@@ -39,7 +39,7 @@ Jede Kachel öffnet den Dialog der jeweiligen Technik; die verlinkten Seiten erk
 |-
 | Wärmequelle Erdreich || [[Grundlagen/Wärmequelle Erdreich|Grundlagen]] || [[Programm Dokumentation/Wärmequelle Erdreich|Anwendung]] || [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung]]
 |-
-| Kühlung || [[Grundlagen/Kühlung|Grundlagen]] || [[Programm Dokumentation/Kälteerzeugung|Anwendung]] || —
+| Kühlung || [[Grundlagen/Kühlung|Grundlagen]] || [[Programm Dokumentation/Kälteerzeugung|Anwendung]] || [[Programm Dokumentation/Berechnung/Kühlung|Berechnung]]
 |}
 
 == Betriebszeiten ==

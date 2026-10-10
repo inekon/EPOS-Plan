@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Kälteerzeugung
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Kälteerzeugung.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Die '''Kälteerzeugung''' deckt den Kältebedarf, den EPOS-Plan für gekühlte Gebäude, Lastgänge im Kanal ''Kühlung'' und Prozesskälte rechnet. Kälte erzeugen die '''Wärmepumpe im Kühlbetrieb''' – wahlweise mit freier Kühlung über ihre Wärmequelle – und die '''Kältemaschine''' mit Luft-, Trocken- oder Nassrückkühlung; ein '''Kältespeicher''' puffert zwischen Erzeugung und Bedarf. Wie der Kältebedarf entsteht und wie Sie die Kühlung eines Gebäudes einstellen, steht auf der Seite [[Programm Dokumentation/Kühlung|Kühlung]]; was Kälteerzeugung, EER und freie Kühlung fachlich bedeuten, erklärt [[Grundlagen/Kühlung]].
+Die '''Kälteerzeugung''' deckt den Kältebedarf, den EPOS-Plan für gekühlte Gebäude, Lastgänge im Kanal ''Kühlung'' und Prozesskälte rechnet. Kälte erzeugen die '''Wärmepumpe im Kühlbetrieb''' – wahlweise mit freier Kühlung über ihre Wärmequelle – und die '''Kältemaschine''' mit Luft-, Trocken- oder Nassrückkühlung; ein '''Kältespeicher''' puffert zwischen Erzeugung und Bedarf. Wie der Kältebedarf entsteht und wie Sie die Kühlung eines Gebäudes einstellen, steht auf der Seite [[Programm Dokumentation/Kühlung|Kühlung]]; was Kälteerzeugung, EER und freie Kühlung fachlich bedeuten, erklärt [[Grundlagen/Kühlung]]; den Rechenweg mit Formeln zeigt [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]].
 
 == Einbindung in EPOS-Plan ==
 {{Anker|einbindung}}
@@ -185,7 +185,7 @@ Fehlt dem gewählten Stromträger der Arbeitspreis, bleiben die Energiekosten au
 * '''Kühlleistung ist keine Kühlkennlinie.''' Ohne Kühlkennlinie im Projekt ist ''Maschine auch zum Kühlen benutzen'' gesperrt („Zu diesem Gerät liegen keine Kühlkenndaten vor"); eine Kühlleistung allein genügt nicht. Abhilfe: ein Gerät mit Kühlkennlinie wählen.
 * '''Wärmepumpe ohne Kaskadenplatz.''' Eine Wärmepumpe im Kühlbetrieb kühlt nur, wenn sie in der Kaskade der ''Simulation Konfiguration'' steht.
 * '''Kältemaschine ohne Anlage.''' Ein Gerät im Projektkatalog ohne Anlage im Dialog ''Kältemaschinen im Projekt'' rechnet nicht, ebenso ein Gerät ohne Kennlinienpunkte; der Lauf nennt beides.
-* '''Übergangszeit.''' Die Wärmepumpe kühlt nur an Kühltagen; Kälte an einem Heiztag deckt sie nicht; eine Kältemaschine ist nicht an die Kühltage gebunden. Die Sperrzeit des Energieversorgers sperrt auch das Kühlen der Wärmepumpe.
+* '''Übergangszeit.''' Die Wärmepumpe kühlt nur an Kühltagen; Kälte an einem Heiztag deckt sie nicht; eine Kältemaschine ist weder an die Kühltage noch an die Sperrzeit einer Wärmepumpe gebunden und deckt Kälte auch an einem Heiztag; nur das Laden eines Kältespeichers wartet auf einen Kühltag. Die Sperrzeit des Energieversorgers sperrt auch das Kühlen der Wärmepumpe.
 * '''Kühl-Vorlauf.''' Zur Wahl stehen die Stützstellen der Kühlkennlinie, leer die kälteste. Ein Kühl-Vorlauf zwischen zwei Stützstellen rechnet Kälteleistung und Leistungszahl linear zwischen beiden, ein Wert außerhalb mit der nächsten Stützstelle; das Laufprotokoll nennt das je Gerät. Kälter als die Vorlaufgrenze mischt das Gebäude hoch, der Kälteerzeuger rechnet aber mit der Leistungszahl seines Vorlaufs.
 * '''Rand der Kennlinie.''' Auf der Achse der Außen- bzw. Quellentemperatur wird über der obersten Stützstelle mit ''Extrapolation der WP-Kennlinie erlauben'' verlängert, sonst gilt ihr Wert, unter der untersten deren Wert; das Laufprotokoll zählt die Stunden. Den Kühl-Vorlauf betrifft der Schalter nicht. Ein Kühlblock in Heizlage oder mit vertauschten Achsen steht unter ''Kühl-Vorlauf'' gesperrt.
 * '''Luftgekühlte Kältemaschine.''' Sie kennt keine freie Kühlung; dafür braucht es einen Trocken- oder Nasskühler.
@@ -210,11 +210,17 @@ Die Zahlen des Kältebedarfs – Kältelast, Stunden mit Kühlbedarf, Überhitzu
 * '''Rückwirkung nur an der Sonde''': Die Kühlwärme einer Wärmepumpe mit Erdwärmesonde regeneriert das Sondenfeld ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]); bei Erdkollektor, Konstant, Profil und CSV verändert sie die Quellentemperatur nicht. Kältemaschinen kühlen gegen die Umgebung und speisen nicht ins Erdreich.
 * Verluste eines Kältenetzes werden nicht gerechnet.
 
+== Berechnung ==
+{{Anker|berechnung}}
+
+Kältefolge, Rückkühlung und freie Kühlung, Teillast und Takten der Kältemaschine, der Kühlbetrieb der Wärmepumpe und die Kälteschranke stehen mit Formeln unter [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]].
+
 == Siehe auch ==
 {{Anker|siehe-auch}}
 
 * [[Programm Dokumentation/Kühlung]] – Kältebedarf, Kühlung am Gebäude, Kühlübergabe und Kühlkurve
 * [[Grundlagen/Kühlung]] – Kälteerzeugung, EER, freie Kühlung, Teillast und Takten fachlich
+* [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]] – der Rechenweg mit Formeln
 * [[Programm Dokumentation/Wärmepumpe]] – der Heizbetrieb derselben Maschine
 * [[Programm Dokumentation/Gerätekataloge#kaeltemaschinen|Gerätekataloge]] – Verwaltung und Import der Kältemaschinen
 * [[Programm Dokumentation/Pufferspeicher]] – Speicherdialog, Schwellen und Ladeleistung

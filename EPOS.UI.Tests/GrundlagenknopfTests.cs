@@ -70,7 +70,8 @@ public sealed class GrundlagenknopfTests : EposBunitContext
         { "Photovoltaik", "Photovoltaik" },
         { "Photovoltaik#wechselrichter", "Wechselrichter" },
         { "Stromspeicher", "Stromspeicher" },
-        { "Wärmequelle Erdreich", "Wärmequelle_Erdreich" }
+        { "Wärmequelle Erdreich", "Wärmequelle_Erdreich" },
+        { "Kühlung", "Kühlung" }
     };
 
     /// <summary>Rechenwegseiten OHNE Technik — ihre Dialoge bekommen keinen Grundlagenknopf.</summary>

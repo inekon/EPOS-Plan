@@ -271,6 +271,7 @@ public sealed class BerechnungsknopfTests
         { "Form_AdminPV.Berechnung",               "Photovoltaik" },
         { "Form_AdminWechselrichter.Berechnung",   "Photovoltaik" },
         { "Form_AdminStromspeicher.Berechnung",    "Stromspeicher" },
+        { "Form_Kaeltemaschine_Stamm.Berechnung",  "Kühlung" },
     };
 
     /// <summary>

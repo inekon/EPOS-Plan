@@ -42,6 +42,8 @@ Jede Seite folgt derselben Gliederung:
 |-
 | [[Programm Dokumentation/Berechnung/Pufferspeicher|Pufferspeicher]] || Kapazitaet, Hysterese, Bereitschaftsverluste, Schichten und Kaeltespeicher
 |-
+| [[Programm Dokumentation/Berechnung/Kühlung|Kühlung]] || Kaeltebedarf, Tagesbetriebsart, Kaeltefolge, Kaeltemaschine mit Rueckkuehlung, Teillast und Takten, freie Kuehlung und Kaelteschranke
+|-
 | [[Programm Dokumentation/Berechnung/Solarthermie|Solarthermie]] || Kollektorertrag aus Einstrahlung und Kennlinie
 |-
 | [[Programm Dokumentation/Berechnung/Photovoltaik|Photovoltaik]] || Einstrahlung, Modultemperatur, Wechselrichter
@@ -77,7 +79,7 @@ Nur der '''Zeitindex''' <math>t</math> beziehungsweise <math>k</math> steht nich
 
 Jedes Zeichen einer Formel steht in einer der beiden Tabellen, und jedes Zeichen der Tabellen kommt in einer Formel vor.
 
-'''Die gemeinsamen Zeichen aller 13 Seiten:'''
+'''Die gemeinsamen Zeichen aller 14 Seiten:'''
 
 {| class="wikitable"
 ! Groesse !! Symbol !! Einheit
@@ -113,7 +115,7 @@ Wo der Rechenkern eine andere Bezeichnung fuehrt (etwa <code>PV_WrEta10</code> f
 
 Jeder Abschnitt jeder Seite dieser Rubrik traegt eine '''Sprungmarke'''. Sie steht als <code><nowiki>{{Anker|<name>}}</nowiki></code> unmittelbar '''unter''' der Ueberschrift — die Hausform dieses Wikis, dieselbe wie auf den Seiten der Rubrik „Grundlagen".
 
-Die Namen sind auf allen 13 Seiten '''dieselben''', kleingeschrieben und ohne Umlaut:
+Die Namen sind auf allen 14 Seiten '''dieselben''', kleingeschrieben und ohne Umlaut:
 
 {| class="wikitable"
 ! Abschnitt !! Sprungmarke

@@ -677,7 +677,7 @@ UcBericht.lblZiel      = Bericht#zielordner
 # Fensterknopf <Form>.btn_Help: Der zeigt weiter auf die allgemeine Seite OHNE
 # Anker, denn dort ist der Anfang die Antwort.
 #
-# Die Anker sind auf jeder der 13 Seiten dieselben sieben, kleingeschrieben und
+# Die Anker sind auf jeder der 14 Seiten dieselben sieben, kleingeschrieben und
 # ohne Umlaut: was, eingang, zeichen, rechenweg, grenzen, ergebnisse, bezuege;
 # die Photovoltaikseite fuehrt achtens "wechselrichter". Gesetzt werden sie im
 # Wiki mit {{Anker|<name>}} unmittelbar UNTER der Ueberschrift (Vorlage:Anker,
@@ -706,6 +706,17 @@ Form_Solarganglinie.Berechnung   = Berechnung/Solarthermie#rechenweg
 Form_PvGanglinie.Berechnung      = Berechnung/Photovoltaik#rechenweg
 Form_PV.Berechnung               = Berechnung/Photovoltaik#rechenweg
 Form_Stromspeicher.Berechnung    = Berechnung/Stromspeicher#rechenweg
+
+# Kaelteseite: Anlagendialog der Kaeltemaschinen, Gruppe Kuehlbetrieb der
+# Waermepumpen-Konfiguration und Bereich Kuehlung der Simulation Konfiguration.
+Form_Kaeltemaschine.Berechnung              = Berechnung/Kühlung#rechenweg
+Form_WP_Kuehlung.Berechnung                 = Berechnung/Kühlung#rechenweg
+Form_Simulation_Config_Kuehlung.Berechnung  = Berechnung/Kühlung#rechenweg
+# Neben jedem Rechenwegknopf einer Technik steht ihr Grundlagenknopf
+# (Form_WP_Kuehlung.Grundlagen steht im Abschnitt Kuehlung weiter unten).
+Form_Kaeltemaschine.Grundlagen              = /wiki/Grundlagen/Kühlung
+Form_Kaeltemaschine_Stamm.Grundlagen        = /wiki/Grundlagen/Kühlung
+Form_Simulation_Config_Kuehlung.Grundlagen  = /wiki/Grundlagen/Kühlung
 
 # Teil C (Katalogeditoren) - Anwenderentscheid O-H13b-5 vom 07.09.2026
 # ---------------------------------------------------------------------------
@@ -738,6 +749,7 @@ Form_PufferSp_Admin.Berechnung      = Berechnung/Pufferspeicher#rechenweg
 Form_AdminPV.Berechnung             = Berechnung/Photovoltaik#rechenweg
 Form_AdminWechselrichter.Berechnung = Berechnung/Photovoltaik#wechselrichter
 Form_AdminStromspeicher.Berechnung  = Berechnung/Stromspeicher#rechenweg
+Form_Kaeltemaschine_Stamm.Berechnung = Berechnung/Kühlung#rechenweg
 
 # ===========================================================================
 # Rubrik Grundlagen (Konzept Technikdokumentation, Abschnitt 7; TD-E1, TD-E2)
