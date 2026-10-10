@@ -225,7 +225,11 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
         var spalten = ZeitreihenCsv.AusModell(m);
         Assert.NotEmpty(spalten);
         Assert.Equal(21, spalten.Max(s => s.Werte.Length));
-        Assert.StartsWith("Jahr;", ZeitreihenCsv.Text(r, spalten), StringComparison.Ordinal);
+        string[] zeilen = ZeitreihenCsv.Text(r, spalten).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.StartsWith("Jahr;", zeilen[0], StringComparison.Ordinal);
+        // CSV-4: Die Zeitspalte zählt wie das Bild ab dem Investitionsjahr 0 bis 20.
+        Assert.StartsWith("0;", zeilen[1], StringComparison.Ordinal);
+        Assert.StartsWith("20;", zeilen[21], StringComparison.Ordinal);
     }
 
     [Fact]

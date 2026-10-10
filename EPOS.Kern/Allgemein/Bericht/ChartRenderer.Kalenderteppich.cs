@@ -261,6 +261,8 @@ namespace WindowsFormsApplication1
 
             // ---- Die Felder: die feinste Stufe, die unter der Grenze bleibt ----
             double[] werte = teppich.Anzeigereihe();
+            // CSV am Kalenderteppich: die Tafel des Bildes (365 × 24) in Anzeigeeinheit, ungezeichnet.
+            z.Tafel = new Tagesstundentafel(titel ?? groesse, einheit, werte, teppich.WochentagDesErstenTags);
             int budget = KALENDERTEPPICH_ELEMENTE_MAX - TEPPICH_RESERVE;
             int stufe = 0;
             Teppichskala skala = null;

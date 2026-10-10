@@ -115,12 +115,18 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            await TextSchreiben(vorschlagDateiname, () => ZeitreihenCsv.Text(raster, spalten));
+        }
+
+        /// <summary>Dateiwahl, Schreiben (UTF-8 mit BOM) und Meldung — der eine Weg beider Diagrammexporte.</summary>
+        private static async Task TextSchreiben(string vorschlagDateiname, Func<string> inhalt)
+        {
             string dateiname = await DateiWaehlenAsync(vorschlagDateiname);
             if (string.IsNullOrEmpty(dateiname)) return;
 
             try
             {
-                File.WriteAllText(dateiname, ZeitreihenCsv.Text(raster, spalten), new UTF8Encoding(true));
+                File.WriteAllText(dateiname, inhalt(), new UTF8Encoding(true));
                 Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dateiname, "CSV Export");
             }
             catch (Exception ex)
@@ -138,10 +144,12 @@ namespace WindowsFormsApplication1
         public static Task ExportDiagramm(WindowsFormsApplication1.Zeichnung.Zeichenmodell modell, string titel,
                                           object kennung, Zeitraster? raster = null)
         {
+            string vorschlag = string.Format(MyResource.Resource.CHART_DATEI_GANGLINIE, ZeitreihenCsv.Dateistamm(titel), kennung);
+            // Ein Kalenderteppich schreibt seine Tafel 365 × 24, wie das Bild sie zeigt.
+            if (modell?.Tafel is WindowsFormsApplication1.Zeichnung.Tagesstundentafel tafel)
+                return TextSchreiben(vorschlag, () => ZeitreihenCsv.Kalenderteppich(tafel));
             IReadOnlyList<ZeitreihenSpalte> spalten = ZeitreihenCsv.AusModell(modell);
-            return ExportZeitreihen(
-                string.Format(MyResource.Resource.CHART_DATEI_GANGLINIE, ZeitreihenCsv.Dateistamm(titel), kennung),
-                raster ?? ZeitreihenCsv.RasterAus(spalten), spalten);
+            return ExportZeitreihen(vorschlag, raster ?? ZeitreihenCsv.RasterAus(spalten), spalten);
         }
 
         /// <summary>

@@ -57,6 +57,47 @@ public class CsvAmBildWacheTests
             Assert.Contains("[\"CsvSpeichern\"] = Diagrammexportnaht.Fuer(", File.ReadAllText(Pfad(h)));
     }
 
+    /// <summary>
+    /// Die Kalenderteppiche (CSV-4): Teppichbild der Kalenderkarte und der Raumnutzungsvorschau —
+    /// Wirt mit Kaskade, Kette der Einbettung bis zum Bild, das Bild ohne eigenen <c>CsvExport</c>.
+    /// </summary>
+    public static TheoryData<string, string> Teppichketten() => new()
+    {
+        { "GebaeudeDialog>GebaeudeKatalogDialog>KonditionierungReiter>KalenderkarteInhalt", "Modell=\"@_teppich\"" },
+        { "GebaeudeAdminDialog>KonditionierungReiter>KalenderkarteInhalt", "Modell=\"@_teppich\"" },
+        { "GebaeudeDialog>GebaeudeKatalogDialog>RaumnutzungBlatt>RaumnutzungBildEditor", "Modell=\"@_vorschau.Teppich\"" },
+    };
+
+    [Theory]
+    [MemberData(nameof(Teppichketten))]
+    public void Der_Kalenderteppich_sitzt_unter_einem_Wirt_und_traegt_den_Knopf(string kette, string bild)
+    {
+        string[] glieder = kette.Split('>');
+        Assert.Contains(Wirte(), w => (string)w[0] == glieder[0]);
+        for (int i = 0; i < glieder.Length; i++)
+        {
+            string datei = Directory.GetFiles(Pfad("EPOS.UI/Dialoge"), glieder[i] + ".razor", SearchOption.AllDirectories).Single();
+            string text = File.ReadAllText(datei);
+            if (i + 1 < glieder.Length)
+                Assert.True(text.Contains("<" + glieder[i + 1]), glieder[i] + " bettet " + glieder[i + 1] + " nicht ein.");
+            else
+            {
+                int stelle = text.IndexOf(bild, StringComparison.Ordinal);
+                Assert.True(stelle > 0, glieder[i] + ": Teppichbild nicht gefunden.");
+                string tag = text.Substring(stelle, text.IndexOf("/>", stelle, StringComparison.Ordinal) - stelle);
+                Assert.DoesNotContain("CsvExport", tag);
+            }
+        }
+
+        // Das Teppichmodell selbst passt zur Naht: die Tafel 365 × 24, Raster Kalendertag.
+        var naht = new Ganglinienexport((_, _, _) => Task.CompletedTask);
+        Zeichenmodell teppich = ChartRenderer.KalenderteppichModell(Kalenderteppich.ImGemeinjahr(
+            new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, Kalenderangabe.AusWert(20.0), null, null),
+            new Gemeinjahrkalender(3)));
+        Assert.True(naht.Passt(teppich));
+        Assert.Equal(Zeitraster.Kalendertag, naht.RasterFuer(teppich));
+    }
+
     private static string Pfad(string relativ)
     {
         var ordner = new DirectoryInfo(AppContext.BaseDirectory);

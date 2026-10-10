@@ -2154,4 +2154,35 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Equal(Zeitraster.Tagesstunde, new Ganglinienexport((_, _) => Task.CompletedTask).RasterFuer(modell));
         Assert.True(jahre.Passt(modell));
     }
+
+    /// <summary>
+    /// CSV-4: Ein Kalenderteppich trägt keine Reihe, aber seine Tafel 365 × 24 — unter einer Naht
+    /// zeigt seine Leiste „CSV…“, der Klick gibt das Modell mit dem Raster Kalendertag weiter.
+    /// </summary>
+    [Fact]
+    public void Kalenderteppich_traegt_CSV_im_Raster_Kalendertag()
+    {
+        Zeichenmodell modell = ChartRenderer.KalenderteppichModell(Kalenderteppich.ImGemeinjahr(
+            new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, Kalenderangabe.AusWert(20.0), null, null),
+            new Gemeinjahrkalender(3)));
+
+        var ohne = Render<DiagrammSvg>(p => p.Add(x => x.Modell, modell).Add(x => x.Kennung, "t0").Add(x => x.OhneZoom, true));
+        Assert.Empty(ohne.FindAll("button.epos-diagramm-csv"));
+
+        var exporte = new List<(Zeichenmodell Modell, string Titel, Zeitraster Raster)>();
+        var naht = new Ganglinienexport((m, t, r) => { exporte.Add((m, t, r)); return Task.CompletedTask; });
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, modell).Add(x => x.Kennung, "t1").Add(x => x.Bezeichnung, "Teppichbild")
+            .Add(x => x.OhneZoom, true).Add(x => x.LegendeSchaltbar, false)
+            .AddCascadingValue(naht));
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, titel, raster) = Assert.Single(exporte);
+        Assert.Equal("Teppichbild", titel);
+        Assert.Equal(Zeitraster.Kalendertag, raster);
+        string[] zeilen = ZeitreihenCsv.Kalenderteppich(m.Tafel).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(366, zeilen.Length);
+        Assert.Equal(26, zeilen[1].Split(';').Length);
+        Assert.StartsWith("01.01.;Do;20,0;", zeilen[1], StringComparison.Ordinal);
+    }
 }
