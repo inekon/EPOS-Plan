@@ -45677,6 +45677,15 @@ Chart</value>
   <data name="KMA_KATALOG_LEER" xml:space="preserve">
     <value>Der Katalog enthält keine Kältemaschine. Legen Sie Geräte unter Administration › Kältemaschinen an.</value>
   </data>
+  <data name="KM_ANL_BTN_VERWALTUNG" xml:space="preserve">
+    <value>Katalogverwaltung…</value>
+  </data>
+  <data name="KM_ANL_MSG_VERWALTUNG_NICHT" xml:space="preserve">
+    <value>Die Katalogverwaltung der Kältemaschinen lässt sich hier nicht öffnen.</value>
+  </data>
+  <data name="KM_ANL_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>Es gibt ungespeicherte Änderungen. Übernehmen Sie sie mit OK oder verwerfen Sie sie mit Abbrechen, bevor Sie die Katalogverwaltung öffnen.</value>
+  </data>
   <data name="KMA_GRUPPE_GERAET" xml:space="preserve">
     <value>Gerät</value>
   </data>

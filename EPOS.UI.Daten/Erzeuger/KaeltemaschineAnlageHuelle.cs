@@ -37,6 +37,8 @@ namespace WindowsFormsApplication1
                 ["Anlegen"] = new Func<int, string, int>((stammId, name) => KaeltemaschineAnlageCtrl.Anlegen(projektId, stammId, name)),
                 ["Speichern"] = new Func<KaeltemaschineAnlageDaten, string>(Speichern),
                 ["Loeschen"] = new Action<int>(KaeltemaschineAnlageCtrl.Loeschen),
+                // KT: "Typkennfelder laden..." in der Katalogwahl - derselbe Weg wie in der Verwaltung.
+                ["TypkennfelderLaden"] = new Func<KaeltemaschineTypkennfelderErgebnis>(KaeltemaschineKatalogHuelle.TypkennfelderLaden),
                 // Block „Wärmepumpen im Kühlbetrieb“: Bestand und Schreibweg wie der Kühlschalter der
                 // Wärmepumpen-Konfiguration (WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten), geschrieben beim OK.
                 ["Waermepumpen"] = new Func<IReadOnlyList<EPOS.UI.Seiten.Start.KuehlWaermepumpe>>(
