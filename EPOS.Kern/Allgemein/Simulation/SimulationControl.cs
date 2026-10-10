@@ -2008,23 +2008,37 @@ namespace WindowsFormsApplication1
         {
             simulation_wp.wp_list.Clear();
 
-            // Gepflegte Priorität zuerst, ungepflegte (NULL/0) hinten — dieselbe Regel wie
-            // Hydraulikbild und Erzeugerkarten (Ladeordnung.SqlAnlagenprio).
-            DataTable dt = StilleDb.Tabelle(
-                "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
-                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
-                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
-
-            if (dt == null)
+            List<int> ids = WaermepumpenanlagenLesen(m_ID_Projekt);
+            if (ids == null)
             {
                 Protokoll.Warnung("Speicherstufe: Die Wärmepumpen des Projekts " + m_ID_Projekt +
                                   " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
                 return;
             }
 
+            simulation_wp.wp_list.AddRange(ids);
+        }
+
+        /// <summary>
+        /// Die Wärmepumpen-Anlagen eines Projekts in Modulfolge — die Liste, aus der
+        /// <see cref="WP_Liste_Laden"/> die Module baut und <see cref="Kaeltefolge.Lesen"/> die Folge der
+        /// Wärmepumpen im Kühlbetrieb liest. <c>null</c> bei einem Lesefehler.
+        /// </summary>
+        internal static List<int> WaermepumpenanlagenLesen(int idProjekt)
+        {
+            // Gepflegte Priorität zuerst, ungepflegte (NULL/0) hinten — dieselbe Regel wie
+            // Hydraulikbild und Erzeugerkarten (Ladeordnung.SqlAnlagenprio).
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
+            if (dt == null) return null;
+
+            var ids = new List<int>();
             foreach (DataRow r in dt.Rows)
-                simulation_wp.wp_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
+                ids.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
+            return ids;
         }
 
         /// <summary>Kesselliste und Anlagen-IDs (wie <see cref="Simulation_SPK_Ctrl"/>); N9 wie oben,

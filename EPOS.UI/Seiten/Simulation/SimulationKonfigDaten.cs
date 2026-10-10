@@ -133,6 +133,12 @@ public sealed class SimulationKonfigDaten
     /// 0, steht dort nichts.
     /// </summary>
     public bool KaskadeGepflegt;
+
+    /// <summary>
+    /// Der Bereich „Kälte“ (Entwurf Kältebereich 3, Welle KB-A): Projektschalter, Kälteerzeuger in Rechenfolge,
+    /// Kältespeicher und freie Kühlung — aus dem Kernleser der Kältefolge. Nie <c>null</c>.
+    /// </summary>
+    public KaeltebereichDaten Kaeltebereich = new KaeltebereichDaten();
 }
 
 /// <summary>
@@ -307,6 +313,15 @@ public sealed class SimulationKonfigDienste
     /// dem Projekt, die Übernahme legt einen neuen an). <b>Ohne Delegat kein Knopf.</b>
     /// </summary>
     public Action<int>? PufferAuslegungOeffnen;
+
+    /// <summary>
+    /// Der Kühlbetrieb einer Wärmepumpe im Bereich „Kälte“ (Welle KB-A; Aufnehmen = an, Entfernen = aus) —
+    /// derselbe Kernweg wie der Kühlschalter der Wärmepumpen-Konfiguration
+    /// (<c>WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten</c>), schreibt SOFORT. Parameter: Projektkopie
+    /// (<c>Tab_WP.ID</c>) und Zielzustand; Rückgabe <c>null</c> = geschrieben, sonst der Sperrgrund. <c>null</c> als
+    /// Delegat = kein Schreibweg; dann steht kein Schalter da.
+    /// </summary>
+    public Func<int, bool, string?>? KuehlbetriebWpSchreiben;
 }
 
 /// <summary>Ein waehlbarer Quellentyp: Steuerwert und Anzeigetext.</summary>

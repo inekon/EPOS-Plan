@@ -658,7 +658,17 @@ namespace WindowsFormsApplication1
                 "SELECT ID FROM " + TABLE + " WHERE ID_Projekt = ? AND " + KaeltemaschineSchema.SPALTE_ID_STAMM + " = ? ORDER BY ID",
                 new DbParam("?", projektId), new DbParam("?", stammId));
             if (vorhanden != null && vorhanden != DBNull.Value) return Convert.ToInt32(vorhanden, CultureInfo.InvariantCulture);
+            return EigeneKopieAnlegen(stammId, projektId);
+        }
 
+        /// <summary>
+        /// <b>Festlegung KB-1</b> (Entwurf Kältebereich 2.2): legt <b>immer</b> eine neue Projektkopie des Katalogsatzes
+        /// <paramref name="stammId"/> samt Kennlinie an — auch wenn das Projekt schon eine Kopie desselben Satzes führt.
+        /// So trägt jede Kältemaschinen-Anlage ihren eigenen Kaltwasservorlauf und Hilfsstromanteil. Bestehende
+        /// geteilte Kopien bleiben unberührt. <c>-1</c>, wenn es den Katalogsatz nicht gibt.
+        /// </summary>
+        public static int EigeneKopieAnlegen(int stammId, int projektId)
+        {
             KaeltemaschineModel m = KaeltemaschineStammCtrl.Laden(stammId);
             if (m == null) return -1;
             m.IdStamm = stammId;
