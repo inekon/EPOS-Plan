@@ -468,7 +468,7 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Ferienzeitraum | holiday period | datierter Zeitraum (`Ferienbeginn_1` … `Ferienende_4`) des Gebäudes, gilt für alle Spalten; Datum im Gemeinjahr; Bestand „Holiday start" / „Holiday end" |
 | Feiertag | public holiday | wie § 14 (Tagtyp: Sonn-/Feiertag); die neun bundeseinheitlichen Feiertage stehen als Regel und wirken „wie Sonntag" → „as Sunday"; Länderfeiertage sind gewöhnliche Perioden |
 | Bezugsjahr | reference year | das Jahr, dessen Wochentage und Feiertage Vorschau, Teppichbild und Lauf verwenden; nicht „Bezugsperiode" (§ 13 oben) |
-| Gemeinjahr | common year | Jahr mit 365 Tagen ohne 29.02.; Kalender und Ferienzeiträume rechnen darin, ohne Jahresdatum; die Wochentage folgen dem Wochentagsraster (weekday grid) des Laufs, Ostern ist dessen Sonntag am nächsten zum 8. April (Easter convention); „TT.MM." → „DD.MM." |
+| Gemeinjahr | common year | Jahr mit 365 Tagen ohne 29.02.; Kalender und Ferienzeiträume rechnen darin, ohne Jahresdatum; die Wochentage folgen dem Wochentagsraster (weekday grid) des Projekts — dem der Klimaregion, für Gebäudelauf, Zapfkalender und Bedarfsprofile dasselbe —, Ostern ist dessen Sonntag am nächsten zum 8. April (Easter convention); „TT.MM." → „DD.MM." |
 | Zeitfenster | time window | Werkzeug der Karte: Tage, von, bis, Wert — der Weg zur Standardwoche ohne Zellenarbeit |
 | Zeitstruktur übernehmen | apply time structure | Werkzeug der Karte für Kühlen, Lüftung und Geräte: „wie Heizung" → „as heating" oder „wie Anwesenheit" → „as occupancy"; Übernehmen → Apply (§ 8) |
 | Teppichbild | carpet plot | Jahresbild der Vorschau: Tage × Stunden, Farbe = Wert, „aus" als eigene Fläche; die Unterschrift nennt das Bezugsjahr |

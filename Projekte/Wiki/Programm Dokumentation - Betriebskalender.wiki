@@ -26,7 +26,7 @@ Oben steht die Auswahl ''Kalender'' mit den Knöpfen ''Neu'' und ''Löschen'', d
 | ''Ferien kürzen die Monatsmenge'' || Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage des Monats. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.
 |}
 
-Unter den Feldern nennt eine Zeile, wie viele Feiertage und Ferientage der Kalender in einem Beispieljahr trägt; im Simulationslauf gilt das Referenzjahr des Projekts. ''Speichern'' schreibt den Kalender, ''OK'' schreibt und schließt, ''Abbrechen'' verwirft die Eingaben. ''Löschen'' fragt zurück und nennt, wie viele Profilzuordnungen den Kalender nutzen; sie rechnen danach ohne Kalender.
+Unter den Feldern nennt eine Zeile, wie viele Feiertage und Ferientage der Kalender in einem Gemeinjahr trägt, dessen 1. Januar ein Sonntag ist; im Simulationslauf gelten die Wochentage der Klimaregion des Projekts. ''Speichern'' schreibt den Kalender, ''OK'' schreibt und schließt, ''Abbrechen'' verwirft die Eingaben. ''Löschen'' fragt zurück und nennt, wie viele Profilzuordnungen den Kalender nutzen; sie rechnen danach ohne Kalender.
 
 == Einen Kalender zuordnen ==
 {{Anker|zuordnung}}
