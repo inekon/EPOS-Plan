@@ -755,7 +755,8 @@ namespace WindowsFormsApplication1
                 {
                     if (!tagesarten.TryGetValue(kal.ID, out byte[] arten))
                     {
-                        feiertagsjahr ??= SolardatenCtrl.Preisreihenjahr(idProjekt) ?? 0;
+                        // Das eine Wochentagsraster des Projekts (E115) — dieselbe Auflösung wie Gebäudelauf und Zapfkalender.
+                        feiertagsjahr ??= Konditionierungdatenweg.Raster(idProjekt, wochentagJan1).Jahr;
                         arten = kal.Tagesarten(new Gemeinjahrkalender(wochentagJan1, feiertagsjahr.Value));
                         tagesarten[kal.ID] = arten;
                     }
