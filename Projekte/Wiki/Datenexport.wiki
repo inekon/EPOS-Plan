@@ -1,4 +1,4 @@
-Der '''Datenexport''' gibt die berechneten Zeitreihen als CSV-Datei aus – Semikolon als Trennzeichen, Dezimalkomma. Der Knopf ''CSV…'' steht in der Leiste jedes Zeitreihendiagramms der [[Ergebnisdarstellung]] rechts neben ''Bereich'' und ''1:1''.
+Der '''Datenexport''' gibt die berechneten Zeitreihen als CSV-Datei aus – Semikolon als Trennzeichen, Dezimalkomma. Der Knopf ''CSV…'' steht in der Leiste jedes Zeitreihendiagramms der [[Ergebnisdarstellung]] rechts neben ''Bereich'' und ''1:1''; Säulenbilder ohne Zeitachse (Monate, Wochen, Tage) tragen in ihrer Leiste allein ''CSV…''. Dieselbe Leiste tragen die Bilder der Lastspitzenkappung, der Speicherflotte, des Quellprofils und der Kapitalwertverlauf der Wirtschaftlichkeit; dort zählt die erste Spalte die Betrachtungsjahre.
 
 == Export von Zeitreihen ==
 {{Anker|export-von-zeitreihen|csv-export|zeitreihen}}
