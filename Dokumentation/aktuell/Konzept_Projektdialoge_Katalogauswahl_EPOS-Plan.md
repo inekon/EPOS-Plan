@@ -273,6 +273,24 @@ nicht eine Zeile als Untergrenze. Vorgabe der Trennlinie: Katalogliste 259 / 179
 1 280 × 800 / 1 280 × 720 / 1 024 × 700 (vorher 178 / 108 / 108); Trennlinie unten und Detailzeile auf
 klemmen auf 147 px. Projektliste unverändert: Zeile 53 px, Untergrenze 85 px, Vorgabe 138 px.
 
+**Präzisiert in KB1 (gemessen 10.10.2026, Rollbereichprobe, Anwenderentscheid vom selben Tag):** Auf kleinen
+Bildschirmen gilt eine **Kompaktstufe** — unter 1 200 px Breite oder 800 px Höhe (iPad quer und hoch, Laptop bei
+125 %, auch 1 280 × 720 und 1 024 × 700) werden Dialograhmen und Baustein rund ein Achtel kleiner: Schrift
+13 → 12 px, Kartentitel 16 → 14 px, Knöpfe, Kopfleisten und Detailzeile 44 → 37 px, Projektzeile 53 → 46 px,
+Katalogzeile 46 → 40 px (Kästchenmodus) bzw. 53 → 46 px, Untergrenze der Projektliste 85 → 74 px, Vorgabe
+138 → 120 px, Katalogliste Kopf und zwei Zeilen 147 → 128 px bzw. 161 → 140 px. Es ist eine Skalenebene über die
+Token des Hauses; die Maße im Programm (Trennlinie, gemerkte Höhe, `KatalogZeile`) bleiben Pixel der
+Normalstufe. Die Klemme auf eine Katalogzeile unter 600 px Bausteinhöhe gilt nur noch in der Normalstufe.
+**Ausnahme von der Rollbereichregel, nur unterhalb der Mindesthöhe:** Reicht das Fenster nicht für Dialogkopf,
+Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit Kopf, zwei Zeilen und Knopfleiste,
+Detailzeile und Schlussleiste, steht der Baustein auf seiner gemessenen Mindesthöhe, und der Dialogkörper rollt
+senkrecht; die Schlussleiste rollt mit (Kopf und Schlussleiste stehen statisch, wie es die Fensterprobe misst).
+Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts und wächst
+bis 45 % der Fensterhöhe, Projekt- und Katalogliste geben dafür bis zu ihrer Untergrenze ab; erst darüber rollt
+allein die Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
+768 × 1 024, 1 093 × 614), 618 Zustände ohne Verstoß; der Dialogkörper rollt allein in 1 093 × 614 mit
+aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebäudedialogs leer.
+
 ### 4.9 Zuschnitt je Dialog (Randnotiz)
 
 | Dialog | Projekt-Kopfleiste | Katalog-Fußleiste | Detailzeile aufgeklappt | Überlagerung |
@@ -287,6 +305,51 @@ klemmen auf 147 px. Projektliste unverändert: Zeile 53 px, Untergrenze 85 px, V
 | Bedarfsprofile | Jahressumme | Neu, Typ ändern, DB ändern, Schloss, Löschen | Verbrauch, Temperatur, Kalender | — |
 | Wärmebedarf extern, Strom-, Solarganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten | Ganglinie mit Kennzahlen | — |
 | Kältemaschine (Katalogauswahl) | — | Schloss, Löschen, Bearbeiten | Kenndaten | die Anlage bleibt im Anlagendialog |
+
+### 4.10 Spaltenwahl und Verwendungsmarke
+
+Anwenderentscheid vom 10.10.2026 nach der Sichtabnahme der Kompaktstufe: „Die Spalte ‚im Projekt
+verwendet‘ nimmt zu viel Platz weg. Das kann auch durch eine farbliche Kennzeichnung — mit einem
+Hinweis — erfolgen.“ und „Die Spalten sollen wählbar sein (mehrere verfügbar, nur ausgewählte
+anzeigen).“ Dazu der Befund derselben Abnahme: Die Kopfleiste des Projekts kürzte die Summe
+(„Summe [kWth]: 2…“).
+
+**Verwendungsmarke.** Eine Katalogzeile, deren Satz im Projekt verwendet ist, trägt hinter dem
+Bezeichner einen Punkt in der Projektfarbe (die Farbe der Plakette „IM PROJEKT“), die Zeile ist leicht
+getönt, und der Punkt nennt beim Zeigen „Im Projekt verwendet“ (`KFLT_VERWENDET_HINWEIS`, auch als
+`aria-label`). Neben der Trefferzahl in der Kopfleiste des Katalogs steht die Legende „● im Projekt“
+(`KFLT_VERWENDET_LEGENDE`), sobald mindestens eine Zeile verwendet ist. Das Kennzeichen ist
+`Katalogfilterzeile.ImProjekt`; `Katalogverwendung.Stempeln` setzt es zusammen mit dem Wert der Spalte
+`VERWENDET`, einmal je Liste aus der lebenden Projektliste (Entscheid Q12) — die Wirte stempeln wie
+zuvor. Die Marke kürzt nie mit; sie steht in der Kompaktstufe und bei 768 px Breite.
+
+**Spaltenwahl.** In der Kopfleiste des Katalogs öffnet der Knopf „Spalten…“ (in der Kompaktstufe nur
+das Sinnbild, `title` „Angezeigte Spalten wählen“) eine kleine Auswahl: ein Kästchen je Spalte des
+Profils, „Standard“ zum Zurücksetzen. Die Auswahl rollt nie selbst; ab sechs Spalten stehen die
+Kästchen in zwei Spalten. Der Bezeichner und die Wahlspalte sind immer an und stehen nicht in der
+Auswahl. Wählbar sind alle Spalten, die der Wirt definiert — Rang 1, Rang 2 und „im Projekt
+verwendet“; diese ist `Katalogspalte.StandardAus` und fehlt in der Standardanzeige, Sortieren und
+Filtern danach bleiben über die Wahl möglich.
+
+- Ohne gemerkte Wahl gilt die Standardanzeige: Rang 1 immer, Rang 2 nach der Breite (4.8), ohne die
+  standardmäßig abgewählten Spalten; die Stufen rechnen über die angezeigten Spalten.
+- Mit gemerkter Wahl stehen genau die gewählten Spalten, unabhängig von der Breite; reicht sie nicht,
+  rollt die Liste in ihrem eigenen Raster waagerecht (keine zweite Rollfläche).
+- Gemerkt wird je Dialog über `Dienste.Einstellungen` als Text unter
+  `Katalogauswahl.Spalten.<Dialogname>` — die Spaltenschlüssel kommagetrennt in der Folge des
+  Profils; der Dialogname ist derselbe wie bei der Trennlinie (4.3). „Standard“ löscht den Schlüssel
+  und schließt die Auswahl. Eine Wahl ohne jede Spalte ist eine Wahl (nur der Bezeichner), nicht der
+  Standard. Unbekannte Schlüssel fallen still heraus.
+- Tastatur: Knopf und Kästchen sind mit Tab erreichbar, Esc schließt die Auswahl (nicht den Dialog)
+  und gibt den Fokus an den Knopf zurück; ein Klick daneben schließt sie ebenso.
+
+**Summe.** In der Kopfleiste des Projekts hat die Summe Vorrang: Zahl und Einheit werden nie gekürzt
+(`flex-shrink: 0`, `white-space: nowrap`); zuerst geben Überschrift und Knöpfe nach (Auslassung, unter
+800 px Bereichsbreite ohne Pfeile), die Kopfleiste bleibt einzeilig.
+
+Nachweis: `EPOS.UI.Tests/Bausteine/KataloglisteSpaltenwahlTests`, die Dialogtests der Wirte und die
+KS1-Fälle von `Proben/Rasterprobe/katalogprobe.mjs` (Heizkessel und BHKW in 1 280 × 800 und
+768 × 1 024, mit Gegenprobe).
 
 ## 5 Rückweg Projekt → Datenbank
 
@@ -413,6 +476,30 @@ Wärmepumpe, Pufferspeicher).
   bleibt (Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage). Die Meldung danach (Banner) nennt
   Zahl und Namen.
 
+### 5.4 Wie gebaut (Stufe 3, BHKW)
+
+Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
+
+- **Kernweg:** `BHKWStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_BHKW`, Katalog `Tab_BHKW_STAMM`, Anlage über
+  `ID_BHKW`, Kostenkomponente 7), dazu `RueckwegVorschau`, `AusProjektUebernehmen`, `RueckwegNameBelegt` und
+  `KatalogsatzLoeschen`. Prüfregel wie beim Speichern: die zwei Wirkungsgradanteile, Teillast und Takten, die
+  Rücklaufgrenze. `Delete` über den Namen läuft über denselben Löschweg samt Satzvorlage. Kein neuer Schemaschritt:
+  208 und 209 führen `ID_Stamm` an `Tab_BHKW` und beide Vorlagenverweise an `Tab_BHKW_STAMM`;
+  `BHKWCtrl.CopyFromStamm` trägt den Ursprung ein.
+- **Nebenposten:** Die Investition hat fünf Posten (`Kosten_Modul`, `Kosten_Montage`, `Kosten_Lieferung`,
+  `Kosten_Schallschutzhaube`, `Kosten_Abgasreinigung`); sie stehen in „Alle Daten“ und in der Satzbearbeitung,
+  `Investition_kwel` ist dort nur Anzeige und wird vom Kern beim Schreiben aus Posten und `Pel` nachgerechnet, ebenso
+  der Gesamtwirkungsgrad aus seinen zwei Anteilen. Mit dem Rückweg gehen Posten, `Investition_kwel` und
+  `Wartungskosten_kwhel` als Schnittmenge.
+- **Grenzleistung:** Zwei Orte. Das Feld beim Projektsatz (mit Herleitung „0 = Projektvorgabe“) ist die Grenzleistung
+  der Anlagenzeile und bleibt im Projekt; `Tab_BHKW.Grenzleistung` ist Spalte des Moduls und geht mit (5.1). Die
+  Rückfrage nennt beides.
+- **Kindzeilen:** Das BHKW hat keine technischen Kindtabellen — Teillast und Takten, Rücklaufgrenze und die
+  Wirkungsgradanteile sind Spalten am Satz. Anlagenbezogen bleiben Energieträger, Grenzleistung und Temperaturpaar der
+  Anlage, Senken und Zeitprogramm.
+- **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
+  steht wie beim Heizkessel rechts im Katalogfuß.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
@@ -467,7 +554,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 |---|---|---|
 | **1 Baustein** (umgesetzt 09.10.2026, Statuszeile #861) | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
 | **2 Heizkessel** (umgesetzt 09.10.2026, Statuszeile #873; Teil a Knöpfe und Bearbeiten, Teil b Rückweg und Schemaschritt 208) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
-| **3 Erzeuger** | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
+| **3 Erzeuger** (BHKW umgesetzt 10.10.2026, Statuszeile #887) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
 | **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 

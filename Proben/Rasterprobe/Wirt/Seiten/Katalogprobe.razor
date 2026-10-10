@@ -244,13 +244,15 @@
                das Zeilenmass 53 px (kein ZeileIstWahl, keine Tastenfuehrung). zeilen=<n> ist
                die Zahl der Katalogsaetze (ab 120 virtualisiert, bis 6 654); die Projektliste
                traegt zwei Zeilen. Profil und Zeilen sind EINE Instanz je Seite - wie in der
-               Huelle, die sie einmal je Parametersatz baut. *@
+               Huelle, die sie einmal je Parametersatz baut. Der Leer-Weg ProjektGaben zeigt
+               "Bearbeiten..." in der Kopfleiste "Im Projekt" wie in der Huelle. *@
             <GebaeudeDialog Zeilen="@GebaeudeProjektzeilen"
                             Katalogzeilen="@(() => GebaeudeZeilen)"
                             Katalogprofil="@GebaeudeProfil"
                             Filterstandvorgabe="@_filterstand"
                             StammDetail="@GebaeudeStammdetail"
                             StammSatz="@GebaeudeStammsatz"
+                            ProjektGaben="@(_ => null)"
                             Geschlossen="@(b => { })" />
             break;
 

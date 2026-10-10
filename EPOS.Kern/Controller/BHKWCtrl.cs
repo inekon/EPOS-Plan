@@ -357,6 +357,11 @@ namespace WindowsFormsApplication1
                 if (ok) ErzeugerTeillastWerte.BhkwKopieren(s, neueId);
                 // UB-E3-b: die Abschaltgrenze des Ruecklaufs reist mit - leer bleibt leer.
                 if (ok) GeraetegrenzWerte.BhkwKopieren(s, neueId);
+                // Der Ursprung der Kopie (Schemaschritt KatalogkostenUrsprungSchema): Der Rueckweg „In die Datenbank
+                // uebernehmen…" kann ihn dann ueberschreiben, und die Satzvorlagen gehen der Standardvorlage vor.
+                if (ok && KatalogkostenUrsprungSchema.UrsprungLesbar("Tab_BHKW"))
+                    DataRepository.ExecuteSQL("UPDATE [Tab_BHKW] SET [ID_Stamm] = ? WHERE [ID] = ?",
+                                              new DbParam("@st", stammId), new DbParam("@id", neueId));
                 return ok ? neueId : -1;
             }
             catch (Exception ex)

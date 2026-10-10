@@ -1268,6 +1268,49 @@ Haftregel schob es in Ruhe um 15 px nach unten (Bannerprobe: „in Ruhe 87 px, o
 Katalogauswahl rollt der Dialogkörper nicht; dort haftet das Banner deshalb mit `top: 0`. Danach:
 Bannerprobe erfüllt (Gegenprobe rot), Fensterprobe erfüllt (Gegenprobe rot), Katalogprobe 59 Fälle ohne
 Überlagerung, Rasterprobe 28 von 29 (Z6 `kategorien_ueberlagerung`, quer 47 px, war vorher schon rot).
+**Kompaktstufe und Rollbalken (KB1).** Drei weitere Fenster: 1 024 × 768 und 768 × 1 024 (iPad quer
+und hoch), 1 093 × 614 (Laptop bei 125 %). Die Stufe misst die Probe in jedem Fenster nach der
+Medienabfrage `(max-width: 1199.98px), (max-height: 799.98px)` — Normalstufe nur in 1 280 × 800, die
+Kompaktstufe auch in 1 280 × 720 und 1 024 × 700. Je Zustand zusätzlich: Schrift 13 bzw. 12 px,
+Projektzeile 53 bzw. 46 px, Katalogzeile 53/46 bzw. 46/40 px (mit Zeilenmaß), Projektliste mindestens ihre
+Untergrenze, alle Knöpfe der Schlussleiste nach dem Rollen des Dialogkörpers sichtbar und treffbar (gerollt
+wird nur, wenn der Dialog einen bedienbaren Rollbalken hat). In der Kompaktstufe gilt Kopf und **zwei**
+Katalogzeilen auch unter 600 px Bausteinhöhe. Der Dialogkörper darf nur in den drei neuen Fenstern rollen und
+nur mit `data-zweispalten-eng` (Fenster unter der Mindesthöhe) — gezählt als Befund; in den drei bisherigen
+Fenstern bleibt jeder rollende Dialogkörper ein Verstoß. Mit `--fotos <ordner>` legt die Probe Bilder von
+Heizkessel und Gebäude in den drei neuen Fenstern ab. **Zweite Gegenprobe (Rollbalken):** ein 400 px hoher
+Klotz im Heizkessel bei 1 093 × 614 muss den Dialog eng schalten, Projektliste (74 px) und Katalogliste
+(128 px) auf ihrer Untergrenze lassen und die Schlussleiste erreichbar halten; derselbe Klotz mit
+`overflow: hidden` am Dialog muss die Schlussleiste unerreichbar melden.
+
+**Ergebnis vom 10.10.2026, KB1** (Wirt Release, Chromium headless): **618 Zustände, 0 Verstöße**, beide
+Gegenproben rot (verschachtelt 1 Paar, Dialogkörper rollt; ohne Rollbalken „Abbrechen, OK“ unerreichbar) —
+Rückgabe 0. Gemessen (Bausteinhöhe / Projektliste / Katalogliste in px, Vorgabe der Trennlinie):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 |
+|---|---|---|---|---|---|---|
+| Heizkessel (Zeile 53 / 46 bzw. 46 / 40) | 648 / 138 / 259 | 596 / 120 / 253 | 576 / 120 / 233 | 644 / 120 / 301 | 900 / 120 / 557 | 490 / 120 / 147 |
+| Gebäude, Wärmepumpen (Kontextzeile) | 620 / 138 / 226 | 571 / 120 / 225 | 551 / 120 / 205 | 619 / 120 / 273 | 875 / 120 / 529 | 465 / 99 / 140 |
+| Stromganglinie | 648 / 138 / 312 | 596 / 120 / 299 | 576 / 120 / 279 | 644 / 120 / 347 | 900 / 120 / 603 | 490 / 120 / 193 |
+
+Kompaktstufe: Schrift 12 px, Kartentitel 14 px, Knöpfe und Kopfleisten 37 px, Projektzeile 46 px,
+Katalogzeile 46 px (Kästchenmodus 40 px), Untergrenze der Projektliste 74 px, Katalogliste 128 px (Heizkessel)
+bzw. 140 px. Detailzeile auf: Projekt- und Katalogliste auf ihrer Untergrenze, die Detailzeile zeigt
+mindestens 80 px ihres Inhalts; in 1 093 × 614 reicht das Fenster dafür nicht — dort rollt der Dialogkörper
+(23 Zustände, alle „Detailzeile auf“), sonst in keinem Zustand. Im schmalen Bereich (768 px) tritt die
+Überschrift der Kopfleiste hinter die Marke zurück, die Pfeile der Knöpfe entfallen, und das Summenfeld des
+BHKW behält die Beschriftung neben dem Feld: Die Kopfleisten bleiben einzeilig (37 px).
+
+Dieselbe Ausnahme kennen **Fensterprobe** und **Bannerprobe**: Trägt der Dialog `data-zweispalten-eng`,
+darf der Dialogkörper rollen (Befund, nicht gezählt), Kopf und Schlussleiste bleiben `static`, und die
+Schlussleiste muss am Ende des Rollwegs im Fenster stehen; die Gegenprobe „rollender Dialogkörper“ der
+Fensterprobe sperrt den Schalter und bleibt rot. Am Stand KB1 grün: Fensterprobe (Befund in 1 088 × 624
+und 520 × 624 mit aufgeklappter Detailzeile, beim Gebäude in 520 × 624 auch zugeklappt — die zweizeilige
+Schlussleiste), Bannerprobe (BHKW und Gebäude in beiden Fenstern), Katalogprobe, Legendenprobe. Die
+**Rasterprobe** misst in (c) das gesetzte Zeilenmaß mal `--epos-zeilenskala` der Hülle: GD1 bis GD3
+(Gebäude-Projektdialog, 624 px Höhe, also Kompaktstufe) 46,0 px bei `ItemSize` 53, keine Platzhalter,
+4 Sichtbarkeitsmelder nach dem Rollen; verfehlt bleibt allein Z6 (fremd).
+
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
 **Zweck.** Die Legende neben den Ringen der Ergebnisübersicht (Wärme, Strom, Kälte) steht in einer
@@ -1359,3 +1402,81 @@ verfehlen.
 **Ergebnis vom 10.10.2026** (Linux-Container, Chromium headless, Wirt Blazor Server): 6 + 6 Zahlenspalten, größter
 Abstand **0,00 px** in allen drei Fällen, Breiten 948 / 1037 px statt 1280 px — Rückgabe 0. Gegenprobe:
 12 Verstöße, größter Abstand 61,84 px (verfehlt, richtig).
+
+---
+
+## Kennzahlenprobe (Kennzahlenzeile der Ergebnisübersicht) — Seite `/legendenprobe`
+
+**Zweck.** Die Kennzahlenzeile der Ergebnisübersicht (Wärme, Strom, Kälte mit zwei Bändern) ist ein
+Container (`epos-ui.css`, „Das Kennzahlenband"; Markup einmal in `UebersichtReiter.Kennzahl`): Die Kacheln
+stehen in einer umbrechenden Flexzeile, keine wird schmaler als ihr Inhalt (Zahl samt Einheit, längstes
+Wort der Beschriftung), eine Kachel ohne Platz rückt in die nächste Zeile; ist das Band schmaler als 480 px,
+stehen die Kacheln untereinander, je Kachel Beschriftung links und Zahl rechts. Zahl und Einheit stehen in
+einem Element mit `white-space: nowrap`, die Beschriftung bricht nur an Wortgrenzen. Die Probe nutzt die
+Seite der Legendenprobe (echter `UebersichtReiter`, Kälte mit Erzeuger) und setzt die Breite des Rahmens
+`#legendenprobe-rahmen` per Skript. bunit hält die Struktur (`EPOS.UI.Tests/Seiten/UebersichtReiterTests`,
+Zahl und Einheit in einem Element, die Regel als Regel).
+
+```bash
+node kennzahlenprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--ohne-gegenprobe]
+```
+
+**Fälle** (Fenster 1 280 × 900, Rahmen 1 100, 760 und 600 px). Je Kennzahlenband und Kachel: Beschriftung
+und Zahl samt Einheit (per Range gemessen, die Ausdehnung des Textes) liegen in ihrer Kachel; kein
+Inhaltsstück schneidet den Kasten einer anderen Kachel, keine zwei Kacheln überschneiden sich
+(Bounding-Box-Vergleich); Zahl und Einheit liegen auf einer Zeile; kein Wort der Beschriftung ist gebrochen
+(`Range.getClientRects`).
+
+**Gegenprobe** (läuft mit): dieselben Fälle (a) mit der alten Regel (Drittelraster `minmax(0, 1fr)`,
+`min-width: 0`) und (b) mit einer erzwungenen Überlappung (die Zahl jeder Folgekachel 80 px nach links)
+müssen je Verstöße liefern. Rückgabe `0` = kein Verstoß **und** beide Gegenproben rot, `1` = Verstoß oder
+eine Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
+
+**Ergebnis vom 10.10.2026** (Wirt Release, Chromium headless, `kultur=de-DE`): **0 Verstöße, Gegenprobe
+alte Regel rot mit 16, erzwungene Überlappung rot mit 32 Verstößen** (Rückgabe 0).
+
+| Rahmen | Bänder Wärme / Strom / Kälte / Kälte-Deckung | Anordnung | Gegenprobe alt / erzwungen |
+|---|---|---|---|
+| 1 100 | 540 / 540 / 1 098 / 1 098 px | nebeneinander | 0 / 16 |
+| 760 | 370 / 370 / 758 / 758 px | untereinander, untereinander, nebeneinander, nebeneinander | 6 / 8 |
+| 600 | 290 / 290 / 598 / 598 px | untereinander, untereinander, nebeneinander, nebeneinander | 10 / 8 |
+
+## Spaltenwahlprobe (Spaltenwahl und Verwendungsmarke, KS1) — Seite `/fensterprobe`
+
+**Zweck.** Die Katalogliste der Projektdialoge zeigt die Verwendung im Projekt als Marke am Bezeichner,
+getönte Zeile und Legende „● im Projekt“ statt als Spalte, und ihre Spalten sind über „Spalten…“ in der
+Kopfleiste des Katalogs wählbar (Konzept Projektdialoge mit Katalogauswahl 4.10). Die Probe misst das im
+echten Heizkessel- und BHKW-Dialog der Fensterprobe; sie steht als Fälle `KS1_*` am Ende von
+`katalogprobe.mjs`.
+
+```bash
+node katalogprobe.mjs --url http://127.0.0.1:5299 --nur KS1 [--fotos <ordner außerhalb des Repositorys>]
+```
+
+Die Seite nimmt dafür zwei Gaben: `?verwendet=1` — die erste Projektzeile heißt wie die zweite
+Katalogzeile, die Liste trägt also Marke und Legende — und `?summe=<text>` für die Summe der
+Projekt-Kopfleiste (die Probe setzt „1.240,5“). Gemerkt wird die Wahl in den Einstellungen des Wirts
+(`Dienste.Einstellungen`, flüchtig je Prozess): Ein Neuladen der Seite findet sie wieder.
+
+**Fälle** Heizkessel und BHKW in 1 280 × 800 und 768 × 1 024, je:
+
+1. Standardanzeige: keine Spalte „im Projekt verwendet“; die Marke ist sichtbar und hat die Projektfarbe
+   (`rgb(29, 158, 117)`), die Zeile trägt `epos-zeile--verwendet`, die Legende ist sichtbar, der Knopf
+   „Spalten…“ liegt ganz in der Kopfleiste; die Summe ist nicht gekürzt (`scrollWidth ≤ clientWidth`) und
+   die Projekt-Kopfleiste einzeilig.
+2. Auswahl offen: ganz im Bild, rollt nicht in sich (kein `overflow: auto|scroll`, keine Überhöhe), das
+   Dokument rollt nicht.
+3. „Hersteller“ ab, „im Projekt verwendet“ an: die Köpfe folgen.
+4. Esc im Kästchen schließt die Auswahl, nicht den Dialog.
+5. Neuladen: die Wahl gilt weiter; der Katalogbereich rollt nicht quer (die Liste rollt in ihrem Raster).
+6. „Standard“ schließt die Auswahl und setzt zurück, auch nach dem Neuladen.
+
+**Gegenprobe** `KS1_gegenprobe_heizkessel_768x1024` (läuft mit): Die Auswahl bekommt eine Rollhöhe von
+60 px, die Marke wird versteckt — der Fall MUSS Verstöße liefern.
+
+**Ergebnis vom 10.10.2026** (Wirt Release, Chromium headless): **4 von 4 Fällen erfüllt, Gegenprobe rot**
+(„Verwendungsmarke nicht sichtbar; Auswahl rollt in sich“); der ganze Lauf `katalogprobe.mjs` mit
+64 Fällen ohne Überlagerung (Rückgabe 0). Ebenso grün: `rollbereichprobe.mjs`, `fensterprobe.mjs`,
+`bannerprobe.mjs` (der BHKW-Fall wählt seine Katalogzeile über `.epos-zeilenzelle--name` — der
+Katalog des BHKW-Dialogs ist seit seiner Stufe 3 eine Zeilenwahl ohne Wahlknopf), `legendenprobe.mjs`,
+`kennzahlenprobe.mjs`.
