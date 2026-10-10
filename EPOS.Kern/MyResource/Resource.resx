@@ -51013,5 +51013,20 @@ Chart</value>
   <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
     <value>Mit dem Gerät gehen Heiz- und Kühlkennlinie mit allen Stützstellen. Im Projekt bleiben die Anlagendaten: Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten, Wärmequelle, Einbindung und Übergabegrenzen der Anlage sowie die Senken.</value>
   </data>
+  <data name="PVD_LBL_SUMME" xml:space="preserve">
+    <value>Summe aller ausgewählten Module [kWp]:</value>
+  </data>
+  <data name="PVD_BTN_STRAENGE" xml:space="preserve">
+    <value>Stränge und Wechselrichter…</value>
+  </data>
+  <data name="PVD_TITEL_STRAENGE" xml:space="preserve">
+    <value>Stränge und Wechselrichter – {0}</value>
+  </data>
+  <data name="PVD_STRAENGE_STAND" xml:space="preserve">
+    <value>{0} Stränge</value>
+  </data>
+  <data name="PVD_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit.</value>
+  </data>
 </root>
 

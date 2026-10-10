@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -12,14 +13,12 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Die WINDOWS-HÜLLE des Photovoltaik-Projektdialogs (iU9-W6.5).
     ///
-    /// <para><b>Die einfachste der fünf Erzeugermasken.</b> Kein Trägerdialog, keine
-    /// Projektkopie, kein Katalogeditor: Ein Modul wird mit seiner STAMM-Id in die
-    /// geteilte Liste gelegt (<c>ID_PV</c>), und die Zeile trägt drei eigene Werte —
-    /// Neigung, Azimut und Anzahl Module. Alles, was diese Hülle tut, ist Lesen,
-    /// Abbilden und die Gesamtleistung rechnen.</para>
-    ///
-    /// <para><b>Die Modulverwaltung bleibt WinForms</b> (<c>Form_AdminPV</c>, bis Welle
-    /// 14) und geht deshalb über die Sprungbrücke, nicht über eine zweite WebView.</para>
+    /// <para><b>Katalogauswahl V1, Stufe 3.</b> Außerhalb des Assistenten legt „In das Projekt übernehmen" die
+    /// Projektkopie sofort an (<c>PhotovoltaikCtrl.CopyFromStamm</c>, Muster BHKW und Stromspeicher); was diese
+    /// Sitzung neu anlegt oder entfernt, schließt erst OK ab (<see cref="Projektkopievormerkung"/>). Die Zeile trägt
+    /// dann die ID der Kopie (<c>ID_PV</c>), im Assistenten die STAMM-Id. Keine SQL in der Hülle: Katalog,
+    /// Projektkopie, Sammelspeichern, Rückweg und Löschen kommen aus <see cref="PhotovoltaikStammCtrl"/> und
+    /// <see cref="PhotovoltaikCtrl"/>.</para>
     ///
     /// <para><b>W6-O-5</b> (Anwenderentscheid 05.09.2026): Die zwei Leistungsfelder
     /// tragen ihre wahre Einheit. <c>Tab_PV.Leistung</c> ist WATT je Modul
@@ -44,8 +43,9 @@ namespace WindowsFormsApplication1
             bool ok = false;
             BlazorDialogForm<PhotovoltaikDialog> dlg = null;
 
+            var vormerkung = new Projektkopievormerkung(name => new PhotovoltaikCtrl().DeleteFromProjekt(name, projektId));
             var werte = new Dictionary<string, object>(
-                Gaben(besitzer, projektId, idType, modelle, wizard: false))
+                Gaben(besitzer, projektId, idType, modelle, wizard: false, vormerkung: vormerkung))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -61,6 +61,9 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            // Entfernte Projektkopien gehen erst mit OK; Abbrechen (auch Kreuz und Esc) raeumt nur die in dieser
+            // Sitzung neu angelegten ab - Felder desselben Moduls teilen sich eine Kopie.
+            vormerkung.Abschliessen(ok, id => modelle.Exists(it => it.ID_Type == idType && it.ID_PV == id));
             return ok;
         }
 
@@ -72,9 +75,11 @@ namespace WindowsFormsApplication1
         /// <summary>Der PARAMETERSATZ des Dialogs.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
             IWin32Window besitzer, int projektId, int idType,
-            List<WErzeugerModel> modelle, bool wizard)
+            List<WErzeugerModel> modelle, bool wizard, Projektkopievormerkung vormerkung = null)
         {
             var stamm = new PhotovoltaikStammCtrl();
+            // Die Projektkopie gibt es nur mit Projekt und ausserhalb des Assistenten - dort zeigt ID_PV auf den Katalog.
+            bool mitKopie = !wizard && projektId > 0;
             var wrStamm = new WechselrichterStammCtrl();
 
             // W6-B-8: die KATALOGSAETZE als Kernmodelle, an denen die Auslegungshilfe
@@ -131,15 +136,27 @@ namespace WindowsFormsApplication1
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     PhotovoltaikStammCtrl.Katalogfilterzeilen),
 
-                ["Detail"] = new Func<string, ErzeugerDetail>(DetailZu),
+                ["Detail"] = new Func<string, ErzeugerDetail>(
+                    name => DetailZu(PhotovoltaikStammCtrl.Detail(name))),
+                // Die Projektzeile liest ihre Projektkopie ueber die Geraete-ID: Der Name der Anlage darf vom Modul
+                // abweichen. Im Assistenten zeigt die ID auf den Katalog.
+                ["ProjektDetail"] = new Func<ErzeugerZeile, ErzeugerDetail>(
+                    zeile => DetailZu(ModulDer(zeile, mitKopie))),
+                // Das Band der Strangtabelle zum Katalog: der Name des Moduls der Zeile (Kopie = Katalogname).
+                ["Modulname"] = mitKopie
+                    ? new Func<ErzeugerZeile, string>(zeile => ModulDer(zeile, true)?.Bezeichner ?? "")
+                    : null,
 
                 ["Aufnehmen"] = new Func<int, AufnahmeErgebnis>(
-                    stammId => Aufnehmen(projektId, idType, modelle, zuModell, zaehler, stammId)),
+                    stammId => Aufnehmen(projektId, idType, mitKopie, modelle, zuModell, zaehler, stammId, vormerkung)),
 
                 ["Entfernen"] = new Action<ErzeugerZeile>(
                     zeile =>
                     {
                         if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
+                        // Nur VORMERKEN - geloescht wird beim OK, und nur, wenn keine Zeile mehr auf die Kopie zeigt.
+                        if (mitKopie && vormerkung != null)
+                            vormerkung.Entfernt(PhotovoltaikStammCtrl.Satz(true, m.ID_PV)?.m_szName ?? m.Bezeichner, m.ID_PV);
                         modelle.Remove(m);
                         zuModell.Remove(zeile.Schluessel);
                     }),
@@ -191,16 +208,43 @@ namespace WindowsFormsApplication1
                 // KwpSumme steht und nicht daneben.
                 ["Gesamtleistung"] = new Func<string>(
                     () => PhotovoltaikCtrl.GesamtleistungText(
-                              GesamtleistungWatt(idType, modelle))),
+                              GesamtleistungWatt(idType, mitKopie, modelle))),
                 // Paket B (Merge 5): kWp der Anlage fuer die DC/AC-Anzeige des Wechselrichter-
                 // dialogs - Modulleistung (W) mal Anzahl, wie Form_PV.btn_Wechselrichter_Click.
                 ["AnlagenKwp"] = new Func<ErzeugerZeile, double>(zeile =>
                 {
-                    PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(zeile.Bezeichner);
+                    PhotovoltaikStammCtrl.ModulDetail d = ModulDer(zeile, mitKopie);
                     return d == null ? 0.0 : d.Leistung * (zeile.AnzahlModule ?? 0) / 1000.0;
                 }),
 
-                ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
+                // KA-E-9: der Rueckweg „In die Datenbank übernehmen…" - nur mit Projektkopie. Rueckfrage und Schreibweg
+                // kommen aus dem Kern (PhotovoltaikStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM
+                // Vorgang. Die Straenge bleiben an der Anlage im Projekt.
+                ["RueckwegWege"] = mitKopie ? RueckwegWege() : null,
+                ["RueckwegBleibtText"] = Text_("PVD_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit."),
+
+                // Loeschen im Katalogfuss (samt Satzvorlage, KA-E-16): leer = geloescht, sonst der Grund.
+                ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
+
+                // KATALOGAUSWAHL V1, STUFE 3 - KA-E-8: Bearbeiten je Bereich und Mehrfach-Bearbeiten, geschrieben ueber
+                // den Kernweg in EINER Transaktion (PhotovoltaikStammCtrl.SchreibenAlle). Die Koeffizienten alpha_SC und
+                // beta_OC stehen als Lesewerte dabei.
+                ["ProjektsatzWege"] = mitKopie ? new Satzbearbeitungswege
+                {
+                    Lesen = id => MitKoeffizienten(PvAdminHuelle.SatzFelder(true, id), PhotovoltaikStammCtrl.SatzDetail(true, id)),
+                    Speichern = saetze => PvAdminHuelle.SammelSchreiben(true, saetze)
+                } : null,
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => MitKoeffizienten(PvAdminHuelle.SatzFelder(false, id), PhotovoltaikStammCtrl.SatzDetail(false, id)),
+                    Speichern = saetze => PvAdminHuelle.SammelSchreiben(false, saetze)
+                },
+
+                // KA-E-13: ein einzelner ungesperrter Katalogsatz oeffnet den Modulkatalog mit diesem Satz
+                // vorgewaehlt; er traegt selbst Neu..., Duplizieren... und Loeschen. Ueberlagerung im selben Fenster.
+                ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
+                    name => new Dictionary<string, object>(PvAdminHuelle.Gaben()) { ["Vorwahl"] = name }),
 
                 // --- Wechselrichter und Straenge, Stufe S2 (W6-E-2 und W6-E-3) -------
                 // Die Klappliste zeigt den KATALOG; uebernommen wird beim Waehlen, wie
@@ -229,10 +273,10 @@ namespace WindowsFormsApplication1
                 // Komponente zeigt nur.
                 ["WechselrichterBewerten"] =
                     new Func<ErzeugerZeile, string, IReadOnlyList<(int Id, string Text)>>(
-                        (zeile, hersteller) => Bewerten(wrStamm, wrKatalog, zeile, hersteller, temperaturen)),
+                        (zeile, hersteller) => Bewerten(wrStamm, wrKatalog, ModulDer(zeile, mitKopie), zeile, hersteller, temperaturen)),
 
                 ["AuslegungVorschlagen"] = new Func<ErzeugerZeile, int, StrangVorschlag>(
-                    (zeile, stammId) => Auslegen(wrKatalog, zeile, stammId, temperaturen)),
+                    (zeile, stammId) => Auslegen(wrKatalog, ModulDer(zeile, mitKopie), zeile, stammId, temperaturen)),
 
                 // "Wechselrichter vorschlagen": der gefilterte Katalog, je Geraet
                 // bewertet (WechselrichterVorschlag.Bewerten) bei den
@@ -240,7 +284,7 @@ namespace WindowsFormsApplication1
                 // dort, hier nur in die Zeilen der Maske gelegt.
                 ["WechselrichterVorschlagen"] =
                     new Func<ErzeugerZeile, string, IReadOnlyList<WechselrichterVorschlagZeile>>(
-                        (zeile, hersteller) => WechselrichterVorschlagen(wrStamm, wrKatalog, zeile,
+                        (zeile, hersteller) => WechselrichterVorschlagen(wrStamm, wrKatalog, ModulDer(zeile, mitKopie), zeile,
                                                                          hersteller, temperaturen)),
 
                 // W6-B-4: Anzahl_Mppt des KATALOGgeraets - der neue Strang bekommt
@@ -256,7 +300,7 @@ namespace WindowsFormsApplication1
                 ["Modulhersteller"] = new Func<ErzeugerZeile, string>(
                     zeile =>
                     {
-                        PhotovoltaikStammCtrl.ModulDetail d = ModulDer(zeile);
+                        PhotovoltaikStammCtrl.ModulDetail d = ModulDer(zeile, mitKopie);
                         return d == null ? "" : (d.Firma ?? "");
                     }),
 
@@ -274,7 +318,7 @@ namespace WindowsFormsApplication1
                 // W6-B-12: und sie sagt den GESPEICHERTEN Anlagenwert, gegen den P8
                 // prueft - nicht mehr die abgeleitete Summe.
                 ["StraengePruefen"] = new Func<ErzeugerZeile, IReadOnlyList<StrangZeile>, StrangBefund>(
-                    (zeile, straenge) => Pruefen(straenge, zeile, ModulDer(zeile), wrKopien,
+                    (zeile, straenge) => Pruefen(straenge, zeile, ModulDer(zeile, mitKopie), wrKopien,
                                                  temperaturen)),
 
                 // --- W6-B-11: die Auslegungstemperaturen des Projekts ---------------
@@ -295,14 +339,7 @@ namespace WindowsFormsApplication1
                 // Huelle steuert nur bei, was der Kern nicht wissen kann - T_NOCT des
                 // Anlagenmoduls der GEWAEHLTEN Zeile.
                 ["Temperaturvorschlag"] = new Func<ErzeugerZeile, Temperaturvorschlag>(
-                    zeile => Temperaturen(projektId, zeile)),
-
-                // Die Modulverwaltung ist bis Welle 14 eine WinForms-Maske.
-                // iU9-W14a.3: Der Modulkatalog ist die Razor-Komponente
-                // ModulKatalogDialog und erscheint als UEBERLAGERUNG im selben
-                // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
-                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    PvAdminHuelle.Gaben),
+                    zeile => Temperaturen(projektId, ModulDer(zeile, mitKopie))),
 
                 // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
                 // Sie kommen aus derselben Quelle, aus der auch der Modulkatalog hinter
@@ -346,9 +383,12 @@ namespace WindowsFormsApplication1
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
-                ["BtnBearbeitenText"] = Text_("PVD_BTN_BEARBEITEN", "Modul Bearbeiten..."),
-                ["BtnLoeschenText"] = Text_("PVD_BTN_LOESCHEN", "Modul Löschen"),
-                ["GruppeAnlage"] = Text_("PVD_GRP_ANLAGE", "PV Anlage Eigenschaften:"),
+                ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
+                ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
+                ["LabelSumme"] = Text_("PVD_LBL_SUMME", "Summe aller ausgewählten Module [kWp]:"),
+                ["BtnStraengeText"] = Text_("PVD_BTN_STRAENGE", "Stränge und Wechselrichter…"),
+                ["TitelStraenge"] = Text_("PVD_TITEL_STRAENGE", "Stränge und Wechselrichter – {0}"),
+                ["StraengeStandText"] = Text_("PVD_STRAENGE_STAND", "{0} Stränge"),
                 ["LabelNeigung"] = Text_("PVD_LBL_NEIGUNG", "Neigung [°]:"),
                 ["LabelAzimut"] = Text_("PVD_LBL_AZIMUT", "Azimut [°]:"),
 
@@ -366,7 +406,6 @@ namespace WindowsFormsApplication1
                         ErzeugerTraegerHuelle.Zuordnen(projektId, wizard, neu);
                     }),
                 ["LabelAnzahl"] = Text_("PVD_LBL_ANZAHL", "Anzahl Module:"),
-                ["GruppeModul"] = Text_("PVD_GRP_MODUL", "Modul Eigenschaften:"),
                 // W6-E-1 (Windows-Abnahme 05.09.2026): der Aufklapper ueber allen
                 // Modulparametern. Seit dem 15.09.2026 traegt er denselben Text wie bei
                 // Heizkessel und BHKW - er zeigt jetzt dasselbe: ALLE Daten des
@@ -378,15 +417,13 @@ namespace WindowsFormsApplication1
                                                   "aus der Strangtabelle"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
-                ["LabelGesamtleistung"] = Text_("PVD_LBL_GESAMTLEISTUNG", "Gesamtleistung [kW]:"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
                 ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
-                ["FrageLoeschen"] = Text_("PVD_FRAGE_LOESCHEN", "Wollen Sie wirklich das Modul löschen?"),
+                ["FrageLoeschen"] = Text_("HZK_FRAGE_LOESCHEN",
+                    "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?"),
                 ["TitelLoeschen"] = Text_("HZK_TITEL_LOESCHEN", "Löschen"),
-                ["MeldungLoeschFehler"] = Text_("HZK_MSG_LOESCHFEHLER",
-                    "Der Katalogeintrag konnte nicht gelöscht werden.")
             };
         }
 
@@ -395,13 +432,15 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Nimmt das Modul auf (<c>btn_Hinzu_Click</c>, Z. 88). Keine Trägervariante,
-        /// keine Projektkopie: <c>ID_PV</c> ist die STAMM-Id.
+        /// Nimmt das Modul auf (<c>btn_Hinzu_Click</c>, Z. 88). Keine Trägervariante. Außerhalb des Assistenten
+        /// trägt <c>ID_PV</c> die Projektkopie, die hier sofort entsteht; im Assistenten die STAMM-Id (die Kopie
+        /// entsteht dort beim Speichern des Projekts, <c>WizardCtrl</c>).
         /// </summary>
-        private static AufnahmeErgebnis Aufnehmen(int projektId, int idType,
+        private static AufnahmeErgebnis Aufnehmen(int projektId, int idType, bool mitKopie,
                                                   List<WErzeugerModel> modelle,
                                                   Dictionary<int, WErzeugerModel> zuModell,
-                                                  Zaehler zaehler, int stammId)
+                                                  Zaehler zaehler, int stammId,
+                                                  Projektkopievormerkung vormerkung)
         {
             string bezeichner = PhotovoltaikStammCtrl.BezeichnerZu(stammId);
             if (bezeichner.Length == 0)
@@ -420,6 +459,21 @@ namespace WindowsFormsApplication1
                 ID_Carrier = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_PHOTOVOLTAIK, 0, projektId)
             };
 
+            // KATALOGAUSWAHL V1, STUFE 3: die Projektkopie sofort (Muster BHKW) - erst damit haben Bearbeiten…,
+            // „Alle Daten" und der Rueckweg einen Projektsatz. CopyFromStamm teilt die Kopie gleichen Namens.
+            if (mitKopie)
+            {
+                var projektCtrl = new PhotovoltaikCtrl();
+                bool schonDa = projektCtrl.GetProjektId(bezeichner, projektId) > 0;
+                int kopie = projektCtrl.CopyFromStamm(stammId, projektId);
+                if (kopie <= 0)
+                    return new AufnahmeErgebnis(null,
+                        Text_("HZK_MSG_KOPIE_FEHLER", "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
+                model.ID_PV = kopie;
+                // Eine NEUE Kopie raeumt ein Abbrechen wieder ab (Projektkopievormerkung).
+                if (!schonDa) vormerkung?.Angelegt(bezeichner, kopie);
+            }
+
             modelle.Add(model);
             zuModell[model.ID] = model;
 
@@ -437,14 +491,17 @@ namespace WindowsFormsApplication1
         /// <see cref="PhotovoltaikCtrl.GesamtleistungText"/> macht daraus die Anzeige
         /// in kW. Die Summe selbst ist unverändert.
         /// </remarks>
-        private static double GesamtleistungWatt(int idType, List<WErzeugerModel> modelle)
+        private static double GesamtleistungWatt(int idType, bool mitKopie, List<WErzeugerModel> modelle)
         {
             double gesamt = 0;
             foreach (WErzeugerModel m in modelle)
             {
                 if (m.ID_Type != idType) continue;
 
-                PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(m.Bezeichner);
+                // Mit Projektkopie zaehlt ihre Modulleistung (sie ist bearbeitbar), sonst die des Katalogsatzes.
+                PhotovoltaikStammCtrl.ModulDetail d = mitKopie
+                    ? PhotovoltaikStammCtrl.SatzDetail(true, m.ID_PV) ?? PhotovoltaikStammCtrl.Detail(m.Bezeichner)
+                    : PhotovoltaikStammCtrl.Detail(m.Bezeichner);
                 if (d != null) gesamt += m.PV_Leistung * d.Leistung;
             }
             return gesamt;
@@ -624,11 +681,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static IReadOnlyList<(int Id, string Text)> Bewerten(
             WechselrichterStammCtrl stamm, Geraetespeicher katalog,
-            ErzeugerZeile zeile, string hersteller, Auslegungstemperaturen temperaturen)
+            PhotovoltaikStammCtrl.ModulDetail anlagenmodul, ErzeugerZeile zeile, string hersteller,
+            Auslegungstemperaturen temperaturen)
         {
             IReadOnlyList<(int Id, string Text)> roh = WechselrichterEintraege(stamm, hersteller);
 
-            PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
+            PhotovoltaikModel modul = ModulModell(anlagenmodul);
             int module = Modulzahl(zeile);
             if (modul == null || module <= 0 || roh.Count == 0) return roh;
 
@@ -674,10 +732,10 @@ namespace WindowsFormsApplication1
         /// Grund des Kerns — „Kein Vorschlag: Die Modulzahl lässt sich nicht in gleich
         /// lange Stränge und gleich belegte Geräte teilen."</para>
         /// </summary>
-        private static StrangVorschlag Auslegen(Geraetespeicher katalog, ErzeugerZeile zeile,
-                                                int stammId, Auslegungstemperaturen temperaturen)
+        private static StrangVorschlag Auslegen(Geraetespeicher katalog, PhotovoltaikStammCtrl.ModulDetail anlagenmodul,
+                                                ErzeugerZeile zeile, int stammId, Auslegungstemperaturen temperaturen)
         {
-            PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
+            PhotovoltaikModel modul = ModulModell(anlagenmodul);
             WechselrichterModel geraet = katalog.Modell(stammId);
 
             // Die Aufteilung rechnet bei den AUSLEGUNGSTEMPERATUREN des Projekts - auf
@@ -712,11 +770,11 @@ namespace WindowsFormsApplication1
         /// kommt eine leere Liste — die Maske sperrt den Knopf dann ohnehin.
         /// </summary>
         private static IReadOnlyList<WechselrichterVorschlagZeile> WechselrichterVorschlagen(
-            WechselrichterStammCtrl stamm, Geraetespeicher katalog, ErzeugerZeile zeile,
-            string hersteller, Auslegungstemperaturen temperaturen)
+            WechselrichterStammCtrl stamm, Geraetespeicher katalog, PhotovoltaikStammCtrl.ModulDetail anlagenmodul,
+            ErzeugerZeile zeile, string hersteller, Auslegungstemperaturen temperaturen)
         {
             var liste = new List<WechselrichterVorschlagZeile>();
-            PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
+            PhotovoltaikModel modul = ModulModell(anlagenmodul);
             int module = Modulzahl(zeile);
             if (modul == null || module <= 0) return liste;
 
@@ -864,9 +922,19 @@ namespace WindowsFormsApplication1
         /// <para>Ohne Zeile oder ohne Katalogsatz bleibt es <c>null</c>, und die Ampel
         /// meldet „das Modul der Anlage fehlt".</para>
         /// </summary>
-        private static PhotovoltaikStammCtrl.ModulDetail ModulDer(ErzeugerZeile zeile)
+        /// <remarks>
+        /// <b>Katalogauswahl V1:</b> Mit Projektkopie (<paramref name="mitKopie"/>) ist es die Kopie der Zeile über
+        /// ihre Geräte-ID — sie ist bearbeitbar, und der Name der Anlage darf vom Modul abweichen. Fehlt sie, bleibt
+        /// der Katalogsatz gleichen Namens der Rückfall.
+        /// </remarks>
+        private static PhotovoltaikStammCtrl.ModulDetail ModulDer(ErzeugerZeile zeile, bool mitKopie)
         {
             if (zeile == null) return null;
+            if (mitKopie)
+            {
+                PhotovoltaikStammCtrl.ModulDetail kopie = PhotovoltaikStammCtrl.SatzDetail(true, zeile.GeraetId);
+                if (kopie != null) return kopie;
+            }
             return PhotovoltaikStammCtrl.Detail(zeile.Bezeichner);
         }
 
@@ -937,9 +1005,8 @@ namespace WindowsFormsApplication1
         /// Klimareihe des Projekts liest. Die Huelle steuert nur <c>T_NOCT</c> des
         /// Anlagenmoduls bei; ohne gepflegten Wert nimmt der Kern seinen Rueckfall.
         /// </summary>
-        private static Temperaturvorschlag Temperaturen(int projektId, ErzeugerZeile zeile)
+        private static Temperaturvorschlag Temperaturen(int projektId, PhotovoltaikStammCtrl.ModulDetail d)
         {
-            PhotovoltaikStammCtrl.ModulDetail d = ModulDer(zeile);
             AuslegungstemperaturVorschlag.Vorschlag v =
                 AuslegungstemperaturVorschlag.Fuer(projektId, d?.TNoct);
 
@@ -992,9 +1059,8 @@ namespace WindowsFormsApplication1
         /// (<see cref="Katalogfelder"/>). Dieser Weg liefert wieder nur den festen
         /// Detailblock.
         /// </remarks>
-        private static ErzeugerDetail DetailZu(string name)
+        private static ErzeugerDetail DetailZu(PhotovoltaikStammCtrl.ModulDetail d)
         {
-            PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(name);
             if (d == null) return new ErzeugerDetail("", "", new List<(string, string)>());
 
             var felder = new List<(string, string)>
@@ -1017,13 +1083,55 @@ namespace WindowsFormsApplication1
         /// <returns><c>null</c>, wenn es das Modul nicht gibt.</returns>
         private static IReadOnlyList<BrowserFeldwert> Katalogfelder(string name)
         {
-            IReadOnlyList<BrowserFeldwert> felder =
-                ModulFeldwertBruecke.Felder(PvAdminHuelle.Wege(), name);
-            if (felder == null) return null;
+            return MitKoeffizienten(ModulFeldwertBruecke.Felder(PvAdminHuelle.Wege(), name),
+                                    PhotovoltaikStammCtrl.Detail(name));
+        }
 
+        /// <summary>Die Felder eines Satzes samt den zwei Koeffizienten als Lesewerte; <c>null</c> bleibt <c>null</c>.</summary>
+        private static IReadOnlyList<BrowserFeldwert> MitKoeffizienten(IReadOnlyList<BrowserFeldwert> felder,
+                                                                       PhotovoltaikStammCtrl.ModulDetail d)
+        {
+            if (felder == null) return null;
             var liste = new List<BrowserFeldwert>(felder);
-            liste.AddRange(Koeffizienten(name));
+            liste.AddRange(Koeffizienten(d));
             return liste;
+        }
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => PhotovoltaikStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = PhotovoltaikStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = PhotovoltaikStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
+
+        /// <summary>Löscht einen Katalogsatz (samt Satzvorlage, KA‑E‑16); leer = gelöscht, sonst der Grund.</summary>
+        private static string KatalogLoeschen(int id)
+        {
+            string name = PhotovoltaikStammCtrl.BezeichnerZu(id);
+            if (name.Length == 0) return Text_("KBROW_MSG_LOESCHEN_FEHLER", "Der Datensatz konnte nicht gelöscht werden.");
+            PhotovoltaikStammCtrl.SpeicherErgebnis e = PhotovoltaikStammCtrl.Loeschen(name);
+            return e.Ok ? "" : e.Meldung;
         }
 
         /// <summary>
@@ -1040,11 +1148,9 @@ namespace WindowsFormsApplication1
         /// Zeilen heraus. Der Speicherweg lässt sie liegen: Was die Feldliste des
         /// Modulkatalogs nicht kennt, geht nicht in den Stammsatz.
         /// </remarks>
-        private static IReadOnlyList<BrowserFeldwert> Koeffizienten(string name)
+        private static IReadOnlyList<BrowserFeldwert> Koeffizienten(PhotovoltaikStammCtrl.ModulDetail d)
         {
             var liste = new List<BrowserFeldwert>();
-
-            PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(name);
             if (d == null) return liste;
 
             foreach (PhotovoltaikStammCtrl.ModulParameter p in

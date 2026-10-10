@@ -363,6 +363,10 @@ public sealed class GrundlagenknopfTests : EposBunitContext
     public void Jeder_Dialog_traegt_seinen_Grundlagenknopf(string komponente, string schluessel)
     {
         var gezeichnet = AusHuelle(Komponente(komponente), Gaben(komponente));
+        // Katalogauswahl V1 (KA-E-11): Die Hilfe zum Wechselrichter steht in der Überlagerung
+        // „Stränge und Wechselrichter…" des Photovoltaikdialogs - sie wird dafür geöffnet.
+        if (komponente == "PhotovoltaikDialog" && schluessel.StartsWith("Form_PV_Wechselrichter", StringComparison.Ordinal))
+            gezeichnet.Find(".epos-knopf--straenge").Click();
 
         string[] imDialog = gezeichnet.FindComponents<InfoKnopf>().Select(k => k.Instance.Schluessel).ToArray();
 

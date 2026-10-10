@@ -520,4 +520,77 @@ public class ProjektkopievormerkungTests : EposBunitContext
         Assert.True(h.Ergebnis);
         Assert.Equal(new[] { "WP K" }, h.Geloescht);
     }
+
+    // =================================================================================
+    // Photovoltaik (Katalogauswahl V1, Stufe 3): Übernehmen legt die Kopie SOFORT an
+    // =================================================================================
+
+    /// <summary>
+    /// Der Photovoltaikdialog mit einer Hülle nach dem Muster von <c>PhotovoltaikHuelle.Aufnehmen</c>: „In das Projekt
+    /// übernehmen" legt die Projektkopie sofort an und meldet sie der Vormerkung; die Zeile hängt der Dialog selbst an
+    /// die geteilte Liste.
+    /// </summary>
+    private IRenderedComponent<PhotovoltaikDialog> PvAufbauen(Huelle h, List<int> angelegt)
+        => Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, h.Anlagen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.MitVerwendung(Anlagenart.Photovoltaik, s => s))
+            .Add(x => x.Katalogzeilen, () => new List<Katalogfilterzeile>
+            {
+                new Katalogfilterzeile(21, "Modul M").MitText(Katalogfilterprofil.SpBezeichner, "Modul M")
+            })
+            .Add(x => x.Aufnehmen, stammId =>
+            {
+                int kopie = 700 + angelegt.Count;
+                angelegt.Add(kopie);
+                h.Vormerkung.Angelegt("Modul M", kopie);
+                return new AufnahmeErgebnis(new ErzeugerZeile { Schluessel = 80 + angelegt.Count, Bezeichner = "Modul M", GeraetId = kopie });
+            })
+            .Add(x => x.Entfernen, h.Entfernen)
+            .Add(x => x.Geschlossen, h.Geschlossen));
+
+    private static void PvUebernehmen(IRenderedComponent<PhotovoltaikDialog> cut)
+    {
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.Find(".epos-zweispalten-knopf--uebernehmen").Click();
+    }
+
+    [Fact]
+    public void Photovoltaik_Uebernehmen_legt_die_Kopie_sofort_an()
+    {
+        var h = new Huelle();
+        var angelegt = new List<int>();
+        var cut = PvAufbauen(h, angelegt);
+
+        PvUebernehmen(cut);
+
+        Assert.Equal(new[] { 700 }, angelegt);       // vor OK und Abbrechen
+        Assert.Equal(700, Assert.Single(h.Anlagen).GeraetId);
+        Assert.Null(h.Ergebnis);
+    }
+
+    [Fact]
+    public void Photovoltaik_Abbrechen_raeumt_die_neue_Kopie_ab()
+    {
+        var h = new Huelle();
+        var cut = PvAufbauen(h, new List<int>());
+
+        PvUebernehmen(cut);
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+
+        Assert.False(h.Ergebnis);
+        Assert.Equal(new[] { "Modul M" }, h.Geloescht);
+    }
+
+    [Fact]
+    public void Photovoltaik_OK_laesst_die_neue_Kopie_stehen()
+    {
+        var h = new Huelle();
+        var cut = PvAufbauen(h, new List<int>());
+
+        PvUebernehmen(cut);
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.True(h.Ergebnis);
+        Assert.Empty(h.Geloescht);
+    }
 }

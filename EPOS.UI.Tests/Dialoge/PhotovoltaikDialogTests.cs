@@ -120,42 +120,482 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Action<ErzeugerZeile>? entfernen = null,
         Action<ErzeugerZeile>? uebernehmen = null,
         Func<string>? gesamt = null,
-        Func<int, bool>? katalogLoeschen = null,
-        Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
+        Func<int, string>? katalogLoeschen = null,
+        Func<string, IReadOnlyDictionary<string, object>>? editorGaben = null,
         bool wizard = false,
         Func<string, ErzeugerDetail>? detail = null,
         Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
         Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? felderSpeichern = null,
         Action<bool>? geschlossen = null,
-        IReadOnlyList<(int Id, string Text)>? strangmodule = null)
+        IReadOnlyList<(int Id, string Text)>? strangmodule = null,
+        Satzbearbeitungswege? projektsatzWege = null,
+        Satzbearbeitungswege? katalogsatzWege = null,
+        Rueckwegwege? rueckwegWege = null,
+        Func<IReadOnlyList<Katalogfilterzeile>>? katalogzeilen = null,
+        Func<ErzeugerZeile?, bool, Task>? kostenOeffnen = null,
+        Func<ErzeugerZeile?, Task>? energiekosten = null)
     {
         return Render<PhotovoltaikDialog>(p => p
             .Add(x => x.Strangmodule, strangmodule ?? Array.Empty<(int, string)>())
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
             .Add(x => x.Katalogprofil, Profil)
-            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Katalogzeilen, katalogzeilen ?? Katalogzeilen)
             .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Detail, detail ?? (n => Detail(n)))
             .Add(x => x.Aufnehmen, aufnehmen ?? (_ => new AufnahmeErgebnis(Zeile(9, "Modul 500", 32))))
             .Add(x => x.Entfernen, entfernen)
             .Add(x => x.Uebernehmen, uebernehmen)
             .Add(x => x.Gesamtleistung, gesamt ?? (() => "8"))
-            .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
+            .Add(x => x.KatalogLoeschen, katalogLoeschen)
             .Add(x => x.Katalogfelder, katalogfelder)
             .Add(x => x.KatalogfelderSpeichern, felderSpeichern)
-            .Add(x => x.VerwaltungGaben, verwaltung)
+            .Add(x => x.EditorGaben, editorGaben)
+            .Add(x => x.ProjektsatzWege, projektsatzWege)
+            .Add(x => x.KatalogsatzWege, katalogsatzWege)
+            .Add(x => x.RueckwegWege, rueckwegWege)
+            .Add(x => x.KostenOeffnen, kostenOeffnen)
+            .Add(x => x.EnergiekostenOeffnen, energiekosten)
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
 
     /// <summary>Die zweite Liste ist die KATALOGliste; ihre erste Zeile ist „Modul 400".</summary>
+    /// <summary>Wählt eine Katalogzeile — im Katalog ist die ZEILE die Wahl (Kästchenmodus).</summary>
     private static void KatalogzeileWaehlen(IRenderedComponent<PhotovoltaikDialog> cut, int nummer = 0)
-        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[nummer].Click();
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[nummer].Click();
 
     /// <summary>Der Modulbereich — der Gruppenkopf „Modul Eigenschaften:".</summary>
-    private static AngleSharp.Dom.IElement Modulbereich(IRenderedComponent<PhotovoltaikDialog> cut)
-        => cut.FindAll(".epos-gruppenkopf")
-              .First(e => e.TextContent.Contains("Modul Eigenschaften:"));
+    /// <summary>Wählt eine Projektzeile über ihre Wahlspalte.</summary>
+    private static void ProjektzeileWaehlen(IRenderedComponent<PhotovoltaikDialog> cut, int nummer = 0)
+        => cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[nummer].Click();
+
+    private static void KatalogAnkreuzen(IRenderedComponent<PhotovoltaikDialog> cut, params int[] zeilen)
+    {
+        foreach (int i in zeilen)
+            cut.FindAll(".epos-raster")[1].QuerySelectorAll("td .epos-kaestchenzelle input")[i].Change(true);
+    }
+
+    private static IReadOnlyList<Katalogfilterzeile> MitSchloss(params int[] gesperrt)
+    {
+        var zeilen = Katalogzeilen();
+        foreach (var z in zeilen) z.Geschuetzt = gesperrt.Contains(z.Id);
+        return zeilen;
+    }
+
+    private static Satzbearbeitungswege Wege(List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>? gespeichert = null,
+                                             KatalogSpeicherErgebnis? ergebnis = null)
+        => new()
+        {
+            Lesen = id => Katalogfelder("Satz " + id),
+            Speichern = l => { gespeichert?.AddRange(l); return ergebnis ?? new KatalogSpeicherErgebnis(true, "ok", ""); }
+        };
+
+    /// <summary>Der Auswahlpfad der Kostenknöpfe — drei Stück, in dieser Reihenfolge.</summary>
+    private const string KOSTENKNOEPFE = ".epos-kostenleiste button.epos-knopf";
+
+    // =================================================================================
+    // Katalogauswahl V1, Stufe 3: Knöpfe an ihrem Ort, Detailzeile, Bearbeiten je Bereich
+    // =================================================================================
+
+    [Fact]
+    public void S3_Die_Knoepfe_stehen_an_ihrem_Ort_und_der_Katalogfuss_hat_kein_Neu()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege(), katalogsatzWege: Wege(), gesamt: () => "8,000",
+                           editorGaben: _ => new Dictionary<string, object>(), katalogLoeschen: _ => "");
+
+        // D: Kontext im Dialogkopf, keine eigene Kontextzeile mehr.
+        Assert.Equal("Eingabe der Photovoltaik Anlagendaten",
+                     cut.Find(".epos-dialog-kopf > .epos-dialog-kontext").TextContent);
+        Assert.Empty(cut.FindAll(".epos-kontextzeile"));
+
+        // P: Summe kWp, Bearbeiten…, Entfernen — der Rückweg nur mit seinen Wegen.
+        var p = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste");
+        var summe = p.QuerySelector(".epos-zweispalten-summe")!;
+        Assert.Contains("Summe aller ausgewählten Module [kWp]:", summe.TextContent);
+        Assert.Contains("8,000", summe.TextContent);
+        Assert.NotNull(p.QuerySelector(".epos-knopf--bearbeiten-projekt"));
+        Assert.NotNull(p.QuerySelector(".epos-zweispalten-knopf--entfernen"));
+        Assert.Empty(cut.FindAll(".epos-knopf--rueckweg"));
+
+        // K-Kopf: Suche und Übernehmen.
+        var k = cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste");
+        Assert.NotNull(k.QuerySelector(".epos-katalog-suchzeile input[type=search]"));
+        Assert.NotNull(k.QuerySelector(".epos-zweispalten-knopf--uebernehmen"));
+
+        // K-Fuß: Vergleichen, Schloss, Löschen, Bearbeiten nach dem Namen — kein Neu… (4.9).
+        KatalogzeileWaehlen(cut);
+        var fuss = cut.Find(".epos-zweispalten-fussleiste").Children.ToList();
+        Assert.Equal("Modul 400:", fuss[0].TextContent);
+        Assert.Contains(fuss, e => e.ClassList.Contains("epos-knopf--vergleichen"));
+        Assert.Contains(fuss, e => e.ClassList.Contains("epos-knopf--loeschen"));
+        Assert.Contains(fuss, e => e.ClassList.Contains("epos-knopf--bearbeiten-katalog"));
+        Assert.Empty(cut.FindAll(".epos-knopf--neu"));
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() is "Neu..." or "Neu…");
+    }
+
+    [Fact]
+    public void S3_Ohne_Loeschweg_kein_Loeschknopf_und_ohne_Summe_keine_Summe()
+    {
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand));
+        KatalogzeileWaehlen(cut);
+        Assert.Empty(cut.FindAll(".epos-knopf--loeschen"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-summe"));
+    }
+
+    [Fact]
+    public void S3_Die_Detailzeile_nennt_Marke_Name_und_Kenndaten()
+    {
+        var cut = Aufbauen(katalogzeilen: () => MitSchloss(31));
+        var zeile = cut.Find(".epos-zweispalten-satzzeile");
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, zeile.QuerySelector(".epos-zweispalten-marke--satz")!.TextContent);
+        Assert.Equal("Modul 400", zeile.QuerySelector(".epos-zweispalten-satzname")!.TextContent);
+        Assert.Contains("Hersteller Musterwerk", zeile.QuerySelector(".epos-zweispalten-satzkenndaten")!.TextContent);
+
+        KatalogzeileWaehlen(cut);
+        zeile = cut.Find(".epos-zweispalten-satzzeile");
+        Assert.Equal(Resource.AUSWAHL_MARKE_KATALOGSATZ, zeile.QuerySelector(".epos-zweispalten-marke--satz")!.TextContent);
+        Assert.Contains(Resource.AUSWAHL_SATZ_NUR_LESEN, zeile.QuerySelector(".epos-zweispalten-satzkenndaten")!.TextContent);
+    }
+
+    /// <summary>
+    /// Die Projektzeile liest ihr Detail über die ZEILE (Geräte-ID der Projektkopie), der Katalog über den Namen —
+    /// der Name der Anlage darf vom Modul abweichen.
+    /// </summary>
+    [Fact]
+    public void S3_Projektzeile_und_Katalogsatz_holen_ihr_Detail_je_aus_ihrer_Quelle()
+    {
+        var projekt = new List<int>();
+        var katalog = new List<string>();
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "PV Ost/West", 731) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.ProjektDetail, z => { projekt.Add(z.GeraetId); return Detail("Modul 400"); })
+            .Add(x => x.Detail, n => { katalog.Add(n); return Detail(n); }));
+
+        KatalogzeileWaehlen(cut, 1);
+
+        Assert.Equal(new[] { 731 }, projekt);
+        Assert.Equal(new[] { "Modul 500" }, katalog);
+    }
+
+    [Fact]
+    public void S3_Alle_Daten_des_Projektsatzes_speichern_ueber_den_Kernweg()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        var cut = Aufbauen(projektsatzWege: Wege(gespeichert));
+
+        Assert.True(cut.Instance.ParameterOffen);
+        var felder = cut.FindComponent<Katalogfelder>();
+        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == ModulKatalogProfil.FeldModulkosten && f.Editierbar);
+
+        cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
+        cut.Find(".epos-modulparameter .epos-speichervermerk button").Click();
+
+        Assert.Equal(31, Assert.Single(gespeichert).Id);
+    }
+
+    [Fact]
+    public void S3_Bearbeiten_im_Projektbereich_oeffnet_die_Projektkopie_je_Modul_einmal()
+    {
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31), Zeile(2, "Modul 400 Ost", 31) };
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege());
+
+        foreach (int i in new[] { 0, 1 })
+            cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+
+        Assert.Equal(Satzmarke.Projektsatz, cut.Instance.Bearbeitung!.Value.Art);
+        Assert.Equal(31, Assert.Single(cut.Instance.Bearbeitung!.Value.Saetze).Id);
+        var kopf = cut.Find(".epos-ueberlagerung-kopf");
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, kopf.QuerySelector(".epos-zweispalten-marke--satz")!.TextContent);
+    }
+
+    [Fact]
+    public void S3_Ein_einzelner_ungesperrter_Katalogsatz_oeffnet_den_Katalogeditor_mit_Vorwahl()
+    {
+        string? vorgewaehlt = null;
+        var cut = Aufbauen(katalogsatzWege: Wege(),
+                           editorGaben: n => { vorgewaehlt = n; return new Dictionary<string, object>
+                           {
+                               ["Art"] = ModulKatalogArt.Photovoltaik,
+                               ["Wege"] = new ModulKatalogWege(),
+                               ["Vorwahl"] = n
+                           }; });
+        KatalogzeileWaehlen(cut, 1);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+
+        Assert.True(cut.Instance.EditorOffen);
+        Assert.Null(cut.Instance.Bearbeitung);
+        Assert.Equal("Modul 500", vorgewaehlt);
+        Assert.NotNull(cut.FindComponent<ModulKatalogDialog>());
+    }
+
+    [Fact]
+    public void S3_Mehrfach_Bearbeiten_blaettert_und_setzt_fuer_alle_in_einem_Speichern()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        var cut = Aufbauen(katalogsatzWege: Wege(gespeichert), editorGaben: _ => new Dictionary<string, object>());
+
+        KatalogAnkreuzen(cut, 0, 1);
+        Assert.Equal(2, cut.Instance.KatalogWahl.Anzahl);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+
+        Assert.False(cut.Instance.EditorOffen);
+        var sb = cut.FindComponent<Satzbearbeitung>();
+        Assert.Equal(2, sb.Instance.Aktiv.Count);
+        Assert.Equal(string.Format(Resource.Culture, Resource.SATZBEARB_TITEL_KATALOG_N, 2),
+                     cut.Find(".epos-ueberlagerung-titel").TextContent);
+
+        cut.Find(".epos-satzbearbeitung input[type=text]:not([readonly])").Input("Neuwerk");
+        cut.FindAll(".epos-satzbearbeitung-fueralle input")[0].Change(true);
+        cut.Find(".epos-satzbearbeitung-speichern").Click();
+
+        Assert.Equal(new[] { 31, 32 }, gespeichert.Select(g => g.Id).ToArray());
+        Assert.All(gespeichert, g => Assert.Equal("Neuwerk",
+            g.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldFirma).Wert));
+        Assert.Null(cut.Instance.Bearbeitung);
+    }
+
+    [Fact]
+    public void S3_Gesperrte_Katalogsaetze_werden_uebersprungen_und_genannt()
+    {
+        var cut = Aufbauen(katalogsatzWege: Wege(), katalogzeilen: () => MitSchloss(32));
+
+        KatalogAnkreuzen(cut, 0, 1);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+
+        var sb = cut.FindComponent<Satzbearbeitung>();
+        Assert.Equal(31, Assert.Single(sb.Instance.Aktiv).Id);
+        Assert.Contains("„Modul 500“", cut.Find(".epos-satzbearbeitung-hinweis--uebersprungen").TextContent);
+    }
+
+    [Fact]
+    public void S3_Ein_gesperrter_Katalogsatz_allein_oeffnet_nur_lesend()
+    {
+        var cut = Aufbauen(katalogsatzWege: Wege(), katalogzeilen: () => MitSchloss(31),
+                           editorGaben: _ => new Dictionary<string, object>());
+
+        KatalogzeileWaehlen(cut);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+
+        Assert.False(cut.Instance.EditorOffen);
+        Assert.True(cut.FindComponent<Satzbearbeitung>().Instance.NurLesend);
+        Assert.Empty(cut.FindAll(".epos-satzbearbeitung-speichern"));
+    }
+
+    [Fact]
+    public void S3_Ein_abgelehntes_Sammelspeichern_bleibt_offen_und_nennt_den_Grund()
+    {
+        var cut = Aufbauen(katalogsatzWege: Wege(ergebnis: new KatalogSpeicherErgebnis(false, "„Modul 500“ ist gesperrt.", "")));
+
+        KatalogAnkreuzen(cut, 0, 1);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+        cut.Find(".epos-satzbearbeitung input[type=text]:not([readonly])").Input("Neuwerk");
+        cut.Find(".epos-satzbearbeitung-speichern").Click();
+
+        Assert.NotNull(cut.Instance.Bearbeitung);
+        Assert.Contains("gesperrt", cut.Find(".epos-satzbearbeitung-meldung").TextContent);
+    }
+
+    [Fact]
+    public void S3_Die_Sammeluebernahme_legt_je_angekreuztem_Satz_eine_Zeile_an()
+    {
+        var aufgenommen = new List<int>();
+        var zeilen = new List<ErzeugerZeile>();
+        int summenRufe = 0;
+        var cut = Aufbauen(zeilen, aufnehmen: id =>
+        {
+            aufgenommen.Add(id);
+            return new AufnahmeErgebnis(Zeile(20 + id, "Neu " + id, 100 + id));
+        }, gesamt: () => { summenRufe++; return "0"; });
+
+        KatalogAnkreuzen(cut, 0, 1);
+        int vorher = summenRufe;
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+
+        Assert.Equal(new[] { 31, 32 }, aufgenommen.ToArray());
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal(0, cut.Instance.KatalogWahl.Anzahl);
+        Assert.True(summenRufe > vorher);
+    }
+
+    [Fact]
+    public void S3_Entfernen_wirkt_auf_alle_gewaehlten_Projektzeilen()
+    {
+        var entfernt = new List<string>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "A", 131), Zeile(2, "B", 132), Zeile(3, "C", 133) };
+        var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z.Bezeichner));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[2].Click();
+        cut.Find(".epos-zweispalten-knopf--entfernen").Click();
+
+        Assert.Equal(new[] { "A", "C" }, entfernt.ToArray());
+        Assert.Equal("B", Assert.Single(zeilen).Bezeichner);
+    }
+
+    [Fact]
+    public void S3_Loeschen_fragt_nach_und_nennt_den_Namen()
+    {
+        var geloescht = new List<int>();
+        var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return ""; });
+        KatalogzeileWaehlen(cut, 1);
+        cut.Find(".epos-knopf--loeschen").Click();
+
+        Assert.Contains("Modul 500", cut.Find(".epos-rueckfrage").TextContent);
+        Assert.Empty(geloescht);
+        cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Ja").Click();
+        Assert.Equal(new[] { 32 }, geloescht.ToArray());
+        Assert.Null(cut.Instance.Katalogzeile);
+    }
+
+    [Fact]
+    public void S3_Loeschen_mehrerer_ueberspringt_gesperrte_und_meldet_einen_Grund()
+    {
+        var geloescht = new List<int>();
+        var cut = Aufbauen(katalogzeilen: () => MitSchloss(32),
+                           katalogLoeschen: id => { geloescht.Add(id); return id == 31 ? "verwendet" : ""; });
+
+        KatalogAnkreuzen(cut, 0, 1);
+        cut.Find(".epos-knopf--loeschen").Click();
+        Assert.Contains(string.Format(Resource.Culture, Resource.SATZBEARB_UEBERSPRUNGEN, "„Modul 500“"),
+                        cut.Find(".epos-rueckfrage").TextContent);
+        cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Ja").Click();
+
+        Assert.Equal(new[] { 31 }, geloescht.ToArray());
+        Assert.Equal("verwendet", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void S3_Die_Knopfzeile_steht_als_erstes_in_der_Satzflaeche()
+    {
+        var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask,
+                           projektsatzWege: Wege());
+
+        var kinder = cut.Find(".epos-zweispalten-satz").Children.ToList();
+        Assert.Contains("epos-leiste", kinder[0].ClassList);
+        int raster = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
+        int anlage = kinder.FindIndex(k => k.ClassList.Contains("epos-anlagenblock"));
+        int parameter = kinder.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
+        Assert.True(0 < raster && raster < anlage && anlage < parameter);
+
+        var teile = kinder[0].Children.ToList();
+        Assert.Contains("epos-kostenleiste", teile[0].ClassList);
+        Assert.Contains("epos-leiste-fueller", teile[1].ClassList);
+        Assert.Contains("epos-berechnungshilfe", teile[2].ClassList);
+    }
+
+    [Fact]
+    public void S3_Ohne_Wahl_steht_der_Leerhinweis()
+    {
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile>(), katalogzeilen: () => Array.Empty<Katalogfilterzeile>());
+        Assert.Equal(Resource.AUSWAHL_SATZ_LEER, cut.Find(".epos-zweispalten-satzleer").TextContent);
+    }
+
+    [Fact]
+    public void S3_Die_Kostenknoepfe_stehen_nur_beim_Projektsatz_und_fehlen_im_Assistenten()
+    {
+        var kosten = new List<bool>();
+        int energie = 0;
+        ErzeugerZeile? gesehen = null;
+        var cut = Aufbauen(
+            kostenOeffnen: (zeile, betrieb) => { gesehen = zeile; kosten.Add(betrieb); return Task.CompletedTask; },
+            energiekosten: _ => { energie++; return Task.CompletedTask; });
+
+        Assert.Empty(Aufbauen().FindAll(KOSTENKNOEPFE));
+        var knoepfe = cut.FindAll(KOSTENKNOEPFE);
+        Assert.Equal(3, knoepfe.Count);
+        knoepfe[0].Click();
+        cut.FindAll(KOSTENKNOEPFE)[1].Click();
+        cut.FindAll(KOSTENKNOEPFE)[2].Click();
+        Assert.Equal(new[] { false, true }, kosten);
+        Assert.Equal(1, energie);
+        Assert.Equal(31, gesehen!.GeraetId);
+
+        KatalogzeileWaehlen(cut);
+        Assert.Null(cut.Instance.Projektzeile);
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+
+        var wizard = Aufbauen(wizard: true, kostenOeffnen: (_, _) => Task.CompletedTask);
+        Assert.Empty(wizard.FindAll(".epos-kostenleiste"));
+    }
+
+    // =================================================================================
+    // Stufe 3: der Projektsatz und die Überlagerung „Stränge und Wechselrichter…" (KA-E-11)
+    // =================================================================================
+
+    [Fact]
+    public void S3_Der_Projektsatz_traegt_Stueckzahl_Neigung_Azimut_und_das_Ertragsmodell()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-anlagenblock"));
+        Assert.Single(cut.FindComponents<PvModellFelder>());
+        // Die Strangtabelle steht NICHT in der Satzfläche - sie ist die Überlagerung.
+        Assert.Empty(cut.FindComponents<PvStraengeFelder>());
+        Assert.Single(cut.FindAll(".epos-knopf--straenge"));
+
+        KatalogzeileWaehlen(cut);
+        Assert.Empty(cut.FindAll(".epos-anlagenblock"));
+        Assert.Empty(cut.FindComponents<PvModellFelder>());
+        Assert.Empty(cut.FindAll(".epos-knopf--straenge"));
+    }
+
+    [Fact]
+    public void S3_Straenge_und_Wechselrichter_oeffnet_die_Ueberlagerung_mit_der_Strangtabelle()
+    {
+        bool? gemeldet = null;
+        var cut = Aufbauen(geschlossen: ok => gemeldet = ok);
+
+        cut.Find(".epos-knopf--straenge").Click();
+
+        Assert.True(cut.Instance.StraengeOffen);
+        Assert.Single(cut.FindComponents<PvStraengeFelder>());
+        Assert.Equal("Stränge und Wechselrichter – Modul 400", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+                     cut.Find(".epos-ueberlagerung-kopf .epos-zweispalten-marke--satz").TextContent);
+
+        // Esc schliesst bei offener Überlagerung den Dialog nicht.
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Null(gemeldet);
+
+        cut.FindAll(".epos-ueberlagerung .epos-leiste button").Last(b => b.TextContent.Trim() == "OK").Click();
+        Assert.False(cut.Instance.StraengeOffen);
+        Assert.Empty(cut.FindComponents<PvStraengeFelder>());
+        Assert.Null(gemeldet);
+    }
+
+    [Fact]
+    public void S3_Mit_Modulname_fuehrt_die_Strangmodulliste_die_Katalog_Id_des_Moduls()
+    {
+        // Die Zeile traegt die Projektkopie (Id 731) und einen eigenen Anlagennamen; das Band zum Katalog ist der
+        // Name des Moduls.
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "PV Ost/West", 731) };
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Strangmodule, new[] { (31, "Modul 400"), (32, "Modul 500") })
+            .Add(x => x.Modulname, z => z.GeraetId == 731 ? "Modul 500" : ""));
+
+        Assert.Equal(new[] { (32, "Modul 500") }, cut.Instance.ProjektmoduleFuerStraenge().ToArray());
+    }
+
+    [Fact]
+    public void S3_Die_Vorgabe_der_Summe_sagt_kWp()
+    {
+        Assert.Equal("Summe aller ausgewählten Module [kWp]:", new PhotovoltaikDialog().LabelSumme);
+        Assert.Equal("Stränge und Wechselrichter…", new PhotovoltaikDialog().BtnStraengeText);
+    }
+
 
     // =================================================================================
     // Feldbestand
@@ -173,9 +613,9 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Assert.Contains("ausgewählte Module", ueberschriften);
         Assert.Contains("Module aus Datenbank", ueberschriften);
 
-        var gruppen = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
-        Assert.Contains("PV Anlage Eigenschaften:", gruppen);
-        Assert.Contains("Modul Eigenschaften:", gruppen);
+        // Katalogauswahl V1: keine Gruppenköpfe mehr - die Detailzeile „gewählter Satz" trägt Modul und Anlage.
+        Assert.Empty(cut.FindAll(".epos-gruppenkopf-titel"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-anlagenblock"));
     }
 
     [Fact]
@@ -206,35 +646,12 @@ public class PhotovoltaikDialogTests : EposBunitContext
         var cut = Aufbauen();
         Assert.Single(cut.FindAll(".epos-anlagenblock"));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        KatalogzeileWaehlen(cut, 0);
 
         Assert.Empty(cut.FindAll(".epos-anlagenblock"));
     }
 
-    /// <summary>
-    /// Ohne Parametersatz der Modulverwaltung kein Knopf — Hausregel. Seit
-    /// iU9-W14a.3 ist die Verwaltung eine ÜBERLAGERUNG im selben Fenster.
-    /// </summary>
-    [Fact]
-    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Verwaltungsgaben()
-    {
-        var ohne = Aufbauen();
-        Assert.DoesNotContain(ohne.FindAll("button").Select(b => b.TextContent),
-                              t => t == "Modul Bearbeiten...");
-
-        var mit = Aufbauen(verwaltung: () => Verwaltungsgaben());
-        Assert.Contains(mit.FindAll("button").Select(b => b.TextContent),
-                        t => t == "Modul Bearbeiten...");
-    }
-
     /// <summary>Ein Mindestsatz für die Überlagerung — der Katalog braucht sein Profil.</summary>
-    private static IReadOnlyDictionary<string, object> Verwaltungsgaben()
-        => new Dictionary<string, object>
-        {
-            ["Art"] = WindowsFormsApplication1.ModulKatalogArt.Photovoltaik,
-            ["Wege"] = new EPOS.UI.Dialoge.Erzeuger.ModulKatalogWege()
-        };
-
     [Fact]
     public void Im_Assistenten_fehlt_die_OK_Leiste()
     {
@@ -258,7 +675,7 @@ public class PhotovoltaikDialogTests : EposBunitContext
             return new AufnahmeErgebnis(Zeile(9, "Modul 500", 32));
         });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+        KatalogzeileWaehlen(cut, 1);
         cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Equal(32, gefragt);
@@ -327,118 +744,9 @@ public class PhotovoltaikDialogTests : EposBunitContext
     //  Anwenderentscheid W6‑O‑5 (05.09.2026) — „Gesamtleistung in kW"
     // =====================================================================
 
-    /// <summary>
-    /// <b>W6‑O‑5:</b> Der Block „Modul Eigenschaften" zeigte zwei Leistungen mit
-    /// falscher Einheit — die Katalogspalte <c>Leistung</c> führt WATT je Modul, und
-    /// über beiden stand „[KW]". Seither heißt das Modulfeld „[W]" und die
-    /// Gesamtleistung „[kW]".
-    ///
-    /// <para>Zehn Module à 275,19 W sind 2,752 kW. Gerechnet und formatiert wird das
-    /// im Kern (<c>PhotovoltaikCtrl.GesamtleistungText</c>, Nachweis
-    /// <c>EPOS.Kern.Tests/PvModulparameterTests</c>); hier steht, dass die Komponente
-    /// die fertige Zahl unter der richtigen Beschriftung zeigt. Die Einheit steht in
-    /// der BESCHRIFTUNG und nicht im Wert — so wie bei jedem anderen Feld des Blocks.</para>
-    /// </summary>
-    [Fact]
-    public void Zehn_Module_stehen_als_zwei_Komma_sieben_fuenf_zwei_kW_da()
-    {
-        // Zehn Module in der Projektzeile - die Zahl selbst rechnet die Huelle.
-        var zeilen = new List<ErzeugerZeile>
-        {
-            new() { Schluessel = 1, Bezeichner = "Modul 400", GeraetId = 31,
-                    Neigung = 30, Azimut = 180, AnzahlModule = 10 }
-        };
-        var cut = Aufbauen(zeilen, gesamt: () => "2,752");
-
-        var block = cut.FindAll(".epos-gruppenkopf")
-                       .First(e => e.TextContent.Contains("Modul Eigenschaften:"));
-
-        var texte = block.QuerySelectorAll(".epos-feld-text").Select(e => e.TextContent).ToList();
-        Assert.Contains("Modul Leistung [W]:", texte);
-        Assert.Contains("Gesamtleistung [kW]:", texte);
-
-        // Und das Feld dahinter zeigt genau die Zahl, die hereinkam.
-        Assert.Equal("2,752", cut.Instance.Gesamt);
-        Assert.Contains("2,752",
-            block.QuerySelectorAll("input").Select(e => e.GetAttribute("value")));
-    }
-
-    /// <summary>
-    /// Die englische Beschriftung heißt „Total power [kW]" — sie sagte die Einheit
-    /// schon vor W6‑O‑5 richtig; geändert hat sich dort nur „Module power [W]".
-    /// Die Komponente übersetzt nichts, sie zeigt, was die Hülle hereingibt.
-    /// </summary>
-    [Fact]
-    public void Auf_englisch_heissen_die_zwei_Felder_W_und_kW()
-    {
-        using var _ = new Kulturvorrichtung("en-US");
-
-        var cut = Render<PhotovoltaikDialog>(p => p
-            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
-            .Add(x => x.Katalogprofil, Profil)
-            .Add(x => x.Katalogzeilen, Katalogzeilen)
-            .Add(x => x.Filterstandvorgabe, _filterstand)
-            .Add(x => x.Detail, n => new ErzeugerDetail(
-                n, "", new[] { ("Module power [W]:", "275.19") }))
-            .Add(x => x.LabelGesamtleistung, "Total power [kW]:")
-            .Add(x => x.Gesamtleistung, () => "2.752"));
-
-        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
-        Assert.Contains("Module power [W]:", texte);
-        Assert.Contains("Total power [kW]:", texte);
-        Assert.Equal("2.752", cut.Instance.Gesamt);
-    }
-
-    /// <summary>
-    /// Die VORGABE der Komponente trägt die neue Einheit — eine Hülle, die den
-    /// Ressourcenschlüssel nicht setzt, zeigt nicht wieder „[KW]".
-    /// </summary>
-    [Fact]
-    public void Die_Vorgabe_der_Beschriftung_sagt_kW()
-    {
-        Assert.Equal("Gesamtleistung [kW]:", new PhotovoltaikDialog().LabelGesamtleistung);
-    }
-
     // =================================================================================
     // Katalogpflege und Tastatur
     // =================================================================================
-
-    [Fact]
-    public void Loeschen_fragt_zuerst_nach()
-    {
-        var geloescht = new List<int>();
-        var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return true; });
-
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
-
-        Assert.Single(cut.FindAll(".epos-rueckfrage"));
-        Assert.Empty(geloescht);
-
-        cut.FindAll(".epos-rueckfrage button")[0].Click();
-        Assert.Equal(new[] { 31 }, geloescht);
-    }
-
-    /// <summary>
-    /// „Modul Bearbeiten…" öffnet den Modulkatalog als ÜBERLAGERUNG im selben Fenster —
-    /// bis iU9-W14a war es ein Sprung in ein zweites Fenster
-    /// (<c>Sprungziel.PvAdmin</c>).
-    /// </summary>
-    [Fact]
-    public void Bearbeiten_oeffnet_die_Modulverwaltung_als_Ueberlagerung()
-    {
-        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
-
-        Assert.False(cut.Instance.VerwaltungOffen);
-
-        // Der Knopf steht seit dem 15.09.2026 im MODULBEREICH, nicht mehr unter der
-        // Katalogliste.
-        Modulbereich(cut).QuerySelectorAll(".epos-leiste button")
-                         .First(b => b.TextContent == "Modul Bearbeiten...").Click();
-
-        Assert.True(cut.Instance.VerwaltungOffen);
-        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
-    }
 
     [Fact]
     public void Esc_bricht_ab_und_Enter_ist_nicht_belegt()
@@ -770,116 +1078,6 @@ public class PhotovoltaikDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Knöpfe zum gewählten Satz stehen im MODULBEREICH</b> (Anwenderentscheid
-    /// 15.09.2026): „Modul Bearbeiten…" ist dorthin gewandert, wo der Satz steht;
-    /// „Modul Löschen" bleibt bei der LISTE, denn es wirkt auf die Listenzeile.
-    /// </summary>
-    [Fact]
-    public void Bearbeiten_steht_im_Modulbereich_Loeschen_bei_der_Liste()
-    {
-        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
-        KatalogzeileWaehlen(cut);
-
-        var unterDerListe = cut.FindAll(".epos-zweispalten-spalte")[1]
-                               .QuerySelectorAll(".epos-leiste button")
-                               .Select(b => b.TextContent).ToList();
-        Assert.Equal(new[] { "Modul Löschen" }, unterDerListe);
-
-        var imModulbereich = Modulbereich(cut)
-                             .QuerySelectorAll(".epos-leiste button")
-                             .Select(b => b.TextContent).ToList();
-        Assert.Contains("Modul Bearbeiten...", imModulbereich);
-    }
-
-    /// <summary>
-    /// <b>Die Knopfzeile steht als ERSTES unter dem Modulkopf</b> (Anwenderentscheid
-    /// 16.09.2026: „Der Bearbeiten-Button soll weiter oben … stehen, so dass er besser
-    /// sichtbar ist"): links die Kostenknöpfe, rechts „Modul Bearbeiten…", dazwischen
-    /// der Füller. Danach erst die Felder, danach der Aufklapper.
-    /// </summary>
-    [Fact]
-    public void Die_Knopfzeile_steht_unmittelbar_unter_dem_Modulkopf()
-    {
-        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben(),
-                           katalogfelder: Katalogfelder);
-        KatalogzeileWaehlen(cut);
-
-        var kinder = Modulbereich(cut).QuerySelector(".epos-gruppenkopf-koerper")!
-                                      .Children.ToList();
-
-        Assert.Contains("epos-leiste", kinder[0].ClassList);
-        int raster = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
-        int parameter = kinder.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
-        Assert.True(0 < raster && raster < parameter);
-
-        var teile = kinder[0].Children.ToList();
-        Assert.Contains("epos-kostenleiste", teile[0].ClassList);
-        Assert.Contains("epos-leiste-fueller", teile[1].ClassList);
-        Assert.Equal("Modul Bearbeiten...", teile[2].TextContent.Trim());
-    }
-
-    /// <summary>
-    /// <b>Die Kostenleiste steht LINKS in der Knopfzeile</b> und im Assistenten gar
-    /// nicht — dieselbe Anordnung wie beim Heizkessel. Ohne Delegat zeichnet die
-    /// Leiste keinen Knopf (ihre eigene Regel).
-    /// </summary>
-    [Fact]
-    public void Die_Kostenleiste_steht_im_Modulbereich_und_fehlt_im_Assistenten()
-    {
-        var cut = Aufbauen();
-        Assert.Single(Modulbereich(cut).QuerySelectorAll(".epos-kostenleiste"));
-        Assert.Empty(cut.FindAll(".epos-kostenleiste button"));
-
-        var wizard = Aufbauen(wizard: true);
-        Assert.Empty(wizard.FindAll(".epos-kostenleiste"));
-    }
-
-    /// <summary>
-    /// Mit Delegaten stehen die drei Knöpfe da und reichen die GEWÄHLTE Zeile durch —
-    /// beim Katalogsatz ist das <c>null</c>, dann zeigt die Verwaltung die Komponente
-    /// ohne Einengung auf eine Anlage.
-    /// </summary>
-    [Fact]
-    public void Die_Kostenknoepfe_reichen_die_gewaehlte_Zeile_durch()
-    {
-        var kosten = new List<bool>();
-        int energie = 0;
-        ErzeugerZeile? gesehen = null;
-
-        var cut = Render<PhotovoltaikDialog>(p => p
-            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
-            .Add(x => x.Katalogprofil, Profil)
-            .Add(x => x.Katalogzeilen, Katalogzeilen)
-            .Add(x => x.Filterstandvorgabe, _filterstand)
-            .Add(x => x.Detail, n => Detail(n))
-            .Add(x => x.Gesamtleistung, () => "8")
-            .Add(x => x.KostenOeffnen, (Func<ErzeugerZeile?, bool, Task>)((zeile, betrieb) =>
-            {
-                gesehen = zeile;
-                kosten.Add(betrieb);
-                return Task.CompletedTask;
-            }))
-            .Add(x => x.EnergiekostenOeffnen, (Func<ErzeugerZeile?, Task>)(_ =>
-            {
-                energie++;
-                return Task.CompletedTask;
-            })));
-
-        var knoepfe = cut.FindAll(".epos-kostenleiste button");
-        Assert.Equal(3, knoepfe.Count);
-
-        knoepfe[0].Click();
-        Assert.Equal(new[] { false }, kosten);
-        Assert.NotNull(gesehen);                       // beim Oeffnen ist die Projektzeile gewaehlt
-
-        cut.FindAll(".epos-kostenleiste button")[1].Click();
-        Assert.Equal(new[] { false, true }, kosten);
-
-        cut.FindAll(".epos-kostenleiste button")[2].Click();
-        Assert.Equal(1, energie);
-    }
-
-    /// <summary>
     /// <b>Die Komponente formatiert und übersetzt nichts.</b> Unter <c>en-US</c>
     /// stehen genau die Texte da, die die Hülle hereingibt — samt der Zahlen, die
     /// dort schon in der Kultur des Anwenders formatiert wurden.
@@ -993,7 +1191,7 @@ public class PhotovoltaikDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Katalogzeilen(cut)[0].QuerySelector(".epos-anlagenwahl")!.Click();
+        Katalogzeilen(cut)[0].QuerySelector(".epos-zeilenzelle--name")!.Click();
         Assert.False(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
 
         // Ein Filter, der GENAU diese Zeile ausblendet.
@@ -1077,7 +1275,7 @@ public class PhotovoltaikDialogTests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Detail, n => Detail(n))
             .Add(x => x.Gesamtleistung, () => "8")
-            .Add(x => x.KatalogLoeschen, _ => true)
+            .Add(x => x.KatalogLoeschen, _ => "")
             .Add(x => x.Traegerkatalog, Traegerkatalog())
             .Add(x => x.TraegerWechseln, (ErzeugerZeile z, int neu) => gemeldet = (z, neu)));
 
@@ -1273,10 +1471,14 @@ public class PhotovoltaikDialogTests : EposBunitContext
         return z;
     }
 
+    /// <summary>Die Modulklappliste der Strangtabelle — sie steht in der Überlagerung „Stränge und Wechselrichter…".</summary>
     private static IReadOnlyList<string> Modulklappliste(IRenderedComponent<PhotovoltaikDialog> cut)
-        => cut.FindComponents<Auswahlfeld>()
-              .First(f => f.Instance.Kurzname == "Modul")
-              .Instance.Eintraege.Select(e => e.Text).ToList();
+    {
+        if (!cut.Instance.StraengeOffen) cut.Find(".epos-knopf--straenge").Click();
+        return cut.FindComponents<Auswahlfeld>()
+                  .First(f => f.Instance.Kurzname == "Modul")
+                  .Instance.Eintraege.Select(e => e.Text).ToList();
+    }
 
     /// <summary>
     /// <b>Die Klappliste je Strang bietet nur die dem Projekt zugeordneten Module</b>
@@ -1338,11 +1540,13 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Assert.Equal(new[] { "(Modul der Anlage)", "Modul 400" }, Modulklappliste(cut));
 
         // Zuordnen: Katalogzeile "Modul 500" wählen und übernehmen.
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+        KatalogzeileWaehlen(cut, 1);
         cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
         Assert.Equal(new[] { "(Modul der Anlage)", "Modul 400", "Modul 500" }, Modulklappliste(cut));
 
-        // Entfernen: die neue Zeile ist gewählt und geht wieder hinaus.
+        // Entfernen: die neue Zeile wird gewählt und geht wieder hinaus (die Mehrfachwahl der Projektliste
+        // trägt sonst noch die zuerst gewählte Zeile, Katalogauswahl V1).
+        ProjektzeileWaehlen(cut, 1);
         cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
         Assert.Equal(new[] { "(Modul der Anlage)", "Modul 400" }, Modulklappliste(cut));
     }
@@ -1359,5 +1563,80 @@ public class PhotovoltaikDialogTests : EposBunitContext
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
 
         Assert.Equal(new[] { "(Modul der Anlage)", "Modul Neu" }, Modulklappliste(cut));
+    }
+
+    // =================================================================================
+    // Katalogauswahl V1, Stufe 3: Rückweg „In die Datenbank übernehmen…" (5.2, KA‑E‑9)
+    // =================================================================================
+
+    private static Rueckwegwege Rueckweg(IReadOnlyList<Rueckwegvorschlag> zeilen, List<Rueckwegwahl>? geschrieben = null,
+                                         Func<string, bool>? belegt = null, KatalogSpeicherErgebnis? ergebnis = null,
+                                         List<IReadOnlyList<int>>? gefragt = null)
+        => new()
+        {
+            Vorschau = ids => { gefragt?.Add(ids); return zeilen; },
+            NameBelegt = belegt ?? (_ => false),
+            Uebernehmen = w => { geschrieben?.AddRange(w); return ergebnis ?? new KatalogSpeicherErgebnis(true, "2 Sätze übernommen", ""); },
+        };
+
+    [Fact]
+    public void S3b_Der_Knopf_steht_nach_Bearbeiten_und_fragt_je_Projektkopie_einmal()
+    {
+        var gefragt = new List<IReadOnlyList<int>>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31), Zeile(2, "Modul 500", 32), Zeile(3, "Modul 400 Ost", 31) };
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege(),
+                           rueckwegWege: Rueckweg(new[] { new Rueckwegvorschlag(31, "Modul 400", "", Rueckwegsperre.UrsprungUnbekannt, "Modul 400") },
+                                                  gefragt: gefragt));
+
+        var knoepfe = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste").QuerySelectorAll("button").ToList();
+        int bearbeiten = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--bearbeiten-projekt"));
+        int rueckweg = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--rueckweg"));
+        Assert.True(bearbeiten >= 0 && rueckweg == bearbeiten + 1);
+
+        foreach (int i in new[] { 0, 1, 2 })
+            cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
+        cut.Find(".epos-knopf--rueckweg").Click();
+        Assert.Equal(new[] { 31, 32 }, Assert.Single(gefragt).ToArray());
+        Assert.NotNull(cut.Instance.Rueckweg);
+    }
+
+    [Fact]
+    public void S3b_Uebernehmen_meldet_und_liest_den_Katalog_neu()
+    {
+        int gelesen = 0;
+        var geschrieben = new List<Rueckwegwahl>();
+        var zeilen = new[] { new Rueckwegvorschlag(31, "Modul 400", "", Rueckwegsperre.UrsprungUnbekannt, "Modul 400 (Projekt)") };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen, geschrieben),
+                           katalogzeilen: () => { gelesen++; return Katalogzeilen(); });
+        int vorher = gelesen;
+        cut.Find(".epos-knopf--rueckweg").Click();
+        cut.Find(".epos-rueckweg-uebernehmen").Click();
+
+        Assert.Equal(new[] { new Rueckwegwahl(31, false, "Modul 400 (Projekt)") }, geschrieben.ToArray());
+        Assert.Null(cut.Instance.Rueckweg);
+        Assert.Equal("2 Sätze übernommen", cut.Instance.Meldung);
+        Assert.True(gelesen > vorher);
+    }
+
+    [Fact]
+    public void S3b_Der_Hinweis_nennt_was_im_Projekt_bleibt()
+    {
+        var zeilen = new[] { new Rueckwegvorschlag(31, "Modul 400", "", Rueckwegsperre.UrsprungUnbekannt, "Modul 400") };
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.RueckwegWege, Rueckweg(zeilen))
+            .Add(x => x.RueckwegBleibtText, "Im Projekt bleiben: Stränge und Wechselrichterzuordnung."));
+        cut.Find(".epos-knopf--rueckweg").Click();
+        Assert.Contains("Im Projekt bleiben: Stränge und Wechselrichterzuordnung.", cut.Find(".epos-rueckweg").TextContent);
+    }
+
+    [Fact]
+    public void S3b_Ohne_Wege_kein_Knopf()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+        Assert.Empty(cut.FindAll(".epos-knopf--rueckweg"));
     }
 }
