@@ -290,7 +290,9 @@ namespace WindowsFormsApplication1
                 if (m != null) modelle[m.ID] = m;
             Dictionary<int, WPCtrl.KuehlfaehigesGeraet> kuehlfaehig = WPCtrl.KuehlfaehigeGeraete(idProjekt)
                 .GroupBy(g => g.IdWp).ToDictionary(g => g.Key, g => g.First());
-            bool inKaskade = Kaskade.Lesen(KonfigurationCtrl.LiesProjektOhneNachziehen(idProjekt))
+            // Nebenwirkungsfrei gelesen: LiesProjekt zoege bei ungepflegter Kaskade den
+            // Heizkessel in die Datenbank - aus jedem Auffrischen der Konfigurationsseite.
+            bool inKaskade = KonfigurationCtrl.KaskadeLesen(idProjekt)
                 .Contains(DbWerte.ERZEUGER_WAERMEPUMPE);
 
             Dictionary<int, int> jeGeraet = module.Where(modelle.ContainsKey).GroupBy(id => modelle[id].ID_WP)

@@ -464,6 +464,14 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | Kappungsstunden | capping hours | Σ der Kappungsanteile an der Heizleistungsgrenze in h |
 | Nachweisband | verification band | Band, in dem die Stundenleistung einer Rampe bleiben soll (W3) |
 | Spanne (der Aufheizzeit) | range | Vorschlag [t_u; t_o] aus der Zeitkonstante τ₂ neben „Aufheizzeit manuell (h)"; „sinnvolle Spanne" → „sensible range" (`KOND_AUFH_MANUELL_*`) |
+| Aufheizen vor Nutzungsbeginn | preheating before occupancy | Gruppe der Aufheizoptimierung mit Verfahrenswahl (Fassung 2, E122/E124); Schalter „Aufheizen rechnen“ → „Calculate preheating“ (`SIMKONF_AUFH_GRP`, `SIMKONF_AUFH_LBL_SCHALTER`) |
+| Verfahren (der Aufheizung) | method | „Sollwertrampe nach Aufheizleistung“ → „Setpoint ramp by preheat power“ (Bestand), „Vorheizzeit vorgeben“ → „Specify preheat time“, „Vorheizzeit berechnen“ → „Calculate preheat time“ (`SIMKONF_AUFH_VERFAHREN_*`) |
+| Vorheizzeit | preheat time | die Stunden vor dem Kalendersprung, in denen der Sollwert schon auf dem Zielwert steht (Verfahren mit Deckel); vorgegeben oder berechnet, berechnet gilt sie an jedem Sprung; dasselbe Englisch wie „Aufheizzeit“ der Rampe, die beiden Verfahren schließen sich aus; Feld „Vorheizzeit (h)“ → „Preheat time (h)“ |
+| Vorheizfenster | preheat window | die Vorheizzeit vor einem Kalendersprung, Leistung höchstens min(Deckel, verfügbare Heizleistung) |
+| Deckel (der Heizleistung) | cap | höchste Heizlast einer Nutzungsbeginn-Stunde des Jahres ohne Aufheizen plus zulässiger Sprung, stündlich wirksam vom Nutzungsbeginn bis zum Ende der Nutzung; nicht der Deckel n ≤ 48 der Rampe |
+| zulässiger Sprung | permitted step | Toleranz des Deckels in % der höchsten Heizlast am Nutzungsbeginn oder in kW, Vorgabe 20 %; „Zulässiger Sprung zum Nutzungsbeginn“ → „Permitted step at start of occupancy“ (`SIMKONF_AUFH_LBL_TOLERANZ`) |
+| Regelgenauigkeit | control accuracy | Ankunftskriterium ε der Verfahren mit Deckel, 0,5 / 1 / 2 K oder Eingabe, Vorgabe 1 K; „Regelgenauigkeit (K)“ → „Control accuracy (K)“ |
+| verfügbare Heizleistung | available heating power | Heizleistungsgrenze der Zone, sonst Heizlast der kältesten Stunde plus Leistungsreserve |
 | Ferien | holidays | Zeile der Matrix und Art der Periode; Bestand „Holiday setpoint (all day)" (`GEBK_LBL_SOLL_FERIEN`); **nicht** „vacation" |
 | Ferienzeitraum | holiday period | datierter Zeitraum (`Ferienbeginn_1` … `Ferienende_4`) des Gebäudes, gilt für alle Spalten; Datum im Gemeinjahr; Bestand „Holiday start" / „Holiday end" |
 | Feiertag | public holiday | wie § 14 (Tagtyp: Sonn-/Feiertag); die neun bundeseinheitlichen Feiertage stehen als Regel und wirken „wie Sonntag" → „as Sunday"; Länderfeiertage sind gewöhnliche Perioden |

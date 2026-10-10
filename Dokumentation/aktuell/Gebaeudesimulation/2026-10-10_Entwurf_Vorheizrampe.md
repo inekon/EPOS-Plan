@@ -1,9 +1,11 @@
 # Entwurf AH — Vorheizen vor dem Kalendersprung: bestehender Rechenweg gegen neues Konzept
 
-**Fassung 2, Stand 10.10.2026 · Entwurf zur Entscheidung, nichts gebaut.** Fassung 1 (gelesen auf `8100e397`, Basis R50
+**Fassung 2, Stand 10.10.2026 · entschieden, Bau ab V0.** Fassung 1 (gelesen auf `8100e397`, Basis R50
 `2026-10-10_R50_Wochentagsraster`) hat der Anwender am 10.10.2026 mit der Klarstellung 1 und den Entscheiden F1–F10
 beantwortet (Abschnitt 5.1, Wortlaut); F8 wurde am selben Tag durch die Wahl (a) ersetzt. Fassung 2 arbeitet die Entscheide
-ein; die Messungen in Abschnitt 2.8 stammen aus der Basis R51 `2026-10-10_R51_FreieKuehlung`, deren Reihen für 1051 mit R50
+ein; die Fragen F11–F16 der Fassung 2 hat der Anwender am selben Tag entschieden (E124, Abschnitt 5.2) — alle nach
+Empfehlung bis auf F13: Die berechnete Vorheizzeit gilt „fest“ an jedem Sprung, die Art „täglich“ wird nicht gebaut. Der
+Bau läuft in den Wellen V0–V8 (Abschnitt 6). Die Messungen in Abschnitt 2.8 stammen aus der Basis R51 `2026-10-10_R51_FreieKuehlung`, deren Reihen für 1051 mit R50
 übereinstimmen (Heizwärme 24,22 MWh, Spitze 30,00 kW, P_auf 31,62 kW). Grundlage bleiben
 [Teilkonzept Konditionierungsprofile](../Konzept_Konditionierungsprofile_EPOS-Plan.md) Kapitel 4 (Aufheizoptimierung,
 Stufe KP3), [Entwurf KP3](../../ueberholt/2026-10-02_Entwurf_KP3.md), [Konzept Heizlastspitzen](2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)
@@ -149,7 +151,7 @@ wie ihn E58 F1 (b) für die Quelle Grenze nimmt.
 | **Kalendersprung** h_s, Block, Absenkdauer D | wie heute: s(h_s) − s(h_s − 1) > 0,01 K (`Aufheizoptimierung.Spruenge`); der Block reicht von h_s bis zur Stunde vor dem nächsten Sprung nach unten; D sind die zusammenhängenden Stunden unter θ_T vor h_s. Zwei Anstiege (16 → 18 → 20 °C) sind zwei Sprünge (E58 F2) | Sprungliste des Plans |
 | **Vorheizfenster** [h_s − t_V, h_s − 1] | Sollwert dort max(s, min(θ_T, θ_K − 1 K)) (Klarstellung 1; Kühlkappe wie heute); Länge min(t_V, D, 47) | Plan |
 | **Heizlast ohne Aufheizanteil** Φ_ref(h) | die stationäre Heizlast der Stunde bei warmen Bauteilen: `Zonenmodell2K.StationaereHeizlastW`(θ_T, T_a(h), Erdreich des Tags, Zusatzleitwert der Stunde, ohne Sonne und Gewinne) — dieselbe Funktion wie `PhiStat` der heutigen Rampe. Das ist die Last, **auf die** der Kalendersprung führt, wenn nichts aufzuheizen ist | Vorlauf |
-| **Jahresmaximum** Φ_K,max (F2) | max über alle Kalendersprünge des Jahres von Φ_ref(h_s) — eine Zahl je Zone und Jahr; mit Geltung Gebäude die Summe der Zonen in derselben Stunde, maximiert über die Sprungstunden. **Lesarten:** (i) ohne Aufheizanteil (Empfehlung, wie definiert); (ii) die Last der Kalenderstunde im Vorlauf **mit** Aufheizanteil — 1051: ≈ 42,8 kW, damit (1 + x)·Φ_K,max ≈ 51 kW, wirkungslos; (iii) das Jahresmaximum der **Differenz** S_0(h_s) als Steigungsgrenze je Stunde — ein anderer Mechanismus (Frage F11) | Vorlauf |
+| **Jahresmaximum** Φ_K,max (F2) | max über alle Kalendersprünge des Jahres von Φ_ref(h_s) — eine Zahl je Zone und Jahr; mit Geltung Gebäude die Summe der Zonen in derselben Stunde, maximiert über die Sprungstunden. **Lesart (i) ohne Aufheizanteil, entschieden (F11 (a), E124)**; verworfen: (ii) die Last der Kalenderstunde im Vorlauf **mit** Aufheizanteil — 1051: ≈ 42,8 kW, damit (1 + x)·Φ_K,max ≈ 51 kW, wirkungslos; (iii) das Jahresmaximum der **Differenz** S_0(h_s) als Steigungsgrenze je Stunde — ein anderer Mechanismus | Vorlauf |
 | **Toleranz** x bzw. Δ (F3) | x in Prozent von Φ_K,max (Vorgabe 20 %, konfigurierbar) oder Δ in kW; leer = Vorgabe | Projekt |
 | **Deckel** P_K (F8 (a)) | P_K = (1 + x)·Φ_K,max bzw. Φ_K,max + Δ — eine Zahl je Zone (bzw. Gebäude) und Jahr, **stündlich wirksam im Lauf** als `heizleistungMaxW` jeder Stunde von h_s bis Blockende; wirkt nie unter Φ_ref(h) der Stunde (Festlegung, Abschnitt 2.2), wird je Stunde mit `Heizleistung_Max` geschnitten | Plan → `Stundenrand` |
 | **Verfügbare Leistung** P_verf (F4) | wie das heutige P_auf: `Heizleistung_Max` der Zone, sonst (1 + ρ)·Φ_stat(θ_T,max, T_a,min) mit der Reserve ρ (Vorgabe 20 %); 1051: 31,62 kW | Bemessung wie heute |
@@ -176,11 +178,11 @@ in Option 2, aus dem schwersten Sprung des Jahres die Vorheizzeit t_V. Im Lauf g
 Stunde wird eine Tageslast neu berechnet (das war die Schwäche des stündlichen Kalenderdeckels der Fassung 1: an milden
 Tagen führte die Tageslast + 20 % auf Vorheizzeiten über die ganze Nacht, Tabelle 2.2 der Fassung 1).
 
-**Warum der Deckel nicht unter Φ_ref(h) wirkt (Festlegung, Widerspruch möglich).** P_K ist am Jahresmaximum der
+**Warum der Deckel nicht unter Φ_ref(h) wirkt (entschieden, F12 (a), E124).** P_K ist am Jahresmaximum der
 Kalendersprünge bemessen. Eine Blockstunde kann kälter sein als jede Kalenderstunde (ein kalter Nachmittag, eine Nacht mit
 Nutzung); dort läge der Deckel unter der stationären Last, und die Zone könnte θ_T nicht einmal halten — der Deckel hieße
 Komfortverlust statt Spitzenglättung. Die Grenze einer Blockstunde ist deshalb max(P_K, Φ_ref(h)); die Stunden, in denen
-der zweite Zweig greift, werden gezählt („Deckel unter der Heizlast der Stunde“) und gemeldet (Frage F12).
+der zweite Zweig greift, werden gezählt („Deckel unter der Heizlast der Stunde“) und gemeldet.
 
 **Was nicht begrenzt wird.** Außerhalb von Fenster und Block bleibt die Leistung wie heute (`Heizleistung_Max` oder
 unbegrenzt). Ein Übergang aus „aus“ (Heizperiode, Kalender „aus“) bekommt wie heute kein Fenster (W4) und zählt nicht in
@@ -287,7 +289,8 @@ Nutzungsbeginn den Sollwert nicht (bis 1,4 K darunter); nötig wären bis 9 h Vo
 
 ### 2.6 Option 2 — Vorheizzeit berechnet
 
-**Eingaben:** Toleranz, ε, Geltung, Heizkreis-Schalter; die Art der Anwendung „fest“ oder „täglich“ (Frage F13); keine Zeit.
+**Eingaben:** Toleranz, ε, Geltung, Heizkreis-Schalter; keine Zeit. Die berechnete Vorheizzeit gilt „fest“ an jedem Sprung
+(F13 (a), E124); eine Auswahl der Anwendung gibt es nicht.
 
 **Rechenweg:**
 
@@ -296,16 +299,19 @@ Nutzungsbeginn den Sollwert nicht (bis 1,4 K darunter); nötig wären bis 9 h Vo
 2. **t_V = max über alle Sprünge des Jahres von t_nötig** (F5: aus dem Jahresmaximum die Zeit, die nötig ist, den Deckel
    nicht zu überschreiten) — je Zone; mit Geltung Gebäude das Maximum über die Zonen. t_V ist der **Bemessungswert**:
    Herleitungszeile, Bericht, Vorschlag für eine Gebäudeleittechnik.
-3. Plan und Lauf wie Option 1 — mit t_V an jedem Sprung („fest“) oder mit t_nötig(h_s) je Sprung, höchstens t_V
-   („täglich“, Frage F13). „Fest“ entspricht dem Wortlaut von F5 und der heutigen Art „fest“; „täglich“ behält an milden
-   Tagen die Absenkung und kostet weniger Wärme (2.8).
+3. Plan und Lauf wie Option 1 — mit t_V an **jedem** Sprung („fest“, F13 (a), E124). Begründung des Anwenders: In der
+   Realität wird die Vorheizzeit fest gesetzt. „Fest“ entspricht zugleich dem Wortlaut von F5 und der heutigen Art „fest“.
+   Eine Anwendung „täglich“ (je Sprung t_nötig(h_s), höchstens t_V; behält an milden Tagen die Absenkung, 2.8) wird nicht
+   gebaut; sie bleibt eine mögliche spätere Ergänzung auf demselben Kern.
 4. Nachweis im Lauf wie Option 1; verfehlt der Lauf einen Tag, den die Vorausschau als erreichbar sah, nennt der Hinweis
    ihn als Abweichung (Nachbarn, Kreis).
 
 **t_V ≥ Absenkdauer.** Werktags ist D = 13 h. Liegt t_nötig eines Werktags bei D, entfällt die Absenkung dieser Nacht (der
 Bau wird durchgeheizt); liegt das Jahresmaximum t_V bei einem Wochenendsprung über 13 h, entfällt mit „fest“ die
-Absenkung **jeder** Werktagsnacht — das ist in 1051 der Fall (2.8). Der Lauf zählt die Nächte ohne Absenkung und weist die
-Mehrwärme gegen den Vorlauf aus; der Hinweis nennt beides.
+Absenkung **jeder** Werktagsnacht — das ist in 1051 der Fall (2.8): t_V ≈ 15 h aus dem Sprung nach dem Wochenende liegt über
+der Werktagsabsenkung von 13 h, jede Werktagsnacht wird durchgeheizt, ≈ +10 % Heizwärme. Diese Folge ist mit F13 (a)
+angenommen. Der Lauf zählt die Nächte ohne Absenkung und weist die Mehrwärme gegen den Vorlauf aus; der Hinweis nennt
+beides.
 
 **Bemessung (a)/(b) und Aufschlag** des Bestands entfallen in den neuen Verfahren: Die Jahresbetrachtung ersetzt den
 Bemessungsfall, die Toleranz und die Prüfung ersetzen den Aufschlag. P_verf wird weiter wie heute aus `Heizleistung_Max`
@@ -400,9 +406,10 @@ Fensters; Abschätzung, keine Messung):
 
 Lesart: **Option 2 „fest“ liefert in 1051 t_V ≈ 15 h — länger als die Werktagsnacht.** Der Bemessungswert kommt vom
 kältesten Montag (voller Fehlbetrag 4 K nach 61 h, Fenster bei −12 °C); angewandt an jedem Werktag heißt er Durchheizen,
-rund +10 % Heizwärme (Mehrverlust ≈ H_s·(θ_T − θ_Luft)·(t_V − t_nötig), Abschätzung nach oben). Option 2 „täglich“ braucht
-werktags 4–9 h, behält 4–9 h Absenkung und kostet gegenüber dem Bestand (der schon 1–12 h rampt) wenig; die Jahresspitze
-fällt in beiden Fällen auf ≤ 28,2 kW (−6 %), der Sprung am Kalenderpunkt von 23,9 kW auf höchstens den Deckelspielraum
+rund +10 % Heizwärme (Mehrverlust ≈ H_s·(θ_T − θ_Luft)·(t_V − t_nötig), Abschätzung nach oben); diese Folge ist mit F13 (a) „fest“
+(E124) angenommen. Zum Vergleich: Eine Anwendung „täglich“ — nicht gebaut, mögliche spätere Ergänzung — bräuchte
+werktags 4–9 h, behielte 4–9 h Absenkung und kostete gegenüber dem Bestand (der schon 1–12 h rampt) wenig; die Jahresspitze
+fiele in beiden Fällen auf ≤ 28,2 kW (−6 %), der Sprung am Kalenderpunkt von 23,9 kW auf höchstens den Deckelspielraum
 (erwartet 0–5 kW, erst der Lauf misst). Option 1 mit t_V = 6 h verfehlt die Montage (Bedarf 9–15 h) und die kältesten
 Werktage (7–9 h) — der Hinweis nennt sie mit dem Bedarf. „Unerreichbar“ tritt in 1051 nicht auf: P_K = 28,2 kW liegt über
 Φ_stat(20 °C, −18,2 °C) = 26,4 kW; mit x = 10 % (25,9 kW) läge der Deckel unter der Nachtlast der kältesten Nacht, und
@@ -422,9 +429,6 @@ Verfahren.
 | `SIMKONF_AUFH_VERFAHREN_VORGABE` | Vorheizzeit vorgeben | Specify preheat time | — |
 | `SIMKONF_AUFH_VERFAHREN_BERECHNET` | Vorheizzeit berechnen | Calculate preheat time | — |
 | `SIMKONF_AUFH_LBL_VORHEIZZEIT` | Vorheizzeit (h) | Preheat time (h) | Vorgabe |
-| `SIMKONF_AUFH_LBL_VORHEIZART` | Vorheizzeit anwenden | Apply preheat time | Berechnet |
-| `SIMKONF_AUFH_VORHEIZART_FEST` | an jedem Tag gleich (Jahreswert) | same every day (annual value) | — |
-| `SIMKONF_AUFH_VORHEIZART_TAEGLICH` | je Tag so kurz wie möglich | as short as possible each day | — |
 | `SIMKONF_AUFH_LBL_TOLERANZ` | Zulässiger Sprung zum Nutzungsbeginn | Permitted step at start of occupancy | Vorgabe, Berechnet |
 | `SIMKONF_AUFH_TOLERANZ_PROZENT` | % der höchsten Heizlast am Nutzungsbeginn | % of highest heating load at start of occupancy | — |
 | `SIMKONF_AUFH_TOLERANZ_KW` | kW | kW | — |
@@ -436,8 +440,10 @@ Verfahren.
 | `SIMKONF_AUFH_LBL_HEIZKREIS` | Gebäude mit Heizkreis einbeziehen | Include buildings with heating circuit | Vorgabe, Berechnet |
 | `SIMKONF_AUFH_LBL_RESERVE` | Leistungsreserve (%) | Power reserve (%) | alle |
 
-Auswahl Regelgenauigkeit: 0,5 K · 1 K · 2 K · Eingabe (Vorgabe 1 K, Frage F15). Toleranz: Art (% / kW) und Wert, leer = die
-konfigurierbare Vorgabe (20 %, Frage F14), Hinweis „Vorgabe 20 %“ neben dem Feld.
+Auswahl Regelgenauigkeit: 0,5 K · 1 K · 2 K · Eingabe (Vorgabe 1 K, F15 (a)). Toleranz: Art (% / kW) und Wert, leer = die
+konfigurierbare Vorgabe (20 %, F14 (a)), Hinweis „Vorgabe 20 %“ neben dem Feld. Eine Auswahl, wie die berechnete
+Vorheizzeit angewandt wird, gibt es nicht: Sie gilt an jedem Tag gleich (F13 (a), E124); die Schlüssel
+`SIMKONF_AUFH_LBL_VORHEIZART`, `SIMKONF_AUFH_VORHEIZART_FEST` und `SIMKONF_AUFH_VORHEIZART_TAEGLICH` der Fassung 2 entfallen.
 
 **Herleitungstexte:**
 
@@ -458,12 +464,12 @@ konfigurierbare Vorgabe (20 %, Frage F14), Hinweis „Vorgabe 20 %“ neben dem 
   own preheat time.”
 - **Vorheizzeit berechnen** — DE: „Der Lauf rechnet das Jahr zuerst ohne Vorheizen und bestimmt daraus den Deckel und
   für jeden Tag die kürzeste Vorheizzeit, mit der die Raumtemperatur zum Nutzungsbeginn den Sollwert erreicht, ohne den
-  Deckel zu überschreiten. Der größte Wert des Jahres ist die Vorheizzeit des Gebäudes; sie gilt an jedem Tag oder — nach
-  Wahl — nur so lang wie an diesem Tag nötig. Reicht auch die ganze Absenkung nicht, wird die Nacht durchgeheizt und
-  genannt.“ — EN: “The run first calculates the year without preheating and derives the cap and, for every day, the
+  Deckel zu überschreiten. Der größte Wert des Jahres ist die Vorheizzeit des Gebäudes; sie gilt an jedem Tag. Ist sie
+  länger als die Absenkung einer Nacht, wird diese Nacht durchgeheizt; der Lauf nennt die Nächte ohne Absenkung und die
+  Mehrwärme.“ — EN: “The run first calculates the year without preheating and derives the cap and, for every day, the
   shortest preheat time that brings the room to the setpoint at the start of occupancy without exceeding the cap. The
-  year's largest value is the building's preheat time; it applies every day or — by choice — only as long as needed on
-  that day. Where even the whole setback is not enough, the night is heated through and reported.”
+  year's largest value is the building's preheat time; it applies every day. Where it is longer than a night's setback,
+  that night is heated through; the run reports the nights without setback and the additional heat.”
 - **Deckel** — DE: „Der Deckel ist die höchste Heizlast, die eine Nutzungsbeginn-Stunde des Jahres ohne Aufheizen hätte,
   zuzüglich des zulässigen Sprungs (in Prozent davon oder in kW). Er gilt stündlich vom Nutzungsbeginn bis zum Ende der
   Nutzung und nie unter der Heizlast der Stunde.“ — EN: “The cap is the highest heating load any start-of-occupancy hour
@@ -482,8 +488,8 @@ konfigurierbare Vorgabe (20 %, Frage F14), Hinweis „Vorgabe 20 %“ neben dem 
   gespeichert.“ — EN: “Applies to all VDI 6007 buildings in the project; every field is saved immediately.”
 
 Formelzeichen (ρ, Φ_K,max, P_K, G_0) gehören in Hilfe und Herleitungszeile, nicht in Beschriftungen. Die Herleitungszeile
-nennt: Verfahren, Deckel (Bezug, Toleranz, Wert), verfügbare Leistung (Quelle), Vorheizzeit (vorgegeben bzw. berechnet,
-„fest“/„täglich“), Sprung ohne Vorheizen und im Lauf, Tage verfehlt, Nächte ohne Absenkung.
+nennt: Verfahren, Deckel (Bezug, Toleranz, Wert), verfügbare Leistung (Quelle), Vorheizzeit (vorgegeben bzw. berechnet),
+Sprung ohne Vorheizen und im Lauf, Tage verfehlt, Nächte ohne Absenkung.
 
 **Gebäudedialog** (Reiter „Konditionierung“): „Vorheizzeit (h)“ je Gebäude (Verfahren Vorgabe; dieselbe Spalte wie die
 manuelle Aufheizzeit), Zonen: „Vorheizzeit (h)“ bei Geltung Zone; Vorschlag daneben: der Bedarf der letzten Rechnung.
@@ -500,14 +506,14 @@ Deckel, Vorheizzeit, Sprung und Tage erweitert.
 
 | | Bestand (Sollwertrampe) | Option 1 (t_V vorgegeben) | Option 2 (t_V berechnet) |
 |---|---|---|---|
-| **Eingaben** | Schalter, Bemessung (a)/(b) mit ΔT_K, Reserve ρ, Art täglich/fest, Aufschlag h/%, manuelle Zeit je Gebäude | Schalter, t_V (Projekt, Gebäude, Zone), Toleranz % oder kW, ε, Geltung, Heizkreis-Schalter, Reserve ρ bzw. `Heizleistung_Max` | wie Option 1 ohne t_V; dazu „fest“/„täglich“ |
+| **Eingaben** | Schalter, Bemessung (a)/(b) mit ΔT_K, Reserve ρ, Art täglich/fest, Aufschlag h/%, manuelle Zeit je Gebäude | Schalter, t_V (Projekt, Gebäude, Zone), Toleranz % oder kW, ε, Geltung, Heizkreis-Schalter, Reserve ρ bzw. `Heizleistung_Max` | wie Option 1 ohne t_V; t_V gilt „fest“ an jedem Sprung (F13 (a)) |
 | **Rechenweg** | Vorab-Stufenformel, Sollwerttreppe n Stufen; Lauf ideal ohne Grenze | Vorlauf (Φ_K,max, Deckel); Fenster mit Sollwert θ_T und Grenze P_V; Deckel P_K stündlich im Block; Nachweis | Vorlauf; Vorausschau je Sprung (Bisektion über t), t_V = Jahresmaximum; dann wie Option 1 |
 | **Ergebnis an der Kalenderstunde** | Last ≤ P_auf (feste Zahl), Sprung bleibt: 1051 bis 23,9 kW, Median 3,9 kW | Last ≤ P_K per Bau; Luft ggf. unter θ_T, gezählt; Sprung ≤ Deckelspielraum | wie Option 1; Ankunft im Modell gesichert bis auf „unerreichbar“ |
 | **Prüfung „Sollwert erreicht“** | keine (per Bau erfüllt, Grenze fehlt) | ja, je Tag, mit Bedarf | ja, als Nachweis der Vorausschau |
 | **Auslegungswirkung** | Φ_HL + (P_auf − Φ_stat); Jahresspitze in der Rampe (1051: 30,0 kW) | Jahresspitze ≤ P_K (1051: 28,2 kW); E60-Größe bleibt, Deckel daneben | wie Option 1, dazu t_V als Bemessungswert |
-| **Wärme** | Mehrwärme der Rampe klein (täglich) | fest vorgegeben: an milden Tagen mehr als nötig; t_V ≥ D heißt Durchheizen | „fest“: 1051 ≈ +10 % (Werktage durchgeheizt); „täglich“: wenig Mehrwärme |
+| **Wärme** | Mehrwärme der Rampe klein (täglich) | fest vorgegeben: an milden Tagen mehr als nötig; t_V ≥ D heißt Durchheizen | „fest“: 1051 ≈ +10 % (Werktage durchgeheizt), gezählt und ausgewiesen |
 | **Rechenzeit** | ein Lauf | Lauf + Vorlauf + Vorausschau an verfehlten Tagen (≈ 2–3 Zonenjahre) | Lauf + Vorlauf + 148·≤ 6 Vorausschauen (≈ 4–7 Zonenjahre, unter 1 s je Zone, Abschätzung) |
-| **Aufwand** | gebaut | 9,5–13 PT (alle Wellen außer V3) | 11,5–16 PT (mit V3) |
+| **Aufwand** | gebaut | 9,5–13 PT (alle Wellen außer V3) | 11–15,5 PT (mit V3) |
 | **Risiken** | Text verspricht mehr als die Rechnung; AK1-Einzone ausgenommen | zu kurzes t_V → Unterschreitung (gezählt); Deckel unter der Blockstundenlast an kalten Nachmittagen (Floor, gezählt) | „fest“ hebt die Werktagsabsenkung auf; Vorausschau weicht im AK3-Kreis vom Lauf ab (gemeldet) |
 
 ---
@@ -518,10 +524,10 @@ Deckel, Vorheizzeit, Sprung und Tage erweitert.
 alles per `ADD COLUMN`, nullbar, mit Prüfklausel; Bestand bitgleich bei NULL):
 
 - `Tab_Einstellungen`: `Aufheiz_Verfahren` TEXT CHECK IN ('RAMPE','VORGABE','BERECHNET') — NULL = RAMPE;
-  `Aufheiz_Vorheizzeit_H` INTEGER CHECK BETWEEN 1 AND 47; `Aufheiz_Vorheizzeit_Art` TEXT CHECK IN ('FEST','TAEGLICH') —
-  NULL = Vorgabe nach F13; `Aufheiz_Toleranz_Art` TEXT CHECK IN ('PROZENT','KW') — NULL = PROZENT;
+  `Aufheiz_Vorheizzeit_H` INTEGER CHECK BETWEEN 1 AND 47 (keine Spalte für die Art der Anwendung: „fest“ allein, F13 (a));
+  `Aufheiz_Toleranz_Art` TEXT CHECK IN ('PROZENT','KW') — NULL = PROZENT;
   `Aufheiz_Toleranz` REAL CHECK (≥ 0) — Anteil bei PROZENT, kW bei KW, NULL = Vorgabe 20 %;
-  `Aufheiz_Regelgenauigkeit_K` REAL CHECK (> 0 AND ≤ 5) — NULL = Vorgabe nach F15; `Aufheiz_Geltung` TEXT CHECK IN
+  `Aufheiz_Regelgenauigkeit_K` REAL CHECK (> 0 AND ≤ 5) — NULL = Vorgabe 1 K (F15 (a)); `Aufheiz_Geltung` TEXT CHECK IN
   ('GEBAEUDE','ZONE') — NULL = GEBAEUDE; `Aufheiz_Heizkreis_Einbeziehen` INTEGER CHECK (IN (0,1)) — NULL = 1.
 - `Tab_Gebaeude.Aufheizzeit_Manuell_H` bleibt und trägt in „Vorgabe“ die Vorheizzeit des Gebäudes (1–47 h); kein
   Katalogfeld. `Tab_Zone.Vorheizzeit_H` INTEGER CHECK BETWEEN 1 AND 47 — NULL = erbt (nur Geltung Zone, Verfahren Vorgabe).
@@ -538,7 +544,7 @@ Verfahren in `Aufheizoptimierung.Anwenden` bzw. daneben; der Vorlauf ruft `Laufe
 (`Zuruecksetzen(θ_MAw, θ_MIw)`) und nutzt `Schritt` mit den Randwerten der Stunden; Nachweis im Ergebnis
 (`GebaeudeModellErgebnis`, `Komfortkennzahlen`); Laufhinweise `SIMENG_VORHEIZ_*` neu; Auskunft (`Aufheizauskunft`,
 `AufheizauskunftCtrl`) und Herleitungszeile; `KonfigurationCtrl.AufheizvorgabeLesen/Schreiben`; die Vorgabe der Toleranz
-als Konstante im Kern (20 %) und als Schlüssel in `Dienste.Einstellungen` für die Vorbelegung der Oberfläche (F14).
+als Konstante im Kern (20 %) und als Schlüssel in `Dienste.Einstellungen` für die Vorbelegung der Oberfläche (F14 (a)).
 Vergleiche an Grenzen über `Rechenrand.SchwelleErreicht`; keine `(int)`-Abschneidung; feste Feldgrößen.
 
 **Oberfläche:** Gruppe nach 2.9 in `SimulationKonfigSeite.razor` mit Verfahrensauswahl und je Verfahren sichtbaren
@@ -550,11 +556,11 @@ Feldern; Gebäudefeld und Zonenfeld; Hülle in `EPOS.UI.Daten`; KI-Felder (`KiDi
 so bleibt jede Basisdatei der Bestandsprojekte byte-gleich.
 
 **Referenzprojekt und Basis (F9):** 1051 bleibt auf „Rampe“ und hält den Bestand. Neu ein Projekt als Kopie von 1051
-(Nummer bei Anlage) mit „Vorheizzeit berechnen“, Toleranz 20 % (Prozent), ε nach F15, Geltung Gebäude, Vorheizzeit-Art
-nach F13; dazu eine Testzeile für „Vorgabe“ in den Kerntests; Wache nach dem Muster `KonditionierungReferenzprojektWacheTests`
+(Nummer bei Anlage) mit „Vorheizzeit berechnen“, Toleranz 20 % (Prozent), ε = 1 K (F15 (a)), Geltung Gebäude, t_V „fest“
+(F13 (a)); dazu eine Testzeile für „Vorgabe“ in den Kerntests; Wache nach dem Muster `KonditionierungReferenzprojektWacheTests`
 (Skript neben `referenzprojekt_1051_konditionierung.cs`), neue Basis, Aufnahme in die CI-Auswahl. Die Einfrierregel „gesäte
 Konditionierungsdaten“ (`Referenzlaeufe/LIESMICH.md`) wird um die neuen Spalten an `Tab_Einstellungen` (`Aufheiz_Verfahren`,
-`Aufheiz_Vorheizzeit_H`, `Aufheiz_Vorheizzeit_Art`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`,
+`Aufheiz_Vorheizzeit_H`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`,
 `Aufheiz_Geltung`, `Aufheiz_Heizkreis_Einbeziehen`), `Tab_Zone.Vorheizzeit_H` und das neue Projekt erweitert; wer 1051
 umstellt statt zu kopieren, friert ebenfalls neu ein. **Bestand bitgleich:** Verfahren NULL/RAMPE nimmt den heutigen Weg;
 V1 und V2 weisen den Referenzlauf byte-gleich nach.
@@ -574,41 +580,28 @@ Logbuch-Satz beim gebündelten Upload, Versionsnummer beim Anwender erfragen.
 |---|---|---|
 | Klarstellung 1 | „Vorheizfenster: Ab t_V Stunden vor dem Sprung steht der Sollwert schon auf dem Zielwert. Geheizt wird mit einer Leistung, die keinen zusätzlichen Sprung am Zeitpunkt der Temperaturänderung (Kalender) erzeugt (Beispiel Nachtabsenkung von 20 °C auf 17 °C). Kalenderdeckel: die Zeit ist jeweils der Sprung der Soll-Temperatur im Kalender, keine fixe Zeit.“ | Fenster mit Sollwert θ_T (2.1); Grenze P_V im Fenster, Deckel ab dem Kalendersprung (2.2); Zeitpunkt aus der Sprungliste, keine feste Uhrzeit |
 | F1 | „Aufheizoptimierung optional, vom Nutzer wählbar.“ | Verfahren Rampe / Vorgabe / Berechnet, Schalter wie heute (2.2, 2.9) |
-| F2 | „Es gilt der höchste Sprung der Heizlast über ein Jahr am Punkt der Temperaturänderung (Kalender).“ | Φ_K,max aus dem Vorlauf, Lesart (i) ohne Aufheizanteil (2.1; Frage F11 zu den Lesarten) |
-| F3 | „Sprung (Toleranz) wählbar als % oder kW, Vorgabe 20 %, die Vorgabe ist konfigurierbar.“ | `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`; Kern-Konstante 20 %, Vorbelegung über `Dienste.Einstellungen` (Frage F14) |
+| F2 | „Es gilt der höchste Sprung der Heizlast über ein Jahr am Punkt der Temperaturänderung (Kalender).“ | Φ_K,max aus dem Vorlauf, Lesart (i) ohne Aufheizanteil (2.1; F11 (a)) |
+| F3 | „Sprung (Toleranz) wählbar als % oder kW, Vorgabe 20 %, die Vorgabe ist konfigurierbar.“ | `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`; Kern-Konstante 20 %, Vorbelegung über `Dienste.Einstellungen` (F14 (a)) |
 | F4 | „Leistung so, dass der Sprung nicht über den Deckel geht, bzw. höchstens P_verf.“ | P_V = min(P_K, P_verf) im Fenster (2.1) |
-| F5 | „wahlweise (1) t_V vorgegeben oder (2) t_V berechnet, so dass der Sprung der Heizleistung am Temperatursprung minimiert ist — über ein Jahr den maximalen Sprung berechnen und daraus die Zeit t_V, die erforderlich ist, um den Deckel nicht zu überschreiten.“ | Option 1 (2.5) und Option 2 (2.6): t_V = Jahresmaximum des Bedarfs aus Vorlauf und Vorausschau |
+| F5 | „wahlweise (1) t_V vorgegeben oder (2) t_V berechnet, so dass der Sprung der Heizleistung am Temperatursprung minimiert ist — über ein Jahr den maximalen Sprung berechnen und daraus die Zeit t_V, die erforderlich ist, um den Deckel nicht zu überschreiten.“ | Option 1 (2.5) und Option 2 (2.6): t_V = Jahresmaximum des Bedarfs aus Vorlauf und Vorausschau, angewandt an jedem Sprung (F13 (a)) |
 | F6 | „wählbar je Zone oder je Gebäude.“ | `Aufheiz_Geltung`, Rechenregeln in 2.7 |
-| F7 | „Ankunftskriterium als Vorgabe der Regelgenauigkeit der Übergabe (0,5 K; 1 K; 2 K) oder Eingabe.“ | ε mit Auswahl und Eingabe, gemessen am Beginn von h_s (2.1; Vorgabe Frage F15) |
-| F8 | **(a)** — ersetzt die frühere Vorgabe: „Der Kalenderdeckel gilt im Lauf ab dem Sollwertsprung des Kalenders bis zum Ende des Sollwertblocks (nächster Sprung nach unten). Er ergänzt die Jahresbetrachtung (F2; F5 Option 2), ersetzt sie nicht.“ | Deckel P_K aus Jahresmaximum und Toleranz, **stündlich wirksam** von h_s bis Blockende als `heizleistungMaxW`; die Jahresbetrachtung liefert die Bemessung (Φ_K,max, P_K, t_V), der Deckel wirkt im Lauf (2.2); Floor Φ_ref(h) als Festlegung (Frage F12) |
+| F7 | „Ankunftskriterium als Vorgabe der Regelgenauigkeit der Übergabe (0,5 K; 1 K; 2 K) oder Eingabe.“ | ε mit Auswahl und Eingabe, gemessen am Beginn von h_s, Vorgabe 1 K (2.1; F15 (a)) |
+| F8 | **(a)** — ersetzt die frühere Vorgabe: „Der Kalenderdeckel gilt im Lauf ab dem Sollwertsprung des Kalenders bis zum Ende des Sollwertblocks (nächster Sprung nach unten). Er ergänzt die Jahresbetrachtung (F2; F5 Option 2), ersetzt sie nicht.“ | Deckel P_K aus Jahresmaximum und Toleranz, **stündlich wirksam** von h_s bis Blockende als `heizleistungMaxW`; die Jahresbetrachtung liefert die Bemessung (Φ_K,max, P_K, t_V), der Deckel wirkt im Lauf (2.2); Floor Φ_ref(h) (F12 (a)) |
 | F9 | „neues Referenzprojekt als Kopie von 1051 mit dem neuen Verfahren, 1051 bleibt beim Bestand.“ | Abschnitt 4, Einfrierregel erweitert |
-| F10 | „AK1-Einzonengebäude einbeziehen, optional ausnehmbar.“ | Vorlauf und Vorausschau auf dem Kopplungsweg, Schalter `Aufheiz_Heizkreis_Einbeziehen` (2.7; Frage F16 zur Ebene) |
+| F10 | „AK1-Einzonengebäude einbeziehen, optional ausnehmbar.“ | Vorlauf und Vorausschau auf dem Kopplungsweg, Schalter `Aufheiz_Heizkreis_Einbeziehen` je Projekt (2.7; F16 (a)) |
 
-### 5.2 Offene Fragen (höchstens sechs, je mit Empfehlung)
+### 5.2 Entschieden (Anwender, 10.10.2026) — F11–F16
 
-1. **F11 — Bezug Φ_K,max:** (a) Jahresmaximum der Heizlast am Kalenderpunkt **ohne Aufheizanteil** (Φ_ref, dieselbe
-   stationäre Form wie die heutige Rampe; 1051: 23,5 kW → Deckel 28,2 kW); (b) Jahresmaximum der Kalenderstunde **mit**
-   Aufheizanteil aus dem Vorlauf (1051: ≈ 42,8 kW → Deckel ≈ 51 kW, ohne Wirkung); (c) Toleranz als Steigungsgrenze je
-   Stunde auf das Jahresmaximum des Sprungs S_max,0 (Rampenbegrenzung Φ(h) ≤ Φ(h − 1) + Δ — anderer Mechanismus, kein
-   Leistungsdeckel). **Empfehlung (a):** wörtlich „Heizlast am Punkt der Temperaturänderung“, von ρ unabhängig, als Deckel
-   wirksam und vor dem Lauf bekannt.
-2. **F12 — Floor des Deckels:** (a) die Grenze einer Blockstunde ist max(P_K, Φ_ref(h)), Floor-Stunden werden gezählt
-   und gemeldet; (b) P_K streng, auch unter der stationären Last (Komfortverlust, gezählt). **Empfehlung (a)**: Der Deckel
-   soll den Aufheizanteil begrenzen, nicht das Halten des Sollwerts.
-3. **F13 — Anwendung der berechneten Vorheizzeit:** (a) „fest“: t_V (Jahresmaximum) an jedem Sprung — Wortlaut F5,
-   1051: ≈ 15 h, Werktage durchgeheizt, ≈ +10 % Heizwärme; (b) „täglich“: je Sprung der Bedarf t_nötig, höchstens t_V,
-   t_V bleibt Bemessungswert und Ausgabe — 1051: Median 5 h, Absenkung bleibt. **Empfehlung (b) als Vorgabe**, (a) als
-   Auswahl (`Aufheiz_Vorheizzeit_Art`), beide auf demselben Kern; Option 1 ist von Natur aus „fest“.
-4. **F14 — Ort der konfigurierbaren Vorgabe 20 %:** (a) Kern-Konstante 20 % für leere Felder (deterministisch für
-   Referenzlauf und Tests) plus Vorbelegung neuer Projekte über `Dienste.Einstellungen` (Programmeinstellung, Gruppe
-   „Weitere Einstellungen“); (b) eine Vorgabetabelle in der Datenbank. **Empfehlung (a)**: wie die Reserve ρ; die
-   Datenbank bleibt frei von Programmvorgaben.
-5. **F15 — Vorgabe der Regelgenauigkeit und Messpunkt:** (a) ε = 1 K, gemessen am Beginn von h_s (Augenblick, Ende des
-   Fensters), Stundenmittel von h_s als Kennzahl; (b) 0,5 K; (c) Stundenmittel von h_s als Kriterium. **Empfehlung (a)**:
-   1 K entspricht dem Spielraum der 20 % (2.3) und dem Regelabstand eines P-Reglers der Übergabe; der Augenblick ist
-   „zum Kalenderzeitpunkt“ im Wortsinn und folgt E58 F1 (b).
-6. **F16 — Ebene der Heizkreis-Ausnahme (F10):** (a) ein Schalter je Projekt; (b) ein Schalter je Gebäude. **Empfehlung
-   (a)**: ein Projekt hat selten gemischte Fälle; je Gebäude kann später folgen.
+**Wortlaut (E124):** „F11–F16 nach Empfehlung bis auf f13: fest (da in der Realität die vorheizzeit fest gesetzt wird)“.
+
+| Frage | Gegenstand | Gewählt | Umsetzung |
+|---|---|---|---|
+| F11 | Bezug Φ_K,max: (a) Jahresmaximum ohne Aufheizanteil, (b) mit Aufheizanteil aus dem Vorlauf, (c) Steigungsgrenze auf S_max,0 | **(a)** nach Empfehlung | Φ_K,max = Jahresmaximum von Φ_ref(h_s) (2.1); 1051: 23,5 kW → Deckel 28,2 kW |
+| F12 | Floor des Deckels: (a) max(P_K, Φ_ref(h)), (b) P_K streng | **(a)** nach Empfehlung | Grenze einer Blockstunde max(P_K, Φ_ref(h)); Floor-Stunden gezählt und gemeldet (2.2) |
+| F13 | Anwendung der berechneten Vorheizzeit: (a) „fest“ — t_V an jedem Sprung, (b) „täglich“ — je Sprung t_nötig, höchstens t_V | **(a) „fest“**, abweichend von der Empfehlung (b) | Begründung des Anwenders: In der Realität wird die Vorheizzeit fest gesetzt. Option 2 wendet t_V an **jedem** Sprung an (2.6); „täglich“ wird nicht gebaut, damit entfallen `Aufheiz_Vorheizzeit_Art` und die Schlüssel `SIMKONF_AUFH_LBL_VORHEIZART`, `SIMKONF_AUFH_VORHEIZART_FEST`, `SIMKONF_AUFH_VORHEIZART_TAEGLICH` (2.9, 4). Folge an 1051: t_V ≈ 15 h aus dem Sprung nach dem Wochenende liegt über der Werktagsabsenkung von 13 h, jede Werktagsnacht wird durchgeheizt, ≈ +10 % Heizwärme; der Lauf zählt die Nächte ohne Absenkung und weist die Mehrwärme aus (2.6, 2.8). „Täglich“ bleibt eine mögliche spätere Ergänzung auf demselben Kern, nicht Teil des Baus |
+| F14 | Ort der konfigurierbaren Vorgabe 20 %: (a) Kern-Konstante plus `Dienste.Einstellungen`, (b) Vorgabetabelle in der Datenbank | **(a)** nach Empfehlung | Kern-Konstante 20 % für leere Felder (deterministisch für Referenzlauf und Tests), Vorbelegung neuer Projekte über `Dienste.Einstellungen` (Gruppe „Weitere Einstellungen“); keine Vorgabetabelle in der Datenbank |
+| F15 | Vorgabe der Regelgenauigkeit und Messpunkt: (a) 1 K am Beginn von h_s, (b) 0,5 K, (c) Stundenmittel als Kriterium | **(a)** nach Empfehlung | ε-Vorgabe 1 K, gemessen am Beginn von h_s (Augenblick), Stundenmittel von h_s als Kennzahl (2.1) |
+| F16 | Ebene der Heizkreis-Ausnahme (F10): (a) je Projekt, (b) je Gebäude | **(a)** nach Empfehlung | ein Schalter je Projekt, `Aufheiz_Heizkreis_Einbeziehen` (2.7, 4) |
 
 ---
 
@@ -616,17 +609,19 @@ Logbuch-Satz beim gebündelten Upload, Versionsnummer beim Anwender erfragen.
 
 | Welle | Inhalt | Abnahme | PT |
 |---|---|---|---|
-| V0 | Entscheide nachziehen: Teilkonzept Konditionierungsprofile 4 (neuer Abschnitt Vorheizen mit Deckel), Glossar, Register, Statuszeile; Fragen F11–F16 entschieden einarbeiten | Linkwache | 0,5 |
+| V0 | Entscheide nachziehen: Teilkonzept Konditionierungsprofile 4 (neuer Abschnitt Vorheizen mit Deckel), Glossar, Register, Statuszeile; Fragen F11–F16 entschieden einarbeiten (E124) — **erledigt** | Linkwache | 0,5 |
 | V1 | Kern: Deckelreihe je Stunde in Eingang, Zonen, Kopplungsweg (AK1/AK2) und Stepper (AK3); Zustand sichern/setzen für die Vorausschau; ohne Reihe bitgleich; Messung der Rechenzeit eines Zonenjahrs | Referenzlauf byte-gleich, Kerntests | 1,5–2 |
 | V2 | Kern: Vorlauf (Φ_ref, Φ_K,max, S_0, Zustände), Deckel P_K/P_V mit Toleranz % und kW, Vorheizplan Option 1 (Fenster, Sollwert, Kühlkappe, Deckelreihe, Floor, W4, Nacht ohne Absenkung), Nachweis im Lauf (Ankunft am Beginn von h_s, Unterschreitung, Sprung, Deckel- und Floor-Stunden, Mehrwärme), Hinweise, Gebäudewerte | neue Tests, Probe gegen die erste Ordnung (2.3), Bestand byte-gleich | 2–3 |
-| V3 | Kern: Option 2 — Vorausschau je Sprung (Bisektion über t), Bedarf, „unerreichbar“, t_V fest/täglich, Geltung Zone/Gebäude mit Zonenanteilen, AK1-Einbezug, AK3-Profilweg; Messung τ, C_w, t_V und Mehrwärme an der Kopie von 1051 gegen 2.8 | Prüforakel, Messprotokoll, Rechenzeit unter der Schranke | 2–3 |
+| V3 | Kern: Option 2 — Vorausschau je Sprung (Bisektion über t), Bedarf, „unerreichbar“, t_V fest, Geltung Zone/Gebäude mit Zonenanteilen, AK1-Einbezug, AK3-Profilweg; Messung τ, C_w, t_V und Mehrwärme an der Kopie von 1051 gegen 2.8 | Prüforakel, Messprotokoll, Rechenzeit unter der Schranke | 1,5–2,5 |
 | V4 | Schema und Datenweg: ein Schritt (Einstellungen, Zone, Ergebnis Gebäude/Zone), Controller, Testdatenbank anheben, `SqlDialektPruefer` | Schema- und Controllertests | 1–1,5 |
 | V5 | Oberfläche: Gruppe mit Verfahren und Feldern nach 2.9, Texte beider Sprachen, Gebäude- und Zonenfeld, Vorbelegung aus `Dienste.Einstellungen`, Hülle, KI-Felder, bunit | UI-Tests, Windows-Schale kompiliert | 1,5–2 |
 | V6 | Bericht, Kennzahlen, Export, Kurzbericht (Katalogfassung), Variantenvergleich | Berichtstests, `Berichtsvorlage` gezogen | 1–1,5 |
 | V7 | Referenzprojekt (Kopie von 1051), Wache, Einfrierregel, neue Basis, CI-Auswahl | Referenzlauf gegen neue Basis | 1–1,5 |
 | V8 | Wiki-Quellen und Logbuch-Entwurf | Gegenlese-Muster, Produktdatenwache | 0,5–1 |
-| | **Summe** (beide Optionen) | | **11,5–16** |
+| | **Summe** (beide Optionen) | | **11–15,5** |
 
 Nur Option 1 (ohne V3; Bedarf in der Meldung dann aus der Vorausschau an den verfehlten Tagen, Geltung nur Gebäude):
 9,5–13 PT. Reihenfolge: V0 → V1 → V2 → V4 → V3 → V5/V6 parallel → V7 → V8; V1 und V2 ändern ohne Verfahrenswahl keine
-Zahl. Vor V2 sind F11, F12 und F15 zu entscheiden, vor V3 F13, vor V4 F14 und F16.
+Zahl. Alle Fragen sind entschieden (E122, E124). V3 ist gegenüber Fassung 2 um 0,5 PT gesenkt: Mit F13 (a) entfallen
+die zweite Anwendungsart „täglich“ (Fenster je Sprung aus t_nötig, eigene Zählung der Absenkung), ihre Auswahl und deren
+Tests; die Vorausschau je Sprung bleibt, weil t_V ihr Jahresmaximum ist.

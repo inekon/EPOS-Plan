@@ -62,23 +62,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Wie <see cref="LiesProjekt"/>, aber OHNE <see cref="HeizkesselNachziehen"/>:
-        /// ein reiner Leser ohne Schreibweg. Fuer Leser, die nur die Kaskade ansehen und
-        /// dabei eine Oberflaeche aufbauen (Kaeltefolge im Bereich „Kälte“ der
-        /// Simulationskonfiguration) - sie duerfen die Kaskade nicht hinter dem Ruecken
-        /// des Wirts schreiben. Sonst zoege ein Auffrischen der Seite gleich nach dem
-        /// Handgriff „Automatik wieder uebernehmen“ den Heizkessel nach, und Seite und
-        /// Datenbank liefen auseinander (#307, HeizkesselKaskadeTests). Das Nachziehen
-        /// selbst greift weiter beim naechsten Lesen ueber <see cref="LiesProjekt"/>; es
-        /// fuegt nur einen Heizkessel hinzu, die Frage „steht die Waermepumpe in der
-        /// Kaskade?“ beantworten beide Leser gleich.
+        /// <b>Die vier Waermeerzeuger-Plaetze eines Projekts, so wie sie in der Datenbank
+        /// stehen — ohne Nebenwirkung.</b> Anders als <see cref="LiesProjekt"/> laeuft dieser
+        /// Leser NICHT durch <see cref="HeizkesselNachziehen"/>: Er schreibt nie in
+        /// <c>Tab_Einstellungen.Tool_1..4</c>.
+        ///
+        /// <para>Fuer Leser, die nur nachsehen, ob ein Erzeuger einen Kaskadenplatz hat
+        /// (Kaeltefolge). Liefen sie ueber <see cref="LiesProjekt"/>, zoege jedes
+        /// Auffrischen der Konfigurationsseite einer ungepflegten Kaskade den Heizkessel in
+        /// die DATENBANK — auch zwischen „Automatik uebernehmen" und dem naechsten Oeffnen,
+        /// wo die Seite ihn nur im Arbeitsstand zeigen soll. Ein Vormerksatz und eine
+        /// fehlende Zeile heissen wie dort „kein Satz": vier leere Plaetze.</para>
         /// </summary>
-        public static KonfigurationModel LiesProjektOhneNachziehen(int idProjekt)
+        public static List<string> KaskadeLesen(int idProjekt)
         {
-            if (idProjekt <= 0) return null;
+            if (idProjekt <= 0) return Kaskade.Lesen(null);
 
             KonfigurationModel m = new KonfigurationModel();
-            return ZeileUebernehmen(TabelleJeProjekt(idProjekt), m, nachziehen: false) ? m : null;
+            return ZeileUebernehmen(TabelleJeProjekt(idProjekt), m, nachziehen: false)
+                ? Kaskade.Lesen(m)
+                : Kaskade.Lesen(null);
         }
 
         /// <summary>
@@ -134,6 +137,9 @@ namespace WindowsFormsApplication1
         /// Uebernimmt die erste Zeile einer gelesenen Tabelle in ein Modell — die
         /// Abbildung, die <see cref="ReadSingle"/> und <see cref="LiesProjekt"/> teilen.
         /// Rueckgabe <c>false</c>, wenn nichts zu uebernehmen war.
+        /// <para><paramref name="nachziehen"/> = <c>false</c> laesst
+        /// <see cref="HeizkesselNachziehen"/> aus — der nebenwirkungsfreie Leser
+        /// <see cref="KaskadeLesen"/> schreibt nichts.</para>
         /// </summary>
         private static bool ZeileUebernehmen(DataTable dt, KonfigurationModel model, bool nachziehen = true)
         {
