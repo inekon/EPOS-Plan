@@ -5078,9 +5078,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PEAK_CHK_SOC" xml:space="preserve">
     <value>Ladezustand im Diagramm zeigen</value>
   </data>
-  <data name="PEAK_BTN_CSV" xml:space="preserve">
-    <value>CSV-Export</value>
-  </data>
   <data name="PEAK_TAB_KENNZAHLEN" xml:space="preserve">
     <value>Kennzahlen</value>
   </data>
@@ -18631,14 +18628,8 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="FLOTTE_NAV_VOR_TITEL" xml:space="preserve">
     <value>Einen Schritt vor</value>
   </data>
-  <data name="FLOTTE_BTN_CSV_JAHRESKONTEN" xml:space="preserve">
-    <value>Jahreskonten als CSV</value>
-  </data>
   <data name="FLOTTE_BTN_CSV_VERGLEICH" xml:space="preserve">
     <value>Variantenvergleich als CSV</value>
-  </data>
-  <data name="FLOTTE_BTN_CSV_ZEITREIHEN" xml:space="preserve">
-    <value>Alle Zeitreihen und Speicher als CSV</value>
   </data>
   <data name="FLOTTE_ZIEL_PVGREEDY" xml:space="preserve">
     <value>PV-Eigenverbrauch (reaktiv)</value>
@@ -50970,9 +50961,6 @@ Chart</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
-  </data>
-  <data name="BED_GRAFIK_TIP_CSV" xml:space="preserve">
-    <value>Summen als CSV speichern</value>
   </data>
 </root>
 

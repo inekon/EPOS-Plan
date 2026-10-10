@@ -1,5 +1,7 @@
 Der '''Datenexport''' gibt die berechneten Zeitreihen als CSV-Datei aus – Semikolon als Trennzeichen, Dezimalkomma. Der Knopf ''CSV…'' steht in der Leiste jedes Zeitreihendiagramms der [[Ergebnisdarstellung]] rechts neben ''Bereich'' und ''1:1''; Säulenbilder ohne Zeitachse (Monate, Wochen, Tage) tragen in ihrer Leiste allein ''CSV…''. Dieselbe Leiste tragen die Bilder der Lastspitzenkappung, der Speicherflotte, des Quellprofils und der Kapitalwertverlauf der Wirtschaftlichkeit; dort zählt die erste Spalte die Betrachtungsjahre.
 
+Außerdem trägt jedes Bild mit Zeitreihen in den Eingabedialogen ''CSV…'': das Zahlungsstrombild der Wirtschaftlichkeit (je Jahr), die Monatssäulen des Bedarfs, der Jahresgang der Wärmequelle Erdreich, die Ganglinien der Wärmebedarfs- und Stromganglinienverwaltung und der Projektdialoge dazu, die Bilder des Gebäudebedarfs, der Klimadaten und des Kostenprofils, die Wochen- und Tagesprofile (Typprofile, Gebäudetypen, Raumnutzung, Konditionierung, Nutzungsarten) und die Bilder des Zapfprofils samt Auslegung. Die erste Spalte folgt dem Raster der Reihe: Stunde, Viertelstunde, Tag, Woche, Monat, Jahr, Stunde des Tages oder Wochenstunde. Kennlinien tragen keinen Knopf.
+
 == Export von Zeitreihen ==
 {{Anker|export-von-zeitreihen|csv-export|zeitreihen}}
 

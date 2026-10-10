@@ -63,9 +63,6 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
             k.Click();
         Assert.Equal(knoepfe.Count, texte.Count);
         Assert.All(texte, t => Assert.False(string.IsNullOrEmpty(t)));
-        Assert.DoesNotContain(cut.FindAll("button"), b =>
-            b.TextContent.Trim() == Resource.FLOTTE_BTN_CSV_JAHRESKONTEN
-            || b.TextContent.Trim() == Resource.FLOTTE_BTN_CSV_ZEITREIHEN);
     }
 
     [Fact]

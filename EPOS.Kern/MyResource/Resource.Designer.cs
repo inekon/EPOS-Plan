@@ -4236,15 +4236,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summen als CSV speichern ähnelt.
-        /// </summary>
-        public static string BED_GRAFIK_TIP_CSV {
-            get {
-                return ResourceManager.GetString("BED_GRAFIK_TIP_CSV", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Jahresganglinie ähnelt.
         /// </summary>
         public static string BED_GRAFIK_TITEL_JAHR {
@@ -22658,29 +22649,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahreskonten als CSV ähnelt.
-        /// </summary>
-        public static string FLOTTE_BTN_CSV_JAHRESKONTEN {
-            get {
-                return ResourceManager.GetString("FLOTTE_BTN_CSV_JAHRESKONTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variantenvergleich als CSV ähnelt.
         /// </summary>
         public static string FLOTTE_BTN_CSV_VERGLEICH {
             get {
                 return ResourceManager.GetString("FLOTTE_BTN_CSV_VERGLEICH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Zeitreihen und Speicher als CSV ähnelt.
-        /// </summary>
-        public static string FLOTTE_BTN_CSV_ZEITREIHEN {
-            get {
-                return ResourceManager.GetString("FLOTTE_BTN_CSV_ZEITREIHEN", resourceCulture);
             }
         }
         
@@ -89530,15 +89503,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PEAK_BTN_BEENDEN {
             get {
                 return ResourceManager.GetString("PEAK_BTN_BEENDEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Export ähnelt.
-        /// </summary>
-        public static string PEAK_BTN_CSV {
-            get {
-                return ResourceManager.GetString("PEAK_BTN_CSV", resourceCulture);
             }
         }
         

@@ -458,7 +458,6 @@ namespace WindowsFormsApplication1
                 ["RasterTagText"] = Text_("BERG_STUFE_TAG", "Tag"),
                 ["GruppeReihenText"] = Text_("BED_GRAFIK_GRP_REIHEN", "Bedarfsart"),
                 ["GruppeRasterText"] = Text_("BED_GRAFIK_GRP_RASTER", "Zeitraster"),
-                ["CsvSummenHilfe"] = Text_("BED_GRAFIK_TIP_CSV", "Summen als CSV speichern"),
                 ["CsvSpeichern"] = new Func<string, IReadOnlyList<ZeitreihenSpalte>, Task>(CsvSpeichern),
                 ["Monatsnamen"] = Monatsnamen(),
                 // Die Farbe einer Reihe gilt ANWENDUNGSWEIT (Farbrollen, Bedienung
