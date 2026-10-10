@@ -62,6 +62,19 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Ein_Vermerk_steht_ohne_Ausnahme_im_Protokoll_und_ein_leerer_nicht()
+        {
+            var p = new Ausnahmeprotokoll(() => _ordner);
+
+            p.Vermerk("");
+            Assert.False(File.Exists(p.Datei));
+
+            p.Vermerk("Ansicht KAELTEMASCHINE_ANLAGE ohne Wurzel");
+            string text = File.ReadAllText(p.Datei);
+            Assert.Contains("[VERMERK] Ansicht KAELTEMASCHINE_ANLAGE ohne Wurzel", text);
+        }
+
+        [Fact]
         public void Die_Drosselung_zaehlt_und_nennt_die_ausgelassenen_Eintraege()
         {
             DateTime jetzt = new DateTime(2026, 9, 30, 17, 50, 9);
