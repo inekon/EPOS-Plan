@@ -92,6 +92,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* DAS SCHEMA IST SEIT W14a-E-10 DASSELBE WIE BEIM HEIZKESSEL UND BEI DEN
        PV-MODULEN - der Kern des Anwenderentscheids: "Das Schema des Dialogs sollte
@@ -422,6 +427,9 @@
 
     /// <summary><c>true</c> = mit „Beenden" geschlossen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Der Satz, der beim Öffnen gewählt ist (Name); leer oder unbekannt = die erste Zeile.</summary>
+    [Parameter] public string? Vorwahl { get; set; }
 
     // --- Feste Listen ----------------------------------------------------------
 
@@ -865,7 +873,8 @@
         foreach (string name in namen)
         {
             Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == name);
-            WaermepumpeStammDaten? d = zeile is null ? null : Satz?.Invoke(zeile.Id);
+            WaermepumpeStammDaten? d = zeile is null ? null
+                : Katalogladung.SatzDazu(() => Satz?.Invoke(zeile.Id), zeile.Bezeichner, ref _satzFehler);
             saetze.Add(Vergleichsfelder(d, zeile?.Geschuetzt == true));
         }
         _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
@@ -951,6 +960,9 @@
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
     private string _listeFehler = "";
 
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     protected override void OnInitialized()
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
@@ -965,8 +977,12 @@
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Anlagenart.Waermepumpe);
 
         ListeNeuLaden();
-        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
-        if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus; aus dem Projektdialog kommt
+        // der Satz vorgewaehlt (Katalogauswahl V1, KA-E-13: "Bearbeiten…" auf einen ungesperrten Katalogsatz).
+        Katalogfilterzeile? vorwahl = string.IsNullOrEmpty(Vorwahl) ? null
+            : _liste.FirstOrDefault(z => z.Bezeichner == Vorwahl);
+        if (vorwahl is not null) ZeileWaehlen(vorwahl);
+        else if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
 
         // KI-F1b: Die vier Klapplisten der Stammfelder sind WAHLFELDER; ihre Einträge
         // sind genau die Listen, die der Baustein zeichnet.
@@ -1078,7 +1094,8 @@
         // Die Projektsperre der Fokuszeile - der Grund am weich gesperrten "Loeschen".
         _gesperrtDurch = zeile.Geschuetzt ? null : GesperrtDurch?.Invoke(zeile.Bezeichner);
 
-        WaermepumpeStammDaten? satz = Satz?.Invoke(zeile.Id);
+        // KT-4: Warf das Lesen, bleibt der zuvor gezeigte Satz stehen; der Banner nennt den Grund.
+        WaermepumpeStammDaten? satz = Katalogladung.Satz(() => Satz?.Invoke(zeile.Id), zeile.Bezeichner, out _satzFehler);
         if (satz is not null) Daten = satz;
 
         // W14a-E-8: Die Uebersicht folgt der Auswahl - sie liest ueber den
@@ -1124,7 +1141,9 @@
             return;
         }
 
-        KatalogSpeicherErgebnis ergebnis = Speichern(Daten, _neu);
+        // KT-4: Wirft der Schreibweg, bleiben die Eingaben stehen und die Meldung nennt den Grund.
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Speichern(Daten, _neu), _gewaehlt,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, _gewaehlt));
         if (!ergebnis.Ok)
         {
             SpeichernAbgelehnt(ergebnis.Meldung);
@@ -1303,7 +1322,12 @@
                 if (!gruende.Contains(grund)) gruende.Add(grund);
                 continue;
             }
-            if (!Loeschen(name)) continue;
+            if (!Katalogladung.Loeschen(() => Loeschen(name), name, out string loeschGrund))
+            {
+                // KT-4: Warf der Löschweg, nennt das Warnband den Grund.
+                if (loeschGrund.Length > 0 && !gruende.Contains(loeschGrund)) gruende.Add(loeschGrund);
+                continue;
+            }
             geloescht++;
             if (name == _gewaehlt) fokusWeg = true;
         }

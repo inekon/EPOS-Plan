@@ -101,6 +101,17 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* KT-4: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+
     @* Die zwei Listen und die Pfeilspalte: alles im Baustein (Anwenderentscheid
        #76). *@
     <Zweispaltenauswahl Dialogname="Gebaeude" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
@@ -1120,6 +1131,12 @@
         => _gewaehlt is null ? "" : string.Format(System.Globalization.CultureInfo.CurrentCulture, FrageAusProjekt,
                _gewaehlt.Name, _gewaehlt.Zonenzahl, _gewaehlt.Bauteilzahl);
     private string _meldung = "";
+
+    /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
     /// <summary>
@@ -1339,7 +1356,7 @@
     /// </summary>
     private void KatalogLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
 
         _katalogzeile = Katalogsatz(_katalogGewaehlt);
         if (_katalogzeile is null) _katalogGewaehlt = "";
@@ -1424,7 +1441,9 @@
         _gewaehlt = null;
         LoeschsperreLesen();
 
-        GebaeudeStammDetail? detail = StammDetail?.Invoke(k.Bezeichner);
+        // KT-4: Warf das Lesen, steht der Name der Zeile allein; der Banner nennt den Grund.
+        GebaeudeStammDetail? detail = Katalogladung.Satz(() => StammDetail?.Invoke(k.Bezeichner), k.Bezeichner,
+                                                         out _satzFehler);
         _detailName = detail?.Name ?? k.Bezeichner;
         _detailArt = detail?.Art ?? k.Text(Katalogfilterprofil.SpGebaeudeart);
         _detailBeschreibung = detail?.Beschreibung ?? "";
@@ -1828,8 +1847,11 @@
             && !StillSpeichern(amKatalog: true))
             return;
 
-        if (!KatalogLoeschen(_katalogzeile.Bezeichner))
+        string loeschName = _katalogzeile.Bezeichner;
+        if (!Katalogladung.Loeschen(() => KatalogLoeschen(loeschName), loeschName, out string loeschGrund))
         {
+            // KT-4: Warf der Löschweg, nennt die Meldung seinen Grund.
+            if (loeschGrund.Length > 0) { Melden(loeschGrund, WarnStufe.Warnung, amKatalog: true); return; }
             string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
             _loeschsperre = sperre;
             Melden(sperre.Length > 0 ? sperre : MeldungLoeschFehler, WarnStufe.Warnung, amKatalog: true);
@@ -2041,7 +2063,8 @@
     private bool StillSpeichern(bool amKatalog)
     {
         if (ListeSpeichern is null) return false;
-        string fehler = ListeSpeichern() ?? "";
+        // KT-4: Wirft der Schreibweg, kommt sein Grund wie eine Ablehnung zurück.
+        string fehler = Katalogladung.Schreiben(() => ListeSpeichern() ?? "", TitelText, g => g);
         if (fehler.Length > 0) { Melden(fehler, WarnStufe.Warnung, amKatalog); return false; }
         _geaenderteZeilen.Clear();
         // Der Detailblock zeigt die Projektzeile nur, solange kein Katalogsatz markiert ist (das

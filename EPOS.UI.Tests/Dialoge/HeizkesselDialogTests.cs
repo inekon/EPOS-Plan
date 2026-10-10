@@ -1005,6 +1005,46 @@ public class HeizkesselDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>KT-4: Wirft der Schreibweg</b>, nennt die Meldung den Grund, der geänderte Wert bleibt im
+    /// Aufklapper stehen und der Dialog offen; das Ausnahmeprotokoll hat einen Vermerk.
+    /// </summary>
+    [Fact]
+    public void Wirft_Speichern_im_Aufklapper_bleibt_die_Eingabe_und_die_Meldung_nennt_den_Grund()
+    {
+        bool? geschlossen = null;
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (_, _) => throw new InvalidOperationException("Datenbank gesperrt"),
+            geschlossen: e => geschlossen = e);
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
+
+        var vermerke = new List<string>();
+        void Mit(string z) { lock (vermerke) vermerke.Add(z); }
+        Ausnahmeprotokoll.Vermerkt += Mit;
+        try { Knopf(cut, "Speichern").Click(); }
+        finally { Ausnahmeprotokoll.Vermerkt -= Mit; }
+
+        Assert.Equal(string.Format(Resource.WURZEL_SCHREIBEN_FEHLER, "Kessel A", "Datenbank gesperrt"), cut.Instance.Meldung);
+        Assert.Equal("15000", cut.Find(".epos-modulparameter input[inputmode=decimal]").GetAttribute("value"));
+        Assert.Null(geschlossen);
+        Assert.Contains(vermerke, v => v.Contains("nicht gespeichert"));
+    }
+
+    [Fact]
+    public void Wirft_Loeschen_nennt_die_Meldung_den_Grund()
+    {
+        var cut = Aufbauen(katalogLoeschen: _ => throw new InvalidOperationException("Datenbank gesperrt"));
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        Knopf(cut, "Löschen").Click();
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+
+        Assert.Equal(string.Format(Resource.WURZEL_LOESCHEN_FEHLER, "Kessel A", "Datenbank gesperrt"), cut.Instance.Meldung);
+        Assert.NotEmpty(cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name"));
+    }
+
+    /// <summary>
     /// <b>Der Vermerk am Knopf</b> fällt mit der nächsten Eingabe weg; ohne Änderung ist
     /// Speichern weich gesperrt, und ein Klick nennt den Grund, statt zu schreiben.
     /// </summary>
@@ -1885,5 +1925,36 @@ public class HeizkesselDialogTests : EposBunitContext
     {
         var cut = Aufbauen(projektsatzWege: Wege());
         Assert.Empty(cut.FindAll(".epos-knopf--rueckweg"));
+    }
+
+    /// <summary>
+    /// DZ1‑N2: Nach „In das Projekt übernehmen“ folgt die Mehrfachwahl der neuen Zeile —
+    /// „Aus dem Projekt entfernen“ entfernt die eben übernommene Zeile, nicht die zuvor angeklickte.
+    /// </summary>
+    [Fact]
+    public void DZ1N2_Uebernehmen_dann_Entfernen_entfernt_die_eben_uebernommene_Zeile()
+    {
+        var entfernt = new List<int>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100), Zeile(2, "Kessel B", 101) };
+        var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z.Schluessel),
+            aufnehmen: (id, _) => new AufnahmeErgebnis(Zeile(30 + id, "Neu " + id, 300 + id)));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[0].Click();
+        Assert.Equal(new[] { "1" }, cut.Instance.ProjektWahl.Gewaehlte);
+
+        KatalogAnkreuzen(cut, 0);
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+        var traeger = cut.FindComponent<EnergietraegerVarianteDialog>();
+        cut.InvokeAsync(() => traeger.Instance.Geschlossen.InvokeAsync(new EnergietraegerVarianteErgebnis(3, "Erdgas E", "Var")));
+
+        Assert.Equal(3, zeilen.Count);
+        int neu = zeilen[2].Schluessel;
+        Assert.Equal(neu, cut.Instance.Projektzeile!.Schluessel);
+        Assert.Equal(new[] { neu.ToString(System.Globalization.CultureInfo.InvariantCulture) }, cut.Instance.ProjektWahl.Gewaehlte);
+
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
+
+        Assert.Equal(new[] { neu }, entfernt.ToArray());
+        Assert.Equal(new[] { 1, 2 }, zeilen.Select(z => z.Schluessel).ToArray());
     }
 }

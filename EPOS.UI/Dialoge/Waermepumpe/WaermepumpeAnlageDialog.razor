@@ -290,7 +290,7 @@
                        Grund weiterhin im Klartext - auf einem Beruehrungsgeraet ist
                        sie ohnehin der einzige lesbare Ort. *@
                     <div class="epos-leiste">
-                        @if (!Wizard)
+                        @if (!Wizard && KostenleisteAnzeigen)
                         {
                             <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste"
                                                  EnergiekostenOeffnen="@EnergieLeiste"
@@ -673,6 +673,13 @@
     /// Parameter der <see cref="KostenKnoepfeLeiste"/>. Ohne Delegat keine zwei Knöpfe.
     /// </summary>
     [Parameter] public Func<bool, Task>? KostenOeffnen { get; set; }
+
+    /// <summary>
+    /// Zeigt die Kostenknöpfe in der Knopfzeile. Die Überlagerung „Anlage…“ des
+    /// <see cref="WaermepumpenDialog"/> setzt <c>false</c>: Dort tragen die Knöpfe die
+    /// Detailzeile (eine Handlung, ein Ort). Eigenständig geöffnet bleibt die Leiste.
+    /// </summary>
+    [Parameter] public bool KostenleisteAnzeigen { get; set; } = true;
 
     /// <summary>
     /// Öffnet die Energieträgerverwaltung des Projekts, eingeengt auf Strom

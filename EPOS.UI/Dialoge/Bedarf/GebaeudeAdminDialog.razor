@@ -86,6 +86,17 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* KT-4: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+
     <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
@@ -547,6 +558,12 @@
     private GebaeudeKatalogDaten? _geladen;
 
     private string _meldung = "";
+
+    /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
     /// <summary>
     /// Die Statuszeile der Fußleiste. Jede Zuweisung ist eine Erfolgs- oder neutrale
@@ -817,7 +834,7 @@
     /// <summary>Lädt die Liste neu; die bisherige Wahl bleibt, sonst die erste Zeile.</summary>
     public void KatalogLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
         _sperren.Clear();
 
         _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
@@ -848,7 +865,11 @@
         _gewaehlt = schluessel ?? "";
         _meldung = "";
         _fokuszeile = _katalog.FirstOrDefault(z => z.Schluessel == _gewaehlt);
-        _satz = _gewaehlt.Length > 0 ? Satz?.Invoke(_gewaehlt) : null;
+        _satzFehler = "";
+        // KT-4: Warf das Lesen, ist das Stammblatt leer (kein halber Satz); der Banner nennt den Grund.
+        _satz = _gewaehlt.Length > 0
+            ? Katalogladung.Satz(() => Satz?.Invoke(_gewaehlt), _fokuszeile?.Bezeichner ?? _gewaehlt, out _satzFehler)
+            : null;
         _auslieferung = _fokuszeile?.Geschuetzt == true || _satz?.Auslieferung == true;
         _geladen = _satz?.FeldsatzOderKenndaten();
         Zuruecksetzen();
@@ -1144,7 +1165,10 @@
         }
 
         _arbeit.Ableiten();
-        GebaeudeKatalogErgebnis erg = Speichern(_arbeit.Stand, false, _gewaehlt);
+        // KT-4: Wirft der Schreibweg, bleibt der Arbeitsstand stehen und die Meldung nennt den Grund.
+        GebaeudeKatalogErgebnis erg = Katalogladung.Schreiben(() => Speichern(_arbeit.Stand, false, _gewaehlt),
+                                                              _fokuszeile?.Bezeichner ?? _gewaehlt,
+                                                              g => new GebaeudeKatalogErgebnis(false, g));
         if (!erg.Erfolg)
         {
             SpeichernAbgelehnt(erg.Meldung.Length > 0 ? erg.Meldung : MeldungFehler);
@@ -1337,7 +1361,7 @@
         var k = CultureInfo.CurrentCulture;
         foreach (string name in namen)
         {
-            GebaeudeStammblattDaten? s = Satz?.Invoke(name);
+            GebaeudeStammblattDaten? s = Katalogladung.SatzDazu(() => Satz?.Invoke(name), name, ref _satzFehler);
             var felder = new List<Vergleichsfeld>
             {
                 new("TYP", LabelGebaeudetyp, s?.Typ ?? ""),
@@ -1400,8 +1424,13 @@
         if (antwort != true || Loeschen is null) return;
 
         int geloescht = 0;
+        string loeschGrund = "";
         foreach (string name in _loeschziele)
-            if (Loeschen(name)) geloescht++;
+        {
+            // KT-4: Wirft der Löschweg, nennt das Warnband den Grund statt der allgemeinen Meldung.
+            if (Katalogladung.Loeschen(() => Loeschen(name), name, out string grund)) geloescht++;
+            else if (grund.Length > 0) loeschGrund = grund;
+        }
 
         int ziele = _loeschziele.Count + _loeschBleiben;
         int blieben = ziele - geloescht;
@@ -1410,7 +1439,7 @@
         _loeschziele = new List<string>();
 
         if (geloescht > 0) KatalogLaden();
-        if (fehlschlag) Warnen(Resource.BADM_MSG_LOESCHEN_FEHLER);
+        if (fehlschlag) Warnen(loeschGrund.Length > 0 ? loeschGrund : Resource.BADM_MSG_LOESCHEN_FEHLER);
         if (geloescht == 0) return;
 
         _status = ziele == 1
@@ -1545,7 +1574,8 @@
     {
         _katalogGaben = null;
 
-        IReadOnlyList<Katalogfilterzeile> zeilen = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        // Wirft die Liste, nennt KatalogLaden den Grund gleich darauf; hier genügt die leere Liste.
+        IReadOnlyList<Katalogfilterzeile> zeilen = Katalogladung.Lesen(Katalogzeilen, TitelText, out _);
         Katalogfilterzeile? angelegt = zeilen.FirstOrDefault(z => !_vorNeu.Contains(z.Schluessel));
         if (angelegt is not null) _gewaehlt = angelegt.Schluessel;
         KatalogLaden();

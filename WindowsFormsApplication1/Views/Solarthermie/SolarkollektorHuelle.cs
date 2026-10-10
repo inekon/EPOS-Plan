@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -223,6 +224,29 @@ namespace WindowsFormsApplication1
                     SolarkollektorenStammCtrl.Katalogfilterzeilen),
                 ["Detail"] = new Func<string, ErzeugerDetail>(DetailZu),
                 ["Modulflaeche"] = new Func<string, double>(ModulflaecheZu),
+                // KATALOGAUSWAHL V1, STUFE 3: Die Projektzeile liest ihr Detail aus der PROJEKTKOPIE ueber
+                // die Geraete-ID - im Assistenten (keine Kopie, ID_Solar zeigt auf den Katalog) aus dem Katalog.
+                ["ProjektDetail"] = new Func<ErzeugerZeile, ErzeugerDetail>(
+                    zeile => wizard || projektId <= 0 ? DetailZu(zeile.Bezeichner) : ProjektDetailZu(zeile.GeraetId)),
+                ["ProjektModulflaeche"] = new Func<ErzeugerZeile, double>(
+                    zeile => wizard || projektId <= 0 ? ModulflaecheZu(zeile.Bezeichner) : ProjektModulflaecheZu(zeile.GeraetId)),
+
+                // KATALOGAUSWAHL V1, STUFE 3 (KA-E-8): Bearbeiten je Bereich und Mehrfach-Bearbeiten. Die
+                // Projektkopie gibt es nur ausserhalb des Assistenten. Geschrieben wird ueber den Kernweg in
+                // EINER Transaktion (SolarkollektorenStammCtrl.AnzeigefelderSchreibenAlle); die Felder der
+                // Anlage (Modulanzahl, Ausrichtung, Solarkreis) stehen nicht darin.
+                ["ProjektsatzWege"] = wizard || projektId <= 0 ? null : new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(SolarkollektorAdminHuelle.Profil(),
+                                                              SolarkollektorenStammCtrl.SatzAnzeige(true, id)),
+                    Speichern = saetze => SolarkollektorAdminHuelle.SammelSchreiben(true, saetze)
+                },
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(SolarkollektorAdminHuelle.Profil(),
+                                                              SolarkollektorenStammCtrl.SatzAnzeige(false, id)),
+                    Speichern = saetze => SolarkollektorAdminHuelle.SammelSchreiben(false, saetze)
+                },
 
                 ["Aufnehmen"] = new Func<int, AufnahmeErgebnis>(
                     stammId => Aufnehmen(projektId, modelle, zuModell, zaehler, stammId, wizard, vormerkung)),
@@ -246,8 +270,14 @@ namespace WindowsFormsApplication1
                     }),
 
                 ["EditorGaben"] = new Func<string, bool, IReadOnlyDictionary<string, object>>(KatalogGaben),
-                ["KatalogLoeschen"] = new Func<string, bool>(
-                    name => new SolarkollektorenStammCtrl().Delete(name)),
+                ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
+
+                // KATALOGAUSWAHL V1, STUFE 3 (KA-E-9): der Rueckweg „In die Datenbank übernehmen…" - nur
+                // ausserhalb des Assistenten (dort gibt es keine Projektkopie). Rueckfrage und Schreibweg kommen
+                // aus dem Kern (SolarkollektorenStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
+                ["RueckwegWege"] = wizard || projektId <= 0 ? null : RueckwegWege(),
+                ["RueckwegBleibtText"] = Text_("SKV_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit."),
 
                 ["TitelText"] = Text_("SKV_TITEL", "Eingabe der Solarkollektoren"),
                 ["KopfbandText"] = Text_("SKV_KOPFBAND", "Eingabe der Solarkollektoren"),
@@ -257,6 +287,10 @@ namespace WindowsFormsApplication1
                 ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
+                ["LabelSumme"] = Text_("SKV_LBL_SUMME", "Summe aller Module:"),
+                ["BtnNeuText"] = MyResource.Resource.AUSWAHL_BTN_NEU,
+                ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
+                ["TitelLoeschen"] = Text_("HZK_TITEL_LOESCHEN", "Löschen"),
                 ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
                 ["GruppeKollektor"] = Text_("SKV_GRP_KOLLEKTOR", "Kollektor"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
@@ -277,7 +311,6 @@ namespace WindowsFormsApplication1
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnKatalogAendernText"] = Text_("SKV_BTN_DB_AENDERN", "Kollektor in DB ändern..."),
                 ["BtnKatalogNeuText"] = Text_("SKV_BTN_DB_NEU", "Kollektor in DB neu..."),
-                ["BtnKatalogLoeschenText"] = Text_("SKV_BTN_DB_LOESCHEN", "Kollektor in DB löschen"),
                 ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
 
                 // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
@@ -307,8 +340,8 @@ namespace WindowsFormsApplication1
                     : null,
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
-                ["FrageLoeschen"] = Text_("SKV_FRAGE_LOESCHEN",
-                    "Wollen Sie wirklich den Solarkollektor löschen?"),
+                ["FrageLoeschen"] = Text_("SKV_FRAGE_LOESCHEN_NAME",
+                    "Der Katalogeintrag „{0}“ wird für ALLE Projekte gelöscht. Fortfahren?"),
                 ["MeldungUebernommen"] = Text_("SKV_MSG_UEBERNOMMEN", "Die Angaben sind übernommen."),
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
                 ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
@@ -438,6 +471,77 @@ namespace WindowsFormsApplication1
             };
             return new ErzeugerDetail(k.m_szKollektorname ?? "", "", felder);
         }
+
+        /// <summary>Der Detailblock einer Projektzeile aus ihrer Projektkopie (<c>Tab_Solarkollektoren</c>, über die ID).</summary>
+        private static ErzeugerDetail ProjektDetailZu(int idKopie)
+        {
+            var ctrl = new SolarkollektorenCtrl();
+            ctrl.ReadSingle(idKopie);
+            if (ctrl.rows == 0) return new ErzeugerDetail("", "", new List<(string, string)>());
+            var felder = new List<(string, string)>
+            {
+                (Text_("SKV_LBL_KOLLEKTOR", "Kollektor:"), ctrl.m_szKollektortyp ?? ""),
+                (Text_("SKK_LBL_HERSTELLER", "Hersteller :"), ctrl.m_szFirma ?? ""),
+                (Text_("SKK_LBL_BESCHREIBUNG", "Beschreibung :"), ctrl.m_szBeschreibung ?? ""),
+                (Text_("SKV_LBL_MODULAPERTUR", "Aperturfläche:"), ctrl.m_Aperturfläche.ToString())
+            };
+            return new ErzeugerDetail(ctrl.m_szKollektorname ?? "", "", felder);
+        }
+
+        /// <summary>Die Fläche eines Moduls der Projektkopie (Aperturfläche, wie <see cref="ModulflaecheZu"/>).</summary>
+        private static double ProjektModulflaecheZu(int idKopie)
+        {
+            var ctrl = new SolarkollektorenCtrl();
+            ctrl.ReadSingle(idKopie);
+            return ctrl.rows == 0 ? 0 : ctrl.m_Aperturfläche;
+        }
+
+        /// <summary>
+        /// Löscht einen Katalogsatz nach ID. Leere Rückgabe = gelöscht; sonst der Grund.
+        /// Ein gesperrter Satz wird nicht gelöscht.
+        /// </summary>
+        private static string KatalogLoeschen(int id)
+        {
+            SolarkollektorenModel satz = SolarkollektorenStammCtrl.ReadById(id);
+            if (satz == null)
+                return Text_("SKV_MSG_NICHT_GEFUNDEN",
+                    "Der ausgewählte Solarkollektor wurde in den Stammdaten nicht gefunden.");
+            if (SolarkollektorenStammCtrl.IsReadOnlyStatic(satz.m_szKollektorname))
+                return MyResource.Resource.ADM_SCHLOSS_ERST_AUFHEBEN;
+            // KA-E-16: der Satz samt seinen Satzvorlagen in EINEM Vorgang.
+            SolarkollektorenStammCtrl.KatalogsatzLoeschung l = SolarkollektorenStammCtrl.KatalogsatzLoeschen(id);
+            if (!l.Ok) return Text_("SKK_MSG_FEHLER", "Fehler beim Überschreiben des Datensatzes!");
+            if (l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return "";
+        }
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => SolarkollektorenStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = SolarkollektorenStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = SolarkollektorenStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
 
         /// <summary>
         /// Die Fläche EINES Moduls. Der Vorläufer las dafür die Spalte

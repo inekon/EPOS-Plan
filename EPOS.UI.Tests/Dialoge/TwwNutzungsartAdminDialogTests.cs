@@ -128,8 +128,12 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
             return new(true, id, "„" + e.Bezeichner + "“ ist gespeichert.", "");
         }
 
+        /// <summary>KT-4: Der Löschweg wirft wie eine gesperrte Datenbank.</summary>
+        internal bool LoeschenWirft;
+
         internal TwwNutzungsartSpeicherErgebnis Loeschen(int id)
         {
+            if (LoeschenWirft) throw new InvalidOperationException("Datenbank gesperrt");
             Geloescht.Add(id);
             Zeilen.RemoveAll(z => z.Id == id);
             return new(true, id, "gelöscht", "");
@@ -277,6 +281,23 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
         Assert.Contains(grund, cut.Instance.Meldung);
         Assert.Empty(k.Geloescht);
         Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    /// <summary>KT-4: Wirft der Löschweg, bleibt die Zeile, und das Warnband nennt den Grund.</summary>
+    [Fact]
+    public void Wirft_Loeschen_bleibt_die_Zeile_und_das_Warnband_nennt_den_Grund()
+    {
+        var k = new Pruefkatalog { LoeschenWirft = true };
+        var cut = Aufbauen(k);
+        int vorher = Zeilenklick.Zeilen(cut).Count;
+
+        Handlung(cut, "Löschen").Click();
+        Knopf(cut, "Ja").Click();
+
+        Assert.StartsWith(Resource.WURZEL_LOESCHEN_FEHLER.Split('{')[0], cut.Instance.Meldung);
+        Assert.Contains("Datenbank gesperrt", cut.Instance.Meldung);
+        Assert.Empty(k.Geloescht);
+        Assert.Equal(vorher, Zeilenklick.Zeilen(cut).Count);
     }
 
     [Fact]

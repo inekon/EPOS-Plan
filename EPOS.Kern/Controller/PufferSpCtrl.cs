@@ -204,6 +204,11 @@ namespace WindowsFormsApplication1
                 KlassenSetSchreiben(neueId,
                                     KlassenSetAusVerwendung(Text(ColOrNull(s, "Verwendung"))));
 
+                // Der Ursprung der Kopie (Katalogauswahl V1, Stufe 3): Der Rueckweg „In die Datenbank
+                // uebernehmen…" kann ihn dann ueberschreiben, und die Kostenvorlage des Satzes geht der
+                // Standardvorlage vor. Eine schon vorhandene Kopie (oben) behaelt ihren Verweis.
+                KatalogverweisSetzen(neueId, idProjekt, stammId);
+
                 return neueId;
             }
             catch (Exception ex)

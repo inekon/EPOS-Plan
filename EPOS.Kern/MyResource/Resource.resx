@@ -45848,6 +45848,15 @@ Chart</value>
   <data name="WURZEL_LISTE_FEHLER" xml:space="preserve">
     <value>Die Liste „{0}“ konnte nicht gelesen werden: {1}</value>
   </data>
+  <data name="WURZEL_SATZ_FEHLER" xml:space="preserve">
+    <value>Der Satz „{0}“ konnte nicht gelesen werden: {1}</value>
+  </data>
+  <data name="WURZEL_SCHREIBEN_FEHLER" xml:space="preserve">
+    <value>Der Satz „{0}“ wurde nicht gespeichert: {1}</value>
+  </data>
+  <data name="WURZEL_LOESCHEN_FEHLER" xml:space="preserve">
+    <value>Der Satz „{0}“ wurde nicht gelöscht: {1}</value>
+  </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Kältemaschinen im Projekt</value>
   </data>
@@ -50991,6 +51000,87 @@ Chart</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
+  </data>
+  <data name="SPD_LBL_SUMME" xml:space="preserve">
+    <value>Summe aller ausgewählten Speicher [kWh]:</value>
+  </data>
+  <data name="SPD_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Energieträger und Betriebsführung der Anlage (Speichervariante). Kapazität, Leistung, Gerätewerte und die vier Kostenposten gehen mit.</value>
+  </data>
+  <data name="PSPD_LBL_SUMME" xml:space="preserve">
+    <value>Summe Volumen [l]:</value>
+  </data>
+  <data name="PSP_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung des Speichers, seine Senken, Verbünde und Lade-Prioritäten.</value>
+  </data>
+  <data name="SKV_LBL_SUMME" xml:space="preserve">
+    <value>Summe aller Module:</value>
+  </data>
+  <data name="SKV_FRAGE_LOESCHEN_NAME" xml:space="preserve">
+    <value>Der Katalogeintrag „{0}“ wird für ALLE Projekte gelöscht. Fortfahren?</value>
+  </data>
+  <data name="SKV_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit.</value>
+  </data>
+  <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
+    <value>Umstellen braucht genau eine Wärmepumpe im Projekt und genau einen Satz im Katalog.</value>
+  </data>
+  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
+    <value>Anlage…</value>
+  </data>
+  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
+    <value>Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten</value>
+  </data>
+  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
+    <value>Anlage – {0}</value>
+  </data>
+  <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
+    <value>Bitte die Anlage prüfen und mit OK bestätigen.</value>
+  </data>
+  <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
+    <value>Die Modulkosten dürfen nicht negativ sein.</value>
+  </data>
+  <data name="WPV_MSG_NENNLEISTUNG_NEGATIV" xml:space="preserve">
+    <value>Die Nennleistung darf nicht negativ sein.</value>
+  </data>
+  <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
+    <value>Mit dem Gerät gehen Heiz- und Kühlkennlinie mit allen Stützstellen. Im Projekt bleiben die Anlagendaten: Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten, Wärmequelle, Einbindung und Übergabegrenzen der Anlage sowie die Senken.</value>
+  </data>
+  <data name="PVD_LBL_SUMME" xml:space="preserve">
+    <value>Summe aller ausgewählten Module [kWp]:</value>
+  </data>
+  <data name="PVD_BTN_STRAENGE" xml:space="preserve">
+    <value>Stränge und Wechselrichter…</value>
+  </data>
+  <data name="PVD_TITEL_STRAENGE" xml:space="preserve">
+    <value>Stränge und Wechselrichter – {0}</value>
+  </data>
+  <data name="PVD_STRAENGE_STAND" xml:space="preserve">
+    <value>{0} Stränge</value>
+  </data>
+  <data name="PVD_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit.</value>
+  </data>
+  <data name="CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Solarertrag Jahresganglinie</value>
+  </data>
+  <data name="CHART_ACHSE_SOLARERTRAG" xml:space="preserve">
+    <value>Solarertrag</value>
+  </data>
+  <data name="CHART_TITEL_PVERTRAG_JAHRESGANGLINIE" xml:space="preserve">
+    <value>PV-Ertrag Jahresganglinie</value>
+  </data>
+  <data name="CHART_ACHSE_PVERTRAG" xml:space="preserve">
+    <value>PV-Ertrag</value>
+  </data>
+  <data name="GANGLINIE_KEIN_DIAGRAMM" xml:space="preserve">
+    <value>Kein Diagramm vorhanden</value>
+  </data>
+  <data name="KFLT_TREFFER_KURZ" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="KFLT_SPALTE_AUSGEBLENDET" xml:space="preserve">
+    <value>bei dieser Breite ausgeblendet</value>
   </data>
   <data name="KI_FELD_GESPERRT" xml:space="preserve">
     <value>{0}: {1}</value>

@@ -46,7 +46,7 @@ namespace WindowsFormsApplication1
             bool ok = false;
             BlazorDialogForm<SolarganglinieDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>(Gaben(besitzer, projektId, liste))
+            var werte = new Dictionary<string, object>(SolarganglinieKatalogGaben.MitGrafik(Gaben(besitzer, projektId, liste)))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {

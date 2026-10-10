@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -11,10 +12,10 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Die WINDOWS-HÜLLE des Stromspeicher-Projektdialogs (iU9-W6.6).
     ///
-    /// <para><b>Keine neue SQL.</b> Alles, was der Dialog braucht, kann
-    /// <see cref="StromspeicherStammCtrl"/> bereits: <c>ReadAll</c> für die Katalogliste
-    /// und <c>ReadSingle</c> für den Detailblock. Die Maske hat kein Filter, keine
-    /// Projektkopie, keine Trägervariante und keine einzige <c>MessageBox</c>.</para>
+    /// <para><b>Keine SQL in der Hülle.</b> Katalog, Projektkopie, Sammelspeichern, Rückweg und Löschen kommen aus
+    /// <see cref="StromspeicherStammCtrl"/> und <see cref="StromspeicherCtrl"/>. Außerhalb des Assistenten legt
+    /// „In das Projekt übernehmen" die Projektkopie sofort an (<c>CopyFromStamm</c>, Muster BHKW); was diese Sitzung
+    /// neu anlegt oder entfernt, schließt erst OK ab (<see cref="Projektkopievormerkung"/>).</para>
     ///
     /// <para><b>Zwei Beschriftungen kommen aus dem Ressourcenkatalog</b>, nicht aus dem
     /// Designer: <c>SP_LABEL_ENERGIE</c> und <c>SP_LABEL_MODULKOSTEN</c>. Der Designer
@@ -40,9 +41,10 @@ namespace WindowsFormsApplication1
         {
             bool ok = false;
             BlazorDialogForm<StromspeicherDialog> dlg = null;
+            var vormerkung = new Projektkopievormerkung(name => new StromspeicherCtrl().DeleteFromProjekt(name, projektId));
 
             var werte = new Dictionary<string, object>(
-                Gaben(besitzer, projektId, idType, modelle, wizard: false))
+                Gaben(besitzer, projektId, idType, modelle, wizard: false, vormerkung: vormerkung))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -58,6 +60,9 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            // Entfernte Projektkopien gehen erst mit OK; Abbrechen (auch Kreuz und Esc) raeumt nur die in dieser
+            // Sitzung neu angelegten ab - Varianten desselben Speichers teilen sich eine Kopie.
+            vormerkung.Abschliessen(ok, id => modelle.Exists(it => it.ID_Type == idType && it.ID_SP == id));
             return ok;
         }
 
@@ -69,8 +74,10 @@ namespace WindowsFormsApplication1
         /// <summary>Der PARAMETERSATZ des Dialogs.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
             IWin32Window besitzer, int projektId, int idType,
-            List<WErzeugerModel> modelle, bool wizard)
+            List<WErzeugerModel> modelle, bool wizard, Projektkopievormerkung vormerkung = null)
         {
+            // Die Projektkopie gibt es nur mit Projekt und ausserhalb des Assistenten - dort zeigt ID_SP auf den Katalog.
+            bool mitKopie = !wizard && projektId > 0;
             var zeilen = new List<ErzeugerZeile>();
             var zuModell = new Dictionary<int, WErzeugerModel>();
             // ET-5 (08.09.2026): Die Zeile zeigt den Traeger der Anlage - gespeichert oder,
@@ -105,10 +112,15 @@ namespace WindowsFormsApplication1
 
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     StromspeicherStammCtrl.Katalogfilterzeilen),
-                ["Detail"] = new Func<string, ErzeugerDetail>(DetailZu),
+                ["KatalogDetail"] = new Func<string, ErzeugerDetail>(
+                    name => { var c = new StromspeicherStammCtrl(); c.ReadSingle(name); return DetailZu(c.rows == 0 ? null : c.items[0]); }),
+                // Die Projektzeile liest ihre Projektkopie ueber die Geraete-ID: Varianten desselben Speichers tragen
+                // eigene Namen. Im Assistenten zeigt die ID auf den Katalog.
+                ["ProjektDetail"] = new Func<ErzeugerZeile, ErzeugerDetail>(
+                    zeile => DetailZu(StromspeicherStammCtrl.Satz(mitKopie, zeile.GeraetId))),
 
                 ["Aufnehmen"] = new Func<int, AufnahmeErgebnis>(
-                    stammId => Aufnehmen(projektId, idType, modelle, zuModell, zaehler, stammId)),
+                    stammId => Aufnehmen(projektId, idType, mitKopie, modelle, zuModell, zaehler, stammId, vormerkung)),
 
                 ["Entfernen"] = new Action<ErzeugerZeile>(
                     zeile =>
@@ -116,14 +128,44 @@ namespace WindowsFormsApplication1
                         if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
                         modelle.Remove(m);
                         zuModell.Remove(zeile.Schluessel);
+                        // Nur VORMERKEN - geloescht wird beim OK, und nur, wenn keine Zeile mehr auf die Kopie zeigt.
+                        if (mitKopie && vormerkung != null)
+                            vormerkung.Entfernt(StromspeicherStammCtrl.Satz(true, m.ID_SP)?.m_szBezeichner ?? m.Bezeichner, m.ID_SP);
                     }),
 
-                // Die Speicherverwaltung ist bis Welle 14 eine WinForms-Maske.
-                // iU9-W14a.3: Der Modulkatalog ist die Razor-Komponente
-                // ModulKatalogDialog und erscheint als UEBERLAGERUNG im selben
-                // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
-                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    StromspeicherAdminHuelle.Gaben),
+                // KATALOGAUSWAHL V1, STUFE 3: die Summe kWh der Projektliste - die Kapazitaet der Projektkopie
+                // (im Assistenten des Katalogsatzes) je Zeile; Varianten zaehlen je Anlage.
+                ["SummeKapazitaet"] = new Func<string>(
+                    () => SummeKapazitaet(idType, mitKopie, modelle)
+                              .ToString("0.##", System.Globalization.CultureInfo.CurrentCulture)),
+                ["LabelSumme"] = Text_("SPD_LBL_SUMME", "Summe aller ausgewählten Speicher [kWh]:"),
+
+                // KA-E-8: Bearbeiten je Bereich und Mehrfach-Bearbeiten, geschrieben ueber den Kernweg in EINER
+                // Transaktion (StromspeicherStammCtrl.SchreibenAlle) - samt den vier Kostenposten.
+                ["ProjektsatzWege"] = mitKopie ? new Satzbearbeitungswege
+                {
+                    Lesen = id => StromspeicherAdminHuelle.SatzFelder(true, id),
+                    Speichern = saetze => StromspeicherAdminHuelle.SammelSchreiben(true, saetze)
+                } : null,
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => StromspeicherAdminHuelle.SatzFelder(false, id),
+                    Speichern = saetze => StromspeicherAdminHuelle.SammelSchreiben(false, saetze)
+                },
+
+                // KA-E-13: ein einzelner ungesperrter Katalogsatz oeffnet den Modulkatalog mit diesem Satz
+                // vorgewaehlt; er traegt selbst Neu..., Duplizieren... und Loeschen. Ueberlagerung im selben Fenster.
+                ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
+                    KatalogEditorGaben),
+
+                // KA-E-9: der Rueckweg „In die Datenbank übernehmen…" - nur mit Projektkopie. Rueckfrage und Schreibweg
+                // kommen aus dem Kern (StromspeicherStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
+                ["RueckwegWege"] = mitKopie ? RueckwegWege() : null,
+                ["RueckwegBleibtText"] = Text_("SPD_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Energieträger und Betriebsführung der Anlage (Speichervariante). Kapazität, Leistung, Gerätewerte und die vier Kostenposten gehen mit."),
+
+                // Loeschen im Katalogfuss (samt Satzvorlage, KA-E-16): leer = geloescht, sonst der Grund.
+                ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
 
                 // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
                 // Sie kommen aus derselben Quelle, aus der auch der Modulkatalog hinter
@@ -172,8 +214,13 @@ namespace WindowsFormsApplication1
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
-                ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
+                ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
+                ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
+                ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
+                ["FrageLoeschen"] = Text_("HZK_FRAGE_LOESCHEN",
+                    "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?"),
+                ["TitelLoeschen"] = Text_("HZK_TITEL_LOESCHEN", "Löschen"),
 
                 // ET-5 (Anwenderentscheid 08.09.2026): Traegerwahl in der Katalog-Gliederung
                 // Gruppe > Art, gespeichert je Anlage; der gewaehlte Traeger wird dem Projekt
@@ -201,10 +248,11 @@ namespace WindowsFormsApplication1
         /// Nimmt den Speicher auf (<c>btn_Hinzu_Click</c>, Z. 123): je Klick eine EIGENE
         /// Modellinstanz mit der STAMM-Id in <c>ID_SP</c>.
         /// </summary>
-        private static AufnahmeErgebnis Aufnehmen(int projektId, int idType,
+        private static AufnahmeErgebnis Aufnehmen(int projektId, int idType, bool mitKopie,
                                                   List<WErzeugerModel> modelle,
                                                   Dictionary<int, WErzeugerModel> zuModell,
-                                                  Zaehler zaehler, int stammId)
+                                                  Zaehler zaehler, int stammId,
+                                                  Projektkopievormerkung vormerkung)
         {
             var stamm = new StromspeicherStammCtrl();
             stamm.ReadAll();
@@ -229,6 +277,21 @@ namespace WindowsFormsApplication1
                 ID_Carrier = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_STROMSPEICHER, 0, projektId)
             };
 
+            // KATALOGAUSWAHL V1, STUFE 3: die Projektkopie sofort (Muster BHKW) - erst damit haben Bearbeiten…,
+            // „Alle Daten" und der Rueckweg einen Projektsatz. CopyFromStamm teilt die Kopie gleichen Namens.
+            if (mitKopie)
+            {
+                var projektCtrl = new StromspeicherCtrl();
+                bool schonDa = projektCtrl.GetProjektId(satz.m_szBezeichner, projektId) > 0;
+                int kopie = projektCtrl.CopyFromStamm(stammId, projektId);
+                if (kopie <= 0)
+                    return new AufnahmeErgebnis(null,
+                        Text_("HZK_MSG_KOPIE_FEHLER", "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
+                model.ID_SP = kopie;
+                // Eine NEUE Kopie raeumt ein Abbrechen wieder ab (Projektkopievormerkung).
+                if (!schonDa) vormerkung?.Angelegt(satz.m_szBezeichner, kopie);
+            }
+
             modelle.Add(model);
             zuModell[model.ID] = model;
 
@@ -238,6 +301,52 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Abbildungen
         // =================================================================================
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => StromspeicherStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = StromspeicherStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = StromspeicherStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
+
+        /// <summary>Die Summe der Kapazitaeten der Projektliste (Projektkopie bzw. Katalogsatz je Zeile).</summary>
+        private static double SummeKapazitaet(int idType, bool mitKopie, List<WErzeugerModel> modelle)
+        {
+            double summe = 0;
+            foreach (WErzeugerModel m in modelle)
+                if (m.ID_Type == idType) summe += StromspeicherStammCtrl.Satz(mitKopie, m.ID_SP)?.m_Energie ?? 0;
+            return summe;
+        }
+
+        /// <summary>Loescht einen Katalogsatz; leer = geloescht, sonst der Grund.</summary>
+        private static string KatalogLoeschen(int id)
+        {
+            StromspeicherModel satz = StromspeicherStammCtrl.Satz(false, id);
+            if (satz == null) return Text_("KBROW_MSG_LOESCHEN_FEHLER", "Der Datensatz konnte nicht gelöscht werden.");
+            StromspeicherStammCtrl.SpeicherErgebnis e = StromspeicherStammCtrl.Loeschen(satz.m_szBezeichner);
+            return e.Ok ? "" : e.Meldung;
+        }
 
         private static ErzeugerZeile ZeileZu(WErzeugerModel m)
         {
@@ -252,16 +361,12 @@ namespace WindowsFormsApplication1
 
 
         /// <summary>
-        /// Der Detailblock (<c>listBox_SP_SelectedIndexChanged</c>, Z. 206). Er kommt
-        /// IMMER aus dem Katalog — es gibt keine Projektkopie, die abweichen könnte.
+        /// Der Detailblock (<c>listBox_SP_SelectedIndexChanged</c>, Z. 206) eines Katalogsatzes oder einer
+        /// Projektkopie; <c>null</c> = leerer Block.
         /// </summary>
-        private static ErzeugerDetail DetailZu(string name)
+        private static ErzeugerDetail DetailZu(StromspeicherModel s)
         {
-            var ctrl = new StromspeicherStammCtrl();
-            ctrl.ReadSingle(name);
-            if (ctrl.rows == 0) return new ErzeugerDetail("", "", new List<(string, string)>());
-
-            StromspeicherModel s = ctrl.items[0];
+            if (s == null) return new ErzeugerDetail("", "", new List<(string, string)>());
 
             var felder = new List<(string, string)>
             {
@@ -307,5 +412,12 @@ namespace WindowsFormsApplication1
             /// <summary>Der nächste freie Zeilenschlüssel.</summary>
             internal int Naechster = 100000;
         }
+
+        /// <summary>
+        /// Die Gaben des Modulkatalogs hinter „Bearbeiten…“ mit dem gewählten Satz als Vorwahl. Eine eigene
+        /// Methode, damit der Parametersatz des Katalogs nicht als Satz des Projektdialogs gelesen wird.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> KatalogEditorGaben(string name) =>
+            new Dictionary<string, object>(StromspeicherAdminHuelle.Gaben()) { ["Vorwahl"] = name };
     }
 }

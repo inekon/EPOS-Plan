@@ -1,5 +1,6 @@
 ﻿using Bunit;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Solarthermie;
 using EPOS.UI.Dialoge.Waermepumpe;
@@ -169,4 +170,56 @@ public class KatalogListeWirftTests : EposBunitContext
             .Add(x => x.ProfilVorgabe, ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher,
                      s => R.ResourceManager.GetString(s) ?? s))
             .Add(x => x.Wege, new ModulKatalogWege { Katalogzeilen = Wirft })));
+
+    // =================================================================================
+    // KT-4: die vier Dialoge mit eigener Ladeform (nur die Ladezeile über Katalogladung)
+    // =================================================================================
+
+    [Fact]
+    public void GebaeudeAdmin_wirft_die_Liste_zeigt_der_Dialog_den_Grund_und_schliesst()
+    {
+        bool? geschlossen = null;
+        var cut = Render<GebaeudeAdminDialog>(b => b
+            .Add(x => x.Katalogzeilen, Wirft)
+            .Add(x => x.Geschlossen, (bool e) => geschlossen = e));
+        BannerMitGrund(cut);
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.NotNull(geschlossen);
+    }
+
+    [Fact]
+    public void GebaeudeAdmin_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<GebaeudeAdminDialog>(b => b.Add(x => x.Katalogzeilen, Eine)));
+
+    [Fact]
+    public void Gebaeude_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<GebaeudeDialog>(b => b
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
+            .Add(x => x.Katalogzeilen, Wirft)));
+
+    [Fact]
+    public void Gebaeude_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<GebaeudeDialog>(b => b
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
+            .Add(x => x.Katalogzeilen, Eine)));
+
+    [Fact]
+    public void BedarfsProfile_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<BedarfsProfileDialog>(b => b
+            .Add(x => x.Zeilen, new List<BedarfsProfilZeile>())
+            .Add(x => x.Katalogzeilen, Wirft)));
+
+    [Fact]
+    public void BedarfsProfile_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<BedarfsProfileDialog>(b => b
+            .Add(x => x.Zeilen, new List<BedarfsProfilZeile>())
+            .Add(x => x.Katalogzeilen, Eine)));
+
+    [Fact]
+    public void TwwNutzungsart_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<TwwNutzungsartAdminDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
+
+    [Fact]
+    public void TwwNutzungsart_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<TwwNutzungsartAdminDialog>(b => b.Add(x => x.Katalogzeilen, Eine)));
 }

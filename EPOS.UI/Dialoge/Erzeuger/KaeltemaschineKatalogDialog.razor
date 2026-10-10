@@ -48,6 +48,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
     @if (_katalog.Count == 0)
     {
         <p class="epos-leisezeile epos-kaeltemaschine-leer">@Texte.LeerKatalog</p>
@@ -550,6 +555,9 @@
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
     private string _listeFehler = "";
 
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     protected override void OnInitialized()
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
@@ -658,8 +666,12 @@
         _meldung = "";
         _gewaehlt = schluessel ?? "";
         Katalogfilterzeile? zeile = ZeileZu(_gewaehlt);
-        KaeltemaschineDaten? gelesen = zeile is not null ? Lies?.Invoke(zeile.Id) : null;
-        _daten = gelesen ?? (zeile is null ? new KaeltemaschineDaten() : new KaeltemaschineDaten { Id = zeile.Id, Bezeichner = zeile.Bezeichner });
+        _satzFehler = "";
+        KaeltemaschineDaten? gelesen = zeile is not null
+            ? Katalogladung.Satz(() => Lies?.Invoke(zeile.Id), zeile.Bezeichner, out _satzFehler)
+            : null;
+        // KT-4: Warf das Lesen, bleibt das Stammblatt leer (Id 0, nichts zu speichern) - kein halber Satz.
+        _daten = _satzFehler.Length > 0 ? new KaeltemaschineDaten() : gelesen ?? (zeile is null ? new KaeltemaschineDaten() : new KaeltemaschineDaten { Id = zeile.Id, Bezeichner = zeile.Bezeichner });
         _auslieferung = zeile?.Geschuetzt == true || _daten.Auslieferung;
         Zuruecksetzen();
     }
@@ -1197,7 +1209,9 @@
         string? befund = Pruefbefund(_arbeit);
         if (befund is not null) { SpeichernAbgelehnt(befund); return; }
 
-        KaeltemaschineSpeicherErgebnis e = Speichern(_arbeit);
+        // KT-4: Wirft der Schreibweg, bleibt der Arbeitsstand stehen und die Meldung nennt den Grund.
+        KaeltemaschineSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_arbeit), _arbeit.Bezeichner,
+                                                                   g => new KaeltemaschineSpeicherErgebnis(false, g, _arbeit.Id));
         if (!e.Ok) { SpeichernAbgelehnt(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
 
         _geaendert = false;
@@ -1238,7 +1252,8 @@
         string? befund = Pruefbefund(_neu);
         if (befund is not null) { _neuMeldung = befund; return; }
 
-        KaeltemaschineSpeicherErgebnis e = Speichern(_neu);
+        KaeltemaschineSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_neu), _neu.Bezeichner,
+                                                                   g => new KaeltemaschineSpeicherErgebnis(false, g, 0));
         if (!e.Ok) { _neuMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
 
         string name = _neu.Bezeichner.Trim();
@@ -1347,7 +1362,8 @@
                         w.Wert)).ToList());
                 continue;
             }
-            KaeltemaschineDaten d = (z is null ? null : Lies?.Invoke(z.Id)) ?? new KaeltemaschineDaten();
+            KaeltemaschineDaten d = (z is null ? null
+                : Katalogladung.SatzDazu(() => Lies?.Invoke(z.Id), z.Bezeichner, ref _satzFehler)) ?? new KaeltemaschineDaten();
             var felder = Kenndatenwerte(d)
                 .Skip(1)
                 .Select((w, i) => new Vergleichsfeld("F" + i, w.Name, (w.Wert + " " + w.Einheit).Trim()))
@@ -1402,7 +1418,8 @@
         {
             Katalogfilterzeile? z = ZeileZu(s);
             if (z is null) continue;
-            KaeltemaschineSpeicherErgebnis e = Loeschen(z.Id);
+            KaeltemaschineSpeicherErgebnis e = Katalogladung.Loeschen(() => Loeschen(z.Id), z.Bezeichner,
+                                                                      g => new KaeltemaschineSpeicherErgebnis(false, g, z.Id));
             if (e.Ok) { geloescht++; einzeln = z.Bezeichner; }
             else if (fehler.Length == 0) fehler = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler;
         }

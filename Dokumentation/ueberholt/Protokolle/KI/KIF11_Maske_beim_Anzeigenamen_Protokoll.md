@@ -1,6 +1,6 @@
 # KIF11 — Maske beim Anzeigenamen im Hilfe-Assistenten (Protokoll, 10.10.2026)
 
-Statuszeile #904 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Konzept
+Statuszeile #911 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Konzept
 [`Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](../../../aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md)
 (Abschnitt 3.4, Absatz „Die Maske beim Namen“); Vorgänger
 [`KIF9_Setzer_Erzeugermasken_Protokoll.md`](KIF9_Setzer_Erzeugermasken_Protokoll.md) und
@@ -53,7 +53,7 @@ Anzeigename der Maske, z. B. „Form_WP_Anlage“ oder „Wärmepumpe im Projekt
 - `KiMaskenbrueckeTests`: Feldblock-Kopf.
 - bunit `EPOS.UI.Tests/Dialoge/WaermepumpeAnlageDialogTests.Der_Assistent_fuellt_die_Maske_beim_Anzeigenamen_aus` (vorher rot mit dem Text
   der Bildschirmfotos): Vorlauf 50, Rücklauf 45, Klappliste „50, 35, 45, 55“; Helfer `KiSetzweg.Ausfuehren`.
-- Filterlauf: EPOS.Kern.Tests 699, EPOS.UI.Tests 1 010, KiKern.Tests 549, SpeicherEngine.Tests 1, 0 rot; Build 0 Fehler. Gate 904 auf `6321fc0b` grün: Kern-Build 0 Fehler; ChartProben alle grün, 222 Hashes gleich der Messlatte 2026-10-10; Tests 22 220 grün, 0 rot (EPOS.Kern.Tests 12 982 + 7 übersprungen, EPOS.UI.Tests 8 265, KiKern.Tests 549, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 + 1 übersprungen); Dokumentationswachen 35 grün; Referenzlauf 28 von 28 PASS gegen R50 (9 686 136 Werte in Toleranz); Plattformnachweis (gestörter Lauf) PASS.
+- Filterlauf: EPOS.Kern.Tests 699, EPOS.UI.Tests 1 010, KiKern.Tests 549, SpeicherEngine.Tests 1, 0 rot; Build 0 Fehler. Gate 911 auf `6321fc0b` grün: Kern-Build 0 Fehler; ChartProben alle grün, 222 Hashes gleich der Messlatte 2026-10-10; Tests 22 220 grün, 0 rot (EPOS.Kern.Tests 12 982 + 7 übersprungen, EPOS.UI.Tests 8 265, KiKern.Tests 549, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 + 1 übersprungen); Dokumentationswachen 35 grün; Referenzlauf 28 von 28 PASS gegen R50 (9 686 136 Werte in Toleranz); Plattformnachweis (gestörter Lauf) PASS.
 
 ## Offen
 
@@ -66,6 +66,6 @@ Anzeigename der Maske, z. B. „Form_WP_Anlage“ oder „Wärmepumpe im Projekt
 
 ## Verweise
 
-Statuszeile #904 und Nach #904; KIF9 ([`KIF9_Setzer_Erzeugermasken_Protokoll.md`](KIF9_Setzer_Erzeugermasken_Protokoll.md)); KIF10
+Statuszeile #911 und Nach #911; KIF9 ([`KIF9_Setzer_Erzeugermasken_Protokoll.md`](KIF9_Setzer_Erzeugermasken_Protokoll.md)); KIF10
 ([`KIF10_Sperrgrund_Freigabe_Protokoll.md`](KIF10_Sperrgrund_Freigabe_Protokoll.md)); Konzept Dialogintegration 3.4; Wiki-Quelle
 `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki`.

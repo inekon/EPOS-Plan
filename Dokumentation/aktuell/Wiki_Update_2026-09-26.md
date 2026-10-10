@@ -238,7 +238,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
 - Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
 
-*Die folgenden acht Sätze (#886 bis #888, #890, #899 und #904) sind nach dem Sammel-Upload #889 hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer. Die Sätze darüber lagen dem Upload vor; was davon nicht im Logbuch steht (etwa #884, eine Fehlerbehebung), ist nach Regel 13.4 entfallen.*
+*Die folgenden acht Sätze (#886 bis #888, #890, #899 und #911) sind nach dem Sammel-Upload #889 hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer. Die Sätze darüber lagen dem Upload vor; was davon nicht im Logbuch steht (etwa #884, eine Fehlerbehebung), ist nach Regel 13.4 entfallen.*
 
 - Seit 10.10.2026: Die Projektdialoge mit Katalogauswahl passen sich kleinen Bildschirmen an — kompaktere Darstellung unter 1 200 × 800 px und ein Rollbalken, wenn die Höhe nicht reicht. (#886)
 - Seit 10.10.2026: Der BHKW-Dialog folgt dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“. (#887)
@@ -247,9 +247,9 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Hilfe-Assistent trägt Werte in den Erzeugermasken des Projekts (Heizkessel, BHKW, Photovoltaik, Solarkollektoren, Wärmepumpe) so ein, dass sie beim Speichern erhalten bleiben, und sagt, wenn keine Anlage gewählt ist. (#890)
 - Seit 10.10.2026: Der Hilfe-Assistent nennt gesperrte Felder vor der Rückfrage und wechselt den Energieträger einer Anlage sowie den Leistungspreis der Stromspeicher-Auslegung nicht selbst; das geschieht von Hand in der Maske. (#899)
 - Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
-- Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#904)
+- Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#911)
 
-*Die folgenden zehn Sätze (#891 bis #898, #900 und #902) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden dreizehn Sätze (#891 bis #898, #900, #902 und #905 bis #910) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -258,6 +258,9 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: In den Ergebnistabellen der Simulation stehen die Spaltenköpfe über ihren Werten. (#895)
 - Seit 10.10.2026: Der Knopf „CSV…“ am Bild exportiert jede Zeitreihe der Anwendung: Bedarfs-, Klimadaten-, Kostenprofil-, Profil- und Zapfprofilbilder, Ganglinienverwaltungen, Speicherflotte, Lastspitzenkappung, Kapitalwertverlauf und Zahlungsstrom. (#896)
 - Seit 10.10.2026: Auf dem iPad halten die Dialoge und Überlagerungen Statusleiste und Home-Anzeige frei; die Kompaktstufe der Projektdialoge gilt unter 1 280 × 800 Punkten und damit auch auf dem iPad 11 Zoll. (#897)
+- Seit 10.10.2026: Die Dialoge Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe und Photovoltaik folgen dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“; die Wärmepumpe öffnet ihre Anlage als Überlagerung „Anlage…“, die Photovoltaik ihre Stränge als „Stränge und Wechselrichter…“. (#905–#909)
+- Seit 10.10.2026: Die Detailzeile „Gewählter Satz“ nimmt aufgeklappt den Platz unter den Listen; die Dialoge Wärmebedarf extern, Strom-, Solarthermie- und PV-Ganglinie zeigen dort den Lastgang mit Kennzahlen in voller Breite. (#910)
+- Seit 10.10.2026: Nach „In das Projekt übernehmen“ ist nur noch die übernommene Zeile gewählt; „Aus dem Projekt entfernen“ trifft sie. (#910)
 - Seit 10.10.2026: Die Simulation im Dialog Wärmequelle Erdreich rechnet mit den angezeigten Eingaben und zeigt Ergebnis, Verlauf und Kennwerte der Soletemperatur — Jahresmittel, Tiefst- und Höchstwert mit Zeitpunkt — sofort an. (#898)
 - Seit 10.10.2026: Der Kalenderteppich der Konditionierung und der Raumnutzung lässt sich über „CSV…“ als Tabelle mit 365 Tageszeilen (Datum, Wochentag) und 24 Stundenspalten speichern; Zahlungsstrom und Kapitalwertverlauf zählen in der CSV-Datei wie in der Tafel ab Jahr 0. (#900)
 - Seit 10.10.2026: Im Anlagenschema öffnet ein Doppelklick auf Kältemaschine, Rückkühlung, Wärmepumpe im Kühlbetrieb und ihre Quelle den jeweiligen Dialog; der Tooltipp jedes Elements nennt, was der Doppelklick öffnet. (#902)
