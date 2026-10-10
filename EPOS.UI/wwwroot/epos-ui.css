@@ -3587,7 +3587,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > * { flex: 0 0 auto; white-space: nowrap; }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-leiste-fueller { display: none; }
-.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 1 16rem !important; min-width: 7rem; }
+.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem; }   /* gibt vor Trefferzahl und Legende nach (4.10) */
 .epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
@@ -3610,7 +3610,9 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     flex: 0 0 auto;
 }
 .epos-zweispalten-fussleiste > * { flex: 0 0 auto; white-space: nowrap; }
-.epos-zweispalten-summe { color: var(--epos-text-leise); }
+/* DIE SUMME DER PROJEKT-KOPFLEISTE HAT VORRANG (Sichtabnahme 10.10.2026, Konzept 4.10):
+   Zahl und Einheit werden nie gekuerzt; zuerst geben Ueberschrift und Knoepfe nach. */
+.epos-zweispalten-summe { color: var(--epos-text-leise); flex: 0 0 auto !important; white-space: nowrap; }
 
 /* ---- SPALTENWAHL UND VERWENDUNGSMARKE (Konzept 4.10) ----------------
    Die Marke: ein Punkt in der Projektfarbe (die Farbe der Plakette "IM PROJEKT")
@@ -4025,7 +4027,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     .epos-zweispalten-kopfleiste .epos-zweispalten-pfeil { display: none; }
     .epos-zweispalten-kopfleiste > .epos-knopf { min-width: 0; padding-inline: 8px; flex: 0 1 auto; overflow: hidden; }
     .epos-zweispalten-kopfleiste > .epos-knopf .epos-zweispalten-knopftext { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .epos-zweispalten-kopfleiste > :is(.epos-zweispalten-summe, .epos-zweispalten-wahlzahl) { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .epos-zweispalten-kopfleiste > .epos-zweispalten-wahlzahl { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 }
 /* Ein Feld des Wirts in der Kopfleiste (BHKW: Summe) behaelt unter 900 px Fensterbreite die
    Beschriftung NEBEN dem Feld - die Formularregel weiter unten stellte sie darueber, und die
