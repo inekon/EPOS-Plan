@@ -29,4 +29,4 @@ Etappe E4 des Umsetzungskonzepts: die gebaute Funktion in den Repo-Quellen des W
 
 Wiki-Upload (Freigabe und Versionsnummer beim Anwender).
 
-**CI:** läuft (Vermerk folgt).
+**CI:** Kern-Lauf 38021593000 grün auf `b9abd7c0d` (Sitzungszweig `claude/gebaeudesimulation-ub`).
