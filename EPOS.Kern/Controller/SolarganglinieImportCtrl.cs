@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
             bericht.Lesung = lesung;
             if (!lesung.Erfolgreich)
             {
-                bericht.Meldung = GanglinienProtokollText.Text(lesung.ErsterFehler);
+                bericht.Meldung = StundenganglinieDatei.Ablehnungstext(pfad, lesung);
                 bericht.IstFehler = true;
                 return bericht;
             }

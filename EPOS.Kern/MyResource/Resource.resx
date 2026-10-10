@@ -51289,5 +51289,17 @@ Chart</value>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
   </data>
+  <data name="IMPORT_PROT_KEIN_TEXT" xml:space="preserve">
+    <value>Die Datei „{0}“ ist keine Textdatei (Binärinhalt) – vermutlich eine Excel-, ZIP- oder Bilddatei mit falscher Endung.</value>
+  </data>
+  <data name="IMP_MSG_DATEI_GRUND" xml:space="preserve">
+    <value>Datei „{0}“: {1}</value>
+  </data>
+  <data name="IMP_MSG_UNERWARTET" xml:space="preserve">
+    <value>Die Datei „{0}“ konnte nicht eingelesen werden: {1}</value>
+  </data>
+  <data name="IMPORT_MSG_VORSCHAU_UNLESBAR" xml:space="preserve">
+    <value>Mit diesen Einstellungen ist die Datei nicht lesbar: {0}</value>
+  </data>
 </root>
 

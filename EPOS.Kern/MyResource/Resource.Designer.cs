@@ -42393,6 +42393,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit diesen Einstellungen ist die Datei nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_VORSCHAU_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_VORSCHAU_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gesamte Reihe ist null. ähnelt.
         /// </summary>
         public static string IMPORT_PROT_ALLE_NULL {
@@ -42506,6 +42515,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_PROT_KEINE_WERTE {
             get {
                 return ResourceManager.GetString("IMPORT_PROT_KEINE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist keine Textdatei (Binärinhalt) – vermutlich eine Excel-, ZIP- oder Bilddatei mit falscher Endung. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_KEIN_TEXT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_KEIN_TEXT", resourceCulture);
             }
         }
         
@@ -47249,6 +47267,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_MSG_BILANZ {
             get {
                 return ResourceManager.GetString("IMP_MSG_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string IMP_MSG_DATEI_GRUND {
+            get {
+                return ResourceManager.GetString("IMP_MSG_DATEI_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ konnte nicht eingelesen werden: {1} ähnelt.
+        /// </summary>
+        public static string IMP_MSG_UNERWARTET {
+            get {
+                return ResourceManager.GetString("IMP_MSG_UNERWARTET", resourceCulture);
             }
         }
         

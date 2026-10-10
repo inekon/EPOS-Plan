@@ -51282,5 +51282,17 @@ chart</value>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
   </data>
+  <data name="IMPORT_PROT_KEIN_TEXT" xml:space="preserve">
+    <value>The file “{0}” is not a text file (binary content) – probably an Excel, ZIP or image file with the wrong extension.</value>
+  </data>
+  <data name="IMP_MSG_DATEI_GRUND" xml:space="preserve">
+    <value>File “{0}”: {1}</value>
+  </data>
+  <data name="IMP_MSG_UNERWARTET" xml:space="preserve">
+    <value>The file “{0}” could not be imported: {1}</value>
+  </data>
+  <data name="IMPORT_MSG_VORSCHAU_UNLESBAR" xml:space="preserve">
+    <value>The file cannot be read with these settings: {0}</value>
+  </data>
 </root>
 
