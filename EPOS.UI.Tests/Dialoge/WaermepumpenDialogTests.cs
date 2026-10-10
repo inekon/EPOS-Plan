@@ -558,27 +558,162 @@ public class WaermepumpenDialogTests : EposBunitContext
         KatalogzeileWaehlen(cut);
         Knopf(cut, "Bearbeiten...").Click();
 
-        Assert.True(cut.FindComponent<Satzbearbeitung>().Instance.NurLesend);
+        // UeS1: EIN gesperrter Satz geht nur lesend in die Satz-Ueberlagerung, nicht in die Satzbearbeitung.
+        Assert.Null(cut.Instance.Bearbeitung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+        Assert.NotEmpty(cut.FindAll(".epos-satzueberlagerung-koerper .epos-modulparameter input"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])"));
+        cut.Find(".epos-satzueberlagerung-schliessen").Click();
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
     }
 
     [Fact]
     public void Projekt_Bearbeiten_nimmt_die_Projektkopien_je_Geraet_einmal_und_speichert_alle()
     {
         var a = Zeile("WP Alpha");
-        var b = Zeile("WP Alpha");                                 // dieselbe Kopie (IdWp 1)
+        var b = Zeile("WP Beta");
+        b.IdWp = 2;
         var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
-        var cut = Aufbauen(new List<WaermepumpeAnlageDaten> { a, b }, projektsatzWege: Wege(gespeichert));
+        var cut = Aufbauen(new List<WaermepumpeAnlageDaten> { a, b, Zeile("WP Alpha") }, projektsatzWege: Wege(gespeichert));
 
-        ProjektAnkreuzen(cut, 0, 1);
+        ProjektAnkreuzen(cut, 0, 1, 2);
         cut.Find(".epos-knopf--bearbeiten-projekt").Click();
 
-        var satz = Assert.Single(cut.Instance.Bearbeitung!.Value.Saetze);
-        Assert.Equal(1, satz.Id);
+        Assert.Equal(new[] { 1, 2 }, cut.Instance.Bearbeitung!.Value.Saetze.Select(s => s.Id).ToArray());
         cut.Find(".epos-satzbearbeitung input[type=text]:not([readonly])").Input("Neuwerk");
         cut.Find(".epos-satzbearbeitung-speichern").Click();
-        Assert.Equal(1, Assert.Single(gespeichert).Id);
+        Assert.Equal(1, gespeichert.First().Id);
         Assert.Null(cut.Instance.Bearbeitung);
     }
+
+    // =================================================================================
+    // UeS1: Satz-Ueberlagerung in voller Hoehe; Detailzeile der Projektwahl
+    // =================================================================================
+
+    private const string FeldImKoerper = ".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])";
+
+    /// <summary>
+    /// Die Detailzeile nennt die GEWÄHLTE Projektzeile — Marke, Name und Kenndaten —, nie „Kein Satz gewählt";
+    /// die Satzfläche zeigt die Kenndaten des Projektsatzes, keine Anlagenbausteine.
+    /// </summary>
+    [Fact]
+    public void UeS1_Detailzeile_und_Satzflaeche_zeigen_die_gewaehlte_Projektzeile()
+    {
+        var a = Zeile("WP Alpha");
+        var b = Zeile("WP Beta", 20);
+        b.IdWp = 2;
+        var cut = Aufbauen(new List<WaermepumpeAnlageDaten> { a, b });
+
+        Projektwahl(cut, 1).Click();
+        var zeile = cut.Find(".epos-zweispalten-satzzeile");
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, zeile.QuerySelector(".epos-zweispalten-marke")!.TextContent);
+        Assert.Equal("WP Beta", zeile.QuerySelector(".epos-zweispalten-satzname")!.TextContent);
+        Assert.Contains("Bosch", zeile.QuerySelector(".epos-zweispalten-satzkenndaten")!.TextContent);
+        Assert.DoesNotContain(Resource.AUSWAHL_SATZ_LEER, zeile.TextContent);
+
+        // Ein Projektsatz ohne Bezeichner heisst nach seinem Typ - die Zeile ist gewaehlt.
+        b.Bezeichner = "";
+        b.Typ = "Typ B";
+        Projektwahl(cut, 0).Click();
+        Projektwahl(cut, 1).Click();
+        Assert.Equal("Typ B", cut.Find(".epos-zweispalten-satzname").TextContent);
+
+        var flaeche = cut.Find(".epos-zweispalten-satz");
+        Assert.NotEmpty(flaeche.QuerySelectorAll(".epos-wp-satz"));
+        Assert.Empty(flaeche.QuerySelectorAll(".epos-wp-anlage"));
+        Assert.DoesNotContain("Auslegung für Verteilung", flaeche.TextContent);
+    }
+
+    /// <summary>UeS1: „Bearbeiten…" EINER Projektkopie öffnet die Satz-Überlagerung mit Kenndaten und Feldern.</summary>
+    [Fact]
+    public void UeS1_Bearbeiten_einer_Projektkopie_oeffnet_die_Satzueberlagerung()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege(), kosten: (_, _) => Task.CompletedTask);
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+
+        Assert.Null(cut.Instance.Bearbeitung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("WP Alpha", cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-titel").TextContent);
+        Assert.Single(cut.FindAll(".epos-wp-satz"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-wp-satz"));
+        Assert.Equal("Alpha", cut.Find(FeldImKoerper).GetAttribute("value"));
+        // „Anlage…" bleibt der Weg fuer die Anlage.
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-knopf--anlage"));
+    }
+
+    /// <summary>UeS1: OK schreibt die Projektkopie über den Speicherweg und schließt.</summary>
+    [Fact]
+    public void UeS1_OK_der_Satzueberlagerung_schreibt_die_Projektkopie()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        var cut = Aufbauen(projektsatzWege: Wege(gespeichert));
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.Find(FeldImKoerper).Input("Neuwerk");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        var satz = Assert.Single(gespeichert);
+        Assert.Equal(1, satz.Id);
+        Assert.Equal("Neuwerk", satz.Felder.First(f => f.Schluessel == "Firma").Wert);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satz .epos-modulparameter"));
+    }
+
+    /// <summary>UeS1: Wirft der Speicherweg (KT‑4-Fangweg), bleibt die Überlagerung mit dem Grund offen.</summary>
+    [Fact]
+    public void UeS1_Ein_werfender_Speicherweg_haelt_die_Satzueberlagerung_offen()
+    {
+        var wege = new Satzbearbeitungswege
+        {
+            Lesen = Wege().Lesen,
+            Speichern = _ => throw new InvalidOperationException("Datenbank gesperrt")
+        };
+        var cut = Aufbauen(projektsatzWege: wege);
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.Find(FeldImKoerper).Input("Neuwerk");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.False(string.IsNullOrWhiteSpace(cut.Find(".epos-satzueberlagerung-fuss [role=alert]").TextContent));
+        Assert.Equal("Neuwerk", cut.Find(FeldImKoerper).GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// UeS1: Abbrechen verwirft die Feldänderung; eine in der Überlagerung über „Anlage…" bestätigte
+    /// Anlagenänderung steht wieder wie beim Öffnen und geht ans Modell.
+    /// </summary>
+    [Fact]
+    public void UeS1_Abbrechen_verwirft_Feld_und_stellt_die_Anlage_her()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        var uebernommen = new List<WaermepumpeAnlageDaten>();
+        var zeile = Zeile("WP Alpha");
+        var cut = Aufbauen(new List<WaermepumpeAnlageDaten> { zeile }, projektsatzWege: Wege(gespeichert),
+                           uebernehmen: uebernommen.Add);
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.Find(FeldImKoerper).Input("Neuwerk");
+        // „Anlage…" in der Ueberlagerung: Vorlauf geaendert und mit OK bestaetigt.
+        cut.Find(".epos-satzueberlagerung-koerper .epos-knopf--anlage").Click();
+        zeile.Vorlauf = 55;
+        cut.FindComponent<WaermepumpeAnlageDialog>().InvokeAsync(() =>
+            cut.FindComponent<WaermepumpeAnlageDialog>().Instance.Geschlossen.InvokeAsync(true));
+        Assert.Equal(55, zeile.Vorlauf);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+
+        Assert.Empty(gespeichert);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(35, zeile.Vorlauf);
+        Assert.Equal(2, uebernommen.Count);                 // OK der Anlage, dann das Zurueckschreiben
+        Assert.Same(zeile, uebernommen[^1]);
+    }
+
 
     // =================================================================================
     // Rückweg und Löschen (KA-E-9, KA-E-16)

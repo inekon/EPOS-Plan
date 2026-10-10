@@ -53,7 +53,11 @@
                         KatalogWahl="@_katalogWahl" KatalogSichtbar="@KatalogSichtbar()"
                         WahlGeaendert="BeiWahlGeaendert"
                         KatalogFussName="@_katalogZeile?.Bezeichner"
-                        SatzArt="@SatzArt" SatzName="@SatzName" SatzKenndaten="@SatzKenndaten">
+                        SatzArt="@SatzArt" SatzName="@SatzName" SatzKenndaten="@SatzKenndaten"
+                        SatzNurLesen="@(!SatzfelderSpeicherbar)" SatzUebernehmenGesperrt="@_feldFehler"
+                        SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
+                        SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
+                        @ref="_zweispalten">
 
         <Leistenzusatz>
             @* UMSTELLEN (4.2, P): die gewaehlte Projektzeile auf den gewaehlten Katalogsatz - Sperrzeit,
@@ -198,6 +202,23 @@
                     </Reiter>
                 }
             </div>
+
+            @* ALLE DATEN (UeS1): in der Satz-Ueberlagerung die Felder des Satzes zum Bearbeiten - beim
+               Projektsatz die Projektkopie, beim Katalogsatz der Katalog (gesperrt nur lesen). Ihr OK
+               speichert; die Anlage bleibt der Weg ueber „Anlage…". *@
+            @if (_satzGross && _satzfelder is not null)
+            {
+                <div class="epos-modulparameter">
+                    <h3 class="epos-wp-satzfelder-kopf">@LabelAlleDaten</h3>
+                    @if (_gewaehlt is null && _katalogZeile?.Geschuetzt == true)
+                    {
+                        <p class="epos-satzbearbeitung-hinweis" role="note">@Resource.SATZBEARB_NUR_LESEN @Resource.ADM_SCHLOSS_ERST_AUFHEBEN</p>
+                    }
+                    <Katalogfelder Felder="@_satzfelder" NurLesen="@(!SatzfelderSpeicherbar)"
+                                   Geaendert="() => _satzfelderGeaendert = true"
+                                   FehlerZustand="m => _feldFehler = m.Fehler" />
+                </div>
+            }
         }
         </Satz>
     </Zweispaltenauswahl>
@@ -424,6 +445,8 @@
 
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "❌Abbrechen";
+    /// <summary>Kopf der Satzfelder in der Satz-Überlagerung (UeS1).</summary>
+    [Parameter] public string LabelAlleDaten { get; set; } = Resource.ADM_SB_ALLE_DATEN;
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_WPAuswahl.btn_Help";
@@ -552,7 +575,16 @@
 
     private Satzmarke SatzArt => _gewaehlt is not null ? Satzmarke.Projektsatz
                                : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
-    private string? SatzName => _gewaehlt?.Bezeichner ?? _katalogZeile?.Bezeichner;
+
+    /// <summary>
+    /// Der Name der Detailzeile: der Typ der gewählten Projektzeile — ohne Bezeichner ihr Typ bzw. Hersteller,
+    /// nie „Kein Satz gewählt", solange eine Zeile gewählt ist —, sonst der Katalogsatz.
+    /// </summary>
+    private string? SatzName => _gewaehlt is not null
+        ? Erster(_gewaehlt.Bezeichner, _gewaehlt.Typ, _satz?.Name, _gewaehlt.Firma)
+        : _katalogZeile?.Bezeichner;
+
+    private static string? Erster(params string?[] werte) => werte.FirstOrDefault(w => !string.IsNullOrWhiteSpace(w));
 
     /// <summary>Die Kenndaten der zugeklappten Detailzeile: Hersteller, Nennleistung, Heizstab; beim gesperrten Satz der Hinweis.</summary>
     private string? SatzKenndaten
@@ -575,6 +607,123 @@
 
     private RenderFragment MarkeProjektsatz => @<span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@Resource.AUSWAHL_MARKE_PROJEKTSATZ</span>;
     private RenderFragment MarkeKatalogsatz => @<span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@Resource.AUSWAHL_MARKE_KATALOGSATZ</span>;
+
+    // =================================================================================
+    // Die Satz-Ueberlagerung (UeS1): „Bearbeiten…" eines Satzes und „Vergrößern"
+    // =================================================================================
+
+    private Zweispaltenauswahl? _zweispalten;
+
+    /// <summary>Steht die Satz-Überlagerung offen? Dann trägt sie das Fragment samt den Satzfeldern.</summary>
+    private bool _satzGross;
+
+    /// <summary>Grund einer abgelehnten Übernahme, in der Fußleiste der Überlagerung.</summary>
+    private string? _satzUeberlagerungFehler;
+
+    /// <summary>Die Felder des Satzes in der Überlagerung (Projektkopie bzw. Katalogsatz); <c>null</c> = ohne Weg.</summary>
+    private IReadOnlyList<BrowserFeldwert>? _satzfelder;
+    private bool _satzfelderGeaendert;
+    private bool _feldFehler;
+
+    /// <summary>
+    /// Der Merker der Anlage: die Projektzeile beim Öffnen der Überlagerung. Die Anlage ändert sich nur über
+    /// „Anlage…" (mit eigenem OK); ist das in der Überlagerung geschehen, stellt deren „Abbrechen" die Zeile
+    /// wieder her und reicht sie ans Modell.
+    /// </summary>
+    private WaermepumpeAnlageDaten? _anlagenmerker;
+    private bool _anlageInUeberlagerungGeaendert;
+
+    /// <summary>Steht die Satz-Überlagerung offen? (Prüfhilfe.)</summary>
+    public bool SatzUeberlagerungOffen => _satzGross;
+
+    /// <summary>Der Weg der Satzfelder: beim Projektsatz die Projektkopie, beim Katalogsatz der Katalog.</summary>
+    private Satzbearbeitungswege? SatzfelderWege => _gewaehlt is not null ? ProjektsatzWege
+                                                  : _katalogZeile is not null ? KatalogsatzWege : null;
+
+    /// <summary>Die Id des Satzes für <see cref="SatzfelderWege"/>; 0 = keiner.</summary>
+    private int SatzfelderId => _gewaehlt?.IdWp ?? _katalogZeile?.Id ?? 0;
+
+    private bool SatzfelderSpeicherbar => _satzfelder is not null && SatzfelderWege?.Speichern is not null
+                                          && (_gewaehlt is not null || _katalogZeile?.Geschuetzt != true);
+
+    /// <summary>Die Überlagerung ist aufgegangen: die Satzfelder frisch gelesen, die Projektzeile gemerkt.</summary>
+    private void BeiSatzVergroessert()
+    {
+        _satzGross = true;
+        _satzUeberlagerungFehler = null;
+        _anlagenmerker = _gewaehlt?.Schnappschuss();
+        _anlageInUeberlagerungGeaendert = false;
+        SatzfelderHolen();
+    }
+
+    private void SatzfelderHolen()
+    {
+        string fehler = "";
+        Satzbearbeitungswege? wege = SatzfelderWege;
+        int id = SatzfelderId;
+        _satzfelder = wege is null || id <= 0 ? null : Katalogladung.Satz(() => wege.Lesen(id), SatzName, out fehler);
+        if (fehler.Length > 0) Melden(fehler, true);
+        _satzfelderGeaendert = false;
+        _feldFehler = false;
+    }
+
+    /// <summary>
+    /// OK der Überlagerung: geänderte Satzfelder über den Speicherweg der Satzbearbeitung
+    /// (<c>Katalogladung.Schreiben</c>, KT‑4-Fangweg). Lehnt er ab, bleibt die Überlagerung mit dem Grund offen.
+    /// </summary>
+    private void BeiSatzUebernommen()
+    {
+        Satzbearbeitungswege? wege = SatzfelderWege;
+        if (SatzfelderSpeicherbar && _satzfelderGeaendert && wege?.Speichern is not null && _satzfelder is not null)
+        {
+            int id = SatzfelderId;
+            string? name = SatzName;
+            IReadOnlyList<BrowserFeldwert> felder = _satzfelder;
+            KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(
+                () => wege.Speichern(new[] { (id, felder) }), name,
+                g => new KatalogSpeicherErgebnis(false, g, name ?? ""));
+            if (!ergebnis.Ok)
+            {
+                _satzUeberlagerungFehler = ergebnis.Meldung;
+                _zweispalten?.SatzOffenHalten();
+                return;
+            }
+            Melden(ergebnis.Meldung, false);
+            if (_gewaehlt is null)
+            {
+                KatalogNeuLaden();
+                if (_katalogZeile is not null) KatalogZeileWaehlen(_katalogZeile.Bezeichner);
+            }
+            else DetailNachziehen();
+        }
+        SatzUeberlagerungZu();
+    }
+
+    /// <summary>
+    /// Abbrechen, ✕, Esc oder Schließen der Überlagerung: die Satzfelder verworfen; eine in der Überlagerung über
+    /// „Anlage…" geänderte Projektzeile steht wieder wie beim Öffnen.
+    /// </summary>
+    private void BeiSatzVerworfen()
+    {
+        if (_anlageInUeberlagerungGeaendert && _anlagenmerker is not null && _gewaehlt is not null)
+        {
+            _gewaehlt.WerteVon(_anlagenmerker);
+            Uebernehmen?.Invoke(_gewaehlt);
+            DetailNachziehen();
+        }
+        SatzUeberlagerungZu();
+    }
+
+    private void SatzUeberlagerungZu()
+    {
+        _satzGross = false;
+        _satzUeberlagerungFehler = null;
+        _satzfelder = null;
+        _satzfelderGeaendert = false;
+        _feldFehler = false;
+        _anlagenmerker = null;
+        _anlageInUeberlagerungGeaendert = false;
+    }
 
     private string AnlageTitel => string.Format(Resource.Culture, AnlageTitelFormat, _gewaehlt?.Bezeichner ?? "");
 
@@ -756,6 +905,7 @@
                 _ungeprueft.Remove(zeile);
                 _meldung = "";
                 Uebernehmen?.Invoke(zeile);
+                if (_satzGross) _anlageInUeberlagerungGeaendert = true;
             }
             else if (_schnappschuss is not null)
             {
@@ -786,13 +936,20 @@
     /// „Bearbeiten…" im Katalogfuß: ein einzelner ungesperrter Satz öffnet den vollen Katalogeditor (KA-E-13),
     /// mehrere oder gesperrte Sätze die Satzbearbeitung — gesperrte übersprungen, alle gesperrt nur lesend.
     /// </summary>
-    private void BeiKatalogBearbeiten()
+    private async Task BeiKatalogBearbeiten()
     {
         List<Katalogfilterzeile> ziele = KatalogZiele();
         if (ziele.Count == 0) return;
         if (ziele.Count == 1 && !ziele[0].Geschuetzt && EditorGaben is not null)
         {
             _editorGaben = EditorGaben(ziele[0].Bezeichner);
+            return;
+        }
+        // UeS1: EIN gesperrter Satz oeffnet nur lesend in der Satz-Ueberlagerung („Erst Schloss aufheben").
+        if (ziele.Count == 1 && ziele[0].Geschuetzt && KatalogsatzWege is not null && _zweispalten is not null)
+        {
+            if (_katalogZeile?.Bezeichner != ziele[0].Bezeichner) KatalogZeileWaehlen(ziele[0].Bezeichner);
+            await _zweispalten.SatzUeberlagerungOeffnen();
             return;
         }
         if (KatalogsatzWege is not null)
@@ -804,13 +961,23 @@
         if (ziele.All(z => z.Geschuetzt)) BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
     }
 
-    /// <summary>„Bearbeiten…" im Projektbereich: die Projektkopien der Auswahl, je Gerät einmal.</summary>
-    private void BeiProjektBearbeiten()
+    /// <summary>
+    /// „Bearbeiten…" im Projektbereich: EINE Projektkopie öffnet die Satz-Überlagerung (UeS1), mehrere die
+    /// Satzbearbeitung (je Gerät einmal).
+    /// </summary>
+    private async Task BeiProjektBearbeiten()
     {
         if (ProjektsatzWege is null) return;
-        var saetze = ProjektZiele().Where(z => z.IdWp > 0).GroupBy(z => z.IdWp)
+        List<WaermepumpeAnlageDaten> ziele = ProjektZiele().Where(z => z.IdWp > 0).ToList();
+        var saetze = ziele.GroupBy(z => z.IdWp)
             .Select(g => new Bearbeitungssatz(g.Key, g.First().Bezeichner, false)).ToList();
         if (saetze.Count == 0) return;
+        if (saetze.Count == 1 && _zweispalten is not null)
+        {
+            if (_gewaehlt?.IdWp != saetze[0].Id) ProjektZeileWaehlen(ziele.First(z => z.IdWp == saetze[0].Id));
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
         _bearbeitung = (Satzmarke.Projektsatz, saetze);
     }
 
@@ -973,7 +1140,7 @@
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         if (_anlageGaben is not null || _editorGaben is not null || _bearbeitung is not null || _rueckweg is not null ||
-            _loeschfrage)
+            _loeschfrage || _satzGross)
             return Task.CompletedTask;
         return Abbrechen();
     }
