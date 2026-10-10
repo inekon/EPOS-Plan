@@ -3265,6 +3265,18 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
     <value>Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Der Prozess wird übersprungen, sein Anteil bleibt 0; die übrigen Prozesse werden vollständig gerechnet.</value>
   </data>
+  <data name="SIMENG_PRAEFIX_KAELTE" xml:space="preserve">
+    <value>Kältebedarf: </value>
+  </data>
+  <data name="SIMENG_KAELTE_KOPF_FEHLT" xml:space="preserve">
+    <value>Kältebedarf: Zum Kältebedarf '{0}' ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_KAELTE_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Kältebedarf: Zum Typ '{0}' des Kältebedarfs '{1}' ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_KAELTE_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Kältebedarf: Der Typ des Kältebedarfs '{0}' ist nicht definiert. Der Kältebedarf wird übersprungen, sein Anteil bleibt 0; die übrigen werden vollständig gerechnet.</value>
+  </data>
   <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
     <value>Simulation abgebrochen: {0}</value>
   </data>

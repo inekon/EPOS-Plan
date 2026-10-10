@@ -52,6 +52,8 @@ namespace WindowsFormsApplication1
                     return (StromverbraucherStammCtrl.TYP_STAMM, "Typname");
                 case BedarfsArt.Prozesswaerme:
                     return (ProzesswaermeStammCtrl.TYP_STAMM, "Bezeichner");
+                case BedarfsArt.Kaelte:
+                    return (KaeltebedarfStammCtrl.TYP_STAMM, "Bezeichner");
                 default:
                     return (BrauchwasserStammCtrl.TYP_STAMM, "Bezeichner");
             }
@@ -64,6 +66,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return StromverbraucherStammCtrl.TABLE;
                 case BedarfsArt.Prozesswaerme:    return ProzesswaermeStammCtrl.TABLE;
+                case BedarfsArt.Kaelte:           return KaeltebedarfStammCtrl.TABLE;
                 default:                          return BrauchwasserStammCtrl.TABLE;
             }
         }
@@ -156,6 +159,13 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Prozesswaerme:
                     {
                         var ctrl = new ProzesswaermeStammCtrl();
+                        ctrl.ReadAll();
+                        for (int i = 0; i < ctrl.rows; i++) liste.Add(ctrl.items[i].m_szProzessname ?? "");
+                        return liste;
+                    }
+                case BedarfsArt.Kaelte:
+                    {
+                        var ctrl = new KaeltebedarfStammCtrl();
                         ctrl.ReadAll();
                         for (int i = 0; i < ctrl.rows; i++) liste.Add(ctrl.items[i].m_szProzessname ?? "");
                         return liste;
@@ -299,6 +309,7 @@ namespace WindowsFormsApplication1
 
             // PW1 Stufe 1: Vorlauf und Rücklauf der Prozesswärme - der Lauf liest sie
             // (Prozesstemperatur), also Stufe Simulation wie die Monatswerte.
+            // K1: Das Paar der Kaelte ist eine Angabe ohne Wirkung (E-K3) - keine Zeile der Simulationsstufe.
             if (art == BedarfsArt.Prozesswaerme)
             {
                 (double? vl, double? rl) = Temperaturpaar(art, bezeichner);
@@ -354,6 +365,13 @@ namespace WindowsFormsApplication1
                         if (ctrl.rows == 0) return null;
                         return (ctrl.m_szBeschreibung ?? "", ctrl.m_szTyp ?? "");
                     }
+                case BedarfsArt.Kaelte:
+                    {
+                        var ctrl = new KaeltebedarfStammCtrl();
+                        ctrl.ReadSingle(bezeichner);
+                        if (ctrl.rows == 0) return null;
+                        return (ctrl.m_szBeschreibung ?? "", ctrl.m_szTyp ?? "");
+                    }
                 default:
                     {
                         var ctrl = new BrauchwasserStammCtrl();
@@ -382,6 +400,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: weg = new StromverbraucherStammCtrl().Delete(bezeichner); break;
                 case BedarfsArt.Prozesswaerme:    weg = new ProzesswaermeStammCtrl().Delete(bezeichner); break;
+                case BedarfsArt.Kaelte:           weg = new KaeltebedarfStammCtrl().Delete(bezeichner); break;
                 default:                          weg = new BrauchwasserStammCtrl().Delete(bezeichner); break;
             }
             return weg ? BedarfLoeschErgebnis.Geloescht : BedarfLoeschErgebnis.Fehlgeschlagen;
@@ -416,6 +435,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return new StromverbraucherStammCtrl().Exists(bezeichner);
                 case BedarfsArt.Prozesswaerme:    return new ProzesswaermeStammCtrl().Exists(bezeichner);
+                case BedarfsArt.Kaelte:           return new KaeltebedarfStammCtrl().Exists(bezeichner);
                 default:                          return new BrauchwasserStammCtrl().Exists(bezeichner);
             }
         }
@@ -427,6 +447,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return new StromverbraucherStammCtrl().IsReadOnly(bezeichner);
                 case BedarfsArt.Prozesswaerme:    return new ProzesswaermeStammCtrl().IsReadOnly(bezeichner);
+                case BedarfsArt.Kaelte:           return new KaeltebedarfStammCtrl().IsReadOnly(bezeichner);
                 default:                          return new BrauchwasserStammCtrl().IsReadOnly(bezeichner);
             }
         }
@@ -444,7 +465,8 @@ namespace WindowsFormsApplication1
         /// sonst und ohne Paar <c>(null, null)</c>.
         /// </summary>
         internal static (double? Vorlauf, double? Ruecklauf) Temperaturpaar(BedarfsArt art, string bezeichner)
-            => art == BedarfsArt.Prozesswaerme ? ProzesswaermeStammCtrl.Temperaturpaar(bezeichner) : (null, null);
+            => art == BedarfsArt.Prozesswaerme ? ProzesswaermeStammCtrl.Temperaturpaar(bezeichner)
+             : art == BedarfsArt.Kaelte ? KaeltebedarfStammCtrl.Temperaturpaar(bezeichner) : (null, null);
 
         /// <summary>
         /// Schreibt den Kopf samt Temperaturpaar (PW1 Stufe 1) — das Paar nur bei der Prozesswärme;
@@ -455,6 +477,8 @@ namespace WindowsFormsApplication1
         {
             if (art == BedarfsArt.Prozesswaerme)
                 return new ProzesswaermeStammCtrl().SaveHead(bez, typ, beschr, monat, isNew, vorlauf, ruecklauf, true);
+            if (art == BedarfsArt.Kaelte)
+                return new KaeltebedarfStammCtrl().SaveHead(bez, typ, beschr, monat, isNew, vorlauf, ruecklauf, true);
             return SaveHead(art, bez, typ, beschr, monat, isNew);
         }
 
@@ -467,6 +491,8 @@ namespace WindowsFormsApplication1
                     return new StromverbraucherStammCtrl().SaveHead(bez, typ, beschr, monat, isNew);
                 case BedarfsArt.Prozesswaerme:
                     return new ProzesswaermeStammCtrl().SaveHead(bez, typ, beschr, monat, isNew);
+                case BedarfsArt.Kaelte:
+                    return new KaeltebedarfStammCtrl().SaveHead(bez, typ, beschr, monat, isNew);
                 default:
                     return new BrauchwasserStammCtrl().SaveHead(bez, typ, beschr, monat, isNew);
             }

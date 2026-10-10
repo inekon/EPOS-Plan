@@ -148,6 +148,10 @@ namespace WindowsFormsApplication1
 
             if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste, jahressummen);
 
+            // K1: Die Vorschau der Kaelte (ProfilQuelle.Kaelte, Kaeltefarbe) folgt mit dem Dialog; bis dahin bleibt sie
+            // leer - sie faellt NICHT in den Brauchwasserzweig darunter.
+            if (art == BedarfsArt.Kaelte) return ergebnis;
+
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
 
             if (art == BedarfsArt.Prozesswaerme)
@@ -225,6 +229,7 @@ namespace WindowsFormsApplication1
         private static BedarfsVorschau Waerme(BedarfsVorschau ergebnis, BedarfsArt art,
                                               int idProjekt, List<string> liste)
         {
+            if (art == BedarfsArt.Kaelte) return ergebnis;     // K1: Vorschau der Kaelte folgt mit dem Dialog
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
 
             if (art == BedarfsArt.Prozesswaerme)

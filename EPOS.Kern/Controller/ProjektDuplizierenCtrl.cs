@@ -137,6 +137,8 @@ namespace WindowsFormsApplication1
             {"ID_Gebaeude","Tab_Gebaeude"}, {"ID_TagV","Tab_DBTagV"},
             {"ID_Stromverbraucher","Tab_Stromverbraucher"}, {"ID_Prozesswaerme","Tab_Prozesswaerme"},
             {"ID_Brauchwasser","Tab_Brauchwasser"},
+            // K1: Zuordnung und Typkopie des Kaeltebedarfs zeigen auf die Kopfkopie DESSELBEN Projekts.
+            {"ID_Kaeltebedarf","Tab_Kaeltebedarf"},
             // Ä20: Anlagenbezug der Kostenpositionen (Tab_ProjektWerte.ID_Anlage,
             // Migrationsschritt 45). Ohne Versatz zeigten die Positionen einer
             // Variante auf die Anlagen des QUELLprojekts und stünden dort als
