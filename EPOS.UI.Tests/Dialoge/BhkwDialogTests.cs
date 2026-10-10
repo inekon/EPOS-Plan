@@ -1594,4 +1594,160 @@ public class BhkwDialogTests : EposBunitContext
         Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
                               e => e.TextContent.StartsWith("Senken", StringComparison.Ordinal));
     }
+
+    // =================================================================================
+    // Katalogauswahl V1, Stufe 3b: Rückweg „In die Datenbank übernehmen…" (5.2, KA‑E‑9)
+    // =================================================================================
+
+    /// <summary>Rückwegwege mit festen Zeilen; <paramref name="geschrieben"/> fängt die Wahl.</summary>
+    private static Rueckwegwege Rueckweg(IReadOnlyList<Rueckwegvorschlag> zeilen, List<Rueckwegwahl>? geschrieben = null,
+                                         Func<string, bool>? belegt = null, KatalogSpeicherErgebnis? ergebnis = null,
+                                         List<IReadOnlyList<int>>? gefragt = null)
+        => new()
+        {
+            Vorschau = ids => { gefragt?.Add(ids); return zeilen; },
+            NameBelegt = belegt ?? (_ => false),
+            Uebernehmen = w => { geschrieben?.AddRange(w); return ergebnis ?? new KatalogSpeicherErgebnis(true, "2 Sätze übernommen", ""); },
+        };
+
+    [Fact]
+    public void S3b_Der_Knopf_steht_nach_Bearbeiten_in_der_Projektleiste_und_wirkt_auf_die_Auswahl()
+    {
+        var gefragt = new List<IReadOnlyList<int>>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Modul A", 100), Zeile(2, "Modul B", 101), Zeile(3, "Modul A", 100) };
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege(),
+                           rueckwegWege: Rueckweg(new[] { new Rueckwegvorschlag(100, "Modul A", "", Rueckwegsperre.UrsprungUnbekannt, "Modul A") },
+                                                  gefragt: gefragt));
+
+        var leiste = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste");
+        var knoepfe = leiste.QuerySelectorAll("button").ToList();
+        int bearbeiten = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--bearbeiten-projekt"));
+        int rueckweg = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--rueckweg"));
+        Assert.True(bearbeiten >= 0 && rueckweg == bearbeiten + 1);
+        Assert.Equal(Resource.KATRUECK_BTN, knoepfe[rueckweg].TextContent.Trim());
+
+        // Drei Zeilen, zwei Geraete: gefragt wird je Geraet einmal.
+        foreach (int i in new[] { 0, 1, 2 })
+            cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
+        cut.Find(".epos-knopf--rueckweg").Click();
+        Assert.Equal(new[] { 100, 101 }, Assert.Single(gefragt).ToArray());
+        Assert.NotNull(cut.Instance.Rueckweg);
+    }
+
+    [Fact]
+    public void S3b_Die_Rueckfrage_steht_auf_neu_und_graut_ueberschreiben_mit_Grund_aus()
+    {
+        var zeilen = new[]
+        {
+            new Rueckwegvorschlag(100, "Modul A", "Modul A", Rueckwegsperre.Keine, "Modul A (Projekt)"),
+            new Rueckwegvorschlag(101, "Modul B", "Modul B", Rueckwegsperre.Gesperrt, "Modul B (Projekt)"),
+            new Rueckwegvorschlag(102, "Modul C", "", Rueckwegsperre.UrsprungFehlt, "Modul C"),
+            new Rueckwegvorschlag(103, "Modul D", "", Rueckwegsperre.UrsprungUnbekannt, "Modul D"),
+        };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen));
+        cut.Find(".epos-knopf--rueckweg").Click();
+
+        var kopf = cut.Find(".epos-ueberlagerung-kopf");
+        Assert.Equal(string.Format(Resource.Culture, Resource.KATRUECK_TITEL_N, 4), kopf.QuerySelector(".epos-ueberlagerung-titel")!.TextContent);
+        var reihen = cut.FindAll(".epos-rueckweg-zeile");
+        Assert.Equal(4, reihen.Count);
+        Assert.All(reihen, r => Assert.True(r.QuerySelector(".epos-rueckweg-neu")!.HasAttribute("checked")));
+        Assert.False(reihen[0].QuerySelector(".epos-rueckweg-ueber")!.HasAttribute("disabled"));
+        Assert.Contains(Resource.KATRUECK_GRUND_GESPERRT, reihen[1].TextContent);
+        Assert.Contains(Resource.KATRUECK_GRUND_FEHLT, reihen[2].TextContent);
+        Assert.Contains(Resource.KATRUECK_GRUND_UNBEKANNT, reihen[3].TextContent);
+        foreach (int i in new[] { 1, 2, 3 }) Assert.True(reihen[i].QuerySelector(".epos-rueckweg-ueber")!.HasAttribute("disabled"));
+        Assert.Equal("Modul A (Projekt)", reihen[0].QuerySelector(".epos-rueckweg-namensfeld")!.GetAttribute("value"));
+        Assert.False(cut.Find(".epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+        Assert.Contains(Resource.KATRUECK_HINWEIS_KOSTEN, cut.Find(".epos-rueckweg").TextContent);
+    }
+
+    [Fact]
+    public void S3b_Ein_belegter_oder_doppelter_Name_sperrt_Uebernehmen_mit_Hinweis_am_Feld()
+    {
+        var zeilen = new[]
+        {
+            new Rueckwegvorschlag(100, "Modul A", "", Rueckwegsperre.UrsprungUnbekannt, "Modul A (Projekt)"),
+            new Rueckwegvorschlag(101, "Modul B", "", Rueckwegsperre.UrsprungUnbekannt, "Modul B"),
+        };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen, belegt: n => n == "Modul A"));
+        cut.Find(".epos-knopf--rueckweg").Click();
+
+        cut.FindAll(".epos-rueckweg-namensfeld")[0].Input("Modul A");
+        Assert.Contains(Resource.KATRUECK_HINWEIS_NAME_BELEGT, cut.FindAll(".epos-rueckweg-zeile")[0].TextContent);
+        Assert.True(cut.Find(".epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+
+        cut.FindAll(".epos-rueckweg-namensfeld")[0].Input("Modul B");
+        Assert.Contains(Resource.KATRUECK_HINWEIS_NAME_DOPPELT, cut.FindAll(".epos-rueckweg-zeile")[0].TextContent);
+        Assert.True(cut.Find(".epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+
+        cut.FindAll(".epos-rueckweg-namensfeld")[0].Input("Modul A neu");
+        Assert.Empty(cut.FindAll(".epos-rueckweg-namenshinweis"));
+        Assert.False(cut.Find(".epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void S3b_Mehrfach_fuer_alle_ueberschreiben_faellt_je_Zeile_auf_neu_zurueck_und_nennt_sie()
+    {
+        var geschrieben = new List<Rueckwegwahl>();
+        var zeilen = new[]
+        {
+            new Rueckwegvorschlag(100, "Modul A", "Modul A Katalog", Rueckwegsperre.Keine, "Modul A (Projekt)"),
+            new Rueckwegvorschlag(101, "Modul B", "", Rueckwegsperre.UrsprungUnbekannt, "Modul B"),
+        };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen, geschrieben));
+        cut.Find(".epos-knopf--rueckweg").Click();
+
+        cut.Find(".epos-rueckweg-alle-ueber").Change(true);
+
+        var reihen = cut.FindAll(".epos-rueckweg-zeile");
+        Assert.True(reihen[0].QuerySelector(".epos-rueckweg-ueber")!.HasAttribute("checked"));
+        Assert.True(reihen[1].QuerySelector(".epos-rueckweg-neu")!.HasAttribute("checked"));
+        var feld = reihen[0].QuerySelector(".epos-rueckweg-namensfeld")!;
+        Assert.True(feld.HasAttribute("disabled"));
+        Assert.Equal("Modul A Katalog", feld.GetAttribute("value"));
+        Assert.Contains("„Modul B“", cut.Find(".epos-rueckweg-rueckfall").TextContent);
+
+        cut.Find(".epos-rueckweg-uebernehmen").Click();
+
+        Assert.Equal(new[] { new Rueckwegwahl(100, true, ""), new Rueckwegwahl(101, false, "Modul B") }, geschrieben.ToArray());
+        Assert.Null(cut.Instance.Rueckweg);
+        Assert.Equal("2 Sätze übernommen", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void S3b_Eine_Absage_des_Kerns_bleibt_in_der_Rueckfrage_stehen()
+    {
+        var zeilen = new[] { new Rueckwegvorschlag(100, "Modul A", "", Rueckwegsperre.UrsprungUnbekannt, "Modul A") };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen, ergebnis: new KatalogSpeicherErgebnis(false, "Name belegt. Es wurde nichts übernommen.", "")));
+        cut.Find(".epos-knopf--rueckweg").Click();
+        cut.Find(".epos-rueckweg-uebernehmen").Click();
+
+        Assert.NotNull(cut.Instance.Rueckweg);
+        Assert.Equal("Name belegt. Es wurde nichts übernommen.", cut.Find(".epos-rueckweg-meldung").TextContent);
+        cut.Find(".epos-rueckweg-fuss .epos-knopf:not(.epos-knopf--primaer)").Click();
+        Assert.Null(cut.Instance.Rueckweg);
+    }
+
+    [Fact]
+    public void S3b_Der_Hinweis_nennt_was_im_Projekt_bleibt()
+    {
+        var zeilen = new[] { new Rueckwegvorschlag(100, "Modul A", "", Rueckwegsperre.UrsprungUnbekannt, "Modul A") };
+        var cut = Render<BhkwDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.RueckwegWege, Rueckweg(zeilen))
+            .Add(x => x.RueckwegBleibtText, "Im Projekt bleiben: Grenzleistung der Anlage."));
+        cut.Find(".epos-knopf--rueckweg").Click();
+        Assert.Contains("Im Projekt bleiben: Grenzleistung der Anlage.", cut.Find(".epos-rueckweg").TextContent);
+    }
+
+    [Fact]
+    public void S3b_Ohne_Wege_kein_Knopf()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+        Assert.Empty(cut.FindAll(".epos-knopf--rueckweg"));
+    }
 }

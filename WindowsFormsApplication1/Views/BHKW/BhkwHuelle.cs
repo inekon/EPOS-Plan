@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -520,6 +521,13 @@ namespace WindowsFormsApplication1
                     Speichern = saetze => BhkwAdminHuelle.SammelSchreiben(false, saetze)
                 },
 
+                // KATALOGAUSWAHL V1, STUFE 3 (KA-E-9): der Rueckweg „In die Datenbank übernehmen…" - nur
+                // ausserhalb des Assistenten (dort gibt es keine Projektkopie). Rueckfrage und Schreibweg kommen
+                // aus dem Kern (BHKWStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
+                ["RueckwegWege"] = wizard || projektId <= 0 ? null : RueckwegWege(),
+                ["RueckwegBleibtText"] = Text_("BHKW_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit."),
+
                 // #187: Die Ueberlagerung traegt den Titel schon (EditorTitel,
                 // derselbe Schluessel BHKWK_TITEL wie KatalogGaben). KatalogGaben
                 // bleibt dafuer UNVERAENDERT - sie liefert auch das eigenstaendige
@@ -631,6 +639,34 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Schreibwege hinter den Delegaten
         // =================================================================================
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => BHKWStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = BHKWStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = BHKWStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
 
         private static TraegerVorbereitung Vorbereiten(BHKWStammCtrl stamm, int stammId)
         {

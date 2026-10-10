@@ -6036,6 +6036,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit. ähnelt.
+        /// </summary>
+        public static string BHKW_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("BHKW_RUECK_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Investition gesamt: ähnelt.
         /// </summary>
         public static string BHKW_SUMME_LBL {

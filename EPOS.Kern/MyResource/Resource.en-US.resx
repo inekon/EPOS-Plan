@@ -50745,5 +50745,8 @@ chart</value>
   <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
     <value>Per chiller with part-load calculation the cycling electricity, starts, part-load share, mean part-load ratio and seasonal EER without auxiliary power as “column name=value”; empty without such a chiller.</value>
   </data>
+  <data name="BHKW_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: energy carrier, minimum load and temperature pair of the plant, sinks and time schedule. The minimum load of the module is taken along.</value>
+  </data>
 </root>
 

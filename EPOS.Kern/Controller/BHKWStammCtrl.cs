@@ -295,8 +295,12 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            string sql = "DELETE FROM " + TABLE + " WHERE Bezeichner = ?";
-            return DataRepository.ExecuteSQL(sql, new DbParam("@name", szBezeichner ?? ""));
+            // KA-E-16: der Katalogsatz geht samt seinen Satzvorlagen, in EINEM Vorgang.
+            int id = IdZu(szBezeichner);
+            if (id <= 0) return false;
+            KatalogsatzLoeschung l = KatalogsatzLoeschen(id);
+            if (l.Ok && l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return l.Ok;
         }
 
         #endregion
@@ -1033,6 +1037,95 @@ namespace WindowsFormsApplication1
             {
                 return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
                     "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3b: Rückweg Projekt → Datenbank (KA-E-9, KA-E-14 bis KA-E-16)
+        // =================================================================================
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> des BHKW.</summary>
+        public const int KOMPONENTE_KOSTEN = 7;
+
+        /// <summary>
+        /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
+        /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_BHKW</c>, Kostenkomponente 7.
+        /// <b>Keine Kindtabellen</b> — Teillast und Takten, Rücklaufgrenze, die zwei Wirkungsgradanteile und die fünf
+        /// Kostenposten stehen als Spalten am Satz und gehen mit der Schnittmenge, ebenso <c>Tab_BHKW.Grenzleistung</c>
+        /// (Katalogspalte, Konzept 5.1). Anlagenbezogen und damit im Projekt bleiben Energieträger, die Grenzleistung und
+        /// das Temperaturpaar der Anlagenzeile, Senken und Zeitprogramm. Prüfregel wie beim Speichern: die zwei
+        /// Wirkungsgradanteile, Teillast und Takten, die Rücklaufgrenze.
+        /// </summary>
+        public static Rueckweggewerk Rueckweg() => new Rueckweggewerk
+        {
+            Kopietabelle = TABELLE_PROJEKT,
+            Katalogtabelle = TABLE,
+            Anlagenverweis = "ID_BHKW",
+            KomponentenId = KOMPONENTE_KOSTEN,
+            Pruefung = zeile =>
+            {
+                BHKWStammModel m = new BHKWStammCtrl().MapRowToModel(zeile);
+                return new[]
+                {
+                    BhkwWirkungsgrad.Pruefen(m.m_Wirkungsgrad_el, m.m_Wirkungsgrad_th),
+                    ErzeugerTeillastWerte.BhkwVerstoss(ErzeugerTeillastWerte.Bhkw(m)),
+                    GeraetegrenzWerte.BhkwVerstoss(m.m_Ruecklauf_Max),
+                }.FirstOrDefault(g => !string.IsNullOrEmpty(g));
+            },
+        };
+
+        /// <summary>Die Zeilen der Rückfrage zu den Projektkopien <paramref name="idsKopie"/> (<see cref="Katalogrueckweg.Vorschau"/>).</summary>
+        public static IReadOnlyList<Rueckwegzeile> RueckwegVorschau(IReadOnlyList<int> idsKopie)
+            => Katalogrueckweg.Vorschau(Rueckweg(), idsKopie);
+
+        /// <summary>
+        /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): Fachspalten samt Nebenposten und Grenzleistung,
+        /// Betriebs- und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
+        /// </summary>
+        public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)
+            => Katalogrueckweg.Uebernehmen(Rueckweg(), auftraege);
+
+        /// <summary>Ist der Name im BHKW-Katalog vergeben?</summary>
+        public static bool RueckwegNameBelegt(string name) => Katalogrueckweg.NameBelegt(Rueckweg(), name);
+
+        /// <summary>Ausgang von <see cref="KatalogsatzLoeschen"/>.</summary>
+        public sealed record KatalogsatzLoeschung(bool Ok, Satzvorlagenabbau Vorlage, string Meldung);
+
+        /// <summary>
+        /// <b>Löscht den Katalogsatz <paramref name="id"/> samt seinen Satzvorlagen</b> (KA‑E‑16, beide Verweise,
+        /// <see cref="Katalogrueckweg.SatzvorlageBeimLoeschen"/>) in einem Vorgang — scheitert eines, bleibt beides. Ein
+        /// gesperrter Satz wird nicht gelöscht. Die Meldung nennt eine Vorlage, die Projektzeilen noch brauchen.
+        /// </summary>
+        public static KatalogsatzLoeschung KatalogsatzLoeschen(int id)
+        {
+            if (new BHKWStammCtrl().IsReadOnly(id)) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+            string[] verweise = new[] { KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE,
+                                        KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION }
+                .Where(sp => DataRepository.SpalteVorhanden(TABLE, sp)).ToArray();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    DataTable satz = v.Lese("SELECT \"Bezeichner\"" + string.Concat(verweise.Select(sp => ", \"" + sp + "\"")) +
+                                            " FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    if (satz == null || satz.Rows.Count == 0) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+                    DataRow z = satz.Rows[0];
+                    string name = Convert.ToString(z[0], CultureInfo.InvariantCulture) ?? "";
+                    int? Lies(string sp) => satz.Columns.Contains(sp) && z[sp] != DBNull.Value
+                        ? Convert.ToInt32(z[sp], CultureInfo.InvariantCulture) : (int?)null;
+                    v.Ausfuehren("DELETE FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    Satzvorlagenabbau abbau = Katalogrueckweg.SatzvorlageBeimLoeschen(
+                        v, Lies(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE),
+                        Lies(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION));
+                    v.Commit();
+                    return new KatalogsatzLoeschung(true, abbau, Katalogrueckweg.SatzvorlagenMeldung(abbau, name));
+                }
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurück.
+                return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
             }
         }
 

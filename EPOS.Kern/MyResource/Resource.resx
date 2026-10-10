@@ -50752,5 +50752,8 @@ Chart</value>
   <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
     <value>Je Kältemaschine mit Teillastrechnung Taktstrom, Starts, Teillastanteil, mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom als „Spaltenname=Wert“; leer ohne solche Maschine.</value>
   </data>
+  <data name="BHKW_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit.</value>
+  </data>
 </root>
 
