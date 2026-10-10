@@ -25,6 +25,7 @@
 @namespace EPOS.UI.Bausteine
 @using EPOS.UI.Dialoge.Bedarf
 @using WindowsFormsApplication1
+@using SpeicherEngine
 
 <div class="epos-ganglinie-katalogseite">
 
@@ -122,7 +123,7 @@
                             <Dateiwahl Bezeichnung="@Texte.LabelDatei" KnopfText="@Texte.DateiKnopf"
                                        Filter="@Texte.Dateifilter" Pfad="@_pfad" Waehlen="@Wege.DateiWaehlen"
                                        PfadChanged="BeiDatei" Aktiv="@(!_laeuft)" />
-                            @if (Wege.NennleistungVorschlagen is not null)
+                            @if (Wege.NennleistungVorschlagen is not null || Wege.NennleistungAusLesung is not null)
                             {
                                 <Zahlenfeld Bezeichnung="@Texte.LabelNennleistung" Einheit="kWp" Wert="@_nennleistung"
                                             WertChanged="BeiNennleistung" Min="0" Nachkommastellen="2"
@@ -158,6 +159,14 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* DER OPTIONENDIALOG "Format und Vorschau" (nur mit Wege.Lesen): Nach der Dateiwahl legt die
+       Importkette ihre Entscheidungen (Optionen, Protokoll) als Ueberlagerungen ueber die Import-
+       Ueberlagerung - derselbe Baustein wie bei Strom, Lastspitzenkappung und Waermebedarf. *@
+    @if (Wege.Lesen is not null)
+    {
+        <GanglinienImportLauf @ref="_lauf" Einlesen="@LaufEinlesen" Vorschau="@Wege.Vorschau" />
+    }
 
     @* DIE NENNLEISTUNG EINES KATALOGSATZES als kurze Ueberlagerung: OK schreibt sofort an den Katalogsatz
        (wie Loeschen und Schloss), Abbrechen, Kreuz und Esc verwerfen. Der Pruefhinweis des Imports steht
@@ -279,10 +288,12 @@
     /// Hält die Seite Esc bei sich? Solange eine Rückfrage oder der Import offen ist,
     /// schließt der Wirt nicht.
     /// </summary>
-    public bool HaeltEsc => _loeschfrageOffen || _importOffen || _nennOffen || Schlossfrage;
+    public bool HaeltEsc => _loeschfrageOffen || _importOffen || _nennOffen || Schlossfrage
+                            || _lauf?.EtwasOffen == true;
 
     private bool AnzeigenErlaubt => _pfad.Length > 0 && !_laeuft && Wege.MitSystemOeffnen is not null;
-    private bool EinlesenErlaubt => _pfad.Length > 0 && !_laeuft && Wege.Einlesen is not null;
+    private bool EinlesenErlaubt => _pfad.Length > 0 && !_laeuft && Wege.Einlesen is not null
+                                    && (Wege.Lesen is null || _gelesen is not null);
 
     protected override async Task OnInitializedAsync() => await Neuladen();
 
@@ -412,7 +423,7 @@
     /// <summary>Kreuz, Esc und „Abbrechen" — nicht, solange die Kette läuft.</summary>
     private void ImportSchliessen()
     {
-        if (_laeuft) return;
+        if (_laeuft || _lauf?.Laeuft == true) return;
         _importOffen = false;
         _importMeldung = "";
     }
@@ -420,8 +431,9 @@
     private async Task BeiDatei(string pfad)
     {
         _importMeldung = "";
+        _gelesen = null;
         if (string.IsNullOrEmpty(pfad)) { _pfad = ""; NennleistungLeeren(); return; }
-        if (Wege.Ablegen is null) { _pfad = pfad; await NennleistungVorbelegen(); return; }
+        if (Wege.Ablegen is null) { _pfad = pfad; await NachDateiwahl(); return; }
 
         // Die verlustfreie Originalablage; ein Fehlschlag ist eine Warnung, der
         // Import laeuft dann mit der Originaldatei.
@@ -432,7 +444,63 @@
             _importMeldung = erg.Meldung;
             _importMeldungStufe = WarnStufe.Warnung;
         }
-        await NennleistungVorbelegen();
+        await NachDateiwahl();
+    }
+
+    // ---------------------------------------------------------------------
+    // Der Optionendialog "Format und Vorschau" (nur mit Wege.Lesen)
+    // ---------------------------------------------------------------------
+
+    private GanglinienImportLauf? _lauf;
+    private GanglinienImportErgebnis? _gelesen;
+
+    /// <summary>Die über den Optionendialog gelesene Reihe; <c>null</c> = noch keine (Prüfhilfe).</summary>
+    public GanglinienImportErgebnis? Gelesen => _gelesen;
+
+    /// <summary>Der Lauf der Importkette (Prüfhilfe): Steht der Optionendialog?</summary>
+    public bool OptionenOffen => _lauf?.EtwasOffen == true;
+
+    private Task<GanglinienImportErgebnis> LaufEinlesen(string pfad, GanglinienRaster raster, GanglinienImportRueckrufe rueckrufe)
+        => Wege.Lesen!(pfad, rueckrufe);
+
+    /// <summary>
+    /// Nach der Dateiwahl: Mit <see cref="GanglinienKatalogwege.Lesen"/> liest der Optionendialog die
+    /// Datei — Abbrechen bricht den Import ab, ein Fehler bleibt als Grund in der Überlagerung stehen —,
+    /// danach die Vorbelegung der Nennleistung aus der gelesenen Reihe. Ohne den Weg wie bisher die
+    /// Vorbelegung aus der Datei.
+    /// </summary>
+    private async Task NachDateiwahl()
+    {
+        if (Wege.Lesen is null || _lauf is null) { await NennleistungVorbelegen(); return; }
+
+        NennleistungLeeren();
+        GanglinienImportErgebnis? erg = await _lauf.Starten(_pfad, GanglinienRaster.Unbekannt);
+        if (erg is null || erg.Ausgang == ImportAusgang.Abgebrochen)
+        {
+            // Abbrechen im Optionendialog bricht den Import ab: keine Datei, keine Überlagerung.
+            _pfad = "";
+            ImportSchliessen();
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        if (!erg.Erfolgreich)
+        {
+            _pfad = "";
+            PruefMeldung? fehler = erg.Protokoll.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
+            _importMeldung = erg.Meldung.Length > 0 ? erg.Meldung
+                           : fehler is not null ? GanglinienProtokollText.Text(fehler) : Resource.IMPORT_PROT_DATEI_LEER;
+            _importMeldungStufe = WarnStufe.Fehler;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        _gelesen = erg;
+        if (Wege.NennleistungAusLesung is not null)
+        {
+            GanglinienNennleistungsvorschlag v = await Wege.NennleistungAusLesung(_pfad, erg);
+            NennleistungUebernehmen(v);
+        }
+        await InvokeAsync(StateHasChanged);
     }
 
     // ---------------------------------------------------------------------
@@ -464,6 +532,12 @@
         NennleistungLeeren();
         if (Wege.NennleistungVorschlagen is null || _pfad.Length == 0) return;
         GanglinienNennleistungsvorschlag v = await Wege.NennleistungVorschlagen(_pfad);
+        NennleistungUebernehmen(v);
+    }
+
+    /// <summary>Belegt die Nennleistung mit einem Vorschlag vor (Dateikopf oder Spitze) und prüft sie.</summary>
+    private void NennleistungUebernehmen(GanglinienNennleistungsvorschlag? v)
+    {
         if (v is null || v.VorschlagKwp is null) return;
         _nennleistung = v.VorschlagKwp;
         _spitzeKw = v.SpitzeKw;
@@ -514,12 +588,15 @@
                 _ = InvokeAsync(StateHasChanged);
             });
 
-            GanglinienKatalogimport erg = Wege.EinlesenMitNennleistung is not null && Wege.NennleistungVorschlagen is not null
+            GanglinienKatalogimport erg = _gelesen is not null && Wege.EinlesenGelesen is not null
+                ? await Wege.EinlesenGelesen(_pfad, _gelesen, _nennleistung, melder)
+                : Wege.EinlesenMitNennleistung is not null && Wege.NennleistungVorschlagen is not null
                 ? await Wege.EinlesenMitNennleistung(_pfad, _nennleistung, melder)
                 : await Wege.Einlesen!(_pfad, melder);
             if (erg.Erfolgreich)
             {
                 _pfad = "";
+                _gelesen = null;
                 NennleistungLeeren();
                 _importOffen = false;
                 _protokoll = erg.Protokoll ?? "";

@@ -4514,6 +4514,30 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="IMPORT_PROT_GELESEN" xml:space="preserve">
     <value>Gelesen: {0} Werte, {1} Zeitstempel.</value>
   </data>
+  <data name="IMPORT_PROBE_RASTER" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → Raster {1} ({2} Werte)</value>
+  </data>
+  <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → kein Raster: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="IMPORT_PROBE_VIERTEL" xml:space="preserve">
+    <value>Viertelstunde</value>
+  </data>
+  <data name="IMPORT_GRP_GRAFIK" xml:space="preserve">
+    <value>Gelesene Reihe</value>
+  </data>
+  <data name="IMPORT_BILD_TITEL" xml:space="preserve">
+    <value>Gelesene Ganglinie</value>
+  </data>
+  <data name="PVG_BILD_TITEL" xml:space="preserve">
+    <value>Photovoltaik Jahresganglinie</value>
+  </data>
+  <data name="SGL_BILD_TITEL" xml:space="preserve">
+    <value>Solarthermie Jahresganglinie</value>
+  </data>
   <data name="IMPORT_TITEL_OPTIONEN" xml:space="preserve">
     <value>Lastgang einlesen - Format und Vorschau</value>
   </data>
@@ -9471,6 +9495,12 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_MASKE_MEHRDEUTIG" xml:space="preserve">
     <value>Es ist keine steuerbare Maske geöffnet, und die genannten Felder passen gleich gut zu mehreren Masken: {0}. Die Aktion dialog_oeffnen mit dem Schlüssel der gemeinten Maske führt dorthin; dort lassen sich die Werte setzen.</value>
   </data>
+  <data name="KI_DLG_MASKE_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Der Maskenname „{0}“ passt zu mehreren Masken: {1}. Bitte den Schlüssel oder den vollständigen Anzeigenamen der gemeinten Maske nennen.</value>
+  </data>
+  <data name="KI_DLG_OFFENE_MASKE" xml:space="preserve">
+    <value>Geöffnet ist gerade die Maske „{0}“ ({1}).</value>
+  </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
     <value>Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern.</value>
   </data>
@@ -9589,7 +9619,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Knopf</value>
   </data>
   <data name="KI_REG_ERL_MASKE" xml:space="preserve">
-    <value>Typname der Maske, z. B. „Form_PV“. Ohne Angabe gilt die gerade geöffnete steuerbare Maske.</value>
+    <value>Schlüssel oder Anzeigename der Maske, z. B. „Form_WP_Anlage“ oder „Wärmepumpe im Projekt“. Ohne Angabe gilt die gerade geöffnete steuerbare Maske.</value>
   </data>
   <data name="KI_REG_ERL_FELD" xml:space="preserve">
     <value>Logischer Name des Feldes, wie ihn dialog_lesen nennt.</value>
@@ -20168,7 +20198,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Feldwerte lassen sich hier nicht mitsenden: Die Einwilligung „Dialogdaten“ kann nicht eingeholt werden.</value>
   </data>
   <data name="KI_DIALOGDATEN_BLOCK_KOPF" xml:space="preserve">
-    <value>Werte der offenen Maske „{0}“ ({1} Felder):</value>
+    <value>Werte der offenen Maske „{0}“ (Schlüssel {2}, {1} Felder):</value>
   </data>
   <data name="KI_DIALOGDATEN_LEER" xml:space="preserve">
     <value>(leer)</value>
@@ -20381,7 +20411,7 @@ Möchten Sie das zulassen?</value>
     <value>Öffne die Heizkesselverwaltung.</value>
   </data>
   <data name="KI_AKTION_ERL_MASKE_OEFFNEN" xml:space="preserve">
-    <value>Name der Maske aus dem Dialogkatalog, die geöffnet werden soll.</value>
+    <value>Schlüssel oder Anzeigename der Maske aus dem Dialogkatalog, die geöffnet werden soll, z. B. „Form_WP_Anlage“ oder „Wärmepumpe im Projekt“.</value>
   </data>
   <data name="KI_AKTION_ZWECK_DIALOG_SPEICHERN" xml:space="preserve">
     <value>Speichert die Eingaben der offenen Maske über deren eigenen Speicherweg in die Datenbank.</value>
@@ -51378,6 +51408,18 @@ Chart</value>
   </data>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
+  </data>
+  <data name="IMPORT_PROT_KEIN_TEXT" xml:space="preserve">
+    <value>Die Datei „{0}“ ist keine Textdatei (Binärinhalt) – vermutlich eine Excel-, ZIP- oder Bilddatei mit falscher Endung.</value>
+  </data>
+  <data name="IMP_MSG_DATEI_GRUND" xml:space="preserve">
+    <value>Datei „{0}“: {1}</value>
+  </data>
+  <data name="IMP_MSG_UNERWARTET" xml:space="preserve">
+    <value>Die Datei „{0}“ konnte nicht eingelesen werden: {1}</value>
+  </data>
+  <data name="IMPORT_MSG_VORSCHAU_UNLESBAR" xml:space="preserve">
+    <value>Mit diesen Einstellungen ist die Datei nicht lesbar: {0}</value>
   </data>
 </root>
 

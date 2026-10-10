@@ -356,6 +356,45 @@ namespace EPOS.Kern.Tests
             finally { Dienste.Navigation = vorher; }
         }
 
+        /// <summary>
+        /// <b>dialog_oeffnen nimmt auch den Anzeigenamen</b> (Anwendermeldung 10.10.2026) -
+        /// gefaltet wie der Schluessel; geoeffnet wird das Ziel des aufgeloesten Schluessels.
+        /// </summary>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Dialog_oeffnen_nimmt_den_Anzeigenamen(bool gefaltet)
+        {
+            INavigation vorher = Dienste.Navigation;
+            var mitschrift = new Mitschreibnavigation();
+            try
+            {
+                Dienste.Navigation = mitschrift;
+                string anzeige = KiDialoge.Katalog.Finde(KiMaskennamen.KLIMADATEN).Anzeigename;
+
+                KiErgebnis ergebnis = await Frisch().AusfuehrenAsync(
+                    "dialog_oeffnen",
+                    new Dictionary<string, object> { ["maske"] = gefaltet ? anzeige.ToUpperInvariant() : anzeige });
+
+                Assert.True(ergebnis.Status == KiStatus.Ausgefuehrt, ergebnis.Text);
+                Assert.Equal(KiMaskenziele.KLIMADATEN, mitschrift.Maske);
+            }
+            finally { Dienste.Navigation = vorher; }
+        }
+
+        [Fact]
+        public async Task Dialog_oeffnen_nennt_die_Freigaben_mit_Anzeigename_und_Schluessel()
+        {
+            KiDialog erste = KiDialoge.Katalog.Alle[0];
+
+            KiErgebnis ergebnis = await Frisch().AusfuehrenAsync(
+                "dialog_oeffnen",
+                new Dictionary<string, object> { ["maske"] = "Form_GibtEsNicht" });
+
+            Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
+            Assert.Contains(erste.Anzeigename + " (" + erste.Maskenname + ")", ergebnis.Text, StringComparison.Ordinal);
+        }
+
         /// <summary>Eine Navigation, die mitschreibt, was sie zu oeffnen bekam.</summary>
         private sealed class Mitschreibnavigation : INavigation
         {

@@ -4498,6 +4498,30 @@ Please run the simulation with photovoltaics first.</value>
   <data name="IMPORT_PROT_GELESEN" xml:space="preserve">
     <value>Read: {0} values, {1} time stamps.</value>
   </data>
+  <data name="IMPORT_PROBE_RASTER" xml:space="preserve">
+    <value>{0} data rows read → interval {1} ({2} values)</value>
+  </data>
+  <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
+    <value>{0} data rows read → no interval: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
+    <value>hour</value>
+  </data>
+  <data name="IMPORT_PROBE_VIERTEL" xml:space="preserve">
+    <value>quarter hour</value>
+  </data>
+  <data name="IMPORT_GRP_GRAFIK" xml:space="preserve">
+    <value>Series read</value>
+  </data>
+  <data name="IMPORT_BILD_TITEL" xml:space="preserve">
+    <value>Load profile read</value>
+  </data>
+  <data name="PVG_BILD_TITEL" xml:space="preserve">
+    <value>Photovoltaics annual load profile</value>
+  </data>
+  <data name="SGL_BILD_TITEL" xml:space="preserve">
+    <value>Solar thermal annual load profile</value>
+  </data>
   <data name="IMPORT_TITEL_OPTIONEN" xml:space="preserve">
     <value>Import load curve - format and preview</value>
   </data>
@@ -9464,6 +9488,12 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_MASKE_MEHRDEUTIG" xml:space="preserve">
     <value>No controllable form is open, and the named fields fit several forms equally well: {0}. The action dialog_oeffnen with the key of the intended form leads there; the values can be set there.</value>
   </data>
+  <data name="KI_DLG_MASKE_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>The form name “{0}” fits several forms: {1}. Please name the key or the full display name of the intended form.</value>
+  </data>
+  <data name="KI_DLG_OFFENE_MASKE" xml:space="preserve">
+    <value>The form currently open is “{0}” ({1}).</value>
+  </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
     <value>The named fields belong to the form “{0}”. It is not open right now — the action dialog_oeffnen ({1}) leads there. In an administration the field “satz” selects the catalogue record; then the values can be set and saved with dialog_speichern.</value>
   </data>
@@ -9582,7 +9612,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>Button</value>
   </data>
   <data name="KI_REG_ERL_MASKE" xml:space="preserve">
-    <value>Type name of the form, e.g. “Form_PV”. Without an entry the currently open controllable form applies.</value>
+    <value>Key or display name of the form, e.g. “Form_WP_Anlage” or “Heat pump in the project”. Without an entry the currently open controllable form applies.</value>
   </data>
   <data name="KI_REG_ERL_FELD" xml:space="preserve">
     <value>Logical name of the field as named by dialog_lesen.</value>
@@ -20161,7 +20191,7 @@ Please go through the project page again so that the data of the selected projec
     <value>Field values cannot be sent here: the “dialog data” consent cannot be obtained.</value>
   </data>
   <data name="KI_DIALOGDATEN_BLOCK_KOPF" xml:space="preserve">
-    <value>Values of the open dialog “{0}” ({1} fields):</value>
+    <value>Values of the open dialog “{0}” (key {2}, {1} fields):</value>
   </data>
   <data name="KI_DIALOGDATEN_LEER" xml:space="preserve">
     <value>(empty)</value>
@@ -20374,7 +20404,7 @@ Do you want to allow this?</value>
     <value>Open the boiler administration.</value>
   </data>
   <data name="KI_AKTION_ERL_MASKE_OEFFNEN" xml:space="preserve">
-    <value>Name of the form from the dialog catalogue that is to be opened.</value>
+    <value>Key or display name of the form from the dialog catalogue that is to be opened, e.g. “Form_WP_Anlage” or “Heat pump in the project”.</value>
   </data>
   <data name="KI_AKTION_ZWECK_DIALOG_SPEICHERN" xml:space="preserve">
     <value>Saves the entries of the open form to the database through the form's own save path.</value>
@@ -51371,6 +51401,18 @@ chart</value>
   </data>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
+  </data>
+  <data name="IMPORT_PROT_KEIN_TEXT" xml:space="preserve">
+    <value>The file “{0}” is not a text file (binary content) – probably an Excel, ZIP or image file with the wrong extension.</value>
+  </data>
+  <data name="IMP_MSG_DATEI_GRUND" xml:space="preserve">
+    <value>File “{0}”: {1}</value>
+  </data>
+  <data name="IMP_MSG_UNERWARTET" xml:space="preserve">
+    <value>The file “{0}” could not be imported: {1}</value>
+  </data>
+  <data name="IMPORT_MSG_VORSCHAU_UNLESBAR" xml:space="preserve">
+    <value>The file cannot be read with these settings: {0}</value>
   </data>
 </root>
 

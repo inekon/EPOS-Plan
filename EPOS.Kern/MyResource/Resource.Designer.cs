@@ -42042,6 +42042,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesene Ganglinie ähnelt.
+        /// </summary>
+        public static string IMPORT_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("IMPORT_BILD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string IMPORT_BTN_ABBRECHEN {
@@ -42173,6 +42182,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_GRP_EINLESEN {
             get {
                 return ResourceManager.GetString("IMPORT_GRP_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesene Reihe ähnelt.
+        /// </summary>
+        public static string IMPORT_GRP_GRAFIK {
+            get {
+                return ResourceManager.GetString("IMPORT_GRP_GRAFIK", resourceCulture);
             }
         }
         
@@ -42438,6 +42456,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit diesen Einstellungen ist die Datei nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_VORSCHAU_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_VORSCHAU_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → kein Raster: {1} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_KEIN_RASTER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_KEIN_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → Raster {1} ({2} Werte) ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_RASTER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_STUNDE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstunde ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_VIERTEL {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_VIERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gesamte Reihe ist null. ähnelt.
         /// </summary>
         public static string IMPORT_PROT_ALLE_NULL {
@@ -42551,6 +42614,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_PROT_KEINE_WERTE {
             get {
                 return ResourceManager.GetString("IMPORT_PROT_KEINE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist keine Textdatei (Binärinhalt) – vermutlich eine Excel-, ZIP- oder Bilddatei mit falscher Endung. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_KEIN_TEXT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_KEIN_TEXT", resourceCulture);
             }
         }
         
@@ -47294,6 +47366,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_MSG_BILANZ {
             get {
                 return ResourceManager.GetString("IMP_MSG_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string IMP_MSG_DATEI_GRUND {
+            get {
+                return ResourceManager.GetString("IMP_MSG_DATEI_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ konnte nicht eingelesen werden: {1} ähnelt.
+        /// </summary>
+        public static string IMP_MSG_UNERWARTET {
+            get {
+                return ResourceManager.GetString("IMP_MSG_UNERWARTET", resourceCulture);
             }
         }
         
@@ -52933,7 +53023,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Maske aus dem Dialogkatalog, die geöffnet werden soll. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel oder Anzeigename der Maske aus dem Dialogkatalog, die geöffnet werden soll, z. B. „Form_WP_Anlage“ oder „Wärmepumpe im Projekt“. ähnelt.
         /// </summary>
         public static string KI_AKTION_ERL_MASKE_OEFFNEN {
             get {
@@ -54301,7 +54391,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Werte der offenen Maske „{0}“ ({1} Felder): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte der offenen Maske „{0}“ (Schlüssel {2}, {1} Felder): ähnelt.
         /// </summary>
         public static string KI_DIALOGDATEN_BLOCK_KOPF {
             get {
@@ -60659,6 +60749,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Maskenname „{0}“ passt zu mehreren Masken: {1}. Bitte den Schlüssel oder den vollständigen Anzeigenamen der gemeinten Maske nennen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_NAME_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_NAME_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern. ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_NICHT_OFFEN {
@@ -61537,6 +61636,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_NUD_WERT_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_NUD_WERT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geöffnet ist gerade die Maske „{0}“ ({1}). ähnelt.
+        /// </summary>
+        public static string KI_DLG_OFFENE_MASKE {
+            get {
+                return ResourceManager.GetString("KI_DLG_OFFENE_MASKE", resourceCulture);
             }
         }
         
@@ -71795,7 +71903,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typname der Maske, z. B. „Form_PV“. Ohne Angabe gilt die gerade geöffnete steuerbare Maske. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schlüssel oder Anzeigename der Maske, z. B. „Form_WP_Anlage“ oder „Wärmepumpe im Projekt“. Ohne Angabe gilt die gerade geöffnete steuerbare Maske. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_MASKE {
             get {
@@ -95864,6 +95972,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik Jahresganglinie ähnelt.
+        /// </summary>
+        public static string PVG_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("PVG_BILD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Katalog erneuern… ähnelt.
         /// </summary>
         public static string PVG_BTN_ERNEUERN {
@@ -102064,6 +102181,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SGAD_TITEL {
             get {
                 return ResourceManager.GetString("SGAD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie Jahresganglinie ähnelt.
+        /// </summary>
+        public static string SGL_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("SGL_BILD_TITEL", resourceCulture);
             }
         }
         

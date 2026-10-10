@@ -36,4 +36,21 @@ internal static class KiSetzweg
         vorbereitung.Freigabe.Erteilen();
         return await schicht.AusfuehrenAsync(geprueft.Aufruf, vorbereitung.Freigabe, CancellationToken.None);
     }
+
+    /// <summary>
+    /// Derselbe ganze Weg für eine beliebige Aktion mit beliebigen Werten — etwa
+    /// <c>formular_ausfuellen</c> mit einem Anzeigenamen als <c>maske</c>.
+    /// </summary>
+    public static async Task<KiErgebnis> Ausfuehren(string aktion, IReadOnlyDictionary<string, object?> werte)
+    {
+        var schicht = new KiAusfuehrung { Schreibrecht = () => true };
+        KiPruefErgebnis geprueft = KiPruefung.Pruefe(schicht.Register, aktion, werte);
+        Assert.True(geprueft.Gueltig, geprueft.FehlerText());
+
+        KiVorbereitung vorbereitung = await schicht.VorbereitenAsync(geprueft.Aufruf, CancellationToken.None);
+        if (vorbereitung.Freigabe is null) return vorbereitung.Ablehnung;
+
+        vorbereitung.Freigabe.Erteilen();
+        return await schicht.AusfuehrenAsync(geprueft.Aufruf, vorbereitung.Freigabe, CancellationToken.None);
+    }
 }
