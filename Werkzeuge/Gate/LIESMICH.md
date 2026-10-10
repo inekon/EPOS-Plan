@@ -1,7 +1,7 @@
 # Gate-Skripte der Wirtschaftlichkeits-Sitzung
 
 - `gate_windows.sh <Nr> <Worktree>` — die bisherige Windows-Fassung (Git Bash): wartet mit `tasklist` auf fremde `testhost`-Prozesse,
-  vergleicht die ChartProben mit der lokalen Windows-Messlatte `C:\Waermeplan\.claude\gate\messlatte_windows.sha256` (183 Hashes seit BV‑E5)
+  vergleicht die ChartProben mit der lokalen Windows-Messlatte `C:\Waermeplan\.claude\gate\messlatte_windows.sha256` (222 Hashes, Stand `Messlatte_2026-10-10.sha256`)
   und legt das Ergebnis unter `C:\Waermeplan\.claude\gate\GATE<Nr>` ab. Den Referenzlauf enthält sie nicht (eigener Schritt).
 - `gate_linux.sh <Nr> [Repo-Wurzel]` — die Fassung für Cloud- und Linux-Sitzungen: Kern-Filter, ChartProben gegen die versionierte
   Linux-Messlatte `Proben/ChartProben/Messlatte_*.sha256`, Tests mit den xUnit-Schaltern, Dokumentationswachen und der Referenzlauf
