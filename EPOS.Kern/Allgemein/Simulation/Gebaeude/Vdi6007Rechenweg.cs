@@ -185,11 +185,23 @@ namespace WindowsFormsApplication1
                 // Stufe KP3 (Entwurf KP3, Festlegungen 1 und 2): die Aufheizrampe NACH dem Bauen -
                 // Uebergabe, Kaelte, F21 und die stuendliche Kuehlpruefung haben die Reihe ohne Rampe
                 // gesehen; ThetaSoll traegt danach die Rampe. Schalter aus = kein Aufruf (Grundsatz 3).
-                if (Aufheizvorgabe != null && Aufheizvorgabe.An)
-                    LetzterAufheizplan = Aufheizoptimierung.Anwenden(ZonenEingang.Einzeln(eingang), Aufheizvorgabe,
+                // Welle V2 (Entwurf Vorheizrampe Fassung 2, 2.5): Option 1 rechnet erst den Vorlauf ohne Vorheizen und setzt
+                // dann Fenster und Deckelreihe; die Sollwertrampe (Vorgabe) bleibt Zeichen für Zeichen der Bestand.
+                Vorheizrueckfall rueckfall = Vorheizplanung.Rueckfall(Aufheizvorgabe, Anlagenkopplung, eingang.KopplungWirksam);
+                Aufheizvorgabe vorgabe = Vorheizplanung.Wirksam(Aufheizvorgabe, rueckfall);
+                if (Vorheizplanung.Anwendbar(vorgabe))
+                    LetzterAufheizplan = Vorheizplanung.AnwendenEinzone(eingang, vorgabe, index, gebaeude.ID_Gebaeude,
+                                                                        AufheizleistungTestW);
+                else if (vorgabe != null && vorgabe.An)
+                    LetzterAufheizplan = Aufheizoptimierung.Anwenden(ZonenEingang.Einzeln(eingang), vorgabe,
                                                                      AufheizleistungTestW);
 
                 GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude, LetzterAufheizplan);
+                if (LetzterAufheizplan?.Vorheizen != null)
+                {
+                    Vorheizplanung.NachweisenEinzone(eingang, LetzterAufheizplan, ergebnis);
+                    ergebnis.Vorheizen = Vorheizplanung.Gebaeudewerte(new[] { LetzterAufheizplan });
+                }
 
                 // AK3-W3b (Entwurf AK3 2.1 Schritt 3): Im AK3-Weg ist dieser Lauf Pass 1; daneben entsteht aus
                 // DEMSELBEN Eingang ein zweiter, noch nicht eingeschwungener Stepper für den Kreis. Ohne Erfassung
@@ -216,6 +228,7 @@ namespace WindowsFormsApplication1
                 if (!Probelauf)
                 {
                     HinweisReserveVorgabe(Aufheizvorgabe);
+                    HinweisVorheizen(rueckfall, ergebnis.Vorheizen, wer);
                     Melden(eingang, ergebnis, gemeinsam, wer);
                     KopplungMelden(eingang, ergebnis, gebaeude, wer);
                 }
@@ -255,8 +268,12 @@ namespace WindowsFormsApplication1
 
                 // Stufe KP3 (Festlegung 1): die Aufheizrampen am Ende von ZonenEingang.Bauen, in beiden
                 // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
+                // Welle V2: Rückfall auf die Sollwertrampe (AK3, Heizkreis-Schalter) vor dem Bau der Zonen.
+                Vorheizrueckfall rueckfall = Vorheizplanung.Rueckfall(AufheizvorgabeAn, Anlagenkopplung,
+                                                                      Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung));
                 Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index,
-                    gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
+                    gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam),
+                    Vorheizplanung.Wirksam(AufheizvorgabeAn, rueckfall), AufheizleistungTestW,
                     AnlagenVorlaufC, VerfuegbarkeitJeZone, KuehlVorlaufAnlageC, KuehlVorlaufErzeugerMinC);
                 LetztesMehrzonenergebnis = m;
 
@@ -274,6 +291,7 @@ namespace WindowsFormsApplication1
                 if (!Probelauf)
                 {
                     HinweisReserveVorgabe(Aufheizvorgabe);
+                    HinweisVorheizen(rueckfall, m.Gebaeude.Vorheizen, wer);
                     MeldenMehrzonen(m, gemeinsam, wer);
                 }
                 return true;
@@ -441,7 +459,7 @@ namespace WindowsFormsApplication1
                                       kz.GroessteUeberschreitungK.ToString("0.0#", k)));
             }
             // Stufe KP3 (Festlegung 21): die Laufhinweise der Aufheizoptimierung einmal je Gebaeude.
-            HinweisAufheizung(m.Gebaeude.Aufheizung, wer);
+            if (m.Gebaeude.Vorheizen == null) HinweisAufheizung(m.Gebaeude.Aufheizung, wer);
             HinweisErdreichumfang(m.Gebaeude.Erdreich, wer);
 
             if (!(m.Gebaeude.VerbrauchAltKwh > 0.0))
@@ -637,6 +655,48 @@ namespace WindowsFormsApplication1
             SimulationProtokoll.Aktuell.HinweisEinmal("aufh-reserve-vorgabe",
                 "Gebäudemodell VDI 6007: " + string.Format(k, MyResource.Resource.SIMENG_AUFH_RESERVE_VORGABE,
                                                             (AufheizvorgabeSchema.RESERVE_VORGABE * 100.0).ToString("0.#", k)));
+        }
+
+        /// <summary>
+        /// <b>Die Laufhinweise des Vorheizens</b> (Entwurf Vorheizrampe Fassung 2, 2.5, 2.9; Welle V2) — einmal je Gebäude:
+        /// der Rückfall auf die Sollwertrampe (AK3, Heizkreis-Schalter, keine Vorheizzeit, Verfahren „Berechnet“), sonst
+        /// die Kennzahlen (t_V, Φ_K,max, P_K, P_V, Spitze, Nächte ohne Absenkung, Mehrwärme), die Tage ohne Ankunft, die
+        /// Floor-Stunden, die Toleranz 0, Zonen ohne Sprung und die Übergänge aus „aus“. Ohne Vorheizen schweigt die Methode.
+        /// </summary>
+        internal static void HinweisVorheizen(Vorheizrueckfall rueckfall, Vorheizgebaeude v, string wer)
+        {
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string kopf = "Gebäudemodell VDI 6007: " + wer + " — ";
+            string grund = rueckfall switch
+            {
+                Vorheizrueckfall.Ak3 => MyResource.Resource.SIMENG_VORH_RUECKFALL_AK3,
+                Vorheizrueckfall.Heizkreis => MyResource.Resource.SIMENG_VORH_RUECKFALL_HEIZKREIS,
+                Vorheizrueckfall.OhneVorheizzeit => MyResource.Resource.SIMENG_VORH_RUECKFALL_OHNE_ZEIT,
+                Vorheizrueckfall.Berechnet => MyResource.Resource.SIMENG_VORH_RUECKFALL_BERECHNET,
+                _ => null,
+            };
+            if (grund != null) p.HinweisEinmal("vorh-rueckfall-" + wer, kopf + grund);
+            if (v == null) return;
+            p.HinweisEinmal("vorh-kennzahlen-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_KENNZAHLEN,
+                v.VorheizzeitMaxH.ToString(k), (v.PhiKMaxW / 1000.0).ToString("0.0", k), (v.DeckelW / 1000.0).ToString("0.0", k),
+                (v.VorheizleistungW / 1000.0).ToString("0.0", k), (v.SpitzeW / 1000.0).ToString("0.0", k),
+                v.NaechteOhneAbsenkung.ToString(k), (v.MehrwaermeKwh / 1000.0).ToString("0.00", k),
+                double.IsNaN(v.MehrwaermeProzent) ? "–" : v.MehrwaermeProzent.ToString("0.0", k)));
+            if (v.TageOhneAnkunftAnzahl > 0)
+                p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE,
+                    v.TageOhneAnkunftAnzahl.ToString(k), v.UnterschreitungMaxK.ToString("0.0", k)));
+            if (v.FloorstundenH > 0)
+                p.HinweisEinmal("vorh-floor-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_FLOOR,
+                    v.FloorstundenH.ToString(k)));
+            if (v.ToleranzNull)
+                p.HinweisEinmal("vorh-toleranz-null-" + wer, kopf + MyResource.Resource.SIMENG_VORH_TOLERANZ_NULL);
+            if (v.ZonenOhneSprung > 0)
+                p.HinweisEinmal("vorh-ohne-sprung-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_OHNE_SPRUNG,
+                    v.ZonenOhneSprung.ToString(k)));
+            if (v.SpruengeAus > 0)
+                p.HinweisEinmal("vorh-aus-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_AUS,
+                    v.SpruengeAus.ToString(k)));
         }
 
         /// <summary>
@@ -932,7 +992,7 @@ namespace WindowsFormsApplication1
             HinweisUntertemperatur(e, r, wer);
             HinweisAbschnitte(r, wer);
             HinweisErdreichumfang(r.Erdreich, wer);
-            HinweisAufheizung(r.Aufheizung, wer);
+            if (r.Vorheizen == null) HinweisAufheizung(r.Aufheizung, wer);
             HinweisZonensperre(r.Zonensperre, wer);
             if (e.Bauteilweg)
             {

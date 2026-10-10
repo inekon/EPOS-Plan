@@ -365,6 +365,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Raumluft im Augenblick am Beginn der Stunde</b> (Entwurf Vorheizrampe Fassung 2, 2.1 „Ankunft“, Welle V2;
+        /// E58 F1 (b)): der Fall, den der Löser im Zustand der Massen für den Rand <paramref name="r"/> zuerst wählt, und
+        /// darin die Raumluft — im geregelten Fall der Sollwert (bzw. die obere Grenze), sonst die freie Luft des Falls
+        /// (Heizgrenze, Totband, Übergabe mit Leitwert). Rein: Zustand, Muster und Zähler bleiben unberührt.
+        /// </summary>
+        internal double LuftAmBeginn(in Stundenrand r)
+        {
+            RandPruefen(in r);
+            Vektor2 x = new Vektor2(_thetaMAw, _thetaMIw);
+            Betriebsfall fall = FallWaehlen(x, in r, out Abschnitt ab);
+            if (ab.System.Geregelt)
+                return fall == Betriebsfall.KuehlenGeregelt ? r.ThetaMax : r.ThetaSoll;
+            return ab.Ausgang(2, x);
+        }
+
+        /// <summary>
         /// Rechnet eine Blockstunde mit den Randbedingungen <paramref name="r"/> und
         /// schreibt den Zustand fort.
         /// </summary>

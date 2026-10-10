@@ -370,6 +370,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal bool KopplungWirksam { get; private set; }
 
+        /// <summary>
+        /// Erfasst der Lauf die Massen am Stundenende (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V2)? Gesetzt nur von
+        /// <see cref="Vorheizplanung"/>; ohne Schalter rechnet und schreibt jeder Lauf wie zuvor.
+        /// </summary>
+        internal bool MassenErfassen { get; set; }
+
         /// <summary>Die Kennwerte der Übergabe in W und W/K; <c>null</c> ohne wirksame Kopplung.</summary>
         internal Uebergabekennwerte Uebergabe { get; private set; }
 
