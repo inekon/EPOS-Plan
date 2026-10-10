@@ -1459,3 +1459,13 @@ Projekt-Kopfleiste (die Probe setzt „1.240,5“). Gemerkt wird die Wahl in den
 `bannerprobe.mjs` (der BHKW-Fall wählt seine Katalogzeile über `.epos-zeilenzelle--name` — der
 Katalog des BHKW-Dialogs ist seit seiner Stufe 3 eine Zeilenwahl ohne Wahlknopf), `legendenprobe.mjs`,
 `kennzahlenprobe.mjs`.
+
+**Trefferzahl und Hinweis der Spaltenwahl (DZ1, Konzept 4.10).** Dieselben KS1-Fälle messen zusätzlich: Die
+Trefferzahl der Katalog-Kopfleiste kürzt nicht mit Auslassung und ihr Zahlteil steht ganz in ihrem Kasten (das
+Hauptwort darf fehlen, die Probe meldet, ob es steht); in der offenen Auswahl steht neben jeder angehakten
+Spalte, deren Kopf bei der Breite ausgeblendet ist, der Hinweis „bei dieser Breite ausgeblendet“, und neben
+keiner sichtbaren. Die Gegenprobe kneift die Trefferzahl zusätzlich auf 30 px und versteckt den Hinweis.
+**Ergebnis vom 10.10.2026:** 4 von 4 Fällen erfüllt, Gegenprobe rot („Trefferzahl abgeschnitten; Hinweis fehlt
+bei ausgeblendeter Spalte: Brennstoff, η, Brennwert“). Trefferzahl in allen vier Fällen „40 von 40 Sätzen“ mit
+Hauptwort; Hinweis bei 768 × 1 024 am Heizkessel neben Brennstoff, η und Brennwert, am BHKW neben Brennstoff,
+P_th, σ, η und Motortyp, bei 1 280 × 800 am BHKW neben Motortyp, am Heizkessel neben keiner Spalte.

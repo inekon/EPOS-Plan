@@ -423,7 +423,10 @@
 
         <span class="epos-leiste-fueller"></span>
 
-        <span class="epos-katalog-treffer">@Trefferzeile</span>
+        @* DIE TREFFERZAHL kuerzt nie mit Auslassung (4.10): Bei Platzmangel faellt zuerst das
+           Hauptwort weg ("40 von 40"), das Suchfeld gibt davor nach. *@
+        <span class="epos-katalog-treffer" title="@Trefferzeile"><span class="epos-katalog-treffer-zahl">@Trefferzahl</span>@if (Trefferwort.Length > 0)
+        {<span class="epos-katalog-treffer-wort">@Trefferwort</span>}</span>
 
         @* DIE LEGENDE DER VERWENDUNGSMARKE (4.10): nur, wenn mindestens eine Zeile im
            Projekt verwendet ist. *@
@@ -438,7 +441,7 @@
         @* DIE SPALTENWAHL (4.10): nur, wo ein Dialogname die Wahl merken kann. *@
         @if (SpaltenwahlAktiv)
         {
-            <Spaltenwahl Spalten="@WaehlbareSpalten" Angezeigt="@_istAngezeigt"
+            <Spaltenwahl Spalten="@WaehlbareSpalten" Angezeigt="@_istAngezeigt" Stufe="@_stufeZu"
                          Gemerkt="@(_spaltenwahl is not null)" Texte="@Texte"
                          Offen="@SpaltenwahlOffen" OffenChanged="SpaltenwahlOffenSetzen"
                          Umgeschaltet="SpalteUmschalten" Standard="SpaltenStandard" />
@@ -721,6 +724,7 @@
     {
         _zeilenklasse = Zeilenklasse;
         _istAngezeigt = IstAngezeigt;
+        _stufeZu = StufeZu;
         _tastenfuehrung = EventCallback.Factory.Create<KeyboardEventArgs>(this, BeiTaste);
     }
 
@@ -1248,6 +1252,21 @@
                       _gefiltert.Count.ToString("N0", CultureInfo.CurrentCulture),
                       Zeilen.Count.ToString("N0", CultureInfo.CurrentCulture));
 
+    /// <summary>Die Trefferzahl ohne Hauptwort; trägt der Wirt eine eigene Zeile, steht sie ganz hier.</summary>
+    private string Trefferzahl
+    {
+        get
+        {
+            string kurz = string.Format(CultureInfo.CurrentCulture, Texte.TrefferKurz,
+                                        _gefiltert.Count.ToString("N0", CultureInfo.CurrentCulture),
+                                        Zeilen.Count.ToString("N0", CultureInfo.CurrentCulture));
+            return Trefferzeile.StartsWith(kurz, StringComparison.Ordinal) ? kurz : Trefferzeile;
+        }
+    }
+
+    /// <summary>Das Hauptwort der Trefferzahl samt Leerzeichen („ Sätzen“) — es weicht zuerst.</summary>
+    private string Trefferwort => Trefferzeile.Substring(Trefferzahl.Length);
+
     private Task BeiSuche(ChangeEventArgs e)
     {
         Stand.Suche = e.Value?.ToString() ?? "";
@@ -1401,6 +1420,12 @@
     private List<Katalogspalte> _angezeigt = new();
     private readonly HashSet<string> _angezeigtMenge = new(StringComparer.Ordinal);
     private Func<Katalogspalte, bool>? _istAngezeigt;
+
+    /// <summary>Die Stufe, ab der eine Spalte steht (0 = immer) — für den Hinweis der Spaltenwahl.</summary>
+    private Func<Katalogspalte, int>? _stufeZu;
+
+    private int StufeZu(Katalogspalte spalte)
+        => _hatRaenge && _stufen.TryGetValue(spalte.Schluessel, out int stufe) ? stufe : 0;
 
     /// <summary>Die Schlüssel der angezeigten Spalten (Prüfhilfe für Tests).</summary>
     public IReadOnlyList<string> AngezeigteSpalten => _angezeigt.Select(s => s.Schluessel).ToList();

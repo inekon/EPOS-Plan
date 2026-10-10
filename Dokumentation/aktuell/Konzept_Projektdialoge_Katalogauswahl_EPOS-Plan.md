@@ -365,13 +365,27 @@ Filtern danach bleiben über die Wahl möglich.
 - Tastatur: Knopf und Kästchen sind mit Tab erreichbar, Esc schließt die Auswahl (nicht den Dialog)
   und gibt den Fokus an den Knopf zurück; ein Klick daneben schließt sie ebenso.
 
+**Hinweis „bei dieser Breite ausgeblendet“ (DZ1).** In der Standardanzeige stehen Spalten mit Rang 2 in
+der Auswahl als angehakt, auch wenn sie bei der aktuellen Breite weichen. Neben einer solchen Spalte steht
+dann leise „bei dieser Breite ausgeblendet“ (`KFLT_SPALTE_AUSGEBLENDET`, englisch „hidden at this width“).
+Der Hinweis folgt derselben Breite wie die Spalte: Er trägt die Stufe der Spalte (`epos-weicht-ab-N` neben
+`epos-spalte-ab-N`) und erscheint unter denselben Containerabfragen — in der Katalogauswahl misst der
+Katalogbereich (`zweispaltenbereich`, seine Inhaltsbreite ist die Listenbreite), sonst die Liste selbst. Mit
+gemerkter Wahl weicht keine Spalte, und es steht kein Hinweis.
+
+**Trefferzahl (DZ1).** Die Trefferzahl in der Kopfleiste des Katalogs kürzt nie mit Auslassung: Sie steht als
+Zahl („40 von 40“, `KFLT_TREFFER_KURZ`) und Hauptwort („ Sätzen“) und schrumpft nicht; fehlt Platz, gibt zuerst
+das Suchfeld nach (bis 7rem), und erst in einem Katalogbereich unter 700 px Breite fällt das Hauptwort weg. Der
+volle Text steht im `title`. Bei 768 px Fensterbreite steht sie ganz („40 von 40 Sätzen“, gemessen 10.10.2026).
+
 **Summe.** In der Kopfleiste des Projekts hat die Summe Vorrang: Zahl und Einheit werden nie gekürzt
 (`flex-shrink: 0`, `white-space: nowrap`); zuerst geben Überschrift und Knöpfe nach (Auslassung, unter
 800 px Bereichsbreite ohne Pfeile), die Kopfleiste bleibt einzeilig.
 
 Nachweis: `EPOS.UI.Tests/Bausteine/KataloglisteSpaltenwahlTests`, die Dialogtests der Wirte und die
 KS1-Fälle von `Proben/Rasterprobe/katalogprobe.mjs` (Heizkessel und BHKW in 1 280 × 800 und
-768 × 1 024, mit Gegenprobe).
+768 × 1 024, mit Gegenprobe; sie messen auch Trefferzahl und Hinweis), dazu
+`EPOS.UI.Tests/Bausteine/KataloglisteTrefferUndHinweisTests`.
 
 ## 5 Rückweg Projekt → Datenbank
 
