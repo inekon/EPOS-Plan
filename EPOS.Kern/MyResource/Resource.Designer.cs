@@ -18689,6 +18689,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}. {1} ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_DATUM_MUSTER {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_DATUM_MUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Bedarf &amp; Deckung ähnelt.
         /// </summary>
         public static string CHART_ACHSE_ENERGIEBEDARF_DECKUNG {
@@ -18703,6 +18712,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_ACHSE_JAHRESSTUNDEN {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_JAHRESSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresstunden [h] · Datum ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_JAHRESSTUNDEN_DATUM {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_JAHRESSTUNDEN_DATUM", resourceCulture);
             }
         }
         
@@ -18739,6 +18757,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_ACHSE_MONATE {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jan.|Feb.|März|Apr.|Mai|Juni|Juli|Aug.|Sep.|Okt.|Nov.|Dez. ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_MONATSKUERZEL {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_MONATSKUERZEL", resourceCulture);
             }
         }
         

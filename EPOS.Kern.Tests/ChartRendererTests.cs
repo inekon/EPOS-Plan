@@ -635,10 +635,14 @@ namespace EPOS.Kern.Tests
             Assert.NotEmpty(teilung);
             Assert.Equal(teilung.Count, rasterlinien);
 
-            // Die Beschriftungen, dann der Achsentitel (CHART_ACHSE_JAHRESSTUNDEN).
-            Assert.Equal(teilung.Count + 1, gezeichnet.Count);
+            // Je Marke Stunde und Datum (Auftrag GX), dann der Achsentitel
+            // (CHART_ACHSE_JAHRESSTUNDEN_DATUM).
+            Assert.Equal(2 * teilung.Count + 1, gezeichnet.Count);
             for (int i = 0; i < teilung.Count; i++)
-                Assert.Equal(teilung[i].Text, gezeichnet[i]);
+            {
+                Assert.Equal(teilung[i].Text, gezeichnet[2 * i]);
+                Assert.Equal(Zeitachse.Markentext(teilung[i].Stunde, 3399 - 2900), gezeichnet[2 * i + 1]);
+            }
 
             // Die Stunden liegen im Fenster und steigen.
             Assert.All(teilung, t => Assert.InRange(t.Stunde, 2900, 3399));
