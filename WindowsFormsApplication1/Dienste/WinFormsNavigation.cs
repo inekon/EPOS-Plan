@@ -123,6 +123,11 @@ namespace WindowsFormsApplication1
                 case Masken.WpKaelteImport:
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.WaermepumpeKuehlung);
 
+                // K-C: der Kaeltemaschinenimport aus dem Menue "Daten & Import" - dieselbe Auspraegung wie
+                // der Knopf "Import..." im Katalog der Kaeltemaschinen.
+                case Masken.KaeltemaschineImport:
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Kaeltemaschine);
+
                 // iU9-W14a.1: Die vier Erzeuger-Katalogbrowser sind EINE
                 // Razor-Komponente mit vier Auspraegungen (KatalogBrowserProfil im
                 // Kern); je Maskenschluessel steht eine schmale Huelle davor. Der

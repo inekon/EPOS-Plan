@@ -28537,6 +28537,9 @@ Möchten Sie das zulassen?</value>
   <data name="MENU_VDI3805_KAELTE" xml:space="preserve">
     <value>Import Kälteanlagen VDI 3805 (Wärmepumpen mit Kühlfunktion)</value>
   </data>
+  <data name="MENU_IMPORT_KAELTEMASCHINEN" xml:space="preserve">
+    <value>Import Kältemaschinen (CSV, Copper)…</value>
+  </data>
   <data name="IMP_KAT_TITEL_WP_KAELTE" xml:space="preserve">
     <value>Kälteanlagen Einlesen – Wärmepumpen mit Kühlfunktion</value>
   </data>
@@ -49565,7 +49568,7 @@ Chart</value>
     <value>Kennfeldpunkte:</value>
   </data>
   <data name="IMP_KAT_HINWEIS_KAELTEMASCHINE" xml:space="preserve">
-    <value>Gelesen werden die Kurvendatei chiller_curves.json der offenen Bibliothek PNNL Copper (BSD-2-Lizenz, Copyright Pacific Northwest National Laboratory) und die CSV-Kennfeldvorlage Kaeltemaschine_Kennfeldvorlage.csv: Kopfzeilen mit Bezeichner, Rückkühlart (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), Nennkälteleistung, Nenn-EER, Mindestteillast und Kältemittel, danach je Zeile Rückkühltemperatur; Kaltwassertemperatur; Kälteleistung in kW; EER. Aus den Kurven entsteht ein Kennfeld mit 6 × 4 Punkten; Nennwerte gelten am Eurovent-Punkt (Kaltwasser 7 °C, Außenluft 35 °C bzw. Kühlwasser 30 °C). Luftgekühlte Kurven beziehen sich auf die Außenluft und werden um die Grädigkeit von 5 K auf die Rückkühltemperatur verschoben.</value>
+    <value>Gelesen werden die Kurvendatei chiller_curves.json der offenen Bibliothek PNNL Copper (BSD-2-Lizenz, Copyright Pacific Northwest National Laboratory) und die CSV-Kennfeldvorlage Kaeltemaschine_Kennfeldvorlage.csv: Kopfzeilen mit Bezeichner, Rückkühlart (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), Nennkälteleistung, Nenn-EER, Mindestteillast und Kältemittel, danach je Zeile Rückkühltemperatur; Kaltwassertemperatur; Kälteleistung in kW; EER. Aus den Kurven entsteht ein Kennfeld mit 6 × 4 Punkten; Nennwerte gelten am Eurovent-Punkt (Kaltwasser 7 °C, Außenluft 35 °C bzw. Kühlwasser 30 °C). Luftgekühlte Kurven beziehen sich auf die Außenluft und werden um die Grädigkeit von 5 K auf die Rückkühltemperatur verschoben. Dazu zwei Formen ohne Kennfeld: Kaeltemaschine_Nennwertvorlage.csv (nur Nennkälteleistung und Nenn-EER) und Kaeltemaschine_Oekodesignvorlage.csv (Pdesignc, SEER und je Teillastpunkt A–D Außentemperatur, Leistung, EER und Teillastverhältnis aus dem Produktdatenblatt). Beide bekommen ein eingebautes Typkennfeld gleicher Rückkühlart und gleichen Verdichters, auf den Nennpunkt bzw. den Punkt A skaliert; aus den Punkten A–D entstehen Teillastkurve und Mindestteillast. Das Leseprotokoll nennt das gewählte Typkennfeld.</value>
   </data>
   <data name="KM_IMP_MSG_UEBERGANGEN" xml:space="preserve">
     <value>{0} Einträge übergangen: {1}</value>

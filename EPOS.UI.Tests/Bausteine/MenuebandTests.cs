@@ -199,7 +199,8 @@ public class MenuebandTests : EposBunitContext
         // KU3-1: der Punkt „Kältemaschinen" neben der Wärmepumpe (66 -> 67, 52 -> 53).
         // PVG (Schemaschritt 206): der Punkt „PV-Ganglinie" unter „Profile & Lastgänge" (67 -> 68, 53 -> 54).
         // E119: der Import für Kälteanlagen unter „Daten & Import" (68 -> 69, 54 -> 55).
-        Assert.Equal(69, Punkte.Count);
+        // K-C: der Import der Kältemaschinen dahinter (69 -> 70, 55 -> 56).
+        Assert.Equal(70, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -445,6 +446,8 @@ public class MenuebandTests : EposBunitContext
             "MeniItem_VDI3805",
             // E119: der Import für Kälteanlagen gleich hinter dem Wärmepumpenimport.
             "MeniItem_VDI3805_Kaelte",
+            // K-C: der Import der Kältemaschinen gleich dahinter.
+            "MenuItem_Import_Kaeltemaschinen",
             "MenuItem_ST_Import",
             "MenuItem_PufferSp_VDI3805",
             "MenuItem_PV_Import_Gruppe",
@@ -629,11 +632,11 @@ public class MenuebandTests : EposBunitContext
         // jetzt der LETZTE von ihnen; danach kommen nur noch Trennstrich und
         // Dublettenpruefung.
         // E119 schiebt den Import fuer Kaelteanlagen hinter den Waermepumpenimport -
-        // alle folgenden Stellen ruecken um eins.
+        // alle folgenden Stellen ruecken um eins; K-C mit dem Import der Kaeltemaschinen noch einmal.
         string[] kinder = Kinder(daten);
-        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[5]);
-        Assert.Equal("MenuItem_SP_Import", kinder[6]);
-        Assert.Equal("MenuItem_TrennerImportDubletten", kinder[7]);
+        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[6]);
+        Assert.Equal("MenuItem_SP_Import", kinder[7]);
+        Assert.Equal("MenuItem_TrennerImportDubletten", kinder[8]);
 
         // Und es gibt ihn GENAU EINMAL - der Katalog "Stromspeicher" steht
         // schon unter "Strombedarf & Speicher", sein IMPORT nur hier.
@@ -930,6 +933,8 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.WpImport,
             // E119: das NEUE Ziel „Import Kälteanlagen VDI 3805".
             Seitenschluessel.WpKaelteImport,
+            // K-C: das NEUE Ziel „Import Kältemaschinen (CSV, Copper)…".
+            Seitenschluessel.KaeltemaschineImport,
         }.OrderBy(z => z, StringComparer.Ordinal).ToArray(),
                      ziele.OrderBy(z => z, StringComparer.Ordinal).ToArray());
     }
@@ -1041,9 +1046,9 @@ public class MenuebandTests : EposBunitContext
         Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^2].TextSchluessel);
         Assert.Equal("", kinder[^2].Bild);
 
-        // Sieben Importe davor, in der Reihenfolge der Kataloge (E119: der Import fuer
-        // Kaelteanlagen hinter dem Waermepumpenimport).
-        Assert.Equal(7, kinder.Take(kinder.Count - 3).Count());
+        // Acht Importe davor, in der Reihenfolge der Kataloge (E119: der Import fuer
+        // Kaelteanlagen hinter dem Waermepumpenimport, K-C: der Kaeltemaschinenimport dahinter).
+        Assert.Equal(8, kinder.Take(kinder.Count - 3).Count());
 
         // Und nicht mehr in der obersten Ebene des Kopfes.
         Assert.DoesNotContain("MenuItem_KatalogDubletten", Kinder(Administration));
@@ -1273,7 +1278,9 @@ public class MenuebandTests : EposBunitContext
         // „PV-Ganglinie" (PVG, Schemaschritt 206) ist ein echter Weg (53 -> 54).
         //
         // Der Import für Kälteanlagen (E119) ist ein echter Weg (54 -> 55).
-        Assert.Equal(55, Punkte.Count(p => !p.Klappt));
+        //
+        // Der Import der Kältemaschinen (K-C) ist ein echter Weg (55 -> 56).
+        Assert.Equal(56, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]
@@ -1994,5 +2001,31 @@ public class MenuebandTests : EposBunitContext
         Assert.Equal("", punkt.Bild);
         Assert.Single(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.WpKaelteImport);
         Assert.NotEqual(Seitenschluessel.WpImport, Seitenschluessel.WpKaelteImport);
+    }
+
+    // =====================================================================
+    //  K-C (E118, 10.10.2026) — der Import der Kaeltemaschinen
+    // =====================================================================
+
+    [Fact]
+    public void Der_Import_der_Kaeltemaschinen_steht_hinter_dem_Import_fuer_Kaelteanlagen()
+    {
+        // Stufe K-C der Konzeptpruefung Kaelteanlagen: Der Menuepunkt oeffnet dieselbe Importart wie der
+        // Knopf "Import..." im Katalog der Kaeltemaschinen - mit eigenem Ziel, ohne Argument.
+        Menuepunkt daten = Rubrik("MenuItem_DatImport");
+        string[] kinder = Kinder(daten);
+        int kaelte = Array.IndexOf(kinder, "MeniItem_VDI3805_Kaelte");
+        Assert.Equal("MenuItem_Import_Kaeltemaschinen", kinder[kaelte + 1]);
+
+        Menuepunkt punkt = daten.Untereintraege.Single(p => p.Name == "MenuItem_Import_Kaeltemaschinen");
+        Assert.False(punkt.Klappt);
+        Assert.Equal(Seitenschluessel.KaeltemaschineImport, punkt.Ziel);
+        Assert.Equal("MENU_IMPORT_KAELTEMASCHINEN", punkt.TextSchluessel);
+        Assert.Equal("", punkt.Argument);
+        Assert.Equal("", punkt.Bild);
+        Assert.Single(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.KaeltemaschineImport);
+        Assert.NotEqual(Seitenschluessel.WpKaelteImport, Seitenschluessel.KaeltemaschineImport);
+        // Der Schluessel ist der Hilfeschluessel des Importdialogs dieser Art ("Form_Kaeltemaschine_einlesen").
+        Assert.Equal("Form_Kaeltemaschine_einlesen", Seitenschluessel.KaeltemaschineImport);
     }
 }

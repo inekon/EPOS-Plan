@@ -83997,6 +83997,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Kältemaschinen (CSV, Copper)… ähnelt.
+        /// </summary>
+        public static string MENU_IMPORT_KAELTEMASCHINEN {
+            get {
+                return ResourceManager.GetString("MENU_IMPORT_KAELTEMASCHINEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
         /// </summary>
         public static string MENU_KAELTEMASCHINEN {

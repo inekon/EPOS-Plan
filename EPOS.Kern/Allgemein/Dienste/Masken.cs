@@ -49,6 +49,12 @@
         /// Blatt 22 (Entscheid E119) — dieselbe Komponente wie <see cref="WpImport"/> im Kältemodus.
         /// </summary>
         public const string WpKaelteImport = "Form_WP_Kaelte_einlesen";
+        /// <summary>
+        /// Kältemaschinen einlesen (K-C): CSV-Vorlage in den Formen Kennfeld, Nennwerte und Ökodesign A–D oder
+        /// Copper-Kurvendatei — derselbe Importdialog wie der Knopf „Import…“ im Katalog der Kältemaschinen
+        /// (<c>KatalogImportArt.Kaeltemaschine</c>).
+        /// </summary>
+        public const string KaeltemaschineImport = "Form_Kaeltemaschine_einlesen";
         /// <summary>Stammdaten Heizkessel.</summary>
         public const string HeizkesselAdmin = "Form_Heizkessel_Admin";
         /// <summary>Stammdaten BHKW.</summary>
