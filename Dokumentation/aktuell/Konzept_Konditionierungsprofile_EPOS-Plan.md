@@ -164,7 +164,7 @@ berührt zwei Ausschlüsse der Schwesterpapiere (2.3) und ist über die Zonenkal
 |---|---|---|
 | B1 | Die Gruppe „Raumtemperaturen" in „Alle Daten" führt **Zahlenfelder**: Soll am Tag, Nachtabsenkung mit Beginn und Ende (volle Stunde, Platzhalter „Vorgabe 22/6"), Maximalraumtemperatur, Wochenendabsenkung, Soll in Ferien (0 °C heißt jeweils unwirksam), darunter vier Ferienzeiträume aus Tag und Monat. Kühl-, Lüftungs- und Lastwerte stehen in anderen Gruppen; eine grafische Kalenderdarstellung gibt es nicht | `EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor:183-260, 340`; `EPOS.UI/Dialoge/Bedarf/GebaeudeKatalogDialog.razor:495` |
 | B2 | Der Sollwertfahrplan ist eine **Stufenfunktion**: Ferien vor Wochenende vor Tag/Nacht. Das Wochenende gilt ganztags und nur mit Wert > 5 °C, der Merker `Wochenende` wird nicht gelesen; Ferien nur mit `Ferien` > 0,9 und Wert ≥ 1 °C; 0 und 366 heißen „aus", Beginn > Ende heißt Jahreswechsel, ein anderer Tag außerhalb 1…365 ist ein benannter Fehler | `GebaeudeModellEingang.cs:1842-1892`; `GebaeudeFestwerte.cs:128-134` |
-| B3 | Der Wochentag kommt aus dem **Wochentagsraster der Klimaregion** (E115, `Konditionierungdatenweg.Raster`), demselben wie im Zapfkalender; eine Preisreihe mit Jahr legt allein die beweglichen Feiertage auf ihre echten Daten. Die Ortszeit ist MEZ/MESZ mit eigener Regel für die Umstellstunden | `EPOS.Kern/Allgemein/Simulation/Klimakalender.cs:83-113`; `EPOS.Kern/Controller/SolardatenCtrl.cs:147-153, 241`; `EPOS.Kern/Allgemein/DbWerte.cs:2681`; `GebaeudeModellEingang.cs:1606-1617` |
+| B3 | Der Wochentag kommt aus dem **Wochentagsraster des Projekts** (E115, `Konditionierungdatenweg.Raster`), demselben wie im Zapfkalender: im Regelfall dem der Klimaregion; trägt das Projekt eine Preisreihe mit Jahr, gilt für alle Leser der Kalender dieses Jahres — Raster des echten 1. Januar und echte Feiertagsdaten. Die Ortszeit ist MEZ/MESZ mit eigener Regel für die Umstellstunden | `EPOS.Kern/Allgemein/Simulation/Klimakalender.cs:83-113`; `EPOS.Kern/Controller/SolardatenCtrl.cs:147-153, 241`; `EPOS.Kern/Allgemein/DbWerte.cs:2681`; `GebaeudeModellEingang.cs:1606-1617` |
 | B4 | Einziger Zeitprogramm-Baustein ist das **Wochenraster** (7 × 24, streng: eine leere Zelle ist ein Fehler), genutzt für `Sollwertprofil` (AK1) und den Erzeugerfahrplan (AK2). `Sollwertprofil`: 168 Werte mit `;`, höchstens 1 400 Zeichen; der Schreiber setzt zwei Nachkommastellen, der Leser nimmt jede Stellenzahl, aber nur Zahlen. Das Profil gilt nur mit wirksamer Kopplung, Ferien wirken darüber | `EPOS.UI/Bausteine/Wochenraster.razor:1-19`; `EPOS.Kern/Allgemein/Update/AnlagenkopplungSchema.cs:233-242, 291-336`; `GebaeudeModellEingang.cs:920, 1559-1599` |
 | B5 | Innere Gewinne sind **ein konstanter Wattwert**, je zur Hälfte konvektiv und radiativ, nach Leitkonzept 3.3 „Leistung des ganzen Katalogbaus, zeitlich konstant". Er entspricht bei rund 150 von 275 Katalogsätzen und 24 von 29 Projektzeilen etwa 70 W je Person (Median 2,3 W/m²). Personen sind keine eigene Größe | `GebaeudeModellEingang.cs:586, 810-811` |
 | B6 | Der Luftwechsel ist eine Konstante (Infiltration + Nutzer, Vorgaben 0,3 und 0,4 1/h). Einzige Zeitabhängigkeit ist die **Sommerlüftung**: 2,0 1/h, ein, wenn die Raumluft der Vorstunde über 23 °C (mit wirksamer Kühlung θ_kühl − 3 K) liegt und die Außenluft mehr als 2 K kühler ist, aus mit 1 K Hysterese, ausgewertet am Stundenbeginn | `GebaeudeFestwerte.cs:139-148`; `Sommerlueftungsregel.cs:5-27`; `Vdi6007Rechenweg.cs:270-273` |
@@ -286,8 +286,10 @@ mit 365 Tagen; die Woche hat 168 Stunden von Montag 00:00 bis Sonntag 23:00. Die
 Ortszeit, in der der Lauf rechnet (MEZ/MESZ, `EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs`); an den zwei
 Umstelltagen gilt deren Regel, der Kalender führt keine eigene. **Wochentag:** w(d) = (w₀ + d) mod 7, w₀ aus
 dem **einen Wochentagsraster des Projekts** (E115, `Konditionierungdatenweg.Raster`): w₀ ist der Wochentag des 1. Januar
-im Raster der Klimaregion (`ProfilBedarf.WochentagJan1AusKlimaregion`, aus `Tab_Klimadaten.WE`) — dasselbe Raster, mit dem
-Zapfkalender und Bedarfsprofile rechnen; die Wochenendmaske des Gebäudelaufs wird daraus gebildet. Ohne Projekt (Katalog)
+im Raster der Klimaregion (`ProfilBedarf.WochentagJan1AusKlimaregion`, aus `Tab_Klimadaten.WE`), mit einer Preisreihe mit
+Jahr der Wochentag des echten 1. Januar dieses Jahres — dasselbe Raster, mit dem Zapfkalender und Bedarfsprofile rechnen;
+die Wochenendmaske des Gebäudelaufs wird daraus gebildet. Ein Projektgebäude kennt sein Projekt über
+`Tab_Gebaeude.ID_Projekt`; auch sein Arbeitsstand rechnet in dessen Raster. Ohne Projekt (Katalog)
 oder ohne Klimaregion gilt das Rückfallraster mit dem 1. Januar auf einem Sonntag (`ProfilBedarf.WOCHENTAG_ALTKONVENTION`),
 wie im Zapfkalender. Der Kalender speichert kein Jahr: Wechselt die Klimaregion, wandern die Wochentage, die Daten nicht;
 Datum ↔ Jahrestag rechnet der Dialog im Gemeinjahr, nie im laufenden Jahr (B13). Die Bedienung nennt im Regelfall kein
@@ -321,14 +323,18 @@ und endet um 24:00 des Endtags. Leer heißt ganzjährig; ein Zeitraum über das 
 Christi Himmelfahrt, Pfingstmontag, 3. Oktober, 1. und 2. Weihnachtstag) stehen als Regelkennung in der Periode, nicht
 als Jahrestag; die acht Landesregeln ebenso (Feiertagsland am Gebäude). **Die Konvention des Gemeinjahrs (E114):** Im
 Regelfall ist kein Jahresdatum relevant. Ohne Preisreihe mit Jahr liegen die Regeln im Wochentagsraster des Projekts
-(`Gemeinjahrkalender`, E115: ein Raster für Gebäudelauf, Zapfkalender und Bedarfsprofile, das der Klimaregion): Ostersonntag ist der Sonntag des Rasters am nächsten zum Jahrestag 98 (8. April) — ein Gleichstand kann in
+(`Gemeinjahrkalender`, E115: ein Raster für Gebäudelauf, Zapfkalender und Bedarfsprofile, im Regelfall das der Klimaregion): Ostersonntag ist der Sonntag des Rasters am nächsten zum Jahrestag 98 (8. April) — ein Gleichstand kann in
 einer Woche von sieben Tagen nicht eintreten, sonst gälte der frühere —, Karfreitag liegt 2 Tage davor, Ostermontag 1,
 Himmelfahrt 39, Pfingstmontag 50 und Fronleichnam 60 Tage danach; Buß- und Bettag ist der letzte Mittwoch des Rasters vor
 dem Jahrestag 327 (23. November). So fallen die beweglichen Feiertage auf ihren Wochentag in derselben Woche, die
 Wochenprofile, Standardlastprofile und Zapfkalender lesen. Feste Feiertage stehen auf Tag und Monat. Nur wenn die aktive
-Variante eine Preisreihe mit Jahr trägt, liegen Ostern und Buß- und Bettag auf den echten Daten dieses Jahres (Tag und
-Monat im Gemeinjahr); das Raster bleibt das der Klimaregion — Gebäudelauf und Zapfkalender lösen den Sonderfall nach
-derselben Regel auf (`Konditionierungdatenweg.Raster`), und die Bedienung nennt dann „Bezugsjahr 2027" und volle Daten. **Ring:** Für Rampe und Vorlauf ist das Jahr ein
+Variante eine Preisreihe mit Jahr trägt, gilt der Kalender dieses Jahres (`Gemeinjahrkalender.Kalenderjahr`): das Raster
+seines echten 1. Januar und Ostern und Buß- und Bettag auf seinen echten Daten (Tag und Monat im Gemeinjahr) — so liegt
+Ostern auf einem Sonntag, Buß- und Bettag auf einem Mittwoch des Rasters, und die Wochenenden des Bedarfs liegen auf denen
+der Preisreihe. Alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile, Arbeitsstand, Teppich, Nutzungstage,
+Profilvorschau, Betriebskalender — lösen den Sonderfall über `Konditionierungdatenweg.Raster` auf; ein Jahr mit fremdem
+Raster ist nicht baubar (`Gemeinjahrkalender.Aus` prüft w₀). Die Bedienung nennt dann „Bezugsjahr 2027", volle Daten und
+die Wochentage des Jahres. **Ring:** Für Rampe und Vorlauf ist das Jahr ein
 Ring; ein Sprung am 1. Januar greift in die Dezemberstunden wie der Vorlauf (Leitkonzept 4.6).
 
 ### 3.3 Vorgabe-Matrix und Standardfahrplan — abgeleitet bis angelegt, bitgleich
@@ -1548,7 +1554,7 @@ entschieden. Ausgestaltung in 7.8, Stufen in 8.
 | Liest der Tagesbilanz-Weg das Wochenende des Gebäudes und die Ferienliste? (E111) | **nein** — er bleibt bei Samstag und Sonntag und den vier Ferienspalten `Ferienbeginn/-ende_1…4` | 7.8; der Tagesbilanz-Weg ist eingefroren (`Altweg/`), die Einschränkung ist benannt; Generator und Zapfkalender lesen Wochenende und Ferienliste |
 | Zählen Feiertage im Zapfkalender auch mit der Vorgabe Samstag + Sonntag als Sonntag? (E112) | **ja** — Feiertage zählen im Zapfkalender unabhängig von der Wochenendmaske als Sonntag, auch am Samstag | 7.8; die Feiertage kommen aus den Regeln des Kerns (Feiertagsland des gebundenen Gebäudes, ohne Gebäude bundeseinheitlich); Basis R47 |
 | Hängt die Lage der beweglichen Feiertage an einem Jahr? (E114) | **nein, im Regelfall ist kein Jahresdatum relevant** — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November; nur eine Preisreihe mit Jahr setzt die echten Daten | 3.2; `Gemeinjahrkalender`, `Feiertage.Jahrestag`, `Landesfeiertage.Jahrestage`; Konditionierung, Jahresraster, Teppich, Betriebskalender und Zapfkalender lesen dieselbe Konvention; Basis R48 |
-| Mit welchem Wochentagsraster rechnen Gebäudelauf, Zapfkalender und Bedarfsprofile? (E115, 10.10.2026, „Empfehlung") | **mit einem, dem der Klimaregion** — Daten statt Datum; eine Preisreihe mit Jahr setzt allein die Feiertage auf echte Daten, das Raster bleibt; ohne Projekt oder Klimaregion das Rückfallraster (1. Januar = Sonntag) | 3.2; `Konditionierungdatenweg.Raster` als gemeinsame Auflösung, Wochenendmaske des Gebäudelaufs, Arbeitsstand, Teppich, Nutzungstage, Betriebskalender; Bedienung nennt das Raster statt eines Jahres; `Konditionierungsarbeit.Abdruck` schlüsselt w₀ und Jahr; Basis R50 (1051 und 1052 ändern sich, die übrigen Referenzprojekte bleiben byte-gleich) |
+| Mit welchem Wochentagsraster rechnen Gebäudelauf, Zapfkalender und Bedarfsprofile? (E115, 10.10.2026, „Empfehlung") | **mit einem, im Regelfall dem der Klimaregion** — Daten statt Datum; im Sonderfall mit Preisreihenjahr Raster und Feiertage des echten Jahres für alle Leser (`Gemeinjahrkalender.Kalenderjahr`); ohne Projekt oder Klimaregion das Rückfallraster (1. Januar = Sonntag); der Arbeitsstand eines Projektgebäudes rechnet im Raster seines Projekts | 3.2; `Konditionierungdatenweg.Raster` als gemeinsame Auflösung, Wochenendmaske des Gebäudelaufs, Arbeitsstand, Teppich, Nutzungstage, Betriebskalender; Bedienung nennt das Raster statt eines Jahres; `Konditionierungsarbeit.Abdruck` schlüsselt w₀ und Jahr; Basis R50 (1051 und 1052 ändern sich, die übrigen Referenzprojekte bleiben byte-gleich) |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 
