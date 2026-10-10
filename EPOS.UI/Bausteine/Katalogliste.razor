@@ -1470,10 +1470,13 @@
         RaengeRechnen();
     }
 
-    /// <summary>„Standard“: Die gemerkte Wahl fällt, es gilt die Standardanzeige.</summary>
+    /// <summary>„Standard“: Die gemerkte Wahl fällt, es gilt die Standardanzeige; die Auswahl schließt.</summary>
     private void SpaltenStandard()
     {
+        // Die Auswahl schliesst: „Standard“ ist eine abschliessende Handlung, und der
+        // Knopf ist danach gesperrt - der Fokus faende sonst keinen Ort.
         _spaltenwahl = null;
+        SpaltenwahlOffen = false;
         try { WindowsFormsApplication1.Dienste.Einstellungen?.Loesche(Spaltenschluessel); }
         catch (Exception) { }
         RaengeRechnen();
