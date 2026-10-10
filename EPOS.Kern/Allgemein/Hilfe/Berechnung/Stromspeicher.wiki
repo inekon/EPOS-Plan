@@ -19,7 +19,7 @@ Der Speicher darf den Lauf '''nicht kippen''': Fehlen Stammdaten, passt das Zeit
 |-
 | Bruttolast vor Abzug von PV und BHKW || kW je Viertelstunde || Strombedarf einschließlich elektrischer Zusatzverbraucher des Simulationslaufs
 |-
-| PV-Erzeugung || kW je Viertelstunde || Photovoltaikzweig
+| PV-Erzeugung || kW je Viertelstunde || Photovoltaikzweig (Module oder PV-Ganglinie)
 |-
 | BHKW-Erzeugung || kW je Viertelstunde || BHKW-Zweig
 |-
@@ -48,6 +48,8 @@ Der Speicher darf den Lauf '''nicht kippen''': Fehlen Stammdaten, passt das Zeit
 | Kapitalzins, Nutzungsdauer || %, a || Speichervariante
 |-
 | Berechnungsart, Betriebsart, zulässige Ladequellen || — || Speichervariante
+|-
+| Einspeisegrenze || kW oder % || Projekteinstellung „Einspeisegrenze"; leer = keine
 |}
 
 '''Der Bezugspreis trägt den Aufschlag des Stromträgers.''' Er entsteht aus der Energiepreisreihe zuzüglich eines wirksamen Aufschlags in ct/kWh, der auf jedes Intervall gleich wirkt. Wie hoch er ist, bestimmt der am Stromträger gewählte Modus: Bei '''kein Aufschlag''' — der Vorbelegung — ist er 0&nbsp;ct/kWh, bei '''Gesamtwert''' der dort eingetragene Betrag, bei '''aufgeschlüsselt''' die Summe der eingeschalteten Komponenten Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe und Vertrieb. Ein Projekt, an dem niemand einen Aufschlag eingestellt hat, rechnet also mit dem reinen Arbeitspreis. Die Speichervariante kann den Aufschlag zusätzlich abschalten; eine importierte effektive Preisreihe bekommt ihn nie.
@@ -366,6 +368,8 @@ Der '''Standby''' des Speichersystems ist eine Last hinter dem Speicher. Er wird
 :: <math>E_{\mathrm{ch}}(k)</math> – Ladung des Intervalls [kWh]
 
 Der Netzanteil steht im Netzbezug des Laufs, der PV-Anteil fehlt in der Einspeisung; der Fahrplan des Speichers bleibt unberührt. Mit <math>P_{\mathrm{sb}} = 0</math> und <math>s_{\mathrm{SE}} = 0</math> rechnet der Speicher wie ohne beide Felder.
+
+Die '''Einspeisegrenze''' der Projekteinstellung kennt der Fahrplan nicht. Erst danach wird aufgeteilt: Was der Speicher aus dem PV-Überschuss lädt und was der Standby aus ihm deckt, geht nicht ins Netz; vom Rest wird bis zur Grenze eingespeist, darüber wird PV abgeregelt (''Laden vor Abregeln'', Gleichungen (29) und (30) der Seite [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]]).
 
 === Schritt 3 — Dispatch nach Betriebsstrategie ===
 
@@ -850,6 +854,8 @@ Der erste Term sagt, '''wie tief die Flotte überhaupt kappen kann'''. Der zweit
 
 Liegt keine Zeitreihe vor, gilt ein '''benannter''' Rückfall: mit bekannter Bezugsspitze <math>\max\left( P_{\mathrm{ref}} - \sum_j P_{\mathrm{d},j} , 0{,}1 \cdot P_{\mathrm{ref}} \right)</math>, ohne sie die Konstante '''50&nbsp;kW'''. '''Gespeicherte Stände werden nie überschrieben''' — die Vorbelegung greift ausschließlich beim Anlegen einer neuen Flotte.
 
+'''Im Simulationslauf''' bildet der Lauf die Vorgabe der Flotte selbst, ohne sie zu speichern: nach Bedarf, Erzeugern und Photovoltaik, vor der Speicherrechnung, aus dem Lastgang dieses Laufs ohne Speicher und mit derselben Regel wie die Auslegungsansicht. So rechnet der erste Lauf mit derselben Vorgabe wie jeder weitere. Ein gespeicherter Flottenstand gilt unverändert. Der Reiter „Stromspeicher" nennt das Peak-Ziel des Laufs und seine Herkunft: aus dem Lastgang, Rückfall aus der Bezugsspitze oder aus dem gespeicherten Flottenstand. Lässt sich die Vorgabe nicht bilden, bricht der Lauf mit einer Meldung ab.
+
 '''„Peak-Ziel bestimmen"''' beantwortet die Frage, die der Anwender an eine Lastspitzenkappung wirklich stellt: Wie tief komme ich mit '''dieser''' Flotte? Gesucht wird per '''Bisektion''' zwischen der Grundlast (Maximum der Tagesminima) und der Referenzspitze das kleinste <math>H</math>, bei dem die verbleibende Bezugsspitze <math>\le H</math> bleibt. Höchstens '''12 Jahresläufe''', je Lauf eine Meldung, jederzeit abbrechbar. Gerechnet wird dabei ausdrücklich mit der Lastspitzenkappung; '''planende Ziele werden benannt abgewiesen''', weil sie je Lauf den Fahrplaner bräuchten.
 
 Die Vorgabe '''„Netzladung erlaubt" folgt dem Betriebsziel''': Die Lastspitzenkappung bekommt sie — „die Wiederaufladung nutzt freie Anschlussleistung unter <math>H</math>", und genau das '''ist''' Netzladung —, der PV-Eigenverbrauch und die planenden Ziele bekommen sie nicht. Auch diese Vorgabe wirkt nur beim Anlegen einer neuen Konfiguration; der Schalter bleibt änderbar.
@@ -1006,6 +1012,7 @@ Für die '''Speicherflotte''' zusätzlich:
 {{Anker|bezuege}}
 
 * [[Programm Dokumentation/Stromspeicher|Stromspeicher]] — Bedienung von Katalog, Projektdialog und Varianten
+* [[Grundlagen/Stromspeicher|Grundlagen: Stromspeicher]] — Begriffe und Zusammenhänge
 * [[Programm Dokumentation/Stromspeicher#auslegung-ansicht|Stromspeicher-Auslegung]] — die Ansicht mit den fünf Schritten, in der Flotte und Einzelspeicher gerechnet werden
 * [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]] — Herkunft von Überschuss und Reststrom
 * [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]] — Herkunft des zweiten Ladepfads

@@ -1,0 +1,20 @@
+Der Dialog '''Gesetzliche Parameter''' hält die Rechtsgrundlagen der Wirtschaftlichkeits- und der Emissionsrechnung jahresscharf vor: je Schlüssel und Gültigkeitsjahr eine eigene Zeile. Er steht unter {{Menü|Administration|Kosten|Gesetzliche Parameter…}}. Eine Gesetzesänderung ist eine neue Jahreszeile, kein Ändern der alten – nur so liefert eine heute gerechnete Variante in einigen Jahren noch dieselben Zahlen.
+
+== Eingaben ==
+
+* '''Bereich''' – schränkt die Liste ein: KWK-Gesetz, Stromsteuer, Energiesteuer, CO₂-Preis und Umsatzsteuer sowie die Emissions- und Primärenergiefaktoren, getrennt nach gesetzlichem Nachweis und realer Bilanz.
+* '''Liste''' – je Zeile Schlüssel, ''Gültig ab'', Wert, Einheit, Status und Quelle, mit Suche über alle Spalten, einem Trichter je Spalte und dem Sortierpfeil im Spaltenkopf; ein Doppelklick öffnet die Zeile zum Ändern.
+* '''Neu…''' – legt eine Zeile an: Schlüssel, Bereich, Gültigkeitsjahr, Wert, Einheit, Status und Quelle. Ein leeres Wertfeld bedeutet, dass der Satz entfallen ist – das ist etwas anderes als der Wert 0.
+* '''Status''' – ''GESICHERT'', ''VORLAEUFIG'' oder ''PROGNOSE''; damit bleibt erkennbar, ob ein Wert im Gesetz steht oder eine Annahme ist.
+* '''Ändern…''' – liegt das Gültigkeitsjahr der Zeile in der Vergangenheit, fragt das Programm nach: Eine Gesetzesänderung gehört in eine neue Jahreszeile, das Ändern der alten ist nur für Tippfehler gedacht.
+* '''Löschen''' – entfernt die Zeile endgültig; danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.
+
+== Siehe auch ==
+
+* [[Grundlagen/Wirtschaftlichkeitsrechnung]] – wofür Zuschlagssätze, Steuern und CO₂-Preis gebraucht werden
+* [[Wirtschaftlichkeit]] – die Bewertung, die diese Sätze verwendet
+* [[Programm Dokumentation/Kosten#gesetzliche-parameter|Kosten: Gesetzliche Parameter]] – der Katalog im Zusammenhang der Kostenverwaltung
+* [[Programm Dokumentation/Wirtschaftlichkeit#kwk-frist|Wirtschaftlichkeit: Frist zur Inbetriebnahme]] – wie die Wirtschaftlichkeit die Sätze nachschlägt
+* [[Grundlagen/Vergleich Energiebilanz]] – Emissions- und Primärenergiefaktoren in der Bilanz
+
+[[Kategorie:Programm Dokumentation]]

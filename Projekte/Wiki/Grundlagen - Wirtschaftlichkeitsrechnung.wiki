@@ -1,0 +1,135 @@
+Die '''Wirtschaftlichkeitsrechnung''' führt Kosten und Erlöse über den Betrachtungszeitraum zusammen und macht Varianten vergleichbar. Ihre Aussagekraft steht und fällt mit dem Mengengerüst aus der Simulation: Betriebsstunden, Brennstoffverbräuche, Eigenverbrauch und Einspeisung sind die Größen, die anschließend bewertet werden.
+
+== Betrachtungszeitraum und Randbedingungen ==
+{{Anker|betrachtungszeitraum-und-randbedingungen|betrachtungszeitraum}}
+
+Der Betrachtungszeitraum orientiert sich an der Nutzungsdauer der wesentlichen Komponenten; üblich sind 15 bis 20 Jahre. Innerhalb dieses Zeitraums notwendige Ersatzinvestitionen – etwa Motorüberholungen bei BHKW oder der Tausch eines Wechselrichters – gehören in die Rechnung, ebenso ein Restwert am Ende. Weitere Randbedingungen sind der Kalkulationszinssatz, der die Kapitalkosten und die Renditeerwartung abbildet, sowie Preissteigerungsraten, die für Brennstoff, Strom, Wartung und sonstige Kosten getrennt angesetzt werden sollten – Energiepreise und Lohnkosten entwickeln sich erfahrungsgemäß unterschiedlich.
+
+Die Wahl des Zeitraums ist keine Formsache, sondern selbst eine Annahme, die begründet gehört. Ihr Verhältnis zu den Nutzungsdauern entscheidet über zwei Posten: Ist der Zeitraum '''kürzer''' als die längste Nutzungsdauer, steht am Ende ein Restwert; ist er '''länger''' als die kürzeste, fällt zwischendurch mindestens eine Ersatzbeschaffung an. Beide Posten können das Ergebnis in die eine oder die andere Richtung tragen, und beide entstehen nicht aus der Technik, sondern aus dem gewählten Horizont. Ein Zeitraum, der mit den Nutzungsdauern deckungsgleich ist, kommt ohne beides aus – das ist der einfachste, aber selten der realistische Fall.
+
+== Kapitalwert- und Annuitätenmethode ==
+{{Anker|kapitalwert-und-annuitaetenmethode|kapitalwert|annuitaet}}
+
+Bei der '''Kapitalwertmethode''' werden alle Zahlungen der Zukunft auf den Zeitpunkt der Investition abgezinst und aufsummiert:
+
+: <math>KW = -I_0 + \sum_{t=1}^{T} \frac{E_t - A_t}{(1+i)^t} + \frac{RW_T}{(1+i)^T}</math>
+
+Darin sind ''I''<sub>0</sub> die Anfangsauszahlung, ''E''<sub>t</sub> und ''A''<sub>t</sub> die Einnahmen und Ausgaben des Jahres ''t'', ''i'' der Kalkulationszinssatz, ''T'' der Betrachtungszeitraum und ''RW''<sub>T</sub> der Restwert am Ende. Ein positiver Kapitalwert bedeutet, dass sich die Investition unter den gewählten Annahmen rechnet; beim Vergleich mehrerer Varianten ist die mit dem höchsten Kapitalwert vorteilhaft. Der Vorteil dieser Methode liegt darin, dass sie zeitlich veränderliche Zahlungen unmittelbar abbildet – genau das ist bei Vergütungen, Zuschlägen und Boni der Fall, die nur über bestimmte Zeiträume gewährt werden.
+
+Wird die Rechnung als '''Differenz''' zweier Varianten geführt, ändert sich die Aussage: Der Kapitalwert der Differenz-Zahlungsreihe sagt dann nicht, ob sich eine Investition absolut lohnt, sondern ob sie gegenüber der Vergleichslösung vorteilhaft ist. Für energiebezogene Investitionen ist das der übliche und der aussagekräftigere Weg, weil die Alternative fast nie „nichts tun und nichts zahlen" heißt, sondern „weiter betreiben und weiter zahlen".
+
+Die '''Annuitätenmethode''' verteilt dieselben Zahlungen gleichmäßig auf die Jahre und liefert jährliche Gesamtkosten. Sie ist anschaulich, weil das Ergebnis als jährlicher Betrag vorliegt, und führt bei gleichem Kalkulationszins und gleichem Betrachtungszeitraum stets zur selben Rangfolge wie der Kapitalwert: Die Annuität ist der mit dem Annuitätenfaktor umgerechnete Kapitalwert.
+
+: <math>a = \frac{q^{\,n} \cdot (q - 1)}{q^{\,n} - 1} \qquad \text{mit } q = 1 + i</math>
+
+Zeitlich veränderliche Zahlungen werden dabei nach VDI 2067 über preisdynamische Barwertfaktoren erfasst. Aus den Jahreskosten lassen sich '''Wärmegestehungskosten''' in Cent je Kilowattstunde ableiten – die Kennzahl, die Varianten am unmittelbarsten vergleichbar macht. Die '''Amortisationszeit''' ist als Zusatzinformation nützlich, als alleiniges Kriterium jedoch ungeeignet, weil sie alles ausblendet, was nach dem Rückfluss der Investition geschieht. In ihrer '''dynamischen''' Form – der Nulldurchgang der abgezinsten Differenzreihe – ist sie immerhin zinsgerecht; die statische Variante „Investition geteilt durch jährliche Einsparung" ist es nicht.
+
+== VDI 2067 Blatt 1 ==
+{{Anker|vdi-2067|kostenarten|preisaenderungsfaktoren}}
+
+VDI 2067 Blatt 1 ist das Regelwerk, an dem sich die Wirtschaftlichkeitsrechnung gebäudetechnischer Anlagen in Deutschland ausrichtet. Es beschreibt die Rechnung sinngemäß so: Die Jahreskosten einer Anlage setzen sich aus '''kapitalgebundenen''', '''bedarfsgebundenen''' und '''betriebsgebundenen''' Kosten zusammen, ergänzt um sonstige Kosten und um Erlöse.
+
+* '''Kapitalgebundene Kosten''' sind Anschaffung, Ersatzbeschaffungen und der Restwert. Für Bauteile mit unterschiedlicher Lebensdauer sind Ersatzbeschaffungen innerhalb des Betrachtungszeitraums anzusetzen und der Restwert am Ende gutzuschreiben.
+* '''Bedarfsgebundene Kosten''' folgen aus dem Verbrauch: Brennstoff, Strom, Wasser – die Größen, die das Mengengerüst der Simulation liefert.
+* '''Betriebsgebundene Kosten''' umfassen Wartung, Inspektion, Instandsetzung und Bedienung. Ein Teil davon wird üblicherweise als Prozentsatz der Investitionssumme angesetzt – eine Konvention, die praktisch ist, aber eine Folge hat: Wird die Investition anders angenommen, ändern sich diese Kosten mit.
+
+Kennzeichnend für die Norm ist, dass sie '''je Kostenart einen eigenen Preisänderungsfaktor''' vorsieht. Kapitalgebundene, bedarfsgebundene und betriebsgebundene Kosten entwickeln sich nicht gleich, und die Rechnung soll das abbilden. Für die kapitalgebundenen Kosten bedeutet das: Eine Ersatzbeschaffung nach ''n'' Jahren kostet nicht so viel wie die Beschaffung von heute, sondern
+
+: <math>A(n) = A_0 \cdot (1 + p_I)^{\,n}</math>
+
+mit ''p''<sub>I</sub> als Preisänderungssatz der kapitalgebundenen Kosten. Der '''Restwert''' bemisst sich folgerichtig am zuletzt gezahlten Preis, nicht am heutigen: Wurde eine Anlage im Jahr 16 zum Preis von Jahr 16 beschafft, ist die halbe Nutzungsdauer am Ende auch die Hälfte dieses Betrags wert. Die '''Erstbeschaffung''' bleibt dagegen nominal – ihr Betrag ist der Betrag zum Zahlungszeitpunkt.
+
+Ein Zahlenbeispiel: 10.000 € Anschaffung, 8 Jahre Nutzungsdauer, Betrachtungszeitraum 20 Jahre, Preisänderung 2 Prozent im Jahr. Der Ersatz im Jahr 8 kostet 11.717 €, der im Jahr 16 kostet 13.728 €. Am Ende sind von der zweiten Beschaffung vier von acht Jahren verbraucht; der Restwert beträgt 6.864 € und wird abgezinst gutgeschrieben. Ohne Preisindizierung stünden dort zweimal 10.000 € und 5.000 € Restwert – eine Rechnung, die die Anlage von übermorgen zum Preis von heute ansetzt und das Ergebnis deshalb systematisch zu günstig ausweist.
+
+== DIN EN 17463 (VALERI) ==
+{{Anker|din-en-17463|valeri}}
+
+DIN EN 17463 – im Sprachgebrauch nach ihrem englischen Titel „Valuation of Energy Related Investments" kurz '''VALERI''' – beschreibt ein einheitliches Verfahren für die wirtschaftliche Bewertung energiebezogener Investitionen. Sie ist unter anderem dort einschlägig, wo Energiemanagementsysteme nach ISO 50001 eine nachvollziehbare Bewertung von Maßnahmen verlangen. Die Norm schreibt keine Technik vor, sondern die Form der Bewertung. Dem Sinn nach verlangt sie:
+
+* eine '''Kapitalwertrechnung über den gesamten Zahlungsstrom''' der Maßnahme, nicht über einzelne Jahre oder Kennzahlen;
+* die '''Zahlungsströme je Jahr''' ausgewiesen, damit die Rechnung nachvollziehbar bleibt;
+* eine '''Bandbreite''' aus ungünstigem, erwartetem und bestem Fall statt einer einzelnen Zahl;
+* die '''Offenlegung aller Annahmen''' – Zins, Preisentwicklungen, Nutzungsdauern, Förderungen, Vereinfachungen;
+* eine Beschreibung der '''nicht monetären Wirkungen''', die sich nicht in Euro fassen lassen;
+* eine '''Begründung des Betrachtungszeitraums''';
+* und am Ende einen '''Entscheidungsvorschlag''', nicht nur ein Ergebnis.
+
+Der zweite Grundgedanke der Norm ist der '''Referenzfall''': Bewertet wird die Maßnahme gegen den Weiterbetrieb. Nicht die Frage „verdient die neue Anlage Geld?" ist zu beantworten, sondern „ist die neue Anlage über den Betrachtungszeitraum günstiger als der Weiterbetrieb der bestehenden?". Das ist ein Unterschied mit Folgen: Eine Maßnahme mit negativem absolutem Kapitalwert kann gegenüber einem noch teureren Weiterbetrieb eindeutig vorteilhaft sein.
+
+=== Wie EPOS-Plan die Anforderungen abbildet ===
+{{Anker|valeri-abbildung}}
+
+{| class="wikitable"
+! Was die Norm verlangt !! Wie EPOS-Plan es abbildet
+|-
+| Kapitalwert über den gesamten Zahlungsstrom || Kapitalwertmethode mit Barwerten je Zahlungsreihe (Investition, Betrieb, Energie einschließlich CO₂-Abgabe, Erlöse, Ersatz, Restwert)
+|-
+| Zahlungsströme je Jahr || Block „2 · Zahlungsreihen“ der Seite Wirtschaftlichkeit, Mehrjahresübersicht im Bericht und der Kapitalwert-Verlauf als Diagramm bzw. Jahresreihe
+|-
+| Begründeter Betrachtungszeitraum || frei wählbar; eine Hinweiszeile stellt ihn den kürzesten und längsten Nutzungsdauern gegenüber und nennt die Folge (Restwert, Ersatz, deckungsgleich)
+|-
+| Diskontierungszins || Projektparameter, je Szenario eigener Wert
+|-
+| Ersatzbeschaffung und Restwert || eigene ausgewiesene Zeilen, preisindiziert bzw. linear auf der Preisbasis der letzten Beschaffung
+|-
+| Preisentwicklung || drei Sätze: Energie, Betrieb und Investition/Ersatz; CO₂-Preispfad und PV-Vergütung jahresgenau
+|-
+| Förderungen || Investitionszuschuss, KWK-Zuschlag und Steuergutschriften als jahresgenaue Reihen
+|-
+| Bandbreite ungünstig / erwartet / best || zwei Quellen: gepflegte Best-/Worst-Werte je Kostenzeile mit Vorrang und ein pauschaler Parametersatz je Szenario
+|-
+| Sensitivität || je Einflussgröße die Kapitalwertdifferenz bei −Δ, in der Basis und bei +Δ samt Steigung, jeder Wert vollständig neu gerechnet
+|-
+| Referenzfall Weiterbetrieb || wählbare Referenz der Vergleichsgruppe, vorgewählt das Stammprojekt; alle Differenzkennzahlen rechnen gegen sie
+|-
+| Risiko || wahlweise als Zuschlag auf den Kalkulationszins oder als zusätzliche Auszahlung je Jahr, in allen Szenarien gleich
+|-
+| Offenlegung der Annahmen || Parameternachweis mit Zins, Zeitraum, Preissteigerungen und Rechtsständen, dazu die Annahmenzeilen der Szenarien
+|-
+| Nicht monetäre Wirkungen || Liste der Wirkungen am Projekt mit Kategorie und Beurteilung, im Bericht als Tabelle
+|-
+| Entscheidungsvorschlag || Einstufung je Variante (empfohlen, bedingt empfohlen, nicht empfohlen) und ein Vorschlagssatz
+|-
+| Weitere Kennzahlen || Annuität, Wärmegestehungskosten, dazu nachrichtlich dynamische Amortisationszeit und interner Zinsfuß
+|}
+
+An einer Stelle geht EPOS-Plan über die übliche Bewertungsvorlage hinaus: '''Eigenverbrauchsquote und Einspeiseanteil''' werden nicht als Annahme erfragt, sondern aus der Stundensimulation abgeleitet. Weil ein Leser sie sonst für eine Schätzung halten könnte, steht die Herleitung ausdrücklich im Bericht.
+
+An anderen Stellen vereinfacht das Programm bewusst, und auch das gehört in den Bericht: Eine Kostenposition kennt ein Startjahr, aber kein Endjahr; eine Degradation ist nur für den PV-Ertrag modelliert; die Energiekosten gehen als Gesamtrechnung des Simulationslaufs ab dem ersten Jahr ein, weil die Simulation keine komponentenweisen Inbetriebnahmejahre kennt; und die Preisänderung wird über drei Sätze geführt statt über einen je Kostenzeile. Eine Vereinfachung, die im Bericht steht, ist eine Annahme; eine, die nicht dasteht, ist ein Fehler.
+
+== Sensitivität und Szenario ==
+{{Anker|sensitivitaet|szenario|bandbreite}}
+
+Jede Wirtschaftlichkeitsrechnung beruht auf Annahmen über Preise, Zinsen und Nutzungsdauern, die über zwanzig Jahre niemand sicher kennt. Belastbar wird eine Aussage erst, wenn geprüft wird, wie empfindlich das Ergebnis auf diese Annahmen reagiert: Verschiebt eine Änderung des Brennstoffpreises um zwanzig Prozent die Rangfolge der Varianten? Kippt sie bei einem um zwei Prozentpunkte höheren Zinssatz? Bleibt die Reihenfolge stabil, ist die Entscheidung robust – andernfalls sollten die kritischen Annahmen besser abgesichert werden.
+
+'''Sensitivität und Szenario sind zwei verschiedene Fragen''', und sie werden regelmäßig verwechselt:
+
+* Die '''Sensitivität''' verändert '''eine''' Größe und lässt alle anderen stehen. Sie beantwortet: ''Wie empfindlich ist das Ergebnis gegenüber dieser einen Annahme?'' Ihr Ergebnis ist eine Rangliste der Einflussgrößen – sie zeigt, wo sich eine bessere Datengrundlage lohnt.
+* Das '''Szenario''' verschiebt '''alle''' Annahmen gemeinsam in dieselbe Richtung. Es beantwortet: ''Wie sieht ein durchgängig ungünstiger Verlauf aus, und trägt sich die Maßnahme auch dann?'' Sein Ergebnis ist eine Bandbreite.
+
+Beide gehören zu einer belastbaren Bewertung, ersetzen einander aber nicht. Ein Ergebnis, das gegenüber jeder einzelnen Annahme unempfindlich ist, kann im gemeinsamen ungünstigen Fall trotzdem kippen – weil sich mehrere kleine Verschiebungen addieren. Umgekehrt sagt eine breite Bandbreite nicht, welche Annahme sie verursacht; das sagt erst die Sensitivität.
+
+Die in der Kostenerfassung vorgesehenen Bandbreiten zwischen günstigem und ungünstigem Fall sind der einfachste Einstieg in die Szenariorechnung – und die genaueste, weil eine gepflegte Zahl immer besser ist als ein pauschaler Prozentsatz.
+
+== Rolle von EPOS-Plan ==
+{{Anker|rolle-von-epos-plan}}
+
+EPOS-Plan liefert das vollständige, zeitaufgelöste Mengengerüst und die strukturierte Erfassung von Investitions-, Betriebs- und Energiekosten einschließlich Nutzungsdauern, Preisstände und Emissionsfaktoren. Auf dieser Grundlage rechnet EPOS-Plan Kapitalwert, Annuität und die Barwerte der einzelnen Zahlungsreihen selbst, bildet die Bandbreite aus ungünstigem, erwartetem und bestem Fall, weist Ersatzbeschaffungen und Restwert gesondert aus und formuliert einen Vorschlag zur Entscheidung. Welche Eingaben der zugehörige Dialog dafür bereithält und wie die Ergebnisse in Bericht und Arbeitsmappe erscheinen, beschreibt [[Programm Dokumentation/Wirtschaftlichkeit]]; einen Überblick gibt [[Wirtschaftlichkeit]].
+
+Was das Programm nicht leisten kann, bleibt Sache der Bearbeiterin oder des Bearbeiters: die Begründung des Betrachtungszeitraums, die Beschreibung der nicht monetären Wirkungen und die Prüfung, ob die angesetzten Preise, Förderungen und Rechtsstände für das konkrete Projekt zutreffen.
+
+{{Achtung|Wichtig bleibt: Die Rechnung bewertet Annahmen, nicht Tatsachen. Förderungen, steuerliche Wirkungen und vertragliche Rahmenbedingungen sind projektbezogen zu prüfen; die Ergebnisse ersetzen keine steuerliche oder rechtliche Beratung.}}
+
+Die Eingangsgrößen im Einzelnen beschreiben [[Grundlagen/Kostenrechnung|Kostenrechnung]] und [[Grundlagen/Erlösrechnung|Erlösrechnung]], die zugrunde liegende Energiebilanz der [[Grundlagen/Vergleich Energiebilanz|Vergleich der Energiebilanz]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programm Dokumentation/Wirtschaftlichkeit]] – Seite Wirtschaftlichkeit mit Referenz, Szenarien, Sensitivität und Bewertung nach DIN EN 17463
+* [[Wirtschaftlichkeit]] – Programmfunktion: Kalkulationszins, Betrachtungszeitraum, Preissteigerungen und die Auswertung je Variante
+* [[Kosten und Energiepreise]] – Programmfunktion: Investitions-, Betriebs- und Energiekosten mit Nutzungsdauern
+* [[Ergebnisdarstellung]] – Kennzahlen und Variantenvergleich im Ergebnis
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

@@ -1,0 +1,43 @@
+Der '''Datenexport''' gibt die berechneten Zeitreihen als CSV-Datei aus – Semikolon als Trennzeichen, Dezimalkomma. Der Knopf ''CSV…'' steht in der Leiste jedes Zeitreihendiagramms der [[Ergebnisdarstellung]] rechts neben ''Bereich'' und ''1:1''.
+
+== Export von Zeitreihen ==
+{{Anker|export-von-zeitreihen|csv-export|zeitreihen}}
+
+''Wärmelast'' und ''Stromlast'' im Reiter ''Wärme-/Strombedarf'' schreiben dieselbe Datei ''Energiebedarf'' mit Wärmelast, je Bedarfsart einer Spalte und dem Strombedarf; ''Kältelast'' schreibt bei Projekten mit Kühlung die Datei ''Kältebedarf''. ''Wärmepumpe'', ''Heizkessel'', ''Stromspeicher'', ''Wärmegang'' und ''Stromgang'' schreiben je eine eigene Datei mit den Werten der Seite.
+
+== Grafikexport ==
+{{Anker|grafikexport|grafik}}
+
+Jedes andere Zeitreihendiagramm – etwa ''BHKW'', ''Photovoltaik'' oder ''Solarthermie'' – schreibt die Reihen, die es gerade zeigt, je Reihe eine Spalte mit Name und Einheit; der Dateiname folgt dem Diagrammtitel. Ist ''sortiert'' angehakt, stehen die Werte als Dauerlinie in der Datei.
+
+== Aufbau der Exportdateien ==
+{{Anker|aufbau-der-exportdateien|zeitstempel|aussentemperatur}}
+
+Die Dateien des Energiebedarfs und der Seiten ''Wärmepumpe'', ''Heizkessel'', ''Stromspeicher'', ''Wärmegang'' und ''Stromgang'' beginnen mit einem Zeitstempel und der Außentemperatur, sodass die Werte in einer Tabellenkalkulation unmittelbar weiterverwendet werden können; bei der Wärmepumpe stehen die Kennzahlen der Betriebsbereiche als Kopfzeilen davor. Die übrigen Diagramme zählen in der ersten Spalte Stunde oder Viertelstunde.
+
+== Speicherort ==
+{{Anker|speicherort|verzeichnis}}
+
+Der zuletzt verwendete Speicherort wird gemerkt. Die Ordner für Datenbank-Sicherungen und Datenbank-Importe legen Sie unter {{Menü|Administration|Einstellungen}} fest.
+
+== Weitere Ausgabewege ==
+{{Anker|weitere-ausgabewege}}
+
+Der Bericht einer Vergleichsgruppe entsteht als Word-Dokument, als Excel-Arbeitsmappe oder als beides ([[Varianten und Bericht]]); ''Verlauf nach Excel…'' in der Wirtschaftlichkeit speichert den Kapitalwertverlauf als eigene Arbeitsmappe. Gebäudedaten lassen sich als gbXML- oder IFC-Datei ausgeben ([[Programm Dokumentation/Gebäudeimport#export|Gebäudedaten ausgeben]]), ganze Projekte samt Varianten als <code>.wpx</code>-Paket ([[Programm Dokumentation/Projekttransfer|Projekttransfer]]).
+
+== Datenaustausch in der Gegenrichtung ==
+{{Anker|datenaustausch-in-der-gegenrichtung|import}}
+
+{{Hinweis|Herstellerdaten für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren können nach VDI 3805 eingelesen werden, PV-Module, Wechselrichter und Stromspeicher aus der CEC-Liste und weiteren Formaten; Klimadaten werden online bezogen, Gebäude aus gbXML- und IFC-Dateien und Lastgänge für Wärme und Strom importiert. Diese Wege beschreibt die Seite [[Stammdaten und Datenimport]].}}
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Ergebnisse auswerten und Kosten hinterlegen]] – der zugehörige Schritt im Programmablauf
+* [[Ergebnisdarstellung]] – die Bereiche, aus denen exportiert wird
+* [[Stammdaten und Datenimport]] – Import von Hersteller- und Messdaten
+* [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse für Import und Export
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

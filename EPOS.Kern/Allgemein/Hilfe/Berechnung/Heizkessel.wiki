@@ -198,6 +198,8 @@ Größen, die der Lauf je Kessel, je Tag oder je Stunde bildet.
 |-
 | <math>\vartheta_{\mathrm{Sp}}(t)</math> || Rücklauf aus dem Pufferspeicher, den der Kessel lädt || °C || Pufferspeicher, zu Beginn der Stunde gelesen
 |-
+| <math>\vartheta_{\mathrm{WP,max}}</math> || Vorlauf einer Wärmepumpe, die in der Stunde im Vorwärmbetrieb vor dem Kessel läuft || °C || Wärmepumpe, Betriebsbereich B3 ([[Programm Dokumentation/Berechnung/Wärmepumpe#uebergabegrenze|Berechnung: Wärmepumpe]])
+|-
 | <math>\eta_{30,\mathrm{tr}}</math> || trockener Wirkungsgrad bei 30&nbsp;% Last, ohne Kondensationsgewinn || — || (18)
 |-
 | <math>\eta_{\mathrm{tr}}(t)</math> || trockene Teillastkennlinie der Stunde || — || (19)
@@ -405,8 +407,9 @@ Die Kennlinie trifft beide Prüfpunkte der Herstellerangaben: <math>\beta = 0{,}
 
 Ein Kessel mit Brennwertkennlinie (Schritt 1) rechnet je Laufstunde zusätzlich mit ihrem '''Rücklauf'''. Er kommt aus der ersten Stufe der Rücklaufkette, die einen Wert liefert:
 
-: <math>\displaystyle \vartheta_{\mathrm{RL}}(t) = \begin{cases} \vartheta_{\mathrm{HK}}(t) & \text{der gekoppelte Heizkreis liefert einen Wert} \\ \vartheta_{\mathrm{Sp}}(t) & \text{sonst, wenn der Kessel einen Pufferspeicher als Senke hat} \\ \vartheta_{\mathrm{RL,A}} & \text{sonst, wenn ein Temperaturpaar gepflegt ist} \\ \vartheta_{\mathrm{RL,0}} & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(17)
+: <math>\displaystyle \vartheta_{\mathrm{RL}}(t) = \begin{cases} \vartheta_{\mathrm{WP,max}} & \text{eine Wärmepumpe wärmt in dieser Stunde vor} \\ \vartheta_{\mathrm{HK}}(t) & \text{sonst, wenn der gekoppelte Heizkreis einen Wert liefert} \\ \vartheta_{\mathrm{Sp}}(t) & \text{sonst, wenn der Kessel einen Pufferspeicher als Senke hat} \\ \vartheta_{\mathrm{RL,A}} & \text{sonst, wenn ein Temperaturpaar gepflegt ist} \\ \vartheta_{\mathrm{RL,0}} & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(17)
 :: <math>\vartheta_{\mathrm{RL}}(t)</math> – Rücklauf der Laufstunde [°C]
+:: <math>\vartheta_{\mathrm{WP,max}}</math> – Höchster Vorlauf einer Wärmepumpe im Vorwärmbetrieb, die in der Stunde vor dem Kessel in Reihe läuft (Betriebsbereich B3); ihr Vorlauf ist der Rücklauf des Kessels, der auf den Sollvorlauf nachheizt [°C]
 :: <math>\vartheta_{\mathrm{HK}}(t)</math> – gerechneter Rücklauf des Heizkreises bei der Anlagenkopplung „Heizkreis (AK1)", belegt in Stunden mit Heizbedarf eines gekoppelten Gebäudes [°C]
 :: <math>\vartheta_{\mathrm{Sp}}(t)</math> – Rücklauf des ersten Pufferspeichers der Senkenliste in Rangfolge: seine wirksame Rücklauftemperatur, beim geschichteten Speicher die Temperatur der untersten Schicht; gelesen zu Beginn der Stunde [°C]
 :: <math>\vartheta_{\mathrm{RL,A}}</math> – Rücklauf des vollständigen Temperaturpaars der Anlage, sonst des Kessels [°C]
@@ -649,6 +652,7 @@ Zusammen sind <math>\Delta Q_{\mathrm{TL}}</math> und <math>\Delta Q_{\mathrm{BW
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Stundenschleife, Reihenfolge der Erzeuger
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Ladeordnung, Schwellen und der Quellbezug der Kessel-Kaskade
 * [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]] — der Erzeuger, der vor dem Kessel lädt; mit derselben Emissionsquelle
+* [[Programm Dokumentation/Berechnung/Wärmepumpe#uebergabegrenze|Berechnung: Wärmepumpe, Betriebsbereiche]] — Vorwärmbetrieb mit dem Kessel in Reihe
 * [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — woher der Bedarf kommt, den der Kessel deckt
 * [[Programm Dokumentation/Gebäudemodell VDI 6007#heizkreis|Gebäudemodell: Heizkreis und Wärmeübergabe]] — der Heizkreis der Anlagenkopplung, dessen Rücklauf die Brennwertkennlinie nimmt
 * [[Programm Dokumentation/Emissionen|Emissionen]] — Herkunft und Pflege der Emissionsfaktoren

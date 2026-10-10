@@ -1,6 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: BHKW | Fassung 4 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs, BhkwTeillast.cs, Kesselkennlinie.cs (StartsImTakt),
-     EPOS.Kern/Allgemein/Simulation/SimulationControl.cs (BHKW_Liste_Laden, Betriebsart, Protokollmeldungen),
+     EPOS.Kern/Allgemein/Simulation/SimulationControl.cs (BHKW_Liste_Laden, Betriebsart, Protokollmeldungen,
+     BhkwUeberschussKw), EPOS.Kern/Allgemein/Simulation/Bivalenz/Ruecklaufgrenze.cs,
      EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs,
      EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs -->
 
@@ -47,6 +48,10 @@ Der erzeugte Strom deckt zuerst den Strombedarf des Projekts; was darüber hinau
 |-
 | Vorlauf, Rücklauf || °C || Dialog „BHKW", Abschnitt „Modul"
 |-
+| Höchster Rücklauf (Abschaltgrenze) || °C || BHKW-Katalog und Verwaltung des Projekts, Feld „Höchster Rücklauf (Abschaltgrenze)"; leer = keine Grenze
+|-
+| Gerechneter Rücklauf des Heizkreises || °C je Stunde || Gebäudemodell bei der Anlagenkopplung; nur für die Rücklaufgrenze
+|-
 | Wärmesenken und Ladeaufträge || — || Simulationskonfiguration, Karte des BHKW
 |-
 | Ladepriorität || 1…99 || Simulationskonfiguration; Vorgabe 30 für das BHKW
@@ -92,6 +97,8 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\vartheta_{\mathrm{VL}}</math>, <math>\vartheta_{\mathrm{RL}}</math> || Vorlauf- und Rücklauftemperatur des Moduls || °C || Dialog „BHKW", Abschnitt „Modul" (Projektzeile); der Katalogsatz ist die Vorbelegung
 |-
+| <math>\vartheta_{\mathrm{R,max}}</math> || Höchster Rücklauf, über dem das Modul abschaltet || °C || BHKW-Katalog und Verwaltung des Projekts, Feld „Höchster Rücklauf (Abschaltgrenze)"; leer = keine Grenze
+|-
 | <math>r</math> || Ladepriorität des Moduls in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 30''' (Solarthermie 10, Wärmepumpe 20, Heizkessel 40)
 |-
 | <math>N_{\mathrm{max}}</math> || größte Zahl Module je Projekt || Stück || '''Konstante: 10'''
@@ -127,6 +134,8 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 | <math>Q_{\mathrm{ueber}}(t)</math> || Wärmeüberschuss — verworfene Wärme || kWh || (6)
 |-
 | <math>R'_{\mathrm{E}}(t)</math> || Reststrombedarf nach dem Modul; negativ = Stromüberschuss || kWh || (7)
+|-
+| <math>E_{\mathrm{ein}}(q)</math> || BHKW-Einspeisung der Viertelstunde <math>q</math> || kW || Schritt 4, aus dem Reststrombedarf der Viertelstunde nach der Kaskade
 |-
 | <math>Q_{\mathrm{a}}</math> || Wärmeproduktion des Moduls im Jahr || MWh || Jahressumme über <math>Q(t)</math>
 |-
@@ -190,6 +199,8 @@ Gleichung (2) gilt je Modul und in '''allen drei Fahrweisen''' — wärmegeführ
 === Schritt 2 — Die drei Fahrweisen ===
 
 Je Stunde steht ein '''Wärmeraum''' <math>R_{\mathrm{Q}}(t) + S(t)</math> zur Verfügung: der offene Momentanbedarf plus der freie Raum im zugeordneten Pufferspeicher. Der Speicher wird dabei als Spiegel geführt — sein Zuwachs ist die zu ladende Menge, der Rückgang des Restbedarfs die Direktdeckung.
+
+'''Rücklaufgrenze.''' Führt ein Modul einen Höchsten Rücklauf und liegt der Rücklauf zum BHKW in der Stunde darüber, liefert das Modul in dieser Stunde weder Wärme noch Strom — in jeder Fahrweise. Der Rücklauf zum BHKW ist bei der Anlagenkopplung der gerechnete Rücklauf des Heizkreises, sonst die unterste Zone des Pufferspeichers seines ersten Ladeauftrags zu Beginn der Stunde; gibt es beides nicht, ruht die Grenze. Das Laufprotokoll nennt je Modul die Stunden ohne Betrieb.
 
 '''Wärmegeführt (Standard).''' Je Modul, in Listenreihenfolge:
 
@@ -259,6 +270,8 @@ Die Stromproduktion der Stunde mindert den Strombedarf des Projekts:
 :: <math>E(t)</math> – Stromproduktion des Moduls in der Stunde [kWh]
 
 Bleibt <math>R'_{\mathrm{E}}(t)</math> '''negativ''', ist das BHKW-Stromüberschuss: Er wird bewusst nicht auf 0 geklemmt, damit ein Stromspeicher ihn laden kann, wird aber im Photovoltaikzweig getrennt ausgewiesen und '''nicht''' als PV-Einspeisung behandelt.
+
+'''Einspeisung je Viertelstunde.''' Der Strombedarf liegt je Viertelstunde vor; die Kaskade zieht den BHKW-Strom der Stunde in jeder ihrer vier Viertelstunden gleich ab. Eingespeist ist je Viertelstunde <math>q</math> der Strom, den kein Verbraucher des Anschlusses abnimmt: <math>E_{\mathrm{ein}}(q) = \max\left( 0 , -R'_{\mathrm{E}}(q) \right)</math>, mit dem Reststrombedarf <math>R'_{\mathrm{E}}(q)</math> der Viertelstunde nach der Kaskade. Auf diese eine Reihe greifen der Reiter, die Kennzahl der Einspeisung, die Zeitreihe und die Aufteilung der Strommatrix in Eigenstrom und Einspeisung zu; im Stundenmittel ist sie der Überschuss, den der Photovoltaikzweig sieht. Mit einer Speicherflotte gilt die Netzbilanz der Flotte.
 
 === Schritt 5 — Verbrauch, Emissionen, Laufzeiten ===
 
@@ -381,16 +394,17 @@ Ohne Kennlinie ist der erste Bruch gleich dem zweiten, und es bleibt der Anfahrv
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „BHKW"''' — je Modul Wärme- und Stromproduktion, Brennstoffverbrauch, thermische und elektrische Vollbenutzungsstunden, Emissionen; rechnet ein Modul mit Teillastkennlinie, der Mehrbrennstoff der Teillast, taktet eines, seine Starts und sein Anfahrverlust; dazu die Ganglinien von Produktion, Direktdeckung, Speicherladung und Überschuss.
+* '''Simulationsergebnis, Reiter „BHKW"''' — je Modul Wärme- und Stromproduktion, Brennstoffverbrauch, thermische und elektrische Vollbenutzungsstunden, Emissionen; rechnet ein Modul mit Teillastkennlinie, der Mehrbrennstoff der Teillast, taktet eines, seine Starts und sein Anfahrverlust; dazu die Einspeisung als Summe der Viertelstundenreihe aus Schritt 4 und die Ganglinien von Produktion, Direktdeckung, Speicherladung und Überschuss.
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil des BHKW an der Jahreswärme.
 * '''Simulationsergebnis, Reiter „Ergebnis"''' — der Beitrag zur Stromdeckung und der Stromüberschuss aus (7).
-* '''Simulationsprotokoll''' — Meldungen zu Senken und Ladeaufträgen: der Stromüberschuss des BHKW, „BHKW steht zwischen zwei Erzeugern" der Kaskade, die Warnung zur Speicherstufe, „BHKW-Pendelspeicher: keine Puffer-Senke am BHKW", eine Senkenzeile ohne Puffer, eine Senke ohne Ladeauftrag (Rang und Nachrang), Quelle gleich eigene Senke und die nachgezogene Vorbelegung der Ladepriorität. Die Energieprobe des Moduls ist eine Entwicklerausgabe auf der Konsole und steht '''nicht''' im Protokoll.
+* '''Simulationsprotokoll''' — Meldungen zu Senken und Ladeaufträgen: der Stromüberschuss des BHKW, „BHKW steht zwischen zwei Erzeugern" der Kaskade, die Warnung zur Speicherstufe, „BHKW-Pendelspeicher: keine Puffer-Senke am BHKW", eine Senkenzeile ohne Puffer, eine Senke ohne Ladeauftrag (Rang und Nachrang), Quelle gleich eigene Senke, die nachgezogene Vorbelegung der Ladepriorität und je Modul die Stunden ohne Betrieb über der Rücklaufgrenze. Die Energieprobe des Moduls ist eine Entwicklerausgabe auf der Konsole und steht '''nicht''' im Protokoll.
 * '''Bericht''' und '''Wirtschaftlichkeit''' — Strommenge, Wärmemenge, Brennstoff und Vollbenutzungsstunden sind die Bezugsgrößen der KWK-Rechnung.
 
 == Bezüge ==
 {{Anker|bezuege}}
 
 * [[Programm Dokumentation/BHKW|BHKW]] — Bedienung des Dialogs, Katalog, Brennstoffvarianten
+* [[Grundlagen/BHKW|Grundlagen: BHKW]] — Kraft-Wärme-Kopplung, Fahrweisen und Kennzahlen
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Phasen der Stundenschleife, Betriebsart
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Bilanzraum, Ladeordnung und Speicherentladung
 * [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]] — der nachrangige Erzeuger; mit derselben Emissionsquelle

@@ -287,7 +287,8 @@ Dafür steht vor jeder Einheit ein '''Auswahlkästchen''' und oben neben ''„+ 
 * '''Vertritt eine Einheit schon eine Anlage''', gehen ihre Werte in '''diese''' Anlage zurück; nur weitere Stück entstehen daneben neu. Der Bezeichner der vorhandenen Anlage bleibt, wie er ist.
 * '''Zuvor wird gefragt''' – die Rückfrage nennt, wie viele Speicheranlagen neu angelegt und wie viele in ihren Werten angepasst werden. Geschrieben wird alles '''in einem Zug''' oder gar nichts.
 * '''Danach''' tragen die übernommenen Einheiten ihren Anlagenbezug: Die Nachzugszeile über der Liste nennt sie nicht mehr, und beim Hinzufügen erscheinen sie als ''bereits in der Flotte''.
-* Übernommen werden Kapazität, Leistung, Umlaufwirkungsgrad, Start-Ladezustand, die drei Investitionssätze und der Hilfsverbrauch. '''Typ, Hersteller, Degradation, zugesicherte Zyklen und Verschleißkosten''' kennt die Flotteneinheit nicht; die tragen Sie bei Bedarf in der Anlage nach.
+* Eine vorhandene Anlage erhält Kapazität, Leistung, Umlaufwirkungsgrad, Start-Ladezustand, die drei Investitionssätze und den Hilfsverbrauch der Einheit zurück. '''Typ, Hersteller, Degradation, zugesicherte Zyklen und Verschleißkosten''' kennt die Flotteneinheit nicht; sie bleiben in der vorhandenen Anlage unberührt.
+* '''Jedes weitere Stück''' entsteht als vollständige Kopie der Anlagenzeile mit allen Anlageneinstellungen: Betriebsführung, Senken, Stränge und Sperrfenster werden mitkopiert, ein Pufferverbund wird geteilt. Die Kostensätze der Anlage werden nach der nutzbaren Kapazität des Stücks angepasst, Posten in Prozent der Energiekosten ausgenommen; das erste Stück wird beim Zurückschreiben ebenso angepasst. Ein Hinweis erscheint nur, wenn sich die Kapazität ändert.
 
 Der '''gespeicherte Auslegungsstand''' bleibt davon unberührt: Welche Flotte der gewöhnliche Projektlauf rechnet, entscheidet allein ''„Diese Flotte für die Projektsimulation aktivieren"'' in Schritt 5.
 

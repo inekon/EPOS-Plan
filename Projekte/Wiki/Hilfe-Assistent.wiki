@@ -1,0 +1,109 @@
+Der '''Hilfe-Assistent''' beantwortet Fragen zur Bedienung und zur Rechenlogik in einem Chatfenster. Er kennt den Programmbereich, in dem Sie gerade arbeiten, durchsucht die integrierte Hilfe und formuliert auf Wunsch – mit einem eigenen Zugangsschlüssel – frei formulierte Antworten. Ohne Schlüssel arbeitet das Fenster als reine Hilfesuche weiter.
+
+== Die dritte Ebene des Hilfesystems ==
+{{Anker|die-dritte-ebene-des-hilfesystems|hilfesystem}}
+
+Hilfe steht auf drei Ebenen bereit: Kurzhinweise beim Überfahren eines Eingabefelds, diese Online-Dokumentation über {{Menü|Dokumentation}} und – als dritte Ebene – der Hilfe-Assistent. Die ersten beiden Ebenen beschreibt [[Einstellungen, Hilfe und Sprache]].
+
+== Aufruf ==
+{{Anker|aufruf|chatfenster|f1}}
+
+Das Chatfenster öffnen Sie über {{Menü|Hilfe|Hilfe-Assistent (KI)…}}, mit der Taste '''F1''' oder über die EPOS-Marke rechts neben dem ''i'' oben rechts in jeder Maske. Alle Wege übergeben den Bereich, in dem Sie gerade arbeiten. Wie der Assistent aus einem Dialog heraus arbeitet, beschreibt [[Programm Dokumentation/Hilfe-Assistent|Programm-Dokumentation: Hilfe-Assistent]].
+
+== Suche ohne Zugangsschlüssel ==
+{{Anker|suche-ohne-zugangsschluessel|lokale-suche|nur-suchen}}
+
+Mit ''Nur suchen'' durchsucht der Assistent die mitgelieferten Hilfetexte und die bereits abgerufenen Kapitel dieser Online-Dokumentation. Diese Suche läuft vollständig auf Ihrem Rechner, braucht keine Internetverbindung, überträgt nichts und ist kostenfrei.
+
+== Zugangsschlüssel und Tageslimit ==
+{{Anker|zugangsschluessel-und-tageslimit|zugangsschluessel|tageslimit}}
+
+Frei formulierte Antworten erzeugt ein Sprachmodell des Anbieters Google. Dafür hinterlegen Sie im Chatfenster unter ''Einstellungen…'' einen eigenen Zugangsschlüssel; abgerechnet wird unmittelbar über den Anbieter. Der Schlüssel wird verschlüsselt im Benutzerprofil abgelegt, ist an Windows-Konto und Rechner gebunden und steht nie im Klartext in der aufgerufenen Adresse. Das Programm wählt selbsttätig ein verfügbares Modell der kostengünstigen Klasse.
+
+{{Hinweis|Je Arbeitsplatz und Tag sind 50 Anfragen möglich. Diese Grenze ist fest vorgegeben und lässt sich weder im Programm noch durch den Anwender heraufsetzen. Ist sie erreicht, bleibt die Suche in der Hilfe uneingeschränkt nutzbar.}}
+
+== Rechtshinweis und Einwilligung ==
+{{Anker|rechtshinweis-und-einwilligung|einwilligung}}
+
+Vor der ersten Anfrage legt das Programm einen Rechtshinweis vor, der den tatsächlichen Datenfluss vollständig beschreibt. Ohne Ihre Zustimmung wird keine einzige Anfrage abgeschickt. Der Hinweis trägt eine Fassungsnummer; ändert sich sein Inhalt, wird er erneut vorgelegt.
+
+== Was übertragen wird ==
+{{Anker|was-uebertragen-wird|datenschutz}}
+
+Übertragen werden Ihre Frage im Wortlaut, der Name des Bereichs, in dem Sie arbeiten – etwa „Bericht“ oder „Wirtschaftlichkeit“, aus einer festen Liste allgemeiner Bereichsnamen – sowie Auszüge aus der mitgelieferten Wissensbasis. Datenbankinhalte, Kundenstammdaten, Simulationszeitreihen und Dateipfade werden nicht gesendet. Empfänger ist Google als Betreiber der Schnittstelle; nach dessen Bedingungen werden Inhalte im kostenlosen Kontingent zur Produktverbesserung verwendet, für den produktiven Einsatz ist ein kostenpflichtiger Zugang vorgesehen.
+
+{{Achtung|Ihre Frage geht unverändert hinaus. Schreiben Sie deshalb nichts hinein, was den Rechner nicht verlassen soll – keine personenbezogenen Daten und nichts, was der Geheimhaltung unterliegt. Über ''Was wird gesendet?'' zeigt das Chatfenster vor jedem Absenden genau den Text an, der übertragen würde.}}
+
+== Aktionen im Programm ==
+{{Anker|aktionen-im-programm|aktionen}}
+
+Zusätzlich zum Antworten kann der Assistent auf Wunsch benannte Aktionen im Programm ausführen. Sie schalten das im Chatfenster mit ''Aktionen zulassen'' frei; ist der Schalter aus, bleibt es beim reinen Fragen und Antworten. In diesem Betrieb gehen zusätzlich die Namen der zugelassenen Aktionen und die Ergebnisse ausgeführter Leseaktionen hinaus – Projekt-, Varianten- und Anlagennamen darin werden vorher durch Platzhalter ersetzt.
+
+=== Lesende Aktionen ===
+{{Anker|lesende-aktionen}}
+
+Lesende Aktionen laufen sofort: Projekte und Varianten auflisten, Projektdaten, Wirtschaftlichkeitsergebnisse und deren Randbedingungen lesen, Kostenlage und Energieträger prüfen, Lastgänge und Ganglinien auswerten, eine Übernahme im Trockenlauf vorschauen sowie die Felder einer geöffneten Maske lesen und erklären.
+
+=== Ändernde Aktionen ===
+{{Anker|aendernde-aktionen|bestaetigung}}
+
+Ändernde Aktionen laufen '''nur nach ausdrücklicher Bestätigung'''. Dazu gehören: eine Variante anlegen, eine Speichervariante aktiv setzen, den Betrag einer Kostenposition setzen sowie in einer geöffneten Maske ein Feld setzen, ein Formular ausfüllen oder eine geprüfte Schaltfläche betätigen. Der Assistent zeigt vorher eine Vorschau mit ''Ausführen'' und ''Abbrechen''. Jede Bestätigung gilt für genau einen Vorgang; nach 60 Sekunden verfällt sie, ebenso wenn zwischenzeitlich eine andere Aktion gelaufen ist.
+
+{{Hinweis|Schreibgeschützte Datensätze und die mitgelieferten Kataloge sind ausgenommen – der Assistent übergeht einen Schreibschutz nicht, auch nicht mit Bestätigung. Löschen kann er nichts. Im Lesemodus der Lizenz werden ändernde Aktionen abgewiesen.}}
+
+=== Sicherungspunkt und Protokoll ===
+{{Anker|sicherungspunkt-und-protokoll|sicherungspunkt|protokoll}}
+
+Vor der ersten ändernden Aktion einer Sitzung legt das Programm eine datierte Kopie der Datenbank im Ordner ''DB-Backup'' neben der Datenbank an. Gelingt die Kopie nicht, werden ändernde Aktionen abgelehnt. Jeder Versuch – ausgeführt oder abgewiesen – wird mit einer Zeile in einer Protokolldatei neben der Datenbank festgehalten; im Chatfenster öffnet ''Protokoll anzeigen'' diese Liste.
+
+== Was Sie steuern können ==
+{{Anker|was-sie-steuern-koennen|steuerung}}
+
+Sie behalten in jedem Schritt die Kontrolle darüber, was der Assistent tut. Die Schalter dafür sitzen im Chatfenster:
+
+* ''Nur suchen'' – der Assistent durchsucht ausschließlich die mitgelieferte Hilfe. Keine Übertragung, keine Kosten.
+* ''Aktionen zulassen'' – gibt Arbeitsschritte im Programm überhaupt erst frei. Ist der Schalter aus, bleibt es beim Fragen und Antworten. Darunter steht jeweils, was im aktuellen Zustand hinausgeht.
+* ''Werkzeuge…'' – hier führen Sie eine Aktion '''selbst''' aus: aus der Liste wählen, die Angaben eintragen, starten. Das Sprachmodell ist daran nicht beteiligt. So sehen Sie in Ruhe, was eine Aktion bewirkt, bevor Sie sie dem Assistenten überlassen.
+* ''Was wird gesendet?'' – zeigt vor dem Absenden genau den Text, der übertragen würde.
+* ''Protokoll anzeigen'' – führt jede Aktion mit Zeitpunkt und Ergebnis auf, auch die abgewiesenen.
+* ''Einstellungen…'' – Zugangsschlüssel hinterlegen, das fest vorgegebene Tageslimit einsehen und das Sprachmodell bei Bedarf neu erkennen lassen. Für Modelle, die keine Werkzeuge unterstützen, lässt sich dort ein Rückfallweg erzwingen: Der Assistent schlägt Aktionen dann im Antworttext vor, statt sie selbst aufzurufen.
+
+{{Tipp|Wenn Sie den Assistenten nur zum Nachschlagen verwenden, lassen Sie ''Aktionen zulassen'' ausgeschaltet – dann kann er im Programm nichts anfassen. Ganz abschalten lässt er sich unter [[Hilfe-Assistent#abschalten|Abschalten]].}}
+
+== Grenzen ==
+{{Anker|grenzen}}
+
+Der Assistent erklärt die Bedienung und die Rechenwege; er rechnet nicht selbst und ersetzt keine Simulation. Antworten eines Sprachmodells können unvollständig oder falsch sein – prüfen Sie sie, bevor Sie danach handeln.
+
+{{Achtung|Auslegungsentscheidungen, wirtschaftliche Bewertungen und rechtliche Fragen bleiben Ihre Verantwortung. Der Assistent leistet keine Rechts-, Steuer- oder Fachberatung.}}
+
+== Abschalten ==
+{{Anker|abschalten}}
+
+Unter {{Menü|Administration|Einstellungen}} schaltet ''KI-Assistent vollständig deaktivieren'' jede Übertragung ab. Der Betreiber einer Installation kann die Abschaltung zentral vorgeben; sie lässt sich dann aus dem Programm heraus nicht lösen. Der Menüeintrag bleibt erhalten und öffnet die lokale Hilfesuche, die weiterhin nichts überträgt.
+
+== Häufige Fragen ==
+{{Anker|haeufige-fragen}}
+
+=== Brauche ich einen Zugangsschlüssel für den Hilfe-Assistenten? ===
+{{Anker|brauche-ich-einen-zugangsschluessel-fuer-den-hilfe-assistenten}}
+
+Nur für frei formulierte Antworten. Die Suche in der mitgelieferten Hilfe läuft ohne Schlüssel, ohne Internetverbindung und ohne Kosten. Möchten Sie ausformulierte Antworten, hinterlegen Sie im Chatfenster unter ''Einstellungen…'' einen eigenen Zugangsschlüssel; abgerechnet wird direkt über dessen Anbieter, und je Arbeitsplatz und Tag sind 50 Anfragen möglich. Nutzen müssen Sie den Assistenten nicht – er lässt sich auch vollständig abschalten.
+
+=== Welche Daten überträgt der Hilfe-Assistent? ===
+{{Anker|welche-daten-uebertraegt-der-hilfe-assistent}}
+
+Ihre Frage im Wortlaut, den Namen des Bereichs, in dem Sie arbeiten, und Auszüge aus den mitgelieferten Hilfetexten. Projekt- und Kundendaten, Simulationsergebnisse und Dateipfade gehen nicht hinaus. Vor jedem Absenden können Sie sich anzeigen lassen, was genau übertragen würde; vor der ersten Anfrage legt das Programm einen Rechtshinweis vor, und ohne Ihre Zustimmung wird nichts gesendet. Schalten Sie im Chatfenster zusätzlich die Aktionen frei, kommen die Ergebnisse ausgeführter Leseschritte hinzu – Projekt- und Anlagennamen darin werden durch Platzhalter ersetzt.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programm Dokumentation/Hilfe-Assistent|Programm-Dokumentation: Hilfe-Assistent]] – das Chatfenster und der Assistent im Dialog im Einzelnen
+* [[Einstellungen, Hilfe und Sprache]] – Kurzhinweise, Online-Dokumentation und Sprachumschaltung
+* [[Installation und Update]] – Ersteinrichtung und benutzerbezogene Einstellungen
+* [[FAQ]] – häufige Fragen zu Kosten und Datenübertragung
+* [[Systemvoraussetzungen]] – Windows-Versionen und Internetverbindung
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]
