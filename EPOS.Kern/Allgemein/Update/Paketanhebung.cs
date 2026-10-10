@@ -401,6 +401,10 @@ namespace WindowsFormsApplication1
             // Projektkopien seiner Kaeltemaschinen und ihre Ergebnisse bekommen die Spalten leer (heutiger Weg).
             new Stufe(KaeltemaschineTeillastSchema.SCHRITT, Art.Katalog,
                       "Teillast und Takten der Kältemaschine (Teillastkurve, C_d, Verdichterregelung, Randweg, Kennzahlen)"),
+            // Ein Paket fuehrt keinen Katalog der Kaeltemaschinen (das Ziel fuehrt ihn samt Rueckfuellung); die Projektkopien
+            // seiner Kaeltemaschinen bekommen die Katalogfelder leer, die Geraeteart liest sich nach der Rueckfuellregel.
+            new Stufe(KaelteKatalogfelderSchema.SCHRITT, Art.Katalog,
+                      "Katalogfelder der Kälteerzeuger (Geräteart, GWP und Füllmenge des Kältemittels, saisonale Kennzahl)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

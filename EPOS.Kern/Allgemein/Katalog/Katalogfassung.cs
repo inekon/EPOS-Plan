@@ -462,6 +462,8 @@ namespace WindowsFormsApplication1
             new Katalogtabelle(KaeltemaschineSchema.TAB_STAMM, "KM",
                 // KaeltemaschineTeillastSchema (Schritt 210): die acht Eingabespalten von Teillast und Takten haengen ueber
                 // KaeltemaschineSchema.Fachspalten hinten an; leer tragen sie nichts zur Pruefsumme bei.
+                // KaelteKatalogfelderSchema (Schritt 211): Geraeteart, GWP, Fuellmenge und saisonale Kennzahl folgen; die
+                // rueckgefuellte Geraeteart traegt zur Pruefsumme bei, der Schritt bildet sie neu.
                 KaeltemaschineSchema.Fachspalten,
                 new Katalogkind(KaeltemaschineSchema.TAB_KENNDATEN_STAMM, KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE,
                                 KaeltemaschineSchema.KennlinienSpalten))
