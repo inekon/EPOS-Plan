@@ -4514,6 +4514,30 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="IMPORT_PROT_GELESEN" xml:space="preserve">
     <value>Gelesen: {0} Werte, {1} Zeitstempel.</value>
   </data>
+  <data name="IMPORT_PROBE_RASTER" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → Raster {1} ({2} Werte)</value>
+  </data>
+  <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → kein Raster: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="IMPORT_PROBE_VIERTEL" xml:space="preserve">
+    <value>Viertelstunde</value>
+  </data>
+  <data name="IMPORT_GRP_GRAFIK" xml:space="preserve">
+    <value>Gelesene Reihe</value>
+  </data>
+  <data name="IMPORT_BILD_TITEL" xml:space="preserve">
+    <value>Gelesene Ganglinie</value>
+  </data>
+  <data name="PVG_BILD_TITEL" xml:space="preserve">
+    <value>Photovoltaik Jahresganglinie</value>
+  </data>
+  <data name="SGL_BILD_TITEL" xml:space="preserve">
+    <value>Solarthermie Jahresganglinie</value>
+  </data>
   <data name="IMPORT_TITEL_OPTIONEN" xml:space="preserve">
     <value>Lastgang einlesen - Format und Vorschau</value>
   </data>
@@ -28540,6 +28564,45 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_KAT_PROT_KUEHLBLOCK_ACHSE" xml:space="preserve">
     <value>Wärmepumpe „{0}": {1} Kühlblöcke mit vertauschten Achsen nicht übernommen (Vorlauf {2} °C) — die Temperaturachse trägt die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur.</value>
   </data>
+  <data name="MENU_VDI3805_KAELTE" xml:space="preserve">
+    <value>Import Kälteanlagen VDI 3805 (Wärmepumpen mit Kühlfunktion)</value>
+  </data>
+  <data name="MENU_IMPORT_KAELTEMASCHINEN" xml:space="preserve">
+    <value>Import Kältemaschinen (CSV, Copper)…</value>
+  </data>
+  <data name="IMP_KAT_TITEL_WP_KAELTE" xml:space="preserve">
+    <value>Kälteanlagen Einlesen – Wärmepumpen mit Kühlfunktion</value>
+  </data>
+  <data name="IMP_KAT_HINWEIS_KAELTE" xml:space="preserve">
+    <value>Angeboten werden nur Wärmepumpen mit gültiger Kühlkennlinie; fehlt die Nennkühlleistung, gilt die größte Kälteleistung der Kennlinie. Die übrigen nennt das Protokoll mit Grund. * 0=modulierend</value>
+  </data>
+  <data name="IMP_KAT_SP_LEISTUNG_KUEHL" xml:space="preserve">
+    <value>Kühlleistung</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_BILANZ" xml:space="preserve">
+    <value>Kälteimport: {0} von {1} Wärmepumpen kühlfähig mit Kühlkennlinie, {2} übergangen.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: keine Kühlkennlinie.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_HEIZLAGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: Kühlblöcke nur in Heizlage.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ACHSEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: Kühlblöcke nur mit vertauschten Achsen.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_UNGUELTIG" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: kein gültiger Kühlblock (Heizlage oder vertauschte Achsen).</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_NENNKUEHL" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: keine Nennkühlleistung angegeben und keine Kälteleistung in der Kühlkennlinie.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ABGELEITET" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Nennkühlleistung aus der Kühlkennlinie abgeleitet: {1} kW.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ" xml:space="preserve">
+    <value>Kälteimport: bei {0} Wärmepumpen Nennkühlleistung aus der Kühlkennlinie abgeleitet (größte Kälteleistung der gültigen Kühlblöcke).</value>
+  </data>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
   </data>
@@ -49535,7 +49598,7 @@ Chart</value>
     <value>Kennfeldpunkte:</value>
   </data>
   <data name="IMP_KAT_HINWEIS_KAELTEMASCHINE" xml:space="preserve">
-    <value>Gelesen werden die Kurvendatei chiller_curves.json der offenen Bibliothek PNNL Copper (BSD-2-Lizenz, Copyright Pacific Northwest National Laboratory) und die CSV-Kennfeldvorlage Kaeltemaschine_Kennfeldvorlage.csv: Kopfzeilen mit Bezeichner, Rückkühlart (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), Nennkälteleistung, Nenn-EER, Mindestteillast und Kältemittel, danach je Zeile Rückkühltemperatur; Kaltwassertemperatur; Kälteleistung in kW; EER. Aus den Kurven entsteht ein Kennfeld mit 6 × 4 Punkten; Nennwerte gelten am Eurovent-Punkt (Kaltwasser 7 °C, Außenluft 35 °C bzw. Kühlwasser 30 °C). Luftgekühlte Kurven beziehen sich auf die Außenluft und werden um die Grädigkeit von 5 K auf die Rückkühltemperatur verschoben.</value>
+    <value>Gelesen werden die Kurvendatei chiller_curves.json der offenen Bibliothek PNNL Copper (BSD-2-Lizenz, Copyright Pacific Northwest National Laboratory) und die CSV-Kennfeldvorlage Kaeltemaschine_Kennfeldvorlage.csv: Kopfzeilen mit Bezeichner, Rückkühlart (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), Nennkälteleistung, Nenn-EER, Mindestteillast und Kältemittel, danach je Zeile Rückkühltemperatur; Kaltwassertemperatur; Kälteleistung in kW; EER. Aus den Kurven entsteht ein Kennfeld mit 6 × 4 Punkten; Nennwerte gelten am Eurovent-Punkt (Kaltwasser 7 °C, Außenluft 35 °C bzw. Kühlwasser 30 °C). Luftgekühlte Kurven beziehen sich auf die Außenluft und werden um die Grädigkeit von 5 K auf die Rückkühltemperatur verschoben. Dazu zwei Formen ohne Kennfeld: Kaeltemaschine_Nennwertvorlage.csv (nur Nennkälteleistung und Nenn-EER) und Kaeltemaschine_Oekodesignvorlage.csv (Pdesignc, SEER und je Teillastpunkt A–D Außentemperatur, Leistung, EER und Teillastverhältnis aus dem Produktdatenblatt). Beide bekommen ein eingebautes Typkennfeld gleicher Rückkühlart und gleichen Verdichters, auf den Nennpunkt bzw. den Punkt A skaliert; aus den Punkten A–D entstehen Teillastkurve und Mindestteillast. Das Leseprotokoll nennt das gewählte Typkennfeld.</value>
   </data>
   <data name="KM_IMP_MSG_UEBERGANGEN" xml:space="preserve">
     <value>{0} Einträge übergangen: {1}</value>
@@ -51393,6 +51456,102 @@ Chart</value>
   </data>
   <data name="KI_AKT_UNVERAENDERT" xml:space="preserve">
     <value>Unverändert: {0} — {1}</value>
+  </data>
+  <data name="IMPORT_PROT_KEIN_TEXT" xml:space="preserve">
+    <value>Die Datei „{0}“ ist keine Textdatei (Binärinhalt) – vermutlich eine Excel-, ZIP- oder Bilddatei mit falscher Endung.</value>
+  </data>
+  <data name="IMP_MSG_DATEI_GRUND" xml:space="preserve">
+    <value>Datei „{0}“: {1}</value>
+  </data>
+  <data name="IMP_MSG_UNERWARTET" xml:space="preserve">
+    <value>Die Datei „{0}“ konnte nicht eingelesen werden: {1}</value>
+  </data>
+  <data name="IMPORT_MSG_VORSCHAU_UNLESBAR" xml:space="preserve">
+    <value>Mit diesen Einstellungen ist die Datei nicht lesbar: {0}</value>
+  </data>
+  <data name="KM_MSG_GERAETEART_UNGUELTIG" xml:space="preserve">
+    <value>Die Geräteart ist unbekannt.</value>
+  </data>
+  <data name="KM_MSG_GERAETEART_RUECKKUEHLART" xml:space="preserve">
+    <value>Geräteart und Rückkühlart passen nicht zusammen: Ein luftgekühlter Kaltwassersatz rückkühlt mit Luft, ein wassergekühlter nicht.</value>
+  </data>
+  <data name="KM_MSG_KAELTEMITTEL_UNGUELTIG" xml:space="preserve">
+    <value>GWP oder Füllmenge des Kältemittels liegen außerhalb des zulässigen Bereichs (GWP 0 bis 30 000, Füllmenge größer 0 bis 10 000 kg).</value>
+  </data>
+  <data name="KM_MSG_SAISONKENNZAHL_UNGUELTIG" xml:space="preserve">
+    <value>Die saisonale Kennzahl braucht Art und Wert: SEER 1 bis 20, ηs,c 50 bis 800 %.</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_LUFT" xml:space="preserve">
+    <value>Kaltwassersatz luftgekühlt</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_WASSER" xml:space="preserve">
+    <value>Kaltwassersatz wassergekühlt</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_FREIKUEHLUNG" xml:space="preserve">
+    <value>Kaltwassersatz mit Freikühlung</value>
+  </data>
+  <data name="KM_GERAETEART_SPLIT" xml:space="preserve">
+    <value>Splitgerät</value>
+  </data>
+  <data name="KM_GERAETEART_MULTISPLIT" xml:space="preserve">
+    <value>Multisplitgerät</value>
+  </data>
+  <data name="KM_GERAETEART_VRF" xml:space="preserve">
+    <value>VRF-System</value>
+  </data>
+  <data name="KM_GERAETEART_ABSORPTION" xml:space="preserve">
+    <value>Absorptionskältemaschine</value>
+  </data>
+  <data name="KM_GERAETEART_AUS_RUECKKUEHLUNG" xml:space="preserve">
+    <value>nach der Rückkühlart</value>
+  </data>
+  <data name="KM_LBL_GERAETEART" xml:space="preserve">
+    <value>Geräteart</value>
+  </data>
+  <data name="KM_LBL_GWP" xml:space="preserve">
+    <value>GWP des Kältemittels</value>
+  </data>
+  <data name="KM_LBL_FUELLMENGE" xml:space="preserve">
+    <value>Füllmenge</value>
+  </data>
+  <data name="KM_LBL_SAISON_ART" xml:space="preserve">
+    <value>Saisonale Kennzahl</value>
+  </data>
+  <data name="KM_LBL_SAISONKENNZAHL" xml:space="preserve">
+    <value>Wert der saisonalen Kennzahl</value>
+  </data>
+  <data name="KM_EINHEIT_KG" xml:space="preserve">
+    <value>kg</value>
+  </data>
+  <data name="KM_SAISON_ART_KEINE" xml:space="preserve">
+    <value>keine Angabe</value>
+  </data>
+  <data name="KM_SAISON_SEER" xml:space="preserve">
+    <value>SEER</value>
+  </data>
+  <data name="KM_SAISON_ETA_S_C" xml:space="preserve">
+    <value>ηs,c [%]</value>
+  </data>
+  <data name="KFLT_SP_GERAETEART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="KFLT_LT_GERAETEART" xml:space="preserve">
+    <value>Geräteart</value>
+  </data>
+  <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
+    <value>Geräteart des Kälteerzeugers (Kaltwassersatz luft- oder wassergekühlt, mit Freikühlung, Split, Multisplit, VRF, Absorption); leer = nach der Rückkühlart.</value>
+  </data>
+  <data name="KI_DLG_KM_GWP_ERL" xml:space="preserve">
+    <value>Treibhauspotenzial (GWP, 100 Jahre) des Kältemittels; beschreibend, rechnet keine Emission.</value>
+  </data>
+  <data name="KI_DLG_KM_FUELLMENGE_ERL" xml:space="preserve">
+    <value>Füllmenge des Kältemittels in kg.</value>
+  </data>
+  <data name="KI_DLG_KM_SAISON_ART_ERL" xml:space="preserve">
+    <value>Art der saisonalen Kennzahl: SEER oder ηs,c; nur zusammen mit dem Wert.</value>
+  </data>
+  <data name="KI_DLG_KM_SAISONKENNZAHL_ERL" xml:space="preserve">
+    <value>Wert der saisonalen Kennzahl: SEER 1 bis 20 oder ηs,c 50 bis 800 %.</value>
   </data>
 </root>
 

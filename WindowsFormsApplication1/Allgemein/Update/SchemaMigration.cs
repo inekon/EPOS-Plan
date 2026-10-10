@@ -5381,6 +5381,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KAELTEMASCHINE_TEILLAST = KaeltemaschineTeillastSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaelteKatalogfelderSchema.SCHRITT"/> — <b>Katalogfelder der Kälteerzeuger</b> (K-A, Entscheid
+        /// E118): Geräteart, GWP und Füllmenge des Kältemittels und saisonale Kennzahl an Katalog und Projektkopie der
+        /// Kältemaschine; die Geräteart wird nach der Rückkühlart rückgefüllt (LUFT → KWS_LUFT, sonst KWS_WASSER).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest die Spalten.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTE_KATALOGFELDER = KaelteKatalogfelderSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7864,6 +7873,13 @@ namespace WindowsFormsApplication1
                         "Eine Kaeltemaschine koennte keine Teillastkurve, keinen Taktverlust und keine Verdichterregelung tragen. " +
                         "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_KaeltemaschineTeillast),
+            // K-A: Katalogfelder der Kaelteerzeuger. Quelle ist KaelteKatalogfelderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTE_KATALOGFELDER,
+                        "Tab_Kaeltemaschine_STAMM, Tab_Kaeltemaschine: Geraeteart, Kaeltemittel_GWP, Kaeltemittel_Fuellmenge_kg, " +
+                        "Saisonkennzahl_Art, Saisonkennzahl; Geraeteart nach der Rueckkuehlart rueckgefuellt",
+                        "Eine Kaeltemaschine koennte keine Geraeteart, kein GWP, keine Fuellmenge und keine saisonale Kennzahl " +
+                        "tragen. KEIN Rechenergebnis aendert sich - kein Rechenweg liest die Spalten.",
+                        Schritt_KaelteKatalogfelder),
         };
 
         /// <summary>
@@ -15198,6 +15214,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Teillast und Takten der Kaeltemaschine - " +
+                    (e.Angelegt == 0 ? "stand bereits." : e.Angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogfelder der Kälteerzeuger" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTE_KATALOGFELDER"/>,
+        /// die Anweisungen bei <see cref="KaelteKatalogfelderSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaelteKatalogfelder(Lauf l)
+        {
+            string nr = KaelteKatalogfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaelteKatalogfelderSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            KaelteKatalogfelderSchema.Laufergebnis e;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    e = KaelteKatalogfelderSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaelteKatalogfelderSchema.Vollstaendig() || KaelteKatalogfelderSchema.ZeilenOhneGeraeteart() != 0)
+            {
+                l.LetzterFehler = "Die Katalogfelder der Kaelteerzeuger stehen nach dem Schritt nicht vollstaendig oder nicht rueckgefuellt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Katalogfelder der Kaelteerzeuger - " +
                     (e.Angelegt == 0 ? "stand bereits." : e.Angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

@@ -7,20 +7,20 @@ kein Konzept; die Sachlage steht in den Papieren selbst.
 ## 1 Was fertig ist
 
 - **Entscheide E1 bis E26** sind eingearbeitet. Der jüngste, **E26** (17.09.2026), steht als
-  Nachtrag N1.31 im [Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md): Der Altweg
+  Nachtrag N1.31 im [Leitkonzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md): Der Altweg
   (Tagesbilanz) ist ein Übergang, der VDI-Weg löst ihn später komplett ab und arbeitet
   eigenständig; die Stufe **GA — Altweg ablösen** steht wieder als letzte Stufe im Plan, ihr
   Zeitpunkt ist offen (Q24), ihr Umfang ist Q25.
 - **Prüfung vom 17.09.2026** (sechs Blickwinkel, je ein Gegenprüfer): 128 Befunde und 29
   Ergänzungen, Ergebnis und 31 Festlegungen F-Ü1 bis F-D1 im
-  [Prüfprotokoll](2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md), Festlegungen verbindlich im
-  [Register](../Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), Kapitel 8.4 (Widerspruch bis
+  [Prüfprotokoll](../aktuell/Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md), Festlegungen verbindlich im
+  [Register](../aktuell/Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), Kapitel 8.4 (Widerspruch bis
   zur Beauftragung von G1 möglich).
 - **Nachgezogen** (17.09. begonnen, 22.09. vervollständigt): Leitkonzept Rev. 3,
   Umsetzungskonzept Rev. 4, Rechenschritte Rev. 2, Softwarearchitektur Rev. 4, Systementwurf
   Rev. 4, Kühlkonzept Rev. 4, Anlagenkopplung Rev. 2, Mehrzonenmodell Rev. 3, Datenaustausch
   Rev. 2, ADR-002/003/005/006, Befund X, Katalogfilter, Register (66 offene Punkte),
-  [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md), Index. Alle Papiere UTF-8 ohne BOM mit
+  [Statusdatei](../aktuell/Status_Gebaeudesimulation_VDI6007.md), Index. Alle Papiere UTF-8 ohne BOM mit
   CRLF; Linkprobe über `Dokumentation/` ohne Fehler unter `aktuell/`.
 - **Nicht committet.** Der Stand liegt im Arbeitsbaum; `GitHub_Sync.bat` nimmt ihn mit, sobald
   die fremde Sperrdatei `AGENT_LAEUFT` (Sitzung „Energiekosten", 22.09.2026) verschwunden ist.
@@ -40,7 +40,7 @@ und 5 des Prüfprotokolls).
    `Zielversion = 100`, nächste freie 101). Der Klimaspalten-Schritt der Gebäudesimulation
    (Papiername M4, Stufe G2) ist damit **vorweggenommen** — keine Spalte `Windgeschwindigkeit`,
    dafür `Bedeckungsgrad` und `Luftfeuchte`. Nachzuziehen mit Verweis auf
-   [Konzept Klimadatenquellen](../Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md): Softwarearchitektur
+   [Konzept Klimadatenquellen](../aktuell/Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md): Softwarearchitektur
    (Kapitel 0 Punkt 3, Bild 1.1, 2.2, 2.4 Zeile M4, 2.8 Einfrierregel „gesäte Klimareihen"),
    Rechenschritte 1.2/1.3 und die NULL-Regel zur Gegenstrahlung (bei NULL weiter Δθ_lw = 0 und
    α_str,A = 5,0; eine Schätzung aus dem Bedeckungsgrad wäre möglich, wird aber nicht gerechnet),
@@ -91,7 +91,7 @@ vertagt). Kurz und übersichtlich, ein Satz je Punkt.
 gilt das Prüfprotokoll als Kurzfassung (Statusdatei, Zeile Word-Dokument).
 
 Die Word-Datei
-[`Gebaeudesimulation_VDI6007_Architektur_Design_Rechenweg_2026-09-16.docx`](Gebaeudesimulation_VDI6007_Architektur_Design_Rechenweg_2026-09-16.docx)
+[`Gebaeudesimulation_VDI6007_Architektur_Design_Rechenweg_2026-09-16.docx`](../aktuell/Gebaeudesimulation/Gebaeudesimulation_VDI6007_Architektur_Design_Rechenweg_2026-09-16.docx)
 steht auf **E1–E25 (16.09.2026)**. Ihre Markdown-Quelle (rund 2 300 Zeilen, 16 Mermaid-Bilder,
 345 Formeln) und die beiden Konverter (Markdown → docx mit Word-Gleichungen; Mermaid → PNG über
 Playwright und Edge) lagen außerhalb des Repositoriums im Temp-Ordner und sind mit ihm gelöscht
@@ -154,9 +154,9 @@ print "Dateien: $nf, Verweise: $nl, Fehler: $ne\n";
 
 | Was | Wo |
 |---|---|
-| Entscheide E1–E26 mit Wortlaut | [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1; Leitkonzept Nachtrag 1 (N1.1–N1.31) |
+| Entscheide E1–E26 mit Wortlaut | [Statusdatei](../aktuell/Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1; Leitkonzept Nachtrag 1 (N1.1–N1.31) |
 | Stufenplan G0, GB, G1–G7, GA, KU0–KU3, AK0–AK3 | Statusdatei Abschnitt 2; Umsetzungskonzept Kapitel 4; Löschliste der Stufe GA in Kapitel 6 |
-| Offene Anwenderentscheide (66) und Festlegungen | [Register](../Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), Kapitel 0 und 8.4 |
-| Befunde der Prüfung je Blickwinkel | [Prüfprotokoll](2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md), Kapitel 2 |
-| Kühlung mit Wärmepumpen (Konzept gegen Code) | [Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md), Kapitel 4 und 5; Befund W |
-| Trennung Altweg / VDI-Weg | [ADR-006](../ADR-006_Trennung_Altweg_VDI6007.md); Befund X Kapitel 4 (Grundlage der Stufe GA) |
+| Offene Anwenderentscheide (66) und Festlegungen | [Register](../aktuell/Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), Kapitel 0 und 8.4 |
+| Befunde der Prüfung je Blickwinkel | [Prüfprotokoll](../aktuell/Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md), Kapitel 2 |
+| Kühlung mit Wärmepumpen (Konzept gegen Code) | [Kühlkonzept](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md), Kapitel 4 und 5; Befund W |
+| Trennung Altweg / VDI-Weg | [ADR-006](../aktuell/ADR-006_Trennung_Altweg_VDI6007.md); Befund X Kapitel 4 (Grundlage der Stufe GA) |

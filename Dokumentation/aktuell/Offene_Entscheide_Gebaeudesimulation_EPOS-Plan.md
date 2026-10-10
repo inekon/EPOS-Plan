@@ -2149,7 +2149,7 @@ entschieden, Wortlaut „P9: (b) / P10: (b) / P11: Eine Vorlage mit vorbefüllte
 Kalendern. / P12: unklar / P13: (a) / Heizperiode: Wird vom Benutzer vorgegeben mit Datum Start und Datum Ende. In
 dieser Zeit ist der Heizwärmeerzeuger aus." — P11 **abweichend von der Empfehlung**; P11, P12 und die Heizperiode sind
 per Rückfrage geklärt (Vermerke unten, die Heizperiode unter F20). **P14** kommt aus dem Entscheid **E58**
-(02.10.2026, Konzept N1.67) zu Frage F7 des [Entwurfs KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md): ein
+(02.10.2026, Konzept N1.67) zu Frage F7 des [Entwurfs KP3](../ueberholt/2026-10-02_Entwurf_KP3.md): ein
 Entscheid nach einer Messung, offen bis zur Welle RP1. **P15 bis P17** kommen aus der Ausgestaltung der Entscheide **E59**
 (02.10.2026: Aufschlag in Stunden und Prozent, manuelle Aufheizzeit je Gebäude mit Vorschlägen) und **E60** (03.10.2026:
 Auslegungsgröße), beide Konzept N1.68, Teilkonzept 9.9; der Anwender hat sie am 03.10.2026 entschieden, P15
@@ -2410,7 +2410,7 @@ abweichend von der Empfehlung.
   und friert ihn in die neue Basis ein.
 - **Fällig vor:** **RP2** (Einfrieren der Basis R34), nach der Messung in RP1.
 - **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.4 und 9.8;
-  [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) B26, F7 und Abschnitt 7.
+  [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) B26, F7 und Abschnitt 7.
 
 ### P15 — Vorschlagsspanne der manuellen Aufheizzeit
 
@@ -2435,7 +2435,7 @@ Bauart-Tabelle; dazu die bemessene Zeit aus der Herleitungszeile. Regel der Umse
 - **Folge bei Nichtentscheid:** O2 baut (a); die Zahlen stehen in den Texten und sind ohne Schemaschritt änderbar.
 - **Fällig vor:** **O2**.
 - **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 7.6 und 9.9;
-  [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) Festlegung 40.
+  [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) Festlegung 40.
 
 ### P16 — Aufschlag an Sprüngen ohne Rampe
 
@@ -2458,7 +2458,7 @@ und an Tagen ohne Sprung kein Aufschlag; Begrenzung auf D + 1 und W2 bleiben (En
 - **Folge bei Nichtentscheid:** R5 baut (a) nach Festlegung 35 des Entwurfs.
 - **Fällig vor:** **R5**.
 - **Quelle:** [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.6 und 9.9;
-  [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) Festlegung 35, Abschnitt 8.
+  [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) Festlegung 35, Abschnitt 8.
 
 ### P17 — Lesart der Auslegungsgröße
 
@@ -2483,7 +2483,7 @@ Gebäudes trägt `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw` (Entwurf KP3, 
 - **Fällig vor:** **O2**.
 - **Quelle:** [Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md) 4 und 5;
   [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4.8 und 9.9;
-  [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) Festlegung 41.
+  [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) Festlegung 41.
 
 ### Festlegungen F1 bis F22 — Vermerk
 

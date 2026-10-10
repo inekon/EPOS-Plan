@@ -1,6 +1,6 @@
 # Protokoll KP3 — Aufheizoptimierung, Ergebnisse, Referenzprojekt und neue Basis der Konditionierungsprofile
 
-**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4, D2, R5 gebaut; die Basis heißt R34, weil R31, R32 und R33 am 02.10.2026 für die Rechenwegbefunde, die Solarthermie und die Viertelstunden vergeben wurden).** Grundlage: [Entwurf KP3](../../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)
+**Stand 02.10.2026 · in Umsetzung (R1, D1, R2, O1, R3, R4, D2, R5 gebaut; die Basis heißt R34, weil R31, R32 und R33 am 02.10.2026 für die Rechenwegbefunde, die Solarthermie und die Viertelstunden vergeben wurden).** Grundlage: [Entwurf KP3](../../2026-10-02_Entwurf_KP3.md)
 (zwölf Wellen in vier Spuren, Festlegungen nach der Umsetzung als N1.69), Entscheid E58 (Leitkonzept N1.67, Teilkonzept 9.8),
 Entscheide E59 und E60 (Leitkonzept N1.68, Teilkonzept 9.9),
 [Protokoll KP2](2026-09-30_KP2_Konditionierung_Oberflaeche.md). Je Welle ein Agent im eigenen Worktree mit eigenem Gate

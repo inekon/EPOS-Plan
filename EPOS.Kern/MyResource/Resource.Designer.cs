@@ -42042,6 +42042,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesene Ganglinie ähnelt.
+        /// </summary>
+        public static string IMPORT_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("IMPORT_BILD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string IMPORT_BTN_ABBRECHEN {
@@ -42173,6 +42182,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_GRP_EINLESEN {
             get {
                 return ResourceManager.GetString("IMPORT_GRP_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesene Reihe ähnelt.
+        /// </summary>
+        public static string IMPORT_GRP_GRAFIK {
+            get {
+                return ResourceManager.GetString("IMPORT_GRP_GRAFIK", resourceCulture);
             }
         }
         
@@ -42438,6 +42456,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit diesen Einstellungen ist die Datei nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_VORSCHAU_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_VORSCHAU_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → kein Raster: {1} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_KEIN_RASTER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_KEIN_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → Raster {1} ({2} Werte) ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_RASTER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_STUNDE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstunde ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_VIERTEL {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_VIERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gesamte Reihe ist null. ähnelt.
         /// </summary>
         public static string IMPORT_PROT_ALLE_NULL {
@@ -42551,6 +42614,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_PROT_KEINE_WERTE {
             get {
                 return ResourceManager.GetString("IMPORT_PROT_KEINE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist keine Textdatei (Binärinhalt) – vermutlich eine Excel-, ZIP- oder Bilddatei mit falscher Endung. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_KEIN_TEXT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_KEIN_TEXT", resourceCulture);
             }
         }
         
@@ -46731,6 +46803,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angeboten werden nur Wärmepumpen mit gültiger Kühlkennlinie; fehlt die Nennkühlleistung, gilt die größte Kälteleistung der Kennlinie. Die übrigen nennt das Protokoll mit Grund. * 0=modulierend ähnelt.
+        /// </summary>
+        public static string IMP_KAT_HINWEIS_KAELTE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_HINWEIS_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gelesen werden die Kurvendatei chiller_curves.json der offenen Bibliothek PNNL Copper (BSD-2-Lizenz, Copyright Pacific Northwest National Laboratory) und die CSV-Kennfeldvorlage Kaeltemaschine_Kennfeldvorlage.csv: Kopfzeilen mit Bezeichner, Rückkühlart (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), Nennkälteleistung, Nenn-EER, Mindestteillast und Kältemittel, danach je Zeile Rückkühltemperatur; Kaltwassertemperatur; Kälteleistung in kW; EER. Aus den Kurven entsteht ein Kennfeld mit 6 × 4 Punkten; Nennwerte ge [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string IMP_KAT_HINWEIS_KAELTEMASCHINE {
@@ -46826,6 +46907,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_PROT_GELESEN {
             get {
                 return ResourceManager.GetString("IMP_KAT_PROT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Nennkühlleistung aus der Kühlkennlinie abgeleitet: {1} kW. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_ABGELEITET {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteimport: bei {0} Wärmepumpen Nennkühlleistung aus der Kühlkennlinie abgeleitet (größte Kälteleistung der gültigen Kühlblöcke). ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: Kühlblöcke nur mit vertauschten Achsen. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_ACHSEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_ACHSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteimport: {0} von {1} Wärmepumpen kühlfähig mit Kühlkennlinie, {2} übergangen. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_BILANZ {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: Kühlblöcke nur in Heizlage. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_HEIZLAGE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_HEIZLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: keine Kühlkennlinie. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: keine Nennkühlleistung angegeben und keine Kälteleistung in der Kühlkennlinie. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_NENNKUEHL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_NENNKUEHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: kein gültiger Kühlblock (Heizlage oder vertauschte Achsen). ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -46974,6 +47127,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_LEISTUNG_KUEHL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_LEISTUNG_KUEHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Th. Leistung ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_LEISTUNG_TH {
@@ -47060,6 +47222,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_TITEL_WP {
             get {
                 return ResourceManager.GetString("IMP_KAT_TITEL_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteanlagen Einlesen – Wärmepumpen mit Kühlfunktion ähnelt.
+        /// </summary>
+        public static string IMP_KAT_TITEL_WP_KAELTE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_TITEL_WP_KAELTE", resourceCulture);
             }
         }
         
@@ -47294,6 +47465,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_MSG_BILANZ {
             get {
                 return ResourceManager.GetString("IMP_MSG_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string IMP_MSG_DATEI_GRUND {
+            get {
+                return ResourceManager.GetString("IMP_MSG_DATEI_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ konnte nicht eingelesen werden: {1} ähnelt.
+        /// </summary>
+        public static string IMP_MSG_UNERWARTET {
+            get {
+                return ResourceManager.GetString("IMP_MSG_UNERWARTET", resourceCulture);
             }
         }
         
@@ -51907,6 +52096,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräteart ähnelt.
+        /// </summary>
+        public static string KFLT_LT_GERAETEART {
+            get {
+                return ResourceManager.GetString("KFLT_LT_GERAETEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung ähnelt.
         /// </summary>
         public static string KFLT_LT_NENNKAELTELEISTUNG {
@@ -52191,6 +52389,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_GEBAEUDEART {
             get {
                 return ResourceManager.GetString("KFLT_SP_GEBAEUDEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string KFLT_SP_GERAETEART {
+            get {
+                return ResourceManager.GetString("KFLT_SP_GERAETEART", resourceCulture);
             }
         }
         
@@ -59552,6 +59759,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllmenge des Kältemittels in kg. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_FUELLMENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_FUELLMENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräteart des Kälteerzeugers (Kaltwassersatz luft- oder wassergekühlt, mit Freikühlung, Split, Multisplit, VRF, Absorption); leer = nach der Rückkühlart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_GERAETEART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_GERAETEART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wählt den Katalogsatz der Verwaltung – wie ein Klick in die Liste; Schlüssel ist die Id. ähnelt.
         /// </summary>
         public static string KI_DLG_KM_GERAET_ERL {
@@ -59566,6 +59791,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_KM_GERAET_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_KM_GERAET_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Treibhauspotenzial (GWP, 100 Jahre) des Kältemittels; beschreibend, rechnet keine Emission. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_GWP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_GWP_ERL", resourceCulture);
             }
         }
         
@@ -59674,6 +59908,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert der saisonalen Kennzahl: SEER 1 bis 20 oder ηs,c 50 bis 800 %. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_SAISONKENNZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_SAISONKENNZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der saisonalen Kennzahl: SEER oder ηs,c; nur zusammen mit dem Wert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_SAISON_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_SAISON_ART_ERL", resourceCulture);
             }
         }
         
@@ -75733,6 +75985,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kg ähnelt.
+        /// </summary>
+        public static string KM_EINHEIT_KG {
+            get {
+                return ResourceManager.GetString("KM_EINHEIT_KG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Kältemaschine „{0}“ gelöscht werden? ähnelt.
         /// </summary>
         public static string KM_FRAGE_LOESCHEN {
@@ -75747,6 +76008,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_FRAGE_TYPKENNFELDER {
             get {
                 return ResourceManager.GetString("KM_FRAGE_TYPKENNFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Absorptionskältemaschine ähnelt.
+        /// </summary>
+        public static string KM_GERAETEART_ABSORPTION {
+            get {
+                return ResourceManager.GetString("KM_GERAETEART_ABSORPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach der Rückkühlart ähnelt.
+        /// </summary>
+        public static string KM_GERAETEART_AUS_RUECKKUEHLUNG {
+            get {
+                return ResourceManager.GetString("KM_GERAETEART_AUS_RUECKKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwassersatz mit Freikühlung ähnelt.
+        /// </summary>
+        public static string KM_GERAETEART_KWS_FREIKUEHLUNG {
+            get {
+                return ResourceManager.GetString("KM_GERAETEART_KWS_FREIKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwassersatz luftgekühlt ähnelt.
+        /// </summary>
+        public static string KM_GERAETEART_KWS_LUFT {
+            get {
+                return ResourceManager.GetString("KM_GERAETEART_KWS_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwassersatz wassergekühlt ähnelt.
+        /// </summary>
+        public static string KM_GERAETEART_KWS_WASSER {
+            get {
+                return ResourceManager.GetString("KM_GERAETEART_KWS_WASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Multisplitgerät ähnelt.
+        /// </summary>
+        public static string KM_GERAETEART_MULTISPLIT {
+            get {
+                return ResourceManager.GetString("KM_GERAETEART_MULTISPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Splitgerät ähnelt.
+        /// </summary>
+        public static string KM_GERAETEART_SPLIT {
+            get {
+                return ResourceManager.GetString("KM_GERAETEART_SPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VRF-System ähnelt.
+        /// </summary>
+        public static string KM_GERAETEART_VRF {
+            get {
+                return ResourceManager.GetString("KM_GERAETEART_VRF", resourceCulture);
             }
         }
         
@@ -76003,6 +76336,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllmenge ähnelt.
+        /// </summary>
+        public static string KM_LBL_FUELLMENGE {
+            get {
+                return ResourceManager.GetString("KM_LBL_FUELLMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräteart ähnelt.
+        /// </summary>
+        public static string KM_LBL_GERAETEART {
+            get {
+                return ResourceManager.GetString("KM_LBL_GERAETEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP des Kältemittels ähnelt.
+        /// </summary>
+        public static string KM_LBL_GWP {
+            get {
+                return ResourceManager.GetString("KM_LBL_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstrom Rückkühlung ähnelt.
         /// </summary>
         public static string KM_LBL_HILFSSTROM {
@@ -76080,6 +76440,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_LBL_RUECKKUEHLART {
             get {
                 return ResourceManager.GetString("KM_LBL_RUECKKUEHLART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert der saisonalen Kennzahl ähnelt.
+        /// </summary>
+        public static string KM_LBL_SAISONKENNZAHL {
+            get {
+                return ResourceManager.GetString("KM_LBL_SAISONKENNZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saisonale Kennzahl ähnelt.
+        /// </summary>
+        public static string KM_LBL_SAISON_ART {
+            get {
+                return ResourceManager.GetString("KM_LBL_SAISON_ART", resourceCulture);
             }
         }
         
@@ -76228,11 +76606,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräteart und Rückkühlart passen nicht zusammen: Ein luftgekühlter Kaltwassersatz rückkühlt mit Luft, ein wassergekühlter nicht. ähnelt.
+        /// </summary>
+        public static string KM_MSG_GERAETEART_RUECKKUEHLART {
+            get {
+                return ResourceManager.GetString("KM_MSG_GERAETEART_RUECKKUEHLART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Geräteart ist unbekannt. ähnelt.
+        /// </summary>
+        public static string KM_MSG_GERAETEART_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_GERAETEART_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Import aus einer Datei steht auf dieser Plattform nicht zur Verfügung. Die eingebauten Typkennfelder lassen sich über „Typkennfelder laden…“ übernehmen. ähnelt.
         /// </summary>
         public static string KM_MSG_IMPORT_PLATTFORM {
             get {
                 return ResourceManager.GetString("KM_MSG_IMPORT_PLATTFORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP oder Füllmenge des Kältemittels liegen außerhalb des zulässigen Bereichs (GWP 0 bis 30 000, Füllmenge größer 0 bis 10 000 kg). ähnelt.
+        /// </summary>
+        public static string KM_MSG_KAELTEMITTEL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_KAELTEMITTEL_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -76323,6 +76728,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_MSG_RUECKKUEHLART_UNGUELTIG {
             get {
                 return ResourceManager.GetString("KM_MSG_RUECKKUEHLART_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die saisonale Kennzahl braucht Art und Wert: SEER 1 bis 20, ηs,c 50 bis 800 %. ähnelt.
+        /// </summary>
+        public static string KM_MSG_SAISONKENNZAHL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_SAISONKENNZAHL_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -76548,6 +76962,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_RUECKKUEHLART_WASSER {
             get {
                 return ResourceManager.GetString("KM_RUECKKUEHLART_WASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe ähnelt.
+        /// </summary>
+        public static string KM_SAISON_ART_KEINE {
+            get {
+                return ResourceManager.GetString("KM_SAISON_ART_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ηs,c [%] ähnelt.
+        /// </summary>
+        public static string KM_SAISON_ETA_S_C {
+            get {
+                return ResourceManager.GetString("KM_SAISON_ETA_S_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SEER ähnelt.
+        /// </summary>
+        public static string KM_SAISON_SEER {
+            get {
+                return ResourceManager.GetString("KM_SAISON_SEER", resourceCulture);
             }
         }
         
@@ -83754,6 +84195,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Kältemaschinen (CSV, Copper)… ähnelt.
+        /// </summary>
+        public static string MENU_IMPORT_KAELTEMASCHINEN {
+            get {
+                return ResourceManager.GetString("MENU_IMPORT_KAELTEMASCHINEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
         /// </summary>
         public static string MENU_KAELTEMASCHINEN {
@@ -84074,6 +84524,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_VDI3805 {
             get {
                 return ResourceManager.GetString("MENU_VDI3805", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Kälteanlagen VDI 3805 (Wärmepumpen mit Kühlfunktion) ähnelt.
+        /// </summary>
+        public static string MENU_VDI3805_KAELTE {
+            get {
+                return ResourceManager.GetString("MENU_VDI3805_KAELTE", resourceCulture);
             }
         }
         
@@ -95909,6 +96368,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik Jahresganglinie ähnelt.
+        /// </summary>
+        public static string PVG_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("PVG_BILD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Katalog erneuern… ähnelt.
         /// </summary>
         public static string PVG_BTN_ERNEUERN {
@@ -102109,6 +102577,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SGAD_TITEL {
             get {
                 return ResourceManager.GetString("SGAD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie Jahresganglinie ähnelt.
+        /// </summary>
+        public static string SGL_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("SGL_BILD_TITEL", resourceCulture);
             }
         }
         

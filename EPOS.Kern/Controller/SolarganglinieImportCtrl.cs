@@ -58,6 +58,15 @@ namespace WindowsFormsApplication1
         /// <summary>Liest, prüft den Namen und schreibt. Wirft nicht.</summary>
         /// <param name="pfad">Die Quelldatei.</param>
         public static SolarganglinieImportBericht Einlesen(string pfad)
+            => Einlesen(pfad, string.IsNullOrWhiteSpace(pfad) ? null : StundenganglinieDatei.Lies(pfad));
+
+        /// <summary>
+        /// Prüft den Namen und schreibt eine schon gelesene Reihe — der Weg über den Optionendialog
+        /// (<see cref="StundenganglinieDatei.AusImport"/>). Wirft nicht.
+        /// </summary>
+        /// <param name="pfad">Die Quelldatei (Bezeichner aus dem Dateinamen).</param>
+        /// <param name="lesung">Die gelesene Reihe samt Format und Kopftext.</param>
+        public static SolarganglinieImportBericht Einlesen(string pfad, StundenganglinieLesung lesung)
         {
             var bericht = new SolarganglinieImportBericht
             {
@@ -71,11 +80,11 @@ namespace WindowsFormsApplication1
                 return bericht;
             }
 
-            StundenganglinieLesung lesung = StundenganglinieDatei.Lies(pfad);
+            lesung ??= new StundenganglinieLesung();
             bericht.Lesung = lesung;
             if (!lesung.Erfolgreich)
             {
-                bericht.Meldung = GanglinienProtokollText.Text(lesung.ErsterFehler);
+                bericht.Meldung = StundenganglinieDatei.Ablehnungstext(pfad, lesung);
                 bericht.IstFehler = true;
                 return bericht;
             }

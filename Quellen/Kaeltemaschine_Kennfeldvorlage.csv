@@ -13,6 +13,13 @@
 #   Mindestteillast     % der Nennleistung, unterhalb taktet die Maschine
 #   Kältemittel         z. B. R290 (nur Angabe)
 #
+# KATALOGFELDER (optional, beschreibend – kein Rechenweg liest sie):
+#   Geräteart           KWS_LUFT, KWS_WASSER, KWS_FREIKUEHLUNG, SPLIT, MULTISPLIT, VRF oder ABSORPTION;
+#                       leer = aus der Rückkühlart (LUFT → KWS_LUFT, sonst KWS_WASSER)
+#   GWP                 Treibhauspotenzial des Kältemittels (100 Jahre), 0 bis 30 000
+#   Füllmenge           Kältemittelfüllmenge in kg
+#   SEER oder ETA_S_C   saisonale Kennzahl: SEER (1 bis 20) oder ηs,c in % (50 bis 800); höchstens eine angeben
+#
 # TEILLAST UND TAKTEN (optional; leer = Vorgabe):
 #   Verdichterregelung  EIN_AUS, STUFEN oder DREHZAHL – wählt die Vorgabekurve, wenn keine Kurve angegeben ist
 #   Teillast_Weg        LINEAR oder KURVE; leer = heutiger Weg (linear, ohne Taktverlust)
@@ -35,6 +42,7 @@
 #
 Bezeichner;Beispiel Kältemaschine 100 kW Trockenkühler
 Rückkühlart;TROCKENKUEHLER
+Geräteart;KWS_WASSER
 Nennkälteleistung;100
 Nenn-EER;5,0
 Mindestteillast;25

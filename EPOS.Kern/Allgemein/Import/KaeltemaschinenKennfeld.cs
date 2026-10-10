@@ -259,6 +259,8 @@ namespace WindowsFormsApplication1
                 Nenn_EER = Math.Round(eerNenn, 2, MidpointRounding.AwayFromZero),
                 Kaeltemittel = null,
                 Rueckkuehlart = art,
+                // K-A: die Geraeteart aus condenser_type der Quelle (air = luftgekuehlt, sonst wassergekuehlt).
+                Geraeteart = satz.IstLuft ? KaelteKatalogfelderSchema.GERAETEART_KWS_LUFT : KaelteKatalogfelderSchema.GERAETEART_KWS_WASSER,
                 Mindestteillast_Prozent = Mindestteillast(satz),
                 Kennlinie = Raster(satz, art, faktor)
             };

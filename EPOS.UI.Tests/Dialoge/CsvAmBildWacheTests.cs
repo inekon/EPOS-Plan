@@ -38,6 +38,9 @@ public class CsvAmBildWacheTests
         { "BedarfAdminDialog", "EPOS.UI/Dialoge/Bedarf/BedarfAdminDialog.razor", "WindowsFormsApplication1/Views/Bedarf/BedarfAdminHuelle.cs" },
         { "TwwNutzungsartAdminDialog", "EPOS.UI/Dialoge/Bedarf/TwwNutzungsartAdminDialog.razor", "EPOS.UI.Daten/Bedarf/ZapfprofilHuelle.Katalogdialog.cs" },
         { "GebaeudeAdminDialog", "EPOS.UI/Dialoge/Bedarf/GebaeudeAdminDialog.razor", "EPOS.UI.Daten/Bedarf/GebaeudeAdminHuelle.cs" },
+        // PV- und Solarganglinie: die Grafik der Satzansicht und das Bild im Optionendialog des Imports.
+        { "PvGanglinieDialog", "EPOS.UI/Dialoge/Erzeuger/PvGanglinieDialog.razor", "EPOS.UI.Daten/Erzeuger/PvGanglinieKatalogGaben.cs" },
+        { "SolarganglinieDialog", "EPOS.UI/Dialoge/Solarthermie/SolarganglinieDialog.razor", "EPOS.UI.Daten/Erzeuger/SolarganglinieKatalogGaben.cs|WindowsFormsApplication1/Views/Solarthermie/SolarganglinieHuelle.cs" },
     };
 
     [Theory]

@@ -2,7 +2,7 @@
 
 **Sitzung:** Gebäudesimulation, Statuszeile **#827**. Zweig der Integration `KK`, letzter Baucommit `7856be854`; Basis **R44**
 `2026-10-08_R44_Kuehlkurve` (KK5b). **Entscheide:** E105 (Auftrag), E106 (Q-KK-1 bis Q-KK-7), E107 (Auslegungsweg). Entwurf
-und Abschnitt „Wie gebaut“: [Entwurf KK](../../../aktuell/Gebaeudesimulation/2026-10-08_Entwurf_KK_Kuehlkurve.md) 6.2.
+und Abschnitt „Wie gebaut“: [Entwurf KK](../../2026-10-08_Entwurf_KK_Kuehlkurve.md) 6.2.
 
 ## 1 Auftrag
 

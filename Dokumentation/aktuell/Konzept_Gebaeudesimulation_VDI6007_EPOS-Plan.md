@@ -4986,7 +4986,7 @@ weitgehend mit abdeckt, samt der Bestätigung von Nr. 27 („eine Rückfrage, im
 ### N1.67 Entscheid E58 — Konditionierungsprofile: Aufheizoptimierung, Variantenvergleich, Kurzbericht, Referenzprojekt 1051, Einfrieren, Reserve, Nachtlüftung
 
 **Anlass.** Der Entwurf der Stufe KP3
-([`Gebaeudesimulation/2026-10-02_Entwurf_KP3.md`](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)) — zwei Leser, zwei
+([`2026-10-02_Entwurf_KP3.md`](../ueberholt/2026-10-02_Entwurf_KP3.md)) — zwei Leser, zwei
 unabhängige Entwürfe (einer vom Rechenweg und den Nachweisen her, einer von Daten, Ergebnissen, Darstellung und
 Regressionsnetz her), eine Gegenprüfung jeder code-gestützten Aussage am Code, an der Testdatenbank und mit
 Rechenproben, die Synthese in einem Papier — legt acht Fragen vor; alles Übrige benennt er als 33 Festlegungen der
@@ -5016,7 +5016,7 @@ mit der Umsetzung als **N1.69**; N1.68 hält E59 und E60.
 **Anlass E59.** Nach E58 gibt der Anwender am 02.10.2026 eine Vorgabe zur Aufheizoptimierung: „Die Rampe soll jeweils
 individuell für ein Gebäude ermittelt werden und nicht pauschal. Ein Aufschlag auf diesen Wert könnte sinnvoll sein
 (Benutzervorgabe). Außerdem soll es einen manuellen Wert als Eingabe geben — mit plausiblen Vorschlägen." Drei Rückfragen
-beantwortet er am selben Tag. Der [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) führt die Vorgabe als F9
+beantwortet er am selben Tag. Der [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) führt die Vorgabe als F9
 (Abschnitt 6) und ihre Ausgestaltung als Festlegungen 34–40, 42 und 43 (Abschnitt 5).
 
 | Frage | Entscheid |
@@ -5060,7 +5060,7 @@ Aufschlag noch Art „manuell", ihr Netz sind N-AH11 und N-AH12. Das
 **Anlass.** Die Rechen-, Daten- und Referenzwellen der Stufe KP3 sind gebaut (02.–04.10.2026;
 [Protokoll KP3](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-02_KP3_Aufheizoptimierung.md),
 [A/B-Protokoll RP1](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-03_KP3_RP1_AB-Protokoll_1051.md),
-[Entwurf](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md)): R1 (Aufheizantwort, Stufenformel, Kappungsanteil), D1
+[Entwurf](../ueberholt/2026-10-02_Entwurf_KP3.md)): R1 (Aufheizantwort, Stufenformel, Kappungsanteil), D1
 (Schemaschritte 160 und 161, Datenweg), R2 (Aufheizplan im Einzonenlauf), O1 (Projekteinstellung), R3 (Mehrzonenweg), R4
 (Lauf, Ergebnis, Laufhinweise), D2 (Kennzahlen, Export, Auskunft), R5 (Aufschlag und manuelle Aufheizzeit nach E59,
 Schemaschritt 174), RP1 (Referenzprojekt 1051, Wache, Messung ρ_min), RP2a (Erdreichwiderstand nach DIN EN ISO 13370,

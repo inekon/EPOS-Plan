@@ -41,7 +41,7 @@ namespace EPOS.Kern.Tests
             // Haengt ueber KatalogkostenInvestitionSchema.SCHRITT + 1 an 209.
             Assert.Equal(210, KaeltemaschineTeillastSchema.SCHRITT);
             Assert.Equal(KatalogkostenInvestitionSchema.SCHRITT + 1, KaeltemaschineTeillastSchema.SCHRITT);
-            Assert.Equal(KaeltemaschineTeillastSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KaeltemaschineTeillastSchema.SCHRITT); // 211 KaelteKatalogfelderSchema haengt an
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == KaeltemaschineTeillastSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog, s.Wirkung);
             Assert.Null(s.Umformung);
@@ -58,8 +58,9 @@ namespace EPOS.Kern.Tests
             Assert.All(KaeltemaschineTeillastSchema.SPALTEN, x => Assert.DoesNotContain("NOT NULL", x.Typ, StringComparison.Ordinal));
             Assert.All(KaeltemaschineTeillastSchema.SPALTEN, x => Assert.DoesNotContain("DEFAULT", x.Typ, StringComparison.Ordinal));
             // Die acht Eingabespalten haengen hinten an den Fachspalten (Katalogfassung, Projektkopie).
-            Assert.Equal(KaeltemaschineSchema.Grundspalten.Concat(EINGABE), KaeltemaschineSchema.Fachspalten);
-            Assert.Equal(EINGABE, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(12));
+            // Dahinter folgen die fuenf Katalogfelder (KaelteKatalogfelderSchema, Schritt 211).
+            Assert.Equal(KaeltemaschineSchema.Grundspalten.Concat(EINGABE), KaeltemaschineSchema.Fachspalten.Take(20));
+            Assert.Equal(EINGABE, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(12).Take(8));
         }
 
         /// <summary>Die Prüfklauseln an einer STRICT-Tabelle: ein Wert außerhalb wird abgewiesen, NULL angenommen.</summary>

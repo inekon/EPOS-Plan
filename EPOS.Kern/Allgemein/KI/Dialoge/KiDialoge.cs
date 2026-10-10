@@ -5496,7 +5496,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Verwaltung „Kältemaschinen" (KU3-1) — die Satzwahl, zwölf Kenndaten und das Raster der
+        /// Die Verwaltung „Kältemaschinen" (KU3-1) — die Satzwahl, zwölf Kenndaten, die fünf Katalogfelder (K-A), die
+        /// acht Felder von Teillast und Takten und das Raster der
         /// Kennlinie aus <c>EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKatalogKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -5547,6 +5548,19 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("modulkosten", SICHT + "Modulkosten", KiDialogTexte.KmModulkostenName,
                                      KiParameterTyp.Zahl, KiDialogTexte.KmModulkostenErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true, min: 0),
+                    // K-A: die fünf Katalogfelder (Geräteart, GWP, Füllmenge, saisonale Kennzahl).
+                    new KiDialogFeld("geraeteart", SICHT + "Geraeteart", KiDialogTexte.KmGeraeteartName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmGeraeteartErl, leerErlaubt: true),
+                    new KiDialogFeld("kaeltemittel_gwp", SICHT + "Gwp", KiDialogTexte.KmGwpName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmGwpErl, leerErlaubt: true, min: 0,
+                                     max: KaelteKatalogfelderSchema.GWP_MAX),
+                    new KiDialogFeld("kaeltemittel_fuellmenge", SICHT + "Fuellmenge", KiDialogTexte.KmFuellmengeName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmFuellmengeErl, leerErlaubt: true, min: 0,
+                                     max: KaelteKatalogfelderSchema.FUELLMENGE_MAX),
+                    new KiDialogFeld("saisonkennzahl_art", SICHT + "SaisonArt", KiDialogTexte.KmSaisonArtName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmSaisonArtErl, leerErlaubt: true),
+                    new KiDialogFeld("saisonkennzahl", SICHT + "Saisonkennzahl", KiDialogTexte.KmSaisonkennzahlName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmSaisonkennzahlErl, leerErlaubt: true, min: 0),
                     // KM3-E3-a: die acht Felder der Gruppe „Teillast und Takten".
                     new KiDialogFeld("teillast_weg", SICHT + "TeillastWeg", KiDialogTexte.KmTeillastWegName,
                                      KiParameterTyp.Wahl, KiDialogTexte.KmTeillastWegErl, leerErlaubt: true),

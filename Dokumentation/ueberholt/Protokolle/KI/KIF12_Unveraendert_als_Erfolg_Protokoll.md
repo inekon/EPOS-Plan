@@ -1,6 +1,6 @@
 # KIF12 — „Unverändert“ als Erfolg, Ausweichnamen der Parameter (Protokoll, 10.10.2026)
 
-Statuszeile #915 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Konzept
+Statuszeile #924 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Konzept
 [`Konzept_KI-Assistent_Aufgabensteuerung.md`](../../../aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md) (Abschnitt 3.5, Punkt 6
 „Nichts zu ändern“); Vorgänger [`KIF11_Maske_beim_Anzeigenamen_Protokoll.md`](KIF11_Maske_beim_Anzeigenamen_Protokoll.md). Zweig
 `claude/assistent-unveraendert` (Opus), Commit `63b08a17`.
@@ -62,5 +62,5 @@ gewinnt; jeder andere unbekannte Name bleibt benannt abgelehnt.
 
 ## Verweise
 
-Statuszeile #915 und Nach #915; KIF11 ([`KIF11_Maske_beim_Anzeigenamen_Protokoll.md`](KIF11_Maske_beim_Anzeigenamen_Protokoll.md)); Konzept
+Statuszeile #924 und Nach #924; KIF11 ([`KIF11_Maske_beim_Anzeigenamen_Protokoll.md`](KIF11_Maske_beim_Anzeigenamen_Protokoll.md)); Konzept
 Aufgabensteuerung 3.5; Wiki-Quelle `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki`.

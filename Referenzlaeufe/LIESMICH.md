@@ -571,6 +571,28 @@ Speicherbilanz, Kosten und Emissionen.
 > Kältespeicher; dort bilden sie die Kälteschranke des Kreises (Regel „gesäte Auslegungsdaten der Übergabe“). Gehalten
 > von `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests`.
 
+## Die Einfrierregel „gesäte Daten der freien Kühlung“ (Referenzprojekt 1064)
+
+Weiterer Ort derselben Falle. Projekt 1064 „Referenzprojekt Freie Kühlung“ ist das einzige Referenzprojekt, dessen
+Wärmepumpe frei über ihre Wärmequelle kühlt: In jeder Kühlstunde, in der die Quellentemperatur plus Grädigkeit den
+Kühlvorlauf erreicht, deckt die Sole bis zur Leistungsgrenze vor dem Verdichter (Strom über den Ersatz-EER plus
+Hilfsstrom), den Rest der Verdichter. Schalter, Grädigkeit und Grenze verschieben Kältestrom, EER, Reststrom und über
+die Rückspeisung die Soletemperatur.
+
+> **Wer gesäte Daten der freien Kühlung eines Referenzprojekts in der Testdatenbank ändert, friert im selben Schritt
+> die Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen sind an der Anlagenzeile einer Wärmepumpe im Kühlbetrieb `Tab_Energieanlagen.Kuehl_Frei`,
+> `Kuehl_Frei_Graedigkeit_K` und `Kuehl_Frei_Leistung_kW`, dazu die Quelle, die die freie Kühlung trägt (`WQ_Typ` und
+> die Spalten der Erdreichquelle), und der Kühlvorlauf der Wärmepumpe (`Tab_WP.Kuehl_Vorlauf`), gegen den die Stunde
+> geprüft wird. Ebenso betroffen ist das Anlegen oder Entfernen eines Referenzprojekts mit freier Kühlung.
+>
+> Die Zeilen legt [`Skripte/referenzprojekt_1064_freie_kuehlung.py`](Skripte/referenzprojekt_1064_freie_kuehlung.py)
+> an (unten); gehalten werden sie von `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` (jede gesäte Zelle, die
+> Kopie von 1017, ein Lauf mit freier Kühlung bis zur Leistungsgrenze gegen die Jahreswerte der Basis). Die Vorlage
+> 1017 bleibt unverändert; für 1064 gelten daneben die Regeln „gesäte Gebäudedaten“, „gesäte Kältedaten“ und „gesäte
+> Erdreichquellen“ wie für 1017.
+
 ## Die Einfrierregel „Freigabe der Konditionierung“ (Zonensperre)
 
 Die Gebäude heizen und kühlen eine Zone nie am selben Tag: Die Tagesbetriebsart je Zone wählt innerhalb der
@@ -699,7 +721,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-10_R50_Wochentagsraster`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-10_R51_FreieKuehlung`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -728,11 +750,11 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-10_R50_Wochentagsraster/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063), **911 CSV**, **6 336 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 10.10.2026, Stand `64cd555ff`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 94 781 440 Byte, LFS-SHA-256
-`32af2d32d06b104ceb944e82dcb621ec0f481d58312e0d3b6d2b370c62dcf4fa`, mit den Projekten 1053 bis 1063; Nachträge der
+**`2026-10-10_R51_FreieKuehlung/`** — **neunundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064), **943 CSV**, **6 568 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 10.10.2026, Stand `b8e20e1b`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 95 629 312 Byte, LFS-SHA-256
+`3b9097b6a5ee6e9b2495dd9c18ab6682c53952b58d02f6a563963df77bf70cdb`, mit den Projekten 1053 bis 1064; Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
@@ -761,39 +783,44 @@ von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Küh
 `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
 Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
 `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
-Kältemaschine von Projekt 1063. 1050, 1052, 1054,
-1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
-achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+Kältemaschine von Projekt 1063 und `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` die freie Kühlung über die
+Wärmequelle von Projekt 1064. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061, 1062 und 1064 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Anwenderentscheid E115 (10.10.2026) — ein Wochentagsraster der Klimaregion für alle Leser.** Gebäudelauf,
-> Zapfkalender und Bedarfsprofile rechnen mit demselben Raster: In der Testdatenbank ist der 1. Januar der Klimaregion ein
-> Donnerstag. Der Gebäudelauf nahm vorher den Ortszeit-Kalender zum Solardaten-Jahr 2025 (1. Januar ein Mittwoch). Sonderfall:
-> Eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres; kein Referenzprojekt trägt eine. Schemastand
-> und Testdatenbank (210, `32af2d32…`) bleiben unverändert; die Basis ändert sich allein durch den Rechenweg der
-> Gebäude mit wochentagsabhängigen Kalendern.
+> **Anlass: das Referenzprojekt 1064 „Referenzprojekt Freie Kühlung“ (Stufe KU3-6, Entscheid E75, Schemaschritt 187) —
+> die freie Kühlung über die Wärmequelle der Wärmepumpe rechnete bis dahin kein Referenzprojekt.** 1064 ist die Kopie
+> von 1017; an der Anlagenzeile der Sole-Wasser-Wärmepumpe (Erdsonde 5 × 120 m, Kühlvorlauf 18 °C) stehen
+> `Kuehl_Frei` 1, `Kuehl_Frei_Graedigkeit_K` 4,0 K und `Kuehl_Frei_Leistung_kW` 4,0 kW (Abschnitt „Das
+> Referenzprojekt 1064“ unten). Schemastand 210 bleibt; die Testdatenbank wächst um die Kopie (`3b9097b6…`).
 >
-> Gegen R49 ändern sich drei Projekte, die übrigen fünfundzwanzig sind byte-gleich (911 CSV, 6 336 Skalare; 25 PASS,
-> geändert 1051, 1052, 1054 mit 23, 16 und 18 geänderten CSV):
+> Gegen R50 sind alle achtundzwanzig Projekte byte-gleich (`vergleich`: 28 PASS, 911/911 CSV; einziger Befund
+> „Projekt_1064 nur im Vergleichslauf vorhanden“); hinzu kommt 1064 mit 32 CSV und 232 Skalaren:
 >
-> | Projekt | Wärmebedarf gesamt (MWh) R49 → R50 | Befund |
+> | Größe | 1017 | 1064 |
 > |---|---|---|
-> | 1051 | 28,34 → 28,28 | `AufheiztageBegrenzt` 1 → 0: im Klimaregion-Raster gibt es keinen Tag mit begrenzter Aufheizzeit mehr (`KonditionierungBauwahlprobeTests` hält nur noch die Rampe) |
-> | 1052 | 53,96 → 54,00 | `AufheizzeitLaengsteH` 13 → 15 |
-> | 1054 (Kopie von 1052) | 47,56 → 47,59 | `Waermelast_Max` 26,05 → 27,47 kW |
+> | Kälte (MWh), Deckung | 4,05, 100 % | 4,05, 100 % |
+> | freie Kühlung | — | 125 h, 0,277 MWh |
+> | Kältestrom (MWh) / EER-Jahreswert | 0,773 / 5,24 | 0,740 / 5,48 |
+> | Reststrom (MWh) | 10,90 | 10,87 |
 >
-> Zwei Läufe sind byte-gleich (911/911 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 867/911 CSV
-> byte-gleich. Die nächste Basis wird R51.
+> Gegen 1017 ändern sich allein `aggregate.csv`, `reststrom_viertelstunde.csv` und `wp_quellentemperatur.csv` (die
+> Rückspeisung der Kälte in die Sonde ist ohne die Verdichterabwärme der freien Stunden kleiner); die Heizreihen sind
+> byte-gleich.
+>
+> Zwei Läufe sind byte-gleich (943/943 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 899/943 CSV
+> byte-gleich (1064 ganz byte-gleich).
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063 \
->   --ziel Referenzlaeufe/2026-10-10_R50_Wochentagsraster
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064 \
+>   --ziel Referenzlaeufe/2026-10-10_R51_FreieKuehlung
 > ```
 >
-> Die Regel steht im [Konzept Konditionierungsprofile](../Dokumentation/aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
-> Abschnitte 3.2 und 9.10 (E114, E115).
+> Die Regel steht im Protokoll [KU3-6](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_KU3-6_Freie_Kuehlung_Waermequelle.md)
+> und im [Kühlkonzept](../Dokumentation/aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md), Abschnitt 11.
 
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
@@ -1129,13 +1156,26 @@ achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > bleibt** — keine gesäte Spalte eines Referenzprojekts ändert ihren Wert, keine Einfrierregel ist berührt, kein Leser der
 > Simulation fragt die neuen Spalten.
 
-### Die Vorgängerbasis R49 (Kältemaschine Teillast)
+> **Nachtrag — Testdatenbank auf 211 (Katalogfelder der Kälteerzeuger, K-A), Basis R51 unberührt.**
+> `KaelteKatalogfelderSchema` (211 = `KaeltemaschineTeillastSchema.SCHRITT + 1`) legt an `Tab_Kaeltemaschine_STAMM` und
+> `Tab_Kaeltemaschine` je fünf nullbare Spalten mit Prüfklausel an (`Geraeteart`, `Kaeltemittel_GWP`,
+> `Kaeltemittel_Fuellmenge_kg`, `Saisonkennzahl_Art`, `Saisonkennzahl`) und füllt die Geräteart nach der Rückkühlart
+> zurück (LUFT → `KWS_LUFT`, sonst `KWS_WASSER`): 37 Katalogsätze (12/25), die drei Projektkopien von 1055, 1059 und
+> 1063 (`KWS_WASSER`), 37 Prüfsummen neu. Gehoben aus dem Stand 210 (`3b9097b6…`) mit `Werkzeuge/Testdatenbankschema`;
+> der Zellvergleich zeigt nur `Tab_Applikation.SchemaVersion` und `Tab_Kaeltemaschine_STAMM`, die Projektkopien
+> unterscheiden sich nur um die Zusatzspalten. Die Testdatenbank steht auf **211** (`quick_check` ok,
+> `foreign_key_check` leer, SQL-Dialektprüfer 0 Fundstellen): **95 596 544 Byte, LFS-SHA-256
+> `ee2ba997bc37518e96a53391a6e0f23d45c80c9a58e9e5c5107e81841f0b76ce`**. **Die Basis `2026-10-10_R51_FreieKuehlung`
+> bleibt** — kein Rechenweg liest die Spalten; die Kältemaschinenprojekte 1017, 1055, 1059, 1063 und 1064 rechnen
+> byte-gleich ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_K-A_Katalogfelder_Kaelte.md)).
 
-Achtundzwanzig Projekte, 911 CSV, 6 336 Skalare, auf Linux eingefroren gegen dieselbe Testdatenbank `32af2d32…`
-(Schemastand 210); mit R50 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekt 1063, Teillast und
-Takten der Kältemaschine) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R50 ist
-das Wochentagsraster der Klimaregion für alle Leser; 1051, 1052 und 1054 ändern sich, die übrigen sind byte-gleich.
+### Die Vorgängerbasis R50 (Wochentagsraster)
+
+Achtundzwanzig Projekte, 911 CSV, 6 336 Skalare, auf Linux eingefroren gegen die Testdatenbank `32af2d32…`
+(Schemastand 210); mit R51 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Wochentagsraster der Klimaregion für alle
+Leser, Anwenderentscheid E115) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R51 ist
+das Referenzprojekt 1064 mit freier Kühlung über die Wärmequelle; die achtundzwanzig Projekte von R50 sind byte-gleich.
 
 ## Was hier liegt
 
@@ -1584,6 +1624,40 @@ Bivalenzpunkte des Geräts 1,83 °C und −3,55 °C, der Anlage 2,34 °C, größ
 CI-Auswahl; gehalten von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests`; es gelten die Einfrierregeln
 „gesäte Übergabegrenzdaten“, „gesäte Auslegungsdaten der Übergabe“ und „gesäte Kesseldaten“.
 
+### Das Referenzprojekt 1064 „Referenzprojekt Freie Kühlung“
+
+Projekt **1064 „Referenzprojekt Freie Kühlung“** ist die Kopie des Kühlreferenzprojekts 1017 auf dem Kopierweg des
+Programms (`ProjektDuplizierenCtrl`, 9 390 Zeilen in 25 Tabellen, Zeilenzahlen gleich der Vorlage; gegen eine Kopie mit
+dem Programm selbst Zelle für Zelle gleich bis auf die gesäten Zellen) — dasselbe Gebäude nach VDI 6007 mit Kühlung
+(Sollwert 24 °C, Kühlleistungsgrenze 15 kW), dieselbe Sole-Wasser-Wärmepumpe im Kühlbetrieb (Kühlvorlauf 18 °C, zehn
+Kühlkennlinienpunkte) an der Erdsonde (5 × 120 m), dieselbe Kaskade. 1017 bleibt unverändert; das Paar 1017/1064 zeigt die
+Wirkung allein der freien Kühlung. Gesät sind:
+
+| Ort | Zelle | Wert |
+|---|---|---|
+| `Tab_Energieanlagen` (Anlagenzeile der Wärmepumpe) | `Kuehl_Frei` | 1 |
+| | `Kuehl_Frei_Graedigkeit_K` | 4,0 K (Vorgabe leer = 3,0 K) |
+| | `Kuehl_Frei_Leistung_kW` | 4,0 kW (Vorgabe leer = Kälteleistung der Kennlinie, 13 bis 15 kW) |
+| `Tab_Projekt` | `Beschreibung`; `Kosten_Geaendert` | Zweck des Projekts; Kostenstempel leer |
+
+Die Werte: Mit gepflegter Grädigkeit liest der Lauf die Zelle, nicht die Vorgabe; die Sole kühlt frei, solange sie
+höchstens 14 °C hat. Die Grenze 4 kW greift in einem Teil der freien Stunden, dort deckt der Verdichter den Rest (mit
+8 kW griffe sie nie). Gerechnet: Kältebedarf 4,05 MWh, gedeckt 100 %; freie Kühlung 125 Stunden, 0,277 MWh, davon
+35 Stunden an der Grenze; Kältestrom 0,740 MWh (1017: 0,773 MWh), EER-Jahreswert 5,48 (1017: 5,24); Reststrom 10,87 MWh
+(1017: 10,90 MWh); die Heizreihen gleich 1017. 1064 steht in der Basis R51 und nicht in der CI-Auswahl; es gilt die
+Einfrierregel „gesäte Daten der freien Kühlung“ oben.
+
+```bash
+python3 Referenzlaeufe/Skripte/referenzprojekt_1064_freie_kuehlung.py Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Das Skript ist wiederholbar (steht 1064 schon, Abbruch ohne Schreiben mit Rückgabe 0), schreibt in einer Transaktion
+ohne `VACUUM`, prüft Vorlage, Zeilenzahlen der Kopie, jede gesäte Zelle, `foreign_key_check`, `quick_check` und
+`integrity_check` und rollt bei jeder Abweichung zurück. Die Kopie fällt auf die nächste freie Projekt-ID;
+vorausgesetzt ist 1063 als höchste. Nach einer Neufassung der Testdatenbank wird es nach 1063 gezogen. Die Testdatenbank
+mit 1064 (Schemastand 210, `integrity_check` ok, `foreign_key_check` leer): **95 629 312 Byte, LFS-SHA-256
+`3b9097b6a5ee6e9b2495dd9c18ab6682c53952b58d02f6a563963df77bf70cdb`**.
+
 ## Die wichtigste Regel
 
 **Die produktive `Kenndaten.accdb` wird nie beschrieben.**
@@ -1652,7 +1726,8 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R50 (achtundzwanzig Projekte, Wochentagsraster der Klimaregion): GESAMT PASS, 867/911 CSV
+Stand mit R51 (neunundzwanzig Projekte, Referenzprojekt 1064 mit freier Kühlung): GESAMT PASS, 899/943 CSV
+byte-gleich, 1064 ganz byte-gleich; mit R50 (achtundzwanzig Projekte, Wochentagsraster der Klimaregion): GESAMT PASS, 867/911 CSV
 byte-gleich; mit R49 (Referenzprojekt 1063 auf dem Stand Gemeinjahr): GESAMT PASS, 867/911 CSV
 byte-gleich, 1063 ganz byte-gleich; mit R48 (Gemeinjahr-Konvention) GESAMT PASS, 835/879 CSV byte-gleich; der Stand mit
 R47 (Feiertage im Zapfkalender) war GESAMT PASS, 835/879 CSV byte-gleich, 1045 ganz byte-gleich; für R46 war der gestörte Lauf nicht gemessen; der Stand mit R45

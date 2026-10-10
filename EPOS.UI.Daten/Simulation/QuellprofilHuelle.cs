@@ -171,8 +171,9 @@ namespace WindowsFormsApplication1
 
             if (string.IsNullOrEmpty(pfad)) return new double[0];
 
-            return await SpeicherEngine.Kulturweitergabe.Starten(
-                () => WaermequelleClass.WerteAusCsv(pfad, soll));
+            // Eine Ausnahme wird vermerkt und ist „unlesbar" (null): Der Dialog nennt dann den
+            // Grund mit der erwarteten Zeilenzahl (SIMQ_MSG_CSV_FEHLER).
+            return await Importfang.Starten<double[]>(pfad, () => WaermequelleClass.WerteAusCsv(pfad, soll), _ => null);
         }
 
         /// <summary>

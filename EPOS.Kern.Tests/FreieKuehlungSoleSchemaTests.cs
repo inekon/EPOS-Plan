@@ -146,9 +146,11 @@ namespace EPOS.Kern.Tests
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= FreieKuehlungSoleSchema.SCHRITT);
             Assert.True(FreieKuehlungSoleSchema.Vollstaendig());
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen") > 0);
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kuehl_Frei <> 0"));
+            // Saat trägt allein das Referenzprojekt Freie Kühlung 1064 (FreieKuehlungReferenzprojektWacheTests).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kuehl_Frei <> 0 AND ID_Projekt <> 1064"));
             foreach (var s in FreieKuehlungSoleSchema.SPALTEN.Where(x => x.Spalte != FreieKuehlungSoleSchema.SPALTE_KUEHL_FREI))
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL" +
+                                      (s.Tabelle == FreieKuehlungSoleSchema.TAB_ANLAGEN ? " AND ID_Projekt <> 1064" : "")));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(FreieKuehlungSoleSchema.TAB_ANLAGEN);
             // Hinter den drei Spalten stehen allein die sechs des Erdsondenfeldes (Schritt 195) und die zwei der
             // Uebergabegrenze (Schritt 205).

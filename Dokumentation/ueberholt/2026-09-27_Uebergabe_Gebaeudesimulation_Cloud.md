@@ -12,7 +12,7 @@ im [Register](../aktuell/Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), im
 [Leitkonzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (Nachträge N1.x) und in den Protokollen
 unter [`ueberholt/Protokolle/Gebaeudesimulation/`](Protokolle/Gebaeudesimulation/). Die
 Vorgängerübergaben bleiben gültig:
-[`2026-09-26_Uebergabe_Gebaeudesimulation_Anlagenkopplung_Mehrzonen.md`](../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_Gebaeudesimulation_Anlagenkopplung_Mehrzonen.md)
+[`2026-09-26_Uebergabe_Gebaeudesimulation_Anlagenkopplung_Mehrzonen.md`](2026-09-26_Uebergabe_Gebaeudesimulation_Anlagenkopplung_Mehrzonen.md)
 (AK1, G6a, G6b, G7a, Arbeitsweise) und [`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md)
 (G6c, E51).
 

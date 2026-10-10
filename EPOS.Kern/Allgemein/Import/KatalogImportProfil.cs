@@ -51,7 +51,15 @@ namespace WindowsFormsApplication1
         /// (<c>chiller_curves.json</c>, BSD-2) und der CSV-Kennfeldvorlage
         /// <c>Quellen/Kaeltemaschine_Kennfeldvorlage.csv</c>. Die Form erkennt der Ablauf am Inhalt.
         /// </summary>
-        Kaeltemaschine
+        Kaeltemaschine,
+
+        /// <summary>
+        /// VDI 3805 Blatt 22 im KÄLTEMODUS (Entscheid E119 vom 10.10.2026): dieselbe Datei, derselbe
+        /// Leser und derselbe Wärmepumpenkatalog wie <see cref="Waermepumpe"/>, aber nur die Geräte,
+        /// die Kälte erzeugen können (<see cref="KuehlfaehigkeitsPruefung"/>). Für Kälteanlagen gibt
+        /// es keine VDI-3805-Daten; der Menüpunkt „Import Kälteanlagen VDI 3805“ führt hierher.
+        /// </summary>
+        WaermepumpeKuehlung
     }
 
     /// <summary>
@@ -462,6 +470,8 @@ namespace WindowsFormsApplication1
                     };
 
                 case KatalogImportArt.Waermepumpe:
+                case KatalogImportArt.WaermepumpeKuehlung:
+                    bool kaelte = art == KatalogImportArt.WaermepumpeKuehlung;
                     return new KatalogImportProfil
                     {
                         Art = art,
@@ -472,7 +482,9 @@ namespace WindowsFormsApplication1
                         Unterordner = "VDI_Waermepumpe",
                         UnterordnerRueckfall = "VDI",
                         Dateifilter = VdiFilter,
-                        FilterSpaltentitel = t("IMP_KAT_SP_LEISTUNG_TH"),
+                        // E119: Im Kaeltemodus traegt die Zahlenspalte die Kuehlleistung - nach
+                        // ihr waehlt, wer eine Kaelteanlage plant.
+                        FilterSpaltentitel = kaelte ? t("IMP_KAT_SP_LEISTUNG_KUEHL") : t("IMP_KAT_SP_LEISTUNG_TH"),
                         FilterSpalteneinheit = t("IMP_KAT_EINH_KW"),
                         FilterNachkommastellen = 0,
                         HilfeSchluessel = "Wärmepumpe",
@@ -480,7 +492,7 @@ namespace WindowsFormsApplication1
                         // Sonderfall in der Maske: Der Stromspeicher braucht
                         // dieselbe Zeile fuer die fehlenden Kosten, und zwei
                         // Wege zu einer Zeile liefen auseinander.
-                        Hinweis = t("IMP_KAT_HINWEIS_STUFEN"),
+                        Hinweis = kaelte ? t("IMP_KAT_HINWEIS_KAELTE") : t("IMP_KAT_HINWEIS_STUFEN"),
                         Detailfelder = new[]
                         {
                             new ImportDetailfeld(FeldName,       t("IMP_KAT_FELD_NAME"),  "", editierbar: true),
@@ -607,6 +619,7 @@ namespace WindowsFormsApplication1
                 yield return KatalogImportArt.Waermepumpe;
                 yield return KatalogImportArt.Stromspeicher;
                 yield return KatalogImportArt.Kaeltemaschine;
+                yield return KatalogImportArt.WaermepumpeKuehlung;
             }
         }
 

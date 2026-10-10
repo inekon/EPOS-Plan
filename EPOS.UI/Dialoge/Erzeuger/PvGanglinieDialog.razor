@@ -24,6 +24,7 @@
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
+<CascadingValue Value="@CsvNaht">
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
@@ -216,6 +217,7 @@
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
 </div>
+</CascadingValue>
 
 @code {
     /// <summary>
@@ -237,6 +239,18 @@
     /// Import (Hülle <c>PvGanglinieKatalogGaben</c>).
     /// </summary>
     [Parameter] public GanglinienKatalogwege Katalogwege { get; set; } = new();
+
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster); jedes Zeitreihenbild des Dialogs —
+    /// die Grafik der Satzansicht und das Bild im Optionendialog des Imports — trägt damit den Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Export-Kaskade; ohne <see cref="CsvSpeichern"/> keine.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
 
     /// <summary>Die Beschriftungen der Katalogseite.</summary>
     [Parameter] public GanglinienKatalogtexte Katalogtexte { get; set; } = new();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -111,6 +112,91 @@ namespace WindowsFormsApplication1
             erg.Meldungen.AddRange(vorschau.Meldungen);
             if (!vorschau.Lesbar) return erg;
 
+            GanglinienImportOptionen format = Vorbelegung(vorschau);
+            erg.Format = format;
+            erg.Kopftext = Kopftext(vorschau, format);
+
+            GanglinienRohdaten roh = GanglinienDatei.Lies(pfad, format);
+            erg.Meldungen.AddRange(roh.Meldungen);
+            if (!roh.Erfolgreich) return erg;
+            return Auswerten(erg, roh.Werte);
+        }
+
+        /// <summary>
+        /// <b>Die Formaterkennung des Katalogimports</b> für den Optionendialog: dieselbe Erkennung wie
+        /// <see cref="GanglinienDatei.Erkenne"/>, die Vorbelegung aber so, wie <see cref="Lies(string)"/>
+        /// die Datei ohne Dialog liest (eine Spalte mit Dezimalkomma statt „Komma, zwei Spalten“, die
+        /// laufende Nummer übersprungen). Nie <c>null</c>, wirft nicht.
+        /// </summary>
+        /// <param name="pfad">Die Quelldatei.</param>
+        public static GanglinienVorschau Erkenne(string pfad)
+        {
+            GanglinienVorschau vorschau = GanglinienDatei.Erkenne(pfad);
+            if (vorschau.Lesbar) vorschau.Vorschlag = Vorbelegung(vorschau);
+            return vorschau;
+        }
+
+        /// <summary>
+        /// <b>Die Lesung aus einer schon geprüften Reihe</b> (Optionendialog und
+        /// <c>GanglinienImportAblauf.OhneAblage</c>): 8 760 oder 35 040 Werte in kW, dazu Format und
+        /// Kopftext; Raster, Stundenreihe, Jahresarbeit und Spitze wie bei <see cref="Lies(string)"/>.
+        /// Nie <c>null</c>, wirft nicht.
+        /// </summary>
+        /// <param name="werteKw">Die geprüfte Reihe im Raster der Datei [kW].</param>
+        /// <param name="format">Die bestätigten Leseoptionen; <c>null</c> = Vorgabe.</param>
+        /// <param name="kopftext">Der Text der Kopfzeile (<see cref="Kopftext(string, GanglinienImportOptionen)"/>).</param>
+        public static StundenganglinieLesung AusWerten(double[] werteKw, GanglinienImportOptionen format, string kopftext)
+        {
+            var erg = new StundenganglinieLesung
+            {
+                Format = format ?? new GanglinienImportOptionen(),
+                Kopftext = kopftext ?? ""
+            };
+            return Auswerten(erg, werteKw ?? Array.Empty<double>());
+        }
+
+        /// <summary>
+        /// <b>Die Lesung aus dem Ergebnis der Importkette</b> (<c>GanglinienImportAblauf.OhneAblage</c>):
+        /// die geprüften Werte samt den bestätigten Optionen und dem Kopftext der Datei unter diesen
+        /// Optionen. Ohne erfolgreiches Ergebnis eine Lesung ohne Erfolg. Wirft nicht.
+        /// </summary>
+        /// <param name="pfad">Die Quelldatei.</param>
+        /// <param name="gelesen">Das Ergebnis der Kette.</param>
+        public static StundenganglinieLesung AusImport(string pfad, GanglinienImportErgebnis gelesen)
+        {
+            if (gelesen == null || !gelesen.Erfolgreich) return new StundenganglinieLesung();
+            return AusWerten(gelesen.Werte, gelesen.Optionen, Kopftext(pfad, gelesen.Optionen));
+        }
+
+        /// <summary>
+        /// Der Text der Kopfzeile einer Datei unter den gewählten Optionen ("" ohne Kopfzeile oder ohne
+        /// lesbare Datei). Wirft nicht.
+        /// </summary>
+        /// <param name="pfad">Die Quelldatei.</param>
+        /// <param name="format">Die bestätigten Leseoptionen.</param>
+        public static string Kopftext(string pfad, GanglinienImportOptionen format)
+        {
+            if (format == null || !format.Kopfzeile) return "";
+            try
+            {
+                GanglinienVorschau erkannt = GanglinienDatei.Erkenne(pfad);
+                if (!erkannt.Lesbar) return "";
+                // Die Zeilen unter dem gewählten Trennzeichen; das Zusammensetzen einer am Komma zerlegten
+                // Kopfzeile richtet sich nach der ursprünglichen Erkennung.
+                GanglinienVorschau gewaehlt = GanglinienDatei.Vorschau(pfad, format.Kopie());
+                if (!gewaehlt.Lesbar) return "";
+                gewaehlt.Vorschlag = erkannt.Vorschlag;
+                return Kopftext(gewaehlt, format);
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        /// <summary>Die Vorbelegung, mit der <see cref="Lies(string)"/> eine erkannte Datei liest.</summary>
+        private static GanglinienImportOptionen Vorbelegung(GanglinienVorschau vorschau)
+        {
             GanglinienImportOptionen format = vorschau.Vorschlag.Kopie();
             if (IstEinspaltigMitDezimalkomma(vorschau))
             {
@@ -124,29 +210,28 @@ namespace WindowsFormsApplication1
                 // Den Dezimaltrenner bestimmt GanglinienDatei.Erkenne schon aus den Datenzeilen allein.
                 ZaehlerspalteUeberspringen(vorschau, format);
             }
-            erg.Format = format;
-            erg.Kopftext = Kopftext(vorschau, format);
+            return format;
+        }
 
-            GanglinienRohdaten roh = GanglinienDatei.Lies(pfad, format);
-            erg.Meldungen.AddRange(roh.Meldungen);
-            if (!roh.Erfolgreich) return erg;
-
-            erg.AnzahlWerte = roh.Werte.Length;
-            erg.WerteImDateirasterKw = roh.Werte;
-            if (roh.Werte.Length == STUNDEN)
+        /// <summary>Raster, Stundenreihe, Jahresarbeit und Spitze zu einer gelesenen Reihe.</summary>
+        private static StundenganglinieLesung Auswerten(StundenganglinieLesung erg, double[] werte)
+        {
+            erg.AnzahlWerte = werte.Length;
+            erg.WerteImDateirasterKw = werte;
+            if (werte.Length == STUNDEN)
             {
                 erg.Raster = GanglinienRaster.Stunde;
-                erg.StundenwerteKw = (double[])roh.Werte.Clone();
+                erg.StundenwerteKw = (double[])werte.Clone();
             }
-            else if (roh.Werte.Length == VIERTELSTUNDEN)
+            else if (werte.Length == VIERTELSTUNDEN)
             {
                 erg.Raster = GanglinienRaster.Viertelstunde;
-                erg.StundenwerteKw = new SimulationControl().Viertelstunden_zu_Stundenwerte_Mittelwert(roh.Werte);
+                erg.StundenwerteKw = new SimulationControl().Viertelstunden_zu_Stundenwerte_Mittelwert(werte);
             }
             else
             {
                 erg.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselAnzahl,
-                    roh.Werte.Length.ToString(CultureInfo.InvariantCulture)));
+                    werte.Length.ToString(CultureInfo.InvariantCulture)));
                 return erg;
             }
 
@@ -160,6 +245,23 @@ namespace WindowsFormsApplication1
             erg.SpitzeKw = spitze;
             erg.Erfolgreich = true;
             return erg;
+        }
+
+        /// <summary>
+        /// <b>Der benannte Grund einer gescheiterten Lesung</b> für Banner und Protokoll:
+        /// „Datei „x.csv“: Zeile 12: „abc“ ist keine Zahl.“ — Dateiname und erster Fehler
+        /// (mit Zeilennummer, wo es eine gibt). Ohne Fehlermeldung der Grund „keine
+        /// auswertbare Zeile“; nie leer.
+        /// </summary>
+        /// <param name="pfad">Die Quelldatei.</param>
+        /// <param name="lesung">Die gescheiterte Lesung.</param>
+        public static string Ablehnungstext(string pfad, StundenganglinieLesung lesung)
+        {
+            string grund = GanglinienProtokollText.Text(lesung?.ErsterFehler);
+            if (string.IsNullOrWhiteSpace(grund))
+                grund = GanglinienProtokollText.Text(new PruefMeldung(PruefStufe.Fehler, GanglinienDatei.SchluesselDateiLeer));
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_MSG_DATEI_GRUND,
+                                 Path.GetFileName(pfad ?? ""), grund);
         }
 
         /// <summary>
