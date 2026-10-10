@@ -48,14 +48,20 @@ public sealed class Ganglinienexport
     /// <summary>
     /// Trägt das Modell eine Zeitreihe? Eine Zeichenfläche mit Stunden- oder Indexachse, oder ein
     /// Säulenbild ohne Zeichenfläche, das seine Reihen im Modell führt — und dazu mindestens eine
-    /// Linie oder Fläche mit Werten. Punktwolken (x = Wert), Kennlinien und Ringe nicht.
+    /// Linie oder Fläche mit Werten. Punktwolken (x = Wert), Kennlinien und Ringe nicht; eine
+    /// Wertachse nur mit dem ausdrücklichen Raster <see cref="Zeitraster.Jahr"/>.
     /// </summary>
     public bool Passt(Zeichenmodell? modell)
     {
         if (modell is null) return false;
-        if (modell.Flaeche is not null && modell.Flaeche.X == Achsenart.Wert) return false;
+        // Eine Wertachse ist eine Kennlinie — außer die Naht sagt ausdrücklich „Jahr“: Der
+        // Kapitalwertverlauf zählt Betrachtungsjahre auf einer Wertachse („a“), gleichabständig
+        // und ohne eigene x-Werte.
+        bool jahresachse = Raster == Zeitraster.Jahr;
+        if (modell.Flaeche is not null && modell.Flaeche.X == Achsenart.Wert && !jahresachse) return false;
         foreach (Datenreihe r in modell.Reihen)
-            if (r.Art != Reihenart.Punkte && r.Werte is { Length: > 0 }) return true;
+            if (r.Art != Reihenart.Punkte && r.Werte is { Length: > 0 } && (!jahresachse || r.XWerte is null))
+                return true;
         return false;
     }
 }

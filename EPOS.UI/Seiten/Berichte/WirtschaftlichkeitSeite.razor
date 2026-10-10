@@ -286,8 +286,11 @@
                    SZENARIEN - nach der Bandbreite, vor der Sensitivitaet, wie im Mockup:
                    Die Bandbreite zeigt die Spanne am Ende, der Verlauf, wie sie
                    entsteht. Ohne Datenseite steht nur der Platzhalter. *@
-                <KapitalwertVerlaufAbschnitt @ref="_verlauf" Dienste="@Verlauf" Fassung="@_verlaufFassung"
-                                             Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
+                @* "CSV..." am Kapitalwertverlauf: erste Spalte das Betrachtungsjahr (Raster Jahr). *@
+                <CascadingValue Value="@Jahresexport">
+                    <KapitalwertVerlaufAbschnitt @ref="_verlauf" Dienste="@Verlauf" Fassung="@_verlaufFassung"
+                                                 Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
+                </CascadingValue>
 
                 @Sensitivitaetsteil
 
@@ -751,6 +754,17 @@
 
     /// <summary>Liefert den Anzeigestand (Vorbild <c>LadeDaten</c>).</summary>
     [Parameter] public Func<WirtschaftlichkeitStand>? Laden { get; set; }
+
+    /// <summary>
+    /// „CSV…“ an den Jahresreihen der Seite (Kapitalwertverlauf): die Naht der Hülle; das Raster
+    /// ist ausdrücklich „Jahr“. Ohne Delegat kein Knopf.
+    /// </summary>
+    [Parameter] public Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, Zeitraster, Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _jahresexport;
+
+    private Ganglinienexport? Jahresexport => CsvSpeichern is null ? null
+        : _jahresexport ??= new Ganglinienexport(CsvSpeichern, Zeitraster.Jahr);
 
     /// <summary>
     /// Zeigt ein anderes Szenario. Gerechnet wird dabei nichts — die Hülle
