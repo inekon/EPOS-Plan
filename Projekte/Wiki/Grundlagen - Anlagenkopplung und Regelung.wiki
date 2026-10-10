@@ -1,0 +1,75 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Anlagenkopplung und Regelung
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Anlagenkopplung und Regelung.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Die '''Anlagenkopplung''' legt fest, wie eng Gebäude und Anlage in der Simulation miteinander verbunden sind. Ohne Kopplung bekommt jedes Gebäude genau die Wärme, die es verlangt, und die Erzeuger decken diesen Bedarf, so gut sie können. Mit Kopplung rechnet EPOS-Plan den Heizkreis dazwischen – Vorlauf, Rücklauf, die Leistung der Heizflächen – und auf der höchsten Stufe wirkt die Anlage auf den Raum zurück: Reicht ihre Leistung nicht, wird es kühler, statt dass nur ein Rest ungedeckt bleibt.
+
+== Worum es geht ==
+{{Anker|worum-es-geht}}
+
+Eine Wärmepumpe arbeitet umso besser, je niedriger der Vorlauf ist; Heizkörper geben aber nur bei ausreichendem Vorlauf genug Leistung ab. Welcher Vorlauf in einer Stunde nötig ist, hängt von Außentemperatur, Raumtemperatur und Heizfläche ab. Erst wenn diese Kette gerechnet wird, stimmen Leistungszahl, Einsatz des Spitzenlasterzeugers und Komfort zueinander.
+
+Eine '''Heizfläche''' gibt ihre Leistung mit der Übertemperatur ab, der Differenz zwischen mittlerer Heizwassertemperatur und Raumluft: <math>\Phi = \Phi_{\mathrm{N}} \cdot \left( \Delta\vartheta / \Delta\vartheta_{\mathrm{N}} \right)^{n}</math>. Der Exponent <math>n</math> kennzeichnet die Bauart; EPOS-Plan setzt als Vorgabe 1,3 für Radiatoren, 1,1 für Flächenheizungen und 1,4 für Konvektoren.
+
+[[Datei:Anlagenkopplung_Stufen.svg|mini|600px|Prinzipbild: Die Stufen der Anlagenkopplung – ideal ohne Kopplung, Heizkreis als Einbahnstraße (AK1) und geschlossener Kreis mit Rückwirkung auf den Raum (AK3).]]
+
+== So rechnet EPOS-Plan ==
+{{Anker|so-rechnet-epos-plan}}
+
+{| class="wikitable"
+! Stufe !! Was gerechnet wird
+|-
+| {{Anker|aus}}''aus'' || ideale Regelung: Jedes Gebäude bekommt die Wärme, die den Sollwert hält; die Wärmepumpe rechnet mit dem Vorlauf ihrer Auslegung.
+|-
+| {{Anker|ak1}}''Heizkreis (AK1)'' || Gebäude mit Wärmeübergabe rechnen Vorlauf, Rücklauf und die Grenze ihrer Heizflächen; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Gekühlte Gebäude mit Kühlübergabe rechnen ebenso ihre Kälteseite mit festem Kaltwasser-Vorlauf. Die Richtung ist eine Einbahnstraße vom Gebäude zur Anlage.
+|-
+| {{Anker|ak2}}''Fahrplan (AK2)'' || steht als eigene Stufe gesperrt in der Liste; der Anlagenfahrplan wirkt ab Stufe AK1 (siehe unten).
+|-
+| {{Anker|ak3}}''Geschlossener Kreis (AK3)'' || wie AK1, dazu gleicht jede Stunde Raumtemperatur, Bedarf und Vorlauf mit der Leistung ab, die Erzeuger und Heizungspuffer liefern können. Fehlt Leistung, sinkt die Raumtemperatur. Auf der Kälteseite begrenzt die '''Kälteschranke''' aus Kälteerzeugern und Kältespeichern die Raumkühlung.
+|}
+
+* {{Anker|heizkurve}}'''Heizkurve.''' Mit Heizkurve folgt der Vorlauf der Außentemperatur durch den Auslegungspunkt; Niveau und Steilheit verschieben und neigen sie. Ohne Heizkurve fährt das Gebäude einen festen Vorlauf. Auf Stufe AK3 hebt der '''Raumeinfluss''' den Vorlauf an, wenn die kälteste Zone unter ihrem Sollwert liegt.
+* {{Anker|raumregler}}'''Raumregler.''' Ein Proportionalregler öffnet die Heizfläche nach der Abweichung vom Sollwert; sein Proportionalband bestimmt, wie weich er regelt.
+* {{Anker|fahrplan}}'''Anlagenfahrplan.''' Sperrzeiten des Netzbetreibers, das Zeitprogramm der Erzeuger und ein Höchstvorlauf legen fest, wann eine Anlage mit welchem Vorlauf zur Verfügung steht. Gekoppelt gerechnete Gebäude spüren eine Sperre als sinkende Raumtemperatur; ein Heizungspuffer kann sie überbrücken. Die '''Komfortstunden''' zählen die Stunden der Nutzungszeit mit mehr als 1&nbsp;K Unterschreitung des Sollwerts.
+* {{Anker|uebergabegrenze}}'''Übergabegrenze und Bivalenz.''' Mit einer gewählten Einbindung der Wärmepumpe – direkt, über Puffer oder Weiche – begrenzen ihr Höchstvorlauf, ihr zulässiger Rücklauf und ihre Spreizung, was sie an den Heizkreis liefert. Im Vorwärmbetrieb wärmt sie den Rücklauf vor, und ein Kessel in Reihe hebt auf den Sollvorlauf. Jede Stunde fällt in einen von vier Betriebsbereichen: Wärmepumpe allein, parallel, Vorwärmung oder nur Kessel. Eine Herleitungszeile im Dialog nennt die gerechneten Grenzwerte.
+* {{Anker|kuehlkurve}}'''Kühlkurve.''' Auf Stufe AK3 kann der Kühlvorlauf einer Kühlkurve am Gebäude folgen, mit eigenem Raumeinfluss.
+
+== Eingaben und Wirkung ==
+{{Anker|eingaben-und-wirkung}}
+
+{| class="wikitable"
+! Eingabe !! Wirkung
+|-
+| Anlagenkopplung (Projekteinstellung) || welche der Stufen gerechnet wird
+|-
+| Übergabe am Gebäude oder je Zone (Art, Exponent, Nennleistung, Auslegung Vorlauf/Rücklauf/Raum) || Leistung der Heizflächen in jeder Stunde
+|-
+| Heizkurve, Raumeinfluss, Proportionalband || Vorlauf und Regelverhalten
+|-
+| Sperrzeiten, Zeitprogramm, Höchstvorlauf der Erzeuger || Verfügbarkeit der Anlage je Stunde
+|-
+| Einbindung, Vorwärmbetrieb, Grenzen der Wärmepumpe || Übergabegrenze und Aufteilung auf Wärmepumpe und Kessel
+|-
+| Heizungspuffer, Kältespeicher, Kälteerzeuger || was auf Stufe AK3 zur Verfügung steht
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* Ohne Kopplung bleiben die Eingaben der Wärmeübergabe gespeichert, wirken aber nicht.
+* Mit Kopplung ist ein Teil der Unterdeckung keine fehlende Wärme, sondern ein kühlerer Raum. Komfortstunden und Restbedarf gehören deshalb immer zusammen gelesen.
+* Die Nennleistung der Übergabe leitet EPOS-Plan als stationäre Heizlast des Modells her; eine Heizlastberechnung nach Norm ersetzt sie nicht.
+* Stufe AK3 rechnet länger; findet der Abgleich in einer Stunde keine stabile Lösung, bricht der Lauf mit einer Meldung ab, die Gebäude und Stunde nennt.
+* Auf den Stufen ''aus'' und AK1 begrenzt die Kälteanlage das Gebäude nicht; ungedeckte Kälte steht dann als Rest im Laufprotokoll.
+
+== Weiterführend ==
+{{Anker|weiterfuehrend}}
+
+* [[Programm Dokumentation/Simulation#anlagenkopplung|Simulation: Anlagenkopplung]] – die Projekteinstellung
+* [[Programm Dokumentation/Gebäudemodell VDI 6007#heizkreis|Gebäudemodell: Heizkreis und Wärmeübergabe]] und [[Programm Dokumentation/Gebäudemodell VDI 6007#komfort|Komfortstunden]]
+* [[Programm Dokumentation/Wärmepumpe#einbindung-hydraulik|Wärmepumpe: Einbindung]] und [[Programm Dokumentation/Wärmepumpe#sperrzeiten|Sperrzeiten]]
+* [[Programm Dokumentation/Kühlung#kaelteschranke|Kühlung: Kälteschranke]]
+* [[Grundlagen/Gebäudemodell VDI 6007]], [[Grundlagen/Wärmepumpe]], [[Grundlagen/Hydraulikschemata]]
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

@@ -3,7 +3,7 @@ Der '''Wärmebedarf''' ist die Grundlage jeder Auslegung. EPOS-Plan ermittelt ih
 == Modellansatz ==
 {{Anker|modellansatz}}
 
-Vorgabe ist das [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell nach VDI 6007]]: Es rechnet jedes Gebäude Stunde für Stunde als thermisches Raummodell mit zwei Speicherkapazitäten, einer für die Außenbauteile und einer für die Innenbauteile. In die Stundenbilanz gehen die Sonneneinstrahlung je Himmelsrichtung über die Fenster, die Transmission über Außenwand, Fenster, Dach, Grundfläche und sonstige Bauteile mit ihren U-Werten, die Wärmebrücken, die Lüftung und die inneren Gewinne ein. Bauteile am Erdreich gehen mit dem Erdreichwiderstand nach DIN EN ISO 13370 ein. Die Speichermasse dämpft die Tagesgänge und sorgt dafür, dass Absenkphasen nicht unmittelbar auf die Heizleistung durchschlagen.
+Vorgabe ist das [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell nach VDI 6007]]: Es rechnet jedes Gebäude Stunde für Stunde als thermisches Raummodell mit zwei Speicherkapazitäten, einer für die Außenbauteile und einer für die Innenbauteile. In die Stundenbilanz gehen die Sonneneinstrahlung je Himmelsrichtung über die Fenster, die Transmission über Außenwand, Fenster, Dach, Grundfläche und sonstige Bauteile mit ihren U-Werten, die Wärmebrücken, die Lüftung und die inneren Gewinne ein. Bauteile am Erdreich gehen mit dem Erdreichwiderstand nach DIN EN ISO 13370 ein ([[Grundlagen/Bauteile am Erdreich|Bauteile am Erdreich]]). Die Speichermasse dämpft die Tagesgänge und sorgt dafür, dass Absenkphasen nicht unmittelbar auf die Heizleistung durchschlagen.
 
 Ein Gebäude lässt sich in mehrere Zonen teilen, etwa Wohnungen und ein unbeheiztes Treppenhaus oder ein Büroteil neben einer kühler gehaltenen Halle; jede Zone rechnet mit eigenen Bauteilen, Sollwerten und Nutzungswerten ([[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]). Ist die Kühlung eingeschaltet, rechnet dasselbe Modell auch den Kältebedarf; er läuft als eigener Kanal neben dem Wärmebedarf ([[Grundlagen/Kühlung|Kühlung]]). Eine Zone heizt und kühlt nie am selben Tag.
 
@@ -40,6 +40,9 @@ Den vollständigen Rechenweg mit allen Gleichungen beschreibt [[Programm Dokumen
 * [[Gebäude und Gebäudetypen]] – Gebäudekenngrößen, Gebäudetypen und Verteilungskurven
 * [[Programm Dokumentation/Gebäude]] – Gebäudedialog mit Bauteilen, Kalendern und Zonen
 * [[Programm Dokumentation/Berechnung/Wärmebedarf]] – Rechenweg mit Gleichungen
+* [[Grundlagen/Gebäudemodell VDI 6007]] – das Stundenmodell, Zonen und Tagesbetriebsart
+* [[Grundlagen/Brauchwasser-Zapfprofile]] – Warmwasserbedarf aus Nutzungszonen
+* [[Grundlagen/Anlagenkopplung und Regelung]] – Heizkreis und Rückwirkung der Anlage auf den Raum
 
 {{Navigation Grundlagen}}
 
