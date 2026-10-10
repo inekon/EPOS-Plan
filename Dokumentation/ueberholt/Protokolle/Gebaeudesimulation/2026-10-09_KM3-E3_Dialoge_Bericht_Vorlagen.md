@@ -1,6 +1,6 @@
 # Protokoll KM3-E3 — Dialoge, Kennzahlen, Tafel, Vorlagen-Katalogfassung 18 (09./10.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#878**. Commits E3-a `1a8187f6e`, `5f1caee61`, `d1e446ef0`, `935f9fb65`; E3-b `3b691a1ab`, `462c56f69`, `4fb0155b9`, `bf11a4044`; E3-c `176aa8526`; Merge `bc584f434`. **Entscheid:** E116. Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
+**Sitzung:** Gebäudesimulation, Statuszeile **#878**. Commits E3-a `1a8187f6e`, `5f1caee61`, `d1e446ef0`, `935f9fb65`; E3-b `3b691a1ab`, `462c56f69`, `4fb0155b9`, `bf11a4044`; E3-c `176aa8526`; Merge `bc584f434`. **Entscheid:** E116. Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
 
 ## 1 Auftrag und Entscheidlage
 
