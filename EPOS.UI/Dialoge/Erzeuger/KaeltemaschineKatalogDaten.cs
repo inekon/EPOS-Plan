@@ -53,6 +53,23 @@ public sealed class KaeltemaschineDaten
     /// <summary>Gerätepreis [€].</summary>
     public double? Modulkosten { get; set; }
 
+    // ------------------------------------------------------------ Katalogfelder (K-A)
+
+    /// <summary>Listenplatz der Geräteart in <c>KaelteKatalogfelderSchema.GERAETEARTEN</c>; <c>null</c> = nach der Rückkühlart.</summary>
+    public int? GeraeteartIndex { get; set; }
+
+    /// <summary>GWP des Kältemittels [—].</summary>
+    public double? Gwp { get; set; }
+
+    /// <summary>Füllmenge des Kältemittels [kg].</summary>
+    public double? Fuellmenge { get; set; }
+
+    /// <summary>Listenplatz der Art der saisonalen Kennzahl in <c>KaelteKatalogfelderSchema.SAISON_ARTEN</c>; <c>null</c> = keine Angabe.</summary>
+    public int? SaisonArtIndex { get; set; }
+
+    /// <summary>Wert der saisonalen Kennzahl: SEER [—] oder η<sub>s,c</sub> [%].</summary>
+    public double? Saisonkennzahl { get; set; }
+
     // ------------------------------------------------------------ Teillast und Takten (KM3)
 
     /// <summary>
@@ -113,6 +130,11 @@ public sealed class KaeltemaschineDaten
         if (Hilfsstrom != anderer.Hilfsstrom) n++;
         if (KaltwasserMin != anderer.KaltwasserMin) n++;
         if (Modulkosten != anderer.Modulkosten) n++;
+        if (GeraeteartIndex != anderer.GeraeteartIndex) n++;
+        if (Gwp != anderer.Gwp) n++;
+        if (Fuellmenge != anderer.Fuellmenge) n++;
+        if (SaisonArtIndex != anderer.SaisonArtIndex) n++;
+        if (Saisonkennzahl != anderer.Saisonkennzahl) n++;
         if (TeillastWegIndex != anderer.TeillastWegIndex) n++;
         if (KurveA != anderer.KurveA) n++;
         if (KurveB != anderer.KurveB) n++;

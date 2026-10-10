@@ -43,6 +43,27 @@ public sealed class KaeltemaschineKatalogTexte
         Resource.KM_RUECKKUEHLART_TROCKENKUEHLER, Resource.KM_RUECKKUEHLART_NASSKUEHLER
     };
 
+    // ------------------------------------------------------------ Katalogfelder (K-A)
+    public string LabelGeraeteart { get; set; } = Resource.KM_LBL_GERAETEART;
+    public string LabelGwp { get; set; } = Resource.KM_LBL_GWP;
+    public string LabelFuellmenge { get; set; } = Resource.KM_LBL_FUELLMENGE;
+    public string LabelSaisonArt { get; set; } = Resource.KM_LBL_SAISON_ART;
+    public string LabelSaisonkennzahl { get; set; } = Resource.KM_LBL_SAISONKENNZAHL;
+    public string EinheitKg { get; set; } = Resource.KM_EINHEIT_KG;
+    /// <summary>Platzhalter der Geräteart: leer = nach der Rückkühlart.</summary>
+    public string GeraeteartAusRueckkuehlung { get; set; } = Resource.KM_GERAETEART_AUS_RUECKKUEHLUNG;
+    /// <summary>Platzhalter der Art der saisonalen Kennzahl: keine Angabe.</summary>
+    public string SaisonArtKeine { get; set; } = Resource.KM_SAISON_ART_KEINE;
+    /// <summary>Die Gerätearten in der Folge von <c>KaelteKatalogfelderSchema.GERAETEARTEN</c>.</summary>
+    public IReadOnlyList<string> Geraetearten { get; set; } = new[]
+    {
+        Resource.KM_GERAETEART_KWS_LUFT, Resource.KM_GERAETEART_KWS_WASSER, Resource.KM_GERAETEART_KWS_FREIKUEHLUNG,
+        Resource.KM_GERAETEART_SPLIT, Resource.KM_GERAETEART_MULTISPLIT, Resource.KM_GERAETEART_VRF,
+        Resource.KM_GERAETEART_ABSORPTION
+    };
+    /// <summary>Die Arten der saisonalen Kennzahl in der Folge von <c>KaelteKatalogfelderSchema.SAISON_ARTEN</c>.</summary>
+    public IReadOnlyList<string> SaisonArten { get; set; } = new[] { Resource.KM_SAISON_SEER, Resource.KM_SAISON_ETA_S_C };
+
     // ------------------------------------------------------------ Kennlinie
     public string SpalteRueckkuehltemperatur { get; set; } = Resource.KM_SP_RUECKKUEHLTEMPERATUR;
     public string SpalteKaltwassertemperatur { get; set; } = Resource.KM_SP_KALTWASSERTEMPERATUR;

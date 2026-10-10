@@ -39,6 +39,12 @@ public sealed class KaeltemaschineKatalogKiSicht
     /// <summary>Die Anzeigetexte der Wege am Kennfeldrand in der Folge der Listenplätze (KM3-E3-a).</summary>
     public Func<IReadOnlyList<string>>? Randwege { get; init; }
 
+    /// <summary>Die Anzeigetexte der Gerätearten in der Folge der Listenplätze (K-A).</summary>
+    public Func<IReadOnlyList<string>>? Geraetearten { get; init; }
+
+    /// <summary>Die Anzeigetexte der Arten der saisonalen Kennzahl in der Folge der Listenplätze (K-A).</summary>
+    public Func<IReadOnlyList<string>>? SaisonArten { get; init; }
+
     /// <summary>Der Arbeitsstand des Stammblatts; <c>null</c> ohne Satz.</summary>
     public Func<KaeltemaschineDaten?>? ArbeitLesen { get; init; }
 
@@ -104,6 +110,31 @@ public sealed class KaeltemaschineKatalogKiSicht
     public double? KaltwasserMin { get => ArbeitLesen?.Invoke()?.KaltwasserMin; set => Setzen(d => d.KaltwasserMin = value); }
 
     public double? Modulkosten { get => ArbeitLesen?.Invoke()?.Modulkosten; set => Setzen(d => d.Modulkosten = value); }
+
+    // =====================================================================
+    //  Katalogfelder (K-A)
+    // =====================================================================
+
+    /// <summary>Geräteart als Listenplatz (Text); leer = nach der Rückkühlart.</summary>
+    public string Geraeteart { get => PlatzLesen(d => d.GeraeteartIndex); set => Setzen(d => d.GeraeteartIndex = Platz(value, Geraetearten)); }
+
+    /// <summary>Die Einträge der Geräteart.</summary>
+    public IReadOnlyList<KiWahleintrag> GeraeteartWahl => Wahl(Geraetearten);
+
+    /// <summary>GWP des Kältemittels.</summary>
+    public double? Gwp { get => ArbeitLesen?.Invoke()?.Gwp; set => Setzen(d => d.Gwp = value); }
+
+    /// <summary>Füllmenge des Kältemittels [kg].</summary>
+    public double? Fuellmenge { get => ArbeitLesen?.Invoke()?.Fuellmenge; set => Setzen(d => d.Fuellmenge = value); }
+
+    /// <summary>Art der saisonalen Kennzahl als Listenplatz (Text); leer = keine Angabe.</summary>
+    public string SaisonArt { get => PlatzLesen(d => d.SaisonArtIndex); set => Setzen(d => d.SaisonArtIndex = Platz(value, SaisonArten)); }
+
+    /// <summary>Die Einträge der Art der saisonalen Kennzahl.</summary>
+    public IReadOnlyList<KiWahleintrag> SaisonArtWahl => Wahl(SaisonArten);
+
+    /// <summary>Wert der saisonalen Kennzahl.</summary>
+    public double? Saisonkennzahl { get => ArbeitLesen?.Invoke()?.Saisonkennzahl; set => Setzen(d => d.Saisonkennzahl = value); }
 
     // =====================================================================
     //  Teillast und Takten (KM3-E3-a) — die acht Felder der Gruppe
