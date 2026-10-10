@@ -518,7 +518,9 @@ public class KalenderkarteTests : EposBunitContext
                 return basis.WochenVorschau!(g, w);
             }
         };
-        var cut = Aufbauen(weg, entprellungMs: 150);
+        // Befund WT-b: Mit 150 ms Ruhezeit feuerte unter Last eine Entprellung zwischen zwei Eingaben. Die Ruhezeit steht
+        // während der Eingaben auf einer Minute und erst vor der letzten auf 1 ms (Muster VorpruefungEntprelltTests).
+        var cut = Aufbauen(weg, entprellungMs: 60_000);
         Assert.Equal(1, bilder);                        // beim Öffnen sofort
 
         Waehlen(cut, KonditionierungGroesse.Heizen, "Schule");
@@ -529,15 +531,23 @@ public class KalenderkarteTests : EposBunitContext
 
         // Drei Eingaben hintereinander in dieselbe Zelle: EIN Bild nach der Ruhezeit. Der Wirt zeichnet
         // nach jeder Eingabe neu (im Editor über „Geaendert"); hier tut es der Prüfstand.
-        foreach (string eingabe in new[] { "21", "21,5", "22" })
+        foreach (string eingabe in new[] { "21", "21,5" })
         {
             Eingabe(cut, "Heizen · Tag").Input(eingabe);
             cut.Render();
         }
-        Assert.Equal(3, bilder);
+        Assert.Equal(3, bilder);                        // in der Ruhezeit kein Bild
+
+        cut.Render(p => p.Add(x => x.EntprellungMs, 1));
+        Assert.Equal(3, bilder);                        // derselbe Stand rechnet nicht neu
+        Eingabe(cut, "Heizen · Tag").Input("22");
+        cut.Render();
+
+        // Auf den gezeichneten Zustand warten, nicht auf die Uhr.
         cut.WaitForAssertion(() => Assert.Equal(4, bilder), TimeSpan.FromSeconds(5));
         Assert.Equal(22, _bearbeitung.Vorschauwoche(KonditionierungGroesse.Heizen)![10]);
-        Thread.Sleep(300);
+        // Die überholten Entprellungen sind abgebrochen — kämen sie noch, stünde der Zähler hier höher.
+        cut.Render();
         Assert.Equal(4, bilder);                        // und kein zweites
     }
 }
