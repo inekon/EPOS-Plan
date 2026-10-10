@@ -1,7 +1,7 @@
 ﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Betriebskalender
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Betriebskalender.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Ein '''Betriebskalender''' legt Feiertage und Betriebsferien auf das Wochenprofil eines Bedarfsprofils. Ohne Kalender gilt dasselbe 168-Stunden-Muster für alle Wochen des Jahres; mit Kalender trägt ein Feiertag den Sonntag des Wochenprofils, und an Ferientagen sinkt der Bedarf auf einen wählbaren Anteil. Ein Kalender gilt für Brauchwasser-, Prozesswärme- und Stromprofile gleichermaßen.
+Ein '''Betriebskalender''' legt Feiertage und Betriebsferien auf das Wochenprofil eines Bedarfsprofils. Ohne Kalender gilt dasselbe 168-Stunden-Muster für alle Wochen des Jahres; mit Kalender trägt ein Feiertag den Sonntag des Wochenprofils, und an Ferientagen sinkt der Bedarf auf einen wählbaren Anteil. Ein Kalender gilt für Brauchwasser-, Prozesswärme- und Stromprofile gleichermaßen. Die Kalender der Gebäude und Zonen – Heizen, Kühlen, Lüftung, Geräte und Personen – sind davon getrennt; sie stehen im Reiter ''Konditionierung'' des Gebäudes (siehe [[Programm Dokumentation/Gebäude#kalenderbedienung|Gebäude: Kalenderbedienung]]).
 
 Die Kalender pflegen Sie über das Menü '''Administration''' › ''Wärme- und Kälteerzeugung'' › ''Profile & Lastgänge'' › ''Betriebskalender''. Gewählt wird ein Kalender je Profilzuordnung im Bedarfsprofil-Dialog des Projekts.
 
@@ -26,7 +26,7 @@ Oben steht die Auswahl ''Kalender'' mit den Knöpfen ''Neu'' und ''Löschen'', d
 | ''Ferien kürzen die Monatsmenge'' || Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage des Monats. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.
 |}
 
-Unter den Feldern nennt eine Zeile, wie viele Feiertage und Ferientage der Kalender in einem Gemeinjahr trägt, dessen 1. Januar ein Sonntag ist; im Simulationslauf gelten die Wochentage der Klimaregion des Projekts. ''Speichern'' schreibt den Kalender, ''OK'' schreibt und schließt, ''Abbrechen'' verwirft die Eingaben. ''Löschen'' fragt zurück und nennt, wie viele Profilzuordnungen den Kalender nutzen; sie rechnen danach ohne Kalender.
+Unter den Feldern nennt eine Zeile, wie viele Feiertage und Ferientage der Kalender in einem Gemeinjahr trägt, und den Wochentag des 1. Januar, mit dem sie zählt; im Simulationslauf gilt das Wochentagsraster der Klimaregion des Projekts. ''Speichern'' schreibt den Kalender, ''OK'' schreibt und schließt, ''Abbrechen'' verwirft die Eingaben. ''Löschen'' fragt zurück und nennt, wie viele Profilzuordnungen den Kalender nutzen; sie rechnen danach ohne Kalender.
 
 == Einen Kalender zuordnen ==
 {{Anker|zuordnung}}
@@ -36,4 +36,4 @@ Im Bedarfsprofil-Dialog von Brauchwasser, Prozesswärme oder Strombedarf wählen
 == Wie gerechnet wird ==
 {{Anker|rechenweg}}
 
-Das Wochenprofil wird ab dem Wochentag des 1. Januar über das Jahr gelegt; danach ersetzt der Kalender ganze Tage: Feiertage durch den Sonntag des Wochenprofils, Ferientage durch den Ferienfaktor mal dem Tagesmittel. Ferien gehen Feiertagen vor. Anschließend wird jeder Monat auf seinen Monatswert gebracht. Feiertage verschieben deshalb nur Bedarf innerhalb des Monats; Ferien ebenso, außer der Schalter ''Ferien kürzen die Monatsmenge'' ist gesetzt. Hat ein Monat ohne diesen Schalter keine Stunde mit Bedarf mehr, rechnet er ohne Ferien, und das Laufprotokoll nennt es. Die Formeln stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Schritt 3.
+Das Wochenprofil wird nach dem Wochentagsraster der Klimaregion des Projekts über das Jahr gelegt; danach ersetzt der Kalender ganze Tage: Feiertage durch den Sonntag des Wochenprofils, Ferientage durch den Ferienfaktor mal dem Tagesmittel. Ferien gehen Feiertagen vor. Die Feiertage liegen im Gemeinjahr nach festen Regeln; eine Preisreihe mit Jahr setzt die Feiertage dieses Jahres. Anschließend wird jeder Monat auf seinen Monatswert gebracht. Feiertage verschieben deshalb nur Bedarf innerhalb des Monats; Ferien ebenso, außer der Schalter ''Ferien kürzen die Monatsmenge'' ist gesetzt. Hat ein Monat ohne diesen Schalter keine Stunde mit Bedarf mehr, rechnet er ohne Ferien, und das Laufprotokoll nennt es. Die Formeln stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Schritt 3.
