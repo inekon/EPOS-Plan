@@ -42,6 +42,11 @@
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
 
     @* P = Kopfleiste „Im Projekt" (Summe kWh, Bearbeiten…, In die Datenbank übernehmen…,
        Entfernen), K = Kopf- und Fussleiste des Katalogs, S = Detailzeile „gewaehlter Satz",
@@ -541,6 +546,9 @@
         Filtertexte.SpalteWahl = SpalteWahl;
     }
 
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
     protected override void OnInitialized()
     {
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Katalogprofil?.Art ?? Anlagenart.Stromspeicher);
@@ -627,7 +635,7 @@
     /// <summary>Liest den Katalog neu — nach einem Schreibweg. Der Filter ruft sie nicht.</summary>
     private void KatalogNeuLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
         VerwendungStempeln();
         _katalogZeile = Katalogsatz(_katalogGewaehlt);
         if (_katalogZeile is null) _katalogGewaehlt = "";

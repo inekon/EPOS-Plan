@@ -248,7 +248,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Hilfe-Assistent nennt gesperrte Felder vor der Rückfrage und wechselt den Energieträger einer Anlage sowie den Leistungspreis der Stromspeicher-Auslegung nicht selbst; das geschieht von Hand in der Maske. (#899)
 - Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
 
-*Die folgenden neun Sätze (#891 bis #898 und #900) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden zehn Sätze (#891 bis #898, #900 und #902) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -262,6 +262,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Nach „In das Projekt übernehmen“ ist nur noch die übernommene Zeile gewählt; „Aus dem Projekt entfernen“ trifft sie. (#907)
 - Seit 10.10.2026: Die Simulation im Dialog Wärmequelle Erdreich rechnet mit den angezeigten Eingaben und zeigt Ergebnis, Verlauf und Kennwerte der Soletemperatur — Jahresmittel, Tiefst- und Höchstwert mit Zeitpunkt — sofort an. (#898)
 - Seit 10.10.2026: Der Kalenderteppich der Konditionierung und der Raumnutzung lässt sich über „CSV…“ als Tabelle mit 365 Tageszeilen (Datum, Wochentag) und 24 Stundenspalten speichern; Zahlungsstrom und Kapitalwertverlauf zählen in der CSV-Datei wie in der Tafel ab Jahr 0. (#900)
+- Seit 10.10.2026: Im Anlagenschema öffnet ein Doppelklick auf Kältemaschine, Rückkühlung, Wärmepumpe im Kühlbetrieb und ihre Quelle den jeweiligen Dialog; der Tooltipp jedes Elements nennt, was der Doppelklick öffnet. (#902)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

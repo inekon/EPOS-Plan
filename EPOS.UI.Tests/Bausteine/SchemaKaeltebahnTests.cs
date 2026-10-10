@@ -152,4 +152,106 @@ public class SchemaKaeltebahnTests : BunitContext
 
         Assert.Equal("KSPEICHER_9", gemeldet);
     }
+
+    // ================================================================== KS-2: Doppelklick
+
+    /// <summary>KS-2: Der Wirt nennt je Schlüssel den Weg — hier wie die Simulationskonfiguration.</summary>
+    private static string? Wege(string schluessel) => schluessel switch
+    {
+        "KQUELLE_7" => "Doppelklick öffnet die Kältemaschinen des Projekts; dort steht die Rückkühlart.",
+        "KERZEUGER_7" => "Doppelklick öffnet die Kältemaschinen des Projekts.",
+        "KSPEICHER_9" => "Doppelklick öffnet die Pufferverwaltung.",
+        "ERZEUGER_1" => "",
+        _ => null
+    };
+
+    private IRenderedComponent<Schema> MitWegen(System.Action<string> bearbeitet, string gewaehlt = "")
+        => Render<Schema>(p => p
+            .Add(x => x.Layout, Bild(true))
+            .Add(x => x.SichtbarMachen, false)
+            .Add(x => x.Gewaehlt, gewaehlt)
+            .Add(x => x.Editorhinweis, Wege)
+            .Add(x => x.BearbeitenGewuenscht, bearbeitet));
+
+    private static AngleSharp.Dom.IElement Kasten(IRenderedComponent<Schema> cut, string titel)
+        => cut.FindAll("g.epos-schema-knoten").Single(g => g.GetAttribute("aria-label") == titel);
+
+    /// <summary>
+    /// KS-2: Kältemaschine, Rückkühlung und Kältespeicher melden ihren Doppelklick mit IHREM
+    /// Schlüssel — der Wirt entscheidet daraus über den Dialog.
+    /// </summary>
+    [Fact]
+    public void Der_Doppelklick_auf_die_Kaeltebahn_meldet_den_Schluessel_des_Elements()
+    {
+        var gemeldet = new System.Collections.Generic.List<string>();
+        var cut = MitWegen(gemeldet.Add);
+
+        Kasten(cut, "Kältemaschine 10 kW").DoubleClick();
+        Kasten(cut, "Trockenkühler").DoubleClick();
+        Kasten(cut, "Kaltwasserspeicher").DoubleClick();
+
+        Assert.Equal(new[] { "KERZEUGER_7", "KQUELLE_7", "KSPEICHER_9" }, gemeldet);
+    }
+
+    /// <summary>
+    /// KS-2: Ein Element ohne Editor (der Kältekreis, der Heizkreis) trägt KEINEN Doppelklick —
+    /// statt eines Handlers, der nichts tut; die Elemente mit Editor tragen ihn.
+    /// </summary>
+    [Fact]
+    public void Ein_Element_ohne_Editor_traegt_keinen_Doppelklick()
+    {
+        var cut = MitWegen(_ => { });
+
+        Assert.False(Kasten(cut, "Kältekreis").HasAttribute("blazor:ondblclick"));
+        Assert.False(Kasten(cut, "Heizkreis").HasAttribute("blazor:ondblclick"));
+        Assert.True(Kasten(cut, "Kältemaschine 10 kW").HasAttribute("blazor:ondblclick"));
+        Assert.True(Kasten(cut, "Trockenkühler").HasAttribute("blazor:ondblclick"));
+        Assert.True(Kasten(cut, "Wärmepumpe").HasAttribute("blazor:ondblclick"));
+    }
+
+    /// <summary>
+    /// KS-2: Ohne den Delegat bleibt alles wie vor KS-2 — jedes Element trägt den Doppelklick.
+    /// </summary>
+    [Fact]
+    public void Ohne_Editorhinweis_traegt_jedes_Element_den_Doppelklick()
+    {
+        var cut = Render<Schema>(p => p.Add(x => x.Layout, Bild(true)).Add(x => x.SichtbarMachen, false));
+
+        Assert.All(cut.FindAll("g.epos-schema-knoten"), g => Assert.True(g.HasAttribute("blazor:ondblclick")));
+    }
+
+    /// <summary>KS-2: Der Tooltipp nennt den Weg als letzte Zeile; ein Element ohne Editor nennt keinen.</summary>
+    [Fact]
+    public void Der_Tooltipp_nennt_den_Weg_des_Doppelklicks()
+    {
+        var cut = MitWegen(_ => { });
+
+        string km = Kasten(cut, "Kältemaschine 10 kW").QuerySelector("title")!.TextContent;
+        Assert.EndsWith("Doppelklick öffnet die Kältemaschinen des Projekts.", km);
+
+        string rk = Kasten(cut, "Trockenkühler").QuerySelector("title")!.TextContent;
+        Assert.StartsWith("Trockenkühler\nRückkühlung: Trockenkühler\n", rk);
+        Assert.EndsWith("dort steht die Rückkühlart.", rk);
+
+        Assert.DoesNotContain("Doppelklick", Kasten(cut, "Kältekreis").QuerySelector("title")!.TextContent);
+        Assert.DoesNotContain("Doppelklick", Kasten(cut, "Wärmepumpe").QuerySelector("title")!.TextContent);
+    }
+
+    /// <summary>
+    /// KS-2: Die Eingabetaste auf dem GEWÄHLTEN Element ist der Tastaturweg zum Doppelklick —
+    /// auf einem Element ohne Editor öffnet sie nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Eingabetaste_oeffnet_nur_ein_Element_mit_Editor()
+    {
+        var gemeldet = new System.Collections.Generic.List<string>();
+
+        var ohne = MitWegen(gemeldet.Add, gewaehlt: "ABNEHMER_KAELTEKREIS");
+        Kasten(ohne, "Kältekreis").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
+        Assert.Empty(gemeldet);
+
+        var mit = MitWegen(gemeldet.Add, gewaehlt: "KERZEUGER_7");
+        Kasten(mit, "Kältemaschine 10 kW").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
+        Assert.Equal(new[] { "KERZEUGER_7" }, gemeldet);
+    }
 }

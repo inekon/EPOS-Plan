@@ -61,7 +61,7 @@ Wirts `BEDARF_ERGEBNIS` setzt nun das Zeitraster Jahr/Monat/Woche/Tag des Grafik
 4. PV-Dialog ohne Sicht: `Katalog_`-Felder scheitern erst nach der Bestätigung; ohne Zeile „Feld unbekannt“.
 5. Stromspeicher: Veraltet-Marke nur indirekt geprüft; `groessen_optimieren` stellt nur den Schalter.
 6. Bedarfsgrafik: `jahresverlauf` und `zeitstufe` sprechen beide das Raster an; Feldkennung `zeitstufe` ggf. `zeitraster`.
-7. Die 12 verbleibenden Ausnahmen (Vorschlag beim Anwender: belassen).
+7. Die 12 verbleibenden Ausnahmen: Anwenderentscheid 10.10.2026 „Belassen“ — sie bleiben mit ihren Gründen in der Ausnahmeliste.
 8. Wiki-Upload der Seite Hilfe-Assistent und des Logbuchs mit dem nächsten Sammel-Upload.
 9. Windows-Sichtabnahme durch den Anwender: „setze Rücklauftemperatur auf 65“ in Verwaltung Heizkessel; „setze Energieträger …“
    wird vor der Rückfrage benannt abgelehnt.

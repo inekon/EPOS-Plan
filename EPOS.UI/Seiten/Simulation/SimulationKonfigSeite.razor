@@ -68,7 +68,8 @@
                     LeerText="@SchemaLeerText" WarnungText="@SchemaWarnungText"
                     AbnehmerWarnungText="@SchemaAbnehmerWarnungText"
                     KetteKopfText="@SchemaKetteKopfText" KeineKetteText="@SchemaKeineKetteText"
-                    Ausgewaehlt="SchemaAuswahl" BearbeitenGewuenscht="SchemaBearbeiten" />
+                    Ausgewaehlt="SchemaAuswahl" BearbeitenGewuenscht="SchemaBearbeiten"
+                    Editorhinweis="SchemaEditorhinweis" />
         }
         else
         {
@@ -1947,6 +1948,12 @@
     /// <summary>Auftrag KS: Kaeltespeicher der Kaeltebahn (SchemaModell.PRAEFIX_KAELTE_SPEICHER).</summary>
     private const string PRAEFIX_KAELTE_SPEICHER = "KSPEICHER_";
 
+    /// <summary>Auftrag KS-2: Kaelteerzeuger der Kaeltebahn (SchemaModell.PRAEFIX_KAELTE_ERZEUGER).</summary>
+    private const string PRAEFIX_KAELTE_ERZEUGER = "KERZEUGER_";
+
+    /// <summary>Auftrag KS-2: Rueckkuehlung bzw. Quelle der Kaeltebahn (SchemaModell.PRAEFIX_KAELTE_QUELLE).</summary>
+    private const string PRAEFIX_KAELTE_QUELLE = "KQUELLE_";
+
     private static int IdAusSchluessel(string schluessel, string praefix)
     {
         if (string.IsNullOrEmpty(schluessel) ||
@@ -1972,38 +1979,46 @@
     }
 
     /// <summary>
-    /// Doppelklick im Schema — DERSELBE Editor wie an der Kachel
-    /// (woertlich <c>SchemaBearbeiten</c>:302-342).
+    /// Der Weg eines Doppelklicks im Schema — EINE Entscheidung fuer Doppelklick,
+    /// Eingabetaste und Tooltipp (Auftrag KS-2). <see cref="SchemaBearbeiten"/> fuehrt ihn
+    /// aus, <see cref="SchemaEditorhinweis"/> sagt dem Baustein, ob es ihn gibt.
     /// </summary>
-    private void SchemaBearbeiten(string schluessel)
+    private enum Schemaweg
     {
-        if (string.IsNullOrEmpty(schluessel) || IdProjekt <= 0) return;
+        /// <summary>Kein Editor — das Element traegt keinen Doppelklick.</summary>
+        Keiner,
 
-        _auswahl = schluessel;
+        /// <summary>Die Pufferverwaltung (Puffer und Kaeltespeicher).</summary>
+        Pufferverwaltung,
+
+        /// <summary>Der Senkendialog — der Standard-Editor einer Erzeugerkachel.</summary>
+        Waermesenke,
+
+        /// <summary>Die Quellenwahl — wie der Quellen-Chip der Kachel.</summary>
+        Waermequelle,
+
+        /// <summary>Die Kaeltemaschinen des Projekts — derselbe Weg wie die Kachel „Kühlung und Kälteanlagen“.</summary>
+        Kaeltemaschinen
+    }
+
+    /// <summary>Welcher Weg gehoert zu DIESEM Schluessel, und welche Anlagenzeile traegt ihn?</summary>
+    private (Schemaweg Weg, ErzeugerZeile? Zeile, int IdPuffer, bool Rueckkuehlung) SchemawegZu(string schluessel)
+    {
+        if (string.IsNullOrEmpty(schluessel) || IdProjekt <= 0) return (Schemaweg.Keiner, null, 0, false);
 
         int idPuffer = IdAusSchluessel(schluessel, PRAEFIX_SPEICHER);
-        if (idPuffer > 0)
-        {
-            _offenerSpeicher = idPuffer;
-            PufferVerwaltungOeffnen(idPuffer);
-            return;
-        }
+        if (idPuffer > 0) return (Schemaweg.Pufferverwaltung, null, idPuffer, false);
 
         // Auftrag KS: Der Kaeltespeicher oeffnet dieselbe Pufferverwaltung.
         int idKaeltespeicher = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_SPEICHER);
-        if (idKaeltespeicher > 0)
-        {
-            PufferVerwaltungOeffnen(idKaeltespeicher);
-            return;
-        }
+        if (idKaeltespeicher > 0) return (Schemaweg.Pufferverwaltung, null, idKaeltespeicher, false);
 
         int idAnlage = IdAusSchluessel(schluessel, PRAEFIX_ERZEUGER);
         if (idAnlage > 0)
         {
             // Der Senkendialog ist der Standard-Editor einer Erzeugerkachel.
             ErzeugerZeile? erz = ZeileZuAnlage(idAnlage);
-            if (erz is not null) WaermesenkeBearbeiten(erz);
-            return;
+            return erz is null ? (Schemaweg.Keiner, null, 0, false) : (Schemaweg.Waermesenke, erz, 0, false);
         }
 
         int idQuelle = IdAusSchluessel(schluessel, PRAEFIX_QUELLE);
@@ -2012,8 +2027,108 @@
             // Wie der Quellen-Chip der Kachel: nur Arten mit Quellenwahl bekommen
             // den Editor, die uebrigen bleiben stumm (Etappe D5b).
             ErzeugerZeile? q = ZeileZuAnlage(idQuelle);
-            if (q is not null && q.QuellenwahlMoeglich) WaermequelleBearbeiten(q);
+            return q is not null && q.QuellenwahlMoeglich
+                ? (Schemaweg.Waermequelle, q, 0, false) : (Schemaweg.Keiner, null, 0, false);
         }
+
+        // Auftrag KS-2: die Kaeltebahn. Die Waermepumpe im Kuehlbetrieb oeffnet, was ihr
+        // Kasten in der Waermebahn oeffnet; die Kaeltemaschine ihren Anlagendialog.
+        int idKaelte = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_ERZEUGER);
+        if (idKaelte > 0) return KaeltewegZu(schluessel, idKaelte, rueckkuehlung: false);
+
+        int idRueckkuehlung = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_QUELLE);
+        if (idRueckkuehlung > 0) return KaeltewegZu(schluessel, idRueckkuehlung, rueckkuehlung: true);
+
+        // Heizkreis, Warmwasser, Prozess und Kaeltekreis haben keinen Editor.
+        return (Schemaweg.Keiner, null, 0, false);
+    }
+
+    /// <summary>
+    /// Auftrag KS-2: Kaelteerzeuger und Rueckkuehlung. Ob der Kasten eine Waermepumpe ist,
+    /// sagt das Schema selbst (<c>IstWaermepumpe</c>) — die Kaeltemaschine steht in keiner
+    /// Kachelgruppe dieser Seite. Die Rueckkuehlung einer Waermepumpe ist ihre Quelle: mit
+    /// Quellenwahl die Quellenwahl, sonst der Dialog der Waermepumpe; die Rueckkuehlart einer
+    /// Kaeltemaschine steht in deren Anlagendialog — einen eigenen Rueckkuehl-Dialog gibt es nicht.
+    /// </summary>
+    private (Schemaweg Weg, ErzeugerZeile? Zeile, int IdPuffer, bool Rueckkuehlung) KaeltewegZu(
+        string schluessel, int idAnlage, bool rueckkuehlung)
+    {
+        bool waermepumpe = _schema?.Knoten.Any(k => k.Schluessel == schluessel && k.IstWaermepumpe) == true;
+        ErzeugerZeile? wp = ZeileZuAnlage(idAnlage);
+
+        if (!waermepumpe && wp is null) return (Schemaweg.Kaeltemaschinen, null, 0, rueckkuehlung);
+        if (wp is null) return (Schemaweg.Keiner, null, 0, false);
+
+        return rueckkuehlung && wp.QuellenwahlMoeglich
+            ? (Schemaweg.Waermequelle, wp, 0, true)
+            : (Schemaweg.Waermesenke, wp, 0, rueckkuehlung);
+    }
+
+    /// <summary>
+    /// Die Zeile, die der Baustein <c>Schema</c> in den Tooltipp eines Elements setzt;
+    /// <c>null</c> = kein Editor, das Element traegt dann keinen Doppelklick (KS-2).
+    /// </summary>
+    private string? SchemaEditorhinweis(string schluessel)
+    {
+        var (weg, _, _, rueckkuehlung) = SchemawegZu(schluessel);
+        return weg switch
+        {
+            Schemaweg.Pufferverwaltung => Resource.SIM_SCHEMA_DK_PUFFER,
+            Schemaweg.Waermesenke => Resource.SIM_SCHEMA_DK_SENKE,
+            Schemaweg.Waermequelle => Resource.SIM_SCHEMA_DK_QUELLE,
+            Schemaweg.Kaeltemaschinen => rueckkuehlung
+                ? Resource.SIM_SCHEMA_DK_RUECKKUEHLUNG : Resource.SIM_SCHEMA_DK_KAELTEMASCHINE,
+            _ => null
+        };
+    }
+
+    /// <summary>
+    /// Doppelklick im Schema — DERSELBE Editor wie an der Kachel
+    /// (woertlich <c>SchemaBearbeiten</c>:302-342).
+    /// </summary>
+    private void SchemaBearbeiten(string schluessel)
+    {
+        var (weg, zeile, idPuffer, _) = SchemawegZu(schluessel);
+        if (weg == Schemaweg.Keiner) return;
+
+        _auswahl = schluessel;
+
+        switch (weg)
+        {
+            case Schemaweg.Pufferverwaltung:
+                if (IdAusSchluessel(schluessel, PRAEFIX_SPEICHER) > 0) _offenerSpeicher = idPuffer;
+                PufferVerwaltungOeffnen(idPuffer);
+                break;
+            case Schemaweg.Waermesenke when zeile is not null:
+                WaermesenkeBearbeiten(zeile);
+                break;
+            case Schemaweg.Waermequelle when zeile is not null:
+                WaermequelleBearbeiten(zeile);
+                break;
+            case Schemaweg.Kaeltemaschinen:
+                KaeltemaschinenOeffnen();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Auftrag KS-2: oeffnet die Kaeltemaschinen des Projekts ueber <c>Dienste.Navigation</c> —
+    /// DERSELBE Weg wie die Kachel „Kühlung und Kälteanlagen“ (<c>ErzeugerReiter</c>, KT-2).
+    /// Lehnt die Naht ab, steht der Grund im Banner dieser Seite, benannt wie dort: ohne
+    /// gezeichnete Wurzel „keine Oberfläche“, sonst „führt die Ansicht nicht“. Was die Wurzel
+    /// beim Aufbau der Ansicht ablehnt (kein Projekt, Ausnahme in den Gaben), zeigt sie selbst.
+    /// </summary>
+    private void KaeltemaschinenOeffnen()
+    {
+        bool offen = WindowsFormsApplication1.Dienste.Navigation
+            .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, "");
+        if (offen) return;
+
+        string grund = EPOS.UI.Dienste.Navigationsziel.Aktuell is null
+            ? Resource.WURZEL_KEINE_OBERFLAECHE : Resource.WURZEL_NICHT_GEFUEHRT;
+        Melden(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             Resource.WURZEL_ANSICHT_FEHLER, Resource.START_E_KUEHL_TITEL, grund),
+               WarnStufe.Warnung);
     }
 
     private ErzeugerZeile? ZeileZuAnlage(int idAnlage)

@@ -87,6 +87,11 @@
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
 
     @* DAS SCHEMA IST SEIT W14a-E-10 DASSELBE WIE BEIM HEIZKESSEL UND BEI DEN
        PV-MODULEN - der Kern des Anwenderentscheids: "Das Schema des Dialogs sollte
@@ -946,6 +951,9 @@
         _felderTexte.EinheitEuro = EinheitEuro;
     }
 
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
     protected override void OnInitialized()
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
@@ -1042,7 +1050,7 @@
 
     private void ListeNeuLaden()
     {
-        _liste = Liste?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _liste = Katalogladung.Lesen(Liste, TitelText, out _listeFehler);
 
         // Kaestchen verschwundener Zeilen fallen (V6); ein laufender Vergleich liest neu.
         _auswahl.Abgleichen(_liste.Select(z => z.Schluessel));

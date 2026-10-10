@@ -112456,6 +112456,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Kältemaschinen des Projekts. ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_DK_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_DK_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Pufferverwaltung. ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_DK_PUFFER {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_DK_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Wärmequelle. ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_DK_QUELLE {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_DK_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Kältemaschinen des Projekts; dort steht die Rückkühlart. ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_DK_RUECKKUEHLUNG {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_DK_RUECKKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Wärmesenke. ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_DK_SENKE {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_DK_SENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kaskade im Projekt — kein Erzeuger bezieht seine Wärme aus einem Pufferspeicher. ähnelt.
         /// </summary>
         public static string SIM_SCHEMA_KEINE_KETTE {
