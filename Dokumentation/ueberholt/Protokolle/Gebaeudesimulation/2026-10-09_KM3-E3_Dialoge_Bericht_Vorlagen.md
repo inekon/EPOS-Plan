@@ -1,10 +1,10 @@
 # Protokoll KM3-E3 — Dialoge, Kennzahlen, Tafel, Vorlagen-Katalogfassung 18 (09./10.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#878**. Commits E3-a `1a8187f6e`, `5f1caee61`, `d1e446ef0`, `935f9fb65`; E3-b `3b691a1ab`, `462c56f69`, `4fb0155b9`, `bf11a4044`; E3-c `176aa8526`; Merge `bc584f434`. **Entscheid:** E114. Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
+**Sitzung:** Gebäudesimulation, Statuszeile **#878**. Commits E3-a `1a8187f6e`, `5f1caee61`, `d1e446ef0`, `935f9fb65`; E3-b `3b691a1ab`, `462c56f69`, `4fb0155b9`, `bf11a4044`; E3-c `176aa8526`; Merge `bc584f434`. **Entscheid:** E116. Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
 
 ## 1 Auftrag und Entscheidlage
 
-- **E114** (Anwender, 09.10.2026): KM3-Q1 bis Q11 nach Empfehlung a; E3 bringt die Dialoggruppe, die Lesewerte, die Kennzahlen, die Tafel und die Vorlagen der Katalogfassung 18.
+- **E116** (Anwender, 09.10.2026): KM3-Q1 bis Q11 nach Empfehlung a; E3 bringt die Dialoggruppe, die Lesewerte, die Kennzahlen, die Tafel und die Vorlagen der Katalogfassung 18.
 
 ## 2 Wellen
 
@@ -43,6 +43,6 @@ E4 (Wiki, Logbuch).
 
 ## 7 Gate und CI
 
-**Gate:** @GATE@
+**Gate:** Rest-Gate auf a848bc157 grün (UI 8042/8042, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27, Doku-Wachen 35, Werkzeugtests 124/61/24/39, Schale, Designer, SQL 2708/0); Referenzlauf 28/28 PASS, 911/911 byte-gleich gegen R49; Kern-Blöcke AB 1902/1903, CD 283, EF 1122/1122 nach Einheiten-Fix, GH 1453, IJ 447/452, LM 360, NO 228, PQ 920, R 310, S 1440, TUVWXYZ 1941 (K per CI-Lauf 38007278194: 12 841/12 849 bestanden, allein EinheitenWache rot, behoben).
 
 **CI:** läuft (Vermerk folgt).

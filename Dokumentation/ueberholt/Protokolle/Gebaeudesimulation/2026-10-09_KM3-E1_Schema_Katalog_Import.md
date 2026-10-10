@@ -1,10 +1,10 @@
 # Protokoll KM3-E1 — Schemaschritt 210, Katalog, Import der Teillastkurve (09.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#876**. Commits E1-a `62cf8611c`, E1-b `10cfef908`, E1-c `e43f346c5`. **Entscheid:** E114 (KM3-Q1 bis Q11). Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
+**Sitzung:** Gebäudesimulation, Statuszeile **#876**. Commits E1-a `62cf8611c`, E1-b `10cfef908`, E1-c `e43f346c5`. **Entscheid:** E116 (KM3-Q1 bis Q11). Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
 
 ## 1 Auftrag und Entscheidlage
 
-- **E114** (Anwender, 09.10.2026): Startfreigabe KM3 mit den Entscheiden KM3-Q1 bis Q11 nach Empfehlung a.
+- **E116** (Anwender, 09.10.2026): Startfreigabe KM3 mit den Entscheiden KM3-Q1 bis Q11 nach Empfehlung a.
 - Schemanummer: angemeldet als 209, mit Anwenderentscheid vom 09.10.2026 (Weg B) auf 208 gesetzt (`8cbda3b97`); nach dem Bau von 208 `KatalogkostenUrsprungSchema` und 209 `KatalogkostenInvestitionSchema` durch KA1 (Konto 2, #873) mit Anwenderentscheid 09.10.2026 19:55 UTC auf **210** verschoben, hängt an 209 `KatalogkostenInvestitionSchema` (KM3-M2).
 - Entscheid der Orchestrierung: Die Plausibilitätsgrenze des Gütemaßes sinkt auf 0,3, weil sieben Festdrehzahl-Sätze physikalisch plausibel sind.
 
@@ -40,6 +40,6 @@ E3 (Dialoggruppe, Bericht, Kennzahlen, Vorlagen), E4 (Wiki, Logbuch).
 
 ## 7 Gate und CI
 
-**Gate:** @GATE@
+**Gate:** Rest-Gate auf a848bc157 grün (UI 8042/8042, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27, Doku-Wachen 35, Werkzeugtests 124/61/24/39, Schale, Designer, SQL 2708/0); Referenzlauf 28/28 PASS, 911/911 byte-gleich gegen R49; Kern-Blöcke AB 1902/1903, CD 283, EF 1122/1122 nach Einheiten-Fix, GH 1453, IJ 447/452, LM 360, NO 228, PQ 920, R 310, S 1440, TUVWXYZ 1941 (K per CI-Lauf 38007278194: 12 841/12 849 bestanden, allein EinheitenWache rot, behoben).
 
 **CI:** Kern-Lauf der CI auf dem Sitzungszweig läuft (Vermerk folgt).
