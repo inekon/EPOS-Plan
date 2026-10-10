@@ -18,9 +18,9 @@ Split-Kälte …“.
 | **E-K2** | Deckungsart je Zuordnungszeile (CSV-Lastgang und Profil): „zentral“ (Vorgabe, geht in die Kältefolge wie heute) oder „dezentral Split“ mit EER (fest oder linear über der Außentemperatur), Kühlträger und eigenem Zähler; der Split-Anteil wird **neben** der Kaskade gebucht und als Strom gezählt — ohne Gerätegrenze, ohne Inneneinheiten (die gehören zum Raumklimagerät Typ 14 des Entwurfs K-D; Kennfeld später von dort). |
 | **E-K3** | Kältebedarfsprofile tragen Vorlauf/Rücklauf nur als Angabe ohne Wirkung auf die Erzeuger; Prozesskälte mit Vorrang (Naht `Kaelteangebot.Prozesskaelte`) ist eine spätere Welle. |
 
-Schemaschritt **213** ist für die Welle K1 vorgesehen; er hängt an 212 `KaelteRangSchema` (Welle KB-D der Sitzung
-Gebäudesimulation). Vor dem Bau gilt die Regel aus `CLAUDE.md`: Nummer in der Zeile „Schemaschritt angemeldet“ im Kopf von
-[`Status_iOS_Migration.md`](Status_iOS_Migration.md) gegen origin prüfen bzw. anmelden, Kette über `+ 1` an der Vorgängerklasse.
+Schemaschritt **213** ist für die Welle K1 angemeldet (Zeile „Schemaschritt angemeldet“ im Kopf von
+[`Status_iOS_Migration.md`](Status_iOS_Migration.md), 10.10.2026 21:26 UTC); er hängt an 212 `KaelteRangSchema` (Welle KB-D der
+Sitzung Gebäudesimulation), Kette über `+ 1` an der Vorgängerklasse.
 
 ### 1.2 Abgrenzung
 
