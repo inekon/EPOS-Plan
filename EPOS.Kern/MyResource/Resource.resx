@@ -962,6 +962,27 @@
   <data name="KFLT_SP_VERWENDET" xml:space="preserve">
     <value>im Projekt verwendet</value>
   </data>
+  <data name="KFLT_VERWENDET_HINWEIS" xml:space="preserve">
+    <value>Im Projekt verwendet</value>
+  </data>
+  <data name="KFLT_VERWENDET_LEGENDE" xml:space="preserve">
+    <value>im Projekt</value>
+  </data>
+  <data name="KFLT_SPALTEN" xml:space="preserve">
+    <value>Spalten…</value>
+  </data>
+  <data name="KFLT_SPALTEN_HINWEIS" xml:space="preserve">
+    <value>Angezeigte Spalten wählen</value>
+  </data>
+  <data name="KFLT_SPALTEN_TITEL" xml:space="preserve">
+    <value>Angezeigte Spalten</value>
+  </data>
+  <data name="KFLT_SPALTEN_STANDARD" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="KFLT_SPALTEN_STANDARD_HINWEIS" xml:space="preserve">
+    <value>Spaltenwahl auf die Standardanzeige zurücksetzen</value>
+  </data>
   <data name="KFLT_SP_VLMAX" xml:space="preserve">
     <value>VL max</value>
   </data>
