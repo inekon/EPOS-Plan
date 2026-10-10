@@ -636,6 +636,14 @@ namespace WindowsFormsApplication1
         public const string AUSDRUCK_LEER = "=";
 
         /// <summary>
+        /// <b>Die Verneinung einer Text- oder Kennzeichenspalte</b> — vorangestellt wie
+        /// <c>!Typkennfeld</c>: trifft jede Zelle, die der Rest NICHT trifft. Der Schalter
+        /// „Typkennfelder ausblenden" der Kältemaschinenverwaltung setzt ihn auf die Spalte
+        /// Herkunft — kein zweiter Filterweg, „Filter zurücksetzen" nimmt ihn mit.
+        /// </summary>
+        public const string AUSDRUCK_NICHT = "!";
+
+        /// <summary>
         /// Welche der acht Anlagenarten. <b>Nur bei den acht Anlagenkatalogen belegt</b>;
         /// die sechs Kataloge der Stufe S3 (Bedarf, Zeitreihen) sind keine Anlagen und
         /// stehen unter ihrem <see cref="Schluessel"/>.
@@ -861,20 +869,30 @@ namespace WindowsFormsApplication1
                     };
 
                 // ----------------------------------------------------------
-                // Kaeltemaschine (KU3-1, 3 Beispielgeraete) - SECHS Spalten
+                // Kaeltemaschine (3 Beispielgeraete, 34 Typkennfelder) - SIEBEN Spalten
                 // ----------------------------------------------------------
+                // Nach dem Muster der Waermepumpe: Hersteller vorn, dann der
+                // Bezeichner (mit dem Schloss - es haengt am Bezeichner, nicht am
+                // Platz) und der Hauptkennwert; beide Immer. Die weichenden Spalten
+                // kommen in der Folge Hersteller, EER, Rueckkuehlung, Herkunft dazu,
+                // der Typ zuletzt (er sagt fuer die Typkennfelder dasselbe wie die
+                // Herkunft).
                 case Anlagenart.Kaeltemaschine:
                     return new Katalogfilterprofil
                     {
                         Art = art,
                         Spalten = new[]
                         {
-                            new Katalogspalte(SpBezeichner,         t("KFLT_SP_BEZEICHNER")),
                             new Katalogspalte(SpHersteller,         t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
-                            new Katalogspalte(SpTyp,                t("KFLT_SP_TYP"), rang: Katalogspaltenrang.Breit),
+                            new Katalogspalte(SpBezeichner,         t("KFLT_SP_BEZEICHNER")),
                             new Katalogspalte(SpNennkaelteleistung, t("KFLT_SP_NENNKAELTELEISTUNG"), "kW", Katalogspaltenart.Zahl),
                             new Katalogspalte(SpEer,                t("KFLT_SP_EER"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
-                            new Katalogspalte(SpRueckkuehlart,      t("KFLT_SP_RUECKKUEHLART"), rang: Katalogspaltenrang.BeiPlatz)
+                            new Katalogspalte(SpRueckkuehlart,      t("KFLT_SP_RUECKKUEHLART"), rang: Katalogspaltenrang.BeiPlatz),
+                            // Typkennfeld, Auslieferung oder eigen
+                            // (KaeltemaschineStammCtrl.HerkunftText); der Schalter
+                            // „Typkennfelder ausblenden" setzt hier den verneinten Trichter.
+                            new Katalogspalte(SpHerkunft,           t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpTyp,                t("KFLT_SP_TYP"), rang: Katalogspaltenrang.Breit)
                         }
                     };
             }

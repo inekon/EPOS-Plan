@@ -45418,6 +45418,18 @@ chart</value>
   <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
     <value>(not specified)</value>
   </data>
+  <data name="KM_HERKUNFT_TYPKENNFELD" xml:space="preserve">
+    <value>Type map</value>
+  </data>
+  <data name="KM_HERKUNFT_AUSLIEFERUNG" xml:space="preserve">
+    <value>Supplied</value>
+  </data>
+  <data name="KM_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>own</value>
+  </data>
+  <data name="KM_CHK_OHNE_TYPKENNFELDER" xml:space="preserve">
+    <value>Hide type maps</value>
+  </data>
   <data name="KM_RUECKKUEHLART_LUFT" xml:space="preserve">
     <value>Air-cooled</value>
   </data>

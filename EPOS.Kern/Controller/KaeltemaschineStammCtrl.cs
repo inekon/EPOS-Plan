@@ -24,7 +24,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine Zeile der Katalogliste.</summary>
         public sealed record Listenzeile(int Id, string Bezeichner, string Firma, double? Nennkaelteleistung_kW,
-                                         double? Nenn_EER, string Rueckkuehlart, bool ReadOnly, string Typ = null);
+                                         double? Nenn_EER, string Rueckkuehlart, bool ReadOnly, string Typ = null,
+                                         bool Katalogsatz = false);
 
         // =================================================================
         //  Lesen
@@ -37,14 +38,15 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT ID, Bezeichner, Firma, Typ, " + KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG + ", " +
                 KaeltemaschineSchema.SPALTE_NENN_EER + ", " + KaeltemaschineSchema.SPALTE_RUECKKUEHLART +
-                ", ReadOnly FROM " + TABLE + " ORDER BY Bezeichner");
+                ", ReadOnly, " + Katalogfassung.SPALTE_SCHLUESSEL + " FROM " + TABLE + " ORDER BY Bezeichner");
             if (dt == null) return liste;
             foreach (DataRow r in dt.Rows)
                 liste.Add(new Listenzeile(Ganz(r["ID"]), Text(r["Bezeichner"]) ?? "", Text(r["Firma"]),
                                           Zahl(r[KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG]),
                                           Zahl(r[KaeltemaschineSchema.SPALTE_NENN_EER]),
                                           Text(r[KaeltemaschineSchema.SPALTE_RUECKKUEHLART]),
-                                          Ganz(r["ReadOnly"]) == 1, Text(r["Typ"])));
+                                          Ganz(r["ReadOnly"]) == 1, Text(r["Typ"]),
+                                          !string.IsNullOrEmpty(Text(r[Katalogfassung.SPALTE_SCHLUESSEL]))));
             return liste;
         }
 
@@ -69,10 +71,35 @@ namespace WindowsFormsApplication1
                     .MitText(Katalogfilterprofil.SpTyp, z.Typ)
                     .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, z.Nennkaelteleistung_kW, 1)
                     .MitZahl(Katalogfilterprofil.SpEer, z.Nenn_EER, 2)
-                    .MitText(Katalogfilterprofil.SpRueckkuehlart, RueckkuehlartText(z.Rueckkuehlart)));
+                    .MitText(Katalogfilterprofil.SpRueckkuehlart, RueckkuehlartText(z.Rueckkuehlart))
+                    .MitText(Katalogfilterprofil.SpHerkunft, HerkunftText(z.Typ, z.Katalogsatz)));
             }
             return zeilen;
         }
+
+        /// <summary>
+        /// <b>Die Herkunft eines Katalogsatzes</b> als Anzeigetext der Spalte Herkunft: „Typkennfeld“ für jeden Satz
+        /// mit <c>Typ = </c><see cref="KaeltemaschinenKennfeld.TYP"/> (die eingebauten Typkennfelder, ihre Kopien und
+        /// ein eingelesener Copper-Kurvensatz — der Import setzt denselben Typ), „Auslieferung“ für einen anderen Satz
+        /// mit Katalogschlüssel (die gesäten Beispielgeräte; eine Kopie trägt keinen Schlüssel), sonst „eigen“.
+        /// <para>Ein eingelesener Satz aus der CSV-Kennfeldvorlage hinterlässt kein Kennzeichen — weder Quelle noch
+        /// Schlüssel —, er steht deshalb als „eigen“.</para>
+        /// </summary>
+        /// <param name="typ">Die Spalte <c>Typ</c> des Satzes.</param>
+        /// <param name="katalogsatz">Trägt der Satz einen Katalogschlüssel (<c>Katalog_Schluessel</c>)?</param>
+        public static string HerkunftText(string typ, bool katalogsatz)
+        {
+            if (string.Equals(typ, KaeltemaschinenKennfeld.TYP, StringComparison.Ordinal))
+                return MyResource.Resource.KM_HERKUNFT_TYPKENNFELD;
+            return katalogsatz ? MyResource.Resource.KM_HERKUNFT_AUSLIEFERUNG : MyResource.Resource.KM_HERKUNFT_EIGEN;
+        }
+
+        /// <summary>
+        /// Der Trichter, den der Schalter „Typkennfelder ausblenden“ auf die Spalte Herkunft legt: die Verneinung
+        /// (<see cref="Katalogfilterprofil.AUSDRUCK_NICHT"/>) des Herkunftstexts „Typkennfeld“ in der Oberflächensprache.
+        /// </summary>
+        public static string AusdruckOhneTypkennfelder
+            => Katalogfilterprofil.AUSDRUCK_NICHT + MyResource.Resource.KM_HERKUNFT_TYPKENNFELD;
 
         /// <summary>
         /// Der Anzeigetext einer Rückkühlart in der Oberflächensprache; leer für <c>null</c>, der Wert selbst für
