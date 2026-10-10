@@ -381,7 +381,8 @@ Detailzeile auf (Kurve Breite × Höhe, Überhang des rollenden Dialogkörpers):
 | Solarthermie-, PV-Ganglinie | 1 110 × 153 px, rollt 57 px | 1 118 × 154 px, rollt 42 px | 982 × 160 px | 726 × 396 px |
 
 Die Kurve ist in allen sechs Fenstern so breit wie die Satzfläche (1 024 × 700: 982 px, 1 093 × 614: 1 051 px, je
-154 px hoch, der Dialogkörper rollt dort nach KB1).
+154 px hoch, der Dialogkörper rollt dort nach KB1). Präzisiert in R1: Schrift des Bildes im Dialog 9,75 pt (13 px),
+kompakt 9 pt (12 px), wie die Oberfläche; das Vorgabebild bleibt.
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 
