@@ -45501,7 +45501,7 @@ Chart</value>
     <value>Kältemaschinen</value>
   </data>
   <data name="KFLT_SP_NENNKAELTELEISTUNG" xml:space="preserve">
-    <value>Kälteleistung</value>
+    <value>P_N</value>
   </data>
   <data name="KFLT_SP_EER" xml:space="preserve">
     <value>EER</value>
@@ -50583,6 +50583,42 @@ Chart</value>
   </data>
   <data name="KM_BILD_ACHSE_G" xml:space="preserve">
     <value>EER-Verhältnis g</value>
+  </data>
+  <data name="KM_KL_BEZEICHNUNG" xml:space="preserve">
+    <value>Kennlinie:</value>
+  </data>
+  <data name="KM_KL_REITER_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="KM_KL_REITER_LEISTUNG" xml:space="preserve">
+    <value>Kälteleistung</value>
+  </data>
+  <data name="KM_KL_TITEL_EER" xml:space="preserve">
+    <value>EER je Kaltwassertemperatur</value>
+  </data>
+  <data name="KM_KL_TITEL_LEISTUNG" xml:space="preserve">
+    <value>Kälteleistung je Kaltwassertemperatur</value>
+  </data>
+  <data name="KM_KL_ACHSE_EER" xml:space="preserve">
+    <value>EER [-]</value>
+  </data>
+  <data name="KM_KL_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Kälteleistung [kW]</value>
+  </data>
+  <data name="KM_KL_ACHSE_RUECKKUEHL" xml:space="preserve">
+    <value>Rückkühlung [°C]</value>
+  </data>
+  <data name="KM_KL_ACHSE_AUSSEN" xml:space="preserve">
+    <value>Außenluft [°C]</value>
+  </data>
+  <data name="KM_KL_PLATZHALTER" xml:space="preserve">
+    <value>Keine vollständigen Kennlinienpunkte vorhanden</value>
+  </data>
+  <data name="KM_VGL_G" xml:space="preserve">
+    <value>EER-Verhältnis g({0})</value>
+  </data>
+  <data name="KM_VGL_STUETZSTELLEN" xml:space="preserve">
+    <value>Kennlinienstützstellen</value>
   </data>
   <data name="KM_BTN_KURVE_TYPKENNFELD" xml:space="preserve">
     <value>Kurve aus Typkennfeld…</value>

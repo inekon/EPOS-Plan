@@ -52096,7 +52096,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_N ähnelt.
         /// </summary>
         public static string KFLT_SP_NENNKAELTELEISTUNG {
             get {
@@ -74554,6 +74554,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft [°C] ähnelt.
+        /// </summary>
+        public static string KM_KL_ACHSE_AUSSEN {
+            get {
+                return ResourceManager.GetString("KM_KL_ACHSE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER [-] ähnelt.
+        /// </summary>
+        public static string KM_KL_ACHSE_EER {
+            get {
+                return ResourceManager.GetString("KM_KL_ACHSE_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung [kW] ähnelt.
+        /// </summary>
+        public static string KM_KL_ACHSE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KM_KL_ACHSE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung [°C] ähnelt.
+        /// </summary>
+        public static string KM_KL_ACHSE_RUECKKUEHL {
+            get {
+                return ResourceManager.GetString("KM_KL_ACHSE_RUECKKUEHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinie: ähnelt.
+        /// </summary>
+        public static string KM_KL_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("KM_KL_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine vollständigen Kennlinienpunkte vorhanden ähnelt.
+        /// </summary>
+        public static string KM_KL_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("KM_KL_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
+        /// </summary>
+        public static string KM_KL_REITER_EER {
+            get {
+                return ResourceManager.GetString("KM_KL_REITER_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung ähnelt.
+        /// </summary>
+        public static string KM_KL_REITER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KM_KL_REITER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER je Kaltwassertemperatur ähnelt.
+        /// </summary>
+        public static string KM_KL_TITEL_EER {
+            get {
+                return ResourceManager.GetString("KM_KL_TITEL_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung je Kaltwassertemperatur ähnelt.
+        /// </summary>
+        public static string KM_KL_TITEL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KM_KL_TITEL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string KM_LBL_BESCHREIBUNG {
@@ -75315,6 +75405,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_TYPKENNFELD_WAEHLEN {
             get {
                 return ResourceManager.GetString("KM_TYPKENNFELD_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER-Verhältnis g({0}) ähnelt.
+        /// </summary>
+        public static string KM_VGL_G {
+            get {
+                return ResourceManager.GetString("KM_VGL_G", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinienstützstellen ähnelt.
+        /// </summary>
+        public static string KM_VGL_STUETZSTELLEN {
+            get {
+                return ResourceManager.GetString("KM_VGL_STUETZSTELLEN", resourceCulture);
             }
         }
         
