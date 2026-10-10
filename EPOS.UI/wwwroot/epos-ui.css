@@ -4033,52 +4033,119 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     max-height: none;
 }
 
-/* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9): Der Baustein GanglinienGrafik fuellt
-   die Satzflaeche; Kennzahlen und Schalter behalten ihre Hoehe, das Bild nimmt den Rest. Die
-   Zeichenflaeche haelt das Seitenverhaeltnis des Zeichenmodells (--epos-bild-verhaeltnis, von
-   DiagrammSvg gesetzt): Hoehe aus dem Behaelter, Breite daraus, hoechstens die volle Breite.
-   Die Untergrenze --epos-ganglinie-min haelt das Bild lesbar; darunter rollt die Satzflaeche. */
-/* Der Name steht schon in der Detailzeile; Kennzahlen und Schalter teilen sich EINE Zeile. Die
-   Untergrenze der Satzflaeche (--epos-satz-untergrenze, KB1) ist mit Ganglinie deren Untergrenze:
-   Reicht das Fenster nicht dafuer, rollt der Dialogkoerper, nicht das Bild. */
-.epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) { --epos-satz-untergrenze: 260px; }
+/* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9; verdichtet DZ1-N1): Der Baustein GanglinienGrafik
+   fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,
+   Beschreibung, Kennwerte nebeneinander, Beschriftung vor dem Feld) und die Kennzahlenzeile, die zugleich
+   Schalter "sortiert", Einheitenwahl, Zoomleiste des Bildes und die Infoknoepfe des Wirts traegt. Die Kurve
+   nimmt den Rest: Hoehe aus dem Behaelter, Breite daraus ueber das Seitenverhaeltnis des Zeichenmodells
+   (--epos-bild-verhaeltnis, von DiagrammSvg gesetzt), hoechstens die volle Breite. Damit Zoomleiste und
+   Zeigerzeile im Raster des Bausteins stehen, loest sich der Rahmen von DiagrammSvg hier auf
+   (display: contents); Bezugsbreite der Kurve ist die Breite des Bausteins (container ganglinienbild).
+   Die Zeigerzeile liegt oben rechts ueber dem Bild, statt eine Zeile unter ihm zu belegen.
+   UNTERGRENZE: Kopf plus Mindesthoehe der Kurve (--epos-kurve-min, 90 px) ist die Untergrenze der
+   Satzflaeche (--epos-satz-untergrenze, KB1); die Felder der Kopfzeile sind als Lesefelder 0,7 Beruehrungsziel
+   hoch. Reicht das Fenster nicht dafuer, rollt nach KB1 der Dialogkoerper, nie das Bild. Die Untergrenze
+   steht als fester Wert je Stufe (90 px Kurve + Kennzahlenzeile 44 bzw. 37 px + 8 px; mit Kopfzeile dazu
+   0,7 Beruehrungsziel + 2 px), weil das Skript (satzOffenMin) sie als px-Wert liest, nicht als calc(). */
+.epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) {
+    --epos-kurve-min: 90px;
+    --epos-satz-untergrenze: 142px;
+}
+.epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 175px; }
+@media (max-width: 1199.98px), (max-height: 799.98px) {
+    .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) { --epos-satz-untergrenze: 135px; }
+    .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 163px; }
+}
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik {
-    --epos-ganglinie-min: 260px;
     flex: 1 1 0;
-    min-height: var(--epos-ganglinie-min);
+    min-height: min-content;
     margin-top: 0;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto minmax(var(--epos-kurve-min, 90px), 1fr);
+    grid-template-areas: "kopf kopf kopf" "kennzahlen zoom leiste" "bild bild bild";
     gap: 4px var(--epos-abstand);
     align-items: center;
+    container: ganglinienbild / inline-size;
 }
-/* Was neben der Ganglinie in der Satzflaeche steht (Name, Beschreibung, Kennwerte), behaelt seine Hoehe. */
+/* Was neben der Ganglinie in der Satzflaeche steht (Hinweise, Abweichungszeilen), behaelt seine Hoehe. */
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz:has(.epos-ganglinie-grafik) :is(.epos-zweispalten-satz, .epos-zweispalten-satzblock) > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock) {
     flex-shrink: 0;
 }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-kontextzeile {
     display: none;
 }
+/* Die Kopfzeile: Felder nebeneinander, die Beschreibung breiter, Beschriftung vor dem Feld. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf {
+    grid-area: kopf;
+    display: flex;
+    gap: 4px var(--epos-abstand);
+    min-width: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld,
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste > .epos-feld {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld { flex: 2 1 0; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld:nth-child(2) { flex-grow: 4; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld--kurz { flex: 1 1 0; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-feld-text,
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste .epos-feld-text {
+    white-space: nowrap;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-feld-zeile { flex: 1 1 0; min-width: 0; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-eingabe {
+    min-width: 0;
+    width: 100%;
+    min-height: calc(0.7 * var(--epos-touchziel));
+    text-overflow: ellipsis;
+}
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kennzahlen {
+    grid-area: kennzahlen;
     flex-direction: row;
     gap: 4px 16px;
+    min-width: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste {
+    grid-area: leiste;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-knoepfe {
+    display: flex;
+    gap: 6px;
 }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg {
-    grid-column: 1 / -1;
-    align-self: stretch;
-    min-height: 0;
-    max-width: none;
-    align-items: center;
-    container: ganglinienbild / size;
+    display: contents;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > * {
-    align-self: stretch;
-    flex: 0 0 auto;
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-leiste {
+    grid-area: zoom;
+    flex-wrap: nowrap;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche {
-    align-self: center;
-    flex: 1 1 0;
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile {
+    grid-area: bild;
+    align-self: start;
+    justify-self: end;
+    z-index: 1;
+    margin: 2px 6px 0 0;
+    padding: 0 4px;
+    min-height: 16px;
+    line-height: 16px;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--epos-karte-flaeche) 85%, transparent);
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile:empty {
+    display: none;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
+    grid-area: bild;
+    justify-self: center;
+    align-self: stretch;
+    contain: size;
     min-height: 0;
     width: auto;
     max-width: 100%;

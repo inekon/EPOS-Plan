@@ -39,22 +39,19 @@
     @{
         // Die Daten des gewaehlten Satzes - im Projektbetrieb die Detailzeile der
         // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite.
-        RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
-        @* Der Weg in die Wikirubriken "Grundlagen" und "Berechnung": wie der Solarertrag
-           entsteht. Der Fensterknopf oben rechts bleibt, was er ist. *@
-        <div class="epos-berechnungshilfe">
+        RenderFragment knoepfe = @<text>
             <InfoKnopf Schluessel="Form_Solarganglinie.Grundlagen"
                        StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
             <InfoKnopf Schluessel="Form_Solarganglinie.Berechnung"
                        StandardKurztext="Berechnungsweg Solarthermie" MitAssistent="false" />
-        </div>
+        </text>;
 
-        <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
-        <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
-                  Mehrzeilig="true" Zeilen="3" />
+        RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
 
         @* DIE GANGLINIE DES GEWAEHLTEN SATZES (DZ1, Konzept 4.9): derselbe Baustein und
-           dieselben Kennzahlen wie im Waermebedarf extern; ohne Kennzahlen-Delegat keine Grafik. *@
+           dieselben Kennzahlen wie im Waermebedarf extern; ohne Kennzahlen-Delegat keine Grafik.
+           Mit Grafik steht der Kopf verdichtet (DZ1-N1): Name und Beschreibung in EINER Zeile,
+           die Infoknoepfe rechts in der Kennzahlenzeile - die Kurve bekommt den Rest. *@
         @if (_grafik.Kennzahlen is not null)
         {
             <GanglinienGrafik Schluessel="@_grafik.Schluessel" Bezeichner="@_grafik.Bezeichner"
@@ -65,7 +62,24 @@
                               LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
                               EinheitStunden="@EinheitStunden"
                               Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
-                              FarbeSetzen="@FarbeSetzen" FarbeZuruecksetzen="@FarbeZuruecksetzen" />
+                              FarbeSetzen="@FarbeSetzen" FarbeZuruecksetzen="@FarbeZuruecksetzen"
+                              Knoepfe="@knoepfe">
+                <Kopfzeile>
+                    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                              Titel="@_beschreibung" />
+                </Kopfzeile>
+            </GanglinienGrafik>
+        }
+        else
+        {
+            @* Der Weg in die Wikirubriken "Grundlagen" und "Berechnung": wie der Solarertrag
+               entsteht. Der Fensterknopf oben rechts bleibt, was er ist. *@
+            <div class="epos-berechnungshilfe">@knoepfe</div>
+
+            <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                      Mehrzeilig="true" Zeilen="3" />
         }
         </div>;
     }

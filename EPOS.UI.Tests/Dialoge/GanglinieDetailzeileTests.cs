@@ -145,8 +145,50 @@ public class GanglinieDetailzeileTests : EposBunitContext
         Assert.Equal(new GanglinienWahl(true, 22, "Ganglinie Süd"), cut.Instance.Grafikwahl);
         Assert.True(AufgeklapptMitGanglinie(cut));
 
-        // Die Namens- und Kennwertfelder stehen mit der Grafik in der Satzflaeche.
-        Assert.NotEmpty(cut.FindAll(".epos-zweispalten-satz .epos-berechnungshilfe"));
+        // Die Namens- und Kennwertfelder stehen mit der Grafik in der Satzflaeche - verdichtet (DZ1-N1):
+        // alle fuenf in der Kopfzeile, die Infoknoepfe in der Kennzahlenzeile, keine eigene Knopfzeile.
+        Assert.Equal(5, cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-leiste .epos-ganglinie-knoepfe .epos-infoknopf").Count);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satz .epos-berechnungshilfe"));
+    }
+
+    // =================================================================================
+    // Verdichteter Kopf der Satzflaeche (DZ1-N1)
+    // =================================================================================
+
+    [Fact]
+    public void Solarganglinie_Kopf_traegt_Name_und_Beschreibung_in_einer_Zeile_und_die_Infoknoepfe_in_der_Kennzahlenzeile()
+    {
+        var cut = Solar();
+        Waehlen(cut, 0, 0);
+        Assert.True(AufgeklapptMitGanglinie(cut));
+
+        // EINE Kopfzeile mit Name und Beschreibung, beide als einzeilige Lesefelder (kein textarea).
+        var kopf = Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-grafik > .epos-ganglinie-kopf"));
+        var felder = kopf.QuerySelectorAll(":scope > .epos-feld");
+        Assert.Equal(2, felder.Length);
+        Assert.Equal(new[] { "Name:", "Beschreibung:" },
+                     felder.Select(f => f.QuerySelector(".epos-feld-text")!.TextContent.Trim()));
+        Assert.All(felder, f => Assert.NotNull(f.QuerySelector("input[readonly]")));
+        Assert.Empty(kopf.QuerySelectorAll("textarea"));
+        Assert.Equal("Ganglinie Nord", felder[0].QuerySelector("input")!.GetAttribute("value"));
+
+        // Die Kennzahlenzeile traegt Schalter, Einheitenwahl und die zwei Infoknoepfe; keine eigene Knopfzeile.
+        var leiste = cut.Find(".epos-zweispalten-satz .epos-ganglinie-grafik > .epos-ganglinie-leiste");
+        Assert.NotNull(leiste.QuerySelector("input[type=checkbox]"));
+        Assert.NotNull(leiste.QuerySelector("select"));
+        Assert.Equal(2, leiste.QuerySelectorAll(".epos-ganglinie-knoepfe .epos-infoknopf").Length);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satz .epos-berechnungshilfe"));
+    }
+
+    [Fact]
+    public void Solarganglinie_ohne_Grafik_behaelt_Knopfzeile_und_Felder_untereinander()
+    {
+        var cut = Solar(mitGrafik: false);
+        Waehlen(cut, 1, 0);
+        Assert.Empty(cut.FindAll(".epos-ganglinie-kopf"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-berechnungshilfe"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz textarea[readonly]"));
     }
 
     // =================================================================================

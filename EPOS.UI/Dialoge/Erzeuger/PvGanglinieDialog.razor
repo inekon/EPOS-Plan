@@ -35,28 +35,19 @@
     @{
         // Die Daten des gewaehlten Satzes (DZ1) - im Projektbetrieb die Detailzeile der
         // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite.
+        RenderFragment knoepfe = @<text>
+            <InfoKnopf Schluessel="Form_PvGanglinie.Grundlagen"
+                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+            <InfoKnopf Schluessel="Form_PvGanglinie.Berechnung"
+                       StandardKurztext="Berechnungsweg Photovoltaik" MitAssistent="false" />
+        </text>;
+
         RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
         @* Die Weiche in einem Satz: eine zugeordnete Ganglinie ersetzt die Modulrechnung. *@
         @if (!string.IsNullOrEmpty(HinweisText))
         {
             <p class="epos-leisezeile">@HinweisText</p>
         }
-        <div class="epos-berechnungshilfe">
-            <InfoKnopf Schluessel="Form_PvGanglinie.Grundlagen"
-                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
-            <InfoKnopf Schluessel="Form_PvGanglinie.Berechnung"
-                       StandardKurztext="Berechnungsweg Photovoltaik" MitAssistent="false" />
-        </div>
-
-        <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
-        <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
-                  Mehrzeilig="true" Zeilen="3" />
-        @* Die Kennwerte der markierten Ganglinie: Raster, Jahresarbeit und die gepflegte Nennleistung
-           (Tab_PvGanglinie_STAMM.Nennleistung_kWp) - ohne sie rechnet der Lauf mit der Spitze der Reihe. *@
-        <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" />
-        <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" />
-        <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" />
-
         @* Projektkopie und Katalog (E113): nur zu einer markierten PROJEKTZEILE, deren Kopie abweicht. Eine neu
            aufgenommene Zeile hat vor dem OK noch keine Kopie: sie sagt "noch nicht gespeichert", ohne Zeichen und Knopf. *@
         @if (_projektZeile is not null && IstUngespeichert(_projektZeile))
@@ -79,20 +70,45 @@
             <p class="epos-leisezeile epos-pvg-erneuernstatus" role="status">@_erneuernStatus</p>
         }
 
-            @* DIE GANGLINIE DES GEWAEHLTEN SATZES (DZ1, Konzept 4.9): derselbe Baustein und
-               dieselben Kennzahlen wie im Waermebedarf extern; ohne Kennzahlen-Delegat keine Grafik. *@
-            @if (_grafik.Kennzahlen is not null)
-            {
-                <GanglinienGrafik Schluessel="@_grafik.Schluessel" Bezeichner="@_grafik.Bezeichner"
-                                  Kennzahlen="@_grafik.Kennzahlen" Bildauftrag="@_grafik.Bild(Bildauftrag)"
-                                  Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
-                                  LabelJahresarbeit="@LabelGrafikJahresarbeit" LabelSpitze="@LabelSpitze"
-                                  LabelVollbenutzung="@LabelVollbenutzung"
-                                  LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
-                                  EinheitStunden="@EinheitStunden"
-                                  Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
-                                  FarbeSetzen="@FarbeSetzen" FarbeZuruecksetzen="@FarbeZuruecksetzen" />
-            }
+        @* DIE GANGLINIE DES GEWAEHLTEN SATZES (DZ1, Konzept 4.9): derselbe Baustein und
+           dieselben Kennzahlen wie im Waermebedarf extern; ohne Kennzahlen-Delegat keine Grafik.
+           Mit Grafik steht der Kopf verdichtet (DZ1-N1): Name, Beschreibung und die Kennwerte in EINER
+           Zeile, die Infoknoepfe rechts in der Kennzahlenzeile - die Kurve bekommt den Rest. *@
+        @if (_grafik.Kennzahlen is not null)
+        {
+            <GanglinienGrafik Schluessel="@_grafik.Schluessel" Bezeichner="@_grafik.Bezeichner"
+                              Kennzahlen="@_grafik.Kennzahlen" Bildauftrag="@_grafik.Bild(Bildauftrag)"
+                              Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
+                              LabelJahresarbeit="@LabelGrafikJahresarbeit" LabelSpitze="@LabelSpitze"
+                              LabelVollbenutzung="@LabelVollbenutzung"
+                              LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
+                              EinheitStunden="@EinheitStunden"
+                              Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
+                              FarbeSetzen="@FarbeSetzen" FarbeZuruecksetzen="@FarbeZuruecksetzen"
+                              Knoepfe="@knoepfe">
+                <Kopfzeile>
+                    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                              Titel="@_beschreibung" />
+                    <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" Kurz="true" />
+                    <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" Kurz="true" />
+                    <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" Kurz="true" />
+                </Kopfzeile>
+            </GanglinienGrafik>
+        }
+        else
+        {
+            <div class="epos-berechnungshilfe">@knoepfe</div>
+
+            <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                      Mehrzeilig="true" Zeilen="3" />
+            @* Die Kennwerte der markierten Ganglinie: Raster, Jahresarbeit und die gepflegte Nennleistung
+               (Tab_PvGanglinie_STAMM.Nennleistung_kWp) - ohne sie rechnet der Lauf mit der Spitze der Reihe. *@
+            <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" />
+        }
         </div>;
     }
 
