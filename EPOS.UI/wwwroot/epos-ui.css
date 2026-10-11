@@ -17843,3 +17843,92 @@ td.epos-vorlage-katalogbeschreibung {
     }
 }
 
+
+/* ===== Klappgruppe (Bausteine/Klappgruppe.razor): ein Abschnitt, dessen Kopfzeile ihn auf- und
+   zuklappt. Kopfzeile = Ueberschrift mit Klappknopf (Zeichen, Titel, Zusatz) und rechts die
+   Handlungen des Wirts; der Inhalt steht nur aufgeklappt im Baum. ===== */
+.epos-klappgruppe {
+    min-width: 0;
+}
+
+.epos-klappgruppe-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-klappgruppe-titel {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+}
+
+.epos-klappgruppe-knopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    padding: 0 8px 0 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-klappgruppe-knopf:hover .epos-klappgruppe-text {
+    text-decoration: underline;
+}
+
+.epos-klappgruppe-knopf:focus-visible {
+    outline: 2px solid var(--epos-marke);
+    outline-offset: 2px;
+}
+
+.epos-klappgruppe-zeichen {
+    flex: 0 0 auto;
+    width: 1em;
+    text-align: center;
+}
+
+.epos-klappgruppe-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-klappgruppe-zusatz {
+    flex: 0 0 auto;
+    font-weight: 400;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
+.epos-klappgruppe-handlungen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.epos-klappgruppe-inhalt {
+    min-width: 0;
+    margin-top: 4px;
+}
+
+@media (forced-colors: active) {
+    .epos-klappgruppe-knopf {
+        color: ButtonText;
+        forced-color-adjust: none;
+    }
+
+    .epos-klappgruppe-knopf:focus-visible {
+        outline-color: Highlight;
+    }
+
+    .epos-klappgruppe-zusatz {
+        opacity: 1;
+    }
+}
