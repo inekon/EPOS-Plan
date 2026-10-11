@@ -370,7 +370,7 @@ namespace EPOS.Kern.Tests
             _aus.WriteLine(string.Format(c, "1051: Heizwärme ohne Aufheizen {0:0.0} kWh ({1:0} ms), Sollwertrampe des Projekts {2:0.0} kWh ({3:0} ms, An={4})",
                                          qOhne, tOhne, qRampe, tRampe, projekt.An));
 
-            foreach (double eps in new[] { 1.0, 0.5 })
+            foreach (double eps in new[] { 2.0, 1.0, 0.5, 0.25, 0.1 })
             {
                 uhr.Restart();
                 AufheizLauf.Gebaeudelauf l = AufheizLauf.Projekt(1051, Berechnet(eps: eps)).Single();
@@ -429,10 +429,10 @@ namespace EPOS.Kern.Tests
                     v.MehrwaermeProzent, qLauf - qRampe, 100.0 * (qLauf - qRampe) / qRampe, ms));
             }
 
-            foreach (int projektId in new[] { 1052, 1054 })
+            foreach ((int projektId, double eps) in new[] { (1052, 1.0), (1054, 1.0), (1054, 2.0) })
             {
                 uhr.Restart();
-                List<AufheizLauf.Gebaeudelauf> ll = AufheizLauf.Projekt(projektId, Berechnet());
+                List<AufheizLauf.Gebaeudelauf> ll = AufheizLauf.Projekt(projektId, Berechnet(eps: eps));
                 double ms = uhr.Elapsed.TotalMilliseconds;
                 uhr.Restart();
                 AufheizLauf.Projekt(projektId, Aufheizvorgabe.Aus);
@@ -441,11 +441,13 @@ namespace EPOS.Kern.Tests
                 {
                     Vorheizgebaeude v = l.Ergebnis?.Vorheizen;
                     int zonen = l.Mehrzonen?.Eingaenge.Count ?? 1;
-                    _aus.WriteLine(string.Format(c, "{0} Gebäude {1} ({2} Zonen): Option 2 {3}, t_V {4} h, Vorausschauen {5}, Tage ohne Ankunft {6}, " +
-                                                    "Abweichungen {7}, Rechenzeit {8:0} ms gegen {9:0} ms ohne Aufheizen",
+                    _aus.WriteLine(string.Format(c, "{0} Gebäude {1} ({2} Zonen), ε {10} K: Option 2 {3}, t_V {4} h, Vorausschauen {5}, Tage ohne Ankunft {6}, " +
+                                                    "Abweichungen {7}, unerreichbar {11} Tage, Unterschreitung bis {12:0.00} K, Nächte ohne Absenkung {13}, " +
+                                                    "Median {14:0.#} h, Rechenzeit {8:0} ms gegen {9:0} ms ohne Aufheizen",
                                                  projektId, l.Gebaeude, zonen, v != null ? "gerechnet" : "Rückfall",
                                                  v?.VorheizzeitMaxH ?? 0, v?.Vorausschauen ?? 0, v?.TageOhneAnkunftAnzahl ?? 0,
-                                                 v?.TageAbweichung ?? 0, ms, msOhne));
+                                                 v?.TageAbweichung ?? 0, ms, msOhne, eps, v?.TageUnerreichbar ?? 0,
+                                                 v?.UnterschreitungMaxK ?? 0.0, v?.NaechteOhneAbsenkung ?? 0, v?.BedarfMedianH ?? double.NaN));
                 }
             }
         }
