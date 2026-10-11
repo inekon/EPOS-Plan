@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -115,6 +116,10 @@ namespace WindowsFormsApplication1
             // KM3 (Schritt 210): die fünf Ergebnisspalten von Teillast und Takten; vor dem Schritt nicht geschrieben.
             bool kmTeillast = System.Linq.Enumerable.All(KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN,
                                     s => DataRepository.SpalteVorhanden(KaeltemaschineTeillastSchema.TAB_ERGEBNIS, s.Spalte));
+            // K-F2 (RueckkuehlwerkSchema, Schritt 214): vier der sechs Ergebnisspalten des Rueckkuehlwerks (TeilFreikuehlung_*
+            // folgt mit K-F3); vor dem Schritt nicht geschrieben.
+            bool kmRueckkuehlung = System.Linq.Enumerable.All(RueckkuehlwerkSchema.SPALTEN_ERGEBNIS,
+                                    s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte));
             bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
                                          s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
             // AK2-1 (Schritt 186): die Komfort- und Fahrplanspalten des Energiebedarfs - ebenso vor der
@@ -363,7 +368,11 @@ namespace WindowsFormsApplication1
                             "FreieKuehlung_Stunden, Taktstunden, Unterdeckung_MWh, Stunden_Leistungsgrenze" +
                             (kmAbrechnung ? ", Kaeltestrom_Netzbezug_MWh, Kuehl_ID_Carrier, Kuehl_EigenerZaehler, Stromspitze_kW" : "") +
                             (kmTeillast ? ", Taktstrom_MWh, Starts, Teillaststunden, Lastgrad_Mittel, Stunden_Extrapoliert" : "") +
-                            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?" + (kmAbrechnung ? ",?,?,?,?" : "") + (kmTeillast ? ",?,?,?,?,?" : "") + ")";
+                            (kmRueckkuehlung ? ", " + RueckkuehlwerkSchema.SPALTE_VENTILATORSTROM + ", " + RueckkuehlwerkSchema.SPALTE_WASSER +
+                                               ", " + RueckkuehlwerkSchema.SPALTE_STUNDEN_NASS + ", " +
+                                               RueckkuehlwerkSchema.SPALTE_RUECKKUEHLTEMPERATUR_MITTEL : "") +
+                            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?" + (kmAbrechnung ? ",?,?,?,?" : "") + (kmTeillast ? ",?,?,?,?,?" : "") +
+                            (kmRueckkuehlung ? ",?,?,?,?" : "") + ")";
                         foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
                         {
                             var pk = new List<DbParam>
@@ -398,6 +407,14 @@ namespace WindowsFormsApplication1
                                 pk.Add(new DbParam("@tl", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Teillaststunden) });
                                 pk.Add(new DbParam("@lg", DbParamTyp.Double) { Wert = WertOderNull(km.Lastgrad_Mittel) });
                                 pk.Add(new DbParam("@ex", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Extrapoliert) });
+                            }
+                            // K-F2 (Schritt 214): ohne Rueckkuehlwerk NULL - der Satz bleibt wie ohne K-F2.
+                            if (kmRueckkuehlung)
+                            {
+                                pk.Add(new DbParam("@rv", DbParamTyp.Double) { Wert = WertOderNull(km.Ventilatorstrom_MWh) });
+                                pk.Add(new DbParam("@rw", DbParamTyp.Double) { Wert = WertOderNull(km.Wasser_m3) });
+                                pk.Add(new DbParam("@rn", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Nass) });
+                                pk.Add(new DbParam("@rt", DbParamTyp.Double) { Wert = WertOderNull(km.Rueckkuehltemperatur_Mittel) });
                             }
                             v.Ausfuehren(sqlKm, pk.ToArray());
                         }
@@ -1227,6 +1244,11 @@ namespace WindowsFormsApplication1
                             Teillaststunden = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_TEILLASTSTUNDEN),
                             Lastgrad_Mittel = DN(rk, KaeltemaschineTeillastSchema.SPALTE_LASTGRAD_MITTEL),
                             Stunden_Extrapoliert = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_STUNDEN_EXTRAPOLIERT),
+                            // K-F2 (Schritt 214); vor dem Schritt bzw. ohne Rueckkuehlwerk NULL.
+                            Ventilatorstrom_MWh = DN(rk, RueckkuehlwerkSchema.SPALTE_VENTILATORSTROM),
+                            Wasser_m3 = DN(rk, RueckkuehlwerkSchema.SPALTE_WASSER),
+                            Stunden_Nass = GanzOderNull(rk, RueckkuehlwerkSchema.SPALTE_STUNDEN_NASS),
+                            Rueckkuehltemperatur_Mittel = DN(rk, RueckkuehlwerkSchema.SPALTE_RUECKKUEHLTEMPERATUR_MITTEL),
                         });
                     }
             }
@@ -1673,7 +1695,7 @@ namespace WindowsFormsApplication1
         /// (KP-S1v), dann KP-S3 — die Sommerlüftung und die Aufheizoptimierung. Geschrieben und gelesen
         /// wird nur, was die Datenbank trägt (<see cref="Vorhandene{T}"/>).
         /// </summary>
-        private static readonly Ergebnisspalte<ErgebnisZoneModel>[] ZONENSPALTEN =
+        private static readonly Ergebnisspalte<ErgebnisZoneModel>[] ZONENSPALTEN = new Ergebnisspalte<ErgebnisZoneModel>[]
         {
             new Ergebnisspalte<ErgebnisZoneModel>("ID_Zone", DbParamTyp.Integer,
                 z => z.ID_Zone.HasValue ? (object)z.ID_Zone.Value : DBNull.Value,
@@ -1717,13 +1739,13 @@ namespace WindowsFormsApplication1
             // Schritt 185 (MZ-Rest): die Kaelte der Zone - NULL ohne wirksame Kuehlung.
             Zahl<ErgebnisZoneModel>(ZonenKaeltespitzeSchema.SPALTE_KAELTESPITZE, z => z.KaeltespitzeKw, (z, w) => z.KaeltespitzeKw = w),
             Ganz<ErgebnisZoneModel>(ZonenKaeltespitzeSchema.SPALTE_KUEHLSTUNDEN, z => z.KuehlstundenH, (z, w) => z.KuehlstundenH = w),
-        };
+        }.Concat(Vorheizspalten<ErgebnisZoneModel>(z => z.Vorheizen, (z, k) => z.Vorheizen = k)).ToArray();
 
         /// <summary>
         /// Die vierzehn Aufheizspalten einer Zeile von <c>Tab_ErgebnisGebaeude</c> (KP-S3), in
         /// Schemareihenfolge; angehängt an die Spalten der Schritte 107 bis KP-S1v.
         /// </summary>
-        private static readonly Ergebnisspalte<ErgebnisGebaeudeModel>[] AUFHEIZSPALTEN_GEBAEUDE =
+        private static readonly Ergebnisspalte<ErgebnisGebaeudeModel>[] AUFHEIZSPALTEN_GEBAEUDE = new Ergebnisspalte<ErgebnisGebaeudeModel>[]
         {
             Text<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_ZUSTAND, g => g.AufheizZustand, (g, w) => g.AufheizZustand = w),
             Text<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_BEMESSUNG, g => g.AufheizBemessung, (g, w) => g.AufheizBemessung = w),
@@ -1748,7 +1770,57 @@ namespace WindowsFormsApplication1
                 g => g.AufheizAufschlagVerwendetH, (g, w) => g.AufheizAufschlagVerwendetH = w),
             Ganz<ErgebnisGebaeudeModel>(AufheizAufschlagErgebnisSchema.SPALTE_ZEIT_BEMESSEN,
                 g => g.AufheizzeitBemessenH, (g, w) => g.AufheizzeitBemessenH = w),
-        };
+        }.Concat(Vorheizspalten<ErgebnisGebaeudeModel>(g => g.Vorheizen, (g, k) => g.Vorheizen = k)).ToArray();
+
+        /// <summary>
+        /// Die achtzehn Spalten des Vorheizens (AH-V4, <see cref="VorheizenSchema.ERGEBNISSPALTEN"/>) für eine Zeile von
+        /// <typeparamref name="T"/>: geschrieben aus <paramref name="hole"/> (fehlt die Kennzahl, NULL), gelesen nur, was nicht
+        /// NULL ist — so bleibt die Kennzahl einer Zeile ohne Vorheizen <c>null</c>.
+        /// </summary>
+        private static Ergebnisspalte<T>[] Vorheizspalten<T>(Func<T, Vorheizkennzahlen> hole, Action<T, Vorheizkennzahlen> setzen)
+        {
+            Vorheizkennzahlen Anlegen(T m)
+            {
+                Vorheizkennzahlen k = hole(m);
+                if (k == null)
+                {
+                    k = new Vorheizkennzahlen();
+                    setzen(m, k);
+                }
+                return k;
+            }
+            Ergebnisspalte<T> VGanz(string name, Func<Vorheizkennzahlen, int?> wert, Action<Vorheizkennzahlen, int?> s)
+                => new Ergebnisspalte<T>(name, DbParamTyp.Integer, m => Oder(hole(m) == null ? null : wert(hole(m))),
+                                         (m, r) => { int? w = GanzOderNull(r, name); if (w.HasValue) s(Anlegen(m), w); });
+            Ergebnisspalte<T> VZahl(string name, Func<Vorheizkennzahlen, double?> wert, Action<Vorheizkennzahlen, double?> s)
+                => new Ergebnisspalte<T>(name, DbParamTyp.Double, m => Oder(hole(m) == null ? null : wert(hole(m))),
+                                         (m, r) => { double? w = DN(r, name); if (w.HasValue) s(Anlegen(m), w); });
+            Ergebnisspalte<T> VText(string name, Func<Vorheizkennzahlen, string> wert, Action<Vorheizkennzahlen, string> s)
+                => new Ergebnisspalte<T>(name, DbParamTyp.VarWChar,
+                                         m => hole(m) == null || string.IsNullOrEmpty(wert(hole(m))) ? DBNull.Value : (object)wert(hole(m)),
+                                         (m, r) => { string w = S(r, name); if (w.Length > 0) s(Anlegen(m), w); });
+            return new[]
+            {
+                VText(VorheizenSchema.SPALTE_ERG_VERFAHREN, k => k.Verfahren, (k, w) => k.Verfahren = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_VORHEIZZEIT, k => k.VorheizzeitH, (k, w) => k.VorheizzeitH = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_BEDARF_MAX, k => k.VorheizzeitBedarfMaxH, (k, w) => k.VorheizzeitBedarfMaxH = w),
+                VZahl(VorheizenSchema.SPALTE_ERG_BEZUG, k => k.BezugKw, (k, w) => k.BezugKw = w),
+                VZahl(VorheizenSchema.SPALTE_ERG_DECKEL, k => k.DeckelKw, (k, w) => k.DeckelKw = w),
+                VZahl(VorheizenSchema.SPALTE_ERG_LEISTUNG, k => k.LeistungKw, (k, w) => k.LeistungKw = w),
+                VZahl(VorheizenSchema.SPALTE_ERG_SPRUNG_VORLAUF, k => k.SprungVorlaufMaxKw, (k, w) => k.SprungVorlaufMaxKw = w),
+                VZahl(VorheizenSchema.SPALTE_ERG_SPRUNG_LAUF, k => k.SprungLaufMaxKw, (k, w) => k.SprungLaufMaxKw = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_TAGE_VERFEHLT, k => k.TageVerfehlt, (k, w) => k.TageVerfehlt = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_TAGE_UEBER, k => k.TageUeberVorheizzeit, (k, w) => k.TageUeberVorheizzeit = w),
+                VZahl(VorheizenSchema.SPALTE_ERG_UNTERSCHREITUNG_MAX, k => k.UnterschreitungMaxK, (k, w) => k.UnterschreitungMaxK = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_UNTERSCHREITUNG_H, k => k.UnterschreitungH, (k, w) => k.UnterschreitungH = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_DECKELSTUNDEN, k => k.DeckelstundenH, (k, w) => k.DeckelstundenH = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_FLOORSTUNDEN, k => k.FloorstundenH, (k, w) => k.FloorstundenH = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_NAECHTE, k => k.NaechteOhneAbsenkung, (k, w) => k.NaechteOhneAbsenkung = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_UNERREICHBAR, k => k.UnerreichbarTage, (k, w) => k.UnerreichbarTage = w),
+                VGanz(VorheizenSchema.SPALTE_ERG_SPERRZEIT, k => k.SperrzeitTage, (k, w) => k.SperrzeitTage = w),
+                VZahl(VorheizenSchema.SPALTE_ERG_MEHRWAERME, k => k.MehrwaermeMwh, (k, w) => k.MehrwaermeMwh = w),
+            };
+        }
 
         /// <summary>Die Spalten der Liste, die <paramref name="tabelle"/> trägt (ohne Unterschied von Groß- und Kleinschreibung).</summary>
         private static List<Ergebnisspalte<T>> Vorhandene<T>(string tabelle, IEnumerable<Ergebnisspalte<T>> liste)

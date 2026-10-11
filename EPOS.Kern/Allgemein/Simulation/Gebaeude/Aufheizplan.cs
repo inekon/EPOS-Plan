@@ -53,6 +53,12 @@ namespace WindowsFormsApplication1
         internal int? ManuellH { get; init; }
 
         /// <summary>
+        /// Die Vorheizzeit der Zone [h] (<c>Tab_Zone.Vorheizzeit_H</c>, AH-V4), 1 … 47; <c>null</c> = erbt. Wirksam nur im
+        /// Verfahren „Vorgabe“ mit Geltung Zone (Entwurf Vorheizrampe Fassung 2, Abschnitt 4).
+        /// </summary>
+        internal int? VorheizzeitZoneH { get; init; }
+
+        /// <summary>
         /// Die stationäre Auslegungsheizlast Φ_HL der Zone [W] (<see cref="GebaeudeModellEingang.Auslegungslasten"/>,
         /// E60, Festlegung 41; E97: mit und ohne Anlagenkopplung dieselbe Bildung); NaN für eine unbeheizte Zone und wo
         /// der Auslegungspunkt keine Zahl trägt.
@@ -219,6 +225,7 @@ namespace WindowsFormsApplication1
                 Strahlungsanteil = e.HeizungStrahlungsanteil,
                 HeizleistungMaxW = e.HeizleistungMaxW,
                 ManuellH = e.AufheizzeitManuellH,
+                VorheizzeitZoneH = e.Zone?.Eingaben?.VorheizzeitH,
                 AuslegungsheizlastW = auslegungsheizlastW,
                 Nutzungszeit = e.Nutzungszeit,
                 Gekoppelt = e.KopplungWirksam

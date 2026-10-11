@@ -609,7 +609,7 @@ public sealed class SimulationKiSicht
         set
         {
             WindowsFormsApplication1.Aufheizvorgabe a = Aufheizstand;
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(value, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(value, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
         }
     }
 
@@ -625,7 +625,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNGEN,
                                      WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, wert, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, wert, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
         }
     }
 
@@ -647,7 +647,7 @@ public sealed class SimulationKiSicht
                 throw new InvalidOperationException(Resource.KI_DLG_SIM_AUFH_NUR_ABZUG);
             Bereich(value, WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MIN_K,
                     WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MAX_K, Resource.SIMKONF_AUFH_LBL_ABZUG);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, value, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, value, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
         }
     }
 
@@ -663,7 +663,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             Bereich(value, 1.0, 100.0, Resource.SIMKONF_AUFH_LBL_RESERVE);
             double? anteil = value is double p ? p / 100.0 : null;
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
         }
     }
 
@@ -679,7 +679,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_ARTEN,
                                      WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH);
-            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, wert, a.AufschlagH, a.AufschlagProzent));
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, wert, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
         }
     }
 
@@ -703,7 +703,7 @@ public sealed class SimulationKiSicht
             WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
             Bereich(value, 0, WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX, Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H);
             AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
-                                                                        value, a.AufschlagProzent));
+                                                                        value, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
         }
     }
 
@@ -717,8 +717,161 @@ public sealed class SimulationKiSicht
             Bereich(value, 0, WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX,
                     Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT);
             AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
-                                                                        a.AufschlagH, value));
+                                                                        a.AufschlagH, value) { Vorheizen = a.Vorheizen });
         }
+    }
+
+    // Das Vorheizen (Entwurf Vorheizrampe Fassung 2, 2.9; Welle AH-V5): sieben Felder über denselben Delegaten.
+    // Das Verfahren nur bei Schalter an; die Vorheizzeit nur beim Verfahren „Vorgabe“, Toleranz, Regelgenauigkeit,
+    // Geltung und Heizkreis-Schalter nur bei „Vorgabe“ oder „Berechnet“ — sonst benannt abgelehnt wie die Maske, die
+    // sie dann nicht zeigt. Grenzen wie die Felder: Vorheizzeit 1 … 47 h, Toleranz ≥ 0, Regelgenauigkeit 0,1 … 5 K.
+
+    /// <summary>Das Verfahren als Steuerwert: <c>RAMPE</c> (Vorgabe), <c>VORGABE</c> oder <c>BERECHNET</c>.</summary>
+    public string AufheizVerfahren
+    {
+        get => VerfahrenText(Aufheizstand.Vorheizen.Verfahren);
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            string wert = Steuerwert(value, Verfahrenwerte, WindowsFormsApplication1.VorheizenSchema.VERFAHREN_RAMPE);
+            WindowsFormsApplication1.Aufheizverfahren v = wert switch
+            {
+                WindowsFormsApplication1.VorheizenSchema.VERFAHREN_VORGABE => WindowsFormsApplication1.Aufheizverfahren.Vorgabe,
+                WindowsFormsApplication1.VorheizenSchema.VERFAHREN_BERECHNET => WindowsFormsApplication1.Aufheizverfahren.Berechnet,
+                _ => WindowsFormsApplication1.Aufheizverfahren.Sollwertrampe,
+            };
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitVerfahren(v)));
+        }
+    }
+
+    /// <summary>Die drei Verfahren mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> AufheizVerfahrenWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.VorheizenSchema.VERFAHREN_RAMPE, Resource.SIMKONF_AUFH_VERFAHREN_RAMPE),
+        new KiWahleintrag(WindowsFormsApplication1.VorheizenSchema.VERFAHREN_VORGABE, Resource.SIMKONF_AUFH_VERFAHREN_VORGABE),
+        new KiWahleintrag(WindowsFormsApplication1.VorheizenSchema.VERFAHREN_BERECHNET, Resource.SIMKONF_AUFH_VERFAHREN_BERECHNET)
+    };
+
+    /// <summary>Die Vorheizzeit des Projekts [h] 1 … 47; <c>null</c> = die Werte der Gebäude und Zonen.</summary>
+    public int? AufheizVorheizzeitH
+    {
+        get => Aufheizstand.Vorheizen.VorheizzeitH;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = VorheizVerfahren(Resource.SIMKONF_AUFH_LBL_VORHEIZZEIT, nurVorgabe: true);
+            Bereich(value, WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MIN_H, WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MAX_H,
+                    Resource.SIMKONF_AUFH_LBL_VORHEIZZEIT);
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitVorheizzeit(value)));
+        }
+    }
+
+    /// <summary>Die Art der Toleranz als Steuerwert: <c>PROZENT</c> (Vorgabe) oder <c>KW</c>.</summary>
+    public string AufheizToleranzArt
+    {
+        get => Aufheizstand.Vorheizen.Toleranzart == WindowsFormsApplication1.Vorheiztoleranzart.Kilowatt
+            ? WindowsFormsApplication1.VorheizenSchema.TOLERANZ_KW : WindowsFormsApplication1.VorheizenSchema.TOLERANZ_PROZENT;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = VorheizVerfahren(Resource.SIMKONF_AUFH_LBL_TOLERANZ);
+            string wert = Steuerwert(value, Toleranzwerte, WindowsFormsApplication1.VorheizenSchema.TOLERANZ_PROZENT);
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitToleranz(WindowsFormsApplication1.VorheizenSchema.ToleranzartAus(wert),
+                                                                    a.Vorheizen.ToleranzWert)));
+        }
+    }
+
+    /// <summary>Die zwei Arten der Toleranz mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> AufheizToleranzArtWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.VorheizenSchema.TOLERANZ_PROZENT, Resource.SIMKONF_AUFH_TOLERANZ_PROZENT),
+        new KiWahleintrag(WindowsFormsApplication1.VorheizenSchema.TOLERANZ_KW, Resource.SIMKONF_AUFH_TOLERANZ_KW)
+    };
+
+    /// <summary>Der zulässige Sprung in der gewählten Einheit, ≥ 0; <c>null</c> = Vorgabe 20 %.</summary>
+    public double? AufheizToleranz
+    {
+        get => Aufheizstand.Vorheizen.ToleranzWert;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = VorheizVerfahren(Resource.SIMKONF_AUFH_LBL_TOLERANZ_WERT);
+            Bereich(value, 0.0, double.MaxValue, Resource.SIMKONF_AUFH_LBL_TOLERANZ_WERT);
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitToleranz(a.Vorheizen.Toleranzart, value)));
+        }
+    }
+
+    /// <summary>Die Regelgenauigkeit [K] 0,1 … 5; <c>null</c> = Vorgabe 1 K.</summary>
+    public double? AufheizGenauigkeitK
+    {
+        get => Aufheizstand.Vorheizen.GenauigkeitK;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = VorheizVerfahren(Resource.SIMKONF_AUFH_LBL_GENAUIGKEIT);
+            Bereich(value, 0.1, 5.0, Resource.SIMKONF_AUFH_LBL_GENAUIGKEIT);
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitGenauigkeit(value)));
+        }
+    }
+
+    /// <summary>Die Geltung als Steuerwert: <c>GEBAEUDE</c> (Vorgabe) oder <c>ZONE</c>.</summary>
+    public string AufheizGeltung
+    {
+        get => Aufheizstand.Vorheizen.Geltung == WindowsFormsApplication1.Vorheizgeltung.Zone
+            ? WindowsFormsApplication1.VorheizenSchema.GELTUNG_ZONE : WindowsFormsApplication1.VorheizenSchema.GELTUNG_GEBAEUDE;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = VorheizVerfahren(Resource.SIMKONF_AUFH_LBL_GELTUNG);
+            string wert = Steuerwert(value, Geltungswerte, WindowsFormsApplication1.VorheizenSchema.GELTUNG_GEBAEUDE);
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitGeltung(WindowsFormsApplication1.VorheizenSchema.GeltungAus(wert))));
+        }
+    }
+
+    /// <summary>Die zwei Geltungen mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> AufheizGeltungWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.VorheizenSchema.GELTUNG_GEBAEUDE, Resource.SIMKONF_AUFH_GELTUNG_GEBAEUDE),
+        new KiWahleintrag(WindowsFormsApplication1.VorheizenSchema.GELTUNG_ZONE, Resource.SIMKONF_AUFH_GELTUNG_ZONE)
+    };
+
+    /// <summary>„Gebäude mit Heizkreis einbeziehen“ (Vorgabe an).</summary>
+    public bool AufheizHeizkreis
+    {
+        get => Aufheizstand.Vorheizen.HeizkreisEinbeziehen;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = VorheizVerfahren(Resource.SIMKONF_AUFH_LBL_HEIZKREIS);
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitHeizkreis(value)));
+        }
+    }
+
+    private static readonly string[] Verfahrenwerte =
+    {
+        WindowsFormsApplication1.VorheizenSchema.VERFAHREN_RAMPE, WindowsFormsApplication1.VorheizenSchema.VERFAHREN_VORGABE,
+        WindowsFormsApplication1.VorheizenSchema.VERFAHREN_BERECHNET
+    };
+
+    private static readonly string[] Toleranzwerte =
+        { WindowsFormsApplication1.VorheizenSchema.TOLERANZ_PROZENT, WindowsFormsApplication1.VorheizenSchema.TOLERANZ_KW };
+
+    private static readonly string[] Geltungswerte =
+        { WindowsFormsApplication1.VorheizenSchema.GELTUNG_GEBAEUDE, WindowsFormsApplication1.VorheizenSchema.GELTUNG_ZONE };
+
+    private static string VerfahrenText(WindowsFormsApplication1.Aufheizverfahren v) => v switch
+    {
+        WindowsFormsApplication1.Aufheizverfahren.Vorgabe => WindowsFormsApplication1.VorheizenSchema.VERFAHREN_VORGABE,
+        WindowsFormsApplication1.Aufheizverfahren.Berechnet => WindowsFormsApplication1.VorheizenSchema.VERFAHREN_BERECHNET,
+        _ => WindowsFormsApplication1.VorheizenSchema.VERFAHREN_RAMPE,
+    };
+
+    /// <summary>
+    /// Der Stand für ein Feld des Vorheizens — nur bei Schalter an und einem Verfahren, das die Maske dafür zeigt; sonst
+    /// benannt abgelehnt.
+    /// </summary>
+    private WindowsFormsApplication1.Aufheizvorgabe VorheizVerfahren(string feld, bool nurVorgabe = false)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+        WindowsFormsApplication1.Aufheizverfahren v = a.Vorheizen.Verfahren;
+        if (v == WindowsFormsApplication1.Aufheizverfahren.Sollwertrampe
+            || (nurVorgabe && v != WindowsFormsApplication1.Aufheizverfahren.Vorgabe))
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resource.KI_DLG_SIM_AUFH_NICHT_VERFAHREN, feld));
+        return a;
     }
 
     // =====================================================================

@@ -1476,7 +1476,9 @@
         Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Schluessel == _duplizierQuelle);
         if (zeile is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = Duplizieren(zeile.Id, name);
+        // KT-5: Wirft das Duplizieren, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Duplizieren(zeile.Id, name), name,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, name));
         if (!ergebnis.Ok)
         {
             Warnen(ergebnis.Meldung);

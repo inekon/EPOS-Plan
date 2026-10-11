@@ -34,7 +34,11 @@ namespace WindowsFormsApplication1
     /// <param name="DurchlaeufeMax">Höchstzahl der Durchläufe einer Stunde.</param>
     /// <param name="MusterwechselH">Stunden mit gehaltenem oder nicht haltbarem Muster.</param>
     internal sealed record GebaeudeZonenergebnis(int ZonenId, int Rang, string Bezeichnung, bool IstBeheizt, double Nutzflaeche_M2,
-                                         GebaeudeModellErgebnis Ergebnis, double DeltaThetaMaxK, int DurchlaeufeMax, int MusterwechselH);
+                                         GebaeudeModellErgebnis Ergebnis, double DeltaThetaMaxK, int DurchlaeufeMax, int MusterwechselH)
+    {
+        /// <summary>Die Werte des Vorheizens der Zone (AH-V4: die Zonenzeile des Ergebnisses); <c>null</c> ohne Vorheizen.</summary>
+        internal Vorheizgebaeude Vorheizen { get; init; }
+    }
 
     /// <summary>Das Ergebnis der Mehrzonen-Rechnung eines Gebäudes (Stufe G6b, Welle W4) samt den Befunden der Zonenschleife.</summary>
     internal sealed class Mehrzonenergebnis
@@ -498,9 +502,15 @@ namespace WindowsFormsApplication1
                     double d = GroessteDifferenz(ergebnisse[z].Raumtemperatur, ergebnisse[j].Raumtemperatur);
                     delta = double.IsNaN(delta) ? d : Math.Max(delta, d);
                 }
+                // AH-V4: die Werte des Vorheizens je Zone aus ihrem Plan (der Nachweis steht schon, Rechnen und Abschluss
+                // weisen vor der Summe nach).
+                Aufheizplan plan = zonen[z].Aufheizplan;
                 liste.Add(new GebaeudeZonenergebnis(zonen[z].ZonenId, e.Zone?.Rang ?? z + 1, zonen[z].Bezeichnung, zonen[z].IstBeheizt,
                                             e.Nutzflaeche_M2, ergebnisse[z], delta, schleife.DurchlaeufeMaxJeZone[z],
-                                            schleife.MusterwechselJeZone[z]));
+                                            schleife.MusterwechselJeZone[z])
+                {
+                    Vorheizen = plan?.Vorheizen != null ? Vorheizplanung.Gebaeudewerte(new[] { plan }) : null,
+                });
             }
             return liste;
         }

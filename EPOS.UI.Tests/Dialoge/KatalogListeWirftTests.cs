@@ -136,6 +136,10 @@ public class KatalogListeWirftTests : EposBunitContext
         => OhneBanner(Render<WaermepumpeStammDialog>(b => b.Add(x => x.Liste, Eine)));
 
     [Fact]
+    public void Kaeltemaschinenanlage_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<KaeltemaschineAnlageDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
+
+    [Fact]
     public void Bhkw_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
         => BannerMitGrund(Render<BhkwDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
 
@@ -152,8 +156,50 @@ public class KatalogListeWirftTests : EposBunitContext
         => BannerMitGrund(Render<PhotovoltaikDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
 
     [Fact]
+    public void WaermebedarfExtern_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<WaermebedarfExternDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Wirft()))));
+
+    [Fact]
+    public void WaermebedarfExtern_wirft_die_Aufgabe_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<WaermebedarfExternDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromException<IReadOnlyList<Katalogfilterzeile>>(
+                new InvalidOperationException(GRUND)))));
+
+    [Fact]
+    public void Stromganglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<EPOS.UI.Dialoge.Strom.StromganglinieDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Wirft()))));
+
+    [Fact]
+    public void Stromganglinie_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<EPOS.UI.Dialoge.Strom.StromganglinieDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))));
+
+    [Fact]
+    public void WaermebedarfExtern_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<WaermebedarfExternDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))));
+
+    [Fact]
     public void Solarkollektoren_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
         => BannerMitGrund(Render<SolarkollektorenDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
+
+    [Fact]
+    public void Solarganglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<PvGanglinieDialog>(b => b
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
+
+    [Fact]
+    public void Solarganglinie_im_Katalogbetrieb_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogbetrieb, true)
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
 
     [Fact]
     public void KatalogBrowser_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
@@ -222,4 +268,82 @@ public class KatalogListeWirftTests : EposBunitContext
     [Fact]
     public void TwwNutzungsart_ohne_Ausnahme_zeigt_keinen_Listenbanner()
         => OhneBanner(Render<TwwNutzungsartAdminDialog>(b => b.Add(x => x.Katalogzeilen, Eine)));
+
+    // =================================================================================
+    // KT-6: PV-Ganglinie und Solarganglinie — die Liste der Katalogseite, ihre Verwendung und das
+    // Neuladen nach dem Import
+    // =================================================================================
+
+    private static Task<IReadOnlyList<Katalogfilterzeile>> Ganglinien()
+        => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[] { Zeitreihenproben.Zeile(31, "Gerät A") });
+
+    private IRenderedComponent<PvGanglinieDialog> PvGanglinie(GanglinienKatalogwege wege)
+        => Render<PvGanglinieDialog>(b => b
+            .Add(x => x.Zeilen, new List<ErzeugerZeile>())
+            .Add(x => x.Katalogwege, wege)
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
+
+    private IRenderedComponent<SolarganglinieDialog> Solarganglinie(GanglinienKatalogwege wege)
+        => Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Zeilen, new List<ErzeugerZeile>())
+            .Add(x => x.Katalogwege, wege)
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund_und_bleibt_bedienbar()
+    {
+        bool? geschlossen = null;
+        var cut = Render<PvGanglinieDialog>(b => b
+            .Add(x => x.Zeilen, new List<ErzeugerZeile>())
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Geschlossen, v => geschlossen = v));
+        BannerMitGrund(cut);
+        Assert.Contains("Photovoltaik Ganglinie", cut.Instance.Katalogseite!.Ladefehler);
+        Assert.Empty(cut.Instance.Katalog);
+        cut.FindAll("button").First(k => k.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(geschlossen);
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Verwendung_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(PvGanglinie(new GanglinienKatalogwege
+        {
+            Katalogzeilen = Ganglinien,
+            Verwendung = () => throw new InvalidOperationException(GRUND)
+        }));
+
+    [Fact]
+    public void PvGanglinie_wirft_das_Neuladen_nach_dem_Import_zeigt_der_Dialog_den_Grund()
+    {
+        int gelesen = 0;
+        var cut = PvGanglinie(new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => ++gelesen == 1 ? Ganglinien() : Task.FromResult(Wirft()),
+            DateiWaehlen = _ => Task.FromResult<string?>("D:/Daten/Ganglinie.csv"),
+            Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(true, false, "Gerät B", "", ""))
+        });
+        OhneBanner(cut);
+        cut.Find("button.epos-importknopf").Click();
+        cut.FindAll("button").First(k => k.TextContent.Trim() == R.SGAD_BTN_DATEI).Click();
+        cut.FindAll("button").First(k => k.TextContent.Trim() == R.SGAD_BTN_EINLESEN).Click();
+        BannerMitGrund(cut);
+        Assert.False(cut.Instance.Katalogseite!.ImportOffen);
+    }
+
+    [Fact]
+    public void PvGanglinie_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(PvGanglinie(new GanglinienKatalogwege
+        {
+            Katalogzeilen = Ganglinien,
+            Verwendung = () => Task.FromResult<IReadOnlyDictionary<string, IReadOnlyList<string>>>(
+                new Dictionary<string, IReadOnlyList<string>>())
+        }));
+
+    [Fact]
+    public void Solarganglinie_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Solarganglinie(new GanglinienKatalogwege { Katalogzeilen = Ganglinien }));
 }

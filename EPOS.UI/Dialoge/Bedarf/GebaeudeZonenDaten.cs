@@ -122,6 +122,12 @@ public sealed class ZoneDaten
     /// <summary>Nennleistung der Kühlübergabe [kW]; <c>null</c> = Anteil des Gebäudes nach Nutzfläche.</summary>
     public double? KuehlUebergabeLeistungNennKw { get; set; }
 
+    /// <summary>
+    /// Die Vorheizzeit der Zone [h] (<c>Tab_Zone.Vorheizzeit_H</c>, AH-V4/V5), 1 … 47; <c>null</c> = die des Gebäudes. Wirksam
+    /// beim Verfahren „Vorheizzeit vorgeben“ mit Geltung je Zone.
+    /// </summary>
+    public int? VorheizzeitH { get; set; }
+
     /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>) samt den sieben Übergabefeldern und den vier Kühlfeldern.</summary>
     public Zoneneingaben Eingaben()
         => new(Nutzflaeche, Raumhoehe, Volumen, IstBeheizt, SollTag, SollNacht, SollWochenende, SollFerien,
@@ -129,7 +135,7 @@ public sealed class ZoneDaten
                LuftwechselNutzer, InterneWaermegewinne, Bewohner,
                UebergabeArt, UebergabeExponent, UebergabeLeistungNennKw, AuslegungVorlauf, AuslegungRuecklauf,
                AuslegungRaumtemperatur, ReglerProportionalband,
-               KuehlungAktiv, KuehlSollwert, KuehlSollwertNacht, KuehlleistungMaxKw);
+               KuehlungAktiv, KuehlSollwert, KuehlSollwertNacht, KuehlleistungMaxKw, VorheizzeitH: VorheizzeitH);
 
     /// <summary>
     /// Die Zone, deren Duplikat diese ist (Stufe G6a) — ihre Id im Arbeitsstand; <c>null</c> = kein

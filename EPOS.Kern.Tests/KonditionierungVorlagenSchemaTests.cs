@@ -215,9 +215,9 @@ namespace EPOS.Kern.Tests
 
             // Die Ergebnisspalten - die Messlatte steht auf dem Zielstand: dazu je vierzehn Spalten der
             // Aufheizoptimierung (KP-S3) und die drei bzw. eine des Schritts KP-S4 (B24).
-            Assert.Equal(AufheizAufschlagErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
+            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
                          DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
-            Assert.Equal(ZonenKaeltespitzeSchema.SPALTENZAHL_ERGEBNIS_ZONE,
+            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_ZONE,
                          DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_ERGEBNIS).Count);
             foreach (string t in KonditionierungVorlagenSchema.Ergebnistabellen)
             {

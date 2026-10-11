@@ -115,7 +115,7 @@ namespace EPOS.Kern.Tests
             // Die Messlatte steht auf dem Zielstand: dazu die fünf Spalten des Kältekreises (KAK-S3, E37),
             // die Nachtauskühlstunden (KP-S1v), die vierzehn Spalten der Aufheizoptimierung (KP-S3) und die
             // drei des Schritts KP-S4 (B24) und die zwei des Schritts 194 (E99).
-            Assert.Equal(AufheizAufschlagErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
+            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
 
             // Vorzustand herstellen, Schritt 107 fahren, zweimal - dann Schritt 128, zweimal.
             DataRepository.ExecuteNonQuery("DROP TABLE " + ErgebnisGebaeudeSchema.TAB);

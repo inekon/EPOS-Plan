@@ -331,11 +331,16 @@ namespace WindowsFormsApplication1
             int existing = GetProjektGanglinieId(szBezeichner, idProjekt);
             if (existing > 0) return existing;
 
+            // Der Ursprung der Kopie (Schemaschritt KatalogkostenUrsprungSchema): Die Projektkopie nennt ihren
+            // Katalogsatz über die ID, nicht nur über den gleichen Namen. Vor dem Vorgang gefragt, weil die
+            // Spaltenprüfung die eigene Verbindung liest.
+            bool ursprung = KatalogkostenUrsprungSchema.UrsprungLesbar(HEAD_PROJ);
+
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
-                    int neu = CopyGanglinieToProjekt(szBezeichner, idProjekt, v);
+                    int neu = CopyGanglinieToProjekt(szBezeichner, idProjekt, v, ursprung);
                     if (neu > 0) v.Commit(); else v.Rollback();
                     return neu;
                 }
@@ -350,7 +355,7 @@ namespace WindowsFormsApplication1
 
         // Kopiert eine Stamm-Ganglinie (per Bezeichner) samt Daten in die Projekt-Tabellen.
         // Kopf-ID und Daten-IDs im Projekt explizit (MAX+1); ID_Ganglinie = neue Kopf-ID.
-        private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, DbVorgang v)
+        private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, DbVorgang v, bool ursprung)
         {
             int stammId;
             {
@@ -374,6 +379,10 @@ namespace WindowsFormsApplication1
                 p.Add(new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt });
                 p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
                 v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner) VALUES (?, ?, ?)", p.ToArray());
+                if (ursprung)
+                    v.Ausfuehren("UPDATE " + HEAD_PROJ + " SET ID_Stamm = ? WHERE ID = ?",
+                        new DbParam("@st", DbParamTyp.Integer) { Wert = stammId },
+                        new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
             }
 
             // Daten der Stamm-Ganglinie in Reihenfolge lesen ...

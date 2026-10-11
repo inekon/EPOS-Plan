@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace WindowsFormsApplication1
@@ -56,6 +57,17 @@ namespace WindowsFormsApplication1
         /// nicht über <c>Properties.Settings</c>.
         /// </summary>
         public bool NeueProjekteMitKuehlung;
+
+        /// <summary>
+        /// Die Vorbelegung des zulässigen Sprungs zum Nutzungsbeginn neuer Projekte (Entwurf Vorheizrampe, F14 (a); AH-V5) —
+        /// Wert in der Einheit von <see cref="NeueProjekteVorheizToleranzArt"/>; <c>null</c> = keine Vorbelegung (Kern-Vorgabe
+        /// 20 %). Gelesen und geschrieben über <c>Dienste.Einstellungen</c>
+        /// (<see cref="EinstellungenCtrl.VorheiztoleranzLesen"/>).
+        /// </summary>
+        public double? NeueProjekteVorheizToleranz;
+
+        /// <summary>Die Einheit der Vorbelegung: Prozent (Vorgabe) oder kW.</summary>
+        public Vorheiztoleranzart NeueProjekteVorheizToleranzArt;
     }
 
     /// <summary>Das Ergebnis des Speicherns: gelungen oder mit Grund gescheitert.</summary>
@@ -159,6 +171,56 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // Die Programmeinstellung „Toleranz des Vorheizens für neue Projekte" (AH-V4, F14 (a))
+        // =====================================================================
+
+        /// <summary>
+        /// Der Schlüssel des Werts in <c>Dienste.Einstellungen</c> — ASCII und <b>eingefroren</b>; der Wert steht als Text in
+        /// invarianter Schreibweise (Prozent bzw. kW, ≥ 0). Leer heißt: keine Vorbelegung, das Projekt rechnet mit der
+        /// Kern-Konstante 20 % (<see cref="Vorheizvorgabe.TOLERANZ_VORGABE_PROZENT"/>). Die Oberfläche kommt mit V5.
+        /// </summary>
+        public const string SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ = "NeueProjekteVorheizToleranz";
+
+        /// <summary>Der Schlüssel der Art (<c>PROZENT</c> oder <c>KW</c>); leer heißt Prozent.</summary>
+        public const string SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ_ART = "NeueProjekteVorheizToleranzArt";
+
+        /// <summary>
+        /// Liest die Vorbelegung der Toleranz; nichts hinterlegt, unlesbar, negativ oder eine Ausnahme der Ablage heißen
+        /// „keine“ (<c>null</c>). Einziger Leser außer dem Einstellungsdialog: <see cref="KonfigurationCtrl.VorheiztoleranzAnfangswertSetzen"/>.
+        /// </summary>
+        public static (double? Wert, Vorheiztoleranzart Art) VorheiztoleranzLesen()
+        {
+            try
+            {
+                string text = Dienste.Einstellungen.Lies(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ, null);
+                string art = Dienste.Einstellungen.Lies(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ_ART, null);
+                if (string.IsNullOrWhiteSpace(text)
+                    || !double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double wert)
+                    || double.IsNaN(wert) || double.IsInfinity(wert) || wert < 0.0)
+                    return (null, Vorheiztoleranzart.Prozent);
+                return (wert, VorheizenSchema.ToleranzartAus(art));
+            }
+            catch
+            {
+                return (null, Vorheiztoleranzart.Prozent);
+            }
+        }
+
+        /// <summary>Schreibt die Vorbelegung der Toleranz; <c>null</c> löscht sie (keine Vorbelegung).</summary>
+        public static void VorheiztoleranzSchreiben(double? wert, Vorheiztoleranzart art)
+        {
+            if (!wert.HasValue)
+            {
+                Dienste.Einstellungen.Loesche(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ);
+                Dienste.Einstellungen.Loesche(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ_ART);
+                return;
+            }
+            Dienste.Einstellungen.Schreib(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ, wert.Value.ToString("R", CultureInfo.InvariantCulture));
+            Dienste.Einstellungen.Schreib(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ_ART,
+                                          VorheizenSchema.ToleranzartWert(art) ?? VorheizenSchema.TOLERANZ_PROZENT);
+        }
+
+        // =====================================================================
         // Lesen (Form_AdminSettings_Load)
         // =====================================================================
 
@@ -186,6 +248,7 @@ namespace WindowsFormsApplication1
             s.TryRegionalUrl = Properties.Settings.Default.TRYRegionalUrl ?? "";
             s.DiagrammFarben = Properties.Settings.Default.DiagrammFarben ?? "";
             s.NeueProjekteMitKuehlung = NeueProjekteMitKuehlungLesen();
+            (s.NeueProjekteVorheizToleranz, s.NeueProjekteVorheizToleranzArt) = VorheiztoleranzLesen();
             return s;
         }
 
@@ -204,6 +267,8 @@ namespace WindowsFormsApplication1
             // Der Wert aus Dienste.Einstellungen kennt kein Reset() - die Werksvorgabe wird
             // hier gesetzt und wie alles andere erst mit „OK" gespeichert.
             s.NeueProjekteMitKuehlung = NEUE_PROJEKTE_MIT_KUEHLUNG_VORGABE;
+            s.NeueProjekteVorheizToleranz = null;
+            s.NeueProjekteVorheizToleranzArt = Vorheiztoleranzart.Prozent;
             return s;
         }
 
@@ -261,6 +326,10 @@ namespace WindowsFormsApplication1
             try
             {
                 NeueProjekteMitKuehlungSchreiben(s.NeueProjekteMitKuehlung);
+                // AH-V5 (F14 (a)): die Vorbelegung der Toleranz neuer Projekte über denselben Weg.
+                double? toleranz = s.NeueProjekteVorheizToleranz is double t && !double.IsNaN(t) && !double.IsInfinity(t) && t >= 0.0
+                    ? t : null;
+                VorheiztoleranzSchreiben(toleranz, s.NeueProjekteVorheizToleranzArt);
             }
             catch (Exception ex)
             {

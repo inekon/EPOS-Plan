@@ -434,9 +434,12 @@
        Datenbank, zeigt die Liste sie als Wahl (der Lauf rechnet dann AK1 und sagt es).
        Scheitert das Schreiben, kehrt die Wahl zurueck (@key).
 
-       „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1): der Schalter (Vorgabe aus) und
-       - nur bei Schalter an - Bemessung, ΔT_K (nur bei „kaelteste Stunde − ΔT_K"), Aufheizreserve
-       ρ in % und Art der Aufheizzeit. Jedes Feld schreibt sofort die GANZE Einstellung
+       „Aufheizen vor Nutzungsbeginn" (Entwurf KP3, Grundsatz 5; Welle O1; Entwurf Vorheizrampe 2.9, Welle
+       AH-V5): der Schalter (Vorgabe aus) und - nur bei Schalter an - das Verfahren. Bei „Sollwertrampe"
+       Bemessung, ΔT_K (nur bei „kaelteste Stunde − ΔT_K"), Art der Aufheizzeit und Aufschlag; bei „Vorheizzeit
+       vorgeben" die Vorheizzeit (1-47 h), bei beiden neuen Verfahren Toleranz (Art und Wert, leer = 20 %),
+       Regelgenauigkeit (0,5/1/2 K oder Eingabe), Geltung und „Gebaeude mit Heizkreis einbeziehen"; die
+       Leistungsreserve immer. Jedes Feld schreibt sofort die GANZE Einstellung
        (AufheizvorgabeSchreiben, normalisiert nach Festlegung 24: Vorgaben als NULL, ein getippter
        Wert bleibt); scheitert es, kehrt der Abschnitt zurueck (@key) und die Seite sagt es. Die
        Herleitungszeilen je Gebaeude stehen nur mit ihrem Delegaten (AufheizHerleitung).
@@ -544,46 +547,124 @@
                                       WertChanged="AufheizSchalterGesetzt" />
                             @if (Aufheizung.An)
                             {
-                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_BEMESSUNG"
-                                             Eintraege="@Bemessungseintraege"
-                                             Auswahl="@(Aufheizung.MitAbzug ? 1 : 0)"
+                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_VERFAHREN"
+                                             Eintraege="@Verfahreneintraege"
+                                             Auswahl="@((int)Vorheizen.Verfahren)"
                                              Aktiv="@(!_daten.Gesperrt)"
-                                             AuswahlChanged="AufheizBemessungGewaehlt" />
-                                @if (Aufheizung.MitAbzug)
+                                             AuswahlChanged="AufheizVerfahrenGewaehlt" />
+                                @if (Vorheizen.Verfahren == WindowsFormsApplication1.Aufheizverfahren.Sollwertrampe)
                                 {
-                                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ABZUG"
-                                                Wert="@Aufheizung.AbzugK"
-                                                Einheit="K" Min="0" Max="10"
-                                                Platzhalter="@Vorgabetext(WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_VORGABE_K)"
+                                    <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_BEMESSUNG"
+                                                 Eintraege="@Bemessungseintraege"
+                                                 Auswahl="@(Aufheizung.MitAbzug ? 1 : 0)"
+                                                 Aktiv="@(!_daten.Gesperrt)"
+                                                 AuswahlChanged="AufheizBemessungGewaehlt" />
+                                    @if (Aufheizung.MitAbzug)
+                                    {
+                                        <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ABZUG"
+                                                    Wert="@Aufheizung.AbzugK"
+                                                    Einheit="K" Min="0" Max="10"
+                                                    Platzhalter="@Vorgabetext(WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_VORGABE_K)"
+                                                    Aktiv="@(!_daten.Gesperrt)"
+                                                    WertChanged="AufheizAbzugGesetzt" />
+                                    }
+                                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_RESERVE"
+                                                Wert="@ReserveProzent"
+                                                Min="1" Max="100"
+                                                Platzhalter="@Reservevorgabetext"
                                                 Aktiv="@(!_daten.Gesperrt)"
-                                                WertChanged="AufheizAbzugGesetzt" />
+                                                WertChanged="AufheizReserveGesetzt" />
+                                    <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_RESERVE" />
+                                    <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ART"
+                                                 Eintraege="@Arteintraege"
+                                                 Auswahl="@(Aufheizung.IstFest ? 1 : 0)"
+                                                 Aktiv="@(!_daten.Gesperrt)"
+                                                 AuswahlChanged="AufheizArtGewaehlt" />
+                                    <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H"
+                                                  Wert="@Aufheizung.AufschlagH"
+                                                  Min="0" Max="@WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX"
+                                                  Platzhalter="@Vorgabetext(0)"
+                                                  Aktiv="@(!_daten.Gesperrt)"
+                                                  WertChanged="AufheizAufschlagHGesetzt" />
+                                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT"
+                                                Wert="@Aufheizung.AufschlagProzent"
+                                                Min="0" Max="@WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX"
+                                                Platzhalter="@Vorgabetext(0)"
+                                                Aktiv="@(!_daten.Gesperrt)"
+                                                WertChanged="AufheizAufschlagProzentGesetzt" />
+                                    <Herleitungszeile Text="@Resource.SIMKONF_AUFH_AUFSCHLAG_HRL" />
                                 }
-                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_RESERVE"
-                                            Wert="@ReserveProzent"
-                                            Einheit="%" Min="1" Max="100"
-                                            Platzhalter="@Reservevorgabetext"
-                                            Aktiv="@(!_daten.Gesperrt)"
-                                            WertChanged="AufheizReserveGesetzt" />
-                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_RESERVE" />
-                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ART"
-                                             Eintraege="@Arteintraege"
-                                             Auswahl="@(Aufheizung.IstFest ? 1 : 0)"
-                                             Aktiv="@(!_daten.Gesperrt)"
-                                             AuswahlChanged="AufheizArtGewaehlt" />
-                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H"
-                                              Wert="@Aufheizung.AufschlagH"
-                                              Min="0" Max="@WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX"
-                                              Platzhalter="@Vorgabetext(0)"
+                                else
+                                {
+                                    @if (Vorheizen.IstVorgabe)
+                                    {
+                                        <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_VORHEIZZEIT"
+                                                      Wert="@Vorheizen.VorheizzeitH"
+                                                      Min="@WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MIN_H"
+                                                      Max="@WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MAX_H"
+                                                      Platzhalter="@Resource.SIMKONF_AUFH_VORHEIZZEIT_LEER"
+                                                      Aktiv="@(!_daten.Gesperrt)"
+                                                      WertChanged="AufheizVorheizzeitGesetzt" />
+                                        <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_VORHEIZZEIT" />
+                                    }
+                                    <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_TOLERANZ"
+                                                 Eintraege="@Toleranzeintraege"
+                                                 Auswahl="@((int)Vorheizen.Toleranzart)"
+                                                 Aktiv="@(!_daten.Gesperrt)"
+                                                 AuswahlChanged="AufheizToleranzartGewaehlt" />
+                                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_TOLERANZ_WERT"
+                                                Wert="@Vorheizen.ToleranzWert"
+                                                Einheit="@(Vorheizen.Toleranzart == WindowsFormsApplication1.Vorheiztoleranzart.Kilowatt ? "kW" : "%")"
+                                                Min="0"
+                                                Platzhalter="@Toleranzvorgabetext"
+                                                Aktiv="@(!_daten.Gesperrt)"
+                                                WertChanged="AufheizToleranzGesetzt" />
+                                    <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_GENAUIGKEIT"
+                                                 Eintraege="@Genauigkeitseintraege"
+                                                 Auswahl="@GenauigkeitAuswahl"
+                                                 Aktiv="@(!_daten.Gesperrt)"
+                                                 AuswahlChanged="AufheizGenauigkeitGewaehlt" />
+                                    @if (GenauigkeitAuswahl == GENAUIGKEIT_EINGABE)
+                                    {
+                                        <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_GENAUIGKEIT_WERT"
+                                                    Wert="@Vorheizen.GenauigkeitK"
+                                                    Einheit="K" Min="0.1" Max="5"
+                                                    Platzhalter="@Vorgabetext(WindowsFormsApplication1.Vorheizvorgabe.GENAUIGKEIT_VORGABE_K)"
+                                                    Aktiv="@(!_daten.Gesperrt)"
+                                                    WertChanged="AufheizGenauigkeitGesetzt" />
+                                    }
+                                    <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_GELTUNG"
+                                                 Eintraege="@Geltungseintraege"
+                                                 Auswahl="@((int)Vorheizen.Geltung)"
+                                                 Aktiv="@(!_daten.Gesperrt)"
+                                                 AuswahlChanged="AufheizGeltungGewaehlt" />
+                                    <Schalter Bezeichnung="@Resource.SIMKONF_AUFH_LBL_HEIZKREIS"
+                                              Wert="@Vorheizen.HeizkreisEinbeziehen"
                                               Aktiv="@(!_daten.Gesperrt)"
-                                              WertChanged="AufheizAufschlagHGesetzt" />
-                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT"
-                                            Wert="@Aufheizung.AufschlagProzent"
-                                            Min="0" Max="@WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX"
-                                            Platzhalter="@Vorgabetext(0)"
-                                            Aktiv="@(!_daten.Gesperrt)"
-                                            WertChanged="AufheizAufschlagProzentGesetzt" />
-                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_AUFSCHLAG_HRL" />
-                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AN" />
+                                              WertChanged="AufheizHeizkreisGesetzt" />
+                                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_RESERVE"
+                                                Wert="@ReserveProzent"
+                                                Min="1" Max="100"
+                                                Platzhalter="@Reservevorgabetext"
+                                                Aktiv="@(!_daten.Gesperrt)"
+                                                WertChanged="AufheizReserveGesetzt" />
+                                    <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_RESERVE" />
+                                }
+                                @switch (Vorheizen.Verfahren)
+                                {
+                                    case WindowsFormsApplication1.Aufheizverfahren.Vorgabe:
+                                        <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_VORGABE" />
+                                        <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_DECKEL" />
+                                        break;
+                                    case WindowsFormsApplication1.Aufheizverfahren.Berechnet:
+                                        <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_BERECHNET" />
+                                        <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_DECKEL" />
+                                        break;
+                                    default:
+                                        <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AN" />
+                                        break;
+                                }
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_VERFUEGBAR" />
                                 @if (_parameter.Anlagenkopplung == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1)
                                 {
                                     <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_GEKOPPELT" />
@@ -592,6 +673,7 @@
                                 {
                                     <Herleitungszeile Text="@zeile" />
                                 }
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_GELTUNG" />
                             }
                             else
                             {
@@ -600,6 +682,7 @@
                                 {
                                     <Herleitungszeile Text="@AufschlagAusZeile" />
                                 }
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_GELTUNG" />
                             }
                         </KindInhalt>
                     </Formularraster>
@@ -1986,7 +2069,7 @@
     private void AufheizSchalterGesetzt(bool an)
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
     }
 
     private void AufheizBemessungGewaehlt(int? index)
@@ -1994,13 +2077,13 @@
         if (index is null) return;
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         string? bemessung = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
     }
 
     private void AufheizAbzugGesetzt(double? wert)
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
     }
 
     /// <summary>Die Reserve kommt in Prozent und wird als Anteil gespeichert (Festlegung 15).</summary>
@@ -2008,7 +2091,7 @@
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         double? anteil = prozent is double p ? p / 100.0 : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
     }
 
     private void AufheizArtGewaehlt(int? index)
@@ -2016,7 +2099,7 @@
         if (index is null) return;
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         string? art = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST : null;
-        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!, a.AufschlagH, a.AufschlagProzent));
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!, a.AufschlagH, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
     }
 
     /// <summary>
@@ -2027,7 +2110,7 @@
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
-                                                                    stunden, a.AufschlagProzent));
+                                                                    stunden, a.AufschlagProzent) { Vorheizen = a.Vorheizen });
     }
 
     /// <summary>Der Aufschlag in Prozent von n (Welle O1b, E59 (2)); 0 und leer werden NULL (Festlegung 36).</summary>
@@ -2035,7 +2118,132 @@
     {
         WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
         AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
-                                                                    a.AufschlagH, prozent));
+                                                                    a.AufschlagH, prozent) { Vorheizen = a.Vorheizen });
+    }
+
+    // ---- Das Vorheizen (Entwurf Vorheizrampe Fassung 2, 2.9; Welle AH-V5) ----------------------------
+    //  Verfahren, Vorheizzeit (nur Vorgabe), Toleranz (Art und Wert), Regelgenauigkeit (Auswahl oder Eingabe),
+    //  Geltung und Heizkreis-Schalter (Vorgabe und Berechnet). Jedes Feld schreibt die ganze Einstellung über
+    //  denselben Weg (AufheizSchreiben); ein Wert außerhalb der Grenzen des Kerns kehrt zurück und meldet.
+
+    /// <summary>Id der Auswahl „Eingabe“ der Regelgenauigkeit.</summary>
+    private const int GENAUIGKEIT_EINGABE = 3;
+
+    /// <summary>Hat der Anwender „Eingabe“ gewählt, bevor er einen Wert tippt?</summary>
+    private bool _genauigkeitEingabe;
+
+    /// <summary>Das gespeicherte Vorheizen; ohne Stand die Sollwertrampe.</summary>
+    private WindowsFormsApplication1.Vorheizvorgabe Vorheizen
+        => Aufheizung.Vorheizen ?? WindowsFormsApplication1.Vorheizvorgabe.Sollwertrampe;
+
+    /// <summary>Die drei Verfahren (Id = Wert des Aufzählungstyps).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Verfahreneintraege => new[]
+    {
+        ((int)WindowsFormsApplication1.Aufheizverfahren.Sollwertrampe, Resource.SIMKONF_AUFH_VERFAHREN_RAMPE),
+        ((int)WindowsFormsApplication1.Aufheizverfahren.Vorgabe, Resource.SIMKONF_AUFH_VERFAHREN_VORGABE),
+        ((int)WindowsFormsApplication1.Aufheizverfahren.Berechnet, Resource.SIMKONF_AUFH_VERFAHREN_BERECHNET)
+    };
+
+    /// <summary>Die zwei Arten der Toleranz (Id = Wert des Aufzählungstyps).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Toleranzeintraege => new[]
+    {
+        ((int)WindowsFormsApplication1.Vorheiztoleranzart.Prozent, Resource.SIMKONF_AUFH_TOLERANZ_PROZENT),
+        ((int)WindowsFormsApplication1.Vorheiztoleranzart.Kilowatt, Resource.SIMKONF_AUFH_TOLERANZ_KW)
+    };
+
+    /// <summary>Die zwei Geltungen (Id = Wert des Aufzählungstyps).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Geltungseintraege => new[]
+    {
+        ((int)WindowsFormsApplication1.Vorheizgeltung.Gebaeude, Resource.SIMKONF_AUFH_GELTUNG_GEBAEUDE),
+        ((int)WindowsFormsApplication1.Vorheizgeltung.Zone, Resource.SIMKONF_AUFH_GELTUNG_ZONE)
+    };
+
+    /// <summary>Die festen Stufen der Regelgenauigkeit (F7, F15 (a)): Id 0 = 0,5 K, 1 = 1 K (Vorgabe), 2 = 2 K.</summary>
+    private static readonly double[] GenauigkeitStufenK = { 0.5, 1.0, 2.0 };
+
+    /// <summary>Die Auswahl der Regelgenauigkeit: drei Stufen und „Eingabe“.</summary>
+    private static IReadOnlyList<(int Id, string Text)> Genauigkeitseintraege
+        => GenauigkeitStufenK.Select((k, i) => (i, k.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) + " K"))
+                             .Append((GENAUIGKEIT_EINGABE, Resource.SIMKONF_AUFH_GENAUIGKEIT_EINGABE))
+                             .ToList();
+
+    /// <summary>Die gezeigte Auswahl: leer = 1 K, eine Stufe, sonst (oder nach der Wahl) „Eingabe“.</summary>
+    private int GenauigkeitAuswahl
+    {
+        get
+        {
+            if (_genauigkeitEingabe) return GENAUIGKEIT_EINGABE;
+            if (Vorheizen.GenauigkeitK is not double g) return 1;
+            int i = Array.IndexOf(GenauigkeitStufenK, g);
+            return i >= 0 ? i : GENAUIGKEIT_EINGABE;
+        }
+    }
+
+    /// <summary>Der Platzhalter der leeren Toleranz: „Vorgabe 20 %“ (F14 (a)) — auch bei der Art kW gilt dann 20 %.</summary>
+    private static string Toleranzvorgabetext
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_TOLERANZ_VORGABE,
+                         WindowsFormsApplication1.Vorheizvorgabe.TOLERANZ_VORGABE_PROZENT
+                             .ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
+
+    private void AufheizVerfahrenGewaehlt(int? index)
+    {
+        if (index is not int i || !Enum.IsDefined(typeof(WindowsFormsApplication1.Aufheizverfahren), i)) return;
+        VorheizenSchreiben(v => v.MitVerfahren((WindowsFormsApplication1.Aufheizverfahren)i));
+    }
+
+    private void AufheizVorheizzeitGesetzt(int? stunden) => VorheizenSchreiben(v => v.MitVorheizzeit(stunden));
+
+    private void AufheizToleranzartGewaehlt(int? index)
+    {
+        if (index is not int i || !Enum.IsDefined(typeof(WindowsFormsApplication1.Vorheiztoleranzart), i)) return;
+        VorheizenSchreiben(v => v.MitToleranz((WindowsFormsApplication1.Vorheiztoleranzart)i, v.ToleranzWert));
+    }
+
+    private void AufheizToleranzGesetzt(double? wert) => VorheizenSchreiben(v => v.MitToleranz(v.Toleranzart, wert));
+
+    /// <summary>Eine Stufe schreibt (1 K als leer = Vorgabe); „Eingabe“ öffnet nur das Zahlenfeld.</summary>
+    private void AufheizGenauigkeitGewaehlt(int? index)
+    {
+        if (index is not int i) return;
+        if (i == GENAUIGKEIT_EINGABE)
+        {
+            _genauigkeitEingabe = true;
+            return;
+        }
+        if (i < 0 || i >= GenauigkeitStufenK.Length) return;
+        _genauigkeitEingabe = false;
+        double k = GenauigkeitStufenK[i];
+        VorheizenSchreiben(v => v.MitGenauigkeit(k == WindowsFormsApplication1.Vorheizvorgabe.GENAUIGKEIT_VORGABE_K ? null : k));
+    }
+
+    private void AufheizGenauigkeitGesetzt(double? wert) => VorheizenSchreiben(v => v.MitGenauigkeit(wert));
+
+    private void AufheizGeltungGewaehlt(int? index)
+    {
+        if (index is not int i || !Enum.IsDefined(typeof(WindowsFormsApplication1.Vorheizgeltung), i)) return;
+        VorheizenSchreiben(v => v.MitGeltung((WindowsFormsApplication1.Vorheizgeltung)i));
+    }
+
+    private void AufheizHeizkreisGesetzt(bool an) => VorheizenSchreiben(v => v.MitHeizkreis(an));
+
+    /// <summary>
+    /// Baut das neue Vorheizen und schreibt die ganze Einstellung; verwirft der Kern den Wert (Grenzen des Konstruktors),
+    /// kehrt der Abschnitt zurück und die Fußzeile meldet es.
+    /// </summary>
+    private void VorheizenSchreiben(Func<WindowsFormsApplication1.Vorheizvorgabe, WindowsFormsApplication1.Vorheizvorgabe> bau)
+    {
+        WindowsFormsApplication1.Vorheizvorgabe neu;
+        try
+        {
+            neu = bau(Vorheizen);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            _aufheizSchluessel++;
+            Melden(Resource.SIMKONF_AUFH_MSG_FEHLER, WarnStufe.Warnung);
+            return;
+        }
+        AufheizSchreiben(Aufheizung.MitVorheizen(neu));
     }
 
     /// <summary>

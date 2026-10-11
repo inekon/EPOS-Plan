@@ -89,6 +89,7 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
 
         internal TwwNutzungsartEditorDaten Editor(int id, TwwEditorModus modus)
         {
+            if (EditorWirft) throw new InvalidOperationException("Datenbank gesperrt");
             var z = Zeilen.FirstOrDefault(x => x.Id == id);
             bool gesperrt = z.Auslieferung || z.Projekte.Length > 0;
             TwwEditorModus m = modus == TwwEditorModus.Aendern && gesperrt ? TwwEditorModus.SpeichernUnter : modus;
@@ -119,8 +120,15 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
             };
         }
 
+        /// <summary>KT-5: Der Schreibweg des Editors wirft wie eine gesperrte Datenbank.</summary>
+        internal bool SpeichernWirft;
+
+        /// <summary>KT-5: Das Lesen des Editorstands wirft.</summary>
+        internal bool EditorWirft;
+
         internal TwwNutzungsartSpeicherErgebnis Speichern(TwwEditorModus modus, TwwNutzungsartEntwurfDaten e)
         {
+            if (SpeichernWirft) throw new InvalidOperationException("Datenbank gesperrt");
             Gespeichert.Add((modus, e));
             if (e.Bezeichner == "belegt") return new(false, e.IdBezug, "Die Nutzungsart wurde nicht gespeichert — vergeben", "ZPGK_GRUND_NAME_BELEGT");
             int id = modus == TwwEditorModus.Aendern ? e.IdBezug : NaechsteId++;
@@ -366,6 +374,48 @@ public class TwwNutzungsartAdminDialogTests : EposBunitContext
         Assert.Equal(TwwEditorModus.SpeichernUnter, k.Gespeichert.Single().Modus);
         Assert.Equal(3, k.Gespeichert.Single().Entwurf.IdBezug);
         Assert.Equal(10, cut.Instance.GewaehltId);
+    }
+
+    /// <summary>
+    /// <b>KT-5: Wirft der Schreibweg des eingebetteten Editors</b>, bleibt der Editor mit seinen
+    /// Eingaben offen, sein Banner nennt den Grund (<c>WURZEL_SCHREIBEN_FEHLER</c>), und das
+    /// Ausnahmeprotokoll hat einen Vermerk.
+    /// </summary>
+    [Fact]
+    public void Wirft_Speichern_im_Editor_bleibt_der_Editor_offen_und_nennt_den_Grund()
+    {
+        var k = new Pruefkatalog { SpeichernWirft = true };
+        var cut = Aufbauen(k);
+        Handlung(cut, "Speichern unter…").Click();
+        IRenderedComponent<TwwNutzungsartEditor> ed = cut.FindComponent<TwwNutzungsartEditor>();
+        ed.FindAll("input").First().Input("Neue Art");
+
+        var vermerke = new List<string>();
+        void Mit(string z) { lock (vermerke) vermerke.Add(z); }
+        Ausnahmeprotokoll.Vermerkt += Mit;
+        try { Knopf(ed, "OK").Click(); }
+        finally { Ausnahmeprotokoll.Vermerkt -= Mit; }
+
+        Assert.NotNull(cut.Instance.Editor);
+        Assert.Equal(string.Format(Resource.WURZEL_SCHREIBEN_FEHLER, "Neue Art", "Datenbank gesperrt"), ed.Instance.Meldung);
+        Assert.Equal("Neue Art", ed.FindAll("input").First().GetAttribute("value"));
+        Assert.Contains(vermerke, v => v.Contains("nicht gespeichert"));
+    }
+
+    /// <summary>
+    /// <b>KT-5: Wirft das Lesen des Editorstands</b>, geht kein Editor auf, und das Warnband nennt
+    /// den Grund (<c>WURZEL_SATZ_FEHLER</c>).
+    /// </summary>
+    [Fact]
+    public void Wirft_das_Laden_des_Editors_oeffnet_keinen_Editor_und_nennt_den_Grund()
+    {
+        var k = new Pruefkatalog { EditorWirft = true };
+        var cut = Aufbauen(k);
+        Handlung(cut, "Speichern unter…").Click();
+
+        Assert.Null(cut.Instance.Editor);
+        Assert.StartsWith(Resource.WURZEL_SATZ_FEHLER.Split('{')[0], cut.Instance.Meldung);
+        Assert.Contains("Datenbank gesperrt", cut.Instance.Meldung);
     }
 
     [Fact]

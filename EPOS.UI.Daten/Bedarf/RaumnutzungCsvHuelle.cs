@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
             {
                 Texte = Texte(),
                 DateiWaehlen = DateiWaehlen,
-                Pruefen = (datei, ziel) => Vorschau(ctrl.CsvPruefen(datei?.Inhalt, ziel)),
+                Pruefen = (datei, ziel) => Pruefen(ctrl, datei, ziel),
                 Uebernehmen = (datei, ziel, name, ersetzen) => Uebernehmen(ctrl, datei, ziel, name, ersetzen),
                 Exportieren = id => Exportieren(ctrl, id, teilen),
             };
@@ -64,15 +64,26 @@ namespace WindowsFormsApplication1
             _ => RaumnutzungCsvMeldungsart.Fehler,
         };
 
-        /// <summary>Übernehmen: neu lesen, abgleichen, schreiben; die Bilanz ist die Meldung.</summary>
-        internal static RaumnutzungErgebnis Uebernehmen(RaumnutzungCtrl ctrl, RaumnutzungCsvDatei datei, long? ziel, string name, bool ersetzen)
-        {
-            RaumnutzungCsvLesung l = ctrl.CsvPruefen(datei?.Inhalt, ziel);
-            RaumnutzungCtrl.CsvBilanz b = ctrl.CsvUebernehmen(l, ziel, name, ersetzen);
-            return new RaumnutzungErgebnis(b.Ok, b.Meldung ?? "", b.IdKatalog);
-        }
+        /// <summary>
+        /// Die Vorschau einer gewählten Datei: lesen und mit der Zielkategorie abgleichen. Was dabei als Ausnahme entsteht
+        /// (Leser, Datenbank), lehnt die Fangstelle der Importe benannt ab (<see cref="Importfang"/>): Abbruch mit Datei und
+        /// Grund, Vermerk im Ausnahmeprotokoll — die Komponente bleibt bedienbar.
+        /// </summary>
+        internal static RaumnutzungCsvVorschau Pruefen(RaumnutzungCtrl ctrl, RaumnutzungCsvDatei datei, long? ziel)
+            => Importfang.Fangen(datei?.Name, () => Vorschau(ctrl.CsvPruefen(datei?.Inhalt, ziel)),
+                                 a => new RaumnutzungCsvVorschau(a.Text, Array.Empty<RaumnutzungCsvProfilzeile>(),
+                                                                 Array.Empty<RaumnutzungCsvMeldungDaten>()));
 
-        /// <summary>Die Dateiwahl der Plattform und das Lesen; abgebrochen = <c>null</c>, ein Lesefehler als Ausnahme mit Text.</summary>
+        /// <summary>Übernehmen: neu lesen, abgleichen, schreiben; die Bilanz ist die Meldung. Eine Ausnahme wird benannt abgelehnt.</summary>
+        internal static RaumnutzungErgebnis Uebernehmen(RaumnutzungCtrl ctrl, RaumnutzungCsvDatei datei, long? ziel, string name, bool ersetzen)
+            => Importfang.Fangen(datei?.Name, () =>
+            {
+                RaumnutzungCsvLesung l = ctrl.CsvPruefen(datei?.Inhalt, ziel);
+                RaumnutzungCtrl.CsvBilanz b = ctrl.CsvUebernehmen(l, ziel, name, ersetzen);
+                return new RaumnutzungErgebnis(b.Ok, b.Meldung ?? "", b.IdKatalog);
+            }, a => new RaumnutzungErgebnis(false, a.Text));
+
+        /// <summary>Die Dateiwahl der Plattform und das Lesen; abgebrochen = <c>null</c>, ein Lesefehler als Ausnahme mit Text, vermerkt im Ausnahmeprotokoll.</summary>
         private static async Task<RaumnutzungCsvDatei> DateiWaehlen()
         {
             string pfad = await Dienste.Datei.DateiOeffnenAsync(MyResource.Resource.RNP_CSV_DLG_IMPORT,
@@ -84,6 +95,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException || ex is NotSupportedException)
             {
+                // Die Anzeige bleibt der Satz mit Grund; der Vermerk im Ausnahmeprotokoll kommt über die Fangstelle der Importe.
+                Importfang.Vermerken(pfad, ex);
                 throw new InvalidOperationException(Format(MyResource.Resource.RNP_CSV_MSG_LESEFEHLER, ex.Message), ex);
             }
         }

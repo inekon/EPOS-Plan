@@ -459,6 +459,14 @@ namespace WindowsFormsApplication1
         // legt Katalogspalten und Schlüssel an (KaeltemaschineSchema, KU3-1).
         private static readonly Katalogtabelle[] STUFE3 =
         {
+            // KaeltemittelSchema (Schritt 216, KM4-E1): die Kaeltemitteltabelle VOR der Kaeltemaschine - sie ist das
+            // Verweisziel von ID_Kaeltemittel und bekommt ihre Schluessel zuerst. Name ist der Code, keine Projektkopie,
+            // kein Kind. Die Schritte der Kaeltemaschine pruefen und stempeln allein ihren eigenen Katalog.
+            new Katalogtabelle(KaeltemittelSchema.TAB_STAMM, KaeltemittelSchema.KUERZEL, KaeltemittelSchema.Fachspalten)
+            {
+                Stufe = 3, Anzeigeschluessel = "KABG_KATALOG_KAELTEMITTEL",
+                Namensspalten = new[] { KaeltemittelSchema.SPALTE_CODE },
+            },
             new Katalogtabelle(KaeltemaschineSchema.TAB_STAMM, "KM",
                 // KaeltemaschineTeillastSchema (Schritt 210): die acht Eingabespalten von Teillast und Takten haengen ueber
                 // KaeltemaschineSchema.Fachspalten hinten an; leer tragen sie nichts zur Pruefsumme bei.
@@ -467,7 +475,14 @@ namespace WindowsFormsApplication1
                 KaeltemaschineSchema.Fachspalten,
                 new Katalogkind(KaeltemaschineSchema.TAB_KENNDATEN_STAMM, KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE,
                                 KaeltemaschineSchema.KennlinienSpalten))
-            { Stufe = 3, Anzeigeschluessel = "KABG_KATALOG_KAELTEMASCHINE" },
+            {
+                Stufe = 3, Anzeigeschluessel = "KABG_KATALOG_KAELTEMASCHINE",
+                // KaeltemittelSchema (Schritt 216): der Verweis geht ueber den Code in Pruefsumme und Paket ein.
+                Verweise = new[]
+                {
+                    new Katalogverweis(KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL, KaeltemittelSchema.TAB_STAMM, KaeltemittelSchema.SPALTE_CODE)
+                },
+            },
         };
 
         // Stufe 4: die Kataloge des Kaeltebedarfs (Schritt KaeltebedarfSchema, K1). Eigene Stufe aus demselben Grund wie

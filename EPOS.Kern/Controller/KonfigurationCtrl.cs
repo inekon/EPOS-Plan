@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -969,7 +970,54 @@ namespace WindowsFormsApplication1
                 HeizgrenzeOderLeer(r[3]),
                 TextOderLeer(r[4]),
                 aufschlagH.HasValue ? (int?)Math.Round(aufschlagH.Value) : null,
-                mitAufschlag && dt.Columns.Count > 6 ? HeizgrenzeOderLeer(r[6]) : null);
+                mitAufschlag && dt.Columns.Count > 6 ? HeizgrenzeOderLeer(r[6]) : null)
+            {
+                Vorheizen = VorheizvorgabeLesen(idProjekt),
+            };
+        }
+
+        /// <summary>Stehen die sieben Spalten des Vorheizens (Schemaschritt <see cref="VorheizenSchema.SCHRITT"/>)?</summary>
+        private static bool VorheizspaltenVorhanden()
+        {
+            HashSet<string> spalten = StilleDb.SpaltenNamen(VorheizenSchema.TAB_EINSTELLUNGEN);
+            return spalten != null && VorheizenSchema.SPALTEN_EINSTELLUNG.All(s => spalten.Contains(s.Spalte));
+        }
+
+        /// <summary>
+        /// <b>Das Vorheizen eines Projekts</b> (AH-V4; Entwurf Vorheizrampe Fassung 2, 2.9) — dialogfrei und NULL-erhaltend in
+        /// EINER Abfrage der sieben Spalten (<see cref="VorheizenSchema.SPALTEN_EINSTELLUNG"/>). <b>Fehlende Zeile, fehlende
+        /// Spalte und ein unlesbarer Satz heißen Sollwertrampe</b> (<see cref="Vorheizvorgabe.Sollwertrampe"/>): Dann rechnet das
+        /// Projekt wie der Bestand. Leere Felder bleiben leer; der Kern setzt seine Konstanten ein (F14, F15).
+        /// </summary>
+        public static Vorheizvorgabe VorheizvorgabeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0 || !VorheizspaltenVorhanden()) return Vorheizvorgabe.Sollwertrampe;
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT [" + string.Join("], [", VorheizenSchema.SPALTEN_EINSTELLUNG.Select(s => s.Spalte)) + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < VorheizenSchema.SPALTEN_EINSTELLUNG.Count)
+                return Vorheizvorgabe.Sollwertrampe;
+            DataRow r = dt.Rows[0];
+            try
+            {
+                double? zeit = HeizgrenzeOderLeer(r[1]);
+                double? heizkreis = HeizgrenzeOderLeer(r[6]);
+                var v = new Vorheizvorgabe(
+                    VorheizenSchema.VerfahrenAus(TextOderLeer(r[0])),
+                    zeit.HasValue ? (int?)Math.Round(zeit.Value) : null,
+                    VorheizenSchema.ToleranzartAus(TextOderLeer(r[2])),
+                    HeizgrenzeOderLeer(r[3]),
+                    HeizgrenzeOderLeer(r[4]),
+                    VorheizenSchema.GeltungAus(TextOderLeer(r[5])),
+                    !heizkreis.HasValue || heizkreis.Value != 0.0);
+                // Die Vorgabe ohne gesetztes Feld ist DIE Sollwertrampe (Gleichheit des Records, Bestand bitgleich).
+                return v.Equals(Vorheizvorgabe.Sollwertrampe) ? Vorheizvorgabe.Sollwertrampe : v;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return Vorheizvorgabe.Sollwertrampe;
+            }
         }
 
         /// <summary>Stehen die zwei Spalten des Aufschlags (Schemaschritt KP-S4)?</summary>
@@ -1000,6 +1048,9 @@ namespace WindowsFormsApplication1
 
             bool mitAufschlag = AufschlagspaltenVorhanden();
             if (!mitAufschlag && vorgabe.HatAufschlag) return false;
+            bool mitVorheizen = VorheizspaltenVorhanden();
+            Vorheizvorgabe vh = vorgabe.Vorheizen ?? Vorheizvorgabe.Sollwertrampe;
+            if (!mitVorheizen && !vh.Equals(Vorheizvorgabe.Sollwertrampe)) return false;
             var parameter = new List<DbParam>
             {
                 StilleDb.Par("@an", DbParamTyp.Integer, vorgabe.An ? 1 : 0),
@@ -1013,6 +1064,7 @@ namespace WindowsFormsApplication1
                 parameter.Add(StilleDb.Par("@aufschlagH", DbParamTyp.Integer, (object)vorgabe.AufschlagH ?? DBNull.Value));
                 parameter.Add(StilleDb.Par("@aufschlagP", DbParamTyp.Double, (object)vorgabe.AufschlagProzent ?? DBNull.Value));
             }
+            if (mitVorheizen) parameter.AddRange(Vorheizwerte(vh));
             parameter.Add(StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             int betroffen = StilleDb.NonQuery(
@@ -1022,9 +1074,53 @@ namespace WindowsFormsApplication1
                 (mitAufschlag
                     ? ", [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_H + "] = ?, [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT + "] = ?"
                     : "") +
+                (mitVorheizen ? Vorheizzuweisungen() : "") +
                 " WHERE ID_Projekt = ?",
                 parameter.ToArray());
 
+            return betroffen > 0;
+        }
+
+        /// <summary>Die Zuweisungen der sieben Spalten des Vorheizens als Fortsetzung einer <c>SET</c>-Liste.</summary>
+        private static string Vorheizzuweisungen()
+            => string.Concat(VorheizenSchema.SPALTEN_EINSTELLUNG.Select(s => ", [" + s.Spalte + "] = ?"));
+
+        /// <summary>
+        /// Die Werte der sieben Spalten in Tabellenfolge — normalisiert wie die Aufheizvorgabe (Festlegung 24): die Vorgabe
+        /// eines Felds (Sollwertrampe, Prozent, Gebäude, Heizkreis einbezogen) und ein leeres Zahlenfeld als NULL.
+        /// </summary>
+        private static IEnumerable<DbParam> Vorheizwerte(Vorheizvorgabe v)
+        {
+            yield return StilleDb.Par("@vhVerfahren", DbParamTyp.VarWChar, (object)VorheizenSchema.VerfahrenWert(v.Verfahren) ?? DBNull.Value);
+            yield return StilleDb.Par("@vhZeit", DbParamTyp.Integer, (object)v.VorheizzeitH ?? DBNull.Value);
+            yield return StilleDb.Par("@vhArt", DbParamTyp.VarWChar, (object)VorheizenSchema.ToleranzartWert(v.Toleranzart) ?? DBNull.Value);
+            yield return StilleDb.Par("@vhToleranz", DbParamTyp.Double, (object)v.ToleranzWert ?? DBNull.Value);
+            yield return StilleDb.Par("@vhGenauigkeit", DbParamTyp.Double, (object)v.GenauigkeitK ?? DBNull.Value);
+            yield return StilleDb.Par("@vhGeltung", DbParamTyp.VarWChar, (object)VorheizenSchema.GeltungWert(v.Geltung) ?? DBNull.Value);
+            yield return StilleDb.Par("@vhHeizkreis", DbParamTyp.Integer, v.HeizkreisEinbeziehen ? DBNull.Value : (object)0);
+        }
+
+        /// <summary>
+        /// <b>DIE VORBELEGUNG DER TOLERANZ EINES NEUEN PROJEKTS</b> (AH-V4, F14 (a)): Steht in der Programmeinstellung
+        /// (<see cref="EinstellungenCtrl.VorheiztoleranzLesen"/>) ein Wert, schreibt die Projektanlage ihn samt Art in
+        /// <c>Aufheiz_Toleranz</c>/<c>Aufheiz_Toleranz_Art</c>; sonst bleibt NULL (Kern-Konstante 20 %). Ohne Einstellungssatz
+        /// legt sie den Vormerksatz an (Muster <see cref="KuehlbetriebAnfangswertSetzen"/>). Kein Lauf liest die
+        /// Programmeinstellung.
+        /// </summary>
+        /// <returns><c>true</c>, wenn ein Wert geschrieben wurde.</returns>
+        public static bool VorheiztoleranzAnfangswertSetzen(int idProjekt)
+        {
+            if (idProjekt <= 0) return false;
+            (double? wert, Vorheiztoleranzart art) = EinstellungenCtrl.VorheiztoleranzLesen();
+            if (!wert.HasValue || !VorheizspaltenVorhanden()) return false;
+            if (!SatzVorhanden(idProjekt) && !VormerksatzAnlegen(idProjekt)) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + VorheizenSchema.SPALTE_TOLERANZ + "] = ?, [" +
+                VorheizenSchema.SPALTE_TOLERANZ_ART + "] = ? WHERE ID_Projekt = ?",
+                StilleDb.Par("@vhToleranz", DbParamTyp.Double, wert.Value),
+                StilleDb.Par("@vhArt", DbParamTyp.VarWChar, (object)VorheizenSchema.ToleranzartWert(art) ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             return betroffen > 0;
         }
 

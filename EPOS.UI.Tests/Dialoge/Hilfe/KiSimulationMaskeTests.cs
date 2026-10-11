@@ -229,9 +229,11 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>KB‑D: vierundsiebzig — die Folge der Kälteerzeuger (lesend) und „gepflegt“ (aus = Vorgabefolge).</para>
     /// <para>KB‑B: siebenundsiebzig — der Bereich „Kälte“: Kälteerzeuger und Kältespeicher (nur lesend), die
     /// Wärmepumpen im Kühlbetrieb.</para>
+    /// <para>AH‑V5: vierundachtzig — die sieben Felder des Vorheizens (Verfahren, Vorheizzeit, Toleranz mit Art,
+    /// Regelgenauigkeit, Geltung, Heizkreis).</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_siebenundsiebzig_Felder_an()
+    public void Die_Ansicht_meldet_vierundachtzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -243,7 +245,8 @@ public class KiSimulationMaskeTests : IDisposable
         // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5), dazu die zwei des Aufschlags (O1b)
         // und die Betriebsbereiche der Wärmepumpe (UB-E4), dazu Teillast und Takten der Kältemaschinen (KM3-E3-b)
         // und die Folge der Kälteerzeuger mit ihrem Schalter (KB-D) und die drei des Bereichs „Kälte“ (KB-B).
-        Assert.Equal(77, felder.Count);
+        // AH-V5: die sieben Felder des Vorheizens.
+        Assert.Equal(84, felder.Count);
     }
 
     /// <summary>
@@ -464,6 +467,8 @@ public class KiSimulationMaskeTests : IDisposable
             "zirkulation_leistung", "zirkulation_laufzeit", "anlagenkopplung",
             "aufheizoptimierung", "aufheiz_bemessung", "aufheiz_abzug", "aufheiz_reserve", "aufheiz_art",
             "aufheiz_aufschlag_h", "aufheiz_aufschlag_prozent",
+            "aufheiz_verfahren", "aufheiz_vorheizzeit", "aufheiz_toleranz_art", "aufheiz_toleranz",
+            "aufheiz_genauigkeit", "aufheiz_geltung", "aufheiz_heizkreis",
             "einspeisegrenze", "einspeisegrenze_einheit",
             "desinfektion", "desinfektion_intervall", "desinfektion_stunde",
             "desinfektion_zieltemperatur", "desinfektion_volumen",

@@ -249,7 +249,10 @@ namespace Auslieferungsvorlage.Tests
             // 190 seit dem Schemaschritt 214 (RueckkuehlwerkSchema, K-F1): Tab_Rueckkuehlwerk(_STAMM),
             // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
             //
-            Assert.Equal(190, befund.Strict);
+            // 191 seit dem Schemaschritt 216 (KaeltemittelSchema, KM4-E1): Tab_Kaeltemittel_STAMM, STRICT von ihrer ersten
+            // Zeile an; die achtzehn ausgelieferten Codes bleiben in der Vorlage.
+            //
+            Assert.Equal(191, befund.Strict);
         }
 
         // =============================================================================
@@ -408,6 +411,30 @@ namespace Auslieferungsvorlage.Tests
             // Die Vorlagenpositionen behalten ihre Positionsart.
             Assert.True(befund.Verweise > 0,
                         "Keine Auslieferungsposition traegt mehr eine Positionsart.");
+        }
+
+        /// <summary>
+        /// <b>KM4-E1-b:</b> Die Kältemitteltabelle ist ein Auslieferungskatalog — die Vorlage behält ihre achtzehn
+        /// ausgelieferten Codes —, und der Verweis <c>ID_Kaeltemittel</c> der ausgelieferten Kältemaschinen bleibt stehen
+        /// und zeigt auf eine Zeile der Vorlage.
+        /// </summary>
+        [Fact]
+        public void Kaeltemitteltabelle_bleibt_und_der_Verweis_der_Kaeltemaschinen_auch()
+        {
+            if (!_v.Vorhanden) return;
+
+            var befund = _v.Lesen(() => (
+                Codes: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"" + KaeltemittelSchema.TAB_STAMM + "\" WHERE \"ReadOnly\" = 1")),
+                MitVerweis: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"" + KaeltemaschineSchema.TAB_STAMM + "\" WHERE \"ID_Kaeltemittel\" IS NOT NULL")),
+                Verwaist: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"" + KaeltemaschineSchema.TAB_STAMM + "\" m WHERE m.\"ID_Kaeltemittel\" IS NOT NULL " +
+                    "AND NOT EXISTS (SELECT 1 FROM \"" + KaeltemittelSchema.TAB_STAMM + "\" k WHERE k.\"ID\" = m.\"ID_Kaeltemittel\")"))));
+
+            Assert.Equal(KaeltemittelSchema.SAAT.Count, befund.Codes);
+            Assert.Equal(3L, befund.MitVerweis); // die Auslieferungssätze 1 bis 3
+            Assert.Equal(0L, befund.Verwaist);
         }
 
         // =============================================================================

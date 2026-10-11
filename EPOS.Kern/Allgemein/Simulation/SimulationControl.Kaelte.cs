@@ -442,6 +442,11 @@ namespace WindowsFormsApplication1
                     Protokoll.HinweisEinmal("kuehl-km-feuchte-" + id,
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE,
                                       k.Bezeichner, ohneFeuchte));
+                // K-F2: adiabat/hybrid ohne Feuchte über der Schaltgrenze - trocken, benannt, nie still.
+                if (k.Rueckkuehlwerk != null && k.Rueckkuehlwerk.StundenOhneFeuchteTrocken > 0)
+                    Protokoll.HinweisEinmal("kuehl-rkw-feuchte-" + a.AnlagenId,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_OHNE_FEUCHTE,
+                                      k.Bezeichner, k.Rueckkuehlwerk.Bezeichner, k.Rueckkuehlwerk.StundenOhneFeuchteTrocken));
 
                 // K23 wie bei der Wärmepumpe: NULL = kein Zuschlag; ein Wert außerhalb 0 <= x < 1 wird benannt verworfen.
                 double hilfsstromanteil = 0.0;
@@ -489,8 +494,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Das Rückkühlwerk einer Kältemaschinen-Anlage</b> (K-F1; Entwurf Split/VRF/Rückkühlwerk 5.1–5.3): liest die
         /// Projektkopie aus <c>ID_Rueckkuehlwerk</c> über <see cref="RueckkuehlwerkCtrl.LadenStill"/> und setzt sie an die
-        /// Maschine. Eine luftgekühlte Maschine kennt kein Rückkühlwerk — es wird dann mit Hinweis übergangen. Was K-F1 am
-        /// Rückkühlwerk noch nicht rechnet, wird einmal je Anlage benannt; gerechnet wird der Weg <c>FEST</c>.
+        /// Maschine. Eine luftgekühlte Maschine kennt kein Rückkühlwerk — es wird dann mit Hinweis übergangen. Was am
+        /// Rückkühlwerk noch nicht gerechnet wird (Reihe, K-F3), wird einmal je Anlage benannt; dazu nennt der Lauf den
+        /// ersetzten Hilfsstrom, die leere Nennleistung und die Verdunstungskühlanlage (42. BImSchV) je einmal.
         /// </summary>
         private void RueckkuehlwerkAnsetzen(KaeltemaschineAnlageModel a, Kaeltemaschine k)
         {
@@ -504,11 +510,52 @@ namespace WindowsFormsApplication1
                                   k.Bezeichner, r.Bezeichner));
                 return;
             }
+            r.WasserpreisEurM3 = a.WasserpreisEurM3;
             k.RueckkuehlwerkSetzen(r);
             if (r.NichtGerechnet.Count > 0)
                 Protokoll.HinweisEinmal("kuehl-rkw-nicht-gerechnet-" + a.AnlagenId,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_NICHT_GERECHNET,
                                   k.Bezeichner, r.Bezeichner, RueckkuehlwerkMerkmale(r.NichtGerechnet)));
+            // K-F2 (Entwurf 5.3): der Ventilator ersetzt den Hilfsstrom der Rückkühlung - keine Doppelzählung, benannt.
+            if (r.MitVentilator && k.HilfsstromRueckkuehlungKw > 0)
+                Protokoll.HinweisEinmal("kuehl-rkw-hilfsstrom-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT,
+                                  k.Bezeichner, r.Bezeichner, r.VentilatorNennKw.Value.ToString("N2", CultureInfo.CurrentCulture),
+                                  k.HilfsstromRueckkuehlungKw.ToString("N2", CultureInfo.CurrentCulture)));
+            if ((r.Lastabhaengig || r.MitVentilator) && !r.NennleistungKw.HasValue)
+                Protokoll.HinweisEinmal("kuehl-rkw-nenn-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER,
+                                  k.Bezeichner, r.Bezeichner));
+            // K-F2: Verdunstungskühlanlagen (42. BImSchV) - nur Hinweis, keine Prüfung.
+            if (r.Verdunstungskuehlanlage)
+                Protokoll.HinweisEinmal("kuehl-rkw-bimschv-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_BIMSCHV,
+                                  k.Bezeichner, r.Bezeichner));
+        }
+
+        /// <summary>
+        /// K-F2 (Entwurf 5.3, 5.8, Frage KD-Q8): die Meldungen des Rückkühlwerks nach der Kaskade — Wasser samt Kosten (leer
+        /// Preis = keine Kosten, benannt) und die Stunden über der Nennleistung.
+        /// </summary>
+        private void RueckkuehlwerkMelden(Kaelteerzeuger e)
+        {
+            Rueckkuehlwerk r = e.Maschine.Rueckkuehlwerk;
+            if (r == null) return;
+            if (r.Verdunstungskuehlanlage && e.RkWasserM3 > 0)
+            {
+                string menge = e.RkWasserM3.ToString("N1", CultureInfo.CurrentCulture);
+                double? kosten = Rueckkuehlwerk.WasserkostenEur(e.RkWasserM3, r.WasserpreisEurM3);
+                Protokoll.HinweisEinmal("kuehl-rkw-wasser-" + e.AnlagenID, kosten.HasValue
+                    ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER_KOSTEN,
+                                    e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass,
+                                    kosten.Value.ToString("N0", CultureInfo.CurrentCulture))
+                    : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS,
+                                    e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass));
+            }
+            if (e.RkStundenUeberlast > 0)
+                Protokoll.HinweisEinmal("kuehl-rkw-ueberlast-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_UEBERLAST,
+                                  e.Bezeichner, r.Bezeichner, e.RkStundenUeberlast));
         }
 
         /// <summary>Die nicht gerechneten Merkmale eines Rückkühlwerks als Aufzählung in der Sprache des Laufs.</summary>
@@ -993,6 +1040,7 @@ namespace WindowsFormsApplication1
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_UNTERDECKUNG,
                         e.Bezeichner, e.StundenLeistungsgrenze,
                         (e.OffenAnLeistungsgrenzeKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture)));
+            RueckkuehlwerkMelden(e);
         }
 
         // =====================================================================

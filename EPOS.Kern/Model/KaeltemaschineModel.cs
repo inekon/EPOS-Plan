@@ -39,6 +39,12 @@ namespace WindowsFormsApplication1
         /// <summary>Kältemittel (Text).</summary>
         public string Kaeltemittel { get; set; }
 
+        /// <summary>
+        /// Verweis auf die Kältemitteltabelle (<c>Tab_Kaeltemittel_STAMM.ID</c>, Schritt 216); <c>null</c> = kein Treffer,
+        /// leerer Text oder Datenbank vor dem Schritt. Beim Speichern setzt der Code-Abgleich des Textes die ID.
+        /// </summary>
+        public int? ID_Kaeltemittel { get; set; }
+
         /// <summary>Rückkühlart — Persistenzwert aus <see cref="KaeltemaschineSchema.RUECKKUEHLARTEN"/>.</summary>
         public string Rueckkuehlart { get; set; }
 

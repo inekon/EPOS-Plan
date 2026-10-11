@@ -3423,6 +3423,46 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrRkw + " - vollstaendig: " + RueckkuehlwerkSchema.Vollstaendig() +
                                   ", Anlagenzeilen mit Wert: " + RueckkuehlwerkSchema.ZeilenMitWert() + " (erwartet True, 0).");
             }
+
+            // ---- Schritt VorheizenSchema.SCHRITT (AH-V4): Vorheizen der Aufheizoptimierung, Fassung 2 - sieben Spalten an
+            //      Tab_Einstellungen, Vorheizzeit_H an Tab_Zone, achtzehn Ergebnisspalten an Tab_ErgebnisGebaeude und
+            //      Tab_ErgebnisZone. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Vorheizen.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Spalte steht auf NULL, und NULL ist die Sollwertrampe des Bestands.
+            string nrVh = VorheizenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVh + " - Vorheizen: " + (VorheizenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVh = new List<string>();
+                angelegt += VorheizenSchema.Ausfuehren(berichtVh);
+                foreach (string zeile in berichtVh)
+                    Console.WriteLine("Schritt " + nrVh + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVh + " - vollstaendig: " + VorheizenSchema.Vollstaendig() +
+                                  ", Einstellungen mit Verfahren: " + VorheizenSchema.ZeilenMitVerfahren() + " (erwartet True, 0).");
+            }
+
+            // ---- Schritt KaeltemittelSchema.SCHRITT (KM4-E1): Kaeltemittel als Stammdatum - Tab_Kaeltemittel_STAMM samt
+            //      Saat (achtzehn Codes VORLAEUFIG) und Katalogschluesseln, ID_Kaeltemittel an Katalog und Projektkopie der
+            //      Kaeltemaschine mit Zuordnung des Textbestands, Tab_Projekt.Inbetriebnahmejahr. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Kaeltemittel.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest Tabelle, Verweis oder Jahr.
+            string nrKmt = KaeltemittelSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKmt + " - Kaeltemittel: " + (KaeltemittelSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKmt = new List<string>();
+                KaeltemittelSchema.Laufergebnis ergKmt = KaeltemittelSchema.Ausfuehren(berichtKmt);
+                angelegt += ergKmt.Angelegt;
+                foreach (string zeile in berichtKmt)
+                    Console.WriteLine("Schritt " + nrKmt + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKmt + " - vollstaendig: " + KaeltemittelSchema.Vollstaendig() +
+                                  ", Katalogsaetze mit ID: " + KaeltemittelSchema.ZeilenMitId(KaeltemaschineSchema.TAB_STAMM) +
+                                  ", Projektkopien mit ID: " + KaeltemittelSchema.ZeilenMitId(KaeltemaschineSchema.TAB_PROJEKT) +
+                                  " (erwartet True, 3, 3).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

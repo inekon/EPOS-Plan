@@ -481,5 +481,75 @@ namespace EPOS.Kern.Tests
                 Assert.Contains(p.Hinweise, z => z.Contains("Vorheizen " + tV.ToString(CultureInfo.InvariantCulture) + " h", StringComparison.Ordinal));
             }
         }
+
+        // =====================================================================
+        //  AH-V5: Zonenwerte genügen — Rückfall nur je Zone ohne jeden Wert
+        // =====================================================================
+
+        [Fact]
+        public void Rueckfall_ohne_Projektwert_nur_ohne_Gebaeude_und_bei_Geltung_Zone_ohne_Zonenwert()
+        {
+            Aufheizvorgabe zone = new Aufheizvorgabe(true, null, null, null, null)
+            {
+                Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Vorgabe, null, geltung: Vorheizgeltung.Zone),
+            };
+            Aufheizvorgabe gebaeude = new Aufheizvorgabe(true, null, null, null, null)
+            {
+                Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Vorgabe),
+            };
+            Assert.True(Vorheizplanung.Anwendbar(zone));
+            Assert.Equal(Vorheizrueckfall.OhneVorheizzeit, Vorheizplanung.Rueckfall(zone, null, false, null, new int?[] { null, null }));
+            Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(zone, null, false, null, new int?[] { null, 4 }));
+            Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(zone, null, false, 5, null));
+            // Geltung Gebäude: Zonenwerte wirken nicht — ohne Gebäude- und Projektwert fällt das Gebäude zurück.
+            Assert.Equal(Vorheizrueckfall.OhneVorheizzeit, Vorheizplanung.Rueckfall(gebaeude, null, false, null, new int?[] { 4 }));
+            Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(gebaeude, null, false, 5, null));
+            // Der Heizkreis-Schalter bleibt der zweite Grund.
+            Aufheizvorgabe ohneKreis = new Aufheizvorgabe(true, null, null, null, null)
+            {
+                Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Vorgabe, null, geltung: Vorheizgeltung.Zone, heizkreisEinbeziehen: false),
+            };
+            Assert.Equal(Vorheizrueckfall.Heizkreis, Vorheizplanung.Rueckfall(ohneKreis, null, true, null, new int?[] { 4 }));
+        }
+
+        [Fact]
+        public void Mehrzonen_Geltung_Zone_ohne_Projektwert_nimmt_Zone_vor_Gebaeude_und_rampt_nur_die_Zone_ohne_Wert()
+        {
+            using var k = new Kulturvorrichtung("de-DE");
+            Aufheizvorgabe v = new Aufheizvorgabe(true, null, null, null, null)
+            {
+                Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Vorgabe, null, geltung: Vorheizgeltung.Zone),
+            };
+
+            // Zone 1 mit eigener Vorheizzeit, Zone 2 ohne, Gebäude ohne: Zone 2 rechnet mit der Sollwertrampe.
+            ProjektGebaeudeModel g = AufheizMehrzonenTests.Dreizonen(
+                eins: new Zoneneingaben(SollTag: 21.0, SollNacht: 16.0, VorheizzeitH: 4),
+                zwei: new Zoneneingaben(SollTag: 20.0, SollNacht: 17.0));
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+            IReadOnlyList<Aufheizplan> plaene = Zonenplaene(g, v);
+            Assert.Equal(4, plaene[0].Vorheizen.VorheizzeitH);
+            Assert.Null(plaene[1].Vorheizen);
+            Assert.False(plaene[1].Unbeheizt);
+            Assert.True(plaene[2].Unbeheizt);
+            Assert.Single(p.Hinweise, z => z.Contains("Wohnung 2", StringComparison.Ordinal)
+                                           && z.Contains("Sollwertrampe", StringComparison.Ordinal));
+            Assert.DoesNotContain(p.Hinweise, z => z.Contains("„Wohnung 1“", StringComparison.Ordinal));
+            // Mit Gebäudewert erbt Zone 2 ihn, Zone 1 behält ihren.
+            g = AufheizMehrzonenTests.Dreizonen(
+                eins: new Zoneneingaben(SollTag: 21.0, SollNacht: 16.0, VorheizzeitH: 4),
+                zwei: new Zoneneingaben(SollTag: 20.0, SollNacht: 17.0));
+            g.Aufheizzeit_Manuell_H = 5;
+            plaene = Zonenplaene(g, v);
+            Assert.Equal(4, plaene[0].Vorheizen.VorheizzeitH);
+            Assert.Equal(5, plaene[1].Vorheizen.VorheizzeitH);
+        }
+
+        private static IReadOnlyList<Aufheizplan> Zonenplaene(ProjektGebaeudeModel g, Aufheizvorgabe v)
+        {
+            IReadOnlyList<ZonenEingang> zonen = ZonenEingang.Bauen(g, AufheizMehrzonenTests.Klima());
+            foreach (ZonenEingang z in zonen)
+                if (z.Eingang.ThetaSoll.Any(x => !double.IsNaN(x))) z.Eingang.HeizsollwertMitRampeSetzen(Kalender());
+            return Vorheizplanung.AnwendenZonen(zonen, v, 0, 1, "Dreizonen");
+        }
     }
 }

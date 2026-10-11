@@ -502,8 +502,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static bool Anwendbar(Aufheizvorgabe vorgabe)
             => vorgabe != null && vorgabe.An && vorgabe.Vorheizen != null
-               && ((vorgabe.Vorheizen.IstVorgabe && vorgabe.Vorheizen.VorheizzeitH.HasValue)
-                   || vorgabe.Vorheizen.Verfahren == Aufheizverfahren.Berechnet);
+               && (vorgabe.Vorheizen.IstVorgabe || vorgabe.Vorheizen.Verfahren == Aufheizverfahren.Berechnet);
 
         /// <summary>
         /// Der Rückfall eines Gebäudes auf die Sollwertrampe (2.7): Verfahren „Vorgabe“ ohne Vorheizzeit, Heizkreis bei Schalter
@@ -511,11 +510,21 @@ namespace WindowsFormsApplication1
         /// Profilweg (dem Pass 1 des Kreises), der Plan reist mit dem Eingang in den Stepper, der Nachweis misst am Kreisergebnis
         /// (<see cref="Zonenrechnung.Abschluss"/>).
         /// </summary>
-        internal static Vorheizrueckfall Rueckfall(Aufheizvorgabe vorgabe, string anlagenkopplung, bool heizkreisWirksam)
+        /// <param name="vorheizzeitGebaeudeH">Die Vorheizzeit des Gebäudes (<c>Aufheizzeit_Manuell_H</c>); <c>null</c> = keine.</param>
+        /// <param name="vorheizzeitenZonenH">Die Vorheizzeiten der Zonen (<c>Tab_Zone.Vorheizzeit_H</c>); wirksam nur mit
+        /// Geltung Zone. AH-V5: Mit Verfahren „Vorgabe“ fällt das Gebäude nur zurück, wenn weder Projekt noch Gebäude noch —
+        /// bei Geltung Zone — eine Zone eine Vorheizzeit trägt; eine einzelne Zone ohne jeden Wert fällt in
+        /// <see cref="AnwendenZonen"/> für sich zurück.</param>
+        internal static Vorheizrueckfall Rueckfall(Aufheizvorgabe vorgabe, string anlagenkopplung, bool heizkreisWirksam,
+                                                   int? vorheizzeitGebaeudeH = null,
+                                                   IEnumerable<int?> vorheizzeitenZonenH = null)
         {
             if (vorgabe == null || !vorgabe.An || vorgabe.Vorheizen == null
                 || vorgabe.Vorheizen.Verfahren == Aufheizverfahren.Sollwertrampe) return Vorheizrueckfall.Keiner;
-            if (vorgabe.Vorheizen.IstVorgabe && !vorgabe.Vorheizen.VorheizzeitH.HasValue) return Vorheizrueckfall.OhneVorheizzeit;
+            if (vorgabe.Vorheizen.IstVorgabe && !vorgabe.Vorheizen.VorheizzeitH.HasValue && !vorheizzeitGebaeudeH.HasValue
+                && !(vorgabe.Vorheizen.Geltung == Vorheizgeltung.Zone && vorheizzeitenZonenH != null
+                     && vorheizzeitenZonenH.Any(h => h.HasValue)))
+                return Vorheizrueckfall.OhneVorheizzeit;
             if (heizkreisWirksam && !vorgabe.Vorheizen.HeizkreisEinbeziehen) return Vorheizrueckfall.Heizkreis;
             return Vorheizrueckfall.Keiner;
         }
@@ -545,7 +554,9 @@ namespace WindowsFormsApplication1
             ZonenEingang zone = ZonenEingang.Einzeln(eingang);
             Aufheizzone az = Aufheizzone.Aus(zone);
             Aufheizplan plan;
-            if (!az.Beheizt) plan = Unbeheizt(az);
+            if (OhneVorheizzeit(az, vorgabe))
+                plan = Aufheizoptimierung.Planen(az, vorgabe with { Vorheizen = Vorheizvorgabe.Sollwertrampe }, aufheizleistungTestW);
+            else if (!az.Beheizt) plan = Unbeheizt(az);
             else
             {
                 Vorheizanalyse a = Analysieren(az, vorgabe, vorlauf, aufheizleistungTestW);
@@ -588,8 +599,17 @@ namespace WindowsFormsApplication1
             GebaeudeModellErgebnis[] vorlauf = stepper.Abschluss(index, idGebaeude);
             Aufheizzone[] eingaenge = Aufheizzone.AusZonen(zonen);
             var analysen = new Vorheizanalyse[eingaenge.Length];
+            // AH-V5: Eine Zone ohne jede Vorheizzeit (Option 1, Geltung Zone) rechnet für sich mit der Sollwertrampe, mit Hinweis.
+            var rampe = new bool[eingaenge.Length];
             for (int i = 0; i < eingaenge.Length; i++)
-                if (eingaenge[i].Beheizt) analysen[i] = Analysieren(eingaenge[i], vorgabe, vorlauf[i], aufheizleistungTestW);
+            {
+                rampe[i] = OhneVorheizzeit(eingaenge[i], vorgabe);
+                if (rampe[i])
+                    SimulationProtokoll.Aktuell.HinweisEinmal("vorh-rueckfall-zone-" + wer + "-" + i,
+                        "Gebäudemodell VDI 6007: " + wer + " — " + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                            MyResource.Resource.SIMENG_VORH_RUECKFALL_ZONE, eingaenge[i].Bezeichnung));
+                else if (eingaenge[i].Beheizt) analysen[i] = Analysieren(eingaenge[i], vorgabe, vorlauf[i], aufheizleistungTestW);
+            }
             if (vorgabe.Vorheizen.Geltung == Vorheizgeltung.Gebaeude) GebaeudedeckelVerteilen(analysen, vorgabe.Vorheizen);
             for (int i = 0; i < analysen.Length; i++)
                 analysen[i]?.VorausschauBilden(zonen[i], vorlauf, vorgabe.Vorheizen.GenauigkeitWirksamK,
@@ -607,10 +627,13 @@ namespace WindowsFormsApplication1
                 }
             bool gemeinsam = IstBerechnet(vorgabe) && vorgabe.Vorheizen.Geltung == Vorheizgeltung.Gebaeude;
             var plaene = new Aufheizplan[eingaenge.Length];
+            Aufheizvorgabe rueckfallvorgabe = vorgabe with { Vorheizen = Vorheizvorgabe.Sollwertrampe };
             for (int i = 0; i < eingaenge.Length; i++)
-                plaene[i] = analysen[i] == null
-                    ? Unbeheizt(eingaenge[i])
-                    : PlanBilden(analysen[i], vorgabe, gemeinsam ? tVGebaeude : tV[i]);
+                plaene[i] = rampe[i]
+                    ? Aufheizoptimierung.Planen(eingaenge[i], rueckfallvorgabe, aufheizleistungTestW)
+                    : analysen[i] == null
+                        ? Unbeheizt(eingaenge[i])
+                        : PlanBilden(analysen[i], vorgabe, gemeinsam ? tVGebaeude : tV[i]);
             for (int i = 0; i < plaene.Length; i++) Aufheizoptimierung.PlanSetzen(zonen[i], plaene[i]);
             return plaene;
         }
@@ -739,8 +762,23 @@ namespace WindowsFormsApplication1
         {
             if (IstBerechnet(vorgabe))
                 return Math.Max(Vorheizvorgabe.VORHEIZZEIT_MIN_H, a.BedarfQuantilH);
-            return Math.Clamp(a.Zone.ManuellH ?? vorgabe.Vorheizen.VorheizzeitH.Value, Vorheizvorgabe.VORHEIZZEIT_MIN_H, FENSTER_MAX_H);
+            return Math.Clamp(VorheizzeitVorgabe(a.Zone, vorgabe).Value, Vorheizvorgabe.VORHEIZZEIT_MIN_H, FENSTER_MAX_H);
         }
+
+        /// <summary>
+        /// Die vorgegebene Vorheizzeit einer Zone (Option 1): mit Geltung Zone zuerst die der Zone (<c>Tab_Zone.Vorheizzeit_H</c>,
+        /// AH-V4), dann die des Gebäudes, dann die des Projekts; <c>null</c> = keine — dann rechnet die Zone mit der
+        /// Sollwertrampe (AH-V5).
+        /// </summary>
+        internal static int? VorheizzeitVorgabe(Aufheizzone zone, Aufheizvorgabe vorgabe)
+        {
+            int? eigene = vorgabe.Vorheizen.Geltung == Vorheizgeltung.Zone ? zone.VorheizzeitZoneH : null;
+            return eigene ?? zone.ManuellH ?? vorgabe.Vorheizen.VorheizzeitH;
+        }
+
+        /// <summary>Rechnet die Zone mit Option 1 ohne jede Vorheizzeit — dann mit der Sollwertrampe (AH-V5)?</summary>
+        private static bool OhneVorheizzeit(Aufheizzone zone, Aufheizvorgabe vorgabe)
+            => vorgabe.Vorheizen.IstVorgabe && zone.Beheizt && !VorheizzeitVorgabe(zone, vorgabe).HasValue;
 
         private static Aufheizplan Unbeheizt(Aufheizzone zone)
             => new Aufheizplan { Zustand = DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT, Reihe = zone.Soll, Geaendert = false };

@@ -271,7 +271,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // (bewusst draußen): 18 → 19.
         // KK4 (Entwurf KK Festlegung 15): die Kühlübergabe der Zone - Art und zwei Zahlenfelder (Katalogfelder
         // kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung): 19 → 22.
-        new("ZonenDialog", 22),
+        // AH-V5: die Vorheizzeit der Zone - Katalogfeld vorheizzeit (22 → 23).
+        new("ZonenDialog", 23),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
@@ -280,7 +281,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // die Bestaetigung liest der Assistent nur, setzen kann sie allein der Anwender.
         // Freigabe der Importdialoge, Teil A (10.10.2026): alle Eingabestellen im Katalog.
         new("SpeicherFlottenCsvDialog", 26),
-        new("GanglinieImportOptionenDialog", 9),
+        // IM-3: erste Datenzeile und Zeilenzahl (Katalogfelder erste_datenzeile, zeilenzahl): 9 → 11.
+        new("GanglinieImportOptionenDialog", 11),
         new("SpotpreisImportDialog", 2, "die Dateiwahl (Betriebssystemdialog) und das Protokoll zählen nicht; Bezeichnung und Ablage stehen im Katalog"),
         new("ImportKonflikteDialog", 2, "Name und Aktion je Zeile stehen als Spalten im Katalog"),
         // Freigabe der Masken, Teil C (10.10.2026).
@@ -325,7 +327,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // BV-E2 (Entscheid BV-E2-1): das Logo der Rubrik „Bericht" ist eine Dateiwahl und zählt hier nicht
         // (die Zahl bleibt 10), steht aber als Katalogfeld bericht_logo über EinstellungenKiSicht.BerichtLogo.
         // Die zwei Vorgaben der Installation (Konzept Berichtsvorlagen 10.3) sind zwei Auswahlfelder: 10 → 12.
-        new("EinstellungenDialog", 12, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2); die zwei Vorgaben der Installation sind die Wahlfelder bericht_vorgabe_word und bericht_vorgabe_excel"),
+        // AH-V5 (F14 (a)): die Vorbelegung der Vorheiztoleranz - Katalogfelder neue_projekte_vorheiz_art und
+        // neue_projekte_vorheiz_wert (12 → 14).
+        new("EinstellungenDialog", 14, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2); die zwei Vorgaben der Installation sind die Wahlfelder bericht_vorgabe_word und bericht_vorgabe_excel"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),
@@ -496,7 +500,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // als einspeisegrenze und einspeisegrenze_einheit (17 → 19).
         // KP3 O1b (E59 (2)): der Aufschlag unter der Art in Stunden und Prozent - die Feldkarte führt
         // ihn als aufheiz_aufschlag_h und aufheiz_aufschlag_prozent (Aufheizoptimierung 9 → 11, 24 → 26).
-        new("SimulationKonfigSeite", 26),
+        // AH-V5 (Entwurf Vorheizrampe 2.9): das Vorheizen - Verfahren, Vorheizzeit, Toleranz (Art und Wert),
+        // Regelgenauigkeit (Auswahl und Eingabefeld, beide aufheiz_genauigkeit), Geltung und Heizkreis-Schalter; die
+        // Leistungsreserve steht je Verfahrenszweig einmal im Markup (aufheiz_reserve) (26 → 35).
+        new("SimulationKonfigSeite", 35),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

@@ -223,6 +223,62 @@ namespace EPOS.Kern.Tests
         //  Zielstand unverändert, Fehler lässt die Datenbank unberührt
         // =============================================================================
 
+        /// <summary>
+        /// <b>KM4-E1-b:</b> <c>ID_Kaeltemittel</c> reist nicht (Ausnahme wie <c>ID_Stamm</c>); am Ziel setzt der Import ihn
+        /// aus dem Text — auch bei abweichender ID-Vergabe der Kältemitteltabelle —, für einen Text ohne Code-Treffer über
+        /// den Katalogsatz mit demselben Text und Verweis („R1234ze“), und ein unbekannter Text bleibt ohne ID stehen.
+        /// </summary>
+        [Fact]
+        public void Kaeltemittelverweis_reist_nicht_und_wird_am_Ziel_aus_dem_Text_gesetzt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+            const string QUELLE = "Kältemaschine mit Kältespeicher"; // Referenzprojekt 1055
+            const int PROJEKT = 1055;
+
+            // Zwei weitere Kopien: der Satz „R1234ze“ (Verweis über den Katalogschlüssel) und ein unbekannter Text.
+            int nass = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel = ?",
+                new DbParam("?", KaeltemittelSchema.BEISPIEL_SCHLUESSEL)), CultureInfo.InvariantCulture);
+            Assert.True(KaeltemaschineCtrl.EigeneKopieAnlegen(nass, PROJEKT) > 0);
+            int fremd = KaeltemaschineCtrl.EigeneKopieAnlegen(nass, PROJEKT);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine SET Kaeltemittel = 'Frigen X', ID_Kaeltemittel = NULL, " +
+                                           "Bezeichner = 'Fremdgerät' WHERE ID = ?", new DbParam("?", fremd));
+            var quelle = KaeltemaschineCtrl.IdsImProjekt(PROJEKT);
+            Assert.Equal(3, quelle.Count);
+
+            string paket = ordner.Datei("kaeltemittel.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(QUELLE, paket));
+
+            // Am Ziel eine andere ID-Vergabe: R513A und R1234ze(E) bekommen neue IDs (die Katalogsätze ziehen mit).
+            foreach ((string Code, int Neu) z in new[] { ("R513A", 500), (KaeltemittelSchema.BEISPIEL_CODE, 501) })
+            {
+                int alt = KaeltemittelCtrl.IdZumCode(z.Code).Value;
+                DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemittel_STAMM SET ID = ? WHERE ID = ?",
+                                               new DbParam("?", z.Neu), new DbParam("?", alt));
+                DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine_STAMM SET ID_Kaeltemittel = ? WHERE ID_Kaeltemittel = ?",
+                                               new DbParam("?", z.Neu), new DbParam("?", alt));
+            }
+
+            int neu = io.Importieren(paket, "Kältemittel Rundreise", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            var ziel = KaeltemaschineCtrl.IdsImProjekt(neu);
+            Assert.Equal(3, ziel.Count);
+            KaeltemaschineModel r513a = KaeltemaschineCtrl.Laden(ziel[0]);
+            Assert.Equal("R513A", r513a.Kaeltemittel);
+            Assert.Equal(500, r513a.ID_Kaeltemittel);
+            KaeltemaschineModel r1234ze = KaeltemaschineCtrl.Laden(ziel[1]);
+            Assert.Equal(KaeltemittelSchema.BEISPIEL_TEXT, r1234ze.Kaeltemittel);
+            Assert.Equal(nass, r1234ze.IdStamm);
+            Assert.Equal(501, r1234ze.ID_Kaeltemittel);
+            KaeltemaschineModel unbekannt = KaeltemaschineCtrl.Laden(ziel[2]);
+            Assert.Equal("Frigen X", unbekannt.Kaeltemittel);
+            Assert.Null(unbekannt.ID_Kaeltemittel);
+        }
+
         [Fact]
         public void Ein_Paket_auf_Zielstand_wird_nicht_angefasst()
         {
