@@ -1322,6 +1322,14 @@ namespace WindowsFormsApplication1
             if (km != null && km.ContainsKey(KaeltemaschineSchema.SPALTE_ID_STAMM))
                 foreach (int id in ids)
                     v.Ausfuehren(KaeltemaschineSchema.SqlNachtragProjekt(), new DbParam("@projekt", id));
+            // Der Verweis auf das Kaeltemittel (Schritt 216) reist nicht; am Ziel setzt ihn der Code-Abgleich des Textes.
+            if (km != null && km.ContainsKey(KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL) &&
+                DataRepository.TabelleVorhanden(KaeltemittelSchema.TAB_STAMM))
+                foreach (int id in ids)
+                {
+                    v.Ausfuehren(KaeltemittelSchema.SqlNachtragProjekt(), new DbParam("@projekt", id));
+                    v.Ausfuehren(KaeltemittelSchema.SqlNachtragProjektUeberStamm(), new DbParam("@projekt", id));
+                }
 
             Dictionary<string, Type> rkw = ZielTypen(RueckkuehlwerkSchema.TAB_PROJEKT);
             if (rkw != null && rkw.ContainsKey(RueckkuehlwerkSchema.SPALTE_ID_STAMM))
@@ -1363,6 +1371,11 @@ namespace WindowsFormsApplication1
             // Ebenso der Katalogverweis der Kaeltemaschinen-Projektkopie (KU3-1).
             if (tab.Equals(KaeltemaschineSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&
                 col.Equals(KaeltemaschineSchema.SPALTE_ID_STAMM, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+            // Ebenso der Verweis der Kaeltemaschinen-Projektkopie auf ihr Kaeltemittel (KM4-E1): Die Id einer fremden
+            // Kaeltemitteltabelle sagt am Ziel nichts; VerweiseNachtragen setzt ihn ueber den Code des Textes.
+            if (tab.Equals(KaeltemaschineSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL, StringComparison.OrdinalIgnoreCase))
                 return DBNull.Value;
             // Ebenso der Katalogverweis der Rueckkuehlwerk-Projektkopie (K-F1).
             if (tab.Equals(RueckkuehlwerkSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&

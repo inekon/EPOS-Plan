@@ -287,6 +287,33 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Nachtrag des Projektpakets (Muster <see cref="KaeltemaschineSchema.SqlNachtragProjekt"/>): <c>ID_Kaeltemittel</c>
+        /// reist nicht und wird an den Projektkopien der Kältemaschine eines importierten Projekts aus dem Text gesetzt —
+        /// derselbe Code-Abgleich wie <see cref="SqlZuordnung"/>, nur bei genau einem Treffer. Parameter: die Projekt-ID.
+        /// </summary>
+        public static string SqlNachtragProjekt() =>
+            SqlZuordnung(KaeltemaschineSchema.TAB_PROJEKT) + " AND \"ID_Projekt\" = ?";
+
+        /// <summary>
+        /// Der zweite Nachtrag nach <see cref="SqlNachtragProjekt"/>: Eine Projektkopie ohne Code-Treffer, deren Katalogsatz
+        /// (<c>ID_Stamm</c>, am Ziel schon über den Bezeichner nachgetragen) denselben Text trägt und einen Verweis führt,
+        /// übernimmt dessen ID — so wie <see cref="KaeltemaschineCtrl.AusKatalogUebernehmen"/> (etwa „R1234ze“ über den
+        /// Katalogschlüssel auf <see cref="BEISPIEL_CODE"/>). Parameter: die Projekt-ID.
+        /// </summary>
+        public static string SqlNachtragProjektUeberStamm()
+        {
+            string p = Q(KaeltemaschineSchema.TAB_PROJEKT), s = Q(KaeltemaschineSchema.TAB_STAMM);
+            string text = Getrimmt(p + "." + Q(KaeltemaschineSchema.SPALTE_KAELTEMITTEL));
+            string bedingung = "s." + Q("ID") + " = " + p + "." + Q(KaeltemaschineSchema.SPALTE_ID_STAMM) + " AND s." +
+                               Q(SPALTE_ID_KAELTEMITTEL) + " IS NOT NULL AND " + Getrimmt("s." + Q(KaeltemaschineSchema.SPALTE_KAELTEMITTEL)) +
+                               " = " + text + " COLLATE NOCASE";
+            return "UPDATE " + p + " SET " + Q(SPALTE_ID_KAELTEMITTEL) + " = (SELECT s." + Q(SPALTE_ID_KAELTEMITTEL) + " FROM " + s +
+                   " s WHERE " + bedingung + ") WHERE \"ID_Projekt\" = ? AND " + Q(SPALTE_ID_KAELTEMITTEL) + " IS NULL AND " +
+                   Q(KaeltemaschineSchema.SPALTE_ID_STAMM) + " IS NOT NULL AND " + text + " <> '' AND EXISTS (SELECT 1 FROM " + s +
+                   " s WHERE " + bedingung + ")";
+        }
+
+        /// <summary>
         /// Setzt den Auslieferungssatz „R1234ze“ über seinen Katalogschlüssel auf <see cref="BEISPIEL_CODE"/> — nur mit
         /// leerer ID und dem Text ohne Isomer. Parameter: Code, Katalogschlüssel, Text, Code.
         /// </summary>
