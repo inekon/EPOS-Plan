@@ -1,5 +1,23 @@
 Der Dialog '''Brauchwasser''' verwaltet die Brauchwasserprofile des Projekts. Sie wählen einen Profiltyp aus dem Katalog und geben den Jahresverbrauch an; hinterlegte Monatsanteile und ein Wochenprofil aus 168 Stundenwerten verteilen ihn über das Jahr. Wahlweise erzeugt der Zapfprofilgenerator den Bedarf aus Nutzungszonen des Gebäudes; die Optionsgruppe ''Rechenweg Brauchwasser'' wählt zwischen ''Bestandsprofile'' und ''Zapfprofil''.
 
+== Konfiguration im Überblick ==
+{{Anker|konfiguration}}
+
+Der Brauchwasserbedarf eines Projekts entsteht in vier Schritten; die ersten beiden legen fest, wie viel Wärme wann gebraucht wird, die letzten beiden, wie sie bereitgestellt und woher sie gedeckt wird.
+
+# '''Bedarf wählen''' – im Bedarfsprofil-Dialog ''Brauchwasserwärme'' ein oder mehrere Profile aus dem Katalog ins Projekt übernehmen und den Jahresverbrauch eintragen, oder über ''Zapfprofil erzeugen…'' Nutzungszonen anlegen und den ''Rechenweg Brauchwasser'' auf ''Zapfprofil'' stellen.
+# '''Zeitlichen Verlauf prüfen''' – ''Simulation'' zeigt Monatswerte und Jahresganglinie; ein Betriebskalender legt Feiertage und Betriebsferien auf das Wochenprofil.
+# '''Zirkulation und Desinfektion festlegen''' – auf dem Weg der Bestandsprofile in den ''Weiteren Einstellungen'' der Simulationskonfiguration, auf dem Weg des Zapfprofils je Gebäude im Zapfprofil; die thermische Desinfektion gilt für beide Wege.
+# '''Einbinden''' – in der ''Simulation Konfiguration'' bestimmt die Wärmesenke jedes Erzeugers, ob er das Brauchwasser direkt deckt oder einen Pufferspeicher mit der Nutzung Brauchwasser lädt (siehe [[#einbindung|Einbindung in die Anlage]]).
+
+Jede Zuordnung eines Profils zum Projekt ist eine eigene Zeile mit gepflegter Jahressumme; das Profil im Projekt ist eine Kopie des Katalogsatzes, ihre Änderung berührt den Katalog nicht. Brauchwasser, Prozesswärme und Stromverbraucher werden in Bedarfsprofil-Dialogen desselben Aufbaus verwaltet.
+
+[[Datei:Tagesgang_Brauchwasser.svg|mini|600px|Prinzipbild: derselbe Tagesbedarf als Stundenmittel des Bestandsprofils und als eine Realisierung des Zapfprofils.]]
+
+Welcher Weg passt, hängt von der Frage ab: Für die Energiebilanz eines Jahres genügt das Bestandsprofil mit seinem geglätteten Stundengang. Wer Spitzen, Speichergröße und Zirkulation aus Leitungsdaten braucht oder mehrere Nutzungen in einem Gebäude hat, nimmt das Zapfprofil. Hintergrund unter [[Grundlagen/Brauchwasser|Grundlagen: Brauchwasser]].
+
+[[Datei:Bildschirmfoto_Brauchwasser.png|mini|zentriert|800px|Brauchwasserwärme – Bildschirmfoto mit Beispieldaten.]]
+
 == Eingaben ==
 
 * {{Anker|profilkatalog|projektprofile}}'''Datenbank Profile und ausgewählte Profile im Projekt''' – ein Profil auswählen und ins Projekt übernehmen; mehrere Profile nebeneinander sind möglich.
@@ -16,10 +34,67 @@ Der Dialog '''Brauchwasser''' verwaltet die Brauchwasserprofile des Projekts. Si
 
 Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwerte des Brauchwasserbedarfs werden, steht unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]].
 
+== Einbindung in die Anlage ==
+{{Anker|einbindung}}
+
+Der Brauchwasserbedarf ist einer der drei Wärmekanäle der Simulation – neben Heizung und Prozesswärme. Gedeckt wird er von den Erzeugern, deren Wärmesenke ihn bedient; eingestellt wird das in der ''Simulation Konfiguration'' über ''Wärmesenken…'' je Anlage ([[Programm Dokumentation/Simulation#senkenliste|Wärmesenken einer Anlage]]).
+
+[[Datei:Einbindung_Brauchwasser.svg|mini|600px|Prinzipbild: Kessel und Wärmepumpe laden einen Kombispeicher, das Frischwassermodul zapft oben, die Zirkulation läuft zum Modul zurück.]]
+
+* '''Direkt über den Heizkreis''' – das Ziel ''Heizkreis'' deckt das Brauchwasser unmittelbar in der Stunde des Bedarfs. Die ''Bedarfsart'' teilt die Lieferung: beides mit Warmwasservorrang, nur Warmwasser oder nur Heizwärme. Eine neu angelegte Anlage erhält diese Senke mit Warmwasservorrang, sobald das Projekt Heizung oder Brauchwasser führt.
+* '''Über einen Brauchwasserspeicher''' – das Ziel ''Pufferspeicher Brauchwasser'' lädt einen Speicher, dessen ''Nutzung'' Brauchwasser einschließt; aus ihm wird der Kanal in der Stunde des Bedarfs entladen.
+* '''Über einen Kombispeicher''' – das Ziel ''Pufferspeicher Kombi (Heizung + Warmwasser)'' lädt einen Speicher mit den Nutzungen Heizung und Brauchwasser. Geschichtet hält er oben einen Bereitschaftsteil für das Brauchwasser; ''Vorschlag Kombispeicher'' im Pufferspeicherdialog setzt die Zonenanteile dafür, die ''Entnahmehöhe je Kanal'' legt fest, aus welcher Höhe Heizung und Brauchwasser entnehmen.
+* '''Reihenfolge''' – die Kaskade bestimmt, welcher Erzeuger zuerst deckt, die Ladepriorität, wer zuerst lädt. Bei knappem Speichervorrat bedienen die Speicher in der Vorbelegung zuerst das Brauchwasser, dann die Prozesswärme, dann die Heizung.
+
+'''Temperaturniveau.''' Der Brauchwasserkanal trägt kein Temperaturpaar wie die Prozesswärme; die Temperatur wirkt am Speicher. Ein geschichteter Speicher gibt an das Brauchwasser nur ab, was die Schichten ab der ''Nutztemperatur Brauchwasser'' hergeben, und ein ''Frischwassermodul'' zapft nur, solange die oberste Zone Zapftemperatur plus ''Grädigkeit Frischwassermodul'' hält ([[Programm Dokumentation/Pufferspeicher#bereitschaft|Bereitschaft und Frischwassermodul]]). Was der Speicher nicht hergibt, deckt die nächste Stufe der Kaskade. Eine Wärmepumpe, deren Senke nur das Warmwasser ist, rechnet am Vorlauf ihrer Anlage. Liegt der Vorlauf eines Erzeugers unter der Nutztemperatur seines Zielspeichers, meldet das Laufprotokoll es vor der ersten Stunde.
+
+'''Zirkulation und Desinfektion.''' Die Zirkulation ist eine eigene Teilreihe im Brauchwasserkanal und wird von denselben Erzeugern und Speichern gedeckt wie die Zapfung. Die thermische Desinfektion ist ein eigener Posten im Brauchwasserkanal; gedeckt wird sie nur von einem Erzeuger oder Brauchwasserspeicher, der ihre Zieltemperatur erreicht ([[Programm Dokumentation/Simulation#desinfektion|Thermische Desinfektion]]).
+
+Prinzipschemata mit Booster, Frischwasserstation und Zirkulation stehen unter [[Grundlagen/Hydraulikschemata#brauchwasser-und-prozesswaerme|Grundlagen: Hydraulikschemata]].
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+Ein Mehrfamilienhaus mit 20 Wohnungen braucht im Jahr rund 40&nbsp;MWh Wärme für Brauchwasser. Eine Wärmepumpe heizt, ein Heizkessel heizt das Brauchwasser nach; beide arbeiten auf einen Kombispeicher mit 1&nbsp;000&nbsp;l und ein Frischwassermodul.
+
+<!-- Rechnung: Zirkulation 1 kW · 16 h/d · 365 d = 5 840 kWh/a, gerundet 5,8 MWh. Beispielwerte, kein EPOS-Plan-Ergebnis. -->
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Brauchwasserwärme || ''Datenbank Profile'' → ins Projekt übernehmen || ein Wohnprofil des Katalogs || Monatswerte und Wochenprofil kommen aus dem Katalog
+|-
+| Brauchwasserwärme || ''Ändern des Jahresverbrauchs'' || 40 MWh || skaliert die Monatswerte, der Verlauf bleibt
+|-
+| Simulation Konfiguration, ''Weitere Einstellungen'' || ''Zirkulation Leistung'' / ''Zirkulation Laufzeit'' || 1 kW / 16 h/d || gibt dem Bestandsprofil rund 5,8&nbsp;MWh Zirkulation im Jahr
+|-
+| Pufferspeicher im Projekt || ''Nutzung'' || Heizung und Brauchwasser || der Speicher bedient beide Kanäle
+|-
+| Pufferspeicher im Projekt || ''Schichten'' / ''Vorschlag Kombispeicher'' || 4 / 0,10;0,16;0,37;0,37 || oben ein Bereitschaftsteil, darunter die Heizungszonen
+|-
+| Pufferspeicher im Projekt || ''Frischwassermodul'' / ''Grädigkeit Frischwassermodul'' || an / 5 K || das Brauchwasser wird nur aus der obersten Zone gezapft
+|-
+| Wärmesenken der Wärmepumpe || ''Ziel'' / ''Eigene Einspeisehöhe'' || Pufferspeicher Kombi / 0,5 || sie lädt die Heizungszonen bei niedrigem Vorlauf
+|-
+| Wärmesenken des Heizkessels || ''Ziel'' / ''Eigene Einspeisehöhe'' || Pufferspeicher Kombi / 1 || er heizt den Bereitschaftsteil oben nach
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Speicher ohne Lader.''' Ein Pufferspeicher mit der Nutzung Brauchwasser bekommt nur Wärme, wenn ihn mindestens ein Erzeuger in seiner Wärmesenke als Ziel führt; die Nutzung allein verbindet nichts.
+* '''Nutzung und Ziel passen nicht.''' Lädt eine Anlage einen Speicher mit einem Zweck, den der Speicher nicht entlädt – etwa das Ziel ''Pufferspeicher Brauchwasser'' an einem Speicher, der nur die Heizung bedient –, meldet das Laufprotokoll es.
+* '''Zu niedriger Vorlauf.''' Hält der Speicher oben die Zapftemperatur plus Grädigkeit nicht, weil nur eine Wärmepumpe mit niedrigem Vorlauf lädt, deckt das Frischwassermodul nicht; die Lücke übernimmt die nächste Stufe der Kaskade oder der Heizstab.
+* '''Zirkulation an zwei Stellen.''' Steht der Rechenweg auf ''Zapfprofil'', gilt dessen Zirkulation; die Zirkulationsfelder der Simulationskonfiguration wirken dann nicht.
+* '''Jahresverbrauch und Zapfprofil.''' Auf dem Weg ''Zapfprofil'' rechnen die Bestandsprofile nicht mit; ihr Jahresverbrauch zählt erst wieder, wenn der Rechenweg zurück auf ''Bestandsprofile'' steht.
+
 == Siehe auch ==
 
 * [[Wärmebedarf erfassen]] – Warmwasser als einer der vier Anteile des Wärmebedarfs
 * [[Grundlagen/Wärmebedarfsrechnung]] – das Rechenverfahren hinter dem Jahresgang
+* [[Grundlagen/Brauchwasser]] – Bedarf, Speicherung und Einbindung des Trinkwarmwassers
+* [[Grundlagen/Brauchwasser-Zapfprofile|Grundlagen: Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
+* [[Grundlagen/Hydraulikschemata]] – Prinzipschemata mit Booster, Frischwasserstation und Zirkulation
+* [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] – Nutzung, Schichtung, Entnahmehöhe und Frischwassermodul
 * [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] – der Zapfprofilgenerator mit Nutzungszonen und Speicherauslegung
 * [[Programm Dokumentation/Betriebskalender|Betriebskalender]] – Feiertage und Betriebsferien im Wochenprofil
 

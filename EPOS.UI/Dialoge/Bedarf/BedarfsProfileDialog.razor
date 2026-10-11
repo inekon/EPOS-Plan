@@ -125,7 +125,8 @@
                         UebernehmenText="@BtnHinzuText"
                         UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText"
-                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen"
+                        SatzArt="@SatzArt" SatzName="@SatzName">
 
         <Links>
             <div class="epos-raster-huelle">
@@ -675,6 +676,13 @@
     private Katalogfilterstand _filterstand = new();
     private BedarfsProfilZeile? _gewaehlt;
     private Katalogfilterzeile? _katalogzeile;
+
+    /// <summary>Was die Satzzeile zeigt: die Zuordnung, den Katalogsatz oder keinen.</summary>
+    private Satzmarke SatzArt => _gewaehlt is not null ? Satzmarke.Projektsatz
+                               : _katalogzeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Satzzeile.</summary>
+    private string? SatzName => _gewaehlt?.Name ?? _katalogzeile?.Bezeichner;
 
     /// <summary>Der Bezeichner der gewählten Katalogzeile — die Markierung hängt am NAMEN.</summary>
     private string _katalogGewaehlt = "";

@@ -2,8 +2,17 @@ Beim Schritt '''Wärmebedarf erfassen''' entsteht der Bedarf aus bis zu vier Ant
 
 == Gebäudeheizwärme ==
 {{Anker|gebaeudeheizwaerme|gebaeude}}
+[[Datei:Bildschirmfoto_Gebaeudedaten.png|mini|zentriert|800px|Eingabe der Gebäudedaten – Bildschirmfoto mit Beispieldaten.]]
 
-Für die Gebäudeheizwärme wählen Sie ein Gebäude aus dem Katalog. Die Liste führt Name, Gebäudeart, Verwendung (Wohngebäude oder Gewerbe+Sonstige), Baualtersklasse – ein Bauzeitraum von „bis 1859“ bis „ab 2021“ – und Fläche; ein Suchfeld mit Platzhaltern, ein Trichter je Spalte und der Sortierpfeil engen sie ein. Ein Gebäude lässt sich auch aus einer gbXML- oder IFC-Datei importieren ([[Programm Dokumentation/Gebäudeimport|Gebäudeimport]]). Das zugeordnete Gebäude wird zu einer Projektkopie, in der Sie die Bezugsgröße anpassen – üblicherweise die Nutzfläche in Quadratmetern – und die Sie über ''Gebäude im Projekt bearbeiten…'' mit Hülle, Zonen und Konditionierung selbst bearbeiten.
+Die Gebäude des Projekts ordnen Sie im Dialog ''Eingabe der Gebäudedaten'' zu – im offenen Projekt auf der Startseite im Reiter ''Wärmebedarf'' oder im Assistenten beim Schritt der Gebäude. Die Schritte:
+
+# Im Bereich ''Katalog (Datenbank)'' ein Gebäude wählen. Suchfeld, Trichter je Spalte und ''Spalten…'' engen die Liste ein; ein Gebäude lässt sich auch aus einer gbXML- oder IFC-Datei importieren ([[Programm Dokumentation/Gebäudeimport|Gebäudeimport]]).
+# ''In das Projekt übernehmen'' legt eine '''Projektkopie''' an. Ein Katalogsatz mit Zonen bringt seine Zonen mit.
+# ''Fläche und Verbrauch…'' setzt die Bezugsgröße – üblicherweise die Nutzfläche in Quadratmetern, sonst einen Verbrauch (siehe unten).
+# Wo die Kopie vom Katalog abweichen soll, öffnet ''Bearbeiten…'' in der Kopfleiste der Projektliste den Gebäudeeditor mit Hülle, Konditionierung und Zonen.
+# ''Simulation…'' rechnet den Wärmebedarf des markierten Gebäudes zur Kontrolle; ''OK'' speichert die Liste.
+
+Die Masken im Einzelnen beschreibt [[Programm Dokumentation/Gebäude|Programm-Dokumentation: Gebäude]]; den Katalog pflegen Sie über das Menü ''Administration'' › ''Gebäude'' › ''Bearbeiten''.
 
 === Bedarf aus Verbrauchsdaten ===
 {{Anker|bedarf-aus-verbrauchsdaten|verbrauchsdaten}}
@@ -19,9 +28,9 @@ EPOS-Plan rechnet den Verbrauch unter Berücksichtigung des Jahresnutzungsgrads 
 === Kenngrößen des Gebäudetyps ===
 {{Anker|kenngroessen-des-gebaeudetyps|gebaeudetyp}}
 
-Die physikalischen Kenngrößen eines Gebäudes stehen im Reiter ''Gebäude und Hülle'': Nutzfläche und Fläche je Nutzer, Baualtersklasse, Baujahr und Energiestandard, Raumhöhe, interne Wärmegewinne, Fensterflächen getrennt nach Nord, Süd, Ost und West, der Fensterdurchlassgrad, die Flächen von Außenwand, Fenster, Dach, Bodenplatte und sonstigen Bauteilen mit den zugehörigen U-Werten, drei Wärmebrücken mit Verlustkoeffizient und Anschlusslänge, die Luftwechselrate und die Bauart – leicht, schwer oder sehr schwer –, die die Speicherfähigkeit bestimmt; dazu die Modellparameter des Gebäudemodells und die Kühlung. Statt der U-Wert-Gruppen kann das Gebäude als Zone aus einzelnen Bauteilen mit Schichtaufbau beschrieben werden ([[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]).
+Die physikalischen Kenngrößen eines Gebäudes stehen im Reiter ''Gebäude und Hülle'' des Katalog- bzw. Gebäudeeditors ([[Programm Dokumentation/Gebäude#gebaeude-und-huelle|Gebäude: Reiter „Gebäude und Hülle“]]): Nutzfläche und Fläche je Nutzer, Baualtersklasse, Baujahr und Energiestandard, Raumhöhe, interne Wärmegewinne, Fensterflächen getrennt nach Nord, Süd, Ost und West, der Fensterdurchlassgrad, die Flächen von Außenwand, Fenster, Dach, Bodenplatte und sonstigen Bauteilen mit den zugehörigen U-Werten – die Bodenplatte am Erdreich rechnet ohne eigenen wirksamen U-Wert nach DIN EN ISO 13370 –, drei Wärmebrücken mit Verlustkoeffizient und Anschlusslänge, die Luftwechselrate und die Bauart – leicht, schwer oder sehr schwer –, die die Speicherfähigkeit bestimmt; dazu die Modellparameter des Gebäudemodells, die Wärmeübergabe und die Kühlung. Statt der U-Wert-Gruppen kann das Gebäude im Reiter ''Zonen'' aus einer oder mehreren Zonen mit einzelnen Bauteilen und Schichtaufbau beschrieben werden, im Projekt wie im Katalog ([[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]).
 
-Der Reiter ''Konditionierung'' führt, wann und worauf das Gebäude geheizt, gekühlt und gelüftet wird: eine Vorgabe-Matrix mit den Größen Heizen, Kühlen, Lüftung, Geräte und Personen für Nennwert, Tag, Nacht, Wochenende, Ferien und Saison – alle Temperaturen als absolute Raumsolltemperaturen – und je Größe ein Kalender mit Wochenprofilen, Zuordnungen im Jahr, benannten Ferienzeiträumen, Wochenendtagen und Feiertagsland; Vorlagen der Konditionierung lassen sich übernehmen ([[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Konditionierung]]).
+Der Reiter ''Konditionierung'' führt, wann und worauf das Gebäude geheizt, gekühlt und gelüftet wird: eine Vorgabe-Matrix mit den Größen Heizen, Kühlen, Lüftung, Geräte und Personen für Nennwert, Tag, Nacht, Wochenende, Ferien und Saison – alle Temperaturen als absolute Raumsolltemperaturen – und je Größe ein Kalender mit Wochenprofilen, Zuordnungen im Jahr, benannten Ferienzeiträumen, Wochenendtagen und Feiertagsland. Vorlagen der Konditionierung und [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]] lassen sich übernehmen; die Werte sind danach eine Kopie am Gebäude. Am Gebäude im Projekt steht dazu die manuelle Aufheizzeit für die Aufheizoptimierung ([[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Konditionierung]]).
 
 === Berechnung des Jahresgangs ===
 {{Anker|berechnung-des-jahresgangs|jahresgang|tagesverteilung}}
@@ -44,7 +53,7 @@ Statt der Bestandsprofile kann der Zapfprofilgenerator den Brauchwasserbedarf au
 == Externer Lastgang und Netzverluste ==
 {{Anker|externer-lastgang-und-netzverluste|lastgang|netzverluste}}
 
-Ein bereits vorliegender Wärmelastgang kann alternativ als Stundenreihe eingelesen und direkt zum berechneten Bedarf addiert werden.
+Ein bereits vorliegender Wärmelastgang kann alternativ als Stundenreihe eingelesen und direkt zum berechneten Bedarf addiert werden; den Katalog der Lastgänge führt das Menü ''Administration'' › ''Wärme- und Kälteerzeugung'' › ''Profile & Lastgänge'' › ''Wärmebedarf Lastgang''.
 
 Netzverluste tragen Sie im Block ''Weitere Einstellungen'' der Simulationskonfiguration ein: einen Gesamtwert in Prozent oder kWh/a, der je Stunde anteilig auf die Kanäle verteilt wird, oder je Kanal – Heizung, Brauchwasser, Prozesswärme – einen eigenen Wert als gleichmäßigen Betrag über das Jahr; dazu die Zirkulation des Brauchwassers mit Leistung und Laufzeit ([[Programm Dokumentation/Simulation#netzverluste-je-kanal|Simulation: Netzverluste je Kanal]]).
 

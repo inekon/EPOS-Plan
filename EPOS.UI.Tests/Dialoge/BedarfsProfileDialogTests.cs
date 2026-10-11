@@ -275,6 +275,27 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Equal(1, zeilen[0].IdZ);
     }
 
+    [Fact]
+    public void Die_Satzzeile_nennt_die_gewaehlte_Projektzeile()
+    {
+        var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, "Wohnhaus 10 Wohnungen") });
+
+        string satz = cut.Find(".epos-zweispalten-satzname").TextContent.Trim();
+
+        Assert.Equal("Wohnhaus 10 Wohnungen", satz);
+        Assert.Contains("epos-zweispalten-marke--satz", cut.Markup);
+    }
+
+    [Fact]
+    public void Die_Satzzeile_nennt_die_gewaehlte_Katalogzeile()
+    {
+        var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, "Wohnhaus 10 Wohnungen") });
+
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();   // erste Katalogzeile
+
+        Assert.Equal("Profil A", cut.Find(".epos-zweispalten-satzname").TextContent.Trim());
+    }
+
     // =================================================================================
     // Uebernehmen
     // =================================================================================

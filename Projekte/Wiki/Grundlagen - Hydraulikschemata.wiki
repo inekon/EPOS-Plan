@@ -354,10 +354,69 @@ Das Kollektorfeld lädt über einen internen Wärmetauscher die untere, kalte Pu
 
 '''Vorteile:''' Zusätzlicher regenerativer Anteil, der den Kessel im Sommer entlastet und die Brennstoffkosten senkt.<br>'''Nachteile:''' Der Sommerbetrieb des BHKW wird verdrängt – die Vollbenutzungsstunden sind zu prüfen; ohne Vorrangregelung konkurrieren Solaranlage und BHKW um dieselbe Speicherzone.
 
+== Brauchwasser und Prozesswärme als Wärmesenken ==
+{{Anker|brauchwasser-und-prozesswaerme|gl-brauchwasser-und-prozesswaerme}}
+
+Heizung, Brauchwasser und Prozesswärme sind in EPOS-Plan drei getrennte Wärmesenken. Jede hat ihr eigenes Temperaturniveau und ihren eigenen zeitlichen Verlauf, und jeder Erzeuger bedient nur die Senken, die ihm zugeordnet sind. Die Schemata oben zeigen die Einbindung aus Sicht der Wärmepumpe und des BHKW; die folgenden Bilder zeigen sie aus Sicht der Senke.
+
+=== Brauchwasser über Kombispeicher und Frischwassermodul ===
+{{Anker|brauchwasser-kombispeicher|gl-brauchwasser-kombispeicher}}
+
+[[Datei:Einbindung_Brauchwasser.svg|mini|600px|Prinzipbild: Kessel und Wärmepumpe laden einen Kombispeicher, das Frischwassermodul zapft oben, die Zirkulation läuft zum Modul zurück.]]
+
+Ein geschichteter Kombispeicher trennt die Temperaturniveaus in der Höhe: oben ein Bereitschaftsteil auf Zapftemperatur plus Grädigkeit des Übertragers, darunter die Heizungszonen. Der Erzeuger mit dem hohen Vorlauf – hier der Kessel – speist oben ein und heizt nur den Bereitschaftsteil nach; die Wärmepumpe lädt mit niedrigem Vorlauf in der Mitte und arbeitet dort mit guter Leistungszahl. Das Frischwassermodul erwärmt das Trinkwasser im Durchfluss, es steht kein Trinkwasser im Speicher.
+
+Die Zirkulation hält das Warmwasser im Netz auf Temperatur und fließt zum Modul zurück. Sie ist ein Dauerverbrauch über die Laufzeit der Pumpe, unabhängig von der Zapfung, und hebt den Rücklauf des Moduls an – der Speicher wird oben stärker durchmischt.
+
+'''Vorteile:''' Ein Speicher für Heizung und Warmwasser, hygienisch günstig, die Wärmepumpe bleibt auf niedrigem Vorlauf.<br>'''Nachteile:''' Die Schichtung muss erhalten bleiben; ein falsch angeschlossener Rücklauf oder eine zu große Zirkulation zerstört sie, und der Kessel übernimmt dann einen größeren Anteil.
+
+=== Brauchwasser über eigenen Speicher ===
+{{Anker|brauchwasser-eigener-speicher|gl-brauchwasser-eigener-speicher}}
+
+Ein eigener Brauchwasserspeicher wird von den Erzeugern geladen, die ihn als Senke führen, und bedient allein das Warmwasser. Diese Trennung passt, wenn Heizung und Warmwasser deutlich verschiedene Temperaturen brauchen oder ein Erzeuger allein für das Warmwasser vorgesehen ist, etwa eine Booster-Wärmepumpe oder eine Solaranlage zur Vorwärmung (siehe [[#variante-2-reiner-warmwasserpfad|Wärmepumpe mit Booster, Variante 2]] und [[#variante-1-trinkwassererwaermung-mit-waermepumpenspeicher|Solarthermie mit Wärmepumpe, Variante 1]]).
+
+=== Prozesswärme direkt und über einen Prozesspuffer ===
+{{Anker|prozesswaerme-einbindung|gl-prozesswaerme-einbindung}}
+
+[[Datei:Einbindung_Prozesswaerme.svg|mini|600px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
+
+Prozesswärme folgt dem Schichtplan, nicht dem Wetter, und braucht oft ein höheres Temperaturniveau als die Raumheizung. Deshalb wird sie meist von einem Erzeuger mit hohem Vorlauf gedeckt – Kessel, BHKW oder eine Hochtemperatur-Wärmepumpe – und hydraulisch vom Heizkreis getrennt: direkt über einen eigenen Verteiler oder über einen Prozesspuffer, der Schichtwechsel und Anfahrspitzen ausgleicht. Ein Erzeuger, der den Prozessvorlauf nicht erreicht, kann den Prozess nicht versorgen, wohl aber die Heizung.
+
+Hat der Erzeuger mehrere Senken, entscheidet ihre Rangfolge: Der Prozess auf Rang 1 und der Heizkreis auf Rang 2 bedeuten, dass in jeder Stunde zuerst der Prozess beliefert wird und die Heizung den Rest bekommt.
+
+'''Vorteile:''' Getrennte Temperaturniveaus, die Raumheizung bleibt auf niedrigem Vorlauf; der Prozesspuffer glättet die Last des Erzeugers.<br>'''Nachteile:''' Der Erzeuger für den Prozess ist auf das hohe Niveau festgelegt; eine Wärmepumpe, die Prozess und Heizung in derselben Stunde bedient, läuft die ganze Stunde am höheren Vorlauf.
+
+=== So bildet EPOS-Plan die Senken ab ===
+{{Anker|senken-in-der-simulation|gl-senken-in-der-simulation}}
+
+{| class="wikitable"
+! In der Anlage !! In EPOS-Plan
+|-
+| Erzeuger deckt Heizung und Warmwasser direkt || Wärmesenke ''Heizkreis'' mit ''Bedarfsart'' beides mit Warmwasservorrang, nur Warmwasser oder nur Heizwärme
+|-
+| Erzeuger lädt einen Warmwasserspeicher || Wärmesenke ''Pufferspeicher Brauchwasser''; der Speicher trägt die ''Nutzung'' Brauchwasser
+|-
+| Kombispeicher für Heizung und Warmwasser || Wärmesenke ''Pufferspeicher Kombi (Heizung + Warmwasser)''; Speicher mit beiden Nutzungen, geschichtet, Entnahmehöhe je Kanal
+|-
+| Frischwasserstation am Speicher || ''Frischwassermodul'' am Pufferspeicher mit Grädigkeit; es zapft nur aus der obersten Zone
+|-
+| Zirkulation || Zirkulationsleistung und Laufzeit in der Simulationskonfiguration oder die Zirkulation des Zapfprofils
+|-
+| Erzeuger versorgt einen Prozess direkt || Wärmesenke ''Prozesswärme''
+|-
+| Prozesspuffer || Wärmesenke ''Pufferspeicher Prozesswärme''; der Speicher trägt die ''Nutzung'' Prozesswärme
+|-
+| Vorlauf, den der Prozess braucht || Temperaturpaar des Prozesses; je Stunde gilt der höchste geforderte Vorlauf
+|-
+| Vorrangschaltung zwischen den Senken eines Erzeugers || Rangfolge der Senkenliste der Anlage
+|-
+| Solarthermie vor der Nachheizung am selben Speicher || Ladepriorität und nachrangige Schwelle des Speichers
+|}
+
 == Übersetzung in die Simulation ==
 {{Anker|uebersetzung-in-die-simulation}}
 
-Für die Simulation gilt in allen Fällen dieselbe Übersetzung: Die Reihenfolge im Konfigurationsdialog gibt die Vorrangschaltung wieder, die Zuordnung des Pufferspeichers zum jeweiligen Erzeuger bildet die hydraulische Anbindung ab, und die Ein- und Abschaltschwellen entsprechen der Regelstrategie.
+Für die Simulation gilt in allen Fällen dieselbe Übersetzung: Die Reihenfolge im Konfigurationsdialog gibt die Vorrangschaltung wieder, die Zuordnung des Pufferspeichers zum jeweiligen Erzeuger bildet die hydraulische Anbindung ab, und die Ein- und Abschaltschwellen entsprechen der Regelstrategie. Welche Senken ein Erzeuger beliefert – Heizkreis, Prozesswärme oder ein Pufferspeicher für Heizung, Brauchwasser, Prozesswärme oder Kombibetrieb – und in welcher Rangfolge, legt seine Senkenliste fest; die Nutzung des Pufferspeichers bestimmt, welche Senken er seinerseits bedient.
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
@@ -367,6 +426,9 @@ Für die Simulation gilt in allen Fällen dieselbe Übersetzung: Die Reihenfolge
 * [[Wärmepumpe]] – Programmfunktion: Kennfeld, Wärmequelle und Wärmesenke
 * [[Blockheizkraftwerk]] – Programmfunktion: Modulauswahl, Pendelspeicher und Betriebsart
 * [[Programm Dokumentation/Berechnung/Pufferspeicher]] – Rechenweg der Speicherbewirtschaftung
+* [[Grundlagen/Brauchwasser]] – Bedarf, Speicherung und Einbindung des Trinkwarmwassers
+* [[Grundlagen/Prozesswärme]] – Lastgang, Temperaturniveau und Einbindung der Prozesswärme
+* [[Programm Dokumentation/Brauchwasser#einbindung|Brauchwasser: Einbindung in die Anlage]] und [[Programm Dokumentation/Prozesswärme#einbindung|Prozesswärme: Einbindung in die Anlage]] – die Einstellungen im Programm
 
 {{Navigation Grundlagen}}
 

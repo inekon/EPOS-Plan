@@ -12,21 +12,23 @@ Der Reiter ''Wärme-/Strombedarf'' zeigt Wärmelast und Strombedarf als Jahresga
 
 Der Reiter ''Wärmepumpe'' weist Wärmebedarfsdeckung, Bivalenzpunkt, Speicherkapazität, durchschnittliche Vollbenutzungsstunden, minimale Spitzenkesselleistung und die Jahresarbeitszahl – der Wärmepumpe und mit Heizstab – aus, dazu Ganglinien für Produktion, Stromverbrauch und Speichertemperaturen, die Betriebsbereiche einer Wärmepumpe mit Einbindung, die Auslegungsprüfung einer Erdreichquelle, eine Modultabelle mit JAZ je Modul und am Ende das Diagramm ''Leistung über Außentemperatur''.
 
-Für ''Heizkessel'', ''BHKW'', ''Solarthermie'', ''Photovoltaik'' und ''Stromspeicher'' gibt es entsprechende Reiter mit Deckungsanteil, Produktion, Restbedarf, Verbrauchs- und Emissionswerten: der Heizkessel mit Laufstunden, Starts, Bereitschaftsverlust, Jahresnutzungsgrad und Brennwertanteil, das BHKW mit Wärmelast, Stromlast und Einspeisung, die Solarthermie mit Kollektorertrag brutto, genutzt und Überschuss, die Photovoltaik mit Abregelung, der Stromspeicher mit dem Peak-Ziel der Speicherflotte. Rechnet eine Kältemaschine ihr Teillastverhalten, zeigt der Reiter ''Kältegang'' Taktstrom, Starts und Jahres-EER.
+Für ''Heizkessel'', ''BHKW'', ''Solarthermie'', ''Photovoltaik'' und ''Stromspeicher'' gibt es entsprechende Reiter mit Deckungsanteil, Produktion, Restbedarf, Verbrauchs- und Emissionswerten: der Heizkessel mit Laufstunden, Starts, Bereitschaftsverlust, Jahresnutzungsgrad und Brennwertanteil, das BHKW mit Wärmelast, Stromlast und Einspeisung, die Solarthermie mit Kollektorertrag brutto, genutzt und Überschuss, die Photovoltaik mit Abregelung, der Stromspeicher mit dem Peak-Ziel der Speicherflotte. Rechnet eine Kältemaschine ihr Teillastverhalten, zeigt das Blatt ''Kälteproduktion'' des Reiters ''Ergebnis'' Taktstrom, Starts und Jahres-EER.
 
 == Ergebnisseite und Autarkieanalyse ==
 {{Anker|ergebnisseite-und-autarkieanalyse|ergebnisseite|autarkie}}
 
 Die ''Übersicht'' ist ein Dashboard mit den Spalten ''Wärme'' und ''Strom'': je Spalte die Kaskade des Laufs, die Kennzahlen Bedarf, Deckung durch Erzeuger und Rest, der Deckungsring mit Legende und die Erzeugertabelle; bei Kälte folgt der Block ''Kältedeckung'' mit einem dritten Ring.
 
-Der Reiter ''Ergebnis'' führt die Blätter ''Wärmeproduktion'', ''Stromproduktion'', bei Kälte ''Kälteproduktion'' und ganz rechts ''Autarkie-Analyse''. Die Produktionsblätter zeigen Erzeuger und Speicherinhalt als Jahresganglinie mit ein- und ausblendbaren Reihen; die Autarkie-Analyse stellt monatsweise Direktverbrauch, Speichernutzung und Netzbezug gegenüber, bei Solarthermie die solare Deckung je Monat, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad, Speichernutzen und CO₂-Einsparung aus. Das Ergebnis lässt sich je Projekt speichern.
+Der Reiter ''Ergebnis'' führt die Blätter ''Wärmeproduktion'', ''Stromproduktion'', bei Kälte ''Kälteproduktion'' und ganz rechts ''Autarkie-Analyse''. Die Produktionsblätter zeigen Erzeuger und Speicherinhalt als Jahresganglinie mit ein- und ausblendbaren Reihen, die Kälteproduktion je Kälteerzeuger die gedeckte und die ungedeckte Kälte; die Autarkie-Analyse stellt monatsweise Direktverbrauch, Speichernutzung und Netzbezug gegenüber, bei Solarthermie die solare Deckung je Monat, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad, Speichernutzen und CO₂-Einsparung aus. Das Ergebnis lässt sich je Projekt speichern.
+
+Rechnet das Projekt mit Anlagenkopplung, zeigt das Ergebnis eines gekoppelten Gebäudes, wie weit Übergabe und Erzeuger den Raum versorgt haben: Komfortstunden neben dem Restbedarf und auf Stufe ''geschlossener Kreis (AK3)'' die Kennzahlen des Kreises ([[Programm Dokumentation/Simulationsergebnisse#kopplungskennzahlen|Kennzahlen der Anlagenkopplung]]). Bei einer Wärmepumpe mit Einbindung nennt der Reiter ''Wärmepumpe'' die Stunden und die Wärme je Betriebsbereich und die Bivalenzpunkte.
 
 {{Tipp|Ändern Sie jeweils nur eine Größe – Vorlauftemperatur, Maschinengröße, Speichervolumen, Betriebsmodus – und rechnen Sie erneut; so bleibt der Effekt jeder Entscheidung sichtbar.}}
 
 == Zeitreihen exportieren ==
 {{Anker|zeitreihen-exportieren|export|csv}}
 
-Der Knopf ''CSV…'' in der Leiste jedes Zeitreihendiagramms speichert die Jahresganglinie als CSV-Datei mit Zeitstempel und Außentemperatur – siehe [[Datenexport]].
+Der Knopf ''CSV…'' in der Leiste jedes Zeitreihendiagramms speichert die Reihen des Bildes als CSV-Datei, beim Energiebedarf und den Seiten der Erzeuger mit Zeitstempel und Außentemperatur; die Monatsbilder tragen den Knopf ebenso – siehe [[Datenexport]].
 
 == Kosten hinterlegen ==
 {{Anker|kosten-hinterlegen|kosten|energiepreise}}

@@ -150,7 +150,7 @@ Die Eingaben stehen in der Gruppe '''Kühlung''' im Abschnitt '''Kühlübergabe'
 
 Den Strahlungsanteil bringt die Art mit (Kühldecke und Flächenkühlung 0,5, Gebläsekonvektor 0); er hat kein eigenes Feld. Der Raumregler ist derselbe wie beim Heizen und nimmt dessen Proportionalband.
 
-'''Kaltwasser-Vorlauf.''' Ohne [[#kuehlkurve|Kühlkurve]] ist der Vorlauf der Kühlübergabe fest: der kälteste Kühl-Vorlauf der Wärmepumpen im [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlbetrieb]] des Projekts, ohne solche Anlage der Auslegungsvorlauf. Liegt er unter der Vorlaufgrenze, mischt das Gebäude auf die Grenze hoch; die Wärmepumpe rechnet weiter an ihrem Kühl-Vorlauf. Eine Vorlaufgrenze über dem Auslegungsvorlauf ist erlaubt – die Nennleistung wird dann nie erreicht, und eine Zeile unter den Feldern sagt es.
+'''Kaltwasser-Vorlauf.''' Ohne [[#kuehlkurve|Kühlkurve]] ist der Vorlauf der Kühlübergabe fest: der kälteste Kühl-Vorlauf der Wärmepumpen im [[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kühlbetrieb]] des Projekts, ohne solche Anlage der Auslegungsvorlauf. Liegt er unter der Vorlaufgrenze, mischt das Gebäude auf die Grenze hoch; die Wärmepumpe rechnet weiter an ihrem Kühl-Vorlauf. Eine Vorlaufgrenze über dem Auslegungsvorlauf ist erlaubt – die Nennleistung wird dann nie erreicht, und eine Zeile unter den Feldern sagt es.
 
 Unter den Feldern steht, ob die Kühlübergabe im geöffneten Projekt wirkt und woran es fehlt, der Auslegungstag mit seiner Kühllast, der Kaltwasser-Vorlauf und seine Herkunft. Zwei Zeilen stehen immer da: '''Die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze''' – EPOS-Plan prüft nicht, ob an der Kühlfläche Tauwasser ausfällt –, und die Kühlübergabe rechnet '''sensibel, ohne Entfeuchtung'''. Widersprüchliche Angaben meldet ''OK'' mit den Werten: Vorlauf, Rücklauf und Raumtemperatur des Auslegungspunkts müssen aufsteigen.
 
@@ -175,9 +175,11 @@ Die Kurve hat zwei Punkte. Solange die Außenluft nicht über dem Kühlsollwert 
 | Auslegungs-Außentemperatur (Eingabe) || – || °C, 0 bis 60, nur mit dem Weg ''Eingabe''; liegt sie nicht mehr als 1 K über dem Kühlsollwert oder fehlt sie, rechnet der Lauf mit dem wärmsten Tagesmittel und sagt es im Laufprotokoll
 |}
 
-Die Vorgaben sind Vorgaben von EPOS-Plan, keine Normwerte. Unter den Feldern nennt eine Zeile Fußpunkt, Auslegungsvorlauf und Auslegungs-Außentemperatur, mit denen gerechnet wird. Die Wärmepumpe im Kühlbetrieb und die Kältemaschine rechnen in jeder Stunde am Vorlauf der Kurve, die [[Programm Dokumentation/Kühlung#kaelteschranke|Kälteschranke]] ebenso. Auf den Stufen ''aus'' und ''Heizkreis (AK1)'' wirkt die Kurve nicht, es gilt der feste Kaltwasser-Vorlauf. Mit mehreren Zonen gilt die Kurve für den Kaltwasserkreis des Gebäudes am niedrigsten Kühlsollwert der gekühlten Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]).
+Die Vorgaben sind Vorgaben von EPOS-Plan, keine Normwerte. Unter den Feldern nennt eine Zeile Fußpunkt, Auslegungsvorlauf und Auslegungs-Außentemperatur, mit denen gerechnet wird. Die Wärmepumpe im Kühlbetrieb und die Kältemaschine rechnen in jeder Stunde am Vorlauf der Kurve, die [[Programm Dokumentation/Kälteerzeugung#kaelteschranke|Kälteschranke]] ebenso. Auf den Stufen ''aus'' und ''Heizkreis (AK1)'' wirkt die Kurve nicht, es gilt der feste Kaltwasser-Vorlauf. Mit mehreren Zonen gilt die Kurve für den Kaltwasserkreis des Gebäudes am niedrigsten Kühlsollwert der gekühlten Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]).
 
 Hat ein Lauf mit Kühlkurve gerechnet, zeigen das Ergebnis des Gebäudes und der Bericht (Tafel „Kühlkurve“) drei Kennzahlen des Projekts: den mittleren verlangten Kühlvorlauf der Kühlstunden, die Summe der Absenkung durch den Raumeinfluss in Kelvinstunden und die Kühlstunden, in denen die Kurve an der Vorlaufgrenze stand.
+
+[[Datei:Diagramm_Kuehlvorlauf_Ruecklauf.png|mini|zentriert|800px|Kühlvorlauf und Kühlrücklauf eines Gebäudes über das Jahr, gestrichelt die Auslegungswerte. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
 == Komfortstunden ==
 {{Anker|komfort}}
@@ -195,6 +197,8 @@ Die Schwelle 1,0 K ist eine Vorgabe von EPOS-Plan, kein Normwert. Gezählt wird 
 '''Feste Last.''' Im Lauf mit Fahrplan rechnet nur ein Gebäude nach VDI 6007 mit Wärmeübergabe ''mit Rückwirkung''. Jedes andere Gebäude – auf dem Rechenweg Tagesbilanz oder ohne Wärmeübergabe – geht als '''feste Last''' ein: Es zehrt an der Verfügbarkeit der Anlage, sein Bedarf bleibt aber wie ohne Fahrplan, und es hat keine Komfortstunden. Der Bericht nennt je Gebäude den Bedarfsbegriff und je Projekt die Zahl der Gebäude als feste Last.
 
 '''Profilweg.''' Die Verfügbarkeit der Anlagen rechnet das Programm einmal je Projekt vorab; ein Pufferspeicher geht nur als Vorrat über die Dauer einer Sperre ein. Die Komfortstunden sind deshalb eine Näherung und eher zu hoch als zu niedrig; der Bericht nennt das.
+
+[[Datei:Diagramm_Raumtemperatur_Komfort.png|mini|zentriert|800px|Raumtemperatur und Sollwert einer Woche; grün markiert die Stunden, in denen der Raum den Sollwert unterschreitet. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
 == Lüftung ==
 {{Anker|lueftung}}

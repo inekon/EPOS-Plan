@@ -203,7 +203,7 @@ Diese Stundenfolge ist die '''Speicherstufe'''. In ihr rechnen die Waermepumpe �
 
 Der Grund fuer diese Ordnung: Zwei Erzeuger, die denselben Speicher bedienen, muessen in derselben Stundenschleife laufen. Ein Modul, das sein ganzes Jahr fuer sich durchrechnet, gaebe der naechsten Stufe einen Fuellstand vom Silvesterabend in ihre Stunde 0.
 
-'''Kaelteseite.''' Rechnet das Projekt Kaelte, fuehrt der Lauf neben den drei Waermekanaelen einen '''Kuehlkanal'''; er geht nicht in die Summe des Waermebedarfs ein. Die '''Kaeltekaskade''' rechnet nach der Waermekaskade der Waermepumpen, und ihr Strom geht als eigene Reihe in den Reststrombedarf. Steht keine Waermepumpe in der Stundenschleife, rechnen die Kaeltemaschinen allein, nach der ganzen Waermekaskade.
+'''Kaelteseite.''' Rechnet das Projekt Kaelte, fuehrt der Lauf neben den drei Waermekanaelen einen '''Kuehlkanal'''; er geht nicht in die Summe des Waermebedarfs ein. Die '''Kaeltekaskade''' rechnet nach der Waermekaskade der Waermepumpen, und ihr Strom geht als eigene Reihe in den Reststrombedarf. Steht keine Waermepumpe in der Stundenschleife, rechnen die Kaeltemaschinen allein, nach der ganzen Waermekaskade. Die Folge der Kaeltestufen — freie Kuehlung der Kaeltemaschinen, Kaeltespeicher, Waermepumpen im Kuehlbetrieb, Kaeltemaschinen — und die Rechnung jedes Kaelteerzeugers stehen unter [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]].
 
 '''Anlagenkopplung.''' Die Projekteinstellung „Anlagenkopplung" legt fest, ob die Erzeuger auf die Gebaeude zurueckwirken. Bei „aus" gilt ideale Regelung: Die Gebaeude rechnen ihren Bedarf vorab, die Kaskade deckt ihn. Bei '''AK1''' rechnet das Gebaeude seine Waermeuebergabe mit Heizkurve und Vorlauf schon in der Bedarfsrechnung (Heizkreis als Randbedingung); die Erzeuger wirken nicht zurueck. Bei '''AK3''' rechnen Gebaeude und Kaskade '''je Stunde im geschlossenen Kreis''':
 
@@ -316,5 +316,6 @@ Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstan
 * [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]]
 * [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] — das Gebaeude im geschlossenen Kreis
 * [[Programm Dokumentation/Kühlung|Kühlung]] — Kaelteerzeuger und Kaelteseite
+* [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]] — Kaeltefolge, Kaeltemaschine und Kaelteschranke
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]]
 * [[Programm Dokumentation/Berechnung|Berechnung]] — alle Rechenwege im Überblick

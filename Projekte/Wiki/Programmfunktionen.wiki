@@ -43,7 +43,8 @@ Hilfe steht überall dort zur Verfügung, wo sie gebraucht wird. Beim Überfahre
 * [[Photovoltaik]] – Einstrahlung auf die Modulebene, Zelltemperatur, Stränge und [[Programm Dokumentation/Wechselrichter|Wechselrichter]], Strombilanz nach der Rangfolge Direktverbrauch, Speicherladung, Einspeisung.
 * [[Pufferspeicher]] – Volumen, Temperaturen und Bereitschaftsverluste, bewirtschaftet über einstellbare Ein- und Abschaltschwellen.
 * [[Stromspeicher]] – Kapazität, Leistung und Ladezustandsgrenzen; der Füllstand lässt sich als eigene Kurve darstellen.
-* [[Programm Dokumentation/Kühlung|Kühlung]] – Kältebedarf der Gebäude, Kältemaschinen und Wärmepumpen im Kühlbetrieb, Kältespeicher.
+* [[Programm Dokumentation/Kühlung|Kühlung]] – Kältebedarf der Gebäude, Kühlung je Zone, Kühlübergabe und Kühlkurve.
+* [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]] – Kältemaschinen mit Rückkühlung, Wärmepumpen im Kühlbetrieb, freie Kühlung und Kältespeicher.
 * [[Simulation]] – 8.760 Stunden auf der Wärmeseite und 35.040 Viertelstunden auf der Stromseite in einer frei konfigurierbaren Erzeugerkaskade.
 * [[Ergebnisdarstellung]] – Deckungsanteile, Kennzahlen, Jahresganglinien, Ringdiagramme, Autarkieanalyse und Modultabellen in Registerkarten.
 * [[Datenexport]] – Zeitreihen und die angezeigte Grafik als CSV-Datei mit Zeitstempel und Außentemperatur.

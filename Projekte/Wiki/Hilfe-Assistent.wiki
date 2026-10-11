@@ -18,7 +18,7 @@ Mit ''Nur suchen'' durchsucht der Assistent die mitgelieferten Hilfetexte und di
 == Zugangsschlüssel und Tageslimit ==
 {{Anker|zugangsschluessel-und-tageslimit|zugangsschluessel|tageslimit}}
 
-Frei formulierte Antworten erzeugt ein Sprachmodell des Anbieters Google. Dafür hinterlegen Sie im Chatfenster unter ''Einstellungen…'' einen eigenen Zugangsschlüssel; abgerechnet wird unmittelbar über den Anbieter. Der Schlüssel wird verschlüsselt im Benutzerprofil abgelegt, ist an Windows-Konto und Rechner gebunden und steht nie im Klartext in der aufgerufenen Adresse. Das Programm wählt selbsttätig ein verfügbares Modell der kostengünstigen Klasse.
+Frei formulierte Antworten erzeugt ein Sprachmodell des Anbieters Google. Dafür hinterlegen Sie im Chatfenster unter ''Einstellungen…'' einen eigenen Zugangsschlüssel; abgerechnet wird unmittelbar über den Anbieter. Der Schlüssel wird verschlüsselt im Benutzerprofil abgelegt (auf dem iPad im Schlüsselbund des Geräts), ist an Windows-Konto und Rechner gebunden und steht nie im Klartext in der aufgerufenen Adresse. Das Programm wählt selbsttätig ein verfügbares Modell der kostengünstigen Klasse.
 
 {{Hinweis|Je Arbeitsplatz und Tag sind 50 Anfragen möglich. Diese Grenze ist fest vorgegeben und lässt sich weder im Programm noch durch den Anwender heraufsetzen. Ist sie erreicht, bleibt die Suche in der Hilfe uneingeschränkt nutzbar.}}
 
@@ -47,7 +47,7 @@ Lesende Aktionen laufen sofort: Projekte und Varianten auflisten, Projektdaten, 
 === Ändernde Aktionen ===
 {{Anker|aendernde-aktionen|bestaetigung}}
 
-Ändernde Aktionen laufen '''nur nach ausdrücklicher Bestätigung'''. Dazu gehören: eine Variante anlegen, eine Speichervariante aktiv setzen, den Betrag einer Kostenposition setzen sowie in einer geöffneten Maske ein Feld setzen, ein Formular ausfüllen oder eine geprüfte Schaltfläche betätigen. Der Assistent zeigt vorher eine Vorschau mit ''Ausführen'' und ''Abbrechen''. Jede Bestätigung gilt für genau einen Vorgang; nach 60 Sekunden verfällt sie, ebenso wenn zwischenzeitlich eine andere Aktion gelaufen ist.
+Ändernde Aktionen laufen '''nur nach ausdrücklicher Bestätigung'''. Dazu gehören: eine Variante anlegen, eine Speichervariante aktiv setzen, den Betrag einer Kostenposition setzen sowie in einer geöffneten Maske ein Feld setzen, ein Formular ausfüllen oder eine geprüfte Schaltfläche betätigen. Der Assistent zeigt vorher eine Vorschau mit ''Ausführen'' und ''Abbrechen''. Die Maske nennen Sie mit ihrem Anzeigenamen; ist der Name nicht eindeutig, nennt der Assistent die Kandidaten. Fast jede Maske ist steuerbar; ein Feld, das der Assistent nicht setzen darf, lehnt er vor der Bestätigung mit Begründung ab. Welche Masken er bewusst nicht steuert, steht in der [[Programm Dokumentation/Hilfe-Assistent|Programm-Dokumentation]]. Jede Bestätigung gilt für genau einen Vorgang; nach 60 Sekunden verfällt sie, ebenso wenn zwischenzeitlich eine andere Aktion gelaufen ist.
 
 {{Hinweis|Schreibgeschützte Datensätze und die mitgelieferten Kataloge sind ausgenommen – der Assistent übergeht einen Schreibschutz nicht, auch nicht mit Bestätigung. Löschen kann er nichts. Im Lesemodus der Lizenz werden ändernde Aktionen abgewiesen.}}
 

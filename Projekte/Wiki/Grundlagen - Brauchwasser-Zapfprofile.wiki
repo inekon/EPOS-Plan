@@ -1,0 +1,61 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Brauchwasser-Zapfprofile
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Brauchwasser-Zapfprofile.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Ein '''Zapfprofil''' beschreibt, wann und wie viel warmes Trinkwasser in einem Gebäude gezapft wird – Stunde für Stunde über das Jahr. Der Zapfprofilgenerator von EPOS-Plan bildet es aus '''Nutzungszonen''' nach dem Ansatz der VDI 6002: Je Zone bestimmen Nutzungsart, Bezugsgröße und Bedarfsniveau die Tagesmenge, ein Tagesgang verteilt sie auf die Stunden, Wochen- und Monatsfaktoren auf das Jahr.
+
+== Worum es geht ==
+{{Anker|worum-es-geht}}
+
+Der Warmwasserbedarf bestimmt den Sommerbetrieb der Wärmeerzeuger allein und entscheidet oft über Speichergröße und Ladeleistung. Dafür reicht eine Jahressumme nicht: Ein Wohnhaus zapft morgens und abends, ein Hotel zur Frühstückszeit, eine Sporthalle nach dem Training. Das Zapfprofil liefert diese Gleichzeitigkeit, und mit ihr die Spitzen, die Speicher und Erzeuger abdecken müssen.
+
+Die Energie einer Zapfung folgt aus Volumen und Temperaturhub: <math>Q = V \cdot \rho \cdot c_{\mathrm{p}} \cdot (\vartheta_{\mathrm{Zapf}} - \vartheta_{\mathrm{KW}})</math>. Weil das Kaltwasser im Sommer wärmer ist als im Winter, ändert sich die Energie bei gleichem Volumen über das Jahr; EPOS-Plan führt dafür einen Jahresgang des Kaltwassers mit Jahresmittel und Amplitude.
+
+[[Datei:Zapfprofil_Tagesgang.svg|mini|600px|Prinzipbild: Tagesgang einer Wohnzone mit Morgen- und Abendspitze, Werktag und Sonntag; Feiertage tragen den Sonntagsgang.]]
+
+== So rechnet EPOS-Plan ==
+{{Anker|so-rechnet-epos-plan}}
+
+* {{Anker|zonen}}'''Nutzungszonen.''' Jede Zone trägt eine Nutzungsart aus dem Katalog (etwa Wohnen, Büro, Hotel) und eine Bezugsgröße in deren Einheit – Personen, Wohneinheiten, Zimmer, Betten, Beschäftigte oder Fläche. Das Bedarfsniveau ''niedrig'', ''mittel'' oder ''hoch'' wählt den spezifischen Bedarf.
+* {{Anker|deterministisch}}'''Deterministischer Weg.''' Die Stundenreihe entsteht aus Tagesgang, Wochenanteilen und zwölf Monatsfaktoren. Derselbe Eingabestand ergibt immer dieselbe Reihe.
+* {{Anker|stochastisch}}'''Stochastischer Weg.''' Für jede Nutzungseinheit werden einzelne Zapfereignisse gezogen – Kurzzapfung, Spüle, Dusche, Bad mit Volumenstrom, Dauer und Streuung – und nach dem Tagesgang verteilt. Die Gleichzeitigkeit vieler Einheiten entsteht dabei von selbst. Der '''Seed''' ist die Startzahl der Ziehung: Derselbe Seed liefert auf jedem Rechner dieselbe Reihe. Die '''Realisierungen''' sind die Zahl der gezogenen Jahre für die Konsistenzprobe; die Jahresenergie ist auf den deterministischen Weg abgeglichen.
+* {{Anker|kalender}}'''Kalender.''' Der Samstag trägt den Samstagsgang, Sonntage und Feiertage tragen den Sonntagsgang. Feiertage gelten bundeseinheitlich, mit dem Feiertagsland des Gebäudes kommen dessen Landesfeiertage hinzu. Wie Wochentage und bewegliche Feiertage im Jahr liegen, beschreibt [[Grundlagen/Gemeinjahr und Feiertage|Gemeinjahr und Feiertage]]. Ferienzeiträume senken den Bedarf.
+* {{Anker|bilanzgrenze}}'''Bilanzgrenze und Zirkulation.''' Gerechnet wird die Zapfenergie an der Zapfstelle; die Zirkulation läuft als eigene Teilreihe daneben. Beide zusammen gehen als Brauchwasserbedarf in die Simulation.
+
+== Eingaben und Wirkung ==
+{{Anker|eingaben-und-wirkung}}
+
+{| class="wikitable"
+! Eingabe !! Wirkung
+|-
+| Nutzungsart, Bezugsgröße, Bedarfsniveau || Tagesmenge der Zone
+|-
+| Tagesgang, Wochenanteile, Auslastungsgang || Lage der Spitzen im Tag, Unterschied Werktag – Wochenende, Saison
+|-
+| Zapftemperatur, Kaltwasser (Jahresmittel, Amplitude) || Energie je Liter über das Jahr
+|-
+| Rechenweg, Seed, Realisierungen || deterministische oder stochastische Jahresreihe, Wiederholbarkeit
+|-
+| Jahresmesswert || skaliert die Zone auf einen gemessenen Verbrauch
+|-
+| Zirkulation || eigener, nahezu gleichmäßiger Verlustposten
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* Zimmer und Betten sind verschiedene Bezugsgrößen; ein Doppelzimmer ist ein Zimmer mit zwei Betten.
+* Ein anderer Seed ergibt ein anderes, gleich wahrscheinliches Jahr. Wer Varianten vergleicht, hält den Seed fest.
+* Der stochastische Weg zeigt Spitzen, die der deterministische glättet – für die Auslegung von Speicher und Ladeleistung ist er der aussagekräftigere.
+* Die Zirkulation kann in Mehrfamilienhäusern einen großen Teil des Warmwasserbedarfs ausmachen; sie gehört in die Bilanz.
+
+== Weiterführend ==
+{{Anker|weiterfuehrend}}
+
+* [[Programm Dokumentation/Brauchwasser-Zapfprofil]] – Zonen, Stufen, Stochastik, Auslegung und Kalibrierung im Dialog
+* [[Programm Dokumentation/Betriebskalender]] – Feiertage und Ferien auf Wochenprofilen
+* [[Grundlagen/Wärmebedarfsrechnung#warmwasser-prozesswaerme-und-netzverluste|Wärmebedarfsrechnung: Warmwasser]] – Warmwasser im Wärmebedarf
+* [[Grundlagen/Pufferspeicher]] – Speicher und Bereitschaftsverluste
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

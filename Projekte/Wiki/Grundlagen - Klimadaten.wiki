@@ -17,7 +17,7 @@ EPOS-Plan rechnet mit Stundenwerten über ein Gemeinjahr ohne Schalttag, also 8.
 === Wochentage und Feiertage ===
 {{Anker|wochentage}}
 
-Die Klimaregion bestimmt auch den Kalender. Aus ihren Wochenendkennzeichen ergibt sich der Wochentag des 1. Januar, und dieses Wochentagsraster gilt für alle Bedarfsarten: Gebäude, Brauchwasser, Prozesswärme und Strombedarf. Ein Jahresdatum hat das Raster nicht; die beweglichen Feiertage liegen nach festen Regeln in diesem Gemeinjahr, Ostern etwa auf dem Sonntag, der dem 8. April am nächsten liegt. Trägt das Projekt eine Spotpreisreihe mit Jahr, gilt stattdessen der Kalender dieses Jahres mit seinen echten Feiertagen. Einzelheiten stehen unter [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+Die Klimaregion bestimmt auch den Kalender. Aus ihren Wochenendkennzeichen ergibt sich der Wochentag des 1. Januar, und dieses Wochentagsraster gilt für alle Bedarfsarten: Gebäude, Brauchwasser, Prozesswärme und Strombedarf. Ein Jahresdatum hat das Raster nicht; die beweglichen Feiertage liegen nach festen Regeln in diesem Gemeinjahr, Ostern etwa auf dem Sonntag, der dem 8. April am nächsten liegt. Trägt das Projekt eine Spotpreisreihe mit Jahr, gilt stattdessen der Kalender dieses Jahres mit seinen echten Feiertagen. Einzelheiten stehen unter [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]]; Regeln und Beispiel zeigt [[Grundlagen/Gemeinjahr und Feiertage|Gemeinjahr und Feiertage]].
 
 == Standortwahl ==
 {{Anker|standortwahl}}
@@ -70,6 +70,7 @@ Welche dieser Größen EPOS-Plan übernimmt, nennt [[Programm Dokumentation/Klim
 {{Anker|siehe-auch}}
 
 * [[Klimadaten festlegen]] – Standort und Klimadatensatz im Programmablauf
+* [[Grundlagen/Gemeinjahr und Feiertage]] – Wochentagsraster, Osterregel und Preisreihe mit Jahr
 * [[Programm Dokumentation/Klimadaten]] – Dialog Klimadaten, Quellen und Import
 * [[Stammdaten und Datenimport]] – Klimadatensätze, Kataloge und Datenimport
 

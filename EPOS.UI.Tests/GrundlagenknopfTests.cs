@@ -70,7 +70,8 @@ public sealed class GrundlagenknopfTests : EposBunitContext
         { "Photovoltaik", "Photovoltaik" },
         { "Photovoltaik#wechselrichter", "Wechselrichter" },
         { "Stromspeicher", "Stromspeicher" },
-        { "Wärmequelle Erdreich", "Wärmequelle_Erdreich" }
+        { "Wärmequelle Erdreich", "Wärmequelle_Erdreich" },
+        { "Kühlung", "Kühlung" }
     };
 
     /// <summary>Rechenwegseiten OHNE Technik — ihre Dialoge bekommen keinen Grundlagenknopf.</summary>
@@ -83,7 +84,7 @@ public sealed class GrundlagenknopfTests : EposBunitContext
         {
             { "Form_PV_Wechselrichter", ("Wechselrichter", "Wechselrichter") },
             { "Form_Gebaeude_Kuehlung", ("Kühlung", "Kühlung") },
-            { "Form_WP_Kuehlung", ("Kühlung", "Kühlung") }
+            { "Form_WP_Kuehlung", ("Kälteerzeugung", "Kühlung") }
         };
 
     public GrundlagenknopfTests()

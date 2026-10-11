@@ -25,7 +25,7 @@ Summen werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen, 
 == Energiepreise ==
 {{Anker|energiepreise|arbeitspreis|emissionsfaktoren}}
 
-In der ''Energieträgerverwaltung'' werden je Energieträger Arbeits-, Grund- und Leistungspreis, Heiz- beziehungsweise Brennwert und die Emissionsfaktoren gepflegt, jeweils mit Gültigkeitsdatum, sodass sich Preisentwicklungen nachvollziehbar hinterlegen lassen. Der Stromträger kann statt des Leistungspreises eine Leistungspreis-Staffel führen. Der Knopf '''±''' an den Preisen hinterlegt eigene Werte für die Szenarien der [[Wirtschaftlichkeit]].
+In der ''Energieträgerverwaltung'' werden je Energieträger Arbeits-, Grund- und Leistungspreis, Heiz- beziehungsweise Brennwert und die Emissionsfaktoren gepflegt, jeweils mit Gültigkeitsdatum, sodass sich Preisentwicklungen nachvollziehbar hinterlegen lassen. Der Stromträger kann statt des Leistungspreises eine Leistungspreis-Staffel führen. Wie der Vergleich den Netzbezug einer Version ohne stromverwendenden Erzeuger und dessen Leistungspreis behandelt, beschreibt [[Wirtschaftlichkeit#strommatrix|Strommatrix]]. Der Knopf '''±''' an den Preisen hinterlegt eigene Werte für die Szenarien der [[Wirtschaftlichkeit]].
 
 == Nutzungsdauern und gesetzliche Parameter ==
 {{Anker|nutzungsdauern-und-gesetzliche-parameter}}
