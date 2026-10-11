@@ -108398,6 +108398,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellaufheizung mit {0} K Überhöhung: {1} Stunden mit angehobenem Vorlauf, höchster Vorlauf {2} °C, in {3} Stunden begrenzt durch die Vorlaufgrenze der Anlage. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_SCHNELL {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_SCHNELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} Fensterstunden bleibt die Schnellaufheizung wirkungslos: Der Vorlauf steht schon an der Vorlaufgrenze der Anlage (Vorlauf_Max). ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_SCHNELL_GRENZE {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_SCHNELL_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schnellaufheizung wirkt nur an Zonen mit Heizkreis und Heizkurve; an {0} Zonen bleibt sie ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_SCHNELL_OHNE_HEIZKREIS {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_SCHNELL_OHNE_HEIZKREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} Fensterstunden liegt die Schnellaufheizung in einer Sperrzeit der Anlage und bleibt dort ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_SCHNELL_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_SCHNELL_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Vorheizfenster liegt an {0} Tagen in einer Sperrzeit der Anlage ({1} Uhr, {2} Fensterstunden ohne verfügbare Wärme); vorheizen können nur die Stunden {3} Uhr. ähnelt.
         /// </summary>
         public static string SIMENG_VORH_SPERRZEIT {

@@ -441,6 +441,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die Massentemperatur der Innenbauteile am Ende jeder Stunde [°C]; wie <see cref="MassenEndeAw"/>.</summary>
         internal double[] MassenEndeIw { get; init; }
 
+        /// <summary>Schnellaufheizung (SA1): Stunden, in denen die Überhöhung den Vorlauf angehoben hat; <c>null</c> = keine.</summary>
+        internal bool[] UeberhoehtStunden { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Stunden, in denen die Vorlaufgrenze der Anlage die Überhöhung begrenzt hat.</summary>
+        internal bool[] UeberhoehungBegrenztStunden { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Stunden mit verlangter, aber wirkungsloser Überhöhung (Vorlauf schon an der Grenze).</summary>
+        internal bool[] UeberhoehungWirkungslosStunden { get; init; }
+
         /// <summary>
         /// Die Gebäudewerte des Vorheizens nach Option 1 (Entwurf Vorheizrampe Fassung 2, 2.5; Welle V2) — der
         /// Ergebnisschreiber (V4) holt sie hier ab; <c>null</c> für die Sollwertrampe und ohne Schalter.
@@ -484,6 +493,9 @@ namespace WindowsFormsApplication1
                 Zonensperre = Zonensperre?.Skaliert(faktor),
                 MassenEndeAw = MassenEndeAw,
                 MassenEndeIw = MassenEndeIw,
+                UeberhoehtStunden = UeberhoehtStunden,
+                UeberhoehungBegrenztStunden = UeberhoehungBegrenztStunden,
+                UeberhoehungWirkungslosStunden = UeberhoehungWirkungslosStunden,
                 Vorheizen = Vorheizen?.Skaliert(faktor),
             };
         }
