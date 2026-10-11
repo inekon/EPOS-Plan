@@ -52692,12 +52692,6 @@ chart</value>
   <data name="KI_ABSAGE_NUR_ENTWICKLER" xml:space="preserve">
     <value>This function is not enabled in your edition.</value>
   </data>
-  <data name="ADM_SET_RUBRIK_ENTWICKLUNG" xml:space="preserve">
-    <value>Development</value>
-  </data>
-  <data name="ADM_SET_HINT_ENTWICKLUNG" xml:space="preserve">
-    <value>Calculation defaults of the draw-off profile for development and testing. An empty field means: the programme default applies.</value>
-  </data>
   <data name="ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
     <value>Draw-off profile: temperature of the litre display</value>
   </data>
@@ -52800,6 +52794,13 @@ chart</value>
   </data>
   <data name="FW_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <!-- Administration und Support, Zapfprofil-Nachzug -->
+  <data name="ADM_SET_RUBRIK_ZAPFPROFIL" xml:space="preserve">
+    <value>Draw-off profile</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPFPROFIL" xml:space="preserve">
+    <value>Calculation defaults of the draw-off profile generator for all projects: temperature of the litre display, hourly threshold, nominal volumes of the storage selection and the start folders for catalogue package and type days. An empty field means: the programme default applies; an invalid value is discarded with a notice and the default is used.</value>
   </data>
 </root>
 
