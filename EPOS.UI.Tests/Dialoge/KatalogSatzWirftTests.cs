@@ -363,6 +363,43 @@ public class KatalogSatzWirftTests : EposBunitContext
     // Die Fangstelle selbst
     // =================================================================================
 
+    // =================================================================================
+    // Die Ganglinien-Dialoge (Kennzahlen des gewählten Satzes, Katalogauswahl V1 Stufe 4)
+    // =================================================================================
+
+    [Fact]
+    public void Solarganglinie_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Eine()) })
+            .Add(x => x.Kennzahlen, _ => Wirft<Task<GanglinienKennzahlen?>>()));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<PvGanglinieDialog>(b => b
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Eine()) })
+            .Add(x => x.Kennzahlen, _ => Wirft<Task<GanglinienKennzahlen?>>()));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void Solarganglinie_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+    {
+        var cut = Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Eine()) })
+            .Add(x => x.Kennzahlen, _ => Task.FromResult<GanglinienKennzahlen?>(null)));
+        ZeileWaehlen(cut);
+        OhneBanner(cut);
+    }
+
     [Fact]
     public void Katalogladung_Satz_und_SatzDazu_benennen_und_halten_den_Grund()
     {

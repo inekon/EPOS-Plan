@@ -1509,6 +1509,16 @@ bisher (Kältemaschinenauswahl, Überlagerung „Simulation…“), je iPad-Fens
 75 px, Banner 83 bis 118 px, Schlussleiste ab 765 px; ohne Token Kopf ab 12 px, Schlussleiste bis 822 px, rot).
 Die Zahlen der Fenster 1 088 × 624 und 520 × 624 sind unverändert.
 
+**Stufe 4, Solar- und PV-Ganglinie (11.10.2026).** Die Fälle `solarganglinie` und `pvganglinie` messen dazu die
+Fußleiste der Katalogseite in den Slots der `Zweispaltenauswahl` (je ein Knopf Vergleichen, Löschen, Import in
+`.epos-zweispalten-fussleiste`, keine eigene Leiste `.epos-ganglinie-katalogfuss`, der Formathinweis als Infoknopf im
+Katalogkopf), den Stift beider Listen (Satz-Überlagerung als Ansicht, die Kurve füllt den Körper, Esc schließt) und
+die Mehrfachwahl (zwei Kästchen: die Fußleiste nennt „2 Sätze“, Vergleichen frei). Die Wirtseite reicht dafür einen
+Lösch- und einen Einleseweg. Ergebnis (Wirt Release, Chromium headless, `--nur <fall>`): je Fall **140 Zustände,
+0 Verstöße**, Rückgabe 0, die Gegenproben rot. In 1 280 × 800: Stift der Projekt- und der Katalogzeile Überlagerung
+8 bis 792 px, Körper 633 px, Kurve 1 226 × 548 px (Modell 1 224 × 546), Fußleiste „Schließen“; Fußleiste und
+Mehrfachwahl bei offener Detailzeile Projektliste 85 px, Katalogliste 147 px, Satzfläche 251 px (Kurve 153 px).
+
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
 **Zweck.** Die Legende neben den Ringen der Ergebnisübersicht (Wärme, Strom, Kälte) steht in einer

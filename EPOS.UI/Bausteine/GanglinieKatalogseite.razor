@@ -2,10 +2,17 @@
 
    WOZU. Die Katalogpflege einer Zeitreihe bleibt im Projektdialog (Konzept
    Projektdialoge mit Katalogauswahl): Liste mit Beschreibung, Jahresarbeit und
-   Spitze, Vergleichen (der Knopf der Suchzeile, Strg-Klick markiert), Schloss
-   setzen/aufheben, Loeschen und Import... - EIN Baustein, damit dieselbe Seite
+   Spitze, Vergleichen, Schloss setzen/aufheben, Loeschen und Import... - EIN Baustein, damit dieselbe Seite
    jede Zeitreihenart traegt. Der Wirt reicht die Wege seiner Art herein
    (GanglinienKatalogwege); die Fachlogik bleibt in deren Controllern.
+
+   DIE FUSSLEISTE (Katalogauswahl V1, Stufe 4) sind drei Fragmente - Fuss (Vergleichen..., Schloss,
+   Loeschen auf der Auswahl), FussRechts (Import...); den Formathinweis (Infoknopf) reicht der Wirt. Mit
+   FussImWirt legt der Wirt sie in die Slots KatalogFuss, KatalogFussRechts und KatalogKopf der
+   Zweispaltenauswahl und hoert ZustandGeaendert, um sie nachzuzeichnen; ohne (Katalogbetrieb)
+   traegt die Seite sie in ihrer eigenen Leiste. Die Liste fuehrt Kaestchen (Mehrfachwahl, 4.5)
+   und mit dem Rueckruf Stift den Stift je Zeile (UeS2). Wirft das Lesen der Liste oder das
+   Loeschen, nennt ein Banner den Grund (KT-4, Katalogladung).
 
    DIE WAHL GEHOERT DEM WIRT: Er setzt Gewaehlt (die Markierung haengt am NAMEN)
    und hoert ZeileGewaehlt; nach jeder Aenderung des Katalogs (Import, Loeschen,
@@ -29,58 +36,35 @@
 
 <div class="epos-ganglinie-katalogseite">
 
-    <Katalogliste Profil="@Profil" Zeilen="@_katalog"
-                  Filterstand="@Filterstand" Texte="@Filtertexte"
-                  Gewaehlt="@Gewaehlt" GewaehltChanged="BeiZeile" />
+    @* KT-4: Wirft das Lesen der Liste, nennt dieser Banner den Grund (Katalogladung.Lesen). *@
+    @if (_listeFehler.Length > 0)
+    {
+        <div class="epos-katalogmeldung">
+            <Warnbanner Stufe="@WarnStufe.Warnung" Text="@_listeFehler" />
+        </div>
+    }
 
-    <div class="epos-leiste">
-        @if (Wege.Einlesen is not null)
-        {
-            <button type="button" class="epos-knopf epos-importknopf" disabled="@_laeuft"
-                    @onclick="ImportOeffnen">@Texte.ImportKnopf</button>
-        }
-        else if (Wege.ImportAbgelehnt.Length > 0)
-        {
-            <button type="button" class="epos-knopf epos-importknopf" aria-disabled="true"
-                    title="@Wege.ImportAbgelehnt"
-                    @onclick="() => Warnen(Wege.ImportAbgelehnt)">@Texte.ImportKnopf</button>
-        }
-        @if (Wege.NennleistungSchreiben is not null)
-        {
-            @* Nur die PV-Ganglinie: die Nennleistung des gewaehlten Katalogsatzes. Ein Auslieferungssatz
-               ist weich gesperrt und nennt den Grund. *@
-            if (_zeile is not null && _zeile.Geschuetzt)
-            {
-                <button type="button" class="epos-knopf epos-nennleistungknopf" aria-disabled="true"
-                        title="@Texte.NennleistungGesperrt"
-                        @onclick="() => Warnen(Texte.NennleistungGesperrt)">@Texte.NennleistungKnopf</button>
-            }
-            else
-            {
-                <button type="button" class="epos-knopf epos-nennleistungknopf"
-                        disabled="@(_zeile is null || _laeuft)"
-                        @onclick="NennleistungOeffnen">@Texte.NennleistungKnopf</button>
-            }
-        }
-        <Katalogschloss @ref="_katalogschloss" Weg="@Wege.Schloss" Zeile="@_zeile"
-                        NurLesen="@_laeuft" JaText="@Texte.Ja" NeinText="@Texte.Nein"
-                        Geschaltet="BeiSchlossGeschaltet" Abgelehnt="Warnen" />
-        @if (Wege.Loeschen is not null)
-        {
-            string grund = LoeschGrund;
-            if (grund.Length > 0)
-            {
-                <button type="button" class="epos-knopf epos-katalog-loeschen" aria-disabled="true"
-                        title="@grund" @onclick="() => Warnen(grund)">@Texte.LoeschenKnopf</button>
-            }
-            else
-            {
-                <button type="button" class="epos-knopf epos-katalog-loeschen"
-                        disabled="@(_zeile is null || _laeuft)"
-                        @onclick="BeiLoeschen">@Texte.LoeschenKnopf</button>
-            }
-        }
-    </div>
+    @* DIE KATALOGLISTE im Kaestchenmodus (Konzept 4.5): Die Zeile ist die Wahl (Detailzeile), das
+       Kaestchen waehlt mehrere fuer Vergleichen, Schloss und Loeschen; der Stift je Zeile (UeS2)
+       ruft den Wirt. *@
+    <Katalogliste @ref="_liste" Profil="@Profil" Zeilen="@_katalog"
+                  Filterstand="@Filterstand" Texte="@Filtertexte"
+                  Gewaehlt="@Gewaehlt" GewaehltChanged="BeiZeile"
+                  ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_kaestchen"
+                  GewaehlteChanged="BeiKaestchen"
+                  Bearbeiten="@StiftRueckruf" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
+
+    @* OHNE ZWEISPALTENAUSWAHL (Katalogbetrieb) traegt die Seite ihre Fussleiste selbst - dieselben
+       Fragmente, die der Wirt sonst in die Slots KatalogFuss und KatalogFussRechts legt. *@
+    @if (!FussImWirt)
+    {
+        <div class="epos-leiste epos-ganglinie-katalogfuss">
+            @Fuss
+            <span class="epos-leiste-fueller"></span>
+            @Formathinweis
+            @FussRechts
+        </div>
+    }
 
     @if (_meldung.Length > 0)
     {
@@ -233,19 +217,180 @@
     /// <summary>Der Katalog hat sich geändert (Import, Löschen, Schloss).</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
 
+    /// <summary>
+    /// <b>Die Fußleiste steht beim Wirt</b> (Katalogauswahl V1, Stufe 4): Die Seite zeichnet keine eigene
+    /// Leiste; der Wirt legt <see cref="Fuss"/> in den Slot <c>KatalogFuss</c>, <see cref="FussRechts"/> in
+    /// <c>KatalogFussRechts</c> und seinen Formathinweis in <c>KatalogKopf</c> der <c>Zweispaltenauswahl</c>.
+    /// Ohne (Katalogbetrieb) trägt die Seite dieselben Fragmente in ihrer eigenen Leiste.
+    /// </summary>
+    [Parameter] public bool FussImWirt { get; set; }
+
+    /// <summary>
+    /// Der Zustand der Fragmente hat sich geändert (Wahl, Kästchen, Löschen, Schloss): Der Wirt zeichnet
+    /// neu, damit seine Slots nachziehen. Die Seite ruft es auch nach dem ersten Zeichnen.
+    /// </summary>
+    [Parameter] public EventCallback ZustandGeaendert { get; set; }
+
+    /// <summary>
+    /// Der Stift je Katalogzeile (UeS2): Die Liste wählt die Zeile und ruft danach diesen Rückruf. Ohne ihn
+    /// trägt die Liste keinen Stift.
+    /// </summary>
+    [Parameter] public EventCallback<Katalogfilterzeile> Stift { get; set; }
+
+    /// <summary>Der Name der Liste im Grund, wenn das Lesen wirft (KT-4, Titel des Dialogs).</summary>
+    [Parameter] public string Listenname { get; set; } = "";
+
+    /// <summary>
+    /// Der Formathinweis des Imports (Infoknopf des Wirts): Ohne Zweispaltenauswahl steht er in der eigenen
+    /// Leiste der Seite; mit legt ihn der Wirt in den Slot <c>KatalogKopf</c>.
+    /// </summary>
+    [Parameter] public RenderFragment? Formathinweis { get; set; }
+
+    private EventCallback<Katalogfilterzeile> StiftRueckruf
+        => Stift.HasDelegate ? EventCallback.Factory.Create<Katalogfilterzeile>(this, BeiStift) : default;
+
+    private async Task BeiStift(Katalogfilterzeile zeile)
+    {
+        if ((_zeile?.Bezeichner ?? "") != zeile.Bezeichner) await Waehlen(zeile.Bezeichner);
+        await Stift.InvokeAsync(zeile);
+    }
+
+    // =====================================================================
+    // Die Fragmente der Fußleiste und des Katalogkopfs (4.2)
+    // =====================================================================
+
+    /// <summary>
+    /// Links in der Katalog-Fußleiste: Vergleichen… (ab zwei Sätzen), Nennleistung… (nur PV), Schloss
+    /// setzen/aufheben…, Löschen — sie wirken auf die Auswahl des Katalogs (Kästchen, sonst die Wahl).
+    /// </summary>
+    public RenderFragment Fuss => @<text>
+        <button type="button" class="epos-knopf epos-knopf--vergleichen"
+                title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
+                disabled="@(Ziele().Count < 2 || _laeuft)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
+        @if (Wege.NennleistungSchreiben is not null)
+        {
+            @* Nur die PV-Ganglinie: die Nennleistung des gewaehlten Katalogsatzes. Ein Auslieferungssatz
+               ist weich gesperrt und nennt den Grund. *@
+            if (_zeile is not null && _zeile.Geschuetzt)
+            {
+                <button type="button" class="epos-knopf epos-nennleistungknopf" aria-disabled="true"
+                        title="@Texte.NennleistungGesperrt"
+                        @onclick="() => Warnen(Texte.NennleistungGesperrt)">@Texte.NennleistungKnopf</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-nennleistungknopf"
+                        disabled="@(_zeile is null || _laeuft)"
+                        @onclick="NennleistungOeffnen">@Texte.NennleistungKnopf</button>
+            }
+        }
+        <Katalogschloss @ref="_katalogschloss" Weg="@Wege.Schloss" Zeile="@_zeile"
+                        NurLesen="@_laeuft" JaText="@Texte.Ja" NeinText="@Texte.Nein"
+                        Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
+        @if (Wege.Loeschen is not null)
+        {
+            string grund = Ziele().Count == 1 ? LoeschGrundVon(Ziele()[0]) : "";
+            if (grund.Length > 0)
+            {
+                <button type="button" class="epos-knopf epos-katalog-loeschen" aria-disabled="true"
+                        title="@grund" @onclick="() => WarnenUndNachziehen(grund)">@Texte.LoeschenKnopf</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-katalog-loeschen"
+                        disabled="@(Ziele().Count == 0 || _laeuft)"
+                        @onclick="BeiLoeschen">@Texte.LoeschenKnopf</button>
+            }
+        }
+    </text>;
+
+    /// <summary>Rechts in der Katalog-Fußleiste: Import… (weich gesperrt, wenn die Plattform den Grund nennt).</summary>
+    public RenderFragment FussRechts => @<text>
+        @if (Wege.Einlesen is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf" disabled="@_laeuft"
+                    @onclick="ImportOeffnen">@Texte.ImportKnopf</button>
+        }
+        else if (Wege.ImportAbgelehnt.Length > 0)
+        {
+            <button type="button" class="epos-knopf epos-importknopf" aria-disabled="true"
+                    title="@Wege.ImportAbgelehnt"
+                    @onclick="() => WarnenUndNachziehen(Wege.ImportAbgelehnt)">@Texte.ImportKnopf</button>
+        }
+    </text>;
+
+    // =====================================================================
+    // Die Mehrfachwahl des Katalogs (4.5)
+    // =====================================================================
+
+    private readonly Bereichswahl _wahl = new();
+    private IReadOnlyList<string> _kaestchen = new List<string>();
+    private Katalogliste? _liste;
+
+    /// <summary>Die Mehrfachwahl des Katalogs — der Wirt reicht sie als <c>KatalogWahl</c> weiter.</summary>
+    public Bereichswahl Wahl => _wahl;
+
+    /// <summary>Schlüssel der sichtbaren (gefilterten) Katalogzeilen in Anzeigereihenfolge.</summary>
+    public IReadOnlyList<string> Sichtbar => (_liste?.Angezeigt ?? _katalog).Select(z => z.Schluessel).ToList();
+
+    /// <summary>Die Ziele einer Katalogaktion: die angekreuzten Sätze, sonst der gewählte.</summary>
+    public IReadOnlyList<Katalogfilterzeile> Ziele()
+    {
+        if (_wahl.Anzahl > 0)
+            return _wahl.Gewaehlte.Select(s => _katalog.FirstOrDefault(z => z.Schluessel == s))
+                        .OfType<Katalogfilterzeile>().ToList();
+        return _zeile is null ? Array.Empty<Katalogfilterzeile>() : new[] { _zeile };
+    }
+
+    private async Task BeiKaestchen(IReadOnlyList<string> gewaehlt)
+    {
+        _kaestchen = gewaehlt;
+        _wahl.Setzen(gewaehlt);
+        await Nachziehen();
+    }
+
+    private void KaestchenLeeren()
+    {
+        _wahl.Leeren();
+        _kaestchen = new List<string>();
+    }
+
+    private async Task BeiVergleichen()
+    {
+        IReadOnlyList<Katalogfilterzeile> ziele = Ziele();
+        if (ziele.Count >= 2) _liste?.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+        await Nachziehen();
+    }
+
+    /// <summary>Lässt den Wirt nachzeichnen — seine Slots tragen die Fragmente dieser Seite.</summary>
+    private Task Nachziehen() => ZustandGeaendert.HasDelegate ? ZustandGeaendert.InvokeAsync() : Task.CompletedTask;
+
+    private async Task WarnenUndNachziehen(string text)
+    {
+        Warnen(text);
+        await Nachziehen();
+    }
+
+    private async Task BeiSchlossAbgelehnt(string grund) => await WarnenUndNachziehen(grund);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && FussImWirt) await Nachziehen();
+    }
+
     private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private IReadOnlyDictionary<string, IReadOnlyList<string>>? _verwendung;
     private Katalogfilterzeile? _zeile;
     private Katalogschloss? _katalogschloss;
 
     private string _meldung = "";
+    private string _listeFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
     private string _status = "";
     private string _protokoll = "";
 
     private bool _loeschfrageOffen;
     private string _loeschfrage = "";
-    private string _loeschziel = "";
 
     private bool _importOffen;
     private bool _laeuft;
@@ -309,10 +454,31 @@
     /// </summary>
     public async Task Neuladen()
     {
-        _katalog = Wege.Katalogzeilen is null
-            ? Array.Empty<Katalogfilterzeile>()
-            : await Wege.Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
-        _verwendung = Wege.Verwendung is null ? null : await Wege.Verwendung();
+        // KT-4: Wirft die Quelle, bleibt die Liste leer, der Banner nennt den Grund, und das
+        // Ausnahmeprotokoll hat einen Vermerk - dieselbe Fangstelle wie bei den Erzeugern.
+        _listeFehler = "";
+        try
+        {
+            _katalog = Wege.Katalogzeilen is null
+                ? Array.Empty<Katalogfilterzeile>()
+                : await Wege.Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
+        }
+        catch (Exception ex)
+        {
+            _katalog = Katalogladung.Lesen<Katalogfilterzeile>(() => throw ex, Listenname, out _listeFehler);
+        }
+        try
+        {
+            _verwendung = Wege.Verwendung is null ? null : await Wege.Verwendung();
+        }
+        catch (Exception ex)
+        {
+            _verwendung = null;
+            if (_listeFehler.Length == 0)
+                Katalogladung.Lesen<Katalogfilterzeile>(() => throw ex, Listenname, out _listeFehler);
+        }
+        _wahl.Bereinigen(_katalog.Select(z => z.Schluessel));
+        _kaestchen = _wahl.Gewaehlte.ToList();
         if (ImProjekt is not null)
             Katalogverwendung.Stempeln(_katalog, ImProjekt());
 
@@ -329,6 +495,7 @@
         _zeile = zeile;
         _meldung = "";
         await ZeileGewaehlt.InvokeAsync(zeile);
+        await Nachziehen();
     }
 
     private Task BeiZeile(string bezeichner) => Waehlen(bezeichner ?? "");
@@ -349,63 +516,119 @@
         _meldung = "";
         _status = status ?? "";
         await Geaendert.InvokeAsync();
+        await Nachziehen();
     }
 
     // =====================================================================
     // Löschen
     // =====================================================================
 
-    /// <summary>Warum die gewählte Zeile nicht gelöscht werden darf; leer = frei.</summary>
-    private string LoeschGrund
+    /// <summary>Warum <paramref name="zeile"/> nicht gelöscht werden darf; leer = frei.</summary>
+    private string LoeschGrundVon(Katalogfilterzeile zeile)
     {
-        get
-        {
-            if (_zeile is null) return "";
-            string name = _zeile.Bezeichner;
-            if (ImProjekt is not null && ImProjekt().Contains(name, StringComparer.Ordinal))
-                return string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.ImProjekt, name);
-            if (_zeile.Geschuetzt) return Texte.Schreibgeschuetzt;
-            IReadOnlyList<string> projekte = Ganglinienblatt.Projekte(_verwendung, name);
-            return projekte.Count == 0
-                ? ""
-                : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.ADM_AW_LOESCHEN_VERWENDET,
-                                Ganglinienblatt.Projektliste(projekte));
-        }
+        string name = zeile.Bezeichner;
+        if (ImProjekt is not null && ImProjekt().Contains(name, StringComparer.Ordinal))
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.ImProjekt, name);
+        if (zeile.Geschuetzt) return Texte.Schreibgeschuetzt;
+        IReadOnlyList<string> projekte = Ganglinienblatt.Projekte(_verwendung, name);
+        return projekte.Count == 0
+            ? ""
+            : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.ADM_AW_LOESCHEN_VERWENDET,
+                            Ganglinienblatt.Projektliste(projekte));
     }
 
+    private List<string> _loeschziele = new();
+    private List<string> _loeschUebersprungen = new();
+
+    /// <summary>Die Sätze, die die offene Rückfrage löschen würde (Prüfhilfe).</summary>
+    public IReadOnlyList<string> Loeschziele => _loeschziele;
+
+    /// <summary>
+    /// „Löschen" auf der Auswahl (4.5): Gesperrte, verwendete und zugeordnete Sätze werden übersprungen
+    /// und in der EINEN Rückfrage genannt; trifft die Sperre alle (oder den einen), nennt das Warnband den Grund.
+    /// </summary>
     private async Task BeiLoeschen()
     {
-        if (_laeuft || _zeile is null || Wege.Loeschen is null) return;
+        IReadOnlyList<Katalogfilterzeile> ziele = Ziele();
+        if (_laeuft || ziele.Count == 0 || Wege.Loeschen is null) return;
 
-        string grund = LoeschGrund;
-        if (grund.Length > 0) { Warnen(grund); return; }
-
-        string name = _zeile.Bezeichner;
-        if (Wege.HatProjektzuordnung is not null && await Wege.HatProjektzuordnung(name))
+        var frei = new List<string>();
+        var uebersprungen = new List<string>();
+        string ersterGrund = "";
+        foreach (Katalogfilterzeile z in ziele)
         {
-            Warnen(Texte.Projektzuordnung);
-            return;
+            string grund = LoeschGrundVon(z);
+            if (grund.Length == 0 && Wege.HatProjektzuordnung is not null)
+            {
+                bool zugeordnet;
+                try { zugeordnet = await Wege.HatProjektzuordnung(z.Bezeichner); }
+                catch (Exception ex)
+                {
+                    Katalogladung.Loeschen(() => throw ex, z.Bezeichner, out grund);
+                    zugeordnet = false;
+                }
+                if (zugeordnet) grund = Texte.Projektzuordnung;
+            }
+            if (grund.Length > 0)
+            {
+                if (ersterGrund.Length == 0) ersterGrund = grund;
+                uebersprungen.Add(z.Bezeichner);
+            }
+            else frei.Add(z.Bezeichner);
         }
 
+        if (frei.Count == 0) { await WarnenUndNachziehen(ersterGrund); return; }
+
         _meldung = "";
-        _loeschziel = name;
-        _loeschfrage = string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Loeschfrage, name);
+        _loeschziele = frei;
+        _loeschUebersprungen = uebersprungen;
+        _loeschfrage = frei.Count == 1
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Loeschfrage, frei[0])
+            : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.AUSWAHL_FRAGE_LOESCHEN_N,
+                            frei.Count, string.Join(", ", frei.Select(n => "\u201e" + n + "\u201c")));
+        if (uebersprungen.Count > 0)
+            _loeschfrage += " " + string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SATZBEARB_UEBERSPRUNGEN,
+                                                string.Join(", ", uebersprungen.Select(n => "\u201e" + n + "\u201c")));
         _loeschfrageOffen = true;
+        await Nachziehen();
     }
 
     private async Task LoeschfrageBeantwortet(bool? antwort)
     {
         _loeschfrageOffen = false;
-        string name = _loeschziel;
-        _loeschziel = "";
-        if (antwort != true || Wege.Loeschen is null || name.Length == 0) return;
+        List<string> namen = _loeschziele;
+        _loeschziele = new();
+        _loeschUebersprungen = new();
+        if (antwort != true || Wege.Loeschen is null || namen.Count == 0) { await Nachziehen(); return; }
 
-        bool ok = await Wege.Loeschen(name);
+        string fehler = "";
+        var geloescht = new List<string>();
+        foreach (string name in namen)
+        {
+            // KT-4: Wirft der Loeschweg, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            bool ok;
+            try { ok = await Wege.Loeschen(name); }
+            catch (Exception ex)
+            {
+                Katalogladung.Loeschen(() => throw ex, name, out string grund);
+                fehler = grund;
+                continue;
+            }
+            if (ok) geloescht.Add(name);
+            else if (fehler.Length == 0) fehler = Texte.Schreibgeschuetzt;
+        }
+        if (geloescht.Count > 0) KaestchenLeeren();
         await Neuladen();
-        if (!ok) { Warnen(Texte.Schreibgeschuetzt); return; }
-
-        _status = string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Geloescht, name);
-        await Geaendert.InvokeAsync();
+        if (fehler.Length > 0) Warnen(fehler);
+        if (geloescht.Count > 0)
+        {
+            _status = geloescht.Count == 1
+                ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Geloescht, geloescht[0])
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Geloescht,
+                                string.Join(", ", geloescht));
+            await Geaendert.InvokeAsync();
+        }
+        await Nachziehen();
     }
 
     // =====================================================================
@@ -618,6 +841,7 @@
             _anteil = null;
             _fortschrittText = "";
         }
+        await Nachziehen();
     }
 
     // =====================================================================
@@ -691,6 +915,6 @@
             _zeile = zeile;
             await ZeileGewaehlt.InvokeAsync(zeile);
         }
-        await Geaendert.InvokeAsync();
+        await Geaendert.InvokeAsync();    await Nachziehen();
     }
 }

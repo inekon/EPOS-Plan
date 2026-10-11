@@ -312,7 +312,10 @@ async function massAbwartenUeberlagerung(seite) {
 
 /** UeS1c: oeffnet in einem Ganglinien-Wirt die Projektzeile, klappt die Detailzeile auf und vergroessert. */
 async function gangliniePerVergroessern(seite) {
-  if (await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').count())
+  // Die Zeilenwahl der Projektzeile (nicht ihr Kaestchen und nicht der Stift).
+  const wahl = seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-anlagenwahl');
+  if (await wahl.count()) await wahl.first().click();
+  else if (await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').count())
     await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').first().click();
   await ruhe(seite);
   await satz(seite, true);
@@ -730,6 +733,47 @@ try {
                 || await seite.locator('.epos-formathinweis, body > #app > .epos-dialog > .epos-kontextzeile').count())
               { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Fussleiste/Formathinweis nicht nach Stufe 4`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
           }
+        }
+        // Stufe 4 (Solar- und PV-Ganglinie): die Katalogknoepfe in der Fussleiste der Zweispaltenauswahl
+        // (links Vergleichen, Loeschen; rechts Import), der Formathinweis als Infoknopf im Katalogkopf, der
+        // Stift beider Listen oeffnet die Ansicht (Kurve fuellt den Koerper), zwei Kaestchen nennen „2 Saetze".
+        if (fall === 'solarganglinie' || fall === 'pvganglinie') {
+          const fuss = '.epos-zweispalten-fussleiste';
+          for (const [k, name] of [['.epos-knopf--vergleichen', 'Vergleichen'], ['.epos-katalog-loeschen', 'Loeschen'], ['.epos-importknopf', 'Import']])
+            if (await seite.locator(`${fuss} ${k}`).count() !== 1) {
+              verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Fussleiste ohne ${name}`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+            }
+          if (await seite.locator('.epos-ganglinie-katalogfuss').count()
+              || await seite.locator('.epos-zweispalten-bereich--katalog .epos-ganglinie-formathinweis .epos-infoknopf').count() !== 1) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: eigene Leiste der Seite oder Formathinweis nicht im Katalogkopf`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
+          await mess('Fussleiste');
+          for (const [bereich, wo] of [['projekt', 'Projektzeile'], ['katalog', 'Katalogzeile']]) {
+            const stift = seite.locator(`.epos-zweispalten-bereich--${bereich} .epos-zeilenstift`);
+            if (!(await stift.count())) { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${wo} ohne Stift`); console.log('  VERSTOSS ' + verstoesse.at(-1)); continue; }
+            await stift.first().click();
+            await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+            await massAbwartenUeberlagerung(seite);
+            pruefeSatzUeberlagerung(fall, fenster, `Satz-Ueberlagerung ueber den Stift (${wo})`,
+              await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke: '.epos-ganglinie-grafik' }));
+            pruefeKurveImKoerper(fall + ' Stift ' + wo, fenster, await seite.evaluate(kurveImKoerper));
+            await mess(`Stift ${wo} offen`);
+            await seite.keyboard.press('Escape');
+            await ruhe(seite);
+            if (await seite.locator('.epos-ueberlagerung--satz').count()) {
+              verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Ansicht des Stifts nicht`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+              await seite.locator('.epos-satzueberlagerung-schliessen').click(); await ruhe(seite);
+            }
+          }
+          const kk = seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input');
+          if (await kk.count() >= 2) {
+            await kk.nth(0).check(); await kk.nth(1).check(); await ruhe(seite);
+            const name = (await seite.locator(`${fuss} .epos-zweispalten-fussname`).textContent() || '').trim();
+            if (!/^2\b/.test(name)) { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Fussleiste nennt bei zwei Kaestchen „${name}"`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+            if (await seite.locator(`${fuss} .epos-knopf--vergleichen[disabled]`).count()) { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Vergleichen bei zwei Saetzen gesperrt`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+            await mess('Mehrfachwahl');
+            await kk.nth(0).uncheck(); await kk.nth(1).uncheck(); await ruhe(seite);
+          } else { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Katalog ohne Kaestchen`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
         }
         // Ueberlagerung offen: Gebaeude -> "Simulation..." (wie die Fensterprobe).
         if (fall === 'gebaeude') {
