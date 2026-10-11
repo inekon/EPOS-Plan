@@ -51759,6 +51759,18 @@ chart</value>
   <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
     <value>Electric backup heater</value>
   </data>
+  <data name="KFLT_LT_HERSTELLER" xml:space="preserve">
+    <value>Heat pump manufacturer</value>
+  </data>
+  <data name="KFLT_LT_MODELL" xml:space="preserve">
+    <value>Heat pump model designation</value>
+  </data>
+  <data name="KFLT_LT_QUELLE" xml:space="preserve">
+    <value>Heat source of the heat pump (air, brine, water)</value>
+  </data>
+  <data name="KFLT_LT_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Cooling capacity in cooling mode (kW)</value>
+  </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Unit type of the cooling generator (air- or water-cooled chiller, with free cooling, split, multi-split, VRF, absorption); empty = from heat rejection.</value>
   </data>

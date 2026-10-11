@@ -51766,6 +51766,18 @@ Chart</value>
   <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
     <value>Elektrische Zuheizung</value>
   </data>
+  <data name="KFLT_LT_HERSTELLER" xml:space="preserve">
+    <value>Hersteller der Wärmepumpe</value>
+  </data>
+  <data name="KFLT_LT_MODELL" xml:space="preserve">
+    <value>Modellbezeichnung der Wärmepumpe</value>
+  </data>
+  <data name="KFLT_LT_QUELLE" xml:space="preserve">
+    <value>Wärmequelle der Wärmepumpe (Luft, Sole, Wasser)</value>
+  </data>
+  <data name="KFLT_LT_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Kühlleistung im Kühlbetrieb (kW)</value>
+  </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Geräteart des Kälteerzeugers (Kaltwassersatz luft- oder wassergekühlt, mit Freikühlung, Split, Multisplit, VRF, Absorption); leer = nach der Rückkühlart.</value>
   </data>

@@ -53644,11 +53644,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KFLT_LT_HERSTELLER {
+            get {
+                return ResourceManager.GetString("KFLT_LT_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung im Kühlbetrieb (kW) ähnelt.
+        /// </summary>
+        public static string KFLT_LT_KUEHLLEISTUNG {
+            get {
+                return ResourceManager.GetString("KFLT_LT_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modellbezeichnung der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KFLT_LT_MODELL {
+            get {
+                return ResourceManager.GetString("KFLT_LT_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung ähnelt.
         /// </summary>
         public static string KFLT_LT_NENNKAELTELEISTUNG {
             get {
                 return ResourceManager.GetString("KFLT_LT_NENNKAELTELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle der Wärmepumpe (Luft, Sole, Wasser) ähnelt.
+        /// </summary>
+        public static string KFLT_LT_QUELLE {
+            get {
+                return ResourceManager.GetString("KFLT_LT_QUELLE", resourceCulture);
             }
         }
         
