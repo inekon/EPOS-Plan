@@ -74,7 +74,7 @@ Gate 933: Gate 931 auf 646d4eac grün: Kern-Filter 0 Fehler, ChartProben 222 Has
 
 ## Offen
 
-- Upload nur auf Zuruf des Anwenders; Zugangsdaten werden dann erfragt.
+- Upload erledigt 11.10.2026 (04:10–04:27 UTC, Bot-Konto, Stand `31f31a7d`): 39 Dateien (6 bestehende gleich, 11 SVG und 22 PNG neu, SHA-1-Rücklese gleich), 128 Seiten gleich (5 neu, übrige ersetzt; 0 Fehler, 0 Parse-Warnungen, Rücklese byte-gleich), 19 Weiterleitungen gleich; Update-Logbuch: sechs Sätze unter „Version 1.2.0.10 – Oktober 2026“, Revision 933. Bildschirmfotos der Gebäudedialoge zurückgestellt.
 - Sichtabnahme der Bilder durch den Anwender.
 - Nicht abgebildete Masken (acht entfernte Platzhalter, siehe Bildwelle).
 - Befund „Kältemaschine nicht an Kühltage gebunden“ für die Fachsitzung.
