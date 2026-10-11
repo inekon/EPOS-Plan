@@ -80,6 +80,10 @@ const BREITE_ANTEIL = 0.9;   // DZ1-N2: Kurvenbreite mindestens 90 % der Satzfla
 const MASS_TOLERANZ = 3;     // DZ1-N2: Zeichenmodell in Behaeltergroesse, je Richtung hoechstens 3 px
 const UNTERGRENZE_SPIEL = 5; // DZ1-N2: "auf der Untergrenze" heisst Kurve hoechstens 5 px ueber --epos-kurve-min (Rand der Flaeche, Rundung der Kopfmasse)
 const ROLLT_NICHT = ['stromganglinie', 'solarganglinie', 'pvganglinie'];   // DZ1-N2: Rollen in 1 280 x 800 / 720 nur auf der Untergrenze
+// Stufe 4 (Rest 3): Waermebedarf extern und Stromganglinie - mit offener Ganglinie rollt der Dialogkoerper in diesen
+// drei Fenstern gar nicht (Katalog Kopf und eine Zeile, Kurve bis an den unteren Rand der Satzflaeche).
+const ROLLT_GAR_NICHT = ['waermebedarf', 'stromganglinie'];
+const FENSTER_REST3 = ['1280x800', '1280x720', '1024x768'];
 
 const FENSTER = [{ breite: 1280, hoehe: 800 }, { breite: 1280, hoehe: 720 }, { breite: 1024, hoehe: 700 },
   { breite: 1024, hoehe: 768, neu: true }, { breite: 768, hoehe: 1024, neu: true }, { breite: 1093, hoehe: 614, neu: true },
@@ -409,6 +413,8 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
     if (fenster.breite === 1280 && (fenster.hoehe === 800 || fenster.hoehe === 720) && ROLLT_NICHT.includes(fall) && m.dialogRollt
         && m.bild > m.kurveMin + UNTERGRENZE_SPIEL)
       fehler.push(`Ganglinie: Dialogkoerper rollt bei ${fenster.breite} x ${fenster.hoehe}, obwohl die Kurve (${m.bild} px) ueber ihrer Untergrenze steht`);
+    if (ROLLT_GAR_NICHT.includes(fall) && FENSTER_REST3.includes(`${fenster.breite}x${fenster.hoehe}`) && !fenster.ipad && m.dialogUeberhang > 0)
+      fehler.push(`Ganglinie (Rest 3): Dialogkoerper rollt ${m.dialogUeberhang} px bei ${fenster.breite} x ${fenster.hoehe}`);
     kurven.push(`${fall} ${fenster.breite}x${fenster.hoehe} ${zustand}: Kurve ${m.bildBreite} x ${m.bild} px, Satzflaeche ${m.satzBreite} px, Modell ${m.modell ? m.modell.breite + ' x ' + m.modell.hoehe : '-'}, Dialog rollt ${m.dialogUeberhang} px`);
   }
   if (m.eng && (fenster.neu || (m.satzOffen && m.ganglinie))) { befunde.push(kennung + ': Dialogkoerper rollt (unter der Mindesthoehe)'); m = { ...m, dialogRollt: false }; }
@@ -423,7 +429,8 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
     // Gemessen mit der echten Zeilenhoehe der Katalogliste (Kaestchenmodus 46 px, sonst 53 px).
     const zeile = m.katalogZeile || (m.kompakt ? ZEILE_KOMPAKT : ZEILE);
     // Kompaktstufe: immer zwei Zeilen (darunter rollt der Dialogkoerper).
-    const soll = ((!m.kompakt && m.zweispalten !== null && m.zweispalten < 600) ? 1 : 2) * zeile;
+    // Stufe 4: Mit offener Ganglinie behaelt die Katalogliste Kopf und EINE Zeile (Stilblatt, Konzept 4.9).
+    const soll = ((!m.kompakt && m.zweispalten !== null && m.zweispalten < 600) || (m.satzOffen && m.ganglinie) ? 1 : 2) * zeile;
     if (m.katalog !== null && m.katalogKopf !== null && m.katalog + 2 < m.katalogKopf + soll)
       fehler.push(`Katalogliste ${m.katalog} px < Kopf ${m.katalogKopf} + ${soll / zeile} Zeile(n) a ${zeile} px`);
     // Heizkessel (Stufe 2, Entscheid der Orchestrierung zu Konzept 4.8): in JEDEM Fenster Kopf und
@@ -491,8 +498,9 @@ try {
         if (await taste(seite, 'Home')) await mess('Trennlinie oben');
         if (await taste(seite, 'End')) await mess('Trennlinie unten');
         // Ganglinien-Dialoge (DZ1): erst eine Projektzeile waehlen - die Detailzeile zeigt dann ihre Ganglinie.
-        if (/ganglinie|waermebedarf/.test(fall) && await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').count()) {
-          await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').first().click();
+        // Stufe 4: die Zeile traegt vor der Wahl ein Kaestchen - gewaehlt wird ueber den Wahlknopf.
+        if (/ganglinie|waermebedarf/.test(fall) && await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button.epos-anlagenwahl').count()) {
+          await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button.epos-anlagenwahl').first().click();
           await ruhe(seite);
         }
         if (await satz(seite, true)) {
@@ -700,6 +708,26 @@ try {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Schließen schliesst die Satz-Ueberlagerung nicht`);
           await massAbwarten(seite);              // die Satzflaeche zeichnet die Kurve wieder in ihrem Mass
           await mess('nach Satz-Ueberlagerung');
+          // Stufe 4 (UeS2): der Stift der Projektzeile oeffnet dieselbe Ansicht (nur „Schließen").
+          if (ROLLT_GAR_NICHT.includes(fall)) {
+            const stift = seite.locator('.epos-zweispalten-bereich--projekt tbody .epos-zeilenstift');
+            if (await stift.count()) {
+              await stift.first().click();
+              await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+              await ruhe(seite);
+              await mess('Satz-Ueberlagerung ueber den Stift');
+              pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber den Stift',
+                await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke: '.epos-ganglinie-grafik' }));
+              await seite.locator('.epos-satzueberlagerung-schliessen').click();
+              await ruhe(seite);
+              if (await seite.locator('.epos-ueberlagerung--satz').count())
+                verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Schließen schliesst die Ansicht ueber den Stift nicht`);
+            } else { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Projektliste ohne Stift`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+            if (await seite.locator('.epos-zweispalten-fussleiste .epos-knopf--import').count() !== 1
+                || await seite.locator('.epos-zweispalten-bereich--katalog .epos-zweispalten-kopfleiste .epos-formathinweis-knopf').count() !== 1
+                || await seite.locator('.epos-formathinweis, body > #app > .epos-dialog > .epos-kontextzeile').count())
+              { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Fussleiste/Formathinweis nicht nach Stufe 4`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+          }
         }
         // Ueberlagerung offen: Gebaeude -> "Simulation..." (wie die Fensterprobe).
         if (fall === 'gebaeude') {
@@ -848,7 +876,8 @@ try {
     for (const [art, stil, muster] of [
       ['Kurve 60 px', '.epos-ganglinie-grafik .epos-diagramm-svg-flaeche { max-height: 60px !important; }', 'Untergrenze'],
       ['Breite 300 px', '.epos-ganglinie-grafik .epos-diagramm-svg-flaeche { max-width: 300px !important; }', 'der Satzflaeche'],
-      ['Satzflaeche 600 px', '.epos-zweispalten { --epos-satz-untergrenze: 600px !important; }', 'Dialogkoerper rollt bei']]) {
+      // Stufe 4: die Untergrenze wirkt ueber --epos-satz-offen-min; die Gegenprobe setzt beide.
+      ['Satzflaeche 600 px', '.epos-zweispalten { --epos-satz-untergrenze: 600px !important; --epos-satz-offen-min: 600px !important; }', 'Dialogkoerper rollt bei']]) {
       const k4 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
       const s4 = await k4.newPage();
       await s4.goto(WURZEL + '/rollbereichprobe?fall=solarganglinie&zeilen=40', { waitUntil: 'networkidle' });

@@ -169,11 +169,11 @@
 
         <Links>
             <div class="epos-raster-huelle">
-                <table class="epos-raster">
+                <table class="epos-raster epos-raster--zuordnung">
                     <thead>
                         <tr>
                             <th class="epos-spalte-kaestchen"><Wahlkaestchen Bereich="Auswahlbereich.Projekt" /></th>
-                            <th>@SpalteWahl</th>
+                            <th class="epos-spalte-wahl">@SpalteWahl</th>
                             <th>@SpalteName</th>
                             <th class="epos-spalte-stift"><Zeilenstift Kopf="true" /></th>
                         </tr>
@@ -187,7 +187,7 @@
                                     <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@Projektschluessel(z)"
                                                    Kurztext="@z.Bezeichner" />
                                 </td>
-                                <td>
+                                <td class="epos-spalte-wahl">
                                     <Zeilenwahl Gewaehlt="@(z == _projektZeile)" Kurztext="@SpalteWahl"
                                                 Gewaehltwerden="() => ProjektZeileKlick(z)" />
                                 </td>

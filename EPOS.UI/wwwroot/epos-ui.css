@@ -4197,6 +4197,23 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
         minmax(var(--epos-satz-min), 1fr);
 }
 
+/* MIT OFFENER GANGLINIE (Stufe 4, Konzept 4.9 DZ1-N1 "kleinere Untergrenze der Katalogliste"): Die Kurve
+   ist der Inhalt, den der Anwender sehen will; die Katalogliste behaelt dann Kopf und EINE Zeile samt Kopf-
+   und Fussleiste, damit Kurve (mindestens --epos-kurve-min) und Listen in 1 280 x 800, 1 280 x 720 und
+   1 024 x 768 ohne Rollen des Dialogkoerpers stehen. Zugeklappt gilt wieder die Untergrenze mit zwei Zeilen. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) > .epos-zweispalten-bereich--katalog .epos-raster-huelle {
+    --epos-katalog-min: calc(53px + var(--epos-katalog-zeile, 53px) + 2px);
+}
+/* Die Kurve reicht bis an den unteren Rand der Satzflaeche (die Achsenbeschriftung haelt ihren Abstand im
+   Bild selbst); die Untergrenze der Satzflaeche zaehlt dann nur Kopf, Rahmen und oberes Polster
+   (3 + 1 + 4 + 1 px) statt der 20 px der Satzflaeche mit Feldern. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) {
+    --epos-satz-min: calc(var(--epos-touchziel) + 9px + var(--epos-satz-offen-min, 0px));
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen > .epos-zweispalten-bereich--satz .epos-zweispalten-satz:has(.epos-ganglinie-grafik) {
+    padding-bottom: 0;
+}
+
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog:not(.epos-zweispalten--zusammenfassung) {
     grid-template-rows: min-content minmax(var(--epos-satz-min), 1fr);
 }
@@ -10943,6 +10960,19 @@ table.epos-simerg-tabelle {
     width: calc(var(--epos-touchziel) + 4px);
     padding: 0 2px;
     text-align: center;
+}
+
+/* Die Zuordnungsliste der Ganglinien-Wirte (Waermebedarf extern, Stromganglinie; eine schlichte Tabelle):
+   Kaestchen- und Wahlspalte so schmal wie ihr Beruehrungsziel, der Name nimmt den Rest. */
+.epos-raster-huelle table.epos-raster--zuordnung th.epos-spalte-kaestchen,
+.epos-raster-huelle table.epos-raster--zuordnung td.epos-spalte-kaestchen,
+.epos-raster-huelle table.epos-raster--zuordnung th.epos-spalte-wahl,
+.epos-raster-huelle table.epos-raster--zuordnung td.epos-spalte-wahl {
+    width: calc(var(--epos-touchziel) + 4px);
+    padding-left: 2px;
+    padding-right: 2px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .epos-zeilenstift {

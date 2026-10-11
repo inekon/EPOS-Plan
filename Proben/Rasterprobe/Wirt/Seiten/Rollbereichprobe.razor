@@ -5,6 +5,7 @@
 @using EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Strom
 @using WindowsFormsApplication1.Zeichnung
+@using SpeicherEngine
 @inject NavigationManager Navigation
 
 @*  DIE ROLLBEREICHPROBE (Konzept Projektdialoge mit Katalogauswahl, Abschnitt 8,
@@ -73,13 +74,19 @@
             <WaermebedarfExternDialog Zeilen="@WaermeZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Waermebedarf)"
                                       Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Waermebedarf)))"
                                       Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
-                                      Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
+                                      Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
+                                      DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
+                                      KatalogLoeschen="@(_ => false)" VerwaltungGaben="@KeineVerwaltung"
+                                      Schloss="@KeinSchloss" Kanaele="@Wirtkanaele" />
             break;
         case "stromganglinie":
             <StromganglinieDialog Zeilen="@StromZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Stromganglinie)"
                                   Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Stromganglinie)))"
                                   Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
-                                  Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
+                                  Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
+                                  DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
+                                  Loeschen="@(_ => Task.FromResult(false))" Verwaltung="@KeineVerwaltung"
+                                  Schloss="@KeinSchloss" />
             break;
         case "solarganglinie":
             <SolarganglinieDialog Zeilen="@Erzeuger("Solar")" Katalogprofil="@Zeitreihe(Zeitreihenart.Solarganglinie)"
@@ -108,6 +115,19 @@
 <p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
 
 @code {
+    // Stufe 4 (Waermebedarf extern, Stromganglinie): die Katalogpflege steht wie in der Anwendung in der
+    // Fussleiste (Speichern unter, Schloss, Loeschen, Bearbeiten, Importieren) - die Wege tun hier nichts.
+    private static readonly Func<string, Task<string?>> KeineDatei = _ => Task.FromResult<string?>(null);
+    private static readonly Func<string, GanglinienRaster, GanglinienImportRueckrufe, Task<GanglinienImportErgebnis>> KeinImport
+        = (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis());
+    private static readonly Func<string, string, Task<bool>> KeineKopie = (_, __) => Task.FromResult(false);
+    private static readonly IReadOnlyDictionary<string, object> KeineVerwaltung = new Dictionary<string, object>();
+    private static readonly Schlossweg KeinSchloss = new((_, __) => new SchlossErgebnis(false, ""));
+    private static readonly (string Wert, string Text)[] Wirtkanaele =
+    {
+        ("HEIZUNG", "Heizung"), ("BRAUCHWASSER", "Brauchwasser"), ("PROZESS", "Prozesswärme"), ("Kuehlung", "Kühlung")
+    };
+
     private string _fall = "pufferspeicher";
     private int _anzahl = 40;
     private int _projekt = 2;
