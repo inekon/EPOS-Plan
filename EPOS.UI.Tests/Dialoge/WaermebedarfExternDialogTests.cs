@@ -1171,4 +1171,38 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         Assert.Equal("Ganglinie A", cut.Instance.Katalogname);
         Assert.Single(cut.FindAll("[role='dialog']"));
     }
+
+    /// <summary>
+    /// <b>Kein Datenverlust über den Dialog</b> (Konzept Kältebedarf 3.2/3.4): Der Dialog kennt die Deckungsfelder
+    /// einer Kühlzeile nicht. Wählt der Anwender die Kälte-Art, schreibt der Rückweg der Hülle
+    /// (<see cref="WaermebedarfExternAbbildung.Rueckweg"/>) die Modelle fort — Split, EER, Kühlträger und eigener
+    /// Zähler bleiben, die Art folgt der Wahl.
+    /// </summary>
+    [Fact]
+    public void Die_Wahl_der_Kaelteart_laesst_die_Deckungsfelder_der_Zeile_stehen()
+    {
+        var modelle = new List<Z_ProjWaermebedarfModel>
+        {
+            new()
+            {
+                m_ID_Z = 7, m_ID_Ganglinie = 5, m_szBezeichner = "Ganglinie A", Kanal = DbWerte.KANAL_KUEHLUNG,
+                Deckung = KaeltebedarfSchema.DECKUNG_SPLIT, EerWeg = KaeltebedarfSchema.EER_FEST, Eer1 = 3.5,
+                KuehlIdCarrier = 4, KuehlEigenerZaehler = true
+            }
+        };
+        List<WaermebedarfExternZeile> zeilen = WaermebedarfExternAbbildung.Zeilen(modelle);
+        var cut = Aufbauen(zeilen: zeilen, geaendert: WaermebedarfExternAbbildung.Rueckweg(zeilen, modelle, 1017));
+
+        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-zweispalten-kopfleiste select")[1].Change("1");          // Prozesskälte
+
+        Z_ProjWaermebedarfModel m = Assert.Single(modelle);
+        Assert.Equal(DbWerte.KAELTE_ART_PROZESS, m.KaelteArt);
+        Assert.Equal(KaeltebedarfSchema.DECKUNG_SPLIT, m.Deckung);
+        Assert.Equal(KaeltebedarfSchema.EER_FEST, m.EerWeg);
+        Assert.Equal(3.5, m.Eer1);
+        Assert.Equal(4, m.KuehlIdCarrier);
+        Assert.True(m.KuehlEigenerZaehler);
+        Assert.Equal(7, m.m_ID_Z);
+    }
 }
