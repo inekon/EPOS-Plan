@@ -4,7 +4,7 @@
 [`Konzept_Administration_Support_EPOS-Plan.md`](../../../aktuell/Konzept_Administration_Support_EPOS-Plan.md),
 Entwicklerseite:
 [`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](../../../aktuell/Entwicklerhandbuch_Administration_Support_EPOS-Plan.md).
-Statuszeile #1001 (vorläufig #995, beim Merge auf die nächste freie Nummer umgezogen). Kein Schemaschritt, kein Rechenweg. iOS bleibt zurückgestellt.
+Statuszeile #1005 (vorläufig #995, beim Merge auf die nächste freie Nummer umgezogen). Kein Schemaschritt, kein Rechenweg. iOS bleibt zurückgestellt.
 
 ## 1 Anlass
 
@@ -31,12 +31,12 @@ iPad bleibt zurückgestellt (kein Quick Assist dort).
   Commit ``c3c7a94c`, `6fabe6cb` (Merge `2733d64a`)`.
 - Papier-Welle (diese): Konzept 4.1 bis 4.4, 4.7, 4.8, 7 (AS-Q7, AS-Q9), 8, Stand-Block;
   Handbuch 4 (auch 4.6 Betrieb), 6, 7; Wiki-Quelle `Programm Dokumentation - Fernwartung.wiki`;
-  Status #1001; dieses Protokoll; `Dokumentation/LIESMICH.md`. „Installation und Update“ und „Über
+  Status #1005; dieses Protokoll; `Dokumentation/LIESMICH.md`. „Installation und Update“ und „Über
   EPOS-Plan“ blieben unverändert (keine Sätze zum alten Weg).
 
 ## 4 Gate
 
-Das Gate lief am 11.10. im Hauptbaum nach dem Merge des Code-Zweigs (`2733d64a`), über den SDK-Umweg (10.0.112 statt 10.0.400) und mit der echten Testdatenbank: Kern-Filter 0 Fehler; Windows-Schale auf Linux 0 Fehler; `EPOS.UI.Tests` 9076 von 9076; `KiKern.Tests` 553 von 553; `SpeicherEngine.Tests` 397 von 397; `SpeicherPlanung.Tests` 27 von 28 (1 übersprungen, Bestand); `EPOS.Kern.Tests` nach Filter 2495 von 2495. Der volle Kern-Lauf ist die CI; Push-SHA und CI-Kennung stehen im Statuspunkt „Nach #1001“ (e).
+Das Gate lief am 11.10. im Hauptbaum nach dem Merge des Code-Zweigs (`2733d64a`), über den SDK-Umweg (10.0.112 statt 10.0.400) und mit der echten Testdatenbank: Kern-Filter 0 Fehler; Windows-Schale auf Linux 0 Fehler; `EPOS.UI.Tests` 9076 von 9076; `KiKern.Tests` 553 von 553; `SpeicherEngine.Tests` 397 von 397; `SpeicherPlanung.Tests` 27 von 28 (1 übersprungen, Bestand); `EPOS.Kern.Tests` nach Filter 2495 von 2495. Der volle Kern-Lauf ist die CI; Push-SHA und CI-Kennung stehen im Statuspunkt „Nach #1005“ (e).
 
 ## 5 Offene Punkte
 
