@@ -419,13 +419,10 @@ zurückgestellt (4.5).
 
 **Zurückgestellt** (Anwender 11.10.2026: „stelle iPad-Support (remote) zurück, wird später
 bearbeitet"). Stufe 2 baut die Fernwartung für Windows; auf dem iPad gibt es den Menüpunkt ohnehin
-nicht (die Kopfleiste ist dort leer), und der Fernwartungsdialog wird dort nicht angeboten, bis der
-iPad-Weg entschieden ist. Für diesen späteren Entscheid liegt der Befund bereit: Apple lässt keine
-Fernsteuerung zu, und die RustDesk-App für iOS kann nur *steuern* — ein iPad lässt sich mit
-RustDesk weder fernsteuern noch ansehen (Herstellerangabe, Stand 2025/2026). Denkbar sind dann
-Kontakt und Diagnosedaten auf dem iPad (Stufe 3, Einstieg in der Startansicht neben der
-Versionszeile) mit benannter Ablehnung der Fernwartung, oder ein anderes Werkzeug allein für das
-Ansehen des iPad-Bildschirms.
+nicht (die Kopfleiste ist dort leer), und der Fernwartungsdialog wird dort nicht angeboten. Für das
+iPad gibt es keinen Fernwartungsweg: Quick Assist existiert für iPadOS nicht, und iPadOS lässt eine
+Bildschirmsteuerung durch Fremdprogramme nicht zu; der Weg dort bleibt die E-Mail mit kopierten
+Diagnosedaten.
 
 ### 4.6 Supportvertrag ins Token (Ausbau)
 
@@ -532,7 +529,7 @@ fest, auch dort, wo der Entscheid abweicht.
 | **AS-Q7** | Fernwartungswerkzeug | (a) TeamViewer personalisiertes QuickSupport-Modul; (b) AnyDesk Custom Client; (c) Windows Quick Assist; (d) RustDesk | (a) — Bestand bei INEKON, ohne Installation beim Kunden, Service-Warteschlange; (c) als Textzeile | **(d) RustDesk** — eigener Server, keine Lizenzkosten je Helfer, quelloffener Client; dazu „kein TeamViewer als Support" im Wiki. Anwenderentscheid 11.10.2026 (zweiter Entscheid): Quick Assist als Standardweg statt RustDesk — Gerätezählung des Pro-Tarifs, laufender Betrieb; RustDesk quelloffen bleibt Reserve; Umsetzung Commit `⟨COMMIT-QA⟩` |
 | **AS-Q8** | Lizenzbedingung | (a) schreibfähige Lizenz; (b) bezahlte Lizenz, Laufzeit egal; (c) jede Lizenz; (d) Supportvertrag im Token | (b), (d) als Ausbau (Stufe 4) | **(b)** |
 | **AS-Q9** | Bereitstellung des Fernwartungsprogramms | (a) Laden bei Bedarf mit Manifest, Prüfsumme, Signaturprüfung, 30-Tage-Ablage; (b) im Setup; (c) nur Link | (a) mit (c) als Zweitweg | **(c)** — Link auf die Fernwartungsseite, für Windows und iOS derselbe Knopf; (a) und (b) bleiben als Ausbau möglich (4.4); (c) bleibt; der Dialog startet zusätzlich Quick Assist |
-| **AS-Q10** | iOS | (a) Kontakt und Diagnosedaten, Fernwartung benannt abgelehnt; (b) zusätzlich die App des Fernwartungsdienstes öffnen | (a) — erst, wenn Bildschirm-Ansehen am iPad als Supportweg angeboten wird, kommt (b) | **zurückgestellt** — „stelle iPad-Support (remote) zurück, wird später bearbeitet"; der Befund für dann steht in 4.5 (mit RustDesk ist (b) gegenstandslos) |
+| **AS-Q10** | iOS | (a) Kontakt und Diagnosedaten, Fernwartung benannt abgelehnt; (b) zusätzlich die App des Fernwartungsdienstes öffnen | (a) — erst, wenn Bildschirm-Ansehen am iPad als Supportweg angeboten wird, kommt (b) | **zurückgestellt** — „stelle iPad-Support (remote) zurück, wird später bearbeitet"; der Befund für dann steht in 4.5 (mit RustDesk ist (b) gegenstandslos; mit Quick Assist ebenso (kein iPadOS-Client)) |
 
 Noch nicht gefragt, weil sie keinen Entscheid brauchen: der Name des Menüpunkts („Fernwartung…",
 en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fußleisten (Hausregel).
