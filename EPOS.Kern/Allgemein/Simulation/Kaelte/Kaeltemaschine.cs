@@ -421,8 +421,26 @@ namespace WindowsFormsApplication1
                 }
             }
             double abwaerme = s.FreieKuehlung ? s.KaelteKwh : s.KaelteKwh + s.VerdichterKwh;
-            RueckkuehlwerkStunde b = r.Stunde(h, abwaerme, s.KaelteKwh, s.KapazitaetKw, rk);
+            // Der Laufanteil zählt nur an der lastabhängigen Annäherung (EIN_AUS läuft dann voll, solange die Maschine läuft).
+            double lauf = r.Lastabhaengig && !s.FreieKuehlung ? LaufanteilDerStunde(s) : double.NaN;
+            RueckkuehlwerkStunde b = r.Stunde(h, abwaerme, s.KaelteKwh, s.KapazitaetKw, rk, lauf);
             return s.MitRueckkuehlung(r.MitVentilator ? b.VentilatorKwh : s.HilfsstromKwh, b);
+        }
+
+        /// <summary>
+        /// K-F2: der Laufanteil der Verdichterstunde [—] — 1, solange die Maschine moduliert; in einer Taktstunde (unter der
+        /// Mindestteillast, Kennzeichen <see cref="KaeltemaschinenStunde.Takt"/>, linear wie auf dem Weg von KM3) die Zeit am
+        /// Mindestpunkt: Kälte je laufender Maschine / min(Mindestteillast · Nennleistung, Kapazität je Maschine).
+        /// </summary>
+        internal double LaufanteilDerStunde(KaeltemaschinenStunde s)
+        {
+            if (!(s.KaelteKwh > 0)) return 0.0;
+            if (!s.Takt) return 1.0;
+            int anzahl = Math.Max(1, Anzahl);
+            int laufend = s.Laufend > 0 ? s.Laufend : anzahl;
+            double kapJe = s.KapazitaetKw / anzahl;
+            double pMin = Math.Min(Mindestteillast * NennleistungKw, kapJe);
+            return pMin > 0 ? Math.Min(1.0, s.KaelteKwh / laufend / pMin) : 1.0;
         }
 
         /// <summary>Eine Stunde EINER Maschine der Anlagenzeile.</summary>

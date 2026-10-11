@@ -320,8 +320,11 @@ An `Tab_Energieanlagen` (Typ 13): `ID_Rueckkuehlwerk` (Projektkopie, `SET NULL`)
 - **Ein Schritt:** Die Stunde rechnet bei der Nenn-Annäherung, schätzt daraus die Abwärme, bildet die lastabhängige
   Rückkühltemperatur und rechnet die Stunde damit einmal neu. Freie Kühlung (`PARALLEL`) entscheidet und rechnet an der
   Nenn-Annäherung.
-- **Ventilator:** `EIN_AUS` P · min(x, 1); `STUFEN` P · Stufe (n gleich große Ventilatorgruppen mit Nenndrehzahl);
-  `DREHZAHL` P · L³. Mit `Ventilator_Nenn_kW` ersetzt er `Hilfsstrom_Rueckkuehlung_kW`; der Ergebniswert
+- **Ventilator:** Die Energie folgt dem Luftanteil der Annäherungsrechnung. `EIN_AUS` (auch leer gepflegt) unter `FEST`
+  taktet auf den Lastanteil und hält so im Mittel ΔT_Nenn: P · min(x, 1). `EIN_AUS` unter `LASTABHAENGIG` läuft voll,
+  solange die Maschine läuft — nur so sinkt die Annäherung auf ΔT_Nenn · x: P · Laufanteil der Maschine (1 bei
+  modulierendem Betrieb, in einer Taktstunde die Zeit am Mindestpunkt). Freie Kühlung rechnet an der Nenn-Annäherung und
+  damit taktend. `STUFEN` P · Stufe (n gleich große Ventilatorgruppen mit Nenndrehzahl); `DREHZAHL` P · L³. Mit `Ventilator_Nenn_kW` ersetzt er `Hilfsstrom_Rueckkuehlung_kW`; der Ergebniswert
   `Ventilatorstrom_MWh` ist der Strom der Rückkühlung (ohne Ventilator der Hilfsstrom der Rückkühlung wie heute).
 - **Nass abgeführte Wärme:** Kühlturm die ganze Abwärme; adiabat und hybrid die Vorkühlwärme der Luft = Abwärme ·
   Vorkühlung / Lufterwärmung (10 K, höchstens die Abwärme). Drift: Kühlturm als Anteil des Umlaufwassers (Wärme /
@@ -330,17 +333,21 @@ An `Tab_Energieanlagen` (Typ 13): `ID_Rueckkuehlwerk` (Projektkopie, `SET NULL`)
 - **Wasserkosten** = Menge × `Wasserpreis_EUR_m3`, leer = keine Kosten; beides als Hinweis im Lauf. Eine Zeile der
   Betriebskosten braucht eine Kostenkomponente in `Tab_KostenKomponente` (Daten) — offen.
 
-| Feld | Vorgabe | Quelle |
+Alle Quellenangaben sind aus der Fachliteratur zitiert und **nicht am Wortlaut geprüft (vorläufig)**; „Annahme“ heißt
+eigene Festlegung mit fachlicher Begründung.
+
+| Feld | Vorgabe | Quelle bzw. Begründung |
 |---|---|---|
-| `Befeuchtung_Wirkungsgrad` | 0,8 | ASHRAE Handbook — HVAC Systems and Equipment, „Evaporative Air-Cooling Equipment“ (Benetzungsmatten 70–95 %) |
-| `Befeuchtung_Ab_C` | 25 °C | DIN EN 14511-2, Normbedingung Verflüssiger 30/35 °C: ein Trockenkühler mit 10 K Grädigkeit hält 35 °C bis 25 °C Außenluft |
-| `Verdunstung_Faktor` | Kühlturm 0,9; adiabat/hybrid 1,0 | ASHRAE Handbook — HVAC Systems and Equipment, „Cooling Towers“ (Verdunstung ≈ 0,00085 · Umlauf · Spreizung [°F]); Vorkühlung isenthalp |
-| `Eindickung` | 3 | VDI 3803 Blatt 1; ASHRAE Handbook — HVAC Applications, „Water Treatment“ (üblich 2–6) |
-| `Drift_Anteil` | Kühlturm 0,0001 des Umlaufs; adiabat/hybrid 0 | VDI 2047 Blatt 2, Anforderung an Tropfenabscheider |
-| `Ventilator_Drehzahl_Min` | 0,2 | Recknagel, Taschenbuch für Heizung und Klimatechnik, Ventilatoren (Stellbereich bis etwa 20 %) |
+| `Befeuchtung_Wirkungsgrad` | 0,8 | ASHRAE Handbook — HVAC Systems and Equipment, „Evaporative Air-Cooling Equipment“ (Benetzungsmatten etwa 70–95 %) — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| `Befeuchtung_Ab_C` | 25 °C | Annahme: ein Trockenkühler mit 10 K Grädigkeit hält bis 25 °C Außenluft etwa 35 °C Kühlwasservorlauf, wie ihn wassergekühlte Verflüssiger üblich erwarten; darüber lohnt die Befeuchtung |
+| `Verdunstung_Faktor` | Kühlturm 0,9; adiabat/hybrid 1,0 | ASHRAE Handbook — HVAC Systems and Equipment, „Cooling Towers“ (Verdunstung ≈ 0,00085 · Umlauf · Spreizung [°F]) — Quelle nicht am Wortlaut geprüft (vorläufig); Vorkühlung isenthalp |
+| `Eindickung` | 3 | Annahme, übliche Größenordnung nach Fachliteratur (etwa 2–6, z. B. ASHRAE „Water Treatment“) — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| `Drift_Anteil` | Kühlturm 0,0001 des Umlaufs; adiabat/hybrid 0 | VDI 2047 Blatt 2, Anforderung an Tropfenabscheider — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| `Ventilator_Drehzahl_Min` | 0,2 | Annahme, übliche Größenordnung nach Fachliteratur (Stellbereich bis etwa 20 %, z. B. Recknagel) — Quelle nicht am Wortlaut geprüft (vorläufig) |
 | `Ventilator_Stufen` | 2 | Schema (mindestens 2) |
-| Verdampfungsenthalpie | 2 450 kJ/kg | VDI-Wärmeatlas, Stoffwerte von Wasser (rund 20 °C) |
-| Lufterwärmung adiabat/hybrid | 10 K | DIN EN 1048, Normpunkt Lufteintritt 25 °C, Fluid 40/35 °C |
+| Verdampfungsenthalpie | 2 450 kJ/kg | Stoffwert von Wasser bei rund 20 °C (z. B. VDI-Wärmeatlas) — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| Umlaufspreizung Kühlturm | 5 K | Annahme: übliche Kühlwasserspreizung wassergekühlter Verflüssiger (etwa 30/35 °C) |
+| Lufterwärmung adiabat/hybrid | 10 K | Annahme: üblicher Auslegungspunkt eines Trockenkühlers (Lufteintritt um 25 °C, Fluid um 40/35 °C) |
 
 ### 5.4 Klimadaten
 

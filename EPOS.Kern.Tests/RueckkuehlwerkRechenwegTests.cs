@@ -255,6 +255,42 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Ein_Aus_fest_taktet_lastabhaengig_laeuft_voll_der_Vorteil_zaehlt_nur_einmal()
+        {
+            // FEST: der Ventilator taktet auf x = 0,5 und hält im Mittel die Nenn-Annäherung.
+            Rueckkuehlwerk fest = Rk(new RueckkuehlwerkModel { Nennleistung_kW = 100, Ventilator_Nenn_kW = 4 });
+            Assert.Equal(2.0, fest.VentilatorKwh(0.5), 12);
+            Assert.Equal(2.0, fest.VentilatorKwh(0.5, 1.0), 12);          // der Laufanteil zählt unter FEST nicht
+            Assert.Equal(Bits(30.0), Bits(fest.RueckkuehltemperaturLastabhaengig(30.0, 0.5)));
+            // LASTABHAENGIG: voll, solange die Maschine läuft; die Annäherung sinkt auf ΔT_Nenn · 0,5.
+            Rueckkuehlwerk la = Rk(new RueckkuehlwerkModel
+            {
+                Annaeherung_Weg = "LASTABHAENGIG", Nennleistung_kW = 100, Ventilator_Nenn_kW = 4, Ventilator_Regelung = "EIN_AUS"
+            });
+            Assert.Equal(4.0, la.VentilatorKwh(0.5, 1.0), 12);
+            Assert.Equal(2.8, la.VentilatorKwh(0.5, 0.7), 12);
+            Assert.Equal(2.0, la.VentilatorKwh(0.5), 12);                  // ohne Laufanteil (freie Kühlung): taktend
+            Assert.Equal(25.0, la.RueckkuehltemperaturLastabhaengig(30.0, 0.5), 12);
+            // Leer gepflegt rechnet wie EIN_AUS.
+            Rueckkuehlwerk leer = Rk(new RueckkuehlwerkModel { Annaeherung_Weg = "LASTABHAENGIG", Nennleistung_kW = 100, Ventilator_Nenn_kW = 4 });
+            Assert.Equal(4.0, leer.VentilatorKwh(0.5, 1.0), 12);
+
+            // Durch die Maschine: modulierend Laufanteil 1, in einer Taktstunde die Zeit am Mindestpunkt.
+            Kaeltemaschine k = Maschine();
+            Ansetzen(k, la, new[] { 24.0 });
+            KaeltemaschinenStunde s = k.Stunde(0, 40.0, 7.0);
+            Assert.False(s.Takt);
+            Assert.Equal(4.0, s.HilfsstromKwh, 12);
+            Kaeltemaschine t = Maschine();
+            t.Mindestteillast = 0.5;
+            Ansetzen(t, la, new[] { 24.0 });
+            KaeltemaschinenStunde st = t.Stunde(0, 15.0, 7.0);
+            Assert.True(st.Takt);
+            double pMin = Math.Min(0.5 * 90.0, st.KapazitaetKw);
+            Assert.Equal(4.0 * 15.0 / pMin, st.HilfsstromKwh, 12);
+        }
+
+        [Fact]
         public void Mit_Ventilator_entfaellt_der_Hilfsstrom_der_Rueckkuehlung_keine_Doppelzaehlung()
         {
             var aussen = new[] { 24.0 };

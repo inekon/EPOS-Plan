@@ -76,8 +76,10 @@ namespace WindowsFormsApplication1
     /// überlastet, die Luft läuft voll), höchstens bis <see cref="RueckkuehlwerkSchema.ANNAEHERUNG_MAX_K"/>. Gegen die
     /// Zirkularität rechnet die Maschine genau einen Schritt (<see cref="Kaeltemaschine.Stunde(int, double, double)"/>).</para>
     ///
-    /// <para><b>Ventilator</b> (nur mit <c>Ventilator_Nenn_kW</c>, er ersetzt dann den Hilfsstrom der Rückkühlung):
-    /// <c>EIN_AUS</c> volle Leistung im Laufanteil min(x, 1); <c>STUFEN</c> n gleich große Ventilatorgruppen, die nächsthöhere
+    /// <para><b>Ventilator</b> (nur mit <c>Ventilator_Nenn_kW</c>, er ersetzt dann den Hilfsstrom der Rückkühlung); seine
+    /// Energie folgt dem Luftanteil der Annäherungsrechnung: <c>EIN_AUS</c> unter <c>FEST</c> taktend P · min(x, 1) (hält
+    /// ΔT_Nenn), unter <c>LASTABHAENGIG</c> voll, solange die Maschine läuft (P · Laufanteil der Maschine, ΔT = ΔT_Nenn · x);
+    /// <c>STUFEN</c> n gleich große Ventilatorgruppen, die nächsthöhere
     /// Stufe des nötigen Luftanteils, Leistung ∝ Stufe; <c>DREHZAHL</c> Luftanteil max(x, kleinste Drehzahl), Leistung ∝
     /// Luftanteil³ (Ähnlichkeitsgesetz).</para>
     ///
@@ -375,9 +377,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Ventilatorstrom der Stunde [kWh] beim Lastanteil <paramref name="x"/>; 0 ohne <c>Ventilator_Nenn_kW</c> oder
-        /// ohne Last. <c>EIN_AUS</c>: P · min(x, 1); <c>STUFEN</c>: P · Stufe; <c>DREHZAHL</c>: P · L³.
+        /// ohne Last. Die Energie folgt dem Luftanteil der Annäherungsrechnung: <c>STUFEN</c> P · Stufe, <c>DREHZAHL</c> P · L³.
+        /// <c>EIN_AUS</c> (auch leer gepflegt) hängt am Weg: Unter <c>FEST</c> taktet der Ventilator auf den Lastanteil und
+        /// hält so im Mittel die Nenn-Annäherung — P · min(x, 1). Unter <c>LASTABHAENGIG</c> läuft er voll, solange die
+        /// Maschine läuft (nur so sinkt die Annäherung auf ΔT_Nenn · x) — P · <paramref name="laufanteilMaschine"/>; ohne
+        /// Laufanteil (<c>NaN</c>, etwa in freier Kühlung an der Nenn-Annäherung) gilt der feste Weg.
         /// </summary>
-        public double VentilatorKwh(double x)
+        public double VentilatorKwh(double x, double laufanteilMaschine = double.NaN)
         {
             if (!VentilatorNennKw.HasValue || !(x > 0)) return 0.0;
             double p = VentilatorNennKw.Value;
@@ -386,20 +392,25 @@ namespace WindowsFormsApplication1
             {
                 case RueckkuehlwerkSchema.REGELUNG_STUFEN: return p * l;
                 case RueckkuehlwerkSchema.REGELUNG_DREHZAHL: return p * l * l * l;
-                default: return p * Math.Min(x, 1.0);
+                default:
+                    if (Lastabhaengig && !double.IsNaN(laufanteilMaschine))
+                        return p * Math.Max(0.0, Math.Min(1.0, laufanteilMaschine));
+                    return p * Math.Min(x, 1.0);
             }
         }
 
         /// <summary>
         /// Die Bilanz einer Stunde: Abwärme <paramref name="abwaermeKwh"/>, Kälte und Kapazität der Maschinen (für den
-        /// Lastanteil ohne Nennleistung) und die Rückkühltemperatur, mit der die Stunde gerechnet wurde.
+        /// Lastanteil ohne Nennleistung), die Rückkühltemperatur, mit der die Stunde gerechnet wurde, und der Laufanteil der
+        /// Maschine in der Stunde (<c>NaN</c> = an der Nenn-Annäherung gerechnet, siehe <see cref="VentilatorKwh"/>).
         /// </summary>
-        public RueckkuehlwerkStunde Stunde(int h, double abwaermeKwh, double kaelteKwh, double kapazitaetKw, double rueckkuehlC)
+        public RueckkuehlwerkStunde Stunde(int h, double abwaermeKwh, double kaelteKwh, double kapazitaetKw, double rueckkuehlC,
+                                           double laufanteilMaschine = double.NaN)
         {
             if (!(abwaermeKwh > 0)) return new RueckkuehlwerkStunde(0, 0, 0, 0, 0, 0, 0, false, rueckkuehlC);
             double x = Lastanteil(abwaermeKwh, kaelteKwh, kapazitaetKw);
             double l = Luftanteil(x);
-            double ventilator = VentilatorKwh(x);
+            double ventilator = VentilatorKwh(x, laufanteilMaschine);
             bool nass = NassInStunde(h);
             double verdunstung = 0, abflutung = 0, drift = 0;
             if (nass)
