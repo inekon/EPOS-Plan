@@ -350,7 +350,7 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// <b>227 Zeilen in <c>Tab_Gesetzesparameter</c></b> — der Auslieferungsstand
+        /// <b>240 Zeilen in <c>Tab_Gesetzesparameter</c></b> — der Auslieferungsstand
         /// (226 Zeilen der Vorbelegung und die Generationsmarke). Die Dublettenpruefung der
         /// Maske laedt diese Zeilen heute bei JEDEM Speichern vollstaendig neu (Befund
         /// W14c-B12).
@@ -360,7 +360,8 @@ namespace EPOS.Kern.Tests
         /// erreicht hat. Seit das Werkzeug <c>Testdatenbankschema</c> die Nachsaat mit
         /// zieht, steht sie auf der Zielgeneration — mit Generation 7 vier Zeilen mehr
         /// (<c>STROMST_REDUZIERT_SATZ</c> und die drei UMLAGEN), mit Generation 8 (ETAPPE
-        /// E7c, A20) eine weitere: <c>KWKG_INBETRIEBNAHME_FRISTENDE</c>.</para>
+        /// E7c, A20) eine weitere: <c>KWKG_INBETRIEBNAHME_FRISTENDE</c>, mit Generation 10
+        /// (KM4-E2-a) die dreizehn F-Gas-Regeln nach Anhang IV.</para>
         ///
         /// <para><b>Gezählt wird nach der Nachsaat</b> — dem Stand, den die Maske nach dem
         /// Programmstart zeigt. Sie ist wiederholbar; so zählt der Fall auf einer Kopie, die
@@ -369,12 +370,12 @@ namespace EPOS.Kern.Tests
         /// Arbeitskopie schon nachgesät hat.</para>
         /// </summary>
         [Fact]
-        public void DerGesetzeskatalogFuehrt227Zeilen()
+        public void DerGesetzeskatalogFuehrt240Zeilen()
         {
             if (!_db.Vorhanden) return;
             GesetzKatalog.StelleKatalogSicher();
             object v = DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_Gesetzesparameter");
-            Assert.Equal(227, Convert.ToInt32(v, CultureInfo.InvariantCulture));
+            Assert.Equal(240, Convert.ToInt32(v, CultureInfo.InvariantCulture));
         }
 
         /// <summary>
