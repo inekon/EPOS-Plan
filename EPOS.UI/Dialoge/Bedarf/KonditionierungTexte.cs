@@ -1118,10 +1118,10 @@ public sealed class KonditionierungTexte
     public string LabelKalbEinzeltage { get; set; } = "Einzeltage (Feiertage, Ausnahmen)";
 
     /// <summary><c>KOND_LBL_KLAPP_EINZELTAGE_EINER</c> — die Anzahl im Kopf der Einzeltage bei genau einem Tag</summary>
-    public string TextKalbEinzeltageEiner { get; set; } = "1 Tag";
+    public string LabelKlappEinzeltageEiner { get; set; } = "1 Tag";
 
     /// <summary><c>KOND_LBL_KLAPP_EINZELTAGE_ANZAHL</c> — die Anzahl im Kopf der Einzeltage; {0} ist die Zahl</summary>
-    public string TextKalbEinzeltageAnzahl { get; set; } = "{0} Tage";
+    public string LabelKlappEinzeltageAnzahl { get; set; } = "{0} Tage";
 
     /// <summary><c>KOND_LBL_KALB_DATUM</c> — das Datum eines Einzeltags</summary>
     public string LabelKalbDatum { get; set; } = "Datum";
