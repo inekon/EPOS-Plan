@@ -360,4 +360,37 @@ public class WaermepumpeBivalenzTests : EposBunitContext
         Assert.Equal(r290.ToString(), c.Find("[data-gruppe=betriebszeiten] select").GetAttribute("value")
                                       ?? c.Find("[data-gruppe=betriebszeiten] select option[selected]").GetAttribute("value"));
     }
+
+    // =====================================================================================
+    // KM4-E3-b: die Klappliste der Anlage bleibt, wie Bivalenzvorgaben sie führt
+    // =====================================================================================
+
+    [Fact]
+    public void Die_Klappliste_bleibt_Codes_Reihenfolge_und_Vorgaben_wie_Bivalenzvorgaben()
+    {
+        IReadOnlyList<KaeltemittelEintrag> liste = BivalenzAbbildung.Kaeltemittelliste();
+
+        // Die Lesewerte kommen dazu, alles andere bleibt: ohne sie gleicht jeder Eintrag einem zweiten Aufbau,
+        // die Codes stehen einmal und in der Folge des Kerns, R290 und R744 tragen ihre Klasse.
+        IReadOnlyList<KaeltemittelEintrag> zweite = BivalenzAbbildung.Kaeltemittelliste();
+        Assert.Equal(zweite.Select(e => e with { Lesewerte = "" }), liste.Select(e => e with { Lesewerte = "" }));
+        Assert.Equal(liste.Count, liste.Select(e => e.Code).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.True(liste.Single(e => e.Code == "R290").Klasse);
+        Assert.True(liste.Single(e => e.Code == "R744").Klasse);
+        foreach (KaeltemittelEintrag e in liste)
+            Assert.NotNull(e.Lesewerte);   // ohne Datenbank leer, nie null
+
+        var c = Aufbauen(Daten());
+        Assert.Equal(liste.Count + 1, c.FindAll("[data-gruppe=betriebszeiten] select option").Count);
+    }
+
+    [Fact]
+    public void Die_Konfiguration_zeigt_keine_Zulaessigkeitszeile()
+    {
+        // Die Lesezeile „Zulässigkeit“ gehört dem Anlagendialog (Konzept 7.3), nicht der Konfiguration.
+        WaermepumpeAnlageDaten d = Daten();
+        d.ZulaessigkeitRechnen = _ => "Zulässigkeit des Kältemittels: ohne Inbetriebnahmejahr nicht geprüft";
+        var c = Aufbauen(d);
+        Assert.DoesNotContain("Zulässigkeit des Kältemittels", c.Markup);
+    }
 }

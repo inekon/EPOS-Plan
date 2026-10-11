@@ -98,6 +98,7 @@
             <Kachel Titel="@KuehlungTitelText"
                     Beschreibung="@KuehlungText"
                     Zustand="@KuehlungZustand(kuehlung)"
+                    Status="@KaeltemittelHinweis(kuehlung, KaeltemittelStatusText, KaeltemittelWarnungText, KaeltemittelNichtPruefbarText)"
                     Bild="@Kachelbilder.KuehlungQuelle"
                     Bildklasse="@Kachelbilder.KLASSE_SYMBOL"
                     Zusatzklasse="epos-startkachel-kuehlung"
@@ -175,6 +176,30 @@
 
     /// <summary>Beschreibung der Kachel „Kühlung“.</summary>
     [Parameter] public string KuehlungText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_TEXT;
+
+    /// <summary>START_E_KUEHL_KM_STATUS — Rahmen der Hinweiszeile, {0} = die Teile.</summary>
+    [Parameter] public string KaeltemittelStatusText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_KM_STATUS;
+
+    /// <summary>START_E_KUEHL_KM_WARNUNG — {0} = Zahl der Kälteerzeuger mit Kältemittelwarnung.</summary>
+    [Parameter] public string KaeltemittelWarnungText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_KM_WARNUNG;
+
+    /// <summary>START_E_KUEHL_KM_NICHT_PRUEFBAR — {0} = Zahl der Kälteerzeuger mit „nicht prüfbar“.</summary>
+    [Parameter] public string KaeltemittelNichtPruefbarText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_KM_NICHT_PRUEFBAR;
+
+    /// <summary>
+    /// KM4-E3-b (Konzept Kältemittel als Stammdatum 5.2, 7.5): die Hinweiszeile der Kachel „Kühlung und Kälteanlagen“ —
+    /// „Kältemittel: 1 mit Hinweis · 1 nicht prüfbar“; leer, wenn beide Zahlen 0 sind (auch ohne Inbetriebnahmejahr).
+    /// </summary>
+    public static string KaeltemittelHinweis(KuehlungKachelDaten? d, string rahmen, string warnung, string nichtPruefbar)
+    {
+        if (d is null) return "";
+        var teile = new List<string>();
+        if (d.KaeltemittelWarnungen > 0)
+            teile.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, warnung, d.KaeltemittelWarnungen));
+        if (d.KaeltemittelNichtPruefbar > 0)
+            teile.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, nichtPruefbar, d.KaeltemittelNichtPruefbar));
+        return teile.Count == 0 ? "" : string.Format(System.Globalization.CultureInfo.CurrentCulture, rahmen, string.Join(" · ", teile));
+    }
 
     /// <summary>Grüner Punkt, sobald das Projekt eine Kältemaschine oder eine Wärmepumpe im Kühlbetrieb führt.</summary>
     private static Kachelstand KuehlungZustand(KuehlungKachelDaten? d)

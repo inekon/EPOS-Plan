@@ -72,6 +72,17 @@
                             {
                                 <Herleitungszeile Text="@SenkenText" />
                             }
+
+                            @* DIE ZULAESSIGKEIT DES KAELTEMITTELS (KM4-E3-b, Konzept Kaeltemittel als
+                               Stammdatum 5.2/7.3): eine Lesezeile mit dem Ergebnis der Pruefung fuer diese
+                               Anlage und das Inbetriebnahmejahr des Projekts - zulaessig, Warnung mit Regel,
+                               Fundstelle und Stichtag, "nicht pruefbar" mit der fehlenden Groesse oder
+                               "ohne Inbetriebnahmejahr nicht geprueft". Gerechnet zum Kaeltemittel der Wahl
+                               (Konfiguration), fertig von der Huelle; nur lesend, Speichern bleibt frei. *@
+                            @if (Zulaessigkeitszeile is string zulaessig)
+                            {
+                                <Herleitungszeile Text="@zulaessig" />
+                            }
                         </KindInhalt>
                     </Formularraster>
                 </KindInhalt>
@@ -416,6 +427,22 @@
 </div>
 
 @code {
+    /// <summary>
+    /// KM4-E3-b: die Lesezeile „Zulässigkeit“ des Kältemittels zum Arbeitsstand; <c>null</c> = keine (ohne Gabe
+    /// oder bei einem Wurf). Prüfhilfe für Tests.
+    /// </summary>
+    public string? Zulaessigkeitszeile
+    {
+        get
+        {
+            try
+            {
+                string? z = Daten.ZulaessigkeitRechnen?.Invoke(Daten.Kaeltemittel);
+                return string.IsNullOrWhiteSpace(z) ? null : z;
+            }
+            catch (Exception) { return null; }
+        }
+    }
     /// <summary>Die Hilfeschlüssel der Wärmepumpe — EINE Stelle; der Katalogsatz der Satz-Überlagerung nimmt dieselben.</summary>
     public const string HILFE_FENSTER = "Wizard_WPItem.btn_Help";
     public const string HILFE_GRUNDLAGEN = "Form_WP.Grundlagen";

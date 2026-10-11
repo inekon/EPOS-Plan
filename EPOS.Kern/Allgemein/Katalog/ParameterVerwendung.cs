@@ -564,7 +564,8 @@ namespace WindowsFormsApplication1
             E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_ABWERTUNG, t("WPS_LBL_RUECKLAUF_ABWERTUNG"), "%/K", SIM,
               "Geraetegrenzen.Bilden (leer = Vorgabe nach Kaeltemittel, sonst keine); Ruecklaufgrenze.Faktor auf Leistung und COP"),
             E(UebergabegrenzeSchema.SPALTE_KAELTEMITTEL, t("WPS_LBL_KAELTEMITTEL"), "", SIM,
-              "Geraetegrenzen.Bilden (Vorgaben der Kaeltemittelklasse, U-2; leer = allgemeine Vorgaben); Dialog Bivalenz und Uebergabe"),
+              "Code, Abgleich gegen die Kaeltemitteltabelle (Tab_Kaeltemittel_STAMM); KaeltemittelProjektpruefung (Zulaessigkeit nach Anhang IV der VO (EU) 2024/573, Hinweis, nie Sperre); "
+              + "Geraetegrenzen.Bilden (Vorgaben der Kaeltemittelklasse, U-2; leer = allgemeine Vorgaben); Dialog Bivalenz und Uebergabe; Treibhauswirkung nicht im Rechenweg (Kuehlkonzept 6.3)"),
         };
 
         // =================================================================
@@ -919,8 +920,8 @@ namespace WindowsFormsApplication1
         /// (<c>Tab_Kaeltemaschine</c>) über <c>Kaeltemaschine.AusModell</c> — Nennkälteleistung,
         /// Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung und den kleinsten Kaltwasservorlauf;
         /// Leistung und EER der Stunde kommen aus der Kennlinie. Der Nenn-EER ist eine Angabe des
-        /// Datenblatts, das Kältemittel eine Beschreibung (F-Gase rechnet EPOS-Plan nicht, Kühlkonzept
-        /// 6.3); die Modulkosten liest die Wirtschaftlichkeit (KU3-4, Gerätepreis × Anzahl der Anlagenzeile).
+        /// Datenblatts, das Kältemittel ein Code mit Verweis auf die Kältemitteltabelle für die Zulässigkeitsprüfung (seine
+        /// Treibhauswirkung rechnet EPOS-Plan nicht, Kühlkonzept 6.3); die Modulkosten liest die Wirtschaftlichkeit (KU3-4, Gerätepreis × Anzahl der Anlagenzeile).
         /// </summary>
         private static IReadOnlyList<ParameterEintrag> Kaeltemaschine(Func<string, string> t)
         {
@@ -941,7 +942,8 @@ namespace WindowsFormsApplication1
                 E(KaeltemaschineSchema.SPALTE_NENN_EER, t("KM_LBL_NENN_EER"), "-", DLG,
                   "KaeltemaschineKatalogDialog.razor (Datenblattangabe; gerechnet wird der EER der Kennlinie)"),
                 E(KaeltemaschineSchema.SPALTE_KAELTEMITTEL, t("KM_LBL_KAELTEMITTEL"), "", DLG,
-                  "KaeltemaschineKatalogDialog.razor (Beschreibung; F-Gase ausgeschlossen, Kuehlkonzept 6.3)"),
+                  "Code bzw. Verweis ID_Kaeltemittel auf die Kaeltemitteltabelle; KaeltemittelProjektpruefung (Zulaessigkeit nach Anhang IV der VO (EU) 2024/573, Hinweis, nie Sperre); "
+              + "KaeltemaschineKatalogDialog.razor (Klappliste Kaeltemittel); nicht im Rechenweg (Treibhauswirkung ausgeschlossen, Kuehlkonzept 6.3)"),
                 E(KaeltemaschineSchema.SPALTE_RUECKKUEHLART, t("KM_LBL_RUECKKUEHLART"), "", SIM,
                   "Kaeltemaschine.Rueckkuehltemperatur; Kaeltemaschine.FreieKuehlungMoeglich"),
                 E(KaeltemaschineSchema.SPALTE_MINDESTTEILLAST, t("KM_LBL_MINDESTTEILLAST"), "%", SIM,
@@ -960,8 +962,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Verweis auf die Kältemitteltabelle</b> (<see cref="KaeltemittelSchema"/>, Schritt 216; KM4-E1): Die Zuordnung
-        /// des Textbestands setzt ihn, Katalogfassung und Prüfsumme führen ihn über den Code; kein Rechenweg liest ihn (die
-        /// Zulässigkeitsprüfung ist KM4-E2), der Dialog zeigt ihn ab KM4-E3.
+        /// des Textbestands setzt ihn, Katalogfassung und Prüfsumme führen ihn über den Code; kein Rechenweg liest ihn, die
+        /// Zulässigkeitsprüfung (<see cref="KaeltemittelProjektpruefung"/>) und die Klappliste des Katalogdialogs lesen ihn.
         /// </summary>
         private static IReadOnlyList<ParameterEintrag> KaeltemittelVerweis(Func<string, string> t) => new[]
         {

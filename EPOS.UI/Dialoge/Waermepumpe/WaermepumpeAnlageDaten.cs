@@ -120,6 +120,13 @@ public sealed class WaermepumpeAnlageDaten
     /// </summary>
     public Func<WaermepumpeAnlageDaten, WaermepumpeBivalenzWerte?>? BivalenzRechnen { get; set; }
 
+    /// <summary>
+    /// KM4-E3-b: die Lesezeile „Zulässigkeit“ des Kältemittels zum Code der Wahl (<see cref="Kaeltemittel"/>) mit dem
+    /// Inbetriebnahmejahr des Projekts — fertig formuliert von der Hülle (Kern: <c>KaeltemittelZulaessigkeitszeile</c>);
+    /// <c>null</c> = keine Zeile (neue Anlage, kein Projekt).
+    /// </summary>
+    public Func<string?, string>? ZulaessigkeitRechnen { get; set; }
+
     /// <summary>Bivalenter Betrieb.</summary>
     public bool BivalenterBetrieb { get; set; }
 
@@ -289,6 +296,7 @@ public sealed class WaermepumpeAnlageDaten
         Vorwaermbetrieb = Vorwaermbetrieb,
         Bivalenz = Bivalenz,
         BivalenzRechnen = BivalenzRechnen,
+        ZulaessigkeitRechnen = ZulaessigkeitRechnen,
         BivalenterBetrieb = BivalenterBetrieb,
         CarrierId = CarrierId,
         Betriebsart = Betriebsart,

@@ -106,6 +106,14 @@ namespace WindowsFormsApplication1
         public string Klimaname { get; set; } = "";
 
         /// <summary>
+        /// Geplantes Jahr der Inbetriebnahme (<c>Tab_Projekt.Inbetriebnahmejahr</c>, KM4-E3-b); <c>null</c> = leer,
+        /// keine Zulässigkeitsprüfung der Kältemittel. Gültig ist 2000 bis 2100 wie der CHECK des Schemas; ein Wert
+        /// außerhalb steht hier, bis die Kopfregel ihn benannt meldet (<see cref="ProjektKopfBefund.JahrAusserhalb"/>) —
+        /// gekappt wird er nie.
+        /// </summary>
+        public int? Inbetriebnahmejahr { get; set; }
+
+        /// <summary>
         /// Darf der Projektname geaendert werden? Im Neu-Modus ja, im Bearbeiten-Modus
         /// nein — der Ersatz fuer <c>SetEditProjektName(bool)</c>. Gesetzt VOR
         /// <c>Bestuecken</c>.
@@ -132,7 +140,10 @@ namespace WindowsFormsApplication1
         Ok = 0,
         NameLeer,
         NameVorhanden,
-        KlimaLeer
+        KlimaLeer,
+
+        /// <summary>Das Inbetriebnahmejahr ist gesetzt, liegt aber nicht in 2000 bis 2100 (KM4-E3-b).</summary>
+        JahrAusserhalb
     }
 
     /// <summary>
@@ -151,8 +162,17 @@ namespace WindowsFormsApplication1
                     if (string.Equals((n ?? "").Trim(), daten.Name.Trim(), StringComparison.CurrentCultureIgnoreCase))
                         return ProjektKopfBefund.NameVorhanden;
             if (daten.IdKlimaregion <= 0 && string.IsNullOrWhiteSpace(daten.Klimaname)) return ProjektKopfBefund.KlimaLeer;
+            if (!JahrGueltig(daten.Inbetriebnahmejahr)) return ProjektKopfBefund.JahrAusserhalb;
             return ProjektKopfBefund.Ok;
         }
+
+        /// <summary>
+        /// Ist das Inbetriebnahmejahr zulässig? Leer ja (keine Prüfung), sonst 2000 bis 2100 — derselbe Bereich wie
+        /// der CHECK von <c>Tab_Projekt.Inbetriebnahmejahr</c> (<see cref="KaeltemittelSchema"/>).
+        /// </summary>
+        public static bool JahrGueltig(int? jahr)
+            => !jahr.HasValue || (jahr.Value >= KaeltemittelSchema.INBETRIEBNAHMEJAHR_MIN
+                                  && jahr.Value <= KaeltemittelSchema.INBETRIEBNAHMEJAHR_MAX);
     }
 
     public enum DuplizierBefund

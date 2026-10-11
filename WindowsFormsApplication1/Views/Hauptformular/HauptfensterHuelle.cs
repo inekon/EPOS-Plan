@@ -401,6 +401,11 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.NutzungsdauerVerwaltung:
                     return () => NutzungsdauerFenster.Oeffnen(_besitzer?.Invoke());
 
+                // KM4-E3-c: die Verwaltung der Kaeltemittel (Menue „Daten & Import") - die Datenseite liegt
+                // plattformfrei in KaeltemittelHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.Kaeltemittel:
+                    return () => KaeltemittelFenster.Oeffnen(_besitzer?.Invoke());
+
                 case Seitenschluessel.Einstellungen:
                     return () => EinstellungenHuelle.Oeffnen(_besitzer?.Invoke());
 

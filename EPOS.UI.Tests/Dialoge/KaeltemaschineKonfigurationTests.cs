@@ -129,4 +129,38 @@ public class KaeltemaschineKonfigurationTests : EposBunitContext
         Assert.Null(KaeltemaschineKonfiguration.AnteilAlsProzent(null));
         Assert.Equal(KaeltemaschineKonfiguration.AnteilAlsProzent(0.123), KaeltemaschineAnlageDialog.AnteilAlsProzent(0.123));
     }
+
+    // =====================================================================================
+    // KM4-E3-b: die Lesezeile „Zulässigkeit“ des Kältemittels (Konzept Kältemittel als Stammdatum 5.2, 7.2)
+    // =====================================================================================
+
+    [Fact]
+    public void Die_Zulaessigkeitszeile_steht_wie_die_Huelle_sie_formuliert()
+    {
+        KaeltemaschineAnlageDaten d = Satz();
+        d.Zulaessigkeit = "Zulässigkeit des Kältemittels R134a: Warnung — nach Anhang IV Nr. 1 ab 2027 nur Restbestand oder Ausnahme (F-Gas mit GWP ≥ 150; Inbetriebnahmejahr 2028)";
+        var cut = Zeige(d);
+        Assert.Contains("Zulässigkeit des Kältemittels R134a: Warnung", cut.Markup);
+        Assert.Contains("ab 2027 nur Restbestand oder Ausnahme", cut.Markup);
+    }
+
+    [Fact]
+    public void Ohne_Text_steht_keine_Zulaessigkeitszeile_und_sie_ist_keine_Eingabe()
+    {
+        KaeltemaschineAnlageDaten d = Satz();
+        var cut = Zeige(d);
+        Assert.DoesNotContain("Zulässigkeit des Kältemittels", cut.Markup);
+        int felder = cut.FindAll("input").Count;
+
+        d.Zulaessigkeit = "Zulässigkeit des Kältemittels: ohne Inbetriebnahmejahr nicht geprüft";
+        cut.Render();
+        Assert.Contains("ohne Inbetriebnahmejahr nicht geprüft", cut.Markup);
+        Assert.Equal(felder, cut.FindAll("input").Count);
+
+        // Die Lesezeile zählt nicht zu den Eingaben, reist aber mit der Kopie.
+        KaeltemaschineAnlageDaten k = d.Kopie();
+        Assert.Equal(d.Zulaessigkeit, k.Zulaessigkeit);
+        k.Zulaessigkeit = "";
+        Assert.True(d.GleicheEingaben(k));
+    }
 }

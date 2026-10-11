@@ -271,7 +271,7 @@ namespace WindowsFormsApplication1
             {
                 // KM4-E1: die Kaeltemitteltabelle (Name ist der Code). Die Kaeltemaschine verweist ueber die ID
                 // (Katalog und Projektkopie); eine verwendete Zeile ist unveraenderlich (Konzept Kaeltemittel 3.2).
-                // Ohne Oberflaeche bis KM4-E3, deshalb nicht im Dublettendialog.
+                // Bleibt ausserhalb des Dublettendialogs: Der Code ist eindeutig (UNIQUE, COLLATE NOCASE).
                 Schluessel = "KAELTEMITTEL",
                 Tabelle = KaeltemittelSchema.TAB_STAMM,
                 NamensSpalte = KaeltemittelSchema.SPALTE_CODE,

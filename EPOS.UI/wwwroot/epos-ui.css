@@ -10783,6 +10783,18 @@ table.epos-simerg-tabelle {
     box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
 }
 
+/* Die gewaehlte Zeile der Verwaltung "Kaeltemittel" (schlichte Tabelle, keine Katalogliste):
+   dieselbe Flaeche und derselbe linke Balken wie die Fokuszeile der Katalogliste, ueber die
+   eigene Klasse des Dialogs - die .epos-raster-Regeln bleiben unberuehrt. Die Zeile traegt
+   dazu aria-selected="true". */
+table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
+    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
+}
+
 /* WEICHT DIE ERSTE SPALTE (Rang, V2 - die Waermepumpe fuehrt den Hersteller vor
    dem Modell), faellt mit ihr der Balken. Die erste Spalte, die immer steht,
    traegt dann epos-balken-ab-N (N = die Stufe, ab der die erste steht), und
@@ -10847,6 +10859,7 @@ table.epos-simerg-tabelle {
 
 @media (forced-colors: active) {
     .epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td,
+    table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td,
     .epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
         outline: 2px solid Highlight;
         outline-offset: -2px;

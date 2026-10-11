@@ -1,8 +1,8 @@
 # Protokoll KM4‑E1 — Schemaschritt 216, Kältemitteltabelle, Zuordnung und Verweis der Kältemaschine
 
 **11.10.2026 · Sitzung Kälteanlagen · Wellen E1‑a und E1‑b des Kältemittels als Stammdatum.** Grundlage:
-[Fachkonzept](../../../aktuell/Kälteanlagen/Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) 3.1, 3.2, 4.1, 4.2, 4.4, 4.6, 6,
-9 (E123, KM4‑Q1 bis Q17 nach Empfehlung), 10; [Umsetzungskonzept](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md)
+[Fachkonzept](../../Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) 3.1, 3.2, 4.1, 4.2, 4.4, 4.6, 6,
+9 (E123, KM4‑Q1 bis Q17 nach Empfehlung), 10; [Umsetzungskonzept](../../Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md)
 3.1. Schema, Register, Saat, Zuordnung, Testdatenbank; keine Oberfläche, kein Rechenweg.
 
 ## Was gebaut ist

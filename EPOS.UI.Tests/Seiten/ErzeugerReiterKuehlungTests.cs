@@ -132,4 +132,43 @@ public class ErzeugerReiterKuehlungTests : EposBunitContext
         Assert.Contains("epos-kachel-statuspunkt--aus", kachel.QuerySelector(".epos-kachel-statuspunkt")!.ClassName);
         Assert.Equal(OhneLeerraum(Resource.START_E_KUEHL_TITEL + Resource.START_E_KUEHL_TEXT), OhneLeerraum(kachel.TextContent));
     }
+
+    // =====================================================================================
+    // KM4-E3-b: die Hinweiszeile des Kältemittels (Konzept Kältemittel als Stammdatum 5.2, 7.5)
+    // =====================================================================================
+
+    private static KuehlungKachelDaten MitHinweisen(int warnungen, int nichtPruefbar) => new()
+    {
+        KuehlungRechnen = true,
+        Kaeltemaschinen = new[] { new KuehlKaeltemaschine("Kältemaschine 1", 1) },
+        KaeltemittelWarnungen = warnungen,
+        KaeltemittelNichtPruefbar = nichtPruefbar
+    };
+
+    private static string Statuszeile(IRenderedComponent<ErzeugerReiter> cut)
+        => cut.Find(".epos-startkachel-kuehlung .epos-kachel-status").TextContent.Trim();
+
+    [Fact]
+    public void Die_Kachel_nennt_Warnungen_und_nicht_pruefbare_Kaeltemittel()
+    {
+        var cut = Zeichnen(MitHinweisen(2, 1));
+        Assert.Equal("Kältemittel: 2 mit Hinweis · 1 nicht prüfbar", Statuszeile(cut));
+    }
+
+    [Fact]
+    public void Nur_Warnungen_oder_nur_nicht_pruefbar_nennt_nur_diesen_Teil()
+    {
+        Assert.Equal("Kältemittel: 1 mit Hinweis", Statuszeile(Zeichnen(MitHinweisen(1, 0))));
+        Assert.Equal("Kältemittel: 3 nicht prüfbar", Statuszeile(Zeichnen(MitHinweisen(0, 3))));
+    }
+
+    [Fact]
+    public void Ohne_Hinweis_und_ohne_Inbetriebnahmejahr_steht_keine_Zeile()
+    {
+        // Ohne Jahr zählt die Hülle 0 und 0 - der Punkt steht, ein Text nicht.
+        var cut = Zeichnen(MitHinweisen(0, 0));
+        Assert.DoesNotContain("Kältemittel:", cut.Markup);
+        Assert.Equal("", ErzeugerReiter.KaeltemittelHinweis(null, "{0}", "{0}", "{0}"));
+        Assert.Equal("", ErzeugerReiter.KaeltemittelHinweis(Bestand(), "{0}", "{0}", "{0}"));
+    }
 }

@@ -330,8 +330,36 @@ namespace WindowsFormsApplication1
                 Erstelldatum = ctrl.m_Erstelldatum,
                 Aenderungsdatum = ctrl.m_Aenderungsdatum,
                 IdKlimaregion = KlimaregionStammCtrl.IdVonName(klimaname),
-                Klimaname = klimaname
+                Klimaname = klimaname,
+                Inbetriebnahmejahr = Inbetriebnahmejahr(ctrl.m_ID)
             };
+        }
+
+        // KM4-E3-b: das Inbetriebnahmejahr des Projekts (Konzept Kältemittel als Stammdatum 4.4, 7.4).
+        private const string SQL_JAHR_SETZEN =
+            "UPDATE \"" + KaeltemittelSchema.TAB_PROJEKT + "\" SET \"" + KaeltemittelSchema.SPALTE_INBETRIEBNAHMEJAHR +
+            "\" = ? WHERE \"ID\" = ?";
+
+        /// <summary>
+        /// Das geplante Inbetriebnahmejahr des Projekts; <c>null</c> = leer (keine Zulässigkeitsprüfung), vor dem
+        /// Schemaschritt oder bei einem Lesefehler. Derselbe Lesweg wie die Prüfung
+        /// (<see cref="KaeltemittelProjektpruefung.Inbetriebnahmejahr"/>).
+        /// </summary>
+        public static int? Inbetriebnahmejahr(int idProjekt) => KaeltemittelProjektpruefung.Inbetriebnahmejahr(idProjekt);
+
+        /// <summary>
+        /// Schreibt das Inbetriebnahmejahr; <c>null</c> leert es. Ein Jahr außerhalb 2000 bis 2100 wird nicht
+        /// gekappt, sondern abgelehnt (<c>false</c>, nichts geschrieben) — die Kopfregel meldet es vorher benannt.
+        /// Vor dem Schemaschritt gilt ein leeres Jahr als geschrieben, ein gesetztes als abgelehnt.
+        /// </summary>
+        public static bool InbetriebnahmejahrSetzen(int idProjekt, int? jahr)
+        {
+            if (idProjekt <= 0 || !ProjektKopfRegeln.JahrGueltig(jahr)) return false;
+            if (!DataRepository.SpalteVorhanden(KaeltemittelSchema.TAB_PROJEKT, KaeltemittelSchema.SPALTE_INBETRIEBNAHMEJAHR))
+                return !jahr.HasValue;
+            return DataRepository.ExecuteSQL(SQL_JAHR_SETZEN,
+                new DbParam("@jahr", DbParamTyp.Integer) { Wert = jahr.HasValue ? jahr.Value : (object)DBNull.Value },
+                new DbParam("@id", idProjekt));
         }
 
         /// <summary>

@@ -4,11 +4,11 @@
 durch den Anwender; Fragen KM4‑Q1 bis KM4‑Q17 entschieden (E123, alle nach Empfehlung; Abschnitt 9)** · Codestand `d21de06f9` (Zweig
 `ios_migration_september`, Schemastand 212 `KaelteRangSchema`, Referenzbasis R51
 `2026-10-10_R51_FreieKuehlung` mit 29 Projekten; 213 bei der Sitzung „Dialoge und Korrekturen“ angemeldet (K1),
-KM4 meldet die nächste freie Nummer vor dem Bau an) · Vorarbeit: [Recherche Kälteanlagen](2026-10-08_Recherche_Kaelteanlagen_Herstellerdaten_Rechenmodelle.md)
-(Abschnitte „Kältemittel“, „Stufe 4“, „Offene Klärungen“), [Konzeptprüfung Katalog und Import](2026-10-10_Konzeptpruefung_Kaelteanlagen_Katalog_Import.md)
-(Stufe K‑A, Frage KKP‑Q3), [Übergabe Kälteanlagen](2026-10-10_Uebergabe_Kaelteanlagen.md) und
-[Übergabe Teil Programm](2026-10-10_Uebergabe_Kaelteanlagen_Programm.md), Entscheid E118 im
-[Register](../Status_Gebaeudesimulation_VDI6007.md) und der [Entwurf Split/VRF/Rückkühlwerk](2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md).
+KM4 meldet die nächste freie Nummer vor dem Bau an) · Vorarbeit: [Recherche Kälteanlagen](../aktuell/Kälteanlagen/2026-10-08_Recherche_Kaelteanlagen_Herstellerdaten_Rechenmodelle.md)
+(Abschnitte „Kältemittel“, „Stufe 4“, „Offene Klärungen“), [Konzeptprüfung Katalog und Import](../aktuell/Kälteanlagen/2026-10-10_Konzeptpruefung_Kaelteanlagen_Katalog_Import.md)
+(Stufe K‑A, Frage KKP‑Q3), [Übergabe Kälteanlagen](../aktuell/Kälteanlagen/2026-10-10_Uebergabe_Kaelteanlagen.md) und
+[Übergabe Teil Programm](../aktuell/Kälteanlagen/2026-10-10_Uebergabe_Kaelteanlagen_Programm.md), Entscheid E118 im
+[Register](../aktuell/Status_Gebaeudesimulation_VDI6007.md) und der [Entwurf Split/VRF/Rückkühlwerk](../aktuell/Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md).
 **Umsetzung:** [`Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md`](Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md).
 
 Ziel: Das Kältemittel einer Kältemaschine ist ein freier Text ohne Bedeutung für Rechnung, Prüfung und Bericht;
@@ -135,7 +135,7 @@ enthalten.“, `BausteineProjekt`, englisch in `BerichtTexte`); Kälteerzeugerta
 nachzuziehen (KM4‑Q14). Wiki: Seite Kühlung („Keine Kältemittelemissionen“; von KB und den Dialogsitzungen
 mitbelegt), Wärmepumpe (Gerätegrenzen, Kältemittel‑Auswahl), Gerätekataloge; `WikiProduktdatenWacheTests` trifft
 Codes wie `R290` und `R1234ze` als Typcode‑Muster und lässt nur `R744` als Normbezeichnung zu. Zwei GWP‑Stellen:
-`emissionsart.co2_aequivalent` (GWP₁₀₀ nach IPCC AR6, [Emissionsarten](../Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md))
+`emissionsart.co2_aequivalent` (GWP₁₀₀ nach IPCC AR6, [Emissionsarten](../aktuell/Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md))
 und das Kältemittel.
 
 **2.8 Testdatenbank (Schemastand 211).** `Tab_Kaeltemaschine`: drei Projektkopien (1055 und 1063 je 20 kW, 1059
@@ -431,7 +431,7 @@ CSV‑Export unverändert.
 ## 6 Schema
 
 - **Ein Schritt**, Klasse `KaeltemittelSchema`, Nummer **nächste freie zur Bauzeit** (213 ist für K1 Kältebedarf vergeben) — vor dem Bau in der Kopfzeile
-  „Schemaschritt angemeldet“ der [Statusdatei](../Status_iOS_Migration.md) mit dem Vermerk „Sitzung Kälteanlagen“
+  „Schemaschritt angemeldet“ der [Statusdatei](../aktuell/Status_iOS_Migration.md) mit dem Vermerk „Sitzung Kälteanlagen“
   anmelden und allein pushen; `SCHRITT = <Vorgängerklasse>.SCHRITT + 1` an der Klasse, die zur Bauzeit die höchste
   Nummer trägt (KB‑D, 212, liegt auf `origin`; K‑F1 läuft vor KM4‑E1, siehe Umsetzungskonzept 3.0).
 - Inhalt: `Tab_Kaeltemittel_STAMM` (4.1) mit Registereintrag und Katalogschlüsseln; `ID_Kaeltemittel` an beiden
@@ -442,14 +442,14 @@ CSV‑Export unverändert.
   ändert nichts. Tabellen bleiben `STRICT`; Boolean als 0/1 mit CHECK.
 - Eintragsstellen wie Schritt 211: Klasse unter `EPOS.Kern/Allgemein/Update/`, `SchemaStand.Zielversion`,
   `Paketanhebung.STUFEN` (Art Import), `SchemaMigration` der Windows‑Schale, `Werkzeuge/Testdatenbankschema`,
-  `EPOS.Kern.Tests/TestDatenbank.cs`; Nachzüge: LFS‑Testdatenbank, [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md),
+  `EPOS.Kern.Tests/TestDatenbank.cs`; Nachzüge: LFS‑Testdatenbank, [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md),
   `KaeltemittelSchemaTests`, `TestdatenbankSchemastandWacheTests`; Spaltenzahlen in `KaeltemaschineSchemaTests`
   (32 → 33, 30 → 31), Registerzählung in `KatalogabgleichTests` (51 → 52) und — nur bei KM4‑Q5 b — die
   Einstellungsspalten in `AufheizSchemaTests`.
 - Katalogabgleich und Auslieferungsvorlage kennen die Tabelle über das Register (Anwenderzeilen fallen in der
   Auslieferung, gesperrte Zeilen bleiben — zu prüfen in `Werkzeuge/Auslieferungsvorlage`).
-- `SqlDialektPruefer` nach jeder neuen Anweisung ([BETRIEB_SQLITE](../BETRIEB_SQLITE.md) § 6,
-  [ADR‑001](../ADR-001_Schema-Ausrollung.md)).
+- `SqlDialektPruefer` nach jeder neuen Anweisung ([BETRIEB_SQLITE](../aktuell/BETRIEB_SQLITE.md) § 6,
+  [ADR‑001](../aktuell/ADR-001_Schema-Ausrollung.md)).
 
 ## 7 Oberfläche und Wiki
 
@@ -560,24 +560,56 @@ Vorlagenfeld, keine neue Vorlagen‑Katalogfassung.
 
 ## 11 Quellen
 
-- [Recherche Kälteanlagen](2026-10-08_Recherche_Kaelteanlagen_Herstellerdaten_Rechenmodelle.md) — Abschnitte
+- [Recherche Kälteanlagen](../aktuell/Kälteanlagen/2026-10-08_Recherche_Kaelteanlagen_Herstellerdaten_Rechenmodelle.md) — Abschnitte
   „Kältemittel“, „Stufe 4“, „Offene Klärungen“ (dort: `Katalog_Ausgelaufen` für unzulässige Sätze — hier verworfen).
-- [Konzeptprüfung Katalog und Import](2026-10-10_Konzeptpruefung_Kaelteanlagen_Katalog_Import.md) — Stufe K‑A,
-  Frage KKP‑Q3; [Übergabe Kälteanlagen](2026-10-10_Uebergabe_Kaelteanlagen.md) und
-  [Übergabe Teil Programm](2026-10-10_Uebergabe_Kaelteanlagen_Programm.md) — Zuständigkeiten, UB‑Schnittstelle,
-  Stand, Arbeitsregeln; [Entwurf Split/VRF/Rückkühlwerk](2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md) — K‑D,
-  K‑E, K‑F; [Entwurf Kältebereich](../Gebaeudesimulation/2026-10-10_Entwurf_Kaeltebereich.md) — KB‑A/KB‑B, Abschnitt 4
-  „Wer baut was“; [Konzept Projektdialoge und Katalogauswahl](../Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
+- [Konzeptprüfung Katalog und Import](../aktuell/Kälteanlagen/2026-10-10_Konzeptpruefung_Kaelteanlagen_Katalog_Import.md) — Stufe K‑A,
+  Frage KKP‑Q3; [Übergabe Kälteanlagen](../aktuell/Kälteanlagen/2026-10-10_Uebergabe_Kaelteanlagen.md) und
+  [Übergabe Teil Programm](../aktuell/Kälteanlagen/2026-10-10_Uebergabe_Kaelteanlagen_Programm.md) — Zuständigkeiten, UB‑Schnittstelle,
+  Stand, Arbeitsregeln; [Entwurf Split/VRF/Rückkühlwerk](../aktuell/Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md) — K‑D,
+  K‑E, K‑F; [Entwurf Kältebereich](../aktuell/Gebaeudesimulation/2026-10-10_Entwurf_Kaeltebereich.md) — KB‑A/KB‑B, Abschnitt 4
+  „Wer baut was“; [Konzept Projektdialoge und Katalogauswahl](../aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
   — Stufe 5 am Anlagendialog der Kältemaschine.
-- [Konzept Kühlung Gebäudesimulation](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) — 6.3 und §14 (Ausschluss).
-- [Konzept Emissionsarten](../Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md) — GWP₁₀₀ der Emissionsarten (AR6).
-- [Umsetzungskonzept Übergabegrenze und Bivalenz](../../ueberholt/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) —
+- [Konzept Kühlung Gebäudesimulation](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) — 6.3 und §14 (Ausschluss).
+- [Konzept Emissionsarten](../aktuell/Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md) — GWP₁₀₀ der Emissionsarten (AR6).
+- [Umsetzungskonzept Übergabegrenze und Bivalenz](Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) —
   Entscheid U‑2 (Kältemittel der Wärmepumpe als Klappliste im Kern).
-- [Konzept Simulationsablauf](../Konzept_Simulationsablauf_EPOS-Plan.md) — Katalogspalten, `Katalog_Ausgelaufen`.
-- Vorlage für Aufbau und Entscheide: [Konzept Teillast und Takten (KM3)](../../ueberholt/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
+- [Konzept Simulationsablauf](../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md) — Katalogspalten, `Katalog_Ausgelaufen`.
+- Vorlage für Aufbau und Entscheide: [Konzept Teillast und Takten (KM3)](Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
 - Rechtsquellen, nur genannt, nicht im Volltext geöffnet: Verordnung (EU) 2024/573 (Art. 3, 5, 6, 11, 12, 13;
   Anhänge I, II, IV, VI; drei Berichtigungen des deutschen Texts, Inhalt nicht ermittelt); Verordnung (EU) 517/2014
   (Altwerte); Durchführungsverordnungen 2024/2174, 2026/286, 2026/1975; REACH‑Beschränkungsvorschlag PFAS (ECHA,
   RAC 02.03.2026, SEAC‑Entwurf 10.03.2026); BEG EM und BEG NWG (Sekundärquellen); ISO 817, EN 378‑1, ASHRAE 34;
   IPCC AR4 und AR6. Regeln und Kältemittelwerte sind am amtlichen Volltext der
   Verordnung (EU) 2024/573 geprüft (vom Anwender bereitgestellt); die Fundstellen stehen je Zeile, 3.1 und 3.3.
+
+## 12 Umsetzung — wie gebaut
+
+KM4 ist mit den Wellen E1 bis E4 gebaut; die Papiere sind Geschichte, gültig ist der Code.
+
+| Welle | Gebaut | Statuszeile | Protokoll |
+|---|---|---|---|
+| **E1‑a, E1‑b** | Schemaschritt 216 `KaeltemittelSchema`: `Tab_Kaeltemittel_STAMM` mit 18 Codes im Katalogregister (`KMT`), Verweis `ID_Kaeltemittel` an `Tab_Kaeltemaschine(_STAMM)` neben der bleibenden Textspalte, `Tab_Projekt.Inbetriebnahmejahr`, Zuordnung des Textbestands über den Code, `KaeltemittelCtrl`, Paketweg, Wachen (E123) | #958 | [`2026-10-11_KM4-E1_Kaeltemitteltabelle.md`](Protokolle/Kaelteanlagen/2026-10-11_KM4-E1_Kaeltemitteltabelle.md) |
+| **E2‑a, E2‑b** | Regelzeilen `FGAS` als Generation 10 des Gesetzeskatalogs (13 Zeilen nach Anhang IV der VO (EU) 2024/573), reine Klasse `Kaeltemittelzulaessigkeit`, Datenbankweg `KaeltemittelProjektpruefung`, Warnkriterium `KAELTEMITTEL_STICHTAG`, Laufhinweis, Warntext an der Kältebahn, Berichtsspalte „Kältemittel“; ohne Schemaschritt | #970 | [`2026-10-11_KM4-E2_Regelsaat_Zulaessigkeit.md`](Protokolle/Kaelteanlagen/2026-10-11_KM4-E2_Regelsaat_Zulaessigkeit.md) |
+| **E2‑c** | die 18 Kältemittelzeilen am Volltext der VO (EU) 2024/573 gesichert (`GESICHERT` mit Fundstelle je Zeile); bestehende Datenbanken erhalten den Stand über den Katalogabgleich mit dem Katalogpaket | #975 | wie E2 |
+| **E3‑a, E3‑b, E3‑c** | Klappliste „Kältemittel“ und Lesezeilen im Katalogdialog der Kältemaschine mit Schnellwahl des GWP und KI‑Sicht (E3‑a); Feld „Inbetriebnahmejahr“ an den Projektdaten, Lesezeilen der Wärmepumpe, Zeile „Zulässigkeit“ im Anlagendialog, Hinweis an der Kachel „Kühlung und Kälteanlagen“ (E3‑b); Verwaltung „Kältemittel…“ unter „Daten & Import“ (E3‑c) | #993 | [`2026-10-11_KM4-E3_Oberflaeche.md`](Protokolle/Kaelteanlagen/2026-10-11_KM4-E3_Oberflaeche.md) |
+| **E4‑a, E4‑b** | Wiki‑Quellen Gerätekataloge (Abschnitt `kaeltemittel`), Kälteerzeugung, Wärmepumpe und Kurzanleitung, Hilfeziel `Kaeltemittel.btn_Help`, Logbuch‑Entwurf in `Wiki_Update_2026-09-26.md` (Version offen); Nachzug des Kühlkonzepts §14 und 6.3, Text der Spalte `Kaeltemittel` in `ParameterVerwendung`, dieser Abschnitt, Umzug beider Papiere nach `ueberholt/` | #994 | — (Statuszeile) |
+
+Statuszeilen in der [Statusdatei](../aktuell/Status_iOS_Migration.md). Testdatenbank auf Schema 216 mit den 18 Kältemittelzeilen und den 13
+Regelzeilen; die Referenzbasis ist über alle Wellen unverändert geblieben.
+
+**Abweichungen vom Konzept:**
+
+- Der PFAS‑Wert „enthält einen Bestandteil“ heißt `BESTANDTEIL` (die Saatliste schrieb `ENTHAELT`).
+- **Nr. 7 d** des Anhangs IV nennt im deutschen Wortlaut „GWP von 750“ ohne „oder mehr“; nach **E126** gilt die Lesart
+  ≥ 750 wie in Nr. 9 e, die Zeile ist `GESICHERT` mit Vermerk in `Quelle`.
+- Begriff F‑Gas nach Art. 2 Buchst. a (nicht Art. 3 Nr. 1); Nr. 7 a gilt nur für HFKW.
+- **R1233zd(E)** ist nach dem Volltext ein HFCKW, kein F‑Gas im Sinne der Verordnung; in der Tabelle steht es als
+  chlorhaltiges Olefin in der Gruppe `HFO`.
+- Die gewählte Zeile der Verwaltung „Kältemittel…“ ist auf **Anwenderwunsch** hervorgehoben (auch im Kontrastmodus).
+- **E3‑a** lief nach Freigabe des Anwenders vom 11.10.2026 **ohne Abstimmung** mit der Sitzung „Dialoge und
+  Korrekturen“, im Aufbau der Stufe 5.
+- Die Wiki‑Quelle für die Kältemaschine ist „Kälteerzeugung“, nicht „Kühlung“.
+
+**Offen:** die Windows‑Sichtabnahme (Punkte unter „Nach #993“ der Statusdatei), der Wiki‑Upload der vier Seiten samt
+Logbuch‑Eintrag (Version beim Anwender offen) und vor der nächsten Auslieferung der Abgleich der produktiven Datenbank,
+damit das Katalogpaket den gesicherten Stand der Kältemitteltabelle trägt.

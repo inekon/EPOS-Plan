@@ -71,7 +71,8 @@ public class ProjektKopfSeiteTests : EposBunitContext
         // Projektname, Kunde, Bearbeiter + die zwei gesperrten Datumsfelder;
         // Beschreibung ist ein textarea, Klimaregion die durchsuchbare Auswahl der
         // Kopfleiste (#527, Suchauswahl statt select).
-        Assert.Equal(5, cut.FindAll(TEXTFELDER).Count);
+        // KM4-E3-b: dazu das Inbetriebnahmejahr als sechstes Textfeld.
+        Assert.Equal(6, cut.FindAll(TEXTFELDER).Count);
         Assert.Single(cut.FindAll("textarea"));
         Assert.Empty(cut.FindAll("select"));
         Assert.Single(cut.FindAll(KLIMAFELD));
@@ -241,7 +242,8 @@ public class ProjektKopfSeiteTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-projektkopf-raster"));
         Assert.Single(cut.FindAll(".epos-formularraster"));
-        Assert.Equal(6, cut.FindAll(".epos-formularraster .epos-feld").Count);
+        // Sechs Felder des Vorlaeufers und das Inbetriebnahmejahr (KM4-E3-b).
+        Assert.Equal(7, cut.FindAll(".epos-formularraster .epos-feld").Count);
 
         // Die Beschreibung steht als mehrzeiliges - also BREITES - Feld
         // ausserhalb des Rasters.
@@ -478,5 +480,114 @@ public class ProjektKopfSeiteTests : EposBunitContext
 
         Waehlen(cut, "München (PVGIS)");
         Assert.Contains("Klimadaten: München · 11,5000° / 48,1000°", cut.Markup);
+    }
+
+    // =====================================================================================
+    // KM4-E3-b: das Inbetriebnahmejahr (Konzept Kältemittel als Stammdatum 4.4, 7.4)
+    // =====================================================================================
+
+    /// <summary>Das Jahresfeld — das letzte Textfeld des Formularrasters.</summary>
+    private static AngleSharp.Dom.IElement Jahresfeld(IRenderedComponent<ProjektKopfSeite> cut)
+        => cut.FindAll(TEXTFELDER + ":not([readonly])").Last();
+
+    [Fact]
+    public void Das_Inbetriebnahmejahr_steht_leer_mit_Platzhalter_und_Hilfezeile()
+    {
+        ProjektKopfDaten daten = Satz();
+        var cut = Aufbauen(daten);
+
+        AngleSharp.Dom.IElement feld = Jahresfeld(cut);
+        Assert.Equal("", feld.GetAttribute("value") ?? "");
+        Assert.Equal("leer: keine Zulässigkeitsprüfung", feld.GetAttribute("placeholder"));
+        Assert.Contains("Inbetriebnahmejahr", cut.Markup);
+        Assert.Contains("F-Gas-Verordnung", cut.Markup);
+        Assert.Contains("sperrt nichts", cut.Markup);
+        Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
+    }
+
+    [Fact]
+    public void Ein_gespeichertes_Jahr_steht_im_Feld()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.Inbetriebnahmejahr = 2027;
+        var cut = Aufbauen(daten);
+
+        Assert.Equal("2027", Jahresfeld(cut).GetAttribute("value"));
+    }
+
+    [Theory]
+    [InlineData("2000", 2000)]
+    [InlineData("2027", 2027)]
+    [InlineData(" 2100 ", 2100)]
+    public void Ein_Jahr_im_Bereich_landet_im_Satz_ohne_Hinweis(string eingabe, int erwartet)
+    {
+        ProjektKopfDaten daten = Satz();
+        var cut = Aufbauen(daten);
+
+        Jahresfeld(cut).Input(eingabe);
+
+        Assert.Equal(erwartet, daten.Inbetriebnahmejahr);
+        Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
+        Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
+    }
+
+    [Theory]
+    [InlineData("1999", 1999)]
+    [InlineData("2101", 2101)]
+    [InlineData("20x7", 0)]
+    public void Ein_Jahr_ausserhalb_bringt_die_benannte_Meldung_und_wird_nicht_gekappt(string eingabe, int erwartet)
+    {
+        ProjektKopfDaten daten = Satz();
+        var cut = Aufbauen(daten);
+
+        Jahresfeld(cut).Input(eingabe);
+
+        // Nie gekappt: Der Satz traegt den Wert (keine Zahl: 0), die Kopfregel meldet ihn benannt.
+        Assert.Equal(erwartet, daten.Inbetriebnahmejahr);
+        Assert.Equal(ProjektKopfBefund.JahrAusserhalb, cut.Instance.Befund);
+        Assert.Contains("zwischen 2000 und 2100", cut.Find(".epos-projektkopf-hinweis").TextContent);
+        // Das Getippte bleibt stehen.
+        Assert.Equal(eingabe, Jahresfeld(cut).GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Ein_geleertes_Feld_nimmt_das_Jahr_und_die_Meldung_weg()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.Inbetriebnahmejahr = 2030;
+        var cut = Aufbauen(daten);
+
+        Jahresfeld(cut).Input("1990");
+        Assert.Equal(ProjektKopfBefund.JahrAusserhalb, cut.Instance.Befund);
+
+        Jahresfeld(cut).Input("");
+        Assert.Null(daten.Inbetriebnahmejahr);
+        Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
+        Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
+    }
+
+    [Fact]
+    public void Die_Kopfregel_haelt_den_CHECK_Bereich()
+    {
+        Assert.True(ProjektKopfRegeln.JahrGueltig(null));
+        Assert.True(ProjektKopfRegeln.JahrGueltig(2000));
+        Assert.True(ProjektKopfRegeln.JahrGueltig(2100));
+        Assert.False(ProjektKopfRegeln.JahrGueltig(1999));
+        Assert.False(ProjektKopfRegeln.JahrGueltig(2101));
+        Assert.Equal(KaeltemittelSchema.INBETRIEBNAHMEJAHR_MIN, 2000);
+        Assert.Equal(KaeltemittelSchema.INBETRIEBNAHMEJAHR_MAX, 2100);
+    }
+
+    [Fact]
+    public void Die_KI_Sicht_liest_und_setzt_das_Jahr()
+    {
+        ProjektKopfDaten daten = Satz();
+        var sicht = new ProjektKopfKiSicht { Kopf = () => daten };
+
+        Assert.Null(sicht.Inbetriebnahmejahr);
+        sicht.Inbetriebnahmejahr = 2031;
+        Assert.Equal(2031, daten.Inbetriebnahmejahr);
+        sicht.Inbetriebnahmejahr = null;
+        Assert.Null(daten.Inbetriebnahmejahr);
     }
 }
