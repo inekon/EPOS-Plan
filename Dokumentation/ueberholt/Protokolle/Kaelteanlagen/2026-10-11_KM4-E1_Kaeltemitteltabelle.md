@@ -1,6 +1,6 @@
-# Protokoll KM4‑E1‑a — Schemaschritt 216, Kältemitteltabelle und Zuordnung
+# Protokoll KM4‑E1 — Schemaschritt 216, Kältemitteltabelle, Zuordnung und Verweis der Kältemaschine
 
-**11.10.2026 · Sitzung Kälteanlagen · Welle E1‑a des Kältemittels als Stammdatum.** Grundlage:
+**11.10.2026 · Sitzung Kälteanlagen · Wellen E1‑a und E1‑b des Kältemittels als Stammdatum.** Grundlage:
 [Fachkonzept](../../../aktuell/Kälteanlagen/Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) 3.1, 3.2, 4.1, 4.2, 4.4, 4.6, 6,
 9 (E123, KM4‑Q1 bis Q17 nach Empfehlung), 10; [Umsetzungskonzept](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md)
 3.1. Schema, Register, Saat, Zuordnung, Testdatenbank; keine Oberfläche, kein Rechenweg.
@@ -40,8 +40,27 @@ Zellvergleich der Bestandsspalten: nur `Tab_Applikation.SchemaVersion` und die P
 - `Gruppe`, `Bezeichnung` (neutraler Stoffname) und `Quelle` (Recherche und Vertrauensgrad) sind aus der Saatliste
   abgeleitet; R1233zd(E) steht als chlorhaltiges Olefin in der Gruppe `HFO`.
 
-## Offen für E1‑b
+## Offen für E1‑b (unten erledigt)
 
 Modell und Controller der Kältemaschine (`ID_Kaeltemittel` lesen, schreiben, Leer → NULL, `AusKatalogUebernehmen`),
 `KaeltemittelCtrl`, Projektpaket (Ausnahme wie `ID_Stamm`, Nachtrag aus dem Text), Wache „Codes ⊆ Tabelle“,
 `WikiProduktdatenWacheTests.Normbezeichnungen`.
+
+## E1‑b — Verweis in Modell, Controller, Paketen und Wachen
+
+- **Modell und Controller:** `KaeltemaschineModel.ID_Kaeltemittel`; `KaeltemaschineStammCtrl` liest mit Spaltenprobe, der
+  Schreibschritt `KaeltemittelSchreiben` gleicht den Code ab (leer oder kein Treffer → NULL); `EigeneKopieAnlegen` und
+  `AusKatalogUebernehmen` übernehmen die ID, Duplizieren behält sie. `KaeltemittelCtrl` liest nur; die Pflege kommt mit E3.
+- **Projektpaket:** Die ID reist nicht; der Nachtrag am Ziel läuft über den Code und zusätzlich über den Katalogsatz
+  (`SqlNachtragProjektUeberStamm`), damit „R1234ze“ die Zuordnung behält. Das Katalogpaket trägt den Code.
+- **Wachen:** `KaeltemittelCodesWacheTests` (die zehn Codes der Klappliste der Wärmepumpe ⊆ Tabelle);
+  `WikiProduktdatenWacheTests` führt die Normbezeichnungen der Saatcodes; die Auslieferungsvorlage behält die 18 Zeilen;
+  `VorheizenSchemaTests` prüft `>= 215`.
+- **Offen:** E2 `ID_Kaeltemittel` im Rechenweg; E3 Oberfläche und Pflege.
+
+## Gate der Zusammenführung mit K‑F2 (`gate_rest_linux.sh` auf `d74640010`)
+
+EPOS.UI.Tests 8651, KiKern.Tests 553, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 (+1 übersprungen),
+Dokumentationswachen 35, Windows-Schale 0 Fehler, Designer unverändert, SQL-Dialekt 0 Fundstellen, Werkzeugtests grün
+(Formularkarte 124, Auslieferungsvorlage 62, Gebäudevergleich 24, Zapfprofil 39), Konfliktmarker keine, Referenzlauf 29/29
+PASS gegen R51, CSV byte-gleich 943/943. Basis unverändert.

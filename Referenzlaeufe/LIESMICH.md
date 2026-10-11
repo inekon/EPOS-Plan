@@ -1,4 +1,4 @@
-﻿# Referenzlauf-Suite (Paket B1)
+# Referenzlauf-Suite (Paket B1)
 
 Regressionsbasis für den Simulationskern von EPOS-Plan.
 
@@ -1219,7 +1219,7 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > drei Prüfsummen, 191 STRICT-Tabellen. Die Testdatenbank steht auf **216** (`integrity_check` ok, `foreign_key_check`
 > leer): **95 735 808 Byte, LFS-SHA-256 `a63c8e78720b11a83ff69717a5f26b83fb93c8e493ac74d91b8252474fd64e94`**. Kein
 > Rechenweg liest Tabelle, Verweis oder Jahr
-> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Kaelteanlagen/2026-10-11_KM4_E1a_Kaeltemitteltabelle.md)).
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Kaelteanlagen/2026-10-11_KM4-E1_Kaeltemitteltabelle.md)).
 
 ### Die Vorgängerbasis R50 (Wochentagsraster)
 
