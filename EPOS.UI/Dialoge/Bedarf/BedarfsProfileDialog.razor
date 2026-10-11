@@ -1099,7 +1099,12 @@
     {
         if (_katalogzeile is null || Aufnehmen is null) return;
 
-        BedarfsProfilZeile? neu = Aufnehmen(_katalogzeile.Bezeichner);
+        // KT-5: Wirft das Aufnehmen, nennt die Meldung den Grund; die Projektliste bleibt.
+        string name = _katalogzeile.Bezeichner;
+        string grund = "";
+        BedarfsProfilZeile? neu = Katalogladung.Schreiben(() => Aufnehmen(name), name,
+                                                          g => { grund = g; return (BedarfsProfilZeile?)null; });
+        if (grund.Length > 0) { Melden(grund, WarnStufe.Warnung); return; }
         if (neu is null) return;
 
         Zeilen.Add(neu);
