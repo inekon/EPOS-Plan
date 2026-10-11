@@ -31,7 +31,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die eingeordneten Fachspalten: KWKG (Schritte 22/61/105), Quellangaben,
-        /// Steuer und Aufteilung, Kältemaschine (KU3), Sondenfeld (Schritt 195), Kältefolge (Schritt 212).
+        /// Steuer und Aufteilung, Kältemaschine (KU3), Sondenfeld (Schritt 195), Kältefolge (Schritt 212),
+        /// Rückkühlwerk und Wasserpreis (K-F1).
         /// </summary>
         private static readonly string[] FACHSPALTEN =
         {
@@ -44,7 +45,10 @@ namespace EPOS.Kern.Tests
             "WQ_Sondenabstand", "WQ_Bohrlochdurchmesser", "WQ_Bohrlochwiderstand",
             "WQ_Kopfueberdeckung", "WQ_Betrachtungsjahr", "WQ_Sondenanordnung",
             // KB-D (Schritt 212): der Rang in der Kaeltefolge - die Zeile traegt ihn durch Assistent und Kopie.
-            "Kaelte_Rang"
+            "Kaelte_Rang",
+            // K-F1: das Rueckkuehlwerk der Kaeltemaschine (projekteigene Zeile, AnlagenFachspalten.PROJEKTBEZUG)
+            // und der Wasserpreis der Anlage - beide Eingabewerte, die Assistent, Uebernahme und Kopie retten.
+            "ID_Rueckkuehlwerk", "Wasserpreis_EUR_m3"
         };
 
         /// <summary>
