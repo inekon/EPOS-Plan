@@ -133,45 +133,15 @@
                         SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
                         SatzBearbeiten="BeiDetailBearbeiten"
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
-                        SatzZusammenfassung="@Zusammenfassung()" @ref="_zweispalten">
+                        SatzZusammenfassung="@Zusammenfassung()"
+                        KnopfleisteAmSatz="true"
+                        ProjektGewaehlt="@(_gewaehlt is null ? null : Projektschluessel(_gewaehlt))"
+                        ProjektGewaehltChanged="BeiProjektTastenwahl"
+                        @ref="_zweispalten">
 
         <Leistenzusatz>
-            @* „Bearbeiten…" (4.2, 4.9): die Projektkopie des gewählten Projektgebäudes samt Zonen und Bauteilen
-               (Überlagerung „Hülle und Zonen"), für genau eine gewählte Zeile; im Assistenten wie die Schlussleiste nicht. *@
-            @if (ProjektGaben is not null && !Wizard)
-            {
-                @if (ProjektZiele().Count == 0)
-                {
-                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
-                            aria-disabled="true" title="@SperreWahlProjekt"
-                            @onclick="() => Melden(SperreWahlProjekt, WarnStufe.Hinweis)">
-                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
-                    </button>
-                }
-                else if (ProjektZiele().Count == 1 && !ProjektZiele()[0].HatProjektkopie && ListeSpeichern is null)
-                {
-                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
-                            aria-disabled="true" title="@SperreNeueZeile"
-                            @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">
-                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
-                    </button>
-                }
-                else if (ProjektZiele().Count > 1)
-                {
-                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
-                            aria-disabled="true" title="@Resource.GEB_SPERRE_BEARBEITEN_EINER"
-                            @onclick="() => Melden(Resource.GEB_SPERRE_BEARBEITEN_EINER, WarnStufe.Hinweis)">
-                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
-                    </button>
-                }
-                else
-                {
-                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
-                            title="@BtnProjektHinweis" @onclick="BeiProjekt">
-                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
-                    </button>
-                }
-            }
+            @* AW3b: „Bearbeiten…" (Hülle und Zonen der Projektkopie) steht nur noch EINMAL, in der Knopfleiste am
+               gewaehlten Satz; hier bleibt der Rueckweg „In die Datenbank übernehmen…". *@
             @* KA-E-9, Regel 5.2: der Rückweg mit Rückfrage - nur für GENAU EINE gewählte Projektzeile (der Kernweg
                kennt keinen Mehrsatz-Vorgang); mehrere: weich gesperrt mit Grund. *@
             @if (RueckwegDa)
@@ -203,13 +173,15 @@
         </Leistenzusatz>
 
         <Links>
-            <div class="epos-raster-huelle">
+            @* DIE ZEILE IST DIE WAHL (AW3b, Schema AW1): kein Wahlknopf - ein Klick in die Namenszelle waehlt die
+               Zeile (Hervorhebung wie in der Katalogliste), ↑ ↓ Pos1 Ende bewegen die Wahl, die Huelle ist ein
+               Tabulatorhalt; das Kaestchen bleibt die Mehrfachwahl. *@
+            <div class="epos-raster-huelle" tabindex="0" aria-label="@LabelProjektliste" @onkeydown="BeiProjektTaste">
                 <table class="epos-raster">
                     <thead>
                         <tr>
                             <th class="epos-spalte-kaestchen"><Wahlkaestchen Bereich="Auswahlbereich.Projekt" /></th>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
+                            <th class="epos-spalte-zeilenzelle">@SpalteName</th>
                             @* Stufe G1 (Konzept 2.7, E1): ohne diese Spalte waere der Rechenweg
                                fuer den Anwender unsichtbar - sie bleibt bis Stufe GA. *@
                             <th>@SpalteRechenweg</th>
@@ -223,16 +195,16 @@
                         @foreach (GebaeudeProjektZeile zeile in Zeilen)
                         {
                             GebaeudeProjektZeile z = zeile;
-                            <tr class="@(IstGewaehlt(z) ? "epos-zeile--markiert" : null)">
+                            <tr class="@(IstGewaehlt(z) ? "epos-zeile--gewaehlt" : null)">
                                 <td class="epos-spalte-kaestchen">
                                     <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@Projektschluessel(z)"
                                                    Kurztext="@z.Name" />
                                 </td>
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@IstGewaehlt(z)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => ProjektZeileKlick(z)" />
+                                <td class="epos-spalte-zeilenzelle">
+                                    <span class="epos-zeilenzelle epos-projektzeile" title="@z.Name"
+                                          aria-current="@(IstGewaehlt(z) ? "true" : null)"
+                                          @onclick="() => ProjektZeileKlick(z)">@z.Name</span>
                                 </td>
-                                <td>@z.Name</td>
                                 <td>@z.Rechenweg</td>
                                 @* UeS2: der Stift je Projektzeile - „Hülle und Zonen" ihrer Projektkopie. *@
                                 @if (ProjektGaben is not null && !Wizard)
@@ -269,10 +241,32 @@
         </Rechts>
 
         <KatalogFuss>
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b, Schema AW1): Schloss… und Loeschen nur auf Katalogsaetze -
+               beim Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen"; Bearbeiten… je Satzart: beim
+               Projektsatz „Hülle und Zonen" der Projektkopie (wie der Stift der Zeile, mit denselben weichen Sperren;
+               im Assistenten und ohne Editor die Satz-Ueberlagerung), beim Katalogsatz der Katalogeditor (gesperrt
+               nur lesend). Den Satz des Projektgebaeudes (Ausrichtung, Wohnflaeche, Export, Simulation) oeffnet dann
+               „Vergrößern" - der Stift der Detailzeile ist mit der Knopfleiste am Satz entfallen. Kein Vergleich. *@
+            @if (SatzArt == Satzmarke.Projektsatz && ProjektGaben is not null && !Wizard)
+            {
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-vergroessern"
+                        title="@Resource.AUSWAHL_SATZ_VERGROESSERN_HINWEIS" aria-label="@Resource.AUSWAHL_SATZ_VERGROESSERN"
+                        disabled="@(_zweispalten?.SatzUeberlagerungOffen == true)" @onclick="BeiVergroessern">
+                    <span class="epos-zweispalten-pfeil" aria-hidden="true">⤢</span>
+                    <span class="epos-zweispalten-knopftext">@Resource.AUSWAHL_SATZ_VERGROESSERN</span>
+                </button>
+            }
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogzeile"
+                            Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
                             Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
-            @if (KatalogZiele().Count == 1 && LoeschsperreAnzeige.Length > 0)
+            @if (KatalogSperrgrund is string grund)
+            {
+                <button type="button" class="epos-knopf epos-knopf--loeschen epos-gebaeude-db-loeschen"
+                        aria-disabled="true" title="@grund"
+                        @onclick="() => BeiSchlossAbgelehnt(grund)">@BtnDbLoeschenText</button>
+            }
+            else if (KatalogZiele().Count == 1 && LoeschsperreAnzeige.Length > 0)
             {
                 @* Der Grund am Bedienelement: gesperrt (Auslieferungssatz, im Assistenten auch der Satz einer
                    ungespeicherten Zeile), der Versuch meldet ihn unter der Liste. *@
@@ -286,7 +280,54 @@
                         disabled="@(KatalogZiele().Count == 0)"
                         @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
             }
-            @{
+            @if (SatzArt == Satzmarke.Projektsatz)
+            {
+                @* „Bearbeiten…" (4.2, 4.9): die Projektkopie des gewählten Projektgebäudes samt Zonen und Bauteilen
+                   (Überlagerung „Hülle und Zonen"), für genau eine gewählte Zeile; im Assistenten wie die Schlussleiste nicht. *@
+                @if (ProjektGaben is not null && !Wizard)
+                {
+                    @if (ProjektZiele().Count == 0)
+                    {
+                        <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt epos-gebaeude-projekt"
+                                aria-disabled="true" title="@SperreWahlProjekt"
+                                @onclick="() => Melden(SperreWahlProjekt, WarnStufe.Hinweis)">
+                            <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                        </button>
+                    }
+                    else if (ProjektZiele().Count == 1 && !ProjektZiele()[0].HatProjektkopie && ListeSpeichern is null)
+                    {
+                        <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt epos-gebaeude-projekt"
+                                aria-disabled="true" title="@SperreNeueZeile"
+                                @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">
+                            <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                        </button>
+                    }
+                    else if (ProjektZiele().Count > 1)
+                    {
+                        <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt epos-gebaeude-projekt"
+                                aria-disabled="true" title="@Resource.GEB_SPERRE_BEARBEITEN_EINER"
+                                @onclick="() => Melden(Resource.GEB_SPERRE_BEARBEITEN_EINER, WarnStufe.Hinweis)">
+                            <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt epos-gebaeude-projekt"
+                                title="@BtnProjektHinweis" @onclick="BeiProjekt">
+                            <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                        </button>
+                    }
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt"
+                            title="@Resource.AUSWAHL_SATZ_BEARBEITEN_HINWEIS" @onclick="BeiDetailBearbeiten">
+                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                    </button>
+                }
+            }
+            else
+            {
                 @if (KatalogZiele().Count > 1)
                 {
                     <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog epos-gebaeude-katalog-bearbeiten"
@@ -1632,11 +1673,34 @@
         return _katalogzeile is null ? new() : new() { _katalogzeile };
     }
 
+    /// <summary>
+    /// Klick in eine Projektzeile (AW3b, wie Heizkessel): Die Zeile wird der gewählte Satz, die Detailzeile folgt;
+    /// die Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
     private void ProjektZeileKlick(GebaeudeProjektZeile zeile)
     {
-        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
-        ProjektzeileWaehlen(zeile);
+        if (!IstGewaehlt(zeile)) ProjektzeileWaehlen(zeile);
     }
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private void BeiProjektTastenwahl(string schluessel)
+    {
+        GebaeudeProjektZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
+        if (zeile is not null) ProjektZeileKlick(zeile);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen (AW3b): Sie wirken nur auf Katalogsätze; steht ein
+    /// Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
+
+    /// <summary>„Vergrößern" am Projektsatz (AW3b): der Satz des Projektgebäudes in der Satz-Überlagerung.</summary>
+    private Task BeiVergroessern() => _zweispalten is null ? Task.CompletedTask : _zweispalten.SatzUeberlagerungOeffnen();
 
     private void BeiWahlGeaendert(Auswahlbereich bereich)
     {
@@ -1935,9 +1999,12 @@
         _ => art,
     };
 
+    /// <summary>
+    /// „Bearbeiten…" am Katalogsatz (AW3b: dasselbe wie der Stift der Katalogzeile): ungesperrt der Katalogeditor,
+    /// gesperrt oder ohne Editor der Satz nur lesend in der Satz-Überlagerung; mehrere angekreuzt: weich gesperrt.
+    /// </summary>
     private async Task BeiKatalogAendern()
     {
-        if (KatalogGaben is null) return;
         List<Katalogfilterzeile> ziele = KatalogZiele();
         if (ziele.Count == 0) { Melden(MeldungKeineWahl, WarnStufe.Warnung, amKatalog: true); return; }
         if (ziele.Count > 1) { Melden(Resource.GEB_SPERRE_BEARBEITEN_EINER, WarnStufe.Hinweis, amKatalog: true); return; }

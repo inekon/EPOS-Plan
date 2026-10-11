@@ -15,7 +15,10 @@ internal static class GebaeudeDialogProbe
     public static void SatzOeffnen(IRenderedComponent<GebaeudeDialog> cut)
     {
         if (cut.Instance.Zweispalten?.SatzUeberlagerungOffen == true) return;
-        IElement? k = cut.FindAll("button.epos-zweispalten-bearbeiten").FirstOrDefault();
+        // AW3b: Mit der Knopfleiste am Satz oeffnet „Vergrößern" den Projektsatz (Bearbeiten… ist dort „Hülle und
+        // Zonen"); ohne Editor, im Assistenten und beim Katalogsatz ist es „Bearbeiten…" am Satz.
+        IElement? k = cut.FindAll(".epos-zweispalten-satzknoepfe .epos-zweispalten-vergroessern").FirstOrDefault()
+                   ?? cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog").FirstOrDefault();
         if (k is not null && !k.HasAttribute("disabled")) k.Click();
     }
 

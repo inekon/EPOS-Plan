@@ -4302,6 +4302,8 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten-satzknoepfe > * { flex: 0 0 auto; white-space: nowrap; }
 /* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
+/* AW3b: dasselbe fuer die von Hand gebauten Projektlisten (Waermebedarf extern, Stromganglinie, Gebaeude). */
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster:not(.quickgrid) > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
 /* Die Projektzeile behaelt ihr Mass (53 px, Kompaktstufe 46 px - Zweispaltenauswahl.ZEILE, nach dem die
    Trennlinie rechnet); nur die Klickflaeche fuellt sie jetzt ganz. */
 .epos-zweispalten-inhalt--zeilenwahl .epos-zeilenzelle.epos-projektzeile {

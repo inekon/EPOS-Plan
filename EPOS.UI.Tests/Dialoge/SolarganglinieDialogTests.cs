@@ -135,7 +135,7 @@ public class SolarganglinieDialogTests : EposBunitContext
         // A-27: Der Vorlaeufer setzte nur den Namen; sein Beschreibungsfeld blieb in
         // JEDEM Zustand leer, obwohl der Katalogsatz sie fuehrt.
         var cut = Aufbauen();
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl, tbody tr .epos-projektzeile")[0].Click();
 
         Assert.Equal("Ganglinie Nord", cut.Find("input[readonly]").GetAttribute("value"));
         Assert.Equal("Messreihe 2024, Standort Nord", cut.Find("textarea[readonly]").TextContent);
@@ -145,7 +145,7 @@ public class SolarganglinieDialogTests : EposBunitContext
     public void Auch_eine_Projektzeile_zeigt_ihre_Beschreibung()
     {
         var cut = Aufbauen();
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl, tbody tr .epos-projektzeile")[0].Click();
 
         Assert.Equal("Messreihe 2024, Standort Nord", cut.Find("textarea[readonly]").TextContent);
     }
@@ -172,7 +172,7 @@ public class SolarganglinieDialogTests : EposBunitContext
             return Zeile(100000, "Ganglinie Süd", id);
         });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[1].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl, tbody tr .epos-projektzeile")[1].Click();
         cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Equal(22, gerufen);
@@ -193,7 +193,7 @@ public class SolarganglinieDialogTests : EposBunitContext
         var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z));
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[1]
-           .QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl")!.Click();
+           .QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl, .epos-projektzeile")!.Click();
         cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
         Assert.Single(zeilen);
@@ -298,7 +298,7 @@ public class SolarganglinieDialogTests : EposBunitContext
     /// <summary>Wählt die Katalogzeile <paramref name="index"/> über ihre Wahlspalte.</summary>
     private static void Katalogwahl(IRenderedComponent<SolarganglinieDialog> cut, int index, bool katalogbetrieb = false)
         => cut.FindAll(".epos-raster")[katalogbetrieb ? 0 : 1].QuerySelectorAll("tbody tr")[index]
-              .QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl")!.Click();
+              .QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl, .epos-projektzeile")!.Click();
 
     private static IElement Loeschknopf(IRenderedComponent<SolarganglinieDialog> cut)
         => cut.Find("button.epos-katalog-loeschen");
@@ -333,9 +333,9 @@ public class SolarganglinieDialogTests : EposBunitContext
     {
         var cut = Aufbauen(wege: Wege(PFLEGE));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[0]
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl, tbody tr .epos-projektzeile")[0]
            .Click(new MouseEventArgs { CtrlKey = true });
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[1]
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl, tbody tr .epos-projektzeile")[1]
            .Click(new MouseEventArgs { CtrlKey = true });
         cut.FindAll("button").First(b => b.TextContent.Trim().StartsWith("Vergleichen")).Click();
 

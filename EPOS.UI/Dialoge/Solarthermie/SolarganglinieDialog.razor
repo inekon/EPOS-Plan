@@ -139,12 +139,19 @@
                             WahlGeaendert="BeiWahlGeaendert"
                             KatalogFussName="@_katalogZeile?.Bezeichner"
                             SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true"
+                            KnopfleisteAmSatz="true"
+                            ProjektGewaehlt="@(_projektZeile is null ? null : Projektschluessel(_projektZeile))"
+                            ProjektGewaehltChanged="BeiProjektTastenwahl"
                             @ref="_zweispalten">
 
             <KatalogKopf>@formathinweis</KatalogKopf>
 
             <Links>
-                <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
+                @* DIE ZEILE IST DIE WAHL (AW3b, Schema AW1): kein Wahlknopf - ein Klick in die Namenszelle waehlt
+                   die Zeile, ↑ ↓ Pos1 Ende bewegen die Wahl, die Liste ist ein Tabulatorhalt. *@
+                <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()"
+                        Zeilenklasse="@ProjektZeilenklasse" Tastenfuehrung="BeiProjektTaste"
+                        Tastenbeschriftung="@LabelProjektliste">
                     <KindInhalt>
                         <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-kaestchen">
                             <HeaderTemplate>
@@ -155,12 +162,11 @@
                                                Kurztext="@context.Bezeichner" />
                             </ChildContent>
                         </TemplateColumn>
-                        <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
-                            <Zeilenwahl Gewaehlt="@(context == _projektZeile)" Kurztext="@SpalteWahl"
-                                        Gewaehltwerden="() => ProjektZeileKlick(context)" />
+                        <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteName" Class="epos-spalte-zeilenzelle">
+                            <span class="epos-zeilenzelle epos-projektzeile" title="@context.Bezeichner"
+                                  aria-current="@(context == _projektZeile ? "true" : null)"
+                                  @onclick="() => ProjektZeileKlick(context)">@context.Bezeichner</span>
                         </TemplateColumn>
-                        <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
-                                        Property="@(z => z.Bezeichner)" Title="@SpalteName" />
                         @* UeS2: der Stift je Projektzeile - die Ganglinie der Zeile in der Satz-Ueberlagerung
                            (reine Ansicht: die Projektkopie hat keinen eigenen Speicherweg). *@
                         <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-stift">
@@ -185,11 +191,19 @@
                                        Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
                                        ZeileGewaehlt="BeiKatalogzeile"
                                        ImProjekt="@ProjektBezeichner" Listenname="@TitelText"
-                                       FussImWirt="true" ZustandGeaendert="Nachgezogen"
+                                       FussImWirt="true" Sperrgrund="@(() => KatalogSperrgrund)" ZustandGeaendert="Nachgezogen"
                                        Stift="BeiKatalogStift" Formathinweis="@formathinweis" />
             </Rechts>
 
-            <KatalogFuss>@_seite?.Fuss</KatalogFuss>
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): die Knoepfe der Katalogseite (Vergleichen…, Schloss…,
+               Loeschen; beim Projektsatz weich gesperrt bzw. ohne Vergleich) und Bearbeiten… - dasselbe wie der
+               Stift der Zeile: die Ganglinie als Ansicht (kein Katalogeditor, kein Neu…). *@
+            <KatalogFuss>
+                @_seite?.Fuss
+                <button type="button" class="epos-knopf @(SatzArt == Satzmarke.Projektsatz ? "epos-knopf--bearbeiten-projekt" : "epos-knopf--bearbeiten-katalog")"
+                        title="@Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS"
+                        disabled="@(SatzArt == Satzmarke.Keiner)" @onclick="BeiSatzBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            </KatalogFuss>
             <KatalogFussRechts>@_seite?.FussRechts</KatalogFussRechts>
 
             <Satz>@satzinhalt</Satz>
@@ -361,11 +375,43 @@
     private IReadOnlyList<Katalogfilterzeile> KatalogZiele()
         => _seite?.Ziele() ?? (_katalogZeile is null ? Array.Empty<Katalogfilterzeile>() : new[] { _katalogZeile });
 
+    /// <summary>
+    /// Klick in eine Projektzeile (AW3b, wie Heizkessel): Die Zeile wird der gewählte Satz, die Detailzeile folgt;
+    /// die Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
     private void ProjektZeileKlick(ErzeugerZeile zeile)
     {
-        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
-        ProjektZeileWaehlen(zeile);
+        if (_projektZeile != zeile) ProjektZeileWaehlen(zeile);
     }
+
+    /// <summary>Die Hervorhebung der gewählten Projektzeile — dieselbe Klasse wie in der Katalogliste.</summary>
+    private string? ProjektZeilenklasse(ErzeugerZeile zeile) => zeile == _projektZeile ? "epos-zeile--gewaehlt" : null;
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private void BeiProjektTastenwahl(string schluessel)
+    {
+        ErzeugerZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
+        if (zeile is not null) ProjektZeileKlick(zeile);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen der Katalogseite (AW3b): Sie wirken nur auf
+    /// Katalogsätze; steht ein Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
+
+    /// <summary>
+    /// „Bearbeiten…" am gewählten Satz (AW3b): dasselbe wie der Stift der Zeile — die Ganglinie als Ansicht in der
+    /// Satz-Überlagerung (einen Katalogeditor und einen Speicherweg der Projektkopie gibt es hier nicht).
+    /// </summary>
+    private Task BeiSatzBearbeiten()
+        => _projektZeile is not null ? BeiProjektStift(_projektZeile)
+         : _katalogZeile is not null ? BeiKatalogStift(_katalogZeile)
+         : Task.CompletedTask;
 
     private void BeiWahlGeaendert(Auswahlbereich bereich)
     {
