@@ -861,6 +861,45 @@ Kostenkomponente, Kostenvorlagen) und passt nicht auf das Gebäude. Hier steht, 
   neu/überschreiben, Sperrgrund, Namensfeld, Abweichungen und Kindzeilen aus der Vorschau, Hinweis auf das, was im Projekt
   bleibt: Zuordnung, Wohnfläche, Ausrichtung) an Stelle der Namensabfrage; Mehrfachauswahl; Wiki und Logbuch.
 
+### 5.15 Wie gebaut (Stufe 4, Gebäudedialog)
+
+Der Gebäudedialog ist Wirt der Katalogauswahl V1 nach dem Muster des BHKW (5.4, UeS2); hier steht, was abweicht.
+
+- **Leisten (4.2, 4.9):** Projekt-Kopfleiste ohne Summe mit „Bearbeiten…" (Überlagerung „Hülle und Zonen" der einen
+  gewählten Projektkopie; mehrere: weich gesperrt mit Grund), „In die Datenbank übernehmen…" und „Aus dem Projekt
+  entfernen". Katalog-Fußleiste über die Slots: links Schloss, Löschen, Bearbeiten…, rechts Neu…, Importieren…,
+  Baustoff-Zuordnungen…; die frühere Listenleiste unter der Katalogliste entfällt. Die Knöpfe des Satzes (Fläche und
+  Verbrauch…, Exportieren…, Datei erneut lesen…, Simulation…, Gebäudetyp in DB ändern…) wandern aus der Schlussleiste in
+  die Satz-Überlagerung; die Schlussleiste trägt nur Abbrechen und OK.
+- **Mehrfachwahl (4.5):** Kästchen in beiden Listen (Projektliste als eigene Spalte, Katalogliste `ZeileIstWahl` mit
+  Kästchen, 46 px). Übernehmen, Entfernen (eine Rückfrage für alle Zeilen mit Zonen) und Löschen wirken auf die Auswahl;
+  Löschen überspringt gesperrte und im Assistenten zugeordnete Sätze und nennt sie. Bearbeiten… und der Rückweg wirken auf
+  genau einen Satz.
+- **Stift (UeS2):** Projektzeile → „Hülle und Zonen" ihrer Kopie (der Stift ersetzt hier die Satz-Überlagerung, weil der
+  breite Projektsatz eine eigene Überlagerung hat, KA‑E‑11); Katalogzeile ungesperrt → Katalogeditor, gesperrt → Satz
+  nur lesend.
+- **Verwendungsmarke (4.10):** `Katalogverwendung.StempelnUeberId` über `IdKatalog` der Projektzeilen
+  (`ID_Gebaeude_Stamm`), nicht über den Namen; das Profil der Hülle trägt `MitVerwendungsspalte`.
+- **Detailzeile:** Zusammenfassung beim Projektsatz Gebäudeart, Baualtersklasse, Fläche samt Art der Angabe,
+  Ausrichtung, Rechenweg, Kühlung, Zonen, H_ges; beim Katalogsatz die Profilspalten, Rechenweg, U-Werte kurz, Zonen, H_ges.
+  „Bearbeiten" öffnet den bisherigen Satzinhalt (Block „Verbrauch", Ausrichtung, Knöpfe) als Satz-Überlagerung; der
+  Infoknopf „Berechnung" steht im Kopf der Detailzeile und in der Überlagerung. Die Überlagerungen 2, 3, 4, 7 und 10
+  öffnen aus ihr heraus und liegen darüber (DOM-Reihenfolge, Probe prüft die Mitte des Fensters). OK übernimmt den
+  Arbeitsstand über den Fangweg; Abbrechen stellt Fläche, Art der Angabe, Jahresnutzungsgrad, dezentrales Warmwasser,
+  Rechenweg und – wenn in der Überlagerung gedreht – die Ausrichtung zurück (Merker). Ein Katalogsatz öffnet als reine
+  Ansicht, ein gesperrter mit „Erst Schloss aufheben".
+- **Rückfrage (5.2, 5.14):** Baustein `Rueckwegfrage` mit den Gaben `RueckwegVorschau`, `Rueckweg` und
+  `RueckwegNameBelegt`; zusätzlich (Parameter `Zusatz`) die abweichenden Kopfspalten und die Kindzeilen, der Kostenhinweis
+  entfällt (`KostenHinweis = false`), der Bleibt-Hinweis nennt Zuordnung, Wohnfläche und Ausrichtung. Die Namensabfrage
+  (Überlagerung 9) ist ersetzt. Nach dem Schreiben zieht die Hülle `IdKatalog` der Zeile auf den neuen Ursprung nach —
+  sonst ersetzte der Abgleich der Liste beim OK die Kopie (`GleicherKatalogsatz`).
+- **Projektkopie sofort (4.6):** Gabe `ZeileAnlegen` (nicht im Assistenten): der Bestand aus `Z_ProjGebCtrl.LiesProjekt`
+  plus die neue Zeile in EINEM Abgleich (`Speichere_Projekt_Gebaeudeliste`), ein Entfernen bleibt bis OK vorgemerkt; Gabe
+  `Abgebrochen` löscht die in der Sitzung angelegten Zuordnungen samt Kopie (`Del_Projekt_ZuordungGebäude`). Auch der
+  Gebäudeimport legt so an.
+- **Offen:** Die Überlagerung „Simulation…" rollt weiter als Ganzes (Abschnitt 7 Punkt 7); ein Jahreswärmebedarf in der
+  Zusammenfassung fehlt (keine Quelle ohne Rechenlauf).
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
@@ -916,7 +955,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | **1 Baustein** (umgesetzt 09.10.2026, Statuszeile #861) | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
 | **2 Heizkessel** (umgesetzt 09.10.2026, Statuszeile #873; Teil a Knöpfe und Bearbeiten, Teil b Rückweg und Schemaschritt 208) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
 | **3 Erzeuger** (umgesetzt 10.10.2026: BHKW Statuszeile #887, übrige Erzeuger Statuszeilen #905–#909, ÜS1/ÜS2 Statuszeilen #939/#940) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
-| **4 Bedarf und Zeitreihen** (Gebäude-Rückweg umgesetzt 11.10.2026 (Statuszeile folgt), Gebäudedialog offen) | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
+| **4 Bedarf und Zeitreihen** (Gebäude-Rückweg umgesetzt 11.10.2026 (Statuszeile folgt); Gebäudedialog umgesetzt 11.10.2026 (Statuszeile folgt); Überlagerung Simulation… offen) | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 
 **Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus
