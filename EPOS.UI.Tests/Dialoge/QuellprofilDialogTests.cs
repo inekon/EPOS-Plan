@@ -2,6 +2,7 @@
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Simulation;
+using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
 using EPOS.UI.Standards;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,8 +40,9 @@ public class QuellprofilDialogTests : EposBunitContext
         internal Dictionary<int, QuellprofilInhalt> Profile { get; } = new();
         internal int SpeicherErgebnis { get; set; } = 99;
         internal QuellprofilInhalt? Gespeichert;
-        internal double[]? CsvErgebnis;
-        internal int CsvSoll;
+        /// <summary>Der Pfad, den die Dateiwahl liefert ("" = abgebrochen).</summary>
+        internal string CsvPfad = "";
+        internal int CsvWahlen;
     }
 
     private static int Anzahl(string ba) => ba switch
@@ -87,11 +89,14 @@ public class QuellprofilDialogTests : EposBunitContext
             p.Add(x => x.ProfilLesen, id => stand.Profile.TryGetValue(id, out var k) ? k : null);
             p.Add(x => x.Speichern, k => { stand.Gespeichert = k; return stand.SpeicherErgebnis; });
             if (mitCsv)
-                p.Add(x => x.CsvLesen, soll =>
+            {
+                p.Add(x => x.CsvWaehlen, () =>
                 {
-                    stand.CsvSoll = soll;
-                    return Task.FromResult(stand.CsvErgebnis);
+                    stand.CsvWahlen++;
+                    return Task.FromResult(stand.CsvPfad);
                 });
+                p.Add(x => x.CsvWege, GanglinienFormatwege.Kern());
+            }
             if (!titelAnzeigen) p.Add(x => x.TitelAnzeigen, false);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
         });
@@ -396,11 +401,39 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("CSV"));
     }
 
+    /// <summary>Eine Datei mit <paramref name="anzahl"/> Temperaturen (Kopfzeile, Semikolon, Komma).</summary>
+    private string CsvDatei(int anzahl)
+    {
+        string pfad = Path.Combine(Path.GetTempPath(), "epos-quellprofil-" + Guid.NewGuid().ToString("N") + ".csv");
+        var zeilen = new List<string> { "Tag;Temperatur" };
+        for (int i = 0; i < anzahl; i++) zeilen.Add((i + 1) + ";" + (8 + i % 5) + ",5");
+        File.WriteAllLines(pfad, zeilen);
+        _dateien.Add(pfad);
+        return pfad;
+    }
+
+    private readonly List<string> _dateien = new();
+
+    /// <summary>Raeumt die Probedateien weg.</summary>
+    protected override void Dispose(bool disposing)
+    {
+        foreach (string d in _dateien)
+            try { File.Delete(d); } catch { }
+        base.Dispose(disposing);
+    }
+
+    /// <summary>„CSV…“ bis zum Optionendialog: Knopf, Rueckfrage OK, Dateiwahl.</summary>
+    private static void CsvStarten(IRenderedComponent<QuellprofilDialog> cut)
+    {
+        cut.FindAll("button").First(b => b.TextContent.Contains("CSV")).Click();
+        cut.FindAll(".epos-rueckfrage button")[0].Click();     // OK
+    }
+
     /// <summary>Der CSV-Weg geht ueber eine RUECKFRAGE mit der Sollzahl — woertlich.</summary>
     [Fact]
     public void Der_CSV_Knopf_fragt_erst_zurueck()
     {
-        var stand = new Pruefstand { CsvErgebnis = new double[365] };
+        var stand = new Pruefstand { CsvPfad = "" };
         var cut = Zeige(Neu(), stand);
         cut.FindAll("select")[1].Change("1");
 
@@ -408,23 +441,85 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.True(cut.Instance.CsvFrageSteht);
         Assert.Contains("365", cut.Markup);
 
-        cut.FindAll(".epos-rueckfrage button")[0].Click();     // OK
-        Assert.Equal(365, stand.CsvSoll);
-        Assert.Equal(365, cut.Instance.Werte!.Length);
+        // Abgebrochene Dateiwahl: kein Optionendialog, keine Meldung.
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+        Assert.Equal(1, stand.CsvWahlen);
+        Assert.Empty(cut.FindComponents<GanglinieImportOptionenDialog>());
+        Assert.Equal("", cut.Instance.Meldung);
     }
 
-    /// <summary>Kommt nichts zurueck, meldet der Dialog woertlich.</summary>
+    /// <summary>
+    /// IM-4: Die gewaehlte Datei laeuft ueber den Optionendialog „Format und Vorschau“ mit der
+    /// Formatbeschreibung des Quellprofils — Temperaturachse in °C, ohne Einheit/Raster, ohne
+    /// Summe und Nennleistung; OK uebernimmt die 365 Werte.
+    /// </summary>
+    [Fact]
+    public void Die_CSV_laeuft_ueber_den_Optionendialog_mit_dem_Quellprofilformat()
+    {
+        var stand = new Pruefstand { CsvPfad = CsvDatei(365) };
+        var cut = Zeige(Neu(), stand);
+        cut.FindAll("select")[1].Change("1");
+        CsvStarten(cut);
+
+        cut.WaitForState(() => cut.FindComponents<GanglinieImportOptionenDialog>().Count == 1);
+        var optionen = cut.FindComponent<GanglinieImportOptionenDialog>();
+        Assert.Equal(GanglinienImportFormat.KENNUNG_QUELLPROFIL, optionen.Instance.Format!.Kennung);
+        Assert.Equal(365, optionen.Instance.Format!.Werteanzahl);
+        Assert.True(optionen.Instance.Probe!.Erfolgreich);
+        Assert.Equal("", optionen.Instance.Probe.Kennzahlen);
+        Assert.Empty(optionen.FindAll(".epos-importoptionen-kennzahlen"));
+        Assert.Contains("°C", optionen.Instance.Probe.Zeile);
+        Assert.Contains("Quellprofil", optionen.Find(".epos-dialog-titel").TextContent);
+
+        optionen.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(365, cut.Instance.Werte!.Length));
+        Assert.Equal(8.5, cut.Instance.Werte![0], 9);
+        Assert.Equal(12.5, cut.Instance.Werte![4], 9);
+        Assert.Empty(cut.FindComponents<GanglinieImportOptionenDialog>());
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// IM-4: Eine Datei mit falscher Werteanzahl lehnt schon das OK des Optionendialogs BENANNT ab
+    /// — Banner mit beiden Zahlen, der Dialog bleibt offen, die Werte bleiben, wie sie waren.
+    /// </summary>
+    [Fact]
+    public void Eine_falsche_Werteanzahl_lehnt_der_Optionendialog_benannt_ab()
+    {
+        var stand = new Pruefstand { CsvPfad = CsvDatei(100) };
+        var cut = Zeige(Neu(), stand);
+        cut.FindAll("select")[1].Change("1");
+        CsvStarten(cut);
+
+        cut.WaitForState(() => cut.FindComponents<GanglinieImportOptionenDialog>().Count == 1);
+        var optionen = cut.FindComponent<GanglinieImportOptionenDialog>();
+        Assert.False(optionen.Instance.Probe!.Erfolgreich);
+        Assert.Contains("365", optionen.Instance.Probe.Zeile);
+
+        optionen.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.Contains("nicht übernommen", optionen.Instance.Meldung);
+        Assert.Contains("100", optionen.Instance.Meldung);
+        Assert.Contains("365", optionen.Instance.Meldung);
+        Assert.Single(cut.FindComponents<GanglinieImportOptionenDialog>());
+
+        // Abbrechen: zurueck ohne Meldung, nichts gelesen.
+        optionen.FindAll("button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindComponents<GanglinieImportOptionenDialog>()));
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    /// <summary>Eine unlesbare Datei meldet woertlich, mit dem Grund — ohne Optionendialog.</summary>
     [Fact]
     public void Eine_unlesbare_CSV_meldet()
     {
-        var stand = new Pruefstand { CsvErgebnis = null };
+        var stand = new Pruefstand { CsvPfad = Path.Combine(Path.GetTempPath(), "epos-fehlt-" + Guid.NewGuid().ToString("N") + ".csv") };
         var cut = Zeige(Neu(), stand);
         cut.FindAll("select")[1].Change("1");
+        CsvStarten(cut);
 
-        cut.FindAll("button").First(b => b.TextContent.Contains("CSV")).Click();
-        cut.FindAll(".epos-rueckfrage button")[0].Click();
-
-        Assert.Contains("keine 365 Werte", cut.Instance.Meldung);
+        cut.WaitForAssertion(() => Assert.Contains("keine 365 Werte", cut.Instance.Meldung));
+        Assert.Empty(cut.FindComponents<GanglinieImportOptionenDialog>());
     }
 
     // ================================================================== Info-Zeile

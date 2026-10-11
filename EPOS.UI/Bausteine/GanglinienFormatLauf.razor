@@ -1,0 +1,99 @@
+﻿@* Der Import eines SONDERFORMATS über den Dialog „Format und Vorschau“ (IM-4).
+
+   WOZU. Quellprofil, Spotpreis und TWW-Messreihen lesen eine Wertereihe aus einer Datei, legen
+   sie aber nicht als Ganglinie ab - die Importkette mit Protokoll und Konflikten
+   (GanglinienImportLauf) passt deshalb nicht. Was sie mit ihr teilen, ist der Optionendialog:
+   Trennzeichen, Wertspalte, erste Datenzeile, Zeilenzahl, Vorschautabelle und Bild. Dieser
+   Baustein faehrt genau das: Erkennen -> Dialog mit der Formatbeschreibung -> Probelesung unter
+   den bestaetigten Optionen. Das Ergebnis traegt Optionen (samt Jahr), Werte und den Grund einer
+   Ablehnung; was daraus wird, entscheidet der Wirt.
+
+   DIE FORMATBESCHREIBUNG (GanglinienImportFormat, Kern) sagt dem Dialog, welche Felder es gibt
+   und wie das Bild aussieht, und der Probe, welche Werteanzahl gilt. Ein neues Format braucht
+   keine Aenderung hier und keine am Dialog.
+
+   DIE WEGE kommen aus der Huelle (GanglinienFormatwege): Sie liest hinter ihrer Fangstelle, ein
+   Lesefehler steht im Ausnahmeprotokoll und kommt als unlesbare Vorschau mit Grund zurueck.
+
+   ESC. Der Wirt fragt EtwasOffen, bevor er Esc fuer sich auswertet. *@
+
+@namespace EPOS.UI.Bausteine
+@using EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<Ueberlagerung Offen="@_offen" Titel="" Schliessbar="false">
+    <KindInhalt>
+        @if (_offen && _format is not null)
+        {
+            <GanglinieImportOptionenDialog Pfad="@_pfad" Erkennung="@_erkennung" Format="@_format"
+                                           Vorschau="@VorschauMitFormat" Geschlossen="OptionenFertig" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary>Erkennen und Neuzerlegen — von der Hülle, hinter ihrer Fangstelle.</summary>
+    [Parameter] public GanglinienFormatwege? Wege { get; set; }
+
+    private bool _offen;
+    private string _pfad = "";
+    private GanglinienVorschau? _erkennung;
+    private GanglinienImportFormat? _format;
+    private TaskCompletionSource<GanglinienImportOptionen?>? _wartet;
+
+    /// <summary>Steht der Optionendialog?</summary>
+    public bool EtwasOffen => _offen;
+
+    /// <summary>Ist der Weg verkabelt?</summary>
+    public bool Bereit => Wege?.Erkennen is not null && Wege.Vorschau is not null;
+
+    /// <summary>
+    /// Liest eine gewählte Datei nach dem <paramref name="format"/> über den Optionendialog.
+    /// <c>null</c> = abgebrochen (oder kein Pfad, kein Weg) — der Wirt meldet dann nichts.
+    /// Sonst das Ergebnis: Erfolg mit Werten, oder der benannte Grund der Ablehnung (unlesbare
+    /// Datei, falsche Werteanzahl).
+    /// </summary>
+    public async Task<GanglinienFormatErgebnis?> Lesen(string pfad, GanglinienImportFormat format)
+    {
+        if (string.IsNullOrEmpty(pfad) || format is null || !Bereit) return null;
+
+        GanglinienVorschau erkannt = await Wege!.Erkennen!(pfad, format);
+        if (erkannt is null || !erkannt.Lesbar)
+            return new GanglinienFormatErgebnis(null!, null!, Grund(erkannt));
+
+        _pfad = pfad;
+        _erkennung = erkannt;
+        _format = format;
+        _offen = true;
+        _wartet = new TaskCompletionSource<GanglinienImportOptionen?>();
+        await InvokeAsync(StateHasChanged);
+        GanglinienImportOptionen? optionen = await _wartet.Task;
+        if (optionen is null) return null;
+
+        // Dieselbe Probelesung wie am OK des Dialogs - unter den bestätigten Optionen.
+        GanglinienVorschau? neu = await Wege.Vorschau!(pfad, optionen, format);
+        GanglinienProbe? probe = neu is not null && neu.Lesbar ? neu.Probe : null;
+        if (probe is null) return new GanglinienFormatErgebnis(optionen, null!, Grund(neu));
+        return new GanglinienFormatErgebnis(optionen, probe, probe.Erfolgreich ? "" : probe.Grund);
+    }
+
+    private Task<GanglinienVorschau?> VorschauMitFormat(string pfad, GanglinienImportOptionen optionen)
+        => Wege?.Vorschau is null || _format is null
+            ? Task.FromResult<GanglinienVorschau?>(null)
+            : Wege.Vorschau(pfad, optionen, _format)!;
+
+    private void OptionenFertig(GanglinienImportOptionen? optionen)
+    {
+        _offen = false;
+        _wartet?.TrySetResult(optionen);
+    }
+
+    /// <summary>Der Grund einer unlesbaren Vorschau, als Satz.</summary>
+    private static string Grund(GanglinienVorschau? v)
+    {
+        PruefMeldung? fehler = v?.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
+        return fehler is null ? WindowsFormsApplication1.MyResource.Resource.IMPORT_PROT_DATEI_LEER
+                              : GanglinienProtokollText.Text(fehler);
+    }
+}

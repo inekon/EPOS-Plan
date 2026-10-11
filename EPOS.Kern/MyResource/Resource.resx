@@ -4532,6 +4532,30 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
     <value>{0} Datenzeilen gelesen → kein Raster: {1}</value>
   </data>
+  <data name="IMPORT_PROBE_WERTE" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → {1} Werte in {2}</value>
+  </data>
+  <data name="IMPORT_PROBE_ABGELEHNT" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → abgelehnt: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_WERTEANZAHL" xml:space="preserve">
+    <value>Die Datei liefert {0} Werte, erwartet sind genau {1}.</value>
+  </data>
+  <data name="IMPORT_PROBE_SUMME" xml:space="preserve">
+    <value>Jahressumme {0} {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_NENNLEISTUNG" xml:space="preserve">
+    <value>Höchstleistung {0} {1}</value>
+  </data>
+  <data name="IMPORT_TITEL_QUELLPROFIL" xml:space="preserve">
+    <value>Quellprofil einlesen – Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_LBL_JAHR" xml:space="preserve">
+    <value>Jahr der Reihe:</value>
+  </data>
+  <data name="IMPORT_MSG_FORMAT_ABGELEHNT" xml:space="preserve">
+    <value>Die Datei passt nicht zum Format und wird nicht übernommen: {0}</value>
+  </data>
   <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
     <value>Stunde</value>
   </data>
@@ -51430,6 +51454,15 @@ Chart</value>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>Ein Tabellenblatt gibt es nur bei einer Excel-Mappe.</value>
   </data>
+  <data name="KI_DLG_GIO_JAHR_ERL" xml:space="preserve">
+    <value>Das Kalenderjahr der Reihe — nur bei Formaten mit Jahresfeld (etwa Spotpreisen); es legt Wochentage und Feiertage fest.</value>
+  </data>
+  <data name="KI_GIO_FORMAT_FEST" xml:space="preserve">
+    <value>Bei diesem Format steht das Feld fest; es wird nicht angezeigt.</value>
+  </data>
+  <data name="KI_GIO_KEIN_JAHR" xml:space="preserve">
+    <value>Ein Jahresfeld gibt es nur bei Formaten mit Jahr (etwa Spotpreisen).</value>
+  </data>
   <data name="KI_DLG_SPOT_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Name, unter dem die Preisreihe abgelegt wird; leer wird er beim Wählen der Datei mit dem Dateinamen vorbelegt.</value>
   </data>
@@ -52545,6 +52578,51 @@ Chart</value>
   </data>
   <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
     <value>Zone</value>
+  </data>
+  <data name="IMPORT_ACHSE_SPOTPREIS" xml:space="preserve">
+    <value>Spotpreis [ct/kWh]</value>
+  </data>
+  <data name="IMPORT_TITEL_SPOTPREIS" xml:space="preserve">
+    <value>Spotmarktpreise einlesen – Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_PROBE_SPOTPREIS" xml:space="preserve">
+    <value>Jahr der Datei {0} · Mittel {1} ct/kWh · Spanne {2} bis {3} ct/kWh</value>
+  </data>
+  <data name="IMPORT_TITEL_TWW_MESSREIHE" xml:space="preserve">
+    <value>Messreihe einlesen – Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_ENERGIE" xml:space="preserve">
+    <value>Zapfenergie [kWh]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_VOLUMEN" xml:space="preserve">
+    <value>Zapfvolumen [m³]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAGESSTUNDE" xml:space="preserve">
+    <value>Stunde des Tages [h]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAG_DER_REIHE" xml:space="preserve">
+    <value>Tag der Reihe</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE" xml:space="preserve">
+    <value>{0} Tage gelesen · gezeigt: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE_TAGESREIHE" xml:space="preserve">
+    <value>{0} Tage gelesen · gezeigt: die ersten {1} Tage</value>
+  </data>
+  <data name="KI_DLG_SPOT_JAHR_ERL" xml:space="preserve">
+    <value>Das Jahr der geprüften Reihe — aus dem Jahresfeld von „Format und Vorschau“; vorgeschlagen ist das Jahr der Datei. Es legt Wochentage und Feiertage fest.</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_NAME" xml:space="preserve">
+    <value>Vorschau der Datei</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_ERL" xml:space="preserve">
+    <value>Die Kennzahlenzeile aus „Format und Vorschau“: gelesene Tage und der gezeigte Tag der Tagesansicht.</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_NAME" xml:space="preserve">
+    <value>Bildart</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
+    <value>Wie die Vorschau die gelesene Reihe zeigt: Jahr (Jahresverlauf) oder Tag (Tagesansicht der TWW-Messreihe).</value>
   </data>
 </root>
 
