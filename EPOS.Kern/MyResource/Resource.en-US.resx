@@ -53104,24 +53104,6 @@ chart</value>
   <data name="SUP_PAKET_DATEIFILTER" xml:space="preserve">
     <value>ZIP archive (*.zip)|*.zip</value>
   </data>
-  <data name="WPK_BTN_KATALOG" xml:space="preserve">
-    <value>📋  Module catalogue...</value>
-  </data>
-  <data name="WPA_TITEL" xml:space="preserve">
-    <value>Detail view</value>
-  </data>
-  <data name="WPA_LBL_WP" xml:space="preserve">
-    <value>Heat pump selection:</value>
-  </data>
-  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
-    <value>System…</value>
-  </data>
-  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
-    <value>Edit operating mode, temperatures, blocking times, heating rod, heat source and transfer of this system</value>
-  </data>
-  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
-    <value>System – {0}</value>
-  </data>
   <data name="BV_VORH_SA_UEBERHOEHUNG" xml:space="preserve">
     <value>Rapid heat-up: setpoint boost Δθ</value>
   </data>

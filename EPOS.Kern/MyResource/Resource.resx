@@ -53111,24 +53111,6 @@ Chart</value>
   <data name="SUP_PAKET_DATEIFILTER" xml:space="preserve">
     <value>ZIP-Archiv (*.zip)|*.zip</value>
   </data>
-  <data name="WPK_BTN_KATALOG" xml:space="preserve">
-    <value>📋  Modul-Katalog...</value>
-  </data>
-  <data name="WPA_TITEL" xml:space="preserve">
-    <value>Detailansicht</value>
-  </data>
-  <data name="WPA_LBL_WP" xml:space="preserve">
-    <value>Wärmepumpen Auswahl:</value>
-  </data>
-  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
-    <value>Anlage…</value>
-  </data>
-  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
-    <value>Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten</value>
-  </data>
-  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
-    <value>Anlage – {0}</value>
-  </data>
   <data name="BV_VORH_SA_UEBERHOEHUNG" xml:space="preserve">
     <value>Schnellaufheizung: Überhöhung Δθ</value>
   </data>
