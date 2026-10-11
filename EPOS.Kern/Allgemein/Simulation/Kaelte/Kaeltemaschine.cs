@@ -210,6 +210,26 @@ namespace WindowsFormsApplication1
             Laufend = laufend;
         }
 
+        /// <summary>K-F2: <c>true</c> = die Maschine hat ein Rückkühlwerk, <see cref="Rueckkuehlung"/> ist belegt.</summary>
+        public readonly bool MitRueckkuehlwerk;
+
+        /// <summary>K-F2: die Stunde des Rückkühlwerks (Ventilator, Wasser, Rückkühltemperatur); leer ohne Rückkühlwerk.</summary>
+        public readonly RueckkuehlwerkStunde Rueckkuehlung;
+
+        private KaeltemaschinenStunde(KaeltemaschinenStunde s, double hilfs, RueckkuehlwerkStunde r)
+            : this(s.KaelteKwh, s.VerdichterKwh, hilfs, s.KapazitaetKw, s.FreieKuehlung, s.Randwert, s.Takt,
+                   s.MehrstromKwh, s.Starts, s.Lastgrad, s.Extrapoliert, s.Laufend)
+        {
+            MitRueckkuehlwerk = true;
+            Rueckkuehlung = r;
+        }
+
+        /// <summary>
+        /// K-F2: dieselbe Stunde mit der Bilanz des Rückkühlwerks und dem Hilfsstrom der Rückkühlung
+        /// <paramref name="hilfs"/> [kWh] (mit gepflegtem Ventilator dessen Strom, sonst unverändert).
+        /// </summary>
+        public KaeltemaschinenStunde MitRueckkuehlung(double hilfs, RueckkuehlwerkStunde r) => new KaeltemaschinenStunde(this, hilfs, r);
+
         /// <summary>Strom der Stunde [kWh] — Verdichter und Rückkühlung.</summary>
         public double StromKwh => VerdichterKwh + HilfsstromKwh;
     }
@@ -356,20 +376,59 @@ namespace WindowsFormsApplication1
         /// </summary>
         public KaeltemaschinenStunde Stunde(int h, double lastKwh, double kaltwasserC)
         {
+            if (Rueckkuehlwerk == null) return StundeBei(h, lastKwh, kaltwasserC, RueckkuehltemperaturDerStunde(h));
+            return StundeMitRueckkuehlwerk(h, lastKwh, kaltwasserC);
+        }
+
+        /// <summary>Die Rückkühltemperatur der Stunde mit Nenn-Annäherung [°C]; ohne Reihe die des fremden Kühlwassers.</summary>
+        private double RueckkuehltemperaturDerStunde(int h) =>
+            Rueckkuehltemperatur_stuendlich != null && h >= 0 && h < Rueckkuehltemperatur_stuendlich.Length
+                ? Rueckkuehltemperatur_stuendlich[h] : KaelteFestwerte.RUECKKUEHLTEMPERATUR_WASSER_C;
+
+        /// <summary>Eine Stunde der Anlagenzeile bei der Rückkühltemperatur <paramref name="rk"/> [°C].</summary>
+        private KaeltemaschinenStunde StundeBei(int h, double lastKwh, double kaltwasserC, double rk)
+        {
             // KM3: nur mit Teillast_Weg oder Randweg GUETEGRAD der neue Weg; freie Kühlung bleibt unverändert.
-            if (MitWeg && lastKwh > 0 && !FreieKuehlung(h, kaltwasserC)) return StundeMitWeg(h, lastKwh, kaltwasserC);
-            if (Anzahl <= 1) return StundeEinzeln(h, lastKwh, kaltwasserC);
-            KaeltemaschinenStunde s = StundeEinzeln(h, lastKwh / Anzahl, kaltwasserC);
+            if (MitWeg && lastKwh > 0 && !FreieKuehlung(h, kaltwasserC)) return StundeMitWeg(h, lastKwh, kaltwasserC, rk);
+            if (Anzahl <= 1) return StundeEinzeln(h, lastKwh, kaltwasserC, rk);
+            KaeltemaschinenStunde s = StundeEinzeln(h, lastKwh / Anzahl, kaltwasserC, rk);
             return new KaeltemaschinenStunde(s.KaelteKwh * Anzahl, s.VerdichterKwh * Anzahl, s.HilfsstromKwh * Anzahl,
                                              s.KapazitaetKw * Anzahl, s.FreieKuehlung, s.Randwert, s.Takt);
         }
 
+        /// <summary>
+        /// K-F2 (Entwurf Split/VRF/Rückkühlwerk 5.3): eine Stunde mit Rückkühlwerk. Die Stunde rechnet zuerst mit der
+        /// Nenn-Annäherung; mit Annäherung <c>LASTABHAENGIG</c> schätzt sie daraus die Abwärme (Kälte + Verdichterstrom),
+        /// bildet die lastabhängige Rückkühltemperatur und rechnet die Stunde damit GENAU EINMAL neu — deterministisch, ohne
+        /// Iteration. In freier Kühlung gilt die Nenn-Annäherung (die Entscheidung fiel an ihr). Dann die Bilanz des
+        /// Rückkühlwerks; mit gepflegtem Ventilator ersetzt sein Strom den Hilfsstrom der Rückkühlung.
+        /// </summary>
+        private KaeltemaschinenStunde StundeMitRueckkuehlwerk(int h, double lastKwh, double kaltwasserC)
+        {
+            Rueckkuehlwerk r = Rueckkuehlwerk;
+            double rkNenn = RueckkuehltemperaturDerStunde(h);
+            KaeltemaschinenStunde s = StundeBei(h, lastKwh, kaltwasserC, rkNenn);
+            if (!(s.KaelteKwh > 0)) return s;
+            double rk = rkNenn;
+            if (r.Lastabhaengig && !s.FreieKuehlung)
+            {
+                double x0 = r.Lastanteil(s.KaelteKwh + s.VerdichterKwh, s.KaelteKwh, s.KapazitaetKw);
+                rk = r.RueckkuehltemperaturLastabhaengig(rkNenn, x0);
+                if (BitConverter.DoubleToInt64Bits(rk) != BitConverter.DoubleToInt64Bits(rkNenn))
+                {
+                    s = StundeBei(h, lastKwh, kaltwasserC, rk);
+                    if (!(s.KaelteKwh > 0)) return s;
+                }
+            }
+            double abwaerme = s.FreieKuehlung ? s.KaelteKwh : s.KaelteKwh + s.VerdichterKwh;
+            RueckkuehlwerkStunde b = r.Stunde(h, abwaerme, s.KaelteKwh, s.KapazitaetKw, rk);
+            return s.MitRueckkuehlung(r.MitVentilator ? b.VentilatorKwh : s.HilfsstromKwh, b);
+        }
+
         /// <summary>Eine Stunde EINER Maschine der Anlagenzeile.</summary>
-        private KaeltemaschinenStunde StundeEinzeln(int h, double lastKwh, double kaltwasserC)
+        private KaeltemaschinenStunde StundeEinzeln(int h, double lastKwh, double kaltwasserC, double rk)
         {
             if (!(lastKwh > 0)) return default;
-            double rk = Rueckkuehltemperatur_stuendlich != null && h >= 0 && h < Rueckkuehltemperatur_stuendlich.Length
-                ? Rueckkuehltemperatur_stuendlich[h] : KaelteFestwerte.RUECKKUEHLTEMPERATUR_WASSER_C;
 
             if (FreieKuehlung(h, kaltwasserC))
             {
@@ -399,12 +458,10 @@ namespace WindowsFormsApplication1
         /// Kennfeldpunkt nach Randweg, Folgeschaltung (nur mit <c>Teillast_Weg</c>, sonst gleichmäßige Teilung auf alle),
         /// Lastgrad, Strom nach Lastachse bzw. Takten mit Mehrstrom, Hilfsstrom der Rückkühlung nach Laufanteil.
         /// </summary>
-        private KaeltemaschinenStunde StundeMitWeg(int h, double lastKwh, double kaltwasserC)
+        private KaeltemaschinenStunde StundeMitWeg(int h, double lastKwh, double kaltwasserC, double rk)
         {
             if (Kennlinie == null || Kennlinie.Leer) return default;
             int anzahl = Math.Max(1, Anzahl);
-            double rk = Rueckkuehltemperatur_stuendlich != null && h >= 0 && h < Rueckkuehltemperatur_stuendlich.Length
-                ? Rueckkuehltemperatur_stuendlich[h] : KaelteFestwerte.RUECKKUEHLTEMPERATUR_WASSER_C;
             KaeltemaschinenRandpunkt p = KaeltemaschinenRand.Auswerten(Kennlinie, rk, kaltwasserC, Teillast.Randweg);
             if (!(p.LeistungKw > 0) || !(p.Eer > 0))
                 return new KaeltemaschinenStunde(0, 0, 0, 0, false, p.Randwert, false, 0.0, 0, 0.0, p.Extrapoliert, 0);

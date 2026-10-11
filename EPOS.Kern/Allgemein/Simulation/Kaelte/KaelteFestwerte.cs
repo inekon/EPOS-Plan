@@ -89,5 +89,83 @@
         /// PLR_min ≤ PLR &lt; 0,95 zählt als Teillaststunde.
         /// </summary>
         public const double TEILLASTSTUNDEN_LASTGRAD_GRENZE = 0.95;
+
+        // ---- Rückkühlwerk (K-F2, Entwurf Split/VRF/Rückkühlwerk 5.3): die Vorgaben leerer Katalogfelder ----
+
+        /// <summary>
+        /// Vorgabe <c>Befeuchtung_Wirkungsgrad</c> [—]: Sättigungswirkungsgrad der adiabaten Vorkühlung, die Lufteintritts-
+        /// temperatur sinkt um diesen Anteil des psychrometrischen Abstands (Trockenkugel − Feuchtkugel). Quelle: ASHRAE
+        /// Handbook — HVAC Systems and Equipment, Kapitel „Evaporative Air-Cooling Equipment“ (direkte Verdunstungskühler mit
+        /// Benetzungsmatten 70 bis 95 %); 0,8 liegt im unteren Drittel des Bands.
+        /// </summary>
+        public const double RKW_BEFEUCHTUNG_WIRKUNGSGRAD = 0.8;
+
+        /// <summary>
+        /// Vorgabe <c>Befeuchtung_Ab_C</c> [°C]: Außentemperatur, ab der adiabat befeuchtet (bzw. ein Hybridkühler nass
+        /// fährt). Herleitung aus der Normbedingung des wassergekühlten Verflüssigers 30/35 °C (DIN EN 14511-2): Mit der
+        /// trockenen Grädigkeit <see cref="GRAEDIGKEIT_TROCKENKUEHLER_K"/> hält ein Trockenkühler 35 °C bis 25 °C Außenluft;
+        /// darüber befeuchtet er.
+        /// </summary>
+        public const double RKW_BEFEUCHTUNG_AB_C = 25.0;
+
+        /// <summary>
+        /// Vorgabe <c>Verdunstung_Faktor</c> [—] des Kühlturms: Anteil der Wärme, der als Verdampfung abgeht. Quelle: ASHRAE
+        /// Handbook — HVAC Systems and Equipment, Kapitel „Cooling Towers“ (Verdunstung ≈ 0,00085 · Umlauf · Spreizung in °F,
+        /// das sind rund 90 % der abgeführten Wärme latent).
+        /// </summary>
+        public const double RKW_VERDUNSTUNG_FAKTOR = 0.9;
+
+        /// <summary>
+        /// Vorgabe <c>Verdunstung_Faktor</c> [—] der adiabaten und hybriden Befeuchtung: Die Vorkühlung der Luft ist reine
+        /// Verdunstung (isenthalp), das verdunstete Wasser trägt die ganze Vorkühlwärme.
+        /// </summary>
+        public const double RKW_VERDUNSTUNG_FAKTOR_BEFEUCHTUNG = 1.0;
+
+        /// <summary>
+        /// Vorgabe <c>Eindickung</c> [—]: Eindickungszahl des Umlauf- bzw. Befeuchtungswassers. Quelle: VDI 3803 Blatt 1 und
+        /// ASHRAE Handbook — HVAC Applications, Kapitel „Water Treatment“ (üblich 2 bis 6); 3 ist der vorsichtige Wert ohne
+        /// Wasseraufbereitung.
+        /// </summary>
+        public const double RKW_EINDICKUNG = 3.0;
+
+        /// <summary>
+        /// Vorgabe <c>Drift_Anteil</c> [—] des Kühlturms, bezogen auf das Umlaufwasser: 0,01 % — die Anforderung an
+        /// Tropfenabscheider nach VDI 2047 Blatt 2 (Verdunstungskühlanlagen). Adiabate und hybride Befeuchtung: Vorgabe 0
+        /// (Benetzungsmatten und Besprühung ohne nennenswerten Tropfenauswurf), ein gepflegter Wert gilt dort bezogen auf
+        /// das verdunstete Wasser.
+        /// </summary>
+        public const double RKW_DRIFT_ANTEIL = 0.0001;
+
+        /// <summary>
+        /// Vorgabe <c>Ventilator_Drehzahl_Min</c> [—]: kleinster Luftanteil des drehzahlgeregelten Ventilators. Quelle:
+        /// Recknagel, Taschenbuch für Heizung und Klimatechnik, Abschnitt Ventilatoren (Stellbereich drehzahlgeregelter
+        /// Ventilatoren bis etwa 20 % der Nenndrehzahl).
+        /// </summary>
+        public const double RKW_VENTILATOR_DREHZAHL_MIN = 0.2;
+
+        /// <summary>Vorgabe <c>Ventilator_Stufen</c> bei Regelung <c>STUFEN</c>: zwei Stufen (das Schema verlangt mindestens 2).</summary>
+        public const int RKW_VENTILATOR_STUFEN = 2;
+
+        /// <summary>Verdampfungsenthalpie des Wassers bei rund 20 °C [kJ/kg] (VDI-Wärmeatlas, Stoffwerte von Wasser: 2 454 kJ/kg).</summary>
+        public const double RKW_VERDAMPFUNGSENTHALPIE_KJ_KG = 2450.0;
+
+        /// <summary>Spezifische Wärmekapazität des Wassers [kJ/(kg·K)] — Umlaufwasser des Kühlturms.</summary>
+        public const double RKW_WASSER_CP_KJ_KGK = 4.19;
+
+        /// <summary>Dichte des Wassers [kg/m³].</summary>
+        public const double RKW_WASSER_DICHTE_KG_M3 = 1000.0;
+
+        /// <summary>
+        /// Spreizung des Umlaufwassers am Kühlturm [K] — Bezugsgröße der Drift: Umlauf = Wärme / (c_p · Spreizung).
+        /// Quelle: Normbedingung des wassergekühlten Verflüssigers 30/35 °C (DIN EN 14511-2).
+        /// </summary>
+        public const double RKW_UMLAUF_SPREIZUNG_K = 5.0;
+
+        /// <summary>
+        /// Lufterwärmung über den Wärmeübertrager des adiabaten bzw. hybriden Kühlers [K] — Bezugsgröße der Befeuchtung:
+        /// Luftstrom · c_p = abgeführte Wärme / Lufterwärmung, der Luftstrom folgt der Last. Herleitung aus dem Normpunkt
+        /// nach DIN EN 1048 (Lufteintritt 25 °C, Fluid 40/35 °C): Die Luft erwärmt sich um rund 10 K.
+        /// </summary>
+        public const double RKW_LUFTERWAERMUNG_K = 10.0;
     }
 }
