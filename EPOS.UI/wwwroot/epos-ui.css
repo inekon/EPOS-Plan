@@ -9721,6 +9721,36 @@ table.epos-simerg-tabelle {
     background: var(--epos-menue-marke);
 }
 
+/* Ein gesperrter Punkt (Konzept Administration und Support 4.2): sichtbar, gedaempft,
+   der Grund steht im title; kein Handzeiger, kein Klick. */
+.epos-menueband-zeile.epos-menue-gesperrt,
+.epos-menueband-knopf.epos-menue-gesperrt {
+    color: var(--epos-text-sehr-leise);
+    cursor: default;
+}
+
+/* ===== Fernwartung (Administration und Support, Stufe 2; Konzept 4.2) ===== */
+.epos-fernwartung-zone {
+    margin: 0 0 12px 0;
+}
+
+.epos-fernwartung-kontakt th {
+    text-align: left;
+    font-weight: 400;
+    color: var(--epos-text-leise);
+    padding: 2px 16px 2px 0;
+}
+
+.epos-fw-schritte {
+    margin: 4px 0 8px 0;
+    padding-left: 22px;
+}
+
+.epos-fw-sperrgrund {
+    margin: 4px 0;
+    color: var(--epos-text-leise);
+}
+
 .epos-menueband-bild {
     width: 16px;
     height: 16px;
