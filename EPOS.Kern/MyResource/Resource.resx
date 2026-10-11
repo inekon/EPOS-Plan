@@ -6607,6 +6607,9 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
     <value>Umsatzsteuer</value>
   </data>
+  <data name="GESETZ_KLASSE_ANZ_FGAS" xml:space="preserve">
+    <value>F-Gase (VO 2024/573, Anhang IV)</value>
+  </data>
   <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
     <value>⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" und dort „Planwert übernehmen…" erfassen</value>
   </data>
@@ -46162,6 +46165,39 @@ Chart</value>
   </data>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
     <value>Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet.</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_STICHTAG" xml:space="preserve">
+    <value>{0}: Kältemittel {1} — nach {2} ab {3} nur Restbestand oder Ausnahme ({4}; Inbetriebnahmejahr {5}, Nennleistung {6} kW). Die Prüfung warnt nur: Anhang IV verbietet das Inverkehrbringen, nicht den Betrieb, und seine Ausnahmen kennt sie nicht.</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_KRIT_GWP" xml:space="preserve">
+    <value>F-Gas mit GWP ≥ {0}</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_KRIT_HFKW" xml:space="preserve">
+    <value>HFKW mit GWP ≥ {0}</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_KRIT_FGAS" xml:space="preserve">
+    <value>jedes F-Gas</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_NICHT_PRUEFBAR" xml:space="preserve">
+    <value>{0}: Die Zulässigkeit des Kältemittels für das Inbetriebnahmejahr {1} ist nicht prüfbar — {2}.</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_GERAETEKLASSE" xml:space="preserve">
+    <value>die Geräteklasse ist nicht bestimmbar (Geräteart bzw. Bauart und Typ)</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_LEISTUNG" xml:space="preserve">
+    <value>die Nennleistung fehlt</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_KAELTEMITTEL" xml:space="preserve">
+    <value>das Kältemittel ist unbekannt</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_GWP" xml:space="preserve">
+    <value>der GWP des Kältemittels ist unbekannt</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_FGAS" xml:space="preserve">
+    <value>das F-Gas-Kennzeichen des Kältemittels ist unbekannt</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_STOFFKLASSE" xml:space="preserve">
+    <value>die Stoffklasse des Kältemittels ist unbekannt</value>
   </data>
   <data name="GIMP_ZONENREGEL_Z6" xml:space="preserve">
     <value>Z6 – nach Raumtemperatur und Nutzung</value>

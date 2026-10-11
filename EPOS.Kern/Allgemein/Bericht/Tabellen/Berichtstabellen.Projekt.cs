@@ -12,11 +12,14 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b><c>tabelle.kaelteerzeuger</c></b> — je Wärmepumpe im Kühlbetrieb Kälte, Kältestrom, EER-Jahreswert, ihr
         /// Netzbezug und der Stromträger (Kühlkonzept 8.4) aus den Modulzeilen des Ergebnisses des Stamms. Die Namen der
-        /// Träger kommen aus dem Wertesatz (<paramref name="traegername"/>).
+        /// Träger kommen aus dem Wertesatz (<paramref name="traegername"/>). KM4-E2 (Konzept Kältemittel als Stammdatum 5.3):
+        /// Führt ein Erzeuger einen Kältemittel-Code (<paramref name="kaeltemittel"/>), steht die Spalte „Kältemittel“ dabei;
+        /// ein Erzeuger der Ergebnisklasse 2 trägt einen Stern, die Fußnote steht unter der Tafel.
         /// </summary>
         public static Berichtstabelle Kaelteerzeuger(ErgebnisWaermepumpeModel wp, Func<int, string> traegername,
                                                      bool englisch, CultureInfo kultur,
-                                                     IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null)
+                                                     IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null,
+                                                     IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null)
         {
             var zeilen = (wp?.Module ?? new List<ErgebnisWaermepumpeModulModel>())
                 .Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
@@ -25,8 +28,28 @@ namespace WindowsFormsApplication1
                 .Where(k => k != null && k.Kaelteproduktion_MWh > 0).ToList();
             if (zeilen.Count == 0 && km.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
 
-            var t = new Berichtstabelle().Feste(2600, 1200, 1300, 1000, 1300, 0);
-            string[] titel = { "Anlage", "Kälte [MWh/a]", "Kältestrom [MWh/a]", "EER", "aus dem Netz [MWh/a]", "Stromträger" };
+            // KM4-E2: Code je Zeile - die Wärmepumpe über den Anlagennamen der Modulzeile, die Kältemaschine über ihr Gerät.
+            Func<ErgebnisWaermepumpeModulModel, KaeltemittelBerichtszeile> kmWp = m => kaeltemittel?.FirstOrDefault(
+                z => z != null && z.Art == KaeltemittelGeraeteart.Waermepumpe && string.Equals(z.Bezeichner, m.Modul, StringComparison.Ordinal));
+            Func<ErgebnisKaeltemaschineModel, KaeltemittelBerichtszeile> kmKm = k => kaeltemittel?.FirstOrDefault(
+                z => z != null && z.Art == KaeltemittelGeraeteart.Kaeltemaschine && k.ID_Kaeltemaschine.HasValue &&
+                     z.ID_Geraet == k.ID_Kaeltemaschine);
+            bool mitKaeltemittel = zeilen.Any(m => !string.IsNullOrEmpty(kmWp(m)?.Code)) ||
+                                   km.Any(k => !string.IsNullOrEmpty(kmKm(k)?.Code));
+            bool stern = false;
+            Func<KaeltemittelBerichtszeile, Tabellenzelle> kaeltemittelZelle = z =>
+            {
+                if (z == null || string.IsNullOrEmpty(z.Code)) return Zellen.Text(Tabellenzelle.STRICH);
+                bool warnt = z.Klasse == KaeltemittelErgebnisklasse.AbStichtag;
+                stern |= warnt;
+                return Zellen.Text(warnt ? z.Code + " *" : z.Code);
+            };
+
+            var t = mitKaeltemittel ? new Berichtstabelle().Feste(2400, 1100, 1100, 1200, 900, 1200, 0)
+                                    : new Berichtstabelle().Feste(2600, 1200, 1300, 1000, 1300, 0);
+            string[] titel = mitKaeltemittel
+                ? new[] { "Anlage", "Kältemittel", "Kälte [MWh/a]", "Kältestrom [MWh/a]", "EER", "aus dem Netz [MWh/a]", "Stromträger" }
+                : new[] { "Anlage", "Kälte [MWh/a]", "Kältestrom [MWh/a]", "EER", "aus dem Netz [MWh/a]", "Stromträger" };
             t.MitKopf(titel.Select(x => new Tabellenzelle
             {
                 Text = BerichtTexte.T(x, englisch), Fett = true, Hinterlegung = Tabellenhinterlegung.Stamm,
@@ -41,7 +64,7 @@ namespace WindowsFormsApplication1
             foreach (ErgebnisWaermepumpeModulModel m in zeilen)
             {
                 double strom = m.Stromverbrauch_Kuehlung ?? 0.0;
-                t.Zeile(new[]
+                t.Zeile(MitKaeltemittel(mitKaeltemittel, kaeltemittelZelle(kmWp(m)), new[]
                 {
                     Zellen.Text(string.IsNullOrEmpty(m.Modul) ? Tabellenzelle.STRICH : m.Modul),
                     zahl(m.Kaelteproduktion.Value, "MWh/a"),
@@ -49,13 +72,13 @@ namespace WindowsFormsApplication1
                     zahl(strom > 0 ? m.Kaelteproduktion.Value / strom : (double?)null, null),
                     zahl(m.Kaeltestrom_Netzbezug, "MWh/a"),
                     Zellen.Text(ProjektbeschreibungBaustein.KuehltraegerText(m, traegername)),
-                });
+                }));
             }
             foreach (ErgebnisKaeltemaschineModel k in km)
             {
                 string name = string.IsNullOrEmpty(k.Bezeichner) ? Tabellenzelle.STRICH : k.Bezeichner;
                 if (k.Anzahl > 1) name += " (" + k.Anzahl.ToString(kultur) + " ×)";
-                t.Zeile(new[]
+                t.Zeile(MitKaeltemittel(mitKaeltemittel, kaeltemittelZelle(kmKm(k)), new[]
                 {
                     Zellen.Text(name),
                     zahl(k.Kaelteproduktion_MWh, "MWh/a"),
@@ -66,9 +89,23 @@ namespace WindowsFormsApplication1
                     Zellen.Text(k.Kaeltestrom_Netzbezug_MWh.HasValue
                         ? ProjektbeschreibungBaustein.KuehltraegerText(k.Kuehl_CarrierId, k.Kuehl_EigenerZaehler, traegername)
                         : Tabellenzelle.STRICH),
-                });
+                }));
             }
+            if (stern) t.Hinweis(BerichtTexte.T(FUSSNOTE_KAELTEMITTEL, englisch));
             return t;
+        }
+
+        /// <summary>KM4-E2: Die Fußnote des Sterns an der Spalte „Kältemittel“ (Text über <see cref="BerichtTexte"/>).</summary>
+        public const string FUSSNOTE_KAELTEMITTEL =
+            "* Für das geplante Inbetriebnahmejahr nach Anhang IV der Verordnung (EU) 2024/573 nur Restbestand oder Ausnahme; siehe Warnungen. Die Prüfung warnt nur, sie sperrt nie.";
+
+        /// <summary>Setzt die Zelle „Kältemittel“ an die zweite Stelle einer Zeile, wenn die Spalte geführt wird.</summary>
+        private static Tabellenzelle[] MitKaeltemittel(bool mit, Tabellenzelle kaeltemittel, Tabellenzelle[] zellen)
+        {
+            if (!mit) return zellen;
+            var l = new List<Tabellenzelle>(zellen);
+            l.Insert(1, kaeltemittel);
+            return l.ToArray();
         }
 
         /// <summary>

@@ -582,6 +582,8 @@ namespace WindowsFormsApplication1
             // PAKET S2 (Konzept 6.2, Entscheidung F6): Der Warnkriterienkatalog am
             // Laufstart.
             WarnkriterienMelden();
+            // KM4-E2: „nicht prüfbar“ der Kältemittelprüfung - nur mit Inbetriebnahmejahr.
+            KaeltemittelHinweiseMelden();
 
             // #190: Was angelegt ist, aber auf keinem Platz steht, rechnet nicht - und
             // sagte das bis hierher nicht. Die Zeile steht unmittelbar hinter dem

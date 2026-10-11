@@ -171,6 +171,12 @@ namespace WindowsFormsApplication1
         /// <summary>Brennstoffmengen je Erzeuger (EnergieMengen.BaueBrennstoffmengen; null = nicht ermittelbar).</summary>
         public DataTable Brennstoffmengen;
 
+        /// <summary>
+        /// KM4-E2 (Konzept Kältemittel als Stammdatum 5.3): je Kälteerzeuger Kältemittel-Code und Ergebnisklasse der
+        /// Zulässigkeitsprüfung (<see cref="KaeltemittelProjektpruefung"/>); <c>null</c> = nicht gesammelt.
+        /// </summary>
+        public List<KaeltemittelBerichtszeile> Kaeltemittel;
+
         /// <summary>Detail-Daten (Klimaregion, Gebäude, Anlage, Komponenten) für
         /// Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung (Phase 2).</summary>
         public ProjektDetails Details;

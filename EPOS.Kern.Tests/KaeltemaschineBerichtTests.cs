@@ -60,5 +60,49 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3.0, t.Zeilen[0].Zellen[3].Zahl!.Value, 9);
             Assert.True(Berichtstabellen.Kaelteerzeuger(null, _ => "", true, CultureInfo.InvariantCulture).IstLeer);
         }
+
+        /// <summary>
+        /// KM4-E2 (Konzept Kältemittel als Stammdatum 5.3): Mit einem Code führt die Tafel die Spalte „Kältemittel“ an
+        /// zweiter Stelle — die Kältemaschine über ihr Gerät, die Wärmepumpe über den Anlagennamen der Modulzeile; ein
+        /// Erzeuger der Klasse 2 trägt einen Stern, die Fußnote steht einmal unter der Tafel. Ohne Code bleibt die Tafel,
+        /// wie sie war.
+        /// </summary>
+        [Fact]
+        public void Die_Tafel_der_Kaelteerzeuger_fuehrt_das_Kaeltemittel_mit_Stern_und_Fussnote()
+        {
+            var kultur = CultureInfo.GetCultureInfo("de-DE");
+            var km = new List<ErgebnisKaeltemaschineModel>
+            {
+                new() { ID_Kaeltemaschine = 7, Bezeichner = "KM 10", Kaelteproduktion_MWh = 5, Stromverbrauch_MWh = 1 },
+                new() { ID_Kaeltemaschine = 8, Bezeichner = "KM 20", Kaelteproduktion_MWh = 9, Stromverbrauch_MWh = 3 },
+            };
+            var wp = new ErgebnisWaermepumpeModel();
+            wp.Module.Add(new ErgebnisWaermepumpeModulModel { Modul = "WP Halle", Kaelteproduktion = 4, Stromverbrauch_Kuehlung = 1 });
+            var kaeltemittel = new List<KaeltemittelBerichtszeile>
+            {
+                new(KaeltemittelGeraeteart.Kaeltemaschine, 7, "KM 10", "R513A", KaeltemittelErgebnisklasse.AbStichtag),
+                new(KaeltemittelGeraeteart.Kaeltemaschine, 8, "KM 20", "R513A", KaeltemittelErgebnisklasse.Zulaessig),
+                new(KaeltemittelGeraeteart.Waermepumpe, 99, "WP Halle", "R290", null),
+            };
+
+            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, _ => "", false, kultur, km, kaeltemittel);
+            Assert.Equal("Kältemittel", t.Kopf.Zellen[1].Text);
+            Assert.Equal(7, t.Kopf.Zellen.Count);
+            Assert.Equal(new[] { "R290", "R513A *", "R513A" }, t.Zeilen.Select(z => z.Zellen[1].Text).ToArray());
+            Assert.Equal(Berichtstabellen.FUSSNOTE_KAELTEMITTEL, Assert.Single(t.Hinweise));
+
+            Berichtstabelle en = Berichtstabellen.Kaelteerzeuger(wp, _ => "", true, kultur, km, kaeltemittel);
+            Assert.Equal("Refrigerant", en.Kopf.Zellen[1].Text);
+            Assert.StartsWith("* For the planned year", Assert.Single(en.Hinweise));
+
+            // Ohne Klasse 2 kein Stern und keine Fußnote; ohne Code keine Spalte.
+            Berichtstabelle ohneStern = Berichtstabellen.Kaelteerzeuger(wp, _ => "", false, kultur, km, kaeltemittel.Skip(1).ToList());
+            Assert.Empty(ohneStern.Hinweise);
+            Assert.Equal("—", ohneStern.Zeilen[1].Zellen[1].Text);
+            Berichtstabelle ohne = Berichtstabellen.Kaelteerzeuger(wp, _ => "", false, kultur, km);
+            Assert.Equal(6, ohne.Kopf.Zellen.Count);
+            Assert.Equal("Anlage", ohne.Kopf.Zellen[0].Text);
+            Assert.Equal("Kälte [MWh/a]", ohne.Kopf.Zellen[1].Text);
+        }
     }
 }

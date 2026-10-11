@@ -175,7 +175,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-10_R51_FreieKuehlung`, neunundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-11_R52_Vorheizen`, dreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -207,13 +207,14 @@ Projekt 1061 rechnet als Kopie von 1058 seinen Kühlvorlauf über eine Kühlkurv
 Projekt 1062 rechnet als Kopie von 1061 das Gebäude in zwei Zonen mit Kühlübergabe je Zone, gehalten von `EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1063 rechnet als Kopie von 1055 seine Kältemaschine mit Teillastkurve, Takten unter der Mindestteillast von 30 % mit dem Vorgabe-Taktverlustfaktor und Gütegrad-Extrapolation an den Kennfeldrändern, gehalten von `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests`,
 Projekt 1064 rechnet als Kopie von 1017 seine Kälte mit freier Kühlung über die Erdsonde der Wärmepumpe — Grädigkeit 4 K, Leistungsgrenze 4 kW, den Rest deckt der Verdichter —, gehalten von `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1065 rechnet als Kopie von 1051 sein Gebäude mit berechneter Vorheizzeit — Deckel aus dem Jahresmaximum der Heizlast am Kalendersprung mit 20 % Toleranz, Vorheizzeit als 95-%-Quantil des Bedarfs, Ankunft innerhalb 1 K —, gehalten von `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests`,
 die Sole-Wärmepumpen der Referenzprojekte rechnen mit Erdreichquelle (Erdsonde), deren Entzug ohne Taktstrom
 und deren Prüfung je Anlage mit Erdreichquelle, die Wärmepumpen rechnen ihre Kennlinie über den Vorlauf interpoliert,
 1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
 allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
-1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060 und 1063; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
+1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063 und 1065; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
 
 **Einfrierregeln** — wer eines davon ändert, friert im selben Schritt die Basis neu ein und
@@ -330,6 +331,11 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Kuehl_Frei_Graedigkeit_K` und `Kuehl_Frei_Leistung_kW`, die Quelle, die sie trägt (`WQ_Typ` und die Felder der
   Erdreichquelle), und der Kühlvorlauf der Wärmepumpe, dazu das Anlegen oder Entfernen eines Referenzprojekts mit
   freier Kühlung.
+- gesäte Vorheizdaten eines Referenzprojekts: an `Tab_Einstellungen` `Aufheizoptimierung` und die sieben Spalten
+  `Aufheiz_Verfahren`, `Aufheiz_Vorheizzeit_H`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`,
+  `Aufheiz_Geltung`, `Aufheiz_Heizkreis_Einbeziehen`, `Tab_Zone.Vorheizzeit_H` und `Tab_Gebaeude.Aufheizzeit_Manuell_H`
+  seiner Gebäude, die Festwerte des Rechenwegs (Vorgabe 20 % Toleranz, Vorgabe ε 1 K, Quantil 95 %, Fenstergrenze 47 h,
+  Ankunftsbezug), dazu das Anlegen oder Entfernen eines Referenzprojekts mit Vorheizen.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
@@ -340,7 +346,7 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
 | Workflow | Läuft von selbst | Nur auf Zuruf (*Actions → Run workflow*) |
 |---|---|---|
-| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben mit Hash-Messlatte (jede Zeile der jüngsten `Proben/ChartProben/Messlatte_*.sha256` muss unverändert in der Liste des Laufs stehen; Vergleich nur auf ubuntu, Liste als Artefakt), Referenzlauf der zehn Projekte der CI-Auswahl gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
+| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben mit Hash-Messlatte (jede Zeile der jüngsten `Proben/ChartProben/Messlatte_*.sha256` muss unverändert in der Liste des Laufs stehen; Vergleich nur auf ubuntu, Liste als Artefakt), Referenzlauf der zwölf Projekte der CI-Auswahl gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
 | [`windows.yml`](.github/workflows/windows.yml) | Job `build-test` bei Push auf `main` und nächtlich 03:00 UTC auf dem Arbeitszweig `ios_migration_september` (der geplante Lauf nimmt den Workflow von `main` und checkt den Arbeitszweig aus; **zählt doppelt**); Pushes auf Arbeitszweige lösen ihn nicht aus, der Kern-Lauf auf ubuntu prüft sie | Häkchen „setup“: Job `installer` baut das Installationsprogramm (rund 4 Minuten, Installer als Artefakt) |
 | [`ios.yml`](.github/workflows/ios.yml) | nie | baut die iOS-Hülle auf `macos-26`, startet sie im Simulator und rechnet Projekt 1030 gegen die Basis; 15–20 Minuten, **zählt zehnfach** |
 
