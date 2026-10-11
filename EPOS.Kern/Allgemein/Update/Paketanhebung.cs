@@ -425,6 +425,10 @@ namespace WindowsFormsApplication1
             // Ein aelteres Paket fuehrt kein Inbetriebnahmejahr; die Spalte kommt leer an (keine Pruefung).
             new Stufe(KaeltemittelSchema.SCHRITT, Art.Import,
                       "Kältemittel als Stammdatum (Kältemitteltabelle, Verweis der Kältemaschine über den Code, Inbetriebnahmejahr)"),
+            // Ein älteres Paket führt keine Schnellaufheizung; seine Projekte kommen mit Schalter aus an (Spalten leer), die
+            // Ergebnisspalten bleiben leer.
+            new Stufe(SchnellaufheizungSchema.SCHRITT, Art.Ddl,
+                      "Schnellaufheizung des Vorheizens (Schalter, Raumsollwert-Überhöhung; Ergebnisse je Gebäude und Zone)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

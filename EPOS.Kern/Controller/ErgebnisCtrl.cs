@@ -1840,6 +1840,13 @@ namespace WindowsFormsApplication1
                 VGanz(VorheizenSchema.SPALTE_ERG_UNERREICHBAR, k => k.UnerreichbarTage, (k, w) => k.UnerreichbarTage = w),
                 VGanz(VorheizenSchema.SPALTE_ERG_SPERRZEIT, k => k.SperrzeitTage, (k, w) => k.SperrzeitTage = w),
                 VZahl(VorheizenSchema.SPALTE_ERG_MEHRWAERME, k => k.MehrwaermeMwh, (k, w) => k.MehrwaermeMwh = w),
+                // SA2 (Schritt 217): die Schnellaufheizung - nach Vorhandensein, NULL, solange sie nicht wirkt.
+                VZahl(SchnellaufheizungSchema.SPALTE_ERG_UEBERHOEHUNG, k => k.UeberhoehungK, (k, w) => k.UeberhoehungK = w),
+                VGanz(SchnellaufheizungSchema.SPALTE_ERG_STUNDEN, k => k.UeberhoehungH, (k, w) => k.UeberhoehungH = w),
+                VZahl(SchnellaufheizungSchema.SPALTE_ERG_VORLAUF_MAX, k => k.UeberhoehungVorlaufMaxC, (k, w) => k.UeberhoehungVorlaufMaxC = w),
+                VGanz(SchnellaufheizungSchema.SPALTE_ERG_VORLAUFGRENZE, k => k.VorlaufgrenzeH, (k, w) => k.VorlaufgrenzeH = w),
+                VGanz(SchnellaufheizungSchema.SPALTE_ERG_WIRKUNGSLOS, k => k.UeberhoehungWirkungslosH, (k, w) => k.UeberhoehungWirkungslosH = w),
+                VGanz(SchnellaufheizungSchema.SPALTE_ERG_SPERRZEIT, k => k.UeberhoehungSperrzeitH, (k, w) => k.UeberhoehungSperrzeitH = w),
             };
         }
 

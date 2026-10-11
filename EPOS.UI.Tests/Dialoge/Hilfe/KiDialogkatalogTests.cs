@@ -1196,8 +1196,9 @@ public class KiDialogkatalogTests : IDisposable
     {
         KiDialog d = KiDialoge.Katalog.Finde(maske)!;
 
-        Assert.Equal(17, d.Felder.Count);
+        Assert.Equal(18, d.Felder.Count);   // KT-8b: dazu der Ladestand der Fangstelle
         Assert.True(d.FindeFeld("satz")!.Satzwahl);
+        Assert.True(d.FindeFeld("ladestand")!.NurLesen);
         Assert.True(d.FindeFeld("typ")!.IstWahl);
         Assert.False(d.FindeFeld("typ")!.NurLesen);
         Assert.False(d.FindeFeld("beschreibung")!.NurLesen);
@@ -1228,7 +1229,7 @@ public class KiDialogkatalogTests : IDisposable
     [Theory]
     [InlineData(KiMaskennamen.TYPPROFIL, "wochenwerte", 168, 4)]
     [InlineData(KiMaskennamen.TYPSTAMM, "monatswerte", 12, 6)]   // dazu Vorlauf und Rücklauf der Prozesswärme (PW1 Stufe 1)
-    [InlineData(KiMaskennamen.GEBAEUDETYP, "stundenwerte", 24, 4)]
+    [InlineData(KiMaskennamen.GEBAEUDETYP, "stundenwerte", 24, 5)]   // KT-8b: dazu der Ladestand
     [InlineData(KiMaskennamen.KOSTENPROFIL, "monatswerte", 12, 5)]
     [InlineData(KiMaskennamen.KOSTENPROFIL, "wochenwerte", 168, 5)]
     [InlineData(KiMaskennamen.LEISTUNGSPREISREIHE, "monatssaetze", 12, 4)]
@@ -1359,7 +1360,7 @@ public class KiDialogkatalogTests : IDisposable
         // Mit NP4c die fünf Umschalter je Größe (nur lesbar) und die Spalten von Zeilenbild (5) und Stundenprofil (3).
         // Mit KP3 O2 (E59) die manuelle Aufheizzeit (aufheizzeit_manuell, nur im Projekt). Mit AK3-W4b der Raumeinfluss
         // der Heizkurve (heizkurve_raumeinfluss, Festlegung 23). Mit KK4 die fünf Felder der Kühlkurve (kuehlkurve_*).
-        Assert.Equal(89 + 47 + 34 + 3 + 5 + 3 + 1 + 1 + 5, d.Felder.Count);
+        Assert.Equal(89 + 47 + 34 + 3 + 5 + 3 + 1 + 1 + 5 + 1, d.Felder.Count);   // KT-8b: + Ladestand
         Assert.Equal(47, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {
@@ -1422,7 +1423,8 @@ public class KiDialogkatalogTests : IDisposable
         // die Felder der Vorgabe-Matrix führt die Verwaltung wie der Editor (KP2 U4: das Blatt
         // „Konditionierung" am selben Arbeitsstand, dieselbe Feldtafel).
         // NP3c: − die Felder des Blatts „Nutzungsprofile" (nur der Editor trägt das Blatt).
-        Assert.Equal(editor.Felder.Count - 4 - KiNutzungsprofilfelder.Alle.Count
+        // KT-8b: − der Ladestand (nur der Editor meldet die Fangstelle der Typ- und Artlisten).
+        Assert.Equal(editor.Felder.Count - 4 - 1 - KiNutzungsprofilfelder.Alle.Count
                      - KiNutzungsprofilfelder.Zuordnungsspalten.Count - KiNutzungsprofilfelder.Zeilenbildspalten.Count
                      - KiNutzungsprofilfelder.Stundenspalten.Count, verwaltung.Felder.Count);
         Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith("zone_", StringComparison.Ordinal));
@@ -1440,7 +1442,7 @@ public class KiDialogkatalogTests : IDisposable
 
         foreach (KiDialogFeld e in editor.Felder)
         {
-            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)
+            if (e.Name is "betriebsart" or "name" or "ladestand" || e.Name.StartsWith("zone_", StringComparison.Ordinal)
                 || e.Name.StartsWith(KiNutzungsprofilfelder.PRAEFIX, StringComparison.Ordinal)) continue;
             KiDialogFeld? v = verwaltung.FindeFeld(e.Name);
             Assert.True(v is not null, "Das Feld " + e.Name + " fehlt in der Verwaltung.");

@@ -224,6 +224,76 @@ public class SchlossumschaltungTests : EposBunitContext
         Assert.False(s.FrageOffen);
     }
 
+    /// <summary>
+    /// KT-8a: Wirft die Frage nach dem Lesemodus (Datenbank), ist die Handlung weich gesperrt und
+    /// nennt den Grund, ein Klick meldet ihn fürs Warnband, das Protokoll hat EINEN Vermerk — die
+    /// Frage geht danach nicht erneut an die Datenbank —, und nichts wird geschrieben.
+    /// </summary>
+    [Fact]
+    public void KT8a_ein_werfender_Lesemodus_sperrt_weich_und_kommt_ins_Warnband_und_ins_Protokoll()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gefragt = 0;
+        var weg = new Schlossweg((ids, g) => { _geschaltet.Add((ids, g)); return new SchlossErgebnis(true, "") { Geaendert = ids }; })
+        {
+            Lesemodus = () => { gefragt++; throw new InvalidOperationException("Lizenzdatei gesperrt"); }
+        };
+        var s = new Schlossumschaltung();
+
+        Auswahlhandlung h = s.Handlung(weg, Leer, new[] { A }, false)!;
+        Assert.False(h.Aus);
+        Assert.Contains("Lizenzdatei gesperrt", h.Sperrgrund);
+        Assert.Contains("Lizenzdatei gesperrt", s.LesemodusFehler);
+        // KT-8c: der eigene Text der Lesemodus-Frage, nicht „Schloss setzen" als Satzname.
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.WURZEL_LESEMODUS_FEHLER.Split('{')[0], h.Sperrgrund);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.ADM_SCHLOSS_SETZEN_TITEL, h.Sperrgrund);
+
+        string? grund = s.Fragen(weg, new[] { A }, false);
+        Assert.Contains("Lizenzdatei gesperrt", grund);
+        Assert.False(s.FrageOffen);
+        Assert.Empty(_geschaltet);
+        Assert.True(vermerke.Enthaelt("Lizenzdatei gesperrt"));
+        Assert.Equal(1, gefragt);
+    }
+
+    /// <summary>
+    /// KT-8c: Der Knopf „Schloss…" ohne Auswahlleiste (<c>Katalogschloss</c>) trägt denselben Grund —
+    /// den eigenen Text der Lesemodus-Frage — als <c>title</c> und ist weich gesperrt.
+    /// </summary>
+    [Fact]
+    public void KT8c_Katalogschloss_nennt_den_Lesemodus_Fehler_im_eigenen_Text()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var weg = new Schlossweg((ids, g) => new SchlossErgebnis(true, "") { Geaendert = ids })
+        {
+            Lesemodus = () => throw new InvalidOperationException("Lizenzdatei gesperrt")
+        };
+
+        var cut = Render<Katalogschloss>(b => b.Add(x => x.Weg, weg).Add(x => x.Zeile, A));
+
+        var knopf = cut.Find("button.epos-katalogschloss");
+        string titel = knopf.GetAttribute("title") ?? "";
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.WURZEL_LESEMODUS_FEHLER.Split('{')[0], titel);
+        Assert.Contains("Lizenzdatei gesperrt", titel);
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.True(vermerke.Enthaelt("Lizenzdatei gesperrt"));
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_im_Lesemodus_kein_Grund_und_kein_Vermerk()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var s = new Schlossumschaltung();
+
+        Auswahlhandlung h = s.Handlung(Weg(), Leer, new[] { A }, false)!;
+
+        Assert.False(h.Aus);
+        Assert.Equal("", h.Sperrgrund);
+        Assert.Equal("", s.LesemodusFehler);
+        Assert.Null(s.Fragen(Weg(), new[] { A }, false));
+        Assert.True(vermerke.Leer);
+    }
+
     [Fact]
     public void Unveraenderte_Saetze_nennt_die_Statuszeile()
     {

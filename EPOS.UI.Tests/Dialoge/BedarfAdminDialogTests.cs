@@ -1069,4 +1069,100 @@ public class BedarfAdminDialogTests : EposBunitContext
         speichern.Click();
         Assert.Equal(new[] { "Alpha" }, geschrieben);
     }
+
+    // =====================================================================
+    //  KT-8a: Typstamm- und Typprofilgaben über die Fangstelle
+    // =====================================================================
+
+    private const string KT8A_GRUND = "Typweg gesperrt";
+
+    private static IReadOnlyDictionary<string, object> KT8aWirft()
+        => throw new InvalidOperationException(KT8A_GRUND);
+
+    private static List<string> KT8aBanner(IRenderedComponent<BedarfAdminDialog> cut)
+        => cut.FindAll(".epos-warnbanner-text").Select(e => e.TextContent).ToList();
+
+    /// <summary>Wie der Anwender „Neu…" mit einem freien Namen bestätigt.</summary>
+    private static void KT8aNeuMitName(IRenderedComponent<BedarfAdminDialog> cut)
+    {
+        Knopf(cut, Texte(BedarfsArt.Stromverbraucher).Neu).Click();
+        cut.Find(".epos-ueberlagerung input").Input("Gamma");
+        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+    }
+
+    [Fact]
+    public void KT8a_wirft_die_Typprofilgabe_nennt_der_Banner_den_Grund_und_die_Ueberlagerung_bleibt_zu()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme, typProfilGaben: KT8aWirft, geschlossen: b => geschlossen = b);
+
+        Knopf(cut, "Typ ändern...").Click();
+
+        Assert.Contains(KT8aBanner(cut), b => b.Contains(KT8A_GRUND));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Empty(cut.FindComponents<TypProfilDialog>());
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void KT8a_die_Typprofilgabe_wird_einmal_gelesen_und_ohne_Ausnahme_kein_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gelesen = 0;
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme,
+                           typProfilGaben: () => { gelesen++; return new Dictionary<string, object>(); });
+
+        Knopf(cut, "Typ ändern...").Click();
+        cut.Render();
+        cut.Render();
+
+        Assert.Single(cut.FindComponents<TypProfilDialog>());
+        Assert.Equal(1, gelesen);
+        Assert.Empty(KT8aBanner(cut));
+        Assert.True(vermerke.Leer);
+    }
+
+    [Fact]
+    public void KT8a_wirft_die_Typstammgabe_nennt_der_Banner_den_Grund_und_der_Stammkopf_bleibt_zu()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(BedarfsArt.Stromverbraucher, typStammGaben: (_, _, _, _) => KT8aWirft());
+
+        KT8aNeuMitName(cut);
+
+        Assert.Contains(KT8aBanner(cut), b => b.Contains(KT8A_GRUND) && b.Contains("Gamma"));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.False(cut.Instance.TypStammOffen);
+    }
+
+    [Fact]
+    public void KT8a_wirft_die_Namenspruefung_nennt_der_Banner_den_Grund_und_der_Stammkopf_bleibt_zu()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(BedarfsArt.Stromverbraucher,
+                           exists: _ => throw new InvalidOperationException(KT8A_GRUND),
+                           typStammGaben: (_, _, _, _) => new Dictionary<string, object>());
+
+        KT8aNeuMitName(cut);
+
+        Assert.Contains(KT8aBanner(cut), b => b.Contains(KT8A_GRUND));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.False(cut.Instance.TypStammOffen);
+        Assert.DoesNotContain("existiert bereits", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_geht_der_Stammkopf_auf_und_kein_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(BedarfsArt.Stromverbraucher,
+                           typStammGaben: (_, _, _, _) => new Dictionary<string, object>());
+
+        KT8aNeuMitName(cut);
+
+        Assert.True(cut.Instance.TypStammOffen);
+        Assert.Empty(KT8aBanner(cut));
+        Assert.True(vermerke.Leer);
+    }
 }

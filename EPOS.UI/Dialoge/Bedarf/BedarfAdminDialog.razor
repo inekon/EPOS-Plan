@@ -264,9 +264,9 @@
     <Ueberlagerung Offen="@_typProfilOffen"
                    Titel="@BtnTypAendernText" Geschlossen="() => _typProfilOffen = false">
         <KindInhalt>
-            @if (_typProfilOffen && TypProfilGaben is not null)
+            @if (_typProfilOffen && _typProfilGaben is not null)
             {
-                <TypProfilDialog @attributes="TypProfilGaben()" TitelAnzeigen="false"
+                <TypProfilDialog @attributes="_typProfilGaben" TitelAnzeigen="false"
                                  Geschlossen="_ => _typProfilOffen = false" />
             }
         </KindInhalt>
@@ -864,7 +864,8 @@
             MonatLesen = m => _arbeitMonate[m],
             MonatSetzen = BeiMonat,
             JahressummeLesen = () => _jahressumme,
-            BedarfsartLesen = () => Art.ToString()
+            BedarfsartLesen = () => Art.ToString(),
+            LadestandLesen = () => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler)
         };
     }
 
@@ -912,6 +913,8 @@
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _auslieferung,
         Schreibschutzgrund = () => MeldungSpeichernGesperrt,
+        // KT-8b: Liste oder Satz nicht geladen (Fangstelle) - der Grund des Banners sperrt.
+        Sperrgrund = f => KatalogKiSperre.Feldsperre(f, _listeFehler, _satzFehler, "satz"),
         Pruefen = () => Pruefbefund() ?? "",
         Speichern = () => Task.FromResult(KiSpeichern())
     };
@@ -923,6 +926,9 @@
     /// </summary>
     private KiErgebnis KiSpeichern()
     {
+        // KT-8b: Eine nicht geladene Liste oder ein nicht geladener Satz erklärt zuerst.
+        if (KatalogKiSperre.Aktionssperre(_listeFehler, _satzFehler) is { } sperre)
+            return KiErgebnis.Abgelehnt(sperre);
         if (Speichern is null)
             return KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText));
         if (_gewaehlt.Length == 0)
@@ -1064,13 +1070,18 @@
         _namensfrage = false;
         if (string.IsNullOrEmpty(name) || TypStammGaben is null) return;
 
-        if (Exists is not null && Exists(name))
+        // KT-8a: Namensprüfung und Gaben des Stammkopfs lesen über die Fangstelle; wirft einer der
+        // Wege, nennt der Satzbanner den Grund, und der Stammkopf geht nicht auf (ein Name, dessen
+        // Prüfung geworfen hat, gilt als belegt).
+        _satzFehler = "";
+        if (Exists is not null && Katalogladung.Wert(() => Exists(name), name, true, out _satzFehler))
         {
-            Melden(MeldungNameBelegt, WarnStufe.Warnung);
+            if (_satzFehler.Length == 0) Melden(MeldungNameBelegt, WarnStufe.Warnung);
             return;
         }
 
-        _typStammGaben = TypStammGaben(name, "", "", true);
+        Func<string, string, string, bool, IReadOnlyDictionary<string, object>> gaben = TypStammGaben;
+        _typStammGaben = Katalogladung.Satz(() => gaben(name, "", "", true), name, out _satzFehler);
     }
 
     /// <summary>Der Stammkopf ist zu; der Vorläufer lud danach IMMER die Liste neu.</summary>
@@ -1084,8 +1095,15 @@
     {
         if (TypProfilGaben is null) return;
         _meldung = "";
-        _typProfilOffen = true;
+        // KT-8a: Die Gaben des Wochenprofils einmal über die Fangstelle lesen, nicht je Zeichenlauf;
+        // wirft der Weg, nennt der Satzbanner den Grund, und die Überlagerung bleibt zu.
+        Func<IReadOnlyDictionary<string, object>> gaben = TypProfilGaben;
+        _typProfilGaben = Katalogladung.Satz(() => gaben(), _gewaehlt, out _satzFehler);
+        _typProfilOffen = _typProfilGaben is not null;
     }
+
+    /// <summary>KT-8a: die beim Öffnen gelesenen Gaben des Wochenprofils; <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _typProfilGaben;
 
     // =====================================================================
     // "Profil löschen"

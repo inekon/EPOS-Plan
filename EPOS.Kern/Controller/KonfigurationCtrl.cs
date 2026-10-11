@@ -983,20 +983,33 @@ namespace WindowsFormsApplication1
             return spalten != null && VorheizenSchema.SPALTEN_EINSTELLUNG.All(s => spalten.Contains(s.Spalte));
         }
 
+        /// <summary>Stehen die zwei Spalten der Schnellaufheizung (Schemaschritt <see cref="SchnellaufheizungSchema.SCHRITT"/>)?</summary>
+        private static bool SchnellaufspaltenVorhanden()
+        {
+            HashSet<string> spalten = StilleDb.SpaltenNamen(SchnellaufheizungSchema.TAB_EINSTELLUNGEN);
+            return spalten != null && SchnellaufheizungSchema.SPALTEN_EINSTELLUNG.All(s => spalten.Contains(s.Spalte));
+        }
+
         /// <summary>
         /// <b>Das Vorheizen eines Projekts</b> (AH-V4; Entwurf Vorheizrampe Fassung 2, 2.9) — dialogfrei und NULL-erhaltend in
         /// EINER Abfrage der sieben Spalten (<see cref="VorheizenSchema.SPALTEN_EINSTELLUNG"/>). <b>Fehlende Zeile, fehlende
         /// Spalte und ein unlesbarer Satz heißen Sollwertrampe</b> (<see cref="Vorheizvorgabe.Sollwertrampe"/>): Dann rechnet das
         /// Projekt wie der Bestand. Leere Felder bleiben leer; der Kern setzt seine Konstanten ein (F14, F15).
+        /// Dieselbe Abfrage liest die Schnellaufheizung (SA2, <see cref="SchnellaufheizungSchema.SPALTEN_EINSTELLUNG"/>):
+        /// Schalter NULL oder 0 = aus, Überhöhung NULL = Kern-Vorgabe; fehlen ihre Spalten, ist sie aus.
         /// </summary>
         public static Vorheizvorgabe VorheizvorgabeLesen(int idProjekt)
         {
             if (idProjekt <= 0 || !VorheizspaltenVorhanden()) return Vorheizvorgabe.Sollwertrampe;
+            bool mitSchnell = SchnellaufspaltenVorhanden();
+            IEnumerable<string> spalten = VorheizenSchema.SPALTEN_EINSTELLUNG.Select(s => s.Spalte);
+            if (mitSchnell) spalten = spalten.Concat(SchnellaufheizungSchema.SPALTEN_EINSTELLUNG.Select(s => s.Spalte));
+            int erwartet = VorheizenSchema.SPALTEN_EINSTELLUNG.Count + (mitSchnell ? SchnellaufheizungSchema.SPALTEN_EINSTELLUNG.Count : 0);
             DataTable dt = StilleDb.Tabelle(
-                "SELECT [" + string.Join("], [", VorheizenSchema.SPALTEN_EINSTELLUNG.Select(s => s.Spalte)) + "] " +
+                "SELECT [" + string.Join("], [", spalten) + "] " +
                 "FROM Tab_Einstellungen WHERE ID_Projekt = ? ORDER BY ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
-            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < VorheizenSchema.SPALTEN_EINSTELLUNG.Count)
+            if (dt == null || dt.Rows.Count == 0 || dt.Columns.Count < erwartet)
                 return Vorheizvorgabe.Sollwertrampe;
             DataRow r = dt.Rows[0];
             try
@@ -1011,6 +1024,14 @@ namespace WindowsFormsApplication1
                     HeizgrenzeOderLeer(r[4]),
                     VorheizenSchema.GeltungAus(TextOderLeer(r[5])),
                     !heizkreis.HasValue || heizkreis.Value != 0.0);
+                if (mitSchnell)
+                {
+                    int i = VorheizenSchema.SPALTEN_EINSTELLUNG.Count;
+                    double? schalter = HeizgrenzeOderLeer(r[i]);
+                    double? ueberhoehung = HeizgrenzeOderLeer(r[i + 1]);
+                    bool an = schalter.HasValue && schalter.Value != 0.0;
+                    if (an || ueberhoehung.HasValue) v = v.MitSchnellaufheizung(an, ueberhoehung);
+                }
                 // Die Vorgabe ohne gesetztes Feld ist DIE Sollwertrampe (Gleichheit des Records, Bestand bitgleich).
                 return v.Equals(Vorheizvorgabe.Sollwertrampe) ? Vorheizvorgabe.Sollwertrampe : v;
             }
@@ -1051,6 +1072,8 @@ namespace WindowsFormsApplication1
             bool mitVorheizen = VorheizspaltenVorhanden();
             Vorheizvorgabe vh = vorgabe.Vorheizen ?? Vorheizvorgabe.Sollwertrampe;
             if (!mitVorheizen && !vh.Equals(Vorheizvorgabe.Sollwertrampe)) return false;
+            bool mitSchnell = mitVorheizen && SchnellaufspaltenVorhanden();
+            if (!mitSchnell && (vh.Schnellaufheizung || vh.UeberhoehungK.HasValue)) return false;
             var parameter = new List<DbParam>
             {
                 StilleDb.Par("@an", DbParamTyp.Integer, vorgabe.An ? 1 : 0),
@@ -1065,6 +1088,7 @@ namespace WindowsFormsApplication1
                 parameter.Add(StilleDb.Par("@aufschlagP", DbParamTyp.Double, (object)vorgabe.AufschlagProzent ?? DBNull.Value));
             }
             if (mitVorheizen) parameter.AddRange(Vorheizwerte(vh));
+            if (mitSchnell) parameter.AddRange(Schnellaufwerte(vh));
             parameter.Add(StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             int betroffen = StilleDb.NonQuery(
@@ -1075,6 +1099,7 @@ namespace WindowsFormsApplication1
                     ? ", [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_H + "] = ?, [" + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT + "] = ?"
                     : "") +
                 (mitVorheizen ? Vorheizzuweisungen() : "") +
+                (mitSchnell ? string.Concat(SchnellaufheizungSchema.SPALTEN_EINSTELLUNG.Select(s => ", [" + s.Spalte + "] = ?")) : "") +
                 " WHERE ID_Projekt = ?",
                 parameter.ToArray());
 
@@ -1098,6 +1123,16 @@ namespace WindowsFormsApplication1
             yield return StilleDb.Par("@vhGenauigkeit", DbParamTyp.Double, (object)v.GenauigkeitK ?? DBNull.Value);
             yield return StilleDb.Par("@vhGeltung", DbParamTyp.VarWChar, (object)VorheizenSchema.GeltungWert(v.Geltung) ?? DBNull.Value);
             yield return StilleDb.Par("@vhHeizkreis", DbParamTyp.Integer, v.HeizkreisEinbeziehen ? DBNull.Value : (object)0);
+        }
+
+        /// <summary>
+        /// Die Werte der zwei Spalten der Schnellaufheizung (SA2) — normalisiert: Schalter „an“ als 1, „aus“ als NULL; die
+        /// Überhöhung, wie sie ist, die Kern-Vorgabe (leer) als NULL.
+        /// </summary>
+        private static IEnumerable<DbParam> Schnellaufwerte(Vorheizvorgabe v)
+        {
+            yield return StilleDb.Par("@saSchalter", DbParamTyp.Integer, v.Schnellaufheizung ? (object)1 : DBNull.Value);
+            yield return StilleDb.Par("@saUeberhoehung", DbParamTyp.Double, (object)v.UeberhoehungK ?? DBNull.Value);
         }
 
         /// <summary>

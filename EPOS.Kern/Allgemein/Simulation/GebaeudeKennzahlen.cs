@@ -258,7 +258,23 @@ namespace WindowsFormsApplication1
                 UnerreichbarTage = v.TageUnerreichbar,
                 SperrzeitTage = v.TageSperrzeit,
                 MehrwaermeMwh = Endlich(v.MehrwaermeKwh / 1000.0),
-            };
+            }.MitSchnellaufwerten(v);
+        }
+
+        /// <summary>
+        /// <b>Die sechs Werte der Schnellaufheizung</b> (SA2, Schritt 217) — gesetzt nur, wenn sie an einer Zone wirkt
+        /// (<see cref="Vorheizgebaeude.UeberhoehungK"/> über null); sonst bleiben alle NULL. Der Vorlauf nur endlich.
+        /// </summary>
+        private static Vorheizkennzahlen MitSchnellaufwerten(this Vorheizkennzahlen k, Vorheizgebaeude v)
+        {
+            if (!(v.UeberhoehungK > 0.0)) return k;
+            k.UeberhoehungK = v.UeberhoehungK;
+            k.UeberhoehungH = v.UeberhoehungStundenH;
+            k.UeberhoehungVorlaufMaxC = Endlich(v.UeberhoehungVorlaufMaxC);
+            k.VorlaufgrenzeH = v.UeberhoehungBegrenztH;
+            k.UeberhoehungWirkungslosH = v.UeberhoehungWirkungslosH;
+            k.UeberhoehungSperrzeitH = v.UeberhoehungGesperrtH;
+            return k;
         }
 
         /// <summary>Setzt die Aufheizwerte in die Gebäudezeile; <c>null</c> lässt sie NULL.</summary>

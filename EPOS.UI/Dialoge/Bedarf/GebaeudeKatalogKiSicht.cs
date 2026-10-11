@@ -1099,6 +1099,33 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     /// <summary>Die Stundenprofile im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
     public IReadOnlyList<RaumnutzungStundenKiZeile> Nutzungsprofilstunden
         => Nutzungsprofile?.Stundenzeilen ?? Array.Empty<RaumnutzungStundenKiZeile>();
+
+    // =====================================================================
+    //  KT-8b: der Ladestand der Fangstelle
+    // =====================================================================
+
+    /// <summary>
+    /// Liefert die Bannertexte der Fangstelle (<c>Katalogladung</c>): gescheiterte Liste,
+    /// gescheiterter Satz; leer = alles geladen.
+    /// </summary>
+    public Func<string>? LadestandLesen { get; set; }
+
+    /// <summary>
+    /// Hängt den Ladestand an die Sicht, die der Arbeitsstand baut (<c>GebaeudeArbeitsstand.KiSicht</c>),
+    /// und gibt sie zurück.
+    /// </summary>
+    public GebaeudeKatalogKiSicht MitLadestand(Func<string> lesen)
+    {
+        LadestandLesen = lesen;
+        return this;
+    }
+
+    /// <summary>
+    /// Was der Dialog nicht lesen konnte, im Wortlaut seines Warnbanners — nur lesbar. Steht hier
+    /// ein Grund, sperrt der Dialog die Felder und lehnt Speichern mit demselben Grund ab
+    /// (<c>KatalogKiSperre</c>).
+    /// </summary>
+    public string Ladestand => LadestandLesen?.Invoke() ?? "";
 }
 
 /// <summary>

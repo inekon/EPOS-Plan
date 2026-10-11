@@ -335,7 +335,7 @@ Form_Energietraeger.btn_Help = Kosten#energietraegerverwaltung
 Form_ProjektBrennstoffe.btn_Help = Kosten#brennstoffe-des-projekts
 Form_KostenAdmin.btn_Help = Kosten
 Form_KostenKomponente.btn_Help = Kosten#komponentenliste
-Form_Kostenprofil.btn_Help = Kosten
+Form_Kostenprofil.btn_Help = Kosten#kostenprofil
 Form_Nutzungsdauer.btn_Help = Kosten#nutzungsdauern
 # Erster Dialog als Razor-Komponente (iU8/iZ5). Der Schluessel steht in der
 # Komponente selbst (EnergietraegerVarianteDialog.razor, HilfeSchluessel);

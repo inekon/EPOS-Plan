@@ -3463,6 +3463,24 @@ namespace Testdatenbankschema
                                   ", Projektkopien mit ID: " + KaeltemittelSchema.ZeilenMitId(KaeltemaschineSchema.TAB_PROJEKT) +
                                   " (erwartet True, 3, 3).");
             }
+
+            // ---- Schritt SchnellaufheizungSchema.SCHRITT (SA2): Schnellaufheizung des Vorheizens - Schalter und
+            //      Raumsollwert-Ueberhoehung an Tab_Einstellungen, sechs Ergebnisspalten an Tab_ErgebnisGebaeude und
+            //      Tab_ErgebnisZone. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Schnellaufheizung.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Spalte steht auf NULL, und NULL heisst aus.
+            string nrSa = SchnellaufheizungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSa + " - Schnellaufheizung: " + (SchnellaufheizungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSa = new List<string>();
+                angelegt += SchnellaufheizungSchema.Ausfuehren(berichtSa);
+                foreach (string zeile in berichtSa)
+                    Console.WriteLine("Schritt " + nrSa + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSa + " - vollstaendig: " + SchnellaufheizungSchema.Vollstaendig() +
+                                  ", Einstellungen mit Schalter: " + SchnellaufheizungSchema.ZeilenMitSchalter() + " (erwartet True, 0).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
