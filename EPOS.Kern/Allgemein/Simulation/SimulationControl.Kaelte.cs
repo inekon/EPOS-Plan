@@ -374,6 +374,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>„Nicht prüfbar“ der Kältemittelprüfung</b> (KM4-E2; Konzept Kältemittel als Stammdatum 3.3, 5.2): Je
+        /// Kälteerzeuger der Ergebnisklasse 4 ein Hinweis mit der fehlenden Größe — nur bei gesetztem
+        /// Inbetriebnahmejahr; ohne Jahr prüft und meldet der Lauf nichts (eine Abfrage). Die Warnung der Klasse 2
+        /// meldet der Warnkriterienkatalog (<see cref="Warnkriterien.KAELTEMITTEL_STICHTAG"/>).
+        /// </summary>
+        private void KaeltemittelHinweiseMelden()
+        {
+            foreach (KaeltemittelErzeugerpruefung p in KaeltemittelProjektpruefung.Pruefen(m_ID_Projekt))
+            {
+                string text = Warnkriterien.KaeltemittelNichtPruefbarText(p);
+                if (text.Length > 0)
+                    Protokoll.HinweisEinmal("kuehl-km-kaeltemittel-" + p.ID_Anlage.ToString(CultureInfo.InvariantCulture), text);
+            }
+        }
+
+        /// <summary>
         /// <b>Die Kältemaschinen des Projekts</b> (KU3-4; Kühlkonzept 5.3, 5.5, 6.1): jede Anlagenzeile mit Typ
         /// <see cref="KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE"/> und Verweis auf ihre Projektkopie ist eine
         /// Maschine — mit Anzahl, Kaltwasservorlauf (<c>Kuehl_Vorlauf</c>), Hilfsstromanteil, Kühlträger und

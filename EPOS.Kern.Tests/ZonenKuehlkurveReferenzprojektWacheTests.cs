@@ -100,8 +100,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(W.Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", VORLAGE),
                          W.Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", PROJEKT));
             Assert.Equal(0, Zonen(VORLAGE).Rows.Count);
-            // Nach 1062 allein die Referenzprojekte Kältemaschine Teillast 1063 (KM3) und Freie Kühlung 1064 (FK).
-            Assert.Equal(0L, W.Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID > ? AND ID NOT IN (1063, 1064)", PROJEKT));
+            // Nach 1062 allein die Referenzprojekte Kältemaschine Teillast 1063 (KM3), Freie Kühlung 1064 (FK) und Vorheizen 1065.
+            Assert.Equal(0L, W.Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID > ? AND ID NOT IN (1063, 1064, 1065)", PROJEKT));
         }
 
         [Fact]

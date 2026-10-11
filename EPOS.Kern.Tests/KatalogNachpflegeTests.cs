@@ -33,8 +33,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Generation_9_pflegt_nur_und_saet_keine_Zeile()
         {
-            Assert.Equal(9, GesetzKatalog.AktuelleGeneration);
-            Assert.Equal(8, GesetzKatalog.JuengsteSaatgeneration);
+            // KM4-E2-a: Die Generation 10 sät die F-Gas-Regeln; die 9 bleibt die pflegende.
+            Assert.Equal(10, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(10, GesetzKatalog.JuengsteSaatgeneration);
             Assert.DoesNotContain(GesetzKatalog.Vorbelegung(), p => p.Generation == 9);
             Assert.Contains(GesetzKatalog.Nachpflege(),
                             s => s.Generation == 9 && s.Tabelle == "Tab_Brennstoff_Stamm");
@@ -55,12 +56,14 @@ namespace EPOS.Kern.Tests
 
             Assert.True(GesetzKatalog.SaatWarnungen.Count == 0,
                         "Die Nachpflege meldet Warnungen: " + string.Join(" | ", GesetzKatalog.SaatWarnungen));
-            Assert.Equal(0, GesetzKatalog.ZuletztNachgesaet);          // keine neue Zeile
+            // Die Generation 9 sät keine Zeile; neu sind allein die Zeilen der jüngeren
+            // Generationen, die MarkerAuf abgeräumt hat (KM4-E2-a: Generation 10).
+            Assert.Equal(JuengereSaatzeilen(9), GesetzKatalog.ZuletztNachgesaet);
             Assert.True(GesetzKatalog.ZuletztNachgepflegt >= 1);
-            Assert.Equal(zeilen, Ganzzahl("SELECT COUNT(*) FROM " + TABELLE));
+            Assert.Equal(zeilen + JuengereSaatzeilen(9), Ganzzahl("SELECT COUNT(*) FROM " + TABELLE));
             Assert.Equal(1.0, Kommazahl("SELECT Hi FROM Tab_Brennstoff_Stamm WHERE ID = 24"), 12);
             Assert.Equal(1.0, Kommazahl("SELECT Hs FROM Tab_Brennstoff_Stamm WHERE ID = 24"), 12);
-            Assert.Equal(9, Marker());
+            Assert.Equal(GesetzKatalog.AktuelleGeneration, Marker());
 
             // Wiederholbar: Der Marker steht oben, ein zweiter Lauf pflegt nichts.
             GesetzKatalog.StelleKatalogSicher();
@@ -84,7 +87,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(GesetzKatalog.SaatWarnungen);
             Assert.Equal(2.5, Kommazahl("SELECT Hi FROM Tab_Brennstoff_Stamm WHERE ID = 24"), 12);
             Assert.Equal(0.0, Kommazahl("SELECT Hs FROM Tab_Brennstoff_Stamm WHERE ID = 24"), 12);
-            Assert.Equal(9, Marker());
+            Assert.Equal(GesetzKatalog.AktuelleGeneration, Marker());
         }
 
         /// <summary>
@@ -160,7 +163,7 @@ namespace EPOS.Kern.Tests
 
             Assert.Empty(GesetzKatalog.SaatWarnungen);
             Assert.True(GesetzKatalog.ZuletztNachgepflegt >= 2);
-            Assert.Equal(zeilen, Ganzzahl("SELECT COUNT(*) FROM " + TABELLE));
+            Assert.Equal(zeilen + JuengereSaatzeilen(9), Ganzzahl("SELECT COUNT(*) FROM " + TABELLE));
             Assert.Equal(DbWerte.GESETZ_STATUS_ABGEKUENDIGT,
                          Text("SELECT Status FROM " + TABELLE + " WHERE Schluessel = 'KWKG_REALISIERUNGSFRIST'"));
             Assert.Equal(DbWerte.GESETZ_STATUS_ABGEKUENDIGT,
@@ -220,8 +223,25 @@ namespace EPOS.Kern.Tests
             return d.FullName;
         }
 
+        /// <summary>Zahl der Saatzeilen jünger als <paramref name="generation"/> — mit 9 die Zeilen,
+        /// die <see cref="MarkerAuf"/> abräumt und die Nachsaat wieder bringt.</summary>
+        private static int JuengereSaatzeilen(int generation)
+            => GesetzKatalog.Vorbelegung().Count(p => p.Generation > generation);
+
+        /// <summary>
+        /// Setzt den Marker zurück und räumt die Saatzeilen der Generationen ÜBER 9 ab (KM4-E2-a:
+        /// die F-Gas-Regeln der Generation 10). Sonst stünden sie beim Nachsäen schon da und
+        /// meldeten sich als Dubletten — die Fälle prüfen die Nachpflege der 9, nicht die Saat.
+        /// </summary>
         private static void MarkerAuf(int generation)
         {
+            foreach (GesetzParameter p in GesetzKatalog.Vorbelegung())
+            {
+                if (p.Generation <= 9) continue;
+                DataRepository.ExecuteNonQuery(
+                    "DELETE FROM " + TABELLE + " WHERE Schluessel = ? AND Klasse = ? AND JahrVon = ?",
+                    new DbParam("@s", p.Schluessel), new DbParam("@k", p.Klasse), new DbParam("@j", p.JahrVon));
+            }
             DataRepository.ExecuteNonQuery(
                 "UPDATE " + TABELLE + " SET [Wert] = ? WHERE Schluessel = ?",
                 new DbParam("@w", DbParamTyp.Double) { Wert = (double)generation },
