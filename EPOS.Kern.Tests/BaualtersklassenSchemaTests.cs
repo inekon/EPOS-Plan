@@ -188,9 +188,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(35L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'NIEDRIGENERGIE'"));   // 34 + der Referenzkatalogbau von 1051 (KP3, RP1)
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'PASSIVHAUS'"));
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'EH70'"));
-            // Einzige Projektkopie mit Energiestandard: das Gebäude von 1051 aus seinem Referenzkatalogbau (KP3, RP1).
+            // Einzige Projektkopien mit Energiestandard: das Gebäude von 1051 aus seinem Referenzkatalogbau (KP3, RP1) und
+            // seine Kopie im Referenzprojekt 1065.
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard IS NOT NULL" + Konditionierungsbestand.Ausser("Tab_Gebaeude")));
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard = 'NIEDRIGENERGIE' AND ID IN (" + Konditionierungsbestand.GEBAEUDE_1051 + ")"));
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard = 'NIEDRIGENERGIE' AND ID IN (" + Konditionierungsbestand.GEBAEUDE_1051 + ")"));
             // Die Projektkopien trugen nur Bauzeitraeume (alt A 18, D 2, F 4, G 2, H 2) - je einen Buchstaben weiter;
             // H3 mit der Gebaeudekopie des Referenzprojekts Solarthermie 1049 (Vorlage 1018), G5 mit der
             // des Referenzprojekts Kesselkennlinie 1050 (Vorlage 1023), H4 mit der des Zonenprojekts 1052
@@ -204,7 +205,8 @@ namespace EPOS.Kern.Tests
             // E9: dazu die Gebäudekopie des Referenzprojekts Übergabegrenze 1060 (Vorlage 1056, UB-E2-d).
             // E10: dazu die Gebäudekopie des Referenzprojekts Kältemaschine Teillast 1063 (Vorlage 1055, KM3).
             // E11: dazu die Gebäudekopie des Referenzprojekts Freie Kühlung 1064 (Vorlage 1017, FK).
-            Assert.Equal(new[] { "B19", "E11", "G5", "H6", "I2", "J1" }, kopien);
+            // J2: dazu die Gebäudekopie des Referenzprojekts Vorheizen 1065 (Vorlage 1051).
+            Assert.Equal(new[] { "B19", "E11", "G5", "H6", "I2", "J2" }, kopien);
         }
 
         /// <summary>
