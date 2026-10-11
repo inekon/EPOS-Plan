@@ -88,6 +88,7 @@ namespace Berichtsvorlage
             internal string Empfehlung, BesteVor, BesteMitte, BesteNach, Wirtschaft, Kuehlung, KuehlungVor, KuehlungMitte, KuehlungNach;
             internal string Deckung, Anhang, Stamm, Gruppe, Summe, Warnung;
             internal string Aufheizung, AufheizVor, AufheizBei, AufheizLeistung, AufheizAuslegung, AufheizAus, AufheizUnd, AufheizNach;
+            internal string VorheizZeit, VorheizLeistung, VorheizVerfehlt, VorheizMehr;
             internal string Titel, Beschreibung;
             internal string[][] Kommentare;
         }
@@ -265,6 +266,18 @@ namespace Berichtsvorlage
                                          Beispielvorlage.Lauf(" " + t.AufheizUnd + " "), P("gebaeude.ergebnis.aufheizzuschlag"),
                                          Beispielvorlage.Lauf(t.AufheizNach)));
             r.Add(Beispielvorlage.Absatz("Normal", P("gebaeude.ergebnis.aufheizhinweise")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/je")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+
+            // 7b — Vorheizen der Fassung 2 (AH-V6, Katalog v19): nur mit Verfahren „Vorgabe“ oder „Berechnet“, ein Satz je Gebäude
+            r.Add(Beispielvorlage.Absatz("Normal", P("#wenn hat.vorheizen")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#je gebaeude")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("gebaeude.name"), Beispielvorlage.Lauf(" – "), P("gebaeude.ergebnis.vorheizverfahren"),
+                                         Beispielvorlage.Lauf(t.VorheizZeit + " "), P("gebaeude.ergebnis.vorheizzeit"),
+                                         Beispielvorlage.Lauf(t.VorheizLeistung + " "), P("gebaeude.ergebnis.vorheizleistung"),
+                                         Beispielvorlage.Lauf(t.VorheizVerfehlt + " "), P("gebaeude.ergebnis.vorheiz_tage_verfehlt"),
+                                         Beispielvorlage.Lauf(t.VorheizMehr + " "), P("gebaeude.ergebnis.vorheiz_mehrwaerme"),
+                                         Beispielvorlage.Lauf(".")));
             r.Add(Beispielvorlage.Absatz("Normal", P("/je")));
             r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
 
@@ -694,6 +707,8 @@ namespace Berichtsvorlage
             Aufheizung = "Aufheizung", AufheizVor = ": Die Aufheizzeit beträgt", AufheizBei = "bei",
             AufheizLeistung = ", die Aufheizleistung", AufheizAuslegung = "; die Auslegungsgröße",
             AufheizAus = "setzt sich aus der Auslegungsheizlast", AufheizUnd = "und dem Aufheizzuschlag", AufheizNach = " zusammen.",
+            VorheizZeit = ": Vorheizzeit", VorheizLeistung = ", Vorheizleistung", VorheizVerfehlt = ", Tage ohne Ankunft",
+            VorheizMehr = ", Mehrwärme des Vorheizens",
             Kommentare = new[]
             {
                 new[]
@@ -765,7 +780,8 @@ namespace Berichtsvorlage
                     + "etwa „Gebäude 1: Die Aufheizzeit beträgt 4 h bei −10,0 °C …“.",
                     "Die Werte gebaeude.ergebnis.… kommen aus dem Ergebnis des Laufs. Die Auslegungsgröße ist die "
                     + "Auslegungsheizlast plus der Aufheizzuschlag; {{gebaeude.ergebnis.aufheizhinweise}} nennt die Hinweise W1 bis "
-                    + "W5 und bleibt ohne Anlass leer.",
+                    + "W5 und bleibt ohne Anlass leer. Mit vorgegebener oder berechneter Vorheizzeit folgt ({{#wenn hat.vorheizen}}) "
+                    + "ein Satz mit Verfahren, Vorheizzeit, Vorheizleistung, Tagen ohne Ankunft und Mehrwärme.",
                 },
             },
         };
@@ -789,6 +805,8 @@ namespace Berichtsvorlage
             Aufheizung = "Preheating", AufheizVor = ": The preheat time is", AufheizBei = "at",
             AufheizLeistung = ", the preheat power", AufheizAuslegung = "; the design capacity",
             AufheizAus = "consists of the design heat load", AufheizUnd = "and the heating-up capacity", AufheizNach = ".",
+            VorheizZeit = ": preheat time", VorheizLeistung = ", preheat power", VorheizVerfehlt = ", days without arrival",
+            VorheizMehr = ", additional heat from preheating",
             Kommentare = new[]
             {
                 new[]
@@ -859,7 +877,8 @@ namespace Berichtsvorlage
                     + "example “Building 1: The preheat time is 4 h at −10.0 °C …”.",
                     "The values gebaeude.ergebnis.… come from the result of the run. The design capacity is the design heat "
                     + "load plus the heating-up capacity; {{gebaeude.ergebnis.aufheizhinweise}} lists the notes W1 to W5 and stays "
-                    + "empty without cause.",
+                    + "empty without cause. With a specified or calculated preheat time ({{#wenn hat.vorheizen}}) a sentence "
+                    + "follows with method, preheat time, preheat power, days without arrival and additional heat.",
                 },
             },
         };

@@ -15,7 +15,7 @@ Abschnitte 5.1 und 10 (Zeile K‑F2); Vorgänger [K‑F1](2026-10-10_K-F1_Rueckk
   42. BImSchV.
 - **Ergebnisse und Kennzahlen:** Spalten `Ventilatorstrom_MWh`, `Wasser_m3`, `Stunden_Nass`, `Rueckkuehltemperatur_Mittel`
   (nur mit Rückkühlwerk, sonst NULL); Kennzahlen `kaelte.rk.ventilator`, `kaelte.rk.wasser_m3`.
-- **Bericht:** Berichtskatalogfassung 18 → 19, Messlatte `Vorlagenfeldkatalog_v19`, zehn Berichtsvorlagen neu gebaut.
+- **Bericht:** Berichtskatalogfassung 18 → 20, Messlatte `Vorlagenfeldkatalog_v20`, zehn Berichtsvorlagen neu gebaut. Beim Zusammenführen mit origin auf 20 gehoben: Fassung 19 trägt AH‑V6 (`FASSUNG_VORHEIZEN`), die Rückkühlwerk-Kennzahlen stehen unter `FASSUNG_RUECKKUEHLWERK` = 20; die Messlatte v19 ist die von origin.
 - **Vorgaben:** `KaelteFestwerte` mit „Quelle nicht am Wortlaut geprüft (vorläufig)“; Annahmen begründet.
 
 ## Nachweise

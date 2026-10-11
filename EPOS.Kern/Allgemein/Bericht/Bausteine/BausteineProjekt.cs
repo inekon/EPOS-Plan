@@ -607,6 +607,12 @@ namespace WindowsFormsApplication1
                 k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Gebaeudeergebnis(g, BerichtTexte.Englisch, k.Kultur, aufschlag)));
                 // Festlegung 30: W1-W5 als benannte Hinweiszeilen unter der Tafel des Gebaeudes, nur mit Anlass.
                 foreach (string hinweis in Aufheizbericht.Hinweise(g, k.Kultur)) k.HinweisRoh(hinweis);
+                // AH-V6: das Vorheizen je Zone (Fassung 2) - nur, wenn eine Zone Vorheizwerte traegt; bei Sollwertrampe nichts.
+                if (Aufheizbericht.Zonentafel(g, k.Kultur) is Berichtstabelle vorheizZonen)
+                {
+                    k.TextRoh(Aufheizbericht.Zonentitel(k.Kultur));
+                    k.Fuege(WordTabellenschreiber.Direkt(k, vorheizZonen));
+                }
             }
 
             // E60 (Festlegung 41): neben der Auslegungsgroesse der Hinweis, dass die ideale Spitze keine ist.

@@ -42,8 +42,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung des Ausweises der Vorlaufwahl der Wärmepumpe (Katalog v14, VW1b).</summary>
         internal const int FASSUNG_VORLAUFWAHL_WP = 14;
 
-        /// <summary>Die Fassung der Kennzahlen des Rückkühlwerks (Katalog v19, K-F2).</summary>
-        internal const int FASSUNG_RUECKKUEHLWERK = 19;
+        /// <summary>Die Fassung der Kennzahlen des Rückkühlwerks (Katalog v20, K-F2).</summary>
+        internal const int FASSUNG_RUECKKUEHLWERK = 20;
 
         /// <summary>
         /// Die Kennzahlen der Kältemaschine als Anlage (Schemaschritt 183) kamen mit Katalog v12 — ihre erzeugten

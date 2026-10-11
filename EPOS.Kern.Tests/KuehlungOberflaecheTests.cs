@@ -343,7 +343,7 @@ namespace EPOS.Kern.Tests
                                  // KM3-E3-b (Katalog v18): die fuenf Kennzahlen „Teillast und Takten“.
                                  "kaelte.km.taktstrom", "kaelte.km.starts", "kaelte.km.teillastanteil", "kaelte.km.lastgrad",
                                  "kaelte.km.jaz_verdichter",
-                                 // K-F2 (Katalog v19): Strom und Wasser der Rückkühlwerke.
+                                 // K-F2 (Katalog v20): Strom und Wasser der Rückkühlwerke.
                                  "kaelte.rk.ventilator", "kaelte.rk.wasser_m3",
                                  "kaelte.rest", "kaelte.jaz", "kaelte.strom",
                                  "kaelte.netzbezug", "kaelte.kosten", "kaelte.co2" },
