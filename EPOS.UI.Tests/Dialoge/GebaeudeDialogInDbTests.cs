@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Bedarf;
+using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
 using EPOS.UI.Standards;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class GebaeudeDialogInDbTests : EposBunitContext
 {
-    private const string KNOPF = "In DB übernehmen";
+    private const string KNOPF = "In die Datenbank übernehmen…";
 
     public GebaeudeDialogInDbTests()
     {
@@ -54,13 +55,22 @@ public class GebaeudeDialogInDbTests : EposBunitContext
     /// <summary>Der Katalog der Probe — wächst mit jeder erfolgreichen Übernahme.</summary>
     private readonly List<Katalogfilterzeile> _katalog = new() { Katalogsatz(1, "Haus 1990") };
 
-    /// <summary>Die Aufrufe der Hülle: Zeile und Name.</summary>
-    private readonly List<(GebaeudeProjektZeile Zeile, string Name)> _aufrufe = new();
+    /// <summary>Was die Hülle geschrieben hätte: Zeile, Wahl, Name.</summary>
+    private readonly List<(GebaeudeProjektZeile Zeile, bool Ueberschreiben, string Name)> _aufrufe = new();
 
-    private GebaeudeDbUebernahme Hullenweg(GebaeudeProjektZeile z, string name)
+    /// <summary>Der Sperrgrund des Ursprungs in der Vorschau (Vorgabe: überschreiben möglich).</summary>
+    private Rueckwegabsage _ursprung = Rueckwegabsage.Keine;
+
+    private GebaeudeRueckwegVorschau Vorschau(GebaeudeProjektZeile z)
+        => new(z.IdZ, 70, z.Name, 1, "Haus 1990", _ursprung, z.Name + " (Projekt)",
+               new[] { new GebaeudeAbweichung("Wohnflaeche_gesamt", "140", "150") },
+               new[] { new GebaeudeKindzahl(GebaeudeRueckweg.ART_ZONEN, 2, 1), new GebaeudeKindzahl(GebaeudeRueckweg.ART_BAUTEILE, 9, 4) });
+
+    /// <summary>Der Rückweg der Hülle im Kleinen (Muster <c>GebaeudeHuelle.Rueckweg</c>).</summary>
+    private GebaeudeDbUebernahme Hullenweg(GebaeudeProjektZeile z, bool ueberschreiben, string name)
     {
-        _aufrufe.Add((z, name));
-        if (string.IsNullOrWhiteSpace(name)) return new GebaeudeDbUebernahme(false, "", "Bitte einen Namen eingeben.", true);
+        _aufrufe.Add((z, ueberschreiben, name));
+        if (ueberschreiben) return new GebaeudeDbUebernahme(true, "Haus 1990", "Gebäude „Haus 1990“ überschrieben.");
         if (_katalog.Any(k => k.Bezeichner == name))
             return new GebaeudeDbUebernahme(false, "", "Ein Gebäude mit diesem Namen steht schon im Katalog.", true);
         _katalog.Add(Katalogsatz(_katalog.Count + 1, name));
@@ -81,49 +91,59 @@ public class GebaeudeDialogInDbTests : EposBunitContext
              .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
              .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "Katalogtext", "150,00"));
             if (mitWeg)
-                p.Add(x => x.InDbVorschlag, z => z.Name + " (2)")
-                 .Add(x => x.InDbUebernehmen, Hullenweg);
+                p.Add(x => x.RueckwegVorschau, Vorschau)
+                 .Add(x => x.Rueckweg, Hullenweg)
+                 .Add(x => x.RueckwegNameBelegt, n => _katalog.Any(k => k.Bezeichner == n));
         });
     }
 
     private static IElement? InDbKnopf(IRenderedComponent<GebaeudeDialog> cut)
         => cut.FindAll(".epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste button.epos-gebaeude-in-db").SingleOrDefault();
 
-    private static void Ok(IRenderedComponent<GebaeudeDialog> cut)
-        => cut.FindAll(".epos-gebaeude-in-db-abfrage .epos-leiste button.epos-knopf--primaer").Single().Click();
+    private static void Uebernehmen(IRenderedComponent<GebaeudeDialog> cut)
+        => cut.Find("button.epos-rueckweg-uebernehmen").Click();
 
     [Fact]
-    public void Ohne_Delegat_kein_Knopf_mit_Delegat_der_dritte_Knopf_der_Leiste()
+    public void Ohne_Delegat_kein_Knopf_mit_Delegat_in_der_Projekt_Kopfleiste()
     {
         var ohne = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) }, mitWeg: false);
         Assert.Null(InDbKnopf(ohne));
-        Assert.Equal(2, ohne.FindAll(".epos-zweispalten-knopf--richtung").Count);
 
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) });
-        IReadOnlyList<IElement> leiste = new[] { cut.Find(".epos-zweispalten-knopf--uebernehmen"), cut.Find(".epos-zweispalten-knopf--entfernen"), InDbKnopf(cut)! };
-        Assert.Equal(3, leiste.Count);
-        Assert.Equal(KNOPF, leiste[2].TextContent.Trim());
-        Assert.Equal("Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen",
-                     leiste[2].GetAttribute("title"));
-        Assert.False(leiste[2].HasAttribute("disabled"));
+        IElement knopf = InDbKnopf(cut)!;
+        Assert.Equal(KNOPF, knopf.TextContent.Trim());
+        Assert.Equal(R.KATRUECK_BTN_HINWEIS, knopf.GetAttribute("title"));
+        Assert.False(knopf.HasAttribute("disabled"));
     }
 
     [Fact]
     public void Der_Knopf_ist_nur_mit_gewaehlter_Projektzeile_aktiv()
     {
-        // Leere Projektliste: nichts gewählt.
         var leer = Aufbauen(new List<GebaeudeProjektZeile>());
         Assert.True(InDbKnopf(leer)!.HasAttribute("disabled"));
 
         // Eine Katalogwahl nimmt die Projektmarkierung - der Knopf sperrt.
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) });
         Assert.False(InDbKnopf(cut)!.HasAttribute("disabled"));
-        cut.FindAll(".epos-katalogliste tbody tr").First().QuerySelector("button.epos-anlagenwahl")!.Click();
+        cut.FindAll(".epos-katalogliste tbody tr").First().QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl")!.Click();
         Assert.Null(cut.Instance.Gewaehlt);
         Assert.True(InDbKnopf(cut)!.HasAttribute("disabled"));
     }
 
-    /// <summary>Im Assistenten (kein stiller Speicherweg) bleibt eine ungespeicherte Zeile weich gesperrt.</summary>
+    [Fact]
+    public void Mehrere_gewaehlte_Zeilen_sperren_den_Knopf_mit_Grund()
+    {
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true), Zeile(2, "Haus B", true) });
+        cut.InvokeAsync(() => cut.Instance.ProjektWahl.Setzen(new[] { "1", "2" }));
+        cut.Render();
+        IElement knopf = InDbKnopf(cut)!;
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(R.GEB_SPERRE_RUECKWEG_MEHRERE, knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.Null(cut.Instance.Rueckwegzeilen);
+        Assert.Equal(R.GEB_SPERRE_RUECKWEG_MEHRERE, cut.Instance.Meldung);
+    }
+
     [Fact]
     public void Im_Assistenten_ist_eine_ungespeicherte_Zeile_weich_gesperrt_und_nennt_den_Grund()
     {
@@ -133,16 +153,11 @@ public class GebaeudeDialogInDbTests : EposBunitContext
         Assert.Equal(R.GEB_SPERRE_IN_DB_ASSISTENT, knopf.GetAttribute("title"));
 
         knopf.Click();
-        Assert.False(cut.Instance.InDbOffen);
+        Assert.Null(cut.Instance.Rueckwegzeilen);
         Assert.Empty(_aufrufe);
         Assert.Equal(R.GEB_SPERRE_IN_DB_ASSISTENT, cut.Instance.Meldung);
     }
 
-    /// <summary>
-    /// Anwenderentscheid 06.10.2026: Außerhalb des Assistenten speichert der Klick eine ungespeicherte
-    /// Zeile zuerst still (derselbe Weg wie Bearbeiten und Exportieren), danach öffnet die Abfrage für
-    /// die nun gespeicherte Zeile und schreibt sie.
-    /// </summary>
     [Fact]
     public void Eine_ungespeicherte_Zeile_wird_vorher_still_gespeichert()
     {
@@ -150,106 +165,108 @@ public class GebaeudeDialogInDbTests : EposBunitContext
         GebaeudeProjektZeile neu = Zeile(100000, "Neu", false);
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { neu },
                            listeSpeichern: () => { gespeichert++; neu.IdZ = 55; neu.HatProjektkopie = true; return ""; });
-        IElement knopf = InDbKnopf(cut)!;
-        Assert.Null(knopf.GetAttribute("aria-disabled"));
-        Assert.Equal("Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen",
-                     knopf.GetAttribute("title"));
-
-        knopf.Click();
+        InDbKnopf(cut)!.Click();
         Assert.Equal(1, gespeichert);
-        Assert.True(cut.Instance.InDbOffen);
-        Assert.Equal("Neu (2)", cut.Instance.InDbName);
-
-        Ok(cut);
-        Assert.Single(_aufrufe);
-        Assert.Same(neu, _aufrufe[0].Zeile);
-        Assert.Equal(55, _aufrufe[0].Zeile.IdZ);
-        Assert.Equal("Gebäude „Neu (2)“ in die Datenbank übernommen.", cut.Instance.Meldung);
+        Assert.NotNull(cut.Instance.Rueckwegzeilen);
+        Assert.Equal(55, cut.Instance.Rueckwegzeilen![0].Id);
+        Assert.Equal("Neu (Projekt)", cut.Find(".epos-rueckweg-namensfeld").GetAttribute("value"));
     }
 
-    /// <summary>Scheitert das stille Speichern, steht seine Meldung und es wird nicht übernommen.</summary>
     [Fact]
-    public void Scheitert_das_stille_Speichern_wird_nicht_uebernommen()
+    public void Scheitert_das_stille_Speichern_oeffnet_keine_Rueckfrage()
     {
         GebaeudeProjektZeile neu = Zeile(100000, "Neu", false);
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { neu },
                            listeSpeichern: () => "Die Gebäudeliste wurde nicht gespeichert.");
-
         InDbKnopf(cut)!.Click();
-        Assert.False(cut.Instance.InDbOffen);
+        Assert.Null(cut.Instance.Rueckwegzeilen);
         Assert.Empty(_aufrufe);
-        Assert.False(neu.HatProjektkopie);
         Assert.Equal("Die Gebäudeliste wurde nicht gespeichert.", cut.Instance.Meldung);
     }
 
-    /// <summary>Eine gespeicherte Zeile speichert nicht erst still.</summary>
     [Fact]
-    public void Eine_gespeicherte_Zeile_speichert_nicht_vorher()
+    public void Die_Rueckfrage_zeigt_Vorschlag_Abweichungen_Kindzeilen_und_was_bleibt()
     {
-        int gespeichert = 0;
-        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) },
-                           listeSpeichern: () => { gespeichert++; return ""; });
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) }, listeSpeichern: () => "");
         InDbKnopf(cut)!.Click();
-        Assert.True(cut.Instance.InDbOffen);
-        Assert.Equal(0, gespeichert);
+        Assert.Equal("Haus A (Projekt)", cut.Find(".epos-rueckweg-namensfeld").GetAttribute("value"));
+        Assert.Contains("Wohnflaeche_gesamt (140 → 150)", cut.Find(".epos-gebaeude-rueckweg-abweichungen").TextContent);
+        string kinder = cut.Find(".epos-gebaeude-rueckweg-kindzeilen").TextContent;
+        Assert.Contains("Zonen 2 / 1", kinder);
+        Assert.Contains("Bauteile 9 / 4", kinder);
+        Assert.Equal(R.GEB_RUECKWEG_BLEIBT, cut.Find(".epos-rueckweg-bleibt").TextContent.Trim());
+        Assert.DoesNotContain(R.KATRUECK_HINWEIS_KOSTEN, cut.Markup);
+        Assert.False(cut.Find(".epos-rueckweg-ueber").HasAttribute("disabled"));
     }
 
     [Fact]
-    public void Die_Abfrage_schreibt_den_Satz_waehlt_ihn_im_Katalog_und_meldet_ihn()
+    public void Neu_schreibt_den_Satz_waehlt_ihn_im_Katalog_und_meldet_ihn()
     {
         GebaeudeProjektZeile zeile = Zeile(1, "Haus A", true);
-        var cut = Aufbauen(new List<GebaeudeProjektZeile> { zeile });
-
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { zeile }, listeSpeichern: () => "");
         InDbKnopf(cut)!.Click();
-        Assert.True(cut.Instance.InDbOffen);
-        Assert.Equal("Haus A (2)", cut.Instance.InDbName);
-        Assert.Equal("Haus A (2)", cut.Find(".epos-gebaeude-in-db-name input").GetAttribute("value"));
-        Assert.Contains("seine Zonen samt Bauteilen", cut.Find(".epos-gebaeude-in-db-regel").TextContent);
+        Uebernehmen(cut);
 
-        Ok(cut);
-
-        Assert.False(cut.Instance.InDbOffen);
+        Assert.Null(cut.Instance.Rueckwegzeilen);
         Assert.Single(_aufrufe);
         Assert.Same(zeile, _aufrufe[0].Zeile);
-        Assert.Equal("Haus A (2)", _aufrufe[0].Name);
-        Assert.Equal("Haus A (2)", cut.Instance.Katalogzeile?.Bezeichner);
-        Assert.Contains("Haus A (2)", cut.FindAll(".epos-katalogliste tbody tr").Select(tr => tr.TextContent).Aggregate((a, b) => a + b));
-        Assert.Equal("Gebäude „Haus A (2)“ in die Datenbank übernommen.", cut.Instance.Meldung);
-        // Die Projektliste bleibt, wie sie war.
+        Assert.False(_aufrufe[0].Ueberschreiben);
+        Assert.Equal("Haus A (Projekt)", _aufrufe[0].Name);
+        Assert.Equal("Haus A (Projekt)", cut.Instance.Katalogzeile?.Bezeichner);
+        Assert.Equal("Gebäude „Haus A (Projekt)“ in die Datenbank übernommen.", cut.Instance.Meldung);
         Assert.Single(cut.Instance.Zeilen);
     }
 
     [Fact]
-    public void Ein_Doppelname_steht_am_Feld_und_die_Abfrage_bleibt_offen()
+    public void Ueberschreiben_sperrt_das_Namensfeld_und_schreibt_den_Ursprung()
     {
-        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) });
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) }, listeSpeichern: () => "");
         InDbKnopf(cut)!.Click();
-        cut.Find(".epos-gebaeude-in-db-name input").Input("Haus 1990");
-        Ok(cut);
+        cut.Find(".epos-rueckweg-ueber").Change(true);
+        IElement feld = cut.Find(".epos-rueckweg-namensfeld");
+        Assert.True(feld.HasAttribute("disabled"));
+        Assert.Equal("Haus 1990", feld.GetAttribute("value"));
+        Uebernehmen(cut);
 
-        Assert.True(cut.Instance.InDbOffen);
-        Assert.Equal("Ein Gebäude mit diesem Namen steht schon im Katalog.", cut.Instance.InDbNameFehler);
-        Assert.Equal("Ein Gebäude mit diesem Namen steht schon im Katalog.",
-                     cut.Find(".epos-gebaeude-in-db-name .epos-kond-feldmeldung").TextContent.Trim());
+        Assert.Single(_aufrufe);
+        Assert.True(_aufrufe[0].Ueberschreiben);
+        Assert.Equal("Gebäude „Haus 1990“ überschrieben.", cut.Instance.Meldung);
         Assert.Single(_katalog);
+    }
 
-        // Eine Eingabe nimmt die Absage zurück; ein freier Name geht durch.
-        cut.Find(".epos-gebaeude-in-db-name input").Input("Haus A neu");
-        Assert.Null(cut.Instance.InDbNameFehler);
-        Ok(cut);
-        Assert.False(cut.Instance.InDbOffen);
+    [Fact]
+    public void Ein_gesperrter_Ursprung_sperrt_Ueberschreiben_mit_Grund()
+    {
+        _ursprung = Rueckwegabsage.UrsprungGesperrt;
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) }, listeSpeichern: () => "");
+        InDbKnopf(cut)!.Click();
+        Assert.True(cut.Find(".epos-rueckweg-ueber").HasAttribute("disabled"));
+        Assert.Contains(R.KATRUECK_GRUND_GESPERRT, cut.Find(".epos-rueckweg-grund").TextContent);
+    }
+
+    [Fact]
+    public void Ein_belegter_Name_steht_am_Feld_und_sperrt_Uebernehmen()
+    {
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) }, listeSpeichern: () => "");
+        InDbKnopf(cut)!.Click();
+        cut.Find(".epos-rueckweg-namensfeld").Input("Haus 1990");
+        Assert.Equal(R.KATRUECK_HINWEIS_NAME_BELEGT, cut.Find(".epos-rueckweg-namenshinweis").TextContent.Trim());
+        Assert.True(cut.Find("button.epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+
+        cut.Find(".epos-rueckweg-namensfeld").Input("Haus A neu");
+        Uebernehmen(cut);
+        Assert.Null(cut.Instance.Rueckwegzeilen);
         Assert.Equal(2, _katalog.Count);
     }
 
     [Fact]
     public void Abbrechen_schreibt_nichts()
     {
-        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) });
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) }, listeSpeichern: () => "");
         InDbKnopf(cut)!.Click();
-        cut.FindAll(".epos-gebaeude-in-db-abfrage .epos-leiste button")
-           .First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        cut.FindAll(".epos-rueckweg-fuss button").First(b => b.TextContent.Trim() == R.KATRUECK_BTN_ABBRECHEN).Click();
 
-        Assert.False(cut.Instance.InDbOffen);
+        Assert.Null(cut.Instance.Rueckwegzeilen);
         Assert.Empty(_aufrufe);
         Assert.Single(_katalog);
     }
