@@ -10,9 +10,10 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Der WINDOWS-ADAPTER von „Hilfe → Fernwartung…" (Konzept Administration und Support,
     /// Abschnitt 4.2). Die Hülle ist plattformfrei (<see cref="FernwartungHuelle"/>,
-    /// <c>EPOS.UI.Daten</c>); hier stehen nur das Fenster und die zwei Rückrufe der Plattform:
-    /// Adresse öffnen über <c>Dienste.Datei.AdresseOeffnen</c> und Kopieren über die
-    /// Zwischenablage. Muster <see cref="KatalogabgleichFenster"/>.
+    /// <c>EPOS.UI.Daten</c>); hier stehen nur das Fenster und die drei Rückrufe der Plattform:
+    /// Adresse öffnen über <c>Dienste.Datei.AdresseOeffnen</c>, Kopieren über die
+    /// Zwischenablage und Quick Assist starten über <see cref="QuickAssistStart"/>. Muster
+    /// <see cref="KatalogabgleichFenster"/>.
     /// </summary>
     internal static class FernwartungFenster
     {
@@ -31,7 +32,7 @@ namespace WindowsFormsApplication1
             };
 
             var werte = new Dictionary<string, object>(FernwartungHuelle.Gaben(
-                Application.ProductVersion, AdresseOeffnen, kopieren))
+                Application.ProductVersion, AdresseOeffnen, kopieren, QuickAssistStart.Starten))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
