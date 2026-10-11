@@ -46072,6 +46072,39 @@ chart</value>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
     <value>Cold storage “{0}”: cooling is switched off for the project — it is not calculated.</value>
   </data>
+  <data name="SIMWARN_KAELTEMITTEL_STICHTAG" xml:space="preserve">
+    <value>{0}: refrigerant {1} — under {2}, from {3} only remaining stock or an exemption ({4}; year of commissioning {5}, rated capacity {6} kW). The check only warns: Annex IV prohibits placing on the market, not operation, and the check does not know its exemptions.</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_KRIT_GWP" xml:space="preserve">
+    <value>F-gas with GWP ≥ {0}</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_KRIT_HFKW" xml:space="preserve">
+    <value>HFC with GWP ≥ {0}</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_KRIT_FGAS" xml:space="preserve">
+    <value>any F-gas</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_NICHT_PRUEFBAR" xml:space="preserve">
+    <value>{0}: the admissibility of the refrigerant for the year of commissioning {1} cannot be checked — {2}.</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_GERAETEKLASSE" xml:space="preserve">
+    <value>the device class cannot be determined (device type, or design and type)</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_LEISTUNG" xml:space="preserve">
+    <value>the rated capacity is missing</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_KAELTEMITTEL" xml:space="preserve">
+    <value>the refrigerant is unknown</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_GWP" xml:space="preserve">
+    <value>the GWP of the refrigerant is unknown</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_FGAS" xml:space="preserve">
+    <value>the F-gas flag of the refrigerant is unknown</value>
+  </data>
+  <data name="SIMWARN_KAELTEMITTEL_FEHLT_STOFFKLASSE" xml:space="preserve">
+    <value>the substance class of the refrigerant is unknown</value>
+  </data>
   <data name="GIMP_ZONENREGEL_Z6" xml:space="preserve">
     <value>Z6 – by room temperature and use</value>
   </data>
