@@ -205,7 +205,8 @@ public class MenuebandTests : EposBunitContext
         // Punkten, nur im Entwicklermodus sichtbar (70 -> 78, 56 -> 63). Die Zahlen hier gelten
         // fuer den VOLLSTAENDIGEN Baum Eintraege; den Zuschnitt je Stufe pruefen die Faelle
         // zu Menuetabelle.Sichtbar weiter unten und EntwicklerbereicheWacheTests.
-        Assert.Equal(78, Punkte.Count);
+        // KM4-E3-c: die Verwaltung „Kältemittel…" unter „Daten & Import" (78 -> 79, 63 -> 64).
+        Assert.Equal(79, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -462,6 +463,8 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_SP_Import",
             // MN-1: Trennstrich, danach die Dublettenpruefung.
             "MenuItem_TrennerImportDubletten",
+            // KM4-E3-c: die Verwaltung der Kältemittel vor der Pflege der eingelesenen Kataloge.
+            "MenuItem_Kaeltemittel",
             "MenuItem_KatalogDubletten",
             // KU1 Stufe 1: der Abgleich mit dem Katalogpaket, hinter der Dublettenpruefung.
             "MenuItem_Katalogabgleich",
@@ -899,6 +902,8 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.Gesetzeskatalog,
             // KU3-1: das NEUE Ziel neben der Waermepumpe - die Kaeltemaschinen.
             Seitenschluessel.KaeltemaschineKatalog,
+            // KM4-E3-c: das NEUE Ziel „Kältemittel…" unter „Daten & Import".
+            Seitenschluessel.Kaeltemittel,
             Seitenschluessel.HeizkesselAdmin,
             Seitenschluessel.HeizkesselImport,
             // KU1 Stufe 1: das NEUE Ziel „Katalog aktualisieren…".
@@ -1047,14 +1052,18 @@ public class MenuebandTests : EposBunitContext
         Assert.Equal(Seitenschluessel.Katalogabgleich, kinder[^1].Ziel);
         Assert.Equal("KABG_MENUE", kinder[^1].TextSchluessel);
         Assert.Equal("MenuItem_KatalogDubletten", kinder[^2].Name);
-        Assert.True(kinder[^3].Trenner);
+        // KM4-E3-c: davor die Verwaltung der Kältemittel, dann der Trennstrich.
+        Assert.Equal("MenuItem_Kaeltemittel", kinder[^3].Name);
+        Assert.Equal(Seitenschluessel.Kaeltemittel, kinder[^3].Ziel);
+        Assert.Equal("KMT_MENUE", kinder[^3].TextSchluessel);
+        Assert.True(kinder[^4].Trenner);
         Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^2].Ziel);
         Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^2].TextSchluessel);
         Assert.Equal("", kinder[^2].Bild);
 
         // Acht Importe davor, in der Reihenfolge der Kataloge (E119: der Import fuer
         // Kaelteanlagen hinter dem Waermepumpenimport, K-C: der Kaeltemaschinenimport dahinter).
-        Assert.Equal(8, kinder.Take(kinder.Count - 3).Count());
+        Assert.Equal(8, kinder.Take(kinder.Count - 4).Count());
 
         // Und nicht mehr in der obersten Ebene des Kopfes.
         Assert.DoesNotContain("MenuItem_KatalogDubletten", Kinder(Administration));
@@ -1289,7 +1298,9 @@ public class MenuebandTests : EposBunitContext
         //
         // Der Kopf „Entwicklung" (Administration und Support, Stufe 1) klappt auf (14 -> 15)
         // und fuehrt sieben handelnde Punkte (56 -> 63).
-        Assert.Equal(63, Punkte.Count(p => !p.Klappt));
+        //
+        // Die Verwaltung der Kältemittel (KM4-E3-c) ist ein echter Weg (63 -> 64).
+        Assert.Equal(64, Punkte.Count(p => !p.Klappt));
     }
 
     // =====================================================================
@@ -1301,10 +1312,10 @@ public class MenuebandTests : EposBunitContext
     {
         List<Menuepunkt> anwender = Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender)).ToList();
 
-        // 78 - 8 = 70 Punkte, 15 - 2 = 13 Trenner, 63 - 7 = 56 handelnde: der Stand vor Stufe 1.
-        Assert.Equal(70, anwender.Count(p => !p.Trenner));
+        // 79 - 8 = 71 Punkte, 15 - 2 = 13 Trenner, 64 - 7 = 57 handelnde (KM4-E3-c: + Kältemittel).
+        Assert.Equal(71, anwender.Count(p => !p.Trenner));
         Assert.Equal(13, anwender.Count(p => p.Trenner));
-        Assert.Equal(56, anwender.Count(p => !p.Trenner && !p.Klappt));
+        Assert.Equal(57, anwender.Count(p => !p.Trenner && !p.Klappt));
         Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
                      Menuetabelle.Sichtbar(Freigabestufe.Anwender).Select(p => p.Name).ToArray());
         Assert.All(anwender, p => Assert.Equal(Freigabestufe.Anwender, p.Stufe));
@@ -1317,7 +1328,7 @@ public class MenuebandTests : EposBunitContext
         List<Menuepunkt> alle = Menuetabelle.Alle.ToList();
 
         Assert.Equal(alle.Select(p => p.Name), entwickler.Select(p => p.Name));
-        Assert.Equal(78, entwickler.Count(p => !p.Trenner));
+        Assert.Equal(79, entwickler.Count(p => !p.Trenner));
         Assert.Equal(15, entwickler.Count(p => p.Trenner));
     }
 

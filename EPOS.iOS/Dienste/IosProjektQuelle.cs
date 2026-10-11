@@ -562,6 +562,13 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? KaeltemittelGaben()
+    {
+        try { return new KaeltemittelHuelle().Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Kältemittel: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
     public IReadOnlyDictionary<string, object>? GesetzeskatalogGaben()
     {
         try { return GesetzeskatalogHuelle.Gaben(""); }

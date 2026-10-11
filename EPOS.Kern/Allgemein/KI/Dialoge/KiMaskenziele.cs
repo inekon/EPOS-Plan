@@ -209,6 +209,12 @@ namespace WindowsFormsApplication1
         public const string KAELTEMASCHINE_KATALOG = "KAELTEMASCHINE_KATALOG";
 
         /// <summary>
+        /// Der Seitenschluessel der Verwaltung „Kältemittel" (KM4-E3-c, Menü „Daten &amp; Import") —
+        /// <c>Seitenschluessel.Kaeltemittel</c>, dieselbe Zeichenkette.
+        /// </summary>
+        public const string KAELTEMITTEL = "KAELTEMITTEL";
+
+        /// <summary>
         /// Der Seitenschluessel des Erzeugerdialogs „Kältemaschinen im Projekt" (KU3-4c) — eine freie Ansicht
         /// der Wurzel fuer das offene Projekt (<c>Seitenschluessel.KaeltemaschineAnlage</c>, dieselbe Zeichenkette).
         /// </summary>
@@ -413,6 +419,7 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.BAUSTOFF_KATALOG, BAUSTOFF_KATALOG },
                 { KiMaskennamen.BAUTEILAUFBAU, BAUTEILAUFBAU_KATALOG },
                 { KiMaskennamen.KAELTEMASCHINE_KATALOG, KAELTEMASCHINE_KATALOG },
+                { KiMaskennamen.KAELTEMITTEL, KAELTEMITTEL },
                 { KiMaskennamen.KAELTEMASCHINE_ANLAGE, KAELTEMASCHINE_ANLAGE },
 
                 // Die Betriebskalender der Bedarfsprofile (PW2, BW2) - eine freie Ansicht wie die

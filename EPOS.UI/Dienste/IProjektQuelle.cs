@@ -366,6 +366,12 @@ public interface IProjektQuelle
     IReadOnlyDictionary<string, object>? NutzungsdauerGaben() => null;
 
     /// <summary>
+    /// Der fertige PARAMETERSATZ der Verwaltung KÄLTEMITTEL (<c>Dialoge.Admin.KaeltemittelDialog</c>,
+    /// KM4-E3-c); <c>null</c> = diese Hülle führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KaeltemittelGaben() => null;
+
+    /// <summary>
     /// Der fertige PARAMETERSATZ des GESETZESKATALOGS
     /// (<c>Dialoge.Wirtschaftlichkeit.GesetzeskatalogDialog</c>); <c>null</c> =
     /// diese Hülle führt ihn nicht.

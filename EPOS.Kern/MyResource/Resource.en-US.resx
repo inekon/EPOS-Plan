@@ -53010,5 +53010,206 @@ chart</value>
   <data name="KI_DLG_PKOPF_JAHR_ERL" xml:space="preserve">
     <value>The planned year of commissioning, 2000 to 2100 — empty means no admissibility check of the refrigerants. A year switches on the check against the deadlines of the F-gas regulation in the simulation run; it only gives notices.</value>
   </data>
+  <data name="KMT_MSG_CODE_UNGUELTIG" xml:space="preserve">
+    <value>The code must not be empty and may have at most {0} characters.</value>
+  </data>
+  <data name="KMT_MSG_TEXT_ZU_LANG" xml:space="preserve">
+    <value>Name and references may have at most {0} characters.</value>
+  </data>
+  <data name="KMT_MSG_GWP_UNGUELTIG" xml:space="preserve">
+    <value>The GWP must be a number of 0 or more.</value>
+  </data>
+  <data name="KMT_MSG_WERTEMENGE" xml:space="preserve">
+    <value>“{0}” is not a permitted value for “{1}”.</value>
+  </data>
+  <data name="KMT_MSG_CODE_BELEGT" xml:space="preserve">
+    <value>The code “{0}” already exists (case is ignored).</value>
+  </data>
+  <data name="KMT_MSG_CODE_VERWENDET" xml:space="preserve">
+    <value>The code “{0}” cannot change: {1} chiller(s) use this refrigerant.</value>
+  </data>
+  <data name="KMT_MSG_VERWENDET" xml:space="preserve">
+    <value>“{0}” is used by {1} chiller(s) and cannot be deleted.</value>
+  </data>
+  <data name="KMT_MSG_SATZ_FEHLT" xml:space="preserve">
+    <value>The refrigerant no longer exists.</value>
+  </data>
+  <data name="KMT_MSG_TABELLE_FEHLT" xml:space="preserve">
+    <value>This database has no refrigerant table.</value>
+  </data>
+  <data name="KMT_SP_CODE" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="KMT_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KMT_SP_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="KMT_SP_GWP" xml:space="preserve">
+    <value>GWP</value>
+  </data>
+  <data name="KMT_SP_GWP_QUELLE" xml:space="preserve">
+    <value>GWP reference</value>
+  </data>
+  <data name="KMT_SP_FGAS" xml:space="preserve">
+    <value>F-gas</value>
+  </data>
+  <data name="KMT_SP_NATUERLICH" xml:space="preserve">
+    <value>natural</value>
+  </data>
+  <data name="KMT_SP_SICHERHEIT" xml:space="preserve">
+    <value>Safety class</value>
+  </data>
+  <data name="KMT_SP_PFAS" xml:space="preserve">
+    <value>PFAS</value>
+  </data>
+  <data name="KMT_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="KMT_SP_QUELLE" xml:space="preserve">
+    <value>Reference of the attributes</value>
+  </data>
+  <data name="KMT_SP_SORTIERUNG" xml:space="preserve">
+    <value>Sort order</value>
+  </data>
+  <data name="KMT_GRUPPE_HFKW" xml:space="preserve">
+    <value>HFC</value>
+  </data>
+  <data name="KMT_GRUPPE_HFO" xml:space="preserve">
+    <value>HFO</value>
+  </data>
+  <data name="KMT_GRUPPE_HFCKW" xml:space="preserve">
+    <value>HCFC</value>
+  </data>
+  <data name="KMT_GRUPPE_GEMISCH" xml:space="preserve">
+    <value>Blend</value>
+  </data>
+  <data name="KMT_GRUPPE_NATUERLICH" xml:space="preserve">
+    <value>natural</value>
+  </data>
+  <data name="KMT_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>other</value>
+  </data>
+  <data name="KMT_PFAS_PFAS" xml:space="preserve">
+    <value>PFAS</value>
+  </data>
+  <data name="KMT_PFAS_BESTANDTEIL" xml:space="preserve">
+    <value>contains a PFAS component</value>
+  </data>
+  <data name="KMT_PFAS_KEIN" xml:space="preserve">
+    <value>no PFAS</value>
+  </data>
+  <data name="KMT_STATUS_GESICHERT" xml:space="preserve">
+    <value>verified</value>
+  </data>
+  <data name="KMT_STATUS_VORLAEUFIG" xml:space="preserve">
+    <value>provisional</value>
+  </data>
+  <data name="KMT_STATUS_PROGNOSE" xml:space="preserve">
+    <value>forecast</value>
+  </data>
+  <data name="KMT_STATUS_ABGEKUENDIGT" xml:space="preserve">
+    <value>withdrawn</value>
+  </data>
+  <data name="KMT_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="KMT_NEIN" xml:space="preserve">
+    <value>no</value>
+  </data>
+  <data name="KMT_UNBEKANNT" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="KMT_TITEL" xml:space="preserve">
+    <value>Refrigerants</value>
+  </data>
+  <data name="KMT_MENUE" xml:space="preserve">
+    <value>Refrigerants…</value>
+  </data>
+  <data name="KMT_EINLEITUNG" xml:space="preserve">
+    <value>The refrigerant list of the chillers and heat pumps: GWP with its reference, attributes under the F-gas regulation, safety class and PFAS status. Supplied rows are locked; your own rows can be added, changed and deleted as long as no chiller uses them.</value>
+  </data>
+  <data name="KMT_NEU" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="KMT_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KMT_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="KMT_SATZ_NEU" xml:space="preserve">
+    <value>New refrigerant</value>
+  </data>
+  <data name="KMT_VERWENDUNG" xml:space="preserve">
+    <value>Used by {0} chiller(s) — the code is fixed and the row cannot be deleted.</value>
+  </data>
+  <data name="KMT_UNBENUTZT" xml:space="preserve">
+    <value>Not used by any chiller.</value>
+  </data>
+  <data name="KMT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete refrigerant “{0}”?</value>
+  </data>
+  <data name="KMT_LEER" xml:space="preserve">
+    <value>The refrigerant table is empty.</value>
+  </data>
+  <data name="KMT_GELOESCHT" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+  <data name="KMT_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>The refrigerants are not yet available on this device.</value>
+  </data>
+  <data name="KMT_FUNDSTELLEN" xml:space="preserve">
+    <value>References</value>
+  </data>
+  <data name="KMT_KEINE_ANGABE" xml:space="preserve">
+    <value>not stated</value>
+  </data>
+  <data name="KMT_LESEMODUS" xml:space="preserve">
+    <value>The database is read-only — the refrigerants cannot be changed.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KMT" xml:space="preserve">
+    <value>Refrigerants</value>
+  </data>
+  <data name="KI_KMT_ERL_SATZ" xml:space="preserve">
+    <value>Selects the row of the refrigerant table, like a click in the list.</value>
+  </data>
+  <data name="KI_KMT_ERL_CODE" xml:space="preserve">
+    <value>Designation according to ISO 817 including the isomer, unique regardless of case; fixed for a row in use.</value>
+  </data>
+  <data name="KI_KMT_ERL_BEZEICHNUNG" xml:space="preserve">
+    <value>Substance or blend name, neutral, no trade name.</value>
+  </data>
+  <data name="KI_KMT_ERL_GRUPPE" xml:space="preserve">
+    <value>Substance group of the row; empty means unknown.</value>
+  </data>
+  <data name="KI_KMT_ERL_GWP" xml:space="preserve">
+    <value>Global warming potential over 100 years; empty means unknown.</value>
+  </data>
+  <data name="KI_KMT_ERL_GWP_QUELLE" xml:space="preserve">
+    <value>Reference of the GWP value in the regulation (annex, section, page, assessment report).</value>
+  </data>
+  <data name="KI_KMT_ERL_FGAS" xml:space="preserve">
+    <value>Fluorinated greenhouse gas under the F-gas regulation: yes, no or unknown.</value>
+  </data>
+  <data name="KI_KMT_ERL_NATUERLICH" xml:space="preserve">
+    <value>Natural refrigerant: yes, no or unknown.</value>
+  </data>
+  <data name="KI_KMT_ERL_SICHERHEIT" xml:space="preserve">
+    <value>Safety class according to ISO 817 / EN 378-1 (display only).</value>
+  </data>
+  <data name="KI_KMT_ERL_PFAS" xml:space="preserve">
+    <value>PFAS status: substance is PFAS, contains a PFAS component or no PFAS.</value>
+  </data>
+  <data name="KI_KMT_ERL_STATUS" xml:space="preserve">
+    <value>Evidence status of the row; empty becomes “provisional” on saving.</value>
+  </data>
+  <data name="KI_KMT_ERL_QUELLE" xml:space="preserve">
+    <value>Reference of the other attributes (F-gas, mass fractions, PFAS derivation).</value>
+  </data>
+  <data name="KI_KMT_ERL_SORTIERUNG" xml:space="preserve">
+    <value>Order in the drop-down list; empty sorts by code.</value>
+  </data>
 </root>
 

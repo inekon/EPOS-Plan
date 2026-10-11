@@ -262,6 +262,8 @@ namespace WindowsFormsApplication1
             // Die Kältemaschine (KU3): Katalog- und Anlagendialog tragen eigene Hilfeschluessel.
             { "KaeltemaschineKatalog",         B_KAELTEMASCHINE },
             { "KaeltemaschineAnlage",          B_KAELTEMASCHINE },
+            // KM4-E3-c: die Verwaltung der Kältemittel.
+            { "Kaeltemittel",                  B_KAELTEMASCHINE },
             // KM1: der Katalogimport der Kaeltemaschine (Form_Kaeltemaschine_einlesen).
             { "Form_Kaeltemaschine",           B_KAELTEMASCHINE },
             // Die Betriebskalender gelten fuer Brauchwasser, Prozesswaerme und Strom; ihr Bereich
