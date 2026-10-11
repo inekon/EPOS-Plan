@@ -133,10 +133,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Vorgabe der Raumsollwert-Überhöhung</b> Δθ [K] der Schnellaufheizung (SA1, E128) — gesetzt nach der Messung an
-        /// 1054, 1047 und 1058 (Protokoll SA1): die kürzeste Vorheizzeit, die die Nachtabsenkung an den Werktagen erhält, ohne
-        /// die Heizwärme und den Strom der Wärmepumpe merklich zu heben.
+        /// 1054, 1047 und 1058 (Protokoll SA1): die kleinste gemessene Überhöhung, die in 1054 die Nachtabsenkung jeder Nacht
+        /// erhält (t_V 12 → 6 h, Heizwärme −2,5 %) und in 1047 und 1058 jeden Tag über t_V beseitigt; 3 und 5 K kürzen t_V
+        /// nur um ein bis zwei Stunden, heben aber den Strom der Wärmepumpe in 1047 weiter (+4 bzw. +8 % gegen 2 K) und die
+        /// Stunden an <c>Vorlauf_Max</c> (11 bzw. 54 statt 8).
         /// </summary>
-        public const double UEBERHOEHUNG_VORGABE_K = 3.0;
+        public const double UEBERHOEHUNG_VORGABE_K = 2.0;
 
         /// <summary>Die größte zulässige Überhöhung [K] (Bereich &gt; 0 … 10 K).</summary>
         public const double UEBERHOEHUNG_MAX_K = 10.0;

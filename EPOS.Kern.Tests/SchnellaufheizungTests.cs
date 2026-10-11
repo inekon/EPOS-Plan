@@ -342,6 +342,7 @@ namespace EPOS.Kern.Tests
                     SimulationRunner r = Projektlauf(projekt, dK);
                     double s = uhr.Elapsed.TotalSeconds;
                     List<GebaeudeModellErgebnis> alle = Ergebnisse(r).ToList();
+                    Assert.True(alle.Any(x => x.Vorheizen != null), "Lauf " + projekt + " mit " + dK + " K ohne Vorheizergebnis");
                     double q = alle.Sum(e => e.HeizlastW.Sum()) / 1e6;
                     SimulationWaermepumpe wp = r.sim.simulation_wp;
                     double strom = wp.WpStrombedarfGesamtKwh / 1000.0, wpq = wp.WpWaermeproduktionGesamtKwh / 1000.0;

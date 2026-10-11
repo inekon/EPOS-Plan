@@ -403,9 +403,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Stundenrand Ueberhoehen(in Stundenrand r)
         {
-            double luft = LuftAmBeginn(in r);
-            return Rechenrand.SchwelleErreicht(luft, r.UeberhoehungAnkunftC) ? r.OhneUeberhoehung() : r.UeberhoehungAnwenden();
+            // Die Zonenschleife rechnet eine Stunde mehrmals aus demselben Zustand (Gauß-Seidel, Musterprobe); die Nachbarluft
+            // im Rand ändert sich dabei. Die Entscheidung fällt deshalb EINMAL je Ausgangszustand — beim ersten Durchlauf — und
+            // gilt für die Wiederholungen; sonst kippte sie an der Schwelle zwischen den Durchläufen und die Kopplung
+            // konvergierte nicht.
+            bool gleich = _ueberEntschieden
+                          && BitConverter.DoubleToInt64Bits(_ueberAw) == BitConverter.DoubleToInt64Bits(_thetaMAw)
+                          && BitConverter.DoubleToInt64Bits(_ueberIw) == BitConverter.DoubleToInt64Bits(_thetaMIw)
+                          && BitConverter.DoubleToInt64Bits(_ueberAnkunft) == BitConverter.DoubleToInt64Bits(r.UeberhoehungAnkunftC)
+                          && BitConverter.DoubleToInt64Bits(_ueberRoh) == BitConverter.DoubleToInt64Bits(r.UeberhoehungVorlaufRohC);
+            if (!gleich)
+            {
+                _ueberAngekommen = Rechenrand.SchwelleErreicht(LuftAmBeginn(in r), r.UeberhoehungAnkunftC);
+                _ueberAw = _thetaMAw;
+                _ueberIw = _thetaMIw;
+                _ueberAnkunft = r.UeberhoehungAnkunftC;
+                _ueberRoh = r.UeberhoehungVorlaufRohC;
+                _ueberEntschieden = true;
+            }
+            return _ueberAngekommen ? r.OhneUeberhoehung() : r.UeberhoehungAnwenden();
         }
+
+        // Schnellaufheizung: die letzte Entscheidung samt Ausgangszustand (siehe Ueberhoehen).
+        private bool _ueberEntschieden, _ueberAngekommen;
+        private double _ueberAw, _ueberIw, _ueberAnkunft, _ueberRoh;
 
         private static Stundenergebnis Markiert(in Stundenergebnis e, in Stundenrand w)
             => !w.UeberhoehungWirksam && !w.UeberhoehungBegrenzt && !w.UeberhoehungWirkungslos
