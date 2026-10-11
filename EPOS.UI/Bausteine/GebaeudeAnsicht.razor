@@ -133,6 +133,10 @@
         {
             <p class="epos-leisezeile epos-gebansicht-befund-hinweis" role="note">@BefundGrund(daten)</p>
         }
+        @if (_sperrmeldung.Length > 0)
+        {
+            <p class="epos-leisezeile epos-gebansicht-sperrmeldung" role="status">@_sperrmeldung</p>
+        }
         @if (!daten.Umhaengbar)
         {
             <p class="epos-leisezeile epos-gebansicht-nuranzeige">@Texte.NurAnzeige</p>
@@ -510,15 +514,15 @@
             <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_ZONEN"
                     aria-pressed="@(ImGruppenmodus ? "false" : "true")" @onclick="() => BeiFarbmodus(FARBMODUS_ZONEN)">@Texte.FarbmodusZonen</button>
             <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_RAND"
-                    aria-pressed="@(ImRandmodus ? "true" : "false")" disabled="@(!daten.RandbedingungWaehlbar)"
+                    aria-pressed="@(ImRandmodus ? "true" : "false")" aria-disabled="@(daten.RandbedingungWaehlbar ? null : "true")"
                     title="@(daten.RandbedingungWaehlbar ? null : RandGrund(daten))"
                     @onclick="() => BeiFarbmodus(FARBMODUS_RAND)">@Texte.FarbmodusRand</button>
             <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_AUFBAU"
-                    aria-pressed="@(ImAufbaumodus ? "true" : "false")" disabled="@(!daten.AufbauWaehlbar)"
+                    aria-pressed="@(ImAufbaumodus ? "true" : "false")" aria-disabled="@(daten.AufbauWaehlbar ? null : "true")"
                     title="@(daten.AufbauWaehlbar ? null : AufbauGrund(daten))"
                     @onclick="() => BeiFarbmodus(FARBMODUS_AUFBAU)">@Texte.FarbmodusAufbau</button>
             <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_BEFUND"
-                    aria-pressed="@(ImBefundmodus ? "true" : "false")" disabled="@(!daten.BefundWaehlbar)"
+                    aria-pressed="@(ImBefundmodus ? "true" : "false")" aria-disabled="@(daten.BefundWaehlbar ? null : "true")"
                     title="@(daten.BefundWaehlbar ? null : BefundGrund(daten))"
                     @onclick="() => BeiFarbmodus(FARBMODUS_BEFUND)">@Texte.FarbmodusBefund</button>
         </div>
@@ -625,9 +629,13 @@
 
     private void BeiFarbmodus(string schluessel)
     {
-        if (schluessel == FARBMODUS_RAND && Daten is not { RandbedingungWaehlbar: true }) return;
-        if (schluessel == FARBMODUS_AUFBAU && Daten is not { AufbauWaehlbar: true }) return;
-        if (schluessel == FARBMODUS_BEFUND && Daten is not { BefundWaehlbar: true }) return;
+        // Weiche Sperre (Hausregel): Der gesperrte Knopf bleibt anklickbar, damit sein title den Grund zeigt; der Versuch
+        // meldet den Grund in der Statuszeile unter der Leiste, der Modus bleibt.
+        _sperrmeldung = "";
+        if (schluessel == FARBMODUS_RAND && Daten is { } d1 && !d1.RandbedingungWaehlbar) { _sperrmeldung = RandGrund(d1); return; }
+        if (schluessel == FARBMODUS_AUFBAU && Daten is { } d2 && !d2.AufbauWaehlbar) { _sperrmeldung = AufbauGrund(d2); return; }
+        if (schluessel == FARBMODUS_BEFUND && Daten is { } d3 && !d3.BefundWaehlbar) { _sperrmeldung = BefundGrund(d3); return; }
+        if (Daten is null) return;
         if (!string.Equals(_farbmodus, schluessel, StringComparison.Ordinal)) _treffer = null;
         _farbmodus = schluessel;
     }
@@ -642,7 +650,34 @@
                                     + string.Concat(_befundSichtbar.Select(x => x ? '1' : '0'));
 
     /// <summary>Warum „Aufbau" nicht wählbar ist — ohne Stufen, sonst der Grund von „Randbedingung".</summary>
-    private string AufbauGrund(GebaeudeAnsichtDaten daten) => daten.HatAufbaustufen ? RandGrund(daten) : Texte.AufbauOhneStufen;
+    private string AufbauGrund(GebaeudeAnsichtDaten daten)
+        => daten.HatAufbaustufen ? RandGrund(daten)
+           : daten.Vorschlagsgrund.Length > 0 ? Format(Texte.AufbauOhneVorschlag, daten.Vorschlagsgrund) : Texte.AufbauOhneStufen;
+
+    /// <summary>Die Meldung des letzten Versuchs, einen gesperrten Farbmodus zu wählen (weiche Sperre); leer = keine.</summary>
+    private string _sperrmeldung = "";
+
+    /// <summary>
+    /// Die Legendenzeile „ohne Bauteilbezug (n)" (Auftrag AB): Raumdreiecke, die keinem Bauteil zugeordnet sind, zeichnen in
+    /// Aufbau und Befund in der neutralen Farbe „ohne Bauteil".
+    /// </summary>
+    private RenderFragment OhneBezugzeile(GebaeudeAnsichtDaten daten, string farbe, int spalten) => __builder =>
+    {
+        int n = daten.DreieckeOhneBauteilbezug();
+        if (n > 0)
+        {
+            <tr class="epos-gebansicht-ohnebezug">
+                <td>
+                    <span class="epos-gebansicht-farbfeld" style="@("background:" + farbe)" aria-hidden="true"></span>
+                    <span class="epos-gebansicht-zonenname">@Format(Texte.OhneBauteilbezug, n)</span>
+                </td>
+                @for (int i = 1; i < spalten; i++)
+                {
+                    <td></td>
+                }
+            </tr>
+        }
+    };
 
     private void BeiStufe(Aufbaustufe s) => _stufeSichtbar[(int)s] = !_stufeSichtbar[(int)s];
 
@@ -679,6 +714,7 @@
                         <td class="epos-gebimport-zahl epos-gebansicht-aufbau-innen">@Format(Texte.AufbauZahl, eintrag.ZahlInnen, eintrag.FlaecheInnenM2.ToString("N1", CultureInfo.CurrentCulture))</td>
                     </tr>
                 }
+                @OhneBezugzeile(daten, GebaeudeAnsichtAufbaustufen.Farbe(Aufbaustufe.OhneBauteil), 3)
             </tbody>
         </table>
     };
@@ -688,7 +724,9 @@
     // =====================================================================
 
     /// <summary>Warum „Befund" nicht wählbar ist — ohne Befunde, sonst der Grund von „Randbedingung".</summary>
-    private string BefundGrund(GebaeudeAnsichtDaten daten) => daten.HatBefunde ? RandGrund(daten) : Texte.BefundOhne;
+    private string BefundGrund(GebaeudeAnsichtDaten daten)
+        => daten.HatBefunde ? RandGrund(daten)
+           : daten.Vorschlagsgrund.Length > 0 ? Format(Texte.BefundOhneVorschlag, daten.Vorschlagsgrund) : Texte.BefundOhne;
 
     private void BeiBefund(Bauteilbefundstufe s) => _befundSichtbar[(int)s] = !_befundSichtbar[(int)s];
 
@@ -725,6 +763,7 @@
                         <td class="epos-gebimport-zahl epos-gebansicht-befund-zahl">@Format(Texte.AufbauZahl, eintrag.Zahl, eintrag.FlaecheM2.ToString("N1", CultureInfo.CurrentCulture))</td>
                     </tr>
                 }
+                @OhneBezugzeile(daten, GebaeudeAnsichtBefundstufen.Farbe(Bauteilbefundstufe.OhneBauteil), 2)
             </tbody>
         </table>
     };

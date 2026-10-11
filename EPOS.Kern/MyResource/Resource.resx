@@ -38051,6 +38051,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GIMP_DLG_KEINE_BAUTEILE" xml:space="preserve">
     <value>Keine Bauteile.</value>
   </data>
+  <data name="GIMP_BT_RICHTUNGEN" xml:space="preserve">
+    <value>N,NO,O,SO,S,SW,W,NW</value>
+  </data>
   <data name="GIMP_BT_AUS_SCHICHTEN" xml:space="preserve">
     <value>aus Schichten</value>
   </data>
@@ -48292,6 +48295,15 @@ Chart</value>
   </data>
   <data name="GANS_FARBMODUS_AUFBAU" xml:space="preserve">
     <value>Aufbau</value>
+  </data>
+  <data name="GANS_AUFBAU_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>„Aufbau“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0}</value>
+  </data>
+  <data name="GANS_BEFUND_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>„Befund“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0}</value>
+  </data>
+  <data name="GANS_OHNE_BAUTEILBEZUG" xml:space="preserve">
+    <value>ohne Bauteilbezug ({0})</value>
   </data>
   <data name="GANS_AUFBAU_OHNE_STUFEN" xml:space="preserve">
     <value>„Aufbau“ ist gesperrt: Es liegen keine Zuordnungsstufen der Bauteile vor (kein Bauteilvorschlag).</value>

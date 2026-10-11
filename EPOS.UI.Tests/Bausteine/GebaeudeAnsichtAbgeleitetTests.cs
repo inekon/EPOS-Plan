@@ -86,7 +86,7 @@ public class GebaeudeAnsichtAbgeleitetTests : EposBunitContext
     {
         IRenderedComponent<GebaeudeAnsicht> cut = Zeige(Daten());
         foreach (string modus in new[] { "randbedingung", "aufbau", "befund" })
-            Assert.False(cut.Find($".epos-gebansicht-farbmodus button[data-farbmodus='{modus}']").HasAttribute("disabled"), modus);
+            Assert.True(cut.Find($".epos-gebansicht-farbmodus button[data-farbmodus='{modus}']").GetAttribute("aria-disabled") is null, modus);
     }
 
     [Fact]

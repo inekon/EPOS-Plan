@@ -851,7 +851,7 @@ public class GebaeudeAnsichtTests : EposBunitContext
         Assert.Equal("Randbedingung", Farbmodusknopf(cut, "randbedingung").TextContent);
         Assert.Equal("Farbmodus", cut.Find(".epos-gebansicht-farbmodus").GetAttribute("aria-label"));
         Assert.Equal("true", Farbmodusknopf(cut, "zonen").GetAttribute("aria-pressed"));
-        Assert.False(Farbmodusknopf(cut, "randbedingung").HasAttribute("disabled"));
+        Assert.Null(Farbmodusknopf(cut, "randbedingung").GetAttribute("aria-disabled"));
         Assert.Empty(cut.FindAll(".epos-gebansicht-farbmodus-hinweis"));
         Assert.Empty(cut.FindAll("line.epos-gebansicht-kante"));
         Assert.Empty(cut.FindAll(".epos-gebansicht-randlegende"));
@@ -943,7 +943,7 @@ public class GebaeudeAnsichtTests : EposBunitContext
         Erdgeschoss(cut);
         IElement knopf = Farbmodusknopf(cut, "randbedingung");
         string grund = "Randbedingung nicht wählbar: Für dieses Gebäude liegen keine klassifizierten Körper aus der Datei vor.";
-        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         Assert.Equal(grund, knopf.GetAttribute("title"));
         Assert.Equal(grund, cut.Find(".epos-gebansicht-farbmodus-hinweis").TextContent);
         knopf.Click();
@@ -952,7 +952,7 @@ public class GebaeudeAnsichtTests : EposBunitContext
 
         // Über der Dreiecksgrenze: Prismen ohne Gruppen, der Grund ist die Grenze.
         IRenderedComponent<GebaeudeAnsicht> gross = Zeige(RandDaten(grenze: 1));
-        Assert.True(Farbmodusknopf(gross, "randbedingung").HasAttribute("disabled"));
+        Assert.Equal("true", Farbmodusknopf(gross, "randbedingung").GetAttribute("aria-disabled"));
         Assert.Equal("Randbedingung nicht wählbar: Die Körper überschreiten die Dreiecksgrenze, die Räume stehen als Prismen ohne Gruppen da.",
                      gross.Find(".epos-gebansicht-farbmodus-hinweis").TextContent);
         IRenderedComponent<GebaeudeAnsicht> verworfen = Zeige(Daten() with { RandgruppenZuGross = true });

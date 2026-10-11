@@ -1160,7 +1160,7 @@ namespace WindowsFormsApplication1
                     hn = _datei;
                 }
 
-                GebaeudeBauteilzeile z = NeueZeile(Name(s), art, flaeche, rand, p.Summenfeld, s.Quelltyp, s.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, p.Summenfeld, s.Quelltyp, s.Kennung, null);
                 z.HerkunftFlaeche = herkunftFlaeche;
                 z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1194,7 +1194,7 @@ namespace WindowsFormsApplication1
                 (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
 
-                GebaeudeBauteilzeile z = NeueZeile(Name(s), Bauteilart.Vorhangfassade, flaeche, rand, p.Summenfeld,
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), Bauteilart.Vorhangfassade, flaeche, rand, p.Summenfeld,
                                                    s.Quelltyp, s.Kennung, null);
                 z.HerkunftFlaeche = herkunftFlaeche;
                 z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
@@ -1228,7 +1228,7 @@ namespace WindowsFormsApplication1
                     (azimut, ha) = Azimut(teil.AzimutGrad, false);
                 }
 
-                GebaeudeBauteilzeile z = NeueZeile(Name(f), Bauteilart.Fenster, f.BruttoflaecheM2.Value, rand,
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(f), Bauteilart.Fenster, f.BruttoflaecheM2.Value, rand,
                                                    GebaeudeZielfelder.FENSTER_GESAMT, f.Quelltyp, f.Kennung, null);
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = f.Flaechenherkunft;
@@ -1258,7 +1258,7 @@ namespace WindowsFormsApplication1
                     gespiegelt = g;
                 }
 
-                GebaeudeBauteilzeile z = NeueZeile(Name(t), Bauteilart.Tuer, t.BruttoflaecheM2.Value, rand,
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(t), Bauteilart.Tuer, t.BruttoflaecheM2.Value, rand,
                                                    GebaeudeZielfelder.FLAECHE_SONSTIGE, t.Quelltyp, t.Kennung, null);
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = t.Flaechenherkunft;
@@ -1640,7 +1640,7 @@ namespace WindowsFormsApplication1
                     hn = _datei;
                 }
                 (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(s.AzimutGrad, gespiegelt);
-                GebaeudeBauteilzeile z = NeueZeile(Name(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = weg;
@@ -1677,7 +1677,7 @@ namespace WindowsFormsApplication1
                 (double? neigung, Importherkunft hn) = seite != null ? Neigung(seite.NeigungGrad, false) : Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
                 string feld = fenster ? GebaeudeZielfelder.FENSTER_GESAMT : GebaeudeZielfelder.FLAECHE_SONSTIGE;
-                GebaeudeBauteilzeile z = NeueZeile(Name(o), o.Art, flaeche, rand, feld, o.Quelltyp, o.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(o), o.Art, flaeche, rand, feld, o.Quelltyp, o.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = o.Flaechenherkunft;
@@ -1764,7 +1764,7 @@ namespace WindowsFormsApplication1
                     neigung = boden.Value ? GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_UNTEN : GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_OBEN;
                     hn = _datei;
                 }
-                string name = Name(s) + (seite == null ? "" : " (Seite " + seite + ")");
+                string name = Lesename(s) + (seite == null ? "" : " (Seite " + seite + ")");
                 GebaeudeBauteilzeile z = NeueZeile(name, art, flaeche, Bauteilrand.Innen, null, s.Quelltyp, s.Kennung, seite);
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = weg;
@@ -1895,7 +1895,7 @@ namespace WindowsFormsApplication1
                     neigung = DeckenneigungAusSicht(s, pos, gegenPos);
                     if (neigung.HasValue) hn = _datei;
                 }
-                string name = Name(s) + (seite == null ? "" : " (Seite " + seite + ")");
+                string name = Lesename(s) + (seite == null ? "" : " (Seite " + seite + ")");
                 GebaeudeBauteilzeile z = NeueZeile(name, art, p.NettoM2.Value, Bauteilrand.Innen, null, s.Quelltyp, s.Kennung, seite);
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = s.Flaechenherkunft;
@@ -2417,6 +2417,21 @@ namespace WindowsFormsApplication1
                                                 string.IsNullOrEmpty(kennung) ? null : kennung, seite);
             }
 
+            // Raumname je Kennung für den lesbaren Bauteilnamen; einmal je Gebäude gebildet.
+            private Dictionary<string, string> _raumnamen;
+
+            /// <summary>Der lesbare Name eines Bauteils mit den Raumnamen dieses Gebäudes (<see cref="GebaeudeBauteilvorschlag.Lesename(AbbildBauteil, Func{string, string})"/>).</summary>
+            private string Lesename(AbbildBauteil b)
+            {
+                if (_raumnamen == null)
+                {
+                    _raumnamen = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (AbbildRaum r in _g?.Raeume ?? new List<AbbildRaum>())
+                        if (!string.IsNullOrEmpty(r.Kennung) && !string.IsNullOrWhiteSpace(r.Name)) _raumnamen[r.Kennung] = r.Name.Trim();
+                }
+                return GebaeudeBauteilvorschlag.Lesename(b, k => _raumnamen.TryGetValue(k, out string n) ? n : null);
+            }
+
             private static void Setzen(GebaeudeBauteilzeile z, double? neigung, Importherkunft hn, double? azimut, Importherkunft ha)
             {
                 z.Bauteil.Neigung = neigung;
@@ -2718,6 +2733,47 @@ namespace WindowsFormsApplication1
         }
 
         private static string Name(AbbildBauteil b) => string.IsNullOrWhiteSpace(b.Name) ? b.Kennung ?? "" : b.Name.Trim();
+
+        /// <summary>
+        /// <b>Der lesbare Name eines Bauteils</b> (Auftrag AB): der CAD-Name, wenn die Datei einen trägt; sonst aus Art, Raum und
+        /// Ausrichtung gebildet („Außenwand EG-R4 S"), damit die Liste keine GUID zeigt. Die Kennung bleibt in
+        /// <see cref="BauteilModel.Quellkennung"/> und im Steckbrief. Ohne Art, Raum und Ausrichtung bleibt die Kennung.
+        /// </summary>
+        internal static string Lesename(AbbildBauteil b, Func<string, string> raumname)
+        {
+            if (b == null) return "";
+            if (!string.IsNullOrWhiteSpace(b.Name)) return b.Name.Trim();
+            string art = BauteilaufbauCtrl.BauteilartText(GebaeudeZonenabbildung.ArtFuerZeile(b.Art));
+            string raum = null;
+            foreach (AbbildGrenze g in b.Grenzen)
+            {
+                if (string.IsNullOrEmpty(g.RaumKennung)) continue;
+                raum = raumname?.Invoke(g.RaumKennung);
+                if (!string.IsNullOrWhiteSpace(raum)) break;
+            }
+            // Ohne Raumgrenze (Projektdatei): der erste Nachbarraum.
+            if (string.IsNullOrWhiteSpace(raum))
+                foreach (AbbildNachbar nb in b.Nachbarn)
+                {
+                    if (string.IsNullOrEmpty(nb.Kennung)) continue;
+                    raum = raumname?.Invoke(nb.Kennung);
+                    if (!string.IsNullOrWhiteSpace(raum)) break;
+                }
+            string richtung = Himmelsrichtung(b.AzimutGrad, b.NeigungGrad);
+            string name = string.Join(" ", new[] { art, raum?.Trim(), richtung }.Where(t => !string.IsNullOrWhiteSpace(t)));
+            return name.Length == 0 || (raum == null && richtung == null) ? (b.Kennung ?? "") : name;
+        }
+
+        /// <summary>Die Himmelsrichtung in acht Sektoren (Ressource GIMP_BT_RICHTUNGEN); <c>null</c> ohne Azimut oder waagerecht.</summary>
+        internal static string Himmelsrichtung(double? azimut, double? neigung)
+        {
+            if (!azimut.HasValue || double.IsNaN(azimut.Value)) return null;
+            if (neigung.HasValue && (neigung.Value < 10.0 || neigung.Value > 170.0)) return null;
+            string[] namen = (MyResource.Resource.GIMP_BT_RICHTUNGEN ?? "").Split(',');
+            if (namen.Length != 8) return null;
+            double a = ((azimut.Value % 360.0) + 360.0) % 360.0;
+            return namen[(int)Math.Floor((a + 22.5) / 45.0) % 8].Trim();
+        }
 
         private static string Kuerzen(string text, int laenge)
         {

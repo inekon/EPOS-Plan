@@ -182,6 +182,29 @@ public sealed record GebaeudeAnsichtDaten
     /// <summary>Der Steckbrief je Bauteilkennung — geöffnet beim Klick auf Bauteilkörper oder Raumfläche; leer = keiner.</summary>
     public IReadOnlyDictionary<string, BauteilsteckbriefDaten> Steckbriefe { get; init; } = new Dictionary<string, BauteilsteckbriefDaten>(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Der Grund, warum kein Bauteilvorschlag vorliegt (Auftrag AB), etwa nicht zugeordnete Räume des Zonenplans; leer = kein
+    /// besonderer Grund. Die Ansicht nennt ihn am gesperrten Farbmodus „Aufbau" und „Befund".
+    /// </summary>
+    public string Vorschlagsgrund { get; init; } = "";
+
+    /// <summary>
+    /// Die Zahl der Raumdreiecke ohne Bauteilbezug (Auftrag AB): Dreiecke mit Gruppe außer R0, deren Bauteil leer ist oder
+    /// keine Stufe hat — sie zeichnen in Aufbau und Befund neutral und stehen in einer eigenen Legendenzeile.
+    /// </summary>
+    public int DreieckeOhneBauteilbezug()
+    {
+        int n = 0;
+        if (!HatAufbaustufen) return 0;
+        foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
+        {
+            if (k.Dateikoerper?.Gruppen is not { } gruppen || k.Dreiecksbauteile is not { } je) continue;
+            for (int t = 0; t < gruppen.Count; t++)
+                if (Stufenbyte(gruppen[t], t < je.Count ? je[t] : null) == (byte)Aufbaustufe.OhneBauteil) n++;
+        }
+        return n;
+    }
+
     /// <summary>Liegen Stufen vor (ein Bauteilvorschlag bzw. gespeicherte Bauteile)?</summary>
     public bool HatAufbaustufen => Bauteilstufen.Count > 0;
 
@@ -919,6 +942,10 @@ public sealed class GebaeudeAnsichtTexte
 
     /// <summary>Der Grund der Sperre ohne Stufen (<c>GANS_AUFBAU_OHNE_STUFEN</c>).</summary>
     public string AufbauOhneStufen { get; set; } = Resource.GANS_AUFBAU_OHNE_STUFEN;
+    /// <summary>GANS_AUFBAU_OHNE_VORSCHLAG — {0} der Grund, warum kein Bauteilvorschlag vorliegt.</summary>
+    public string AufbauOhneVorschlag { get; set; } = Resource.GANS_AUFBAU_OHNE_VORSCHLAG;
+    /// <summary>GANS_OHNE_BAUTEILBEZUG — {0} Zahl der Dreiecke.</summary>
+    public string OhneBauteilbezug { get; set; } = Resource.GANS_OHNE_BAUTEILBEZUG;
 
     /// <summary>Die Legende der Stufen (<c>GANS_AUFBAU_LEGENDE</c>).</summary>
     public string AufbauLegende { get; set; } = Resource.GANS_AUFBAU_LEGENDE;
@@ -961,6 +988,8 @@ public sealed class GebaeudeAnsichtTexte
 
     /// <summary>Warum „Befund" gesperrt ist: keine Befunde (<c>GANS_BEFUND_OHNE</c>).</summary>
     public string BefundOhne { get; set; } = Resource.GANS_BEFUND_OHNE;
+    /// <summary>GANS_BEFUND_OHNE_VORSCHLAG — {0} der Grund, warum kein Bauteilvorschlag vorliegt.</summary>
+    public string BefundOhneVorschlag { get; set; } = Resource.GANS_BEFUND_OHNE_VORSCHLAG;
 
     /// <summary>Titel der Befundlegende (<c>GANS_BEFUND_LEGENDE</c>).</summary>
     public string BefundLegende { get; set; } = Resource.GANS_BEFUND_LEGENDE;

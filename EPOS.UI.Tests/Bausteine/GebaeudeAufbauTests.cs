@@ -138,7 +138,7 @@ public class GebaeudeAufbauTests : EposBunitContext
         IRenderedComponent<GebaeudeAnsicht> cut = Zeige(Daten());
         IElement knopf = Farbmodusknopf(cut, "aufbau");
         Assert.Equal("Aufbau", knopf.TextContent.Trim());
-        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
         Assert.Empty(cut.FindAll(".epos-gebansicht-aufbau-hinweis"));
         ImAufbaumodus(cut);
         Assert.Equal("true", Farbmodusknopf(cut, "aufbau").GetAttribute("aria-pressed"));
@@ -175,13 +175,62 @@ public class GebaeudeAufbauTests : EposBunitContext
     {
         IRenderedComponent<GebaeudeAnsicht> cut = Zeige(Daten(mitStufen: false));
         IElement knopf = Farbmodusknopf(cut, "aufbau");
-        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         string grund = new GebaeudeAnsichtTexte().AufbauOhneStufen;
         Assert.Equal(grund, knopf.GetAttribute("title"));
         Assert.Equal(grund, cut.Find(".epos-gebansicht-aufbau-hinweis").TextContent.Trim());
         Assert.Equal("zonen", cut.Instance.Farbmodus);
         // „Randbedingung" bleibt wählbar.
-        Assert.False(Farbmodusknopf(cut, "randbedingung").HasAttribute("disabled"));
+        Assert.Null(Farbmodusknopf(cut, "randbedingung").GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public void AB_Der_gesperrte_Knopf_ist_weich_gesperrt_und_meldet_den_Versuch()
+    {
+        IRenderedComponent<GebaeudeAnsicht> cut = Zeige(Daten(mitStufen: false));
+        IElement knopf = Farbmodusknopf(cut, "aufbau");
+        // Weiche Sperre: kein disabled (sonst erschiene der title nie), aria-disabled samt Grund.
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-sperrmeldung"));
+        knopf.Click();
+        Assert.Equal("zonen", cut.Instance.Farbmodus);
+        Assert.Equal(new GebaeudeAnsichtTexte().AufbauOhneStufen, cut.Find(".epos-gebansicht-sperrmeldung").TextContent.Trim());
+        Farbmodusknopf(cut, "befund").Click();
+        Assert.Equal(new GebaeudeAnsichtTexte().BefundOhne, cut.Find(".epos-gebansicht-sperrmeldung").TextContent.Trim());
+        Assert.Equal("zonen", cut.Instance.Farbmodus);
+    }
+
+    [Fact]
+    public void AB_Ohne_Vorschlag_nennt_die_Sperre_den_Grund_des_Vorschlags()
+    {
+        GebaeudeAnsichtDaten d = Daten(mitStufen: false) with { Vorschlagsgrund = "3 Räume sind keiner Zone zugeordnet." };
+        IRenderedComponent<GebaeudeAnsicht> cut = Zeige(d);
+        var texte = new GebaeudeAnsichtTexte();
+        string aufbau = string.Format(CultureInfo.CurrentCulture, texte.AufbauOhneVorschlag, d.Vorschlagsgrund);
+        string befund = string.Format(CultureInfo.CurrentCulture, texte.BefundOhneVorschlag, d.Vorschlagsgrund);
+        Assert.Equal(aufbau, Farbmodusknopf(cut, "aufbau").GetAttribute("title"));
+        Assert.Equal(befund, Farbmodusknopf(cut, "befund").GetAttribute("title"));
+        Assert.Equal(aufbau, cut.Find(".epos-gebansicht-aufbau-hinweis").TextContent.Trim());
+        Assert.Contains("keiner Zone", aufbau);
+    }
+
+    [Fact]
+    public void AB_Dreiecke_ohne_Bauteilbezug_stehen_neutral_in_einer_eigenen_Legendenzeile()
+    {
+        GebaeudeAnsichtDaten basis = Daten();
+        GebaeudeAnsichtKoerperraum k = basis.Koerperraeume[0] with { Dreiecksbauteile = new string?[] { "aw-sued", null, null } };
+        GebaeudeAnsichtDaten d = basis with { Koerperraeume = new[] { k } };
+        // Dreieck 2 (R3) ohne Bauteil zählt, Dreieck 3 (R0, neutrale Innenfläche) nicht.
+        Assert.Equal(1, d.DreieckeOhneBauteilbezug());
+        Assert.Equal((byte)Aufbaustufe.OhneBauteil, d.Stufenbyte(3, null));
+        Assert.Equal(0, Daten(mitStufen: false).DreieckeOhneBauteilbezug());
+        IRenderedComponent<GebaeudeAnsicht> cut = ImAufbaumodus(Zeige(d));
+        IElement zeile = cut.Find(".epos-gebansicht-aufbaulegende .epos-gebansicht-ohnebezug");
+        Assert.Equal(string.Format(CultureInfo.CurrentCulture, new GebaeudeAnsichtTexte().OhneBauteilbezug, 1), zeile.TextContent.Trim());
+        Assert.Contains(GebaeudeAnsichtAufbaustufen.Farbe(Aufbaustufe.OhneBauteil), zeile.QuerySelector(".epos-gebansicht-farbfeld")!.GetAttribute("style"));
+        // Ohne solche Dreiecke keine Zeile.
+        Assert.Empty(ImAufbaumodus(Zeige(Daten())).FindAll(".epos-gebansicht-ohnebezug"));
     }
 
     [Fact]
