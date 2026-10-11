@@ -20651,6 +20651,186 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankpfad ähnelt.
+        /// </summary>
+        public static string DIAG_DATENBANKPFAD {
+            get {
+                return ResourceManager.GetString("DIAG_DATENBANKPFAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus ähnelt.
+        /// </summary>
+        public static string DIAG_ENTWICKLERMODUS {
+            get {
+                return ResourceManager.GetString("DIAG_ENTWICKLERMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firma ähnelt.
+        /// </summary>
+        public static string DIAG_FIRMA {
+            get {
+                return ResourceManager.GetString("DIAG_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätekennung ähnelt.
+        /// </summary>
+        public static string DIAG_GERAETEKENNUNG {
+            get {
+                return ResourceManager.GetString("DIAG_GERAETEKENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gültig bis ähnelt.
+        /// </summary>
+        public static string DIAG_GUELTIG_BIS {
+            get {
+                return ResourceManager.GetString("DIAG_GUELTIG_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogfassung ähnelt.
+        /// </summary>
+        public static string DIAG_KATALOGFASSUNG {
+            get {
+                return ResourceManager.GetString("DIAG_KATALOGFASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nie abgeglichen ähnelt.
+        /// </summary>
+        public static string DIAG_KATALOG_NIE {
+            get {
+                return ResourceManager.GetString("DIAG_KATALOG_NIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Datenbank ähnelt.
+        /// </summary>
+        public static string DIAG_KEINE_DATENBANK {
+            get {
+                return ResourceManager.GetString("DIAG_KEINE_DATENBANK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Lizenz ähnelt.
+        /// </summary>
+        public static string DIAG_KEINE_LIZENZ {
+            get {
+                return ResourceManager.GetString("DIAG_KEINE_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenznummer ähnelt.
+        /// </summary>
+        public static string DIAG_LIZENZNUMMER {
+            get {
+                return ResourceManager.GetString("DIAG_LIZENZNUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzstatus ähnelt.
+        /// </summary>
+        public static string DIAG_LIZENZSTATUS {
+            get {
+                return ResourceManager.GetString("DIAG_LIZENZSTATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenztyp ähnelt.
+        /// </summary>
+        public static string DIAG_LIZENZTYP {
+            get {
+                return ResourceManager.GetString("DIAG_LIZENZTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht ermittelbar ähnelt.
+        /// </summary>
+        public static string DIAG_NICHT_ERMITTELBAR {
+            get {
+                return ResourceManager.GetString("DIAG_NICHT_ERMITTELBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Plattform ähnelt.
+        /// </summary>
+        public static string DIAG_PLATTFORM {
+            get {
+                return ResourceManager.GetString("DIAG_PLATTFORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Programmversion ähnelt.
+        /// </summary>
+        public static string DIAG_PROGRAMMVERSION {
+            get {
+                return ResourceManager.GetString("DIAG_PROGRAMMVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokollordner ähnelt.
+        /// </summary>
+        public static string DIAG_PROTOKOLLORDNER {
+            get {
+                return ResourceManager.GetString("DIAG_PROTOKOLLORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schemastand ähnelt.
+        /// </summary>
+        public static string DIAG_SCHEMASTAND {
+            get {
+                return ResourceManager.GetString("DIAG_SCHEMASTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Ziel {1}) ähnelt.
+        /// </summary>
+        public static string DIAG_SCHEMA_FORMAT {
+            get {
+                return ResourceManager.GetString("DIAG_SCHEMA_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sprache ähnelt.
+        /// </summary>
+        public static string DIAG_SPRACHE {
+            get {
+                return ResourceManager.GetString("DIAG_SPRACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbefristet ähnelt.
+        /// </summary>
+        public static string DIAG_UNBEFRISTET {
+            get {
+                return ResourceManager.GetString("DIAG_UNBEFRISTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
         /// </summary>
         public static string EIN_BERICHT_BTN_LOGO_ENTFERNEN {
@@ -21457,6 +21637,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EMQ_WAS_WAERMETRAEGER {
             get {
                 return ResourceManager.GetString("EMQ_WAS_WAERMETRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus ist nicht eingeschaltet. ähnelt.
+        /// </summary>
+        public static string ENTW_AUS_NICHT_AKTIV {
+            get {
+                return ResourceManager.GetString("ENTW_AUS_NICHT_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus läuft über das Startargument --entwickler. Starten Sie EPOS-Plan ohne dieses Argument neu. ähnelt.
+        /// </summary>
+        public static string ENTW_AUS_STARTARGUMENT {
+            get {
+                return ResourceManager.GetString("ENTW_AUS_STARTARGUMENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus läuft über die Umgebungsvariable EPOS_ENTWICKLER. Entfernen Sie die Variable und starten Sie EPOS-Plan neu. ähnelt.
+        /// </summary>
+        public static string ENTW_AUS_UMGEBUNG {
+            get {
+                return ResourceManager.GetString("ENTW_AUS_UMGEBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus über die Einstellung (gilt bis zum Ausschalten) ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_EINSTELLUNG {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_EINSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus vom Administrator gesperrt ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_GESPERRT {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus aus ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_KEINE {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus über das Startargument --entwickler ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_STARTARGUMENT {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_STARTARGUMENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus über die Umgebungsvariable EPOS_ENTWICKLER ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_UMGEBUNG {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_UMGEBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anwender ähnelt.
+        /// </summary>
+        public static string ENTW_STUFE_ANWENDER {
+            get {
+                return ResourceManager.GetString("ENTW_STUFE_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwickler ähnelt.
+        /// </summary>
+        public static string ENTW_STUFE_ENTWICKLER {
+            get {
+                return ResourceManager.GetString("ENTW_STUFE_ENTWICKLER", resourceCulture);
             }
         }
         
