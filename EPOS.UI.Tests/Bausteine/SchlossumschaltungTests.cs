@@ -224,6 +224,50 @@ public class SchlossumschaltungTests : EposBunitContext
         Assert.False(s.FrageOffen);
     }
 
+    /// <summary>
+    /// KT-8a: Wirft die Frage nach dem Lesemodus (Datenbank), ist die Handlung weich gesperrt und
+    /// nennt den Grund, ein Klick meldet ihn fürs Warnband, das Protokoll hat EINEN Vermerk — die
+    /// Frage geht danach nicht erneut an die Datenbank —, und nichts wird geschrieben.
+    /// </summary>
+    [Fact]
+    public void KT8a_ein_werfender_Lesemodus_sperrt_weich_und_kommt_ins_Warnband_und_ins_Protokoll()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gefragt = 0;
+        var weg = new Schlossweg((ids, g) => { _geschaltet.Add((ids, g)); return new SchlossErgebnis(true, "") { Geaendert = ids }; })
+        {
+            Lesemodus = () => { gefragt++; throw new InvalidOperationException("Lizenzdatei gesperrt"); }
+        };
+        var s = new Schlossumschaltung();
+
+        Auswahlhandlung h = s.Handlung(weg, Leer, new[] { A }, false)!;
+        Assert.False(h.Aus);
+        Assert.Contains("Lizenzdatei gesperrt", h.Sperrgrund);
+        Assert.Contains("Lizenzdatei gesperrt", s.LesemodusFehler);
+
+        string? grund = s.Fragen(weg, new[] { A }, false);
+        Assert.Contains("Lizenzdatei gesperrt", grund);
+        Assert.False(s.FrageOffen);
+        Assert.Empty(_geschaltet);
+        Assert.True(vermerke.Enthaelt("Lizenzdatei gesperrt"));
+        Assert.Equal(1, gefragt);
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_im_Lesemodus_kein_Grund_und_kein_Vermerk()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var s = new Schlossumschaltung();
+
+        Auswahlhandlung h = s.Handlung(Weg(), Leer, new[] { A }, false)!;
+
+        Assert.False(h.Aus);
+        Assert.Equal("", h.Sperrgrund);
+        Assert.Equal("", s.LesemodusFehler);
+        Assert.Null(s.Fragen(Weg(), new[] { A }, false));
+        Assert.True(vermerke.Leer);
+    }
+
     [Fact]
     public void Unveraenderte_Saetze_nennt_die_Statuszeile()
     {

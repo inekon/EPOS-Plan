@@ -845,7 +845,7 @@
         _satzGross = false;
         _satzUeberlagerungFehler = null;
         if (_anlagenmerker is { } merker && _projektZeile is not null)
-            merker.Zurueckschreiben(_projektZeile, TraegerWechseln, UebernahmeWeg);
+            merker.Zurueckschreiben(_projektZeile, TraegerWeg, UebernahmeWeg);
         _anlagenmerker = null;
         if (_felder is not null) FelderHolen();
         KostenNachziehen();
@@ -1375,7 +1375,7 @@
         if (_projektZeile is null || !neu.HasValue) return;
         if (neu.Value == _projektZeile.CarrierId) return;   // programmatische Vorwahl
 
-        TraegerWechseln?.Invoke(_projektZeile, neu.Value);
+        if (!TraegerUebernehmen(_projektZeile, neu.Value)) return;
         _projektZeile.CarrierId = neu.Value;
     }
 
@@ -1715,6 +1715,24 @@
     // =================================================================================
     // Abschluss
     // =================================================================================
+
+    /// <summary>
+    /// KT-8a: Der Trägerwechsel an den Wirt (<see cref="TraegerWechseln"/>) schreibt sofort in die
+    /// Datenbank und läuft deshalb über die Fangstelle (<c>Katalogladung.Schreiben</c>). Wirft er,
+    /// steht der Grund im Banner, das Protokoll hat einen Vermerk, der Dialog bleibt offen, und die
+    /// Zeile behält ihren Träger.
+    /// </summary>
+    /// <returns><c>true</c>, wenn der Träger gewechselt ist (oder kein Weg gereicht wurde).</returns>
+    private bool TraegerUebernehmen(ErzeugerZeile zeile, int traeger)
+    {
+        if (TraegerWechseln is null) return true;
+        string grund = Katalogladung.Schreiben(() => { TraegerWechseln(zeile, traeger); return ""; }, zeile.Bezeichner, g => g);
+        if (grund.Length > 0) Melden(grund, true);
+        return grund.Length == 0;
+    }
+
+    /// <summary>KT-8a: Der Trägerweg für den Rückweg des Merkers — gefangen wie die Trägerwahl.</summary>
+    private Action<ErzeugerZeile, int>? TraegerWeg => TraegerWechseln is null ? null : (z, t) => TraegerUebernehmen(z, t);
 
     private void Melden(string text, bool fehler)
     {

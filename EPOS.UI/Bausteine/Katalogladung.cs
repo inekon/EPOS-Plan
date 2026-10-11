@@ -199,6 +199,27 @@ public static class Katalogladung
         }
     }
 
+    /// <summary>
+    /// KT-8a: Liest einen Wert, den ein Dialog nicht als Satz führt — eine Zustandsfrage
+    /// (<c>bool</c>) oder eine Summe, auch einen Werttyp. Wirft <paramref name="weg"/>, ist das
+    /// Ergebnis <paramref name="vorgabe"/> (der sichere Wert des Aufrufers),
+    /// <paramref name="fehler"/> nennt den Grund (<see cref="Resource.WURZEL_SATZ_FEHLER"/>), und
+    /// das Protokoll hat einen Vermerk.
+    /// </summary>
+    public static T Wert<T>(Func<T> weg, string? satz, T vorgabe, out string fehler)
+    {
+        fehler = "";
+        try
+        {
+            return weg();
+        }
+        catch (Exception ex)
+        {
+            fehler = Benennen(Resource.WURZEL_SATZ_FEHLER, "Katalogwert", "nicht gelesen", satz, ex);
+            return vorgabe;
+        }
+    }
+
     /// <summary>Der Grund in der Sprache der Oberfläche und der Vermerk im Ausnahmeprotokoll.</summary>
     private static string Benennen(string vorlage, string was, string wie, string? satz, Exception ex)
     {

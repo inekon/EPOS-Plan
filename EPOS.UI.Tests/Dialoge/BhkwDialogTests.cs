@@ -990,6 +990,39 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Equal(6, cut.Instance.Projektzeile!.CarrierId);
     }
 
+    /// <summary>KT-8a: Wirft der Trägerwechsel (Datenbank), nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen, die Zeile behält ihren Träger.</summary>
+    [Fact]
+    public void KT8a_wirft_der_Traegerwechsel_nennt_der_Banner_den_Grund_und_der_Dialog_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(traegerWechseln: (_, _) => throw new InvalidOperationException("Träger gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+        Satz(cut);
+        int vorher = cut.Instance.Projektzeile!.CarrierId;
+
+        cut.FindAll("select")[0].Change("6");
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Träger gesperrt"));
+        Assert.True(vermerke.Enthaelt("Träger gesperrt"));
+        Assert.Null(geschlossen);
+        Assert.Equal(vorher, cut.Instance.Projektzeile!.CarrierId);
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_zeigt_der_Traegerwechsel_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(traegerWechseln: (_, _) => { });
+        Satz(cut);
+
+        cut.FindAll("select")[0].Change("6");
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+        Assert.Equal(6, cut.Instance.Projektzeile!.CarrierId);
+    }
+
     // =================================================================================
     // Katalogpflege
     // =================================================================================

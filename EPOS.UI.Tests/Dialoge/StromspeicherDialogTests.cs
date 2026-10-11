@@ -906,6 +906,52 @@ public class StromspeicherDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-traegerwahl"));
     }
 
+    /// <summary>KT-8a: Wirft der Trägerwechsel (Datenbank), nennt der Banner den Grund, das Protokoll hat einen Vermerk, die Zeile behält ihren Träger.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void KT8a_Traegerwechsel_wirft_Banner_sonst_keiner(bool wirft)
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        ErzeugerZeile zeile = Zeile(1, "Speicher 10", 141);
+        zeile.CarrierId = 60;
+        var cut = Render<StromspeicherDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { zeile })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.KatalogDetail, n => Detail(n))
+            .Add(x => x.ProjektDetail, z => Detail(z.Bezeichner))
+            .Add(x => x.Traegerkatalog, new[]
+            {
+                new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie"),
+                new EnergietraegerWahl.Eintrag(58, "Strom", "Elektrische Energie 2")
+            })
+            .Add(x => x.Geschlossen, ok => geschlossen = ok)
+            .Add(x => x.TraegerWechseln, (ErzeugerZeile _, int _) =>
+            {
+                if (wirft) throw new InvalidOperationException("Träger gesperrt");
+            }));
+
+        Satz(cut);
+        cut.Find(".epos-traegerwahl").QuerySelectorAll("select")[1].Change("58");
+
+        if (wirft)
+        {
+            Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Träger gesperrt"));
+            Assert.True(vermerke.Enthaelt("Träger gesperrt"));
+            Assert.Equal(60, zeile.CarrierId);
+        }
+        else
+        {
+            Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+            Assert.True(vermerke.Leer);
+            Assert.Equal(58, zeile.CarrierId);
+        }
+        Assert.Null(geschlossen);
+    }
+
     // =====================================================================
     //  Der Aufklapper „Alle Daten anzeigen" — beim Katalogsatz
     // =====================================================================

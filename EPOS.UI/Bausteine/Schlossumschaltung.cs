@@ -133,7 +133,10 @@ public sealed class Schlossumschaltung
         {
             Kurztext = aufheben ? Resource.ADM_AW_SCHLOSS_AUFHEBEN_KURZ : Resource.ADM_AW_SCHLOSS_SETZEN_KURZ,
             Breitenvorlage = aufheben ? Resource.ADM_AW_SCHLOSS_SETZEN : Resource.ADM_AW_SCHLOSS_AUFHEBEN,
-            Aus = nurLesen || Lesemodus(weg)
+            // KT-8a: Warf die Frage nach dem Lesemodus, ist der Knopf WEICH gesperrt und nennt den
+            // Grund; ein Klick meldet ihn über Fragen (Warnband im Wirt).
+            Aus = nurLesen || (Lesemodus(weg) && _lesemodusFehler.Length == 0),
+            Sperrgrund = _lesemodusFehler
         };
     }
 
@@ -154,7 +157,7 @@ public sealed class Schlossumschaltung
                           Func<IReadOnlyList<Katalogfilterzeile>, string>? zusatzBeimAufheben = null)
     {
         if (weg is null || ziele is null || ziele.Count == 0) return null;
-        if (Lesemodus(weg)) return Resource.LIZ_LESEMODUS_SPERRE;
+        if (Lesemodus(weg)) return _lesemodusFehler.Length > 0 ? _lesemodusFehler : Resource.LIZ_LESEMODUS_SPERRE;
         if (ungespeichert) return Resource.ADM_MSG_UNGESPEICHERT;
 
         Aufheben = ziele.Any(z => z.Geschuetzt);
@@ -233,5 +236,27 @@ public sealed class Schlossumschaltung
         return string.Join(" ", teile);
     }
 
-    private static bool Lesemodus(Schlossweg weg) => weg.Lesemodus?.Invoke() == true;
+    /// <summary>
+    /// KT-8a: Der Grund, wenn die Frage nach dem Lesemodus (<see cref="Schlossweg.Lesemodus"/>)
+    /// geworfen hat; leer = nicht geworfen. Er bleibt stehen, solange der Wirt lebt — die Frage
+    /// geht danach nicht mehr bei jedem Zeichenlauf an die Datenbank.
+    /// </summary>
+    public string LesemodusFehler => _lesemodusFehler;
+
+    private string _lesemodusFehler = "";
+
+    /// <summary>
+    /// Steht die Datenbank im Lesemodus der Lizenz? Die Frage läuft über die Fangstelle
+    /// (<see cref="Katalogladung.Wert{T}"/>): Wirft sie, gilt der Lesemodus (der sichere Wert —
+    /// nichts wird geschrieben), der Grund steht in <see cref="LesemodusFehler"/>, und das
+    /// Protokoll hat einen Vermerk.
+    /// </summary>
+    private bool Lesemodus(Schlossweg weg)
+    {
+        if (weg.Lesemodus is null) return false;
+        if (_lesemodusFehler.Length > 0) return true;
+        bool lesemodus = Katalogladung.Wert(() => weg.Lesemodus(), Resource.ADM_SCHLOSS_SETZEN_TITEL, true, out string grund);
+        _lesemodusFehler = grund;
+        return lesemodus;
+    }
 }

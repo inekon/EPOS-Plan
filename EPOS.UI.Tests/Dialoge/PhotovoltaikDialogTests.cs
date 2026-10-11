@@ -1381,6 +1381,50 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Assert.Equal(58, zeile.CarrierId);
     }
 
+    /// <summary>KT-8a: Wirft der Trägerwechsel (Datenbank), nennt der Banner den Grund, das Protokoll hat einen Vermerk, die Zeile behält ihren Träger.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void KT8a_Traegerwechsel_wirft_Banner_sonst_keiner(bool wirft)
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        ErzeugerZeile zeile = Zeile(1, "Modul 400", 31);
+        zeile.CarrierId = 60;
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { zeile })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Detail, n => Detail(n))
+            .Add(x => x.Gesamtleistung, () => "8")
+            .Add(x => x.KatalogLoeschen, _ => "")
+            .Add(x => x.Traegerkatalog, Traegerkatalog())
+            .Add(x => x.Geschlossen, ok => geschlossen = ok)
+            .Add(x => x.TraegerWechseln, (ErzeugerZeile _, int _) =>
+            {
+                if (wirft) throw new InvalidOperationException("Träger gesperrt");
+            }));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        Satz(cut);
+        cut.Find(".epos-traegerwahl").QuerySelectorAll("select")[1].Change("58");
+
+        if (wirft)
+        {
+            Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Träger gesperrt"));
+            Assert.True(vermerke.Enthaelt("Träger gesperrt"));
+            Assert.Equal(60, zeile.CarrierId);
+        }
+        else
+        {
+            Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+            Assert.True(vermerke.Leer);
+            Assert.Equal(58, zeile.CarrierId);
+        }
+        Assert.Null(geschlossen);
+    }
+
     [Fact]
     public void Ohne_Traegerkatalog_steht_keine_Traegerwahl()
     {
