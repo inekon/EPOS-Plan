@@ -62,9 +62,11 @@ public class EinstellungenDialogTests : EposBunitContext
         Func<Einstellungensatz, bool, Task<SpeicherBefund>>? speichern = null,
         Func<Task<Einstellungensatz>>? zuruecksetzen = null,
         Action<bool>? geschlossen = null,
-        IReadOnlyList<Farbrollengabe>? farbrollen = null)
+        IReadOnlyList<Farbrollengabe>? farbrollen = null,
+        bool entwickler = false)
     {
         return Render<EinstellungenDialog>(p => p
+            .Add(x => x.Entwickler, entwickler)
             .Add(x => x.Satz, satz ?? Satz())
             .Add(x => x.Farbrollen, farbrollen ?? Diagrammfarben.Gaben())
             .Add(x => x.KiAbgeschaltet, kiAus)
@@ -79,6 +81,32 @@ public class EinstellungenDialogTests : EposBunitContext
 
     private static void Reiter(IRenderedComponent<EinstellungenDialog> cut, int nummer)
         => cut.FindAll(".epos-reiter-knopf")[nummer].Click();
+
+    /// <summary>
+    /// Entwicklerbereich ZAPFPROFIL_VORGABEN: die Rubrik „Entwicklung“ nur mit Kennzeichen; sie zeigt die fünf Vorgaben
+    /// des Satzes als Eingabefelder mit Hinweis und gibt eine Änderung mit dem Satz an „Speichern“.
+    /// </summary>
+    [Fact]
+    public void Die_Rubrik_Entwicklung_steht_nur_mit_Kennzeichen()
+    {
+        var ohne = Zeige();
+        int blaetter = ohne.FindAll(".epos-reiter-knopf").Count;
+        Assert.DoesNotContain(ohne.FindAll(".epos-reiter-knopf"), k => k.TextContent.Trim() == "Entwicklung");
+        Assert.Empty(ohne.FindAll("[data-bereich='ZAPFPROFIL_VORGABEN']"));
+
+        Einstellungensatz satz = Satz();
+        satz.ZapfNenninhalte = "300; 400";
+        satz.ZapfAnzeigetemperatur = "45";
+        var mit = Zeige(satz: satz, entwickler: true);
+        Assert.Equal(blaetter + 1, mit.FindAll(".epos-reiter-knopf").Count);
+        mit.FindAll(".epos-reiter-knopf").Single(k => k.TextContent.Trim() == "Entwicklung").Click();
+        AngleSharp.Dom.IElement bereich = mit.Find("[data-stufe='entwickler'][data-bereich='ZAPFPROFIL_VORGABEN']");
+        var felder = bereich.QuerySelectorAll("input");
+        Assert.Equal(5, felder.Length);
+        Assert.Contains(felder, f => f.GetAttribute("value") == "300; 400");
+        Assert.Contains(felder, f => f.GetAttribute("value") == "45");
+        Assert.Contains("Liter", bereich.TextContent);
+    }
 
     // =====================================================================
     //  Feldbestand (Feldkarte Form_AdminSettings, 28 Zeilen)
