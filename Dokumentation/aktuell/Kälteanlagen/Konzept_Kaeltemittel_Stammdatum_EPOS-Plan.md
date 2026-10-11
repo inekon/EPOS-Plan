@@ -256,7 +256,7 @@ Fundstelle (Anhang IV, Nummer, Buchstabe, Seite) in `Quelle`:
 |---|---|---|---|---|
 | 7 a | Kühler, ohne Band | HFKW, GWP ≥ 2 500 | 2020 | `GESICHERT` |
 | 7 b / 7 c | Kühler bis 12 kW | GWP ≥ 150 / jedes F‑Gas | 2027 / 2032 | `GESICHERT` |
-| 7 d | Kühler über 12 kW | GWP 750 | 2027 | `VORLAEUFIG` |
+| 7 d | Kühler über 12 kW | GWP ≥ 750 (Lesart) | 2027 | `GESICHERT` |
 | 8 b / 8 c | in sich geschlossen bis 12 kW (Höchstnennleistung) | GWP ≥ 150 / jedes F‑Gas | 2027 / 2032 | `GESICHERT` |
 | 8 d | in sich geschlossen über 12 bis 50 kW | GWP ≥ 150 | 2027 | `GESICHERT` |
 | 8 e | andere in sich geschlossene, ohne Band | GWP ≥ 150 | 2030 | `GESICHERT` |
@@ -268,7 +268,7 @@ Was der Wortlaut festlegt: Er sagt „Kühler“, nicht
 „Kaltwassersatz“. Nr. 7 a und Nr. 8 a nennen „HFKW“, nicht alle F‑Gase — daher das dritte Kriterium `HFKW`; Nr. 7 a
 bringt die Grenze 2 500 und den Stichtag 2020. Nr. 7 a und Nr. 8 e nennen kein Leistungsband (Band `ALLE`); ein
 eigenes Band „über 50 kW“ kommt im Text nicht vor. Nr. 7 d lautet „GWP von 750“ ohne „oder mehr“; gesät ist die Lesart
-„≥ 750“ wie in Nr. 9 e, die Zeile bleibt deshalb `VORLAEUFIG`. Die Buchstaben unter Nr. 9 sind bestätigt. Die 750 bei
+„≥ 750“ wie in Nr. 9 e, festgelegt durch Anwenderentscheid — die Zeile ist `GESICHERT`, `Quelle` trägt den Vermerk. Die Buchstaben unter Nr. 9 sind bestätigt. Die 750 bei
 Sicherheitsausnahme (Nr. 8 b bis e) ist ein Höchstwert innerhalb der Ausnahme, keine Regel — die Prüfung kennt die
 Ausnahmen nicht und sät sie nicht. Nr. 8 nennt die „Höchstnennleistung“, Nr. 7 und 9 die „Nennleistung“. Nicht gesät:
 Nr. 9 a (Füllmenge), Nr. 8 a (steckerfertige, von Raum zu Raum bringbare Geräte) und Nr. 4 bis 6 (Kälteanlagen ohne
@@ -519,8 +519,8 @@ die Basis.
 `Katalog_Ausgelaufen` wird nicht benutzt. Ohne Jahr keine Prüfung; „nicht prüfbar“ ist ein Hinweis, keine Warnung.
 Die Nennleistung gilt je Gerät, nicht je Anlagenzeile. Absorption ergibt keinen Befund; Split, Multisplit und VRF an
 Anlagenart 13 sind in KM4 „nicht prüfbar“. Der Code‑Abgleich ist Trim und `OrdinalIgnoreCase` wie
-`Bivalenzvorgaben.IstBekannt`. Die Regelzeilen sind am amtlichen Wortlaut geprüft und tragen `GESICHERT`, Nr. 7 d
-`VORLAEUFIG`; Kältemittelzeilen tragen `VORLAEUFIG`, bis sie am Wortlaut geprüft sind. Nicht gesät werden Nr. 9 a
+`Bivalenzvorgaben.IstBekannt`. Die Regelzeilen sind am amtlichen Wortlaut geprüft und tragen `GESICHERT` (Nr. 7 d in
+der Lesart „≥ 750“ nach Anwenderentscheid); Kältemittelzeilen tragen `VORLAEUFIG`, bis sie am Wortlaut geprüft sind. Nicht gesät werden Nr. 9 a
 (Füllmenge), Nr. 8 a und Nr. 4 bis 6 (keine Geräteklasse) und die 750 bei Sicherheitsausnahme (Höchstwert innerhalb der
 Ausnahme); Sole‑ und Wasser‑Wasser‑Wärmepumpen sind n.b. Die Tabelle steht im Katalogregister (Stufe 3, `KMT` vor `KM`) ohne Projektkopie;
 `ID_Kaeltemittel` ohne Fremdschlüsselzwang, reist nicht im Projektpaket. Die Kältemittelcodes gelten als

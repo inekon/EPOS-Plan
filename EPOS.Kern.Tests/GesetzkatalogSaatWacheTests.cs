@@ -227,7 +227,8 @@ namespace EPOS.Kern.Tests
         /// <b>Die Generation 10 sät die dreizehn F-Gas-Regeln in den Schranken</b>: Klasse
         /// <c>FGAS</c>, Einheit „-“, Stichtag 2020 bis 2035, Grenze 0 (jedes F-Gas), 150, 750 oder
         /// 2 500, jede Zeile mit Fundstelle in Anhang IV und einem Schlüssel aus dem Vokabular.
-        /// Gesichert sind alle außer Nr. 7 d (Wortlaut ohne „oder mehr“).
+        /// Gesichert sind alle; Nr. 7 d (deutscher Wortlaut ohne „oder mehr“) trägt die Lesart
+        /// „≥ 750“ nach Anwenderentscheid als Vermerk in der Fundstelle.
         /// </summary>
         [Fact]
         public void DieGeneration10SaetDieFgasRegelnInDenSchranken()
@@ -257,9 +258,9 @@ namespace EPOS.Kern.Tests
                              p.Wert.Value == 0.0);
                 Assert.StartsWith("VO (EU) 2024/573 Anh. IV Nr. ", p.Quelle);
                 Assert.Matches(@"S\. 7[1-5]/86", p.Quelle);
-                Assert.Equal(p.Schluessel == DbWerte.GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP
-                                 ? DbWerte.GESETZ_STATUS_VORLAEUFIG : DbWerte.GESETZ_STATUS_GESICHERT,
-                             p.Status);
+                Assert.Equal(DbWerte.GESETZ_STATUS_GESICHERT, p.Status);
+                if (p.Schluessel == DbWerte.GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP)
+                    Assert.Contains("Lesart ≥ 750", p.Quelle);
             }
 
             // Nicht gesät: Nr. 9 a (Füllmenge), Nr. 8 a, Nr. 4 bis 6, Art. 13.
@@ -302,6 +303,36 @@ namespace EPOS.Kern.Tests
 
                 GesetzKatalog.StelleKatalogSicher();
                 Assert.Equal(0, GesetzKatalog.ZuletztNachgesaet);
+            }
+        }
+
+        /// <summary>
+        /// <b>Statusprobe:</b> Die F-Gas-Zeilen der Testdatenbank stehen wie die Saat — Stichtag, Grenze,
+        /// Status und Fundstelle je Schlüssel; Nr. 7 d ist <c>GESICHERT</c> mit dem Vermerk der Lesart.
+        /// </summary>
+        [Fact]
+        public void DieFgasZeilenDerTestdatenbankStehenWieDieSaat()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                var saat = GesetzKatalog.Vorbelegung().Where(p => p.Klasse == DbWerte.GESETZ_KLASSE_FGAS)
+                    .OrderBy(p => p.Schluessel, StringComparer.Ordinal).ThenBy(p => p.JahrVon).ToList();
+                var db = new GesetzKatalog().AlleDerKlasse(DbWerte.GESETZ_KLASSE_FGAS)
+                    .OrderBy(p => p.Schluessel, StringComparer.Ordinal).ThenBy(p => p.JahrVon).ToList();
+                Assert.Equal(saat.Count, db.Count);
+                for (int i = 0; i < saat.Count; i++)
+                {
+                    Assert.Equal(saat[i].Schluessel, db[i].Schluessel);
+                    Assert.Equal(saat[i].JahrVon, db[i].JahrVon);
+                    Assert.Equal(saat[i].Wert, db[i].Wert);
+                    Assert.Equal(saat[i].Status, db[i].Status);
+                    Assert.Equal(saat[i].Quelle, db[i].Quelle);
+                }
+                GesetzParameter d = Assert.Single(db, p => p.Schluessel == DbWerte.GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP);
+                Assert.Equal(DbWerte.GESETZ_STATUS_GESICHERT, d.Status);
+                Assert.Contains("Anwenderentscheid", d.Quelle);
             }
         }
 

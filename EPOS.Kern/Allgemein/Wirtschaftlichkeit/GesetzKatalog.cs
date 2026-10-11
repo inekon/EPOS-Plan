@@ -1875,15 +1875,15 @@ namespace WindowsFormsApplication1
         /// bringbare Raumklimageräte — keine Geräteklasse in EPOS-Plan), Nr. 4 bis 6 (Kälteanlagen ohne
         /// Kühler — keine Geräteklasse) und Art. 13 (Bestand, KM4-Q12 b).</para>
         ///
-        /// <para><b>Nr. 7 d:</b> Der Wortlaut nennt „GWP von 750“ ohne „oder mehr“; gesät ist die
-        /// Lesart „≥ 750“ wie in Nr. 9 e. Die Zeile bleibt deshalb <c>VORLAEUFIG</c>.</para>
+        /// <para><b>Nr. 7 d:</b> Der deutsche Wortlaut nennt „GWP von 750“ ohne „oder mehr“; gesät ist
+        /// die Lesart „≥ 750“ wie in Nr. 9 e, festgelegt durch Anwenderentscheid — die Zeile ist
+        /// <c>GESICHERT</c>, <c>Quelle</c> trägt den Vermerk.</para>
         /// </summary>
         private static void FgasRegeln(List<GesetzParameter> l)
         {
             const string FG = DbWerte.GESETZ_KLASSE_FGAS;
             const string OHNE = DbWerte.GESETZ_EINHEIT_OHNE;
             const string G = DbWerte.GESETZ_STATUS_GESICHERT;
-            const string V = DbWerte.GESETZ_STATUS_VORLAEUFIG;
             const int GEN = GENERATION_FGAS;
             const string Q = "VO (EU) 2024/573 Anh. IV ";
 
@@ -1893,8 +1893,8 @@ namespace WindowsFormsApplication1
                     Q + "Nr. 7 Buchst. b, S. 72/86", GEN));
             l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_BIS12_FGAS, FG, 2032, 0.0, OHNE, G,
                     Q + "Nr. 7 Buchst. c, S. 72/86", GEN));
-            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP, FG, 2027, 750.0, OHNE, V,
-                    Q + "Nr. 7 Buchst. d, S. 72/86 (Wortlaut „GWP von 750“, gelesen als ≥ 750)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP, FG, 2027, 750.0, OHNE, G,
+                    Q + "Nr. 7 Buchst. d, S. 72/86; dt. Wortlaut ohne ‚oder mehr‘, Lesart ≥ 750 (Anwenderentscheid)", GEN));
 
             l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_BIS12_GWP, FG, 2027, 150.0, OHNE, G,
                     Q + "Nr. 8 Buchst. b, S. 72/86 (Höchstnennleistung)", GEN));
