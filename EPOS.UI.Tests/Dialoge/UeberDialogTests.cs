@@ -2,6 +2,7 @@
 using Bunit;
 using EPOS.UI.Dialoge.Hilfe;
 using EPOS.UI.Dienste;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -235,5 +236,92 @@ public class UeberDialogTests : EposBunitContext
 
         Assert.Contains("Zugriff verweigert", cut.Markup);
         Assert.Empty(cut.FindAll(".epos-ueber-paketergebnis"));
+    }
+    // =====================================================================
+    // Die Geste im Dialog selbst (Fokus in der WebView, AltGr der deutschen Tastatur)
+    // =====================================================================
+
+    private IRenderedComponent<UeberDialog> ZeigeGeste(Action? geste, Action<bool>? geschlossen = null)
+        => Render<UeberDialog>(p =>
+        {
+            p.Add(x => x.Daten, Daten()).Add(x => x.GesteAusgeloest, geste);
+            if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
+        });
+
+    private static KeyboardEventArgs Taste(string key, string code, bool strg = true, bool umschalt = true, bool alt = true)
+        => new() { Key = key, Code = code, CtrlKey = strg, ShiftKey = umschalt, AltKey = alt };
+
+    [Theory]
+    [InlineData("E")]
+    [InlineData("€")]
+    [InlineData("")]
+    [InlineData("Unidentified")]
+    public void Die_Geste_am_Dialog_ruft_den_Rueckruf_genau_einmal(string key)
+    {
+        int ausgeloest = 0;
+        var cut = ZeigeGeste(() => ausgeloest++);
+
+        cut.Find(".epos-ueber").KeyDown(Taste(key, "KeyE"));
+
+        Assert.Equal(1, ausgeloest);
+    }
+
+    [Theory]
+    [InlineData(false, true, true, "KeyE")]
+    [InlineData(true, false, true, "KeyE")]
+    [InlineData(true, true, false, "KeyE")]
+    [InlineData(true, true, true, "KeyR")]
+    [InlineData(true, true, true, "")]
+    public void Ohne_alle_drei_Modifikatoren_oder_mit_anderer_Taste_kein_Aufruf(bool strg, bool umschalt, bool alt, string code)
+    {
+        int ausgeloest = 0;
+        var cut = ZeigeGeste(() => ausgeloest++);
+
+        cut.Find(".epos-ueber").KeyDown(Taste("E", code, strg, umschalt, alt));
+
+        Assert.Equal(0, ausgeloest);
+    }
+
+    [Fact]
+    public void Ohne_Rueckruf_bleibt_die_Geste_folgenlos()
+    {
+        bool? geschlossen = null;
+        var cut = ZeigeGeste(null, b => geschlossen = b);
+
+        cut.Find(".epos-ueber").KeyDown(Taste("€", "KeyE"));
+
+        Assert.Null(geschlossen);
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+    }
+
+    [Fact]
+    public void Eine_Ausnahme_des_Rueckrufs_meldet_der_Banner()
+    {
+        var cut = ZeigeGeste(() => throw new InvalidOperationException("Geste gesperrt"));
+
+        cut.Find(".epos-ueber").KeyDown(Taste("E", "KeyE"));
+
+        Assert.Contains("Geste gesperrt", cut.Markup);
+    }
+
+    [Fact]
+    public void Escape_schliesst_weiter_und_loest_die_Geste_nicht_aus()
+    {
+        int ausgeloest = 0;
+        bool? geschlossen = null;
+        var cut = ZeigeGeste(() => ausgeloest++, b => geschlossen = b);
+
+        cut.Find(".epos-ueber").KeyDown(new KeyboardEventArgs { Key = "Escape", Code = "Escape" });
+
+        Assert.False(geschlossen);
+        Assert.Equal(0, ausgeloest);
+    }
+
+    [Fact]
+    public void Beim_Oeffnen_bekommt_der_Dialog_den_Fokus()
+    {
+        ZeigeGeste(null);
+
+        Assert.Contains(JSInterop.Invocations, a => a.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
     }
 }
