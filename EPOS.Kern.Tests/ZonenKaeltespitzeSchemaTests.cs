@@ -32,7 +32,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(ZonenKaeltespitzeSchema.Vollstaendig());
-            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(ZonenKaeltespitzeSchema.TAB_ERGEBNIS_ZONE).Count);
+            Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(ZonenKaeltespitzeSchema.TAB_ERGEBNIS_ZONE).Count);
             Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM \"Tab_ErgebnisZone\" WHERE \"Kaeltespitze_kW\" IS NOT NULL OR \"Kuehlstunden\" IS NOT NULL")));
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?", new DbParam("@n", "Tab_ErgebnisZone")));
@@ -47,7 +47,7 @@ namespace EPOS.Kern.Tests
             foreach (var s in ZonenKaeltespitzeSchema.SPALTEN)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"" + s.Tabelle + "\" DROP COLUMN \"" + s.Spalte + "\"");
             Assert.False(ZonenKaeltespitzeSchema.Vollstaendig());
-            Assert.Equal(ZonenUebergabeSchema.SPALTENZAHL_ERGEBNIS_ZONE + VorheizenSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle(ZonenKaeltespitzeSchema.TAB_ERGEBNIS_ZONE).Count);
+            Assert.Equal(ZonenUebergabeSchema.SPALTENZAHL_ERGEBNIS_ZONE + VorheizenSchema.ERGEBNISSPALTEN.Count + SchnellaufheizungSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle(ZonenKaeltespitzeSchema.TAB_ERGEBNIS_ZONE).Count);
             var bericht = new List<string>();
             Assert.Equal(2, ZonenKaeltespitzeSchema.Ausfuehren(bericht));
             Assert.Contains(bericht, z => z.Contains("KEIN DML", StringComparison.Ordinal));

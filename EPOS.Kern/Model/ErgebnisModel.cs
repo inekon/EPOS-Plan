@@ -375,6 +375,26 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Mehrwärme des Vorheizens [MWh].</summary>
         public double? MehrwaermeMwh;
+
+        // SA2 (Schritt 217): die Schnellaufheizung - null, solange sie an keiner Zone wirkt.
+
+        /// <summary>Die wirksame Raumsollwert-Überhöhung Δθ [K]; am Gebäude die größte der Zonen.</summary>
+        public double? UeberhoehungK;
+
+        /// <summary>Stunden, in denen die Überhöhung den Vorlauf angehoben hat [h]; am Gebäude Summe der Zonen.</summary>
+        public int? UeberhoehungH;
+
+        /// <summary>Der höchste Vorlauf in diesen Stunden [°C]; leer ohne solche Stunde.</summary>
+        public double? UeberhoehungVorlaufMaxC;
+
+        /// <summary>Stunden, in denen die Vorlaufgrenze der Anlage die Überhöhung begrenzt hat [h].</summary>
+        public int? VorlaufgrenzeH;
+
+        /// <summary>Stunden mit wirkungsloser Überhöhung (Vorlauf schon an der Vorlaufgrenze) [h].</summary>
+        public int? UeberhoehungWirkungslosH;
+
+        /// <summary>Fensterstunden mit Überhöhung in einer Sperrzeit [h].</summary>
+        public int? UeberhoehungSperrzeitH;
     }
 
     public class ErgebnisZoneModel
