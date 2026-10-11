@@ -4298,6 +4298,17 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten-satzknoepfe > * { flex: 0 0 auto; white-space: nowrap; }
 /* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
+/* Die Projektzeile behaelt ihr Mass (53 px, Kompaktstufe 46 px - Zweispaltenauswahl.ZEILE, nach dem die
+   Trennlinie rechnet); nur die Klickflaeche fuellt sie jetzt ganz. */
+.epos-zweispalten-inhalt--zeilenwahl .epos-zeilenzelle {
+    height: calc(53px * var(--epos-zeilenskala, 1) - 1px);
+    line-height: calc(53px * var(--epos-zeilenskala, 1) - 1px);
+}
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr > td.epos-zelle-wahl { padding: 0; }
+/* Die Namensspalte nimmt die Breite, Kaestchen und Stift bleiben schmal; Kopf und Name stehen links. */
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster .epos-spalte-zeilenzelle { width: 100%; text-align: start; }
+/* Am Satz geht der Name den Kenndaten vor: er kuerzt erst ab 24 Zeichen, die Kenndaten zuerst. */
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzname { flex: 0 0 auto !important; max-width: 24ch; }
 
 /* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9; verdichtet DZ1-N1): Der Baustein GanglinienGrafik
    fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,

@@ -85,8 +85,10 @@ public class WaermepumpenDialogTests : EposBunitContext
         Rueckwegwege? rueckweg = null,
         Func<WaermepumpeAnlageDaten, bool, Task>? kosten = null,
         Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>? anlageGaben = null,
-        Func<WaermepumpeAnlageDaten, (double Invest, double Betrieb)>? kostensumme = null)
+        Func<WaermepumpeAnlageDaten, (double Invest, double Betrieb)>? kostensumme = null,
+        Schlossweg? schloss = null)
         => Render<WaermepumpenDialog>(p => p
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Zeilen, zeilen ?? new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") })
             .Add(x => x.Katalog, () => katalog ?? Katalog)
             .Add(x => x.Katalogprofil, Katalogprofil)
@@ -151,15 +153,19 @@ public class WaermepumpenDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// UeS2: Das Fragment des Satzes steht nur in der Satz-Überlagerung — „Bearbeiten" der
-    /// Detailzeile öffnet sie (falls zu); zurück kommt ihr Körper.
+    /// UeS2: Das Fragment des Satzes steht nur in der Satz-Überlagerung — „Bearbeiten…" der
+    /// Knopfleiste am Satz (AW1) öffnet sie (falls zu); zurück kommt ihr Körper.
     /// </summary>
     private static AngleSharp.Dom.IElement Satz(IRenderedComponent<WaermepumpenDialog> cut)
     {
         if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
-            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+            cut.Find(BEARBEITEN_AM_SATZ).Click();
         return cut.Find(".epos-satzueberlagerung-koerper");
     }
+
+    /// <summary>„Bearbeiten…" der Knopfleiste am gewählten Satz (AW1), je nach Satzart.</summary>
+    private const string BEARBEITEN_AM_SATZ =
+        ".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog";
 
     /// <summary>UeS2: Schließt eine offene Satz-Überlagerung wie Abbrechen bzw. Schließen.</summary>
     private static void SatzZu(IRenderedComponent<WaermepumpenDialog> cut)
@@ -175,9 +181,9 @@ public class WaermepumpenDialogTests : EposBunitContext
     private static IElement Knopf(IRenderedComponent<WaermepumpenDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
-    /// <summary>Die Zeilenwahl der PROJEKTliste (das erste Raster).</summary>
+    /// <summary>Die Wahl einer Zeile der PROJEKTliste (das erste Raster): ihre erste Zelle (AW1: die Zeile ist die Wahl).</summary>
     private static IElement Projektwahl(IRenderedComponent<WaermepumpenDialog> cut, int index)
-        => cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[index];
+        => cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[index].QuerySelector(".epos-projektzeile")!;
 
     private static IElement Pfeil(IRenderedComponent<WaermepumpenDialog> cut, int index)
         => cut.Find(index == 0 ? ".epos-zweispalten-knopf--uebernehmen" : ".epos-zweispalten-knopf--entfernen");
@@ -193,7 +199,8 @@ public class WaermepumpenDialogTests : EposBunitContext
         var kopf = cut.FindAll(".epos-raster")[0].QuerySelectorAll("th:not(.epos-spalte-kaestchen)")
                       .Select(e => e.TextContent.Trim()).ToList();
 
-        Assert.Equal(new[] { "Wahl", "Hersteller", "Typ", "Leistung [kW]", "Vorlauf [°C]",
+        // AW1: keine Spalte „Wahl" mehr - die Zeile ist die Wahl.
+        Assert.Equal(new[] { "Hersteller", "Typ", "Leistung [kW]", "Vorlauf [°C]",
                              "Rücklauf [°C]", "Betriebsart" }, kopf);
         // KA-E-5: die Kästchenspalte der Mehrfachwahl steht davor.
         Assert.Single(cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody td.epos-spalte-kaestchen .epos-wahlkaestchen"));
@@ -256,7 +263,8 @@ public class WaermepumpenDialogTests : EposBunitContext
         var knoepfe = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
         Assert.DoesNotContain("OK", knoepfe);
         Assert.Empty(cut.FindAll(".epos-kostenleiste"));
-        Assert.Empty(cut.FindAll(".epos-knopf--bearbeiten-projekt"));
+        // AW1: kein „Bearbeiten…" in der Projektleiste; am Satz zeigt es ohne Weg der Projektkopie nur die Ueberlagerung.
+        Assert.Empty(cut.FindAll(".epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste .epos-knopf--bearbeiten-projekt"));
         Assert.Single(cut.FindAll(".epos-knopf--anlage"));       // die Anlage geht auch im Assistenten auf
     }
 
@@ -272,10 +280,12 @@ public class WaermepumpenDialogTests : EposBunitContext
 
         var projekt = cut.Find(".epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste").TextContent;
         Assert.Contains("Markierte auf diese Wärmepumpe umstellen", projekt);
-        Assert.Contains(Resource.AUSWAHL_BTN_BEARBEITEN, projekt);
+        Assert.DoesNotContain(Resource.AUSWAHL_BTN_BEARBEITEN, projekt);   // AW1: Bearbeiten nur am Satz
         Assert.Contains(Resource.KATRUECK_BTN, projekt);
 
-        var fuss = cut.Find(".epos-zweispalten-fussleiste").TextContent;
+        // AW1: keine Fussleiste - die Knoepfe stehen am gewaehlten Satz.
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+        var fuss = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe").TextContent;
         Assert.Contains("Löschen", fuss);
         Assert.Contains("Bearbeiten...", fuss);
         Assert.DoesNotContain(Resource.AUSWAHL_BTN_VERGLEICHEN, fuss);
@@ -336,7 +346,8 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.False(cut.Instance.DetailOffen);
         // UeS2: ohne Satz nennt die Detailzeile den Leersatz, „Bearbeiten" ist gesperrt.
         Assert.Equal(Resource.AUSWAHL_SATZ_LEER, cut.Find(".epos-zweispalten-satzname").TextContent);
-        Assert.True(cut.Find(".epos-zweispalten-bearbeiten").HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-bearbeiten"));   // AW1: kein Stift in der Detailzeile
+        Assert.All(cut.FindAll(BEARBEITEN_AM_SATZ), k => Assert.True(k.HasAttribute("disabled")));
         Assert.True(Pfeil(cut, 1).HasAttribute("disabled"));
     }
 
@@ -571,6 +582,7 @@ public class WaermepumpenDialogTests : EposBunitContext
         var cut = Aufbauen(katalog: ZweiSaetze(2), katalogsatzWege: Wege(),
                            editorGaben: _ => new Dictionary<string, object>());
 
+        KatalogzeileWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
         KatalogAnkreuzen(cut, 0, 1);
         Knopf(cut, "Bearbeiten...").Click();
 
@@ -993,5 +1005,105 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.Equal("WP Zwei", cut.FindComponent<Zweispaltenauswahl>().Instance.SatzName);
         Assert.False(cut.Instance.SatzUeberlagerungOffen);
         Assert.True(cut.Instance.EditorOffen);
+    }
+    // =================================================================================
+    // AW1: eine Wahl je Zeile, Knopfleiste am gewaehlten Satz (Anwenderentscheide 11.10.2026)
+    // =================================================================================
+
+    private static List<WaermepumpeAnlageDaten> DreiPumpen()
+        => new() { Zeile("WP A"), Zeile("WP B", 14), Zeile("WP C", 16) };
+
+    private static IElement AmSatz(IRenderedComponent<WaermepumpenDialog> cut, string klasse)
+        => cut.Find(".epos-zweispalten-satzknoepfe ." + klasse);
+
+    /// <summary>AW1: kein Wahlknopf, die Zeile ist die Wahl — Klick hebt sie hervor, die Kästchen bleiben unberührt.</summary>
+    [Fact]
+    public void AW1_Die_Zeile_ist_die_Wahl_und_wird_hervorgehoben()
+    {
+        var cut = Aufbauen(DreiPumpen());
+        var liste = cut.FindAll(".epos-raster")[0];
+        Assert.Empty(liste.QuerySelectorAll(".epos-zeilenwahl, .epos-anlagenwahl, input[type=radio]"));
+
+        Projektwahl(cut, 2).Click();
+
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr").ToList();
+        Assert.Single(zeilen, tr => tr.ClassList.Contains("epos-zeile--gewaehlt"));
+        Assert.Contains("epos-zeile--gewaehlt", zeilen[2].ClassList);
+        Assert.Equal("true", zeilen[2].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Equal("WP C", cut.Find(".epos-zweispalten-satzname").TextContent);
+        Assert.Equal(0, cut.Instance.ProjektWahl.Anzahl);
+    }
+
+    /// <summary>AW1: Die Projektliste ist ein Tabulatorhalt; ↑ ↓ Pos1 Ende bewegen die Wahl.</summary>
+    [Fact]
+    public void AW1_Die_Pfeiltasten_bewegen_die_Wahl()
+    {
+        var cut = Aufbauen(DreiPumpen());
+        Projektwahl(cut, 0).Click();
+        var huelle = cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle");
+        Assert.Equal("0", huelle.GetAttribute("tabindex"));
+
+        huelle.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        Assert.Equal("WP B", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle").KeyDown(new KeyboardEventArgs { Key = "End" });
+        Assert.Equal("WP C", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle").KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        Assert.Equal("WP B", cut.Find(".epos-zweispalten-satzname").TextContent);
+    }
+
+    /// <summary>
+    /// AW1: Beim Projektsatz sind Schloss… und Löschen weich gesperrt („Katalogsatz wählen"), Bearbeiten…
+    /// öffnet die Projektkopie; beim Katalogsatz wirken sie wie bisher.
+    /// </summary>
+    [Fact]
+    public void AW1_Sperren_folgen_der_Art_des_gewaehlten_Satzes()
+    {
+        var geloescht = new List<int>();
+        var pruefung = new Schlosspruefung();
+        var cut = Aufbauen(DreiPumpen(), projektsatzWege: Wege(), schloss: pruefung.Weg(),
+                           katalogLoeschen: id => { geloescht.Add(id); return ""; });
+        Projektwahl(cut, 1).Click();
+
+        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        {
+            var knopf = AmSatz(cut, klasse);
+            Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+            Assert.False(knopf.HasAttribute("disabled"));
+            Assert.Equal(Resource.AUSWAHL_SPERRE_KATALOGSATZ, knopf.GetAttribute("title"));
+        }
+        AmSatz(cut, "epos-katalogschloss").Click();
+        Assert.Equal(Resource.AUSWAHL_SPERRE_KATALOGSATZ, cut.Find(".epos-warnbanner-text").TextContent);
+        Assert.Empty(pruefung.Aufrufe);
+        Assert.Empty(geloescht);
+
+        AmSatz(cut, "epos-knopf--bearbeiten-projekt").Click();
+        Assert.True(cut.FindComponent<Zweispaltenauswahl>().Instance.SatzUeberlagerungOffen);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+                     cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-kopf .epos-zweispalten-marke--satz").TextContent);
+        SatzZu(cut);
+
+        KatalogzeileWaehlen(cut);
+        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        {
+            Assert.False(AmSatz(cut, klasse).HasAttribute("aria-disabled"));
+            Assert.False(AmSatz(cut, klasse).HasAttribute("disabled"));
+        }
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog"));
+    }
+
+    /// <summary>AW1: Der Stift einer Projektzeile tut, was „Bearbeiten…" am Satz für diese Zeile tut; der Stift der Detailzeile entfällt.</summary>
+    [Fact]
+    public void AW1_Der_Stift_je_Zeile_ist_Bearbeiten_fuer_diese_Zeile()
+    {
+        var cut = Aufbauen(DreiPumpen(), projektsatzWege: Wege());
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste .epos-knopf--bearbeiten-projekt"));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift")[1].Click();
+
+        Assert.True(cut.FindComponent<Zweispaltenauswahl>().Instance.SatzUeberlagerungOffen);
+        Assert.Equal("WP B", cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-titel").TextContent.Trim());
+        Assert.Contains("epos-zeile--gewaehlt", cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[1].ClassList);
     }
 }

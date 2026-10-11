@@ -3,10 +3,15 @@
    "gewaehlter Satz".
 
    KATALOGAUSWAHL V1, STUFE 3 (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.6, 4.9):
-   * Projekt-Kopfleiste: Umstellen (genau eine Projektzeile auf genau einen Katalogsatz), Bearbeiten…
-     (Projektkopien), In die Datenbank uebernehmen… (KA-E-9), Entfernen.
-   * Katalogfuss: Schloss, Loeschen, Bearbeiten… - ohne Vergleichen und ohne Neu… (beides traegt der
-     Katalogeditor). Ein einzelner ungesperrter Satz oeffnet den vollen Katalogeditor (KA-E-13).
+   * Projekt-Kopfleiste: Umstellen (genau eine Projektzeile auf genau einen Katalogsatz), In die
+     Datenbank uebernehmen… (KA-E-9), Entfernen.
+   * Knopfleiste am gewaehlten Satz (KnopfleisteAmSatz, AW1): Schloss, Loeschen, Bearbeiten… - ohne
+     Vergleichen und ohne Neu… (beides traegt der Katalogeditor). Bearbeiten… wirkt je Satzart auf die
+     Projektkopie oder den Katalogsatz; Schloss und Loeschen nur auf Katalogsaetze, beim Projektsatz weich
+     gesperrt („Katalogsatz waehlen"). Ein einzelner ungesperrter Satz oeffnet den vollen Katalogeditor
+     (KA-E-13).
+   * Projektliste: die Zeile ist die Wahl (farbig hervorgehoben wie in der Katalogliste, ↑ ↓ Pos1 Ende,
+     ein Tabulatorhalt); das Kaestchen ist die Mehrfachwahl.
    * Detailzeile aufgeklappt: die Kenndaten samt Kennlinie (COP und Leistung), beim Projektsatz die
      Kostenknoepfe (KA-E-12) und "Anlage…".
    * "Anlage…" oeffnet die Anlagenseite WaermepumpeAnlageDialog als Ueberlagerung im selben Fenster
@@ -58,6 +63,9 @@
                         SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
+                        KnopfleisteAmSatz="true"
+                        ProjektGewaehlt="@(_gewaehlt is null ? null : Projektschluessel(_gewaehlt))"
+                        ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
 
         <Leistenzusatz>
@@ -66,12 +74,7 @@
             <button type="button" class="epos-knopf epos-zweispalten-knopf epos-wp-umstellen"
                     title="@(UmstellenMoeglich ? TipUmstellen : TipUmstellenEiner)"
                     disabled="@(!UmstellenMoeglich)" @onclick="BeiUmstellen">@LabelUmstellen</button>
-            @if (ProjektsatzWege is not null)
-            {
-                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--bearbeiten-projekt"
-                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
-                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
-            }
+            @* „Bearbeiten…" steht nur noch EINMAL, in der Knopfleiste am gewaehlten Satz (AW1). *@
             @if (RueckwegWege is not null)
             {
                 @* KA-E-9: der Rueckweg in die Datenbank, wirksam auf die Auswahl der Projektliste. *@
@@ -82,12 +85,14 @@
         </Leistenzusatz>
 
         <Links>
-            <div class="epos-raster-huelle">
+            @* DIE ZEILE IST DIE WAHL (AW1): kein Wahlknopf - ein Klick in eine Zelle waehlt die Zeile,
+               ↑ ↓ Pos1 Ende bewegen die Wahl (die Huelle ist ein Tabulatorhalt), das Kaestchen bleibt die
+               Mehrfachwahl. *@
+            <div class="epos-raster-huelle" tabindex="0" aria-label="@LabelProjektliste" @onkeydown="BeiProjektTaste">
                 <table class="epos-raster">
                     <thead>
                         <tr>
                             <th class="epos-spalte-kaestchen"><Wahlkaestchen Bereich="Auswahlbereich.Projekt" /></th>
-                            <th>@SpalteWahl</th>
                             <th>@SpalteHersteller</th>
                             <th>@SpalteTyp</th>
                             <th>@SpalteLeistung</th>
@@ -104,21 +109,19 @@
                         @foreach (WaermepumpeAnlageDaten zeile in Zeilen)
                         {
                             WaermepumpeAnlageDaten z = zeile;
-                            <tr class="@(z == _gewaehlt ? "epos-zeile--markiert" : null)">
+                            string? aktuell = z == _gewaehlt ? "true" : null;
+                            <tr class="@(z == _gewaehlt ? "epos-zeile--gewaehlt" : null)">
                                 <td class="epos-spalte-kaestchen">
                                     <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@Projektschluessel(z)"
                                                    Kurztext="@z.Bezeichner" />
                                 </td>
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => ProjektZeileKlick(z)" />
-                                </td>
-                                <td>@z.Firma</td>
-                                <td>@z.Bezeichner</td>
-                                <td>@z.Nennleistung</td>
-                                <td>@z.Vorlauf</td>
-                                <td>@z.Ruecklauf</td>
-                                <td>@z.Betriebsart</td>
+                                @foreach (object? text in new object?[] { z.Firma, z.Bezeichner, z.Nennleistung, z.Vorlauf, z.Ruecklauf, z.Betriebsart })
+                                {
+                                    <td class="epos-zelle-wahl">
+                                        <span class="epos-zeilenzelle epos-projektzeile" title="@text" aria-current="@aktuell"
+                                              @onclick="() => ProjektZeileKlick(z)">@text</span>
+                                    </td>
+                                }
                                 @* UeS2: der Stift je Projektzeile - die Projektkopie in der Satz-Ueberlagerung;
                                    nur, wo es den Weg der Projektkopie gibt (wie „Bearbeiten…"). *@
                                 @if (ProjektsatzWege is not null)
@@ -147,16 +150,31 @@
         </Rechts>
 
         <KatalogFuss>
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW1): Bearbeiten… je Satzart; Schloss… und Loeschen nur auf
+               Katalogsaetze - beim Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen". *@
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
+                            Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
                             Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
-            @if (KatalogLoeschen is not null)
+            @if (KatalogLoeschen is not null && KatalogSperrgrund is string grund)
+            {
+                <button type="button" class="epos-knopf epos-knopf--loeschen" aria-disabled="true" title="@grund"
+                        @onclick="() => BeiSchlossAbgelehnt(grund)">@BtnLoeschenText</button>
+            }
+            else if (KatalogLoeschen is not null)
             {
                 <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
                         @onclick="BeiLoeschenGefragt">@BtnLoeschenText</button>
             }
-            @if (EditorGaben is not null || KatalogsatzWege is not null)
+            @if (SatzArt == Satzmarke.Projektsatz)
             {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt"
+                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@BtnBearbeitenText</button>
+            }
+            else
+            {
+                @* Ohne Editor und Sammelweg zeigt „Bearbeiten…" den Katalogsatz in der Ueberlagerung (AW1). *@
                 <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
                         title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
                         disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
@@ -768,11 +786,31 @@
 
     private string AnlageTitel => string.Format(Resource.Culture, AnlageTitelFormat, _gewaehlt?.Bezeichner ?? "");
 
+    /// <summary>
+    /// Klick in eine Projektzeile (AW1): Die Zeile wird der gewählte Satz, die Detailzeile folgt; die
+    /// Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
     private void ProjektZeileKlick(WaermepumpeAnlageDaten zeile)
     {
-        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
-        ProjektZeileWaehlen(zeile);
+        if (_gewaehlt != zeile) ProjektZeileWaehlen(zeile);
     }
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private void BeiProjektTastenwahl(string schluessel)
+    {
+        WaermepumpeAnlageDaten? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
+        if (zeile is not null) ProjektZeileKlick(zeile);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen (AW1): Sie wirken nur auf Katalogsätze;
+    /// steht ein Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
 
     private void BeiWahlGeaendert(Auswahlbereich bereich)
     {
@@ -1086,6 +1124,14 @@
                             ziele.Select(z => new Bearbeitungssatz(z.Id, z.Bezeichner, z.Geschuetzt)).ToList());
             return;
         }
+        // AW1: ohne Sammelweg zeigt „Bearbeiten…" den einen Satz in der Ueberlagerung (wie zuvor der Stift
+        // der Detailzeile).
+        if (ziele.Count == 1 && _zweispalten is not null)
+        {
+            if (_katalogZeile?.Bezeichner != ziele[0].Bezeichner) KatalogZeileWaehlen(ziele[0].Bezeichner);
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
         if (ziele.All(z => z.Geschuetzt)) BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
     }
 
@@ -1095,7 +1141,13 @@
     /// </summary>
     private async Task BeiProjektBearbeiten()
     {
-        if (ProjektsatzWege is null) return;
+        if (ProjektsatzWege is null)
+        {
+            // AW1: ohne Weg der Projektkopie zeigt „Bearbeiten…" den Projektsatz in der Ueberlagerung
+            // (wie zuvor der Stift der Detailzeile) - dort stehen Kenndaten, Kosten und „Anlage…".
+            if (_gewaehlt is not null && _zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
         List<WaermepumpeAnlageDaten> ziele = ProjektZiele().Where(z => z.IdWp > 0).ToList();
         var saetze = ziele.GroupBy(z => z.IdWp)
             .Select(g => new Bearbeitungssatz(g.Key, g.First().Bezeichner, false)).ToList();
