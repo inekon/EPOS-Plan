@@ -235,24 +235,24 @@ public class KatalogKiSperreTests : EposBunitContext
     }
 
     // =================================================================================
-    // Wärmepumpen-Anlagendialog: Ladestand ohne Speicherweg
+    // Wärmepumpen-Anlagenfelder: Ladestand ohne Speicherweg
     // =================================================================================
 
     [Fact]
-    public void WaermepumpeAnlage_Stammliste_wirft_der_Ladestand_nennt_den_Grund()
+    public void WaermepumpeAnlage_Vorlaufstufen_wirft_der_Ladestand_nennt_den_Grund()
     {
-        Render<WaermepumpeAnlageDialog>(p => p
-            .Add(x => x.Daten, new WaermepumpeAnlageDaten())
-            .Add(x => x.Stammliste, Wirft<IReadOnlyList<WaermepumpeStammZeile>>));
+        Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, new WaermepumpeAnlageDaten { IdWp = 1, Bezeichner = "WP" })
+            .Add(x => x.Vorlaeufe, _ => throw new InvalidOperationException(GRUND)));
         Assert.Contains(GRUND, Ladestand(KiMaskennamen.WAERMEPUMPE_ANLAGE));
     }
 
     [Fact]
     public void WaermepumpeAnlage_ohne_Ausnahme_ist_der_Ladestand_leer()
     {
-        Render<WaermepumpeAnlageDialog>(p => p
-            .Add(x => x.Daten, new WaermepumpeAnlageDaten())
-            .Add(x => x.Stammliste, () => Array.Empty<WaermepumpeStammZeile>()));
+        Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, new WaermepumpeAnlageDaten { IdWp = 1, Bezeichner = "WP" })
+            .Add(x => x.Vorlaeufe, _ => Array.Empty<int>()));
         Assert.Equal("", Ladestand(KiMaskennamen.WAERMEPUMPE_ANLAGE));
     }
 }

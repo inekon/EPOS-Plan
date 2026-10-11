@@ -99,6 +99,21 @@ export function satzOffenMin(wurzel) {
 }
 
 /** Setzt Mindesthoehe und Rollschalter am Dialog (nur, wenn sich etwas aendert). */
+// Die Tasten, die in der Projektliste die Wahl bewegen (AW1).
+const PROJEKTTASTEN = new Set(["ArrowUp", "ArrowDown", "Home", "End"]);
+
+// Die gewaehlte Zeile der Projektliste in den sichtbaren Bereich ihrer Huelle holen - nur die
+// Huelle rollt (scrollIntoView rollte auch den Dialog).
+function gewaehlteZeigen(huelle) {
+    const tr = huelle.querySelector("tbody > tr.epos-zeile--gewaehlt");
+    if (!tr) return;
+    const h = huelle.getBoundingClientRect(), z = tr.getBoundingClientRect();
+    const kopf = huelle.querySelector("thead");
+    const oben = h.top + (kopf ? kopf.getBoundingClientRect().height : 0);
+    if (z.top < oben) huelle.scrollTop -= oben - z.top;
+    else if (z.bottom > h.bottom) huelle.scrollTop += z.bottom - h.bottom;
+}
+
 function engPruefen(wurzel) {
     const dialog = wurzel.parentElement;
     if (!dialog || !dialog.classList.contains("epos-dialog") || !wurzel.isConnected) return;
@@ -163,6 +178,15 @@ export function anmelden(wurzel, dotnet) {
         const bereich = huelle.closest(".epos-zweispalten-bereich--katalog") ? "Katalog"
                       : huelle.closest(".epos-zweispalten-bereich--projekt") ? "Projekt" : null;
         if (!bereich) return;
+        // DIE ZEILE IST DIE WAHL AUCH IN DER PROJEKTLISTE (AW1): Die Huelle fuehrt ↑ ↓ Pos1 Ende
+        // selbst (Tastenfuehrung des Rasters); hier nur das Rollen der Huelle abhalten und danach
+        // die gewaehlte Zeile in den sichtbaren Bereich holen - ohne einen Vorfahren zu rollen.
+        if (bereich === "Projekt" && e.target === huelle && PROJEKTTASTEN.has(e.key)
+            && huelle.closest(".epos-zweispalten-inhalt--zeilenwahl")) {
+            e.preventDefault();
+            setTimeout(() => gewaehlteZeigen(huelle), 60);
+            return;
+        }
         let name = null;
         if (e.key === "Enter") name = "Enter";
         else if (e.key === "Delete" && bereich === "Projekt") name = "Entf";

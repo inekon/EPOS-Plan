@@ -1,122 +1,21 @@
-﻿@* Detailansicht einer Waermepumpen-ANLAGE (iU9-W7.4).
+﻿@* Die Felder einer Waermepumpen-ANLAGE - der Baustein, den die Satz-Ueberlagerung der Waermepumpen
+   Verwaltung (WaermepumpenDialog, „Bearbeiten…" am Projektsatz) traegt (AW2). Satz-Ueberlagerung und
+   Anlagenseite sind EINE Ueberlagerung: kein eigener Dialograhmen, kein Titel, kein OK - die gehoeren
+   dem Wirt. Keine Auswahlliste: die Satzwahl ist die Katalogauswahl des Wirts.
 
-   VORBILD. Views/Wizard/Wizard_WPItem (690 Z., lokalisiert de/en, 47
-   Kartenzeilen, 3 Gruppen, 2 Reiter mit 2 Charts, 3 MessageBox, dazu die
-   Laufzeitfelder der Kostenzeile). Die groesste Maske der Welle.
+   DREI ABSCHNITTE untereinander, in derselben Folge wie beim Katalogsatz:
+     * „Auslegung fuer Verteilung": Vorlauf, Ruecklauf samt Vorbelegung und ueblichen Werten, Senken.
+     * „Waermepumpen Kenndaten": Knopfzeile (Konfiguration…, Kennliniendaten Ansicht/Bearbeiten…),
+       Grundlagen und Berechnung (i), die Kostensummen der Anlage und EINE bearbeitbare Feldgruppe
+       (WaermepumpeStammFelder) - jedes Feld einmal.
+     * Die Kennlinien (COP, Leistung) mit Extrapolationsschalter und Herkunftszeile.
 
-   DREI SPALTEN WIE IM VORBILD (W7-E-2, Windows-Abnahme 06.09.2026:
-   "Dialoganordnung sehr uebersichtlich - versuche den Dialog angelehnt an die
-   alte Version zu gestalten"). Bis dahin standen die drei Bloecke UNTEREINANDER
-   und die Ueberlagerung rollte innen; die Auslegung war abgeschnitten. Die
-   Anordnung des Vorbilds, gemessen an Wizard_WPItem.resx (1126 x 752):
+   DER WIRT PRUEFT UND VERWIRFT. Die Felder schreiben an Ort und Stelle in Daten; der Wirt ruft vor
+   seinem OK Pruefen() und haelt beim Abbrechen den Merker der Zeile. Was der Kennlinieneditor in die
+   Projektkennlinien schreibt, nimmt KennlinienZuruecksetzen() zurueck.
 
-     LINKS  (x 16..560)  Auswahl (label_WP 16/13, listBox_WP 21/40,
-                         btn_Katalog 286/10).
-     MITTE  (x 537..748) groupBox3 "Auslegung fuer Verteilung" (32, 211x111); die
-                         "Nutzungsdauer 20 a" darunter (label31 532/158) gehoert
-                         seit dem 30.09.2026 in den Kostendialog.
-     RECHTS (x 693..1122) groupBox2 "Waermepumpen Kenndaten" (32, 348x320) -
-                         darunter "Kenndaten Kennlinien:" (label24 693/355) und
-                         tabControl1 (693/381, 429x260).
-
-   WAS SICH AM 16.09.2026 GEAENDERT HAT (Anwenderentscheid nach den Bildschirm-
-   fotos des Waermepumpendialogs):
-
-     * DIE GRUPPE "Waermeerzeuger Spitzenlast:" IST AUS DEM DIALOGKOERPER
-       VERSCHWUNDEN. Ihre Ueberschrift benannte nur den ERSTEN Schalter - die
-       elektrische Nachheizung -, obwohl darunter Sperrzeit, bivalenter Betrieb,
-       Bivalenztemperatur und der Energietraeger standen. Der Block heisst
-       seither "Konfiguration", steht im Baustein WaermepumpeKonfiguration und
-       geht hier ueber den Knopf "Konfiguration…" in einer Ueberlagerung auf;
-       den zweiten Weg dorthin fuehrt Simulation > Konfiguration. Die
-       Ueberlagerung traegt Titel und Kreuz, ihr OK prueft dieselben Regeln wie
-       das OK des Dialogs, ihr Abbrechen schreibt den gesicherten Stand zurueck.
-     * DIE KENNDATEN SIND EIN MODULBEREICH wie bei den sechs Erzeugern: Unter
-       dem Gruppenkopf steht EINE Knopfzeile (Kosten und Konfiguration links,
-       Kennlinieneditor rechts), darunter ALLE Parameter des Stammgeraets,
-       unmittelbar und BEARBEITBAR (Baustein WaermepumpeStammFelder), mit einem
-       eigenen Speichernknopf. Die sechs nur lesenden Kenndatenfelder und der
-       Knopf "Parameter Bearbeiten…" samt seiner Ueberlagerung sind damit
-       entfallen - kein Feld steht zweimal da.
-
-   DIE HAEKCHEN TRAGEN IHREN EIGENEN TEXT (W7-E-2). label7 und label19 sind im
-   Vorbild UEBERSCHRIFTEN; die Kaestchen daneben heissen "Elektrische
-   Nachheizung aktivieren (falls vorhanden)" und "Sperrzeit durch
-   Energieversorger". Sie stehen jetzt im Baustein WaermepumpeKonfiguration.
-
-   DER TITEL STEHT EINMAL. Wer die Ansicht in einer Ueberlagerung zeigt, gibt
-   TitelText leer - dann zeichnet der Dialog keinen zweiten Kopf. Das
-   Bildschirmfoto der Abnahme zeigte "Detailansicht" zweimal uebereinander.
-
-   DIE MELDUNG STEHT BEI DEM KNOPF, DER SIE AUSLOEST (Befund W7-B-2, "OK-Button
-   funktioniert nicht bei Aufruf ueber Aendern.."). Der Knopf REAGIERTE - er
-   meldete einen Fehler; nur stand das Band ganz oben und der Knopf ganz unten
-   in einer rollenden Ueberlagerung. Seither sitzen Band und Leiste in DERSELBEN
-   Fussleiste (.epos-dialog-fuss), und das bemaengelte Feld traegt die
-   Mangelklasse. Der haeufigste Grund bei einer Bestandszeile war Ruecklauf 0 -
-   ProjektPuffer.TemperaturenPruefen verwirft ihn ("groesser als 0 grad C").
-   Seit dem 30.09.2026 belegt die Huelle einen Ruecklauf 0/leer aus dem Vorlauf
-   vor (Kern: AnlagenTemperaturen.WaermepumpeRuecklaufVorgabe, Vorlauf - 10 K),
-   und die Zeile darunter nennt die Herkunft.
-
-   DIE BETRIEBSART WIRD TOLERANT GELESEN (zweiter Teil von W7-B-2). Der
-   Vorlaeufer hatte eine FREI BESCHREIBBARE ComboBox und schrieb ihren Text
-   ungeprueft in Tab_Energieanlagen.Betriebsart (Befund L0-1); ein <select>
-   kann einen nicht zeichengleichen Wert gar nicht zeigen. DbWerte
-   .BetriebsartOderDefault fuehrt "parallelbetrieb", "Bivalent-parallel" oder
-   "Parallel operation" auf den Steuerwert zurueck - unbekannt bleibt leer und
-   ist dann eine Pflichtangabe, nach der der Dialog sichtbar fragt.
-
-   DER DIALOG BEARBEITET EINE KOPIE. Der Vorlaeufer schrieb im OK-Knopf in
-   item - die Referenz in die Projektliste der Verwaltung. Hier bekommt der
-   Dialog eine Kopie, die Huelle uebertraegt sie beim OK zurueck; Abbrechen
-   verwirft sie.
-
-   DIE STILLE VORWAHL (Ä21). item.ID_WP traegt bei einer Zeile aus der
-   Projektliste die PROJEKT-Geraete-Id, bei einer frisch gewaehlten
-   Waermepumpe die Stammkatalog-Id. Der Vorlaeufer musste sich dafuer mit
-   m_bStilleFuellung gegen seinen eigenen Auswahl-Handler wehren, den schon
-   die programmatische Textzuweisung ausloeste. Hier gibt es das Problem
-   nicht: Der Aufbau fuellt aus den Daten, und NUR ein Klick auf eine
-   Listenzeile wechselt die Id - samt der Stammfelder am Datensatz (Ä23).
-
-   DIE ZWEI SICHTBARKEITSREGELN (Betriebsart nur bei bivalentem Betrieb,
-   Bivalenztemperatur nur, wo sie rechenwirksam ist) stehen seit dem 16.09.2026
-   im Baustein WaermepumpeKonfiguration - woertlich, wie sie hier standen. Die
-   Pufferspeichergruppe wird GAR NICHT gezeichnet (Ä19); ihre Werte laufen im
-   Datensatz mit.
-
-   DIE KOSTENZEILE (Ä19/Ä22/Ä25) ersetzt die Modulkosten: ein Knopf - seit dem
-   16.09.2026 in der Knopfzeile oben - und die Summen dieser Anlage. Ohne
-   gespeicherte Anlagenzeile bleibt er gesperrt und sagt im Tooltip warum - hier
-   zusaetzlich als Herleitungszeile, weil ein Tooltip auf einem
-   Beruehrungsgeraet nicht erreichbar ist.
-
-   DIE STAMMFELDER GEHOEREN DER PROJEKTKOPIE (Anwenderentscheid 16.09.2026, und
-   das BERICHTIGT die Bauart des Vormittags). Sie schrieben bis dahin in den
-   KATALOG (Tab_WP_STAMM) - wer Hersteller, Typ, Regelung, Aufstellung, Baujahr,
-   Nennleistung oder Heizstab aenderte, aenderte sie fuer JEDES andere Projekt
-   mit. Sie sind aber Daten DIESER Anlage: Der Rechenweg liest Tab_WP
-   (SimulationWaermepumpe.ModuleAufbauen), und dorthin gehoeren sie.
-
-   FOLGEN, jede fuer sich pruefbar:
-
-     * Die Felder binden an Daten (den Feldsatz der Anlage) und gehen mit dem OK
-       des Dialogs hinaus - KEIN eigener Speichern-Knopf mehr. Den Schreibweg in
-       Tab_WP zieht die Huelle nach dem Anlegen der Projektkopie nach
-       (WPCtrl.ProjektgeraetSchreiben).
-     * Der BEZEICHNER ist hier nicht editierbar (BezeichnerAenderbar="false"):
-       Projektkopie und Katalogsatz kennen einander allein ueber den Namen, und
-       die Waermesenken haengen an (Typ, Bezeichner). Umbenannt wird in der
-       Katalogverwaltung.
-     * Das eigene Heizstab-Feld der Anlage ist mit dem des Bausteins VERSCHMOLZEN
-       - ein Feld, eine Spalte (Tab_WP.Heizung); zwei gleich beschriftete Felder
-       in einem Block waren nicht auseinanderzuhalten.
-     * In den Katalog kommt der Stand nur auf ausdruecklichen Zuruf: der Knopf
-       "In Stamm uebernehmen…" mit Vorschau und Rueckfrage.
-
-   TASTATUR: Esc bricht ab - aber erst, wenn keine Ueberlagerung offen ist.
-   Enter ist nicht belegt. *@
+   Die Konfiguration, der Kennlinieneditor und „In Stamm uebernehmen" stehen in eigenen
+   Ueberlagerungen; Esc werten sie selbst aus. *@
 
 @namespace EPOS.UI.Dialoge.Waermepumpe
 @inherits Farbwahlwirt
@@ -125,86 +24,12 @@
 @using EPOS.UI.Dialoge.Kosten
 @implements IDisposable
 
-<div class="epos-dialog epos-wp-anlage @(Eingebettet ? "epos-dialog--eingebettet" : "")" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-wp-anlagefelder">
 
-    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
-        @if (!string.IsNullOrEmpty(TitelText))
-        {
-            <h1 class="epos-dialog-titel">@TitelText</h1>
-        }
-        <InfoKnopf Schluessel="@HilfeSchluessel" />
-        @* Eingebettet (W7-B-3): der Wirt schliesst, nicht der Dialog selbst - dann
-           kein Kreuz, so wie schon kein Esc und kein eigener Dialograhmen. *@
-        @if (!string.IsNullOrEmpty(TitelText) && !Eingebettet)
-        {
-            <Schliesskreuz Geschlossen="Abbrechen" />
-        }
-    </div>
+    <div class="epos-wp-abschnitte">
 
-    <div class="epos-wp-spalten">
-
-        @* ================= LINKS: Auswahl der Waermepumpe ================= *@
-        <div class="epos-wp-spalte epos-wp-spalte--links">
-
-            @* EINGEBETTET (W7-B-3 Nachtrag, 08.09.2026): In der Waermepumpen
-               Verwaltung ist der Katalog rechts DIE Auswahl - die Innenliste hier
-               und die Ueberlagerung "Modul-Katalog..." zeigten dieselben Zeilen ein
-               zweites Mal. Der Wirt stellt eine Projektzeile ueber "Markierte auf
-               diese Waermepumpe umstellen" um (WaermepumpeUmstellen). Frei stehend
-               (Assistent, Altweg) bleibt die Liste, wie sie war. *@
-            @if (!Eingebettet)
-            {
-            <div class="epos-wp-auswahl">
-                <div class="epos-wp-auswahl-kopf">
-                    <h2 class="epos-untergruppe">@LabelWpAuswahl</h2>
-                    <button type="button" class="epos-knopf" disabled="@NurLesen"
-                            @onclick="BeiKatalog">@BtnKatalogText</button>
-                </div>
-
-                @* W7-B-1: "Anstelle Name sollte Typ stehen, es fehlt der
-                   Hersteller (vor Typ)." Typ ist die MODELLBEZEICHNUNG; der
-                   Waermepumpentyp "Luft-Wasser" bleibt im Kenndatenblock. *@
-                <div class="epos-raster-huelle epos-wp-auswahlliste">
-                    <table class="epos-raster">
-                        <thead>
-                            <tr>
-                                <th>@SpalteWahl</th>
-                                <th>@SpalteHersteller</th>
-                                <th>@SpalteTyp</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (WaermepumpeStammZeile zeile in _stammliste)
-                            {
-                                WaermepumpeStammZeile z = zeile;
-                                <tr class="@(z.Bezeichner == Daten.Bezeichner ? "epos-zeile--markiert" : null)">
-                                    <td>
-                                        <Zeilenwahl Gewaehlt="@(z.Bezeichner == Daten.Bezeichner)"
-                                                    Kurztext="@SpalteWahl" Aktiv="@(!NurLesen)"
-                                                    Gewaehltwerden="() => WaermepumpeWaehlen(z)" />
-                                    </td>
-                                    <td>@z.Firma</td>
-                                    <td>@z.Bezeichner</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            }
-
-            @* HIER STAND DIE GRUPPE "Waermeerzeuger Spitzenlast:" (bis 16.09.2026).
-               Anwenderentscheid vom 16.09.2026: Die Ueberschrift benannte nur den
-               ERSTEN Schalter - die elektrische Nachheizung -, obwohl darunter
-               Sperrzeit, bivalenter Betrieb, Bivalenztemperatur und der Energietraeger
-               standen. Der Block heisst seither "Konfiguration", steht im Baustein
-               WaermepumpeKonfiguration und ist von ZWEI Stellen aus erreichbar: hier
-               ueber den Knopf "Konfiguration…" in der Knopfzeile der Kenndaten und aus
-               Simulation > Konfiguration. *@
-        </div>
-
-        @* ================= MITTE: Auslegung fuer Verteilung ================ *@
-        <div class="epos-wp-spalte epos-wp-spalte--mitte">
+        @* ================= Auslegung fuer Verteilung ====================== *@
+        <section class="epos-wp-abschnitt epos-wp-abschnitt--auslegung">
             <Gruppenkopf Titel="@GruppeAuslegung">
                 <KindInhalt>
                     <Formularraster Einspaltig="true">
@@ -251,10 +76,10 @@
                     </Formularraster>
                 </KindInhalt>
             </Gruppenkopf>
-        </div>
+        </section>
 
         @* ================= RECHTS: Kenndaten und Kennlinien ================ *@
-        <div class="epos-wp-spalte epos-wp-spalte--rechts">
+        <section class="epos-wp-abschnitt epos-wp-abschnitt--kenndaten">
             <Gruppenkopf Titel="@GruppeKenndaten">
                 <KindInhalt>
                     @* DIE KNOPFZEILE STEHT OBEN (Anwenderentscheid 16.09.2026, dieselbe
@@ -329,9 +154,12 @@
                        Fensterknopf oben rechts bleibt, was er ist. *@
                     <div class="epos-berechnungshilfe">
                         @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation, Abschnitt 7). *@
-                        <InfoKnopf Schluessel="Form_WP.Grundlagen"
+                        @* AW2: der Hilfeknopf der Waermepumpe (Wizard_WPItem.btn_Help) steht mit Grundlagen und
+                           Berechnung hier - die Satz-Ueberlagerung hat keinen eigenen Fensterknopf. *@
+                        <InfoKnopf Schluessel="@HILFE_FENSTER" MitAssistent="false" />
+                        <InfoKnopf Schluessel="@HILFE_GRUNDLAGEN"
                                    StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
-                        <InfoKnopf Schluessel="Form_WP.Berechnung"
+                        <InfoKnopf Schluessel="@HILFE_BERECHNUNG"
                                    StandardKurztext="Berechnungsweg Wärmepumpe" MitAssistent="false" />
                     </div>
 
@@ -375,7 +203,10 @@
                 </KindInhalt>
             </Gruppenkopf>
 
-            @* --- Die beiden Kennlinienbilder ------------------------------- *@
+        </section>
+
+        @* --- Die beiden Kennlinienbilder ------------------------------- *@
+        <section class="epos-wp-abschnitt epos-wp-abschnitt--kennlinien">
             <h2 class="epos-untergruppe">@LabelKennlinien</h2>
 
             @* W10b-B-3 (Windows-Abnahme 08.09.2026): "Extrapolation der WP-Kennlinie
@@ -479,45 +310,20 @@
                     </Reiterblatt>
                 </KindInhalt>
             </Reiter>
-        </div>
+        </section>
     </div>
 
-    @* --- Fussleiste: die Meldung steht bei dem Knopf, der sie ausloest ----- *@
-    <div class="epos-dialog-fuss">
-        @if (_warnung.Length > 0)
-        {
-            <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
-        }
-        @* KT-7: Wirft das Lesen einer Liste, nennt dieser Banner den Grund (Katalogladung). *@
-        @if (!string.IsNullOrEmpty(_listeFehler))
-        {
-            <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
-        }
-        @* KT-7: Wirft das Lesen eines Satzes (Stamm, Vorlaufstufen, Bilder, Kennlinien), nennt dieser Banner den Grund. *@
-        @if (!string.IsNullOrEmpty(_satzFehler))
-        {
-            <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
-        }
-
-        @if (Eingebettet)
-        {
-            @* EINGEBETTET in der Waermepumpen Verwaltung (W7-B-3, 08.09.2026): OK und
-               Abbrechen gehoeren dem Wirt; er ruft Pruefen(), bevor er die Zeile wechselt
-               oder schliesst. Das Warnband oben bleibt - es nennt das Feld. *@
-        }
-        else if (NurLesen)
-        {
-            @* Nur ansehen: EIN Knopf, der schliesst - kein OK, das nichts uebernimmt. *@
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf epos-knopf--primaer"
-                        @onclick="() => Geschlossen.InvokeAsync(false)">@SchliessenText</button>
-            </div>
-        }
-        else
-        {
-            <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
-        }
-    </div>
+    @* --- Die Meldung der Pruefung: der Wirt (Satz-Ueberlagerung) ruft Pruefen() vor seinem OK;
+           das Band nennt das Feld, das Feld traegt die Mangelklasse. *@
+    @if (_warnung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
+    }
+    @* KT-7: Wirft das Lesen eines Satzes (Vorlaufstufen, Bilder, Kennlinien), nennt dieser Banner den Grund. *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* --- Ueberlagerung 1: die KONFIGURATION (16.09.2026) --------------------
        Der Block, der bis hierher als Gruppe "Waermeerzeuger Spitzenlast:" in der
@@ -607,33 +413,17 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung 3: der Modulkatalog ---------------------------------- *@
-    <Ueberlagerung Offen="@_katalogOffen"
-                   Titel="@BtnKatalogText" Geschlossen="() => _katalogOffen = false">
-        <KindInhalt>
-            @if (_katalogOffen)
-            {
-                @* KT-8a: Wirft eine Vergleichsabfrage, nennt dieser Banner den Grund — in der
-                   Ueberlagerung, wo der Vergleich steht. *@
-                @if (_vergleichFehler.Length > 0)
-                {
-                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@_vergleichFehler" />
-                }
-                @* Ein Titel, eine Stelle: die Ueberlagerung traegt den Titel. *@
-                <WaermepumpenKatalogDialog Zeilen="@_katalog" Profil="@Katalogprofil"
-                                           Vergleichsparameter="@_vergleichsweg"
-                                           TitelText="" Geschlossen="KatalogFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
 </div>
 
 @code {
+    /// <summary>Die Hilfeschlüssel der Wärmepumpe — EINE Stelle; der Katalogsatz der Satz-Überlagerung nimmt dieselben.</summary>
+    public const string HILFE_FENSTER = "Wizard_WPItem.btn_Help";
+    public const string HILFE_GRUNDLAGEN = "Form_WP.Grundlagen";
+    public const string HILFE_BERECHNUNG = "Form_WP.Berechnung";
+
     /// <summary>Der bearbeitete Satz — eine KOPIE; die Hülle überträgt sie beim OK zurück.</summary>
     [Parameter] public WaermepumpeAnlageDaten Daten { get; set; } = new();
 
-    /// <summary>Die Stammliste (<c>WPStammCtrl.ReadAll</c>).</summary>
-    [Parameter] public Func<IReadOnlyList<WaermepumpeStammZeile>>? Stammliste { get; set; }
 
     /// <summary>Die Vorlaufstufen eines Geräts (<c>KenndatenCtrl.ReadVorlauf</c>).</summary>
     [Parameter] public Func<int, IReadOnlyList<int>>? Vorlaeufe { get; set; }
@@ -712,21 +502,7 @@
     /// </summary>
     [Parameter] public Func<WaermepumpeAnlageDaten, Task>? EnergiekostenOeffnen { get; set; }
 
-    /// <summary>
-    /// Der Katalog für die Überlagerung „Modul-Katalog…" —
-    /// <c>WPStammCtrl.Katalogfilterzeilen()</c>, seit Stufe S2.2 derselbe Weg wie
-    /// in der Verwaltung. Die neun Spalten und ihre Trichter kommen aus dem Profil.
-    /// </summary>
-    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalog { get; set; }
 
-    /// <summary>Die Spalten des Katalogs — die Hülle reicht das übersetzte Profil herein.</summary>
-    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
-    /// <summary>
-    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
-    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Er geht
-    /// unveraendert an den Katalog weiter.
-    /// </summary>
-    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
 
 
     /// <summary>
@@ -783,12 +559,6 @@
     /// </summary>
     [Parameter] public bool NurLesen { get; set; }
 
-    /// <summary>
-    /// EINGEBETTET (W7‑B‑3, 08.09.2026): Die Ansicht steht als Abschnitt in der
-    /// Wärmepumpen Verwaltung unter der Auswahl — ohne eigenen Dialograhmen, ohne
-    /// OK/Abbrechen, ohne Esc. Der Wirt ruft <see cref="Pruefen"/> und übernimmt die Zeile.
-    /// </summary>
-    [Parameter] public bool Eingebettet { get; set; }
 
     /// <summary>
     /// Assistentenbetrieb: keine Kostenleiste. Die Ansicht steht dort eingebettet in
@@ -813,8 +583,6 @@
     /// </summary>
     [Parameter] public Func<bool, bool>? ExtrapolationSchreiben { get; set; }
 
-    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
-    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
     // --- Feste Listen ----------------------------------------------------------
 
@@ -828,24 +596,9 @@
 
     // --- Texte -----------------------------------------------------------------
 
-    /// <summary>
-    /// Überschrift des Dialogs. <b>Leer = keine</b> — so bekommt eine Ansicht in einer
-    /// <c>Ueberlagerung</c> den Titel genau EINMAL (W7‑E‑2).
-    /// </summary>
-    [Parameter] public string TitelText { get; set; } = "Detailansicht";
 
-    [Parameter] public string LabelWpAuswahl { get; set; } = "Wärmepumpen Auswahl:";
-    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
 
-    /// <summary>Spaltenkopf „Hersteller" beider Listen (W7‑B‑1).</summary>
-    [Parameter] public string SpalteHersteller { get; set; } = "Hersteller";
 
-    /// <summary>
-    /// Spaltenkopf „Typ" beider Listen (W7‑B‑1) — gemeint ist die MODELLBEZEICHNUNG
-    /// (<c>Bezeichner</c>). Der Wärmepumpentyp „Luft-Wasser" heißt im Kenndatenblock
-    /// weiter „Wärmepumpentyp" (<c>WaermepumpeStammFelderTexte.LabelTyp</c>).
-    /// </summary>
-    [Parameter] public string SpalteTyp { get; set; } = "Typ";
 
     [Parameter] public string GruppeKenndaten { get; set; } = "Wärmepumpen Kenndaten";
     [Parameter] public string GruppeAuslegung { get; set; } = "Auslegung für Verteilung";
@@ -914,7 +667,6 @@
     [Parameter] public string EinheitKw { get; set; } = "kW";
     [Parameter] public string EinheitGrad { get; set; } = "°C";
 
-    [Parameter] public string BtnKatalogText { get; set; } = "📋  Modul-Katalog...";
 
     /// <summary>Der Knopf in die Konfiguration (<c>WPA_BTN_KONFIGURATION</c>, 16.09.2026).</summary>
     [Parameter] public string BtnKonfigurationText { get; set; } = "Konfiguration…";
@@ -1024,26 +776,16 @@
     /// <summary>Die Beschriftungen des Stamm-Feldrasters — EIN Bündel, ebenfalls selbstfüllend.</summary>
     [Parameter] public WaermepumpeStammFelderTexte StammfelderTexte { get; set; } = new();
 
-    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
-    [Parameter] public string HilfeSchluessel { get; set; } = "Wizard_WPItem.btn_Help";
 
-    private ElementReference _wurzel;
-    private bool _ersterAufbau = true;
 
-    private IReadOnlyList<WaermepumpeStammZeile> _stammliste = Array.Empty<WaermepumpeStammZeile>();
     private IReadOnlyList<int> _vorlaufstufen = Array.Empty<int>();
-    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private KennlinienBilder _bilder = KennlinienBilder.Leer;
     private bool _extrapolation = true;          // W10b-B-3, Vorbelegung "an"
     private int _extrapolationSchluessel;        // @key des Schalters (Neuaufbau nach Fehlschlag)
 
-    private bool _katalogOffen;
     private bool _kostenBereit;
     private string _blatt = "COP";
     private string _warnung = "";
-
-    /// <summary>KT-7: der Grund, wenn das Lesen einer Liste geworfen hat; leer = gelesen.</summary>
-    private string _listeFehler = "";
 
     /// <summary>KT-7: der Grund, wenn das Lesen eines Satzes geworfen hat; leer = gelesen.</summary>
     private string _satzFehler = "";
@@ -1108,9 +850,6 @@
     /// <summary>Die Hülle eines Feldes: durchsichtig im Raster, markiert bei Mangel.</summary>
     private string Huelle(string schluessel)
         => _mangel == schluessel ? "epos-feldhuelle epos-feldhuelle--mangel" : "epos-feldhuelle";
-
-    /// <summary>Steht der Modulkatalog? Prüfhilfe für die Tests.</summary>
-    public bool KatalogOffen => _katalogOffen;
 
     /// <summary>Steht die Konfiguration? Prüfhilfe für die Tests.</summary>
     public bool KonfigurationOffen => _konfigOffen;
@@ -1204,8 +943,6 @@
 
     protected override void OnInitialized()
     {
-        // KT-7: Wirft das Lesen der Auswahlliste, bleibt sie leer und der Banner nennt den Grund.
-        _stammliste = Katalogladung.Lesen(Stammliste, TitelText, out _listeFehler);
         _extrapolation = ExtrapolationErlaubt;
 
         // W7-B-2: Ein Altwert aus Tab_Energieanlagen wird auf den Steuerwert
@@ -1237,8 +974,9 @@
             ExtrapolationLesen = () => _extrapolation,
             ExtrapolationSetzen = KiExtrapolationSetzen,
             Kuehlgaben = () => Kuehlung,
-            // KT-8b: was die Fangstelle nicht lesen konnte (Stammliste, Stammsatz, Kennlinien, Kosten).
-            LadestandLesen = () => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler)
+            // KT-8b: was die Fangstelle nicht lesen konnte (Stammsatz, Kennlinien, Kosten); die Stammliste
+            // liest der Wirt (WaermepumpenDialog).
+            LadestandLesen = () => KatalogKiSperre.Ladestand(_satzFehler)
         };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE_ANLAGE,
                                           () => _kiSicht, KiHaken(),
@@ -1321,16 +1059,6 @@
 
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender || !_ersterAufbau) return;
-        _ersterAufbau = false;
-        // Eingebettet setzt der Wirt den Erstfokus auf seine eigene Wurzel, damit der
-        // Tabulator oben beginnt; allein fokussiert sich die Ansicht selbst.
-        if (Eingebettet) return;
-        await _wurzel.FocusAsync(preventScroll: true);
-    }
 
     /// <summary>Vorlaufstufen, Bilder, Kostenzeile und Stammfelder zum aktuellen Gerät nachziehen.</summary>
     private void Auffrischen()
@@ -1454,42 +1182,6 @@
         Daten.RuecklaufHerleitung = "";
     }
 
-    /// <summary>
-    /// Eine ECHTE Nutzerwahl: Sie wechselt die Geräte-Id auf die Stammkatalog-Id UND
-    /// zieht die Stammfelder am Datensatz nach (Ä23) — sonst trüge das Listenobjekt
-    /// nach einem Wechsel weiter die Nennleistung der vorherigen Wahl, und die
-    /// Verwaltungsliste zeigte 0 kW.
-    /// </summary>
-    private void WaermepumpeWaehlen(WaermepumpeStammZeile zeile)
-    {
-        Daten.Bezeichner = zeile.Bezeichner;
-        Daten.IdWp = zeile.Id;
-        _warnung = "";
-        _mangel = "";
-
-        // KT-7: Wirft das Lesen des Stammsatzes, nennt der Satzbanner den Grund.
-        string stammFehler = "";
-        WaermepumpeStammDaten? stamm = Stammdaten is null ? null
-            : Katalogladung.Satz(() => Stammdaten(zeile.Id), zeile.Bezeichner, out stammFehler);
-        if (stamm is not null)
-        {
-            Daten.Regelung = stamm.Regelung;
-            Daten.Nennleistung = stamm.Nennleistung ?? 0;
-            Daten.Modulkosten = stamm.Modulkosten;
-            Daten.Baujahr = stamm.Baujahr ?? 0;
-            Daten.Beschreibung = stamm.Beschreibung;
-            Daten.Firma = stamm.Firma;
-            Daten.Typ = stamm.Typ;
-            Daten.Aufstellung = stamm.Aufstellung;
-            Daten.HeizstabLeistung = stamm.Heizstab;
-            Daten.Kuehlleistung = stamm.Kuehlleistung;
-            Daten.MindestleistungKw = stamm.MindestleistungKw;
-            Daten.TaktverlustfaktorCd = stamm.TaktverlustfaktorCd;
-        }
-        Auffrischen();
-        if (_satzFehler.Length == 0) _satzFehler = stammFehler;
-    }
-
     // =================================================================================
     // Kosten, Katalog, Konfiguration, Stammfelder, Kennlinieneditor
     // =================================================================================
@@ -1540,59 +1232,6 @@
         string grund = await Katalogladung.SchreibenAsync(async () => { await oeffnen(Daten); return ""; },
                                                           Daten.Bezeichner, g => g);
         if (grund.Length > 0) { _satzFehler = grund; StateHasChanged(); }
-    }
-
-    /// <summary>
-    /// KT-8a: Die Vergleichsabfrage für den Katalog — gefangen beim ERZEUGEN der Gabe, nicht im
-    /// Baustein <c>Katalogliste</c>, der sie abruft: Der Baustein kennt keinen Banner, und eine
-    /// Fangstelle dort griffe in alle Wirte. Wirft die Abfrage, bleibt das Gerät im Vergleich leer,
-    /// der Banner der Katalog-Überlagerung nennt den Grund, das Protokoll hat einen Vermerk.
-    /// </summary>
-    private IReadOnlyList<Parameterwert> VergleichsparameterLesen(string bezeichner)
-    {
-        if (Vergleichsparameter is null) return Array.Empty<Parameterwert>();
-        IReadOnlyList<Parameterwert>? werte = Katalogladung.SatzDazu(() => Vergleichsparameter(bezeichner), bezeichner,
-                                                                    ref _vergleichFehler);
-        if (_vergleichFehler.Length > 0) _ = InvokeAsync(StateHasChanged);
-        return werte ?? Array.Empty<Parameterwert>();
-    }
-
-    /// <summary>Die gefangene Gabe — <c>null</c> ohne Delegat (dann vergleicht der Katalog die Spalten).</summary>
-    private Func<string, IReadOnlyList<Parameterwert>>? _vergleichsweg;
-
-    /// <summary>KT-8a: der Grund, wenn eine Vergleichsabfrage geworfen hat; leer = keine.</summary>
-    private string _vergleichFehler = "";
-
-    private void BeiKatalog()
-    {
-        // KT-7: Wirft das Lesen des Katalogs, bleibt die Auswahl leer und der Banner nennt den Grund.
-        _katalog = Katalogladung.Lesen(Katalog, TitelText, out _listeFehler);
-        _vergleichFehler = "";
-        _vergleichsweg = Vergleichsparameter is null ? null : VergleichsparameterLesen;
-        _katalogOffen = true;
-    }
-
-    private void KatalogFertig(string? bezeichner)
-    {
-        _katalogOffen = false;
-        if (bezeichner is null) return;
-        WaermepumpeUmstellen(bezeichner);
-    }
-
-    /// <summary>
-    /// Stellt die Anlage auf die Wärmepumpe <paramref name="bezeichner"/> der Stammliste um —
-    /// derselbe Weg wie die Innenliste und „Modul-Katalog…", für den Wirt der eingebetteten
-    /// Ansicht (W7‑B‑3 Nachtrag: „Markierte auf diese Wärmepumpe umstellen"). Die
-    /// Betriebsdaten der Zeile (Sperrzeit, Bivalenz, Heizstab, Kosten) bleiben.
-    /// <c>false</c> = kein Stammsatz dieses Namens.
-    /// </summary>
-    public bool WaermepumpeUmstellen(string bezeichner)
-    {
-        WaermepumpeStammZeile? zeile = _stammliste.FirstOrDefault(z => z.Bezeichner == bezeichner);
-        if (zeile is null) return false;
-        WaermepumpeWaehlen(zeile);
-        StateHasChanged();
-        return true;
     }
 
     /// <summary>
@@ -1803,8 +1442,6 @@
         _stammStufe = ergebnis.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung;
         _stammMeldung = ergebnis.Meldung ?? "";
 
-        // Der Katalog hat sich geaendert - die Auswahlliste links liest ihn.
-        _stammliste = Katalogladung.Lesen(Stammliste, TitelText, out _listeFehler);
 
         UebernahmeSchliessen();
     }
@@ -1848,10 +1485,26 @@
         _kennlinienZeilen = null;
         if (stand is null || NurLesen) return;   // Abbruch
 
-        // KT-7: Wirft der Abgleich, nennt die Meldung bei den Kennlinien den Grund.
+        // AW2: der Stand vor der ERSTEN Aenderung - das Abbrechen des Wirts schreibt ihn zurueck.
+        // KT-7: Merker und Abgleich laufen ueber die Fangstelle; wirft einer, nennt die Meldung bei den
+        // Kennlinien den Grund.
+        int idWp = Daten.IdWp;
+        if (_kennlinienMerker is null)
+        {
+            string merkerFehler = "";
+            List<KennlinienZeile>? vorher = Kennlinien is null ? null
+                : Katalogladung.Satz(() => Kennlinien(idWp), Daten.Bezeichner, out merkerFehler)?
+                      .Select(z => z.Kopie()).ToList();
+            if (merkerFehler.Length > 0)
+            {
+                _kennlinienMeldung = merkerFehler;
+                _kennlinienStufe = WarnStufe.Warnung;
+                return;
+            }
+            _kennlinienMerker = (idWp, vorher);
+        }
         if (KennlinienAbgleichen is not null)
         {
-            int idWp = Daten.IdWp;
             Katalogladung.Schreiben(() => KennlinienAbgleichen(idWp, stand), Daten.Bezeichner, g =>
             {
                 _kennlinienMeldung = g;
@@ -1956,31 +1609,31 @@
         return fehler;
     }
 
-    private async Task BeiErgebnis(bool ok)
+    /// <summary>Der Stand der Projektkennlinien vor der ersten Änderung im Editor; <c>null</c> = unverändert.</summary>
+    private (int IdWp, List<KennlinienZeile>? Zeilen)? _kennlinienMerker;
+
+    /// <summary>Hat der Kennlinieneditor in dieser Sitzung geschrieben? (Prüfhilfe.)</summary>
+    public bool KennlinienGeaendert => _kennlinienMerker is not null;
+
+    /// <summary>
+    /// AW2: Abbrechen der Satz-Überlagerung — die Projektkennlinien stehen wieder wie beim Öffnen. Der Editor
+    /// schreibt bei seinem OK sofort (die Bilder zeigen den neuen Stand); erst das OK des Wirts behält ihn.
+    /// </summary>
+    /// <returns>KT-7: leer, wenn zurückgeschrieben (oder nichts zu tun); sonst der Grund — das Zurückschreiben
+    /// läuft über die Fangstelle (<c>Katalogladung.Schreiben</c>), der Wirt nennt ihn im Banner.</returns>
+    public string KennlinienZuruecksetzen()
     {
-        if (!ok)
+        if (_kennlinienMerker is not (int id, List<KennlinienZeile> zeilen) || NurLesen || KennlinienAbgleichen is null)
         {
-            await Geschlossen.InvokeAsync(false);
-            return;
+            _kennlinienMerker = null;
+            return "";
         }
-
-        (string? fehler, string feld) = ErsterFehler();
-        if (fehler is not null) { MangelSetzen(fehler, feld); return; }
-
-        _warnung = "";
-        _mangel = "";
-        await Geschlossen.InvokeAsync(true);
+        _kennlinienMerker = null;
+        return Katalogladung.Schreiben(() => { KennlinienAbgleichen(id, zeilen); return ""; }, Daten.Bezeichner, g => g);
     }
 
-    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gerufen: schliesst ohne zu speichern.</summary>
-    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+    /// <summary>AW2: das OK des Wirts behält den Stand der Kennlinien.</summary>
+    public void KennlinienBehalten() => _kennlinienMerker = null;
 
-    private Task BeiTaste(KeyboardEventArgs e)
-    {
-        // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || Eingebettet || _konfigOffen ||
-            _kennlinienZeilen is not null || _katalogOffen ||
-            _vorschau is not null) return Task.CompletedTask;
-        return Abbrechen();
-    }
+
 }
