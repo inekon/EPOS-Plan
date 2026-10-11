@@ -3,9 +3,12 @@
 
    WOZU. Hilfe -> Version zeigt Produkt und Version und buendelt, was der Support braucht: den
    Diagnoseblock des Kerns zum Kopieren, den Protokollordner, den Kontakt und den Weg zur
-   Fernwartung. Im geoeffneten Dialog schaltet die Geste Strg+Umschalt+Alt+E den
-   Entwicklermodus (Konzept 3.2); die Schale faengt die Taste ab und stoesst den Dialog ueber
-   UeberAnstoss an, der Dialog zeigt danach den neuen Diagnoseblock.
+   Fernwartung. Im geoeffneten Dialog schaltet die Geste Strg+Umschalt+F12 den
+   Entwicklermodus (Konzept 3.2); ohne Alt, damit AltGr der deutschen Tastatur nicht stoert.
+   Die Schale faengt die Taste ab und stoesst den Dialog ueber UeberAnstoss an, der Dialog zeigt
+   danach den neuen Diagnoseblock. Erreicht die Taste die Schale nicht (Fokus in der WebView),
+   erkennt der Dialog sie selbst an der physischen Taste (Code „F12") und ruft GesteAusgeloest —
+   denselben Weg der Schale. Beim Oeffnen bekommt der Dialog den Fokus, damit die Taste ihn erreicht.
 
    AUFBAU von oben nach unten: Kopf (Produktname, Claim, Version mit Baudatum, Haus),
    Diagnosedaten, Kontakt, Fussleiste. Kein Arbeitsstand, deshalb nur „Schliessen". Keine
@@ -20,7 +23,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @implements IDisposable
 
-<div class="epos-dialog epos-ueber" tabindex="-1" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-ueber" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@T.Titel</h1>
@@ -164,8 +167,16 @@
     /// </summary>
     [Parameter] public Func<bool, Task<SupportpaketAnzeige>>? SupportpaketSpeichern { get; set; }
 
-    /// <summary>Der Anstoss der Geste; die Schale loest ihn aus, wenn sie Strg+Umschalt+Alt+E faengt.</summary>
+    /// <summary>Der Anstoss der Geste; die Schale loest ihn aus, wenn sie Strg+Umschalt+F12 faengt.</summary>
     [Parameter] public UeberAnstoss? Anstoss { get; set; }
+
+    /// <summary>
+    /// Die Geste, im Dialog selbst erkannt (Strg+Umschalt und die physische Taste F12, ohne
+    /// Alt — layoutunabhaengig). Die Schale
+    /// belegt sie mit demselben Weg wie ihr Abfangen der Taste (Schalten mit Rueckfrage, danach
+    /// <see cref="Anstoss"/>); <c>null</c> = die Taste bleibt folgenlos (iOS, Tests).
+    /// </summary>
+    [Parameter] public Action? GesteAusgeloest { get; set; }
 
     /// <summary>Der Dialog ist zu (immer <c>false</c>: er schreibt nichts).</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
@@ -190,6 +201,9 @@
 
     private UeberAnstoss? _angemeldet;
 
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
     /// <summary>Der Haken „KI-Protokoll beilegen" — Vorgabe aus.</summary>
     private bool _mitKiProtokoll;
 
@@ -211,6 +225,15 @@
             _angemeldet = Anstoss;
             if (_angemeldet is not null) _angemeldet.Empfaenger = () => _ = InvokeAsync(BeiGeste);
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Der Fokus auf den Dialog, damit @onkeydown die Geste und Escape sieht.
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        try { await _wurzel.FocusAsync(preventScroll: true); }
+        catch (Exception) { /* ohne Browser (Vorabdarstellung): kein Fokus, kein Fehler */ }
     }
 
     public void Dispose()
@@ -321,8 +344,23 @@
 
     private async Task Schliessen() => await Geschlossen.InvokeAsync(false);
 
+    /// <summary>
+    /// Ist der Tastendruck die Geste Strg+Umschalt+F12? Gezaehlt wird die physische Taste
+    /// (<c>Code</c>), nicht das Zeichen (<c>Key</c>); mit Alt ist es keine Geste (Strg+Alt ist
+    /// auf der deutschen Tastatur AltGr).
+    /// </summary>
+    internal static bool IstGeste(KeyboardEventArgs e) =>
+        e is not null && e.Code == "F12" && e.CtrlKey && e.ShiftKey && !e.AltKey;
+
     private async Task BeiTaste(KeyboardEventArgs e)
     {
+        if (IstGeste(e))
+        {
+            if (GesteAusgeloest is null) return;
+            try { GesteAusgeloest(); }
+            catch (Exception ex) { Melden(WarnStufe.Fehler, ex.Message); }
+            return;
+        }
         if (e.Key != "Escape") return;
         await Schliessen();
     }
