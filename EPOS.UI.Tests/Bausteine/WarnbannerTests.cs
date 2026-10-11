@@ -259,9 +259,10 @@ public class WarnbannerTests : EposBunitContext
 
         Assert.Contains("epos-warnbanner--liste", cut.Find("div.epos-warnbanner").ClassName);
         Assert.Equal("Stamm: Haus: ok (Ergebnis-ID 357)", cut.Find(".epos-warnbanner-text").TextContent);
-        Assert.Equal("· 3 Hinweise", cut.Find(".epos-warnbanner-zahl").TextContent);
-
         var klapper = cut.Find("button.epos-warnbanner-klapper");
+        Assert.Contains("epos-hinweisklappe--eingebettet", klapper.ClassList);   // die Klapp-Bauform des Hauses
+        Assert.Equal("3", klapper.QuerySelector(".epos-simerg-laufband-zahl")!.TextContent);
+        Assert.Equal("3 Hinweise", klapper.QuerySelector(".epos-simerg-laufband-text")!.TextContent);
         Assert.Equal("false", klapper.GetAttribute("aria-expanded"));
         Assert.Contains("Hinweise anzeigen", klapper.TextContent);
         Assert.Empty(cut.FindAll(".epos-warnbanner-liste"));
@@ -322,7 +323,7 @@ public class WarnbannerTests : EposBunitContext
             .Add(x => x.Text, "Kopf")
             .Add(x => x.Hinweise, new[] { "Nur einer" }));
 
-        Assert.Equal("· 1 Hinweis", cut.Find(".epos-warnbanner-zahl").TextContent);
+        Assert.Equal("1 Hinweis", cut.Find(".epos-warnbanner-klapper .epos-simerg-laufband-text").TextContent);
     }
 
     /// <summary>Fehler und Warnung mit Liste stehen OFFEN - ein Fehler wird nicht versteckt.</summary>
@@ -356,7 +357,7 @@ public class WarnbannerTests : EposBunitContext
         {
             Assert.Equal("epos-warnbanner epos-warnbanner--hinweis", cut.Find("div.epos-warnbanner").ClassName);
             Assert.Empty(cut.FindAll(".epos-warnbanner-klapper"));
-            Assert.Empty(cut.FindAll(".epos-warnbanner-zahl"));
+            Assert.Empty(cut.FindAll(".epos-simerg-laufband-zahl"));
             Assert.Empty(cut.FindAll(".epos-warnbanner-liste"));
             Assert.Equal("Nur Text", cut.Find(".epos-warnbanner-text").TextContent);
         }
@@ -370,12 +371,15 @@ public class WarnbannerTests : EposBunitContext
     public void Die_Liste_rollt_in_begrenzter_Hoehe()
     {
         string css = StilblattLesen();
-        int i = css.IndexOf(".epos-warnbanner-liste {", StringComparison.Ordinal);
-        Assert.True(i >= 0, "Regel .epos-warnbanner-liste fehlt");
+        int i = css.IndexOf("\n.epos-hinweisklappe-inhalt {", StringComparison.Ordinal);
+        Assert.True(i >= 0, "Regel .epos-hinweisklappe-inhalt fehlt");
         string regel = css.Substring(i, css.IndexOf('}', i) - i);
         Assert.Contains("max-height: 40vh", regel);
         Assert.Contains("overflow-y: auto", regel);
         Assert.Contains("flex-wrap: wrap", css.Substring(css.IndexOf(".epos-warnbanner--liste {", StringComparison.Ordinal), 60));
+        int j = css.IndexOf(".epos-warnbanner > .epos-hinweisklappe-inhalt {", StringComparison.Ordinal);
+        Assert.True(j >= 0, "Regel der Liste im Banner fehlt");
+        Assert.Contains("order: 1", css.Substring(j, css.IndexOf('}', j) - j));
     }
 
     private static string StilblattLesen()
@@ -384,6 +388,6 @@ public class WarnbannerTests : EposBunitContext
         while (ordner != null && !System.IO.File.Exists(System.IO.Path.Combine(ordner, "EPOS.UI", "wwwroot", "epos-ui.css")))
             ordner = System.IO.Path.GetDirectoryName(ordner);
         Assert.NotNull(ordner);
-        return System.IO.File.ReadAllText(System.IO.Path.Combine(ordner!, "EPOS.UI", "wwwroot", "epos-ui.css"));
+        return System.IO.File.ReadAllText(System.IO.Path.Combine(ordner!, "EPOS.UI", "wwwroot", "epos-ui.css")).Replace("\r\n", "\n");
     }
 }
