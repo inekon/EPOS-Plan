@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Fernwartung
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Fernwartung.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-{{Anker|fernwartung}}Der Dialog '''Fernwartung''' führt zum Support von INEKON: Er nennt die Kontaktwege, stellt die Angaben bereit, die der Support für die Hilfe braucht, und öffnet die Seite, über die der Support auf Ihren Bildschirm schauen und Ihnen bei der Bedienung helfen kann. Sie öffnen ihn über {{Menü|Hilfe|Fernwartung…}}. Die Fernwartung ist unter Windows verfügbar.
+{{Anker|fernwartung}}Der Dialog '''Fernwartung''' führt zum Support von INEKON: Er nennt die Kontaktwege, stellt die Angaben bereit, die der Support für die Hilfe braucht, und startet Quick Assist, über das der Support auf Ihren Bildschirm schauen und Ihnen bei der Bedienung helfen kann. Sie öffnen ihn über {{Menü|Hilfe|Fernwartung…}}. Die Fernwartung ist unter Windows verfügbar.
 
 == Der Dialog ==
 {{Anker|dialog}}
@@ -10,7 +10,7 @@ Der Dialog hat vier Zonen von oben nach unten:
 
 * '''Kontakt''' – Telefon 0711 9959 826 50 und E-Mail [mailto:info@inekon.de info@inekon.de], erreichbar werktags von 9 bis 16 Uhr. Diese Zone steht immer zur Verfügung, auch ohne Lizenz.
 * '''Ihre Angaben für den Support''' – ein Textblock mit Programmversion, Betriebssystem, Sprache, Pfad der Datenbank, Schemastand, Katalogfassung, den Lizenzangaben, der Kurzform der Gerätekennung und dem Protokollordner. Der Knopf '''Kopieren''' legt den Block in die Zwischenablage; Sie können ihn dem Support am Telefon vorlesen oder in eine E-Mail einfügen. Auch diese Zone steht immer zur Verfügung.
-* '''Fernwartung''' – ein Erklärtext, die drei Schritte einer Sitzung und der Knopf '''Fernwartungsseite öffnen'''. Er öffnet die Fernwartungsseite von INEKON im Browser (<code>https://epos-plan.de/support/fernwartung</code>). Schlägt das Öffnen fehl, etwa weil kein Browser eingerichtet ist, nennt der Dialog den Grund.
+* '''Fernwartung''' – ein Erklärtext, die drei Schritte einer Sitzung und der Knopf '''Quick Assist starten'''. Er öffnet das Windows-Programm Quick Assist. Ist es auf Ihrem Rechner nicht verfügbar, zeigt der Dialog einen Hinweis: Suchen Sie Quick Assist im Startmenü oder folgen Sie der Anleitung auf der Fernwartungsseite. Als zweiter Weg öffnet der Knopf '''Fernwartungsseite öffnen''' die Anleitung von INEKON im Browser (<code>https://epos-plan.de/support/fernwartung</code>). Schlägt das Öffnen fehl, etwa weil kein Browser eingerichtet ist, nennt der Dialog den Grund.
 * '''Schließen''' – beendet den Dialog. Er hat keinen Arbeitsstand, den es zu bestätigen gäbe.
 
 Dieselben Angaben stehen im Dialog '''Über EPOS-Plan''' unter {{Menü|Hilfe|Version}}, dort als Block ''Diagnosedaten'' mit den Knöpfen ''Diagnosedaten kopieren'' und ''Protokollordner öffnen''; der Knopf ''Fernwartung…'' öffnet den hier beschriebenen Dialog. ''Supportpaket speichern…'' legt eine ZIP-Datei mit den Protokollen für den Support ab: die Diagnosedaten, die Ausnahmeprotokolle, das Migrationsprotokoll und einen Auszug des Katalogabgleichs, keine Projektdaten. Das Protokoll des KI-Assistenten kommt nur mit, wenn Sie ''KI-Protokoll beilegen'' ankreuzen, weil es Eingaben von Ihnen enthalten kann. Die Datei hängen Sie selbst an Ihre E-Mail; das geht auch in der Testversion. Der Dialog erscheint nur unter Windows.
@@ -18,26 +18,26 @@ Dieselben Angaben stehen im Dialog '''Über EPOS-Plan''' unter {{Menü|Hilfe|Ver
 == Voraussetzung ==
 {{Anker|voraussetzung}}
 
-Die Fernwartung setzt eine '''aktivierte, bezahlte Lizenz''' voraus, eine Personen- oder eine Firmenlizenz. Sie gilt auch nach Ablauf der Lizenzlaufzeit: Wer Hilfe bei der Verlängerung oder einer Reparatur braucht, soll sie bekommen. In der Testversion und ohne Aktivierung ist der Knopf '''Fernwartungsseite öffnen''' gesperrt; der Grund steht daneben. Kontakt und Angaben bleiben auch dann nutzbar, Sie erreichen den Support per Telefon oder E-Mail.
+Die Fernwartung setzt Windows 10 oder 11 mit Quick Assist und eine '''aktivierte, bezahlte Lizenz''' voraus, eine Personen- oder eine Firmenlizenz. Sie gilt auch nach Ablauf der Lizenzlaufzeit: Wer Hilfe bei der Verlängerung oder einer Reparatur braucht, soll sie bekommen. In der Testversion und ohne Aktivierung sind die Knöpfe '''Quick Assist starten''' und '''Fernwartungsseite öffnen''' gesperrt; der Grund steht daneben. Kontakt und Angaben bleiben auch dann nutzbar, Sie erreichen den Support per Telefon oder E-Mail.
 
 Die Lizenz aktivieren Sie unter {{Menü|Hilfe|Lizenz}}.
 
 == Ablauf einer Sitzung ==
 {{Anker|ablauf}}
 
-# '''Programm laden und starten.''' Öffnen Sie über den Knopf die Fernwartungsseite, laden Sie dort das Fernwartungsprogramm von INEKON und starten Sie es. Es braucht keine Installation.
-# '''Kennung nennen.''' Das Programm zeigt eine Kennung und ein Einmalkennwort. Nennen Sie beides dem Support, am besten am Telefon.
-# '''Anfrage annehmen.''' Der Support baut die Verbindung auf; Sie nehmen die Anfrage im Fernwartungsprogramm an. Ohne Ihre Annahme kommt keine Verbindung zustande, und die Annahme gilt nur für diese eine Sitzung.
+# '''Support anrufen.''' Rufen Sie INEKON an (Telefon im Dialog). Der Support nennt Ihnen einen sechsstelligen Code, der zehn Minuten gilt.
+# '''Quick Assist starten und Code eingeben.''' Öffnen Sie Quick Assist mit dem Knopf '''Quick Assist starten''' und geben Sie den Code ein.
+# '''Zugriff erlauben.''' Der Support sieht dann Ihren Bildschirm und bittet, je nach Fall, um Ansicht oder um Steuerung. Quick Assist zeigt Ihnen den Namen des Helfers und fragt, ob Sie erlauben. Ohne Ihre Annahme kommt keine Verbindung zustande, und die Annahme gilt nur für diese eine Sitzung.
 
-Sie können die Verbindung jederzeit selbst beenden, indem Sie sie im Fernwartungsprogramm trennen oder das Programm schließen. Beim nächsten Mal beginnen Sie wieder mit Schritt 1; das Einmalkennwort gilt nur für eine Sitzung.
+Sie können die Verbindung jederzeit selbst beenden, indem Sie sie in Quick Assist trennen oder das Programm schließen. Beim nächsten Mal beginnen Sie wieder mit Schritt 1; der Code gilt nur für eine Sitzung.
 
 == Was übertragen wird ==
 {{Anker|datenschutz}}
 
-* Aus EPOS-Plan heraus geht allein der Aufruf der Fernwartungsseite ins Internet, die Adresse enthält keine Kundendaten. Die Angaben für den Support verlassen EPOS-Plan nur, wenn Sie sie selbst kopieren und weitergeben.
-* Die Sitzung selbst läuft über das Fernwartungsprogramm von INEKON und einen Server von INEKON, Ende-zu-Ende verschlüsselt. Der Server vermittelt die Verbindung; die Bildschirminhalte gehen nicht über ihn im Klartext.
+* Aus EPOS-Plan heraus geht allein der Aufruf der Fernwartungsseite ins Internet, die Adresse enthält keine Kundendaten. Quick Assist startet EPOS-Plan lokal. Die Angaben für den Support verlassen EPOS-Plan nur, wenn Sie sie selbst kopieren und weitergeben.
+* Die Sitzung selbst läuft verschlüsselt über die Microsoft-Dienste von Quick Assist. Der Support meldet sich mit einem Firmenkonto von INEKON an; Sie sehen den Namen des Helfers, bevor Sie erlauben.
 * EPOS-Plan zeichnet nichts auf und merkt sich weder eine Einwilligung noch eine Sitzung.
-* Sie nehmen jede Verbindung selbst an und beenden sie jederzeit.
+* Sie nehmen jede Anfrage selbst an und beenden sie jederzeit.
 
 == iPad ==
 {{Anker|ipad}}
