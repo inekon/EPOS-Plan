@@ -7,7 +7,7 @@
 // =====================================================================================
 
 /// <summary>Die Gaben des Dialogs beim Oeffnen.</summary>
-/// <param name="Erlaubt">Ist der Knopf „Fernwartungsseite oeffnen" frei?</param>
+/// <param name="Erlaubt">Sind die Knoepfe „Quick Assist starten" und „Fernwartungsseite oeffnen" frei?</param>
 /// <param name="Sperrgrund">Warum nicht — leer, wenn erlaubt.</param>
 /// <param name="Telefon">Telefonnummer des Supports.</param>
 /// <param name="Mail">E-Mail-Adresse des Supports.</param>
@@ -59,23 +59,34 @@ public sealed class FernwartungTexte
     /// <summary><c>FW_ZONE_FERNWARTUNG</c></summary>
     public string ZoneFernwartung { get; init; } = "Fernwartung";
 
-    /// <summary><c>FW_ERKLAERUNG</c></summary>
+    /// <summary><c>FW_QA_ERKLAERUNG</c></summary>
     public string Erklaerung { get; init; } =
-        "Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm und kann Ihnen die " +
-        "Bedienung zeigen oder einen Fehler mit Ihnen beheben. Den Bildschirm sieht nur der Support, mit " +
-        "dem Sie gerade sprechen; EPOS-Plan zeichnet dabei nichts auf. Jede Verbindung nehmen Sie im " +
-        "Fernwartungsprogramm selbst an, und Sie können sie dort jederzeit beenden.";
+        "Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm über Quick Assist, das " +
+        "Hilfeprogramm von Windows, und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. " +
+        "Die Verbindung läuft verschlüsselt über Microsoft; EPOS-Plan zeichnet dabei nichts auf. Jede Anfrage " +
+        "nehmen Sie in Quick Assist selbst an, und Sie können die Sitzung dort jederzeit beenden.";
 
-    /// <summary><c>FW_SCHRITT_1</c></summary>
-    public string Schritt1 { get; init; } =
-        "Laden Sie das Fernwartungsprogramm von der Fernwartungsseite und starten Sie es.";
+    /// <summary><c>FW_QA_SCHRITT_1</c></summary>
+    public string Schritt1 { get; init; } = "Rufen Sie uns an (Telefon unter „Kontakt“).";
 
-    /// <summary><c>FW_SCHRITT_2</c></summary>
+    /// <summary><c>FW_QA_SCHRITT_2</c></summary>
     public string Schritt2 { get; init; } =
-        "Nennen Sie dem Support die angezeigte Kennung und das Einmalkennwort.";
+        "Starten Sie Quick Assist mit dem Knopf unten und geben Sie den sechsstelligen Code ein, den wir Ihnen nennen.";
 
-    /// <summary><c>FW_SCHRITT_3</c></summary>
-    public string Schritt3 { get; init; } = "Nehmen Sie die Anfrage im Programm an.";
+    /// <summary><c>FW_QA_SCHRITT_3</c></summary>
+    public string Schritt3 { get; init; } =
+        "Erlauben Sie die Bildschirmansicht oder die Steuerung, wenn Quick Assist fragt.";
+
+    /// <summary><c>FW_QA_STARTEN</c></summary>
+    public string QuickAssistStarten { get; init; } = "Quick Assist starten";
+
+    /// <summary><c>FW_QA_FEHLER</c></summary>
+    public string QuickAssistFehler { get; init; } =
+        "Quick Assist ist auf diesem Rechner nicht verfügbar. Öffnen Sie es über das Startmenü oder die Fernwartungsseite.";
+
+    /// <summary><c>FW_QA_NUR_WINDOWS</c> — ohne Startrueckruf der Plattform.</summary>
+    public string QuickAssistNurWindows { get; init; } =
+        "Quick Assist steht unter Windows zur Verfügung. Die Fernwartungsseite beschreibt den Weg.";
 
     /// <summary><c>FW_SEITE_OEFFNEN</c></summary>
     public string SeiteOeffnen { get; init; } = "Fernwartungsseite öffnen";
