@@ -52257,6 +52257,24 @@ chart</value>
   <data name="KI_DLG_SIM_AUFH_HEIZKREIS_ERL" xml:space="preserve">
     <value>Yes = buildings with an effective heating circuit use the chosen method (default), No = they use the setpoint ramp. Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
   </data>
+  <data name="SIMKONF_AUFH_LBL_SCHNELL" xml:space="preserve">
+    <value>Rapid heat-up (raise heating curve during preheat window)</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_UEBERHOEHUNG" xml:space="preserve">
+    <value>Room setpoint boost (K)</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_SCHNELL" xml:space="preserve">
+    <value>Rapid heat-up raises the room setpoint of the heating curve by the boost during the preheat window so that the flow temperature rises. It only acts on buildings with a heating circuit, ends on arrival (room temperature within the control accuracy of the setpoint) and is limited by the plant's highest flow temperature.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_SCHNELL_ERL" xml:space="preserve">
+    <value>Yes = the heating curve uses the room setpoint raised by the boost during the preheat window (buildings with a heating circuit only, ends on arrival, limited by the plant's highest flow temperature), No = off (default). Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_UEBERHOEHUNG_ERL" xml:space="preserve">
+    <value>Room setpoint boost of rapid heat-up in K, greater than 0 and at most 10; empty = default 2 K. Only with rapid heat-up switched on; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_SCHNELL_AUS" xml:space="preserve">
+    <value>The field “{0}” is only shown on the form with rapid heat-up switched on.</value>
+  </data>
   <data name="KI_DLG_SIM_AUFH_NICHT_VERFAHREN" xml:space="preserve">
     <value>The field “{0}” is not shown on the form for the chosen method.</value>
   </data>

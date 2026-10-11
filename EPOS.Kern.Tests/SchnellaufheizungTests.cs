@@ -275,23 +275,20 @@ namespace EPOS.Kern.Tests
         //  Projektläufe (AK3-Kreis) und Messung
         // =====================================================================
 
-        /// <summary>Der ganze Projektlauf mit Option 2 und — über die Testnaht bis SA2 — der Schnellaufheizung Δθ (NaN = aus).</summary>
+        /// <summary>
+        /// Der ganze Projektlauf mit Option 2 und der Schnellaufheizung Δθ (NaN = aus). Schalter und Überhöhung stehen in den
+        /// Spalten des Schritts 217 der Testkopie (<see cref="VorheizAk3Tests.Projektlauf"/> schreibt und setzt zurück) — kein
+        /// Testhaken im Kern.
+        /// </summary>
         internal static SimulationRunner Projektlauf(int projekt, double dK)
         {
             Aufheizvorgabe basis = VorheizAk3Tests.ProjektvorgabeAn(projekt);
+            Vorheizvorgabe vh = new Vorheizvorgabe(Aufheizverfahren.Berechnet, null, Vorheiztoleranzart.Prozent, 20.0, 1.0);
             Aufheizvorgabe v = basis with
             {
-                Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Berechnet, null, Vorheiztoleranzart.Prozent, 20.0, 1.0),
+                Vorheizen = double.IsNaN(dK) ? vh : vh.MitSchnellaufheizung(true, dK),
             };
-            SimulationWaermebedarf.SchnellaufheizungTestnaht = double.IsNaN(dK) ? null : x => x.MitSchnellaufheizung(true, dK);
-            try
-            {
-                return VorheizAk3Tests.Projektlauf(projekt, v);
-            }
-            finally
-            {
-                SimulationWaermebedarf.SchnellaufheizungTestnaht = null;
-            }
+            return VorheizAk3Tests.Projektlauf(projekt, v);
         }
 
         private static IEnumerable<GebaeudeModellErgebnis> Ergebnisse(SimulationRunner r)

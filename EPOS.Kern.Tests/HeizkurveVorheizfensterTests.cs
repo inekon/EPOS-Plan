@@ -11,9 +11,8 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Heizkurve im Vorheizfenster</b> (SA1b): Mit den neuen Verfahren „Vorheizzeit vorgeben“ und „berechnen“ fährt die
     /// Heizkurve einer gekoppelten Zone im Fenster am Fenstersollwert θ_T — die Vorlaufreihe wird nach dem Plan am Sollwert der
-    /// Stunde neu gebildet, die Vorausschau rechnet ebenso. Die Sollwertrampe plant gekoppelte Zonen nicht;
-    /// ihr Vorlauf bleibt mit und ohne den internen Schalter <see cref="Aufheizoptimierung.RampeVorlaufNachfuehren"/> der Bestand.
-    /// Dazu die Messung der Rampe an 1054 (nur mit <c>EPOS_MESSUNG=1</c>).
+    /// Stunde neu gebildet, die Vorausschau rechnet ebenso. Die Sollwertrampe plant gekoppelte Zonen nicht; ihr Vorlauf bleibt
+    /// der Bestand.
     /// </summary>
     [Collection("Testdatenbank")]
     public class HeizkurveVorheizfensterTests : IClassFixture<TestDatenbank>
@@ -106,39 +105,20 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  Sollwertrampe: Schalter aus = Bestand, Schalter an = Kurve an der Rampe
+        //  Sollwertrampe: gekoppelte Zonen bleiben unberührt
         // =====================================================================
-
-        private static (GebaeudeModellEingang E, Aufheizplan Plan, double[] VorlaufVorher, GebaeudeModellErgebnis Lauf) Rampe(bool schalter)
-        {
-            GebaeudeModellEingang e = VorheizAnkunftsbezugTests.Gekoppelt(1.0);
-            double[] vorher = (double[])e.VorlaufC.Clone();
-            bool alt = Aufheizoptimierung.RampeVorlaufNachfuehren;
-            Aufheizoptimierung.RampeVorlaufNachfuehren = schalter;
-            try
-            {
-                Aufheizplan plan = Aufheizoptimierung.Anwenden(ZonenEingang.Einzeln(e), new Aufheizvorgabe(true, null, null, null, null),
-                                                               0.5 * e.AuslegungsheizlastW);
-                GebaeudeModellErgebnis lauf = Vdi6007Rechenweg.Laufen(e, 0, 1, plan);
-                return (e, plan, vorher, lauf);
-            }
-            finally
-            {
-                Aufheizoptimierung.RampeVorlaufNachfuehren = alt;
-            }
-        }
 
         /// <summary>
         /// Die Sollwertrampe plant eine gekoppelte Zone nicht (Zustand GEKOPPELT, W5/F13): Ihr Sollwert und damit ihr Vorlauf bleiben
-        /// mit und ohne Schalter Zeichen für Zeichen der Bestand — der Befund trifft die Rampe nicht.
+        /// Zeichen für Zeichen der Bestand — eine Nachführung der Kurve an der Rampe hätte deshalb keine Wirkung (SA3a).
         /// </summary>
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Die_Sollwertrampe_laesst_den_Vorlauf_einer_gekoppelten_Zone_unberuehrt(bool schalter)
+        [Fact]
+        public void Die_Sollwertrampe_laesst_den_Vorlauf_einer_gekoppelten_Zone_unberuehrt()
         {
-            Assert.False(Aufheizoptimierung.RampeVorlaufNachfuehren);
-            (GebaeudeModellEingang e, Aufheizplan plan, double[] vorher, _) = Rampe(schalter);
+            GebaeudeModellEingang e = VorheizAnkunftsbezugTests.Gekoppelt(1.0);
+            double[] vorher = (double[])e.VorlaufC.Clone();
+            Aufheizplan plan = Aufheizoptimierung.Anwenden(ZonenEingang.Einzeln(e), new Aufheizvorgabe(true, null, null, null, null),
+                                                           0.5 * e.AuslegungsheizlastW);
             Assert.Equal(DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, plan.Zustand);
             Assert.False(plan.Geaendert);
             Assert.Null(plan.Vorheizen);
@@ -146,11 +126,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schalter bildet nur aus dem Sollwert gekoppelter Zonen: Eine angehobene Reihe an einer gekoppelten Zone (wie sie
-        /// die Rampe setzen würde) zieht die Kurve nach — ohne Schalter nicht.
+        /// Die Nachbildung der Kurve folgt dem Sollwert gekoppelter Zonen: Eine angehobene Reihe an einer gekoppelten Zone zieht
+        /// die Kurve erst mit <see cref="GebaeudeModellEingang.VorlaufNachSollwertBilden"/> nach.
         /// </summary>
         [Fact]
-        public void Mit_Schalter_folgt_die_Kurve_einer_angehobenen_Reihe()
+        public void Die_Nachbildung_der_Kurve_folgt_einer_angehobenen_Reihe()
         {
             GebaeudeModellEingang e = VorheizAnkunftsbezugTests.Gekoppelt(1.0);
             double[] vorher = (double[])e.VorlaufC.Clone();
@@ -162,57 +142,6 @@ namespace EPOS.Kern.Tests
             GebaeudeModellEingang.VorlaufNachSollwertBilden(new[] { ZonenEingang.Einzeln(e) });
             KurveAmSollwert(e);
             Assert.Contains(Enumerable.Range(0, STUNDEN), h => e.VorlaufC[h] > vorher[h]);
-        }
-
-        // =====================================================================
-        //  Messung der Rampe an 1054 (nur mit EPOS_MESSUNG=1)
-        // =====================================================================
-
-        /// <summary>
-        /// <b>Messung SA1b, Sollwertrampe</b> (kein harter Wert): Projekte mit eigener Aufheizvorgabe (Rampe) und wirksamem
-        /// Heizkreis je ohne und mit Schalter — Heizwärme, Spitze, Nutzungsstunden unter dem Sollwert (1 K und 0,5 K), höchster
-        /// Vorlauf, Strom der Wärmepumpe.
-        /// </summary>
-        [Fact]
-        public void Messung_SA1b_Rampe()
-        {
-            if (!_db.Vorhanden || Environment.GetEnvironmentVariable("EPOS_MESSUNG") != "1") return;
-            using var k = new Kulturvorrichtung("de-DE");
-            CultureInfo c = CultureInfo.InvariantCulture;
-            _aus.WriteLine("| Projekt | Schalter | Heizwärme MWh | Spitze kW | Std. unter Soll −1 K | Std. unter Soll −0,5 K | Vorlauf max °C | Vorlauf Mittel °C | WP-Strom MWh |");
-            _aus.WriteLine("|---|---|---|---|---|---|---|---|---|");
-            foreach (int projekt in new[] { 1054 })
-                foreach (bool schalter in new[] { false, true })
-                {
-                    bool alt = Aufheizoptimierung.RampeVorlaufNachfuehren;
-                    Aufheizoptimierung.RampeVorlaufNachfuehren = schalter;
-                    SimulationRunner r;
-                    try { r = VorheizAk3Tests.Projektlauf(projekt, null); }
-                    finally { Aufheizoptimierung.RampeVorlaufNachfuehren = alt; }
-                    List<GebaeudeModellErgebnis> alle = r.simulation_Waermebedarf.GebaeudeErgebnisse.Alle.Where(e => e != null).ToList();
-                    double q = alle.Sum(e => e.HeizlastW.Sum()) / 1e6;
-                    double spitze = alle.Max(e => e.SpitzeKw);
-                    int unter1 = 0, unter05 = 0;
-                    foreach (GebaeudeModellErgebnis e in alle)
-                    {
-                        IEnumerable<(double[] Luft, double[] Soll, bool[] Maske)> teile = e.Zonen != null && e.Zonen.Count > 0
-                            ? e.Zonen.Select(z => (z.Ergebnis.Raumtemperatur, z.Ergebnis.Heizsollwert, z.Ergebnis.Nutzungsmaske ?? e.Nutzungsmaske))
-                            : new[] { (e.Raumtemperatur, e.Heizsollwert, e.Nutzungsmaske) };
-                        foreach (var t in teile)
-                            for (int h = 0; h < STUNDEN; h++)
-                            {
-                                if (t.Soll == null || double.IsNaN(t.Soll[h]) || (t.Maske != null && !t.Maske[h])) continue;
-                                if (t.Luft[h] < t.Soll[h] - 1.0) unter1++;
-                                if (t.Luft[h] < t.Soll[h] - 0.5) unter05++;
-                            }
-                    }
-                    IEnumerable<double> v = alle.Where(e => e.Heizkreis != null).SelectMany(e => e.Heizkreis.VorlaufC).Where(x => !double.IsNaN(x));
-                    SimulationWaermepumpe wp = r.sim.simulation_wp;
-                    double strom = wp == null ? double.NaN : wp.WpStrombedarfGesamtKwh / 1000.0;
-                    _aus.WriteLine(string.Format(c, "| {0} | {1} | {2:0.000} | {3:0.0} | {4} | {5} | {6:0.0} | {7:0.00} | {8:0.000} |",
-                        projekt, schalter ? "an" : "aus", q, spitze, unter1, unter05, v.DefaultIfEmpty(double.NaN).Max(),
-                        v.DefaultIfEmpty(double.NaN).Average(), strom));
-                }
         }
     }
 }
