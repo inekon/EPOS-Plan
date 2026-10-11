@@ -54,10 +54,10 @@ Mit dieser Neuentwicklung beginnt auch die Versionszählung neu. Welche Funktion
 
 Mit dem Kauf des Programms EPOS-Plan ist automatisch ein Wartungs- und Updatevertrag verbunden. Dieser ist für die ersten 3 Monate kostenlos, danach entstehen dem Käufer jährliche Kosten. Sollte kein weiterer Wartungs- und Updateservice gewünscht werden, wird der Vertrag nach den ersten drei Monaten nicht verlängert. Es besteht jedoch keine andere Möglichkeit, EPOS-Plan zu aktualisieren; dies ist nur im Rahmen des Wartungsvertrags möglich. INEKON – Intelligente Energiekonzepte bietet im Rahmen der Wartung folgende Leistungen an:
 
-* Telefonische Unterstützung an Werktagen von 9.00 Uhr bis 16.00 Uhr.<br>Telefon: 0711 9959 826 50<br>Fax: 0711 9959 826 59<br>Bitte halten Sie Ihre Kundennummer, Betriebssystemversion und EPOS-Plan-Version bereit.<br>E-Mail: [mailto:info@inekon.de info@inekon.de]
+* Telefonische Unterstützung an Werktagen von 9.00 Uhr bis 16.00 Uhr.<br>Telefon: 0711 9959 826 50<br>Fax: 0711 9959 826 59<br>Bitte halten Sie Ihre Kundennummer, Betriebssystemversion und EPOS-Plan-Version bereit; diese und weitere Angaben für den Support stehen unter {{Menü|Hilfe|Version}}: ''Diagnosedaten kopieren'' legt sie zum Einfügen in eine E-Mail in die Zwischenablage, ''Supportpaket speichern…'' legt die Protokolle als ZIP-Datei zum Anhängen ab.<br>E-Mail: [mailto:info@inekon.de info@inekon.de]
 * Beantwortung von Fragen über das Internet. Antworten auf häufig gestellte Fragen finden Sie in den [[FAQ]] und auf unserer Internetseite unter www.epos-plan.de.
 * Update und Wartung erfolgen über unseren Server.
-* In Problemfällen bieten wir eine Fernwartung an.
+* In Problemfällen bieten wir eine Fernwartung an; Sie erreichen sie über {{Menü|Hilfe|Fernwartung…}} ([[Programm Dokumentation/Fernwartung|Fernwartung]]).
 * Aktualisierte Herstellerdaten – von Wärmepumpen über Heizkessel und BHKW-Module bis zu Kollektoren und Speichern – bieten wir über unseren Server zum Download an.
 * Den Zugang zum Server erhalten Sie im Rahmen eines Wartungsvertrages. In den ersten 3 Monaten nach Kauf des Programms ist dieser kostenlos, danach können Sie einen Wartungs- und Updatevertrag abschließen.
 

@@ -52615,51 +52615,6 @@ Chart</value>
   <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
     <value>Zone</value>
   </data>
-  <data name="IMPORT_ACHSE_SPOTPREIS" xml:space="preserve">
-    <value>Spotpreis [ct/kWh]</value>
-  </data>
-  <data name="IMPORT_TITEL_SPOTPREIS" xml:space="preserve">
-    <value>Spotmarktpreise einlesen – Format und Vorschau</value>
-  </data>
-  <data name="IMPORT_PROBE_SPOTPREIS" xml:space="preserve">
-    <value>Jahr der Datei {0} · Mittel {1} ct/kWh · Spanne {2} bis {3} ct/kWh</value>
-  </data>
-  <data name="IMPORT_TITEL_TWW_MESSREIHE" xml:space="preserve">
-    <value>Messreihe einlesen – Format und Vorschau</value>
-  </data>
-  <data name="IMPORT_ACHSE_TWW_ENERGIE" xml:space="preserve">
-    <value>Zapfenergie [kWh]</value>
-  </data>
-  <data name="IMPORT_ACHSE_TWW_VOLUMEN" xml:space="preserve">
-    <value>Zapfvolumen [m³]</value>
-  </data>
-  <data name="IMPORT_ACHSE_TAGESSTUNDE" xml:space="preserve">
-    <value>Stunde des Tages [h]</value>
-  </data>
-  <data name="IMPORT_ACHSE_TAG_DER_REIHE" xml:space="preserve">
-    <value>Tag der Reihe</value>
-  </data>
-  <data name="IMPORT_PROBE_TAGE" xml:space="preserve">
-    <value>{0} Tage gelesen · gezeigt: {1}</value>
-  </data>
-  <data name="IMPORT_PROBE_TAGE_TAGESREIHE" xml:space="preserve">
-    <value>{0} Tage gelesen · gezeigt: die ersten {1} Tage</value>
-  </data>
-  <data name="KI_DLG_SPOT_JAHR_ERL" xml:space="preserve">
-    <value>Das Jahr der geprüften Reihe — aus dem Jahresfeld von „Format und Vorschau“; vorgeschlagen ist das Jahr der Datei. Es legt Wochentage und Feiertage fest.</value>
-  </data>
-  <data name="KI_DLG_ZPGM_VORSCHAU_NAME" xml:space="preserve">
-    <value>Vorschau der Datei</value>
-  </data>
-  <data name="KI_DLG_ZPGM_VORSCHAU_ERL" xml:space="preserve">
-    <value>Die Kennzahlenzeile aus „Format und Vorschau“: gelesene Tage und der gezeigte Tag der Tagesansicht.</value>
-  </data>
-  <data name="KI_DLG_GIO_BILDART_NAME" xml:space="preserve">
-    <value>Bildart</value>
-  </data>
-  <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
-    <value>Wie die Vorschau die gelesene Reihe zeigt: Jahr (Jahresverlauf) oder Tag (Tagesansicht der TWW-Messreihe).</value>
-  </data>
   <!-- Administration und Support, Stufe 1 -->
   <data name="ENTW_QUELLE_KEINE" xml:space="preserve">
     <value>Entwicklermodus aus</value>
@@ -52813,12 +52768,6 @@ Chart</value>
   <data name="KI_ABSAGE_NUR_ENTWICKLER" xml:space="preserve">
     <value>Diese Funktion ist in Ihrer Fassung nicht freigegeben.</value>
   </data>
-  <data name="ADM_SET_RUBRIK_ENTWICKLUNG" xml:space="preserve">
-    <value>Entwicklung</value>
-  </data>
-  <data name="ADM_SET_HINT_ENTWICKLUNG" xml:space="preserve">
-    <value>Rechenvorgaben des Zapfprofils für Entwicklung und Prüfung. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms.</value>
-  </data>
   <data name="ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
     <value>Zapfprofil: Temperatur der Literanzeige</value>
   </data>
@@ -52851,6 +52800,205 @@ Chart</value>
   </data>
   <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
     <value>Die Rechenvorgaben des Zapfprofils konnten nicht gespeichert werden: {0}</value>
+  </data>
+  <!-- Administration und Support, Stufe 2 (Welle 2a) -->
+  <data name="MENU_FERNWARTUNG" xml:space="preserve">
+    <value>Fernwartung…</value>
+  </data>
+  <data name="SUP_KONTAKT_TELEFON" xml:space="preserve">
+    <value>0711 9959 826 50</value>
+  </data>
+  <data name="SUP_KONTAKT_MAIL" xml:space="preserve">
+    <value>info@inekon.de</value>
+  </data>
+  <data name="SUP_KONTAKT_ZEITEN" xml:space="preserve">
+    <value>werktags 9 bis 16 Uhr</value>
+  </data>
+  <data name="FW_SPERRE_TEST" xml:space="preserve">
+    <value>Die Fernwartung steht in der Testversion nicht zur Verfügung. Sie erreichen uns per E-Mail.</value>
+  </data>
+  <data name="FW_SPERRE_LIZENZ" xml:space="preserve">
+    <value>Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre Lizenz unter Hilfe → Lizenz.</value>
+  </data>
+  <data name="FW_TITEL" xml:space="preserve">
+    <value>Fernwartung</value>
+  </data>
+  <data name="FW_ZONE_KONTAKT" xml:space="preserve">
+    <value>Kontakt</value>
+  </data>
+  <data name="FW_TELEFON" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="FW_MAIL" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="FW_ZEITEN" xml:space="preserve">
+    <value>Erreichbar</value>
+  </data>
+  <data name="FW_ZONE_ANGABEN" xml:space="preserve">
+    <value>Ihre Angaben für den Support</value>
+  </data>
+  <data name="FW_ANGABEN_HINWEIS" xml:space="preserve">
+    <value>Mit diesen Angaben erkennt der Support Ihre Installation. Kopieren Sie sie in Ihre E-Mail oder lesen Sie sie am Telefon vor.</value>
+  </data>
+  <data name="FW_KOPIEREN" xml:space="preserve">
+    <value>Kopieren</value>
+  </data>
+  <data name="FW_KOPIERT" xml:space="preserve">
+    <value>Die Angaben stehen in der Zwischenablage.</value>
+  </data>
+  <data name="FW_ZONE_FERNWARTUNG" xml:space="preserve">
+    <value>Fernwartung</value>
+  </data>
+  <data name="FW_ERKLAERUNG" xml:space="preserve">
+    <value>Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Den Bildschirm sieht nur der Support, mit dem Sie gerade sprechen; EPOS-Plan zeichnet dabei nichts auf. Jede Verbindung nehmen Sie im Fernwartungsprogramm selbst an, und Sie können sie dort jederzeit beenden.</value>
+  </data>
+  <data name="FW_SCHRITT_1" xml:space="preserve">
+    <value>Laden Sie das Fernwartungsprogramm von der Fernwartungsseite und starten Sie es.</value>
+  </data>
+  <data name="FW_SCHRITT_2" xml:space="preserve">
+    <value>Nennen Sie dem Support die angezeigte Kennung und das Einmalkennwort.</value>
+  </data>
+  <data name="FW_SCHRITT_3" xml:space="preserve">
+    <value>Nehmen Sie die Anfrage im Programm an.</value>
+  </data>
+  <data name="FW_SEITE_OEFFNEN" xml:space="preserve">
+    <value>Fernwartungsseite öffnen</value>
+  </data>
+  <data name="FW_SEITE_FEHLER" xml:space="preserve">
+    <value>Die Fernwartungsseite konnte nicht geöffnet werden. Öffnen Sie {0} in Ihrem Browser oder rufen Sie uns an.</value>
+  </data>
+  <data name="FW_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="IMPORT_ACHSE_SPOTPREIS" xml:space="preserve">
+    <value>Spotpreis [ct/kWh]</value>
+  </data>
+  <data name="IMPORT_TITEL_SPOTPREIS" xml:space="preserve">
+    <value>Spotmarktpreise einlesen – Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_PROBE_SPOTPREIS" xml:space="preserve">
+    <value>Jahr der Datei {0} · Mittel {1} ct/kWh · Spanne {2} bis {3} ct/kWh</value>
+  </data>
+  <data name="IMPORT_TITEL_TWW_MESSREIHE" xml:space="preserve">
+    <value>Messreihe einlesen – Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_ENERGIE" xml:space="preserve">
+    <value>Zapfenergie [kWh]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_VOLUMEN" xml:space="preserve">
+    <value>Zapfvolumen [m³]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAGESSTUNDE" xml:space="preserve">
+    <value>Stunde des Tages [h]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAG_DER_REIHE" xml:space="preserve">
+    <value>Tag der Reihe</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE" xml:space="preserve">
+    <value>{0} Tage gelesen · gezeigt: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE_TAGESREIHE" xml:space="preserve">
+    <value>{0} Tage gelesen · gezeigt: die ersten {1} Tage</value>
+  </data>
+  <data name="KI_DLG_SPOT_JAHR_ERL" xml:space="preserve">
+    <value>Das Jahr der geprüften Reihe — aus dem Jahresfeld von „Format und Vorschau“; vorgeschlagen ist das Jahr der Datei. Es legt Wochentage und Feiertage fest.</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_NAME" xml:space="preserve">
+    <value>Vorschau der Datei</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_ERL" xml:space="preserve">
+    <value>Die Kennzahlenzeile aus „Format und Vorschau“: gelesene Tage und der gezeigte Tag der Tagesansicht.</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_NAME" xml:space="preserve">
+    <value>Bildart</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
+    <value>Wie die Vorschau die gelesene Reihe zeigt: Jahr (Jahresverlauf) oder Tag (Tagesansicht der TWW-Messreihe).</value>
+  </data>
+  <!-- Administration und Support, Zapfprofil-Nachzug -->
+  <data name="ADM_SET_RUBRIK_ZAPFPROFIL" xml:space="preserve">
+    <value>Zapfprofil</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPFPROFIL" xml:space="preserve">
+    <value>Rechenvorgaben des Zapfprofilgenerators für alle Projekte: Anzeigetemperatur der Literangabe, Stundenschwelle, Nenninhalte der Speicherauswahl und die Startordner für Katalogpaket und Typtage. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms; einen ungültigen Wert verwirft die Rechnung mit Hinweis und rechnet mit der Vorgabe.</value>
+  </data>
+  <!-- Administration und Support, Stufe 3 (Welle 3a) -->
+  <data name="UEB_VERSION_BAUDATUM" xml:space="preserve">
+    <value>Version {0} vom {1}</value>
+  </data>
+  <data name="UEB_ZONE_DIAGNOSE" xml:space="preserve">
+    <value>Diagnosedaten</value>
+  </data>
+  <data name="UEB_DIAGNOSE_HINWEIS" xml:space="preserve">
+    <value>Mit diesen Angaben erkennt der Support Ihre Installation. Kopieren Sie sie in Ihre E-Mail oder lesen Sie sie am Telefon vor.</value>
+  </data>
+  <data name="UEB_KOPIEREN" xml:space="preserve">
+    <value>Diagnosedaten kopieren</value>
+  </data>
+  <data name="UEB_KOPIERT" xml:space="preserve">
+    <value>Die Diagnosedaten stehen in der Zwischenablage.</value>
+  </data>
+  <data name="UEB_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Protokollordner öffnen</value>
+  </data>
+  <data name="UEB_ZONE_KONTAKT" xml:space="preserve">
+    <value>Kontakt</value>
+  </data>
+  <data name="UEB_TELEFON" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="UEB_MAIL" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="UEB_ZEITEN" xml:space="preserve">
+    <value>Erreichbar</value>
+  </data>
+  <data name="UEB_FERNWARTUNG" xml:space="preserve">
+    <value>Fernwartung…</value>
+  </data>
+  <data name="UEB_MAIL_FEHLER" xml:space="preserve">
+    <value>Das E-Mail-Programm konnte nicht geöffnet werden. Schreiben Sie an {0}.</value>
+  </data>
+  <data name="UEB_MODUS_GEWECHSELT" xml:space="preserve">
+    <value>Die Diagnosedaten sind aktualisiert.</value>
+  </data>
+  <data name="UEB_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <!-- Administration und Support, Stufe 3 (Welle 3b) -->
+  <data name="SUP_PAKET_KNOPF" xml:space="preserve">
+    <value>Supportpaket speichern…</value>
+  </data>
+  <data name="SUP_PAKET_HAKEN" xml:space="preserve">
+    <value>KI-Protokoll beilegen</value>
+  </data>
+  <data name="SUP_PAKET_HAKEN_HINWEIS" xml:space="preserve">
+    <value>Das KI-Protokoll kann Ihre Eingaben an den Assistenten enthalten.</value>
+  </data>
+  <data name="SUP_PAKET_HINWEIS" xml:space="preserve">
+    <value>Das Supportpaket enthält die Diagnosedaten und die Protokolle des Programms, keine Projektdaten und keine Datenbank. Hängen Sie die Datei an Ihre E-Mail an den Support.</value>
+  </data>
+  <data name="SUP_PAKET_GESPEICHERT" xml:space="preserve">
+    <value>Supportpaket gespeichert: {0}</value>
+  </data>
+  <data name="SUP_PAKET_ENTHALTEN" xml:space="preserve">
+    <value>Enthalten: {0}</value>
+  </data>
+  <data name="SUP_PAKET_FEHLEND" xml:space="preserve">
+    <value>Nicht vorhanden: {0}</value>
+  </data>
+  <data name="SUP_PAKET_FEHLER" xml:space="preserve">
+    <value>Das Supportpaket konnte nicht gespeichert werden: {0}</value>
+  </data>
+  <data name="SUP_PAKET_KEIN_ZIEL" xml:space="preserve">
+    <value>Kein Ziel für das Supportpaket angegeben.</value>
+  </data>
+  <data name="SUP_PAKET_DIALOGTITEL" xml:space="preserve">
+    <value>Supportpaket speichern</value>
+  </data>
+  <data name="SUP_PAKET_DATEIFILTER" xml:space="preserve">
+    <value>ZIP-Archiv (*.zip)|*.zip</value>
   </data>
 </root>
 

@@ -21,7 +21,6 @@ namespace WindowsFormsApplication1
         public const string KATALOG_WIEDERHERSTELLEN = "KATALOG_WIEDERHERSTELLEN";
         public const string KI_WERKZEUGE = "KI_WERKZEUGE";
         public const string EXPORT_IDS = "EXPORT_IDS";
-        public const string ZAPFPROFIL_VORGABEN = "ZAPFPROFIL_VORGABEN";
         public const string WEBVIEW_WERKZEUGE = "WEBVIEW_WERKZEUGE";
 
         /// <summary>Alle Entwicklerbereiche in der Reihenfolge des Handbuchs.</summary>
@@ -41,8 +40,6 @@ namespace WindowsFormsApplication1
                 "Zeigt die Prüf- und Fehlersuchwerkzeuge des KI-Assistenten: Werkzeuge, Protokoll, Modellwahl und Weg B."),
             new Entwicklerbereich(EXPORT_IDS,
                 "Öffnet die Exportzusage (IDS) des IFC-Exports als Prüfartefakt."),
-            new Entwicklerbereich(ZAPFPROFIL_VORGABEN,
-                "Zeigt die fünf Rechenvorgaben des Zapfprofilgenerators in der Rubrik „Entwicklung“ des Einstellungsdialogs."),
             new Entwicklerbereich(WEBVIEW_WERKZEUGE,
                 "Öffnet die Entwicklerwerkzeuge der WebView2 für DOM, Stilblatt, Konsole und Netz der Razor-Oberfläche."),
         };
