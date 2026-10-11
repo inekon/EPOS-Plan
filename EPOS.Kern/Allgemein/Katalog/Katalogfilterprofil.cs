@@ -788,11 +788,11 @@ namespace WindowsFormsApplication1
                         Art = art,
                         Spalten = new[]
                         {
-                            new Katalogspalte(SpHersteller,   t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpHersteller,   t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz, langtext: t("KFLT_LT_HERSTELLER")),
                             // Der Bezeichner heisst hier "Modell" - der Vorlaeufer
                             // Form_WpFilterAuswahl nannte ihn so.
-                            new Katalogspalte(SpBezeichner,   t("KFLT_SP_MODELL")),
-                            new Katalogspalte(SpQuelle,       t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpBezeichner,   t("KFLT_SP_MODELL"), langtext: t("KFLT_LT_MODELL")),
+                            new Katalogspalte(SpQuelle,       t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.BeiPlatz, langtext: t("KFLT_LT_QUELLE")),
                             new Katalogspalte(SpNennleistung, t("KFLT_SP_NENNLEISTUNG"), "kW", Katalogspaltenart.Zahl,
                                               langtext: t("WPS_LBL_NENNLEISTUNG")),
                             new Katalogspalte(SpVlMin,        t("KFLT_SP_VLMIN"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit, langtext: t("KFLT_LT_VLMIN")),
@@ -802,7 +802,7 @@ namespace WindowsFormsApplication1
                             // sagt dasselbe und nennt die Leistung; das schnelle Ja/Nein
                             // traegt der Schalter „nur mit Kuehlfunktion", der genau
                             // diese Spalte auf ">0" setzt.
-                            new Katalogspalte(SpKuehlleistung, t("KFLT_SP_KUEHLLEISTUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpKuehlleistung, t("KFLT_SP_KUEHLLEISTUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz, langtext: t("KFLT_LT_KUEHLLEISTUNG")),
                             new Katalogspalte(SpCop,          t("KFLT_SP_COP"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit, langtext: t("KFLT_LT_COP"))
                         }
                     };
