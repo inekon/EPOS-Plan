@@ -123,13 +123,15 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Rueckfall_AK3_Heizkreis_ohne_Zeit_und_Berechnet()
+        public void Rueckfall_Heizkreis_ohne_Zeit_und_Berechnet_AK3_ohne_Rueckfall()
         {
             Aufheizvorgabe v = Vorgabe(6);
             Assert.True(Vorheizplanung.Anwendbar(v));
             Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(v, null, false));
             Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(v, DbWerte.ANLAGENKOPPLUNG_AK1, true));
-            Assert.Equal(Vorheizrueckfall.Ak3, Vorheizplanung.Rueckfall(v, DbWerte.ANLAGENKOPPLUNG_AK3, true));
+            // V3b: AK3 rechnet beide Verfahren — kein Rückfall.
+            Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(v, DbWerte.ANLAGENKOPPLUNG_AK3, true));
+            Assert.Equal(Vorheizrueckfall.Heizkreis, Vorheizplanung.Rueckfall(Vorgabe(6, heizkreis: false), DbWerte.ANLAGENKOPPLUNG_AK3, true));
             Assert.Equal(Vorheizrueckfall.Heizkreis, Vorheizplanung.Rueckfall(Vorgabe(6, heizkreis: false), DbWerte.ANLAGENKOPPLUNG_AK1, true));
             Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(Vorgabe(6, heizkreis: false), DbWerte.ANLAGENKOPPLUNG_AK1, false));
             var ohne = new Aufheizvorgabe(true, null, null, null, null) { Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Vorgabe) };
@@ -137,9 +139,9 @@ namespace EPOS.Kern.Tests
             var berechnet = new Aufheizvorgabe(true, null, null, null, null) { Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Berechnet) };
             Assert.True(Vorheizplanung.Anwendbar(berechnet));
             Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(berechnet, null, false));
-            Assert.Equal(Vorheizrueckfall.Ak3, Vorheizplanung.Rueckfall(berechnet, DbWerte.ANLAGENKOPPLUNG_AK3, false));
+            Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(berechnet, DbWerte.ANLAGENKOPPLUNG_AK3, false));
 
-            Aufheizvorgabe wirksam = Vorheizplanung.Wirksam(v, Vorheizrueckfall.Ak3);
+            Aufheizvorgabe wirksam = Vorheizplanung.Wirksam(v, Vorheizrueckfall.Heizkreis);
             Assert.False(Vorheizplanung.Anwendbar(wirksam));
             Assert.Same(Vorheizvorgabe.Sollwertrampe, wirksam.Vorheizen);
             Assert.True(wirksam.An);
@@ -147,14 +149,15 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Der_Ruckfall_AK3_steht_als_Hinweis_einmal_je_Gebaeude_in_beiden_Sprachen()
+        public void Der_Rueckfall_Heizkreis_steht_als_Hinweis_einmal_je_Gebaeude_in_beiden_Sprachen()
         {
-            foreach ((string kultur, string text) in new[] { ("de-DE", "geschlossenen Kreis (AK3)"), ("en-US", "closed loop (AK3)") })
+            foreach (string kultur in new[] { "de-DE", "en-US" })
             {
                 using var k = new Kulturvorrichtung(kultur);
                 SimulationProtokoll p = SimulationProtokoll.NeuStarten();
-                Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Ak3, null, "Gebäude A");
-                Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Ak3, null, "Gebäude A");
+                Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Heizkreis, null, "Gebäude A");
+                Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Heizkreis, null, "Gebäude A");
+                string text = WindowsFormsApplication1.MyResource.Resource.SIMENG_VORH_RUECKFALL_HEIZKREIS;
                 Assert.Single(p.Hinweise, z => z.Contains(text, StringComparison.Ordinal) && z.Contains("Gebäude A", StringComparison.Ordinal));
             }
         }

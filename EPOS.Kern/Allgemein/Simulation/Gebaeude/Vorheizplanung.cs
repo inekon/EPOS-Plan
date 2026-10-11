@@ -10,9 +10,6 @@ namespace WindowsFormsApplication1
         /// <summary>Kein Rückfall: Option 1 oder Option 2 rechnet.</summary>
         Keiner,
 
-        /// <summary>Das Projekt rechnet im geschlossenen Kreis AK3 — der Profilweg kommt mit V3b.</summary>
-        Ak3,
-
         /// <summary>Gebäude mit Heizkreis, Schalter „Gebäude mit Heizkreis einbeziehen“ aus (F16).</summary>
         Heizkreis,
 
@@ -130,6 +127,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>ε [K].</summary>
         internal double GenauigkeitK { get; init; }
+
+        /// <summary>Der Ankunftsbezug von Vorausschau und Nachweis (V3b).</summary>
+        internal Vorheizankunftsbezug Ankunftsbezug { get; init; } = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE;
 
         /// <summary>Φ_K,max [W]: das Jahresmaximum von Φ_ref(h_s) (F11 (a)).</summary>
         internal double PhiKMaxW { get; init; }
@@ -329,8 +329,22 @@ namespace WindowsFormsApplication1
         internal int BedarfMaxH => Bedarf == null || Bedarf.Length == 0 ? 0 : Bedarf.Max();
 
         /// <summary>Die Vorausschau der Zone mit P_V, P_K und ε dieser Analyse.</summary>
-        internal void VorausschauBilden(ZonenEingang zone, IReadOnlyList<GebaeudeModellErgebnis> alle, double genauigkeitK)
-            => Vorausschau = new Vorheizvorausschau(zone, Zone.Soll, Vorlauf, alle, VorheizleistungW, DeckelW, genauigkeitK);
+        internal void VorausschauBilden(ZonenEingang zone, IReadOnlyList<GebaeudeModellErgebnis> alle, double genauigkeitK,
+                                        Vorheizankunftsbezug bezug = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE)
+            => Vorausschau = new Vorheizvorausschau(zone, Zone.Soll, Vorlauf, alle, VorheizleistungW, DeckelW, genauigkeitK, bezug);
+
+        /// <summary>Das Maximum des Bedarfs über die erreichbaren Sprünge [h] (V3b; 0 ohne erreichbaren Sprung).</summary>
+        internal int BedarfMaxErreichbarH
+        {
+            get
+            {
+                int m = 0;
+                if (Bedarf == null) return 0;
+                for (int i = 0; i < Bedarf.Length; i++)
+                    if (!Unerreichbar[i] && Bedarf[i] > m) m = Bedarf[i];
+                return m;
+            }
+        }
 
         /// <summary>Der Bedarf t_nötig je Sprung (Bisektion, 2.3) samt Kennzeichen „unerreichbar“.</summary>
         internal void BedarfBestimmen()
@@ -386,15 +400,16 @@ namespace WindowsFormsApplication1
                    || vorgabe.Vorheizen.Verfahren == Aufheizverfahren.Berechnet);
 
         /// <summary>
-        /// Der Rückfall eines Gebäudes auf die Sollwertrampe (2.7): Verfahren „Vorgabe“ ohne Vorheizzeit, AK3 (Profilweg mit
-        /// V3b), Heizkreis bei Schalter aus (F16). Ohne gewähltes Verfahren: keiner.
+        /// Der Rückfall eines Gebäudes auf die Sollwertrampe (2.7): Verfahren „Vorgabe“ ohne Vorheizzeit, Heizkreis bei Schalter
+        /// aus (F16). Ohne gewähltes Verfahren: keiner. AK3 rechnet beide Verfahren (V3b): Vorlauf, Vorausschau und Plan auf dem
+        /// Profilweg (dem Pass 1 des Kreises), der Plan reist mit dem Eingang in den Stepper, der Nachweis misst am Kreisergebnis
+        /// (<see cref="Zonenrechnung.Abschluss"/>).
         /// </summary>
         internal static Vorheizrueckfall Rueckfall(Aufheizvorgabe vorgabe, string anlagenkopplung, bool heizkreisWirksam)
         {
             if (vorgabe == null || !vorgabe.An || vorgabe.Vorheizen == null
                 || vorgabe.Vorheizen.Verfahren == Aufheizverfahren.Sollwertrampe) return Vorheizrueckfall.Keiner;
             if (vorgabe.Vorheizen.IstVorgabe && !vorgabe.Vorheizen.VorheizzeitH.HasValue) return Vorheizrueckfall.OhneVorheizzeit;
-            if (Ak3Kernstufe.Wirksam(anlagenkopplung)) return Vorheizrueckfall.Ak3;
             if (heizkreisWirksam && !vorgabe.Vorheizen.HeizkreisEinbeziehen) return Vorheizrueckfall.Heizkreis;
             return Vorheizrueckfall.Keiner;
         }
@@ -428,7 +443,7 @@ namespace WindowsFormsApplication1
             else
             {
                 Vorheizanalyse a = Analysieren(az, vorgabe, vorlauf, aufheizleistungTestW);
-                a.VorausschauBilden(zone, null, vorgabe.Vorheizen.GenauigkeitWirksamK);
+                a.VorausschauBilden(zone, null, vorgabe.Vorheizen.GenauigkeitWirksamK, vorgabe.Vorheizen.Ankunftsbezug);
                 if (IstBerechnet(vorgabe)) a.BedarfBestimmen();
                 plan = PlanBilden(a, vorgabe, Vorheizzeit(a, vorgabe));
             }
@@ -471,7 +486,8 @@ namespace WindowsFormsApplication1
                 if (eingaenge[i].Beheizt) analysen[i] = Analysieren(eingaenge[i], vorgabe, vorlauf[i], aufheizleistungTestW);
             if (vorgabe.Vorheizen.Geltung == Vorheizgeltung.Gebaeude) GebaeudedeckelVerteilen(analysen, vorgabe.Vorheizen);
             for (int i = 0; i < analysen.Length; i++)
-                analysen[i]?.VorausschauBilden(zonen[i], vorlauf, vorgabe.Vorheizen.GenauigkeitWirksamK);
+                analysen[i]?.VorausschauBilden(zonen[i], vorlauf, vorgabe.Vorheizen.GenauigkeitWirksamK,
+                                               vorgabe.Vorheizen.Ankunftsbezug);
 
             var tV = new int[analysen.Length];
             if (IstBerechnet(vorgabe))
@@ -610,11 +626,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// t_V der Zone: Option 1 <c>Aufheizzeit_Manuell_H</c> des Gebäudes, sonst die Vorheizzeit des Projekts; Option 2 das
-        /// Maximum von t_nötig über die Sprünge des Jahres (F5), mindestens 1 h.
+        /// Maximum von t_nötig über die Sprünge des Jahres (F5), mindestens 1 h — unerreichbare Sprünge mit min(D, 47) (2.6), mit
+        /// der internen Wahl <see cref="Vorheizvorgabe.UnerreichbareImMaximum"/> = false nur die erreichbaren (V3b).
         /// </summary>
         private static int Vorheizzeit(Vorheizanalyse a, Aufheizvorgabe vorgabe)
         {
-            if (IstBerechnet(vorgabe)) return Math.Max(Vorheizvorgabe.VORHEIZZEIT_MIN_H, a.BedarfMaxH);
+            if (IstBerechnet(vorgabe))
+                return Math.Max(Vorheizvorgabe.VORHEIZZEIT_MIN_H,
+                                vorgabe.Vorheizen.UnerreichbareImMaximum ? a.BedarfMaxH : a.BedarfMaxErreichbarH);
             return Math.Clamp(a.Zone.ManuellH ?? vorgabe.Vorheizen.VorheizzeitH.Value, Vorheizvorgabe.VORHEIZZEIT_MIN_H, FENSTER_MAX_H);
         }
 
@@ -724,6 +743,7 @@ namespace WindowsFormsApplication1
                 GeltungGebaeude = a.GeltungGebaeude,
                 Vorausschau = a.Vorausschau,
                 GenauigkeitK = vv.GenauigkeitWirksamK,
+                Ankunftsbezug = vv.Ankunftsbezug,
                 PhiKMaxW = a.PhiKMaxW,
                 DeckelW = pK,
                 VerfuegbarW = a.VerfuegbarW,
@@ -809,6 +829,9 @@ namespace WindowsFormsApplication1
 
             GebaeudeModellEingang e = zone.Eingang;
             var modell = new Zonenmodell2K(e.Parameter, e.Bezeichnung);
+            Zonenmodell2K stat = vp.Ankunftsbezug == Vorheizankunftsbezug.Uebergabe && e.KopplungWirksam
+                ? new Zonenmodell2K(e.Parameter, e.Bezeichnung)
+                : null;
             double eps = vp.GenauigkeitK;
             double[] last = lauf.HeizlastW, luft = lauf.Raumtemperatur, kappung = lauf.HeizleistungMaxAnteil;
             double[] soll = e.ThetaSoll;
@@ -829,7 +852,11 @@ namespace WindowsFormsApplication1
                 modell.Zuruecksetzen(lauf.MassenEndeAw[hv], lauf.MassenEndeIw[hv]);
                 if (nachbarn != null) for (int i = 0; i < alle.Count; i++) nachbarn[i] = alle[i].Raumtemperatur[hs];
                 Stundenrand r = zone.Rand(hs, false, nachbarn ?? ReadOnlySpan<double>.Empty, false);
-                double dTheta = Math.Max(0.0, sp.ThetaTC - modell.LuftAmBeginn(in r));
+                // V3b: mit Ankunftsbezug (b) an einer Zone mit Heizkreis gegen min(θ_T, θ_stat) — dieselbe Regel wie die Vorausschau.
+                double bezug = stat == null
+                    ? sp.ThetaTC
+                    : Vorheizankunft.Bezug(vp.Ankunftsbezug, e, stat, in r, sp.ThetaTC, lauf.MassenEndeAw[hv], lauf.MassenEndeIw[hv]);
+                double dTheta = Math.Max(0.0, bezug - modell.LuftAmBeginn(in r));
                 bool angekommen = Rechenrand.SchwelleErreicht(eps, dTheta);
                 if (!angekommen) tage[hs / 24] = true;
 

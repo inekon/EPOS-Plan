@@ -33,6 +33,8 @@ namespace WindowsFormsApplication1
         private readonly Zonenmodell2K _modell;
         private readonly Sommerlueftungsregel _regel;
         private readonly Sommerlueftungsregel _nachtregel;
+        private Zonenmodell2K _stat;
+        private Dictionary<int, double> _bezug;
 
         /// <param name="zone">Die Zone (Rand, Parameter).</param>
         /// <param name="soll">Die Heizsollwertreihe ohne Vorheizen (Kalender, 8 760 Stunden).</param>
@@ -41,9 +43,10 @@ namespace WindowsFormsApplication1
         /// <param name="vorheizleistungW">P_V im Fenster [W]; +∞ = keine Grenze.</param>
         /// <param name="deckelW">P_K ab h_s [W]; +∞ = keine Grenze.</param>
         /// <param name="genauigkeitK">ε [K].</param>
+        /// <param name="bezug">Der Ankunftsbezug (V3b); (b) wirkt nur an einer Zone mit Heizkreis.</param>
         internal Vorheizvorausschau(ZonenEingang zone, double[] soll, GebaeudeModellErgebnis vorlauf,
                                     IReadOnlyList<GebaeudeModellErgebnis> alle, double vorheizleistungW, double deckelW,
-                                    double genauigkeitK)
+                                    double genauigkeitK, Vorheizankunftsbezug bezug = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE)
         {
             _zone = zone ?? throw new ArgumentNullException(nameof(zone));
             _soll = soll ?? throw new ArgumentNullException(nameof(soll));
@@ -60,7 +63,11 @@ namespace WindowsFormsApplication1
             VorheizleistungW = vorheizleistungW;
             DeckelW = deckelW;
             GenauigkeitK = genauigkeitK;
+            Ankunftsbezug = bezug;
         }
+
+        /// <summary>Der Ankunftsbezug (V3b).</summary>
+        internal Vorheizankunftsbezug Ankunftsbezug { get; }
 
         /// <summary>P_V [W] (+∞ = keine Grenze).</summary>
         internal double VorheizleistungW { get; }
@@ -116,7 +123,7 @@ namespace WindowsFormsApplication1
             Vorausschauen++;
             Stundenrand rs = _zone.Rand(hs, false, Nachbarn(hs), false)
                 .MitVorheizen(thetaT, Grenze(Math.Max(DeckelW, phiRefW)));
-            deltaThetaK = Math.Max(0.0, thetaT - _modell.LuftAmBeginn(in rs));
+            deltaThetaK = Math.Max(0.0, BezugC(hs, thetaT, in rs) - _modell.LuftAmBeginn(in rs));
             return Rechenrand.SchwelleErreicht(GenauigkeitK, deltaThetaK);
         }
 
@@ -150,6 +157,22 @@ namespace WindowsFormsApplication1
                 }
             unerreichbar = true;
             return tMax;
+        }
+
+        /// <summary>
+        /// Der Bezug der Ankunft an h_s [°C]: θ_T, mit (b) an einer Zone mit Heizkreis min(θ_T, θ_stat) — θ_stat aus dem
+        /// Gleichgewicht unter dem Rand von h_s (<see cref="Vorheizankunft"/>), je Sprung einmal, ab den Vorlaufmassen vor h_s.
+        /// </summary>
+        internal double BezugC(int hs, double thetaT, in Stundenrand rs)
+        {
+            if (Ankunftsbezug != Vorheizankunftsbezug.Uebergabe || !_e.KopplungWirksam) return thetaT;
+            _bezug ??= new Dictionary<int, double>();
+            if (_bezug.TryGetValue(hs, out double b)) return b;
+            _stat ??= new Zonenmodell2K(_e.Parameter, _e.Bezeichnung);
+            int hv = Ring(hs - 1);
+            b = Vorheizankunft.Bezug(Ankunftsbezug, _e, _stat, in rs, thetaT, _vorlauf.MassenEndeAw[hv], _vorlauf.MassenEndeIw[hv]);
+            _bezug[hs] = b;
+            return b;
         }
 
         private double Grenze(double w)
