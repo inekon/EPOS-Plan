@@ -1423,8 +1423,8 @@ public class KiDialogkatalogTests : IDisposable
         // die Felder der Vorgabe-Matrix führt die Verwaltung wie der Editor (KP2 U4: das Blatt
         // „Konditionierung" am selben Arbeitsstand, dieselbe Feldtafel).
         // NP3c: − die Felder des Blatts „Nutzungsprofile" (nur der Editor trägt das Blatt).
-        // KT-8b: − der Ladestand (nur der Editor meldet die Fangstelle der Typ- und Artlisten).
-        Assert.Equal(editor.Felder.Count - 4 - 1 - KiNutzungsprofilfelder.Alle.Count
+        // KT-9b: Den Ladestand der Fangstelle führen beide (KT-8b Editor, KT-9b Verwaltung).
+        Assert.Equal(editor.Felder.Count - 4 - KiNutzungsprofilfelder.Alle.Count
                      - KiNutzungsprofilfelder.Zuordnungsspalten.Count - KiNutzungsprofilfelder.Zeilenbildspalten.Count
                      - KiNutzungsprofilfelder.Stundenspalten.Count, verwaltung.Felder.Count);
         Assert.DoesNotContain(verwaltung.Felder, f => f.Name.StartsWith("zone_", StringComparison.Ordinal));
@@ -1442,7 +1442,7 @@ public class KiDialogkatalogTests : IDisposable
 
         foreach (KiDialogFeld e in editor.Felder)
         {
-            if (e.Name is "betriebsart" or "name" or "ladestand" || e.Name.StartsWith("zone_", StringComparison.Ordinal)
+            if (e.Name is "betriebsart" or "name" || e.Name.StartsWith("zone_", StringComparison.Ordinal)
                 || e.Name.StartsWith(KiNutzungsprofilfelder.PRAEFIX, StringComparison.Ordinal)) continue;
             KiDialogFeld? v = verwaltung.FindeFeld(e.Name);
             Assert.True(v is not null, "Das Feld " + e.Name + " fehlt in der Verwaltung.");

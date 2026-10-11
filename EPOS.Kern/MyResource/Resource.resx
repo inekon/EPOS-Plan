@@ -41540,6 +41540,21 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_HINWEIS_LESEMODUS" xml:space="preserve">
     <value>Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine bearbeitbare Kopie an.</value>
   </data>
+  <data name="KOND_TXT_PLATZHALTER_DATUM_BEGINN" xml:space="preserve">
+    <value>Beginn TT.MM.</value>
+  </data>
+  <data name="KOND_TXT_PLATZHALTER_DATUM_ENDE" xml:space="preserve">
+    <value>Ende TT.MM.</value>
+  </data>
+  <data name="KOND_TXT_DATUM_FORMAT" xml:space="preserve">
+    <value>Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.10. bis 30.04.</value>
+  </data>
+  <data name="KOND_TXT_DATUM_JAHR" xml:space="preserve">
+    <value>Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr.</value>
+  </data>
+  <data name="KOND_TXT_SAISON_HALB" xml:space="preserve">
+    <value>Saison unvollständig: Sie wirkt erst mit Beginn und Ende und ist noch nicht übernommen.</value>
+  </data>
   <data name="KOND_TXT_GEMEINJAHR" xml:space="preserve">
     <value>Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht.</value>
   </data>

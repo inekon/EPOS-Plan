@@ -165,16 +165,21 @@
                         WahlGeaendert="BeiWahlGeaendert"
                         KatalogFussName="@_katalogZeile?.Bezeichner"
                         SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true"
+                        KnopfleisteAmSatz="true"
+                        ProjektGewaehlt="@(_projektZeile is null ? null : Projektschluessel(_projektZeile))"
+                        ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
 
         <Links>
-            <div class="epos-raster-huelle">
+            @* DIE ZEILE IST DIE WAHL (AW3b, Schema AW1): kein Wahlknopf - ein Klick in die Namenszelle waehlt
+               die Zeile (Hervorhebung wie in der Katalogliste), ↑ ↓ Pos1 Ende bewegen die Wahl, die Huelle ist
+               ein Tabulatorhalt; das Kaestchen bleibt die Mehrfachwahl. *@
+            <div class="epos-raster-huelle" tabindex="0" aria-label="@LabelProjektliste" @onkeydown="BeiProjektTaste">
                 <table class="epos-raster epos-raster--zuordnung">
                     <thead>
                         <tr>
                             <th class="epos-spalte-kaestchen"><Wahlkaestchen Bereich="Auswahlbereich.Projekt" /></th>
-                            <th class="epos-spalte-wahl">@SpalteWahl</th>
-                            <th>@SpalteName</th>
+                            <th class="epos-spalte-zeilenzelle">@SpalteName</th>
                             <th class="epos-spalte-stift"><Zeilenstift Kopf="true" /></th>
                         </tr>
                     </thead>
@@ -182,16 +187,16 @@
                         @foreach (GanglinienProjektZeile zeile in Zeilen)
                         {
                             GanglinienProjektZeile z = zeile;
-                            <tr class="@(z == _projektZeile ? "epos-zeile--markiert" : null)">
+                            <tr class="@(z == _projektZeile ? "epos-zeile--gewaehlt" : null)">
                                 <td class="epos-spalte-kaestchen">
                                     <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@Projektschluessel(z)"
                                                    Kurztext="@z.Bezeichner" />
                                 </td>
-                                <td class="epos-spalte-wahl">
-                                    <Zeilenwahl Gewaehlt="@(z == _projektZeile)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => ProjektZeileKlick(z)" />
+                                <td class="epos-spalte-zeilenzelle">
+                                    <span class="epos-zeilenzelle epos-projektzeile" title="@z.Bezeichner"
+                                          aria-current="@(z == _projektZeile ? "true" : null)"
+                                          @onclick="() => ProjektZeileKlick(z)">@z.Bezeichner</span>
                                 </td>
-                                <td>@z.Bezeichner</td>
                                 <td class="epos-spalte-stift">
                                     <Zeilenstift Hinweis="@Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS"
                                                  Geklickt="@(() => BeiProjektStift(z))" />
@@ -229,24 +234,52 @@
         </KatalogKopf>
 
         <KatalogFuss>
+            @* VERGROESSERN (UeS1) bleibt: Mit der Knopfleiste am Satz entfaellt der Knopf des Bausteins; die
+               Ganglinie des gewaehlten Satzes - auch eines ungesperrten Katalogsatzes, dessen Bearbeiten… die
+               Verwaltung oeffnet - steht weiter als Ueberlagerung ueber dem ganzen Dialog. *@
+            <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-vergroessern"
+                    title="@Resource.AUSWAHL_SATZ_VERGROESSERN_HINWEIS" aria-label="@Resource.AUSWAHL_SATZ_VERGROESSERN"
+                    disabled="@(SatzArt == Satzmarke.Keiner || SatzUeberlagerungOffen)" @onclick="BeiVergroessern">
+                <span class="epos-zweispalten-pfeil" aria-hidden="true">⤢</span>
+                <span class="epos-zweispalten-knopftext">@Resource.AUSWAHL_SATZ_VERGROESSERN</span>
+            </button>
             @if (KopierenMoeglich)
             {
                 <button type="button" class="epos-knopf epos-knopf--speichern-unter" disabled="@(!KopierenErlaubt)"
                         @onclick="BeiSpeichernUnter">@SpeichernUnterText</button>
             }
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): Schloss… und Loeschen nur auf Katalogsaetze - beim
+               Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen"; Bearbeiten… je Satzart (Projektsatz:
+               die Ganglinie in der Ueberlagerung zur Ansicht; Katalogsatz: ungesperrt die Verwaltung ohne Vorwahl,
+               gesperrt die Ansicht) - dasselbe wie der Stift der Zeile. Einen Vergleich fuehrt der Dialog nicht. *@
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
+                            Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
                             Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
             @if (LoeschenMoeglich)
             {
-                <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(!LoeschenErlaubt)"
-                        title="@LoeschenGrund" @onclick="BeiLoeschen">@LoeschenText</button>
+                @if (KatalogSperrgrund is string grund)
+                {
+                    <button type="button" class="epos-knopf epos-knopf--loeschen" aria-disabled="true" title="@grund"
+                            @onclick="() => BeiSchlossAbgelehnt(grund)">@LoeschenText</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(!LoeschenErlaubt)"
+                            title="@LoeschenGrund" @onclick="BeiLoeschen">@LoeschenText</button>
+                }
             }
-            @if (Verwaltung is not null)
+            @if (SatzArt == Satzmarke.Projektsatz)
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt"
+                        title="@Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS"
+                        @onclick="() => BeiProjektStift(_projektZeile!)">@BearbeitenText</button>
+            }
+            else
             {
                 <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
-                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS"
-                        @onclick="BeiBearbeiten">@BearbeitenText</button>
+                        title="@(_katalogZeile?.Geschuetzt == true ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
+                        disabled="@(_katalogZeile is null && !(Verwaltung is not null))" @onclick="BeiKatalogBearbeiten">@BearbeitenText</button>
             }
         </KatalogFuss>
 
@@ -720,10 +753,42 @@
         return _katalogZeile is null ? new() : new() { _katalogZeile };
     }
 
+    /// <summary>
+    /// Klick in eine Projektzeile (AW3b, wie Heizkessel): Die Zeile wird der gewählte Satz, die Detailzeile folgt;
+    /// die Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
     private Task ProjektZeileKlick(GanglinienProjektZeile zeile)
+        => _projektZeile == zeile ? Task.CompletedTask : ProjektZeileWaehlen(zeile);
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private Task BeiProjektTastenwahl(string schluessel)
     {
-        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
-        return ProjektZeileWaehlen(zeile);
+        GanglinienProjektZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
+        return zeile is null ? Task.CompletedTask : ProjektZeileKlick(zeile);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen (AW3b): Sie wirken nur auf Katalogsätze; steht ein
+    /// Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    /// <summary>„Vergrößern" der Knopfleiste am Satz: die Ganglinie als Satz-Überlagerung.</summary>
+    private Task BeiVergroessern() => _zweispalten is null ? Task.CompletedTask : _zweispalten.SatzUeberlagerungOeffnen();
+
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
+
+    /// <summary>
+    /// „Bearbeiten…" am Katalogsatz (AW3b): dasselbe wie der Stift der Katalogzeile — ungesperrt die Verwaltung
+    /// ohne Vorwahl, gesperrt die Ganglinie zur Ansicht; ohne gewählten Satz die Verwaltung.
+    /// </summary>
+    private Task BeiKatalogBearbeiten()
+    {
+        if (_katalogZeile is not null) return BeiKatalogStift(_katalogZeile);
+        BeiBearbeiten();
+        return Task.CompletedTask;
     }
 
     private async Task BeiWahlGeaendert(Auswahlbereich bereich)

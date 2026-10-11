@@ -136,7 +136,8 @@ public class KatalogSchreibenWirftTests : EposBunitContext
     {
         ZeileWaehlen(cut);
         if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
-            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten, "
+                     + ".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog").Click();   // AW1: Bearbeiten… am Satz
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
         cut.Find(".epos-satzueberlagerung-ok").Click();
     }

@@ -75,7 +75,7 @@ public class GanglinieKatalogfussTests : EposBunitContext
                             .Click(new MouseEventArgs { CtrlKey = strg });
 
     private static IElement Fussleiste<T>(IRenderedComponent<T> cut) where T : IComponent
-        => cut.Find(".epos-zweispalten-fussleiste");
+        => cut.Find(".epos-zweispalten-satzknoepfe");   // AW3b: die Knopfleiste steht am gewaehlten Satz
 
     // =================================================================================
     // Die Fussleiste in den Slots
@@ -91,8 +91,8 @@ public class GanglinieKatalogfussTests : EposBunitContext
         Assert.Single(fuss.QuerySelectorAll("button.epos-importknopf"));
         // Import steht rechts vom Fueller, Vergleichen links davon.
         List<string> folge = fuss.Children.Select(e => e.ClassName ?? "").ToList();
-        Assert.True(folge.FindIndex(k => k.Contains("epos-leiste-fueller")) < folge.FindIndex(k => k.Contains("epos-importknopf")));
-        Assert.True(folge.FindIndex(k => k.Contains("epos-knopf--vergleichen")) < folge.FindIndex(k => k.Contains("epos-leiste-fueller")));
+        // AW3b: am Satz stehen sie in einer Zeile - Vergleichen vorn, Import hinten.
+        Assert.True(folge.FindIndex(k => k.Contains("epos-knopf--vergleichen")) < folge.FindIndex(k => k.Contains("epos-importknopf")));
         // Keine eigene Leiste der Seite mehr, der Formathinweis als Infoknopf im Katalogkopf.
         Assert.Empty(cut.FindAll(".epos-ganglinie-katalogfuss"));
         Assert.Single(cut.FindAll(".epos-ganglinie-formathinweis .epos-infoknopf"));
@@ -120,7 +120,7 @@ public class GanglinieKatalogfussTests : EposBunitContext
         Assert.True(Fussleiste(cut).QuerySelector("button.epos-knopf--vergleichen")!.HasAttribute("disabled"));
         KatalogKlick(cut, 0, strg: true);
         KatalogKlick(cut, 1, strg: true);
-        Assert.Contains(string.Format(R.Culture, R.AUSWAHL_FUSS_SAETZE, 2), Fussleiste(cut).TextContent);
+        Assert.Equal(2, cut.FindComponent<GanglinieKatalogseite>().Instance.Ziele().Count);   // AW3b: die Zahl stand im Fuss
         IElement knopf = Fussleiste(cut).QuerySelector("button.epos-knopf--vergleichen")!;
         Assert.False(knopf.HasAttribute("disabled"));
         knopf.Click();
@@ -236,5 +236,69 @@ public class GanglinieKatalogfussTests : EposBunitContext
         KatalogKlick(cut, 0);
         Assert.Contains("Reihe gesperrt", cut.Instance.SatzFehler);
         Assert.Contains(cut.FindAll(".epos-warnbanner-text"), e => e.TextContent.Contains("Reihe gesperrt"));
+    }
+
+    // =================================================================================
+    // AW3b: eine Wahl je Zeile, Knopfleiste am gewaehlten Satz (Schema AW1)
+    // =================================================================================
+
+    private GanglinienKatalogwege WegeMitSchloss(Schlosspruefung schloss) => new()
+    {
+        Katalogzeilen = () => Task.FromResult(Katalog),
+        Loeschen = n => { _geloescht.Add(n); return Task.FromResult(true); },
+        Schloss = schloss.Weg()
+    };
+
+    private static List<ErzeugerZeile> DreiZeilen()
+        => new() { Zeile(1, "Projekt Nord", 21), Zeile(2, "Projekt Süd", 22), Zeile(3, "Projekt West", 23) };
+
+    [Fact]
+    public void AW3b_Solar_Die_Zeile_ist_die_Wahl_mit_Hervorhebung_und_Tasten()
+    {
+        var cut = Solar(zeilen: DreiZeilen());
+        KnopfleisteAmSatzPruefung.ZeileIstWahl(cut, 3);
+        KnopfleisteAmSatzPruefung.KlickWaehlt(cut, 1, "Projekt Süd");
+        KnopfleisteAmSatzPruefung.PfeiltastenBewegen(cut, "Projekt Nord", "Projekt Süd", "Projekt West");
+        KnopfleisteAmSatzPruefung.Schlussleiste(cut, "OK", "Abbrechen");
+    }
+
+    [Fact]
+    public void AW3b_Solar_Beim_Projektsatz_weich_gesperrt_beim_Katalogsatz_frei()
+    {
+        var schloss = new Schlosspruefung();
+        var cut = Solar(WegeMitSchloss(schloss), DreiZeilen());
+        KnopfleisteAmSatzPruefung.Projektzeilen(cut)[0].Click();
+        Assert.True(KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        KnopfleisteAmSatzPruefung.WeichGesperrt(cut, schloss, "epos-katalog-loeschen");
+        Assert.Empty(_geloescht);
+
+        KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--bearbeiten-projekt").Click();   // = der Stift: Ansicht
+        Assert.NotEmpty(cut.FindAll(".epos-satzueberlagerung-koerper"));
+        cut.FindAll(".epos-satzueberlagerung-schliessen, .epos-satzueberlagerung-abbrechen")[0].Click();
+
+        KatalogKlick(cut, 0);
+        KnopfleisteAmSatzPruefung.KatalogsatzFrei(cut, "epos-katalog-loeschen");
+        KatalogKlick(cut, 0, strg: true);
+        KatalogKlick(cut, 1, strg: true);
+        Assert.False(KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void AW3b_Pv_Die_Zeile_ist_die_Wahl_und_der_Projektsatz_sperrt_weich()
+    {
+        var schloss = new Schlosspruefung();
+        var wege = WegeMitSchloss(schloss);
+        var cut = Pv(wege);
+        KnopfleisteAmSatzPruefung.ZeileIstWahl(cut, 2);
+        KnopfleisteAmSatzPruefung.KlickWaehlt(cut, 1, "Ganglinie Süd");
+        KnopfleisteAmSatzPruefung.PfeiltastenBewegen(cut, "Ganglinie Nord", "Ganglinie Süd", "Ganglinie Süd");
+        KnopfleisteAmSatzPruefung.WeichGesperrt(cut, schloss, "epos-katalog-loeschen");
+        KnopfleisteAmSatzPruefung.Schlussleiste(cut, "OK", "Abbrechen");
+
+        KatalogKlick(cut, 0);   // im Projekt verwendet: Loeschen nennt diesen Grund, nicht „Katalogsatz wählen"
+        Assert.False(KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-katalogschloss").HasAttribute("aria-disabled"));
+        Assert.NotEqual(R.AUSWAHL_SPERRE_KATALOGSATZ, KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-katalog-loeschen").GetAttribute("title"));
+        KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--bearbeiten-katalog").Click();   // = der Stift: Ansicht
+        Assert.NotEmpty(cut.FindAll(".epos-satzueberlagerung-koerper"));
     }
 }

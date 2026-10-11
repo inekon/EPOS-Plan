@@ -1,10 +1,12 @@
 # Übergabe der Sitzung „Dialoge und Korrekturen“ auf ein anderes Konto (11.10.2026)
 
+> **Abgelöst** durch die Übergabe von Konto 3 ([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md`](../aktuell/Dialoge/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md)).
+
 Dieses Papier übergibt die Sitzung „Dialoge und Korrekturen“ an eine neue Sitzung unter einem
 anderen Konto. Es nennt den Stand, die geltenden Entscheide, die Regeln der Sitzung über
 `CLAUDE.md` hinaus und die offenen Punkte; der Einstiegs-Prompt steht in Abschnitt 5. Regelquelle
 bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
-([`2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../../ueberholt/2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md)) ab.
+([`2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](./2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md)) ab.
 
 ## 1 Stand
 
@@ -23,11 +25,12 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   - #988 AW1 Knopfleiste am Satz (Heizkessel, Wärmepumpe); #989 AW2 Wärmepumpe Überlagerung mit Anlage.
     PV-Ganglinie; #963 BP Bedarfsprofile; #964 GEB Gebäude (Rückweg, Dialog, Überlagerung);
     #965 diese Übergabe.
+  - #998 AW3a Erzeuger, #999 AW3b Stufe 4/5 und Kältemaschine: Knopfleiste am Satz in allen Wirten der Katalogauswahl.
 - **Katalogauswahl V1:** Stufen 1 bis 5 umgesetzt (Baustein, Heizkessel, sieben Erzeuger,
   Zeitreihen, Bedarfsprofile, Gebäude, Kältemaschine) samt Satz-Überlagerung (ÜS1) und Stift und
   Zusammenfassung (ÜS2).
 - **Kältebedarf:** Konzept
-  [`Konzept_Kaeltebedarf_EPOS-Plan.md`](../Konzept_Kaeltebedarf_EPOS-Plan.md) (K0); K1 bis K4 gebaut
+  [`Konzept_Kaeltebedarf_EPOS-Plan.md`](../aktuell/Konzept_Kaeltebedarf_EPOS-Plan.md) (K0); K1 bis K4 gebaut
   (#944, #980–#982), K5 und K6 offen.
 - **Basis:** R51 `2026-10-10_R51_FreieKuehlung` (Sitzung Gebäudesimulation).
 - **Schemaschritte:** 213 (unser, K1) gebaut; 214 (K-F1) und 215 (AH-V4) gebaut von anderen
@@ -41,7 +44,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
 ## 2 Geltende Entscheide (Auswahl)
 
 **Katalogauswahl** (Konzept
-[`Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](../Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md))
+[`Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](../aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md))
 
 - **V1 „Gerahmt und gestapelt“** (08.10.): oben „Im Projekt“, darunter „Katalog (Datenbank)“, unten
   die Zeile „gewählter Satz“; der Dialogkörper rollt nicht, nur die Listen. Katalogpflege bleibt im
@@ -58,7 +61,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   Gebäude-Verwaltung bleibt im Gerüst der Verwaltungen (Anwender „ja“, 10.10.).
 
 **Kältebedarf** (Konzept
-[`Konzept_Kaeltebedarf_EPOS-Plan.md`](../Konzept_Kaeltebedarf_EPOS-Plan.md))
+[`Konzept_Kaeltebedarf_EPOS-Plan.md`](../aktuell/Konzept_Kaeltebedarf_EPOS-Plan.md))
 
 - **E-K1:** siebter Reiter „Kältebedarf“ mit drei Kacheln.
 - **E-K2:** Deckungsart je Zuordnungszeile, zentral oder dezentral (Split) mit EER fest oder
@@ -170,7 +173,7 @@ Keine Zugangsdaten ins Repository. **Antworten:** auf Deutsch, knapp.
    `.epos-gebaeude-in-db` öffnet seit dem Gebäudeumbau die Rückfrage „In die Datenbank übernehmen“ statt einer
    Meldung, deshalb erscheint kein Banner. Kein Fehler im Dialog; Empfehlung: den Auslöser der Probe auf eine
    Meldung des Gebäudedialogs umstellen (z. B. Löschen eines gesperrten Satzes) und die Gegenprobe prüfen.
-   Die übrigen Fälle (`heizkessel`, `bhkw`) sind erfüllt.
+   Die übrigen Fälle (`heizkessel`, `bhkw`) sind erfüllt. — erledigt mit #999: die Probe ist grün.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 
