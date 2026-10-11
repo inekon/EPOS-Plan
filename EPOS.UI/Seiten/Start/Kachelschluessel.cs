@@ -1,7 +1,7 @@
 ﻿namespace EPOS.UI.Seiten.Start;
 
 /// <summary>
-/// Die sprachneutralen Schlüssel der <b>21 Kacheln</b> der Startseite
+/// Die sprachneutralen Schlüssel der <b>24 Kacheln</b> der Startseite
 /// (iU9-W16b.2) — dieselbe Drei-Schichten-Regel wie <c>Seitenschluessel</c> und
 /// <c>Masken</c>: ASCII, sprachneutral, nie ein Anzeigetext.
 ///
@@ -51,7 +51,18 @@ public static class Kachelschluessel
     /// <summary>„Brauchwasserwärme" — <c>pBox_Brauchwasser</c>.</summary>
     public const string Brauchwasser = "BRAUCHWASSER";
 
-    // ---- Reiter 3: Strombedarf (drei) ----
+    // ---- Reiter 3: Kaeltebedarf (drei, Konzept Kaeltebedarf 3.1, Stufe K4) ----
+
+    /// <summary>„Kältebedarf extern" — Kältelastgang als CSV (Kanal „Kuehlung“ in <c>Z_ProjektWaermebedarf</c>).</summary>
+    public const string KaeltebedarfExtern = "KAELTEBEDARF_EXTERN";
+
+    /// <summary>„Kältebedarfsprofile" — Typprofil, Jahressumme und Kalender (<c>Z_Projekt_Kaeltebedarf</c>).</summary>
+    public const string Kaeltebedarfsprofile = "KAELTEBEDARFSPROFILE";
+
+    /// <summary>„Gebäudekühlung" — Sprung in die Kühlung der Projektgebäude (Konzept Kältebedarf 3.5).</summary>
+    public const string Gebaeudekuehlung = "GEBAEUDEKUEHLUNG";
+
+    // ---- Reiter 4: Strombedarf (drei) ----
 
     /// <summary>„Standardlastprofil" — <c>pBox_StdLastProfil</c>.</summary>
     public const string StromStandardprofil = "STROM_STANDARDPROFIL";
@@ -62,7 +73,7 @@ public static class Kachelschluessel
     /// <summary>„Messdaten importieren" — <c>pBox_StromMessdaten</c>.</summary>
     public const string StromMessdaten = "STROM_MESSDATEN";
 
-    // ---- Reiter 4: Energieerzeuger (sieben) ----
+    // ---- Reiter 5: Energieerzeuger (sieben) ----
 
     /// <summary>„Wärmepumpe" — <c>pBox_WP</c>.</summary>
     public const string Waermepumpe = "WAERMEPUMPE";
@@ -85,7 +96,7 @@ public static class Kachelschluessel
     /// <summary>„Pufferspeicher" — <c>pBox_Pufferspeicher</c>.</summary>
     public const string Pufferspeicher = "PUFFERSPEICHER";
 
-    // ---- Reiter 5: Simulation (ein Knopf, eine Kachel) ----
+    // ---- Reiter 6: Simulation (ein Knopf, eine Kachel) ----
 
     /// <summary>Der Knopf „Simulation Konfiguration…" — <c>btn_SimKonfig</c>.</summary>
     public const string SimulationKonfiguration = "SIMULATION_KONFIGURATION";
@@ -101,13 +112,17 @@ public static class Kachelschluessel
     /// <c>FormMain</c> und ist mit dem Anwenderentscheid E-7 (K6-a) entfallen. Die
     /// Kachel „Optimierung" auf Reiter 5 wird gar nicht erst gebaut: Ihr Handler war
     /// leer, und der Vorläufer blendete sie zur Laufzeit aus (H11).</para>
+    ///
+    /// <para><b>Dazu die drei Kacheln des Reiters „Kältebedarf"</b> (Konzept
+    /// Kältebedarf 3.1, Stufe K4) — 21 + 3 = 24.</para>
     /// </summary>
-    public const int Anzahl = 21;
+    public const int Anzahl = 24;
 }
 
 /// <summary>
-/// Die sprachneutralen Schlüssel der <b>sechs Reiter</b> der Startseite
-/// (iU9-W16b.2) — die Nachfolge von <c>tabPage1</c> … <c>tabPage6</c>.
+/// Die sprachneutralen Schlüssel der <b>sieben Reiter</b> der Startseite
+/// (iU9-W16b.2) — die Nachfolge von <c>tabPage1</c> … <c>tabPage6</c>, dazu der
+/// Reiter „Kältebedarf" hinter „Wärmebedarf" (Konzept Kältebedarf 3.1, OP-1).
 /// </summary>
 public static class Reiterschluessel
 {
@@ -117,21 +132,24 @@ public static class Reiterschluessel
     /// <summary>Reiter 2 „Wärmebedarf".</summary>
     public const string Waermebedarf = "WAERMEBEDARF";
 
-    /// <summary>Reiter 3 „Strombedarf".</summary>
+    /// <summary>Reiter 3 „Kältebedarf" (Stufe K4) — Bedarf Wärme → Kälte → Strom, dann Erzeuger.</summary>
+    public const string Kaeltebedarf = "KAELTEBEDARF";
+
+    /// <summary>Reiter 4 „Strombedarf".</summary>
     public const string Strombedarf = "STROMBEDARF";
 
-    /// <summary>Reiter 4 „Energieerzeuger".</summary>
+    /// <summary>Reiter 5 „Energieerzeuger".</summary>
     public const string Erzeuger = "ERZEUGER";
 
-    /// <summary>Reiter 5 „Simulation".</summary>
+    /// <summary>Reiter 6 „Simulation".</summary>
     public const string Simulation = "SIMULATION";
 
-    /// <summary>Reiter 6 „Berichte &amp; Kosten" — die Seite aus iU9-W5.</summary>
+    /// <summary>Reiter 7 „Berichte &amp; Kosten" — die Seite aus iU9-W5.</summary>
     public const string BerichteKosten = "BERICHTE_KOSTEN";
 
-    /// <summary>Die sechs Schlüssel in der Reihenfolge des Bestands.</summary>
+    /// <summary>Die sieben Schlüssel in der Reihenfolge der Reiterleiste.</summary>
     public static readonly string[] Alle =
     {
-        Projekt, Waermebedarf, Strombedarf, Erzeuger, Simulation, BerichteKosten
+        Projekt, Waermebedarf, Kaeltebedarf, Strombedarf, Erzeuger, Simulation, BerichteKosten
     };
 }

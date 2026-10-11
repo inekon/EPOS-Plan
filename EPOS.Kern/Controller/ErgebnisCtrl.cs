@@ -131,6 +131,9 @@ namespace WindowsFormsApplication1
             bool ak3kEnergie = Ak3KSchema.ErgebnisspaltenVorhanden();
             // KK (KuehlkurveSchema, Schritt 202): die Kennzahlen der Kühlkurve - ebenso.
             bool kuehlkurveEnergie = KuehlkurveSchema.ErgebnisspaltenVorhanden();
+            // K3 (KaeltebedarfSchema, Schritt 213): die fünf Spalten des Kältebedarfs ohne Gebäudemodell - ebenso.
+            bool kaeltebedarfEnergie = KaeltebedarfSchema.ERGEBNISSPALTEN.All(
+                s => DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_ERGEBNIS, s));
             // KU3-6a (Schritt 187): die Zaehler der freien Kuehlung an beiden Ergebnistabellen der Waermepumpe -
             // ebenso vor der Transaktion gefragt; auf einer Datenbank davor bleiben die Zeilen, wie sie waren.
             bool freieKuehlungWp = FreieKuehlungSoleSchema.ErgebnisspaltenVorhanden();
@@ -285,10 +288,12 @@ namespace WindowsFormsApplication1
                             (komfortEnergie ? ", " + string.Join(", ", AnlagenfahrplanSchema.SPALTEN_ERGEBNIS) : "") +
                             (ak3Energie ? ", " + string.Join(", ", Ak3Schema.SPALTEN_ERGEBNIS) : "") +
                             (ak3kEnergie ? ", " + string.Join(", ", Ak3KSchema.SPALTEN_ERGEBNIS) : "") +
-                            (kuehlkurveEnergie ? ", " + string.Join(", ", KuehlkurveSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                            (kuehlkurveEnergie ? ", " + string.Join(", ", KuehlkurveSchema.SPALTEN_ERGEBNIS) : "") +
+                            (kaeltebedarfEnergie ? ", " + string.Join(", ", KaeltebedarfSchema.ERGEBNISSPALTEN) : "") + ") " +
                             "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?" + (kuehlkreisEnergie ? ", ?,?,?" : "") +
                             (komfortEnergie ? ", ?,?,?,?,?,?" : "") + (ak3Energie ? ", ?,?,?,?,?,?" : "") +
-                            (ak3kEnergie ? ", ?,?,?,?,?,?,?" : "") + (kuehlkurveEnergie ? ", ?,?,?" : "") + ")";
+                            (ak3kEnergie ? ", ?,?,?,?,?,?,?" : "") + (kuehlkurveEnergie ? ", ?,?,?" : "") +
+                            (kaeltebedarfEnergie ? ", ?,?,?,?,?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
@@ -355,6 +360,16 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@kkm", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlkurveVorlaufMittelC) });
                                 p.Add(new DbParam("@kka", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlkurveAbsenkungKh) });
                                 p.Add(new DbParam("@kkg", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KuehlkurveVorlaufgrenzeStundenH) });
+                            }
+                            // K3 (KaeltebedarfSchema, Konzept Kältebedarf 4.3): NULL ohne Profil- bzw. Split-Zeile; Reihenfolge
+                            // wie KaeltebedarfSchema.ERGEBNISSPALTEN.
+                            if (kaeltebedarfEnergie)
+                            {
+                                p.Add(new DbParam("@kbp", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KaeltebedarfProfilMwh) });
+                                p.Add(new DbParam("@kbd", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KaeltebedarfDezentralMwh) });
+                                p.Add(new DbParam("@kbs", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KaelteDezentralSpitzeKw) });
+                                p.Add(new DbParam("@kbe", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.StromDezentralMwh) });
+                                p.Add(new DbParam("@kbj", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.JahresEerDezentral) });
                             }
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -1207,6 +1222,12 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.KuehlkurveVorlaufMittelC = DN(re, KuehlkurveSchema.SPALTE_VORLAUF_MITTEL);
                 m.Energiebedarf.KuehlkurveAbsenkungKh = DN(re, KuehlkurveSchema.SPALTE_ABSENKUNG_KH);
                 m.Energiebedarf.KuehlkurveVorlaufgrenzeStundenH = GanzOderNull(re, KuehlkurveSchema.SPALTE_VORLAUFGRENZE_STUNDEN);
+                // K3 (KaeltebedarfSchema): dieselbe Regel; eine fehlende Spalte liest null.
+                m.Energiebedarf.KaeltebedarfProfilMwh = DN(re, KaeltebedarfSchema.ERGEBNISSPALTEN[0]);
+                m.Energiebedarf.KaeltebedarfDezentralMwh = DN(re, KaeltebedarfSchema.ERGEBNISSPALTEN[1]);
+                m.Energiebedarf.KaelteDezentralSpitzeKw = DN(re, KaeltebedarfSchema.ERGEBNISSPALTEN[2]);
+                m.Energiebedarf.StromDezentralMwh = DN(re, KaeltebedarfSchema.ERGEBNISSPALTEN[3]);
+                m.Energiebedarf.JahresEerDezentral = DN(re, KaeltebedarfSchema.ERGEBNISSPALTEN[4]);
             }
 
             // KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine; vor dem Schritt fehlt die Tabelle.

@@ -37,7 +37,7 @@ public class KachelbilderTests : EposBunitContext
     //  Die Tabelle
     // =====================================================================
 
-    /// <summary>Die 21 Schlüssel aus <see cref="Kachelschluessel"/> selbst.</summary>
+    /// <summary>Die 24 Schlüssel aus <see cref="Kachelschluessel"/> selbst.</summary>
     private static IReadOnlyList<string> AlleSchluessel()
     {
         List<string> schluessel = typeof(Kachelschluessel)
@@ -51,7 +51,7 @@ public class KachelbilderTests : EposBunitContext
     }
 
     [Fact]
-    public void Jede_der_21_Kacheln_traegt_ein_Bild()
+    public void Jede_der_24_Kacheln_traegt_ein_Bild()
     {
         IReadOnlyList<string> schluessel = AlleSchluessel();
 
@@ -90,7 +90,9 @@ public class KachelbilderTests : EposBunitContext
         Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, kopf.Take(4).ToArray());
         Assert.Equal(84, (kopf[16] << 24) | (kopf[17] << 16) | (kopf[18] << 8) | kopf[19]);
         Assert.Equal(84, (kopf[20] << 24) | (kopf[21] << 16) | (kopf[22] << 8) | kopf[23]);
-        Assert.False(Kachelbilder.Alle.Values.Any(e => e.Datei == Kachelbilder.KUEHLUNG_DATEI));
+        // In der Tabelle steht es genau einmal: an der Kachel „Gebäudekühlung" des Reiters Kältebedarf (K4).
+        Assert.Equal(new[] { Kachelschluessel.Gebaeudekuehlung },
+                     Kachelbilder.Alle.Where(e => e.Value.Datei == Kachelbilder.KUEHLUNG_DATEI).Select(e => e.Key).ToArray());
     }
 
     [Fact]
@@ -199,6 +201,71 @@ public class KachelbilderTests : EposBunitContext
         Assert.All(bilder, b => Assert.Equal("", b.GetAttribute("alt")));
         Assert.Equal("_content/EPOS.UI/bilder/start/PProjektNeu_Symbol.png",
                      bilder[0].GetAttribute("src"));
+    }
+
+    /// <summary>
+    /// Die drei Kacheln des Reiters „Kältebedarf" (Konzept Kältebedarf 3.1, K4): zwei eigene Bilder in
+    /// Kältefärbung, abgeleitet aus den Vorbildern der Strombedarf-Kacheln in DENSELBEN Maßen (der CSS-Ausschnitt
+    /// sitzt so an derselben Stelle), und das Eiskristall-Symbol der Kühlungskachel.
+    /// </summary>
+    [Fact]
+    public void Die_drei_Kaeltekacheln_tragen_ihr_Bild_in_den_Massen_der_Vorbilder()
+    {
+        Assert.Equal("PKaelteMessdaten.jpg", Datei(Kachelschluessel.KaeltebedarfExtern));
+        Assert.Equal("PKaelteProfil.jpg", Datei(Kachelschluessel.Kaeltebedarfsprofile));
+        Assert.Equal(Kachelbilder.KUEHLUNG_DATEI, Datei(Kachelschluessel.Gebaeudekuehlung));
+
+        Assert.Equal(Kachelbilder.KLASSE_AUSSCHNITT, Kachelbilder.Klasse(Kachelschluessel.KaeltebedarfExtern));
+        Assert.Equal(Kachelbilder.KLASSE_AUSSCHNITT, Kachelbilder.Klasse(Kachelschluessel.Kaeltebedarfsprofile));
+        Assert.Equal(Kachelbilder.KLASSE_SYMBOL, Kachelbilder.Klasse(Kachelschluessel.Gebaeudekuehlung));
+
+        string ordner = Bilderordner();
+        foreach ((string neu, string vorbild) in new[]
+                 {
+                     ("PKaelteMessdaten.jpg", "PStromMessdaten.jpg"),
+                     ("PKaelteProfil.jpg", "PStdLastProfil.jpg")
+                 })
+        {
+            byte[] a = File.ReadAllBytes(Path.Combine(ordner, neu));
+            byte[] b = File.ReadAllBytes(Path.Combine(ordner, vorbild));
+            Assert.Equal(new byte[] { 0xFF, 0xD8 }, a.Take(2).ToArray());     // JPG wie das Vorbild
+            Assert.Equal(JpgMasse(b), JpgMasse(a));
+            Assert.NotEqual(b, a);                                           // eigene Färbung, keine Kopie
+        }
+    }
+
+    [Fact]
+    public void Der_Reiter_Kaeltebedarf_zeichnet_zwei_Ausschnitte_und_das_Kuehlungssymbol()
+    {
+        var cut = Render<KaeltebedarfReiter>(p => p
+            .Add(x => x.Kacheln, Kacheln(Reiterschluessel.Kaeltebedarf,
+                                         Kachelschluessel.KaeltebedarfExtern,
+                                         Kachelschluessel.Kaeltebedarfsprofile,
+                                         Kachelschluessel.Gebaeudekuehlung)));
+
+        var bilder = cut.FindAll(".epos-kachel img");
+        Assert.Equal(3, bilder.Count);
+        Assert.Equal("_content/EPOS.UI/bilder/start/PKaelteMessdaten.jpg", bilder[0].GetAttribute("src"));
+        Assert.Equal("_content/EPOS.UI/bilder/start/PKaelteProfil.jpg", bilder[1].GetAttribute("src"));
+        Assert.Equal(Kachelbilder.KuehlungQuelle, bilder[2].GetAttribute("src"));
+        Assert.Contains(Kachelbilder.KLASSE_AUSSCHNITT, bilder[0].ClassName);
+        Assert.Contains(Kachelbilder.KLASSE_SYMBOL, bilder[2].ClassName);
+    }
+
+    /// <summary>Breite und Höhe eines JPG aus seinem ersten SOF-Block.</summary>
+    private static (int Breite, int Hoehe) JpgMasse(byte[] jpg)
+    {
+        int i = 2;
+        while (i + 9 < jpg.Length)
+        {
+            Assert.Equal(0xFF, jpg[i]);
+            byte marke = jpg[i + 1];
+            int laenge = (jpg[i + 2] << 8) | jpg[i + 3];
+            if (marke >= 0xC0 && marke <= 0xC3)
+                return ((jpg[i + 7] << 8) | jpg[i + 8], (jpg[i + 5] << 8) | jpg[i + 6]);
+            i += 2 + laenge;
+        }
+        throw new InvalidDataException("kein SOF-Block");
     }
 
     [Fact]

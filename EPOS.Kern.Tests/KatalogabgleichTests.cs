@@ -791,6 +791,99 @@ namespace EPOS.Kern.Tests
             Assert.False(zweiter.EtwasZuTun);
         }
 
+        /// <summary>
+        /// Der Stand der Kältemittelzeilen vor KM4-E2-c (Schritt 216 in der Fassung von KM4-E1): Code, Gruppe, GWP-Quelle,
+        /// Quelle und der Anfang der damals gestempelten Prüfsumme. Status war durchweg <c>VORLAEUFIG</c>.
+        /// </summary>
+        private static readonly (string Code, string Gruppe, string GwpQuelle, string Quelle, string Summe)[] KAELTEMITTEL_VOR_E2C =
+        {
+            ("R32", "HFKW", "VO 2024/573 Anhang I, GWP100 AR4", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S+P; PFAS nach Strukturformel (OECD 2021)", "fa3eaa7dc780"),
+            ("R134a", "HFKW", "VO 2024/573 Anhang I, GWP100 AR4", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S; PFAS nach Strukturformel (OECD 2021)", "6a1a46944fac"),
+            ("R410A", "GEMISCH", "Gemisch R32/R125 50/50 (Anhang I AR4; R125 = 3500), Abl.", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad Abl.; PFAS nach Strukturformel (OECD 2021)", "d54bcac9bd51"),
+            ("R407C", "GEMISCH", "Gemisch R32/R125/R134a 23/25/52 (Anhang I AR4), Abl.", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad Abl.; PFAS nach Strukturformel (OECD 2021)", "4f65e566cc48"),
+            ("R404A", "GEMISCH", "Gemisch R125/R143a/R134a 44/52/4 (Anhang I AR4; R143a = 4470), Abl.", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad Abl.; PFAS nach Strukturformel (OECD 2021)", "4ce3be039487"),
+            ("R454B", "GEMISCH", "Gemisch R32/R1234yf 68,9/31,1 (Anhang I AR4, Anhang II AR6), Abl.", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad Abl.; PFAS nach Strukturformel (OECD 2021)", "99cd921fa099"),
+            ("R454C", "GEMISCH", "Gemisch R32/R1234yf 21,5/78,5 (Anhang I AR4, Anhang II AR6), Abl.", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad Abl./S; PFAS nach Strukturformel (OECD 2021)", "d3043c5773fd"),
+            ("R452B", "GEMISCH", "Gemisch R32/R125/R1234yf 67/7/26 (Anhang I AR4, Anhang II AR6), Abl.", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad Abl.; PFAS nach Strukturformel (OECD 2021)", "ce2a647803a0"),
+            ("R455A", "GEMISCH", "Gemisch R744/R32/R1234yf 3/21,5/75,5 (Anhang I AR4, Anhang II/VI AR6), Abl.", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad Abl.; PFAS nach Strukturformel (OECD 2021)", "cc628f03a3b8"),
+            ("R513A", "GEMISCH", "Gemisch R1234yf/R134a 56/44 (Anhang II AR6, Anhang I AR4), Abl.", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad Abl./S; PFAS nach Strukturformel (OECD 2021)", "4a66f83a3377"),
+            ("R1234ze(E)", "HFO", "VO 2024/573 Anhang II Abschnitt 1, GWP100 AR6", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S; PFAS nach Strukturformel (OECD 2021)", "2fde3199ec97"),
+            ("R1234yf", "HFO", "VO 2024/573 Anhang II Abschnitt 1, GWP100 AR6", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S; PFAS nach Strukturformel (OECD 2021)", "590f87d9b3dd"),
+            ("R1233zd(E)", "HFO", "VO 2024/573 Anhang II Abschnitt 1, GWP100 AR6", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S; PFAS nach Strukturformel (OECD 2021)", "73135adcf39f"),
+            ("R290", "NATUERLICH", "VO 2024/573 Anhang VI, GWP100 AR6", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S-amtl; PFAS nach Strukturformel (OECD 2021)", "42a2653cba27"),
+            ("R600a", "NATUERLICH", "VO 2024/573 Anhang VI (Fußnote nicht gelesen)", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S-amtl; PFAS nach Strukturformel (OECD 2021)", "a1ca286906c7"),
+            ("R1270", "NATUERLICH", "VO 2024/573 Anhang VI (Fußnote nicht gelesen)", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S-amtl; PFAS nach Strukturformel (OECD 2021)", "b6726aec52d6"),
+            ("R744", "NATUERLICH", "Bezugsgas (GWP100 = 1)", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S; PFAS nach Strukturformel (OECD 2021)", "8c04a7695fab"),
+            ("R717", "NATUERLICH", "VO 2024/573 Anhang VI", "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad S-amtl; PFAS nach Strukturformel (OECD 2021)", "0f5730df9754"),
+        };
+
+        /// <summary>
+        /// KM4-E2-c, der Weg für bestehende Datenbanken: Schritt 216 legt nur fehlende Codes an, die gesicherten Werte
+        /// bringt der Katalogabgleich mit dem Katalogpaket der Auslieferung. Eine Datenbank mit den alten
+        /// <c>VORLAEUFIG</c>-Zeilen und ihren alten Prüfsummen bekommt die neuen Werte; eine vom Anwender veränderte
+        /// gesperrte Zeile bleibt, wie sie ist. Die Prüfsummen der Kältemaschinen bleiben (der Verweis reist als Code).
+        /// </summary>
+        [Fact]
+        public void Abgleich_bringt_die_gesicherten_Kaeltemittelzeilen_und_laesst_eine_angepasste()
+        {
+            if (!_db.Vorhanden) return;
+            const string TAB = KaeltemittelSchema.TAB_STAMM;
+            Katalogpaket paket = Katalogpaket.AusBytes(Katalogpaket.AusDatenbank(3).Bytes());
+            List<Katalogpaketsatz> saetze = paket.Tabellen.Single(t => t.Tabelle == TAB).Saetze;
+            Assert.Equal(KaeltemittelSchema.SAAT.Count, saetze.Count);
+            Assert.All(saetze, s => Assert.Equal(DbWerte.GESETZ_STATUS_GESICHERT, s.Werte["Status"]));
+            string maschinenVorher = Tabellenbild(KaeltemaschineSchema.TAB_STAMM);
+
+            // Der alte Stand: Werte von KM4-E1 und die damals gestempelte Prüfsumme (dieselbe wie ausgeliefert).
+            Katalogtabelle kmt = Katalogfassung.Tabelle(TAB);
+            List<string> spalten = kmt.Fachspalten.ToList();
+            foreach (var alt in KAELTEMITTEL_VOR_E2C)
+            {
+                DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Kaeltemittel_STAMM SET Status = 'VORLAEUFIG', Gruppe = ?, GWP_Quelle = ?, Quelle = ? WHERE Code = ?",
+                    new DbParam("@g", alt.Gruppe), new DbParam("@gq", alt.GwpQuelle), new DbParam("@q", alt.Quelle),
+                    new DbParam("@c", alt.Code));
+                DataTable dt = DataRepository.GetDataTable("SELECT ID, " + string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
+                                                           " FROM Tab_Kaeltemittel_STAMM WHERE Code = ?", new DbParam("@c", alt.Code));
+                string summe = Katalogfassung.PruefsummeDerZeile(kmt, spalten, dt.Rows[0], Katalogfassung.LeseOhneVorgang);
+                Assert.StartsWith(alt.Summe, summe, StringComparison.Ordinal);
+                DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemittel_STAMM SET Katalog_Pruefsumme = ? WHERE Code = ?",
+                                               new DbParam("@s", summe), new DbParam("@c", alt.Code));
+            }
+            // Angepasst: gesperrt, aber vom Anwender geändert - bleibt.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemittel_STAMM SET Bezeichnung = 'Propan (eigene Fassung)' WHERE Code = 'R290'");
+
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            Assert.Equal((0, 17, 1, 0), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen));
+            Assert.All(e.Eintraege.Where(x => x.Aktion == Katalogabgleich.AKTION_AKTUALISIERT), x => Assert.Equal(TAB, x.Tabelle));
+            Assert.Equal(R.KABG_HINWEIS_BEHALTEN_GEAENDERT, e.Eintraege.Single(x => x.Schluessel == "KMT:R290").Hinweis);
+
+            foreach (KaeltemittelSchema.Kaeltemittel k in KaeltemittelSchema.SAAT)
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Status, Gruppe, GWP_Quelle, Quelle, Bezeichnung, Katalog_Pruefsumme, ReadOnly FROM Tab_Kaeltemittel_STAMM WHERE Code = ?",
+                    new DbParam("@c", k.Code));
+                DataRow r = dt.Rows[0];
+                string Zelle(string s) => Convert.ToString(r[s], CultureInfo.InvariantCulture);
+                Assert.Equal(1L, Convert.ToInt64(r["ReadOnly"], CultureInfo.InvariantCulture));
+                if (k.Code == "R290")
+                {
+                    Assert.Equal(DbWerte.GESETZ_STATUS_VORLAEUFIG, Zelle("Status"));
+                    Assert.Equal("Propan (eigene Fassung)", Zelle("Bezeichnung"));
+                    continue;
+                }
+                Assert.Equal(KaeltemittelSchema.SAAT_STATUS, Zelle("Status"));
+                Assert.Equal(k.Gruppe, Zelle("Gruppe"));
+                Assert.Equal(k.GwpQuelle, Zelle("GWP_Quelle"));
+                Assert.Equal(KaeltemittelSchema.QuelleDer(k), Zelle("Quelle"));
+                Assert.Equal(saetze.Single(s => s.Werte["Code"] as string == k.Code).Pruefsumme, Zelle("Katalog_Pruefsumme"));
+            }
+            Assert.Equal(DbWerte.KAELTEMITTEL_GRUPPE_HFCKW,
+                         Text("SELECT Gruppe FROM Tab_Kaeltemittel_STAMM WHERE Code = 'R1233zd(E)'"));
+            Assert.Equal(maschinenVorher, Tabellenbild(KaeltemaschineSchema.TAB_STAMM));
+        }
+
         /// <summary>„Auslieferungsstand wiederherstellen" gilt auch für einen Satz der Stufe 2.</summary>
         [Fact]
         public void Wiederherstellen_gilt_auch_fuer_die_Stufe_2()

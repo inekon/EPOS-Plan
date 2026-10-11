@@ -82,7 +82,17 @@ public static class Kachelbilder
             [Kachelschluessel.Prozesswaerme] = ("Unbenannt3.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.Brauchwasser] = ("Unbenannt3.jpg", KLASSE_AUSSCHNITT),
 
-            // ---- Reiter 3 „Strombedarf" -------------------------------------
+            // ---- Reiter „Kaeltebedarf" (Stufe K4) ---------------------------
+            // Zwei EIGENE Bilder, abgeleitet aus den Vorbildern der Strombedarf-
+            // Kacheln: dieselben Masse (555 x 258 bzw. 558 x 261, JPG) und derselbe Ausschnitt,
+            // nur in Kaeltefaerbung (Blautoenung) - der Lastgang aus
+            // PStromMessdaten.jpg, das Typprofil aus PStdLastProfil.jpg. Die
+            // Gebaeudekuehlung traegt das Eiskristall-Symbol der Kuehlungskachel.
+            [Kachelschluessel.KaeltebedarfExtern] = (KAELTE_EXTERN_DATEI, KLASSE_AUSSCHNITT),
+            [Kachelschluessel.Kaeltebedarfsprofile] = (KAELTE_PROFIL_DATEI, KLASSE_AUSSCHNITT),
+            [Kachelschluessel.Gebaeudekuehlung] = (KUEHLUNG_DATEI, KLASSE_SYMBOL),
+
+            // ---- Reiter „Strombedarf" ---------------------------------------
             [Kachelschluessel.StromStandardprofil] = ("PStdLastProfil.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.StromEigenesProfil] = ("PStromProfilEigenes.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.StromMessdaten] = ("PStromMessdaten.jpg", KLASSE_AUSSCHNITT),
@@ -123,6 +133,12 @@ public static class Kachelbilder
     /// 84 × 84 Pixeln gerechnet — es trägt deshalb <see cref="KLASSE_SYMBOL"/>, keinen Ausschnitt.
     /// </summary>
     public const string KUEHLUNG_DATEI = "PKuehlung_Symbol.png";
+
+    /// <summary>Das Bild der Kachel „Kältebedarf extern" — <c>PStromMessdaten.jpg</c> in Kältefärbung.</summary>
+    public const string KAELTE_EXTERN_DATEI = "PKaelteMessdaten.jpg";
+
+    /// <summary>Das Bild der Kachel „Kältebedarfsprofile" — <c>PStdLastProfil.jpg</c> in Kältefärbung.</summary>
+    public const string KAELTE_PROFIL_DATEI = "PKaelteProfil.jpg";
 
     /// <summary>Die Web-Adresse des Kühlungssinnbilds.</summary>
     public const string KuehlungQuelle = ORDNER + KUEHLUNG_DATEI;

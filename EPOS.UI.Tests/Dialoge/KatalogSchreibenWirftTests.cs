@@ -750,6 +750,140 @@ public class KatalogSchreibenWirftTests : EposBunitContext
     public void GebaeudeAdmin_ohne_Ausnahme_zeigt_keinen_Satzgrund()
         => OhneSatzgrund(GebaeudeAdmin());
 
+    // ---- KT-7: Bedarfsverwaltung, Gebäudetypen, Baustoffe, Bauteilaufbauten ---------------
+
+    /// <summary>Wählt in der Auswahlleiste „Duplizieren…" und bestätigt die Namensabfrage.</summary>
+    private static void Duplizieren<T>(IRenderedComponent<T> cut) where T : IComponent
+    {
+        Handlung(cut, R.ADM_BTN_DUPLIZIEREN).Click();
+        NamensabfrageOk(cut);
+    }
+
+    /// <summary>Wählt in der Auswahlleiste den Löschknopf und bestätigt die Rückfrage.</summary>
+    private static void Loeschen<T>(IRenderedComponent<T> cut, string knopf) where T : IComponent
+    {
+        Handlung(cut, knopf).Click();
+        RueckfrageJa(cut);
+    }
+
+    private IRenderedComponent<BedarfAdminDialog> BedarfAdmin(Func<string, BedarfLoeschAusgang>? loeschen = null,
+                                                              Func<int, string, KatalogSpeicherErgebnis>? duplizieren = null)
+        => Render<BedarfAdminDialog>(b => b
+            .Add(x => x.Art, BedarfsArt.Stromverbraucher)
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.BtnLoeschenText, "Löschen")
+            .Add(x => x.Loeschen, loeschen ?? (_ => BedarfLoeschAusgang.Geloescht))
+            .Add(x => x.Duplizieren, duplizieren ?? ((_, n) => new KatalogSpeicherErgebnis(true, "", n))));
+
+    [Fact]
+    public void BedarfAdmin_wirft_das_Loeschen_nennt_der_Dialog_den_Grund()
+    {
+        var cut = BedarfAdmin(loeschen: _ => Wirft<BedarfLoeschAusgang>());
+        Loeschen(cut, "Löschen");
+        GrundSteht(cut, R.WURZEL_LOESCHEN_FEHLER);
+    }
+
+    [Fact]
+    public void BedarfAdmin_wirft_das_Duplizieren_nennt_der_Dialog_den_Grund()
+    {
+        var cut = BedarfAdmin(duplizieren: (_, _) => Wirft<KatalogSpeicherErgebnis>());
+        Duplizieren(cut);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+    }
+
+    [Fact]
+    public void BedarfAdmin_ohne_Ausnahme_zeigt_keinen_Satzgrund()
+        => OhneSatzgrund(BedarfAdmin());
+
+    private IRenderedComponent<GebaeudetypDialog> Gebaeudetyp(Func<int, bool>? loeschen = null,
+                                                              Func<int, string, KatalogSpeicherErgebnis>? duplizieren = null)
+        => Render<GebaeudetypDialog>(b => b
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeudetyp(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Loeschen, loeschen ?? (_ => true))
+            .Add(x => x.Duplizieren, duplizieren ?? ((_, n) => new KatalogSpeicherErgebnis(true, "", n))));
+
+    [Fact]
+    public void Gebaeudetyp_wirft_das_Loeschen_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Gebaeudetyp(loeschen: _ => Wirft<bool>());
+        Loeschen(cut, R.PSP_TITEL_LOESCHEN);
+        GrundSteht(cut, R.WURZEL_LOESCHEN_FEHLER);
+    }
+
+    [Fact]
+    public void Gebaeudetyp_wirft_das_Duplizieren_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Gebaeudetyp(duplizieren: (_, _) => Wirft<KatalogSpeicherErgebnis>());
+        Duplizieren(cut);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+    }
+
+    [Fact]
+    public void Gebaeudetyp_ohne_Ausnahme_zeigt_keinen_Satzgrund()
+        => OhneSatzgrund(Gebaeudetyp());
+
+    private IRenderedComponent<BaustoffKatalogDialog> Baustoff(Func<int, BaustoffSpeicherErgebnis>? loeschen = null,
+                                                               Func<int, string, BaustoffSpeicherErgebnis>? duplizieren = null)
+        => Render<BaustoffKatalogDialog>(b => b
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBaustoff(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Loeschen, loeschen ?? (id => new BaustoffSpeicherErgebnis(true, "", id)))
+            .Add(x => x.Duplizieren, duplizieren ?? ((_, _) => new BaustoffSpeicherErgebnis(true, "", 2))));
+
+    [Fact]
+    public void Baustoff_wirft_das_Loeschen_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Baustoff(loeschen: _ => Wirft<BaustoffSpeicherErgebnis>());
+        Loeschen(cut, R.BST_BTN_LOESCHEN);
+        GrundSteht(cut, R.WURZEL_LOESCHEN_FEHLER);
+    }
+
+    [Fact]
+    public void Baustoff_wirft_das_Duplizieren_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Baustoff(duplizieren: (_, _) => Wirft<BaustoffSpeicherErgebnis>());
+        Duplizieren(cut);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+    }
+
+    [Fact]
+    public void Baustoff_ohne_Ausnahme_zeigt_keinen_Satzgrund()
+        => OhneSatzgrund(Baustoff());
+
+    private IRenderedComponent<BauteilaufbauDialog> Bauteilaufbau(Func<int, BauteilaufbauSpeicherErgebnis>? loeschen = null,
+                                                                  Func<int, string, BauteilaufbauSpeicherErgebnis>? duplizieren = null)
+        => Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Loeschen, loeschen ?? (id => new BauteilaufbauSpeicherErgebnis(true, "", id)))
+            .Add(x => x.Duplizieren, duplizieren ?? ((_, _) => new BauteilaufbauSpeicherErgebnis(true, "", 2))));
+
+    [Fact]
+    public void Bauteilaufbau_wirft_das_Loeschen_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Bauteilaufbau(loeschen: _ => Wirft<BauteilaufbauSpeicherErgebnis>());
+        Loeschen(cut, R.BTA_BTN_LOESCHEN);
+        GrundSteht(cut, R.WURZEL_LOESCHEN_FEHLER);
+    }
+
+    [Fact]
+    public void Bauteilaufbau_wirft_das_Duplizieren_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Bauteilaufbau(duplizieren: (_, _) => Wirft<BauteilaufbauSpeicherErgebnis>());
+        Duplizieren(cut);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+    }
+
+    [Fact]
+    public void Bauteilaufbau_ohne_Ausnahme_zeigt_keinen_Satzgrund()
+        => OhneSatzgrund(Bauteilaufbau());
+
     private IRenderedComponent<GebaeudeDialog> Gebaeude(Func<string, GebaeudeProjektZeile?>? stammSatz = null,
                                                       Func<string, bool>? loeschen = null,
                                                       List<GebaeudeProjektZeile>? zeilen = null,
@@ -1137,5 +1271,114 @@ public class KatalogSchreibenWirftTests : EposBunitContext
         GanglinieEinlesen(cut);
         Assert.True(cut.Instance.Katalogseite!.ImportOffen);
         GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+    }
+
+    // =================================================================================
+    // KT-7: Namensprüfung des Katalogbrowsers und die Importgaben der Verwaltungen
+    // =================================================================================
+
+    private static KatalogBrowserWege BrowserWegeMit(Func<string, bool>? existiert = null,
+                                                     Func<IReadOnlyDictionary<string, object>>? importGaben = null)
+    {
+        KatalogBrowserWege w = BrowserWege();
+        return new KatalogBrowserWege
+        {
+            Katalogzeilen = w.Katalogzeilen, Detail = w.Detail, Speichern = w.Speichern,
+            Duplizieren = w.Duplizieren, Loeschen = w.Loeschen,
+            Existiert = existiert, ImportGaben = importGaben
+        };
+    }
+
+    /// <summary>„Neu…" mit einem Namen: die Namensabfrage ausfüllen und bestätigen.</summary>
+    private static void NeuMitNamen(IRenderedComponent<KatalogBrowserDialog> cut, string name)
+    {
+        cut.FindAll("button").First(b => b.TextContent.Trim() is "Neu..." or "Neu…").Click();
+        cut.FindAll(".epos-ueberlagerung input[type=text]")[0].Input(name);
+        cut.FindAll(".epos-ueberlagerung .epos-knopf--primaer")[0].Click();
+    }
+
+    [Fact]
+    public void KT7_KatalogBrowser_wirft_die_Namenspruefung_beim_Neu_nennt_der_Dialog_den_Grund()
+    {
+        bool editor = false;
+        var cut = Render<KatalogBrowserDialog>(b => b
+            .Add(x => x.Art, KatalogBrowserArt.Heizkessel)
+            .Add(x => x.ProfilVorgabe, BrowserProfil())
+            .Add(x => x.Wege, BrowserWegeMit(existiert: _ => Wirft<bool>()))
+            .Add(x => x.EditorGaben, (_, _, _) => { editor = true; return new Dictionary<string, object>(); }));
+
+        NeuMitNamen(cut, "Kessel neu");
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+        Assert.False(editor);   // nie über einen ungeprüften Namen anlegen
+    }
+
+    [Fact]
+    public void KT7_KatalogBrowser_wirft_die_Namenspruefung_beim_Duplizieren_nennt_die_Abfrage_den_Grund()
+    {
+        var cut = Browser(BrowserWegeMit(existiert: _ => Wirft<bool>()));
+        ZeileWaehlen(cut);
+        Handlung(cut, R.ADM_BTN_DUPLIZIEREN).Click();
+        NamensabfrageOk(cut);
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+    }
+
+    [Fact]
+    public void KT7_KatalogBrowser_ohne_Ausnahme_hat_die_Namenspruefung_keinen_Grund()
+    {
+        var cut = Browser(BrowserWegeMit(existiert: _ => false));
+        NeuMitNamen(cut, "Kessel neu");
+
+        OhneSatzgrund(cut);
+    }
+
+    [Fact]
+    public void KT7_KatalogBrowser_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Browser(BrowserWegeMit(importGaben: () => Wirft<IReadOnlyDictionary<string, object>>()));
+        cut.Find(".epos-importknopf").Click();
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+    }
+
+    [Fact]
+    public void KT7_ModulKatalog_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Render<ModulKatalogDialog>(b => b
+            .Add(x => x.Art, ModulKatalogArt.Stromspeicher)
+            .Add(x => x.ProfilVorgabe, ModulProfil())
+            .Add(x => x.Wege, new ModulKatalogWege
+            {
+                Katalogzeilen = Eine,
+                Detail = ModulFelder,
+                KatalogImportGaben = () => Wirft<IReadOnlyDictionary<string, object>>()
+            }));
+        cut.Find(".epos-importknopf").Click();
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+        Assert.False(cut.Instance.ImportOffen);
+    }
+
+    [Fact]
+    public void KT7_WaermepumpeStamm_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        var cut = WpStamm();
+        cut.Render(p => p.Add(x => x.ImportGaben, () => Wirft<IReadOnlyDictionary<string, object>>()));
+        cut.Find(".epos-importknopf").Click();
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+        Assert.False(cut.Instance.ImportOffen);
+    }
+
+    [Fact]
+    public void KT7_Gebaeude_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Gebaeude();
+        cut.Render(p => p.Add(x => x.ImportGaben, () => Wirft<GebaeudeImportweg>()));
+        cut.Find(".epos-importknopf").Click();
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
     }
 }

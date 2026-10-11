@@ -97,6 +97,74 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1.37, KaeltemittelSchema.SAAT.Single(k => k.Code == "R1234ze(E)").Gwp);
         }
 
+        /// <summary>
+        /// KM4-E2-c: Jede Saatzeile ist am Volltext der Verordnung gesichert und trägt ihre Fundstelle (Anhang, Abschnitt,
+        /// Seite). Der Begriff F-Gas folgt aus Art. 2 Buchst. a (S. 16), nicht aus Art. 3 Nr. 1; R744 steht nicht in
+        /// Anhang VI und trägt GWP 1 aus der Begriffsbestimmung; die Gemische tragen Gemischregel und Massenanteile nach
+        /// ISO 817; R1233zd(E) ist ein HFCKW.
+        /// </summary>
+        [Fact]
+        public void Die_Saat_ist_gesichert_und_traegt_je_Zeile_die_Fundstelle()
+        {
+            Assert.Equal(DbWerte.GESETZ_STATUS_GESICHERT, KaeltemittelSchema.SAAT_STATUS);
+            Assert.All(KaeltemittelSchema.SAAT, k =>
+            {
+                Assert.StartsWith("VO (EU) 2024/573 ", k.GwpQuelle, StringComparison.Ordinal);
+                Assert.Matches(@"S\. \d\d", k.GwpQuelle);
+                Assert.Contains("Art. 2 Buchst. a", k.Quelle, StringComparison.Ordinal);
+                Assert.Contains("S. 16", k.Quelle, StringComparison.Ordinal);
+                Assert.DoesNotContain("Art. 3 Nr. 1", k.Quelle, StringComparison.Ordinal);
+                Assert.DoesNotContain("Rechtsrecherche", k.Quelle, StringComparison.Ordinal);
+                Assert.StartsWith(k.FGas ? (k.Gruppe == DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH ? "Massenanteile " : "F-Gas: ") : "Kein F-Gas: ",
+                                  k.Quelle, StringComparison.Ordinal);
+            });
+            string Gwpq(string code) => KaeltemittelSchema.SAAT.Single(k => k.Code == code).GwpQuelle;
+            Assert.Contains("Anh. I Abschn. 1, S. 65 (AR4)", Gwpq("R32"), StringComparison.Ordinal);
+            Assert.Contains("Anh. I Abschn. 1, S. 66 (AR4)", Gwpq("R134a"), StringComparison.Ordinal);
+            foreach (string c in new[] { "R1234ze(E)", "R1234yf", "R1233zd(E)" })
+                Assert.Contains("Anh. II Abschn. 1, S. 68 (AR6; Wert gilt für alle Isomere)", Gwpq(c), StringComparison.Ordinal);
+            foreach (string c in new[] { "R290", "R717" })
+                Assert.Contains("Anh. VI, S. 78", Gwpq(c), StringComparison.Ordinal);
+            foreach (string c in new[] { "R600a", "R1270" })
+                Assert.Contains("Anh. VI, S. 78; Fn. 3: WMO 2018, << 1", Gwpq(c), StringComparison.Ordinal);
+            Assert.Contains("Art. 3 Nr. 1, S. 16", Gwpq("R744"), StringComparison.Ordinal);
+            Assert.Contains("nicht in Anh. VI (dort Standard 0, S. 77)", Gwpq("R744"), StringComparison.Ordinal);
+            Assert.All(KaeltemittelSchema.SAAT.Where(k => k.Gruppe == DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH), k =>
+            {
+                Assert.Contains("Gemischregel Anh. VI, S. 77; Bestandteile Anh. I (AR4)", k.GwpQuelle, StringComparison.Ordinal);
+                Assert.Contains("nach der Kältemittelbezeichnung (ISO 817)", k.Quelle, StringComparison.Ordinal);
+            });
+            Assert.Equal(8, KaeltemittelSchema.SAAT.Count(k => k.Gruppe == DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH));
+            Assert.Equal(DbWerte.KAELTEMITTEL_GRUPPE_HFCKW, KaeltemittelSchema.SAAT.Single(k => k.Code == "R1233zd(E)").Gruppe);
+            Assert.Equal(new[] { "R1234ze(E)", "R1234yf" },
+                         KaeltemittelSchema.SAAT.Where(k => k.Gruppe == DbWerte.KAELTEMITTEL_GRUPPE_HFO).Select(k => k.Code));
+        }
+
+        /// <summary>Die Testdatenbank trägt die Saat Zelle für Zelle: Status, Gruppe, GWP, beide Quellen.</summary>
+        [Fact]
+        public void Die_Testkopie_traegt_die_gesicherte_Saat_Zelle_fuer_Zelle()
+        {
+            if (!_db.Vorhanden) return;
+            foreach (KaeltemittelSchema.Kaeltemittel k in KaeltemittelSchema.SAAT)
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Bezeichnung, Gruppe, GWP, GWP_Quelle, F_Gas, Natuerlich, PFAS_Status, Status, Quelle, Sortierung " +
+                    "FROM Tab_Kaeltemittel_STAMM WHERE Code = ? AND ReadOnly = 1", new DbParam("?", k.Code));
+                Assert.Equal(1, dt.Rows.Count);
+                DataRow r = dt.Rows[0];
+                Assert.Equal(k.Bezeichnung, Convert.ToString(r["Bezeichnung"], CultureInfo.InvariantCulture));
+                Assert.Equal(k.Gruppe, Convert.ToString(r["Gruppe"], CultureInfo.InvariantCulture));
+                Assert.Equal(k.Gwp, Convert.ToDouble(r["GWP"], CultureInfo.InvariantCulture));
+                Assert.Equal(k.GwpQuelle, Convert.ToString(r["GWP_Quelle"], CultureInfo.InvariantCulture));
+                Assert.Equal(k.FGas ? 1L : 0L, Convert.ToInt64(r["F_Gas"], CultureInfo.InvariantCulture));
+                Assert.Equal(k.Natuerlich ? 1L : 0L, Convert.ToInt64(r["Natuerlich"], CultureInfo.InvariantCulture));
+                Assert.Equal(k.PfasStatus, Convert.ToString(r["PFAS_Status"], CultureInfo.InvariantCulture));
+                Assert.Equal(KaeltemittelSchema.SAAT_STATUS, Convert.ToString(r["Status"], CultureInfo.InvariantCulture));
+                Assert.Equal(KaeltemittelSchema.QuelleDer(k), Convert.ToString(r["Quelle"], CultureInfo.InvariantCulture));
+                Assert.Equal((long)KaeltemittelSchema.SortierungDer(k), Convert.ToInt64(r["Sortierung"], CultureInfo.InvariantCulture));
+            }
+        }
+
         [Fact]
         public void Die_Pruefklauseln_halten_die_Grenzen()
         {
@@ -129,7 +197,7 @@ namespace EPOS.Kern.Tests
         //  Teil 2 - die Testdatenbank, die Zuordnung und die Rundreise
         // =============================================================================
 
-        /// <summary>Die Testkopie steht auf dem Schritt: Tabelle, achtzehn Codes VORLAEUFIG, Spalten leer bis auf die Zuordnung.</summary>
+        /// <summary>Die Testkopie steht auf dem Schritt: Tabelle, achtzehn Codes GESICHERT, Spalten leer bis auf die Zuordnung.</summary>
         [Fact]
         public void Die_Testkopie_fuehrt_Tabelle_Saat_und_Spalten()
         {
@@ -139,7 +207,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains("STRICT", Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE name = 'Tab_Kaeltemittel_STAMM'"), CultureInfo.InvariantCulture));
             Assert.Equal(18L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemittel_STAMM"));
-            Assert.Equal(18L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemittel_STAMM WHERE ReadOnly = 1 AND Status = 'VORLAEUFIG' " +
+            Assert.Equal(18L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemittel_STAMM WHERE ReadOnly = 1 AND Status = 'GESICHERT' " +
                                    "AND Sicherheitsgruppe IS NULL AND GWP IS NOT NULL AND GWP_Quelle IS NOT NULL " +
                                    "AND Katalog_Schluessel LIKE 'KMT:%' AND Katalog_Pruefsumme IS NOT NULL"));
             Assert.Equal("KMT:R1234ZE_E", Convert.ToString(DataRepository.ExecuteScalar(

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
@@ -380,6 +381,49 @@ public class WarnbannerTests : EposBunitContext
         int j = css.IndexOf(".epos-warnbanner > .epos-hinweisklappe-inhalt {", StringComparison.Ordinal);
         Assert.True(j >= 0, "Regel der Liste im Banner fehlt");
         Assert.Contains("order: 1", css.Substring(j, css.IndexOf('}', j) - j));
+    }
+
+    /// <summary>
+    /// <b>Die gemessene Höhe (scroll-padding-top im eigenen Fenster).</b> Jedes neu gezeichnete
+    /// Banner meldet sich genau einmal beim Höhenmodul (<see cref="Warnbanner.MODUL"/>,
+    /// <c>hoeheMelden</c> mit dem Banner selbst); ein neuer Text am stehenden Banner meldet nicht
+    /// noch einmal - die Höhe folgt der ResizeObserver im Modul. Ein ausgeblendetes und mit
+    /// neuem Text wieder gezeigtes Banner ist ein neues Element und meldet sich neu. Das
+    /// Stilblatt rechnet das Token im Polster des Fensters, mit einer Bannerzeile als Rückfall.
+    /// Lage und Tabulator misst <c>Proben/Rasterprobe/fensterprobe.mjs</c>, Fall „meldungsliste".
+    /// </summary>
+    [Fact]
+    public void Banner_meldet_seine_Hoehe_einmal_je_Element_dem_Modul()
+    {
+        var modul = JSInterop.SetupModule(Warnbanner.MODUL);
+        modul.SetupVoid("hoeheMelden", _ => true).SetVoidResult();
+
+        var cut = Render<Warnbanner>(p => p.Add(x => x.Text, "Erste Meldung"));
+        Assert.Single(modul.Invocations, i => i.Identifier == "hoeheMelden");
+
+        cut.Render(p => p.Add(x => x.Text, "Zweite Meldung"));
+        Assert.Single(modul.Invocations, i => i.Identifier == "hoeheMelden");
+
+        cut.Find(".epos-warnbanner-schliessen").Click();
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+        cut.Render(p => p.Add(x => x.Text, "Dritte Meldung"));
+        Assert.NotEmpty(cut.FindAll(".epos-warnbanner"));
+        Assert.Equal(2, modul.Invocations.Count(i => i.Identifier == "hoeheMelden"));
+
+        string css = StilblattLesen();
+        Assert.Contains("--epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + var("
+            + Warnbanner.TOKEN + ", calc(22px + 2 * var(--epos-rand))) + var(--epos-rand));", css);
+    }
+
+    /// <summary>Ohne Modul (Hülle ohne Skripte) steht das Banner trotzdem.</summary>
+    [Fact]
+    public void Ohne_Hoehenmodul_steht_das_Banner()
+    {
+        JSInterop.SetupModule(Warnbanner.MODUL).SetupVoid("hoeheMelden", _ => true).SetException(new InvalidOperationException("kein Modul"));
+
+        var cut = Render<Warnbanner>(p => p.Add(x => x.Text, "Meldung"));
+
+        Assert.Contains("Meldung", cut.Find(".epos-warnbanner-text").TextContent);
     }
 
     private static string StilblattLesen()

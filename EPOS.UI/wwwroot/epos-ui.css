@@ -2709,11 +2709,15 @@ html:has(> body > #app > .epos-fenstermarke) {
     }
 }
 
-/* Haftet ein Banner unter dem Kopf, rechnet das Polster oben seine Hoehe mit: eine
-   Textzeile (20 px) + Polster 2 x --epos-rand + Rahmen 2 px. Ein mehrzeiliges Banner
-   laesst entsprechend weniger Luft. */
+/* Haftet ein Banner unter dem Kopf, rechnet das Polster oben seine Hoehe mit. Die Hoehe
+   ist gemessen: Der Warnbanner meldet sie als --epos-meldung-hoehe (epos-warnbanner.js,
+   ResizeObserver) - ein umbrechender Text und vor allem die aufgeklappte Hinweisliste (bis
+   40 % der Fensterhoehe) machen ihn um ein Vielfaches hoeher als eine Zeile, und das
+   angesprungene Feld laege sonst unter ihm. Rueckfall ohne Messung: eine Textzeile
+   (20 px) + Polster 2 x --epos-rand + Rahmen 2 px. Gemessen: Fensterprobe, Fall
+   „meldungsliste". */
 html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner) {
-    --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + 22px + 3 * var(--epos-rand));
+    --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + var(--epos-meldung-hoehe, calc(22px + 2 * var(--epos-rand))) + var(--epos-rand));
 }
 
 /* WAS IN KOPF ODER FUSS DEN FOKUS BEKOMMT, STEHT SCHON IM BILD - dann gilt
@@ -9258,6 +9262,25 @@ table.epos-simerg-tabelle {
 
 .epos-startreiter-hinweis .epos-startseite-status {
     font-size: inherit;
+}
+
+/* Reiter „Kaeltebedarf“ (K4): der Sprung der Hinweiszeile in die Simulationskonfiguration
+   - ein Verweis in der Zeile, kein Knopf daneben (Form wie .epos-simerg-verweis). */
+.epos-startreiter-verweis {
+    border: 0;
+    background: none;
+    padding: 4px 0;
+    min-height: var(--epos-touchziel);
+    font: inherit;
+    font-weight: 400;
+    color: var(--epos-marke);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.epos-startreiter-verweis:hover,
+.epos-startreiter-verweis:focus-visible {
+    text-decoration-thickness: 2px;
 }
 
 .epos-startreiter-leiste {

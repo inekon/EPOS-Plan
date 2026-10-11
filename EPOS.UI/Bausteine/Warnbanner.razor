@@ -39,11 +39,13 @@
 @namespace EPOS.UI.Bausteine
 @using EPOS.UI.Dienste
 @using WindowsFormsApplication1
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
 @implements IDisposable
 
 @if (!_verfallen)
 {
-    <div class="@Klassen" role="alert">
+    <div class="@Klassen" role="alert" @ref="_wurzel">
         <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
         <span class="epos-warnbanner-text">@Text</span>
         @* DIE HINWEISLISTE (Anwenderbefund 10.10.2026: rund 25 Hinweise eines
@@ -326,8 +328,58 @@
 
     private Hinweisklappe? _klappe;
 
+    // =====================================================================
+    //  Die gemessene Hoehe (scroll-padding-top im eigenen Fenster)
+    // =====================================================================
+
+    /// <summary>Der Pfad des Moduls, das die Höhe eines Banners an der Dialogwurzel als Token meldet.</summary>
+    public const string MODUL = "./_content/EPOS.UI/epos-warnbanner.js";
+
+    /// <summary>Das Token, mit dem das Polster des Fensters (<c>scroll-padding-top</c>) rechnet.</summary>
+    public const string TOKEN = "--epos-meldung-hoehe";
+
+    private ElementReference _wurzel;
+    private string? _gemeldet;
+    private IJSObjectReference? _modul;
+
+    /// <summary>
+    /// Meldet jedes neu gezeichnete Banner dem Hoehenmodul (<see cref="MODUL"/>,
+    /// <c>hoeheMelden</c>): Steht es als unmittelbares Kind der Dialogwurzel, setzt ein
+    /// ResizeObserver seine Hoehe als Token <see cref="TOKEN"/>, und das Polster des
+    /// Fensters (<c>scroll-padding-top</c>) rechnet damit - das angesprungene Feld steht unter
+    /// dem Banner, auch mit aufgeklappter Hinweisliste. An jeder anderen Stelle meldet das
+    /// Modul nichts. Ohne Modul (Huelle ohne Skripte, Test) gilt der Rueckfall des
+    /// Stilblatts: eine Bannerzeile.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_verfallen || _wurzel.Id is null || _wurzel.Id == _gemeldet) return;
+        _gemeldet = _wurzel.Id;
+        try
+        {
+            _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            await _modul.InvokeVoidAsync("hoeheMelden", _wurzel);
+        }
+        catch (Exception)
+        {
+            // Ohne das Modul steht das Banner trotzdem; das Polster rechnet eine Zeile.
+        }
+    }
+
     /// <inheritdoc/>
-    public void Dispose() => Abbrechen();
+    public void Dispose()
+    {
+        Abbrechen();
+        IJSObjectReference? modul = _modul;
+        _modul = null;
+        if (modul is not null) _ = Freigeben(modul);
+    }
+
+    private static async Task Freigeben(IJSObjectReference modul)
+    {
+        try { await modul.DisposeAsync(); }
+        catch (Exception) { /* Die WebView ist schon weg. */ }
+    }
 
     private string Klasse => Stufe switch
     {

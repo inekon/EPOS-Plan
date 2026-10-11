@@ -66,6 +66,10 @@ namespace WindowsFormsApplication1
             {
                 KomponentenBestandCtrl.Eintrag e = bestand[k];
 
+                // Die zwei Kaeltebedarfe (K4) zaehlen nur fuer die Startseite: Der
+                // Projektassistent bekommt keine Kaelteseite (Konzept Kaeltebedarf 3.1).
+                if (k == KomponentenBestandCtrl.KAELTE_EXTERN || k == KomponentenBestandCtrl.KAELTEPROFIL) continue;
+
                 zeilen.Add(new KomponentenZeile
                 {
                     Kennung = k,

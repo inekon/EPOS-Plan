@@ -1316,8 +1316,14 @@
     {
         if (Ungespeichert) { Warnen(MeldungUngespeichert); return; }
         _vorImport = new HashSet<string>(_zeilen.Select(z => z.Bezeichner), StringComparer.Ordinal);
-        _modulImportGaben = Wege.ModulImportGaben?.Invoke();
-        _katalogImportGaben = _modulImportGaben is null ? Wege.KatalogImportGaben?.Invoke() : null;
+        // KT-7: Wirft die Hülle beim Bereitstellen des Imports, nennt das Warnband den Grund (Katalogladung.Satz).
+        string fehler = "";
+        _modulImportGaben = Wege.ModulImportGaben is null ? null
+            : Katalogladung.Satz(() => Wege.ModulImportGaben(), Profil.Titel, out fehler);
+        _katalogImportGaben = _modulImportGaben is null && fehler.Length == 0 && Wege.KatalogImportGaben is not null
+            ? Katalogladung.Satz(() => Wege.KatalogImportGaben(), Profil.Titel, out fehler)
+            : null;
+        if (fehler.Length > 0) Warnen(fehler);
     }
 
     /// <summary>

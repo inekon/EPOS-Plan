@@ -523,6 +523,8 @@ namespace WindowsFormsApplication1
             // KÜHLUNG (Stufe KU1, E21): die Kältefassade dockt an DASSELBE Kanalfeld an. Sie
             // bucht in der Gebäude- und der Lastgangschleife mit und schließt am Ende ab.
             Kaelteseite.Beginnen(_kanaele, KuehlbetriebProjekt);
+            // K3 (Konzept Kältebedarf 4.2): der EER der dezentralen Deckung hängt an derselben Außentemperatur.
+            Kaelteseite.Aussentemperatur = Stundentemperatur;
 
             // KU2 (Kühlkonzept 5.5): Hat das Projekt Kälteerzeuger angelegt, meldet erst die
             // Kältekaskade die Unterdeckung - mit Menge und Grund -, nicht schon der Bedarfslauf.
@@ -696,7 +698,8 @@ namespace WindowsFormsApplication1
                 // Energieprobe der Waermeseite und nicht in Waermebedarf_Extern (4.2).
                 if (Kanal.IstKaelte(kanal))
                 {
-                    Kaelteseite.GanglinieBuchen(ganglinie);
+                    // K3 (Konzept Kältebedarf 4.2): mit der Deckungsart der Zeile - zentral oder dezentral (Split).
+                    Kaelteseite.BedarfBuchen(ganglinie, Kaeltedeckung.AusLastgang(waectrl.items[n]), false);
                     continue;
                 }
 
@@ -733,6 +736,9 @@ namespace WindowsFormsApplication1
             //com.CSharp_I_vectoren_addieren(prozesswerte, Waermebedarf);
             WPPlan.Core.BhkwPlan.VectorenAddieren(prozesswerte, _kanaele.Prozess);
             for (int h = 0; h < 8760; h++) probe[h] += prozesswerte[h];
+
+            // K3 (Konzept Kältebedarf 4.1): Kältebedarfsprofile - je Zuordnungszeile mit ihrer Deckungsart an die Kältefassade.
+            Kaeltebedarf_berechnen();
 
             // Brauchwasserwärme
             Brauchwasserwaerme_berechnen();
@@ -1939,6 +1945,42 @@ namespace WindowsFormsApplication1
             // Stufe G1 (Umsetzungskonzept 1.2 Zeile 2): die ganze Zeilenliste bleibt für den
             // VDI-Weg stehen — Strahlung, Gegenstrahlung und die UTC-Herkunft je Zeile.
             _kalender.Gemeinsam.SolarOrtszeit = ctrldat.items.ToArray();
+        }
+
+        /// <summary>
+        /// <b>Kältebedarfsprofile im Lauf</b> (K3, Konzept Kältebedarf 4.1): <see cref="ProfilBedarf.Rechnen"/> mit
+        /// <see cref="ProfilQuelle.Kaelte"/> wie die Prozesswärme — Wochenprofil auf das Wochentagsraster der Klimaregion,
+        /// Betriebskalender, Monatsanteile, Normierung auf die Summe der Zeile —, und je gerechneter Zuordnungszeile die Reihe
+        /// mit ihrer Deckungsart an <see cref="SimulationKaeltebedarf.BedarfBuchen"/>. Ohne Zuordnungszeile (jedes
+        /// Referenzprojekt) keine Abfrage weiter und keine Meldung; ohne Kühlbetrieb nur gezählt.
+        /// </summary>
+        private void Kaeltebedarf_berechnen()
+        {
+            if (m_ID_Projekt <= 0 || !KaeltebedarfSchema.TabellenVorhanden()) return;
+            List<Z_ProjektKaeltebedarfModel> zeilen = Z_ProjektKaeltebedarfCtrl.LiesProjekt(m_ID_Projekt);
+            if (zeilen.Count == 0) return;
+            if (!KuehlbetriebProjekt)
+            {
+                Kaelteseite.ProfileZaehlen(zeilen.Count);
+                return;
+            }
+
+            var deckung = new Dictionary<int, Kaeltedeckung>();
+            foreach (Z_ProjektKaeltebedarfModel z in zeilen) deckung[z.ID_Z] = Kaeltedeckung.AusProfilzeile(z);
+            var info = new ProfilLaufInfo
+            {
+                JeZeile = (id, kopf, reihe) => Kaelteseite.BedarfBuchen(reihe,
+                    deckung.TryGetValue(id, out Kaeltedeckung d) ? d : Kaeltedeckung.Zentral, true)
+            };
+            try
+            {
+                ProfilBedarf.Rechnen(ProfilQuelle.Kaelte(ProfilQuellmodus.Projektrechnung), m_ID_Projekt, null,
+                                     WochentagJan1, mo_anfang, mo_ende, new double[8760], new double[12], info);
+            }
+            catch (SystemException ex)
+            {
+                SimulationProtokoll.Aktuell.Warnung(MyResource.Resource.SIMENG_PRAEFIX_KAELTE + ex.Message);
+            }
         }
 
         /// <summary>

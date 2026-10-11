@@ -496,6 +496,15 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.Kaeltebedarf_Gesamt = kaelte.Kaeltebedarf_Gesamt;
                 m.Energiebedarf.Kaeltelast_Max = kaelte.Kaeltebedarf_Max;
                 m.Energiebedarf.Kaelterestbedarf = kaelte.Kaelterestbedarf;
+                // K3 (Schritt 213, Konzept Kältebedarf 4.3): nur mit Wert - ohne Profil- bzw. Split-Zeile bleiben die Spalten NULL.
+                if (kaelte.MitProfil) m.Energiebedarf.KaeltebedarfProfilMwh = kaelte.Kaeltebedarf_Profil_Gesamt;
+                if (kaelte.MitDezentral)
+                {
+                    m.Energiebedarf.KaeltebedarfDezentralMwh = kaelte.Kaeltebedarf_Dezentral_Gesamt;
+                    m.Energiebedarf.KaelteDezentralSpitzeKw = kaelte.Kaelte_Dezentral_Max;
+                    m.Energiebedarf.StromDezentralMwh = kaelte.Strom_Dezentral_Gesamt;
+                    m.Energiebedarf.JahresEerDezentral = kaelte.Strom_Dezentral_Gesamt > 0 ? kaelte.Jahres_EER_Dezentral : (double?)null;
+                }
             }
 
             // ANLAGENKOPPLUNG (AK1; Anlagenkopplung 8.3): die drei Groessen des Waermeteils nur,

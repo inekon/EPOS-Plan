@@ -1256,6 +1256,13 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `aaaa17565a5454d892422cf4b1f1d60335d31ad1642ca78dad5a5b92714620db`**. Alle dreißig Projekte rechnen gegen R52
 > GESAMT PASS und byte-gleich (979/979 CSV)
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V7_Referenzprojekt_R52.md)).
+> **Nachtrag — Kältemittelzeilen gesichert (KM4‑E2‑c), Schema 216, Basis R52 unberührt.** Die achtzehn Zeilen von
+> `Tab_Kaeltemittel_STAMM` tragen die neue Saat von `KaeltemittelSchema`: `Status` `GESICHERT`, `GWP_Quelle` und `Quelle`
+> mit der Fundstelle in der Verordnung (EU) 2024/573, Gruppe von R1233zd(E) `HFCKW`; ihre Prüfsummen sind über
+> `KatalogSchluesselSaat` neu gestempelt. Der Zellvergleich gegen die Fassung davor (`55b1494c…`) zeigt nur diese
+> achtzehn Zeilen (Spalten `Status`, `Gruppe`, `GWP_Quelle`, `Quelle`, `Katalog_Pruefsumme`); die Prüfsummen der
+> Kältemaschinen und `Tab_Applikation` bleiben. `integrity_check` ok, `foreign_key_check` leer: **96 538 624 Byte,
+> LFS-SHA-256 `7b2094e0236fb9a17a49b6dfc5aebe714d6297ed62166fb35401a53d218e5d03`**. Kein Rechenweg liest die Zeilen.
 
 ### Die Vorgängerbasis R51 (freie Kühlung)
 

@@ -775,4 +775,53 @@ public class BhkwKatalogDialogTests : EposBunitContext
         cut.FindAll("input[type=text]")[1].Input("Anderes Werk");
         Assert.Equal(2, bilder);
     }
+
+    // =================================================================================
+    // KT-7: Wirft der Schreibweg, bleibt der Dialog offen und nennt den Grund
+    // =================================================================================
+
+    private const string KT7_GRUND = "Schreibweg gesperrt";
+
+    /// <summary>Führt <paramref name="handlung"/> aus und schreibt die Vermerke des Ausnahmeprotokolls mit.</summary>
+    private static List<string> Kt7Mitschreiben(Action handlung)
+    {
+        var vermerke = new List<string>();
+        void Mitschreiben(string z) { lock (vermerke) vermerke.Add(z); }
+        WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt += Mitschreiben;
+        try { handlung(); }
+        finally { WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt -= Mitschreiben; }
+        return vermerke;
+    }
+
+    /// <summary>Der Banner nennt <paramref name="vorlage"/> samt Grund, das Protokoll hat einen Vermerk.</summary>
+    private static void Kt7GrundSteht(IReadOnlyList<string> vermerke, string banner, string vorlage, string vermerk)
+    {
+        Assert.Contains(vorlage.Split('{')[0], banner);
+        Assert.Contains(KT7_GRUND, banner);
+        lock (vermerke) Assert.Contains(vermerke, v => v.StartsWith(vermerk, StringComparison.Ordinal) && v.Contains(KT7_GRUND));
+    }
+
+    [Fact]
+    public void KT7_wirft_das_Ueberschreiben_bleibt_der_Dialog_offen_und_nennt_den_Grund()
+    {
+        bool geschlossen = false;
+        IRenderedComponent<BhkwKatalogDialog>? cut = null;
+        List<string> vermerke = Kt7Mitschreiben(() =>
+        {
+            cut = Aufbauen(ueberschreiben: _ => throw new InvalidOperationException(KT7_GRUND),
+                           geschlossen: _ => geschlossen = true);
+            cut!.FindAll(".epos-leiste button")[^4].Click();
+        });
+
+        Assert.False(geschlossen);
+        string banner = string.Join("\n", cut!.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Kt7GrundSteht(vermerke, banner, WindowsFormsApplication1.MyResource.Resource.WURZEL_SCHREIBEN_FEHLER, "Katalogsatz");
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_schreibt_das_Ueberschreiben_keinen_Vermerk()
+    {
+        List<string> vermerke = Kt7Mitschreiben(() => Aufbauen().FindAll(".epos-leiste button")[^4].Click());
+        lock (vermerke) Assert.Empty(vermerke);
+    }
 }
