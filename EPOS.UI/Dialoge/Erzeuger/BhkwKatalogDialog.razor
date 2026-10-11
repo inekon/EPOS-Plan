@@ -255,6 +255,19 @@
     /// <summary>Legt einen neuen Satz an - zweiter Parameter ist der gewuenschte Name.</summary>
     [Parameter] public Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>? Anlegen { get; set; }
 
+    /// <summary>
+    /// KT-7: „Überschreiben" über die Fangstelle — wirft der Schreibweg, kommt die Ablehnung mit
+    /// Grund zurück (<c>WURZEL_SCHREIBEN_FEHLER</c>), der Dialog bleibt mit seinen Eingaben offen.
+    /// </summary>
+    private KatalogSpeicherErgebnis UeberschreibenGefangen()
+        => Katalogladung.Schreiben(() => Ueberschreiben!(Daten), Daten.Bezeichner,
+                                   g => new KatalogSpeicherErgebnis(false, g, Daten.Bezeichner));
+
+    /// <summary>KT-7: „Speichern"/„Speichern unter" über die Fangstelle, wie <see cref="UeberschreibenGefangen"/>.</summary>
+    private KatalogSpeicherErgebnis AnlegenGefangen(string name)
+        => Katalogladung.Schreiben(() => Anlegen!(Daten, name), name,
+                                   g => new KatalogSpeicherErgebnis(false, g, name));
+
     // OHNE "Co2Vorgabe" und "EmissionsVorgabe" seit dem 15.09.2026: Die zwei
     // Vorgabeknoepfe gehoerten zu den Gruppen BEHG und Emissionen, und die sind
     // ersatzlos entfallen. Ebenso ohne die Umrechnung der Investition - sie stand
@@ -579,7 +592,7 @@
             return;
         }
 
-        await NachDemSchreiben(Ueberschreiben(Daten));
+        await NachDemSchreiben(UeberschreibenGefangen());
     }
 
     private async Task BeiSpeichern()
@@ -594,7 +607,7 @@
             return;
         }
 
-        await NachDemSchreiben(Anlegen(Daten, Daten.Bezeichner));
+        await NachDemSchreiben(AnlegenGefangen(Daten.Bezeichner));
     }
 
     private async Task BeiSpeichernUnter(string? name)
@@ -603,7 +616,7 @@
         if (name is null || Anlegen is null) return;
         if (!EingabenPruefen()) return;
 
-        await NachDemSchreiben(Anlegen(Daten, name));
+        await NachDemSchreiben(AnlegenGefangen(name));
     }
 
     private async Task NachDemSchreiben(KatalogSpeicherErgebnis ergebnis)
@@ -668,8 +681,8 @@
             return KiKern.KiErgebnis.Abgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
 
         KatalogSpeicherErgebnis? ergebnis = Modus == KatalogModus.Bearbeiten
-            ? Ueberschreiben?.Invoke(Daten)
-            : Anlegen?.Invoke(Daten, Daten.Bezeichner);
+            ? (Ueberschreiben is null ? null : UeberschreibenGefangen())
+            : (Anlegen is null ? null : AnlegenGefangen(Daten.Bezeichner));
 
         if (ergebnis is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG

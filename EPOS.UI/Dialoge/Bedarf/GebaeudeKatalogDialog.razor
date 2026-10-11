@@ -102,6 +102,11 @@
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-7: Wirft das Lesen einer Klappliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
 
     @if (!string.IsNullOrEmpty(Vorbelegung))
     {
@@ -1108,6 +1113,17 @@
     private bool _ersterAufbau = true;
     private string _reiter = "";
     private string _meldung = "";
+
+    /// <summary>KT-7: der Grund, wenn das Lesen einer Klappliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>
+    /// KT-7: der Schreibweg der Hülle über die Fangstelle — wirft er, kommt die Ablehnung mit
+    /// Grund zurück (<c>WURZEL_SCHREIBEN_FEHLER</c>), der Dialog bleibt mit seinem Stand offen.
+    /// </summary>
+    private GebaeudeKatalogErgebnis SpeichernGefangen(bool istNeu, string bezeichner)
+        => Katalogladung.Schreiben(() => Speichern!(_stand, istNeu, bezeichner), bezeichner,
+                                   g => new GebaeudeKatalogErgebnis(false, g));
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
     /// <summary>
@@ -1508,7 +1524,9 @@
         ZonenuebernahmeDaten v;
         try
         {
-            v = await Zonen!.Uebernehmen!(_arbeit.Probestand());
+            // KT-7: Wirft der Vorschlag, kommt eine Ablehnung mit Grund zurück (Katalogladung.SchreibenAsync).
+            v = await Katalogladung.SchreibenAsync(() => Zonen!.Uebernehmen!(_arbeit.Probestand()), _ursprungsname,
+                g => new ZonenuebernahmeDaten(false, g, 0, null, 0, "", 0, false));
         }
         finally
         {
@@ -1710,8 +1728,10 @@
         // Eine Fehleingabe in der Matrix, die inneren Waermegewinne und der Kuehlsollwert haengen am
         // Reiter „Konditionierung" (E56 F3 (a)) - die Pruefung springt dorthin.
         _arbeit.IstKonditionierungsfeld = feld => _kond.IstMatrixfeld(feld) || feld == Feld(LabelMaxTemperatur);
-        _typen = Gebaeudetypen?.Invoke() ?? Array.Empty<string>();
-        _arten = Gebaeudearten?.Invoke() ?? Array.Empty<string>();
+        // KT-7: Wirft das Lesen einer Klappliste, bleibt sie leer und der Banner nennt den Grund.
+        _typen = Katalogladung.Lesen(Gebaeudetypen, LabelGebaeudetyp.TrimEnd(' ', ':'), out _listeFehler);
+        _arten = Katalogladung.Lesen(Gebaeudearten, LabelGebaeudeart.TrimEnd(' ', ':'), out string artenFehler);
+        if (_listeFehler.Length == 0) _listeFehler = artenFehler;
 
         StandSetzen(Daten ?? new GebaeudeKatalogDaten());
 
@@ -2033,7 +2053,7 @@
         if (Speichern is null) return true;
 
         Ableiten();
-        GebaeudeKatalogErgebnis ergebnis = Speichern(_stand, istNeu, bezeichner);
+        GebaeudeKatalogErgebnis ergebnis = SpeichernGefangen(istNeu, bezeichner);
         if (!ergebnis.Erfolg)
         {
             Melden(ergebnis.Meldung, WarnStufe.Warnung);
@@ -2108,7 +2128,10 @@
     private bool ZonenSchreiben(bool alleLuft = false)
     {
         if (!_arbeit.ZonenGeaendert || Zonen?.Speichern is null) return true;
-        ZonenSchreibergebnis erg = Zonen.Speichern(_arbeit.Zonenstand(!alleLuft)) ?? ZonenSchreibergebnis.Gut;
+        // KT-7: Wirft der Schreibweg der Zonen, nennt die Meldung den Grund.
+        ZonenSchreibergebnis erg = Katalogladung.Schreiben(
+            () => Zonen.Speichern(_arbeit.Zonenstand(!alleLuft)) ?? ZonenSchreibergebnis.Gut, _ursprungsname,
+            ZonenSchreibergebnis.Fehler);
         if (!erg.Ok)
         {
             Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, erg.Meldung), WarnStufe.Warnung);
@@ -2129,7 +2152,10 @@
     {
         if (!_arbeit.ZonenGeaendert && Zonen?.Neulesen is not null)
         {
-            ZonenNeulesung n = Zonen.Neulesen();
+            // KT-7: Wirft das Neulesen, bleibt der Dialog offen und die Meldung nennt den Grund.
+            string grund = "";
+            ZonenNeulesung? n = Katalogladung.Satz(() => Zonen.Neulesen(), _ursprungsname, out grund);
+            if (n is null) { Melden(grund, WarnStufe.Warnung); return false; }
             _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: true);
             return true;
         }
@@ -2165,7 +2191,7 @@
         string abdruck = _arbeit.Abdruck();
         if (abdruck != _abdruckGeschrieben)
         {
-            GebaeudeKatalogErgebnis e = Speichern(_stand, false, _ursprungsname);
+            GebaeudeKatalogErgebnis e = SpeichernGefangen(false, _ursprungsname);
             if (!e.Erfolg)
             {
                 Melden(e.Meldung, WarnStufe.Warnung);
@@ -2183,7 +2209,9 @@
             {
                 if (!b.IdAufbauStamm.HasValue) continue;   // schon mit einem gleichen Aufbau uebernommen
                 int stamm = b.IdAufbauStamm.Value;
-                AufbauUebernahmeErgebnis r = Zonen.AufbauUebernehmen(stamm);
+                // KT-7: Wirft die Übernahme, kommt die Ablehnung mit Grund zurück.
+                AufbauUebernahmeErgebnis r = Katalogladung.Schreiben(() => Zonen.AufbauUebernehmen(stamm), b.AufbauText,
+                                                                     g => new AufbauUebernahmeErgebnis(false, g, null));
                 if (!r.Ok || r.Wahl is null)
                 {
                     Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungAufbau, b.AufbauText, r.Meldung),
@@ -2257,7 +2285,7 @@
         if (Speichern is null) return;
 
         Ableiten();
-        GebaeudeKatalogErgebnis ergebnis = Speichern(_stand, true, _ursprungsname);
+        GebaeudeKatalogErgebnis ergebnis = SpeichernGefangen(true, _ursprungsname);
         if (!ergebnis.Erfolg)
         {
             Melden(ergebnis.Meldung, WarnStufe.Warnung);

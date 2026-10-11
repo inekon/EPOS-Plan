@@ -191,7 +191,11 @@ public sealed class Schlossumschaltung
         if (antwort != true || weg is null || ziele.Count == 0) return Schlossausgang.Nichts;
 
         bool gesperrt = !Aufheben;
-        SchlossErgebnis e = weg.Setzen(ziele.Select(z => z.Id).ToList(), gesperrt);
+        // KT-7: Wirft der Schlossweg (Datenbank), kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben):
+        // Warnband im Wirt, Vermerk im Ausnahmeprotokoll, nichts als geschrieben gezählt.
+        string satz = string.Join(", ", ziele.Select(z => z.Bezeichner));
+        SchlossErgebnis e = Katalogladung.Schreiben(() => weg.Setzen(ziele.Select(z => z.Id).ToList(), gesperrt),
+                                                    satz, g => new SchlossErgebnis(false, g));
         if (!e.Ok) return new Schlossausgang(false, "", e.Meldung ?? "");
 
         foreach (int id in e.Geaendert)

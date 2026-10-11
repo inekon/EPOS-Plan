@@ -534,6 +534,46 @@ public class SolarkollektorenDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// KT-7: Wirft der Übernahmeweg beim OK der Satz-Überlagerung, nennt der Banner den Grund, das
+    /// Protokoll hat einen Vermerk, die Überlagerung und der Dialog bleiben offen.
+    /// </summary>
+    [Fact]
+    public void KT7_wirft_die_Uebernahme_nennt_der_Banner_den_Grund_und_der_Dialog_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var zeile = Zeile(1, "Vitosol 200");
+        var cut = Aufbauen(new List<ErzeugerZeile> { zeile },
+                           uebernehmen: _ => throw new InvalidOperationException("Modell gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+
+        Satz(cut);
+        cut.FindAll(".epos-gruppenkopf-koerper")[0].QuerySelectorAll("input")[0].Input("6");
+        Ok(cut);
+
+        Assert.Contains("Modell gesperrt", cut.Markup);
+        Assert.True(vermerke.Enthaelt("Modell gesperrt"));
+        Assert.DoesNotContain("übernommen", string.Join("\n", cut.FindAll(".epos-warnbanner-text").Select(b => b.TextContent)));
+        Assert.NotEmpty(cut.FindAll(".epos-satzueberlagerung-koerper"));
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_hat_die_Uebernahme_keinen_Vermerk()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var zeile = Zeile(1, "Vitosol 200");
+        var cut = Aufbauen(new List<ErzeugerZeile> { zeile }, uebernehmen: _ => { });
+
+        Satz(cut);
+        cut.FindAll(".epos-gruppenkopf-koerper")[0].QuerySelectorAll("input")[0].Input("6");
+        Ok(cut);
+
+        Assert.DoesNotContain("wurde nicht gespeichert", cut.Markup);
+        Assert.True(vermerke.Leer);
+    }
+
+    /// <summary>
     /// Der Solarkreis (Welle M2): „Übernehmen" trägt Pumpe, Verluste, Arbeitstemperatur aus dem
     /// Speicher, Grädigkeit und Spreizung in die Zeile; Grädigkeit und Spreizung sind nur mit der
     /// Arbeitstemperatur aus dem Speicher frei.

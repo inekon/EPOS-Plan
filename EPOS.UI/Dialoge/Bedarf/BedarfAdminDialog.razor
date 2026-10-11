@@ -82,6 +82,16 @@
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-7: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-7: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.SatzDazu). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* --- STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): Liste
            links ueber die ganze Hoehe, rechts Auswahlleiste und STAMMBLATT. Bis
@@ -531,6 +541,12 @@
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
+    /// <summary>KT-7: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-7: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     private bool _loeschfrage;
     private string _loeschfrageText = "";
     private bool _namensfrage;
@@ -729,7 +745,9 @@
         foreach (string name in namen)
         {
             var felder = new List<Vergleichsfeld>();
-            foreach (Parameterwert p in Vergleichsparameter(name) ?? Array.Empty<Parameterwert>())
+            // KT-7: Wirft das Lesen eines Vergleichssatzes, nennt der Satzbanner den Grund.
+            foreach (Parameterwert p in Katalogladung.SatzDazu(() => Vergleichsparameter(name), name, ref _satzFehler)
+                                        ?? Array.Empty<Parameterwert>())
             {
                 string titel = p.Eintrag.Einheit.Length > 0
                     ? p.Eintrag.Anzeigetext + " [" + p.Eintrag.Einheit + "]"
@@ -789,9 +807,11 @@
         _filterstand = Filterstandvorgabe
             ?? Katalogfilterregister.Stand(Katalogprofil?.Schluessel ?? ("BEDARF_" + Art));
 
-        _typliste = Typen?.Invoke() ?? Array.Empty<string>();
+        // KT-7: Wirft das Lesen der Typliste, nennt der Listenbanner den Grund.
+        _typliste = Katalogladung.Lesen(Typen, TitelText, out string typFehler);
 
         KatalogLaden();
+        if (_listeFehler.Length == 0) _listeFehler = typFehler;
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaske, () => KiSicht(), KiHaken());
     }
@@ -936,7 +956,8 @@
     {
         if (Katalogzeilen is null) return;
 
-        _katalog = Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
+        // KT-7: Wirft das Lesen der Liste, bleibt sie leer und der Banner nennt den Grund.
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
 
         _geschuetzt = new HashSet<string>(_katalog.Where(z => z.Geschuetzt).Select(z => z.Bezeichner),
                                           StringComparer.Ordinal);
@@ -976,19 +997,26 @@
         _fokuszeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
         _auslieferung = _fokuszeile?.Geschuetzt == true;
 
-        _jahressumme = Jahressumme is not null ? Jahressumme(_gewaehlt) ?? "" : "";
+        // KT-7: Jahressumme, Kopf und Monatswerte lesen über die Fangstelle; wirft einer der
+        // Wege, nennt der Satzbanner den Grund, der Dialog bleibt bedienbar.
+        _satzFehler = "";
+        string gewaehlt = _gewaehlt;
+        _jahressumme = Jahressumme is not null
+            ? Katalogladung.SatzDazu(() => Jahressumme(gewaehlt), gewaehlt, ref _satzFehler) ?? ""
+            : "";
 
         // Woertlich: Der Vorlaeufer prueft rows > 0 und laesst die drei Felder sonst
         // UNVERAENDERT stehen.
-        (string Beschreibung, string Typ)? kopf = Kopf?.Invoke(_gewaehlt);
+        (string Beschreibung, string Typ)[]? kopf = Katalogladung.SatzDazu(
+            () => Kopf?.Invoke(gewaehlt) is { } k ? new[] { k } : null, gewaehlt, ref _satzFehler);
         if (kopf is not null)
         {
-            _beschreibung = kopf.Value.Beschreibung;
-            _typ = kopf.Value.Typ;
+            _beschreibung = kopf[0].Beschreibung;
+            _typ = kopf[0].Typ;
         }
 
         // Stufe 4: der Arbeitsstand beginnt beim gespeicherten Stand.
-        double[]? monate = Monatswerte?.Invoke(_gewaehlt);
+        double[]? monate = Katalogladung.SatzDazu(() => Monatswerte?.Invoke(gewaehlt), gewaehlt, ref _satzFehler);
         _monate = new double?[12];
         if (monate is not null)
             for (int m = 0; m < 12 && m < monate.Length; m++) _monate[m] = monate[m];
@@ -1113,10 +1141,14 @@
         string? fehler = null;
         foreach (string name in _loeschziele)
         {
-            BedarfLoeschAusgang ausgang = Loeschen(name);
+            // KT-7: Wirft das Löschen, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            string grund = "";
+            BedarfLoeschAusgang ausgang = Katalogladung.Loeschen(() => Loeschen(name), name,
+                g => { grund = g; return BedarfLoeschAusgang.Fehlgeschlagen; });
             if (ausgang == BedarfLoeschAusgang.Geloescht) { geloescht++; continue; }
-            fehler ??= ausgang == BedarfLoeschAusgang.Schreibgeschuetzt
-                ? MeldungSchreibgeschuetzt : MeldungLoeschfehler;
+            fehler ??= grund.Length > 0 ? grund
+                : ausgang == BedarfLoeschAusgang.Schreibgeschuetzt
+                    ? MeldungSchreibgeschuetzt : MeldungLoeschfehler;
         }
 
         int ziele = _loeschziele.Count + _loeschBleiben;
@@ -1169,7 +1201,9 @@
         Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _duplizierQuelle);
         if (zeile is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = Duplizieren(zeile.Id, name);
+        // KT-7: Wirft das Duplizieren, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Duplizieren(zeile.Id, name), name,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, name));
         if (!ergebnis.Ok)
         {
             Warnen(ergebnis.Meldung);
@@ -1247,7 +1281,9 @@
     {
         if (!ZeileGewaehlt || Vorschau is null) return;
         _meldung = "";
-        _ergebnisGaben = Vorschau(_gewaehlt);
+        // KT-7: Wirft die Vorschau, nennt der Satzbanner den Grund.
+        string gewaehlt = _gewaehlt;
+        _ergebnisGaben = Katalogladung.Satz(() => Vorschau(gewaehlt), gewaehlt, out _satzFehler);
     }
 
     // =====================================================================
@@ -1411,7 +1447,10 @@
         var werte = new double[12];
         for (int m = 0; m < 12; m++) werte[m] = _arbeitMonate[m] ?? _monate[m] ?? 0.0;
 
-        KatalogSpeicherErgebnis erg = Speichern(_gewaehlt, _arbeitTyp, _arbeitBeschreibung, werte);
+        // KT-7: Wirft der Schreibweg, bleiben die Felder stehen und die Meldung nennt den Grund.
+        KatalogSpeicherErgebnis erg = Katalogladung.Schreiben(
+            () => Speichern(_gewaehlt, _arbeitTyp, _arbeitBeschreibung, werte), _gewaehlt,
+            g => new KatalogSpeicherErgebnis(false, g, _gewaehlt));
         if (!erg.Ok)
         {
             SpeichernAbgelehnt(erg.Meldung);
