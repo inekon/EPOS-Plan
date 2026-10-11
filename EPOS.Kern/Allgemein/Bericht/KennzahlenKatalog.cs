@@ -782,11 +782,11 @@ namespace WindowsFormsApplication1
             // K-F2 (Entwurf Split/VRF/Rückkühlwerk 5.8, Katalog v19): nur Maschinen mit Rückkühlwerk; ohne sie null.
             {
                 Kennzahl R(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_RUECKKUEHLWERK; return k; }
-                l.Add(R(new Kennzahl(SCHLUESSEL_RK_VENTILATOR, "Strom Rückkühlwerke (Ventilator)",
-                    "Heat rejection fan electricity", "MWh/a", GR_KAELTE, "N2", true,
+                l.Add(R(new Kennzahl(SCHLUESSEL_RK_VENTILATOR, "Strom Rückkühlwerke (sensibel)",
+                    "Heat rejection electricity (sensible)", "MWh/a", GR_KAELTE, "N2", true,
                     v => RkSumme(v, k => k.Ventilatorstrom_MWh))));
-                l.Add(R(new Kennzahl(SCHLUESSEL_RK_WASSER, "Wasser Rückkühlwerke",
-                    "Heat rejection water use", "m³/a", GR_KAELTE, "N1", true,
+                l.Add(R(new Kennzahl(SCHLUESSEL_RK_WASSER, "Wasser Rückkühlwerke (sensibel)",
+                    "Heat rejection water use (sensible)", "m³/a", GR_KAELTE, "N1", true,
                     v => RkSumme(v, k => k.Wasser_m3))));
             }
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
