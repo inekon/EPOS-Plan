@@ -363,6 +363,18 @@
                         <Schalter Bezeichnung="@KuehlungSchalterText" Wert="@_satz.NeueProjekteMitKuehlung"
                                   WertChanged="@(w => _satz.NeueProjekteMitKuehlung = w)" />
                         <Herleitungszeile Text="@KuehlungHinweisText" />
+
+                        @* Die Vorbelegung des zulaessigen Sprungs zum Nutzungsbeginn neuer Projekte (Entwurf
+                           Vorheizrampe F14 (a); AH-V5): Art und Wert, leer = Vorgabe 20 %. Sie setzt allein den
+                           Anfangswert eines NEU angelegten Projekts; geschrieben mit OK ueber Dienste.Einstellungen. *@
+                        <Auswahlfeld Bezeichnung="@VorheizArtText" Eintraege="@VorheizArteintraege"
+                                     Auswahl="@((int)_satz.NeueProjekteVorheizToleranzArt)"
+                                     AuswahlChanged="@(i => { if (i is int a && Enum.IsDefined(typeof(Vorheiztoleranzart), a)) _satz.NeueProjekteVorheizToleranzArt = (Vorheiztoleranzart)a; })" />
+                        <Zahlenfeld Bezeichnung="@VorheizWertText" Wert="@_satz.NeueProjekteVorheizToleranz"
+                                    Einheit="@(_satz.NeueProjekteVorheizToleranzArt == Vorheiztoleranzart.Kilowatt ? "kW" : "%")"
+                                    Min="0" Platzhalter="@VorheizVorgabeText"
+                                    WertChanged="@(w => _satz.NeueProjekteVorheizToleranz = w)" />
+                        <Herleitungszeile Text="@VorheizHinweisText" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -608,6 +620,21 @@
     [Parameter] public string NeueProjekteTitelText { get; set; } = Resource.ADM_SET_GRUPPE_NEUE_PROJEKTE;
     [Parameter] public string KuehlungSchalterText { get; set; } = Resource.ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG;
     [Parameter] public string KuehlungHinweisText { get; set; } = Resource.ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG;
+    [Parameter] public string VorheizArtText { get; set; } = Resource.ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_ART;
+    [Parameter] public string VorheizWertText { get; set; } = Resource.ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_WERT;
+    [Parameter] public string VorheizHinweisText { get; set; } = Resource.ADM_SET_HINT_NEUE_PROJEKTE_VORHEIZ;
+
+    /// <summary>Die zwei Einheiten der Vorbelegung (Id = Wert des Aufzählungstyps).</summary>
+    private static IReadOnlyList<(int Id, string Text)> VorheizArteintraege => new[]
+    {
+        ((int)Vorheiztoleranzart.Prozent, Resource.SIMKONF_AUFH_TOLERANZ_PROZENT),
+        ((int)Vorheiztoleranzart.Kilowatt, Resource.SIMKONF_AUFH_TOLERANZ_KW)
+    };
+
+    /// <summary>Der Platzhalter der leeren Vorbelegung („Vorgabe 20 %“).</summary>
+    private static string VorheizVorgabeText
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_TOLERANZ_VORGABE,
+                         Vorheizvorgabe.TOLERANZ_VORGABE_PROZENT.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
     [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_AdminSettings.btn_Help";
@@ -1009,7 +1036,9 @@
             AllgemeinPfad = pfade?.AllgemeinPfad ?? "",
             DiagrammFarben = s?.DiagrammFarben ?? "",
             // Kein Pfad: kommt immer aus s - auch "Standardwerte" setzt ihn (auf aus).
-            NeueProjekteMitKuehlung = s?.NeueProjekteMitKuehlung ?? false
+            NeueProjekteMitKuehlung = s?.NeueProjekteMitKuehlung ?? false,
+            NeueProjekteVorheizToleranz = s?.NeueProjekteVorheizToleranz,
+            NeueProjekteVorheizToleranzArt = s?.NeueProjekteVorheizToleranzArt ?? Vorheiztoleranzart.Prozent
         };
 
         FarbenUebernehmen(_satz.DiagrammFarben);

@@ -1,6 +1,8 @@
-﻿using EPOS.UI.Dienste;
+﻿using System.Globalization;
+using EPOS.UI.Dienste;
 using KiKern;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Dialoge.Admin;
 
@@ -87,6 +89,44 @@ public sealed class EinstellungenKiSicht : IKiFeldtafel
     {
         get => Satz?.Invoke()?.NeueProjekteMitKuehlung ?? false;
         set => Schreiben(s => s.NeueProjekteMitKuehlung = value);
+    }
+
+    /// <summary>Die Einheit der Vorbelegung der Toleranz neuer Projekte (AH-V5): <c>PROZENT</c> (Vorgabe) oder <c>KW</c>.</summary>
+    public string NeueProjekteVorheizToleranzArt
+    {
+        get => Satz?.Invoke()?.NeueProjekteVorheizToleranzArt == Vorheiztoleranzart.Kilowatt
+            ? VorheizenSchema.TOLERANZ_KW : VorheizenSchema.TOLERANZ_PROZENT;
+        set
+        {
+            string t = (value ?? "").Trim();
+            Vorheiztoleranzart art = t.Length == 0 || string.Equals(t, VorheizenSchema.TOLERANZ_PROZENT, StringComparison.OrdinalIgnoreCase)
+                ? Vorheiztoleranzart.Prozent
+                : string.Equals(t, VorheizenSchema.TOLERANZ_KW, StringComparison.OrdinalIgnoreCase)
+                    ? Vorheiztoleranzart.Kilowatt
+                    : throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_AUFH_UNBEKANNT, t,
+                        VorheizenSchema.TOLERANZ_PROZENT + ", " + VorheizenSchema.TOLERANZ_KW));
+            Schreiben(s => s.NeueProjekteVorheizToleranzArt = art);
+        }
+    }
+
+    /// <summary>Die zwei Einheiten mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> NeueProjekteVorheizToleranzArtWahl => new[]
+    {
+        new KiWahleintrag(VorheizenSchema.TOLERANZ_PROZENT, Resource.SIMKONF_AUFH_TOLERANZ_PROZENT),
+        new KiWahleintrag(VorheizenSchema.TOLERANZ_KW, Resource.SIMKONF_AUFH_TOLERANZ_KW)
+    };
+
+    /// <summary>Die Vorbelegung der Toleranz neuer Projekte, ≥ 0; <c>null</c> = Vorgabe 20 %.</summary>
+    public double? NeueProjekteVorheizToleranz
+    {
+        get => Satz?.Invoke()?.NeueProjekteVorheizToleranz;
+        set
+        {
+            if (value is double w && (double.IsNaN(w) || double.IsInfinity(w) || w < 0.0))
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resource.KI_FELD_BEREICH,
+                    Resource.ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_WERT, w.ToString(CultureInfo.CurrentCulture), "≥ 0"));
+            Schreiben(s => s.NeueProjekteVorheizToleranz = value);
+        }
     }
 
     private void Schreiben(Action<Einstellungensatz> weg)

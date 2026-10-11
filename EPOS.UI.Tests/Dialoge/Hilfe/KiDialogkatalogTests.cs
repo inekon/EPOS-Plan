@@ -947,7 +947,8 @@ public class KiDialogkatalogTests : IDisposable
         // der Rubrik „Bericht", BV-E2 (Entscheid BV-E2-1) das Logo, dazu die zwei Vorgaben der
         // Installation als Wahlfelder und je Farbrolle ein Feld.
         var rollen = WindowsFormsApplication1.Zeichnung.Diagrammfarben.Rollen;
-        Assert.Equal(11 + rollen.Count, d.Felder.Count);
+        // AH-V5: dazu die Vorbelegung der Vorheiztoleranz (Einheit und Wert).
+        Assert.Equal(13 + rollen.Count, d.Felder.Count);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtFirma", d.FindeFeld("bericht_firma")!.Eigenschaftspfad);
         Assert.Equal(KiDialoge.EINSTELLUNGEN_SICHT + ".BerichtVorlagenordner",
                      d.FindeFeld("bericht_vorlagenordner")!.Eigenschaftspfad);

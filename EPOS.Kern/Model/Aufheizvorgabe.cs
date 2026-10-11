@@ -63,6 +63,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Vorheizvorgabe Vorheizen { get; init; } = Vorheizvorgabe.Sollwertrampe;
 
+        /// <summary>Dieselbe Einstellung mit anderem Vorheizen (AH-V5); <c>null</c> = die Sollwertrampe.</summary>
+        public Aufheizvorgabe MitVorheizen(Vorheizvorgabe vorheizen)
+            => this with { Vorheizen = vorheizen ?? Vorheizvorgabe.Sollwertrampe };
+
         /// <summary>Der Projektschalter (<c>Tab_Einstellungen.Aufheizoptimierung</c>).</summary>
         public bool An { get; }
 
