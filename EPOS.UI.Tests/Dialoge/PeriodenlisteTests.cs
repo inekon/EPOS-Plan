@@ -144,8 +144,8 @@ public class PeriodenlisteTests : EposBunitContext
         Assert.Contains("Erst Name", _verweigert.Single());
 
         Feld(cut, "Name").Input("Inventur");
-        Feld(cut, "Von").Input("01.06.");
-        Feld(cut, "Bis").Input("03.06.");
+        Feld(cut, "Von").Change("01.06.");
+        Feld(cut, "Bis").Change("03.06.");
         Feld(cut, "Wert").Input("12");
         cut.Find("button.epos-kond-periode-uebernehmen").Click();
 
@@ -228,8 +228,8 @@ public class PeriodenlisteTests : EposBunitContext
         IElement form = cut.Find("section.epos-kond-karte-einzelheiten[data-groesse='0'] .epos-kond-periode-form");
         form.QuerySelectorAll("label.epos-feld").Single(l => l.QuerySelector(".epos-feld-text")!.TextContent.Trim() == "Name")
             .QuerySelector("input")!.Input("Betriebsruhe");
-        Formfeld(cut, "Von").Input("27.12.");
-        Formfeld(cut, "Bis").Input("31.12.");
+        Formfeld(cut, "Von").Change("27.12.");
+        Formfeld(cut, "Bis").Change("31.12.");
         Formfeld(cut, "Wert").Input("12");
         cut.Find("section.epos-kond-karte-einzelheiten[data-groesse='0'] button.epos-kond-periode-uebernehmen").Click();
 

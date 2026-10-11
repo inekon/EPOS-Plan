@@ -129,9 +129,11 @@
                     else
                     {
                         <Gemeinjahrdatum Bezeichnung="@Texte.SpalteVon" Meldung="@Texte.MeldungGemeinjahr" Wert="@_form.Von"
-                                         WertChanged="w => _form.Von = w" />
+                                         Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr"
+                                         Platzhalter="@Texte.PlatzhalterDatumBeginn" WertChanged="w => _form.Von = w" />
                         <Gemeinjahrdatum Bezeichnung="@Texte.SpalteBis" Meldung="@Texte.MeldungGemeinjahr" Wert="@_form.Bis"
-                                         WertChanged="w => _form.Bis = w" />
+                                         Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr"
+                                         Platzhalter="@Texte.PlatzhalterDatumEnde" WertChanged="w => _form.Bis = w" />
                     }
                     <Auswahlfeld Bezeichnung="@Texte.LabelAngabe" Eintraege="@Angaben" Auswahl="@((int)_form.Angabe)"
                                  AuswahlChanged="w => _form.Angabe = (KonditionierungAngabe)(w ?? 0)" />
