@@ -429,6 +429,12 @@
     /// </summary>
     [Parameter] public int Vorwahl { get; set; }
 
+    /// <summary>
+    /// AW3b: der Editor geht im Modus Neu auf — „Neu…" der Knopfleiste am Satz im Anlagendialog legt immer einen
+    /// Katalogsatz an.
+    /// </summary>
+    [Parameter] public bool NeuBeimStart { get; set; }
+
     /// <summary>Die Anzeigetexte (ein Bündel).</summary>
     [Parameter] public KaeltemaschineKatalogTexte Texte { get; set; } = new();
 
@@ -587,6 +593,7 @@
         // KT-2/KT-3: Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - Katalogladung fängt
         // am Rand, der eigene Banner nennt den Grund, das Ausnahmeprotokoll trägt den Vermerk.
         ListeLaden(Vorwahl > 0 ? Vorwahl.ToString(CultureInfo.InvariantCulture) : null);
+        if (NeuBeimStart) BeiNeu();
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KAELTEMASCHINE_KATALOG, () => KiSicht(), KiHaken());
     }

@@ -157,7 +157,7 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         var p = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste");
         Assert.Contains(R.KMA_SUMME, p.TextContent);
         Assert.Contains("200", p.QuerySelector(".epos-zweispalten-summe")!.TextContent);       // 2 × 100 kW
-        Assert.NotNull(p.QuerySelector(".epos-knopf--bearbeiten-projekt"));
+        Assert.Null(p.QuerySelector(".epos-knopf--bearbeiten-projekt"));                       // AW3b: nur am Satz
         Assert.NotNull(p.QuerySelector(".epos-zweispalten-knopf--entfernen"));
         Assert.DoesNotContain(cut.FindAll("button"), k => k.TextContent.Contains("Datenbank übernehmen"));
 
@@ -167,7 +167,8 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         Assert.Equal(2, Zeilenklick.Zeilen(cut).Count);
         Assert.NotNull(cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-zweispalten-knopf--uebernehmen"));
 
-        string fuss = cut.Find(".epos-zweispalten-fussleiste").TextContent;
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));                               // AW3b: Knopfleiste am Satz
+        string fuss = cut.Find(".epos-zweispalten-satzknoepfe").TextContent;
         foreach (string knopf in new[] { R.AUSWAHL_BTN_VERGLEICHEN, R.KMA_BTN_LOESCHEN, R.AUSWAHL_BTN_BEARBEITEN, R.KM_BTN_TYPKENNFELDER, R.KM_ANL_BTN_VERWALTUNG })
             Assert.Contains(knopf, fuss);
         Assert.Empty(cut.FindAll(".epos-ueberlagerung--offen .epos-katalogliste"));             // keine Katalogüberlagerung mehr
@@ -367,7 +368,7 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         var p = new Projekt();
         var cut = Aufbauen(this, p);
         Zeilenklick.Zeile(cut, 1);
-        cut.Find(".epos-zweispalten-fussleiste .epos-knopf--loeschen").Click();
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--loeschen").Click();
         Assert.True(cut.Instance.Loeschfrage);
         Assert.Contains("„Kältemaschine 200 kW“", cut.Find(".epos-rueckfrage").TextContent);
         cut.Find(".epos-rueckfrage").QuerySelectorAll(".epos-knopf").First(b => b.TextContent.Trim() == R.ALLG_BTN_JA).Click();
@@ -377,7 +378,7 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         var zwei = Aufbauen(this, q);
         Zeilenklick.Zeile(zwei, 1);
         q.Wurf = "gesperrt im Kern";
-        zwei.Find(".epos-zweispalten-fussleiste .epos-knopf--loeschen").Click();
+        zwei.Find(".epos-zweispalten-satzknoepfe .epos-knopf--loeschen").Click();
         zwei.Find(".epos-rueckfrage").QuerySelectorAll(".epos-knopf").First(b => b.TextContent.Trim() == R.ALLG_BTN_JA).Click();
         Assert.Contains("gesperrt im Kern", zwei.Markup);
     }
