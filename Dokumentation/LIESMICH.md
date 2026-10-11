@@ -374,6 +374,7 @@ ihrem Ladeort hängen:
 |---|---|
 | [`../CLAUDE.md`](../CLAUDE.md), [`../EPOS.Kern/CLAUDE.md`](../EPOS.Kern/CLAUDE.md), [`../EPOS.UI/CLAUDE.md`](../EPOS.UI/CLAUDE.md), [`../EPOS.iOS/CLAUDE.md`](../EPOS.iOS/CLAUDE.md), [`../WindowsFormsApplication1/CLAUDE.md`](../WindowsFormsApplication1/CLAUDE.md) | Claude Code lädt sie **an ihrem Ort** — das ist die Voraussetzung dafür, dass die Dokumentation „nach wie vor für Claude genutzt" wird |
 | [`../README.md`](../README.md) | Startseite des Repositoriums auf GitHub |
+| [`../Quellen/LIESMICH.md`](../Quellen/LIESMICH.md) | beschreibt die HottCAD-IFC-Testdateien im selben Ordner (Testmaterial, nicht ausgeliefert) |
 | [`../Referenzlaeufe/LIESMICH.md`](../Referenzlaeufe/LIESMICH.md) | beschreibt die Regressionsbasen im selben Ordner und wird bei jedem Einfrieren fortgeschrieben |
 | [`../Proben/Rasterprobe/LIESMICH.md`](../Proben/Rasterprobe/LIESMICH.md), [`../Proben/SvgProbe/LIESMICH.md`](../Proben/SvgProbe/LIESMICH.md), [`../Werkzeuge/Formularkarte/LIESMICH.md`](../Werkzeuge/Formularkarte/LIESMICH.md), [`../Werkzeuge/SqlDialektPruefer/LIESMICH.md`](../Werkzeuge/SqlDialektPruefer/LIESMICH.md) | Bedienungsanleitung des Werkzeugs daneben; `Formularkarte.Tests` liest ihre Datei sogar als Prüfmuster |
 | [`../sql/LIESMICH.md`](../sql/LIESMICH.md), [`../sql/pv_katalog/LIESMICH.md`](../sql/pv_katalog/LIESMICH.md) | erklären die Skripte und Schemadateien ihres Ordners |

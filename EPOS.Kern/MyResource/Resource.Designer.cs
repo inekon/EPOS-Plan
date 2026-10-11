@@ -106217,7 +106217,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit berechnet: {0} h aus dem größten Bedarf des Jahres (Median der Nutzungsbeginne {1} h); sie gilt an jedem Nutzungsbeginn. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit berechnet: {0} h — sie reicht für {2} % der erreichbaren Nutzungsbeginne (Median {1} h, größter Bedarf {3} h, {4} Nutzungsbeginne bräuchten mehr); sie gilt an jedem Nutzungsbeginn. Unerreichbare Nutzungsbeginne gehen nicht ein. ähnelt.
         /// </summary>
         public static string SIMENG_VORH_BERECHNET {
             get {
@@ -106276,6 +106276,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_VORH_RUECKFALL_OHNE_ZEIT {
             get {
                 return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_OHNE_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Vorheizfenster liegt an {0} Tagen in einer Sperrzeit der Anlage ({1} Uhr, {2} Fensterstunden ohne verfügbare Wärme); vorheizen können nur die Stunden {3} Uhr. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Vorheizfenster liegt an {0} Tagen ganz in einer Sperrzeit der Anlage ({1} Uhr, {2} Fensterstunden ohne verfügbare Wärme); dort kann nicht vorgeheizt werden. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_SPERRZEIT_GANZ {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_SPERRZEIT_GANZ", resourceCulture);
             }
         }
         

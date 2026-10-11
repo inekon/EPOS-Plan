@@ -30,7 +30,7 @@ Der Bericht einer Vergleichsgruppe entsteht als Word-Dokument, als Excel-Arbeits
 == Datenaustausch in der Gegenrichtung ==
 {{Anker|datenaustausch-in-der-gegenrichtung|import}}
 
-{{Hinweis|Herstellerdaten für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren können nach VDI 3805 eingelesen werden, PV-Module, Wechselrichter und Stromspeicher aus der CEC-Liste und weiteren Formaten; Klimadaten werden online bezogen, Gebäude aus gbXML-, IFC- und Projektdateien und Lastgänge für Wärme und Strom importiert. Diese Wege beschreibt die Seite [[Stammdaten und Datenimport]].}}
+{{Hinweis|Herstellerdaten für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren können nach VDI 3805 eingelesen werden, PV-Module, Wechselrichter und Stromspeicher aus der CEC-Liste und weiteren Formaten; Klimadaten werden online bezogen, Gebäude aus gbXML- und IFC-Dateien und Lastgänge für Wärme und Strom importiert. Diese Wege beschreibt die Seite [[Stammdaten und Datenimport]].}}
 
 == Siehe auch ==
 {{Anker|siehe-auch}}

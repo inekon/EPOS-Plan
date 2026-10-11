@@ -96,6 +96,26 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Tage, an denen der Lauf verfehlt, was die Vorausschau als erreichbar sah (Nachbarn, Kreis; V3a).</summary>
         internal bool[] TageAbweichung { get; init; } = new bool[365];
+
+        /// <summary>Option 2: die Tage mit einem erreichbaren Sprung, dessen Bedarf t_nötig über t_V liegt (F19, V3c) —
+        /// „Vorheizzeit reicht nicht, nötig wären bis … h“.</summary>
+        internal bool[] TageUeberVorheizzeit { get; init; } = new bool[365];
+
+        /// <summary>Option 2: die größte Unterschreitung im Block an den Sprüngen über t_V [K] (F19, V3c).</summary>
+        internal double UnterschreitungUeberVorheizzeitK { get; init; }
+
+        /// <summary>Die Tage (Tag der Sprungstunde), an denen eine Stunde des Vorheizfensters ohne verfügbare Wärme in einer
+        /// Sperrzeit liegt (F20, V3c; <see cref="Vorheizplanung.FensterstundeGesperrt"/>).</summary>
+        internal bool[] TageSperrzeit { get; init; } = new bool[365];
+
+        /// <summary>Die Uhrzeiten (Stunde des Tags, 24) der gesperrten Fensterstunden (F20).</summary>
+        internal bool[] SperrUhr { get; init; } = new bool[24];
+
+        /// <summary>Die Uhrzeiten der Fensterstunden mit verfügbarer Wärme an den Sprüngen mit Sperre (F20).</summary>
+        internal bool[] FreiUhr { get; init; } = new bool[24];
+
+        /// <summary>Die gesperrten Fensterstunden des Jahres (F20).</summary>
+        internal int FensterstundenGesperrt { get; init; }
     }
 
     /// <summary>
@@ -110,11 +130,18 @@ namespace WindowsFormsApplication1
         /// <summary>Das Verfahren (Vorgabe oder Berechnet).</summary>
         internal Aufheizverfahren Verfahren { get; init; } = Aufheizverfahren.Vorgabe;
 
-        /// <summary>Option 2: das Maximum von t_nötig der Zone selbst [h] (vor dem Maximum über die Zonen); 0 = keines.</summary>
+        /// <summary>Option 2: t_nötig,max — das Maximum von t_nötig über die erreichbaren Sprünge der Zone selbst [h] (F18, V3c;
+        /// vor dem Maximum über die Zonen); 0 = keines.</summary>
         internal int BedarfMaxH { get; init; }
 
-        /// <summary>Option 2: die Zahl der unerreichbaren Sprünge der Zone.</summary>
+        /// <summary>Option 2: das 95-%-Quantil von t_nötig über die erreichbaren Sprünge der Zone selbst [h] (F19, V3c); 0 = keines.</summary>
+        internal int BedarfQuantilH { get; init; }
+
+        /// <summary>Option 2: die Zahl der unerreichbaren Sprünge der Zone (gezählt, nicht bemessen, F18).</summary>
         internal int SpruengeUnerreichbar { get; init; }
+
+        /// <summary>Option 2: die erreichbaren Sprünge der Zone, deren Bedarf t_nötig über t_V liegt (F19, V3c).</summary>
+        internal int SpruengeUeberVorheizzeit { get; init; }
 
         /// <summary>Geltung Gebäude: die Zone hat keine Auslegungsheizlast und bleibt ohne Deckel (2.7).</summary>
         internal bool OhneAuslegungsheizlast { get; init; }
@@ -240,11 +267,33 @@ namespace WindowsFormsApplication1
         /// <summary>Rechnet das Gebäude Option 2 (t_V berechnet)?</summary>
         internal bool Berechnet { get; init; }
 
-        /// <summary>Der größte Bedarf t_nötig [h] (Option 1: der Tage ohne Ankunft; Option 2: = t_V); 0 = keiner.</summary>
+        /// <summary>Der größte Bedarf t_nötig [h] (Option 1: der Tage ohne Ankunft; Option 2: t_nötig,max der erreichbaren
+        /// Sprünge, F19); 0 = keiner.</summary>
         internal int BedarfMaxH { get; init; }
 
-        /// <summary>Der Median von t_nötig über die Sprünge mit Bedarf [h] (Option 2); NaN = keiner.</summary>
+        /// <summary>Der Median von t_nötig über die erreichbaren Sprünge mit Bedarf [h] (Option 2, F18); NaN = keiner.</summary>
         internal double BedarfMedianH { get; init; } = double.NaN;
+
+        /// <summary>Option 2: Σ der erreichbaren Sprünge mit t_nötig über t_V (F19).</summary>
+        internal int SpruengeUeberVorheizzeit { get; init; }
+
+        /// <summary>Option 2: die Tage mit einem Sprung über t_V (Vereinigung der Zonen, F19).</summary>
+        internal int TageUeberVorheizzeit { get; init; }
+
+        /// <summary>Option 2: die größte Unterschreitung an den Sprüngen über t_V [K] (F19).</summary>
+        internal double UnterschreitungUeberVorheizzeitK { get; init; }
+
+        /// <summary>Die Tage mit einer gesperrten Fensterstunde (Vereinigung der Zonen, F20).</summary>
+        internal int TageSperrzeit { get; init; }
+
+        /// <summary>Die Uhrzeiten der gesperrten Fensterstunden (Vereinigung der Zonen, F20).</summary>
+        internal bool[] SperrUhr { get; init; } = new bool[24];
+
+        /// <summary>Die Uhrzeiten der freien Fensterstunden an den Sprüngen mit Sperre (Vereinigung der Zonen, F20).</summary>
+        internal bool[] FreiUhr { get; init; } = new bool[24];
+
+        /// <summary>Σ gesperrte Fensterstunden der Zonen (F20).</summary>
+        internal int FensterstundenGesperrt { get; init; }
 
         /// <summary>Die Tage mit einem unerreichbaren Sprung (Vereinigung der Zonen).</summary>
         internal int TageUnerreichbar { get; init; }
@@ -333,7 +382,12 @@ namespace WindowsFormsApplication1
                                         Vorheizankunftsbezug bezug = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE)
             => Vorausschau = new Vorheizvorausschau(zone, Zone.Soll, Vorlauf, alle, VorheizleistungW, DeckelW, genauigkeitK, bezug);
 
-        /// <summary>Das Maximum des Bedarfs über die erreichbaren Sprünge [h] (V3b; 0 ohne erreichbaren Sprung).</summary>
+        /// <summary>Das 95-%-Quantil des Bedarfs über die erreichbaren Sprünge [h] (F19, <see cref="Vorheizplanung.Quantil"/>;
+        /// 0 ohne erreichbaren Sprung).</summary>
+        internal int BedarfQuantilH
+            => Bedarf == null ? 0 : Vorheizplanung.Quantil(Bedarf.Where((b, i) => !Unerreichbar[i] && b > 0), Vorheizplanung.BEDARF_QUANTIL_PROZENT);
+
+        /// <summary>t_nötig,max: das Maximum des Bedarfs über die erreichbaren Sprünge [h] (V3b, F18; 0 ohne erreichbaren Sprung).</summary>
         internal int BedarfMaxErreichbarH
         {
             get
@@ -375,8 +429,8 @@ namespace WindowsFormsApplication1
     /// aus „aus“ bekommen kein Fenster (W4). Die Ankunft rechnet über <see cref="Rechenrand"/>.</para>
     ///
     /// <para><b>Option 2 und Geltung Gebäude (V3a).</b> Je Sprung bestimmt die <see cref="Vorheizvorausschau"/> den Bedarf
-    /// t_nötig durch Bisektion; t_V ist das Jahresmaximum (fest an jedem Sprung, F13 (a)), mit Geltung Gebäude das Maximum über
-    /// die Zonen. Geltung Gebäude teilt den Deckel des Gebäudes nach Φ_HL auf die Zonen (<see cref="GebaeudedeckelVerteilen"/>).
+    /// t_nötig durch Bisektion; t_V ist das 95-%-Quantil über die erreichbaren Sprünge (fest an jedem Sprung, F13 (a), F19 (b)),
+    /// mit Geltung Gebäude das Maximum der Zonenquantile; unerreichbare Sprünge werden nur gezählt (F18 (b)). Geltung Gebäude teilt den Deckel des Gebäudes nach Φ_HL auf die Zonen (<see cref="GebaeudedeckelVerteilen"/>).
     /// Option 1 bestimmt den Bedarf nur an den Tagen, die der Lauf verfehlt.</para>
     /// </summary>
     internal static class Vorheizplanung
@@ -385,6 +439,58 @@ namespace WindowsFormsApplication1
 
         /// <summary>Das längste Fenster [h] (2.1).</summary>
         internal const int FENSTER_MAX_H = Vorheizvorgabe.VORHEIZZEIT_MAX_H;
+
+        /// <summary>Der Anteil der erreichbaren Sprünge, den t_V der Option 2 abdeckt [%] (F19 (b), Anwenderentscheid 11.10.2026,
+        /// E125) — Kern-Konstante, nicht einstellbar.</summary>
+        internal const int BEDARF_QUANTIL_PROZENT = 95;
+
+        /// <summary>
+        /// <b>Das Quantil des Bedarfs</b> (F19): das kleinste t aus <paramref name="bedarfe"/>, das mindestens
+        /// <paramref name="prozent"/> % der Werte abdeckt — der Wert an Rang ⌈p·n/100⌉ der aufsteigend sortierten Liste (ganzzahlig,
+        /// ohne Interpolation). Unter 20 Sprüngen ist das bei 95 % das Maximum. 0 = keine Werte.
+        /// </summary>
+        internal static int Quantil(IEnumerable<int> bedarfe, int prozent)
+        {
+            if (bedarfe == null) throw new ArgumentNullException(nameof(bedarfe));
+            if (prozent < 1 || prozent > 100) throw new ArgumentOutOfRangeException(nameof(prozent));
+            List<int> liste = bedarfe.ToList();
+            if (liste.Count == 0) return 0;
+            liste.Sort();
+            int rang = (prozent * liste.Count + 99) / 100;
+            return liste[Math.Max(1, rang) - 1];
+        }
+
+        /// <summary>
+        /// <b>Eine Fensterstunde ohne verfügbare Wärme</b> (F20 (a)): Die Schranke der Anlagenverfügbarkeit (AK2), die Vorlauf,
+        /// Vorausschau und Lauf schon tragen, lässt in der Stunde keine Leistung zu, und ihr Grund ist ein Fahrplangrund (Sperrzeit,
+        /// Zeitprogramm, Speicher leer). Ohne wirksame Schranke: nie.
+        /// </summary>
+        internal static bool FensterstundeGesperrt(GebaeudeModellEingang e, int h)
+        {
+            if (e == null || !e.FahrplanWirksam) return false;
+            Anlagenverfuegbarkeit v = e.Verfuegbarkeit[h];
+            bool fahrplan = v.Grund == Verfuegbarkeitsgrund.Sperrzeit || v.Grund == Verfuegbarkeitsgrund.Zeitprogramm
+                            || v.Grund == Verfuegbarkeitsgrund.SpeicherLeer;
+            return fahrplan && !(v.LeistungKw > Rechenrand.ABSOLUT);
+        }
+
+        /// <summary>Die Uhrzeiten eines Stundensatzes (24) als Bereiche „0–6, 22–24“; über Mitternacht „22–6“; leer: „–“.</summary>
+        internal static string Uhrzeiten(bool[] uhr)
+        {
+            if (uhr == null || uhr.Length != 24) throw new ArgumentException("Erwartet 24 Stunden.", nameof(uhr));
+            if (uhr.All(x => x)) return "0–24";
+            var teile = new List<string>();
+            for (int i = 0; i < 24; i++)
+            {
+                if (!uhr[i] || uhr[(i + 23) % 24]) continue;
+                int laenge = 0;
+                while (uhr[(i + laenge) % 24]) laenge++;
+                int ende = i + laenge > 24 ? i + laenge - 24 : i + laenge;
+                teile.Add(i.ToString(System.Globalization.CultureInfo.InvariantCulture) + "–"
+                          + ende.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+            return teile.Count == 0 ? "–" : string.Join(", ", teile);
+        }
 
         // =====================================================================
         //  Weiche
@@ -626,14 +732,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// t_V der Zone: Option 1 <c>Aufheizzeit_Manuell_H</c> des Gebäudes, sonst die Vorheizzeit des Projekts; Option 2 das
-        /// Maximum von t_nötig über die Sprünge des Jahres (F5), mindestens 1 h — unerreichbare Sprünge mit min(D, 47) (2.6), mit
-        /// der internen Wahl <see cref="Vorheizvorgabe.UnerreichbareImMaximum"/> = false nur die erreichbaren (V3b).
+        /// 95-%-Quantil von t_nötig über die erreichbaren Sprünge des Jahres (F19 (b)), mindestens 1 h — unerreichbare Sprünge
+        /// gehen nicht ein, sie werden gezählt (F18 (b)).
         /// </summary>
         private static int Vorheizzeit(Vorheizanalyse a, Aufheizvorgabe vorgabe)
         {
             if (IstBerechnet(vorgabe))
-                return Math.Max(Vorheizvorgabe.VORHEIZZEIT_MIN_H,
-                                vorgabe.Vorheizen.UnerreichbareImMaximum ? a.BedarfMaxH : a.BedarfMaxErreichbarH);
+                return Math.Max(Vorheizvorgabe.VORHEIZZEIT_MIN_H, a.BedarfQuantilH);
             return Math.Clamp(a.Zone.ManuellH ?? vorgabe.Vorheizen.VorheizzeitH.Value, Vorheizvorgabe.VORHEIZZEIT_MIN_H, FENSTER_MAX_H);
         }
 
@@ -665,7 +770,7 @@ namespace WindowsFormsApplication1
             var tagFenster = new bool[365];
             var liste = new List<Vorheizsprung>();
             var aufheizspruenge = new List<Aufheizsprung>();
-            int naechte = 0, stunden = 0, laengste = 0, kuerzesteD = int.MaxValue, unerreichbar = 0;
+            int naechte = 0, stunden = 0, laengste = 0, kuerzesteD = int.MaxValue, unerreichbar = 0, ueber = 0;
             for (int i = 0; i < spruenge.Count; i++)
             {
                 (int hs, int d) = spruenge[i];
@@ -675,6 +780,7 @@ namespace WindowsFormsApplication1
                 bool nacht = tV >= d && fenster == d;
                 if (nacht) naechte++;
                 if (a.Unerreichbar[i]) unerreichbar++;
+                else if (a.Bedarf[i] > tV) ueber++;
                 int geschrieben = 0;
                 for (int k = 1; k <= fenster; k++)
                 {
@@ -737,8 +843,10 @@ namespace WindowsFormsApplication1
             {
                 VorheizzeitH = tV,
                 Verfahren = vv.Verfahren,
-                BedarfMaxH = a.BedarfMaxH,
+                BedarfMaxH = a.BedarfMaxErreichbarH,
+                BedarfQuantilH = a.BedarfQuantilH,
                 SpruengeUnerreichbar = unerreichbar,
+                SpruengeUeberVorheizzeit = IstBerechnet(vorgabe) ? ueber : 0,
                 OhneAuslegungsheizlast = a.OhneAuslegungsheizlast,
                 GeltungGebaeude = a.GeltungGebaeude,
                 Vorausschau = a.Vorausschau,
@@ -845,7 +953,14 @@ namespace WindowsFormsApplication1
             double[] nachbarn = alle == null || !zone.Gekoppelt ? null : new double[alle.Count];
             var tageUnerreichbar = new bool[365];
             var tageAbweichung = new bool[365];
-            int bedarfMax = vp.Verfahren == Aufheizverfahren.Berechnet ? vp.BedarfMaxH : 0;
+            bool berechnet = vp.Verfahren == Aufheizverfahren.Berechnet;
+            int bedarfMax = berechnet ? vp.BedarfMaxH : 0;
+            var tageUeber = new bool[365];
+            var tageSperre = new bool[365];
+            var sperrUhr = new bool[24];
+            var freiUhr = new bool[24];
+            double unterUeber = 0.0;
+            int gesperrt = 0;
             foreach (Vorheizsprung sp in vp.Spruenge)
             {
                 int hs = sp.Sprungstunde, hv = Ring(hs - 1);
@@ -869,7 +984,8 @@ namespace WindowsFormsApplication1
                     if (bedarf == 0 && vp.Vorausschau != null && sp.FensterMaxH >= 1)
                         bedarf = vp.Vorausschau.Bedarf(hs, sp.FensterMaxH, sp.PhiRefW, out unerreichbar);
                     abweichung = bedarf > 0 && !unerreichbar && bedarf <= sp.FensterH;
-                    if (bedarf > bedarfMax) bedarfMax = bedarf;
+                    // F18: Mit Option 2 bleibt ein unerreichbarer Sprung aus t_nötig,max.
+                    if (bedarf > bedarfMax && !(berechnet && unerreichbar)) bedarfMax = bedarf;
                 }
                 if (unerreichbar) tageUnerreichbar[hs / 24] = true;
                 if (abweichung) tageAbweichung[hs / 24] = true;
@@ -902,6 +1018,29 @@ namespace WindowsFormsApplication1
                     h = Ring(h + 1);
                 }
                 if (unterSprung > unterMax) unterMax = unterSprung;
+                // F19: ein erreichbarer Sprung, dessen Bedarf über t_V liegt — „nötig wären bis … h“.
+                if (berechnet && !sp.Unerreichbar && sp.BedarfH > vp.VorheizzeitH)
+                {
+                    tageUeber[hs / 24] = true;
+                    if (unterSprung > unterUeber) unterUeber = unterSprung;
+                }
+                // F20: Fensterstunden ohne verfügbare Wärme (Sperrzeit) — nur gemeldet, das Fenster bleibt.
+                if (sp.FensterH > 0 && e.FahrplanWirksam)
+                {
+                    int vorher = gesperrt;
+                    for (int k = 1; k <= sp.FensterH; k++)
+                        if (FensterstundeGesperrt(e, Ring(hs - k)))
+                        {
+                            gesperrt++;
+                            sperrUhr[Ring(hs - k) % 24] = true;
+                        }
+                    if (gesperrt > vorher)
+                    {
+                        tageSperre[hs / 24] = true;
+                        for (int k = 1; k <= sp.FensterH; k++)
+                            if (!FensterstundeGesperrt(e, Ring(hs - k))) freiUhr[Ring(hs - k) % 24] = true;
+                    }
+                }
                 double sprung = last[hs] - last[hv];
                 if (double.IsNaN(sMax) || sprung > sMax) sMax = sprung;
                 pruefungen.Add(new Vorheizpruefung(hs, dTheta, angekommen, luft[hs], unter, unterSprung, sprung,
@@ -924,6 +1063,12 @@ namespace WindowsFormsApplication1
                 BedarfMaxH = bedarfMax,
                 TageUnerreichbar = tageUnerreichbar,
                 TageAbweichung = tageAbweichung,
+                TageUeberVorheizzeit = tageUeber,
+                UnterschreitungUeberVorheizzeitK = unterUeber,
+                TageSperrzeit = tageSperre,
+                SperrUhr = sperrUhr,
+                FreiUhr = freiUhr,
+                FensterstundenGesperrt = gesperrt,
             };
             vp.Nachweis = nachweis;
             return nachweis;
@@ -947,12 +1092,17 @@ namespace WindowsFormsApplication1
             var tage = new bool[365];
             var tageUnerreichbar = new bool[365];
             var tageAbweichung = new bool[365];
-            double unterMax = 0.0, sMax = double.NaN, s0Max = double.NaN;
+            var tageUeber = new bool[365];
+            var tageSperre = new bool[365];
+            var sperrUhr = new bool[24];
+            var freiUhr = new bool[24];
+            double unterMax = 0.0, sMax = double.NaN, s0Max = double.NaN, unterUeber = 0.0;
             int bedarfMax = 0;
             var bedarfe = new List<int>();
             foreach (Vorheizplan v in mit)
             {
-                foreach (Vorheizsprung sp in v.Spruenge) if (sp.BedarfH > 0) bedarfe.Add(sp.BedarfH);
+                // F18: der Median über die erreichbaren Sprünge.
+                foreach (Vorheizsprung sp in v.Spruenge) if (sp.BedarfH > 0 && !sp.Unerreichbar) bedarfe.Add(sp.BedarfH);
                 if (v.Nachweis != null)
                 {
                     for (int t = 0; t < 365; t++)
@@ -960,7 +1110,15 @@ namespace WindowsFormsApplication1
                         if (v.Nachweis.TageOhneAnkunft[t]) tage[t] = true;
                         if (v.Nachweis.TageUnerreichbar[t]) tageUnerreichbar[t] = true;
                         if (v.Nachweis.TageAbweichung[t]) tageAbweichung[t] = true;
+                        if (v.Nachweis.TageUeberVorheizzeit[t]) tageUeber[t] = true;
+                        if (v.Nachweis.TageSperrzeit[t]) tageSperre[t] = true;
                     }
+                    for (int u = 0; u < 24; u++)
+                    {
+                        if (v.Nachweis.SperrUhr[u]) sperrUhr[u] = true;
+                        if (v.Nachweis.FreiUhr[u]) freiUhr[u] = true;
+                    }
+                    if (v.Nachweis.UnterschreitungUeberVorheizzeitK > unterUeber) unterUeber = v.Nachweis.UnterschreitungUeberVorheizzeitK;
                     if (v.Nachweis.BedarfMaxH > bedarfMax) bedarfMax = v.Nachweis.BedarfMaxH;
                     if (v.Nachweis.UnterschreitungMaxK > unterMax) unterMax = v.Nachweis.UnterschreitungMaxK;
                     if (!double.IsNaN(v.Nachweis.SprungMaxW) && (double.IsNaN(sMax) || v.Nachweis.SprungMaxW > sMax)) sMax = v.Nachweis.SprungMaxW;
@@ -1016,6 +1174,13 @@ namespace WindowsFormsApplication1
                 BedarfMedianH = median,
                 TageUnerreichbar = tageUnerreichbar.Count(x => x),
                 TageAbweichung = tageAbweichung.Count(x => x),
+                SpruengeUeberVorheizzeit = mit.Sum(v => v.SpruengeUeberVorheizzeit),
+                TageUeberVorheizzeit = tageUeber.Count(x => x),
+                UnterschreitungUeberVorheizzeitK = unterUeber,
+                TageSperrzeit = tageSperre.Count(x => x),
+                SperrUhr = sperrUhr,
+                FreiUhr = freiUhr,
+                FensterstundenGesperrt = mit.Sum(v => v.Nachweis?.FensterstundenGesperrt ?? 0),
                 ZonenOhneAuslegungsheizlast = mit.Count(v => v.OhneAuslegungsheizlast),
                 Vorausschauen = mit.Sum(v => v.Vorausschau?.Vorausschauen ?? 0),
             };

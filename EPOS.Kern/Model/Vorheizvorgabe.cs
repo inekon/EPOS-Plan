@@ -36,18 +36,19 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Der Ankunftsbezug eines Gebäudes mit Heizkreis</b> (Welle V3b, interne Wahl für einen offenen Anwenderentscheid; kein
-    /// Schema, keine Oberfläche): wogegen Vorausschau und Nachweis die Ankunft am Beginn von h_s messen. Gilt nur für Zonen mit
-    /// wirksamer Wärmeübergabe (<see cref="GebaeudeModellEingang.KopplungWirksam"/>); jede andere Zone misst gegen θ_T − ε.
+    /// <b>Der Ankunftsbezug eines Gebäudes mit Heizkreis</b> (Welle V3b; entschieden mit F17 (b), Anwender 11.10.2026, Welle
+    /// V3c; kein Schema, keine Oberfläche): wogegen Vorausschau und Nachweis die Ankunft am Beginn von h_s messen. Gilt nur für
+    /// Zonen mit wirksamer Wärmeübergabe (<see cref="GebaeudeModellEingang.KopplungWirksam"/>); jede andere Zone misst gegen
+    /// θ_T − ε. Die Wahl bleibt <c>internal</c>, weil Tests und Messung (a) als Gegenprobe rechnen.
     /// </summary>
     internal enum Vorheizankunftsbezug
     {
-        /// <summary>(a) Gegen θ_T − ε (Entwurf 2.5) — die Vorgabe.</summary>
+        /// <summary>(a) Gegen θ_T − ε (Entwurf 2.5) — nur noch Gegenprobe der Tests und der Messung.</summary>
         Sollwert = 0,
 
         /// <summary>
         /// (b) Gegen min(θ_T, θ_stat) − ε: θ_stat ist die Raumluft, die die Übergabe am durchgewärmten Bau zur Kalenderstunde h_s
-        /// stationär hält (Gleichgewicht des Zonenmodells mit dem Rand von h_s, <see cref="Vorheizankunft"/>).
+        /// stationär hält (Gleichgewicht des Zonenmodells mit dem Rand von h_s, <see cref="Vorheizankunft"/>) — die Vorgabe (F17).
         /// </summary>
         Uebergabe = 1,
     }
@@ -123,19 +124,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Heizkreis-Schalter des Projekts (F16 (a)).</summary>
         public bool HeizkreisEinbeziehen { get; }
 
-        /// <summary>Die Vorgabe des Ankunftsbezugs (V3b): (a) gegen θ_T − ε — das Verhalten vor V3b.</summary>
-        internal const Vorheizankunftsbezug ANKUNFTSBEZUG_VORGABE = Vorheizankunftsbezug.Sollwert;
+        /// <summary>Die Vorgabe des Ankunftsbezugs: (b) gegen min(θ_T, θ_stat) − ε an einer Zone mit Heizkreis (F17 (b),
+        /// Anwenderentscheid 11.10.2026, E125).</summary>
+        internal const Vorheizankunftsbezug ANKUNFTSBEZUG_VORGABE = Vorheizankunftsbezug.Uebergabe;
 
-        /// <summary>Die Vorgabe, ob unerreichbare Sprünge mit min(D, 47) in das Maximum t_V der Option 2 eingehen (V3b): ja —
-        /// Wortlaut 2.6, das Verhalten vor V3b.</summary>
-        internal const bool UNERREICHBARE_IM_MAXIMUM_VORGABE = true;
-
-        /// <summary>Der Ankunftsbezug eines Gebäudes mit Heizkreis (interne Wahl, V3b).</summary>
+        /// <summary>Der Ankunftsbezug eines Gebäudes mit Heizkreis (interne Wahl für Tests und Messung; Vorgabe F17 (b)).</summary>
         internal Vorheizankunftsbezug Ankunftsbezug { get; init; } = ANKUNFTSBEZUG_VORGABE;
-
-        /// <summary>Gehen unerreichbare Sprünge mit min(D, 47) in das Maximum t_V der Option 2 ein (interne Wahl, V3b)? Nein: Sie
-        /// werden nur gezählt und gemeldet; t_V ist das Maximum der erreichbaren Sprünge.</summary>
-        internal bool UnerreichbareImMaximum { get; init; } = UNERREICHBARE_IM_MAXIMUM_VORGABE;
 
         /// <summary>Rechnet die Einstellung Option 1 (Vorheizzeit vorgeben)?</summary>
         public bool IstVorgabe => Verfahren == Aufheizverfahren.Vorgabe;
