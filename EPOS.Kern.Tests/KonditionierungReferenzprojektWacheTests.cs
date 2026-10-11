@@ -70,6 +70,9 @@ namespace EPOS.Kern.Tests
 
         private const int PROJEKT = Konditionierungsprojekt1051.NEU;
 
+        /// <summary>Die Kopie von 1051 mit berechneter Vorheizzeit (Referenzprojekt Vorheizen, <see cref="VorheizReferenzprojektWacheTests"/>).</summary>
+        private const int KOPIE_VORHEIZEN = 1065;
+
         /// <summary>Das Gebäude der Projektkopie und der Referenzkatalogbau der gesäten Testdatenbank.</summary>
         internal const int GEBAEUDE = 10657, KATALOGBAU = 289;
 
@@ -99,11 +102,13 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Konditionierungsprojekt1051.NAME, Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT Projektname FROM Tab_Projekt WHERE ID = ?", new DbParam("@p", PROJEKT)), CultureInfo.InvariantCulture));
 
-            // Die fünf Kalender am Gebäude (ohne Zone) und am Katalogbau: nur 1051 und der Referenzbau.
-            Assert.Equal(new long[] { PROJEKT }, Liste(
+            // Die fünf Kalender am Gebäude (ohne Zone) und am Katalogbau: nur 1051, seine Kopie 1065 (Referenzprojekt
+            // Vorheizen, AH-V7) und der Referenzbau.
+            long gebaeudeKopie = Zonenprojekt1052.Gebaeude(KOPIE_VORHEIZEN);
+            Assert.Equal(new long[] { PROJEKT, KOPIE_VORHEIZEN }, Liste(
                 "SELECT DISTINCT g.ID_Projekt FROM Tab_Konditionierungskalender k JOIN Tab_Gebaeude g ON g.ID = k.ID_Gebaeude " +
                 "WHERE k.ID_Zone IS NULL ORDER BY 1"));
-            Assert.Equal(new long[] { GEBAEUDE }, Liste(
+            Assert.Equal(new long[] { GEBAEUDE, gebaeudeKopie }, Liste(
                 "SELECT ID_Gebaeude FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IS NOT NULL AND ID_Zone IS NULL " +
                 "AND Groesse <> 'ALLE' GROUP BY ID_Gebaeude HAVING COUNT(DISTINCT Groesse) = 5 ORDER BY 1"));
             Assert.Equal(new long[] { KATALOGBAU }, Liste(
@@ -111,22 +116,23 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new long[] { KATALOGBAU }, Liste(
                 "SELECT DISTINCT ID_Gebaeude_Stamm FROM Tab_Konditionierungsvorgabe WHERE ID_Gebaeude_Stamm IS NOT NULL ORDER BY 1"));
 
-            // Die Nachtauskühlung (bedingte Nachtzeile der Lüftung): nur Gebäude 10657 und Referenzbau 289.
-            Assert.Equal(new[] { "∅|" + KATALOGBAU, GEBAEUDE + "|∅" }, Zeilen(
+            // Die Nachtauskühlung (bedingte Nachtzeile der Lüftung): nur Gebäude 10657, seine Kopie in 1065 und Referenzbau 289.
+            Assert.Equal(new[] { "∅|" + KATALOGBAU, GEBAEUDE + "|∅", gebaeudeKopie + "|∅" }, Zeilen(
                 "SELECT ID_Gebaeude, ID_Gebaeude_Stamm FROM Tab_Konditionierungsvorgabe WHERE Bedingt_K IS NOT NULL " +
                 "ORDER BY ID_Gebaeude IS NOT NULL, ID"));
 
-            // Die Schalter und Ferien des Referenzbaus: kein anderes Gebäude, kein anderer Katalogbau.
-            Assert.Equal(new long[] { PROJEKT }, Liste("SELECT DISTINCT ID_Projekt FROM Tab_Gebaeude WHERE Sommerlueftung = 1 ORDER BY 1"));
+            // Die Schalter und Ferien des Referenzbaus: kein anderes Gebäude als das von 1051 und seiner Kopie 1065,
+            // kein anderer Katalogbau.
+            Assert.Equal(new long[] { PROJEKT, KOPIE_VORHEIZEN }, Liste("SELECT DISTINCT ID_Projekt FROM Tab_Gebaeude WHERE Sommerlueftung = 1 ORDER BY 1"));
             Assert.Equal(new long[] { KATALOGBAU }, Liste("SELECT ID FROM Tab_Gebaeude_STAMM WHERE Sommerlueftung = 1 ORDER BY 1"));
-            Assert.Equal(new long[] { PROJEKT }, Liste(
+            Assert.Equal(new long[] { PROJEKT, KOPIE_VORHEIZEN }, Liste(
                 "SELECT DISTINCT ID_Projekt FROM Tab_Gebaeude WHERE Ferienbeginn_1 IS NOT NULL AND Ferienbeginn_1 NOT IN (0, 366) ORDER BY 1"));
             Assert.Equal(new long[] { KATALOGBAU }, Liste(
                 "SELECT ID FROM Tab_Gebaeude_STAMM WHERE Ferienbeginn_1 = ? AND Ferienende_1 = ? ORDER BY 1",
                 Konditionierungsprojekt1051.FERIEN[0].Beginn, Konditionierungsprojekt1051.FERIEN[0].Ende));
-            Assert.Equal(new long[] { PROJEKT }, Liste(
+            Assert.Equal(new long[] { PROJEKT, KOPIE_VORHEIZEN }, Liste(
                 "SELECT ID_Projekt FROM Tab_Gebaeude WHERE ID_Gebaeude_Stamm = ? ORDER BY 1", KATALOGBAU));
-            Assert.Equal(new long[] { 1051, 1052, 1054 }, Liste(   // 1054: Kopie von 1052 (AK1z)
+            Assert.Equal(new long[] { 1051, 1052, 1054, KOPIE_VORHEIZEN }, Liste(   // 1054: Kopie von 1052 (AK1z); 1065: Kopie von 1051
                 "SELECT ID_Projekt FROM Tab_Einstellungen WHERE Aufheizoptimierung = 1 ORDER BY 1"));
         }
 

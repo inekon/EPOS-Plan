@@ -44,7 +44,7 @@ namespace EPOS.Kern.Tests
         private const string NAME = "Referenzprojekt Freie Kühlung";
         private const double GRAEDIGKEIT_K = 4.0, LEISTUNG_KW = 4.0;
 
-        // Die Jahreswerte der Basis R51 (Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1064/aggregate.csv).
+        // Die Jahreswerte der Basis R51 (Referenzlaeufe/2026-10-11_R52_Vorheizen/Projekt_1064/aggregate.csv, unverändert seit R51).
         private const int R51_FREI_STUNDEN = 125;
         private const double R51_FREI_MWH = 0.277361939;
         private const double R51_KAELTE_MWH = 4.05051694;
@@ -141,8 +141,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kuehl_Frei = 1 AND ID_Projekt = ?", PROJEKT));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE (Kuehl_Frei_Graedigkeit_K IS NOT NULL OR Kuehl_Frei_Leistung_kW IS NOT NULL) " +
                                   "AND ID_Projekt <> ?", PROJEKT));
-            // 1064 ist das jüngste Projekt der Testdatenbank.
-            Assert.Equal((long)PROJEKT, Zahl("SELECT MAX(ID) FROM Tab_Projekt"));
+            // 1064 ist angelegt; jüngere Projekte (1065) sind Kopien ohne freie Kühlung.
+            Assert.True(Zahl("SELECT MAX(ID) FROM Tab_Projekt") >= PROJEKT);
         }
 
         // =====================================================================
