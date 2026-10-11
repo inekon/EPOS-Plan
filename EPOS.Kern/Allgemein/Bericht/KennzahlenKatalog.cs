@@ -327,6 +327,19 @@ namespace WindowsFormsApplication1
         /// <summary>Jahres-EER ohne Hilfsstrom = Verdichterkälte / Verdichterstrom [—] (KM3, Katalog v18).</summary>
         public const string SCHLUESSEL_KM_JAZ_VERDICHTER = "kaelte.km.jaz_verdichter";
 
+        /// <summary>Strom der Rückkühlwerke [MWh/a] — Ventilator bzw. Hilfsstrom der Rückkühlung (K-F2, Katalog v20).</summary>
+        public const string SCHLUESSEL_RK_VENTILATOR = "kaelte.rk.ventilator";
+
+        /// <summary>Wasser der Rückkühlwerke [m³/a] — Verdunstung, Abflutung, Drift (K-F2, Katalog v20).</summary>
+        public const string SCHLUESSEL_RK_WASSER = "kaelte.rk.wasser_m3";
+
+        /// <summary>Summe einer Größe über die Kältemaschinen mit Rückkühlwerk; <c>null</c> ohne solche.</summary>
+        private static double? RkSumme(VariantenDaten v, Func<ErgebnisKaeltemaschineModel, double?> wert)
+        {
+            List<double> w = KM(v)?.Select(wert).Where(x => x.HasValue).Select(x => x.Value).ToList();
+            return w != null && w.Count > 0 ? w.Sum() : (double?)null;
+        }
+
         /// <summary>Die Kältemaschinen mit Teillastweg samt Platz in der Ergebnisliste; <c>null</c> ohne solche.</summary>
         private static List<(int Platz, ErgebnisKaeltemaschineModel K)> KmTeillast(VariantenDaten v)
         {
@@ -777,6 +790,16 @@ namespace WindowsFormsApplication1
                     "Chiller mean part-load ratio (sensible)", "–", GR_KAELTE, "N2", true, LastgradKaeltemaschinen)));
                 l.Add(T(new Kennzahl(SCHLUESSEL_KM_JAZ_VERDICHTER, "Jahres-EER Kältemaschinen ohne Hilfsstrom (sensibel)",
                     "Chiller seasonal EER without auxiliary power (sensible)", "–", GR_KAELTE, "N2", true, JazVerdichterKaeltemaschinen)));
+            }
+            // K-F2 (Entwurf Split/VRF/Rückkühlwerk 5.8, Katalog v20): nur Maschinen mit Rückkühlwerk; ohne sie null.
+            {
+                Kennzahl R(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_RUECKKUEHLWERK; return k; }
+                l.Add(R(new Kennzahl(SCHLUESSEL_RK_VENTILATOR, "Strom Rückkühlwerke (sensibel)",
+                    "Heat rejection electricity (sensible)", "MWh/a", GR_KAELTE, "N2", true,
+                    v => RkSumme(v, k => k.Ventilatorstrom_MWh))));
+                l.Add(R(new Kennzahl(SCHLUESSEL_RK_WASSER, "Wasser Rückkühlwerke (sensibel)",
+                    "Heat rejection water use (sensible)", "m³/a", GR_KAELTE, "N1", true,
+                    v => RkSumme(v, k => k.Wasser_m3))));
             }
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
                 "Uncovered cooling demand (sensible)", "MWh/a", GR_KAELTE, "N1", true,

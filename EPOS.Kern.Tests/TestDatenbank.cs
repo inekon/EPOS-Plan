@@ -1029,6 +1029,9 @@ namespace EPOS.Kern.Tests
                 // Schritt VorheizenSchema.SCHRITT (AH-V4): sieben Einstellungsspalten, Vorheizzeit der Zone, achtzehn
                 // Ergebnisspalten je Gebaeude und Zone, leer, reines DDL. Wiederholbar.
                 VorheizenSchema.Ausfuehren(null);
+                // Schritt KaeltemittelSchema.SCHRITT (KM4-E1): Kaeltemitteltabelle samt Saat und Schluesseln, Verweis der
+                // Kaeltemaschine mit Zuordnung des Textbestands, Inbetriebnahmejahr am Projekt. Wiederholbar.
+                KaeltemittelSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

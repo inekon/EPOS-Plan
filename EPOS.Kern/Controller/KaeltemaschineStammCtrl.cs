@@ -453,6 +453,10 @@ namespace WindowsFormsApplication1
                 m.Saisonkennzahl_Art = Text(r[KaelteKatalogfelderSchema.SPALTE_SAISON_ART]);
                 m.Saisonkennzahl = Zahl(r[KaelteKatalogfelderSchema.SPALTE_SAISON_WERT]);
             }
+            // Schritt 216: der Verweis auf das Kaeltemittel - vor dem Schritt fehlt die Spalte, dann null.
+            if (r.Table.Columns.Contains(KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL) &&
+                r[KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL] != DBNull.Value)
+                m.ID_Kaeltemittel = Ganz(r[KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL]);
             m.Geraeteart = KaelteKatalogfelderSchema.GeraeteartWirksam(m.Geraeteart, m.Rueckkuehlart);
             if (katalog) m.ReadOnly = Ganz(r["ReadOnly"]) == 1;
             else
@@ -511,6 +515,7 @@ namespace WindowsFormsApplication1
                 int neueId = Convert.ToInt32(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
                 TeillastSchreiben(v, tabelle, neueId, m);
                 KatalogfelderSchreiben(v, tabelle, neueId, m);
+                KaeltemittelSchreiben(v, tabelle, neueId, m, false);
                 return neueId;
             }
             string setzen = string.Join(", ", KaeltemaschineSchema.Grundspalten.Select(s => "\"" + s + "\" = ?"));
@@ -519,7 +524,36 @@ namespace WindowsFormsApplication1
             v.Ausfuehren("UPDATE " + tabelle + " SET " + setzen + " WHERE ID = ?", q.ToArray());
             TeillastSchreiben(v, tabelle, m.Id, m);
             KatalogfelderSchreiben(v, tabelle, m.Id, m);
+            KaeltemittelSchreiben(v, tabelle, m.Id, m, false);
             return m.Id;
+        }
+
+        /// <summary>
+        /// Schreibt den Verweis <c>ID_Kaeltemittel</c> an den Satz <paramref name="id"/> — in einem eigenen Schritt im
+        /// Vorgang <paramref name="v"/> und nur, wenn die Spalte steht (Schritt <see cref="KaeltemittelSchema.SCHRITT"/>).
+        /// Der Text ist die Quelle: Code-Abgleich (Trim, ohne Groß/Klein) gegen <c>Tab_Kaeltemittel_STAMM.Code</c>, Treffer →
+        /// ID, kein Treffer oder leerer Text → NULL. Mit <paramref name="idUebernehmen"/> gilt stattdessen die ID des
+        /// Modells (Übernahme aus dem Katalog, auch ein Verweis über den Katalogschlüssel ohne Code-Gleichheit) — nach der
+        /// Trefferprobe, dass es die Zeile gibt. Das Modell trägt danach die geschriebene ID.
+        /// </summary>
+        internal static void KaeltemittelSchreiben(DbVorgang v, string tabelle, int id, KaeltemaschineModel m, bool idUebernehmen)
+        {
+            object da = v.Skalar("SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?",
+                new DbParam("?", tabelle), new DbParam("?", KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL));
+            if (da == null || da == DBNull.Value || Convert.ToInt32(da, CultureInfo.InvariantCulture) < 1) return;
+            object treffer = null;
+            if (idUebernehmen && m.ID_Kaeltemittel.HasValue)
+                treffer = v.Skalar(KaeltemittelCtrl.SQL_ID_PROBE, new DbParam("?", m.ID_Kaeltemittel.Value));
+            else if (!idUebernehmen)
+            {
+                string code = m.Kaeltemittel?.Trim();
+                if (!string.IsNullOrEmpty(code))
+                    treffer = v.Skalar(KaeltemittelCtrl.SQL_ID_ZUM_CODE, new DbParam("?", code));
+            }
+            int? neu = treffer == null || treffer == DBNull.Value ? (int?)null : Convert.ToInt32(treffer, CultureInfo.InvariantCulture);
+            v.Ausfuehren("UPDATE " + tabelle + " SET \"" + KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL + "\" = ? WHERE ID = ?",
+                new DbParam("?", Wert(neu)), new DbParam("?", id));
+            m.ID_Kaeltemittel = neu;
         }
 
         /// <summary>
@@ -648,7 +682,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Kopiert den Katalogsatz <paramref name="stammId"/> samt Kennlinie in das Projekt
         /// <paramref name="projektId"/> — Spalte für Spalte nach <see cref="KaeltemaschineSchema.Fachspalten"/> (die acht
-        /// Spalten von Teillast und Takten, wenn sie stehen),
+        /// Spalten von Teillast und Takten, wenn sie stehen, und der Verweis <c>ID_Kaeltemittel</c>),
         /// mit <c>ID_Stamm</c> als Zuordnung. Führt das Projekt schon eine Kopie dieses Katalogsatzes, bleibt
         /// sie und ihre ID kommt zurück. <c>-1</c>, wenn es den Katalogsatz nicht gibt.
         /// </summary>
@@ -676,7 +710,12 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
+                    // Der Verweis auf das Kaeltemittel reist mit der Kopie - auch einer, den der Katalog ueber seinen
+                    // Schluessel traegt (R1234ze → R1234ze(E)) und den der Code-Abgleich des Textes nicht faende.
+                    int? kaeltemittel = m.ID_Kaeltemittel;
                     int id = KaeltemaschineStammCtrl.KopfSchreiben(v, TABLE, m, true, projektId);
+                    m.ID_Kaeltemittel = kaeltemittel;
+                    KaeltemaschineStammCtrl.KaeltemittelSchreiben(v, TABLE, id, m, true);
                     KaeltemaschineStammCtrl.KennlinieSchreiben(v, CURVE, id, m.Kennlinie, projektId);
                     v.Commit();
                     return id;

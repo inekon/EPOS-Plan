@@ -716,6 +716,17 @@ namespace WindowsFormsApplication1
         public double? Lastgrad_Mittel;
         /// <summary>Stunden mit Gütegrad-Extrapolation über den Kennfeldrand.</summary>
         public int? Stunden_Extrapoliert;
+
+        // K-F2 (RueckkuehlwerkSchema, Entwurf Split/VRF/Rückkühlwerk 5.8): nur mit Rückkühlwerk an der Anlagenzeile belegt;
+        // sonst null = NULL, der Satz bleibt wie ohne Rückkühlwerk. TeilFreikuehlung_* folgen mit K-F3.
+        /// <summary>Strom der Rückkühlung [MWh/a] — Ventilator bzw. Hilfsstrom der Rückkühlung; Teil von <see cref="Hilfsstrom_MWh"/>.</summary>
+        public double? Ventilatorstrom_MWh;
+        /// <summary>Wasser des Rückkühlwerks [m³/a] — Verdunstung, Abflutung, Drift.</summary>
+        public double? Wasser_m3;
+        /// <summary>Stunden, in denen das Rückkühlwerk nass lief [h/a].</summary>
+        public int? Stunden_Nass;
+        /// <summary>Mittlere Rückkühltemperatur der Betriebsstunden [°C].</summary>
+        public double? Rueckkuehltemperatur_Mittel;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.

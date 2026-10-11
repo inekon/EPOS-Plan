@@ -779,6 +779,11 @@ namespace WindowsFormsApplication1
                                 Teillaststunden = e.Maschine.TeillastWirksam ? (int?)e.StundenTeillast : null,
                                 Lastgrad_Mittel = e.Maschine.TeillastWirksam ? (double?)e.LastgradMittel : null,
                                 Stunden_Extrapoliert = e.Maschine.GuetegradWirksam ? (int?)e.StundenExtrapoliert : null,
+                                // K-F2 (RueckkuehlwerkSchema): nur mit Rueckkuehlwerk belegt, sonst NULL.
+                                Ventilatorstrom_MWh = e.Maschine.Rueckkuehlwerk != null ? (double?)(e.RkVentilatorKwh / 1000.0) : null,
+                                Wasser_m3 = e.Maschine.Rueckkuehlwerk != null ? (double?)e.RkWasserM3 : null,
+                                Stunden_Nass = e.Maschine.Rueckkuehlwerk != null ? (int?)e.RkStundenNass : null,
+                                Rueckkuehltemperatur_Mittel = e.Maschine.Rueckkuehlwerk != null ? e.RkTemperaturMittel : null,
                             });
             }
 
