@@ -1409,4 +1409,49 @@ public class StromspeicherDialogTests : EposBunitContext
             Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
         Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopfknoepfe"));
     }
+
+    // =====================================================================
+    //  KT-8a: Kosten-Rückrufe über die Fangstelle
+    // =====================================================================
+
+    /// <summary>KT-8a: Wirft der Weg in die Kosten- oder Energieträgerverwaltung, nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public void KT8a_wirft_der_Kostenweg_nennt_der_Banner_den_Grund(int knopf)
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostenOeffnen: (_, _) => throw new InvalidOperationException("Kostenverwaltung gesperrt"), energiekosten: _ => throw new InvalidOperationException("Kostenverwaltung gesperrt"));
+        Satz(cut);
+
+        cut.FindAll(".epos-kostenleiste button.epos-knopf")[knopf].Click();
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Kostenverwaltung gesperrt"));
+        Assert.True(vermerke.Enthaelt("Kostenverwaltung gesperrt"));
+        Assert.NotEmpty(cut.FindAll(".epos-kostenleiste button.epos-knopf"));
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_zeigt_der_Kostenweg_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask, energiekosten: _ => Task.CompletedTask);
+        Satz(cut);
+
+        cut.FindAll(".epos-kostenleiste button.epos-knopf")[0].Click();
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+    }
+
+    /// <summary>KT-8a: Wirft die Kostensumme, fehlt die Angabe, der Banner nennt den Grund, das Protokoll hat einen Vermerk.</summary>
+    [Fact]
+    public void KT8a_wirft_die_Kostensumme_nennt_der_Banner_den_Grund()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostensumme: _ => throw new InvalidOperationException("Kostenverwaltung gesperrt"));
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Kostenverwaltung gesperrt"));
+        Assert.True(vermerke.Enthaelt("Kostenverwaltung gesperrt"));
+    }
 }
