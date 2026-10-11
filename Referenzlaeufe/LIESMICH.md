@@ -1189,11 +1189,13 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > 0 Fundstellen): **95 694 848 Byte, LFS-SHA-256 `23bbf212b45062f3dcdcfc649865b64a82e82f506a3fcb3e84974d45c430bc0c`**.
 > **Die Basis `2026-10-10_R51_FreieKuehlung` bleibt.** Ein Kältebedarfsprofil oder eine Split-Zeile in einem
 > Referenzprojekt friert neu ein (Konzept Kältebedarf, Abschnitt 8.1).
-> **Nachtrag — Schema 213 (Rückkühlwerk, K‑F1) als Arbeitskette, Basis R51 unberührt.** `RueckkuehlwerkSchema`
-> (`KaelteRangSchema.SCHRITT + 1`, angemeldet als 214, hängt beim Push an 213) legt `Tab_Rueckkuehlwerk(_STAMM)`,
+> **Nachtrag — Schema 214 (Rückkühlwerk, K‑F1, hängt an 213 K1), Basis R51 unberührt.** `RueckkuehlwerkSchema`
+> (214 = `KaeltebedarfSchema.SCHRITT + 1`) legt `Tab_Rueckkuehlwerk(_STAMM)`,
 > `Tab_Energieanlagen.ID_Rueckkuehlwerk` und `Wasserpreis_EUR_m3` sowie sechs Ergebnisspalten an
-> `Tab_ErgebnisKaeltemaschine` an; nur leere Tabellen und Spalten, die 183 Bestandstabellen der Testdatenbank sind
-> inhaltsgleich. Ohne gewähltes Rückkühlwerk rechnen 1055 und 1063 byte-gleich (je 32 Dateien)
+> `Tab_ErgebnisKaeltemaschine` an; nur leere Tabellen und Spalten, die 189 Bestandstabellen der Fassung 213 sind
+> inhaltsgleich. Gehoben aus der Fassung 213 (`23bbf212…`) mit `Werkzeuge/Testdatenbankschema`; die Testdatenbank steht auf
+> **214** (`integrity_check` ok, `foreign_key_check` leer): **95 711 232 Byte, LFS-SHA-256
+> `cbc100d23791054cfab08cfeea488a29af1a9a21468880f87a33090dcbaa3ba6`**. Ohne gewähltes Rückkühlwerk rechnen 1055 und 1063 byte-gleich (je 32 Dateien)
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Kaelteanlagen/2026-10-10_K-F1_Rueckkuehlwerk_Glied.md)).
 
 ### Die Vorgängerbasis R50 (Wochentagsraster)
