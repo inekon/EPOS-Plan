@@ -287,7 +287,7 @@ namespace WindowsFormsApplication1
                     z => ZeileAnlegen(projektId, z, ausstehend, neuAngelegt));
                 gaben["Abgebrochen"] = new Action(() => NeuAngelegteAbraeumen(projektId, neuAngelegt));
                 // Die Rueckfrage nennt auch DIESES Projekt, wenn seine ungespeicherte Zeile aus dem
-                // Satz stammt - ihre Kopie entsteht mit dem stillen Speichern vor dem Loeschen.
+                // Satz stammt - ihre Kopie entsteht vor dem Loeschen (ZeileAnlegen, ohne ihn still gespeichert).
                 gaben["KatalogLoeschhinweis"] = new Func<string, string>(
                     name => GebaeudeStammCtrl.Loeschhinweis(name, AusstehendAus(zeilen, name) ? projektName : null));
             }

@@ -65,13 +65,14 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
     private readonly List<string> _geloescht = new();
     private readonly List<string> _angelegt = new();
     private int _abgebrochen;
+    private int _stillGespeichert;
 
     private IRenderedComponent<GebaeudeDialog> Aufbauen(List<GebaeudeProjektZeile> zeilen, bool sofort = true,
                                                          Func<GebaeudeProjektZeile, string>? anlegen = null)
         => Render<GebaeudeDialog>(p =>
         {
             p.Add(x => x.Zeilen, zeilen)
-             .Add(x => x.ListeSpeichern, () => "")
+             .Add(x => x.ListeSpeichern, () => { _stillGespeichert++; return ""; })
              .Add(x => x.Katalogzeilen, () => _katalog.ToList())
              .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeude(s => R.ResourceManager.GetString(s) ?? s)
                                                          .MitVerwendungsspalte(s => R.ResourceManager.GetString(s) ?? s))
@@ -131,6 +132,33 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
         Assert.True(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
         Assert.Contains(R.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
         Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    [Fact]
+    public void Bearbeiten_der_Detailzeile_oeffnet_ungesperrt_den_Editor_und_gesperrt_den_Satz_nur_lesend()
+    {
+        var cut = Aufbauen(new List<GebaeudeProjektZeile>());
+        KatalogWaehlen(cut, "Haus 2010");
+        cut.Find("button.epos-zweispalten-bearbeiten").Click();
+        Assert.Equal(new[] { "Haus 2010" }, _editor);
+        Assert.True(cut.Instance.KatalogeditorOffen);
+        Assert.False(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
+        cut.FindAll(".epos-ueberlagerung-zu").Last().Click();
+
+        KatalogWaehlen(cut, "Auslieferung");
+        cut.Find("button.epos-zweispalten-bearbeiten").Click();
+        Assert.Single(_editor);
+        Assert.True(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
+        Assert.Contains(R.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+    }
+
+    [Fact]
+    public void Bearbeiten_der_Detailzeile_oeffnet_beim_Projektsatz_die_Satz_Ueberlagerung()
+    {
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", 1) });
+        cut.Find("button.epos-zweispalten-bearbeiten").Click();
+        Assert.True(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
+        Assert.Empty(_editor);
     }
 
     // ------------------------------------------------------------------ Stift
@@ -274,6 +302,43 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
         Assert.Contains("„Auslieferung“", cut.Instance.Loeschfrage);
         Assert.StartsWith("Soll Haus 1990 wirklich", cut.Instance.Loeschfrage);
         cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Ja").Click();
+        Assert.Equal(new[] { "Haus 1990" }, _geloescht);
+    }
+
+    [Fact]
+    public void Loeschen_eines_Satzes_mit_ungespeicherter_Zeile_legt_allein_ihre_Kopie_an()
+    {
+        GebaeudeProjektZeile neu = Zeile(100001, "Haus 1990", 1);
+        neu.HatProjektkopie = false;
+        bool? ergebnis = null;
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", 2), neu });
+        cut.Render(p => p.Add(x => x.Geschlossen, b => ergebnis = b));
+        KatalogWaehlen(cut, "Haus 1990");
+        cut.Find("button.epos-gebaeude-db-loeschen").Click();
+        cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Ja").Click();
+
+        Assert.Equal(new[] { "Haus 1990" }, _angelegt);   // ZeileAnlegen allein für die Zeile aus dem Satz
+        Assert.Equal(0, _stillGespeichert);               // kein stilles Speichern der ganzen Liste
+        Assert.True(neu.HatProjektkopie);
+        Assert.Equal(new[] { "Haus 1990" }, _geloescht);
+
+        // Abbrechen räumt die eben angelegte Kopie wieder ab (die Hülle über Abgebrochen).
+        cut.FindAll(".epos-dialog > .epos-leiste button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(ergebnis);
+        Assert.Equal(1, _abgebrochen);
+    }
+
+    [Fact]
+    public void Ohne_Weg_der_Kopie_speichert_das_Loeschen_die_Liste_still()
+    {
+        GebaeudeProjektZeile neu = Zeile(100001, "Haus 1990", 1);
+        neu.HatProjektkopie = false;
+        var cut = Aufbauen(new List<GebaeudeProjektZeile> { neu }, sofort: false);
+        KatalogWaehlen(cut, "Haus 1990");
+        cut.Find("button.epos-gebaeude-db-loeschen").Click();
+        cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Ja").Click();
+        Assert.Equal(1, _stillGespeichert);
+        Assert.Empty(_angelegt);
         Assert.Equal(new[] { "Haus 1990" }, _geloescht);
     }
 

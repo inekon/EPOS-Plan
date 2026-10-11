@@ -131,6 +131,7 @@
                         SatzArt="@SatzArt" SatzName="@SatzName" SatzKenndaten="@SatzKenndaten"
                         SatzNurLesen="@KatalogsatzGesperrt" SatzNurAnsicht="@(SatzArt == Satzmarke.Katalogsatz)"
                         SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
+                        SatzBearbeiten="BeiDetailBearbeiten"
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()" @ref="_zweispalten">
 
@@ -1666,6 +1667,20 @@
         await KatalogsatzBearbeiten(zeile);
     }
 
+    /// <summary>
+    /// „Bearbeiten" der Detailzeile (geb3): beim ungesperrten Katalogsatz derselbe Weg wie Fußleiste und Stift — der
+    /// Katalogeditor; beim gesperrten Katalogsatz und beim Projektsatz die Satz-Überlagerung.
+    /// </summary>
+    private async Task BeiDetailBearbeiten()
+    {
+        if (SatzArt == Satzmarke.Katalogsatz && _katalogzeile is not null)
+        {
+            await KatalogsatzBearbeiten(_katalogzeile);
+            return;
+        }
+        if (_zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
     private async Task KatalogsatzBearbeiten(Katalogfilterzeile zeile)
     {
         if (!zeile.Geschuetzt && KatalogGaben is not null)
@@ -1822,7 +1837,7 @@
         if (ziele.Count != 1 || !RueckwegDa) return;
         GebaeudeProjektZeile z = ziele[0];
         if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
-        if (!z.HatProjektkopie && !VorherSpeichern(SperreInDb)) return;
+        if (!z.HatProjektkopie && !VorherSpeichern(z, SperreInDb)) return;
         _meldung = "";
         WindowsFormsApplication1.GebaeudeRueckwegVorschau? v = null;
         if (RueckwegVorschau is not null && Rueckweg is not null)
@@ -2017,7 +2032,7 @@
     private void ProjekteditorOeffnen(GebaeudeProjektZeile z)
     {
         if (ProjektGaben is null) return;
-        if (!z.HatProjektkopie && !VorherSpeichern(SperreNeueZeile)) return;
+        if (!z.HatProjektkopie && !VorherSpeichern(z, SperreNeueZeile)) return;
         _meldung = "";
         _projektGaben = ProjektGaben(z);
         if (_projektGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
@@ -2039,7 +2054,7 @@
     private void BeiExport()
     {
         if (_gewaehlt is null || ExportGaben is null) return;
-        if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(SperreExport)) return;
+        if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(_gewaehlt, SperreExport)) return;
         _meldung = "";
         _exportGaben = ExportGaben(_gewaehlt, _geaenderteZeilen.Contains(_gewaehlt));
         if (_exportGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
@@ -2115,7 +2130,7 @@
         if (gaben is null && ListeSpeichern is not null && !_gewaehlt.HatProjektkopie
             && _gewaehlt.Herkunftsschluessel is not null)
         {
-            if (!StillSpeichern(amKatalog: false)) return;
+            if (!KopienAnlegen(new[] { _gewaehlt }, amKatalog: false)) return;
             gaben = BedarfGaben(_gewaehlt);
         }
         if (gaben is null)
@@ -2188,9 +2203,10 @@
         foreach (Katalogfilterzeile k in ziele)
         {
             int satz = k.Id;
-            // Die Kopie einer ungespeicherten Zeile aus diesem Satz entsteht zuerst (stilles Speichern).
-            if (ListeSpeichern is not null && Zeilen.Any(z => !z.HatProjektkopie && z.IdKatalog == satz)
-                && !StillSpeichern(amKatalog: true))
+            // Die Kopie einer ungespeicherten Zeile aus diesem Satz entsteht zuerst (geb3: über ZeileAnlegen allein
+            // für diese Zeilen, Abbrechen räumt sie ab; ohne den Weg still gespeichert).
+            if (ListeSpeichern is not null
+                && !KopienAnlegen(Zeilen.Where(z => !z.HatProjektkopie && z.IdKatalog == satz).ToList(), amKatalog: true))
                 return;
             string loeschName = k.Bezeichner;
             // KT-4: Wirft der Löschweg, kommt sein Grund wie eine Ablehnung zurück.
@@ -2391,17 +2407,37 @@
     }
 
     /// <summary>
-    /// Vor dem Öffnen oder Übernehmen einer ungespeicherten Zeile: still speichern; ohne Speicherweg
+    /// Vor dem Öffnen oder Übernehmen einer ungespeicherten Zeile: ihre Kopie anlegen (<see cref="KopienAnlegen"/>); ohne Speicherweg
     /// (Assistent) die weiche Sperre <paramref name="sperre"/>. Fehlt die Kopie trotz Erfolg, steht
     /// <see cref="MeldungProjektkopieFehlt"/>. <c>true</c>, wenn die Zeile danach ihre Projektkopie trägt.
     /// </summary>
-    private bool VorherSpeichern(string sperre)
+    private bool VorherSpeichern(GebaeudeProjektZeile zeile, string sperre)
     {
         if (ListeSpeichern is null) { Melden(sperre, WarnStufe.Hinweis); return false; }
-        if (!StillSpeichern(amKatalog: false)) return false;
-        if (_gewaehlt is { HatProjektkopie: true }) return true;
+        if (!KopienAnlegen(new[] { zeile }, amKatalog: false)) return false;
+        if (zeile.HatProjektkopie) return true;
         Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
         return false;
+    }
+
+    /// <summary>
+    /// <b>Die Projektkopie der ungespeicherten Zeilen</b> (geb3, Konzept 4.6): Mit <see cref="ZeileAnlegen"/> entsteht sie
+    /// allein für diese Zeilen — der übrige Arbeitsstand bleibt bis OK, und Abbrechen räumt die Kopien wieder ab; ohne
+    /// den Weg bleibt es beim stillen Speichern der ganzen Liste (<see cref="StillSpeichern"/>). Scheitert eine Zeile,
+    /// steht ihr Grund als Warnung, und es geschieht nichts weiter.
+    /// </summary>
+    private bool KopienAnlegen(IReadOnlyList<GebaeudeProjektZeile> zeilen, bool amKatalog)
+    {
+        if (zeilen.All(z => z.HatProjektkopie)) return true;
+        if (ZeileAnlegen is null) return StillSpeichern(amKatalog);
+        foreach (GebaeudeProjektZeile z in zeilen.Where(z => !z.HatProjektkopie))
+        {
+            // KT-4: Wirft der Schreibweg, kommt sein Grund wie eine Ablehnung zurück.
+            string fehler = Katalogladung.Schreiben(() => ZeileAnlegen(z) ?? "", TitelText, g => g);
+            if (fehler.Length > 0) { Melden(fehler, WarnStufe.Warnung, amKatalog); return false; }
+        }
+        if (_gewaehlt is not null && _katalogzeile is null) ProjektzeileWaehlen(_gewaehlt);
+        return true;
     }
 
     /// <summary>
