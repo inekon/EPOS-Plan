@@ -4,8 +4,9 @@
 `2026-10-10_R50_Wochentagsraster`) hat der Anwender am 10.10.2026 mit der Klarstellung 1 und den Entscheiden F1–F10
 beantwortet (Abschnitt 5.1, Wortlaut); F8 wurde am selben Tag durch die Wahl (a) ersetzt. Fassung 2 arbeitet die Entscheide
 ein; die Fragen F11–F16 der Fassung 2 hat der Anwender am selben Tag entschieden (E124, Abschnitt 5.2) — alle nach
-Empfehlung bis auf F13: Die berechnete Vorheizzeit gilt „fest“ an jedem Sprung, die Art „täglich“ wird nicht gebaut. Der
-Bau läuft in den Wellen V0–V8 (Abschnitt 6). Die Messungen in Abschnitt 2.8 stammen aus der Basis R51 `2026-10-10_R51_FreieKuehlung`, deren Reihen für 1051 mit R50
+Empfehlung bis auf F13: Die berechnete Vorheizzeit gilt „fest“ an jedem Sprung, die Art „täglich“ wird nicht gebaut. Die
+Fragen F17–F20 aus der Messung der Welle V3 hat der Anwender am 11.10.2026 nach Empfehlung entschieden (E125, Abschnitt 5.3).
+Der Bau läuft in den Wellen V0–V8 (Abschnitt 6). Die Messungen in Abschnitt 2.8 stammen aus der Basis R51 `2026-10-10_R51_FreieKuehlung`, deren Reihen für 1051 mit R50
 übereinstimmen (Heizwärme 24,22 MWh, Spitze 30,00 kW, P_auf 31,62 kW). Grundlage bleiben
 [Teilkonzept Konditionierungsprofile](../Konzept_Konditionierungsprofile_EPOS-Plan.md) Kapitel 4 (Aufheizoptimierung,
 Stufe KP3), [Entwurf KP3](../../ueberholt/2026-10-02_Entwurf_KP3.md), [Konzept Heizlastspitzen](2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)
@@ -294,11 +295,16 @@ Nutzungsbeginn den Sollwert nicht (bis 1,4 K darunter); nötig wären bis 9 h Vo
 
 **Rechenweg:**
 
-1. Vorlauf nach 2.4; je Sprung der Bedarf t_nötig(h_s) unter P_V, Kennzeichnung „unerreichbar“ (t_nötig = min(D, 47),
-   Absenkung entfällt).
-2. **t_V = max über alle Sprünge des Jahres von t_nötig** (F5: aus dem Jahresmaximum die Zeit, die nötig ist, den Deckel
-   nicht zu überschreiten) — je Zone; mit Geltung Gebäude das Maximum über die Zonen. t_V ist der **Bemessungswert**:
-   Herleitungszeile, Bericht, Vorschlag für eine Gebäudeleittechnik.
+1. Vorlauf nach 2.4; je Sprung der Bedarf t_nötig(h_s) unter P_V, Kennzeichnung „unerreichbar“ (kein t ≤ min(D, 47)
+   kommt an). **Ein unerreichbarer Sprung geht nicht in die Bemessung ein** (F18 (b), E125): Er wird gezählt und im Hinweis
+   genannt; sein Fenster ist wie an jedem Sprung min(t_V, D, 47).
+2. **t_V = 95-%-Quantil von t_nötig über die erreichbaren Sprünge des Jahres** (F19 (b), E125; F5: aus dem Jahresbedarf die
+   Zeit, die nötig ist, den Deckel nicht zu überschreiten) — das kleinste t, das mindestens 95 % dieser Sprünge abdeckt (Rang
+   ⌈0,95·n⌉ der aufsteigend sortierten Bedarfe, ohne Interpolation; unter 20 Sprüngen das Maximum); der Anteil 95 % ist eine
+   Kern-Konstante (`Vorheizplanung.BEDARF_QUANTIL_PROZENT`), nicht einstellbar. Je Zone; mit Geltung Gebäude das Maximum der
+   Zonenquantile. t_V ist der **Bemessungswert**: Herleitungszeile, Bericht, Vorschlag für eine Gebäudeleittechnik. Das
+   Maximum **t_nötig,max** der erreichbaren Sprünge bleibt Ergebnisgröße; die Sprünge mit t_nötig > t_V werden gezählt, ihre
+   Tage meldet der Nachweis als „nötig wären bis t_nötig,max h statt t_V h“ samt der größten Unterschreitung an ihnen.
 3. Plan und Lauf wie Option 1 — mit t_V an **jedem** Sprung („fest“, F13 (a), E124). Begründung des Anwenders: In der
    Realität wird die Vorheizzeit fest gesetzt. „Fest“ entspricht zugleich dem Wortlaut von F5 und der heutigen Art „fest“.
    Eine Anwendung „täglich“ (je Sprung t_nötig(h_s), höchstens t_V; behält an milden Tagen die Absenkung, 2.8) wird nicht
@@ -307,7 +313,7 @@ Nutzungsbeginn den Sollwert nicht (bis 1,4 K darunter); nötig wären bis 9 h Vo
    ihn als Abweichung (Nachbarn, Kreis).
 
 **t_V ≥ Absenkdauer.** Werktags ist D = 13 h. Liegt t_nötig eines Werktags bei D, entfällt die Absenkung dieser Nacht (der
-Bau wird durchgeheizt); liegt das Jahresmaximum t_V bei einem Wochenendsprung über 13 h, entfällt mit „fest“ die
+Bau wird durchgeheizt); liegt t_V bei einem Wochenendsprung über 13 h, entfällt mit „fest“ die
 Absenkung **jeder** Werktagsnacht — das ist in 1051 der Fall (2.8): t_V ≈ 15 h aus dem Sprung nach dem Wochenende liegt über
 der Werktagsabsenkung von 13 h, jede Werktagsnacht wird durchgeheizt, ≈ +10 % Heizwärme. Diese Folge ist mit F13 (a)
 angenommen. Der Lauf zählt die Nächte ohne Absenkung und weist die Mehrwärme gegen den Vorlauf aus; der Hinweis nennt
@@ -331,8 +337,17 @@ oder (1 + ρ)·Φ_stat(θ_T,max, T_a,min) gebildet; die Reserve ρ bleibt Eingab
   Kopplungsweg selbst (`SchrittUebergabe`, `Zonenmodell2K.cs:1168`): Übergabe, Heizkurve und P-Regler sind in der
   Vorausschau enthalten; P_V und P_K wirken als Begrenzungsgrund `HeizleistungMax` neben Übergabe und Vorlaufgrenze
   (`:956`, `:577`). Die Regelgenauigkeit ε deckt den Regelabstand des P-Reglers (`Regler_Proportionalband`); W5 entfällt
-  für die neuen Verfahren.
+  für die neuen Verfahren. **Ankunftsbezug (F17 (b), E125):** An einer Zone mit Heizkreis messen Vorausschau und Nachweis
+  die Ankunft gegen min(θ_T, θ_stat) − ε; θ_stat ist die Raumluft, die der Heizkreis am durchgewärmten Bau zur
+  Kalenderstunde hält (Gleichgewicht des Zonenmodells mit dem Rand von h_s, `Vorheizankunft`). Was die Übergabe stationär
+  nicht hält, kann kein Vorheizen erreichen — ohne den Bezug zögen solche Sprünge t_V auf das längste Fenster. Eine
+  Schnellaufheizung (Heizkurve im Fenster anheben) bleibt eine mögliche spätere Ergänzung.
 - **AK2 (Verfügbarkeit):** Deckelreihe und Verfügbarkeitsschranke gelten zusammen (Minimum, `Stundenrand.cs:159`).
+  **Sperrzeit (F20 (a), E125):** Vorausschau und Lauf rechnen eine Sperrzeit (Nachtsperre der Wärmepumpe, Zeitprogramm 0
+  an Kessel und BHKW) mit, weil sie dieselbe Schranke tragen. Liegt eine Fensterstunde ohne verfügbare Wärme in einer
+  Sperrzeit (Grund Sperrzeit, Zeitprogramm oder Speicher leer, Schranke 0), nennt ein Hinweis die Tage, die gesperrten
+  Uhrzeiten und die Stunden, in denen vorgeheizt werden kann (liegt das Fenster ganz in der Sperre: dass dort nicht
+  vorgeheizt werden kann). Keine Sonderlogik: Das Fenster wird nicht verschoben.
 - **AK3 (geschlossener Kreis):** Vorlauf und Vorausschau im Profilweg (Rückstufe `Ak3Kernstufe`), der Plan — Sollwertreihe
   und Deckelreihe — reist über `AufheizplanSetzen` in den Stepper (`Vdi6007Rechenweg.cs:207`); ob der Erzeuger P_V liefert,
   zeigt der Kreis; der Nachweis misst am Kreisergebnis.
@@ -603,6 +618,32 @@ Logbuch-Satz beim gebündelten Upload, Versionsnummer beim Anwender erfragen.
 | F15 | Vorgabe der Regelgenauigkeit und Messpunkt: (a) 1 K am Beginn von h_s, (b) 0,5 K, (c) Stundenmittel als Kriterium | **(a)** nach Empfehlung | ε-Vorgabe 1 K, gemessen am Beginn von h_s (Augenblick), Stundenmittel von h_s als Kennzahl (2.1) |
 | F16 | Ebene der Heizkreis-Ausnahme (F10): (a) je Projekt, (b) je Gebäude | **(a)** nach Empfehlung | ein Schalter je Projekt, `Aufheiz_Heizkreis_Einbeziehen` (2.7, 4) |
 
+### 5.3 Entschieden (Anwender, 11.10.2026) — F17–F20
+
+**Wortlaut (E125):** „F17-F20: Empfehlung“. Die Fragen kamen aus der Messung der Welle V3b
+([Protokoll AH-V3b](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V3b_AK3_Auskunft_Ankunftsbezug.md)).
+
+| Frage | Gegenstand | Gewählt | Umsetzung (AH-V3c) |
+|---|---|---|---|
+| F17 | Ankunftsbezug an Zonen mit Heizkreis: (a) θ_T − ε, (b) min(θ_T, θ_stat) − ε | **(b)** nach Empfehlung | Vorgabe `Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE` = (b); die Wahl bleibt `internal` als Gegenprobe der Tests und der Messung (2.7). Schnellaufheizung nicht Teil des Baus |
+| F18 | Unerreichbare Sprünge: (a) mit min(D, 47) in t_V, (b) nur gezählt | **(b)** nach Empfehlung | Sie bemessen t_V nicht, werden gezählt und gemeldet; der Schalter `UnerreichbareImMaximum` ist zurückgebaut (2.6) |
+| F19 | t_V bei „fest“: (a) Maximum, (b) 95-%-Quantil | **(b)** nach Empfehlung | Kleinstes t, das ≥ 95 % der erreichbaren Sprünge deckt (Kern-Konstante); t_V,Geb = Maximum der Zonenquantile; t_nötig,max, Zahl der Sprünge und Tage über t_V als Ergebnisgrößen; Hinweis „nötig wären bis … h statt … h“ (2.6) |
+| F20 | Vorheizfenster in einer Sperrzeit: (a) mitrechnen und melden, (b) Fenster verschieben | **(a)** nach Empfehlung | Hinweis `SIMENG_VORH_SPERRZEIT` bzw. `…_GANZ` mit Tagen, gesperrten und freien Uhrzeiten; keine Sonderlogik (2.7) |
+
+**Messung mit den Vorgaben** (Option 2, ε 1 K, Geltung Gebäude, die übrigen Felder der Projektvorgabe, ganzer Projektlauf
+über die Testnaht; Mehrwärme gegen die Basis R51):
+
+| Projekt | t_V (Q95) [h] | t_nötig,max [h] | Sprünge / Tage über t_V | Tage unerreichbar | Tage ohne Ankunft | Unterschreitung max [K] | Nächte ohne Absenkung | Spitze [kW] | Mehrwärme |
+|---|---|---|---|---|---|---|---|---|---|
+| 1054 (AK1, 3 Zonen) | 12 | 18 | 12 / 12 | 1 | 10 | 3,97 | 365 | 23,8 | +4 637 kWh (+9,7 %) |
+| 1047 (AK1, Einzone) | 1 | 2 | 13 / 13 | 0 | 10 | 2,39 | 0 | 42,0 | +484 kWh (+0,7 %) |
+| 1058 (AK3) | 1 | 2 | 13 / 13 | 0 | 1 | 2,31 | 0 | 42,0 | +547 kWh (+0,8 %) |
+| 1056 (AK1, Fahrplan) | 1 | 8 | 8 / 8 | 189 | 197 | 6,52 | 0 | 47,0 | ±0 kWh |
+| 1051 (ohne Heizkreis) | 2 | 5 | 5 / 5 | 0 | 5 | 1,54 | 0 | 28,3 | +450 kWh (+1,9 %) |
+
+1056: Das Fenster (5–6 Uhr) liegt an 359 Tagen ganz in der Sperrzeit; der Hinweis nennt es. Einzelheiten und Lesart im
+[Protokoll AH-V3c](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V3c_Entscheide_F17_F20.md).
+
 ---
 
 ## 6 Wellenplan
@@ -612,7 +653,7 @@ Logbuch-Satz beim gebündelten Upload, Versionsnummer beim Anwender erfragen.
 | V0 | Entscheide nachziehen: Teilkonzept Konditionierungsprofile 4 (neuer Abschnitt Vorheizen mit Deckel), Glossar, Register, Statuszeile; Fragen F11–F16 entschieden einarbeiten (E124) — **erledigt** | Linkwache | 0,5 |
 | V1 | Kern: Deckelreihe je Stunde in Eingang, Zonen, Kopplungsweg (AK1/AK2) und Stepper (AK3); Zustand sichern/setzen für die Vorausschau; ohne Reihe bitgleich; Messung der Rechenzeit eines Zonenjahrs | Referenzlauf byte-gleich, Kerntests | 1,5–2 |
 | V2 | Kern: Vorlauf (Φ_ref, Φ_K,max, S_0, Zustände), Deckel P_K/P_V mit Toleranz % und kW, Vorheizplan Option 1 (Fenster, Sollwert, Kühlkappe, Deckelreihe, Floor, W4, Nacht ohne Absenkung), Nachweis im Lauf (Ankunft am Beginn von h_s, Unterschreitung, Sprung, Deckel- und Floor-Stunden, Mehrwärme), Hinweise, Gebäudewerte | neue Tests, Probe gegen die erste Ordnung (2.3), Bestand byte-gleich | 2–3 |
-| V3 | Kern: Option 2 — Vorausschau je Sprung (Bisektion über t), Bedarf, „unerreichbar“, t_V fest, Geltung Zone/Gebäude mit Zonenanteilen, AK1-Einbezug, AK3-Profilweg; Messung τ, C_w, t_V und Mehrwärme an der Kopie von 1051 gegen 2.8 | Prüforakel, Messprotokoll, Rechenzeit unter der Schranke | 1,5–2,5 |
+| V3 | Kern: Option 2 — Vorausschau je Sprung (Bisektion über t), Bedarf, „unerreichbar“, t_V fest, Geltung Zone/Gebäude mit Zonenanteilen, AK1-Einbezug, AK3-Profilweg; Messung τ, C_w, t_V und Mehrwärme an der Kopie von 1051 gegen 2.8; Entscheide F17–F20 (E125) — **erledigt** (V3a, V3b, V3c) | Prüforakel, Messprotokoll, Rechenzeit unter der Schranke | 1,5–2,5 |
 | V4 | Schema und Datenweg: ein Schritt (Einstellungen, Zone, Ergebnis Gebäude/Zone), Controller, Testdatenbank anheben, `SqlDialektPruefer` | Schema- und Controllertests | 1–1,5 |
 | V5 | Oberfläche: Gruppe mit Verfahren und Feldern nach 2.9, Texte beider Sprachen, Gebäude- und Zonenfeld, Vorbelegung aus `Dienste.Einstellungen`, Hülle, KI-Felder, bunit | UI-Tests, Windows-Schale kompiliert | 1,5–2 |
 | V6 | Bericht, Kennzahlen, Export, Kurzbericht (Katalogfassung), Variantenvergleich | Berichtstests, `Berichtsvorlage` gezogen | 1–1,5 |
@@ -622,6 +663,6 @@ Logbuch-Satz beim gebündelten Upload, Versionsnummer beim Anwender erfragen.
 
 Nur Option 1 (ohne V3; Bedarf in der Meldung dann aus der Vorausschau an den verfehlten Tagen, Geltung nur Gebäude):
 9,5–13 PT. Reihenfolge: V0 → V1 → V2 → V4 → V3 → V5/V6 parallel → V7 → V8; V1 und V2 ändern ohne Verfahrenswahl keine
-Zahl. Alle Fragen sind entschieden (E122, E124). V3 ist gegenüber Fassung 2 um 0,5 PT gesenkt: Mit F13 (a) entfallen
+Zahl. Alle Fragen sind entschieden (E122, E124, E125). V3 ist gegenüber Fassung 2 um 0,5 PT gesenkt: Mit F13 (a) entfallen
 die zweite Anwendungsart „täglich“ (Fenster je Sprung aus t_nötig, eigene Zählung der Absenkung), ihre Auswahl und deren
-Tests; die Vorausschau je Sprung bleibt, weil t_V ihr Jahresmaximum ist.
+Tests; die Vorausschau je Sprung bleibt, weil t_V ihr 95-%-Quantil ist (F19).

@@ -9,10 +9,10 @@ using Xunit.Abstractions;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Ankunftsbezug und Maximum der Option 2 als interne Wahl</b> (Welle V3b, für einen offenen Anwenderentscheid): (a) gegen
-    /// θ_T − ε (Vorgabe), (b) gegen min(θ_T, θ_stat) − ε an einer Zone mit Heizkreis — θ_stat ist der Fixpunkt der Stundenabbildung
-    /// des Zonenmodells unter dem Rand von h_s; unerreichbare Sprünge im Maximum t_V (Vorgabe) oder nur gezählt. Dazu die Messung
-    /// an 1054, 1056, 1047, 1058 und 1051 (nur mit <c>EPOS_MESSUNG=1</c>).
+    /// <b>Ankunftsbezug und Bemessung der Option 2</b> (Welle V3b, entschieden mit F17–F19, Welle V3c): (b) gegen
+    /// min(θ_T, θ_stat) − ε an einer Zone mit Heizkreis (Vorgabe, F17) — θ_stat ist der Fixpunkt der Stundenabbildung des
+    /// Zonenmodells unter dem Rand von h_s —, (a) gegen θ_T − ε als Gegenprobe; unerreichbare Sprünge nur gezählt (F18), t_V
+    /// das 95-%-Quantil (F19). Dazu die Messung an 1054, 1047, 1058, 1056 und 1051 (nur mit <c>EPOS_MESSUNG=1</c>).
     /// </summary>
     [Collection("Testdatenbank")]
     public class VorheizAnkunftsbezugTests : IClassFixture<TestDatenbank>
@@ -33,19 +33,14 @@ namespace EPOS.Kern.Tests
         private static readonly SolardatenModel[] Klima = Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang);
 
         private static Aufheizvorgabe Berechnet(Vorheizankunftsbezug bezug = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE,
-                                                bool imMaximum = Vorheizvorgabe.UNERREICHBARE_IM_MAXIMUM_VORGABE,
                                                 Aufheizvorgabe basis = null)
             => (basis ?? new Aufheizvorgabe(true, null, null, null, null)) with
             {
-                Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Berechnet)
-                {
-                    Ankunftsbezug = bezug,
-                    UnerreichbareImMaximum = imMaximum,
-                },
+                Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Berechnet) { Ankunftsbezug = bezug },
             };
 
         /// <summary>Das Probegebäude AK1 (Radiator, Heizkurve) mit knapper Übergabe: Nennleistung = <paramref name="anteil"/> · Φ_HL.</summary>
-        private static GebaeudeModellEingang Gekoppelt(double anteil)
+        internal static GebaeudeModellEingang Gekoppelt(double anteil)
         {
             static ProjektGebaeudeModel G(double? nennKw)
             {
@@ -73,7 +68,7 @@ namespace EPOS.Kern.Tests
             return e;
         }
 
-        private static (Aufheizplan Plan, GebaeudeModellErgebnis Lauf) Rechnen(GebaeudeModellEingang e, Aufheizvorgabe v)
+        internal static (Aufheizplan Plan, GebaeudeModellErgebnis Lauf) Rechnen(GebaeudeModellEingang e, Aufheizvorgabe v)
         {
             Aufheizplan plan = Vorheizplanung.AnwendenEinzone(e, v, 0, 1);
             GebaeudeModellErgebnis lauf = Vdi6007Rechenweg.Laufen(e, 0, 1, plan);
@@ -161,25 +156,28 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ohne_unerreichbare_Spruenge_im_Maximum_ist_tV_das_Maximum_der_erreichbaren()
+        public void Unerreichbare_Spruenge_gehen_nicht_in_tV_ein_und_werden_gezaehlt()
         {
-            (Aufheizplan mit, _) = Rechnen(Gekoppelt(0.4), Berechnet(imMaximum: true));
-            (Aufheizplan ohne, _) = Rechnen(Gekoppelt(0.4), Berechnet(imMaximum: false));
-            Assert.True(ohne.Vorheizen.SpruengeUnerreichbar > 0);
-            int erreichbar = ohne.Vorheizen.Spruenge.Where(x => !x.Unerreichbar).Select(x => x.BedarfH).DefaultIfEmpty(0).Max();
-            Assert.Equal(Math.Max(1, erreichbar), ohne.Vorheizen.VorheizzeitH);
-            Assert.Equal(Math.Max(1, mit.Vorheizen.Spruenge.Max(x => x.BedarfH)), mit.Vorheizen.VorheizzeitH);
-            Assert.True(ohne.Vorheizen.VorheizzeitH < mit.Vorheizen.VorheizzeitH);
-            Assert.Equal(mit.Vorheizen.SpruengeUnerreichbar, ohne.Vorheizen.SpruengeUnerreichbar);
+            (Aufheizplan p, _) = Rechnen(Gekoppelt(0.4), Berechnet(Vorheizankunftsbezug.Sollwert));
+            Vorheizplan vp = p.Vorheizen;
+            Assert.True(vp.SpruengeUnerreichbar > 0, "Die Probe ist nicht knapp genug.");
+            Assert.Equal(vp.Spruenge.Count(x => x.Unerreichbar), vp.SpruengeUnerreichbar);
+            List<int> erreichbar = vp.Spruenge.Where(x => !x.Unerreichbar && x.BedarfH > 0).Select(x => x.BedarfH).ToList();
+            Assert.Equal(Math.Max(1, Vorheizplanung.Quantil(erreichbar, 95)), vp.VorheizzeitH);
+            Assert.Equal(erreichbar.DefaultIfEmpty(0).Max(), vp.BedarfMaxH);
+            // Mit den unerreichbaren Sprüngen (min(D, 47)) läge t_V höher — sie bemessen nicht.
+            Assert.True(vp.Spruenge.Where(x => x.Unerreichbar).Max(x => x.BedarfH) > vp.VorheizzeitH);
+            Assert.Equal(erreichbar.Count(b => b > vp.VorheizzeitH), vp.SpruengeUeberVorheizzeit);
         }
 
         [Fact]
-        public void Die_Vorgaben_sind_das_Verhalten_vor_V3b()
+        public void Die_Vorgaben_sind_die_Entscheide_F17_bis_F19()
         {
             var v = new Vorheizvorgabe(Aufheizverfahren.Berechnet);
-            Assert.Equal(Vorheizankunftsbezug.Sollwert, v.Ankunftsbezug);
-            Assert.True(v.UnerreichbareImMaximum);
-            Assert.Equal(v, v with { Ankunftsbezug = Vorheizankunftsbezug.Sollwert, UnerreichbareImMaximum = true });
+            Assert.Equal(Vorheizankunftsbezug.Uebergabe, v.Ankunftsbezug);
+            Assert.Equal(Vorheizankunftsbezug.Uebergabe, Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE);
+            Assert.Equal(95, Vorheizplanung.BEDARF_QUANTIL_PROZENT);
+            Assert.Equal(v, v with { Ankunftsbezug = Vorheizankunftsbezug.Uebergabe });
             // Ausdrücklich gesetzte Vorgaben rechnen bitgleich zur ungesetzten Vorgabe — auch an der knappen Übergabe.
             (Aufheizplan pa, GebaeudeModellErgebnis la) = Rechnen(Gekoppelt(0.4), new Aufheizvorgabe(true, null, null, null, null) { Vorheizen = v });
             (Aufheizplan pb, GebaeudeModellErgebnis lb) = Rechnen(Gekoppelt(0.4), Berechnet());
@@ -192,43 +190,39 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// <b>Die Entscheidungsgrundlage</b>: je Projekt Option 2 (ε 1 K, Geltung Gebäude, die übrigen Felder der Projektvorgabe) für
-        /// Bezug (a)/(b) × unerreichbare Sprünge im Maximum ja/nein über den ganzen Projektlauf (1058: Nachweis am Kreis); Mehrwärme
-        /// gegen den Lauf mit der gespeicherten Vorgabe des Projekts (= Basis R51).
+        /// <b>Die Messung der Entscheide F17–F20</b> (Welle V3c): je Projekt Option 2 mit den Vorgaben (Bezug (b), Quantil 95 %,
+        /// unerreichbare nur gezählt; ε 1 K, Geltung Gebäude, die übrigen Felder der Projektvorgabe) über den ganzen Projektlauf
+        /// (1058: Nachweis am Kreis); Mehrwärme gegen den Lauf mit der gespeicherten Vorgabe des Projekts (= Basis R51); dazu der
+        /// Sperrzeit-Hinweis (F20).
         /// </summary>
         [Fact]
-        public void Messung_Ankunftsbezug_und_Maximum()
+        public void Messung_Entscheide_F17_bis_F20()
         {
             if (!_db.Vorhanden || Environment.GetEnvironmentVariable("EPOS_MESSUNG") != "1") return;
             using var k = new Kulturvorrichtung("de-DE");
             CultureInfo c = CultureInfo.InvariantCulture;
-            foreach (int projekt in new[] { 1054, 1056, 1047, 1058, 1051 })
+            _aus.WriteLine("| Projekt | t_V (Q95) | t_nötig,max | Median | Sprünge über t_V | Tage über t_V | unerreichbar | ohne Ankunft | Unterschreitung K | Nächte o. Absenkung | Spitze kW | Mehrwärme kWh | Sperrzeit Tage | Zeit |");
+            foreach (int projekt in new[] { 1054, 1047, 1058, 1056, 1051 })
             {
                 SimulationRunner basis = VorheizAk3Tests.Projektlauf(projekt, null);
                 double qBasis = Heizwaerme(basis);
-                Aufheizvorgabe pv = KonfigurationCtrl.AufheizvorgabeLesen(projekt);
-                _aus.WriteLine(string.Format(c, "{0}: Heizwärme Basis {1:0} kWh (Aufheizoptimierung des Projekts {2})", projekt, qBasis,
-                                             pv != null && pv.An ? "an" : "aus"));
-                foreach ((Vorheizankunftsbezug bezug, bool imMax) in new[]
-                         {
-                             (Vorheizankunftsbezug.Sollwert, true), (Vorheizankunftsbezug.Sollwert, false),
-                             (Vorheizankunftsbezug.Uebergabe, true), (Vorheizankunftsbezug.Uebergabe, false),
-                         })
+                var uhr = System.Diagnostics.Stopwatch.StartNew();
+                SimulationRunner r = VorheizAk3Tests.Projektlauf(projekt, Berechnet(Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE,
+                                                                                     VorheizAk3Tests.ProjektvorgabeAn(projekt)));
+                double ms = uhr.Elapsed.TotalMilliseconds;
+                double q = Heizwaerme(r);
+                foreach (GebaeudeModellErgebnis e in Ergebnisse(r).Where(x => x.Vorheizen != null))
                 {
-                    var uhr = System.Diagnostics.Stopwatch.StartNew();
-                    SimulationRunner r = VorheizAk3Tests.Projektlauf(projekt, Berechnet(bezug, imMax, VorheizAk3Tests.ProjektvorgabeAn(projekt)));
-                    double ms = uhr.Elapsed.TotalMilliseconds;
-                    double q = Heizwaerme(r);
-                    foreach (GebaeudeModellErgebnis e in Ergebnisse(r).Where(x => x.Vorheizen != null))
-                    {
-                        Vorheizgebaeude v = e.Vorheizen;
-                        _aus.WriteLine(string.Format(c,
-                            "| {0} | {1} | {2} | {3} | {4:0.#} / {5} | {6} | {7} | {8:0.00} | {9} | {10:0.0} | {11:+0;−0} ({12:+0.0;−0.0} %) | {13:0} ms |",
-                            projekt, bezug == Vorheizankunftsbezug.Sollwert ? "(a)" : "(b)", imMax ? "mit" : "ohne", v.VorheizzeitMaxH,
-                            v.BedarfMedianH, v.BedarfMaxH, v.TageUnerreichbar, v.TageOhneAnkunftAnzahl, v.UnterschreitungMaxK,
-                            v.NaechteOhneAbsenkung, v.SpitzeW / 1000.0, q - qBasis, 100.0 * (q - qBasis) / qBasis, ms));
-                    }
+                    Vorheizgebaeude v = e.Vorheizen;
+                    _aus.WriteLine(string.Format(c,
+                        "| {0} | {1} | {2} | {3:0.#} | {4} | {5} | {6} | {7} | {8:0.00} | {9} | {10:0.0} | {11:+0;−0} ({12:+0.0;−0.0} %) | {13} ({14} h; {15} / frei {16}) | {17:0} ms |",
+                        projekt, v.VorheizzeitMaxH, v.BedarfMaxH, v.BedarfMedianH, v.SpruengeUeberVorheizzeit, v.TageUeberVorheizzeit,
+                        v.TageUnerreichbar, v.TageOhneAnkunftAnzahl, v.UnterschreitungMaxK, v.NaechteOhneAbsenkung, v.SpitzeW / 1000.0,
+                        q - qBasis, 100.0 * (q - qBasis) / qBasis, v.TageSperrzeit, v.FensterstundenGesperrt,
+                        Vorheizplanung.Uhrzeiten(v.SperrUhr), Vorheizplanung.Uhrzeiten(v.FreiUhr), ms));
                 }
+                foreach (string z in r.Protokoll.Hinweise.Where(z => z.Contains("Vorheiz", StringComparison.Ordinal)))
+                    _aus.WriteLine("  " + z);
             }
         }
 

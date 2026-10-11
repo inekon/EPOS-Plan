@@ -685,7 +685,8 @@ namespace WindowsFormsApplication1
         /// <b>Die Laufhinweise des Vorheizens</b> (Entwurf Vorheizrampe Fassung 2, 2.5, 2.9; Welle V2) — einmal je Gebäude:
         /// der Rückfall auf die Sollwertrampe (Heizkreis-Schalter, keine Vorheizzeit), sonst die Kennzahlen (t_V,
         /// Φ_K,max, P_K, P_V, Spitze, Nächte ohne Absenkung, Mehrwärme), mit Option 2 die Bemessung von t_V, die Tage ohne
-        /// Ankunft samt Bedarf („nötig wären …“, V3a), die unerreichbaren Tage, die Abweichungen des Laufs von der Vorausschau,
+        /// Ankunft samt Bedarf („nötig wären …“, V3a; mit Option 2 die Tage über dem Quantil t_V, F19), die unerreichbaren Tage,
+        /// die Fensterstunden in einer Sperrzeit (F20), die Abweichungen des Laufs von der Vorausschau,
         /// Zonen ohne Auslegungsheizlast, die Floor-Stunden, die Toleranz 0, Zonen ohne Sprung und die Übergänge aus „aus“.
         /// Ohne Vorheizen schweigt die Methode.
         /// </summary>
@@ -709,8 +710,15 @@ namespace WindowsFormsApplication1
                 double.IsNaN(v.MehrwaermeProzent) ? "–" : v.MehrwaermeProzent.ToString("0.0", k)));
             if (v.Berechnet)
                 p.HinweisEinmal("vorh-berechnet-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_BERECHNET,
-                    v.VorheizzeitMaxH.ToString(k), double.IsNaN(v.BedarfMedianH) ? "–" : v.BedarfMedianH.ToString("0.#", k)));
-            if (v.TageOhneAnkunftAnzahl > 0)
+                    v.VorheizzeitMaxH.ToString(k), double.IsNaN(v.BedarfMedianH) ? "–" : v.BedarfMedianH.ToString("0.#", k),
+                    Vorheizplanung.BEDARF_QUANTIL_PROZENT.ToString(k), v.BedarfMaxH.ToString(k),
+                    v.SpruengeUeberVorheizzeit.ToString(k)));
+            // F19 (V3c): Mit Option 2 meldet der Hinweis die Tage, deren Bedarf über dem Quantil t_V liegt.
+            if (v.Berechnet && v.TageUeberVorheizzeit > 0)
+                p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE_BEDARF,
+                    v.TageUeberVorheizzeit.ToString(k), v.UnterschreitungUeberVorheizzeitK.ToString("0.0", k),
+                    v.BedarfMaxH.ToString(k), v.VorheizzeitMaxH.ToString(k)));
+            else if (v.TageOhneAnkunftAnzahl > 0)
             {
                 if (v.BedarfMaxH > v.VorheizzeitMaxH)
                     p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE_BEDARF,
@@ -723,6 +731,12 @@ namespace WindowsFormsApplication1
             if (v.TageUnerreichbar > 0)
                 p.HinweisEinmal("vorh-unerreichbar-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_UNERREICHBAR,
                     v.TageUnerreichbar.ToString(k), v.NaechteOhneAbsenkung.ToString(k)));
+            // F20 (V3c): ohne freie Fensterstunde ein eigener Text — das Fenster liegt ganz in der Sperrzeit.
+            if (v.TageSperrzeit > 0)
+                p.HinweisEinmal("vorh-sperrzeit-" + wer, kopf + string.Format(k,
+                    v.FreiUhr.Any(x => x) ? MyResource.Resource.SIMENG_VORH_SPERRZEIT : MyResource.Resource.SIMENG_VORH_SPERRZEIT_GANZ,
+                    v.TageSperrzeit.ToString(k), Vorheizplanung.Uhrzeiten(v.SperrUhr), v.FensterstundenGesperrt.ToString(k),
+                    Vorheizplanung.Uhrzeiten(v.FreiUhr)));
             if (v.TageAbweichung > 0)
                 p.HinweisEinmal("vorh-abweichung-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_ABWEICHUNG,
                     v.TageAbweichung.ToString(k)));
