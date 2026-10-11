@@ -40,6 +40,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const int FASSUNG_AUFHEIZUNG = 16;
 
+        /// <summary>Die Fassung der Vorheizgrößen der Aufheizoptimierung Fassung 2 (AH-V6, Katalog v19).</summary>
+        internal const int FASSUNG_VORHEIZEN = 19;
+
         /// <summary>Musterschlüssel der Kennzahlen des laufenden Stands.</summary>
         public const string MUSTER_STAND_KENNZAHL = "stand.kennzahl.<k>";
 
@@ -576,7 +579,7 @@ namespace WindowsFormsApplication1
                 Zahl("gebaeude.ergebnis.kuehlstunden", w => MitGebaeudeergebnis(w, true, e => e.KuehlstundenH), "N0", "h/a"),
                 Zahl("gebaeude.ergebnis.raumtemperatur", w => MitGebaeudeergebnis(w, true, e => e.MittlereRaumtemperaturC), "N1", "°C"),
                 Zahl("gebaeude.ergebnis.ueberhitzungsstunden", w => MitGebaeudeergebnis(w, true, e => e.UeberhitzungsstundenH), "N0", "h/a"),
-            }.Concat(Aufheizwerte());
+            }.Concat(Aufheizwerte()).Concat(Vorheizwerte());
         }
 
         /// <summary>
@@ -624,6 +627,44 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// <b>Katalog v19 (AH-V6; Entwurf Vorheizrampe 2.9):</b> die Vorheizgrößen der Fassung 2 des laufenden Gebäudes aus der
+        /// Ergebniszeile des Laufs — dieselben Zahlen wie die Gebäudetafel (<see cref="Aufheizbericht.Vorheizzeilen"/>), nur auf dem
+        /// Weg nach VDI 6007. Bei Sollwertrampe sind alle leer.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Vorheizwerte()
+        {
+            const Vorlagenfeldkontext GB = Vorlagenfeldkontext.Gebaeude;
+            Vorlagenfeld Zahl(string rest, Func<Vorheizkennzahlen, object> wert, string format, string einheit) =>
+                new Vorlagenfeld("gebaeude.ergebnis." + rest, Vorlagenfeldart.Zahl, GB,
+                                 w => MitGebaeudeergebnis(w, true, e => e.Vorheizen == null ? null : wert(e.Vorheizen)))
+                { Seit = FASSUNG_VORHEIZEN, Format = format, Einheit = einheit };
+
+            return new[]
+            {
+                new Vorlagenfeld("gebaeude.ergebnis.vorheizverfahren", Vorlagenfeldart.Text, GB,
+                    w => MitGebaeudeergebnis(w, true, e => Leer(Aufheizbericht.Verfahrenstext(e.Vorheizen?.Verfahren, w.Kultur))))
+                { Seit = FASSUNG_VORHEIZEN },
+                Zahl("vorheizzeit", v => v.VorheizzeitH, "N0", "h"),
+                Zahl("vorheizzeit_bedarf_max", v => v.VorheizzeitBedarfMaxH, "N0", "h"),
+                Zahl("vorheiz_bezug", v => v.BezugKw, "N1", "kW"),
+                Zahl("vorheiz_deckel", v => v.DeckelKw, "N1", "kW"),
+                Zahl("vorheizleistung", v => v.LeistungKw, "N1", "kW"),
+                Zahl("vorheiz_sprung_vorlauf", v => v.SprungVorlaufMaxKw, "N1", "kW"),
+                Zahl("vorheiz_sprung_lauf", v => v.SprungLaufMaxKw, "N1", "kW"),
+                Zahl("vorheiz_tage_verfehlt", v => v.TageVerfehlt, "N0", null),
+                Zahl("vorheiz_tage_ueber", v => v.TageUeberVorheizzeit, "N0", null),
+                Zahl("vorheiz_unterschreitung_max", v => v.UnterschreitungMaxK, "N1", "K"),
+                Zahl("vorheiz_unterschreitungsstunden", v => v.UnterschreitungH, "N0", "h/a"),
+                Zahl("vorheiz_deckelstunden", v => v.DeckelstundenH, "N0", "h/a"),
+                Zahl("vorheiz_floorstunden", v => v.FloorstundenH, "N0", "h/a"),
+                Zahl("vorheiz_naechte_ohne_absenkung", v => v.NaechteOhneAbsenkung, "N0", null),
+                Zahl("vorheiz_tage_unerreichbar", v => v.UnerreichbarTage, "N0", null),
+                Zahl("vorheiz_tage_sperrzeit", v => v.SperrzeitTage, "N0", null),
+                Zahl("vorheiz_mehrwaerme", v => v.MehrwaermeMwh, "N2", "MWh/a"),
+            };
+        }
+
         /// <summary>Ein leerer Text heißt „kein Wert“ (Leerwert des Felds statt eines leeren Laufs).</summary>
         private static object Leer(string text) => string.IsNullOrEmpty(text) ? null : text;
 
@@ -650,6 +691,9 @@ namespace WindowsFormsApplication1
                 // Katalog v16 (KP3 Welle O3a): ein Gebäude des Stands hat mit Aufheizoptimierung gerechnet.
                 new Vorlagenfeld("hat.aufheizung", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatAufheizung))
                     { Seit = FASSUNG_AUFHEIZUNG },
+                // Katalog v19 (AH-V6): ein Gebäude des Stands hat mit Vorheizen nach Fassung 2 gerechnet.
+                new Vorlagenfeld("hat.vorheizen", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatVorheizen))
+                    { Seit = FASSUNG_VORHEIZEN },
             };
         }
 

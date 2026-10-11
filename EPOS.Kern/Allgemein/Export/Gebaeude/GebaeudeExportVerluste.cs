@@ -57,6 +57,8 @@ namespace WindowsFormsApplication1
             // die Nutzung der Zone führt der IFC-Export als Zelle Nutzung von EPOS_Zone aus den Kalenderkopien
             // (RaumnutzungCtrl.ProfilUebernehmen schreibt beides zugleich), und der Import setzt sie dort wieder.
             ["Nutzungsprofil"] = N,
+            // AH-V4/V6 (Schritt 215): die Vorheizzeit der Zone - die Datei trägt sie nicht, der Import schreibt NULL (erbt).
+            ["Vorheizzeit_H"] = V,
         };
 
         /// <summary>Die Felder eines Bauteils.</summary>
@@ -173,6 +175,7 @@ namespace WindowsFormsApplication1
                 if (z.Bewohner.HasValue) namen.Add("Bewohner");
                 if (!string.IsNullOrWhiteSpace(z.Uebergabe_Art)) namen.Add("Uebergabe_Art");
                 if (!string.IsNullOrWhiteSpace(z.Kuehl_Uebergabe_Art)) namen.Add("Kuehl_Uebergabe_Art");
+                if (z.Vorheizzeit_H.HasValue) namen.Add("Vorheizzeit_H");
                 foreach (BauteilModel b in z.Bauteile ?? new List<BauteilModel>())
                 {
                     if (b == null) continue;
