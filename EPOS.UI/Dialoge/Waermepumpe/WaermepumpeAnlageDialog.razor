@@ -613,9 +613,15 @@
         <KindInhalt>
             @if (_katalogOffen)
             {
+                @* KT-8a: Wirft eine Vergleichsabfrage, nennt dieser Banner den Grund — in der
+                   Ueberlagerung, wo der Vergleich steht. *@
+                @if (_vergleichFehler.Length > 0)
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@_vergleichFehler" />
+                }
                 @* Ein Titel, eine Stelle: die Ueberlagerung traegt den Titel. *@
                 <WaermepumpenKatalogDialog Zeilen="@_katalog" Profil="@Katalogprofil"
-                                           Vergleichsparameter="@Vergleichsparameter"
+                                           Vergleichsparameter="@_vergleichsweg"
                                            TitelText="" Geschlossen="KatalogFertig" />
             }
         </KindInhalt>
@@ -1119,8 +1125,33 @@
     /// Führt das Projekt eine eigene Gerätekopie? Ohne Delegat <c>true</c> — eine Seite
     /// ohne Gaben soll zeichnen und bedienbar sein, nicht gesperrt dastehen.
     /// </summary>
+    /// <remarks>
+    /// KT-8a: Die Frage geht an die Datenbank und wird beim Zeichnen gelesen — deshalb einmal je
+    /// Gerät (<c>Daten.IdWp</c>) über die Fangstelle gelesen und gemerkt; <see cref="Auffrischen"/>
+    /// fragt neu. Wirft sie, gilt die Anlage als nicht gespeichert (der sichere Wert: beide Knöpfe
+    /// weich gesperrt), und der Satzbanner nennt den Grund.
+    /// </remarks>
     private bool Projektkopie
-        => ProjektkopieVorhanden is null || (Daten.IdWp > 0 && ProjektkopieVorhanden(Daten.IdWp));
+    {
+        get
+        {
+            if (ProjektkopieVorhanden is null) return true;
+            int idWp = Daten.IdWp;
+            if (idWp <= 0) return false;
+            if (idWp != _projektkopieFuer)
+            {
+                _projektkopieFuer = idWp;
+                _projektkopie = Katalogladung.Wert(() => ProjektkopieVorhanden(idWp), Daten.Bezeichner, false,
+                                                   out string grund);
+                if (grund.Length > 0) _satzFehler = grund;
+            }
+            return _projektkopie;
+        }
+    }
+
+    /// <summary>KT-8a: Für welches Gerät <see cref="_projektkopie"/> gelesen ist; -1 = neu fragen.</summary>
+    private int _projektkopieFuer = -1;
+    private bool _projektkopie;
 
     /// <summary>Der Grund der weichen Sperre — <c>null</c>, solange nichts gesperrt ist.</summary>
     private string? Sperrgrund => Projektkopie ? null : MeldungNichtGespeichert;
@@ -1128,14 +1159,31 @@
     private string RuecklaufVorschlagszeile
         => string.Format(RuecklaufFormat, string.Join(", ", RuecklaufVorschlaege));
 
+    /// <summary>Die Summenzeile — gelesen in <see cref="KostenNachziehen"/>, nicht je Zeichenlauf.</summary>
     private string Kostensummen
+        => _kostensummen is { } s ? string.Format(TextKostenSummen, s.Invest, s.Betrieb) : TextKostenKeine;
+
+    private (double Invest, double Betrieb)? _kostensummen;
+
+    /// <summary>
+    /// KT-8a: Bereitschaft und Summen der Kostenleiste über die Fangstelle lesen. Wirft ein Weg,
+    /// gilt die Leiste als nicht bereit bzw. ohne Summe (der sichere Wert), und der Satzbanner
+    /// nennt den Grund.
+    /// </summary>
+    private void KostenNachziehen()
     {
-        get
+        _kostenBereit = false;
+        _kostensummen = null;
+        if (KostenBereit is not null)
         {
-            if (!_kostenBereit || Kostensumme is null) return TextKostenKeine;
-            (double invest, double betrieb) = Kostensumme();
-            return string.Format(TextKostenSummen, invest, betrieb);
+            _kostenBereit = Katalogladung.Wert(KostenBereit, Daten.Bezeichner, false, out string grund);
+            if (grund.Length > 0) _satzFehler = grund;
         }
+        if (!_kostenBereit || Kostensumme is null) return;
+        Func<(double Invest, double Betrieb)> summe = Kostensumme;
+        _kostensummen = Katalogladung.Wert<(double Invest, double Betrieb)?>(() => summe(), Daten.Bezeichner, null,
+                                                                            out string summenGrund);
+        if (summenGrund.Length > 0) _satzFehler = summenGrund;
     }
 
     /// <summary>
@@ -1296,7 +1344,9 @@
         _bilder = (Bilder is not null && idWp > 0)
             ? Katalogladung.SatzDazu(() => Bilder(idWp), satz, ref _satzFehler) ?? KennlinienBilder.Leer
             : KennlinienBilder.Leer;
-        _kostenBereit = KostenBereit?.Invoke() ?? false;
+        KostenNachziehen();
+        _projektkopieFuer = -1;               // KT-8a: Projektkopie neu fragen
+        _ = Projektkopie;
         StammabbildNachziehen();
     }
 
@@ -1467,21 +1517,56 @@
     private async Task BeiKosten(bool betrieb)
     {
         if (KostenOeffnen is null) return;
-        await KostenOeffnen(betrieb);
-        _kostenBereit = KostenBereit?.Invoke() ?? false;   // KostenSummenAnzeigen nach der Rueckkehr
+        // KT-8a: Wirft der Weg in die Kostenverwaltung, nennt der Satzbanner den Grund; der Dialog bleibt offen.
+        Func<bool, Task> oeffnen = KostenOeffnen;
+        string grund = await Katalogladung.SchreibenAsync(async () => { await oeffnen(betrieb); return ""; },
+                                                          Daten.Bezeichner, g => g);
+        if (grund.Length > 0) _satzFehler = grund;
+        KostenNachziehen();                   // KostenSummenAnzeigen nach der Rueckkehr
+        StateHasChanged();
     }
 
     /// <summary>
     /// „Energiekosten…" — die Energieträgerverwaltung, eingeengt auf Strom. Der
     /// Feldsatz geht mit; er trägt Träger und Gerät dieser Anlage.
     /// </summary>
-    private Task BeiEnergiekosten()
-        => EnergiekostenOeffnen?.Invoke(Daten) ?? Task.CompletedTask;
+    private async Task BeiEnergiekosten()
+    {
+        if (EnergiekostenOeffnen is null) return;
+        // KT-8a: Wirft der Weg in die Energieträgerverwaltung, nennt der Satzbanner den Grund.
+        Func<WaermepumpeAnlageDaten, Task> oeffnen = EnergiekostenOeffnen;
+        string grund = await Katalogladung.SchreibenAsync(async () => { await oeffnen(Daten); return ""; },
+                                                          Daten.Bezeichner, g => g);
+        if (grund.Length > 0) { _satzFehler = grund; StateHasChanged(); }
+    }
+
+    /// <summary>
+    /// KT-8a: Die Vergleichsabfrage für den Katalog — gefangen beim ERZEUGEN der Gabe, nicht im
+    /// Baustein <c>Katalogliste</c>, der sie abruft: Der Baustein kennt keinen Banner, und eine
+    /// Fangstelle dort griffe in alle Wirte. Wirft die Abfrage, bleibt das Gerät im Vergleich leer,
+    /// der Banner der Katalog-Überlagerung nennt den Grund, das Protokoll hat einen Vermerk.
+    /// </summary>
+    private IReadOnlyList<Parameterwert> VergleichsparameterLesen(string bezeichner)
+    {
+        if (Vergleichsparameter is null) return Array.Empty<Parameterwert>();
+        IReadOnlyList<Parameterwert>? werte = Katalogladung.SatzDazu(() => Vergleichsparameter(bezeichner), bezeichner,
+                                                                    ref _vergleichFehler);
+        if (_vergleichFehler.Length > 0) _ = InvokeAsync(StateHasChanged);
+        return werte ?? Array.Empty<Parameterwert>();
+    }
+
+    /// <summary>Die gefangene Gabe — <c>null</c> ohne Delegat (dann vergleicht der Katalog die Spalten).</summary>
+    private Func<string, IReadOnlyList<Parameterwert>>? _vergleichsweg;
+
+    /// <summary>KT-8a: der Grund, wenn eine Vergleichsabfrage geworfen hat; leer = keine.</summary>
+    private string _vergleichFehler = "";
 
     private void BeiKatalog()
     {
         // KT-7: Wirft das Lesen des Katalogs, bleibt die Auswahl leer und der Banner nennt den Grund.
         _katalog = Katalogladung.Lesen(Katalog, TitelText, out _listeFehler);
+        _vergleichFehler = "";
+        _vergleichsweg = Vergleichsparameter is null ? null : VergleichsparameterLesen;
         _katalogOffen = true;
     }
 
