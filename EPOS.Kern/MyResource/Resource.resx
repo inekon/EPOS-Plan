@@ -51865,5 +51865,125 @@ Chart</value>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt.</value>
   </data>
+  <data name="BPF_BTN_KAT_TYP_AENDERN" xml:space="preserve">
+    <value>Typ ändern…</value>
+  </data>
+  <data name="BPF_BTN_KAT_DB_AENDERN" xml:space="preserve">
+    <value>DB ändern…</value>
+  </data>
+  <data name="BPF_BTN_KAT_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="BPF_BTN_KAT_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_LEISTE" xml:space="preserve">
+    <value>Simulation…</value>
+  </data>
+  <data name="BPF_HINW_SIMULATION" xml:space="preserve">
+    <value>Rechnet den Bedarf mit dem Stand dieses Dialogs und zeigt Kennzahlen, Monate und Grafik.</value>
+  </data>
+  <data name="BPF_HINW_BEARBEITEN_EINER" xml:space="preserve">
+    <value>„Bearbeiten…“ wirkt auf genau eine Projektzeile.</value>
+  </data>
+  <data name="BPF_HINW_DB_AENDERN" xml:space="preserve">
+    <value>Öffnet den gewählten Katalogsatz im Katalogeditor.</value>
+  </data>
+  <data name="BPF_HINW_TYP_AENDERN" xml:space="preserve">
+    <value>Öffnet die Wochen-Stundenprofile der Typen.</value>
+  </data>
+  <data name="BPF_ZF_TYP" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="BPF_ZF_JAHRESSUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="BPF_ZF_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="BPF_ZF_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="BPF_GRP_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="BPF_MSG_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Im Projekt zugeordnet und übersprungen: {0}.</value>
+  </data>
+  <data name="BPF_TITEL_KAELTE" xml:space="preserve">
+    <value>Kältebedarfsprofile</value>
+  </data>
+  <data name="BPF_LBL_PROJEKTLISTE_KAELTE" xml:space="preserve">
+    <value>Ausgewählte Kältebedarfe im Projekt</value>
+  </data>
+  <data name="BPF_LBL_KATALOG_KAELTE" xml:space="preserve">
+    <value>Datenbank Kältebedarf</value>
+  </data>
+  <data name="BPF_LBL_JAHRESVERBRAUCH_KAELTE" xml:space="preserve">
+    <value>jährlicher Kältebedarf:</value>
+  </data>
+  <data name="BPF_LBL_SUMME_KAELTE" xml:space="preserve">
+    <value>Summe aller ausgewählten Kältebedarfe:</value>
+  </data>
+  <data name="BPF_HILFE_BERECHNUNG_KAELTE" xml:space="preserve">
+    <value>Berechnungsweg: Kältebedarf</value>
+  </data>
+  <data name="BPF_BTN_DB_AENDERN_KAELTE" xml:space="preserve">
+    <value>Kältebedarf in DB ändern</value>
+  </data>
+  <data name="BPF_BTN_DB_NEU_KAELTE" xml:space="preserve">
+    <value>Kältebedarf in DB neu</value>
+  </data>
+  <data name="BPF_BTN_DB_LOESCHEN_KAELTE" xml:space="preserve">
+    <value>Kältebedarf in DB löschen</value>
+  </data>
+  <data name="BPF_BTN_TYP_AENDERN_KAELTE" xml:space="preserve">
+    <value>Typ in DB ändern</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_KAELTE" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="BADM_TITEL_KAELTE" xml:space="preserve">
+    <value>Kältebedarf Verwaltung</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_KAELTE" xml:space="preserve">
+    <value>Kältebedarfe in der Datenbank</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_KAELTE" xml:space="preserve">
+    <value>Jahressumme Kältebedarf</value>
+  </data>
+  <data name="BADM_BTN_AENDERN_KAELTE" xml:space="preserve">
+    <value>Kältebedarf ändern…</value>
+  </data>
+  <data name="BADM_BTN_NEU_KAELTE" xml:space="preserve">
+    <value>Kältebedarf neu…</value>
+  </data>
+  <data name="BADM_BTN_TYP_KAELTE" xml:space="preserve">
+    <value>Kältetyp ändern…</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_KAELTE" xml:space="preserve">
+    <value>Kältebedarf löschen</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_KAELTE" xml:space="preserve">
+    <value>Bitte einen Kältebedarf auswählen.</value>
+  </data>
+  <data name="BTYP_TITEL_KAELTE" xml:space="preserve">
+    <value>Eingabe Kältebedarf</value>
+  </data>
+  <data name="BTYP_LBL_TYP_KAELTE" xml:space="preserve">
+    <value>Kältetyp:</value>
+  </data>
+  <data name="BTYP_MSG_TYP_KAELTE" xml:space="preserve">
+    <value>Kältetyp auswählen!</value>
+  </data>
+  <data name="BPRO_TITEL_KAELTE" xml:space="preserve">
+    <value>Kältetypen Stundenverteilung</value>
+  </data>
+  <data name="BPRO_LBL_LISTE_KAELTE" xml:space="preserve">
+    <value>Liste der Kältetypen in der DB:</value>
+  </data>
+  <data name="BPRO_LBL_BESCHR_KAELTE" xml:space="preserve">
+    <value>Beschreibung des ausgewählten Kältetyps:</value>
+  </data>
 </root>
 

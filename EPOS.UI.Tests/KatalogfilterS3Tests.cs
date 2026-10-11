@@ -145,7 +145,7 @@ public class KatalogfilterS3Tests : EposBunitContext
 
         // Wahl + vier Profilspalten + "im Projekt verwendet"; die "Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);   // Kästchen + Spalten + Stift (Stufe 4)   // „im Projekt verwendet“ standardmaessig aus (4.10)
 
         Katalogfilterzeile verwendet =
             cut.Instance.Katalog.First(z => z.Bezeichner == "Haushalt-3");
