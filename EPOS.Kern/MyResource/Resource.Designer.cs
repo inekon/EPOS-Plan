@@ -48720,6 +48720,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
         /// </summary>
         public static string KABG_KATALOG_KB {
@@ -76854,6 +76863,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_LBL_HILFSSTROM {
             get {
                 return ResourceManager.GetString("KM_LBL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel (Tabellenverweis) ähnelt.
+        /// </summary>
+        public static string KM_LBL_ID_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("KM_LBL_ID_KAELTEMITTEL", resourceCulture);
             }
         }
         

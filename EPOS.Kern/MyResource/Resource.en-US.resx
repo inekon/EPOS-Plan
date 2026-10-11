@@ -51885,6 +51885,12 @@ chart</value>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} heated zones have no design heat load; they receive no share of the building cap and remain uncapped.</value>
   </data>
+  <data name="KM_LBL_ID_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerant (table reference)</value>
+  </data>
+  <data name="KABG_KATALOG_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerants</value>
+  </data>
   <data name="KABG_KATALOG_RUECKKUEHLWERK" xml:space="preserve">
     <value>Heat rejection units</value>
   </data>

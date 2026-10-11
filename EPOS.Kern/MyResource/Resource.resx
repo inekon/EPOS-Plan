@@ -51892,6 +51892,12 @@ Chart</value>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt.</value>
   </data>
+  <data name="KM_LBL_ID_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel (Tabellenverweis)</value>
+  </data>
+  <data name="KABG_KATALOG_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel</value>
+  </data>
   <data name="KABG_KATALOG_RUECKKUEHLWERK" xml:space="preserve">
     <value>Rückkühlwerke</value>
   </data>
