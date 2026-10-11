@@ -18,6 +18,9 @@ namespace EPOS.Kern.Tests
     {
         private readonly TestDatenbank _db = new TestDatenbank();
 
+        /// <summary>Das Referenzprojekt mit berechneter Vorheizzeit (<see cref="VorheizReferenzprojektWacheTests"/>).</summary>
+        private const int REFERENZPROJEKT_VORHEIZEN = 1065;
+
         public void Dispose() => _db.Dispose();
 
         // =================================================================
@@ -130,9 +133,11 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(VorheizenSchema.Vollstaendig());
-            Assert.Equal(0, VorheizenSchema.ZeilenMitVerfahren());
+            // Allein das Referenzprojekt 1065 (Vorheizen, VorheizReferenzprojektWacheTests) trägt ein Verfahren.
+            Assert.Equal(1, VorheizenSchema.ZeilenMitVerfahren());
             foreach (var s in VorheizenSchema.SPALTEN)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL" +
+                                      (s.Tabelle == VorheizenSchema.TAB_EINSTELLUNGEN ? " AND ID_Projekt <> " + REFERENZPROJEKT_VORHEIZEN : "")));
             Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(VorheizenSchema.TAB_ERGEBNIS_GEBAEUDE).Count);
             Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(VorheizenSchema.TAB_ERGEBNIS_ZONE).Count);
             Assert.Equal((long)SchemaStand.Zielversion, Zahl("SELECT SchemaVersion FROM Tab_Applikation"));
@@ -182,12 +187,13 @@ namespace EPOS.Kern.Tests
             var berechnet = new Vorheizvorgabe(Aufheizverfahren.Berechnet);
             Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, bestand with { Vorheizen = berechnet }));
             Assert.Equal(berechnet, KonfigurationCtrl.AufheizvorgabeLesen(projekt).Vorheizen);
-            Assert.Equal(1, VorheizenSchema.ZeilenMitVerfahren());
+            Assert.Equal(2, VorheizenSchema.ZeilenMitVerfahren());   // 1051 und das Referenzprojekt 1065
 
             // Zurück auf die Sollwertrampe: jede Spalte wieder NULL, der Bestand ist wieder gleich.
             Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, bestand));
             foreach (var s in VorheizenSchema.SPALTEN_EINSTELLUNG)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE \"" + s.Spalte + "\" IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE \"" + s.Spalte + "\" IS NOT NULL AND ID_Projekt <> " +
+                                      REFERENZPROJEKT_VORHEIZEN));
             Assert.Equal(bestand, KonfigurationCtrl.AufheizvorgabeLesen(projekt));
         }
 

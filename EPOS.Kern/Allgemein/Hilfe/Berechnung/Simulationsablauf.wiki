@@ -38,7 +38,7 @@ Der Lauf rechnet '''nicht''' die Waerme- und Strommengen selbst, sondern setzt s
 |-
 | Extrapolation der Waermepumpen-Kennlinie || ja/nein || Simulationskonfiguration; ohne Konfigurationssatz gilt „erlaubt"
 |-
-| Anlagenkopplung || aus, AK1, AK3 || Simulationskonfiguration, Feld „Anlagenkopplung": „aus", „Heizkreis (AK1)", „geschlossener Kreis (AK3)"; leer = aus
+| Anlagenkopplung || aus, Heizkreis, geschlossener Kreis || Simulationskonfiguration, Feld „Anlagenkopplung": „aus", „Heizkreis", „geschlossener Kreis"; leer = aus
 |}
 
 == Formelzeichen und Parameter ==
@@ -205,14 +205,14 @@ Der Grund fuer diese Ordnung: Zwei Erzeuger, die denselben Speicher bedienen, mu
 
 '''Kaelteseite.''' Rechnet das Projekt Kaelte, fuehrt der Lauf neben den drei Waermekanaelen einen '''Kuehlkanal'''; er geht nicht in die Summe des Waermebedarfs ein. Die '''Kaeltekaskade''' rechnet nach der Waermekaskade der Waermepumpen, und ihr Strom geht als eigene Reihe in den Reststrombedarf. Steht keine Waermepumpe in der Stundenschleife, rechnen die Kaeltemaschinen allein, nach der ganzen Waermekaskade. Die Folge der Kaeltestufen — freie Kuehlung der Kaeltemaschinen, Kaeltespeicher, Waermepumpen im Kuehlbetrieb, Kaeltemaschinen — und die Rechnung jedes Kaelteerzeugers stehen unter [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]].
 
-'''Anlagenkopplung.''' Die Projekteinstellung „Anlagenkopplung" legt fest, ob die Erzeuger auf die Gebaeude zurueckwirken. Bei „aus" gilt ideale Regelung: Die Gebaeude rechnen ihren Bedarf vorab, die Kaskade deckt ihn. Bei '''AK1''' rechnet das Gebaeude seine Waermeuebergabe mit Heizkurve und Vorlauf schon in der Bedarfsrechnung (Heizkreis als Randbedingung); die Erzeuger wirken nicht zurueck. Bei '''AK3''' rechnen Gebaeude und Kaskade '''je Stunde im geschlossenen Kreis''':
+'''Anlagenkopplung.''' Die Projekteinstellung „Anlagenkopplung" legt fest, ob die Erzeuger auf die Gebaeude zurueckwirken. Bei „aus" gilt ideale Regelung: Die Gebaeude rechnen ihren Bedarf vorab, die Kaskade deckt ihn. Beim '''Heizkreis''' rechnet das Gebaeude seine Waermeuebergabe mit Heizkurve und Vorlauf schon in der Bedarfsrechnung (Heizkreis als Randbedingung); die Erzeuger wirken nicht zurueck. Beim '''geschlossenen Kreis''' rechnen Gebaeude und Kaskade '''je Stunde gemeinsam''':
 
 # Vor der ersten Stunde schwingen die Gebaeude 720 Stunden ohne Kaskade ein.
 # Je Stunde bietet die Kaskade am Vorlauf der Stunde eine Leistung an; sie wird auf Gebaeude und Zonen verteilt, und jedes Gebaeude rechnet die Stunde mit dieser Schranke.
 # Aus der Loesung bildet der Lauf den Vorlauf bedarfsgewichtet neu und fragt das Angebot erneut ab — bis sich Raumluft um hoechstens 0,01 K, Heizleistung um hoechstens 0,1 W, Vorlauf um hoechstens 0,05 K und Angebot um hoechstens 0,1 W aendern.
 # Danach laeuft die eigentliche Kaskadenstunde einmal mit dem gefundenen Bedarf.
 
-Hoechstens 20 Durchlaeufe sind zugelassen, mit mehreren Zonen hoechstens 120 als Produkt aus Zonenzahl und Durchlaeufen; wird die Grenze gerissen, bricht der Lauf mit Gebaeude, Stunde und groesster Abweichung ab, statt still zu naehern. Auf AK3 liegt auch die Kaelteseite im Kreis: Die Kaeltekaskade rechnet je Stunde nach der Waermestunde, und das Kaelteangebot begrenzt als '''Kaelteschranke''' die Kuehlleistung der Zonen. Ein Gebaeude auf dem Rechenweg Tagesbilanz rechnet keine Anlagenkopplung.
+Hoechstens 20 Durchlaeufe sind zugelassen, mit mehreren Zonen hoechstens 120 als Produkt aus Zonenzahl und Durchlaeufen; wird die Grenze gerissen, bricht der Lauf mit Gebaeude, Stunde und groesster Abweichung ab, statt still zu naehern. Im geschlossenen Kreis liegt auch die Kaelteseite im Kreis: Die Kaeltekaskade rechnet je Stunde nach der Waermestunde, und das Kaelteangebot begrenzt als '''Kaelteschranke''' die Kuehlleistung der Zonen. Ein Gebaeude auf dem Rechenweg Tagesbilanz rechnet keine Anlagenkopplung.
 
 '''Komfortstunden.''' Mit Anlagenkopplung zaehlt der Lauf je gekoppeltem Gebaeude die Stunden der Nutzungszeit, in denen die Raumluft um mehr als 1 K unter dem Heizsollwert liegt — mit wirksamer Kuehlung ebenso ueber dem Kuehlsollwert —, dazu die Summe dieser Abweichungen in Kelvinstunden und die laengste zusammenhaengende Folge solcher Stunden. Mit mehreren Zonen zaehlt eine Stunde, sobald eine Zone die Schwelle reisst.
 
@@ -304,7 +304,7 @@ Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstan
 * '''Simulationsergebnis''', Reiter „Übersicht" — Jahresmengen und Deckungsgrade je Erzeuger, <math>Q_{\mathrm{Rest}}</math> nach (8) und <math>E_{\mathrm{Rest}}</math> nach (9).
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — die Jahresganglinien und die Jahresdauerlinien des Bedarfs.
 * '''Simulationsergebnis''', je ein Reiter pro beteiligtem Erzeuger.
-* '''Laufprotokoll''' — Hinweise, Warnungen und der Abbruchgrund; hier stehen auch die Warnkriterien aus Schritt 9 und, auf AK3 mit Kaelteseite, die Zaehler des Kreises (Stunden an der Kaelteschranke, Umschaltstunden, Kaelte-Restbedarf, Fallwechsel).
+* '''Laufprotokoll''' — Hinweise, Warnungen und der Abbruchgrund; hier stehen auch die Warnkriterien aus Schritt 9 und, im geschlossenen Kreis mit Kaelteseite, die Zaehler des Kreises (Stunden an der Kaelteschranke, Umschaltstunden, Kaelte-Restbedarf, Fallwechsel).
 * '''Bericht und Wirtschaftlichkeit''' rechnen auf denselben Jahresmengen weiter.
 
 == Bezüge ==

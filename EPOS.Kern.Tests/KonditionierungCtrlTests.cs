@@ -189,15 +189,20 @@ namespace EPOS.Kern.Tests
         {
             if (!Bereit()) return;
             // Ein eigenes Gebaeude anlegen, damit die Kaskade ohne Bestandsschaden gemessen wird.
-            object p = DataRepository.ExecuteScalar("SELECT MIN(ID_Projekt) FROM \"Tab_Gebaeude\"");
-            if (p == null || p == DBNull.Value) return;
+            long vorlage = EinGebaeude();
+            if (vorlage == 0) return;
+            long vorher = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT MAX(ID) FROM \"Tab_Gebaeude\""), CultureInfo.InvariantCulture);
+            // Die Pflichtspalten (Projektzuordnung, Name, Typ) von einem bestehenden Gebäude - sonst scheitert die Zeile
+            // still, und der Fall mäße am jüngsten Bestandsgebäude.
             DataRepository.ExecuteNonQuery(
-                "INSERT INTO \"Tab_Gebaeude\" (\"ID_Projekt\", \"Raumsolltemperatur_Tag\") VALUES (?, 20)",
-                new DbParam("@p", Convert.ToInt32(p, CultureInfo.InvariantCulture)));
+                "INSERT INTO \"Tab_Gebaeude\" (\"ID_Projekt\", \"ID_ProjektGebaeude\", \"Gebaeudename\", \"Typ\", \"Raumsolltemperatur_Tag\") " +
+                "SELECT \"ID_Projekt\", \"ID_ProjektGebaeude\", 'Kaskadenprobe', \"Typ\", 20 FROM \"Tab_Gebaeude\" WHERE \"ID\" = ?",
+                new DbParam("@v", vorlage));
             // last_insert_rowid() taugt hier nicht: DataRepository arbeitet je Aufruf auf einer
             // eigenen Verbindung, und die Funktion gilt je Verbindung.
             long id = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT MAX(ID) FROM \"Tab_Gebaeude\""),
                                       CultureInfo.InvariantCulture);
+            Assert.True(id > vorher, "Das Probegebäude wurde nicht angelegt.");
             var eigner = KonditionierungCtrl.Eigner.Gebaeude(id);
 
             KonditionierungCtrl.Ergebnis a = _ctrl.Anlegen(eigner, Matrix(274, 120),

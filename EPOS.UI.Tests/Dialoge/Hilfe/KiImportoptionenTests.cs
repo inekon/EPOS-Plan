@@ -138,6 +138,54 @@ public sealed class KiImportoptionenTests : EposBunitContext, IDisposable
         Assert.Equal("Notizen", excel.Instance.Optionen().Blattname);
     }
 
+    [Fact]
+    public async Task Ganglinie_das_Jahr_nur_bei_einem_Format_mit_Jahresfeld()
+    {
+        var ohne = Ganglinie(excel: false);
+        KiVorbereitung abgelehnt = await ohne.InvokeAsync(() =>
+            Vorbereiten(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, "jahr", "2025"));
+        Assert.Null(abgelehnt.Freigabe);
+        Assert.Contains(Resource.KI_GIO_KEIN_JAHR, abgelehnt.Ablehnung.Text);
+        ohne.Instance.Dispose();
+
+        var mit = Ganglinie(excel: false, new GanglinienImportFormat { Kennung = "PRUEFJAHR", Einheit = "€/MWh", Jahresfeld = true });
+        Assert.Equal(KiStatus.Ausgefuehrt, (await mit.InvokeAsync(() =>
+            Setzen(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, "jahr", "2025"))).Status);
+        Assert.Equal(2025, mit.Instance.Optionen().Jahr);
+    }
+
+    [Fact]
+    public async Task Quellprofil_Einheit_Raster_und_Konvention_stehen_fest()
+    {
+        var cut = Ganglinie(excel: false, GanglinienImportFormat.Quellprofil(DbWerte.WQ_PROFIL_BETRIEBSART_TAG));
+        foreach (string feld in new[] { "einheit", "raster", "konvention" })
+        {
+            KiVorbereitung abgelehnt = await cut.InvokeAsync(() =>
+                Vorbereiten(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, feld, "0"));
+            Assert.Null(abgelehnt.Freigabe);
+            Assert.Contains(Resource.KI_GIO_FORMAT_FEST, abgelehnt.Ablehnung.Text);
+        }
+        Assert.Equal(KiStatus.Ausgefuehrt, (await cut.InvokeAsync(() =>
+            Setzen(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, "zeilenzahl", "365"))).Status);
+        Assert.Equal(365, cut.Instance.Optionen().Zeilenzahl);
+    }
+
+    [Fact]
+    public void Die_Sicht_nennt_Format_und_Werteanzahl()
+    {
+        var sicht = new GanglinieImportOptionenKiSicht(_ => 0, () => false, (_, _) => { },
+            _ => Array.Empty<KiWahleintrag>(), () => false,
+            () => GanglinienImportFormat.Quellprofil(DbWerte.WQ_PROFIL_BETRIEBSART_STUNDE));
+        Assert.Equal(GanglinienImportFormat.KENNUNG_QUELLPROFIL, sicht.Format);
+        Assert.Equal(8760, sicht.Werteanzahl);
+
+        var standard = new GanglinieImportOptionenKiSicht(_ => 0, () => false, (_, _) => { },
+            _ => Array.Empty<KiWahleintrag>(), () => false);
+        Assert.Equal(GanglinienImportFormat.KENNUNG_GANGLINIE, standard.Format);
+        Assert.Null(standard.Sperrgrund("einheit"));
+        Assert.Equal(Resource.KI_GIO_KEIN_JAHR, standard.Sperrgrund("jahr"));
+    }
+
     // =====================================================================
     //  Spotpreise einlesen
     // =====================================================================
@@ -148,7 +196,7 @@ public sealed class KiImportoptionenTests : EposBunitContext, IDisposable
         (string Bezeichnung, bool Stamm)? gespeichert = null;
         var cut = Render<SpotpreisImportDialog>(p => p
             .Add(x => x.Waehlen, f => Task.FromResult<string?>(@"C:\Daten\spot2026.csv"))
-            .Add(x => x.Pruefen, pfad => Task.FromResult(new SpotpreisPruefung(true, "in Ordnung", 2026)))
+            .Add(x => x.Pruefen, (pfad, jahr) => Task.FromResult(new SpotpreisPruefung(true, "in Ordnung", 2026)))
             .Add(x => x.Speichern, (b, s, f) =>
             {
                 gespeichert = (b, s);
@@ -232,7 +280,7 @@ public sealed class KiImportoptionenTests : EposBunitContext, IDisposable
         return select.QuerySelector("option[selected]")?.GetAttribute("value");
     }
 
-    private IRenderedComponent<GanglinieImportOptionenDialog> Ganglinie(bool excel)
+    private IRenderedComponent<GanglinieImportOptionenDialog> Ganglinie(bool excel, GanglinienImportFormat? format = null)
     {
         var v = new GanglinienVorschau { IstExcel = excel, Spaltenzahl = 2, Lesbar = true };
         v.Vorschlag.Trennzeichen = ';';
@@ -245,6 +293,7 @@ public sealed class KiImportoptionenTests : EposBunitContext, IDisposable
         if (excel) { v.Blaetter.Add("Lastgang"); v.Blaetter.Add("Notizen"); }
         return Render<GanglinieImportOptionenDialog>(p => p
             .Add(x => x.Pfad, excel ? @"C:\Daten\lastgang.xlsx" : @"C:\Daten\lastgang.csv")
+            .Add(x => x.Format, format)
             .Add(x => x.Erkennung, v));
     }
 

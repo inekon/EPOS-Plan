@@ -43908,6 +43908,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotpreis [ct/kWh] ähnelt.
+        /// </summary>
+        public static string IMPORT_ACHSE_SPOTPREIS {
+            get {
+                return ResourceManager.GetString("IMPORT_ACHSE_SPOTPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde des Tages [h] ähnelt.
+        /// </summary>
+        public static string IMPORT_ACHSE_TAGESSTUNDE {
+            get {
+                return ResourceManager.GetString("IMPORT_ACHSE_TAGESSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag der Reihe ähnelt.
+        /// </summary>
+        public static string IMPORT_ACHSE_TAG_DER_REIHE {
+            get {
+                return ResourceManager.GetString("IMPORT_ACHSE_TAG_DER_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfenergie [kWh] ähnelt.
+        /// </summary>
+        public static string IMPORT_ACHSE_TWW_ENERGIE {
+            get {
+                return ResourceManager.GetString("IMPORT_ACHSE_TWW_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfvolumen [m³] ähnelt.
+        /// </summary>
+        public static string IMPORT_ACHSE_TWW_VOLUMEN {
+            get {
+                return ResourceManager.GetString("IMPORT_ACHSE_TWW_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gelesene Ganglinie ähnelt.
         /// </summary>
         public static string IMPORT_BILD_TITEL {
@@ -44187,6 +44232,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr der Reihe: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_JAHR {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Werte über 1 Jahr als Textdatei ähnelt.
         /// </summary>
         public static string IMPORT_LBL_JAHRESWERTE {
@@ -44304,6 +44358,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei passt nicht zum Format und wird nicht übernommen: {0} ähnelt.
+        /// </summary>
+        public static string IMPORT_MSG_FORMAT_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("IMPORT_MSG_FORMAT_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromganglinie &quot;{0}&quot; wurde gelöscht. ähnelt.
         /// </summary>
         public static string IMPORT_MSG_GELOESCHT {
@@ -44349,11 +44412,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → abgelehnt: {1} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → kein Raster: {1} ähnelt.
         /// </summary>
         public static string IMPORT_PROBE_KEIN_RASTER {
             get {
                 return ResourceManager.GetString("IMPORT_PROBE_KEIN_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstleistung {0} {1} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_NENNLEISTUNG", resourceCulture);
             }
         }
         
@@ -44367,6 +44448,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr der Datei {0} · Mittel {1} ct/kWh · Spanne {2} bis {3} ct/kWh ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_SPOTPREIS {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_SPOTPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
         /// </summary>
         public static string IMPORT_PROBE_STUNDE {
@@ -44376,11 +44466,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme {0} {1} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_SUMME {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tage gelesen · gezeigt: {1} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_TAGE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tage gelesen · gezeigt: die ersten {1} Tage ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_TAGE_TAGESREIHE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_TAGE_TAGESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstunde ähnelt.
         /// </summary>
         public static string IMPORT_PROBE_VIERTEL {
             get {
                 return ResourceManager.GetString("IMPORT_PROBE_VIERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → {1} Werte in {2} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_WERTE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei liefert {0} Werte, erwartet sind genau {1}. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_WERTEANZAHL {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_WERTEANZAHL", resourceCulture);
             }
         }
         
@@ -44903,6 +45038,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_TITEL_PROTOKOLL {
             get {
                 return ResourceManager.GetString("IMPORT_TITEL_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil einlesen – Format und Vorschau ähnelt.
+        /// </summary>
+        public static string IMPORT_TITEL_QUELLPROFIL {
+            get {
+                return ResourceManager.GetString("IMPORT_TITEL_QUELLPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotmarktpreise einlesen – Format und Vorschau ähnelt.
+        /// </summary>
+        public static string IMPORT_TITEL_SPOTPREIS {
+            get {
+                return ResourceManager.GetString("IMPORT_TITEL_SPOTPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Messreihe einlesen – Format und Vorschau ähnelt.
+        /// </summary>
+        public static string IMPORT_TITEL_TWW_MESSREIHE {
+            get {
+                return ResourceManager.GetString("IMPORT_TITEL_TWW_MESSREIHE", resourceCulture);
             }
         }
         
@@ -60788,6 +60950,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie die Vorschau die gelesene Reihe zeigt: Jahr (Jahresverlauf) oder Tag (Tagesansicht der TWW-Messreihe). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_BILDART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_BILDART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildart ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_BILDART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_BILDART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Tabellenblatt einer Excel-Mappe, aus dem gelesen wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GIO_BLATT_ERL {
@@ -60820,6 +61000,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GIO_ERSTE_DATENZEILE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GIO_ERSTE_DATENZEILE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kalenderjahr der Reihe — nur bei Formaten mit Jahresfeld (etwa Spotpreisen); es legt Wochentage und Feiertage fest. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_JAHR_ERL", resourceCulture);
             }
         }
         
@@ -67745,6 +67934,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahr der geprüften Reihe — aus dem Jahresfeld von „Format und Vorschau“; vorgeschlagen ist das Jahr der Datei. Es legt Wochentage und Feiertage fest. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPOT_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPOT_JAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Steht die Preisreihe allen Projekten zur Verfügung oder nur dem geöffneten? ähnelt.
         /// </summary>
         public static string KI_DLG_SPOT_STAMM_ERL {
@@ -70778,6 +70976,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennzahlenzeile aus „Format und Vorschau“: gelesene Tage und der gezeigte Tag der Tagesansicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGM_VORSCHAU_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGM_VORSCHAU_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau der Datei ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPGM_VORSCHAU_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPGM_VORSCHAU_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudearten, die das eingespielte Paket führt. Nur Anzeige; im Zapfprofil wählt der Anwender eine davon. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGT_ARTEN_ERL {
@@ -72718,6 +72934,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_GIMP_RUECKFRAGE {
             get {
                 return ResourceManager.GetString("KI_GIMP_RUECKFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei diesem Format steht das Feld fest; es wird nicht angezeigt. ähnelt.
+        /// </summary>
+        public static string KI_GIO_FORMAT_FEST {
+            get {
+                return ResourceManager.GetString("KI_GIO_FORMAT_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Jahresfeld gibt es nur bei Formaten mit Jahr (etwa Spotpreisen). ähnelt.
+        /// </summary>
+        public static string KI_GIO_KEIN_JAHR {
+            get {
+                return ResourceManager.GetString("KI_GIO_KEIN_JAHR", resourceCulture);
             }
         }
         

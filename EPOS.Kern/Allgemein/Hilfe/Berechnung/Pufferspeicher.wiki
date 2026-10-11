@@ -1,14 +1,14 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Pufferspeicher | Fassung 4 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationPufferspeicher.cs (Energie- und Schichtebene), PufferOptionen.cs (Bereitschaft nach Temperatur, Zonenanteile, Frischwassermodul),
      Ladeordnung.cs (Lade- und Entladereihenfolge, Obergrenzen), Kaskadenschleife.cs (Phasen A-G), Kaskade.cs, Hydraulikbild.cs, Update/ProjektPuffer.cs (nutzbare Kapazität),
-     Kaeltekaskade.cs und Kaelteangebot.cs (Kältespeicher), Stundenangebot.cs (Speicheranteil auf Stufe AK3), Bivalenz/Hydraulikgrenze.cs (Einbindung der Wärmepumpe) -->
+     Kaeltekaskade.cs und Kaelteangebot.cs (Kältespeicher), Stundenangebot.cs (Speicheranteil im geschlossenen Kreis), Bivalenz/Hydraulikgrenze.cs (Einbindung der Wärmepumpe) -->
 
 == Was berechnet wird ==
 {{Anker|was}}
 
 Ein thermischer Pufferspeicher entkoppelt Erzeugung und Bedarf. Der Lauf führt für jede Stunde seinen '''Füllstand''', die '''Ladung''', die '''Entladung''', die '''Bereitschaftsverluste''' und — wenn mehr als eine Schicht gepflegt ist — die '''Temperaturen''' seiner Zonen. Ergebnisgrößen sind die Jahressummen dieser vier Energieströme, die '''Vollzyklen''' und die Ganglinien von Füllstand und Temperaturen.
 
-Der Speicher rechnet nicht für sich: Er ist die Senke der Erzeuger und die Quelle der Bedarfsdeckung. Wer wann in ihn lädt, entscheidet die '''Ladeordnung'''; wer wann aus ihm entnimmt, die '''Entladereihenfolge''' seines Kanals. Ein Speicher mit der Verwendung „Kälte" ist ein '''Kältespeicher''': Er rechnet nach denselben Regeln, bedient aber allein die Kühlung (Schritt 11). Auf der Kopplungsstufe AK3 zählt der Vorrat der Heizungspuffer zum Angebot der Anlage an das Gebäude (Schritt 12).
+Der Speicher rechnet nicht für sich: Er ist die Senke der Erzeuger und die Quelle der Bedarfsdeckung. Wer wann in ihn lädt, entscheidet die '''Ladeordnung'''; wer wann aus ihm entnimmt, die '''Entladereihenfolge''' seines Kanals. Ein Speicher mit der Verwendung „Kälte" ist ein '''Kältespeicher''': Er rechnet nach denselben Regeln, bedient aber allein die Kühlung (Schritt 11). Steht die Anlagenkopplung auf dem geschlossenen Kreis, zählt der Vorrat der Heizungspuffer zum Angebot der Anlage an das Gebäude (Schritt 12).
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -33,6 +33,8 @@ Der Speicher rechnet nicht für sich: Er ist die Senke der Erzeuger und die Quel
 | Schichtenzahl (1…10), Behälterhöhe, effektive Wärmeleitfähigkeit || —, m, W/(m·K) || Abschnitt „Schichtung und Leistungsgrenzen"
 |-
 | Entnahmehöhe je Kanal || Anteil 0…1 (1 = ganz oben) || Abschnitt „Schichtung und Leistungsgrenzen"
+|-
+| Einspeisehöhe je ladender Senke || Anteil 0…1 (1 = ganz oben) || Dialog „Wärmesenke - <Anlage>", Feld „eigene Einspeisehöhe"; ohne Angabe oben
 |-
 | Mindest-Nutztemperatur Brauchwasser || °C || Abschnitt „Schichtung und Leistungsgrenzen"
 |-
@@ -305,6 +307,7 @@ Am Stundenende, nach Bedarfsdeckung, Ladung und Nachentladung:
 Der Verlust ist also füllstandsanteilig: Ein halb voller Speicher verliert halb so viel wie ein voller. Steht ausnahmsweise noch Durchfluss im Speicher, trägt dieser den Verlust zuerst, damit die getrennte Bilanz aufgeht. Mit dem Weg '''nach Temperatur''' treten (20) und (21) aus Schritt 8 an die Stelle von (9) und (10).
 
 === Schritt 6 — Schichtung (nur bei mehr als einer Schicht) ===
+{{Anker|schichtung}}
 
 Der Speicherinhalt wird auf <math>N</math> Zonen verteilt, Schicht 0 oben — ohne gepflegte Zonenanteile gleich groß, mit ihnen nach Schritt 9. Der Füllstand bleibt die führende Größe; die Schichtebene verteilt ihn nur:
 
@@ -354,7 +357,7 @@ Eine volle Zone hat damit Vorlauf-, eine leere Rücklauftemperatur. Ohne gepfleg
 :: <math>\kappa</math> – Kappung des Ausgleichs je Schichtpaar und Stunde [–], Konstante 0,25
 :: <math>C_{\mathrm{Sch}}</math> – Wärmekapazität einer Schicht aus (17) [kWh/K]
 
-Je Stunde laufen in dieser Reihenfolge: ideale '''Einschichtung''' beim Laden (die Wärme geht auf die Einspeisehöhe), ideale '''Verdrängung''' beim Entladen (an der Entnahmehöhe des Kanals), dann der '''vertikale Ausgleich''' (18) — Wärmeleitung zwischen benachbarten Zonen, auf <math>\kappa = 25</math>&nbsp;% der Temperaturdifferenz gekappt, damit der Schritt stabil bleibt und die Reihenfolge zweier Schichten nicht kippen kann —, anschließend die '''Inversionsmischung''' (wärmer unten als oben wird gemischt), danach die Verluste nach Wärmeabgabefläche und Temperaturüberhöhung, und ein zweiter Inversionsdurchgang.
+Je Stunde laufen in dieser Reihenfolge: ideale '''Einschichtung''' beim Laden (die Wärme füllt die Zonen von der Einspeisehöhe der ladenden Senke abwärts, jede bis zur Vorlauftemperatur; ist darunter alles voll, steigt der Rest nach oben), ideale '''Verdrängung''' beim Entladen (der Rücklauf tritt unten ein, die unterste zugängliche Zone fällt zuerst auf Rücklauftemperatur; zugänglich sind die Zonen von der Entnahmehöhe des Kanals abwärts), dann der '''vertikale Ausgleich''' (18) — Wärmeleitung zwischen benachbarten Zonen, auf <math>\kappa = 25</math>&nbsp;% der Temperaturdifferenz gekappt, damit der Schritt stabil bleibt und die Reihenfolge zweier Schichten nicht kippen kann —, anschließend die '''Inversionsmischung''' (wärmer unten als oben wird gemischt), danach die Verluste nach Wärmeabgabefläche und Temperaturüberhöhung, und ein zweiter Inversionsdurchgang.
 
 Weitere Vorbelegungen ohne gepflegte Werte: Entnahmehöhe <math>h_{\mathrm{E}}</math> '''oben''' (1,0), Mindest-Nutztemperatur <math>\vartheta_{\mathrm{min}}</math> '''gleich <math>\vartheta_{\mathrm{RL}}</math>'''. Höchstens '''zehn''' Schichten.
 
@@ -455,10 +458,10 @@ Ist das Paar leer oder liegt der Rücklauf nicht über dem Vorlauf, rechnet der 
 
 Je Kältestunde gilt diese Reihenfolge: Ladewunsch der Kältespeicher, freie Kühlung, Entladung der Kältespeicher in den Kühlbedarf, Kälteerzeuger in ihrer Reihenfolge, Bereitschaftsverlust. Die '''Ladephase''' folgt der Hysterese (7), (8): Sie beginnt, wenn der Vorrat auf die Einschaltschwelle fällt — der Lauf beginnt mit leerem Speicher, also ladend —, und endet an der Abschaltschwelle. In der Ladephase wünscht der Speicher den Abstand bis zur Abschaltschwelle, begrenzt durch die Ladeleistungsgrenze; geladen wird mit der Kälte, die die Erzeuger über den Raumbedarf hinaus liefern. Entladen wird in jeder Stunde mit Vorrat, auch in der Ladephase. Rechnet der Lauf den Kühlvorlauf je Stunde, liegt er mit Kältespeicher nie über dessen Vorlauf.
 
-=== Schritt 12 — Heizungspuffer im Anlagenangebot (Stufe AK3) ===
+=== Schritt 12 — Heizungspuffer im Anlagenangebot des geschlossenen Kreises ===
 {{Anker|ak3}}
 
-Auf der Kopplungsstufe AK3 fragt das Gebäude je Stunde ab, was die Anlage liefern kann. Zu diesem Angebot zählt neben den Erzeugern, was die Heizungspuffer am '''Stundenbeginn''' hergeben — je Speicher, der den Heizkanal bedient, das Kleinste aus Füllstand, Restbudget der Entladeleistungsgrenze <math>P_{\mathrm{ent,max}}</math>, dem Vorrat über dem Mindestfüllstand und dem, was der Heizkanal nach Entnahmehöhe und Mindest-Nutztemperatur entnehmen kann. Die Abfrage verändert keinen Speicher. Fällt ein Erzeuger in einer '''Sperrstunde''' aus, füllt dieser Vorrat die Lücke; reicht er nicht, weist der Lauf den Rest als „Speicher leer" aus und zählt die Stunde. So überbrückt der Puffer die Sperrstunden einer Wärmepumpe. Auf den Stufen AK1 und AK2 rechnet der Anlagenfahrplan vorab ohne Ladezustand: Je zusammenhängendem Block von Sperrstunden darf die nutzbare Kapazität aller Heizungspuffer die Lücke füllen, gleich verteilt auf die Stunden des Blocks.
+Im geschlossenen Kreis fragt das Gebäude je Stunde ab, was die Anlage liefern kann. Zu diesem Angebot zählt neben den Erzeugern, was die Heizungspuffer am '''Stundenbeginn''' hergeben — je Speicher, der den Heizkanal bedient, das Kleinste aus Füllstand, Restbudget der Entladeleistungsgrenze <math>P_{\mathrm{ent,max}}</math>, dem Vorrat über dem Mindestfüllstand und dem, was der Heizkanal nach Entnahmehöhe und Mindest-Nutztemperatur entnehmen kann. Die Abfrage verändert keinen Speicher. Fällt ein Erzeuger in einer '''Sperrstunde''' aus, füllt dieser Vorrat die Lücke; reicht er nicht, weist der Lauf den Rest als „Speicher leer" aus und zählt die Stunde. So überbrückt der Puffer die Sperrstunden einer Wärmepumpe. Mit der Anlagenkopplung ''Heizkreis'' oder ''Fahrplan'' rechnet der Anlagenfahrplan vorab ohne Ladezustand: Je zusammenhängendem Block von Sperrstunden darf die nutzbare Kapazität aller Heizungspuffer die Lücke füllen, gleich verteilt auf die Stunden des Blocks.
 
 Ist eine Wärmepumpe mit der '''Einbindung „Puffer"''' an den Speicher angeschlossen, ist ihr Rücklauf die Temperatur der untersten Zone des Speichers am Stundenbeginn; auf der Ladeseite begrenzt ihre höchste zulässige Spreizung die Leistung. Die Mischung auf der Entladeseite wird nicht gerechnet — entnommen wird wie in Schritt 3. Die Einbindungen „direkt" und „Weiche" betreffen allein die Wärmepumpe und stehen auf der Seite [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]].
 
@@ -480,8 +483,8 @@ Ist eine Wärmepumpe mit der '''Einbindung „Puffer"''' an den Speicher angesch
 
 * '''Simulationsergebnis, Reiter „Wärmepumpe"''' — die Tabelle der Pufferspeicher mit Kapazität, Ladung, Entladung, Verlusten, Vollzyklen <math>z_{\mathrm{V}}</math> und Füllstand am Jahresende, darunter je Speicher mit Option die Zeilen „Bereitschaftsverlust nach Temperatur" und „Frischwassermodul – Stunden ohne ausreichende Puffertemperatur"; ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht.
 * '''Simulationsergebnis, Reiter „Ergebnis", Blatt „Wärme Produktion Chart"''' — Speicherladung und Speicherentladung im Stapel der Erzeuger, die Entladung den Erzeugern zugerechnet, die geladen haben; mit der Auswahl „Speicher:" die Ganglinie des Füllstands <math>\mathrm{SOC}(t)</math>.
-* '''Simulationsergebnis, Temperaturverlauf''' — je geschichtetem Speicher die Zonentemperaturen <math>\vartheta_{i}(t)</math> über das Jahr.
-* '''Simulationskonfiguration''' — die Speicherkachel zeigt Kurzbilanz und Schwellenband, das Hydraulikschema die Kanten zwischen Erzeugern, Speichern und Kanälen samt Ladepriorität.
+* '''Simulationsergebnis, Reiter „Wärmepumpe", Unterblatt „Speichertemperaturen"''' — je Speicher, der Senke eines Erzeugers ist, die Temperatur der obersten und der untersten Zone, <math>\vartheta_{0}(t)</math> und <math>\vartheta_{N-1}(t)</math>, über das Jahr; ohne Schichtung fallen beide zusammen.
+* '''Simulationskonfiguration''' — die Speicherkachel zeigt Kurzbilanz, Schwellenband, Schichtenzahl und nach dem Lauf das Jahresmittel der obersten Zone, das Hydraulikschema die Kanten zwischen Erzeugern, Speichern und Kanälen samt Ladepriorität.
 * '''Simulationsprotokoll''' — Rückfall <math>\Delta T_{0}</math>, wirkungslose Quellbezüge, Speicher ohne Lader, Wärmeverlustkoeffizient <math>H_{\mathrm{B}}</math> des Wegs nach Temperatur, abgelehnte Zonenanteile, Mindesttemperatur und Nachheizstunden des Frischwassermoduls.
 
 == Bezüge ==

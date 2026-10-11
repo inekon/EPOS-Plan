@@ -116,6 +116,18 @@ namespace ChartProben
             // Dienste.Einstellungen ist hier ohnehin die fluechtige Standardfassung.
             Farbpalette.Aktuell = Farbpalette.Vorgabe;
 
+            // Schalter --wiki <ordner>: schreibt nur die Wiki-Fassungen der Diagramme (sprechende Beschriftungen)
+            // und endet; keine Probe, keine Hashliste, die Standardausgabe bleibt unberuehrt.
+            string wiki = Argument(args, "--wiki");
+            if (wiki != null)
+            {
+                Directory.CreateDirectory(wiki);
+                BivalenzWikibild(wiki);
+                WikiZeitreihenbilder(wiki);
+                Console.WriteLine("Wiki-Fassungen geschrieben: " + wiki);
+                return 0;
+            }
+
             string ziel = Argument(args, "--ziel") ?? Path.Combine(Wurzel(), "artifacts", "chartproben");
             Directory.CreateDirectory(ziel);
 

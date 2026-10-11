@@ -1854,7 +1854,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Importoptionen einer Gangliniendatei — elf Felder ueber die Sichtklasse
+        /// Die Importoptionen einer Gangliniendatei — zwölf Felder ueber die Sichtklasse
         /// <c>EPOS.UI.Dialoge.Strom.GanglinieImportOptionenKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1893,7 +1893,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("erste_datenzeile", SICHT + "ErsteDatenzeile", KiDialogTexte.GioErsteDatenzeileName,
                                      KiParameterTyp.Ganzzahl, KiDialogTexte.GioErsteDatenzeileErl),
                     new KiDialogFeld("zeilenzahl", SICHT + "Zeilenzahl", KiDialogTexte.GioZeilenzahlName,
-                                     KiParameterTyp.Ganzzahl, KiDialogTexte.GioZeilenzahlErl)
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.GioZeilenzahlErl),
+                    new KiDialogFeld("jahr", SICHT + "Jahr", KiDialogTexte.GioJahrName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.GioJahrErl),
+                    new KiDialogFeld("bildart", SICHT + "Bildart", KiDialogTexte.GioBildartName,
+                                     KiParameterTyp.Text, KiDialogTexte.GioBildartErl, leerErlaubt: true, nurLesen: true)
                 });
         }
 
@@ -1917,7 +1921,9 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("bezeichnung", SICHT + "Bezeichnung", KiDialogTexte.SpotBezeichnerName, KiParameterTyp.Text,
                                      KiDialogTexte.SpotBezeichnerErl, leerErlaubt: true),
                     new KiDialogFeld("fuer_alle_projekte", SICHT + "FuerAlleProjekte", KiDialogTexte.SpotStammName, KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.SpotStammErl)
+                                     KiDialogTexte.SpotStammErl),
+                    new KiDialogFeld("jahr", SICHT + "Jahr", KiDialogTexte.GioJahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SpotJahrErl, leerErlaubt: true, nurLesen: true)
                 });
         }
 
@@ -5014,7 +5020,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ZpgmGrundErl, leerErlaubt: true, nurLesen: true),
                     new KiDialogFeld("pruefbericht", TWW_MESSREIHEN_SICHT + ".Pruefbericht",
                                      KiDialogTexte.ZpgmBerichtName, KiParameterTyp.Text,
-                                     KiDialogTexte.ZpgmBerichtErl, leerErlaubt: true, nurLesen: true)
+                                     KiDialogTexte.ZpgmBerichtErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("vorschau", TWW_MESSREIHEN_SICHT + ".Vorschau",
+                                     KiDialogTexte.ZpgmVorschauName, KiParameterTyp.Text,
+                                     KiDialogTexte.ZpgmVorschauErl, leerErlaubt: true, nurLesen: true)
                 },
                 knoepfe: new[]
                 {

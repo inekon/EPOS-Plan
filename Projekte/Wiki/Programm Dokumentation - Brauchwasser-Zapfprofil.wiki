@@ -97,7 +97,7 @@ In der Stufe ''Erweitert'' klappt unter der Nutzungsart der Katalog auf: Je Eint
 
 {{Anker|herkunft}}Darunter liegt ab der Stufe ''Erweitert'' die zugeklappte Karte '''Herkunft'''. Aufgeklappt zeigt sie, woher jeder Wert der Rechnung kommt — je Wert eine Zeile in der Reihenfolge, in der der Rechenweg ihn festlegt: die Größe, ihr Wert mit Einheit, die Zone (''Projekt'' bei einem Wert des ganzen Projekts), der Stand (''Vorgabe'', ''überschrieben'', ''kalibriert'' oder ''umgerechnet''), die Quelle mit Regelwerk, Ausgabe, Katalogfassung und Art der Herkunft sowie ein Vermerk mit Faktor, Messwertquelle oder Rechenweg. Gibt es nichts festzuhalten, sagt die Karte das. Die [[#auslegung|Auslegung]] führt dieselbe Karte mit den Werten ihrer Rechnung.
 
-[[Datei:Diagramm_Zapfprofil_Dauerlinie.png|mini|zentriert|800px|Dauerlinie von Zapfung und Zirkulation mit den Perzentilen P50 bis P99 und der Ladeleistung. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+[[Datei:Diagramm_Zapfprofil_Dauerlinie.png|mini|zentriert|800px|Dauerlinie von Zapfung und Zirkulation mit der Ladeleistung als Vergleichslinie. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
 == Hinweise und Prüfung ==
 
@@ -272,6 +272,8 @@ Die Liste '''Eingespielte Messreihen''' führt je Reihe Bezeichnung, gemessene G
 
 Die gewählte Datei wird sofort geprüft, ohne dass etwas geschrieben wird. Die '''Prüfung der Datei''' nennt entweder Datei, Zeile und Grund der Ablehnung oder, wenn die Datei taugt, was ein Einspielen ablegen würde: Bezeichnung, gemessene Größe, Auflösung, Beginn, Ende, Zeitschritte, Tage, gefüllte Lücken, Schalttage und Quelle. Darunter stehen die '''Hinweise''': gefüllte Lücken, die beiden Sprünge der Sommerzeit und ein 29. Februar.
 
+{{Anker|messdaten-vorschau}}Nach der Dateiwahl öffnet der Dialog ''Messreihe einlesen – Format und Vorschau'', wie beim [[Programm Dokumentation/Photovoltaik#ganglinie-dialog|Import einer Photovoltaik-Ganglinie]]. Statt eines Jahresbilds zeigt er eine '''Tagesansicht''': den ersten vollständigen Tag der Datei, Stunde 0 bis 24, je Stunde die Summe der Zapfung in kWh oder m³ auf der Achse ''Zapfenergie [kWh]'' bzw. ''Zapfvolumen [m³]''. Eine Reihe in Tageswerten zeigt stattdessen die Tagesmengen der ersten 31 Tage über der Achse ''Tag der Reihe''. Die Kennzahlenzeile nennt die gelesenen Tage und den gezeigten Tag, etwa ''30 Tage gelesen · gezeigt: 03.03.2025''. Die Spaltenwahl im Dialog wirkt auf die Vorschautabelle und die Zeilenzählung; gelesen wird mit dem Messreihenleser der Prüfung.
+
 ''Einspielen'' schreibt die Reihe; eine Reihe gleicher Bezeichnung desselben Projekts wird nach einer Rückfrage vollständig ersetzt. ''Löschen'' entfernt die gewählte Reihe nach einer Rückfrage. Beides wirkt sofort – es gibt nichts zu verwerfen. ''Beenden'', ✕ und ''Esc'' schließen die Überlagerung.
 
 == Vergleich und Kalibrierung ==
@@ -322,7 +324,7 @@ Was der Dialog erzeugt, ist ein Bedarf, keine Anlage. Die Summe der Zonen – Za
 * Die '''Speichertemperatur''' der Auslegung und die '''Zapftemperatur''' der Zonen gehen in die thermische Desinfektion und in das Frischwassermodul des Pufferspeichers ein (siehe [[#desinfektion-frischwasser|Thermische Desinfektion und Frischwassermodul]]).
 * Die '''Zirkulation''' bleibt in der Simulation eine eigene Teilreihe; sie wird von denselben Erzeugern und Speichern gedeckt wie die Zapfung und erscheint im Ergebnis als eigener Posten.
 
-[[Datei:Tagesgang_Brauchwasser.svg|mini|600px|Prinzipbild: derselbe Tagesbedarf als Stundenmittel des Bestandsprofils und als eine Realisierung des Zapfprofils.]]
+[[Datei:Tagesgang_Brauchwasser.svg|mini|zentriert|800px|Prinzipbild: derselbe Tagesbedarf als Stundenmittel des Bestandsprofils und als eine Realisierung des Zapfprofils.]]
 
 == Beispiel ==
 

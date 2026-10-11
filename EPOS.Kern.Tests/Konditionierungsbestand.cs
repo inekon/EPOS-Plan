@@ -12,8 +12,11 @@ namespace EPOS.Kern.Tests
     /// </summary>
     internal static class Konditionierungsbestand
     {
-        /// <summary>Das Gebäude des Referenzprojekts 1051.</summary>
-        internal const string GEBAEUDE_1051 = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1051";
+        /// <summary>
+        /// Das Gebäude des Referenzprojekts 1051 und das seiner Kopie 1065 (Referenzprojekt Vorheizen,
+        /// <see cref="VorheizReferenzprojektWacheTests"/>) — die Kopie trägt dieselben Kalender, Vorgaben und Schalter.
+        /// </summary>
+        internal const string GEBAEUDE_1051 = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1051, 1065)";
 
         /// <summary>Der Referenzkatalogbau von 1051.</summary>
         internal const string KATALOGBAU_1051 =

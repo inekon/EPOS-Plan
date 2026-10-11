@@ -183,9 +183,12 @@ namespace EPOS.Kern.Tests
             Assert.False(sp.Erfolg && fall == "leer");
             var bs = new BslibImport().AusDatei(pfad);
             Assert.False(bs.Erfolg && fall == "leer");
-            // Der Leser des Quellprofils ist nachsichtig (letzte Zahl je Zeile): 8 760 lesbare Zeilen sind ihm recht.
-            if (fall != "csv_als_xlsx" && fall != "anfuehrung_offen")
-                Assert.Null(WaermequelleClass.WerteAusCsv(pfad, 8760));
+            // Das Quellprofil liest über den Optionendialog (IM-4): Eine falsche Datei ist unlesbar
+            // oder wird von der Probelesung benannt abgelehnt - nie still als Profil übernommen.
+            GanglinienVorschau quell = GanglinienDatei.Erkenne(pfad,
+                GanglinienImportFormat.Quellprofil(DbWerte.WQ_PROFIL_BETRIEBSART_STUNDE));
+            Assert.False(quell.Lesbar && quell.Probe.Erfolgreich, "Quellprofil ohne Ablehnung: " + fall);
+            if (quell.Lesbar) Assert.False(string.IsNullOrEmpty(quell.Probe.Grund), "Quellprofil ohne Grund: " + fall);
             RaumnutzungCsvLesung rn = RaumnutzungCsv.Lesen(File.ReadAllBytes(pfad));
             Assert.Empty(rn.Zeilen);
             Assert.True(!string.IsNullOrEmpty(rn.Abbruch) || rn.Meldungen.Count > 0, "Raumnutzung ohne Befund: " + fall);

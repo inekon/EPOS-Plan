@@ -19,7 +19,15 @@
            ?kultur=de-DE   (die Kultur des Wirtes, siehe Program.cs)
 *@
 
-<div class="epos-probe-wirt epos-wikibild" data-bild="@_bild">
+@* Die Kopfzeile der Katalogliste (Titel, Suchfeld, Zähler, Spalten…, Vergleichen, Übernehmen)
+   braucht bei den Bedarfsdialogen, der Wärmepumpe und dem Stromspeicher mehr als die 1160 px des Hausblatts, sonst kürzt sie Titel
+   und Suchfeld und schiebt „Vergleichen" an den Rand. Nur fürs Bild: der Dialog darf breiter, das Suchfeld
+   trägt seinen Platzhalter ganz. *@
+<style>
+    .epos-wikibild[data-breit] .epos-dialog { max-width: 1380px; }
+    .epos-wikibild[data-breit] .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 0 14rem !important; }
+</style>
+<div class="epos-probe-wirt epos-wikibild" data-bild="@_bild" data-breit="@(Breit ? "" : null)">
     @switch (_bild)
     {
         case "heizkessel":
@@ -141,16 +149,39 @@
 
         case "brauchwasser":
         case "prozesswaerme":
+            @* Die Gaben der Hülle (BedarfsProfileHuelle.Gaben samt ZapfprofilHuelle.Einhaengen)
+               mit Beispielwerten statt Datenbank: dieselben Texte aus den Ressourcen, die
+               Delegaten, an denen Knöpfe und Gruppen hängen („Typ in DB ändern", beim
+               Brauchwasser „Zapfprofil erzeugen…" und der Rechenweg Brauchwasser). *@
             <BedarfsProfileDialog Art="@_bedarfArt"
-                                  TitelText="@BedarfText("Prozesswärme", "Brauchwasserwärme")"
-                                  KopfbandText="@BedarfText("Prozesswärme", "Brauchwasserwärme")"
-                                  LabelProjektliste="@BedarfText("Ausgewählte Prozesse im Projekt", "Ausgewählte Profile im Projekt")"
-                                  LabelKatalog="@BedarfText("Datenbank Prozesswärme", "Datenbank Profile")"
-                                  LabelJahresverbrauch="@BedarfText("jährlicher Prozesswärmebedarf:", "jährlicher Wärmebedarf:")"
-                                  LabelSumme="@BedarfText("Summe aller ausgew. Prozesse:", "Summe Brauchwasserprofile:")"
-                                  BtnDbAendernText="@BedarfText("Prozess in DB ändern", "Profil in DB ändern")"
-                                  BtnDbNeuText="@BedarfText("Prozess in DB neu", "Profil in DB neu")"
-                                  BtnDbLoeschenText="@BedarfText("Prozess in DB löschen", "Profil in DB löschen")"
+                                  TitelText="@BpfText("BPF_TITEL", "Prozesswärme", "Brauchwasserwärme")"
+                                  KopfbandText="@BpfText("BPF_TITEL", "Prozesswärme", "Brauchwasserwärme")"
+                                  LabelProjektliste="@BpfText("BPF_LBL_PROJEKTLISTE", "Ausgewählte Prozesse im Projekt", "Ausgewählte Profile im Projekt")"
+                                  LabelKatalog="@BpfText("BPF_LBL_KATALOG", "Datenbank Prozesswärme", "Datenbank Profile")"
+                                  GruppeInfo="@Einfach("BPF_GRP_INFO", "Profil")"
+                                  GruppeVerbrauch="@Einfach("BPF_GRP_VERBRAUCH", "Ändern des Jahresverbrauchs")"
+                                  LabelName="@Einfach("BTYP_LBL_NAME", "Name:")"
+                                  LabelTyp="@Einfach("BPF_LBL_TYP", "Typ:")"
+                                  LabelBeschreibung="@Einfach("BTYP_LBL_BESCHREIBUNG", "Beschreibung:")"
+                                  LabelJahresverbrauch="@BpfText("BPF_LBL_JAHRESVERBRAUCH", "jährlicher Prozesswärmebedarf:", "jährlicher Wärmebedarf:")"
+                                  LabelSumme="@BpfText("BPF_LBL_SUMME", "Summe aller ausgew. Prozesse:", "Summe Brauchwasserprofile:")"
+                                  LabelNeuerWert="@Einfach("BPF_LBL_NEUER_WERT", "neuer Wert")"
+                                  LabelEinheit="@Einfach("ALLG_LBL_EINHEIT", "Einheit:")"
+                                  SpalteWahl="@Einfach("KFAK_SP_WAHL", "Wahl")"
+                                  SpalteName="@Einfach("BHKWV_SP_NAME", "Name")"
+                                  SpalteTyp="@Einfach("BPF_SP_TYP", "Typ")"
+                                  BtnHinzuText="@Einfach("AUSWAHL_BTN_UEBERNEHMEN", "In das Projekt übernehmen")"
+                                  BtnEntfernenText="@Einfach("AUSWAHL_BTN_ENTFERNEN", "Aus dem Projekt entfernen")"
+                                  BtnDbAendernText="@BpfText("BPF_BTN_DB_AENDERN", "Prozess in DB ändern", "Profil in DB ändern")"
+                                  BtnDbNeuText="@BpfText("BPF_BTN_DB_NEU", "Prozess in DB neu", "Profil in DB neu")"
+                                  BtnDbLoeschenText="@BpfText("BPF_BTN_DB_LOESCHEN", "Prozess in DB löschen", "Profil in DB löschen")"
+                                  BtnTypAendernText="@BpfText("BPF_BTN_TYP_AENDERN", "Typ in DB ändern", "Typ in DB ändern")"
+                                  BtnSimulationText="@BpfText("BPF_BTN_SIMULATION", "Simulation", "Simulation")"
+                                  BtnUebernehmenText="@Einfach("BPF_BTN_UEBERNEHMEN", "Übernehmen")"
+                                  OkText="@Resource.ALLG_BTN_OK"
+                                  AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                                  JaText="@Resource.ALLG_BTN_JA"
+                                  NeinText="@Resource.ALLG_BTN_NEIN"
                                   Zeilen="@_bedarf"
                                   Katalogzeilen="@(() => Wikibeispiele.BedarfZeilen(_bedarfArt == BedarfsArt.Prozesswaerme ? Wikibeispiele.Prozesswaerme : Wikibeispiele.Brauchwasser))"
                                   Katalogprofil="@Katalogfilterprofil.FuerBedarf(_bedarfArt, Uebersetzt).MitVerwendungsspalte(Uebersetzt)"
@@ -160,10 +191,22 @@
                                   Aufnehmen="@(n => new BedarfsProfilZeile { IdZ = 100000, IdStamm = 9, Name = n, Summe = BedarfSumme(n) })"
                                   KatalogLoeschen="@(_ => true)"
                                   ProjektGespeichert="@(() => true)"
+                                  SummeSichern="@((_, _) => { })"
                                   Simulieren="@(_ => new Dictionary<string, object>())"
+                                  TypStammGaben="@((_, _, _, _) => new Dictionary<string, object>())"
+                                  TypProfilGaben="@(() => new Dictionary<string, object>())"
                                   Einheit="Energieeinheit.MWh"
+                                  EinheitGewaehlt="@(_ => { })"
                                   Betriebskalender="@(new List<(int Id, string Text)> { (1, "Betrieb Montag bis Freitag"), (2, "Betrieb mit Werksferien") })"
                                   TemperaturPruefen="@(_bedarfArt == BedarfsArt.Prozesswaerme ? Prozesstemperatur.Paarpruefung : null)"
+                                  Speichern="@(_bedarfArt == BedarfsArt.Brauchwasser ? () => "" : null)"
+                                  ZapfprofilEinstiegTexte="@ZapfprofilTexte"
+                                  ZapfprofilGaben="@(_bedarfArt == BedarfsArt.Brauchwasser ? () => new Dictionary<string, object>() : null)"
+                                  ZapfprofilUebernommen="@(_ => { })"
+                                  RechenwegBrauchwasser="ZapfprofilWeg.Bestand"
+                                  RechenwegGesetzt="@(_bedarfArt == BedarfsArt.Brauchwasser ? _ => { } : null)"
+                                  ZapfprofilZonen="2"
+                                  SimulationMeldung="@(() => "")"
                                   Schloss="@Schloss"
                                   Geschlossen="@(b => { })" />
             break;
@@ -202,6 +245,9 @@
 
 @code {
     private string _bild = "";
+
+    // Die Bilder, deren Katalog-Kopfzeile erst im breiten Dialog ungekürzt steht (wikibilder.mjs: BREIT).
+    private bool Breit => _bild is "brauchwasser" or "prozesswaerme" or "waermepumpe" or "stromspeicher";
     private readonly Katalogfilterstand _filterstand = new();
     private BedarfsArt _bedarfArt = BedarfsArt.Brauchwasser;
 
@@ -263,8 +309,37 @@
     };
 
     // ---------------------------------------------------------------- Bedarf
-    private string BedarfText(string prozess, string brauchwasser)
-        => _bedarfArt == BedarfsArt.Prozesswaerme ? prozess : brauchwasser;
+
+    // Wie BedarfsProfileHuelle.Text_ und TextEinfach: der Ressourcentext je Ausprägung, sonst der Rückfall.
+    private string BpfText(string schluessel, string prozess, string brauchwasser)
+        => _bedarfArt == BedarfsArt.Prozesswaerme
+            ? Einfach(schluessel + "_PROZ", prozess)
+            : Einfach(schluessel + "_BW", brauchwasser);
+
+    private static string Einfach(string schluessel, string rueckfall)
+    {
+        string? t = Resource.ResourceManager.GetString(schluessel);
+        return string.IsNullOrEmpty(t) ? rueckfall : t;
+    }
+
+    // Wie ZapfprofilHuelle.EinstiegTexte: die Beschriftungen des Zapfprofil-Einstiegs.
+    private static ZapfprofilEinstiegTexte ZapfprofilTexte
+    {
+        get
+        {
+            var t = new ZapfprofilEinstiegTexte();
+            t.Knopf = Einfach("BPF_BTN_ZAPFPROFIL_BW", t.Knopf);
+            t.Titel = Einfach("ZPG_TITEL", t.Titel);
+            t.LabelRechenweg = Einfach("BPF_LBL_RECHENWEG_BW", t.LabelRechenweg);
+            t.OptionBestand = Einfach("BPF_OPT_BESTANDSPROFILE", t.OptionBestand);
+            t.OptionZapfprofil = Einfach("BPF_OPT_ZAPFPROFIL", t.OptionZapfprofil);
+            t.HinweisRechenweg = Einfach("BPF_HINW_RECHENWEG_BW", t.HinweisRechenweg);
+            t.HinweisZapfprofilweg = Einfach("BPF_HINW_ZAPFPROFILWEG", t.HinweisZapfprofilweg);
+            t.HinweisOhneZonen = Einfach("BPF_HINW_ZAPFPROFIL_OHNE_ZONEN", t.HinweisOhneZonen);
+            t.LeisteZapfprofil = Einfach("BPF_LBL_LEISTE_ZAPFPROFIL", t.LeisteZapfprofil);
+            return t;
+        }
+    }
 
     private List<BedarfsProfilZeile> _bedarf => _bedarfArt == BedarfsArt.Prozesswaerme
         ? _bedarfProzess : _bedarfBw;

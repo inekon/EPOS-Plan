@@ -15,6 +15,7 @@ public sealed class SpotpreisImportKiSicht
     public Action<string>? BezeichnungSetzen { get; init; }
     public Func<bool>? StammLesen { get; init; }
     public Action<bool>? StammSetzen { get; init; }
+    public Func<int>? JahrLesen { get; init; }
 
     /// <summary>Der Name, unter dem die Preisreihe abgelegt wird.</summary>
     public string Bezeichnung
@@ -29,4 +30,10 @@ public sealed class SpotpreisImportKiSicht
         get => StammLesen?.Invoke() ?? false;
         set => (StammSetzen ?? throw new InvalidOperationException(nameof(FuerAlleProjekte)))(value);
     }
+
+    /// <summary>
+    /// Das Jahr der geprüften Reihe (aus dem Jahresfeld von „Format und Vorschau“); 0, solange keine
+    /// Datei geprüft ist. Nur lesbar — es entsteht beim Einlesen.
+    /// </summary>
+    public int Jahr => JahrLesen?.Invoke() ?? 0;
 }

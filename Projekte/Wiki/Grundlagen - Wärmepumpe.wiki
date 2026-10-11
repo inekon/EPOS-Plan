@@ -35,7 +35,7 @@ Ein Kältemittel verdampft auf der kalten Seite bei der Temperatur der Wärmeque
 | Heizstabanteil || Anteil elektrischer Zusatzheizung an der Jahreswärme bei sinnvoller Auslegung || < 5 %
 |}
 
-[[Datei:Diagramm_Bivalenz.png|mini|zentriert|800px|Bivalenzdiagramm: Heizlast und Wärmepumpenleistung über der Außentemperatur mit Bivalenzpunkten, Vorwärmbereich und Abschaltpunkt. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+[[Datei:Diagramm_Bivalenz.png|mini|zentriert|800px|Bivalenzdiagramm: Heizlast und Wärmepumpenleistung über der Außentemperatur. Oberhalb des ersten Bivalenzpunkts („Kessel hilft unter …“) heizt die Wärmepumpe allein, darunter wärmt sie vor und der Kessel hebt nach; unterhalb des zweiten Bivalenzpunkts („Kessel allein …“) heizt nur der Kessel. Die Marke „Kennfeld …“ zeigt, wo die Leistung der Wärmepumpe ohne Grenze der Heizflächen die Heizlast schneiden würde; der Abschaltpunkt ist die eingegebene Außentemperatur, unter der die Wärmepumpe abschaltet. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
 == Typische Größen ==
 {{Anker|typische-groessen}}

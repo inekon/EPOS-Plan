@@ -8,19 +8,64 @@ Ein '''Pufferspeicher''' entkoppelt Wärmeerzeugung und Wärmebedarf: Er speiche
 
 Gespeichert wird die Wärmekapazität des Wassers: Ein wärmeres Volumen enthält mehr Energie als dasselbe Volumen bei niedrigerer Temperatur – 1 000 Liter mit 20 Kelvin Spreizung fassen rund 23 Kilowattstunden. Ein Speicher arbeitet nur dann wirksam, wenn er sauber schichtet – oben heiß, unten kalt –, denn erst die Schichtung trennt die Temperaturniveaus von Ladung und Entnahme; wird er durchmischt, verliert er einen Teil seiner nutzbaren Kapazität. Unabhängig vom Betrieb fallen zudem Bereitschaftsverluste an: Wärme, die durch die Behälterwand entweicht, auch ohne dass Wärme entnommen wird.
 
-<!-- Prinzipbild der Schichtung: warmes Wasser oben, kaltes unten. Die Temperaturen sind
-     Beispielwerte fuer ein Heizungssystem mit rund 60/30 Grad, keinem Produkt zugeordnet. -->
-{{Diagramm-Anfang|titel=Schichtung im Pufferspeicher}}
-{{Fluss-Anfang}}
-{{Flussspalte-Anfang}}
-{{Flusskasten|Oben|heiß, rund 60 °C – Vorlauftemperatur|rolle=speicher}}
-{{Flusspfeil|richtung=unten}}
-{{Flusskasten|Mitte|Übergangszone|rolle=speicher}}
-{{Flusspfeil|richtung=unten}}
-{{Flusskasten|Unten|kalt, rund 30 °C – Rücklauftemperatur|rolle=speicher}}
-{{Flussspalte-Ende}}
-{{Fluss-Ende}}
-{{Diagramm-Ende|Prinzipbild, Beispielwerte gerundet.}}
+Wie die Schichtung entsteht, warum sie zählt und wie EPOS-Plan sie rechnet, steht im folgenden Abschnitt [[#schichtspeicher|Schichtspeicher]].
+
+== Schichtspeicher ==
+{{Anker|schichtspeicher|schichtung}}
+
+Ein '''Schichtspeicher''' hält sein Wasser nach der Temperatur geordnet: oben das heiße, unten das kalte, dazwischen eine schmale '''Übergangszone''', in der die Temperatur auf kurzer Höhe von warm auf kalt wechselt. Warmes Wasser ist leichter als kaltes und bleibt deshalb oben; solange nichts die Schichten aufwirbelt, liegen sie stabil übereinander. Ein Speicher, in dem überall dieselbe Temperatur herrscht, heißt '''Mischspeicher'''.
+
+[[Datei:Schichtspeicher.svg|mini|zentriert|800px|Schichtspeicher mit vier Schichten: Der Erzeuger speist oben ein und holt seinen Rücklauf unten ab, der Verbraucher entnimmt oben und gibt seinen Rücklauf unten zurück; rechts der Temperaturverlauf über der Höhe mit der Übergangszone. Prinzipbild, Beispielwerte gerundet.]]
+
+=== Wie die Schichtung entsteht ===
+{{Anker|entstehung}}
+
+Die Schichtung entsteht, wenn heißes Wasser ruhig oben einströmt und kaltes ruhig unten. Beim '''Laden''' speist der Erzeuger seinen Vorlauf oben ein und holt sich das kalte Wasser unten als Rücklauf: Die heiße Zone wächst von oben nach unten, die Übergangszone sinkt. Beim '''Entladen''' entnimmt der Verbraucher oben, sein Rücklauf tritt unten ein und schiebt das heiße Wasser nach oben hinaus: Die Übergangszone steigt. Auch im Stillstand verbreitert Wärmeleitung im Wasser und in der Behälterwand die Übergangszone langsam. Ein hoher, schlanker Behälter schichtet besser als ein gedrungener, weil die Übergangszone dann nur einen kleinen Teil des Volumens einnimmt.
+
+=== Was die Schichtung zerstört ===
+{{Anker|stoerungen}}
+
+* '''Hohe Volumenströme.''' Ein schneller Strahl wirbelt die Schichten durch. Beruhigte Einströmungen – Prallblech, Leitrohr, Schichtladelanze – und eine Spreizung, die den Volumenstrom klein hält, schützen die Schichtung.
+* '''Falsche Anschlusshöhen.''' Ein heißer Vorlauf, der unten oder in der Mitte einströmt, steigt durch die kälteren Schichten auf und mischt sie; ein Rücklauf, der oben ankommt, kühlt die heiße Zone. Vorläufe gehören nach oben, Rückläufe nach unten, ein Erzeuger mit niedriger Temperatur – etwa die Solarthermie – auf die Höhe, deren Temperatur er erreicht.
+* '''Zu warmer Rücklauf.''' Kommt der Rücklauf mit kleiner Spreizung zurück – über einen offenen Überströmer, einen schlecht abgeglichenen Heizkreis oder einen Kurzschluss zwischen Vor- und Rücklauf –, wird das Wasser unten warm. Die Übergangszone verwischt, und die nutzbare Kapazität schrumpft, weil Vorlauf und Rücklauf näher zusammenrücken.
+* '''Inversion.''' Liegt wärmeres Wasser unter kälterem, steigt es auf und mischt sich mit der Schicht darüber – etwa wenn ein Erzeuger mit hoher Temperatur unten einspeist.
+
+=== Warum die Schichtung zählt ===
+{{Anker|nutzen}}
+
+* '''Hohe Temperatur sofort oben.''' Brauchwasser und Heizkreis bekommen ihre Vorlauftemperatur schon aus einem teilweise geladenen Speicher. Ein Mischspeicher muss erst ganz aufgeheizt sein, bevor er die volle Temperatur liefert.
+* '''Kalter Rücklauf unten.''' Der Erzeuger bekommt das kälteste Wasser des Speichers zurück. Das zählt bei der Wärmepumpe, deren Leistungszahl mit sinkender Kondensationstemperatur steigt, beim Brennwertkessel, der den Wasserdampf im Abgas nur mit einem Rücklauf unter rund 55&nbsp;°C kondensiert, und bei Solarkollektoren, die mit kaltem Eintritt weniger Wärme an die Umgebung verlieren und mehr Ertrag bringen.
+* '''Nutzbare Kapazität über die Spreizung.''' Nutzbar ist die Wärme zwischen Vorlauf und Rücklauf: 1 000 Liter zwischen 60 und 30&nbsp;°C fassen rund 35 Kilowattstunden. Derselbe Inhalt, auf 45&nbsp;°C durchmischt, enthält dieselbe Energie, aber ein Heizkreis mit 55&nbsp;°C Vorlauf kann ihm nichts mehr entnehmen.
+
+{| class="wikitable"
+! Merkmal !! Schichtspeicher !! Mischspeicher
+|-
+| Temperatur im Speicher || oben heiß, unten kalt, schmale Übergangszone || überall gleich, Mischtemperatur
+|-
+| Vorlauf an den Verbraucher || mit Ladetemperatur, auch bei Teilladung || erst mit voller Temperatur, wenn der ganze Inhalt warm ist
+|-
+| Rücklauf an den Erzeuger || kalt, aus der untersten Schicht || Mischtemperatur, steigt mit der Ladung
+|-
+| Nutzbare Kapazität || die volle Spreizung zwischen Vorlauf und Rücklauf || kleiner, sobald der Verbraucher eine Mindesttemperatur braucht
+|-
+| Geeignet für || Wärmepumpe, Brennwertkessel, Solarthermie, Kombispeicher mit Brauchwasser || kurze Pufferung ohne Temperaturanspruch, etwa als hydraulische Weiche
+|-
+| Bauliche Voraussetzung || hoher, schlanker Behälter, beruhigte Einströmung, Anschlüsse auf der passenden Höhe || keine besondere
+|}
+
+=== So rechnet EPOS-Plan ===
+{{Anker|schichtung-in-epos-plan}}
+
+EPOS-Plan rechnet einen Pufferspeicher als einen einzigen Vorrat oder geschichtet in zwei bis zehn Zonen; die Zahl stellen Sie im Dialog ''Pufferspeicher im Projekt'' unter ''Schichtung und Leistungsgrenzen'' mit ''Schichten:'' ein, ein neuer Speicher beginnt mit einer Schicht.
+
+* '''Füllstand und Zonen.''' Führend bleibt der Füllstand des Speichers; die Zonen verteilen ihn nur. Jede Zone hat eine Temperatur zwischen der Rücklauftemperatur (leer) und der Vorlauftemperatur (voll) des Speichers. Ohne Angabe sind die Zonen gleich groß, mit ''Zonenanteile von oben'' bekommt jede ihr eigenes Volumen.
+* '''Laden.''' Die Wärme eines Erzeugers füllt die Zonen von seiner Einspeisehöhe abwärts, eine nach der anderen, bis zur Vorlauftemperatur; ohne eigene Einspeisehöhe speist er oben ein.
+* '''Entladen.''' Der Rücklauf tritt unten ein: Die unterste Zone fällt zuerst auf Rücklauftemperatur, die darüber rücken nach. Ein Kanal – Heizung, Brauchwasser, Prozesswärme – entnimmt nur aus den Zonen unterhalb seiner Entnahmehöhe, die mindestens seine Nutztemperatur haben. So tastet die Heizung im Kombispeicher den Bereitschaftsteil des Brauchwassers oben nicht an.
+* '''Ausgleich.''' Nach Laden und Entladen gleicht Wärmeleitung zwischen benachbarten Zonen die Temperaturen ein Stück an; liegt eine wärmere Zone unter einer kälteren, mischt EPOS-Plan beide.
+* '''Kalter Rücklauf in der Rechnung.''' Die Temperatur der untersten Zone ist der Rücklauf, mit dem die Solarthermie ihre Arbeitstemperatur aus dem Speicher bildet, mit dem ein Brennwertkessel mit Kennlinie und ein BHKW mit Rücklaufgrenze rechnen und den eine Wärmepumpe mit der Einbindung ''Puffer'' sieht. Ein Speicher, der gut geschichtet bleibt, rechnet sich deshalb auch bei den Erzeugern günstiger.
+* '''Grenzen.''' Die Rechnung schichtet ideal: Ein Einströmstrahl mischt nicht, Volumenströme, Anschlussstutzen und Wärmeübertrager im Speicher kennt sie nicht. Was eine Schichtung in der Praxis zerstört – ein schneller Strahl, ein zu warmer Rücklauf – bildet sie deshalb nicht ab; eine schlechtere Schichtung lässt sich nur über eine höhere effektive Wärmeleitfähigkeit annähern. Ein Kältespeicher rechnet immer als ein Vorrat.
+
+Die Formeln stehen unter [[Programm Dokumentation/Berechnung/Pufferspeicher#schichtung|Berechnung: Pufferspeicher, Schritt Schichtung]], die Bedienung mit einem Beispiel unter [[Programm Dokumentation/Pufferspeicher#schichtung-nutzen|Pufferspeicher: Schichtung nutzen]].
 
 == Kennzahlen ==
 {{Anker|kennzahlen|kapazitaet}}{{Anker|bewirtschaftung-ueber-schaltschwellen|schaltschwellen}}
@@ -94,7 +139,7 @@ Der Katalog der Pufferspeicher liegt unter Administration → Energiesysteme →
 {{Anker|siehe-auch}}
 
 * [[Programm Dokumentation/Pufferspeicher|Programm Dokumentation: Pufferspeicher]] – Einbindung, Beispiel, Zusammenspiel und Fallstricke
-* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] – der Rechenweg
+* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] – der Rechenweg, auch der Schichtung
 * [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] – das Volumen nach den Kriterien der Auslegung
 * [[Grundlagen/Solarkollektoren|Grundlagen: Solarkollektoren]] – der häufigste schwankende Erzeuger vor dem Puffer
 * [[Grundlagen/Hydraulikschemata|Hydraulikschemata]] – gebräuchliche Schaltungen als Prinzipschema

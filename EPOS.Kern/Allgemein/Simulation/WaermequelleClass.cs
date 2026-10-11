@@ -1142,66 +1142,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// PAKET Q1: liest <paramref name="anzahl"/> Zahlenwerte aus einer CSV-Datei —
-        /// der Importweg der Quellprofile (12, 365 oder 8760 Werte).
-        ///
-        /// <para><b>Dieselben Trennzeichen- und Dezimalregeln wie
-        /// <see cref="ProfilAusCsv"/></b>: Erst Semikolon/Tabulator als Feldtrenner mit
-        /// Komma als Dezimalzeichen, sonst Komma als Feldtrenner mit Punkt als
-        /// Dezimalzeichen; gezählt wird der LETZTE parsebare Wert einer Zeile, damit
-        /// „Zeitstempel;Wert" ohne Vorbehandlung durchgeht. Zeilen ohne Zahl (Kopfzeilen)
-        /// werden übersprungen.</para>
-        ///
-        /// <para><b>ANSI statt UTF-8</b> (Projektregel <c>KONTEXT_Importkodierung_ANSI</c>):
-        /// Deutsche Zählerexporte und Messreihen sind fast nie UTF-8. Gelesen wird über
-        /// <see cref="AnsiEncoding"/> mit BOM-Erkennung — ein vorhandenes BOM schlägt die
-        /// Vorgabe, genau wie in <c>GanglinienDatei.LeserOeffnen</c>. Für reine
-        /// Zahlenzeilen ist das ohne Folge; es rettet die Kopfzeile mit Umlauten davor,
-        /// als Ersatzzeichenfolge in einer Fehlermeldung zu landen.</para>
-        ///
-        /// <para><b>Genau <paramref name="anzahl"/> Werte oder <c>null</c>.</b> Eine zu
-        /// kurze Datei stillschweigend mit Nullen aufzufüllen hieße, ein
-        /// Temperaturprofil zu erfinden.</para>
-        /// </summary>
-        public static double[] WerteAusCsv(string pfad, int anzahl)
-        {
-            if (string.IsNullOrEmpty(pfad) || anzahl <= 0 || !File.Exists(pfad)) return null;
-
-            double[] werte = new double[anzahl];
-            int index = 0;
-
-            try
-            {
-                using (StreamReader leser = new StreamReader(pfad, AnsiEncoding.Get(), true))
-                {
-                    string zeileRoh;
-                    while ((zeileRoh = leser.ReadLine()) != null)
-                    {
-                        if (index >= anzahl) break;
-
-                        string zeile = zeileRoh.Trim();
-                        if (zeile.Length == 0) continue;
-
-                        double wert = LetzteZahl(zeile.Split(';', '\t'), true);
-                        if (double.IsNaN(wert) && zeile.IndexOf(',') >= 0)
-                            wert = LetzteZahl(zeile.Split(','), false);
-
-                        if (double.IsNaN(wert)) continue;   // z. B. Kopfzeile
-
-                        werte[index++] = wert;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("WerteAusCsv fehlgeschlagen: " + ex.Message);
-                return null;
-            }
-
-            return index == anzahl ? werte : null;
-        }
-
-        /// <summary>
         /// Liefert den letzten parsebaren Zahlenwert aus den Feldern, sonst NaN.
         /// </summary>
         private static double LetzteZahl(string[] felder, bool kommaAlsDezimal)

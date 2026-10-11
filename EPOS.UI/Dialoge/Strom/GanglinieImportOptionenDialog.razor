@@ -41,7 +41,7 @@
 <div class="epos-dialog epos-importoptionen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <h1 class="epos-dialog-titel">@TitelAnzeige</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         <Schliesskreuz Geschlossen="BeiAbbrechen" />
     </div>
@@ -69,12 +69,20 @@
                      Auswahl="@_iWertspalte" AuswahlChanged="@(i => _iWertspalte = i ?? 0)" />
         <Auswahlfeld Bezeichnung="@LabelZeitspalte" Eintraege="@_zeitspalten"
                      Auswahl="@_iZeitspalte" AuswahlChanged="@(i => _iZeitspalte = i ?? 0)" />
-        <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@_einheit"
-                     Auswahl="@_iEinheit" AuswahlChanged="@(i => _iEinheit = i ?? 0)" />
-        <Auswahlfeld Bezeichnung="@LabelRaster" Eintraege="@_raster"
-                     Auswahl="@_iRaster" AuswahlChanged="@(i => _iRaster = i ?? 0)" />
-        <Auswahlfeld Bezeichnung="@LabelKonvention" Eintraege="@_konvention"
-                     Auswahl="@_iKonvention" AuswahlChanged="@(i => _iKonvention = i ?? 0)" />
+        @* Die Formatbeschreibung (IM-4) entscheidet, welche Felder es gibt: Einheit, Raster und
+           Konvention nur beim Lastgang; ein Sonderformat (Quellprofil in °C …) hat sie fest. *@
+        @if (F.Einheitswahl)
+        {
+            <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@_einheit"
+                         Auswahl="@_iEinheit" AuswahlChanged="@(i => _iEinheit = i ?? 0)" />
+        }
+        @if (F.Rasterwahl)
+        {
+            <Auswahlfeld Bezeichnung="@LabelRaster" Eintraege="@_raster"
+                         Auswahl="@_iRaster" AuswahlChanged="@(i => _iRaster = i ?? 0)" />
+            <Auswahlfeld Bezeichnung="@LabelKonvention" Eintraege="@_konvention"
+                         Auswahl="@_iKonvention" AuswahlChanged="@(i => _iKonvention = i ?? 0)" />
+        }
         @if (IstExcel)
         {
             <Auswahlfeld Bezeichnung="@LabelBlatt" Eintraege="@_blaetter"
@@ -87,6 +95,11 @@
                       Feldname="ErsteDatenzeile" WertChanged="ErsteDatenzeileSetzen" />
         <Ganzzahlfeld Bezeichnung="@LabelZeilenzahl" Wert="@(_zeilenzahl > 0 ? _zeilenzahl : null)" Min="1"
                       Feldname="Zeilenzahl" WertChanged="ZeilenzahlSetzen" />
+        @if (F.Jahresfeld)
+        {
+            <Ganzzahlfeld Bezeichnung="@LabelJahr" Wert="@(_jahr > 0 ? _jahr : null)" Min="1900"
+                          Feldname="Jahr" WertChanged="JahrSetzen" />
+        }
             </KindInhalt>
         </Formularraster>
     </div>
@@ -120,12 +133,16 @@
     @if (_probe is not null)
     {
         <p class="epos-leisezeile epos-importoptionen-probe" role="status">@_probe.Zeile</p>
+        @if (_probe.Kennzahlen.Length > 0)
+        {
+            <p class="epos-leisezeile epos-importoptionen-kennzahlen">@_probe.Kennzahlen</p>
+        }
         @if (_probe.Modell is not null)
         {
             <Gruppenkopf Titel="@GruppeGrafik" />
             <div class="epos-importoptionen-bild">
                 <DiagrammSvg Modell="@_probe.Modell" Kennung="@("importoptionen-" + _probeNummer)"
-                             Bezeichnung="@BildTitel" Einheit="kW" Palette="@WindowsFormsApplication1.Zeichnung.Farbpalette.Aktuell" />
+                             Bezeichnung="@BildTitel" Einheit="@F.Einheit" Palette="@WindowsFormsApplication1.Zeichnung.Farbpalette.Aktuell" />
             </div>
         }
     }
@@ -166,6 +183,21 @@
     [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>? Vorschau { get; set; }
 
     /// <summary>
+    /// Die Formatbeschreibung (IM-4): welche Felder es gibt, welche Werteanzahl gilt, wie das Bild
+    /// aussieht. <c>null</c> = der Lastgang der Importkette (<see cref="GanglinienImportFormat.Ganglinie"/>).
+    /// Ein Sonderformat mit fester Werteanzahl lehnt eine abweichende Datei am OK BENANNT ab — der
+    /// Grund steht im Banner, der Dialog bleibt offen.
+    /// </summary>
+    [Parameter] public GanglinienImportFormat? Format { get; set; }
+
+    /// <summary>Die wirksame Formatbeschreibung.</summary>
+    private GanglinienImportFormat F => _format ??= Format ?? GanglinienImportFormat.Ganglinie;
+    private GanglinienImportFormat? _format;
+
+    /// <summary>Der Titel: ein Sonderformat nennt sich selbst, solange der Wirt keinen eigenen setzt.</summary>
+    private string TitelAnzeige => !F.IstGanglinie && TitelText == Resource.IMPORT_TITEL_OPTIONEN ? F.Titel : TitelText;
+
+    /// <summary>
     /// Der Dialog ist zu Ende: die bestaetigten Optionen, oder <c>null</c> bei
     /// Abbruch.
     /// </summary>
@@ -191,6 +223,10 @@
     [Parameter] public string LabelErsteDatenzeile { get; set; } = Resource.IMPORT_LBL_ERSTE_DATENZEILE;
     /// <summary>Beschriftung der Zeilenzahl — <c>IMPORT_LBL_ZEILENZAHL</c>.</summary>
     [Parameter] public string LabelZeilenzahl { get; set; } = Resource.IMPORT_LBL_ZEILENZAHL;
+    /// <summary>Beschriftung des Jahresfeldes (Formate mit Jahr) — <c>IMPORT_LBL_JAHR</c>.</summary>
+    [Parameter] public string LabelJahr { get; set; } = Resource.IMPORT_LBL_JAHR;
+    /// <summary>Banner, wenn OK eine Datei bestätigen soll, die nicht zum Format passt ({0} = Grund).</summary>
+    [Parameter] public string VorlageAbgelehnt { get; set; } = Resource.IMPORT_MSG_FORMAT_ABGELEHNT;
     [Parameter] public string AktualisierenText { get; set; } = Resource.IMPORT_BTN_AKTUALISIEREN;
     [Parameter] public string VorlageVorschau { get; set; } = Resource.IMPORT_GRP_VORSCHAU;
     [Parameter] public string HinweisText { get; set; } = Resource.IMPORT_HINWEIS_OPTIONEN;
@@ -235,6 +271,12 @@
 
     /// <summary>Hat der Anwender (oder der Wirt) die Zeilenzahl gesetzt? Sonst liest der Import bis zum Dateiende.</summary>
     private bool _zeilenzahlGesetzt;
+
+    /// <summary>Das Jahr der Reihe (Formate mit Jahresfeld); 0 = keines.</summary>
+    private int _jahr;
+
+    /// <summary>Das Jahr, wie es im Feld steht; 0 = keines (Prüfhilfe).</summary>
+    public int Jahr => _jahr;
 
     /// <summary>Die erste Datenzeile, wie sie im Feld steht (Prüfhilfe).</summary>
     public int ErsteDatenzeile => _ersteDatenzeile;
@@ -320,7 +362,7 @@
 
     protected override void OnInitialized()
     {
-        _kiSicht = new GanglinieImportOptionenKiSicht(KiPlatz, () => _kopfzeile, KiSetzen, KiWahl, () => IstExcel);
+        _kiSicht = new GanglinieImportOptionenKiSicht(KiPlatz, () => _kopfzeile, KiSetzen, KiWahl, () => IstExcel, () => F);
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, () => _kiSicht, KiHaken());
     }
 
@@ -347,6 +389,7 @@
         nameof(GanglinieImportOptionenKiSicht.Blatt) => _iBlatt,
         nameof(GanglinieImportOptionenKiSicht.ErsteDatenzeile) => _ersteDatenzeile,
         nameof(GanglinieImportOptionenKiSicht.Zeilenzahl) => _zeilenzahl,
+        nameof(GanglinieImportOptionenKiSicht.Jahr) => _jahr,
         _ => throw new InvalidOperationException(feld)
     };
 
@@ -378,6 +421,7 @@
             case nameof(GanglinieImportOptionenKiSicht.Kopfzeile): KopfzeileSetzen(wert is true); break;
             case nameof(GanglinieImportOptionenKiSicht.ErsteDatenzeile): ErsteDatenzeileSetzen(wert as int?); break;
             case nameof(GanglinieImportOptionenKiSicht.Zeilenzahl): ZeilenzahlSetzen(wert as int?); break;
+            case nameof(GanglinieImportOptionenKiSicht.Jahr): JahrSetzen(wert as int?); break;
             case nameof(GanglinieImportOptionenKiSicht.Trennzeichen): _iTrennzeichen = platz; break;
             case nameof(GanglinieImportOptionenKiSicht.Dezimaltrenner): _iDezimal = platz; break;
             case nameof(GanglinieImportOptionenKiSicht.Wertspalte): _iWertspalte = platz; break;
@@ -440,6 +484,7 @@
         _ersteDatenzeile = o.ErsteDatenzeileWirksam;
         _zeilenzahlGesetzt = o.Zeilenzahl > 0;
         _zeilenzahl = _zeilenzahlGesetzt ? o.Zeilenzahl : _probe?.ZeilenAbStart ?? 0;
+        _jahr = Math.Max(0, o.Jahr);
 
         _iWertspalte = Math.Max(GanglinienOptionenModell.Grenzen(o.WertSpalte, _wertspalten.Count), 0);
         // Die Zeitspaltenliste beginnt mit "(keine)" - daher die Verschiebung um eins.
@@ -471,6 +516,7 @@
             Kopfzeile = _kopfzeile,
             ErsteDatenzeile = Math.Max(1, _ersteDatenzeile),
             Zeilenzahl = _zeilenzahlGesetzt ? _zeilenzahl : 0,
+            Jahr = F.Jahresfeld ? _jahr : 0,
             WertSpalte = Math.Max(0, _iWertspalte),
             ZeitSpalte = _iZeitspalte - 1,
             Blattname = _iBlatt >= 0 && _iBlatt < _blattnamen.Count ? _blattnamen[_iBlatt] : ""
@@ -494,6 +540,9 @@
         _ersteDatenzeile = Math.Max(1, zeile ?? 1);
         _kopfzeile = _ersteDatenzeile > 1;
     }
+
+    /// <summary>Das Jahr der Reihe; eine leere Eingabe heißt „keines".</summary>
+    private void JahrSetzen(int? jahr) => _jahr = jahr is > 0 ? jahr.Value : 0;
 
     /// <summary>Die Zeilenzahl; eine leere Eingabe heißt wieder „bis zum Dateiende" (Vorgabe der Probe).</summary>
     private void ZeilenzahlSetzen(int? zahl)
@@ -546,7 +595,31 @@
     // Schluss
     // =====================================================================
 
-    private Task BeiOk() => Geschlossen.InvokeAsync(Optionen());
+    /// <summary>
+    /// OK. Der Lastgang bestätigt wörtlich ohne Prüfschritt (Befund W12-B16). Ein Sonderformat
+    /// (IM-4) liest die Datei mit den gewählten Optionen noch einmal und lehnt BENANNT ab, was nicht
+    /// zum Format passt (feste Werteanzahl, eigene Prüfung) — der Grund steht im Banner, die
+    /// Probezeile zeigt ihn auch, der Dialog bleibt offen.
+    /// </summary>
+    private async Task BeiOk()
+    {
+        GanglinienImportOptionen optionen = Optionen();
+        if (!F.IstGanglinie && Vorschau is not null)
+        {
+            GanglinienVorschau? neu = await Vorschau(Pfad, optionen);
+            GanglinienProbe? probe = neu is not null && neu.Lesbar ? neu.Probe : null;
+            if (probe is null || !probe.Erfolgreich)
+            {
+                PruefMeldung? fehler = neu?.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
+                string grund = probe is not null && probe.Grund.Length > 0 ? probe.Grund
+                    : fehler is not null ? GanglinienProtokollText.Text(fehler) : Resource.IMPORT_PROT_DATEI_LEER;
+                _meldung = string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageAbgelehnt, grund);
+                if (probe is not null) { _probe = probe; _probeNummer++; }
+                return;
+            }
+        }
+        await Geschlossen.InvokeAsync(optionen);
+    }
 
     private Task BeiAbbrechen() => Geschlossen.InvokeAsync(null);
 
