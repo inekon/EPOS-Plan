@@ -5445,6 +5445,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_SCHNELLAUFHEIZUNG = SchnellaufheizungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="RaumnutzungNormkategorienSchema.SCHRITT"/> — <b>Kategorien SIA 2024 und VDI 2078 entfallen</b>
+        /// (NP6, E129): Die leeren, ausgelieferten Kategorien des Katalogs der Nutzungsprofile fallen weg; eine wider Erwarten
+        /// befüllte wird eine eigene Kategorie und steht im Protokoll. Die Kategorie DIN bekommt die zwei Wohnprofile nach
+        /// Tabelle 5 (Einfamilienhaus, Mehrfamilienhaus; ohne Nummer, ohne Werte).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest eine Kategorie.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG_NORMKATEGORIEN = RaumnutzungNormkategorienSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7978,6 +7988,13 @@ namespace WindowsFormsApplication1
                         "Ein Projekt koennte die Schnellaufheizung nicht speichern. KEIN Rechenergebnis aendert sich - jede " +
                         "Spalte steht auf NULL, und NULL heisst aus.",
                         Schritt_Schnellaufheizung),
+            // NP6: Kategorien SIA 2024 und VDI 2078 entfallen. Quelle ist RaumnutzungNormkategorienSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG_NORMKATEGORIEN,
+                        "Tab_Raumnutzungskatalog: die ausgelieferten Kategorien SIA 2024 und VDI 2078 (ohne Profil) entfallen; " +
+                        "Tab_Raumnutzungsprofil: zwei Wohnprofile der DIN (Einfamilienhaus, Mehrfamilienhaus) ohne Werte",
+                        "Der Katalog der Nutzungsprofile fuehrte zwei leere, schreibgeschuetzte Kategorien, in die kein Profil " +
+                        "eingetragen werden kann, und der Kategorie DIN fehlten die Wohngebaeude. KEIN Rechenergebnis aendert sich - kein Rechenweg liest eine Kategorie.",
+                        Schritt_RaumnutzungNormkategorien),
         };
 
         /// <summary>
@@ -15423,6 +15440,62 @@ namespace WindowsFormsApplication1
                     (erg.Angelegt == 0 ? "stand bereits." : erg.Angelegt + " Schemaanweisung(en).") +
                     " " + erg.Saat + " Kaeltemittel gesaet, " + (erg.KatalogZugeordnet + erg.ProjektZugeordnet) +
                     " Zeile(n) zugeordnet. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kategorien SIA 2024 und VDI 2078 entfallen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_RAUMNUTZUNG_NORMKATEGORIEN"/>, die Anweisungen bei <see cref="RaumnutzungNormkategorienSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_RaumnutzungNormkategorien(Lauf l)
+        {
+            string nr = RaumnutzungNormkategorienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungNormkategorienSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RaumnutzungNormkategorienSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungNormkategorienSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kategorien SIA 2024 und VDI 2078 stehen nach dem Schritt noch als ausgelieferte Kategorien, " +
+                                  "oder der Kategorie DIN fehlt ein Wohnprofil.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kategorien SIA 2024 und VDI 2078, Wohnprofile der DIN - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Kategorie(n) oder Profil(e) entfernt, umgestellt oder angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

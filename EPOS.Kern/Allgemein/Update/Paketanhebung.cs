@@ -429,6 +429,10 @@ namespace WindowsFormsApplication1
             // Ergebnisspalten bleiben leer.
             new Stufe(SchnellaufheizungSchema.SCHRITT, Art.Ddl,
                       "Schnellaufheizung des Vorheizens (Schalter, Raumsollwert-Überhöhung; Ergebnisse je Gebäude und Zone)"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); die Kategorien SIA 2024 und VDI 2078
+            // nimmt der Schritt am Ziel heraus und legt die Wohnprofile der DIN an.
+            new Stufe(RaumnutzungNormkategorienSchema.SCHRITT, Art.Katalog,
+                      "Kategorien SIA 2024 und VDI 2078 des Katalogs der Nutzungsprofile entfallen, Wohnprofile der DIN (E129)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

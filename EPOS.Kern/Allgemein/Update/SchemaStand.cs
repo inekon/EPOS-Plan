@@ -1029,7 +1029,12 @@ namespace WindowsFormsApplication1
         /// Danach, mit der SCHNELLAUFHEIZUNG (SA2, E128), steht das Ziel auf <see cref="SchnellaufheizungSchema.SCHRITT"/>:
         /// Schalter und Raumsollwert-Überhöhung an <c>Tab_Einstellungen</c> und sechs Ergebnisspalten je Gebäude und Zone
         /// (<see cref="SchnellaufheizungSchema"/>). <b>Ergebnisneutral:</b> Jede Spalte steht auf NULL, und NULL ist „aus“.
-        public const int Zielversion = SchnellaufheizungSchema.SCHRITT;
+        /// Danach, mit dem WEGFALL DER KATEGORIEN SIA 2024 UND VDI 2078 (NP6, E129), steht das Ziel auf
+        /// <see cref="RaumnutzungNormkategorienSchema.SCHRITT"/>: Die beiden leeren, ausgelieferten Kategorien des Katalogs der
+        /// Nutzungsprofile fallen weg, die Kategorie DIN bekommt die zwei Wohnprofile nach Tabelle 5 ohne Werte
+        /// (<see cref="RaumnutzungNormkategorienSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg
+        /// liest eine Kategorie.
+        public const int Zielversion = RaumnutzungNormkategorienSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

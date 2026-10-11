@@ -123,7 +123,7 @@ namespace Auslieferungsvorlage
         /// <b>Was der Katalog der Nutzungsprofile in der Vorlage trägt.</b> Gezählt werden je Kategorie die Profile
         /// (gesperrt und eigen) und die Zuordnungen; geprüft wird dreierlei: die ausgelieferte Saat steht vollständig
         /// (<see cref="RaumnutzungSchema.OffeneSaat"/>), <b>kein Kennwert, kein Zeilenbild, kein Stundenprofil in einer
-        /// Normkategorie</b> (DIN V 18599-10, SIA 2024, VDI 2078 — Normwerte werden nie ausgeliefert) und in jedem Modus
+        /// Normkategorie</b> (DIN/TS 18599-10 — Normwerte werden nie ausgeliefert; SIA 2024 und VDI 2078 entfallen, E129) und in jedem Modus
         /// keine eigene Zeile mehr (NP-F21, Q46). Steht der Schemaschritt nicht, ist das ein Hinweis.
         /// </summary>
         private bool Nutzungsprofile()
