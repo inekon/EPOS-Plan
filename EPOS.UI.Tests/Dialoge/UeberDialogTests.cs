@@ -138,6 +138,19 @@ public class UeberDialogTests : EposBunitContext
     }
 
     [Fact]
+    public void Nach_dem_Schalten_bekommt_die_Wurzel_den_Fokus_erneut()
+    {
+        var anstoss = new UeberAnstoss();
+        var cut = Zeige(schalten: () => DIAGNOSE_NEU, anstoss: anstoss);
+        int vorher = JSInterop.Invocations.Count(a => a.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
+
+        cut.InvokeAsync(anstoss.Ausloesen);
+
+        cut.WaitForAssertion(() => Assert.Equal(vorher + 1,
+            JSInterop.Invocations.Count(a => a.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase))));
+    }
+
+    [Fact]
     public void Liefert_die_Geste_nichts_bleibt_der_Text()
     {
         var anstoss = new UeberAnstoss();
