@@ -102,8 +102,14 @@ namespace WindowsFormsApplication1
         /// <summary>Merkmal: Wasserbilanz (gerechnet seit K-F2).</summary>
         public const string MERKMAL_WASSERBILANZ = "WASSERBILANZ";
 
-        /// <summary>Merkmal: freie Kühlung in Reihe (Teil-Freikühlung, K-F3).</summary>
+        /// <summary>Merkmal: freie Kühlung in Reihe (Teil-Freikühlung, gerechnet seit K-F3).</summary>
         public const string MERKMAL_REIHE = "REIHE";
+
+        /// <summary>
+        /// K-F3: Schaltung der freien Kühlung <c>REIHE</c> — der Rückkühler kühlt den Kaltwasserrücklauf vor, der Verdichter
+        /// deckt den Rest (Teil-Freikühlung, <see cref="TeilFreikuehlungKwh"/>); sonst <c>PARALLEL</c> (heutige freie Kühlung).
+        /// </summary>
+        public bool Reihe;
 
         /// <summary>ID der Projektkopie.</summary>
         public int Id;
@@ -230,9 +236,55 @@ namespace WindowsFormsApplication1
             if (Endlich(m.Befeuchtung_Wirkungsgrad) is double eta && eta >= 0 && eta <= 1) r.BefeuchtungWirkungsgrad = eta;
             if (Endlich(m.Befeuchtung_Ab_C) is double ab) r.BefeuchtungAbC = ab;
             if (Endlich(m.Eindickung) is double e && e > 1) r.Eindickung = e;
-            if (string.Equals(m.Freikuehlung_Schaltung, RueckkuehlwerkSchema.SCHALTUNG_REIHE, StringComparison.Ordinal))
-                r._nichtGerechnet.Add(MERKMAL_REIHE);
+            // K-F3: REIHE wird gerechnet (Teil-Freikühlung) - kein Merkmal mehr in NichtGerechnet.
+            r.Reihe = string.Equals(m.Freikuehlung_Schaltung, RueckkuehlwerkSchema.SCHALTUNG_REIHE, StringComparison.Ordinal);
             return r;
+        }
+
+        // =====================================================================
+        //  K-F3: Teil-Freikühlung in Reihe
+        // =====================================================================
+
+        /// <summary>
+        /// K-F3 (Entwurf 5.5): Greift die Teil-Freikühlung? Ja, wenn die Fluidtemperatur des Rückkühlers
+        /// <paramref name="fluidC"/> (Bezug + Annäherung) mindestens <see cref="KaelteFestwerte.FREIE_KUEHLUNG_ABSTAND_K"/> unter
+        /// dem Kaltwasserrücklauf <paramref name="ruecklaufC"/> liegt — verglichen über <see cref="Rechenrand.SchwelleErreicht"/>
+        /// (die Schwelle ist der Rücklauf minus Abstand, der Wert die Fluidtemperatur; Untergrenze, daher vertauscht).
+        /// </summary>
+        public static bool TeilFreikuehlungGreift(double ruecklaufC, double fluidC)
+        {
+            if (double.IsNaN(ruecklaufC) || double.IsNaN(fluidC) || double.IsInfinity(ruecklaufC) || double.IsInfinity(fluidC))
+                return false;
+            return Rechenrand.SchwelleErreicht(ruecklaufC - KaelteFestwerte.FREIE_KUEHLUNG_ABSTAND_K, fluidC);
+        }
+
+        /// <summary>
+        /// K-F3 (Entwurf 5.5): die Kälte der Teil-Freikühlung einer Stunde [kWh]. Annahme: Die Spreizung der Stunde
+        /// θ_R − θ_V ist gegeben, der Kaltwasserstrom folgt der Last — ṁ·c_p = Last / (θ_R − θ_V). Der Vorkühler kühlt den
+        /// Rücklauf von θ_R höchstens auf θ_FK und deckt so den Anteil (θ_R − θ_FK) / (θ_R − θ_V) der Last, begrenzt auf 0…1:
+        /// Q̇_FK = min(Last · clamp((θ_R − θ_FK) / (θ_R − θ_V), 0, 1), Rückkühlerleistung). c_p kürzt sich, keine Iteration.
+        /// Die Variante mit konstantem (Nenn-)Massenstrom ist nicht gebaut. 0, wenn die Teil-Freikühlung nicht greift
+        /// (<see cref="TeilFreikuehlungGreift"/>), die Spreizung nicht über 0 liegt (<see cref="Rechenrand.SchwelleErreicht"/>)
+        /// oder eine Größe fehlt.
+        /// </summary>
+        /// <param name="kaelteKwh">Kälte der Stunde, die die Maschine decken soll [kWh].</param>
+        /// <param name="vorlaufC">Kaltwasservorlauf der Stunde [°C].</param>
+        /// <param name="ruecklaufC">Kaltwasserrücklauf der Stunde [°C] (ohne AK3 Vorlauf + Auslegungsspreizung, auf AK3 gerechnet).</param>
+        /// <param name="fluidC">Fluidtemperatur des Rückkühlers (Bezug + Annäherung) [°C].</param>
+        /// <param name="rueckkuehlerKw">Leistungsgrenze des Rückkühlers [kW].</param>
+        public static double TeilFreikuehlungKwh(double kaelteKwh, double vorlaufC, double ruecklaufC, double fluidC,
+                                                 double rueckkuehlerKw)
+        {
+            if (!(kaelteKwh > 0) || !(rueckkuehlerKw > 0) || double.IsNaN(vorlaufC) || double.IsInfinity(vorlaufC)) return 0.0;
+            if (!TeilFreikuehlungGreift(ruecklaufC, fluidC)) return 0.0;
+            double spreizung = ruecklaufC - vorlaufC;
+            // Spreizung der Stunde ≤ 0 (am Rand): kein Kaltwasserstrom, den der Rückkühler vorkühlen könnte.
+            if (Rechenrand.SchwelleErreicht(0.0, spreizung)) return 0.0;
+            double anteil = (ruecklaufC - fluidC) / spreizung;
+            if (!(anteil > 0)) return 0.0;
+            if (anteil > 1.0) anteil = 1.0;
+            double q = kaelteKwh * anteil;
+            return q < rueckkuehlerKw ? q : rueckkuehlerKw;
         }
 
         // =====================================================================

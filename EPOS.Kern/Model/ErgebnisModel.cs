@@ -756,7 +756,7 @@ namespace WindowsFormsApplication1
         public int? Stunden_Extrapoliert;
 
         // K-F2 (RueckkuehlwerkSchema, Entwurf Split/VRF/Rückkühlwerk 5.8): nur mit Rückkühlwerk an der Anlagenzeile belegt;
-        // sonst null = NULL, der Satz bleibt wie ohne Rückkühlwerk. TeilFreikuehlung_* folgen mit K-F3.
+        // sonst null = NULL, der Satz bleibt wie ohne Rückkühlwerk. TeilFreikuehlung_* (K-F3) nur mit Schaltung REIHE.
         /// <summary>Strom der Rückkühlung [MWh/a] — Ventilator bzw. Hilfsstrom der Rückkühlung; Teil von <see cref="Hilfsstrom_MWh"/>.</summary>
         public double? Ventilatorstrom_MWh;
         /// <summary>Wasser des Rückkühlwerks [m³/a] — Verdunstung, Abflutung, Drift.</summary>
@@ -765,6 +765,10 @@ namespace WindowsFormsApplication1
         public int? Stunden_Nass;
         /// <summary>Mittlere Rückkühltemperatur der Betriebsstunden [°C].</summary>
         public double? Rueckkuehltemperatur_Mittel;
+        /// <summary>K-F3: Kälte der Teil-Freikühlung in Reihe [MWh/a] — der vorgekühlte Anteil der Mischstunden; nur mit <c>REIHE</c>.</summary>
+        public double? TeilFreikuehlung_MWh;
+        /// <summary>K-F3: Mischstunden der Teil-Freikühlung in Reihe [h/a]; nur mit <c>REIHE</c>.</summary>
+        public int? TeilFreikuehlung_Stunden;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.
