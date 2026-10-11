@@ -105911,11 +105911,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen verfehlt der Lauf den Sollwert zum Nutzungsbeginn, den die Vorausschau als erreichbar sah (Nachbarzonen oder Heizkreis). ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Übergänge aus „aus“ (Heizperiode, Kalender) bekommen kein Vorheizen und zählen nicht in die Prüfung. ähnelt.
         /// </summary>
         public static string SIMENG_VORH_AUS {
             get {
                 return ResourceManager.GetString("SIMENG_VORH_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit berechnet: {0} h aus dem größten Bedarf des Jahres (Median der Nutzungsbeginne {1} h); sie gilt an jedem Nutzungsbeginn. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_BERECHNET {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_BERECHNET", resourceCulture);
             }
         }
         
@@ -105938,29 +105956,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_OHNE_HEIZLAST {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_OHNE_HEIZLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Zonen haben keinen Nutzungsbeginn im Heizkalender; dort wird nicht vorgeheizt. ähnelt.
         /// </summary>
         public static string SIMENG_VORH_OHNE_SPRUNG {
             get {
                 return ResourceManager.GetString("SIMENG_VORH_OHNE_SPRUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Vorheizzeit vorgeben“ rechnet im geschlossenen Kreis (AK3) noch nicht; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
-        /// </summary>
-        public static string SIMENG_VORH_RUECKFALL_AK3 {
-            get {
-                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_AK3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Vorheizzeit berechnen“ rechnet noch nicht; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
-        /// </summary>
-        public static string SIMENG_VORH_RUECKFALL_BERECHNET {
-            get {
-                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_BERECHNET", resourceCulture);
             }
         }
         
@@ -105992,11 +106001,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter); nötig wären bis {2} h Vorheizen statt {3} h. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_TAGE_BEDARF {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_TAGE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der zulässige Sprung zum Nutzungsbeginn ist 0: Der Deckel liegt auf der höchsten Heizlast am Nutzungsbeginn, und das Vorheizen braucht meist die ganze Nacht. ähnelt.
         /// </summary>
         public static string SIMENG_VORH_TOLERANZ_NULL {
             get {
                 return ResourceManager.GetString("SIMENG_VORH_TOLERANZ_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen reicht die Vorheizleistung selbst ohne Absenkung der Nacht nicht, um den Sollwert zum Nutzungsbeginn zu erreichen (unerreichbar); {1} Nächte bleiben ohne Absenkung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_UNERREICHBAR", resourceCulture);
             }
         }
         
