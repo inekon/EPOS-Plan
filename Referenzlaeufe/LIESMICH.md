@@ -1,4 +1,4 @@
-# Referenzlauf-Suite (Paket B1)
+﻿# Referenzlauf-Suite (Paket B1)
 
 Regressionsbasis für den Simulationskern von EPOS-Plan.
 
@@ -1208,6 +1208,18 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `cc9222a80172a6809b24e45d3706c7bb2eff4fc1fdbe43f95aef79601609121d`**. NULL ist die Sollwertrampe; kein Referenzprojekt
 > trägt ein Verfahren
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V4_Schema215.md)).
+> **Nachtrag — Schema 216 (Kältemittel als Stammdatum, KM4‑E1, hängt an 215 AH‑V4), Basis R51 unberührt.**
+> `KaeltemittelSchema` (216 = `VorheizenSchema.SCHRITT + 1`) legt `Tab_Kaeltemittel_STAMM` an (STRICT, Register „KMT“ in
+> Stufe 3 vor „KM“, achtzehn ausgelieferte Codes `VORLAEUFIG` mit Katalogschlüssel und Prüfsumme), `ID_Kaeltemittel` an
+> `Tab_Kaeltemaschine_STAMM` und `Tab_Kaeltemaschine` und `Inbetriebnahmejahr` an `Tab_Projekt` (leer). Die Zuordnung des
+> Textbestands setzt die ID an den drei Projektkopien von 1055, 1059 und 1063 (`R513A`, Text unverändert) und an den
+> Auslieferungssätzen 1 bis 3 (`R32`, `R513A`, `R1234ze` → `R1234ze(E)` über den Katalogschlüssel), deren Prüfsummen neu
+> gebildet sind; die 34 Typkennfelder bleiben leer. Gehoben aus der Fassung 215 (`cc9222a8…`) mit
+> `Werkzeuge/Testdatenbankschema`; der Zellvergleich der Bestandsspalten zeigt nur `Tab_Applikation.SchemaVersion` und die
+> drei Prüfsummen, 191 STRICT-Tabellen. Die Testdatenbank steht auf **216** (`integrity_check` ok, `foreign_key_check`
+> leer): **95 735 808 Byte, LFS-SHA-256 `a63c8e78720b11a83ff69717a5f26b83fb93c8e493ac74d91b8252474fd64e94`**. Kein
+> Rechenweg liest Tabelle, Verweis oder Jahr
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Kaelteanlagen/2026-10-11_KM4_E1a_Kaeltemitteltabelle.md)).
 
 ### Die Vorgängerbasis R50 (Wochentagsraster)
 
