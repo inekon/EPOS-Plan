@@ -18,8 +18,10 @@ namespace WindowsFormsApplication1
     //   Tab_Kaeltemaschine          ID_Kaeltemittel ebenso
     //   Tab_Projekt                 Inbetriebnahmejahr (nullbar, 2000 bis 2100; leer = keine Pruefung, KM4-Q5 a)
     //
-    // SAAT. Achtzehn Codes mit GWP, Quelle, F-Gas, natuerlich und PFAS-Status, alle VORLAEUFIG bis zur Pruefung am
-    // Volltext der Verordnung (KM4-Q2 a); Sicherheitsgruppe leer (KM4-Q3 b). Wiederholbar: nur fehlende Codes.
+    // SAAT. Achtzehn Codes mit GWP, Quelle, F-Gas, natuerlich und PFAS-Status, alle GESICHERT: am amtlichen Volltext der
+    // Verordnung geprueft, je Zeile mit Fundstelle (KM4-E2-c); Sicherheitsgruppe leer (KM4-Q3 b). Wiederholbar: nur
+    // fehlende Codes. Eine bestehende Datenbank zieht geaenderte Saatzeilen ueber den Katalogabgleich mit dem
+    // Katalogpaket der Auslieferung nach (gesperrte Zeile mit unveraenderter Pruefsumme: aktualisiert; angepasst: bleibt).
     //
     // ZUORDNUNG DES TEXTBESTANDS (3.2, KM4-Q8 a). Je Zeile mit leerer ID und gesetztem Text: genau ein Code-Treffer
     // (Trim, ohne Gross/Klein) setzt die ID, der Text bleibt; ohne Treffer bleibt sie leer (nie raten). Der
@@ -162,67 +164,83 @@ namespace WindowsFormsApplication1
         //  Die Saat (KM4-Q2 a, Q3 b, Q10 a, Q11 a)
         // =================================================================
 
-        /// <summary>Eine Kältemittelzeile der Saat.</summary>
+        /// <summary>Eine Kältemittelzeile der Saat: GWP mit Fundstelle, die übrigen Kennzeichen mit ihrer Fundstelle.</summary>
         public sealed record Kaeltemittel(string Code, string Bezeichnung, string Gruppe, double Gwp, string GwpQuelle,
-                                          bool FGas, bool Natuerlich, string PfasStatus, string Vertrauen);
+                                          bool FGas, bool Natuerlich, string PfasStatus, string Quelle);
 
-        private const string AR4 = "Anhang I AR4";
-        private const string QUELLE_RECHERCHE = "Rechtsrecherche Kälteanlagen 10.10.2026; Vertrauensgrad ";
-        private const string PFAS_HERLEITUNG = "; PFAS nach Strukturformel (OECD 2021)";
+        // Fundstellen in der amtlichen deutschen Fassung der Verordnung (EU) 2024/573 (Amtsblatt, 86 Seiten), geprüft am
+        // Volltext (KM4-E2-c). Nur Fundstellen, keine Textabschrift. Der Begriff „fluorierte Treibhausgase“ folgt aus
+        // Art. 2 Buchst. a (die in den Anhängen I, II und III aufgeführten Stoffe, allein oder als Gemisch), S. 16.
+        private const string VO = "VO (EU) 2024/573 ";
+        private const string PFAS = "; PFAS nach Strukturformel (OECD 2021)";
+        private const string PFAS_KURZ = "; PFAS nach OECD 2021";
+        private const string HFKW_GWP_65 = VO + "Anh. I Abschn. 1, S. 65 (AR4)";
+        private const string HFKW_GWP_66 = VO + "Anh. I Abschn. 1, S. 66 (AR4)";
+        private const string HFKW_QUELLE = "F-Gas: " + VO + "Art. 2 Buchst. a (Anh. I), S. 16" + PFAS;
+        private const string ANH2_GWP = VO + "Anh. II Abschn. 1, S. 68 (AR6; Wert gilt für alle Isomere)";
+        private const string ANH2_QUELLE = "F-Gas: " + VO + "Art. 2 Buchst. a (Anh. II), S. 16" + PFAS;
+        private const string ANH6_GWP = VO + "Anh. VI, S. 78 (AR6)";
+        private const string ANH6_GWP_FN3 = VO + "Anh. VI, S. 78; Fn. 3: WMO 2018, << 1";
+        private const string R744_GWP = VO + "Art. 3 Nr. 1, S. 16: GWP im Verhältnis zu CO₂ = 1; nicht in Anh. VI (dort Standard 0, S. 77)";
+        private const string NATUERLICH_QUELLE = "Kein F-Gas: nicht in Anh. I bis III, " + VO + "Art. 2 Buchst. a, S. 16" + PFAS;
+        private const string GEMISCH_GWP_AR4 = VO + "Gemischregel Anh. VI, S. 77; Bestandteile Anh. I (AR4)";
+        private const string GEMISCH_GWP = VO + "Gemischregel Anh. VI, S. 77; Bestandteile Anh. I (AR4) und Anh. II/VI (AR6)";
+
+        /// <summary>Die Quelle eines Gemischs: Massenanteile nach ISO 817 (die Verordnung nennt keine Zusammensetzung).</summary>
+        private static string GemischQuelle(string anteile) =>
+            "Massenanteile " + anteile + " nach der Kältemittelbezeichnung (ISO 817); F-Gas: Art. 2 Buchst. a, S. 16" + PFAS_KURZ;
 
         /// <summary>
         /// Die achtzehn Codes — die zehn der Wärmepumpen-Klappliste eingeschlossen. GWP₁₀₀ nach der Verordnung (EU)
-        /// 2024/573 mit Quelle und Bezug je Zeile; Gemische als massengewichtete Summe ihrer Bestandteile (eigene Rechnung).
-        /// Alle Zeilen <c>VORLAEUFIG</c>, die Sicherheitsgruppe leer.
+        /// 2024/573 mit Fundstelle je Zeile (Anhang, Abschnitt, Seite); Gemische nach der Gemischregel des Anhangs VI als
+        /// massengewichtete Summe ihrer Bestandteile, Massenanteile nach ISO 817. Alle Zeilen <c>GESICHERT</c> (geprüft am
+        /// Volltext, KM4-E2-c), die Sicherheitsgruppe leer. R1233zd(E) führt die Verordnung als HFCKW (Anhang II).
         /// </summary>
         public static readonly IReadOnlyList<Kaeltemittel> SAAT = new[]
         {
             new Kaeltemittel("R32", "Difluormethan", DbWerte.KAELTEMITTEL_GRUPPE_HFKW, 675,
-                "VO 2024/573 Anhang I, GWP100 AR4", true, false, DbWerte.KAELTEMITTEL_PFAS_KEIN, "S+P"),
+                HFKW_GWP_65, true, false, DbWerte.KAELTEMITTEL_PFAS_KEIN, HFKW_QUELLE),
             new Kaeltemittel("R134a", "1,1,1,2-Tetrafluorethan", DbWerte.KAELTEMITTEL_GRUPPE_HFKW, 1430,
-                "VO 2024/573 Anhang I, GWP100 AR4", true, false, DbWerte.KAELTEMITTEL_PFAS, "S"),
+                HFKW_GWP_66, true, false, DbWerte.KAELTEMITTEL_PFAS, HFKW_QUELLE),
             new Kaeltemittel("R410A", "Gemisch R32/R125", DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH, 2087.5,
-                "Gemisch R32/R125 50/50 (" + AR4 + "; R125 = 3500), Abl.", true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, "Abl."),
+                GEMISCH_GWP_AR4, true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, GemischQuelle("50/50")),
             new Kaeltemittel("R407C", "Gemisch R32/R125/R134a", DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH, 1773.85,
-                "Gemisch R32/R125/R134a 23/25/52 (" + AR4 + "), Abl.", true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, "Abl."),
+                GEMISCH_GWP_AR4, true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, GemischQuelle("23/25/52")),
             new Kaeltemittel("R404A", "Gemisch R125/R143a/R134a", DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH, 3921.6,
-                "Gemisch R125/R143a/R134a 44/52/4 (" + AR4 + "; R143a = 4470), Abl.", true, false,
-                DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, "Abl."),
+                GEMISCH_GWP_AR4, true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, GemischQuelle("44/52/4")),
             new Kaeltemittel("R454B", "Gemisch R32/R1234yf", DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH, 465.2,
-                "Gemisch R32/R1234yf 68,9/31,1 (" + AR4 + ", Anhang II AR6), Abl.", true, false,
-                DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, "Abl."),
+                GEMISCH_GWP, true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, GemischQuelle("68,9/31,1")),
             new Kaeltemittel("R454C", "Gemisch R32/R1234yf", DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH, 145.5,
-                "Gemisch R32/R1234yf 21,5/78,5 (" + AR4 + ", Anhang II AR6), Abl.", true, false,
-                DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, "Abl./S"),
+                GEMISCH_GWP, true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, GemischQuelle("21,5/78,5")),
             new Kaeltemittel("R452B", "Gemisch R32/R125/R1234yf", DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH, 697.4,
-                "Gemisch R32/R125/R1234yf 67/7/26 (" + AR4 + ", Anhang II AR6), Abl.", true, false,
-                DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, "Abl."),
+                GEMISCH_GWP, true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, GemischQuelle("67/7/26")),
             new Kaeltemittel("R455A", "Gemisch R744/R32/R1234yf", DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH, 145.5,
-                "Gemisch R744/R32/R1234yf 3/21,5/75,5 (" + AR4 + ", Anhang II/VI AR6), Abl.", true, false,
-                DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, "Abl."),
+                GEMISCH_GWP, true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, GemischQuelle("3/21,5/75,5")),
             new Kaeltemittel("R513A", "Gemisch R1234yf/R134a", DbWerte.KAELTEMITTEL_GRUPPE_GEMISCH, 629.5,
-                "Gemisch R1234yf/R134a 56/44 (Anhang II AR6, " + AR4 + "), Abl.", true, false,
-                DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, "Abl./S"),
+                GEMISCH_GWP, true, false, DbWerte.KAELTEMITTEL_PFAS_BESTANDTEIL, GemischQuelle("56/44")),
             new Kaeltemittel("R1234ze(E)", "trans-1,3,3,3-Tetrafluorpropen", DbWerte.KAELTEMITTEL_GRUPPE_HFO, 1.37,
-                "VO 2024/573 Anhang II Abschnitt 1, GWP100 AR6", true, false, DbWerte.KAELTEMITTEL_PFAS, "S"),
+                ANH2_GWP, true, false, DbWerte.KAELTEMITTEL_PFAS, ANH2_QUELLE),
             new Kaeltemittel("R1234yf", "2,3,3,3-Tetrafluorpropen", DbWerte.KAELTEMITTEL_GRUPPE_HFO, 0.501,
-                "VO 2024/573 Anhang II Abschnitt 1, GWP100 AR6", true, false, DbWerte.KAELTEMITTEL_PFAS, "S"),
-            new Kaeltemittel("R1233zd(E)", "trans-1-Chlor-3,3,3-trifluorpropen", DbWerte.KAELTEMITTEL_GRUPPE_HFO, 3.88,
-                "VO 2024/573 Anhang II Abschnitt 1, GWP100 AR6", true, false, DbWerte.KAELTEMITTEL_PFAS, "S"),
+                ANH2_GWP, true, false, DbWerte.KAELTEMITTEL_PFAS, ANH2_QUELLE),
+            new Kaeltemittel("R1233zd(E)", "trans-1-Chlor-3,3,3-trifluorpropen", DbWerte.KAELTEMITTEL_GRUPPE_HFCKW, 3.88,
+                ANH2_GWP, true, false, DbWerte.KAELTEMITTEL_PFAS, ANH2_QUELLE),
             new Kaeltemittel("R290", "Propan", DbWerte.KAELTEMITTEL_GRUPPE_NATUERLICH, 0.02,
-                "VO 2024/573 Anhang VI, GWP100 AR6", false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, "S-amtl"),
+                ANH6_GWP, false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, NATUERLICH_QUELLE),
             new Kaeltemittel("R600a", "Isobutan", DbWerte.KAELTEMITTEL_GRUPPE_NATUERLICH, 0,
-                "VO 2024/573 Anhang VI (Fußnote nicht gelesen)", false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, "S-amtl"),
+                ANH6_GWP_FN3, false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, NATUERLICH_QUELLE),
             new Kaeltemittel("R1270", "Propen", DbWerte.KAELTEMITTEL_GRUPPE_NATUERLICH, 0,
-                "VO 2024/573 Anhang VI (Fußnote nicht gelesen)", false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, "S-amtl"),
+                ANH6_GWP_FN3, false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, NATUERLICH_QUELLE),
             new Kaeltemittel("R744", "Kohlendioxid", DbWerte.KAELTEMITTEL_GRUPPE_NATUERLICH, 1,
-                "Bezugsgas (GWP100 = 1)", false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, "S"),
+                R744_GWP, false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, NATUERLICH_QUELLE),
             new Kaeltemittel("R717", "Ammoniak", DbWerte.KAELTEMITTEL_GRUPPE_NATUERLICH, 0,
-                "VO 2024/573 Anhang VI", false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, "S-amtl"),
+                ANH6_GWP, false, true, DbWerte.KAELTEMITTEL_PFAS_KEIN, NATUERLICH_QUELLE),
         };
 
-        /// <summary>Die Quelle der übrigen Kennzeichen einer Saatzeile.</summary>
-        public static string QuelleDer(Kaeltemittel k) => QUELLE_RECHERCHE + k.Vertrauen + PFAS_HERLEITUNG;
+        /// <summary>Der Status jeder Saatzeile: am Volltext der Verordnung geprüft (KM4-E2-c).</summary>
+        public const string SAAT_STATUS = DbWerte.GESETZ_STATUS_GESICHERT;
+
+        /// <summary>Die Quelle der übrigen Kennzeichen einer Saatzeile (F-Gas, natürlich, PFAS).</summary>
+        public static string QuelleDer(Kaeltemittel k) => k.Quelle;
 
         /// <summary>Die Sortierung einer Saatzeile: ihre Stelle in <see cref="SAAT"/> mal zehn.</summary>
         public static int SortierungDer(Kaeltemittel k)
@@ -237,7 +255,7 @@ namespace WindowsFormsApplication1
             "SELECT ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, 1 WHERE NOT EXISTS (SELECT 1 FROM " + Q(TAB_STAMM) +
             " WHERE " + Q(SPALTE_CODE) + " = ?)";
 
-        /// <summary>Legt die fehlenden Codes der Saat an (ausgelieferte Zeilen, <c>VORLAEUFIG</c>); liefert ihre Zahl.</summary>
+        /// <summary>Legt die fehlenden Codes der Saat an (ausgelieferte Zeilen, <c>GESICHERT</c>); liefert ihre Zahl.</summary>
         public static int Saat(IList<string> bericht)
         {
             int n = 0;
@@ -250,7 +268,7 @@ namespace WindowsFormsApplication1
                             new DbParam("?", k.Code), new DbParam("?", k.Bezeichnung), new DbParam("?", k.Gruppe),
                             new DbParam("?", k.Gwp), new DbParam("?", k.GwpQuelle), new DbParam("?", k.FGas ? 1 : 0),
                             new DbParam("?", k.Natuerlich ? 1 : 0), new DbParam("?", k.PfasStatus),
-                            new DbParam("?", DbWerte.GESETZ_STATUS_VORLAEUFIG), new DbParam("?", QuelleDer(k)),
+                            new DbParam("?", SAAT_STATUS), new DbParam("?", QuelleDer(k)),
                             new DbParam("?", SortierungDer(k)), new DbParam("?", k.Code));
                     v.Commit();
                 }
@@ -260,7 +278,7 @@ namespace WindowsFormsApplication1
                     throw;
                 }
             }
-            bericht?.Add(TAB_STAMM + ": " + n.ToString(CultureInfo.InvariantCulture) + " Kaeltemittel angelegt (VORLAEUFIG)");
+            bericht?.Add(TAB_STAMM + ": " + n.ToString(CultureInfo.InvariantCulture) + " Kaeltemittel angelegt (GESICHERT)");
             return n;
         }
 
