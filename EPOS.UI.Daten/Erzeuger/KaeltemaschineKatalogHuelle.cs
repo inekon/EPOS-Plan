@@ -85,10 +85,10 @@ namespace WindowsFormsApplication1
         /// <see cref="KaeltemittelCtrl.Liste"/> — Reihenfolge der Tabelle (Sortierung, dann Code). Ohne Tabelle oder
         /// Datenbank leer; dann bleibt im Dialog nur ein Bestandstext wählbar.
         /// </summary>
-        internal static IReadOnlyList<KaeltemittelWahl> Kaeltemittelliste()
+        internal static IReadOnlyList<KaeltemittelListeneintrag> Kaeltemittelliste()
         {
             try { return Kaeltemittelwahlen(KaeltemittelCtrl.Liste()); }
-            catch (Exception) { return Array.Empty<KaeltemittelWahl>(); }
+            catch (Exception) { return Array.Empty<KaeltemittelListeneintrag>(); }
         }
 
         /// <summary>
@@ -96,10 +96,10 @@ namespace WindowsFormsApplication1
         /// Bezeichnung“, dazu der Tabellenwert des GWP und die übrigen Stammwerte als Lesezeile
         /// (<see cref="KaeltemittelZulaessigkeitszeile.LesewerteOhneGwp"/>). Sätze ohne Code fallen weg.
         /// </summary>
-        internal static IReadOnlyList<KaeltemittelWahl> Kaeltemittelwahlen(IEnumerable<KaeltemittelCtrl.Kaeltemittelsatz> saetze)
+        internal static IReadOnlyList<KaeltemittelListeneintrag> Kaeltemittelwahlen(IEnumerable<KaeltemittelCtrl.Kaeltemittelsatz> saetze)
             => (saetze ?? Enumerable.Empty<KaeltemittelCtrl.Kaeltemittelsatz>())
                .Where(k => k != null && !string.IsNullOrWhiteSpace(k.Code))
-               .Select(k => new KaeltemittelWahl(k.Id, k.Code.Trim(),
+               .Select(k => new KaeltemittelListeneintrag(k.Id, k.Code.Trim(),
                    string.IsNullOrWhiteSpace(k.Bezeichnung) ? k.Code.Trim() : k.Code.Trim() + " — " + k.Bezeichnung.Trim(),
                    k.GWP, KaeltemittelZulaessigkeitszeile.LesewerteOhneGwp(k)))
                .ToList();

@@ -26,11 +26,11 @@ public class KaeltemaschineKatalogKaeltemittelTests : EposBunitContext
 
     private const string LESE_R32 = "F-Gas · Sicherheitsgruppe A2L";
 
-    private static readonly IReadOnlyList<KaeltemittelWahl> Liste = new[]
+    private static readonly IReadOnlyList<KaeltemittelListeneintrag> Liste = new[]
     {
-        new KaeltemittelWahl(1, "R32", "R32 — Difluormethan", 675, LESE_R32),
-        new KaeltemittelWahl(2, "R290", "R290 — Propan", 3, "kein F-Gas · natürlich"),
-        new KaeltemittelWahl(3, "SONDER", "SONDER — ohne Tabellen-GWP", null, "")
+        new KaeltemittelListeneintrag(1, "R32", "R32 — Difluormethan", 675, LESE_R32),
+        new KaeltemittelListeneintrag(2, "R290", "R290 — Propan", 3, "kein F-Gas · natürlich"),
+        new KaeltemittelListeneintrag(3, "SONDER", "SONDER — ohne Tabellen-GWP", null, "")
     };
 
     private static KaeltemaschineKatalogTexte Texte => new();
@@ -234,10 +234,10 @@ public class KaeltemaschineKatalogKaeltemittelTests : EposBunitContext
             new KaeltemittelCtrl.Kaeltemittelsatz(9, "  ", "ohne Code", "", null, "", null, null, "", null, null, null, 3, false),
             null!
         };
-        IReadOnlyList<KaeltemittelWahl> l = KaeltemaschineKatalogHuelle.Kaeltemittelwahlen(saetze);
+        IReadOnlyList<KaeltemittelListeneintrag> l = KaeltemaschineKatalogHuelle.Kaeltemittelwahlen(saetze);
 
         Assert.Equal(2, l.Count);
-        Assert.Equal(new KaeltemittelWahl(7, "R32", "R32 — Difluormethan", 675, l[0].Lesewerte), l[0]);
+        Assert.Equal(new KaeltemittelListeneintrag(7, "R32", "R32 — Difluormethan", 675, l[0].Lesewerte), l[0]);
         Assert.Equal("R744", l[1].Text);
         Assert.DoesNotContain("GWP", l[0].Lesewerte, StringComparison.Ordinal);
         Assert.Contains(R.KM_LESE_FGAS, l[0].Lesewerte);

@@ -31,7 +31,7 @@ public sealed class KaeltemaschineKatalogKiSicht
     public Func<IReadOnlyList<string>>? Rueckkuehlarten { get; init; }
 
     /// <summary>Die Klappliste „Kältemittel“ des Dialogs (KM4-E3-a).</summary>
-    public Func<IReadOnlyList<KaeltemittelWahl>>? Kaeltemittelliste { get; init; }
+    public Func<IReadOnlyList<KaeltemittelListeneintrag>>? Kaeltemittelliste { get; init; }
 
     /// <summary>Die Anzeigetexte der Teillastwege in der Folge der Listenplätze (KM3-E3-a).</summary>
     public Func<IReadOnlyList<string>>? TeillastWege { get; init; }
@@ -95,14 +95,14 @@ public sealed class KaeltemaschineKatalogKiSicht
         set
         {
             string text = (value ?? "").Trim();
-            KaeltemittelWahl? e = KaeltemittelLesung.Eintrag(Kaeltemittelliste?.Invoke() ?? Array.Empty<KaeltemittelWahl>(), text);
+            KaeltemittelListeneintrag? e = KaeltemittelLesung.Eintrag(Kaeltemittelliste?.Invoke() ?? Array.Empty<KaeltemittelListeneintrag>(), text);
             Setzen(d => d.Kaeltemittel = e?.Code ?? text);
         }
     }
 
     /// <summary>Begleiteigenschaft des Kältemittels: Schlüssel ist der Code, Text „Code — Bezeichnung“.</summary>
     public IReadOnlyList<KiWahleintrag> KaeltemittelWahl
-        => (Kaeltemittelliste?.Invoke() ?? Array.Empty<KaeltemittelWahl>())
+        => (Kaeltemittelliste?.Invoke() ?? Array.Empty<KaeltemittelListeneintrag>())
            .Select(e => new KiWahleintrag(e.Code, e.Text))
            .ToList();
 

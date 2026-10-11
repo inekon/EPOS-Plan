@@ -185,6 +185,47 @@ public class KaeltemittelDialogTests : EposBunitContext
         Assert.True(cut.Instance.Geschrieben);
     }
 
+    /// <summary>
+    /// Die gewaehlte Zeile ist markiert (Klasse <c>epos-zeile--gewaehlt</c> und <c>aria-selected="true"</c>) - genau
+    /// eine, und die Markierung wandert mit der Wahl.
+    /// </summary>
+    [Fact]
+    public void Die_gewaehlte_Zeile_ist_markiert_und_die_Markierung_wandert_mit()
+    {
+        var cut = Zeige();
+
+        cut.FindAll(".epos-kmt-liste tbody tr")[1].Click();
+        var markiert = cut.FindAll(".epos-kmt-liste tbody tr.epos-zeile--gewaehlt");
+        Assert.Single(markiert);
+        Assert.Contains("R999X", markiert[0].TextContent);
+        Assert.Single(cut.FindAll(".epos-kmt-liste tbody tr[aria-selected=true]"));
+        Assert.Equal("true", cut.FindAll(".epos-kmt-liste tbody tr")[1].GetAttribute("aria-selected"));
+
+        cut.FindAll(".epos-kmt-liste tbody tr")[0].Click();
+        markiert = cut.FindAll(".epos-kmt-liste tbody tr.epos-zeile--gewaehlt");
+        Assert.Single(markiert);
+        Assert.Contains("R32", markiert[0].TextContent);
+        Assert.Equal("true", cut.FindAll(".epos-kmt-liste tbody tr")[0].GetAttribute("aria-selected"));
+        Assert.Equal("false", cut.FindAll(".epos-kmt-liste tbody tr")[1].GetAttribute("aria-selected"));
+    }
+
+    /// <summary>
+    /// Die Hervorhebung ist eine Regel des Dialogs (eigene Klasse <c>epos-kmt-liste</c>) mit denselben Tokens wie die
+    /// Fokuszeile der Katalogliste - Flaeche und linker Balken; bunit misst keine Farbe, deshalb wird die Regel geprueft.
+    /// </summary>
+    [Fact]
+    public void Die_Hervorhebung_nimmt_die_Tokens_der_Katalogliste()
+    {
+        var d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))) d = d.Parent;
+        Assert.NotNull(d);
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+        Assert.Contains("table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td {\n    background: var(--epos-karte-flaeche-hover);",
+                        css.Replace("\r\n", "\n"));
+        Assert.Contains("table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {\n    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);",
+                        css.Replace("\r\n", "\n"));
+    }
+
     [Fact]
     public void Abbrechen_schliesst_ohne_zu_schreiben()
     {

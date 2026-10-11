@@ -44,7 +44,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             var liste = KaeltemaschineKatalogHuelle.Kaeltemittelliste();
             Assert.NotEmpty(liste);
-            KaeltemittelWahl r32 = liste.Single(w => w.Code == "R32");
+            KaeltemittelListeneintrag r32 = liste.Single(w => w.Code == "R32");
             Assert.Equal(KaeltemittelCtrl.IdZumCode("R32"), r32.Id);
 
             KaeltemaschineDaten d = EigenerSatz("Kältemittel Rundreise");

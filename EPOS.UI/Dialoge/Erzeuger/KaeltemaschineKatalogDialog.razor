@@ -362,7 +362,7 @@
     [Parameter] public IReadOnlyList<string>? Rueckkuehlarten { get; set; }
 
     /// <summary>Die Klappliste „Kältemittel“ aus der Kältemitteltabelle (KM4-E3-a); ohne Gabe leer.</summary>
-    [Parameter] public IReadOnlyList<KaeltemittelWahl>? Kaeltemittelliste { get; set; }
+    [Parameter] public IReadOnlyList<KaeltemittelListeneintrag>? Kaeltemittelliste { get; set; }
 
     /// <summary>Lädt eine Kältemaschine samt Kennlinie über ihre Id; <c>null</c> = es gibt sie nicht (mehr).</summary>
     [Parameter] public Func<int, KaeltemaschineDaten?>? Lies { get; set; }
@@ -724,7 +724,7 @@
         => platz is int p && p >= 0 && p < Rueckkuehltexte.Count ? Rueckkuehltexte[p] : "";
 
     /// <summary>Die Klappliste der Kältemittel — leer ohne Gabe (dann bleibt nur ein Bestandstext wählbar).</summary>
-    private IReadOnlyList<KaeltemittelWahl> KaeltemittelListe => Kaeltemittelliste ?? Array.Empty<KaeltemittelWahl>();
+    private IReadOnlyList<KaeltemittelListeneintrag> KaeltemittelListe => Kaeltemittelliste ?? Array.Empty<KaeltemittelListeneintrag>();
 
     /// <summary>
     /// Die Wahl der Klappliste (KM4-E3-a): Platz −1 (Bestandstext) lässt den Text stehen, leer löscht ihn, ein Eintrag
@@ -740,7 +740,7 @@
     /// <summary>Die Schnellwahl „GWP aus Kältemittel übernehmen“: das Geräte-GWP auf den Tabellenwert.</summary>
     private void GwpUebernehmen(KaeltemaschineDaten d)
     {
-        if (KaeltemittelLesung.Eintrag(KaeltemittelListe, d.Kaeltemittel) is KaeltemittelWahl e && e.Gwp.HasValue)
+        if (KaeltemittelLesung.Eintrag(KaeltemittelListe, d.Kaeltemittel) is KaeltemittelListeneintrag e && e.Gwp.HasValue)
             Feld(d, () => d.Gwp = e.Gwp);
     }
 
