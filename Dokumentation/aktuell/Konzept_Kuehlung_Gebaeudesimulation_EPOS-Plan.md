@@ -2006,21 +2006,21 @@ Entfernen eines Referenzprojekts mit Kälte-Wärme-Kopplung.
 
 #### 5.6.12 Fragen an den Anwender
 
-| Kennung | Frage | Empfehlung |
-|---|---|---|
-| **KWN‑Q1** | Gilt Brauchwasser als Wärmesenke wie die Prozesswärme (häufiger Fall Kühlung + Trinkwarmwasser)? | **Ja**, gleichgestellt; die Ladetemperatur ist Hubgrenze. Ohne Brauchwasser fiele der häufigste Praxisfall heraus |
-| **KWN‑Q2** | Wird Fall f (gleichzeitiges Heizen und Kühlen verschiedener Gebäudezonen) aufgenommen? | **Nicht jetzt.** Als eigene spätere Stufe nach c bis e, nur zwischen verschiedenen Zonen (innerhalb einer Zone ausgeschlossen, E104), mit Mehrzonen-Referenzprojekt; er berührt die Erzeugertagesart K8a |
-| **KWN‑Q3** | Welche Führung gilt? | **Schnittmenge mit Restbetrieb** als Vorgabe; kälte- und wärmegeführt wählbar ab der Speicherstufe |
-| **KWN‑Q4** | Wie wird der Strom auf Wärme und Kälte aufgeteilt? | **Nach Nutzenergie**; gebucht wird der Strom einmal; die Gutschrift leistet der Variantenvergleich; exergetisch höchstens als spätere Auswertung |
-| **KWN‑Q5** | Wann kommen die seltenen Fälle d und e? | **Spätere Stufe** (KWN-6): Sie brauchen die Aufteilung auf mehrere Senken einer Seite (Knappheitsreihenfolge bzw. Vorrang Prozesskälte) |
-| **KWN‑Q6** | Soll die Kopplung über Speicher optimiert werden? | **Einfache Regel zuerst** (Überschuss als Ladeangebot, Stufe 2); die Optimierung bleibt benannt vertagt |
-| **KWN‑Q7** | Prozesskälte als Unterposten des Kühlkanals (`Kaelte_Art`) statt fünftem Kanal — und wirkt dann ihr Temperaturpaar (Aufhebung von E-K3 für gekoppelte Geräte)? | **Ja zu beidem**: Unterposten, kein fünfter Kanal; das Temperaturpaar wirkt nur im Kopplungsbetrieb und für den Vorrang |
-| **KWN‑Q8** | Deckt die Kopplung vor der freien Kühlung? | **Ja**: ihre Kälte liefert zugleich Wärme |
-| **KWN‑Q9** | Werden Mehrleitergeräte (dritter Übertrager zur Luft) und die Teilwärmerückgewinnung am Enthitzer luftgekühlter Maschinen aufgenommen? | **Später**, nach KWN-4; bis dahin benannt abgelehnt |
-| **KWN‑Q10** | Gilt die Kopplung an Gebäudesenken auch auf AK3? | **Ja, mit eigener Welle** (KWN-7): Der Kopplungsanteil geht als Verfügbarkeit in Wärme- und Kälteschranke; bis dahin auf AK3 nur Prozess- und Brauchwassersenken |
-| **KWN‑Q11** | Braucht eine Wärmepumpe mit Kältespeicher als Quelle eine zweite Quelle (Außenluft, Erdsonde) als Rückfall, wenn der Speicher keine Wärme mehr liefert? | **Entschieden 11.10.2026, Anwenderentscheid: nein.** Die Wärmepumpe hat genau diese eine Quelle; an der unteren Grenze des Kältespeichers entzieht sie nicht weiter, die fehlende Wärme decken die übrigen Erzeuger der Wärmekaskade; kein Quellwechsel im Gerät, keine Felder dafür, die Konfiguration lehnt eine zweite Quelle benannt ab (5.6.7) |
-| **KWN‑Q12** | Soll der Kältespeicher die Wärmepumpe anstoßen können (kältegeführt: Lauf, weil der Speicher warm wird, solange der Puffer Wärme nimmt)? | **Später** (mit KWN-5): als Ladewunsch der Quelle an der Schwelle des Kältespeichers; zuerst wärmegeführt in der Wärmekaskade |
-| **KWN‑Q13** | Dürfen andere Kälteerzeuger einen Kältespeicher laden, der Quelle einer Wärmepumpe ist? | **Nein**: Sie decken den Kälteüberlauf direkt; sonst schrieben zwei Jahresschleifen denselben Speicherzustand fort |
+| Kennung | Frage | Empfehlung | Entscheid |
+|---|---|---|---|
+| **KWN‑Q1** | Gilt Brauchwasser als Wärmesenke wie die Prozesswärme (häufiger Fall Kühlung + Trinkwarmwasser)? | **Ja**, gleichgestellt; die Ladetemperatur ist Hubgrenze. Ohne Brauchwasser fiele der häufigste Praxisfall heraus | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q2** | Wird Fall f (gleichzeitiges Heizen und Kühlen verschiedener Gebäudezonen) aufgenommen? | **Nicht jetzt.** Als eigene spätere Stufe nach c bis e, nur zwischen verschiedenen Zonen (innerhalb einer Zone ausgeschlossen, E104), mit Mehrzonen-Referenzprojekt; er berührt die Erzeugertagesart K8a | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q3** | Welche Führung gilt? | **Schnittmenge mit Restbetrieb** als Vorgabe; kälte- und wärmegeführt wählbar ab der Speicherstufe | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q4** | Wie wird der Strom auf Wärme und Kälte aufgeteilt? | **Nach Nutzenergie**; gebucht wird der Strom einmal; die Gutschrift leistet der Variantenvergleich; exergetisch höchstens als spätere Auswertung | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q5** | Wann kommen die seltenen Fälle d und e? | **Spätere Stufe** (KWN-6): Sie brauchen die Aufteilung auf mehrere Senken einer Seite (Knappheitsreihenfolge bzw. Vorrang Prozesskälte) | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q6** | Soll die Kopplung über Speicher optimiert werden? | **Einfache Regel zuerst** (Überschuss als Ladeangebot, Stufe 2); die Optimierung bleibt benannt vertagt | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q7** | Prozesskälte als Unterposten des Kühlkanals (`Kaelte_Art`) statt fünftem Kanal — und wirkt dann ihr Temperaturpaar (Aufhebung von E-K3 für gekoppelte Geräte)? | **Ja zu beidem**: Unterposten, kein fünfter Kanal; das Temperaturpaar wirkt nur im Kopplungsbetrieb und für den Vorrang | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q8** | Deckt die Kopplung vor der freien Kühlung? | **Ja**: ihre Kälte liefert zugleich Wärme | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q9** | Werden Mehrleitergeräte (dritter Übertrager zur Luft) und die Teilwärmerückgewinnung am Enthitzer luftgekühlter Maschinen aufgenommen? | **Später**, nach KWN-4; bis dahin benannt abgelehnt | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q10** | Gilt die Kopplung an Gebäudesenken auch auf AK3? | **Ja, mit eigener Welle** (KWN-7): Der Kopplungsanteil geht als Verfügbarkeit in Wärme- und Kälteschranke; bis dahin auf AK3 nur Prozess- und Brauchwassersenken | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q11** | Braucht eine Wärmepumpe mit Kältespeicher als Quelle eine zweite Quelle (Außenluft, Erdsonde) als Rückfall, wenn der Speicher keine Wärme mehr liefert? | **Entschieden 11.10.2026, Anwenderentscheid: nein.** Die Wärmepumpe hat genau diese eine Quelle; an der unteren Grenze des Kältespeichers entzieht sie nicht weiter, die fehlende Wärme decken die übrigen Erzeuger der Wärmekaskade; kein Quellwechsel im Gerät, keine Felder dafür, die Konfiguration lehnt eine zweite Quelle benannt ab (5.6.7) | E127 (Anwender, 11.10.2026): nein |
+| **KWN‑Q12** | Soll der Kältespeicher die Wärmepumpe anstoßen können (kältegeführt: Lauf, weil der Speicher warm wird, solange der Puffer Wärme nimmt)? | **Später** (mit KWN-5): als Ladewunsch der Quelle an der Schwelle des Kältespeichers; zuerst wärmegeführt in der Wärmekaskade | E127 (Anwender, 11.10.2026): nach Empfehlung |
+| **KWN‑Q13** | Dürfen andere Kälteerzeuger einen Kältespeicher laden, der Quelle einer Wärmepumpe ist? | **Nein**: Sie decken den Kälteüberlauf direkt; sonst schrieben zwei Jahresschleifen denselben Speicherzustand fort | E127 (Anwender, 11.10.2026): nach Empfehlung |
 
 #### 5.6.13 Stufenplan
 
