@@ -53007,5 +53007,8 @@ chart</value>
   <data name="START_E_KUEHL_KM_NICHT_PRUEFBAR" xml:space="preserve">
     <value>{0} not checkable</value>
   </data>
+  <data name="KI_DLG_PKOPF_JAHR_ERL" xml:space="preserve">
+    <value>The planned year of commissioning, 2000 to 2100 — empty means no admissibility check of the refrigerants. A year switches on the check against the deadlines of the F-gas regulation in the simulation run; it only gives notices.</value>
+  </data>
 </root>
 

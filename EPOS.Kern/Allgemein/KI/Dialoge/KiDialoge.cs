@@ -10385,7 +10385,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Projektkopf des Assistenten „Neues Projekt" — fuenf Felder aus
+        /// Der Projektkopf des Assistenten „Neues Projekt" — sechs Felder aus
         /// <c>EPOS.UI.Seiten.Assistent.ProjektKopfKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -10427,7 +10427,12 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PkopfBearbeiterErl, leerErlaubt: true),
                     new KiDialogFeld("beschreibung", "ProjektKopfKiSicht.Beschreibung",
                                      KiDialogTexte.PkopfBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.PkopfBeschreibungErl, leerErlaubt: true)
+                                     KiDialogTexte.PkopfBeschreibungErl, leerErlaubt: true),
+                    // KM4-E3-b: das Inbetriebnahmejahr (leer = keine Zulaessigkeitspruefung der Kaeltemittel).
+                    new KiDialogFeld("inbetriebnahmejahr", "ProjektKopfKiSicht.Inbetriebnahmejahr",
+                                     KiDialogTexte.PkopfJahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PkopfJahrErl, leerErlaubt: true,
+                                     min: KaeltemittelSchema.INBETRIEBNAHMEJAHR_MIN, max: KaeltemittelSchema.INBETRIEBNAHMEJAHR_MAX)
                 },
                 knoepfe: new[]
                 {

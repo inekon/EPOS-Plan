@@ -137,7 +137,11 @@ namespace WindowsFormsApplication1
                 KuehlHilfsstromanteil = m.KuehlHilfsstromanteil,
                 KuehlCarrierId = m.KuehlIdCarrier,
                 KuehlEigenerZaehler = m.KuehlEigenerZaehler == true,
-                Geraet = m.IdKaeltemaschine.HasValue ? Werte(KaeltemaschineCtrl.Laden(m.IdKaeltemaschine.Value)) : null
+                Geraet = m.IdKaeltemaschine.HasValue ? Werte(KaeltemaschineCtrl.Laden(m.IdKaeltemaschine.Value)) : null,
+                // KM4-E3-b: die Lesezeile „Zulässigkeit“ (Konzept Kaeltemittel als Stammdatum 7.2).
+                Zulaessigkeit = m.IdProjekt > 0 && m.AnlagenId > 0
+                    ? KaeltemittelZulaessigkeitszeile.Anlage(m.IdProjekt, m.AnlagenId)
+                    : ""
             };
         }
 

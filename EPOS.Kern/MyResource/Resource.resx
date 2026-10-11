@@ -53014,5 +53014,8 @@ Chart</value>
   <data name="START_E_KUEHL_KM_NICHT_PRUEFBAR" xml:space="preserve">
     <value>{0} nicht prüfbar</value>
   </data>
+  <data name="KI_DLG_PKOPF_JAHR_ERL" xml:space="preserve">
+    <value>Das geplante Jahr der Inbetriebnahme, 2000 bis 2100 — leer heißt: keine Zulässigkeitsprüfung der Kältemittel. Ein Jahr schaltet im Simulationslauf die Prüfung gegen die Stichtage der F-Gas-Verordnung ein; sie weist nur hin.</value>
+  </data>
 </root>
 

@@ -12,7 +12,9 @@ namespace WindowsFormsApplication1
     /// <item>die <b>Kältemaschinen</b> des Projekts aus <see cref="KaeltemaschineAnlageCtrl.ListeStill"/>;</item>
     /// <item>die <b>Wärmepumpen mit Kühlfunktion</b> aus <see cref="WPCtrl.KuehlfaehigeGeraete"/> samt Kühlbetrieb
     /// und Sperrgrund;</item>
-    /// <item>die Projekteinstellung <b>„Kühlung rechnen“</b> aus <see cref="KonfigurationCtrl.KuehlbetriebLesen"/>.</item>
+    /// <item>die Projekteinstellung <b>„Kühlung rechnen“</b> aus <see cref="KonfigurationCtrl.KuehlbetriebLesen"/>;</item>
+    /// <item>die Zahl der Kälteerzeuger mit Kältemittelwarnung bzw. „nicht prüfbar“ aus
+    /// <see cref="KaeltemittelZulaessigkeitszeile.Zaehlen"/> (KM4-E3-b; nur mit Inbetriebnahmejahr).</item>
     /// </list>
     /// Die Schalter „Wärmepumpen im Kühlbetrieb“ stehen im Erzeugerdialog der Kältemaschinen
     /// (<see cref="KaeltemaschineAnlageHuelle"/>) und schreiben beim OK über <see cref="WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten"/>
@@ -25,8 +27,12 @@ namespace WindowsFormsApplication1
         internal static KuehlungKachelDaten Daten(int idProjekt)
         {
             if (idProjekt <= 0) return null;
+            // KM4-E3-b: die Hinweiszeile der Kachel - ohne Inbetriebnahmejahr beide Zahlen 0, dann keine Zeile.
+            (int warnungen, int nichtPruefbar) = KaeltemittelZulaessigkeitszeile.Zaehlen(idProjekt);
             return new KuehlungKachelDaten
             {
+                KaeltemittelWarnungen = warnungen,
+                KaeltemittelNichtPruefbar = nichtPruefbar,
                 KuehlungRechnen = KonfigurationCtrl.KuehlbetriebLesen(idProjekt),
                 Kaeltemaschinen = KaeltemaschineAnlageCtrl.ListeStill(idProjekt)
                     .Select(a => new KuehlKaeltemaschine(a.Bezeichner ?? "", Math.Max(1, a.Anzahl)))

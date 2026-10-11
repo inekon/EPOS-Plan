@@ -121,7 +121,16 @@ namespace WindowsFormsApplication1
                 ["LabelBearbeiter"] = Text_("PKOPF_LBL_BEARBEITER", "Bearbeiter"),
                 ["LabelAenderung"] = Text_("PKOPF_LBL_AENDERUNG", "Änderungsdatum"),
                 ["LabelErstellt"] = Text_("PKOPF_LBL_ERSTELLT", "Erstelldatum"),
-                ["LabelKlima"] = Text_("PKOPF_LBL_KLIMA", "Klimaregion")
+                ["LabelKlima"] = Text_("PKOPF_LBL_KLIMA", "Klimaregion"),
+                // KM4-E3-b: das Inbetriebnahmejahr (Konzept Kaeltemittel als Stammdatum 7.4).
+                ["LabelInbetriebnahmejahr"] = Text_("PKOPF_LBL_INBETRIEBNAHMEJAHR", "Inbetriebnahmejahr"),
+                ["PlatzhalterInbetriebnahmejahr"] = Text_("PKOPF_INBETRIEBNAHMEJAHR_PLATZHALTER", "leer: keine Zulässigkeitsprüfung"),
+                ["HilfeInbetriebnahmejahr"] = Text_("PKOPF_INBETRIEBNAHMEJAHR_HILFE",
+                    "Geplantes Jahr der Inbetriebnahme. Ein Jahr schaltet im Simulationslauf die Prüfung der Kältemittel " +
+                    "von Wärmepumpen und Kältemaschinen gegen die Stichtage der F-Gas-Verordnung ein; die Prüfung weist " +
+                    "nur hin und sperrt nichts. Leer: keine Prüfung."),
+                ["TextJahrAusserhalb"] = Text_("WZP_JAHR_AUSSERHALB",
+                    "Das Inbetriebnahmejahr muss zwischen {0} und {1} liegen; leer bleibt die Zulässigkeitsprüfung der Kältemittel aus.")
             };
         }
 

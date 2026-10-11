@@ -3797,6 +3797,8 @@
         internal static string PkopfKlimaErl => MyResource.Resource.KI_DLG_PKOPF_KLIMA_ERL;
         internal static string PkopfKundeName => MyResource.Resource.PKOPF_LBL_KUNDE;
         internal static string PkopfKundeErl => MyResource.Resource.KI_DLG_PKOPF_KUNDE_ERL;
+        internal static string PkopfJahrName => MyResource.Resource.PKOPF_LBL_INBETRIEBNAHMEJAHR;
+        internal static string PkopfJahrErl => MyResource.Resource.KI_DLG_PKOPF_JAHR_ERL;
         internal static string PkopfBearbeiterName => MyResource.Resource.PKOPF_LBL_BEARBEITER;
         internal static string PkopfBearbeiterErl => MyResource.Resource.KI_DLG_PKOPF_BEARBEITER_ERL;
         internal static string PkopfBeschreibungName => MyResource.Resource.PKOPF_LBL_BESCHREIBUNG;

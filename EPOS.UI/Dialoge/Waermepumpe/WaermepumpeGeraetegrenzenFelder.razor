@@ -57,6 +57,14 @@
                         WertChanged="w => Setzen(() => Daten.RuecklaufAbwertungProzentJeK = w)" />
         </KindInhalt>
     </Formularraster>
+    @* DIE LESEZEILE DES KAELTEMITTELS (KM4-E3-b, Konzept Kaeltemittel als Stammdatum 7.3): die Stammwerte des
+       gewaehlten Codes aus der Kaeltemitteltabelle (GWP, F-Gas, natuerlich, Sicherheitsgruppe, PFAS, Status), fertig
+       von der Huelle am Eintrag der Klappliste. Nur lesend; ohne Tabellenzeile (SONSTIGES, Bestandstext) keine Zeile.
+       Klappliste, Schnellwahl und Vorgaben bleiben unveraendert. *@
+    @if (KaeltemittelLesewerte is string lese)
+    {
+        <Herleitungszeile Text="@lese" />
+    }
     <Herleitungszeile Text="@Texte.HinweisSchnellwahl" />
     @if (_gefuellt > 0)
     {
@@ -108,6 +116,13 @@
             return l;
         }
     }
+
+    /// <summary>Die Lesezeile der Stammwerte des gewählten Kältemittels; <c>null</c> = keine (Prüfhilfe für Tests).</summary>
+    public string? KaeltemittelLesewerte
+        => KaeltemittelIndex is int i && i >= 0 && i < Daten.Kaeltemittelliste.Count
+           && !string.IsNullOrWhiteSpace(Daten.Kaeltemittelliste[i].Lesewerte)
+            ? Daten.Kaeltemittelliste[i].Lesewerte
+            : null;
 
     private int? KaeltemittelIndex
         => string.IsNullOrWhiteSpace(Daten.Kaeltemittel) ? null : KaeltemittelPlatz(Daten.Kaeltemittel);

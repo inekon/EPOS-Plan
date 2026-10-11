@@ -27,7 +27,7 @@
    KEINE DATENBANK (Hausregel EPOS.UI): Die Klimaregionen und der Projektkopf
    kommen fertig aus der Huelle.
 
-   HILFE-ASSISTENT (Welle #458, Stufe 2): Die Seite meldet ihre fuenf Felder
+   HILFE-ASSISTENT (Welle #458, Stufe 2): Die Seite meldet ihre sechs Felder
    selbst an (KiMaskennamen.PROJEKTKOPF, Sichtklasse ProjektKopfKiSicht) - der
    Rahmen des Assistenten zeichnet sie als DynamicComponent und kennt ihren
    Stand nicht. Die Kopfregeln sind die Pruefung; einen Speicherweg gibt es
@@ -98,8 +98,19 @@
 
                 <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
                           NurLesen="true" Vorlagenfeld="projekt.angelegt" />
+
+                @* DAS INBETRIEBNAHMEJAHR (KM4-E3-b, Konzept Kaeltemittel als Stammdatum 4.4/7.4):
+                   frei, leer heisst "keine Zulaessigkeitspruefung". Getippt wird Text; eine ganze
+                   Zahl geht in das DTO, auch ausserhalb 2000 bis 2100 - dann meldet die Kopfregel
+                   (ProjektKopfRegeln, JahrAusserhalb) benannt darunter, gekappt wird nie. Keine
+                   Zahl: das DTO bekommt 0, dieselbe Meldung. *@
+                <Textfeld Bezeichnung="@LabelInbetriebnahmejahr" Wert="@JahrText" Kurz="true"
+                          Titel="@HilfeInbetriebnahmejahr" Platzhalter="@PlatzhalterInbetriebnahmejahr"
+                          Hoechstlaenge="4" WertChanged="JahrGeaendert" />
             </KindInhalt>
         </Formularraster>
+
+        <Herleitungszeile Text="@HilfeInbetriebnahmejahr" />
 
         @* Die HERKUNFTSZEILE der gewaehlten Region - derselbe Satz wie unter der
            Klappliste der Kopfleiste (KlimaHerkunftGaben.Zeile), hier ueber den
@@ -166,6 +177,20 @@
     [Parameter] public string LabelErstellt { get; set; } = "Erstelldatum";
     [Parameter] public string LabelKlima { get; set; } = "Klimaregion";
 
+    // --- Inbetriebnahmejahr (KM4-E3-b) ---------------------------------------------------
+    /// <summary>PKOPF_LBL_INBETRIEBNAHMEJAHR</summary>
+    [Parameter] public string LabelInbetriebnahmejahr { get; set; } = "Inbetriebnahmejahr";
+    /// <summary>PKOPF_INBETRIEBNAHMEJAHR_PLATZHALTER</summary>
+    [Parameter] public string PlatzhalterInbetriebnahmejahr { get; set; } = "leer: keine Zulässigkeitsprüfung";
+    /// <summary>PKOPF_INBETRIEBNAHMEJAHR_HILFE — Tooltip und Zeile unter den Feldern.</summary>
+    [Parameter] public string HilfeInbetriebnahmejahr { get; set; } =
+        "Geplantes Jahr der Inbetriebnahme. Ein Jahr schaltet im Simulationslauf die Prüfung der Kältemittel von " +
+        "Wärmepumpen und Kältemaschinen gegen die Stichtage der F-Gas-Verordnung ein; die Prüfung weist nur hin und " +
+        "sperrt nichts. Leer: keine Prüfung.";
+    /// <summary>WZP_JAHR_AUSSERHALB — {0} und {1} sind die Grenzen 2000 und 2100.</summary>
+    [Parameter] public string TextJahrAusserhalb { get; set; } =
+        "Das Inbetriebnahmejahr muss zwischen {0} und {1} liegen; leer bleibt die Zulässigkeitsprüfung der Kältemittel aus.";
+
     // --- Pflichtfelder, Namensdoppel, Vorbelegung (Nutzerauftrag 02.09.2026, Merge 5) ----
     /// <summary>Die vergebenen Projektnamen - ein NEUES Projekt darf keinen davon tragen.</summary>
     [Parameter] public IReadOnlyCollection<string> VergebeneNamen { get; set; } = Array.Empty<string>();
@@ -191,8 +216,37 @@
         ProjektKopfBefund.NameLeer => TextNameLeer,
         ProjektKopfBefund.NameVorhanden => TextNameVorhanden,
         ProjektKopfBefund.KlimaLeer => TextKlimaLeer,
+        ProjektKopfBefund.JahrAusserhalb => string.Format(System.Globalization.CultureInfo.CurrentCulture, TextJahrAusserhalb,
+            KaeltemittelSchema.INBETRIEBNAHMEJAHR_MIN, KaeltemittelSchema.INBETRIEBNAHMEJAHR_MAX),
         _ => ""
     };
+
+    /// <summary>Der getippte Text des Jahresfelds; <c>null</c> = noch nichts getippt, es gilt das DTO.</summary>
+    private string? _jahrText;
+
+    /// <summary>Was das Jahresfeld zeigt: das Getippte, sonst das Jahr des DTO (leer ohne Jahr).</summary>
+    private string JahrText => _jahrText is string t && JahrAusText(t) == Daten.Inbetriebnahmejahr
+        ? t
+        : Daten.Inbetriebnahmejahr is int j ? j.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
+
+    /// <summary>
+    /// Leer → kein Jahr; eine ganze Zahl → dieses Jahr, auch außerhalb des Bereichs (die Kopfregel meldet es);
+    /// sonst 0 — außerhalb, dieselbe Meldung. Nie gekappt.
+    /// </summary>
+    public void JahrGeaendert(string? text)
+    {
+        _jahrText = text ?? "";
+        Daten.Inbetriebnahmejahr = JahrAusText(_jahrText);
+    }
+
+    /// <summary>Text → Jahr: leer <c>null</c>, ganze Zahl diese, sonst 0 (außerhalb des Bereichs).</summary>
+    private static int? JahrAusText(string text)
+    {
+        string t = (text ?? "").Trim();
+        if (t.Length == 0) return null;
+        return int.TryParse(t, System.Globalization.NumberStyles.Integer,
+                            System.Globalization.CultureInfo.InvariantCulture, out int jahr) ? jahr : 0;
+    }
 
     /// <summary>
     /// Die gewählte Klimaregion als LISTENINDEX — das <c>Auswahlfeld</c> arbeitet mit

@@ -25,16 +25,58 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class BivalenzAbbildung
     {
-        /// <summary>Die Klappliste der Kältemittel aus <see cref="Bivalenzvorgaben"/>, in der Reihenfolge des Kerns.</summary>
+        /// <summary>
+        /// Die Klappliste der Kältemittel aus <see cref="Bivalenzvorgaben"/>, in der Reihenfolge des Kerns. KM4-E3-b:
+        /// Jeder Eintrag trägt dazu die Stammwerte seines Codes aus <c>Tab_Kaeltemittel_STAMM</c> als fertige Lesezeile
+        /// (<see cref="KaeltemittelZulaessigkeitszeile.Lesewerte"/>) — Einträge, Reihenfolge und Vorgaben bleiben, wie
+        /// <see cref="Bivalenzvorgaben"/> sie führt.
+        /// </summary>
         public static IReadOnlyList<KaeltemittelEintrag> Kaeltemittelliste()
-            => Bivalenzvorgaben.Kaeltemittelcodes.Select(code =>
+        {
+            Dictionary<string, string> lesewerte = KaeltemittelLesewerte();
+            return Bivalenzvorgaben.Kaeltemittelcodes.Select(code =>
             {
                 Kaeltemittelvorgabe v = Bivalenzvorgaben.Vorgabe(code);
                 return new KaeltemittelEintrag(code, v.HoechstvorlaufC, v.RuecklaufGrenzeC, v.BezugsruecklaufC,
                     v.Herkunft == Kaeltemittelherkunft.Kaeltemittelklasse,
                     v.SpreizungAuslegungK, v.SpreizungMaxK, v.SpreizungMinK, v.MindestvolumenstromAnteil * 100.0,
-                    v.AbwertungProzentJeK);
+                    v.AbwertungProzentJeK,
+                    lesewerte.TryGetValue(code, out string? lese) ? lese : "");
             }).ToList();
+        }
+
+        /// <summary>Code → Lesezeile der Stammwerte, ohne Groß/Klein; leer ohne Tabelle oder Datenbank.</summary>
+        private static Dictionary<string, string> KaeltemittelLesewerte()
+        {
+            var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                foreach (KaeltemittelCtrl.Kaeltemittelsatz s in KaeltemittelCtrl.Liste())
+                    if (s != null && !string.IsNullOrWhiteSpace(s.Code)) d[s.Code.Trim()] = KaeltemittelZulaessigkeitszeile.Lesewerte(s);
+            }
+            catch (Exception) { /* ohne Tabelle oder Datenbank keine Lesezeile */ }
+            return d;
+        }
+
+        /// <summary>
+        /// KM4-E3-b: setzt die Lesezeile „Zulässigkeit“ des Wärmepumpen-Anlagendialogs — gerechnet zum Kältemittel der
+        /// Wahl im Dialog, je Code einmal (<see cref="KaeltemittelZulaessigkeitszeile.Anlage"/>). Ohne gespeicherte
+        /// Anlage oder Projekt keine Zeile.
+        /// </summary>
+        public static void ZulaessigkeitSetzen(WErzeugerModel m, WaermepumpeAnlageDaten d)
+        {
+            if (m == null || d == null) return;
+            int idProjekt = m.ID_Projekt, idAnlage = m.ID;
+            if (idProjekt <= 0 || idAnlage <= 0) return;
+            var zeilen = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            d.ZulaessigkeitRechnen = code =>
+            {
+                string k = (code ?? "").Trim();
+                if (!zeilen.TryGetValue(k, out string? z))
+                    zeilen[k] = z = KaeltemittelZulaessigkeitszeile.Anlage(idProjekt, idAnlage, true, k);
+                return z;
+            };
+        }
 
         /// <summary>
         /// Setzt Klappliste und Rechenweg der Herleitung in den Feldsatz. Die Datenbank wird erst beim ersten Zeichnen
@@ -47,6 +89,7 @@ namespace WindowsFormsApplication1
             int idProjekt = m.ID_Projekt;
             int idWp = m.ID_WP;
             d.Kaeltemittelliste = Kaeltemittelliste();
+            ZulaessigkeitSetzen(m, d);
             try { d.Kaeltemittel = WaermepumpeGeraeteCtrl.KaeltemittelLesen(idWp > 0 ? idWp : d.IdWp); }
             catch (Exception) { /* ohne Spalte oder Datenbank bleibt die Wahl leer */ }
             var projekt = new Lazy<BivalenzProjektdaten>(() =>

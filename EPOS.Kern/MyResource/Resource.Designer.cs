@@ -64370,6 +64370,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das geplante Jahr der Inbetriebnahme, 2000 bis 2100 — leer heißt: keine Zulässigkeitsprüfung der Kältemittel. Ein Jahr schaltet im Simulationslauf die Prüfung gegen die Stichtage der F-Gas-Verordnung ein; sie weist nur hin. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_JAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion des Projekts aus den Stammregionen — Pflicht; mit ihren Wetterdaten rechnet die Simulation. ähnelt.
         /// </summary>
         public static string KI_DLG_PKOPF_KLIMA_ERL {

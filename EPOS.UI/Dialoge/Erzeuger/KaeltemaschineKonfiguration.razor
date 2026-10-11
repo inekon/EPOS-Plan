@@ -49,6 +49,13 @@
                 <Herleitungszeile Text="@Texte.HinweisZaehler" />
             }
             <Herleitungszeile Text="@Texte.HinweisReihenfolge" />
+            @* KM4-E3-b (Konzept Kaeltemittel als Stammdatum 5.2/7.2): die Lesezeile „Zulaessigkeit“ des
+               Kaeltemittels mit dem Inbetriebnahmejahr des Projekts - fertig von der Huelle im Feldsatz, keine
+               Eingabe. Ohne Text (neue Anlage) keine Zeile. *@
+            @if (!string.IsNullOrWhiteSpace(Daten.Zulaessigkeit))
+            {
+                <Herleitungszeile Text="@Daten.Zulaessigkeit" />
+            }
         </div>
     </KindInhalt>
 </Formulargruppe>

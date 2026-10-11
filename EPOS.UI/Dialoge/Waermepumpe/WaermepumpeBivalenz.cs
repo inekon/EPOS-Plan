@@ -156,13 +156,16 @@ public sealed record WaermepumpeBivalenzBefund(BivalenzBefundArt Art, bool NurHi
 /// <para><b>Schnellwahl im Stammblatt</b> (UB‑E3‑b): <see cref="Klasse"/> sagt, ob der Code eine eigene Zeile der Tafel
 /// 6.3 hat; dann füllt seine Wahl leere Gerätefelder mit den Spreizungen [K], dem Mindestvolumenstrom [%] und bei R744
 /// mit Rücklaufgrenze, Bezugsrücklauf und Abwertung [%/K]. Ohne Klasse (allgemeine Vorgabe) füllt sie nichts.</para>
+///
+/// <para><b>Lesewerte</b> (KM4-E3-b): die Stammwerte des Codes aus der Kältemitteltabelle als fertige Zeile (GWP,
+/// F-Gas, natürlich, Sicherheitsgruppe, PFAS, Status) — nur Anzeige unter der Klappliste; leer ohne Tabellenzeile.</para>
 /// </summary>
 public sealed record KaeltemittelEintrag(string Code, double? HoechstvorlaufC,
                                          double? RuecklaufGrenzeC = null, double? BezugsruecklaufC = null,
                                          bool Klasse = false,
                                          double? SpreizungAuslegungK = null, double? SpreizungMaxK = null,
                                          double? SpreizungMinK = null, double? MindestvolumenstromProzent = null,
-                                         double? AbwertungProzentJeK = null);
+                                         double? AbwertungProzentJeK = null, string Lesewerte = "");
 
 /// <summary>
 /// <b>Die Herleitungszeile in Worten</b> — EINE Stelle für Dialog und KI-Sicht. Zahlen in der Oberflächenkultur

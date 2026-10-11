@@ -25,6 +25,15 @@ public sealed class KuehlungKachelDaten
     /// <summary>Die Wärmepumpen des Projekts mit Kühlfunktion — Geräte ohne Kühlkennlinie fehlen.</summary>
     public IReadOnlyList<KuehlWaermepumpe> Waermepumpen { get; init; } = Array.Empty<KuehlWaermepumpe>();
 
+    /// <summary>
+    /// KM4-E3-b (Konzept Kältemittel als Stammdatum 5.2, 7.5): Zahl der Kälteerzeuger mit Kältemittelwarnung (ab einem
+    /// Stichtag nur Restbestand oder Ausnahme). Nur mit gesetztem Inbetriebnahmejahr größer 0.
+    /// </summary>
+    public int KaeltemittelWarnungen { get; init; }
+
+    /// <summary>KM4-E3-b: Zahl der Kälteerzeuger, deren Kältemittel „nicht prüfbar“ ist; nur mit gesetztem Jahr größer 0.</summary>
+    public int KaeltemittelNichtPruefbar { get; init; }
+
     /// <summary>Ist die Kachel leer — keine Kältemaschine und keine kühlfähige Wärmepumpe?</summary>
     public bool Leer => Kaeltemaschinen.Count == 0 && Waermepumpen.Count == 0;
 }
