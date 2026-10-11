@@ -59,10 +59,10 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
     {
         Knopf(Wurzel(b), "epos-kalb-zeile-neu").Click();
         IElement editor = b.Find(".epos-kalb-zuordnung .epos-kalb-editor");
-        IReadOnlyList<IElement> daten = editor.QuerySelectorAll("input[type=date]").ToList();
+        IReadOnlyList<IElement> daten = editor.QuerySelectorAll(".epos-gemeinjahrdatum input").ToList();
         daten[0].Change(von);
-        b.Find(".epos-kalb-zuordnung .epos-kalb-editor").QuerySelectorAll("input[type=date]")[1].Change(bis);
-        b.Find(".epos-kalb-zuordnung .epos-kalb-editor input:not([type=date])").Input(name);
+        b.Find(".epos-kalb-zuordnung .epos-kalb-editor").QuerySelectorAll(".epos-gemeinjahrdatum input")[1].Change(bis);
+        b.Find(".epos-kalb-zuordnung .epos-kalb-editor input:not([inputmode=decimal])").Input(name);
         foreach (KonditionierungGroesse g in abwaehlen)
             b.Find($".epos-kalb-zuordnung .epos-kalb-gilt[data-groesse='{(int)g}']").Click();
         Knopf(b.Find(".epos-kalb-zuordnung .epos-kalb-editor"), "epos-kalb-uebernehmen").Click();
@@ -132,7 +132,7 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
     {
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
-        ZeileAnlegen(b, "2025-03-01", "2025-03-10", "Messe", L);
+        ZeileAnlegen(b, "01.03.", "10.03.", "Messe", L);
 
         KalenderZuordnungszeile z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Messe");
         Assert.Equal(new[] { H }, z.GiltFuer);
@@ -160,8 +160,8 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
         Knopf(Wurzel(b), "epos-kalb-einzeltag-neu").Click();
         IElement editor = b.Find(".epos-kalb-einzeltage .epos-kalb-editor");
-        editor.QuerySelector("input[type=date]")!.Change("2025-06-02");
-        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input:not([type=date])").Input("Betriebsausflug");
+        editor.QuerySelector(".epos-gemeinjahrdatum input")!.Change("02.06.");
+        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input:not([inputmode=decimal])").Input("Betriebsausflug");
         Knopf(b.Find(".epos-kalb-einzeltage .epos-kalb-editor"), "epos-kalb-uebernehmen").Click();
 
         KalenderZuordnungszeile z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Betriebsausflug");
@@ -182,8 +182,8 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
 
         Knopf(Wurzel(b), "epos-kalb-ferien-neu").Click();
         IElement neu = b.FindAll(".epos-kalb-ferienzeile")[vorher];
-        neu.QuerySelectorAll("input[type=date]")[0].Change("2025-08-04");
-        b.FindAll(".epos-kalb-ferienzeile")[vorher].QuerySelectorAll("input[type=date]")[1].Change("2025-08-15");
+        neu.QuerySelectorAll(".epos-gemeinjahrdatum input")[0].Change("04.08.");
+        b.FindAll(".epos-kalb-ferienzeile")[vorher].QuerySelectorAll(".epos-gemeinjahrdatum input")[1].Change("15.08.");
 
         Assert.Equal(vorher + 1, b.Instance.Ansicht!.Ferien.Count);
         Assert.Equal(216, _arbeit.Ferienbeginne()[vorher]);
@@ -211,7 +211,7 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
         Assert.Equal(365, b.FindAll(".epos-kalb-jahr button.epos-kalb-jahrtag").Count);
-        ZeileAnlegen(b, "2025-03-01", "2025-03-10", "Messe");
+        ZeileAnlegen(b, "01.03.", "10.03.", "Messe");
         Assert.Empty(b.FindAll(".epos-kalb-zuordnung .epos-kalb-editor"));
 
         b.Find(".epos-kalb-jahrtag[data-tag='1']").Click();                       // Standardwoche: keine Zeile
@@ -229,7 +229,7 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
     {
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
-        ZeileAnlegen(b, "2025-03-01", "2025-03-10", "Messe");
+        ZeileAnlegen(b, "01.03.", "10.03.", "Messe");
         b.FindAll(".epos-kalb-zuordnung .epos-formularraster select")[^2].Change("3");
         b.FindAll(".epos-kalb-zuordnung .epos-formularraster select")[^1].Change("4");
         Knopf(Wurzel(b), "epos-kalb-monat-kopieren").Click();
@@ -253,8 +253,8 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
     {
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
-        ZeileAnlegen(b, "2025-04-10", "2025-04-30", "A");
-        ZeileAnlegen(b, "2025-04-20", "2025-05-10", "B");
+        ZeileAnlegen(b, "10.04.", "30.04.", "A");
+        ZeileAnlegen(b, "20.04.", "10.05.", "B");
         Assert.Empty(b.FindAll(".epos-kalb-warnung"));
 
         int rangB = b.Instance.Ansicht!.Zuordnungen.Single(z => z.Schluessel.Name == "B").Raenge[H];
@@ -295,8 +295,8 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
     private static void EinzeltagAnlegen(IRenderedComponent<KalenderbedienungAbschnitt> b, string datum, string name)
     {
         Knopf(Wurzel(b), "epos-kalb-einzeltag-neu").Click();
-        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input[type=date]").Change(datum);
-        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input:not([type=date])").Input(name);
+        b.Find(".epos-kalb-einzeltage .epos-kalb-editor .epos-gemeinjahrdatum input").Change(datum);
+        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input:not([inputmode=decimal])").Input(name);
         Knopf(b.Find(".epos-kalb-einzeltage .epos-kalb-editor"), "epos-kalb-uebernehmen").Click();
     }
 
@@ -305,7 +305,7 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
     {
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
-        EinzeltagAnlegen(b, "2025-06-02", "Betriebsausflug");
+        EinzeltagAnlegen(b, "02.06.", "Betriebsausflug");
         KalenderZuordnungszeile z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Betriebsausflug");
         Assert.True(z.IstGemeinsam);
 
@@ -340,7 +340,7 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
     {
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
-        ZeileAnlegen(b, "2025-03-01", "2025-03-10", "Messe");            // Standardwoche über zwei Größen: je Größe eine Kopie
+        ZeileAnlegen(b, "01.03.", "10.03.", "Messe");            // Standardwoche über zwei Größen: je Größe eine Kopie
 
         KalenderZuordnungszeile z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Messe");
         Assert.False(z.IstGemeinsam);
@@ -391,9 +391,9 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         // Eine Zeile wählt die Woche als Wochenprofil (Verweis IdWoche).
         Knopf(Wurzel(b), "epos-kalb-zeile-neu").Click();
         IElement editor = b.Find(".epos-kalb-zuordnung .epos-kalb-editor");
-        editor.QuerySelectorAll("input[type=date]")[0].Change("2025-03-01");
-        b.Find(".epos-kalb-zuordnung .epos-kalb-editor").QuerySelectorAll("input[type=date]")[1].Change("2025-03-10");
-        b.Find(".epos-kalb-zuordnung .epos-kalb-editor input:not([type=date])").Input("Messe");
+        editor.QuerySelectorAll(".epos-gemeinjahrdatum input")[0].Change("01.03.");
+        b.Find(".epos-kalb-zuordnung .epos-kalb-editor").QuerySelectorAll(".epos-gemeinjahrdatum input")[1].Change("10.03.");
+        b.Find(".epos-kalb-zuordnung .epos-kalb-editor input:not([inputmode=decimal])").Input("Messe");
         int index = b.Instance.Ansicht!.Profile.ToList().FindIndex(p => p.IstBenannt) + 1;
         b.FindAll(".epos-kalb-zuordnung .epos-kalb-editor select")[1].Change(index.ToString(System.Globalization.CultureInfo.InvariantCulture));
         Knopf(b.Find(".epos-kalb-zuordnung .epos-kalb-editor"), "epos-kalb-uebernehmen").Click();
@@ -469,8 +469,8 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         {
             Knopf(Wurzel(b), "epos-kalb-ferien-neu").Click();
             int n = vorher + k;
-            b.FindAll(".epos-kalb-ferienzeile")[n].QuerySelectorAll("input[type=date]")[0].Change($"2025-{monate[k]}-10");
-            b.FindAll(".epos-kalb-ferienzeile")[n].QuerySelectorAll("input[type=date]")[1].Change($"2025-{monate[k]}-12");
+            b.FindAll(".epos-kalb-ferienzeile")[n].QuerySelectorAll(".epos-gemeinjahrdatum input")[0].Change($"10.{monate[k]}.");
+            b.FindAll(".epos-kalb-ferienzeile")[n].QuerySelectorAll(".epos-gemeinjahrdatum input")[1].Change($"12.{monate[k]}.");
         }
         Assert.Equal(vorher + monate.Length, b.Instance.Ansicht!.Ferien.Count);
 
@@ -480,14 +480,14 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         // die ersten vier tragen sie im Bezeichner ihrer Spiegelperiode.
         int letzte = vorher + monate.Length - 1;
         Assert.True(letzte >= 4);
-        IElement erstes = b.FindAll(".epos-kalb-ferienzeile")[0].QuerySelector("input:not([type=date])")!;
+        IElement erstes = b.FindAll(".epos-kalb-ferienzeile")[0].QuerySelector("input:not([inputmode=decimal])")!;
         Assert.False(erstes.HasAttribute("readonly"));
         erstes.Input("Winterferien");
         Assert.Equal("Winterferien", b.Instance.Ansicht!.Ferien[0].Name);
-        Assert.Equal("Winterferien", b.FindAll(".epos-kalb-ferienzeile")[0].QuerySelector("input:not([type=date])")!.GetAttribute("value"));
-        b.FindAll(".epos-kalb-ferienzeile")[letzte].QuerySelector("input:not([type=date])")!.Input("Sommerpause");
+        Assert.Equal("Winterferien", b.FindAll(".epos-kalb-ferienzeile")[0].QuerySelector("input:not([inputmode=decimal])")!.GetAttribute("value"));
+        b.FindAll(".epos-kalb-ferienzeile")[letzte].QuerySelector("input:not([inputmode=decimal])")!.Input("Sommerpause");
         Assert.Contains(b.Instance.Ansicht!.Ferien, f => f.Name == "Sommerpause" && f.Beginn == Kalendertage.Jahrestag(7, 10));
-        Assert.Equal("Sommerpause", b.FindAll(".epos-kalb-ferienzeile")[letzte].QuerySelector("input:not([type=date])")!.GetAttribute("value"));
+        Assert.Equal("Sommerpause", b.FindAll(".epos-kalb-ferienzeile")[letzte].QuerySelector("input:not([inputmode=decimal])")!.GetAttribute("value"));
     }
 
     [Fact]
@@ -495,7 +495,7 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
     {
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
-        EinzeltagAnlegen(b, "2025-06-02", "Betriebsausflug");
+        EinzeltagAnlegen(b, "02.06.", "Betriebsausflug");
         Assert.Contains("epos-kalb-jahrtag--gemeinsam", b.Find(".epos-kalb-jahrtag[data-tag='153']").ClassList);
         Assert.DoesNotContain("epos-kalb-jahrtag--gemeinsam", b.Find(".epos-kalb-jahrtag[data-tag='152']").ClassList);
         Assert.NotNull(b.Find(".epos-kalb-legende .epos-kalb-muster--gemeinsam"));
@@ -504,5 +504,34 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         b.Find(".epos-kalb-jahrtag[data-tag='153']").Click();
         Assert.Equal("Betriebsausflug", b.Instance.GewaehlteZeile!.Name);
         Assert.NotNull(b.Find(".epos-kalb-einzeltage .epos-kalb-editor"));
+    }
+
+    // =================================================================================
+    // Saison der Karte: Tag und Monat ohne Jahr (Auftrag KS)
+    // =================================================================================
+
+    [Fact]
+    public void Die_Saison_der_Karte_nimmt_Tag_und_Monat_ohne_Datumswaehler_und_nennt_eine_halbe_Saison()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
+        Assert.Empty(b.FindAll("input[type=date]"));
+
+        IReadOnlyList<IElement> felder = b.Find(".epos-kalb-saison").QuerySelectorAll(".epos-gemeinjahrdatum input").ToList();
+        Assert.Equal(2, felder.Count);
+        Assert.Equal("Beginn TT.MM.", felder[0].GetAttribute("placeholder"));
+        Assert.Empty(b.FindAll(".epos-saison-halb"));
+
+        felder[0].Input("1.5.");
+        felder[0].Change("1.5.");
+        Assert.Equal("01.05.", b.Find(".epos-kalb-saison .epos-gemeinjahrdatum input").GetAttribute("value"));
+        // Nur der Beginn: nicht gespeichert, aber benannt.
+        Assert.Equal((null, null), _bearbeitung.Zeiten(H, KonditionierungZeile.Saison));
+        Assert.Single(b.FindAll(".epos-kalb-saison .epos-saison-halb"));
+
+        b.Find(".epos-kalb-saison").QuerySelectorAll(".epos-gemeinjahrdatum input")[1].Change("30.9");
+        Assert.Equal((121, 273), _bearbeitung.Zeiten(H, KonditionierungZeile.Saison));
+        Assert.Empty(b.FindAll(".epos-saison-halb"));
+        Assert.Equal("30.09.", b.Find(".epos-kalb-saison").QuerySelectorAll(".epos-gemeinjahrdatum input")[1].GetAttribute("value"));
     }
 }

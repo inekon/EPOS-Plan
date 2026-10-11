@@ -766,4 +766,46 @@ public class KonditionierungMatrixTests : EposBunitContext
         Assert.Equal(sollTag, _bearbeitung.Stand.SollTag);
         Assert.False(_bearbeitung.KannZuruecknehmen);
     }
+
+    // =================================================================================
+    // Saison: Datum Zeichen für Zeichen (Auftrag KS, Meldung vom 11.10.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Der Anwender tippt den Saisonbeginn Zeichen für Zeichen. Während der Eingabe wird nichts geprüft,
+    /// nichts verworfen und nichts zurückgesetzt; erst beim Verlassen des Felds (change) gilt der Text.
+    /// Vor der Behebung färbte schon „1" das Feld, und „10.1" leerte es, weil die halbe Saison den Wert
+    /// nicht an das Feld zurückgab.
+    /// </summary>
+    [Fact]
+    public void Der_Saisonbeginn_laesst_sich_Zeichen_fuer_Zeichen_eingeben()
+    {
+        var cut = Aufbauen(Satz(mitKonditionierung: true), Weg(new Protokoll()));
+        const string start = "Heizen · Saison · Start der Saison";
+        const string ende = "Heizen · Saison · Ende der Saison";
+
+        foreach (string text in new[] { "1", "10", "10.", "10.1", "10.10." })
+        {
+            Eingabe(cut, start).Input(text);
+            Assert.Equal(text, Eingabe(cut, start).GetAttribute("value"));
+            Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-meldung"));
+            Assert.DoesNotContain("epos-fehleingabe", Eingabe(cut, start).ClassName);
+        }
+        Eingabe(cut, start).Change("10.10.");
+        Assert.Equal("10.10.", Eingabe(cut, start).GetAttribute("value"));
+        Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-meldung"));
+        Assert.Single(cut.FindAll(".epos-kond-matrix .epos-saison-halb"));
+
+        // Die halbe Saison wartet: Der Beginn bleibt stehen, auch wenn der Reiter neu zeichnet.
+        cut.Render();
+        Assert.Equal("10.10.", Eingabe(cut, start).GetAttribute("value"));
+
+        foreach (string text in new[] { "3", "30", "30.", "30.4" })
+            Eingabe(cut, ende).Input(text);
+        Eingabe(cut, ende).Change("30.4");
+        Assert.Equal("30.04.", Eingabe(cut, ende).GetAttribute("value"));
+        Assert.Equal("10.10.", Eingabe(cut, start).GetAttribute("value"));
+        Assert.Equal((283, 120), _bearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Saison));
+        Assert.Empty(cut.FindAll(".epos-saison-halb"));
+    }
 }
