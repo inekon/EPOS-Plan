@@ -551,6 +551,39 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Equal(6, cut.Instance.Projektzeile!.CarrierId);
     }
 
+    /// <summary>KT-8a: Wirft der Trägerwechsel (Datenbank), nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen, die Zeile behält ihren Träger.</summary>
+    [Fact]
+    public void KT8a_wirft_der_Traegerwechsel_nennt_der_Banner_den_Grund_und_der_Dialog_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(traegerWechseln: (_, _) => throw new InvalidOperationException("Träger gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+        Satz(cut);
+        int vorher = cut.Instance.Projektzeile!.CarrierId;
+
+        cut.FindAll("select")[0].Change("6");
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Träger gesperrt"));
+        Assert.True(vermerke.Enthaelt("Träger gesperrt"));
+        Assert.Null(geschlossen);
+        Assert.Equal(vorher, cut.Instance.Projektzeile!.CarrierId);
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_zeigt_der_Traegerwechsel_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(traegerWechseln: (_, _) => { });
+        Satz(cut);
+
+        cut.FindAll("select")[0].Change("6");
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+        Assert.Equal(6, cut.Instance.Projektzeile!.CarrierId);
+    }
+
     [Fact]
     public void Vorlauf_und_Ruecklauf_wandern_ins_Modell()
     {
@@ -2319,5 +2352,51 @@ public class HeizkesselDialogTests : EposBunitContext
             Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
         Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopfknoepfe"));
         Assert.Equal(2, cut.FindAll(".epos-satzueberlagerung-koerper .epos-berechnungshilfe .epos-hilfepille").Count);
+    }
+
+    // =====================================================================
+    //  KT-8a: Kosten-Rückrufe über die Fangstelle
+    // =====================================================================
+
+    /// <summary>KT-8a: Wirft der Weg in die Kosten- oder Energieträgerverwaltung, nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void KT8a_wirft_der_Kostenweg_nennt_der_Banner_den_Grund(int knopf)
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostenOeffnen: (_, _) => throw new InvalidOperationException("Kostenverwaltung gesperrt"), energiekosten: _ => throw new InvalidOperationException("Kostenverwaltung gesperrt"));
+        Satz(cut);
+
+        cut.FindAll(".epos-kostenleiste button.epos-knopf")[knopf].Click();
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Kostenverwaltung gesperrt"));
+        Assert.True(vermerke.Enthaelt("Kostenverwaltung gesperrt"));
+        Assert.NotEmpty(cut.FindAll(".epos-kostenleiste button.epos-knopf"));
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_zeigt_der_Kostenweg_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask, energiekosten: _ => Task.CompletedTask);
+        Satz(cut);
+
+        cut.FindAll(".epos-kostenleiste button.epos-knopf")[0].Click();
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+    }
+
+    /// <summary>KT-8a: Wirft die Kostensumme, fehlt die Angabe, der Banner nennt den Grund, das Protokoll hat einen Vermerk.</summary>
+    [Fact]
+    public void KT8a_wirft_die_Kostensumme_nennt_der_Banner_den_Grund()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostensumme: _ => throw new InvalidOperationException("Kostenverwaltung gesperrt"));
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Kostenverwaltung gesperrt"));
+        Assert.True(vermerke.Enthaelt("Kostenverwaltung gesperrt"));
     }
 }

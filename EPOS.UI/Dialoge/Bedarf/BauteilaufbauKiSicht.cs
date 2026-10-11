@@ -120,6 +120,23 @@ public sealed class BauteilaufbauKiSicht
         stand.Eingabe();
         Geaendert?.Invoke();
     }
+
+    // =====================================================================
+    //  KT-8b: der Ladestand der Fangstelle
+    // =====================================================================
+
+    /// <summary>
+    /// Liefert die Bannertexte der Fangstelle (<c>Katalogladung</c>): gescheiterte Liste,
+    /// gescheiterter Satz; leer = alles geladen.
+    /// </summary>
+    public Func<string>? LadestandLesen { get; init; }
+
+    /// <summary>
+    /// Was der Dialog nicht lesen konnte, im Wortlaut seines Warnbanners — nur lesbar. Steht hier
+    /// ein Grund, sperrt der Dialog die Felder und lehnt Speichern mit demselben Grund ab
+    /// (<c>KatalogKiSperre</c>).
+    /// </summary>
+    public string Ladestand => LadestandLesen?.Invoke() ?? "";
 }
 
 /// <summary>

@@ -854,8 +854,11 @@
     {
         _kosten = null;
         if (Wizard || Kostensumme is null || _gewaehlt is null) return;
-        try { _kosten = Kostensumme(_gewaehlt); }
-        catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
+        // KT-8a: über die Fangstelle — wirft die Summe, fehlt die Angabe, und der Banner nennt den Grund.
+        Func<WaermepumpeAnlageDaten, (double Invest, double Betrieb)> summe = Kostensumme;
+        _kosten = Katalogladung.Wert<(double Invest, double Betrieb)?>(() => summe(_gewaehlt), _gewaehlt?.Bezeichner, null,
+                                                                      out string kostenGrund);
+        if (kostenGrund.Length > 0) Melden(kostenGrund, true);
     }
 
     /// <summary>
@@ -1055,9 +1058,9 @@
     private Func<Task>? EnergieLeiste
         => EnergiekostenOeffnen is null ? null : (Func<Task>)BeiEnergiekosten;
     private Task BeiKosten(bool betrieb)
-        => _gewaehlt is null || KostenOeffnen is null ? Task.CompletedTask : KostenOeffnen(_gewaehlt, betrieb);
+        => KostenwegGefangen(_gewaehlt is { } g && KostenOeffnen is not null ? () => KostenOeffnen(g, betrieb) : null);
     private Task BeiEnergiekosten()
-        => _gewaehlt is null || EnergiekostenOeffnen is null ? Task.CompletedTask : EnergiekostenOeffnen(_gewaehlt);
+        => KostenwegGefangen(_gewaehlt is { } g && EnergiekostenOeffnen is not null ? () => EnergiekostenOeffnen(g) : null);
 
     // =================================================================================
     // Katalogpflege und Bearbeiten je Bereich (4.6, KA-E-8, KA-E-13)
@@ -1236,6 +1239,18 @@
     // =================================================================================
     // Abschluss
     // =================================================================================
+
+    /// <summary>
+    /// KT-8a: Der Weg in die Kosten- bzw. Energieträgerverwaltung läuft über die Fangstelle
+    /// (<c>Katalogladung.SchreibenAsync</c>): Wirft er, nennt der Banner den Grund, das Protokoll
+    /// hat einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    private async Task KostenwegGefangen(Func<Task>? weg)
+    {
+        if (weg is null) return;
+        string grund = await Katalogladung.SchreibenAsync(async () => { await weg(); return ""; }, _gewaehlt?.Bezeichner, g => g);
+        if (grund.Length > 0) { Melden(grund, true); StateHasChanged(); }
+    }
 
     private void Melden(string text, bool fehler)
     {
