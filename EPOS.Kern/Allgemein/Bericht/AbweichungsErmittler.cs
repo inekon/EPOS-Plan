@@ -287,6 +287,12 @@ namespace WindowsFormsApplication1
                         "ABW_MERKMAL_VORH_REGELGENAUIGKEIT"),
             new Merkmal("Gebäude", "Tab_Einstellungen", VorheizenSchema.SPALTE_GELTUNG, "Geltung der Vorheizzeit", "", TEXT,
                         "ABW_MERKMAL_VORH_GELTUNG"),
+            // SA3b (Schritt 217): die Schnellaufheizung - Schalter (NULL = aus) und Überhöhung (NULL = Kern-Vorgabe 2 K, über die
+            // Zahlvorgabe); NULL und die Vorgabe sind keine Abweichung.
+            new Merkmal("Gebäude", "Tab_Einstellungen", SchnellaufheizungSchema.SPALTE_SCHALTER, "Schnellaufheizung", "", JN,
+                        "ABW_MERKMAL_VORH_SCHNELLAUF"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", SchnellaufheizungSchema.SPALTE_UEBERHOEHUNG, "Überhöhung Δθ", "K", 1,
+                        "ABW_MERKMAL_VORH_UEBERHOEHUNG"),
         };
 
         /// <summary>
@@ -369,6 +375,7 @@ namespace WindowsFormsApplication1
                 { "Tab_Einstellungen." + AufheizManuellSchema.SPALTE_AUFSCHLAG_H, (0.0, 1.0) },
                 { "Tab_Einstellungen." + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT, (0.0, 1.0) },
                 { "Tab_Einstellungen." + VorheizenSchema.SPALTE_REGELGENAUIGKEIT, (Vorheizvorgabe.GENAUIGKEIT_VORGABE_K, 1.0) },
+                { "Tab_Einstellungen." + SchnellaufheizungSchema.SPALTE_UEBERHOEHUNG, (Vorheizvorgabe.UEBERHOEHUNG_VORGABE_K, 1.0) },
             };
 
         /// <summary>Der wirksame Zahlwert eines Merkmals: der Spaltenwert, NULL über die Zahlvorgabe, mal dem Anzeigefaktor.</summary>

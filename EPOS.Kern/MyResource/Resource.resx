@@ -52702,6 +52702,63 @@ Chart</value>
   <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
     <value>Zone</value>
   </data>
+  <data name="BV_VORH_SA_UEBERHOEHUNG" xml:space="preserve">
+    <value>Schnellaufheizung: Überhöhung Δθ</value>
+  </data>
+  <data name="BV_VORH_SA_STUNDEN" xml:space="preserve">
+    <value>Stunden mit Überhöhung</value>
+  </data>
+  <data name="BV_VORH_SA_VORLAUF_MAX" xml:space="preserve">
+    <value>Höchster Vorlauf mit Überhöhung</value>
+  </data>
+  <data name="BV_VORH_SA_VORLAUFGRENZE" xml:space="preserve">
+    <value>Stunden an der Vorlaufgrenze</value>
+  </data>
+  <data name="BV_VORH_SA_WIRKUNGSLOS" xml:space="preserve">
+    <value>Stunden mit wirkungsloser Überhöhung</value>
+  </data>
+  <data name="BV_VORH_SA_SPERRZEIT" xml:space="preserve">
+    <value>Stunden mit Überhöhung in einer Sperrzeit</value>
+  </data>
+  <data name="BV_VORH_SA_HALBSATZ" xml:space="preserve">
+    <value>, mit Schnellaufheizung (+{0} K)</value>
+  </data>
+  <data name="BV_VORH_KOPF_UEBERHOEHUNG" xml:space="preserve">
+    <value>Δθ [K]</value>
+  </data>
+  <data name="BV_VORH_KOPF_UEBERHOEHUNG_H" xml:space="preserve">
+    <value>Std. überhöht [h/a]</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG" xml:space="preserve">
+    <value>Wirksame Raumsollwert-Überhöhung Δθ der Schnellaufheizung des laufenden Gebäudes; leer ohne Wirkung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_STUNDEN" xml:space="preserve">
+    <value>Stunden mit Überhöhung der Schnellaufheizung des laufenden Gebäudes; leer ohne Wirkung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_VORLAUF_MAX" xml:space="preserve">
+    <value>Höchster Vorlauf in den Stunden mit Überhöhung des laufenden Gebäudes; leer ohne Wirkung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_VORLAUFGRENZE_STUNDEN" xml:space="preserve">
+    <value>Stunden, in denen die Vorlaufgrenze die Überhöhung des laufenden Gebäudes begrenzt hat; leer ohne Wirkung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_WIRKUNGSLOS" xml:space="preserve">
+    <value>Stunden mit wirkungsloser Überhöhung (Vorlauf schon an der Grenze) des laufenden Gebäudes; leer ohne Wirkung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_SPERRZEIT" xml:space="preserve">
+    <value>Vorheizstunden mit Überhöhung in einer Sperrzeit des laufenden Gebäudes; leer ohne Wirkung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SCHNELLAUFHEIZUNG" xml:space="preserve">
+    <value>Halbsatz „, mit Schnellaufheizung (+2,0 K)“ des laufenden Gebäudes mit führendem Komma; leer ohne Wirkung.</value>
+  </data>
+  <data name="VF_HAT__SCHNELLAUFHEIZUNG" xml:space="preserve">
+    <value>Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit wirksamer Schnellaufheizung gerechnet?</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_SCHNELLAUF" xml:space="preserve">
+    <value>Schnellaufheizung</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_UEBERHOEHUNG" xml:space="preserve">
+    <value>Überhöhung Δθ</value>
+  </data>
   <!-- Administration und Support, Stufe 1 -->
   <data name="ENTW_QUELLE_KEINE" xml:space="preserve">
     <value>Entwicklermodus aus</value>

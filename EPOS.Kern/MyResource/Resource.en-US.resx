@@ -52695,6 +52695,63 @@ chart</value>
   <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
     <value>Zone</value>
   </data>
+  <data name="BV_VORH_SA_UEBERHOEHUNG" xml:space="preserve">
+    <value>Rapid heat-up: setpoint boost Δθ</value>
+  </data>
+  <data name="BV_VORH_SA_STUNDEN" xml:space="preserve">
+    <value>Hours with setpoint boost</value>
+  </data>
+  <data name="BV_VORH_SA_VORLAUF_MAX" xml:space="preserve">
+    <value>Highest flow temperature with boost</value>
+  </data>
+  <data name="BV_VORH_SA_VORLAUFGRENZE" xml:space="preserve">
+    <value>Hours at the flow temperature limit</value>
+  </data>
+  <data name="BV_VORH_SA_WIRKUNGSLOS" xml:space="preserve">
+    <value>Hours with ineffective boost</value>
+  </data>
+  <data name="BV_VORH_SA_SPERRZEIT" xml:space="preserve">
+    <value>Hours with boost in a blocking period</value>
+  </data>
+  <data name="BV_VORH_SA_HALBSATZ" xml:space="preserve">
+    <value>, with rapid heat-up (+{0} K)</value>
+  </data>
+  <data name="BV_VORH_KOPF_UEBERHOEHUNG" xml:space="preserve">
+    <value>Δθ [K]</value>
+  </data>
+  <data name="BV_VORH_KOPF_UEBERHOEHUNG_H" xml:space="preserve">
+    <value>Boost hours [h/a]</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG" xml:space="preserve">
+    <value>Effective room setpoint boost Δθ of the rapid heat-up of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_STUNDEN" xml:space="preserve">
+    <value>Hours with setpoint boost of the rapid heat-up of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_VORLAUF_MAX" xml:space="preserve">
+    <value>Highest flow temperature in the hours with boost of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_VORLAUFGRENZE_STUNDEN" xml:space="preserve">
+    <value>Hours in which the flow temperature limit capped the boost of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_WIRKUNGSLOS" xml:space="preserve">
+    <value>Hours with ineffective boost (flow temperature already at the limit) of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_SPERRZEIT" xml:space="preserve">
+    <value>Preheat hours with boost in a blocking period of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SCHNELLAUFHEIZUNG" xml:space="preserve">
+    <value>Half sentence “, with rapid heat-up (+2.0 K)” of the current building with leading comma; empty without effect.</value>
+  </data>
+  <data name="VF_HAT__SCHNELLAUFHEIZUNG" xml:space="preserve">
+    <value>Data switch: Has a building of the state (or of any state) been calculated with effective rapid heat-up?</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_SCHNELLAUF" xml:space="preserve">
+    <value>Rapid heat-up</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_UEBERHOEHUNG" xml:space="preserve">
+    <value>Setpoint boost Δθ</value>
+  </data>
   <!-- Administration und Support, Stufe 1 -->
   <data name="ENTW_QUELLE_KEINE" xml:space="preserve">
     <value>Developer mode off</value>
