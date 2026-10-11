@@ -52927,5 +52927,92 @@ Chart</value>
   <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
     <value>Die Rechenvorgaben des Zapfprofils konnten nicht gespeichert werden: {0}</value>
   </data>
+  <data name="KM_ZUL_OHNE_JAHR" xml:space="preserve">
+    <value>Zulässigkeit des Kältemittels: ohne Inbetriebnahmejahr nicht geprüft</value>
+  </data>
+  <data name="KM_ZUL_OHNE_KAELTEMITTEL" xml:space="preserve">
+    <value>Zulässigkeit des Kältemittels: ohne Kältemittel nicht geprüft</value>
+  </data>
+  <data name="KM_ZUL_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>Zulässigkeit des Kältemittels: nicht geprüft</value>
+  </data>
+  <data name="KM_ZUL_ABSORPTION" xml:space="preserve">
+    <value>Zulässigkeit des Kältemittels: Absorption — nicht geprüft</value>
+  </data>
+  <data name="KM_ZUL_BESTAND" xml:space="preserve">
+    <value>Zulässigkeit des Kältemittels: Bestandsanlage — Anhang IV nicht anwendbar</value>
+  </data>
+  <data name="KM_ZUL_ZULAESSIG" xml:space="preserve">
+    <value>Zulässigkeit des Kältemittels {0}: zulässig für das Inbetriebnahmejahr {1}</value>
+  </data>
+  <data name="KM_ZUL_WARNUNG" xml:space="preserve">
+    <value>Zulässigkeit des Kältemittels {0}: Warnung — nach {1} ab {2} nur Restbestand oder Ausnahme ({3}; Inbetriebnahmejahr {4})</value>
+  </data>
+  <data name="KM_ZUL_NICHT_PRUEFBAR" xml:space="preserve">
+    <value>Zulässigkeit des Kältemittels: für das Inbetriebnahmejahr {0} nicht prüfbar — {1}</value>
+  </data>
+  <data name="KM_LESE_GWP" xml:space="preserve">
+    <value>GWP {0}</value>
+  </data>
+  <data name="KM_LESE_FGAS" xml:space="preserve">
+    <value>F-Gas</value>
+  </data>
+  <data name="KM_LESE_KEIN_FGAS" xml:space="preserve">
+    <value>kein F-Gas</value>
+  </data>
+  <data name="KM_LESE_NATUERLICH" xml:space="preserve">
+    <value>natürlich</value>
+  </data>
+  <data name="KM_LESE_SICHERHEITSGRUPPE" xml:space="preserve">
+    <value>Sicherheitsgruppe {0}</value>
+  </data>
+  <data name="KM_LESE_PFAS" xml:space="preserve">
+    <value>PFAS</value>
+  </data>
+  <data name="KM_LESE_PFAS_BESTANDTEIL" xml:space="preserve">
+    <value>mit PFAS-Bestandteil</value>
+  </data>
+  <data name="KM_LESE_PFAS_KEIN" xml:space="preserve">
+    <value>kein PFAS</value>
+  </data>
+  <data name="KM_LESE_STATUS" xml:space="preserve">
+    <value>Status {0}</value>
+  </data>
+  <data name="KM_STATUS_GESICHERT" xml:space="preserve">
+    <value>gesichert</value>
+  </data>
+  <data name="KM_STATUS_VORLAEUFIG" xml:space="preserve">
+    <value>vorläufig</value>
+  </data>
+  <data name="KM_STATUS_PROGNOSE" xml:space="preserve">
+    <value>Prognose</value>
+  </data>
+  <data name="KM_STATUS_ABGEKUENDIGT" xml:space="preserve">
+    <value>abgekündigt</value>
+  </data>
+  <data name="PKOPF_LBL_INBETRIEBNAHMEJAHR" xml:space="preserve">
+    <value>Inbetriebnahmejahr</value>
+  </data>
+  <data name="PKOPF_INBETRIEBNAHMEJAHR_PLATZHALTER" xml:space="preserve">
+    <value>leer: keine Zulässigkeitsprüfung</value>
+  </data>
+  <data name="PKOPF_INBETRIEBNAHMEJAHR_HILFE" xml:space="preserve">
+    <value>Geplantes Jahr der Inbetriebnahme. Ein Jahr schaltet im Simulationslauf die Prüfung der Kältemittel von Wärmepumpen und Kältemaschinen gegen die Stichtage der F-Gas-Verordnung ein; die Prüfung weist nur hin und sperrt nichts. Leer: keine Prüfung.</value>
+  </data>
+  <data name="WZP_JAHR_AUSSERHALB" xml:space="preserve">
+    <value>Das Inbetriebnahmejahr muss zwischen {0} und {1} liegen; leer bleibt die Zulässigkeitsprüfung der Kältemittel aus.</value>
+  </data>
+  <data name="WIZ_JAHR_TITEL" xml:space="preserve">
+    <value>Inbetriebnahmejahr ungültig</value>
+  </data>
+  <data name="START_E_KUEHL_KM_STATUS" xml:space="preserve">
+    <value>Kältemittel: {0}</value>
+  </data>
+  <data name="START_E_KUEHL_KM_WARNUNG" xml:space="preserve">
+    <value>{0} mit Hinweis</value>
+  </data>
+  <data name="START_E_KUEHL_KM_NICHT_PRUEFBAR" xml:space="preserve">
+    <value>{0} nicht prüfbar</value>
+  </data>
 </root>
 

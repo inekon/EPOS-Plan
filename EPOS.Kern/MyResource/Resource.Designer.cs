@@ -79039,6 +79039,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die F-Gas ähnelt.
+        /// </summary>
+        public static string KM_LESE_FGAS {
+            get {
+                return ResourceManager.GetString("KM_LESE_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP {0} ähnelt.
+        /// </summary>
+        public static string KM_LESE_GWP {
+            get {
+                return ResourceManager.GetString("KM_LESE_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein F-Gas ähnelt.
+        /// </summary>
+        public static string KM_LESE_KEIN_FGAS {
+            get {
+                return ResourceManager.GetString("KM_LESE_KEIN_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die natürlich ähnelt.
+        /// </summary>
+        public static string KM_LESE_NATUERLICH {
+            get {
+                return ResourceManager.GetString("KM_LESE_NATUERLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PFAS ähnelt.
+        /// </summary>
+        public static string KM_LESE_PFAS {
+            get {
+                return ResourceManager.GetString("KM_LESE_PFAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit PFAS-Bestandteil ähnelt.
+        /// </summary>
+        public static string KM_LESE_PFAS_BESTANDTEIL {
+            get {
+                return ResourceManager.GetString("KM_LESE_PFAS_BESTANDTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein PFAS ähnelt.
+        /// </summary>
+        public static string KM_LESE_PFAS_KEIN {
+            get {
+                return ResourceManager.GetString("KM_LESE_PFAS_KEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicherheitsgruppe {0} ähnelt.
+        /// </summary>
+        public static string KM_LESE_SICHERHEITSGRUPPE {
+            get {
+                return ResourceManager.GetString("KM_LESE_SICHERHEITSGRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Status {0} ähnelt.
+        /// </summary>
+        public static string KM_LESE_STATUS {
+            get {
+                return ResourceManager.GetString("KM_LESE_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ angelegt. ähnelt.
         /// </summary>
         public static string KM_MSG_ANGELEGT {
@@ -79525,6 +79606,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgekündigt ähnelt.
+        /// </summary>
+        public static string KM_STATUS_ABGEKUENDIGT {
+            get {
+                return ResourceManager.GetString("KM_STATUS_ABGEKUENDIGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gesichert ähnelt.
+        /// </summary>
+        public static string KM_STATUS_GESICHERT {
+            get {
+                return ResourceManager.GetString("KM_STATUS_GESICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prognose ähnelt.
+        /// </summary>
+        public static string KM_STATUS_PROGNOSE {
+            get {
+                return ResourceManager.GetString("KM_STATUS_PROGNOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorläufig ähnelt.
+        /// </summary>
+        public static string KM_STATUS_VORLAEUFIG {
+            get {
+                return ResourceManager.GetString("KM_STATUS_VORLAEUFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die wie bisher ähnelt.
         /// </summary>
         public static string KM_TEILLAST_WEG_BESTAND {
@@ -79683,6 +79800,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_VGL_STUETZSTELLEN {
             get {
                 return ResourceManager.GetString("KM_VGL_STUETZSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: Absorption — nicht geprüft ähnelt.
+        /// </summary>
+        public static string KM_ZUL_ABSORPTION {
+            get {
+                return ResourceManager.GetString("KM_ZUL_ABSORPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: Bestandsanlage — Anhang IV nicht anwendbar ähnelt.
+        /// </summary>
+        public static string KM_ZUL_BESTAND {
+            get {
+                return ResourceManager.GetString("KM_ZUL_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: nicht geprüft ähnelt.
+        /// </summary>
+        public static string KM_ZUL_NICHT_GEPRUEFT {
+            get {
+                return ResourceManager.GetString("KM_ZUL_NICHT_GEPRUEFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: für das Inbetriebnahmejahr {0} nicht prüfbar — {1} ähnelt.
+        /// </summary>
+        public static string KM_ZUL_NICHT_PRUEFBAR {
+            get {
+                return ResourceManager.GetString("KM_ZUL_NICHT_PRUEFBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: ohne Inbetriebnahmejahr nicht geprüft ähnelt.
+        /// </summary>
+        public static string KM_ZUL_OHNE_JAHR {
+            get {
+                return ResourceManager.GetString("KM_ZUL_OHNE_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: ohne Kältemittel nicht geprüft ähnelt.
+        /// </summary>
+        public static string KM_ZUL_OHNE_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("KM_ZUL_OHNE_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels {0}: Warnung — nach {1} ab {2} nur Restbestand oder Ausnahme ({3}; Inbetriebnahmejahr {4}) ähnelt.
+        /// </summary>
+        public static string KM_ZUL_WARNUNG {
+            get {
+                return ResourceManager.GetString("KM_ZUL_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels {0}: zulässig für das Inbetriebnahmejahr {1} ähnelt.
+        /// </summary>
+        public static string KM_ZUL_ZULAESSIG {
+            get {
+                return ResourceManager.GetString("KM_ZUL_ZULAESSIG", resourceCulture);
             }
         }
         
@@ -94541,6 +94730,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geplantes Jahr der Inbetriebnahme. Ein Jahr schaltet im Simulationslauf die Prüfung der Kältemittel von Wärmepumpen und Kältemaschinen gegen die Stichtage der F-Gas-Verordnung ein; die Prüfung weist nur hin und sperrt nichts. Leer: keine Prüfung. ähnelt.
+        /// </summary>
+        public static string PKOPF_INBETRIEBNAHMEJAHR_HILFE {
+            get {
+                return ResourceManager.GetString("PKOPF_INBETRIEBNAHMEJAHR_HILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer: keine Zulässigkeitsprüfung ähnelt.
+        /// </summary>
+        public static string PKOPF_INBETRIEBNAHMEJAHR_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("PKOPF_INBETRIEBNAHMEJAHR_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projektkonfiguration ähnelt.
         /// </summary>
         public static string PKOPF_KOPF {
@@ -94582,6 +94789,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PKOPF_LBL_ERSTELLT {
             get {
                 return ResourceManager.GetString("PKOPF_LBL_ERSTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inbetriebnahmejahr ähnelt.
+        /// </summary>
+        public static string PKOPF_LBL_INBETRIEBNAHMEJAHR {
+            get {
+                return ResourceManager.GetString("PKOPF_LBL_INBETRIEBNAHMEJAHR", resourceCulture);
             }
         }
         
@@ -120234,6 +120450,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} nicht prüfbar ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM_NICHT_PRUEFBAR {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM_NICHT_PRUEFBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel: {0} ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM_STATUS {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} mit Hinweis ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM_WARNUNG {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung mit Kältemaschinen und Wärmepumpen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_TEXT {
@@ -135805,6 +136048,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inbetriebnahmejahr ungültig ähnelt.
+        /// </summary>
+        public static string WIZ_JAHR_TITEL {
+            get {
+                return ResourceManager.GetString("WIZ_JAHR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Klimazone auswählen! ähnelt.
         /// </summary>
         public static string WIZ_KLIMA_FEHLT {
@@ -140503,6 +140755,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WZP_BESCHREIBUNG_HINT {
             get {
                 return ResourceManager.GetString("WZP_BESCHREIBUNG_HINT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Inbetriebnahmejahr muss zwischen {0} und {1} liegen; leer bleibt die Zulässigkeitsprüfung der Kältemittel aus. ähnelt.
+        /// </summary>
+        public static string WZP_JAHR_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("WZP_JAHR_AUSSERHALB", resourceCulture);
             }
         }
         

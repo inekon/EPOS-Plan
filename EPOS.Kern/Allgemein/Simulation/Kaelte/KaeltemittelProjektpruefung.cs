@@ -95,6 +95,25 @@ namespace WindowsFormsApplication1
         /// Jahr leer, außer mit <paramref name="mitCodes"/>: dann dieselben Erzeuger mit Code und ohne Ergebnis.
         /// </summary>
         public static IReadOnlyList<KaeltemittelErzeugerpruefung> Pruefen(int idProjekt, bool mitCodes = false)
+            => Pruefen(idProjekt, mitCodes, 0, false, null);
+
+        /// <summary>
+        /// <b>Die Prüfung EINER Anlage</b> für die Lesezeile „Zulässigkeit“ der Dialoge (Konzept Kältemittel als
+        /// Stammdatum 5.2, 7.2, 7.3): derselbe Weg wie <see cref="Pruefen(int, bool)"/>, beschränkt auf die Anlage
+        /// <paramref name="idAnlage"/>. Mit <paramref name="ersetzen"/> prüft eine Wärmepumpen-Anlage statt des
+        /// gespeicherten Codes <paramref name="kaeltemittelWp"/> — die Wahl im offenen Dialog. Ohne Jahr kein
+        /// Ergebnis; <c>null</c>, wenn die Anlage nicht geprüft wird (keine Anlage, Wärmepumpe ohne Kältemittel).
+        /// </summary>
+        public static KaeltemittelErzeugerpruefung PruefenAnlage(int idProjekt, int idAnlage, bool ersetzen = false,
+                                                                 string kaeltemittelWp = null)
+        {
+            if (idProjekt <= 0 || idAnlage <= 0) return null;
+            IReadOnlyList<KaeltemittelErzeugerpruefung> l = Pruefen(idProjekt, true, idAnlage, ersetzen, kaeltemittelWp);
+            return l.Count > 0 ? l[0] : null;
+        }
+
+        private static IReadOnlyList<KaeltemittelErzeugerpruefung> Pruefen(int idProjekt, bool mitCodes, int nurAnlage,
+                                                                             bool ersetzen, string kaeltemittelWp)
         {
             var liste = new List<KaeltemittelErzeugerpruefung>();
             if (idProjekt <= 0) return liste;
@@ -109,6 +128,7 @@ namespace WindowsFormsApplication1
             foreach (KaeltemaschineAnlageModel a in KaeltemaschineAnlageCtrl.ListeStill(idProjekt))
             {
                 if (a == null || a.AnlagenId <= 0 || !a.IdKaeltemaschine.HasValue) continue;
+                if (nurAnlage > 0 && a.AnlagenId != nurAnlage) continue;
                 KaeltemaschineModel m = KaeltemaschineCtrl.LadenStill(a.IdKaeltemaschine.Value);
                 if (m == null) continue;
 
@@ -142,7 +162,9 @@ namespace WindowsFormsApplication1
             if (dt != null)
                 foreach (DataRow r in dt.Rows)
                 {
-                    string code = StilleDb.Text(StilleDb.Feld(r, "Kaeltemittel")).Trim();
+                    int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID_Anlage"));
+                    if (nurAnlage > 0 && idAnlage != nurAnlage) continue;
+                    string code = (ersetzen ? kaeltemittelWp ?? "" : StilleDb.Text(StilleDb.Feld(r, "Kaeltemittel"))).Trim();
                     if (code.Length == 0) continue;
                     KaeltemittelCtrl.Kaeltemittelsatz satz = KaeltemittelCtrl.LadenZumCode(code);
                     string klasse = Kaeltemittelregeln.GeraeteklasseWaermepumpe(
@@ -159,7 +181,6 @@ namespace WindowsFormsApplication1
                         Jahr = jahr,
                         Regeln = regeln,
                     };
-                    int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID_Anlage"));
                     string anlage = StilleDb.Text(StilleDb.Feld(r, "Anlage"));
                     string geraet = StilleDb.Text(StilleDb.Feld(r, "Geraet"));
                     string name = !string.IsNullOrWhiteSpace(anlage) ? anlage
