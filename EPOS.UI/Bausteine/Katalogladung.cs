@@ -243,6 +243,29 @@ public static class Katalogladung
         }
     }
 
+    /// <summary>
+    /// KT-9: die gefangene Vergleichsgabe eines Projektdialogs. Der Baustein <c>Katalogliste</c> ruft
+    /// die Gabe je verglichenem Gerät; er hat keinen Banner und dient allen Wirten. Deshalb fängt der
+    /// Dialog die Gabe dort, wo er sie an die Liste reicht: Wirft die Abfrage eines Geräts, bleibt das
+    /// Gerät im Vergleich leer, <paramref name="melden"/> bekommt den Grund
+    /// (<see cref="Resource.WURZEL_SATZ_FEHLER"/>, beide Sprachen) für den Banner des Dialogs, und das
+    /// Ausnahmeprotokoll hat einen Vermerk. Ohne Gabe <c>null</c> — dann vergleicht die Liste ihre Spalten.
+    /// </summary>
+    /// <param name="gabe">Die Gabe des Wirtes (Parameterübersicht je Gerätebezeichner).</param>
+    /// <param name="melden">Nimmt den Grund, wenn eine Abfrage geworfen hat.</param>
+    public static Func<string, IReadOnlyList<T>>? Vergleichsgabe<T>(Func<string, IReadOnlyList<T>>? gabe,
+                                                                     Action<string> melden)
+    {
+        if (gabe is null) return null;
+        return bezeichner =>
+        {
+            string grund = "";
+            IReadOnlyList<T>? werte = SatzDazu(() => gabe(bezeichner), bezeichner, ref grund);
+            if (grund.Length > 0) melden(grund);
+            return werte ?? Array.Empty<T>();
+        };
+    }
+
     /// <summary>Der Grund in der Sprache der Oberfläche und der Vermerk im Ausnahmeprotokoll.</summary>
     private static string Benennen(string vorlage, string was, string wie, string? satz, Exception ex)
     {
