@@ -760,6 +760,10 @@ Deckungswelt auch einen Besitzer hat und nicht als Sonderfall in der Wärmefassa
    XML-Dokumentationskopf von `Kanalsatz` spricht künftig vom **Bedarfskanal**; die
    Konstanten und Persistenzwerte bleiben eingefroren.
 
+**Kälte-Wärme-Kopplung.** Ein Gerät, das Kälte und Wärme zugleich nutzbar macht, bucht in beide Deckungswelten — nur
+über die Kopplungsbuchung, die Kanallisten bleiben getrennt (5.6.6). Prozesskälte wird Unterposten des Kühlkanals, kein
+fünfter Kanal (5.6.9).
+
 ### 4.2 Die Stellen, die sich **nicht** selbst mitziehen
 
 Befund W 1.2 führt die Kanalschleifen als „zieht sich selbst" (Zeile 3 seiner Stellenliste). Das
@@ -985,6 +989,10 @@ sie prüfbar — und **zwei davon sind verschiedener Art**, was in Rev. 1 vermen
 4. **Die Senke.** `Senke` bekommt den Wert **Kältekreis**; die Aufräumregel für unbekannte Ziele
    (`WaermesenkeClass.cs:326-372`) darf ein Kälteziel **nicht** auf `ZIEL_HEIZKREIS` ziehen —
    heute ist das der stille Rückfall, und er wäre hier ein Fachfehler.
+
+**Die Naht für die Kälte-Wärme-Kopplung (5.6.6).** Die Trennung bleibt; ein Kopplungsgerät bucht in beide Welten allein
+über eine Kopplungsbuchung, die die Deckungsprobe Kälte als einzige Ausnahme zählt und eine dritte Laufprüfung, die
+Kopplungsprobe, je Stunde gegen `Q_W = Q_K + P_el − Q_V` hält.
 
 **Die Namenskette, einmal ausgeschrieben.** Die Kältespitze trägt — wie die Wärmespitze — zwei
 Namen auf zwei Ebenen, und beide bleiben: **`Kaeltebedarf_Max`** ist das Rohfeld der Fassade
@@ -1430,6 +1438,9 @@ gerechnet" (8.2, 8.5) —, nicht still übergangen. Die Kälteseite des Quellspe
 überhaupt, mit dem Kältespeicher in KU3 (K7). **Gebaut mit der zweiten Welle:** als Sperrgrund im
 Schreibweg (`WPCtrl.KuehlbetriebSperrgrund`) und als benannte Warnung im Lauf.
 
+Die Kopplung einer Wärmepumpe über einen **Kältespeicher als Quelle** ist ein anderer Fall — die Maschine heizt, ihre
+Quelle ist der Kältespeicher — und steht in 5.6.7.
+
 ### 5.2 Die Umschaltung Heizen ↔ Kühlen (K8a)
 
 Eine reversible Maschine kann in einer Stunde nur eines. Drei Regeln stehen zur Wahl:
@@ -1615,6 +1626,428 @@ Deckungswelten hält: **kein** Wärmeerzeuger darf in KU1 auch nur ein Kilowatt 
 
 **So gebaut (KU3-2, 04.10.2026):** Die Kältemaschine hat bis Schemaschritt 183 keinen Kaskadenplatz. Sie deckt nach allen Wärmepumpen im Kühlbetrieb, mehrere Maschinen in Kennungsreihenfolge (Hinweis im Laufprotokoll); Stunden mit freier Kühlung decken Maschinen mit Trocken- oder Nasskühler vor allen anderen. Ohne Kältemaschine bleibt die Schleife unverändert; ohne Wärmepumpe läuft die Kältekaskade am Ende der Wärmekaskade vor der Stromstufe. Kühltage und Sperrzeiten der Wärmepumpe gelten nicht für die Maschine; die Unterdeckung wird je Maschine mit Stunden an der Leistungsgrenze und offener Menge ausgewiesen.
 
+### 5.6 Gleichzeitige Kälte- und Wärmenutzung (Kälte-Wärme-Kopplung)
+
+Eine Wärmepumpe oder eine Kältemaschine pumpt Wärme von einer kalten auf eine warme Seite. Wird **beides** genutzt —
+die Kälte am Verdampfer **und** die Wärme am Kondensator —, liefert eine Kilowattstunde Strom zwei Nutzen. Dieser
+Abschnitt beschreibt diesen Betrieb, hier **Kälte-Wärme-Kopplung** genannt. Kurzzeichen ist **KWN** (Kälte-Wärme-Nutzung),
+nicht „KWK“: Dieses Kürzel steht in EPOS-Plan für die Kraft-Wärme-Kopplung des BHKW.
+
+#### 5.6.1 Bestand: was den Kopplungsfall trägt und was ihn hindert
+
+| Baustein | Stand | Trägt | Hindert |
+|---|---|---|---|
+| **Prozesskälte als Bedarf** | Es gibt **keinen eigenen Prozesskältekanal**. Prozesskälte kommt als Kältebedarfsprofil (Satz „Prozesskälte Dauerlast“, 6/12 °C) oder als Kühllastgang in den **einen** Kühlkanal `Kanal.KUEHLUNG` ([Konzept Kältebedarf](Konzept_Kaeltebedarf_EPOS-Plan.md) 3.3, 4.2, Schema 213). Vorlauf und Rücklauf der Profile sind Angabe ohne Wirkung (E-K3). Die Naht `Kaelteangebot.Prozesskaelte` (Vorrang vor der Raumkühlung) steht im Kern, ist aber nicht verdrahtet: Kein Rechenweg belegt sie | die Menge je Stunde | Prozesskälte und Raumkühlung sind im Kanal **nicht unterscheidbar**; ohne diese Unterscheidung kann keine Senke „Prozesskälte“ an ein Gerät gebunden werden, und die Temperatur der Prozesskälte wirkt nicht |
+| **Prozesswärme als Bedarf** | eigener Kanal `PROZESS` aus `Tab_Prozesswaerme`/`Z_Projekt_Prozesswaerme`, mit Temperaturpaar `Vorlauf`/`Ruecklauf` (`ProzesswaermeTemperaturSchema`); `Prozesstemperatur` bildet je Stunde den höchsten geforderten Vorlauf und den mengengewichteten Rücklauf, die Wärmepumpe rechnet den Prozessanteil am Prozessvorlauf | Senke, Menge **und** Temperaturniveau je Stunde | — |
+| **Brauchwasser** | eigener Kanal `BRAUCHWASSER`, Zapfprofile nach VDI 6002 oder Zapfprofilgenerator; am Kühltag bleibt er für die reversible Wärmepumpe bedienbar (5.2) | zweite Wärmesenke außerhalb der Raumheizung, ganzjährig | — |
+| **Reversible Wärmepumpe** (5.1, 5.2, K8a) | Heizen **oder** Kühlen; am Kühltag ist der Heizkanal gesperrt, Brauchwasser und Prozesswärme bleiben bedienbar; der Zeitanteil der Wärme steht der Kälte nicht zur Verfügung | Gerät mit Heiz- und Kühlkennlinie, Zeitanteilsrechnung | die Kondensatorwärme im Kühlbetrieb geht an die Quelle (5.1 (5)), nicht an eine Senke; Kälte- und Wärmereihen sind bewusst getrennt (`Kaelteproduktion_stuendlich` neben `WP_Waermeproduktion_stuendlich`), weil `ErdreichAuswertung` den Entzug als `WP_Waermeproduktion − WP_Strombedarf` liest |
+| **Kältemaschine** (5.3, KU3) | Kennlinie über Rückkühl- und Kaltwassertemperatur, Rückkühlart, Teillast, Takten, Gütegrad-Extrapolation am Kennfeldrand (Referenzprojekt 1063) | Rechenweg der Kälteseite samt Hub über der Rückkühltemperatur | die Kondensatorwärme hat **kein Ziel außer der Rückkühlung** |
+| **Rückkühlwerk** (5.4, E120, K‑F1/K‑F2, [Entwurf](Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md) 5) | eigenes Glied an der Anlagenzeile der Kältemaschine, kein Erzeuger, kein Platz in der Kältefolge; Annäherung fest oder lastabhängig | der natürliche Abnehmer eines **Wärmeüberschusses** | — |
+| **Freie Kühlung über die Erdsonde** (5.4, KU3-6, Referenzprojekt 1064) | Betriebsfall der Wärmepumpe vor dem Verdichter | zeigt, dass ein Gerät mehrere Betriebsfälle in einer Stunde trägt | — |
+| **Anlagenkopplung AK1–AK3, `Z_AnlageSenke`, Puffer, Kältespeicher, `Tool_*`, Kältefolge `Kaelte_Rang`** | Senkenzuordnung je Wärmeerzeuger; Kältespeicher ohne Senkenzeile (alle Kälteerzeuger laden ihn, 4.6); Wärmeseite in `Kaskadenschleife`, Kälteseite in `Kaeltekaskade` **nach** ihr, jede über das ganze Jahr | Senkenbindung, Speicher beider Seiten, Platz in beiden Folgen | die zwei Jahresschleifen laufen nacheinander — eine Stunde der Kälteseite kann die Wärmeseite derselben Stunde nicht mehr erreichen |
+| **Trennung der Deckungswelten** (4.4) | zwei disjunkte Kanallisten; die Deckungsprobe Kälte setzt das Ergebnis auf fehlgeschlagen, wenn ein Kälteerzeuger in einen Wärmekanal bucht | Schutz vor stiller Doppelbuchung | **der Kern des Hindernisses**: Ein Kopplungsgerät bucht seinem Wesen nach in beide Welten — heute wäre das ein Fehler des Laufs |
+
+**Befund.** Bedarfsseite und Gerätephysik sind weitgehend da: Prozesswärme mit Temperatur, Brauchwasser,
+Gebäudeheizung, Gebäudekühlung, eine Kältemaschine mit Hubrechnung, das Rückkühlwerk als Abnehmer des Überschusses.
+Es fehlen drei Dinge: (1) die **Unterscheidung Prozesskälte ↔ Raumkühlung** im Kühlkanal, (2) eine **definierte
+Naht** durch die Trennung der Deckungswelten, (3) eine **Stelle im Ablauf**, an der Kälte und Wärme derselben Stunde
+zusammen entschieden werden, bevor die beiden Jahresschleifen laufen. Dazu kommt eine Vorgabe des Anwenders, die schon
+gilt (E104, zur Zonensperre): „Für Prozesskälte und Prozesswärme soll Heizen und Kühlen gleichzeitig möglich sein.“
+
+#### 5.6.2 Begriffe und Fälle
+
+**Gebäudesenken** sind die Raumkonditionierung: Kanal `HEIZUNG` (Gebäude, Zonen, Heizlastgänge) und der
+**Raumkühlanteil** des Kanals `KUEHLUNG` (Gebäude, Zonen, Kühllastgänge und Kältebedarfsprofile der Art „Raum“). Sie
+unterliegen der Zonensperre und der Tagesart (3.5, 5.2). **Prozesssenken** sind Kanal `PROZESS` und der
+**Prozesskälteanteil** des Kühlkanals (Profile und Lastgänge der Art „Prozess“, 5.6.9). Sie sind keine
+Raumkonditionierung und bleiben am Kühl- wie am Heiztag frei (E104).
+
+| Fall | Wärmesenke | Kältesenke | Typische Anwendungen (neutral) | Temperaturen (Richtwerte) | Hub | Häufigkeit |
+|---|---|---|---|---|---|---|
+| **a** | Prozesswärme | Gebäudekühlung | Bürobau oder Hotel mit Kaltwassersatz und Wärme für Reinigung, Wäscherei, Schwimmbadwasser oder Lufterhitzer | Kälte 6/12 bis 16/19 °C; Wärme 45–70 °C | 35–65 K | häufig, saisonal (Sommer) |
+| **b** | Gebäudeheizung | Prozesskälte | Lebensmittelmarkt mit Gewerbekälte, Serverraum oder Rechenzentrum, Kühlhaus, Eisfläche, Molkerei — die Abwärme heizt das Gebäude | Kälte −30 bis +18 °C; Wärme 30–55 °C (Flächenheizung bis Heizkörper) | 25–80 K | häufig, saisonal (Winter) |
+| **c** | Prozesswärme | Prozesskälte | Lebensmittel- und Getränkeherstellung (Pasteurisieren und Kühlen), Brauerei, Molkerei, Kunststoffverarbeitung (Werkzeugkühlung und Trocknung), Oberflächentechnik | Kälte −10 bis +15 °C; Wärme 50–90 °C | 40–90 K | häufig in der Industrie, ganzjährig |
+| **d** | Prozesswärme | Prozesskälte **und** Gebäudekühlung | Produktionsbetrieb mit klimatisierten Büros | wie c, Raumkühlung zusätzlich | wie c | selten |
+| **e** | Prozesswärme **und** Gebäudeheizung | Prozesskälte | Produktionsbetrieb, dessen Abwärme auch die Hallen heizt | wie c, Heizung zusätzlich | wie c | selten |
+| *f (Frage)* | Gebäudeheizung | Gebäudekühlung | Vierleitersystem: Kernzonen kühlen, Randzonen heizen in derselben Stunde | Kälte 6/12 bis 16/19 °C; Wärme 30–45 °C | 20–40 K | nicht in der Liste des Anwenders, siehe KWN‑Q2 |
+
+Die Richtwerte sind Planungsgrößen ohne Produktbezug; sie zeigen, warum der Hub die Fälle trennt: Fall b mit
+Flächenheizung ist der energetisch günstigste, Fall c mit Wärme über 70 °C liegt am Rand dessen, was eine
+Kältemaschine mit üblichem Kältemittel leistet.
+
+**Brauchwasser.** Der häufigste Kopplungsfall der Praxis ist **Gebäudekühlung + Trinkwarmwasser** (Hotel, Wohnbau mit
+Kühlung, Pflegeheim). Brauchwasser ist wie die Prozesswärme keine Raumkonditionierung, liegt mit 55–65 °C im selben
+Temperaturband und ist ganzjährig. Dieses Papier **empfiehlt, Brauchwasser als Wärmesenke der Prozesswärme
+gleichzustellen** — rechnerisch ist es nur ein weiterer Wärmekanal mit eigenem Vorlauf; die Legionellenvorgabe
+(Ladetemperatur) bleibt eine Grenze des Hubs (KWN‑Q1).
+
+**Fall f** (gleichzeitiges Heizen und Kühlen verschiedener Gebäudezonen) ist in der Liste des Anwenders **nicht**
+enthalten und wird **nicht** stillschweigend eingeschlossen. Physikalisch ist er derselbe Betrieb wie a bis e; im Ablauf
+widerspricht er aber der projektweiten Erzeugertagesart (5.2, E104), und innerhalb einer Zone hat der Anwender ihn
+ausgeschlossen („Kühlung und Heizung gleichzeitig in einer Zone nicht sinnvoll“, E104). Empfehlung: als spätere Stufe nach
+c bis e, nur zwischen **verschiedenen** Zonen, mit einem Mehrzonen-Referenzprojekt (KWN‑Q2).
+
+#### 5.6.3 Physik einer Stunde
+
+**Bilanz.** Für ein Gerät im Kopplungsbetrieb gilt je Stunde
+
+```
+Q_W = Q_K + P_el − Q_V            [kWh]
+Q_V ≥ 0  Wärmeverlust des Geräts an die Umgebung (Vorgabe 0: die Kennlinie enthält ihn)
+```
+
+Die genutzte Wärme ist also stets **größer** als die genutzte Kälte — um die Verdichterarbeit.
+
+**Temperaturen aus den Senken.** Der Verdampfer folgt der Kältesenke, der Kondensator der Wärmesenke:
+
+```
+T_Verd = θ_K,VL − ΔT_Gr        Kaltwasser- bzw. Solevorlauf der Kältesenke minus Grädigkeit
+T_Kond = θ_W,VL + ΔT_Gr        Vorlauf der Wärmesenke plus Grädigkeit
+Hub    = T_Kond − T_Verd
+COP_C  = T_Kond / Hub  (in K)   Carnot-Leistungszahl der Wärmeseite
+COP    = η_G · COP_C           Gütegrad η_G aus der Kennlinie (Rand: Extrapolation wie 1063)
+EER    = COP − 1               (bei Q_V = 0)
+GLZ    = (Q_W + Q_K) / P_el = COP + EER = 2 · COP − 1
+```
+
+`θ_W,VL` kommt aus der Senke: Prozesswärme aus `Prozesstemperatur` (höchster Vorlauf der Stunde), Brauchwasser aus der
+Ladetemperatur, Heizung aus Heizkurve bzw. gerechnetem Vorlauf (AK1–AK3). `θ_K,VL` ist der Kühlvorlauf (5.2, Kühlkurve)
+bzw. für Prozesskälte das Temperaturpaar des Profils — das hebt E-K3 für gekoppelte Geräte auf (KWN‑Q7).
+
+**Rechenbeispiel** (angenommener Gütegrad 0,5, keine Produktwerte): Kälte 6 °C, Wärme 60 °C, Grädigkeit je 3 K →
+Hub 60 K, COP_C = 336,15 / 60 = 5,60, COP = 2,80, EER = 1,80, **GLZ = 4,60**. Getrennt erzeugt bräuchte dieselbe Kälte
+mit Rückkühlung auf 35 °C (Hub 35 K) einen EER von rund 3,9 — die gekoppelte Maschine kühlt also **schlechter**, als
+eine reine Kältemaschine es täte, und gewinnt trotzdem, weil die Wärme sonst eigens erzeugt werden müsste. Diese
+Abwägung ist die Kernaussage, die der Bericht zeigen muss (5.6.10).
+
+**Kennlinie bei beiden Temperaturen.**
+
+- **Kältemaschine:** Die Kennlinie steht über Rückkühl- und Kaltwassertemperatur (5.3). Im Kopplungsbetrieb ist die
+  Rückkühltemperatur der **Rücklauf der Wärmesenke** (Kondensatoreintritt); EER und Kapazität kommen aus derselben
+  Kennlinie, die Wärme ist `Q_K · (1 + 1/EER)`. Die Stützstellen enden heute bei 45 °C Rückkühlung; darüber gilt der
+  Randweg der Kennlinie (`Kennfeld_Randweg`, Gütegrad-Extrapolation) mit Zählung der Stunden.
+- **Wärmepumpe:** Die Heizkennlinie steht über Quellentemperatur und Vorlauf. Im Kopplungsbetrieb ist die
+  „Quelle“ der **Rücklauf der Kältesenke** (Verdampfereintritt, Muster der Prüfpunkte Wasser/Wasser nach DIN EN 14511);
+  Heizleistung und COP kommen aus der Heizkennlinie, die Kälte ist `Q_W · (1 − 1/COP)`. Die Kühlkennlinie `Pkuehl` wird
+  dafür **nicht** gebraucht.
+
+**Grenzen.** Je Gerät eine **Einsatzgrenze des Kondensators** (höchster Wärmevorlauf) und des Verdampfers (tiefster
+Kältevorlauf); liegt eine Senke außerhalb, gibt es in dieser Stunde keine Kopplung (Grund `HUB`, gezählt, als Hinweis
+gemeldet), und das Gerät rechnet wie heute im Einzelbetrieb. Die Kapazität begrenzt die Kennlinie im Kopplungspunkt.
+Eine **Luft-Wasser-Wärmepumpe** und eine **luftgekühlte Kältemaschine** haben keine wasserseitige Gegenseite und koppeln
+**nicht** (benannt abgelehnt); Geräte mit drittem Wärmeübertrager (Mehrleitergeräte) und die Teilwärmerückgewinnung am
+Enthitzer einer luftgekühlten Maschine sind spätere Gegenstände (KWN‑Q9).
+
+#### 5.6.4 Führung
+
+| Führung | Regel je Stunde | Überschuss | Fehlbetrag |
+|---|---|---|---|
+| **Schnittmenge** (Vorgabe) | `Q_K,kop = min(Q_K,Bedarf ; Q_W,Bedarf · EER/COP ; Kapazität)` — das Gerät koppelt genau so viel, wie **beide** Seiten abnehmen | entsteht im Kopplungsanteil nicht | der Rest beider Seiten geht in die Kaskaden; das Gerät bedient ihn mit seinem **restlichen Zeitanteil** im Einzelbetrieb (Kältemaschine: Kälte mit Rückkühlung; Wärmepumpe: Wärme aus ihrer Quelle) |
+| **kältegeführt** | `Q_K = min(Q_K,Bedarf ; Kapazität)`, die Wärme fällt an | Wärmeüberschuss → Rückkühlwerk bzw. Rückkühlart der Kältemaschine; bei der Wärmepumpe in die Quelle (Erdreich: Regeneration, K8c) | Wärme: übrige Wärmeerzeuger der Kaskade |
+| **wärmegeführt** | `Q_W = min(Q_W,Bedarf ; Kapazität)`, die Kälte fällt an | Kälteüberschuss → die Umweltquelle der Wärmepumpe übernimmt den Verdampferanteil, den die Kältesenke nicht abnimmt | Kälte: übrige Erzeuger der Kältefolge |
+
+**Empfehlung: Schnittmenge mit Restbetrieb als Vorgabe für alle Fälle** (KWN‑Q3). Sie ist deterministisch, braucht keine
+Iteration, erzeugt im Kopplungsanteil keinen Überschuss und überlässt den Rest den vorhandenen Wegen: Bei der
+Kältemaschine wirkt sie wie „kältegeführt“ (der Restbetrieb kühlt mit Rückkühlung, und zwar beim günstigeren Hub der
+Rückkühlung), bei der Wärmepumpe wie „wärmegeführt“. Kälte- und wärmegeführt bleiben wählbar; sie werden erst mit
+Speichern sinnvoll (5.6.5), weil dann ein Überschuss einen Abnehmer hat. Fallweise: **a** und **c** Schnittmenge;
+**b** kältegeführt, wo die Prozesskälte zwingend ist (Kühlhaus, Serverraum) — die Schnittmenge liefert dort dieselbe
+Kälte, weil der Restbetrieb sie deckt.
+
+**Zeitanteil.** Der Kopplungsanteil belegt den Zeitanteil `τ_kop = Q_K,kop / Kapazität_K(Kopplungspunkt)`; für den
+Einzelbetrieb bleibt `1 − τ_kop`, genau wie heute der Heizanteil den Kühlanteil begrenzt (5.2).
+
+#### 5.6.5 Speicher
+
+Puffer und Kältespeicher entkoppeln Wärme- und Kältebedarf in der Zeit (Kälte am Nachmittag, Wärme am Morgen).
+
+- **Stufe 1 — ohne Speicherwirkung.** Die Schnittmenge rechnet mit dem Bedarf der Stunde; Speicher laden und entladen wie
+  heute in ihren Kaskaden. Das genügt für c (gleichzeitige Prozesse) und für die Grundlast von a und b.
+- **Stufe 2 — Überschuss in den Speicher.** Bei kälte- oder wärmegeführtem Betrieb geht der Überschuss **zuerst** in den
+  gekoppelten Speicher der Gegenseite (Wärme in einen Puffer an einer Wärmesenke des Geräts, Kälte in einen Kältespeicher),
+  **erst dann** an Rückkühlung bzw. Quelle. Der Überschuss ist eine vorab berechnete Stundenreihe und erreicht den Speicher
+  als **Ladeangebot** in dessen Jahresschleife — dasselbe Muster wie der Ertrag eines Kollektorfelds, das den Puffer lädt.
+  Kein Zustand wandert zurück, keine Iteration.
+- **Speicher als Quelle.** Die Wärmepumpe koppelt über einen Kältespeicher auf der Verdampfer- und einen
+  Heizungspuffer auf der Kondensatorseite; das ist ein eigener, einfacherer Weg ohne Kopplungsvorstufe (5.6.7).
+- **Später — Optimierung.** Ein Gerät, das **wegen** freien Speicherplatzes mehr koppelt, braucht den Speicherzustand vor
+  der Entscheidung und damit einen Fahrplan über mehrere Stunden. Das bleibt benannt vertagt (KWN‑Q6); ein
+  Fahrplaner nach Art von `IFlottenPlaner` hinge an der Windows-Schale und wäre auf iOS nicht verfügbar.
+
+#### 5.6.6 Einordnung in Kaskade und Kältefolge
+
+**Ein Gerät, zwei Plätze.** Das Kopplungsgerät behält seinen Platz in **seiner** Folge (Wärmepumpe: `Tool_1…4`;
+Kältemaschine: Kältefolge `Kaelte_Rang`) und bekommt dort seinen Restbetrieb. Den Kopplungsanteil rechnet eine eigene
+**Kopplungsvorstufe** — sie hat keinen Platz in einer Folge, wie das Rückkühlwerk und der Split-Anteil.
+
+**Reihenfolge innerhalb der Stunde** (und, weil beide Kaskaden Jahresschleifen sind, des Laufs):
+
+1. Bedarf in Pass 1 samt Zonensperre (3.5), Abzug der dezentralen Kälte (Split, Raumgeräte).
+2. **Kopplungsvorstufe** über alle 8760 Stunden: je Kopplungsgerät Kopplungsanteil nach 5.6.4, aus Bedarf und
+   Temperaturen der gebundenen Senken — eine reine Funktion von Vektoren, ohne Speicherzustand. Sie zieht ihren Anteil
+   von **beiden** Restbedarfen ab, bevor eine Kaskade rechnet (Muster: der Split-Anteil wird vom Kühlkanal abgezogen,
+   [Konzept Kältebedarf](Konzept_Kaeltebedarf_EPOS-Plan.md) 4.2).
+3. Wärmekaskade wie heute; das Kopplungsgerät mit seinem Restzeitanteil, Überschusswärme als Ladeangebot (Stufe 2).
+4. Kältekaskade wie heute; freie Kühlung, Kältespeicher, Wärmepumpen, Kältemaschinen — das Kopplungsgerät mit seinem
+   Restzeitanteil.
+
+**Kopplung vor freier Kühlung.** Die Kopplungsvorstufe deckt vor der freien Kühlung, weil ihre Kälte zugleich Wärme
+liefert, die sonst ein anderer Erzeuger bereitstellen müsste (KWN‑Q8).
+
+**Tagesart.** Die Kopplungsvorstufe richtet sich **nicht** nach der Erzeugertagesart (K8a), sondern nach dem Bedarf nach
+der Zonensperre: Am Heiztag einer Zone ist ihre Raumkühlung null, am Kühltag ihre Raumheizung — die Fälle a und b
+koppeln also von selbst nur an den passenden Tagen, die Prozesssenken immer (E104). Auf AK3, wo der Raumbedarf erst in
+der Stundenkette mit den Schranken entsteht, ist Stufe 1 auf Prozess- und Brauchwassersenken beschränkt; Gebäudesenken
+auf AK3 kommen mit einer eigenen Welle in die Schranken (5.6.12).
+
+**Die Naht durch die Trennung der Deckungswelten (4.4).** Die Trennung wird **nicht aufgehoben**, sie bekommt eine
+benannte Tür:
+
+- Die beiden Kanallisten bleiben disjunkt. Ein Kopplungsgerät bucht nie direkt in einen Kanal der Gegenseite, sondern
+  allein über eine **Kopplungsbuchung** je Gerät und Stunde (`Q_W`, `Q_K`, `P_el`, `Q_V`, Senke je Seite).
+- Die **Deckungsprobe Kälte** zählt die Kopplungsbuchung als zulässige Ausnahme und nur sie: Ein Kälteerzeuger in einem
+  Wärmekanal außerhalb der Kopplungsbuchung bleibt ein Fehler.
+- Eine dritte Laufprüfung, die **Kopplungsprobe**, hält je Stunde `Q_W = Q_K + P_el − Q_V` und `τ_kop ≤ 1` (Kopplungs- und
+  Restzeitanteil zusammen); Stufe **Fehler**, Gesamtergebnis fehlgeschlagen — dieselbe Schärfe wie die Kälteproben.
+- **Keine Doppelbuchung von Strom:** `P_el` des Kopplungsanteils steht in einer **eigenen** Reihe
+  `Stromverbrauch_Kopplung_stuendlich` und **nicht** in `WP_Strombedarf_stuendlich` oder
+  `Stromverbrauch_Kuehlung_stuendlich`; ebenso stehen Kopplungswärme und -kälte in eigenen Reihen. Damit liest
+  `ErdreichAuswertung` den Kopplungsanteil nicht als Entzug (5.1 (5)) — er berührt die Sonde nicht.
+
+#### 5.6.7 Kopplung über Speicher: der Kältespeicher als Quelle der Wärmepumpe
+
+Eine Wärmepumpe kann Kälte und Wärme auch **über zwei Speicher** koppeln: Auf der Verdampferseite entzieht sie einem
+**Kältespeicher der Prozesskälte** Wärme und kühlt ihn damit; auf der Kondensatorseite lädt sie einen **Pufferspeicher für
+Heizung und Warmwasser** (bzw. einen Trinkwarmwasserspeicher). Die Prozesskälte entlädt den Kältespeicher, Heizung und
+Brauchwasser entladen den Puffer. Die Speicher entkoppeln die beiden Seiten in der Zeit, und das Gerät braucht keine
+Kopplungsvorstufe: Es ist eine Wärmepumpe in der Wärmekaskade, deren Quelle ein Speicher ist. Dafür wird in der
+Simulationskonfiguration die **Quelle der Wärmepumpe** um den Kältespeicher ergänzt.
+
+**Bestand.** Die Quelle „Pufferspeicher“ gibt es (`WQ_Typ = Pufferspeicher`, `DbWerte.WQ_TYP_PUFFERSPEICHER`):
+
+| Merkmal | Heute |
+|---|---|
+| Wahl | `Tab_Energieanlagen.WQ_ID_Puffer` — Verweis über die **ID der Projektkopie** in `Tab_Pufferspeicher`, kein Text; Dialog `QuellePufferspeicherDialog` aus der Simulationskonfiguration (Karte der Anlage, Chip „Quelle:“) |
+| Art | eigenständiger **Quellspeicher** (Verwendung `Quelle`, `PSP_VERWENDUNG_QUELLE`) oder **geteilter Puffer** (zugleich Senke eines anderen Erzeugers, Booster-Fall); Luft-Wasser-Maschinen entnehmen nie aus einem Speicher (`WaermequelleClass.Quellspeicher`) |
+| Füllstand | Kapazität aus Volumen und `WQ_Spreizung` (leer = 5 K) als Temperaturhub; der Quellspeicher **startet voll**, die Wärmepumpe entzieht `Ptherm − Pel` und wird am Inhalt gekappt; unter `Rechenrand.ABSOLUT` gilt er als leer |
+| Ladung | **eigenständig:** nur die feste Regeneration `WQ_Regeneration` je Stunde, einmal je Speicher und Stunde am Stundenanfang (`Kaskadenschleife`); **geteilt:** die Erzeuger, deren Senke er ist |
+| Temperatur | eigenständig statisch (feste Quelltemperatur), geteilt stündlich aus der Schichtung; Lesepunkt am Stundenanfang (`WQ_TemperaturModus`, „Davor“) |
+| Prüfungen | `WQ_Unbegrenzt` schaltet die Bilanz ab; der **Kurzschluss** „derselbe Puffer als Quelle und Senke derselben Anlage“ wird benannt abgefangen (`WaermesenkeClass.KurzschlussMeldung`), Ringe über mehrere Anlagen erkennt `Hydraulikbild`; der Kühlbetrieb einer Wärmepumpe mit Quellspeicher ist benannt abgelehnt (5.1 (6)) |
+
+**Was für den Kopplungsfall fehlt.** (1) Ein Speicher mit **Verwendung Kälte** ist als Quelle nicht vorgesehen; seine
+Lesart ist gespiegelt (kalt = geladen, 4.6), die des Quellspeichers nicht (warm = voll). (2) Die **Kältebedarfssenke am
+selben Speicher**: Der Kältespeicher hat keine Senkenzeile, alle Kälteerzeuger laden ihn, der ganze Kühlkanal entlädt ihn
+— eine Bindung „diese Prozesskälte an diesen Speicher“ gibt es nicht. (3) Die **Temperaturgrenzen des Verdampfers**
+gegenüber dem Temperaturpaar des Kältespeichers werden nicht geprüft. (4) Die feste Regeneration ist ein Skalar; die
+Prozesskälte ist eine Stundenreihe. (5) Der Kältespeicher lebt heute in der `Kaeltekaskade`, die **nach** der
+Wärmekaskade läuft — ein Speicher, dem die Wärmepumpe in der Wärmekaskade entzieht, kann nicht zugleich in der späteren
+Jahresschleife von anderen Kälteerzeugern geladen werden, ohne dass sein Zustand zweimal fortgeschrieben wird.
+
+**Die Lesart, die alles trägt.** Für die Wärmepumpe ist der Kältespeicher ein Quellspeicher, dessen Füllstand die
+**Wärme über seiner unteren Grenze** ist: Inhalt = Volumen · 1,16 Wh/(l·K) · (θ_Speicher − θ_VL,Kälte), Kapazität bis
+θ_RL,Kälte. Die Prozesskälte der Stunde **ist** seine Regeneration — sie trägt Wärme in den Speicher —, nur eben als
+Stundenreihe statt als fester Wert. „Kältespeicher voll geladen“ heißt „Quellspeicher leer“ und umgekehrt. Damit genügt
+eine Verallgemeinerung des Bestands (Regeneration als Reihe), kein zweiter Speichertyp.
+
+**Simulationskonfiguration.**
+
+- **Daten:** Die Wahl ist `WQ_Typ = Pufferspeicher` mit `WQ_ID_Puffer` = ID eines Pufferspeichers mit Verwendung
+  **Kälte** — dieselben Felder wie heute, kein Textverweis. Die Prozesskälte, die diesen Speicher entlädt, wird über die
+  ID gebunden: `ID_Pufferspeicher` an der Kältebedarfszeile der Art `PROZESS` (`Z_Projekt_Kaeltebedarf`, Kühlzeilen in
+  `Z_ProjektWaermebedarf`; NULL = Kühlkanal allgemein). Die Wärmeseite bleibt `Z_AnlageSenke` der Wärmepumpe (Puffer
+  Heizung, Brauchwasser oder Kombi). **Felder für eine Rückfallquelle gibt es nicht** (KWN‑Q11).
+- **Prüfungen** (benannt, beim Speichern und im Lauf): der gewählte Speicher hat Verwendung Kälte; die Maschine ist
+  Sole-Wasser oder Wasser-Wasser; das Temperaturfenster passt — Kältespeicher-Vorlauf minus Grädigkeit nicht unter der
+  Einsatzgrenze des Verdampfers, Rücklauf innerhalb der Heizkennlinie (sonst Randweg mit Zählung); kein Kreisschluss —
+  der Kältespeicher ist nicht Senke derselben Anlage (Kurzschlussmeldung) und nicht über einen Ring wieder ihre Senke
+  (`Hydraulikbild`); höchstens **eine** Wärmepumpe je Kältespeicher als Quelle; `WQ_Unbegrenzt` und `WQ_Regeneration`
+  sind bei einem Kältespeicher gesperrt (die Prozesskälte ersetzt die Regeneration); **zu einer Speicherquelle sind keine
+  Felder einer zweiten Quelle gesetzt** (`WQ_Typ` Außenluft/Erdreich samt Sondenfeldern, `Kuehl_Frei`) — sonst die Meldung
+  „Eine Wärmepumpe mit Speicher als Quelle hat genau diese Quelle“. Ob die heutige Quellenwahl einen Kältespeicher schon
+  anbietet, prüft KWN-0; tut sie es, lehnt der Lauf ihn bis KWN-2S benannt ab.
+- **Oberfläche** (beschrieben, nicht gebaut): Die Karte der Wärmepumpe in der Simulationskonfiguration zeigt im Chip
+  „Quelle:“ den Kältespeicher mit dem Zusatz „(Prozesskälte)“; der Quellendialog listet die Kältespeicher des Projekts
+  neben den Puffern, getrennt überschrieben, und zeigt ihr Temperaturpaar als Kaltwasser-Vorlauf/-Rücklauf. Die Karte des
+  Kältespeichers im Bereich „Kälte“ ([Entwurf Kältebereich](Gebaeudesimulation/2026-10-10_Entwurf_Kaeltebereich.md) 3)
+  nennt die Wärmepumpe als „entzieht Wärme“ und die gebundenen Prozesskältezeilen; der Speicher steht dort nicht in der
+  Folge der Kälteerzeuger. Ablauf und Phasen der Stunde: [Konzept Simulationsablauf](Konzept_Simulationsablauf_EPOS-Plan.md).
+
+**Rechenweg der Stunde** — deterministisch, in der Wärmekaskade, ohne Iteration:
+
+1. **Kältebedarf → Kältespeicher.** Am Stundenanfang trägt die gebundene Prozesskälte der Stunde Wärme in den
+   Kältespeicher (Regeneration als Reihe, einmal je Speicher und Stunde). Was über die obere Grenze (θ_RL,Kälte) ginge,
+   nimmt der Speicher nicht auf: Dieser Teil ist **Kälteüberlauf** der Stunde.
+2. **Wärmepumpen-Entzug.** Die Wärmepumpe rechnet wie heute in der Wärmekaskade (Platz `Tool_*`, Ladephase des
+   Heizungspuffers), mit der Speichertemperatur als Quelltemperatur, und entzieht `Ptherm − Pel`, gekappt am Inhalt über
+   der unteren Grenze.
+3. **Heizungspuffer.** Die Wärme geht an Heizung und Brauchwasser bzw. in den Puffer, wie bei jeder Senke.
+4. **Kältekaskade danach.** Der Kälteüberlauf aller Stunden geht als Restbedarf in die `Kaeltekaskade` und wird dort von
+   den **übrigen** Kälteerzeugern direkt gedeckt (freie Kühlung, Wärmepumpen im Kühlbetrieb, Kältemaschinen); den
+   Kältespeicher, der Quelle einer Wärmepumpe ist, laden sie **nicht** (KWN‑Q13) — so schreibt nur eine Jahresschleife
+   seinen Zustand fort.
+
+**Grenzfälle.**
+
+- **Kältespeicher an der unteren Grenze** (kalt, für die Wärmepumpe leer): Die Wärmepumpe entzieht nicht weiter. Sie
+  läuft in dieser Stunde nur bis zur Grenze oder gar nicht; die fehlende Wärme decken die übrigen Erzeuger der
+  Wärmekaskade. **Es gibt keinen Quellwechsel innerhalb des Geräts** — eine Wärmepumpe mit Speicher als Quelle hat genau
+  diese eine Quelle (KWN‑Q11, entschieden).
+- **Heizungspuffer voll** und kein Wärmebedarf: Die Wärmepumpe läuft nicht — eine Wärmepumpe hat keine eigene Rückkühlung
+  (5.4), sie schaltet ab. Der Kältespeicher erwärmt sich durch die Prozesskälte bis zur oberen Grenze; was darüber
+  hinausgeht, ist Kälteüberlauf und wird von den übrigen Kälteerzeugern gedeckt. Ohne einen solchen bleibt er als
+  ungedeckte Kälte stehen (F-K12, Grund „Quellspeicher voll, Wärmeseite gesättigt“).
+- **Kältegeführter Anstoß** (die Wärmepumpe läuft, **weil** der Kältespeicher warm wird, solange der Puffer Wärme nimmt):
+  nicht in der ersten Stufe; als Ladewunsch der Quelle an der Schwelle des Kältespeichers vorgesehen (KWN‑Q12).
+
+**Ergebnis.** Der Kältespeicher erscheint in `Tab_ErgebnisPufferspeicher` mit Verwendung `Kaelte` und der Rolle Quelle;
+Entzug der Wärmepumpe und Entladung durch die Prozesskälte stehen getrennt. Die von der Wärmepumpe erzeugte Kälte zählt
+zur Kältedeckung über den Speicher, ihr Strom bleibt in `WP_Strombedarf_stuendlich` (die Wärmepumpe läuft im
+Heizbetrieb). `ErdreichAuswertung` ist nicht berührt: Eine Maschine mit Speicherquelle hat keine Erdsonde. Die
+Kennzahlen aus 5.6.10 gelten sinngemäß mit „genutzte Kälte“ = Entzug aus dem Kältespeicher. Für die Deckungsprobe Kälte
+ist dieser Entzug eine Kopplungsbuchung (5.6.6): Ein Wärmeerzeuger deckt Kälte nur über sie.
+
+#### 5.6.8 Strom, Kosten, Emissionen
+
+**Gebucht wird der Strom einmal**, als Position „Kälte-Wärme-Kopplung“ in derselben Stufenrechnung wie aller Strom
+(Photovoltaik, Stromspeicher, Netz, 6.1); Träger und Zähler sind die der Anlage in ihrer Hauptrolle (Kältemaschine:
+`Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`; Wärmepumpe: ihr Heizträger). Aufzuteilen ist der Strom nur für Kennzahlen,
+spezifische Kosten und Emissionen **je Nutzen**:
+
+| Verfahren | Regel | Dafür | Dagegen |
+|---|---|---|---|
+| **nach Nutzenergie** | `P_W = P_el · Q_W/(Q_W + Q_K)`, `P_K = P_el · Q_K/(Q_W + Q_K)` | einfach, ohne Bezugsgröße, beide Seiten erhalten die GLZ als Arbeitszahl; deterministisch | bewertet Wärme bei 60 °C und Kälte bei 6 °C gleich |
+| **exergetisch** (Carnot-gewichtet) | Gewichte `Q_W · (1 − T_u/T_W)` und `Q_K · (T_u/T_K − 1)` mit der Außentemperatur `T_u` | thermodynamisch begründet | braucht eine Bezugstemperatur; liegt `T_K` über `T_u` (Winter, Prozesskälte 15 °C), wird das Kältegewicht null oder negativ und braucht eine Sonderregel; schwer erklärbar |
+| **Gutschrift** | das Hauptprodukt trägt den ganzen Strom, das Nebenprodukt wird mit dem vermiedenen Aufwand eines Referenzerzeugers gutgeschrieben | in der Kraft-Wärme-Kopplung geläufig | die Wahl des Referenzerzeugers ist willkürlich und verschiebt jede Kennzahl; die Ersparnis erscheint doppelt, sobald der Variantenvergleich sie ohnehin zeigt |
+
+**Empfehlung: nach Nutzenergie** (KWN‑Q4). Die Gesamtleistungszahl ist die ehrliche Kennzahl des Geräts; die Aufteilung
+nach Nutzenergie gibt sie beiden Seiten unverändert weiter und braucht keine Annahme. Die Gutschrift leistet in EPOS-Plan
+bereits der **Variantenvergleich** (Variante mit und ohne Kopplung) — ohne Referenzerzeuger und ohne doppelte Buchung.
+Das exergetische Verfahren kann später als Auswertung danebentreten, nicht als Bilanzregel.
+
+**Wirtschaftlichkeit und Emissionen.** Die Kopplung senkt Endenergie und Emissionen über die **anderen** Erzeuger, deren
+Wärme oder Kälte entfällt; die Strombilanz steigt nur um den Mehrstrom des höheren Hubs. Emissionen laufen wie 6.3 über
+den Stromträger der Anlage, ein eigener Faktor entsteht nicht. Investitionsseitig kommt eine Kostenkomponente für die
+Wärmenutzung hinzu (Wärmeübertrager, Einbindung, Mehrkosten eines Geräts mit höherer Kondensatortemperatur), Nutzungsdauer
+nach VDI 2067 Blatt 1. Eine Gutschrift in der Wirtschaftlichkeit entsteht nicht; die Ersparnis zeigt der Vergleich.
+
+#### 5.6.9 Eingaben und Datenmodell (Vorschlag)
+
+Papiername **`KWN-S1`**; die Nummer vergibt der Schritt bei seiner Beauftragung (Kapitel 7). Alle Spalten nullbar, NULL =
+keine Kopplung bzw. Vorgabe — ohne Eingabe rechnet jedes Projekt wie heute.
+
+| Ort | Spalte | Bedeutung |
+|---|---|---|
+| `Tab_Energieanlagen` (Wärmepumpe und Typ 13 Kältemaschine) | `Kopplung_Aktiv` | INTEGER, `CHECK (Kopplung_Aktiv IN (0,1))` |
+| | `Kopplung_Fuehrung` | TEXT `SCHNITTMENGE` (NULL), `KAELTE`, `WAERME` |
+| | `Kopplung_Kond_Vorlauf_Max` | Einsatzgrenze des Kondensators [°C]; NULL = Rand der Kennlinie |
+| | `Kopplung_Graedigkeit_K` | Grädigkeit beider Übertrager [K]; NULL = Festwert in `KaelteFestwerte` |
+| `Z_AnlageSenke` | Senkenzeilen der Kopplung | Wärmeseite: Heizkreis, Brauchwasser, Prozesswärme, Puffer (Bestand); Kälteseite: neue Ziele „Raumkühlung“ und „Prozesskälte“ (zu `WS_ZIEL_KAELTEKREIS`, 4.6) und ein gekoppelter Kältespeicher |
+| `Z_Projekt_Kaeltebedarf`, Kühlzeilen in `Z_ProjektWaermebedarf` | `Kaelte_Art` | TEXT `RAUM` (NULL) oder `PROZESS` — der Prozesskälteanteil wird in der Fassade `SimulationKaeltebedarf` als **Unterposten** `Kaeltebedarf_Prozess` geführt, **kein fünfter Kanal** (Knappheit, Persistenz und Kennzahlen bleiben unberührt, KWN‑Q7); er belegt zugleich die Naht `Kaelteangebot.Prozesskaelte` |
+| `Z_Projekt_Kaeltebedarf`, Kühlzeilen in `Z_ProjektWaermebedarf` | `ID_Pufferspeicher` | INTEGER, Verweis auf einen Kältespeicher (Projektkopie, `ON DELETE SET NULL`), nur bei `Kaelte_Art = PROZESS`: diese Prozesskälte entlädt diesen Speicher (5.6.7); NULL = Kühlkanal allgemein |
+| `Tab_Energieanlagen` (Wärmepumpe mit Speicherquelle) | — | **keine neue Spalte**: `WQ_Typ = Pufferspeicher` und `WQ_ID_Puffer` auf einen Kältespeicher; **keine Felder für eine Rückfallquelle** (KWN‑Q11) |
+| Ergebnistabellen (Muster `KU-S4`) | je Kopplungsgerät | `Kopplung_Waerme_MWh`, `Kopplung_Kaelte_MWh`, `Kopplung_Strom_MWh`, `Kopplung_Stunden`, `Kopplung_Ueberschuss_Waerme_MWh`, `Kopplung_Ueberschuss_Kaelte_MWh`, `Kopplung_Hub_Stunden` |
+
+**Kältemaschine und Wärmepumpe verschieden:**
+
+| | Kältemaschine | Wärmepumpe |
+|---|---|---|
+| Voraussetzung | wassergekühlt (Rückkühlart nicht `LUFT`) | Sole-Wasser oder Wasser-Wasser; Luft-Wasser benannt abgelehnt |
+| Kennlinie im Kopplungspunkt | Kältekennlinie, Rückkühltemperatur := Rücklauf der Wärmesenke | Heizkennlinie, Quellentemperatur := Rücklauf der Kältesenke |
+| Restbetrieb | Kälte mit Rückkühlung (Rückkühlwerk, 5.4) | Wärme aus der eigenen Quelle |
+| Überschuss | Wärme → Rückkühlung | Kälte → Quelle (der Verdampfer nimmt den Rest aus der Quelle) |
+| Hauptrolle für Träger und Zähler | Kälte | Wärme |
+| Bestehende Sperren | — | Quellspeicher (5.1 (6)) und Kühlbetrieb bleiben, wie sie sind; eine Wärmepumpe im Kopplungsbetrieb braucht `Kuehlbetrieb = 1` **nicht** |
+
+**Schemabedarf grob:** ein Schritt mit vier Spalten an `Tab_Energieanlagen`, einer Spalte an zwei Zuordnungstabellen, zwei
+Zielwerten (Persistenzwerte, keine CHECK-Klausel an `Z_AnlageSenke`) und den Ergebnisspalten; ein zweiter Schritt, falls
+die Kostenkomponente eine Zeile in `Tab_KostenKomponente` braucht.
+
+#### 5.6.10 Ergebnisgrößen und Kennzahlen
+
+| Größe | Einheit | Bildung |
+|---|---|---|
+| **genutzte Abwärme** | MWh/a | Σ `Q_W` der Kopplungsbuchungen, je Gerät und Senke |
+| **genutzte Kälte** | MWh/a | Σ `Q_K` der Kopplungsbuchungen, je Gerät und Senke |
+| **Gesamtleistungszahl** (Jahreswert) | — | (Σ `Q_W` + Σ `Q_K`) / Σ `P_el` des Kopplungsanteils; in DIN EN 14511 ist für gleichzeitiges Heizen und Kühlen eine Gesamtleistungszahl (TER) beschrieben — nicht am Wortlaut geprüft |
+| **Überschüsse** | MWh/a | Wärme an Rückkühlung bzw. Quelle, Kälte an Quelle — nur bei kälte- oder wärmegeführtem Betrieb |
+| **Stunden im Kopplungsbetrieb** | h/a | Stunden mit `Q_K,kop > 0`, dazu Stunden ohne Kopplung wegen Hubgrenze |
+| **Kopplungsanteil** | % | genutzte Abwärme / gesamte Kondensatorwärme des Geräts |
+
+Die Kennzahlen stehen in einer eigenen Gruppe neben `GR_KAELTE` (6.4). Der **Bericht** führt je Kopplungsgerät eine Tafel
+„Kälte-Wärme-Kopplung“ (Wärme, Kälte, Strom, GLZ, Stunden, Überschüsse) und im Deckungsbild beider Seiten eine eigene
+Fläche „aus Kopplung“; die Jahresarbeitszahl Kälte (6.4) wird **mit** und **ohne** Kopplungsanteil ausgewiesen, damit der
+Einzelbetrieb vergleichbar bleibt. Der Referenzlauf-Export schreibt die Skalare in `aggregate.csv` und eine Reihe nur, wenn
+ein Gerät koppelt (Muster 4.7).
+
+#### 5.6.11 Byte-Gleichheit und Referenzprojekte
+
+**Ohne `Kopplung_Aktiv = 1` entsteht kein Objekt der Kopplungsvorstufe** (Muster `Prozesstemperatur`: ohne gepflegtes Paar
+`null`), und jeder Leser rechnet Zeichen für Zeichen wie zuvor. `Kaelte_Art = NULL` ist Raumkühlung; der Unterposten
+`Kaeltebedarf_Prozess` ist dann null und erscheint als Datei und Schlüssel nur, wenn er > 0 ist. Jedes bestehende
+Referenzprojekt bleibt byte-gleich; das ist die Abnahme jeder Welle bis zum Einfrieren.
+
+**Neue Referenzprojekte**, Nummer jeweils die nächste freie:
+
+| Fall | Kopie von | Änderung | Wache |
+|---|---|---|---|
+| **b** | 1055 (Kältemaschine mit Trocken-Rückkühler und Kältespeicher, Wärmepumpe heizt) | ein Kältebedarfsprofil „Prozesskälte Dauerlast“ der Art `PROZESS`; Kopplung an der Kältemaschine, Wärmesenke Heizkreis | `KaelteWaermeKopplungBReferenzprojektWacheTests` |
+| **a** | 1017 (Wärmepumpe Sole mit Erdsonde, Kühlbetrieb) | eine Prozesswärme-Zuordnung mit Temperaturpaar; Kopplung an der Wärmepumpe, Wärmesenke Prozesswärme, Kältesenke Raumkühlung | `KaelteWaermeKopplungAReferenzprojektWacheTests` |
+| **b über Speicher** | 1055 (Kältespeicher vorhanden, Wärmepumpe heizt, Kältemaschine als übriger Kälteerzeuger) | Quelle der Wärmepumpe = Kältespeicher, Prozesskälteprofil an diesen Speicher gebunden, Heizungspuffer an der Wärmepumpe (5.6.7) | `KaelteWaermeKopplungSpeicherReferenzprojektWacheTests` |
+| *c (spätere Welle)* | 1063 (Kältemaschine mit Teillastkurve) | Prozesswärme und Prozesskälte | — |
+
+**Einfrierregel (Entwurf, für `CLAUDE.md`):** gesäte Kopplungsdaten eines Referenzprojekts: an der Anlagenzeile seines
+Kopplungsgeräts `Kopplung_Aktiv`, `Kopplung_Fuehrung`, `Kopplung_Kond_Vorlauf_Max` und `Kopplung_Graedigkeit_K`, die
+Senkenzeilen der Kopplung in `Z_AnlageSenke`, die `Kaelte_Art` seiner Kältebedarfszeilen, die Temperaturpaare der gekoppelten
+Senken (Prozesswärme `Vorlauf`/`Ruecklauf`, Kältebedarfsprofil, Kältespeicher), die Festwerte der Kopplung in
+`KaelteFestwerte` (Grädigkeit, Einsatzgrenzen), bei der Kopplung über Speicher
+`WQ_Typ` und `WQ_ID_Puffer` der Wärmepumpe, Volumen, Temperaturpaar und Schwellen des Kältespeichers, die Bindung
+`ID_Pufferspeicher` der Prozesskältezeilen und der Heizungspuffer der Wärmepumpe samt Senkenzeilen, dazu das Anlegen oder
+Entfernen eines Referenzprojekts mit Kälte-Wärme-Kopplung.
+
+#### 5.6.12 Fragen an den Anwender
+
+| Kennung | Frage | Empfehlung |
+|---|---|---|
+| **KWN‑Q1** | Gilt Brauchwasser als Wärmesenke wie die Prozesswärme (häufiger Fall Kühlung + Trinkwarmwasser)? | **Ja**, gleichgestellt; die Ladetemperatur ist Hubgrenze. Ohne Brauchwasser fiele der häufigste Praxisfall heraus |
+| **KWN‑Q2** | Wird Fall f (gleichzeitiges Heizen und Kühlen verschiedener Gebäudezonen) aufgenommen? | **Nicht jetzt.** Als eigene spätere Stufe nach c bis e, nur zwischen verschiedenen Zonen (innerhalb einer Zone ausgeschlossen, E104), mit Mehrzonen-Referenzprojekt; er berührt die Erzeugertagesart K8a |
+| **KWN‑Q3** | Welche Führung gilt? | **Schnittmenge mit Restbetrieb** als Vorgabe; kälte- und wärmegeführt wählbar ab der Speicherstufe |
+| **KWN‑Q4** | Wie wird der Strom auf Wärme und Kälte aufgeteilt? | **Nach Nutzenergie**; gebucht wird der Strom einmal; die Gutschrift leistet der Variantenvergleich; exergetisch höchstens als spätere Auswertung |
+| **KWN‑Q5** | Wann kommen die seltenen Fälle d und e? | **Spätere Stufe** (KWN-6): Sie brauchen die Aufteilung auf mehrere Senken einer Seite (Knappheitsreihenfolge bzw. Vorrang Prozesskälte) |
+| **KWN‑Q6** | Soll die Kopplung über Speicher optimiert werden? | **Einfache Regel zuerst** (Überschuss als Ladeangebot, Stufe 2); die Optimierung bleibt benannt vertagt |
+| **KWN‑Q7** | Prozesskälte als Unterposten des Kühlkanals (`Kaelte_Art`) statt fünftem Kanal — und wirkt dann ihr Temperaturpaar (Aufhebung von E-K3 für gekoppelte Geräte)? | **Ja zu beidem**: Unterposten, kein fünfter Kanal; das Temperaturpaar wirkt nur im Kopplungsbetrieb und für den Vorrang |
+| **KWN‑Q8** | Deckt die Kopplung vor der freien Kühlung? | **Ja**: ihre Kälte liefert zugleich Wärme |
+| **KWN‑Q9** | Werden Mehrleitergeräte (dritter Übertrager zur Luft) und die Teilwärmerückgewinnung am Enthitzer luftgekühlter Maschinen aufgenommen? | **Später**, nach KWN-4; bis dahin benannt abgelehnt |
+| **KWN‑Q10** | Gilt die Kopplung an Gebäudesenken auch auf AK3? | **Ja, mit eigener Welle** (KWN-7): Der Kopplungsanteil geht als Verfügbarkeit in Wärme- und Kälteschranke; bis dahin auf AK3 nur Prozess- und Brauchwassersenken |
+| **KWN‑Q11** | Braucht eine Wärmepumpe mit Kältespeicher als Quelle eine zweite Quelle (Außenluft, Erdsonde) als Rückfall, wenn der Speicher keine Wärme mehr liefert? | **Entschieden 11.10.2026, Anwenderentscheid: nein.** Die Wärmepumpe hat genau diese eine Quelle; an der unteren Grenze des Kältespeichers entzieht sie nicht weiter, die fehlende Wärme decken die übrigen Erzeuger der Wärmekaskade; kein Quellwechsel im Gerät, keine Felder dafür, die Konfiguration lehnt eine zweite Quelle benannt ab (5.6.7) |
+| **KWN‑Q12** | Soll der Kältespeicher die Wärmepumpe anstoßen können (kältegeführt: Lauf, weil der Speicher warm wird, solange der Puffer Wärme nimmt)? | **Später** (mit KWN-5): als Ladewunsch der Quelle an der Schwelle des Kältespeichers; zuerst wärmegeführt in der Wärmekaskade |
+| **KWN‑Q13** | Dürfen andere Kälteerzeuger einen Kältespeicher laden, der Quelle einer Wärmepumpe ist? | **Nein**: Sie decken den Kälteüberlauf direkt; sonst schrieben zwei Jahresschleifen denselben Speicherzustand fort |
+
+#### 5.6.13 Stufenplan
+
+| Welle | Inhalt | Aufwand | Abnahme |
+|---|---|---|---|
+| **KWN-0** | Bedarfsseite: `Kaelte_Art` an den Kältebedarfszeilen, Unterposten `Kaeltebedarf_Prozess`, Naht `Kaelteangebot.Prozesskaelte` verdrahtet, Dialogfeld „Art“ in „Kältebedarf extern“ und „Kältebedarfsprofile“ | 2–3 PT | Kern-Filter grün; Schematests, `SqlDialektPruefer`; Bedarfsprobe Kälte ohne Fehler; Referenzlauf aller Projekte **byte-gleich** |
+| **KWN-1** | Schema `KWN-S1`, Kopplungsvorstufe mit Schnittmenge für die **Kältemaschine**, ein Wärme- und ein Kälteziel (Fälle a, b, c), Kopplungsbuchung, Kopplungsprobe, erweiterte Deckungsprobe, eigene Reihen und Stromposition, Hubgrenze | 5–7 PT | Rechenproben ohne Datenbank (Bilanz je Stunde, Hubgrenze, Schnittmenge an beiden Grenzen, τ_kop + Rest ≤ 1); Kopplungs- und Deckungsprobe ohne Fehler; Referenzlauf byte-gleich |
+| **KWN-2** | dasselbe für die **Wärmepumpe** (Sole/Wasser-Wasser) samt Brauchwasser als Senke; Erdreich unberührt; Führungen kälte- und wärmegeführt mit Überschuss an Rückkühlung bzw. Quelle | 3–4 PT | Rechenproben; Probe „Entzugsganglinie unverändert bei Kopplung“; Referenzlauf byte-gleich |
+| **KWN-2S** | Kopplung über Speicher (5.6.7): Kältespeicher als Quelle der Wärmepumpe, Regeneration als Stundenreihe aus der gebundenen Prozesskälte, Kälteüberlauf an die Kältekaskade, Prüfungen der Konfiguration (Verwendung, Temperaturfenster, Kreisschluss, keine zweite Quelle), Quellenwahl und Chip in der Simulationskonfiguration | 3–4 PT | Rechenproben (Speicher an der unteren Grenze, Puffer voll, Überlauf); Quellspeicherfälle des Bestands byte-gleich; bunit der Quellenwahl; Schale auf Linux (0 Fehler); Referenzlauf byte-gleich |
+| **KWN-3** | Referenzprojekte b, a und b über Speicher, Wachen, Einfrierregel in `CLAUDE.md`, neue Basis | 2–3 PT | Wachen grün; Referenzlauf aller Projekte gegen die neue Basis, Begründung in `Referenzlaeufe/LIESMICH.md` |
+| **KWN-4** | Oberfläche (Gruppe „Kälte-Wärme-Kopplung“ im Erzeugerdialog beider Typen, Senkenwahl), Bericht, Kennzahlen, Kostenkomponente, Ressourcen in beiden Sprachen, Wiki-Quellen, Logbuch-Entwurf | 3–5 PT | bunit der Dialoge; Schale auf Linux (0 Fehler); `designer_neu.py`; `BerichtSchreiberOhneDatenbankWacheTests`; ChartProben; `WikiProduktdatenWacheTests` |
+| **KWN-5** | Speicherstufe: Überschuss als Ladeangebot an Puffer und Kältespeicher | 2–3 PT | Rechenprobe Speicherbilanz; Referenzlauf PASS |
+| **KWN-6** | Fälle d und e: mehrere Senken je Seite (Wärme nach Knappheitsreihenfolge, Kälte mit Vorrang Prozesskälte); Referenzprojekt c | 2–3 PT | Rechenproben; Wache; Referenzlauf |
+| *KWN-7 (nach Frage)* | Kopplung an Gebäudesenken auf AK3 (Schranken); danach gegebenenfalls Fall f | 3–5 PT | Komfortkennzahlen; Referenzlauf 1058/1059 byte-gleich |
+
+**Summe KWN-0 bis KWN-6 samt KWN-2S: 22–32 PT**, mit KWN-7 25–37 PT. **Voraussetzungen:** Schema 213 (Kältebedarf) und
+`Kaelte_Rang` gemergt; Rückkühlwerk K‑F1 für den Überschuss der Kältemaschine (sonst Festwerte der Rückkühlart).
+**Abgrenzung:** keine Optimierung über mehrere Stunden, keine Latentlast, keine Mehrleitergeräte und keine
+Enthitzer-Teilrückgewinnung vor KWN‑Q9, kein Fall f vor KWN‑Q2; ein iOS-Lauf ist für keine Welle begründet.
+
+**Normen und Quellen** (nicht am Wortlaut geprüft, soweit nicht anders vermerkt): DIN EN 14511 (Prüfbedingungen und
+Leistungszahlen, auch für gleichzeitigen Heiz- und Kühlbetrieb), DIN EN 14825 (Teillast und Saisonkennzahlen), VDI 4650
+Blatt 1 (Jahresarbeitszahl), VDI 4645 (Planung von Wärmepumpenanlagen), DIN EN 15316-4-2 (Energiebedarf von
+Wärmepumpensystemen), VDI 2067 Blatt 1 (Wirtschaftlichkeit).
+
+---
+
 ## 6. Strom, Wirtschaftlichkeit, Emissionen
 
 ### 6.1 Der Kältestrom in der Strombilanz
@@ -1639,6 +2072,9 @@ Trennung ist keine Jahresarbeitszahl bildbar — weder für die Wärme (weil Kä
 noch für die Kälte (weil sie nicht sichtbar ist). Zwei Kennzahlen, die heute stimmen, würden
 falsch, ohne dass eine Fehlermeldung entsteht. Die Trennung ist also nicht Komfort, sondern
 Voraussetzung dafür, dass der Bestand richtig bleibt.
+
+**Kälte-Wärme-Kopplung:** Der Strom eines Kopplungsgeräts wird einmal gebucht, in einer eigenen Position; aufgeteilt wird
+er nur für Kennzahlen, spezifische Kosten und Emissionen je Nutzen (5.6.8).
 
 Die Position geht **in dieselbe Stufenrechnung** wie der übrige Strom: Eigenverbrauch aus
 Photovoltaik zuerst, dann Stromspeicher, dann Netzbezug — die Kälte hat hier keinen Sonderweg. Das
@@ -1839,6 +2275,9 @@ Anlagenwahl; sein Kältestrom trägt keinen Kühlträger (10.4) und rechnet mit 
 | **Ungedeckte Kälte** (`Kaelterestbedarf`) | Gruppe `GR_KAELTE` (K15) | MWh/a | Kanal minus Deckung | Summe |
 | **Stunden mit gleichzeitigem Heizen und Kühlen** | (Projektskalar) | h/a | Zählung der Stunden mit Heiz- und Kühlanteil > 0 je Gebäude (3.3, 3.5) | Maximum, mit dem führenden Gebäude als Herkunftszeile |
 
+Die Kennzahlen der Kälte-Wärme-Kopplung (genutzte Abwärme und Kälte, Gesamtleistungszahl, Überschüsse, Stunden im
+Kopplungsbetrieb) stehen in einer eigenen Gruppe (5.6.10).
+
 **Die Schlüsselnamen sind übernommen, nicht erfunden.** `kaelte.jahresbedarf`, `kaelte.spitze`,
 `kaelte.stunden` und `kaelte.deckungsgrad` sind die Schlüssel, die die
 [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 4.3 führt; dieses
@@ -1950,6 +2389,8 @@ Für alle neuen Tabellen gilt ohne Ausnahme: **`STRICT`**, Schlüssel
 (wiederholbar), Textlänge als `CHECK (length(...) ≤ n)`, Boolean als `INTEGER NOT NULL DEFAULT 0
 CHECK (spalte IN (0,1))`, **Beziehungen über IDs**, **kein DDL-DEFAULT auf einem Fachwert** — NULL
 ist die Vorgabe.
+
+Der Vorschlag für die Kälte-Wärme-Kopplung (`KWN-S1`, ohne Nummer) steht in 5.6.9.
 
 ### 7.1 `KU-S1` — Gebäude und Zone: die Kühleingaben
 
