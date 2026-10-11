@@ -96,7 +96,8 @@ public class PeakShavingDialogTests : EposBunitContext
         Func<PeakShavingErgebnis, bool, Zeichenmodell?>? modell = null,
         Func<PeakShavingErgebnis, Task<bool>>? csv = null,
         Func<double, bool, Task<bool>>? variante = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Func<Zeichenmodell, string, Zeitraster, Task>? bildCsv = null)
     {
         IReadOnlyList<(int Id, string Text)> g = ganglinien ?? Zwei();
         return Render<PeakShavingDialog>(p => p
@@ -112,6 +113,7 @@ public class PeakShavingDialogTests : EposBunitContext
             .Add(x => x.MinimaleSchwelle, minimal)
             .Add(x => x.Modell, modell)
             .Add(x => x.CsvSpeichern, csv)
+            .Add(x => x.BildCsvSpeichern, bildCsv)
             .Add(x => x.Geschlossen, (bool ok) => geschlossen?.Invoke(ok)));
     }
 
@@ -491,6 +493,51 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.Equal("Datei", cut.Instance.Zeilen[2].Text(Katalogfilterprofil.SpQuelle));
         Assert.Contains("nicht abgelegt", cut.Instance.Status);
         Assert.Equal("Messung_3.csv", cut.Find(".epos-stammblatt-nametext").TextContent);
+    }
+
+    /// <summary>
+    /// IM-3: Das Vorschaubild des Optionendialogs trägt „CSV…“ — dieselbe Export-Kaskade wie im
+    /// Optionendialog der Stromganglinie; der Klick gibt das Modell der gelesenen Reihe an die Hülle.
+    /// Ohne Delegat der Hülle kein Knopf.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Das_Vorschaubild_des_Optionendialogs_traegt_CSV(bool mitNaht)
+    {
+        string datei = Path.Combine(Path.GetTempPath(), "epos-im3-ps-" + Guid.NewGuid().ToString("N") + ".csv");
+        File.WriteAllText(datei, "Nr;Leistung\r\n" + string.Concat(
+            Enumerable.Range(1, 8760).Select(i => i + ";" + (i % 24) + ",5\r\n")));
+        try
+        {
+            Zeichenmodell? gespeichert = null;
+            Zeitraster raster = Zeitraster.Viertelstunde;
+            var cut = Zeige(waehlen: f => Task.FromResult<string?>(datei),
+                            einlesen: async (p, r) =>
+                            {
+                                await r.Optionen!(p, GanglinienDatei.Erkenne(p));
+                                return new GanglinienImportErgebnis();
+                            },
+                            bildCsv: mitNaht
+                                ? (m, titel, z) => { gespeichert = m; raster = z; return Task.CompletedTask; }
+                                : null);
+
+            cut.Find("button.epos-importknopf").Click();
+            cut.Find(".epos-ueberlagerung .epos-dateiwahl button").Click();
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-importoptionen-bild")));
+
+            var knopf = cut.FindAll(".epos-importoptionen-bild .epos-diagramm-csv");
+            if (!mitNaht)
+            {
+                Assert.Empty(knopf);
+                return;
+            }
+            Assert.Single(knopf);
+            knopf[0].Click();
+            cut.WaitForAssertion(() => Assert.NotNull(gespeichert));
+            Assert.Equal(Zeitraster.Stunde, raster);
+        }
+        finally { File.Delete(datei); }
     }
 
     /// <summary>Das Kreuz der Überlagerung schließt sie, ohne einzulesen.</summary>
