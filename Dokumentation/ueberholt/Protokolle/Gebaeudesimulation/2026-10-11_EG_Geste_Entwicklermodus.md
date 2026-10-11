@@ -42,3 +42,24 @@ Rückruf folgenlos; Ausnahme im Banner; Escape schließt weiter; Fokus beim Öff
 
 Sichtabnahme unter Windows mit deutscher Tastatur: Geste bei Fokus im Dialog, Rückfrage genau
 einmal, Diagnoseblock und Hauptfenster danach im neuen Modus.
+
+## Nachtrag: Umstellung auf Strg+Umschalt+F12 (Anwenderentscheid 11.10.2026)
+
+Anwenderentscheid 11.10.2026, Wortlaut „nehme Strg+Umschalt+F12“ (übermittelt von der Sitzung
+Administration und Support): Die Geste kommt ohne Alt aus, damit AltGr auf der deutschen
+Tastatur nicht stört.
+
+- `UeberFenster.GESTE` = `Keys.Control | Keys.Shift | Keys.F12`; `UeberDialog.IstGeste`
+  erkennt `Code == "F12"` mit Strg und Umschalt und ohne Alt. Kommentare in `UeberDialog`,
+  `UeberDaten`, `UeberFenster` und `EntwicklungHuelle` nachgezogen; Ressourcentexte nennen die
+  Tastenfolge nicht.
+- Kollisionsprüfung: Die Schale belegt F12 nirgends (`ProcessCmdKey` des Hauptfensters fängt
+  nur F1). F12 allein öffnet bei freigegebenem Bereich `WEBVIEW_WERKZEUGE` die
+  Entwicklerwerkzeuge der WebView2 (ebenso Strg+Umschalt+I/J/C); Strg+Umschalt+F12 ist kein
+  Beschleuniger der WebView, und `ProcessCmdKey` des Über-Fensters meldet die Geste als
+  behandelt, bevor die WebView sie verarbeitet.
+- Die Ergänzung der Zeile „Tastenfolge“ im Entwicklerhandbuch ist zurückgenommen; die Sitzung
+  Administration und Support zieht die Papiere selbst nach.
+- bunit `UeberDialogTests`: Strg+Umschalt+F12 ruft genau einmal (`Key` „F12“, leer,
+  „Unidentified“); mit Alt, ohne Strg, ohne Umschalt, mit `Code` „KeyE“, „F11“ oder leer kein
+  Aufruf; Escape schließt weiter; Fokus beim Öffnen.

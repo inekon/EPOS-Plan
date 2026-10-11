@@ -18,7 +18,8 @@ namespace WindowsFormsApplication1
     /// Fernwartung, Adresse öffnen über <c>Dienste.Datei.AdresseOeffnen</c> — und die Geste
     /// des Entwicklermodus (Konzept 3.2, Entwicklerhandbuch Abschnitt 1).
     ///
-    /// <para><b>Die Geste.</b> Strg+Umschalt+Alt+E fängt das Fenster über
+    /// <para><b>Die Geste.</b> Strg+Umschalt+F12 (ohne Alt, damit AltGr der deutschen Tastatur nicht
+    /// stört) fängt das Fenster über
     /// <see cref="BlazorDialogForm{TKomponente}.Befehlstaste"/> ab, bevor die WebView die Taste
     /// sieht. Eine Nachricht später — nicht mitten in der Tastenverarbeitung und nicht im
     /// Blazor-Verteiler, denn die Rückfrage ist modal — schaltet
@@ -27,9 +28,8 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Zweiter Weg der Geste.</b> <see cref="Form.ProcessCmdKey"/> sieht den Tastendruck nur,
     /// wenn die WebView2 ihn als Beschleuniger an das Fenster weiterreicht. Mit dem Fokus im
-    /// Browserfenster (ein Kindfenster des WebView2-Prozesses) und der deutschen Tastatur, auf der
-    /// Strg+Alt als AltGr gilt, behandelt die WebView den Druck als Zeicheneingabe und reicht ihn nicht
-    /// weiter. Deshalb erkennt der Razor-Dialog die Geste zusätzlich selbst an der physischen Taste und
+    /// Browserfenster (ein Kindfenster des WebView2-Prozesses) kann die WebView den Druck behalten.
+    /// Deshalb erkennt der Razor-Dialog die Geste zusätzlich selbst an der physischen Taste und
     /// ruft <c>GesteAusgeloest</c>, das hier denselben Weg nimmt. Eine Sperre lässt je Tastendruck nur
     /// EIN Schalten zu, auch wenn beide Wege ihn sehen.</para>
     ///
@@ -39,8 +39,13 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class UeberFenster
     {
-        /// <summary>Die Tastenfolge der Geste.</summary>
-        internal const Keys GESTE = Keys.Control | Keys.Shift | Keys.Alt | Keys.E;
+        /// <summary>
+        /// Die Tastenfolge der Geste: Strg+Umschalt+F12. F12 allein öffnet bei freigegebenem
+        /// Entwicklerbereich <c>WEBVIEW_WERKZEUGE</c> die Entwicklerwerkzeuge der WebView; mit Strg+Umschalt
+        /// ist es kein Beschleuniger der WebView, und <see cref="Form.ProcessCmdKey"/> meldet die Geste als
+        /// behandelt, bevor die WebView sie sieht.
+        /// </summary>
+        internal const Keys GESTE = Keys.Control | Keys.Shift | Keys.F12;
 
         /// <summary>Zeigt „Über EPOS-Plan" als modales Fenster.</summary>
         /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>

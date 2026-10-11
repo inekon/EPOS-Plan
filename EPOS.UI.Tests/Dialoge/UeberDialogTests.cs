@@ -238,7 +238,7 @@ public class UeberDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-ueber-paketergebnis"));
     }
     // =====================================================================
-    // Die Geste im Dialog selbst (Fokus in der WebView, AltGr der deutschen Tastatur)
+    // Die Geste Strg+Umschalt+F12 im Dialog selbst (Fokus in der WebView)
     // =====================================================================
 
     private IRenderedComponent<UeberDialog> ZeigeGeste(Action? geste, Action<bool>? geschlossen = null)
@@ -248,12 +248,11 @@ public class UeberDialogTests : EposBunitContext
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
         });
 
-    private static KeyboardEventArgs Taste(string key, string code, bool strg = true, bool umschalt = true, bool alt = true)
+    private static KeyboardEventArgs Taste(string key, string code, bool strg = true, bool umschalt = true, bool alt = false)
         => new() { Key = key, Code = code, CtrlKey = strg, ShiftKey = umschalt, AltKey = alt };
 
     [Theory]
-    [InlineData("E")]
-    [InlineData("€")]
+    [InlineData("F12")]
     [InlineData("")]
     [InlineData("Unidentified")]
     public void Die_Geste_am_Dialog_ruft_den_Rueckruf_genau_einmal(string key)
@@ -261,23 +260,26 @@ public class UeberDialogTests : EposBunitContext
         int ausgeloest = 0;
         var cut = ZeigeGeste(() => ausgeloest++);
 
-        cut.Find(".epos-ueber").KeyDown(Taste(key, "KeyE"));
+        cut.Find(".epos-ueber").KeyDown(Taste(key, "F12"));
 
         Assert.Equal(1, ausgeloest);
     }
 
     [Theory]
-    [InlineData(false, true, true, "KeyE")]
-    [InlineData(true, false, true, "KeyE")]
+    [InlineData(true, true, true, "F12")]
+    [InlineData(false, true, false, "F12")]
+    [InlineData(true, false, false, "F12")]
+    [InlineData(false, false, false, "F12")]
     [InlineData(true, true, false, "KeyE")]
-    [InlineData(true, true, true, "KeyR")]
-    [InlineData(true, true, true, "")]
-    public void Ohne_alle_drei_Modifikatoren_oder_mit_anderer_Taste_kein_Aufruf(bool strg, bool umschalt, bool alt, string code)
+    [InlineData(true, true, true, "KeyE")]
+    [InlineData(true, true, false, "F11")]
+    [InlineData(true, true, false, "")]
+    public void Mit_Alt_ohne_Strg_oder_Umschalt_oder_mit_anderer_Taste_kein_Aufruf(bool strg, bool umschalt, bool alt, string code)
     {
         int ausgeloest = 0;
         var cut = ZeigeGeste(() => ausgeloest++);
 
-        cut.Find(".epos-ueber").KeyDown(Taste("E", code, strg, umschalt, alt));
+        cut.Find(".epos-ueber").KeyDown(Taste("F12", code, strg, umschalt, alt));
 
         Assert.Equal(0, ausgeloest);
     }
@@ -288,7 +290,7 @@ public class UeberDialogTests : EposBunitContext
         bool? geschlossen = null;
         var cut = ZeigeGeste(null, b => geschlossen = b);
 
-        cut.Find(".epos-ueber").KeyDown(Taste("€", "KeyE"));
+        cut.Find(".epos-ueber").KeyDown(Taste("F12", "F12"));
 
         Assert.Null(geschlossen);
         Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
@@ -299,7 +301,7 @@ public class UeberDialogTests : EposBunitContext
     {
         var cut = ZeigeGeste(() => throw new InvalidOperationException("Geste gesperrt"));
 
-        cut.Find(".epos-ueber").KeyDown(Taste("E", "KeyE"));
+        cut.Find(".epos-ueber").KeyDown(Taste("F12", "F12"));
 
         Assert.Contains("Geste gesperrt", cut.Markup);
     }

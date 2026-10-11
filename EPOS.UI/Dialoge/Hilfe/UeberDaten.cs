@@ -40,7 +40,7 @@ public sealed record SupportpaketAnzeige(string Pfad, IReadOnlyList<string> Enth
 
 /// <summary>
 /// Der ANSTOSS der Geste des Entwicklermodus (Konzept 3.2, Entwicklerhandbuch Abschnitt 1): Die
-/// Schale faengt Strg+Umschalt+Alt+E im Fenster ab (unter Windows in <c>ProcessCmdKey</c>, bevor
+/// Schale faengt Strg+Umschalt+F12 im Fenster ab (unter Windows in <c>ProcessCmdKey</c>, bevor
 /// die WebView die Taste sieht) und stoesst den Dialog an; der Dialog ruft daraufhin seinen
 /// Rueckruf <c>EntwicklermodusSchalten</c> und zeigt den neuen Diagnoseblock. Plattformfrei,
 /// ohne Zustand ausser dem einen Empfaenger.
