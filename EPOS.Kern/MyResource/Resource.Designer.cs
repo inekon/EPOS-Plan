@@ -223,6 +223,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellaufheizung ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_SCHNELLAUF {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_SCHNELLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorheiztoleranz ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_VORH_TOLERANZ {
@@ -237,6 +246,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ABW_MERKMAL_VORH_TOLERANZ_ART {
             get {
                 return ResourceManager.GetString("ABW_MERKMAL_VORH_TOLERANZ_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überhöhung Δθ ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_UEBERHOEHUNG", resourceCulture);
             }
         }
         
@@ -17375,6 +17393,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δθ [K] ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_UEBERHOEHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Std. überhöht [h/a] ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_UEBERHOEHUNG_H {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_UEBERHOEHUNG_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unterschreitung max. [K] ähnelt.
         /// </summary>
         public static string BV_VORH_KOPF_UNTERSCHREITUNG {
@@ -17425,6 +17461,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORH_NAECHTE {
             get {
                 return ResourceManager.GetString("BV_VORH_NAECHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , mit Schnellaufheizung (+{0} K) ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_HALBSATZ {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_HALBSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Überhöhung in einer Sperrzeit ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Überhöhung ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_STUNDEN {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellaufheizung: Überhöhung Δθ ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_UEBERHOEHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden an der Vorlaufgrenze ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_VORLAUFGRENZE {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_VORLAUFGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Vorlauf mit Überhöhung ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_VORLAUF_MAX {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_VORLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit wirkungsloser Überhöhung ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_WIRKUNGSLOS {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_WIRKUNGSLOS", resourceCulture);
             }
         }
         
@@ -124852,6 +124951,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Halbsatz „, mit Schnellaufheizung (+2,0 K)“ des laufenden Gebäudes mit führendem Komma; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SCHNELLAUFHEIZUNG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SCHNELLAUFHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Größter Sprung im Lauf S_max des laufenden Gebäudes; leer ohne Sprung oder bei Sollwertrampe. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_LAUF {
@@ -124906,6 +125014,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Raumsollwert-Überhöhung Δθ der Schnellaufheizung des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizstunden mit Überhöhung in einer Sperrzeit des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Überhöhung der Schnellaufheizung des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_STUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Vorlauf in den Stunden mit Überhöhung des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_VORLAUF_MAX {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_VORLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit wirkungsloser Überhöhung (Vorlauf schon an der Grenze) des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_WIRKUNGSLOS {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_WIRKUNGSLOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden unter dem Sollwert beim Vorheizen des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNGSSTUNDEN {
@@ -124920,6 +125073,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX {
             get {
                 return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden, in denen die Vorlaufgrenze die Überhöhung des laufenden Gebäudes begrenzt hat; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_VORLAUFGRENZE_STUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_VORLAUFGRENZE_STUNDEN", resourceCulture);
             }
         }
         
@@ -125271,6 +125433,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_HAT__KAELTE {
             get {
                 return ResourceManager.GetString("VF_HAT__KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit wirksamer Schnellaufheizung gerechnet? ähnelt.
+        /// </summary>
+        public static string VF_HAT__SCHNELLAUFHEIZUNG {
+            get {
+                return ResourceManager.GetString("VF_HAT__SCHNELLAUFHEIZUNG", resourceCulture);
             }
         }
         
@@ -137924,6 +138095,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Auswahl: ähnelt.
+        /// </summary>
+        public static string WPA_LBL_WP {
+            get {
+                return ResourceManager.GetString("WPA_LBL_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm ähnelt.
         /// </summary>
         public static string WPA_LBL_ZEITPROGRAMM {
@@ -138145,6 +138325,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_RUECKLAUF_VORSCHLAG {
             get {
                 return ResourceManager.GetString("WPA_RUECKLAUF_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Detailansicht ähnelt.
+        /// </summary>
+        public static string WPA_TITEL {
+            get {
+                return ResourceManager.GetString("WPA_TITEL", resourceCulture);
             }
         }
         
@@ -138514,6 +138703,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_BTN_FILTERN {
             get {
                 return ResourceManager.GetString("WPK_BTN_FILTERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 📋  Modul-Katalog... ähnelt.
+        /// </summary>
+        public static string WPK_BTN_KATALOG {
+            get {
+                return ResourceManager.GetString("WPK_BTN_KATALOG", resourceCulture);
             }
         }
         
@@ -139598,6 +139796,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage… ähnelt.
+        /// </summary>
+        public static string WPV_BTN_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_BTN_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht ähnelt.
         /// </summary>
         public static string WPV_BTN_ANSICHT {
@@ -139787,6 +139994,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten ähnelt.
+        /// </summary>
+        public static string WPV_TIP_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_TIP_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die links markierte Wärmepumpe durch die rechts markierte ersetzen — Betriebsdaten und Kosten der Zeile bleiben. ähnelt.
         /// </summary>
         public static string WPV_TIP_UMSTELLEN {
@@ -139810,6 +140026,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPV_TITEL {
             get {
                 return ResourceManager.GetString("WPV_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage – {0} ähnelt.
+        /// </summary>
+        public static string WPV_TITEL_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_TITEL_ANLAGE", resourceCulture);
             }
         }
         

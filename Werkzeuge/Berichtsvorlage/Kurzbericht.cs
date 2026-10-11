@@ -277,6 +277,8 @@ namespace Berichtsvorlage
                                          Beispielvorlage.Lauf(t.VorheizLeistung + " "), P("gebaeude.ergebnis.vorheizleistung"),
                                          Beispielvorlage.Lauf(t.VorheizVerfehlt + " "), P("gebaeude.ergebnis.vorheiz_tage_verfehlt"),
                                          Beispielvorlage.Lauf(t.VorheizMehr + " "), P("gebaeude.ergebnis.vorheiz_mehrwaerme"),
+                                         // SA3b (Katalog v21): der Halbsatz der Schnellaufheizung, leer ohne Wirkung
+                                         P("gebaeude.ergebnis.vorheiz_schnellaufheizung"),
                                          Beispielvorlage.Lauf(".")));
             r.Add(Beispielvorlage.Absatz("Normal", P("/je")));
             r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
@@ -781,7 +783,8 @@ namespace Berichtsvorlage
                     "Die Werte gebaeude.ergebnis.… kommen aus dem Ergebnis des Laufs. Die Auslegungsgröße ist die "
                     + "Auslegungsheizlast plus der Aufheizzuschlag; {{gebaeude.ergebnis.aufheizhinweise}} nennt die Hinweise W1 bis "
                     + "W5 und bleibt ohne Anlass leer. Mit vorgegebener oder berechneter Vorheizzeit folgt ({{#wenn hat.vorheizen}}) "
-                    + "ein Satz mit Verfahren, Vorheizzeit, Vorheizleistung, Tagen ohne Ankunft und Mehrwärme.",
+                    + "ein Satz mit Verfahren, Vorheizzeit, Vorheizleistung, Tagen ohne Ankunft und Mehrwärme; mit wirksamer "
+                    + "Schnellaufheizung endet er mit „, mit Schnellaufheizung (+2,0 K)“ ({{gebaeude.ergebnis.vorheiz_schnellaufheizung}}).",
                 },
             },
         };
@@ -878,7 +881,8 @@ namespace Berichtsvorlage
                     "The values gebaeude.ergebnis.… come from the result of the run. The design capacity is the design heat "
                     + "load plus the heating-up capacity; {{gebaeude.ergebnis.aufheizhinweise}} lists the notes W1 to W5 and stays "
                     + "empty without cause. With a specified or calculated preheat time ({{#wenn hat.vorheizen}}) a sentence "
-                    + "follows with method, preheat time, preheat power, days without arrival and additional heat.",
+                    + "follows with method, preheat time, preheat power, days without arrival and additional heat; with effective "
+                    + "rapid heat-up it ends with “, with rapid heat-up (+2.0 K)” ({{gebaeude.ergebnis.vorheiz_schnellaufheizung}}).",
                 },
             },
         };
