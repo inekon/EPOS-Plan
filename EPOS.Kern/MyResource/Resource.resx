@@ -52927,5 +52927,206 @@ Chart</value>
   <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
     <value>Die Rechenvorgaben des Zapfprofils konnten nicht gespeichert werden: {0}</value>
   </data>
+  <data name="KMT_MSG_CODE_UNGUELTIG" xml:space="preserve">
+    <value>Der Code darf nicht leer sein und höchstens {0} Zeichen haben.</value>
+  </data>
+  <data name="KMT_MSG_TEXT_ZU_LANG" xml:space="preserve">
+    <value>Bezeichnung und Fundstellen dürfen höchstens {0} Zeichen haben.</value>
+  </data>
+  <data name="KMT_MSG_GWP_UNGUELTIG" xml:space="preserve">
+    <value>Das GWP muss eine Zahl ab 0 sein.</value>
+  </data>
+  <data name="KMT_MSG_WERTEMENGE" xml:space="preserve">
+    <value>„{0}“ ist kein zulässiger Wert für „{1}“.</value>
+  </data>
+  <data name="KMT_MSG_CODE_BELEGT" xml:space="preserve">
+    <value>Den Code „{0}“ gibt es schon (Groß- und Kleinschreibung zählen nicht).</value>
+  </data>
+  <data name="KMT_MSG_CODE_VERWENDET" xml:space="preserve">
+    <value>Der Code „{0}“ bleibt: {1} Kältemaschine(n) verwenden das Kältemittel.</value>
+  </data>
+  <data name="KMT_MSG_VERWENDET" xml:space="preserve">
+    <value>„{0}“ wird von {1} Kältemaschine(n) verwendet und lässt sich nicht löschen.</value>
+  </data>
+  <data name="KMT_MSG_SATZ_FEHLT" xml:space="preserve">
+    <value>Das Kältemittel gibt es nicht mehr.</value>
+  </data>
+  <data name="KMT_MSG_TABELLE_FEHLT" xml:space="preserve">
+    <value>Diese Datenbank hat keine Kältemitteltabelle.</value>
+  </data>
+  <data name="KMT_SP_CODE" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="KMT_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="KMT_SP_GRUPPE" xml:space="preserve">
+    <value>Gruppe</value>
+  </data>
+  <data name="KMT_SP_GWP" xml:space="preserve">
+    <value>GWP</value>
+  </data>
+  <data name="KMT_SP_GWP_QUELLE" xml:space="preserve">
+    <value>Fundstelle GWP</value>
+  </data>
+  <data name="KMT_SP_FGAS" xml:space="preserve">
+    <value>F-Gas</value>
+  </data>
+  <data name="KMT_SP_NATUERLICH" xml:space="preserve">
+    <value>natürlich</value>
+  </data>
+  <data name="KMT_SP_SICHERHEIT" xml:space="preserve">
+    <value>Sicherheitsgruppe</value>
+  </data>
+  <data name="KMT_SP_PFAS" xml:space="preserve">
+    <value>PFAS</value>
+  </data>
+  <data name="KMT_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="KMT_SP_QUELLE" xml:space="preserve">
+    <value>Fundstelle Kennzeichen</value>
+  </data>
+  <data name="KMT_SP_SORTIERUNG" xml:space="preserve">
+    <value>Sortierung</value>
+  </data>
+  <data name="KMT_GRUPPE_HFKW" xml:space="preserve">
+    <value>HFKW</value>
+  </data>
+  <data name="KMT_GRUPPE_HFO" xml:space="preserve">
+    <value>HFO</value>
+  </data>
+  <data name="KMT_GRUPPE_HFCKW" xml:space="preserve">
+    <value>HFCKW</value>
+  </data>
+  <data name="KMT_GRUPPE_GEMISCH" xml:space="preserve">
+    <value>Gemisch</value>
+  </data>
+  <data name="KMT_GRUPPE_NATUERLICH" xml:space="preserve">
+    <value>natürlich</value>
+  </data>
+  <data name="KMT_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>sonstige</value>
+  </data>
+  <data name="KMT_PFAS_PFAS" xml:space="preserve">
+    <value>PFAS</value>
+  </data>
+  <data name="KMT_PFAS_BESTANDTEIL" xml:space="preserve">
+    <value>enthält einen PFAS-Bestandteil</value>
+  </data>
+  <data name="KMT_PFAS_KEIN" xml:space="preserve">
+    <value>kein PFAS</value>
+  </data>
+  <data name="KMT_STATUS_GESICHERT" xml:space="preserve">
+    <value>gesichert</value>
+  </data>
+  <data name="KMT_STATUS_VORLAEUFIG" xml:space="preserve">
+    <value>vorläufig</value>
+  </data>
+  <data name="KMT_STATUS_PROGNOSE" xml:space="preserve">
+    <value>Prognose</value>
+  </data>
+  <data name="KMT_STATUS_ABGEKUENDIGT" xml:space="preserve">
+    <value>abgekündigt</value>
+  </data>
+  <data name="KMT_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="KMT_NEIN" xml:space="preserve">
+    <value>nein</value>
+  </data>
+  <data name="KMT_UNBEKANNT" xml:space="preserve">
+    <value>unbekannt</value>
+  </data>
+  <data name="KMT_TITEL" xml:space="preserve">
+    <value>Kältemittel</value>
+  </data>
+  <data name="KMT_MENUE" xml:space="preserve">
+    <value>Kältemittel…</value>
+  </data>
+  <data name="KMT_EINLEITUNG" xml:space="preserve">
+    <value>Die Kältemittelliste der Kältemaschinen und Wärmepumpen: GWP mit Fundstelle, Kennzeichen nach der F-Gas-Verordnung, Sicherheitsgruppe und PFAS-Status. Ausgelieferte Zeilen sind gesperrt; eigene Zeilen lassen sich anlegen, ändern und löschen, solange keine Kältemaschine sie verwendet.</value>
+  </data>
+  <data name="KMT_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="KMT_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="KMT_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="KMT_SATZ_NEU" xml:space="preserve">
+    <value>Neues Kältemittel</value>
+  </data>
+  <data name="KMT_VERWENDUNG" xml:space="preserve">
+    <value>Verwendet von {0} Kältemaschine(n) — der Code bleibt, die Zeile lässt sich nicht löschen.</value>
+  </data>
+  <data name="KMT_UNBENUTZT" xml:space="preserve">
+    <value>Von keiner Kältemaschine verwendet.</value>
+  </data>
+  <data name="KMT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Kältemittel „{0}“ löschen?</value>
+  </data>
+  <data name="KMT_LEER" xml:space="preserve">
+    <value>Die Kältemitteltabelle ist leer.</value>
+  </data>
+  <data name="KMT_GELOESCHT" xml:space="preserve">
+    <value>„{0}“ ist gelöscht.</value>
+  </data>
+  <data name="KMT_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Die Kältemittel stehen auf diesem Gerät noch nicht zur Verfügung.</value>
+  </data>
+  <data name="KMT_FUNDSTELLEN" xml:space="preserve">
+    <value>Fundstellen</value>
+  </data>
+  <data name="KMT_KEINE_ANGABE" xml:space="preserve">
+    <value>keine Angabe</value>
+  </data>
+  <data name="KMT_LESEMODUS" xml:space="preserve">
+    <value>Die Datenbank ist nur lesbar — die Kältemittel lassen sich nicht ändern.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KMT" xml:space="preserve">
+    <value>Kältemittel</value>
+  </data>
+  <data name="KI_KMT_ERL_SATZ" xml:space="preserve">
+    <value>Wählt die Zeile der Kältemitteltabelle, wie ein Klick in die Liste.</value>
+  </data>
+  <data name="KI_KMT_ERL_CODE" xml:space="preserve">
+    <value>Kurzzeichen nach ISO 817 mit Isomerangabe, eindeutig ohne Groß- und Kleinschreibung; bei einer verwendeten Zeile fest.</value>
+  </data>
+  <data name="KI_KMT_ERL_BEZEICHNUNG" xml:space="preserve">
+    <value>Stoff- oder Gemischname, neutral, kein Handelsname.</value>
+  </data>
+  <data name="KI_KMT_ERL_GRUPPE" xml:space="preserve">
+    <value>Stoffgruppe der Zeile; leer heißt unbekannt.</value>
+  </data>
+  <data name="KI_KMT_ERL_GWP" xml:space="preserve">
+    <value>Treibhauspotenzial über 100 Jahre; leer heißt unbekannt.</value>
+  </data>
+  <data name="KI_KMT_ERL_GWP_QUELLE" xml:space="preserve">
+    <value>Fundstelle des GWP-Werts in der Verordnung (Anhang, Abschnitt, Seite, Sachstandsbericht).</value>
+  </data>
+  <data name="KI_KMT_ERL_FGAS" xml:space="preserve">
+    <value>Fluoriertes Treibhausgas im Sinn der F-Gas-Verordnung: ja, nein oder unbekannt.</value>
+  </data>
+  <data name="KI_KMT_ERL_NATUERLICH" xml:space="preserve">
+    <value>Natürliches Kältemittel: ja, nein oder unbekannt.</value>
+  </data>
+  <data name="KI_KMT_ERL_SICHERHEIT" xml:space="preserve">
+    <value>Sicherheitsgruppe nach ISO 817 / EN 378-1 (nur Anzeige).</value>
+  </data>
+  <data name="KI_KMT_ERL_PFAS" xml:space="preserve">
+    <value>PFAS-Status: Stoff ist PFAS, enthält einen PFAS-Bestandteil oder kein PFAS.</value>
+  </data>
+  <data name="KI_KMT_ERL_STATUS" xml:space="preserve">
+    <value>Belegstand der Zeile; leer wird beim Speichern „vorläufig“.</value>
+  </data>
+  <data name="KI_KMT_ERL_QUELLE" xml:space="preserve">
+    <value>Fundstelle der übrigen Kennzeichen (F-Gas, Massenanteile, PFAS-Herleitung).</value>
+  </data>
+  <data name="KI_KMT_ERL_SORTIERUNG" xml:space="preserve">
+    <value>Reihenfolge in der Klappliste; leer ordnet nach dem Code.</value>
+  </data>
 </root>
 
