@@ -326,6 +326,14 @@ namespace WindowsFormsApplication1
         public const string KAELTESPEICHER_OHNE_KUEHLUNG = "KAELTESPEICHER_OHNE_KUEHLUNG";
 
         /// <summary>
+        /// KM4-E2 (Konzept Kältemittel als Stammdatum 3.3, 5.2; E123): Das Kältemittel einer Kältemaschine oder einer
+        /// Wärmepumpe mit Code fällt im geplanten Inbetriebnahmejahr unter eine Regel nach Anhang IV der Verordnung (EU)
+        /// 2024/573 — ab dem Stichtag nur Restbestand oder Ausnahme. WEICH: Die Prüfung warnt und sperrt nie. Ohne
+        /// Inbetriebnahmejahr entsteht kein Befund.
+        /// </summary>
+        public const string KAELTEMITTEL_STICHTAG = "KAELTEMITTEL_STICHTAG";
+
+        /// <summary>
         /// Untergrenze [MWh/a], ab der ein Kanal als „mit Bedarf" gilt. Darunter liegt
         /// nur Rundungsrauschen der Netzverlustverteilung; gemeldet würde sonst
         /// „0,0 MWh/a".
@@ -413,8 +421,82 @@ namespace WindowsFormsApplication1
             }
 
             KaeltespeicherPruefen(idProjekt, befunde);
+            KaeltemittelPruefen(idProjekt, befunde);
 
             return befunde;
+        }
+
+        /// <summary>
+        /// <see cref="KAELTEMITTEL_STICHTAG"/> — je Kältemaschine und je Wärmepumpe mit Kältemittel-Code ein weicher
+        /// Befund mit <c>ID_Anlage</c>, nur für Ergebnisklasse 2 (Konzept Kältemittel als Stammdatum 5.2). Ohne
+        /// Inbetriebnahmejahr eine einzige Abfrage und kein Befund. „Nicht prüfbar“ ist kein Befund, sondern ein
+        /// Hinweis des Laufs (<c>SimulationControl.KaeltemittelHinweiseMelden</c>).
+        /// </summary>
+        public static void KaeltemittelPruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            if (idProjekt <= 0 || befunde == null) return;
+            foreach (KaeltemittelErzeugerpruefung p in KaeltemittelProjektpruefung.Pruefen(idProjekt))
+            {
+                string text = KaeltemittelText(p);
+                if (text.Length > 0)
+                    befunde.Add(Befund(KAELTEMITTEL_STICHTAG, false, p.ID_Anlage, 0, text));
+            }
+        }
+
+        /// <summary>
+        /// Der Warntext eines Erzeugers der Ergebnisklasse 2: Anlage, Kältemittel, Regel (Fundstelle), Stichtag,
+        /// Kriterium, benutztes Jahr und benutzte Leistung; leer für jede andere Klasse.
+        /// </summary>
+        public static string KaeltemittelText(KaeltemittelErzeugerpruefung p)
+        {
+            KaeltemittelErgebnis e = p?.Ergebnis;
+            if (e == null || e.Klasse != KaeltemittelErgebnisklasse.AbStichtag) return "";
+            string kriterium = KaeltemittelKriteriumText(p.Regel?.Kriterium, e.Grenze);
+            string fundstelle = !string.IsNullOrWhiteSpace(p.Regel?.Quelle) ? p.Regel.Quelle.Trim() : e.Regelschluessel;
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTEMITTEL_STICHTAG,
+                p.Bezeichner, string.IsNullOrEmpty(p.Code) ? "—" : p.Code, fundstelle,
+                e.Stichtag?.ToString(CultureInfo.InvariantCulture) ?? "—", kriterium,
+                e.Jahr.ToString(CultureInfo.InvariantCulture),
+                e.LeistungKw.HasValue ? Grad(e.LeistungKw.Value) : "—");
+        }
+
+        /// <summary>
+        /// Der Hinweistext eines Erzeugers der Ergebnisklasse 4 („nicht prüfbar“, nur mit Jahr) mit der fehlenden
+        /// Größe; leer für jede andere Klasse.
+        /// </summary>
+        public static string KaeltemittelNichtPruefbarText(KaeltemittelErzeugerpruefung p)
+        {
+            KaeltemittelErgebnis e = p?.Ergebnis;
+            if (e == null || e.Klasse != KaeltemittelErgebnisklasse.NichtPruefbar) return "";
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTEMITTEL_NICHT_PRUEFBAR,
+                p.Bezeichner, e.Jahr.ToString(CultureInfo.InvariantCulture), KaeltemittelFehltText(e.FehlendeGroesse));
+        }
+
+        /// <summary>Die fehlende Größe (<c>Kaeltemittelzulaessigkeit.FEHLT_*</c>) als Satzteil.</summary>
+        public static string KaeltemittelFehltText(string fehlt)
+        {
+            switch (fehlt)
+            {
+                case Kaeltemittelzulaessigkeit.FEHLT_GERAETEKLASSE: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_GERAETEKLASSE;
+                case Kaeltemittelzulaessigkeit.FEHLT_LEISTUNG: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_LEISTUNG;
+                case Kaeltemittelzulaessigkeit.FEHLT_KAELTEMITTEL: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_KAELTEMITTEL;
+                case Kaeltemittelzulaessigkeit.FEHLT_GWP: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_GWP;
+                case Kaeltemittelzulaessigkeit.FEHLT_FGAS: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_FGAS;
+                case Kaeltemittelzulaessigkeit.FEHLT_STOFFKLASSE: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_STOFFKLASSE;
+                default: return fehlt ?? "";
+            }
+        }
+
+        /// <summary>Das Kriterium einer Regel (<c>DbWerte.FGAS_KRIT_*</c>) mit seiner Grenze als Satzteil.</summary>
+        public static string KaeltemittelKriteriumText(string kriterium, double? grenze)
+        {
+            string g = grenze.HasValue ? grenze.Value.ToString("#,0.#", CultureInfo.CurrentCulture) : "—";
+            switch (kriterium)
+            {
+                case DbWerte.FGAS_KRIT_FGAS: return MyResource.Resource.SIMWARN_KAELTEMITTEL_KRIT_FGAS;
+                case DbWerte.FGAS_KRIT_HFKW: return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTEMITTEL_KRIT_HFKW, g);
+                default: return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTEMITTEL_KRIT_GWP, g);
+            }
         }
 
         /// <summary>

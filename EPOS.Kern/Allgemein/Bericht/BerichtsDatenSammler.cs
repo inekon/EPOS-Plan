@@ -592,6 +592,10 @@ namespace WindowsFormsApplication1
                 };
             }
 
+            // KM4-E2: Kältemittel je Kälteerzeuger samt Ergebnisklasse (best effort, Konzept Kältemittel 5.3).
+            try { v.Kaeltemittel = KaeltemittelBerichtszeile.Aus(KaeltemittelProjektpruefung.Pruefen(v.IdProjekt, mitCodes: true)); }
+            catch { v.Kaeltemittel = null; }
+
             // 4. Brennstoffmengen (best effort — fehlendes Kostenmodul stoppt nichts).
             try { v.Brennstoffmengen = EnergieMengen.BaueBrennstoffmengen(v.IdProjekt); }
             catch { v.Brennstoffmengen = null; }

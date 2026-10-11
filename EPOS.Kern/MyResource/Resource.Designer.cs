@@ -35886,6 +35886,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die F-Gase (VO 2024/573, Anhang IV) ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_FGAS {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Gesetz ähnelt.
         /// </summary>
         public static string GESETZ_KLASSE_ANZ_KWKG {
@@ -113345,6 +113354,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_KACHEL_SPEICHER_TIP {
             get {
                 return ResourceManager.GetString("SIMWARN_KACHEL_SPEICHER_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das F-Gas-Kennzeichen des Kältemittels ist unbekannt ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_FEHLT_FGAS {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_FEHLT_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Geräteklasse ist nicht bestimmbar (Geräteart bzw. Bauart und Typ) ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_FEHLT_GERAETEKLASSE {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_FEHLT_GERAETEKLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der GWP des Kältemittels ist unbekannt ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_FEHLT_GWP {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_FEHLT_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Kältemittel ist unbekannt ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_FEHLT_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_FEHLT_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Nennleistung fehlt ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_FEHLT_LEISTUNG {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_FEHLT_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Stoffklasse des Kältemittels ist unbekannt ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_FEHLT_STOFFKLASSE {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_FEHLT_STOFFKLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die jedes F-Gas ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_KRIT_FGAS {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_KRIT_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die F-Gas mit GWP ≥ {0} ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_KRIT_GWP {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_KRIT_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die HFKW mit GWP ≥ {0} ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_KRIT_HFKW {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_KRIT_HFKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Zulässigkeit des Kältemittels für das Inbetriebnahmejahr {1} ist nicht prüfbar — {2}. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_NICHT_PRUEFBAR {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_NICHT_PRUEFBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Kältemittel {1} — nach {2} ab {3} nur Restbestand oder Ausnahme ({4}; Inbetriebnahmejahr {5}, Nennleistung {6} kW). Die Prüfung warnt nur: Anhang IV verbietet das Inverkehrbringen, nicht den Betrieb, und seine Ausnahmen kennt sie nicht. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTEMITTEL_STICHTAG {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTEMITTEL_STICHTAG", resourceCulture);
             }
         }
         

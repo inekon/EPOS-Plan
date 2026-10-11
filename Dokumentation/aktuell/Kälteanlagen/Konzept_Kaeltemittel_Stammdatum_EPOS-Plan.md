@@ -158,8 +158,9 @@ Die Bezeichnung nennt Stoff oder Gemischart neutral — kein Handelsname.
 Je Zeile: GWP **mit Quelle und Bezug** (Anhang I der Verordnung rechnet GWP₁₀₀ nach AR4, Anhang II und VI nach
 AR6; ein Gemisch ist die massengewichtete Summe seiner Bestandteile, S‑amtl — deshalb läuft die Quelle je Wert mit,
 sonst stehen Alt‑ und Neuwerte unerkannt nebeneinander), das Kennzeichen **F‑Gas** (fluoriertes Treibhausgas im
-Sinn der Verordnung, Anhang I oder II — auch HFO mit GWP unter 150, Abl. aus Art. 3 Nr. 1, nicht am Wortlaut
-geprüft), **natürlich** (für den Hinweis nach KM4‑Q11), die **Sicherheitsgruppe** (A1, A2L, A2, A3, B1, B2L, B2, B3
+Sinn der Verordnung: die Stoffe der Anhänge I, II und III, allein oder als Gemisch — auch HFO mit GWP unter 150;
+S‑amtl, Art. 2 Buchst. a und Fußnote 1 zu Anhang II; „HFKW“ dagegen sind nach Art. 3 Nr. 4 nur die Stoffe der
+Gruppe 1 von Anhang I, keine Olefine), **natürlich** (für den Hinweis nach KM4‑Q11), die **Sicherheitsgruppe** (A1, A2L, A2, A3, B1, B2L, B2, B3
 nach ISO 817 / EN 378‑1 — nur Spalte, Werte nach KM4‑Q3), der **PFAS‑Status** (dreiwertig: Stoff ist PFAS · enthält
 einen PFAS‑Bestandteil · kein PFAS; Herleitung über die Strukturformel, S; Verfahrensstand „geplant, nicht in Kraft“
 als Text, nie als Verbot, KM4‑Q10) und ein **Status** mit dem Vokabular von `Tab_Gesetzesparameter` (`GESICHERT`
@@ -228,18 +229,50 @@ Warnung, mit der fehlenden Größe im Text. **Ohne Jahr prüft und meldet der La
 Referenzprotokolle bleiben unverändert.
 
 **Regelsatz (Form, nicht Werte).** Eine Regel ist das Tupel (Geräteklasse, Leistungsband, Kriterium, Stichtag,
-Status, Quelle) mit Kriterium „GWP ≥ Grenze“ oder „jedes F‑Gas“. Anhang IV kennt die Geräteklassen Kühler (Nr. 7),
-steckerfertige, Monoblock‑ und in sich geschlossene Geräte (Nr. 8) und Split (Nr. 9, darunter Luft/Wasser und
-Luft/Luft), die Bänder bis 12 kW, über 12 kW, über 12 bis 50 kW und über 50 kW, die Grenzen 150 und 750 und
-Stichtage zwischen 2025 und 2035 (S+P, S‑amtl; die Buchstaben unter Nr. 9 und die 750‑Grenze bei
-Sicherheitsausnahme unter Nr. 8 b sind nicht bestätigt; Nr. 9 a hängt an einer Füllmenge unter 3 kg — das
-Regelschema kennt dieses Kriterium nicht, die Zeile wird **nicht gesät**). **Auswertung (Abl.):** Eine Geräteklasse
+Status, Quelle) mit Kriterium „F‑Gas mit GWP ≥ Grenze“, „HFKW mit GWP ≥ Grenze“ oder „jedes F‑Gas“. Anhang IV
+kennt die Geräteklassen Kühler (Nr. 7), steckerfertige, Monoblock‑ und in sich geschlossene Geräte (Nr. 8) und Split
+(Nr. 9, darunter Luft/Wasser und Luft/Luft), die Bänder bis 12 kW, über 12 kW, über 12 bis 50 kW und ohne Band, die
+Grenzen 150, 750 und 2 500 und Stichtage zwischen 2020 und 2035 (S‑amtl, am Wortlaut geprüft, siehe „Abgleich am
+Wortlaut“; Nr. 9 a hängt an einer Füllmenge unter 3 kg — das Regelschema kennt dieses Kriterium nicht, die Zeile
+wird **nicht gesät**). **Auswertung (Abl.):** Eine Geräteklasse
 erbt die Regeln ihrer Oberklasse (`SPLIT_LUFTWASSER`, `SPLIT_LUFTLUFT` → `SPLIT`). Das Band ist ein Intervall
 (untere Grenze ausschließlich, obere einschließlich); eine Regel gilt, wenn die Nennleistung darin liegt. Je
 Schlüssel gilt die jüngste Zeile mit `JahrVon ≤ Jahr` (Zeitreihe wie `GesetzKatalog.WertMitHerkunft`), über die
 Schlüssel hinweg gelten alle; trifft eine, ist das Ergebnis Klasse 2, und der Text nennt die treffende Regel mit dem
-frühesten Stichtag. **Die Zahlen werden beim Bau aus dem EUR‑Lex‑Volltext aufgenommen, nicht aus diesem Papier und
-nicht aus der Recherche**; bis zur Prüfung tragen sie `VORLAEUFIG`.
+frühesten Stichtag. Trifft die jüngste Zeile einer Zeitreihe, ist ihr Stichtag die früheste Zeile, ab der die Reihe
+ohne Unterbrechung trifft (Split über 12 kW mit GWP 2 000: ab 2029, nicht erst ab der Verschärfung 2033). Ein HFKW‑
+Kriterium braucht die Stoffklasse: Gruppe `HFKW` trifft, `HFO`, `HFCKW` und `NATUERLICH` nicht; ein Gemisch trifft,
+wenn sein Code in der festen Liste der Gemische mit Bestandteil aus Anhang I Gruppe 1 steht
+(`Kaeltemittelzulaessigkeit.GEMISCHE_MIT_HFKW`: R410A, R407C, R404A, R454B, R454C, R452B, R455A, R513A), sonst ist
+die Stoffklasse unbekannt. Hängt eine Regel an einer unbekannten Größe (GWP, F‑Gas‑Kennzeichen, Stoffklasse) und
+trifft keine andere, ist das Ergebnis Klasse 4. Ohne Tabellenzeile gilt ein Geräte‑GWP über der Grenze als F‑Gas
+(konservativ, die Prüfung warnt nur). **Die Zahlen stammen aus dem amtlichen Wortlaut, nicht aus diesem Papier und
+nicht aus der Recherche.**
+
+**Abgleich am Wortlaut (amtliche deutsche Fassung, S‑amtl).** Gesät sind dreizehn Zeilen (Generation 10), jede mit
+Fundstelle (Anhang IV, Nummer, Buchstabe, Seite) in `Quelle`:
+
+| Nr. | Geräteklasse, Band | Kriterium | Stichtag | Status |
+|---|---|---|---|---|
+| 7 a | Kühler, ohne Band | HFKW, GWP ≥ 2 500 | 2020 | `GESICHERT` |
+| 7 b / 7 c | Kühler bis 12 kW | GWP ≥ 150 / jedes F‑Gas | 2027 / 2032 | `GESICHERT` |
+| 7 d | Kühler über 12 kW | GWP ≥ 750 (Lesart) | 2027 | `GESICHERT` |
+| 8 b / 8 c | in sich geschlossen bis 12 kW (Höchstnennleistung) | GWP ≥ 150 / jedes F‑Gas | 2027 / 2032 | `GESICHERT` |
+| 8 d | in sich geschlossen über 12 bis 50 kW | GWP ≥ 150 | 2027 | `GESICHERT` |
+| 8 e | andere in sich geschlossene, ohne Band | GWP ≥ 150 | 2030 | `GESICHERT` |
+| 9 b / 9 c | Split Luft/Wasser bzw. Luft/Luft bis 12 kW | GWP ≥ 150 | 2027 / 2029 | `GESICHERT` |
+| 9 d | Split bis 12 kW | jedes F‑Gas | 2035 | `GESICHERT` |
+| 9 e / 9 f | Split über 12 kW (eine Zeitreihe) | GWP ≥ 750 / ≥ 150 | 2029 / 2033 | `GESICHERT` |
+
+Was der Wortlaut festlegt: Er sagt „Kühler“, nicht
+„Kaltwassersatz“. Nr. 7 a und Nr. 8 a nennen „HFKW“, nicht alle F‑Gase — daher das dritte Kriterium `HFKW`; Nr. 7 a
+bringt die Grenze 2 500 und den Stichtag 2020. Nr. 7 a und Nr. 8 e nennen kein Leistungsband (Band `ALLE`); ein
+eigenes Band „über 50 kW“ kommt im Text nicht vor. Nr. 7 d lautet „GWP von 750“ ohne „oder mehr“; gesät ist die Lesart
+„≥ 750“ wie in Nr. 9 e, festgelegt durch Anwenderentscheid — die Zeile ist `GESICHERT`, `Quelle` trägt den Vermerk. Die Buchstaben unter Nr. 9 sind bestätigt. Die 750 bei
+Sicherheitsausnahme (Nr. 8 b bis e) ist ein Höchstwert innerhalb der Ausnahme, keine Regel — die Prüfung kennt die
+Ausnahmen nicht und sät sie nicht. Nr. 8 nennt die „Höchstnennleistung“, Nr. 7 und 9 die „Nennleistung“. Nicht gesät:
+Nr. 9 a (Füllmenge), Nr. 8 a (steckerfertige, von Raum zu Raum bringbare Geräte) und Nr. 4 bis 6 (Kälteanlagen ohne
+Kühler) — für sie hat EPOS‑Plan keine Geräteklasse.
 
 **Zwei Beispiele aus der Testdatenbank (Abl., zur Veranschaulichung; Werte S+P/S‑amtl).** Die Kältemaschine von
 1063 (20 kW, R513A, GWP rund 630, S) fällt unter „Kühler über 12 kW: GWP ≥ 750 ab 2027“ nicht — zulässig. Die auf
@@ -320,8 +353,9 @@ Keine neue Spalte an `Tab_WP(_STAMM)` (KM4‑Q9). Der Code der Textspalte ist de
 Vorschlag (KM4‑Q4): Zeilen in `Tab_Gesetzesparameter` mit `Klasse = 'FGAS'` (`DbWerte.GESETZ_KLASSE_FGAS`, Einheit
 `GESETZ_EINHEIT_OHNE`), `Schluessel` nach festem Vokabular `FGAS_IV_<KLASSE>_<BAND>_<KRIT>` (Klasse `KUEHLER`,
 `MONOBLOCK`, `SPLIT`, `SPLIT_LUFTWASSER`, `SPLIT_LUFTLUFT`; Band `BIS12`, `UEBER12`, `UEBER12BIS50`, `UEBER50`;
-Kriterium `GWP` mit `Wert` = Grenze oder `FGAS` mit `Wert` = 0; Konstanten in `DbWerte`), `JahrVon` = Stichtag,
-`Status`, `Quelle` mit Anhang, Nummer und Vertrauensgrad; Art.‑13‑Regeln mit Präfix `FGAS_13_…` (KM4‑Q12). **Saatweg:**
+Kriterium `GWP` (F‑Gas) oder `HFKW` (nur Anhang I Gruppe 1) mit `Wert` = Grenze oder `FGAS` mit `Wert` = 0; Band
+zusätzlich `ALLE` für Nummern ohne Band; Konstanten in `DbWerte`), `JahrVon` = Stichtag, `Status`, `Quelle` mit
+Anhang, Nummer, Buchstabe und Seite; Art.‑13‑Regeln mit Präfix `FGAS_13_…` (KM4‑Q12). **Saatweg:**
 als neue Generation in `GesetzKatalog.Vorbelegung()` (Testdatenbank 9 → 10; `StelleKatalogSicher` sät beim Start
 nach, `GesetzkatalogSaatWacheTests` misst die Schranken), **nicht im Schemaschritt**; Klasse in `KlassenVorrat()`
 und `KlasseAnzeige()` (Ressource `GESETZ_KLASSE_ANZ_FGAS`); die Pflegemaske „Gesetzeskatalog“ zeigt und ändert die
@@ -485,9 +519,10 @@ die Basis.
 `Katalog_Ausgelaufen` wird nicht benutzt. Ohne Jahr keine Prüfung; „nicht prüfbar“ ist ein Hinweis, keine Warnung.
 Die Nennleistung gilt je Gerät, nicht je Anlagenzeile. Absorption ergibt keinen Befund; Split, Multisplit und VRF an
 Anlagenart 13 sind in KM4 „nicht prüfbar“. Der Code‑Abgleich ist Trim und `OrdinalIgnoreCase` wie
-`Bivalenzvorgaben.IstBekannt`. Regelzeilen und Kältemittelzeilen tragen `VORLAEUFIG`, bis sie am EUR‑Lex‑Volltext
-geprüft sind; n.b.‑Regeln (Nr. 9 a, Buchstaben unter Nr. 9, 750 bei Sicherheitsausnahme, Sole‑/Wasser‑Wasser)
-werden nicht gesät. Die Tabelle steht im Katalogregister (Stufe 3, `KMT` vor `KM`) ohne Projektkopie;
+`Bivalenzvorgaben.IstBekannt`. Die Regelzeilen sind am amtlichen Wortlaut geprüft und tragen `GESICHERT` (Nr. 7 d in
+der Lesart „≥ 750“ nach Anwenderentscheid); Kältemittelzeilen tragen `VORLAEUFIG`, bis sie am Wortlaut geprüft sind. Nicht gesät werden Nr. 9 a
+(Füllmenge), Nr. 8 a und Nr. 4 bis 6 (keine Geräteklasse) und die 750 bei Sicherheitsausnahme (Höchstwert innerhalb der
+Ausnahme); Sole‑ und Wasser‑Wasser‑Wärmepumpen sind n.b. Die Tabelle steht im Katalogregister (Stufe 3, `KMT` vor `KM`) ohne Projektkopie;
 `ID_Kaeltemittel` ohne Fremdschlüsselzwang, reist nicht im Projektpaket. Die Kältemittelcodes gelten als
 Normbezeichnungen (ISO 817) und werden in `WikiProduktdatenWacheTests.Normbezeichnungen` aufgenommen. Kein neues
 Vorlagenfeld, keine neue Vorlagen‑Katalogfassung.

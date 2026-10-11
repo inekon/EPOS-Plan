@@ -500,7 +500,7 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername, km);
+            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername, km, stamm?.Kaeltemittel);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
                                                         k.F(wp.Kaelteproduktion_WP.Value, 2),
@@ -518,10 +518,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp,
                                                     Func<int, string> traegername,
-                                                    IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null)
+                                                    IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null,
+                                                    IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null)
         {
-            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen.
-            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen);
+            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen, KM4-E2 samt Kältemittel.
+            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen, kaeltemittel);
             if (t.IstLeer) return;
 
             k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);

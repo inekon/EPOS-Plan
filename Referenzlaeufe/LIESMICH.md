@@ -593,6 +593,33 @@ die Rückspeisung die Soletemperatur.
 > 1017 bleibt unverändert; für 1064 gelten daneben die Regeln „gesäte Gebäudedaten“, „gesäte Kältedaten“ und „gesäte
 > Erdreichquellen“ wie für 1017.
 
+## Die Einfrierregel „gesäte Vorheizdaten“ (Referenzprojekt 1065)
+
+Weiterer Ort derselben Falle. Projekt 1065 „Referenzprojekt Vorheizen“ ist das einzige Referenzprojekt, dessen Gebäude
+vor dem Kalendersprung vorheizt statt die Sollwertrampe zu fahren: Der Vorlauf bestimmt aus dem Jahresmaximum der
+Heizlast am Sprung Φ_K,max und daraus den Deckel P_K, die Vorausschau den Bedarf je Sprung, das 95-%-Quantil die
+Vorheizzeit t_V; im Lauf heizt das Gebäude ab t_V Stunden vor dem Sprung mit dem Zielsollwert und höchstens P_V, ab dem
+Sprung bis zum Blockende gilt der Deckel. Verfahren, Toleranz, Regelgenauigkeit, Geltung und die Festwerte verschieben
+Heizwärme, Spitze, Nächte ohne Absenkung und damit Erzeuger und Emissionen.
+
+> **Wer gesäte Vorheizdaten eines Referenzprojekts in der Testdatenbank ändert, friert im selben Schritt die Basis neu
+> ein und begründet den Wechsel hier.**
+>
+> Betroffen sind an `Tab_Einstellungen` der Schalter `Aufheizoptimierung` und die sieben Spalten `Aufheiz_Verfahren`,
+> `Aufheiz_Vorheizzeit_H`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`, `Aufheiz_Geltung`
+> und `Aufheiz_Heizkreis_Einbeziehen`, an seinen Gebäuden `Tab_Zone.Vorheizzeit_H` und `Tab_Gebaeude.Aufheizzeit_Manuell_H`,
+> die Festwerte des Rechenwegs (Vorgabe der Toleranz 20 % `Vorheizvorgabe.TOLERANZ_VORGABE_PROZENT`, Vorgabe ε 1 K
+> `Vorheizvorgabe.GENAUIGKEIT_VORGABE_K`, Quantil 95 % `Vorheizplanung.BEDARF_QUANTIL_PROZENT`, Fenstergrenze 47 h
+> `Vorheizvorgabe.VORHEIZZEIT_MAX_H`, Ankunftsbezug `Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE`), dazu das Anlegen oder
+> Entfernen eines Referenzprojekts mit Vorheizen. Leere Zellen sind Vorgaben des Kerns: Wer eine Vorgabe ändert, ändert
+> 1065.
+>
+> Die Zeilen legt [`Skripte/referenzprojekt_1065_vorheizen.cs`](Skripte/referenzprojekt_1065_vorheizen.cs) an (unten);
+> gehalten werden sie von `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` (jede gesäte Zelle, die Kopie von 1051, ein
+> Lauf mit berechneter Vorheizzeit gegen die Kennzahlen der Basis, die Schlüssel `Geb[0].Vorheiz*` gegen die Basis). Die
+> Vorlage 1051 bleibt bei der Sollwertrampe; für 1065 gelten daneben die Regeln „gesäte Gebäudedaten“ und „gesäte
+> Konditionierungsdaten“ wie für 1051.
+
 ## Die Einfrierregel „Freigabe der Konditionierung“ (Zonensperre)
 
 Die Gebäude heizen und kühlen eine Zone nie am selben Tag: Die Tagesbetriebsart je Zone wählt innerhalb der
@@ -721,7 +748,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-10_R51_FreieKuehlung`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-11_R52_Vorheizen`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -750,13 +777,13 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-10_R51_FreieKuehlung/`** — **neunundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064), **943 CSV**, **6 568 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 10.10.2026, Stand `b8e20e1b`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 95 629 312 Byte, LFS-SHA-256
-`3b9097b6a5ee6e9b2495dd9c18ab6682c53952b58d02f6a563963df77bf70cdb`, mit den Projekten 1053 bis 1064; Nachträge der
-Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063) jeden Push und rechnet dieselben Projekte
+**`2026-10-11_R52_Vorheizen/`** — **dreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065), **979 CSV**, **6 777 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 11.10.2026, Stand `59ce46fc6`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **215**, 96 546 816 Byte, LFS-SHA-256
+`832fda5088ad3bb21b3e7ec55dec715b573afe22a9c952d2e2730d3a78595f3f`, mit den Projekten 1053 bis 1065; die Nachträge der
+Schemaschritte 211 bis 215 unten sind darin enthalten; Nachtrag 216 unten). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
 `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
@@ -784,43 +811,45 @@ von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Küh
 Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
 `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
 Kältemaschine von Projekt 1063 und `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` die freie Kühlung über die
-Wärmequelle von Projekt 1064. 1050, 1052, 1054,
+Wärmequelle von Projekt 1064 und `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` die berechnete Vorheizzeit von
+Projekt 1065. 1050, 1052, 1054,
 1055, 1056, 1057, 1059, 1061, 1062 und 1064 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
-neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: das Referenzprojekt 1064 „Referenzprojekt Freie Kühlung“ (Stufe KU3-6, Entscheid E75, Schemaschritt 187) —
-> die freie Kühlung über die Wärmequelle der Wärmepumpe rechnete bis dahin kein Referenzprojekt.** 1064 ist die Kopie
-> von 1017; an der Anlagenzeile der Sole-Wasser-Wärmepumpe (Erdsonde 5 × 120 m, Kühlvorlauf 18 °C) stehen
-> `Kuehl_Frei` 1, `Kuehl_Frei_Graedigkeit_K` 4,0 K und `Kuehl_Frei_Leistung_kW` 4,0 kW (Abschnitt „Das
-> Referenzprojekt 1064“ unten). Schemastand 210 bleibt; die Testdatenbank wächst um die Kopie (`3b9097b6…`).
+> **Anlass: das Referenzprojekt 1065 „Referenzprojekt Vorheizen“ (Entwurf Vorheizrampe, Abschnitt 4, Entscheid F9) —
+> das Vorheizen vor dem Kalendersprung mit berechneter Vorheizzeit rechnete bis dahin kein Referenzprojekt.** 1065 ist
+> die Kopie von 1051; an `Tab_Einstellungen` steht `Aufheiz_Verfahren` `BERECHNET`, die übrigen sechs Vorheizzellen
+> sind leer (Vorgaben: Toleranz 20 %, ε 1 K, Geltung Gebäude, Heizkreis einbezogen; Abschnitt „Das Referenzprojekt
+> 1065“ unten). 1051 bleibt bei der Sollwertrampe. Die Testdatenbank wächst um die Kopie (`832fda50…`, Schemastand 215).
 >
-> Gegen R50 sind alle achtundzwanzig Projekte byte-gleich (`vergleich`: 28 PASS, 911/911 CSV; einziger Befund
-> „Projekt_1064 nur im Vergleichslauf vorhanden“); hinzu kommt 1064 mit 32 CSV und 232 Skalaren:
+> Gegen R51 sind alle neunundzwanzig Projekte byte-gleich (943/943 CSV; `vergleich`: 29 PASS, einziger Befund
+> „Projekt_1065 nur im Vergleichslauf vorhanden“); hinzu kommt 1065 mit 36 CSV und 209 Skalaren, darunter erstmals die
+> achtzehn Schlüssel `Geb[0].Vorheiz*`:
 >
-> | Größe | 1017 | 1064 |
+> | Größe | 1051 | 1065 |
 > |---|---|---|
-> | Kälte (MWh), Deckung | 4,05, 100 % | 4,05, 100 % |
-> | freie Kühlung | — | 125 h, 0,277 MWh |
-> | Kältestrom (MWh) / EER-Jahreswert | 0,773 / 5,24 | 0,740 / 5,48 |
-> | Reststrom (MWh) | 10,90 | 10,87 |
+> | Verfahren | Sollwertrampe | berechnet |
+> | Φ_K,max / Deckel P_K (kW) | — | 23,62 / 28,34 |
+> | Vorheizzeit t_V (h), größter Bedarf (h) | — | 2, 5 |
+> | Tage über t_V / ohne Ankunft / Nächte ohne Absenkung | — | 5 / 5 / 0 |
+> | Spitze des Gebäudes (kW) | 30,00 | 28,34 |
+> | Heizwärme (MWh) | 24,22 | 24,67 (+0,45, +1,9 %) |
 >
-> Gegen 1017 ändern sich allein `aggregate.csv`, `reststrom_viertelstunde.csv` und `wp_quellentemperatur.csv` (die
-> Rückspeisung der Kälte in die Sonde ist ohne die Verdichterabwärme der freien Stunden kleiner); die Heizreihen sind
-> byte-gleich.
+> Gegen 1051 ändern sich die Reihen des Gebäudes und der Erzeuger; 1051 selbst ist byte-gleich zu R51.
 >
-> Zwei Läufe sind byte-gleich (943/943 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 899/943 CSV
-> byte-gleich (1064 ganz byte-gleich).
+> Zwei Läufe sind byte-gleich (979/979 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 934/979 CSV
+> byte-gleich (1065: 35/36, `heizstab.csv` innerhalb der Toleranz).
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064 \
->   --ziel Referenzlaeufe/2026-10-10_R51_FreieKuehlung
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065 \
+>   --ziel Referenzlaeufe/2026-10-11_R52_Vorheizen
 > ```
 >
-> Die Regel steht im Protokoll [KU3-6](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-05_KU3-6_Freie_Kuehlung_Waermequelle.md)
-> und im [Kühlkonzept](../Dokumentation/aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md), Abschnitt 11.
+> Die Regel steht im Protokoll [AH-V7](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V7_Referenzprojekt_R52.md)
+> und im [Entwurf Vorheizrampe](../Dokumentation/aktuell/Gebaeudesimulation/2026-10-10_Entwurf_Vorheizrampe.md), Abschnitt 4.
 
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
@@ -1220,14 +1249,21 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > leer): **95 735 808 Byte, LFS-SHA-256 `a63c8e78720b11a83ff69717a5f26b83fb93c8e493ac74d91b8252474fd64e94`**. Kein
 > Rechenweg liest Tabelle, Verweis oder Jahr
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Kaelteanlagen/2026-10-11_KM4-E1_Kaeltemitteltabelle.md)).
+> **Nachtrag — Projekt 1065 auf Schema 216, Basis R52 unberührt.** Das Saatskript
+> `Skripte/referenzprojekt_1065_vorheizen.cs` legt 1065 auf der Fassung 216 (`a63c8e78…`) erneut an: 9 449 neue Zeilen
+> in 30 Tabellen, keine geänderte Zeile, `integrity_check` ok, `foreign_key_check` leer. Die Testdatenbank steht auf
+> **216** mit den Projekten 1053 bis 1065: **96 571 392 Byte, LFS-SHA-256
+> `aaaa17565a5454d892422cf4b1f1d60335d31ad1642ca78dad5a5b92714620db`**. Alle dreißig Projekte rechnen gegen R52
+> GESAMT PASS und byte-gleich (979/979 CSV)
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V7_Referenzprojekt_R52.md)).
 
-### Die Vorgängerbasis R50 (Wochentagsraster)
+### Die Vorgängerbasis R51 (freie Kühlung)
 
-Achtundzwanzig Projekte, 911 CSV, 6 336 Skalare, auf Linux eingefroren gegen die Testdatenbank `32af2d32…`
-(Schemastand 210); mit R51 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Wochentagsraster der Klimaregion für alle
-Leser, Anwenderentscheid E115) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R51 ist
-das Referenzprojekt 1064 mit freier Kühlung über die Wärmequelle; die achtundzwanzig Projekte von R50 sind byte-gleich.
+Neunundzwanzig Projekte, 943 CSV, 6 568 Skalare, auf Linux eingefroren gegen die Testdatenbank `3b9097b6…`
+(Schemastand 210); mit R52 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekt 1064 mit freier Kühlung
+über die Wärmequelle) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R52 ist
+das Referenzprojekt 1065 mit berechneter Vorheizzeit; die neunundzwanzig Projekte von R51 sind byte-gleich.
 
 ## Was hier liegt
 
@@ -1696,11 +1732,38 @@ Die Werte: Mit gepflegter Grädigkeit liest der Lauf die Zelle, nicht die Vorgab
 höchstens 14 °C hat. Die Grenze 4 kW greift in einem Teil der freien Stunden, dort deckt der Verdichter den Rest (mit
 8 kW griffe sie nie). Gerechnet: Kältebedarf 4,05 MWh, gedeckt 100 %; freie Kühlung 125 Stunden, 0,277 MWh, davon
 35 Stunden an der Grenze; Kältestrom 0,740 MWh (1017: 0,773 MWh), EER-Jahreswert 5,48 (1017: 5,24); Reststrom 10,87 MWh
-(1017: 10,90 MWh); die Heizreihen gleich 1017. 1064 steht in der Basis R51 und nicht in der CI-Auswahl; es gilt die
-Einfrierregel „gesäte Daten der freien Kühlung“ oben.
+(1017: 10,90 MWh); die Heizreihen gleich 1017. 1064 steht in der aktuellen Basis und nicht in der CI-Auswahl; es gilt
+die Einfrierregel „gesäte Daten der freien Kühlung“ oben.
 
 ```bash
 python3 Referenzlaeufe/Skripte/referenzprojekt_1064_freie_kuehlung.py Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+### Das Referenzprojekt 1065 „Referenzprojekt Vorheizen“
+
+Projekt **1065 „Referenzprojekt Vorheizen“** ist die Kopie des Konditionierungsprojekts 1051 auf dem Kopierweg des
+Programms (`ProjektDuplizierenCtrl`, 9 449 Zeilen in 30 Tabellen, je Projekttabelle so viele Zeilen wie die Vorlage,
+sechs Gebäudekalender mit Perioden und Vorgabezeilen) — derselbe Bürobau nach VDI 6007 mit Konditionierungskalendern,
+Nachtzeile der Lüftung, Ferien, Heizperiode und eingeschalteter Aufheizoptimierung, dieselben Erzeuger. 1051 bleibt bei
+der Sollwertrampe (Verfahren leer); das Paar 1051/1065 zeigt die Wirkung allein des Verfahrens. Gesät sind:
+
+| Ort | Zelle | Wert |
+|---|---|---|
+| `Tab_Einstellungen` | `Aufheizoptimierung` | 1 (wie 1051) |
+| | `Aufheiz_Verfahren` | `BERECHNET` |
+| | `Aufheiz_Vorheizzeit_H`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`, `Aufheiz_Geltung`, `Aufheiz_Heizkreis_Einbeziehen` | leer — Vorgaben: Toleranz 20 % (Prozent), ε 1 K, Geltung Gebäude, Heizkreis einbezogen |
+| `Tab_Projekt` | `Beschreibung`; `Kosten_Geaendert` | Zweck des Projekts; Kostenstempel leer |
+
+Gebäude und Zonen tragen keine Vorheizzeit (`Aufheizzeit_Manuell_H`, `Tab_Zone.Vorheizzeit_H` leer). Gerechnet:
+Φ_K,max 23,62 kW, Deckel P_K = P_V 28,34 kW, Spitze 28,34 kW (1051: 30,00 kW); Vorheizzeit t_V 2 h als 95-%-Quantil,
+größter Bedarf 5 h, fünf Tage über t_V, fünf Tage ohne Ankunft (größte Unterschreitung 1,54 K), 26 Deckelstunden, keine
+Nacht ohne Absenkung, kein unerreichbarer Sprung; Heizwärme 24,67 MWh gegen 24,22 MWh von 1051 (+0,45 MWh, +1,9 %).
+Erstmals stehen die 18 Exportschlüssel `Geb[0].Vorheiz*` in einer Basis. 1065 steht in der aktuellen Basis und in der
+CI-Auswahl; es gilt die Einfrierregel „gesäte Vorheizdaten“ oben, als Kopie von 1051 dazu „gesäte Gebäudedaten“ und
+„gesäte Konditionierungsdaten“.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1065_vorheizen.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
 ```
 
 Das Skript ist wiederholbar (steht 1064 schon, Abbruch ohne Schreiben mit Rückgabe 0), schreibt in einer Transaktion
@@ -1778,7 +1841,8 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R51 (neunundzwanzig Projekte, Referenzprojekt 1064 mit freier Kühlung): GESAMT PASS, 899/943 CSV
+Stand mit R52 (dreißig Projekte, Referenzprojekt 1065 mit berechneter Vorheizzeit): GESAMT PASS, 934/979 CSV
+byte-gleich, 1065 35/36 (`heizstab.csv` innerhalb der Toleranz); mit R51 (neunundzwanzig Projekte, Referenzprojekt 1064 mit freier Kühlung): GESAMT PASS, 899/943 CSV
 byte-gleich, 1064 ganz byte-gleich; mit R50 (achtundzwanzig Projekte, Wochentagsraster der Klimaregion): GESAMT PASS, 867/911 CSV
 byte-gleich; mit R49 (Referenzprojekt 1063 auf dem Stand Gemeinjahr): GESAMT PASS, 867/911 CSV
 byte-gleich, 1063 ganz byte-gleich; mit R48 (Gemeinjahr-Konvention) GESAMT PASS, 835/879 CSV byte-gleich; der Stand mit
