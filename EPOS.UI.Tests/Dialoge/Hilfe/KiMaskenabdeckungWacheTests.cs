@@ -507,7 +507,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // AH-V5 (Entwurf Vorheizrampe 2.9): das Vorheizen - Verfahren, Vorheizzeit, Toleranz (Art und Wert),
         // Regelgenauigkeit (Auswahl und Eingabefeld, beide aufheiz_genauigkeit), Geltung und Heizkreis-Schalter; die
         // Leistungsreserve steht je Verfahrenszweig einmal im Markup (aufheiz_reserve) (26 → 35).
-        new("SimulationKonfigSeite", 35),
+        // SA3a (E128): die Schnellaufheizung - Schalter und Raumsollwert-Überhöhung, Katalogfelder aufheiz_schnell und
+        // aufheiz_ueberhoehung (35 → 37).
+        new("SimulationKonfigSeite", 37),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

@@ -66071,6 +66071,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ steht nur bei eingeschalteter Schnellaufheizung auf der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_SCHNELL_AUS {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_SCHNELL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = die Heizkurve rechnet im Vorheizfenster mit dem um die Überhöhung angehobenen Raumsollwert (nur Gebäude mit Heizkreis, endet bei Ankunft, begrenzt durch den höchsten Vorlauf der Anlage), Nein = aus (Vorgabe). Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_SCHNELL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_SCHNELL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einheit des zulässigen Sprungs zum Nutzungsbeginn: PROZENT = % der höchsten Heizlast am Nutzungsbeginn (Vorgabe), KW = kW. Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_AUFH_TOLERANZ_ART_ERL {
@@ -66085,6 +66103,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_AUFH_TOLERANZ_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_AUFH_TOLERANZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumsollwert-Überhöhung der Schnellaufheizung in K, größer als 0 und höchstens 10; leer = Vorgabe 2 K. Nur bei eingeschalteter Schnellaufheizung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_UEBERHOEHUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_UEBERHOEHUNG_ERL", resourceCulture);
             }
         }
         
@@ -110736,6 +110763,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schnellaufheizung hebt im Vorheizfenster den Raumsollwert der Heizkurve um die Überhöhung an, damit der Vorlauf steigt. Sie wirkt nur bei Gebäuden mit Heizkreis, endet mit der Ankunft (Raumtemperatur bis auf die Regelgenauigkeit am Sollwert) und ist durch den höchsten Vorlauf der Anlage begrenzt. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_SCHNELL {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_SCHNELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verfügbar ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die Heizlast an der kältesten Stunde zuzüglich der Leistungsreserve. ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_HRL_VERFUEGBAR {
@@ -110907,6 +110943,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellaufheizung (Heizkurve im Vorheizfenster anheben) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_SCHNELL {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_SCHNELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zulässiger Sprung zum Nutzungsbeginn ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_LBL_TOLERANZ {
@@ -110921,6 +110966,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_AUFH_LBL_TOLERANZ_WERT {
             get {
                 return ResourceManager.GetString("SIMKONF_AUFH_LBL_TOLERANZ_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumsollwert-Überhöhung (K) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_UEBERHOEHUNG", resourceCulture);
             }
         }
         

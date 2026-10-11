@@ -885,6 +885,11 @@
         internal static string SimAufheizGeltungErl => MyResource.Resource.KI_DLG_SIM_AUFH_GELTUNG_ERL;
         internal static string SimAufheizHeizkreisName => MyResource.Resource.SIMKONF_AUFH_LBL_HEIZKREIS;
         internal static string SimAufheizHeizkreisErl => MyResource.Resource.KI_DLG_SIM_AUFH_HEIZKREIS_ERL;
+        // Die Schnellaufheizung (SA3a).
+        internal static string SimAufheizSchnellName => MyResource.Resource.SIMKONF_AUFH_LBL_SCHNELL;
+        internal static string SimAufheizSchnellErl => MyResource.Resource.KI_DLG_SIM_AUFH_SCHNELL_ERL;
+        internal static string SimAufheizUeberhoehungName => MyResource.Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG;
+        internal static string SimAufheizUeberhoehungErl => MyResource.Resource.KI_DLG_SIM_AUFH_UEBERHOEHUNG_ERL;
         // Die Vorheizzeit der Zone (Welle AH-V5).
         internal static string ZonVorheizzeitName => MyResource.Resource.ZONDLG_LBL_VORHEIZZEIT;
         internal static string ZonVorheizzeitErl => MyResource.Resource.KI_DLG_ZON_VORHEIZZEIT_ERL;

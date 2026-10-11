@@ -231,9 +231,10 @@ public class KiSimulationMaskeTests : IDisposable
     /// Wärmepumpen im Kühlbetrieb.</para>
     /// <para>AH‑V5: vierundachtzig — die sieben Felder des Vorheizens (Verfahren, Vorheizzeit, Toleranz mit Art,
     /// Regelgenauigkeit, Geltung, Heizkreis).</para>
+    /// <para>SA3a: sechsundachtzig — Schalter und Überhöhung der Schnellaufheizung.</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_vierundachtzig_Felder_an()
+    public void Die_Ansicht_meldet_sechsundachtzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -245,8 +246,8 @@ public class KiSimulationMaskeTests : IDisposable
         // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5), dazu die zwei des Aufschlags (O1b)
         // und die Betriebsbereiche der Wärmepumpe (UB-E4), dazu Teillast und Takten der Kältemaschinen (KM3-E3-b)
         // und die Folge der Kälteerzeuger mit ihrem Schalter (KB-D) und die drei des Bereichs „Kälte“ (KB-B).
-        // AH-V5: die sieben Felder des Vorheizens.
-        Assert.Equal(84, felder.Count);
+        // AH-V5: die sieben Felder des Vorheizens; SA3a: die zwei der Schnellaufheizung.
+        Assert.Equal(86, felder.Count);
     }
 
     /// <summary>
@@ -469,6 +470,7 @@ public class KiSimulationMaskeTests : IDisposable
             "aufheiz_aufschlag_h", "aufheiz_aufschlag_prozent",
             "aufheiz_verfahren", "aufheiz_vorheizzeit", "aufheiz_toleranz_art", "aufheiz_toleranz",
             "aufheiz_genauigkeit", "aufheiz_geltung", "aufheiz_heizkreis",
+            "aufheiz_schnell", "aufheiz_ueberhoehung",
             "einspeisegrenze", "einspeisegrenze_einheit",
             "desinfektion", "desinfektion_intervall", "desinfektion_stunde",
             "desinfektion_zieltemperatur", "desinfektion_volumen",
@@ -859,6 +861,55 @@ public class KiSimulationMaskeTests : IDisposable
         SimulationParameterDienste wege = probe.Wege();
         wege.AufheizvorgabeSchreiben = v => { geschrieben.Add(v); return antwort; };
         return new SimulationKiSicht(() => null, () => probe.Stand, () => wege, () => null, () => "", () => "");
+    }
+
+    /// <summary>
+    /// <b>Schnellaufheizung (SA3a):</b> Schalter und Überhöhung lesen und schreiben über denselben Weg wie die Maske; der
+    /// Schalter nur bei „Vorgabe“ oder „Berechnet“, die Überhöhung nur bei Schalter an und im Bereich &gt; 0 … 10 K — sonst
+    /// benannt abgelehnt, der Stand bleibt.
+    /// </summary>
+    [Fact]
+    public void Die_Schnellaufheizung_ist_les_und_setzbar_und_lehnt_benannt_ab()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<WindowsFormsApplication1.Aufheizvorgabe>();
+        WindowsFormsApplication1.Aufheizvorgabe rampe = new(true, null!, null, null, null!);
+        SimulationKiSicht sicht = AufheizSicht(probe, rampe, geschrieben);
+        Assert.False(sicht.AufheizSchnell);
+        Assert.Null(sicht.AufheizUeberhoehungK);
+        // Bei der Sollwertrampe steht der Schalter nicht auf der Maske.
+        var ex = Assert.Throws<InvalidOperationException>(() => sicht.AufheizSchnell = true);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_SCHNELL, ex.Message);
+        Assert.Empty(geschrieben);
+
+        probe.Stand.Aufheizung = rampe.MitVorheizen(new WindowsFormsApplication1.Vorheizvorgabe(WindowsFormsApplication1.Aufheizverfahren.Berechnet));
+        // Überhöhung bei Schalter aus: abgelehnt.
+        Assert.Throws<InvalidOperationException>(() => sicht.AufheizUeberhoehungK = 3.0);
+        sicht.AufheizSchnell = true;
+        Assert.True(probe.Stand.Aufheizung.Vorheizen.Schnellaufheizung);
+        Assert.Null(probe.Stand.Aufheizung.Vorheizen.UeberhoehungK);
+        sicht.AufheizUeberhoehungK = 3.5;
+        Assert.Equal(3.5, probe.Stand.Aufheizung.Vorheizen.UeberhoehungK);
+        int n = geschrieben.Count;
+        ex = Assert.Throws<InvalidOperationException>(() => sicht.AufheizUeberhoehungK = 0.0);
+        Assert.Contains("> 0 bis 10", ex.Message);
+        Assert.Throws<InvalidOperationException>(() => sicht.AufheizUeberhoehungK = 10.5);
+        Assert.Equal(n, geschrieben.Count);
+        Assert.Equal(3.5, probe.Stand.Aufheizung.Vorheizen.UeberhoehungK);
+        // Aus behält die Überhöhung; leer = Vorgabe.
+        sicht.AufheizSchnell = false;
+        Assert.False(probe.Stand.Aufheizung.Vorheizen.Schnellaufheizung);
+        Assert.Equal(3.5, probe.Stand.Aufheizung.Vorheizen.UeberhoehungK);
+        sicht.AufheizSchnell = true;
+        sicht.AufheizUeberhoehungK = null;
+        Assert.Null(probe.Stand.Aufheizung.Vorheizen.UeberhoehungK);
+        Assert.Equal(probe.Stand.Aufheizung, geschrieben.Last());
+
+        // Die Brücke liest beide Felder.
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+        Dictionary<string, string> werte = Werte();
+        Assert.Equal("", werte["aufheiz_ueberhoehung"]);
+        Assert.True(werte.ContainsKey("aufheiz_schnell"));
     }
 
     /// <summary>
