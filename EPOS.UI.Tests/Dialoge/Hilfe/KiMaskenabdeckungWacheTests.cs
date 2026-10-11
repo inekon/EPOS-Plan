@@ -329,7 +329,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Die zwei Vorgaben der Installation (Konzept Berichtsvorlagen 10.3) sind zwei Auswahlfelder: 10 → 12.
         // AH-V5 (F14 (a)): die Vorbelegung der Vorheiztoleranz - Katalogfelder neue_projekte_vorheiz_art und
         // neue_projekte_vorheiz_wert (12 → 14).
-        new("EinstellungenDialog", 14, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2); die zwei Vorgaben der Installation sind die Wahlfelder bericht_vorgabe_word und bericht_vorgabe_excel"),
+        // Zusammen mit AH-V5 (neue_projekte_vorheiz_art und -wert, 14) und den fünf Zapfprofil-Vorgaben: 19.
+        new("EinstellungenDialog", 19, "die fünf Rechenvorgaben des Zapfprofils der Rubrik „Entwicklung“ (Entwicklerbereich ZAPFPROFIL_VORGABEN, nur im Entwicklermodus) bleiben draußen — der Assistent steuert keinen Entwicklerbereich; Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2); die zwei Vorgaben der Installation sind die Wahlfelder bericht_vorgabe_word und bericht_vorgabe_excel"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),

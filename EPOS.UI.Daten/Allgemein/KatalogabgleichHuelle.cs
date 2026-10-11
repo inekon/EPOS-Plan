@@ -57,6 +57,8 @@ namespace WindowsFormsApplication1
             ["Wiederherstellen"] = new Func<string, string, Task<KatalogabgleichAntwort>>(
                 (tabelle, schluessel) => Task.FromResult(Wiederherstellen(tabelle, schluessel))),
             ["HilfeSchluessel"] = "Form_Katalogabgleich.btn_Help",
+            // Entwicklerbereich KATALOG_WIEDERHERSTELLEN: die Knöpfe „Wiederherstellen“ nur im Entwicklermodus.
+            ["Entwickler"] = Entwicklermodus.Aktiv,
         };
 
         /// <summary>Das Textbündel aus dem Ressourcenkatalog.</summary>

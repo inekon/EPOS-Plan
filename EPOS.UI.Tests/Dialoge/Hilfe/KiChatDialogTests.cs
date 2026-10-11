@@ -141,10 +141,12 @@ public class KiChatDialogTests : EposBunitContext
         KiChatTexte? texte = null,
         string kontext = "Bereich: Projektverwaltung",
         bool hilfeBetrieb = false,
-        IReadOnlyList<KiAktion>? aktionen = null)
+        IReadOnlyList<KiAktion>? aktionen = null,
+        bool entwickler = true)
     {
         return Render<KiChatDialog>(p =>
         {
+            p.Add(x => x.Entwickler, entwickler);   // Entwicklerbereich KI_WERKZEUGE
             p.Add(x => x.Texte, texte ?? Texte())
              .Add(x => x.Kontext, kontext)
              .Add(x => x.HilfeBetrieb, hilfeBetrieb)
@@ -164,6 +166,20 @@ public class KiChatDialogTests : EposBunitContext
     /// <b>Regelbetrieb:</b> „Fragen" und „Nur suchen", Aktionsschalter, Werkzeuge,
     /// Vorschau, Protokoll, Einstellungen und der Verweis auf den Rechtshinweis.
     /// </summary>
+    /// <summary>Entwicklerbereich KI_WERKZEUGE: ohne Kennzeichen kein „Werkzeuge…“, kein „Protokoll anzeigen“; „Was wird gesendet?“ bleibt.</summary>
+    [Fact]
+    public void Ohne_Entwicklermodus_fehlen_Werkzeuge_und_Protokoll()
+    {
+        var ohne = Zeigen(entwickler: false);
+        Assert.Empty(ohne.FindAll("[data-bereich='KI_WERKZEUGE']"));
+        Assert.DoesNotContain(ohne.FindAll("button"), b => b.TextContent.Trim() == Texte().Werkzeuge);
+        Assert.DoesNotContain(ohne.FindAll("button"), b => b.TextContent.Trim() == Texte().Protokoll);
+        Assert.Contains(ohne.FindAll("button"), b => b.TextContent.Trim() == Texte().Vorschau);
+
+        var mit = Zeigen();
+        Assert.Equal(2, mit.FindAll("[data-stufe='entwickler'][data-bereich='KI_WERKZEUGE']").Count);
+    }
+
     [Fact]
     public void Regelbetrieb_zeigt_alles()
     {

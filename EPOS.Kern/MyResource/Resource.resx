@@ -52485,5 +52485,48 @@ Chart</value>
   <data name="ENTW_WEBWERKZEUGE_NICHT" xml:space="preserve">
     <value>Die Entwicklerwerkzeuge der Oberfläche sind gerade nicht verfügbar.</value>
   </data>
+  <!-- Administration und Support, Stufe 1 (Welle 1b) -->
+  <data name="KI_ABSAGE_NUR_ENTWICKLER" xml:space="preserve">
+    <value>Diese Funktion ist in Ihrer Fassung nicht freigegeben.</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_ENTWICKLUNG" xml:space="preserve">
+    <value>Entwicklung</value>
+  </data>
+  <data name="ADM_SET_HINT_ENTWICKLUNG" xml:space="preserve">
+    <value>Rechenvorgaben des Zapfprofils für Entwicklung und Prüfung. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Zapfprofil: Temperatur der Literanzeige</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Zahl in °C mit Dezimalpunkt, z. B. 45; leer = Parameter des Katalogs. Wirkt nur auf die Kennzahlen, nie auf die Reihe.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Zapfprofil: Schwelle der Stundenzählung</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Zahl in kW mit Dezimalpunkt, z. B. 0.5; leer = Parameter des Katalogs.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_NENNINHALTE" xml:space="preserve">
+    <value>Zapfprofil: Speicher-Nenninhalte</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_NENNINHALTE" xml:space="preserve">
+    <value>Liste in Litern, streng aufsteigend und positiv, getrennt durch Semikolon oder Leerzeichen, z. B. 300; 400; 500; leer = Parameter des Katalogs.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_KATALOGORDNER" xml:space="preserve">
+    <value>Zapfprofil: Ordner des Katalogimports</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_KATALOGORDNER" xml:space="preserve">
+    <value>Ordnerpfad, in dem die Wahl des Katalogpakets beginnt; leer = keine Vorgabe. Der Import merkt sich den zuletzt gewählten Ordner hier.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_IMPORTORDNER" xml:space="preserve">
+    <value>Zapfprofil: Ordner des Typtagimports</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_IMPORTORDNER" xml:space="preserve">
+    <value>Ordnerpfad, in dem die Wahl der Typtagdatei beginnt; leer = keine Vorgabe.</value>
+  </data>
+  <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
+    <value>Die Rechenvorgaben des Zapfprofils konnten nicht gespeichert werden: {0}</value>
+  </data>
 </root>
 
