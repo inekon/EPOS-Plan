@@ -105,7 +105,7 @@ Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- 
 * '''Name''', '''Hersteller''', '''Beschreibung'''.
 * '''Wärmepumpentyp''', '''Leistungsstufen''', '''Aufstellung''', '''Baujahr'''.
 * '''Nennleistung''', '''Heizstab''', '''Kühlleistung'''.
-* '''Gerätegrenzen''' – eine eigene Gruppe mit Auslegungs-, größter und kleinster Spreizung, Mindestvolumenstrom, größtem Rücklauf, Bezugsrücklauf, Abwertung je Kelvin Rücklauf und Kältemittel; Bedeutung unter [[Programm Dokumentation/Wärmepumpe#geraetegrenzen|Wärmepumpe: Gerätegrenzen]].
+* '''Gerätegrenzen''' – eine eigene Gruppe mit Auslegungs-, größter und kleinster Spreizung, Mindestvolumenstrom, größtem Rücklauf, Bezugsrücklauf, Abwertung je Kelvin Rücklauf und Kältemittel; Bedeutung unter [[Programm Dokumentation/Wärmepumpe#geraetegrenzen|Wärmepumpe: Gerätegrenzen]]; das Kältemittel wählt die Klappliste der Kältemittelliste ([[#kaeltemittel|Kältemittel]]).
 * {{Anker|wp-mindestleistung}}'''Mindestleistung''' – in kW, die kleinste Leistung, auf die das Gerät herunterregelt; leer = es moduliert bis null. Unter ihr taktet das Gerät, und die Simulation rechnet den Taktverlust ([[Programm Dokumentation/Wärmepumpe#takten|Wärmepumpe: Takten]]).
 * '''Teillastkoeffizient C_d''' – Faktor zwischen 0 und 1 für den Taktverlust nach EN 14825; leer gilt die Vorgabe 0,9 der Norm. In den Projektdialogen stehen beide Werte nur lesend.
 * '''Modulkosten''' – in einer eigenen Gruppe ''Kosten'', nur lesend, mit einer Herleitungszeile darunter: Gerätekosten laufen über die Kostenverwaltung und nicht über ein Eingabefeld dieser Maske.
@@ -123,6 +123,22 @@ Die Verwaltung ''Kältemaschinen'' (Administration → Wärme- und Kälteerzeugu
 
 * ''Typkennfelder laden…'' legt nach einer Rückfrage die eingebauten Typkennfelder (Luft, Trockenkühler, Nasskühler und Wasser; Scroll, Schraube, Turbo und Hubkolben) als gesperrte Sätze an; vorhandene Sätze bleiben unverändert, die Meldung nennt die Zahl der neuen und übersprungenen Sätze. Ein Typkennfeld trägt keinen Herstellernamen.
 * ''Import…'' liest Kältemaschinen aus einer Kurvendatei oder aus einer der drei CSV-Vorlagen ein – Kennfeld, Nennwerte oder Ökodesign-Datenblatt A–D ([[#import-kaeltemaschinen|Import Kältemaschinen]]); gesperrte Sätze überschreibt der Import nie. Auf dem iPad steht der Import aus einer Datei nicht zur Verfügung, ''Typkennfelder laden…'' schon.
+
+{{Anker|kaeltemaschine-kaeltemittel}}
+'''Kältemittel.''' Das Feld ''Kältemittel'' des Katalogdialogs ist eine Klappliste über die Kältemittelliste ([[#kaeltemittel|Kältemittel]]); sie zeigt Code und Bezeichnung. Ein Gerät, dessen Kältemitteltext in der Liste fehlt, steht als ''nicht zugeordnet: <Text>'' in der Klappliste und bleibt wählbar; ohne Wahl gilt ''— kein Kältemittel —''. Unter der Klappliste stehen Lesezeilen mit den Angaben der gewählten Zeile: ''GWP'' mit Herkunft (aus der Kältemitteltabelle oder Geräteangabe), F-Gas, natürlich, Sicherheitsgruppe, PFAS-Status (''PFAS'', ''mit PFAS-Bestandteil'', ''kein PFAS'') und der Status der Zeile (gesichert oder vorläufig). Weicht der Geräte-GWP um mehr als 1 % vom Tabellenwert ab, steht ein Hinweis darunter; die Zulässigkeitsprüfung nimmt den Tabellenwert, bei einem nicht zugeordneten Kältemittel den Geräte-GWP. Die Schnellwahl ''GWP aus Kältemittel übernehmen'' setzt den Geräte-GWP auf den Wert der Tabelle.
+
+== Kältemittel ==
+{{Anker|kaeltemittel}}
+
+Die Verwaltung ''Kältemittel'' (Administration → Daten & Import → ''Kältemittel…'') führt die Kältemittelliste, aus der Kältemaschinen und Wärmepumpen ihr Kältemittel wählen. Die Liste zeigt je Zeile ''Code'', ''Bezeichnung'', ''Gruppe'', ''GWP'', ''F-Gas'', ''natürlich'', ''Sicherheitsgruppe'', ''PFAS'' und ''Status''; unter der Liste stehen die Fundstellen des GWP-Werts und der übrigen Kennzeichen.
+
+* '''Herkunft der Werte:''' Die ausgelieferten GWP-Werte und Kennzeichen stammen aus der Verordnung (EU) 2024/573 über fluorierte Treibhausgase; die Fundstelle steht je Zeile.
+* '''Status:''' ''gesichert'' heißt, der Wert ist belegt; ''vorläufig'' heißt, die Zeile ist noch nicht abschließend belegt. Leer wird beim Speichern ''vorläufig''.
+* '''Ausgelieferte Zeilen''' tragen das Schloss und sind nur lesbar; ''Schloss aufheben…'' macht sie zu eigenen Zeilen, die sich ändern lassen.
+* '''Eigene Zeilen''' legt ''Neu'' an; der Code ist ein Kurzzeichen nach ISO 817 und ohne Rücksicht auf Groß- und Kleinschreibung eindeutig.
+* '''Löschen''' geht nur für eine Zeile, die keine Kältemaschine verwendet. Wird die Zeile verwendet, nennt die Verwaltung die Zahl der Geräte, und der Code bleibt fest.
+
+Fehlende Angaben (leeres GWP, leeres F-Gas-Kennzeichen) heißen ''unbekannt''; die Zulässigkeitsprüfung stuft ein solches Kältemittel dann als nicht prüfbar ein ([[Programm Dokumentation/Kälteerzeugung#kaeltemittel-zulaessigkeit|Kälteerzeugung: Zulässigkeit des Kältemittels]]). Hat eine Datenbank keine Kältemitteltabelle, meldet die Verwaltung das und bleibt leer.
 
 == PV-Module ==
 {{Anker|pv-module}}

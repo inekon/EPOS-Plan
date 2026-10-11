@@ -180,7 +180,7 @@ Die Gruppe ''Gerätegrenzen'' der Wärmepumpe (Katalog und Projektkopie) beschre
 * '''Mindestvolumenstrom''' – in Prozent des Auslegungsvolumenstroms; er begrenzt die Spreizung nach oben.
 * '''Größter Rücklauf''' – in °C, die Abschaltgrenze für den Rücklauf.
 * '''Bezugsrücklauf''' und '''Abwertung je Kelvin Rücklauf''' – ab welchem Rücklauf in °C Wärmeleistung und Leistungszahl je Kelvin um den angegebenen Prozentsatz abgewertet werden, bis zum größten Rücklauf; leer gilt die Vorgabe des Kältemittels, 0 schaltet die Abwertung ab.
-* '''Kältemittel''' – Auswahl; die Schnellwahl füllt die Felder mit den Vorgaben des Kältemittels, wo es welche gibt, und lässt sich überschreiben.
+* '''Kältemittel''' – Auswahl aus der Kältemittelliste ([[Programm Dokumentation/Gerätekataloge#kaeltemittel|Gerätekataloge: Kältemittel]]); darunter eine Lesezeile mit GWP, F-Gas, natürlich, Sicherheitsgruppe und PFAS-Status der gewählten Zeile, leer bei einem Kältemittel ohne Zeile in der Liste. Die Schnellwahl füllt die Felder mit den Vorgaben des Kältemittels, wo es welche gibt, und lässt sich überschreiben.
 
 === Konfiguration ===
 
@@ -194,6 +194,7 @@ Die Gruppe ''Gerätegrenzen'' der Wärmepumpe (Katalog und Projektkopie) beschre
 * {{Anker|betriebsbereiche}}'''Betriebsbereiche''' – mit einer Einbindung teilt EPOS-Plan jede Stunde einem von vier Bereichen zu: Wärmepumpe allein, parallel mit dem zweiten Erzeuger, Vorwärmung oder nur Kessel. Die Stunden und die Wärme je Bereich stehen im Reiter ''Wärmepumpe'' der [[Programm Dokumentation/Simulationsergebnisse#betriebsbereiche|Simulationsergebnisse]].
 * {{Anker|energietraeger}}'''Energieträger''' – die Wahl erfolgt in zwei Stufen: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe. Vorbelegt ist der Stromträger des Projekts; ein Gruppenwechsel wählt die erste Art der Gruppe. Strompreis, Aufschläge und Emissionsfaktor der Wärmepumpe folgen dieser Wahl.
 * '''Kühlbetrieb''' – ''Maschine auch zum Kühlen benutzen'' mit Kühl-Vorlauf, Hilfsstromanteil, Stromträger und Abrechnung des Kältestroms. Ohne Kühlkennlinie im Projekt oder mit einem Pufferspeicher als Quelle ist der Schalter gesperrt und steht ohne Haken; der Grund steht darunter. Siehe [[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]].
+* {{Anker|kaeltemittel-zulaessigkeit}}'''Zulässigkeit''' – eine Lesezeile im Anlagendialog nennt, ob das Kältemittel zum Inbetriebnahmejahr des Projekts zulässig ist, einen Hinweis auslöst oder nicht prüfbar ist; ohne Jahr oder ohne Kältemittel steht dort ''nicht geprüft''. Sole-Wasser- und Wasser-Wasser-Wärmepumpen gelten als nicht prüfbar. Die Prüfung weist nur hin: [[Programm Dokumentation/Kälteerzeugung#kaeltemittel-zulaessigkeit|Kälteerzeugung: Zulässigkeit des Kältemittels]].
 
 === Einstellungen der Simulation ===
 
