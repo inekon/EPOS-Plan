@@ -309,7 +309,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 | Stufe | Inhalt | Stand |
 |---|---|---|
 | 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #974); die Zapfprofil-Vorgaben sind Anwenderrubrik „Zapfprofil" statt Entwicklerbereich (Nachzug 11.10.2026, #986) |
-| 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Microsoft-Konto, Seite. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #985); Nachzug Quick Assist (#998); offen beim Anwender: Microsoft-Konto des Supports, Fernwartungsseite als Anleitung |
+| 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Microsoft-Konto, Seite. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #985); Nachzug Quick Assist (#1001); offen beim Anwender: Microsoft-Konto des Supports, Fernwartungsseite als Anleitung |
 | 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | umgesetzt (11.10.2026, #987): 3a (Dialog, Diagnoseblock, Geste im Dialog), 3b (Supportpaket) |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |
 
