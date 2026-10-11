@@ -40,6 +40,13 @@
 //    stehen ganz zwischen beiden. Gegenprobe: dasselbe Fenster ohne die Token muss rot
 //    werden.
 //
+//  LIZENZBANNER (Fall „lizenzbanner"): das Banner der AppWurzel (Baustein Lizenzbanner,
+//    Lesemodus-Satz, bricht im schmalen Fenster um) steht in #app VOR einem Dialog voller
+//    Hoehe, ohne Fenstermarke wie in der AppWurzel auf iOS - je Katalogdialog (Bedarf) und
+//    Katalogauswahl (Heizkessel). Das Dokument rollt nicht (scrollHeight = clientHeight),
+//    das Banner steht oben, der Kopf des Dialogs darunter, die Schlussleiste im Fenster.
+//    Gegenprobe: dasselbe mit --epos-banner-oben: 0px !important muss rot werden.
+//
 //  GEGENPROBE (laeuft mit, abschaltbar mit --ohne-gegenprobe): dieselben
 //  Fensterdialoge OHNE Fenstermarke (?marke=0) muessen die Haft-Kriterien
 //  verfehlen, und MIT Marke, aber ohne scroll-padding muss der Tabulator
@@ -458,6 +465,40 @@ async function nichtsRollt(seite, name, melden, rd = { oben: 0, unten: 0 }) {
   return { n, listen: a.listen, kopf: a.kopf, fuss: a.fussBoden, dokument: a.dokument };
 }
 
+/** Lizenzbanner vor einem Dialog voller Hoehe; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
+const LIZENZFAELLE = ['katalog', 'heizkessel'];
+async function lizenzbanner(browser, f, fall, melden, gegen = false) {
+  const name = `lizenzbanner ${fall} ${f.breite}x${f.hoehe}${f.ipad ? ' iPad' : ''}`;
+  let n = 0;
+  const m = melden ? (t => { n++; melde(name, t); }) : (() => n++);
+  const seite = await oeffnen(browser, fall, f, '&lizenz=1&marke=0');
+  if (gegen) await seite.addStyleTag({ content: 'html { --epos-banner-oben: 0px !important; }' });
+  await seite.waitForSelector('body > #app > .epos-lizenzbanner > .epos-warnbanner', { timeout: 20000 });
+  await seite.waitForTimeout(300);
+  const r = await seite.evaluate(() => {
+    const b = document.querySelector('body > #app > .epos-lizenzbanner').getBoundingClientRect();
+    const d = document.querySelector('body > #app > .epos-dialog');
+    const kopf = d.querySelector(':scope > .epos-dialog-kopf') || d.firstElementChild;
+    const fuss = [...d.querySelectorAll('.epos-knopf--primaer')].map(k => k.parentElement).pop()
+      || d.querySelector('.epos-dialog-fuss');
+    const dok = document.scrollingElement;
+    return { bOben: b.top, bUnten: b.bottom, token: getComputedStyle(document.documentElement).getPropertyValue('--epos-banner-oben').trim(),
+      dok: dok.scrollHeight, innen: dok.clientHeight, kopf: kopf.getBoundingClientRect().top,
+      fuss: fuss ? fuss.getBoundingClientRect().bottom : -1, dialogUnten: d.getBoundingClientRect().bottom };
+  });
+  const rd = rand(f);
+  if (r.dok > r.innen + TOL) m(`das Dokument rollt (${r.dok} > ${r.innen} px)`);
+  if (r.bOben < rd.oben - TOL) m(`Banner beginnt bei ${zahl(r.bOben)} px, ueber dem sicheren Abstand`);
+  if (r.kopf < r.bUnten - TOL) m(`Kopf bei ${zahl(r.kopf)} px unter dem Banner (${zahl(r.bUnten)} px)`);
+  if (r.fuss < 0 || r.fuss > r.innen - rd.unten + TOL) m(`Schlussleiste endet bei ${zahl(r.fuss)} px, Fenster ${r.innen - rd.unten} px`);
+  if (r.dialogUnten > r.innen - rd.unten + TOL) m(`Dialog endet bei ${zahl(r.dialogUnten)} px, Fenster ${r.innen - rd.unten} px`);
+  if (melden) console.log(`    Banner ${zahl(r.bOben)}..${zahl(r.bUnten)} px (Token ${r.token}), Kopf ${zahl(r.kopf)}, Schlussleiste bis ${zahl(r.fuss)}, `
+    + `Dokument ${r.dok}/${r.innen} px`);
+  if (FOTOS && melden) await seite.screenshot({ path: `${FOTOS}/lizenzbanner_${fall}_${f.breite}.png` });
+  await seite.close();
+  return n;
+}
+
 // ---------------------------------------------------------------------------
 //  Lauf
 // ---------------------------------------------------------------------------
@@ -564,6 +605,11 @@ try {
       console.log(`    Kopf ${zahl(mit.kopf.top)}..${zahl(mit.kopf.bottom)}, Fuss ${zahl(mit.fuss.top)}..${zahl(mit.fuss.bottom)} px, `
         + `Dokument ${mit.dokument} px, ${mit.kopfPos}/${mit.fussPos}; mit = ohne Marke: ${a === b}`);
     }
+
+    if (!NUR || NUR === 'lizenzbanner') for (const fall of LIZENZFAELLE) {
+      console.log(`- lizenzbanner ${fall} ${kennung}`);
+      await lizenzbanner(browser, f, fall, true);
+    }
   }
 
   // -------------------------------------------------------------- Gegenprobe
@@ -649,6 +695,12 @@ try {
         if (r7.n === 0) gegenGruen++;
         await s7.close();
       }
+    }
+    // Lizenzbanner ohne das Token: das Dokument rollt um die Bannerhoehe.
+    if (!NUR || NUR === 'lizenzbanner') for (const f of FENSTER) for (const fall of LIZENZFAELLE) {
+      const n8 = await lizenzbanner(browser, f, fall, false, true);
+      console.log(`    Lizenzbanner ohne --epos-banner-oben ${fall} ${f.breite}x${f.hoehe}: ${n8} Verstoesse`);
+      if (n8 === 0) gegenGruen++;
     }
     if (gegenGruen) console.log(`  GEGENPROBE GRUEN in ${gegenGruen} Faellen - die Probe misst die Regel nicht`);
     // Die Projektdialoge mit Katalogauswahl rollen nicht mehr; der einzige lange Fensterdialog des
