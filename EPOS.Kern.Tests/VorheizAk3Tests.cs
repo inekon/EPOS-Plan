@@ -148,11 +148,22 @@ namespace EPOS.Kern.Tests
             return v.An ? v : v.Eingeschaltet();
         }
 
-        /// <summary>Der ganze Projektlauf mit der Aufheizvorgabe <paramref name="vorgabe"/> (Testnaht; <c>null</c> = die des Projekts).</summary>
+        /// <summary>
+        /// Der ganze Projektlauf mit der Aufheizvorgabe <paramref name="vorgabe"/> (<c>null</c> = die des Projekts). AH-V4: Die
+        /// Vorgabe steht in den Spalten des Schritts 215 der Testkopie und wird danach zurückgesetzt — kein Testhaken im Kern.
+        /// Der Ankunftsbezug hat keine Spalte (E125); ein Lauf rechnet deshalb nur mit der Vorgabe (b).
+        /// </summary>
         internal static SimulationRunner Projektlauf(int projekt, Aufheizvorgabe vorgabe)
         {
             SimulationProtokoll.NeuStarten();
-            SimulationWaermebedarf.AufheizvorgabeTestnaht = vorgabe == null ? null : _ => vorgabe;
+            Aufheizvorgabe alt = null;
+            if (vorgabe != null)
+            {
+                Assert.Equal(Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE, (vorgabe.Vorheizen ?? Vorheizvorgabe.Sollwertrampe).Ankunftsbezug);
+                alt = KonfigurationCtrl.AufheizvorgabeLesen(projekt);
+                Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, vorgabe), "Vorgabe von " + projekt + " nicht geschrieben");
+                Assert.Equal(vorgabe.Vorheizen, KonfigurationCtrl.AufheizvorgabeLesen(projekt).Vorheizen);
+            }
             try
             {
                 var r = new SimulationRunner();
@@ -161,7 +172,7 @@ namespace EPOS.Kern.Tests
             }
             finally
             {
-                SimulationWaermebedarf.AufheizvorgabeTestnaht = null;
+                if (alt != null) KonfigurationCtrl.AufheizvorgabeSetzen(projekt, alt);
             }
         }
 
