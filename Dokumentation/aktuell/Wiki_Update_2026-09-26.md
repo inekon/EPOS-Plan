@@ -174,6 +174,12 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version offen (nach 1.2.0.10) — ausstehend
+
+Kopfsatz: 1 Satz, Version beim Anwender zu erfragen; Upload mit dem nächsten Sammel-Upload.
+
+- Seit 11.10.2026: Die Dialoge der Solarthermie- und der PV-Ganglinie führen ihre Katalogknöpfe in der Fußleiste, wählen mehrere Sätze mit Kästchen und öffnen jede Zeile mit dem Stift. (#…)
+
 ### Version offen (Vorschlag 1.2.1) — veröffentlicht 10.10.2026 (Revision 827)
 
 Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.

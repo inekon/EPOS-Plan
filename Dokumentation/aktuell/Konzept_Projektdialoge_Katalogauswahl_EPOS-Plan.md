@@ -831,6 +831,41 @@ Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier 
   „Modul Bearbeiten…" öffnete den Modulkatalog ohne Vorwahl auch ohne gewählten Satz. Ist nur ein gesperrter Satz
   gewählt, ist Neu… allein über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
 
+### 5.12 Wie gebaut (Stufe 4, Solar- und PV-Ganglinie)
+
+Beide Wirte folgen dem BHKW (5.4) in den Knöpfen und dem Stift; einen Rückweg in die Datenbank und eine Satzbearbeitung
+haben sie nicht. Hier steht nur, was abweicht.
+
+- **Baustein:** Die Knöpfe stehen in der gemeinsamen `GanglinieKatalogseite`. Mit `FussImWirt` zeichnet sie keine eigene
+  Leiste, sondern reicht drei Teile: `Fuss` (Vergleichen…, bei der PV „Nennleistung bearbeiten…“, Schloss
+  setzen/aufheben…, Löschen) für den Slot `KatalogFuss`, `FussRechts` (Import…) für `KatalogFussRechts`; den
+  Formathinweis legt der Wirt als Infoknopf in `KatalogKopf` (Schlüssel `Form_Solarganglinie.btn_Help_Import`,
+  `Form_PvGanglinie.btn_Help_Import`). Ändert sich ihr Zustand (Wahl, Kästchen, Löschen, Schloss, Import), ruft sie
+  `ZustandGeaendert`, und der Wirt zeichnet die Slots nach. Im Katalogbetrieb (Menü *Profile & Lastgänge*) trägt sie
+  dieselben Teile in der eigenen Leiste.
+- **Mehrfachwahl:** Die Katalogliste läuft im Kästchenmodus (Zeile ist die Wahl, Kästchen und Kopfhäkchen auf der
+  gefilterten Liste); `GanglinieKatalogseite.Wahl` geht als `KatalogWahl` an die `Zweispaltenauswahl`. Die Projektliste
+  ist ein `Raster` mit `Wahlkaestchen`. Übernehmen und Entfernen wirken auf die Auswahl, die Wahl folgt der Übernahme
+  (DZ1‑N2). Löschen fragt einmal: gesperrte, im Projekt geführte und anderen Projekten zugeordnete Sätze nennt die
+  Rückfrage und überspringt sie; trifft die Sperre den einzigen Satz, ist der Knopf weich gesperrt und nennt den Grund.
+- **Stift:** In beiden Listen; er öffnet die Ganglinie in der Satz‑Überlagerung als reine Ansicht (`SatzNurAnsicht`,
+  nur „Schließen“). Ein Katalogeditor fehlt, deshalb öffnet auch ein ungesperrter Katalogsatz die Ansicht; die
+  Nennleistung eines PV‑Katalogsatzes bleibt der Knopf der Fußleiste.
+- **Projektkopie:** Sie entsteht erst beim OK der Hülle (`WizardCtrl.Add_Solarganglinie` bzw. der PV-Weg) – vor dem OK
+  gibt es nichts vorzumerken, `Projektkopievormerkung` entfällt. `SolarganglinieStammCtrl.ApplyGanglinieToProjekt`
+  trägt den Ursprung `Tab_Solarganglinie.ID_Stamm` ein (Spalte seit Schemaschritt 208, kein neuer Schritt). Die
+  PV-Ganglinie gleicht weiter über den Bezeichner ab (E113): Zeichen an der Projektzeile, „weicht vom Katalog ab: …“
+  und „Aus dem Katalog erneuern…“ im Satzblock der Detailzeile – bei offener Überlagerung genau einmal dort.
+- **KT‑4:** Wirft das Lesen der Liste (oder der Verwendung) oder das Löschen, nennt der Banner der Seite den Grund
+  (`Katalogladung.Lesen`/`Loeschen`); wirft das Lesen der Kennzahlen des gewählten Satzes, nennt ihn der Banner des
+  Wirts (`Katalogladung.Satz`).
+- **Nachweis:** `EPOS.UI.Tests/Dialoge/GanglinieKatalogfussTests`, die Fälle beider Wirte in `KatalogSatzWirftTests`
+  und `KatalogListeWirftTests`, `EPOS.Kern.Tests/GanglinienProjektSchreibwegTests` (Ursprung der Kopie) und die
+  Rollbereichprobe (Fälle `solarganglinie`, `pvganglinie`: Fußleiste, Stift beider Listen, Mehrfachwahl; je
+  140 Zustände ohne Verstoß). Gemessen in 1 280 × 800: Die Ansicht über den Stift füllt den Körper (633 px, Kurve
+  1 226 × 548 px), Fußleiste nur „Schließen“; mit offener Detailzeile Projektliste 85 px, Katalogliste 147 px,
+  Satzfläche 251 px mit 153 px Kurve.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
@@ -886,7 +921,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | **1 Baustein** (umgesetzt 09.10.2026, Statuszeile #861) | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
 | **2 Heizkessel** (umgesetzt 09.10.2026, Statuszeile #873; Teil a Knöpfe und Bearbeiten, Teil b Rückweg und Schemaschritt 208) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
 | **3 Erzeuger** (umgesetzt 10.10.2026: BHKW Statuszeile #887, übrige Erzeuger Statuszeilen #905–#909, ÜS1/ÜS2 Statuszeilen #939/#940) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
-| **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
+| **4 Bedarf und Zeitreihen** (Solar-/PV-Ganglinie umgesetzt 11.10.2026, Statuszeile folgt) | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 
 **Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus

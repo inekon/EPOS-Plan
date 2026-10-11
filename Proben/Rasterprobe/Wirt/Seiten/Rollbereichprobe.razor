@@ -225,7 +225,10 @@
     private GanglinienKatalogwege Gangwege(Zeitreihenart art)
         => _gangwege.TryGetValue(art, out var w) ? w : _gangwege[art] = new GanglinienKatalogwege
         {
-            Katalogzeilen = () => Task.FromResult(Zeitreihenkatalog(art))
+            Katalogzeilen = () => Task.FromResult(Zeitreihenkatalog(art)),
+            // Stufe 4: Loeschen und Import, damit die Fussleiste der Katalogseite ihre Knoepfe traegt.
+            Loeschen = _ => Task.FromResult(false),
+            Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, false, "", "", ""))
         };
 
     private List<GanglinienProjektZeile>? _strom;
