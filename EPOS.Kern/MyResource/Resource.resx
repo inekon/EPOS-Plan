@@ -51733,9 +51733,6 @@ Chart</value>
   <data name="SIMENG_VORH_AUS" xml:space="preserve">
     <value>{0} Übergänge aus „aus“ (Heizperiode, Kalender) bekommen kein Vorheizen und zählen nicht in die Prüfung.</value>
   </data>
-  <data name="SIMENG_VORH_RUECKFALL_AK3" xml:space="preserve">
-    <value>Das Vorheizen („Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“) rechnet im geschlossenen Kreis (AK3) noch nicht; es gilt die Sollwertrampe nach Aufheizleistung.</value>
-  </data>
   <data name="SIMENG_VORH_RUECKFALL_HEIZKREIS" xml:space="preserve">
     <value>Gebäude mit Heizkreis sind vom Vorheizen ausgenommen; es gilt die Sollwertrampe nach Aufheizleistung.</value>
   </data>

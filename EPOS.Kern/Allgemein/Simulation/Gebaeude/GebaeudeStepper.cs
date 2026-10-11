@@ -79,6 +79,9 @@ namespace WindowsFormsApplication1
         /// <summary>Der Eingang des Einzonenwegs (KK3: Kühlkurve und Untergrenzen des Raumeinflusses); <c>null</c> im Mehrzonenweg.</summary>
         internal GebaeudeModellEingang EingangEinzone => _zone?.Eingang;
 
+        /// <summary>Die Zone des Einzonenwegs (V3b: Nachweis des Vorheizens am Kreisergebnis); <c>null</c> im Mehrzonenweg.</summary>
+        internal ZonenEingang ZoneEinzone => _zone;
+
         /// <summary>Die Zahl der Zonen (Länge der Liste aus <see cref="Schritt"/>).</summary>
         internal int Zonenzahl => _schleife == null ? 1 : _schleife.Laeufe.Count;
 

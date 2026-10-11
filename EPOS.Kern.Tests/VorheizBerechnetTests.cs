@@ -325,16 +325,15 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(q.Hinweise, z => z.Contains("nötig wären", StringComparison.Ordinal));
 
             SimulationProtokoll r = SimulationProtokoll.NeuStarten();
-            Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Ak3, null, "Gebäude C");
-            Assert.Contains(r.Hinweise, z => z.Contains("„Vorheizzeit berechnen“", StringComparison.Ordinal)
-                                             && z.Contains("(AK3)", StringComparison.Ordinal));
+            Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Heizkreis, null, "Gebäude C");
+            Assert.Contains(r.Hinweise, z => z.Contains("Gebäude C", StringComparison.Ordinal));
         }
 
         [Fact]
         public void Berechnet_mit_Rueckfall_rechnet_die_Sollwertrampe_bitgleich()
         {
             var an = new Aufheizvorgabe(true, null, null, null, null);
-            Aufheizvorgabe wirksam = Vorheizplanung.Wirksam(Berechnet(), Vorheizrueckfall.Ak3);
+            Aufheizvorgabe wirksam = Vorheizplanung.Wirksam(Berechnet(), Vorheizrueckfall.Heizkreis);
             Assert.False(Vorheizplanung.Anwendbar(wirksam));
             GebaeudeModellEingang a = Probeeingang(), b = Probeeingang();
             Aufheizplan pa = Aufheizoptimierung.Anwenden(ZonenEingang.Einzeln(a), an);

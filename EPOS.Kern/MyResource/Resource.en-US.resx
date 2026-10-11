@@ -51726,9 +51726,6 @@ chart</value>
   <data name="SIMENG_VORH_AUS" xml:space="preserve">
     <value>{0} transitions from “off” (heating period, calendar) get no preheating and are not checked.</value>
   </data>
-  <data name="SIMENG_VORH_RUECKFALL_AK3" xml:space="preserve">
-    <value>Preheating (“Specify preheat time” or “Calculate preheat time”) is not yet calculated in the closed loop (AK3); the setpoint ramp by preheat power applies.</value>
-  </data>
   <data name="SIMENG_VORH_RUECKFALL_HEIZKREIS" xml:space="preserve">
     <value>Buildings with heating circuit are excluded from preheating; the setpoint ramp by preheat power applies.</value>
   </data>

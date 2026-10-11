@@ -105641,15 +105641,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Vorheizen („Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“) rechnet im geschlossenen Kreis (AK3) noch nicht; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
-        /// </summary>
-        public static string SIMENG_VORH_RUECKFALL_AK3 {
-            get {
-                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_AK3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude mit Heizkreis sind vom Vorheizen ausgenommen; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
         /// </summary>
         public static string SIMENG_VORH_RUECKFALL_HEIZKREIS {
