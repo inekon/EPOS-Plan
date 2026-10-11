@@ -48,7 +48,7 @@ Rechts steht das gewählte Profil: Kategorie, Nummer, Name, Beschreibung und Que
 
 === Reiter Zuordnung ===
 
-Die Tabelle ordnet einem Schlüssel ein Profil zu: Art (DIN-Nummer, IFC-Klasse oder HottCAD-Raumtyp), Schlüssel und Profil. Die Auswahl des Profils ist nach Kategorien gegliedert und kennt ''keine''; sie wirkt sofort, auch in ausgelieferten Zeilen. Ausgelieferte Zeilen tragen ein Schloss und lassen sich nicht löschen; eigene Zeilen entfernt ''Löschen'' nach einer Rückfrage. Eine neue Zeile entsteht unter der Tabelle aus ''Art'' und ''Schlüssel'' mit ''Zeile anlegen''. Der Gebäudeimport nutzt diese Tabelle, um Zonen ein Profil vorzuschlagen.
+Die Tabelle ordnet einem Schlüssel ein Profil zu: Art (DIN-Nummer oder IFC-Klasse), Schlüssel und Profil. Die Auswahl des Profils ist nach Kategorien gegliedert und kennt ''keine''; sie wirkt sofort, auch in ausgelieferten Zeilen. Ausgelieferte Zeilen tragen ein Schloss und lassen sich nicht löschen; eigene Zeilen entfernt ''Löschen'' nach einer Rückfrage. Eine neue Zeile entsteht unter der Tabelle aus ''Art'' und ''Schlüssel'' mit ''Zeile anlegen''. Der Gebäudeimport nutzt diese Tabelle, um Zonen ein Profil vorzuschlagen.
 
 == Bedienung ==
 
@@ -67,10 +67,6 @@ Die Nutzung einer Vorlage ist ein freier Text; beim Eintippen bietet das Program
 === CSV importieren und exportieren ===
 
 Im Kopf des Blatts stehen ''CSV importieren…'' und ''CSV exportieren…''. Beim Import wählen Sie die Datei und eine eigene Zielkategorie; eine Vorschau zeigt je Zeile, was übernommen wird und was nicht, und geschrieben wird erst mit ''Übernehmen''. Der Export schreibt dasselbe Format; die Datei lässt sich wieder einlesen.
-
-=== Aus Projektdatei ===
-
-''Aus Projektdatei…'' liest die Nutzungsprofile einer HottCAD-Projektdatei und legt sie in einer eigenen Kategorie an, wahlweise ergänzend oder ersetzend. Die Beleuchtung bleibt leer; die Beleuchtungsstärke steht in der Beschreibung des Profils.
 
 == CSV-Format ==
 
