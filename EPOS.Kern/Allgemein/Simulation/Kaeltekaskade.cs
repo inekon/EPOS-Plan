@@ -250,6 +250,30 @@ namespace WindowsFormsApplication1
         /// <summary>KM3: laufende Maschinen der Vorstunde <see cref="LetzteKuehlstunde"/> (Starts der Folgeschaltung).</summary>
         internal int LaufendVorstunde;
 
+        // ---- K-F2: das Rückkühlwerk der Kältemaschine (Entwurf Split/VRF/Rückkühlwerk 5.8) ------------
+        // Nur mit Rückkühlwerk an der Anlagenzeile belegt (Kaeltemaschine.Rueckkuehlwerk); sonst bleiben sie 0.
+
+        /// <summary>K-F2: Strom der Rückkühlung [kWh] — mit gepflegtem Ventilator dessen Strom, sonst der Hilfsstrom der Rückkühlung.</summary>
+        public double RkVentilatorKwh;
+
+        /// <summary>K-F2: Wasser des Rückkühlwerks [m³] — Verdunstung, Abflutung, Drift.</summary>
+        public double RkWasserM3;
+
+        /// <summary>K-F2: Stunden, in denen das Rückkühlwerk nass lief.</summary>
+        public int RkStundenNass;
+
+        /// <summary>K-F2: Σ Rückkühltemperatur der Betriebsstunden [°C·h].</summary>
+        public double RkTemperaturSumme;
+
+        /// <summary>K-F2: Betriebsstunden des Rückkühlwerks (Stunden mit Kälte).</summary>
+        public int RkStunden;
+
+        /// <summary>K-F2: Stunden über der Nennleistung des Rückkühlwerks.</summary>
+        public int RkStundenUeberlast;
+
+        /// <summary>K-F2: mittlere Rückkühltemperatur der Betriebsstunden [°C]; <c>null</c> ohne Betriebsstunde.</summary>
+        public double? RkTemperaturMittel => RkStunden > 0 ? RkTemperaturSumme / RkStunden : (double?)null;
+
         /// <summary>Setzt das Ergebnis auf den Laufanfang.</summary>
         internal void Nullen()
         {
@@ -263,6 +287,12 @@ namespace WindowsFormsApplication1
             LastgradGewichtKwh = 0;
             LastgradKaelteKwh = 0;
             LaufendVorstunde = 0;
+            RkVentilatorKwh = 0;
+            RkWasserM3 = 0;
+            RkStundenNass = 0;
+            RkTemperaturSumme = 0;
+            RkStunden = 0;
+            RkStundenUeberlast = 0;
             Array.Clear(Kaelte_stuendlich, 0, Kaelte_stuendlich.Length);
             Array.Clear(Strom_stuendlich, 0, Strom_stuendlich.Length);
             Array.Clear(Taktstrom_stuendlich, 0, Taktstrom_stuendlich.Length);
@@ -840,6 +870,7 @@ namespace WindowsFormsApplication1
             if (s.FreieKuehlung) { e.StundenFreieKuehlung++; e.KaelteFreiKwh += s.KaelteKwh; }
             if (s.Takt) e.Taktstunden++;
             if (e.Maschine.TeillastWirksam) TeillastBuchen(e, h, s);
+            if (s.MitRueckkuehlwerk) RueckkuehlungBuchen(e, s);
 
             Deckung_stuendlich[h] += raum;
             Stromverbrauch_Kuehlung_stuendlich[h] += strom;
@@ -856,6 +887,21 @@ namespace WindowsFormsApplication1
             }
             if (ladung > 0) lade -= SpeicherLaden(h, ladung);
             if (lade < 0) lade = 0;
+        }
+
+        /// <summary>
+        /// K-F2 (Entwurf Split/VRF/Rückkühlwerk 5.8): bucht die Stunde des Rückkühlwerks — Strom der Rückkühlung, Wasser,
+        /// Nass- und Überlaststunden und die Rückkühltemperatur der Betriebsstunde.
+        /// </summary>
+        private static void RueckkuehlungBuchen(Kaelteerzeuger e, KaeltemaschinenStunde s)
+        {
+            RueckkuehlwerkStunde r = s.Rueckkuehlung;
+            e.RkVentilatorKwh += s.HilfsstromKwh;
+            e.RkWasserM3 += r.WasserM3;
+            if (r.Nass) e.RkStundenNass++;
+            if (r.Ueberlast) e.RkStundenUeberlast++;
+            e.RkTemperaturSumme += r.RueckkuehlC;
+            e.RkStunden++;
         }
 
         /// <summary>

@@ -105191,6 +105191,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ ist eine Verdunstungskühlanlage — Anzeige-, Prüf- und Betriebspflichten nach der 42. BImSchV beachten (nur Hinweis, EPOS prüft sie nicht). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_BIMSCHV {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_BIMSCHV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Der Ventilator des Rückkühlwerks „{1}“ ({2} kW) ersetzt den Hilfsstrom der Rückkühlung der Maschine ({3} kW) — er wird nicht doppelt gezählt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“ ist luftgekühlt und kennt kein Rückkühlwerk — „{1}“ bleibt unberücksichtigt. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_RKW_LUFT_IGNORIERT {
@@ -105245,11 +105263,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ rechnet mit fester Annäherung über der Bezugstemperatur; noch nicht gerechnet: {2}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ hat keine Nennleistung — lastabhängige Annäherung und Ventilator folgen dem Lastanteil der Maschinen (Nennpunkt = volle Leistung der Stunde). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Am Rückkühlwerk „{1}“ noch nicht gerechnet: {2}. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_RKW_NICHT_GERECHNET {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_RKW_NICHT_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Klima führt keine Luftfeuchte — das Rückkühlwerk „{1}“ rechnet in {2} Stunden über der Schaltgrenze trocken, ohne Befeuchtung und ohne Wasserverbrauch. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_OHNE_FEUCHTE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_OHNE_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ lag in {2} Stunden über seiner Nennleistung — der Ventilator lief dort voll, eine lastabhängige Annäherung stieg über den Nennwert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_UEBERLAST {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_UEBERLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; Wasserkosten {4} €/a (Menge × Wasserpreis, nicht in den Betriebskosten der Wirtschaftlichkeit). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_WASSER_KOSTEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; ohne Wasserpreis an der Anlage keine Wasserkosten. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS", resourceCulture);
             }
         }
         

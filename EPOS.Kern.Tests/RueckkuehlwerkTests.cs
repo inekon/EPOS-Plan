@@ -10,8 +10,8 @@ namespace EPOS.Kern.Tests
     /// <b>Rechenproben des Rückkühlwerks ohne Datenbank</b> (K-F1; Entwurf Split/VRF/Rückkühlwerk 5.3, 5.6): Mit leeren
     /// Feldern rechnet jede Bauart Bit für Bit wie die Rückkühlart, als die sie gilt
     /// (<see cref="Kaeltemaschine.Rueckkuehltemperatur(string, double, double?, out bool)"/>) — über einen Temperatur- und
-    /// Feuchtebereich und ohne Feuchte. Eine gepflegte Annäherung wirkt; was K-F1 noch nicht rechnet, liefert den Weg
-    /// <c>FEST</c> und wird als Merkmal benannt.
+    /// Feuchtebereich und ohne Feuchte — adiabat und hybrid unterhalb ihrer Schaltgrenze und ohne Feuchte (K-F2 befeuchtet
+    /// darüber). Eine gepflegte Annäherung wirkt; offen benannt bleibt nur die Reihe (K-F3).
     /// </summary>
     public class RueckkuehlwerkTests
     {
@@ -26,6 +26,10 @@ namespace EPOS.Kern.Tests
         private static IEnumerable<double?> Feuchten() => new double?[] { null, double.NaN, 0, 3, 5, 17.5, 50, 83.3, 99, 100 };
 
         public static IEnumerable<object[]> Bauarten() => RueckkuehlwerkSchema.BAUARTEN.Select(b => new object[] { b });
+
+        /// <summary>Befeuchtet die Bauart oberhalb der Schaltgrenze (K-F2)? Dann ist sie nur darunter bzw. ohne Feuchte bitgleich.</summary>
+        private static bool Befeuchtend(string bauart) =>
+            bauart is RueckkuehlwerkSchema.BAUART_ADIABAT or RueckkuehlwerkSchema.BAUART_HYBRID;
 
         private static Rueckkuehlwerk Leer(string bauart) =>
             Rueckkuehlwerk.AusModell(new RueckkuehlwerkModel { Id = 7, Bezeichner = "RK", Bauart = bauart });
@@ -42,13 +46,14 @@ namespace EPOS.Kern.Tests
             foreach (double t in Temperaturen())
                 foreach (double? f in Feuchten())
                 {
+                    if (Befeuchtend(bauart) && t > KaelteFestwerte.RKW_BEFEUCHTUNG_AB_C && f.HasValue && !double.IsNaN(f.Value)) continue;
                     double heute = Kaeltemaschine.Rueckkuehltemperatur(art, t, f, out bool ohneHeute);
                     double neu = r.Rueckkuehltemperatur(t, f, out bool ohneNeu);
                     Assert.Equal(BitConverter.DoubleToInt64Bits(heute), BitConverter.DoubleToInt64Bits(neu));
                     Assert.Equal(ohneHeute, ohneNeu);
                     faelle++;
                 }
-            Assert.True(faelle > 900);
+            Assert.True(faelle > 600);
         }
 
         [Theory]
@@ -68,7 +73,7 @@ namespace EPOS.Kern.Tests
             mit.RueckkuehlwerkSetzen(r);
             Assert.Equal(ohne.Rueckkuehlart, mit.Rueckkuehlart);
             Assert.Equal(ohne.FreieKuehlungMoeglich, mit.FreieKuehlungMoeglich);
-            foreach (double[] f in new[] { feuchte, null })
+            foreach (double[] f in Befeuchtend(bauart) ? new double[][] { null } : new[] { feuchte, null })
             {
                 double[] a = ohne.RueckkuehltemperaturenBilden(aussen, f, out int na);
                 double[] b = mit.RueckkuehltemperaturenBilden(aussen, f, out int nb);
@@ -122,47 +127,35 @@ namespace EPOS.Kern.Tests
             Assert.Equal(30.0, nan.Rueckkuehltemperatur(20.0, null, out _));
         }
 
-        public static IEnumerable<object[]> Hinweisfaelle() => new[]
+        public static IEnumerable<object[]> Gerechnete_Merkmale() => new[]
         {
-            new object[] { new RueckkuehlwerkModel { Annaeherung_Weg = "LASTABHAENGIG", Nennleistung_kW = 100 }, Rueckkuehlwerk.MERKMAL_LASTABHAENGIG },
-            new object[] { new RueckkuehlwerkModel { Freikuehlung_Schaltung = "REIHE" }, Rueckkuehlwerk.MERKMAL_REIHE },
-            new object[] { new RueckkuehlwerkModel { Ventilator_Nenn_kW = 2.5 }, Rueckkuehlwerk.MERKMAL_VENTILATOR },
-            new object[] { new RueckkuehlwerkModel { Ventilator_Regelung = "STUFEN", Ventilator_Stufen = 3 }, Rueckkuehlwerk.MERKMAL_VENTILATOR },
-            new object[] { new RueckkuehlwerkModel { Bauart = "ADIABAT" }, Rueckkuehlwerk.MERKMAL_BEFEUCHTUNG },
-            new object[] { new RueckkuehlwerkModel { Bauart = "HYBRID", Befeuchtung_Ab_C = 24 }, Rueckkuehlwerk.MERKMAL_BEFEUCHTUNG },
-            new object[] { new RueckkuehlwerkModel { Bauart = "KUEHLTURM_OFFEN", Verdunstung_Faktor = 1.1, Eindickung = 3 }, Rueckkuehlwerk.MERKMAL_WASSERBILANZ },
+            new object[] { new RueckkuehlwerkModel { Annaeherung_Weg = "LASTABHAENGIG", Nennleistung_kW = 100 } },
+            new object[] { new RueckkuehlwerkModel { Ventilator_Nenn_kW = 2.5 } },
+            new object[] { new RueckkuehlwerkModel { Ventilator_Regelung = "STUFEN", Ventilator_Stufen = 3 } },
+            new object[] { new RueckkuehlwerkModel { Bauart = "ADIABAT" } },
+            new object[] { new RueckkuehlwerkModel { Bauart = "HYBRID", Befeuchtung_Ab_C = 24 } },
+            new object[] { new RueckkuehlwerkModel { Bauart = "KUEHLTURM_OFFEN", Verdunstung_Faktor = 1.1, Eindickung = 3 } },
         };
 
         [Theory]
-        [MemberData(nameof(Hinweisfaelle))]
-        public void Was_K_F1_nicht_rechnet_liefert_den_festen_Weg_und_genau_ein_Merkmal(RueckkuehlwerkModel m, string merkmal)
+        [MemberData(nameof(Gerechnete_Merkmale))]
+        public void Was_K_F2_rechnet_ist_kein_offenes_Merkmal(RueckkuehlwerkModel m)
         {
-            Rueckkuehlwerk r = Rueckkuehlwerk.AusModell(m);
-            Assert.Equal(new[] { merkmal }, r.NichtGerechnet);
-            // Der feste Weg mit den Vorgaben der passenden Rückkühlart.
-            foreach (double t in new[] { -5.0, 12.0, 31.0 })
-                foreach (double? f in new double?[] { null, 65.0 })
-                    Assert.Equal(Kaeltemaschine.Rueckkuehltemperatur(r.Rueckkuehlart, t, f, out _), r.Rueckkuehltemperatur(t, f, out _));
-            // Die Meldung des Laufs ist EINE Aufzählung.
-            string text = SimulationControl.RueckkuehlwerkMerkmale(r.NichtGerechnet);
-            Assert.False(string.IsNullOrWhiteSpace(text));
-            Assert.DoesNotContain(";", text);
+            Assert.Empty(Rueckkuehlwerk.AusModell(m).NichtGerechnet);
         }
 
         [Fact]
-        public void Mehrere_Merkmale_stehen_in_fester_Reihenfolge_in_einer_Aufzaehlung()
+        public void Offen_bleibt_nur_die_Reihe_in_einer_Aufzaehlung()
         {
             Rueckkuehlwerk r = Rueckkuehlwerk.AusModell(new RueckkuehlwerkModel
             {
                 Bauart = "HYBRID", Annaeherung_Weg = "LASTABHAENGIG", Ventilator_Nenn_kW = 3, Drift_Anteil = 0.001,
                 Freikuehlung_Schaltung = "REIHE"
             });
-            Assert.Equal(new[]
-            {
-                Rueckkuehlwerk.MERKMAL_LASTABHAENGIG, Rueckkuehlwerk.MERKMAL_VENTILATOR, Rueckkuehlwerk.MERKMAL_BEFEUCHTUNG,
-                Rueckkuehlwerk.MERKMAL_WASSERBILANZ, Rueckkuehlwerk.MERKMAL_REIHE
-            }, r.NichtGerechnet);
-            Assert.Equal(4, SimulationControl.RueckkuehlwerkMerkmale(r.NichtGerechnet).Count(c => c == ';'));
+            Assert.Equal(new[] { Rueckkuehlwerk.MERKMAL_REIHE }, r.NichtGerechnet);
+            string text = SimulationControl.RueckkuehlwerkMerkmale(r.NichtGerechnet);
+            Assert.False(string.IsNullOrWhiteSpace(text));
+            Assert.DoesNotContain(";", text);
             // PARALLEL und FEST sind die heutigen Wege, kein Merkmal.
             Assert.Empty(Rueckkuehlwerk.AusModell(new RueckkuehlwerkModel { Annaeherung_Weg = "FEST", Freikuehlung_Schaltung = "PARALLEL" }).NichtGerechnet);
         }
