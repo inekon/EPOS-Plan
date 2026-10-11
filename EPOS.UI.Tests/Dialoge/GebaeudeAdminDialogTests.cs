@@ -141,6 +141,8 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     {
         internal readonly List<(GebaeudeKatalogDaten Daten, bool Neu, string Name)> Gespeichert = new();
         internal readonly List<string> Geloescht = new();
+        /// <summary>KT-5: Der Schreibweg wirft (gesperrte Datenbank).</summary>
+        internal bool SpeichernWirft;
         internal readonly List<(int Id, string Name)> Dupliziert = new();
         internal int Editor;
         internal int Gebaeudetypen;
@@ -201,6 +203,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
             })
             .Add(x => x.Speichern, (d, neu, name) =>
             {
+                if (pr.SpeichernWirft) throw new InvalidOperationException("Datenbank gesperrt");
                 pr.Gespeichert.Add((d.Kopie(), neu, name));
                 return new GebaeudeKatalogErgebnis(true, "");
             })
@@ -368,6 +371,29 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Contains("H_ges", cut.Find(".epos-stammblatt").TextContent);
         Assert.False(cut.Instance.AlleDatenOffen);
         Assert.Empty(cut.FindAll(".epos-gebaeude-alledaten"));
+    }
+
+    /// <summary>
+    /// <b>KT-5: Wirft der Schreibweg</b>, nennt die Meldung den Grund (<c>WURZEL_SCHREIBEN_FEHLER</c>),
+    /// die geänderten Felder bleiben stehen, und das Ausnahmeprotokoll hat einen Vermerk.
+    /// </summary>
+    [Fact]
+    public void Wirft_Speichern_bleiben_die_Eingaben_und_die_Meldung_nennt_den_Grund()
+    {
+        var p = new Protokoll { SpeichernWirft = true };
+        var cut = Aufbauen(p);
+        cut.Find(".epos-stammblatt textarea").Input("neu");
+
+        var vermerke = new List<string>();
+        void Mit(string z) { lock (vermerke) vermerke.Add(z); }
+        Ausnahmeprotokoll.Vermerkt += Mit;
+        try { Knopf(cut, "Speichern").Click(); }
+        finally { Ausnahmeprotokoll.Vermerkt -= Mit; }
+
+        Assert.Contains("Datenbank gesperrt", cut.Instance.Meldung);
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.WURZEL_SCHREIBEN_FEHLER.Split('{')[0], cut.Instance.Meldung);
+        Assert.True(cut.Instance.Geaendert);
+        Assert.Contains(vermerke, v => v.Contains("nicht gespeichert"));
     }
 
     /// <summary>

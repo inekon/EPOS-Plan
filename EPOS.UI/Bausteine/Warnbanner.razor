@@ -46,21 +46,17 @@
     <div class="@Klassen" role="alert">
         <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
         <span class="epos-warnbanner-text">@Text</span>
-        @if (HatListe)
-        {
-            <span class="epos-warnbanner-zahl">· @Zahltext</span>
-            @* DER KLAPPER DER HINWEISLISTE (Anwenderbefund 10.10.2026: rund 25 Hinweise
-               eines Simulationslaufs, zu einem Absatz verkettet, deckten die ganze Seite).
-               Zugeklappt traegt das Banner EINE Zeile - Kopftext und Zahl -, aufgeklappt
-               steht die Liste darunter in einem Rollbereich begrenzter Hoehe. Ein echter
-               Knopf: Enter und Leertaste bedient der Browser, aria-expanded und
-               aria-controls sagen der Sprachausgabe, was er tut. *@
-            <button type="button" class="epos-warnbanner-klapper"
-                    aria-expanded="@(IstOffen ? "true" : "false")" aria-controls="@_listenId"
-                    title="@KlapperText" @onclick="Umklappen">
-                @KlapperText <span class="epos-warnbanner-chevron" aria-hidden="true">@(IstOffen ? "▴" : "▾")</span>
-            </button>
-        }
+        @* DIE HINWEISLISTE (Anwenderbefund 10.10.2026: rund 25 Hinweise eines
+           Simulationslaufs, zu einem Absatz verkettet, deckten die ganze Seite). Sie ist
+           die Klapp-Bauform des Hauses, der Baustein Hinweisklappe, eingebettet: Zugeklappt
+           traegt das Banner EINE Zeile - Kopftext, Zahl und Klapper -, aufgeklappt steht
+           die Liste darunter in ihrem Rollbereich (im Flexkasten des Banners nach hinten
+           geordnet, unter Handgriff und Kreuz). Ohne Hinweise zeichnet sie nichts. *@
+        <Hinweisklappe @ref="_klappe" Hinweise="@Hinweise" Eingebettet="true"
+                       Offen="@Anfangsoffen" EinzelnOffen="false"
+                       Klasse="epos-warnbanner-klapper" ListenKlasse="epos-warnbanner-liste"
+                       TextEiner="@ZahlEiner" TextMehrere="@ZahlMehrere"
+                       AnzeigenText="@AnzeigenText" AusblendenText="@AusblendenText" />
         @if (AktionSichtbar)
         {
             @* DER WEG VON DER MELDUNG ZUR HANDLUNG (Anwenderentscheid vom
@@ -97,15 +93,6 @@
            und Seite rollt das Banner mit und braucht ihn nicht. *@
         <button type="button" class="epos-warnbanner-schliessen" title="@SchliessenKurztext"
                 aria-label="@SchliessenKurztext" @onclick="Schliessen">✕</button>
-        @if (HatListe && IstOffen)
-        {
-            <ul class="epos-warnbanner-liste" id="@_listenId">
-                @for (int i = 0; i < Hinweise!.Count; i++)
-                {
-                    <li @key="i">@Hinweise[i]</li>
-                }
-            </ul>
-        }
     </div>
 }
 
@@ -328,28 +315,16 @@
     public bool HatListe => Hinweise is { Count: > 0 };
 
     /// <summary>
-    /// Steht die Liste offen? Die Stellung, die der Anwender waehlt, bleibt, solange das
-    /// Banner lebt - auch ueber einen neuen Text; gespeichert wird sie nicht.
+    /// Steht die Liste offen? Die Stellung, die der Anwender waehlt, fuehrt die
+    /// Hinweisklappe; sie bleibt, solange das Banner lebt - auch ueber einen neuen Text;
+    /// gespeichert wird sie nicht.
     /// </summary>
-    public bool IstOffen => _offen ?? HinweiseOffen ?? Stufe is WarnStufe.Fehler or WarnStufe.Warnung;
+    public bool IstOffen => HatListe && (_klappe?.IstOffen ?? Anfangsoffen);
 
-    private bool? _offen;
+    /// <summary>Anfangsstellung der Liste nach <see cref="HinweiseOffen"/>, sonst nach der Stufe.</summary>
+    private bool Anfangsoffen => HinweiseOffen ?? Stufe is WarnStufe.Fehler or WarnStufe.Warnung;
 
-    private readonly string _listenId = "epos-warnbanner-liste-" + Guid.NewGuid().ToString("N")[..8];
-
-    private string KlapperText => IstOffen ? AusblendenText : AnzeigenText;
-
-    private string Zahltext
-    {
-        get
-        {
-            int n = Hinweise?.Count ?? 0;
-            return n == 1 ? ZahlEiner
-                : string.Format(System.Globalization.CultureInfo.CurrentCulture, ZahlMehrere, n);
-        }
-    }
-
-    private void Umklappen() => _offen = !IstOffen;
+    private Hinweisklappe? _klappe;
 
     /// <inheritdoc/>
     public void Dispose() => Abbrechen();

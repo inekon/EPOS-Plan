@@ -281,7 +281,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // die Bestaetigung liest der Assistent nur, setzen kann sie allein der Anwender.
         // Freigabe der Importdialoge, Teil A (10.10.2026): alle Eingabestellen im Katalog.
         new("SpeicherFlottenCsvDialog", 26),
-        new("GanglinieImportOptionenDialog", 9),
+        // IM-3: erste Datenzeile und Zeilenzahl (Katalogfelder erste_datenzeile, zeilenzahl): 9 → 11.
+        new("GanglinieImportOptionenDialog", 11),
         new("SpotpreisImportDialog", 2, "die Dateiwahl (Betriebssystemdialog) und das Protokoll zählen nicht; Bezeichnung und Ablage stehen im Katalog"),
         new("ImportKonflikteDialog", 2, "Name und Aktion je Zeile stehen als Spalten im Katalog"),
         // Freigabe der Masken, Teil C (10.10.2026).

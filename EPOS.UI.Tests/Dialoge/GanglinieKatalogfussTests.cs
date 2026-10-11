@@ -234,7 +234,7 @@ public class GanglinieKatalogfussTests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Kennzahlen, _ => throw new InvalidOperationException("Reihe gesperrt")));
         KatalogKlick(cut, 0);
-        Assert.Contains("Reihe gesperrt", cut.Instance.Satzfehler);
+        Assert.Contains("Reihe gesperrt", cut.Instance.SatzFehler);
         Assert.Contains(cut.FindAll(".epos-warnbanner-text"), e => e.TextContent.Contains("Reihe gesperrt"));
     }
 }

@@ -3179,6 +3179,10 @@
         internal static string GioBlattErl => MyResource.Resource.KI_DLG_GIO_BLATT_ERL;
         internal static string GioKopfzeileName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_KOPFZEILE);
         internal static string GioKopfzeileErl => MyResource.Resource.KI_DLG_GIO_KOPFZEILE_ERL;
+        internal static string GioErsteDatenzeileName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_ERSTE_DATENZEILE);
+        internal static string GioErsteDatenzeileErl => MyResource.Resource.KI_DLG_GIO_ERSTE_DATENZEILE_ERL;
+        internal static string GioZeilenzahlName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_ZEILENZAHL);
+        internal static string GioZeilenzahlErl => MyResource.Resource.KI_DLG_GIO_ZEILENZAHL_ERL;
 
         // Form_SpotpreisImport
         internal static string SpotBezeichnerName => OhneDoppelpunkt(MyResource.Resource.PREIS_IMPORT_LABEL_BEZEICHNER);

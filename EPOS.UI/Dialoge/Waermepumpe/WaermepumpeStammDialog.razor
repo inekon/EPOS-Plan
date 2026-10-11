@@ -1101,7 +1101,9 @@
         // W14a-E-8: Die Uebersicht folgt der Auswahl - sie liest ueber den
         // BEZEICHNER, weil der Verwendungskatalog fuer alle sieben Anlagenarten
         // denselben Schluessel benutzt.
-        _uebersicht = Uebersicht?.Invoke(zeile.Bezeichner) ?? Array.Empty<Parameterwert>();
+        // KT-5: Die Übersicht liest Vergleichsdaten aus der Datenbank; wirft sie, nennt der Banner den Grund.
+        _uebersicht = Katalogladung.SatzDazu(() => Uebersicht?.Invoke(zeile.Bezeichner), zeile.Bezeichner,
+                                             ref _satzFehler) ?? Array.Empty<Parameterwert>();
 
         // Der Umschalter erscheint nur mit Kuehl-Kenndaten, und die Anzeige faellt
         // dabei auf Waerme zurueck - listBox_WP_SelectedIndexChanged:338 rief dafuer
@@ -1196,7 +1198,9 @@
         if (quelle is null) return;
 
         string alt = _duplizierQuelle;
-        KatalogSpeicherErgebnis ergebnis = Duplizieren(quelle.Id, name);
+        // KT-5: Wirft das Duplizieren, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Duplizieren(quelle.Id, name), name,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, name));
         if (!ergebnis.Ok)
         {
             _meldung = ergebnis.Meldung;

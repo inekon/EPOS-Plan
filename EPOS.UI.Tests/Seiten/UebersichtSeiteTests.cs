@@ -909,7 +909,7 @@ public class UebersichtSeiteTests : EposBunitContext
         Assert.Equal("Stamm: Haus: ok (Ergebnis-ID 357)", banner.Instance.Text);
         Assert.Equal(hinweise, banner.Instance.Hinweise);
         Assert.False(banner.Instance.IstOffen);
-        Assert.Equal("· 3 Hinweise", cut.Find(".epos-warnbanner-zahl").TextContent);
+        Assert.Equal("3 Hinweise", cut.Find(".epos-warnbanner-klapper .epos-simerg-laufband-text").TextContent);
         Assert.DoesNotContain("Puffer leer", cut.Find(".epos-warnbanner").TextContent);
     }
 

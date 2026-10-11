@@ -41,6 +41,17 @@ namespace WindowsFormsApplication1
             catch (Exception ex) { return ablehnung(Vermerken(pfad, ex)); }
         }
 
+        /// <summary>
+        /// Wie <see cref="Starten{T}"/> für einen SYNCHRONEN Weg, den die Komponente im Zeichenlauf ruft
+        /// (Vorschau und Übernahme des Raumnutzungsimports): ohne Nebenfaden, dieselbe Ablehnung.
+        /// </summary>
+        internal static T Fangen<T>(string pfad, Func<T> arbeit, Func<Importablehnung, T> ablehnung)
+        {
+            try { return arbeit(); }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex) { return ablehnung(Vermerken(pfad, ex)); }
+        }
+
         /// <summary>Wie <see cref="Starten{T}"/> für eine asynchrone Kette (Importablauf mit Rückrufen).</summary>
         internal static async Task<T> StartenAsync<T>(string pfad, Func<Task<T>> arbeit, Func<Importablehnung, T> ablehnung)
         {
