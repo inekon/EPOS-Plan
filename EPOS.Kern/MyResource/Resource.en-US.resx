@@ -50400,6 +50400,12 @@ chart</value>
   <data name="AUSWAHL_SATZ_BEARBEITEN" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="AUSWAHL_SATZ_KNOEPFE" xml:space="preserve">
+    <value>Actions for the selected record</value>
+  </data>
+  <data name="AUSWAHL_SPERRE_KATALOGSATZ" xml:space="preserve">
+    <value>Select a catalogue record</value>
+  </data>
   <data name="AUSWAHL_SATZ_BEARBEITEN_HINWEIS" xml:space="preserve">
     <value>Edit the selected record over the dialog</value>
   </data>

@@ -4292,6 +4292,12 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten { flex: 0 0 auto; margin-right: 4px; gap: 6px; }
 /* Die Kopfknoepfe des Wirts (UeS2b): seine Infoknoepfe rechts vor „Bearbeiten", Sinnbilder in jeder Stufe. */
 .epos-zweispalten-satzkopf > .epos-zweispalten-satzkopfknoepfe { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; }
+/* DIE KNOPFLEISTE AM SATZ (AW1): die Knoepfe der Katalog-Fussleiste rechts im Kopf der Detailzeile;
+   sie brechen nicht um und geben nicht nach - zuerst kuerzen Name und Kenndaten des Satzes. */
+.epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe { flex: 0 0 auto; display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 8px; margin: 0 4px 0 4px; }
+.epos-zweispalten-satzknoepfe > * { flex: 0 0 auto; white-space: nowrap; }
+/* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
 
 /* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9; verdichtet DZ1-N1): Der Baustein GanglinienGrafik
    fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,
@@ -10689,11 +10695,13 @@ table.epos-simerg-tabelle {
 
 /* Die Fokuszeile: Flaeche und linker Balken - wie im Mockup
    Administrationsdialoge_Schema. */
-.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
+.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td,
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
     background: var(--epos-karte-flaeche-hover);
 }
 
-.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td:first-child {
+.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td:first-child,
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
 }
 
@@ -10760,7 +10768,8 @@ table.epos-simerg-tabelle {
 }
 
 @media (forced-colors: active) {
-    .epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
+    .epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td,
+    .epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
         outline: 2px solid Highlight;
         outline-offset: -2px;
     }

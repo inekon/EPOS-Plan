@@ -50407,6 +50407,12 @@ Chart</value>
   <data name="AUSWAHL_SATZ_BEARBEITEN" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
+  <data name="AUSWAHL_SATZ_KNOEPFE" xml:space="preserve">
+    <value>Aktionen für den gewählten Satz</value>
+  </data>
+  <data name="AUSWAHL_SPERRE_KATALOGSATZ" xml:space="preserve">
+    <value>Katalogsatz wählen</value>
+  </data>
   <data name="AUSWAHL_SATZ_BEARBEITEN_HINWEIS" xml:space="preserve">
     <value>Den gewählten Satz über dem Dialog bearbeiten</value>
   </data>

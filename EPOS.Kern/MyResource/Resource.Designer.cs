@@ -3255,6 +3255,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen für den gewählten Satz ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_KNOEPFE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_KNOEPFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Satz gewählt ähnelt.
         /// </summary>
         public static string AUSWAHL_SATZ_LEER {
@@ -3296,6 +3305,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_SATZ_ZUSAMMENFASSUNG {
             get {
                 return ResourceManager.GetString("AUSWAHL_SATZ_ZUSAMMENFASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz wählen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SPERRE_KATALOGSATZ {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SPERRE_KATALOGSATZ", resourceCulture);
             }
         }
         
