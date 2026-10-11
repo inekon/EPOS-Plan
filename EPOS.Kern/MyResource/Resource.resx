@@ -6583,6 +6583,9 @@ Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.</value>
   <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
     <value>Umsatzsteuer</value>
   </data>
+  <data name="GESETZ_KLASSE_ANZ_FGAS" xml:space="preserve">
+    <value>F-Gase (VO 2024/573, Anhang IV)</value>
+  </data>
   <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
     <value>⚠ Ohne Kostenposition: {0} — über „Kostenverwaltung öffnen…" und dort „Planwert übernehmen…" erfassen</value>
   </data>

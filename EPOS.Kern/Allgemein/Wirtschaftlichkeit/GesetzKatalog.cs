@@ -316,7 +316,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die acht Klassen, die der Zeilendialog zur Auswahl stellt — <b>in dieser
+        /// Die neun Klassen, die der Zeilendialog zur Auswahl stellt — <b>in dieser
         /// Reihenfolge</b> und mit ihren eingefrorenen DB-Schreibweisen.
         ///
         /// <para><b>Nicht zu verwechseln mit <see cref="Klassen"/>:</b> Das ist, was in
@@ -335,7 +335,8 @@ namespace WindowsFormsApplication1
                 DbWerte.GESETZ_KLASSE_EF_NACHWEIS,
                 DbWerte.GESETZ_KLASSE_EF_BILANZ,
                 DbWerte.GESETZ_KLASSE_PEF_NACHWEIS,
-                DbWerte.GESETZ_KLASSE_UMSATZSTEUER
+                DbWerte.GESETZ_KLASSE_UMSATZSTEUER,
+                DbWerte.GESETZ_KLASSE_FGAS
             };
         }
 
@@ -397,6 +398,7 @@ namespace WindowsFormsApplication1
                 case DbWerte.GESETZ_KLASSE_EF_BILANZ: return MyResource.Resource.GESETZ_KLASSE_ANZ_EF_BILANZ;
                 case DbWerte.GESETZ_KLASSE_PEF_NACHWEIS: return MyResource.Resource.GESETZ_KLASSE_ANZ_PEF_NACHWEIS;
                 case DbWerte.GESETZ_KLASSE_UMSATZSTEUER: return MyResource.Resource.GESETZ_KLASSE_ANZ_UMSATZSTEUER;
+                case DbWerte.GESETZ_KLASSE_FGAS: return MyResource.Resource.GESETZ_KLASSE_ANZ_FGAS;
                 default: return klasse ?? "";
             }
         }
@@ -1852,8 +1854,67 @@ namespace WindowsFormsApplication1
             l.Add(N(DbWerte.GESETZ_EEG_JAHRESMARKTWERT_SOLAR, EEG, 2024, 4.624, CT, G, Q_JW + ", 2024", 6));
             l.Add(N(DbWerte.GESETZ_EEG_JAHRESMARKTWERT_SOLAR, EEG, 2025, 4.508, CT, G, Q_JW + ", 2025", 6));
 
+            FgasRegeln(l);
+
             _vorbelegung = l;
             return _vorbelegung;
+        }
+
+        /// <summary>Saat-Generation der F-Gas-Regeln (KM4-E2).</summary>
+        public const int GENERATION_FGAS = 10;
+
+        /// <summary>
+        /// <b>Generation 10 — die Regeln nach Anhang IV der Verordnung (EU) 2024/573</b> (Konzept
+        /// Kältemittel als Stammdatum 3.3 und 4.5, Entscheid E123, KM4-Q4 b). Jede Zeile ist am
+        /// amtlichen deutschen Wortlaut geprüft (ABl.-Fassung, PDF-Seite „x/86“) und trägt ihre
+        /// Fundstelle in <c>Quelle</c> — keine Textabschrift. <c>JahrVon</c> = Stichtag (1. Januar),
+        /// <c>Wert</c> = GWP-Grenze („GWP von … oder mehr“), 0 bei „jedes F-Gas“.
+        ///
+        /// <para><b>Was nicht gesät wird:</b> Nr. 9 a (Mono-Split mit Füllmenge unter 3 kg — das
+        /// Regelschema kennt das Füllmengenkriterium nicht), Nr. 8 a (steckerfertige, von Raum zu Raum
+        /// bringbare Raumklimageräte — keine Geräteklasse in EPOS-Plan), Nr. 4 bis 6 (Kälteanlagen ohne
+        /// Kühler — keine Geräteklasse) und Art. 13 (Bestand, KM4-Q12 b).</para>
+        ///
+        /// <para><b>Nr. 7 d:</b> Der Wortlaut nennt „GWP von 750“ ohne „oder mehr“; gesät ist die
+        /// Lesart „≥ 750“ wie in Nr. 9 e. Die Zeile bleibt deshalb <c>VORLAEUFIG</c>.</para>
+        /// </summary>
+        private static void FgasRegeln(List<GesetzParameter> l)
+        {
+            const string FG = DbWerte.GESETZ_KLASSE_FGAS;
+            const string OHNE = DbWerte.GESETZ_EINHEIT_OHNE;
+            const string G = DbWerte.GESETZ_STATUS_GESICHERT;
+            const string V = DbWerte.GESETZ_STATUS_VORLAEUFIG;
+            const int GEN = GENERATION_FGAS;
+            const string Q = "VO (EU) 2024/573 Anh. IV ";
+
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_ALLE_HFKW, FG, 2020, 2500.0, OHNE, G,
+                    Q + "Nr. 7 Buchst. a, S. 71/86 (nur HFKW nach Art. 3 Nr. 4)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_BIS12_GWP, FG, 2027, 150.0, OHNE, G,
+                    Q + "Nr. 7 Buchst. b, S. 72/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_BIS12_FGAS, FG, 2032, 0.0, OHNE, G,
+                    Q + "Nr. 7 Buchst. c, S. 72/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP, FG, 2027, 750.0, OHNE, V,
+                    Q + "Nr. 7 Buchst. d, S. 72/86 (Wortlaut „GWP von 750“, gelesen als ≥ 750)", GEN));
+
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_BIS12_GWP, FG, 2027, 150.0, OHNE, G,
+                    Q + "Nr. 8 Buchst. b, S. 72/86 (Höchstnennleistung)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_BIS12_FGAS, FG, 2032, 0.0, OHNE, G,
+                    Q + "Nr. 8 Buchst. c, S. 73/86 (Höchstnennleistung)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_UEBER12BIS50_GWP, FG, 2027, 150.0, OHNE, G,
+                    Q + "Nr. 8 Buchst. d, S. 73/86 (Höchstnennleistung)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_ALLE_GWP, FG, 2030, 150.0, OHNE, G,
+                    Q + "Nr. 8 Buchst. e, S. 73/86", GEN));
+
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_LUFTWASSER_BIS12_GWP, FG, 2027, 150.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. b, S. 74/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_LUFTLUFT_BIS12_GWP, FG, 2029, 150.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. c, S. 74/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_BIS12_FGAS, FG, 2035, 0.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. d, S. 74/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_UEBER12_GWP, FG, 2029, 750.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. e, S. 74/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_UEBER12_GWP, FG, 2033, 150.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. f, S. 75/86", GEN));
         }
 
         /// <summary>Kurzschreibweise für eine Vorbelegungszeile mit Wert; ohne Angabe

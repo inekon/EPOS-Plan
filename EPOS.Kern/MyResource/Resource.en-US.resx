@@ -6567,6 +6567,9 @@ After that the value will be missing from every calculation concerning that year
   <data name="GESETZ_KLASSE_ANZ_UMSATZSTEUER" xml:space="preserve">
     <value>VAT</value>
   </data>
+  <data name="GESETZ_KLASSE_ANZ_FGAS" xml:space="preserve">
+    <value>F-gases (Reg. 2024/573, Annex IV)</value>
+  </data>
   <data name="BK_KOSTEN_OHNE_POSITION" xml:space="preserve">
     <value>⚠ No cost item: {0} — record it via “Open cost management…” and then “Adopt engineering value…”</value>
   </data>

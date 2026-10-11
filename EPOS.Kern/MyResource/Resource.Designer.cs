@@ -34986,6 +34986,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die F-Gase (VO 2024/573, Anhang IV) ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_FGAS {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Gesetz ähnelt.
         /// </summary>
         public static string GESETZ_KLASSE_ANZ_KWKG {
