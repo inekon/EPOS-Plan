@@ -28544,7 +28544,7 @@ Möchten Sie das zulassen?</value>
     <value>Wasserbilanz</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_MERKMAL_REIHE" xml:space="preserve">
-    <value>freie Kühlung in Reihe (gerechnet wird parallel)</value>
+    <value>freie Kühlung in Reihe</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_BIMSCHV" xml:space="preserve">
     <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ ist eine Verdunstungskühlanlage — Anzeige-, Prüf- und Betriebspflichten nach der 42. BImSchV beachten (nur Hinweis, EPOS prüft sie nicht).</value>
@@ -28557,6 +28557,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_OHNE_FEUCHTE" xml:space="preserve">
     <value>Kältemaschine „{0}“: Das Klima führt keine Luftfeuchte — das Rückkühlwerk „{1}“ rechnet in {2} Stunden über der Schaltgrenze trocken, ohne Befeuchtung und ohne Wasserverbrauch.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ kühlt den Kaltwasserrücklauf in Reihe vor (Teil-Freikühlung); Kaltwasserspreizung {2} K aus {3}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE" xml:space="preserve">
+    <value>der Kühlübergabe der Gebäude</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE" xml:space="preserve">
+    <value>der EPOS-Vorgabe (kein Gebäude pflegt eine Kühlübergabe)</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
     <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ lag in {2} Stunden über seiner Nennleistung — der Ventilator lief dort voll, eine lastabhängige Annäherung stieg über den Nennwert.</value>

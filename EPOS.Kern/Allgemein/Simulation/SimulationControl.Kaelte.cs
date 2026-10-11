@@ -519,7 +519,8 @@ namespace WindowsFormsApplication1
         /// <b>Das Rückkühlwerk einer Kältemaschinen-Anlage</b> (K-F1; Entwurf Split/VRF/Rückkühlwerk 5.1–5.3): liest die
         /// Projektkopie aus <c>ID_Rueckkuehlwerk</c> über <see cref="RueckkuehlwerkCtrl.LadenStill"/> und setzt sie an die
         /// Maschine. Eine luftgekühlte Maschine kennt kein Rückkühlwerk — es wird dann mit Hinweis übergangen. Was am
-        /// Rückkühlwerk noch nicht gerechnet wird (Reihe, K-F3), wird einmal je Anlage benannt; dazu nennt der Lauf den
+        /// Rückkühlwerk noch nicht gerechnet wird, wird einmal je Anlage benannt (seit K-F3 rechnet jedes Merkmal, auch die
+        /// Teil-Freikühlung in Reihe — sie nennt ihre Kaltwasserspreizung samt Herkunft); dazu nennt der Lauf den
         /// ersetzten Hilfsstrom, die leere Nennleistung und die Verdunstungskühlanlage (42. BImSchV) je einmal.
         /// </summary>
         private void RueckkuehlwerkAnsetzen(KaeltemaschineAnlageModel a, Kaeltemaschine k)
@@ -536,6 +537,17 @@ namespace WindowsFormsApplication1
             }
             r.WasserpreisEurM3 = a.WasserpreisEurM3;
             k.RueckkuehlwerkSetzen(r);
+            // K-F3 (Entwurf 5.5): Teil-Freikühlung in Reihe - die Auslegungsspreizung der Kühlübergabe, sonst die Vorgabe, benannt.
+            if (r.Reihe)
+            {
+                double? spreizung = AuslegungsspreizungKuehlung(m_ID_Projekt);
+                k.ReiheSpreizungK = spreizung ?? KaelteFestwerte.REIHE_SPREIZUNG_K;
+                Protokoll.HinweisEinmal("kuehl-rkw-reihe-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_REIHE,
+                                  k.Bezeichner, r.Bezeichner, k.ReiheSpreizungK.ToString("N1", CultureInfo.CurrentCulture),
+                                  spreizung.HasValue ? MyResource.Resource.SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE
+                                                     : MyResource.Resource.SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE));
+            }
             if (r.NichtGerechnet.Count > 0)
                 Protokoll.HinweisEinmal("kuehl-rkw-nicht-gerechnet-" + a.AnlagenId,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_NICHT_GERECHNET,
@@ -580,6 +592,56 @@ namespace WindowsFormsApplication1
                 Protokoll.HinweisEinmal("kuehl-rkw-ueberlast-" + e.AnlagenID,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_UEBERLAST,
                                   e.Bezeichner, r.Bezeichner, e.RkStundenUeberlast));
+        }
+
+        /// <summary>
+        /// K-F3 (Entwurf 5.5): die Auslegungsspreizung der Kühlübergabe des Projekts [K] — je Gebäude mit
+        /// <c>Kuehluebergabe_Aktiv</c> und bekannter Kühlübergabeart <c>Kuehl_Auslegung_Ruecklauf − Kuehl_Auslegung_Vorlauf</c>
+        /// (leer die Vorgabe der Art, wie im Gebäudemodell), über alle Gebäude die kleinste positive — sie unterschätzt den
+        /// Kaltwasserstrom und damit die Teil-Freikühlung nie zu Gunsten der Anlage. <c>null</c> ohne solches Gebäude.
+        /// </summary>
+        internal static double? AuslegungsspreizungKuehlung(int idProjekt)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT Kuehl_Uebergabe_Art, Kuehl_Auslegung_Vorlauf, Kuehl_Auslegung_Ruecklauf " +
+                "FROM Tab_Gebaeude WHERE ID_Projekt = ? AND Kuehluebergabe_Aktiv = 1 ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null) return null;
+            double? kleinste = null;
+            foreach (DataRow row in dt.Rows)
+            {
+                object a = StilleDb.Feld(row, "Kuehl_Uebergabe_Art");
+                string art = a == null || a is DBNull ? null : a.ToString();
+                if (!Kuehluebergabe.ArtBekannt(art)) continue;
+                double v = StilleDb.Kommazahl(StilleDb.Feld(row, "Kuehl_Auslegung_Vorlauf"), Kuehluebergabe.VorgabeVorlaufC(art));
+                double r = StilleDb.Kommazahl(StilleDb.Feld(row, "Kuehl_Auslegung_Ruecklauf"), Kuehluebergabe.VorgabeRuecklaufC(art));
+                double d = r - v;
+                if (!(d > 0) || double.IsInfinity(d)) continue;
+                if (!kleinste.HasValue || d < kleinste.Value) kleinste = d;
+            }
+            return kleinste;
+        }
+
+        /// <summary>
+        /// K-F3 (Entwurf 5.5): der gerechnete Kühlrücklauf einer Stunde auf Stufe AK3 [°C] — kühlleistungsgewichtet über die
+        /// Zonen der Lösung mit Kühlübergabe (<see cref="Stundenergebnis.KuehlRuecklaufC"/>); NaN ohne kühlende Zone.
+        /// </summary>
+        internal static double KuehlRuecklaufDerLoesung(IReadOnlyList<Stundenergebnis>[] loesung)
+        {
+            if (loesung == null) return double.NaN;
+            double summe = 0.0, gewicht = 0.0;
+            foreach (IReadOnlyList<Stundenergebnis> g in loesung)
+            {
+                if (g == null) continue;
+                foreach (Stundenergebnis z in g)
+                {
+                    if (!(z.KuehlleistungW > 0) || double.IsNaN(z.KuehlRuecklaufC) || double.IsInfinity(z.KuehlRuecklaufC))
+                        continue;
+                    summe += z.KuehlleistungW * z.KuehlRuecklaufC;
+                    gewicht += z.KuehlleistungW;
+                }
+            }
+            return gewicht > 0 ? summe / gewicht : double.NaN;
         }
 
         /// <summary>Die nicht gerechneten Merkmale eines Rückkühlwerks als Aufzählung in der Sprache des Laufs.</summary>
@@ -818,6 +880,7 @@ namespace WindowsFormsApplication1
                                               Speicher = KaeltespeicherLesen(), ImKreis = true };
             kaskade.Beginnen(simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
             _kaeltestunde = kaskade;
+            bool mitReihe = _kaelteerzeuger.Any(e => e.Maschine?.Rueckkuehlwerk != null && e.Maschine.Rueckkuehlwerk.Reihe);
             return h =>
             {
                 foreach (KeyValuePair<Kaelteerzeuger, bool[]> z in masken)
@@ -845,7 +908,9 @@ namespace WindowsFormsApplication1
                 }
                 double d = weg.KaelteDeltaKwh[h];
                 // K3: dieselbe Abzugsstelle je Stunde (SimulationKaeltebedarf.BedarfDerKaskade, Andockpunkt für K-D).
-                kaskade.StundeRechnen(h, kaelte.BedarfDerKaskade(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h]), vK);
+                // K-F3 (Entwurf 5.5): der gerechnete Kühlrücklauf der Stunde - nur eine Kältemaschine in Reihe liest ihn.
+                double rK = mitReihe && ks != null && ks.Jahresstunde == h ? KuehlRuecklaufDerLoesung(ks.Loesung) : double.NaN;
+                kaskade.StundeRechnen(h, kaelte.BedarfDerKaskade(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h]), vK, rK);
                 // Festlegung 14: der Rest der echten Kältestunde ist die Abweichung zur Schätzung der Kälteschranke.
                 double rest = kaskade.Rest_stuendlich[h];
                 kreis?.KaelteRestZaehlen(rest);

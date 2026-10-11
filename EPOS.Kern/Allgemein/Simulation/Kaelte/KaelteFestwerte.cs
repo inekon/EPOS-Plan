@@ -36,6 +36,14 @@
         public const double FREIE_KUEHLUNG_EER = 15.0;
 
         /// <summary>
+        /// K-F3 (Entwurf Split/VRF/Rückkühlwerk 5.5): Auslegungsspreizung des Kaltwassers [K] für die Teil-Freikühlung in Reihe,
+        /// wenn kein Gebäude des Projekts eine Kühlübergabe pflegt — Bezug des Kaltwasserstroms (ṁ·c_p = Q̇_Nenn / Δθ) und, ohne
+        /// gerechneten Rücklauf, des Rücklaufs (Vorlauf + Δθ). Quelle: Normbedingung „Kaltwasser 12/7 °C“ der DIN EN 14511-2
+        /// (Flüssigkeitskühlsätze, Anwendung Gebläsekonvektor) — Quelle nicht am Wortlaut geprüft (vorläufig).
+        /// </summary>
+        public const double REIHE_SPREIZUNG_K = 5.0;
+
+        /// <summary>
         /// Freie Kühlung über die Wärmequelle der Wärmepumpe [K] (KU3-6, F1/F3): die Grädigkeit des
         /// Wärmetauschers zwischen Sole bzw. Grundwasser und Kaltwasser, wenn die Anlagenzeile keine
         /// pflegt (<c>Kuehl_Frei_Graedigkeit_K</c> NULL). Frei gekühlt wird, solange die Quellentemperatur

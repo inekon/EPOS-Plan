@@ -333,6 +333,12 @@ namespace WindowsFormsApplication1
         /// <summary>Wasser der Rückkühlwerke [m³/a] — Verdunstung, Abflutung, Drift (K-F2, Katalog v20).</summary>
         public const string SCHLUESSEL_RK_WASSER = "kaelte.rk.wasser_m3";
 
+        /// <summary>Kälte der Teil-Freikühlung in Reihe [MWh/a] — der vorgekühlte Anteil der Mischstunden (K-F3, Katalog v21).</summary>
+        public const string SCHLUESSEL_RK_TEILFREI = "kaelte.rk.teilfrei";
+
+        /// <summary>Mischstunden der Teil-Freikühlung in Reihe [h/a] (K-F3, Katalog v21).</summary>
+        public const string SCHLUESSEL_RK_TEILFREI_STUNDEN = "kaelte.rk.teilfrei_stunden";
+
         /// <summary>Summe einer Größe über die Kältemaschinen mit Rückkühlwerk; <c>null</c> ohne solche.</summary>
         private static double? RkSumme(VariantenDaten v, Func<ErgebnisKaeltemaschineModel, double?> wert)
         {
@@ -800,6 +806,16 @@ namespace WindowsFormsApplication1
                 l.Add(R(new Kennzahl(SCHLUESSEL_RK_WASSER, "Wasser Rückkühlwerke (sensibel)",
                     "Heat rejection water use (sensible)", "m³/a", GR_KAELTE, "N1", true,
                     v => RkSumme(v, k => k.Wasser_m3))));
+            }
+            // K-F3 (Entwurf Split/VRF/Rückkühlwerk 5.5, 5.8, Katalog v21): nur Maschinen mit Rückkühlwerk in Reihe; ohne sie null.
+            {
+                Kennzahl F(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_TEILFREIKUEHLUNG; return k; }
+                l.Add(F(new Kennzahl(SCHLUESSEL_RK_TEILFREI, "Teil-Freikühlung Rückkühlwerke (sensibel)",
+                    "Partial free cooling via heat rejection (sensible)", "MWh/a", GR_KAELTE, "N2", true,
+                    v => RkSumme(v, k => k.TeilFreikuehlung_MWh))));
+                l.Add(F(new Kennzahl(SCHLUESSEL_RK_TEILFREI_STUNDEN, "Stunden Teil-Freikühlung Rückkühlwerke (sensibel)",
+                    "Partial free cooling hours via heat rejection (sensible)", "h/a", GR_KAELTE, "N0", true,
+                    v => RkSumme(v, k => k.TeilFreikuehlung_Stunden.HasValue ? (double?)k.TeilFreikuehlung_Stunden.Value : null))));
             }
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
                 "Uncovered cooling demand (sensible)", "MWh/a", GR_KAELTE, "N1", true,
