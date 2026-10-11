@@ -75886,6 +75886,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Kältemaschine „{0}“ aus der Datenbank gelöscht werden? ähnelt.
+        /// </summary>
+        public static string KMA_FRAGE_KATALOG_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KMA_FRAGE_KATALOG_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Anlage „{0}“ aus dem Projekt entfernt werden? Gelöscht wird beim OK. ähnelt.
         /// </summary>
         public static string KMA_FRAGE_LOESCHEN {
@@ -75918,6 +75927,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_GRUPPE_GERAET {
             get {
                 return ResourceManager.GetString("KMA_GRUPPE_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kenndaten ähnelt.
+        /// </summary>
+        public static string KMA_GRUPPE_KENNDATEN {
+            get {
+                return ResourceManager.GetString("KMA_GRUPPE_KENNDATEN", resourceCulture);
             }
         }
         
@@ -76030,6 +76048,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Kältemaschinen des Projekts aus der Datenbank ähnelt.
+        /// </summary>
+        public static string KMA_KOPFBAND {
+            get {
+                return ResourceManager.GetString("KMA_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschinen des Projekts konnten nicht gelesen werden: {0} ähnelt.
         /// </summary>
         public static string KMA_LADEN_FEHLER {
@@ -76102,11 +76129,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen in der Datenbank: ähnelt.
+        /// </summary>
+        public static string KMA_LISTE_KATALOG {
+            get {
+                return ResourceManager.GetString("KMA_LISTE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen im Projekt: ähnelt.
+        /// </summary>
+        public static string KMA_LISTE_PROJEKT {
+            get {
+                return ResourceManager.GetString("KMA_LISTE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschine „{0}“ gibt es im Katalog nicht mehr. ähnelt.
         /// </summary>
         public static string KMA_MSG_ANLEGEN_FEHLT {
             get {
                 return ResourceManager.GetString("KMA_MSG_ANLEGEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschine konnte nicht aus der Datenbank gelöscht werden. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_KATALOG_LOESCHFEHLER {
+            get {
+                return ResourceManager.GetString("KMA_MSG_KATALOG_LOESCHFEHLER", resourceCulture);
             }
         }
         
@@ -76138,6 +76192,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER/SEER ähnelt.
+        /// </summary>
+        public static string KMA_SP_EER {
+            get {
+                return ResourceManager.GetString("KMA_SP_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung [kW] ähnelt.
         /// </summary>
         public static string KMA_SP_LEISTUNG {
@@ -76156,11 +76219,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahl ähnelt.
+        /// </summary>
+        public static string KMA_SP_WAHL {
+            get {
+                return ResourceManager.GetString("KMA_SP_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Nennkälteleistung [kW]: ähnelt.
+        /// </summary>
+        public static string KMA_SUMME {
+            get {
+                return ResourceManager.GetString("KMA_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen im Projekt ähnelt.
         /// </summary>
         public static string KMA_TITEL {
             get {
                 return ResourceManager.GetString("KMA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine bearbeiten ähnelt.
+        /// </summary>
+        public static string KMA_TITEL_EDITOR {
+            get {
+                return ResourceManager.GetString("KMA_TITEL_EDITOR", resourceCulture);
             }
         }
         

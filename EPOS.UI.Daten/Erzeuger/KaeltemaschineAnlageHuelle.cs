@@ -44,11 +44,51 @@ namespace WindowsFormsApplication1
                 ["Waermepumpen"] = new Func<IReadOnlyList<EPOS.UI.Seiten.Start.KuehlWaermepumpe>>(
                     () => KuehlungKachelBau.Waermepumpen(projektId)),
                 ["KuehlbetriebSchreiben"] = new Func<int, bool, string>(
-                    (idWp, an) => KuehlungKachelBau.KuehlbetriebSchreiben(projektId, idWp, an))
+                    (idWp, an) => KuehlungKachelBau.KuehlbetriebSchreiben(projektId, idWp, an)),
+
+                // KATALOGAUSWAHL V1, STUFE 5 (Konzept 4.9, 5.10): die Wege der Zweispaltenauswahl - Vergleich und
+                // Schloss wie in der Verwaltung, Loeschen ueber den Kernweg, der Katalogeditor als Ueberlagerung
+                // (die Windows-Schale reicht die Gaben samt Import herein, KaeltemaschineAnlageFensterHuelle).
+                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.Werte),
+                ["Schloss"] = Schlosswege.Aus(KaeltemaschineStammCtrl.SchlossSetzen),
+                ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
+                ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogHuelle.Gaben),
+                // Die Kostensummen der Anlage (Kostenkomponente 11) fuer die Zusammenfassung der Detailzeile.
+                ["Kostensumme"] = new Func<int, (double Invest, double Betrieb)>(id => Kostensumme(projektId, id)),
+                // Die Kenndaten als Bild: Kennlinie (EER, Kaelteleistung) und Teillastkurve - je Projektkopie
+                // (katalogsatz = false) oder Stammsatz (true), dieselben Modelle wie in der Verwaltung.
+                ["Kennlinienbilder"] = new Func<int, bool, KaeltemaschineKennlinienbilder>(
+                    (id, katalog) => Satz(id, katalog) is KaeltemaschineModel m
+                        ? KaeltemaschineKennlinienbild.Modelle(KaeltemaschineKatalogHuelle.AlsDaten(m)) : null),
+                ["Teillastbild"] = new Func<int, bool, WindowsFormsApplication1.Zeichnung.Zeichenmodell>(
+                    (id, katalog) => Satz(id, katalog) is KaeltemaschineModel m ? KaeltemaschineTeillastbild.Modell(m) : null)
             };
         }
 
         /// <summary>Die Anlagen des Projekts samt Kennwerten ihrer Projektkopie.</summary>
+        /// <summary>Ein Satz des Katalogs (<paramref name="katalog"/>) oder eine Projektkopie; <c>null</c> = es gibt ihn nicht.</summary>
+        internal static KaeltemaschineModel Satz(int id, bool katalog)
+        {
+            if (id <= 0) return null;
+            return katalog ? KaeltemaschineStammCtrl.Laden(id) : KaeltemaschineCtrl.Laden(id);
+        }
+
+        /// <summary>Löscht einen Katalogsatz; leer = gelöscht, sonst der Grund des Kerns.</summary>
+        internal static string KatalogLoeschen(int id)
+        {
+            KaeltemaschineStammCtrl.SpeicherErgebnis e = KaeltemaschineStammCtrl.Loeschen(id);
+            if (e.Ok) return "";
+            return string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.KMA_MSG_KATALOG_LOESCHFEHLER : e.Meldung;
+        }
+
+        /// <summary>Investition und Betrieb der Anlage (Kostenkomponente 11, <c>KostenSummenCtrl.AnlagenSumme</c>).</summary>
+        internal static (double Invest, double Betrieb) Kostensumme(int projektId, int anlagenId)
+        {
+            if (projektId <= 0 || anlagenId <= 0) return (0, 0);
+            return (KostenSummenCtrl.AnlagenSumme(projektId, DbWerte.KOSTEN_KATEGORIE_INVESTITION, anlagenId),
+                    KostenSummenCtrl.AnlagenSumme(projektId, DbWerte.KOSTEN_KATEGORIE_BETRIEB, anlagenId));
+        }
+
         internal static IReadOnlyList<KaeltemaschineAnlageDaten> Liste(int projektId)
         {
             List<KaeltemaschineAnlageDaten> liste = KaeltemaschineAnlageCtrl.Liste(projektId).Select(AlsDaten).ToList();
@@ -157,6 +197,9 @@ namespace WindowsFormsApplication1
                 NennEer = m.Nenn_EER,
                 Mindestteillast = m.Mindestteillast_Prozent,
                 KaltwasserMin = m.Kaltwasser_Vorlauf_Min,
+                Saisonkennzahl = m.Saisonkennzahl,
+                SaisonkennzahlArt = m.Saisonkennzahl_Art ?? "",
+                Geraeteart = string.IsNullOrEmpty(m.Geraeteart) ? "" : KaeltemaschineStammCtrl.GeraeteartText(m.Geraeteart),
                 Kaltwasserstuetzstellen = (m.Kennlinie ?? new List<KaeltemaschineKenndatenModel>())
                     .Select(k => k.Kaltwassertemperatur).Distinct().OrderBy(t => t).ToList()
             };

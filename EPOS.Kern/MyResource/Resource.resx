@@ -51865,5 +51865,35 @@ Chart</value>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt.</value>
   </data>
+  <data name="KMA_LISTE_PROJEKT" xml:space="preserve">
+    <value>Kältemaschinen im Projekt:</value>
+  </data>
+  <data name="KMA_LISTE_KATALOG" xml:space="preserve">
+    <value>Kältemaschinen in der Datenbank:</value>
+  </data>
+  <data name="KMA_SUMME" xml:space="preserve">
+    <value>Summe Nennkälteleistung [kW]:</value>
+  </data>
+  <data name="KMA_SP_EER" xml:space="preserve">
+    <value>EER/SEER</value>
+  </data>
+  <data name="KMA_KOPFBAND" xml:space="preserve">
+    <value>Wählen Sie die Kältemaschinen des Projekts aus der Datenbank</value>
+  </data>
+  <data name="KMA_FRAGE_KATALOG_LOESCHEN" xml:space="preserve">
+    <value>Soll die Kältemaschine „{0}“ aus der Datenbank gelöscht werden?</value>
+  </data>
+  <data name="KMA_MSG_KATALOG_LOESCHFEHLER" xml:space="preserve">
+    <value>Die Kältemaschine konnte nicht aus der Datenbank gelöscht werden.</value>
+  </data>
+  <data name="KMA_TITEL_EDITOR" xml:space="preserve">
+    <value>Kältemaschine bearbeiten</value>
+  </data>
+  <data name="KMA_GRUPPE_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten</value>
+  </data>
+  <data name="KMA_SP_WAHL" xml:space="preserve">
+    <value>Wahl</value>
+  </data>
 </root>
 

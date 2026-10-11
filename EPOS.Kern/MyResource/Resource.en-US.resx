@@ -51858,5 +51858,35 @@ chart</value>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} heated zones have no design heat load; they receive no share of the building cap and remain uncapped.</value>
   </data>
+  <data name="KMA_LISTE_PROJEKT" xml:space="preserve">
+    <value>Chillers in the project:</value>
+  </data>
+  <data name="KMA_LISTE_KATALOG" xml:space="preserve">
+    <value>Chillers in the database:</value>
+  </data>
+  <data name="KMA_SUMME" xml:space="preserve">
+    <value>Total rated cooling capacity [kW]:</value>
+  </data>
+  <data name="KMA_SP_EER" xml:space="preserve">
+    <value>EER/SEER</value>
+  </data>
+  <data name="KMA_KOPFBAND" xml:space="preserve">
+    <value>Select the project's chillers from the database</value>
+  </data>
+  <data name="KMA_FRAGE_KATALOG_LOESCHEN" xml:space="preserve">
+    <value>Delete the chiller “{0}” from the database?</value>
+  </data>
+  <data name="KMA_MSG_KATALOG_LOESCHFEHLER" xml:space="preserve">
+    <value>The chiller could not be deleted from the database.</value>
+  </data>
+  <data name="KMA_TITEL_EDITOR" xml:space="preserve">
+    <value>Edit chiller</value>
+  </data>
+  <data name="KMA_GRUPPE_KENNDATEN" xml:space="preserve">
+    <value>Characteristics</value>
+  </data>
+  <data name="KMA_SP_WAHL" xml:space="preserve">
+    <value>Select</value>
+  </data>
 </root>
 

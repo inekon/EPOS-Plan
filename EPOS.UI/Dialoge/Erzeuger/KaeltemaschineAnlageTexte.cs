@@ -88,6 +88,50 @@ public sealed class KaeltemaschineAnlageTexte
     public string FrageLoeschen { get; set; } = Resource.KMA_FRAGE_LOESCHEN;
     public string AnlegenFehlt { get; set; } = Resource.KMA_MSG_ANLEGEN_FEHLT;
 
+    // ------------------------------------------------------------ Katalogauswahl V1 (Stufe 5)
+    /// <summary>Titel der Projektliste (KMA_LISTE_PROJEKT).</summary>
+    public string ListeProjekt { get; set; } = Resource.KMA_LISTE_PROJEKT;
+    /// <summary>Titel der Katalogliste (KMA_LISTE_KATALOG).</summary>
+    public string ListeKatalog { get; set; } = Resource.KMA_LISTE_KATALOG;
+    /// <summary>Die Summe der Nennkälteleistungen in der Projekt-Kopfleiste (KMA_SUMME).</summary>
+    public string Summe { get; set; } = Resource.KMA_SUMME;
+    /// <summary>Der Kontext im Dialogkopf (KMA_KOPFBAND).</summary>
+    public string Kopfband { get; set; } = Resource.KMA_KOPFBAND;
+    /// <summary>Spalte Wahl der Projektliste (KMA_SP_WAHL).</summary>
+    public string SpalteWahl { get; set; } = Resource.KMA_SP_WAHL;
+    /// <summary>Spalte EER/SEER der Projektliste (KMA_SP_EER).</summary>
+    public string SpalteEer { get; set; } = Resource.KMA_SP_EER;
+    /// <summary>Spalte Rückkühlart der Projektliste (KM_LBL_RUECKKUEHLART).</summary>
+    public string SpalteRueckkuehlart { get; set; } = Resource.KM_LBL_RUECKKUEHLART;
+    /// <summary>Spalte Kühlträger der Projektliste (KMA_LBL_TRAEGER).</summary>
+    public string SpalteTraeger { get; set; } = Resource.KMA_LBL_TRAEGER;
+    /// <summary>Spalte eigener Zähler der Projektliste (KMA_LBL_ZAEHLER).</summary>
+    public string SpalteZaehler { get; set; } = Resource.KMA_LBL_ZAEHLER;
+    /// <summary>„In das Projekt übernehmen" (AUSWAHL_BTN_UEBERNEHMEN).</summary>
+    public string KnopfInsProjekt { get; set; } = Resource.AUSWAHL_BTN_UEBERNEHMEN;
+    /// <summary>„Aus dem Projekt entfernen" (AUSWAHL_BTN_ENTFERNEN).</summary>
+    public string KnopfEntfernen { get; set; } = Resource.AUSWAHL_BTN_ENTFERNEN;
+    /// <summary>Rückfrage vor dem Löschen aus der Datenbank (KMA_FRAGE_KATALOG_LOESCHEN).</summary>
+    public string FrageKatalogLoeschen { get; set; } = Resource.KMA_FRAGE_KATALOG_LOESCHEN;
+    /// <summary>Titel des Katalogeditors in der Überlagerung (KMA_TITEL_EDITOR).</summary>
+    public string TitelEditor { get; set; } = Resource.KMA_TITEL_EDITOR;
+    /// <summary>Gruppe der Kenndaten in der Satz-Überlagerung (KMA_GRUPPE_KENNDATEN).</summary>
+    public string GruppeKenndaten { get; set; } = Resource.KMA_GRUPPE_KENNDATEN;
+    /// <summary>Bezeichnung des Teillastbilds (KM_BILD_TEILLAST).</summary>
+    public string BildTeillast { get; set; } = Resource.KM_BILD_TEILLAST;
+    /// <summary>Bezeichnung der Reiterleiste der Kennlinienbilder (KM_KL_BEZEICHNUNG).</summary>
+    public string KennlinienbildBezeichnung { get; set; } = Resource.KM_KL_BEZEICHNUNG;
+    /// <summary>Reiter EER (KM_KL_REITER_EER).</summary>
+    public string ReiterEer { get; set; } = Resource.KM_KL_REITER_EER;
+    /// <summary>Reiter Kälteleistung (KM_KL_REITER_LEISTUNG).</summary>
+    public string ReiterLeistung { get; set; } = Resource.KM_KL_REITER_LEISTUNG;
+    /// <summary>Platzhalter ohne vollständigen Kennlinienpunkt (KM_KL_PLATZHALTER).</summary>
+    public string PlatzhalterKennlinienbild { get; set; } = Resource.KM_KL_PLATZHALTER;
+    /// <summary>Kostenknopf Investition (KDLG_KNOPF_INVEST).</summary>
+    public string KostenInvest { get; set; } = Resource.KDLG_KNOPF_INVEST;
+    /// <summary>Kostenknopf Betrieb (KDLG_KNOPF_BETRIEB).</summary>
+    public string KostenBetrieb { get; set; } = Resource.KDLG_KNOPF_BETRIEB;
+
     // ------------------------------------------------------------ Einheiten (Symbole)
     public string EinheitKw { get; set; } = "kW";
     public string EinheitProzent { get; set; } = "%";
