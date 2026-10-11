@@ -108,8 +108,10 @@ public class ProjektdialogSchlossTests : EposBunitContext
     /// <summary>UeS2: „Alle Daten" stehen in der Satz-Überlagerung — „Bearbeiten" der Detailzeile öffnet sie.</summary>
     private static void SatzOeffnen(IRenderedComponent<BhkwDialog> cut)
     {
+        // AW1 (AW3a): Der Stift der Detailzeile ist entfallen; „Bearbeiten…" am Satz oeffnet beim
+        // ungesperrten Katalogsatz den Katalogeditor - die Ueberlagerung des Satzes oeffnet der Baustein.
         if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
-            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+            cut.InvokeAsync(() => cut.FindComponent<Zweispaltenauswahl>().Instance.SatzUeberlagerungOeffnen());
     }
 
     [Fact]
@@ -118,8 +120,10 @@ public class ProjektdialogSchlossTests : EposBunitContext
         var pruefung = new Schlosspruefung(21);
         var cut = Aufbauen(pruefung);
 
-        // Ohne gewählten Katalogsatz steht der Knopf, ist aber gesperrt.
-        Assert.True(Schlossknopf(cut).HasAttribute("disabled"));
+        // Ohne gewählten Katalogsatz steht der Knopf, ist aber gesperrt - beim Projektsatz weich
+        // mit dem Grund „Katalogsatz wählen" (AW1).
+        Assert.Equal("true", Schlossknopf(cut).GetAttribute("aria-disabled"));
+        Assert.Equal(Resource.AUSWAHL_SPERRE_KATALOGSATZ, Schlossknopf(cut).GetAttribute("title"));
 
         KatalogsatzWaehlen(cut, 0);
         Assert.Equal(Resource.ADM_AW_SCHLOSS_AUFHEBEN, Schlossknopf(cut).TextContent.Trim());

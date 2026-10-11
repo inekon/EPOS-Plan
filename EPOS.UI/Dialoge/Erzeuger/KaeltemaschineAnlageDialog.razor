@@ -79,20 +79,24 @@
                         SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
+                        KnopfleisteAmSatz="true"
+                        ProjektGewaehlt="@(Aktuell is null ? null : _gewaehlt)"
+                        ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
 
         <ProjektKopf>
             <span class="epos-zweispalten-summe">@Texte.Summe <b>@Summentext</b></span>
         </ProjektKopf>
 
-        <Leistenzusatz>
-            <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--bearbeiten-projekt"
-                    title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
-                    disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
-        </Leistenzusatz>
+        @* AW3b: „Bearbeiten…" steht nur noch EINMAL, in der Knopfleiste am gewaehlten Satz. *@
 
         <Links>
-            <Raster TZeile="Zeile" Zeilen="@Sichtbare.AsQueryable()">
+            @* DIE ZEILE IST DIE WAHL (AW3b wie Heizkessel): kein Wahlknopf - ein Klick in die Namenszelle
+               waehlt die Zeile (Hervorhebung wie in der Katalogliste), ↑ ↓ Pos1 Ende bewegen die Wahl, die
+               Liste ist ein Tabulatorhalt; das Kaestchen bleibt die Mehrfachwahl. *@
+            <Raster TZeile="Zeile" Zeilen="@Sichtbare.AsQueryable()"
+                    Zeilenklasse="@ProjektZeilenklasse" Tastenfuehrung="BeiProjektTaste"
+                    Tastenbeschriftung="@Texte.ListeProjekt">
                 <KindInhalt>
                     <TemplateColumn TGridItem="Zeile" Class="epos-spalte-kaestchen">
                         <HeaderTemplate>
@@ -103,11 +107,11 @@
                                            Kurztext="@context.Arbeit.Bezeichner" />
                         </ChildContent>
                     </TemplateColumn>
-                    <TemplateColumn TGridItem="Zeile" Title="@Texte.SpalteWahl">
-                        <Zeilenwahl Gewaehlt="@(context.Schluessel == _gewaehlt)" Kurztext="@Texte.SpalteWahl"
-                                    Gewaehltwerden="() => ProjektZeileKlick(context)" />
+                    <TemplateColumn TGridItem="Zeile" Title="@Texte.SpalteName" Class="epos-spalte-zeilenzelle">
+                        <span class="epos-zeilenzelle epos-projektzeile" title="@context.Arbeit.Bezeichner"
+                              aria-current="@(context.Schluessel == _gewaehlt ? "true" : null)"
+                              @onclick="() => ProjektZeileKlick(context)">@context.Arbeit.Bezeichner</span>
                     </TemplateColumn>
-                    <PropertyColumn TGridItem="Zeile" TProp="string" Property="@(z => z.Arbeit.Bezeichner)" Title="@Texte.SpalteName" />
                     <PropertyColumn TGridItem="Zeile" TProp="string" Property="@(z => Zahl(z.Arbeit.Geraet == null ? null : z.Arbeit.Geraet.Nennkaelteleistung, 1))"
                                     Title="@Texte.SpalteLeistung" />
                     <PropertyColumn TGridItem="Zeile" TProp="string" Property="@(z => EerText(z.Arbeit.Geraet))" Title="@Texte.SpalteEer" />
@@ -142,26 +146,48 @@
         </Rechts>
 
         <KatalogFuss>
-            @if (Vergleichsparameter is not null)
-            {
-                <button type="button" class="epos-knopf epos-knopf--vergleichen"
-                        title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
-                        disabled="@(KatalogZiele().Count < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
-            }
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b, Schema AW1/AW2): Vergleichen… und Bearbeiten… wirken im
+               Bereich des gewaehlten Satzes, Schloss… und Loeschen nur auf Katalogsaetze - beim Projektsatz weich
+               gesperrt mit dem Grund „Katalogsatz waehlen"; rechts Neu… (Katalogeditor im Modus Neu). *@
+            <button type="button" class="epos-knopf epos-knopf--vergleichen"
+                    title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
+                    disabled="@(VergleichsZahl < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
+                            Sperrgrund="@KatalogSperrgrund"
                             JaText="@Texte.Ja" NeinText="@Texte.Nein"
                             Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
             @if (KatalogLoeschen is not null)
             {
-                <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
-                        @onclick="BeiLoeschenGefragt">@Texte.KnopfLoeschen</button>
+                @if (KatalogSperrgrund is string grund)
+                {
+                    <button type="button" class="epos-knopf epos-knopf--loeschen" aria-disabled="true" title="@grund"
+                            @onclick="() => BeiSchlossAbgelehnt(grund)">@Texte.KnopfLoeschen</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
+                            @onclick="BeiLoeschenGefragt">@Texte.KnopfLoeschen</button>
+                }
             }
-            <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
-                    title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
-                    disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            @if (SatzArt == Satzmarke.Projektsatz)
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt"
+                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
+                        title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
+                        disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
         </KatalogFuss>
 
         <KatalogFussRechts>
+            @if (KatalogGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--neu" @onclick="BeiNeu">@Resource.AUSWAHL_BTN_NEU</button>
+            }
             @if (TypkennfelderLaden is not null)
             {
                 <button type="button" class="epos-knopf epos-kaeltemaschine-typkennfelder"
@@ -289,7 +315,7 @@
             @if (_editorGaben is not null)
             {
                 <KaeltemaschineKatalogDialog @attributes="_editorGaben" TitelText="" Vorwahl="@_editorVorwahl"
-                                             Geschlossen="EditorFertig" />
+                                             NeuBeimStart="@_editorNeu" Geschlossen="EditorFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -439,6 +465,7 @@
 
     private IReadOnlyDictionary<string, object>? _editorGaben;
     private int _editorVorwahl;
+    private bool _editorNeu;
 
     private bool _loeschfrage;
     private string _loeschfrageText = "";
@@ -575,11 +602,38 @@
         return _katalogZeile is null ? new() : new() { _katalogZeile };
     }
 
+    /// <summary>
+    /// Klick in eine Projektzeile (AW3b, wie Heizkessel): Die Zeile wird der gewählte Satz, die Detailzeile folgt;
+    /// die Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
     private void ProjektZeileKlick(Zeile zeile)
     {
-        _projektWahl.Klick(zeile.Schluessel, strg: false, umschalt: false, ProjektSchluessel());
-        ProjektZeileWaehlen(zeile);
+        if (zeile.Schluessel != _gewaehlt) ProjektZeileWaehlen(zeile);
     }
+
+    /// <summary>Die Hervorhebung der gewählten Projektzeile — dieselbe Klasse wie in der Katalogliste.</summary>
+    private string? ProjektZeilenklasse(Zeile zeile) => zeile.Schluessel == _gewaehlt ? "epos-zeile--gewaehlt" : null;
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private void BeiProjektTastenwahl(string schluessel)
+    {
+        if (Sichtbare.FirstOrDefault(z => z.Schluessel == schluessel) is Zeile zeile) ProjektZeileKlick(zeile);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen (AW3b): Sie wirken nur auf Katalogsätze; steht ein
+    /// Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
+
+    /// <summary>Wie viele Sätze „Vergleichen…" im Bereich des gewählten Satzes vergleichen würde.</summary>
+    private int VergleichsZahl => SatzArt == Satzmarke.Projektsatz
+        ? ProjektZiele().Count(z => z.Arbeit.Geraet is not null)
+        : Vergleichsparameter is null ? 0 : KatalogZiele().Count;
 
     private void BeiWahlGeaendert(Auswahlbereich bereich)
     {
@@ -992,14 +1046,53 @@
     private void EditorFertig(bool _)
     {
         _editorGaben = null;
+        _editorNeu = false;
         KatalogNeuLaden();
         if (_katalogZeile is not null) KatalogZeileWaehlen(_katalogZeile.Schluessel);
     }
 
+    /// <summary>
+    /// „Vergleichen…" — zwei oder mehr Sätze nebeneinander, im Bereich des gewählten Satzes (AW3b): beim Projektsatz
+    /// die angekreuzten Anlagen mit den Kennwerten ihrer Projektkopie, sonst die angekreuzten Katalogsätze.
+    /// </summary>
     private void BeiVergleichen()
     {
+        if (_katalogliste is null) return;
+        if (SatzArt == Satzmarke.Projektsatz)
+        {
+            var saetze = ProjektZiele().Where(z => z.Arbeit.Geraet is not null)
+                .Select(z => (z.Arbeit.Bezeichner, GeraetWerte(z.Arbeit.Geraet!))).ToList();
+            if (saetze.Count >= 2) _katalogliste.VergleichenWerte(saetze);
+            return;
+        }
         List<Katalogfilterzeile> ziele = KatalogZiele();
-        if (ziele.Count >= 2) _katalogliste?.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+        if (ziele.Count >= 2) _katalogliste.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+    }
+
+    /// <summary>Die Kennwerte einer Projektkopie für den Vergleich — dieselben Felder wie die Gerätegruppe des Satzes.</summary>
+    private IReadOnlyList<(string Beschriftung, string Wert)> GeraetWerte(KaeltemaschineGeraetwerte g)
+    {
+        static string Mit(string name, string einheit) => einheit.Length > 0 ? name + " [" + einheit + "]" : name;
+        return new List<(string, string)>
+        {
+            (Texte.LabelFirma, g.Firma ?? ""),
+            (Texte.LabelTyp, g.Typ ?? ""),
+            (Mit(Texte.LabelNennkaelteleistung, Texte.EinheitKw), Zahl(g.Nennkaelteleistung, 1)),
+            (Texte.LabelNennEer, Zahl(g.NennEer, 2)),
+            (Texte.LabelRueckkuehlart, g.Rueckkuehlart ?? ""),
+            (Mit(Texte.LabelMindestteillast, Texte.EinheitProzent), Zahl(g.Mindestteillast, 0)),
+            (Mit(Texte.LabelKaltwasserMin, Texte.EinheitGradC), Zahl(g.KaltwasserMin, 1)),
+            (Texte.LabelTeillastWeg, g.TeillastWeg ?? ""),
+            (Texte.LabelVerdichterregelung, g.Verdichterregelung ?? ""),
+            (Texte.LabelTaktverlust, g.Taktverlustfaktor ?? ""),
+            (Texte.LabelKennfeldrand, g.Kennfeldrand ?? ""),
+        };
+    }
+
+    /// <summary>„Neu…" der Knopfleiste am Satz (AW3b): legt immer einen Katalogsatz an — der Katalogeditor im Modus Neu.</summary>
+    private void BeiNeu()
+    {
+        if (EditorOeffnen(0)) _editorNeu = true;
     }
 
     private void BeiLoeschenGefragt()

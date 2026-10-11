@@ -145,7 +145,7 @@
             <Katalogliste @ref="_katalogliste" Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
-                          Vergleichsparameter="@Vergleichsparameter"
+                          Vergleichsparameter="@_vergleichsgabe"
                           ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
                           GewaehlteChanged="BeiKatalogKaestchen"
                           Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
@@ -581,8 +581,30 @@
     /// <summary>Das Band der Seite (Prüfhilfe).</summary>
     public string Meldung => _meldung;
 
+    /// <summary>KT-9: die Gabe des Wirtes, aus der <see cref="_vergleichsgabe"/> gebaut ist.</summary>
+    private Func<string, IReadOnlyList<Parameterwert>>? _vergleichsgabeQuelle;
+
+    /// <summary>
+    /// KT-9: die gefangene Vergleichsgabe an die Katalogliste — wirft die Abfrage eines Geräts, bleibt
+    /// es im Vergleich leer, der Banner nennt den Grund, das Ausnahmeprotokoll hat einen Vermerk.
+    /// </summary>
+    private Func<string, IReadOnlyList<Parameterwert>>? _vergleichsgabe;
+
+    /// <summary>KT-9: Der Grund einer geworfenen Vergleichsabfrage geht in den Banner des Dialogs.</summary>
+    private void VergleichsfehlerMelden(string grund)
+    {
+        Melden(grund, true);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     protected override void OnParametersSet()
     {
+        // KT-9: die Vergleichsgabe der Katalogliste gefangen (einmal je Gabe des Wirtes gebaut).
+        if (!ReferenceEquals(_vergleichsgabeQuelle, Vergleichsparameter))
+        {
+            _vergleichsgabeQuelle = Vergleichsparameter;
+            _vergleichsgabe = Katalogladung.Vergleichsgabe(Vergleichsparameter, VergleichsfehlerMelden);
+        }
         Filtertexte.SpalteWahl = SpalteWahl;
     }
 

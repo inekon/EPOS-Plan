@@ -588,4 +588,146 @@ public class KatalogSatzWirftTests : EposBunitContext
         Assert.Null(wert);
         Assert.Contains(GRUND, fehler);
     }
+
+    // =================================================================================
+    // KT-9: die Vergleichsgabe der Katalogliste in den Projektdialogen
+    // =================================================================================
+
+    private const string ZWEITER = "Gerät B";
+
+    private static IReadOnlyList<Katalogfilterzeile> Zwei()
+        => new[] { new Katalogfilterzeile(1, NAME), new Katalogfilterzeile(2, ZWEITER) };
+
+    /// <summary>Die Gabe: <see cref="ZWEITER"/> liefert einen Wert, <see cref="NAME"/> wirft, wenn gewünscht.</summary>
+    private static Func<string, IReadOnlyList<Parameterwert>> Gabe(bool wirft)
+        => name => wirft && name == NAME
+            ? throw new InvalidOperationException(GRUND)
+            : new[] { new Parameterwert(new ParameterEintrag("Leistung", "Leistung", "kW",
+                                                                Array.Empty<Verwendung>(), ""), "42") };
+
+    /// <summary>Vergleicht beide Geräte über die Katalogliste des Dialogs (der Weg des Knopfs „Vergleichen…").</summary>
+    private static void Vergleichen(IRenderedComponent<Katalogliste> liste)
+        => liste.InvokeAsync(() => liste.Instance.Vergleichen(new[] { ZWEITER, NAME }));
+
+    /// <summary>Die Werte der einen Vergleichszeile (je Gerät eine Zelle).</summary>
+    private static List<string> Vergleichswerte<T>(IRenderedComponent<T> cut) where T : IComponent
+    {
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-vergleich tbody tr")));
+        return cut.Find(".epos-vergleich tbody tr").QuerySelectorAll("td")
+                  .Select(e => e.TextContent.Trim()).ToList();
+    }
+
+    /// <summary>
+    /// Wirft die Abfrage eines Geräts: Das Gerät bleibt im Vergleich leer, das andere trägt seinen Wert,
+    /// der Banner nennt Gerät und Grund, das Protokoll hat einen Vermerk, der Dialog steht weiter.
+    /// </summary>
+    private void VergleichWirft<T>(IRenderedComponent<T> cut, IRenderedComponent<Katalogliste> liste)
+        where T : IComponent
+    {
+        Vergleichen(liste);
+        Assert.Equal(new[] { "42", ParameterVerwendung.LEER }, Vergleichswerte(cut));
+
+        string vorspann = R.WURZEL_SATZ_FEHLER.Split('{')[0];
+        cut.WaitForAssertion(() => Assert.Contains(
+            cut.FindAll(".epos-warnbanner--warnung .epos-warnbanner-text").Select(e => e.TextContent),
+            t => t.StartsWith(vorspann, StringComparison.Ordinal) && t.Contains(NAME) && t.Contains(GRUND)));
+        lock (_vermerke)
+            Assert.Contains(_vermerke, v => v.StartsWith("Katalogsatz", StringComparison.Ordinal)
+                                            && v.Contains(NAME) && v.Contains(GRUND));
+        // Der Dialog ist offen: die Katalogliste führt ihre beiden Zeilen weiter.
+        Assert.Equal(2, liste.Instance.Zeilen.Count);
+        Assert.NotEmpty(cut.FindAll(".epos-vergleich"));
+    }
+
+    private void VergleichOhneAusnahme<T>(IRenderedComponent<T> cut, IRenderedComponent<Katalogliste> liste)
+        where T : IComponent
+    {
+        Vergleichen(liste);
+        Assert.Equal(new[] { "42", "42" }, Vergleichswerte(cut));
+        OhneBanner(cut);
+    }
+
+    private IRenderedComponent<WaermepumpenDialog> WpVergleich(bool wirft)
+        => Render<WaermepumpenDialog>(b => b
+            .Add(x => x.Zeilen, new List<WaermepumpeAnlageDaten>())
+            .Add(x => x.Katalog, Zwei)
+            .Add(x => x.Katalogprofil, Profil(Anlagenart.Waermepumpe))
+            .Add(x => x.Vergleichsparameter, Gabe(wirft)));
+
+    [Fact]
+    public void Waermepumpen_wirft_die_Vergleichsgabe_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = WpVergleich(true);
+        VergleichWirft(cut, cut.FindComponent<Katalogliste>());
+    }
+
+    [Fact]
+    public void Waermepumpen_Vergleich_ohne_Ausnahme_zeigt_keinen_Banner()
+    {
+        var cut = WpVergleich(false);
+        VergleichOhneAusnahme(cut, cut.FindComponent<Katalogliste>());
+    }
+
+    private IRenderedComponent<HeizkesselDialog> KesselVergleich(bool wirft)
+        => Render<HeizkesselDialog>(b => b
+            .Add(x => x.Katalogprofil, Profil(Anlagenart.Heizkessel))
+            .Add(x => x.Katalogzeilen, Zwei)
+            .Add(x => x.KatalogDetail, Detail)
+            .Add(x => x.Vergleichsparameter, Gabe(wirft)));
+
+    [Fact]
+    public void Heizkessel_wirft_die_Vergleichsgabe_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = KesselVergleich(true);
+        VergleichWirft(cut, cut.FindComponent<Katalogliste>());
+    }
+
+    [Fact]
+    public void Heizkessel_Vergleich_ohne_Ausnahme_zeigt_keinen_Banner()
+    {
+        var cut = KesselVergleich(false);
+        VergleichOhneAusnahme(cut, cut.FindComponent<Katalogliste>());
+    }
+
+    private IRenderedComponent<BhkwDialog> BhkwVergleich(bool wirft)
+        => Render<BhkwDialog>(b => b
+            .Add(x => x.Katalogprofil, Profil(Anlagenart.Bhkw))
+            .Add(x => x.Katalogzeilen, Zwei)
+            .Add(x => x.KatalogDetail, Detail)
+            .Add(x => x.Vergleichsparameter, Gabe(wirft)));
+
+    [Fact]
+    public void Bhkw_wirft_die_Vergleichsgabe_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = BhkwVergleich(true);
+        VergleichWirft(cut, cut.FindComponent<Katalogliste>());
+    }
+
+    [Fact]
+    public void Bhkw_Vergleich_ohne_Ausnahme_zeigt_keinen_Banner()
+    {
+        var cut = BhkwVergleich(false);
+        VergleichOhneAusnahme(cut, cut.FindComponent<Katalogliste>());
+    }
+
+    private IRenderedComponent<PhotovoltaikDialog> PvVergleich(bool wirft)
+        => Render<PhotovoltaikDialog>(b => b
+            .Add(x => x.Katalogprofil, Profil(Anlagenart.Photovoltaik))
+            .Add(x => x.Katalogzeilen, Zwei)
+            .Add(x => x.Detail, Detail)
+            .Add(x => x.Vergleichsparameter, Gabe(wirft)));
+
+    [Fact]
+    public void Photovoltaik_wirft_die_Vergleichsgabe_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = PvVergleich(true);
+        VergleichWirft(cut, cut.FindComponent<Katalogliste>());
+    }
+
+    [Fact]
+    public void Photovoltaik_Vergleich_ohne_Ausnahme_zeigt_keinen_Banner()
+    {
+        var cut = PvVergleich(false);
+        VergleichOhneAusnahme(cut, cut.FindComponent<Katalogliste>());
+    }
 }

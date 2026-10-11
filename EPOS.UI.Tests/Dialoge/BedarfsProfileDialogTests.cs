@@ -112,13 +112,14 @@ public class BedarfsProfileDialogTests : EposBunitContext
         => cut.FindAll(".epos-katalogliste .epos-zeilenzelle--name")[i].Click();
 
     /// <summary>
-    /// Stufe 4 (UeS2): Die Felder des Satzes stehen nur in der Satz-Überlagerung — „Bearbeiten" der
-    /// Detailzeile öffnet sie (falls zu); zurück kommt ihr Körper.
+    /// Stufe 4 (UeS2): Die Felder des Satzes stehen nur in der Satz-Überlagerung — „Bearbeiten…" der
+    /// Knopfleiste am Satz (AW3b) öffnet sie (falls zu): beim Projektsatz die Zuordnung, beim Katalogsatz
+    /// ohne Katalogeditor den Satz; zurück kommt ihr Körper.
     /// </summary>
     private static IElement Satz(IRenderedComponent<BedarfsProfileDialog> cut)
     {
         if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
-            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+            cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog").Click();
         return cut.Find(".epos-satzueberlagerung-koerper");
     }
 
@@ -173,7 +174,9 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);   // Kästchen + vier Spalten + Stift (Stufe 4); „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
 
-        foreach (string t in new[] { "Prozess in DB ändern", "Neu…",
+        // AW3b: „Bearbeiten…" am Katalogsatz traegt den Weg „DB ändern…"; sein Text ist der Titel des Editors.
+        Assert.Equal("Prozess in DB ändern", cut.Instance.TitelDbAendern);
+        foreach (string t in new[] { "Neu…",
                                      "Löschen", "Simulation…",
                                      "Übernehmen", "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
@@ -211,7 +214,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
         Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);   // Kästchen + vier Spalten + Stift (Stufe 4); „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
-        Assert.NotNull(Knopf(cut, "Stromverbraucher ändern..."));
+        Assert.Equal("Stromverbraucher ändern...", cut.Instance.TitelDbAendern);   // AW3b: Titel des Katalogeditors
     }
 
     [Fact]
@@ -230,7 +233,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
         Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);   // Kästchen + vier Spalten + Stift (Stufe 4); „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
-        Assert.NotNull(Knopf(cut, "Profil in DB ändern"));
+        Assert.Equal("Profil in DB ändern", cut.Instance.TitelDbAendern);   // AW3b: Titel des Katalogeditors
     }
 
     [Fact]
@@ -295,7 +298,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var zeilen = new List<BedarfsProfilZeile> { Zeile(1), Zeile(2, "Profil B") };
         var cut = Aufbauen(zeilen: zeilen);
 
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();   // zweite Projektzeile
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[1].Click();   // zweite Projektzeile (AW3b: die Zeile ist die Wahl)
         Entfernen(cut).Click();
 
         Assert.Single(zeilen);
@@ -333,7 +336,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile>());
 
         // Stufe 4: Ohne Projektzeile gibt es weder „Bearbeiten…" noch die Verbrauchsfelder.
-        Assert.True(cut.Find(".epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
+        Assert.True(cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog").HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll(".epos-knopf--bearbeiten-projekt"));
         KatalogKlick(cut, 0);
         Satz(cut);
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Übernehmen");
@@ -680,7 +684,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         });
 
         KatalogKlick(cut, 0);
-        Knopf(cut, "Prozess in DB ändern").Click();
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--db-aendern").Click();   // AW3b: „Bearbeiten…" am Katalogsatz
 
         Assert.True(cut.Instance.TypStammOffen);
         Assert.False(istNeu);
@@ -826,7 +830,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var cut = Aufbauen(typStammGaben: (_, _, _, _) => new Dictionary<string, object>());
 
         KatalogKlick(cut, 0);
-        Knopf(cut, "Prozess in DB ändern").Click();
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--db-aendern").Click();   // AW3b: „Bearbeiten…" am Katalogsatz
         Assert.True(cut.Instance.TypStammOffen);
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
@@ -1446,8 +1450,9 @@ public class BedarfsProfileDialogTests : EposBunitContext
         List<BedarfsProfilZeile> zeilen, IReadOnlyList<Katalogfilterzeile>? katalog = null,
         BedarfsArt art = BedarfsArt.Prozesswaerme, Func<string, bool>? loeschen = null,
         Func<string, string, string, bool, IReadOnlyDictionary<string, object>>? typStamm = null,
-        IReadOnlyList<(int Id, string Text)>? kalender = null, Action? geaendert = null)
+        IReadOnlyList<(int Id, string Text)>? kalender = null, Action? geaendert = null, EPOS.UI.Bausteine.Schlossweg? schloss = null)
         => Render<BedarfsProfileDialog>(p => p
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Art, art)
             .Add(x => x.TitelText, "Bedarf")
             .Add(x => x.Zeilen, zeilen)
@@ -1471,7 +1476,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5), Zeile(2, "Profil B", 7.5) });
 
         Assert.Contains("20,00", cut.Find(".epos-zweispalten-summe").TextContent);
-        Assert.False(cut.Find(".epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
+        Assert.False(cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
+        Assert.Null(cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste").QuerySelector(".epos-knopf--bearbeiten-projekt"));
         Assert.NotNull(cut.Find(".epos-knopf--simulation"));
         // Zwei angekreuzte Zeilen: „Bearbeiten…" wirkt auf genau eine.
         foreach (int i in new[] { 0, 1 })
@@ -1485,16 +1491,17 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1) },
                              typStamm: (_, _, _, _) => new Dictionary<string, object>());
 
-        IElement fuss = cut.Find(".epos-zweispalten-fussleiste");
-        string text = fuss.TextContent;
-        foreach (string t in new[] { "Typ ändern…", "DB ändern…", "Löschen", "Neu…" })
+        // AW3b: keine Fussleiste unter dem Katalog - die Knoepfe stehen am gewaehlten Satz.
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+        string text = cut.Find(".epos-zweispalten-satzknoepfe").TextContent;
+        foreach (string t in new[] { "Typ ändern…", "Bearbeiten…", "Löschen", "Neu…" })
             Assert.Contains(t, text);
         // Die alte Knopfleiste unter der Katalogliste ist entfallen.
         Assert.Empty(cut.FindAll(".epos-zweispalten-spalte .epos-katalogliste + .epos-leiste"));
-        // „DB ändern…" braucht genau einen Katalogsatz.
-        Assert.True(fuss.QuerySelector(".epos-knopf--db-aendern")!.HasAttribute("disabled"));
+        // „Bearbeiten…" des Katalogs („DB ändern…") steht erst beim Katalogsatz.
+        Assert.Empty(cut.FindAll(".epos-knopf--db-aendern"));
         KatalogKlick(cut, 0);
-        Assert.False(cut.Find(".epos-knopf--db-aendern").HasAttribute("disabled"));
+        Assert.False(cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--db-aendern").HasAttribute("disabled"));
     }
 
     [Fact]
@@ -1612,6 +1619,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1, "Profil A") }, katalog,
                              loeschen: n => { geloescht.Add(n); return true; });
 
+        KatalogKlick(cut, 0);   // AW3b: Loeschen wirkt, wenn ein Katalogsatz gewaehlt ist
         for (int i = 0; i < 4; i++)
             cut.FindAll(".epos-raster")[1].QuerySelectorAll("td .epos-kaestchenzelle input")[i].Change(true);
         cut.Find(".epos-knopf--loeschen").Click();
@@ -1659,5 +1667,114 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Satz(cut);
         // Kälte führt das Temperaturpaar wie die Prozesswärme (Konzept Kältebedarf 3.3).
         Assert.Equal(3, cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=decimal]").Count);
+    }
+
+    // =================================================================================
+    // AW3b: eine Wahl je Zeile, Knopfleiste am gewaehlten Satz (Schema AW1)
+    // =================================================================================
+
+    private static IElement AmSatz(IRenderedComponent<BedarfsProfileDialog> cut, string klasse)
+        => cut.Find(".epos-zweispalten-satzknoepfe ." + klasse);
+
+    private static List<BedarfsProfilZeile> DreiZeilen()
+        => new() { Zeile(1, "Profil A"), Zeile(2, "Profil B"), Zeile(3, "Profil C") };
+
+    [Fact]
+    public void AW3b_Die_Projektliste_traegt_keinen_Wahlknopf_die_Zeile_ist_die_Wahl()
+    {
+        var cut = AufbauenS4(DreiZeilen());
+        var liste = cut.FindAll(".epos-raster")[0];
+        Assert.Empty(liste.QuerySelectorAll(".epos-zeilenwahl, .epos-anlagenwahl, input[type=radio]"));
+        Assert.Equal(3, liste.QuerySelectorAll("td.epos-spalte-zeilenzelle > .epos-zeilenzelle").Length);
+        Assert.NotNull(cut.Find(".epos-zweispalten-bereich--projekt .epos-zweispalten-inhalt--zeilenwahl"));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[1].Click();
+
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr").ToList();
+        Assert.Single(zeilen, tr => tr.ClassList.Contains("epos-zeile--gewaehlt"));
+        Assert.Contains("epos-zeile--gewaehlt", zeilen[1].ClassList);
+        Assert.Equal("true", zeilen[1].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Equal("Profil B", cut.Find(".epos-zweispalten-satzname").TextContent);
+        Assert.Empty(cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen[aria-checked=true]"));
+    }
+
+    [Fact]
+    public void AW3b_Die_Pfeiltasten_bewegen_die_Wahl_der_Projektliste()
+    {
+        var cut = AufbauenS4(DreiZeilen());
+        const string huelle = ".epos-zweispalten-bereich--projekt .epos-raster-huelle";
+        Assert.Equal("0", cut.Find(huelle).GetAttribute("tabindex"));
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+        cut.Find(huelle).KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        Assert.Equal("Profil B", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.Find(huelle).KeyDown(new KeyboardEventArgs { Key = "End" });
+        Assert.Equal("Profil C", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.Find(huelle).KeyDown(new KeyboardEventArgs { Key = "Home" });
+        Assert.Equal("Profil A", cut.Find(".epos-zweispalten-satzname").TextContent);
+    }
+
+    [Fact]
+    public void AW3b_Die_Knopfleiste_steht_am_Satz_ohne_Stift_unten()
+    {
+        var cut = AufbauenS4(DreiZeilen(), typStamm: (_, _, _, _) => new Dictionary<string, object>(),
+                             schloss: new Schlosspruefung().Weg());
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));
+        string[] folge = { "epos-knopf--typ-aendern", "epos-katalogschloss", "epos-knopf--loeschen",
+                           "epos-knopf--bearbeiten-projekt", "epos-knopf--neu" };
+        var namen = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe").Children
+            .Select(e => folge.FirstOrDefault(f => e.ClassList.Contains(f))).OfType<string>().ToList();
+        Assert.Equal(folge, namen.ToArray());
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--vergleichen"));   // der Dialog vergleicht nicht
+    }
+
+    [Fact]
+    public void AW3b_Beim_Projektsatz_sind_Schloss_und_Loeschen_weich_gesperrt()
+    {
+        var pruefung = new Schlosspruefung();
+        var geloescht = new List<string>();
+        var cut = AufbauenS4(DreiZeilen(), schloss: pruefung.Weg(), loeschen: n => { geloescht.Add(n); return true; });
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+
+        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        {
+            var knopf = AmSatz(cut, klasse);
+            Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+            Assert.False(knopf.HasAttribute("disabled"));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_SPERRE_KATALOGSATZ, knopf.GetAttribute("title"));
+        }
+        AmSatz(cut, "epos-knopf--loeschen").Click();
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_SPERRE_KATALOGSATZ, cut.Find(".epos-warnbanner-text").TextContent);
+        AmSatz(cut, "epos-katalogschloss").Click();
+        Assert.Empty(pruefung.Aufrufe);
+        Assert.Empty(geloescht);
+
+        AmSatz(cut, "epos-knopf--bearbeiten-projekt").Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+    }
+
+    [Fact]
+    public void AW3b_Beim_Katalogsatz_wirken_Schloss_Loeschen_und_Bearbeiten_auf_den_Katalog()
+    {
+        var gaben = 0;
+        var cut = AufbauenS4(DreiZeilen(), schloss: new Schlosspruefung().Weg(),
+                             typStamm: (_, _, _, _) => { gaben++; return new Dictionary<string, object>(); });
+        KatalogKlick(cut, 1);
+
+        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+            Assert.False(AmSatz(cut, klasse).HasAttribute("aria-disabled"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt"));
+        AmSatz(cut, "epos-knopf--bearbeiten-katalog").Click();
+        Assert.Equal(1, gaben);
+    }
+
+    [Fact]
+    public void AW3b_Der_Stift_je_Zeile_ist_Bearbeiten_fuer_diese_Zeile()
+    {
+        var cut = AufbauenS4(DreiZeilen());
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift")[2].Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains("epos-zeile--gewaehlt", cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[2].ClassList);
+        Assert.Equal("Profil C", cut.Find(".epos-zweispalten-satzname").TextContent);
     }
 }

@@ -235,6 +235,42 @@ public class KatalogKiSperreTests : EposBunitContext
     }
 
     // =================================================================================
+    // KT-9b: Gebäudeverwaltung — dieselbe Sichtklasse wie der Katalogeditor, dazu Liste und Satz
+    // =================================================================================
+
+    private IRenderedComponent<GebaeudeAdminDialog> GebaeudeAdmin(Func<IReadOnlyList<Katalogfilterzeile>> zeilen,
+                                                                  Func<string, GebaeudeStammblattDaten?>? satz = null)
+        => Render<GebaeudeAdminDialog>(b => b
+            .Add(x => x.Katalogzeilen, zeilen)
+            .Add(x => x.Satz, satz ?? (_ => null))
+            .Add(x => x.Speichern, (_, _, _) => new GebaeudeKatalogErgebnis(true, "")));
+
+    [Fact]
+    public void GebaeudeAdmin_Liste_wirft_die_KI_Sicht_nennt_den_Grund_und_sperrt()
+    {
+        GebaeudeAdmin(Wirft<IReadOnlyList<Katalogfilterzeile>>);
+        ListeGesperrt(KiMaskennamen.GEBAEUDE_ADMIN, "beschreibung", "satz");
+    }
+
+    [Fact]
+    public void GebaeudeAdmin_Satz_wirft_die_KI_Sicht_sperrt_die_Felder_und_Speichern()
+    {
+        GebaeudeAdmin(Eine, _ => Wirft<GebaeudeStammblattDaten?>());
+        SatzGesperrt(KiMaskennamen.GEBAEUDE_ADMIN, "beschreibung", "satz");
+        KiErgebnis e = Speichern(KiMaskennamen.GEBAEUDE_ADMIN);
+        Assert.Equal(KiStatus.Abgelehnt, e.Status);
+        Assert.Contains(GRUND, e.Text);
+    }
+
+    [Fact]
+    public void GebaeudeAdmin_ohne_Ausnahme_ist_der_Ladestand_leer()
+    {
+        GebaeudeAdmin(Eine);
+        Frei(KiMaskennamen.GEBAEUDE_ADMIN, "beschreibung");
+        Assert.Equal("", Sperre(KiMaskennamen.GEBAEUDE_ADMIN, "satz"));
+    }
+
+    // =================================================================================
     // Wärmepumpen-Anlagenfelder: Ladestand ohne Speicherweg
     // =================================================================================
 

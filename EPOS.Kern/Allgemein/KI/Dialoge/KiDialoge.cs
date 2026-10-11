@@ -6967,9 +6967,11 @@ namespace WindowsFormsApplication1
                 felder.Add(new KiDialogFeld("zone_bauteile", ZONE + "Bauteile", KiDialogTexte.GebzZoneBauteileName,
                                             KiParameterTyp.Ganzzahl, KiDialogTexte.GebzZoneBauteileErl,
                                             leerErlaubt: true, zeilenkennzeichen: "Nummer", nurLesen: true));
-                // KT-8b: der Ladestand (Klapplisten der Gebaeudetypen und -arten, Fangstelle).
-                felder.Add(Ladestandfeld("GebaeudeKatalogKiSicht."));
             }
+
+            // KT-8b/KT-9b: der Ladestand der Fangstelle - im Editor die Klapplisten der Gebaeudetypen
+            // und -arten, in der Verwaltung dazu die Katalogliste und der gewaehlte Satz.
+            felder.Add(Ladestandfeld("GebaeudeKatalogKiSicht."));
             return felder;
         }
 
