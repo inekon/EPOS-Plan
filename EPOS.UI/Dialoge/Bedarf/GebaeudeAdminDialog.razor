@@ -747,7 +747,7 @@
             // Stufe KP2, Welle U4: die Vorgabe-Matrix des Blatts „Konditionierung" als Feldtafel - über
             // dieselbe Bearbeitung wie die Zellen des Blatts, am selben Arbeitsstand.
             Konditionierung = _kond
-        });
+        }).MitLadestand(() => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler));
     }
 
     /// <summary>Die Verwendungen: Schlüssel ist der STEUERWERT, Text der Eintrag der Maske.</summary>
@@ -797,6 +797,9 @@
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _auslieferung,
         Schreibschutzgrund = () => Schloss is not null ? Resource.ADM_SB_NUR_LESEN : MeldungSpeichernGesperrt,
+        // KT-9b: Liste nicht geladen (Fangstelle) - alle Felder gesperrt; Satz nicht geladen - alle
+        // außer der Satzwahl. Der Grund ist der Wortlaut des Banners.
+        Sperrgrund = f => KatalogKiSperre.Feldsperre(f, _listeFehler, _satzFehler, "satz"),
         Pruefen = () => _arbeit.Pruefen(false, Pruefwortlaut, HuellTexte)?.Meldung ?? "",
         Speichern = () => Task.FromResult(KiSpeichern())
     };
@@ -808,6 +811,9 @@
     /// </summary>
     private KiErgebnis KiSpeichern()
     {
+        // KT-9b: Eine nicht geladene Liste oder ein nicht geladener Satz erklärt zuerst.
+        if (KatalogKiSperre.Aktionssperre(_listeFehler, _satzFehler) is { } sperre)
+            return KiErgebnis.Abgelehnt(sperre);
         if (Speichern is null)
             return KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText));
 
