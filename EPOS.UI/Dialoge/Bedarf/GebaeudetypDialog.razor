@@ -60,6 +60,16 @@
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-7: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-7: Wirft das Lesen des gewählten Typs, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
@@ -407,6 +417,12 @@
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>KT-7: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-7: der Grund, wenn das Lesen des gewählten Typs geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     /// <summary>
     /// Die Statuszeile der Fußleiste. Jede Zuweisung ist eine Erfolgs- oder neutrale
     /// Meldung und nimmt die rote Färbung zurück; rot färbt allein
@@ -596,14 +612,19 @@
     /// </summary>
     private void ListeLaden()
     {
+        // KT-7: Liste, Namensliste und Verwendung lesen über die Fangstelle; wirft einer der
+        // Wege, bleibt die Liste leer und der Banner nennt den Grund.
         if (Katalogzeilen is not null)
-            _katalog = Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
+            _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
         else
-            _katalog = (Typen?.Invoke() ?? Array.Empty<string>())
+            _katalog = Katalogladung.Lesen(Typen, TitelText, out _listeFehler)
                 .Select((t, i) => new Katalogfilterzeile(i + 1, t).MitText(Katalogfilterprofil.SpBezeichner, t))
                 .ToList();
 
-        _verwendung = Verwendung?.Invoke() ?? new Dictionary<string, int>();
+        IReadOnlyList<IReadOnlyDictionary<string, int>> verwendung = Katalogladung.Lesen<IReadOnlyDictionary<string, int>>(
+            Verwendung is null ? null : () => new IReadOnlyDictionary<string, int>[] { Verwendung() }, TitelText, out string verwendungFehler);
+        _verwendung = verwendung.Count > 0 && verwendung[0] is not null ? verwendung[0] : new Dictionary<string, int>();
+        if (_listeFehler.Length == 0) _listeFehler = verwendungFehler;
 
         _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
         if (_auswahl.Vergleich) VergleichBauen();
@@ -641,7 +662,11 @@
         Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Schluessel == _gewaehlt);
         string name = zeile?.Bezeichner ?? _gewaehlt;
 
-        GebaeudetypDaten? gelesen = name.Length > 0 ? Lies?.Invoke(name) : null;
+        // KT-7: Wirft das Lesen des Typs, nennt der Satzbanner den Grund.
+        _satzFehler = "";
+        GebaeudetypDaten? gelesen = name.Length > 0 && Lies is not null
+            ? Katalogladung.Satz(() => Lies(name), name, out _satzFehler)
+            : null;
         _daten = gelesen ?? (name.Length > 0 && Lies is null && Daten.Name == name ? Daten : new GebaeudetypDaten());
         _auslieferung = zeile?.Geschuetzt == true || (_daten.Name.Length > 0 && !_daten.Aenderbar);
         _kurve = 0;
@@ -843,15 +868,21 @@
         if (_auslieferung) { SpeichernAbgelehnt(HinweisGesperrt); return; }
         if (!_geaendert || _daten.Name.Length == 0) return;
 
+        // KT-7: Wirft ein Schreibweg, bleiben die Felder stehen und die Meldung nennt den Grund.
+        string grund = "";
+        string satz = _daten.Name;
         bool verteilungAnders = GeaenderteFelder - (BeschreibungAnders ? 1 : 0) > 0;
-        if (verteilungAnders && (Speichern is null || !Speichern(_daten.Id, _verteilung)))
+        if (verteilungAnders && (Speichern is null
+            || !Katalogladung.Schreiben(() => Speichern(_daten.Id, _verteilung), satz, g => { grund = g; return false; })))
         {
-            SpeichernAbgelehnt(MeldungFehler);
+            SpeichernAbgelehnt(grund.Length > 0 ? grund : MeldungFehler);
             return;
         }
-        if (BeschreibungAnders && (BeschreibungSpeichern is null || !BeschreibungSpeichern(_daten.Id, _arbeitBeschreibung)))
+        if (BeschreibungAnders && (BeschreibungSpeichern is null
+            || !Katalogladung.Schreiben(() => BeschreibungSpeichern(_daten.Id, _arbeitBeschreibung), satz,
+                                        g => { grund = g; return false; })))
         {
-            SpeichernAbgelehnt(MeldungFehler);
+            SpeichernAbgelehnt(grund.Length > 0 ? grund : MeldungFehler);
             return;
         }
 
@@ -904,7 +935,14 @@
         if (NameVergeben(name)) { _neuMeldung = MeldungNameBelegt; return; }
 
         int kurven = _neuKurven == 5 ? 5 : 8;
-        if (Anlegen(name, _neuBeschreibung ?? "", kurven) <= 0) { _neuMeldung = MeldungFehler; return; }
+        // KT-7: Wirft das Anlegen, nennt die Meldung der Namensabfrage den Grund.
+        string grund = "";
+        if (Katalogladung.Schreiben(() => Anlegen(name, _neuBeschreibung ?? "", kurven), name,
+                                    g => { grund = g; return 0; }) <= 0)
+        {
+            _neuMeldung = grund.Length > 0 ? grund : MeldungFehler;
+            return;
+        }
 
         _neuOffen = false;
         _auswahl.Aufheben();
@@ -1030,7 +1068,8 @@
         foreach (string s in schluessel)
         {
             string name = ZeileZu(s)?.Bezeichner ?? s;
-            GebaeudetypDaten? d = Lies?.Invoke(name);
+            // KT-7: Wirft das Lesen eines Vergleichssatzes, nennt der Satzbanner den Grund.
+            GebaeudetypDaten? d = Katalogladung.SatzDazu(() => Lies?.Invoke(name), name, ref _satzFehler);
             var felder = new List<Vergleichsfeld>
             {
                 new("KURVEN", Resource.GTYP_KZ_KURVEN, d?.Kurven.ToString(k) ?? ""),
@@ -1088,11 +1127,17 @@
 
         int geloescht = 0;
         string einzeln = "";
+        string grund = "";
         foreach (string s in _loeschziele)
         {
             Katalogfilterzeile? z = ZeileZu(s);
             if (z is null) continue;
-            if (Loeschen(z.Id)) { geloescht++; einzeln = z.Bezeichner; }
+            // KT-7: Wirft das Löschen, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            if (Katalogladung.Loeschen(() => Loeschen(z.Id), z.Bezeichner, out string fehler))
+            {
+                geloescht++; einzeln = z.Bezeichner;
+            }
+            else if (grund.Length == 0) grund = fehler;
         }
 
         int ziele = _loeschziele.Count + _loeschBleiben;
@@ -1101,7 +1146,7 @@
         _loeschziele = new List<string>();
 
         if (geloescht > 0) ListeLaden();
-        if (fehlschlag) Warnen(MeldungFehler);
+        if (fehlschlag) Warnen(grund.Length > 0 ? grund : MeldungFehler);
         if (geloescht == 0) return;
 
         _status = ziele == 1
@@ -1137,7 +1182,9 @@
         Katalogfilterzeile? zeile = ZeileZu(_duplizierQuelle);
         if (zeile is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = Duplizieren(zeile.Id, name);
+        // KT-7: Wirft das Duplizieren, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Duplizieren(zeile.Id, name), name,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, name));
         if (!ergebnis.Ok)
         {
             Warnen(ergebnis.Meldung);

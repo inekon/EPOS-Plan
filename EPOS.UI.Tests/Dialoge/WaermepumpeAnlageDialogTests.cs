@@ -2500,4 +2500,64 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
             Schreibnaht.Schreibrecht = vorher;
         }
     }
+
+    // =================================================================================
+    // KT-7: Wirft der Schreibweg, bleibt der Dialog offen und nennt den Grund
+    // =================================================================================
+
+    private const string KT7_GRUND = "Schreibweg gesperrt";
+
+    /// <summary>Führt <paramref name="handlung"/> aus und schreibt die Vermerke des Ausnahmeprotokolls mit.</summary>
+    private static List<string> Kt7Mitschreiben(Action handlung)
+    {
+        var vermerke = new List<string>();
+        void Mitschreiben(string z) { lock (vermerke) vermerke.Add(z); }
+        WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt += Mitschreiben;
+        try { handlung(); }
+        finally { WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt -= Mitschreiben; }
+        return vermerke;
+    }
+
+    /// <summary>Der Banner nennt <paramref name="vorlage"/> samt Grund, das Protokoll hat einen Vermerk.</summary>
+    private static void Kt7GrundSteht(IReadOnlyList<string> vermerke, string banner, string vorlage, string vermerk)
+    {
+        Assert.Contains(vorlage.Split('{')[0], banner);
+        Assert.Contains(KT7_GRUND, banner);
+        lock (vermerke) Assert.Contains(vermerke, v => v.StartsWith(vermerk, StringComparison.Ordinal) && v.Contains(KT7_GRUND));
+    }
+
+    [Fact]
+    public void KT7_wirft_die_Stammliste_zeigt_der_Dialog_den_Grund()
+    {
+        IRenderedComponent<WaermepumpeAnlageDialog>? cut = null;
+        List<string> vermerke = Kt7Mitschreiben(() => cut = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => throw new InvalidOperationException(KT7_GRUND))));
+
+        string banner = string.Join("\n", cut!.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Assert.Contains(KT7_GRUND, banner);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.WURZEL_LISTE_FEHLER.Split('{')[0], banner);
+        lock (vermerke) Assert.Contains(vermerke, v => v.StartsWith("Katalogliste", StringComparison.Ordinal) && v.Contains(KT7_GRUND));
+    }
+
+    [Fact]
+    public void KT7_werfen_die_Vorlaufstufen_zeigt_der_Dialog_den_Grund()
+    {
+        IRenderedComponent<WaermepumpeAnlageDialog>? cut = null;
+        List<string> vermerke = Kt7Mitschreiben(() => cut = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Vorlaeufe, _ => throw new InvalidOperationException(KT7_GRUND))));
+
+        string banner = string.Join("\n", cut!.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Kt7GrundSteht(vermerke, banner.Split('\n').First(b => b.Contains(KT7_GRUND)),
+                      WindowsFormsApplication1.MyResource.Resource.WURZEL_SATZ_FEHLER, "Katalogsatz");
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_zeigt_der_Dialog_keinen_Grund()
+    {
+        List<string> vermerke = Kt7Mitschreiben(() => Aufbauen());
+        lock (vermerke) Assert.Empty(vermerke);
+    }
 }
