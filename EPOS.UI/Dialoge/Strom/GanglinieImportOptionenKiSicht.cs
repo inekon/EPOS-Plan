@@ -5,7 +5,8 @@ namespace EPOS.UI.Dialoge.Strom;
 
 /// <summary>
 /// Das FLACHE Abbild des <see cref="GanglinieImportOptionenDialog"/> für den Hilfe-Assistenten
-/// (Freigabe der Importdialoge, Teil A): acht Klapplisten und die Kopfzeile.
+/// (Freigabe der Importdialoge, Teil A): acht Klapplisten, die Kopfzeile, die erste Datenzeile und
+/// die Zahl der zu lesenden Zeilen.
 /// </summary>
 /// <remarks>
 /// <para><b>Warum eine Sichtklasse:</b> Der Dialog führt nur private PLÄTZE seiner Klapplisten.
@@ -44,6 +45,20 @@ public sealed class GanglinieImportOptionenKiSicht
     {
         get => _kopfzeile();
         set => _setzen(nameof(Kopfzeile), value);
+    }
+
+    /// <summary>Die 1-basierte Nummer der ersten Datenzeile (Zählung der Vorschautabelle).</summary>
+    public int ErsteDatenzeile
+    {
+        get => _platz(nameof(ErsteDatenzeile));
+        set => _setzen(nameof(ErsteDatenzeile), value);
+    }
+
+    /// <summary>Wie viele Zeilen ab der ersten Datenzeile gelesen werden.</summary>
+    public int Zeilenzahl
+    {
+        get => _platz(nameof(Zeilenzahl));
+        set => _setzen(nameof(Zeilenzahl), value);
     }
 
     /// <summary>Die Wahl des Feldes <c>Trennzeichen</c> — dieselbe Liste wie die Klappliste der Maske.</summary>

@@ -1461,7 +1461,12 @@
     {
         if (_katalogzeile is null || StammSatz is null) return;
 
-        GebaeudeProjektZeile? neu = StammSatz(_katalogzeile.Bezeichner);
+        // KT-5: Wirft das Aufnehmen, nennt die Meldung den Grund; die Projektliste bleibt.
+        string name = _katalogzeile.Bezeichner;
+        string grund = "";
+        GebaeudeProjektZeile? neu = Katalogladung.Schreiben(() => StammSatz(name), name,
+                                                            g => { grund = g; return (GebaeudeProjektZeile?)null; });
+        if (grund.Length > 0) { Melden(grund, WarnStufe.Warnung, amKatalog: true); return; }
         if (neu is null) return;
 
         Zeilen.Add(neu);
@@ -1576,7 +1581,13 @@
     {
         if (_inDbZeile is null || InDbUebernehmen is null) { InDbAbbrechen(); return; }
 
-        GebaeudeDbUebernahme e = InDbUebernehmen(_inDbZeile, _inDbName);
+        // KT-5: Wirft das Aufnehmen in den Katalog, bleibt die Abfrage mit dem Grund offen.
+        GebaeudeProjektZeile zeile = _inDbZeile;
+        string name = _inDbName;
+        string grund = "";
+        GebaeudeDbUebernahme? e = Katalogladung.Schreiben(() => InDbUebernehmen(zeile, name), name,
+                                                          g => { grund = g; return (GebaeudeDbUebernahme?)null; });
+        if (e is null) { _inDbFehler = grund; return; }
         if (!e.Ok)
         {
             if (e.AmNamen) _inDbNameFehler = e.Meldung;
@@ -1625,7 +1636,11 @@
         KatalogLaden();   // SetGebaeudeDB() nach dem Schliessen
 
         if (import is null || !gespeichert) return;
-        GebaeudeProjektZeile? neu = import.Aufnehmen();
+        // KT-5: Wirft das Aufnehmen des Imports, nennt die Meldung den Grund.
+        string grund = "";
+        GebaeudeProjektZeile? neu = Katalogladung.Schreiben(() => import.Aufnehmen(), TitelText,
+                                                            g => { grund = g; return (GebaeudeProjektZeile?)null; });
+        if (grund.Length > 0) { Melden(grund, WarnStufe.Warnung, amKatalog: true); return; }
         if (neu is null) return;
 
         Zeilen.Add(neu);

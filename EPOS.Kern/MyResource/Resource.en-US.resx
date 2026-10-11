@@ -4555,6 +4555,18 @@ Please run the simulation with photovoltaics first.</value>
   <data name="IMPORT_LBL_KOPFZEILE" xml:space="preserve">
     <value>First line is a header row</value>
   </data>
+  <data name="IMPORT_LBL_ERSTE_DATENZEILE" xml:space="preserve">
+    <value>First data row:</value>
+  </data>
+  <data name="IMPORT_LBL_ZEILENZAHL" xml:space="preserve">
+    <value>Rows to import:</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_FEHLEN" xml:space="preserve">
+    <value>From row {0} the file holds only {1} data rows; {2} are requested.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_UEBRIG" xml:space="preserve">
+    <value>{0} rows after the {1} rows read (from row {2}) are ignored.</value>
+  </data>
   <data name="IMPORT_LBL_WERTSPALTE" xml:space="preserve">
     <value>Value column:</value>
   </data>
@@ -51402,6 +51414,12 @@ chart</value>
   <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
     <value>Does the first row hold column names instead of values? The preview shows the change only after “Refresh preview”.</value>
   </data>
+  <data name="KI_DLG_GIO_ERSTE_DATENZEILE_ERL" xml:space="preserve">
+    <value>The number of the first row holding values, counted as in the preview table; the rows before it are skipped. The preview shows the change only after “Refresh preview”.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEILENZAHL_ERL" xml:space="preserve">
+    <value>How many rows are read from the first data row on — 8,760 for hourly values, 35,040 for quarter-hourly values. Missing rows reject the import; remaining rows are ignored.</value>
+  </data>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>A worksheet only exists for an Excel workbook.</value>
   </data>
@@ -51695,6 +51713,18 @@ chart</value>
   </data>
   <data name="KFLT_LT_GERAETEART" xml:space="preserve">
     <value>Unit type</value>
+  </data>
+  <data name="KFLT_LT_VLMIN" xml:space="preserve">
+    <value>Minimum flow temperature</value>
+  </data>
+  <data name="KFLT_LT_VLMAX" xml:space="preserve">
+    <value>Maximum flow temperature</value>
+  </data>
+  <data name="KFLT_LT_COP" xml:space="preserve">
+    <value>Coefficient of performance, heating</value>
+  </data>
+  <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
+    <value>Electric backup heater</value>
   </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Unit type of the cooling generator (air- or water-cooled chiller, with free cooling, split, multi-split, VRF, absorption); empty = from heat rejection.</value>

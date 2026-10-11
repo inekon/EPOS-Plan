@@ -80,12 +80,19 @@
             <Auswahlfeld Bezeichnung="@LabelBlatt" Eintraege="@_blaetter"
                          Auswahl="@_iBlatt" AuswahlChanged="@(i => _iBlatt = i ?? 0)" />
         }
+        @* Das Lesefenster (IM-3): ab welcher Zeile und wie viele Zeilen gelesen werden. Vorgabe aus
+           der Erkennung (erste Zeile mit lesbarem Wert) und der Probe (Zeilen ab dort bis zum Ende);
+           wie jede Option wirkt es erst nach „Vorschau aktualisieren". *@
+        <Ganzzahlfeld Bezeichnung="@LabelErsteDatenzeile" Wert="@_ersteDatenzeile" Min="1"
+                      Feldname="ErsteDatenzeile" WertChanged="ErsteDatenzeileSetzen" />
+        <Ganzzahlfeld Bezeichnung="@LabelZeilenzahl" Wert="@(_zeilenzahl > 0 ? _zeilenzahl : null)" Min="1"
+                      Feldname="Zeilenzahl" WertChanged="ZeilenzahlSetzen" />
             </KindInhalt>
         </Formularraster>
     </div>
 
     <Schalter Bezeichnung="@LabelKopfzeile" Wert="@_kopfzeile"
-              WertChanged="@(w => _kopfzeile = w)" />
+              WertChanged="KopfzeileSetzen" />
 
     <Herleitungszeile Text="@HinweisText" />
 
@@ -180,6 +187,10 @@
     [Parameter] public string LabelKonvention { get; set; } = Resource.IMPORT_LBL_KONVENTION;
     [Parameter] public string LabelBlatt { get; set; } = Resource.IMPORT_LBL_BLATT;
     [Parameter] public string LabelKopfzeile { get; set; } = Resource.IMPORT_LBL_KOPFZEILE;
+    /// <summary>Beschriftung der ersten Datenzeile — <c>IMPORT_LBL_ERSTE_DATENZEILE</c>.</summary>
+    [Parameter] public string LabelErsteDatenzeile { get; set; } = Resource.IMPORT_LBL_ERSTE_DATENZEILE;
+    /// <summary>Beschriftung der Zeilenzahl — <c>IMPORT_LBL_ZEILENZAHL</c>.</summary>
+    [Parameter] public string LabelZeilenzahl { get; set; } = Resource.IMPORT_LBL_ZEILENZAHL;
     [Parameter] public string AktualisierenText { get; set; } = Resource.IMPORT_BTN_AKTUALISIEREN;
     [Parameter] public string VorlageVorschau { get; set; } = Resource.IMPORT_GRP_VORSCHAU;
     [Parameter] public string HinweisText { get; set; } = Resource.IMPORT_HINWEIS_OPTIONEN;
@@ -215,6 +226,21 @@
     private int _iTrennzeichen, _iDezimal, _iEinheit, _iRaster, _iKonvention;
     private int _iWertspalte, _iZeitspalte, _iBlatt;
     private bool _kopfzeile;
+
+    /// <summary>Die 1-basierte erste Datenzeile (Zählung der Vorschautabelle).</summary>
+    private int _ersteDatenzeile = 1;
+
+    /// <summary>Die Zahl der zu lesenden Zeilen; ohne Eingabe die Zeilen der Probe ab der ersten Datenzeile.</summary>
+    private int _zeilenzahl;
+
+    /// <summary>Hat der Anwender (oder der Wirt) die Zeilenzahl gesetzt? Sonst liest der Import bis zum Dateiende.</summary>
+    private bool _zeilenzahlGesetzt;
+
+    /// <summary>Die erste Datenzeile, wie sie im Feld steht (Prüfhilfe).</summary>
+    public int ErsteDatenzeile => _ersteDatenzeile;
+
+    /// <summary>Die Zeilenzahl, wie sie im Feld steht; 0 = keine (Prüfhilfe).</summary>
+    public int Zeilenzahl => _zeilenzahl;
 
     private GanglinienVorschau? _vorschau;
     private GanglinienProbe? _probe;
@@ -264,9 +290,10 @@
             List<string[]>? quelle = _vorschau?.Zeilen;
             if (quelle is null) return zeilen.AsQueryable();
 
+            // Grau stehen die Zeilen vor der ersten Datenzeile - die Kopfzeile und alles, was übersprungen wird.
             for (int z = 0; z < quelle.Count; z++)
                 zeilen.Add(new VorschauZeile((z + 1).ToString(CultureInfo.CurrentCulture),
-                                             quelle[z], z == 0 && _kopfzeile));
+                                             quelle[z], z < _ersteDatenzeile - 1));
             return zeilen.AsQueryable();
         }
     }
@@ -318,6 +345,8 @@
         nameof(GanglinieImportOptionenKiSicht.Raster) => _iRaster,
         nameof(GanglinieImportOptionenKiSicht.Konvention) => _iKonvention,
         nameof(GanglinieImportOptionenKiSicht.Blatt) => _iBlatt,
+        nameof(GanglinieImportOptionenKiSicht.ErsteDatenzeile) => _ersteDatenzeile,
+        nameof(GanglinieImportOptionenKiSicht.Zeilenzahl) => _zeilenzahl,
         _ => throw new InvalidOperationException(feld)
     };
 
@@ -346,7 +375,9 @@
         int platz = wert as int? ?? 0;
         switch (feld)
         {
-            case nameof(GanglinieImportOptionenKiSicht.Kopfzeile): _kopfzeile = wert is true; break;
+            case nameof(GanglinieImportOptionenKiSicht.Kopfzeile): KopfzeileSetzen(wert is true); break;
+            case nameof(GanglinieImportOptionenKiSicht.ErsteDatenzeile): ErsteDatenzeileSetzen(wert as int?); break;
+            case nameof(GanglinieImportOptionenKiSicht.Zeilenzahl): ZeilenzahlSetzen(wert as int?); break;
             case nameof(GanglinieImportOptionenKiSicht.Trennzeichen): _iTrennzeichen = platz; break;
             case nameof(GanglinieImportOptionenKiSicht.Dezimaltrenner): _iDezimal = platz; break;
             case nameof(GanglinieImportOptionenKiSicht.Wertspalte): _iWertspalte = platz; break;
@@ -406,6 +437,9 @@
         _iRaster = GanglinienOptionenModell.Index(GanglinienOptionenModell.Rasterwerte, o.Raster, 0);
         _iKonvention = GanglinienOptionenModell.Index(GanglinienOptionenModell.Konventionswerte, o.Konvention, 0);
         _kopfzeile = o.Kopfzeile;
+        _ersteDatenzeile = o.ErsteDatenzeileWirksam;
+        _zeilenzahlGesetzt = o.Zeilenzahl > 0;
+        _zeilenzahl = _zeilenzahlGesetzt ? o.Zeilenzahl : _probe?.ZeilenAbStart ?? 0;
 
         _iWertspalte = Math.Max(GanglinienOptionenModell.Grenzen(o.WertSpalte, _wertspalten.Count), 0);
         // Die Zeitspaltenliste beginnt mit "(keine)" - daher die Verschiebung um eins.
@@ -435,10 +469,37 @@
             Konvention = GanglinienOptionenModell.Wert(
                 GanglinienOptionenModell.Konventionswerte, _iKonvention, IntervallKonvention.Automatisch),
             Kopfzeile = _kopfzeile,
+            ErsteDatenzeile = Math.Max(1, _ersteDatenzeile),
+            Zeilenzahl = _zeilenzahlGesetzt ? _zeilenzahl : 0,
             WertSpalte = Math.Max(0, _iWertspalte),
             ZeitSpalte = _iZeitspalte - 1,
             Blattname = _iBlatt >= 0 && _iBlatt < _blattnamen.Count ? _blattnamen[_iBlatt] : ""
         };
+    }
+
+    /// <summary>
+    /// Der Kopfzeilenschalter und die erste Datenzeile gehen zusammen: Mit Kopfzeile beginnen die
+    /// Daten frühestens in Zeile 2, ohne in Zeile 1.
+    /// </summary>
+    private void KopfzeileSetzen(bool kopfzeile)
+    {
+        _kopfzeile = kopfzeile;
+        if (kopfzeile && _ersteDatenzeile < 2) _ersteDatenzeile = 2;
+        if (!kopfzeile) _ersteDatenzeile = 1;
+    }
+
+    /// <summary>Die erste Datenzeile; eine leere oder kleinere Eingabe als 1 heißt Zeile 1.</summary>
+    private void ErsteDatenzeileSetzen(int? zeile)
+    {
+        _ersteDatenzeile = Math.Max(1, zeile ?? 1);
+        _kopfzeile = _ersteDatenzeile > 1;
+    }
+
+    /// <summary>Die Zeilenzahl; eine leere Eingabe heißt wieder „bis zum Dateiende" (Vorgabe der Probe).</summary>
+    private void ZeilenzahlSetzen(int? zahl)
+    {
+        _zeilenzahlGesetzt = zahl is > 0;
+        _zeilenzahl = _zeilenzahlGesetzt ? zahl!.Value : _probe?.ZeilenAbStart ?? 0;
     }
 
     // =====================================================================
