@@ -10,7 +10,7 @@ Eine Wärmepumpe arbeitet umso besser, je niedriger der Vorlauf ist; Heizkörper
 
 Eine '''Heizfläche''' gibt ihre Leistung mit der Übertemperatur ab, der Differenz zwischen mittlerer Heizwassertemperatur und Raumluft: <math>\Phi = \Phi_{\mathrm{N}} \cdot \left( \Delta\vartheta / \Delta\vartheta_{\mathrm{N}} \right)^{n}</math>. Der Exponent <math>n</math> kennzeichnet die Bauart; EPOS-Plan setzt als Vorgabe 1,3 für Radiatoren, 1,1 für Flächenheizungen und 1,4 für Konvektoren.
 
-[[Datei:Anlagenkopplung_Stufen.svg|mini|600px|Prinzipbild: Die Stufen der Anlagenkopplung – ideal ohne Kopplung, Heizkreis als Einbahnstraße (AK1) und geschlossener Kreis mit Rückwirkung auf den Raum (AK3).]]
+[[Datei:Anlagenkopplung_Stufen.svg|mini|zentriert|800px|Prinzipbild: Die Stufen der Anlagenkopplung – ideal ohne Kopplung, Heizkreis als Einbahnstraße (AK1) und geschlossener Kreis mit Rückwirkung auf den Raum (AK3).]]
 
 == So rechnet EPOS-Plan ==
 {{Anker|so-rechnet-epos-plan}}

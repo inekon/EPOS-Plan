@@ -19,13 +19,13 @@ Das Temperaturniveau entscheidet, welcher Erzeuger in Frage kommt. Ein Kessel od
 
 EPOS-Plan führt die Prozesswärme als eigenen Wärmekanal neben Heizung und Brauchwasser. Jeder Prozess bringt zwölf Monatswerte und einen Wochengang aus 168 Stundenwerten mit; der Jahresverbrauch skaliert die Monatswerte, und der Wochengang verteilt jeden Monat auf seine Stunden. Ein Betriebskalender legt Feiertage – sie tragen den Sonntag des Wochengangs – und Betriebsferien darauf. Der Katalog liefert acht typische Betriebsweisen als Vorlage.
 
-[[Datei:Wochenprofil_Prozesswaerme.svg|mini|600px|Prinzipbild: Wochenprofile im Ein- und Zweischichtbetrieb, unten dieselbe Woche mit einem Feiertag aus dem Betriebskalender.]]
+[[Datei:Wochenprofil_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Wochenprofile im Ein- und Zweischichtbetrieb, unten dieselbe Woche mit einem Feiertag aus dem Betriebskalender.]]
 
 Trägt ein Prozess ein Temperaturpaar, bildet der Lauf je Stunde den höchsten geforderten Vorlauf aller laufenden Prozesse und ihren mengengewichteten Rücklauf. Ein Erzeuger, der diesen Vorlauf nicht erreicht, deckt den Prozess in dieser Stunde nicht; eine Wärmepumpe rechnet an der Kennlinie, die ihn erreicht; ein geschichteter Speicher gibt nur aus ausreichend heißen Schichten ab. Ohne Temperaturpaar ist der Prozess eine reine Wärmemenge.
 
 Gedeckt wird der Kanal nur von Erzeugern, deren Wärmesenke ihn ausdrücklich bedient – direkt oder über einen Pufferspeicher mit der Nutzung Prozesswärme. Die Rangfolge der Senken einer Anlage entscheidet, ob der Prozess vor der Heizung beliefert wird.
 
-[[Datei:Einbindung_Prozesswaerme.svg|mini|600px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
+[[Datei:Einbindung_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
 
 == Eingaben und Wirkung ==
 {{Anker|eingaben-und-wirkung}}

@@ -12,7 +12,7 @@ Prozesswärme ist Wärme für Produktion, Reinigung, Trocknung oder Lüftungsanl
 
 Jeder Prozess ist im Projekt eine eigene Zuordnung mit gepflegter Jahressumme, das Profil eine Kopie des Katalogsatzes. Mehrere Prozesse mit verschiedenen Temperaturniveaus laufen nebeneinander und addieren sich im Prozesskanal.
 
-[[Datei:Wochenprofil_Prozesswaerme.svg|mini|600px|Prinzipbild: Wochenprofile im Ein- und Zweischichtbetrieb, unten dieselbe Woche mit einem Feiertag aus dem Betriebskalender.]]
+[[Datei:Wochenprofil_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Wochenprofile im Ein- und Zweischichtbetrieb, unten dieselbe Woche mit einem Feiertag aus dem Betriebskalender.]]
 
 Hintergrund zu Lastgang, Temperaturniveau und Einbindung unter [[Grundlagen/Prozesswärme|Grundlagen: Prozesswärme]].
 
@@ -38,7 +38,7 @@ Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwert
 
 Die Prozesswärme ist ein eigener Wärmekanal der Simulation, getrennt von Heizung und Brauchwasser. Ein Erzeuger deckt ihn nur, wenn eine seiner Wärmesenken ihn bedient; die Senke ''Heizkreis'' bedient ihn nicht. Eingestellt wird das in der ''Simulation Konfiguration'' über ''Wärmesenken…'' je Anlage ([[Programm Dokumentation/Simulation#senkenliste|Wärmesenken einer Anlage]]).
 
-[[Datei:Einbindung_Prozesswaerme.svg|mini|600px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
+[[Datei:Einbindung_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
 
 * '''Direktsenke Prozesswärme''' – das Ziel ''Prozesswärme'' deckt den Prozess in der Stunde des Bedarfs unmittelbar. Eine neu angelegte Anlage erhält diese Senke auf dem nächsten Rang nach dem Heizkreis, wenn das Projekt bereits Prozesswärme führt.
 * '''Puffer für Prozesswärme''' – das Ziel ''Pufferspeicher Prozesswärme'' lädt einen Speicher, dessen ''Nutzung'' Prozesswärme einschließt. Er gleicht Schichtwechsel und Anfahrspitzen aus und erlaubt einem kleineren Erzeuger, über den Tag vorzuladen.

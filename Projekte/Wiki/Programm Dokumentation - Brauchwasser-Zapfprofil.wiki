@@ -322,7 +322,7 @@ Was der Dialog erzeugt, ist ein Bedarf, keine Anlage. Die Summe der Zonen – Za
 * Die '''Speichertemperatur''' der Auslegung und die '''Zapftemperatur''' der Zonen gehen in die thermische Desinfektion und in das Frischwassermodul des Pufferspeichers ein (siehe [[#desinfektion-frischwasser|Thermische Desinfektion und Frischwassermodul]]).
 * Die '''Zirkulation''' bleibt in der Simulation eine eigene Teilreihe; sie wird von denselben Erzeugern und Speichern gedeckt wie die Zapfung und erscheint im Ergebnis als eigener Posten.
 
-[[Datei:Tagesgang_Brauchwasser.svg|mini|600px|Prinzipbild: derselbe Tagesbedarf als Stundenmittel des Bestandsprofils und als eine Realisierung des Zapfprofils.]]
+[[Datei:Tagesgang_Brauchwasser.svg|mini|zentriert|800px|Prinzipbild: derselbe Tagesbedarf als Stundenmittel des Bestandsprofils und als eine Realisierung des Zapfprofils.]]
 
 == Beispiel ==
 
