@@ -52738,5 +52738,75 @@ Chart</value>
   <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
     <value>Die Rechenvorgaben des Zapfprofils konnten nicht gespeichert werden: {0}</value>
   </data>
+  <!-- Administration und Support, Stufe 2 (Welle 2a) -->
+  <data name="MENU_FERNWARTUNG" xml:space="preserve">
+    <value>Fernwartung…</value>
+  </data>
+  <data name="SUP_KONTAKT_TELEFON" xml:space="preserve">
+    <value>0711 9959 826 50</value>
+  </data>
+  <data name="SUP_KONTAKT_MAIL" xml:space="preserve">
+    <value>info@inekon.de</value>
+  </data>
+  <data name="SUP_KONTAKT_ZEITEN" xml:space="preserve">
+    <value>werktags 9 bis 16 Uhr</value>
+  </data>
+  <data name="FW_SPERRE_TEST" xml:space="preserve">
+    <value>Die Fernwartung steht in der Testversion nicht zur Verfügung. Sie erreichen uns per E-Mail.</value>
+  </data>
+  <data name="FW_SPERRE_LIZENZ" xml:space="preserve">
+    <value>Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre Lizenz unter Hilfe → Lizenz.</value>
+  </data>
+  <data name="FW_TITEL" xml:space="preserve">
+    <value>Fernwartung</value>
+  </data>
+  <data name="FW_ZONE_KONTAKT" xml:space="preserve">
+    <value>Kontakt</value>
+  </data>
+  <data name="FW_TELEFON" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="FW_MAIL" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="FW_ZEITEN" xml:space="preserve">
+    <value>Erreichbar</value>
+  </data>
+  <data name="FW_ZONE_ANGABEN" xml:space="preserve">
+    <value>Ihre Angaben für den Support</value>
+  </data>
+  <data name="FW_ANGABEN_HINWEIS" xml:space="preserve">
+    <value>Mit diesen Angaben erkennt der Support Ihre Installation. Kopieren Sie sie in Ihre E-Mail oder lesen Sie sie am Telefon vor.</value>
+  </data>
+  <data name="FW_KOPIEREN" xml:space="preserve">
+    <value>Kopieren</value>
+  </data>
+  <data name="FW_KOPIERT" xml:space="preserve">
+    <value>Die Angaben stehen in der Zwischenablage.</value>
+  </data>
+  <data name="FW_ZONE_FERNWARTUNG" xml:space="preserve">
+    <value>Fernwartung</value>
+  </data>
+  <data name="FW_ERKLAERUNG" xml:space="preserve">
+    <value>Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Den Bildschirm sieht nur der Support, mit dem Sie gerade sprechen; EPOS-Plan zeichnet dabei nichts auf. Jede Verbindung nehmen Sie im Fernwartungsprogramm selbst an, und Sie können sie dort jederzeit beenden.</value>
+  </data>
+  <data name="FW_SCHRITT_1" xml:space="preserve">
+    <value>Laden Sie das Fernwartungsprogramm von der Fernwartungsseite und starten Sie es.</value>
+  </data>
+  <data name="FW_SCHRITT_2" xml:space="preserve">
+    <value>Nennen Sie dem Support die angezeigte Kennung und das Einmalkennwort.</value>
+  </data>
+  <data name="FW_SCHRITT_3" xml:space="preserve">
+    <value>Nehmen Sie die Anfrage im Programm an.</value>
+  </data>
+  <data name="FW_SEITE_OEFFNEN" xml:space="preserve">
+    <value>Fernwartungsseite öffnen</value>
+  </data>
+  <data name="FW_SEITE_FEHLER" xml:space="preserve">
+    <value>Die Fernwartungsseite konnte nicht geöffnet werden. Öffnen Sie {0} in Ihrem Browser oder rufen Sie uns an.</value>
+  </data>
+  <data name="FW_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
 </root>
 
