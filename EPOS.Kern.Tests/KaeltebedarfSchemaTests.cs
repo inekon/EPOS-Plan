@@ -24,7 +24,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(213, KaeltebedarfSchema.SCHRITT);
             Assert.Equal(KaelteRangSchema.SCHRITT + 1, KaeltebedarfSchema.SCHRITT);
-            Assert.Equal(KaeltebedarfSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(KaeltebedarfSchema.SCHRITT <= SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == KaeltebedarfSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);

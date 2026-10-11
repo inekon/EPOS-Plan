@@ -3404,6 +3404,25 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrKb + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrKb + " - vollstaendig: " + KaeltebedarfSchema.Vollstaendig() + " (erwartet True).");
             }
+
+            // ---- Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Rueckkuehlwerk als eigenes Glied - Katalog und Projektkopie
+            //      (leer, keine Saat), ID_Rueckkuehlwerk und Wasserpreis_EUR_m3 an Tab_Energieanlagen, sechs Kennzahlen an
+            //      Tab_ErgebnisKaeltemaschine. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Rueckkuehlwerk.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Tabellen oder Spalten, jede Zeile steht auf NULL.
+            string nrRkw = RueckkuehlwerkSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrRkw + " - Rueckkuehlwerk: " +
+                              (RueckkuehlwerkSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtRkw = new List<string>();
+                angelegt += RueckkuehlwerkSchema.Ausfuehren(berichtRkw);
+                foreach (string zeile in berichtRkw)
+                    Console.WriteLine("Schritt " + nrRkw + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrRkw + " - vollstaendig: " + RueckkuehlwerkSchema.Vollstaendig() +
+                                  ", Anlagenzeilen mit Wert: " + RueckkuehlwerkSchema.ZeilenMitWert() + " (erwartet True, 0).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

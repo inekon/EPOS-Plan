@@ -145,7 +145,8 @@ namespace EPOS.Kern.Tests
             // Erdsondenfeldes (Schritt 195), die zwei der Uebergabegrenze (Schritt 205) und der Rang der Kaeltefolge
             // (Schritt 212).
             int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count + ErdsondenfeldSchema.SPALTEN.Count +
-                       UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + KaelteRangSchema.SPALTEN.Count;
+                       UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + KaelteRangSchema.SPALTEN.Count +
+                       RueckkuehlwerkSchema.SPALTEN_ANLAGE.Count;   // + Verweis und Wasserpreis des Rueckkuehlwerks (K-F1)
             Assert.Equal(new[] { "Zeitprogramm", "Vorlauf_Max" }, anlagen.Skip(anlagen.Count - frei - 2).Take(2).ToArray());
             // Dahinter stehen allein die sechs Kennzahlen des Kreises (Ak3Schema), die sieben von AK3-K (Ak3KSchema) und
             // die drei der Kuehlkurve (KuehlkurveSchema) und die fuenf des Kaeltebedarfs (KaeltebedarfSchema, Schritt 213).

@@ -38,6 +38,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hilfsstromanteil der Projektkopie [0…1); <c>null</c> = kein Zuschlag.</summary>
         public double? KuehlHilfsstromanteil { get; set; }
+
+        /// <summary>
+        /// Verweis auf die Projektkopie des Rückkühlwerks (<c>ID_Rueckkuehlwerk</c>, K-F1); <c>null</c> = keins gewählt, die
+        /// Rückkühlart der Kältemaschine rechnet mit ihren Festwerten. Nur gelesen — geschrieben über
+        /// <see cref="KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen"/>.
+        /// </summary>
+        public int? IdRueckkuehlwerk { get; set; }
+
+        /// <summary>
+        /// Wasserpreis der Anlage [€/m³] (<c>Wasserpreis_EUR_m3</c>, Frage KD-Q8); <c>null</c> = keine Wasserkosten. Nur
+        /// gelesen — geschrieben über <see cref="KaeltemaschineAnlageCtrl.WasserpreisSetzen"/>.
+        /// </summary>
+        public double? WasserpreisEurM3 { get; set; }
+
+        /// <summary>Rückkühlart der Projektkopie der Kältemaschine (Anzeige und Verträglichkeitsprüfung).</summary>
+        public string Rueckkuehlart { get; set; }
     }
 
     /// <summary>
@@ -48,16 +64,25 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class KaeltemaschineAnlageCtrl
     {
-        private const string SQL_LISTE =
+        private const string SQL_LISTE_KOPF =
             "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Kaeltemaschine, a.Kaeltemaschine_Anzahl, a.Kuehl_ID_Carrier, " +
-            "a.Kuehl_EigenerZaehler, k.Kuehl_Vorlauf, k.Kuehl_Hilfsstromanteil " +
-            "FROM Tab_Energieanlagen a LEFT JOIN Tab_Kaeltemaschine k ON k.ID = a.ID_Kaeltemaschine ";
+            "a.Kuehl_EigenerZaehler, k.Kuehl_Vorlauf, k.Kuehl_Hilfsstromanteil, k.Rueckkuehlart";
+
+        /// <summary>Die zwei Spalten des Rückkühlwerks (Schritt <see cref="RueckkuehlwerkSchema.SCHRITT"/>), wenn sie stehen.</summary>
+        private const string SQL_LISTE_RUECKKUEHLWERK = ", a.ID_Rueckkuehlwerk, a.Wasserpreis_EUR_m3";
+
+        private const string SQL_LISTE_FUSS =
+            " FROM Tab_Energieanlagen a LEFT JOIN Tab_Kaeltemaschine k ON k.ID = a.ID_Kaeltemaschine ";
+
+        /// <summary>Die Leseanweisung — ohne die Spalten des Rückkühlwerks auf einem Stand vor seinem Schritt.</summary>
+        private static string SqlListe() =>
+            SQL_LISTE_KOPF + (RueckkuehlwerkSchema.AnlagenspaltenVorhanden() ? SQL_LISTE_RUECKKUEHLWERK : "") + SQL_LISTE_FUSS;
 
         /// <summary>Die Anlagenzeilen der Kältemaschine eines Projekts in der Reihenfolge ihrer Kennung.</summary>
         public static IReadOnlyList<KaeltemaschineAnlageModel> Liste(int projektId)
         {
             var liste = new List<KaeltemaschineAnlageModel>();
-            DataTable dt = DataRepository.GetDataTable(SQL_LISTE + "WHERE a.ID_Projekt = ? AND a.ID_Type = ? ORDER BY a.ID",
+            DataTable dt = DataRepository.GetDataTable(SqlListe() + "WHERE a.ID_Projekt = ? AND a.ID_Type = ? ORDER BY a.ID",
                 new DbParam("?", projektId), new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
             if (dt != null) foreach (DataRow r in dt.Rows) liste.Add(AusZeile(r));
             return liste;
@@ -84,7 +109,7 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Anlagenzeile; <c>null</c>, wenn es sie nicht gibt oder sie keine Kältemaschine ist.</summary>
         public static KaeltemaschineAnlageModel Laden(int anlagenId)
         {
-            DataTable dt = DataRepository.GetDataTable(SQL_LISTE + "WHERE a.ID = ? AND a.ID_Type = ?",
+            DataTable dt = DataRepository.GetDataTable(SqlListe() + "WHERE a.ID = ? AND a.ID_Type = ?",
                 new DbParam("?", anlagenId), new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
             return dt == null || dt.Rows.Count == 0 ? null : AusZeile(dt.Rows[0]);
         }
@@ -167,8 +192,88 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        // =================================================================
+        //  Rückkühlwerk und Wasserpreis (K-F1)
+        // =================================================================
+
         /// <summary>
-        /// Löscht die Anlagenzeile — und ihre Projektkopie, wenn keine andere Anlagenzeile sie mehr führt.
+        /// <b>Verträglichkeit</b> von Kältemaschine und Rückkühlwerk — ohne Datenbank: Eine luftgekühlte Maschine
+        /// (Rückkühlart <c>LUFT</c>) trägt ihren Verflüssiger selbst und bekommt kein Rückkühlwerk. <c>null</c> = verträglich,
+        /// sonst der Meldungstext.
+        /// </summary>
+        public static string RueckkuehlwerkPruefen(string rueckkuehlart, bool mitRueckkuehlwerk)
+        {
+            if (mitRueckkuehlwerk && string.Equals(rueckkuehlart, KaeltemaschineSchema.RUECKKUEHLART_LUFT, StringComparison.Ordinal))
+                return MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH;
+            return null;
+        }
+
+        /// <summary>
+        /// Wählt das Rückkühlwerk einer Anlage: <paramref name="stammId"/> = Katalogsatz, aus dem die Anlage eine
+        /// <b>eigene</b> Projektkopie bekommt (<see cref="RueckkuehlwerkCtrl.AusKatalogUebernehmen"/>); <c>null</c> = keins
+        /// (heutiger Weg über die Rückkühlart). Die bisherige Kopie geht, wenn keine andere Anlagenzeile sie mehr führt.
+        /// Liefert <c>null</c> oder den Meldungstext (Verträglichkeit, fehlender Satz, Stand vor dem Schritt).
+        /// </summary>
+        public static string RueckkuehlwerkWaehlen(int anlagenId, int? stammId)
+        {
+            if (!RueckkuehlwerkSchema.AnlagenspaltenVorhanden())
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_MSG_SCHEMA_FEHLT, RueckkuehlwerkSchema.SCHRITT);
+            KaeltemaschineAnlageModel a = Laden(anlagenId);
+            if (a == null) return MyResource.Resource.KM_ANLAGE_FEHLT;
+            string unvertraeglich = RueckkuehlwerkPruefen(a.Rueckkuehlart, stammId.HasValue);
+            if (unvertraeglich != null) return unvertraeglich;
+            if (stammId.HasValue && RueckkuehlwerkStammCtrl.Laden(stammId.Value) == null)
+                return MyResource.Resource.RKW_MSG_SATZ_FEHLT;
+
+            int? alt = a.IdRueckkuehlwerk;
+            int? neu = stammId.HasValue ? RueckkuehlwerkCtrl.AusKatalogUebernehmen(stammId.Value, a.IdProjekt) : (int?)null;
+            if (neu.HasValue && neu.Value <= 0) return MyResource.Resource.RKW_MSG_SATZ_FEHLT;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    v.Ausfuehren("UPDATE Tab_Energieanlagen SET ID_Rueckkuehlwerk = ? WHERE ID = ? AND ID_Type = ?",
+                        new DbParam("?", neu.HasValue ? (object)neu.Value : DBNull.Value), new DbParam("?", anlagenId),
+                        new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
+                    if (alt.HasValue) RueckkuehlwerkAufraeumen(v, alt.Value);
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Setzt den Wasserpreis einer Anlage [€/m³]; <c>null</c> = keine Wasserkosten. Liefert <c>null</c> oder den
+        /// Meldungstext.
+        /// </summary>
+        public static string WasserpreisSetzen(int anlagenId, double? preisEurM3)
+        {
+            if (!RueckkuehlwerkSchema.AnlagenspaltenVorhanden())
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_MSG_SCHEMA_FEHLT, RueckkuehlwerkSchema.SCHRITT);
+            if (preisEurM3.HasValue && (double.IsNaN(preisEurM3.Value) || double.IsInfinity(preisEurM3.Value) || preisEurM3.Value < 0))
+                return MyResource.Resource.RKW_MSG_WERT_UNGUELTIG;
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET Wasserpreis_EUR_m3 = ? WHERE ID = ? AND ID_Type = ?",
+                new DbParam("?", preisEurM3.HasValue ? (object)preisEurM3.Value : DBNull.Value), new DbParam("?", anlagenId),
+                new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
+            return null;
+        }
+
+        /// <summary>Löscht die Projektkopie eines Rückkühlwerks, wenn keine Anlagenzeile sie mehr führt.</summary>
+        private static void RueckkuehlwerkAufraeumen(DbVorgang v, int idRueckkuehlwerk)
+        {
+            v.Ausfuehren("DELETE FROM Tab_Rueckkuehlwerk WHERE ID = ? AND NOT EXISTS " +
+                         "(SELECT 1 FROM Tab_Energieanlagen WHERE ID_Rueckkuehlwerk = ?)",
+                new DbParam("?", idRueckkuehlwerk), new DbParam("?", idRueckkuehlwerk));
+        }
+
+        /// <summary>
+        /// Löscht die Anlagenzeile — und ihre Projektkopie, wenn keine andere Anlagenzeile sie mehr führt; ebenso die
+        /// Projektkopie ihres Rückkühlwerks.
         /// </summary>
         public static void Loeschen(int anlagenId)
         {
@@ -188,6 +293,7 @@ namespace WindowsFormsApplication1
                         v.Ausfuehren("DELETE FROM Tab_Kaeltemaschine WHERE ID = ? AND NOT EXISTS " +
                                      "(SELECT 1 FROM Tab_Energieanlagen WHERE ID_Kaeltemaschine = ?)",
                             new DbParam("?", a.IdKaeltemaschine.Value), new DbParam("?", a.IdKaeltemaschine.Value));
+                    if (a.IdRueckkuehlwerk.HasValue) RueckkuehlwerkAufraeumen(v, a.IdRueckkuehlwerk.Value);
                     v.Commit();
                 }
                 catch
@@ -204,6 +310,8 @@ namespace WindowsFormsApplication1
             double? carrier = Z("Kuehl_ID_Carrier");
             double? zaehler = Z("Kuehl_EigenerZaehler");
             double? km = Z("ID_Kaeltemaschine");
+            bool mitRkw = r.Table.Columns.Contains(RueckkuehlwerkSchema.SPALTE_ID_RUECKKUEHLWERK);
+            double? rkw = mitRkw ? Z(RueckkuehlwerkSchema.SPALTE_ID_RUECKKUEHLWERK) : null;
             return new KaeltemaschineAnlageModel
             {
                 AnlagenId = KaeltemaschineStammCtrl.Ganz(r["ID"]),
@@ -215,6 +323,9 @@ namespace WindowsFormsApplication1
                 KuehlEigenerZaehler = zaehler.HasValue ? (bool?)(zaehler.Value != 0) : null,
                 KuehlVorlauf = Z("Kuehl_Vorlauf"),
                 KuehlHilfsstromanteil = Z("Kuehl_Hilfsstromanteil"),
+                Rueckkuehlart = KaeltemaschineStammCtrl.Text(r[KaeltemaschineSchema.SPALTE_RUECKKUEHLART]),
+                IdRueckkuehlwerk = rkw.HasValue ? (int?)(int)rkw.Value : null,
+                WasserpreisEurM3 = mitRkw ? Z(RueckkuehlwerkSchema.SPALTE_WASSERPREIS) : null,
             };
         }
     }

@@ -280,6 +280,8 @@ namespace WindowsFormsApplication1
                                         if (IstWaermepumpenkatalog(fk.RefTab)) continue;
                                         // Dieselbe Regel fuer den Katalog der Kaeltemaschine (KU3-1).
                                         if (string.Equals(fk.RefTab, KaeltemaschineSchema.TAB_STAMM, StringComparison.OrdinalIgnoreCase)) continue;
+                                        // Ebenso der Katalog des Rueckkuehlwerks (K-F1).
+                                        if (string.Equals(fk.RefTab, RueckkuehlwerkSchema.TAB_STAMM, StringComparison.OrdinalIgnoreCase)) continue;
                                         // Die Katalogverweise der Pufferauslegung (Welle P4c) reisen
                                         // nicht: Konditionierungsvorlage und Pufferkatalog des Ziels
                                         // kennen die Id nicht oder unter einem anderen Satz.
@@ -1321,6 +1323,11 @@ namespace WindowsFormsApplication1
                 foreach (int id in ids)
                     v.Ausfuehren(KaeltemaschineSchema.SqlNachtragProjekt(), new DbParam("@projekt", id));
 
+            Dictionary<string, Type> rkw = ZielTypen(RueckkuehlwerkSchema.TAB_PROJEKT);
+            if (rkw != null && rkw.ContainsKey(RueckkuehlwerkSchema.SPALTE_ID_STAMM))
+                foreach (int id in ids)
+                    v.Ausfuehren(RueckkuehlwerkSchema.SqlNachtragProjekt(), new DbParam("@projekt", id));
+
             // Die Ursprungsverweise aus Schritt KatalogkostenUrsprungSchema.SCHRITT reisen nicht: Am Ziel kommt die Kopie
             // ohne Ursprung an („Ursprung nicht bekannt"), damit ein Rückweg nie einen fremden Satz überschreibt.
             foreach ((string Kopie, string Katalog) k in KatalogkostenUrsprungSchema.KOPIEN_OHNE_URSPRUNG)
@@ -1356,6 +1363,10 @@ namespace WindowsFormsApplication1
             // Ebenso der Katalogverweis der Kaeltemaschinen-Projektkopie (KU3-1).
             if (tab.Equals(KaeltemaschineSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&
                 col.Equals(KaeltemaschineSchema.SPALTE_ID_STAMM, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+            // Ebenso der Katalogverweis der Rueckkuehlwerk-Projektkopie (K-F1).
+            if (tab.Equals(RueckkuehlwerkSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(RueckkuehlwerkSchema.SPALTE_ID_STAMM, StringComparison.OrdinalIgnoreCase))
                 return DBNull.Value;
 
             // Der Katalogverweis des Projektpuffers (Welle P4c) reist nicht - die Id eines fremden

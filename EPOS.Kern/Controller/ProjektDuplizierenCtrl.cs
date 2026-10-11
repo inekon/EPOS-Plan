@@ -180,6 +180,9 @@ namespace WindowsFormsApplication1
             {"ID_Wechselrichter","Tab_Wechselrichter"},
             // KU3-1: die Kennlinie der Kaeltemaschine haengt an der Projektkopie.
             {KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE, KaeltemaschineSchema.TAB_PROJEKT},
+            // K-F1: die Anlagenzeile der Kaeltemaschine zeigt auf die Projektkopie ihres Rueckkuehlwerks. Die deklarierte
+            // Beziehung erkennt _echteFks ohnehin; der Eintrag traegt den Versatz auch ohne Schemaauskunft.
+            {RueckkuehlwerkSchema.SPALTE_ID_RUECKKUEHLWERK, RueckkuehlwerkSchema.TAB_PROJEKT},
             // Zapfprofilgenerator (Schemaschritt 103): der Wohnungstyp haengt an der Zone.
             // Die deklarierte Beziehung Tab_TwwWohnungstyp.ID_Zone -> Tab_TwwZone erkennt
             // _echteFks ohnehin; der Eintrag traegt den Versatz auch ohne sie.

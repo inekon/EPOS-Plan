@@ -412,6 +412,10 @@ namespace WindowsFormsApplication1
             // Lastgänge stehen auf 'zentral' (heutiger Weg), die Ergebnisspalten leer.
             new Stufe(KaeltebedarfSchema.SCHRITT, Art.Ddl,
                       "Kältebedarf (Profile, Typkatalog, Zuordnung mit Deckungsart)"),
+            // Ein Paket fuehrt keinen Katalog der Rueckkuehlwerke (der Katalog bleibt im Ziel); seine Kaeltemaschinen kommen
+            // ohne Rueckkuehlwerk und ohne Wasserpreis an (heutiger Weg ueber die Rueckkuehlart), die Ergebnisspalten leer.
+            new Stufe(RueckkuehlwerkSchema.SCHRITT, Art.Katalog,
+                      "Rückkühlwerk als eigenes Glied (Katalog, Projektkopie, Verweis und Wasserpreis an der Anlage, Kennzahlen)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -1012,7 +1012,12 @@ namespace WindowsFormsApplication1
         /// (<see cref="KaeltebedarfSchema"/>), Deckungsspalten an <c>Z_ProjektWaermebedarf</c>, fünf leere Ergebnisspalten,
         /// sechs neutrale Typsätze (<see cref="KaeltetypSaat"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt ordnet einen
         /// Kältebedarf zu, jeder Lastgang steht auf „zentral“.
-        public const int Zielversion = KaeltebedarfSchema.SCHRITT;
+        /// Danach, mit dem RÜCKKÜHLWERK ALS EIGENEM GLIED (K-F1, Entscheid E120), steht das Ziel auf
+        /// <see cref="RueckkuehlwerkSchema.SCHRITT"/>: Katalog und Projektkopie des Rückkühlwerks, sein Verweis und der
+        /// Wasserpreis an der Anlagenzeile der Kältemaschine, sechs Kennzahlen der Rückkühlung an ihrem Ergebnis
+        /// (<see cref="RueckkuehlwerkSchema"/>). <b>Ergebnisneutral:</b> Der Katalog entsteht leer, alle Spalten stehen auf
+        /// NULL, kein Rechenweg liest sie.
+        public const int Zielversion = RueckkuehlwerkSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

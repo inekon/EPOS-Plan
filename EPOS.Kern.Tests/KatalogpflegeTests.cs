@@ -67,7 +67,7 @@ namespace EPOS.Kern.Tests
             // KU3-1: die Kaeltemaschine dazu - 26.
             // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen dazu (Schloss) - 27.
             // PVG (Schemaschritt 206): die PV-Ganglinie dazu - 28.
-            Assert.Equal(30, KatalogRegistry.Alle.Count);   // K1: KAELTEBEDARF, KAELTETYP
+            Assert.Equal(31, KatalogRegistry.Alle.Count);   // K1: KAELTEBEDARF, KAELTETYP; K-F1: RUECKKUEHLWERK
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -82,7 +82,9 @@ namespace EPOS.Kern.Tests
                 "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV",
                 "WECHSELRICHTER",
                 // KU3-1: die Kaeltemaschine nach den Erzeugern der Waerme- und Stromseite, vor dem BHKW.
-                "KAELTEMASCHINE", "BHKW",
+                "KAELTEMASCHINE",
+                // K-F1: das Rueckkuehlwerk als Glied der Kaeltemaschine gleich hinter ihr.
+                "RUECKKUEHLWERK", "BHKW",
                 "STROMSPEICHER", "GEBAEUDE",
                 // Gebaeudesimulation G3 (W21): die zwei Kataloge der Gebaeudehuelle beim Gebaeude.
                 "BAUSTOFF", "BAUTEILAUFBAU",

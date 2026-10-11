@@ -92,8 +92,9 @@ namespace EPOS.Kern.Tests
                 new DbParam("?", KaeltemaschineAnlageSchema.POSITION_AGGREGAT))));
             // Schritt 184 (KU3-4d) haengt seine Abrechnungsspalten an dieselbe Tabelle.
             // + fuenf Kennzahlspalten von Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 210).
+            // + sechs Kennzahlen der Rueckkuehlung (RueckkuehlwerkSchema, K-F1).
             Assert.Equal(4 + KaeltemaschineAnlageSchema.ErgebnisSpalten.Length + KaeltestromabrechnungSchema.SPALTEN.Count +
-                         KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN.Count,
+                         KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN.Count + RueckkuehlwerkSchema.SPALTEN_ERGEBNIS.Count,
                          DataRepository.SpaltenVonTabelle(KaeltemaschineAnlageSchema.TAB_ERGEBNIS).Count);
             // Eine Anlagenzeile der Kältemaschine führen allein die Referenzprojekte 1055 (KU3-4b), 1059 (AK3-K-K5a) und 1063 (KM3).
             Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(

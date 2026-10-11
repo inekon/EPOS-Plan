@@ -1533,11 +1533,17 @@ Stellen:
 |---|---|---|
 | **Nacht- und Sommerlüftung** (erhöhter Luftwechsel bei günstiger Außentemperatur) | in den **freien Lauf** des Gebäudemodells — sie senkt den Bedarf, sie deckt ihn nicht (3.4) | G2, vor KU2 |
 | **Freie Kühlung über die Wärmequelle** (Sole direkt in den Kältekreis, ohne Verdichter) | ein **Betriebsfall des Erzeugers** mit sehr hohem EER, begrenzt durch die Quellentemperatur | KU3 |
-| **Rückkühlung** (Abfuhr der Kondensatorwärme) | **Bestandteil** der Kältemaschine, nicht eigenständig | KU3 |
+| **Rückkühlung** (Abfuhr der Kondensatorwärme) | **eigenes Glied** (Rückkühlwerk mit Katalog, gewählt an der Anlagenzeile der Kältemaschine), **kein Erzeuger**, kein Platz in der Kältefolge (E120) | KU3, K‑F1 |
 
 **K8 ist mit E33 (23.09.2026) nach Empfehlung entschieden:** Alle drei werden gebaut, aber keine
 als eigener „Erzeuger" im Sinne der Anlagenliste. Ein Eintrag „freie Kühlung" in der Erzeugerauswahl würde eine Anlage suggerieren,
 die es nicht gibt.
+
+Die Rückkühlung ist ein **eigenes Glied** (E120): ein Rückkühlwerk mit Katalog, gewählt an der Anlagenzeile der
+Kältemaschine; es ist kein Erzeuger der Anlagenliste und hat keinen Platz in der Kältefolge. Ohne gewähltes Rückkühlwerk
+rechnet die Rückkühlart der Kältemaschine mit den Festwerten. Bei der reversiblen Wärmepumpe bleibt die Rückkühlung Teil
+von Maschine und Kennlinie. Wortlaut und Katalog:
+[Entwurf Split, VRF und Rückkühlwerk](Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md), 5.1.
 
 **So gebaut (KU3-2, 04.10.2026):** Die freie Kühlung ist ein Betriebsfall des Rückkühlers, kein Erzeuger (K8). Sie gilt nur bei Trocken- und Nasskühler, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit dem Ersatz-EER 15 plus Hilfsstrom, der Verdichter ist in dieser Stunde aus; Stunden und Kälte werden gezählt. **So gebaut (KU3-6, 05.10.2026):** Der Weg über die Wärmequelle der Wärmepumpe (Sole direkt in den Kühlkreis, ohne Verdichter) ist ein Betriebsfall der Wärmepumpe im Kühlbetrieb, kein Erzeuger. Die Anlagenzeile trägt den Schalter `Kuehl_Frei`, die Grädigkeit des Wärmetauschers `Kuehl_Frei_Graedigkeit_K` (leer = 3,0 K, `KaelteFestwerte.FREIE_KUEHLUNG_SOLE_GRAEDIGKEIT_K`) und die Leistungsgrenze `Kuehl_Frei_Leistung_kW` (leer = Kälteleistung der Kennlinie in der Stunde; Schemaschritt 187 `FreieKuehlungSoleSchema`). Der Schalter wirkt nur an einer Sole-Wasser- oder Wasser-Wasser-Maschine mit gepflegter Quelle (`WQ_Typ` Erdreich, Konstant, Profil, CSV); bei Luft-Wasser, leerer Quelle (Außenluft-Rückfall) oder Quellspeicher lehnt der Lauf ihn benannt ab, und der Dialog nennt den Sperrgrund. Je Stunde deckt die Quelle vor dem Verdichter, solange Quellentemperatur plus Grädigkeit den Kaltwasser-Vorlauf nicht übersteigt: der freie Anteil ist auf die Leistungsgrenze gedeckelt, sein Strom rechnet sich über den Ersatz-EER 15 des Rückkühlers plus Hilfsstromanteil, der Rest der Stunde läuft über den Verdichter nach Kennlinie. Stunden und Kälte stehen als `FreieKuehlung_Stunden` und `FreieKuehlung_MWh` am Wärmepumpen-Ergebnis, als Kennzahlen `kaelte.wp.frei` und `kaelte.wp.frei_stunden` im Bericht und laufen in die Szenariomengen. Die Quellentemperatur ist dieselbe Reihe wie im Heizbetrieb; die Heizreihen, die Entzugsganglinie und die Prüfung nach VDI 4640 bleiben unberührt, die Rückwirkung auf die Sonde (K8c) bleibt vertagt. Kein Referenzprojekt nutzt den Schalter; das Netz sind Rechen- und Datenbankprobe, die Basis R37 bleibt.
 
