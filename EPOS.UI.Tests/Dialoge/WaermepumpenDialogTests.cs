@@ -79,6 +79,7 @@ public class WaermepumpenDialogTests : EposBunitContext
         Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>? katalogSpeichern = null,
         Func<int, IReadOnlyList<KennlinienZeile>>? katalogKennlinien = null,
         Func<int, IReadOnlyList<KennlinienZeile>, bool>? katalogKennlinienAbgleichen = null,
+        Func<IReadOnlyDictionary<string, object>>? neuGaben = null,
         Func<int, string>? katalogLoeschen = null,
         Rueckwegwege? rueckweg = null,
         Func<WaermepumpeAnlageDaten, bool, Task>? kosten = null,
@@ -99,6 +100,7 @@ public class WaermepumpenDialogTests : EposBunitContext
             .Add(x => x.KatalogSatz, id => Stamm("WP Neu", "Alpha", 20))
             .Add(x => x.ProjektBilder, _ => KennlinienBilder.Leer)
             .Add(x => x.KatalogBilder, _ => KennlinienBilder.Leer)
+            .Add(x => x.NeuGaben, neuGaben)
             .Add(x => x.KatalogSpeichern, katalogSpeichern)
             .Add(x => x.KatalogKennlinien, katalogKennlinien)
             .Add(x => x.KatalogKennlinienAbgleichen, katalogKennlinienAbgleichen)
@@ -217,9 +219,9 @@ public class WaermepumpenDialogTests : EposBunitContext
 
         var knoepfe = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("OK", knoepfe);
-        Assert.Contains("❌Abbrechen", knoepfe);
+        Assert.Contains(Resource.ALLG_BTN_ABBRECHEN, knoepfe);   // AW2: die Schlussleiste der anderen Projektdialoge
         Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
-        // Die Anlagenseite steht nicht mehr eingebettet - sie ist die Überlagerung „Anlage…".
+        // AW2: Die Anlagenfelder stehen nur in der Satz-Ueberlagerung („Bearbeiten…").
         Assert.Empty(cut.FindAll(".epos-wp-anlage"));
         Assert.False(cut.Instance.DetailOffen);
     }
@@ -273,9 +275,9 @@ public class WaermepumpenDialogTests : EposBunitContext
     // =================================================================================
 
     [Fact]
-    public void S3_Die_Knoepfe_stehen_an_ihrem_Ort_Katalogfuss_ohne_Vergleichen_und_Neu()
+    public void S3_Die_Knoepfe_stehen_an_ihrem_Ort_mit_Vergleichen_und_Neu()
     {
-        var cut = Aufbauen(katalogLoeschen: _ => "",
+        var cut = Aufbauen(katalogLoeschen: _ => "", neuGaben: () => new Dictionary<string, object>(),
                            rueckweg: Rueckweg(Array.Empty<Rueckwegvorschlag>()));
 
         var projekt = cut.Find(".epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste").TextContent;
@@ -288,9 +290,9 @@ public class WaermepumpenDialogTests : EposBunitContext
         var fuss = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe").TextContent;
         Assert.Contains("Löschen", fuss);
         Assert.Contains("Bearbeiten...", fuss);
-        Assert.DoesNotContain(Resource.AUSWAHL_BTN_VERGLEICHEN, fuss);
-        Assert.Empty(cut.FindAll(".epos-knopf--vergleichen"));
-        Assert.Empty(cut.FindAll(".epos-knopf--neu"));
+        Assert.Contains(Resource.AUSWAHL_BTN_VERGLEICHEN, fuss);   // AW2: wie in den anderen Projektdialogen
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--vergleichen"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--neu"));
     }
 
     [Fact]
@@ -543,7 +545,7 @@ public class WaermepumpenDialogTests : EposBunitContext
     {
         bool? ergebnis = null;
         var cut = Aufbauen(geschlossen: b => ergebnis = b);
-        Knopf(cut, "❌Abbrechen").Click();
+        Knopf(cut, Resource.ALLG_BTN_ABBRECHEN).Click();
         Assert.False(ergebnis);
 
         bool? zweites = null;
@@ -939,5 +941,71 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.True(cut.Instance.SatzUeberlagerungOffen);
         Assert.True(cut.Instance.DetailOffen);
         Assert.Equal("WP Beta", cut.Instance.Gewaehlt!.Bezeichner);
+    }
+
+    // =================================================================================
+    // AW2-Nachtrag: Knopfleiste und Schlussleiste wie in den anderen Projektdialogen
+    // =================================================================================
+
+    [Fact]
+    public void AW2_Die_Knopfleiste_am_Satz_traegt_Vergleichen_Schloss_Loeschen_Bearbeiten_und_Neu()
+    {
+        var cut = Aufbauen(DreiPumpen(), schloss: new Schlosspruefung().Weg(), katalogLoeschen: _ => "",
+                           neuGaben: () => new Dictionary<string, object>());
+        var leiste = cut.Find(".epos-zweispalten-satzknoepfe");
+        string[] folge = leiste.QuerySelectorAll("button")
+            .Select(b => b.ClassList.First(k => k is "epos-knopf--vergleichen" or "epos-katalogschloss" or "epos-knopf--loeschen"
+                                                 or "epos-knopf--bearbeiten-projekt" or "epos-knopf--bearbeiten-katalog"
+                                                 or "epos-knopf--neu")).ToArray();
+        Assert.Equal(new[] { "epos-knopf--vergleichen", "epos-katalogschloss", "epos-knopf--loeschen",
+                             "epos-knopf--bearbeiten-projekt", "epos-knopf--neu" }, folge);
+    }
+
+    [Fact]
+    public void AW2_Vergleichen_wirkt_auf_die_angekreuzten_Zeilen_des_Bereichs_und_ist_unter_zwei_gesperrt()
+    {
+        var pumpen = DreiPumpen();
+        for (int i = 0; i < pumpen.Count; i++) pumpen[i].IdWp = i + 1;
+        var cut = Aufbauen(pumpen, katalog: ZweiSaetze());
+        Assert.True(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+
+        // Projektsatz: zwei angekreuzte Projektzeilen verschiedener Geraete
+        ProjektAnkreuzen(cut, 0, 1);
+        Assert.False(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+
+        // Katalogsatz: die Zeile waehlt, das Ankreuzen waehlt nicht (Anwenderentscheid)
+        KatalogzeileWaehlen(cut);
+        Assert.Equal(Satzmarke.Katalogsatz, cut.FindComponent<Zweispaltenauswahl>().Instance.SatzArt);
+        Assert.True(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        KatalogAnkreuzen(cut, 0, 1);
+        Assert.Equal(Satzmarke.Katalogsatz, cut.FindComponent<Zweispaltenauswahl>().Instance.SatzArt);
+        Assert.False(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        AmSatz(cut, "epos-knopf--vergleichen").Click();
+        Assert.NotEmpty(cut.FindAll(".epos-vergleich-name"));
+    }
+
+    [Fact]
+    public void AW2_Neu_oeffnet_den_Katalogeditor_im_Modus_Neu_auch_beim_Projektsatz()
+    {
+        int gerufen = 0;
+        var cut = Aufbauen(neuGaben: () => { gerufen++; return new Dictionary<string, object>(); });
+        Assert.Equal(Satzmarke.Projektsatz, cut.FindComponent<Zweispaltenauswahl>().Instance.SatzArt);
+        AmSatz(cut, "epos-knopf--neu").Click();
+        Assert.Equal(1, gerufen);
+        Assert.True(cut.Instance.NeuOffen);
+    }
+
+    [Fact]
+    public void AW2_Die_Schlussleiste_ist_die_der_anderen_Projektdialoge()
+    {
+        var cut = Render<WaermepumpenDialog>(p => p
+            .Add(x => x.Zeilen, new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") })
+            .Add(x => x.Katalog, () => Katalog));
+        var fuss = cut.FindComponents<SpeichernLeiste>();
+        Assert.Single(fuss);
+        var texte = fuss[0].FindAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Contains(Resource.ALLG_BTN_ABBRECHEN, texte);
+        Assert.Contains(Resource.ALLG_BTN_OK, texte);
+        Assert.DoesNotContain(texte, t => t.Contains('❌') || t.Contains('✕'));
     }
 }

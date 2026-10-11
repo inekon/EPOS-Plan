@@ -152,8 +152,13 @@
         </Rechts>
 
         <KatalogFuss>
-            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW1): Bearbeiten… je Satzart; Schloss… und Loeschen nur auf
-               Katalogsaetze - beim Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen". *@
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW1, AW2 wie in den anderen Projektdialogen): Vergleichen…,
+               Schloss…, Loeschen, Bearbeiten…, rechts Neu…. Vergleichen… wirkt auf die angekreuzten Zeilen des
+               Bereichs des gewaehlten Satzes (unter zwei gesperrt); Schloss… und Loeschen nur auf Katalogsaetze -
+               beim Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen". *@
+            <button type="button" class="epos-knopf epos-knopf--vergleichen"
+                    title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
+                    disabled="@(VergleichsZahl < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
                             Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
@@ -182,6 +187,14 @@
                         disabled="@(_katalogZeile is null)" @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
             }
         </KatalogFuss>
+
+        <KatalogFussRechts>
+            @* AW2: „Neu…" legt immer einen KATALOGsatz an - der Katalogeditor der Waermepumpe im Modus Neu. *@
+            @if (NeuGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--neu" @onclick="BeiNeu">@Resource.AUSWAHL_BTN_NEU</button>
+            }
+        </KatalogFussRechts>
 
         <Satz>
         @* DIE SATZ-UEBERLAGERUNG (AW2): EIN Aufbau fuer Projektsatz und Katalogsatz - Kostenknoepfe,
@@ -296,6 +309,17 @@
     {
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
+
+    @* --- Ueberlagerung: der Katalogeditor im Modus Neu (AW2, „Neu…") --- *@
+    <Ueberlagerung Offen="@(_neuGaben is not null)" Schliessbar="false" Titel=""
+                   Geschlossen="() => NeuFertig(false)">
+        <KindInhalt>
+            @if (_neuGaben is not null)
+            {
+                <WaermepumpeStammDialog @attributes="_neuGaben" Geschlossen="NeuFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     @* --- Ueberlagerung: der Kennlinieneditor des KATALOGSATZES (AW2) - gesperrt nur lesend. Er schreibt
            Tab_Kenndaten_STAMM bei seinem OK; das Abbrechen der Satz-Ueberlagerung nimmt es zurueck. *@
@@ -475,8 +499,8 @@
     /// <summary>Das Band bei einem Mangel einer Zeile: {0} = Typ, {1} = der Wortlaut.</summary>
     [Parameter] public string MangelFormat { get; set; } = "„{0}“: {1}";
 
-    [Parameter] public string OkText { get; set; } = "OK";
-    [Parameter] public string AbbrechenText { get; set; } = "❌Abbrechen";
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_WPAuswahl.btn_Help";
@@ -493,6 +517,12 @@
 
     /// <summary>AW2: der Rückschreibweg des Kennlinieneditors in den Katalog; <c>null</c> = der Editor zeigt nur.</summary>
     [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>, bool>? KatalogKennlinienAbgleichen { get; set; }
+
+    /// <summary>
+    /// AW2: die Gaben des Katalogeditors (<c>WaermepumpeStammDialog</c>) im Modus Neu — „Neu…" der Knopfleiste am Satz
+    /// legt immer einen Katalogsatz an. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? NeuGaben { get; set; }
 
     /// <summary>„Kennliniendaten Ansicht/Bearbeiten…" am Katalogsatz (<c>WPS_BTN_KENNDATEN</c>).</summary>
     [Parameter] public string BtnKenndatenText { get; set; } = Resource.WPS_BTN_KENNDATEN;
@@ -798,6 +828,60 @@
         _satzBearbeitung = null;
         _satzGeaendert = false;
         _katalogKennlinien = null;
+    }
+
+    // --- Vergleichen… und Neu… (AW2, wie in den anderen Projektdialogen) -------------
+
+    private IReadOnlyDictionary<string, object>? _neuGaben;
+
+    /// <summary>Steht der Katalogeditor im Modus Neu? (Prüfhilfe.)</summary>
+    public bool NeuOffen => _neuGaben is not null;
+
+    /// <summary>Wie viele Sätze „Vergleichen…" im Bereich des gewählten Satzes vergleichen würde.</summary>
+    private int VergleichsZahl => SatzArt == Satzmarke.Projektsatz
+        ? (ProjektSatz is null ? 0 : ProjektZiele().Select(z => z.IdWp).Distinct().Count())
+        : KatalogZiele().Count;
+
+    /// <summary>
+    /// „Vergleichen…" — zwei oder mehr Sätze nebeneinander, im Bereich des gewählten Satzes: beim Projektsatz die
+    /// angekreuzten Projektkopien (je Gerät einmal, mit den Werten der Feldgruppe), sonst die angekreuzten Katalogsätze.
+    /// </summary>
+    private void BeiVergleichen()
+    {
+        if (_katalogliste is null) return;
+        if (SatzArt != Satzmarke.Projektsatz)
+        {
+            List<Katalogfilterzeile> ziele = KatalogZiele();
+            if (ziele.Count >= 2) _katalogliste.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+            return;
+        }
+        if (ProjektSatz is null) return;
+        var saetze = new List<(string Name, IReadOnlyList<(string Beschriftung, string Wert)> Werte)>();
+        foreach (var g in ProjektZiele().GroupBy(z => z.IdWp))
+        {
+            WaermepumpeAnlageDaten z = g.First();
+            string grund = "";
+            WaermepumpeStammDaten? satz = Katalogladung.SatzDazu(() => ProjektSatz(z), z.Bezeichner, ref grund);
+            if (satz is null) { if (grund.Length > 0) Melden(grund, true); return; }
+            saetze.Add((z.Bezeichner, WaermepumpeStammFelder.Kenndatenwerte(satz, _felderTexte)
+                .Select(w => (w.Einheit.Length > 0 ? w.Name + " [" + w.Einheit + "]" : w.Name, w.Wert)).ToList()));
+        }
+        if (saetze.Count >= 2) _katalogliste.VergleichenWerte(saetze);
+    }
+
+    /// <summary>„Neu…": der Katalogeditor im Modus Neu.</summary>
+    private void BeiNeu()
+    {
+        if (NeuGaben is not null) _neuGaben = NeuGaben();
+    }
+
+    /// <summary>Nach dem Katalogeditor: die Katalogliste neu ziehen.</summary>
+    private void NeuFertig(bool _)
+    {
+        _neuGaben = null;
+        KatalogNeuLaden();
+        if (_katalogZeile is not null) KatalogZeileWaehlen(_katalogZeile.Bezeichner);
+        else DetailNachziehen();
     }
 
     /// <summary>Klick auf eine weich gesperrte Stelle des Katalogsatzes: das Band nennt den Grund.</summary>
@@ -1238,7 +1322,7 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_katalogschloss?.FrageOffen == true) return Task.CompletedTask;
-        if (_katalogKennlinien is not null || _rueckweg is not null ||
+        if (_katalogKennlinien is not null || _neuGaben is not null || _rueckweg is not null ||
             _loeschfrage || _satzGross)
             return Task.CompletedTask;
         return Abbrechen();

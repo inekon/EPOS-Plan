@@ -167,6 +167,8 @@ namespace WindowsFormsApplication1
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
                 // AW2: EINE Satz-Ueberlagerung fuer Projekt- und Katalogsatz. Der Katalogsatz schreibt ueber
                 // den Speicherweg des Katalogeditors (KA-E-8), seine Kennlinien ueber dessen Abgleich.
+                // AW2: "Neu…" der Knopfleiste am Satz - der Katalogeditor im Modus Neu.
+                ["NeuGaben"] = new Func<IReadOnlyDictionary<string, object>>(KatalogNeuGaben),
                 ["KatalogSpeichern"] = new Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>(
                     WaermepumpeStammHuelle.Speichern),
                 ["KatalogKennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(
@@ -436,6 +438,14 @@ namespace WindowsFormsApplication1
             Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
             _ => Rueckwegsperre.UrsprungUnbekannt,
         };
+
+        /// <summary>AW2: die Gaben des Katalogeditors im Modus Neu („Neu…" der Knopfleiste am Satz).</summary>
+        private static IReadOnlyDictionary<string, object> KatalogNeuGaben()
+        {
+            var gaben = new Dictionary<string, object>(WaermepumpeStammHuelle.Gaben());
+            gaben["NeuBeimStart"] = true;
+            return gaben;
+        }
 
         private static string Text_(string schluessel, string rueckfall)
         {
