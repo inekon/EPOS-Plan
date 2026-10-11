@@ -448,8 +448,6 @@ public class ProjektkopievormerkungTests : EposBunitContext
             .Add(x => x.AnlageGaben, d => new Dictionary<string, object>
             {
                 ["Daten"] = d,
-                ["Stammliste"] = new Func<IReadOnlyList<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammZeile>>(
-                    () => new[] { new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammZeile(d.IdWp, "WP K", false) }),
                 ["TemperaturenPruefen"] = new Func<int?, int?, string?>((_, _) => null)
             })
             .Add(x => x.Entfernen, z => h.Vormerkung.Entfernt(z.Bezeichner, z.IdWp))
@@ -459,8 +457,8 @@ public class ProjektkopievormerkungTests : EposBunitContext
     {
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
         cut.Find(".epos-zweispalten-knopf--uebernehmen").Click();
-        // Eine einzelne neue Zeile öffnet „Anlage…" - mit OK bestätigt geht sie ins Modell.
-        cut.FindAll(".epos-wp-anlage-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+        // Eine einzelne neue Zeile öffnet die Satz-Überlagerung (AW2) - mit OK bestätigt geht sie ins Modell.
+        cut.Find(".epos-satzueberlagerung-ok").Click();
     }
 
     private static void WpAbschluss(IRenderedComponent<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog> cut, string text)
