@@ -164,6 +164,15 @@ namespace WindowsFormsApplication1
                 ["Claim"] = MyResource.Resource.HAUPT_CLAIM,
                 ["VersionText"] = Versionszeile(),
 
+                // DER ENTWICKLERMODUS (Administration und Support, Stufe 1): das Menue im
+                // Zuschnitt der Stufe, die Marke neben der Versionszeile und die Naht, ueber
+                // die beides nach einem Wechsel zur Laufzeit neu versorgt wird.
+                ["Eintraege"] = Menuetabelle.Sichtbar(Entwicklermodus.Stufe),
+                ["EntwicklerMarke"] = Marke(),
+                ["EntwicklerMarkeTip"] = MarkeTip(),
+                ["FreigabeAnmelden"] =
+                    new Action<Action<IReadOnlyList<Menuepunkt>, string, string>>(s => _freigabeSetzer = s),
+
                 // DAS LIZENZBANNER (Welle iF30, Anwenderentscheid 04.09.2026).
                 // Ermittelt wird die Lage HIER, in der Hülle, und nicht in der
                 // Komponente: Der Weg dahinter liest die DPAPI-Ablage und den
@@ -179,6 +188,35 @@ namespace WindowsFormsApplication1
                 ["StarthinweisTitel"] = MyResource.Resource.KABG_START_TITEL,
                 ["StarthinweisOk"] = MyResource.Resource.KABG_OK
             };
+        }
+
+        // =====================================================================
+        //  Entwicklermodus (Administration und Support, Stufe 1)
+        // =====================================================================
+
+        /// <summary>Der Setzer der Seite (<c>Hauptfenster.FreigabeAnmelden</c>); null bis zum ersten Zeichnen.</summary>
+        private Action<IReadOnlyList<Menuepunkt>, string, string> _freigabeSetzer;
+
+        /// <summary>Oeffnet die DevTools der WebView des Hauptfensters; der Rahmen belegt ihn.</summary>
+        internal Func<bool> Entwicklerwerkzeuge { get; set; }
+
+        /// <summary>Meldet dem Rahmen einen Wechsel der Freigabestufe (Fenstertitel).</summary>
+        internal event Action FreigabeGewechselt;
+
+        /// <summary>Die Marke „Entwickler"; leer, wenn der Modus aus ist.</summary>
+        internal static string Marke() => Entwicklermodus.Aktiv ? MyResource.Resource.ENTW_MARKE : "";
+
+        /// <summary>Der Tooltip der Marke: die Quelle des Modus als fertiger Satz des Kerns.</summary>
+        internal static string MarkeTip() => Entwicklermodus.Aktiv ? Entwicklermodus.QuelleText : "";
+
+        /// <summary>
+        /// Menue, Marke und Fenstertitel nach einem Wechsel der Stufe sofort neu versorgen
+        /// (Tastenfolge, „Entwicklermodus ausschalten").
+        /// </summary>
+        internal void FreigabeNeuVersorgen()
+        {
+            _freigabeSetzer?.Invoke(Menuetabelle.Sichtbar(Entwicklermodus.Stufe), Marke(), MarkeTip());
+            FreigabeGewechselt?.Invoke();
         }
 
         /// <summary>„Version 1.0.0.0" — der Text des rechten Kopfbandlabels.</summary>
@@ -390,6 +428,27 @@ namespace WindowsFormsApplication1
 
                 case Seitenschluessel.Dokumentation:
                     return Dokumentation;
+
+                // ---- Menü „Entwicklung" (Administration und Support, Stufe 1) ----
+                // Nur im Entwicklermodus sichtbar; die Arbeit macht EntwicklungHuelle.
+                // „Auslieferungsstand wiederherstellen…" ist der Fall Katalogabgleich oben.
+                case Seitenschluessel.EntwAusnahmeprotokoll:
+                    return EntwicklungHuelle.AusnahmeprotokollOeffnen;
+
+                case Seitenschluessel.EntwProtokollordner:
+                    return EntwicklungHuelle.ProtokollordnerOeffnen;
+
+                case Seitenschluessel.EntwDatenbankordner:
+                    return EntwicklungHuelle.DatenbankordnerOeffnen;
+
+                case Seitenschluessel.EntwDiagnosedaten:
+                    return EntwicklungHuelle.DiagnosedatenKopieren;
+
+                case Seitenschluessel.EntwWebWerkzeuge:
+                    return () => EntwicklungHuelle.WebWerkzeugeOeffnen(Entwicklerwerkzeuge);
+
+                case Seitenschluessel.EntwModusAus:
+                    return () => EntwicklungHuelle.ModusAusschalten(FreigabeNeuVersorgen);
 
                 // ---- Sprache ------------------------------------------------
                 case Seitenschluessel.SpracheDeutsch:
