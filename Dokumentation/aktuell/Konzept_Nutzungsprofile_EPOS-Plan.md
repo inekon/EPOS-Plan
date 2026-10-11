@@ -6,11 +6,13 @@
 > **NP5c gebaut:** DIN 19 → Muster Verkehr, DIN 20 → Muster Lager stehen in der Zuordnung (Schritt 190 und Saat, 5.4).
 > **NP5d gebaut:** HottCAD zählt nach der Ausgabe 2025 (Anwender, 06.10.2026); die Zuordnung `DIN_NUMMER` und
 > `Din18599Nutzung` zählen wie die Kategorie DIN (30, 31 → Schule, 33, 37 → Sport, 43 → Lager; Schritt 190 und Saat, 5.4).
+> **NP6 gebaut:** SIA 2024 und VDI 2078 entfallen (E129, Schritt 219); die Kategorie DIN führt dazu die zwei Wohnprofile
+> nach Tabelle 5 ohne Nummer und ohne Werte (5.2, 5.3).
 
 > **Rev. 2 (vereint aus zwei Fassungen vom 05.10.2026) — Auftrag aus Entscheid E90 (Q37, 05.10.2026); Fragen
 > Q38 bis Q47 mit E91 nach Empfehlung entschieden.** Der Anwender hat entschieden: Nutzungsprofile werden ein
 > **frei definierbarer Katalog mit Katalogkategorien** — eine Kategorie für den Katalog nach DIN V 18599-10, eigene
-> Kataloge mit eigenen Profilen, weitere Kataloge für SIA 2024, VDI 2078 usw. —, dazu eine **änderbare Zuordnung** der
+> Kataloge mit eigenen Profilen —, dazu eine **änderbare Zuordnung** der
 > DIN-Profilnummern und der IFC-Nutzungsklassen auf Profile; Zugang aus dem Gebäudedialog, dem Zonenbaum des Imports
 > und dem Zonendialog. **Normwerte werden weiterhin nicht ausgeliefert** (B15, P4 der
 > [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md)): Die Normen sind kostenpflichtig, keine
@@ -33,7 +35,8 @@
    (Befund B6).
 3. **Ausgeliefert:** die Kategorie „EPOS-Muster“ mit den heutigen drei Mustern Wohnen, Büro, Schule, dazu Sonstige
    und fünf neue runde Muster (Sport, Gastronomie, Lager, Verkehr, Technik); die Kategorie „DIN/TS 18599-10“ mit
-   Nummern und Namen **ohne Werte**; die Kategorien „SIA 2024“ und „VDI 2078“ **leer** mit ihrer Struktur.
+   Nummern und Namen **ohne Werte**, dazu die zwei Wohnprofile nach Tabelle 5 ohne Nummer. Weitere Normkategorien
+   werden nicht ausgeliefert (E129); Werte aus eigenen Ausgaben führt der Anwender in eigenen Kategorien.
 4. **Die 14 ausgelieferten Konditionierungsvorlagen bleiben**, wie sie sind (P11 bleibt). Die drei EPOS-Muster
    Wohnen, Büro, Schule erzeugen über den Generator **bitgleich** dieselben Kalender wie heute „Vorlage übernehmen“
    mit den Vorlagen derselben Nutzung — das ist der Nachweis der Ergebnisneutralität.
@@ -155,7 +158,7 @@ stehen in Kapitel 9.
 | **NP-F1** | **Profil = Parametersatz.** Ein Nutzungsprofil trägt den Kern aus 2.2; ein Generator erzeugt daraus die Vorgabezeilen je Größe und über die vorhandene Mechanik (`Vorgabematrix`, `Konditionierungsarbeit`) die Kalender. Profile werden nie gerechnet, nur übernommen | Die Kalender sind die Ausführungsschicht und bleiben es; der Rechenweg bleibt unberührt |
 | **NP-F2** | **Namensstamm `Raumnutzung`** für die Tabellen (`Tab_Raumnutzungskatalog`, `Tab_Raumnutzungsprofil`, `Tab_Raumnutzungszeile`, `Tab_Raumnutzungsstunden`, `Tab_Raumnutzungszuordnung`); Klassen im Kern `Raumnutzungsprofil`, `Raumnutzungsgenerator`, Controller `RaumnutzungCtrl`. In der Oberfläche heißt es „Nutzungsprofil“ | `Tab_Nutzungsprofil_STAMM` und `Z_Nutzungsprofil` gehören der Pufferauslegung (B6); ein `Tab_Nutzungsprofil` neben `Tab_Nutzungsprofil_STAMM` wäre nach der Namensregel der Kataloge dessen Projektkopie — eine Falle für jeden Kopierweg |
 | **NP-F3** | **Ein Katalog, projektübergreifend**, ohne Projektkopie: Kategorien und Profile stehen einmal in der Datenbank; `ReadOnly = 1` gehört zur Auslieferung | Wie die Konditionierungsvorlagen (Konditionierungsprofile 5.7); am Ziel liegen Kopien (NP-F14) |
-| **NP-F4** | **Die Kategorie hat eine Art:** `EPOS_MUSTER`, `DIN_V_18599_10`, `SIA_2024`, `VDI_2078`, `EIGEN`. Die Art steuert nur Anzeige, Lizenzhinweis und die Prüfung „keine Werte in ausgelieferten Normkategorien“; der Generator kennt sie nicht | Eine Kategorie je Quelle, beliebig viele eigene (E90) |
+| **NP-F4** | **Die Kategorie hat eine Art:** `EPOS_MUSTER`, `DIN_V_18599_10`, `EIGEN`; `SIA_2024` und `VDI_2078` sind entfallen (E129) und stehen im `CHECK` nur noch als Bestand. Die Art steuert nur Anzeige, Lizenzhinweis und die Prüfung „keine Werte in ausgelieferten Normkategorien“; der Generator kennt sie nicht | Eine Kategorie je Quelle, beliebig viele eigene (E90) |
 | **NP-F5** | **Die Nummer in der Quelle ist Text** (`„22.1“`, `„70“`), eindeutig je Kategorie ohne Unterschied der Schreibung, darf leer sein | DIN V 18599-10 nummeriert die Hallen 22.1 bis 22.3; SIA 2024 nummeriert mit Punkten |
 | **NP-F6** | **Jeder Kennwert darf leer sein** und heißt dann „Größe nicht belegt“: Der Generator legt für eine Größe ohne Kennwerte keinen Kalender an, das Ziel behält seinen (wie eine leere Zelle der Vorlage, Konditionierungsprofile 3.5) | Normkategorien kommen ohne Werte; ein halbes Profil setzt nur seine Größen |
 | **NP-F7** | **Zeilenbild vor Generator:** Ein Profil darf je Größe ein **Zeilenbild** tragen — die Vorgabezeilen der Matrix (Tag, Nacht mit Zeiten, Wochenende, Ferien) in der Form von `Tab_Konditionierungsvorgabe`. Trägt eine Größe ein Zeilenbild, gilt es statt der Kennwerte dieser Größe. Die EPOS-Muster Wohnen, Büro und Schule tragen ihr heutiges Vorlagenbild als Zeilenbild, wo der Generator es nicht bitgleich aus Kennwerten herleitet | Bitgleichheit ohne Sonderlogik im Generator (Wohnen: Personen nachts 100 %, tags 50 %) |
@@ -187,7 +190,8 @@ Alle `STRICT`, Boolean-Spalten als 0/1 mit `CHECK (spalte IN (0,1))`, Beziehunge
 Access-Schreibweisen ([BETRIEB_SQLITE](BETRIEB_SQLITE.md) Abschnitt 6).
 
 **`Tab_Raumnutzungskatalog`** — die Kategorie: `ID`; `Bezeichner` TEXT NOT NULL (1–80, eindeutig ohne Unterschied
-der Schreibung); `Art` TEXT NOT NULL `CHECK (Art IN ('EPOS_MUSTER','DIN_V_18599_10','SIA_2024','VDI_2078','EIGEN'))`;
+der Schreibung); `Art` TEXT NOT NULL `CHECK (Art IN ('EPOS_MUSTER','DIN_V_18599_10','SIA_2024','VDI_2078','EIGEN'))` — `SIA_2024` und
+`VDI_2078` entfallen (E129), im `CHECK` nur noch Bestand, damit das Schema aller Datenbanken gleich bleibt;
 `Beschreibung` TEXT (≤ 400); `Quellenhinweis` TEXT (≤ 400; Norm, Ausgabe, Lizenzhinweis); `ReadOnly` INTEGER NOT NULL
 DEFAULT 0; `Reihenfolge` INTEGER.
 
@@ -360,19 +364,24 @@ trägt der Anwender aus seiner lizenzierten Ausgabe ein oder importiert sie.“ 
 | 43 | Lagerhallen, Logistikhallen | 41 |
 
 Namen nach Tabelle 6 mit großem Anfangsbuchstaben; 23 und 24 tragen den Titel aus Anhang A, weil der Name der Tabelle 6
-länger als 80 Zeichen ist. **Wohngebäude** (Tabelle 5, Einfamilien- und Mehrfamilienhaus) tragen keine Nummer und stehen
-nicht als Profil in der Kategorie; sie führen über das Muster Wohnen und die Werte 70 und 71 der Projektdatei (5.4).
+länger als 80 Zeichen ist. **Wohngebäude** (Tabelle 5) stehen als zwei Profile ohne Nummer in der Kategorie —
+„Wohngebäude – Einfamilienhaus“ und „Wohngebäude – Mehrfamilienhaus“, ohne Werte wie die übrigen, am Ende der Kategorie
+(Profile ohne Nummer stehen hinter denen mit Nummer); die Namen bestätigt der Anwender an seiner Ausgabe (Q47). Die Werte
+70 und 71 der Projektdatei führen weiter auf das Muster Wohnen (5.4, NP-F13); wer Werte hat, dupliziert und stellt die
+Zuordnung um (NP-F19). Angelegt werden die beiden Profile von Schemaschritt 219 (`RaumnutzungNormkategorienSchema`).
 44 bis 47 sind in keiner Ausgabe eine Nummer der Norm (B10). Schemaschritt 190 (`RaumnutzungDinTsSchema`) stellt eine
 Datenbank mit der Saat 2018 um: Kategorie umbenannt, die 24 ausgelieferten Profile auf Nummer und Namen 2025 (Ids
 bleiben, eine Zuordnung oder ein Duplikat des Anwenders zeigt danach auf dieselbe Nutzung), die übrigen 19 ohne Werte
 angelegt; Zeilen des Anwenders bleiben, wie sie sind, die ausgelieferte Zuordnung `DIN_NUMMER` ab 22 wechselt auf die
 Zählung 2025 (5.4).
 
-### 5.3 Kategorien „SIA 2024“ und „VDI 2078“ (leer)
+### 5.3 Kategorien „SIA 2024“ und „VDI 2078“ — entfallen (E129)
 
-Je eine Kategorie ohne Profil, mit `Quellenhinweis` (Merkblatt bzw. Richtlinie, lizenzpflichtig) und Beschreibung
-der Struktur: SIA 2024 nummeriert Raumnutzungen mit Punkten und gibt Tagesverläufe — sie füllt die Stundenprofile
-(NP-F9); VDI 2078 gibt Nutzungszeit und innere Lasten. Profile legt der Anwender an oder importiert sie.
+Beide Kategorien werden nicht ausgeliefert. Sie waren leer und schreibgeschützt, ein Anwender konnte in sie kein Profil
+eintragen; VDI 2078 definiert keine Nutzungsprofile je Raumtyp, sie verweist für innere Lasten auf DIN V 18599-10.
+Schemaschritt 219 (`RaumnutzungNormkategorienSchema`) entfernt sie aus jeder Datenbank; trüge eine wider Erwarten
+Profile, würde sie eine eigene Kategorie (Art `EIGEN`) und im Migrationsprotokoll benannt. Werte aus eigenen Ausgaben
+führt der Anwender in eigenen Kategorien (CSV-Import, Duplizieren); die Stundenprofile (NP-F9) bleiben dafür.
 
 ### 5.4 Zuordnung
 
@@ -490,13 +499,14 @@ der CSV-Import nutzt den vorhandenen Dateidienst).
 
 | Prüfung | Stufe | Was sie hält |
 |---|---|---|
-| `RaumnutzungskatalogWacheTests` (neu) | NP1 | ausgelieferte Zeilen `ReadOnly`; **kein Kennwert, kein Zeilenbild, kein Stundenprofil in Kategorien der Art DIN, SIA, VDI**; eindeutige Namen je Kategorie; Grenzen; keine Katalognamen von Produkten |
+| `RaumnutzungskatalogWacheTests` (neu) | NP1 | ausgelieferte Zeilen `ReadOnly`; **kein Kennwert, kein Zeilenbild, kein Stundenprofil in der Kategorie der Art DIN** (samt den Wohnprofilen); eindeutige Namen je Kategorie; Grenzen; keine Katalognamen von Produkten |
 | `RaumnutzungsgeneratorTests` (neu) | NP1 | Tabelle 4.3 je Größe, Fenster über Mitternacht, freie Einzeltage, Feiertage, Einheiten (NP-F10), leere Profile (NP-F6) |
 | Bitgleichheit der Muster (neu) | NP1 | 4.3: Profil = Vorlage gleicher Nutzung, je Größe und Ziel |
 | Schemafall des Tabellenneubaus | NP1 | Zeilenzahl, Inhalt und Indizes von `Tab_Konditionierungskalender` und `Tab_Konditionierungsvorlage_STAMM` vor und nach dem Schritt gleich; Sichten neu |
 | Pufferauslegung | NP1 | `Nutzungsprofil.Ableiten` liefert für alte Kennungen und neue Musternamen dasselbe Pufferprofil (B6, NP-F15) |
 | `KonditionierungsvorlagenWacheTests` | NP1 | die 14 Vorlagen unverändert |
 | `SqlDialektPruefer` | jede | jede neue SQL-Anweisung |
+| `RaumnutzungNormkategorienSchemaTests` | NP6 | Schritt 219: SIA 2024 und VDI 2078 entfallen, eine befüllte wird eigen; zwei Wohnprofile der DIN ohne Werte am Ende der Kategorie, Zuordnung 70 und 71 unverändert; wiederholbar |
 | Importproben, Fälle zu `ZonenplanCtrl` | NP2 | Vorbelegung über die Zuordnung gleich der heutigen festen Tabellen; Rangfolge Datei vor Profil |
 | `ZonenReferenzprojektWacheTests`, `ZonenHeizkreisReferenzprojektWacheTests`, `KonditionierungReferenzprojektWacheTests` | NP1, NP2 | 1051, 1052 und 1054 mit ihren Zonen- und Gebäudekalendern unverändert |
 | Referenzlauf gegen die aktuelle Basis | NP1, NP2 | byte-gleich (NP-F24) |
@@ -557,7 +567,7 @@ sechste Größe in dieser Stufe.
 
 ### 10.4 Verweise
 
-- [Status der Gebäudesimulation](Status_Gebaeudesimulation_VDI6007.md) — E81, E90, Stufe NP
+- [Status der Gebäudesimulation](Status_Gebaeudesimulation_VDI6007.md) — E81, E90, E129, Stufe NP
 - [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) — B15, P4, P11, P12, E54, E56, E57, F22; 3.5, 5.6, 5.7, 7.4
 - [Mehrzonenmodell](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) — 2.6, Zonenplan und Zonenplan mit Projektdatei
 - [Datenaustausch](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) — 16.3, 16.4
@@ -585,7 +595,7 @@ Fassung mit Parametersatz und Generator (A). Aus der Fassung mit Vorlagen je Gr�
 - Verworfen: `ID_Nutzungsprofil` an Vorlage, Kalenderkopie, Zone und Gebäude — eine Herkunft als ID am Ziel widerspricht 1.2 und NP-F14; die Zone trägt eine Textkopie (Q41, E91).
 - Verworfen: die Profilwerte als Konditionierungsvorlagen je Größe (`Z_Nutzungsprofil_Vorlage`) — das Profil ist ein Parametersatz mit Generator (NP-F1), die 14 Vorlagen bleiben daneben (Q45, E91).
 - Verworfen: die Umschlüsselung der Kennungen auf Profil-IDs (Entscheidvorschlag N‑3) — vorhandene Werte bleiben unverändert (NP-F15).
-- Verworfen: Nummern und Kurznamen für SIA 2024 und VDI 2078 (Entscheidvorschlag N‑2 über DIN hinaus) — beide Kategorien kommen leer (5.3), für DIN gilt Q47 (E91).
+- Verworfen: Nummern und Kurznamen für SIA 2024 und VDI 2078 (Entscheidvorschlag N‑2 über DIN hinaus) — beide Kategorien entfallen (5.3, E129), für DIN gilt Q47 (E91).
 - Verworfen: ein eigenes Profilfeld am Gebäude (Entscheidvorschlag N‑1) — das Gebäude bekommt das Profil als Kalenderkopie mit Nutzungstext, die Zone ohne eigene Kalender folgt dem Gebäude über die Kaskade (B4).
 - Verworfen: die Zapf-Nutzungsart am Profil als Weg der Pufferauslegung — er bleibt bei `Z_Nutzungsprofil` (NP-F15).
 - Verworfen: der Menüpunkt im Katalogmenü — das Blatt hat keinen (NP-F22, E56).
@@ -602,8 +612,8 @@ Fassung mit Parametersatz und Generator (A). Aus der Fassung mit Vorlagen je Gr�
   dabei nichts verlieren — Zeilenzahl und Prüfsumme vor und nach dem Schritt im Nachweis, Sicherung nach
   [BETRIEB_SQLITE](BETRIEB_SQLITE.md) vor dem Schritt wie bei jedem Tabellenneubau.
 - **Lizenz der Normnamen:** Nummer und Name der DIN-Profile gelten als Tatsachen ohne Werte; ausgeliefert wird nur, was
-  der Anwender an seiner Ausgabe bestätigt hat (Q47). Im Zweifel bleibt eine Nummer weg; SIA 2024 und VDI 2078 kommen
-  leer (5.3).
+  der Anwender an seiner Ausgabe bestätigt hat (Q47). Im Zweifel bleibt eine Nummer weg; SIA 2024 und VDI 2078 werden
+  nicht ausgeliefert (5.3, E129).
 - **Normwerte über die Hintertür:** Werte aus einer Projektdatei (Q46) oder aus der Datenbank des Entwicklers dürfen
   nie in die Auslieferung — die Katalogwache und der Prüfbericht der Auslieferungsvorlage halten die Grenze (NP-F21).
 - **Pufferauslegung:** Wer die Nutzungsspalte umbaut, trifft die Quelle `KONDITIONIERUNG` von `Z_Nutzungsprofil`

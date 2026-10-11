@@ -5204,7 +5204,7 @@ nur noch das Inventar der Altweg-Bestandteile. In der Reihenfolge E67 ist GA ges
 
 **Entscheid E90 (Anwender, 05.10.2026), zu Q37:** Die Nutzung der Zonen (bisher drei feste Werte, beim HottCAD-Import ohne
 Wirkung) wird ein **frei definierbarer Katalog von Nutzungsprofilen** mit Katalogkategorien (EPOS-Muster, DIN V 18599-10,
-SIA 2024, VDI 2078, eigene Kataloge), dazu eine **änderbare Zuordnung** der DIN-Profilnummern, IFC-Nutzungsklassen und
+eigene Kataloge; die Kategorien SIA 2024 und VDI 2078 entfallen mit E129), dazu eine **änderbare Zuordnung** der DIN-Profilnummern, IFC-Nutzungsklassen und
 HottCAD-Raumtypen auf Profile; Zugang aus dem Gebäudeeditor, dem Zonenbaum und dem Zonendialog. Ein Profil ist ein
 Parametersatz, ein Generator macht daraus die fünf Konditionierungskalender; am Rechenweg ändert sich nichts. **Normwerte
 werden weiterhin nicht ausgeliefert** (B15, P4): Die Kategorien liefern Struktur und Nummern, die Werte trägt der Anwender

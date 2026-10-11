@@ -502,7 +502,7 @@ Herkunft ergänzt („aus Vorlage ‚Büro‘ (Heizen)"), die Nutzung übernomme
 der Zielgröße, ohne Nennwert und Saison (E54).
 
 > **Vermerk 05.10.2026 (E90):** Die Nutzung als feste Kennung (Wohnen, Büro, Schule, Sonstige) wird zum Katalog der
-> Nutzungsprofile mit Kategorien (EPOS-Muster, DIN V 18599-10, SIA 2024, VDI 2078, eigene) und änderbarer Zuordnung;
+> Nutzungsprofile mit Kategorien (EPOS-Muster, DIN/TS 18599-10, eigene; SIA 2024 und VDI 2078 entfallen, E129) und änderbarer Zuordnung;
 > die 14 Vorlagen dieser Tabelle bleiben, die Muster Wohnen, Büro und Schule werden zusätzlich als Profile bitgleich
 > abgebildet, Normwerte werden weiterhin nicht ausgeliefert (B15, P4). Ausgearbeitet in
 > [Konzept Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md) (Stufe NP).

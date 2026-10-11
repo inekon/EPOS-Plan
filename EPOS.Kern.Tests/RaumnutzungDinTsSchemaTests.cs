@@ -191,7 +191,8 @@ namespace EPOS.Kern.Tests
             }
             long k = KategorieDin();
             Assert.Equal(43L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = " + k));
-            Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE ReadOnly = 1"));
+            // EPOS-Muster und DIN; SIA 2024 und VDI 2078 hat der Schritt RaumnutzungNormkategorienSchema genommen (E129).
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE ReadOnly = 1"));
 
             // Zuordnung (ausgeliefert und eigen) und die eigene Kategorie unverändert bis auf die ausgelieferten Schlüssel der
             // Zählung 2018 (jetzt 2025, Ids und Profile bleiben); dazu DIN 19 und 20 auf den Mustern.
