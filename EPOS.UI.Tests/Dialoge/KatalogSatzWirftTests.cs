@@ -153,6 +153,17 @@ public class KatalogSatzWirftTests : EposBunitContext
     }
 
     [Fact]
+    public void Kaeltemaschinenanlage_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<KaeltemaschineAnlageDialog>(b => b
+            .Add(x => x.Katalogprofil, Profil(Anlagenart.Kaeltemaschine))
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogwerte, _ => Wirft<KaeltemaschineGeraetwerte?>()));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
     public void Bhkw_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
     {
         var cut = Render<BhkwDialog>(b => b
@@ -194,6 +205,46 @@ public class KatalogSatzWirftTests : EposBunitContext
             .Add(x => x.Detail, _ => Wirft<ErzeugerDetail?>()));
         ZeileWaehlen(cut);
         BannerMitGrund(cut);
+    }
+
+    // =================================================================================
+    // Die Ganglinien-Wirte (Kennzahlen der gewählten Ganglinie)
+    // =================================================================================
+
+    [Fact]
+    public void WaermebedarfExtern_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<WaermebedarfExternDialog>(b => b
+            .Add(x => x.Zeilen, new List<WaermebedarfExternZeile>())
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Waermebedarf))
+            .Add(x => x.Kennzahlen, _ => Task.FromException<GanglinienKennzahlen?>(new InvalidOperationException(GRUND))));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void Stromganglinie_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<EPOS.UI.Dialoge.Strom.StromganglinieDialog>(b => b
+            .Add(x => x.Zeilen, new List<EPOS.UI.Dialoge.Strom.GanglinienProjektZeile>())
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Kennzahlen, _ => Task.FromException<GanglinienKennzahlen?>(new InvalidOperationException(GRUND))));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void WaermebedarfExtern_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+    {
+        var cut = Render<WaermebedarfExternDialog>(b => b
+            .Add(x => x.Zeilen, new List<WaermebedarfExternZeile>())
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Waermebedarf))
+            .Add(x => x.Kennzahlen, _ => Task.FromResult<GanglinienKennzahlen?>(null)));
+        ZeileWaehlen(cut);
+        OhneBanner(cut);
     }
 
     [Fact]
@@ -311,6 +362,43 @@ public class KatalogSatzWirftTests : EposBunitContext
     // =================================================================================
     // Die Fangstelle selbst
     // =================================================================================
+
+    // =================================================================================
+    // Die Ganglinien-Dialoge (Kennzahlen des gewählten Satzes, Katalogauswahl V1 Stufe 4)
+    // =================================================================================
+
+    [Fact]
+    public void Solarganglinie_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Eine()) })
+            .Add(x => x.Kennzahlen, _ => Wirft<Task<GanglinienKennzahlen?>>()));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<PvGanglinieDialog>(b => b
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Eine()) })
+            .Add(x => x.Kennzahlen, _ => Wirft<Task<GanglinienKennzahlen?>>()));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void Solarganglinie_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+    {
+        var cut = Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Eine()) })
+            .Add(x => x.Kennzahlen, _ => Task.FromResult<GanglinienKennzahlen?>(null)));
+        ZeileWaehlen(cut);
+        OhneBanner(cut);
+    }
 
     [Fact]
     public void Katalogladung_Satz_und_SatzDazu_benennen_und_halten_den_Grund()

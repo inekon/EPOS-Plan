@@ -125,6 +125,67 @@ public static class Katalogladung
         return ok;
     }
 
+    /// <summary>
+    /// Wie <see cref="Lesen{T}"/> für eine Quelle, die wartet (Ganglinienkataloge): Wirft sie — beim Aufruf oder
+    /// in der Aufgabe —, ist die Liste leer und der Grund steht in <c>Fehler</c>.
+    /// </summary>
+    public static async Task<(IReadOnlyList<T> Liste, string Fehler)> LesenAsync<T>(
+        Func<Task<IReadOnlyList<T>>>? quelle, string? liste)
+    {
+        if (quelle is null) return (Array.Empty<T>(), "");
+        try
+        {
+            return ((await quelle()) ?? Array.Empty<T>(), "");
+        }
+        catch (Exception ex)
+        {
+            string name = liste ?? "";
+            Ausnahmeprotokoll.Vermerken("Katalogliste „" + name + "“ nicht gelesen: "
+                + ex.GetType().FullName + ": " + ex.Message);
+            return (Array.Empty<T>(),
+                    string.Format(CultureInfo.CurrentCulture, Resource.WURZEL_LISTE_FEHLER, name, ex.Message));
+        }
+    }
+
+    /// <summary>Wie <see cref="Satz{T}"/> für eine Lesestelle, die wartet (Kennzahlen einer Ganglinie).</summary>
+    public static async Task<(T? Satz, string Fehler)> SatzAsync<T>(Func<Task<T?>> weg, string? satz) where T : class
+    {
+        try
+        {
+            return (await weg(), "");
+        }
+        catch (Exception ex)
+        {
+            return (null, Benennen(Resource.WURZEL_SATZ_FEHLER, "Katalogsatz", "nicht gelesen", satz, ex));
+        }
+    }
+
+    /// <summary>Wie <see cref="Schreiben{T}"/> für einen Schreibweg, der wartet (Speichern unter einer Ganglinie).</summary>
+    public static async Task<T> SchreibenAsync<T>(Func<Task<T>> weg, string? satz, Func<string, T> abgelehnt)
+    {
+        try
+        {
+            return await weg();
+        }
+        catch (Exception ex)
+        {
+            return abgelehnt(Benennen(Resource.WURZEL_SCHREIBEN_FEHLER, "Katalogsatz", "nicht gespeichert", satz, ex));
+        }
+    }
+
+    /// <summary>Wie <see cref="Loeschen{T}"/> für einen Löschweg, der wartet.</summary>
+    public static async Task<T> LoeschenAsync<T>(Func<Task<T>> weg, string? satz, Func<string, T> abgelehnt)
+    {
+        try
+        {
+            return await weg();
+        }
+        catch (Exception ex)
+        {
+            return abgelehnt(Benennen(Resource.WURZEL_LOESCHEN_FEHLER, "Katalogsatz", "nicht gelöscht", satz, ex));
+        }
+    }
+
     /// <summary>Der Grund in der Sprache der Oberfläche und der Vermerk im Ausnahmeprotokoll.</summary>
     private static string Benennen(string vorlage, string was, string wie, string? satz, Exception ex)
     {

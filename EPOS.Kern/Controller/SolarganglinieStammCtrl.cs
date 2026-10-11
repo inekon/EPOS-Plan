@@ -232,7 +232,10 @@ namespace WindowsFormsApplication1
                 p.Add(new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt });
                 p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
                 p.Add(new DbParam("@beschr", DbParamTyp.VarWChar) { Wert = (object)(beschreibung ?? "") });
-                v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Beschreibung) VALUES (?, ?, ?, ?)", p.ToArray());
+                // Der Ursprung der Kopie (Spalte ID_Stamm, Katalogauswahl V1 Stufe 4): der Katalogsatz,
+                // aus dem sie entsteht - Rueckweg und Abgleich finden ihn ueber die ID, nicht den Namen.
+                p.Add(new DbParam("@stamm", DbParamTyp.Integer) { Wert = stammId });
+                v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Beschreibung, ID_Stamm) VALUES (?, ?, ?, ?, ?)", p.ToArray());
             }
 
             // Daten der Stamm-Ganglinie einlesen (in Reihenfolge) ...

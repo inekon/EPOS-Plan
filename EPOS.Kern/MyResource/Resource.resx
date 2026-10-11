@@ -52099,5 +52099,38 @@ Chart</value>
   <data name="KI_DLG_ADMSET_VORHEIZ_WERT_ERL" xml:space="preserve">
     <value>Vorbelegung des zulässigen Sprungs zum Nutzungsbeginn für neue Projekte, nicht negativ; leer = Vorgabe 20 %. Programmeinstellung; wird mit OK gespeichert.</value>
   </data>
+  <data name="KMA_LISTE_PROJEKT" xml:space="preserve">
+    <value>Kältemaschinen im Projekt:</value>
+  </data>
+  <data name="KMA_LISTE_KATALOG" xml:space="preserve">
+    <value>Kältemaschinen in der Datenbank:</value>
+  </data>
+  <data name="KMA_SUMME" xml:space="preserve">
+    <value>Summe Nennkälteleistung [kW]:</value>
+  </data>
+  <data name="KMA_SP_EER" xml:space="preserve">
+    <value>EER/SEER</value>
+  </data>
+  <data name="KMA_KOPFBAND" xml:space="preserve">
+    <value>Wählen Sie die Kältemaschinen des Projekts aus der Datenbank</value>
+  </data>
+  <data name="KMA_FRAGE_KATALOG_LOESCHEN" xml:space="preserve">
+    <value>Soll die Kältemaschine „{0}“ aus der Datenbank gelöscht werden?</value>
+  </data>
+  <data name="KMA_MSG_KATALOG_LOESCHFEHLER" xml:space="preserve">
+    <value>Die Kältemaschine konnte nicht aus der Datenbank gelöscht werden.</value>
+  </data>
+  <data name="KMA_TITEL_EDITOR" xml:space="preserve">
+    <value>Kältemaschine bearbeiten</value>
+  </data>
+  <data name="KMA_GRUPPE_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten</value>
+  </data>
+  <data name="KMA_SP_WAHL" xml:space="preserve">
+    <value>Wahl</value>
+  </data>
+  <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Übersprungen (im Projekt zugeordnet): {0}</value>
+  </data>
 </root>
 
