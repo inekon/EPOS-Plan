@@ -19,9 +19,9 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   - #910 DZ1 Detailzeile mit Vorrang, Ganglinie in den CSV-Dialogen.
   - #939 ÜS1 Satz-Überlagerung in voller Höhe; #940 ÜS2 Stift, Zusammenfassung, „Bearbeiten“.
   - #942 Wiki-Quellen der Katalogauswahl; #943 Konzept Kältebedarf; #944 K1 Schema 213.
-  - #956 KM5 Kältemaschine; #957 ZR1 Wärmebedarf extern und Stromganglinie; #958 ZR2 Solar- und
-    PV-Ganglinie; #959 BP Bedarfsprofile; #960 GEB Gebäude (Rückweg, Dialog, Überlagerung);
-    #961 diese Übergabe.
+  - #958 KM5 Kältemaschine; #959 ZR1 Wärmebedarf extern und Stromganglinie; #960 ZR2 Solar- und
+    PV-Ganglinie; #961 BP Bedarfsprofile; #962 GEB Gebäude (Rückweg, Dialog, Überlagerung);
+    #963 diese Übergabe.
 - **Katalogauswahl V1:** Stufen 1 bis 5 umgesetzt (Baustein, Heizkessel, sieben Erzeuger,
   Zeitreihen, Bedarfsprofile, Gebäude, Kältemaschine) samt Satz-Überlagerung (ÜS1) und Stift und
   Zusammenfassung (ÜS2).
@@ -34,9 +34,8 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   lesen, bevor eine Nummer angemeldet wird.
 - Es laufen keine Agenten; es gibt keine offenen Worktrees.
 - **CI:** Die Kern-Läufe der Pushes e6bbae833 (Welle 12) und 77f4ba259 (Welle 13, Teil 1) wurden
-  meist durch fremde Pushes abgebrochen. CI-Vermerke an #905–#910, #939–#944 und #956–#961 stehen
+  meist durch fremde Pushes abgebrochen. CI-Vermerke an #905–#910, #939–#944 und #958–#963 stehen
   aus; nachtragen, sobald ein grüner Kern-Lauf existiert, dessen `headSha` den Push-Commit enthält.
-  Die Nummern #956–#960 der Welle 13 brauchen den Vermerk ebenfalls.
 
 ## 2 Geltende Entscheide (Auswahl)
 
@@ -165,7 +164,7 @@ Keine Zugangsdaten ins Repository. **Antworten:** auf Deutsch, knapp.
 5. **Sichtabnahme unter Windows** beim Anwender für alle umgestellten Dialoge. Der Wärmepumpen-
    Befund „Kein Satz gewählt“ (Bildschirmfoto 10.10.) ließ sich im Probenwirt nicht nachstellen;
    der Rückfall des Satznamens ist gebaut, bitte unter Windows nachsehen.
-6. **CI-Vermerke** an #905–#910, #939–#944 und #956–#961 (und #956–#960), siehe Abschnitt 1.
+6. **CI-Vermerke** an #905–#910, #939–#944 und #958–#963, siehe Abschnitt 1.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 
@@ -204,7 +203,7 @@ Berichterstellung, KI-Assistent, Wiki) auf demselben Arbeitszweig; Statusnummern
 Schemaschritte werden schnell vergeben.
 
 Erste Schritte: (1) Stand prüfen: `git status` sauber, keine Konfliktmarker, keine liegen
-gebliebene AGENT_LAEUFT, die Zeilen #905–#910, #939–#944 und #956–#961 tragen ihren CI-Vermerk.
+gebliebene AGENT_LAEUFT, die Zeilen #905–#910, #939–#944 und #958–#963 tragen ihren CI-Vermerk.
 (2) Den Stand in höchstens fünf Zeilen melden. (3) Mit dem Anwender abstimmen, womit
 weitergemacht wird. Empfehlung: Kältebedarf K2 bis K4 als nächste Welle, vorher die offenen
 CI-Vermerke.
