@@ -94,10 +94,17 @@
                                Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
             break;
         case "kaeltemaschine":
-            <KaeltemaschineKatalogDialog Katalogprofil="@Profil(Anlagenart.Kaeltemaschine)"
-                                         Katalogzeilen="@(() => Katalog(Anlagenart.Kaeltemaschine))"
-                                         Filterstandvorgabe="@_filterstand" TitelText="Kältemaschinen"
-                                         Geschlossen="@(b => Beendet(b))" />
+            @* Stufe 5: der Erzeugerdialog als Wirt der Zweispaltenauswahl - Projektliste, Katalog, Zusammenfassung,
+               Satz-Ueberlagerung mit Anlagenfeldern und Kostenknoepfen; ohne Datenbank. *@
+            <KaeltemaschineAnlageDialog Katalogprofil="@Profil(Anlagenart.Kaeltemaschine)"
+                                        Katalogzeilen="@(() => Katalog(Anlagenart.Kaeltemaschine))"
+                                        Anlagen="@Kaelteanlagen" Katalogwerte="@(_ => KaelteGeraet)"
+                                        Stromtraeger="@(new[] { (5, "Strom") })" ProjektStromtraeger="5"
+                                        Anlegen="@((_, _) => -1)" Speichern="@(_ => null)" Loeschen="@(_ => { })"
+                                        KatalogLoeschen="@(_ => "")" Kostensumme="@(_ => (1000.0, 50.0))"
+                                        KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                        Waermepumpen="@(() => Array.Empty<EPOS.UI.Seiten.Start.KuehlWaermepumpe>())"
+                                        Geschlossen="@(b => Beendet(b))" />
             break;
         default:
             <p>unbekannter Fall: @_fall</p>
@@ -135,6 +142,18 @@
 
     private IReadOnlyList<Katalogfilterzeile> Katalog(Anlagenart art)
         => _kataloge.TryGetValue(art, out var k) ? k : _kataloge[art] = Zeilenbau.Voll(Profil(art), _anzahl);
+
+    /// <summary>Stufe 5: das Geraet der Kaeltemaschinen - Kennwerte der Zusammenfassung und der Satz-Ueberlagerung.</summary>
+    private static readonly KaeltemaschineGeraetwerte KaelteGeraet = new()
+    {
+        Bezeichner = "Kältemaschine", Firma = "Musterwerk", Rueckkuehlart = "Luft", Nennkaelteleistung = 100, NennEer = 3.2,
+        Mindestteillast = 30, KaltwasserMin = 6
+    };
+
+    private IReadOnlyList<KaeltemaschineAnlageDaten> Kaelteanlagen() => Enumerable.Range(1, _projekt)
+        .Select(i => new KaeltemaschineAnlageDaten { AnlagenId = i, GeraetId = 100 + i, Bezeichner = "KM " + i, Anzahl = 1,
+                                                    KuehlCarrierId = 5, Geraet = KaelteGeraet })
+        .ToList();
 
     private List<ErzeugerZeile>? _erzeuger;
     private List<ErzeugerZeile> Erzeuger(string praefix) => _erzeuger ??= Enumerable.Range(1, _projekt)
