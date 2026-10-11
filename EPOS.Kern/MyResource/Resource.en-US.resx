@@ -52051,5 +52051,63 @@ chart</value>
   <data name="DIAG_UNBEFRISTET" xml:space="preserve">
     <value>unlimited</value>
   </data>
+  <!-- Administration und Support, Stufe 1 (Welle 1a) -->
+  <data name="MENU_ENTWICKLUNG" xml:space="preserve">
+    <value>Development</value>
+  </data>
+  <data name="MENU_ENTW_AUSNAHMEN" xml:space="preserve">
+    <value>Open exception log</value>
+  </data>
+  <data name="MENU_ENTW_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="MENU_ENTW_DATENBANKORDNER" xml:space="preserve">
+    <value>Open database folder</value>
+  </data>
+  <data name="MENU_ENTW_DIAGNOSE" xml:space="preserve">
+    <value>Copy diagnostic data</value>
+  </data>
+  <data name="MENU_ENTW_WEBWERKZEUGE" xml:space="preserve">
+    <value>Developer tools of the interface</value>
+  </data>
+  <data name="MENU_ENTW_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Restore delivery state…</value>
+  </data>
+  <data name="MENU_ENTW_AUS" xml:space="preserve">
+    <value>Switch off developer mode</value>
+  </data>
+  <data name="ENTW_MARKE" xml:space="preserve">
+    <value>Developer</value>
+  </data>
+  <data name="ENTW_TITELZUSATZ" xml:space="preserve">
+    <value>(developer mode)</value>
+  </data>
+  <data name="ENTW_TITEL" xml:space="preserve">
+    <value>Developer mode</value>
+  </data>
+  <data name="ENTW_EIN_FRAGE" xml:space="preserve">
+    <value>Switch on developer mode? It stays on until it is switched off.</value>
+  </data>
+  <data name="ENTW_EIN_GESPERRT" xml:space="preserve">
+    <value>Developer mode has been locked on this computer by the administrator.</value>
+  </data>
+  <data name="ENTW_DIAGNOSE_KOPIERT" xml:space="preserve">
+    <value>The diagnostic data has been copied to the clipboard.</value>
+  </data>
+  <data name="ENTW_AUSNAHMEN_FEHLT" xml:space="preserve">
+    <value>There is no exception log yet. Expected at:
+{0}</value>
+  </data>
+  <data name="ENTW_ORDNER_FEHLT" xml:space="preserve">
+    <value>The folder does not exist:
+{0}</value>
+  </data>
+  <data name="ENTW_OEFFNEN_FEHLER" xml:space="preserve">
+    <value>Could not be opened:
+{0}</value>
+  </data>
+  <data name="ENTW_WEBWERKZEUGE_NICHT" xml:space="preserve">
+    <value>The developer tools of the interface are not available right now.</value>
+  </data>
 </root>
 

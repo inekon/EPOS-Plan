@@ -21641,6 +21641,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt noch kein Ausnahmeprotokoll. Erwartet unter:
+        ///{0} ähnelt.
+        /// </summary>
+        public static string ENTW_AUSNAHMEN_FEHLT {
+            get {
+                return ResourceManager.GetString("ENTW_AUSNAHMEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus ist nicht eingeschaltet. ähnelt.
         /// </summary>
         public static string ENTW_AUS_NICHT_AKTIV {
@@ -21664,6 +21674,62 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ENTW_AUS_UMGEBUNG {
             get {
                 return ResourceManager.GetString("ENTW_AUS_UMGEBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Diagnosedaten stehen in der Zwischenablage. ähnelt.
+        /// </summary>
+        public static string ENTW_DIAGNOSE_KOPIERT {
+            get {
+                return ResourceManager.GetString("ENTW_DIAGNOSE_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus einschalten? Er gilt bis zum Ausschalten. ähnelt.
+        /// </summary>
+        public static string ENTW_EIN_FRAGE {
+            get {
+                return ResourceManager.GetString("ENTW_EIN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus ist auf diesem Rechner vom Administrator gesperrt. ähnelt.
+        /// </summary>
+        public static string ENTW_EIN_GESPERRT {
+            get {
+                return ResourceManager.GetString("ENTW_EIN_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwickler ähnelt.
+        /// </summary>
+        public static string ENTW_MARKE {
+            get {
+                return ResourceManager.GetString("ENTW_MARKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konnte nicht geöffnet werden:
+        ///{0} ähnelt.
+        /// </summary>
+        public static string ENTW_OEFFNEN_FEHLER {
+            get {
+                return ResourceManager.GetString("ENTW_OEFFNEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner ist nicht vorhanden:
+        ///{0} ähnelt.
+        /// </summary>
+        public static string ENTW_ORDNER_FEHLT {
+            get {
+                return ResourceManager.GetString("ENTW_ORDNER_FEHLT", resourceCulture);
             }
         }
         
@@ -21727,6 +21793,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ENTW_STUFE_ENTWICKLER {
             get {
                 return ResourceManager.GetString("ENTW_STUFE_ENTWICKLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus ähnelt.
+        /// </summary>
+        public static string ENTW_TITEL {
+            get {
+                return ResourceManager.GetString("ENTW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Entwicklermodus) ähnelt.
+        /// </summary>
+        public static string ENTW_TITELZUSATZ {
+            get {
+                return ResourceManager.GetString("ENTW_TITELZUSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Entwicklerwerkzeuge der Oberfläche sind gerade nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string ENTW_WEBWERKZEUGE_NICHT {
+            get {
+                return ResourceManager.GetString("ENTW_WEBWERKZEUGE_NICHT", resourceCulture);
             }
         }
         
@@ -84893,6 +84986,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_ENGLISCH {
             get {
                 return ResourceManager.GetString("MENU_ENGLISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklung ähnelt.
+        /// </summary>
+        public static string MENU_ENTWICKLUNG {
+            get {
+                return ResourceManager.GetString("MENU_ENTWICKLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus ausschalten ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_AUS {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausnahmeprotokoll öffnen ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_AUSNAHMEN {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_AUSNAHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankordner öffnen ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_DATENBANKORDNER {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_DATENBANKORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagnosedaten kopieren ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_DIAGNOSE {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_DIAGNOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokollordner öffnen ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_PROTOKOLLORDNER {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_PROTOKOLLORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklerwerkzeuge der Oberfläche ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_WEBWERKZEUGE {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_WEBWERKZEUGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungsstand wiederherstellen… ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_WIEDERHERSTELLEN {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_WIEDERHERSTELLEN", resourceCulture);
             }
         }
         

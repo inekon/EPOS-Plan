@@ -52058,5 +52058,63 @@ Chart</value>
   <data name="DIAG_UNBEFRISTET" xml:space="preserve">
     <value>unbefristet</value>
   </data>
+  <!-- Administration und Support, Stufe 1 (Welle 1a) -->
+  <data name="MENU_ENTWICKLUNG" xml:space="preserve">
+    <value>Entwicklung</value>
+  </data>
+  <data name="MENU_ENTW_AUSNAHMEN" xml:space="preserve">
+    <value>Ausnahmeprotokoll öffnen</value>
+  </data>
+  <data name="MENU_ENTW_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Protokollordner öffnen</value>
+  </data>
+  <data name="MENU_ENTW_DATENBANKORDNER" xml:space="preserve">
+    <value>Datenbankordner öffnen</value>
+  </data>
+  <data name="MENU_ENTW_DIAGNOSE" xml:space="preserve">
+    <value>Diagnosedaten kopieren</value>
+  </data>
+  <data name="MENU_ENTW_WEBWERKZEUGE" xml:space="preserve">
+    <value>Entwicklerwerkzeuge der Oberfläche</value>
+  </data>
+  <data name="MENU_ENTW_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Auslieferungsstand wiederherstellen…</value>
+  </data>
+  <data name="MENU_ENTW_AUS" xml:space="preserve">
+    <value>Entwicklermodus ausschalten</value>
+  </data>
+  <data name="ENTW_MARKE" xml:space="preserve">
+    <value>Entwickler</value>
+  </data>
+  <data name="ENTW_TITELZUSATZ" xml:space="preserve">
+    <value>(Entwicklermodus)</value>
+  </data>
+  <data name="ENTW_TITEL" xml:space="preserve">
+    <value>Entwicklermodus</value>
+  </data>
+  <data name="ENTW_EIN_FRAGE" xml:space="preserve">
+    <value>Entwicklermodus einschalten? Er gilt bis zum Ausschalten.</value>
+  </data>
+  <data name="ENTW_EIN_GESPERRT" xml:space="preserve">
+    <value>Der Entwicklermodus ist auf diesem Rechner vom Administrator gesperrt.</value>
+  </data>
+  <data name="ENTW_DIAGNOSE_KOPIERT" xml:space="preserve">
+    <value>Die Diagnosedaten stehen in der Zwischenablage.</value>
+  </data>
+  <data name="ENTW_AUSNAHMEN_FEHLT" xml:space="preserve">
+    <value>Es gibt noch kein Ausnahmeprotokoll. Erwartet unter:
+{0}</value>
+  </data>
+  <data name="ENTW_ORDNER_FEHLT" xml:space="preserve">
+    <value>Der Ordner ist nicht vorhanden:
+{0}</value>
+  </data>
+  <data name="ENTW_OEFFNEN_FEHLER" xml:space="preserve">
+    <value>Konnte nicht geöffnet werden:
+{0}</value>
+  </data>
+  <data name="ENTW_WEBWERKZEUGE_NICHT" xml:space="preserve">
+    <value>Die Entwicklerwerkzeuge der Oberfläche sind gerade nicht verfügbar.</value>
+  </data>
 </root>
 
