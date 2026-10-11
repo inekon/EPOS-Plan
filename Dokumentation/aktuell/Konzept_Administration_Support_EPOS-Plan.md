@@ -482,8 +482,10 @@ Kontakt und die Geste des Entwicklermodus (3.2). Inhalt:
 
 **Supportpaket (Stufe 3b, AS-Q6):** „Supportpaket speichern…" legt eine ZIP-Datei ab mit
 `Diagnosedaten.txt`, `Ausnahmen.txt` und `Ausnahmen.alt.txt`, `migration_protokoll.txt`,
-dem Auszug aus `Tab_Katalogabgleich` — **ohne Projektdaten und ohne `ki_aktionen.txt`** (es kann
-Eingaben des Anwenders enthalten; nur mit eigenem Haken). Die Datei hängt der Anwender an seine
+dem Auszug aus `Tab_Katalogabgleich` (`Katalogabgleich.txt`, die jüngsten 2 000 Zeilen) — **ohne
+Projektdaten und ohne `ki_aktionen.txt`** (es kann Eingaben des Anwenders enthalten; nur mit eigenem
+Haken „KI-Protokoll beilegen", Vorgabe aus). Fehlende Quellen nennt die Ergebniszeile, ohne Fehler
+(Kern `Allgemein/Support/Supportpaket.cs`). Die Datei hängt der Anwender an seine
 E-Mail; das ist der Supportweg ohne Fernwartung, auch für die Testversion.
 
 Zwei Nebenbefunde aus der Sichtung, die hier nur vermerkt sind (eigene Aufträge): die iOS-Version
@@ -541,7 +543,7 @@ en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fuß
 |---|---|---|
 | **1 — Entwicklermodus und Projektdatei** | `Entwicklermodus`, `Freigabestufe` am Menüpunkt, `Menuetabelle.Sichtbar`, Marke, Kopf *Entwicklung* mit den sieben Punkten (3.5), die drei Einstiege der Projektdatei, iOS-Dateifilter, KI-Feldkarten, `Program.Main(args)` | Kern-Filter grün; `EntwicklerbereicheWacheTests`, `MenuebandTests` mit zwei Bäumen; Windows-Build auf Linux (Schale berührt); Sichtprobe: ohne Modus kein Projektdatei-Knopf und kein Kopf *Entwicklung*, mit `--entwickler` beides und die Marke; HKLM-Sperre schlägt alles — **umgesetzt** (11.10.2026, #968) |
 | **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **umgesetzt** (11.10.2026, #969, Commit `bb594b7a`; Protokoll [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); **offen beim Anwender (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur, Sichtprobe |
-| **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`, `UeberDialogTests`; Sichtprobe: Textblock vollständig, Geste schaltet — **3a umgesetzt** (Dialog, Geste im Dialog); 3b offen |
+| **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`, `UeberDialogTests`; Sichtprobe: Textblock vollständig, Geste schaltet — **3a umgesetzt** (Dialog, Geste im Dialog); **3b umgesetzt** (Supportpaket) |
 | **4 — Supportvertrag im Token** (auf Zuruf) | `support_bis` im Server, tolerantes Lesen im Client, Lesart (d) wählbar | Serverseite durch den Anwender ausgerollt; Clienttest mit Token ohne und mit Feld |
 
 Reihenfolge: 1 → 2 → 3; Stufe 3 kann mit Stufe 2 zusammen laufen, weil der Diagnoseblock beiden
