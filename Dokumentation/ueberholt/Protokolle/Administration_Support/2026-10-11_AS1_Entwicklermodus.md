@@ -4,7 +4,7 @@
 [`Konzept_Administration_Support_EPOS-Plan.md`](../../../aktuell/Konzept_Administration_Support_EPOS-Plan.md),
 Entwicklerseite:
 [`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](../../../aktuell/Entwicklerhandbuch_Administration_Support_EPOS-Plan.md).
-Statuszeile #972. Zweig `claude/gracious-brown-qx5kb2`, Stand `5eb9e5f2`. Kein Schemaschritt, kein
+Statuszeile #974. Zweig `claude/gracious-brown-qx5kb2`, Stand `5eb9e5f2`. Kein Schemaschritt, kein
 Rechenweg (kein Referenzlauf nötig).
 
 ## 1 Zuschnitt und Verträge
@@ -79,7 +79,7 @@ Kennzeichen als Parameter aus den Hüllen, nie direkt aus der Registry.
 ## 5 Merge
 
 - `d39e5b83`: origin/ios_migration_september (51 Commits, #948–#957 anderer Sitzungen). Die eigenen
-  Statuszeilen #948/#949 dieser Sitzung wurden auf **#970/#971** umnummeriert.
+  Statuszeilen #948/#949 dieser Sitzung wurden auf **#972/#973** umnummeriert.
 - `01dc4314`: Welle 1a. Ressourcen beider Seiten vereinigt; Git legt das gemeinsame schließende
   `</data>` hinter den Block, deshalb beide Seiten plus ein `</data>`; Designer neu erzeugt.
 - `5eb9e5f2`: Welle 1b. Konflikte mit AH-V5 im Einstellungsdialog und -controller beidseitig
