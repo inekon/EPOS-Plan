@@ -186,6 +186,14 @@ namespace WindowsFormsApplication1
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
                 ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
 
+                // UeS2: die Kostensummen der Anlage fuer die Zusammenfassung der Detailzeile - nur
+                // eine schon gespeicherte Anlagenzeile hat Kosten; gelesen wird ohne zu speichern.
+                ["Kostensumme"] = mitKopie
+                    ? new Func<WaermepumpeAnlageDaten, (double Invest, double Betrieb)>(
+                        daten => daten != null && zuModell.TryGetValue(daten, out WErzeugerModel m) && m.ID > 0
+                            ? ErzeugerKostenwege.Summen(projektId, m.ID)
+                            : (0.0, 0.0))
+                    : null,
                 // KA-E-12: die Kostenknoepfe beim Projektsatz - die Anlagenzeile muss dafuer gespeichert sein.
                 ["KostenOeffnen"] = mitKopie
                     ? new Func<WaermepumpeAnlageDaten, bool, System.Threading.Tasks.Task>(

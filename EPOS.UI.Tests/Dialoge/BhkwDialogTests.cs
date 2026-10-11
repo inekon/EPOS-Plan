@@ -1949,13 +1949,17 @@ public class BhkwDialogTests : EposBunitContext
         => cut.FindAll(".epos-satzzusammenfassung-angabe")
               .ToDictionary(a => a.QuerySelector("dt")!.TextContent, a => a.QuerySelector("dd")!.TextContent);
 
-    /// <summary>Ein Detail mit den Beschriftungen der Hülle (Ressourcen) — die Zusammenfassung liest sie daran.</summary>
-    private static ErzeugerDetail DetailMitRessourcen(string name) => new(
+    /// <summary>
+    /// Ein Detail wie das der Hülle: die Leistungen als Zahlwerte (UeS2b) — die Felder tragen
+    /// bewusst andere Beschriftungen, die Zusammenfassung liest nicht an ihnen.
+    /// </summary>
+    private static ErzeugerDetail DetailMitKennwerten(string name) => new(
         name, "Beschreibung",
         new[] { (Resource.HZK_LBL_BRENNSTOFFTYP, "Erdgas LL"),
-                (Resource.BHKWV_LBL_HERSTELLER, "Musterwerk"),
-                (Resource.BHKWV_LBL_PTHERM, "80"),
-                (Resource.BHKWV_LBL_PEL, "40") });
+                ("Hersteller:", "Musterwerk"),
+                ("Waerme [kW]:", "999"),
+                ("Strom [kW]:", "999") },
+        Kennwerte: new ErzeugerKennwerte { PthermKw = 80, PelKw = 40 });
 
     [Fact]
     public void UeS2_Die_Zusammenfassung_des_Projektsatzes_nennt_die_Anlagendaten()
@@ -1967,7 +1971,7 @@ public class BhkwDialogTests : EposBunitContext
             .Add(x => x.Katalogprofil, Profil)
             .Add(x => x.Katalogzeilen, Katalogzeilen)
             .Add(x => x.Filterstandvorgabe, _filterstand)
-            .Add(x => x.ProjektDetail, n => DetailMitRessourcen(n))
+            .Add(x => x.ProjektDetail, n => DetailMitKennwerten(n))
             .Add(x => x.LabelBrennstofftyp, Resource.HZK_LBL_BRENNSTOFFTYP)
             .Add(x => x.Varianten, _ => new[] { (5, "Erdgas E Variante") })
             .Add(x => x.SummePtherm, () => "80")

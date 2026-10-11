@@ -1188,11 +1188,6 @@
         catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
     }
 
-    /// <summary>Der Wert des Detailfelds mit dieser Beschriftung; <c>null</c>, wenn es fehlt oder leer ist.</summary>
-    private string? Detailwert(string beschriftung)
-        => _detail.Felder.Where(f => f.Feld == beschriftung && !string.IsNullOrWhiteSpace(f.Wert))
-                         .Select(f => f.Wert).FirstOrDefault();
-
     /// <summary>
     /// <b>Die Kurzangaben des gewählten Satzes</b> für die Detailzeile. Projektsatz: P_el/P_th,
     /// Brennstoff, Träger, Grenzleistung, Vorlauf/Rücklauf, Invest, Betrieb, Senken. Katalogsatz:
@@ -1206,10 +1201,13 @@
         if (_projektZeile is ErzeugerZeile p)
         {
             var leistung = new List<string>();
-            if (Detailwert(Resource.BHKWV_LBL_PEL) is { } pel) leistung.Add(pel + " kWel");
-            if (Detailwert(Resource.BHKWV_LBL_PTHERM) is { } pth) leistung.Add(pth + " kWth");
+            // UeS2b: die Zahlwerte des Details, nicht die Beschriftungen seiner Felder.
+            if (_detail.Kennwerte?.PelKw is double pel) leistung.Add(Satzangaben.Zahl(pel, "kWel"));
+            if (_detail.Kennwerte?.PthermKw is double pth) leistung.Add(Satzangaben.Zahl(pth, "kWth"));
             if (leistung.Count > 0) liste.Add(new(Resource.AUSWAHL_ZF_LEISTUNG, string.Join(" / ", leistung)));
-            if (Detailwert(LabelBrennstofftyp) is { } brennstoff) liste.Add(new(Resource.AUSWAHL_ZF_BRENNSTOFF, brennstoff));
+            string? brennstoff = _detail.Felder.Where(f => f.Feld == LabelBrennstofftyp && !string.IsNullOrWhiteSpace(f.Wert))
+                                               .Select(f => f.Wert).FirstOrDefault();
+            if (brennstoff is not null) liste.Add(new(Resource.AUSWAHL_ZF_BRENNSTOFF, brennstoff));
             string traeger = _varianten.Where(v => v.Id == p.CarrierId).Select(v => v.Text).FirstOrDefault() ?? "";
             if (traeger.Length > 0) liste.Add(new(Resource.AUSWAHL_ZF_TRAEGER, traeger));
             if (p.Grenzleistung is double grenze)

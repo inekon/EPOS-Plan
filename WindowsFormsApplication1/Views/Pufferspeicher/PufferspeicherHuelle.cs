@@ -445,7 +445,11 @@ namespace WindowsFormsApplication1
                 (Text_("PSPD_LBL_VOLUMEN", "Gesamtvolumen [l]:"), d.Gesamtvolumen)
             };
 
-            return new ErzeugerDetail(d.Bezeichner, "", felder);
+            // UeS2b: der Zahlwert fuer die Zusammenfassung der Detailzeile - nicht ueber die Beschriftung.
+            double? volumen = double.TryParse(d.Gesamtvolumen, System.Globalization.NumberStyles.Any,
+                                              System.Globalization.CultureInfo.CurrentCulture, out double v) ? v : null;
+            return new ErzeugerDetail(d.Bezeichner, "", felder,
+                                      Kennwerte: new ErzeugerKennwerte { VolumenLiter = volumen });
         }
 
 

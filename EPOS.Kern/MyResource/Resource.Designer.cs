@@ -3237,6 +3237,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Albedo ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_ALBEDO {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_ANZAHL {
@@ -3246,11 +3255,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung/Azimut ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_AUSRICHTUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_AUSRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_BETRIEB {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BETRIEBSART", resourceCulture);
             }
         }
         
@@ -3273,6 +3300,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertragsmodell ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_ERTRAGSMODELL {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_ERTRAGSMODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0:N0} € ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_EURO {
@@ -3287,6 +3323,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_ZF_EURO_JAHR {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_EURO_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_FLAECHE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_FLAECHE", resourceCulture);
             }
         }
         
@@ -3318,11 +3363,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_LEISTUNG {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung gesamt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_LEISTUNG_GESAMT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_QUELLE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_QUELLE", resourceCulture);
             }
         }
         
@@ -3341,6 +3413,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_ZF_SENKEN {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_SENKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarkreis ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_SOLARKREIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_SOLARKREIS", resourceCulture);
             }
         }
         
@@ -41966,15 +42047,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZK_BTN_BEARBEITEN {
             get {
                 return ResourceManager.GetString("HZK_BTN_BEARBEITEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
-        /// </summary>
-        public static string HZK_BTN_FELDER_SPEICHERN {
-            get {
-                return ResourceManager.GetString("HZK_BTN_FELDER_SPEICHERN", resourceCulture);
             }
         }
         

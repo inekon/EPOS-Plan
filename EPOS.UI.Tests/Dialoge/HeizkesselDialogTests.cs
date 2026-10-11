@@ -80,7 +80,7 @@ public class HeizkesselDialogTests : EposBunitContext
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung",
         new[] { ("Brennstoff Typ:", "Erdgas E"), ("Leistung [kW]:", "120,00") },
-        ("Brennwertkessel", true));
+        ("Brennwertkessel", true), new ErzeugerKennwerte { PthermKw = 120 });
 
     private IRenderedComponent<HeizkesselDialog> Aufbauen(
         List<ErzeugerZeile>? zeilen = null,
@@ -2171,7 +2171,7 @@ public class HeizkesselDialogTests : EposBunitContext
         cut.Find(".epos-zweispalten-satzzeile").Click();
 
         var angaben = Angaben(cut);
-        Assert.Equal("120,00 kWth", angaben[Resource.AUSWAHL_ZF_LEISTUNG]);
+        Assert.Equal("120 kWth", angaben[Resource.AUSWAHL_ZF_LEISTUNG]);   // UeS2b: aus dem Zahlwert des Details
         Assert.Equal("70/50 °C", angaben[Resource.AUSWAHL_ZF_VORLAUF_RUECKLAUF]);
         Assert.Equal("Erdgas E", angaben[Resource.AUSWAHL_ZF_BRENNSTOFF]);
         Assert.Equal("Erdgas E Variante", angaben[Resource.AUSWAHL_ZF_TRAEGER]);

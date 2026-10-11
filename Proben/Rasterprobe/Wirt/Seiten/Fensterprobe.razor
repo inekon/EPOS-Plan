@@ -91,6 +91,7 @@
                                 ProjektSatz="@(d => new WaermepumpeStammDaten { Id = 1, Name = d.Bezeichner, Firma = d.Firma, Nennleistung = d.Nennleistung, Heizstab = 6 })"
                                 ProjektsatzWege="@SatzWege"
                                 KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                Kostensumme="@(_ => (18000.0, 300.0))"
                                 Anlegen="@(n => WpZeile(n))"
                                 Geschlossen="@(b => Beendet(b))" />
             break;
@@ -234,7 +235,8 @@
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung des Satzes " + name,
         new[] { ("Brennstoff Typ:", "Erdgas E"), ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") },
-        ("Brennwertkessel", true));
+        ("Brennwertkessel", true),
+        new ErzeugerKennwerte { PthermKw = 120, PelKw = 60 });   // UeS2b: die Zahlwerte der Zusammenfassung
 
     /// <summary>Die Felder des Aufklappers "Alle Daten anzeigen" - ein Text, eine Zahl, ein Schalter.</summary>
     private static List<BrowserFeldwert> Felder() => new()
@@ -261,6 +263,7 @@
         Ruecklauf = 28,
         Nennleistung = nennleistung,
         Betriebsart = DbWerte.WP_BETRIEBSART_PARALLEL,
+        Typ = "Sole-Wasser",   // UeS2b: die Quelle der Zusammenfassung
         SperrzeitVon = 0,
         SperrzeitBis = 0,
         HeizstabLeistung = 6

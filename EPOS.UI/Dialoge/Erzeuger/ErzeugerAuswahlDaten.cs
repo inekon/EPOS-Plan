@@ -165,11 +165,16 @@ public sealed record KatalogZeile(int Id, string Bezeichner, string Eigenschafte
 /// Ein Ja/Nein-Merkmal mit Beschriftung, <c>null</c> = keines. Beim Heizkessel ist das
 /// „Brennwertkessel".
 /// </param>
+/// <param name="Kennwerte">
+/// Die Zahlwerte des Satzes für die Zusammenfassung der Detailzeile (UeS2b) — unabhängig
+/// von den Beschriftungen der <paramref name="Felder"/>; <c>null</c> = keine.
+/// </param>
 public sealed record ErzeugerDetail(
     string Bezeichner,
     string Beschreibung,
     IReadOnlyList<(string Feld, string Wert)> Felder,
-    (string Feld, bool Wert)? Schalter = null)
+    (string Feld, bool Wert)? Schalter = null,
+    ErzeugerKennwerte? Kennwerte = null)
 {
     /// <summary>
     /// Ist der Anzeigewert eine ZAHL? Dann bekommt sein Feld im
@@ -204,6 +209,28 @@ public sealed record ErzeugerDetail(
 // (Baustein Parameteruebersicht) und kommen aus
 // PhotovoltaikStammCtrl.Parameterzeilen. Der Detailblock trug sie nur noch,
 // ohne dass eine Hülle sie belegte.
+
+/// <summary>
+/// <b>Die Zahlwerte eines Satzes</b> für die Zusammenfassung der Detailzeile (UeS2b): Die
+/// Hülle setzt sie aus dem Modell, der Dialog formatiert sie samt Einheit. So liest die
+/// Zusammenfassung nicht an den Beschriftungen der Anzeigefelder (Ressourcen) — jeder Wirt,
+/// auch der Probenwirt, zeigt die Angaben, sobald er die Zahl reicht. Leer = keine Angabe.
+/// </summary>
+public sealed record ErzeugerKennwerte
+{
+    /// <summary>Thermische Leistung in kW (Heizkessel, BHKW).</summary>
+    public double? PthermKw { get; init; }
+    /// <summary>Elektrische Leistung in kW (BHKW).</summary>
+    public double? PelKw { get; init; }
+    /// <summary>Lade- und Entladeleistung in kW (Stromspeicher).</summary>
+    public double? LeistungKw { get; init; }
+    /// <summary>Speichervolumen in l (Pufferspeicher).</summary>
+    public double? VolumenLiter { get; init; }
+    /// <summary>Nutzbare Kapazität in kWh (Stromspeicher).</summary>
+    public double? KapazitaetKwh { get; init; }
+    /// <summary>Nennleistung eines Moduls in W (Photovoltaik).</summary>
+    public double? ModulleistungW { get; init; }
+}
 
 /// <summary>
 /// Was der Kern beisteuert, bevor eine Zeile aufgenommen werden kann — die Werte, die

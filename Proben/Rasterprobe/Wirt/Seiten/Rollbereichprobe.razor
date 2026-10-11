@@ -51,7 +51,8 @@
                                 Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
                                 ProjektDetail="@(z => Detail(z.Bezeichner))" Modulname="@(z => z.Bezeichner)"
                                 Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
-                                Gesamtleistung="@(() => "12,0")" Geschlossen="@(b => Beendet(b))" />
+                                Gesamtleistung="@(() => "12,0")" Kostensumme="@(_ => (14000.0, 180.0))"
+                                Geschlossen="@(b => Beendet(b))" />
             break;
         case "solarkollektoren":
             <SolarkollektorenDialog Zeilen="@Erzeuger("Kollektor")" Katalogprofil="@Profil(Anlagenart.Solarkollektoren)"
@@ -59,6 +60,7 @@
                                     Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
                                     ProjektDetail="@(z => Detail(z.Bezeichner))"
                                     ProjektModulflaeche="@(_ => 2.0)" ProjektsatzWege="@SatzWege"
+                                    Kostensumme="@(_ => (6500.0, 90.0))"
                                     Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
             break;
         case "bedarfsprofile":
@@ -136,12 +138,19 @@
 
     private List<ErzeugerZeile>? _erzeuger;
     private List<ErzeugerZeile> Erzeuger(string praefix) => _erzeuger ??= Enumerable.Range(1, _projekt)
-        .Select(i => new ErzeugerZeile { Schluessel = i, Bezeichner = praefix + " " + i, GeraetId = 100 + i, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 })
+        .Select(i => new ErzeugerZeile { Schluessel = i, Bezeichner = praefix + " " + i, GeraetId = 100 + i, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50,
+                                         AnzahlModule = 20, Neigung = 30, Azimut = 0 })   // UeS2b: Angaben der Zusammenfassung
         .ToList();
 
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung des Satzes " + name,
-        new[] { ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") }, ("Schalter", true));
+        new[] { ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") }, ("Schalter", true), KENNWERTE);
+
+    /// <summary>UeS2b: die Zahlwerte der Zusammenfassung - jeder Wirt liest seine (Volumen, Kapazitaet, Modulleistung).</summary>
+    private static readonly ErzeugerKennwerte KENNWERTE = new()
+    {
+        PthermKw = 120, PelKw = 60, VolumenLiter = 1000, KapazitaetKwh = 20, LeistungKw = 10, ModulleistungW = 400
+    };
 
     private static List<BrowserFeldwert> Felder() => new()
     {

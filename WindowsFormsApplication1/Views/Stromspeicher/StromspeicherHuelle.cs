@@ -384,7 +384,9 @@ namespace WindowsFormsApplication1
                 (MyResource.Resource.SP_LABEL_MODULKOSTEN, s.m_Modulkosten.ToString())
             };
 
-            return new ErzeugerDetail(s.m_szBezeichner ?? "", "", felder);
+            // UeS2b: die Zahlwerte fuer die Zusammenfassung der Detailzeile - nicht ueber die Beschriftungen.
+            return new ErzeugerDetail(s.m_szBezeichner ?? "", "", felder,
+                                      Kennwerte: new ErzeugerKennwerte { KapazitaetKwh = s.m_Energie, LeistungKw = s.m_Leistung });
         }
 
 
