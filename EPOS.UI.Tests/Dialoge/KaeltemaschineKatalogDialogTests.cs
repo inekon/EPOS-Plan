@@ -649,6 +649,32 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         Assert.True(zeilen.Single(z => z.Name == R.KM_LBL_NENNKAELTELEISTUNG + " [kW]").Abweichend);
         Assert.Contains(R.KM_VGL_STUETZSTELLEN, Stammblatt(cut).TextContent);
     }
+
+    /// <summary>KT-7: Wirft die Hülle beim Bereitstellen des Imports, nennt das Warnband den Grund; der Import bleibt zu.</summary>
+    [Fact]
+    public void KT7_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(mehr: b => b.Add(x => x.ImportGaben,
+            () => throw new InvalidOperationException("Importweg gesperrt")));
+
+        cut.Find(".epos-importknopf").Click();
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), t => t.TextContent.Contains("Importweg gesperrt"));
+        Assert.True(vermerke.Enthaelt("Importweg gesperrt"));
+        Assert.DoesNotContain(cut.FindAll(".epos-warnbanner-text"), t => t.TextContent.Contains(R.KM_MSG_IMPORT_PLATTFORM));
+    }
+
+    [Fact]
+    public void KT7_ohne_Importweg_bleibt_die_benannte_Ablehnung_ohne_Vermerk()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen();
+
+        cut.Find(".epos-importknopf").Click();
+
+        Assert.True(vermerke.Leer);
+    }
 }
 
 /// <summary>Dieselbe Verwaltung auf der englischen Oberfläche: Titel, Gruppen, Rückkühlart, Steuerwert.</summary>

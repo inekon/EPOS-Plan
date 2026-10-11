@@ -1138,4 +1138,113 @@ public class KatalogSchreibenWirftTests : EposBunitContext
         Assert.True(cut.Instance.Katalogseite!.ImportOffen);
         GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
     }
+
+    // =================================================================================
+    // KT-7: Namensprüfung des Katalogbrowsers und die Importgaben der Verwaltungen
+    // =================================================================================
+
+    private static KatalogBrowserWege BrowserWegeMit(Func<string, bool>? existiert = null,
+                                                     Func<IReadOnlyDictionary<string, object>>? importGaben = null)
+    {
+        KatalogBrowserWege w = BrowserWege();
+        return new KatalogBrowserWege
+        {
+            Katalogzeilen = w.Katalogzeilen, Detail = w.Detail, Speichern = w.Speichern,
+            Duplizieren = w.Duplizieren, Loeschen = w.Loeschen,
+            Existiert = existiert, ImportGaben = importGaben
+        };
+    }
+
+    /// <summary>„Neu…" mit einem Namen: die Namensabfrage ausfüllen und bestätigen.</summary>
+    private static void NeuMitNamen(IRenderedComponent<KatalogBrowserDialog> cut, string name)
+    {
+        cut.FindAll("button").First(b => b.TextContent.Trim() is "Neu..." or "Neu…").Click();
+        cut.FindAll(".epos-ueberlagerung input[type=text]")[0].Input(name);
+        cut.FindAll(".epos-ueberlagerung .epos-knopf--primaer")[0].Click();
+    }
+
+    [Fact]
+    public void KT7_KatalogBrowser_wirft_die_Namenspruefung_beim_Neu_nennt_der_Dialog_den_Grund()
+    {
+        bool editor = false;
+        var cut = Render<KatalogBrowserDialog>(b => b
+            .Add(x => x.Art, KatalogBrowserArt.Heizkessel)
+            .Add(x => x.ProfilVorgabe, BrowserProfil())
+            .Add(x => x.Wege, BrowserWegeMit(existiert: _ => Wirft<bool>()))
+            .Add(x => x.EditorGaben, (_, _, _) => { editor = true; return new Dictionary<string, object>(); }));
+
+        NeuMitNamen(cut, "Kessel neu");
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+        Assert.False(editor);   // nie über einen ungeprüften Namen anlegen
+    }
+
+    [Fact]
+    public void KT7_KatalogBrowser_wirft_die_Namenspruefung_beim_Duplizieren_nennt_die_Abfrage_den_Grund()
+    {
+        var cut = Browser(BrowserWegeMit(existiert: _ => Wirft<bool>()));
+        ZeileWaehlen(cut);
+        Handlung(cut, R.ADM_BTN_DUPLIZIEREN).Click();
+        NamensabfrageOk(cut);
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+    }
+
+    [Fact]
+    public void KT7_KatalogBrowser_ohne_Ausnahme_hat_die_Namenspruefung_keinen_Grund()
+    {
+        var cut = Browser(BrowserWegeMit(existiert: _ => false));
+        NeuMitNamen(cut, "Kessel neu");
+
+        OhneSatzgrund(cut);
+    }
+
+    [Fact]
+    public void KT7_KatalogBrowser_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Browser(BrowserWegeMit(importGaben: () => Wirft<IReadOnlyDictionary<string, object>>()));
+        cut.Find(".epos-importknopf").Click();
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+    }
+
+    [Fact]
+    public void KT7_ModulKatalog_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Render<ModulKatalogDialog>(b => b
+            .Add(x => x.Art, ModulKatalogArt.Stromspeicher)
+            .Add(x => x.ProfilVorgabe, ModulProfil())
+            .Add(x => x.Wege, new ModulKatalogWege
+            {
+                Katalogzeilen = Eine,
+                Detail = ModulFelder,
+                KatalogImportGaben = () => Wirft<IReadOnlyDictionary<string, object>>()
+            }));
+        cut.Find(".epos-importknopf").Click();
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+        Assert.False(cut.Instance.ImportOffen);
+    }
+
+    [Fact]
+    public void KT7_WaermepumpeStamm_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        var cut = WpStamm();
+        cut.Render(p => p.Add(x => x.ImportGaben, () => Wirft<IReadOnlyDictionary<string, object>>()));
+        cut.Find(".epos-importknopf").Click();
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+        Assert.False(cut.Instance.ImportOffen);
+    }
+
+    [Fact]
+    public void KT7_Gebaeude_wirft_die_Importgabe_nennt_der_Dialog_den_Grund()
+    {
+        var cut = Gebaeude();
+        cut.Render(p => p.Add(x => x.ImportGaben, () => Wirft<GebaeudeImportweg>()));
+        cut.Find(".epos-importknopf").Click();
+
+        GrundSteht(cut, R.WURZEL_SATZ_FEHLER);
+    }
 }

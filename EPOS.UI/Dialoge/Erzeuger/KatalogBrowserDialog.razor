@@ -1185,11 +1185,37 @@
         _duplizierfrage = true;
     }
 
+    /// <summary>
+    /// Für den Namensvorschlag: Wirft die Prüfung, gilt der Name hier als frei (sonst suchte der
+    /// Vorschlag ohne Ende); die Abfrage prüft ihn über <see cref="NameBelegt"/> noch einmal.
+    /// </summary>
     private bool NameVergeben(string name)
-        => _zeilen.Any(z => z.Bezeichner == name) || Wege.Existiert?.Invoke(name) == true;
+        => _zeilen.Any(z => z.Bezeichner == name) || (ExistiertGefangen(name, out string fehler) && fehler.Length == 0);
 
-    /// <summary>Die Namensprüfung der Abfrage — ein vergebener Name hält sie offen.</summary>
-    private string? NameBelegt(string name) => NameVergeben(name) ? MeldungNameBelegt : null;
+    /// <summary>
+    /// Die Namensprüfung der Abfrage — ein vergebener Name hält sie offen; wirft die Prüfung,
+    /// nennt die Abfrage den Grund.
+    /// </summary>
+    private string? NameBelegt(string name)
+    {
+        if (_zeilen.Any(z => z.Bezeichner == name)) return MeldungNameBelegt;
+        if (!ExistiertGefangen(name, out string fehler)) return null;
+        return fehler.Length > 0 ? fehler : MeldungNameBelegt;
+    }
+
+    /// <summary>
+    /// KT-7: Die Namensprüfung der Hülle (<c>Wege.Existiert</c>, Datenbank) läuft über die
+    /// Fangstelle (<c>Katalogladung.Satz</c>). Wirft sie, gilt der Name als belegt — angelegt
+    /// wird nie über einen ungeprüften Namen —, <paramref name="fehler"/> nennt den Grund, und
+    /// das Protokoll hat einen Vermerk.
+    /// </summary>
+    private bool ExistiertGefangen(string name, out string fehler)
+    {
+        fehler = "";
+        if (Wege.Existiert is null) return false;
+        Tuple<bool>? antwort = Katalogladung.Satz(() => Tuple.Create(Wege.Existiert(name)), name, out fehler);
+        return antwort?.Item1 ?? true;
+    }
 
     private void BeiDuplizierName(string? name)
     {
@@ -1268,9 +1294,9 @@
         _namensfrage = false;
         if (name is null) return;
 
-        if (Wege.Existiert?.Invoke(name) == true)
+        if (ExistiertGefangen(name, out string fehler))
         {
-            _meldung = MeldungNameBelegt;
+            _meldung = fehler.Length > 0 ? fehler : MeldungNameBelegt;
             _meldungStufe = WarnStufe.Warnung;
             return;
         }
@@ -1446,7 +1472,9 @@
         if (_geaendert) { Warnen(MeldungUngespeichert); return; }
         _meldung = "";
         _vorImport = new HashSet<string>(_zeilen.Select(z => z.Bezeichner), StringComparer.Ordinal);
-        _importGaben = Wege.ImportGaben();
+        // KT-7: Wirft die Hülle beim Bereitstellen des Imports, nennt das Warnband den Grund (Katalogladung.Satz).
+        _importGaben = Katalogladung.Satz(() => Wege.ImportGaben(), Profil.Titel, out string fehler);
+        if (fehler.Length > 0) Warnen(fehler);
     }
 
     /// <summary>
