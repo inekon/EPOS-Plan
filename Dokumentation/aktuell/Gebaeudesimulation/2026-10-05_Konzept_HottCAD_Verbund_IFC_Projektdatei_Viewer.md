@@ -391,8 +391,8 @@ die Sichtabnahme auf Windows, die iPad-Sichtprobe hängt an der offenen Probe 31
 Kein web-ifc, kein IFC-Vollbetrachter, keine xBIM Geometry Engine, kein neues NuGet-Paket
 (ADR-003 und Datenaustauschkonzept 15.6 bleiben). Kein Schreiben der `.sqproj`, kein Lesen
 der Binärströme (`WDIN18599DataModel`, `.BDExit`, Grafikmodell), keine Übernahme von
-Hersteller-, Adress- oder Kontaktdaten aus der Projektdatei, keine Anwenderdateien im
-Repositorium, kein Klimaimport (E80), keine Persistenz der Geometrie (E87). Die Gruppenfarben
+Hersteller-, Adress- oder Kontaktdaten aus der Projektdatei, keine Projektdateien `.sqproj` im
+Repositorium (die sechs IFC-Exporte liegen als Testmaterial unter `Quellen/` mit LIESMICH und sind nicht Teil der Auslieferung), kein Klimaimport (E80), keine Persistenz der Geometrie (E87). Die Gruppenfarben
 sind Anzeige und Gegenprobe, keine Rechengröße; die Einfrierregeln sind nicht berührt, weil
 kein Referenzprojekt importiert wird.
 
