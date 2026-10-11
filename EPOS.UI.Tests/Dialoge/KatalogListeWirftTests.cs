@@ -163,6 +163,16 @@ public class KatalogListeWirftTests : EposBunitContext
                 new InvalidOperationException(GRUND)))));
 
     [Fact]
+    public void Stromganglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<EPOS.UI.Dialoge.Strom.StromganglinieDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Wirft()))));
+
+    [Fact]
+    public void Stromganglinie_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<EPOS.UI.Dialoge.Strom.StromganglinieDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))));
+
+    [Fact]
     public void WaermebedarfExtern_ohne_Ausnahme_zeigt_keinen_Listenbanner()
         => OhneBanner(Render<WaermebedarfExternDialog>(b => b
             .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))));

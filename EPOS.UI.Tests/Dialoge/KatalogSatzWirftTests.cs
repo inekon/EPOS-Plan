@@ -213,6 +213,18 @@ public class KatalogSatzWirftTests : EposBunitContext
     }
 
     [Fact]
+    public void Stromganglinie_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<EPOS.UI.Dialoge.Strom.StromganglinieDialog>(b => b
+            .Add(x => x.Zeilen, new List<EPOS.UI.Dialoge.Strom.GanglinienProjektZeile>())
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Kennzahlen, _ => Task.FromException<GanglinienKennzahlen?>(new InvalidOperationException(GRUND))));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
     public void WaermebedarfExtern_ohne_Ausnahme_zeigt_keinen_Satzbanner()
     {
         var cut = Render<WaermebedarfExternDialog>(b => b
