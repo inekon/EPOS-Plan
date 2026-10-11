@@ -12,7 +12,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Vorheizen Option 2 „Vorheizzeit berechnen“, Vorausschau und Geltung Gebäude</b> (Entwurf Vorheizrampe Fassung 2,
     /// 2.3, 2.4, 2.5, 2.6, 2.7; Welle V3a): die Vorausschau ist rein, die Bisektion trifft die lineare Suche, „unerreichbar“ bei
-    /// P_V &lt; Φ_stat, t_V ist das Maximum des Bedarfs und gilt an jedem Sprung, Option 1 nennt den Bedarf der verfehlten Tage,
+    /// P_V &lt; Φ_stat, t_V ist das 95-%-Quantil des Bedarfs (F19) und gilt an jedem Sprung, Option 1 nennt den Bedarf der verfehlten Tage,
     /// Geltung Gebäude teilt den Deckel nach Φ_HL (Zone ohne Φ_HL ungedeckelt), die Hinweistexte (de-DE) und die Messung an
     /// Projekt 1051 (nur mit <c>EPOS_MESSUNG=1</c>).
     /// </summary>
@@ -145,7 +145,7 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         [Fact]
-        public void Option2_tV_ist_das_Maximum_des_Bedarfs_und_gilt_an_jedem_Sprung()
+        public void Option2_tV_ist_das_Quantil_des_Bedarfs_und_gilt_an_jedem_Sprung()
         {
             using var k = new Kulturvorrichtung("de-DE");
             SimulationProtokoll p = SimulationProtokoll.NeuStarten();
@@ -156,21 +156,36 @@ namespace EPOS.Kern.Tests
             List<Vorheizsprung> mit = vp.Spruenge.Where(x => x.FensterMaxH >= 1).ToList();
             Assert.NotEmpty(mit);
             Assert.All(mit, x => Assert.InRange(x.BedarfH, 1, x.FensterMaxH));
-            int max = mit.Max(x => x.BedarfH);
-            Assert.Equal(max, vp.VorheizzeitH);
+            List<int> erreichbar = mit.Where(x => !x.Unerreichbar).Select(x => x.BedarfH).ToList();
+            int max = erreichbar.Max();
+            // F19: t_V ist das kleinste t, das mindestens 95 % der erreichbaren Sprünge abdeckt.
+            int tV = vp.VorheizzeitH;
+            Assert.Equal(Math.Max(1, Vorheizplanung.Quantil(erreichbar, 95)), tV);
+            Assert.True(erreichbar.Count(b => b <= tV) >= 0.95 * erreichbar.Count);
+            Assert.True(tV == 1 || erreichbar.Count(b => b <= tV - 1) < 0.95 * erreichbar.Count);
             Assert.Equal(max, vp.BedarfMaxH);
+            Assert.Equal(erreichbar.Count(b => b > tV), vp.SpruengeUeberVorheizzeit);
             Assert.All(vp.Spruenge, x => Assert.Equal(Math.Min(vp.VorheizzeitH, x.FensterMaxH), x.FensterH));
 
             Vorheizgebaeude g = Vorheizplanung.Gebaeudewerte(new[] { plan });
             Assert.True(g.Berechnet);
-            Assert.Equal(max, g.VorheizzeitMaxH);
+            Assert.Equal(tV, g.VorheizzeitMaxH);
+            Assert.Equal(max, g.BedarfMaxH);
             Assert.InRange(g.BedarfMedianH, 1.0, max);
             Assert.True(g.Vorausschauen <= 6 * mit.Count);
-            // Die Vorausschau ist zur sicheren Seite: Mit t_V = max t_nötig kommt der Lauf an jedem Sprung an.
-            Assert.Equal(0, g.TageOhneAnkunftAnzahl);
+            // Die Vorausschau ist zur sicheren Seite: Jeder Tag ohne Ankunft trägt einen Sprung über t_V oder einen unerreichbaren.
+            Vorheiznachweis n = plan.Vorheizen.Nachweis;
+            for (int t = 0; t < 365; t++)
+                if (n.TageOhneAnkunft[t]) Assert.True(n.TageUeberVorheizzeit[t] || n.TageUnerreichbar[t], "Tag " + t);
+            var tageUeber = new HashSet<int>(mit.Where(x => !x.Unerreichbar && x.BedarfH > tV).Select(x => x.Sprungstunde / 24));
+            Assert.Equal(tageUeber.Count, g.TageUeberVorheizzeit);
             Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Keiner, g, "Probe");
-            Assert.Contains(p.Hinweise, z => z.Contains("Vorheizzeit berechnet: " + max.ToString(CultureInfo.InvariantCulture) + " h",
+            Assert.Contains(p.Hinweise, z => z.Contains("Vorheizzeit berechnet: " + tV.ToString(CultureInfo.InvariantCulture) + " h — sie reicht für 95 %",
                                                        StringComparison.Ordinal));
+            if (g.TageUeberVorheizzeit > 0)
+                Assert.Contains(p.Hinweise, z => z.Contains("nötig wären bis " + max.ToString(CultureInfo.InvariantCulture) + " h Vorheizen statt "
+                                                            + tV.ToString(CultureInfo.InvariantCulture) + " h", StringComparison.Ordinal));
+            _aus.WriteLine($"t_V {tV} h, t_nötig,max {max} h, Sprünge {erreichbar.Count}, über t_V {vp.SpruengeUeberVorheizzeit}, Tage über {g.TageUeberVorheizzeit}");
         }
 
         [Fact]
@@ -224,8 +239,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(Math.Min(vp.DeckelW, vp.VerfuegbarW), vp.VorheizleistungW);
             }
             Assert.Equal(1.2 * phiGeb, mit.Sum(x => x.Plan.DeckelW), 6);
-            // t_V,Geb = max_i t_V,i: alle Zonen tragen dieselbe Zeit, das Maximum ihrer Bedarfe.
-            int tV = mit.Max(x => x.Plan.BedarfMaxH);
+            // t_V,Geb = max_i t_V,i: alle Zonen tragen dieselbe Zeit, das Maximum ihrer Quantile (F19).
+            int tV = Math.Max(1, mit.Max(x => x.Plan.BedarfQuantilH));
             Assert.All(mit, x => Assert.Equal(tV, x.Plan.VorheizzeitH));
 
             // Lauf und Gebäudewerte: der Sprung an der Summe.

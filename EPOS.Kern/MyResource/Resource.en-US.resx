@@ -51844,7 +51844,7 @@ chart</value>
     <value>“Specify preheat time” has no preheat time; the setpoint ramp by preheat power applies.</value>
   </data>
   <data name="SIMENG_VORH_BERECHNET" xml:space="preserve">
-    <value>Calculated preheat time: {0} h from the largest requirement of the year (median of the occupancy starts {1} h); it applies at every occupancy start.</value>
+    <value>Calculated preheat time: {0} h — it suffices for {2} % of the reachable occupancy starts (median {1} h, largest requirement {3} h, {4} occupancy starts would need more); it applies at every occupancy start. Unreachable occupancy starts are not included.</value>
   </data>
   <data name="SIMENG_VORH_TAGE_BEDARF" xml:space="preserve">
     <value>On {0} days the room air does not reach the setpoint at occupancy start (up to {1} K below); up to {2} h of preheating would be required instead of {3} h.</value>
@@ -51854,6 +51854,9 @@ chart</value>
   </data>
   <data name="SIMENG_VORH_ABWEICHUNG" xml:space="preserve">
     <value>On {0} days the run misses the setpoint at occupancy start that the look-ahead found reachable (neighbouring zones or heating circuit).</value>
+  </data>
+  <data name="SIMENG_VORH_SPERRZEIT" xml:space="preserve">
+    <value>On {0} days the preheat window lies in a blocking period of the plant ({1} h, {2} window hours without available heat); preheating is only possible in the hours {3} h.</value>
   </data>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} heated zones have no design heat load; they receive no share of the building cap and remain uncapped.</value>
