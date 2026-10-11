@@ -139,7 +139,11 @@ gegen `origin` messen.
   `KaeltemittelregelnTests` (Vokabular, unbekannter Schlüssel benannt verworfen, Geräteklasse),
   `GesetzkatalogSaatWacheTests` (Generation 10 in den Schranken), `KaeltemittelZulaessigkeitLaufTests`
   (Arbeitskopie, Muster `KaeltespeicherDatenbankTests`: 1059 mit Jahr 2027 → Warnbefund, Protokollwarnung,
-  `bericht.warnungen`; 1063 → kein Befund; ohne Jahr → nichts), `SchemaModellTests` (Warntext am Knoten),
+  `bericht.warnungen`; 1063 → kein Befund; ohne Jahr → nichts; am Regelsatz nachgerechnet: 1059 trifft Nr. 7 b
+  (Kühler bis 12 kW, GWP ≥ 150, 2027), 1063 mit 20 kW bleibt unter Nr. 7 d zulässig; die Wärmepumpen beider Projekte
+  sind Sole‑Wasser **ohne** Kältemittel‑Code und werden nicht geprüft — die Probe der Wärmepumpe setzt an der
+  Arbeitskopie einen Code: Luft‑Wasser‑Monoblock 35 kW mit R410A trifft Nr. 8 d, Sole‑Wasser mit R290 ist „nicht
+  prüfbar“), `SchemaModellTests` (Warntext am Knoten),
   `KaeltemaschineBerichtTests` (Spalte, `BerichtSchreiberOhneDatenbankWacheTests`).
 - **Abnahme:** Filter‑Tests grün; Referenzlauf aller Projekte der Basis `GESAMT: PASS`, Projektdateien
   byte‑gleich, `protokoll.txt` der Referenzprojekte ohne neue Zeile.

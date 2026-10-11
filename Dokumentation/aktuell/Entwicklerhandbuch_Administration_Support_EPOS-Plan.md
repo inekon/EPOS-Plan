@@ -3,7 +3,7 @@
 **Für wen.** INEKON — Entwicklung und Support. Nicht für Anwender; nichts aus diesem Handbuch kommt
 ins Wiki, und die Entwicklerbereiche werden in der Anwenderdokumentation nicht erwähnt.
 
-**Stand.** 11.10.2026, Stufe 1 ist umgesetzt (11.10.2026, #971); Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
+**Stand.** 11.10.2026, Stufe 1 ist umgesetzt (11.10.2026, #974); Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
 ([`Konzept_Administration_Support_EPOS-Plan.md`](Konzept_Administration_Support_EPOS-Plan.md)).
 Jeder Abschnitt trägt die Stufe, ab der er gilt: **[heute]** vorhanden, **[Stufe 1]**
 Entwicklermodus, **[Stufe 2]** Fernwartung, **[Stufe 3]** Dialog „Über EPOS-Plan" und
@@ -269,7 +269,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 
 | Stufe | Inhalt | Stand |
 |---|---|---|
-| 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #971) |
+| 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #974) |
 | 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | offen |
 | 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | offen |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |

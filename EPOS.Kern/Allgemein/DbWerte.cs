@@ -2271,6 +2271,127 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string GESETZ_KLASSE_UMLAGEN = "UMLAGEN";
 
+        /// <summary>
+        /// Verordnung (EU) 2024/573 über fluorierte Treibhausgase, Anhang IV: die Stichtage, ab denen
+        /// das INVERKEHRBRINGEN bestimmter Kühler, Klimaanlagen und Wärmepumpen untersagt ist
+        /// (Art. 11 Abs. 1). Die Zeilen tragen die Regel im Schlüssel (Vokabular <c>FGAS_*</c> unten),
+        /// den Stichtag in <c>JahrVon</c>, die GWP-Grenze in <c>Wert</c> (0 bei „jedes F-Gas“), Einheit
+        /// <see cref="GESETZ_EINHEIT_OHNE"/> (Konzept Kältemittel als Stammdatum 4.5, KM4-E2,
+        /// Saat-Generation 10). Gelesen von <c>Kaeltemittelregeln</c>, ausgewertet von
+        /// <c>Kaeltemittelzulaessigkeit</c> — als Warnung, nie als Sperre.
+        /// </summary>
+        public const string GESETZ_KLASSE_FGAS = "FGAS";
+
+        // =====================================================================
+        // F-Gase — Schlüsselvokabular der Klasse FGAS (KM4-E2, Saat-Generation 10)
+        //
+        //   Schlüssel = FGAS_IV_<GERAETEKLASSE>_<BAND>_<KRITERIUM>
+        //   Die Geräteklasse darf Unterstriche tragen; Band und Kriterium nicht.
+        //   Zerlegt wird von hinten: letztes Glied Kriterium, vorletztes Band, der
+        //   Rest bis zum Präfix die Geräteklasse (Kaeltemittelregeln.Zerlegen).
+        //   Persistenzwerte: ASCII, GROSS, eingefroren.
+        // =====================================================================
+
+        /// <summary>Präfix der Regeln nach Anhang IV.</summary>
+        public const string FGAS_PRAEFIX_IV = "FGAS_IV_";
+
+        /// <summary>Geräteklasse Kühler (Anhang IV Nr. 7; Kaltwassersatz).</summary>
+        public const string FGAS_KLASSE_KUEHLER = "KUEHLER";
+
+        /// <summary>Geräteklasse in sich geschlossene Klimaanlage oder Wärmepumpe (Anhang IV Nr. 8;
+        /// Monoblock, Kompaktgerät).</summary>
+        public const string FGAS_KLASSE_MONOBLOCK = "MONOBLOCK";
+
+        /// <summary>Geräteklasse Split-Klimaanlage oder Split-Wärmepumpe (Anhang IV Nr. 9) — Oberklasse
+        /// von <see cref="FGAS_KLASSE_SPLIT_LUFTWASSER"/> und <see cref="FGAS_KLASSE_SPLIT_LUFTLUFT"/>.</summary>
+        public const string FGAS_KLASSE_SPLIT = "SPLIT";
+
+        /// <summary>Geräteklasse Luft-Wasser-Splitsystem (Anhang IV Nr. 9 Buchst. b); erbt <see cref="FGAS_KLASSE_SPLIT"/>.</summary>
+        public const string FGAS_KLASSE_SPLIT_LUFTWASSER = "SPLIT_LUFTWASSER";
+
+        /// <summary>Geräteklasse Luft-Luft-Splitsystem (Anhang IV Nr. 9 Buchst. c); erbt <see cref="FGAS_KLASSE_SPLIT"/>.</summary>
+        public const string FGAS_KLASSE_SPLIT_LUFTLUFT = "SPLIT_LUFTLUFT";
+
+        /// <summary>Die Geräteklassen des Vokabulars.</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> FGAS_KLASSEN = new[]
+        {
+            FGAS_KLASSE_KUEHLER, FGAS_KLASSE_MONOBLOCK, FGAS_KLASSE_SPLIT,
+            FGAS_KLASSE_SPLIT_LUFTWASSER, FGAS_KLASSE_SPLIT_LUFTLUFT
+        };
+
+        /// <summary>Leistungsband: jede Nennleistung (die Nummer nennt kein Band).</summary>
+        public const string FGAS_BAND_ALLE = "ALLE";
+
+        /// <summary>Leistungsband: bis einschließlich 12 kW, Intervall (0, 12].</summary>
+        public const string FGAS_BAND_BIS12 = "BIS12";
+
+        /// <summary>Leistungsband: über 12 kW, Intervall (12, ∞).</summary>
+        public const string FGAS_BAND_UEBER12 = "UEBER12";
+
+        /// <summary>Leistungsband: über 12 kW bis einschließlich 50 kW, Intervall (12, 50].</summary>
+        public const string FGAS_BAND_UEBER12BIS50 = "UEBER12BIS50";
+
+        /// <summary>Leistungsband: über 50 kW, Intervall (50, ∞).</summary>
+        public const string FGAS_BAND_UEBER50 = "UEBER50";
+
+        /// <summary>Die Leistungsbänder des Vokabulars.</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> FGAS_BAENDER = new[]
+        {
+            FGAS_BAND_ALLE, FGAS_BAND_BIS12, FGAS_BAND_UEBER12, FGAS_BAND_UEBER12BIS50, FGAS_BAND_UEBER50
+        };
+
+        /// <summary>Kriterium: fluoriertes Treibhausgas (Art. 2 Buchst. a: Anhänge I, II, III) mit GWP ≥ Wert.</summary>
+        public const string FGAS_KRIT_GWP = "GWP";
+
+        /// <summary>Kriterium: jedes fluorierte Treibhausgas, ohne GWP-Grenze (Wert = 0).</summary>
+        public const string FGAS_KRIT_FGAS = "FGAS";
+
+        /// <summary>Kriterium: HFKW (Art. 3 Nr. 4: Anhang I Gruppe 1, keine Olefine) mit GWP ≥ Wert.</summary>
+        public const string FGAS_KRIT_HFKW = "HFKW";
+
+        /// <summary>Die Kriterien des Vokabulars.</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> FGAS_KRITERIEN = new[]
+        {
+            FGAS_KRIT_GWP, FGAS_KRIT_FGAS, FGAS_KRIT_HFKW
+        };
+
+        /// <summary>Anhang IV Nr. 7 a: Kühler, HFKW mit GWP ≥ 2 500.</summary>
+        public const string GESETZ_FGAS_IV_KUEHLER_ALLE_HFKW = "FGAS_IV_KUEHLER_ALLE_HFKW";
+
+        /// <summary>Anhang IV Nr. 7 b: Kühler bis 12 kW, F-Gase mit GWP ≥ 150.</summary>
+        public const string GESETZ_FGAS_IV_KUEHLER_BIS12_GWP = "FGAS_IV_KUEHLER_BIS12_GWP";
+
+        /// <summary>Anhang IV Nr. 7 c: Kühler bis 12 kW, jedes F-Gas.</summary>
+        public const string GESETZ_FGAS_IV_KUEHLER_BIS12_FGAS = "FGAS_IV_KUEHLER_BIS12_FGAS";
+
+        /// <summary>Anhang IV Nr. 7 d: Kühler über 12 kW, F-Gase mit GWP 750.</summary>
+        public const string GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP = "FGAS_IV_KUEHLER_UEBER12_GWP";
+
+        /// <summary>Anhang IV Nr. 8 b: in sich geschlossen bis 12 kW, F-Gase mit GWP ≥ 150.</summary>
+        public const string GESETZ_FGAS_IV_MONOBLOCK_BIS12_GWP = "FGAS_IV_MONOBLOCK_BIS12_GWP";
+
+        /// <summary>Anhang IV Nr. 8 c: in sich geschlossen bis 12 kW, jedes F-Gas.</summary>
+        public const string GESETZ_FGAS_IV_MONOBLOCK_BIS12_FGAS = "FGAS_IV_MONOBLOCK_BIS12_FGAS";
+
+        /// <summary>Anhang IV Nr. 8 d: in sich geschlossen über 12 bis 50 kW, F-Gase mit GWP ≥ 150.</summary>
+        public const string GESETZ_FGAS_IV_MONOBLOCK_UEBER12BIS50_GWP = "FGAS_IV_MONOBLOCK_UEBER12BIS50_GWP";
+
+        /// <summary>Anhang IV Nr. 8 e: andere in sich geschlossene, F-Gase mit GWP ≥ 150.</summary>
+        public const string GESETZ_FGAS_IV_MONOBLOCK_ALLE_GWP = "FGAS_IV_MONOBLOCK_ALLE_GWP";
+
+        /// <summary>Anhang IV Nr. 9 b: Luft-Wasser-Split bis 12 kW, F-Gase mit GWP ≥ 150.</summary>
+        public const string GESETZ_FGAS_IV_SPLIT_LUFTWASSER_BIS12_GWP = "FGAS_IV_SPLIT_LUFTWASSER_BIS12_GWP";
+
+        /// <summary>Anhang IV Nr. 9 c: Luft-Luft-Split bis 12 kW, F-Gase mit GWP ≥ 150.</summary>
+        public const string GESETZ_FGAS_IV_SPLIT_LUFTLUFT_BIS12_GWP = "FGAS_IV_SPLIT_LUFTLUFT_BIS12_GWP";
+
+        /// <summary>Anhang IV Nr. 9 d: Split bis 12 kW, jedes F-Gas.</summary>
+        public const string GESETZ_FGAS_IV_SPLIT_BIS12_FGAS = "FGAS_IV_SPLIT_BIS12_FGAS";
+
+        /// <summary>Anhang IV Nr. 9 e und f: Split über 12 kW, F-Gase mit GWP ≥ 750 (2029), ≥ 150 (2033) —
+        /// eine Zeitreihe unter einem Schlüssel.</summary>
+        public const string GESETZ_FGAS_IV_SPLIT_UEBER12_GWP = "FGAS_IV_SPLIT_UEBER12_GWP";
+
         // =====================================================================
         // EEG-Photovoltaik — Schlüssel der Klasse EEG (Etappe P2, Saat-Generation 5)
         //   Persistenzwerte, eingefroren (Drei-Schichten-Regel).

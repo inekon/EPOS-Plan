@@ -142,7 +142,8 @@ namespace EPOS.Kern.Tests
             var zeilen = new List<string>();
             KesselBrennwertNachzug.Bericht b = KesselBrennwertNachzug.Ausfuehren(zeilen);
             Assert.Equal(kopien, b.Geprueft);
-            Assert.Equal(27, b.AusKatalog.Count);   // 23 + die Kopie des Kessels von 1007 im Referenzprojekt 1051 (KP3, RP1)
+            Assert.Equal(28, b.AusKatalog.Count);   // 23 + die Kopie des Kessels von 1007 im Referenzprojekt 1051 (KP3, RP1)
+                                                    // + deren Kopie im Referenzprojekt Vorheizen 1065
                                                     // + die Kopie des Kessels von 1018 im Prüfprojekt 1053
                                                     // + die Kopie des Kessels von 1029 im Referenzprojekt Erdsonde 1057
                                                     // + die Kopie im Referenzprojekt 1054 (AK1z, Kopie von 1052)
@@ -152,8 +153,8 @@ namespace EPOS.Kern.Tests
             Assert.Contains(b.AusBeschreibung, z => z.Contains("Kessel " + OHNE_KATALOG));
             Assert.Empty(b.OhneZuordnung);
             Assert.Empty(b.Mehrdeutig);
-            Assert.Equal(29, b.Gesetzt);   // 24 + 1051 (KP3, RP1) + 1053 + 1054 (AK1z) + 1057 + 1060 (UB-E2-d)
-            Assert.StartsWith("29 von " + kopien, zeilen[0]);
+            Assert.Equal(30, b.Gesetzt);   // 24 + 1051 (KP3, RP1) + 1053 + 1054 (AK1z) + 1057 + 1060 (UB-E2-d) + 1065
+            Assert.StartsWith("30 von " + kopien, zeilen[0]);
             Assert.Contains(zeilen, z => z.Contains(OHNE_KATALOG.ToString(CultureInfo.InvariantCulture)));
 
             Assert.Equal(kopien - ELEKTROKESSEL.Length, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 1"));

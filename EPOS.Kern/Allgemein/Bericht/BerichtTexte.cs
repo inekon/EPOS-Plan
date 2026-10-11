@@ -394,6 +394,10 @@ namespace WindowsFormsApplication1
             { "Kältestrom [MWh/a]", "Cooling electricity [MWh/a]" },
             { "aus dem Netz [MWh/a]", "from the grid [MWh/a]" },
             { "Stromträger", "Electricity carrier" },
+            // KM4-E2 (Konzept Kältemittel als Stammdatum 5.3): Spalte und Fußnote der Kälteerzeugertabelle.
+            { "Kältemittel", "Refrigerant" },
+            { Berichtstabellen.FUSSNOTE_KAELTEMITTEL,
+              "* For the planned year of commissioning, under Annex IV of Regulation (EU) 2024/573 only remaining stock or an exemption; see warnings. The check only warns, it never blocks." },
             { "Die Emissionen des Kältestroms sind betriebsbedingt über den Strom gerechnet; Kältemittelverluste sind nicht enthalten.",
               "Emissions of the cooling electricity are operational, calculated via the electricity; refrigerant losses are not included." },
 
