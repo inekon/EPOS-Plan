@@ -615,6 +615,8 @@ namespace WindowsFormsApplication1
                 plan = PlanBilden(a, vorgabe, Vorheizzeit(a, vorgabe));
             }
             Aufheizoptimierung.PlanSetzen(zone, plan);
+            // SA1b: Die Heizkurve folgt im Vorheizfenster dem Sollwert der Stunde (θ_T), nicht dem abgesenkten des Bauers.
+            GebaeudeModellEingang.VorlaufNachSollwertBilden(new[] { zone });
             return plan;
         }
 
@@ -685,6 +687,8 @@ namespace WindowsFormsApplication1
                         ? Unbeheizt(eingaenge[i])
                         : PlanBilden(analysen[i], vorgabe, gemeinsam ? tVGebaeude : tV[i]);
             for (int i = 0; i < plaene.Length; i++) Aufheizoptimierung.PlanSetzen(zonen[i], plaene[i]);
+            // SA1b: der gemeinsame Vorlauf am höchsten Sollwert der Stunde — im Vorheizfenster θ_T —, erst nach allen Plänen.
+            GebaeudeModellEingang.VorlaufNachSollwertBilden(zonen);
             return plaene;
         }
 
