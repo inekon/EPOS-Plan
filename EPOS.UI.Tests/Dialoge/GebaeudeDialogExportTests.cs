@@ -78,8 +78,18 @@ public class GebaeudeDialogExportTests : EposBunitContext
             if (knopftext is not null) p.Add(x => x.BtnExportText, knopftext);
         });
 
+    /// <summary>
+    /// Ein Knopf nach seinem Text; steht er nicht im Dialog, sondern in der Satz-Überlagerung (Stufe 4: Wohnfläche,
+    /// Simulation, Export, Gebäudetyp), öffnet ihn „Bearbeiten" der Detailzeile zuerst — wie die Hand.
+    /// </summary>
     private static IElement Knopf(IRenderedComponent<GebaeudeDialog> cut, string text)
-        => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+    {
+        if (text == "Gebäude in DB ändern...") text = WindowsFormsApplication1.MyResource.Resource.AUSWAHL_BTN_BEARBEITEN;
+        IElement? k = cut.FindAll("button").FirstOrDefault(b => b.TextContent.Trim() == text);
+        if (k is not null) return k;
+        GebaeudeDialogProbe.SatzOeffnen(cut);
+        return cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+    }
 
     [Fact]
     public void Ohne_Delegat_gibt_es_keinen_Exportknopf()
@@ -88,6 +98,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
         Assert.DoesNotContain(KNOPF, ohne.Markup);
 
         var mit = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, kopie: true) }, (_, _) => Exportgaben());
+        GebaeudeDialogProbe.SatzOeffnen(mit);
         Assert.Contains(KNOPF, mit.Markup);
         Assert.Equal("Die Daten des Gebäudes im Projekt ausgeben — als gbXML mit schematischer Raumgeometrie oder als IFC mit Zonen, Bauteilflächen und Schichtaufbauten ohne Geometrie",
                      Knopf(mit, KNOPF).GetAttribute("title"));
@@ -99,7 +110,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, kopie: true) }, (_, _) => Exportgaben());
         IElement knopf = Knopf(cut, KNOPF);
         Assert.Contains("epos-gebaeude-export", knopf.ClassName);
-        Assert.Equal("epos-leiste", knopf.ParentElement!.ClassName);
+        Assert.Equal("epos-leiste epos-gebaeude-satzknoepfe", knopf.ParentElement!.ClassName);
         Assert.DoesNotContain("epos-knopf--primaer", knopf.ClassName);
     }
 
@@ -169,7 +180,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
 
         Assert.True(cut.Instance.ExportOffen);
         Assert.Equal((4711, false), Assert.Single(gereicht));
-        Assert.Contains("Gebäude exportieren", cut.Find("[role=dialog]").TextContent);
+        Assert.Contains("Gebäude exportieren", cut.FindAll("[role=dialog]").Last().TextContent);
         Assert.Single(cut.FindComponents<GebaeudeExportDialog>());
     }
 
@@ -219,7 +230,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
 
         Knopf(cut, "Fläche und Verbrauch…").Click();
         Assert.True(cut.Instance.WohnflaecheOffen);
-        cut.Find("[role=dialog] .epos-leiste button.epos-knopf--primaer").Click();
+        cut.FindAll("[role=dialog] .epos-leiste button.epos-knopf--primaer").Last().Click();
         Assert.False(cut.Instance.WohnflaecheOffen);
 
         Knopf(cut, KNOPF).Click();
@@ -233,6 +244,7 @@ public class GebaeudeDialogExportTests : EposBunitContext
     {
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, kopie: true) }, (_, _) => Exportgaben(),
                            knopftext: "Exportieren und teilen…");
+        GebaeudeDialogProbe.SatzOeffnen(cut);
         Assert.Contains("Exportieren und teilen…", cut.Markup);
         Assert.DoesNotContain(">" + KNOPF + "<", cut.Markup);
     }

@@ -77,7 +77,11 @@
         </tbody>
     </table>
 
-    <p class="epos-rueckweg-hinweis" role="note">@Resource.KATRUECK_HINWEIS_KOSTEN</p>
+    @Zusatz
+    @if (KostenHinweis)
+    {
+        <p class="epos-rueckweg-hinweis" role="note">@Resource.KATRUECK_HINWEIS_KOSTEN</p>
+    }
     @if (!string.IsNullOrEmpty(BleibtText))
     {
         <p class="epos-rueckweg-hinweis epos-rueckweg-bleibt" role="note">@BleibtText</p>
@@ -102,6 +106,10 @@
     [Parameter, EditorRequired] public Rueckwegwege Wege { get; set; } = null!;
     /// <summary>Was im Projekt bleibt (je Gewerk, von der Hülle).</summary>
     [Parameter] public string BleibtText { get; set; } = "";
+    /// <summary>Weitere Angaben des Gewerks unter der Tabelle (Gebäude: Abweichungen und Kindzeilen aus der Vorschau).</summary>
+    [Parameter] public RenderFragment? Zusatz { get; set; }
+    /// <summary>Der Hinweis zu den Kosten (Satzvorlagen); ein Gewerk ohne Kosten am Satz (Gebäude) blendet ihn aus.</summary>
+    [Parameter] public bool KostenHinweis { get; set; } = true;
     /// <summary>Zu: <c>null</c> = abgebrochen, sonst die Meldung des Kerns nach dem Schreiben.</summary>
     [Parameter] public EventCallback<string?> Geschlossen { get; set; }
 

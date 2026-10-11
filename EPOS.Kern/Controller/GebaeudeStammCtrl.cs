@@ -1561,8 +1561,10 @@ namespace WindowsFormsApplication1
         /// <para>Alles in EINEM Vorgang; das Projekt bleibt unberührt. Benannte Absagen: kein Gebäude
         /// (oder keine Projektkopie), Name leer, Name vergeben.</para>
         /// </summary>
+        /// <param name="ursprungSetzen">Regel 5.2 Punkt 4 (<see cref="GebaeudeRueckweg"/>): im selben Vorgang bekommt die
+        /// Projektkopie den neuen Satz als Ursprung (<c>ID_Gebaeude_Stamm</c>), damit ein zweiter Rückweg überschreiben kann.</param>
         public static ProjektuebernahmeErgebnis AusProjektUebernehmen(int idProjektGebaeude, string name,
-                                                                      DateTime? stichtag = null)
+                                                                      DateTime? stichtag = null, bool ursprungSetzen = false)
         {
             DataRow r = idProjektGebaeude > 0 ? Projektkopiezeile(idProjektGebaeude) : null;
             if (r == null)
@@ -1621,6 +1623,11 @@ namespace WindowsFormsApplication1
                         return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler, zonen.Meldung);
                     }
 
+                    if (ursprungSetzen && DataRepository.SpaltenVonTabelle(TABLE_PROJ)
+                            .Exists(s => string.Equals(s, "ID_Gebaeude_Stamm", StringComparison.OrdinalIgnoreCase)))
+                        vorgang.Ausfuehren("UPDATE [" + TABLE_PROJ + "] SET [ID_Gebaeude_Stamm] = ? WHERE [ID] = ?",
+                                           new DbParam("@u", id), new DbParam("@gid", idGebaeude));
+
                     vorgang.Commit();
                     return new ProjektuebernahmeErgebnis(true, id, neuerName, Projektuebernahmeabsage.Keine, "",
                                                          befund, zonen.Zonen, zonen.Bauteile);
@@ -1632,6 +1639,17 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+
+        /// <summary>Die Rückfrage des Gebäude-Rückwegs (Regel 5.2): <see cref="GebaeudeRueckweg.Vorschau"/>.</summary>
+        public static GebaeudeRueckwegVorschau RueckwegVorschau(int idProjektGebaeude) => GebaeudeRueckweg.Vorschau(idProjektGebaeude);
+
+        /// <summary>Der Gebäude-Rückweg (Regel 5.2): neu unter <paramref name="name"/> oder den Ursprung überschreiben —
+        /// <see cref="GebaeudeRueckweg.Rueckweg"/>.</summary>
+        public static Rueckwegergebnis Rueckweg(int idProjektGebaeude, Rueckwegart art, string name, DateTime? stichtag = null)
+            => GebaeudeRueckweg.Rueckweg(idProjektGebaeude, art, name, stichtag);
+
+        /// <summary>Ist der Name im Gebäudekatalog vergeben (Rückfrage des Rückwegs)?</summary>
+        public static bool RueckwegNameBelegt(string name) => GebaeudeRueckweg.NameBelegt(name);
 
         /// <summary>
         /// Die Beschreibung des neuen Katalogsatzes: die der Projektkopie, darunter die Herkunft

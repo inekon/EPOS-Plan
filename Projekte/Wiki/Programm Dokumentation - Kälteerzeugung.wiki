@@ -14,7 +14,7 @@ In der Reihenfolge der Bedienung:
 # '''Kaskade''' – Eine Wärmepumpe im Kühlbetrieb kühlt nur, wenn sie unter ''Komponenten der Simulation'' in der Kaskade steht; die Kältemaschinen folgen ihr in der Reihenfolge ihrer Anlagen, die Pfeile im Bereich ''Kälte'' ändern diese Folge ([[#deckung|Deckung und Reihenfolge]]).
 # '''Kältestrom''' (wahlweise) – ein eigener Stromträger und ein eigener Zähler für den Kältestrom ([[#abrechnung|Stromträger und Abrechnung]]).
 
-[[Datei:Kaelteanlage_Kaeltemaschine.svg|mini|600px|Prinzipbild: Kältemaschine mit Trocken-Rückkühler, Kältespeicher und Kühlübergabe im Gebäude; der Kältestrom läuft über einen eigenen Zähler.]]
+[[Datei:Kaelteanlage_Kaeltemaschine.svg|mini|zentriert|800px|Prinzipbild: Kältemaschine mit Trocken-Rückkühler, Kältespeicher und Kühlübergabe im Gebäude; der Kältestrom läuft über einen eigenen Zähler.]]
 [[Datei:Bildschirmfoto_Kaeltemaschine.png|mini|zentriert|800px|Kältemaschinen im Projekt – Bildschirmfoto mit Beispieldaten.]]
 
 == Deckung und Reihenfolge ==
@@ -31,9 +31,9 @@ Diese Folge ist die '''Vorgabefolge'''. Die Folge der Erzeuger lässt sich im [[
 
 Was keine Stufe deckt, bleibt ungedeckt; das Laufprotokoll nennt Menge und Spitze. Ohne Kälteerzeuger bleibt der ganze Kältebedarf ungedeckt. Die Kühlung steht in der Knappheitsreihenfolge immer an letzter Stelle; ein Bedienelement für ihren Rang gibt es nicht.
 
-[[Datei:Kaelte_Kaskade.svg|mini|600px|Prinzipbild: Die Folge der Kälteerzeugung in einer Stunde und die Kälteschranke auf Stufe AK3.]]
+[[Datei:Kaelte_Kaskade.svg|mini|zentriert|800px|Prinzipbild: Die Folge der Kälteerzeugung in einer Stunde und die Kälteschranke im geschlossenen Kreis.]]
 
-{{Anker|kaelteschranke}}'''Kälteschranke auf Stufe AK3.''' Rechnet das Projekt mit der Anlagenkopplung ''geschlossener Kreis (AK3)'', wirkt die Kälteanlage auf das Gebäude zurück: In jeder Stunde begrenzt die '''Kälteschranke''' die Raumkühlung – die Leistung der Kälteerzeuger am Kühlvorlauf samt freier Kühlung und der entnehmbare Inhalt der Kältespeicher, nach Abzug der Prozesskälte. Greift sie, wird der Raum wärmer; das zeigt sich in den Überhitzungsstunden. Eine reversible Wärmepumpe fehlt an ihrem Kühltag der Heizseite und an ihrem Heiztag der Kälteseite. Auf den Stufen ''aus'' und ''Heizkreis (AK1)'' begrenzt die Kälteanlage das Gebäude nicht; ungedeckte Kälte steht dort als Rest im Laufprotokoll.
+{{Anker|kaelteschranke}}'''Kälteschranke im geschlossenen Kreis.''' Rechnet das Projekt mit der Anlagenkopplung ''geschlossener Kreis'', wirkt die Kälteanlage auf das Gebäude zurück: In jeder Stunde begrenzt die '''Kälteschranke''' die Raumkühlung – die Leistung der Kälteerzeuger am Kühlvorlauf samt freier Kühlung und der entnehmbare Inhalt der Kältespeicher, nach Abzug der Prozesskälte. Greift sie, wird der Raum wärmer; das zeigt sich in den Überhitzungsstunden. Eine reversible Wärmepumpe fehlt an ihrem Kühltag der Heizseite und an ihrem Heiztag der Kälteseite. Ohne Kopplung und im ''Heizkreis'' begrenzt die Kälteanlage das Gebäude nicht; ungedeckte Kälte steht dort als Rest im Laufprotokoll.
 
 == Kühlbetrieb der Wärmepumpe ==
 {{Anker|kuehlbetrieb}}
@@ -207,8 +207,6 @@ Fehlt dem gewählten Stromträger der Arbeitspreis, bleiben die Energiekosten au
 * '''Wirtschaftlichkeit''' – der Kältestrom ist Teil der Energiekosten und der Emissionen. Trägt ein Kälteerzeuger einen eigenen Stromträger, steht sein Kältestrom in den Energiekosten je Anlage als eigene Zeile ''Kältestrom …''; bei eigenem Zähler stehen darunter ''Grundpreis Kältestromzähler …'' und ''Leistungspreis Kältestromzähler …''. Den Leistungspreis rechnet EPOS-Plan aus einem frischen Lauf, wie beim Netzbezug des Projekts.
 
 Die Zahlen des Kältebedarfs – Kältelast, Stunden mit Kühlbedarf, Überhitzungsstunden – beschreibt [[Programm Dokumentation/Kühlung#ergebnisse|Kühlung: Ergebnisse]].
-
-[[Datei:Diagramm_Kaelteproduktion.png|mini|zentriert|800px|Kälteproduktion als Jahresganglinie: die gedeckte Kälte des Kälteerzeugers, darüber die ungedeckte Kälte, als Linie der Kältebedarf. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
 == Grenzen ==
 {{Anker|grenzen}}

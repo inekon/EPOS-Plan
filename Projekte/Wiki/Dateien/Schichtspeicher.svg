@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Schichtspeicher: Temperatur nach Höhe
+
+Inhalt: Ein Pufferspeicher in vier Schichten, oben heiß, unten kalt, dazwischen die
+Übergangszone. Der Erzeuger speist seinen Vorlauf oben ein und holt seinen Rücklauf unten
+ab; der Verbraucher entnimmt oben und gibt seinen Rücklauf unten zurück. Rechts neben dem
+Speicher steht der Temperaturverlauf über der Höhe.
+
+Annahmen: Vorlauf rund 60 °C, Rücklauf rund 30 °C, Übergangszone rund 45 °C. Die Schichten
+sind gleich groß. Beim Laden wandert die Übergangszone nach unten, beim Entladen nach oben.
+
+Darstellung: Vorlauf durchgezogen, Rücklauf gestrichelt in derselben Farbe, Pfeile in
+Fließrichtung. Farben nach Vorlage:Diagrammfarbe (waerme, speicher).
+Prinzipbild mit gerundeten Beispielwerten, keinem Produkt zugeordnet.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs>
+  <linearGradient id="schichtung" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dba371"/><stop offset="0.45" stop-color="#e2b287"/><stop offset="0.58" stop-color="#f3dfcd"/><stop offset="0.72" stop-color="#d6ecef"/><stop offset="1" stop-color="#b3dde4"/></linearGradient>
+  <marker id="pfeil-w" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#c56a1a"/></marker>
+  <marker id="pfeil-k" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#2f7f8f"/></marker>
+</defs>
+  <rect x="1" y="1" width="898" height="618" rx="12" fill="#fcfcfb" stroke="#d0d7de" stroke-width="1"/>
+  <text x="28" y="38" font-size="18" fill="#1f2328" font-weight="600">Schichtspeicher: oben heiß, unten kalt</text>
+  <text x="28" y="61" font-size="14" fill="#57606a">Vorlauf oben ein und aus, Rücklauf unten; dazwischen wandert die Übergangszone</text>
+  <!-- Erzeuger -->
+  <rect x="40" y="150" width="150" height="100" rx="8" fill="#f8ede4" stroke="#c56a1a" stroke-width="2"/>
+  <text x="115" y="188" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Erzeuger</text>
+  <text x="115" y="207" font-size="13" fill="#57606a" text-anchor="middle">Wärmepumpe, Kessel,</text>
+  <text x="115" y="224" font-size="13" fill="#57606a" text-anchor="middle">Solarthermie</text>
+  <path d="M190,170 L245,170 L245,140 L292,140" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-w)"/>
+  <text x="196" y="128" font-size="13" fill="#1f2328">Vorlauf 60 °C</text>
+  <path d="M300,480 L180,480 L180,258" fill="none" stroke="#2f7f8f" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5" marker-end="url(#pfeil-k)"/>
+  <text x="292" y="470" font-size="13" fill="#1f2328" text-anchor="end">Rücklauf 30 °C</text>
+  <text x="30" y="300" font-size="13" fill="#1f2328" font-weight="600">Laden</text>
+  <text x="30" y="318" font-size="13" fill="#57606a">Die Wärme füllt die</text>
+  <text x="30" y="335" font-size="13" fill="#57606a">Schichten von oben</text>
+  <text x="30" y="352" font-size="13" fill="#57606a">nach unten auf; die</text>
+  <text x="30" y="369" font-size="13" fill="#57606a">Übergangszone sinkt.</text>
+  <text x="30" y="398" font-size="13" fill="#57606a">Kalter Rücklauf unten:</text>
+  <text x="30" y="415" font-size="13" fill="#57606a">gut für Wärmepumpe,</text>
+  <text x="30" y="432" font-size="13" fill="#57606a">Brennwert und Solar.</text>
+  <!-- Speicher mit vier Schichten -->
+  <rect x="300" y="100" width="140" height="420" rx="70" ry="24" fill="url(#schichtung)" stroke="#7b4fa3" stroke-width="2"/>
+  <path d="M302,215 L438,215 M300,310 L440,310 M300,405 L440,405" stroke="#57606a" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="370" y="160" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">Schicht 1</text>
+  <text x="370" y="177" font-size="13" fill="#1f2328" text-anchor="middle">heiß, 60 °C</text>
+  <text x="370" y="255" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">Schicht 2</text>
+  <text x="370" y="272" font-size="13" fill="#1f2328" text-anchor="middle">58 °C</text>
+  <text x="370" y="350" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">Schicht 3</text>
+  <text x="370" y="367" font-size="13" fill="#1f2328" text-anchor="middle">Übergang, 45 °C</text>
+  <text x="370" y="445" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">Schicht 4</text>
+  <text x="370" y="462" font-size="13" fill="#1f2328" text-anchor="middle">kalt, 30 °C</text>
+  <text x="370" y="545" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Pufferspeicher</text>
+  <!-- Verbraucher -->
+  <path d="M440,140 L470,140 L470,90 L795,90 L795,142" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-w)"/>
+  <text x="700" y="82" font-size="13" fill="#1f2328" text-anchor="end">Entnahme oben</text>
+  <rect x="720" y="150" width="150" height="100" rx="8" fill="#f8ede4" stroke="#c56a1a" stroke-width="2"/>
+  <text x="795" y="188" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Verbraucher</text>
+  <text x="795" y="207" font-size="13" fill="#57606a" text-anchor="middle">Heizkreis,</text>
+  <text x="795" y="224" font-size="13" fill="#57606a" text-anchor="middle">Brauchwasser</text>
+  <path d="M720,235 L705,235 L705,565 L470,565 L470,480 L448,480" fill="none" stroke="#2f7f8f" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5" marker-end="url(#pfeil-k)"/>
+  <text x="690" y="557" font-size="13" fill="#1f2328" text-anchor="end">Rücklauf unten zurück</text>
+  <text x="720" y="300" font-size="13" fill="#1f2328" font-weight="600">Entladen</text>
+  <text x="720" y="318" font-size="13" fill="#57606a">Der Rücklauf schiebt</text>
+  <text x="720" y="335" font-size="13" fill="#57606a">das heiße Wasser</text>
+  <text x="720" y="352" font-size="13" fill="#57606a">nach oben hinaus;</text>
+  <text x="720" y="369" font-size="13" fill="#57606a">die Übergangszone</text>
+  <text x="720" y="386" font-size="13" fill="#57606a">steigt.</text>
+  <!-- Temperaturverlauf über der Höhe -->
+  <text x="600" y="112" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">Temperatur über der Höhe</text>
+  <rect x="521" y="310" width="164" height="95" fill="#eaeef2"/>
+  <text x="527" y="327" font-size="12" fill="#57606a">Übergangszone</text>
+  <path d="M520,120 L520,500 L690,500" fill="none" stroke="#57606a" stroke-width="1.4"/>
+  <path d="M530,500 L530,506 M600,500 L600,506 M670,500 L670,506" stroke="#57606a" stroke-width="1.4"/>
+  <text x="530" y="522" font-size="12" fill="#57606a" text-anchor="middle">30</text>
+  <text x="600" y="522" font-size="12" fill="#57606a" text-anchor="middle">45</text>
+  <text x="670" y="522" font-size="12" fill="#57606a" text-anchor="middle">60 °C</text>
+  <text x="512" y="132" font-size="12" fill="#57606a" text-anchor="end">oben</text>
+  <text x="512" y="498" font-size="12" fill="#57606a" text-anchor="end">unten</text>
+  <path d="M670,120 L667,215 C664,270 660,295 650,315 C635,340 615,350 600,357 C585,365 565,385 548,410 C538,425 532,450 530,500" fill="none" stroke="#7b4fa3" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Legende -->
+  <path d="M40,598 L80,598" stroke="#c56a1a" stroke-width="3"/>
+  <text x="88" y="603" font-size="13" fill="#1f2328">Vorlauf, heiß</text>
+  <path d="M200,598 L240,598" stroke="#2f7f8f" stroke-width="3" stroke-dasharray="8 5"/>
+  <text x="248" y="603" font-size="13" fill="#1f2328">Rücklauf, kalt</text>
+  <path d="M370,598 L410,598" stroke="#7b4fa3" stroke-width="3"/>
+  <text x="418" y="603" font-size="13" fill="#1f2328">Speichertemperatur</text>
+  <text x="872" y="603" font-size="12" fill="#57606a" text-anchor="end">Prinzipbild, Beispielwerte gerundet</text>
+</svg>

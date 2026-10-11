@@ -4516,6 +4516,30 @@ Please run the simulation with photovoltaics first.</value>
   <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
     <value>{0} data rows read → no interval: {1}</value>
   </data>
+  <data name="IMPORT_PROBE_WERTE" xml:space="preserve">
+    <value>{0} data rows read → {1} values in {2}</value>
+  </data>
+  <data name="IMPORT_PROBE_ABGELEHNT" xml:space="preserve">
+    <value>{0} data rows read → rejected: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_WERTEANZAHL" xml:space="preserve">
+    <value>The file supplies {0} values; exactly {1} are expected.</value>
+  </data>
+  <data name="IMPORT_PROBE_SUMME" xml:space="preserve">
+    <value>Annual total {0} {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_NENNLEISTUNG" xml:space="preserve">
+    <value>Peak power {0} {1}</value>
+  </data>
+  <data name="IMPORT_TITEL_QUELLPROFIL" xml:space="preserve">
+    <value>Import source profile – format and preview</value>
+  </data>
+  <data name="IMPORT_LBL_JAHR" xml:space="preserve">
+    <value>Year of the series:</value>
+  </data>
+  <data name="IMPORT_MSG_FORMAT_ABGELEHNT" xml:space="preserve">
+    <value>The file does not match the format and is not imported: {0}</value>
+  </data>
   <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
     <value>hour</value>
   </data>
@@ -51423,6 +51447,15 @@ chart</value>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>A worksheet only exists for an Excel workbook.</value>
   </data>
+  <data name="KI_DLG_GIO_JAHR_ERL" xml:space="preserve">
+    <value>The calendar year of the series — only for formats with a year field (such as spot prices); it fixes weekdays and holidays.</value>
+  </data>
+  <data name="KI_GIO_FORMAT_FEST" xml:space="preserve">
+    <value>This format fixes the field; it is not shown.</value>
+  </data>
+  <data name="KI_GIO_KEIN_JAHR" xml:space="preserve">
+    <value>A year field only exists for formats with a year (such as spot prices).</value>
+  </data>
   <data name="KI_DLG_SPOT_BEZEICHNER_ERL" xml:space="preserve">
     <value>The name under which the price series is stored; if empty, it is prefilled with the file name when the file is chosen.</value>
   </data>
@@ -52182,6 +52215,189 @@ chart</value>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Skipped (assigned in the project): {0}</value>
   </data>
+  <data name="BPF_BTN_KAT_TYP_AENDERN" xml:space="preserve">
+    <value>Change type…</value>
+  </data>
+  <data name="BPF_BTN_KAT_DB_AENDERN" xml:space="preserve">
+    <value>Edit in database…</value>
+  </data>
+  <data name="BPF_BTN_KAT_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="BPF_BTN_KAT_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_LEISTE" xml:space="preserve">
+    <value>Simulation…</value>
+  </data>
+  <data name="BPF_HINW_SIMULATION" xml:space="preserve">
+    <value>Calculates the demand with the state of this dialog and shows key figures, months and chart.</value>
+  </data>
+  <data name="BPF_HINW_BEARBEITEN_EINER" xml:space="preserve">
+    <value>“Edit…” acts on exactly one project row.</value>
+  </data>
+  <data name="BPF_HINW_DB_AENDERN" xml:space="preserve">
+    <value>Opens the selected catalogue record in the catalogue editor.</value>
+  </data>
+  <data name="BPF_HINW_TYP_AENDERN" xml:space="preserve">
+    <value>Opens the weekly hourly profiles of the types.</value>
+  </data>
+  <data name="BPF_ZF_TYP" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="BPF_ZF_JAHRESSUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="BPF_ZF_KALENDER" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="BPF_ZF_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="BPF_GRP_SATZ" xml:space="preserve">
+    <value>Record</value>
+  </data>
+  <data name="BPF_MSG_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Assigned in the project and skipped: {0}.</value>
+  </data>
+  <data name="BPF_TITEL_KAELTE" xml:space="preserve">
+    <value>Cooling demand profiles</value>
+  </data>
+  <data name="BPF_LBL_PROJEKTLISTE_KAELTE" xml:space="preserve">
+    <value>Selected cooling demands in the project</value>
+  </data>
+  <data name="BPF_LBL_KATALOG_KAELTE" xml:space="preserve">
+    <value>Cooling demand database</value>
+  </data>
+  <data name="BPF_LBL_JAHRESVERBRAUCH_KAELTE" xml:space="preserve">
+    <value>annual cooling demand:</value>
+  </data>
+  <data name="BPF_LBL_SUMME_KAELTE" xml:space="preserve">
+    <value>Total of all selected cooling demands:</value>
+  </data>
+  <data name="BPF_HILFE_BERECHNUNG_KAELTE" xml:space="preserve">
+    <value>Calculation: cooling demand</value>
+  </data>
+  <data name="BPF_BTN_DB_AENDERN_KAELTE" xml:space="preserve">
+    <value>Edit cooling demand in database</value>
+  </data>
+  <data name="BPF_BTN_DB_NEU_KAELTE" xml:space="preserve">
+    <value>New cooling demand in database</value>
+  </data>
+  <data name="BPF_BTN_DB_LOESCHEN_KAELTE" xml:space="preserve">
+    <value>Delete cooling demand in database</value>
+  </data>
+  <data name="BPF_BTN_TYP_AENDERN_KAELTE" xml:space="preserve">
+    <value>Edit type in database</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_KAELTE" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="BADM_TITEL_KAELTE" xml:space="preserve">
+    <value>Cooling demand management</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_KAELTE" xml:space="preserve">
+    <value>Cooling demands in the database</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_KAELTE" xml:space="preserve">
+    <value>Annual cooling demand</value>
+  </data>
+  <data name="BADM_BTN_AENDERN_KAELTE" xml:space="preserve">
+    <value>Edit cooling demand…</value>
+  </data>
+  <data name="BADM_BTN_NEU_KAELTE" xml:space="preserve">
+    <value>New cooling demand…</value>
+  </data>
+  <data name="BADM_BTN_TYP_KAELTE" xml:space="preserve">
+    <value>Edit cooling type…</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_KAELTE" xml:space="preserve">
+    <value>Delete cooling demand</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_KAELTE" xml:space="preserve">
+    <value>Please select a cooling demand.</value>
+  </data>
+  <data name="BTYP_TITEL_KAELTE" xml:space="preserve">
+    <value>Cooling demand input</value>
+  </data>
+  <data name="BTYP_LBL_TYP_KAELTE" xml:space="preserve">
+    <value>Cooling type:</value>
+  </data>
+  <data name="BTYP_MSG_TYP_KAELTE" xml:space="preserve">
+    <value>Select a cooling type!</value>
+  </data>
+  <data name="BPRO_TITEL_KAELTE" xml:space="preserve">
+    <value>Cooling types hourly distribution</value>
+  </data>
+  <data name="BPRO_LBL_LISTE_KAELTE" xml:space="preserve">
+    <value>List of cooling types in the database:</value>
+  </data>
+  <data name="BPRO_LBL_BESCHR_KAELTE" xml:space="preserve">
+    <value>Description of the selected cooling type:</value>
+  </data>
+  <data name="GEB_ZF_UWERTE" xml:space="preserve">
+    <value>U-values</value>
+  </data>
+  <data name="GEB_ZF_UWERTE_WERT" xml:space="preserve">
+    <value>wall {0} · window {1} · roof {2} · ground {3} W/(m²·K)</value>
+  </data>
+  <data name="GEB_ZF_AUSRICHTUNG" xml:space="preserve">
+    <value>Orientation</value>
+  </data>
+  <data name="GEB_ZF_AUSRICHTUNG_WERT" xml:space="preserve">
+    <value>Plan top {0}°</value>
+  </data>
+  <data name="GEB_ZF_KUEHLUNG" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="GEB_ZF_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEB_RUECKWEG_BLEIBT" xml:space="preserve">
+    <value>The project keeps the building's assignment, floor area and orientation.</value>
+  </data>
+  <data name="GEB_RUECKWEG_ABWEICHUNGEN" xml:space="preserve">
+    <value>Header columns differing from the origin “{0}”: {1}</value>
+  </data>
+  <data name="GEB_RUECKWEG_ABW_ZEILE" xml:space="preserve">
+    <value>{0} ({1} → {2})</value>
+  </data>
+  <data name="GEB_RUECKWEG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>No header columns differ from the origin “{0}”.</value>
+  </data>
+  <data name="GEB_RUECKWEG_KINDZEILEN" xml:space="preserve">
+    <value>Child rows in the project / at the origin: {0}</value>
+  </data>
+  <data name="GEB_RUECKWEG_KIND_ZEILE" xml:space="preserve">
+    <value>{0} {1} / {2}</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_BAUTEILE" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_LUFTSTROEME" xml:space="preserve">
+    <value>Air flows</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_KALENDER" xml:space="preserve">
+    <value>Calendars</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_VORGABEN" xml:space="preserve">
+    <value>Setpoint rows</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_PERIODEN" xml:space="preserve">
+    <value>Periods</value>
+  </data>
+  <data name="GEB_SPERRE_RUECKWEG_MEHRERE" xml:space="preserve">
+    <value>Only for exactly one selected project building – transfer several buildings one after another.</value>
+  </data>
+  <data name="GEB_SPERRE_BEARBEITEN_EINER" xml:space="preserve">
+    <value>“Edit…” works on exactly one selected record.</value>
+  </data>
+  <data name="GEB_MSG_LOESCHEN_N" xml:space="preserve">
+    <value>{0} buildings deleted.</value>
+  </data>
   <data name="BV_VORH_VERFAHREN" xml:space="preserve">
     <value>Preheating – method</value>
   </data>
@@ -52355,6 +52571,51 @@ chart</value>
   </data>
   <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
     <value>Zone</value>
+  </data>
+  <data name="IMPORT_ACHSE_SPOTPREIS" xml:space="preserve">
+    <value>Spot price [ct/kWh]</value>
+  </data>
+  <data name="IMPORT_TITEL_SPOTPREIS" xml:space="preserve">
+    <value>Import spot market prices – format and preview</value>
+  </data>
+  <data name="IMPORT_PROBE_SPOTPREIS" xml:space="preserve">
+    <value>Year of file {0} · mean {1} ct/kWh · range {2} to {3} ct/kWh</value>
+  </data>
+  <data name="IMPORT_TITEL_TWW_MESSREIHE" xml:space="preserve">
+    <value>Import measured series – format and preview</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_ENERGIE" xml:space="preserve">
+    <value>Draw-off energy [kWh]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_VOLUMEN" xml:space="preserve">
+    <value>Draw-off volume [m³]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAGESSTUNDE" xml:space="preserve">
+    <value>Hour of day [h]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAG_DER_REIHE" xml:space="preserve">
+    <value>Day of series</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE" xml:space="preserve">
+    <value>{0} days read · shown: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE_TAGESREIHE" xml:space="preserve">
+    <value>{0} days read · shown: the first {1} days</value>
+  </data>
+  <data name="KI_DLG_SPOT_JAHR_ERL" xml:space="preserve">
+    <value>The year of the checked series — from the year field of “Format and preview”; the year of the file is proposed. It sets weekdays and public holidays.</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_NAME" xml:space="preserve">
+    <value>File preview</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_ERL" xml:space="preserve">
+    <value>The key figure line from “Format and preview”: days read and the day shown in the day view.</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_NAME" xml:space="preserve">
+    <value>Chart type</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
+    <value>How the preview shows the series read: year (annual profile) or day (day view of the DHW measured series).</value>
   </data>
 </root>
 

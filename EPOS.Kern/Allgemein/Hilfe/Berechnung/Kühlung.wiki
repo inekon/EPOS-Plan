@@ -173,7 +173,7 @@ Größen, die der Lauf je Stunde, je Tag oder je Jahr bildet.
 |-
 | <math>\vartheta_{\mathrm{V,K}}(t)</math> || Kühlvorlauf der Kühlkurve || °C || (23)
 |-
-| <math>P_{\mathrm{KS}}(t)</math> || Kälteschranke der Raumkühlung (Stufe AK3) || kW || (24)
+| <math>P_{\mathrm{KS}}(t)</math> || Kälteschranke der Raumkühlung (geschlossener Kreis) || kW || (24)
 |-
 | <math>N_{\mathrm{K}}</math> || Netzbezug des Kältestroms || kWh/a || (25)
 |-
@@ -429,9 +429,9 @@ Die Leistung <math>Q_{\mathrm{av}}(t)</math> bleibt am Randwert. Jede Stunde au�
 === Schritt 9 — Kühlvorlauf je Stunde und Kälteschranke ===
 {{Anker|kaelteschranke}}
 
-Ohne Anlagenkopplung und auf der Stufe ''Heizkreis (AK1)'' rechnet jeder Kälteerzeuger mit seinem festen Kühl- bzw. Kaltwasservorlauf, und das Gebäude wird durch die Kälteanlage nicht begrenzt; ungedeckte Kälte steht als Rest im Laufprotokoll.
+Ohne Anlagenkopplung und im ''Heizkreis'' rechnet jeder Kälteerzeuger mit seinem festen Kühl- bzw. Kaltwasservorlauf, und das Gebäude wird durch die Kälteanlage nicht begrenzt; ungedeckte Kälte steht als Rest im Laufprotokoll.
 
-Auf der Stufe ''geschlossener Kreis (AK3)'' rechnet die Kältekaskade je Stunde nach der Wärmestunde im Kreis. Fährt ein Gebäude eine '''Kühlkurve''', verlangt es den Vorlauf:
+Im geschlossenen Kreis rechnet die Kältekaskade je Stunde nach der Wärmestunde im Kreis. Fährt ein Gebäude eine '''Kühlkurve''', verlangt es den Vorlauf:
 
 : <math>\displaystyle \vartheta_{\mathrm{V,K}}(t) = \begin{cases} \vartheta_{\mathrm{V,F}} & \vartheta_{\mathrm{a}}(t) \le \vartheta_{\mathrm{max}} \\ \vartheta_{\mathrm{V,F}} + \left(\vartheta_{\mathrm{V,K,N}} - \vartheta_{\mathrm{V,F}}\right) \cdot \frac{\vartheta_{\mathrm{a}}(t) - \vartheta_{\mathrm{max}}}{\vartheta_{\mathrm{a,K,N}} - \vartheta_{\mathrm{max}}} & \vartheta_{\mathrm{max}} < \vartheta_{\mathrm{a}}(t) < \vartheta_{\mathrm{a,K,N}} \\ \vartheta_{\mathrm{V,K,N}} & \vartheta_{\mathrm{a}}(t) \ge \vartheta_{\mathrm{a,K,N}} \end{cases}</math> &nbsp;&nbsp;(23)
 :: <math>\vartheta_{\mathrm{V,K}}(t)</math> – Kühlvorlauf der Kurve [°C]
@@ -500,7 +500,7 @@ Stünden zwei solche Maschinen in der Anlage, liefe bei 40&nbsp;kWh nach (10) nu
 * '''Rückkühlung vereinfacht.''' Die Rückkühltemperatur folgt aus Außen- oder Feuchtkugeltemperatur mit fester Grädigkeit; die wassergekühlte Maschine rechnet mit festem Kühlwasser. Die freie Kühlung ist ein Ein-Aus-Fall je Stunde, ohne Teilentlastung des Verdichters.
 * '''Keine Kältemittelemissionen''' und keine Verluste eines Kältenetzes.
 * '''Rückwirkung nur an der Sonde.''' Die Kühlwärme einer Wärmepumpe mit Erdwärmesonde regeneriert das Sondenfeld; Kältemaschinen kühlen gegen die Umgebung.
-* '''Begrenzung des Gebäudes nur auf AK3.''' Auf den übrigen Stufen rechnet das Gebäude seine Kälte unbegrenzt durch die Erzeuger; ungedeckte Kälte bleibt Rest.
+* '''Begrenzung des Gebäudes nur im geschlossenen Kreis.''' Ohne Kopplung und im Heizkreis rechnet das Gebäude seine Kälte unbegrenzt durch die Erzeuger; ungedeckte Kälte bleibt Rest.
 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
@@ -509,7 +509,7 @@ Stünden zwei solche Maschinen in der Anlage, liefe bei 40&nbsp;kWh nach (10) nu
 * '''Simulationsergebnis, Reiter „Ergebnis", Blatt „Kälteproduktion"''' — je Kälteerzeuger die gedeckte Kälte der Stunde, die ungedeckte Kälte und der Kältebedarf, wahlweise als Dauerlinie; darunter je Kältemaschine mit Teillastrechnung Taktstrom, Starts, Teillastanteil nach (27), mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom.
 * '''Ergebnis je Kältemaschine''' — Anzahl, Kälteproduktion, Stromverbrauch, Hilfsstrom, Kälte und Stunden der freien Kühlung, Taktstunden, Unterdeckung und Stunden an der Leistungsgrenze.
 * '''Ergebnis je Zone''' — Kältespitze und Stunden mit Kältebedarf der Zone.
-* '''Laufprotokoll''' — Kälte-Restbedarf an Kühl- und Heiztagen, gesperrter Heizkanal an Kühltagen, Randstunden der Kennlinien, Nasskühler ohne Luftfeuchte, angehobener Kaltwasservorlauf, auf AK3 die Stunden an der Kälteschranke.
+* '''Laufprotokoll''' — Kälte-Restbedarf an Kühl- und Heiztagen, gesperrter Heizkanal an Kühltagen, Randstunden der Kennlinien, Nasskühler ohne Luftfeuchte, angehobener Kaltwasservorlauf, im geschlossenen Kreis die Stunden an der Kälteschranke.
 * '''Bericht''' und '''Wirtschaftlichkeit''' — Abschnitt „Kältebedarf und -deckung" mit Kälteerzeugung, Kältestrom, Jahresarbeitszahl Kälte, Netzbezug, Kosten und CO₂ des Kältestroms; der Kältestrom geht in Energiekosten und Emissionen ein.
 
 == Bezüge ==

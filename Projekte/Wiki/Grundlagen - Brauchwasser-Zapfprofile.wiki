@@ -10,7 +10,7 @@ Der Warmwasserbedarf bestimmt den Sommerbetrieb der Wärmeerzeuger allein und en
 
 Die Energie einer Zapfung folgt aus Volumen und Temperaturhub: <math>Q = V \cdot \rho \cdot c_{\mathrm{p}} \cdot (\vartheta_{\mathrm{Zapf}} - \vartheta_{\mathrm{KW}})</math>. Weil das Kaltwasser im Sommer wärmer ist als im Winter, ändert sich die Energie bei gleichem Volumen über das Jahr; EPOS-Plan führt dafür einen Jahresgang des Kaltwassers mit Jahresmittel und Amplitude.
 
-[[Datei:Zapfprofil_Tagesgang.svg|mini|600px|Prinzipbild: Tagesgang einer Wohnzone mit Morgen- und Abendspitze, Werktag und Sonntag; Feiertage tragen den Sonntagsgang.]]
+[[Datei:Zapfprofil_Tagesgang.svg|mini|zentriert|800px|Prinzipbild: Tagesgang einer Wohnzone mit Morgen- und Abendspitze, Werktag und Sonntag; Feiertage tragen den Sonntagsgang.]]
 
 == So rechnet EPOS-Plan ==
 {{Anker|so-rechnet-epos-plan}}

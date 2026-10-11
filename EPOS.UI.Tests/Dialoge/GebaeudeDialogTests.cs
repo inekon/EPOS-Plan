@@ -107,8 +107,18 @@ public class GebaeudeDialogTests : EposBunitContext
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
     }
 
+    /// <summary>
+    /// Ein Knopf nach seinem Text; steht er nicht im Dialog, sondern in der Satz-Überlagerung (Stufe 4: Wohnfläche,
+    /// Simulation, Export, Gebäudetyp), öffnet ihn „Bearbeiten" der Detailzeile zuerst — wie die Hand.
+    /// </summary>
     private static IElement Knopf(IRenderedComponent<GebaeudeDialog> cut, string text)
-        => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+    {
+        if (text == "Gebäude in DB ändern...") text = WindowsFormsApplication1.MyResource.Resource.AUSWAHL_BTN_BEARBEITEN;
+        IElement? k = cut.FindAll("button").FirstOrDefault(b => b.TextContent.Trim() == text);
+        if (k is not null) return k;
+        GebaeudeDialogProbe.SatzOeffnen(cut);
+        return cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+    }
 
     /// <summary>
     /// Der Übernahmeknopf — seit Befund W9‑B‑3 mit Klartext, seit dem
@@ -128,7 +138,7 @@ public class GebaeudeDialogTests : EposBunitContext
     /// <summary>Wählt einen Katalogsatz über den Wahlknopf seiner Zeile — wie die Hand.</summary>
     private static void KatalogWaehlen(IRenderedComponent<GebaeudeDialog> cut, string name)
         => Katalogzeilen(cut).First(tr => tr.TextContent.Contains(name, StringComparison.Ordinal))
-                             .QuerySelector("button.epos-anlagenwahl")!.Click();
+                             .QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl")!.Click();
 
     /// <summary>Die Namen der gezeichneten Katalogzeilen.</summary>
     private static string[] Katalognamen(IRenderedComponent<GebaeudeDialog> cut)
@@ -149,8 +159,8 @@ public class GebaeudeDialogTests : EposBunitContext
         IRenderedComponent<GebaeudeDialog> cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile>());
 
         IElement satz = cut.Find(".epos-zweispalten-satz");
-        Assert.Empty(satz.Children);
         Assert.Empty(satz.QuerySelectorAll("button, input, textarea"));
+        Assert.True(cut.Find("button.epos-zweispalten-bearbeiten").HasAttribute("disabled"));
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_SATZ_LEER, cut.Find(".epos-zweispalten-satzname").TextContent.Trim());
     }
 
@@ -180,6 +190,7 @@ public class GebaeudeDialogTests : EposBunitContext
     public void Der_Feldbestand_der_Karte_steht()
     {
         var cut = Aufbauen();
+        GebaeudeDialogProbe.SatzOeffnen(cut);
 
         Assert.Contains("Eingabe der Gebäudedaten", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Contains("Eingabe der Energiedaten", cut.Markup);
@@ -198,7 +209,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(6, cut.FindAll("input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 
-        foreach (string t in new[] { "Fläche und Verbrauch…", "Gebäude in DB ändern...",
+        foreach (string t in new[] { "Fläche und Verbrauch…", WindowsFormsApplication1.MyResource.Resource.AUSWAHL_BTN_BEARBEITEN,
                                      "Gebäude in DB neu...", "Gebäude in DB löschen",
                                      "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
@@ -226,6 +237,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.DoesNotContain("Gebäudetyp in DB ändern...", cut.Markup);
 
         var cut2 = Aufbauen(gebaeudetypGaben: () => new Dictionary<string, object>());
+        GebaeudeDialogProbe.SatzOeffnen(cut2);
         Assert.Contains("Gebäudetyp in DB ändern...", cut2.Markup);
     }
 
@@ -251,13 +263,13 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(6, cut.FindAll(".epos-katalogliste thead .epos-trichter").Count);
 
         Assert.Equal(new[] { "Haus 1990", "Haus 2010", "Hotel Sonne" }, Katalognamen(cut));
-        Assert.Equal(3, cut.FindAll(".epos-katalogliste tbody button.epos-anlagenwahl").Count);
-        Assert.Equal("Wahl", cut.Find(".epos-katalogliste thead th.epos-spalte-wahl").TextContent.Trim());
+        // Stufe 4 (UeS2, Muster BHKW): Die Zeile ist die Wahl, das Kästchen wählt mehrere - keine Wahlspalte mehr.
+        Assert.Empty(cut.FindAll(".epos-katalogliste tbody button.epos-anlagenwahl"));
+        Assert.Equal(3, cut.FindAll(".epos-katalogliste tbody .epos-zeilenzelle--name").Count);
 
         Katalogliste liste = cut.FindComponent<Katalogliste>().Instance;
-        Assert.Equal(53f, liste.Zeilenhoehe);
-        Assert.Equal(Raster<Katalogfilterzeile>.ZEILENHOEHE, liste.Zeilenhoehe);
-        Assert.False(liste.ZeileIstWahl);
+        Assert.Equal(Katalogliste.ZEILENHOEHE_ZEILENWAHL, liste.Zeilenhoehe);   // 46 px: die Zeile ist die Wahl
+        Assert.True(liste.ZeileIstWahl);
         Assert.Empty(cut.FindAll(".epos-katalog-vergleichknopf"));
         Assert.Contains("3 von 3", cut.Find(".epos-katalog-treffer").TextContent);
     }
@@ -433,7 +445,7 @@ public class GebaeudeDialogTests : EposBunitContext
         var zeilen = new List<GebaeudeProjektZeile>();
         var cut = Aufbauen(zeilen: zeilen, geaendert: () => gemeldet = true);
 
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();   // eine Katalogzeile
+        Katalogzeilen(cut).Last().QuerySelector(".epos-zeilenzelle--name")!.Click();   // eine Katalogzeile
         Uebernehmen(cut).Click();
 
         Assert.Single(zeilen);
@@ -457,7 +469,7 @@ public class GebaeudeDialogTests : EposBunitContext
         zeilen[0].IdKatalog = 17;
         var cut = Aufbauen(zeilen: zeilen);
 
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();   // eine Katalogzeile
+        Katalogzeilen(cut).Last().QuerySelector(".epos-zeilenzelle--name")!.Click();   // eine Katalogzeile
         Uebernehmen(cut).Click();
 
         Assert.Equal(2, zeilen.Count);
@@ -493,6 +505,7 @@ public class GebaeudeDialogTests : EposBunitContext
     public void Eine_Projektzeile_fuellt_den_Detailblock_aus_der_Zeile()
     {
         var cut = Aufbauen();
+        GebaeudeDialogProbe.SatzOeffnen(cut);
 
         Assert.Contains("Haus 1990", cut.Markup);
         Assert.Contains("Ein Haus", cut.Markup);
@@ -507,7 +520,8 @@ public class GebaeudeDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        Katalogzeilen(cut).Last().QuerySelector(".epos-zeilenzelle--name")!.Click();
+        GebaeudeDialogProbe.SatzOeffnen(cut);
 
         Assert.Contains("Katalogtext", cut.Markup);
         Assert.Null(cut.Instance.Gewaehlt);
@@ -532,7 +546,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Knopf(cut, "Fläche und Verbrauch…").Click();
 
         Assert.True(cut.Instance.WohnflaecheOffen);
-        Assert.Single(cut.FindAll("[role=dialog]"));
+        Assert.Equal(2, cut.FindAll("[role=dialog]").Count);   // über der Satz-Überlagerung
     }
 
     // =================================================================================
@@ -549,6 +563,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.DoesNotContain("Simulation...", Aufbauen().Markup);
 
         var cut = Aufbauen(bedarfGaben: _ => new Dictionary<string, object>());
+        GebaeudeDialogProbe.SatzOeffnen(cut);
         Assert.Contains("Simulation...", cut.Markup);
     }
 
@@ -560,12 +575,13 @@ public class GebaeudeDialogTests : EposBunitContext
 
         // Der Sprung in den Katalog nimmt die Projektmarkierung weg
         // (KatalogzeileWaehlen setzt _gewaehlt auf null).
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        Katalogzeilen(cut).Last().QuerySelector(".epos-zeilenzelle--name")!.Click();
 
         Assert.Null(cut.Instance.Gewaehlt);
-        var knopf = Knopf(cut, "Simulation...");
-        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
-        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_SIMULATION, knopf.GetAttribute("title"));
+        // Stufe 4: Die Knöpfe des Projektsatzes stehen in der Satz-Überlagerung - beim Katalogsatz fehlen sie.
+        GebaeudeDialogProbe.SatzOeffnen(cut);
+        Assert.True(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-simulation"));
     }
 
     /// <summary>
@@ -596,10 +612,8 @@ public class GebaeudeDialogTests : EposBunitContext
 
         var faelle = new[]
         {
-            ("button.epos-gebaeude-flaeche", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_FLAECHE),
+            // Stufe 4: Fläche, Export und Simulation stehen in der Satz-Überlagerung des Projektsatzes.
             ("button.epos-gebaeude-projekt", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_PROJEKT),
-            ("button.epos-gebaeude-export", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_EXPORT),
-            ("button.epos-gebaeude-simulation", WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_SIMULATION),
         };
         foreach ((string waehler, string grund) in faelle)
         {
@@ -617,9 +631,9 @@ public class GebaeudeDialogTests : EposBunitContext
         // Mit Projektwahl: frei, ohne Sperrgrund.
         cut.FindAll("button.epos-anlagenwahl").First().Click();
         Assert.NotNull(cut.Instance.Gewaehlt);
-        Assert.Null(cut.Find("button.epos-gebaeude-flaeche").GetAttribute("aria-disabled"));
-        Assert.Null(cut.Find("button.epos-gebaeude-simulation").GetAttribute("aria-disabled"));
-        cut.Find("button.epos-gebaeude-flaeche").Click();
+        Assert.Null(GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-flaeche").GetAttribute("aria-disabled"));
+        Assert.Null(GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-simulation").GetAttribute("aria-disabled"));
+        GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-flaeche").Click();
         Assert.True(cut.Instance.WohnflaecheOffen);
     }
 
@@ -650,7 +664,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_BTN_BEARBEITEN, knopf.TextContent.Trim());
         Assert.Single(cut.FindAll("button.epos-gebaeude-projekt"));
 
-        var schlussleiste = cut.Find("button.epos-gebaeude-flaeche").Closest(".epos-leiste")!;
+        var schlussleiste = GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-flaeche").Closest(".epos-leiste")!;
         Assert.Empty(schlussleiste.QuerySelectorAll("button.epos-gebaeude-projekt"));
 
         // Ohne Wahl: weich gesperrt mit Grund, der Versuch meldet ihn und oeffnet nichts.
@@ -693,7 +707,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(2, zeilen.Count);
         Assert.Same(zeilen[1], cut.Instance.Gewaehlt);
         Assert.Equal("Hotel Sonne", cut.Instance.Gewaehlt!.Name);
-        var knopf = cut.Find("button.epos-gebaeude-flaeche");
+        var knopf = GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-flaeche");
         Assert.Null(knopf.GetAttribute("aria-disabled"));
         knopf.Click();
         Assert.Same(zeilen[1], skaliert);
@@ -731,7 +745,7 @@ public class GebaeudeDialogTests : EposBunitContext
 
         Assert.Equal(4711, gefragt);
         Assert.True(cut.Instance.BedarfOffen);
-        Assert.Single(cut.FindAll("[role=dialog]"));
+        Assert.Equal(2, cut.FindAll("[role=dialog]").Count);   // über der Satz-Überlagerung
     }
 
     /// <summary>
@@ -895,7 +909,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.True(cut.Instance.KatalogeditorOffen);
         Assert.Contains("epos-ueberlagerung--breit", cut.Find(".epos-ueberlagerung").ClassName);
 
-        cut.Find(".epos-ueberlagerung-zu").Click();
+        cut.FindAll(".epos-ueberlagerung-zu").Last().Click();
         Assert.False(cut.Instance.KatalogeditorOffen);
 
         Knopf(cut, "Gebäude in DB neu...").Click();
@@ -925,7 +939,7 @@ public class GebaeudeDialogTests : EposBunitContext
         bool gerufen = false;
         var cut = Aufbauen(katalogLoeschen: _ => { gerufen = true; return true; });
 
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        Katalogzeilen(cut).Last().QuerySelector(".epos-zeilenzelle--name")!.Click();
         Knopf(cut, "Gebäude in DB löschen").Click();
         Knopf(cut, "Nein").Click();
 
@@ -1153,7 +1167,7 @@ public class GebaeudeDialogTests : EposBunitContext
     {
         var cut = Aufbauen(katalogLoeschen: _ => false, katalogLoeschsperre: _ => "");
 
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        Katalogzeilen(cut).Last().QuerySelector(".epos-zeilenzelle--name")!.Click();
         Knopf(cut, "Gebäude in DB löschen").Click();
         Knopf(cut, "Ja").Click();
 
@@ -1275,7 +1289,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Knopf(cut, "Simulation...").Click();
         Assert.True(cut.Instance.BedarfOffen);
 
-        cut.Find(".epos-ueberlagerung-zu").Click();
+        cut.FindAll(".epos-ueberlagerung-zu").Last().Click();
 
         Assert.False(cut.Instance.BedarfOffen);
     }
@@ -1293,7 +1307,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Knopf(cut, "Gebäude in DB neu...").Click();
         Assert.True(cut.Instance.KatalogeditorOffen);
 
-        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung").Last().QuerySelectorAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
@@ -1310,7 +1324,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Knopf(cut, "Fläche und Verbrauch…").Click();
         Assert.True(cut.Instance.WohnflaecheOffen);
 
-        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung").Last().QuerySelectorAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
@@ -1327,7 +1341,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Knopf(cut, "Gebäudetyp in DB ändern...").Click();
         Assert.True(cut.Instance.GebaeudetypOffen);
 
-        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung").Last().QuerySelectorAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
@@ -1348,9 +1362,28 @@ public class GebaeudeDialogTests : EposBunitContext
         Knopf(cut, "Simulation...").Click();
         Assert.True(cut.Instance.BedarfOffen);
 
-        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung").Last().QuerySelectorAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// geb3 (Konzept Katalogauswahl 7.7): Die Bedarfs-Überlagerung rollt nicht als Ganzes — sie trägt die Zusatzklasse
+    /// des Rollkörpers, und der eingebettete Dialog bringt genau einen Rollkörper mit.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Bedarf_rollt_nur_in_ihrem_Rollkoerper()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(4711) },
+                           bedarfGaben: z => new Dictionary<string, object>
+                           {
+                               ["Daten"] = new GebaeudeBedarfDaten { Name = z.Name }
+                           });
+
+        Knopf(cut, "Simulation...").Click();
+        IElement u = cut.FindAll(".epos-ueberlagerung").Last();
+        Assert.Contains("epos-ueberlagerung--rollkoerper", u.ClassList);
+        Assert.Single(u.QuerySelectorAll(".epos-ueberlagerung-inhalt > .epos-dialog > .epos-dialog-rollkoerper"));
     }
 
     [Fact]
@@ -1377,7 +1410,7 @@ public class GebaeudeDialogTests : EposBunitContext
 
     /// <summary>Die Listenleiste unter dem Katalog — sie steht IN der Zweispaltenauswahl.</summary>
     private static IElement Katalogleiste(IRenderedComponent<GebaeudeDialog> cut)
-        => cut.FindAll(".epos-zweispalten .epos-leiste")[0];
+        => cut.Find(".epos-zweispalten-fussleiste");
 
     /// <summary>
     /// <b>Projektbetrieb.</b> Der Fuß läuft
@@ -1391,23 +1424,18 @@ public class GebaeudeDialogTests : EposBunitContext
         var cut = Aufbauen(bedarfGaben: _ => new Dictionary<string, object>(),
                            gebaeudetypGaben: () => new Dictionary<string, object>());
 
+        // Stufe 4: Der Fuß trägt nur noch Abbrechen und OK; die Knöpfe des Satzes stehen in der Satz-Überlagerung.
         IElement fuss = Fuss(cut);
-
-        Assert.Equal(
-            new[] { "Fläche und Verbrauch…", "Simulation...", "Gebäudetyp in DB ändern...", "Abbrechen", "OK" },
-            fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
-
-        // Der Fueller der SpeichernLeiste ist ihre Statusspanne (flex: 1 1 auto):
-        // Sie steht zwischen den Aktionen und den zwei Schlussknoepfen.
-        Assert.Single(fuss.QuerySelectorAll(".epos-status"));
-
+        Assert.Equal(new[] { "Abbrechen", "OK" },
+                     fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
         var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
         Assert.Single(primaer);
-        Assert.Equal("OK", primaer[0].TextContent.Trim());
         Assert.Same(fuss.QuerySelectorAll("button").Last(), primaer[0]);
 
-        // Keine zweite Leiste im Detailblock mehr - die drei Knoepfe sind gewandert.
-        Assert.Equal(2, cut.FindAll(".epos-leiste").Count);      // Katalogliste + Fuss
+        GebaeudeDialogProbe.SatzOeffnen(cut);
+        Assert.Equal(new[] { "Fläche und Verbrauch…", "Simulation...", "Gebäudetyp in DB ändern..." },
+                     cut.Find(".epos-gebaeude-satzknoepfe").QuerySelectorAll("button")
+                        .Select(b => b.TextContent.Trim()).ToArray());
     }
 
     /// <summary>
@@ -1420,11 +1448,14 @@ public class GebaeudeDialogTests : EposBunitContext
     {
         var projekt = Aufbauen(gebaeudetypGaben: () => new Dictionary<string, object>());
 
-        Assert.Equal(new[] { "Gebäude in DB neu...", "Gebäude in DB ändern...",
-                             "Gebäude in DB löschen" },
+        // Stufe 4 (4.9 Zeile „Gebäude"): die Katalog-Fußleiste links Löschen und Bearbeiten…, rechts Neu…; der
+        // Gebäudetyp steht nie in ihr, sondern bei den Knöpfen des Satzes.
+        Assert.Equal(new[] { "Gebäude in DB löschen", WindowsFormsApplication1.MyResource.Resource.AUSWAHL_BTN_BEARBEITEN,
+                             "Gebäude in DB neu..." },
                      Katalogleiste(projekt).QuerySelectorAll("button")
                          .Select(b => b.TextContent.Trim()).ToArray());
-        Assert.Contains(Fuss(projekt).QuerySelectorAll("button"),
+        GebaeudeDialogProbe.SatzOeffnen(projekt);
+        Assert.Contains(projekt.Find(".epos-gebaeude-satzknoepfe").QuerySelectorAll("button"),
                         b => b.TextContent.Trim() == "Gebäudetyp in DB ändern...");
     }
 
@@ -1443,17 +1474,15 @@ public class GebaeudeDialogTests : EposBunitContext
 
         IElement fuss = Fuss(cut);
 
-        fuss.QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Fläche und Verbrauch…").Click();
+        Knopf(cut, "Fläche und Verbrauch…").Click();
         Assert.True(cut.Instance.WohnflaecheOffen);
-        cut.Find(".epos-ueberlagerung-zu").Click();
+        cut.FindAll(".epos-ueberlagerung-zu").Last().Click();
 
-        Fuss(cut).QuerySelectorAll("button")
-            .First(b => b.TextContent.Trim() == "Simulation...").Click();
+        Knopf(cut, "Simulation...").Click();
         Assert.True(cut.Instance.BedarfOffen);
-        cut.Find(".epos-ueberlagerung-zu").Click();
+        cut.FindAll(".epos-ueberlagerung-zu").Last().Click();
 
-        Fuss(cut).QuerySelectorAll("button")
-            .First(b => b.TextContent.Trim() == "Gebäudetyp in DB ändern...").Click();
+        Knopf(cut, "Gebäudetyp in DB ändern...").Click();
         Assert.True(cut.Instance.GebaeudetypOffen);
     }
 
@@ -1474,7 +1503,7 @@ public class GebaeudeDialogTests : EposBunitContext
                            geschlossen: b => ergebnis = b);
 
         // Eine Aufnahme aus dem Katalog - der Arbeitsstand des Dialogs aendert sich.
-        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        Katalogzeilen(cut).Last().QuerySelector(".epos-zeilenzelle--name")!.Click();
         Uebernehmen(cut).Click();
         Assert.Equal(2, zeilen.Count);
 
@@ -1528,10 +1557,10 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal("", cut.Instance.Meldung);
         Assert.Equal(nachUebernahme, geaendert);
 
-        cut.Find(".epos-ueberlagerung-zu").Click();
+        cut.FindAll(".epos-ueberlagerung-zu").Last().Click();
         Assert.False(cut.Instance.BedarfOffen);
 
-        Knopf(cut, "Abbrechen").Click();
+        Fuss(cut).QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
         Assert.False(ergebnis);
     }
 
@@ -1616,7 +1645,7 @@ public class GebaeudeDialogTests : EposBunitContext
 
         Assert.Equal(12, cut.Instance.Gewaehlt?.IdZ);
         Assert.Equal("Haus B",
-                     cut.Find(".epos-zeile--markiert td:nth-child(2)").TextContent.Trim());
+                     cut.Find(".epos-zeile--markiert td:nth-child(3)").TextContent.Trim());
     }
 
     /// <summary>
@@ -1649,7 +1678,7 @@ public class GebaeudeDialogTests : EposBunitContext
         var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(11, "Haus A") });
 
         // Die erste Katalogzeile waehlen - das nimmt die Projektmarkierung weg.
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        Katalogzeilen(cut)[0].QuerySelector(".epos-zeilenzelle--name")!.Click();
         Assert.Null(cut.Instance.Gewaehlt);
         Assert.NotNull(cut.Instance.Katalogzeile);
 
@@ -1812,6 +1841,7 @@ public class GebaeudeDialogTests : EposBunitContext
         z.Rechenweg = "VDI 6007";
         z.HgesWK = 2046.25;
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { z });
+        GebaeudeDialogProbe.SatzOeffnen(cut);
 
         var felder = cut.FindAll("label.epos-feld");
         IElement hges = felder.First(l => l.TextContent.Contains("Wärmeleitwert H_ges:")).QuerySelector("input")!;
@@ -1832,6 +1862,7 @@ public class GebaeudeDialogTests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "Katalogtext",
                                                                   "150,00", "VDI 6007", 500.0)));
+        GebaeudeDialogProbe.SatzOeffnen(cut);
 
         IElement hges = cut.FindAll("label.epos-feld")
                            .First(l => l.TextContent.Contains("Wärmeleitwert H_ges:")).QuerySelector("input")!;
