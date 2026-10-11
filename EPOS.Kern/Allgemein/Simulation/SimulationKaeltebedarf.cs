@@ -884,6 +884,22 @@ namespace WindowsFormsApplication1
                             "Angekündigte Kälteerzeuger: Die Unterdeckung meldet dann die Kältekaskade mit ihrem Grund (5.5)."),
             new Gegenstueck(null, "Kaeltekaskade.Kuehltage", "KU2",
                             "Tagesbetriebsart der reversiblen Maschine (K8a, 5.2) - die Wärmeseite kennt keine Umschaltung."),
+
+            // ---- K3 (Konzept Kältebedarf 4.3): Profile und dezentrale (Split-)Deckung ----
+            new Gegenstueck("Waermebedarf_Prozess_Stunde", "Kaeltebedarf_Profil", "K3",
+                            "Profilanteil wie die Prozesswärme; zentral und dezentral gedeckt zusammen."),
+            new Gegenstueck("Waermebedarf_Prozess", "Kaeltebedarf_Profil_Gesamt", "K3",
+                            "Jahressumme der Profile [MWh]."),
+            new Gegenstueck(null, "MitProfil", "K3", "Hat eine Profilzeile gerechnet? Ergebnisspalte nur mit Wert."),
+            new Gegenstueck(null, "Kaeltebedarf_Dezentral", "K3",
+                            "Zugewinn: Kälte neben der Kaskade (Split) - die Wärmeseite kennt keine Deckung ohne Erzeuger."),
+            new Gegenstueck(null, "Kaeltebedarf_Dezentral_Gesamt", "K3", "Jahressumme der dezentralen Deckung [MWh]."),
+            new Gegenstueck(null, "Kaelte_Dezentral_Max", "K3", "Spitze der dezentralen Deckung [kW]."),
+            new Gegenstueck(null, "Strom_Dezentral", "K3", "Strom der dezentralen Deckung je Stunde = Q / EER(θ_e)."),
+            new Gegenstueck(null, "Strom_Dezentral_Gesamt", "K3", "Jahressumme des Split-Stroms [MWh]."),
+            new Gegenstueck(null, "Jahres_EER_Dezentral", "K3", "Jahres-EER der dezentralen Deckung = Σ Q / Σ P."),
+            new Gegenstueck(null, "MitDezentral", "K3", "Hat eine Zeile dezentral gerechnet? Spalten und Export nur mit Wert."),
+            new Gegenstueck(null, "DezentraleZeilen", "K3", "Die Split-Zeilen mit Strom, Kühlträger und Zähler (Abrechnung)."),
         };
     }
 
