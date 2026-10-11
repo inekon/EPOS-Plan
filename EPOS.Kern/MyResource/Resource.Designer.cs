@@ -82896,6 +82896,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tage ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KLAPP_EINZELTAGE_ANZAHL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KLAPP_EINZELTAGE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Tag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KLAPP_EINZELTAGE_EINER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KLAPP_EINZELTAGE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Komfortsollwert ähnelt.
         /// </summary>
         public static string KOND_LBL_KOMFORTSOLLWERT {
@@ -84908,24 +84926,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_KALB_EIGENE_WOCHE {
             get {
                 return ResourceManager.GetString("KOND_TXT_KALB_EIGENE_WOCHE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tage ähnelt.
-        /// </summary>
-        public static string KOND_TXT_KALB_EINZELTAGE_ANZAHL {
-            get {
-                return ResourceManager.GetString("KOND_TXT_KALB_EINZELTAGE_ANZAHL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Tag ähnelt.
-        /// </summary>
-        public static string KOND_TXT_KALB_EINZELTAGE_EINER {
-            get {
-                return ResourceManager.GetString("KOND_TXT_KALB_EINZELTAGE_EINER", resourceCulture);
             }
         }
         

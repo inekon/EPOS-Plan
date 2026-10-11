@@ -50013,10 +50013,10 @@ chart</value>
   <data name="KOND_LBL_KALB_EINZELTAGE" xml:space="preserve">
     <value>Single days (public holidays, exceptions)</value>
   </data>
-  <data name="KOND_TXT_KALB_EINZELTAGE_EINER" xml:space="preserve">
+  <data name="KOND_LBL_KLAPP_EINZELTAGE_EINER" xml:space="preserve">
     <value>1 day</value>
   </data>
-  <data name="KOND_TXT_KALB_EINZELTAGE_ANZAHL" xml:space="preserve">
+  <data name="KOND_LBL_KLAPP_EINZELTAGE_ANZAHL" xml:space="preserve">
     <value>{0} days</value>
   </data>
   <data name="KOND_LBL_KALB_DATUM" xml:space="preserve">
