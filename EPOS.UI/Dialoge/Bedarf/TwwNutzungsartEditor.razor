@@ -286,7 +286,12 @@
             _meldung = Texte.GrundOhneWeg;
             return;
         }
-        TwwNutzungsartSpeicherErgebnis e = Speichern(Daten.Modus, _e.Kopie());
+        // KT-5: Wirft der Schreibweg, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben);
+        // der Editor bleibt mit seinen Eingaben offen.
+        TwwEditorModus modus = Daten.Modus;
+        TwwNutzungsartEntwurfDaten entwurf = _e.Kopie();
+        TwwNutzungsartSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(modus, entwurf), entwurf.Bezeichner,
+                                                                   g => new TwwNutzungsartSpeicherErgebnis(false, 0, g, ""));
         if (!e.Ok)
         {
             _meldung = e.Meldung;

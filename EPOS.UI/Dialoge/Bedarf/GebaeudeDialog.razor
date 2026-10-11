@@ -1511,7 +1511,12 @@
         GebaeudeProjektZeile? letzte = null;
         foreach (Katalogfilterzeile k in KatalogZiele())
         {
-            GebaeudeProjektZeile? neu = StammSatz(k.Bezeichner);
+            // KT-5: Wirft das Aufnehmen, nennt die Meldung den Grund; die Projektliste behaelt die schon aufgenommenen.
+            string name = k.Bezeichner;
+            string grund = "";
+            GebaeudeProjektZeile? neu = Katalogladung.Schreiben(() => StammSatz(name), name,
+                                                                g => { grund = g; return (GebaeudeProjektZeile?)null; });
+            if (grund.Length > 0) { Melden(grund, WarnStufe.Warnung, amKatalog: true); break; }
             if (neu is null) continue;
             if (!ProjektkopieAnlegen(neu)) break;
             Zeilen.Add(neu);
@@ -1961,7 +1966,11 @@
         KatalogLaden();   // SetGebaeudeDB() nach dem Schliessen
 
         if (import is null || !gespeichert) return;
-        GebaeudeProjektZeile? neu = import.Aufnehmen();
+        // KT-5: Wirft das Aufnehmen des Imports, nennt die Meldung den Grund.
+        string grund = "";
+        GebaeudeProjektZeile? neu = Katalogladung.Schreiben(() => import.Aufnehmen(), TitelText,
+                                                            g => { grund = g; return (GebaeudeProjektZeile?)null; });
+        if (grund.Length > 0) { Melden(grund, WarnStufe.Warnung, amKatalog: true); return; }
         if (neu is null) return;
         if (!ProjektkopieAnlegen(neu)) return;
         Zeilen.Add(neu);

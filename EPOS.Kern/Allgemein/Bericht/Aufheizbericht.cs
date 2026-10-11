@@ -93,6 +93,10 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // AH-V6: die Vorheizgrößen der Fassung 2 — nur mit Verfahren „Vorgabe“ oder „Berechnet“; bei Sollwertrampe
+            // trägt die Ergebniszeile keine (null) und die Tafel bleibt, wie sie war.
+            foreach (var zeile in Vorheizzeilen(g.Vorheizen, kultur)) yield return zeile;
+
             if (Auslegungsgroesse(g) is double auslegung)
             {
                 yield return (T(nameof(RR.BV_AUFH_AUSLEGUNG), kultur), Zahl(auslegung, 1, "kW", kultur));
@@ -107,6 +111,98 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double? Auslegungsgroesse(ErgebnisGebaeudeModel g)
             => g?.AuslegungsheizlastKw is double hl ? hl + (g.AufheizzuschlagKw ?? 0.0) : (double?)null;
+
+        // =====================================================================
+        //  Vorheizen nach Fassung 2 (AH-V6; Entwurf Vorheizrampe 2.9)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Vorheizzeilen einer Ergebnis- oder Zonenzeile</b> (Schritt 215): Verfahren, Vorheizzeit t_V (vorgegeben bzw.
+        /// berechnet als Quantil), größter Bedarf t_nötig, Bezug Φ_K,max, Deckel P_K, Vorheizleistung P_V, die Sprünge im Vorlauf
+        /// und im Lauf, die Tage ohne Ankunft und mit Sprung über t_V, die Unterschreitung, die Deckel- und Floorstunden, die Nächte
+        /// ohne Absenkung, die unerreichbaren und die gesperrten Tage und die Mehrwärme — jede nur mit Wert. Leer bei
+        /// Sollwertrampe (<paramref name="v"/> <c>null</c>).
+        /// </summary>
+        public static IEnumerable<(string Beschriftung, Tabellenzelle Wert)> Vorheizzeilen(Vorheizkennzahlen v, CultureInfo kultur)
+        {
+            if (v == null) yield break;
+            bool berechnet = v.Verfahren == VorheizenSchema.VERFAHREN_BERECHNET;
+            yield return (T(nameof(RR.BV_VORH_VERFAHREN), kultur), Zellen.Text(Verfahrenstext(v.Verfahren, kultur)));
+            if (v.VorheizzeitH.HasValue)
+                yield return (T(berechnet ? nameof(RR.BV_VORH_ZEIT_BERECHNET) : nameof(RR.BV_VORH_ZEIT_VORGABE), kultur),
+                              Zahl(v.VorheizzeitH, 0, "h", kultur));
+            if (v.VorheizzeitBedarfMaxH.HasValue) yield return (T(nameof(RR.BV_VORH_BEDARF_MAX), kultur), Zahl(v.VorheizzeitBedarfMaxH, 0, "h", kultur));
+            if (v.BezugKw.HasValue) yield return (T(nameof(RR.BV_VORH_BEZUG), kultur), Zahl(v.BezugKw, 1, "kW", kultur));
+            if (v.DeckelKw.HasValue) yield return (T(nameof(RR.BV_VORH_DECKEL), kultur), Zahl(v.DeckelKw, 1, "kW", kultur));
+            if (v.LeistungKw.HasValue) yield return (T(nameof(RR.BV_VORH_LEISTUNG), kultur), Zahl(v.LeistungKw, 1, "kW", kultur));
+            if (v.SprungVorlaufMaxKw.HasValue) yield return (T(nameof(RR.BV_VORH_SPRUNG_VORLAUF), kultur), Zahl(v.SprungVorlaufMaxKw, 1, "kW", kultur));
+            if (v.SprungLaufMaxKw.HasValue) yield return (T(nameof(RR.BV_VORH_SPRUNG_LAUF), kultur), Zahl(v.SprungLaufMaxKw, 1, "kW", kultur));
+            if (v.TageVerfehlt.HasValue) yield return (T(nameof(RR.BV_VORH_TAGE_VERFEHLT), kultur), Rechts(Zahl(v.TageVerfehlt, 0, null, kultur)));
+            if (v.TageUeberVorheizzeit.HasValue) yield return (T(nameof(RR.BV_VORH_TAGE_UEBER), kultur), Zahl(v.TageUeberVorheizzeit, 0, null, kultur));
+            if (v.UnterschreitungMaxK.HasValue) yield return (T(nameof(RR.BV_VORH_UNTERSCHREITUNG_MAX), kultur), Zahl(v.UnterschreitungMaxK, 1, "K", kultur));
+            if (v.UnterschreitungH.HasValue) yield return (T(nameof(RR.BV_VORH_UNTERSCHREITUNG_H), kultur), Zahl(v.UnterschreitungH, 0, "h/a", kultur));
+            if (v.DeckelstundenH.HasValue) yield return (T(nameof(RR.BV_VORH_DECKELSTUNDEN), kultur), Zahl(v.DeckelstundenH, 0, "h/a", kultur));
+            if (v.FloorstundenH.HasValue) yield return (T(nameof(RR.BV_VORH_FLOORSTUNDEN), kultur), Zahl(v.FloorstundenH, 0, "h/a", kultur));
+            if (v.NaechteOhneAbsenkung.HasValue) yield return (T(nameof(RR.BV_VORH_NAECHTE), kultur), Zahl(v.NaechteOhneAbsenkung, 0, null, kultur));
+            if (v.UnerreichbarTage.HasValue) yield return (T(nameof(RR.BV_VORH_UNERREICHBAR), kultur), Zahl(v.UnerreichbarTage, 0, null, kultur));
+            if (v.SperrzeitTage.HasValue) yield return (T(nameof(RR.BV_VORH_SPERRZEIT), kultur), Zahl(v.SperrzeitTage, 0, null, kultur));
+            if (v.MehrwaermeMwh.HasValue) yield return (T(nameof(RR.BV_VORH_MEHRWAERME), kultur), Zahl(v.MehrwaermeMwh, 2, "MWh/a", kultur));
+        }
+
+        /// <summary>Das Verfahren als Text („Vorheizzeit vorgegeben“ bzw. „Vorheizzeit berechnet“); leer ohne Verfahren.</summary>
+        public static string Verfahrenstext(string verfahren, CultureInfo kultur) => verfahren switch
+        {
+            VorheizenSchema.VERFAHREN_VORGABE => T(nameof(RR.BV_VORH_VERFAHREN_VORGABE), kultur),
+            VorheizenSchema.VERFAHREN_BERECHNET => T(nameof(RR.BV_VORH_VERFAHREN_BERECHNET), kultur),
+            _ => "",
+        };
+
+        /// <summary>Hat ein Gebäude des Stands mit Vorheizen nach Fassung 2 gerechnet (Verfahren „Vorgabe“ oder „Berechnet“)?</summary>
+        public static bool HatVorheizen(VariantenDaten v)
+            => v?.Ergebnis?.Gebaeude != null && v.Ergebnis.Gebaeude.Any(g => g?.Vorheizen != null);
+
+        /// <summary>
+        /// <b>Die Tafel „Vorheizen je Zone“</b> eines Mehrzonengebäudes: je Zone mit Vorheizwerten eine Zeile mit Vorheizzeit t_V,
+        /// Vorheizleistung P_V, Tagen ohne Ankunft, größter Unterschreitung und Mehrwärme. <c>null</c>, wenn keine Zone
+        /// Vorheizwerte trägt (Sollwertrampe, ein Gebäude ohne Zonenzeilen) — dann schreibt der Bericht nichts.
+        /// </summary>
+        public static Berichtstabelle Zonentafel(ErgebnisGebaeudeModel g, CultureInfo kultur)
+        {
+            List<ErgebnisZoneModel> zonen = g?.Zonen?.Where(z => z?.Vorheizen != null).ToList();
+            if (zonen == null || zonen.Count == 0) return null;
+            var t = new Berichtstabelle().Feste(2355, 1400, 1400, 1400, 1400, 1400);
+            t.MitKopf(new[]
+            {
+                Zellen.Kopf(T(nameof(RR.BV_VORH_ZONE), kultur), Tabellenausrichtung.Links),
+                Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_ZEIT), kultur)),
+                Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_LEISTUNG), kultur)),
+                Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_VERFEHLT), kultur)),
+                Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_UNTERSCHREITUNG), kultur)),
+                Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_MEHRWAERME), kultur)),
+            });
+            foreach (ErgebnisZoneModel z in zonen)
+            {
+                Vorheizkennzahlen v = z.Vorheizen;
+                t.Zeile(new[]
+                {
+                    Zellen.Text(string.IsNullOrWhiteSpace(z.Bezeichner) ? Tabellenzelle.STRICH : z.Bezeichner),
+                    Rechts(Zahl(v.VorheizzeitH, 0, null, kultur)),
+                    Rechts(Zahl(v.LeistungKw, 1, null, kultur)),
+                    Rechts(Zahl(v.TageVerfehlt, 0, null, kultur)),
+                    Rechts(Zahl(v.UnterschreitungMaxK, 1, null, kultur)),
+                    Rechts(Zahl(v.MehrwaermeMwh, 2, null, kultur)),
+                });
+            }
+            return t;
+        }
+
+        private static Tabellenzelle Rechts(Tabellenzelle z) => new Tabellenzelle
+        {
+            Text = z.Text, Zahl = z.Zahl, Format = z.Format, Einheit = z.Einheit, Ausrichtung = Tabellenausrichtung.Rechts,
+        };
+
+        /// <summary>Die Zeile über der Tafel „Vorheizen je Zone“.</summary>
+        public static string Zonentitel(CultureInfo kultur) => T(nameof(RR.BV_VORH_ZONEN_TITEL), kultur);
 
         /// <summary>Hat ein Gebäude des Stands mit Aufheizrechnung gerechnet (Zustand gesetzt)?</summary>
         public static bool HatAufheizung(VariantenDaten v)

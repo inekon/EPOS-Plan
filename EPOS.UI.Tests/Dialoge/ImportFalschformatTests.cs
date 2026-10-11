@@ -2,6 +2,7 @@
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Solarthermie;
 using EPOS.UI.Dialoge.Strom;
@@ -186,5 +187,62 @@ public sealed class ImportFalschformatTests : EposBunitContext
         Assert.Contains("Feld zu lang", cut.Instance.Meldung);
         Assert.Contains(cut.Instance.Meldung, cut.Markup);
         Assert.Equal(3, cut.FindAll(".epos-leiste button").Count);   // der Dialog bleibt bedienbar
+    }
+
+    // =====================================================================
+    // Raumnutzung: Vorschau und Übernahme über die Fangstelle (IM-3)
+    // =====================================================================
+
+    /// <summary>Die ersten Bytes einer Excel-Mappe (ZIP) — kein CSV.</summary>
+    private static RaumnutzungCsvDatei Mappe(string name)
+        => new(name, new byte[] { 0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00, 0x08, 0x00, 0x00, 0x00 });
+
+    [Fact]
+    public void Raumnutzung_falsches_Format_wird_benannt_abgelehnt_statt_als_Ausnahme()
+    {
+        RaumnutzungCsvDatei datei = Mappe("profile.xlsx");
+
+        RaumnutzungCsvVorschau v = RaumnutzungCsvHuelle.Pruefen(new RaumnutzungCtrl(), datei, null);
+        Assert.False(string.IsNullOrEmpty(v.Abbruch));
+        Assert.Empty(v.Profile);
+
+        RaumnutzungErgebnis e = RaumnutzungCsvHuelle.Uebernehmen(new RaumnutzungCtrl(), datei, null, "Neu", false);
+        Assert.False(e.Ok);
+        Assert.False(string.IsNullOrEmpty(e.Meldung));
+    }
+
+    [Fact]
+    public void Raumnutzung_eine_Ausnahme_wird_benannt_abgelehnt_und_vermerkt()
+    {
+        var vermerke = new List<string>();
+        Action<string> hoerer = z => { lock (vermerke) vermerke.Add(z); };
+        Ausnahmeprotokoll.Vermerkt += hoerer;
+        try
+        {
+            RaumnutzungCsvDatei datei = Mappe("profile.xlsx");
+            // Ohne Controller wirft die Lesung - dieselbe Lage wie ein Fehler in Leser oder Datenbank.
+            var weg = new RaumnutzungCsvWeg
+            {
+                DateiWaehlen = () => Task.FromResult<RaumnutzungCsvDatei?>(datei),
+                Pruefen = (d, z) => RaumnutzungCsvHuelle.Pruefen(null!, d, z),
+                Uebernehmen = (d, z, n, ersetzen) => RaumnutzungCsvHuelle.Uebernehmen(null!, d, z, n, ersetzen)
+            };
+            var cut = Render<RaumnutzungCsvAustausch>(p => p.Add(x => x.Weg, weg));
+
+            cut.Find("button.epos-raumnutzung-csv-import").Click();
+
+            cut.WaitForAssertion(() => Assert.Contains(
+                "Die Datei \u201eprofile.xlsx\u201c konnte nicht eingelesen werden:",
+                cut.Find(".epos-raumnutzung-csv-abbruch").TextContent));
+            lock (vermerke) Assert.Contains(vermerke, z => z.Contains("profile.xlsx") && z.Contains("NullReferenceException"));
+
+            RaumnutzungErgebnis e = RaumnutzungCsvHuelle.Uebernehmen(null!, datei, null, "Neu", false);
+            Assert.False(e.Ok);
+            Assert.Contains("profile.xlsx", e.Meldung);
+        }
+        finally
+        {
+            Ausnahmeprotokoll.Vermerkt -= hoerer;
+        }
     }
 }

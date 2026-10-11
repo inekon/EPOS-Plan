@@ -1451,9 +1451,15 @@
 
         // Die Sammeluebernahme (4.5): je gewaehltem Katalogsatz eine Zeile; die Wahl folgt den neuen.
         var neue = new List<BedarfsProfilZeile>();
+        bool abgelehnt = false;
         foreach (Katalogfilterzeile k in ziele)
         {
-            BedarfsProfilZeile? neu = Aufnehmen(k.Bezeichner);
+            // KT-5: Wirft das Aufnehmen, nennt die Meldung den Grund; die Projektliste behaelt die schon aufgenommenen.
+            string name = k.Bezeichner;
+            string grund = "";
+            BedarfsProfilZeile? neu = Katalogladung.Schreiben(() => Aufnehmen(name), name,
+                                                              g => { grund = g; return (BedarfsProfilZeile?)null; });
+            if (grund.Length > 0) { Melden(grund, WarnStufe.Warnung); abgelehnt = true; break; }
             if (neu is null) continue;
             Zeilen.Add(neu);
             neue.Add(neu);
@@ -1466,7 +1472,7 @@
         ProjektzeileWaehlen(neue[^1]);
         VerwendungStempeln();
         Geaendert?.Invoke();
-        _meldung = "";
+        if (!abgelehnt) _meldung = "";
     }
 
     private void BeiEntfernen()

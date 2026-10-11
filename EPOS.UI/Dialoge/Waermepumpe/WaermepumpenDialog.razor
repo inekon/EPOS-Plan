@@ -888,21 +888,27 @@
     private void DetailNachziehen()
     {
         KostenNachziehen();
+        // KT-5: Wirft das Lesen des Satzes oder seiner Bilder, steht der Detailblock leer, und die
+        // Meldung nennt den Grund (Katalogladung.Satz).
+        string grund = "";
         if (_gewaehlt is not null)
         {
-            _satz = ProjektSatz?.Invoke(_gewaehlt);
-            _bilder = ProjektBilder?.Invoke(_gewaehlt);
+            WaermepumpeAnlageDaten z = _gewaehlt;
+            _satz = Katalogladung.SatzDazu(() => ProjektSatz?.Invoke(z), z.Bezeichner, ref grund);
+            _bilder = Katalogladung.SatzDazu(() => ProjektBilder?.Invoke(z), z.Bezeichner, ref grund);
         }
         else if (_katalogZeile is not null)
         {
-            _satz = KatalogSatz?.Invoke(_katalogZeile.Id);
-            _bilder = KatalogBilder?.Invoke(_katalogZeile.Id);
+            Katalogfilterzeile k = _katalogZeile;
+            _satz = Katalogladung.SatzDazu(() => KatalogSatz?.Invoke(k.Id), k.Bezeichner, ref grund);
+            _bilder = Katalogladung.SatzDazu(() => KatalogBilder?.Invoke(k.Id), k.Bezeichner, ref grund);
         }
         else
         {
             _satz = null;
             _bilder = null;
         }
+        if (grund.Length > 0) Melden(grund, true);
     }
 
     // =================================================================================
@@ -912,7 +918,9 @@
     /// <summary>Liest den Katalog neu — nach einem Schreibweg. Der Filter ruft sie nicht.</summary>
     private void KatalogNeuLaden()
     {
-        _katalog = Katalog?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        // KT-5: Wirft das Lesen der Liste, bleibt sie leer, und die Meldung nennt den Grund (Katalogladung.Lesen).
+        _katalog = Katalogladung.Lesen(Katalog, TitelText, out string listeFehler);
+        if (listeFehler.Length > 0) Melden(listeFehler, true);
         VerwendungStempeln();
         _katalogZeile = Katalogsatz(_katalogGewaehlt);
         if (_katalogZeile is null) _katalogGewaehlt = "";
@@ -946,9 +954,12 @@
         if (ziele.Count == 0) return;
         WaermepumpeAnlageDaten? letzte = null;
         int neu = 0;
+        string grund = "";
         foreach (Katalogfilterzeile z in ziele)
         {
-            WaermepumpeAnlageDaten? zeile = Anlegen(z.Bezeichner);
+            // KT-5: Wirft das Anlegen der Projektkopie, nennt die Meldung den Grund; die übrigen Ziele laufen weiter.
+            WaermepumpeAnlageDaten? zeile = Katalogladung.Schreiben(() => Anlegen(z.Bezeichner), z.Bezeichner,
+                                                                    g => { grund = g; return (WaermepumpeAnlageDaten?)null; });
             if (zeile is null) continue;
             Zeilen.Add(zeile);
             Uebernehmen?.Invoke(zeile);
@@ -958,8 +969,9 @@
         }
         VerwendungStempeln();
         if (_katalogWahl.Anzahl > 0) KatalogKaestchenLeeren();
+        if (grund.Length > 0) Melden(grund, true);
         if (letzte is null) return;
-        _meldung = "";
+        if (grund.Length == 0) _meldung = "";
         ProjektZeileWaehlen(letzte);
         if (neu == 1 && AnlageGaben is not null) AnlageOeffnen();
     }
@@ -1191,7 +1203,8 @@
         int geloescht = 0;
         foreach (Katalogfilterzeile z in ziele)
         {
-            string grund = KatalogLoeschen(z.Id) ?? "";
+            // KT-5: Wirft der Löschweg, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            string grund = Katalogladung.Loeschen(() => KatalogLoeschen(z.Id) ?? "", z.Bezeichner, g => g);
             if (grund.Length > 0) { fehler = grund; continue; }
             geloescht++;
             if (z.Bezeichner == _katalogGewaehlt) fokusWeg = true;

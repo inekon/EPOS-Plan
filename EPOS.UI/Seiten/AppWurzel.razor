@@ -60,14 +60,12 @@
        (Anwenderentscheid iF30-O-2 vom 06.09.2026). Entschieden wird das im
        Kern; hier steht davon nur die Frage nach LizenzLage.WarnungZeigen in
        LizenzlageUebernehmen. Der Lesemodus ist ausgenommen. *@
-    @* Der Wirt traegt die Klasse, nicht das Banner: Eine Ansicht darf ihre EIGENEN
-       Warnbanner haben (die Projektliste hat eines), und ein Pruefstand muss die zwei
-       auseinanderhalten koennen. *@
-    <div class="epos-lizenzbanner">
-        <Warnbanner Stufe="@Bannerstufe"
-                    Text="@_lizenzbanner"
-                    Verfaellt="@Bannerfrist" />
-    </div>
+    @* Der Baustein traegt die Klasse epos-lizenzbanner am Wirt und meldet dessen
+       Hoehe als Token --epos-banner-oben: Die Dialoge voller Hoehe ziehen sie ab,
+       sonst rollte das Dokument um die Bannerhoehe (Bausteine/Lizenzbanner.razor). *@
+    <Lizenzbanner Stufe="@Bannerstufe"
+                  Text="@_lizenzbanner"
+                  Verfaellt="@Bannerfrist" />
 }
 
 @* DER MELDER DES HILFEKONTEXTS (Auftrag #221, Anwenderentscheid KI-D-E-1).

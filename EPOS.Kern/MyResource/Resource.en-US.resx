@@ -4555,6 +4555,18 @@ Please run the simulation with photovoltaics first.</value>
   <data name="IMPORT_LBL_KOPFZEILE" xml:space="preserve">
     <value>First line is a header row</value>
   </data>
+  <data name="IMPORT_LBL_ERSTE_DATENZEILE" xml:space="preserve">
+    <value>First data row:</value>
+  </data>
+  <data name="IMPORT_LBL_ZEILENZAHL" xml:space="preserve">
+    <value>Rows to import:</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_FEHLEN" xml:space="preserve">
+    <value>From row {0} the file holds only {1} data rows; {2} are requested.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_UEBRIG" xml:space="preserve">
+    <value>{0} rows after the {1} rows read (from row {2}) are ignored.</value>
+  </data>
   <data name="IMPORT_LBL_WERTSPALTE" xml:space="preserve">
     <value>Value column:</value>
   </data>
@@ -51381,6 +51393,12 @@ chart</value>
   <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
     <value>Does the first row hold column names instead of values? The preview shows the change only after “Refresh preview”.</value>
   </data>
+  <data name="KI_DLG_GIO_ERSTE_DATENZEILE_ERL" xml:space="preserve">
+    <value>The number of the first row holding values, counted as in the preview table; the rows before it are skipped. The preview shows the change only after “Refresh preview”.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEILENZAHL_ERL" xml:space="preserve">
+    <value>How many rows are read from the first data row on — 8,760 for hourly values, 35,040 for quarter-hourly values. Missing rows reject the import; remaining rows are ignored.</value>
+  </data>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>A worksheet only exists for an Excel workbook.</value>
   </data>
@@ -51674,6 +51692,18 @@ chart</value>
   </data>
   <data name="KFLT_LT_GERAETEART" xml:space="preserve">
     <value>Unit type</value>
+  </data>
+  <data name="KFLT_LT_VLMIN" xml:space="preserve">
+    <value>Minimum flow temperature</value>
+  </data>
+  <data name="KFLT_LT_VLMAX" xml:space="preserve">
+    <value>Maximum flow temperature</value>
+  </data>
+  <data name="KFLT_LT_COP" xml:space="preserve">
+    <value>Coefficient of performance, heating</value>
+  </data>
+  <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
+    <value>Electric backup heater</value>
   </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Unit type of the cooling generator (air- or water-cooled chiller, with free cooling, split, multi-split, VRF, absorption); empty = from heat rejection.</value>
@@ -52307,6 +52337,180 @@ chart</value>
   </data>
   <data name="GEB_MSG_LOESCHEN_N" xml:space="preserve">
     <value>{0} buildings deleted.</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN" xml:space="preserve">
+    <value>Preheating – method</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN_VORGABE" xml:space="preserve">
+    <value>Preheat time specified</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN_BERECHNET" xml:space="preserve">
+    <value>Preheat time calculated</value>
+  </data>
+  <data name="BV_VORH_ZEIT_VORGABE" xml:space="preserve">
+    <value>Preheat time t_V (specified)</value>
+  </data>
+  <data name="BV_VORH_ZEIT_BERECHNET" xml:space="preserve">
+    <value>Preheat time t_V (calculated, quantile)</value>
+  </data>
+  <data name="BV_VORH_BEDARF_MAX" xml:space="preserve">
+    <value>Largest preheat need t_req</value>
+  </data>
+  <data name="BV_VORH_BEZUG" xml:space="preserve">
+    <value>Reference power Φ_K,max</value>
+  </data>
+  <data name="BV_VORH_DECKEL" xml:space="preserve">
+    <value>Cap P_K</value>
+  </data>
+  <data name="BV_VORH_LEISTUNG" xml:space="preserve">
+    <value>Preheat power P_V</value>
+  </data>
+  <data name="BV_VORH_SPRUNG_VORLAUF" xml:space="preserve">
+    <value>Largest step in advance S_max,0</value>
+  </data>
+  <data name="BV_VORH_SPRUNG_LAUF" xml:space="preserve">
+    <value>Largest step in the run S_max</value>
+  </data>
+  <data name="BV_VORH_TAGE_VERFEHLT" xml:space="preserve">
+    <value>Days without arrival</value>
+  </data>
+  <data name="BV_VORH_TAGE_UEBER" xml:space="preserve">
+    <value>Days with a step beyond t_V</value>
+  </data>
+  <data name="BV_VORH_UNTERSCHREITUNG_MAX" xml:space="preserve">
+    <value>Largest shortfall below the setpoint</value>
+  </data>
+  <data name="BV_VORH_UNTERSCHREITUNG_H" xml:space="preserve">
+    <value>Hours below the setpoint</value>
+  </data>
+  <data name="BV_VORH_DECKELSTUNDEN" xml:space="preserve">
+    <value>Hours at the cap</value>
+  </data>
+  <data name="BV_VORH_FLOORSTUNDEN" xml:space="preserve">
+    <value>Hours at the floor</value>
+  </data>
+  <data name="BV_VORH_NAECHTE" xml:space="preserve">
+    <value>Nights without setback</value>
+  </data>
+  <data name="BV_VORH_UNERREICHBAR" xml:space="preserve">
+    <value>Days with an unreachable step</value>
+  </data>
+  <data name="BV_VORH_SPERRZEIT" xml:space="preserve">
+    <value>Days with a blocked preheat hour</value>
+  </data>
+  <data name="BV_VORH_MEHRWAERME" xml:space="preserve">
+    <value>Additional heat from preheating</value>
+  </data>
+  <data name="BV_VORH_ZONEN_TITEL" xml:space="preserve">
+    <value>Preheating per zone</value>
+  </data>
+  <data name="BV_VORH_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="BV_VORH_KOPF_ZEIT" xml:space="preserve">
+    <value>t_V [h]</value>
+  </data>
+  <data name="BV_VORH_KOPF_LEISTUNG" xml:space="preserve">
+    <value>P_V [kW]</value>
+  </data>
+  <data name="BV_VORH_KOPF_VERFEHLT" xml:space="preserve">
+    <value>Days without arrival</value>
+  </data>
+  <data name="BV_VORH_KOPF_UNTERSCHREITUNG" xml:space="preserve">
+    <value>Max. shortfall [K]</value>
+  </data>
+  <data name="BV_VORH_KOPF_MEHRWAERME" xml:space="preserve">
+    <value>Additional heat [MWh/a]</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZVERFAHREN" xml:space="preserve">
+    <value>Preheating method of the current building (specified or calculated); empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT" xml:space="preserve">
+    <value>Preheat time t_V of the current building (specified or calculated quantile); empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT_BEDARF_MAX" xml:space="preserve">
+    <value>Largest preheat need t_req of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_BEZUG" xml:space="preserve">
+    <value>Reference power Φ_K,max of preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKEL" xml:space="preserve">
+    <value>Cap P_K of preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZLEISTUNG" xml:space="preserve">
+    <value>Preheat power P_V of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_VORLAUF" xml:space="preserve">
+    <value>Largest step in advance S_max,0 of the current building; empty without a step or with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_LAUF" xml:space="preserve">
+    <value>Largest step in the run S_max of the current building; empty without a step or with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_VERFEHLT" xml:space="preserve">
+    <value>Days without arrival of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UEBER" xml:space="preserve">
+    <value>Days with a step beyond t_V of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX" xml:space="preserve">
+    <value>Largest shortfall below the setpoint during preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNGSSTUNDEN" xml:space="preserve">
+    <value>Hours below the setpoint during preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKELSTUNDEN" xml:space="preserve">
+    <value>Hours at the cap of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_FLOORSTUNDEN" xml:space="preserve">
+    <value>Hours at the floor of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_NAECHTE_OHNE_ABSENKUNG" xml:space="preserve">
+    <value>Nights without setback of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UNERREICHBAR" xml:space="preserve">
+    <value>Days with an unreachable step of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_SPERRZEIT" xml:space="preserve">
+    <value>Days with a blocked preheat hour of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_MEHRWAERME" xml:space="preserve">
+    <value>Additional heat from preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_HAT__VORHEIZEN" xml:space="preserve">
+    <value>Data switch: Has a building of the state (or of any state) been calculated with a specified or calculated preheat time?</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_VERFAHREN" xml:space="preserve">
+    <value>Preheating method</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_ZEIT" xml:space="preserve">
+    <value>Preheat time (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_TOLERANZ_ART" xml:space="preserve">
+    <value>Preheat tolerance type</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_TOLERANZ" xml:space="preserve">
+    <value>Preheat tolerance</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_REGELGENAUIGKEIT" xml:space="preserve">
+    <value>Control accuracy ε</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_GELTUNG" xml:space="preserve">
+    <value>Scope of the preheat time</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_RAMPE" xml:space="preserve">
+    <value>Setpoint ramp</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_PROZENT" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
+    <value>Zone</value>
   </data>
 </root>
 

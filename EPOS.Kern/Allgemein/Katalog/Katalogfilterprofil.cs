@@ -795,15 +795,15 @@ namespace WindowsFormsApplication1
                             new Katalogspalte(SpQuelle,       t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpNennleistung, t("KFLT_SP_NENNLEISTUNG"), "kW", Katalogspaltenart.Zahl,
                                               langtext: t("WPS_LBL_NENNLEISTUNG")),
-                            new Katalogspalte(SpVlMin,        t("KFLT_SP_VLMIN"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
-                            new Katalogspalte(SpVlMax,        t("KFLT_SP_VLMAX"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
-                            new Katalogspalte(SpZuheizung,    t("KFLT_SP_ZUHEIZUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
+                            new Katalogspalte(SpVlMin,        t("KFLT_SP_VLMIN"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit, langtext: t("KFLT_LT_VLMIN")),
+                            new Katalogspalte(SpVlMax,        t("KFLT_SP_VLMAX"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz, langtext: t("KFLT_LT_VLMAX")),
+                            new Katalogspalte(SpZuheizung,    t("KFLT_SP_ZUHEIZUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit, langtext: t("KFLT_LT_ZUHEIZUNG")),
                             // 16.09.2026: die ZAHL statt des Kennzeichens „Kuehlen" - sie
                             // sagt dasselbe und nennt die Leistung; das schnelle Ja/Nein
                             // traegt der Schalter „nur mit Kuehlfunktion", der genau
                             // diese Spalte auf ">0" setzt.
                             new Katalogspalte(SpKuehlleistung, t("KFLT_SP_KUEHLLEISTUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
-                            new Katalogspalte(SpCop,          t("KFLT_SP_COP"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit)
+                            new Katalogspalte(SpCop,          t("KFLT_SP_COP"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit, langtext: t("KFLT_LT_COP"))
                         }
                     };
 

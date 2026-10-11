@@ -159,6 +159,14 @@
     --epos-sicher-oben: env(safe-area-inset-top, 0px);
     --epos-sicher-unten: env(safe-area-inset-bottom, 0px);
 
+    /* DIE HOEHE DES LIZENZBANNERS. Das Banner der AppWurzel steht in #app ueber der
+       Ansicht; jede Regel, die eine Wurzel in voller Fensterhoehe rechnet, zieht es ab
+       wie --epos-sicher-oben, sonst rollte das Dokument um seine Hoehe. Der Baustein
+       Lizenzbanner setzt das Token an der Wurzel des Dokuments auf die gemessene
+       Hoehe, solange er steht (epos-lizenzbanner.js); ohne Banner gilt 0. Fest
+       stehende Ueberlagerungen bedecken das Banner und ziehen es nicht ab. */
+    --epos-banner-oben: 0px;
+
     /* DIE OBERGRENZE EINES DIAGRAMMS (Windows-Abnahme V2 07.09.2026, Befund
        W11b-B-4: "Simulation Uebersicht: Die Charts sind optisch zu gross").
        Jahresganglinie, Dauerlinie, Streuwolke, Speicherverlauf und
@@ -353,6 +361,13 @@ body {
     padding-bottom: var(--epos-sicher-unten);
 }
 
+/* Der Wirt des Lizenzbanners (Baustein Lizenzbanner): Seine gemessene Hoehe ist das
+   Token --epos-banner-oben (Token oben). flow-root haelt die Raender des Banners im
+   Wirt, damit die Messung sie mitzaehlt. */
+.epos-lizenzbanner {
+    display: flow-root;
+}
+
 /* Wurzel eines Dialogs. tabindex="-1" traegt die Tastenbehandlung
    (Enter = OK, Esc = Abbrechen), der Rahmen darf dabei nicht aufblitzen. */
 .epos-dialog {
@@ -520,11 +535,12 @@ body {
 }
 
 /* DIE HINWEISLISTE (Anwenderbefund 10.10.2026: die Hinweise eines Simulationslaufs
-   deckten als ein Absatz die ganze Seite). Zugeklappt EINE Zeile: Kopftext, die Zahl
-   der Hinweise und der Klapper; aufgeklappt steht die Liste unter der Zeile (der
-   Umbruch des Flexkastens) in einem Rollbereich von hoechstens 40 % der Fensterhoehe -
-   sie rollt innen, das Banner selbst bleibt, wo es steht (auch haftend im eigenen
-   Fenster). Der Kopftext waechst hier nicht, die Zahl nimmt den Platz bis zum Klapper. */
+   deckten als ein Absatz die ganze Seite). Sie ist die Klapp-Bauform des Hauses - der
+   Baustein Hinweisklappe, eingebettet (Regeln unter „Baustein Hinweisklappe"). Zugeklappt
+   EINE Zeile: Kopftext, dann die Klappzeile mit Zahl und Klapper; aufgeklappt bricht der
+   Flexkasten um, und der Rollbereich der Liste steht unter der ganzen Zeile (order: 1 -
+   nach Handgriff und Kreuz). Das Banner selbst bleibt, wo es steht (auch haftend im
+   eigenen Fenster). Der Kopftext waechst hier nicht, die Klappzeile nimmt den Platz. */
 .epos-warnbanner--liste {
     flex-wrap: wrap;
 }
@@ -534,66 +550,30 @@ body {
     min-width: 0;
 }
 
-.epos-warnbanner-zahl {
-    flex: 1 1 auto;
-    white-space: nowrap;
-}
-
-/* Der Klapper: ein Knopf in der Anmutung von „erklaeren lassen", das
-   Beruehrungsziel haelt --epos-touchziel, der negative Rand nimmt ihm die Hoehe in
-   der Zeile (wie das Kreuz). */
-.epos-warnbanner-klapper {
-    flex: 0 0 auto;
-    align-self: center;
-    min-height: var(--epos-touchziel);
-    margin-block: -12px;
-    padding: 0 6px;
-    font: inherit;
-    color: inherit;
-    white-space: nowrap;
-    background: transparent;
-    border: none;
-    border-radius: var(--epos-ecke);
-    cursor: pointer;
-}
-
-.epos-warnbanner-klapper:hover {
-    background: rgba(0, 0, 0, 0.06);
-}
-
-.epos-warnbanner-chevron {
-    font-weight: 700;
-}
-
-.epos-warnbanner-liste {
+.epos-warnbanner > .epos-hinweisklappe-inhalt {
     flex: 1 0 100%;
-    max-height: 40vh;
-    margin: 0;
-    padding: 4px 0 0 2em;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-}
-
-.epos-warnbanner-liste > li + li {
-    margin-top: 2px;
+    order: 1;
 }
 
 /* Hinweis: der Ton der Hinweisflaechen der Startmaske (KARTE_FLAECHE_HOVER). */
-.epos-warnbanner--hinweis {
+.epos-warnbanner--hinweis,
+.epos-hinweisklappe--hinweis {
     border-color: var(--epos-karte-rahmen-hover);
     background: var(--epos-karte-flaeche-hover);
     color: var(--epos-karte-titel);
 }
 
 /* Warnung: WARN_* aus KartenStil. */
-.epos-warnbanner--warnung {
+.epos-warnbanner--warnung,
+.epos-hinweisklappe--warnung {
     border-color: var(--epos-warn-rahmen);
     background: var(--epos-warn-flaeche);
     color: var(--epos-warn-text);
 }
 
 /* Fehler: der Korallenklang der Senke, Flaeche wie ein fehlerhaftes Feld. */
-.epos-warnbanner--fehler {
+.epos-warnbanner--fehler,
+.epos-hinweisklappe--fehler {
     border-color: var(--epos-senke-rahmen);
     background: var(--epos-fehleingabe);
     color: var(--epos-senke-text);
@@ -602,7 +582,8 @@ body {
 /* Erfolg (iU9-W10a.4): dasselbe Waldgruen, mit dem die Statuszeile des Bestands
    "hat geklappt" sagt (Color.ForestGreen in Form_PufferSp_Projekt.Status und
    Form_Simulation_Config.ShowStatus). */
-.epos-warnbanner--erfolg {
+.epos-warnbanner--erfolg,
+.epos-hinweisklappe--erfolg {
     border-color: rgb(34, 139, 34);
     background: rgb(240, 250, 240);
     color: rgb(24, 98, 24);
@@ -2296,30 +2277,35 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
    ========================================================================== */
 
 @media (forced-colors: active) {
-    .epos-warnbanner {
+    .epos-warnbanner,
+    .epos-hinweisklappe:not(.epos-hinweisklappe--eingebettet) {
         forced-color-adjust: none;
         border-width: 2px;
     }
 
-    .epos-warnbanner--hinweis {
+    .epos-warnbanner--hinweis,
+    .epos-hinweisklappe--hinweis {
         border-color: rgb(59, 130, 246);
         background: rgb(239, 246, 255);
         color: rgb(15, 31, 61);
     }
 
-    .epos-warnbanner--warnung {
+    .epos-warnbanner--warnung,
+    .epos-hinweisklappe--warnung {
         border-color: rgb(200, 138, 0);
         background: rgb(255, 246, 224);
         color: rgb(138, 91, 0);
     }
 
-    .epos-warnbanner--fehler {
+    .epos-warnbanner--fehler,
+    .epos-hinweisklappe--fehler {
         border-color: rgb(216, 90, 48);
         background: rgb(255, 235, 235);
         color: rgb(153, 60, 29);
     }
 
-    .epos-warnbanner--erfolg {
+    .epos-warnbanner--erfolg,
+    .epos-hinweisklappe--erfolg {
         border-color: rgb(34, 139, 34);
         background: rgb(240, 250, 240);
         color: rgb(24, 98, 24);
@@ -4134,8 +4120,8 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 
 #app > .epos-dialog:has(> .epos-zweispalten),
 .epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {
-    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
-    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
+    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     overflow: hidden;
     box-sizing: border-box;
 }
@@ -7704,7 +7690,7 @@ table.epos-simerg-tabelle {
     position: sticky;
     top: 0;
     align-self: start;
-    height: max(var(--epos-assistent-band-min), calc(100dvh - var(--epos-assistent-band-abzug) - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
+    height: max(var(--epos-assistent-band-min), calc(100dvh - var(--epos-assistent-band-abzug) - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten)));
 }
 
 .epos-assistentseite .epos-assistent-band > .epos-projektliste {
@@ -7862,7 +7848,7 @@ table.epos-simerg-tabelle {
    -------------------------------------------------------------------------- */
 #app > .epos-projektwahl,
 #app > .epos-projektkopie {
-    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
 }
 
 /* Wachsen von null aus (flex-basis 0) - aber nie unter den Inhalt: Die
@@ -8783,7 +8769,7 @@ table.epos-simerg-tabelle {
     flex-direction: column;
     gap: 12px;
     min-width: 0;
-    min-height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    min-height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
 }
 
 /* Kopfzeile: Titel und Untertitel links, der Hilfeknopf rechts - dieselbe Lage
@@ -10017,8 +10003,8 @@ table.epos-simerg-tabelle {
    die ehrliche Antwort; hidden schnitte die Knoepfe ab. */
 .epos-katalog-dialog {
     max-width: none;
-    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
-    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
+    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     overflow: auto;
 }
 
@@ -11892,7 +11878,7 @@ table.epos-simerg-tabelle {
    ========================================================================== */
 
 .epos-kichat {
-    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     padding: var(--epos-rand);
     gap: 10px;
 }
@@ -14034,12 +14020,16 @@ table.epos-simerg-tabelle {
     margin-left: auto;
 }
 
-/* --- Das Hinweisband der Ergebnisseite ----------------------------------- */
+/* --- Baustein Hinweisklappe: die Klapp-Bauform des Hauses ----------------
 
-/* SEIT #222 KOMPAKT. Vorher war es ein Knopf in voller Breite mit zentriertem
-   Text auf weissem Grund - eine leere Zeile, die wie eine Schaltflaeche fuer
-   etwas Wichtiges aussah. Jetzt ist es ein Band in der Warnfarbe des Hauses:
-   links die ZAHL als Abzeichen, in der Mitte der Text, rechts "anzeigen". */
+   EINE Bauform fuer jede Hinweisliste (Simulation, Bericht, Wirtschaftlichkeit und
+   die Hinweise des Warnbanners): links das Zeichen der Schwere und die ZAHL als
+   Abzeichen, in der Mitte der Text, rechts „anzeigen ▾"/„ausblenden ▴"; aufgeklappt
+   der Rollbereich darunter. Frei stehend ist die Zeile ein Band im Farbklang ihrer
+   Stufe (.epos-hinweisklappe--<stufe>, dieselben Regeln wie der Warnbanner, auch im
+   Kontrastmodus); eingebettet im Warnbanner erbt sie dessen Klang. Darum setzt diese
+   Regel weder Rahmen- noch Flaechen- noch Schriftfarbe. Die Klassen epos-simerg-laufband*
+   sind die Pruefanker aus der Herkunft auf der Simulationsseite. */
 .epos-simerg-laufband {
     display: flex;
     align-items: center;
@@ -14047,23 +14037,23 @@ table.epos-simerg-tabelle {
     width: 100%;
     min-height: var(--epos-touchziel);
     padding: 6px var(--epos-rand);
-    border: 1px solid var(--epos-warn-rahmen);
+    border-width: 1px;
+    border-style: solid;
     border-radius: var(--epos-ecke);
-    background: var(--epos-warn-flaeche);
-    color: var(--epos-warn-text);
     font-family: inherit;
     font-size: inherit;
     text-align: left;
     cursor: pointer;
 }
 
+/* Das Abzeichen der Zahl: umrandet in der Schriftfarbe der Zeile - so haelt es in allen
+   vier Klaengen und im Kontrastmodus denselben Kontrast wie der Text. */
 .epos-simerg-laufband-zahl {
     flex: none;
     min-width: 24px;
     padding: 0 8px;
+    border: 1px solid currentColor;
     border-radius: 10px;
-    background: var(--epos-warn-rahmen);
-    color: #fff;
     font-weight: 700;
     text-align: center;
 }
@@ -14078,13 +14068,49 @@ table.epos-simerg-tabelle {
     white-space: nowrap;
 }
 
-/* Baustein Hinweisklappe: das Zeichen der Schwere vor der Zahl (dieselben Zeichen
-   wie der Warnbanner), aufgeklappt die Liste darunter. */
+/* Das Zeichen der Schwere vor der Zahl (dieselben Zeichen wie der Warnbanner). */
 .epos-hinweisklappe-symbol {
     flex: none;
     min-width: 1em;
     font-weight: 700;
     text-align: center;
+}
+
+/* Eingebettet im Warnbanner: ohne eigenen Grund und Rahmen, der Klang ist der des
+   Banners. Das Beruehrungsziel haelt --epos-touchziel (in der Kompaktstufe kleiner), der
+   negative Rand nimmt ihm die Hoehe in der Zeile - das Banner bleibt so niedrig wie ohne
+   Liste. */
+.epos-simerg-laufband.epos-hinweisklappe--eingebettet {
+    flex: 1 1 auto;
+    align-self: center;
+    width: auto;
+    min-width: 0;
+    margin-block: -12px;
+    padding: 0 6px;
+    border: none;
+    background: transparent;
+    color: inherit;
+}
+
+.epos-simerg-laufband.epos-hinweisklappe--eingebettet:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+/* Der Rollbereich der aufgeklappten Liste: hoechstens 40 % der Fensterhoehe, er rollt
+   innen - die Zeile darueber bleibt, wo sie steht. */
+.epos-hinweisklappe-inhalt {
+    max-height: 40vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.epos-hinweisklappe-liste {
+    margin: 0;
+    padding: 4px 0 0 2em;
+}
+
+.epos-hinweisklappe-liste > li + li {
+    margin-top: 2px;
 }
 
 /* Die aufgeklappte Hinweisliste der Wirtschaftlichkeitsseite: die Banner
@@ -14093,12 +14119,6 @@ table.epos-simerg-tabelle {
     display: flex;
     flex-direction: column;
     gap: 8px;
-}
-
-@media (forced-colors: active) {
-    .epos-simerg-laufband {
-        border: 1px solid ButtonBorder;
-    }
 }
 
 /* Die Hinweise eines Berichtslaufs: dasselbe Band wie oben, aber aufklappbar

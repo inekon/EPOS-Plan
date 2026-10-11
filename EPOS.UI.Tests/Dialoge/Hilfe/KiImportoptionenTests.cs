@@ -107,6 +107,22 @@ public sealed class KiImportoptionenTests : EposBunitContext, IDisposable
     }
 
     [Fact]
+    public async Task Ganglinie_erste_Datenzeile_und_Zeilenzahl_landen_in_den_Optionen()
+    {
+        var cut = Ganglinie(excel: false);
+
+        Assert.Equal(KiStatus.Ausgefuehrt, (await cut.InvokeAsync(() =>
+            Setzen(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, "erste_datenzeile", "5"))).Status);
+        Assert.Equal(KiStatus.Ausgefuehrt, (await cut.InvokeAsync(() =>
+            Setzen(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, "zeilenzahl", "8760"))).Status);
+
+        GanglinienImportOptionen o = cut.Instance.Optionen();
+        Assert.Equal(5, o.ErsteDatenzeile);
+        Assert.Equal(8760, o.Zeilenzahl);
+        Assert.True(o.Kopfzeile);
+    }
+
+    [Fact]
     public async Task Ganglinie_Tabellenblatt_nur_bei_einer_Excel_Mappe()
     {
         var csv = Ganglinie(excel: false);

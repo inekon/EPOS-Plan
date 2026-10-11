@@ -4571,6 +4571,18 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="IMPORT_LBL_KOPFZEILE" xml:space="preserve">
     <value>Erste Zeile ist eine Kopfzeile</value>
   </data>
+  <data name="IMPORT_LBL_ERSTE_DATENZEILE" xml:space="preserve">
+    <value>Erste Datenzeile:</value>
+  </data>
+  <data name="IMPORT_LBL_ZEILENZAHL" xml:space="preserve">
+    <value>Zeilen zu importieren:</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_FEHLEN" xml:space="preserve">
+    <value>Ab Zeile {0} stehen nur {1} Datenzeilen in der Datei, verlangt sind {2}.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_UEBRIG" xml:space="preserve">
+    <value>{0} Zeilen nach den {1} gelesenen (ab Zeile {2}) bleiben unberücksichtigt.</value>
+  </data>
   <data name="IMPORT_LBL_WERTSPALTE" xml:space="preserve">
     <value>Wertspalte:</value>
   </data>
@@ -51388,6 +51400,12 @@ Chart</value>
   <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
     <value>Trägt die erste Zeile die Spaltennamen statt Werte? Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
   </data>
+  <data name="KI_DLG_GIO_ERSTE_DATENZEILE_ERL" xml:space="preserve">
+    <value>Die Nummer der ersten Zeile mit Werten, gezählt wie in der Vorschautabelle; die Zeilen davor werden übersprungen. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEILENZAHL_ERL" xml:space="preserve">
+    <value>Wie viele Zeilen ab der ersten Datenzeile gelesen werden — 8 760 für Stundenwerte, 35 040 für Viertelstundenwerte. Fehlen Zeilen, wird der Import abgelehnt; übrige Zeilen bleiben unberücksichtigt.</value>
+  </data>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>Ein Tabellenblatt gibt es nur bei einer Excel-Mappe.</value>
   </data>
@@ -51681,6 +51699,18 @@ Chart</value>
   </data>
   <data name="KFLT_LT_GERAETEART" xml:space="preserve">
     <value>Geräteart</value>
+  </data>
+  <data name="KFLT_LT_VLMIN" xml:space="preserve">
+    <value>Mindestvorlauf</value>
+  </data>
+  <data name="KFLT_LT_VLMAX" xml:space="preserve">
+    <value>Höchstvorlauf</value>
+  </data>
+  <data name="KFLT_LT_COP" xml:space="preserve">
+    <value>Leistungszahl im Heizbetrieb</value>
+  </data>
+  <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
+    <value>Elektrische Zuheizung</value>
   </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Geräteart des Kälteerzeugers (Kaltwassersatz luft- oder wassergekühlt, mit Freikühlung, Split, Multisplit, VRF, Absorption); leer = nach der Rückkühlart.</value>
@@ -52314,6 +52344,180 @@ Chart</value>
   </data>
   <data name="GEB_MSG_LOESCHEN_N" xml:space="preserve">
     <value>{0} Gebäude gelöscht.</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN" xml:space="preserve">
+    <value>Vorheizen – Verfahren</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN_VORGABE" xml:space="preserve">
+    <value>Vorheizzeit vorgegeben</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN_BERECHNET" xml:space="preserve">
+    <value>Vorheizzeit berechnet</value>
+  </data>
+  <data name="BV_VORH_ZEIT_VORGABE" xml:space="preserve">
+    <value>Vorheizzeit t_V (vorgegeben)</value>
+  </data>
+  <data name="BV_VORH_ZEIT_BERECHNET" xml:space="preserve">
+    <value>Vorheizzeit t_V (berechnet, Quantil)</value>
+  </data>
+  <data name="BV_VORH_BEDARF_MAX" xml:space="preserve">
+    <value>Größter Vorheizbedarf t_nötig</value>
+  </data>
+  <data name="BV_VORH_BEZUG" xml:space="preserve">
+    <value>Bezugsleistung Φ_K,max</value>
+  </data>
+  <data name="BV_VORH_DECKEL" xml:space="preserve">
+    <value>Deckel P_K</value>
+  </data>
+  <data name="BV_VORH_LEISTUNG" xml:space="preserve">
+    <value>Vorheizleistung P_V</value>
+  </data>
+  <data name="BV_VORH_SPRUNG_VORLAUF" xml:space="preserve">
+    <value>Größter Sprung im Vorlauf S_max,0</value>
+  </data>
+  <data name="BV_VORH_SPRUNG_LAUF" xml:space="preserve">
+    <value>Größter Sprung im Lauf S_max</value>
+  </data>
+  <data name="BV_VORH_TAGE_VERFEHLT" xml:space="preserve">
+    <value>Tage ohne Ankunft</value>
+  </data>
+  <data name="BV_VORH_TAGE_UEBER" xml:space="preserve">
+    <value>Tage mit Sprung über t_V</value>
+  </data>
+  <data name="BV_VORH_UNTERSCHREITUNG_MAX" xml:space="preserve">
+    <value>Größte Unterschreitung des Sollwerts</value>
+  </data>
+  <data name="BV_VORH_UNTERSCHREITUNG_H" xml:space="preserve">
+    <value>Stunden unter dem Sollwert</value>
+  </data>
+  <data name="BV_VORH_DECKELSTUNDEN" xml:space="preserve">
+    <value>Stunden am Deckel</value>
+  </data>
+  <data name="BV_VORH_FLOORSTUNDEN" xml:space="preserve">
+    <value>Stunden an der Untergrenze</value>
+  </data>
+  <data name="BV_VORH_NAECHTE" xml:space="preserve">
+    <value>Nächte ohne Absenkung</value>
+  </data>
+  <data name="BV_VORH_UNERREICHBAR" xml:space="preserve">
+    <value>Tage mit unerreichbarem Sprung</value>
+  </data>
+  <data name="BV_VORH_SPERRZEIT" xml:space="preserve">
+    <value>Tage mit gesperrter Vorheizstunde</value>
+  </data>
+  <data name="BV_VORH_MEHRWAERME" xml:space="preserve">
+    <value>Mehrwärme des Vorheizens</value>
+  </data>
+  <data name="BV_VORH_ZONEN_TITEL" xml:space="preserve">
+    <value>Vorheizen je Zone</value>
+  </data>
+  <data name="BV_VORH_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="BV_VORH_KOPF_ZEIT" xml:space="preserve">
+    <value>t_V [h]</value>
+  </data>
+  <data name="BV_VORH_KOPF_LEISTUNG" xml:space="preserve">
+    <value>P_V [kW]</value>
+  </data>
+  <data name="BV_VORH_KOPF_VERFEHLT" xml:space="preserve">
+    <value>Tage ohne Ankunft</value>
+  </data>
+  <data name="BV_VORH_KOPF_UNTERSCHREITUNG" xml:space="preserve">
+    <value>Unterschreitung max. [K]</value>
+  </data>
+  <data name="BV_VORH_KOPF_MEHRWAERME" xml:space="preserve">
+    <value>Mehrwärme [MWh/a]</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZVERFAHREN" xml:space="preserve">
+    <value>Verfahren des Vorheizens des laufenden Gebäudes (vorgegeben oder berechnet); leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT" xml:space="preserve">
+    <value>Vorheizzeit t_V des laufenden Gebäudes (vorgegeben bzw. berechnetes Quantil); leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT_BEDARF_MAX" xml:space="preserve">
+    <value>Größter Vorheizbedarf t_nötig des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_BEZUG" xml:space="preserve">
+    <value>Bezugsleistung Φ_K,max des Vorheizens des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKEL" xml:space="preserve">
+    <value>Deckel P_K des Vorheizens des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZLEISTUNG" xml:space="preserve">
+    <value>Vorheizleistung P_V des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_VORLAUF" xml:space="preserve">
+    <value>Größter Sprung im Vorlauf S_max,0 des laufenden Gebäudes; leer ohne Sprung oder bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_LAUF" xml:space="preserve">
+    <value>Größter Sprung im Lauf S_max des laufenden Gebäudes; leer ohne Sprung oder bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_VERFEHLT" xml:space="preserve">
+    <value>Tage ohne Ankunft des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UEBER" xml:space="preserve">
+    <value>Tage mit Sprung über t_V des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX" xml:space="preserve">
+    <value>Größte Unterschreitung des Sollwerts beim Vorheizen des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNGSSTUNDEN" xml:space="preserve">
+    <value>Stunden unter dem Sollwert beim Vorheizen des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKELSTUNDEN" xml:space="preserve">
+    <value>Stunden am Deckel des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_FLOORSTUNDEN" xml:space="preserve">
+    <value>Stunden an der Untergrenze des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_NAECHTE_OHNE_ABSENKUNG" xml:space="preserve">
+    <value>Nächte ohne Absenkung des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UNERREICHBAR" xml:space="preserve">
+    <value>Tage mit unerreichbarem Sprung des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_SPERRZEIT" xml:space="preserve">
+    <value>Tage mit gesperrter Vorheizstunde des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_MEHRWAERME" xml:space="preserve">
+    <value>Mehrwärme des Vorheizens des laufenden Gebäudes; leer bei Sollwertrampe.</value>
+  </data>
+  <data name="VF_HAT__VORHEIZEN" xml:space="preserve">
+    <value>Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit vorgegebener oder berechneter Vorheizzeit gerechnet?</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_VERFAHREN" xml:space="preserve">
+    <value>Verfahren des Vorheizens</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_ZEIT" xml:space="preserve">
+    <value>Vorheizzeit (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_TOLERANZ_ART" xml:space="preserve">
+    <value>Art der Vorheiztoleranz</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_TOLERANZ" xml:space="preserve">
+    <value>Vorheiztoleranz</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_REGELGENAUIGKEIT" xml:space="preserve">
+    <value>Regelgenauigkeit ε</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_GELTUNG" xml:space="preserve">
+    <value>Geltung der Vorheizzeit</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_RAMPE" xml:space="preserve">
+    <value>Sollwertrampe</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_PROZENT" xml:space="preserve">
+    <value>Prozent</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
+    <value>Zone</value>
   </data>
 </root>
 

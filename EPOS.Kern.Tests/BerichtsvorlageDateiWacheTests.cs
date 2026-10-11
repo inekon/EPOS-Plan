@@ -486,6 +486,10 @@ namespace EPOS.Kern.Tests
             "{{gebaeude.ergebnis.aufheiz_aussentemperatur}}", "{{gebaeude.ergebnis.aufheizleistung}}",
             "{{gebaeude.ergebnis.auslegungsgroesse}}", "{{gebaeude.ergebnis.auslegungsheizlast}}",
             "{{gebaeude.ergebnis.aufheizzuschlag}}", "{{gebaeude.ergebnis.aufheizhinweise}}", "{{/je}}", "{{/wenn}}",
+            // AH-V6 (Katalog v19): der Vorheizsatz je Gebäude, nur mit vorgegebener oder berechneter Vorheizzeit.
+            "{{#wenn hat.vorheizen}}", "{{#je gebaeude}}", "{{gebaeude.name}}", "{{gebaeude.ergebnis.vorheizverfahren}}",
+            "{{gebaeude.ergebnis.vorheizzeit}}", "{{gebaeude.ergebnis.vorheizleistung}}", "{{gebaeude.ergebnis.vorheiz_tage_verfehlt}}",
+            "{{gebaeude.ergebnis.vorheiz_mehrwaerme}}", "{{/je}}", "{{/wenn}}",
             "{{#je stand}}", "{{stand.anzeige}}", "{{/je}}",
             "{{kapitel.anhang|ohne titel|ebene 2}}",
         };

@@ -30,6 +30,9 @@
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
                            ohne den Schalter steht alles wie fuer die Fensterprobe
+      ?lizenz=1            das Lizenzbanner der AppWurzel (Baustein Lizenzbanner, Lesemodus-Satz) als
+                           erstes Kind von #app vor dem Dialog - fuer den Fall „lizenzbanner" der
+                           fensterprobe.mjs (mit ?marke=0 wie in der AppWurzel auf iOS)
       ?marke=0             OHNE Fenstermarke - die Gegenprobe: der Dialog steht wie ohne die Regel
       ?zeilen=40           Katalogzeilen
       ?verwendet=1         Heizkessel und BHKW: die erste Projektzeile heisst wie die zweite
@@ -39,6 +42,10 @@
       ?kultur=de-DE|en-US  Kultur und Sprache; Program.cs setzt sie. *@
 
 <div id="app">
+    @if (_lizenz)
+    {
+        <Lizenzbanner Stufe="WarnStufe.Warnung" Text="@Resource.LIZ_BANNER_LESEMODUS" />
+    }
     @switch (_fall)
     {
         case "heizkessel":
@@ -156,6 +163,7 @@
     private string _fall = "heizkessel";
     private bool _marke = true;
     private bool _meldung;
+    private bool _lizenz;
     private bool _verwendet;
     private string? _summe;
     private int _anzahl = 40;
@@ -168,6 +176,7 @@
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
         if (abfrage.TryGetValue("marke", out var m)) _marke = m.ToString() != "0";
         if (abfrage.TryGetValue("meldung", out var g)) _meldung = g.ToString() == "1";
+        if (abfrage.TryGetValue("lizenz", out var l)) _lizenz = l.ToString() == "1";
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
         if (abfrage.TryGetValue("verwendet", out var v)) _verwendet = v.ToString() == "1";
         if (abfrage.TryGetValue("summe", out var s)) _summe = s.ToString();

@@ -42,6 +42,23 @@ namespace WindowsFormsApplication1
         /// <summary>Excel: Name des zu lesenden Tabellenblatts. Leer = erstes Blatt.</summary>
         public string Blattname = "";
 
+        /// <summary>
+        /// Die 1-basierte Nummer der ersten Datenzeile, gezählt über die nicht leeren Zeilen der Datei
+        /// (dieselbe Zählung wie die Vorschautabelle); die Zeilen davor werden übersprungen.
+        /// <c>0</c> = aus <see cref="Kopfzeile"/> abgeleitet (2 mit, 1 ohne Kopfzeile).
+        /// </summary>
+        public int ErsteDatenzeile = 0;
+
+        /// <summary>
+        /// Wie viele Datenzeilen ab der ersten gelesen werden; <c>0</c> = bis zum Dateiende. Stehen
+        /// weniger Zeilen in der Datei, benennt das Protokoll den Fehlbestand; bleiben Zeilen übrig,
+        /// nennt es sie als Hinweis.
+        /// </summary>
+        public int Zeilenzahl = 0;
+
+        /// <summary>Die wirksame erste Datenzeile (1-basiert): <see cref="ErsteDatenzeile"/> oder die aus der Kopfzeile.</summary>
+        public int ErsteDatenzeileWirksam => ErsteDatenzeile > 0 ? ErsteDatenzeile : (Kopfzeile ? 2 : 1);
+
         /// <summary>Flache Kopie - der Dialog arbeitet auf einer Arbeitsfassung.</summary>
         public GanglinienImportOptionen Kopie()
         {
@@ -55,7 +72,9 @@ namespace WindowsFormsApplication1
                 Einheit = Einheit,
                 Raster = Raster,
                 Konvention = Konvention,
-                Blattname = Blattname
+                Blattname = Blattname,
+                ErsteDatenzeile = ErsteDatenzeile,
+                Zeilenzahl = Zeilenzahl
             };
         }
     }
@@ -115,6 +134,12 @@ namespace WindowsFormsApplication1
     /// <summary>Rohdaten einer Quelldatei, Eingang der <see cref="GanglinienPruefung"/>.</summary>
     public sealed class GanglinienRohdaten
     {
+        /// <summary>
+        /// Die nicht leeren Zeilen ab der ersten Datenzeile bis zum Dateiende — gelesen oder nicht.
+        /// Die Vorgabe der Zeilenzahl im Optionendialog.
+        /// </summary>
+        public int ZeilenAbStart;
+
         /// <summary>Gelesene Werte in Dateireihenfolge.</summary>
         public double[] Werte = new double[0];
 
@@ -199,6 +224,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Datei nicht lesbar. {0} = Meldung des Betriebssystems.</summary>
         public const string SchluesselLesefehler = "IMPORT_PROT_LESEFEHLER";
+
+        /// <summary>Zu wenig Zeilen. {0} = erste Datenzeile, {1} = vorhandene Zeilen ab dort, {2} = verlangte Zeilenzahl.</summary>
+        public const string SchluesselZeilenFehlen = "IMPORT_PROT_ZEILEN_FEHLEN";
+
+        /// <summary>Zeilen bleiben übrig. {0} = übrige Zeilen, {1} = gelesene Zeilenzahl, {2} = erste Datenzeile.</summary>
+        public const string SchluesselZeilenUebrig = "IMPORT_PROT_ZEILEN_UEBRIG";
 
         /// <summary>Format erkannt. {0} = Trennzeichen, {1} = Dezimaltrenner, {2} = Spalten, {3} = Kopfzeile ja/nein.</summary>
         public const string SchluesselFormatErkannt = "IMPORT_PROT_FORMAT_ERKANNT";
@@ -322,12 +353,16 @@ namespace WindowsFormsApplication1
                 o.Trennzeichen = trenn;
                 o.Dezimaltrenner = ErkannterDezimaltrenner(zeilen, o.Trennzeichen);
                 o.Kopfzeile = IstKopfzeile(zeilen[0], o.Dezimaltrenner);
+                // Mehrere Kopfzeilen (Spaltennamen, darunter eine Einheitenzeile) zählen alle als Kopf.
+                int kopfzeilen = o.Kopfzeile ? Kopfzeilenzahl(zeilen, o.Dezimaltrenner) : 0;
                 // Nach der Kopfzeilenwahl zählen nur die DATENzeilen: Ein Komma im Beschreibungstext der
                 // Kopfzeile („Sued 45 Grad, Leistung") entschiede sonst gegen Werte wie 51.470, deren drei
                 // Nachkommastellen für sich nichts entscheiden - aus 51,47 würde 51 470 (Strom- und Wärmeimport).
-                if (o.Kopfzeile && zeilen.Count > 1)
-                    o.Dezimaltrenner = ErkannterDezimaltrenner(zeilen.GetRange(1, zeilen.Count - 1), o.Trennzeichen);
-                SpaltenWaehlen(zeilen, o);
+                if (o.Kopfzeile && zeilen.Count > kopfzeilen)
+                    o.Dezimaltrenner = ErkannterDezimaltrenner(
+                        zeilen.GetRange(kopfzeilen, zeilen.Count - kopfzeilen), o.Trennzeichen);
+                SpaltenWaehlen(zeilen, o, kopfzeilen);
+                o.ErsteDatenzeile = ErsteZahlzeile(zeilen, o, kopfzeilen);
 
                 for (int i = 0; i < zeilen.Count && i < VorschauZeilen; i++) v.Zeilen.Add(zeilen[i]);
 
@@ -678,13 +713,40 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Zahl der Kopfzeilen über den Daten: die führenden Zeilen, die Kopfzeilen sind
+        /// (<see cref="IstKopfzeile"/>). Sind es alle Zeilen der Erkennung — eine Textspalte in jeder
+        /// Zeile —, bleibt es bei der einen Kopfzeile.
+        /// </summary>
+        private static int Kopfzeilenzahl(List<string[]> zeilen, char dezimaltrenner)
+        {
+            int n = 0;
+            while (n < zeilen.Count && IstKopfzeile(zeilen[n], dezimaltrenner)) n++;
+            return n >= zeilen.Count ? 1 : Math.Max(n, 1);
+        }
+
+        /// <summary>
+        /// Die erste Datenzeile der Erkennung (1-basiert, Zählung der Vorschautabelle): die erste Zeile
+        /// nach den Kopfzeilen, deren Wertspalte als Zahl lesbar ist; ohne solche die Zeile nach dem Kopf.
+        /// </summary>
+        private static int ErsteZahlzeile(List<string[]> zeilen, GanglinienImportOptionen o, int kopfzeilen)
+        {
+            for (int z = kopfzeilen; z < zeilen.Count; z++)
+            {
+                string[] f = zeilen[z];
+                double d;
+                if (o.WertSpalte < f.Length && VersucheZahl(f[o.WertSpalte], o.Dezimaltrenner, out d))
+                    return z + 1;
+            }
+            return kopfzeilen + 1;
+        }
+
+        /// <summary>
         /// Waehlt Zeit- und Wertspalte: erste durchgaengig als Zeitstempel lesbare
         /// Spalte wird zur Zeitspalte, erste durchgaengig numerische Spalte
         /// daneben zur Wertspalte.
         /// </summary>
-        private static void SpaltenWaehlen(List<string[]> zeilen, GanglinienImportOptionen o)
+        private static void SpaltenWaehlen(List<string[]> zeilen, GanglinienImportOptionen o, int von)
         {
-            int von = o.Kopfzeile ? 1 : 0;
             int spalten = 0;
             for (int z = von; z < zeilen.Count; z++)
                 if (zeilen[z].Length > spalten) spalten = zeilen[z].Length;
@@ -792,7 +854,7 @@ namespace WindowsFormsApplication1
             List<DateTime> zeiten = o.ZeitSpalte >= 0 ? new List<DateTime>(35040) : null;
             int fehler = 0;
             int zeilennummer = 0;
-            bool erste = true;
+            Zeilenfenster fenster = new Zeilenfenster(o);
 
             using (StreamReader sr = LeserOeffnen(pfad))
             {
@@ -804,8 +866,7 @@ namespace WindowsFormsApplication1
                         zeilennummer++;
                         string t = z.Trim();
                         if (t.Length == 0) continue;
-                        if (erste && o.Kopfzeile) { erste = false; continue; }
-                        erste = false;
+                        if (!fenster.Nimmt()) continue;
                         ZeileUebernehmen(new string[] { t }, zeilennummer, o, werte, zeiten, r, ref fehler);
                     }
                 }
@@ -817,8 +878,7 @@ namespace WindowsFormsApplication1
                     while (csv.Read())
                     {
                         zeilennummer++;
-                        if (erste && o.Kopfzeile) { erste = false; continue; }
-                        erste = false;
+                        if (!fenster.Nimmt()) continue;
                         string[] felder = new string[csv.FieldsCount];
                         for (int i = 0; i < csv.FieldsCount; i++) felder[i] = csv[i] ?? "";
                         ZeileUebernehmen(felder, zeilennummer, o, werte, zeiten, r, ref fehler);
@@ -826,7 +886,53 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            fenster.Abschluss(r);
             Abschluss(werte, zeiten, r, fehler);
+        }
+
+        /// <summary>
+        /// <b>Das Lesefenster</b> aus erster Datenzeile und Zeilenzahl: zählt die nicht leeren Zeilen
+        /// (die Zählung der Vorschautabelle), lässt die Zeilen vor der ersten Datenzeile und die nach der
+        /// verlangten Zahl aus und benennt am Ende Fehlbestand (Fehler) und Überschuss (Hinweis).
+        /// </summary>
+        private sealed class Zeilenfenster
+        {
+            private readonly int _start;
+            private readonly int _grenze;
+            private int _satz;
+            private int _genommen;
+            private int _uebrig;
+
+            public Zeilenfenster(GanglinienImportOptionen o)
+            {
+                _start = Math.Max(1, o.ErsteDatenzeileWirksam);
+                _grenze = Math.Max(0, o.Zeilenzahl);
+            }
+
+            /// <summary>Zählt eine nicht leere Zeile; <c>true</c>, wenn sie gelesen wird.</summary>
+            public bool Nimmt()
+            {
+                _satz++;
+                if (_satz < _start) return false;
+                if (_grenze > 0 && _genommen >= _grenze) { _uebrig++; return false; }
+                _genommen++;
+                return true;
+            }
+
+            /// <summary>Trägt die Zeilen ab dem Start ein und benennt Fehlbestand und Überschuss.</summary>
+            public void Abschluss(GanglinienRohdaten r)
+            {
+                r.ZeilenAbStart = _genommen + _uebrig;
+                string start = _start.ToString(CultureInfo.InvariantCulture);
+                if (_grenze > 0 && _genommen < _grenze)
+                    r.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselZeilenFehlen, start,
+                        _genommen.ToString(CultureInfo.InvariantCulture),
+                        _grenze.ToString(CultureInfo.InvariantCulture)));
+                else if (_uebrig > 0)
+                    r.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SchluesselZeilenUebrig,
+                        _uebrig.ToString(CultureInfo.InvariantCulture),
+                        _grenze.ToString(CultureInfo.InvariantCulture), start));
+            }
         }
 
         /// <summary>Ein Datensatz aus zerlegten Feldern.</summary>
@@ -1046,7 +1152,7 @@ namespace WindowsFormsApplication1
             List<double> werte = new List<double>(35040);
             List<DateTime> zeiten = o.ZeitSpalte >= 0 ? new List<DateTime>(35040) : null;
             int fehler = 0;
-            bool erste = true;
+            Zeilenfenster fenster = new Zeilenfenster(o);
 
             for (int z = 1; z <= zeilen; z++)
             {
@@ -1056,8 +1162,7 @@ namespace WindowsFormsApplication1
                     if (daten[z, s] != null && ZelleAlsText(daten[z, s]).Length > 0) leer = false;
                 if (leer) continue;
 
-                if (erste && o.Kopfzeile) { erste = false; continue; }
-                erste = false;
+                if (!fenster.Nimmt()) continue;
 
                 int wertSpalte = o.WertSpalte + 1;
                 int zeitSpalte = o.ZeitSpalte + 1;
@@ -1091,6 +1196,7 @@ namespace WindowsFormsApplication1
                 werte.Add(w);
             }
 
+            fenster.Abschluss(r);
             Abschluss(werte, zeiten, r, fehler);
         }
 
