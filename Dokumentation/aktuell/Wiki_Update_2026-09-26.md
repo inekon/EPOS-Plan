@@ -257,7 +257,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
 - Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#911)
 
-*Die folgenden einundzwanzig Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939, #940 und dreimal #…) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden zweiundzwanzig Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939, #940 und viermal #…) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -280,6 +280,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 11.10.2026: Der Dialog „Kältemaschinen im Projekt“ ist wie die übrigen Erzeugerdialoge aufgebaut: Kältemaschinen im Projekt oben, der Katalog darunter, „In das Projekt übernehmen“ legt die Anlage sofort an. (#…)
 - Seit 11.10.2026: Die Dialoge Wärmebedarf extern und Stromganglinie tragen Mehrfachwahl, einen Stift je Zeile und die Knöpfe des Katalogs in seiner Fußleiste; die Kanalwahl steht in der Kopfleiste der Projektliste, und die Ganglinie passt ohne Rollen in den Dialog. (#…)
 - Seit 11.10.2026: Die Dialoge der Solarthermie- und der PV-Ganglinie führen ihre Katalogknöpfe in der Fußleiste, wählen mehrere Sätze mit Kästchen und öffnen jede Zeile mit dem Stift. (#…)
+- Seit 11.10.2026: Die Dialoge Strombedarf, Brauchwasser und Prozesswärme folgen der Katalogauswahl der Erzeuger: Jahressumme in der Kopfleiste, Mehrfachwahl, Stift je Zeile, Kurzangaben des gewählten Satzes und Bearbeiten als Überlagerung. (#…)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
