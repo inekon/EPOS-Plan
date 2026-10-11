@@ -243,7 +243,10 @@ namespace Auslieferungsvorlage.Tests
             // 183 seit dem Schemaschritt 207 (KalenderbedienungSchema, K2): Tab_Konditionierungswoche, STRICT von ihrer ersten
             // Zeile an und in der Vorlage LEER; der Neubau von Kalender und Periode haelt STRICT.
             //
-            Assert.Equal(183, befund.Strict);
+            // 185 seit dem Schemaschritt des Rueckkuehlwerks (RueckkuehlwerkSchema, K-F1): Tab_Rueckkuehlwerk(_STAMM),
+            // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            Assert.Equal(185, befund.Strict);
         }
 
         // =============================================================================
