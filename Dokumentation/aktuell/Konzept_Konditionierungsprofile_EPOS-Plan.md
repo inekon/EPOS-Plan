@@ -892,15 +892,18 @@ Die Kürzel heißen N-AH, weil N-A1 bis N-A9 im Anlagenkopplungskonzept vergeben
 | N-AH11 Aufschlag | n' nach 4.6 je Rampe mit n > 1 in täglich und fest, Sprünge mit n = 1 ohne Aufschlag, Deckel 48, W2 mit n', t_auf,max unverändert | ohne Ausnahme; Aufschlag 0/0 und Schalter aus byte-gleich |
 | N-AH12 manuell | jeder Sprung n = t_m + 1, Zonen erben, kein Aufschlag, Bemessung unverändert, `Aufheiz_Art` = `MANUELL`, Export nur gesetzt | ohne Ausnahme; Schalter aus byte-gleich |
 
-### 4.10 Vorheizen mit Deckel (Fassung 2, E122/E124)
+### 4.10 Vorheizen mit Deckel (Fassung 2, E122/E124/E125)
 
 Die Gruppe „Aufheizen vor Nutzungsbeginn“ bietet bei eingeschalteter Optimierung drei **Verfahren** (E122 F1):
 
 - **Sollwertrampe** — der Bestand nach 4.1 bis 4.9, bitgleich.
 - **Vorheizzeit vorgeben** (Option 1) — t_V in Stunden je Projekt, Gebäude oder Zone; der Lauf prüft je Sprung die Ankunft
   und nennt die Tage, an denen t_V nicht reicht, mit der nötigen Zeit.
-- **Vorheizzeit berechnen** (Option 2) — t_V ist das Jahresmaximum des Bedarfs t_nötig über alle Kalendersprünge und gilt
-  **fest an jedem Sprung** (E124 F13 (a): in der Realität wird die Vorheizzeit fest gesetzt). Ist t_V länger als die
+- **Vorheizzeit berechnen** (Option 2) — t_V ist das **95-%-Quantil** des Bedarfs t_nötig über die erreichbaren
+  Kalendersprünge (das kleinste t, das mindestens 95 % von ihnen abdeckt; Kern-Konstante, E125 F19 (b)) und gilt
+  **fest an jedem Sprung** (E124 F13 (a): in der Realität wird die Vorheizzeit fest gesetzt); die Tage mit t_nötig über t_V
+  nennt der Hinweis mit der nötigen Zeit und der Unterschreitung, das Maximum t_nötig,max bleibt Ergebnisgröße. Ein
+  unerreichbarer Sprung geht nicht in t_V ein, er wird gezählt und gemeldet (E125 F18 (b)). Ist t_V länger als die
   Absenkung einer Nacht, wird sie durchgeheizt (1051: t_V ≈ 15 h aus dem Sprung nach dem Wochenende über der
   Werktagsabsenkung von 13 h, ≈ +10 % Heizwärme); der Lauf zählt die Nächte ohne Absenkung und weist die Mehrwärme aus.
   Eine Anwendung „täglich“ wird nicht gebaut.
@@ -916,10 +919,13 @@ max(P_K, Φ_ref(h)), die Floor-Stunden werden gezählt (E124 F12 (a)). Im Fenste
 wie P_auf in 4.4. Option 2 bestimmt t_nötig je Sprung mit einer **Vorausschau** auf dem Zustand des Vorlaufs.
 
 **Ankunft.** Die Luft am Beginn von h_s (Augenblick) liegt bei θ_T − ε oder darüber; ε ist die Regelgenauigkeit, Vorgabe
-1 K, das Stundenmittel von h_s ist Kennzahl (E124 F15 (a)).
+1 K, das Stundenmittel von h_s ist Kennzahl (E124 F15 (a)). An einer Zone mit Heizkreis gilt die Ankunft gegen
+min(θ_T, θ_stat) − ε, θ_stat ist die Raumluft, die der Heizkreis am durchgewärmten Bau zur Kalenderstunde hält (E125 F17 (b)).
 
 **Geltung und Kopplung.** t_V gilt je Gebäude oder je Zone (E122 F6). AK1-Einzonengebäude werden einbezogen; ein Schalter
-je Projekt (`Aufheiz_Heizkreis_Einbeziehen`) nimmt sie aus (E122 F10, E124 F16 (a)). Bemessung (a)/(b), die Arten
+je Projekt (`Aufheiz_Heizkreis_Einbeziehen`) nimmt sie aus (E122 F10, E124 F16 (a)). Eine Sperrzeit der Anlage (Nachtsperre,
+Zeitprogramm 0) rechnen Vorausschau und Lauf mit; liegen Fensterstunden ohne verfügbare Wärme in ihr, nennt ein Hinweis die
+Tage und die Stunden, in denen vorgeheizt werden kann — das Fenster bleibt, wo es ist (E125 F20 (a)). Bemessung (a)/(b), die Arten
 „täglich“/„fest“ der Rampe und der Aufschlag gelten in diesen Verfahren nicht.
 
 Einzelheiten — Begriffe, Physik, Zahlen an 1051, Texte, Schema, Wellen V0–V8: [Entwurf Vorheizrampe](Gebaeudesimulation/2026-10-10_Entwurf_Vorheizrampe.md).
