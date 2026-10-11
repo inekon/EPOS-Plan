@@ -18,12 +18,20 @@ namespace WindowsFormsApplication1
     /// Fernwartung, Adresse öffnen über <c>Dienste.Datei.AdresseOeffnen</c> — und die Geste
     /// des Entwicklermodus (Konzept 3.2, Entwicklerhandbuch Abschnitt 1).
     ///
-    /// <para><b>Die Geste.</b> Strg+Umschalt+Alt+E fängt das Fenster über
+    /// <para><b>Die Geste.</b> Strg+Umschalt+F12 (ohne Alt, damit AltGr der deutschen Tastatur nicht
+    /// stört) fängt das Fenster über
     /// <see cref="BlazorDialogForm{TKomponente}.Befehlstaste"/> ab, bevor die WebView die Taste
     /// sieht. Eine Nachricht später — nicht mitten in der Tastenverarbeitung und nicht im
     /// Blazor-Verteiler, denn die Rückfrage ist modal — schaltet
     /// <see cref="EntwicklungHuelle.GesteUmschalten"/> den Modus; danach versorgt das Hauptfenster
     /// Menü, Marke und Titel neu, und der Anstoß lässt den Dialog den neuen Diagnoseblock holen.</para>
+    ///
+    /// <para><b>Zweiter Weg der Geste.</b> <see cref="Form.ProcessCmdKey"/> sieht den Tastendruck nur,
+    /// wenn die WebView2 ihn als Beschleuniger an das Fenster weiterreicht. Mit dem Fokus im
+    /// Browserfenster (ein Kindfenster des WebView2-Prozesses) kann die WebView den Druck behalten.
+    /// Deshalb erkennt der Razor-Dialog die Geste zusätzlich selbst an der physischen Taste und
+    /// ruft <c>GesteAusgeloest</c>, das hier denselben Weg nimmt. Eine Sperre lässt je Tastendruck nur
+    /// EIN Schalten zu, auch wenn beide Wege ihn sehen.</para>
     ///
     /// <para>Was einen Modaldialog öffnen kann (Protokollordner mit Meldung, Fernwartung), läuft
     /// ebenso eine Nachricht später: Kein Rückruf der WebView2 trägt eine Modalschleife oder
@@ -31,8 +39,13 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class UeberFenster
     {
-        /// <summary>Die Tastenfolge der Geste.</summary>
-        internal const Keys GESTE = Keys.Control | Keys.Shift | Keys.Alt | Keys.E;
+        /// <summary>
+        /// Die Tastenfolge der Geste: Strg+Umschalt+F12. F12 allein öffnet bei freigegebenem
+        /// Entwicklerbereich <c>WEBVIEW_WERKZEUGE</c> die Entwicklerwerkzeuge der WebView; mit Strg+Umschalt
+        /// ist es kein Beschleuniger der WebView, und <see cref="Form.ProcessCmdKey"/> meldet die Geste als
+        /// behandelt, bevor die WebView sie sieht.
+        /// </summary>
+        internal const Keys GESTE = Keys.Control | Keys.Shift | Keys.F12;
 
         /// <summary>Zeigt „Über EPOS-Plan" als modales Fenster.</summary>
         /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
@@ -65,12 +78,26 @@ namespace WindowsFormsApplication1
                 return fertig.Task;
             };
 
+            // Die Geste, gleich auf welchem Weg erkannt (ProcessCmdKey oder der Dialog selbst): eine
+            // Nachricht spaeter schalten, Hauptfenster neu versorgen, anstossen. Die Sperre laesst
+            // waehrend des Schaltens (Rueckfrage ist modal) und kurz danach kein zweites zu.
+            var sperre = new Gestensperre();
+            Action geste = () => Spaeter(dlg, () =>
+            {
+                if (!sperre.Betreten(Environment.TickCount64)) return;
+                try
+                {
+                    if (EntwicklungHuelle.GesteUmschalten(neuVersorgen)) anstoss.Ausloesen();
+                }
+                finally { sperre.Verlassen(Environment.TickCount64); }
+            });
+
             // Die Windows-Schale hat VOR dem Anstoss geschaltet (s. o.); der Rueckruf liefert den Block danach.
             Func<string> schalten = () => UeberHuelle.Diagnosetext(programmversion);
 
             var werte = new Dictionary<string, object>(UeberHuelle.Gaben(
                 Hauptfensterrahmen.PRODUKTNAME, version, Baudatum(), programmversion,
-                AdresseOeffnen, kopieren, protokollordner, fernwartung, schalten, anstoss, supportpaket))
+                AdresseOeffnen, kopieren, protokollordner, fernwartung, schalten, anstoss, supportpaket, geste))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -86,16 +113,43 @@ namespace WindowsFormsApplication1
             dlg.Befehlstaste = taste =>
             {
                 if (taste != GESTE) return false;
-                Spaeter(dlg, () =>
-                {
-                    if (EntwicklungHuelle.GesteUmschalten(neuVersorgen)) anstoss.Ausloesen();
-                });
+                geste();
                 return true;
             };
 
             using (dlg)
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+        }
+
+        /// <summary>
+        /// Die SPERRE gegen doppeltes Schalten: Ein Tastendruck kann die Geste auf beiden Wegen
+        /// auslösen (<see cref="Form.ProcessCmdKey"/> und der Dialog). Während eines Schaltens und
+        /// <see cref="RUHE_MS"/> danach wird kein zweites zugelassen. Nur auf dem Faden der Oberfläche.
+        /// </summary>
+        internal sealed class Gestensperre
+        {
+            /// <summary>Die Ruhezeit nach einem Schalten in Millisekunden.</summary>
+            internal const long RUHE_MS = 500;
+
+            private bool _laeuft;
+            private long _zuletzt = long.MinValue / 2;
+
+            /// <summary><c>true</c> = das Schalten darf laufen; dann ist die Sperre belegt.</summary>
+            internal bool Betreten(long jetztMs)
+            {
+                if (_laeuft || jetztMs - _zuletzt < RUHE_MS) return false;
+                _laeuft = true;
+                _zuletzt = jetztMs;
+                return true;
+            }
+
+            /// <summary>Gibt die Sperre frei; die Ruhezeit zählt ab hier.</summary>
+            internal void Verlassen(long jetztMs)
+            {
+                _laeuft = false;
+                _zuletzt = jetztMs;
             }
         }
 
