@@ -3423,6 +3423,24 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrRkw + " - vollstaendig: " + RueckkuehlwerkSchema.Vollstaendig() +
                                   ", Anlagenzeilen mit Wert: " + RueckkuehlwerkSchema.ZeilenMitWert() + " (erwartet True, 0).");
             }
+
+            // ---- Schritt VorheizenSchema.SCHRITT (AH-V4): Vorheizen der Aufheizoptimierung, Fassung 2 - sieben Spalten an
+            //      Tab_Einstellungen, Vorheizzeit_H an Tab_Zone, achtzehn Ergebnisspalten an Tab_ErgebnisGebaeude und
+            //      Tab_ErgebnisZone. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Vorheizen.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Spalte steht auf NULL, und NULL ist die Sollwertrampe des Bestands.
+            string nrVh = VorheizenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVh + " - Vorheizen: " + (VorheizenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVh = new List<string>();
+                angelegt += VorheizenSchema.Ausfuehren(berichtVh);
+                foreach (string zeile in berichtVh)
+                    Console.WriteLine("Schritt " + nrVh + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVh + " - vollstaendig: " + VorheizenSchema.Vollstaendig() +
+                                  ", Einstellungen mit Verfahren: " + VorheizenSchema.ZeilenMitVerfahren() + " (erwartet True, 0).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

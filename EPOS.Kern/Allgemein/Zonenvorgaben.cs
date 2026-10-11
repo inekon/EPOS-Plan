@@ -97,7 +97,8 @@ namespace WindowsFormsApplication1
         double? ReglerProportionalbandK = null,
         bool? KuehlungAktiv = null, double? KuehlSollwert = null, double? KuehlSollwertNacht = null,
         double? KuehlleistungMaxKw = null,
-        string KuehlUebergabeArt = null, double? KuehlUebergabeExponent = null, double? KuehlUebergabeLeistungNennKw = null)
+        string KuehlUebergabeArt = null, double? KuehlUebergabeExponent = null, double? KuehlUebergabeLeistungNennKw = null,
+        int? VorheizzeitH = null)
     {
         /// <summary>Die Eingaben einer gespeicherten Zone.</summary>
         public static Zoneneingaben Aus(ZoneModel z)
@@ -110,7 +111,7 @@ namespace WindowsFormsApplication1
                 z.Uebergabe_Art, z.Uebergabe_Exponent, z.Uebergabe_Leistung_Nenn,
                 z.Auslegung_Vorlauf, z.Auslegung_Ruecklauf, z.Auslegung_Raumtemperatur, z.Regler_Proportionalband,
                 z.Kuehlung_Aktiv, z.Kuehl_Sollwert, z.Kuehl_Sollwert_Nacht, z.Kuehlleistung_Max,
-                z.Kuehl_Uebergabe_Art, z.Kuehl_Uebergabe_Exponent, z.Kuehl_Uebergabe_Leistung_Nenn);
+                z.Kuehl_Uebergabe_Art, z.Kuehl_Uebergabe_Exponent, z.Kuehl_Uebergabe_Leistung_Nenn, z.Vorheizzeit_H);
         }
     }
 

@@ -2265,6 +2265,10 @@ Stand 05.10.2026: Proben 33 bis 38 grün — 33 `SqprojLeserTests`, 34 `SqprojRa
 und Nennwerte gleich, zweiter Export byte-gleich; alle Angabearten; Gegenproben ohne `EPOS_*`) und der Fall der
 Anreicherung in `IfcAnreicherungTests`.
 
+### 16.8 Herkunft der Formatkenntnis und Rechte
+
+Die Kenntnis des Formats `.sqproj` stammt aus der Analyse von Projektdateien, die der lizenzierte Anwender mit der Exportfunktion seiner HottCAD-Installation selbst erzeugt hat. Untersucht wurden allein diese Dateien mit den Bordmitteln von SQLite (`sqlite_master`, `PRAGMA table_info`), festgehalten im [Befund zur HottCAD-Projektdatei](Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md). Programmcode von HottCAD wurde weder dekompiliert noch disassembliert; Dokumentation, Schemata oder Bibliotheken der Hottgenroth Software AG werden nicht verwendet und liegen nicht im Repositorium. Der Leser öffnet die Datei ausschließlich lesend mit `Microsoft.Data.Sqlite`, übernimmt nur die Daten des jeweiligen Projekts (Gebäude, Räume, Zonen, Bauteile und die vom Projekt benutzten Profile) und entnimmt keine Kataloge zur Auslieferung. Datenformate, Tabellen- und Spaltennamen sind keine Ausdrucksform eines Programms und frei nutzbar (§ 69a Abs. 2 UrhG; EuGH, SAS Institute, C-406/10); das Beobachten rechtmäßig erzeugter Dateien ist dem Anwender nach § 69d Abs. 3 UrhG erlaubt und vertraglich nicht abdingbar (§ 69g Abs. 2 UrhG). „HottCAD“ ist eine Marke der Hottgenroth Software AG und wird in Oberfläche und Papieren nur beschreibend als Herkunft der Datei genannt (§ 23 MarkenG); es besteht keine geschäftliche Verbindung, und EPOS-Plan wirbt nicht mit Kompatibilität. Projektdateien `.sqproj` kommen nie ins Repositorium; die sechs IFC-Exporte unter `Quellen/` sind Testmaterial und nicht Teil der Auslieferung (`Quellen/LIESMICH.md`).
+
 ---
 
 ## 17. Ein Gebäudebetrachter für IFC, Projektdatei und gbXML — Körper aus den Flächen der Datei

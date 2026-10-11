@@ -739,7 +739,9 @@ namespace WindowsFormsApplication1
         {
             if (IstBerechnet(vorgabe))
                 return Math.Max(Vorheizvorgabe.VORHEIZZEIT_MIN_H, a.BedarfQuantilH);
-            return Math.Clamp(a.Zone.ManuellH ?? vorgabe.Vorheizen.VorheizzeitH.Value, Vorheizvorgabe.VORHEIZZEIT_MIN_H, FENSTER_MAX_H);
+            // AH-V4: mit Geltung Zone zuerst die Vorheizzeit der Zone (Tab_Zone.Vorheizzeit_H), dann das Gebäude, dann das Projekt.
+            int? zone = vorgabe.Vorheizen.Geltung == Vorheizgeltung.Zone ? a.Zone.VorheizzeitZoneH : null;
+            return Math.Clamp(zone ?? a.Zone.ManuellH ?? vorgabe.Vorheizen.VorheizzeitH.Value, Vorheizvorgabe.VORHEIZZEIT_MIN_H, FENSTER_MAX_H);
         }
 
         private static Aufheizplan Unbeheizt(Aufheizzone zone)

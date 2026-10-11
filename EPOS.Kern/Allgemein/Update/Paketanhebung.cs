@@ -416,6 +416,10 @@ namespace WindowsFormsApplication1
             // ohne Rueckkuehlwerk und ohne Wasserpreis an (heutiger Weg ueber die Rueckkuehlart), die Ergebnisspalten leer.
             new Stufe(RueckkuehlwerkSchema.SCHRITT, Art.Katalog,
                       "Rückkühlwerk als eigenes Glied (Katalog, Projektkopie, Verweis und Wasserpreis an der Anlage, Kennzahlen)"),
+            // Ein älteres Paket führt kein Vorheizen; seine Projekte kommen mit der Sollwertrampe an (Spalten leer), die
+            // Zonen erben die Vorheizzeit, die Ergebnisspalten bleiben leer.
+            new Stufe(VorheizenSchema.SCHRITT, Art.Ddl,
+                      "Vorheizen der Aufheizoptimierung (Verfahren, Vorheizzeit, Toleranz, Geltung; Ergebnisse je Gebäude und Zone)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
