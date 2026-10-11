@@ -191,12 +191,18 @@ namespace WindowsFormsApplication1
             {
                 SimulationProtokoll.Aktuell.HinweisEinmal("ak3-ohne-kaskadenstunde",
                     "Anlagenkopplung AK3: Die Kaskade hat den Kreis nicht je Stunde gerufen; die Gebäude bleiben beim unbegrenzten Lauf.");
+                // V3b: Die Gebäude bleiben bei Pass 1 — dann nennen die Hinweise des Vorheizens dessen Kennzahlen.
+                foreach (Ak3Weg.Eintrag g in _ak3.Gebaeude)
+                    Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Keiner, GebaeudeErgebnisse.Ergebnis(g.Index)?.Vorheizen,
+                                                      Vdi6007Rechenweg.Bezeichnung(g.Zeile));
                 return false;
             }
 
             foreach (Ak3Weg.Eintrag g in _ak3.Gebaeude)
             {
                 GebaeudeModellErgebnis e = Zonenrechnung.Abschluss(g.Stepper, g.Index, g.Zeile.ID_Gebaeude);
+                // V3b: Der Abschluss hat das Vorheizen am Kreisergebnis nachgewiesen; die Hinweise nennen dessen Kennzahlen.
+                Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Keiner, e.Vorheizen, Vdi6007Rechenweg.Bezeichnung(g.Zeile));
                 if (g.Skaliert) e = e.Skaliert(g.Faktor);
                 // AK3-K (Festlegung 20): Die Tagesart der Zonensperre entschied Pass 1, der Kreis übernimmt sie als
                 // Vorgabe - seine Kennzahlen bleiben die des Pass 1.

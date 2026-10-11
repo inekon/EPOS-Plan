@@ -408,6 +408,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keinen Rang der Kälteerzeuger; die Spalte kommt leer an (Vorgabefolge).
             new Stufe(KaelteRangSchema.SCHRITT, Art.Ddl,
                       "Pflegbare Kältefolge (Rang der Kälteerzeuger an der Anlagenzeile)"),
+            // Ein älteres Paket führt keinen Kältebedarf; die Tabellen kommen leer an, die Deckungsspalten seiner
+            // Lastgänge stehen auf 'zentral' (heutiger Weg), die Ergebnisspalten leer.
+            new Stufe(KaeltebedarfSchema.SCHRITT, Art.Ddl,
+                      "Kältebedarf (Profile, Typkatalog, Zuordnung mit Deckungsart)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

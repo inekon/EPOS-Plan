@@ -1007,7 +1007,12 @@ namespace WindowsFormsApplication1
         /// <see cref="KaelteRangSchema.SCHRITT"/>: der Rang eines Kälteerzeugers an seiner Anlagenzeile
         /// (<c>Tab_Energieanlagen.Kaelte_Rang</c>, <see cref="KaelteRangSchema"/>). <b>Ergebnisneutral:</b> Jede Zeile
         /// steht danach auf NULL, und NULL ist die Vorgabefolge.
-        public const int Zielversion = KaelteRangSchema.SCHRITT;
+        /// Danach, mit dem KÄLTEBEDARF OHNE GEBÄUDEMODELL (K1, Entscheide E-K1 bis E-K3), steht das Ziel auf
+        /// <see cref="KaeltebedarfSchema.SCHRITT"/>: Kältebedarfsprofile, Typkatalog und Zuordnung mit Deckungsart
+        /// (<see cref="KaeltebedarfSchema"/>), Deckungsspalten an <c>Z_ProjektWaermebedarf</c>, fünf leere Ergebnisspalten,
+        /// sechs neutrale Typsätze (<see cref="KaeltetypSaat"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt ordnet einen
+        /// Kältebedarf zu, jeder Lastgang steht auf „zentral“.
+        public const int Zielversion = KaeltebedarfSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

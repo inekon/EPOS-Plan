@@ -5398,6 +5398,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KAELTE_RANG = KaelteRangSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaeltebedarfSchema.SCHRITT"/> — <b>Kältebedarf ohne Gebäudemodell</b> (K1, Entscheide E-K1 bis
+        /// E-K3): Kältebedarfsprofile, Typkatalog und Zuordnung mit Deckungsart, Deckungsspalten an
+        /// <c>Z_ProjektWaermebedarf</c>, fünf leere Ergebnisspalten, Saat der sechs neutralen Typsätze.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt ordnet einen Kältebedarf zu, jeder Lastgang steht auf
+        /// „zentral“.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEBEDARF = KaeltebedarfSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7894,6 +7904,13 @@ namespace WindowsFormsApplication1
                         "Die Folge der Kaelteerzeuger liesse sich nicht pflegen. KEIN Rechenergebnis aendert sich - " +
                         "jede Zeile steht auf NULL, und NULL ist die Vorgabefolge.",
                         Schritt_KaelteRang),
+            // K1: Kaeltebedarf ohne Gebaeudemodell. Quelle ist KaeltebedarfSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEBEDARF,
+                        "Tab_Kaeltebedarf_STAMM, Tab_Kaeltetyp_STAMM, Tab_Kaeltebedarf, Tab_Kaeltetyp, Z_Projekt_Kaeltebedarf; " +
+                        "Deckungsspalten an Z_ProjektWaermebedarf; Ergebnisspalten an Tab_ErgebnisEnergiebedarf; Saat der Kaeltetypen",
+                        "Kaeltebedarf liesse sich nicht als Profil pflegen und keine Zuordnung truege ihre Deckungsart. " +
+                        "KEIN Rechenergebnis aendert sich - kein Referenzprojekt ordnet einen Kaeltebedarf zu.",
+                        Schritt_Kaeltebedarf),
         };
 
         /// <summary>
@@ -15229,6 +15246,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Teillast und Takten der Kaeltemaschine - " +
                     (e.Angelegt == 0 ? "stand bereits." : e.Angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kältebedarf" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTEBEDARF"/>,
+        /// die Anweisungen bei <see cref="KaeltebedarfSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Kaeltebedarf(Lauf l)
+        {
+            string nr = KaeltebedarfSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltebedarfSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KaeltebedarfSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltebedarfSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tabellen, Spalten oder Saat des Kaeltebedarfs stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kaeltebedarf - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Schemaanweisung(en).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

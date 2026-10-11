@@ -64,6 +64,10 @@
                     <span class="epos-ueberlagerung-kopfzusatz">@Kopfzusatz</span>
                 }
                 <h2 class="epos-ueberlagerung-titel">@Titel</h2>
+                @if (Kopfnachsatz is not null)
+                {
+                    <span class="epos-ueberlagerung-kopfnachsatz">@Kopfnachsatz</span>
+                }
                 @if (Schliessbar)
                 {
                     <button type="button" class="epos-knopf epos-ueberlagerung-zu"
@@ -116,6 +120,12 @@
     /// was gespeichert wird, KA‑E‑8). Ohne sie bleibt der Kopf, wie er war.
     /// </summary>
     [Parameter] public RenderFragment? Kopfzusatz { get; set; }
+
+    /// <summary>
+    /// Was nach dem Titel im Kopf steht (Satz-Überlagerung der Katalogauswahl: die Kenndaten).
+    /// Ohne ihn bleibt der Kopf, wie er war.
+    /// </summary>
+    [Parameter] public RenderFragment? Kopfnachsatz { get; set; }
 
     /// <summary>Zeigt das ✕ in der Kopfzeile. <c>false</c> = nur der Inhalt schliesst.</summary>
     [Parameter] public bool Schliessbar { get; set; } = true;

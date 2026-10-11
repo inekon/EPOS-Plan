@@ -73,7 +73,12 @@
                         KatalogWahl="@_katalogWahl" KatalogSichtbar="@KatalogSichtbar()"
                         WahlGeaendert="BeiWahlGeaendert"
                         KatalogFussName="@_katalogZeile?.Bezeichner"
-                        SatzArt="@SatzArt" SatzName="@SatzName" SatzKenndaten="@SatzKenndaten">
+                        SatzArt="@SatzArt" SatzName="@SatzName" SatzKenndaten="@SatzKenndaten"
+                        SatzNurLesen="@SatzNurLesen" SatzUebernehmenGesperrt="@_feldFehler"
+                        SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
+                        SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
+                        SatzZusammenfassung="@Zusammenfassung()"
+                        @ref="_zweispalten">
 
         <ProjektKopf>
             @if (Gesamtleistung is not null)
@@ -116,6 +121,20 @@
                     </TemplateColumn>
                     <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
                                     Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
+                    @* UeS2: der Stift je Projektzeile - die Projektkopie in der Satz-Ueberlagerung;
+                       nur, wo es den Weg der Projektkopie gibt (wie „Bearbeiten…"). *@
+                    @if (ProjektsatzWege is not null)
+                    {
+                        <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-stift">
+                            <HeaderTemplate>
+                                <Zeilenstift Kopf="true" />
+                            </HeaderTemplate>
+                            <ChildContent>
+                                <Zeilenstift Hinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                                             Geklickt="@(() => BeiProjektStift(context))" />
+                            </ChildContent>
+                        </TemplateColumn>
+                    }
                 </KindInhalt>
             </Raster>
         </Links>
@@ -130,7 +149,8 @@
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
                           Vergleichsparameter="@Vergleichsparameter"
                           ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
-                          GewaehlteChanged="BeiKatalogKaestchen" Gefiltert="BeiGefiltert" />
+                          GewaehlteChanged="BeiKatalogKaestchen" Gefiltert="BeiGefiltert"
+                          Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
         </Rechts>
 
         <KatalogFuss>
@@ -149,6 +169,17 @@
                     title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
                     disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
         </KatalogFuss>
+
+        <SatzKopfKnoepfe>
+            @* DIE INFOKNOEPFE IM KOPF DER DETAILZEILE (UeS2b): ohne Ueberlagerung erreichbar; in ihr
+               stehen sie in der Knopfzeile des Fragments (der Baustein zeigt je Ansicht eine Stelle). *@
+            <span class="epos-berechnungshilfe">
+                <InfoKnopf Schluessel="Form_PV.Grundlagen"
+                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                <InfoKnopf Schluessel="Form_PV.Berechnung"
+                           StandardKurztext="Berechnungsweg Photovoltaik" MitAssistent="false" />
+            </span>
+        </SatzKopfKnoepfe>
 
         <Satz>
         @* DIE KNOPFZEILE DER SATZFLAECHE: beim Projektsatz die Kostenknoepfe (KA-E-12),
@@ -254,15 +285,7 @@
                         <Katalogfelder Felder="@_felder" NurLesen="@(!FelderSpeicherbar)"
                                        Geaendert="FeldGeaendert"
                                        FehlerZustand="BeiFeldFehler" />
-
-                        @if (FelderSpeicherbar)
-                        {
-                            <div class="epos-leiste">
-                                <Speichervermerk @ref="_felderVermerk" Text="@BtnFelderSpeichernText"
-                                                 Geaendert="@_felderGeaendert" Gesperrt="@_feldFehler"
-                                                 Satz="@SatzName" Speichern="FelderSpeichern" />
-                            </div>
-                        }
+                        @* Gespeichert wird ueber das OK der Satz-Ueberlagerung - das Fragment steht nur dort (UeS2). *@
                     }
                 </div>
             }
@@ -689,6 +712,13 @@
     [Parameter] public Func<ErzeugerZeile?, bool, Task>? KostenOeffnen { get; set; }
 
     /// <summary>
+    /// <b>Invest- und Betriebskosten einer Projektzeile</b> für die Zusammenfassung der
+    /// Detailzeile (UeS2) — die Summen der Kostenverwaltung dieser Anlage in € bzw. €/a.
+    /// <c>null</c> (Assistent, kein Projekt): die Zusammenfassung nennt keine Kosten.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, (double Invest, double Betrieb)>? Kostensumme { get; set; }
+
+    /// <summary>
     /// Öffnet die Energieträgerverwaltung zur GEWÄHLTEN Projektzeile (Träger und Gerät
     /// gehen mit); <c>null</c> = keine Wahl. Ohne Delegat fehlt der Knopf.
     /// </summary>
@@ -748,7 +778,6 @@
     [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? KatalogfelderSpeichern { get; set; }
 
     /// <summary>Beschriftung des Speicherknopfs im Aufklapper.</summary>
-    [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
 
     /// <summary>
     /// Der Zusatz hinter der abgeleiteten Modulzahl (Entscheidungsfrage <b>Q9</b>) —
@@ -783,7 +812,6 @@
     public bool ParameterOffen => _parameterOffen;
     private IReadOnlyList<BrowserFeldwert>? _felder;
     private bool _felderGeaendert;
-    private Speichervermerk? _felderVermerk;
     private string _felderErfolg = "";
     private bool _feldFehler;
 
@@ -865,6 +893,14 @@
     private bool AlleDatenDa => _projektZeile is not null
         ? ProjektsatzWege is not null
         : _katalogZeile is not null && Katalogfelder is not null;
+
+    /// <summary>
+    /// UeS2: Beim Projektsatz ist die Satz-Überlagerung nie nur lesend — ihre Anlagenfelder
+    /// (Neigung, Azimut, Anzahl, Ertragsmodell) schreiben sofort, ihr OK behält sie, ihr
+    /// Abbrechen stellt sie zurück; ohne Weg der Projektkopie (Assistent) stünde sonst nur
+    /// „Schließen" da, das wie Abbrechen verwirft.
+    /// </summary>
+    private bool SatzNurLesen => !FelderSpeicherbar && _projektZeile is null;
 
     private bool FelderSpeicherbar => _projektZeile is not null
         ? ProjektsatzWege?.Speichern is not null
@@ -1093,6 +1129,7 @@
         _detail = Katalogladung.Satz(() => ProjektDetail is not null ? ProjektDetail(zeile) : Detail?.Invoke(zeile.Bezeichner),
                                      zeile.Bezeichner, out _satzFehler)
                   ?? Leer(zeile.Bezeichner);
+        KostenNachziehen();
         FelderNachziehen();
     }
 
@@ -1197,7 +1234,6 @@
     private void FeldGeaendert()
     {
         _felderGeaendert = true;
-        _felderVermerk?.Leeren();
     }
 
     /// <summary>
@@ -1206,6 +1242,7 @@
     /// </summary>
     private void FelderSpeichern()
     {
+        _letzterSpeicherfehler = null;
         if (_felder is null) return;
         KatalogSpeicherErgebnis ergebnis;
         if (_projektZeile is not null)
@@ -1226,13 +1263,12 @@
         if (!ergebnis.Ok)
         {
             Melden(ergebnis.Meldung, true);
-            _felderVermerk?.Fehler(ergebnis.Meldung);
+            _letzterSpeicherfehler = ergebnis.Meldung;
             return;
         }
         _felderGeaendert = false;
         _meldung = "";
         _felderErfolg = ergebnis.Meldung;
-        _felderVermerk?.Gespeichert();
         if (_projektZeile is not null) ProjektNeuLesen();
         else
         {
@@ -1242,6 +1278,84 @@
                 _detail = Katalogladung.SatzDazu(() => Detail is not null ? Detail(_katalogZeile.Bezeichner) : null,
                                                  _katalogZeile.Bezeichner, ref _satzFehler) ?? _detail;
         }
+    }
+
+    /// <summary>Grund der letzten Ablehnung von <see cref="FelderSpeichern"/>; <c>null</c> = gespeichert.</summary>
+    private string? _letzterSpeicherfehler;
+
+    // =================================================================================
+    // Die Satz-Ueberlagerung (UeS1): „Bearbeiten…" eines Satzes und „Vergrößern"
+    // =================================================================================
+
+    private Zweispaltenauswahl? _zweispalten;
+
+    /// <summary>Steht die Satz-Überlagerung offen? Dann trägt sie das Fragment und ihr OK speichert.</summary>
+    private bool _satzGross;
+
+    /// <summary>Grund einer abgelehnten Übernahme, in der Fußleiste der Überlagerung.</summary>
+    private string? _satzUeberlagerungFehler;
+
+    /// <summary>
+    /// Träger, Neigung, Azimut, Modulanzahl und Ertragsmodell gehen schon bei der Eingabe in die Anlage — der
+    /// Merker hält ihren Stand für „Abbrechen".
+    /// </summary>
+    private PvAnlagenmerker? _anlagenmerker;
+
+    /// <summary>Steht die Satz-Überlagerung offen? (Prüfhilfe.)</summary>
+    public bool SatzUeberlagerungOffen => _satzGross;
+
+    /// <summary>
+    /// Die Überlagerung ist aufgegangen: „Alle Daten" aufgeklappt — frisch gelesen, wenn der Aufklapper zu
+    /// war; ein offener Aufklapper behält seine Eingaben. Die Anlagenfelder werden gemerkt.
+    /// </summary>
+    private void BeiSatzVergroessert()
+    {
+        _satzGross = true;
+        _satzUeberlagerungFehler = null;
+        _anlagenmerker = _projektZeile is not null ? PvAnlagenmerker.Von(_projektZeile) : null;
+        if (AlleDatenDa && (!_parameterOffen || _felder is null))
+        {
+            _parameterOffen = true;
+            FelderHolen();
+        }
+    }
+
+    /// <summary>
+    /// OK der Überlagerung: derselbe Speicherweg wie der Knopf der Satzfläche (<see cref="FelderSpeichern"/>
+    /// über <c>Katalogladung.Schreiben</c>, KT‑4-Fangweg). Lehnt er ab, bleibt die Überlagerung mit dem Grund offen.
+    /// </summary>
+    private void BeiSatzUebernommen()
+    {
+        if (FelderSpeicherbar && _felder is not null && _felderGeaendert)
+        {
+            FelderSpeichern();
+            if (_letzterSpeicherfehler is not null)
+            {
+                _satzUeberlagerungFehler = _letzterSpeicherfehler;
+                _zweispalten?.SatzOffenHalten();
+                return;
+            }
+        }
+        _satzGross = false;
+        _satzUeberlagerungFehler = null;
+        _anlagenmerker = null;
+        KostenNachziehen();   // die Kostenknoepfe der Ueberlagerung koennen die Summen geaendert haben
+    }
+
+    /// <summary>
+    /// Abbrechen, ✕, Esc oder Schließen der Überlagerung: der Satz wird neu gelesen, Änderungen verworfen —
+    /// auch die anlagenbezogenen Felder stehen wieder wie beim Öffnen.
+    /// </summary>
+    private void BeiSatzVerworfen()
+    {
+        _satzGross = false;
+        _satzUeberlagerungFehler = null;
+        if (_anlagenmerker is { } merker && _projektZeile is not null
+            && merker.Zurueckschreiben(_projektZeile, TraegerWechseln, Uebernehmen))
+            SummeNachziehen();
+        _anlagenmerker = null;
+        if (_felder is not null) FelderHolen();
+        KostenNachziehen();
     }
 
     /// <summary>Nach dem Speichern einer Projektkopie: Kenndaten und Summe neu.</summary>
@@ -1348,13 +1462,20 @@
     /// „Bearbeiten…" im Katalogfuß: ein einzelner ungesperrter Satz öffnet den vollen Katalogeditor (KA-E-13),
     /// mehrere oder gesperrte Sätze die Satzbearbeitung - gesperrte übersprungen, alle gesperrt nur lesend.
     /// </summary>
-    private void BeiKatalogBearbeiten()
+    private async Task BeiKatalogBearbeiten()
     {
         List<Katalogfilterzeile> ziele = KatalogZiele();
         if (ziele.Count == 0) return;
         if (ziele.Count == 1 && !ziele[0].Geschuetzt && EditorGaben is not null)
         {
             _editorGaben = EditorGaben(ziele[0].Bezeichner);
+            return;
+        }
+        // UeS1: EIN gesperrter Satz oeffnet nur lesend in der Satz-Ueberlagerung („Erst Schloss aufheben").
+        if (ziele.Count == 1 && ziele[0].Geschuetzt && Katalogfelder is not null && _zweispalten is not null)
+        {
+            if (_katalogZeile?.Bezeichner != ziele[0].Bezeichner) KatalogZeileWaehlen(ziele[0].Bezeichner);
+            await _zweispalten.SatzUeberlagerungOeffnen();
             return;
         }
         if (KatalogsatzWege is not null)
@@ -1367,13 +1488,101 @@
     }
 
     /// <summary>„Bearbeiten…" im Projektbereich: die Projektkopien der Auswahl, je Modul einmal (Felder desselben Moduls teilen sie).</summary>
-    private void BeiProjektBearbeiten()
+    private async Task BeiProjektBearbeiten()
     {
         if (ProjektsatzWege is null) return;
-        var saetze = ProjektZiele().GroupBy(z => z.GeraetId)
+        List<ErzeugerZeile> ziele = ProjektZiele();
+        var saetze = ziele.GroupBy(z => z.GeraetId)
             .Select(g => new Bearbeitungssatz(g.Key, g.First().Bezeichner, false)).ToList();
         if (saetze.Count == 0) return;
+        // UeS1: EINE Projektkopie oeffnet die Satz-Ueberlagerung, mehrere die Satzbearbeitung.
+        if (saetze.Count == 1 && _zweispalten is not null)
+        {
+            if (_projektZeile?.GeraetId != saetze[0].Id) ProjektZeileWaehlen(ziele.First(z => z.GeraetId == saetze[0].Id));
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
         _bearbeitung = (Satzmarke.Projektsatz, saetze);
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Projektzeile — sie wird gewählt (ohne die Kästchen der
+    /// Mehrfachwahl anzufassen) und ihre Projektkopie öffnet in der Satz-Überlagerung.
+    /// </summary>
+    private async Task BeiProjektStift(ErzeugerZeile zeile)
+    {
+        if (ProjektsatzWege is null || _zweispalten is null) return;
+        if (_projektZeile != zeile) ProjektZeileWaehlen(zeile);
+        await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Katalogzeile (die Katalogliste hat sie schon gewählt) — ein
+    /// gesperrter Satz öffnet nur lesend in der Satz-Überlagerung, ein ungesperrter den
+    /// Katalogeditor (KA‑E‑13); ohne Editor die Überlagerung.
+    /// </summary>
+    private async Task BeiKatalogStift(Katalogfilterzeile zeile)
+    {
+        if (_katalogZeile?.Bezeichner != zeile.Bezeichner) KatalogZeileWaehlen(zeile.Bezeichner);
+        if (!zeile.Geschuetzt && EditorGaben is not null)
+        {
+            _editorGaben = EditorGaben(zeile.Bezeichner);
+            return;
+        }
+        if (Katalogfelder is not null && _zweispalten is not null)
+        {
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
+        if (zeile.Geschuetzt) BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
+    }
+
+    // =================================================================================
+    // Die Zusammenfassung der Detailzeile (UeS2)
+    // =================================================================================
+
+    /// <summary>Die Kostensummen der gewählten Projektzeile — gelesen bei der Wahl und nach der Überlagerung.</summary>
+    private (double Invest, double Betrieb)? _kosten;
+
+    private void KostenNachziehen()
+    {
+        _kosten = null;
+        if (Wizard || Kostensumme is null || _projektZeile is null) return;
+        try { _kosten = Kostensumme(_projektZeile); }
+        catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
+    }
+
+    /// <summary>
+    /// <b>Die Kurzangaben des gewählten Satzes</b> für die Detailzeile. Projektsatz: Stückzahl
+    /// (aus den Strängen, sonst die Eingabe), kWp gesamt (über <see cref="AnlagenKwp"/>, sonst
+    /// Modulleistung des Details mal Stückzahl), Neigung/Azimut, Albedo (leer = 0,2), Ertragsmodell,
+    /// Invest, Betrieb. Katalogsatz: Hersteller, P_MPP, Wirkungsgrad und Modulfläche aus den
+    /// Spalten des Katalogprofils. Ohne Satz eine leere Liste — nie <c>null</c>, sonst zeichnete
+    /// der Baustein das Fragment in der Detailzeile.
+    /// </summary>
+    internal IReadOnlyList<Satzangabe> Zusammenfassung()
+    {
+        var liste = new List<Satzangabe>();
+        CultureInfo k = CultureInfo.CurrentCulture;
+        if (_projektZeile is ErzeugerZeile p)
+        {
+            double stueck = p.Straenge.Count > 0 ? Modulzahl : p.AnzahlModule ?? 0;
+            liste.Add(new(Resource.AUSWAHL_ZF_ANZAHL, stueck.ToString("0", k)));
+            double kwp = KwpDer(p);
+            if (kwp <= 0 && _detail.Kennwerte?.ModulleistungW is double w) kwp = w * stueck / 1000.0;
+            if (kwp > 0) liste.Add(new(Resource.AUSWAHL_ZF_LEISTUNG_GESAMT, Satzangaben.Zahl(kwp, "kWp")));
+            liste.Add(new(Resource.AUSWAHL_ZF_AUSRICHTUNG,
+                          (p.Neigung ?? 0).ToString(k) + "° / " + (p.Azimut ?? 0).ToString(k) + "°"));
+            liste.Add(new(Resource.AUSWAHL_ZF_ALBEDO, (p.Albedo ?? 0.2).ToString("0.##", k)));
+            liste.Add(new(Resource.AUSWAHL_ZF_ERTRAGSMODELL, p.ModellErweitert ? _modellTexte.ModellErweitert : _modellTexte.ModellEinfach));
+            Satzangaben.Kosten(liste, _kosten);
+        }
+        else if (_katalogZeile is Katalogfilterzeile z && Katalogprofil is not null)
+        {
+            Satzangaben.Katalog(liste, z, Katalogprofil, Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpPstc,
+                                Katalogfilterprofil.SpEta, Katalogfilterprofil.SpModulflaeche);
+        }
+        return liste;
     }
 
     /// <summary>Die Satzbearbeitung ist zu; gespeichert: Listen, Detail und Summe neu.</summary>
@@ -1516,7 +1725,8 @@
     {
         if (e.Key == "Escape" && _katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_straengeOffen || _editorGaben is not null || _bearbeitung is not null || _rueckweg is not null || _loeschfrage)
+        if (_straengeOffen || _editorGaben is not null || _bearbeitung is not null || _rueckweg is not null || _loeschfrage ||
+            _satzGross)
             return Task.CompletedTask;
         return Abbrechen();
     }

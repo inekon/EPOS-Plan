@@ -93,7 +93,7 @@ melden sie im Takt des Bildaufbaus.
 | GD3 | derselbe Dialog mit 269 Gebäuden (das Maß der Testdatenbank, weiter virtualisiert), 1 088 × 624 |
 | Z1 / Z2 | die **Wohnungstabelle** der Stufe Erweitert im Zapfprofil-Dialog (Seite `maske=wohnungen`; die Probe klickt die Stufe „Erweitert"), 12 Wohnungstypen, 1 088 × 624 und 400 × 624 — Sollwerte (l) |
 | Z3 / Z4 / Z5 | das **Raster der Zapfkategorien** für sich (Seite `maske=kategorien`), 10 Kategorien, bearbeitbar 1 088 × 624 und 400 × 624, lesend (`art=lesen`) 1 088 × 624 — Sollwerte (l) |
-| Z6 / Z7 | dasselbe Raster **in seiner Überlagerung** „Kategorien…" des Katalogdialogs (Seite `maske=tww`), 1 088 × 624 (dazu `querMax` 1 px) und 400 × 624 — Sollwerte (l) |
+| Z6 / Z7 | dasselbe Raster **in seiner Überlagerung** „Kategorien…" des Katalogdialogs (Seite `maske=tww`), 1 088 × 624 (dazu `querMax` 1 px; das Raster trägt dafür `--col-gap: 0px` wie die Katalogliste, Summe der Mindestbreiten 970 px in der 988 px breiten Hülle) und 400 × 624 — Sollwerte (l) |
 | Z8 | **Gegenprobe** zu Z7: die versteckte Feldbeschriftung ohne positionierten Vorfahren (`position: static`). Sie MUSS die Sollwerte verfehlen |
 | GI / GJ | 2 400 Zeilen in der Liste **„Flächen je Zone“ des Gebäudeimports** (Stufe G6c; Seite `/gebaeudeimport?datei=ifc4_zonen.ifc&flaechen=2400`, die Probe klickt „Datei wählen…“, die Flächen des Zonenhauses reihum vervielfacht), 1 088 × 624 und 400 × 624 — gemessen nur in der Flächenliste (`bereich: '.epos-gebimport-flaechen'`); Sollwerte: Rollbehälter = Hülle, Zeile **46 px** (die Zeile ist die Wahl) |
 
@@ -1209,14 +1209,17 @@ Probe von `/fensterprobe`.
 node rollbereichprobe.mjs --url http://127.0.0.1:5299 [--nur <fall>] [--ohne-gegenprobe]
 ```
 
-**Fälle.** Dreizehn Dialoge × drei Fenster (1 280 × 800, 1 280 × 720, 1 024 × 700) × die Zustände Vorgabe,
-Trennlinie oben (Pos1), Trennlinie unten (Ende), Detailzeile auf bei beiden Grenzen, Detailzeile wieder zu,
-mit der Maus gezogen, neu geladen (die Höhe kommt über `Dienste.Einstellungen` wieder) und beim Gebäude die
-offene Überlagerung „Simulation…". Je Zustand: kein sichtbares Element mit `overflow: auto|scroll` in einem
-anderen; Dokument und Dialogkörper rollen nicht; kein Bereich und kein Bereichsinhalt läuft über; die
-Katalogliste behält Kopf und zwei Zeilen (unter 600 px Bausteinhöhe Kopf und eine Zeile, Stilblatt
-`@container katalogauswahl`); die Kopfleisten brechen nicht um und schneiden keinen Knopf ab; die Konsole
-bleibt ohne Fehler. **Gegenprobe** (läuft mit): ein absichtlich rollender Inhalt des Katalogbereichs muss als
+**Fälle.** Vierzehn Fälle (Heizkessel, BHKW, Wärmepumpen, Gebäude, Pufferspeicher, Stromspeicher, Photovoltaik,
+Solarkollektoren, Bedarfsprofile, Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie, Kältemaschinenauswahl) × zehn
+Fenster (1 280 × 800, 1 280 × 720, 1 024 × 768, 1 024 × 700, 1 093 × 614, 1 180 × 820, 1 194 × 834, 1 210 × 834,
+834 × 1 194, 768 × 1 024) × die Zustände Vorgabe, Trennlinie oben (Pos1), Trennlinie unten (Ende), Detailzeile auf bei
+beiden Grenzen, Detailzeile wieder zu, mit der Maus gezogen, neu geladen (die Höhe kommt über `Dienste.Einstellungen`
+wieder), in den Wirten mit Satz-Überlagerung „Satz-Überlagerung offen“ (über „Bearbeiten…“ bzw. „Vergrößern“) und
+danach, beim Gebäude die offene Überlagerung „Simulation…“. Je Zustand: kein sichtbares Element mit
+`overflow: auto|scroll` in einem anderen; Dokument und Dialogkörper rollen nicht; kein Bereich und kein Bereichsinhalt
+läuft über; die Katalogliste behält Kopf und zwei Zeilen (unter 600 px Bausteinhöhe Kopf und eine Zeile, Stilblatt
+`@container katalogauswahl`); die Kopfleisten brechen nicht um und schneiden keinen Knopf ab; die Konsole bleibt ohne
+Fehler. **Gegenprobe** (läuft mit): ein absichtlich rollender Inhalt des Katalogbereichs muss als
 verschachtelter Rollbereich, ein rollender Dialogkörper als solcher erkannt werden. Rückgabe `0` = kein
 Verstoß und Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
@@ -1290,7 +1293,67 @@ Zustand „Rückfrage-Überlagerung offen" und schließt sie mit Esc; rot, wenn 
 schließt. **Ergebnis vom 09.10.2026, Stufe 2b:** **309 Zustände, 0 Verstöße, Gegenprobe rot** (verschachtelt 1 Paar,
 Dialogkörper rollt) — Rückgabe 0; Liste unverändert (648 / 138 / 259, 568 / 138 / 179, 548 / 138 / 159), drei
 Rollbereiche (Projekt, Katalog, Überlagerung), keiner im anderen — die Rückfrage hat keinen eigenen. Am selben Stand
-`fensterprobe.mjs`, `bannerprobe.mjs` und `katalogprobe.mjs` grün; `rasterprobe.mjs` wie vor (Z6 verfehlt, fremd).
+`fensterprobe.mjs`, `bannerprobe.mjs` und `katalogprobe.mjs` grün; `rasterprobe.mjs` grün (29 von 29).
+
+**Heizkessel, BHKW, Pufferspeicher, Stromspeicher (ÜS1, Satz-Überlagerung).** „Bearbeiten…" EINER Projektkopie öffnet die Satz-Überlagerung in voller Höhe
+(Konzept 4.4, 4.6); die Probe misst je Fenster den Zustand „Satz-Ueberlagerung offen" (danach Esc) und denselben Weg über
+„Vergrößern" in der Detailzeile (danach Abbrechen): Kopf sichtbar, OK/Abbrechen sichtbar und treffbar über der
+Home-Anzeige, die Überlagerung rollt nicht als Ganzes, in ihr rollt kein Element außer dem Körper, das Fragment steht
+genau einmal; rot, wenn Esc oder Abbrechen nicht schließen. Der Körper trägt die Besonderheit des Wirts — BHKW die
+Kostenknöpfe, Pufferspeicher „Auslegen…", Stromspeicher die Trägerwahl —, sonst rot; die Wirtseiten geben BHKW,
+Pufferspeicher und Stromspeicher dafür Projektsatzwege ohne Datenbank. Mit `--fotos` legt sie
+`heizkessel_satzueberlagerung_<breite>x<hoehe>.png` in 1 280 × 800, 1 194 × 834 und 834 × 1 194 ab, dazu
+`bhkw_…` und `pufferspeicher_…` in 1 280 × 800 und 1 194 × 834. **Gegenprobe**
+(1 280 × 720): ein Rollbereich im Körper und eine als Ganzes rollende Überlagerung mit weggerollter Fußleiste müssen rot
+werden. `fensterprobe.mjs` misst dazu den Fall `satzueberlagerung` im eigenen Fenster (Kopf, Körper und Fuß in dieser
+Folge in der Überlagerung, Fensterkopf und -fuß unter der Abdunkelung, mit = ohne Fenstermarke).
+**Ergebnis vom 10.10.2026, ÜS1** (je `--nur <fall>`): Heizkessel **130 Zustände**, BHKW, Pufferspeicher und
+Stromspeicher je **100 Zustände** (davon je 20 mit offener Satz-Überlagerung), **0 Verstöße, alle Gegenproben rot** —
+Rückgabe 0; Fensterprobe erfüllt. Körper der Satz-Überlagerung in px, in allen vier Wirten gleich:
+
+| 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 | 1 180 × 820 | 1 194 × 834 | 1 210 × 834 | 834 × 1 194 |
+|---|---|---|---|---|---|---|---|---|---|
+| 633 | 579 | 559 | 627 | 883 | 473 | 635 | 649 | 649 | 1 009 |
+
+**Solarkollektoren, Wärmepumpe, Photovoltaik und die vier Ganglinien (ÜS1c).** Die drei Erzeuger gehen denselben Weg
+wie BHKW und Speicher („Bearbeiten…“, Esc, „Vergrößern“, Abbrechen); der Körper trägt die Kollektorfelder, „Anlage…“
+(Fragment `.epos-wp-satz`) bzw. „Stränge und Wechselrichter…“; die Wirtseiten geben dafür Projektsatzwege, der
+Wärmepumpe dazu Kenndaten und Kostenknöpfe. Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie öffnen über
+„Vergrößern“ und schließen mit „Schließen“: Die Fußleiste ist reine Ansicht (genau ein Knopf, kein Hinweis), die Grafik
+steht genau einmal, und die Kurve im Körper füllt ihn — Zeichenfläche so breit wie die Innenbreite des Körpers (höchstens
+2 px weniger), in 1 280 × 800 mindestens 300 px hoch (sonst 150 px), das Modell im gemessenen Maß (viewBox, je höchstens
+4 px). Nach dem Schließen wartet die Probe, bis die Satzfläche die Kurve wieder in ihrem Maß zeichnet. Mit `--fotos`
+legt sie `waermepumpen_…` und `pvganglinie_satzueberlagerung_<breite>x<hoehe>.png` in 1 280 × 800 und 1 194 × 834 ab.
+**Gegenprobe** (PV-Ganglinie, 1 280 × 800): eine auf 120 px gedrückte und eine auf 300 px Breite begrenzte Kurve im
+Körper müssen rot werden.
+**Ergebnis vom 10.10.2026, ÜS1c** (alle Fälle, Wirt Release, Chromium headless): **1 310 Zustände, 0 Verstöße, alle
+Gegenproben rot** — Rückgabe 0; Heizkessel 130, Gebäude 90, Bedarfsprofile 80, Kältemaschinenauswahl 10, jeder übrige
+Fall 100 Zustände. Der Körper der Satz-Überlagerung steht in allen sieben Erzeuger-Wirten wie in der Tabelle oben.
+Kurve in der Satz-Überlagerung, Breite × Höhe in px (Breite = Innenbreite des Körpers):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 | 1 180 × 820 | 1 194 × 834 | 1 210 × 834 | 834 × 1 194 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Wärmebedarf extern, Stromganglinie | 1 226 × 581 | 1 234 × 534 | 978 × 514 | 978 × 582 | 722 × 837 | 1 047 × 428 | 1 134 × 590 | 1 148 × 604 | 1 164 × 604 | 788 × 963 |
+| Solarthermie-, PV-Ganglinie | 1 226 × 548 | 1 234 × 506 | 978 × 486 | 978 × 554 | 722 × 774 | 1 047 × 400 | 1 134 × 562 | 1 148 × 576 | 1 164 × 576 | 788 × 917 |
+
+**Zusammenfassung der Detailzeile (ÜS2).** Alle sieben Erzeuger-Wirte (Heizkessel, BHKW, Puffer- und Stromspeicher,
+Solarkollektoren, Wärmepumpe, Photovoltaik) zeigen aufgeklappt nur ihre Kurzangaben: Die Probe verlangt mindestens eine
+Angabe, keine Besonderheit des Wirts in der Detailzeile, keinen Vorrang und im Kopf der Detailzeile die zwei Infoknöpfe
+(Wärmepumpe: „Anlage…“, Liste `KOPFKNOEPFE`). Die Satz-Überlagerung öffnet je Fenster über „Bearbeiten…“ der
+Projektkopie (danach Esc), über „Bearbeiten“ der Detailzeile (danach Abbrechen) und über den Stift der Projektzeile
+(danach Esc); ihr Körper trägt die Besonderheit des Wirts (Liste `SATZ_WIRTE`). Die Wirtseiten geben dafür
+`Kostensumme`, `Projektangaben` und Zahlwerte am Detail (`ErzeugerKennwerte`), den Projektzeilen Modulanzahl, Neigung
+und Azimut, der Wärmepumpe Quelle und Kostensumme. Mit `--fotos` legt sie
+`<fall>_zusammenfassung_1280x800.png` ab (ohne Pufferspeicher). **Gegenproben:** eine Angabe je Zeile in der
+Zusammenfassung (Vorrang trotz Zusammenfassung) und eine auf 100 px begrenzte Satzfläche müssen rot werden; die
+Kopfleiste der Wärmepumpe mit 6 px Rand am Umstellknopf wird über die Touchziel-Regel rot — mit der Zusammenfassung läuft
+die Liste darunter nicht mehr über. `fensterprobe.mjs` führt Heizkessel, BHKW und Wärmepumpen in `ZUSAMMENFASSUNG`
+(Photovoltaik und Solarkollektoren stehen dort mit, misst aber nur die Rollbereichprobe): Für sie entfällt die Gegenprobe des Vorrangs (DZ1).
+**Ergebnis vom 11.10.2026, ÜS2b** (alle Fälle, Wirt Release, Chromium headless): **1 370 Zustände, 0 Verstöße, alle
+Gegenproben rot** — Rückgabe 0; Fensterprobe erfüllt (Gegenprobe rot), `rasterprobe.mjs` 29 von 29 Fällen erfüllt,
+`katalogprobe.mjs` alle 66 Fälle ohne Überlagerung.
+
+Am selben Stand `diagrammprobe.mjs` erfüllt (41 Schritte, größter Abstand 0,50 px, Gegenprobe ohne Tafel verfehlt).
 
 Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein
 Katalogdialog (`.epos-katalog-dialog` mit `overflow: auto` als Notnagel um Liste und Stammblatt) und kein
@@ -1313,7 +1376,7 @@ unmittelbar unter einem Kopf, der niedriger ist als die geschätzte Kopfhöhe `-
 Haftregel schob es in Ruhe um 15 px nach unten (Bannerprobe: „in Ruhe 87 px, ohne Haftregel 72 px"). In der
 Katalogauswahl rollt der Dialogkörper nicht; dort haftet das Banner deshalb mit `top: 0`. Danach:
 Bannerprobe erfüllt (Gegenprobe rot), Fensterprobe erfüllt (Gegenprobe rot), Katalogprobe 59 Fälle ohne
-Überlagerung, Rasterprobe 28 von 29 (Z6 `kategorien_ueberlagerung`, quer 47 px, war vorher schon rot).
+Überlagerung, Rasterprobe 29 von 29.
 **Kompaktstufe und Rollbalken (KB1).** Drei weitere Fenster: 1 024 × 768 und 768 × 1 024 (iPad quer
 und hoch), 1 093 × 614 (Laptop bei 125 %). Die Stufe misst die Probe in jedem Fenster nach der
 Medienabfrage `(max-width: 1279.98px), (max-height: 799.98px)` — Normalstufe nur in 1 280 × 800, die
@@ -1355,7 +1418,7 @@ und 520 × 624 mit aufgeklappter Detailzeile, beim Gebäude in 520 × 624 auch z
 Schlussleiste), Bannerprobe (BHKW und Gebäude in beiden Fenstern), Katalogprobe, Legendenprobe. Die
 **Rasterprobe** misst in (c) das gesetzte Zeilenmaß mal `--epos-zeilenskala` der Hülle: GD1 bis GD3
 (Gebäude-Projektdialog, 624 px Höhe, also Kompaktstufe) 46,0 px bei `ItemSize` 53, keine Platzhalter,
-4 Sichtbarkeitsmelder nach dem Rollen; verfehlt bleibt allein Z6 (fremd).
+4 Sichtbarkeitsmelder nach dem Rollen; alle 29 Fälle erfüllt.
 
 **Vorrang der Detailzeile (DZ1, Konzept 4.4 und 4.8).** Je Zustand mit aufgeklappter Detailzeile misst die
 Probe zusätzlich: Projektliste und Katalogliste höchstens 2 px über ihrer Untergrenze, die Satzfläche reicht

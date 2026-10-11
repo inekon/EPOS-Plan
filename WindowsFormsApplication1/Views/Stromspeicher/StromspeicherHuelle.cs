@@ -185,7 +185,6 @@ namespace WindowsFormsApplication1
                         (name, felder) => ModulFeldwertBruecke.Speichern(
                             StromspeicherAdminHuelle.Wege(), name, felder)),
                 ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
-                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
 
                 // Die drei Knoepfe der Kostenleiste. Ohne Projekt gibt es keinen
                 // Kostenkontext - dann bleibt der Delegat weg und die Leiste zeichnet
@@ -200,6 +199,13 @@ namespace WindowsFormsApplication1
                     ? new Func<ErzeugerZeile, Task>(
                         zeile => ErzeugerKostenwege.Energiekosten(
                             besitzer, projektId, DbWerte.ERZEUGER_STROMSPEICHER, zeile))
+                    : null,
+
+                // UeS2: die Kostensummen der Anlage fuer die Zusammenfassung der Detailzeile -
+                // dieselbe Anlagenzuordnung wie die Kostenknoepfe (ErzeugerKostenwege).
+                ["Kostensumme"] = projektId > 0
+                    ? new Func<ErzeugerZeile, (double Invest, double Betrieb)>(
+                        zeile => ErzeugerKostenwege.Summen(projektId, DbWerte.ERZEUGER_STROMSPEICHER, zeile))
                     : null,
 
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
@@ -378,7 +384,9 @@ namespace WindowsFormsApplication1
                 (MyResource.Resource.SP_LABEL_MODULKOSTEN, s.m_Modulkosten.ToString())
             };
 
-            return new ErzeugerDetail(s.m_szBezeichner ?? "", "", felder);
+            // UeS2b: die Zahlwerte fuer die Zusammenfassung der Detailzeile - nicht ueber die Beschriftungen.
+            return new ErzeugerDetail(s.m_szBezeichner ?? "", "", felder,
+                                      Kennwerte: new ErzeugerKennwerte { KapazitaetKwh = s.m_Energie, LeistungKw = s.m_Leistung });
         }
 
 

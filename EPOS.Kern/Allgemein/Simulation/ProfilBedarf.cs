@@ -238,6 +238,35 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Kältebedarf aus Profilen (Welle K1, Konzept Kältebedarf 3.3) — gleich geschnitten wie
+        /// <see cref="Prozesswaerme"/>: Kopfsatz, Jahressumme und Wochenprofil folgen
+        /// <c>Z_Projekt_Kaeltebedarf.ID_Kaeltebedarf</c>. Der Rechenweg (Buchung zentral/Split) folgt in K3;
+        /// heute liest die Fabrik allein die Vorschau und die Tests.
+        /// </summary>
+        public static ProfilQuelle Kaelte(ProfilQuellmodus modus)
+        {
+            bool stamm = modus == ProfilQuellmodus.Katalogvorschau;
+            return new ProfilQuelle
+            {
+                Rueckfall = modus == ProfilQuellmodus.Projektvorschau
+                            ? Kaelte(ProfilQuellmodus.Katalogvorschau) : null,
+                Modus = modus,
+                KopfTabelle = stamm ? KaeltebedarfSchema.TAB_KOPF_STAMM : KaeltebedarfSchema.TAB_KOPF,
+                TypTabelle = stamm ? KaeltebedarfSchema.TAB_TYP_STAMM : KaeltebedarfSchema.TAB_TYP,
+                TypSchluesselSpalte = stamm ? "Bezeichner" : "Typname",
+                ProjektfilterAktiv = !stamm,
+                ZuordnungTabelle = KaeltebedarfSchema.TAB_ZUORDNUNG,
+                ZuordnungSummeSpalte = "Summe",
+                ZuordnungIdSpalte = KaeltebedarfSchema.SPALTE_ID_KAELTEBEDARF,
+                TypKopfIdSpalte = stamm ? null : KaeltebedarfSchema.SPALTE_ID_KAELTEBEDARF,
+                Praefix = MyResource.Resource.SIMENG_PRAEFIX_KAELTE,
+                TextKopfFehlt = MyResource.Resource.SIMENG_KAELTE_KOPF_FEHLT,
+                TextTypprofilFehlt = MyResource.Resource.SIMENG_KAELTE_TYPPROFIL_FEHLT,
+                TextTypUndefiniert = MyResource.Resource.SIMENG_KAELTE_TYP_UNDEFINIERT
+            };
+        }
+
+        /// <summary>
         /// Stromverbraucherprofile.
         ///
         /// KATALOGQUELLE (Berichtigung K1, Befund 27.08.2026). K1 hielt hier fest, es

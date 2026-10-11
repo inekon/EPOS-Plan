@@ -301,7 +301,6 @@ namespace WindowsFormsApplication1
                 ["LabelAlbedo"] = Text_("ANLAGE_LABEL_ALBEDO", "Albedo [-]:"),
                 ["HinweisAlbedo"] = Text_("ANLAGE_HINWEIS_ALBEDO",
                     "Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2."),
-                ["BtnUebernehmenText"] = Text_("SKV_BTN_UEBERNEHMEN", "Übernehmen"),
 
                 // „Bearbeiten…" STATT „Kollektor in DB ändern…" (Anwenderentscheid
                 // 15.09.2026, „alle sechs Erzeuger im gleichen Schema"): Der Knopf steht
@@ -326,7 +325,6 @@ namespace WindowsFormsApplication1
                 ["KatalogfelderSpeichern"] =
                     new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
                         (name, felder) => SolarkollektorAdminHuelle.Wege().Speichern!(name, felder)),
-                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
 
                 // DIE KOSTENKNOEPFE IM MODULBEREICH - derselbe Weg, den Heizkessel und
                 // BHKW gehen (ErzeugerKostenwege nimmt die Kostenkomponente als
@@ -337,6 +335,12 @@ namespace WindowsFormsApplication1
                     ? new Func<ErzeugerZeile, bool, Task>(
                         (zeile, betrieb) => ErzeugerKostenwege.Kosten(
                             besitzer, projektId, DbWerte.ERZEUGER_SOLARTHERMIE, zeile, betrieb))
+                    : null,
+                // UeS2: die Kostensummen der Anlage fuer die Zusammenfassung der Detailzeile -
+                // dieselbe Anlagenzuordnung wie die Kostenknoepfe (ErzeugerKostenwege).
+                ["Kostensumme"] = projektId > 0
+                    ? new Func<ErzeugerZeile, (double Invest, double Betrieb)>(
+                        zeile => ErzeugerKostenwege.Summen(projektId, DbWerte.ERZEUGER_SOLARTHERMIE, zeile))
                     : null,
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),

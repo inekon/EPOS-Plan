@@ -3959,6 +3959,74 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten-satzkenndaten { flex: 0 1 auto !important; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--epos-text-leise); }
 .epos-zweispalten-satzdetails { color: var(--epos-text-leise); font-size: 12px; }
 
+/* DER KOPF DER DETAILZEILE (UeS1): die klappende Zeile und daneben „Vergroessern" - zwei Knoepfe
+   nebeneinander, kein Knopf im Knopf. */
+.epos-zweispalten-satzkopf {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    flex: 0 0 auto;
+}
+.epos-zweispalten-satzkopf > .epos-zweispalten-satzzeile { flex: 1 1 auto; width: auto; min-width: 0; }
+.epos-zweispalten-satzkopf > .epos-zweispalten-vergroessern { flex: 0 0 auto; margin-right: 4px; }
+
+/* DIE SATZ-UEBERLAGERUNG (UeS1, Konzept 4.4 und 4.6): der gewaehlte Satz ueber dem ganzen Dialog,
+   in voller Fensterhoehe ohne die sicheren Abstaende. Kopf (Marke, Name, Kenndaten) und Fussleiste
+   (OK / Abbrechen) haften, nur der Koerper rollt - die Ueberlagerung selbst rollt nicht.
+   Gemessen: Proben/Rasterprobe/rollbereichprobe.mjs, Zustand „Satz-Ueberlagerung offen". */
+.epos-ueberlagerung.epos-ueberlagerung--satz {
+    width: min(calc(100vw - 16px), 1400px);
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten) - 16px);
+    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten) - 16px);
+    max-height: none;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+.epos-ueberlagerung--satz > .epos-ueberlagerung-kopf { flex: 0 0 auto; min-width: 0; }
+.epos-ueberlagerung--satz > .epos-ueberlagerung-kopf > .epos-ueberlagerung-titel {
+    flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.epos-ueberlagerung-kopfnachsatz { flex: 1 1 0; min-width: 0; overflow: hidden; }
+.epos-satzueberlagerung-kenndaten {
+    display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--epos-text-leise);
+}
+.epos-ueberlagerung--satz > .epos-ueberlagerung-inhalt {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.epos-satzueberlagerung {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+.epos-satzueberlagerung-koerper {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    padding-right: 4px;
+}
+.epos-satzueberlagerung-koerper .epos-reiter-blatt { overflow: visible; }
+.epos-satzueberlagerung-koerper textarea { field-sizing: content; overflow: hidden; max-height: none; resize: none; }
+.epos-satzueberlagerung-fuss {
+    flex: 0 0 auto;
+    margin: 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+.epos-satzueberlagerung-hinweis { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.epos-satzueberlagerung-hinweis:not(.epos-status--fehler) { color: var(--epos-text-leise); }
+
 .epos-zweispalten-satz {
     display: flex;
     flex-direction: column;
@@ -4104,7 +4172,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    Zeilen samt Kopf- und Fussleiste), die Satzflaeche nimmt die GESAMTE uebrige Hoehe. Ihr
    Inhalt fuellt sie (die Ganglinie zeichnet sich in dieser Hoehe); nur was trotzdem nicht
    passt (Alle Daten), rollt in der Satzflaeche. Zugeklappt gilt das Raster oben. */
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog) {
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog):not(.epos-zweispalten--zusammenfassung) {
     grid-template-rows:
         calc(var(--epos-trenner-min) * var(--epos-zeilenskala, 1) + var(--epos-touchziel) + 18px)
         8px
@@ -4112,7 +4180,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
         minmax(var(--epos-satz-min), 1fr);
 }
 
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog {
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog:not(.epos-zweispalten--zusammenfassung) {
     grid-template-rows: min-content minmax(var(--epos-satz-min), 1fr);
 }
 
@@ -4120,6 +4188,45 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     flex: 1 1 0;
     max-height: none;
 }
+
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz--zusammenfassung {
+    flex: 0 0 auto;
+}
+
+/* DIE ZUSAMMENFASSUNG DER DETAILZEILE (UeS2, Konzept 4.4): Kurzangaben des Satzes als
+   kompaktes Raster - Beschriftung vor Wert, mehrere je Zeile, umbrechend, hoechstens drei
+   Zeilen hoch. Kein Rollbereich (was nicht passt, wird abgeschnitten; jede Angabe nennt sich
+   im title ganz) und KEIN Vorrang: Die Vorrangregeln oben schliessen --zusammenfassung aus,
+   die Listen behalten ihre Aufteilung ueber die Trennlinie, und die Detailzeile ist so hoch
+   wie ihr Inhalt (satzOffenMin misst ihn; er bleibt unter --epos-satz-untergrenze). */
+.epos-zweispalten--zusammenfassung { --epos-zf-zeile: 20px; }   /* 3 x 20 + 8 px Polster bleibt unter der Untergrenze 80 px */
+.epos-zweispalten-satz.epos-zweispalten-satz--zusammenfassung {
+    overflow: hidden;
+    padding: 2px 8px 6px;
+}
+.epos-satzzusammenfassung {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    column-gap: 18px;
+    row-gap: 0;
+    margin: 0;
+    max-height: calc(3 * var(--epos-zf-zeile));
+    overflow: hidden;
+}
+.epos-satzzusammenfassung-angabe {
+    display: flex;
+    gap: 5px;
+    min-width: 0;
+    max-width: 100%;
+    line-height: var(--epos-zf-zeile);
+    white-space: nowrap;
+}
+.epos-satzzusammenfassung-angabe > dt { color: var(--epos-text-leise); flex: 0 0 auto; }
+.epos-satzzusammenfassung-angabe > dd { margin: 0; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten { flex: 0 0 auto; margin-right: 4px; gap: 6px; }
+/* Die Kopfknoepfe des Wirts (UeS2b): seine Infoknoepfe rechts vor „Bearbeiten", Sinnbilder in jeder Stufe. */
+.epos-zweispalten-satzkopf > .epos-zweispalten-satzkopfknoepfe { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; }
 
 /* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9; verdichtet DZ1-N1): Der Baustein GanglinienGrafik
    fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,
@@ -4145,7 +4252,10 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) { --epos-satz-untergrenze: 195px; }
     .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 223px; }
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik {
+/* DIE GANGLINIE IN DER SATZ-UEBERLAGERUNG (UeS1c): Dieselben Regeln gelten im Koerper der Satz-Ueberlagerung
+   (.epos-satzueberlagerung-koerper) - die Kurve fuellt ihn in voller Breite und nimmt die uebrige Hoehe; ihre
+   Flaeche traegt contain: size, damit DiagrammSvg das Mass beobachtet und meldet (DZ1-N2). */
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik {
     flex: 1 1 0;
     min-height: min-content;
     margin-top: 0;
@@ -4158,69 +4268,71 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     container: ganglinienbild / inline-size;
 }
 /* Was neben der Ganglinie in der Satzflaeche steht (Hinweise, Abweichungszeilen), behaelt seine Hoehe. */
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz:has(.epos-ganglinie-grafik) :is(.epos-zweispalten-satz, .epos-zweispalten-satzblock) > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock) {
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz:has(.epos-ganglinie-grafik) :is(.epos-zweispalten-satz, .epos-zweispalten-satzblock) > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock),
+.epos-satzueberlagerung-koerper:has(.epos-ganglinie-grafik) > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock),
+.epos-satzueberlagerung-koerper:has(.epos-ganglinie-grafik) .epos-zweispalten-satzblock > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock) {
     flex-shrink: 0;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-kontextzeile {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-kontextzeile {
     display: none;
 }
 /* Die Kopfzeile: Felder nebeneinander, die Beschreibung breiter, Beschriftung vor dem Feld. */
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf {
     grid-area: kopf;
     display: flex;
     gap: 4px var(--epos-abstand);
     min-width: 0;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld,
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste > .epos-feld {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld,
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste > .epos-feld {
     flex-direction: row;
     align-items: center;
     gap: 6px;
     min-width: 0;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld { flex: 2 1 0; }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld:nth-child(2) { flex-grow: 4; }
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld { flex: 2 1 0; }
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld:nth-child(2) { flex-grow: 4; }
 /* Kurze Kennwerte (PV: Raster, Jahresarbeit, Nennleistung) behalten Platz fuer ihren Wert. */
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld--kurz { flex: 0 1 auto; }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld--kurz .epos-eingabe { width: 9em; }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-feld-text,
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste .epos-feld-text {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld--kurz { flex: 0 1 auto; }
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld--kurz .epos-eingabe { width: 9em; }
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-feld-text,
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste .epos-feld-text {
     white-space: nowrap;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-feld-zeile { flex: 1 1 0; min-width: 0; }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-eingabe {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-feld-zeile { flex: 1 1 0; min-width: 0; }
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-eingabe {
     min-width: 0;
     width: 100%;
     min-height: calc(0.7 * var(--epos-touchziel));
     text-overflow: ellipsis;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kennzahlen {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kennzahlen {
     grid-area: kennzahlen;
     flex-direction: row;
     gap: 4px 16px;
     min-width: 0;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste {
     grid-area: leiste;
     flex-wrap: nowrap;
     align-items: center;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-knoepfe {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-knoepfe {
     display: flex;
     gap: 6px;
 }
 /* Die Huelle des Knopfpaars in der Kennzahlenzeile: ohne eigenen Unterrand. */
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-knoepfe > .epos-berechnungshilfe {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-knoepfe > .epos-berechnungshilfe {
     margin-bottom: 0;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg {
     display: contents;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-leiste {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-leiste {
     grid-area: zoom;
     flex-wrap: nowrap;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile {
     grid-area: bild;
     align-self: start;
     justify-self: end;
@@ -4232,11 +4344,11 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     pointer-events: none;
     background: color-mix(in srgb, var(--epos-karte-flaeche) 85%, transparent);
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile:empty {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile:empty {
     display: none;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
     grid-area: bild;
     justify-self: stretch;
     align-self: stretch;
@@ -4245,7 +4357,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     width: auto;
     max-width: 100%;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche > svg {
+:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik .epos-diagramm-svg-flaeche > svg {
     width: 100%;
     height: 100%;
 }
@@ -4287,6 +4399,11 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     .epos-dialog:has(> .epos-zweispalten) :is(.epos-zweispalten-wahlzahl, .epos-zweispalten-satzdetails) { font-size: 11px; }
     /* Spaltenwahl in der Kompaktstufe: nur das Sinnbild, der title nennt den Text (4.10). */
     .epos-dialog:has(> .epos-zweispalten) .epos-katalog-spaltenknopftext { display: none; }
+    /* „Vergroessern" in der Kompaktstufe: nur das Sinnbild, title und aria-label nennen den Text (UeS1). */
+    .epos-zweispalten-vergroessern .epos-zweispalten-knopftext { display: none; }
+    /* „Bearbeiten" der Detailzeile in der Kompaktstufe: nur der Stift (UeS2). */
+    .epos-zweispalten-bearbeiten .epos-zweispalten-knopftext { display: none; }
+    .epos-zweispalten--zusammenfassung { --epos-zf-zeile: 17px; }
 }
 
 /* SCHMALER BEREICH (iPad hoch, 768 px): Die Kopfleiste bleibt EINE Zeile (4.8). Unter 800 px
@@ -10799,6 +10916,53 @@ table.epos-simerg-tabelle {
     }
 }
 
+/* --- Der Stift je Zeile (UeS2): Baustein Zeilenstift ------------------- */
+/* Eine schmale Spalte am Ende der Zeile; der Knopf ist ein Beruehrungsziel
+   (--epos-touchziel, in der Kompaktstufe 37 px) und bleibt unter dem Zeilenmass
+   (46 bzw. 53 px mal Zeilenskala) - die Zeile waechst nicht. Immer sichtbar,
+   nie nur bei :hover (Hausregel Aktionsknoepfe). */
+.epos-raster-huelle table.epos-raster th.epos-spalte-stift,
+.epos-raster-huelle table.epos-raster td.epos-spalte-stift {
+    width: calc(var(--epos-touchziel) + 4px);
+    padding: 0 2px;
+    text-align: center;
+}
+
+.epos-zeilenstift {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--epos-touchziel);
+    height: var(--epos-touchziel);
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--epos-marke);
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.epos-zeilenstift:hover { border-color: var(--epos-rahmen); }
+.epos-zeilenstift:focus-visible { outline: 2px solid var(--epos-marke); outline-offset: -2px; }
+
+@media (forced-colors: active) {
+    .epos-zeilenstift { color: ButtonText; border-color: ButtonText; }
+}
+
+/* Der Kopf der Stiftspalte: Beschriftung nur fuer die Sprachausgabe. */
+.epos-zeilenstift-kopf {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
 /* --- Zone 3: die Kaestchenspalte der Mehrfachwahl (V6) --------------- */
 /* Die Zelle ist ein label ueber die ganze Hoehe der Zeile: 45 px wie die
    Klickflaeche daneben, damit das Zeilenmass (46 px) steht. */
@@ -14445,6 +14609,15 @@ table.epos-simerg-tabelle {
 
 .epos-zapfprofil-kategorienraster .epos-raster input.epos-eingabe:not([inputmode]) {
     width: 9em;
+}
+
+/* ... und ohne die 1 rem Luft, die QuickGrids Thema an jeden Spaltenkopf haengt
+   (--col-gap, wie in der Katalogliste): Die Koepfe sind die breitesten Zellen ihrer
+   Spalten, und die Summe der Mindestbreiten lag in der Ueberlagerung bei 1 088 px
+   47 px ueber der Huelle (988 px) - "Entfernen" rollte wieder quer (Rasterprobe Z6).
+   Ohne die Luft bleiben rund 18 px Reserve. */
+.epos-zapfprofil-kategorienraster table.quickgrid {
+    --col-gap: 0px;
 }
 
 .epos-zapfprofil-reihenfolge .epos-knopf {

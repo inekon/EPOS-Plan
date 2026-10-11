@@ -255,7 +255,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
 - Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#911)
 
-*Die folgenden sechzehn Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924 und #926) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden achtzehn Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939 und #940) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -273,6 +273,8 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Import von PV- und Solarganglinien läuft über den Dialog „Format und Vorschau“ mit Formatprüfung, Zeilenzahl und Jahresbild der gelesenen Reihe; die Satzansicht der PV- und Solarganglinien zeigt die Ganglinie als Grafik. (#914)
 - Seit 10.10.2026: Der KI-Assistent meldet Felder, die schon den gewünschten Wert tragen, als „unverändert“ statt als nicht ausgeführte Aktion. (#924)
 - Seit 10.10.2026: Die Hinweise eines Simulationslaufs in der Übersicht der Berichte lassen sich ein- und ausklappen; zugeklappt bleibt eine Zeile mit der Zahl der Hinweise. (#926)
+- Seit 10.10.2026: „Bearbeiten“ öffnet den gewählten Satz in allen Erzeugerdialogen als Überlagerung in voller Höhe mit OK und Abbrechen; die Ganglinien-Dialoge zeigen so die Kurve in voller Größe. (#939)
+- Seit 10.10.2026: Beide Listen tragen je Zeile einen Stift zum Bearbeiten; die Zeile „Gewählter Satz“ zeigt aufgeklappt die Anlagendaten in Kurzform. (#940)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

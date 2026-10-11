@@ -470,7 +470,22 @@ namespace WindowsFormsApplication1
             { Stufe = 3, Anzeigeschluessel = "KABG_KATALOG_KAELTEMASCHINE" },
         };
 
-        private static readonly Katalogtabelle[] ALLE = STUFE1.Concat(STUFE2).Concat(STUFE3).ToArray();
+        // Stufe 4: die Kataloge des Kaeltebedarfs (Schritt KaeltebedarfSchema, K1). Eigene Stufe aus demselben Grund wie
+        // Stufe 3: Ihr Schritt legt Tabellen samt Katalogspalten an; stuenden sie in Stufe 3, faende der Schritt der
+        // Kaeltemaschine sie auf einer Datenbank vor 213 "unvollstaendig". Muster PW/PWT: Kopf mit zwoelf Monaten und
+        // Temperaturpaar (Angabe), Typ mit 168 Wochenstunden.
+        private static readonly Katalogtabelle[] STUFE4 =
+        {
+            new Katalogtabelle(KaeltebedarfSchema.TAB_KOPF_STAMM, "KB",
+                Verbinden(new[] { "Bezeichner", "Typ", "Beschreibung" }, Monate12(),
+                          new[] { KaeltebedarfSchema.SPALTE_VORLAUF, KaeltebedarfSchema.SPALTE_RUECKLAUF }))
+            { Stufe = 4, Anzeigeschluessel = "KABG_KATALOG_KB" },
+            new Katalogtabelle(KaeltebedarfSchema.TAB_TYP_STAMM, "KBT",
+                Verbinden(new[] { "Bezeichner", "Beschreibung" }, Stunden168()))
+            { Stufe = 4, Anzeigeschluessel = "KABG_KATALOG_KBT" },
+        };
+
+        private static readonly Katalogtabelle[] ALLE = STUFE1.Concat(STUFE2).Concat(STUFE3).Concat(STUFE4).ToArray();
 
         /// <summary>Die Katalogtabellen der Stufe 1 in fester Folge.</summary>
         public static IReadOnlyList<Katalogtabelle> Stufe1 => STUFE1;
@@ -481,7 +496,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die Katalogtabellen der Stufe 3 — eigener Schemaschritt nach der Katalogfassung.</summary>
         public static IReadOnlyList<Katalogtabelle> Stufe3 => STUFE3;
 
-        /// <summary>Das ganze Register: Stufe 1, dann Stufe 2, dann Stufe 3.</summary>
+        /// <summary>Die Katalogtabellen der Stufe 4 — die Kataloge des Kältebedarfs (Schritt <see cref="KaeltebedarfSchema"/>).</summary>
+        public static IReadOnlyList<Katalogtabelle> Stufe4 => STUFE4;
+
+        /// <summary>Das ganze Register: Stufe 1, dann Stufe 2, dann Stufe 3, dann Stufe 4.</summary>
         public static IReadOnlyList<Katalogtabelle> Alle => ALLE;
 
         /// <summary>

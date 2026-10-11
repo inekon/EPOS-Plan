@@ -46,4 +46,31 @@ public sealed class SolarkollektorenEingaben
 
     /// <summary>Arbeitstemperatur aus dem Speicher (<c>true</c>) statt fest 50 °C.</summary>
     public bool ArbeitstemperaturAusSpeicher { get; set; }
+
+    /// <summary>
+    /// Der Stand jetzt als eigenes Objekt — der Merker der Satz-Überlagerung (ÜS1): „Abbrechen"
+    /// stellt mit <see cref="Uebernehmen"/> die Eingaben beim Öffnen wieder her.
+    /// </summary>
+    public SolarkollektorenEingaben Kopie() => (SolarkollektorenEingaben)MemberwiseClone();
+
+    /// <summary>Schreibt den Stand von <paramref name="von"/> AN ORT UND STELLE in diese Eingaben.</summary>
+    public void Uebernehmen(SolarkollektorenEingaben von)
+    {
+        Anzahl = von.Anzahl;
+        Neigung = von.Neigung;
+        Azimut = von.Azimut;
+        Albedo = von.Albedo;
+        PumpenleistungW = von.PumpenleistungW;
+        VerlusteProzent = von.VerlusteProzent;
+        GraedigkeitK = von.GraedigkeitK;
+        SpreizungK = von.SpreizungK;
+        ArbeitstemperaturAusSpeicher = von.ArbeitstemperaturAusSpeicher;
+    }
+
+    /// <summary>Weicht der Stand von <paramref name="von"/> ab?</summary>
+    public bool Abweichend(SolarkollektorenEingaben von)
+        => Anzahl != von.Anzahl || Neigung != von.Neigung || Azimut != von.Azimut || Albedo != von.Albedo
+           || PumpenleistungW != von.PumpenleistungW || VerlusteProzent != von.VerlusteProzent
+           || GraedigkeitK != von.GraedigkeitK || SpreizungK != von.SpreizungK
+           || ArbeitstemperaturAusSpeicher != von.ArbeitstemperaturAusSpeicher;
 }

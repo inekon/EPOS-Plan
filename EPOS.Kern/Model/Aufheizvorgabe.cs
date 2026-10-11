@@ -57,6 +57,12 @@ namespace WindowsFormsApplication1
             AufschlagProzent = prozent == 0.0 ? null : prozent;
         }
 
+        /// <summary>
+        /// Das Vorheizen (Entwurf Vorheizrampe Fassung 2, Welle V2): Verfahren und Felder; Vorgabe
+        /// <see cref="Vorheizvorgabe.Sollwertrampe"/> — so rechnet jedes Projekt wie der Bestand. Ohne Schema bis V4.
+        /// </summary>
+        public Vorheizvorgabe Vorheizen { get; init; } = Vorheizvorgabe.Sollwertrampe;
+
         /// <summary>Der Projektschalter (<c>Tab_Einstellungen.Aufheizoptimierung</c>).</summary>
         public bool An { get; }
 
@@ -65,7 +71,7 @@ namespace WindowsFormsApplication1
         /// Bedarfsdialogs bemisst bei Schalter aus, als wäre er an; Festlegung 41). Ist der Schalter an, diese Instanz.
         /// </summary>
         public Aufheizvorgabe Eingeschaltet()
-            => An ? this : new Aufheizvorgabe(true, Bemessung, AbzugK, Reserve, Art, AufschlagH, AufschlagProzent);
+            => An ? this : new Aufheizvorgabe(true, Bemessung, AbzugK, Reserve, Art, AufschlagH, AufschlagProzent) { Vorheizen = Vorheizen };
 
         /// <summary>Die Bemessung, wie gespeichert: <c>null</c> = (a) kälteste Stunde, sonst <see cref="DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG"/>.</summary>
         public string Bemessung { get; }

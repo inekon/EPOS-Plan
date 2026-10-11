@@ -4710,9 +4710,20 @@ namespace WindowsFormsApplication1
             int W = mitMass ? Math.Max(breite, MASS_MIN_BREITE) : 1240;
             int H = mitMass ? Math.Max(hoehe, MASS_MIN_HOEHE) : 560;
             bool kompakt = mitMass && H < KOMPAKT_HOEHE;
+            // R1: im Behältermaß die Schrift der Oberfläche, die Abstände im selben Maßstab.
+            Behaeltersatz satz = !mitMass ? null
+                : new Behaeltersatz(kompakt ? Behaeltersatz.PUNKT_KOMPAKT : Behaeltersatz.PUNKT_DIALOG);
             var z = Modell(W, H);
-            if (!kompakt) z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
-            var rc = SKRect.Create(100f, 110f, W - 140f, H - 200f);
+            if (!kompakt)
+            {
+                if (satz == null) z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
+                else z.Markiert("titel", zt =>
+                {
+                    using (var f = Schrift(satz, 22f, fett: true))
+                        Text(zt, titel ?? "", f, Farbrolle.STAMM, Px(satz, 24f), Px(satz, 16f));
+                });
+            }
+            var rc = SKRect.Create(Px(satz, 100f), Px(satz, 110f), W - Px(satz, 140f), H - Px(satz, 200f));
 
             List<Reihe> ganz = Brauchbare(reihen);
             List<Reihe> gueltig = fenster == null
@@ -4720,7 +4731,7 @@ namespace WindowsFormsApplication1
                 : Brauchbare(Zugeschnitten(ganz, fenster));
             if (gueltig.Count == 0)
             {
-                z.Markiert("leerhinweis", zl => Leerhinweis(zl, rc));
+                z.Markiert("leerhinweis", zl => Leerhinweis(zl, rc, satz));
                 return z;
             }
 
@@ -4728,17 +4739,17 @@ namespace WindowsFormsApplication1
             {
                 // Kopfzeile: Achsentitel links, Legende rechts daneben; die Fläche darunter.
                 float legendeX;
-                using (var f = Schrift(15f)) legendeX = rc.Left + f.MeasureText(yTitel ?? "") + 24f;
+                using (var f = Schrift(satz, 15f)) legendeX = rc.Left + f.MeasureText(yTitel ?? "") + Px(satz, 24f);
                 float legende = Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
-                                        legendeX, 4f, W - 30f);
-                float oben = KOMPAKT_OBEN + (legende - LEGENDE_ZEILE);
+                                        legendeX, Px(satz, 4f), W - Px(satz, 30f), satz);
+                float oben = Px(satz, KOMPAKT_OBEN) + (legende - Px(satz, LEGENDE_ZEILE));
                 bool mitStufe = !sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
-                float unten = mitStufe ? KOMPAKT_UNTEN + 20f : KOMPAKT_UNTEN;
-                rc = SKRect.Create(100f, oben, W - 140f, Math.Max(20f, H - oben - unten));
+                float unten = Px(satz, mitStufe ? KOMPAKT_UNTEN + 20f : KOMPAKT_UNTEN);
+                rc = SKRect.Create(Px(satz, 100f), oben, W - Px(satz, 140f), Math.Max(20f, H - oben - unten));
             }
             else
                 Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
-                        100f, 66f, W - 30f);
+                        Px(satz, 100f), Px(satz, 66f), W - Px(satz, 30f), satz);
 
             // Der gemeinsame Bezugswert (siehe Kopf) — aus der GANZEN Reihe, damit
             // 100 % im Ausschnitt dasselbe heisst wie in der Vollansicht.
@@ -4752,13 +4763,13 @@ namespace WindowsFormsApplication1
             if (bezug <= 0) bezug = 1;
 
             int prozentSchritt = rc.Height < PROZENT_FEIN_AB ? 50 : 20;
-            z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc, prozentSchritt));
+            z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc, prozentSchritt, satz));
             Achsenkreuz(z, rc);
-            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, gueltig[0].Werte.Length, !sortiert));
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, ganz[0].Werte.Length, !sortiert));
-            using (var f = Schrift(15f))
+            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, gueltig[0].Werte.Length, !sortiert, satz));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, ganz[0].Werte.Length, !sortiert, satz));
+            using (var f = Schrift(satz, 15f))
                 z.Markiert("yachse", zy =>
-                    Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
+                    Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - Px(satz, 24f)));
 
             // DIE ZEICHENFLAECHE: x die Stuetzstellen des Bildes, y die Prozentachse.
             double xVon = fenster == null ? 0.0
@@ -4837,7 +4848,7 @@ namespace WindowsFormsApplication1
                 // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
                 // sagt welche (nur bei dichten Reihen).
                 bool hinweisUnterDatum = DatumUnterMarken(fenster, achse, sortiert, gesamtN);
-                z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamtN, n, hinweisUnterDatum));
+                z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamtN, n, hinweisUnterDatum, satz));
             }
 
             return z;
@@ -5452,7 +5463,8 @@ namespace WindowsFormsApplication1
         /// <param name="n">Die gezeichneten Werte.</param>
         /// <param name="unterDatum">Die Marken tragen eine Datumszeile (<see cref="Zeitachse"/>):
         /// Achsentitel und Hinweis rücken um diese Zeile tiefer.</param>
-        private static void Stufenhinweis(IZeichenziel z, SKRect rc, int gesamt, int n, bool unterDatum = false)
+        private static void Stufenhinweis(IZeichenziel z, SKRect rc, int gesamt, int n, bool unterDatum = false,
+                                          Behaeltersatz satz = null)
         {
             int spalten = Bildpunktspalten(rc);
             if (n <= spalten) return;
@@ -5460,10 +5472,10 @@ namespace WindowsFormsApplication1
                 ? MyResource.Resource.CHART_HINWEIS_STUFE_TAG
                 : MyResource.Resource.CHART_HINWEIS_STUFE_SPALTE;
             if (string.IsNullOrEmpty(text)) return;
-            using (var f = Schrift(13f))
+            using (var f = Schrift(satz, 13f))
                 Text(z, text, f, Farbrolle.ACHSE,
                      rc.Left + (rc.Width - f.MeasureText(text)) / 2f,
-                     rc.Bottom + 52f + (unterDatum ? DATUMSZEILE_VERSATZ : 0f));
+                     rc.Bottom + Px(satz, 52f) + Px(satz, unterDatum ? DATUMSZEILE_VERSATZ : 0f));
         }
 
         // ------------------------------------------------------------------ B4
@@ -7729,11 +7741,11 @@ namespace WindowsFormsApplication1
                    r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w));
         }
 
-        private static void Leerhinweis(IZeichenziel z, SKRect rc)
+        private static void Leerhinweis(IZeichenziel z, SKRect rc, Behaeltersatz satz = null)
         {
-            using (var f = Schrift(18f))
+            using (var f = Schrift(satz, 18f))
                 Text(z, BerichtTexte.T("Keine Simulationsdaten vorhanden."), f, Farbrolle.ACHSE,
-                     rc.Left, rc.Top + 20f);
+                     rc.Left, rc.Top + Px(satz, 20f));
         }
 
         /// <summary>Eine absteigend sortierte KOPIE — dieselbe Regel wie <see cref="Ganglinie.Dauerlinie"/>.</summary>
@@ -7761,16 +7773,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Derselbe Block ohne das Achsenkreuz — siehe <see cref="BedarfsRasterOhneKreuz"/>.</summary>
-        private static void ProzentRasterOhneKreuz(IZeichenziel z, SKRect rc, int schritt = 20)
+        private static void ProzentRasterOhneKreuz(IZeichenziel z, SKRect rc, int schritt = 20,
+                                                   Behaeltersatz satz = null)
         {
             var raster = Stift(Farbrolle.RASTER, 1f);
-            using (var f = Schrift(15f))
+            using (var f = Schrift(satz, 15f))
                 for (int p = 0; p <= 100; p += schritt)
                 {
                     float y = (float)(rc.Bottom - p / Y_PROZENT_MAX * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = p.ToString(Zahlkultur) + " %";
-                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - Px(satz, 6f),
                          y - TextHoehe(f) / 2f);
                 }
         }
@@ -7821,11 +7834,12 @@ namespace WindowsFormsApplication1
         /// <param name="datum">Die Achse zählt die ZEIT (keine Dauerlinie): Unter jeder
         /// Stundenmarke steht dann das Datum des Gemeinjahres (<see cref="Zeitachse"/>), sofern
         /// die Reihe ein ganzes Jahresraster ist.</param>
-        private static void XAchse(IZeichenziel z, SKRect rc, Achse achse, int n, bool datum = false)
+        private static void XAchse(IZeichenziel z, SKRect rc, Achse achse, int n, bool datum = false,
+                                   Behaeltersatz satz = null)
         {
             bool mitDatum = achse == Achse.Jahresstunden && datum && Zeitachse.WerteJeStunde(n) > 0;
             var raster = Stift(Farbrolle.RASTER, 1f);
-            using (var f = Schrift(15f))
+            using (var f = Schrift(satz, 15f))
             {
                 if (achse == Achse.Monate)
                 {
@@ -7834,7 +7848,7 @@ namespace WindowsFormsApplication1
                         float x = rc.Left + m / 12f * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
                         string lab = m.ToString(Zahlkultur);
-                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + Px(satz, 8f));
                     }
                 }
                 else
@@ -7850,8 +7864,8 @@ namespace WindowsFormsApplication1
                         float x = rc.Left + (float)(index / (n - 1)) * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
                         string lab = h.ToString("N0", Zahlkultur);
-                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                        if (mitDatum) Datumszeile(z, x, rc, Zeitachse.Markentext(h, Zeitachse.STUNDEN_JAHR));
+                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + Px(satz, 8f));
+                        if (mitDatum) Datumszeile(z, x, rc, Zeitachse.Markentext(h, Zeitachse.STUNDEN_JAHR), satz);
                     }
                 }
             }
@@ -7860,7 +7874,7 @@ namespace WindowsFormsApplication1
                                 ? MyResource.Resource.CHART_ACHSE_MONAT
                                 : mitDatum ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM
                                            : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN,
-                         mitDatum);
+                         mitDatum, satz);
         }
 
         /// <summary>
@@ -7875,11 +7889,12 @@ namespace WindowsFormsApplication1
         /// bei <c>rc.Bottom + 8</c>, die Datumszeile bei <c>rc.Bottom + 26</c>; der Titel
         /// rückt um <see cref="DATUMSZEILE_VERSATZ"/> nach unten.
         /// </summary>
-        private static void Datumszeile(IZeichenziel z, float x, SKRect rc, string text)
+        private static void Datumszeile(IZeichenziel z, float x, SKRect rc, string text,
+                                        Behaeltersatz satz = null)
         {
             if (string.IsNullOrEmpty(text)) return;
-            using (var f = Schrift(13f))
-                Text(z, text, f, Farbrolle.ACHSE, x - f.MeasureText(text) / 2f, rc.Bottom + 26f);
+            using (var f = Schrift(satz, 13f))
+                Text(z, text, f, Farbrolle.ACHSE, x - f.MeasureText(text) / 2f, rc.Bottom + Px(satz, 26f));
         }
 
         /// <summary>
@@ -7901,13 +7916,14 @@ namespace WindowsFormsApplication1
         /// liegt <c>rc.Bottom</c> bei 460…470 und die Bildhöhe bei 542…560 — der Titel
         /// bleibt damit innerhalb der Fläche, und kein Bildmaß ändert sich.
         /// </summary>
-        private static void XAchsentitel(IZeichenziel z, SKRect rc, string titel, bool unterDatum = false)
+        private static void XAchsentitel(IZeichenziel z, SKRect rc, string titel, bool unterDatum = false,
+                                         Behaeltersatz satz = null)
         {
             if (string.IsNullOrEmpty(titel)) return;
-            using (var f = Schrift(15f))
+            using (var f = Schrift(satz, 15f))
                 Text(z, titel, f, Farbrolle.ACHSE,
                      rc.Left + (rc.Width - f.MeasureText(titel)) / 2f,
-                     rc.Bottom + 30f + (unterDatum ? DATUMSZEILE_VERSATZ : 0f));
+                     rc.Bottom + Px(satz, 30f) + Px(satz, unterDatum ? DATUMSZEILE_VERSATZ : 0f));
         }
 
         // =================================================================== Schrift
@@ -7947,6 +7963,45 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Schriftmass Schrift(float punkt, bool fett = false, bool kursiv = false)
             => new Schriftmass(new Zeichnung.Schrift(punkt, fett, kursiv));
+
+        /// <summary>
+        /// <b>Schrift und Abstände eines Bildes im Behältermaß</b> (R1 zu DZ1‑N2). Ein Bild, das
+        /// die Oberfläche 1:1 in ihren Behälter stellt, schreibt in der Schrift der Oberfläche
+        /// statt in den Punktgrößen des Berichts: <see cref="Punkt"/> gilt für JEDEN Text, und
+        /// die festen Abstände der Hilfen (Marken, Achsentitel, Legendenzeile und -feld)
+        /// schrumpfen mit <see cref="Faktor"/> — dem Verhältnis zur Achsenschrift 15 pt des
+        /// Bestands —, damit die Kurve den gewonnenen Platz bekommt.
+        ///
+        /// <para><b>Warum ein Parameter</b> und kein Zustand: Die Hilfen nehmen den Satz als
+        /// letzten, optionalen Parameter; <c>null</c> (Vorgabe) ist der Bestand. Jeder andere
+        /// Aufrufer bleibt damit unberührt, und das Bild ohne Maß bleibt byte-gleich.</para>
+        /// </summary>
+        private sealed class Behaeltersatz
+        {
+            /// <summary>Schrift der Oberfläche: 13 px = 9,75 pt.</summary>
+            public const float PUNKT_DIALOG = 9.75f;
+
+            /// <summary>Schrift der Kompaktstufe der Oberfläche: 12 px = 9 pt.</summary>
+            public const float PUNKT_KOMPAKT = 9f;
+
+            /// <summary>Achsenschrift des Bestands, auf die sich <see cref="Faktor"/> bezieht.</summary>
+            private const float PUNKT_BESTAND = 15f;
+
+            public Behaeltersatz(float punkt) { Punkt = punkt; Faktor = punkt / PUNKT_BESTAND; }
+
+            /// <summary>Punktgröße jedes Textes des Bildes.</summary>
+            public float Punkt { get; }
+
+            /// <summary>Maßstab der festen Abstände gegenüber dem Bestand.</summary>
+            public float Faktor { get; }
+        }
+
+        /// <summary>Die Schrift eines Bildes im Behältermaß; ohne <paramref name="satz"/> die Punktgröße des Bestands.</summary>
+        private static Schriftmass Schrift(Behaeltersatz satz, float punkt, bool fett = false)
+            => Schrift(satz == null ? punkt : satz.Punkt, fett);
+
+        /// <summary>Ein fester Abstand [px] im Behältermaß; ohne <paramref name="satz"/> unverändert.</summary>
+        private static float Px(Behaeltersatz satz, float px) => satz == null ? px : px * satz.Faktor;
 
         /// <summary>Zeilenhöhe einer Schrift — Ersatz für <c>MeasureString(...).Height</c>.</summary>
         private static float TextHoehe(Schriftmass f) => f.Hoehe;
@@ -8524,17 +8579,18 @@ namespace WindowsFormsApplication1
         /// Farbwähler öffnet (Farbrollen, Bedienung Teil 2).</para>
         /// </summary>
         private static float Legende(IZeichenziel z, List<Segment> eintraege, float x, float y,
-                                     float umbruchBei = 0)
+                                     float umbruchBei = 0, Behaeltersatz satz = null)
         {
             float startX = x;
             int zeilen = 1;
             var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
-            using (var f = Schrift(16f))
+            float feld = Px(satz, 22f), zeile = Px(satz, LEGENDE_ZEILE);
+            using (var f = Schrift(satz, 16f))
                 foreach (Segment s in eintraege)
                 {
-                    float breite = 40f + f.MeasureText(s.Label ?? "") + 24f;
+                    float breite = Px(satz, 40f) + f.MeasureText(s.Label ?? "") + Px(satz, 24f);
                     if (umbruchBei > 0 && x > startX && x + breite > umbruchBei)
-                    { x = startX; y += LEGENDE_ZEILE; zeilen++; }   // Umbruch bei vielen Serien (Review 11)
+                    { x = startX; y += zeile; zeilen++; }   // Umbruch bei vielen Serien (Review 11)
 
                     float ex = x, ey = y;      // fest fuer die Klammer der Marke
                     z.Markiert("legende:" + (s.Label ?? ""), ze =>
@@ -8547,15 +8603,15 @@ namespace WindowsFormsApplication1
                         // Das Feld trägt die ROLLE des Eintrags (Segment.Ton), wo er eine hat -
                         // dieselbe wie die Linie oder Fläche seiner Reihe.
                         if (s.Strichart != Strichart.Durchgezogen)
-                            ze.Rechteck(ex, ey, 22f, 22f, Stift(Ton(s), 3f, Strichfolge(s.Strichart)));
+                            ze.Rechteck(ex, ey, feld, feld, Stift(Ton(s), 3f, Strichfolge(s.Strichart)));
                         else
-                            ze.Rechteck(ex, ey, 22f, 22f, null, Flaeche(Ton(s)));
-                        ze.Rechteck(ex, ey, 22f, 22f, rahmen);
-                        Text(ze, s.Label, f, Farbrolle.TEXT, ex + 28f, ey + 1f);
+                            ze.Rechteck(ex, ey, feld, feld, null, Flaeche(Ton(s)));
+                        ze.Rechteck(ex, ey, feld, feld, rahmen);
+                        Text(ze, s.Label, f, Farbrolle.TEXT, ex + Px(satz, 28f), ey + Px(satz, 1f));
                     });
                     x += breite;
                 }
-            return zeilen * LEGENDE_ZEILE;
+            return zeilen * zeile;
         }
 
         /// <summary>
@@ -8864,7 +8920,8 @@ namespace WindowsFormsApplication1
         /// <para>Auch ein Monatsbild bekommt im Fenster Stundenmarken: Monatsgrenzen
         /// sagen im Ausschnitt nichts mehr, die Stunde schon.</para>
         /// </summary>
-        private static void XAchseFenster(IZeichenziel z, SKRect rc, Achsenfenster f, int gesamt, bool datum = false)
+        private static void XAchseFenster(IZeichenziel z, SKRect rc, Achsenfenster f, int gesamt, bool datum = false,
+                                          Behaeltersatz satz = null)
         {
             double stundenJeWert = gesamt > Kanalsatz.STUNDEN_JAHR ? 0.25 : 1.0;
             double h0 = f.Von * stundenJeWert;
@@ -8873,20 +8930,20 @@ namespace WindowsFormsApplication1
             bool mitDatum = datum && Zeitachse.WerteJeStunde(gesamt) > 0;
 
             var raster = Stift(Farbrolle.RASTER, 1f);
-            using (var schrift = Schrift(15f))
+            using (var schrift = Schrift(satz, 15f))
                 foreach ((double h, string lab) in Stundenteilung(h0, h1))
                 {
                     float x = rc.Left + (float)((h - h0) / (h1 - h0)) * rc.Width;
                     z.Linie(x, rc.Top, x, rc.Bottom, raster);
                     Text(z, lab, schrift, Farbrolle.ACHSE,
-                         x - schrift.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                    if (mitDatum) Datumszeile(z, x, rc, Zeitachse.Markentext(h, h1 - h0));
+                         x - schrift.MeasureText(lab) / 2f, rc.Bottom + Px(satz, 8f));
+                    if (mitDatum) Datumszeile(z, x, rc, Zeitachse.Markentext(h, h1 - h0), satz);
                 }
 
             // #234: derselbe Achsentitel wie in der Vollansicht - im Fenster zaehlt die
             // Achse IMMER Jahresstunden, auch wenn das Bild sonst Monatsgrenzen traegt.
             XAchsentitel(z, rc, mitDatum ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM
-                                         : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN, mitDatum);
+                                         : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN, mitDatum, satz);
         }
 
         /// <summary>
