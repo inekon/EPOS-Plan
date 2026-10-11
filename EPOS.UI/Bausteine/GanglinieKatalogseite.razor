@@ -226,6 +226,14 @@
     [Parameter] public bool FussImWirt { get; set; }
 
     /// <summary>
+    /// AW3b (Knopfleiste am Satz): Steht im Wirt ein PROJEKTsatz, nennt der Wirt über diesen Rückruf den Grund
+    /// (<c>AUSWAHL_SPERRE_KATALOGSATZ</c>) — Schloss… und Löschen sind dann weich gesperrt (Klick meldet, schreibt
+    /// nichts), Vergleichen… gesperrt (einen Vergleich der Projektzeilen gibt es nicht). <c>null</c> = wie bisher.
+    /// Ein Rückruf, kein Wert: Die Fragmente zeichnet der Wirt in seinen Slots, mit seinem Stand dieses Zuges.
+    /// </summary>
+    [Parameter] public Func<string?>? Sperrgrund { get; set; }
+
+    /// <summary>
     /// Der Zustand der Fragmente hat sich geändert (Wahl, Kästchen, Löschen, Schloss): Der Wirt zeichnet
     /// neu, damit seine Slots nachziehen. Die Seite ruft es auch nach dem ersten Zeichnen.
     /// </summary>
@@ -268,7 +276,7 @@
     public RenderFragment Fuss => @<text>
         <button type="button" class="epos-knopf epos-knopf--vergleichen"
                 title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
-                disabled="@(Ziele().Count < 2 || _laeuft)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
+                disabled="@(Ziele().Count < 2 || _laeuft || Sperrgrund?.Invoke() is not null)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
         @if (Wege.NennleistungSchreiben is not null)
         {
             @* Nur die PV-Ganglinie: die Nennleistung des gewaehlten Katalogsatzes. Ein Auslieferungssatz
@@ -286,12 +294,12 @@
                         @onclick="NennleistungOeffnen">@Texte.NennleistungKnopf</button>
             }
         }
-        <Katalogschloss @ref="_katalogschloss" Weg="@Wege.Schloss" Zeile="@_zeile"
+        <Katalogschloss @ref="_katalogschloss" Weg="@Wege.Schloss" Zeile="@_zeile" Sperrgrund="@(Sperrgrund?.Invoke())"
                         NurLesen="@_laeuft" JaText="@Texte.Ja" NeinText="@Texte.Nein"
                         Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
         @if (Wege.Loeschen is not null)
         {
-            string grund = Ziele().Count == 1 ? LoeschGrundVon(Ziele()[0]) : "";
+            string grund = Sperrgrund?.Invoke() ?? (Ziele().Count == 1 ? LoeschGrundVon(Ziele()[0]) : "");
             if (grund.Length > 0)
             {
                 <button type="button" class="epos-knopf epos-katalog-loeschen" aria-disabled="true"

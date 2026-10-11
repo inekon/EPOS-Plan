@@ -63,17 +63,18 @@ internal static class KnopfleisteAmSatzPruefung
     }
 
     /// <summary>Beim Projektsatz: Schloss… und Löschen fokussierbar, aria-disabled, Grund als Kurztext; Klick meldet.</summary>
-    internal static void WeichGesperrt<T>(IRenderedComponent<T> cut, Schlosspruefung schloss) where T : IComponent
+    internal static void WeichGesperrt<T>(IRenderedComponent<T> cut, Schlosspruefung schloss,
+                                          string loeschen = "epos-knopf--loeschen") where T : IComponent
     {
-        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        foreach (string klasse in new[] { "epos-katalogschloss", loeschen })
         {
             var knopf = AmSatz(cut, klasse);
             Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
             Assert.False(knopf.HasAttribute("disabled"));
             Assert.Equal(R.AUSWAHL_SPERRE_KATALOGSATZ, knopf.GetAttribute("title"));
         }
-        AmSatz(cut, "epos-knopf--loeschen").Click();
-        Assert.Contains(R.AUSWAHL_SPERRE_KATALOGSATZ, cut.Find(".epos-warnbanner-text").TextContent);
+        AmSatz(cut, loeschen).Click();
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains(R.AUSWAHL_SPERRE_KATALOGSATZ));
         Assert.Empty(cut.FindAll(".epos-rueckfrage"));
         AmSatz(cut, "epos-katalogschloss").Click();
         Assert.Empty(schloss.Aufrufe);
@@ -81,9 +82,9 @@ internal static class KnopfleisteAmSatzPruefung
     }
 
     /// <summary>Beim Katalogsatz: Schloss… und Löschen wirken, Bearbeiten… ist das des Katalogs.</summary>
-    internal static void KatalogsatzFrei<T>(IRenderedComponent<T> cut) where T : IComponent
+    internal static void KatalogsatzFrei<T>(IRenderedComponent<T> cut, string loeschen = "epos-knopf--loeschen") where T : IComponent
     {
-        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        foreach (string klasse in new[] { "epos-katalogschloss", loeschen })
             Assert.False(AmSatz(cut, klasse).HasAttribute("aria-disabled"));
         Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt"));
         Assert.NotNull(AmSatz(cut, "epos-knopf--bearbeiten-katalog"));

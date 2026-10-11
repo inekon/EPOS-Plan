@@ -281,7 +281,8 @@ public class GanglinieDetailzeileTests : EposBunitContext
                                                 Func<IRenderedComponent<DiagrammSvg>> grafik)
         where T : Microsoft.AspNetCore.Components.IComponent
     {
-        cut.Find(".epos-zweispalten-vergroessern").Click();
+        // AW3b: „Vergrößern" (Wärmebedarf, Strom) bzw. „Bearbeiten…" am Satz (Solar, PV: dieselbe Ansicht).
+        cut.Find(".epos-zweispalten-vergroessern, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog").Click();
 
         Assert.Single(cut.FindAll(".epos-ganglinie-grafik"));
         Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-ganglinie-grafik"));
