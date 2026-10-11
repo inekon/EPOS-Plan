@@ -1026,7 +1026,10 @@ namespace WindowsFormsApplication1
         /// <c>ID_Kaeltemittel</c> an Katalog und Projektkopie der Kältemaschine samt Zuordnung des Textbestands und
         /// <c>Tab_Projekt.Inbetriebnahmejahr</c> (<see cref="KaeltemittelSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest
         /// Tabelle, Verweis oder Jahr.
-        public const int Zielversion = KaeltemittelSchema.SCHRITT;
+        /// Danach, mit der SCHNELLAUFHEIZUNG (SA2, E128), steht das Ziel auf <see cref="SchnellaufheizungSchema.SCHRITT"/>:
+        /// Schalter und Raumsollwert-Überhöhung an <c>Tab_Einstellungen</c> und sechs Ergebnisspalten je Gebäude und Zone
+        /// (<see cref="SchnellaufheizungSchema"/>). <b>Ergebnisneutral:</b> Jede Spalte steht auf NULL, und NULL ist „aus“.
+        public const int Zielversion = SchnellaufheizungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

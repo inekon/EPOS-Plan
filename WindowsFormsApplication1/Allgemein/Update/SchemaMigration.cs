@@ -5436,6 +5436,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KAELTEMITTEL = KaeltemittelSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="SchnellaufheizungSchema.SCHRITT"/> — <b>Schnellaufheizung des Vorheizens</b> (SA2, E128): Schalter
+        /// und Raumsollwert-Überhöhung an <c>Tab_Einstellungen</c>, sechs Ergebnisspalten an <c>Tab_ErgebnisGebaeude</c> und
+        /// <c>Tab_ErgebnisZone</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Spalte steht auf NULL, und NULL heißt „aus“.</para>
+        /// </summary>
+        public const int SCHRITT_SCHNELLAUFHEIZUNG = SchnellaufheizungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7962,6 +7971,13 @@ namespace WindowsFormsApplication1
                         "Ein Kaeltemittel waere kein Stammdatum mit GWP und Quelle, und die Kaeltemaschine verwiese nur ueber " +
                         "Text darauf. KEIN Rechenergebnis aendert sich - kein Rechenweg liest Tabelle, Verweis oder Jahr.",
                         Schritt_Kaeltemittel),
+            // SA2: Schnellaufheizung des Vorheizens. Quelle ist SchnellaufheizungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_SCHNELLAUFHEIZUNG,
+                        "Tab_Einstellungen: Aufheiz_Schnellaufheizung, Aufheiz_Ueberhoehung_K; Tab_ErgebnisGebaeude und " +
+                        "Tab_ErgebnisZone: sechs Groessen der Ueberhoehung",
+                        "Ein Projekt koennte die Schnellaufheizung nicht speichern. KEIN Rechenergebnis aendert sich - jede " +
+                        "Spalte steht auf NULL, und NULL heisst aus.",
+                        Schritt_Schnellaufheizung),
         };
 
         /// <summary>
@@ -15407,6 +15423,60 @@ namespace WindowsFormsApplication1
                     (erg.Angelegt == 0 ? "stand bereits." : erg.Angelegt + " Schemaanweisung(en).") +
                     " " + erg.Saat + " Kaeltemittel gesaet, " + (erg.KatalogZugeordnet + erg.ProjektZugeordnet) +
                     " Zeile(n) zugeordnet. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Schnellaufheizung des Vorheizens" — Anlass und Wirkung stehen bei <see cref="SCHRITT_SCHNELLAUFHEIZUNG"/>,
+        /// die Anweisungen bei <see cref="SchnellaufheizungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Schnellaufheizung(Lauf l)
+        {
+            string nr = SchnellaufheizungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in SchnellaufheizungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = SchnellaufheizungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!SchnellaufheizungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Schnellaufheizung (Einstellungs- und Ergebnisspalten) steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Schnellaufheizung des Vorheizens - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n).") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

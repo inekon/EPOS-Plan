@@ -1032,6 +1032,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltemittelSchema.SCHRITT (KM4-E1): Kaeltemitteltabelle samt Saat und Schluesseln, Verweis der
                 // Kaeltemaschine mit Zuordnung des Textbestands, Inbetriebnahmejahr am Projekt. Wiederholbar.
                 KaeltemittelSchema.Ausfuehren(null);
+                // Schritt SchnellaufheizungSchema.SCHRITT (SA2): Schalter und Ueberhoehung der Schnellaufheizung, sechs
+                // Ergebnisspalten je Gebaeude und Zone, leer, reines DDL. Wiederholbar.
+                SchnellaufheizungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
