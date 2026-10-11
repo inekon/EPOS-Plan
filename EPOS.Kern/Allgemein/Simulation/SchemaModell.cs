@@ -752,7 +752,10 @@ namespace WindowsFormsApplication1
                 }));
             }
 
-            // 2. Kältemaschinen.
+            // 2. Kältemaschinen. KM4-E2 (Konzept Kältemittel als Stammdatum 5.2): Warnung und Warntext am Knoten aus den
+            // Befunden der Kältemittelprüfung - ohne Inbetriebnahmejahr eine Abfrage und kein Befund.
+            var kaeltemittelBefunde = new List<Warnbefund>();
+            Warnkriterien.KaeltemittelPruefen(idProjekt, kaeltemittelBefunde);
             int kmPlatz = 0;
             foreach (KaeltemaschineAnlageModel km in Kaeltefolge.KaeltemaschinenOrdnen(KaeltemaschineAnlageCtrl.ListeStill(idProjekt)))
             {
@@ -782,6 +785,13 @@ namespace WindowsFormsApplication1
                     if (!double.IsNaN(vorlauf))
                         k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KALTWASSERVORLAUF, vorlauf));
                     k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                    Warnbefund kaeltemittel = kaeltemittelBefunde.FirstOrDefault(
+                        b => b.Kriterium == Warnkriterien.KAELTEMITTEL_STICHTAG && b.ID_Anlage == a.AnlagenId);
+                    if (kaeltemittel != null)
+                    {
+                        k.Warnung = true;
+                        k.Warntext = kaeltemittel.Text;
+                    }
                     Knotenliste.Add(k);
                     erzeuger.Add(k.Schluessel);
                     KaelteKette.Add(k.Titel);
