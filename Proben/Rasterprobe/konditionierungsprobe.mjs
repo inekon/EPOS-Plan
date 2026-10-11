@@ -1124,7 +1124,7 @@ async function karte(seite, marke, f) {
   if (e.tage !== 7) melde(marke, `${e.tage} statt 7 Tagesknöpfe am Zeitfenster`);
   if (!e.vermerk) melde(marke, 'kein Vermerk des letzten Werkzeugs');
   if (e.teppichElemente === 0 || e.teppichElemente > 2000) melde(marke, `Teppichbild mit ${e.teppichElemente} Elementen (soll 1 … 2 000)`);
-  if (!e.teppichZeile.includes('2025')) melde(marke, 'die Zeile unter dem Teppichbild nennt das Bezugsjahr nicht');
+  if (!/\b(19|20)\d{2}\b/.test(e.teppichZeile) && !/Gemeinjahr|common year/i.test(e.teppichZeile)) melde(marke, 'die Zeile unter dem Teppichbild nennt weder Bezugsjahr noch Raster');
 
   // Der Wert am Element: Zeigen auf ein Feld nennt Zeitraum, Wert und Quelle.
   const feld = karteLoc.locator('.epos-kond-teppich svg [data-wert]').first();
