@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Folge der Kälteerzeugung in einer Stunde und Kälteschranke auf Stufe AK3
+Folge der Kälteerzeugung in einer Stunde und Kälteschranke im geschlossenen Kreis
 
 Inhalt: Den Kältebedarf einer Stunde decken die Kälteerzeuger in fester Folge. Zuerst kühlen
 Kältemaschinen mit Trocken- oder Nasskühler frei, wenn die Rückkühltemperatur tief genug ist.
 Dann entladen die Kältespeicher. Dann decken die Wärmepumpen im Kühlbetrieb in der Reihenfolge
 der Kaskade, jede zuerst über die freie Kühlung ihrer Wärmequelle (Sole), dann mit dem Verdichter.
 Zuletzt decken die Kältemaschinen mit dem Verdichter in der Reihenfolge ihrer Anlagen. Ein Rest
-bleibt ungedeckt. Auf der Stufe AK3 der Anlagenkopplung begrenzt die Summe der Stufen als
-Kälteschranke die Raumkühlung; greift sie, wird der Raum wärmer. Auf den Stufen „aus“ und AK1
+bleibt ungedeckt. Im geschlossenen Kreis der Anlagenkopplung begrenzt die Summe der Stufen als
+Kälteschranke die Raumkühlung; greift sie, wird der Raum wärmer. Ohne Kopplung und im Heizkreis
 steht ungedeckte Kälte als Rest im Laufprotokoll.
 
 Darstellung: Farben nach Vorlage:Diagrammfarbe (kaelte, umwelt, speicher). Prinzipbild ohne
@@ -61,15 +61,17 @@ Zahlenwerte, keinem Produkt zugeordnet.
   <!-- Kälteschranke -->
   <path d="M612,90 L630,90 L630,395 L612,395" fill="none" stroke="#1f9bb0" stroke-width="2"/>
   <line x1="630" y1="242" x2="648" y2="242" stroke="#1f9bb0" stroke-width="2"/>
-  <rect x="650" y="150" width="225" height="190" rx="8" fill="#ffffff" stroke="#1f9bb0" stroke-width="2" stroke-dasharray="6 4"/>
-  <text x="664" y="178" font-size="15" fill="#1f2328" font-weight="600">Kälteschranke (AK3)</text>
-  <text x="664" y="203" font-size="13" fill="#57606a">Die Summe der Stufen 1 bis 4</text>
-  <text x="664" y="222" font-size="13" fill="#57606a">am Kühlvorlauf, nach Abzug</text>
-  <text x="664" y="241" font-size="13" fill="#57606a">der Prozesskälte, begrenzt</text>
-  <text x="664" y="260" font-size="13" fill="#57606a">die Raumkühlung.</text>
-  <text x="664" y="285" font-size="13" fill="#57606a">Greift sie, wird der Raum</text>
-  <text x="664" y="304" font-size="13" fill="#57606a">wärmer.</text>
-  <text x="664" y="326" font-size="11" fill="#57606a">Stufe aus oder AK1: Rest im Protokoll</text>
+  <rect x="650" y="150" width="225" height="200" rx="8" fill="#ffffff" stroke="#1f9bb0" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="664" y="178" font-size="15" fill="#1f2328" font-weight="600">Kälteschranke</text>
+  <text x="664" y="196" font-size="12" fill="#7b4fa3">im geschlossenen Kreis</text>
+  <text x="664" y="218" font-size="13" fill="#57606a">Die Summe der Stufen 1 bis 4</text>
+  <text x="664" y="235" font-size="13" fill="#57606a">am Kühlvorlauf, nach Abzug</text>
+  <text x="664" y="252" font-size="13" fill="#57606a">der Prozesskälte, begrenzt</text>
+  <text x="664" y="269" font-size="13" fill="#57606a">die Raumkühlung.</text>
+  <text x="664" y="290" font-size="13" fill="#57606a">Greift sie, wird der Raum</text>
+  <text x="664" y="307" font-size="13" fill="#57606a">wärmer.</text>
+  <text x="664" y="326" font-size="11" fill="#57606a">ohne Kopplung und im Heizkreis:</text>
+  <text x="664" y="340" font-size="11" fill="#57606a">Rest im Protokoll</text>
 
   <text x="870" y="480" font-size="13" fill="#57606a" text-anchor="end">Prinzipbild</text>
 </svg>
