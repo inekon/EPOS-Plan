@@ -628,11 +628,15 @@ try {
           solarkollektoren: ['.epos-gruppenkopf-koerper input', 'Kollektorfelder'],
           waermepumpen: ['button.epos-knopf--anlage', '„Anlage…"', '.epos-wp-satz'],
           photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'],
-          kaeltemaschine: ['.epos-kostenleiste button', 'Kostenknoepfe', '.epos-kaeltemaschine-satz'] };
-        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine'];
+          kaeltemaschine: ['.epos-kostenleiste button', 'Kostenknoepfe', '.epos-kaeltemaschine-satz'],
+          // Stufe 4: die Bedarfsprofile - Verbrauch, Temperatur und Kalender allein in der Ueberlagerung.
+          bedarfsprofile: ['input[inputmode=decimal]', 'Verbrauchsfelder', '.epos-bpf-satz'] };
+        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile'];
         // Kopf der Detailzeile: zwei Infoknoepfe; die Waermepumpe traegt dort „Anlage…" (Grundlagen und Berechnung
         // stehen in ihrem Anlagendialog).
-        const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 1, '„Anlage…"'] };
+        const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 1, '„Anlage…"'],
+          // Bedarfsprofile: der Rechenweg der Auspraegung (eine Grundlagenseite gibt es nicht).
+          bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
         if (SATZ_WIRTE[fall]) {
           const [wahl, was, marke] = SATZ_WIRTE[fall];
           const zusammen = ZUSAMMENFASSUNG_WIRTE.includes(fall);
