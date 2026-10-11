@@ -4,7 +4,7 @@
 [`Konzept_Administration_Support_EPOS-Plan.md`](../../../aktuell/Konzept_Administration_Support_EPOS-Plan.md),
 Entwicklerseite:
 [`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](../../../aktuell/Entwicklerhandbuch_Administration_Support_EPOS-Plan.md).
-Statuszeile #969. Zweig `claude/gracious-brown-qx5kb2`, Stand `bb594b7a` (Wiki-Merge `01125073`).
+Statuszeile #973. Zweig `claude/gracious-brown-qx5kb2`, Stand `bb594b7a` (Wiki-Merge `01125073`).
 Kein Schemaschritt, kein Rechenweg (kein Referenzlauf nötig). iOS bleibt zurückgestellt.
 
 ## 1 Zuschnitt
@@ -17,7 +17,7 @@ die Freigabe im Dialog.
 
 ## 2 Umnummerierung und origin-Merge
 
-- `03db01f5`: Umnummerierung der eigenen Statuszeilen #958–#960 auf **#966–#968**, weil andere
+- `03db01f5`: Umnummerierung der eigenen Statuszeilen #958–#960 auf **#970–#972**, weil andere
   Sitzungen #958–#965 vergeben hatten.
 - `0a7115a9`: Merge von `origin/ios_migration_september` (brachte Schemaschritt 216 und die
   Testdatenbank neu); Konflikt nur in der Statusdatei.
@@ -76,7 +76,7 @@ Das Gate lief am 11.10. im Hauptbaum nach dem Merge beider Wellen (`bb594b7a`), 
 | `SpeicherPlanung.Tests` | 27 von 28, 1 übersprungen (Bestand) |
 | `EPOS.Kern.Tests` nach Filter (Fernwartung, Lizenz, Menue, Hilfe, Ressource, Wache, Entwickler, Diagnosedaten, Dokumentation, Wiki, HelpMapping, Auslieferungskennzeichen) | 1009 von 1010, rot: `KiDialogaufrufTests.Jeder_Hilfeschluessel_des_Bestands_findet_einen_Bereich` |
 
-Die Wache verlangt für jeden Hilfeschlüssel aus `help_mapping.txt` einen Bereich in `KiChatKontext.BEREICH_JE_HILFEPRAEFIX`; der neue Schlüssel `Form_Fernwartung.btn_Help` hatte keinen. Behebung `964d9c10`: eine Zeile, Bereich Hilfe wie `Form_KiChat`. Danach sind `KiDialogaufrufTests`, `KiEntwicklerbereichTests` und die `HelpMapping`-Wachen mit 46 von 46 grün. Der volle Kern-Lauf (rund 57 Minuten) ist die CI; Push-SHA und CI-Kennung stehen im Statuspunkt „Nach #969“ (e).
+Die Wache verlangt für jeden Hilfeschlüssel aus `help_mapping.txt` einen Bereich in `KiChatKontext.BEREICH_JE_HILFEPRAEFIX`; der neue Schlüssel `Form_Fernwartung.btn_Help` hatte keinen. Behebung `964d9c10`: eine Zeile, Bereich Hilfe wie `Form_KiChat`. Danach sind `KiDialogaufrufTests`, `KiEntwicklerbereichTests` und die `HelpMapping`-Wachen mit 46 von 46 grün. Der volle Kern-Lauf (rund 57 Minuten) ist die CI; Push-SHA und CI-Kennung stehen im Statuspunkt „Nach #973“ (e).
 
 ## 7 Umgebung
 
@@ -93,6 +93,6 @@ Nur SDK 10.0.112 statt 10.0.400 installiert; Bau über den Helfer außerhalb des
 - Wiki-Upload gebündelt (neue Seite Fernwartung, „Installation und Update", „Über EPOS-Plan") mit
   Logbuch-Satz; Versionsnummer beim Anwender erfragen.
 - Stufe 3 (Dialog „Über EPOS-Plan", die Geste zieht dorthin) auf Zuruf; Nachzug Zapfprofil-Rubrik
-  offen (Status, „Nach #968" (f)).
+  offen (Status, „Nach #972" (f)).
 - Word-Fassung des Entwicklerhandbuchs neu erzeugen (eigener Auftrag); Push-SHA und CI-Kennung nach
   dem Push in der Statuszeile nachtragen.
