@@ -75,4 +75,13 @@ public sealed class KaeltemaschineGeraetwerte
     public bool TeillastGesetzt { get; init; }
     /// <summary>Die Kaltwassertemperaturen der Kennlinie, aufsteigend und ohne Doppel.</summary>
     public IReadOnlyList<double> Kaltwasserstuetzstellen { get; init; } = Array.Empty<double>();
+
+    /// <summary>Die Saisonkennzahl der Projektkopie (K-A, <c>Saisonkennzahl</c>); <c>null</c> = keine.</summary>
+    public double? Saisonkennzahl { get; init; }
+
+    /// <summary>Die Art der Saisonkennzahl als Kürzel (etwa „SEER“); leer = keine.</summary>
+    public string SaisonkennzahlArt { get; init; } = "";
+
+    /// <summary>Die Geräteart als Anzeigetext (<c>KaeltemaschineStammCtrl.GeraeteartText</c>); leer = keine.</summary>
+    public string Geraeteart { get; init; } = "";
 }

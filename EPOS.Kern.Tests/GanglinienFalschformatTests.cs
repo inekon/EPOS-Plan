@@ -285,5 +285,44 @@ namespace EPOS.Kern.Tests
             Assert.True(l.Erfolgreich, StundenganglinieDatei.Ablehnungstext(pfad, l));
             Assert.Equal("Preis € ü", l.Kopftext);
         }
+
+        /// <summary>
+        /// <b>Der Leser der Ganglinienimporte</b> (<c>GanglinienDatei.LeserOeffnen</c>) öffnet eine
+        /// Windows-1252-Datei über <see cref="AnsiEncoding"/>: Der Kopf mit Umlaut steht richtig in der
+        /// Vorschau, und auf dem Weg wird keine Ausnahme ausgelöst — auch keine abgefangene
+        /// (<c>NotSupportedException</c> der Codepage, Rückfall Latin-1), die das Ausnahmeprotokoll
+        /// als Absturz zählte.
+        /// </summary>
+        [Fact]
+        public void GanglinienDatei_liest_Windows1252_Kopf_ohne_Ausnahme()
+        {
+            byte[] kopf = { (byte)'W', 0xE4, (byte)'r', (byte)'m', (byte)'e', (byte)' ', (byte)'k', (byte)'W', (byte)'\n' };
+            byte[] daten = Encoding.ASCII.GetBytes(Zeilen(8760, i => "3.0"));
+            string pfad = Datei("waerme1252.csv", kopf.Concat(daten).ToArray());
+
+            int ausnahmen = 0;
+            int faden = Environment.CurrentManagedThreadId;
+            EventHandler<System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs> zaehler = (_, e) =>
+            {
+                if (Environment.CurrentManagedThreadId == faden) System.Threading.Interlocked.Increment(ref ausnahmen);
+            };
+            AppDomain.CurrentDomain.FirstChanceException += zaehler;
+            GanglinienVorschau v;
+            GanglinienRohdaten r;
+            try
+            {
+                v = GanglinienDatei.Erkenne(pfad);
+                r = GanglinienDatei.Lies(pfad, v.Vorschlag);
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.FirstChanceException -= zaehler;
+            }
+
+            Assert.Equal(0, ausnahmen);
+            Assert.Equal("Wärme kW", v.Zeilen[0][0]);
+            Assert.True(v.Vorschlag.Kopfzeile);
+            Assert.Equal(8760, r.Werte.Length);
+        }
     }
 }
