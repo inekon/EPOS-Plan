@@ -115,6 +115,8 @@
             <button type="button" role="menuitem" class="@Knopfklasse(p)"
                     id="@Kennung(p)"
                     tabindex="@(Vorn(p) ? 0 : -1)"
+                    aria-disabled="@(p.Gesperrt ? "true" : null)"
+                    title="@(p.Gesperrt ? p.Sperrgrund : null)"
                     @onclick="@(() => Waehlen(p))">
                 @Bild(p)<span class="epos-menueband-text">@p.Text</span>
             </button>
@@ -211,9 +213,13 @@
 
     /// <summary>Dasselbe fuer einen Kopf ohne Untermenue.</summary>
     private static string Knopfklasse(Menuepunkt p)
-        => p.RechtsBuendig
+        => (p.RechtsBuendig
             ? "epos-menueband-knopf epos-menueband-knopf--rechts"
-            : "epos-menueband-knopf";
+            : "epos-menueband-knopf")
+           + (p.Gesperrt ? " " + KLASSE_GESPERRT : "");
+
+    /// <summary>Klasse eines gesperrten Punktes (Konzept Administration und Support 4.2).</summary>
+    private const string KLASSE_GESPERRT = "epos-menue-gesperrt";
 
     // =====================================================================
     //  Zeichnen
@@ -270,7 +276,8 @@
             builder.OpenElement(3, "button");
             builder.AddAttribute(4, "type", "button");
             builder.AddAttribute(5, "role", "menuitem");
-            builder.AddAttribute(6, "class", "epos-menueband-zeile");
+            builder.AddAttribute(6, "class", k.Gesperrt ? "epos-menueband-zeile " + KLASSE_GESPERRT
+                                                        : "epos-menueband-zeile");
             builder.AddAttribute(7, "id", Kennung(k));
             builder.AddAttribute(8, "tabindex", ReferenceEquals(_zeile, k) ? "0" : "-1");
 
@@ -283,6 +290,12 @@
             }
             else
             {
+                if (k.Gesperrt)
+                {
+                    // Gesperrt: sichtbar, mit dem Grund als Tooltip; Waehlen meldet nichts.
+                    builder.AddAttribute(41, "aria-disabled", "true");
+                    builder.AddAttribute(42, "title", k.Sperrgrund);
+                }
                 builder.AddAttribute(12, "onclick",
                     EventCallback.Factory.Create<MouseEventArgs>(this, () => Waehlen(k)));
             }
@@ -374,6 +387,9 @@
 
     private async Task Waehlen(Menuepunkt p)
     {
+        // Ein gesperrter Punkt loest nichts aus; das Band bleibt offen, der Grund steht im Tooltip.
+        if (p.Gesperrt) return;
+
         // Erst schliessen, dann melden: Der Wirt zeigt womoeglich einen modalen
         // Dialog, und das Band soll nicht offen dahinter stehen bleiben.
         Schliessen();

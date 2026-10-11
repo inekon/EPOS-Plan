@@ -205,7 +205,8 @@ public class MenuebandTests : EposBunitContext
         // Punkten, nur im Entwicklermodus sichtbar (70 -> 78, 56 -> 63). Die Zahlen hier gelten
         // fuer den VOLLSTAENDIGEN Baum Eintraege; den Zuschnitt je Stufe pruefen die Faelle
         // zu Menuetabelle.Sichtbar weiter unten und EntwicklerbereicheWacheTests.
-        Assert.Equal(78, Punkte.Count);
+        // Administration und Support, Stufe 2: „Fernwartung…" unter Hilfe (78 -> 79, 63 -> 64).
+        Assert.Equal(79, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -1289,7 +1290,7 @@ public class MenuebandTests : EposBunitContext
         //
         // Der Kopf „Entwicklung" (Administration und Support, Stufe 1) klappt auf (14 -> 15)
         // und fuehrt sieben handelnde Punkte (56 -> 63).
-        Assert.Equal(63, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(64, Punkte.Count(p => !p.Klappt));
     }
 
     // =====================================================================
@@ -1301,10 +1302,11 @@ public class MenuebandTests : EposBunitContext
     {
         List<Menuepunkt> anwender = Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender)).ToList();
 
-        // 78 - 8 = 70 Punkte, 15 - 2 = 13 Trenner, 63 - 7 = 56 handelnde: der Stand vor Stufe 1.
-        Assert.Equal(70, anwender.Count(p => !p.Trenner));
+        // 79 - 8 = 71 Punkte, 15 - 2 = 13 Trenner, 64 - 7 = 57 handelnde: der Stand vor Stufe 1
+        // samt „Fernwartung…" (Stufe 2, fuer den Anwender sichtbar).
+        Assert.Equal(71, anwender.Count(p => !p.Trenner));
         Assert.Equal(13, anwender.Count(p => p.Trenner));
-        Assert.Equal(56, anwender.Count(p => !p.Trenner && !p.Klappt));
+        Assert.Equal(57, anwender.Count(p => !p.Trenner && !p.Klappt));
         Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
                      Menuetabelle.Sichtbar(Freigabestufe.Anwender).Select(p => p.Name).ToArray());
         Assert.All(anwender, p => Assert.Equal(Freigabestufe.Anwender, p.Stufe));
@@ -1317,7 +1319,7 @@ public class MenuebandTests : EposBunitContext
         List<Menuepunkt> alle = Menuetabelle.Alle.ToList();
 
         Assert.Equal(alle.Select(p => p.Name), entwickler.Select(p => p.Name));
-        Assert.Equal(78, entwickler.Count(p => !p.Trenner));
+        Assert.Equal(79, entwickler.Count(p => !p.Trenner));
         Assert.Equal(15, entwickler.Count(p => p.Trenner));
     }
 
@@ -2078,5 +2080,103 @@ public class MenuebandTests : EposBunitContext
         Assert.NotEqual(Seitenschluessel.WpKaelteImport, Seitenschluessel.KaeltemaschineImport);
         // Der Schluessel ist der Hilfeschluessel des Importdialogs dieser Art ("Form_Kaeltemaschine_einlesen").
         Assert.Equal("Form_Kaeltemaschine_einlesen", Seitenschluessel.KaeltemaschineImport);
+    }
+    // =====================================================================
+    //  Fernwartung und Menuesperre (Administration und Support, Stufe 2)
+    // =====================================================================
+
+    private const string GRUND = "Gesperrt zur Probe.";
+
+    private static IReadOnlyList<Menuepunkt> MitFernwartungGesperrt() =>
+        Menuetabelle.Sichtbar(Freigabestufe.Anwender,
+                              ziel => ziel == Seitenschluessel.Fernwartung ? GRUND : "");
+
+    [Fact]
+    public void Hilfe_fuehrt_Fernwartung_nach_Dokumentation_und_vor_dem_Assistenten()
+    {
+        Menuepunkt hilfe = Menuetabelle.Eintraege.Single(p => p.Name == "Help");
+        string[] namen = hilfe.Untereintraege.Select(p => p.Name).ToArray();
+
+        Assert.Equal(new[]
+        {
+            "MenuItem_Version", "toolStripSeparator7", "MenuItem_Lizenz", "MenuItem_Dokumentation",
+            "MenuItem_Fernwartung", "MenuItem_TrennerKiHilfe", "MenuItem_KiAssistent",
+        }, namen);
+
+        Menuepunkt fw = hilfe.Untereintraege.Single(p => p.Name == "MenuItem_Fernwartung");
+        Assert.Equal("MENU_FERNWARTUNG", fw.TextSchluessel);
+        Assert.Equal(Seitenschluessel.Fernwartung, fw.Ziel);
+        Assert.Equal(Freigabestufe.Anwender, fw.Stufe);
+        Assert.False(fw.Gesperrt);
+        Assert.Contains(Seitenschluessel.Fernwartung, Seitenschluessel.Alle);
+    }
+
+    [Fact]
+    public void Sichtbar_mit_Sperrgrund_setzt_den_Grund_nur_am_Ziel_und_laesst_den_Bestand_frei()
+    {
+        IReadOnlyList<Menuepunkt> baum = MitFernwartungGesperrt();
+        List<Menuepunkt> flach = Flach(baum).ToList();
+
+        Menuepunkt fw = flach.Single(p => p.Name == "MenuItem_Fernwartung");
+        Assert.True(fw.Gesperrt);
+        Assert.Equal(GRUND, fw.Sperrgrund);
+        Assert.Single(flach, p => p.Gesperrt);
+
+        // Gleiche Gestalt wie der Zuschnitt ohne Gruende; nicht zwischengespeichert.
+        Assert.Equal(Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender)).Select(p => p.Name),
+                     flach.Select(p => p.Name));
+        Assert.NotSame(baum, MitFernwartungGesperrt());
+
+        // Der vollstaendige Baum und der zwischengespeicherte Zuschnitt bleiben frei.
+        Assert.DoesNotContain(Menuetabelle.Alle, p => p.Gesperrt);
+        Assert.DoesNotContain(Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender)), p => p.Gesperrt);
+    }
+
+    [Fact]
+    public void Ein_gesperrter_Punkt_wird_mit_Grund_gezeichnet_und_meldet_keinen_Klick()
+    {
+        Menuepunkt? gemeldet = null;
+        var cut = Render<Menueband>(p => p
+            .Add(x => x.Eintraege, MitFernwartungGesperrt())
+            .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
+
+        cut.Find("#menue-Help").Click();
+        var zeile = cut.Find("#menue-MenuItem_Fernwartung");
+
+        Assert.Contains("epos-menue-gesperrt", zeile.ClassList);
+        Assert.Equal("true", zeile.GetAttribute("aria-disabled"));
+        Assert.Equal(GRUND, zeile.GetAttribute("title"));
+
+        zeile.Click();
+        Assert.Null(gemeldet);
+
+        // Ein freier Nachbar meldet weiter.
+        Assert.Null(cut.Find("#menue-MenuItem_Dokumentation").GetAttribute("aria-disabled"));
+        cut.Find("#menue-MenuItem_Dokumentation").Click();
+        Assert.Equal(Seitenschluessel.Dokumentation, gemeldet!.Ziel);
+    }
+
+    [Fact]
+    public void Ein_freier_Fernwartungspunkt_meldet_sein_Ziel()
+    {
+        Menuepunkt? gemeldet = null;
+        var cut = Render<Menueband>(p => p
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender, _ => ""))
+            .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
+
+        cut.Find("#menue-Help").Click();
+        var zeile = cut.Find("#menue-MenuItem_Fernwartung");
+        Assert.DoesNotContain("epos-menue-gesperrt", zeile.ClassList);
+        zeile.Click();
+
+        Assert.Equal(Seitenschluessel.Fernwartung, gemeldet!.Ziel);
+    }
+
+    [Fact]
+    public void Das_Stilblatt_daempft_den_gesperrten_Punkt()
+    {
+        string css = Stilblatt();
+        Assert.Contains(".epos-menueband-zeile.epos-menue-gesperrt", css);
+        Assert.Contains("cursor: default", css);
     }
 }

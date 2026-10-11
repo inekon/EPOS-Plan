@@ -122,6 +122,34 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
     /// </summary>
     public Freigabestufe Stufe { get; }
 
+    /// <summary>
+    /// Warum der Punkt GESPERRT ist (Konzept Administration und Support, Abschnitt 4.2) —
+    /// leer heisst frei. Ein gesperrter Punkt bleibt sichtbar, das Band zeichnet ihn
+    /// gedaempft mit dem Grund als Tooltip und meldet keinen Klick. Gesetzt wird der Grund
+    /// nur beim Zuschnitt (<see cref="Menuetabelle.Sichtbar(Freigabestufe, Func{string, string})"/>)
+    /// ueber <see cref="MitSperrgrund"/>; die Tabelle selbst kennt keine Sperre.
+    /// </summary>
+    public string Sperrgrund { get; private init; } = "";
+
+    /// <summary>Ist der Punkt gesperrt?</summary>
+    public bool Gesperrt => !string.IsNullOrEmpty(Sperrgrund);
+
+    /// <summary>
+    /// Eine Kopie dieses Punktes mit dem Sperrgrund <paramref name="grund"/> (leer = frei);
+    /// Untereintraege werden mitgenommen. Der Punkt selbst bleibt unveraendert.
+    /// </summary>
+    public Menuepunkt MitSperrgrund(string grund)
+    {
+        var kopie = new Menuepunkt(Name, TextSchluessel, Ziel, Argument, Bild, Kuerzel,
+                                   RechtsBuendig, Katalog, Stufe)
+        {
+            Trenner = Trenner,
+            Sperrgrund = grund ?? "",
+        };
+        foreach (Menuepunkt k in _kinder) kopie.Add(k);
+        return kopie;
+    }
+
     /// <summary>Das Untermenue; leer, wenn der Punkt unmittelbar handelt.</summary>
     public IReadOnlyList<Menuepunkt> Untereintraege => _kinder;
 

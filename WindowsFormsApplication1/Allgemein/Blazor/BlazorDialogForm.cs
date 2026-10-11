@@ -289,6 +289,24 @@ namespace WindowsFormsApplication1
             set => MinimumSize = value;
         }
 
+        /// <summary>
+        /// Ein BEFEHLSTASTENHAKEN des Aufrufers: bekommt jede Taste, die
+        /// <see cref="ProcessCmdKey"/> erreicht, bevor die WebView sie sieht;
+        /// <c>true</c> = behandelt, die Taste endet hier. <c>null</c> (Vorgabe) =
+        /// unverändert. Der Weg der Geste des Entwicklermodus im Dialog „Über
+        /// EPOS-Plan" (<c>UeberFenster</c>); warum <see cref="ProcessCmdKey"/> und
+        /// nicht <c>KeyPreview</c>, steht am Hauptfensterrahmen.
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<Keys, bool> Befehlstaste { get; set; }
+
+        /// <inheritdoc />
+        protected override bool ProcessCmdKey(ref Message nachricht, Keys taste)
+        {
+            if (Befehlstaste != null && !DesignMode && Befehlstaste(taste)) return true;
+            return base.ProcessCmdKey(ref nachricht, taste);
+        }
+
         /// <inheritdoc />
         protected override void OnFormClosing(FormClosingEventArgs e)
         {

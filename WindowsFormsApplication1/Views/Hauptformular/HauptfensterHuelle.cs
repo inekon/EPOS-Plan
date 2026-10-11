@@ -167,7 +167,7 @@ namespace WindowsFormsApplication1
                 // DER ENTWICKLERMODUS (Administration und Support, Stufe 1): das Menue im
                 // Zuschnitt der Stufe, die Marke neben der Versionszeile und die Naht, ueber
                 // die beides nach einem Wechsel zur Laufzeit neu versorgt wird.
-                ["Eintraege"] = Menuetabelle.Sichtbar(Entwicklermodus.Stufe),
+                ["Eintraege"] = MenueZuschnitt(),
                 ["EntwicklerMarke"] = Marke(),
                 ["EntwicklerMarkeTip"] = MarkeTip(),
                 ["FreigabeAnmelden"] =
@@ -207,15 +207,24 @@ namespace WindowsFormsApplication1
         internal static string Marke() => Entwicklermodus.Aktiv ? MyResource.Resource.ENTW_MARKE : "";
 
         /// <summary>Der Tooltip der Marke: die Quelle des Modus als fertiger Satz des Kerns.</summary>
+        /// <summary>
+        /// Das Menue im Zuschnitt der Stufe, mit den Sperrgruenden (Administration und Support,
+        /// Stufe 2, Konzept 4.2): „Fernwartung…" ist immer sichtbar und ohne bezahlte Lizenz
+        /// gesperrt. Die Frage an den Kern ist ohne Nebenwirkung.
+        /// </summary>
+        internal static IReadOnlyList<Menuepunkt> MenueZuschnitt() =>
+            Menuetabelle.Sichtbar(Entwicklermodus.Stufe,
+                                  ziel => ziel == Seitenschluessel.Fernwartung ? LizenzCtrl.FernwartungErlaubt().Grund : "");
+
         internal static string MarkeTip() => Entwicklermodus.Aktiv ? Entwicklermodus.QuelleText : "";
 
         /// <summary>
         /// Menue, Marke und Fenstertitel nach einem Wechsel der Stufe sofort neu versorgen
-        /// (Tastenfolge, „Entwicklermodus ausschalten").
+        /// (Geste im Dialog „Über EPOS-Plan", „Entwicklermodus ausschalten").
         /// </summary>
         internal void FreigabeNeuVersorgen()
         {
-            _freigabeSetzer?.Invoke(Menuetabelle.Sichtbar(Entwicklermodus.Stufe), Marke(), MarkeTip());
+            _freigabeSetzer?.Invoke(MenueZuschnitt(), Marke(), MarkeTip());
             FreigabeGewechselt?.Invoke();
         }
 
@@ -413,8 +422,14 @@ namespace WindowsFormsApplication1
                 // dort als Reiter „Status & Aktivierung".
 
                 // ---- Menü „Hilfe" -------------------------------------------
+                // Nach dem Lizenzdialog das Menue neu versorgen: Eine frische Aktivierung gibt
+                // „Fernwartung…" frei (Administration und Support, Stufe 2).
                 case Seitenschluessel.Lizenztext:
-                    return () => LizenzHuelle.Anzeigen(_besitzer?.Invoke());
+                    return () =>
+                    {
+                        LizenzHuelle.Anzeigen(_besitzer?.Invoke());
+                        FreigabeNeuVersorgen();
+                    };
 
                 // Der MENUEWEG bleibt (Auftrag #199) und uebergibt keinen
                 // Dialogkontext: Die Huelle baut sich den des aktiven BEREICHS. Den
@@ -423,11 +438,20 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.KiAssistent:
                     return () => KiChatHuelle.Oeffnen(_besitzer?.Invoke());
 
+                // Administration und Support, Stufe 3 (Konzept 5): der Dialog „Über EPOS-Plan" mit
+                // Diagnoseblock, Kontakt und der Geste des Entwicklermodus; die Datenseite liegt
+                // plattformfrei in UeberHuelle, nach einem Wechsel versorgt FreigabeNeuVersorgen.
                 case Seitenschluessel.Version:
-                    return Versionsmeldung;
+                    return () => UeberFenster.Oeffnen(_besitzer?.Invoke(), VersionText(), FreigabeNeuVersorgen);
 
                 case Seitenschluessel.Dokumentation:
                     return Dokumentation;
+
+                // Administration und Support, Stufe 2 (Konzept 4.2): Kontakt, Diagnosedaten und
+                // die Fernwartungsseite; die Datenseite liegt plattformfrei in FernwartungHuelle.
+                // Gesperrt meldet das Menueband keinen Klick, der Dialog sperrt den Knopf selbst.
+                case Seitenschluessel.Fernwartung:
+                    return () => FernwartungFenster.Oeffnen(_besitzer?.Invoke());
 
                 // ---- Menü „Entwicklung" (Administration und Support, Stufe 1) ----
                 // Nur im Entwicklermodus sichtbar; die Arbeit macht EntwicklungHuelle.
@@ -487,24 +511,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         //  Die zusammengesetzten Abläufe
         // =====================================================================
-
-        /// <summary>
-        /// „Über EPOS-Plan" — die EINZIGE <c>MessageBox</c> des Hauptfensters
-        /// (<c>:669-677</c>). Ihr Titel war ein deutsches Literal („Über " +
-        /// PRODUKTNAME) und ihre Schlusszeile ebenso; beide stehen jetzt im
-        /// Katalog.
-        /// </summary>
-        private void Versionsmeldung()
-        {
-            string text = Hauptfensterrahmen.PRODUKTNAME + Environment.NewLine +
-                          MyResource.Resource.HAUPT_CLAIM + Environment.NewLine + Environment.NewLine +
-                          Versionszeile() + Environment.NewLine +
-                          MyResource.Resource.HAUPT_UEBER_HAUS;
-
-            Dienste.Dialog.Meldung(
-                text,
-                string.Format(MyResource.Resource.HAUPT_UEBER_TITEL, Hauptfensterrahmen.PRODUKTNAME));
-        }
 
         /// <summary>
         /// Die Online-Dokumentation im Browser (<c>:807-832</c>). Führend ist der

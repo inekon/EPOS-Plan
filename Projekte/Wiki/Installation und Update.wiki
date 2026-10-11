@@ -152,6 +152,6 @@ Bei mehreren Arbeitsplätzen sollten alle Rechner auf demselben Versionsstand ge
 == Unterstützung ==
 {{Anker|unterstuetzung}}
 
-Im Rahmen des Wartungsvertrags erreichen Sie uns werktags von 9 bis 16 Uhr unter +49 711 9959 826 50 oder per E-Mail an [mailto:info@inekon.de info@inekon.de]; bei Bedarf über Fernwartung. Halten Sie bitte Kundennummer, Windows-Version sowie die alte und die neue EPOS-Plan-Version bereit – letztere finden Sie im Programm unter {{Menü|Hilfe|Version}}. Weitere Antworten stehen in den [[FAQ]] und in den [[Programmfunktionen]].
+Im Rahmen des Wartungsvertrags erreichen Sie uns werktags von 9 bis 16 Uhr unter +49 711 9959 826 50 oder per E-Mail an [mailto:info@inekon.de info@inekon.de]; bei Bedarf über Fernwartung; den Weg dorthin zeigt {{Menü|Hilfe|Fernwartung…}}, Einzelheiten stehen unter [[Programm Dokumentation/Fernwartung|Fernwartung]]. Halten Sie bitte Kundennummer, Windows-Version sowie die alte und die neue EPOS-Plan-Version bereit – letztere finden Sie im Programm unter {{Menü|Hilfe|Version}}. Weitere Antworten stehen in den [[FAQ]] und in den [[Programmfunktionen]].
 
 [[Kategorie:Installation]]
