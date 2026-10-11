@@ -77,6 +77,8 @@ namespace EPOS.Kern.Tests
         {
             ("PhotovoltaikVerguetungDialog.razor", "Math.Max(0.001, Kwp)",
              "Untergrenze der ANLAGENLEISTUNG [kWp] gegen eine Division durch null - keine Energiemenge."),
+            ("PhotovoltaikDialog.razor", "kwp = w * stueck / 1000.0",
+             "Zusammenfassung des Projektsatzes: Modul-Nennleistung [W] x Stueckzahl -> kWp. Leistung, keine Energiemenge."),
             ("PhotovoltaikHuelle.cs", "d.Leistung * (zeile.AnzahlModule ?? 0) / 1000.0",
              "Modul-Nennleistung [W] x Modulzahl -> kWp. Leistung, keine Energiemenge."),
             ("SimulationKonfigHuelle.cs", "(modul.m_Leistung * anzahl / 1000.0)",
