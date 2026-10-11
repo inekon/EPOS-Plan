@@ -1681,7 +1681,7 @@ einen echten Dialog von `EPOS.UI` in Fenstergröße, ohne Datenbank, befüllt au
 100 kWh“, „Wohnhaus Musterstraße“), runde Werte, keine Hersteller- und Produktdaten. Die
 Zeilen der Messproben (`Zeilenbau.cs`) taugen dafür nicht — sie tragen echte
 Herstellernamen. Die Reiter des Gebäudeeditors (Konditionierung, Zonen, Zonendialog) nimmt
-das Skript aus `/konditionierungsprobe`, deren Satz ebenfalls neutral ist.
+das Skript aus `/konditionierungsprobe`, deren Satz ebenfalls neutral ist. Die Aufnahmen der Gebäudedialoge (Gebaeudedaten, Konditionierung, Zonen, Zonendialog) entstehen, liegen aber nicht im Wiki-Stand, solange die Dialoge nicht ausgearbeitet sind.
 
 Gaben von `bild`: `heizkessel`, `bhkw`, `waermepumpe`, `pufferspeicher`, `stromspeicher`,
 `photovoltaik`, `solarkollektoren`, `brauchwasser`, `prozesswaerme`, `gebaeude`,

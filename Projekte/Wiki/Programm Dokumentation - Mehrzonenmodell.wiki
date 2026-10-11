@@ -7,8 +7,6 @@ Das '''Mehrzonenmodell''' rechnet ein Gebäude mit zwei oder mehr Zonen: jede Zo
 
 == Zonen anlegen ==
 {{Anker|zonen-anlegen}}
-[[Datei:Bildschirmfoto_Zonendialog.png|mini|zentriert|800px|Zonendialog – Bildschirmfoto mit Beispieldaten.]]
-
 Zonen führt ein Gebäude im Projekt auf dem Rechenweg VDI 6007 und ebenso ein Satz des Gebäudekatalogs. Sie entstehen im Reiter ''Zonen'' – im Gebäudeeditor ''Gebäude im Projekt: Hülle und Zonen'', den ''Bearbeiten…'' in der Kopfleiste der Projektliste öffnet (siehe [[Programm Dokumentation/Gebäude#zonen|Gebäude]]), oder im Katalogeditor (siehe [[Programm Dokumentation/Gebäude#katalogzonen|Zonen im Katalog]]) – mit ''+ Neue Zone …'', mit ''Duplizieren'', im Projekt auch mit ''Gebäude als eine Zone übernehmen'', aus einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] oder mit der Übernahme eines Katalogsatzes, der Zonen trägt. Gerechnet werden die Zonen nur im Projekt. Vor der zweiten Zone fragt der Editor nach. Ein Gebäude trägt höchstens 50 Zonen.
 
 Mit mehreren Zonen gilt:

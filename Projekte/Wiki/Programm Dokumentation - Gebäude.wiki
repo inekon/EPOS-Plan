@@ -97,8 +97,6 @@ Baualtersklasse und Energiestandard gehen in keine Rechnung ein. Die Klasse best
 
 === Reiter „Konditionierung" ===
 {{Anker|konditionierung|temperaturen-und-ferien}}
-[[Datei:Bildschirmfoto_Konditionierung.png|mini|zentriert|800px|Reiter Konditionierung – Bildschirmfoto mit Beispieldaten.]]
-
 Der Reiter führt, wann und worauf das Gebäude geheizt, gekühlt und gelüftet wird und wann Geräte und Personen Wärme abgeben. Er steht in der Eingabe des Gebäudes im Projekt, im Katalogeditor und im Stammblatt der Verwaltung. Oben steht die '''Vorgabe-Matrix''', darunter je Größe eine '''Kalenderkarte'''. Alle Temperaturen sind '''absolute Raumsolltemperaturen''' in °C, keine Differenzen zum Soll am Tag. Welcher Wert zu welcher Stunde gilt, entscheidet diese Reihenfolge: Ferien vor Wochenende vor Nacht und Tag. Unter VDI 6007 ist die Matrix die Vorgabe, ein angelegter Kalender geht ihr vor; der Rechenweg Tagesbilanz nutzt nur die Felder der Heizspalte.
 
 * {{Anker|matrix}}'''Vorgabe-Matrix''' – fünf Spalten ''Heizen °C'', ''Kühlen °C'', ''Lüftung 1/h'', ''Geräte W bzw. %'' und ''Personen W bzw. %'', darunter die Zeilen ''Vorlage'', ''Nennwert'', ''Tag'', ''Nacht'', ''Wochenende'', ''Ferien'' und ''Saison''. Heizen und Kühlen tragen Temperaturen, Geräte und Personen Anteile des Nennwerts in Prozent, die Lüftung Luftwechsel in 1/h. Eine leere Zelle heißt ''keine'' oder ''Vorgabe …'': Sie gilt wie die Zelle Tag, bei Wochenende wie ein Werktag. Heizen und Kühlen kennen den Zustand ''aus''; ''Zelle auf „aus“ setzen'' schaltet die Größe in dieser Zeile ab. ''Nennwert'' der Geräte und Personen ist die Leistung in W; eine Herleitungszeile unter der Matrix nennt die Jahresmittel der Gewinne in W und W/m². Die Nachtzeit steht in der Zelle ''Nacht'' als ''von–bis'', leer gilt das Nachtfenster der Heizspalte. Die Kühlspalte wirkt nur mit Kühlbetrieb im Projekt und aktiver Kühlung des Gebäudes (siehe [[Programm Dokumentation/Kühlung|Kühlung]]); sonst ist sie gesperrt, der Grund steht am Element. Unter VDI 6007 sind die Zeilen ''Wochenende'' und ''Ferien'' eine Übersicht: Ihre Werte stehen in den Schnellfeldern der [[#kalenderbedienung|Kalenderbedienung]]; auf dem Rechenweg Tagesbilanz bleiben sie in der Matrix bedienbar.
@@ -182,8 +180,6 @@ Ein Beispiel: ''Gebäude 1'' hat 100 m² Nutzfläche, das Projekt gibt 250 m² a
 
 === Reiter „Zonen" ===
 {{Anker|zonen}}
-[[Datei:Bildschirmfoto_Zonen.png|mini|zentriert|800px|Reiter Zonen – Bildschirmfoto mit Beispieldaten.]]
-
 Der Reiter '''Zonen''' listet die Zonen des Gebäudes in ihrer Reihenfolge mit ''Zone'', ''Nutzfläche'', ''Volumen'', ''beheizt'', ''<math>H_{\mathrm{T}} = \sum U \cdot A + \sum \psi \cdot L</math>'' in W/K und der Zahl der ''Bauteile'', darunter die Summenzeile. Je Zeile stehen die Knöpfe:
 
 * '''▲ ▼''' – verschieben die Zone in der Reihenfolge.

@@ -180,6 +180,8 @@ Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Ver
 
 Version noch beim Anwender zu bestätigen.
 
+Die sechs Sätze (#935) sind am 11.10.2026 im Wiki-Abschnitt „Version 1.2.0.10 – Oktober 2026“ veröffentlicht (Revision 933).
+
 - Seit 09.10.2026: Eine Wärmepumpe lässt sich mit Einbindung (direkt, Puffer, Weiche) und Vorwärmbetrieb mit dem Kessel in Reihe rechnen. (#853)
 - Seit 09.10.2026: Wärmepumpen- und BHKW-Katalog führen Gerätegrenzen für Spreizung, Mindestvolumenstrom und Rücklauf. (#854)
 - Seit 09.10.2026: Der Reiter „Wärmepumpe“ der Simulationsergebnisse zeigt die Betriebsbereiche mit Stunden, Wärme und Bivalenzpunkten. (#855)

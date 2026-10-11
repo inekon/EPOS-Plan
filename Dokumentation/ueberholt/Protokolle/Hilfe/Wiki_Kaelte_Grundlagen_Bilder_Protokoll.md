@@ -50,7 +50,7 @@ Sammelmerge `b2d7751c` bis `49a174c8` mit drei Nachzügen: `888f55cc` (Zapfprofi
 
 - **W6a** `089b3447`: zwölf Beispieldiagramme aus `Proben/ChartProben` als `Diagramm_*.png` in zehn Seiten. `35cc5e83`: Konzept Hilfesystem 14.3, Absatz
   „PNG-Bilder“; neue Wache `EPOS.Kern.Tests/WikiBilderWacheTests.cs` mit fünf Prüfpunkten.
-- **W6b** `6f3e9ceb`: Wirt-Seite `/wikibild`, `Wikibeispiele.cs`, Skript `Proben/Rasterprobe/wikibilder.mjs`. `acd5fee8`: 14 Bildschirmfotos
+- **W6b** `6f3e9ceb`: Wirt-Seite `/wikibild`, `Wikibeispiele.cs`, Skript `Proben/Rasterprobe/wikibilder.mjs`. `acd5fee8`: 10 Bildschirmfotos (vier Aufnahmen der Gebäudedialoge auf Anwenderentscheid vom 11.10.2026 zurückgestellt (Dialoge noch nicht ausgearbeitet))
   `Bildschirmfoto_*.png` (Heizkessel, BHKW, Wärmepumpe, Pufferspeicher, Stromspeicher, Photovoltaik, Solarkollektoren, Brauchwasser, Prozesswärme,
   Gebäudedaten, Kältemaschine, Konditionierung, Zonen, Zonendialog). Acht Platzhalter entfernt: Anlagenschema (2), Nutzungsprofile, Ergebnis mit
   Reiterleiste, Bedarfsdialog gekoppelt, WP-Konfiguration mit Herleitung, Wärmequelle Erdreich.
@@ -70,12 +70,12 @@ Feiertage, Anlagenkopplung und Regelung; Programm Dokumentation Kälteerzeugung;
 
 ## Abnahme
 
-Gate 933: Gate 931 auf 646d4eac grün: Kern-Filter 0 Fehler, ChartProben 222 Hashes gleich Messlatte_2026-10-10, Tests KiKern 553, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), UI 8478, Kern 13303 (7 übersprungen), Doku-Wachen 35, Referenzlauf 29 von 29 Projekten PASS (10036768 Werte innerhalb der Toleranz), CSV byte-gleich 943/943, Plattformnachweis (--stoerung ulp) PASS 29 von 29; Nachtest auf 9ce75a0b: UI 8480/8480, Kern-Auswahl 296/296, Build 0 Fehler. CI: CI-Vermerk ⟨folgt nach dem Push⟩.
+Gate 933: Gate 931 auf 646d4eac grün: Kern-Filter 0 Fehler, ChartProben 222 Hashes gleich Messlatte_2026-10-10, Tests KiKern 553, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), UI 8478, Kern 13303 (7 übersprungen), Doku-Wachen 35, Referenzlauf 29 von 29 Projekten PASS (10036768 Werte innerhalb der Toleranz), CSV byte-gleich 943/943, Plattformnachweis (--stoerung ulp) PASS 29 von 29; Nachtest auf 9ce75a0b: UI 8480/8480, Kern-Auswahl 296/296, Build 0 Fehler. CI: CI: Sitzungszweig-Lauf 38096502258 auf `2cbc658e` grün; Lauf 38096503917 auf `ios_migration_september` durch fremde Pushes abgebrochen.
 
 ## Offen
 
-- Upload nur auf Zuruf des Anwenders; Zugangsdaten werden dann erfragt.
+- Upload erledigt 11.10.2026 (04:10–04:27 UTC, Bot-Konto, Stand `31f31a7d`): 39 Dateien (6 bestehende gleich, 11 SVG und 22 PNG neu, SHA-1-Rücklese gleich), 128 Seiten gleich (5 neu, übrige ersetzt; 0 Fehler, 0 Parse-Warnungen, Rücklese byte-gleich), 19 Weiterleitungen gleich; Update-Logbuch: sechs Sätze unter „Version 1.2.0.10 – Oktober 2026“, Revision 933. Bildschirmfotos der Gebäudedialoge zurückgestellt.
 - Sichtabnahme der Bilder durch den Anwender.
-- Nicht abgebildete Masken (acht entfernte Platzhalter, siehe Bildwelle).
+- Nicht abgebildete Masken (acht entfernte Platzhalter, siehe Bildwelle): Anwenderentscheid 11.10.2026 „später“ — kein Nachliefern aus der Windows-Anwendung; Bilder erst, wenn der Prüfstand eine neutrale Beispieldatenbank hat.
 - Befund „Kältemaschine nicht an Kühltage gebunden“ für die Fachsitzung.
 - Schönheitsfehler des Prüfstands `Proben/ChartProben`: Diagrammproben mit „Waerme“ ohne Umlaut und Fußzeile „Paket iU7-3“.
