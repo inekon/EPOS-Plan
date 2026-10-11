@@ -220,6 +220,29 @@ public static class Katalogladung
         }
     }
 
+    /// <summary>
+    /// KT-8c: Stellt eine Zustandsfrage, die keinen Satz nennt (etwa den Lesemodus der Lizenz). Wirft
+    /// <paramref name="weg"/>, ist das Ergebnis <paramref name="vorgabe"/> (der sichere Wert des
+    /// Aufrufers), <paramref name="fehler"/> folgt der eigenen <paramref name="vorlage"/>
+    /// (<c>{0}</c> = Meldung der Ausnahme), und das Protokoll hat einen Vermerk mit
+    /// <paramref name="was"/>.
+    /// </summary>
+    public static T Frage<T>(Func<T> weg, string was, T vorgabe, string vorlage, out string fehler)
+    {
+        fehler = "";
+        try
+        {
+            return weg();
+        }
+        catch (Exception ex)
+        {
+            Ausnahmeprotokoll.Vermerken("Katalogfrage \u201e" + was + "\u201c nicht beantwortet: "
+                + ex.GetType().FullName + ": " + ex.Message);
+            fehler = string.Format(CultureInfo.CurrentCulture, vorlage, ex.Message);
+            return vorgabe;
+        }
+    }
+
     /// <summary>Der Grund in der Sprache der Oberfläche und der Vermerk im Ausnahmeprotokoll.</summary>
     private static string Benennen(string vorlage, string was, string wie, string? satz, Exception ex)
     {

@@ -690,12 +690,27 @@
     {
         _kosten = null;
         if (Kostensumme is null || Aktuell is not Zeile a || a.Arbeit.AnlagenId <= 0) return;
-        try { _kosten = Kostensumme(a.Arbeit.AnlagenId); }
-        catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
+        // KT-8c: über die Fangstelle — wirft die Summe, fehlt die Angabe, und der Banner nennt den Grund.
+        Func<int, (double Invest, double Betrieb)> summe = Kostensumme;
+        int anlagenId = a.Arbeit.AnlagenId;
+        _kosten = Katalogladung.Wert<(double Invest, double Betrieb)?>(() => summe(anlagenId), a.Arbeit.Bezeichner, null,
+                                                                      out string kostenGrund);
+        if (kostenGrund.Length > 0) Melden(kostenGrund, true);
     }
 
-    private Task BeiKosten(Zeile zeile, bool betrieb)
-        => KostenOeffnen is null || zeile.Arbeit.AnlagenId <= 0 ? Task.CompletedTask : KostenOeffnen(zeile.Arbeit.AnlagenId, betrieb);
+    /// <summary>
+    /// KT-8c: Der Weg in die Kostenverwaltung läuft über die Fangstelle
+    /// (<c>Katalogladung.SchreibenAsync</c>): Wirft er, nennt der Banner den Grund, das Protokoll
+    /// hat einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    private async Task BeiKosten(Zeile zeile, bool betrieb)
+    {
+        if (KostenOeffnen is null || zeile.Arbeit.AnlagenId <= 0) return;
+        Func<int, bool, Task> oeffnen = KostenOeffnen;
+        string grund = await Katalogladung.SchreibenAsync(async () => { await oeffnen(zeile.Arbeit.AnlagenId, betrieb); return ""; },
+                                                          zeile.Arbeit.Bezeichner, g => g);
+        if (grund.Length > 0) { Melden(grund, true); StateHasChanged(); }
+    }
 
     // =====================================================================
     // Anzeigehilfen

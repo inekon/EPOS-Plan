@@ -244,6 +244,9 @@ public class SchlossumschaltungTests : EposBunitContext
         Assert.False(h.Aus);
         Assert.Contains("Lizenzdatei gesperrt", h.Sperrgrund);
         Assert.Contains("Lizenzdatei gesperrt", s.LesemodusFehler);
+        // KT-8c: der eigene Text der Lesemodus-Frage, nicht „Schloss setzen" als Satzname.
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.WURZEL_LESEMODUS_FEHLER.Split('{')[0], h.Sperrgrund);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.ADM_SCHLOSS_SETZEN_TITEL, h.Sperrgrund);
 
         string? grund = s.Fragen(weg, new[] { A }, false);
         Assert.Contains("Lizenzdatei gesperrt", grund);
@@ -251,6 +254,29 @@ public class SchlossumschaltungTests : EposBunitContext
         Assert.Empty(_geschaltet);
         Assert.True(vermerke.Enthaelt("Lizenzdatei gesperrt"));
         Assert.Equal(1, gefragt);
+    }
+
+    /// <summary>
+    /// KT-8c: Der Knopf „Schloss…" ohne Auswahlleiste (<c>Katalogschloss</c>) trägt denselben Grund —
+    /// den eigenen Text der Lesemodus-Frage — als <c>title</c> und ist weich gesperrt.
+    /// </summary>
+    [Fact]
+    public void KT8c_Katalogschloss_nennt_den_Lesemodus_Fehler_im_eigenen_Text()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var weg = new Schlossweg((ids, g) => new SchlossErgebnis(true, "") { Geaendert = ids })
+        {
+            Lesemodus = () => throw new InvalidOperationException("Lizenzdatei gesperrt")
+        };
+
+        var cut = Render<Katalogschloss>(b => b.Add(x => x.Weg, weg).Add(x => x.Zeile, A));
+
+        var knopf = cut.Find("button.epos-katalogschloss");
+        string titel = knopf.GetAttribute("title") ?? "";
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.WURZEL_LESEMODUS_FEHLER.Split('{')[0], titel);
+        Assert.Contains("Lizenzdatei gesperrt", titel);
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.True(vermerke.Enthaelt("Lizenzdatei gesperrt"));
     }
 
     [Fact]

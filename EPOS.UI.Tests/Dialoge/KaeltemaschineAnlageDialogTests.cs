@@ -258,6 +258,62 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         Assert.Contains(R.KM_RUECKKUEHLART_WASSER, a.Values);
     }
 
+    /// <summary>
+    /// KT-8c: Wirft die Kostensumme, fehlt die Angabe in der Zusammenfassung, der Banner nennt den
+    /// Grund (<c>WURZEL_SATZ_FEHLER</c>), und das Protokoll hat einen Vermerk — vorher verschluckte
+    /// ein leerer <c>catch</c> die Ausnahme still.
+    /// </summary>
+    [Fact]
+    public void KT8c_wirft_die_Kostensumme_nennt_der_Banner_den_Grund()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(this, new Projekt(),
+                           b => b.Add(x => x.Kostensumme, _ => throw new InvalidOperationException("Kosten gesperrt")));
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), e => e.TextContent.Contains("Kosten gesperrt"));
+        Assert.True(vermerke.Enthaelt("Kosten gesperrt"));
+    }
+
+    /// <summary>
+    /// KT-8c: „Kosten…" läuft über die Fangstelle (<c>Katalogladung.SchreibenAsync</c>): Wirft der Weg,
+    /// nennt der Banner den Grund, das Protokoll hat einen Vermerk, und die Überlagerung bleibt offen.
+    /// </summary>
+    [Fact]
+    public void KT8c_wirft_der_Kostenweg_nennt_der_Banner_den_Grund_und_der_Dialog_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var p = new Projekt();
+        var cut = Aufbauen(this, p, b => b.Add(x => x.KostenOeffnen,
+                                               (_, _) => throw new InvalidOperationException("Kostenverwaltung gesperrt")));
+        IElement satz = ProjektStift(cut);
+
+        satz.QuerySelectorAll(".epos-kostenleiste button.epos-knopf")[0].Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Contains(cut.FindAll(".epos-warnbanner-text"), e => e.TextContent.Contains("Kostenverwaltung gesperrt")));
+        Assert.True(vermerke.Enthaelt("Kostenverwaltung gesperrt"));
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Null(p.Geschlossen);
+    }
+
+    [Fact]
+    public void KT8c_ohne_Ausnahme_zeigt_der_Kostenweg_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int geoeffnet = 0;
+        var cut = Aufbauen(this, new Projekt(), b => b
+            .Add(x => x.KostenOeffnen, (_, _) => { geoeffnet++; return Task.CompletedTask; })
+            .Add(x => x.Kostensumme, _ => (1.0, 2.0)));
+        IElement satz = ProjektStift(cut);
+
+        satz.QuerySelectorAll(".epos-kostenleiste button.epos-knopf")[0].Click();
+
+        Assert.Equal(1, geoeffnet);
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+    }
+
     [Fact]
     public void Der_Stift_oeffnet_die_Ueberlagerung_OK_schreibt_ueber_den_Fangweg()
     {

@@ -247,7 +247,7 @@ public sealed class Schlossumschaltung
 
     /// <summary>
     /// Steht die Datenbank im Lesemodus der Lizenz? Die Frage läuft über die Fangstelle
-    /// (<see cref="Katalogladung.Wert{T}"/>): Wirft sie, gilt der Lesemodus (der sichere Wert —
+    /// (<see cref="Katalogladung.Frage{T}"/>): Wirft sie, gilt der Lesemodus (der sichere Wert —
     /// nichts wird geschrieben), der Grund steht in <see cref="LesemodusFehler"/>, und das
     /// Protokoll hat einen Vermerk.
     /// </summary>
@@ -255,7 +255,9 @@ public sealed class Schlossumschaltung
     {
         if (weg.Lesemodus is null) return false;
         if (_lesemodusFehler.Length > 0) return true;
-        bool lesemodus = Katalogladung.Wert(() => weg.Lesemodus(), Resource.ADM_SCHLOSS_SETZEN_TITEL, true, out string grund);
+        // KT-8c: eigener Text (WURZEL_LESEMODUS_FEHLER) — die Frage nennt keinen Satz.
+        bool lesemodus = Katalogladung.Frage(() => weg.Lesemodus(), "Lesemodus", true,
+                                             Resource.WURZEL_LESEMODUS_FEHLER, out string grund);
         _lesemodusFehler = grund;
         return lesemodus;
     }
