@@ -136,6 +136,122 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Raumflächen je Quelle der Projektdatei</b> (Befund SQ2): je Raum die Fläche, die EPOS übernimmt
+        /// (<c>BmRoom.Area</c>), und die Abweichung jeder anderen Quelle davon in % — DIN-277-Nettofläche
+        /// (<c>BmBuildingSpace.NetAreaValue</c>), Raum-XML (<c>room/@area</c>), Raumpolygone, Bodenfläche des Raumkörpers,
+        /// Summe der Bodenhüllflächen (Level 3, Bezug 8, Boden und Bodenplatte, <c>GrossArea</c>) und die IFC-Menge über die
+        /// HottCAD-GUID. Ausgegeben werden nur die Raumkennungen (<c>ShortDesc</c>) und Prozentwerte, keine Namen; danach die
+        /// Spannweite je Quelle und die Räume, die der Zonenvorschlag aus der Projektdatei allein nicht zuordnet.
+        /// </summary>
+        [Fact]
+        public void Raumflaechen_je_Quelle()
+        {
+            string ordner = Quellen();
+            if (ordner == null || !Directory.Exists(ordner)) return;
+            foreach (string pfad in Directory.GetFiles(ordner, "*.sqproj").OrderBy(p => p, StringComparer.Ordinal))
+            {
+                if (!SqprojLeser.IstSqlite(pfad)) continue;   // LFS-Zeiger oder fremde Datei
+                string kopie = Path.Combine(Path.GetTempPath(), "epos-sqproj-test", Guid.NewGuid().ToString("N") + ".sqproj");
+                Directory.CreateDirectory(Path.GetDirectoryName(kopie));
+                File.Copy(pfad, kopie);
+                try
+                {
+                    var roh = RohflaechenLesen(kopie);
+                    AbbildGebaeude g = Lesen(kopie, out GebaeudeAbbild abbild);
+                    if (g == null) continue;
+                    string ifc = Path.ChangeExtension(pfad, ".ifc");
+                    var ifcJeGuid = (File.Exists(ifc) && new FileInfo(ifc).Length >= 1024 ? Lesen(ifc, out _) : null)?.Raeume
+                                    .Where(r => r.HottcadGuid != null).GroupBy(r => r.HottcadGuid, StringComparer.OrdinalIgnoreCase)
+                                    .ToDictionary(x => x.Key, x => x.First().FlaecheM2, StringComparer.OrdinalIgnoreCase);
+                    string[] quellen = { "DIN 277 netto", "Raum-XML", "Polygon", "Körperboden", "Bodenhüllfläche", "IFC" };
+                    var spanne = quellen.ToDictionary(q => q, _ => new System.Collections.Generic.List<double>());
+                    _aus.WriteLine("=== " + Path.GetFileName(pfad) + " — Räume " + g.Raeume.Count + "; Abweichung je Quelle von BmRoom.Area in %");
+                    _aus.WriteLine("Raum | EPOS (BmRoom.Area) m² | " + string.Join(" | ", quellen));
+                    foreach (AbbildRaum r in g.Raeume.OrderBy(r => r.Name, StringComparer.Ordinal))
+                    {
+                        roh.TryGetValue(r.Kennung, out (double? Din, double? Xml, double? Boden) q);
+                        double? ifcA = ifcJeGuid != null && r.HottcadGuid != null && ifcJeGuid.TryGetValue(r.HottcadGuid, out double? t) ? t : null;
+                        double?[] werte = { q.Din, q.Xml, PolygonflaecheProjektdatei(abbild, r.Kennung), Koerpermasse(r.Koerper).Item1, q.Boden, ifcA };
+                        string zeile = r.Name + " | " + Z(r.FlaecheM2);
+                        for (int i = 0; i < werte.Length; i++)
+                        {
+                            double? p = Prozent(werte[i], r.FlaecheM2);
+                            if (p.HasValue) spanne[quellen[i]].Add(p.Value);
+                            zeile += " | " + (p.HasValue ? p.Value.ToString("+0.00;-0.00;0.00", System.Globalization.CultureInfo.InvariantCulture) : "—");
+                        }
+                        _aus.WriteLine(zeile);
+                    }
+                    foreach (string q in quellen)
+                        if (spanne[q].Count > 0)
+                            _aus.WriteLine("Spanne " + q + ": " + spanne[q].Count + " Räume, " + Z(spanne[q].Min()) + " % … " + Z(spanne[q].Max())
+                                           + " %, über 0,1 %: " + spanne[q].Count(x => Math.Abs(x) > 0.1));
+                    (System.Collections.Generic.IReadOnlyList<string> regeln, string vorgabe, bool _) = GebaeudeZonierung.Waehlbar(abbild, 0);
+                    foreach (string regel in regeln)
+                    {
+                        Zonenplan plan = Zonenplan.Vorschlag(abbild, 0, regel);
+                        _aus.WriteLine("Zonenvorschlag allein aus der Projektdatei, Regel " + regel + (regel == vorgabe ? " (Vorgabe)" : "") + ": nicht zugeordnet " + plan.NichtZugeordnet.Count + " ("
+                                       + string.Join(", ", plan.NichtZugeordnet.Select(r => r.Name + " beheizt " + (r.Beheizt ? "ja" : "nein")
+                                                                                       + ", übrige Räume der Dateizone beheizt " + Dateizone(g, r).Count(x => x.Beheizt) + "/" + Dateizone(g, r).Count))
+                                       + ")");
+                    }
+                }
+                finally
+                {
+                    File.Delete(kopie);
+                }
+            }
+        }
+
+        /// <summary>Die übrigen Räume derselben Zone der Datei (<see cref="AbbildRaum.ZonenKennung"/>).</summary>
+        private static System.Collections.Generic.List<AbbildRaum> Dateizone(AbbildGebaeude g, AbbildRaum r)
+            => g.Raeume.Where(x => x != r && x.ZonenKennung != null && string.Equals(x.ZonenKennung, r.ZonenKennung, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        /// <summary>Abweichung von <paramref name="wert"/> gegen <paramref name="bezug"/> in %; <c>null</c> ohne beide Werte.</summary>
+        private static double? Prozent(double? wert, double? bezug)
+            => wert.HasValue && bezug.HasValue && bezug.Value > 0 ? (wert.Value / bezug.Value - 1.0) * 100.0 : null;
+
+        /// <summary>
+        /// Die Rohflächen je Raum (<c>BmRoom.UUID</c>) unmittelbar aus der Datei: DIN-277-Nettofläche, <c>room/@area</c> des
+        /// Raum-XML und die Summe der Bodenhüllflächen (Level 3, Bezug 8, Elementtyp 4 und 11, <c>GrossArea</c>).
+        /// </summary>
+        private static System.Collections.Generic.Dictionary<string, (double? Din, double? Xml, double? Boden)> RohflaechenLesen(string pfad)
+        {
+            var e = new System.Collections.Generic.Dictionary<string, (double? Din, double? Xml, double? Boden)>(StringComparer.OrdinalIgnoreCase);
+            var b = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder { DataSource = pfad, Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadOnly, Pooling = false };
+            using var c = new Microsoft.Data.Sqlite.SqliteConnection(b.ToString());
+            c.Open();
+            void Lies(string sql, Action<string, double?> setzen)
+            {
+                using var k = c.CreateCommand();
+                k.CommandText = sql;
+                using var l = k.ExecuteReader();
+                while (l.Read())
+                    if (!l.IsDBNull(0)) setzen(l.GetString(0), l.IsDBNull(1) ? null : l.GetDouble(1));
+            }
+            Lies("SELECT ParentUUID, NetAreaValue FROM BmBuildingSpace WHERE NetAreaValue > 0",
+                 (u, v) => { e.TryGetValue(u, out var t); e[u] = (v, t.Xml, t.Boden); });
+            Lies("SELECT x.ReferenceFromUUID, SUM(m.GrossArea) FROM BmElementReference x JOIN BmElement m ON m.UUID = x.ReferenceToUUID"
+                 + " WHERE m.RepositoryLevel = 3 AND x.ReferenceType = 8 AND m.ElementType IN (4, 11) AND m.GrossArea > 0 GROUP BY x.ReferenceFromUUID",
+                 (u, v) => { e.TryGetValue(u, out var t); e[u] = (t.Din, t.Xml, v); });
+            using (var k = c.CreateCommand())
+            {
+                k.CommandText = "SELECT ReferenceUUID, ClassValue FROM BmData WHERE ClassValue LIKE '%<room %'";
+                using var l = k.ExecuteReader();
+                while (l.Read())
+                {
+                    if (l.IsDBNull(0) || l.IsDBNull(1)) continue;
+                    var raum = System.Xml.Linq.XDocument.Parse(l.GetString(1)).Descendants("room").FirstOrDefault();
+                    if (raum?.Attribute("area") is not { } a
+                        || !double.TryParse(a.Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double v)) continue;
+                    string u = l.GetString(0);
+                    e.TryGetValue(u, out var t);
+                    e[u] = (t.Din, v, t.Boden);
+                }
+            }
+            return e;
+        }
+
         private static AbbildGebaeude Lesen(string pfad, out GebaeudeAbbild abbild)
         {
             var ablauf = new GebaeudeImportAblauf();
