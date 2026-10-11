@@ -89,7 +89,7 @@ Kennzeichen als Parameter aus den Hüllen, nie direkt aus der Registry.
 
 - Kern-Filter 0 Fehler (155 Warnungen, vorher 151); Windows-Schale auf Linux 0 Fehler (16 Warnungen);
   SQL-Dialekt-Prüfer 2 813 Texte, 0 Fundstellen; keine Konfliktmarker.
-- Testlauf des Gates: {GATE}
+- Testlauf des Gates: `EPOS.UI.Tests` 8 779 grün, `KiKern.Tests` 553, `SpeicherEngine.Tests` 397, `SpeicherPlanung.Tests` 27 (1 übersprungen), `EPOS.Kern.Tests` nach Filter (Entwickler, Diagnose, Ki, Einstellungen, Resource, HelpMapping, Dokumentation, RepositoryOrdnung, Wiki, GebaeudeImport, Raumnutzung, Katalogabgleich, GebaeudeExport, Lizenz) 1 359 grün in 4 min 44 s — alles mit SDK 10.0.112; der vollständige Kern-Lauf ist der CI-Lauf
 - Referenzlauf nicht betroffen (kein Rechenweg).
 - CI: Push `5eb9e5f2` läuft; der Lauf auf `6f166a81` war rot durch die fremde Einstufung von
   `Vorheizzeit_H` (AH-V6 auf origin bringt die Reparatur, mit dem Merge übernommen).
