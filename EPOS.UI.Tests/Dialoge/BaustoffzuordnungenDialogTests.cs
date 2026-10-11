@@ -181,7 +181,7 @@ public class BaustoffzuordnungenDialogTests : EposBunitContext
         => Assert.Null(Knopf(Gebaeudedialog(null)));
 
     /// <summary>
-    /// <b>Der Knopf steht beim Import</b> (Anwenderentscheid 06.10.2026): in der Leiste unter dem Katalog
+    /// <b>Der Knopf steht beim Import</b> (Anwenderentscheid 06.10.2026): in der Leiste mit dem Import (mit AW3b die Knopfleiste am Satz)
     /// gleich nach „Importieren (gbXML, IFC)…", nicht mehr in der Fußleiste neben OK. Im Assistenten
     /// steht er nicht.
     /// </summary>
@@ -191,7 +191,8 @@ public class BaustoffzuordnungenDialogTests : EposBunitContext
         IRenderedComponent<GebaeudeDialog> cut = Gebaeudedialog(() => new Dictionary<string, object>(), mitImport: true);
         IElement knopf = Knopf(cut)!;
         IElement leiste = knopf.ParentElement!;
-        Assert.Equal("epos-zweispalten-fussleiste", leiste.ClassName);
+        // AW3b: Knopfleiste am Satz - die Katalog-Fussleiste entfaellt, Import und Zuordnungen stehen in der Leiste am Satz.
+        Assert.Equal("epos-zweispalten-satzknoepfe", leiste.ClassName);
         Assert.Contains(leiste.Children, b => b.TextContent.Trim() == "Gebäude in DB neu...");
         Assert.DoesNotContain(leiste.Children, b => b.ClassList.Contains("epos-knopf--primaer"));
         Assert.Contains("epos-importknopf", knopf.PreviousElementSibling!.ClassName);

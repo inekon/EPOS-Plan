@@ -65,6 +65,8 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
     private readonly List<string> _geloescht = new();
     private readonly List<string> _angelegt = new();
     private int _abgebrochen;
+    private readonly Schlosspruefung _schloss = new();
+    private bool _assistent;
     private int _stillGespeichert;
 
     private IRenderedComponent<GebaeudeDialog> Aufbauen(List<GebaeudeProjektZeile> zeilen, bool sofort = true,
@@ -88,7 +90,9 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
              .Add(x => x.ProjektGaben, z => { _projekteditor.Add(z.IdZ); return new Dictionary<string, object>(); })
              .Add(x => x.KatalogLoeschen, n => { _geloescht.Add(n); _katalog.RemoveAll(k => k.Bezeichner == n); return true; })
              .Add(x => x.KatalogLoeschsperre, n => n == "Auslieferung" ? "Ein Auslieferungssatz bleibt." : "")
-             .Add(x => x.Abgebrochen, () => _abgebrochen++);
+             .Add(x => x.Abgebrochen, () => _abgebrochen++)
+             .Add(x => x.Schloss, _schloss.Weg())
+             .Add(x => x.Wizard, _assistent);
             if (sofort)
                 p.Add(x => x.ZeileAnlegen, anlegen ?? (z => { _angelegt.Add(z.Name); z.IdZ = 500 + _angelegt.Count; z.HatProjektkopie = true; return ""; }));
         });
@@ -106,13 +110,16 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
     public void Die_Fussleiste_des_Katalogs_traegt_links_Loeschen_und_Bearbeiten_rechts_Neu_und_Import_ohne_epos_leiste()
     {
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", 1) });
-        IElement fuss = cut.Find(".epos-zweispalten-fussleiste");
+        // AW3b: keine Fussleiste mehr - die Knoepfe stehen am gewaehlten Satz (hier ein Katalogsatz).
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+        KatalogWaehlen(cut, "Haus 2010");
+        IElement fuss = cut.Find(".epos-zweispalten-satzknoepfe");
         string[] texte = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Gebäude in DB löschen", R.AUSWAHL_BTN_BEARBEITEN, "Gebäude in DB neu..." }, texte);
+        Assert.Equal(new[] { "Schloss setzen...", "Gebäude in DB löschen", R.AUSWAHL_BTN_BEARBEITEN, "Gebäude in DB neu..." }, texte);
         // Die alte Listenleiste unter der Katalogliste gibt es nicht mehr.
         Assert.Empty(cut.FindAll(".epos-zweispalten-bereich--katalog .epos-leiste"));
-        // Die Projekt-Kopfleiste: Bearbeiten… vor dem Entfernen, keine Summe.
-        Assert.Single(cut.FindAll(".epos-zweispalten-bereich--projekt button.epos-gebaeude-projekt"));
+        // Die Projekt-Kopfleiste: kein Bearbeiten… mehr (AW3b: am Satz), keine Summe.
+        Assert.Empty(cut.FindAll(".epos-zweispalten-bereich--projekt button.epos-gebaeude-projekt"));
         Assert.Empty(cut.FindAll(".epos-zweispalten-summe"));
     }
 
@@ -139,14 +146,14 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
     {
         var cut = Aufbauen(new List<GebaeudeProjektZeile>());
         KatalogWaehlen(cut, "Haus 2010");
-        cut.Find("button.epos-zweispalten-bearbeiten").Click();
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog").Click();   // AW3b: Bearbeiten… am Satz
         Assert.Equal(new[] { "Haus 2010" }, _editor);
         Assert.True(cut.Instance.KatalogeditorOffen);
         Assert.False(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
         cut.FindAll(".epos-ueberlagerung-zu").Last().Click();
 
         KatalogWaehlen(cut, "Auslieferung");
-        cut.Find("button.epos-zweispalten-bearbeiten").Click();
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog").Click();   // AW3b: Bearbeiten… am Satz
         Assert.Single(_editor);
         Assert.True(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
         Assert.Contains(R.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
@@ -156,7 +163,7 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
     public void Bearbeiten_der_Detailzeile_oeffnet_beim_Projektsatz_die_Satz_Ueberlagerung()
     {
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", 1) });
-        cut.Find("button.epos-zweispalten-bearbeiten").Click();
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-zweispalten-vergroessern, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt").Click();   // AW3b
         Assert.True(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
         Assert.Empty(_editor);
     }
@@ -395,5 +402,69 @@ public class GebaeudeDialogKatalogauswahlTests : EposBunitContext
         Assert.Single(zeilen);
         Assert.False(zeilen[0].HatProjektkopie);
         Assert.Empty(_angelegt);
+    }
+
+    // =================================================================================
+    // AW3b: eine Wahl je Zeile, Knopfleiste am gewaehlten Satz (Schema AW1), Projekt und Assistent
+    // =================================================================================
+
+    private static List<GebaeudeProjektZeile> DreiZeilen()
+        => new() { Zeile(1, "Haus A", 1), Zeile(2, "Haus B", 2), Zeile(3, "Haus C") };
+
+    [Fact]
+    public void AW3b_Die_Zeile_ist_die_Wahl_mit_Hervorhebung_und_Tasten()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        KnopfleisteAmSatzPruefung.ZeileIstWahl(cut, 3);
+        KnopfleisteAmSatzPruefung.KlickWaehlt(cut, 1, "Haus B");
+        KnopfleisteAmSatzPruefung.PfeiltastenBewegen(cut, "Haus A", "Haus B", "Haus C");
+        KnopfleisteAmSatzPruefung.Schlussleiste(cut, "OK", "Abbrechen");
+        // Der Rueckweg bleibt in der Kopfleiste „Im Projekt".
+        Assert.Empty(cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste").QuerySelectorAll(".epos-gebaeude-projekt"));
+    }
+
+    [Fact]
+    public void AW3b_Beim_Projektsatz_weich_gesperrt_Bearbeiten_ist_Huelle_und_Zonen()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        KnopfleisteAmSatzPruefung.Projektzeilen(cut)[1].Click();
+        KnopfleisteAmSatzPruefung.WeichGesperrt(cut, _schloss);
+        Assert.Empty(_geloescht);
+
+        // Bearbeiten… = der Stift der Zeile: „Hülle und Zonen" der Projektkopie.
+        KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--bearbeiten-projekt").Click();
+        Assert.Equal(new[] { 2 }, _projekteditor);
+        // Der Satz des Projektgebaeudes (Fläche, Export, Simulation) oeffnet „Vergrößern".
+        Assert.NotNull(KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-zweispalten-vergroessern"));
+    }
+
+    [Fact]
+    public void AW3b_Beim_Katalogsatz_wirken_Schloss_Loeschen_Bearbeiten_und_Neu_auf_den_Katalog()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        KatalogWaehlen(cut, "Haus 2010");
+        KnopfleisteAmSatzPruefung.KatalogsatzFrei(cut);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-zweispalten-vergroessern"));
+        KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--bearbeiten-katalog").Click();
+        Assert.Equal(new[] { "Haus 2010" }, _editor);
+        cut.FindAll(".epos-ueberlagerung-zu").Last().Click();
+        KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--neu").Click();
+        Assert.Equal(new[] { "Haus 2010", "" }, _editor);
+    }
+
+    [Fact]
+    public void AW3b_Im_Assistenten_ohne_Schlussleiste_Bearbeiten_oeffnet_den_Satz()
+    {
+        _assistent = true;
+        var cut = Aufbauen(DreiZeilen());
+        KnopfleisteAmSatzPruefung.ZeileIstWahl(cut, 3);
+        KnopfleisteAmSatzPruefung.PfeiltastenBewegen(cut, "Haus A", "Haus B", "Haus C");
+        KnopfleisteAmSatzPruefung.WeichGesperrt(cut, _schloss);
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "OK");
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-zweispalten-vergroessern"));
+        // Im Assistenten gibt es „Hülle und Zonen" nicht: Bearbeiten… zeigt den Satz in der Ueberlagerung.
+        KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--bearbeiten-projekt").Click();
+        Assert.True(cut.Instance.Zweispalten!.SatzUeberlagerungOffen);
+        Assert.Empty(_projekteditor);
     }
 }

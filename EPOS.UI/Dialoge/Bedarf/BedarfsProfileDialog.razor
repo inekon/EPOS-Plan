@@ -118,11 +118,12 @@
         </div>
     }
 
-    @* Stufe 4 der Katalogauswahl (Konzept 4.9, 5.13): P = Kopfleiste „Im Projekt" (Jahressumme,
-       Bearbeiten…, Simulation…, Entfernen), K = Kopf- und Fussleiste des Katalogs (Typ ändern…,
-       DB ändern…, Schloss, Löschen; rechts Neu…), S = Detailzeile mit der Zusammenfassung des
-       gewaehlten Satzes, die Felder stehen allein in der Satz-Ueberlagerung. Beide Listen fuehren
-       eine Mehrfachwahl und je Zeile den Stift. *@
+    @* Stufe 4 der Katalogauswahl (Konzept 4.9, 5.13; Schema AW1, AW3b): P = Kopfleiste „Im Projekt"
+       (Jahressumme, Simulation…, Entfernen), K = Kopfleiste des Katalogs (Suche, Uebernehmen), S = Detail-
+       zeile „gewaehlter Satz" mit Marke, Kenndaten, Rechenweg und der Knopfleiste am Satz (Typ ändern…,
+       Schloss…, Loeschen, Bearbeiten…, Neu…); Schloss und Loeschen nur beim Katalogsatz, beim Projektsatz
+       weich gesperrt. In beiden Listen ist die Zeile die Wahl (farbig hervorgehoben, ↑ ↓ Pos1 Ende), die
+       Kaestchen sind die Mehrfachwahl, je Zeile der Stift. *@
     <Zweispaltenauswahl Dialogname="Bedarfsprofile" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                         UebernehmenText="@BtnHinzuText"
@@ -139,6 +140,9 @@
                         SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
+                        KnopfleisteAmSatz="true"
+                        ProjektGewaehlt="@(_gewaehlt is null ? null : Projektschluessel(_gewaehlt))"
+                        ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
 
         <ProjektKopf>
@@ -146,9 +150,7 @@
         </ProjektKopf>
 
         <Leistenzusatz>
-            <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--bearbeiten-projekt"
-                    title="@(ProjektZiele().Count > 1 ? Resource.BPF_HINW_BEARBEITEN_EINER : Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS)"
-                    disabled="@(ProjektZiele().Count != 1)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            @* „Bearbeiten…" steht nur noch EINMAL, in der Knopfleiste am gewaehlten Satz (AW3b). *@
             @* Simulation rechnet die Projektliste (Brauchwasser: die gewaehlte Zeile) - deshalb in P. *@
             <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--simulation"
                     title="@Resource.BPF_HINW_SIMULATION" @onclick="BeiSimulation">@BtnSimulationText</button>
@@ -159,7 +161,11 @@
         </Leistenzusatz>
 
         <Links>
-            <Raster TZeile="BedarfsProfilZeile" Zeilen="@Zeilen.AsQueryable()">
+            @* DIE ZEILE IST DIE WAHL (AW3b wie Heizkessel): kein Wahlknopf - ein Klick in die Namenszelle
+               waehlt die Zeile, ↑ ↓ Pos1 Ende bewegen die Wahl, die Liste ist ein Tabulatorhalt. *@
+            <Raster TZeile="BedarfsProfilZeile" Zeilen="@Zeilen.AsQueryable()"
+                    Zeilenklasse="@ProjektZeilenklasse" Tastenfuehrung="BeiProjektTaste"
+                    Tastenbeschriftung="@LabelProjektliste">
                 <KindInhalt>
                     <TemplateColumn TGridItem="BedarfsProfilZeile" Class="epos-spalte-kaestchen">
                         <HeaderTemplate>
@@ -170,12 +176,11 @@
                                            Kurztext="@context.Name" />
                         </ChildContent>
                     </TemplateColumn>
-                    <TemplateColumn TGridItem="BedarfsProfilZeile" Title="@SpalteWahl">
-                        <Zeilenwahl Gewaehlt="@(_gewaehlt == context)" Kurztext="@SpalteWahl"
-                                    Gewaehltwerden="() => ProjektZeileKlick(context)" />
+                    <TemplateColumn TGridItem="BedarfsProfilZeile" Title="@SpalteName" Class="epos-spalte-zeilenzelle">
+                        <span class="epos-zeilenzelle epos-projektzeile" title="@context.Name"
+                              aria-current="@(_gewaehlt == context ? "true" : null)"
+                              @onclick="() => ProjektZeileKlick(context)">@context.Name</span>
                     </TemplateColumn>
-                    <PropertyColumn TGridItem="BedarfsProfilZeile" TProp="string"
-                                    Property="@(z => z.Name)" Title="@SpalteName" />
                     <PropertyColumn TGridItem="BedarfsProfilZeile" TProp="string"
                                     Property="@(z => SummeText(z.Summe))" Title="@Resource.BPF_ZF_JAHRESSUMME" />
                     @* UeS2: der Stift je Projektzeile - die Zuordnung in der Satz-Ueberlagerung. *@
@@ -210,14 +215,36 @@
                 <button type="button" class="epos-knopf epos-knopf--typ-aendern" title="@Resource.BPF_HINW_TYP_AENDERN"
                         @onclick="() => _typProfilOffen = true">@BtnTypAendernText</button>
             }
-            <button type="button" class="epos-knopf epos-knopf--db-aendern"
-                    title="@(_katalogzeile?.Geschuetzt == true ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.BPF_HINW_DB_AENDERN)"
-                    disabled="@(KatalogZiele().Count != 1)" @onclick="BeiDbAendern">@BtnDbAendernText</button>
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): Schloss… und Loeschen nur auf Katalogsaetze - beim
+               Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen"; Bearbeiten… je Satzart (Projekt-
+               satz: die Zuordnung in der Ueberlagerung, genau eine Zeile; Katalogsatz: der Katalogeditor
+               „DB ändern…", gesperrt nur lesend). Einen Vergleich fuehrt der Dialog nicht. *@
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogzeile"
+                            Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
                             Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
-            <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
-                    @onclick="BeiLoeschenGefragt">@BtnDbLoeschenText</button>
+            @if (KatalogSperrgrund is string grund)
+            {
+                <button type="button" class="epos-knopf epos-knopf--loeschen" aria-disabled="true" title="@grund"
+                        @onclick="() => BeiSchlossAbgelehnt(grund)">@BtnDbLoeschenText</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
+                        @onclick="BeiLoeschenGefragt">@BtnDbLoeschenText</button>
+            }
+            @if (SatzArt == Satzmarke.Projektsatz)
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt"
+                        title="@(ProjektZiele().Count > 1 ? Resource.BPF_HINW_BEARBEITEN_EINER : Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS)"
+                        disabled="@(ProjektZiele().Count != 1)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog epos-knopf--db-aendern"
+                        title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.BPF_HINW_DB_AENDERN)"
+                        disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
         </KatalogFuss>
 
         <KatalogFussRechts>
@@ -1245,10 +1272,44 @@
         return _katalogzeile is null ? new() : new() { _katalogzeile };
     }
 
+    /// <summary>
+    /// Klick in eine Projektzeile (AW3b, wie Heizkessel): Die Zeile wird der gewählte Satz, die Detailzeile folgt;
+    /// die Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
     private void ProjektZeileKlick(BedarfsProfilZeile zeile)
     {
-        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
-        ProjektzeileWaehlen(zeile);
+        if (_gewaehlt != zeile) ProjektzeileWaehlen(zeile);
+    }
+
+    /// <summary>Die Hervorhebung der gewählten Projektzeile — dieselbe Klasse wie in der Katalogliste.</summary>
+    private string? ProjektZeilenklasse(BedarfsProfilZeile zeile) => zeile == _gewaehlt ? "epos-zeile--gewaehlt" : null;
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private void BeiProjektTastenwahl(string schluessel)
+    {
+        BedarfsProfilZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
+        if (zeile is not null) ProjektZeileKlick(zeile);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen (AW3b): Sie wirken nur auf Katalogsätze; steht ein
+    /// Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
+
+    /// <summary>
+    /// „Bearbeiten…" am Katalogsatz (AW3b): der erste freie Zielsatz im Katalogeditor, sonst der gesperrte nur
+    /// lesend in der Satz-Überlagerung — derselbe Weg wie der Stift der Katalogzeile.
+    /// </summary>
+    private Task BeiKatalogBearbeiten()
+    {
+        List<Katalogfilterzeile> ziele = KatalogZiele();
+        if (ziele.Count == 0) return Task.CompletedTask;
+        return BeiKatalogStift(ziele.FirstOrDefault(z => !z.Geschuetzt) ?? ziele[0]);
     }
 
     private void BeiWahlGeaendert(Auswahlbereich bereich)
