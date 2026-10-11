@@ -328,4 +328,107 @@ public class KatalogSatzWirftTests : EposBunitContext
         Assert.Null(Katalogladung.SatzDazu(() => Wirft<string?>(), NAME, ref gehalten));
         Assert.Contains(GRUND, gehalten);
     }
+
+    // =================================================================================
+    // KT-6: PV-Ganglinie und Solarganglinie — die Kennzahlen des gewählten Satzes und die Abweichung
+    // der Projektkopie vom Katalog
+    // =================================================================================
+
+    private static GanglinienKatalogwege GanglinienWege() => new()
+    {
+        Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[] { Zeitreihenproben.Zeile(31, NAME) })
+    };
+
+    private IRenderedComponent<PvGanglinieDialog> PvGanglinie(Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? kennzahlen,
+                                                             Func<string, string>? abweichung,
+                                                             bool mitProjektzeile = false)
+        => Render<PvGanglinieDialog>(b => b
+            .Add(x => x.Zeilen, mitProjektzeile
+                ? new List<ErzeugerZeile> { new() { Schluessel = 1, Bezeichner = NAME, GeraetId = 31 } }
+                : new List<ErzeugerZeile>())
+            .Add(x => x.Katalogwege, GanglinienWege())
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, kennzahlen)
+            .Add(x => x.KatalogAbweichung, abweichung));
+
+    private IRenderedComponent<SolarganglinieDialog> Solarganglinie(Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? kennzahlen)
+        => Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Zeilen, new List<ErzeugerZeile>())
+            .Add(x => x.Katalogwege, GanglinienWege())
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, kennzahlen));
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Kennzahlen_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = PvGanglinie(_ => Wirft<Task<GanglinienKennzahlen?>>(), null);
+        ZeileWaehlen(cut);
+        cut.WaitForAssertion(() => Assert.NotEqual("", cut.Instance.SatzFehler));
+        BannerMitGrund(cut);
+        Assert.Null(cut.Instance.Grafikkennzahlen);
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Abweichung_zeigt_der_Dialog_den_Grund_einmal()
+    {
+        int gefragt = 0;
+        var cut = PvGanglinie(null, _ => { gefragt++; return Wirft<string>(); }, mitProjektzeile: true);
+        cut.WaitForAssertion(() => Assert.NotEqual("", cut.Instance.SatzFehler));
+        BannerMitGrund(cut);
+        Assert.Equal(1, gefragt);
+        Assert.Empty(cut.FindAll(".epos-pvg-abweichung"));
+    }
+
+    [Fact]
+    public void PvGanglinie_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+    {
+        var cut = PvGanglinie(_ => Task.FromResult<GanglinienKennzahlen?>(null), _ => "", mitProjektzeile: true);
+        ZeileWaehlen(cut);
+        OhneBanner(cut);
+    }
+
+    [Fact]
+    public void Solarganglinie_wirft_die_Kennzahlen_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Solarganglinie(_ => Wirft<Task<GanglinienKennzahlen?>>());
+        ZeileWaehlen(cut);
+        cut.WaitForAssertion(() => Assert.NotEqual("", cut.Instance.SatzFehler));
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void Solarganglinie_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+    {
+        var cut = Solarganglinie(_ => Task.FromResult<GanglinienKennzahlen?>(null));
+        ZeileWaehlen(cut);
+        OhneBanner(cut);
+    }
+
+    [Fact]
+    public async Task Die_asynchronen_Wege_der_Fangstelle_nennen_den_Grund_und_lassen_das_Ergebnis_durch()
+    {
+        (IReadOnlyList<int> liste, string fehler) = await Katalogladung.LesenAsync<int>(() => Wirft<Task<IReadOnlyList<int>>>(), NAME);
+        Assert.Empty(liste);
+        Assert.Contains(GRUND, fehler);
+        (liste, fehler) = await Katalogladung.LesenAsync<int>(() => Task.FromResult<IReadOnlyList<int>>(new[] { 1 }), NAME);
+        Assert.Single(liste);
+        Assert.Equal("", fehler);
+
+        (string? satz, fehler) = await Katalogladung.SatzAsync<string>(() => Wirft<Task<string?>>(), NAME);
+        Assert.Null(satz);
+        Assert.Contains(GRUND, fehler);
+        (satz, fehler) = await Katalogladung.SatzAsync<string>(() => Task.FromResult<string?>("x"), NAME);
+        Assert.Equal("x", satz);
+        Assert.Equal("", fehler);
+
+        Assert.Equal("abgelehnt", await Katalogladung.SchreibenAsync(() => Wirft<Task<string>>(), NAME, _ => "abgelehnt"));
+        Assert.Equal("ok", await Katalogladung.SchreibenAsync(() => Task.FromResult("ok"), NAME, _ => "abgelehnt"));
+        Assert.False(await Katalogladung.LoeschenAsync(() => Wirft<Task<bool>>(), NAME, _ => false));
+        Assert.True(await Katalogladung.LoeschenAsync(() => Task.FromResult(true), NAME, _ => false));
+        (int? wert, fehler) = await Katalogladung.ZurListeAsync<int?>(() => Wirft<Task<int?>>(), NAME);
+        Assert.Null(wert);
+        Assert.Contains(GRUND, fehler);
+    }
 }

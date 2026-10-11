@@ -37,6 +37,18 @@
         <Schliesskreuz Geschlossen="BeiKreuz" />
     </div>
 
+    @* KT-6: Wirft das Lesen der Kennzahlen des Satzes, nennt dieser Banner den Grund (Katalogladung.SatzAsync). *@
+    @if (_satzFehler.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+    @* KT-6: Wirft das Aufnehmen oder das Speichern beim OK, nennt dieser Banner den Grund
+       (Katalogladung.Schreiben); der Dialog bleibt mit seinen Eingaben offen. *@
+    @if (_schreibFehler.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_schreibFehler" />
+    }
+
     @{
         // Die Daten des gewaehlten Satzes - im Projektbetrieb die Detailzeile der
         // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite. Die Huelle
@@ -92,6 +104,7 @@
         <GanglinieKatalogseite @ref="_seite" Wege="@Katalogwege" Profil="@Katalogprofil"
                                Filterstand="@_filterstand" Filtertexte="@Filtertexte"
                                Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
+                               Listenname="@TitelText"
                                ZeileGewaehlt="BeiKatalogzeile" />
         @satzinhalt
     }
@@ -138,6 +151,7 @@
                                        Filterstand="@_filterstand" Filtertexte="@Filtertexte"
                                        Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
                                        ZeileGewaehlt="BeiKatalogzeile"
+                                       Listenname="@TitelText"
                                        ImProjekt="@ProjektBezeichner" />
             </Rechts>
 
@@ -218,6 +232,15 @@
 
     /// <summary><c>true</c> = OK bzw. Beenden, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>
+    /// <b>Der OK-Weg</b>: schreibt die Zuordnungen des Projekts (Hülle). Scheitert er oder wirft er, bleibt der
+    /// Dialog mit dem Grund offen; ohne Weg schließt OK nur.
+    /// </summary>
+    [Parameter] public Func<bool>? Speichern { get; set; }
+
+    /// <summary>Der Grund, wenn <see cref="Speichern"/> ohne Ausnahme ablehnt — <c>SGAD_MSG_SCHREIBFEHLER</c>.</summary>
+    [Parameter] public string SchreibfehlerText { get; set; } = Resource.SGAD_MSG_SCHREIBFEHLER;
 
     // --- Texte -----------------------------------------------------------------
 
@@ -311,9 +334,28 @@
 
     private async Task GrafikLaden(GanglinienWahl wahl)
     {
-        await _grafik.LadenAsync(wahl, Kennzahlen);
+        // KT-6: Die Kennzahlen des Satzes über die Fangstelle — wirft der Weg, bleibt die Grafik leer und der
+        // Grund steht im Banner.
+        Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? kennzahlen = Kennzahlen;
+        string grund = "";
+        await _grafik.LadenAsync(wahl, kennzahlen is null ? null : async w =>
+        {
+            (GanglinienKennzahlen? k, string f) = await Katalogladung.SatzAsync(() => kennzahlen(w), w.Bezeichner);
+            grund = f;
+            return k;
+        });
+        if (ReferenceEquals(_grafik.Wahl, wahl)) _satzFehler = grund;
         await InvokeAsync(StateHasChanged);
     }
+
+    /// <summary>Der Grund, wenn ein Satz nicht gelesen werden konnte (Prüfhilfe); leer = gelesen.</summary>
+    public string SatzFehler => _satzFehler;
+
+    /// <summary>Der Grund, wenn Aufnehmen oder Speichern scheiterte (Prüfhilfe); leer = keiner.</summary>
+    public string SchreibFehler => _schreibFehler;
+
+    private string _satzFehler = "";
+    private string _schreibFehler = "";
 
     /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
     public ErzeugerZeile? Projektzeile => _projektZeile;
@@ -454,7 +496,13 @@
     {
         if (_katalogZeile is null || Aufnehmen is null) return;
 
-        ErzeugerZeile? neu = Aufnehmen(_katalogZeile.Id);
+        // KT-6: Wirft das Aufnehmen, bleibt die Liste, wie sie war, und der Grund steht im Banner.
+        Func<int, ErzeugerZeile?> aufnehmen = Aufnehmen;
+        int id = _katalogZeile.Id;
+        string grund = "";
+        ErzeugerZeile? neu = Katalogladung.Schreiben(() => aufnehmen(id), _katalogZeile.Bezeichner,
+                                                     g => { grund = g; return (ErzeugerZeile?)null; });
+        _schreibFehler = grund;
         if (neu is null) return;
 
         Zeilen.Add(neu);
@@ -479,7 +527,26 @@
         _grafik.Verwerfen();
     }
 
-    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+    /// <summary>
+    /// OK schreibt über <see cref="Speichern"/> und schließt erst danach; scheitert oder wirft der Weg, bleibt der
+    /// Dialog mit seinen Eingaben und dem Grund offen (KT-6). Abbrechen schließt ohne zu schreiben.
+    /// </summary>
+    private Task BeiErgebnis(bool ok)
+    {
+        if (ok && Speichern is not null)
+        {
+            Func<bool> speichern = Speichern;
+            string grund = "";
+            bool geschrieben = Katalogladung.Schreiben(speichern, TitelText, g => { grund = g; return false; });
+            if (!geschrieben)
+            {
+                _schreibFehler = grund.Length > 0 ? grund : SchreibfehlerText;
+                return Task.CompletedTask;
+            }
+            _schreibFehler = "";
+        }
+        return Geschlossen.InvokeAsync(ok);
+    }
 
     /// <summary>✕ wirkt wie Esc: Abbrechen im Projektbetrieb, Beenden im Katalogbetrieb.</summary>
     private Task BeiKreuz() => Geschlossen.InvokeAsync(Katalogbetrieb);

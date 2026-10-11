@@ -862,4 +862,280 @@ public class KatalogSchreibenWirftTests : EposBunitContext
             .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerTwwNutzungsart(s => R.ResourceManager.GetString(s) ?? s))
             .Add(x => x.Katalogzeilen, () => new[] { new Katalogfilterzeile(1, NAME) { Schluessel = "1" } })
             .Add(x => x.Detail, id => new TwwNutzungsartDetailDaten { Id = id, Name = NAME })));
+
+    // =================================================================================
+    // KT-6: PV-Ganglinie und Solarganglinie — Speichern beim OK, Aufnehmen, Löschen samt Frage nach der
+    // Projektzuordnung, Aufnahme nach dem Import, Nennleistung und „Aus dem Katalog erneuern"
+    // =================================================================================
+
+    private static IReadOnlyList<Katalogfilterzeile> Ganglinien() => new[] { Zeitreihenproben.Zeile(31, NAME) };
+
+    private static ErzeugerZeile Projektzeile(int id) => new() { Schluessel = 1, Bezeichner = NAME, GeraetId = id };
+
+    private static GanglinienKatalogwege GanglinienWege(Func<string, Task<bool>>? loeschen = null,
+                                                        Func<string, Task<bool>>? zuordnung = null,
+                                                        Func<string, IProgress<ImportFortschritt>, Task<GanglinienKatalogimport>>? einlesen = null,
+                                                        Func<string, double?, Task<GanglinienNennleistungsschrieb>>? nennleistung = null)
+        => new()
+        {
+            Katalogzeilen = () => Task.FromResult(Ganglinien()),
+            Loeschen = loeschen ?? (_ => Task.FromResult(true)),
+            HatProjektzuordnung = zuordnung,
+            DateiWaehlen = _ => Task.FromResult<string?>("D:/Daten/Ganglinie.csv"),
+            Einlesen = einlesen,
+            NennleistungSchreiben = nennleistung
+        };
+
+    private IRenderedComponent<PvGanglinieDialog> PvGanglinie(GanglinienKatalogwege? wege = null,
+                                                             Func<int, ErzeugerZeile?>? aufnehmen = null,
+                                                             Func<bool>? speichern = null,
+                                                             Func<string, Task<PvGanglinieErneuerung>>? erneuern = null,
+                                                             Action<bool>? geschlossen = null,
+                                                             bool katalogbetrieb = false,
+                                                             bool mitProjektzeile = false)
+        => Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, mitProjektzeile ? new List<ErzeugerZeile> { Projektzeile(31) } : new List<ErzeugerZeile>())
+            .Add(x => x.Katalogbetrieb, katalogbetrieb)
+            .Add(x => x.Katalogwege, wege ?? GanglinienWege())
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Aufnehmen, aufnehmen ?? (id => new ErzeugerZeile { Schluessel = 100000, Bezeichner = NAME, GeraetId = id }))
+            .Add(x => x.Speichern, speichern)
+            .Add(x => x.KatalogAbweichung, _ => "weicht vom Katalog ab: Reihe")
+            .Add(x => x.AusKatalogErneuern, erneuern ?? (_ => Task.FromResult(new PvGanglinieErneuerung(true, "erneuert"))))
+            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    private IRenderedComponent<SolarganglinieDialog> Solarganglinie(GanglinienKatalogwege? wege = null,
+                                                                   Func<int, ErzeugerZeile?>? aufnehmen = null,
+                                                                   Func<bool>? speichern = null,
+                                                                   Action<bool>? geschlossen = null,
+                                                                   bool katalogbetrieb = false)
+        => Render<SolarganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile>())
+            .Add(x => x.Katalogbetrieb, katalogbetrieb)
+            .Add(x => x.Katalogwege, wege ?? GanglinienWege())
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Aufnehmen, aufnehmen ?? (id => new ErzeugerZeile { Schluessel = 100000, Bezeichner = NAME, GeraetId = id }))
+            .Add(x => x.Speichern, speichern)
+            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    /// <summary>Löscht die gewählte Katalogzeile über die Katalogseite (Knopf und Rückfrage).</summary>
+    private static void GanglinieLoeschen<T>(IRenderedComponent<T> cut) where T : IComponent
+    {
+        ZeileWaehlen(cut);
+        cut.Find("button.epos-katalog-loeschen").Click();
+        Knopf(cut, R.ALLG_BTN_JA).Click();
+    }
+
+    /// <summary>Import… → Datei wählen → Einlesen.</summary>
+    private static void GanglinieEinlesen<T>(IRenderedComponent<T> cut) where T : IComponent
+    {
+        cut.Find("button.epos-importknopf").Click();
+        Knopf(cut, R.SGAD_BTN_DATEI).Click();
+        Knopf(cut, R.SGAD_BTN_EINLESEN).Click();
+    }
+
+    private void OhneVermerk()
+    {
+        lock (_vermerke) Assert.Empty(_vermerke);
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_das_Speichern_beim_OK_bleibt_der_Dialog_mit_den_Eingaben_offen()
+    {
+        bool? geschlossen = null;
+        var cut = PvGanglinie(speichern: Wirft<bool>, geschlossen: b => geschlossen = b, mitProjektzeile: true);
+        Knopf(cut, "OK").Click();
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+        Assert.Null(geschlossen);
+        Assert.Single(cut.Instance.Zeilen);
+    }
+
+    [Fact]
+    public void PvGanglinie_ohne_Ausnahme_schliesst_OK_nach_dem_Speichern_und_ein_Nein_haelt_offen()
+    {
+        bool? geschlossen = null;
+        bool antwort = false;
+        int gerufen = 0;
+        var cut = PvGanglinie(speichern: () => { gerufen++; return antwort; }, geschlossen: b => geschlossen = b,
+                              mitProjektzeile: true);
+        Knopf(cut, "OK").Click();
+        Assert.Null(geschlossen);
+        Assert.Contains(R.PVG_MSG_SCHREIBFEHLER, Text(cut));
+
+        antwort = true;
+        Knopf(cut, "OK").Click();
+        Assert.True(geschlossen);
+        Assert.Equal(2, gerufen);
+        OhneVermerk();
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_das_Aufnehmen_nennt_der_Dialog_den_Grund_und_nimmt_nichts_auf()
+    {
+        var cut = PvGanglinie(aufnehmen: _ => Wirft<ErzeugerZeile?>());
+        Uebernehmen(cut);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+        Assert.Empty(cut.Instance.Zeilen);
+    }
+
+    [Fact]
+    public void PvGanglinie_ohne_Ausnahme_nimmt_auf()
+    {
+        var cut = PvGanglinie();
+        Uebernehmen(cut);
+        Assert.Single(cut.Instance.Zeilen);
+        Assert.Equal("", cut.Instance.SchreibFehler);
+        OhneVermerk();
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_das_Loeschen_nennt_die_Katalogseite_den_Grund()
+    {
+        var cut = PvGanglinie(wege: GanglinienWege(loeschen: _ => Wirft<Task<bool>>()), katalogbetrieb: true);
+        GanglinieLoeschen(cut);
+        GrundSteht(cut, R.WURZEL_LOESCHEN_FEHLER);
+        Assert.Single(cut.Instance.Katalog);
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Frage_nach_der_Projektzuordnung_loescht_nicht_und_nennt_den_Grund()
+    {
+        bool geloescht = false;
+        var cut = PvGanglinie(wege: GanglinienWege(loeschen: _ => { geloescht = true; return Task.FromResult(true); },
+                                                   zuordnung: _ => Wirft<Task<bool>>()),
+                              katalogbetrieb: true);
+        ZeileWaehlen(cut);
+        cut.Find("button.epos-katalog-loeschen").Click();
+        GrundSteht(cut, R.WURZEL_LOESCHEN_FEHLER);
+        Assert.False(geloescht);
+        Assert.False(cut.Instance.Katalogseite!.Loeschfrage);
+    }
+
+    [Fact]
+    public void PvGanglinie_ohne_Ausnahme_loescht()
+    {
+        var namen = new List<string>();
+        var cut = PvGanglinie(wege: GanglinienWege(loeschen: n => { namen.Add(n); return Task.FromResult(true); },
+                                                   zuordnung: _ => Task.FromResult(false)),
+                              katalogbetrieb: true);
+        GanglinieLoeschen(cut);
+        Assert.Equal(new[] { NAME }, namen);
+        Assert.Contains(NAME, cut.Instance.Katalogseite!.Status);
+        OhneVermerk();
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Aufnahme_nach_dem_Import_bleibt_die_Ueberlagerung_mit_dem_Grund_offen()
+    {
+        var cut = PvGanglinie(wege: GanglinienWege(einlesen: (_, _) => Wirft<Task<GanglinienKatalogimport>>()),
+                              katalogbetrieb: true);
+        GanglinieEinlesen(cut);
+        Assert.True(cut.Instance.Katalogseite!.ImportOffen);
+        Assert.Contains(Mitte(R.WURZEL_SCHREIBEN_FEHLER) + GRUND, cut.Instance.Katalogseite.Importmeldung);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+    }
+
+    [Fact]
+    public void PvGanglinie_ohne_Ausnahme_nimmt_den_Import_in_den_Katalog_auf()
+    {
+        var cut = PvGanglinie(wege: GanglinienWege(einlesen: (_, _) =>
+                                  Task.FromResult(new GanglinienKatalogimport(true, false, NAME, "", ""))),
+                              katalogbetrieb: true);
+        GanglinieEinlesen(cut);
+        Assert.False(cut.Instance.Katalogseite!.ImportOffen);
+        Assert.Equal(NAME, cut.Instance.Katalogzeile?.Bezeichner);
+        OhneVermerk();
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_das_Schreiben_der_Nennleistung_bleibt_die_Ueberlagerung_mit_dem_Grund_offen()
+    {
+        var cut = PvGanglinie(wege: GanglinienWege(nennleistung: (_, _) => Wirft<Task<GanglinienNennleistungsschrieb>>()),
+                              katalogbetrieb: true);
+        ZeileWaehlen(cut);
+        cut.Find("button.epos-nennleistungknopf").Click();
+        cut.Find(".epos-nennleistung-bearbeiten input[inputmode=decimal]").Input("5");
+        cut.Find(".epos-nennleistung-bearbeiten").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.True(cut.Instance.Katalogseite!.NennleistungOffen);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+    }
+
+    [Fact]
+    public void PvGanglinie_wirft_das_Erneuern_bleibt_die_Rueckfrage_offen_und_die_Projektkopie_unveraendert()
+    {
+        var cut = PvGanglinie(erneuern: _ => Wirft<Task<PvGanglinieErneuerung>>(), mitProjektzeile: true);
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr button")[0].Click();
+        cut.Find(".epos-pvg-erneuernknopf").Click();
+        cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.True(cut.Instance.ErneuernOffen);
+        Assert.Contains(Mitte(R.WURZEL_SCHREIBEN_FEHLER) + GRUND, cut.Find(".epos-pvg-erneuern").TextContent);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+        // Die Abweichung steht weiter: Die Kopie ist nicht erneuert, ihr Zeichen bleibt.
+        Assert.Single(cut.FindAll(".epos-pvg-abweichung"));
+        Assert.Equal("weicht vom Katalog ab: Reihe", cut.Instance.ProjektAbweichung);
+    }
+
+    [Fact]
+    public void PvGanglinie_ohne_Ausnahme_erneuert()
+    {
+        var cut = PvGanglinie(mitProjektzeile: true);
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr button")[0].Click();
+        cut.Find(".epos-pvg-erneuernknopf").Click();
+        cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.False(cut.Instance.ErneuernOffen);
+        Assert.Contains("erneuert", cut.Find(".epos-pvg-erneuernstatus").TextContent);
+        OhneVermerk();
+    }
+
+    [Fact]
+    public void Solarganglinie_wirft_das_Speichern_beim_OK_bleibt_der_Dialog_offen()
+    {
+        bool? geschlossen = null;
+        var cut = Solarganglinie(speichern: Wirft<bool>, geschlossen: b => geschlossen = b);
+        Knopf(cut, "OK").Click();
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void Solarganglinie_ohne_Ausnahme_schliesst_OK_nach_dem_Speichern()
+    {
+        bool? geschlossen = null;
+        int gerufen = 0;
+        var cut = Solarganglinie(speichern: () => { gerufen++; return true; }, geschlossen: b => geschlossen = b);
+        Knopf(cut, "OK").Click();
+        Assert.True(geschlossen);
+        Assert.Equal(1, gerufen);
+        OhneVermerk();
+    }
+
+    [Fact]
+    public void Solarganglinie_wirft_das_Aufnehmen_nennt_der_Dialog_den_Grund_und_nimmt_nichts_auf()
+    {
+        var cut = Solarganglinie(aufnehmen: _ => Wirft<ErzeugerZeile?>());
+        Uebernehmen(cut);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+        Assert.Empty(cut.Instance.Zeilen);
+    }
+
+    [Fact]
+    public void Solarganglinie_wirft_das_Loeschen_nennt_die_Katalogseite_den_Grund()
+    {
+        var cut = Solarganglinie(wege: GanglinienWege(loeschen: _ => Wirft<Task<bool>>()), katalogbetrieb: true);
+        GanglinieLoeschen(cut);
+        GrundSteht(cut, R.WURZEL_LOESCHEN_FEHLER);
+        Assert.Single(cut.Instance.Katalog);
+    }
+
+    [Fact]
+    public void Solarganglinie_wirft_die_Aufnahme_nach_dem_Import_bleibt_die_Ueberlagerung_mit_dem_Grund_offen()
+    {
+        var cut = Solarganglinie(wege: GanglinienWege(einlesen: (_, _) => Wirft<Task<GanglinienKatalogimport>>()),
+                                 katalogbetrieb: true);
+        GanglinieEinlesen(cut);
+        Assert.True(cut.Instance.Katalogseite!.ImportOffen);
+        GrundSteht(cut, R.WURZEL_SCHREIBEN_FEHLER);
+    }
 }

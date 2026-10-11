@@ -22,15 +22,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Dialog MIT Projekt (Kachel „Photovoltaik", Wahl „Ganglinie"): OK schreibt die Zuordnungen in
-        /// EINER Transaktion, Abbrechen verwirft.
+        /// EINER Transaktion (im Dialog, über die Fangstelle), Abbrechen verwirft.
         /// </summary>
         /// <returns><c>true</c>, wenn geschrieben wurde.</returns>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId)
         {
             List<PvGanglinieZuordnung> liste = PvGanglinieKatalogGaben.Lesen(projektId);
-            bool ok = Zeigen(besitzer, PvGanglinieKatalogGaben.ProjektGaben(projektId, liste),
-                             MyResource.Resource.PVG_TITEL, MASS);
-            return ok && PvGanglinieKatalogGaben.Speichern(projektId, liste);
+            // Geschrieben wird im OK-Weg des Dialogs (Gabe „Speichern"): OK schließt erst nach dem Schreiben.
+            return Zeigen(besitzer, PvGanglinieKatalogGaben.ProjektGaben(projektId, liste),
+                          MyResource.Resource.PVG_TITEL, MASS);
         }
 
         /// <summary>Der Dialog OHNE Projekt — der Menüpunkt „Profile &amp; Lastgänge → PV-Ganglinie".</summary>
