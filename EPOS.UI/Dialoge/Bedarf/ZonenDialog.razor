@@ -126,6 +126,15 @@
                                     Platzhalter="@GrenzeVorgabe"
                                     Feldname="@Texte.LabelHeizleistungMax" FehlerZustand="FehlerMelden"
                                     Wert="@_stand.HeizleistungMaxKw" WertChanged="w => Setzen(() => _stand.HeizleistungMaxKw = w)" />
+                        @* AH-V5: die Vorheizzeit der Zone (1-47 h, leer = wie Gebaeude); wirksam bei „Vorheizzeit vorgeben"
+                           mit Geltung je Zone - die Zeile darunter sagt es. *@
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelVorheizzeit"
+                                      Min="@WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MIN_H"
+                                      Max="@WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MAX_H"
+                                      Platzhalter="@Texte.PlatzhalterVorheizzeit"
+                                      Feldname="@Texte.LabelVorheizzeit" FehlerZustand="FehlerMelden"
+                                      Wert="@_stand.VorheizzeitH" WertChanged="w => Setzen(() => _stand.VorheizzeitH = w)" />
+                        <Herleitungszeile Text="@Texte.ZeileVorheizzeit" />
                     }
                 </KindInhalt>
             </Formularraster>
@@ -616,6 +625,8 @@
             StrahlungsanteilSetzen = w => Setzen(() => _stand.HeizungStrahlungsanteil = w),
             HeizleistungMaxLesen = () => _stand.HeizleistungMaxKw,
             HeizleistungMaxSetzen = w => Setzen(() => _stand.HeizleistungMaxKw = w),
+            VorheizzeitLesen = () => _stand.VorheizzeitH,
+            VorheizzeitSetzen = w => Setzen(() => _stand.VorheizzeitH = w),
             KuehlungAktivLesen = () => _stand.KuehlungAktiv,
             KuehlungAktivSetzen = w => Setzen(() => _stand.KuehlungAktiv = w),
             KuehlleistungMaxLesen = () => _stand.KuehlleistungMaxKw,
@@ -1133,6 +1144,11 @@
             return string.Format(CultureInfo.CurrentCulture, Texte.MeldungRaumhoehe, name);
         if (_stand.Volumen is double v && (!(v > 0.0) || double.IsInfinity(v)))
             return string.Format(CultureInfo.CurrentCulture, Texte.MeldungVolumen, name);
+        // AH-V5: die Vorheizzeit der Zone 1-47 h - dieselbe Grenze wie die Prüfklausel von Tab_Zone.Vorheizzeit_H.
+        if (_stand.VorheizzeitH is int vh
+            && (vh < WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MIN_H || vh > WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MAX_H))
+            return string.Format(CultureInfo.CurrentCulture, Texte.MeldungVorheizzeit, name,
+                                 WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MIN_H, WindowsFormsApplication1.Vorheizvorgabe.VORHEIZZEIT_MAX_H);
         return UebergabePruefen(name);
     }
 

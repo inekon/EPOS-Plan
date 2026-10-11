@@ -673,7 +673,19 @@ public class SimulationKonfigSeiteTests : BunitContext
     private static IElement Aufheizabschnitt(IRenderedComponent<SimulationKonfigSeite> seite)
         => seite.Find("section.epos-simkonfig-aufheizung");
 
+    /// <summary>Die Auswahlen der Sollwertrampe — ohne die Wahl des Verfahrens (AH-V5), die über allen steht.</summary>
     private static List<IElement> Wahlen(IRenderedComponent<SimulationKonfigSeite> seite)
+        => Aufheizabschnitt(seite).QuerySelectorAll("select").Where(w => !IstVerfahrenswahl(w)).ToList();
+
+    private static bool IstVerfahrenswahl(IElement wahl)
+        => wahl.QuerySelectorAll("option").Any(o => o.TextContent.Trim()
+               == WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_VERFAHREN_RAMPE);
+
+    private static IElement Verfahrenswahl(IRenderedComponent<SimulationKonfigSeite> seite)
+        => Aufheizabschnitt(seite).QuerySelectorAll("select").Single(IstVerfahrenswahl);
+
+    /// <summary>Alle Auswahlen des Abschnitts, die Verfahrenswahl eingeschlossen.</summary>
+    private static List<IElement> AlleWahlen(IRenderedComponent<SimulationKonfigSeite> seite)
         => Aufheizabschnitt(seite).QuerySelectorAll("select").ToList();
 
     private static List<IElement> Textfelder(IRenderedComponent<SimulationKonfigSeite> seite)
@@ -919,7 +931,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.True(seite.Find("fieldset.epos-simkonfig-einstellungen").HasAttribute("disabled"));
         IElement abschnitt = Aufheizabschnitt(seite);
         List<IElement> bedienelemente = abschnitt.QuerySelectorAll("input, select").ToList();
-        Assert.Equal(7, bedienelemente.Count);   // samt den zwei Feldern des Aufschlags (O1b)
+        Assert.Equal(8, bedienelemente.Count);   // samt den zwei Feldern des Aufschlags (O1b) und dem Verfahren (AH-V5)
         Assert.All(bedienelemente, e => Assert.True(e.HasAttribute("disabled")));
         Assert.Empty(_aufheizGeschrieben);
     }
@@ -1168,8 +1180,9 @@ public class SimulationKonfigSeiteTests : BunitContext
             true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, null, null, null!));
 
         IElement abschnitt = Aufheizabschnitt(seite);
-        Assert.Equal("Preheat optimisation", abschnitt.GetAttribute("aria-label"));
-        Assert.Contains("Calculate preheat optimisation", abschnitt.TextContent);
+        Assert.Equal("Preheating before occupancy", abschnitt.GetAttribute("aria-label"));
+        Assert.Contains("Calculate preheating", abschnitt.TextContent);
+        Assert.Contains("Setpoint ramp by preheat power", abschnitt.TextContent);
         Assert.Equal("coldest hour − ΔT_K", Gewaehlt(Wahlen(seite)[0]));
         Assert.Equal("daily", Gewaehlt(Wahlen(seite)[1]));
         Assert.Equal("Default 2", Textfelder(seite)[0].GetAttribute("placeholder"));
@@ -2943,5 +2956,143 @@ public class SimulationKonfigSeiteTests : BunitContext
         Desinfektionsabschnitt(seite).QuerySelectorAll("input[type=text]")[2].Input("95");
         Assert.Equal(vorher, _desinfGeschrieben.Count);
         Assert.Null(seite.Instance.Laufparameter.Desinfektion.ZielC);
+    }
+
+    // =====================================================================
+    //  AH-V5: das Vorheizen — Verfahren, Felder je Verfahren, Speichern
+    // =====================================================================
+
+    private static WindowsFormsApplication1.Aufheizvorgabe AnMit(WindowsFormsApplication1.Vorheizvorgabe v)
+        => AUFHEIZ_AN.MitVorheizen(v);
+
+    [Fact]
+    public void Die_Sollwertrampe_zeigt_die_Verfahrenswahl_und_keine_Felder_des_Vorheizens()
+    {
+        var seite = SeiteMitAufheizung(AUFHEIZ_AN);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_VERFAHREN_RAMPE, Gewaehlt(Verfahrenswahl(seite)));
+        string text = Aufheizabschnitt(seite).TextContent;
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_TOLERANZ, text);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_VORHEIZZEIT, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_BEMESSUNG, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_VERFUEGBAR, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_GELTUNG, text);
+    }
+
+    [Fact]
+    public void Vorheizzeit_vorgeben_zeigt_ihre_Felder_mit_Vorgaben_und_ohne_die_der_Rampe()
+    {
+        var seite = SeiteMitAufheizung(AnMit(new WindowsFormsApplication1.Vorheizvorgabe(WindowsFormsApplication1.Aufheizverfahren.Vorgabe)));
+        IElement abschnitt = Aufheizabschnitt(seite);
+        string text = abschnitt.TextContent;
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_VERFAHREN_VORGABE, Gewaehlt(Verfahrenswahl(seite)));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_VORHEIZZEIT, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_TOLERANZ, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_GELTUNG, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_HEIZKREIS, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_VORGABE, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_DECKEL, text);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_BEMESSUNG, text);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_ART, text);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_AN, text);
+
+        // Felder: Vorheizzeit, Toleranz, Reserve; die Toleranz leer mit dem Hinweis „Vorgabe 20 %“.
+        List<IElement> felder = Textfelder(seite);
+        Assert.Equal(3, felder.Count);
+        Assert.Equal("Gebäude und Zonen", felder[0].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 20 %", felder[1].GetAttribute("placeholder"));
+        // Wahlen: Verfahren, Toleranzart (Prozent), Regelgenauigkeit (1 K), Geltung (je Gebäude).
+        List<IElement> wahlen = AlleWahlen(seite);
+        Assert.Equal(4, wahlen.Count);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_TOLERANZ_PROZENT, Gewaehlt(wahlen[1]));
+        Assert.Equal("1 K", Gewaehlt(wahlen[2]));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_GELTUNG_GEBAEUDE, Gewaehlt(wahlen[3]));
+        // Schalter an und „Gebäude mit Heizkreis einbeziehen“ (Vorgabe an).
+        List<IElement> schalter = abschnitt.QuerySelectorAll("input[type=checkbox]").ToList();
+        Assert.Equal(2, schalter.Count);
+        Assert.True(schalter[1].HasAttribute("checked"));
+        Assert.Empty(_aufheizGeschrieben);
+    }
+
+    [Fact]
+    public void Vorheizzeit_berechnen_zeigt_keine_Vorheizzeit()
+    {
+        var seite = SeiteMitAufheizung(AnMit(new WindowsFormsApplication1.Vorheizvorgabe(WindowsFormsApplication1.Aufheizverfahren.Berechnet)));
+        string text = Aufheizabschnitt(seite).TextContent;
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_VORHEIZZEIT, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_TOLERANZ, text);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_BERECHNET, text);
+        Assert.Equal(2, Textfelder(seite).Count);   // Toleranz und Reserve
+    }
+
+    [Fact]
+    public void Die_Felder_des_Vorheizens_schreiben_sofort_und_behalten_die_Werte_der_Rampe()
+    {
+        var seite = SeiteMitAufheizung(new WindowsFormsApplication1.Aufheizvorgabe(
+            true, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, 3.0, 0.25, null!));
+
+        Verfahrenswahl(seite).Change("1");
+        WindowsFormsApplication1.Aufheizvorgabe w = _aufheizGeschrieben.Last();
+        Assert.Equal(WindowsFormsApplication1.Aufheizverfahren.Vorgabe, w.Vorheizen.Verfahren);
+        Assert.Equal(3.0, w.AbzugK);
+        Assert.Equal(0.25, w.Reserve);
+
+        Textfelder(seite)[0].Input("6");
+        Assert.Equal(6, _aufheizGeschrieben.Last().Vorheizen.VorheizzeitH);
+        int vorher = _aufheizGeschrieben.Count;
+        Textfelder(seite)[0].Input("48");
+        Assert.Equal(vorher, _aufheizGeschrieben.Count);
+
+        AlleWahlen(seite)[1].Change("1");
+        Assert.Equal(WindowsFormsApplication1.Vorheiztoleranzart.Kilowatt, _aufheizGeschrieben.Last().Vorheizen.Toleranzart);
+        Textfelder(seite)[1].Input("3");
+        Assert.Equal(3.0, _aufheizGeschrieben.Last().Vorheizen.ToleranzWert);
+        Assert.Contains("kW", Aufheizabschnitt(seite).TextContent);
+
+        AlleWahlen(seite)[3].Change("1");
+        Assert.Equal(WindowsFormsApplication1.Vorheizgeltung.Zone, _aufheizGeschrieben.Last().Vorheizen.Geltung);
+        Aufheizabschnitt(seite).QuerySelectorAll("input[type=checkbox]")[1].Change(false);
+        Assert.False(_aufheizGeschrieben.Last().Vorheizen.HeizkreisEinbeziehen);
+
+        WindowsFormsApplication1.Vorheizvorgabe v = seite.Instance.Laufparameter.Aufheizung.Vorheizen;
+        Assert.Equal(6, v.VorheizzeitH);
+        Assert.Equal(3.0, v.ToleranzWert);
+        Assert.Equal(WindowsFormsApplication1.Vorheizgeltung.Zone, v.Geltung);
+        Assert.Equal(3.0, seite.Instance.Laufparameter.Aufheizung.AbzugK);
+
+        // Zurück zur Rampe: die Felder der Rampe stehen wieder da, das Vorheizen behält seine Werte.
+        Verfahrenswahl(seite).Change("0");
+        Assert.Equal(WindowsFormsApplication1.Aufheizverfahren.Sollwertrampe, _aufheizGeschrieben.Last().Vorheizen.Verfahren);
+        Assert.Equal(6, _aufheizGeschrieben.Last().Vorheizen.VorheizzeitH);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_BEMESSUNG, Aufheizabschnitt(seite).TextContent);
+    }
+
+    [Fact]
+    public void Die_Regelgenauigkeit_waehlt_Stufen_und_oeffnet_mit_Eingabe_ein_Zahlenfeld()
+    {
+        var seite = SeiteMitAufheizung(AnMit(new WindowsFormsApplication1.Vorheizvorgabe(WindowsFormsApplication1.Aufheizverfahren.Berechnet)));
+        Assert.Equal(2, Textfelder(seite).Count);
+
+        AlleWahlen(seite)[2].Change("0");
+        Assert.Equal(0.5, _aufheizGeschrieben.Last().Vorheizen.GenauigkeitK);
+        AlleWahlen(seite)[2].Change("1");
+        Assert.Null(_aufheizGeschrieben.Last().Vorheizen.GenauigkeitK);   // 1 K ist die Vorgabe
+        int n = _aufheizGeschrieben.Count;
+
+        AlleWahlen(seite)[2].Change("3");
+        Assert.Equal(n, _aufheizGeschrieben.Count);                       // „Eingabe“ schreibt nichts
+        Assert.Equal(3, Textfelder(seite).Count);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_GENAUIGKEIT_WERT, Aufheizabschnitt(seite).TextContent);
+        Textfelder(seite)[1].Input("1,5");
+        Assert.Equal(1.5, _aufheizGeschrieben.Last().Vorheizen.GenauigkeitK);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_GENAUIGKEIT_EINGABE, Gewaehlt(AlleWahlen(seite)[2]));
+        n = _aufheizGeschrieben.Count;
+        Textfelder(seite)[1].Input("6");
+        Assert.Equal(n, _aufheizGeschrieben.Count);                       // über 5 K färbt und schreibt nicht
+
+        // Ein gespeicherter Wert außerhalb der Stufen zeigt „Eingabe“ mit seinem Wert.
+        var gepflegt = SeiteMitAufheizung(AnMit(new WindowsFormsApplication1.Vorheizvorgabe(
+            WindowsFormsApplication1.Aufheizverfahren.Berechnet, genauigkeitK: 1.5)));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_GENAUIGKEIT_EINGABE, Gewaehlt(AlleWahlen(gepflegt)[2]));
+        Assert.Equal("1,5", Textfelder(gepflegt)[1].GetAttribute("value"));
     }
 }

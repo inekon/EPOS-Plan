@@ -143,7 +143,8 @@ public class EinstellungenDialogTests : EposBunitContext
         // "Neue Projekte mit Kuehlung anlegen" (E27, K10) - zwei Schalter, der KI-Schalter
         // zuerst.
         Reiter(cut, 5);
-        Assert.Single(cut.FindAll("input[type=text]"));
+        // Der Allgemein-Pfad und die Vorbelegung der Vorheiztoleranz (AH-V5).
+        Assert.Equal(2, cut.FindAll("input[type=text]").Count);
         Assert.Single(cut.FindAll(".epos-dateiwahl button"));
         Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);
         Assert.Contains("KI", cut.FindAll("label.epos-schalter")[0].TextContent);
@@ -925,5 +926,40 @@ public class EinstellungenDialogTests : EposBunitContext
         foreach (string pfad in new[] { "VdiPfad", "DbExportPfad", "DbImportPfad", "DbPfad",
                                         "AllgemeinPfad", "DbName", "KiAus" })
             Assert.DoesNotContain(d.Felder, f => f.Eigenschaft == pfad);
+    }
+
+    /// <summary>
+    /// AH-V5 (F14 (a)): die Vorbelegung der Toleranz neuer Projekte — leer mit „Vorgabe 20 %“, Art und Wert reisen im
+    /// Wertesatz, ein gespeicherter Stand wird gezeigt.
+    /// </summary>
+    [Fact]
+    public void Die_Vorbelegung_der_Vorheiztoleranz_reist_im_Wertesatz()
+    {
+        Einstellungensatz? uebergeben = null;
+        var cut = Zeige(speichern: (s, _) =>
+        {
+            uebergeben = s;
+            return Task.FromResult(new SpeicherBefund(true, ""));
+        });
+        Reiter(cut, 5);
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.ADM_SET_HINT_NEUE_PROJEKTE_VORHEIZ, cut.Markup);
+        Assert.Single(cut.FindAll("input[type=text]"), i => i.GetAttribute("placeholder") == "Vorgabe 20 %");
+        Assert.Null(cut.Instance.Werte.NeueProjekteVorheizToleranz);
+
+        cut.FindAll("select").Last().Change("1");
+        cut.FindAll("input[type=text]").Single(i => i.GetAttribute("placeholder") == "Vorgabe 20 %").Input("2,5");
+        cut.FindAll("button.epos-knopf--primaer").Last().Click();
+
+        Assert.NotNull(uebergeben);
+        Assert.Equal(2.5, uebergeben!.NeueProjekteVorheizToleranz);
+        Assert.Equal(Vorheiztoleranzart.Kilowatt, uebergeben.NeueProjekteVorheizToleranzArt);
+
+        Einstellungensatz satz = Satz();
+        satz.NeueProjekteVorheizToleranz = 15.0;
+        var gezeigt = Zeige(satz: satz);
+        Reiter(gezeigt, 5);
+        Assert.Equal(15.0, gezeigt.Instance.Werte.NeueProjekteVorheizToleranz);
+        Assert.Contains(gezeigt.FindAll("input[type=text]"), i => i.GetAttribute("value") == "15");
     }
 }

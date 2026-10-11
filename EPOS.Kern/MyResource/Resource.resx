@@ -42216,10 +42216,10 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>es ist kein Projekt geöffnet — der Wärmebedarf wird für ein Gebäude im Projekt berechnet.</value>
   </data>
   <data name="SIMKONF_AUFH_GRP" xml:space="preserve">
-    <value>Aufheizoptimierung</value>
+    <value>Aufheizen vor Nutzungsbeginn</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_SCHALTER" xml:space="preserve">
-    <value>Aufheizoptimierung rechnen</value>
+    <value>Aufheizen rechnen</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_BEMESSUNG" xml:space="preserve">
     <value>Bemessung</value>
@@ -42234,7 +42234,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Abzug ΔT_K</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_RESERVE" xml:space="preserve">
-    <value>Aufheizreserve ρ</value>
+    <value>Leistungsreserve (%)</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_ART" xml:space="preserve">
     <value>Art der Aufheizzeit</value>
@@ -42252,10 +42252,10 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Vorgabe {0} %</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_AUS" xml:space="preserve">
-    <value>Aus: Der Heizsollwert springt so, wie ihn der Kalender führt. Ein: Vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe, damit die Heizleistung die Aufheizleistung nicht übersteigt. Gilt für das ganze Projekt und für Gebäude nach VDI 6007; jedes Feld wird sofort gespeichert.</value>
+    <value>Der Heizsollwert springt zu der Uhrzeit, die der Heizkalender vorgibt. Die erste Nutzungsstunde trägt dann das Aufwärmen der Bauteile; ihre Heizlast kann ein Mehrfaches der Last danach betragen.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_AN" xml:space="preserve">
-    <value>Die Aufheizleistung ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die stationäre Last an der kältesten Stunde zuzüglich der Aufheizreserve ρ. Die Bemessung legt die längste Aufheizzeit fest; „kälteste Stunde − ΔT_K“ bemisst kälter als das Klimajahr. Täglich: Jeder Tag rechnet seine Aufheizzeit nach seiner Außentemperatur, höchstens die längste. Fest: Jeder Tag heizt so lange vor wie der Bemessungsfall. Gilt für das ganze Projekt; jedes Feld wird sofort gespeichert.</value>
+    <value>Vor jedem Nutzungsbeginn hebt der Lauf den Sollwert stundenweise an, so dass keine Stunde mehr als die verfügbare Heizleistung braucht. Die Raumtemperatur erreicht den Sollwert immer; an milden Tagen bleibt ein Sprung der Heizlast, solange er unter der verfügbaren Heizleistung liegt.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_RESERVE" xml:space="preserve">
     <value>Ohne Eingabe gilt die Vorgabe von 20 %, und der Lauf meldet das als Hinweis; zulässig sind 1 bis 100 %.</value>
@@ -42267,7 +42267,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Projekteinstellung „Aufheizoptimierung“ ließ sich nicht speichern.</value>
   </data>
   <data name="SIMKONF_AUFH_HILFE_KNOPF" xml:space="preserve">
-    <value>Hilfe zur Aufheizoptimierung</value>
+    <value>Hilfe zum Aufheizen vor Nutzungsbeginn</value>
   </data>
   <data name="KI_DLG_SIM_AUFH_SCHALTER_ERL" xml:space="preserve">
     <value>An = vor jedem Sprung des Heizsollwerts nach oben rechnet der Lauf eine Aufheizrampe (Gebäude nach VDI 6007), aus = der Sollwert springt wie im Kalender. Projekteinstellung; wird sofort gespeichert, die übrigen Werte bleiben beim Ausschalten erhalten.</value>
@@ -47754,10 +47754,10 @@ Chart</value>
     <value>Aufheizung</value>
   </data>
   <data name="KOND_AUFH_MANUELL_LBL" xml:space="preserve">
-    <value>Aufheizzeit manuell (h)</value>
+    <value>Aufheizzeit bzw. Vorheizzeit (h)</value>
   </data>
   <data name="KOND_AUFH_MANUELL_PLATZHALTER" xml:space="preserve">
-    <value>Art des Projekts</value>
+    <value>Wert des Projekts</value>
   </data>
   <data name="KOND_AUFH_MANUELL_VORSCHLAG_BEMESSEN" xml:space="preserve">
     <value>bemessen: {0} h</value>
@@ -47775,10 +47775,10 @@ Chart</value>
     <value>{0} h liegt außerhalb der Spanne {1}–{2} h — der Wert wird trotzdem gespeichert.</value>
   </data>
   <data name="KOND_AUFH_MANUELL_HRL_OHNE_SCHALTER" xml:space="preserve">
-    <value>Wirkt erst mit eingeschalteter Aufheizoptimierung in der Projekteinstellung.</value>
+    <value>Wirkt erst mit eingeschaltetem „Aufheizen rechnen“ in der Projekteinstellung.</value>
   </data>
   <data name="KOND_AUFH_MANUELL_HRL_LEER" xml:space="preserve">
-    <value>Leer: Es gilt die Art der Projekteinstellung (täglich oder fest).</value>
+    <value>Leer: Es gilt die Projekteinstellung – bei der Sollwertrampe deren Art (täglich oder fest), bei „Vorheizzeit vorgeben“ die Vorheizzeit des Projekts.</value>
   </data>
   <data name="KOND_AUFH_MANUELL_HRL_UNERREICHBAR" xml:space="preserve">
     <value>Die Bemessung ist unerreichbar (W1) — es gibt keine bemessene Zeit.</value>
@@ -51869,7 +51869,7 @@ Chart</value>
     <value>Gebäude mit Heizkreis sind vom Vorheizen ausgenommen; es gilt die Sollwertrampe nach Aufheizleistung.</value>
   </data>
   <data name="SIMENG_VORH_RUECKFALL_OHNE_ZEIT" xml:space="preserve">
-    <value>Für „Vorheizzeit vorgeben“ fehlt die Vorheizzeit; es gilt die Sollwertrampe nach Aufheizleistung.</value>
+    <value>Für „Vorheizzeit vorgeben“ trägt weder das Projekt noch das Gebäude noch eine Zone eine Vorheizzeit; es gilt die Sollwertrampe nach Aufheizleistung.</value>
   </data>
   <data name="SIMENG_VORH_BERECHNET" xml:space="preserve">
     <value>Vorheizzeit berechnet: {0} h — sie reicht für {2} % der erreichbaren Nutzungsbeginne (Median {1} h, größter Bedarf {3} h, {4} Nutzungsbeginne bräuchten mehr); sie gilt an jedem Nutzungsbeginn. Unerreichbare Nutzungsbeginne gehen nicht ein.</value>
@@ -51878,7 +51878,7 @@ Chart</value>
     <value>An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter); nötig wären bis {2} h Vorheizen statt {3} h.</value>
   </data>
   <data name="SIMENG_VORH_UNERREICHBAR" xml:space="preserve">
-    <value>An {0} Tagen reicht die Vorheizleistung selbst ohne Absenkung der Nacht nicht, um den Sollwert zum Nutzungsbeginn zu erreichen (unerreichbar); {1} Nächte bleiben ohne Absenkung.</value>
+    <value>An {0} Tagen erreicht die Raumtemperatur den Sollwert zum Nutzungsbeginn selbst mit dem längsten möglichen Vorheizfenster nicht (unerreichbar); diese Tage gehen nicht in die Bemessung der Vorheizzeit ein.</value>
   </data>
   <data name="SIMENG_VORH_ABWEICHUNG" xml:space="preserve">
     <value>An {0} Tagen verfehlt der Lauf den Sollwert zum Nutzungsbeginn, den die Vorausschau als erreichbar sah (Nachbarzonen oder Heizkreis).</value>
@@ -51966,6 +51966,138 @@ Chart</value>
   </data>
   <data name="RKW_MSG_SCHEMA_FEHLT" xml:space="preserve">
     <value>Die Datenbank kennt das Rückkühlwerk noch nicht (Schemaschritt {0} fehlt).</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_VERFAHREN" xml:space="preserve">
+    <value>Verfahren</value>
+  </data>
+  <data name="SIMKONF_AUFH_VERFAHREN_RAMPE" xml:space="preserve">
+    <value>Sollwertrampe nach Aufheizleistung</value>
+  </data>
+  <data name="SIMKONF_AUFH_VERFAHREN_VORGABE" xml:space="preserve">
+    <value>Vorheizzeit vorgeben</value>
+  </data>
+  <data name="SIMKONF_AUFH_VERFAHREN_BERECHNET" xml:space="preserve">
+    <value>Vorheizzeit berechnen</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_VORHEIZZEIT" xml:space="preserve">
+    <value>Vorheizzeit (h)</value>
+  </data>
+  <data name="SIMKONF_AUFH_VORHEIZZEIT_LEER" xml:space="preserve">
+    <value>Gebäude und Zonen</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_VORHEIZZEIT" xml:space="preserve">
+    <value>Leer: Es gelten die Vorheizzeiten der Gebäude (Reiter „Konditionierung“) und – bei Geltung je Zone – der Zonen. Ein Wert hier gilt für jedes Gebäude und jede Zone ohne eigenen Wert; eine Zone ohne jeden Wert rechnet mit der Sollwertrampe, und der Lauf nennt sie.</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_TOLERANZ" xml:space="preserve">
+    <value>Zulässiger Sprung zum Nutzungsbeginn</value>
+  </data>
+  <data name="SIMKONF_AUFH_TOLERANZ_PROZENT" xml:space="preserve">
+    <value>% der höchsten Heizlast am Nutzungsbeginn</value>
+  </data>
+  <data name="SIMKONF_AUFH_TOLERANZ_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_TOLERANZ_WERT" xml:space="preserve">
+    <value>Zulässiger Sprung, Wert</value>
+  </data>
+  <data name="SIMKONF_AUFH_TOLERANZ_VORGABE" xml:space="preserve">
+    <value>Vorgabe {0} %</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_GENAUIGKEIT" xml:space="preserve">
+    <value>Regelgenauigkeit (K)</value>
+  </data>
+  <data name="SIMKONF_AUFH_GENAUIGKEIT_EINGABE" xml:space="preserve">
+    <value>Eingabe</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_GENAUIGKEIT_WERT" xml:space="preserve">
+    <value>Regelgenauigkeit, Eingabe (K)</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_GELTUNG" xml:space="preserve">
+    <value>Vorheizzeit gilt</value>
+  </data>
+  <data name="SIMKONF_AUFH_GELTUNG_GEBAEUDE" xml:space="preserve">
+    <value>je Gebäude</value>
+  </data>
+  <data name="SIMKONF_AUFH_GELTUNG_ZONE" xml:space="preserve">
+    <value>je Zone</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_HEIZKREIS" xml:space="preserve">
+    <value>Gebäude mit Heizkreis einbeziehen</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_VORGABE" xml:space="preserve">
+    <value>Die Heizung beginnt die eingestellte Zeit vor dem Nutzungsbeginn mit dem Sollwert der Nutzung. Ab Nutzungsbeginn ist die Heizleistung bis zum Ende der Nutzung auf die höchste Heizlast am Nutzungsbeginn des Jahres zuzüglich des zulässigen Sprungs begrenzt (Deckel); vorgeheizt wird höchstens mit dem Deckel und nie über der verfügbaren Heizleistung. Der Lauf prüft jeden Tag, ob die Raumtemperatur zum Nutzungsbeginn den Sollwert bis auf die Regelgenauigkeit erreicht, und nennt die Tage, an denen die Vorheizzeit nicht reicht, mit der nötigen Zeit. Ein Gebäude kann eine eigene Vorheizzeit haben.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_BERECHNET" xml:space="preserve">
+    <value>Der Lauf rechnet das Jahr zuerst ohne Vorheizen und bestimmt daraus den Deckel und für jeden Tag die kürzeste Vorheizzeit, mit der die Raumtemperatur zum Nutzungsbeginn den Sollwert erreicht, ohne den Deckel zu überschreiten. Der größte Wert des Jahres ist die Vorheizzeit des Gebäudes; sie gilt an jedem Tag. Ist sie länger als die Absenkung einer Nacht, wird diese Nacht durchgeheizt; der Lauf nennt die Nächte ohne Absenkung und die Mehrwärme.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_DECKEL" xml:space="preserve">
+    <value>Der Deckel ist die höchste Heizlast, die eine Nutzungsbeginn-Stunde des Jahres ohne Aufheizen hätte, zuzüglich des zulässigen Sprungs (in Prozent davon oder in kW). Er gilt stündlich vom Nutzungsbeginn bis zum Ende der Nutzung und nie unter der Heizlast der Stunde.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_VERFUEGBAR" xml:space="preserve">
+    <value>Verfügbar ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die Heizlast an der kältesten Stunde zuzüglich der Leistungsreserve.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_GELTUNG" xml:space="preserve">
+    <value>Gilt für alle Gebäude nach VDI 6007 im Projekt; jedes Feld wird sofort gespeichert.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_ZONE" xml:space="preserve">
+    <value>Zone „{0}“: Weder die Zone noch das Gebäude noch das Projekt trägt eine Vorheizzeit; die Zone rechnet mit der Sollwertrampe nach Aufheizleistung.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_VERFAHREN_ERL" xml:space="preserve">
+    <value>Verfahren des Aufheizens: RAMPE = Sollwertrampe nach Aufheizleistung (Vorgabe), VORGABE = Vorheizzeit vorgeben, BERECHNET = Vorheizzeit berechnen. Nur bei eingeschaltetem „Aufheizen rechnen“; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_VORHEIZZEIT_ERL" xml:space="preserve">
+    <value>Vorheizzeit des Projekts in ganzen Stunden, 1 bis 47; leer = es gelten die Vorheizzeiten der Gebäude und Zonen. Nur beim Verfahren „Vorheizzeit vorgeben“; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_TOLERANZ_ART_ERL" xml:space="preserve">
+    <value>Einheit des zulässigen Sprungs zum Nutzungsbeginn: PROZENT = % der höchsten Heizlast am Nutzungsbeginn (Vorgabe), KW = kW. Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_TOLERANZ_ERL" xml:space="preserve">
+    <value>Zulässiger Sprung zum Nutzungsbeginn in der gewählten Einheit, nicht negativ; leer = Vorgabe 20 %. Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_GENAUIGKEIT_ERL" xml:space="preserve">
+    <value>Regelgenauigkeit der Übergabe in K, größer als 0 und höchstens 5 (Auswahl 0,5, 1 oder 2 K oder Eingabe); leer = Vorgabe 1 K. Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_GELTUNG_ERL" xml:space="preserve">
+    <value>Geltung der Vorheizzeit: GEBAEUDE = je Gebäude (Vorgabe), ZONE = je Zone. Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_HEIZKREIS_ERL" xml:space="preserve">
+    <value>Ja = Gebäude mit wirksamem Heizkreis rechnen das gewählte Verfahren mit (Vorgabe), Nein = sie rechnen mit der Sollwertrampe. Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_NICHT_VERFAHREN" xml:space="preserve">
+    <value>Das Feld „{0}“ steht beim gewählten Verfahren nicht auf der Maske.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_VERFAHREN" xml:space="preserve">
+    <value>Bei „Sollwertrampe nach Aufheizleistung“ die feste Aufheizzeit dieses Gebäudes, bei „Vorheizzeit vorgeben“ seine Vorheizzeit (vor der des Projekts; bei Geltung je Zone kann jede Zone eine eigene haben). Bei „Vorheizzeit berechnen“ wirkt der Wert nicht.</value>
+  </data>
+  <data name="ZONDLG_LBL_VORHEIZZEIT" xml:space="preserve">
+    <value>Vorheizzeit (h)</value>
+  </data>
+  <data name="ZONDLG_PLATZHALTER_VORHEIZZEIT" xml:space="preserve">
+    <value>wie Gebäude</value>
+  </data>
+  <data name="ZONDLG_HRL_VORHEIZZEIT" xml:space="preserve">
+    <value>Die Vorheizzeit der Zone wirkt beim Verfahren „Vorheizzeit vorgeben“ mit Geltung je Zone; leer = die Vorheizzeit des Gebäudes, sonst die des Projekts. Zulässig sind 1 bis 47 h.</value>
+  </data>
+  <data name="ZONDLG_MSG_VORHEIZZEIT" xml:space="preserve">
+    <value>Die Vorheizzeit der Zone „{0}“ muss zwischen {1} und {2} h liegen.</value>
+  </data>
+  <data name="KI_DLG_ZON_VORHEIZZEIT_ERL" xml:space="preserve">
+    <value>Vorheizzeit der Zone in ganzen Stunden, 1 bis 47; leer = wie Gebäude. Wirkt beim Verfahren „Vorheizzeit vorgeben“ mit Geltung je Zone.</value>
+  </data>
+  <data name="ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_ART" xml:space="preserve">
+    <value>Zulässiger Sprung beim Vorheizen</value>
+  </data>
+  <data name="ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_WERT" xml:space="preserve">
+    <value>Zulässiger Sprung, Wert</value>
+  </data>
+  <data name="ADM_SET_HINT_NEUE_PROJEKTE_VORHEIZ" xml:space="preserve">
+    <value>Anfangswert des zulässigen Sprungs zum Nutzungsbeginn (Aufheizen vor Nutzungsbeginn) für neu angelegte Projekte; leer = Vorgabe 20 %. Vorhandene Projekte bleiben unverändert.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_VORHEIZ_ART_ERL" xml:space="preserve">
+    <value>Einheit der Vorbelegung des zulässigen Sprungs für neue Projekte: PROZENT (Vorgabe) oder KW. Programmeinstellung; wird mit OK gespeichert.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_VORHEIZ_WERT_ERL" xml:space="preserve">
+    <value>Vorbelegung des zulässigen Sprungs zum Nutzungsbeginn für neue Projekte, nicht negativ; leer = Vorgabe 20 %. Programmeinstellung; wird mit OK gespeichert.</value>
   </data>
   <data name="KMA_LISTE_PROJEKT" xml:space="preserve">
     <value>Kältemaschinen im Projekt:</value>
