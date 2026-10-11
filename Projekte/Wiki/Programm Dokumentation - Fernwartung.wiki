@@ -1,0 +1,50 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Fernwartung
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Fernwartung.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+{{Anker|fernwartung}}Der Dialog '''Fernwartung''' führt zum Support von INEKON: Er nennt die Kontaktwege, stellt die Angaben bereit, die der Support für die Hilfe braucht, und öffnet die Seite, über die der Support auf Ihren Bildschirm schauen und Ihnen bei der Bedienung helfen kann. Sie öffnen ihn über {{Menü|Hilfe|Fernwartung…}}. Die Fernwartung ist unter Windows verfügbar.
+
+== Der Dialog ==
+{{Anker|dialog}}
+
+Der Dialog hat vier Zonen von oben nach unten:
+
+* '''Kontakt''' – Telefon 0711 9959 826 50 und E-Mail [mailto:info@inekon.de info@inekon.de], erreichbar werktags von 9 bis 16 Uhr. Diese Zone steht immer zur Verfügung, auch ohne Lizenz.
+* '''Ihre Angaben für den Support''' – ein Textblock mit Programmversion, Betriebssystem, Sprache, Pfad der Datenbank, Schemastand, Katalogfassung, den Lizenzangaben, der Kurzform der Gerätekennung und dem Protokollordner. Der Knopf '''Kopieren''' legt den Block in die Zwischenablage; Sie können ihn dem Support am Telefon vorlesen oder in eine E-Mail einfügen. Auch diese Zone steht immer zur Verfügung.
+* '''Fernwartung''' – ein Erklärtext, die drei Schritte einer Sitzung und der Knopf '''Fernwartungsseite öffnen'''. Er öffnet die Fernwartungsseite von INEKON im Browser (<code>https://epos-plan.de/support/fernwartung</code>). Schlägt das Öffnen fehl, etwa weil kein Browser eingerichtet ist, nennt der Dialog den Grund.
+* '''Schließen''' – beendet den Dialog. Er hat keinen Arbeitsstand, den es zu bestätigen gäbe.
+
+== Voraussetzung ==
+{{Anker|voraussetzung}}
+
+Die Fernwartung setzt eine '''aktivierte, bezahlte Lizenz''' voraus, eine Personen- oder eine Firmenlizenz. Sie gilt auch nach Ablauf der Lizenzlaufzeit: Wer Hilfe bei der Verlängerung oder einer Reparatur braucht, soll sie bekommen. In der Testversion und ohne Aktivierung ist der Knopf '''Fernwartungsseite öffnen''' gesperrt; der Grund steht daneben. Kontakt und Angaben bleiben auch dann nutzbar, Sie erreichen den Support per Telefon oder E-Mail.
+
+Die Lizenz aktivieren Sie unter {{Menü|Hilfe|Lizenz}}.
+
+== Ablauf einer Sitzung ==
+{{Anker|ablauf}}
+
+# '''Programm laden und starten.''' Öffnen Sie über den Knopf die Fernwartungsseite, laden Sie dort das Fernwartungsprogramm von INEKON und starten Sie es. Es braucht keine Installation.
+# '''Kennung nennen.''' Das Programm zeigt eine Kennung und ein Einmalkennwort. Nennen Sie beides dem Support, am besten am Telefon.
+# '''Anfrage annehmen.''' Der Support baut die Verbindung auf; Sie nehmen die Anfrage im Fernwartungsprogramm an. Ohne Ihre Annahme kommt keine Verbindung zustande, und die Annahme gilt nur für diese eine Sitzung.
+
+Sie können die Verbindung jederzeit selbst beenden, indem Sie sie im Fernwartungsprogramm trennen oder das Programm schließen. Beim nächsten Mal beginnen Sie wieder mit Schritt 1; das Einmalkennwort gilt nur für eine Sitzung.
+
+== Was übertragen wird ==
+{{Anker|datenschutz}}
+
+* Aus EPOS-Plan heraus geht allein der Aufruf der Fernwartungsseite ins Internet, die Adresse enthält keine Kundendaten. Die Angaben für den Support verlassen EPOS-Plan nur, wenn Sie sie selbst kopieren und weitergeben.
+* Die Sitzung selbst läuft über das Fernwartungsprogramm von INEKON und einen Server von INEKON, Ende-zu-Ende verschlüsselt. Der Server vermittelt die Verbindung; die Bildschirminhalte gehen nicht über ihn im Klartext.
+* EPOS-Plan zeichnet nichts auf und merkt sich weder eine Einwilligung noch eine Sitzung.
+* Sie nehmen jede Verbindung selbst an und beenden sie jederzeit.
+
+== iPad ==
+{{Anker|ipad}}
+
+Auf dem iPad gibt es keine Fernwartung; der Menüpunkt und der Dialog fehlen dort. Den Support erreichen Sie per Telefon oder E-Mail.
+
+== Siehe auch ==
+
+* [[Installation und Update#unterstuetzung|Installation und Update: Unterstützung]] – Wartungsvertrag und Erreichbarkeit
+* [[Programm Dokumentation/Lizenz|Lizenz]] – Aktivierung und Lizenzarten
+
+[[Kategorie:Programm Dokumentation]]
