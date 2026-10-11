@@ -323,6 +323,10 @@
     </Ueberlagerung>
 
     @* ------------------- Die zwei Ueberlagerungen der Importkette ---------- *@
+    @* "CSV..." am Vorschaubild des Optionendialogs (IM-3): dieselbe Export-Kaskade wie im
+       Optionendialog der Stromganglinie (StromganglinieDialog) - der Weg der Huelle ueber
+       Diagrammexportnaht, das Raster folgt der Laenge der Reihe. *@
+    <CascadingValue Value="@BildCsvNaht">
     <Ueberlagerung Offen="@_optionenOffen" Titel="" Schliessbar="false">
         <KindInhalt>
             @if (_optionenOffen)
@@ -332,6 +336,7 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+    </CascadingValue>
 
     <Ueberlagerung Offen="@_protokollOffen" Titel="" Schliessbar="false">
         <KindInhalt>
@@ -413,6 +418,18 @@
 
     /// <summary>Schreibt die fünf Spalten als CSV; ohne Delegat kein Knopf.</summary>
     [Parameter] public Func<PeakShavingErgebnis, Task<bool>>? CsvSpeichern { get; set; }
+
+    /// <summary>
+    /// „CSV…“ am Vorschaubild des Optionendialogs: der Weg der Hülle (Modell, Bildtitel, Raster der
+    /// ersten Spalte), als Export-Kaskade um die Importüberlagerung. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public Func<Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, Task>? BildCsvSpeichern { get; set; }
+
+    private Ganglinienexport? _bildCsvNaht;
+
+    /// <summary>Die Naht der Kaskade; das Raster folgt der Länge der Reihe.</summary>
+    private Ganglinienexport? BildCsvNaht => BildCsvSpeichern is null ? null
+        : _bildCsvNaht ??= new Ganglinienexport(BildCsvSpeichern);
 
     /// <summary>
     /// Schreibt Zielschwelle und Adaptiv-Flag in die AKTIVE Speichervariante (LS-E-1 (a));

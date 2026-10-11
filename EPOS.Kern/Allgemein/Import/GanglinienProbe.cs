@@ -17,6 +17,12 @@ namespace WindowsFormsApplication1
         /// <summary>Gelesene Datenzeilen (Werte der Wertspalte, ohne Kopfzeile).</summary>
         public int Datenzeilen;
 
+        /// <summary>
+        /// Die nicht leeren Zeilen ab der ersten Datenzeile bis zum Dateiende — die Vorgabe des Feldes
+        /// „Zeilen zu importieren“ (bei einer Jahresreihe ihr Raster, 8 760 oder 35 040).
+        /// </summary>
+        public int ZeilenAbStart;
+
         /// <summary>Das Raster der geprüften Reihe; <see cref="GanglinienRaster.Unbekannt"/> ohne Erfolg.</summary>
         public GanglinienRaster Raster = GanglinienRaster.Unbekannt;
 
@@ -66,6 +72,7 @@ namespace WindowsFormsApplication1
                 GanglinienImportOptionen o = optionen ?? new GanglinienImportOptionen();
                 GanglinienRohdaten roh = GanglinienDatei.Lies(pfad, o);
                 probe.Datenzeilen = roh.Werte?.Length ?? 0;
+                probe.ZeilenAbStart = roh.ZeilenAbStart;
                 if (!roh.Erfolgreich)
                 {
                     probe.Grund = Grundtext(roh.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler));

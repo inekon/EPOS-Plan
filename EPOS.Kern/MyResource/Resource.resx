@@ -4571,6 +4571,18 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="IMPORT_LBL_KOPFZEILE" xml:space="preserve">
     <value>Erste Zeile ist eine Kopfzeile</value>
   </data>
+  <data name="IMPORT_LBL_ERSTE_DATENZEILE" xml:space="preserve">
+    <value>Erste Datenzeile:</value>
+  </data>
+  <data name="IMPORT_LBL_ZEILENZAHL" xml:space="preserve">
+    <value>Zeilen zu importieren:</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_FEHLEN" xml:space="preserve">
+    <value>Ab Zeile {0} stehen nur {1} Datenzeilen in der Datei, verlangt sind {2}.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_UEBRIG" xml:space="preserve">
+    <value>{0} Zeilen nach den {1} gelesenen (ab Zeile {2}) bleiben unberücksichtigt.</value>
+  </data>
   <data name="IMPORT_LBL_WERTSPALTE" xml:space="preserve">
     <value>Wertspalte:</value>
   </data>
@@ -51387,6 +51399,12 @@ Chart</value>
   </data>
   <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
     <value>Trägt die erste Zeile die Spaltennamen statt Werte? Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_DLG_GIO_ERSTE_DATENZEILE_ERL" xml:space="preserve">
+    <value>Die Nummer der ersten Zeile mit Werten, gezählt wie in der Vorschautabelle; die Zeilen davor werden übersprungen. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEILENZAHL_ERL" xml:space="preserve">
+    <value>Wie viele Zeilen ab der ersten Datenzeile gelesen werden — 8 760 für Stundenwerte, 35 040 für Viertelstundenwerte. Fehlen Zeilen, wird der Import abgelehnt; übrige Zeilen bleiben unberücksichtigt.</value>
   </data>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>Ein Tabellenblatt gibt es nur bei einer Excel-Mappe.</value>
