@@ -2233,6 +2233,7 @@ Rechenregel steht in 6.1; umgesetzt mit der dritten Welle von KU2.
 **Kältemittel-Emissionen (F-Gase) sind ausgeschlossen.** Die direkte Treibhauswirkung eines
 Kältemittelverlusts ist ein eigenes Thema mit eigener Datenlage; EPOS-Plan rechnet die
 **betriebsbedingten** Emissionen des Stroms. Das gehört als Grenze in den Bericht (Kapitel 14).
+Die Treibhauswirkung des Kältemittels (Leckage, TEWI) bleibt aus der Emissionsbilanz ausgeschlossen.
 
 **Gebaut mit KU2 Welle 3 — die Regel steht genau einmal.** `Kaeltestromabrechnung` bestimmt den
 Projektträger (`Emissionsquelle.StromTraeger`, sonst der Stromträger des Katalogs), erkennt einen
@@ -3689,8 +3690,9 @@ Mehrzonen 12):
 - **Sommerlicher Wärmeschutz als Nachweis nach DIN 4108-2**, Nachweise nach GEG oder
   DIN V 18599, Normwerte der Nutzungsprofile für Nichtwohngebäude (E90: EPOS-Muster und eigene Profile sind zulässig, siehe [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)).
 - **Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur** — seit E22 Gegenstand des Papiers [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md); hier nur Bedarf und Kälteerzeuger.
-- **Kältemittel und F-Gase** — Füllmenge, GWP, Leckagerate, direkte Treibhauswirkung. EPOS-Plan
-  rechnet die betriebsbedingten Emissionen des Stroms (6.3).
+- **Kältemittel** — Das Kältemittel ist als Stammdatum (`Tab_Kaeltemittel_STAMM`, Verweis `ID_Kaeltemittel`)
+  und als Zulässigkeitsprüfung nach Anhang IV der VO (EU) 2024/573 zugelassen; das ist ein Hinweis bei gesetztem
+  Inbetriebnahmejahr, nie eine Sperre (Leckage und TEWI bleiben nach 6.3 ausgeschlossen).
 - **Luftführung und Kanalnetz** — Volumenströme, Druckverluste, Ventilatorleistung als Physik.
   Ein Hilfsstromanteil ist eine Eingabe, keine Rechnung.
 - **Raumlufttechnische Anlagen als Gewerk** — Wärmerückgewinnung, Befeuchtung, Kanalnetze,
