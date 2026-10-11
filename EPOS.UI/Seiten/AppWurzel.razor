@@ -180,6 +180,10 @@ else if (_ansicht == Seitenschluessel.NutzungsdauerVerwaltung && _nutzungsdauern
     <EPOS.UI.Dialoge.Kosten.NutzungsdauerDialog @attributes="_nutzungsdauern"
                                                 Geschlossen="BeiNutzungsdauernFertig" />
 }
+else if (_ansicht == Seitenschluessel.Kaeltemittel && _kaeltemittel is not null)
+{
+    <EPOS.UI.Dialoge.Admin.KaeltemittelDialog @attributes="_kaeltemittel" Geschlossen="BeiKaeltemittelFertig" />
+}
 else if (_ansicht == Seitenschluessel.Gesetzeskatalog && _gesetzeskatalog is not null)
 {
     <EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogDialog @attributes="_gesetzeskatalog"
@@ -457,6 +461,7 @@ else
     // (A19). Derselbe Lebenslauf wie die fuenf darueber.
     private IReadOnlyDictionary<string, object>? _kostenverwaltung;
     private IReadOnlyDictionary<string, object>? _nutzungsdauern;
+    private IReadOnlyDictionary<string, object>? _kaeltemittel;
     private IReadOnlyDictionary<string, object>? _gesetzeskatalog;
 
     // Die ZWEI Kataloge der Gebaeudesimulation (G3). Derselbe Lebenslauf.
@@ -1303,6 +1308,16 @@ else
             return true;
         }
 
+        // KM4-E3-c: die Verwaltung der Kaeltemittel (Menue „Daten & Import"). Unter Windows faengt die
+        // Huelle den Schluessel vorher ab und oeffnet ihr Fenster; hier landet er auf iOS.
+        if (maske == Seitenschluessel.Kaeltemittel)
+        {
+            _kaeltemittel = Quelle.KaeltemittelGaben();
+            if (_kaeltemittel is null) { _statuszeile = KeinKaeltemittelText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.Gesetzeskatalog)
         {
             _gesetzeskatalog = Quelle.GesetzeskatalogGaben();
@@ -1583,6 +1598,7 @@ else
         // Dasselbe gilt fuer die drei Masken aus E3/8.
         _kostenverwaltung = null;
         _nutzungsdauern = null;
+        _kaeltemittel = null;
         _gesetzeskatalog = null;
 
         // Und fuer die zwei Kataloge der Gebaeudesimulation (G3) sowie den Katalog der
@@ -1646,6 +1662,9 @@ else
     /// <summary>Die Nutzungsdauern sind zu; <c>null</c> = abgebrochen.</summary>
     private void BeiNutzungsdauernFertig(
         EPOS.UI.Dialoge.Kosten.NutzungsdauerErgebnis? ergebnis) => ZurueckZurListe();
+
+    /// <summary>Die Kaeltemittel sind zu (KM4-E3-c).</summary>
+    private void BeiKaeltemittelFertig(bool geschrieben) => ZurueckZurListe();
 
     /// <summary>Der Gesetzeskatalog ist zu.</summary>
     private void BeiGesetzeskatalogFertig(bool ok) => ZurueckZurListe();
@@ -1973,6 +1992,8 @@ else
            // zu erreichen.
            || maske == Seitenschluessel.Kostenverwaltung
            || maske == Seitenschluessel.NutzungsdauerVerwaltung
+           // KM4-E3-c: die Kaeltemittel (Menue „Daten & Import").
+           || maske == Seitenschluessel.Kaeltemittel
            || maske == Seitenschluessel.Gesetzeskatalog
 
            // Die zwei Kataloge der Gebaeudesimulation (G3) - Menue und
@@ -2268,6 +2289,9 @@ else
     /// <summary>Meldung, wenn die Nutzungsdauern nicht aufzubauen sind.</summary>
     [Parameter] public string KeineNutzungsdauernText { get; set; } =
         "Die Nutzungsdauern stehen auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>Meldung, wenn die Kaeltemittel nicht aufzubauen sind (KM4-E3-c).</summary>
+    [Parameter] public string KeinKaeltemittelText { get; set; } = Resource.KMT_NICHT_VERFUEGBAR;
 
     /// <summary>Meldung, wenn der Gesetzeskatalog nicht aufzubauen ist.</summary>
     [Parameter] public string KeinGesetzeskatalogText { get; set; } =

@@ -413,6 +413,10 @@ public static class Menuetabelle
                 new Menuepunkt("MenuItem_SP_Import", "MENU_SP_IMPORT", Seitenschluessel.StromspeicherImport),
                 // MN-1: Importe | Pflege der eingelesenen Kataloge
                 Menuepunkt.Trennstrich("MenuItem_TrennerImportDubletten"),
+                // KM4-E3-c (Fachkonzept Kältemittel 7.6): die Verwaltung der Kältemittel - ein
+                // globales Stammdatum, das Import und Kataloge der Kälteanlagen nachschlagen; vor der
+                // Pflege der eingelesenen Kataloge, weil es selbst ein Katalog ist.
+                new Menuepunkt("MenuItem_Kaeltemittel", "KMT_MENUE", Seitenschluessel.Kaeltemittel),
                 // MN-1 (19.09.2026): aus der obersten Ebene des Kopfes hierher.
                 // Dubletten entstehen BEIM Einlesen; die Pruefung gehoert ans
                 // Ende derselben Rubrik. Ihr Bild hatte sie nie.

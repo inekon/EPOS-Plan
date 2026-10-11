@@ -1,0 +1,509 @@
+﻿@* DIE VERWALTUNG „KÄLTEMITTEL" (KM4-E3-c, Fachkonzept Kältemittel als Stammdatum 7.6; Menü
+   „Administration → Daten & Import → Kältemittel…").
+
+   WOZU. Die Kältemitteltabelle (Tab_Kaeltemittel_STAMM) ist ein globales Stammdatum: Code nach ISO 817,
+   GWP mit Fundstelle, Kennzeichen nach der F-Gas-Verordnung, Sicherheitsgruppe, PFAS-Status und Belegstand.
+   Die Kältemaschine verweist über die ID darauf, die Wärmepumpe über den Code.
+
+   AUFBAU nach dem Hausmuster der schlichten Verwaltungen (Vorbild BetriebskalenderDialog): oben die Liste als
+   Tabelle — die Zeile ist die Wahl —, darunter der Satzbereich im Formularraster mit den Fundstellen als
+   Lesetext, unten die SpeichernLeiste. Neu, Schloss aufheben…/Schloss setzen… (Baustein Katalogschloss) und
+   Löschen stehen in der Kontextleiste über der Liste. Keine virtualisierte Katalogliste: rund zwanzig Zeilen.
+
+   AUSLIEFERUNGSZEILEN tragen das Kennzeichen (Schloss) und sind nur lesbar; geändert wird erst nach
+   „Schloss aufheben…" (AD-Q15) — Katalogschlüssel und Prüfsumme bleiben, der Katalogabgleich lässt die
+   angepasste Zeile stehen. Der Code einer verwendeten Zeile ist fest, gelöscht wird nur eine unbenutzte
+   Anwenderzeile; die Regeln stehen im Kern (KaeltemittelCtrl), hier nur die Anzeige ihres Grundes.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Alles kommt als Delegat aus der Hülle
+   (EPOS.UI.Daten/Allgemein/KaeltemittelHuelle.cs). Ohne Gaben zeichnet der Dialog die leere Liste und bietet
+   keinen Knopf an, der nichts tun könnte. *@
+
+@namespace EPOS.UI.Dialoge.Admin
+@using System.Globalization
+@using EPOS.UI.Bausteine
+@using EPOS.UI.Dialoge.Allgemein
+@using KiKern
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-kaeltemittel" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Resource.KMT_TITEL</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Resource.KMT_TITEL" />
+        <Schliesskreuz Geschlossen="@(() => Beenden(false))" />
+    </div>
+
+    <p class="epos-kontextzeile">@Resource.KMT_EINLEITUNG</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-kontextleiste">
+        @if (Speichern is not null)
+        {
+            <button type="button" class="epos-knopf epos-kmt-neu" disabled="@Lesemodus" @onclick="Neu">@Resource.KMT_NEU</button>
+        }
+        @* Das Schloss (AD-Q15) über den Hausbaustein: Beschriftung folgt der Zeile, Rückfrage mit Vorgabe
+           „Nein", Lesemodus sperrt hart, geschrieben wird über den Schlossweg der Hülle. *@
+        <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_schlossZeile" Ungespeichert="@_geaendert"
+                        NurLesen="@Lesemodus" JaText="@Resource.ALLG_BTN_JA" NeinText="@Resource.ALLG_BTN_NEIN"
+                        Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
+        @if (Loeschen is not null)
+        {
+            <button type="button" class="epos-knopf epos-kmt-loeschen" disabled="@Lesemodus"
+                    aria-disabled="@(LoeschGrund.Length > 0 ? "true" : null)" title="@LoeschGrund"
+                    @onclick="LoeschenFragen">@Resource.KMT_LOESCHEN</button>
+        }
+    </div>
+
+    @if (_liste.Count == 0)
+    {
+        <p class="epos-leerzustand">@Resource.KMT_LEER</p>
+    }
+    else
+    {
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-kmt-liste">
+                <thead>
+                    <tr>
+                        <th>@Resource.KMT_SP_CODE</th>
+                        <th>@Resource.KMT_SP_BEZEICHNUNG</th>
+                        <th>@Resource.KMT_SP_GRUPPE</th>
+                        <th>@Resource.KMT_SP_GWP</th>
+                        <th>@Resource.KMT_SP_FGAS</th>
+                        <th>@Resource.KMT_SP_NATUERLICH</th>
+                        <th>@Resource.KMT_SP_SICHERHEIT</th>
+                        <th>@Resource.KMT_SP_PFAS</th>
+                        <th>@Resource.KMT_SP_STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (KaeltemittelZeile z in _liste)
+                    {
+                        bool gewaehlt = z.Id == _arbeit.Id;
+                        <tr @key="z.Id" class="@(gewaehlt ? "epos-zeile--gewaehlt" : null)" aria-selected="@(gewaehlt ? "true" : "false")"
+                            @onclick="() => Waehlen(z.Id)">
+                            <td class="epos-kmt-code">@z.Code @if (z.Gesperrt) { <Kennzeichen /> }</td>
+                            <td>@z.Bezeichnung</td>
+                            <td>@z.GruppeText</td>
+                            <td>@Zahl(z.Gwp)</td>
+                            <td>@JaNein(z.FGas)</td>
+                            <td>@JaNein(z.Natuerlich)</td>
+                            <td>@z.Sicherheitsgruppe</td>
+                            <td>@z.PfasText</td>
+                            <td>@z.StatusText</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <h2 class="epos-formulargruppe-titel epos-kmt-satzkopf">
+        @(_arbeit.Id > 0 ? _arbeit.Code : Resource.KMT_SATZ_NEU)
+        @if (_arbeit.Gesperrt) { <Kennzeichen Kurztext="@Resource.ADM_SCHLOSS_ERST_AUFHEBEN" /> }
+    </h2>
+
+    <Formularraster>
+        <KindInhalt>
+            <Textfeld Bezeichnung="@Resource.KMT_SP_CODE" Wert="@_arbeit.Code" Hoechstlaenge="20" Kurz="true"
+                      NurLesen="@(NurLesen || CodeFest)" WertChanged="@(w => Feld(z => z.Code = w ?? ""))" />
+            <Textfeld Bezeichnung="@Resource.KMT_SP_BEZEICHNUNG" Wert="@_arbeit.Bezeichnung" Hoechstlaenge="120"
+                      NurLesen="@NurLesen" WertChanged="@(w => Feld(z => z.Bezeichnung = w ?? ""))" />
+            <Auswahlfeld Bezeichnung="@Resource.KMT_SP_GRUPPE" Eintraege="@Eintraege(Gruppen)" Aktiv="@(!NurLesen)"
+                         Auswahl="@Platz(Gruppen, _arbeit.Gruppe)" AuswahlChanged="@(i => Feld(z => z.Gruppe = Wert(Gruppen, i)))" />
+            <Zahlenfeld Bezeichnung="@Resource.KMT_SP_GWP" Feldname="gwp" Min="0" Wert="@_arbeit.Gwp" Aktiv="@(!NurLesen)"
+                        WertChanged="@(w => Feld(z => z.Gwp = w))" />
+            <Auswahlfeld Bezeichnung="@Resource.KMT_SP_FGAS" Eintraege="@Eintraege(SchalterWerte)" Aktiv="@(!NurLesen)"
+                         Auswahl="@Platz(SchalterWerte, Schalter(_arbeit.FGas))"
+                         AuswahlChanged="@(i => Feld(z => z.FGas = Schalter(Wert(SchalterWerte, i))))" />
+            <Auswahlfeld Bezeichnung="@Resource.KMT_SP_NATUERLICH" Eintraege="@Eintraege(SchalterWerte)" Aktiv="@(!NurLesen)"
+                         Auswahl="@Platz(SchalterWerte, Schalter(_arbeit.Natuerlich))"
+                         AuswahlChanged="@(i => Feld(z => z.Natuerlich = Schalter(Wert(SchalterWerte, i))))" />
+            <Auswahlfeld Bezeichnung="@Resource.KMT_SP_SICHERHEIT" Eintraege="@Eintraege(Sicherheitsgruppen)" Aktiv="@(!NurLesen)"
+                         Auswahl="@Platz(Sicherheitsgruppen, _arbeit.Sicherheitsgruppe)"
+                         AuswahlChanged="@(i => Feld(z => z.Sicherheitsgruppe = Wert(Sicherheitsgruppen, i)))" />
+            <Auswahlfeld Bezeichnung="@Resource.KMT_SP_PFAS" Eintraege="@Eintraege(PfasWerte)" Aktiv="@(!NurLesen)"
+                         Auswahl="@Platz(PfasWerte, _arbeit.PfasStatus)"
+                         AuswahlChanged="@(i => Feld(z => z.PfasStatus = Wert(PfasWerte, i)))" />
+            <Auswahlfeld Bezeichnung="@Resource.KMT_SP_STATUS" Eintraege="@Eintraege(Statuswerte)" Aktiv="@(!NurLesen)"
+                         Auswahl="@Platz(Statuswerte, _arbeit.Status)"
+                         AuswahlChanged="@(i => Feld(z => z.Status = Wert(Statuswerte, i)))" />
+            <Zahlenfeld Bezeichnung="@Resource.KMT_SP_SORTIERUNG" Feldname="sortierung" Nachkommastellen="0"
+                        Wert="@((double?)_arbeit.Sortierung)" Aktiv="@(!NurLesen)"
+                        WertChanged="@(w => Feld(z => z.Sortierung = w.HasValue ? (int)Math.Round(w.Value) : null))" />
+            @if (!NurLesen)
+            {
+                <Textfeld Bezeichnung="@Resource.KMT_SP_GWP_QUELLE" Wert="@_arbeit.GwpQuelle" Hoechstlaenge="120"
+                          WertChanged="@(w => Feld(z => z.GwpQuelle = w ?? ""))" />
+                <Textfeld Bezeichnung="@Resource.KMT_SP_QUELLE" Wert="@_arbeit.Quelle" Hoechstlaenge="120"
+                          WertChanged="@(w => Feld(z => z.Quelle = w ?? ""))" />
+            }
+        </KindInhalt>
+    </Formularraster>
+
+    <dl class="epos-kmt-fundstellen" aria-label="@Resource.KMT_FUNDSTELLEN">
+        <dt>@Resource.KMT_SP_GWP_QUELLE</dt>
+        <dd class="epos-kmt-gwp-quelle">@Lesetext(_arbeit.GwpQuelle)</dd>
+        <dt>@Resource.KMT_SP_QUELLE</dt>
+        <dd class="epos-kmt-quelle">@Lesetext(_arbeit.Quelle)</dd>
+    </dl>
+    @if (_arbeit.Id > 0)
+    {
+        <Herleitungszeile Text="@(_arbeit.Verwendung > 0
+                                     ? string.Format(CultureInfo.CurrentCulture, Resource.KMT_VERWENDUNG, _arbeit.Verwendung)
+                                     : Resource.KMT_UNBENUTZT)" />
+    }
+    @if (Lesemodus)
+    {
+        <Herleitungszeile Text="@Resource.KMT_LESEMODUS" />
+    }
+
+    <SpeichernLeiste @ref="_leiste" MitSpeichern="@(Speichern is not null && !NurLesen)" SatzMarkiert="true"
+                     Geaendert="@_geaendert" Gespeichertwerden="@(() => { SpeichernKlick(); })"
+                     OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                     Ergebnis="Beenden" />
+
+    <Rueckfrage Offen="@(_frage.Length > 0)" Frage="@_frage" TitelText="@_frageTitel" VorgabeNein="true"
+                JaText="@Resource.ALLG_BTN_JA" NeinText="@Resource.ALLG_BTN_NEIN" Beantwortet="FrageBeantwortet" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle
+    // =====================================================================
+
+    /// <summary>Die Zeilen beim Öffnen (nach Sortierung und Code).</summary>
+    [Parameter] public IReadOnlyList<KaeltemittelZeile>? Zeilen { get; set; }
+
+    /// <summary>Liest die Zeilen neu (nach jedem Schreibweg).</summary>
+    [Parameter] public Func<IReadOnlyList<KaeltemittelZeile>>? Neuladen { get; set; }
+
+    /// <summary>Prüft einen Arbeitsstand mit den Regeln des Kerns; <c>null</c> = gültig, sonst der Grund.</summary>
+    [Parameter] public Func<KaeltemittelZeile, string?>? Pruefen { get; set; }
+
+    /// <summary>Schreibt eine Zeile (neu bei Id 0); die Antwort trägt die ID oder den Grund.</summary>
+    [Parameter] public Func<KaeltemittelZeile, KaeltemittelAntwort>? Speichern { get; set; }
+
+    /// <summary>Löscht eine Zeile; die Antwort trägt den Grund einer Ablehnung.</summary>
+    [Parameter] public Func<int, KaeltemittelAntwort>? Loeschen { get; set; }
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15): der Schlossweg der Hülle.</summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    /// <summary>Die Stoffgruppen (Persistenzwert, Anzeigetext).</summary>
+    [Parameter] public IReadOnlyList<KaeltemittelWahl> Gruppen { get; set; } = Array.Empty<KaeltemittelWahl>();
+
+    /// <summary>Die Sicherheitsgruppen.</summary>
+    [Parameter] public IReadOnlyList<KaeltemittelWahl> Sicherheitsgruppen { get; set; } = Array.Empty<KaeltemittelWahl>();
+
+    /// <summary>Die PFAS-Status.</summary>
+    [Parameter] public IReadOnlyList<KaeltemittelWahl> PfasWerte { get; set; } = Array.Empty<KaeltemittelWahl>();
+
+    /// <summary>Die Status (Belegstand).</summary>
+    [Parameter] public IReadOnlyList<KaeltemittelWahl> Statuswerte { get; set; } = Array.Empty<KaeltemittelWahl>();
+
+    /// <summary>Die Datenbank ist im Lesemodus der Lizenz: kein Schreibweg.</summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary><c>true</c> = es wurde geschrieben (OK oder ein Schreibweg vorher).</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Der Hilfeschlüssel (Seite Gerätekataloge).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Kaeltemittel.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private SpeichernLeiste? _leiste;
+
+    private List<KaeltemittelZeile> _liste = new();
+    private KaeltemittelZeile _arbeit = new();
+    private bool _geaendert;
+    private bool _geschrieben;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private Katalogschloss? _katalogschloss;
+    private Katalogfilterzeile? _schlossZeile;
+
+    private string _frage = "";
+    private string _frageTitel = "";
+    private Action? _frageJa;
+
+    /// <summary>Der Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public KaeltemittelZeile Arbeit => _arbeit;
+
+    /// <summary>Die Meldung im Banner (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die offene Rückfrage (Prüfhilfe für Tests).</summary>
+    public string OffeneFrage => _frage;
+
+    /// <summary>Hat der Dialog geschrieben (Prüfhilfe für Tests)?</summary>
+    public bool Geschrieben => _geschrieben;
+
+    private IReadOnlyList<KaeltemittelWahl> SchalterWerte => new[]
+    {
+        new KaeltemittelWahl("1", Resource.KMT_JA), new KaeltemittelWahl("0", Resource.KMT_NEIN)
+    };
+
+    /// <summary>Nur lesen: Auslieferungszeile, Lesemodus oder kein Schreibweg.</summary>
+    private bool NurLesen => _arbeit.Gesperrt || Lesemodus || Speichern is null;
+
+    /// <summary>Der Code einer verwendeten Zeile ist fest (Fachkonzept 3.2).</summary>
+    private bool CodeFest => _arbeit.Id > 0 && _arbeit.Verwendung > 0;
+
+    /// <summary>Der Grund, warum „Löschen" nicht geht; leer = es geht.</summary>
+    private string LoeschGrund =>
+        _arbeit.Id <= 0 ? Resource.KMT_MSG_SATZ_FEHLT
+        : _arbeit.Gesperrt ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN
+        : _arbeit.Verwendung > 0
+            ? string.Format(CultureInfo.CurrentCulture, Resource.KMT_MSG_VERWENDET, _arbeit.Code, _arbeit.Verwendung)
+            : "";
+
+    protected override void OnInitialized()
+    {
+        _liste = new List<KaeltemittelZeile>(Zeilen ?? Array.Empty<KaeltemittelZeile>());
+        Zeigen(_liste.FirstOrDefault() ?? new KaeltemittelZeile());
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KAELTEMITTEL, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =====================================================================
+    // Der Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KaeltemittelKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: Die Satzwahl nimmt den Weg eines Klicks, die Felder den Arbeitsstand.</summary>
+    private KaeltemittelKiSicht KiSicht()
+    {
+        return _kiSicht ??= new KaeltemittelKiSicht
+        {
+            SatzLesen = () => _arbeit.Id > 0 ? _arbeit.Id.ToString(CultureInfo.InvariantCulture) : "",
+            SatzSetzen = s => { if (int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id)) Waehlen(id); },
+            SatzEintraege = () => KiMaskenanmeldung.Eintraege(_liste, z => z.Id.ToString(CultureInfo.InvariantCulture), z => z.Code),
+            ArbeitLesen = () => NurLesen ? null : _arbeit,
+            Setzen = Feld,
+            Gruppen = () => Gruppen,
+            Sicherheitsgruppen = () => Sicherheitsgruppen,
+            PfasWerte = () => PfasWerte,
+            Statuswerte = () => Statuswerte,
+            Schalterwerte = () => SchalterWerte
+        };
+    }
+
+    /// <summary>„Speichern" ist der Weg des Knopfes, die Prüfung dieselbe; der Schreibschutz ist der der Zeile.</summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => NurLesen,
+        Schreibschutzgrund = () => Lesemodus ? Resource.KMT_LESEMODUS : Resource.ADM_SCHLOSS_ERST_AUFHEBEN,
+        Pruefen = () => Pruefen?.Invoke(_arbeit.Kopie()) ?? "",
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", Resource.KMT_TITEL));
+        if (NurLesen) return KiErgebnis.Abgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
+        if (!_geaendert) return KiErgebnis.Ok(_arbeit.Code, anzahl: 0);
+        return SpeichernKlick() ? KiErgebnis.Ok(_arbeit.Code, anzahl: 1) : KiErgebnis.Abgelehnt(_meldung);
+    }
+
+    // =====================================================================
+    // Anzeige
+    // =====================================================================
+
+    private static string Zahl(double? wert) => wert?.ToString("0.###", CultureInfo.CurrentCulture) ?? "";
+
+    private static string JaNein(bool? wert) => wert is null ? "" : wert.Value ? Resource.KMT_JA : Resource.KMT_NEIN;
+
+    private static string Lesetext(string text) => string.IsNullOrWhiteSpace(text) ? Resource.KMT_KEINE_ANGABE : text;
+
+    /// <summary>Die Einträge einer Wertemenge: 0 = unbekannt, dann 1 … n.</summary>
+    private static IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<KaeltemittelWahl> menge)
+    {
+        var l = new List<(int, string)> { (0, Resource.KMT_UNBEKANNT) };
+        for (int i = 0; i < menge.Count; i++) l.Add((i + 1, menge[i].Text));
+        return l;
+    }
+
+    private static int Platz(IReadOnlyList<KaeltemittelWahl> menge, string wert)
+    {
+        for (int i = 0; i < menge.Count; i++)
+            if (string.Equals(menge[i].Wert, wert, StringComparison.Ordinal)) return i + 1;
+        return 0;
+    }
+
+    private static string Wert(IReadOnlyList<KaeltemittelWahl> menge, int? platz)
+        => platz is int p && p >= 1 && p <= menge.Count ? menge[p - 1].Wert : "";
+
+    private static string Schalter(bool? wert) => wert is null ? "" : wert.Value ? "1" : "0";
+
+    private static bool? Schalter(string wert) => wert switch { "1" => true, "0" => false, _ => null };
+
+    // =====================================================================
+    // Bedienung
+    // =====================================================================
+
+    private void Feld(Action<KaeltemittelZeile> setzen)
+    {
+        if (NurLesen) return;
+        setzen(_arbeit);
+        _geaendert = true;
+        _meldung = "";
+        _leiste?.Leeren();
+    }
+
+    /// <summary>Eine andere Zeile — ungespeicherte Eingaben an der vorigen verfallen.</summary>
+    private void Waehlen(int id)
+    {
+        KaeltemittelZeile? z = _liste.FirstOrDefault(x => x.Id == id);
+        if (z is null) return;
+        Zeigen(z);
+        _meldung = "";
+    }
+
+    private void Neu()
+    {
+        if (Speichern is null || Lesemodus) return;
+        Zeigen(new KaeltemittelZeile());
+        _meldung = "";
+    }
+
+    private void Zeigen(KaeltemittelZeile z)
+    {
+        _arbeit = z.Kopie();
+        _schlossZeile = z.Id > 0 ? new Katalogfilterzeile(z.Id, z.Code) { Geschuetzt = z.Gesperrt } : null;
+        _geaendert = false;
+        _leiste?.Leeren();
+    }
+
+    private void Nachladen(int auswahl)
+    {
+        if (Neuladen is not null) _liste = new List<KaeltemittelZeile>(Neuladen());
+        KaeltemittelZeile? z = _liste.FirstOrDefault(x => x.Id == auswahl) ?? _liste.FirstOrDefault();
+        Zeigen(z ?? new KaeltemittelZeile());
+    }
+
+    private bool SpeichernKlick()
+    {
+        if (Speichern is null || NurLesen) return false;
+        KaeltemittelZeile k = _arbeit.Kopie();
+        string? grund = Pruefen?.Invoke(k);
+        if (string.IsNullOrEmpty(grund))
+        {
+            KaeltemittelAntwort a = Speichern(k);
+            if (a.Ok)
+            {
+                _geschrieben = true;
+                Nachladen(a.Id);
+                Melden(a.Meldung, WarnStufe.Hinweis);
+                _leiste?.Gespeichert();
+                return true;
+            }
+            grund = a.Meldung;
+        }
+        Melden(grund ?? "", WarnStufe.Warnung);
+        _leiste?.Fehler();
+        return false;
+    }
+
+    private void LoeschenFragen()
+    {
+        if (Loeschen is null || Lesemodus) return;
+        if (LoeschGrund.Length > 0)
+        {
+            Melden(LoeschGrund, WarnStufe.Hinweis);
+            return;
+        }
+        int id = _arbeit.Id;
+        string code = _arbeit.Code;
+        Fragen(Resource.KMT_TITEL, string.Format(CultureInfo.CurrentCulture, Resource.KMT_FRAGE_LOESCHEN, code), () =>
+        {
+            KaeltemittelAntwort a = Loeschen(id);
+            if (!a.Ok)
+            {
+                Melden(a.Meldung, WarnStufe.Warnung);
+                return;
+            }
+            _geschrieben = true;
+            Nachladen(0);
+            Melden(string.Format(CultureInfo.CurrentCulture, Resource.KMT_GELOESCHT, code), WarnStufe.Hinweis);
+        });
+    }
+
+    private void BeiSchlossGeschaltet(string status)
+    {
+        _geschrieben = true;
+        Nachladen(_arbeit.Id);
+        Melden(status ?? "", WarnStufe.Hinweis);
+    }
+
+    private void BeiSchlossAbgelehnt(string grund) => Melden(grund ?? "", WarnStufe.Warnung);
+
+    private void Fragen(string titel, string frage, Action ja)
+    {
+        _frageTitel = titel;
+        _frage = frage;
+        _frageJa = ja;
+    }
+
+    private void FrageBeantwortet(bool? antwort)
+    {
+        Action? ja = _frageJa;
+        _frage = "";
+        _frageJa = null;
+        if (antwort == true) ja?.Invoke();
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    // =====================================================================
+    // Ausgänge
+    // =====================================================================
+
+    private async Task Beenden(bool ok)
+    {
+        if (ok && _geaendert && !SpeichernKlick()) return;   // OK schreibt; scheitert es, bleibt der Dialog offen
+        await Geschlossen.InvokeAsync(_geschrieben);
+    }
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (!string.Equals(e.Key, "Escape", StringComparison.Ordinal)) return;
+        if (_frage.Length > 0)
+        {
+            _frage = "";
+            _frageJa = null;
+            return;
+        }
+        if (_katalogschloss?.FrageOffen == true) return;   // die Frage hält Esc selbst
+        await Beenden(false);
+    }
+}
