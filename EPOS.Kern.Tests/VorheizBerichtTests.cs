@@ -146,7 +146,7 @@ namespace EPOS.Kern.Tests
             }
             Assert.Equal(19, Vorlagenfeldkatalog.Finde("gebaeude.ergebnis.vorheizverfahren").Seit);
             Assert.Equal(19, Vorlagenfeldkatalog.Finde("hat.vorheizen").Seit);
-            Assert.Equal(18, Vorlagenfeldkatalog.Alle.Count(f => f.Schluessel.StartsWith("gebaeude.ergebnis.vorheiz", StringComparison.Ordinal)));
+            Assert.Equal(18, Vorlagenfeldkatalog.Alle.Count(f => f.Seit == 19 && f.Schluessel.StartsWith("gebaeude.ergebnis.vorheiz", StringComparison.Ordinal)));
         }
 
         // =================================================================

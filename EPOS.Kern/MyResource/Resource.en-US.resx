@@ -45797,7 +45797,7 @@ chart</value>
     <value>Energy efficiency ratio at the rating point; greater than zero.</value>
   </data>
   <data name="KI_DLG_KM_KAELTEMITTEL_ERL" xml:space="preserve">
-    <value>Refrigerant as free text.</value>
+    <value>Refrigerant as a choice by the code of the refrigerant table (e.g. R32); an existing text without a table row stays as “not assigned”.</value>
   </data>
   <data name="KI_DLG_KM_RUECKKUEHLART_ERL" xml:space="preserve">
     <value>How the unit rejects its heat: air-cooled, water-cooled, dry cooler or wet cooling tower; heat rejection is part of the machine.</value>
@@ -52272,6 +52272,24 @@ chart</value>
   <data name="KI_DLG_SIM_AUFH_HEIZKREIS_ERL" xml:space="preserve">
     <value>Yes = buildings with an effective heating circuit use the chosen method (default), No = they use the setpoint ramp. Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
   </data>
+  <data name="SIMKONF_AUFH_LBL_SCHNELL" xml:space="preserve">
+    <value>Rapid heat-up (raise heating curve during preheat window)</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_UEBERHOEHUNG" xml:space="preserve">
+    <value>Room setpoint boost (K)</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_SCHNELL" xml:space="preserve">
+    <value>Rapid heat-up raises the room setpoint of the heating curve by the boost during the preheat window so that the flow temperature rises. It only acts on buildings with a heating circuit, ends on arrival (room temperature within the control accuracy of the setpoint) and is limited by the plant's highest flow temperature.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_SCHNELL_ERL" xml:space="preserve">
+    <value>Yes = the heating curve uses the room setpoint raised by the boost during the preheat window (buildings with a heating circuit only, ends on arrival, limited by the plant's highest flow temperature), No = off (default). Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_UEBERHOEHUNG_ERL" xml:space="preserve">
+    <value>Room setpoint boost of rapid heat-up in K, greater than 0 and at most 10; empty = default 2 K. Only with rapid heat-up switched on; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_SCHNELL_AUS" xml:space="preserve">
+    <value>The field “{0}” is only shown on the form with rapid heat-up switched on.</value>
+  </data>
   <data name="KI_DLG_SIM_AUFH_NICHT_VERFAHREN" xml:space="preserve">
     <value>The field “{0}” is not shown on the form for the chosen method.</value>
   </data>
@@ -52887,6 +52905,321 @@ chart</value>
   <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
     <value>The calculation defaults of the draw-off profile could not be saved: {0}</value>
   </data>
+  <data name="KM_ZUL_OHNE_JAHR" xml:space="preserve">
+    <value>Refrigerant admissibility: not checked without a commissioning year</value>
+  </data>
+  <data name="KM_ZUL_OHNE_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerant admissibility: not checked without a refrigerant</value>
+  </data>
+  <data name="KM_ZUL_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>Refrigerant admissibility: not checked</value>
+  </data>
+  <data name="KM_ZUL_ABSORPTION" xml:space="preserve">
+    <value>Refrigerant admissibility: absorption — not checked</value>
+  </data>
+  <data name="KM_ZUL_BESTAND" xml:space="preserve">
+    <value>Refrigerant admissibility: existing installation — Annex IV not applicable</value>
+  </data>
+  <data name="KM_ZUL_ZULAESSIG" xml:space="preserve">
+    <value>Refrigerant admissibility {0}: admissible for the commissioning year {1}</value>
+  </data>
+  <data name="KM_ZUL_WARNUNG" xml:space="preserve">
+    <value>Refrigerant admissibility {0}: warning — under {1} from {2} only remaining stock or exemption ({3}; commissioning year {4})</value>
+  </data>
+  <data name="KM_ZUL_NICHT_PRUEFBAR" xml:space="preserve">
+    <value>Refrigerant admissibility: cannot be checked for the commissioning year {0} — {1}</value>
+  </data>
+  <data name="KM_LESE_GWP" xml:space="preserve">
+    <value>GWP {0}</value>
+  </data>
+  <data name="KM_LESE_FGAS" xml:space="preserve">
+    <value>F-gas</value>
+  </data>
+  <data name="KM_LESE_KEIN_FGAS" xml:space="preserve">
+    <value>no F-gas</value>
+  </data>
+  <data name="KM_LESE_NATUERLICH" xml:space="preserve">
+    <value>natural</value>
+  </data>
+  <data name="KM_LESE_SICHERHEITSGRUPPE" xml:space="preserve">
+    <value>safety group {0}</value>
+  </data>
+  <data name="KM_LESE_PFAS" xml:space="preserve">
+    <value>PFAS</value>
+  </data>
+  <data name="KM_LESE_PFAS_BESTANDTEIL" xml:space="preserve">
+    <value>with PFAS component</value>
+  </data>
+  <data name="KM_LESE_PFAS_KEIN" xml:space="preserve">
+    <value>no PFAS</value>
+  </data>
+  <data name="KM_LESE_STATUS" xml:space="preserve">
+    <value>status {0}</value>
+  </data>
+  <data name="KM_STATUS_GESICHERT" xml:space="preserve">
+    <value>confirmed</value>
+  </data>
+  <data name="KM_STATUS_VORLAEUFIG" xml:space="preserve">
+    <value>provisional</value>
+  </data>
+  <data name="KM_STATUS_PROGNOSE" xml:space="preserve">
+    <value>forecast</value>
+  </data>
+  <data name="KM_STATUS_ABGEKUENDIGT" xml:space="preserve">
+    <value>withdrawn</value>
+  </data>
+  <data name="PKOPF_LBL_INBETRIEBNAHMEJAHR" xml:space="preserve">
+    <value>Commissioning year</value>
+  </data>
+  <data name="PKOPF_INBETRIEBNAHMEJAHR_PLATZHALTER" xml:space="preserve">
+    <value>empty: no admissibility check</value>
+  </data>
+  <data name="PKOPF_INBETRIEBNAHMEJAHR_HILFE" xml:space="preserve">
+    <value>Planned year of commissioning. A year switches on the check of the refrigerants of heat pumps and chillers against the deadlines of the F-gas regulation in the simulation run; the check only gives notices and blocks nothing. Empty: no check.</value>
+  </data>
+  <data name="WZP_JAHR_AUSSERHALB" xml:space="preserve">
+    <value>The commissioning year must lie between {0} and {1}; left empty, the refrigerant admissibility check stays off.</value>
+  </data>
+  <data name="WIZ_JAHR_TITEL" xml:space="preserve">
+    <value>Invalid commissioning year</value>
+  </data>
+  <data name="START_E_KUEHL_KM_STATUS" xml:space="preserve">
+    <value>Refrigerant: {0}</value>
+  </data>
+  <data name="START_E_KUEHL_KM_WARNUNG" xml:space="preserve">
+    <value>{0} with notice</value>
+  </data>
+  <data name="START_E_KUEHL_KM_NICHT_PRUEFBAR" xml:space="preserve">
+    <value>{0} not checkable</value>
+  </data>
+  <data name="KI_DLG_PKOPF_JAHR_ERL" xml:space="preserve">
+    <value>The planned year of commissioning, 2000 to 2100 — empty means no admissibility check of the refrigerants. A year switches on the check against the deadlines of the F-gas regulation in the simulation run; it only gives notices.</value>
+  </data>
+  <data name="KMT_MSG_CODE_UNGUELTIG" xml:space="preserve">
+    <value>The code must not be empty and may have at most {0} characters.</value>
+  </data>
+  <data name="KMT_MSG_TEXT_ZU_LANG" xml:space="preserve">
+    <value>Name and references may have at most {0} characters.</value>
+  </data>
+  <data name="KMT_MSG_GWP_UNGUELTIG" xml:space="preserve">
+    <value>The GWP must be a number of 0 or more.</value>
+  </data>
+  <data name="KMT_MSG_WERTEMENGE" xml:space="preserve">
+    <value>“{0}” is not a permitted value for “{1}”.</value>
+  </data>
+  <data name="KMT_MSG_CODE_BELEGT" xml:space="preserve">
+    <value>The code “{0}” already exists (case is ignored).</value>
+  </data>
+  <data name="KMT_MSG_CODE_VERWENDET" xml:space="preserve">
+    <value>The code “{0}” cannot change: {1} chiller(s) use this refrigerant.</value>
+  </data>
+  <data name="KMT_MSG_VERWENDET" xml:space="preserve">
+    <value>“{0}” is used by {1} chiller(s) and cannot be deleted.</value>
+  </data>
+  <data name="KMT_MSG_SATZ_FEHLT" xml:space="preserve">
+    <value>The refrigerant no longer exists.</value>
+  </data>
+  <data name="KMT_MSG_TABELLE_FEHLT" xml:space="preserve">
+    <value>This database has no refrigerant table.</value>
+  </data>
+  <data name="KMT_SP_CODE" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="KMT_SP_BEZEICHNUNG" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KMT_SP_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="KMT_SP_GWP" xml:space="preserve">
+    <value>GWP</value>
+  </data>
+  <data name="KMT_SP_GWP_QUELLE" xml:space="preserve">
+    <value>GWP reference</value>
+  </data>
+  <data name="KMT_SP_FGAS" xml:space="preserve">
+    <value>F-gas</value>
+  </data>
+  <data name="KMT_SP_NATUERLICH" xml:space="preserve">
+    <value>natural</value>
+  </data>
+  <data name="KMT_SP_SICHERHEIT" xml:space="preserve">
+    <value>Safety class</value>
+  </data>
+  <data name="KMT_SP_PFAS" xml:space="preserve">
+    <value>PFAS</value>
+  </data>
+  <data name="KMT_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="KMT_SP_QUELLE" xml:space="preserve">
+    <value>Reference of the attributes</value>
+  </data>
+  <data name="KMT_SP_SORTIERUNG" xml:space="preserve">
+    <value>Sort order</value>
+  </data>
+  <data name="KMT_GRUPPE_HFKW" xml:space="preserve">
+    <value>HFC</value>
+  </data>
+  <data name="KMT_GRUPPE_HFO" xml:space="preserve">
+    <value>HFO</value>
+  </data>
+  <data name="KMT_GRUPPE_HFCKW" xml:space="preserve">
+    <value>HCFC</value>
+  </data>
+  <data name="KMT_GRUPPE_GEMISCH" xml:space="preserve">
+    <value>Blend</value>
+  </data>
+  <data name="KMT_GRUPPE_NATUERLICH" xml:space="preserve">
+    <value>natural</value>
+  </data>
+  <data name="KMT_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>other</value>
+  </data>
+  <data name="KMT_PFAS_PFAS" xml:space="preserve">
+    <value>PFAS</value>
+  </data>
+  <data name="KMT_PFAS_BESTANDTEIL" xml:space="preserve">
+    <value>contains a PFAS component</value>
+  </data>
+  <data name="KMT_PFAS_KEIN" xml:space="preserve">
+    <value>no PFAS</value>
+  </data>
+  <data name="KMT_STATUS_GESICHERT" xml:space="preserve">
+    <value>verified</value>
+  </data>
+  <data name="KMT_STATUS_VORLAEUFIG" xml:space="preserve">
+    <value>provisional</value>
+  </data>
+  <data name="KMT_STATUS_PROGNOSE" xml:space="preserve">
+    <value>forecast</value>
+  </data>
+  <data name="KMT_STATUS_ABGEKUENDIGT" xml:space="preserve">
+    <value>withdrawn</value>
+  </data>
+  <data name="KMT_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="KMT_NEIN" xml:space="preserve">
+    <value>no</value>
+  </data>
+  <data name="KMT_UNBEKANNT" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="KMT_TITEL" xml:space="preserve">
+    <value>Refrigerants</value>
+  </data>
+  <data name="KMT_MENUE" xml:space="preserve">
+    <value>Refrigerants…</value>
+  </data>
+  <data name="KMT_EINLEITUNG" xml:space="preserve">
+    <value>The refrigerant list of the chillers and heat pumps: GWP with its reference, attributes under the F-gas regulation, safety class and PFAS status. Supplied rows are locked; your own rows can be added, changed and deleted as long as no chiller uses them.</value>
+  </data>
+  <data name="KMT_NEU" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="KMT_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="KMT_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="KMT_SATZ_NEU" xml:space="preserve">
+    <value>New refrigerant</value>
+  </data>
+  <data name="KMT_VERWENDUNG" xml:space="preserve">
+    <value>Used by {0} chiller(s) — the code is fixed and the row cannot be deleted.</value>
+  </data>
+  <data name="KMT_UNBENUTZT" xml:space="preserve">
+    <value>Not used by any chiller.</value>
+  </data>
+  <data name="KMT_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete refrigerant “{0}”?</value>
+  </data>
+  <data name="KMT_LEER" xml:space="preserve">
+    <value>The refrigerant table is empty.</value>
+  </data>
+  <data name="KMT_GELOESCHT" xml:space="preserve">
+    <value>“{0}” has been deleted.</value>
+  </data>
+  <data name="KMT_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>The refrigerants are not yet available on this device.</value>
+  </data>
+  <data name="KMT_FUNDSTELLEN" xml:space="preserve">
+    <value>References</value>
+  </data>
+  <data name="KMT_KEINE_ANGABE" xml:space="preserve">
+    <value>not stated</value>
+  </data>
+  <data name="KMT_LESEMODUS" xml:space="preserve">
+    <value>The database is read-only — the refrigerants cannot be changed.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KMT" xml:space="preserve">
+    <value>Refrigerants</value>
+  </data>
+  <data name="KI_KMT_ERL_SATZ" xml:space="preserve">
+    <value>Selects the row of the refrigerant table, like a click in the list.</value>
+  </data>
+  <data name="KI_KMT_ERL_CODE" xml:space="preserve">
+    <value>Designation according to ISO 817 including the isomer, unique regardless of case; fixed for a row in use.</value>
+  </data>
+  <data name="KI_KMT_ERL_BEZEICHNUNG" xml:space="preserve">
+    <value>Substance or blend name, neutral, no trade name.</value>
+  </data>
+  <data name="KI_KMT_ERL_GRUPPE" xml:space="preserve">
+    <value>Substance group of the row; empty means unknown.</value>
+  </data>
+  <data name="KI_KMT_ERL_GWP" xml:space="preserve">
+    <value>Global warming potential over 100 years; empty means unknown.</value>
+  </data>
+  <data name="KI_KMT_ERL_GWP_QUELLE" xml:space="preserve">
+    <value>Reference of the GWP value in the regulation (annex, section, page, assessment report).</value>
+  </data>
+  <data name="KI_KMT_ERL_FGAS" xml:space="preserve">
+    <value>Fluorinated greenhouse gas under the F-gas regulation: yes, no or unknown.</value>
+  </data>
+  <data name="KI_KMT_ERL_NATUERLICH" xml:space="preserve">
+    <value>Natural refrigerant: yes, no or unknown.</value>
+  </data>
+  <data name="KI_KMT_ERL_SICHERHEIT" xml:space="preserve">
+    <value>Safety class according to ISO 817 / EN 378-1 (display only).</value>
+  </data>
+  <data name="KI_KMT_ERL_PFAS" xml:space="preserve">
+    <value>PFAS status: substance is PFAS, contains a PFAS component or no PFAS.</value>
+  </data>
+  <data name="KI_KMT_ERL_STATUS" xml:space="preserve">
+    <value>Evidence status of the row; empty becomes “provisional” on saving.</value>
+  </data>
+  <data name="KI_KMT_ERL_QUELLE" xml:space="preserve">
+    <value>Reference of the other attributes (F-gas, mass fractions, PFAS derivation).</value>
+  </data>
+  <data name="KI_KMT_ERL_SORTIERUNG" xml:space="preserve">
+    <value>Order in the drop-down list; empty sorts by code.</value>
+  </data>
+  <data name="KM_KMT_KEINS" xml:space="preserve">
+    <value>— no refrigerant —</value>
+  </data>
+  <data name="KM_KMT_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>not assigned: {0}</value>
+  </data>
+  <data name="KM_KMT_GWP_TABELLE" xml:space="preserve">
+    <value>GWP {0} — from the refrigerant table</value>
+  </data>
+  <data name="KM_KMT_GWP_GERAET" xml:space="preserve">
+    <value>GWP {0} — device value</value>
+  </data>
+  <data name="KM_KMT_GWP_ABWEICHUNG" xml:space="preserve">
+    <value>The device GWP {0} differs from the table value {1}; the admissibility check uses the table value.</value>
+  </data>
+  <data name="KM_KMT_OHNE_ZUORDNUNG" xml:space="preserve">
+    <value>The refrigerant is not in the refrigerant table; the check uses the device GWP.</value>
+  </data>
+  <data name="KM_KMT_GWP_UEBERNEHMEN" xml:space="preserve">
+    <value>Take GWP from refrigerant</value>
+  </data>
+  <data name="KM_KMT_GWP_UEBERNEHMEN_TIP" xml:space="preserve">
+    <value>Sets the device GWP to the value of the refrigerant table.</value>
+  </data>
   <!-- Administration und Support, Stufe 2 (Welle 2a) -->
   <data name="MENU_FERNWARTUNG" xml:space="preserve">
     <value>Remote support…</value>
@@ -53085,6 +53418,63 @@ chart</value>
   </data>
   <data name="SUP_PAKET_DATEIFILTER" xml:space="preserve">
     <value>ZIP archive (*.zip)|*.zip</value>
+  </data>
+  <data name="BV_VORH_SA_UEBERHOEHUNG" xml:space="preserve">
+    <value>Rapid heat-up: setpoint boost Δθ</value>
+  </data>
+  <data name="BV_VORH_SA_STUNDEN" xml:space="preserve">
+    <value>Hours with setpoint boost</value>
+  </data>
+  <data name="BV_VORH_SA_VORLAUF_MAX" xml:space="preserve">
+    <value>Highest flow temperature with boost</value>
+  </data>
+  <data name="BV_VORH_SA_VORLAUFGRENZE" xml:space="preserve">
+    <value>Hours at the flow temperature limit</value>
+  </data>
+  <data name="BV_VORH_SA_WIRKUNGSLOS" xml:space="preserve">
+    <value>Hours with ineffective boost</value>
+  </data>
+  <data name="BV_VORH_SA_SPERRZEIT" xml:space="preserve">
+    <value>Hours with boost in a blocking period</value>
+  </data>
+  <data name="BV_VORH_SA_HALBSATZ" xml:space="preserve">
+    <value>, with rapid heat-up (+{0} K)</value>
+  </data>
+  <data name="BV_VORH_KOPF_UEBERHOEHUNG" xml:space="preserve">
+    <value>Δθ [K]</value>
+  </data>
+  <data name="BV_VORH_KOPF_UEBERHOEHUNG_H" xml:space="preserve">
+    <value>Boost hours [h/a]</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG" xml:space="preserve">
+    <value>Effective room setpoint boost Δθ of the rapid heat-up of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_STUNDEN" xml:space="preserve">
+    <value>Hours with setpoint boost of the rapid heat-up of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_VORLAUF_MAX" xml:space="preserve">
+    <value>Highest flow temperature in the hours with boost of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_VORLAUFGRENZE_STUNDEN" xml:space="preserve">
+    <value>Hours in which the flow temperature limit capped the boost of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_WIRKUNGSLOS" xml:space="preserve">
+    <value>Hours with ineffective boost (flow temperature already at the limit) of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_SPERRZEIT" xml:space="preserve">
+    <value>Preheat hours with boost in a blocking period of the current building; empty without effect.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SCHNELLAUFHEIZUNG" xml:space="preserve">
+    <value>Half sentence “, with rapid heat-up (+2.0 K)” of the current building with leading comma; empty without effect.</value>
+  </data>
+  <data name="VF_HAT__SCHNELLAUFHEIZUNG" xml:space="preserve">
+    <value>Data switch: Has a building of the state (or of any state) been calculated with effective rapid heat-up?</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_SCHNELLAUF" xml:space="preserve">
+    <value>Rapid heat-up</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_UEBERHOEHUNG" xml:space="preserve">
+    <value>Setpoint boost Δθ</value>
   </data>
 </root>
 

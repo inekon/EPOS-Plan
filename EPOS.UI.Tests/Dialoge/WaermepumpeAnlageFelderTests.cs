@@ -2288,6 +2288,62 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
         lock (vermerke) Assert.Empty(vermerke);
     }
 
+    // =====================================================================================
+    // KM4-E3-b: die Lesezeile „Zulässigkeit“ des Kältemittels (Konzept 5.2, 7.3)
+    // =====================================================================================
+
+    [Fact]
+    public void Die_Zulaessigkeitszeile_steht_zum_Kaeltemittel_der_Wahl()
+    {
+        WaermepumpeAnlageDaten d = Voll();
+        d.Kaeltemittel = "R410A";
+        var gefragt = new List<string?>();
+        d.ZulaessigkeitRechnen = code =>
+        {
+            gefragt.Add(code);
+            return code == "R410A"
+                ? "Zulässigkeit des Kältemittels R410A: Warnung — nach Anhang IV Nr. 1 ab 2027 nur Restbestand oder Ausnahme (F-Gas mit GWP ≥ 150; Inbetriebnahmejahr 2028)"
+                : "Zulässigkeit des Kältemittels R290: zulässig für das Inbetriebnahmejahr 2028";
+        };
+        var cut = Aufbauen(d);
+
+        Assert.StartsWith("Zulässigkeit des Kältemittels R410A: Warnung", cut.Instance.Zulaessigkeitszeile);
+        Assert.Contains("ab 2027 nur Restbestand oder Ausnahme", cut.Markup);
+        Assert.Contains("R410A", gefragt);
+    }
+
+    [Fact]
+    public void Ohne_Gabe_steht_keine_Zulaessigkeitszeile_und_ein_Wurf_bringt_den_Dialog_nicht_zu_Fall()
+    {
+        WaermepumpeAnlageDaten d = Voll();
+        var cut = Aufbauen(d);
+        Assert.Null(cut.Instance.Zulaessigkeitszeile);
+        Assert.DoesNotContain("Zulässigkeit des Kältemittels", cut.Markup);
+
+        WaermepumpeAnlageDaten d2 = Voll();
+        d2.ZulaessigkeitRechnen = _ => throw new InvalidOperationException("Datenbank weg");
+        var cut2 = Aufbauen(d2);
+        Assert.Null(cut2.Instance.Zulaessigkeitszeile);
+    }
+
+    [Fact]
+    public void Ohne_Inbetriebnahmejahr_nennt_die_Zeile_dass_nicht_geprueft_wird()
+    {
+        WaermepumpeAnlageDaten d = Voll();
+        d.ZulaessigkeitRechnen = _ => WindowsFormsApplication1.MyResource.Resource.KM_ZUL_OHNE_JAHR;
+        var cut = Aufbauen(d);
+        Assert.Contains("ohne Inbetriebnahmejahr nicht geprüft", cut.Markup);
+    }
+
+    [Fact]
+    public void Die_Kopie_traegt_die_Gabe_der_Zulaessigkeitszeile()
+    {
+        WaermepumpeAnlageDaten d = Voll();
+        Func<string?, string> f = _ => "x";
+        d.ZulaessigkeitRechnen = f;
+        Assert.Same(f, d.Kopie().ZulaessigkeitRechnen);
+    }
+
     // =================================================================================
     // KT-8a: Kosten-Rückrufe, Projektkopie und Vergleich über die Fangstelle
     // =================================================================================

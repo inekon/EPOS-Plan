@@ -43,6 +43,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Vorheizgrößen der Aufheizoptimierung Fassung 2 (AH-V6, Katalog v19).</summary>
         internal const int FASSUNG_VORHEIZEN = 19;
 
+        /// <summary>Die Fassung der Schnellaufheizung (SA3b, Schritt 217, Katalog v21).</summary>
+        internal const int FASSUNG_SCHNELLAUFHEIZUNG = 21;
+
         /// <summary>Musterschlüssel der Kennzahlen des laufenden Stands.</summary>
         public const string MUSTER_STAND_KENNZAHL = "stand.kennzahl.<k>";
 
@@ -662,6 +665,33 @@ namespace WindowsFormsApplication1
                 Zahl("vorheiz_tage_unerreichbar", v => v.UnerreichbarTage, "N0", null),
                 Zahl("vorheiz_tage_sperrzeit", v => v.SperrzeitTage, "N0", null),
                 Zahl("vorheiz_mehrwaerme", v => v.MehrwaermeMwh, "N2", "MWh/a"),
+            }.Concat(Schnellaufwerte());
+        }
+
+        /// <summary>
+        /// <b>Katalog v21 (SA3b, Schritt 217):</b> die Schnellaufheizung des laufenden Gebäudes — dieselben Zahlen wie die Zeilen
+        /// der Gebäudetafel (<see cref="Aufheizbericht.Schnellaufzeilen"/>) und der Halbsatz des Kurzberichts. Ohne Wirkung der
+        /// Überhöhung sind alle leer.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Schnellaufwerte()
+        {
+            const Vorlagenfeldkontext GB = Vorlagenfeldkontext.Gebaeude;
+            Vorlagenfeld Zahl(string rest, Func<Vorheizkennzahlen, object> wert, string format, string einheit) =>
+                new Vorlagenfeld("gebaeude.ergebnis." + rest, Vorlagenfeldart.Zahl, GB,
+                                 w => MitGebaeudeergebnis(w, true, e => e.Vorheizen?.UeberhoehungK == null ? null : wert(e.Vorheizen)))
+                { Seit = FASSUNG_SCHNELLAUFHEIZUNG, Format = format, Einheit = einheit };
+
+            return new[]
+            {
+                Zahl("vorheiz_ueberhoehung", v => v.UeberhoehungK, "N1", "K"),
+                Zahl("vorheiz_ueberhoehung_stunden", v => v.UeberhoehungH, "N0", "h/a"),
+                Zahl("vorheiz_ueberhoehung_vorlauf_max", v => v.UeberhoehungVorlaufMaxC, "N1", "°C"),
+                Zahl("vorheiz_vorlaufgrenze_stunden", v => v.VorlaufgrenzeH, "N0", "h/a"),
+                Zahl("vorheiz_ueberhoehung_wirkungslos", v => v.UeberhoehungWirkungslosH, "N0", "h/a"),
+                Zahl("vorheiz_ueberhoehung_sperrzeit", v => v.UeberhoehungSperrzeitH, "N0", "h/a"),
+                new Vorlagenfeld("gebaeude.ergebnis.vorheiz_schnellaufheizung", Vorlagenfeldart.Text, GB,
+                    w => MitGebaeudeergebnis(w, true, e => Leer(Aufheizbericht.Schnellaufhalbsatz(e.Vorheizen, w.Kultur))))
+                { Seit = FASSUNG_SCHNELLAUFHEIZUNG, Leerwert = "" },
             };
         }
 
@@ -694,6 +724,9 @@ namespace WindowsFormsApplication1
                 // Katalog v19 (AH-V6): ein Gebäude des Stands hat mit Vorheizen nach Fassung 2 gerechnet.
                 new Vorlagenfeld("hat.vorheizen", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatVorheizen))
                     { Seit = FASSUNG_VORHEIZEN },
+                // Katalog v21 (SA3b): ein Gebäude des Stands hat mit wirksamer Schnellaufheizung gerechnet.
+                new Vorlagenfeld("hat.schnellaufheizung", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatSchnellaufheizung))
+                    { Seit = FASSUNG_SCHNELLAUFHEIZUNG },
             };
         }
 

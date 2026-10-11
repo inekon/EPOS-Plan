@@ -417,7 +417,8 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         var k = new Katalog();
         var cut = MitKopie(k);
 
-        IElement auswahl = Stammblatt(cut).QuerySelector("select")!;
+        // KM4-E3-a: Die erste Klappliste ist jetzt das Kaeltemittel - die Rueckkuehlart wird ueber ihren Text gefunden.
+        IElement auswahl = Stammblatt(cut).QuerySelectorAll("select").First(s => s.TextContent.Contains(R.KM_RUECKKUEHLART_NASSKUEHLER, StringComparison.Ordinal));
         Assert.Contains(R.KM_RUECKKUEHLART_NASSKUEHLER, auswahl.TextContent);
         Assert.DoesNotContain(auswahl.QuerySelectorAll("option"),
                               o => KaeltemaschineSchema.RUECKKUEHLARTEN.Contains(o.GetAttribute("value") ?? ""));
@@ -714,7 +715,7 @@ public sealed class KaeltemaschineKatalogDialogEnglischTests : EposBunitContext
 
         cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim().StartsWith("Duplicate", StringComparison.Ordinal)).Click();
         cut.Find(".epos-ueberlagerung").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
-        IElement auswahl = cut.Find(".epos-stammblatt select");
+        IElement auswahl = cut.FindAll(".epos-stammblatt select").First(s => s.TextContent.Contains("Wet cooling tower", StringComparison.Ordinal));
         Assert.Contains("Wet cooling tower", auswahl.TextContent);
         auswahl.Change("3");
         cut.FindAll("button").First(b => b.TextContent.Trim() == R.ADM_BTN_SPEICHERN).Click();

@@ -92,4 +92,14 @@ public sealed class ProjektKopfKiSicht
         get => Kopf?.Invoke()?.Beschreibung ?? "";
         set { if (Kopf?.Invoke() is ProjektKopfDaten k) k.Beschreibung = value ?? ""; }
     }
+
+    /// <summary>
+    /// KM4-E3-b: das Inbetriebnahmejahr; <c>null</c> = leer (keine Zulässigkeitsprüfung). Ein Wert außerhalb 2000 bis
+    /// 2100 steht wie von Hand im Kopf und wird von der Kopfregel benannt gemeldet, nie gekappt.
+    /// </summary>
+    public int? Inbetriebnahmejahr
+    {
+        get => Kopf?.Invoke()?.Inbetriebnahmejahr;
+        set { if (Kopf?.Invoke() is ProjektKopfDaten k) k.Inbetriebnahmejahr = value; }
+    }
 }

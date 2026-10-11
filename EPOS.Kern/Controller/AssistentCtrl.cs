@@ -26,6 +26,9 @@ namespace WindowsFormsApplication1
         /// <summary>Pflichtprüfung: kein Projektname eingegeben.</summary>
         ProjektnameFehlt,
 
+        /// <summary>Pflichtprüfung: Das Inbetriebnahmejahr liegt nicht in 2000 bis 2100 (KM4-E3-b); nichts geschrieben.</summary>
+        InbetriebnahmejahrAusserhalb,
+
         /// <summary>Ein Schreibschritt ist fehlgeschlagen; <c>Schritt</c> nennt ihn.</summary>
         Fehlgeschlagen,
 
@@ -328,7 +331,8 @@ namespace WindowsFormsApplication1
                 k.Erstelldatum.ToString("O", CultureInfo.InvariantCulture),
                 k.Aenderungsdatum.ToString("O", CultureInfo.InvariantCulture),
                 k.IdKlimaregion.ToString(CultureInfo.InvariantCulture),
-                k.Klimaname ?? ""
+                k.Klimaname ?? "",
+                k.Inbetriebnahmejahr?.ToString(CultureInfo.InvariantCulture) ?? "-"
             });
         }
 
@@ -838,6 +842,10 @@ namespace WindowsFormsApplication1
             if (ctrl.Projektname == "")
                 return new AssistentErgebnis(AssistentAusgang.ProjektnameFehlt, "");
 
+            // KM4-E3-b: ein Jahr ausserhalb des CHECK-Bereichs wird benannt abgelehnt, nie gekappt.
+            if (!ProjektKopfRegeln.JahrGueltig(Kopf[0].Inbetriebnahmejahr))
+                return new AssistentErgebnis(AssistentAusgang.InbetriebnahmejahrAusserhalb, "");
+
             // #497: Der Bearbeiten-Zweig schreibt die Listen als Stand DES Projekts, fuer
             // das sie geladen wurden. Gehoeren sie einem anderen (Projektwechsel ohne
             // neues Laden) oder keinem, wird BENANNT abgelehnt - nichts geschrieben,
@@ -932,6 +940,9 @@ namespace WindowsFormsApplication1
             if (!ctrl.Add_Projekt(ref id, Projekt, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt");
             ProjektId = id;
+
+            if (!InbetriebnahmejahrSchreiben(vorgang, false))
+                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Inbetriebnahmejahr");
 
             if (!ctrl.Add_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_ZuordungGebaeude");
@@ -1116,6 +1127,10 @@ namespace WindowsFormsApplication1
                     return Fehler("Update_Projekt");
             }
 
+            // KM4-E3-b: das Inbetriebnahmejahr nur, wenn es sich vom gespeicherten unterscheidet.
+            if (!InbetriebnahmejahrSchreiben(vorgang, true))
+                return Fehler("Inbetriebnahmejahr");
+
             Gespeichert = true;
             return new AssistentErgebnis(AssistentAusgang.Gespeichert, "");
         }
@@ -1129,6 +1144,21 @@ namespace WindowsFormsApplication1
             if (_gewerkStand == null) return true;
             return !string.Equals(_gewerkStand[(int)gewerk], AssistentAbgleich.Abdruck(this, gewerk),
                                   StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Schreibt das Inbetriebnahmejahr des Kopfs in den Projektsatz (KM4-E3-b, <see cref="ProjektCtrl.InbetriebnahmejahrSetzen"/>)
+        /// im Vorgang des Laufs; mit <paramref name="nurGeaendert"/> nur, wenn es vom gespeicherten abweicht.
+        /// </summary>
+        private bool InbetriebnahmejahrSchreiben(DbVorgang vorgang, bool nurGeaendert)
+        {
+            int? jahr = Kopf[0].Inbetriebnahmejahr;
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                if (nurGeaendert && ProjektCtrl.Inbetriebnahmejahr(ProjektId) == jahr) return true;
+                if (!jahr.HasValue && !nurGeaendert) return true;   // ein neues Projekt steht ohnehin leer
+                return ProjektCtrl.InbetriebnahmejahrSetzen(ProjektId, jahr);
+            }
         }
 
         private static AssistentErgebnis Fehler(string schritt)
@@ -1159,6 +1189,11 @@ namespace WindowsFormsApplication1
                     return Text("WIZ_KLIMA_FEHLT", "Bitte eine Klimazone auswählen!");
                 case AssistentAusgang.ProjektnameFehlt:
                     return Text("WIZ_NAME_FEHLT", "Bitte einen Projektnamen eingeben!");
+                case AssistentAusgang.InbetriebnahmejahrAusserhalb:
+                    return string.Format(CultureInfo.CurrentCulture,
+                        Text("WZP_JAHR_AUSSERHALB",
+                             "Das Inbetriebnahmejahr muss zwischen {0} und {1} liegen; leer bleibt die Zulässigkeitsprüfung der Kältemittel aus."),
+                        KaeltemittelSchema.INBETRIEBNAHMEJAHR_MIN, KaeltemittelSchema.INBETRIEBNAHMEJAHR_MAX);
                 case AssistentAusgang.Fehlgeschlagen:
                     return string.Format(
                         Text("WIZ_SPEICHERN_FEHLER",
@@ -1188,6 +1223,8 @@ namespace WindowsFormsApplication1
                     return Text("WIZ_KLIMA_FEHLT_TITEL", "Klimazone fehlt");
                 case AssistentAusgang.ProjektnameFehlt:
                     return Text("WIZ_NAME_FEHLT_TITEL", "Projektname fehlt");
+                case AssistentAusgang.InbetriebnahmejahrAusserhalb:
+                    return Text("WIZ_JAHR_TITEL", "Inbetriebnahmejahr ungültig");
                 case AssistentAusgang.Fehlgeschlagen:
                     return Text("WIZ_SPEICHERN_FEHLER_TITEL", "Speichern fehlgeschlagen");
                 case AssistentAusgang.ProjektGewechselt:

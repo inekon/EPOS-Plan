@@ -224,6 +224,13 @@ public sealed class KiMaskenabdeckungWacheTests
         new("NutzungsdauerDialog", 12),
         // ---- Ende ETAPPE E10 ----
 
+        // ---- KM4-E3-c (Verwaltung „Kältemittel") ----
+        // Der Satzbereich: Code, Bezeichnung und die zwei Fundstellen (Textfeld, die Fundstellen nur an einer
+        // Anwenderzeile), Gruppe, F-Gas, natürlich, Sicherheitsgruppe, PFAS-Status und Status (Auswahlfeld), GWP und
+        // Sortierung (Zahlenfeld). Die Feldkarte (KiDialoge, Maske Kaeltemittel) führt alle zwölf, dazu die Satzwahl.
+        new("KaeltemittelDialog", 12),
+        // ---- Ende KM4-E3-c ----
+
         // ---- ETAPPE E17 (V-G11, nicht monetarisierbare Wirkungen) ----
         // Der Freitext der Seite (ein mehrzeiliges Textfeld) weicht der Liste im Baustein
         // WirkungenListe: je Zeile Kategorie, Beschreibung, Dauer und drei Wirkungsgrade -
@@ -476,7 +483,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // sie und meldet sie als BerichtSeiteKiSicht.Katalogsuche an; das Feld „Schreibweise"
         // ist nur lesbar und zählt nicht.
         new("PlatzhalterkatalogDialog", 1, "die Katalogsuche steht über den Wirt als BerichtSeiteKiSicht.Katalogsuche bereit - das Katalogfeld katalogsuche der Maske Berichtsseite"),
-        new("ProjektKopfSeite", 5),
+        new("ProjektKopfSeite", 6),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
         // Pufferspeicher-Auslegung (Stufe P2): dreizehn Felder im Katalog Form_PufferAuslegung (Klassen,
@@ -507,7 +514,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // AH-V5 (Entwurf Vorheizrampe 2.9): das Vorheizen - Verfahren, Vorheizzeit, Toleranz (Art und Wert),
         // Regelgenauigkeit (Auswahl und Eingabefeld, beide aufheiz_genauigkeit), Geltung und Heizkreis-Schalter; die
         // Leistungsreserve steht je Verfahrenszweig einmal im Markup (aufheiz_reserve) (26 → 35).
-        new("SimulationKonfigSeite", 35),
+        // SA3a (E128): die Schnellaufheizung - Schalter und Raumsollwert-Überhöhung, Katalogfelder aufheiz_schnell und
+        // aufheiz_ueberhoehung (35 → 37).
+        new("SimulationKonfigSeite", 37),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

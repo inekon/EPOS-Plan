@@ -219,6 +219,13 @@ namespace WindowsFormsApplication1
         public const string KAELTEMASCHINE_KATALOG = "KaeltemaschineKatalog";
 
         /// <summary>
+        /// Die Verwaltung „Kältemittel" (<c>KaeltemittelDialog</c>, KM4-E3-c) — eine neue Maske ohne
+        /// WinForms-Vorlaeufer und deshalb ohne <c>Form_</c>-Vorsilbe; zugleich die Vorsilbe ihres
+        /// Hilfeschluessels.
+        /// </summary>
+        public const string KAELTEMITTEL = "Kaeltemittel";
+
+        /// <summary>
         /// Der Erzeugerdialog „Kältemaschinen im Projekt" (<c>KaeltemaschineAnlageDialog</c>, KU3-4c) — eine neue
         /// Maske ohne WinForms-Vorlaeufer und deshalb ohne <c>Form_</c>-Vorsilbe; zugleich die Vorsilbe ihres
         /// Hilfeschluessels.
@@ -879,6 +886,7 @@ namespace WindowsFormsApplication1
                 Gebaeudetyp(),
                 BaustoffKatalog(),
                 KaeltemaschineKatalog(),
+                Kaeltemittel(),
                 KaeltemaschineAnlage(),
                 Bauteilaufbau(),
                 Zone(),
@@ -5579,6 +5587,53 @@ namespace WindowsFormsApplication1
         /// Punkte anlegen und entfernen bleiben Klicks des Anwenders. Geschrieben wird mit „Speichern",
         /// dieselbe Prüfung wie am Knopf (<c>KaeltemaschineStammCtrl.Pruefen</c>).
         /// </remarks>
+        /// <summary>
+        /// Die Verwaltung „Kältemittel" (KM4-E3-c, Fachkonzept Kältemittel 7.6) — die Satzwahl und die zwölf Felder
+        /// des Satzbereichs aus <c>EPOS.UI.Dialoge.Admin.KaeltemittelKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Gruppe, F-Gas, natürlich, Sicherheitsgruppe, PFAS-Status und Status sind WAHLEN über den Persistenzwert
+        /// (<c>DbWerte.KAELTEMITTEL_*</c>, bei den Schaltern „1"/„0") — nie über den Anzeigetext. Eine
+        /// Auslieferungszeile ist schreibgeschützt; Anlegen, Löschen und das Schloss bleiben Klicks des Anwenders.
+        /// Geschrieben wird mit „Speichern", dieselbe Prüfung wie am Knopf (<c>KaeltemittelCtrl.Pruefen</c>).
+        /// </remarks>
+        private static KiDialog Kaeltemittel()
+        {
+            const string SICHT = "KaeltemittelKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.KAELTEMITTEL,
+                anzeigename: KiDialogTexte.MaskeKaeltemittel,
+                felder: new[]
+                {
+                    new KiDialogFeld("kaeltemittel", SICHT + "Kaeltemittel", KiDialogTexte.KmtSatzName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmtSatzErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("code", SICHT + "Code", KiDialogTexte.KmtCodeName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmtCodeErl),
+                    new KiDialogFeld("bezeichnung", SICHT + "Bezeichnung", KiDialogTexte.KmtBezeichnungName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmtBezeichnungErl, leerErlaubt: true),
+                    new KiDialogFeld("gruppe", SICHT + "Gruppe", KiDialogTexte.KmtGruppeName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmtGruppeErl, leerErlaubt: true),
+                    new KiDialogFeld("gwp", SICHT + "Gwp", KiDialogTexte.KmtGwpName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.KmtGwpErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("gwp_quelle", SICHT + "GwpQuelle", KiDialogTexte.KmtGwpQuelleName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmtGwpQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("f_gas", SICHT + "FGas", KiDialogTexte.KmtFGasName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmtFGasErl, leerErlaubt: true),
+                    new KiDialogFeld("natuerlich", SICHT + "Natuerlich", KiDialogTexte.KmtNatuerlichName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmtNatuerlichErl, leerErlaubt: true),
+                    new KiDialogFeld("sicherheitsgruppe", SICHT + "Sicherheitsgruppe", KiDialogTexte.KmtSicherheitName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmtSicherheitErl, leerErlaubt: true),
+                    new KiDialogFeld("pfas_status", SICHT + "Pfas", KiDialogTexte.KmtPfasName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmtPfasErl, leerErlaubt: true),
+                    new KiDialogFeld("status", SICHT + "Status", KiDialogTexte.KmtStatusName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmtStatusErl, leerErlaubt: true),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.KmtQuelleName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmtQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("sortierung", SICHT + "Sortierung", KiDialogTexte.KmtSortierungName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.KmtSortierungErl, leerErlaubt: true),
+                });
+        }
+
         private static KiDialog KaeltemaschineKatalog()
         {
             const string SICHT = "KaeltemaschineKatalogKiSicht.";
@@ -5606,7 +5661,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("nenn_eer", SICHT + "NennEer", KiDialogTexte.KmNennEerName,
                                      KiParameterTyp.Zahl, KiDialogTexte.KmNennEerErl, leerErlaubt: true, min: 0),
                     new KiDialogFeld("kaeltemittel", SICHT + "Kaeltemittel", KiDialogTexte.KmKaeltemittelName,
-                                     KiParameterTyp.Text, KiDialogTexte.KmKaeltemittelErl, leerErlaubt: true),
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmKaeltemittelErl, leerErlaubt: true),
                     new KiDialogFeld("rueckkuehlart", SICHT + "Rueckkuehlart", KiDialogTexte.KmRueckkuehlartName,
                                      KiParameterTyp.Wahl, KiDialogTexte.KmRueckkuehlartErl, leerErlaubt: true),
                     new KiDialogFeld("mindestteillast", SICHT + "Mindestteillast", KiDialogTexte.KmMindestteillastName,
@@ -9517,6 +9572,15 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("aufheiz_heizkreis", "SimulationKiSicht.AufheizHeizkreis",
                                      KiDialogTexte.SimAufheizHeizkreisName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SimAufheizHeizkreisErl),
+                    // Die Schnellaufheizung (SA3a, E128): Schalter bei „Vorgabe" oder „Berechnet", die Ueberhoehung
+                    // nur bei Schalter an - sonst lehnt die Sicht benannt ab.
+                    new KiDialogFeld("aufheiz_schnell", "SimulationKiSicht.AufheizSchnell",
+                                     KiDialogTexte.SimAufheizSchnellName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimAufheizSchnellErl),
+                    new KiDialogFeld("aufheiz_ueberhoehung", "SimulationKiSicht.AufheizUeberhoehungK",
+                                     KiDialogTexte.SimAufheizUeberhoehungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizUeberhoehungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true, min: 0, max: 10),
 
                     // ---- Die Einspeisegrenze (Welle M5, PV3) ------------------------------------
                     //
@@ -10405,7 +10469,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Projektkopf des Assistenten „Neues Projekt" — fuenf Felder aus
+        /// Der Projektkopf des Assistenten „Neues Projekt" — sechs Felder aus
         /// <c>EPOS.UI.Seiten.Assistent.ProjektKopfKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -10447,7 +10511,12 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PkopfBearbeiterErl, leerErlaubt: true),
                     new KiDialogFeld("beschreibung", "ProjektKopfKiSicht.Beschreibung",
                                      KiDialogTexte.PkopfBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.PkopfBeschreibungErl, leerErlaubt: true)
+                                     KiDialogTexte.PkopfBeschreibungErl, leerErlaubt: true),
+                    // KM4-E3-b: das Inbetriebnahmejahr (leer = keine Zulaessigkeitspruefung der Kaeltemittel).
+                    new KiDialogFeld("inbetriebnahmejahr", "ProjektKopfKiSicht.Inbetriebnahmejahr",
+                                     KiDialogTexte.PkopfJahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PkopfJahrErl, leerErlaubt: true,
+                                     min: KaeltemittelSchema.INBETRIEBNAHMEJAHR_MIN, max: KaeltemittelSchema.INBETRIEBNAHMEJAHR_MAX)
                 },
                 knoepfe: new[]
                 {

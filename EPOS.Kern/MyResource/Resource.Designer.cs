@@ -223,6 +223,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellaufheizung ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_SCHNELLAUF {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_SCHNELLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorheiztoleranz ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_VORH_TOLERANZ {
@@ -237,6 +246,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ABW_MERKMAL_VORH_TOLERANZ_ART {
             get {
                 return ResourceManager.GetString("ABW_MERKMAL_VORH_TOLERANZ_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überhöhung Δθ ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_UEBERHOEHUNG", resourceCulture);
             }
         }
         
@@ -17375,6 +17393,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δθ [K] ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_UEBERHOEHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Std. überhöht [h/a] ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_UEBERHOEHUNG_H {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_UEBERHOEHUNG_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unterschreitung max. [K] ähnelt.
         /// </summary>
         public static string BV_VORH_KOPF_UNTERSCHREITUNG {
@@ -17425,6 +17461,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VORH_NAECHTE {
             get {
                 return ResourceManager.GetString("BV_VORH_NAECHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , mit Schnellaufheizung (+{0} K) ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_HALBSATZ {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_HALBSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Überhöhung in einer Sperrzeit ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Überhöhung ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_STUNDEN {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellaufheizung: Überhöhung Δθ ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_UEBERHOEHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden an der Vorlaufgrenze ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_VORLAUFGRENZE {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_VORLAUFGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Vorlauf mit Überhöhung ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_VORLAUF_MAX {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_VORLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit wirkungsloser Überhöhung ähnelt.
+        /// </summary>
+        public static string BV_VORH_SA_WIRKUNGSLOS {
+            get {
+                return ResourceManager.GetString("BV_VORH_SA_WIRKUNGSLOS", resourceCulture);
             }
         }
         
@@ -62174,7 +62273,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel als Freitext. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel als Wahl über den Code der Kältemitteltabelle (z. B. R32); ein Bestandstext ohne Tabellenzeile bleibt als „nicht zugeordnet“ stehen. ähnelt.
         /// </summary>
         public static string KI_DLG_KM_KAELTEMITTEL_ERL {
             get {
@@ -63250,6 +63349,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_KMA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_KMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KMT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KMT", resourceCulture);
             }
         }
         
@@ -64582,6 +64690,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PKOPF_BESCHREIBUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PKOPF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das geplante Jahr der Inbetriebnahme, 2000 bis 2100 — leer heißt: keine Zulässigkeitsprüfung der Kältemittel. Ein Jahr schaltet im Simulationslauf die Prüfung gegen die Stichtage der F-Gas-Verordnung ein; sie weist nur hin. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_JAHR_ERL", resourceCulture);
             }
         }
         
@@ -66125,6 +66242,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ steht nur bei eingeschalteter Schnellaufheizung auf der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_SCHNELL_AUS {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_SCHNELL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = die Heizkurve rechnet im Vorheizfenster mit dem um die Überhöhung angehobenen Raumsollwert (nur Gebäude mit Heizkreis, endet bei Ankunft, begrenzt durch den höchsten Vorlauf der Anlage), Nein = aus (Vorgabe). Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_SCHNELL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_SCHNELL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einheit des zulässigen Sprungs zum Nutzungsbeginn: PROZENT = % der höchsten Heizlast am Nutzungsbeginn (Vorgabe), KW = kW. Nur bei „Vorheizzeit vorgeben“ oder „Vorheizzeit berechnen“; wird sofort gespeichert. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_AUFH_TOLERANZ_ART_ERL {
@@ -66139,6 +66274,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_AUFH_TOLERANZ_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_AUFH_TOLERANZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumsollwert-Überhöhung der Schnellaufheizung in K, größer als 0 und höchstens 10; leer = Vorgabe 2 K. Nur bei eingeschalteter Schnellaufheizung; wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUFH_UEBERHOEHUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUFH_UEBERHOEHUNG_ERL", resourceCulture);
             }
         }
         
@@ -73868,6 +74012,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stoff- oder Gemischname, neutral, kein Handelsname. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurzzeichen nach ISO 817 mit Isomerangabe, eindeutig ohne Groß- und Kleinschreibung; bei einer verwendeten Zeile fest. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_CODE {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_CODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fluoriertes Treibhausgas im Sinn der F-Gas-Verordnung: ja, nein oder unbekannt. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_FGAS {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stoffgruppe der Zeile; leer heißt unbekannt. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_GRUPPE {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Treibhauspotenzial über 100 Jahre; leer heißt unbekannt. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_GWP {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fundstelle des GWP-Werts in der Verordnung (Anhang, Abschnitt, Seite, Sachstandsbericht). ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_GWP_QUELLE {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_GWP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Natürliches Kältemittel: ja, nein oder unbekannt. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_NATUERLICH {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_NATUERLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PFAS-Status: Stoff ist PFAS, enthält einen PFAS-Bestandteil oder kein PFAS. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_PFAS {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_PFAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fundstelle der übrigen Kennzeichen (F-Gas, Massenanteile, PFAS-Herleitung). ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_QUELLE {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählt die Zeile der Kältemitteltabelle, wie ein Klick in die Liste. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_SATZ {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicherheitsgruppe nach ISO 817 / EN 378-1 (nur Anzeige). ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_SICHERHEIT {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_SICHERHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihenfolge in der Klappliste; leer ordnet nach dem Code. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_SORTIERUNG {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_SORTIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Belegstand der Zeile; leer wird beim Speichern „vorläufig“. ähnelt.
+        /// </summary>
+        public static string KI_KMT_ERL_STATUS {
+            get {
+                return ResourceManager.GetString("KI_KMT_ERL_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Dialog vom Hilfe-Assistenten erklären lassen ähnelt.
         /// </summary>
         public static string KI_KNOPF_DIALOG_TOOLTIP {
@@ -78445,6 +78706,483 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemittelliste der Kältemaschinen und Wärmepumpen: GWP mit Fundstelle, Kennzeichen nach der F-Gas-Verordnung, Sicherheitsgruppe und PFAS-Status. Ausgelieferte Zeilen sind gesperrt; eigene Zeilen lassen sich anlegen, ändern und löschen, solange keine Kältemaschine sie verwendet. ähnelt.
+        /// </summary>
+        public static string KMT_EINLEITUNG {
+            get {
+                return ResourceManager.GetString("KMT_EINLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string KMT_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KMT_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fundstellen ähnelt.
+        /// </summary>
+        public static string KMT_FUNDSTELLEN {
+            get {
+                return ResourceManager.GetString("KMT_FUNDSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gelöscht. ähnelt.
+        /// </summary>
+        public static string KMT_GELOESCHT {
+            get {
+                return ResourceManager.GetString("KMT_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gemisch ähnelt.
+        /// </summary>
+        public static string KMT_GRUPPE_GEMISCH {
+            get {
+                return ResourceManager.GetString("KMT_GRUPPE_GEMISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die HFCKW ähnelt.
+        /// </summary>
+        public static string KMT_GRUPPE_HFCKW {
+            get {
+                return ResourceManager.GetString("KMT_GRUPPE_HFCKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die HFKW ähnelt.
+        /// </summary>
+        public static string KMT_GRUPPE_HFKW {
+            get {
+                return ResourceManager.GetString("KMT_GRUPPE_HFKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die HFO ähnelt.
+        /// </summary>
+        public static string KMT_GRUPPE_HFO {
+            get {
+                return ResourceManager.GetString("KMT_GRUPPE_HFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die natürlich ähnelt.
+        /// </summary>
+        public static string KMT_GRUPPE_NATUERLICH {
+            get {
+                return ResourceManager.GetString("KMT_GRUPPE_NATUERLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sonstige ähnelt.
+        /// </summary>
+        public static string KMT_GRUPPE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("KMT_GRUPPE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ja ähnelt.
+        /// </summary>
+        public static string KMT_JA {
+            get {
+                return ResourceManager.GetString("KMT_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe ähnelt.
+        /// </summary>
+        public static string KMT_KEINE_ANGABE {
+            get {
+                return ResourceManager.GetString("KMT_KEINE_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemitteltabelle ist leer. ähnelt.
+        /// </summary>
+        public static string KMT_LEER {
+            get {
+                return ResourceManager.GetString("KMT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank ist nur lesbar — die Kältemittel lassen sich nicht ändern. ähnelt.
+        /// </summary>
+        public static string KMT_LESEMODUS {
+            get {
+                return ResourceManager.GetString("KMT_LESEMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string KMT_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KMT_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel… ähnelt.
+        /// </summary>
+        public static string KMT_MENUE {
+            get {
+                return ResourceManager.GetString("KMT_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Code „{0}“ gibt es schon (Groß- und Kleinschreibung zählen nicht). ähnelt.
+        /// </summary>
+        public static string KMT_MSG_CODE_BELEGT {
+            get {
+                return ResourceManager.GetString("KMT_MSG_CODE_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Code darf nicht leer sein und höchstens {0} Zeichen haben. ähnelt.
+        /// </summary>
+        public static string KMT_MSG_CODE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KMT_MSG_CODE_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Code „{0}“ bleibt: {1} Kältemaschine(n) verwenden das Kältemittel. ähnelt.
+        /// </summary>
+        public static string KMT_MSG_CODE_VERWENDET {
+            get {
+                return ResourceManager.GetString("KMT_MSG_CODE_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das GWP muss eine Zahl ab 0 sein. ähnelt.
+        /// </summary>
+        public static string KMT_MSG_GWP_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KMT_MSG_GWP_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kältemittel gibt es nicht mehr. ähnelt.
+        /// </summary>
+        public static string KMT_MSG_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("KMT_MSG_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank hat keine Kältemitteltabelle. ähnelt.
+        /// </summary>
+        public static string KMT_MSG_TABELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("KMT_MSG_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung und Fundstellen dürfen höchstens {0} Zeichen haben. ähnelt.
+        /// </summary>
+        public static string KMT_MSG_TEXT_ZU_LANG {
+            get {
+                return ResourceManager.GetString("KMT_MSG_TEXT_ZU_LANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ wird von {1} Kältemaschine(n) verwendet und lässt sich nicht löschen. ähnelt.
+        /// </summary>
+        public static string KMT_MSG_VERWENDET {
+            get {
+                return ResourceManager.GetString("KMT_MSG_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist kein zulässiger Wert für „{1}“. ähnelt.
+        /// </summary>
+        public static string KMT_MSG_WERTEMENGE {
+            get {
+                return ResourceManager.GetString("KMT_MSG_WERTEMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nein ähnelt.
+        /// </summary>
+        public static string KMT_NEIN {
+            get {
+                return ResourceManager.GetString("KMT_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu ähnelt.
+        /// </summary>
+        public static string KMT_NEU {
+            get {
+                return ResourceManager.GetString("KMT_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemittel stehen auf diesem Gerät noch nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string KMT_NICHT_VERFUEGBAR {
+            get {
+                return ResourceManager.GetString("KMT_NICHT_VERFUEGBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die enthält einen PFAS-Bestandteil ähnelt.
+        /// </summary>
+        public static string KMT_PFAS_BESTANDTEIL {
+            get {
+                return ResourceManager.GetString("KMT_PFAS_BESTANDTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein PFAS ähnelt.
+        /// </summary>
+        public static string KMT_PFAS_KEIN {
+            get {
+                return ResourceManager.GetString("KMT_PFAS_KEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PFAS ähnelt.
+        /// </summary>
+        public static string KMT_PFAS_PFAS {
+            get {
+                return ResourceManager.GetString("KMT_PFAS_PFAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neues Kältemittel ähnelt.
+        /// </summary>
+        public static string KMT_SATZ_NEU {
+            get {
+                return ResourceManager.GetString("KMT_SATZ_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string KMT_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("KMT_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string KMT_SP_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("KMT_SP_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Code ähnelt.
+        /// </summary>
+        public static string KMT_SP_CODE {
+            get {
+                return ResourceManager.GetString("KMT_SP_CODE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die F-Gas ähnelt.
+        /// </summary>
+        public static string KMT_SP_FGAS {
+            get {
+                return ResourceManager.GetString("KMT_SP_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe ähnelt.
+        /// </summary>
+        public static string KMT_SP_GRUPPE {
+            get {
+                return ResourceManager.GetString("KMT_SP_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP ähnelt.
+        /// </summary>
+        public static string KMT_SP_GWP {
+            get {
+                return ResourceManager.GetString("KMT_SP_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fundstelle GWP ähnelt.
+        /// </summary>
+        public static string KMT_SP_GWP_QUELLE {
+            get {
+                return ResourceManager.GetString("KMT_SP_GWP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die natürlich ähnelt.
+        /// </summary>
+        public static string KMT_SP_NATUERLICH {
+            get {
+                return ResourceManager.GetString("KMT_SP_NATUERLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PFAS ähnelt.
+        /// </summary>
+        public static string KMT_SP_PFAS {
+            get {
+                return ResourceManager.GetString("KMT_SP_PFAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fundstelle Kennzeichen ähnelt.
+        /// </summary>
+        public static string KMT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("KMT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicherheitsgruppe ähnelt.
+        /// </summary>
+        public static string KMT_SP_SICHERHEIT {
+            get {
+                return ResourceManager.GetString("KMT_SP_SICHERHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sortierung ähnelt.
+        /// </summary>
+        public static string KMT_SP_SORTIERUNG {
+            get {
+                return ResourceManager.GetString("KMT_SP_SORTIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Status ähnelt.
+        /// </summary>
+        public static string KMT_SP_STATUS {
+            get {
+                return ResourceManager.GetString("KMT_SP_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgekündigt ähnelt.
+        /// </summary>
+        public static string KMT_STATUS_ABGEKUENDIGT {
+            get {
+                return ResourceManager.GetString("KMT_STATUS_ABGEKUENDIGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gesichert ähnelt.
+        /// </summary>
+        public static string KMT_STATUS_GESICHERT {
+            get {
+                return ResourceManager.GetString("KMT_STATUS_GESICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prognose ähnelt.
+        /// </summary>
+        public static string KMT_STATUS_PROGNOSE {
+            get {
+                return ResourceManager.GetString("KMT_STATUS_PROGNOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorläufig ähnelt.
+        /// </summary>
+        public static string KMT_STATUS_VORLAEUFIG {
+            get {
+                return ResourceManager.GetString("KMT_STATUS_VORLAEUFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel ähnelt.
+        /// </summary>
+        public static string KMT_TITEL {
+            get {
+                return ResourceManager.GetString("KMT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbekannt ähnelt.
+        /// </summary>
+        public static string KMT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KMT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von keiner Kältemaschine verwendet. ähnelt.
+        /// </summary>
+        public static string KMT_UNBENUTZT {
+            get {
+                return ResourceManager.GetString("KMT_UNBENUTZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendet von {0} Kältemaschine(n) — der Code bleibt, die Zeile lässt sich nicht löschen. ähnelt.
+        /// </summary>
+        public static string KMT_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("KMT_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzahl muss mindestens 1 sein. ähnelt.
         /// </summary>
         public static string KM_ANLAGE_ANZAHL_UNGUELTIG {
@@ -79012,6 +79750,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Geräte-GWP {0} weicht vom Tabellenwert {1} ab; die Zulässigkeitsprüfung nimmt den Tabellenwert. ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP {0} — Geräteangabe ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_GERAET {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP {0} — aus der Kältemitteltabelle ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_TABELLE {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP aus Kältemittel übernehmen ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setzt das Geräte-GWP auf den Wert der Kältemitteltabelle. ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_UEBERNEHMEN_TIP {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_UEBERNEHMEN_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — kein Kältemittel — ähnelt.
+        /// </summary>
+        public static string KM_KMT_KEINS {
+            get {
+                return ResourceManager.GetString("KM_KMT_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet: {0} ähnelt.
+        /// </summary>
+        public static string KM_KMT_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("KM_KMT_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kältemittel steht nicht in der Kältemitteltabelle; die Prüfung nimmt das Geräte-GWP. ähnelt.
+        /// </summary>
+        public static string KM_KMT_OHNE_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("KM_KMT_OHNE_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string KM_LBL_BESCHREIBUNG {
@@ -79260,6 +80070,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_LEER {
             get {
                 return ResourceManager.GetString("KM_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die F-Gas ähnelt.
+        /// </summary>
+        public static string KM_LESE_FGAS {
+            get {
+                return ResourceManager.GetString("KM_LESE_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP {0} ähnelt.
+        /// </summary>
+        public static string KM_LESE_GWP {
+            get {
+                return ResourceManager.GetString("KM_LESE_GWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein F-Gas ähnelt.
+        /// </summary>
+        public static string KM_LESE_KEIN_FGAS {
+            get {
+                return ResourceManager.GetString("KM_LESE_KEIN_FGAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die natürlich ähnelt.
+        /// </summary>
+        public static string KM_LESE_NATUERLICH {
+            get {
+                return ResourceManager.GetString("KM_LESE_NATUERLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PFAS ähnelt.
+        /// </summary>
+        public static string KM_LESE_PFAS {
+            get {
+                return ResourceManager.GetString("KM_LESE_PFAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit PFAS-Bestandteil ähnelt.
+        /// </summary>
+        public static string KM_LESE_PFAS_BESTANDTEIL {
+            get {
+                return ResourceManager.GetString("KM_LESE_PFAS_BESTANDTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein PFAS ähnelt.
+        /// </summary>
+        public static string KM_LESE_PFAS_KEIN {
+            get {
+                return ResourceManager.GetString("KM_LESE_PFAS_KEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicherheitsgruppe {0} ähnelt.
+        /// </summary>
+        public static string KM_LESE_SICHERHEITSGRUPPE {
+            get {
+                return ResourceManager.GetString("KM_LESE_SICHERHEITSGRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Status {0} ähnelt.
+        /// </summary>
+        public static string KM_LESE_STATUS {
+            get {
+                return ResourceManager.GetString("KM_LESE_STATUS", resourceCulture);
             }
         }
         
@@ -79750,6 +80641,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgekündigt ähnelt.
+        /// </summary>
+        public static string KM_STATUS_ABGEKUENDIGT {
+            get {
+                return ResourceManager.GetString("KM_STATUS_ABGEKUENDIGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gesichert ähnelt.
+        /// </summary>
+        public static string KM_STATUS_GESICHERT {
+            get {
+                return ResourceManager.GetString("KM_STATUS_GESICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prognose ähnelt.
+        /// </summary>
+        public static string KM_STATUS_PROGNOSE {
+            get {
+                return ResourceManager.GetString("KM_STATUS_PROGNOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorläufig ähnelt.
+        /// </summary>
+        public static string KM_STATUS_VORLAEUFIG {
+            get {
+                return ResourceManager.GetString("KM_STATUS_VORLAEUFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die wie bisher ähnelt.
         /// </summary>
         public static string KM_TEILLAST_WEG_BESTAND {
@@ -79908,6 +80835,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_VGL_STUETZSTELLEN {
             get {
                 return ResourceManager.GetString("KM_VGL_STUETZSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: Absorption — nicht geprüft ähnelt.
+        /// </summary>
+        public static string KM_ZUL_ABSORPTION {
+            get {
+                return ResourceManager.GetString("KM_ZUL_ABSORPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: Bestandsanlage — Anhang IV nicht anwendbar ähnelt.
+        /// </summary>
+        public static string KM_ZUL_BESTAND {
+            get {
+                return ResourceManager.GetString("KM_ZUL_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: nicht geprüft ähnelt.
+        /// </summary>
+        public static string KM_ZUL_NICHT_GEPRUEFT {
+            get {
+                return ResourceManager.GetString("KM_ZUL_NICHT_GEPRUEFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: für das Inbetriebnahmejahr {0} nicht prüfbar — {1} ähnelt.
+        /// </summary>
+        public static string KM_ZUL_NICHT_PRUEFBAR {
+            get {
+                return ResourceManager.GetString("KM_ZUL_NICHT_PRUEFBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: ohne Inbetriebnahmejahr nicht geprüft ähnelt.
+        /// </summary>
+        public static string KM_ZUL_OHNE_JAHR {
+            get {
+                return ResourceManager.GetString("KM_ZUL_OHNE_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels: ohne Kältemittel nicht geprüft ähnelt.
+        /// </summary>
+        public static string KM_ZUL_OHNE_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("KM_ZUL_OHNE_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels {0}: Warnung — nach {1} ab {2} nur Restbestand oder Ausnahme ({3}; Inbetriebnahmejahr {4}) ähnelt.
+        /// </summary>
+        public static string KM_ZUL_WARNUNG {
+            get {
+                return ResourceManager.GetString("KM_ZUL_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit des Kältemittels {0}: zulässig für das Inbetriebnahmejahr {1} ähnelt.
+        /// </summary>
+        public static string KM_ZUL_ZULAESSIG {
+            get {
+                return ResourceManager.GetString("KM_ZUL_ZULAESSIG", resourceCulture);
             }
         }
         
@@ -94775,6 +95774,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geplantes Jahr der Inbetriebnahme. Ein Jahr schaltet im Simulationslauf die Prüfung der Kältemittel von Wärmepumpen und Kältemaschinen gegen die Stichtage der F-Gas-Verordnung ein; die Prüfung weist nur hin und sperrt nichts. Leer: keine Prüfung. ähnelt.
+        /// </summary>
+        public static string PKOPF_INBETRIEBNAHMEJAHR_HILFE {
+            get {
+                return ResourceManager.GetString("PKOPF_INBETRIEBNAHMEJAHR_HILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer: keine Zulässigkeitsprüfung ähnelt.
+        /// </summary>
+        public static string PKOPF_INBETRIEBNAHMEJAHR_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("PKOPF_INBETRIEBNAHMEJAHR_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projektkonfiguration ähnelt.
         /// </summary>
         public static string PKOPF_KOPF {
@@ -94816,6 +95833,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PKOPF_LBL_ERSTELLT {
             get {
                 return ResourceManager.GetString("PKOPF_LBL_ERSTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inbetriebnahmejahr ähnelt.
+        /// </summary>
+        public static string PKOPF_LBL_INBETRIEBNAHMEJAHR {
+            get {
+                return ResourceManager.GetString("PKOPF_LBL_INBETRIEBNAHMEJAHR", resourceCulture);
             }
         }
         
@@ -110790,6 +111816,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schnellaufheizung hebt im Vorheizfenster den Raumsollwert der Heizkurve um die Überhöhung an, damit der Vorlauf steigt. Sie wirkt nur bei Gebäuden mit Heizkreis, endet mit der Ankunft (Raumtemperatur bis auf die Regelgenauigkeit am Sollwert) und ist durch den höchsten Vorlauf der Anlage begrenzt. ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_HRL_SCHNELL {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_HRL_SCHNELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verfügbar ist die Heizleistungsgrenze des Gebäudes oder der Zone, ohne Grenze die Heizlast an der kältesten Stunde zuzüglich der Leistungsreserve. ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_HRL_VERFUEGBAR {
@@ -110961,6 +111996,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellaufheizung (Heizkurve im Vorheizfenster anheben) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_SCHNELL {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_SCHNELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zulässiger Sprung zum Nutzungsbeginn ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_LBL_TOLERANZ {
@@ -110975,6 +112019,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_AUFH_LBL_TOLERANZ_WERT {
             get {
                 return ResourceManager.GetString("SIMKONF_AUFH_LBL_TOLERANZ_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumsollwert-Überhöhung (K) ähnelt.
+        /// </summary>
+        public static string SIMKONF_AUFH_LBL_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("SIMKONF_AUFH_LBL_UEBERHOEHUNG", resourceCulture);
             }
         }
         
@@ -120504,6 +121557,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} nicht prüfbar ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM_NICHT_PRUEFBAR {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM_NICHT_PRUEFBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel: {0} ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM_STATUS {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} mit Hinweis ähnelt.
+        /// </summary>
+        public static string START_E_KUEHL_KM_WARNUNG {
+            get {
+                return ResourceManager.GetString("START_E_KUEHL_KM_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung mit Kältemaschinen und Wärmepumpen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_TEXT {
@@ -124834,6 +125914,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Halbsatz „, mit Schnellaufheizung (+2,0 K)“ des laufenden Gebäudes mit führendem Komma; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SCHNELLAUFHEIZUNG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SCHNELLAUFHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Größter Sprung im Lauf S_max des laufenden Gebäudes; leer ohne Sprung oder bei Sollwertrampe. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_LAUF {
@@ -124888,6 +125977,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Raumsollwert-Überhöhung Δθ der Schnellaufheizung des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizstunden mit Überhöhung in einer Sperrzeit des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Überhöhung der Schnellaufheizung des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_STUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Vorlauf in den Stunden mit Überhöhung des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_VORLAUF_MAX {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_VORLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit wirkungsloser Überhöhung (Vorlauf schon an der Grenze) des laufenden Gebäudes; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_WIRKUNGSLOS {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UEBERHOEHUNG_WIRKUNGSLOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden unter dem Sollwert beim Vorheizen des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNGSSTUNDEN {
@@ -124902,6 +126036,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX {
             get {
                 return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden, in denen die Vorlaufgrenze die Überhöhung des laufenden Gebäudes begrenzt hat; leer ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_VORLAUFGRENZE_STUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_VORLAUFGRENZE_STUNDEN", resourceCulture);
             }
         }
         
@@ -125253,6 +126396,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_HAT__KAELTE {
             get {
                 return ResourceManager.GetString("VF_HAT__KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit wirksamer Schnellaufheizung gerechnet? ähnelt.
+        /// </summary>
+        public static string VF_HAT__SCHNELLAUFHEIZUNG {
+            get {
+                return ResourceManager.GetString("VF_HAT__SCHNELLAUFHEIZUNG", resourceCulture);
             }
         }
         
@@ -136327,6 +137479,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inbetriebnahmejahr ungültig ähnelt.
+        /// </summary>
+        public static string WIZ_JAHR_TITEL {
+            get {
+                return ResourceManager.GetString("WIZ_JAHR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Klimazone auswählen! ähnelt.
         /// </summary>
         public static string WIZ_KLIMA_FEHLT {
@@ -140989,6 +142150,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WZP_BESCHREIBUNG_HINT {
             get {
                 return ResourceManager.GetString("WZP_BESCHREIBUNG_HINT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Inbetriebnahmejahr muss zwischen {0} und {1} liegen; leer bleibt die Zulässigkeitsprüfung der Kältemittel aus. ähnelt.
+        /// </summary>
+        public static string WZP_JAHR_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("WZP_JAHR_AUSSERHALB", resourceCulture);
             }
         }
         

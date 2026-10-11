@@ -305,25 +305,11 @@ namespace WindowsFormsApplication1
             get
             {
                 if (_aufheizvorgabeProjekt == null)
-                {
                     _aufheizvorgabeProjekt = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
-                    if (SchnellaufheizungTestnaht != null && _aufheizvorgabeProjekt.Vorheizen != null)
-                        _aufheizvorgabeProjekt = _aufheizvorgabeProjekt with
-                        {
-                            Vorheizen = SchnellaufheizungTestnaht(_aufheizvorgabeProjekt.Vorheizen),
-                        };
-                }
                 return _aufheizvorgabeProjekt;
             }
             set { _aufheizvorgabeProjekt = value ?? Aufheizvorgabe.Aus; }
         }
-
-        /// <summary>
-        /// <b>Testnaht der Schnellaufheizung bis zum Datenweg</b> (SA1; SA2 bringt die Spalten und entfernt die Naht): setzt
-        /// Schalter und Überhöhung an der gelesenen Vorheizvorgabe des Projektlaufs. <c>null</c> (Vorgabe) = keine Wirkung, der
-        /// Lauf liest die Vorgabe Zeichen für Zeichen wie ohne Naht. Nur Tests in der Sammlung „Testdatenbank“ setzen sie.
-        /// </summary>
-        internal static System.Func<Vorheizvorgabe, Vorheizvorgabe> SchnellaufheizungTestnaht;
 
         private Aufheizvorgabe _aufheizvorgabeProjekt;
 

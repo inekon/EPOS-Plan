@@ -885,6 +885,11 @@
         internal static string SimAufheizGeltungErl => MyResource.Resource.KI_DLG_SIM_AUFH_GELTUNG_ERL;
         internal static string SimAufheizHeizkreisName => MyResource.Resource.SIMKONF_AUFH_LBL_HEIZKREIS;
         internal static string SimAufheizHeizkreisErl => MyResource.Resource.KI_DLG_SIM_AUFH_HEIZKREIS_ERL;
+        // Die Schnellaufheizung (SA3a).
+        internal static string SimAufheizSchnellName => MyResource.Resource.SIMKONF_AUFH_LBL_SCHNELL;
+        internal static string SimAufheizSchnellErl => MyResource.Resource.KI_DLG_SIM_AUFH_SCHNELL_ERL;
+        internal static string SimAufheizUeberhoehungName => MyResource.Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG;
+        internal static string SimAufheizUeberhoehungErl => MyResource.Resource.KI_DLG_SIM_AUFH_UEBERHOEHUNG_ERL;
         // Die Vorheizzeit der Zone (Welle AH-V5).
         internal static string ZonVorheizzeitName => MyResource.Resource.ZONDLG_LBL_VORHEIZZEIT;
         internal static string ZonVorheizzeitErl => MyResource.Resource.KI_DLG_ZON_VORHEIZZEIT_ERL;
@@ -1497,6 +1502,35 @@
 
         /// <summary>Die Verwaltung „Kältemaschinen" (KU3-1).</summary>
         internal static string MaskeKaeltemaschineKatalog => MyResource.Resource.KI_DLG_MASKE_KM;
+
+        // ---- Verwaltung „Kältemittel" (KM4-E3-c): Feldnamen sind die Spaltenköpfe des Dialogs ----
+        internal static string MaskeKaeltemittel => MyResource.Resource.KI_DLG_MASKE_KMT;
+        internal static string KmtSatzName => MyResource.Resource.KMT_TITEL;
+        internal static string KmtSatzErl => MyResource.Resource.KI_KMT_ERL_SATZ;
+        internal static string KmtCodeName => MyResource.Resource.KMT_SP_CODE;
+        internal static string KmtCodeErl => MyResource.Resource.KI_KMT_ERL_CODE;
+        internal static string KmtBezeichnungName => MyResource.Resource.KMT_SP_BEZEICHNUNG;
+        internal static string KmtBezeichnungErl => MyResource.Resource.KI_KMT_ERL_BEZEICHNUNG;
+        internal static string KmtGruppeName => MyResource.Resource.KMT_SP_GRUPPE;
+        internal static string KmtGruppeErl => MyResource.Resource.KI_KMT_ERL_GRUPPE;
+        internal static string KmtGwpName => MyResource.Resource.KMT_SP_GWP;
+        internal static string KmtGwpErl => MyResource.Resource.KI_KMT_ERL_GWP;
+        internal static string KmtGwpQuelleName => MyResource.Resource.KMT_SP_GWP_QUELLE;
+        internal static string KmtGwpQuelleErl => MyResource.Resource.KI_KMT_ERL_GWP_QUELLE;
+        internal static string KmtFGasName => MyResource.Resource.KMT_SP_FGAS;
+        internal static string KmtFGasErl => MyResource.Resource.KI_KMT_ERL_FGAS;
+        internal static string KmtNatuerlichName => MyResource.Resource.KMT_SP_NATUERLICH;
+        internal static string KmtNatuerlichErl => MyResource.Resource.KI_KMT_ERL_NATUERLICH;
+        internal static string KmtSicherheitName => MyResource.Resource.KMT_SP_SICHERHEIT;
+        internal static string KmtSicherheitErl => MyResource.Resource.KI_KMT_ERL_SICHERHEIT;
+        internal static string KmtPfasName => MyResource.Resource.KMT_SP_PFAS;
+        internal static string KmtPfasErl => MyResource.Resource.KI_KMT_ERL_PFAS;
+        internal static string KmtStatusName => MyResource.Resource.KMT_SP_STATUS;
+        internal static string KmtStatusErl => MyResource.Resource.KI_KMT_ERL_STATUS;
+        internal static string KmtQuelleName => MyResource.Resource.KMT_SP_QUELLE;
+        internal static string KmtQuelleErl => MyResource.Resource.KI_KMT_ERL_QUELLE;
+        internal static string KmtSortierungName => MyResource.Resource.KMT_SP_SORTIERUNG;
+        internal static string KmtSortierungErl => MyResource.Resource.KI_KMT_ERL_SORTIERUNG;
         internal static string KmGeraetName => MyResource.Resource.KI_DLG_KM_GERAET_NAME;
 
         // ---- KU3-4c: der Erzeugerdialog „Kältemaschinen im Projekt" ----
@@ -3801,6 +3835,8 @@
         internal static string PkopfKlimaErl => MyResource.Resource.KI_DLG_PKOPF_KLIMA_ERL;
         internal static string PkopfKundeName => MyResource.Resource.PKOPF_LBL_KUNDE;
         internal static string PkopfKundeErl => MyResource.Resource.KI_DLG_PKOPF_KUNDE_ERL;
+        internal static string PkopfJahrName => MyResource.Resource.PKOPF_LBL_INBETRIEBNAHMEJAHR;
+        internal static string PkopfJahrErl => MyResource.Resource.KI_DLG_PKOPF_JAHR_ERL;
         internal static string PkopfBearbeiterName => MyResource.Resource.PKOPF_LBL_BEARBEITER;
         internal static string PkopfBearbeiterErl => MyResource.Resource.KI_DLG_PKOPF_BEARBEITER_ERL;
         internal static string PkopfBeschreibungName => MyResource.Resource.PKOPF_LBL_BESCHREIBUNG;

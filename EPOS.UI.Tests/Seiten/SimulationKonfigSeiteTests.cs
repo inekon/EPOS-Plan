@@ -3006,10 +3006,11 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_TOLERANZ_PROZENT, Gewaehlt(wahlen[1]));
         Assert.Equal("1 K", Gewaehlt(wahlen[2]));
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_GELTUNG_GEBAEUDE, Gewaehlt(wahlen[3]));
-        // Schalter an und „Gebäude mit Heizkreis einbeziehen“ (Vorgabe an).
+        // Schalter an, „Gebäude mit Heizkreis einbeziehen“ (Vorgabe an) und die Schnellaufheizung (Vorgabe aus, SA3a).
         List<IElement> schalter = abschnitt.QuerySelectorAll("input[type=checkbox]").ToList();
-        Assert.Equal(2, schalter.Count);
+        Assert.Equal(3, schalter.Count);
         Assert.True(schalter[1].HasAttribute("checked"));
+        Assert.False(schalter[2].HasAttribute("checked"));
         Assert.Empty(_aufheizGeschrieben);
     }
 
@@ -3094,5 +3095,81 @@ public class SimulationKonfigSeiteTests : BunitContext
             WindowsFormsApplication1.Aufheizverfahren.Berechnet, genauigkeitK: 1.5)));
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_GENAUIGKEIT_EINGABE, Gewaehlt(AlleWahlen(gepflegt)[2]));
         Assert.Equal("1,5", Textfelder(gepflegt)[1].GetAttribute("value"));
+    }
+
+    // =====================================================================
+    //  SA3a: die Schnellaufheizung — Schalter, Überhöhung, Speichern
+    // =====================================================================
+
+    private static IElement Schnellschalter(IRenderedComponent<SimulationKonfigSeite> seite)
+        => Aufheizabschnitt(seite).QuerySelectorAll("input[type=checkbox]")[2];
+
+    [Fact]
+    public void Die_Schnellaufheizung_steht_nur_bei_den_neuen_Verfahren()
+    {
+        var rampe = SeiteMitAufheizung(AUFHEIZ_AN);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_SCHNELL, Aufheizabschnitt(rampe).TextContent);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_SCHNELL, Aufheizabschnitt(rampe).TextContent);
+
+        foreach (WindowsFormsApplication1.Aufheizverfahren verfahren in new[]
+                 { WindowsFormsApplication1.Aufheizverfahren.Vorgabe, WindowsFormsApplication1.Aufheizverfahren.Berechnet })
+        {
+            var seite = SeiteMitAufheizung(AnMit(new WindowsFormsApplication1.Vorheizvorgabe(verfahren)));
+            string text = Aufheizabschnitt(seite).TextContent;
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_SCHNELL, text);
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_HRL_SCHNELL, text);
+            // Schalter aus: keine Überhöhung.
+            Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG, text);
+            Assert.False(Schnellschalter(seite).HasAttribute("checked"));
+        }
+    }
+
+    [Fact]
+    public void Mit_Schalter_steht_die_Ueberhoehung_leer_mit_Vorgabe_2_K()
+    {
+        var seite = SeiteMitAufheizung(AnMit(new WindowsFormsApplication1.Vorheizvorgabe(WindowsFormsApplication1.Aufheizverfahren.Berechnet)
+            .MitSchnellaufheizung(true)));
+        Assert.True(Schnellschalter(seite).HasAttribute("checked"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG, Aufheizabschnitt(seite).TextContent);
+        List<IElement> felder = Textfelder(seite);
+        Assert.Equal(3, felder.Count);   // Toleranz, Reserve, Überhöhung
+        Assert.Equal("Vorgabe 2 K", felder[2].GetAttribute("placeholder"));
+        Assert.Equal("", felder[2].GetAttribute("value") ?? "");
+
+        var gepflegt = SeiteMitAufheizung(AnMit(new WindowsFormsApplication1.Vorheizvorgabe(WindowsFormsApplication1.Aufheizverfahren.Vorgabe, 6)
+            .MitSchnellaufheizung(true, 3.5)));
+        Assert.Equal("3,5", Textfelder(gepflegt)[3].GetAttribute("value"));   // Vorheizzeit, Toleranz, Reserve, Überhöhung
+        Assert.Empty(_aufheizGeschrieben);
+    }
+
+    [Fact]
+    public void Schalter_und_Ueberhoehung_schreiben_sofort_im_Bereich()
+    {
+        var seite = SeiteMitAufheizung(AnMit(new WindowsFormsApplication1.Vorheizvorgabe(WindowsFormsApplication1.Aufheizverfahren.Berechnet)));
+        Schnellschalter(seite).Change(true);
+        WindowsFormsApplication1.Vorheizvorgabe v = _aufheizGeschrieben.Last().Vorheizen;
+        Assert.True(v.Schnellaufheizung);
+        Assert.Null(v.UeberhoehungK);
+        Assert.Equal(WindowsFormsApplication1.Aufheizverfahren.Berechnet, v.Verfahren);
+
+        Textfelder(seite)[2].Input("4");
+        Assert.Equal(4.0, _aufheizGeschrieben.Last().Vorheizen.UeberhoehungK);
+        int n = _aufheizGeschrieben.Count;
+        Textfelder(seite)[2].Input("12");                                 // über 10 K färbt und schreibt nicht
+        Assert.Equal(n, _aufheizGeschrieben.Count);
+        Textfelder(seite)[2].Input("0");                                  // 0 K lehnt der Kern ab: kehrt zurück und meldet
+        Assert.Equal(n, _aufheizGeschrieben.Count);
+        Assert.Equal(4.0, seite.Instance.Laufparameter.Aufheizung.Vorheizen.UeberhoehungK);
+        Textfelder(seite)[2].Input("");
+        Assert.Null(_aufheizGeschrieben.Last().Vorheizen.UeberhoehungK);
+        Textfelder(seite)[2].Input("2,5");
+        Assert.Equal(2.5, _aufheizGeschrieben.Last().Vorheizen.UeberhoehungK);
+
+        // Aus: das Feld verschwindet, die Überhöhung bleibt gespeichert.
+        Schnellschalter(seite).Change(false);
+        Assert.False(_aufheizGeschrieben.Last().Vorheizen.Schnellaufheizung);
+        Assert.Equal(2.5, _aufheizGeschrieben.Last().Vorheizen.UeberhoehungK);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG, Aufheizabschnitt(seite).TextContent);
+        Assert.False(seite.Instance.Laufparameter.Aufheizung.Vorheizen.Schnellaufheizung);
     }
 }

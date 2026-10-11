@@ -28,6 +28,7 @@ namespace WindowsFormsApplication1
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(KaeltemaschineStammCtrl.Katalogfilterzeilen),
                 ["Katalogprofil"] = Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine, Katalogtexte.Fuer),
                 ["Rueckkuehlarten"] = Rueckkuehlarten(),
+                ["Kaeltemittelliste"] = Kaeltemittelliste(),
                 ["Lies"] = new Func<int, KaeltemaschineDaten>(id => AlsDaten(KaeltemaschineStammCtrl.Laden(id))),
                 ["Pruefen"] = new Func<KaeltemaschineDaten, string>(Pruefen),
                 ["Speichern"] = new Func<KaeltemaschineDaten, KaeltemaschineSpeicherErgebnis>(Speichern),
@@ -79,6 +80,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Anzeigetexte der Rückkühlarten in der Reihenfolge der Persistenzwerte.</summary>
+        /// <summary>
+        /// Die Klappliste „Kältemittel“ (KM4-E3-a, Konzept Kältemittel als Stammdatum 7.1) aus
+        /// <see cref="KaeltemittelCtrl.Liste"/> — Reihenfolge der Tabelle (Sortierung, dann Code). Ohne Tabelle oder
+        /// Datenbank leer; dann bleibt im Dialog nur ein Bestandstext wählbar.
+        /// </summary>
+        internal static IReadOnlyList<KaeltemittelListeneintrag> Kaeltemittelliste()
+        {
+            try { return Kaeltemittelwahlen(KaeltemittelCtrl.Liste()); }
+            catch (Exception) { return Array.Empty<KaeltemittelListeneintrag>(); }
+        }
+
+        /// <summary>
+        /// Die Einträge zu den Sätzen der Tabelle: Schlüssel und gespeicherter Text ist der Code, die Anzeige „Code —
+        /// Bezeichnung“, dazu der Tabellenwert des GWP und die übrigen Stammwerte als Lesezeile
+        /// (<see cref="KaeltemittelZulaessigkeitszeile.LesewerteOhneGwp"/>). Sätze ohne Code fallen weg.
+        /// </summary>
+        internal static IReadOnlyList<KaeltemittelListeneintrag> Kaeltemittelwahlen(IEnumerable<KaeltemittelCtrl.Kaeltemittelsatz> saetze)
+            => (saetze ?? Enumerable.Empty<KaeltemittelCtrl.Kaeltemittelsatz>())
+               .Where(k => k != null && !string.IsNullOrWhiteSpace(k.Code))
+               .Select(k => new KaeltemittelListeneintrag(k.Id, k.Code.Trim(),
+                   string.IsNullOrWhiteSpace(k.Bezeichnung) ? k.Code.Trim() : k.Code.Trim() + " — " + k.Bezeichnung.Trim(),
+                   k.GWP, KaeltemittelZulaessigkeitszeile.LesewerteOhneGwp(k)))
+               .ToList();
+
         internal static IReadOnlyList<string> Rueckkuehlarten()
             => KaeltemaschineSchema.RUECKKUEHLARTEN.Select(KaeltemaschineStammCtrl.RueckkuehlartText).ToList();
 

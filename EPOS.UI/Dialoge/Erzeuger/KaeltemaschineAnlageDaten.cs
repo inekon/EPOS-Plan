@@ -37,6 +37,13 @@ public sealed class KaeltemaschineAnlageDaten
     /// <summary>Die Kennwerte des Geräts zum Lesen; <c>null</c> = keine bekannt.</summary>
     public KaeltemaschineGeraetwerte? Geraet { get; set; }
 
+    /// <summary>
+    /// KM4-E3-b: die Lesezeile „Zulässigkeit“ des Kältemittels dieser Anlage mit dem Inbetriebnahmejahr des Projekts,
+    /// fertig von der Hülle (Kern: <c>KaeltemittelZulaessigkeitszeile</c>); leer = keine Zeile (neue Anlage). Nur
+    /// lesend, keine Eingabe — sie zählt nicht zu <see cref="GleicheEingaben"/>.
+    /// </summary>
+    public string Zulaessigkeit { get; set; } = "";
+
     /// <summary>Eine unabhängige Kopie (die Kennwerte werden geteilt, sie sind nur zu lesen).</summary>
     public KaeltemaschineAnlageDaten Kopie() => (KaeltemaschineAnlageDaten)MemberwiseClone();
 

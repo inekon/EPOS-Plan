@@ -30,6 +30,9 @@ public sealed class KaeltemaschineKatalogKiSicht
     /// <summary>Die Anzeigetexte der Rückkühlarten in der Reihenfolge der Listenplätze.</summary>
     public Func<IReadOnlyList<string>>? Rueckkuehlarten { get; init; }
 
+    /// <summary>Die Klappliste „Kältemittel“ des Dialogs (KM4-E3-a).</summary>
+    public Func<IReadOnlyList<KaeltemittelListeneintrag>>? Kaeltemittelliste { get; init; }
+
     /// <summary>Die Anzeigetexte der Teillastwege in der Folge der Listenplätze (KM3-E3-a).</summary>
     public Func<IReadOnlyList<string>>? TeillastWege { get; init; }
 
@@ -82,7 +85,26 @@ public sealed class KaeltemaschineKatalogKiSicht
 
     public double? NennEer { get => ArbeitLesen?.Invoke()?.NennEer; set => Setzen(d => d.NennEer = value); }
 
-    public string Kaeltemittel { get => Lies(d => d.Kaeltemittel) ?? ""; set => Setzen(d => d.Kaeltemittel = value ?? ""); }
+    /// <summary>
+    /// Das Kältemittel als WAHL über den Code der Kältemitteltabelle (KM4-E3-a); ein Code wird in der Schreibweise der
+    /// Tabelle übernommen, leer löscht. Ein Bestandstext ohne Tabellenzeile bleibt lesbar stehen.
+    /// </summary>
+    public string Kaeltemittel
+    {
+        get => Lies(d => d.Kaeltemittel) ?? "";
+        set
+        {
+            string text = (value ?? "").Trim();
+            KaeltemittelListeneintrag? e = KaeltemittelLesung.Eintrag(Kaeltemittelliste?.Invoke() ?? Array.Empty<KaeltemittelListeneintrag>(), text);
+            Setzen(d => d.Kaeltemittel = e?.Code ?? text);
+        }
+    }
+
+    /// <summary>Begleiteigenschaft des Kältemittels: Schlüssel ist der Code, Text „Code — Bezeichnung“.</summary>
+    public IReadOnlyList<KiWahleintrag> KaeltemittelWahl
+        => (Kaeltemittelliste?.Invoke() ?? Array.Empty<KaeltemittelListeneintrag>())
+           .Select(e => new KiWahleintrag(e.Code, e.Text))
+           .ToList();
 
     /// <summary>Der Listenplatz der Rückkühlart als Schlüssel („0" bis „3"); leer = keine Angabe.</summary>
     public string Rueckkuehlart

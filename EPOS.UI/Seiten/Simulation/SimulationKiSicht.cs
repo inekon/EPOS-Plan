@@ -841,6 +841,39 @@ public sealed class SimulationKiSicht
         }
     }
 
+    /// <summary>„Schnellaufheizung (Heizkurve im Vorheizfenster anheben)“ (SA3a; Vorgabe aus); aus behält die Überhöhung.</summary>
+    public bool AufheizSchnell
+    {
+        get => Aufheizstand.Vorheizen.Schnellaufheizung;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = VorheizVerfahren(Resource.SIMKONF_AUFH_LBL_SCHNELL);
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitSchnellaufheizung(value, a.Vorheizen.UeberhoehungK)));
+        }
+    }
+
+    /// <summary>Die Raumsollwert-Überhöhung [K] &gt; 0 … 10; <c>null</c> = Vorgabe 2 K. Nur bei Schalter an.</summary>
+    public double? AufheizUeberhoehungK
+    {
+        get => Aufheizstand.Vorheizen.UeberhoehungK;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = VorheizVerfahren(Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG);
+            if (!a.Vorheizen.Schnellaufheizung)
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resource.KI_DLG_SIM_AUFH_SCHNELL_AUS,
+                                                                  Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG));
+            if (value is double w && (!(w > 0.0) || w > WindowsFormsApplication1.Vorheizvorgabe.UEBERHOEHUNG_MAX_K))
+            {
+                // Der Bereich ist links offen (> 0 K) — „0 bis 10“ wäre falsch benannt.
+                CultureInfo k = CultureInfo.CurrentCulture;
+                throw new InvalidOperationException(string.Format(k, Resource.KI_FELD_BEREICH, Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG,
+                    w.ToString(k), string.Format(k, Resource.KI_FELD_BEREICH_VON_BIS, "> 0",
+                        WindowsFormsApplication1.Vorheizvorgabe.UEBERHOEHUNG_MAX_K.ToString(k))));
+            }
+            AufheizSchreiben(a.MitVorheizen(a.Vorheizen.MitSchnellaufheizung(true, value)));
+        }
+    }
+
     private static readonly string[] Verfahrenwerte =
     {
         WindowsFormsApplication1.VorheizenSchema.VERFAHREN_RAMPE, WindowsFormsApplication1.VorheizenSchema.VERFAHREN_VORGABE,

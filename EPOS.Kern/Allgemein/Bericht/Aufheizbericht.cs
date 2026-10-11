@@ -147,7 +147,38 @@ namespace WindowsFormsApplication1
             if (v.UnerreichbarTage.HasValue) yield return (T(nameof(RR.BV_VORH_UNERREICHBAR), kultur), Zahl(v.UnerreichbarTage, 0, null, kultur));
             if (v.SperrzeitTage.HasValue) yield return (T(nameof(RR.BV_VORH_SPERRZEIT), kultur), Zahl(v.SperrzeitTage, 0, null, kultur));
             if (v.MehrwaermeMwh.HasValue) yield return (T(nameof(RR.BV_VORH_MEHRWAERME), kultur), Zahl(v.MehrwaermeMwh, 2, "MWh/a", kultur));
+            foreach (var zeile in Schnellaufzeilen(v, kultur)) yield return zeile;
         }
+
+        /// <summary>
+        /// <b>Die Zeilen der Schnellaufheizung</b> (SA3b, Schritt 217): wirksame Überhöhung Δθ, Stunden mit Überhöhung, höchster
+        /// Vorlauf in diesen Stunden, Stunden an der Vorlaufgrenze, wirkungslose Stunden und Stunden in einer Sperrzeit — nur, wenn
+        /// die Überhöhung an einer Zone gewirkt hat (<see cref="Vorheizkennzahlen.UeberhoehungK"/> gesetzt), jede nur mit Wert.
+        /// Ohne Wirkung keine Zeile: Die Tafel bleibt, wie sie war.
+        /// </summary>
+        public static IEnumerable<(string Beschriftung, Tabellenzelle Wert)> Schnellaufzeilen(Vorheizkennzahlen v, CultureInfo kultur)
+        {
+            if (v?.UeberhoehungK == null) yield break;
+            yield return (T(nameof(RR.BV_VORH_SA_UEBERHOEHUNG), kultur), Zahl(v.UeberhoehungK, 1, "K", kultur));
+            if (v.UeberhoehungH.HasValue) yield return (T(nameof(RR.BV_VORH_SA_STUNDEN), kultur), Zahl(v.UeberhoehungH, 0, "h/a", kultur));
+            if (v.UeberhoehungVorlaufMaxC.HasValue) yield return (T(nameof(RR.BV_VORH_SA_VORLAUF_MAX), kultur), Zahl(v.UeberhoehungVorlaufMaxC, 1, "°C", kultur));
+            if (v.VorlaufgrenzeH.HasValue) yield return (T(nameof(RR.BV_VORH_SA_VORLAUFGRENZE), kultur), Zahl(v.VorlaufgrenzeH, 0, "h/a", kultur));
+            if (v.UeberhoehungWirkungslosH.HasValue) yield return (T(nameof(RR.BV_VORH_SA_WIRKUNGSLOS), kultur), Zahl(v.UeberhoehungWirkungslosH, 0, "h/a", kultur));
+            if (v.UeberhoehungSperrzeitH.HasValue) yield return (T(nameof(RR.BV_VORH_SA_SPERRZEIT), kultur), Zahl(v.UeberhoehungSperrzeitH, 0, "h/a", kultur));
+        }
+
+        /// <summary>
+        /// Der Halbsatz der Schnellaufheizung für den Kurzbericht („, mit Schnellaufheizung (+2,0 K)“, mit führendem Komma);
+        /// <c>null</c>, wenn die Überhöhung nicht gewirkt hat.
+        /// </summary>
+        public static string Schnellaufhalbsatz(Vorheizkennzahlen v, CultureInfo kultur)
+            => v?.UeberhoehungK is double k
+                ? string.Format(kultur, T(nameof(RR.BV_VORH_SA_HALBSATZ), kultur), Tabellenformat.F(k, 1, kultur))
+                : null;
+
+        /// <summary>Hat ein Gebäude des Stands mit wirksamer Schnellaufheizung gerechnet (Überhöhung an einer Zone)?</summary>
+        public static bool HatSchnellaufheizung(VariantenDaten v)
+            => v?.Ergebnis?.Gebaeude != null && v.Ergebnis.Gebaeude.Any(g => g?.Vorheizen?.UeberhoehungK != null);
 
         /// <summary>Das Verfahren als Text („Vorheizzeit vorgegeben“ bzw. „Vorheizzeit berechnet“); leer ohne Verfahren.</summary>
         public static string Verfahrenstext(string verfahren, CultureInfo kultur) => verfahren switch
@@ -170,8 +201,13 @@ namespace WindowsFormsApplication1
         {
             List<ErgebnisZoneModel> zonen = g?.Zonen?.Where(z => z?.Vorheizen != null).ToList();
             if (zonen == null || zonen.Count == 0) return null;
-            var t = new Berichtstabelle().Feste(2355, 1400, 1400, 1400, 1400, 1400);
-            t.MitKopf(new[]
+            // SA3b: die zwei Spalten der Schnellaufheizung (Δθ, Stunden mit Überhöhung) nur, wenn sie an einer Zone gewirkt hat —
+            // sonst bleibt die Tafel, wie sie war.
+            bool schnell = zonen.Any(z => z.Vorheizen.UeberhoehungK != null);
+            var t = schnell
+                ? new Berichtstabelle().Feste(1855, 1070, 1070, 1070, 1070, 1070, 1070, 1070)
+                : new Berichtstabelle().Feste(2355, 1400, 1400, 1400, 1400, 1400);
+            var kopf = new List<Tabellenzelle>
             {
                 Zellen.Kopf(T(nameof(RR.BV_VORH_ZONE), kultur), Tabellenausrichtung.Links),
                 Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_ZEIT), kultur)),
@@ -179,11 +215,17 @@ namespace WindowsFormsApplication1
                 Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_VERFEHLT), kultur)),
                 Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_UNTERSCHREITUNG), kultur)),
                 Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_MEHRWAERME), kultur)),
-            });
+            };
+            if (schnell)
+            {
+                kopf.Add(Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_UEBERHOEHUNG), kultur)));
+                kopf.Add(Zellen.Kopf(T(nameof(RR.BV_VORH_KOPF_UEBERHOEHUNG_H), kultur)));
+            }
+            t.MitKopf(kopf.ToArray());
             foreach (ErgebnisZoneModel z in zonen)
             {
                 Vorheizkennzahlen v = z.Vorheizen;
-                t.Zeile(new[]
+                var zeile = new List<Tabellenzelle>
                 {
                     Zellen.Text(string.IsNullOrWhiteSpace(z.Bezeichner) ? Tabellenzelle.STRICH : z.Bezeichner),
                     Rechts(Zahl(v.VorheizzeitH, 0, null, kultur)),
@@ -191,7 +233,13 @@ namespace WindowsFormsApplication1
                     Rechts(Zahl(v.TageVerfehlt, 0, null, kultur)),
                     Rechts(Zahl(v.UnterschreitungMaxK, 1, null, kultur)),
                     Rechts(Zahl(v.MehrwaermeMwh, 2, null, kultur)),
-                });
+                };
+                if (schnell)
+                {
+                    zeile.Add(Rechts(Zahl(v.UeberhoehungK, 1, null, kultur)));
+                    zeile.Add(Rechts(Zahl(v.UeberhoehungH, 0, null, kultur)));
+                }
+                t.Zeile(zeile.ToArray());
             }
             return t;
         }

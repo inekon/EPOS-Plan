@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Die Wege des Menuekopfs „Entwicklung" (Administration und Support, Stufe 1; Konzept
     /// Abschnitte 3.3 bis 3.6, Entwicklerhandbuch Abschnitt 5) und die Geste
-    /// Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan". Eine Huelle ohne Fachwissen: Sie oeffnet Dateien und Ordner,
+    /// Strg+Umschalt+F12 im Dialog „Über EPOS-Plan". Eine Huelle ohne Fachwissen: Sie oeffnet Dateien und Ordner,
     /// kopiert den Diagnoseblock des Kerns und schaltet den Modus ueber
     /// <see cref="Entwicklermodus"/>. Gerufen wird sie aus <c>HauptfensterHuelle.Ablauf</c>
     /// (schon eine Nachricht spaeter, also auf dem UI-Faden) und aus
@@ -109,7 +109,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Geste Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" (<c>UeberFenster</c>; Konzept
+        /// Die Geste Strg+Umschalt+F12 im Dialog „Über EPOS-Plan" (<c>UeberFenster</c>; Konzept
         /// 3.2): Ist der Modus aus, fragt sie nach und schaltet ihn dauerhaft ein — liegt die Sperre
         /// des Administrators, meldet sie das; ist er an, schaltet sie ihn aus — läuft er über
         /// Umgebung oder Startargument, nennt die Meldung den Grund. Nach einem Wechsel versorgt
