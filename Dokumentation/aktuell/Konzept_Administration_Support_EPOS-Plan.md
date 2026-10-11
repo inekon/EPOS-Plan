@@ -194,11 +194,12 @@ Release-Anwendung, auch beim Kunden.
 | Weg | Wann | Handhabung | Wieder aus |
 |---|---|---|---|
 | **Verknüpfung „EPOS-Plan (Entwickler)"** mit `--entwickler` | Entwicklerrechner, Vorführung, Fehlersuche beim Kunden über Fernwartung | Verknüpfung einmal anlegen (das Setup legt sie **nicht** an — sie bleibt dem Entwickler vorbehalten); Start über sie | nächster Start ohne Argument |
-| **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+Alt+E** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" oder dieselbe Geste im Dialog (löscht die Einstellung) |
+| **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+F12** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" oder dieselbe Geste im Dialog (löscht die Einstellung) |
 | **Umgebungsvariable** `EPOS_ENTWICKLER=1` | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf | einmal im System setzen | Variable entfernen |
 
-Die Geste wirkt nur im geöffneten Dialog „Über EPOS-Plan“, nicht im Hauptfenster. Unter Windows fängt
-das Fenster (`UeberFenster`) die Tastenfolge über `BlazorDialogForm.Befehlstaste` ab, bevor die WebView
+Die Geste wirkt nur im geöffneten Dialog „Über EPOS-Plan“, nicht im Hauptfenster. Der Dialog erkennt
+die Folge selbst (Tastencode F12 mit Strg und Umschalt) und ruft die Plattform; unter Windows fängt zusätzlich
+das Fenster (`UeberFenster`) dieselbe Folge über `BlazorDialogForm.Befehlstaste` ab, bevor die WebView
 sie sieht, und schaltet eine Nachricht später: Ist der Modus aus, nach der Rückfrage ein (bei Sperre
 des Administrators eine Meldung), ist er an, aus — läuft er über Umgebung oder Startargument, nennt
 die Meldung den Grund. Danach zeigt der Dialog den neuen Diagnoseblock, und das Hauptfenster versorgt
@@ -523,7 +524,7 @@ fest, auch dort, wo der Entscheid abweicht.
 | Nr. | Frage | Lesarten | Empfehlung des Entwurfs | Entscheid 11.10.2026 |
 |---|---|---|---|---|
 | **AS-Q1** | Quellen des Entwicklermodus | (a) Einstellung + Startargument + Umgebungsvariable mit HKLM-Sperre (3.1); (b) nur Startargument und Umgebungsvariable, nichts Dauerhaftes; (c) Lizenztyp „intern" als einzige Quelle | (a) — ein Baustein, vier Quellen, der Administrator geht vor; (c) scheitert am Kundenrechner, auf dem der Entwickler mit der Kundenlizenz arbeitet | **(a)** |
-| **AS-Q2** | Geste zum Einschalten | (a) Tastenfolge Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" mit Rückfrage; (b) wie (a) zusätzlich mit Kennwort (fest in den Ressourcen, kein Geheimnis vor einem Entwickler); (c) sichtbarer Haken im Einstellungsdialog | (a) — die Bereiche sind kein Geheimnis, nur kein Anwenderweg; ein Kennwort hält niemanden auf und kostet Pflege; (c) widerspricht dem Auftrag | **(a)** |
+| **AS-Q2** | Geste zum Einschalten | (a) Tastenfolge Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" mit Rückfrage; (b) wie (a) zusätzlich mit Kennwort (fest in den Ressourcen, kein Geheimnis vor einem Entwickler); (c) sichtbarer Haken im Einstellungsdialog | (a) — die Bereiche sind kein Geheimnis, nur kein Anwenderweg; ein Kennwort hält niemanden auf und kostet Pflege; (c) widerspricht dem Auftrag | **(a)**; Anwenderentscheid 11.10.2026: Tastenfolge Strg+Umschalt+F12 statt Strg+Umschalt+Alt+E — Strg+Alt ist auf deutscher Tastatur AltGr, AltGr+E ist Zeicheneingabe; Umsetzung Commit `⟨COMMIT⟩` |
 | **AS-Q3** | Wo verborgene Elemente stehen | (a) am Fachort (Knopf im Importdialog bleibt dort, nur verborgen) und eigener Kopf *Entwicklung* für Werkzeuge ohne Fachort; (b) alles in den Kopf *Entwicklung* | (a) — der Projektdatei-Knopf gehört neben die Dateizeile, sonst bricht der Bedienweg des Imports | **(a)** |
 | **AS-Q4** | Welche Kandidaten aus 3.4 Entwicklerbereich werden | je Zeile ja/nein | wie die Spalte „Empfehlung" in 3.4 — fünf werden Entwicklerbereich (Wiederherstellen im Katalogabgleich, KI-Werkzeuge, IDS-Zusage, Zapfprofil-Rechenvorgaben, WebView-Entwicklerwerkzeuge), vier bleiben Anwender, die Prüfhaken bleiben Build-Schalter | **wie empfohlen, mit einer Ausnahme (Entscheid 11.10.2026):** die Zapfprofil-Rechenvorgaben werden Anwenderrubrik „Zapfprofil" („sollte enthalten sein ohne Entwickler-Abhängigkeit") — vier werden Entwicklerbereich, fünf bleiben Anwender; im Code umgesetzt |
 | **AS-Q5** | Bestand aus dem Modus ohne Modus | (a) lesbar und „Neu lesen" möglich, nur Neuanlage verborgen; (b) alles zur Projektdatei verborgen | (a) — verborgene Daten wären verwaiste Daten; die Herkunft bleibt sichtbar | **(a)** |
