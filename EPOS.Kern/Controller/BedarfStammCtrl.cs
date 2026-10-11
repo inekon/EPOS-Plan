@@ -464,6 +464,97 @@ namespace WindowsFormsApplication1
         /// Das Temperaturpaar eines Katalogsatzes (PW1 Stufe 1) — nur die Prozesswärme führt eines;
         /// sonst und ohne Paar <c>(null, null)</c>.
         /// </summary>
+        /// <summary>
+        /// Die Projekttabellen einer Art: Kopf der Projektkopie, Typprofil der Kopie samt Spalte, die auf
+        /// den Kopf zeigt, und die Zuordnungstabelle samt Spalte, die auf die Kopie zeigt.
+        /// </summary>
+        internal static (string Kopf, string Typ, string Zuordnung, string Bezug) ProjektTabellen(BedarfsArt art)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher:
+                    return (StromverbraucherStammCtrl.TABLE_PROJ, StromverbraucherStammCtrl.TYP_PROJ,
+                            "Z_Projekt_Stromverbraucher", "ID_Stromverbraucher");
+                case BedarfsArt.Prozesswaerme:
+                    return (ProzesswaermeStammCtrl.TABLE_PROJ, ProzesswaermeStammCtrl.TYP_PROJ,
+                            "Z_Projekt_Prozesswaerme", "ID_Prozesswaerme");
+                case BedarfsArt.Kaelte:
+                    return (KaeltebedarfStammCtrl.TABLE_PROJ, KaeltebedarfStammCtrl.TYP_PROJ,
+                            "Z_Projekt_Kaeltebedarf", "ID_Kaeltebedarf");
+                default:
+                    return (BrauchwasserStammCtrl.TABLE_PROJ, BrauchwasserStammCtrl.TYP_PROJ,
+                            "Z_Projekt_Brauchwasser", "ID_Brauchwasser");
+            }
+        }
+
+        /// <summary>Die Projektkopie mit diesem Namen im Projekt; 0, wenn es keine gibt.</summary>
+        internal static int ProjektkopieId(BedarfsArt art, string bezeichner, int idProjekt)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher: return StromverbraucherStammCtrl.GetProjektId(bezeichner, idProjekt);
+                case BedarfsArt.Prozesswaerme:    return ProzesswaermeStammCtrl.GetProjektId(bezeichner, idProjekt);
+                case BedarfsArt.Kaelte:           return KaeltebedarfStammCtrl.GetProjektId(bezeichner, idProjekt);
+                default:                          return BrauchwasserStammCtrl.GetProjektId(bezeichner, idProjekt);
+            }
+        }
+
+        /// <summary>
+        /// „In das Projekt übernehmen" (Stufe 4 der Katalogauswahl): kopiert den Katalogsatz samt Typprofil
+        /// sofort ins Projekt; die Kopie trägt <c>ID_Stamm</c>. Eine gleichnamige Kopie des Projekts wird
+        /// wiederverwendet. Rückgabe: ID der Kopie, −1 bei Fehler.
+        /// </summary>
+        internal static int CopyFromStamm(BedarfsArt art, string bezeichner, int idProjekt)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher: return StromverbraucherStammCtrl.CopyFromStamm(bezeichner, idProjekt);
+                case BedarfsArt.Prozesswaerme:    return ProzesswaermeStammCtrl.CopyFromStamm(bezeichner, idProjekt);
+                case BedarfsArt.Kaelte:           return KaeltebedarfStammCtrl.CopyFromStamm(bezeichner, idProjekt);
+                default:                          return BrauchwasserStammCtrl.CopyFromStamm(bezeichner, idProjekt);
+            }
+        }
+
+        /// <summary>
+        /// Räumt eine Projektkopie samt Typprofil ab — nur, wenn keine Zuordnung des Projekts mehr auf sie
+        /// zeigt (Abbrechen nach „In das Projekt übernehmen", <c>Projektkopievormerkung</c>). Eine Transaktion.
+        /// Rückgabe: <c>true</c>, wenn gelöscht wurde.
+        /// </summary>
+        internal static bool ProjektkopieEntfernen(BedarfsArt art, int idKopie, int idProjekt)
+        {
+            if (idKopie <= 0 || idProjekt <= 0) return false;
+            (string kopf, string typ, string zuordnung, string bezug) = ProjektTabellen(art);
+            if (!DataRepository.TabelleVorhanden(kopf)) return false;
+
+            if (DataRepository.TabelleVorhanden(zuordnung))
+            {
+                object n = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM " + zuordnung + " WHERE " + bezug + " = ? AND ID_Projekt = ?",
+                    new DbParam("@id", idKopie), new DbParam("@proj", idProjekt));
+                if (n != null && n != DBNull.Value && Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0) return false;
+            }
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    if (DataRepository.TabelleVorhanden(typ))
+                        v.Ausfuehren("DELETE FROM " + typ + " WHERE " + bezug + " = ? AND ID_Projekt = ?",
+                                     new DbParam("@id", idKopie), new DbParam("@proj", idProjekt));
+                    v.Ausfuehren("DELETE FROM " + kopf + " WHERE ID = ? AND ID_Projekt = ?",
+                                 new DbParam("@id", idKopie), new DbParam("@proj", idProjekt));
+                    v.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    Console.WriteLine("Fehler beim Entfernen der Projektkopie: " + ex.Message);
+                    return false;
+                }
+            }
+        }
+
         internal static (double? Vorlauf, double? Ruecklauf) Temperaturpaar(BedarfsArt art, string bezeichner)
             => art == BedarfsArt.Prozesswaerme ? ProzesswaermeStammCtrl.Temperaturpaar(bezeichner)
              : art == BedarfsArt.Kaelte ? KaeltebedarfStammCtrl.Temperaturpaar(bezeichner) : (null, null);

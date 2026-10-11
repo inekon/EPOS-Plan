@@ -835,7 +835,7 @@ public class KatalogSchreibenWirftTests : EposBunitContext
     {
         var cut = Bedarf(loeschen: _ => Wirft<bool>());
         ZeileWaehlen(cut);
-        Knopf(cut, "Prozess in DB löschen").Click();
+        Knopf(cut, R.BPF_BTN_KAT_LOESCHEN).Click();
         Knopf(cut, "Ja").Click();
         GrundSteht(cut, R.WURZEL_LOESCHEN_FEHLER);
     }

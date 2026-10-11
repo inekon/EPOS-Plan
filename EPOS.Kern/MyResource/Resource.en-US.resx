@@ -52182,6 +52182,189 @@ chart</value>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Skipped (assigned in the project): {0}</value>
   </data>
+  <data name="BPF_BTN_KAT_TYP_AENDERN" xml:space="preserve">
+    <value>Change type…</value>
+  </data>
+  <data name="BPF_BTN_KAT_DB_AENDERN" xml:space="preserve">
+    <value>Edit in database…</value>
+  </data>
+  <data name="BPF_BTN_KAT_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="BPF_BTN_KAT_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_LEISTE" xml:space="preserve">
+    <value>Simulation…</value>
+  </data>
+  <data name="BPF_HINW_SIMULATION" xml:space="preserve">
+    <value>Calculates the demand with the state of this dialog and shows key figures, months and chart.</value>
+  </data>
+  <data name="BPF_HINW_BEARBEITEN_EINER" xml:space="preserve">
+    <value>“Edit…” acts on exactly one project row.</value>
+  </data>
+  <data name="BPF_HINW_DB_AENDERN" xml:space="preserve">
+    <value>Opens the selected catalogue record in the catalogue editor.</value>
+  </data>
+  <data name="BPF_HINW_TYP_AENDERN" xml:space="preserve">
+    <value>Opens the weekly hourly profiles of the types.</value>
+  </data>
+  <data name="BPF_ZF_TYP" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="BPF_ZF_JAHRESSUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="BPF_ZF_KALENDER" xml:space="preserve">
+    <value>Calendar</value>
+  </data>
+  <data name="BPF_ZF_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="BPF_GRP_SATZ" xml:space="preserve">
+    <value>Record</value>
+  </data>
+  <data name="BPF_MSG_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Assigned in the project and skipped: {0}.</value>
+  </data>
+  <data name="BPF_TITEL_KAELTE" xml:space="preserve">
+    <value>Cooling demand profiles</value>
+  </data>
+  <data name="BPF_LBL_PROJEKTLISTE_KAELTE" xml:space="preserve">
+    <value>Selected cooling demands in the project</value>
+  </data>
+  <data name="BPF_LBL_KATALOG_KAELTE" xml:space="preserve">
+    <value>Cooling demand database</value>
+  </data>
+  <data name="BPF_LBL_JAHRESVERBRAUCH_KAELTE" xml:space="preserve">
+    <value>annual cooling demand:</value>
+  </data>
+  <data name="BPF_LBL_SUMME_KAELTE" xml:space="preserve">
+    <value>Total of all selected cooling demands:</value>
+  </data>
+  <data name="BPF_HILFE_BERECHNUNG_KAELTE" xml:space="preserve">
+    <value>Calculation: cooling demand</value>
+  </data>
+  <data name="BPF_BTN_DB_AENDERN_KAELTE" xml:space="preserve">
+    <value>Edit cooling demand in database</value>
+  </data>
+  <data name="BPF_BTN_DB_NEU_KAELTE" xml:space="preserve">
+    <value>New cooling demand in database</value>
+  </data>
+  <data name="BPF_BTN_DB_LOESCHEN_KAELTE" xml:space="preserve">
+    <value>Delete cooling demand in database</value>
+  </data>
+  <data name="BPF_BTN_TYP_AENDERN_KAELTE" xml:space="preserve">
+    <value>Edit type in database</value>
+  </data>
+  <data name="BPF_BTN_SIMULATION_KAELTE" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="BADM_TITEL_KAELTE" xml:space="preserve">
+    <value>Cooling demand management</value>
+  </data>
+  <data name="BADM_LBL_KATALOG_KAELTE" xml:space="preserve">
+    <value>Cooling demands in the database</value>
+  </data>
+  <data name="BADM_LBL_JAHRESSUMME_KAELTE" xml:space="preserve">
+    <value>Annual cooling demand</value>
+  </data>
+  <data name="BADM_BTN_AENDERN_KAELTE" xml:space="preserve">
+    <value>Edit cooling demand…</value>
+  </data>
+  <data name="BADM_BTN_NEU_KAELTE" xml:space="preserve">
+    <value>New cooling demand…</value>
+  </data>
+  <data name="BADM_BTN_TYP_KAELTE" xml:space="preserve">
+    <value>Edit cooling type…</value>
+  </data>
+  <data name="BADM_BTN_LOESCHEN_KAELTE" xml:space="preserve">
+    <value>Delete cooling demand</value>
+  </data>
+  <data name="BADM_MSG_KEINE_WAHL_KAELTE" xml:space="preserve">
+    <value>Please select a cooling demand.</value>
+  </data>
+  <data name="BTYP_TITEL_KAELTE" xml:space="preserve">
+    <value>Cooling demand input</value>
+  </data>
+  <data name="BTYP_LBL_TYP_KAELTE" xml:space="preserve">
+    <value>Cooling type:</value>
+  </data>
+  <data name="BTYP_MSG_TYP_KAELTE" xml:space="preserve">
+    <value>Select a cooling type!</value>
+  </data>
+  <data name="BPRO_TITEL_KAELTE" xml:space="preserve">
+    <value>Cooling types hourly distribution</value>
+  </data>
+  <data name="BPRO_LBL_LISTE_KAELTE" xml:space="preserve">
+    <value>List of cooling types in the database:</value>
+  </data>
+  <data name="BPRO_LBL_BESCHR_KAELTE" xml:space="preserve">
+    <value>Description of the selected cooling type:</value>
+  </data>
+  <data name="GEB_ZF_UWERTE" xml:space="preserve">
+    <value>U-values</value>
+  </data>
+  <data name="GEB_ZF_UWERTE_WERT" xml:space="preserve">
+    <value>wall {0} · window {1} · roof {2} · ground {3} W/(m²·K)</value>
+  </data>
+  <data name="GEB_ZF_AUSRICHTUNG" xml:space="preserve">
+    <value>Orientation</value>
+  </data>
+  <data name="GEB_ZF_AUSRICHTUNG_WERT" xml:space="preserve">
+    <value>Plan top {0}°</value>
+  </data>
+  <data name="GEB_ZF_KUEHLUNG" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="GEB_ZF_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEB_RUECKWEG_BLEIBT" xml:space="preserve">
+    <value>The project keeps the building's assignment, floor area and orientation.</value>
+  </data>
+  <data name="GEB_RUECKWEG_ABWEICHUNGEN" xml:space="preserve">
+    <value>Header columns differing from the origin “{0}”: {1}</value>
+  </data>
+  <data name="GEB_RUECKWEG_ABW_ZEILE" xml:space="preserve">
+    <value>{0} ({1} → {2})</value>
+  </data>
+  <data name="GEB_RUECKWEG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>No header columns differ from the origin “{0}”.</value>
+  </data>
+  <data name="GEB_RUECKWEG_KINDZEILEN" xml:space="preserve">
+    <value>Child rows in the project / at the origin: {0}</value>
+  </data>
+  <data name="GEB_RUECKWEG_KIND_ZEILE" xml:space="preserve">
+    <value>{0} {1} / {2}</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_BAUTEILE" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_LUFTSTROEME" xml:space="preserve">
+    <value>Air flows</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_KALENDER" xml:space="preserve">
+    <value>Calendars</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_VORGABEN" xml:space="preserve">
+    <value>Setpoint rows</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_PERIODEN" xml:space="preserve">
+    <value>Periods</value>
+  </data>
+  <data name="GEB_SPERRE_RUECKWEG_MEHRERE" xml:space="preserve">
+    <value>Only for exactly one selected project building – transfer several buildings one after another.</value>
+  </data>
+  <data name="GEB_SPERRE_BEARBEITEN_EINER" xml:space="preserve">
+    <value>“Edit…” works on exactly one selected record.</value>
+  </data>
+  <data name="GEB_MSG_LOESCHEN_N" xml:space="preserve">
+    <value>{0} buildings deleted.</value>
+  </data>
   <data name="BV_VORH_VERFAHREN" xml:space="preserve">
     <value>Preheating – method</value>
   </data>

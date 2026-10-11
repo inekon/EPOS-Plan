@@ -479,9 +479,9 @@ public class GebaeudeDialogImportTests : EposBunitContext
         var cut = MitNeulesen(p, n, ZweiZeilen());
 
         Zeile(cut, 1);
-        Assert.Empty(cut.FindAll("button.epos-gebaeude-neulesen"));
+        Assert.Empty(GebaeudeDialogProbe.SatzKnoepfe(cut, "button.epos-gebaeude-neulesen"));
         Zeile(cut, 0);
-        IElement knopf = cut.Find("button.epos-gebaeude-neulesen");
+        IElement knopf = GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-neulesen");
         Assert.Equal("Datei erneut lesen…", knopf.TextContent.Trim());
         Assert.Contains("gespeichert wird nichts", knopf.GetAttribute("title"));
         Zeile(cut, 1);
@@ -507,7 +507,7 @@ public class GebaeudeDialogImportTests : EposBunitContext
         var cut = MitNeulesen(p, n, ZweiZeilen());
         Zeile(cut, 0);
 
-        cut.Find("button.epos-gebaeude-neulesen").Click();
+        GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-neulesen").Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.NeuLesenOffen));
         Assert.Single(n.Gelesen);
         Assert.Equal("Importhaus", n.Gelesen[0].Name);
@@ -544,7 +544,7 @@ public class GebaeudeDialogImportTests : EposBunitContext
         var cut = MitNeulesen(p, n, ZweiZeilen());
         Zeile(cut, 0);
 
-        cut.Find("button.epos-gebaeude-neulesen").Click();
+        GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-neulesen").Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.NeuLesenOffen));
         IElement hinweis = cut.Find(".epos-gebaeude-neulesen-hinweis");
         Assert.Equal("alert", hinweis.GetAttribute("role"));
@@ -569,7 +569,7 @@ public class GebaeudeDialogImportTests : EposBunitContext
         n.Antworten.Enqueue(null);
         var cut = MitNeulesen(p, n, ZweiZeilen());
         Zeile(cut, 0);
-        cut.Find("button.epos-gebaeude-neulesen").Click();
+        GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-neulesen").Click();
         cut.WaitForAssertion(() => Assert.Single(n.Gelesen));
         Assert.False(cut.Instance.NeuLesenOffen);
         Assert.Empty(cut.FindAll(".epos-gebaeude-neulesen-hinweis"));
@@ -595,12 +595,12 @@ public class GebaeudeDialogImportTests : EposBunitContext
         Zeile(cut, 0);
 
         // Ohne Angebot (gespeichert und gleich, abweichende Prüfsumme) kein Knopf.
-        cut.Find("button.epos-gebaeude-neulesen").Click();
+        GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-neulesen").Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.NeuLesenOffen));
         Assert.Empty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss"));
         cut.Find(".epos-ueberlagerung[aria-label='Importdatei erneut lesen'] button.epos-ueberlagerung-zu").Click();
 
-        cut.Find("button.epos-gebaeude-neulesen").Click();
+        GebaeudeDialogProbe.SatzKnopf(cut, "button.epos-gebaeude-neulesen").Click();
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss")));
         Assert.Contains("3 Räume", cut.Find(".epos-gebaeude-neulesen-grundriss-angebot").TextContent);
         IElement knopf = cut.Find("button.epos-gebaeude-neulesen-grundriss");
