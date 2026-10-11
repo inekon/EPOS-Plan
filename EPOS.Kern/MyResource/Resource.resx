@@ -52808,5 +52808,48 @@ Chart</value>
   <data name="FW_SCHLIESSEN" xml:space="preserve">
     <value>Schließen</value>
   </data>
+  <!-- Administration und Support, Stufe 3 (Welle 3a) -->
+  <data name="UEB_VERSION_BAUDATUM" xml:space="preserve">
+    <value>Version {0} vom {1}</value>
+  </data>
+  <data name="UEB_ZONE_DIAGNOSE" xml:space="preserve">
+    <value>Diagnosedaten</value>
+  </data>
+  <data name="UEB_DIAGNOSE_HINWEIS" xml:space="preserve">
+    <value>Mit diesen Angaben erkennt der Support Ihre Installation. Kopieren Sie sie in Ihre E-Mail oder lesen Sie sie am Telefon vor.</value>
+  </data>
+  <data name="UEB_KOPIEREN" xml:space="preserve">
+    <value>Diagnosedaten kopieren</value>
+  </data>
+  <data name="UEB_KOPIERT" xml:space="preserve">
+    <value>Die Diagnosedaten stehen in der Zwischenablage.</value>
+  </data>
+  <data name="UEB_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Protokollordner öffnen</value>
+  </data>
+  <data name="UEB_ZONE_KONTAKT" xml:space="preserve">
+    <value>Kontakt</value>
+  </data>
+  <data name="UEB_TELEFON" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="UEB_MAIL" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="UEB_ZEITEN" xml:space="preserve">
+    <value>Erreichbar</value>
+  </data>
+  <data name="UEB_FERNWARTUNG" xml:space="preserve">
+    <value>Fernwartung…</value>
+  </data>
+  <data name="UEB_MAIL_FEHLER" xml:space="preserve">
+    <value>Das E-Mail-Programm konnte nicht geöffnet werden. Schreiben Sie an {0}.</value>
+  </data>
+  <data name="UEB_MODUS_GEWECHSELT" xml:space="preserve">
+    <value>Die Diagnosedaten sind aktualisiert.</value>
+  </data>
+  <data name="UEB_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
 </root>
 
