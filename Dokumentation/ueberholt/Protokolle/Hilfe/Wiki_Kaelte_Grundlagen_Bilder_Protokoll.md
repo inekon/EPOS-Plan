@@ -50,7 +50,7 @@ Sammelmerge `b2d7751c` bis `49a174c8` mit drei Nachzügen: `888f55cc` (Zapfprofi
 
 - **W6a** `089b3447`: zwölf Beispieldiagramme aus `Proben/ChartProben` als `Diagramm_*.png` in zehn Seiten. `35cc5e83`: Konzept Hilfesystem 14.3, Absatz
   „PNG-Bilder“; neue Wache `EPOS.Kern.Tests/WikiBilderWacheTests.cs` mit fünf Prüfpunkten.
-- **W6b** `6f3e9ceb`: Wirt-Seite `/wikibild`, `Wikibeispiele.cs`, Skript `Proben/Rasterprobe/wikibilder.mjs`. `acd5fee8`: 14 Bildschirmfotos
+- **W6b** `6f3e9ceb`: Wirt-Seite `/wikibild`, `Wikibeispiele.cs`, Skript `Proben/Rasterprobe/wikibilder.mjs`. `acd5fee8`: 10 Bildschirmfotos (vier Aufnahmen der Gebäudedialoge auf Anwenderentscheid vom 11.10.2026 zurückgestellt (Dialoge noch nicht ausgearbeitet))
   `Bildschirmfoto_*.png` (Heizkessel, BHKW, Wärmepumpe, Pufferspeicher, Stromspeicher, Photovoltaik, Solarkollektoren, Brauchwasser, Prozesswärme,
   Gebäudedaten, Kältemaschine, Konditionierung, Zonen, Zonendialog). Acht Platzhalter entfernt: Anlagenschema (2), Nutzungsprofile, Ergebnis mit
   Reiterleiste, Bedarfsdialog gekoppelt, WP-Konfiguration mit Herleitung, Wärmequelle Erdreich.
