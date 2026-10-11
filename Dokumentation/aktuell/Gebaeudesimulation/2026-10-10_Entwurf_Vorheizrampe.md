@@ -6,7 +6,7 @@ beantwortet (Abschnitt 5.1, Wortlaut); F8 wurde am selben Tag durch die Wahl (a)
 ein; die Fragen F11–F16 der Fassung 2 hat der Anwender am selben Tag entschieden (E124, Abschnitt 5.2) — alle nach
 Empfehlung bis auf F13: Die berechnete Vorheizzeit gilt „fest“ an jedem Sprung, die Art „täglich“ wird nicht gebaut. Die
 Fragen F17–F20 aus der Messung der Welle V3 hat der Anwender am 11.10.2026 nach Empfehlung entschieden (E125, Abschnitt 5.3).
-Der Bau läuft in den Wellen V0–V8 (Abschnitt 6). Die Messungen in Abschnitt 2.8 stammen aus der Basis R51 `2026-10-10_R51_FreieKuehlung`, deren Reihen für 1051 mit R50
+Der Bau läuft in den Wellen V0–V8 (Abschnitt 6). Abschnitt 7 beschreibt die Schnellaufheizung (E128). Die Messungen in Abschnitt 2.8 stammen aus der Basis R51 `2026-10-10_R51_FreieKuehlung`, deren Reihen für 1051 mit R50
 übereinstimmen (Heizwärme 24,22 MWh, Spitze 30,00 kW, P_auf 31,62 kW). Grundlage bleiben
 [Teilkonzept Konditionierungsprofile](../Konzept_Konditionierungsprofile_EPOS-Plan.md) Kapitel 4 (Aufheizoptimierung,
 Stufe KP3), [Entwurf KP3](../../ueberholt/2026-10-02_Entwurf_KP3.md), [Konzept Heizlastspitzen](2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)
@@ -666,3 +666,33 @@ Nur Option 1 (ohne V3; Bedarf in der Meldung dann aus der Vorausschau an den ver
 Zahl. Alle Fragen sind entschieden (E122, E124, E125). V3 ist gegenüber Fassung 2 um 0,5 PT gesenkt: Mit F13 (a) entfallen
 die zweite Anwendungsart „täglich“ (Fenster je Sprung aus t_nötig, eigene Zählung der Absenkung), ihre Auswahl und deren
 Tests; die Vorausschau je Sprung bleibt, weil t_V ihr 95-%-Quantil ist (F19).
+
+---
+
+## 7 Schnellaufheizung (E128)
+
+Entschieden am 11.10.2026 (E128, Wortlaut: „setze um: Schnellaufheizung“), Bau in den Wellen SA1–SA4.
+
+**Problem.** Ein Heizkreis fährt am Heizkurvenvorlauf; die Heizkörperleistung hängt an der Übertemperatur zum Raum. Hat die
+Zone ihren Sollwert erreicht, bleibt dem Kreis keine Aufheizreserve. An 1054 braucht das 95-%-Quantil daher 12 h Vorheizzeit,
+jede Nacht wird durchgeheizt (+9,7 % Heizwärme).
+
+**Verfahren.** Im Vorheizfenster rechnet die Heizkurve der Zone mit θ_T + Δθ (Raumsollwert-Überhöhung, Art (b)); der Vorlauf
+steigt über die Kurve mit, bei Kälte mehr, bei mildem Wetter weniger. Ende bei Ankunft: Sobald die Raumluft den Ankunftsbezug
+nach E125 F17 erreicht, spätestens am Kalendersprung, gilt wieder die normale Heizkurve. Grenzen sind `Vorlauf_Max` der Anlage
+und die Deckelreihe P_V/P_K, die wirksam bleibt. Die Vorausschau der Option 2 rechnet mit; θ_stat des Ankunftsbezugs
+bleibt ohne Überhöhung. Die Vorgabe Δθ wird nach der Messung in SA1 (1054, 1047, 1058) Kern-Konstante; Schalter je Projekt,
+Vorgabe aus.
+
+**Wirkungsbereich.** Nur Zonen mit wirksamem Heizkreis (AK1, AK3) und nur in den Verfahren „Vorheizzeit vorgeben“ und
+„Vorheizzeit berechnen“. Ohne Wirkung bei Sperrzeit und ohne Heizkreis.
+
+**Folgen für Wärmepumpen.** Eingeschlossen, Überhöhung bis `Vorlauf_Max`. Ein höherer Vorlauf senkt die Leistungszahl; der
+Lauf weist Strom und Arbeitszahl aus.
+
+| Welle | Inhalt | PT |
+|---|---|---|
+| SA1 | Kern und Messung: Überhöhung im Fenster, Ende bei Ankunft, Vorausschau, Messung an 1054, 1047, 1058, Konstante Δθ | 1,5–2 |
+| SA2 | Schemaschritt 217 und Datenweg: Schalter je Projekt, Controller, Testdatenbank | 0,5 |
+| SA3 | Oberfläche, Bericht, Export | 0,5–1 |
+| SA4 | Referenzprojekt (Kopie eines Heizkreis-Projekts), Basis R53, Wiki | 0,5–1 |
