@@ -263,6 +263,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_StromganglinieDaten WHERE ID_Ganglinie = " + idStrom));
             Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_WaermebedarfDaten WHERE ID_Ganglinie = " + idWaerme));
 
+            // Die Kopie nennt ihren Katalogsatz ueber die ID (Spalte ID_Stamm), nicht nur ueber den Namen.
+            if (KatalogkostenUrsprungSchema.UrsprungLesbar("Tab_Waermebedarf"))
+                Assert.Equal(Zahl("SELECT ID FROM Tab_Waermebedarf_STAMM WHERE Bezeichner = 'GL1_Katalog_Waerme'"),
+                             Zahl("SELECT ID_Stamm FROM Tab_Waermebedarf WHERE ID = " + idWaerme));
+            if (KatalogkostenUrsprungSchema.UrsprungLesbar("Tab_Stromganglinie"))
+                Assert.Equal(Zahl("SELECT ID FROM Tab_Stromganglinie_STAMM WHERE Bezeichner = 'GL1_Katalog_Strom'"),
+                             Zahl("SELECT ID_Stamm FROM Tab_Stromganglinie WHERE ID = " + idStrom));
+
             // Der Katalogsatz selbst bleibt, wo er hingehoert.
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Stromganglinie_STAMM " +
                                  "WHERE Bezeichner = 'GL1_Katalog_Strom'"));
@@ -288,6 +296,72 @@ namespace EPOS.Kern.Tests
                                  "WHERE ID_Projekt IS NULL OR ID_Projekt = 0"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Waermebedarf " +
                                  "WHERE ID_Projekt IS NULL OR ID_Projekt = 0"));
+        }
+
+        /// <summary>
+        /// <b>Kanalfilter beim Löschen</b> (Konzept Kältebedarf K5, 3.3): Speichern über
+        /// <c>Del_WaermebedarfExtern(projekt, kanal)</c> + <c>Add_WaermebedarfExtern</c> ersetzt nur die
+        /// Zeilen dieses Kanals; die Zeilen der übrigen Kanäle — auch eine mit leerem Kanal, die als
+        /// Heizung zählt — bleiben unverändert stehen.
+        /// </summary>
+        [Fact]
+        public void Speichern_mit_Kanalfilter_laesst_die_Zeilen_der_anderen_Kanaele_stehen()
+        {
+            using var _ = new Kulturvorrichtung();
+            if (!_db.Vorhanden) return;
+
+            int projekt = ProjektAnlegen("K5 Kanalfilter");
+            var werte = new List<double> { 1.0, 2.0, 3.0, 4.0 };
+            Assert.True(new WaermebedarfStammCtrl().ImportGanglinie("K5_Heizung", werte));
+            Assert.True(new WaermebedarfStammCtrl().ImportGanglinie("K5_Kuehlung", werte));
+
+            WizardCtrl wiz = new WizardCtrl();
+            var liste = new List<Z_ProjWaermebedarfModel>
+            {
+                new Z_ProjWaermebedarfModel { m_szBezeichner = "K5_Heizung", Kanal = DbWerte.KANAL_HEIZUNG },
+                new Z_ProjWaermebedarfModel { m_szBezeichner = "K5_Heizung", Kanal = DbWerte.KANAL_BRAUCHWASSER },
+                new Z_ProjWaermebedarfModel { m_szBezeichner = "K5_Kuehlung", Kanal = DbWerte.KANAL_KUEHLUNG }
+            };
+            Assert.True(wiz.Add_WaermebedarfExtern(projekt, liste));
+            // Eine Altzeile mit leerem Kanal zählt als Heizung.
+            DataRepository.ExecuteNonQuery("UPDATE Z_ProjektWaermebedarf SET Kanal = NULL WHERE ID_Projekt = ? AND Kanal = ?",
+                new DbParam("@p", projekt), new DbParam("@k", DbWerte.KANAL_HEIZUNG));
+
+            string vorher = Zeilenbild(projekt, "<> 'Kuehlung'");
+
+            // Nur Kühlung neu schreiben.
+            Assert.True(wiz.Del_WaermebedarfExtern(projekt, DbWerte.KANAL_KUEHLUNG));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE ID_Projekt = " + projekt +
+                                  " AND Kanal = 'Kuehlung'"));
+            Assert.True(wiz.Add_WaermebedarfExtern(projekt, new List<Z_ProjWaermebedarfModel>
+            {
+                new Z_ProjWaermebedarfModel { m_szBezeichner = "K5_Kuehlung", Kanal = DbWerte.KANAL_KUEHLUNG }
+            }));
+
+            Assert.Equal(vorher, Zeilenbild(projekt, "<> 'Kuehlung'"));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE ID_Projekt = " + projekt +
+                                  " AND Kanal = 'Kuehlung'"));
+
+            // Heizung löscht die Zeile mit leerem Kanal mit, Brauchwasser und Kühlung bleiben.
+            Assert.True(wiz.Del_WaermebedarfExtern(projekt, DbWerte.KANAL_HEIZUNG));
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE ID_Projekt = " + projekt));
+
+            // Ohne Kanal löscht die Überladung wie bisher alles.
+            Assert.True(wiz.Del_WaermebedarfExtern(projekt, ""));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE ID_Projekt = " + projekt));
+        }
+
+        /// <summary>Die Zeilen eines Projekts (ID_Z, Ganglinie, Name, Kanal) als ein Text — für den Vorher-nachher-Vergleich.</summary>
+        private static string Zeilenbild(int projekt, string kanalBedingung)
+        {
+            System.Data.DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID_Z, ID_Ganglinie, Bezeichner, Kanal FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ? " +
+                "AND COALESCE(Kanal, '') " + kanalBedingung + " ORDER BY ID_Z",
+                new DbParam("@p", projekt));
+            var teile = new List<string>();
+            foreach (System.Data.DataRow r in dt.Rows)
+                teile.Add(string.Join("|", r.ItemArray));
+            return string.Join(";", teile);
         }
 
         // =====================================================================
