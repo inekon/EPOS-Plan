@@ -56,6 +56,7 @@ public class GebaeudeImportAufbauquelleDialogTests : EposBunitContext
         var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)g["Zuordnen"];
         return Render<GebaeudeImportDialog>(c =>
         {
+            c.Add(x => x.ProjektdateiFreigegeben, true);   // Entwicklerbereich: der Bestand prüft mit Kennzeichen
             c.Add(x => x.Profil, g["Profil"] as GebaeudeImportProfilDaten);
             c.Add(x => x.Baualtersklassen, (IReadOnlyList<string>)g["Baualtersklassen"]);
             c.Add(x => x.DateiWaehlen, (Func<string, Task<GebaeudeDateiwahl?>>)(_ =>

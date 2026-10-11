@@ -9930,6 +9930,20 @@ table.epos-simerg-tabelle {
     font-size: 11px;
     color: var(--epos-text-leise);
 }
+/* Die Marke des Entwicklermodus (Administration und Support, Stufe 1): kompakt wie die
+   Versionszeile, in den Warnfarben des Hauses — auffaellig, aber kein Alarm. */
+.epos-hauptfenster-entwickler {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--epos-warn-text);
+    background: var(--epos-warn-flaeche);
+    border: 1px solid var(--epos-warn-rahmen);
+    border-radius: 3px;
+    padding: 0 5px;
+    margin-left: 6px;
+    white-space: nowrap;
+    cursor: default;
+}
 /* Die Hilfepille im Kopf des Hauptfensters: mit der Maus liegt der Rahmen enger
    um die Symbole (Anwenderwunsch), die Symbole selbst bleiben 16 px. Mit dem
    Finger (pointer: coarse, iPad) bleibt das Beruehrungsziel bei 44 px. */

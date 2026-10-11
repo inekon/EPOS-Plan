@@ -56,8 +56,10 @@ public class GebaeudeExportDialogTests : EposBunitContext
 
     private IRenderedComponent<GebaeudeExportDialog> Aufbauen(Stand s, bool gespeicherterStand = false,
                                                               GebaeudeExportTexte? texte = null,
-                                                              IReadOnlyList<GebaeudeExportFormat>? formate = null)
+                                                              IReadOnlyList<GebaeudeExportFormat>? formate = null,
+                                                              bool zusageFreigegeben = true)
         => Render<GebaeudeExportDialog>(p => p
+            .Add(x => x.ZusageFreigegeben, zusageFreigegeben)   // Entwicklerbereich EXPORT_IDS
             .Add(x => x.Vorbereiten, e =>
             {
                 s.Vorbereitet.Add(e.Plz);
@@ -363,6 +365,20 @@ public class GebaeudeExportDialogTests : EposBunitContext
         Assert.Contains("epos-gebexport-meldung--fehler", zeilen[1].ClassName);
     }
 
+    /// <summary>Entwicklerbereich EXPORT_IDS: ohne Kennzeichen kein Knopf der Exportzusage, mit Kennzeichen im Bereich.</summary>
+    [Fact]
+    public void Ohne_Entwicklermodus_fehlt_die_Exportzusage()
+    {
+        var ohne = Aufbauen(new Stand(), formate: Formate(), zusageFreigegeben: false);
+        Formatknoepfe(ohne)[1].Change("1");
+        Assert.Empty(ohne.FindAll(".epos-gebexport-zusageknopf"));
+        Assert.Empty(ohne.FindAll("[data-bereich='EXPORT_IDS']"));
+
+        var mit = Aufbauen(new Stand(), formate: Formate());
+        Formatknoepfe(mit)[1].Change("1");
+        Assert.Single(mit.FindAll("[data-stufe='entwickler'][data-bereich='EXPORT_IDS']"));
+    }
+
     [Fact]
     public void Der_Zusageknopf_ruft_die_Naht_und_nennt_einen_Grund()
     {
@@ -460,6 +476,7 @@ public class GebaeudeExportDialogTests : EposBunitContext
     private IRenderedComponent<GebaeudeExportDialog> AufbauenMitAnreicherung(Stand s, Anreicherungsstand a,
                                                                              GebaeudeExportTexte? texte = null)
         => Render<GebaeudeExportDialog>(p => p
+            .Add(x => x.ZusageFreigegeben, true)   // Entwicklerbereich: der Bestand prüft mit Kennzeichen
             .Add(x => x.Vorbereiten, e => { s.Vorbereitet.Add(e.Plz); s.Formatfolge.Add(e.Format); return Task.FromResult(s.Ansicht(e.Plz)); })
             .Add(x => x.Speichern, e => { s.Gespeichert.Add(e.Plz); s.GespeichertFormat.Add(e.Format); return Task.FromResult(s.Ergebnis); })
             .Add(x => x.Formate, Formate())
