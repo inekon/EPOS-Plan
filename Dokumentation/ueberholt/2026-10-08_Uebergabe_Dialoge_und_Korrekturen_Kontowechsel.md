@@ -1,10 +1,13 @@
 # Übergabe der Sitzung „Dialoge und Korrekturen“ auf ein anderes Konto (08.10.2026)
 
+> **Abgelöst** durch die Übergabe vom 11.10.2026
+> ([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../aktuell/Dialoge/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md)).
+
 Dieses Papier übergibt die Sitzung „Dialoge und Korrekturen“ an eine neue Sitzung unter einem
 anderen Konto. Es nennt den Stand, die geltenden Entscheide, die Regeln der Sitzung über
 `CLAUDE.md` hinaus und die offenen Punkte; der Einstiegs-Prompt steht in Abschnitt 5. Regelquelle
 bleibt `CLAUDE.md`. Es löst das Papier vom 05.10.2026
-([`2026-10-05_Uebergabe_Dialoge_und_Korrekturen.md`](../../ueberholt/2026-10-05_Uebergabe_Dialoge_und_Korrekturen.md)) ab.
+([`2026-10-05_Uebergabe_Dialoge_und_Korrekturen.md`](./2026-10-05_Uebergabe_Dialoge_und_Korrekturen.md)) ab.
 
 ## 1 Stand
 
@@ -64,7 +67,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 05.10.2026
   bleiben.
 
 **Katalogauswahl** (Anwenderentscheid 08.10.2026; Konzept
-[`Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](../Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md),
+[`Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](../aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md),
 Abschnitt 3, KA‑E‑1 bis KA‑E‑11)
 
 - **Variante V1 „Gerahmt und gestapelt“** für alle zwölf Projektdialoge mit Katalogauswahl und die
