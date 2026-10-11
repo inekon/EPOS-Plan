@@ -710,9 +710,11 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    int id = KaeltemaschineStammCtrl.KopfSchreiben(v, TABLE, m, true, projektId);
                     // Der Verweis auf das Kaeltemittel reist mit der Kopie - auch einer, den der Katalog ueber seinen
                     // Schluessel traegt (R1234ze → R1234ze(E)) und den der Code-Abgleich des Textes nicht faende.
+                    int? kaeltemittel = m.ID_Kaeltemittel;
+                    int id = KaeltemaschineStammCtrl.KopfSchreiben(v, TABLE, m, true, projektId);
+                    m.ID_Kaeltemittel = kaeltemittel;
                     KaeltemaschineStammCtrl.KaeltemittelSchreiben(v, TABLE, id, m, true);
                     KaeltemaschineStammCtrl.KennlinieSchreiben(v, CURVE, id, m.Kennlinie, projektId);
                     v.Commit();
