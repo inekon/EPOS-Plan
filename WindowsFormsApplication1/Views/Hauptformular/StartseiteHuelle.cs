@@ -96,6 +96,9 @@ namespace WindowsFormsApplication1
                 // Die Kachel „Kühlung und Kälteanlagen“ im Reiter Energieerzeuger: ihr Bestand (Statuspunkt)
                 // aus der plattformfreien Hülle (EPOS.UI.Daten), je Aufruf mit dem offenen Projekt.
                 ["Kuehlung"] = new Func<KuehlungKachelDaten>(() => KuehlungKachelBau.Daten(_kontext.Id)),
+                // Reiter „Kältebedarf“ (K4): Stand der Kachel „Gebäudekühlung“ und der Projektschalter
+                // „Kühlung rechnen“ für die Hinweiszeile - aus der plattformfreien Hülle (EPOS.UI.Daten).
+                ["Gebaeudekuehlung"] = new Func<GebaeudekuehlungDaten>(() => GebaeudekuehlungKachelBau.Daten(_kontext.Id)),
                 // Variante anlegen und umbenennen AM KOPFBAND (Anwenderwunsch 08.09.2026):
                 // derselbe Weg wie das Menue "Als Variante speichern…", nur meldet er als
                 // Banner der Seite statt als MessageBox.
@@ -152,6 +155,7 @@ namespace WindowsFormsApplication1
 
                 ["ReiterProjektText"] = MyResource.Resource.START_REITER_PROJEKT,
                 ["ReiterWaermeText"] = MyResource.Resource.START_REITER_WAERME,
+                ["ReiterKaelteText"] = MyResource.Resource.START_REITER_KAELTE,
                 ["ReiterStromText"] = MyResource.Resource.START_REITER_STROM,
                 ["ReiterErzeugerText"] = MyResource.Resource.START_REITER_ERZEUGER,
                 ["ReiterSimulationText"] = MyResource.Resource.START_REITER_SIMULATION,
@@ -627,7 +631,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die 21 Kacheln mit Beschriftung und Bestand. Der Statuspunkt kommt aus
+        /// Die 24 Kacheln mit Beschriftung und Bestand. Der Statuspunkt kommt aus
         /// der EINEN Bitmaske des Kerns (<see cref="KomponentenBestandCtrl"/>) —
         /// <c>Form_Start.UpdateWizardSymbole</c> mit seinen dreizehn Bits, sieben
         /// Inline-SQL und sechs <c>ReadAllFilter</c> ist damit ersatzlos entfallen
@@ -662,6 +666,16 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.START_K_PROZESS_T, MyResource.Resource.START_K_PROZESS_B, Stand(32)),
                 Mit(Kachelschluessel.Brauchwasser, Reiterschluessel.Waermebedarf,
                     MyResource.Resource.START_K_BRAUCHWASSER_T, MyResource.Resource.START_K_BRAUCHWASSER_B, Stand(4096)),
+
+                // Reiter „Kältebedarf“ (Konzept Kältebedarf 3.1, K4): zwei Bits des Komponentenbestands;
+                // die Gebäudekühlung hat keines - ihr Stand kommt aus GebaeudekuehlungKachelBau.
+                Mit(Kachelschluessel.KaeltebedarfExtern, Reiterschluessel.Kaeltebedarf,
+                    MyResource.Resource.START_K_KBEXTERN_T, MyResource.Resource.START_K_KBEXTERN_B, Stand(8192)),
+                Mit(Kachelschluessel.Kaeltebedarfsprofile, Reiterschluessel.Kaeltebedarf,
+                    MyResource.Resource.START_K_KBPROFIL_T, MyResource.Resource.START_K_KBPROFIL_B, Stand(16384)),
+                Mit(Kachelschluessel.Gebaeudekuehlung, Reiterschluessel.Kaeltebedarf,
+                    MyResource.Resource.START_K_GEBKUEHL_T, MyResource.Resource.START_K_GEBKUEHL_B,
+                    GebaeudekuehlungKachelBau.Daten(_kontext.Id)?.Zustand ?? Kachelstand.Aus),
 
                 Mit(Kachelschluessel.StromStandardprofil, Reiterschluessel.Strombedarf,
                     MyResource.Resource.START_K_STDLAST_T, MyResource.Resource.START_K_STDLAST_B, Stand(64)),
@@ -706,7 +720,8 @@ namespace WindowsFormsApplication1
             };
 
         // =====================================================================
-        //  Die 21 Kachelwege - woertlich die Handler von Form_Start
+        //  Die 24 Kachelwege - die 21 woertlich die Handler von Form_Start, dazu die
+        //  drei des Reiters Kaeltebedarf (K4)
         // =====================================================================
 
         /// <summary>
@@ -746,6 +761,10 @@ namespace WindowsFormsApplication1
                 case Kachelschluessel.WaermebedarfDaten: WaermebedarfDaten(wirt); break;
                 case Kachelschluessel.Prozesswaerme: Prozesswaerme(wirt); break;
                 case Kachelschluessel.Brauchwasser: Brauchwasser(wirt); break;
+
+                case Kachelschluessel.KaeltebedarfExtern: KaeltebedarfExtern(wirt); break;
+                case Kachelschluessel.Kaeltebedarfsprofile: Kaeltebedarfsprofile(wirt); break;
+                case Kachelschluessel.Gebaeudekuehlung: Gebaeudekuehlung(wirt); break;
 
                 case Kachelschluessel.StromStandardprofil: Standardlastprofil(wirt); break;
                 case Kachelschluessel.StromEigenesProfil:
@@ -904,6 +923,43 @@ namespace WindowsFormsApplication1
 
             BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, behaelter);
         }
+
+        // ---- Reiter Kaeltebedarf (K4) --------------------------------------
+
+        /// <summary>
+        /// Kachel „Kältebedarf extern“ — heute der Dialog „Wärmebedarf extern“ mit allen Kanälen; dort
+        /// wählt der Anwender den Kanal „Kühlung“. Den Modus „nur Kühlung“ bringt die Stufe K5
+        /// (Konzept Kältebedarf 3.2); Lesen und Schreiben sind dieselben wie bei <see cref="WaermebedarfDaten"/>.
+        /// </summary>
+        private void KaeltebedarfExtern(IWin32Window wirt) => WaermebedarfDaten(wirt);
+
+        /// <summary>
+        /// Kachel „Kältebedarfsprofile“ — der Bedarfsprofile-Dialog mit <c>BedarfsArt.Kaelte</c>
+        /// (<see cref="BedarfsProfileHuelle"/>). Löschen und Neuschreiben der Zuordnungen laufen in EINEM
+        /// Vorgang: Scheitert ein Schritt, meldet der Kern den Grund und die alten Zeilen bleiben stehen.
+        /// </summary>
+        private void Kaeltebedarfsprofile(IWin32Window wirt)
+        {
+            List<Z_ProjektKaeltebedarfModel> liste = Z_ProjektKaeltebedarfCtrl.LiesProjekt(_kontext.Id);
+
+            if (!BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste)) return;
+
+            WizardCtrl wizctrl = new WizardCtrl();
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            {
+                if (wizctrl.Del_Projekt_Kaelte(_kontext.Id, 0, vorgang)
+                    && wizctrl.Add_Projekt_Kaelte(_kontext.Id, liste, vorgang))
+                    vorgang.Commit();
+                else
+                    vorgang.Rollback();
+            }
+        }
+
+        /// <summary>
+        /// Kachel „Gebäudekühlung“ — der Projektgebäudedialog wie die Kachel „Gebäude“. Der Sprung in die
+        /// Gruppe „Kühlung“ (<c>Sprungziel = "KUEHLUNG"</c>) kommt mit der Stufe K5 (Konzept Kältebedarf 3.5).
+        /// </summary>
+        private void Gebaeudekuehlung(IWin32Window wirt) => Gebaeude(wirt);
 
         // ---- Reiter 3: Strombedarf -----------------------------------------
 
