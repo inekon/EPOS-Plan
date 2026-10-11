@@ -93,6 +93,7 @@ Kennzeichen als Parameter aus den Hüllen, nie direkt aus der Registry.
 - Referenzlauf nicht betroffen (kein Rechenweg).
 - CI: Push `5eb9e5f2` läuft; der Lauf auf `6f166a81` war rot durch die fremde Einstufung von
   `Vorheizzeit_H` (AH-V6 auf origin bringt die Reparatur, mit dem Merge übernommen).
+- Nachtrag: gepusht `5876851d`, Kern-Lauf 38134668642 (kern.yml, ubuntu) grün, abgeschlossen 12:21 UTC.
 
 ## 7 Umgebung
 

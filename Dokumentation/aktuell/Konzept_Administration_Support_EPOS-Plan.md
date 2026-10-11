@@ -9,7 +9,7 @@ RustDesk und mit AS-Q10 iOS abstimmen — evtl nur (c) aus AS-Q9." und danach �
 (remote) zurück, wird später bearbeitet." Dazu der Entscheid „Änderung in der Wiki vornehmen: kein
 TeamViewer als Support" — die beiden Wiki-Quellen nennen seither keinen Produktnamen mehr (1.1).
 Abschnitt 4 ist auf RustDesk umgeschrieben; die Tabelle 4.1 hält den Vergleich als Begründung fest.
-**Stufe 1 ist umgesetzt** (11.10.2026, #968; Protokoll [`2026-10-11_AS1_Entwicklermodus.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS1_Entwicklermodus.md)); die übrigen Stufen aus Abschnitt 8 sind offen. **Offen nach Stufe 1:** der Nachzug zum Anwenderentscheid vom 11.10.2026, dass die Zapfprofil-Rechenvorgaben als Rubrik „Zapfprofil" allen Anwendern offenstehen (3.4, AS-Q4). Die Entwicklerseite
+**Die Stufen 1 und 2 sind umgesetzt** (11.10.2026, #968 und #969; Protokolle [`2026-10-11_AS1_Entwicklermodus.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS1_Entwicklermodus.md) und [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); die übrigen Stufen aus Abschnitt 8 sind offen. **Offen:** der Nachzug zum Anwenderentscheid vom 11.10.2026, dass die Zapfprofil-Rechenvorgaben als Rubrik „Zapfprofil" allen Anwendern offenstehen (3.4, AS-Q4); Stufe 3; der Betrieb der Fernwartung bei INEKON (Fernwartungsseite, Server, signierter Client; 4.4, 4.8). Die Entwicklerseite
 (Tastenfolgen, Schlüssel, Pfade, Supportablauf) steht im
 [`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](Entwicklerhandbuch_Administration_Support_EPOS-Plan.md),
 mit Word-Fassung daneben.
@@ -327,15 +327,14 @@ Neuer `Seitenschluessel.Fernwartung`, Zeile in `Menuetabelle.cs`, Fall in `Haupt
 Textschlüssel `MENU_FERNWARTUNG` („Fernwartung…" / „Remote support…"). Der Punkt ist **immer
 sichtbar** und ohne Lizenz **gesperrt** (Zielbild 2): dafür bekommt `Menuepunkt` neben der Stufe
 ein zweites, kleines Datum — `sperrgrund` als Textschlüssel —, das die Hülle beim Zuschnitt setzt
-(`Menuetabelle.Sichtbar(stufe, sperren)`); das `Menueband` zeichnet einen gesperrten Punkt
+(`Menuetabelle.Sichtbar(stufe, sperrgrund)`); das `Menueband` zeichnet einen gesperrten Punkt
 ausgegraut mit dem Grund als Tooltip und löst keinen Sprung aus. Das ist die erste Sperre im Menü;
 sie bleibt Daten (die Hülle entscheidet, die Komponente zeigt).
 
 **Dialog `Dialoge/Hilfe/FernwartungDialog.razor`** (Hülle `EPOS.UI.Daten/Hilfe/FernwartungHuelle.cs`,
 Fenster in der Schale wie `KatalogabgleichFenster`), vier Zonen von oben nach unten:
 
-1. **Kontakt** — Telefon, E-Mail, Zeiten (Ressourcen `SUP_KONTAKT_*`, beide Sprachen; Adresse als
-   `mailto:` über `AdresseOeffnen`). Ohne Lizenz oder ohne Internet ist das der Teil, der immer
+1. **Kontakt** — Telefon (in en-US mit Landesvorwahl), E-Mail, Zeiten (werktags 9–16 Uhr; Ressourcen `SUP_KONTAKT_*`, beide Sprachen; die E-Mail-Adresse ist ein `mailto:`-Link, auch im gesperrten Zustand). Ohne Lizenz oder ohne Internet ist das der Teil, der immer
    nützt.
 2. **Ihre Angaben für den Support** — der Diagnoseblock aus Abschnitt 5 (Version, Schemastand,
    Katalogfassung, Lizenztyp und -nummer, Firma, Gerätekennung-Kurzform, Windows-Fassung, Sprache)
@@ -352,14 +351,13 @@ Fenster in der Schale wie `KatalogabgleichFenster`), vier Zonen von oben nach un
 4. **Fußleiste** nach Hausregel: Füller · „Schließen" (primär). Kein OK/Abbrechen — der Dialog hat
    keinen Arbeitsstand.
 
-Ist die Lizenzbedingung (4.3) nicht erfüllt, bleibt Zone 3 **sichtbar, aber gesperrt**, mit dem Grund
-in einer Hinweiszeile („Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre
-Lizenz unter Hilfe → Lizenz." / für die Testversion: „… steht in der Testversion nicht zur Verfügung;
-Sie erreichen uns per E-Mail.").
+Der Knopf „Fernwartungsseite öffnen“ ist nur frei, wenn die Lizenzbedingung (4.3) erfüllt ist und die Schale den Aufruf zum Öffnen der Adresse mitgibt. Sonst bleibt Zone 3 **sichtbar, der Knopf gesperrt**, mit dem Grund
+in einer Hinweiszeile über ihm („Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre
+Lizenz unter Hilfe → Lizenz." / für die Testversion: „Die Fernwartung steht in der Testversion nicht zur Verfügung. Sie erreichen uns per E-Mail.").
 
 ### 4.3 „Bei vorhandener Lizenz" — die Bedingung
 
-Vier Lesarten, in `LizenzCtrl` als eine Frage `FernwartungErlaubt(LizenzLage)` gebaut, damit die
+Vier Lesarten, in `LizenzCtrl` als eine Frage `FernwartungErlaubt()` (ohne Nebenwirkung; die Regel selbst als `internal FernwartungErlaubt(token, status)`) gebaut, damit die
 Hülle sie stellt und die Komponente nur das Ergebnis sieht:
 
 | Lesart | Bedingung | Folge |
@@ -372,7 +370,7 @@ Hülle sie stellt und die Komponente nur das Ergebnis sieht:
 **Empfehlung: (b) jetzt, (d) als Ausbau** (AS-Q8). (b) deckt den Wortlaut „bei vorhandener Lizenz"
 und lässt die Kunden hinein, die Support am nötigsten haben; der Supportvertrag ist heute nicht im
 Token, und die Grenze „nur mit Vertrag" wäre ohne Server-Erweiterung nicht prüfbar. Der
-`UhrManipuliert`-Fall bleibt gesperrt (der Zustand ist verdächtig; der Kontaktblock bleibt).
+`UhrManipuliert`-Fall bleibt gesperrt (der Zustand ist verdächtig; der Kontaktblock bleibt). Das Lesen des Zeitankers ohne Schreiben (`LizenzManager.AnkerOhneSchreiben`) macht ihn erkennbar, ohne die Lizenzablage zu verändern. Zusätzlich gesperrt sind ein unbekannter Lizenztyp und ein Token, das zu einem fremden Gerät gehört; die Gründe sind `FW_SPERRE_LIZENZ` (ohne Lizenz: Wartungsvertrag, zuerst die Lizenz aktivieren) und `FW_SPERRE_TEST` (Testversion).
 
 ### 4.4 Bereitstellung des Fernwartungsprogramms
 
@@ -535,7 +533,7 @@ en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fuß
 | Stufe | Inhalt | Abnahme |
 |---|---|---|
 | **1 — Entwicklermodus und Projektdatei** | `Entwicklermodus`, `Freigabestufe` am Menüpunkt, `Menuetabelle.Sichtbar`, Marke, Kopf *Entwicklung* mit den sieben Punkten (3.5), die drei Einstiege der Projektdatei, iOS-Dateifilter, KI-Feldkarten, `Program.Main(args)` | Kern-Filter grün; `EntwicklerbereicheWacheTests`, `MenuebandTests` mit zwei Bäumen; Windows-Build auf Linux (Schale berührt); Sichtprobe: ohne Modus kein Projektdatei-Knopf und kein Kopf *Entwicklung*, mit `--entwickler` beides und die Marke; HKLM-Sperre schlägt alles — **umgesetzt** (11.10.2026, #968) |
-| **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **Zuarbeit des Anwenders vor der Stufe (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur |
+| **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **umgesetzt** (11.10.2026, #969, Commit `bb594b7a`; Protokoll [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); **offen beim Anwender (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur, Sichtprobe |
 | **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`; Sichtprobe: Textblock vollständig, Geste schaltet |
 | **4 — Supportvertrag im Token** (auf Zuruf) | `support_bis` im Server, tolerantes Lesen im Client, Lesart (d) wählbar | Serverseite durch den Anwender ausgerollt; Clienttest mit Token ohne und mit Feld |
 
