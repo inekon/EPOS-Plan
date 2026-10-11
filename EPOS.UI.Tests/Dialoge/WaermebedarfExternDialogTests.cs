@@ -278,6 +278,28 @@ public class WaermebedarfExternDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// KWN-0: Auf dem Kanal „Kühlung" steht neben der Kanalwahl die Art der Kältezeile (Raumkühlung oder
+    /// Prozesskälte); die Wahl schreibt den Steuerwert in die Zeile. Auf einem Wärmekanal fehlt das Feld.
+    /// </summary>
+    [Fact]
+    public void Der_Kanal_Kuehlung_traegt_die_Art_Raum_oder_Prozess()
+    {
+        var zeilen = new List<WaermebedarfExternZeile> { Zeile(1) };
+        var cut = Aufbauen(zeilen: zeilen);
+        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        Assert.Single(cut.FindAll(".epos-zweispalten-kopfleiste select"));
+
+        cut.Find("select").Change("3");                      // Kühlung
+        Assert.Equal(WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM, zeilen[0].KaelteArt);
+        var felder = cut.FindAll(".epos-zweispalten-kopfleiste select");
+        Assert.Equal(2, felder.Count);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KAELTE_ART_PROZESS, felder[1].InnerHtml);
+
+        felder[1].Change("1");                               // Prozesskälte
+        Assert.Equal(WindowsFormsApplication1.DbWerte.KAELTE_ART_PROZESS, zeilen[0].KaelteArt);
+    }
+
+    /// <summary>
     /// <b>W9‑E‑3, Punkt 4:</b> Der Kanal ist ein Parameterfeld und steht deshalb im
     /// Baustein <c>Formularraster</c> (Hausregel iU8‑E‑2) — Beschriftung NEBEN dem
     /// Feld. Er bleibt in der LINKEN Spalte: Er gehört zur Zuordnung, nicht zum

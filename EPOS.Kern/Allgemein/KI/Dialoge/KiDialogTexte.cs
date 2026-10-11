@@ -2568,6 +2568,8 @@
         internal static string BkalKuerzenErl => MyResource.Resource.BKAL_HRL_KUERZEN;
         internal static string BpfKalenderName => MyResource.Resource.BPF_LBL_KALENDER;
         internal static string BpfKalenderErl => MyResource.Resource.BPF_HINW_KALENDER;
+        internal static string KaelteArtName => MyResource.Resource.KAELTE_ART_LABEL;
+        internal static string KaelteArtErl => MyResource.Resource.KAELTE_ART_HINWEIS;
         internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
         internal static string NudSucheErl => MyResource.Resource.KI_DLG_NUD_SUCHE_ERL;
         internal static string NudTechnikName => MyResource.Resource.KI_DLG_NUD_TECHNIK_NAME;

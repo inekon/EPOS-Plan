@@ -26,4 +26,10 @@ public sealed class WaermebedarfExternZeile
 
     /// <summary>Der Bedarfskanal als Steuerwert.</summary>
     public string Kanal { get; set; } = "";
+
+    /// <summary>
+    /// Die Art der Kältebedarfszeile als Steuerwert (KWN-0): <c>DbWerte.KAELTE_ART_RAUM</c> (Vorgabe) oder
+    /// <c>DbWerte.KAELTE_ART_PROZESS</c>; wirksam nur im Kanal Kühlung.
+    /// </summary>
+    public string KaelteArt { get; set; } = WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM;
 }

@@ -49,6 +49,16 @@ public sealed class BedarfsProfileKiSicht
     public Func<int?>? KalenderLesen { get; init; }
     public Action<int?>? KalenderSetzen { get; init; }
 
+    public Func<int?>? KaelteArtLesen { get; init; }
+    public Action<int?>? KaelteArtSetzen { get; init; }
+
+    /// <summary>Liefert die Arten einer Kältezeile (Raum/Prozess); leer außerhalb der Kälte.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? KaelteArtEintraege { get; init; }
+
+    /// <summary>Die Arten der Kältezeile der Wahl (KWN-0).</summary>
+    public IReadOnlyList<KiWahleintrag> KaelteArtWahl
+        => KaelteArtEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
     /// <summary>Liefert die Betriebskalender der Wahl (0 = ohne Kalender).</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? KalenderEintraege { get; init; }
 
@@ -121,6 +131,16 @@ public sealed class BedarfsProfileKiSicht
     {
         get => KalenderLesen?.Invoke();
         set => KalenderSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Die Art der markierten Kältezeile (KWN-0): 0 = Raumkühlung, 1 = Prozesskälte; leer außerhalb der Kältebedarfsprofile.
+    /// Geschrieben wird mit OK.
+    /// </summary>
+    public int? KaelteArt
+    {
+        get => KaelteArtLesen?.Invoke();
+        set => KaelteArtSetzen?.Invoke(value);
     }
 
     /// <summary>Der Bezeichner des markierten Profils.</summary>
