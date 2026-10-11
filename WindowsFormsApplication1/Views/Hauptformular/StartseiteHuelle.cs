@@ -1061,12 +1061,8 @@ namespace WindowsFormsApplication1
             List<Z_ProjektSolarganglinieModel> ganglinien =
                 Z_ProjektSolarganglinieCtrl.LiesProjekt(_kontext.Id);
 
-            if (SolarganglinieHuelle.Oeffnen(wirt, _kontext.Id, ganglinien))
-            {
-                WizardCtrl wizctrl = new WizardCtrl();
-                wizctrl.Del_Solarganglinie(_kontext.Id);
-                wizctrl.Add_Solarganglinie(_kontext.Id, ganglinien);
-            }
+            // Geschrieben wird im OK-Weg des Dialogs (Gabe „Speichern"): OK schließt erst nach dem Schreiben.
+            SolarganglinieHuelle.Oeffnen(wirt, _kontext.Id, ganglinien);
         }
 
     }

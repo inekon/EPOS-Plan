@@ -43,7 +43,7 @@ public sealed class AufheizzeitManuellFeldTests : EposBunitContext
         var cut = Zeichne(null, VORSCHLAG, gesetzt);
         Assert.Contains("bemessen: 6 h", cut.Find(".epos-aufheizzeit-bemessen").TextContent);
         Assert.Contains("sinnvolle Spanne: 6–12 h (aus der Zeitkonstante τ₂ = 5,0 h)", cut.Markup);
-        Assert.Contains("Leer: Es gilt die Art der Projekteinstellung", cut.Markup);
+        Assert.Contains("Leer: Es gilt die Projekteinstellung", cut.Markup);
         cut.Find("button.epos-aufheizzeit-uebernehmen").Click();
         Assert.Equal(new int?[] { 6 }, gesetzt);
         Assert.Equal("6", cut.Find(".epos-aufheizzeit-manuell").GetAttribute("data-wert"));
@@ -86,7 +86,7 @@ public sealed class AufheizzeitManuellFeldTests : EposBunitContext
     public void Ohne_Schalter_sagt_das_Feld_dass_es_erst_mit_der_Optimierung_wirkt()
     {
         var cut = Zeichne(6, new AufheizzeitManuellDaten { SchalterAn = false, BemessenH = 6, VonH = 6, BisH = 12, Tau2H = 5.0 });
-        Assert.Contains("Wirkt erst mit eingeschalteter Aufheizoptimierung", cut.Markup);
+        Assert.Contains("Wirkt erst mit eingeschaltetem „Aufheizen rechnen“", cut.Markup);
         Assert.Single(cut.FindAll("button.epos-aufheizzeit-uebernehmen"));
     }
 
@@ -113,7 +113,7 @@ public sealed class AufheizzeitManuellFeldTests : EposBunitContext
     public void Die_Zonen_zeigen_den_geerbten_Wert()
     {
         Assert.Contains("Die 2 Zonen erben diesen Wert: 6 h.", Zeichne(6, VORSCHLAG, zonen: new[] { "Zone 1", "Zone 2" }).Markup);
-        Assert.Contains("Die 2 Zonen erben diesen Wert: Art des Projekts.", Zeichne(null, VORSCHLAG, zonen: new[] { "Zone 1", "Zone 2" }).Markup);
+        Assert.Contains("Die 2 Zonen erben diesen Wert: Wert des Projekts.", Zeichne(null, VORSCHLAG, zonen: new[] { "Zone 1", "Zone 2" }).Markup);
     }
 
     [Fact]

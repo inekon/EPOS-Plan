@@ -258,10 +258,12 @@ namespace EPOS.Kern.Tests
             Assert.Contains("4", z["Längste Aufheizzeit t_auf,max (Höchstwert der Gebäude) [h]"][2], StringComparison.Ordinal);
             Assert.Contains("100", z["Sommerlüftungsstunden (Höchstwert der Gebäude) [h/a]"][2], StringComparison.Ordinal);
 
+            // AH-V6 (Katalog v19): die Vorheizkennzahlen der Fassung 2 stehen ab Fassung 19 in derselben Gruppe.
             Assert.All(KennzahlenKatalog.Alle().Where(k => k.Gruppe == KennzahlenKatalog.GR_GEBAEUDE), k =>
             {
-                Assert.Equal(16, k.Seit);
-                Assert.Equal(16, Vorlagenfeldkatalog.SeitDerKennzahl(k));
+                int seit = k.Schluessel.StartsWith("geb.vorheiz", StringComparison.Ordinal) ? 19 : 16;
+                Assert.Equal(seit, k.Seit);
+                Assert.Equal(seit, Vorlagenfeldkatalog.SeitDerKennzahl(k));
                 Assert.True(k.DeltaAnzeigen);
             });
             Assert.Equal(1, Vorlagenfeldkatalog.SeitDerKennzahl(KennzahlenKatalog.Alle().First(k => k.Schluessel == "energie.waermebedarf")));

@@ -325,7 +325,8 @@ namespace WindowsFormsApplication1
             // AK2: die Schranke der Verfügbarkeit (ein Eingang = Eintrag 0) — vor dem Vorlauf des Vorheizens.
             if (VerfuegbarkeitJeZone != null && VerfuegbarkeitJeZone.Count > 0)
                 eingang.Verfuegbarkeit = VerfuegbarkeitJeZone[0];
-            rueckfall = Vorheizplanung.Rueckfall(Aufheizvorgabe, Anlagenkopplung, eingang.KopplungWirksam);
+            rueckfall = Vorheizplanung.Rueckfall(Aufheizvorgabe, Anlagenkopplung, eingang.KopplungWirksam,
+                                                 eingang.AufheizzeitManuellH, new[] { eingang.Zone?.Eingaben?.VorheizzeitH });
             Aufheizvorgabe vorgabe = Vorheizplanung.Wirksam(Aufheizvorgabe, rueckfall);
             if (Vorheizplanung.Anwendbar(vorgabe))
                 return Vorheizplanung.AnwendenEinzone(eingang, vorgabe, index, idGebaeude, AufheizleistungTestW);
@@ -341,7 +342,9 @@ namespace WindowsFormsApplication1
         private Aufheizvorgabe VorgabeZonen(ProjektGebaeudeModel gebaeude, out Vorheizrueckfall rueckfall)
         {
             rueckfall = Vorheizplanung.Rueckfall(AufheizvorgabeAn, Anlagenkopplung,
-                                                 Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung));
+                                                 Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
+                                                 gebaeude.Aufheizzeit_Manuell_H,
+                                                 gebaeude.Zonen?.Select(z => z.Eingaben?.VorheizzeitH));
             return Vorheizplanung.Wirksam(AufheizvorgabeAn, rueckfall);
         }
 
@@ -730,7 +733,7 @@ namespace WindowsFormsApplication1
             }
             if (v.TageUnerreichbar > 0)
                 p.HinweisEinmal("vorh-unerreichbar-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_UNERREICHBAR,
-                    v.TageUnerreichbar.ToString(k), v.NaechteOhneAbsenkung.ToString(k)));
+                    v.TageUnerreichbar.ToString(k)));
             // F20 (V3c): ohne freie Fensterstunde ein eigener Text — das Fenster liegt ganz in der Sperrzeit.
             if (v.TageSperrzeit > 0)
                 p.HinweisEinmal("vorh-sperrzeit-" + wer, kopf + string.Format(k,

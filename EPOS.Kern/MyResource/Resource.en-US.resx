@@ -4555,6 +4555,18 @@ Please run the simulation with photovoltaics first.</value>
   <data name="IMPORT_LBL_KOPFZEILE" xml:space="preserve">
     <value>First line is a header row</value>
   </data>
+  <data name="IMPORT_LBL_ERSTE_DATENZEILE" xml:space="preserve">
+    <value>First data row:</value>
+  </data>
+  <data name="IMPORT_LBL_ZEILENZAHL" xml:space="preserve">
+    <value>Rows to import:</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_FEHLEN" xml:space="preserve">
+    <value>From row {0} the file holds only {1} data rows; {2} are requested.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_UEBRIG" xml:space="preserve">
+    <value>{0} rows after the {1} rows read (from row {2}) are ignored.</value>
+  </data>
   <data name="IMPORT_LBL_WERTSPALTE" xml:space="preserve">
     <value>Value column:</value>
   </data>
@@ -42209,10 +42221,10 @@ This folder holds the standard template, the short report, the detailed template
     <value>no project is open — the heat requirement is calculated for a building in the project.</value>
   </data>
   <data name="SIMKONF_AUFH_GRP" xml:space="preserve">
-    <value>Preheat optimisation</value>
+    <value>Preheating before occupancy</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_SCHALTER" xml:space="preserve">
-    <value>Calculate preheat optimisation</value>
+    <value>Calculate preheating</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_BEMESSUNG" xml:space="preserve">
     <value>Design basis</value>
@@ -42227,7 +42239,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Deduction ΔT_K</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_RESERVE" xml:space="preserve">
-    <value>Preheat reserve ρ</value>
+    <value>Power reserve (%)</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_ART" xml:space="preserve">
     <value>Preheat time mode</value>
@@ -42245,10 +42257,10 @@ This folder holds the standard template, the short report, the detailed template
     <value>Default {0} %</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_AUS" xml:space="preserve">
-    <value>Off: the heating setpoint steps as the calendar defines it. On: before every upward step of the heating setpoint, the run calculates a preheat ramp so that the heating output does not exceed the preheat power. Applies to the whole project and to buildings calculated to VDI 6007; every field is saved immediately.</value>
+    <value>The heating setpoint changes at the time set by the heating calendar. The first hour of occupancy then also warms up the building mass; its heating load can be several times the load afterwards.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_AN" xml:space="preserve">
-    <value>The preheat power is the heating output limit of the building or zone, without a limit the steady-state load at the coldest hour plus the preheat reserve ρ. The design basis fixes the longest preheat time; “coldest hour − ΔT_K” designs colder than the climate year. Daily: every day calculates its preheat time from its outdoor temperature, at most the longest. Fixed: every day preheats as long as the design case. Applies to the whole project; every field is saved immediately.</value>
+    <value>Before each start of occupancy the run raises the setpoint hour by hour so that no hour needs more than the available heating power. The room always reaches the setpoint; on mild days a step in heating load remains as long as it stays below the available heating power.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_RESERVE" xml:space="preserve">
     <value>Without an entry the default of 20 % applies, and the run reports this as a note; allowed are 1 to 100 %.</value>
@@ -42260,7 +42272,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>The project setting “Preheat optimisation” could not be saved.</value>
   </data>
   <data name="SIMKONF_AUFH_HILFE_KNOPF" xml:space="preserve">
-    <value>Help on preheat optimisation</value>
+    <value>Help on preheating before occupancy</value>
   </data>
   <data name="KI_DLG_SIM_AUFH_SCHALTER_ERL" xml:space="preserve">
     <value>On = before every upward step of the heating setpoint, the run calculates a preheat ramp (buildings calculated to VDI 6007), off = the setpoint steps as in the calendar. Project setting; saved immediately, the other values are kept when switching off.</value>
@@ -47747,10 +47759,10 @@ chart</value>
     <value>Preheating</value>
   </data>
   <data name="KOND_AUFH_MANUELL_LBL" xml:space="preserve">
-    <value>Manual preheat time (h)</value>
+    <value>Preheat time or preheat lead time (h)</value>
   </data>
   <data name="KOND_AUFH_MANUELL_PLATZHALTER" xml:space="preserve">
-    <value>project mode</value>
+    <value>project value</value>
   </data>
   <data name="KOND_AUFH_MANUELL_VORSCHLAG_BEMESSEN" xml:space="preserve">
     <value>designed: {0} h</value>
@@ -47768,10 +47780,10 @@ chart</value>
     <value>{0} h lies outside the range {1}–{2} h — the value is saved nevertheless.</value>
   </data>
   <data name="KOND_AUFH_MANUELL_HRL_OHNE_SCHALTER" xml:space="preserve">
-    <value>Takes effect only with preheat optimisation switched on in the project setting.</value>
+    <value>Takes effect only with “Calculate preheating” switched on in the project setting.</value>
   </data>
   <data name="KOND_AUFH_MANUELL_HRL_LEER" xml:space="preserve">
-    <value>Empty: the mode of the project setting applies (daily or fixed).</value>
+    <value>Empty: the project setting applies – with the setpoint ramp its mode (daily or fixed), with “Specify preheat lead time” the project's preheat lead time.</value>
   </data>
   <data name="KOND_AUFH_MANUELL_HRL_UNERREICHBAR" xml:space="preserve">
     <value>The design is unattainable (W1) — there is no designed time.</value>
@@ -51381,6 +51393,12 @@ chart</value>
   <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
     <value>Does the first row hold column names instead of values? The preview shows the change only after “Refresh preview”.</value>
   </data>
+  <data name="KI_DLG_GIO_ERSTE_DATENZEILE_ERL" xml:space="preserve">
+    <value>The number of the first row holding values, counted as in the preview table; the rows before it are skipped. The preview shows the change only after “Refresh preview”.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEILENZAHL_ERL" xml:space="preserve">
+    <value>How many rows are read from the first data row on — 8,760 for hourly values, 35,040 for quarter-hourly values. Missing rows reject the import; remaining rows are ignored.</value>
+  </data>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>A worksheet only exists for an Excel workbook.</value>
   </data>
@@ -51675,6 +51693,18 @@ chart</value>
   <data name="KFLT_LT_GERAETEART" xml:space="preserve">
     <value>Unit type</value>
   </data>
+  <data name="KFLT_LT_VLMIN" xml:space="preserve">
+    <value>Minimum flow temperature</value>
+  </data>
+  <data name="KFLT_LT_VLMAX" xml:space="preserve">
+    <value>Maximum flow temperature</value>
+  </data>
+  <data name="KFLT_LT_COP" xml:space="preserve">
+    <value>Coefficient of performance, heating</value>
+  </data>
+  <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
+    <value>Electric backup heater</value>
+  </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Unit type of the cooling generator (air- or water-cooled chiller, with free cooling, split, multi-split, VRF, absorption); empty = from heat rejection.</value>
   </data>
@@ -51862,7 +51892,7 @@ chart</value>
     <value>Buildings with heating circuit are excluded from preheating; the setpoint ramp by preheat power applies.</value>
   </data>
   <data name="SIMENG_VORH_RUECKFALL_OHNE_ZEIT" xml:space="preserve">
-    <value>“Specify preheat time” has no preheat time; the setpoint ramp by preheat power applies.</value>
+    <value>For “Specify preheat lead time” neither the project nor the building nor a zone has a preheat lead time; the setpoint ramp by preheat power applies.</value>
   </data>
   <data name="SIMENG_VORH_BERECHNET" xml:space="preserve">
     <value>Calculated preheat time: {0} h — it suffices for {2} % of the reachable occupancy starts (median {1} h, largest requirement {3} h, {4} occupancy starts would need more); it applies at every occupancy start. Unreachable occupancy starts are not included.</value>
@@ -51871,7 +51901,7 @@ chart</value>
     <value>On {0} days the room air does not reach the setpoint at occupancy start (up to {1} K below); up to {2} h of preheating would be required instead of {3} h.</value>
   </data>
   <data name="SIMENG_VORH_UNERREICHBAR" xml:space="preserve">
-    <value>On {0} days the preheat power does not reach the setpoint at occupancy start even without night setback (unreachable); {1} nights remain without setback.</value>
+    <value>On {0} days the room does not reach the setpoint at the start of occupancy even with the longest possible preheat window (unreachable); these days do not determine the preheat lead time.</value>
   </data>
   <data name="SIMENG_VORH_ABWEICHUNG" xml:space="preserve">
     <value>On {0} days the run misses the setpoint at occupancy start that the look-ahead found reachable (neighbouring zones or heating circuit).</value>
@@ -51959,6 +51989,345 @@ chart</value>
   </data>
   <data name="RKW_MSG_SCHEMA_FEHLT" xml:space="preserve">
     <value>The database does not know the heat rejection unit yet (schema step {0} is missing).</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_VERFAHREN" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="SIMKONF_AUFH_VERFAHREN_RAMPE" xml:space="preserve">
+    <value>Setpoint ramp by preheat power</value>
+  </data>
+  <data name="SIMKONF_AUFH_VERFAHREN_VORGABE" xml:space="preserve">
+    <value>Specify preheat lead time</value>
+  </data>
+  <data name="SIMKONF_AUFH_VERFAHREN_BERECHNET" xml:space="preserve">
+    <value>Calculate preheat lead time</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_VORHEIZZEIT" xml:space="preserve">
+    <value>Preheat lead time (h)</value>
+  </data>
+  <data name="SIMKONF_AUFH_VORHEIZZEIT_LEER" xml:space="preserve">
+    <value>buildings and zones</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_VORHEIZZEIT" xml:space="preserve">
+    <value>Empty: the preheat lead times of the buildings (“Conditioning” tab) and – with “per zone” – of the zones apply. A value here applies to every building and zone without its own value; a zone without any value is calculated with the setpoint ramp, and the run names it.</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_TOLERANZ" xml:space="preserve">
+    <value>Permitted step at start of occupancy</value>
+  </data>
+  <data name="SIMKONF_AUFH_TOLERANZ_PROZENT" xml:space="preserve">
+    <value>% of highest heating load at start of occupancy</value>
+  </data>
+  <data name="SIMKONF_AUFH_TOLERANZ_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_TOLERANZ_WERT" xml:space="preserve">
+    <value>Permitted step, value</value>
+  </data>
+  <data name="SIMKONF_AUFH_TOLERANZ_VORGABE" xml:space="preserve">
+    <value>Default {0} %</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_GENAUIGKEIT" xml:space="preserve">
+    <value>Control accuracy (K)</value>
+  </data>
+  <data name="SIMKONF_AUFH_GENAUIGKEIT_EINGABE" xml:space="preserve">
+    <value>Enter value</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_GENAUIGKEIT_WERT" xml:space="preserve">
+    <value>Control accuracy, entered value (K)</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_GELTUNG" xml:space="preserve">
+    <value>Preheat lead time applies</value>
+  </data>
+  <data name="SIMKONF_AUFH_GELTUNG_GEBAEUDE" xml:space="preserve">
+    <value>per building</value>
+  </data>
+  <data name="SIMKONF_AUFH_GELTUNG_ZONE" xml:space="preserve">
+    <value>per zone</value>
+  </data>
+  <data name="SIMKONF_AUFH_LBL_HEIZKREIS" xml:space="preserve">
+    <value>Include buildings with heating circuit</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_VORGABE" xml:space="preserve">
+    <value>Heating starts the set time before occupancy with the occupancy setpoint. From the start to the end of occupancy, heating power is capped at the year's highest heating load at start of occupancy plus the permitted step (cap); preheating uses at most the cap and never more than the available heating power. The run checks every day whether the room reaches the setpoint within the control accuracy at the start of occupancy and lists the days on which the preheat lead time is too short, with the time required. A building can have its own preheat lead time.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_BERECHNET" xml:space="preserve">
+    <value>The run first calculates the year without preheating and derives the cap and, for every day, the shortest preheat lead time that brings the room to the setpoint at the start of occupancy without exceeding the cap. The year's largest value is the building's preheat lead time; it applies every day. Where it is longer than a night's setback, that night is heated through; the run reports the nights without setback and the additional heat.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_DECKEL" xml:space="preserve">
+    <value>The cap is the highest heating load any start-of-occupancy hour of the year would have without preheating, plus the permitted step (as a percentage of it or in kW). It applies hourly from the start to the end of occupancy and never below the hour's heating load.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_VERFUEGBAR" xml:space="preserve">
+    <value>Available is the heating power limit of the building or zone; without a limit, the heating load at the coldest hour plus the power reserve.</value>
+  </data>
+  <data name="SIMKONF_AUFH_HRL_GELTUNG" xml:space="preserve">
+    <value>Applies to all VDI 6007 buildings in the project; every field is saved immediately.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_ZONE" xml:space="preserve">
+    <value>Zone “{0}”: neither the zone nor the building nor the project has a preheat lead time; the zone is calculated with the setpoint ramp by preheat power.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_VERFAHREN_ERL" xml:space="preserve">
+    <value>Preheating method: RAMPE = setpoint ramp by preheat power (default), VORGABE = specify preheat lead time, BERECHNET = calculate preheat lead time. Only with “Calculate preheating” switched on; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_VORHEIZZEIT_ERL" xml:space="preserve">
+    <value>Preheat lead time of the project in whole hours, 1 to 47; empty = the preheat lead times of the buildings and zones apply. Only with the method “Specify preheat lead time”; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_TOLERANZ_ART_ERL" xml:space="preserve">
+    <value>Unit of the permitted step at start of occupancy: PROZENT = % of the highest heating load at start of occupancy (default), KW = kW. Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_TOLERANZ_ERL" xml:space="preserve">
+    <value>Permitted step at start of occupancy in the chosen unit, not negative; empty = default 20 %. Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_GENAUIGKEIT_ERL" xml:space="preserve">
+    <value>Control accuracy of the emitter in K, greater than 0 and at most 5 (choice 0.5, 1 or 2 K or an entered value); empty = default 1 K. Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_GELTUNG_ERL" xml:space="preserve">
+    <value>Scope of the preheat lead time: GEBAEUDE = per building (default), ZONE = per zone. Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_HEIZKREIS_ERL" xml:space="preserve">
+    <value>Yes = buildings with an effective heating circuit use the chosen method (default), No = they use the setpoint ramp. Only with “Specify preheat lead time” or “Calculate preheat lead time”; saved immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUFH_NICHT_VERFAHREN" xml:space="preserve">
+    <value>The field “{0}” is not shown on the form for the chosen method.</value>
+  </data>
+  <data name="KOND_AUFH_MANUELL_HRL_VERFAHREN" xml:space="preserve">
+    <value>With “Setpoint ramp by preheat power” the fixed preheat time of this building, with “Specify preheat lead time” its preheat lead time (before the project's; with “per zone” each zone can have its own). With “Calculate preheat lead time” the value has no effect.</value>
+  </data>
+  <data name="ZONDLG_LBL_VORHEIZZEIT" xml:space="preserve">
+    <value>Preheat lead time (h)</value>
+  </data>
+  <data name="ZONDLG_PLATZHALTER_VORHEIZZEIT" xml:space="preserve">
+    <value>as building</value>
+  </data>
+  <data name="ZONDLG_HRL_VORHEIZZEIT" xml:space="preserve">
+    <value>The zone's preheat lead time takes effect with the method “Specify preheat lead time” and scope “per zone”; empty = the building's preheat lead time, otherwise the project's. Allowed are 1 to 47 h.</value>
+  </data>
+  <data name="ZONDLG_MSG_VORHEIZZEIT" xml:space="preserve">
+    <value>The preheat lead time of zone “{0}” must be between {1} and {2} h.</value>
+  </data>
+  <data name="KI_DLG_ZON_VORHEIZZEIT_ERL" xml:space="preserve">
+    <value>Preheat lead time of the zone in whole hours, 1 to 47; empty = as building. Takes effect with the method “Specify preheat lead time” and scope “per zone”.</value>
+  </data>
+  <data name="ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_ART" xml:space="preserve">
+    <value>Permitted step when preheating</value>
+  </data>
+  <data name="ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_WERT" xml:space="preserve">
+    <value>Permitted step, value</value>
+  </data>
+  <data name="ADM_SET_HINT_NEUE_PROJEKTE_VORHEIZ" xml:space="preserve">
+    <value>Initial value of the permitted step at start of occupancy (preheating before occupancy) for newly created projects; empty = default 20 %. Existing projects remain unchanged.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_VORHEIZ_ART_ERL" xml:space="preserve">
+    <value>Unit of the preset permitted step for new projects: PROZENT (default) or KW. Program setting; saved with OK.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_VORHEIZ_WERT_ERL" xml:space="preserve">
+    <value>Preset permitted step at start of occupancy for new projects, not negative; empty = default 20 %. Program setting; saved with OK.</value>
+  </data>
+  <data name="KMA_LISTE_PROJEKT" xml:space="preserve">
+    <value>Chillers in the project:</value>
+  </data>
+  <data name="KMA_LISTE_KATALOG" xml:space="preserve">
+    <value>Chillers in the database:</value>
+  </data>
+  <data name="KMA_SUMME" xml:space="preserve">
+    <value>Total rated cooling capacity [kW]:</value>
+  </data>
+  <data name="KMA_SP_EER" xml:space="preserve">
+    <value>EER/SEER</value>
+  </data>
+  <data name="KMA_KOPFBAND" xml:space="preserve">
+    <value>Select the project's chillers from the database</value>
+  </data>
+  <data name="KMA_FRAGE_KATALOG_LOESCHEN" xml:space="preserve">
+    <value>Delete the chiller “{0}” from the database?</value>
+  </data>
+  <data name="KMA_MSG_KATALOG_LOESCHFEHLER" xml:space="preserve">
+    <value>The chiller could not be deleted from the database.</value>
+  </data>
+  <data name="KMA_TITEL_EDITOR" xml:space="preserve">
+    <value>Edit chiller</value>
+  </data>
+  <data name="KMA_GRUPPE_KENNDATEN" xml:space="preserve">
+    <value>Characteristics</value>
+  </data>
+  <data name="KMA_SP_WAHL" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Skipped (assigned in the project): {0}</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN" xml:space="preserve">
+    <value>Preheating – method</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN_VORGABE" xml:space="preserve">
+    <value>Preheat time specified</value>
+  </data>
+  <data name="BV_VORH_VERFAHREN_BERECHNET" xml:space="preserve">
+    <value>Preheat time calculated</value>
+  </data>
+  <data name="BV_VORH_ZEIT_VORGABE" xml:space="preserve">
+    <value>Preheat time t_V (specified)</value>
+  </data>
+  <data name="BV_VORH_ZEIT_BERECHNET" xml:space="preserve">
+    <value>Preheat time t_V (calculated, quantile)</value>
+  </data>
+  <data name="BV_VORH_BEDARF_MAX" xml:space="preserve">
+    <value>Largest preheat need t_req</value>
+  </data>
+  <data name="BV_VORH_BEZUG" xml:space="preserve">
+    <value>Reference power Φ_K,max</value>
+  </data>
+  <data name="BV_VORH_DECKEL" xml:space="preserve">
+    <value>Cap P_K</value>
+  </data>
+  <data name="BV_VORH_LEISTUNG" xml:space="preserve">
+    <value>Preheat power P_V</value>
+  </data>
+  <data name="BV_VORH_SPRUNG_VORLAUF" xml:space="preserve">
+    <value>Largest step in advance S_max,0</value>
+  </data>
+  <data name="BV_VORH_SPRUNG_LAUF" xml:space="preserve">
+    <value>Largest step in the run S_max</value>
+  </data>
+  <data name="BV_VORH_TAGE_VERFEHLT" xml:space="preserve">
+    <value>Days without arrival</value>
+  </data>
+  <data name="BV_VORH_TAGE_UEBER" xml:space="preserve">
+    <value>Days with a step beyond t_V</value>
+  </data>
+  <data name="BV_VORH_UNTERSCHREITUNG_MAX" xml:space="preserve">
+    <value>Largest shortfall below the setpoint</value>
+  </data>
+  <data name="BV_VORH_UNTERSCHREITUNG_H" xml:space="preserve">
+    <value>Hours below the setpoint</value>
+  </data>
+  <data name="BV_VORH_DECKELSTUNDEN" xml:space="preserve">
+    <value>Hours at the cap</value>
+  </data>
+  <data name="BV_VORH_FLOORSTUNDEN" xml:space="preserve">
+    <value>Hours at the floor</value>
+  </data>
+  <data name="BV_VORH_NAECHTE" xml:space="preserve">
+    <value>Nights without setback</value>
+  </data>
+  <data name="BV_VORH_UNERREICHBAR" xml:space="preserve">
+    <value>Days with an unreachable step</value>
+  </data>
+  <data name="BV_VORH_SPERRZEIT" xml:space="preserve">
+    <value>Days with a blocked preheat hour</value>
+  </data>
+  <data name="BV_VORH_MEHRWAERME" xml:space="preserve">
+    <value>Additional heat from preheating</value>
+  </data>
+  <data name="BV_VORH_ZONEN_TITEL" xml:space="preserve">
+    <value>Preheating per zone</value>
+  </data>
+  <data name="BV_VORH_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="BV_VORH_KOPF_ZEIT" xml:space="preserve">
+    <value>t_V [h]</value>
+  </data>
+  <data name="BV_VORH_KOPF_LEISTUNG" xml:space="preserve">
+    <value>P_V [kW]</value>
+  </data>
+  <data name="BV_VORH_KOPF_VERFEHLT" xml:space="preserve">
+    <value>Days without arrival</value>
+  </data>
+  <data name="BV_VORH_KOPF_UNTERSCHREITUNG" xml:space="preserve">
+    <value>Max. shortfall [K]</value>
+  </data>
+  <data name="BV_VORH_KOPF_MEHRWAERME" xml:space="preserve">
+    <value>Additional heat [MWh/a]</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZVERFAHREN" xml:space="preserve">
+    <value>Preheating method of the current building (specified or calculated); empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT" xml:space="preserve">
+    <value>Preheat time t_V of the current building (specified or calculated quantile); empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT_BEDARF_MAX" xml:space="preserve">
+    <value>Largest preheat need t_req of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_BEZUG" xml:space="preserve">
+    <value>Reference power Φ_K,max of preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKEL" xml:space="preserve">
+    <value>Cap P_K of preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZLEISTUNG" xml:space="preserve">
+    <value>Preheat power P_V of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_VORLAUF" xml:space="preserve">
+    <value>Largest step in advance S_max,0 of the current building; empty without a step or with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_LAUF" xml:space="preserve">
+    <value>Largest step in the run S_max of the current building; empty without a step or with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_VERFEHLT" xml:space="preserve">
+    <value>Days without arrival of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UEBER" xml:space="preserve">
+    <value>Days with a step beyond t_V of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX" xml:space="preserve">
+    <value>Largest shortfall below the setpoint during preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNGSSTUNDEN" xml:space="preserve">
+    <value>Hours below the setpoint during preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKELSTUNDEN" xml:space="preserve">
+    <value>Hours at the cap of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_FLOORSTUNDEN" xml:space="preserve">
+    <value>Hours at the floor of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_NAECHTE_OHNE_ABSENKUNG" xml:space="preserve">
+    <value>Nights without setback of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UNERREICHBAR" xml:space="preserve">
+    <value>Days with an unreachable step of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_SPERRZEIT" xml:space="preserve">
+    <value>Days with a blocked preheat hour of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__VORHEIZ_MEHRWAERME" xml:space="preserve">
+    <value>Additional heat from preheating of the current building; empty with the setpoint ramp.</value>
+  </data>
+  <data name="VF_HAT__VORHEIZEN" xml:space="preserve">
+    <value>Data switch: Has a building of the state (or of any state) been calculated with a specified or calculated preheat time?</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_VERFAHREN" xml:space="preserve">
+    <value>Preheating method</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_ZEIT" xml:space="preserve">
+    <value>Preheat time (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_TOLERANZ_ART" xml:space="preserve">
+    <value>Preheat tolerance type</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_TOLERANZ" xml:space="preserve">
+    <value>Preheat tolerance</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_REGELGENAUIGKEIT" xml:space="preserve">
+    <value>Control accuracy ε</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_GELTUNG" xml:space="preserve">
+    <value>Scope of the preheat time</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_RAMPE" xml:space="preserve">
+    <value>Setpoint ramp</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_PROZENT" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_KW" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
+    <value>Zone</value>
   </data>
 </root>
 

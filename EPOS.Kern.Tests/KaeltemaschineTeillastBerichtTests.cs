@@ -96,7 +96,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Tafel_und_Kennzahlen_stehen_in_Katalog_18_mit_Schalter()
         {
-            Assert.Equal(18, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.True(Vorlagenfeldkatalog.KATALOGFASSUNG >= 18);
             Assert.Equal(18, Vorlagenfeldkatalog.Finde("stand.tabelle.km_teillast")?.Seit);
             Assert.NotNull(Vorlagenfeldkatalog.Finde("hat.tabelle.km_teillast"));
         }

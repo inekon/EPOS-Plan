@@ -154,6 +154,37 @@ namespace WindowsFormsApplication1
             return (1.0 + x) * phiKMaxW;
         }
 
+        // AH-V5: Abwandlungen für Oberfläche und Assistent — je ein Feld neu, dieselbe Prüfung wie der Konstruktor, der
+        // Ankunftsbezug reist mit.
+
+        /// <summary>Dieselbe Vorgabe mit anderem Verfahren.</summary>
+        public Vorheizvorgabe MitVerfahren(Aufheizverfahren verfahren)
+            => Neu(verfahren, VorheizzeitH, Toleranzart, ToleranzWert, GenauigkeitK, Geltung, HeizkreisEinbeziehen);
+
+        /// <summary>Dieselbe Vorgabe mit anderer Vorheizzeit des Projekts (1 … 47 h); <c>null</c> = keine.</summary>
+        public Vorheizvorgabe MitVorheizzeit(int? vorheizzeitH)
+            => Neu(Verfahren, vorheizzeitH, Toleranzart, ToleranzWert, GenauigkeitK, Geltung, HeizkreisEinbeziehen);
+
+        /// <summary>Dieselbe Vorgabe mit anderer Toleranz (Art und Wert); Wert <c>null</c> = Vorgabe 20 %.</summary>
+        public Vorheizvorgabe MitToleranz(Vorheiztoleranzart art, double? wert)
+            => Neu(Verfahren, VorheizzeitH, art, wert, GenauigkeitK, Geltung, HeizkreisEinbeziehen);
+
+        /// <summary>Dieselbe Vorgabe mit anderer Regelgenauigkeit [K]; <c>null</c> = Vorgabe 1 K.</summary>
+        public Vorheizvorgabe MitGenauigkeit(double? genauigkeitK)
+            => Neu(Verfahren, VorheizzeitH, Toleranzart, ToleranzWert, genauigkeitK, Geltung, HeizkreisEinbeziehen);
+
+        /// <summary>Dieselbe Vorgabe mit anderer Geltung.</summary>
+        public Vorheizvorgabe MitGeltung(Vorheizgeltung geltung)
+            => Neu(Verfahren, VorheizzeitH, Toleranzart, ToleranzWert, GenauigkeitK, geltung, HeizkreisEinbeziehen);
+
+        /// <summary>Dieselbe Vorgabe mit anderem Schalter „Gebäude mit Heizkreis einbeziehen“.</summary>
+        public Vorheizvorgabe MitHeizkreis(bool einbeziehen)
+            => Neu(Verfahren, VorheizzeitH, Toleranzart, ToleranzWert, GenauigkeitK, Geltung, einbeziehen);
+
+        private Vorheizvorgabe Neu(Aufheizverfahren verfahren, int? vorheizzeitH, Vorheiztoleranzart art, double? wert,
+                                   double? genauigkeitK, Vorheizgeltung geltung, bool heizkreis)
+            => new Vorheizvorgabe(verfahren, vorheizzeitH, art, wert, genauigkeitK, geltung, heizkreis) { Ankunftsbezug = Ankunftsbezug };
+
         private static double? Zahl(double? wert)
             => wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value) ? wert : null;
     }

@@ -1809,7 +1809,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Importoptionen einer Gangliniendatei — neun Felder ueber die Sichtklasse
+        /// Die Importoptionen einer Gangliniendatei — elf Felder ueber die Sichtklasse
         /// <c>EPOS.UI.Dialoge.Strom.GanglinieImportOptionenKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1844,7 +1844,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("blatt", SICHT + "Blatt", KiDialogTexte.GioBlattName, KiParameterTyp.Wahl,
                                      KiDialogTexte.GioBlattErl),
                     new KiDialogFeld("kopfzeile", SICHT + "Kopfzeile", KiDialogTexte.GioKopfzeileName, KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.GioKopfzeileErl)
+                                     KiDialogTexte.GioKopfzeileErl),
+                    new KiDialogFeld("erste_datenzeile", SICHT + "ErsteDatenzeile", KiDialogTexte.GioErsteDatenzeileName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.GioErsteDatenzeileErl),
+                    new KiDialogFeld("zeilenzahl", SICHT + "Zeilenzahl", KiDialogTexte.GioZeilenzahlName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.GioZeilenzahlErl)
                 });
         }
 
@@ -5791,6 +5795,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehlleistung_max", SICHT + "KuehlleistungMax", KiDialogTexte.ZonKuehlleistungName,
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonKuehlleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                    // AH-V5: die Vorheizzeit der Zone - leer = wie Gebaeude; 1 bis 47 h.
+                    new KiDialogFeld("vorheizzeit", SICHT + "Vorheizzeit", KiDialogTexte.ZonVorheizzeitName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.ZonVorheizzeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_STUNDE, leerErlaubt: true, min: 1, max: 47),
                     // KK4 (Entwurf KK Festlegung 15): die Kuehluebergabe je Zone - leer = wie Gebaeude.
                     new KiDialogFeld("kuehl_uebergabe_art", SICHT + "KuehlUebergabeArt", KiDialogTexte.ZonKuehlUebergabeArtName,
                                      KiParameterTyp.Text, KiDialogTexte.ZonKuehlUebergabeArtErl, leerErlaubt: true),
@@ -9408,6 +9416,32 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimAufheizAufschlagProzentName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SimAufheizAufschlagProzentErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true, min: 0, max: 100),
+                    // Das Vorheizen (Entwurf Vorheizrampe Fassung 2, 2.9; Welle AH-V5): Verfahren bei Schalter an,
+                    // die Vorheizzeit nur bei „Vorgabe", die uebrigen bei „Vorgabe" oder „Berechnet" - sonst lehnt
+                    // die Sicht benannt ab, wie die Maske sie nicht zeigt.
+                    new KiDialogFeld("aufheiz_verfahren", "SimulationKiSicht.AufheizVerfahren",
+                                     KiDialogTexte.SimAufheizVerfahrenName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAufheizVerfahrenErl, leerErlaubt: true),
+                    new KiDialogFeld("aufheiz_vorheizzeit", "SimulationKiSicht.AufheizVorheizzeitH",
+                                     KiDialogTexte.SimAufheizVorheizzeitName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimAufheizVorheizzeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_STUNDE, leerErlaubt: true, min: 1, max: 47),
+                    new KiDialogFeld("aufheiz_toleranz_art", "SimulationKiSicht.AufheizToleranzArt",
+                                     KiDialogTexte.SimAufheizToleranzArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAufheizToleranzArtErl, leerErlaubt: true),
+                    new KiDialogFeld("aufheiz_toleranz", "SimulationKiSicht.AufheizToleranz",
+                                     KiDialogTexte.SimAufheizToleranzName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizToleranzErl, leerErlaubt: true, min: 0),
+                    new KiDialogFeld("aufheiz_genauigkeit", "SimulationKiSicht.AufheizGenauigkeitK",
+                                     KiDialogTexte.SimAufheizGenauigkeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizGenauigkeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true, min: 0.1, max: 5),
+                    new KiDialogFeld("aufheiz_geltung", "SimulationKiSicht.AufheizGeltung",
+                                     KiDialogTexte.SimAufheizGeltungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SimAufheizGeltungErl, leerErlaubt: true),
+                    new KiDialogFeld("aufheiz_heizkreis", "SimulationKiSicht.AufheizHeizkreis",
+                                     KiDialogTexte.SimAufheizHeizkreisName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimAufheizHeizkreisErl),
 
                     // ---- Die Einspeisegrenze (Welle M5, PV3) ------------------------------------
                     //
@@ -10450,6 +10484,13 @@ namespace WindowsFormsApplication1
                 new KiDialogFeld("neue_projekte_kuehlung", EINSTELLUNGEN_SICHT + ".NeueProjekteMitKuehlung",
                                  KiDialogTexte.AdmsetKuehlungName, KiParameterTyp.Wahrheitswert,
                                  KiDialogTexte.AdmsetKuehlungErl),
+                // AH-V5 (F14 (a)): die Vorbelegung der Toleranz neuer Projekte - Einheit und Wert.
+                new KiDialogFeld("neue_projekte_vorheiz_art", EINSTELLUNGEN_SICHT + ".NeueProjekteVorheizToleranzArt",
+                                 KiDialogTexte.AdmsetVorheizArtName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.AdmsetVorheizArtErl, leerErlaubt: true),
+                new KiDialogFeld("neue_projekte_vorheiz_wert", EINSTELLUNGEN_SICHT + ".NeueProjekteVorheizToleranz",
+                                 KiDialogTexte.AdmsetVorheizWertName, KiParameterTyp.Zahl,
+                                 KiDialogTexte.AdmsetVorheizWertErl, leerErlaubt: true, min: 0),
 
                 // BV-E1 (Konzept Berichtsvorlagen 10.3): die Rubrik „Bericht" - an den Arbeitsstand
                 // des Dialogs; ohne Rubrik oder bei gesperrter Ordnerwahl lehnt die Sicht benannt ab.

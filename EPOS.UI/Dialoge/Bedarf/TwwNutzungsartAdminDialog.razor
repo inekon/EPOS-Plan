@@ -588,7 +588,10 @@
         if (EditorLaden is null) return;
         _meldung = "";
         _status = "";
-        _editor = EditorLaden(_detail?.Id ?? 0, TwwEditorModus.Neu);
+        // KT-5: Wirft das Lesen des Editorstands, nennt das Band den Grund; kein Editor geht auf.
+        int id = _detail?.Id ?? 0;
+        _editor = Katalogladung.Satz(() => EditorLaden(id, TwwEditorModus.Neu), _detail?.Name ?? Texte.Titel, out string grund);
+        if (grund.Length > 0) Warnen(grund);
     }
 
     /// <summary>Der Editor zur gewählten Zeile; ohne Wahl nennt das Band den Grund.</summary>
@@ -602,7 +605,10 @@
         }
         _meldung = "";
         _status = "";
-        _editor = EditorLaden(_detail.Id, modus);
+        // KT-5: Wirft das Lesen des Editorstands, nennt das Band den Grund; kein Editor geht auf.
+        TwwNutzungsartDetailDaten detail = _detail;
+        _editor = Katalogladung.Satz(() => EditorLaden(detail.Id, modus), detail.Name, out string grund);
+        if (grund.Length > 0) Warnen(grund);
     }
 
     /// <summary>Der Editor hat geschrieben: Liste neu, die Zeile, die jetzt die Werte trägt, gewählt.</summary>
@@ -665,7 +671,10 @@
         if (_detail is null) { Warnen(Texte.GrundKeineWahl); return; }
         _meldung = "";
         _status = "";
-        _tagesgangGaben = TagesgangGaben(_detail.Id);
+        // KT-5: Wirft das Lesen der Gaben, nennt das Band den Grund; kein Editor geht auf.
+        TwwNutzungsartDetailDaten detail = _detail;
+        _tagesgangGaben = Katalogladung.Satz(() => TagesgangGaben(detail.Id), detail.Name, out string grund);
+        if (grund.Length > 0) Warnen(grund);
     }
 
     private void BeiKategorien()
@@ -674,7 +683,10 @@
         if (_detail is null) { Warnen(Texte.GrundKeineWahl); return; }
         _meldung = "";
         _status = "";
-        _kategorienGaben = KategorienGaben(_detail.Id);
+        // KT-5: Wirft das Lesen der Gaben, nennt das Band den Grund; kein Editor geht auf.
+        TwwNutzungsartDetailDaten detail = _detail;
+        _kategorienGaben = Katalogladung.Satz(() => KategorienGaben(detail.Id), detail.Name, out string grund);
+        if (grund.Length > 0) Warnen(grund);
     }
 
     /// <summary>Der Tagesgang ist geschrieben — eine gesperrte Nutzungsart kam als neue Katalogversion; sie wird gewählt.</summary>

@@ -1,0 +1,77 @@
+﻿@* DAS LIZENZBANNER UEBER DER ANSICHT (Wirt: AppWurzel).
+
+   Der Wirt traegt die Klasse, nicht das Banner: Eine Ansicht darf ihre EIGENEN
+   Warnbanner haben (die Projektliste hat eines), und ein Pruefstand muss die zwei
+   auseinanderhalten koennen.
+
+   DIE HOEHE GEHT IN DIE HOEHENRECHNUNG DER DIALOGE EIN. Das Banner steht in #app
+   vor der Ansicht. Ein Dialog voller Hoehe rechnet 100dvh minus die sicheren
+   Abstaende; stuende das Banner darueber, rollte das Dokument um seine Hoehe und
+   die Schlussleiste laege unter dem Fensterrand. Solange der Baustein steht,
+   meldet epos-lizenzbanner.js die wirkliche Hoehe des Wirts als Token
+   --epos-banner-oben an der Wurzel des Dokuments; jede Hoehenregel zieht es ab
+   wie --epos-sicher-oben (epos-ui.css). Gemessen statt fest: Der Text bricht um,
+   und ein verfallener oder geschlossener Hinweis laesst den Wirt leer (Hoehe 0).
+   Gemessen im Browser mit Proben/Rasterprobe/fensterprobe.mjs (Fall
+   „lizenzbanner"). *@
+
+@namespace EPOS.UI.Bausteine
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
+@implements IAsyncDisposable
+
+<div class="epos-lizenzbanner" @ref="_wirt">
+    <Warnbanner Stufe="@Stufe"
+                Text="@Text"
+                Verfaellt="@Verfaellt" />
+</div>
+
+@code {
+    /// <summary>Der Pfad des Moduls, das die Höhe als Token meldet.</summary>
+    public const string MODUL = "./_content/EPOS.UI/epos-lizenzbanner.js";
+
+    /// <summary>Das Token, das die Höhenregeln des Stilblatts abziehen.</summary>
+    public const string TOKEN = "--epos-banner-oben";
+
+    /// <summary>Die Stufe des Banners (Hinweis oder Warnung).</summary>
+    [Parameter] public WarnStufe Stufe { get; set; } = WarnStufe.Hinweis;
+
+    /// <summary>Der fertige Satz aus dem Kern.</summary>
+    [Parameter] public string Text { get; set; } = "";
+
+    /// <summary>Die Lebensdauer des Hinweises; <c>null</c> = bleibt stehen.</summary>
+    [Parameter] public TimeSpan? Verfaellt { get; set; }
+
+    private ElementReference _wirt;
+    private IJSObjectReference? _modul;
+    private bool _angemeldet;
+
+    /// <inheritdoc/>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_angemeldet) return;
+        _angemeldet = true;
+        try
+        {
+            _modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            if (_modul is not null) await _modul.InvokeVoidAsync("anmelden", _wirt);
+        }
+        catch (Exception)
+        {
+            // Ohne das Modul (eine Huelle ohne Skripte) steht das Banner trotzdem;
+            // das Dokument rollt dann um seine Hoehe.
+        }
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is null) return;
+        try
+        {
+            await _modul.InvokeVoidAsync("abmelden", _wirt);
+            await _modul.DisposeAsync();
+        }
+        catch (Exception) { /* Die WebView ist schon weg. */ }
+    }
+}

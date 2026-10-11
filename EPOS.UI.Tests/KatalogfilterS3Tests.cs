@@ -257,7 +257,8 @@ public class KatalogfilterS3Tests : EposBunitContext
                  Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        Assert.Equal(5, strom.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
+        // „im Projekt verwendet“ standardmaessig aus (4.10); Stufe 4: Kaestchen und Stift statt der Wahlspalte.
+        Assert.Equal(6, strom.FindAll(".epos-katalogliste thead th").Count);
 
         var solar = Render<SolarganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<ErzeugerZeile>())
@@ -273,6 +274,7 @@ public class KatalogfilterS3Tests : EposBunitContext
                  Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        Assert.Equal(5, solar.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
+        // „im Projekt verwendet“ standardmaessig aus (4.10); Stufe 4: Kaestchen und Stift statt der Wahlspalte.
+        Assert.Equal(6, solar.FindAll(".epos-katalogliste thead th").Count);
     }
 }

@@ -294,4 +294,82 @@ public class LizenzbannerTests : EposBunitContext
                          cut.Find(".epos-lizenzbanner .epos-warnbanner-text").TextContent);
         }
     }
+
+    // =====================================================================
+    //  13-15  Die Bannerhöhe in der Höhenrechnung der Dialoge (Auftrag LB)
+    // =====================================================================
+
+    /// <summary>
+    /// Fall 13: <b>Ein sichtbares Banner meldet seine Höhe als Token.</b> Der Baustein
+    /// <see cref="EPOS.UI.Bausteine.Lizenzbanner"/> lädt das Modul und meldet seinen Wirt
+    /// an; das Modul setzt <c>--epos-banner-oben</c> an der Wurzel des Dokuments auf die
+    /// gemessene Höhe. Ohne das Token rollte das Dokument vor einem Dialog voller Höhe um
+    /// die Bannerhöhe (gemessen mit <c>Proben/Rasterprobe/fensterprobe.mjs</c>, Fall
+    /// „lizenzbanner").
+    /// </summary>
+    [Fact]
+    public void Ein_sichtbares_Banner_meldet_seine_Hoehe_als_Token()
+    {
+        var modul = JSInterop.SetupModule(EPOS.UI.Bausteine.Lizenzbanner.MODUL);
+        modul.SetupVoid("anmelden", _ => true).SetVoidResult();
+
+        var cut = Aufbauen(Lesemodus());
+
+        Assert.Single(cut.FindAll(".epos-lizenzbanner > .epos-warnbanner"));
+        var anmeldung = modul.VerifyInvoke("anmelden");
+        Assert.Single(anmeldung.Arguments);
+        Assert.Equal("--epos-banner-oben", EPOS.UI.Bausteine.Lizenzbanner.TOKEN);
+    }
+
+    /// <summary>
+    /// Fall 14: <b>Ohne Banner kein Token.</b> Eine ruhige Lage zeichnet den Baustein nicht,
+    /// das Modul wird nicht geladen, und das Stilblatt rechnet mit seiner Vorgabe 0px.
+    /// </summary>
+    [Fact]
+    public void Ohne_Banner_wird_kein_Token_gesetzt()
+    {
+        var cut = Aufbauen(null);
+
+        Assert.Empty(cut.FindAll(".epos-lizenzbanner"));
+        Assert.DoesNotContain(JSInterop.Invocations,
+            i => i.Identifier == "import"
+                 && i.Arguments.Count > 0
+                 && Equals(i.Arguments[0], EPOS.UI.Bausteine.Lizenzbanner.MODUL));
+        Assert.DoesNotContain(JSInterop.Invocations, i => i.Identifier == "anmelden");
+    }
+
+    /// <summary>
+    /// Fall 15: <b>Jede Höhenregel einer Wurzel in voller Fensterhöhe zieht das Token ab.</b>
+    /// Das Token steht mit Vorgabe 0px in <c>:root</c>, und jede <c>height</c>- oder
+    /// <c>min-height</c>-Regel, die <c>100vh</c>/<c>100dvh</c> um die sicheren Abstände
+    /// mindert, mindert sie auch um die Bannerhöhe. Ausgenommen sind die fest stehenden
+    /// Überlagerungen (Rand 16 px, <c>max-height</c>): Sie bedecken das Banner.
+    /// </summary>
+    [Fact]
+    public void Jede_Hoehenregel_in_voller_Fensterhoehe_zieht_das_Banner_ab()
+    {
+        string css = Stilblatt();
+        Assert.Matches(@"--epos-banner-oben:\s*0px;", css);
+
+        var zeilen = css.Split('\n')
+                        .Select(z => z.Trim())
+                        .Where(z => System.Text.RegularExpressions.Regex.IsMatch(
+                                        z, @"^(min-)?height:.*100d?vh - .*var\(--epos-sicher-oben\)")
+                                    && !z.Contains("- 16px"))
+                        .ToList();
+
+        Assert.NotEmpty(zeilen);
+        Assert.All(zeilen, z => Assert.Contains("var(--epos-banner-oben)", z));
+    }
+
+    private static string Stilblatt()
+    {
+        System.IO.DirectoryInfo? d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null
+               && !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        return System.IO.File.ReadAllText(System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+    }
 }

@@ -125,6 +125,80 @@ public static class Katalogladung
         return ok;
     }
 
+    // ---- Die asynchronen Wege (Ganglinien-Katalogseite und ihre Wirte) --------------------
+    // Dieselbe Fangstelle für Wege, die eine Aufgabe liefern: Auch eine Ausnahme, die schon beim
+    // Aufruf (vor dem ersten await) fällt, landet hier, weil der Aufruf im try steht.
+
+    /// <summary>Wie <see cref="Lesen{T}"/> für eine asynchrone Quelle; das Ergebnis trägt Liste und Grund.</summary>
+    public static async Task<(IReadOnlyList<T> Liste, string Fehler)> LesenAsync<T>(
+        Func<Task<IReadOnlyList<T>>>? quelle, string? liste)
+    {
+        if (quelle is null) return (Array.Empty<T>(), "");
+        try
+        {
+            return (await quelle() ?? Array.Empty<T>(), "");
+        }
+        catch (Exception ex)
+        {
+            return (Array.Empty<T>(), Benennen(Resource.WURZEL_LISTE_FEHLER, "Katalogliste", "nicht gelesen", liste, ex));
+        }
+    }
+
+    /// <summary>
+    /// Liest, was zur Liste gehört (etwa die Verwendung je Zeile), mit dem Grund der Liste
+    /// (<see cref="Resource.WURZEL_LISTE_FEHLER"/>); wirft die Quelle, ist das Ergebnis <c>default</c>.
+    /// </summary>
+    public static async Task<(T? Wert, string Fehler)> ZurListeAsync<T>(Func<Task<T>> quelle, string? liste)
+    {
+        try
+        {
+            return (await quelle(), "");
+        }
+        catch (Exception ex)
+        {
+            return (default, Benennen(Resource.WURZEL_LISTE_FEHLER, "Katalogliste", "nicht gelesen", liste, ex));
+        }
+    }
+
+    /// <summary>Wie <see cref="Satz{T}"/> für einen asynchronen Weg; das Ergebnis trägt Satz und Grund.</summary>
+    public static async Task<(T? Satz, string Fehler)> SatzAsync<T>(Func<Task<T?>> weg, string? satz)
+    {
+        try
+        {
+            return (await weg(), "");
+        }
+        catch (Exception ex)
+        {
+            return (default, Benennen(Resource.WURZEL_SATZ_FEHLER, "Katalogsatz", "nicht gelesen", satz, ex));
+        }
+    }
+
+    /// <summary>Wie <see cref="Schreiben{T}"/> für einen asynchronen Weg.</summary>
+    public static async Task<T> SchreibenAsync<T>(Func<Task<T>> weg, string? satz, Func<string, T> abgelehnt)
+    {
+        try
+        {
+            return await weg();
+        }
+        catch (Exception ex)
+        {
+            return abgelehnt(Benennen(Resource.WURZEL_SCHREIBEN_FEHLER, "Katalogsatz", "nicht gespeichert", satz, ex));
+        }
+    }
+
+    /// <summary>Wie <see cref="Loeschen{T}"/> für einen asynchronen Weg.</summary>
+    public static async Task<T> LoeschenAsync<T>(Func<Task<T>> weg, string? satz, Func<string, T> abgelehnt)
+    {
+        try
+        {
+            return await weg();
+        }
+        catch (Exception ex)
+        {
+            return abgelehnt(Benennen(Resource.WURZEL_LOESCHEN_FEHLER, "Katalogsatz", "nicht gelöscht", satz, ex));
+        }
+    }
+
     /// <summary>Der Grund in der Sprache der Oberfläche und der Vermerk im Ausnahmeprotokoll.</summary>
     private static string Benennen(string vorlage, string was, string wie, string? satz, Exception ex)
     {

@@ -87,6 +87,18 @@ namespace WindowsFormsApplication1
         /// <summary>Auslegungsgröße Φ_HL + Φ_RH [kW] (E60), Summe über die Gebäude.</summary>
         public const string SCHLUESSEL_GEB_AUSLEGUNGSGROESSE = "geb.auslegungsgroesse";
 
+        /// <summary>Vorheizzeit t_V [h] der Fassung 2 (AH-V6), Höchstwert über die Gebäude; leer bei Sollwertrampe.</summary>
+        public const string SCHLUESSEL_GEB_VORHEIZZEIT = "geb.vorheizzeit";
+
+        /// <summary>Vorheizleistung P_V [kW] (AH-V6), Summe über die Gebäude.</summary>
+        public const string SCHLUESSEL_GEB_VORHEIZLEISTUNG = "geb.vorheizleistung";
+
+        /// <summary>Tage ohne Ankunft (AH-V6), Höchstwert über die Gebäude.</summary>
+        public const string SCHLUESSEL_GEB_VORHEIZ_TAGE_VERFEHLT = "geb.vorheiz_tage_verfehlt";
+
+        /// <summary>Mehrwärme des Vorheizens [MWh/a] (AH-V6), Summe über die Gebäude.</summary>
+        public const string SCHLUESSEL_GEB_VORHEIZ_MEHRWAERME = "geb.vorheiz_mehrwaerme";
+
         /// <summary>
         /// Der Höchstwert einer Größe über die Gebäude des Stands — dieselben Ergebniszeilen wie die Gebäudetafel
         /// (<see cref="ProjektbeschreibungBaustein.GebaeudeZeilen"/>); <c>null</c>, wenn kein Gebäude sie trägt. Stunden und Zeiten
@@ -810,6 +822,21 @@ namespace WindowsFormsApplication1
             l.Add(G(new Kennzahl(SCHLUESSEL_GEB_AUSLEGUNGSGROESSE, "Auslegungsgröße Φ_HL + Φ_RH (Summe der Gebäude)",
                 "Design capacity Φ_HL + Φ_RH (sum of buildings)", "kW", GR_GEBAEUDE, "N1", true,
                 v => Gebaeudesumme(v, Aufheizbericht.Auslegungsgroesse))));
+            // AH-V6 (Katalog v19): die Vorheizgrößen der Fassung 2 - nur mit Verfahren „Vorgabe“ oder „Berechnet“; bei
+            // Sollwertrampe trägt kein Gebäude einen Wert, die Zeilen entfallen wie die Aufheizwerte ohne Aufheizrechnung.
+            Kennzahl V(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_VORHEIZEN; return k; }
+            l.Add(V(new Kennzahl(SCHLUESSEL_GEB_VORHEIZZEIT, "Vorheizzeit t_V (Höchstwert der Gebäude)",
+                "Preheat time t_V (building maximum)", "h", GR_GEBAEUDE, "N0", true,
+                v => Gebaeudehoechstwert(v, g => g.Vorheizen?.VorheizzeitH))));
+            l.Add(V(new Kennzahl(SCHLUESSEL_GEB_VORHEIZLEISTUNG, "Vorheizleistung P_V (Summe der Gebäude)",
+                "Preheat power P_V (sum of buildings)", "kW", GR_GEBAEUDE, "N1", true,
+                v => Gebaeudesumme(v, g => g.Vorheizen?.LeistungKw))));
+            l.Add(V(new Kennzahl(SCHLUESSEL_GEB_VORHEIZ_TAGE_VERFEHLT, "Tage ohne Ankunft (Höchstwert der Gebäude)",
+                "Days without arrival (building maximum)", "d/a", GR_GEBAEUDE, "N0", true,
+                v => Gebaeudehoechstwert(v, g => g.Vorheizen?.TageVerfehlt))));
+            l.Add(V(new Kennzahl(SCHLUESSEL_GEB_VORHEIZ_MEHRWAERME, "Mehrwärme des Vorheizens (Summe der Gebäude)",
+                "Additional heat from preheating (sum of buildings)", "MWh/a", GR_GEBAEUDE, "N2", true,
+                v => Gebaeudesumme(v, g => g.Vorheizen?.MehrwaermeMwh))));
 
             // ---------------- Emissionen (KostenEmissionRechner; null = Faktoren fehlen) ----------------
             // Die Beschriftung NENNT DEN MODUS (Etappe E5, Konzept F7): „CO₂-Emissionen"
