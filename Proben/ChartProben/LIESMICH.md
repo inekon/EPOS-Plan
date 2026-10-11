@@ -30,7 +30,7 @@ dotnet run --project Proben/ChartProben -c Release
 | `--hashes <datei>` | schreibt die **Hash-Messlatte**: je Bild eine Zeile aus SHA-256, zwei Leerzeichen und `<name>.png`, nach Name geordnet, mit LF und ohne BOM — das Format von `sha256sum`, also mit `sha256sum -c` im Ablageordner nachrechenbar |
 | `--svg <datei>` | schreibt den Jahresgang der Klimadaten **einmal** als SVG-Text (UTF-8 ohne BOM, LF) und nennt Größe und Knotenzahl — zum Ansehen im Browser und als Nachweis der SVG-Gegenprobe |
 | `--svg-alle <ordner>` | schreibt **jedes** Modell mit SVG-Gegenprobe als eigene `.svg` in diesen Ordner (Dateiname = Bildname ohne `svg_` bzw. `svg_c_`) — für die Sichtprüfung gegen das Skia-Bild aus `--ablage`; daneben `<name>_druck.svg`, der SVG-Teil des Wortberichts (`SvgSchreiber.Drucktext`, Reihen als Pixelpfade ohne `vector-effect`). Kein Teil der Prüfung: Es entsteht kein PNG und keine Hashzeile |
-| `--wiki <ordner>` | schreibt nur die Wiki-Fassungen der Diagramme mit sprechenden Beschriftungen (derzeit `Diagramm_Bivalenz.png`, dieselbe Probe wie `bivalenzdiagramm` mit eigenen Marken) in diesen Ordner und endet; keine Probe, keine Hashzeile |
+| `--wiki <ordner>` | schreibt nur die Wiki-Fassungen der Diagramme mit sprechenden Beschriftungen (`Diagramm_Bivalenz.png` — dieselbe Probe wie `bivalenzdiagramm` mit eigenen Marken — sowie `Diagramm_Waerme_Jahresverlauf.png`, `Diagramm_Waerme_Dauerlinie.png` und `Diagramm_Strombilanz_Monate.png` aus einem eigenen Satz, in dem eine Kaskade stündlich genau den Bedarf deckt) in diesen Ordner und endet; keine Probe, keine Hashzeile |
 
 Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 
