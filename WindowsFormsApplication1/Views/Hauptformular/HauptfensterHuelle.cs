@@ -220,7 +220,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Menue, Marke und Fenstertitel nach einem Wechsel der Stufe sofort neu versorgen
-        /// (Tastenfolge, „Entwicklermodus ausschalten").
+        /// (Geste im Dialog „Über EPOS-Plan", „Entwicklermodus ausschalten").
         /// </summary>
         internal void FreigabeNeuVersorgen()
         {
@@ -438,8 +438,11 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.KiAssistent:
                     return () => KiChatHuelle.Oeffnen(_besitzer?.Invoke());
 
+                // Administration und Support, Stufe 3 (Konzept 5): der Dialog „Über EPOS-Plan" mit
+                // Diagnoseblock, Kontakt und der Geste des Entwicklermodus; die Datenseite liegt
+                // plattformfrei in UeberHuelle, nach einem Wechsel versorgt FreigabeNeuVersorgen.
                 case Seitenschluessel.Version:
-                    return Versionsmeldung;
+                    return () => UeberFenster.Oeffnen(_besitzer?.Invoke(), VersionText(), FreigabeNeuVersorgen);
 
                 case Seitenschluessel.Dokumentation:
                     return Dokumentation;
@@ -508,24 +511,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         //  Die zusammengesetzten Abläufe
         // =====================================================================
-
-        /// <summary>
-        /// „Über EPOS-Plan" — die EINZIGE <c>MessageBox</c> des Hauptfensters
-        /// (<c>:669-677</c>). Ihr Titel war ein deutsches Literal („Über " +
-        /// PRODUKTNAME) und ihre Schlusszeile ebenso; beide stehen jetzt im
-        /// Katalog.
-        /// </summary>
-        private void Versionsmeldung()
-        {
-            string text = Hauptfensterrahmen.PRODUKTNAME + Environment.NewLine +
-                          MyResource.Resource.HAUPT_CLAIM + Environment.NewLine + Environment.NewLine +
-                          Versionszeile() + Environment.NewLine +
-                          MyResource.Resource.HAUPT_UEBER_HAUS;
-
-            Dienste.Dialog.Meldung(
-                text,
-                string.Format(MyResource.Resource.HAUPT_UEBER_TITEL, Hauptfensterrahmen.PRODUKTNAME));
-        }
 
         /// <summary>
         /// Die Online-Dokumentation im Browser (<c>:807-832</c>). Führend ist der
