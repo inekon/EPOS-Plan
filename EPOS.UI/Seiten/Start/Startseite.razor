@@ -7,7 +7,7 @@
 
    AUFBAU (Vermessung § 12.5):
      Kopfband  Projekt/Varianten · Statuszeichen · Klimaregion · Produktgattung
-     Reiter    Projekt · Waermebedarf · Strombedarf · Energieerzeuger ·
+     Reiter    Projekt · Waermebedarf · Kaeltebedarf (K4) · Strombedarf · Energieerzeuger ·
                Simulation · Berichte & Kosten (die Seite aus W5)
      Fussleiste  [◀ Zurueck] [Weiter ▶]
 
@@ -209,7 +209,7 @@
                     Verfallen="MeldungVergessen" />
     }
 
-    @* ================= Die sechs Reiter ================= *@
+    @* ================= Die sieben Reiter ================= *@
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung"
             Verweigert="BeiSperre">
         <KindInhalt>
@@ -231,6 +231,21 @@
                                         KopfText="@WaermeKopfText" Text="@WaermeText"
                                         HinweisTitelText="@WaermeHinweisTitelText"
                                         HinweisText="@WaermeHinweisText" />
+                </KindInhalt>
+            </Reiterblatt>
+
+            @* Reiter „Kaeltebedarf" (Konzept Kaeltebedarf 3.1, Stufe K4) hinter
+               „Waermebedarf" - Bedarf Waerme -> Kaelte -> Strom, dann Erzeuger (OP-1).
+               Die Hinweiszeile springt denselben Weg wie der Knopf
+               „Simulation Konfiguration…" (BeiKachel). *@
+            <Reiterblatt Schluessel="@Reiterschluessel.Kaeltebedarf" Titel="@ReiterKaelteText"
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
+                <KindInhalt>
+                    <KaeltebedarfReiter Kacheln="@KachelnVon(Reiterschluessel.Kaeltebedarf)"
+                                        Geklickt="BeiKachel"
+                                        Gebaeudekuehlung="@Gebaeudekuehlung"
+                                        HinweisZeichen="@StatusKeinsText"
+                                        KonfigurationOeffnen="@(() => BeiKachel(Kachelschluessel.SimulationKonfiguration))" />
                 </KindInhalt>
             </Reiterblatt>
 
@@ -453,7 +468,7 @@
     [Parameter] public Action<bool>? PvartGewaehlt { get; set; }
 
     /// <summary>
-    /// Der Parametersatz des sechsten Reiters (<c>BerichteKostenSeite</c> aus
+    /// Der Parametersatz des letzten Reiters (<c>BerichteKostenSeite</c> aus
     /// W5.6); <c>null</c> = der Reiter bleibt leer.
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BerichteGaben { get; set; }
@@ -571,6 +586,7 @@
 
     [Parameter] public string ReiterProjektText { get; set; } = "Projekt";
     [Parameter] public string ReiterWaermeText { get; set; } = "Wärmebedarf";
+    [Parameter] public string ReiterKaelteText { get; set; } = "Kältebedarf";
     [Parameter] public string ReiterStromText { get; set; } = "Strombedarf";
     [Parameter] public string ReiterErzeugerText { get; set; } = "Energieerzeuger";
     [Parameter] public string ReiterSimulationText { get; set; } = "Simulation";
@@ -609,6 +625,13 @@
     /// nur durchgereicht. <c>null</c> = die Kachel zeigt ihren Leerhinweis.
     /// </summary>
     [Parameter] public Func<KuehlungKachelDaten?>? Kuehlung { get; set; }
+
+    /// <summary>
+    /// Der Stand der Kachel „Gebäudekühlung“ samt Projektschalter „Kühlung rechnen“ im Reiter
+    /// Kältebedarf (Windows: <c>GebaeudekuehlungKachelBau.Daten</c>); nur durchgereicht. <c>null</c> =
+    /// keine Hinweiszeile und keine Zustandszeile.
+    /// </summary>
+    [Parameter] public Func<GebaeudekuehlungDaten?>? Gebaeudekuehlung { get; set; }
 
     [Parameter] public string SimulationKopfText { get; set; } = "Simulation durchführen";
     [Parameter] public string SimulationText { get; set; }

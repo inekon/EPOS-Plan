@@ -16515,6 +16515,51 @@ Please go through the project page again so that the data of the selected projec
   <data name="START_K_MESSDATEN_B" xml:space="preserve">
     <value>Load real consumption data</value>
   </data>
+  <data name="START_REITER_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="START_KB_KOPF" xml:space="preserve">
+    <value>Define cooling demand</value>
+  </data>
+  <data name="START_KB_TEXT" xml:space="preserve">
+    <value>Record the cooling demand of your project.</value>
+  </data>
+  <data name="START_KB_TIPP_TITEL" xml:space="preserve">
+    <value>Tip</value>
+  </data>
+  <data name="START_KB_TIPP" xml:space="preserve">
+    <value>Cooling load profiles and cooling demand profiles record cooling demand without a building model. Cooling of the project buildings is calculated by the building model itself.</value>
+  </data>
+  <data name="START_KB_OHNE_KUEHLBETRIEB" xml:space="preserve">
+    <value>The project does not calculate cooling — switch it on in the simulation configuration.</value>
+  </data>
+  <data name="START_KB_ZUR_KONFIG" xml:space="preserve">
+    <value>Open simulation configuration</value>
+  </data>
+  <data name="START_K_KBEXTERN_T" xml:space="preserve">
+    <value>External cooling demand</value>
+  </data>
+  <data name="START_K_KBEXTERN_B" xml:space="preserve">
+    <value>Import and assign a cooling load profile (CSV)</value>
+  </data>
+  <data name="START_K_KBPROFIL_T" xml:space="preserve">
+    <value>Cooling demand profiles</value>
+  </data>
+  <data name="START_K_KBPROFIL_B" xml:space="preserve">
+    <value>Cooling demand from type profile, annual total and calendar</value>
+  </data>
+  <data name="START_K_GEBKUEHL_T" xml:space="preserve">
+    <value>Building cooling</value>
+  </data>
+  <data name="START_K_GEBKUEHL_B" xml:space="preserve">
+    <value>Set up cooling of the project buildings</value>
+  </data>
+  <data name="START_K_GEBKUEHL_STAND" xml:space="preserve">
+    <value>{0} of {1} buildings cooled</value>
+  </data>
+  <data name="START_K_GEBKUEHL_AUS" xml:space="preserve">
+    <value>Project does not calculate cooling</value>
+  </data>
   <data name="START_E_KOPF" xml:space="preserve">
     <value>Select energy generator</value>
   </data>

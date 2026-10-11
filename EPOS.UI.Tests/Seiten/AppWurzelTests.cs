@@ -395,7 +395,7 @@ public class AppWurzelTests : EposBunitContext
         cut.Render();
 
         Assert.Single(cut.FindAll(".epos-startseite"));
-        Assert.Equal("true", cut.FindAll("[role='tab']")[3].GetAttribute("aria-selected"));
+        Assert.Equal("true", cut.FindAll("[role='tab']")[4].GetAttribute("aria-selected"));
     }
 
     /// <summary>
@@ -411,7 +411,7 @@ public class AppWurzelTests : EposBunitContext
         cut.Instance.OeffneMaske(Seitenschluessel.Startseite,
                                  EPOS.UI.Seiten.Start.Reiterschluessel.Erzeuger);
         cut.Render();
-        Assert.Equal("true", cut.FindAll("[role='tab']")[3].GetAttribute("aria-selected"));
+        Assert.Equal("true", cut.FindAll("[role='tab']")[4].GetAttribute("aria-selected"));
 
         cut.Instance.OeffneMaske(Seitenschluessel.Projektliste);
         cut.Render();

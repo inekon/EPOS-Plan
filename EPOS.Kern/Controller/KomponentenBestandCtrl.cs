@@ -51,7 +51,8 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class KomponentenBestandCtrl
     {
-        // Kennungen der dreizehn Komponenten. Die Reihenfolge ist die Lesereihenfolge
+        // Kennungen der fuenfzehn Komponenten - die dreizehn des Vorlaeufers und die zwei
+        // Kaeltebedarfe der Stufe K4 dahinter. Die Reihenfolge ist die Lesereihenfolge
         // der Kacheln (Bedarf -> Strom -> Erzeuger -> Speicher), NICHT die der
         // Assistentenseiten; die Zuordnung zur Seite steht in SeitenIndex.
         public const int GEBAEUDE = 0;
@@ -68,8 +69,20 @@ namespace WindowsFormsApplication1
         public const int SP = 11;
         public const int PUFFER = 12;
 
+        /// <summary>
+        /// Kältebedarf extern (Konzept Kältebedarf 3.1, Stufe K4): mindestens eine Zeile in
+        /// <c>Z_ProjektWaermebedarf</c> mit Kanal „Kuehlung“ — Bitwert 8192, ohne Assistentenseite.
+        /// </summary>
+        public const int KAELTE_EXTERN = 13;
+
+        /// <summary>
+        /// Kältebedarfsprofile (Konzept Kältebedarf 3.1, Stufe K4): mindestens eine Zeile in
+        /// <c>Z_Projekt_Kaeltebedarf</c> — Bitwert 16384, ohne Assistentenseite.
+        /// </summary>
+        public const int KAELTEPROFIL = 14;
+
         /// <summary>Anzahl der geführten Komponenten (13).</summary>
-        public const int ANZAHL = 13;
+        public const int ANZAHL = 15;
 
         /// <summary>Kennung ohne eigene Assistentenseite (Brauchwasser, Pufferspeicher).</summary>
         public const int OHNE_SEITE = -1;
@@ -108,7 +121,7 @@ namespace WindowsFormsApplication1
 
         private KomponentenBestandCtrl()
         {
-            int[] bits = { 8, 16, 32, 4096, 64, 128, 2, 256, 1, 512, 1024, 4, 2048 };
+            int[] bits = { 8, 16, 32, 4096, 64, 128, 2, 256, 1, 512, 1024, 4, 2048, 8192, 16384 };
             int[] seiten =
             {
                 WizardItemClass.GEBAEUDE_ITEM, WizardItemClass.WAERMEBEDARF_ITEM,
@@ -116,7 +129,9 @@ namespace WindowsFormsApplication1
                 WizardItemClass.STROMSTD_ITEM, WizardItemClass.STROMLASTGANG_ITEM,
                 WizardItemClass.WP_ITEM, WizardItemClass.BHKW_ITEM,
                 WizardItemClass.KESSEL_ITEM, WizardItemClass.SOLAR_ITEM,
-                WizardItemClass.PV_ITEM, WizardItemClass.SP_ITEM, OHNE_SEITE
+                WizardItemClass.PV_ITEM, WizardItemClass.SP_ITEM, OHNE_SEITE,
+                // Kälte (K4): der Projektassistent bekommt keine Kälteseite.
+                OHNE_SEITE, OHNE_SEITE
             };
 
             for (int i = 0; i < ANZAHL; i++)
@@ -225,6 +240,16 @@ namespace WindowsFormsApplication1
             Z_ProjektGebGanglinieCtrl wbctrl = new Z_ProjektGebGanglinieCtrl();
             wbctrl.ReadAll("select * from Z_ProjektWaermebedarf where ID_Projekt=" + idProjekt);
             for (int n = 0; n < wbctrl.rows; n++) Merken(WAERMEBEDARF, wbctrl.items[n].m_szBezeichner);
+
+            // Kältebedarf extern (K4): dieselben Zeilen, gezählt nur mit Kanal „Kuehlung“. Das Bit
+            // WAERMEBEDARF bleibt, wie es war - es zählt jede Zeile, gleich welchen Kanals.
+            for (int n = 0; n < wbctrl.rows; n++)
+                if (string.Equals(wbctrl.items[n].Kanal, DbWerte.KANAL_KUEHLUNG, StringComparison.Ordinal))
+                    Merken(KAELTE_EXTERN, wbctrl.items[n].m_szBezeichner);
+
+            // Kältebedarfsprofile (K4): die Zuordnungszeilen; vor Schema 213 ist die Liste leer.
+            foreach (Z_ProjektKaeltebedarfModel kb in Z_ProjektKaeltebedarfCtrl.LiesProjekt(idProjekt))
+                Merken(KAELTEPROFIL, kb.Bezeichner);
 
             // SV1/SV2: Prozesswaerme, Brauchwasser und Stromverbraucher nennen je Zeile die
             // Projektkopie, auf die die Zeile per ID zeigt - wie die Kacheln der Startseite -,

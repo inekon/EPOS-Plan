@@ -16504,6 +16504,51 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="START_K_MESSDATEN_B" xml:space="preserve">
     <value>Laden Sie reale Verbrauchsdaten</value>
   </data>
+  <data name="START_REITER_KAELTE" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="START_KB_KOPF" xml:space="preserve">
+    <value>Kältebedarf definieren</value>
+  </data>
+  <data name="START_KB_TEXT" xml:space="preserve">
+    <value>Erfassen Sie den Kältebedarf Ihres Projekts.</value>
+  </data>
+  <data name="START_KB_TIPP_TITEL" xml:space="preserve">
+    <value>Tipp</value>
+  </data>
+  <data name="START_KB_TIPP" xml:space="preserve">
+    <value>Kältelastgang und Kältebedarfsprofil erfassen Kältebedarf ohne Gebäudemodell. Die Kühlung der Projektgebäude rechnet das Gebäudemodell selbst.</value>
+  </data>
+  <data name="START_KB_OHNE_KUEHLBETRIEB" xml:space="preserve">
+    <value>Das Projekt rechnet keine Kälte — einschalten in der Simulationskonfiguration.</value>
+  </data>
+  <data name="START_KB_ZUR_KONFIG" xml:space="preserve">
+    <value>Zur Simulationskonfiguration</value>
+  </data>
+  <data name="START_K_KBEXTERN_T" xml:space="preserve">
+    <value>Kältebedarf extern</value>
+  </data>
+  <data name="START_K_KBEXTERN_B" xml:space="preserve">
+    <value>Kältelastgang als CSV einlesen und zuordnen</value>
+  </data>
+  <data name="START_K_KBPROFIL_T" xml:space="preserve">
+    <value>Kältebedarfsprofile</value>
+  </data>
+  <data name="START_K_KBPROFIL_B" xml:space="preserve">
+    <value>Kältebedarf aus Typprofil, Jahressumme und Kalender</value>
+  </data>
+  <data name="START_K_GEBKUEHL_T" xml:space="preserve">
+    <value>Gebäudekühlung</value>
+  </data>
+  <data name="START_K_GEBKUEHL_B" xml:space="preserve">
+    <value>Kühlung der Projektgebäude einstellen</value>
+  </data>
+  <data name="START_K_GEBKUEHL_STAND" xml:space="preserve">
+    <value>{0} von {1} Gebäuden gekühlt</value>
+  </data>
+  <data name="START_K_GEBKUEHL_AUS" xml:space="preserve">
+    <value>Projekt rechnet keine Kälte</value>
+  </data>
   <data name="START_E_KOPF" xml:space="preserve">
     <value>Energieerzeuger auswählen</value>
   </data>
