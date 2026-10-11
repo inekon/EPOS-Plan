@@ -41524,10 +41524,10 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_HINWEIS_LESEMODUS" xml:space="preserve">
     <value>This catalogue record belongs to the delivery and is read-only. “Save as” creates an editable copy.</value>
   </data>
-  <data name="KOND_PLH_DATUM_BEGINN" xml:space="preserve">
+  <data name="KOND_TXT_PLATZHALTER_DATUM_BEGINN" xml:space="preserve">
     <value>Start DD.MM.</value>
   </data>
-  <data name="KOND_PLH_DATUM_ENDE" xml:space="preserve">
+  <data name="KOND_TXT_PLATZHALTER_DATUM_ENDE" xml:space="preserve">
     <value>End DD.MM.</value>
   </data>
   <data name="KOND_TXT_DATUM_FORMAT" xml:space="preserve">
@@ -41535,6 +41535,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_TXT_DATUM_JAHR" xml:space="preserve">
     <value>Without year: the year was discarded, the common year applies.</value>
+  </data>
+  <data name="KOND_TXT_SAISON_HALB" xml:space="preserve">
+    <value>Season incomplete: it applies only with both start and end and has not been applied yet.</value>
   </data>
   <data name="KOND_TXT_GEMEINJAHR" xml:space="preserve">
     <value>Invalid date: DD.MM. in a common year; there is no 29.02.</value>

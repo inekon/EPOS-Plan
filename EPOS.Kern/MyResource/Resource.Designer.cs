@@ -84408,24 +84408,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn TT.MM. ähnelt.
-        /// </summary>
-        public static string KOND_PLH_DATUM_BEGINN {
-            get {
-                return ResourceManager.GetString("KOND_PLH_DATUM_BEGINN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ende TT.MM. ähnelt.
-        /// </summary>
-        public static string KOND_PLH_DATUM_ENDE {
-            get {
-                return ResourceManager.GetString("KOND_PLH_DATUM_ENDE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Landesfeiertag {0} ähnelt.
         /// </summary>
         public static string KOND_TEXT_BEDIENUNG_LANDESFEIERTAG {
@@ -85398,6 +85380,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn TT.MM. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_PLATZHALTER_DATUM_BEGINN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_PLATZHALTER_DATUM_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ende TT.MM. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_PLATZHALTER_DATUM_ENDE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_PLATZHALTER_DATUM_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude ähnelt.
         /// </summary>
         public static string KOND_TXT_PLATZHALTER_WIE_GEBAEUDE {
@@ -85520,6 +85520,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_QUELLE {
             get {
                 return ResourceManager.GetString("KOND_TXT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saison unvollständig: Sie wirkt erst mit Beginn und Ende und ist noch nicht übernommen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_SAISON_HALB {
+            get {
+                return ResourceManager.GetString("KOND_TXT_SAISON_HALB", resourceCulture);
             }
         }
         

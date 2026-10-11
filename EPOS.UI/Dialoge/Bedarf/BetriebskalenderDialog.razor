@@ -56,12 +56,12 @@
                 <Gemeinjahrdatum Bezeichnung="@string.Format(CultureInfo.CurrentCulture, Resource.BKAL_LBL_FERIEN_VON, ii + 1)"
                                  Feldname="@("ferien" + (ii + 1) + "_von")" Meldung="@Resource.KOND_TXT_GEMEINJAHR"
                                  Hinweis="@Resource.KOND_TXT_DATUM_FORMAT" JahrHinweis="@Resource.KOND_TXT_DATUM_JAHR"
-                                 Platzhalter="@Resource.KOND_PLH_DATUM_BEGINN"
+                                 Platzhalter="@Resource.KOND_TXT_PLATZHALTER_DATUM_BEGINN"
                                  Wert="@_satz.Von[ii]" WertChanged="@(w => Feld(() => _satz.Von[ii] = w))" />
                 <Gemeinjahrdatum Bezeichnung="@string.Format(CultureInfo.CurrentCulture, Resource.BKAL_LBL_FERIEN_BIS, ii + 1)"
                                  Feldname="@("ferien" + (ii + 1) + "_bis")" Meldung="@Resource.KOND_TXT_GEMEINJAHR"
                                  Hinweis="@Resource.KOND_TXT_DATUM_FORMAT" JahrHinweis="@Resource.KOND_TXT_DATUM_JAHR"
-                                 Platzhalter="@Resource.KOND_PLH_DATUM_ENDE"
+                                 Platzhalter="@Resource.KOND_TXT_PLATZHALTER_DATUM_ENDE"
                                  Wert="@_satz.Bis[ii]" WertChanged="@(w => Feld(() => _satz.Bis[ii] = w))" />
             }
             <Zahlenfeld Bezeichnung="@Resource.BKAL_LBL_FAKTOR" Feldname="@Resource.BKAL_LBL_FAKTOR" Einheit="%"

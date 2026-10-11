@@ -505,4 +505,33 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         Assert.Equal("Betriebsausflug", b.Instance.GewaehlteZeile!.Name);
         Assert.NotNull(b.Find(".epos-kalb-einzeltage .epos-kalb-editor"));
     }
+
+    // =================================================================================
+    // Saison der Karte: Tag und Monat ohne Jahr (Auftrag KS)
+    // =================================================================================
+
+    [Fact]
+    public void Die_Saison_der_Karte_nimmt_Tag_und_Monat_ohne_Datumswaehler_und_nennt_eine_halbe_Saison()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
+        Assert.Empty(b.FindAll("input[type=date]"));
+
+        IReadOnlyList<IElement> felder = b.Find(".epos-kalb-saison").QuerySelectorAll(".epos-gemeinjahrdatum input").ToList();
+        Assert.Equal(2, felder.Count);
+        Assert.Equal("Beginn TT.MM.", felder[0].GetAttribute("placeholder"));
+        Assert.Empty(b.FindAll(".epos-saison-halb"));
+
+        felder[0].Input("1.5.");
+        felder[0].Change("1.5.");
+        Assert.Equal("01.05.", b.Find(".epos-kalb-saison .epos-gemeinjahrdatum input").GetAttribute("value"));
+        // Nur der Beginn: nicht gespeichert, aber benannt.
+        Assert.Equal((null, null), _bearbeitung.Zeiten(H, KonditionierungZeile.Saison));
+        Assert.Single(b.FindAll(".epos-kalb-saison .epos-saison-halb"));
+
+        b.Find(".epos-kalb-saison").QuerySelectorAll(".epos-gemeinjahrdatum input")[1].Change("30.9");
+        Assert.Equal((121, 273), _bearbeitung.Zeiten(H, KonditionierungZeile.Saison));
+        Assert.Empty(b.FindAll(".epos-saison-halb"));
+        Assert.Equal("30.09.", b.Find(".epos-kalb-saison").QuerySelectorAll(".epos-gemeinjahrdatum input")[1].GetAttribute("value"));
+    }
 }

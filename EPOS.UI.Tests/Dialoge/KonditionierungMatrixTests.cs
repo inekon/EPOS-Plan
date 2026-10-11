@@ -794,6 +794,7 @@ public class KonditionierungMatrixTests : EposBunitContext
         Eingabe(cut, start).Change("10.10.");
         Assert.Equal("10.10.", Eingabe(cut, start).GetAttribute("value"));
         Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-meldung"));
+        Assert.Single(cut.FindAll(".epos-kond-matrix .epos-saison-halb"));
 
         // Die halbe Saison wartet: Der Beginn bleibt stehen, auch wenn der Reiter neu zeichnet.
         cut.Render();
@@ -805,5 +806,6 @@ public class KonditionierungMatrixTests : EposBunitContext
         Assert.Equal("30.04.", Eingabe(cut, ende).GetAttribute("value"));
         Assert.Equal("10.10.", Eingabe(cut, start).GetAttribute("value"));
         Assert.Equal((283, 120), _bearbeitung.Zeiten(KonditionierungGroesse.Heizen, KonditionierungZeile.Saison));
+        Assert.Empty(cut.FindAll(".epos-saison-halb"));
     }
 }

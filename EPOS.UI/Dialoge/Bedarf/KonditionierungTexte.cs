@@ -603,11 +603,15 @@ public sealed class KonditionierungTexte
     public string HinweisDatumJahr { get; set; }
         = "Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr.";
 
-    /// <summary><c>KOND_PLH_DATUM_BEGINN</c> — Platzhalter des ersten Datumsfelds (Saison, Periode, Ferien)</summary>
+    /// <summary><c>KOND_TXT_PLATZHALTER_DATUM_BEGINN</c> — Platzhalter des ersten Datumsfelds (Saison, Periode, Ferien)</summary>
     public string PlatzhalterDatumBeginn { get; set; } = "Beginn TT.MM.";
 
-    /// <summary><c>KOND_PLH_DATUM_ENDE</c> — Platzhalter des zweiten Datumsfelds</summary>
+    /// <summary><c>KOND_TXT_PLATZHALTER_DATUM_ENDE</c> — Platzhalter des zweiten Datumsfelds</summary>
     public string PlatzhalterDatumEnde { get; set; } = "Ende TT.MM.";
+
+    /// <summary><c>KOND_TXT_SAISON_HALB</c> — unter einer Saison mit nur Beginn oder nur Ende</summary>
+    public string HinweisSaisonHalb { get; set; }
+        = "Saison unvollständig: Sie wirkt erst mit Beginn und Ende und ist noch nicht übernommen.";
 
     /// <summary><c>KOND_TXT_HINWEIS_AUS</c> — Bedienhinweis zum Zellzustand „aus“ im Wochenraster</summary>
     public string HinweisAus { get; set; }

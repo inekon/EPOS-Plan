@@ -121,6 +121,11 @@
                     <Gemeinjahrdatum Bezeichnung="@Texte.LabelKalbBis" Wert="@Kalendertage.Jahrestag(_saisonBis)"
                                      Platzhalter="@Texte.PlatzhalterDatumEnde" Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
                                      WertChanged="t => SaisonFeld(Kalendertage.Datum(t, Jahr), false)" />
+                    @if ((_saisonVon is null) != (_saisonBis is null))
+                    {
+                        @* Eine halbe Saison wird nicht gespeichert - das sagt die Karte, statt zu schweigen. *@
+                        <p class="epos-leisezeile epos-saison-halb" role="status">@Texte.HinweisSaisonHalb</p>
+                    }
                     <div class="epos-zeilenknoepfe">
                         <button type="button" class="epos-knopf epos-kalb-ganzjaehrig" @onclick="Ganzjaehrig"
                                 @attributes="Sperre(Handlungssperre(KonditionierungHandlung.SaisonSetzen))">@Texte.KnopfKalbGanzjaehrig</button>

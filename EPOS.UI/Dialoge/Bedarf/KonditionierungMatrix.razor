@@ -285,6 +285,11 @@
                              Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr"
                              Platzhalter="@Texte.PlatzhalterDatumEnde" Wert="@ende"
                              WertChanged="w => SaisonSetzen(g, w, false)" />
+            if (_saison.ContainsKey(g))
+            {
+                @* Eine halbe Saison wartet und wirkt nicht - das sagt die Zelle, statt zu schweigen. *@
+                <span class="epos-leisezeile epos-saison-halb" role="status">@Texte.HinweisSaisonHalb</span>
+            }
             return;
         }
         <Zahlenfeld Bezeichnung="@feld" Feldname="@feld" FehlerZustand="FehlerZustand"
