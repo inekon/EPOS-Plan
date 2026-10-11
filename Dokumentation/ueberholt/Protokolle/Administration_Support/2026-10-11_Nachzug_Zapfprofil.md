@@ -58,6 +58,8 @@ Der volle Kern-Lauf (rund 57 Minuten) ist die CI; Push-SHA und CI-Kennung stehen
 Zahlen des Agenten: `EPOS.UI.Tests` 8825/8825, Kern-Filter 469/469, Windows-Schale auf Linux
 0 Fehler.
 
+Nachtrag: gepusht `aa90b58b` (nach dem Merge von `origin/ios_migration_september`), Kern-Lauf 38150657481 (kern.yml, ubuntu) grün, abgeschlossen 16:30 UTC.
+
 ## 5 Offene Punkte
 
 - Sichtabnahme der Rubrik „Zapfprofil“ unter Windows.

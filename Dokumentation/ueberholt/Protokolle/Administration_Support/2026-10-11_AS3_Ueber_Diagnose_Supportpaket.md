@@ -97,6 +97,8 @@ Der volle Kern-Lauf (rund 57 Minuten) ist die CI; Push-SHA und CI-Kennung stehen
 Zahlen der Agenten: `EPOS.UI.Tests` 8836/8836 (3a) und 8840/8840 (3b), Kern-Filter 1127/1127 (3a)
 und 159/159 (3b), SqlDialektPruefer 2839 Texte/0 Fundstellen, Windows-Schale auf Linux 0 Fehler.
 
+Nachtrag: gepusht `aa90b58b` (nach dem Merge von `origin/ios_migration_september`), Kern-Lauf 38150657481 (kern.yml, ubuntu) grün, abgeschlossen 16:30 UTC.
+
 ## 8 Umgebung
 
 Bau über den Helfer außerhalb des Repositoriums; die Windows-Schale wurde auf Linux mit
