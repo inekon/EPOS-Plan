@@ -171,7 +171,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Parametersatz des Dialogs MIT Projekt: die Zuordnungen als geteilte Liste <paramref name="liste"/>
-        /// (sie gehört dem Aufrufer und wird erst beim OK über <see cref="Speichern"/> geschrieben), Aufnehmen und
+        /// (sie gehört dem Aufrufer und wird erst beim OK des Dialogs über <see cref="Speichern"/> geschrieben), Aufnehmen und
         /// Entfernen arbeiten nur an ihr.
         /// </summary>
         internal static IReadOnlyDictionary<string, object> ProjektGaben(int projektId, List<PvGanglinieZuordnung> liste)
@@ -209,6 +209,8 @@ namespace WindowsFormsApplication1
                     zuModell.TryGetValue(zeile.Schluessel, out PvGanglinieZuordnung z) && z.Id <= 0),
                 ["AusKatalogErneuern"] = new Func<string, Task<PvGanglinieErneuerung>>(n =>
                     Task.FromResult(Erneuern(projektId, n))),
+                // Der OK-Weg im Dialog (KT-6): scheitert oder wirft er, bleibt der Dialog mit dem Grund offen.
+                ["Speichern"] = new Func<bool>(() => Speichern(projektId, liste)),
                 ["Entfernen"] = new Action<ErzeugerZeile>(zeile =>
                 {
                     if (!zuModell.TryGetValue(zeile.Schluessel, out PvGanglinieZuordnung z)) return;

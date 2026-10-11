@@ -82,6 +82,14 @@
         }
     </div>
 
+    @* KT-6: Wirft das Lesen der Liste (auch nach Import, Löschen, Schloss), nennt dieser Banner den Grund
+       (Katalogladung.LesenAsync); die Seite bleibt bedienbar. *@
+    @if (_ladefehler.Length > 0)
+    {
+        <div class="epos-katalogmeldung">
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@_ladefehler" />
+        </div>
+    }
     @if (_meldung.Length > 0)
     {
         <div class="epos-katalogmeldung">
@@ -233,12 +241,18 @@
     /// <summary>Der Katalog hat sich geändert (Import, Löschen, Schloss).</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
 
+    /// <summary>Der Name der Liste im Grund der Fangstelle (Titel des Wirts); leer = der Bildtitel der Wege.</summary>
+    [Parameter] public string Listenname { get; set; } = "";
+
+    private string Liste => Listenname.Length > 0 ? Listenname : Wege.BildTitel;
+
     private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private IReadOnlyDictionary<string, IReadOnlyList<string>>? _verwendung;
     private Katalogfilterzeile? _zeile;
     private Katalogschloss? _katalogschloss;
 
     private string _meldung = "";
+    private string _ladefehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
     private string _status = "";
     private string _protokoll = "";
@@ -265,6 +279,9 @@
 
     /// <summary>Das Warnband der Seite (Prüfhilfe).</summary>
     public string Meldung => _meldung;
+
+    /// <summary>Der Grund, wenn die Liste nicht gelesen werden konnte (Prüfhilfe); leer = gelesen.</summary>
+    public string Ladefehler => _ladefehler;
 
     /// <summary>Die Statuszeile (Prüfhilfe).</summary>
     public string Status => _status;
@@ -309,10 +326,14 @@
     /// </summary>
     public async Task Neuladen()
     {
-        _katalog = Wege.Katalogzeilen is null
-            ? Array.Empty<Katalogfilterzeile>()
-            : await Wege.Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
-        _verwendung = Wege.Verwendung is null ? null : await Wege.Verwendung();
+        // KT-6: Liste und Verwendung über die Fangstelle — wirft die Quelle, ist die Liste leer und der
+        // Grund steht im Banner der Seite, statt dass der Aufbau abbricht.
+        (_katalog, _ladefehler) = await Katalogladung.LesenAsync(Wege.Katalogzeilen, Liste);
+        _verwendung = null;
+        if (Wege.Verwendung is not null && _ladefehler.Length == 0)
+        {
+            (_verwendung, _ladefehler) = await Katalogladung.ZurListeAsync(Wege.Verwendung, Liste);
+        }
         if (ImProjekt is not null)
             Katalogverwendung.Stempeln(_katalog, ImProjekt());
 
@@ -381,10 +402,14 @@
         if (grund.Length > 0) { Warnen(grund); return; }
 
         string name = _zeile.Bezeichner;
-        if (Wege.HatProjektzuordnung is not null && await Wege.HatProjektzuordnung(name))
+        if (Wege.HatProjektzuordnung is not null)
         {
-            Warnen(Texte.Projektzuordnung);
-            return;
+            // KT-6: Wirft die Frage nach der Projektzuordnung, löscht die Seite nicht und nennt den Grund.
+            Func<string, Task<bool>> frage = Wege.HatProjektzuordnung;
+            string fang = "";
+            bool zugeordnet = await Katalogladung.LoeschenAsync(() => frage(name), name, g => { fang = g; return true; });
+            if (fang.Length > 0) { Warnen(fang); return; }
+            if (zugeordnet) { Warnen(Texte.Projektzuordnung); return; }
         }
 
         _meldung = "";
@@ -400,8 +425,12 @@
         _loeschziel = "";
         if (antwort != true || Wege.Loeschen is null || name.Length == 0) return;
 
-        bool ok = await Wege.Loeschen(name);
+        // KT-6: Wirft der Löschweg, steht sein Grund im Banner (Katalogladung.LoeschenAsync).
+        Func<string, Task<bool>> loeschen = Wege.Loeschen;
+        string grund = "";
+        bool ok = await Katalogladung.LoeschenAsync(() => loeschen(name), name, g => { grund = g; return false; });
         await Neuladen();
+        if (grund.Length > 0) { Warnen(grund); return; }
         if (!ok) { Warnen(Texte.Schreibgeschuetzt); return; }
 
         _status = string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Geloescht, name);
@@ -588,11 +617,19 @@
                 _ = InvokeAsync(StateHasChanged);
             });
 
-            GanglinienKatalogimport erg = _gelesen is not null && Wege.EinlesenGelesen is not null
-                ? await Wege.EinlesenGelesen(_pfad, _gelesen, _nennleistung, melder)
-                : Wege.EinlesenMitNennleistung is not null && Wege.NennleistungVorschlagen is not null
-                ? await Wege.EinlesenMitNennleistung(_pfad, _nennleistung, melder)
-                : await Wege.Einlesen!(_pfad, melder);
+            // KT-6: Die Aufnahme in den Katalog über die Fangstelle — wirft der Weg, bleibt die Überlagerung
+            // mit dem Grund offen (Katalogladung.SchreibenAsync), der Katalog bleibt, wie er war.
+            string pfad = _pfad;
+            GanglinienImportErgebnis? gelesen = _gelesen;
+            double? nennleistung = _nennleistung;
+            GanglinienKatalogimport erg = await Katalogladung.SchreibenAsync(
+                () => gelesen is not null && Wege.EinlesenGelesen is not null
+                    ? Wege.EinlesenGelesen(pfad, gelesen, nennleistung, melder)
+                    : Wege.EinlesenMitNennleistung is not null && Wege.NennleistungVorschlagen is not null
+                    ? Wege.EinlesenMitNennleistung(pfad, nennleistung, melder)
+                    : Wege.Einlesen!(pfad, melder),
+                System.IO.Path.GetFileName(pfad),
+                g => new GanglinienKatalogimport(false, true, "", g, ""));
             if (erg.Erfolgreich)
             {
                 _pfad = "";
@@ -673,7 +710,12 @@
     private async Task BeiNennErgebnis(bool ok)
     {
         if (!ok || Wege.NennleistungSchreiben is null) { NennleistungSchliessen(); return; }
-        GanglinienNennleistungsschrieb erg = await Wege.NennleistungSchreiben(_nennZiel, _nennWert);
+        // KT-6: Wirft der Schreibweg, bleibt die Überlagerung mit dem Grund offen (Katalogladung.SchreibenAsync).
+        Func<string, double?, Task<GanglinienNennleistungsschrieb>> schreiben = Wege.NennleistungSchreiben;
+        string ziel0 = _nennZiel;
+        double? wert = _nennWert;
+        GanglinienNennleistungsschrieb erg = await Katalogladung.SchreibenAsync(
+            () => schreiben(ziel0, wert), ziel0, g => new GanglinienNennleistungsschrieb(false, g, ""));
         if (!erg.Erfolgreich)
         {
             _nennFehler = erg.Meldung;

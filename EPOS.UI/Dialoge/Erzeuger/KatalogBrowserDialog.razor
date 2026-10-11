@@ -963,13 +963,15 @@
         // Die Uebersicht wird AUCH OHNE Auswahl geholt: Sie beantwortet die Frage
         // „welche Parameter gibt es hier ueberhaupt", und die haengt nicht am Satz
         // (W14a-E-8). Ohne Bezeichner stehen lauter Leerwerte darin.
-        _uebersicht = Uebersicht?.Invoke(_gewaehlt) ?? Array.Empty<Parameterwert>();
+        // KT-5: Die Übersicht liest Vergleichsdaten aus der Datenbank; wirft sie, nennt der Banner den Grund.
+        _satzFehler = "";
+        _uebersicht = Katalogladung.SatzDazu(() => Uebersicht?.Invoke(_gewaehlt), _gewaehlt, ref _satzFehler)
+                      ?? Array.Empty<Parameterwert>();
 
         // KT-4: Warf das Lesen, ist das Stammblatt leer; der Banner nennt den Grund.
-        _satzFehler = "";
         _felder = _gewaehlt.Length == 0
             ? new List<BrowserFeldwert>()
-            : (Katalogladung.Satz(() => Wege.Detail?.Invoke(_gewaehlt), _gewaehlt, out _satzFehler)
+            : (Katalogladung.SatzDazu(() => Wege.Detail?.Invoke(_gewaehlt), _gewaehlt, ref _satzFehler)
                ?? Array.Empty<BrowserFeldwert>()).ToList();
 
         // Die zwei Gruppen des Stammblatts (V9) teilen DIESELBEN Objekte - geschrieben
@@ -1198,7 +1200,9 @@
         if (zeile is null) return;
 
         string alt = _duplizierQuelle;
-        KatalogSpeicherErgebnis ergebnis = Wege.Duplizieren(zeile.Id, name);
+        // KT-5: Wirft das Duplizieren, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Wege.Duplizieren(zeile.Id, name), name,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, name));
         if (!ergebnis.Ok)
         {
             Warnen(ergebnis.Meldung);

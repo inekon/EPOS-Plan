@@ -855,7 +855,10 @@
     private void Aufnahme(int stammId, EnergietraegerVarianteErgebnis ergebnis)
     {
         if (Aufnehmen is null) return;
-        AufnahmeErgebnis aufnahme = Aufnehmen(stammId, ergebnis);
+        // KT-5: Wirft das Aufnehmen, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        string satz = _katalog.FirstOrDefault(k => k.Id == stammId)?.Bezeichner ?? TitelText;
+        AufnahmeErgebnis aufnahme = Katalogladung.Schreiben(() => Aufnehmen(stammId, ergebnis), satz,
+                                                            g => new AufnahmeErgebnis(null, g, true));
         if (!string.IsNullOrEmpty(aufnahme.Meldung)) Melden(aufnahme.Meldung, aufnahme.Fehler);
         if (aufnahme.Zeile is null) return;
         Zeilen.Add(aufnahme.Zeile);

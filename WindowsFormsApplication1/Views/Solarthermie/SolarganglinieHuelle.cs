@@ -199,6 +199,9 @@ namespace WindowsFormsApplication1
                 ["Aufnehmen"] = new Func<int, ErzeugerZeile>(
                     ganglinieId => Aufnehmen(projektId, liste, zuModell, zaehler, ganglinieId)),
 
+                // Der OK-Weg im Dialog (KT-6): scheitert oder wirft er, bleibt der Dialog mit dem Grund offen.
+                ["Speichern"] = new Func<bool>(() => Speichern(projektId, liste)),
+
                 ["Entfernen"] = new Action<ErzeugerZeile>(
                     zeile =>
                     {
@@ -224,6 +227,22 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
+
+        /// <summary>
+        /// Der OK-Weg: ersetzt die Zuordnungen des Projekts in EINEM Vorgang — wirft ein Schritt, rollt der
+        /// Vorgang zurück, und der Dialog nennt den Grund (Fangstelle <c>Katalogladung.Schreiben</c>).
+        /// </summary>
+        private static bool Speichern(int projektId, List<Z_ProjektSolarganglinieModel> liste)
+        {
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            {
+                var wizctrl = new WizardCtrl();
+                wizctrl.Del_Solarganglinie(projektId, vorgang);
+                wizctrl.Add_Solarganglinie(projektId, liste, vorgang);
+                vorgang.Commit();
+            }
+            return true;
+        }
 
         /// <summary>
         /// „◀" (<c>btn_Hinzufuegen_Click</c>:66): eine neue Zuordnung mit einem
