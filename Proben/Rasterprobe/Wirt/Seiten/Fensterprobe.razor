@@ -30,6 +30,10 @@
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
                            ohne den Schalter steht alles wie fuer die Fensterprobe
+      ?meldung=liste       fuer den Fall „meldungsliste" der fensterprobe.mjs: statt des Falls ein langer
+                           Dialog im eigenen Fenster aus den Bausteinen des Hauses (Kopf mit Hilfepille und
+                           Kreuz, Warnbanner als unmittelbares Kind der Wurzel, Absaetze mit Feldern,
+                           SpeichernLeiste); der Banner traegt 30 Hinweise, die Liste steht aufgeklappt
       ?lizenz=1            das Lizenzbanner der AppWurzel (Baustein Lizenzbanner, Lesemodus-Satz) als
                            erstes Kind von #app vor dem Dialog - fuer den Fall „lizenzbanner" der
                            fensterprobe.mjs (mit ?marke=0 wie in der AppWurzel auf iOS)
@@ -46,6 +50,31 @@
     {
         <Lizenzbanner Stufe="WarnStufe.Warnung" Text="@Resource.LIZ_BANNER_LESEMODUS" />
     }
+    @if (_meldungListe)
+    {
+        @* Der Meldungsbanner mit aufgeklappter Hinweisliste: kein Fachdialog fuehrt eine Hinweisliste
+           im Banner, deshalb steht hier ein Dialog aus den Bausteinen, wie ein Fachdialog ihn baut. *@
+        <div class="epos-dialog epos-meldungslistenprobe" tabindex="-1">
+            <div class="epos-dialog-kopf">
+                <h1 class="epos-dialog-titel">Meldungsliste</h1>
+                <InfoKnopf Schluessel="Fensterprobe" />
+                <Schliesskreuz Geschlossen="@(() => Beendet(false))" />
+            </div>
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="Die Prüfung hat Hinweise ergeben." Hinweise="@ProbeHinweise"
+                        HinweiseOffen="true" />
+            @for (int i = 1; i <= 16; i++)
+            {
+                int nr = i;
+                <p class="epos-meldungslistenprobe-absatz">
+                    <label>Feld @nr <input type="text" value="@("Wert " + nr)" /></label>
+                    Absatz @nr des Inhalts – er rollt mit dem Dokument zwischen Kopf und Schlussleiste.
+                </p>
+            }
+            <SpeichernLeiste Ergebnis="@(b => Beendet(b))" />
+        </div>
+    }
+    else
+    {
     @switch (_fall)
     {
         case "heizkessel":
@@ -152,6 +181,7 @@
             <p>unbekannter Fall: @_fall</p>
             break;
     }
+    }
     @if (_marke)
     {
         <Fenstermarke />
@@ -163,6 +193,12 @@
     private string _fall = "heizkessel";
     private bool _marke = true;
     private bool _meldung;
+    private bool _meldungListe;
+
+    /// <summary>Die Hinweise des Meldungsbanners mit ?meldung=liste - genug, dass die Liste rollen muss.</summary>
+    private static readonly IReadOnlyList<string> ProbeHinweise = Enumerable.Range(1, 30)
+        .Select(i => $"Hinweis {i}: Die Anlage {i} rechnet ohne gepflegte Kennlinie mit den Vorgabewerten des Katalogs.")
+        .ToArray();
     private bool _lizenz;
     private bool _verwendet;
     private string? _summe;
@@ -175,7 +211,7 @@
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
         if (abfrage.TryGetValue("marke", out var m)) _marke = m.ToString() != "0";
-        if (abfrage.TryGetValue("meldung", out var g)) _meldung = g.ToString() == "1";
+        if (abfrage.TryGetValue("meldung", out var g)) { _meldung = g.ToString() == "1"; _meldungListe = g.ToString() == "liste"; }
         if (abfrage.TryGetValue("lizenz", out var l)) _lizenz = l.ToString() == "1";
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
         if (abfrage.TryGetValue("verwendet", out var v)) _verwendet = v.ToString() == "1";

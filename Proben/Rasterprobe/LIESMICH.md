@@ -1095,6 +1095,7 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
 | `…&lizenz=1` | das Lizenzbanner der `AppWurzel` (Baustein `Lizenzbanner`, Lesemodus-Satz) als erstes Kind von `#app` vor dem Dialog |
 | `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
+| `…?meldung=liste` | statt des Falls ein langer Dialog aus Hausbausteinen, dessen `Warnbanner` 30 Hinweise aufgeklappt zeigt (Fall „Meldungsliste" unten) |
 | `…&zeilen=<n>`, `…&kultur=de-DE\|en-US` | Katalogzeilen; Kultur und Sprache wie bei `/gebaeudeimport` |
 
 ```bash
@@ -1176,6 +1177,41 @@ und Dialog unter dem Fensterrand).
 | Heizkessel | 520 × 624 | 0–76,6 px | 88,6 px | 612 px | 624 / 624 px |
 | Katalogdialog | 1 194 × 834 (iPad) | 24–82,4 px (58,375 px) | 98,4 px | 798 px | 834 / 834 px |
 | Heizkessel | 1 194 × 834 (iPad) | 24–82,4 px | 94,4 px | 802 px | 834 / 834 px |
+
+### Fall „Meldungsliste" — Meldungsbanner mit aufgeklappter Hinweisliste (`--nur meldungsliste`)
+
+Der `Warnbanner` setzt seine Hinweisliste aus der `Hinweisklappe` zusammen; aufgeklappt steht die Liste
+in deren Rollbereich (`.epos-hinweisklappe-inhalt`, höchstens 40 % der Fensterhöhe, rollt innen). Als
+unmittelbares Kind der Dialogwurzel haftet der Banner im eigenen Fenster unter dem Kopf — samt der offenen
+Liste. Der Schalter `meldung=liste` der Fensterprobenseite stellt dafür einen langen Dialog aus den
+Bausteinen des Hauses in `#app` (Kopf mit Hilfepille und Kreuz, `Warnbanner` mit 30 Hinweisen und
+`HinweiseOffen`, sechzehn Absätze mit je einem Feld, `SpeichernLeiste`); kein Fachdialog führt eine
+Hinweisliste im Banner, die Probe misst die Bauform.
+
+Gemessen in allen drei Fenstern, bei Rollstand oben, Mitte und Ende: die Haft-Kriterien der Fensterdialoge
+(Kopf `top 0`, Schlussleiste `bottom` = Fensterhöhe, volle Breite, am Ende nichts unter der Leiste); die
+Liste ist aufgeklappt (`aria-expanded`, 30 Einträge); der Banner steht ganz zwischen Kopf und Schlussleiste,
+ab Rollstand Mitte unmittelbar unter dem Kopf; die Liste steht im Banner, ist höchstens 40 % der Fensterhöhe
+hoch, rollt (`scrollHeight` > `clientHeight`) und ist unverdeckt (`elementFromPoint`); außer ihr rollt nur
+das Dokument, kein Dialogkörper. Dann das Mausrad über der Liste (Rollstand Mitte): die Liste rollt bis an
+ihr Ende, das Dokument bleibt stehen, Kopf, Banner und Schlussleiste bleiben an Ort. Als **Auskunft** zählt
+die Probe die Felder, die der Tabulator unter den aufgeklappten Banner legt.
+
+**Gegenprobe:** dieselbe Seite ohne Höhengrenze der Liste (`max-height: none`), mit `position: static` am
+Banner und ohne Fenstermarke (`marke=0`) muss je Fenster rot sein.
+
+**Ergebnis vom 11.10.2026:** kein Verstoß, Gegenprobe rot (ohne Höhengrenze 13 / 15 / 11 Verstöße, Banner
+`static` je 9, ohne Marke je 21); die übrigen Fälle der Fensterprobe unverändert erfüllt.
+
+| Fenster | Kopf / Schlussleiste | Dokument | Banner oben → ab Mitte | Liste sichtbar / ganz | Mausrad: Liste, Dokument |
+|---|---|---|---|---|---|
+| 1 088 × 624 | 0–71 / 554,6–623,6 px | 1 382 px | 81–380,6 → 71–370,6 px | 250 / 608 px | 358 von 358 px, Dokument steht |
+| 520 × 624 | 0–71 / 554,8–623,8 px | 1 699 px | 81–406,8 → 71–396,8 px | 250 / 1 153 px | 903 von 903 px, Dokument steht |
+| 1 194 × 834 (iPad) | 24–95 / 744,6–813,6 px | 1 510 px | 105–488,6 → 95–478,6 px | 334 / 608 px | 274 von 274 px, Dokument steht |
+
+**Grenzen.** Das Polster oben (`scroll-padding-top`) rechnet eine Bannerzeile; bei aufgeklappter Liste legt
+der Tabulator Felder unter den Banner — Auskunft: von 39 angesprungenen Feldern 13 (1 088 px), 24 (520 px)
+und 5 (iPad). Die Probe meldet das nicht als Verstoß.
 
 ## Bannerprobe (Meldung im langen Fensterdialog) — Seite `/fensterprobe?meldung=1`
 
