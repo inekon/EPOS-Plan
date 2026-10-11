@@ -48,6 +48,21 @@
 //    das Banner steht oben, der Kopf des Dialogs darunter, die Schlussleiste im Fenster.
 //    Gegenprobe: dasselbe mit --epos-banner-oben: 0px !important muss rot werden.
 //
+//  MELDUNGSLISTE (Fall „meldungsliste", Seite ?meldung=liste): ein langer Dialog im eigenen
+//    Fenster, dessen Warnbanner (unmittelbares Kind der Wurzel) die Hinweisliste AUFGEKLAPPT
+//    zeigt - 30 Hinweise, mehr als der Rollbereich (.epos-hinweisklappe-inhalt, hoechstens 40 %
+//    der Fensterhoehe) fasst. Bei Rollstand oben, Mitte und Ende: Kopf und Schlussleiste haften
+//    wie bei jedem Fensterdialog; das Banner steht ganz zwischen Kopf und Leiste, ab Mitte
+//    unmittelbar unter dem Kopf; die Liste steht in ihm, ist hoechstens 40 % der Fensterhoehe hoch,
+//    rollt (scrollHeight > clientHeight) und ist unverdeckt (elementFromPoint); ausser ihr rollt
+//    nur das Dokument, kein Dialogkoerper. Das Mausrad ueber der Liste rollt die Liste bis an
+//    ihr Ende, das Dokument bleibt stehen, Kopf, Banner und Leiste bleiben an Ort.
+//    Dann der Tabulator von oben durch alle Felder: jedes angesprungene Feld steht ganz
+//    sichtbar unter dem aufgeklappten Banner und ueber der Schlussleiste - das Polster
+//    (scroll-padding-top) rechnet die gemessene Bannerhoehe (--epos-meldung-hoehe).
+//    Gegenprobe: ohne Hoehengrenze der Liste, mit position: static am Banner, ohne
+//    Fenstermarke und mit dem Token auf eine Bannerzeile muss die Messung rot werden.
+//
 //  GEGENPROBE (laeuft mit, abschaltbar mit --ohne-gegenprobe): dieselben
 //  Fensterdialoge OHNE Fenstermarke (?marke=0) muessen die Haft-Kriterien
 //  verfehlen, und MIT Marke, aber ohne scroll-padding muss der Tabulator
@@ -508,6 +523,112 @@ async function lizenzbanner(browser, f, fall, melden, gegen = false) {
   return n;
 }
 
+/** Banner, Liste und Rahmen beim aktuellen Rollstand (Fall „meldungsliste"). */
+function meldungslage() {
+  const d = document.querySelector('body > #app > .epos-dialog');
+  const banner = d.querySelector(':scope > .epos-warnbanner');
+  const liste = banner && banner.querySelector(':scope > .epos-hinweisklappe-inhalt');
+  const kopf = d.firstElementChild;
+  const fuss = [...d.children].find(e => e.querySelector(':scope > .epos-knopf--primaer') || e.matches('.epos-dialog-fuss'));
+  const r = e => { const b = e.getBoundingClientRect(); return { top: b.top, bottom: b.bottom, left: b.left, right: b.right, hoehe: b.height }; };
+  const rollt = e => /^(auto|scroll)$/.test(getComputedStyle(e).overflowY) && e.scrollHeight > e.clientHeight + 1;
+  const fremd = [...document.querySelectorAll('body *')].filter(e => e !== liste && rollt(e))
+    .map(e => e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0]);
+  let unverdeckt = false;
+  if (liste) {
+    const b = liste.getBoundingClientRect();
+    const t = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+    unverdeckt = !!t && liste.contains(t);
+  }
+  const klapper = banner && banner.querySelector('.epos-warnbanner-klapper');
+  return {
+    y: scrollY, innen: innerHeight, dokument: document.documentElement.scrollHeight,
+    kopf: r(kopf), fuss: r(fuss), banner: banner ? r(banner) : null, liste: liste ? r(liste) : null,
+    bannerPos: banner ? getComputedStyle(banner).position : '',
+    offen: klapper ? klapper.getAttribute('aria-expanded') : '', eintraege: liste ? liste.querySelectorAll('li').length : 0,
+    listeHoehe: liste ? liste.scrollHeight : 0, listeFenster: liste ? liste.clientHeight : 0, listeStand: liste ? liste.scrollTop : 0,
+    listeRollt: liste ? rollt(liste) : false, unverdeckt, fremd,
+  };
+}
+
+/** Der Fall „meldungsliste"; liefert die Zahl der Verstoesse (fuer die Gegenprobe) und die Zahlen. */
+async function meldungsliste(browser, f, melden, zusatz = '', stil = '') {
+  const name = `meldungsliste ${f.breite}x${f.hoehe}${f.ipad ? ' iPad' : ''}`;
+  let n = 0;
+  const m = melden ? (t => { n++; melde(name, t); }) : (() => n++);
+  const rd = rand(f);
+  const seite = await oeffnen(browser, 'heizkessel', f, '&meldung=liste' + zusatz);
+  if (stil) await seite.addStyleTag({ content: stil });
+  await seite.waitForSelector('body > #app > .epos-dialog > .epos-warnbanner .epos-warnbanner-liste', { timeout: 20000 });
+  await seite.waitForTimeout(200);
+  const h = await haften(seite, name, melden, false, rd);
+  n += h.n;
+  const staende = {};
+  const oben = await rollen(seite, 0);
+  const ende = await rollen(seite, 1e6);
+  const mitteY = Math.round(ende.y / 2);
+  for (const [stand, y] of [['oben', 0], ['Mitte', mitteY], ['Ende', 1e6]]) {
+    await rollen(seite, y);
+    const l = await seite.evaluate(meldungslage);
+    staende[stand] = l;
+    if (!l.banner || !l.liste) { m(`${stand}: Banner oder Hinweisliste fehlt`); continue; }
+    if (l.offen !== 'true' || l.eintraege !== 30) m(`${stand}: Liste nicht aufgeklappt (aria-expanded ${l.offen}, ${l.eintraege} Eintraege)`);
+    if (l.banner.top < l.kopf.bottom - TOL || l.banner.bottom > l.fuss.top + TOL)
+      m(`${stand}: Banner ${zahl(l.banner.top)}..${zahl(l.banner.bottom)} px nicht ganz zwischen Kopf (bis ${zahl(l.kopf.bottom)}) und Leiste (ab ${zahl(l.fuss.top)})`);
+    if (stand !== 'oben' && Math.abs(l.banner.top - l.kopf.bottom) > TOL)
+      m(`${stand}: Banner haftet nicht unter dem Kopf (${zahl(l.banner.top)} statt ${zahl(l.kopf.bottom)} px)`);
+    if (l.liste.top < l.banner.top - TOL || l.liste.bottom > l.banner.bottom + TOL) m(`${stand}: Liste steht nicht im Banner`);
+    if (!l.listeRollt) m(`${stand}: die Liste rollt nicht (${l.listeHoehe}/${l.listeFenster} px)`);
+    if (l.listeFenster > 0.4 * l.innen + TOL) m(`${stand}: Liste ${l.listeFenster} px hoch, mehr als 40 % von ${l.innen} px`);
+    if (!l.unverdeckt) m(`${stand}: Liste verdeckt (elementFromPoint)`);
+    if (l.fremd.length) m(`${stand}: ausser der Liste rollt ${l.fremd.join(', ')}`);
+  }
+  // Das Mausrad ueber der Liste (Rollstand Mitte): die Liste rollt bis an ihr Ende, das Dokument nicht.
+  const vor = await rollen(seite, mitteY);
+  const l0 = await seite.evaluate(meldungslage);
+  let rad = null;
+  if (l0.liste && l0.banner) {
+    await seite.mouse.move(l0.liste.left + 40, l0.liste.top + l0.liste.hoehe / 2);
+    for (let i = 0; i < 12; i++) { await seite.mouse.wheel(0, 200); await seite.waitForTimeout(60); }
+    await seite.waitForTimeout(300);
+    const l1 = await seite.evaluate(meldungslage);
+    rad = { stand: zahl(l1.listeStand), max: l1.listeHoehe - l1.listeFenster, y: zahl(l1.y), vorY: zahl(vor.y) };
+    if (l1.listeStand < l1.listeHoehe - l1.listeFenster - TOL) m(`Mausrad: Liste nur bis ${zahl(l1.listeStand)} von ${l1.listeHoehe - l1.listeFenster} px gerollt`);
+    if (Math.abs(l1.y - vor.y) > TOL) m(`Mausrad ueber der Liste rollt das Dokument (${zahl(vor.y)} -> ${zahl(l1.y)} px)`);
+    if (Math.abs(l1.kopf.top - l0.kopf.top) > TOL || Math.abs(l1.fuss.bottom - l0.fuss.bottom) > TOL || Math.abs(l1.banner.top - l0.banner.top) > TOL)
+      m('Mausrad: Kopf, Leiste oder Banner verschoben');
+  }
+  // Der Tabulator: jedes angesprungene Feld steht ganz sichtbar zwischen Banner und Schlussleiste
+  // (das Polster rechnet die gemessene Hoehe des aufgeklappten Banners).
+  let unterBanner = 0, schritte = 0;
+  await rollen(seite, 0);
+  await seite.evaluate(() => document.querySelector('body > #app > .epos-dialog').focus());
+  for (let i = 0; i < 60; i++) {
+    await seite.keyboard.press('Tab');
+    const t = await seite.evaluate(() => {
+      const a = document.activeElement;
+      if (!a || a.tagName !== 'INPUT' || !a.closest('.epos-meldungslistenprobe-absatz')) return null;
+      const b = a.getBoundingClientRect();
+      const d = document.querySelector('body > #app > .epos-dialog');
+      const bn = d.querySelector(':scope > .epos-warnbanner').getBoundingClientRect();
+      const fuss = [...d.children].find(e => e.querySelector(':scope > .epos-knopf--primaer') || e.matches('.epos-dialog-fuss'));
+      const fu = fuss ? fuss.getBoundingClientRect().top : innerHeight;
+      return { verdeckt: b.top < bn.bottom - 0.5 || b.bottom > fu + 0.5, top: b.top, bottom: b.bottom, banner: bn.bottom, fuss: fu };
+    });
+    if (t === null) continue;
+    schritte++;
+    if (t.verdeckt) {
+      unterBanner++;
+      if (unterBanner <= 3) m(`Tabulator: Feld ${schritte} bei ${zahl(t.top)}..${zahl(t.bottom)} px nicht ganz zwischen Banner (bis ${zahl(t.banner)}) und Leiste (ab ${zahl(t.fuss)})`);
+      else n++;
+    }
+  }
+  if (schritte < 16) m(`Tabulator: nur ${schritte} Felder angesprungen`);
+  if (FOTOS && melden) { await rollen(seite, mitteY); await seite.screenshot({ path: `${FOTOS}/meldungsliste_${f.breite}.png` }); }
+  await seite.close();
+  return { n, h: h.zahlen, oben: staende.oben, mitte: staende.Mitte, ende: staende.Ende, rad, schritte, unterBanner, dok: oben.dokument };
+}
+
 // ---------------------------------------------------------------------------
 //  Lauf
 // ---------------------------------------------------------------------------
@@ -622,6 +743,17 @@ try {
       console.log(`- lizenzbanner ${fall} ${kennung}`);
       await lizenzbanner(browser, f, fall, true);
     }
+
+    if (!NUR || NUR === 'meldungsliste') {
+      console.log(`- meldungsliste ${kennung}`);
+      const r = await meldungsliste(browser, f, true);
+      const b = l => l && l.banner ? `${zahl(l.banner.top)}..${zahl(l.banner.bottom)}` : '-';
+      if (r.ende && r.ende.liste) console.log(`    Kopf ${zahl(r.ende.kopf.top)}..${zahl(r.ende.kopf.bottom)}, Leiste ${zahl(r.ende.fuss.top)}..${zahl(r.ende.fuss.bottom)} px, `
+        + `Dokument ${r.dok} px; Banner oben ${b(r.oben)}, Mitte ${b(r.mitte)}, Ende ${b(r.ende)} px; `
+        + `Liste ${r.ende.listeFenster}/${r.ende.listeHoehe} px (${r.ende.eintraege} Eintraege, 40 % = ${zahl(0.4 * r.ende.innen)} px)`);
+      if (r.rad) console.log(`    Mausrad: Liste ${r.rad.stand}/${r.rad.max} px gerollt, Dokument ${r.rad.vorY} -> ${r.rad.y} px`);
+      console.log(`    Tabulator: ${r.schritte} Felder angesprungen, davon nicht ganz zwischen Banner und Leiste ${r.unterBanner}`);
+    }
   }
 
   // -------------------------------------------------------------- Gegenprobe
@@ -713,6 +845,19 @@ try {
       const n8 = await lizenzbanner(browser, f, fall, false, true);
       console.log(`    Lizenzbanner ohne --epos-banner-oben ${fall} ${f.breite}x${f.hoehe}: ${n8} Verstoesse`);
       if (n8 === 0) gegenGruen++;
+    }
+    // Meldungsliste: ohne Hoehengrenze der Liste, mit statischem Banner, ohne Fenstermarke.
+    if (!NUR || NUR === 'meldungsliste') for (const f of FENSTER) {
+      for (const [was, zusatz, stil] of [
+        ['ohne Hoehengrenze der Liste', '', '.epos-hinweisklappe-inhalt { max-height: none !important; }'],
+        ['Banner static', '', '#app > .epos-dialog > .epos-warnbanner { position: static !important; }'],
+        ['ohne Marke', '&marke=0', ''],
+        ['Polster mit einer Bannerzeile', '', ':root { --epos-meldung-hoehe: calc(22px + 2 * var(--epos-rand)) !important; }'],
+      ]) {
+        const g = await meldungsliste(browser, f, false, zusatz, stil);
+        console.log(`    Meldungsliste ${was} ${f.breite}x${f.hoehe}: ${g.n} Verstoesse (Tabulator: ${g.unterBanner} von ${g.schritte} Feldern verdeckt)`);
+        if (g.n === 0) gegenGruen++;
+      }
     }
     if (gegenGruen) console.log(`  GEGENPROBE GRUEN in ${gegenGruen} Faellen - die Probe misst die Regel nicht`);
     // Die Projektdialoge mit Katalogauswahl rollen nicht mehr; der einzige lange Fensterdialog des

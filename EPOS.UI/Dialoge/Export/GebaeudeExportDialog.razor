@@ -83,9 +83,10 @@
         </dl>
     }
 
-    @if (AktuellesFormat is { MitZusage: true } && ZusageOeffnen is not null)
+    @* Entwicklerbereich EXPORT_IDS: „Exportzusage (IDS) öffnen…“ nur mit ZusageFreigegeben. *@
+    @if (AktuellesFormat is { MitZusage: true } && ZusageOeffnen is not null && ZusageFreigegeben)
     {
-        <div class="epos-gebexport-zusage">
+        <div class="epos-gebexport-zusage" data-stufe="entwickler" data-bereich="EXPORT_IDS">
             <button type="button" class="epos-knopf epos-gebexport-zusageknopf" disabled="@_speichertGerade"
                     @onclick="BeiZusage">@Texte.Zusage</button>
             <Herleitungszeile Text="@Texte.ZusageHinweis" />
@@ -241,6 +242,9 @@
     /// kein Knopf.
     /// </summary>
     [Parameter] public Func<Task<string?>>? ZusageOeffnen { get; set; }
+
+    /// <summary>Entwicklerbereich <c>EXPORT_IDS</c>: der Knopf der Exportzusage nur damit; die Hülle setzt es aus <c>Entwicklermodus.Aktiv</c>.</summary>
+    [Parameter] public bool ZusageFreigegeben { get; set; }
 
     /// <summary>
     /// Hat das Gebäude eine Importquelle, deren Originaldatei angereichert werden kann (Stufe G7d)? Gerufen

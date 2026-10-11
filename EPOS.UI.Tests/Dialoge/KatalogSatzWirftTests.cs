@@ -83,6 +83,83 @@ public class KatalogSatzWirftTests : EposBunitContext
     private static ErzeugerDetail Detail(string n) => new(n, "", Array.Empty<(string, string)>());
 
     // =================================================================================
+    // KT-7: Bedarfsverwaltung, Gebäudetypen, Baustoffe, Bauteilaufbauten
+    // =================================================================================
+
+    private IRenderedComponent<BedarfAdminDialog> BedarfAdmin(Func<string, string>? jahressumme = null,
+                                                              Func<string, (string, string)?>? kopf = null,
+                                                              Func<string, double[]?>? monate = null)
+        => Render<BedarfAdminDialog>(b => b
+            .Add(x => x.Art, BedarfsArt.Stromverbraucher)
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Jahressumme, jahressumme ?? (_ => "1"))
+            .Add(x => x.Kopf, kopf ?? (_ => ("B", "T")))
+            .Add(x => x.Monatswerte, monate ?? (_ => new double[12])));
+
+    [Fact]
+    public void BedarfAdmin_wirft_die_Jahressumme_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(BedarfAdmin(jahressumme: _ => Wirft<string>()));
+
+    [Fact]
+    public void BedarfAdmin_wirft_der_Kopf_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(BedarfAdmin(kopf: _ => Wirft<(string, string)?>()));
+
+    [Fact]
+    public void BedarfAdmin_wirft_die_Monatswerte_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(BedarfAdmin(monate: _ => Wirft<double[]?>()));
+
+    [Fact]
+    public void BedarfAdmin_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+        => OhneBanner(BedarfAdmin());
+
+    private IRenderedComponent<GebaeudetypDialog> Gebaeudetyp(Func<string, GebaeudetypDaten?> lies)
+        => Render<GebaeudetypDialog>(b => b
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeudetyp(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, lies));
+
+    [Fact]
+    public void Gebaeudetyp_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Gebaeudetyp(_ => Wirft<GebaeudetypDaten?>()));
+
+    [Fact]
+    public void Gebaeudetyp_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+        => OhneBanner(Gebaeudetyp(_ => null));
+
+    private IRenderedComponent<BaustoffKatalogDialog> Baustoff(Func<int, BaustoffDaten?> lies)
+        => Render<BaustoffKatalogDialog>(b => b
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBaustoff(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, lies));
+
+    [Fact]
+    public void Baustoff_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Baustoff(_ => Wirft<BaustoffDaten?>()));
+
+    [Fact]
+    public void Baustoff_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+        => OhneBanner(Baustoff(_ => null));
+
+    private IRenderedComponent<BauteilaufbauDialog> Bauteilaufbau(Func<int, BauteilaufbauDaten?> lies)
+        => Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, lies));
+
+    [Fact]
+    public void Bauteilaufbau_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Bauteilaufbau(_ => Wirft<BauteilaufbauDaten?>()));
+
+    [Fact]
+    public void Bauteilaufbau_ohne_Ausnahme_zeigt_keinen_Satzbanner()
+        => OhneBanner(Bauteilaufbau(_ => null));
+
+    // =================================================================================
     // Kältemaschine und Wärmepumpe (Stammblatt aus dem Satz)
     // =================================================================================
 

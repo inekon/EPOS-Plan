@@ -158,8 +158,11 @@
 // erscheint, entscheidet die Wurzel (AppWurzel.FuehrtZiel) - keine zweite Liste.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using EPOS.UI.Seiten;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Bausteine;
 
@@ -447,6 +450,24 @@ public static class Menuetabelle
         // Eintraege des MenuStrip rechtsbuendig am Rand sassen. Verschoben wird
         // nur die Optik (margin-left: auto im Band), nicht die Reihenfolge im
         // Markup: Tastaturweg und Nachweis N4 bleiben unveraendert.
+        // Administration und Support, Stufe 1 (Konzept Abschnitte 3.1 bis 3.6): der Kopf
+        // „Entwicklung" — nur im Entwicklermodus sichtbar (Sichtbar). Er steht vor „Sprache",
+        // damit der rechtsbuendige Kopf weiter am Rand sitzt. Die Arbeit jedes Punktes macht die
+        // Windows-Huelle (EntwicklungHuelle); „Auslieferungsstand wiederherstellen…" oeffnet den
+        // Katalogabgleich mit dem Argument „wiederherstellen".
+        new Menuepunkt("MenuItem_Entwicklung", "MENU_ENTWICKLUNG", "", stufe: Freigabestufe.Entwickler)
+        {
+            new Menuepunkt("MenuItem_EntwAusnahmen", "MENU_ENTW_AUSNAHMEN", Seitenschluessel.EntwAusnahmeprotokoll, stufe: Freigabestufe.Entwickler),
+            new Menuepunkt("MenuItem_EntwProtokollordner", "MENU_ENTW_PROTOKOLLORDNER", Seitenschluessel.EntwProtokollordner, stufe: Freigabestufe.Entwickler),
+            new Menuepunkt("MenuItem_EntwDatenbankordner", "MENU_ENTW_DATENBANKORDNER", Seitenschluessel.EntwDatenbankordner, stufe: Freigabestufe.Entwickler),
+            new Menuepunkt("MenuItem_EntwDiagnose", "MENU_ENTW_DIAGNOSE", Seitenschluessel.EntwDiagnosedaten, stufe: Freigabestufe.Entwickler),
+            Menuepunkt.Trennstrich("MenuItem_TrennerEntwWerkzeuge"),
+            new Menuepunkt("MenuItem_EntwWebWerkzeuge", "MENU_ENTW_WEBWERKZEUGE", Seitenschluessel.EntwWebWerkzeuge, stufe: Freigabestufe.Entwickler),
+            new Menuepunkt("MenuItem_EntwWiederherstellen", "MENU_ENTW_WIEDERHERSTELLEN", Seitenschluessel.Katalogabgleich,
+                           argument: "wiederherstellen", stufe: Freigabestufe.Entwickler),
+            Menuepunkt.Trennstrich("MenuItem_TrennerEntwAus"),
+            new Menuepunkt("MenuItem_EntwAus", "MENU_ENTW_AUS", Seitenschluessel.EntwModusAus, stufe: Freigabestufe.Entwickler),
+        },
         new Menuepunkt("Sprache", "MENU_SPRACHE", "", rechtsBuendig: true)
         {
             new Menuepunkt("Deutsch", "MENU_DEUTSCH", Seitenschluessel.SpracheDeutsch, bild: "germany"),
@@ -477,6 +498,54 @@ public static class Menuetabelle
             if (!freigegeben(p.Ziel) || !gesehen.Add(p.Ziel)) continue;
             liste.Add(p);
         }
+        return liste;
+    }
+
+    /// <summary>Je Stufe einmal gebildeter Zuschnitt (<see cref="Sichtbar"/>).</summary>
+    private static readonly ConcurrentDictionary<Freigabestufe, IReadOnlyList<Menuepunkt>> _sichtbar = new();
+
+    /// <summary>
+    /// Der Baum, wie ihn die Stufe <paramref name="stufe"/> sieht (Konzept Administration
+    /// und Support, Abschnitt 3.1; Entwicklerhandbuch Abschnitt 2.2): eine zugeschnittene
+    /// Kopie von <see cref="Eintraege"/>. Punkte mit hoeherer Stufe fallen weg, ebenso
+    /// Untermenues ohne verbleibenden handelnden Punkt; Trennstriche stehen nie doppelt, nie
+    /// am Anfang und nie am Ende einer Ebene. Die Reihenfolge bleibt. Handelnde Punkte sind
+    /// dieselben Instanzen wie in <see cref="Eintraege"/>; ein Untermenue wird kopiert.
+    /// </summary>
+    /// <remarks><see cref="Eintraege"/> bleibt der vollstaendige Baum; das Ergebnis wird je
+    /// Stufe einmal gebildet und dann wiedergegeben.</remarks>
+    public static IReadOnlyList<Menuepunkt> Sichtbar(Freigabestufe stufe) =>
+        _sichtbar.GetOrAdd(stufe, s => Zuschneiden(Eintraege, s));
+
+    private static IReadOnlyList<Menuepunkt> Zuschneiden(IEnumerable<Menuepunkt> punkte, Freigabestufe stufe)
+    {
+        var liste = new List<Menuepunkt>();
+        foreach (Menuepunkt p in punkte)
+        {
+            if (p.Trenner)
+            {
+                // Kein fuehrender und kein doppelter Trenner.
+                if (liste.Count > 0 && !liste[^1].Trenner) liste.Add(p);
+                continue;
+            }
+            if (p.Stufe > stufe) continue;
+            if (!p.Klappt)
+            {
+                liste.Add(p);
+                continue;
+            }
+
+            IReadOnlyList<Menuepunkt> kinder = Zuschneiden(p.Untereintraege, stufe);
+            // Ohne handelnden Punkt (leere Untermenues sind schon gefallen) faellt der Knoten.
+            if (!kinder.Any(k => !k.Trenner)) continue;
+
+            var kopie = new Menuepunkt(p.Name, p.TextSchluessel, p.Ziel, p.Argument, p.Bild, p.Kuerzel,
+                                       p.RechtsBuendig, p.Katalog, p.Stufe);
+            foreach (Menuepunkt k in kinder) kopie.Add(k);
+            liste.Add(kopie);
+        }
+        // Kein schliessender Trenner.
+        while (liste.Count > 0 && liste[^1].Trenner) liste.RemoveAt(liste.Count - 1);
         return liste;
     }
 

@@ -73,6 +73,9 @@ internal static class Dateifilter
 
         foreach (string endung in Endungen(filter))
         {
+            // Entwicklerbereich PROJEKTDATEI_IOS (Entwicklerbereiche.PROJEKTDATEI_IOS): die Projektdatei
+            // des CAD-Programms bietet der Waehler nur im Entwicklermodus an.
+            if (endung == ".sqproj" && !WindowsFormsApplication1.Entwicklermodus.Aktiv) continue;
             string kennung = Kennungen.TryGetValue(endung, out string? k) ? k : ALLES;
             if (!treffer.Contains(kennung)) treffer.Add(kennung);
         }

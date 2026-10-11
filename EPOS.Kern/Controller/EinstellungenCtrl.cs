@@ -68,6 +68,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Einheit der Vorbelegung: Prozent (Vorgabe) oder kW.</summary>
         public Vorheiztoleranzart NeueProjekteVorheizToleranzArt;
+
+        // Entwicklerbereich ZAPFPROFIL_VORGABEN (Rubrik „Entwicklung“): die fünf Rechenvorgaben des Zapfprofils als Text
+        // der Einstellung, leer = Vorgabe (Schlüssel gelöscht). Gelesen immer, geschrieben nur im Entwicklermodus.
+
+        /// <summary><c>Zapfprofil.Anzeigetemperatur</c>: °C, invariante Zahl; leer = Vorgabe.</summary>
+        public string ZapfAnzeigetemperatur = "";
+
+        /// <summary><c>Zapfprofil.Stundenschwelle</c>: kW, invariante Zahl; leer = Vorgabe.</summary>
+        public string ZapfStundenschwelle = "";
+
+        /// <summary><c>Zapfprofil.Nenninhalte</c>: Liter, aufsteigende Liste; leer = Vorgabe.</summary>
+        public string ZapfNenninhalte = "";
+
+        /// <summary><c>Zapfprofil.Katalogordner</c>: Startordner der Katalogpaketwahl; leer = keiner.</summary>
+        public string ZapfKatalogordner = "";
+
+        /// <summary><c>Zapfprofil.Importordner</c>: Startordner der Typtagwahl; leer = keiner.</summary>
+        public string ZapfImportordner = "";
     }
 
     /// <summary>Das Ergebnis des Speicherns: gelungen oder mit Grund gescheitert.</summary>
@@ -249,7 +267,61 @@ namespace WindowsFormsApplication1
             s.DiagrammFarben = Properties.Settings.Default.DiagrammFarben ?? "";
             s.NeueProjekteMitKuehlung = NeueProjekteMitKuehlungLesen();
             (s.NeueProjekteVorheizToleranz, s.NeueProjekteVorheizToleranzArt) = VorheiztoleranzLesen();
+
+            ZapfprofilVorgabenLesen(s);
             return s;
+        }
+
+        // =====================================================================
+        // Entwicklerbereich ZAPFPROFIL_VORGABEN (Konzept Administration und Support 3.3 d)
+        // =====================================================================
+
+        /// <summary>
+        /// Die fünf Schlüssel der Rechenvorgaben des Zapfprofils in <c>Dienste.Einstellungen</c> — dieselben Texte wie bei
+        /// ihren Lesern (<c>ZapfprofilCtrl.EINSTELLUNG_*</c>, <c>ZapfprofilHuelle.EINSTELLUNG_KATALOGORDNER</c> und
+        /// <c>EINSTELLUNG_IMPORTORDNER</c>); Fundstelle <see cref="Entwicklerbereiche.ZAPFPROFIL_VORGABEN"/>.
+        /// </summary>
+        public const string SCHLUESSEL_ZAPF_ANZEIGETEMPERATUR = "Zapfprofil.Anzeigetemperatur";
+        public const string SCHLUESSEL_ZAPF_STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
+        public const string SCHLUESSEL_ZAPF_NENNINHALTE = "Zapfprofil.Nenninhalte";
+        public const string SCHLUESSEL_ZAPF_KATALOGORDNER = "Zapfprofil.Katalogordner";
+        public const string SCHLUESSEL_ZAPF_IMPORTORDNER = "Zapfprofil.Importordner";
+
+        private static string ZapfLies(string schluessel)
+        {
+            try { return Dienste.Einstellungen.Lies(schluessel, "") ?? ""; }
+            catch { return ""; }
+        }
+
+        /// <summary>Liest die fünf Vorgaben in den Satz (leer = nicht gesetzt).</summary>
+        public static void ZapfprofilVorgabenLesen(Einstellungensatz s)
+        {
+            if (s == null) return;
+            s.ZapfAnzeigetemperatur = ZapfLies(SCHLUESSEL_ZAPF_ANZEIGETEMPERATUR);
+            s.ZapfStundenschwelle = ZapfLies(SCHLUESSEL_ZAPF_STUNDENSCHWELLE);
+            s.ZapfNenninhalte = ZapfLies(SCHLUESSEL_ZAPF_NENNINHALTE);
+            s.ZapfKatalogordner = ZapfLies(SCHLUESSEL_ZAPF_KATALOGORDNER);
+            s.ZapfImportordner = ZapfLies(SCHLUESSEL_ZAPF_IMPORTORDNER);
+        }
+
+        /// <summary>
+        /// Schreibt die fünf Vorgaben — nur im Entwicklermodus (<see cref="Entwicklerbereiche.ZAPFPROFIL_VORGABEN"/>);
+        /// ein leerer Wert löscht den Schlüssel, dann gilt die Vorgabe des Lesers. Ohne Modus bleibt die Ablage unberührt.
+        /// </summary>
+        public static void ZapfprofilVorgabenSchreiben(Einstellungensatz s)
+        {
+            if (s == null || !Entwicklermodus.Aktiv) return;
+            ZapfSchreib(SCHLUESSEL_ZAPF_ANZEIGETEMPERATUR, s.ZapfAnzeigetemperatur);
+            ZapfSchreib(SCHLUESSEL_ZAPF_STUNDENSCHWELLE, s.ZapfStundenschwelle);
+            ZapfSchreib(SCHLUESSEL_ZAPF_NENNINHALTE, s.ZapfNenninhalte);
+            ZapfSchreib(SCHLUESSEL_ZAPF_KATALOGORDNER, s.ZapfKatalogordner);
+            ZapfSchreib(SCHLUESSEL_ZAPF_IMPORTORDNER, s.ZapfImportordner);
+        }
+
+        private static void ZapfSchreib(string schluessel, string wert)
+        {
+            if (string.IsNullOrWhiteSpace(wert)) Dienste.Einstellungen.Loesche(schluessel);
+            else Dienste.Einstellungen.Schreib(schluessel, wert.Trim());
         }
 
         /// <summary>
@@ -335,6 +407,17 @@ namespace WindowsFormsApplication1
             {
                 return new SpeicherBefund(false,
                     string.Format(MyResource.Resource.ADM_SET_MSG_KUEHLUNG_FEHLER, ex.Message));
+            }
+
+            // Die Rechenvorgaben des Zapfprofils (Rubrik „Entwicklung“) - nur im Entwicklermodus.
+            try
+            {
+                ZapfprofilVorgabenSchreiben(s);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherBefund(false,
+                    string.Format(MyResource.Resource.ADM_SET_MSG_ZAPF_FEHLER, ex.Message));
             }
 
             Properties.Settings.Default.Save();

@@ -37,7 +37,8 @@ namespace WindowsFormsApplication1
             var ctrl = new RaumnutzungCtrl();
             return new RaumnutzungWeg
             {
-                Projektdatei = ProjektdateiProfileHuelle.BlattWeg(),
+                // Entwicklerbereich PROJEKTDATEI_PROFILE: „Aus Projektdatei…“ nur im Entwicklermodus.
+                Projektdatei = Entwicklermodus.Aktiv ? ProjektdateiProfileHuelle.BlattWeg() : null,
                 Kategorien = () => ctrl.Kategorien().Select(Kategorie).ToList(),
                 Profile = id => ctrl.Profile(id).Select(Profil).ToList(),
                 Zuordnungen = () => ctrl.Zuordnungen().Select(Zuordnung).ToList(),

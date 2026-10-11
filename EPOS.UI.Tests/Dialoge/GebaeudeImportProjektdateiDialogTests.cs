@@ -53,6 +53,7 @@ public class GebaeudeImportProjektdateiDialogTests : EposBunitContext
         IReadOnlyDictionary<string, object> g = huelle.Gaben();
         return Render<GebaeudeImportDialog>(c =>
         {
+            c.Add(x => x.ProjektdateiFreigegeben, true);   // Entwicklerbereich: der Bestand prüft mit Kennzeichen
             c.Add(x => x.Profil, g["Profil"] as GebaeudeImportProfilDaten);
             c.Add(x => x.Baualtersklassen, (IReadOnlyList<string>)g["Baualtersklassen"]);
             c.Add(x => x.DateiWaehlen, (Func<string, Task<GebaeudeDateiwahl?>>)(_ =>
@@ -96,6 +97,26 @@ public class GebaeudeImportProjektdateiDialogTests : EposBunitContext
         Aktion(cut, "projektdatei").Click();
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-sqbilanz, .epos-gebimport-sqbanner")));
         cut.WaitForAssertion(() => Assert.False(Aktion(cut, "projektdatei").HasAttribute("disabled")));
+    }
+
+    /// <summary>
+    /// Entwicklerbereich PROJEKTDATEI_IMPORT: Fällt das Kennzeichen weg, verschwinden Dazuladen, Entfernen und
+    /// Zonierungswahl; die Bilanz der geladenen Projektdatei bleibt lesbar (AS-Q5).
+    /// </summary>
+    [Fact]
+    public void Ohne_Kennzeichen_bleibt_die_geladene_Projektdatei_lesbar_die_Knoepfe_fehlen()
+    {
+        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(hottcad: true, SqprojProbenErzeuger.Zonenhaus());
+        Einlesen(cut);
+        Laden(cut);
+        Assert.NotEmpty(cut.FindAll("[data-stufe='entwickler'][data-bereich='PROJEKTDATEI_IMPORT']"));
+
+        cut.Render(p => p.Add(x => x.ProjektdateiFreigegeben, false));
+
+        Assert.Empty(cut.FindAll("[data-bereich='PROJEKTDATEI_IMPORT']"));
+        Assert.Empty(cut.FindAll("button[data-aktion='projektdatei']"));
+        Assert.Empty(cut.FindAll("button[data-aktion='projektdatei-entfernen']"));
+        Assert.NotEmpty(cut.FindAll(".epos-gebimport-sqbilanz, .epos-gebimport-sqbanner"));
     }
 
     [Fact]

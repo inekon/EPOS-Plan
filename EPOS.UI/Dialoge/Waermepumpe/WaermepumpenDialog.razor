@@ -749,7 +749,7 @@
         if (_anlageInUeberlagerungGeaendert && _anlagenmerker is not null && _gewaehlt is not null)
         {
             _gewaehlt.WerteVon(_anlagenmerker);
-            Uebernehmen?.Invoke(_gewaehlt);
+            ZeileUebernehmen(_gewaehlt);
             DetailNachziehen();
         }
         SatzUeberlagerungZu();
@@ -961,8 +961,10 @@
             WaermepumpeAnlageDaten? zeile = Katalogladung.Schreiben(() => Anlegen(z.Bezeichner), z.Bezeichner,
                                                                     g => { grund = g; return (WaermepumpeAnlageDaten?)null; });
             if (zeile is null) continue;
+            // KT-7: Wirft die Übernahme ins Modell, steht die Zeile nicht in der Liste, und die Meldung nennt den Grund.
+            string uebernahme = ZeileUebernehmen(zeile);
+            if (uebernahme.Length > 0) { grund = uebernahme; continue; }
             Zeilen.Add(zeile);
-            Uebernehmen?.Invoke(zeile);
             _ungeprueft.Add(zeile);
             letzte = zeile;
             neu++;
@@ -1030,9 +1032,10 @@
         {
             if (ok)
             {
-                _ungeprueft.Remove(zeile);
+                // KT-7: Wirft die Übernahme ins Modell, bleibt die Anlagenseite mit den Eingaben offen.
                 _meldung = "";
-                Uebernehmen?.Invoke(zeile);
+                if (ZeileUebernehmen(zeile).Length > 0) return;
+                _ungeprueft.Remove(zeile);
                 if (_satzGross) _anlageInUeberlagerungGeaendert = true;
             }
             else if (_schnappschuss is not null)
@@ -1238,6 +1241,20 @@
     {
         _meldung = text;
         _meldungStufe = fehler ? WarnStufe.Warnung : WarnStufe.Hinweis;
+    }
+
+    /// <summary>
+    /// KT-7: Der Übernahmeweg an den Wirt (<see cref="Uebernehmen"/>: Modell und Trägerzuordnung)
+    /// läuft über die Fangstelle (<c>Katalogladung.Schreiben</c>). Wirft er, steht der Grund im
+    /// Banner, das Protokoll hat einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    /// <returns>Leer, wenn übernommen; sonst der Grund.</returns>
+    private string ZeileUebernehmen(WaermepumpeAnlageDaten zeile)
+    {
+        if (Uebernehmen is null) return "";
+        string grund = Katalogladung.Schreiben(() => { Uebernehmen(zeile); return ""; }, zeile.Bezeichner, g => g);
+        if (grund.Length > 0) Melden(grund, true);
+        return grund;
     }
 
     /// <summary>

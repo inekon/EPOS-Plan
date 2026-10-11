@@ -179,6 +179,17 @@ namespace WindowsFormsApplication1
         /// </remarks>
         protected override bool ProcessCmdKey(ref Message nachricht, Keys taste)
         {
+            // DIE TASTENFOLGE DES ENTWICKLERMODUS (Administration und Support, Stufe 1):
+            // Strg+Umschalt+Alt+E. Das Konzept legt die Geste in den Dialog „Ueber EPOS-Plan";
+            // bis der kommt, ist „Hilfe -> Version" ein Meldungsfeld, und die Folge liegt hier.
+            // Die Rueckfrage laeuft eine Nachricht spaeter, nicht mitten in der Tastenverarbeitung.
+            if (taste == (Keys.Control | Keys.Shift | Keys.Alt | Keys.E) && !DesignMode)
+            {
+                BeginInvoke(new Action(() => EntwicklungHuelle.EinschaltenNachRueckfrage(
+                    () => _huelle?.FreigabeNeuVersorgen())));
+                return true;
+            }
+
             if (taste == Keys.F1 && !DesignMode)
             {
                 // OHNE Aufrufkontext (Auftrag #199): F1 ist der globale Weg und kennt
@@ -188,6 +199,14 @@ namespace WindowsFormsApplication1
             }
 
             return base.ProcessCmdKey(ref nachricht, taste);
+        }
+
+        /// <summary>Der Fenstertitel; im Entwicklermodus mit dem Zusatz <c>ENTW_TITELZUSATZ</c>.</summary>
+        private void TitelSetzen()
+        {
+            Text = Entwicklermodus.Aktiv
+                ? PRODUKTNAME + " " + MyResource.Resource.ENTW_TITELZUSATZ
+                : PRODUKTNAME;
         }
 
         private void BeimLaden(object sender, EventArgs e)
@@ -219,6 +238,9 @@ namespace WindowsFormsApplication1
             // W16b hing hier eine BlazorSeite<Startseite>, davor die
             // eingebettete Form_Start.
             _huelle = new HauptfensterHuelle(() => this, Program.projektkontext);
+            _huelle.Entwicklerwerkzeuge = () => _bild != null && _bild.EntwicklerwerkzeugeOeffnen();
+            _huelle.FreigabeGewechselt += TitelSetzen;
+            TitelSetzen();
             _bild = new BlazorSeite<EPOS.UI.Seiten.Hauptfenster>(
                 new Dictionary<string, object>(_huelle.Gaben()));
             Controls.Add(_bild);

@@ -25,7 +25,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(KaeltemittelSchema.SAAT.Count, liste.Count);
             Assert.Equal(KaeltemittelSchema.SAAT.Select(k => k.Code), liste.Select(z => z.Code));
             Assert.True(liste.All(z => z.ReadOnly));
-            Assert.True(liste.All(z => z.Status == DbWerte.GESETZ_STATUS_VORLAEUFIG));
+            Assert.True(liste.All(z => z.Status == DbWerte.GESETZ_STATUS_GESICHERT));
 
             KaeltemittelCtrl.Kaeltemittelsatz co2 = liste.Single(z => z.Code == "R744");
             Assert.Equal(DbWerte.KAELTEMITTEL_GRUPPE_NATUERLICH, co2.Gruppe);
