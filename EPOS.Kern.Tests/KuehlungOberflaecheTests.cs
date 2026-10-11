@@ -345,10 +345,12 @@ namespace EPOS.Kern.Tests
                                  "kaelte.km.jaz_verdichter",
                                  // K-F2 (Katalog v20): Strom und Wasser der Rückkühlwerke.
                                  "kaelte.rk.ventilator", "kaelte.rk.wasser_m3",
+                                 // K-F3 (Katalog v22): die Teil-Freikühlung in Reihe.
+                                 "kaelte.rk.teilfrei", "kaelte.rk.teilfrei_stunden",
                                  "kaelte.rest", "kaelte.jaz", "kaelte.strom",
                                  "kaelte.netzbezug", "kaelte.kosten", "kaelte.co2" },
                          kaelte.Where(k => k.Gruppe == KennzahlenKatalog.GR_KAELTE).Select(k => k.Schluessel));
-            Assert.Equal(27, kaelte.Count);
+            Assert.Equal(29, kaelte.Count);
         }
 
         /// <summary>

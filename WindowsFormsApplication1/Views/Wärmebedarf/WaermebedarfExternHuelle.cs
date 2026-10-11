@@ -80,14 +80,9 @@ namespace WindowsFormsApplication1
             // teils ohne ihn. Nachtragen, wie es SetControls tat.
             Z_ProjektGebGanglinieCtrl.KanaeleNachladen(projektId, modelle);
 
-            var zeilen = new List<WaermebedarfExternZeile>();
-            foreach (Z_ProjWaermebedarfModel m in modelle) zeilen.Add(AusModell(m));
-
-            Action geaendert = () =>
-            {
-                modelle.Clear();
-                foreach (WaermebedarfExternZeile z in zeilen) modelle.Add(NachModell(z, projektId));
-            };
+            // Abbildung und Rueckweg plattformfrei in EPOS.UI.Daten (WaermebedarfExternAbbildung).
+            List<WaermebedarfExternZeile> zeilen = WaermebedarfExternAbbildung.Zeilen(modelle);
+            Action geaendert = WaermebedarfExternAbbildung.Rueckweg(zeilen, modelle, projektId);
 
             // iU9-W9-E-2: Der Vorrat gehoert zu DIESEM Dialog, nicht zur Klasse -
             // sonst hielten zwei nacheinander geoeffnete Dialoge dieselbe Reihe fest.
@@ -232,33 +227,6 @@ namespace WindowsFormsApplication1
                 (DbWerte.KANAL_BRAUCHWASSER, MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE),
                 (DbWerte.KANAL_PROZESS, MyResource.Resource.KANAL_PROZESS_ANZEIGE),
                 (DbWerte.KANAL_KUEHLUNG, MyResource.Resource.KANAL_KUEHLUNG_ANZEIGE)
-            };
-        }
-
-        // =================================================================================
-        // Abbildung Zeile <-> Modell
-        // =================================================================================
-
-        internal static WaermebedarfExternZeile AusModell(Z_ProjWaermebedarfModel m)
-        {
-            return new WaermebedarfExternZeile
-            {
-                IdZ = m.m_ID_Z,
-                IdGanglinie = m.m_ID_Ganglinie,
-                Bezeichner = m.m_szBezeichner ?? "",
-                Kanal = Z_ProjektGebGanglinieCtrl.KanalOderHeizung(m.Kanal)
-            };
-        }
-
-        internal static Z_ProjWaermebedarfModel NachModell(WaermebedarfExternZeile z, int projektId)
-        {
-            return new Z_ProjWaermebedarfModel
-            {
-                m_ID_Z = z.IdZ,
-                m_ID_Projekt = projektId,
-                m_ID_Ganglinie = z.IdGanglinie,
-                m_szBezeichner = z.Bezeichner,
-                Kanal = Z_ProjektGebGanglinieCtrl.KanalOderHeizung(z.Kanal)
             };
         }
 

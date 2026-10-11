@@ -51135,6 +51135,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art des Kältebedarfs ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_GRUPPE {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesskälte bleibt im Kältebedarf und wird als eigener Posten mitgeführt; die Kälteerzeuger decken sie vor der Raumkühlung. Ihr Temperaturpaar ist eine Angabe ohne Wirkung auf die Erzeuger. ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_HINWEIS {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_LABEL {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesskälte ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_PROZESS {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumkühlung ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_RAUM {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber. ähnelt.
         /// </summary>
         public static string KAELTE_GRENZE_FEUCHTE {
@@ -108389,7 +108434,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die freie Kühlung in Reihe (gerechnet wird parallel) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die freie Kühlung in Reihe ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_RKW_MERKMAL_REIHE {
             get {
@@ -108439,6 +108484,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_RKW_OHNE_FEUCHTE {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_RKW_OHNE_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ kühlt den Kaltwasserrücklauf in Reihe vor (Teil-Freikühlung); Kaltwasserspreizung {2} K aus {3}. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_REIHE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Kühlübergabe der Gebäude ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der EPOS-Vorgabe (kein Gebäude pflegt eine Kühlübergabe) ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE", resourceCulture);
             }
         }
         

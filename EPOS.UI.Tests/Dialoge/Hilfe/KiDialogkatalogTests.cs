@@ -401,7 +401,7 @@ public class KiDialogkatalogTests : IDisposable
 
         // Die drei Bedarfskanaele kennt ebenfalls nur der Dialog; sie kommen als
         // Parameter der Huelle herein.
-        KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal" },
+        KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal", "kaelte_art" },
 
         // Welle KI-F4: Die VARIANTE der Kostenverwaltung haengt am Stand, ihre Liste
         // aber auch (KostenKomponenteStand.Varianten) - eine Begleiteigenschaft

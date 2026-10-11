@@ -351,6 +351,9 @@ namespace WindowsFormsApplication1
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             int nextID = DataRepository.GetMaxID("Z_Projekt_Kaeltebedarf", "ID") + 1;
+            // KWN-0: Die Art (Raum/Prozess) steht in JEDER Schreibstelle, sobald der Schritt KaelteArtSchema steht - sonst
+            // fiele eine Prozesszeile beim naechsten Speichern still auf Raum zurueck.
+            bool mitArt = KaelteArtSchema.ProfilLesbar();
             foreach (var item in list)
             {
                 Z_ProjektKaeltebedarfCtrl.Normalisieren(item);
@@ -380,10 +383,8 @@ namespace WindowsFormsApplication1
                 }
 
                 int idZ = nextID++;
-                bool ok = DataRepository.ExecuteSQL(
-                    "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
-                    "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
-                    "Kuehl_EigenerZaehler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                var ps = new List<DbParam>
+                {
                     new DbParam("@id", idZ),
                     new DbParam("@pID", projektID),
                     new DbParam("@kb", kopie),
@@ -397,7 +398,18 @@ namespace WindowsFormsApplication1
                     new DbParam("@e2", (object)item.Eer2 ?? DBNull.Value),
                     new DbParam("@t2", (object)item.Taussen2 ?? DBNull.Value),
                     new DbParam("@car", (object)item.KuehlIdCarrier ?? DBNull.Value),
-                    new DbParam("@zae", item.KuehlEigenerZaehler ? 1 : 0));
+                    new DbParam("@zae", item.KuehlEigenerZaehler ? 1 : 0),
+                };
+                if (mitArt) ps.Add(new DbParam("@art", item.KaelteArt));
+                bool ok = DataRepository.ExecuteSQL(
+                    mitArt
+                        ? "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
+                          "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
+                          "Kuehl_EigenerZaehler, Kaelte_Art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                        : "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
+                          "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
+                          "Kuehl_EigenerZaehler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    ps.ToArray());
                 if (!ok) return false;
 
                 Z_ProjektKaeltebedarfModel zeile = item;
@@ -3428,6 +3440,9 @@ namespace WindowsFormsApplication1
             // fiele eine Split-Zeile beim naechsten Speichern still auf "zentral" zurueck. Nur der Kanal Kuehlung traegt sie;
             // jeder andere Kanal schreibt "zentral" mit leeren Split-Feldern. Vor dem Schritt bleibt das INSERT wie zuvor.
             bool deckungSpalten = kanalSpalte && Z_ProjektKaeltebedarfCtrl.LastgangDeckungLesbar();
+            // KWN-0: die Art (Raum/Prozess) ebenso, sobald der Schritt KaelteArtSchema steht; ausserhalb des Kanals Kuehlung
+            // schreibt jede Zeile Raum (Normalisieren).
+            bool artSpalte = deckungSpalten && KaelteArtSchema.LastgangLesbar();
             if (deckungSpalten)
                 foreach (var item in list)
                 {
@@ -3466,6 +3481,13 @@ namespace WindowsFormsApplication1
                           "Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
                           "Kuehl_EigenerZaehler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     ps.AddRange(Z_ProjektKaeltebedarfCtrl.DeckungParameter(item));
+                    if (artSpalte)
+                    {
+                        sql = "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner, Kanal, Deckung, " +
+                              "Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
+                              "Kuehl_EigenerZaehler, Kaelte_Art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        ps.Add(new DbParam("@art", KaelteArtSchema.Normal(item.KaelteArt)));
+                    }
                 }
 
                 if (!DataRepository.ExecuteSQL(sql, ps.ToArray())) return false;

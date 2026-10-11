@@ -28537,7 +28537,7 @@ Do you want to allow this?</value>
     <value>water balance</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_MERKMAL_REIHE" xml:space="preserve">
-    <value>free cooling in series (calculated in parallel)</value>
+    <value>free cooling in series</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_BIMSCHV" xml:space="preserve">
     <value>Chiller "{0}": the heat rejection unit "{1}" is an evaporative cooling system — observe the notification, inspection and operating duties of the German 42nd BImSchV (note only, not checked by EPOS).</value>
@@ -28550,6 +28550,15 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_OHNE_FEUCHTE" xml:space="preserve">
     <value>Chiller "{0}": the climate has no humidity — the heat rejection unit "{1}" runs dry in {2} hours above the switching limit, without humidification and without water use.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" pre-cools the chilled-water return in series (partial free cooling); chilled-water temperature difference {2} K from {3}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE" xml:space="preserve">
+    <value>the cooling emitters of the buildings</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE" xml:space="preserve">
+    <value>the EPOS default (no building maintains a cooling emitter)</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
     <value>Chiller "{0}": the heat rejection unit "{1}" exceeded its rated capacity in {2} hours — the fan ran at full speed, a load-dependent approach rose above its rated value.</value>
@@ -53484,6 +53493,21 @@ chart</value>
   </data>
   <data name="ABW_MERKMAL_VORH_UEBERHOEHUNG" xml:space="preserve">
     <value>Setpoint boost Δθ</value>
+  </data>
+  <data name="KAELTE_ART_LABEL" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="KAELTE_ART_RAUM" xml:space="preserve">
+    <value>Space cooling</value>
+  </data>
+  <data name="KAELTE_ART_PROZESS" xml:space="preserve">
+    <value>Process cooling</value>
+  </data>
+  <data name="KAELTE_ART_HINWEIS" xml:space="preserve">
+    <value>Process cooling stays in the cooling demand and is carried as a separate item; the cooling generators cover it before space cooling. Its temperature pair is information without effect on the generators.</value>
+  </data>
+  <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
+    <value>Type of cooling demand</value>
   </data>
 </root>
 

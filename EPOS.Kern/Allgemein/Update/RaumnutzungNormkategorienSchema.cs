@@ -40,9 +40,8 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class RaumnutzungNormkategorienSchema
     {
-        /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht (angemeldet 219).</summary>
-        // UMHÄNGEN: nach Merge von Schritt 218 (Kälteanlagen) an dessen Klasse + 1 → 219
-        public const int SCHRITT = SchnellaufheizungSchema.SCHRITT + 1;
+        /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht (219, hängt an 218 KaelteArtSchema).</summary>
+        public const int SCHRITT = KaelteArtSchema.SCHRITT + 1;
 
         /// <summary>Die Kategorien.</summary>
         public const string TAB_KATALOG = RaumnutzungSchema.TAB_KATALOG;

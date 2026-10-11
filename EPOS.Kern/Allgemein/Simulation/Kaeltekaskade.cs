@@ -274,6 +274,12 @@ namespace WindowsFormsApplication1
         /// <summary>K-F2: mittlere Rückkühltemperatur der Betriebsstunden [°C]; <c>null</c> ohne Betriebsstunde.</summary>
         public double? RkTemperaturMittel => RkStunden > 0 ? RkTemperaturSumme / RkStunden : (double?)null;
 
+        /// <summary>K-F3: Kälte der Teil-Freikühlung in Reihe [kWh] — der vorgekühlte Anteil der Mischstunden.</summary>
+        public double RkTeilFreiKwh;
+
+        /// <summary>K-F3: Mischstunden der Teil-Freikühlung in Reihe (Rückkühler kühlt vor, Verdichter deckt den Rest).</summary>
+        public int RkTeilFreiStunden;
+
         /// <summary>Setzt das Ergebnis auf den Laufanfang.</summary>
         internal void Nullen()
         {
@@ -293,6 +299,8 @@ namespace WindowsFormsApplication1
             RkTemperaturSumme = 0;
             RkStunden = 0;
             RkStundenUeberlast = 0;
+            RkTeilFreiKwh = 0;
+            RkTeilFreiStunden = 0;
             Array.Clear(Kaelte_stuendlich, 0, Kaelte_stuendlich.Length);
             Array.Clear(Strom_stuendlich, 0, Strom_stuendlich.Length);
             Array.Clear(Taktstrom_stuendlich, 0, Taktstrom_stuendlich.Length);
@@ -538,6 +546,9 @@ namespace WindowsFormsApplication1
         private bool _mitFreierKuehlung;
         private int _naechsteStunde = -1;
 
+        /// <summary>K-F3: der Kühlrücklauf der laufenden Stunde [°C]; NaN = Vorlauf + Auslegungsspreizung.</summary>
+        private double _ruecklauf = double.NaN;
+
         /// <summary>true: Der Kreis hat die Stunden je Stunde nach der Wärmestunde gerechnet (AK3-K); false = Jahreslauf.</summary>
         internal bool ImKreis { get; set; }
 
@@ -598,8 +609,18 @@ namespace WindowsFormsApplication1
         /// prüft die freie Kühlung gegen ihn, jede Kältemaschine rechnet bei <see cref="Kaeltemaschine.KaltwasserAmVorlauf"/>.
         /// NaN = der feste Vorlauf, Zeichen für Zeichen <see cref="StundeRechnen(int, double)"/>.
         /// </summary>
-        public void StundeRechnen(int h, double bedarfKwh, double kuehlVorlaufC)
+        public void StundeRechnen(int h, double bedarfKwh, double kuehlVorlaufC) =>
+            StundeRechnen(h, bedarfKwh, kuehlVorlaufC, double.NaN);
+
+        /// <summary>
+        /// K-F3 (Entwurf Split/VRF/Rückkühlwerk 5.5): die Kältestunde mit dem Kühlrücklauf der Stunde
+        /// <paramref name="kuehlRuecklaufC"/> [°C] (Stufe AK3: der gerechnete Rücklauf der Kühlübergabe) — ihn liest nur eine
+        /// Kältemaschine mit Rückkühlwerk in Reihe; NaN = Vorlauf + Auslegungsspreizung, Zeichen für Zeichen
+        /// <see cref="StundeRechnen(int, double, double)"/>.
+        /// </summary>
+        public void StundeRechnen(int h, double bedarfKwh, double kuehlVorlaufC, double kuehlRuecklaufC)
         {
+            _ruecklauf = kuehlRuecklaufC;
             if (h != _naechsteStunde)
                 throw new InvalidOperationException("Die Kältekaskade erwartet die Stunde " + _naechsteStunde + ", nicht " + h + ".");
             _naechsteStunde++;
@@ -842,7 +863,7 @@ namespace WindowsFormsApplication1
         {
             // KU3-5: Die Maschine sieht Raum und Ladewunsch als EINE Last; der Raum hat Vorrang.
             double last = rest + lade;
-            KaeltemaschinenStunde s = e.Maschine.Stunde(h, last, kaltwasserC);
+            KaeltemaschinenStunde s = e.Maschine.Stunde(h, last, kaltwasserC, _ruecklauf);
             if (s.Randwert) e.StundenRandwert++;
             if (s.Extrapoliert) e.StundenExtrapoliert++;
             if (!(s.KaelteKwh > 0))
@@ -902,6 +923,12 @@ namespace WindowsFormsApplication1
             if (r.Ueberlast) e.RkStundenUeberlast++;
             e.RkTemperaturSumme += r.RueckkuehlC;
             e.RkStunden++;
+            // K-F3: die Mischstunde der Teil-Freikühlung in Reihe (eine Stunde ganz in freier Kühlung zählt als freie Kühlung).
+            if (s.TeilFreiKwh > 0)
+            {
+                e.RkTeilFreiKwh += s.TeilFreiKwh;
+                e.RkTeilFreiStunden++;
+            }
         }
 
         /// <summary>
@@ -926,8 +953,8 @@ namespace WindowsFormsApplication1
             e.LetzteKuehlstunde = h;
             e.LaufendVorstunde = s.Laufend;
             if (!s.Takt && s.Lastgrad < KaelteFestwerte.TEILLASTSTUNDEN_LASTGRAD_GRENZE) e.StundenTeillast++;
-            e.LastgradGewichtKwh += s.KaelteKwh * s.Lastgrad;
-            e.LastgradKaelteKwh += s.KaelteKwh;
+            e.LastgradGewichtKwh += s.VerdichterKaelteKwh * s.Lastgrad;
+            e.LastgradKaelteKwh += s.VerdichterKaelteKwh;
         }
 
         /// <summary>

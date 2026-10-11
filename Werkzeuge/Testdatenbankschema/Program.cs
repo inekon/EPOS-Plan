@@ -3482,6 +3482,24 @@ namespace Testdatenbankschema
                                   ", Einstellungen mit Schalter: " + SchnellaufheizungSchema.ZeilenMitSchalter() + " (erwartet True, 0).");
             }
 
+            // ---- Schritt KaelteArtSchema.SCHRITT (KWN-0): Art der Kaeltebedarfszeilen - Kaelte_Art (RAUM/PROZESS, Vorgabe
+            //      RAUM) an Z_Projekt_Kaeltebedarf und Z_ProjektWaermebedarf. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KaelteArt.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Bestandszeile steht auf RAUM; ohne Prozesszeile aendert sich keine Zahl.
+            string nrKwn = KaelteArtSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKwn + " - Art der Kaeltebedarfszeilen: " + (KaelteArtSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKwn = new List<string>();
+                angelegt += KaelteArtSchema.Ausfuehren(berichtKwn);
+                foreach (string zeile in berichtKwn)
+                    Console.WriteLine("Schritt " + nrKwn + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKwn + " - vollstaendig: " + KaelteArtSchema.Vollstaendig() +
+                                  ", Zeilen mit Prozesskaelte: " + KaelteArtSchema.ZeilenMitProzess() + " (erwartet True, 0).");
+            }
+
             // ---- Schritt RaumnutzungNormkategorienSchema.SCHRITT (NP6, E129): die leeren, ausgelieferten Kategorien
             //      SIA 2024 und VDI 2078 des Katalogs der Nutzungsprofile entfallen; eine wider Erwarten befuellte wird eine
             //      eigene; die Kategorie DIN bekommt die zwei Wohnprofile nach Tabelle 5 ohne Werte. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_RaumnutzungNormkategorien. Wiederholbar, kein DDL.

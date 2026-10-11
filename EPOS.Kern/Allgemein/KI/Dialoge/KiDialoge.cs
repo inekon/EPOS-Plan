@@ -3986,6 +3986,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kanal", "WaermebedarfExternZeile.Kanal",
                                      KiDialogTexte.WbxKanalName, KiParameterTyp.Wahl,
                                      KiDialogTexte.WbxKanalErl, leerErlaubt: true),
+                    // KWN-0: die Art der Kaeltezeile (Raum/Prozess), wirksam nur im Kanal Kuehlung.
+                    new KiDialogFeld("kaelte_art", "WaermebedarfExternZeile.KaelteArt",
+                                     KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KaelteArtErl, leerErlaubt: true),
                     new KiDialogFeld("ganglinie", "WaermebedarfExternZeile.Bezeichner",
                                      KiDialogTexte.WbxGanglinieName, KiParameterTyp.Text,
                                      KiDialogTexte.WbxGanglinieErl,
@@ -4238,6 +4242,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("betriebskalender", "BedarfsProfileKiSicht.Betriebskalender",
                                      KiDialogTexte.BpfKalenderName, KiParameterTyp.Wahl,
                                      KiDialogTexte.BpfKalenderErl, leerErlaubt: true),
+                    // KWN-0: die Art der markierten Kaeltezeile (Raum/Prozess); nur Kaeltebedarfsprofile.
+                    new KiDialogFeld("kaelte_art", "BedarfsProfileKiSicht.KaelteArt",
+                                     KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KaelteArtErl, leerErlaubt: true),
                     new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
                                      KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
                                      KiDialogTexte.BpfProfilErl,

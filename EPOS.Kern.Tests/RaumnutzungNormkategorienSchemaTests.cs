@@ -28,8 +28,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nummer_haengt_an_der_Kette_ist_das_Ziel_und_die_Paketanhebung_fuehrt_Katalog()
         {
-            // UMHÄNGEN: nach Merge von Schritt 218 (Kälteanlagen) an dessen Klasse + 1 → 219
-            Assert.Equal(SchnellaufheizungSchema.SCHRITT + 1, RaumnutzungNormkategorienSchema.SCHRITT);
+            Assert.Equal(219, RaumnutzungNormkategorienSchema.SCHRITT);
+            Assert.Equal(KaelteArtSchema.SCHRITT + 1, RaumnutzungNormkategorienSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= RaumnutzungNormkategorienSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == RaumnutzungNormkategorienSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog, s.Wirkung);

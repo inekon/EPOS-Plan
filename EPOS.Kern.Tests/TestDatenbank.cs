@@ -1035,6 +1035,9 @@ namespace EPOS.Kern.Tests
                 // Schritt SchnellaufheizungSchema.SCHRITT (SA2): Schalter und Ueberhoehung der Schnellaufheizung, sechs
                 // Ergebnisspalten je Gebaeude und Zone, leer, reines DDL. Wiederholbar.
                 SchnellaufheizungSchema.Ausfuehren(null);
+                // Schritt KaelteArtSchema.SCHRITT (KWN-0): Kaelte_Art an Profil- und Lastgangzuordnung, Vorgabe RAUM,
+                // reines DDL. Wiederholbar.
+                KaelteArtSchema.Ausfuehren(null);
                 // Schritt RaumnutzungNormkategorienSchema.SCHRITT (NP6, E129): die leeren Kategorien SIA 2024 und VDI 2078
                 // des Katalogs der Nutzungsprofile entfallen, DIN bekommt die zwei Wohnprofile. Wiederholbar, ergebnisneutral.
                 RaumnutzungNormkategorienSchema.Ausfuehren(null);

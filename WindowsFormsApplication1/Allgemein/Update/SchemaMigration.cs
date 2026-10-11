@@ -5446,6 +5446,15 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_SCHNELLAUFHEIZUNG = SchnellaufheizungSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="KaelteArtSchema.SCHRITT"/> — <b>Art der Kältebedarfszeilen</b> (KWN-0, E127): <c>Kaelte_Art</c>
+        /// (Raum/Prozess, Vorgabe Raum) an <c>Z_Projekt_Kaeltebedarf</c> und <c>Z_ProjektWaermebedarf</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Bestandszeile steht auf Raum; ohne Prozesszeile ändert sich keine
+        /// Zahl.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTE_ART = KaelteArtSchema.SCHRITT;
+
+        /// <summary>
         /// Schritt <see cref="RaumnutzungNormkategorienSchema.SCHRITT"/> — <b>Kategorien SIA 2024 und VDI 2078 entfallen</b>
         /// (NP6, E129): Die leeren, ausgelieferten Kategorien des Katalogs der Nutzungsprofile fallen weg; eine wider Erwarten
         /// befüllte wird eine eigene Kategorie und steht im Protokoll. Die Kategorie DIN bekommt die zwei Wohnprofile nach
@@ -7988,6 +7997,12 @@ namespace WindowsFormsApplication1
                         "Ein Projekt koennte die Schnellaufheizung nicht speichern. KEIN Rechenergebnis aendert sich - jede " +
                         "Spalte steht auf NULL, und NULL heisst aus.",
                         Schritt_Schnellaufheizung),
+            // KWN-0: Art der Kaeltebedarfszeilen. Quelle ist KaelteArtSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTE_ART,
+                        "Z_Projekt_Kaeltebedarf und Z_ProjektWaermebedarf: Kaelte_Art (RAUM/PROZESS, Vorgabe RAUM)",
+                        "Ein Projekt koennte Prozesskaelte nicht von Raumkuehlung unterscheiden. KEIN Rechenergebnis aendert " +
+                        "sich - jede Bestandszeile steht auf RAUM.",
+                        Schritt_KaelteArt),
             // NP6: Kategorien SIA 2024 und VDI 2078 entfallen. Quelle ist RaumnutzungNormkategorienSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_RAUMNUTZUNG_NORMKATEGORIEN,
                         "Tab_Raumnutzungskatalog: die ausgelieferten Kategorien SIA 2024 und VDI 2078 (ohne Profil) entfallen; " +
@@ -15440,6 +15455,60 @@ namespace WindowsFormsApplication1
                     (erg.Angelegt == 0 ? "stand bereits." : erg.Angelegt + " Schemaanweisung(en).") +
                     " " + erg.Saat + " Kaeltemittel gesaet, " + (erg.KatalogZugeordnet + erg.ProjektZugeordnet) +
                     " Zeile(n) zugeordnet. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Art der Kältebedarfszeilen" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTE_ART"/>, die
+        /// Anweisungen bei <see cref="KaelteArtSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaelteArt(Lauf l)
+        {
+            string nr = KaelteArtSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaelteArtSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KaelteArtSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaelteArtSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Art der Kaeltebedarfszeilen (Kaelte_Art) steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Art der Kaeltebedarfszeilen - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n).") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 
