@@ -708,7 +708,8 @@ try {
         const SATZ_WIRTE = { bhkw: ['.epos-kostenleiste button', 'Kostenknoepfe'],
           pufferspeicher: ['button.epos-pspd-auslegen', '„Auslegen…"'], stromspeicher: ['.epos-traegerwahl select', 'Traegerwahl'],
           solarkollektoren: ['.epos-gruppenkopf-koerper input', 'Kollektorfelder'],
-          waermepumpen: ['button.epos-knopf--anlage', '„Anlage…"', '.epos-wp-satz'],
+          // AW2: Satz und Anlage sind EINE Ueberlagerung - ihr Koerper traegt die Auslegung fuer Verteilung.
+          waermepumpen: ['.epos-wp-abschnitt--auslegung', '„Auslegung für Verteilung"', '.epos-wp-satzueberlagerung'],
           photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'],
           kaeltemaschine: ['.epos-kostenleiste button', 'Kostenknoepfe', '.epos-kaeltemaschine-satz'],
           // Stufe 4: die Bedarfsprofile - Verbrauch, Temperatur und Kalender allein in der Ueberlagerung.
@@ -716,7 +717,8 @@ try {
         const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile'];
         // Kopf der Detailzeile: zwei Infoknoepfe; die Waermepumpe traegt dort „Anlage…" (Grundlagen und Berechnung
         // stehen in ihrem Anlagendialog).
-        const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 1, '„Anlage…"'],
+        // AW2: Die Waermepumpe hat keine Kopfknoepfe mehr - „Anlage…" ist in der Satz-Ueberlagerung aufgegangen.
+        const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 0, 'kein „Anlage…"'],
           // Bedarfsprofile: der Rechenweg der Auspraegung (eine Grundlagenseite gibt es nicht).
           bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
         if (SATZ_WIRTE[fall]) {

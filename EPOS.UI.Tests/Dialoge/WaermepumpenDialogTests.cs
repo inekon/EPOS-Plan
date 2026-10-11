@@ -885,7 +885,7 @@ public class WaermepumpenDialogTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
         Assert.Single(cut.FindAll(".epos-satzueberlagerung-schliessen"));
-        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, koerper.TextContent);
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-fuss").TextContent);
         var felder = koerper.QuerySelectorAll(".epos-wp-abschnitt--kenndaten input");
         Assert.NotEmpty(felder);
         Assert.All(felder, f => Assert.True(f.HasAttribute("disabled") || f.HasAttribute("readonly")));

@@ -263,10 +263,7 @@
                                             <InfoKnopf Schluessel="@WaermepumpeAnlageFelder.HILFE_BERECHNUNG"
                                                        StandardKurztext="Berechnungsweg Wärmepumpe" MitAssistent="false" />
                                         </div>
-                                        @if (_katalogZeile?.Geschuetzt == true)
-                                        {
-                                            <p class="epos-satzbearbeitung-hinweis" role="note">@Resource.SATZBEARB_NUR_LESEN @Resource.ADM_SCHLOSS_ERST_AUFHEBEN</p>
-                                        }
+                                        @* Gesperrt: den Grund nennt die Fussleiste der Ueberlagerung („Erst Schloss aufheben"). *@
                                         <WaermepumpeStammFelder Daten="@_satzBearbeitung" Texte="@_felderTexte"
                                                                 Aktiv="@KatalogSatzSpeicherbar" BezeichnerAenderbar="false"
                                                                 KuehlleistungAenderbar="false" TeillastAenderbar="true"
