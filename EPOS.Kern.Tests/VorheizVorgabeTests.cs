@@ -135,7 +135,9 @@ namespace EPOS.Kern.Tests
             var ohne = new Aufheizvorgabe(true, null, null, null, null) { Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Vorgabe) };
             Assert.Equal(Vorheizrueckfall.OhneVorheizzeit, Vorheizplanung.Rueckfall(ohne, null, false));
             var berechnet = new Aufheizvorgabe(true, null, null, null, null) { Vorheizen = new Vorheizvorgabe(Aufheizverfahren.Berechnet) };
-            Assert.Equal(Vorheizrueckfall.Berechnet, Vorheizplanung.Rueckfall(berechnet, null, false));
+            Assert.True(Vorheizplanung.Anwendbar(berechnet));
+            Assert.Equal(Vorheizrueckfall.Keiner, Vorheizplanung.Rueckfall(berechnet, null, false));
+            Assert.Equal(Vorheizrueckfall.Ak3, Vorheizplanung.Rueckfall(berechnet, DbWerte.ANLAGENKOPPLUNG_AK3, false));
 
             Aufheizvorgabe wirksam = Vorheizplanung.Wirksam(v, Vorheizrueckfall.Ak3);
             Assert.False(Vorheizplanung.Anwendbar(wirksam));
