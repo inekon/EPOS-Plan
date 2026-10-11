@@ -397,6 +397,38 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.Same(zeilen[0], Assert.Single(uebernommen));
     }
 
+    /// <summary>KT-7: Wirft der Übernahmeweg, nennt der Banner den Grund, die Anlagenseite und der Dialog bleiben offen.</summary>
+    [Fact]
+    public void KT7_wirft_die_Uebernahme_nennt_der_Banner_den_Grund_und_die_Anlage_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") };
+        var cut = Aufbauen(zeilen, uebernehmen: _ => throw new InvalidOperationException("Modell gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+
+        Knopf(cut, "Anlage…").Click();
+        cut.FindAll(".epos-wp-anlage-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Modell gesperrt"));
+        Assert.True(vermerke.Enthaelt("Modell gesperrt"));
+        Assert.True(cut.Instance.DetailOffen);
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_hat_die_Uebernahme_keinen_Vermerk()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(uebernehmen: _ => { });
+
+        Knopf(cut, "Anlage…").Click();
+        cut.FindAll(".epos-wp-anlage-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.False(cut.Instance.DetailOffen);
+        Assert.True(vermerke.Leer);
+    }
+
     [Fact]
     public void Anlage_Abbrechen_setzt_die_Zeile_auf_den_Stand_beim_Oeffnen_zurueck()
     {

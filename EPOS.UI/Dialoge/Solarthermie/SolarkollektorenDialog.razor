@@ -773,7 +773,8 @@
         if (_projektZeile is null || Uebernehmen is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
                                                        .Replace("{0}", TitelText));
-        BeiUebernehmen();
+        string grund = BeiUebernehmen();
+        if (grund.Length > 0) return KiKern.KiErgebnis.Abgelehnt(grund);
         return KiKern.KiErgebnis.Ok(_projektZeile.Bezeichner, anzahl: 1);
     }
 
@@ -901,9 +902,10 @@
     /// „Übernehmen" der Anlagenfelder: schreibt den Arbeitsstand in die Zeile und reicht sie an die
     /// Hülle (Modell). Die Albedo außerhalb 0…1 gilt als leer.
     /// </summary>
-    private void BeiUebernehmen()
+    /// <returns>Leer, wenn übernommen (oder ohne Zeile); sonst der Grund aus dem Übernahmeweg.</returns>
+    private string BeiUebernehmen()
     {
-        if (_projektZeile is null) return;
+        if (_projektZeile is null) return "";
         _projektZeile.AnzahlModule = _eingaben.Anzahl ?? 0;
         _projektZeile.Neigung = _eingaben.Neigung ?? 0;
         _projektZeile.Azimut = _eingaben.Azimut ?? 0;
@@ -913,8 +915,23 @@
         _projektZeile.SolarGraedigkeitK = _eingaben.GraedigkeitK;
         _projektZeile.SolarSpreizungK = _eingaben.SpreizungK;
         _projektZeile.SolarArbeitstemperaturAusSpeicher = _eingaben.ArbeitstemperaturAusSpeicher;
-        Uebernehmen?.Invoke(_projektZeile);
-        Melden(MeldungUebernommen, false);
+        string grund = ZeileUebernehmen(_projektZeile);
+        if (grund.Length == 0) Melden(MeldungUebernommen, false);
+        return grund;
+    }
+
+    /// <summary>
+    /// KT-7: Der Übernahmeweg an den Wirt (<see cref="Uebernehmen"/>) läuft über die Fangstelle
+    /// (<c>Katalogladung.Schreiben</c>). Wirft er, steht der Grund im Banner, das Protokoll hat
+    /// einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    /// <returns>Leer, wenn übernommen; sonst der Grund.</returns>
+    private string ZeileUebernehmen(ErzeugerZeile zeile)
+    {
+        if (Uebernehmen is null) return "";
+        string grund = Katalogladung.Schreiben(() => { Uebernehmen(zeile); return ""; }, zeile.Bezeichner, g => g);
+        if (grund.Length > 0) Melden(grund, true);
+        return grund;
     }
 
     // =================================================================================
@@ -1056,7 +1073,16 @@
             }
         }
         if (_projektZeile is not null && _eingabenMerker is not null && _eingaben.Abweichend(_eingabenMerker))
-            BeiUebernehmen();
+        {
+            // KT-7: Wirft der Übernahmeweg, bleibt die Überlagerung mit den Eingaben offen.
+            string grund = BeiUebernehmen();
+            if (grund.Length > 0)
+            {
+                _satzUeberlagerungFehler = grund;
+                _zweispalten?.SatzOffenHalten();
+                return;
+            }
+        }
         _eingabenMerker = null;
         _satzGross = false;
         _satzUeberlagerungFehler = null;

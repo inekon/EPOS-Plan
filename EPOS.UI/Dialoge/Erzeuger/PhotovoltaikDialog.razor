@@ -255,7 +255,7 @@
                     </Formularraster>
                 </div>
                 <PvModellFelder Zeile="@_projektZeile"
-                                Geaendert="@(() => Uebernehmen?.Invoke(_projektZeile!))" />
+                                Geaendert="@(() => ZeileUebernehmen(_projektZeile!))" />
                 <div class="epos-leiste epos-pv-straengeleiste">
                     <button type="button" class="epos-knopf epos-knopf--straenge"
                             @onclick="BeiStraengeOeffnen">@BtnStraengeText</button>
@@ -1017,7 +1017,7 @@
                 if (_projektZeile is null && Zeilen.Count == 1) ProjektZeileWaehlen(Zeilen[0]);
                 return _projektZeile;
             },
-            Uebernommen = z => { Uebernehmen?.Invoke(z); SummeNachziehen(); },
+            Uebernommen = Uebernehmen is null ? null : z => { UebernahmeWegKi!(z); SummeNachziehen(); },
             ModellEintraege = Modelleintraege,
             AlleDaten = new AlleDatenTafel
             {
@@ -1081,9 +1081,33 @@
     {
         if (_projektZeile is null || Uebernehmen is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText));
-        Uebernehmen(_projektZeile);
+        string grund = ZeileUebernehmen(_projektZeile);
+        if (grund.Length > 0) return KiKern.KiErgebnis.Abgelehnt(grund);
         return KiKern.KiErgebnis.Ok(_projektZeile.Bezeichner, anzahl: 1);
     }
+
+    /// <summary>
+    /// KT-7: Der Übernahmeweg an den Wirt (<see cref="Uebernehmen"/>) läuft über die Fangstelle
+    /// (<c>Katalogladung.Schreiben</c>). Wirft er, steht der Grund im Banner, das Protokoll hat
+    /// einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    /// <returns>Leer, wenn übernommen; sonst der Grund.</returns>
+    private string ZeileUebernehmen(ErzeugerZeile zeile)
+    {
+        if (Uebernehmen is null) return "";
+        string grund = Katalogladung.Schreiben(() => { Uebernehmen(zeile); return ""; }, zeile.Bezeichner, g => g);
+        if (grund.Length > 0) Melden(grund, true);
+        return grund;
+    }
+
+    /// <summary>Der Übernahmeweg für Merker und KI-Sicht: gefangen, und für die KI wirft er benannt.</summary>
+    private Action<ErzeugerZeile>? UebernahmeWeg => Uebernehmen is null ? null : z => ZeileUebernehmen(z);
+
+    private Action<ErzeugerZeile>? UebernahmeWegKi => Uebernehmen is null ? null : z =>
+    {
+        string grund = ZeileUebernehmen(z);
+        if (grund.Length > 0) throw new InvalidOperationException(grund);
+    };
 
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
@@ -1353,7 +1377,7 @@
         _satzGross = false;
         _satzUeberlagerungFehler = null;
         if (_anlagenmerker is { } merker && _projektZeile is not null
-            && merker.Zurueckschreiben(_projektZeile, TraegerWechseln, Uebernehmen))
+            && merker.Zurueckschreiben(_projektZeile, TraegerWechseln, UebernahmeWeg))
             SummeNachziehen();
         _anlagenmerker = null;
         if (_felder is not null) FelderHolen();
@@ -1377,21 +1401,21 @@
     {
         if (_projektZeile is null) return;
         _projektZeile.Neigung = wert;
-        Uebernehmen?.Invoke(_projektZeile);
+        ZeileUebernehmen(_projektZeile);
     }
 
     private void BeiAzimut(int? wert)
     {
         if (_projektZeile is null) return;
         _projektZeile.Azimut = wert;
-        Uebernehmen?.Invoke(_projektZeile);
+        ZeileUebernehmen(_projektZeile);
     }
 
     private void BeiAnzahl(double? wert)
     {
         if (_projektZeile is null) return;
         _projektZeile.AnzahlModule = wert;
-        Uebernehmen?.Invoke(_projektZeile);
+        ZeileUebernehmen(_projektZeile);
         SummeNachziehen();
     }
 
@@ -1452,7 +1476,7 @@
     {
         if (_projektZeile is null) return;
         if (_projektZeile.Straenge.Count > 0) _projektZeile.AnzahlModule = Modulzahl;
-        Uebernehmen?.Invoke(_projektZeile);
+        ZeileUebernehmen(_projektZeile);
         SummeNachziehen();
     }
 
