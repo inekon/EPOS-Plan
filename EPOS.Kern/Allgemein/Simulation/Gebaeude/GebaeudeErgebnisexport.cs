@@ -175,6 +175,7 @@ namespace WindowsFormsApplication1
             skalare.Add(Paar(p + "Ueberhitzungsstunden", e.Ueberhitzungsstunden));
             // Stufe KP3 (Festlegung 28): Lüftungsstunden und Aufheizwerte nur, wenn sie wirken (E32).
             Wirkend(p, e, GebaeudeKennzahlen.Aufheizwerte(e.Aufheizung, zone: false), skalare, texte, gebaeude: true);
+            Vorheizen(p, GebaeudeKennzahlen.Vorheizwerte(e.Vorheizen), skalare, texte);
             Messung(p, e.Innenumkehr, skalare);
 
             // Stufe G6b (W5): je Zone die Kennzahlen, nur ab zwei Zonen.
@@ -209,6 +210,7 @@ namespace WindowsFormsApplication1
                         skalare.Add(Paar(q + "UebergabeBegrenztH", zk.UebergabeBegrenztStundenH));
                     }
                     Wirkend(q, r, GebaeudeKennzahlen.Aufheizwerte(r.Aufheizung, zone: true), skalare, texte, gebaeude: false);
+                    Vorheizen(q, GebaeudeKennzahlen.Vorheizwerte(z.Vorheizen), skalare, texte);
                     Messung(q, r.Innenumkehr, skalare);
                 }
             return new GebaeudeExportsatz(e.Index, e.Modell ?? "", reihen, skalare, texte);
@@ -239,6 +241,43 @@ namespace WindowsFormsApplication1
                 skalare.Add(Paar(praefix + z.Key, z.Value));
             if (gebaeude && a.AufheizzeitManuellH is int manuell)
                 skalare.Add(Paar(praefix + "Aufheizzeit_Manuell", manuell));
+        }
+
+        /// <summary>
+        /// <b>Die Vorheizgrößen der Fassung 2</b> (AH-V6, Schritt 215) — nur mit Verfahren „Vorgabe“ oder „Berechnet“
+        /// (Muster E32: bei Sollwertrampe kein Schlüssel, die Referenz-CSV bleiben byte-gleich): <c>…Vorheizverfahren</c> als
+        /// Text, dann die Zahlen der Ergebniszeile in ihrer Reihenfolge (<see cref="Vorheizschluessel"/>), jede nur mit Wert —
+        /// dieselben NULL-Regeln wie <see cref="GebaeudeKennzahlen.Vorheizwerte"/>.
+        /// </summary>
+        private static void Vorheizen(string praefix, Vorheizkennzahlen v, List<KeyValuePair<string, double>> skalare,
+                                      List<KeyValuePair<string, string>> texte)
+        {
+            if (v == null) return;
+            texte.Add(new KeyValuePair<string, string>(praefix + "Vorheizverfahren", v.Verfahren));
+            foreach ((string schluessel, double? wert) in Vorheizschluessel(v))
+                if (wert is double w) skalare.Add(Paar(praefix + schluessel, w));
+        }
+
+        /// <summary>Die Zahlenschlüssel des Vorheizens in der Reihenfolge der Ergebnisspalten (ohne Präfix).</summary>
+        internal static IEnumerable<(string Schluessel, double? Wert)> Vorheizschluessel(Vorheizkennzahlen v)
+        {
+            yield return ("VorheizzeitH", v.VorheizzeitH);
+            yield return ("VorheizzeitBedarfMaxH", v.VorheizzeitBedarfMaxH);
+            yield return ("VorheizBezugKw", v.BezugKw);
+            yield return ("VorheizDeckelKw", v.DeckelKw);
+            yield return ("VorheizLeistungKw", v.LeistungKw);
+            yield return ("VorheizSprungVorlaufMaxKw", v.SprungVorlaufMaxKw);
+            yield return ("VorheizSprungLaufMaxKw", v.SprungLaufMaxKw);
+            yield return ("VorheizTageVerfehlt", v.TageVerfehlt);
+            yield return ("VorheizTageUeberVorheizzeit", v.TageUeberVorheizzeit);
+            yield return ("VorheizUnterschreitungMaxK", v.UnterschreitungMaxK);
+            yield return ("VorheizUnterschreitungH", v.UnterschreitungH);
+            yield return ("VorheizDeckelstundenH", v.DeckelstundenH);
+            yield return ("VorheizFloorstundenH", v.FloorstundenH);
+            yield return ("VorheizNaechteOhneAbsenkung", v.NaechteOhneAbsenkung);
+            yield return ("VorheizUnerreichbarTage", v.UnerreichbarTage);
+            yield return ("VorheizSperrzeitTage", v.SperrzeitTage);
+            yield return ("VorheizMehrwaermeMwh", v.MehrwaermeMwh);
         }
 
         /// <summary>
