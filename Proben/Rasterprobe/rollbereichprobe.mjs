@@ -317,6 +317,71 @@ async function gangliniePerVergroessern(seite) {
   await massAbwartenUeberlagerung(seite);
 }
 
+/**
+ * geb3: die Ueberlagerung „Simulation..." des Gebaeudes (Zusatzklasse epos-ueberlagerung--rollkoerper, Konzept 7.7).
+ * Kopf und Fussleiste sichtbar und treffbar, die Ueberlagerung rollt nicht als Ganzes, und in ihr rollt hoechstens
+ * der eine Rollkoerper - jeder andere Rollbereich (auch eine Tabelle, die nur rollen KOENNTE) ist ein Verstoss.
+ * Dazu die Zeichenflaechen der Bilder: Breite im Koerper, Modell im Behaeltermass.
+ */
+function simulationUeberlagerung(rand = { oben: 0, unten: 0 }) {
+  const u = [...document.querySelectorAll('.epos-ueberlagerung')].find(e => e.querySelector('.epos-dialog-rollkoerper'));
+  if (!u) return { da: false };
+  const sichtbar = e => { const s = getComputedStyle(e); if (s.display === 'none' || s.visibility === 'hidden') return false; const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0; };
+  const rollt = e => /^(auto|scroll)$/.test(getComputedStyle(e).overflowY) || /^(auto|scroll)$/.test(getComputedStyle(e).overflowX);
+  const koerper = u.querySelector('.epos-dialog-rollkoerper');
+  const fremdeRoller = [...u.querySelectorAll('*')].filter(e => e !== koerper && sichtbar(e) && rollt(e))
+    .map(e => e.tagName.toLowerCase() + '.' + String(e.className).trim().split(/\s+/)[0]);
+  const treffbar = k => {
+    const r = k.getBoundingClientRect();
+    if (r.width === 0 || r.top < rand.oben - 1 || r.bottom > innerHeight - rand.unten + 1 || r.left < -1 || r.right > innerWidth + 1) return false;
+    const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return !!(e && (e === k || k.contains(e)));
+  };
+  const kopf = u.querySelector(':scope > .epos-ueberlagerung-kopf');
+  const zu = u.querySelector(':scope > .epos-ueberlagerung-kopf .epos-ueberlagerung-zu');
+  const knoepfe = [...u.querySelectorAll('.epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste:has(> .epos-status) button')];
+  const bilder = [...koerper.querySelectorAll('.epos-diagramm-svg-flaeche')].filter(sichtbar).map(fl => {
+    const b = fl.getBoundingClientRect(), vb = fl.querySelector(':scope > svg')?.viewBox?.baseVal;
+    return { breite: Math.round(b.width), hoehe: Math.round(b.height), vbBreite: vb ? Math.round(vb.width) : 0, vbHoehe: vb ? Math.round(vb.height) : 0 };
+  });
+  const st = getComputedStyle(koerper);
+  const r = u.getBoundingClientRect();
+  return {
+    da: true, oben: Math.round(r.top), unten: Math.round(r.bottom), breite: Math.round(r.width),
+    koerper: Math.round(koerper.getBoundingClientRect().height),
+    koerperInnen: Math.round(koerper.clientWidth - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight)),
+    koerperRollt: koerper.scrollHeight > koerper.clientHeight + 1, koerperRollbar: rollt(koerper),
+    ganzRollt: u.scrollHeight > u.clientHeight + 1 && rollt(u), ueberlagerungRollbar: rollt(u),
+    kopf: !!(kopf && sichtbar(kopf) && kopf.getBoundingClientRect().top >= rand.oben - 1 && (!zu || treffbar(zu))),
+    fuss: knoepfe.length > 0 && knoepfe.every(treffbar), knoepfe: knoepfe.map(k => k.textContent.trim()),
+    fremdeRoller, bilder,
+  };
+}
+
+const simUebZeilen = [];
+function pruefeSimulationUeberlagerung(fall, fenster, zustand, u) {
+  const kennung = `${fall} ${fenster.breite}x${fenster.hoehe} ${zustand}`;
+  const fehler = [];
+  if (!u.da) fehler.push('Ueberlagerung „Simulation..." ohne Rollkoerper');
+  else {
+    if (!u.kopf) fehler.push('Kopf der Ueberlagerung „Simulation..." nicht sichtbar');
+    if (!u.fuss) fehler.push('Fussleiste der Ueberlagerung „Simulation..." nicht sichtbar oder nicht treffbar (' + u.knoepfe.join(', ') + ')');
+    if (u.ganzRollt || u.ueberlagerungRollbar) fehler.push('Ueberlagerung „Simulation..." rollt als Ganzes');
+    if (!u.koerperRollbar) fehler.push('Rollkoerper ist kein Rollbereich');
+    if (u.fremdeRoller.length) fehler.push('Rollbereich im Rollbereich (ausser dem Rollkoerper): ' + u.fremdeRoller.join('; '));
+    for (const b of u.bilder) {
+      if (b.breite > u.koerperInnen + 2) fehler.push(`Bild ${b.breite} px breiter als der Rollkoerper (${u.koerperInnen} px)`);
+      if (b.breite < 0.9 * u.koerperInnen) fehler.push(`Bild ${b.breite} px schmaler als 90 % des Rollkoerpers (${u.koerperInnen} px)`);
+      // Das Modell zeichnet die Huelle in festem Mass (1 240 x 560); die Flaeche skaliert es seitentreu in die
+      // Behaelterbreite. Ein Modell im Behaeltermass (BildauftragMass wie GanglinienGrafik) steht aus - Information.
+    }
+    simUebZeilen.push(`${kennung}: Ueberlagerung ${u.oben}..${u.unten} px, Breite ${u.breite} px, Rollkoerper ${u.koerper} px${u.koerperRollt ? ' (rollt)' : ''}, `
+      + `Kopf ${u.kopf ? 'sichtbar' : 'FEHLT'}, Fussleiste ${u.fuss ? 'sichtbar' : 'FEHLT'} (${u.knoepfe.join(' / ')}), Bilder ${u.bilder.map(b => b.breite + 'x' + b.hoehe + '/' + b.vbBreite + 'x' + b.vbHoehe).join(', ') || '-'}`);
+  }
+  for (const f of fehler) { verstoesse.push(kennung + ': ' + f); console.log('  VERSTOSS ' + kennung + ': ' + f); }
+  return fehler.length;
+}
+
 const satzUebZeilen = [];
 function pruefeSatzUeberlagerung(fall, fenster, zustand, u) {
   const kennung = `${fall} ${fenster.breite}x${fenster.hoehe} ${zustand}`;
@@ -703,7 +768,7 @@ try {
         }
         // GEBAEUDE (Katalogauswahl V1, Stufe 4): Zusammenfassung, Satz-Ueberlagerung ueber „Bearbeiten", darueber
         // „Simulation…" (z-Reihenfolge: die Bedarfsansicht liegt oben), der Stift der Katalogzeile, die Rueckfrage.
-        // Der Rollbereich der Ansicht „Simulation…" selbst ist ein eigener Folgeauftrag (Zustand wie bisher).
+        // geb3: Die Ansicht „Simulation…" rollt nicht als Ganzes, genau ein Rollkoerper (pruefeSimulationUeberlagerung).
         if (fall === 'gebaeude') {
           const v = (t) => { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${t}`); console.log('  VERSTOSS ' + verstoesse.at(-1)); };
           const foto = async (name) => { if (FOTOS && fenster.breite === 1280 && fenster.hoehe === 800) await seite.screenshot({ path: `${FOTOS}/${fall}_${name}_${fenster.breite}x${fenster.hoehe}.png` }); };
@@ -728,7 +793,10 @@ try {
             await k.first().click();
             await seite.waitForSelector('.epos-ueberlagerung:not(.epos-ueberlagerung--satz)', { timeout: 5000 });
             await ruhe(seite);
-            await mess('Ueberlagerung offen');
+            await mess('Ueberlagerung Simulation… offen');
+            pruefeSimulationUeberlagerung(fall, fenster, 'Ueberlagerung Simulation…', await seite.evaluate(simulationUeberlagerung, rand(fenster)));
+            if (FOTOS && ((fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.breite === 1024 && fenster.hoehe === 700)))
+              await seite.screenshot({ path: `${FOTOS}/${fall}_simulation_${fenster.breite}x${fenster.hoehe}.png` });
             const oben = await seite.evaluate(() => {
               const e = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
               const u = e && e.closest('.epos-ueberlagerung');
@@ -818,6 +886,38 @@ try {
       console.log(`Gegenprobe Satz-Ueberlagerung: Rollbereich im Koerper - ${rot1 ? 'rot' : 'gruen'}; rollt als Ganzes, Fussleiste weggerollt - ${rot2 ? 'rot' : 'gruen'}`);
       if (!rot1 || !rot2) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Satz-Ueberlagerung nicht'); rueckgabe = 1; }
       await k6.close();
+    }
+
+    // geb3: Ueberlagerung „Simulation..." des Gebaeudes - eine Tabelle mit eigener Hoehe (Rollbereich im Rollkoerper)
+    // und eine als Ganzes rollende Ueberlagerung mit weggerollter Fussleiste muessen rot werden.
+    {
+      const k8 = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+      const s8 = await k8.newPage();
+      await s8.goto(WURZEL + '/fensterprobe?fall=gebaeude', { waitUntil: 'networkidle' });
+      await s8.waitForSelector('.epos-zweispalten');
+      await s8.locator('.epos-zweispalten-bearbeiten').click();
+      await s8.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+      await s8.locator('.epos-satzueberlagerung-koerper button.epos-gebaeude-simulation').first().click();
+      await s8.waitForSelector('.epos-dialog-rollkoerper', { timeout: 5000 });
+      await s8.addStyleTag({ content: '.epos-dialog-rollkoerper .epos-raster-huelle { overflow: auto !important; max-height: 60px !important; }' });
+      await ruhe(s8);
+      const vor = verstoesse.length;
+      pruefeSimulationUeberlagerung('gegenprobe-simulation', { breite: 1280, hoehe: 720 }, 'Tabelle mit eigener Hoehe', await s8.evaluate(simulationUeberlagerung));
+      const rot1 = verstoesse.slice(vor).some(v => v.includes('Rollbereich im Rollbereich'));
+      verstoesse.splice(vor); simUebZeilen.pop();
+      await s8.addStyleTag({ content: '.epos-dialog-rollkoerper .epos-raster-huelle { overflow: visible !important; max-height: none !important; }'
+        + ' .epos-ueberlagerung.epos-ueberlagerung--rollkoerper { overflow-y: auto !important; }'
+        + ' .epos-ueberlagerung--rollkoerper > .epos-ueberlagerung-inhalt, .epos-ueberlagerung--rollkoerper > .epos-ueberlagerung-inhalt > .epos-dialog,'
+        + ' .epos-ueberlagerung--rollkoerper .epos-dialog-rollkoerper { flex: 0 0 auto !important; overflow: visible !important; }' });
+      await ruhe(s8);
+      const vor2 = verstoesse.length;
+      pruefeSimulationUeberlagerung('gegenprobe-simulation', { breite: 1280, hoehe: 720 }, 'rollt als Ganzes', await s8.evaluate(simulationUeberlagerung));
+      const neu2 = verstoesse.slice(vor2);
+      const rot2 = neu2.some(v => v.includes('als Ganzes')) && neu2.some(v => v.includes('Fussleiste'));
+      verstoesse.splice(vor2); simUebZeilen.pop();
+      console.log(`Gegenprobe Ueberlagerung Simulation…: Tabelle mit eigener Hoehe - ${rot1 ? 'rot' : 'gruen'}; rollt als Ganzes, Fussleiste weggerollt - ${rot2 ? 'rot' : 'gruen'}`);
+      if (!rot1 || !rot2) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Ueberlagerung „Simulation…" nicht'); rueckgabe = 1; }
+      await k8.close();
     }
 
     // Zusammenfassung (UeS2): eine Angabe je Zeile ohne Hoechsthoehe (acht Zeilen) muss rot werden.
@@ -982,6 +1082,10 @@ try {
   }
   console.log(`\nSatz-Ueberlagerung (UeS1, ${satzUebZeilen.length}):`);
   for (const z of satzUebZeilen) console.log('  ' + z);
+  if (simUebZeilen.length) {
+    console.log(`\nUeberlagerung „Simulation…" (geb3, ${simUebZeilen.length}):`);
+    for (const z of simUebZeilen) console.log('  ' + z);
+  }
   console.log(`\nKurve in der Satz-Ueberlagerung (UeS1c, ${kurveUebZeilen.length}):`);
   for (const z of kurveUebZeilen) console.log('  ' + z);
   console.log(`\nKurven der Ganglinie (DZ1-N2, ${kurven.length}):`);

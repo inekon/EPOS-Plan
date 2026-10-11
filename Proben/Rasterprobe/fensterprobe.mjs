@@ -25,10 +25,11 @@
 //      der eingebetteten Detailansicht steht sichtbar UEBER der Leiste.
 //    - Dublettenpruefung (Protokoll UNTER der Schlussleiste): oben haftet der Fuss
 //      am Fensterrand, am Ende steht er ganz im Bild und das Protokoll frei darunter.
-//  UEBERLAGERUNG (Gebaeude -> "Simulation..."): Fussleiste des eingebetteten
-//    Dialogs haftet am Boden der Ueberlagerung, sein Kopf haftet NICHT, Kopf
-//    und Fuss des Fensters liegen unter der Abdunkelung, das Dokument rollt
-//    nicht - und jede Zahl ist dieselbe wie ohne Fenstermarke.
+//  UEBERLAGERUNG (Gebaeude -> "Simulation..."): Die Ueberlagerung rollt nicht als
+//    Ganzes, genau ihr Rollkoerper rollt (geb3); die Fussleiste des eingebetteten
+//    Dialogs steht am Boden der Ueberlagerung, oben wie nach dem Rollen, sein Kopf
+//    haftet NICHT, Kopf und Fuss des Fensters liegen unter der Abdunkelung, das
+//    Dokument rollt nicht - und jede Zahl ist dieselbe wie ohne Fenstermarke.
 //  KATALOGDIALOG (Bedarfsverwaltung): Kopf und Fuss statisch, das Dokument
 //    rollt nicht, jede Zahl dieselbe wie ohne Fenstermarke.
 //
@@ -330,6 +331,7 @@ async function ueberlagerung(browser, f, marke) {
   const messen = () => seite.evaluate(() => {
     const u = document.querySelector('.epos-ueberlagerung:not(.epos-ueberlagerung--satz)');
     const d = u.querySelector('.epos-ueberlagerung-inhalt > .epos-dialog');
+    const rk = d.querySelector(':scope > .epos-dialog-rollkoerper');
     const fuss = d.querySelector(':scope > .epos-leiste:has(> .epos-status)');
     const kopf = d.querySelector(':scope > .epos-dialog-kopf');
     const uk = u.querySelector('.epos-ueberlagerung-kopf');
@@ -340,6 +342,9 @@ async function ueberlagerung(browser, f, marke) {
     const unter = (x, y) => { const e = document.elementFromPoint(x, y); return e ? String(e.className).split(' ')[0] : ''; };
     return {
       ueberlagerung: r(u), rollhoehe: u.scrollHeight, fenster: u.clientHeight, fuss: r(fuss), fussPos: getComputedStyle(fuss).position,
+      ueberlagerungRollbar: /^(auto|scroll)$/.test(getComputedStyle(u).overflowY),
+      koerperRollbar: !!rk && /^(auto|scroll)$/.test(getComputedStyle(rk).overflowY),
+      koerperRollhoehe: rk ? rk.scrollHeight : 0, koerperFenster: rk ? rk.clientHeight : 0, koerperStand: rk ? Math.round(rk.scrollTop) : 0,
       kopfPos: getComputedStyle(kopf).position, uekopf: r(uk), dokumentRollt: getComputedStyle(document.documentElement).overflow !== 'hidden',
       // Steht die Schlussleiste unter dem Fensterrand (KB1: Dialogkoerper unter der Mindesthoehe), zaehlt der unterste Bildpunkt.
       unterFensterfuss: unter(4, Math.min(wb.top + wb.height / 2, innerHeight - 2)), unterFensterkopf: unter(4, wk.top + wk.height / 2),
@@ -347,7 +352,7 @@ async function ueberlagerung(browser, f, marke) {
     };
   });
   const oben = await messen();
-  await seite.evaluate(() => { const u = document.querySelector('.epos-ueberlagerung'); u.scrollTop = u.scrollHeight; });
+  await seite.evaluate(() => { const k = document.querySelector('.epos-dialog-rollkoerper'); if (k) k.scrollTop = k.scrollHeight; });
   await seite.waitForTimeout(200);
   const unten = await messen();
   if (FOTOS && marke) await seite.screenshot({ path: `${FOTOS}/ueberlagerung_${f.breite}.png` });
@@ -516,9 +521,11 @@ try {
       const mit = await ueberlagerung(browser, f, true);
       const ohne = await ueberlagerung(browser, f, false);
       for (const [stand, m] of [['oben', mit.oben], ['unten', mit.unten]]) {
-        if (m.rollhoehe > m.fenster && Math.abs(m.fuss[1] - (m.ueberlagerung[1] - m.rahmenBorder)) > TOL)
+        if (Math.abs(m.fuss[1] - (m.ueberlagerung[1] - m.rahmenBorder)) > TOL)
           melde(name, `${stand}: Fuss des Unterdialogs endet bei ${m.fuss[1]} statt am Boden der Ueberlagerung (${m.ueberlagerung[1] - m.rahmenBorder})`);
-        if (m.fussPos !== 'sticky') melde(name, 'Fuss des Unterdialogs haftet nicht');
+        if (m.ueberlagerungRollbar || m.rollhoehe > m.fenster + 1) melde(name, `${stand}: die Ueberlagerung rollt als Ganzes (${m.rollhoehe}/${m.fenster} px)`);
+        if (!m.koerperRollbar) melde(name, 'der Rollkoerper des Unterdialogs ist kein Rollbereich');
+        if (stand === 'unten' && m.koerperRollhoehe > m.koerperFenster + 1 && m.koerperStand === 0) melde(name, 'der Rollkoerper rollt nicht');
         if (m.kopfPos !== 'static') melde(name, 'Kopf des Unterdialogs haftet (' + m.kopfPos + ') - doppelter Kopf');
         if (m.dokumentRollt) melde(name, 'das Dokument rollt unter der Ueberlagerung');
         if (m.ueberlagerung[0] < rand(f).oben - TOL || m.ueberlagerung[1] > f.hoehe - rand(f).unten + TOL)
@@ -530,6 +537,7 @@ try {
       const b = JSON.stringify([ohne.oben.ueberlagerung, ohne.oben.fuss, ohne.oben.uekopf, ohne.unten.fuss, ohne.unten.uekopf, ohne.oben.rollhoehe]);
       if (a !== b) melde(name, `mit Marke ${a} != ohne Marke ${b}`);
       console.log(`    Ueberlagerung ${JSON.stringify(mit.oben.ueberlagerung)}, Rollhoehe ${mit.oben.rollhoehe}/${mit.oben.fenster} px; `
+        + `Rollkoerper ${mit.oben.koerperRollhoehe}/${mit.oben.koerperFenster} px (gerollt ${mit.unten.koerperStand} px); `
         + `Fuss oben ${JSON.stringify(mit.oben.fuss)}, unten ${JSON.stringify(mit.unten.fuss)}; Kopf des Unterdialogs ${mit.oben.kopfPos}; `
         + `mit = ohne Marke: ${a === b}`);
     }

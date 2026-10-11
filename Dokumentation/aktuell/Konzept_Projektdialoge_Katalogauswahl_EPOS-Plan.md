@@ -897,8 +897,16 @@ Der Gebäudedialog ist Wirt der Katalogauswahl V1 nach dem Muster des BHKW (5.4,
   plus die neue Zeile in EINEM Abgleich (`Speichere_Projekt_Gebaeudeliste`), ein Entfernen bleibt bis OK vorgemerkt; Gabe
   `Abgebrochen` löscht die in der Sitzung angelegten Zuordnungen samt Kopie (`Del_Projekt_ZuordungGebäude`). Auch der
   Gebäudeimport legt so an.
-- **Offen:** Die Überlagerung „Simulation…" rollt weiter als Ganzes (Abschnitt 7 Punkt 7); ein Jahreswärmebedarf in der
-  Zusammenfassung fehlt (keine Quelle ohne Rechenlauf).
+- **Überlagerung „Simulation…" (7.7, 4.8):** Kopf der Überlagerung, Kopf und Kontextzeile des eingebetteten
+  Bedarfsdialogs und seine Fußleiste stehen fest; genau ein Rollkörper (`epos-dialog-rollkoerper`) nimmt die übrige Höhe
+  und rollt, die Tabellen darin haben keine eigene Höhe und keinen Rollbalken, die Bilder stehen in der Breite des Körpers.
+  Gemessen in zehn Fenstern ohne Verstoß (Rollkörper 348 px in 1 093 × 614 bis 870 px in 834 × 1 194, Fußleiste stets
+  treffbar). „Bearbeiten" der Detailzeile öffnet beim ungesperrten Katalogsatz den Katalogeditor wie Fußleiste und Stift
+  (Gabe `SatzBearbeiten` des Bausteins); vor dem Löschen eines Satzes, aus dem eine ungespeicherte Zeile stammt, und vor
+  Bearbeiten, Export, Rückweg und Simulation einer ungespeicherten Zeile entsteht deren Kopie über `ZeileAnlegen` statt über
+  das stille Speichern der ganzen Liste (Abbrechen räumt sie ab); im Assistenten bleibt es bei der weichen Sperre.
+- **Offen:** Ein Jahreswärmebedarf in der Zusammenfassung fehlt (keine Quelle ohne Rechenlauf); die Bilder der Überlagerung
+  „Simulation…" zeichnen ihr Modell in festem Maß und skalieren es seitentreu in die Behälterbreite.
 
 ## 6 Abwägung: die fünf Varianten
 
@@ -946,7 +954,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | 4 | **Speicherort der Trennlinienhöhe** | `Dienste.Einstellungen` mit `LiesZahl`/`SchreibZahl`, ein Schlüssel je Dialog (`Katalogauswahl.Trenner.<Dialog>`), Wert in Pixeln der Projektliste, je Anwender, nicht je Projekt; ohne Ablage die Vorgabe. Kein Schemaschritt — die Höhe ist Bedienzustand, keine Projektdatum. **Umgesetzt in Stufe 1.** |
 | 5 | **Rückweg bei Kindzeilen** — Kennlinien (`Tab_Kenndaten`, `Tab_Kenndaten_Kuehlung`, `Tab_Kenndaten_Kaeltemaschine`), Zeitreihen (`…Daten`), Typsätze der Bedarfsprofile, PV-Stränge, Gebäudezonen | Technische Kindzeilen gehen **vollständig** mit: bei „neu“ als Kopie am neuen Satz, bei „überschreiben“ als Ersatz der Kindzeilen des Ursprungs in derselben Transaktion. Anlagenbezogene Kindzeilen bleiben im Projekt: PV-Stränge und Wechselrichterzuordnung (`Z_AnlageStrang`), Senken; Gebäudezonen und Bauteile wie heute. Die Rückfrage nennt, was im Projekt bleibt. **Umgesetzt in Stufe 2** (Mechanismus im Kernweg; der Heizkessel hat keine Kindtabellen, 5.3). |
 | 6 | **Katalogpaket** — ein ungesperrter Satz aus der Auslieferung (`Katalog_Schluessel` gesetzt) wird überschrieben | Schlüssel stehen lassen, die Prüfsumme nicht nachführen, damit die Katalogaktualisierung den Satz als vom Anwender geändert erkennt; beim Bau gegen die Regeln des Katalogpakets prüfen. **Umgesetzt in Stufe 2:** Der Rückweg schreibt `Katalog_*` nie; der Katalogabgleich vergleicht die gespeicherte mit der berechneten Prüfsumme der benannten Fachspalten und erkennt so die Änderung. `ID_KostenVorlage` ist Metaspalte und ändert keine Prüfsumme; die Auslieferungsvorlage bleibt unberührt (`Auslieferungsvorlage.Tests` grün, Tabellenzahl gleich). |
-| 7 | **Überlagerung „Simulation…" des Gebäudes** rollt als Ganzes um zwei Listen (Befund der Rollbereichprobe, außerhalb des Bausteins) | Stufe 4 (Überlagerungen nach KA‑E‑11). |
+| 7 | **Überlagerung „Simulation…" des Gebäudes** rollt als Ganzes um zwei Listen (Befund der Rollbereichprobe, außerhalb des Bausteins) | Stufe 4 (Überlagerungen nach KA‑E‑11). **Umgesetzt (geb3):** Zusatzklasse `epos-ueberlagerung--rollkoerper` der Überlagerung, ein Rollkörper `epos-dialog-rollkoerper` im eingebetteten Dialog; die Überlagerung rollt nicht mehr, ihre Tabellen fließen im Körper; wie gebaut in 5.15. |
 
 ## 8 Stufenplan
 

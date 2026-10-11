@@ -1108,7 +1108,8 @@ andere Leiste haftet, genau ein haftender Kopf; der Tabulator durch den ganzen D
 Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Wärmepumpen: OK bei Rollstand 0 — das Band
 des Wirts steht oben im Bild, das Band der Detailansicht über der Schlussleiste und unverdeckt
 (`elementFromPoint`). Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild und das Protokoll
-frei darunter. Überlagerung (Gebäude → „Simulation…"): ihr Fuß haftet an ihrem Boden, der Kopf des
+frei darunter. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht als Ganzes, nur ihr Rollkörper
+(`.epos-dialog-rollkoerper`) rollt, ihr Fuß steht oben wie nach dem Rollen an ihrem Boden, der Kopf des
 Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelung, das Dokument rollt nicht —
 und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
 jede Zahl dieselbe wie mit `marke=0`.
@@ -1357,8 +1358,8 @@ Am selben Stand `diagrammprobe.mjs` erfüllt (41 Schritte, größter Abstand 0,5
 
 Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein
 Katalogdialog (`.epos-katalog-dialog` mit `overflow: auto` als Notnagel um Liste und Stammblatt) und kein
-Wirt des Bausteins; die Überlagerung „Simulation…" des Gebäudes rollt als Ganzes um zwei Listen. Beide je
-drei Fenster.
+Wirt des Bausteins (je drei Fenster). Die Überlagerung „Simulation…" des Gebäudes ist kein Befund mehr: Sie
+rollt nur in ihrem Rollkörper und wird im Fall `gebaeude` als eigener Zustand geprüft (geb3, unten).
 
 **Grenzen.** Bei 720 und 700 px Fensterhöhe behält der Heizkessel Kopf und zwei Katalogzeilen; die
 Wirte ohne eigenes Zeilenmaß (Stufe 3 und 4: Kontextzeile noch unter dem Kopf) klemmen dort weiter auf
@@ -1496,10 +1497,37 @@ Katalog-Fußleiste (Knöpfe in `.epos-zweispalten-fussleiste`, keine Listenleist
 Zusammenfassung der Detailzeile samt Infoknopf im Kopf, die Satz-Überlagerung über „Bearbeiten" (Marke
 `.epos-gebaeude-satzknoepfe`), „Simulation…" aus ihr heraus — die Bedarfsansicht muss in der Fenstermitte über der
 Satz-Überlagerung liegen —, die Satz-Überlagerung über den Stift einer Katalogzeile und die Rückfrage „In die Datenbank
-übernehmen…" mit Kindzeilen. Der Rollbereich der Ansicht „Simulation…" bleibt Befund (Folgeauftrag). Lauf am Wirt
+übernehmen…" mit Kindzeilen. Lauf am Wirt
 Release: **1 400 Zustände, 0 Verstöße**, alle Gegenproben rot, Rückgabe 0; Fotos 1 280 × 800 `gebaeude_zusammenfassung`,
 `gebaeude_satzueberlagerung`, `gebaeude_rueckfrage`. Die Fensterprobe öffnet „Simulation…" über die Satz-Überlagerung;
 die Rasterprobe misst den Gebäudedialog mit 46 px Zeilenmaß (die Zeile ist die Wahl, Kästchen für die Mehrfachwahl).
+
+**Überlagerung „Simulation…" des Gebäudes (geb3, 11.10.2026, Konzept 7.7).** Die Überlagerung trägt die Zusatzklasse
+`epos-ueberlagerung--rollkoerper`, der eingebettete Bedarfsdialog einen Rollkörper `.epos-dialog-rollkoerper`
+zwischen Kontextzeile und Fußleiste; die Tabellen darin (`gebb-kennzahlen`, `gebb-zonen`, `gebb-vergleich`,
+`gebb-monate`) haben keine Höchsthöhe und keinen eigenen Rollbalken mehr. Der Zustand „Ueberlagerung Simulation…" des
+Falls `gebaeude` prüft: Kopf und Kreuz sichtbar und treffbar, OK der Fußleiste treffbar, die Überlagerung rollt nicht
+als Ganzes, der Rollkörper ist Rollbereich, kein anderer Rollbereich in ihr (auch keiner, der nur rollen könnte), jedes
+Bild mindestens 90 % und höchstens 100 % der Körperbreite. Gemessen (Überlagerung oben..unten, Rollkörper):
+
+| Fenster | Überlagerung | Rollkörper | Fenster | Überlagerung | Rollkörper |
+|---|---|---|---|---|---|
+| 1 280 × 800 | 40..760 px | 475 px | 1 093 × 614 | 31..583 px | 348 px |
+| 1 280 × 720 | 36..684 px | 443 px | 1 180 × 820 | 43..781 px | 533 px |
+| 1 024 × 700 | 35..665 px | 425 px | 1 194 × 834 | 44..794 px | 546 px |
+| 1 024 × 768 | 38..730 px | 486 px | 1 210 × 834 | 44..794 px | 546 px |
+| 768 × 1 024 | 51..973 px | 717 px | 834 × 1 194 | 62..1 136 px | 870 px |
+
+In allen zehn Fenstern rollt der Körper, Kopf und Fußleiste sind sichtbar; die Bilder stehen in Körperbreite (862 bzw.
+870 px, im Hochformat 677 und 737 px), ihr Modell bleibt im festen Maß 1 240 × 560 und skaliert seitentreu (Information).
+Lauf `--nur gebaeude`: **120 Zustände, 0 Verstöße**, keine Befunde, alle Gegenproben rot — dazu die neue: eine Tabelle mit
+eigener Höhe (`overflow: auto; max-height: 60px`) meldet „Rollbereich im Rollbereich", eine als Ganzes rollende
+Überlagerung meldet „rollt als Ganzes" und die weggerollte Fußleiste. Fotos `gebaeude_simulation_1280x800`,
+`gebaeude_simulation_1024x700`.
+`fensterprobe.mjs` (Teil `ueberlagerung`) prüft dazu: Rollhöhe der Überlagerung gleich ihrer Höhe, Rollkörper ist
+Rollbereich und rollt, Fuß oben wie unten am Boden der Überlagerung — 1 088 × 624: Überlagerung 31,2..592,8 px, Rollkörper
+1 572/357 px (gerollt 1 215 px), Fuß 533,8..591,8 px; 520 × 624: Rollkörper 1 191/340 px; 1 194 × 834: Überlagerung
+43,7..794,3 px, Rollkörper 1 572/546 px; mit = ohne Marke; FENSTERPROBE ERFUELLT (Gegenprobe rot). `rasterprobe.mjs` 29/29.
 
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
