@@ -3,7 +3,7 @@
 **Für wen.** INEKON — Entwicklung und Support. Nicht für Anwender; nichts aus diesem Handbuch kommt
 ins Wiki, und die Entwicklerbereiche werden in der Anwenderdokumentation nicht erwähnt.
 
-**Stand.** 11.10.2026, Stufen 1 und 2 umgesetzt (11.10.2026, #968 und #969); Nachzug Zapfprofil-Vorgaben offen (Anwenderrubrik, Entscheid 11.10.2026); Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
+**Stand.** 11.10.2026, Stufen 1 und 2 umgesetzt (11.10.2026, #968 und #969); Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
 ([`Konzept_Administration_Support_EPOS-Plan.md`](Konzept_Administration_Support_EPOS-Plan.md)).
 Jeder Abschnitt trägt die Stufe, ab der er gilt: **[heute]** vorhanden, **[Stufe 1]**
 Entwicklermodus, **[Stufe 2]** Fernwartung, **[Stufe 3]** Dialog „Über EPOS-Plan" und
@@ -75,15 +75,16 @@ enthält.
 | `KATALOG_WIEDERHERSTELLEN` | „Auslieferungsstand wiederherstellen…" des Katalogabgleichs | `KatalogabgleichDialog.razor` (Parameter `Entwickler`), Kern `Katalogabgleich.Wiederherstellen`; im Modus über *Entwicklung* | Reparatur eines behaltenen Katalogsatzes |
 | `KI_WERKZEUGE` | KI-Chat: „Werkzeuge…", „Protokoll anzeigen", Modellwahl und „Weg B" in den KI-Einstellungen | `EPOS.UI/Dialoge/Hilfe/KiChatDialog.razor`, `KiEinstellungenDialog.razor` (je Parameter `Entwickler`) | Prüf- und Fehlersuchwerkzeuge des Assistenten; „Was wird gesendet?" bleibt für alle |
 | `EXPORT_IDS` | „Exportzusage (IDS) öffnen…" im Gebäudeexport | `EPOS.UI/Dialoge/Export/GebaeudeExportDialog.razor` (Parameter `ZusageFreigegeben`) | Prüfartefakt des IFC-Exports |
-| `ZAPFPROFIL_VORGABEN` | Rubrik „Entwicklung" im Einstellungsdialog mit den fünf Rechenvorgaben `Zapfprofil.Anzeigetemperatur`, `Zapfprofil.Stundenschwelle`, `Zapfprofil.Nenninhalte`, `Zapfprofil.Katalogordner`, `Zapfprofil.Importordner` | `EinstellungenDialog.razor` (Parameter `Entwickler`, Reiterblatt `ENTWICKLUNG`; Felder `Zapf*` in `EinstellungenCtrl`); gelesen in `ZapfprofilCtrl.Eingang.cs`, `ZapfprofilCtrl.Auslegung.cs`, `ZapfprofilHuelle.*` | **Entfällt als Entwicklerbereich** (Anwenderentscheid 11.10.2026): die fünf Rechenvorgaben werden die Anwenderrubrik „Zapfprofil" im Einstellungsdialog; bis zum Nachzug zeigt Stufe 1 sie noch als Rubrik „Entwicklung" nur im Modus |
 | `WEBVIEW_WERKZEUGE` | Entwicklerwerkzeuge der WebView2 (Strg + Umschalt + I) | `WindowsFormsApplication1/Allgemein/Blazor/BlazorDienste.cs` (`WebviewWerkzeugeFreigegeben`: Debug-Build oder Modus; `AddBlazorWebViewDeveloperTools`) | DOM, Stilblatt, Konsole, Netz der Razor-Oberfläche im Release beim Kunden |
 
 Bewusst **kein** Entwicklerbereich: Katalog-Dublettensuche, Schloss eines Auslieferungssatzes,
 Zapfprofil-Stufe „Experte", Gebäude-Rechenweg „Tagesbilanz", „Was wird gesendet?" im KI-Chat.
 Bewusst **Build-Schalter** bleiben die elf Prüfhaken `#if DEBUG` unter
 `EPOS.Kern/Allgemein/Simulation/` (sie verändern den Rechenweg).
-Nach dem Anwenderentscheid vom 11.10.2026 gehören auch die fünf Zapfprofil-Rechenvorgaben dazu: Sie werden die Anwenderrubrik
-„Zapfprofil" im Einstellungsdialog (Nachzug offen, siehe Abschnitt 7).
+Ebenso kein Entwicklerbereich sind die fünf Rechenvorgaben des Zapfprofils (`Zapfprofil.Anzeigetemperatur`,
+`Zapfprofil.Stundenschwelle`, `Zapfprofil.Nenninhalte`, `Zapfprofil.Katalogordner`, `Zapfprofil.Importordner`): Sie
+stehen für alle Anwender in der Rubrik „Zapfprofil" des Einstellungsdialogs (`EinstellungenDialog.razor`, Reiterblatt
+`ZAPFPROFIL`; Felder `Zapf*` in `EinstellungenCtrl`).
 
 ### 2.2 Der Menükopf „Entwicklung"
 
@@ -276,7 +277,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 
 | Stufe | Inhalt | Stand |
 |---|---|---|
-| 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #968); **Nachzug offen:** Zapfprofil-Vorgaben als Anwenderrubrik „Zapfprofil" statt Entwicklerbereich (Entscheid 11.10.2026) |
+| 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #968); die Zapfprofil-Vorgaben sind Anwenderrubrik „Zapfprofil" statt Entwicklerbereich |
 | 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #969); offen beim Anwender: Fernwartungsseite, Server, signierter Client |
 | 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | offen |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |
