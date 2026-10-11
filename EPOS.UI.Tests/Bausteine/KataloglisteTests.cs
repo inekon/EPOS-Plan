@@ -959,6 +959,34 @@ public class KataloglisteTests : EposBunitContext
                    t => Assert.DoesNotContain("KFLT_LT_", t.GetAttribute("aria-label")));
     }
 
+    [Fact]
+    public void Die_Waermepumpenkoepfe_VL_min_VL_max_Leistungszahl_und_Zuheizung_nennen_ihren_Langtext()
+    {
+        Katalogfilterprofil profil = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, s => s);
+        var zeilen = new List<Katalogfilterzeile>
+        {
+            new Katalogfilterzeile(1, "WP 1")
+                .MitZahl(Katalogfilterprofil.SpVlMin, 25.0)
+                .MitZahl(Katalogfilterprofil.SpVlMax, 60.0)
+                .MitZahl(Katalogfilterprofil.SpZuheizung, 6.0)
+                .MitZahl(Katalogfilterprofil.SpCop, 4.2, 2)
+        };
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, profil)
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        foreach (var (kurz, lang) in new[]
+        {
+            ("KFLT_SP_VLMIN", "KFLT_LT_VLMIN"), ("KFLT_SP_VLMAX", "KFLT_LT_VLMAX"),
+            ("KFLT_SP_COP", "KFLT_LT_COP"), ("KFLT_SP_ZUHEIZUNG", "KFLT_LT_ZUHEIZUNG")
+        })
+        {
+            var kopf = cut.FindAll(".epos-spaltenkopf-text").Single(e => e.TextContent.StartsWith(kurz));
+            Assert.Equal(lang, kopf.GetAttribute("title"));
+        }
+    }
+
     /// <summary>KD-4: Ein Profil ohne Langtexte (Heizkessel) zeichnet keinen title am Kopftext.</summary>
     [Fact]
     public void Ohne_Langtext_traegt_kein_Kopftext_einen_Tooltip()

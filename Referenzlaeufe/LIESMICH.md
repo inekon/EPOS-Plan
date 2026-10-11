@@ -782,7 +782,7 @@ danach im Wegweiser desselben Ordners.
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 11.10.2026, Stand `59ce46fc6`)
 gegen `Kenndaten_Test.sqlite` (Schemastand **215**, 96 546 816 Byte, LFS-SHA-256
 `832fda5088ad3bb21b3e7ec55dec715b573afe22a9c952d2e2730d3a78595f3f`, mit den Projekten 1053 bis 1065; die Nachträge der
-Schemaschritte 211 bis 215 unten sind darin enthalten). Gegen diese Basis hält
+Schemaschritte 211 bis 215 unten sind darin enthalten; Nachtrag 216 unten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -1237,6 +1237,25 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `cc9222a80172a6809b24e45d3706c7bb2eff4fc1fdbe43f95aef79601609121d`**. NULL ist die Sollwertrampe; kein Referenzprojekt
 > trägt ein Verfahren
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V4_Schema215.md)).
+> **Nachtrag — Schema 216 (Kältemittel als Stammdatum, KM4‑E1, hängt an 215 AH‑V4), Basis R51 unberührt.**
+> `KaeltemittelSchema` (216 = `VorheizenSchema.SCHRITT + 1`) legt `Tab_Kaeltemittel_STAMM` an (STRICT, Register „KMT“ in
+> Stufe 3 vor „KM“, achtzehn ausgelieferte Codes `VORLAEUFIG` mit Katalogschlüssel und Prüfsumme), `ID_Kaeltemittel` an
+> `Tab_Kaeltemaschine_STAMM` und `Tab_Kaeltemaschine` und `Inbetriebnahmejahr` an `Tab_Projekt` (leer). Die Zuordnung des
+> Textbestands setzt die ID an den drei Projektkopien von 1055, 1059 und 1063 (`R513A`, Text unverändert) und an den
+> Auslieferungssätzen 1 bis 3 (`R32`, `R513A`, `R1234ze` → `R1234ze(E)` über den Katalogschlüssel), deren Prüfsummen neu
+> gebildet sind; die 34 Typkennfelder bleiben leer. Gehoben aus der Fassung 215 (`cc9222a8…`) mit
+> `Werkzeuge/Testdatenbankschema`; der Zellvergleich der Bestandsspalten zeigt nur `Tab_Applikation.SchemaVersion` und die
+> drei Prüfsummen, 191 STRICT-Tabellen. Die Testdatenbank steht auf **216** (`integrity_check` ok, `foreign_key_check`
+> leer): **95 735 808 Byte, LFS-SHA-256 `a63c8e78720b11a83ff69717a5f26b83fb93c8e493ac74d91b8252474fd64e94`**. Kein
+> Rechenweg liest Tabelle, Verweis oder Jahr
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Kaelteanlagen/2026-10-11_KM4-E1_Kaeltemitteltabelle.md)).
+> **Nachtrag — Projekt 1065 auf Schema 216, Basis R52 unberührt.** Das Saatskript
+> `Skripte/referenzprojekt_1065_vorheizen.cs` legt 1065 auf der Fassung 216 (`a63c8e78…`) erneut an: 9 449 neue Zeilen
+> in 30 Tabellen, keine geänderte Zeile, `integrity_check` ok, `foreign_key_check` leer. Die Testdatenbank steht auf
+> **216** mit den Projekten 1053 bis 1065: **96 571 392 Byte, LFS-SHA-256
+> `aaaa17565a5454d892422cf4b1f1d60335d31ad1642ca78dad5a5b92714620db`**. Alle dreißig Projekte rechnen gegen R52
+> GESAMT PASS und byte-gleich (979/979 CSV)
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V7_Referenzprojekt_R52.md)).
 
 ### Die Vorgängerbasis R51 (freie Kühlung)
 

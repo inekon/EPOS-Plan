@@ -42978,6 +42978,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erste Datenzeile: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_ERSTE_DATENZEILE {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_ERSTE_DATENZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Werte über 1 Jahr als Textdatei ähnelt.
         /// </summary>
         public static string IMPORT_LBL_JAHRESWERTE {
@@ -43037,6 +43046,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_LBL_WERTSPALTE {
             get {
                 return ResourceManager.GetString("IMPORT_LBL_WERTSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen zu importieren: ähnelt.
+        /// </summary>
+        public static string IMPORT_LBL_ZEILENZAHL {
+            get {
+                return ResourceManager.GetString("IMPORT_LBL_ZEILENZAHL", resourceCulture);
             }
         }
         
@@ -43505,6 +43523,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_PROT_ZAHL_UNLESBAR {
             get {
                 return ResourceManager.GetString("IMPORT_PROT_ZAHL_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ab Zeile {0} stehen nur {1} Datenzeilen in der Datei, verlangt sind {2}. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_ZEILEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_ZEILEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeilen nach den {1} gelesenen (ab Zeile {2}) bleiben unberücksichtigt. ähnelt.
+        /// </summary>
+        public static string IMPORT_PROT_ZEILEN_UEBRIG {
+            get {
+                return ResourceManager.GetString("IMPORT_PROT_ZEILEN_UEBRIG", resourceCulture);
             }
         }
         
@@ -49107,6 +49143,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
         /// </summary>
         public static string KABG_KATALOG_KB {
@@ -52861,6 +52906,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungszahl im Heizbetrieb ähnelt.
+        /// </summary>
+        public static string KFLT_LT_COP {
+            get {
+                return ResourceManager.GetString("KFLT_LT_COP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nenn-EER ähnelt.
         /// </summary>
         public static string KFLT_LT_EER {
@@ -52893,6 +52947,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_LT_RUECKKUEHLART {
             get {
                 return ResourceManager.GetString("KFLT_LT_RUECKKUEHLART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstvorlauf ähnelt.
+        /// </summary>
+        public static string KFLT_LT_VLMAX {
+            get {
+                return ResourceManager.GetString("KFLT_LT_VLMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestvorlauf ähnelt.
+        /// </summary>
+        public static string KFLT_LT_VLMIN {
+            get {
+                return ResourceManager.GetString("KFLT_LT_VLMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrische Zuheizung ähnelt.
+        /// </summary>
+        public static string KFLT_LT_ZUHEIZUNG {
+            get {
+                return ResourceManager.GetString("KFLT_LT_ZUHEIZUNG", resourceCulture);
             }
         }
         
@@ -59525,6 +59606,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nummer der ersten Zeile mit Werten, gezählt wie in der Vorschautabelle; die Zeilen davor werden übersprungen. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_ERSTE_DATENZEILE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_ERSTE_DATENZEILE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet. ähnelt.
         /// </summary>
         public static string KI_DLG_GIO_KONVENTION_ERL {
@@ -59566,6 +59656,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GIO_WERTSPALTE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GIO_WERTSPALTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Zeilen ab der ersten Datenzeile gelesen werden — 8 760 für Stundenwerte, 35 040 für Viertelstundenwerte. Fehlen Zeilen, wird der Import abgelehnt; übrige Zeilen bleiben unberücksichtigt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_ZEILENZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_ZEILENZAHL_ERL", resourceCulture);
             }
         }
         
@@ -77430,6 +77529,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_LBL_HILFSSTROM {
             get {
                 return ResourceManager.GetString("KM_LBL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel (Tabellenverweis) ähnelt.
+        /// </summary>
+        public static string KM_LBL_ID_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("KM_LBL_ID_KAELTEMITTEL", resourceCulture);
             }
         }
         
@@ -105524,6 +105632,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ ist eine Verdunstungskühlanlage — Anzeige-, Prüf- und Betriebspflichten nach der 42. BImSchV beachten (nur Hinweis, EPOS prüft sie nicht). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_BIMSCHV {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_BIMSCHV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Der Ventilator des Rückkühlwerks „{1}“ ({2} kW) ersetzt den Hilfsstrom der Rückkühlung der Maschine ({3} kW) — er wird nicht doppelt gezählt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“ ist luftgekühlt und kennt kein Rückkühlwerk — „{1}“ bleibt unberücksichtigt. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_RKW_LUFT_IGNORIERT {
@@ -105578,11 +105704,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ rechnet mit fester Annäherung über der Bezugstemperatur; noch nicht gerechnet: {2}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ hat keine Nennleistung — lastabhängige Annäherung und Ventilator folgen dem Lastanteil der Maschinen (Nennpunkt = volle Leistung der Stunde). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Am Rückkühlwerk „{1}“ noch nicht gerechnet: {2}. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_RKW_NICHT_GERECHNET {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_RKW_NICHT_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Klima führt keine Luftfeuchte — das Rückkühlwerk „{1}“ rechnet in {2} Stunden über der Schaltgrenze trocken, ohne Befeuchtung und ohne Wasserverbrauch. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_OHNE_FEUCHTE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_OHNE_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ lag in {2} Stunden über seiner Nennleistung — der Ventilator lief dort voll, eine lastabhängige Annäherung stieg über den Nennwert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_UEBERLAST {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_UEBERLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; Wasserkosten {4} €/a (Menge × Wasserpreis, nicht in den Betriebskosten der Wirtschaftlichkeit). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_WASSER_KOSTEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; ohne Wasserpreis an der Anlage keine Wasserkosten. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS", resourceCulture);
             }
         }
         

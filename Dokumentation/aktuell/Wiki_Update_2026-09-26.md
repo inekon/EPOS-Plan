@@ -174,6 +174,16 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version offen — Aufheizen vor Nutzungsbeginn (Entwurf, Upload ausstehend)
+
+Version beim Anwender zu erfragen; die Wiki-Quellen (Simulation, Gebäude, Mehrzonenmodell, Einstellungen, Gebäudemodell VDI 6007, Simulationsergebnisse, Berichtsvorlagen) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
+
+- Seit 11.10.2026: Die Gruppe „Aufheizen vor Nutzungsbeginn“ in der Simulationskonfiguration bietet drei Verfahren: Sollwertrampe nach Aufheizleistung, Vorheizzeit vorgeben und Vorheizzeit berechnen.
+- Seit 11.10.2026: Für das Vorheizen lassen sich der zulässige Sprung zum Nutzungsbeginn (in % oder kW), die Regelgenauigkeit und die Geltung je Gebäude oder je Zone einstellen.
+- Seit 11.10.2026: Im Zonendialog kann jede Zone eine eigene Vorheizzeit haben.
+- Seit 11.10.2026: In den Programmeinstellungen lässt sich der zulässige Sprung beim Vorheizen für neue Projekte vorbelegen.
+- Seit 11.10.2026: Bericht, Kurzbericht, Kennzahlen, Variantenvergleich und Datenexport zeigen die Vorheizgrößen (Vorheizzeit, Vorheizleistung, Tage ohne Ankunft, Mehrwärme); die Berichtsvorlagen kennen dazu neue Platzhalter.
+
 ### Version offen (Vorschlag 1.2.1) — veröffentlicht 10.10.2026 (Revision 827)
 
 Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
@@ -257,7 +267,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
 - Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#911)
 
-*Die folgenden einundzwanzig Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939, #940 und dreimal #…) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden dreiundzwanzig Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939, #940, #951, #953 und dreimal #…) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -280,6 +290,8 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 11.10.2026: Der Dialog „Kältemaschinen im Projekt“ ist wie die übrigen Erzeugerdialoge aufgebaut: Kältemaschinen im Projekt oben, der Katalog darunter, „In das Projekt übernehmen“ legt die Anlage sofort an. (#…)
 - Seit 11.10.2026: Die Dialoge Wärmebedarf extern und Stromganglinie tragen Mehrfachwahl, einen Stift je Zeile und die Knöpfe des Katalogs in seiner Fußleiste; die Kanalwahl steht in der Kopfleiste der Projektliste, und die Ganglinie passt ohne Rollen in den Dialog. (#…)
 - Seit 11.10.2026: Die Dialoge der Solarthermie- und der PV-Ganglinie führen ihre Katalogknöpfe in der Fußleiste, wählen mehrere Sätze mit Kästchen und öffnen jede Zeile mit dem Stift. (#…)
+- Seit 11.10.2026: Der Importdialog „Format und Vorschau“ der Ganglinien fragt die erste Datenzeile und die Zahl der zu lesenden Zeilen ab; das Vorschaubild der Lastspitzenkappung lässt sich über „CSV…“ speichern. (#951)
+- Seit 11.10.2026: Die Hinweislisten der Simulations-, Berichts- und Wirtschaftlichkeitsseite und die Hinweise im Meldungsbanner werden einheitlich auf- und zugeklappt; lange Listen rollen in einem begrenzten Bereich. (#953)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

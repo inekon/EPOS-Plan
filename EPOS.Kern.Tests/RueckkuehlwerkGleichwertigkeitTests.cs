@@ -16,8 +16,9 @@ namespace EPOS.Kern.Tests
     /// mit Kältemaschine rechnet auf einer Kopie der Testdatenbank einmal ohne und einmal mit einem Rückkühlwerk
     /// <c>TROCKEN</c>/<c>FEST</c>/leere Felder/<c>PARALLEL</c> an seiner Kältemaschinen-Anlage — die Ordner des Referenzlaufs
     /// (<c>Ergebnisexport.ProjektAusfuehren</c>) und die Ergebniszeilen der Kältemaschine (<c>Tab_ErgebnisKaeltemaschine</c>)
-    /// sind byte-gleich. Gegenprobe: dieselbe Kopie mit +2 K Annäherung rechnet mehr Kältestrom. Ein Datenbanktest, nicht in
-    /// der Basis.
+    /// sind byte-gleich (bis auf die Ergebnisspalten des Rückkühlwerks, die nur mit Rückkühlwerk belegt sind, K-F2). Gegenprobe:
+    /// dieselbe Kopie mit +2 K Annäherung rechnet mehr Kältestrom. K-F2: eine Kopie mit Kühlturm, lastabhängiger Annäherung,
+    /// Drehzahlventilator und Wasserpreis füllt die Ergebnisspalten. Ein Datenbanktest, nicht in der Basis.
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class RueckkuehlwerkGleichwertigkeitTests : IDisposable
@@ -55,7 +56,11 @@ namespace EPOS.Kern.Tests
             return n;
         }
 
-        /// <summary>Die Ergebniszeilen der Kältemaschine des jüngsten Laufs, jede Zahl rundungsfrei als Text.</summary>
+        /// <summary>Die Ergebnisspalten des Rückkühlwerks (K-F2): nur mit Rückkühlwerk belegt, darum nicht im Byte-Vergleich.</summary>
+        private static readonly HashSet<string> RkSpalten =
+            new HashSet<string>(RueckkuehlwerkSchema.SPALTEN_ERGEBNIS.Select(s => s.Spalte), StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Die Ergebniszeilen der Kältemaschine des jüngsten Laufs, jede Zahl rundungsfrei als Text (ohne die Spalten des Rückkühlwerks).</summary>
         private static List<string> KaelteZeilen(int projekt)
         {
             DataTable t = DataRepository.GetDataTable(
@@ -65,10 +70,19 @@ namespace EPOS.Kern.Tests
             var zeilen = new List<string>();
             foreach (DataRow r in t.Rows)
                 zeilen.Add(string.Join("|", t.Columns.Cast<DataColumn>()
-                    .Where(c => c.ColumnName != "ID" && c.ColumnName != "ID_Ergebnis")
+                    .Where(c => c.ColumnName != "ID" && c.ColumnName != "ID_Ergebnis" && !RkSpalten.Contains(c.ColumnName))
                     .Select(c => c.ColumnName + "=" + (r[c] is double d ? d.ToString("R", CultureInfo.InvariantCulture)
                                                        : Convert.ToString(r[c], CultureInfo.InvariantCulture)))));
             return zeilen;
+        }
+
+        /// <summary>Eine Spalte der ersten Ergebniszeile der Kältemaschine des jüngsten Laufs; <c>null</c> = NULL.</summary>
+        private static object KaelteWert(int projekt, string spalte)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT " + spalte + " FROM Tab_ErgebnisKaeltemaschine WHERE ID_Ergebnis = " +
+                "(SELECT MAX(ID) FROM Tab_Ergebnis WHERE ID_Projekt = ?) ORDER BY ID LIMIT 1", new DbParam("?", projekt));
+            return o == null || o == DBNull.Value ? null : o;
         }
 
         private static double KaelteSumme(int projekt, string spalte) =>
@@ -107,6 +121,7 @@ namespace EPOS.Kern.Tests
             {
                 Export(projekt, ohne);
                 List<string> zeilenOhne = KaelteZeilen(projekt);
+                foreach (string sp in RkSpalten) Assert.Null(KaelteWert(projekt, sp));
                 double stromOhne = KaelteSumme(projekt, "Stromverbrauch_MWh");
                 Assert.NotEmpty(zeilenOhne);
 
@@ -122,6 +137,14 @@ namespace EPOS.Kern.Tests
                 Export(projekt, mit);
                 long bytes = Bytegleich(ohne, mit, out int dateien);
                 Assert.Equal(zeilenOhne, KaelteZeilen(projekt));
+                // K-F2: mit Rückkühlwerk belegt - trocken ohne Wasser, Strom der Rückkühlung = Hilfsstrom der Rückkühlung,
+                // die Teil-Freikühlung bleibt leer (K-F3).
+                Assert.Equal(0.0, Convert.ToDouble(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_WASSER), CultureInfo.InvariantCulture));
+                Assert.Equal(0L, Convert.ToInt64(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_STUNDEN_NASS), CultureInfo.InvariantCulture));
+                Assert.NotNull(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_VENTILATORSTROM));
+                Assert.NotNull(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_RUECKKUEHLTEMPERATUR_MITTEL));
+                Assert.Null(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG));
+                Assert.Null(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG_STUNDEN));
                 _aus.WriteLine("{0}: mit Rückkühlwerk TROCKEN/FEST/leer/PARALLEL {1} Dateien, {2} Bytes byte-gleich, {3} Ergebniszeilen gleich",
                                projekt, dateien, bytes, zeilenOhne.Count);
 
@@ -147,36 +170,50 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Was_K_F1_nicht_rechnet_rechnet_fest_und_wird_einmal_je_Anlage_benannt()
+        public void Kuehlturm_lastabhaengig_mit_Drehzahlventilator_fuellt_die_Ergebnisspalten()
         {
             if (!_db.Vorhanden) return;
             const int projekt = 1055;
             int anlage = Anlage(projekt);
             var lauf = new SimulationRunner();
             Assert.True(lauf.SimuliereUndSpeichere(projekt, out string fehler) > 0, "Lauf gescheitert: " + fehler);
-            List<string> zeilenOhne = KaelteZeilen(projekt);
+            double kaelteOhne = KaelteSumme(projekt, "Kaelteproduktion_MWh");
 
             RueckkuehlwerkStammCtrl.SpeicherErgebnis s = RueckkuehlwerkStammCtrl.Speichern(new RueckkuehlwerkModel
             {
-                Bezeichner = "RK Vorgriff", Bauart = RueckkuehlwerkSchema.BAUART_TROCKEN, Nennleistung_kW = 80,
+                Bezeichner = "RK Kuehlturm", Bauart = RueckkuehlwerkSchema.BAUART_KUEHLTURM_OFFEN, Nennleistung_kW = 80,
                 Annaeherung_Weg = RueckkuehlwerkSchema.WEG_LASTABHAENGIG, Ventilator_Nenn_kW = 1.5,
                 Ventilator_Regelung = RueckkuehlwerkSchema.REGELUNG_DREHZAHL, Ventilator_Drehzahl_Min = 0.2,
                 Freikuehlung_Schaltung = RueckkuehlwerkSchema.SCHALTUNG_REIHE
             });
             Assert.True(s.Ok, s.Meldung);
             Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, s.Id));
+            Assert.Null(KaeltemaschineAnlageCtrl.WasserpreisSetzen(anlage, 3.0));
 
             lauf = new SimulationRunner();
             Assert.True(lauf.SimuliereUndSpeichere(projekt, out fehler) > 0, "Lauf gescheitert: " + fehler);
-            // Der feste Weg: dieselben Ergebnisse wie ohne Rückkühlwerk.
-            Assert.Equal(zeilenOhne, KaelteZeilen(projekt));
-            string hinweis = Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Vorgriff", StringComparison.Ordinal));
-            // Drei Merkmale in EINER Aufzählung.
-            Assert.Contains(SimulationControl.RueckkuehlwerkMerkmale(new[]
-            {
-                Rueckkuehlwerk.MERKMAL_LASTABHAENGIG, Rueckkuehlwerk.MERKMAL_VENTILATOR, Rueckkuehlwerk.MERKMAL_REIHE
-            }), hinweis, StringComparison.Ordinal);
-            _aus.WriteLine(hinweis);
+            double ventilator = Convert.ToDouble(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_VENTILATORSTROM), CultureInfo.InvariantCulture);
+            double wasser = Convert.ToDouble(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_WASSER), CultureInfo.InvariantCulture);
+            long nass = Convert.ToInt64(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_STUNDEN_NASS), CultureInfo.InvariantCulture);
+            double rk = Convert.ToDouble(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_RUECKKUEHLTEMPERATUR_MITTEL), CultureInfo.InvariantCulture);
+            double hilfs = KaelteSumme(projekt, "Hilfsstrom_MWh");
+            Assert.True(ventilator > 0 && ventilator <= hilfs + 1e-12, "Ventilator " + ventilator + " MWh, Hilfsstrom " + hilfs + " MWh");
+            Assert.True(wasser > 0, "kein Wasser");
+            Assert.True(nass > 0 && nass <= 8760);
+            Assert.True(rk > -30 && rk < 50, "Rückkühltemperatur " + rk);
+            Assert.Null(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG));
+            Assert.True(KaelteSumme(projekt, "Kaelteproduktion_MWh") > 0);
+
+            // Die Hinweise je einmal: Ausweichweg ohne Feuchte, 42. BImSchV, Wasser mit Kosten, offene Reihe.
+            Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) && h.Contains("BImSchV", StringComparison.Ordinal));
+            string w = Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) && h.Contains("m³", StringComparison.Ordinal));
+            Assert.Contains("€/a", w, StringComparison.Ordinal);
+            Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) &&
+                                                       h.Contains(SimulationControl.RueckkuehlwerkMerkmale(new[] { Rueckkuehlwerk.MERKMAL_REIHE }), StringComparison.Ordinal));
+            Assert.Contains(lauf.Protokoll.Hinweise, h => h.Contains("Luftfeuchte", StringComparison.Ordinal));
+            _aus.WriteLine("1055 mit Kühlturm: Kälte {0:F3} MWh (ohne {1:F3}), Ventilator {2:F4} MWh, Wasser {3:F1} m³, {4} Nassstunden, Rückkühlung im Mittel {5:F2} °C",
+                           KaelteSumme(projekt, "Kaelteproduktion_MWh"), kaelteOhne, ventilator, wasser, nass, rk);
+            _aus.WriteLine(w);
         }
     }
 }

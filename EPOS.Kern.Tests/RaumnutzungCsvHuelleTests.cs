@@ -102,6 +102,26 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public async Task Ein_Lesefehler_der_Dateiwahl_steht_im_Ausnahmeprotokoll()
+        {
+            var vermerke = new List<string>();
+            Action<string> hoerer = z => { lock (vermerke) vermerke.Add(z); };
+            Ausnahmeprotokoll.Vermerkt += hoerer;
+            try
+            {
+                Dienste.Datei = new Dateiprobe { Oeffnen = Path.Combine(_ordner, "fehlt_im3b.csv") };
+                RaumnutzungCsvWeg w = RaumnutzungCsvHuelle.Weg(new RaumnutzungCtrl(), ios: false);
+                InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(() => w.DateiWaehlen());
+                Assert.False(string.IsNullOrEmpty(ex.Message));
+                lock (vermerke) Assert.Contains(vermerke, z => z.Contains("fehlt_im3b.csv") && z.Contains("FileNotFoundException"));
+            }
+            finally
+            {
+                Ausnahmeprotokoll.Vermerkt -= hoerer;
+            }
+        }
+
+        [Fact]
         public void Eine_kaputte_Datei_kommt_als_Abbruch_in_die_Vorschau()
         {
             RaumnutzungCsvWeg w = RaumnutzungCsvHuelle.Weg(new RaumnutzungCtrl(), ios: false);

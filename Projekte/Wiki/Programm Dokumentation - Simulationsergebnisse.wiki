@@ -85,6 +85,8 @@ Gebäude nach VDI 6007 führen neben dem Wärme- und Kältebedarf (siehe [[Progr
 * {{Anker|auslegungsgroesse}}'''Aufheizzuschlag''' und Auslegungsheizlast – die stationäre Auslegungsheizlast plus der Zuschlag der Aufheizung ergibt die '''Auslegungsgröße''' der Heizung; die ideale Spitze und das Tagesmittel stehen daneben. Die Auslegungsheizlast steht auch ohne Anlagenkopplung.
 * '''Hinweise W1 bis W5''' und die Spalten je Zone – der Bedarfsdialog des Gebäudes führt die Gruppe ''Aufheizung'' mit allen Kennzahlen dieser Liste, den Hinweisen des Laufs und einer Spalte je beheizter Zone.
 
+{{Anker|vorheizen}}'''Vorheizgrößen.''' Bei den Verfahren ''Vorheizzeit vorgeben'' und ''Vorheizzeit berechnen'' stehen im Ergebnis des Gebäudes und – je Zone – im Datenexport das Verfahren, die Vorheizzeit, der größte Vorheizbedarf, die Bezugsleistung, der Deckel, die Vorheizleistung, die größten Sprünge im Vorlauf und im Lauf, die Tage ohne Ankunft und die Tage mit Sprung über der Vorheizzeit, die größte Unterschreitung des Sollwerts, die Stunden unter dem Sollwert, am Deckel und an der Untergrenze, die Nächte ohne Absenkung, die unerreichbaren und die gesperrten Tage und die Mehrwärme des Vorheizens. Die Kennzahlgruppe ''Gebäude'' führt mit Abweichung im Variantenvergleich die Vorheizzeit, die Vorheizleistung, die Tage ohne Ankunft und die Mehrwärme; bei der Sollwertrampe fehlen diese Zeilen.
+
 Der Export nennt dazu je Gebäude den Zustand der Aufheizung, die Bemessung, die Art und die Quelle der Leistung als Text und die Zahlen als eigene Schlüssel, nur bei eingeschalteter Aufheizoptimierung.
 
 '''Hinweise des Laufs.''' Das Laufprotokoll nennt, was die Aufheizoptimierung nicht einhalten konnte; der Lauf rechnet weiter:

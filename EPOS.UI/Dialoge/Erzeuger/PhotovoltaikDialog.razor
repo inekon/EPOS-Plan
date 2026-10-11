@@ -1157,7 +1157,9 @@
         if (ziele.Count == 0) return;
         foreach (Katalogfilterzeile z in ziele)
         {
-            AufnahmeErgebnis aufnahme = Aufnehmen(z.Id);
+            // KT-5: Wirft das Aufnehmen, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+            AufnahmeErgebnis aufnahme = Katalogladung.Schreiben(() => Aufnehmen(z.Id), z.Bezeichner,
+                                                                    g => new AufnahmeErgebnis(null, g, true));
             if (!string.IsNullOrEmpty(aufnahme.Meldung)) Melden(aufnahme.Meldung, aufnahme.Fehler);
             if (aufnahme.Zeile is null) continue;
             Zeilen.Add(aufnahme.Zeile);

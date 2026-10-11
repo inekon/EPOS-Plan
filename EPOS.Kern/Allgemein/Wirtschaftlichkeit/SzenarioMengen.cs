@@ -186,6 +186,11 @@ namespace WindowsFormsApplication1
                         Teillaststunden = km.Teillaststunden,
                         Lastgrad_Mittel = km.Lastgrad_Mittel,
                         Stunden_Extrapoliert = km.Stunden_Extrapoliert,
+                        // K-F2: Strom und Wasser des Rueckkuehlwerks skalieren als Menge, Stunden und Temperatur bleiben.
+                        Ventilatorstrom_MWh = Mal(km.Ventilatorstrom_MWh, f),
+                        Wasser_m3 = Mal(km.Wasser_m3, f),
+                        Stunden_Nass = km.Stunden_Nass,
+                        Rueckkuehltemperatur_Mittel = km.Rueckkuehltemperatur_Mittel,
                     });
 
             if (m.BHKW != null)

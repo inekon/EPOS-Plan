@@ -4571,6 +4571,18 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="IMPORT_LBL_KOPFZEILE" xml:space="preserve">
     <value>Erste Zeile ist eine Kopfzeile</value>
   </data>
+  <data name="IMPORT_LBL_ERSTE_DATENZEILE" xml:space="preserve">
+    <value>Erste Datenzeile:</value>
+  </data>
+  <data name="IMPORT_LBL_ZEILENZAHL" xml:space="preserve">
+    <value>Zeilen zu importieren:</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_FEHLEN" xml:space="preserve">
+    <value>Ab Zeile {0} stehen nur {1} Datenzeilen in der Datei, verlangt sind {2}.</value>
+  </data>
+  <data name="IMPORT_PROT_ZEILEN_UEBRIG" xml:space="preserve">
+    <value>{0} Zeilen nach den {1} gelesenen (ab Zeile {2}) bleiben unberücksichtigt.</value>
+  </data>
   <data name="IMPORT_LBL_WERTSPALTE" xml:space="preserve">
     <value>Wertspalte:</value>
   </data>
@@ -28433,7 +28445,7 @@ Möchten Sie das zulassen?</value>
     <value>Kältemaschine „{0}": Das Klima führt keine Luftfeuchte — der Nasskühler rechnet in {1} Stunden mit der Außentemperatur − 3 K statt der Feuchtkugeltemperatur.</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_NICHT_GERECHNET" xml:space="preserve">
-    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ rechnet mit fester Annäherung über der Bezugstemperatur; noch nicht gerechnet: {2}.</value>
+    <value>Kältemaschine „{0}“: Am Rückkühlwerk „{1}“ noch nicht gerechnet: {2}.</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_LUFT_IGNORIERT" xml:space="preserve">
     <value>Kältemaschine „{0}“ ist luftgekühlt und kennt kein Rückkühlwerk — „{1}“ bleibt unberücksichtigt.</value>
@@ -28452,6 +28464,27 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_MERKMAL_REIHE" xml:space="preserve">
     <value>freie Kühlung in Reihe (gerechnet wird parallel)</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_BIMSCHV" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ ist eine Verdunstungskühlanlage — Anzeige-, Prüf- und Betriebspflichten nach der 42. BImSchV beachten (nur Hinweis, EPOS prüft sie nicht).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Der Ventilator des Rückkühlwerks „{1}“ ({2} kW) ersetzt den Hilfsstrom der Rückkühlung der Maschine ({3} kW) — er wird nicht doppelt gezählt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ hat keine Nennleistung — lastabhängige Annäherung und Ventilator folgen dem Lastanteil der Maschinen (Nennpunkt = volle Leistung der Stunde).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_OHNE_FEUCHTE" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Klima führt keine Luftfeuchte — das Rückkühlwerk „{1}“ rechnet in {2} Stunden über der Schaltgrenze trocken, ohne Befeuchtung und ohne Wasserverbrauch.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ lag in {2} Stunden über seiner Nennleistung — der Ventilator lief dort voll, eine lastabhängige Annäherung stieg über den Nennwert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_WASSER_KOSTEN" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; Wasserkosten {4} €/a (Menge × Wasserpreis, nicht in den Betriebskosten der Wirtschaftlichkeit).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; ohne Wasserpreis an der Anlage keine Wasserkosten.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Kältemaschine „{0}": In {1} Stunden lag der Betriebspunkt außerhalb der Kennlinie (Rückkühlung {2} bis {3} °C, Kaltwasser {4} °C) — gerechnet wurde mit dem Randwert.</value>
@@ -51388,6 +51421,12 @@ Chart</value>
   <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
     <value>Trägt die erste Zeile die Spaltennamen statt Werte? Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
   </data>
+  <data name="KI_DLG_GIO_ERSTE_DATENZEILE_ERL" xml:space="preserve">
+    <value>Die Nummer der ersten Zeile mit Werten, gezählt wie in der Vorschautabelle; die Zeilen davor werden übersprungen. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEILENZAHL_ERL" xml:space="preserve">
+    <value>Wie viele Zeilen ab der ersten Datenzeile gelesen werden — 8 760 für Stundenwerte, 35 040 für Viertelstundenwerte. Fehlen Zeilen, wird der Import abgelehnt; übrige Zeilen bleiben unberücksichtigt.</value>
+  </data>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>Ein Tabellenblatt gibt es nur bei einer Excel-Mappe.</value>
   </data>
@@ -51682,6 +51721,18 @@ Chart</value>
   <data name="KFLT_LT_GERAETEART" xml:space="preserve">
     <value>Geräteart</value>
   </data>
+  <data name="KFLT_LT_VLMIN" xml:space="preserve">
+    <value>Mindestvorlauf</value>
+  </data>
+  <data name="KFLT_LT_VLMAX" xml:space="preserve">
+    <value>Höchstvorlauf</value>
+  </data>
+  <data name="KFLT_LT_COP" xml:space="preserve">
+    <value>Leistungszahl im Heizbetrieb</value>
+  </data>
+  <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
+    <value>Elektrische Zuheizung</value>
+  </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Geräteart des Kälteerzeugers (Kaltwassersatz luft- oder wassergekühlt, mit Freikühlung, Split, Multisplit, VRF, Absorption); leer = nach der Rückkühlart.</value>
   </data>
@@ -51891,6 +51942,12 @@ Chart</value>
   </data>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt.</value>
+  </data>
+  <data name="KM_LBL_ID_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel (Tabellenverweis)</value>
+  </data>
+  <data name="KABG_KATALOG_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel</value>
   </data>
   <data name="KABG_KATALOG_RUECKKUEHLWERK" xml:space="preserve">
     <value>Rückkühlwerke</value>

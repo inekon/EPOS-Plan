@@ -125,30 +125,43 @@ public static class Katalogladung
         return ok;
     }
 
-    /// <summary>
-    /// Wie <see cref="Lesen{T}"/> für eine Quelle, die wartet (Ganglinienkataloge): Wirft sie — beim Aufruf oder
-    /// in der Aufgabe —, ist die Liste leer und der Grund steht in <c>Fehler</c>.
-    /// </summary>
+    // ---- Die asynchronen Wege (Ganglinien-Katalogseite und ihre Wirte) --------------------
+    // Dieselbe Fangstelle für Wege, die eine Aufgabe liefern: Auch eine Ausnahme, die schon beim
+    // Aufruf (vor dem ersten await) fällt, landet hier, weil der Aufruf im try steht.
+
+    /// <summary>Wie <see cref="Lesen{T}"/> für eine asynchrone Quelle; das Ergebnis trägt Liste und Grund.</summary>
     public static async Task<(IReadOnlyList<T> Liste, string Fehler)> LesenAsync<T>(
         Func<Task<IReadOnlyList<T>>>? quelle, string? liste)
     {
         if (quelle is null) return (Array.Empty<T>(), "");
         try
         {
-            return ((await quelle()) ?? Array.Empty<T>(), "");
+            return (await quelle() ?? Array.Empty<T>(), "");
         }
         catch (Exception ex)
         {
-            string name = liste ?? "";
-            Ausnahmeprotokoll.Vermerken("Katalogliste „" + name + "“ nicht gelesen: "
-                + ex.GetType().FullName + ": " + ex.Message);
-            return (Array.Empty<T>(),
-                    string.Format(CultureInfo.CurrentCulture, Resource.WURZEL_LISTE_FEHLER, name, ex.Message));
+            return (Array.Empty<T>(), Benennen(Resource.WURZEL_LISTE_FEHLER, "Katalogliste", "nicht gelesen", liste, ex));
         }
     }
 
-    /// <summary>Wie <see cref="Satz{T}"/> für eine Lesestelle, die wartet (Kennzahlen einer Ganglinie).</summary>
-    public static async Task<(T? Satz, string Fehler)> SatzAsync<T>(Func<Task<T?>> weg, string? satz) where T : class
+    /// <summary>
+    /// Liest, was zur Liste gehört (etwa die Verwendung je Zeile), mit dem Grund der Liste
+    /// (<see cref="Resource.WURZEL_LISTE_FEHLER"/>); wirft die Quelle, ist das Ergebnis <c>default</c>.
+    /// </summary>
+    public static async Task<(T? Wert, string Fehler)> ZurListeAsync<T>(Func<Task<T>> quelle, string? liste)
+    {
+        try
+        {
+            return (await quelle(), "");
+        }
+        catch (Exception ex)
+        {
+            return (default, Benennen(Resource.WURZEL_LISTE_FEHLER, "Katalogliste", "nicht gelesen", liste, ex));
+        }
+    }
+
+    /// <summary>Wie <see cref="Satz{T}"/> für einen asynchronen Weg; das Ergebnis trägt Satz und Grund.</summary>
+    public static async Task<(T? Satz, string Fehler)> SatzAsync<T>(Func<Task<T?>> weg, string? satz)
     {
         try
         {
@@ -156,11 +169,11 @@ public static class Katalogladung
         }
         catch (Exception ex)
         {
-            return (null, Benennen(Resource.WURZEL_SATZ_FEHLER, "Katalogsatz", "nicht gelesen", satz, ex));
+            return (default, Benennen(Resource.WURZEL_SATZ_FEHLER, "Katalogsatz", "nicht gelesen", satz, ex));
         }
     }
 
-    /// <summary>Wie <see cref="Schreiben{T}"/> für einen Schreibweg, der wartet (Speichern unter einer Ganglinie).</summary>
+    /// <summary>Wie <see cref="Schreiben{T}"/> für einen asynchronen Weg.</summary>
     public static async Task<T> SchreibenAsync<T>(Func<Task<T>> weg, string? satz, Func<string, T> abgelehnt)
     {
         try
@@ -173,7 +186,7 @@ public static class Katalogladung
         }
     }
 
-    /// <summary>Wie <see cref="Loeschen{T}"/> für einen Löschweg, der wartet.</summary>
+    /// <summary>Wie <see cref="Loeschen{T}"/> für einen asynchronen Weg.</summary>
     public static async Task<T> LoeschenAsync<T>(Func<Task<T>> weg, string? satz, Func<string, T> abgelehnt)
     {
         try
