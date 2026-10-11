@@ -123,6 +123,7 @@ namespace ChartProben
             {
                 Directory.CreateDirectory(wiki);
                 BivalenzWikibild(wiki);
+                WikiZeitreihenbilder(wiki);
                 Console.WriteLine("Wiki-Fassungen geschrieben: " + wiki);
                 return 0;
             }

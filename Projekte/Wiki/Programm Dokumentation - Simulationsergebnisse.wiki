@@ -54,9 +54,9 @@ Die Streuwolke ''Leistung über Außentemperatur'' auf der Seite ''Wärmepumpe''
 
 Alle diese Bilder sind ebenso '''maßstabsfrei''' wie die Zeitreihen; ihre Farben stellen Sie unter [[#diagrammfarben|Farben der Diagramme]] ein.
 
-[[Datei:Diagramm_Waerme_Jahresverlauf.png|mini|zentriert|800px|Wärmeerzeugung im Jahresverlauf als Tagesmittel: die Erzeuger gestapelt, darüber der Wärmebedarf als Linie. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+[[Datei:Diagramm_Waerme_Jahresverlauf.png|mini|zentriert|800px|Wärmeerzeugung im Jahresverlauf als Tagesmittel: die Erzeuger gestapelt; zusammen ergeben sie in jeder Stunde den Wärmebedarf, der als Linie darüber liegt. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
-[[Datei:Diagramm_Waerme_Dauerlinie.png|mini|zentriert|800px|Jahresdauerlinie Wärme: Bedarf und Erzeuger, jeweils nach Stundenwerten absteigend geordnet. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+[[Datei:Diagramm_Waerme_Dauerlinie.png|mini|zentriert|800px|Jahresdauerlinie Wärme: Bedarf und Erzeuger, jede Reihe für sich nach Stundenwerten absteigend geordnet. Jede Kurve zeigt, wie viele Stunden im Jahr ein Erzeuger mit welcher Leistung läuft; die Kurven sind nicht gestapelt, deshalb können sie sich schneiden – etwa der Spitzenkessel, der wenige Stunden mit hoher Leistung läuft, und das BHKW in Grundlast. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
 == Farben der Diagramme ==
 {{Anker|diagrammfarben}}
