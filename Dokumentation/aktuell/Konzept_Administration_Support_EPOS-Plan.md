@@ -1,8 +1,18 @@
 # Konzept: Administration und Support — Entwicklerbereiche schalten, Fernwartung aus dem Menü
 
-**Stand:** Entwurf vom 11.10.2026 zum Anwenderentscheid. Die Fragen AS-Q1 bis AS-Q10 (Abschnitt 7)
-sind offen; je Frage steht eine Empfehlung, gebaut wird nach Zuruf die gewählte Lesart. Nichts aus
-diesem Papier ist umgesetzt.
+**Stand:** Entwurf vom 11.10.2026; **neun der zehn Fragen sind am 11.10.2026 entschieden, AS-Q10
+ist zurückgestellt** (Abschnitt 7): AS-Q1 bis AS-Q6 und AS-Q8 nach Empfehlung, **AS-Q7 mit
+RustDesk** statt TeamViewer (Lesart d), AS-Q9 passend dazu mit dem Link als Weg (Lesart c); die
+Fernwartung vom iPad aus (AS-Q10) wird später bearbeitet — Stufe 2 baut Windows. Wortlaut des
+Anwenders: „AS-Q1 bis AS-Q6 und AS-Q8 wie vorgeschlagen. AS-Q7 mit RustDesk. AS-Q9 passend zu
+RustDesk und mit AS-Q10 iOS abstimmen — evtl nur (c) aus AS-Q9." und danach „stelle iPad-Support
+(remote) zurück, wird später bearbeitet." Dazu der Entscheid „Änderung in der Wiki vornehmen: kein
+TeamViewer als Support" — die beiden Wiki-Quellen nennen seither keinen Produktnamen mehr (1.1).
+Abschnitt 4 ist auf RustDesk umgeschrieben; die Tabelle 4.1 hält den Vergleich als Begründung fest.
+Nichts aus diesem Papier ist umgesetzt; die Umsetzung läuft in den Stufen aus Abschnitt 8. Die Entwicklerseite
+(Tastenfolgen, Schlüssel, Pfade, Supportablauf) steht im
+[`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](Entwicklerhandbuch_Administration_Support_EPOS-Plan.md),
+mit Word-Fassung daneben.
 
 **Auftrag des Anwenders (11.10.2026, wörtlich):** „Konzeption Administration und Support. 1. Es gibt
 in EPOS-Plan Bereiche, die für den Benutzer nicht sichtbar sein sollen, aber für den Entwickler. Wie
@@ -39,8 +49,9 @@ Datenbankpfad, Schemastand, Lizenznummer, Kontakt.
 **Der Supportweg liegt außerhalb der Anwendung.** Die Wiki-Seiten „Installation und Update →
 Unterstützung" und „Über EPOS-Plan → Software-Service" (Repo-Quellen unter `Projekte/Wiki/`)
 nennen Telefon, Fax, E-Mail `info@inekon.de`, die Zeiten werktags 9–16 Uhr und: „In Problemfällen
-bieten wir mit TeamViewer eine Fernwartung an." Der Anwender soll Kundennummer, Windows-Version und
-EPOS-Plan-Version bereithalten. In der Anwendung steht davon nichts; das Setup trägt nur
+bieten wir mit TeamViewer eine Fernwartung an." (Befund vom 11.10.2026; nach dem Anwenderentscheid
+vom selben Tag nennen beide Seiten nur noch „Fernwartung" ohne Produktnamen.) Der Anwender soll
+Kundennummer, Windows-Version und EPOS-Plan-Version bereithalten. In der Anwendung steht davon nichts; das Setup trägt nur
 `AppSupportURL = https://epos-plan.de/support` in die Windows-Softwareliste ein
 (`Setup/EPOS-Plan.iss`), und die Rechtstexte nennen das Impressum.
 
@@ -152,7 +163,8 @@ Vier Bauarten für „an/aus" gibt es im Bestand, jede mit einem Gebrauch:
 4. **Die Liste ist Daten, die Wache hält sie.** Welche Bereiche Entwicklerbereiche sind, steht an
    einer Stelle; ein Test beweist, dass der Anwenderbaum keinen davon enthält.
 5. **Support beginnt in der Anwendung.** Unter *Hilfe* stehen Kontakt, die Angaben, die der Support
-   braucht, und der Start der Fernwartung — mit Einwilligung je Sitzung und ohne eigene Speicherung.
+   braucht, und der Weg zur Fernwartung — mit Annahme je Sitzung im Fernwartungsprogramm und ohne
+   eigene Speicherung.
 6. **Nichts Fachliches in der Schale.** Stufe, Lizenzfrage, Diagnosedaten und die Regeln der
    Fernwartung liegen im Kern beziehungsweise in den Hüllen; die Schale startet Prozesse und öffnet
    Adressen, mehr nicht. iOS lehnt benannt ab, was es nicht kann.
@@ -289,18 +301,20 @@ Vier Werkzeuge kommen in Frage; Angaben nach Herstellerseiten und Wissensdatenba
 |---|---|---|---|---|
 | Bestand bei INEKON | **ja** — das Wiki nennt TeamViewer als Fernwartung des Wartungsvertrags | nein | nein | nein |
 | Lizenz des Helfers | Business, Premium, Corporate oder Tensor (Modul selbst kostenlos) | Standard, Advanced oder Ultimate-Cloud | kostenlos; Helfer braucht ein Microsoft-Konto | Server quelloffen, Custom-Client-Generator ab dem Pro-Tarif |
-| Anwenderseite | Modul läuft ohne Installation, nur eingehend, mit Logo, Begrüßungstext, Haftungshinweis | Custom Client mit Logo, Haftungshinweis, Richtung „nur eingehend" | Store-App; Anwender tippt einen Code ein, den der Helfer nennt | eigener Client, eigene Serveradresse |
-| Sitzungsaufbau | Sitzungscode erscheint in der Service-Warteschlange von INEKON (Benachrichtigung in App und E-Mail); oder ID + Kennwort | ID + Kennwort; Kommandozeile `anydesk.exe <ID> --with-password` | Helfer erzeugt Code, Anwender gibt ihn ein | ID + Kennwort |
-| Start aus EPOS-Plan | Modul herunterladen und starten (4.4) | wie TeamViewer | App starten, Code von Hand | wie TeamViewer |
-| iOS | QuickSupport-App: nur Bildschirm *ansehen* (Apple lässt keine Fernsteuerung zu) | Android ja, iOS keine Angabe | nein | iOS-Client vorhanden, nur ansehen |
-| Betrieb und Risiko | Link bricht, wenn das Modul im Management-Konto gelöscht wird oder die Lizenz ausläuft (neu anlegen) | Lizenzmodell 2025 geändert, Preissteigerungen gemeldet | abhängig von Microsoft-Konto und Store; keine Anpassung | eigener Server (VPS, TLS, Pflege) |
+| Anwenderseite | Modul läuft ohne Installation, nur eingehend, mit Logo, Begrüßungstext, Haftungshinweis | Custom Client mit Logo, Haftungshinweis, Richtung „nur eingehend" | Store-App; Anwender tippt einen Code ein, den der Helfer nennt | gestalteter Client aus dem Pro-Generator (Name, Logo, nur eingehend, Server und Schlüssel fest), läuft ohne Installation |
+| Sitzungsaufbau | Sitzungscode erscheint in der Service-Warteschlange von INEKON (Benachrichtigung in App und E-Mail); oder ID + Kennwort | ID + Kennwort; Kommandozeile `anydesk.exe <ID> --with-password` | Helfer erzeugt Code, Anwender gibt ihn ein | Kennung und Einmalkennwort, die der Anwender dem Support nennt; der Anwender nimmt die Verbindung an |
+| Start aus EPOS-Plan | Modul herunterladen und starten | wie TeamViewer | App starten, Code von Hand | Link auf die Fernwartungsseite von INEKON (4.4) |
+| iOS | QuickSupport-App: nur Bildschirm *ansehen* (Apple lässt keine Fernsteuerung zu) | Android ja, iOS keine Angabe | nein | die iOS-App steuert nur; ein iPad kann weder gesteuert noch angesehen werden (Herstellerangabe) |
+| Betrieb und Risiko | Link bricht, wenn das Modul im Management-Konto gelöscht wird oder die Lizenz ausläuft (neu anlegen) | Lizenzmodell 2025 geändert, Preissteigerungen gemeldet | abhängig von Microsoft-Konto und Store; keine Anpassung | eigener Server (VPS, Ports, Pflege); die Herstellersignatur der Windows-Datei ist im Dezember 2025 zurückgezogen worden, eine eigene Signatur ist nötig (SmartScreen) |
 
-**Empfehlung: TeamViewer mit personalisiertem QuickSupport-Modul** (AS-Q7). Es ist der Weg, den
-INEKON den Kunden schon zusagt; das Modul braucht beim Kunden weder Installation noch
-Administratorrechte, zeigt INEKONs Logo und Hinweistext, und die Service-Warteschlange meldet die
-Anfrage dem Support, ohne dass der Anwender eine ID vorliest. Quick Assist bleibt als
-**Ausweichweg ohne Lizenz** erwähnenswert (im Dialog als Text „Alternativ: Quick Assist mit einem
-Code vom Support"), nicht als Automatik.
+Die Empfehlung des Entwurfs lautete TeamViewer (Bestand im Wiki, Service-Warteschlange, keine
+eigene Infrastruktur). **Entschieden ist RustDesk** (AS-Q7, Anwender 11.10.2026): Die Sitzungen
+laufen über einen Server, den INEKON selbst betreibt, es fallen keine Lizenzkosten je Helfer an,
+der Client ist quelloffen, und der Kunde lädt ein kleines Programm ohne Installation. Was dieser
+Weg verlangt, steht in 4.4 und 4.8: einen eigenen Vermittlungsserver, den Pro-Tarif für den
+gestalteten Client und eine eigene Codesignatur. Quick Assist bleibt als **Ausweichweg ohne eigene
+Infrastruktur** erwähnenswert (auf der Fernwartungsseite als Hinweis „Alternativ: Quick Assist mit
+einem Code vom Support"), nicht als Automatik.
 
 ### 4.2 Der Bedienweg
 
@@ -323,12 +337,14 @@ Fenster in der Schale wie `KatalogabgleichFenster`), vier Zonen von oben nach un
    Katalogfassung, Lizenztyp und -nummer, Firma, Gerätekennung-Kurzform, Windows-Fassung, Sprache)
    mit dem Knopf „Kopieren". Der Support fragt genau das heute am Telefon ab.
 3. **Fernwartung** — Erklärtext (was geschieht, wer den Bildschirm sieht, dass EPOS-Plan nichts
-   aufzeichnet, dass die Sitzung jederzeit am Modul beendet werden kann), ein Haken „Ich bin
-   einverstanden, dass INEKON für diese Sitzung meinen Bildschirm sieht und den Rechner
-   fernsteuert" (je Sitzung, nicht gemerkt), der primäre Knopf **„Fernwartung starten"**, eine
-   Zustandszeile („Modul wird geladen …", „Modul gestartet — nennen Sie dem Support den angezeigten
-   Sitzungscode", Fehler benannt: kein Internet, Download abgelehnt, Prüfsumme falsch) und der
-   Zweitweg „Modul im Browser herunterladen" (4.4).
+   aufzeichnet, dass der Anwender jede Verbindung im Fernwartungsprogramm selbst annimmt und
+   jederzeit beendet), die drei Schritte in Kurzform (Programm von der Fernwartungsseite laden und
+   starten, dem Support die angezeigte Kennung und das Einmalkennwort nennen, die Anfrage im
+   Programm annehmen) und der primäre Knopf **„Fernwartungsseite öffnen"**, der
+   `https://epos-plan.de/support/fernwartung` im Browser öffnet (AS-Q9 Lesart c, 4.4). Kein Haken
+   für die Einwilligung: Die Einwilligung ist die Annahme der Verbindung im Fernwartungsprogramm,
+   das sie je Sitzung abfragt; der Dialog sagt das. Fehler werden benannt (kein Browser, Adresse
+   nicht erreichbar).
 4. **Fußleiste** nach Hausregel: Füller · „Schließen" (primär). Kein OK/Abbrechen — der Dialog hat
    keinen Arbeitsstand.
 
@@ -354,35 +370,49 @@ und lässt die Kunden hinein, die Support am nötigsten haben; der Supportvertra
 Token, und die Grenze „nur mit Vertrag" wäre ohne Server-Erweiterung nicht prüfbar. Der
 `UhrManipuliert`-Fall bleibt gesperrt (der Zustand ist verdächtig; der Kontaktblock bleibt).
 
-### 4.4 Bereitstellung des Moduls
+### 4.4 Bereitstellung des Fernwartungsprogramms
 
-Drei Wege, mit Empfehlung (AS-Q9):
+Der Entwurf stellte drei Wege zur Wahl (AS-Q9): (a) Laden bei Bedarf mit Manifest, Prüfsumme und
+Signaturprüfung, (b) im Setup mitliefern, (c) nur ein Link. **Entschieden ist (c)** (Anwender
+11.10.2026, abgestimmt mit AS-Q10): EPOS-Plan öffnet einen Link, mehr nicht. Die
+**Fernwartungsseite** `https://epos-plan.de/support/fernwartung` auf INEKONs WordPress trägt den
+Download des Windows-Clients, die drei Schritte, den Hinweis auf Telefon und Zeiten und den Satz
+für das iPad (4.5). In der Anwendung bleibt damit allein `IDateiDienst.AdresseOeffnen` — kein
+Download, keine Prüfsumme, keine Signaturprüfung, keine zehnte Schnittstelle. Stufe 2 baut den Weg
+für Windows; das iPad ist zurückgestellt (4.5).
 
-| Weg | Ablauf | Für | Wider |
-|---|---|---|---|
-| **(a) Laden bei Bedarf** | Die Anwendung holt über HTTPS ein kleines Manifest von INEKON (`FernwartungUrl`, Vorgabe `https://epos-plan.de/support/fernwartung.json`: Adresse des Moduls, SHA‑256, Fassung, Datum), lädt das Modul nach `%LOCALAPPDATA%\WP-Plan\Fernwartung\`, prüft die Prüfsumme, startet es; eine gültige Kopie wird 30 Tage wiederverwendet | immer die aktuelle Modulfassung; kein 30-MB-Fremdprogramm im Setup; INEKON tauscht das Modul ohne Programmupdate | braucht Internet (die Fernwartung braucht es ohnehin); INEKON pflegt das Manifest, wenn TeamViewer das Modul neu baut |
-| (b) im Setup mitliefern | `{app}\Support\INEKON-QuickSupport.exe` als eigene `[Files]`-Zeile; Start aus `{app}` | läuft ohne Download | Modulfassung altert mit dem Setup; jedes Modulupdate ist ein Programmupdate; `{app}` ist heute kein Startort |
-| (c) nur Link | `AdresseOeffnen` auf den Modullink, der Anwender führt die Datei aus | nichts zu bauen | kein Zustand, keine Prüfung, Browser-Download-Hürden |
+**Der Client.** Ein gestalteter RustDesk-Client aus dem Generator des Pro-Tarifs (4.8): Name und
+Logo von INEKON, Vermittlungsserver und Schlüssel fest voreingestellt, Richtung „nur eingehend",
+Einstellungen gesperrt, Einmalkennwort je Sitzung, Annahme der Verbindung durch den Anwender. Er
+läuft ohne Installation als einzelne Datei unter einem festen Namen (`EPOS-Plan-Fernwartung.exe`)
+und liegt auf epos-plan.de — nicht beim Hersteller, damit INEKON die Fassung bewusst tauscht. Ohne
+Pro-Tarif ginge der quelloffene Client mit Serverangabe im Dateinamen
+(`rustdesk-host=<server>,key=<schlüssel>.exe`) oder per Startargument `--config`; ihm fehlen Logo,
+die Sperre der Einstellungen und „nur eingehend".
 
-**Empfehlung: (a) mit (c) als Zweitweg.** Die Prüfsummenprüfung liegt im Kern
-(`EPOS.Kern/Allgemein/Support/Fernwartungsmodul.cs`: Manifest lesen, Prüfsumme vergleichen,
-Ablage verwalten — plattformfrei und testbar mit einer Probe-Datei); Download und Start liegen in
-einer benannten Naht `IFernwartung` (`Verfuegbar`, `StartenAsync(pfad)`) mit Windows-Adapter
-(`Process.Start`, `UseShellExecute = true`) und iOS-Adapter, der benannt ablehnt. Zusätzlich prüft
-der Windows-Adapter vor dem Start die Authenticode-Signatur der Datei (`WinVerifyTrust`) — ein
-unsigniertes oder fremd signiertes Modul wird nicht gestartet, auch wenn die Prüfsumme stimmt.
-Stimmt die Prüfsumme nicht (Manifest veraltet), bietet der Dialog den Zweitweg (c) an und nennt
-den Grund.
+**Signatur.** Die Herstellersignatur der RustDesk-Windows-Dateien ist im Dezember 2025 von der
+Zertifizierungsstelle zurückgezogen worden; ein unsignierter oder so signierter Client löst beim
+Kunden den SmartScreen-Hinweis „Unbekannter Herausgeber" aus. Das Setup-Konzept (§ 9) sieht ein
+Codesignaturzertifikat auf INEKON ohnehin vor; dasselbe Zertifikat signiert den
+Fernwartungs-Client. Bis es da ist, erklärt die Fernwartungsseite den Hinweis und den Weg
+„Weitere Informationen → Trotzdem ausführen".
+
+**Ausbau (nicht entschieden, nicht Teil der Stufe 2):** Die Lesarten (a) und (b) bleiben möglich,
+weil die Datei INEKON gehört — (b) im Setup unter `{app}\Support\` mitliefern, dann startet der
+Dialog sie unmittelbar; (a) bei Bedarf laden mit Manifest, SHA‑256 und Signaturprüfung gegen
+INEKONs Zertifikat. Beides lohnt erst, wenn der Link-Weg im Support stört.
 
 ### 4.5 iOS
 
-Apple lässt keine Fernsteuerung zu; die TeamViewer-QuickSupport-App kann den Bildschirm über die
-Broadcast-Erweiterung *zeigen*. Für Stufe 1 gilt (AS-Q10): Der Dialog existiert auf dem iPad mit
-den Zonen 1 und 2 (Kontakt, Diagnosedaten kopieren); Zone 3 ist benannt abgelehnt („Fernwartung
-steht auf dem iPad nicht zur Verfügung; der Support kann Ihren Bildschirm über die App ‚TeamViewer
-QuickSupport' ansehen"). Der Einstieg liegt in der Startansicht neben der Versionszeile, da die
-Kopfleiste auf iOS leer ist. Ein späterer Ausbau kann die QuickSupport-App über ihr URL-Schema
-öffnen — erst, wenn INEKON diesen Weg auch im Support anbietet.
+**Zurückgestellt** (Anwender 11.10.2026: „stelle iPad-Support (remote) zurück, wird später
+bearbeitet"). Stufe 2 baut die Fernwartung für Windows; auf dem iPad gibt es den Menüpunkt ohnehin
+nicht (die Kopfleiste ist dort leer), und der Fernwartungsdialog wird dort nicht angeboten, bis der
+iPad-Weg entschieden ist. Für diesen späteren Entscheid liegt der Befund bereit: Apple lässt keine
+Fernsteuerung zu, und die RustDesk-App für iOS kann nur *steuern* — ein iPad lässt sich mit
+RustDesk weder fernsteuern noch ansehen (Herstellerangabe, Stand 2025/2026). Denkbar sind dann
+Kontakt und Diagnosedaten auf dem iPad (Stufe 3, Einstieg in der Startansicht neben der
+Versionszeile) mit benannter Ablehnung der Fernwartung, oder ein anderes Werkzeug allein für das
+Ansehen des iPad-Bildschirms.
 
 ### 4.6 Supportvertrag ins Token (Ausbau)
 
@@ -395,16 +425,34 @@ Kein Teil der Stufe 2; eigener Schritt auf Zuruf.
 
 ### 4.7 Datenschutz
 
-Die Fernwartung ist eine Sitzung, die der Anwender selbst startet und beendet; EPOS-Plan speichert
-nichts davon (kein Protokoll, keine gemerkte Einwilligung — der Haken ist je Sitzung). Nach außen
-gehen allein Manifest- und Modulabruf (Adresse ohne Kundendaten) und danach die Sitzung des
-Fremdprogramms nach dessen Datenschutzregeln. Das steht im Dialog (Zone 3) und wird in zwei
+Die Fernwartung ist eine Sitzung, die der Anwender selbst startet, annimmt und beendet; EPOS-Plan
+speichert nichts davon (kein Protokoll, keine gemerkte Einwilligung — die Annahme gilt je Sitzung).
+Aus der Anwendung geht allein der Aufruf der Fernwartungsseite nach außen (Adresse ohne
+Kundendaten). Die Sitzung selbst läuft Ende-zu-Ende verschlüsselt über INEKONs eigenen
+Vermittlungsserver (4.8), nicht über einen Fremdanbieter; der Server sieht Kennungen und
+Verbindungsdaten, keine Bildschirminhalte. Das Sitzungsprotokoll des Pro-Tarifs (wer wann mit wem)
+ist die einzige Aufzeichnung und liegt bei INEKON. Das steht im Dialog (Zone 3) und wird in zwei
 Wiki-Seiten nachgezogen: „Installation und Update → Unterstützung" (Weg aus dem Menü, was
 übertragen wird) und „Über EPOS-Plan → Software-Service". Der Rechtstext `LIZR_RH_A6`
 (Datenverarbeitung der Lizenz) bleibt unberührt — die Fernwartung ist keine Lizenzverarbeitung.
 Nebenbefund, nicht Teil dieses Konzepts: `LIZR_RH_A6` und Konzept Lizenzierung § 7 nennen den
 Gerätenamen und den Windows-Anmeldenamen nicht, die `activate` und `trial` heute senden
 (`WindowsGeraeteId.Anzeige`); das gehört in die nächste Pflege der Lizenzpapiere.
+
+### 4.8 Was INEKON dafür betreibt
+
+| Baustein | Inhalt | Einmalig / laufend |
+|---|---|---|
+| Vermittlungsserver | ein kleiner VPS mit den beiden RustDesk-Diensten `hbbs` (Kennungen, Durchstich) und `hbbr` (Relais) aus dem Docker-Abbild des Herstellers, eigener Name wie `fernwartung.epos-plan.de`, Ports 21115 bis 21119 TCP und 21116 UDP nach außen; das Schlüsselpaar entsteht beim ersten Start | einmalig einrichten; laufend Updates und Erreichbarkeit — ohne Server keine Sitzung, sonst nichts |
+| Pro-Tarif | Web-Konsole, Generator des gestalteten Clients, Adressbuch, Sitzungsprotokoll; jährliche Abrechnung, kleinste Stufe genügt (Stand 2026 rund 20 bis 25 US-Dollar je Monat, beim Hersteller prüfen) | laufend |
+| Gestalteter Client | aus dem Generator: Name, Logo, Server und Schlüssel, nur eingehend, gesperrte Einstellungen, Einmalkennwort; signiert mit INEKONs Zertifikat; abgelegt auf epos-plan.de | einmalig, dann je Clientfassung |
+| Fernwartungsseite | `https://epos-plan.de/support/fernwartung`: Download, drei Schritte, SmartScreen-Hinweis, Telefon und Zeiten, Satz für das iPad | einmalig; Pflege mit dem Client |
+| Support-Arbeitsplatz | der RustDesk-Client in der Vollfassung auf den Rechnern des Supports, auf denselben Server eingestellt, mit Adressbuch | einmalig je Arbeitsplatz |
+| Codesignatur | das Zertifikat aus Setup-Konzept § 9 (Hardwaretoken); es signiert Setup, Anwendung und Fernwartungs-Client | einmalig beschaffen, jährlich verlängern |
+
+Ohne Pro-Tarif geht es mit dem quelloffenen Server und dem Client mit Serverangabe im Dateinamen
+(4.4); dann fehlen Logo, Adressbuch und Sitzungsprotokoll, und der Anwender sieht die Serverangabe
+im Client. Der Vergleich der Kosten gehört zur Zuarbeit des Anwenders vor Stufe 2.
 
 
 ## 5 Der Dialog „Über EPOS-Plan" und die Diagnosedaten
@@ -439,37 +487,40 @@ Projekttransfer sichert vor dem Import mit `File.Copy` ohne `-wal` statt mit `VA
 
 | Projekt | Stufe 1 (Entwicklermodus, Projektdatei) | Stufe 2 (Fernwartung) | Stufe 3 (Über, Diagnose) |
 |---|---|---|---|
-| `EPOS.Kern` | `Allgemein/Freigabe/Entwicklermodus.cs`, `Entwicklerbereiche.cs`; `KiDialoge` mit `nurEntwickler` | `Allgemein/Support/Fernwartungsmodul.cs`; `LizenzCtrl.FernwartungErlaubt`; `Dienste/IFernwartung.cs` (zehnte Schnittstelle, Rückfall „nicht verfügbar") | `Allgemein/Diagnose/Diagnosedaten.cs`; Supportpaket |
+| `EPOS.Kern` | `Allgemein/Freigabe/Entwicklermodus.cs`, `Entwicklerbereiche.cs`; `KiDialoge` mit `nurEntwickler` | `LizenzCtrl.FernwartungErlaubt`; Adresse der Fernwartungsseite als Konstante neben `LizenzManager.PORTAL_URL` | `Allgemein/Diagnose/Diagnosedaten.cs`; Supportpaket |
 | `EPOS.UI` | `Menuepunkt.stufe`, `Menuetabelle.Sichtbar`; Marke in der Kopfleiste; Kopf *Entwicklung*; `GebaeudeImportDialog`, `RaumnutzungBlatt` mit Kennzeichen; Ressourcen de/en | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`; `Dialoge/Hilfe/FernwartungDialog.razor` + Texte | `Dialoge/Hilfe/UeberDialog.razor` löst `Versionsmeldung` ab; Geste |
 | `EPOS.UI.Daten` | Gaben der beiden Importhüllen | `Hilfe/FernwartungHuelle.cs` | `Hilfe/UeberHuelle.cs` |
-| `WindowsFormsApplication1` | `Program.Main(string[] args)`, `--entwickler`; Zuschnitt des Menüs; Explorer- und DevTools-Hüllen | `Dienste/WindowsFernwartung.cs` (Download, Signaturprüfung, Start); Fenster | Fenster; Zwischenablage |
-| `EPOS.iOS` | `EPOS_ENTWICKLER`, `Preferences`; `Dateifilter` je Stufe | `IosFernwartung`: benannt abgelehnt | Einstieg in der Startansicht |
-| `Setup/` | nichts (keine Entwickler-Verknüpfung) | nichts bei Weg (a); Vermerk zur `AppSupportURL` | nichts |
+| `WindowsFormsApplication1` | `Program.Main(string[] args)`, `--entwickler`; Zuschnitt des Menüs; Explorer- und DevTools-Hüllen | Fenster; die Adresse öffnet der vorhandene `WindowsDateiDienst.AdresseOeffnen` | Fenster; Zwischenablage |
+| `EPOS.iOS` | `EPOS_ENTWICKLER`, `Preferences`; `Dateifilter` je Stufe | nichts — das iPad ist zurückgestellt (4.5) | Einstieg in der Startansicht |
+| `Setup/` | nichts (keine Entwickler-Verknüpfung) | nichts; `AppSupportURL` zeigt auf die Support-Seite, die auf die Fernwartungsseite verweist | nichts |
 | Lizenzserver | nichts | nichts (Stufe 4: `support_bis`) | nichts |
-| Tests | `EntwicklerbereicheWacheTests`, `MenuebandTests` (zwei Bäume), bunit-Proben | `FernwartungsmodulTests` (Manifest, Prüfsumme, Ablage), `LizenzCtrlTests` (vier Lesarten), bunit `FernwartungDialog` gesperrt/frei | `DiagnosedatenTests`, bunit `UeberDialog` |
+| INEKON-Betrieb (außerhalb des Repositoriums) | nichts | Vermittlungsserver, Pro-Tarif, gestalteter Client, Fernwartungsseite, Codesignatur (4.8) | nichts |
+| Tests | `EntwicklerbereicheWacheTests`, `MenuebandTests` (zwei Bäume), bunit-Proben | `LizenzCtrlTests` (vier Lesarten), bunit `FernwartungDialog` gesperrt/frei und „Fernwartungsseite öffnen" ruft die Adresse | `DiagnosedatenTests`, bunit `UeberDialog` |
 | Wiki | kein Eintrag (Entwicklerbereiche werden nicht dokumentiert) | „Installation und Update", „Über EPOS-Plan", neue Hilfeseite „Fernwartung" mit Infoknopf-Anker; Logbuch | „Über EPOS-Plan"; Logbuch |
 
 Kein Schemaschritt, kein Rechenweg, Referenzlauf nicht betroffen. Die iOS-Hülle wird von Stufe 1
-(Dateifilter, Umgebungsvariable) und Stufe 2 (benannte Ablehnung) berührt — ein `ios.yml`-Lauf wäre
-damit begründet und wird, wie immer, nur nach Rückfrage gestartet.
+(Dateifilter, Umgebungsvariable) berührt, von Stufe 2 nicht (das iPad ist zurückgestellt) — ein
+`ios.yml`-Lauf wäre mit Stufe 1 begründet und wird, wie immer, nur nach Rückfrage gestartet.
 
 
 ## 7 Entscheide
 
-Je Frage Lesarten und Empfehlung; gebaut wird die gewählte Lesart. Die Empfehlung steht zuerst.
+Neun Fragen sind am 11.10.2026 entschieden, AS-Q10 ist zurückgestellt (Wortlaut im Stand-Block). Die Spalte „Entscheid"
+nennt die gewählte Lesart; die Spalte davor hält die Empfehlung des Entwurfs mit ihrer Begründung
+fest, auch dort, wo der Entscheid abweicht.
 
-| Nr. | Frage | Lesarten | Empfehlung |
-|---|---|---|---|
-| **AS-Q1** | Quellen des Entwicklermodus | (a) Einstellung + Startargument + Umgebungsvariable mit HKLM-Sperre (3.1); (b) nur Startargument und Umgebungsvariable, nichts Dauerhaftes; (c) Lizenztyp „intern" als einzige Quelle | **(a)** — ein Baustein, vier Quellen, der Administrator geht vor; (c) scheitert am Kundenrechner, auf dem der Entwickler mit der Kundenlizenz arbeitet |
-| **AS-Q2** | Geste zum Einschalten | (a) Tastenfolge Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" mit Rückfrage; (b) wie (a) zusätzlich mit Kennwort (fest in den Ressourcen, kein Geheimnis vor einem Entwickler); (c) sichtbarer Haken im Einstellungsdialog | **(a)** — die Bereiche sind kein Geheimnis, nur kein Anwenderweg; ein Kennwort hält niemanden auf und kostet Pflege; (c) widerspricht dem Auftrag |
-| **AS-Q3** | Wo verborgene Elemente stehen | (a) am Fachort (Knopf im Importdialog bleibt dort, nur verborgen) und eigener Kopf *Entwicklung* für Werkzeuge ohne Fachort; (b) alles in den Kopf *Entwicklung* | **(a)** — der Projektdatei-Knopf gehört neben die Dateizeile, sonst bricht der Bedienweg des Imports |
-| **AS-Q4** | Welche Kandidaten aus 3.4 Entwicklerbereich werden | je Zeile ja/nein | **wie die Spalte „Empfehlung"** — vier werden Entwicklerbereich, vier bleiben Anwender, die Prüfhaken bleiben Build-Schalter |
-| **AS-Q5** | Bestand aus dem Modus ohne Modus | (a) lesbar und „Neu lesen" möglich, nur Neuanlage verborgen; (b) alles zur Projektdatei verborgen | **(a)** — verborgene Daten wären verwaiste Daten; die Herkunft bleibt sichtbar |
-| **AS-Q6** | Protokolle und Supportpaket | (a) `ki_aktionen.txt` wandert nach `Logs\`, Supportpaket als ZIP ohne Projektdaten (Stufe 3b); (b) nur Diagnosedaten kopieren, kein Paket | **(a)** — ein Ordner, eine Datei an die E-Mail; der KI-Auszug nur mit eigenem Haken |
-| **AS-Q7** | Fernwartungswerkzeug | (a) TeamViewer personalisiertes QuickSupport-Modul; (b) AnyDesk Custom Client; (c) Windows Quick Assist; (d) RustDesk | **(a)** — Bestand bei INEKON, ohne Installation beim Kunden, Service-Warteschlange; (c) als Textzeile im Dialog |
-| **AS-Q8** | Lizenzbedingung | (a) schreibfähige Lizenz; (b) bezahlte Lizenz, Laufzeit egal; (c) jede Lizenz; (d) Supportvertrag im Token | **(b)**, (d) als Ausbau (Stufe 4) |
-| **AS-Q9** | Bereitstellung des Moduls | (a) Laden bei Bedarf mit Manifest, Prüfsumme, Signaturprüfung, 30-Tage-Ablage; (b) im Setup; (c) nur Link | **(a)** mit (c) als Zweitweg |
-| **AS-Q10** | iOS | (a) Kontakt und Diagnosedaten, Fernwartung benannt abgelehnt; (b) zusätzlich QuickSupport-App über URL-Schema öffnen | **(a)** — erst, wenn INEKON Bildschirm-Ansehen am iPad als Supportweg anbietet, kommt (b) |
+| Nr. | Frage | Lesarten | Empfehlung des Entwurfs | Entscheid 11.10.2026 |
+|---|---|---|---|---|
+| **AS-Q1** | Quellen des Entwicklermodus | (a) Einstellung + Startargument + Umgebungsvariable mit HKLM-Sperre (3.1); (b) nur Startargument und Umgebungsvariable, nichts Dauerhaftes; (c) Lizenztyp „intern" als einzige Quelle | (a) — ein Baustein, vier Quellen, der Administrator geht vor; (c) scheitert am Kundenrechner, auf dem der Entwickler mit der Kundenlizenz arbeitet | **(a)** |
+| **AS-Q2** | Geste zum Einschalten | (a) Tastenfolge Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" mit Rückfrage; (b) wie (a) zusätzlich mit Kennwort (fest in den Ressourcen, kein Geheimnis vor einem Entwickler); (c) sichtbarer Haken im Einstellungsdialog | (a) — die Bereiche sind kein Geheimnis, nur kein Anwenderweg; ein Kennwort hält niemanden auf und kostet Pflege; (c) widerspricht dem Auftrag | **(a)** |
+| **AS-Q3** | Wo verborgene Elemente stehen | (a) am Fachort (Knopf im Importdialog bleibt dort, nur verborgen) und eigener Kopf *Entwicklung* für Werkzeuge ohne Fachort; (b) alles in den Kopf *Entwicklung* | (a) — der Projektdatei-Knopf gehört neben die Dateizeile, sonst bricht der Bedienweg des Imports | **(a)** |
+| **AS-Q4** | Welche Kandidaten aus 3.4 Entwicklerbereich werden | je Zeile ja/nein | wie die Spalte „Empfehlung" in 3.4 — fünf werden Entwicklerbereich (Wiederherstellen im Katalogabgleich, KI-Werkzeuge, IDS-Zusage, Zapfprofil-Rechenvorgaben, WebView-Entwicklerwerkzeuge), vier bleiben Anwender, die Prüfhaken bleiben Build-Schalter | **wie empfohlen** |
+| **AS-Q5** | Bestand aus dem Modus ohne Modus | (a) lesbar und „Neu lesen" möglich, nur Neuanlage verborgen; (b) alles zur Projektdatei verborgen | (a) — verborgene Daten wären verwaiste Daten; die Herkunft bleibt sichtbar | **(a)** |
+| **AS-Q6** | Protokolle und Supportpaket | (a) `ki_aktionen.txt` wandert nach `Logs\`, Supportpaket als ZIP ohne Projektdaten (Stufe 3b); (b) nur Diagnosedaten kopieren, kein Paket | (a) — ein Ordner, eine Datei an die E-Mail; der KI-Auszug nur mit eigenem Haken | **(a)** |
+| **AS-Q7** | Fernwartungswerkzeug | (a) TeamViewer personalisiertes QuickSupport-Modul; (b) AnyDesk Custom Client; (c) Windows Quick Assist; (d) RustDesk | (a) — Bestand bei INEKON, ohne Installation beim Kunden, Service-Warteschlange; (c) als Textzeile | **(d) RustDesk** — eigener Server, keine Lizenzkosten je Helfer, quelloffener Client; Folgen in 4.4 und 4.8; dazu „kein TeamViewer als Support" im Wiki |
+| **AS-Q8** | Lizenzbedingung | (a) schreibfähige Lizenz; (b) bezahlte Lizenz, Laufzeit egal; (c) jede Lizenz; (d) Supportvertrag im Token | (b), (d) als Ausbau (Stufe 4) | **(b)** |
+| **AS-Q9** | Bereitstellung des Fernwartungsprogramms | (a) Laden bei Bedarf mit Manifest, Prüfsumme, Signaturprüfung, 30-Tage-Ablage; (b) im Setup; (c) nur Link | (a) mit (c) als Zweitweg | **(c)** — Link auf die Fernwartungsseite, für Windows und iOS derselbe Knopf; (a) und (b) bleiben als Ausbau möglich (4.4) |
+| **AS-Q10** | iOS | (a) Kontakt und Diagnosedaten, Fernwartung benannt abgelehnt; (b) zusätzlich die App des Fernwartungsdienstes öffnen | (a) — erst, wenn Bildschirm-Ansehen am iPad als Supportweg angeboten wird, kommt (b) | **zurückgestellt** — „stelle iPad-Support (remote) zurück, wird später bearbeitet"; der Befund für dann steht in 4.5 (mit RustDesk ist (b) gegenstandslos) |
 
 Noch nicht gefragt, weil sie keinen Entscheid brauchen: der Name des Menüpunkts („Fernwartung…",
 en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fußleisten (Hausregel).
@@ -480,7 +531,7 @@ en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fuß
 | Stufe | Inhalt | Abnahme |
 |---|---|---|
 | **1 — Entwicklermodus und Projektdatei** | `Entwicklermodus`, `Freigabestufe` am Menüpunkt, `Menuetabelle.Sichtbar`, Marke, Kopf *Entwicklung* mit den sieben Punkten (3.5), die drei Einstiege der Projektdatei, iOS-Dateifilter, KI-Feldkarten, `Program.Main(args)` | Kern-Filter grün; `EntwicklerbereicheWacheTests`, `MenuebandTests` mit zwei Bäumen; Windows-Build auf Linux (Schale berührt); Sichtprobe: ohne Modus kein Projektdatei-Knopf und kein Kopf *Entwicklung*, mit `--entwickler` beides und die Marke; HKLM-Sperre schlägt alles |
-| **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, `Fernwartungsmodul` (Manifest, Prüfsumme, Ablage), `IFernwartung` mit Windows-Adapter (Download, `WinVerifyTrust`, Start) und iOS-Ablehnung, Ressourcen, Wiki-Quellen, Logbuch-Entwurf | Kern-Filter grün; `FernwartungsmodulTests` mit Probe-Manifest; bunit gesperrt/frei; Windows-Sichtprobe mit dem echten Modul von INEKON (Manifest auf epos-plan.de muss vorher liegen — Zuarbeit des Anwenders: Modul im TeamViewer-Konto anlegen, Link und Prüfsumme) |
+| **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **Zuarbeit des Anwenders vor der Stufe (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur |
 | **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`; Sichtprobe: Textblock vollständig, Geste schaltet |
 | **4 — Supportvertrag im Token** (auf Zuruf) | `support_bis` im Server, tolerantes Lesen im Client, Lesart (d) wählbar | Serverseite durch den Anwender ausgerollt; Clienttest mit Token ohne und mit Feld |
 
@@ -489,8 +540,8 @@ gehört. Jede Stufe ist eine Welle mit Statuszeile, Protokoll unter `ueberholt/P
 wo die Schale berührt ist — dem Windows-Build auf Linux als Teil des Gates.
 
 **Logbuch-Entwürfe** (Veröffentlichung mit dem nächsten Sammel-Upload, Versionsnummer beim
-Anwender erfragen): „Unter Hilfe → Fernwartung… lässt sich eine Fernwartungssitzung mit dem
-INEKON-Support starten; Voraussetzung ist eine aktivierte Lizenz." — „Hilfe → Version zeigt jetzt
+Anwender erfragen): „Unter Hilfe → Fernwartung… führt ein Weg zur Fernwartung durch den
+INEKON-Support; Voraussetzung ist eine aktivierte Lizenz." — „Hilfe → Version zeigt jetzt
 die Angaben, die der Support benötigt, mit ‚Diagnosedaten kopieren'." Stufe 1 bekommt keinen
 Eintrag (Entwicklerbereiche sind nicht Teil der Anwenderdokumentation).
 
