@@ -1256,14 +1256,21 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `aaaa17565a5454d892422cf4b1f1d60335d31ad1642ca78dad5a5b92714620db`**. Alle dreißig Projekte rechnen gegen R52
 > GESAMT PASS und byte-gleich (979/979 CSV)
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V7_Referenzprojekt_R52.md)).
+> **Nachtrag — Kältemittelzeilen gesichert (KM4‑E2‑c), Schema 216, Basis R52 unberührt.** Die achtzehn Zeilen von
+> `Tab_Kaeltemittel_STAMM` tragen die neue Saat von `KaeltemittelSchema`: `Status` `GESICHERT`, `GWP_Quelle` und `Quelle`
+> mit der Fundstelle in der Verordnung (EU) 2024/573, Gruppe von R1233zd(E) `HFCKW`; ihre Prüfsummen sind über
+> `KatalogSchluesselSaat` neu gestempelt. Der Zellvergleich gegen die Fassung davor (`55b1494c…`) zeigt nur diese
+> achtzehn Zeilen (Spalten `Status`, `Gruppe`, `GWP_Quelle`, `Quelle`, `Katalog_Pruefsumme`); die Prüfsummen der
+> Kältemaschinen und `Tab_Applikation` bleiben. `integrity_check` ok, `foreign_key_check` leer: **96 538 624 Byte,
+> LFS-SHA-256 `7b2094e0236fb9a17a49b6dfc5aebe714d6297ed62166fb35401a53d218e5d03`**. Kein Rechenweg liest die Zeilen.
 > **Nachtrag — Schema 217 (Schnellaufheizung, SA2, hängt an 216 KM4‑E1), Basis R52 unberührt.**
 > `SchnellaufheizungSchema` (217 = `KaeltemittelSchema.SCHRITT + 1`) legt an `Tab_Einstellungen`
 > `Aufheiz_Schnellaufheizung` (0/1, NULL = aus) und `Aufheiz_Ueberhoehung_K` (> 0 bis 10 K, NULL = Kern-Vorgabe) an, an
 > `Tab_ErgebnisGebaeude` und `Tab_ErgebnisZone` je sechs Größen der Überhöhung (alle leer). Gehoben aus der Fassung 216
-> (`55b1494c…`) mit `Werkzeuge/Testdatenbankschema`; der Zellvergleich der Bestandsspalten zeigt nur
+> (`7b2094e0…`, nach KM4‑E2‑c) mit `Werkzeuge/Testdatenbankschema`; der Zellvergleich der Bestandsspalten zeigt nur
 > `Tab_Applikation.SchemaVersion`, die vierzehn neuen Spalten sind leer, 192 Tabellen, davon 191 STRICT. Die
 > Testdatenbank steht auf **217** (`integrity_check` ok, `foreign_key_check` leer): **96 542 720 Byte, LFS-SHA-256
-> `d142b55928d2443c3d501b471913031a40eafa049dfbb08c85098c4b366b2d28`**. Alle dreißig Projekte rechnen gegen R52
+> `615aec8f6f42b63ed00084dcdcd0b4c66a370de023d75d95a7cd51149123cf5b`**. Alle dreißig Projekte rechnen gegen R52
 > GESAMT PASS und byte-gleich
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_SA2_Schema217.md)).
 

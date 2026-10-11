@@ -1022,7 +1022,7 @@ namespace WindowsFormsApplication1
         /// Zone an <c>Tab_Zone</c> und achtzehn Ergebnisspalten je Gebäude und Zone (<see cref="VorheizenSchema"/>).
         /// <b>Ergebnisneutral:</b> Jede Spalte steht auf NULL, und NULL ist die Sollwertrampe des Bestands.
         /// Danach, mit dem KÄLTEMITTEL ALS STAMMDATUM (KM4-E1, E123), steht das Ziel auf <see cref="KaeltemittelSchema.SCHRITT"/>:
-        /// die Kältemitteltabelle <c>Tab_Kaeltemittel_STAMM</c> (Register „KMT“, achtzehn Codes <c>VORLAEUFIG</c>), der Verweis
+        /// die Kältemitteltabelle <c>Tab_Kaeltemittel_STAMM</c> (Register „KMT“, achtzehn Codes <c>GESICHERT</c>), der Verweis
         /// <c>ID_Kaeltemittel</c> an Katalog und Projektkopie der Kältemaschine samt Zuordnung des Textbestands und
         /// <c>Tab_Projekt.Inbetriebnahmejahr</c> (<see cref="KaeltemittelSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest
         /// Tabelle, Verweis oder Jahr.

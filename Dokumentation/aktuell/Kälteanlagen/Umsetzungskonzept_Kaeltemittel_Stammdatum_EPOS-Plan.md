@@ -31,7 +31,7 @@ Abschnitte des Fachkonzepts. Es plant nach E123 (KM4‑Q1 bis KM4‑Q17, alle na
    Tabelle trägt die Codes, eine Wache hält die Teilmenge (FK 3.2). Jede Abweichung davon ist vorher mit der Sitzung
    Gebäudesimulation abzustimmen; die Prüfung jeder Wärmepumpe (KM4‑Q16) liest nur.
 6. **Keine Normtexte, keine Produktdaten, kein Raten.** Gesäte Werte tragen `Quelle` und `Status`
-   (`VORLAEUFIG` bis zur Prüfung am EUR‑Lex‑Volltext); unbekannte Texte bleiben unzugeordnet; Beispiele neutral.
+   (`GESICHERT` erst nach Prüfung am amtlichen Volltext, sonst `VORLAEUFIG`); unbekannte Texte bleiben unzugeordnet; Beispiele neutral.
 
 ## 2 Ausgangslage im Code (Kurzfassung, Einzelheiten FK 2)
 
@@ -74,7 +74,7 @@ gegen `origin` messen.
   Mit E120 (KD‑Q10) läuft K‑F1 vor KM4‑E1; beide berühren Katalogregister, Schemakette und `KaelteBahnAnlegen` —
   nacheinander, nicht parallel.
 - EUR‑Lex‑Volltext der Verordnung (EU) 2024/573 (Anhänge I, II, IV, Art. 13) vom Anwender bereitstellen lassen (die
-  Umgebung erreicht EUR‑Lex nicht); ohne Text bleiben Regeln und Werte `VORLAEUFIG` bis KM4‑E2‑c.
+  Umgebung erreicht EUR‑Lex nicht); mit dem Text sind Regeln und Werte in KM4‑E2‑c gesichert.
 - Schemanummer (nächste freie zur Bauzeit; 213 ist für K1 Kältebedarf vergeben) in der Kopfzeile „Schemaschritt angemeldet“ der
   [Statusdatei](../Status_iOS_Migration.md) mit dem Vermerk „Sitzung Kälteanlagen“ anmelden und allein pushen.
 
@@ -131,9 +131,17 @@ gegen `origin` messen.
   `Warntext` am Kältemaschinen‑Knoten aus den Befunden; **nach KB‑D**), `BerichtsDatenSammler` → `BerichtsDaten`
   (Code, Klasse), `Berichtstabellen.Projekt` (Spalte „Kältemittel“, Fußnote), `BerichtTexte`;
   `designer_neu.py schreiben`.
-- **Regelabgleich (E2‑c):** jede gesäte Regel‑ und Kältemittelzeile gegen den vom Anwender bereitgestellten
-  Volltext; `Status` auf `GESICHERT` oder Zeile entfernen; n.b.‑Regeln bleiben draußen; Protokoll mit Fundstelle je
-  Zeile (Anhang, Nummer, Buchstabe) — keine Textabschrift ins Repositorium.
+- **Regelabgleich (E2‑c) — umgesetzt.** Jede gesäte Regel‑ und Kältemittelzeile ist gegen den vom Anwender
+  bereitgestellten amtlichen Volltext geprüft; n.b.‑Regeln bleiben draußen; keine Textabschrift ins Repositorium.
+  Die achtzehn Kältemittelzeilen der Saat (`KaeltemittelSchema.SAAT`) stehen auf `GESICHERT`, `GWP_Quelle` und
+  `Quelle` tragen je Zeile die Fundstelle (Anhang, Abschnitt, Seite; F‑Gas nach Art. 2 Buchst. a; R744 aus Art. 3
+  Nr. 1; Gemische nach der Gemischregel des Anhangs VI mit Massenanteilen nach ISO 817; Tafel in FK 3.1); alle
+  achtzehn GWP‑Werte stimmen, R1233zd(E) wechselt von `HFO` auf `HFCKW` (die Regeln urteilen unverändert, HFCKW ist
+  kein HFKW). **Bestehende Datenbanken:** Schritt 216 legt nur fehlende Codes an; den gesicherten Stand bringt der
+  Katalogabgleich mit dem Katalogpaket der nächsten Auslieferung — eine gesperrte Zeile mit unveränderter Prüfsumme
+  wird aktualisiert, eine angepasste bleibt (Beleg `KatalogabgleichTests.Abgleich_bringt_die_gesicherten_
+  Kaeltemittelzeilen_und_laesst_eine_angepasste`); kein Schemaschritt. Die Testdatenbank trägt den neuen Stand (nur
+  die achtzehn Zeilen samt Prüfsummen; die Prüfsummen der Kältemaschinen bleiben, der Verweis reist als Code).
 - **Tests:** `KaeltemittelZulaessigkeitTests` (Proben FK 10: Klassen 1, 2, 4; Oberklasse Split; Bänder; Zeitreihe;
   „jedes F‑Gas“; GWP‑Vorrang; treffende Regel des frühesten Stichtags; ohne Jahr kein Ergebnis; Absorption),
   `KaeltemittelregelnTests` (Vokabular, unbekannter Schlüssel benannt verworfen, Geräteklasse),

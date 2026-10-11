@@ -103,7 +103,7 @@ namespace WindowsFormsApplication1
                 case AssistentGewerk.Waermebedarf:
                     foreach (Z_ProjWaermebedarfModel w in lauf.Waermebedarf)
                         Zeile(sb, w == null ? null : w.m_szBezeichner,
-                              w == null ? null : Z_ProjektGebGanglinieCtrl.KanalOderHeizung(w.Kanal));
+                              w == null ? null : Z_ProjektGebGanglinieCtrl.KanalOderHeizung(w.Kanal) + DeckungAbdruck(w));
                     break;
 
                 case AssistentGewerk.Stromverbraucher:
@@ -112,6 +112,19 @@ namespace WindowsFormsApplication1
                     break;
             }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Die Deckungsart einer Lastgangzeile im Abdruck (Schritt 213): Der Schreibweg trägt sie, also zählt sie. Leer bei
+        /// „zentral“ und außerhalb des Kanals Kühlung — der Abdruck einer solchen Zeile bleibt, wie er war.
+        /// </summary>
+        private static string DeckungAbdruck(Z_ProjWaermebedarfModel w)
+        {
+            if (!Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(w) || w.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT) return "";
+            return "|" + w.Deckung + "|" + (w.EerWeg ?? "") + "|" + Zahl(w.Eer1) + "|" + Zahl(w.Taussen1) + "|" +
+                   Zahl(w.Eer2) + "|" + Zahl(w.Taussen2) + "|" +
+                   (w.KuehlIdCarrier?.ToString(CultureInfo.InvariantCulture) ?? "") + "|" +
+                   (w.KuehlEigenerZaehler ? "1" : "0");
         }
 
         /// <summary>Die Abdrücke aller fünf Gewerke, Index = <see cref="AssistentGewerk"/>.</summary>
@@ -207,6 +220,8 @@ namespace WindowsFormsApplication1
         {
             return wert.ToString("R", CultureInfo.InvariantCulture);
         }
+
+        private static string Zahl(double? wert) => wert.HasValue ? Zahl(wert.Value) : "";
 
         private static void Zeile(StringBuilder sb, string bezeichner, string wert)
         {

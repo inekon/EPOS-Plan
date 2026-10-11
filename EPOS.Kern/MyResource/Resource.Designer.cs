@@ -54133,11 +54133,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KFLT_LT_HERSTELLER {
+            get {
+                return ResourceManager.GetString("KFLT_LT_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung im Kühlbetrieb (kW) ähnelt.
+        /// </summary>
+        public static string KFLT_LT_KUEHLLEISTUNG {
+            get {
+                return ResourceManager.GetString("KFLT_LT_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modellbezeichnung der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KFLT_LT_MODELL {
+            get {
+                return ResourceManager.GetString("KFLT_LT_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung ähnelt.
         /// </summary>
         public static string KFLT_LT_NENNKAELTELEISTUNG {
             get {
                 return ResourceManager.GetString("KFLT_LT_NENNKAELTELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle der Wärmepumpe (Luft, Sole, Wasser) ähnelt.
+        /// </summary>
+        public static string KFLT_LT_QUELLE {
+            get {
+                return ResourceManager.GetString("KFLT_LT_QUELLE", resourceCulture);
             }
         }
         
@@ -106769,6 +106805,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split): {0} Zeilen, {1} MWh/a, Spitze {2} kW, Strom {3} MWh/a, Jahres-EER {4}. Gedeckt neben der Kältefolge, ohne Kaltwasser und ohne Leistungsgrenze. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split): Der Jahres-EER {0} liegt unter {1}. Bitte die EER-Angaben der Split-Zeilen mit Gerätedaten prüfen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DEZENTRAL_EER_NIEDRIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DEZENTRAL_EER_NIEDRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) „{0}&quot;: Der Strom ({1} MWh/a) geht mit dem Stromträger des Projekts in Strombilanz und Abrechnung; eine gesonderte Abrechnung über den Kühlträger {2} ist für dezentrale Zeilen noch nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}&quot;) — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_HEIZEN_UND_KUEHLEN {
@@ -106985,6 +107048,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen&quot; aus). {0} Gebäude mit eingeschalteter Kühlung, {1} Lastgänge mit dem Kanal Kühlung und {2} Kältebedarfsprofile bleiben ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_PROJEKT_AUS_PROFILE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_PROJEKT_AUS_PROFILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ ist eine Verdunstungskühlanlage — Anzeige-, Prüf- und Betriebspflichten nach der 42. BImSchV beachten (nur Hinweis, EPOS prüft sie nicht). ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_RKW_BIMSCHV {
@@ -107107,6 +107179,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) ohne rechnenden EER: {0}. Der Strom der dezentralen Deckung lässt sich nicht bilden; der Lauf wird nicht gespeichert. Bitte EER-Weg, EER und Außentemperatur der Zeile pflegen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_SPLIT_OHNE_EER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_SPLIT_OHNE_EER", resourceCulture);
             }
         }
         
@@ -114036,6 +114117,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf „{0}&quot; ist dezentral (Split) gedeckt, aber ohne gültigen EER ({1}) — der Lauf bricht ab. Bitte die Deckung der Zeile pflegen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTE_SPLIT_OHNE_EER {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTE_SPLIT_OHNE_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen. ähnelt.
         /// </summary>
         public static string SIMWARN_KANAL_OHNE_VERSORGER {
@@ -120243,6 +120333,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf definieren ähnelt.
+        /// </summary>
+        public static string START_KB_KOPF {
+            get {
+                return ResourceManager.GetString("START_KB_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte — einschalten in der Simulationskonfiguration. ähnelt.
+        /// </summary>
+        public static string START_KB_OHNE_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("START_KB_OHNE_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erfassen Sie den Kältebedarf Ihres Projekts. ähnelt.
+        /// </summary>
+        public static string START_KB_TEXT {
+            get {
+                return ResourceManager.GetString("START_KB_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelastgang und Kältebedarfsprofil erfassen Kältebedarf ohne Gebäudemodell. Die Kühlung der Projektgebäude rechnet das Gebäudemodell selbst. ähnelt.
+        /// </summary>
+        public static string START_KB_TIPP {
+            get {
+                return ResourceManager.GetString("START_KB_TIPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tipp ähnelt.
+        /// </summary>
+        public static string START_KB_TIPP_TITEL {
+            get {
+                return ResourceManager.GetString("START_KB_TIPP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zur Simulationskonfiguration ähnelt.
+        /// </summary>
+        public static string START_KB_ZUR_KONFIG {
+            get {
+                return ResourceManager.GetString("START_KB_ZUR_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}) ähnelt.
         /// </summary>
         public static string START_KLIMA_EINTRAG {
@@ -120387,6 +120531,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt rechnet keine Kälte ähnelt.
+        /// </summary>
+        public static string START_K_GEBKUEHL_AUS {
+            get {
+                return ResourceManager.GetString("START_K_GEBKUEHL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung der Projektgebäude einstellen ähnelt.
+        /// </summary>
+        public static string START_K_GEBKUEHL_B {
+            get {
+                return ResourceManager.GetString("START_K_GEBKUEHL_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Gebäuden gekühlt ähnelt.
+        /// </summary>
+        public static string START_K_GEBKUEHL_STAND {
+            get {
+                return ResourceManager.GetString("START_K_GEBKUEHL_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudekühlung ähnelt.
+        /// </summary>
+        public static string START_K_GEBKUEHL_T {
+            get {
+                return ResourceManager.GetString("START_K_GEBKUEHL_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konventionelle Wärmeerzeugung ähnelt.
         /// </summary>
         public static string START_K_HEIZKESSEL_B {
@@ -120401,6 +120581,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_K_HEIZKESSEL_T {
             get {
                 return ResourceManager.GetString("START_K_HEIZKESSEL_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelastgang als CSV einlesen und zuordnen ähnelt.
+        /// </summary>
+        public static string START_K_KBEXTERN_B {
+            get {
+                return ResourceManager.GetString("START_K_KBEXTERN_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf extern ähnelt.
+        /// </summary>
+        public static string START_K_KBEXTERN_T {
+            get {
+                return ResourceManager.GetString("START_K_KBEXTERN_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf aus Typprofil, Jahressumme und Kalender ähnelt.
+        /// </summary>
+        public static string START_K_KBPROFIL_B {
+            get {
+                return ResourceManager.GetString("START_K_KBPROFIL_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string START_K_KBPROFIL_T {
+            get {
+                return ResourceManager.GetString("START_K_KBPROFIL_T", resourceCulture);
             }
         }
         
@@ -120707,6 +120923,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_REITER_ERZEUGER {
             get {
                 return ResourceManager.GetString("START_REITER_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string START_REITER_KAELTE {
+            get {
+                return ResourceManager.GetString("START_REITER_KAELTE", resourceCulture);
             }
         }
         

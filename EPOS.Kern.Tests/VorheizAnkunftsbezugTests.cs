@@ -58,6 +58,8 @@ namespace EPOS.Kern.Tests
             GebaeudeModellEingang e = Bauen(G(anteil * phiHl / 1000.0));
             Assert.True(e.KopplungWirksam);
             e.HeizsollwertMitRampeSetzen(VorheizVorgabeTests.Kalender());
+            // SA1b: die Heizkurve am Kalender des Gebäudes — wie ein Bauer, der den Kalender selbst trägt.
+            GebaeudeModellEingang.VorlaufNachSollwertBilden(new[] { ZonenEingang.Einzeln(e) });
             return e;
         }
 

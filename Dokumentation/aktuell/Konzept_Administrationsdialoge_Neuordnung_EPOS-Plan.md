@@ -876,12 +876,12 @@ Seite; ob ein Satz schon im Projekt steht, sagt eine weitere Spalte „im Projek
 
 | Kennung | Inhalt | Entscheid |
 |---|---|---|
-| **AD-Q2** | Umschalter „Katalog \| Im Projekt (n)" mit „＋" je Zeile statt `Zweispaltenauswahl` (V5) | Ja, Heizkessel als Pilot |
+| **AD-Q2** | Umschalter „Katalog \| Im Projekt (n)" mit „＋" je Zeile statt `Zweispaltenauswahl` (V5) | Ja, Heizkessel als Pilot — abgelöst am 08.10.2026 durch die Katalogauswahl V1 „Gerahmt und gestapelt“ ([Konzept Katalogauswahl](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)): der Baustein `Zweispaltenauswahl` bleibt, der Umschalter wird nicht gebaut |
 | **AD-Q3** | Doppelklick auf eine Katalogzeile | Projektdialog: wie „＋" (Übernahme, danach die Trägerwahl); Verwaltung: nichts — dieser Teil gilt weiter (3.3) |
 | **AD-Q4** | Mehrfachwahl mit Sammelübernahme, Trägerwahl einmal je Brennstoff (V6) | Ja zu beidem; die Mehrfachwahl gilt in den Verwaltungen mit Variante B weiter (6.1) |
 | **AD-Q5** | Katalogfelder im Stammblatt des Projektdialogs | bearbeitbar — abweichend von der Empfehlung schreibt „Ändern" nur die Projektkopie; die Übernahme in den Katalog ist eine eigene Funktion |
 | **AD-Q7** | „＋ Ins Projekt" aus der Verwaltung, wenn ein Projekt offen ist | Nein — Katalog und Projekt bleiben getrennt; als Folge gilt weiter: Die Verwaltungen kennen kein Projekt |
-| **AD-Q10** | Bleibt die Katalogpflege (Neu, Duplizieren, Löschen) im Projektdialog? | nicht entschieden; die Empfehlung war (a): „Katalog verwalten…" öffnet die Verwaltung als Überlagerung, der Projektdialog pflegt nur Projektzeilen |
+| **AD-Q10** | Bleibt die Katalogpflege (Neu, Duplizieren, Löschen) im Projektdialog? | entschieden am 08.10.2026 als KA‑E‑7 ([Konzept Katalogauswahl](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)): die Katalogpflege bleibt im Katalogbereich des Projektdialogs; umgesetzt mit den Stufen 1 bis 5 der Katalogauswahl |
 
 Die Stufen 3 bis 5 aus AD-Q8 (Heizkessel-Projektdialog als Pilot, übrige Erzeuger, Bedarf und
 Zeitreihen samt Gebäude) ruhen mit diesen Entscheiden.

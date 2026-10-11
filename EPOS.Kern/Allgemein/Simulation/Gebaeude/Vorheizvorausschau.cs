@@ -140,6 +140,8 @@ namespace WindowsFormsApplication1
                 double s = _soll[h];
                 if (!double.IsNaN(s) && s > wert) wert = s;
                 r = r.MitVorheizen(wert, grenzeFenster);
+                // SA1b: Die Heizkurve fährt im Fenster am Fenstersollwert wie im Lauf (VorlaufNachSollwertBilden).
+                r = _e.KurveAmSollwert(in r, h, wert);
                 if (UeberhoehungK > 0.0) r = _e.Ueberhoehen(in r, h, wert, UeberhoehungK, ankunft);
                 Stundenergebnis erg = _modell.Schritt(in r);
                 luftVor = erg.ThetaAirMittel;

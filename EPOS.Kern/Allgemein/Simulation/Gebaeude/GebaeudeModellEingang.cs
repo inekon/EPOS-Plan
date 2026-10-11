@@ -867,6 +867,55 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Bildet die Vorlaufreihe der Heizkurve neu am Heizsollwert, der jetzt gilt</b> (SA1b): Schritt E rechnet die Reihe
+        /// beim Bauen aus der Sollwertreihe ohne Rampe; nach <see cref="HeizsollwertMitRampeSetzen"/> fährt die Kurve sonst im
+        /// Vorheizfenster am abgesenkten Sollwert, während der Raumregler θ_T sieht. Die Reihe wird an Ort und Stelle beschrieben —
+        /// im Mehrzonenweg die eine Reihe des Gebäudeheizkreises (Heizkurve am höchsten Heizsollwert der gekoppelten Zonen, wie
+        /// <see cref="ZonenkopplungAufloesen"/>), im Einzonenweg die des Eingangs (wie Schritt E). Ohne wirksamen Heizkreis mit
+        /// Heizkurve (fester Vorlauf) nichts. Ein unveränderter Sollwert ergibt Zeichen für Zeichen dieselbe Reihe.
+        /// </summary>
+        /// <param name="zonen">Die Zonen eines Gebäudes (Einzone: eine).</param>
+        internal static void VorlaufNachSollwertBilden(IReadOnlyList<ZonenEingang> zonen)
+        {
+            if (zonen == null) throw new ArgumentNullException(nameof(zonen));
+            GebaeudeModellEingang erste = null;
+            foreach (ZonenEingang z in zonen)
+                if (z.Eingang.KopplungWirksam) { erste = z.Eingang; break; }
+            if (erste == null || !erste.HeizkurveAktiv || erste.Heizkurve == null || erste.VorlaufC == null) return;
+            Heizkurve kurve = erste.Heizkurve;
+            double[] vorlauf = erste.VorlaufC;
+            if (erste.Gebaeudeheizkreis == null)
+            {
+                for (int h = 0; h < 8760; h++) vorlauf[h] = kurve.VorlaufC(erste.ThetaSoll[h], erste.ThetaOut[h]);
+                return;
+            }
+            for (int h = 0; h < 8760; h++)
+            {
+                double soll = double.NegativeInfinity;
+                foreach (ZonenEingang z in zonen)
+                {
+                    if (!z.Eingang.KopplungWirksam) continue;
+                    double s = z.Eingang.ThetaSoll[h];
+                    if (Endlich(s) && s > soll) soll = s;
+                }
+                vorlauf[h] = double.IsNegativeInfinity(soll) ? double.NaN : kurve.VorlaufC(soll, erste.ThetaOut[h]);
+            }
+        }
+
+        /// <summary>
+        /// <b>Der Rand mit der Heizkurve am Fenstersollwert</b> (SA1b) für die Vorausschau des Vorheizplans: der Vorlauf der Kurve
+        /// bei <paramref name="sollC"/>, nie unter dem Vorlauf des Randes (der gemeinsame Vorlauf folgt im Mehrzonenweg dem höchsten
+        /// Sollwert), gekappt am Vorlaufangebot der Anlage. Ohne wirksamen Heizkreis mit Heizkurve derselbe Rand.
+        /// </summary>
+        internal Stundenrand KurveAmSollwert(in Stundenrand r, int h, double sollC)
+        {
+            if (!KopplungWirksam || !HeizkurveAktiv || Heizkurve == null || !r.MitUebergabe || double.IsNaN(sollC)) return r;
+            double k = Heizkurve.VorlaufC(sollC, ThetaOut[h]);
+            if (double.IsNaN(k) || (!double.IsNaN(r.VorlaufC) && !(k > r.VorlaufC))) return r;
+            return r.MitKurvenvorlauf(k);
+        }
+
+        /// <summary>
         /// <b>Die äquivalente Außentemperatur am Bemessungspunkt</b> [°C] in der <b>Außenform</b>
         /// (Entwurf KP3, Befund B4, Festlegung 12): Außenluft und Fenster bei <paramref name="aussenC"/>
         /// ohne Strahlung, das Erdreich mit seinem Tagesmittel am Tag <paramref name="tag"/>, der

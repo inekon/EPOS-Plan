@@ -203,6 +203,27 @@ public class SchlossumschaltungTests : EposBunitContext
         Assert.Empty(s.Entsperrte);
     }
 
+    /// <summary>
+    /// KT-7: Wirft der Schlossweg (Datenbank), kommt der Grund mit dem Satznamen ins Warnband
+    /// (<c>WURZEL_SCHREIBEN_FEHLER</c>), das Ausnahmeprotokoll hat einen Vermerk, nichts wird gemerkt.
+    /// </summary>
+    [Fact]
+    public void KT7_ein_werfender_Schlossweg_kommt_ins_Warnband_und_ins_Protokoll()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var s = new Schlossumschaltung();
+        s.Fragen(Weg(), new[] { A }, false);
+
+        Schlossausgang a = s.Beantwortet(true, new Schlossweg((_, _) => throw new InvalidOperationException("Datei gesperrt")));
+
+        Assert.False(a.Geschrieben);
+        Assert.Contains("Datei gesperrt", a.Fehler);
+        Assert.Contains("Kessel A", a.Fehler);
+        Assert.True(vermerke.Enthaelt("Datei gesperrt"));
+        Assert.Empty(s.Entsperrte);
+        Assert.False(s.FrageOffen);
+    }
+
     [Fact]
     public void Unveraenderte_Saetze_nennt_die_Statuszeile()
     {

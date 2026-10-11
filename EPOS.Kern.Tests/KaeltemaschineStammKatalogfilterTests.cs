@@ -78,11 +78,15 @@ namespace EPOS.Kern.Tests
 
             Katalogfilterprofil wp = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, s => R.ResourceManager.GetString(s) ?? s);
             Assert.Equal(R.WPS_LBL_NENNLEISTUNG, wp.Spalte(Katalogfilterprofil.SpNennleistung).Langtext);
-            Assert.Equal(5, wp.Spalten.Count(s => s.HatLangtext));
+            Assert.Equal(9, wp.Spalten.Count(s => s.HatLangtext));
             Assert.Equal("Mindestvorlauf", wp.Spalte(Katalogfilterprofil.SpVlMin).Langtext);
             Assert.Equal("Höchstvorlauf", wp.Spalte(Katalogfilterprofil.SpVlMax).Langtext);
             Assert.Equal("Leistungszahl im Heizbetrieb", wp.Spalte(Katalogfilterprofil.SpCop).Langtext);
             Assert.Equal("Elektrische Zuheizung", wp.Spalte(Katalogfilterprofil.SpZuheizung).Langtext);
+            Assert.Equal("Hersteller der Wärmepumpe", wp.Spalte(Katalogfilterprofil.SpHersteller).Langtext);
+            Assert.Equal("Modellbezeichnung der Wärmepumpe", wp.Spalte(Katalogfilterprofil.SpBezeichner).Langtext);
+            Assert.Equal("Wärmequelle der Wärmepumpe (Luft, Sole, Wasser)", wp.Spalte(Katalogfilterprofil.SpQuelle).Langtext);
+            Assert.Equal("Kühlleistung im Kühlbetrieb (kW)", wp.Spalte(Katalogfilterprofil.SpKuehlleistung).Langtext);
 
             foreach (Anlagenart art in Katalogfilterprofil.AlleArten)
             {
@@ -103,6 +107,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Maximum flow temperature", R.ResourceManager.GetString("KFLT_LT_VLMAX", en));
             Assert.Equal("Coefficient of performance, heating", R.ResourceManager.GetString("KFLT_LT_COP", en));
             Assert.Equal("Electric backup heater", R.ResourceManager.GetString("KFLT_LT_ZUHEIZUNG", en));
+            Assert.Equal("Heat pump manufacturer", R.ResourceManager.GetString("KFLT_LT_HERSTELLER", en));
+            Assert.Equal("Heat pump model designation", R.ResourceManager.GetString("KFLT_LT_MODELL", en));
+            Assert.Equal("Heat source of the heat pump (air, brine, water)", R.ResourceManager.GetString("KFLT_LT_QUELLE", en));
+            Assert.Equal("Cooling capacity in cooling mode (kW)", R.ResourceManager.GetString("KFLT_LT_KUEHLLEISTUNG", en));
             Assert.Equal("Recool.", R.ResourceManager.GetString("KFLT_SP_RUECKKUEHLART", en));
         }
 

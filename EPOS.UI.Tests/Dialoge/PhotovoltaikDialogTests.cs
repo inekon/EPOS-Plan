@@ -765,6 +765,36 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Assert.Equal(3, uebernommen.Count);
     }
 
+    /// <summary>KT-7: Wirft der Übernahmeweg, nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen.</summary>
+    [Fact]
+    public void KT7_wirft_die_Uebernahme_nennt_der_Banner_den_Grund_und_der_Dialog_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(uebernehmen: _ => throw new InvalidOperationException("Modell gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+        Satz(cut);
+
+        cut.Find(".epos-anlagenblock").QuerySelectorAll("input[inputmode=numeric]")[0].Input("35");
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Modell gesperrt"));
+        Assert.True(vermerke.Enthaelt("Modell gesperrt"));
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_zeigt_die_Uebernahme_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(uebernehmen: _ => { });
+        Satz(cut);
+
+        cut.Find(".epos-anlagenblock").QuerySelectorAll("input[inputmode=numeric]")[0].Input("35");
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+    }
+
     [Fact]
     public void Eine_neue_Modulzahl_zieht_die_Gesamtleistung_nach()
     {

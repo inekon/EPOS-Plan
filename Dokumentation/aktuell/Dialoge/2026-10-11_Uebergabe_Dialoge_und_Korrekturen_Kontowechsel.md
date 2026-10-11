@@ -26,8 +26,8 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   Zeitreihen, Bedarfsprofile, Gebäude, Kältemaschine) samt Satz-Überlagerung (ÜS1) und Stift und
   Zusammenfassung (ÜS2).
 - **Kältebedarf:** Konzept
-  [`Konzept_Kaeltebedarf_EPOS-Plan.md`](../Konzept_Kaeltebedarf_EPOS-Plan.md) (K0); K1 Schema 213
-  gebaut, K2 bis K6 offen.
+  [`Konzept_Kaeltebedarf_EPOS-Plan.md`](../Konzept_Kaeltebedarf_EPOS-Plan.md) (K0); K1 bis K4 gebaut
+  (#944, #980–#982), K5 und K6 offen.
 - **Basis:** R51 `2026-10-10_R51_FreieKuehlung` (Sitzung Gebäudesimulation).
 - **Schemaschritte:** 213 (unser, K1) gebaut; 214 (K-F1) und 215 (AH-V4) gebaut von anderen
   Sitzungen; 216 (KM4-E1) angemeldet von der Sitzung Kälteanlagen — Kopfzeile der Statusdatei

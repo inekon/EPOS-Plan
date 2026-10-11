@@ -488,6 +488,16 @@
         {
             <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
         }
+        @* KT-7: Wirft das Lesen einer Liste, nennt dieser Banner den Grund (Katalogladung). *@
+        @if (!string.IsNullOrEmpty(_listeFehler))
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+        }
+        @* KT-7: Wirft das Lesen eines Satzes (Stamm, Vorlaufstufen, Bilder, Kennlinien), nennt dieser Banner den Grund. *@
+        @if (!string.IsNullOrEmpty(_satzFehler))
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+        }
 
         @if (Eingebettet)
         {
@@ -1026,6 +1036,12 @@
     private string _blatt = "COP";
     private string _warnung = "";
 
+    /// <summary>KT-7: der Grund, wenn das Lesen einer Liste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-7: der Grund, wenn das Lesen eines Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     // --- Die KONFIGURATION in der Ueberlagerung (16.09.2026) -------------------
     private bool _konfigOffen;
     private string _konfigWarnung = "";
@@ -1140,7 +1156,8 @@
 
     protected override void OnInitialized()
     {
-        _stammliste = Stammliste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+        // KT-7: Wirft das Lesen der Auswahlliste, bleibt sie leer und der Banner nennt den Grund.
+        _stammliste = Katalogladung.Lesen(Stammliste, TitelText, out _listeFehler);
         _extrapolation = ExtrapolationErlaubt;
 
         // W7-B-2: Ein Altwert aus Tab_Energieanlagen wird auf den Steuerwert
@@ -1268,10 +1285,17 @@
     /// <summary>Vorlaufstufen, Bilder, Kostenzeile und Stammfelder zum aktuellen Gerät nachziehen.</summary>
     private void Auffrischen()
     {
-        _vorlaufstufen = (Vorlaeufe is not null && Daten.IdWp > 0)
-            ? Vorlaeufe(Daten.IdWp) : Array.Empty<int>();
-        _bilder = (Bilder is not null && Daten.IdWp > 0)
-            ? Bilder(Daten.IdWp) : KennlinienBilder.Leer;
+        // KT-7: Vorlaufstufen und Bilder lesen über die Fangstelle; wirft einer der Wege, bleibt
+        // der Teil leer und der Satzbanner nennt den Grund.
+        _satzFehler = "";
+        int idWp = Daten.IdWp;
+        string satz = Daten.Bezeichner;
+        _vorlaufstufen = (Vorlaeufe is not null && idWp > 0)
+            ? Katalogladung.SatzDazu(() => Vorlaeufe(idWp), satz, ref _satzFehler) ?? Array.Empty<int>()
+            : Array.Empty<int>();
+        _bilder = (Bilder is not null && idWp > 0)
+            ? Katalogladung.SatzDazu(() => Bilder(idWp), satz, ref _satzFehler) ?? KennlinienBilder.Leer
+            : KennlinienBilder.Leer;
         _kostenBereit = KostenBereit?.Invoke() ?? false;
         StammabbildNachziehen();
     }
@@ -1327,9 +1351,18 @@
     {
         if (KennlinienUebernehmen is null || Daten.IdWp <= 0) return;
 
-        int zeilen = KennlinienUebernehmen(Daten.IdWp);
+        // KT-7: Wirft die Übernahme, nennt die Meldung bei den Kennlinien den Grund.
+        string grund = "";
+        int idWp = Daten.IdWp;
+        int zeilen = Katalogladung.Schreiben(() => KennlinienUebernehmen(idWp), Daten.Bezeichner,
+                                             g => { grund = g; return 0; });
 
-        if (zeilen > 0)
+        if (grund.Length > 0)
+        {
+            _kennlinienStufe = WarnStufe.Warnung;
+            _kennlinienMeldung = grund;
+        }
+        else if (zeilen > 0)
         {
             _kennlinienStufe = WarnStufe.Hinweis;
             _kennlinienMeldung = string.Format(TextKennlinienUebernommen, zeilen);
@@ -1382,7 +1415,10 @@
         _warnung = "";
         _mangel = "";
 
-        WaermepumpeStammDaten? stamm = Stammdaten?.Invoke(zeile.Id);
+        // KT-7: Wirft das Lesen des Stammsatzes, nennt der Satzbanner den Grund.
+        string stammFehler = "";
+        WaermepumpeStammDaten? stamm = Stammdaten is null ? null
+            : Katalogladung.Satz(() => Stammdaten(zeile.Id), zeile.Bezeichner, out stammFehler);
         if (stamm is not null)
         {
             Daten.Regelung = stamm.Regelung;
@@ -1399,6 +1435,7 @@
             Daten.TaktverlustfaktorCd = stamm.TaktverlustfaktorCd;
         }
         Auffrischen();
+        if (_satzFehler.Length == 0) _satzFehler = stammFehler;
     }
 
     // =================================================================================
@@ -1443,7 +1480,8 @@
 
     private void BeiKatalog()
     {
-        _katalog = Katalog?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        // KT-7: Wirft das Lesen des Katalogs, bleibt die Auswahl leer und der Banner nennt den Grund.
+        _katalog = Katalogladung.Lesen(Katalog, TitelText, out _listeFehler);
         _katalogOffen = true;
     }
 
@@ -1480,13 +1518,15 @@
     private bool ExtrapolationUebernehmen(bool wert)
     {
         if (ExtrapolationSchreiben is null) return false;
-        if (ExtrapolationSchreiben(wert))
+        // KT-7: Wirft der Schreibweg, bleibt der Schalter beim gespeicherten Stand und die Meldung nennt den Grund.
+        string grund = "";
+        if (Katalogladung.Schreiben(() => ExtrapolationSchreiben(wert), Daten.Bezeichner, g => { grund = g; return false; }))
         {
             _extrapolation = wert;
             return true;
         }
         _extrapolationSchluessel++;                 // der Schalter zeigt wieder den gespeicherten Stand
-        _kennlinienMeldung = WarnungExtrapolation;
+        _kennlinienMeldung = grund.Length > 0 ? grund : WarnungExtrapolation;
         _kennlinienStufe = WarnStufe.Fehler;
         return false;
     }
@@ -1598,7 +1638,16 @@
         if (!Projektkopie) { NichtGespeichertMelden(); return; }
         if (InStammUebernehmen is null || UebernahmeVorschau is null || NurLesen) return;
 
-        WaermepumpeUebernahmeVorschau? v = UebernahmeVorschau(Daten.IdWp);
+        // KT-7: Wirft die Vorschau, nennt die Meldung bei den Kenndaten den Grund.
+        int idWp = Daten.IdWp;
+        WaermepumpeUebernahmeVorschau? v = Katalogladung.Satz(() => UebernahmeVorschau(idWp), Daten.Bezeichner,
+                                                              out string vorschauFehler);
+        if (vorschauFehler.Length > 0)
+        {
+            _stammMeldung = vorschauFehler;
+            _stammStufe = WarnStufe.Warnung;
+            return;
+        }
         if (v is null || string.IsNullOrEmpty(v.Bezeichner))
         {
             NichtGespeichertMelden();
@@ -1657,13 +1706,18 @@
 
         if (InStammUebernehmen is null) { UebernahmeSchliessen(); return; }
 
-        KatalogSpeicherErgebnis ergebnis = InStammUebernehmen(Daten.IdWp, _mitKennlinien);
+        // KT-7: Wirft die Übernahme, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        int idWp = Daten.IdWp;
+        bool mitKennlinien = _mitKennlinien;
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => InStammUebernehmen(idWp, mitKennlinien),
+                                                                   Daten.Bezeichner,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, Daten.Bezeichner));
 
         _stammStufe = ergebnis.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung;
         _stammMeldung = ergebnis.Meldung ?? "";
 
         // Der Katalog hat sich geaendert - die Auswahlliste links liest ihn.
-        _stammliste = Stammliste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+        _stammliste = Katalogladung.Lesen(Stammliste, TitelText, out _listeFehler);
 
         UebernahmeSchliessen();
     }
@@ -1694,7 +1748,12 @@
         if (!Projektkopie) { NichtGespeichertMelden(); return; }
         if (Kennlinien is null || Daten.IdWp <= 0) return;
 
-        _kennlinienZeilen = Kennlinien(Daten.IdWp).Select(z => z.Kopie()).ToList();
+        // KT-7: Wirft das Lesen der Kennlinien, öffnet der Editor nicht und der Satzbanner nennt den Grund.
+        int idWp = Daten.IdWp;
+        IReadOnlyList<KennlinienZeile>? zeilen = Katalogladung.Satz(() => Kennlinien(idWp), Daten.Bezeichner,
+                                                                    out _satzFehler);
+        if (zeilen is null) return;
+        _kennlinienZeilen = zeilen.Select(z => z.Kopie()).ToList();
     }
 
     private void KenndatenFertig(IReadOnlyList<KennlinienZeile>? stand)
@@ -1702,7 +1761,17 @@
         _kennlinienZeilen = null;
         if (stand is null || NurLesen) return;   // Abbruch
 
-        KennlinienAbgleichen?.Invoke(Daten.IdWp, stand);
+        // KT-7: Wirft der Abgleich, nennt die Meldung bei den Kennlinien den Grund.
+        if (KennlinienAbgleichen is not null)
+        {
+            int idWp = Daten.IdWp;
+            Katalogladung.Schreiben(() => KennlinienAbgleichen(idWp, stand), Daten.Bezeichner, g =>
+            {
+                _kennlinienMeldung = g;
+                _kennlinienStufe = WarnStufe.Warnung;
+                return false;
+            });
+        }
 
         // Die Bilder lesen Tab_Kenndaten - nach dem Editor stehen sie neu da.
         Auffrischen();

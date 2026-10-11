@@ -326,6 +326,13 @@ namespace WindowsFormsApplication1
         public const string KAELTESPEICHER_OHNE_KUEHLUNG = "KAELTESPEICHER_OHNE_KUEHLUNG";
 
         /// <summary>
+        /// K3 (Konzept Kältebedarf 4.4, 5): Eine Kältebedarfszeile (Profil oder Lastgang im Kanal Kühlung) ist dezentral
+        /// (Split) gedeckt, aber ihre EER-Angaben rechnen nicht — der Lauf eines Projekts mit Kühlbetrieb bricht dann benannt
+        /// ab. WEICH (die Meldung bringt die Aussage vor den Lauf).
+        /// </summary>
+        public const string DEZENTRALE_KAELTE_OHNE_EER = "DEZENTRALE_KAELTE_OHNE_EER";
+
+        /// <summary>
         /// KM4-E2 (Konzept Kältemittel als Stammdatum 3.3, 5.2; E123): Das Kältemittel einer Kältemaschine oder einer
         /// Wärmepumpe mit Code fällt im geplanten Inbetriebnahmejahr unter eine Regel nach Anhang IV der Verordnung (EU)
         /// 2024/573 — ab dem Stichtag nur Restbestand oder Ausnahme. WEICH: Die Prüfung warnt und sperrt nie. Ohne
@@ -421,6 +428,7 @@ namespace WindowsFormsApplication1
             }
 
             KaeltespeicherPruefen(idProjekt, befunde);
+            DezentraleKaeltePruefen(idProjekt, befunde);
             KaeltemittelPruefen(idProjekt, befunde);
 
             return befunde;
@@ -526,6 +534,48 @@ namespace WindowsFormsApplication1
                     befunde.Add(Befund(KAELTESPEICHER_OHNE_ERZEUGER, false, 0, p.ID,
                         string.Format(MyResource.Resource.SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER, name)));
             }
+        }
+
+        /// <summary>
+        /// <see cref="DEZENTRALE_KAELTE_OHNE_EER"/> — je Split-Zeile ohne rechnenden EER (K3), nur in einem Projekt mit
+        /// Kühlbetrieb (sonst rechnet die Zeile nicht). Dieselbe Regel wie beim Speichern
+        /// (<see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung(Z_ProjektKaeltebedarfModel)"/>). Ohne Split-Zeile kein Befund.
+        /// </summary>
+        public static void DezentraleKaeltePruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            if (idProjekt <= 0 || befunde == null || !KaeltebedarfSchema.TabellenVorhanden()) return;
+            var gruende = new List<KeyValuePair<string, string>>();
+            foreach (Z_ProjektKaeltebedarfModel z in Z_ProjektKaeltebedarfCtrl.LiesProjekt(idProjekt))
+            {
+                if (z.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT) continue;
+                string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(z);
+                if (grund != null) gruende.Add(new KeyValuePair<string, string>(z.Bezeichner, grund));
+            }
+            if (Z_ProjektKaeltebedarfCtrl.LastgangDeckungLesbar())
+            {
+                DataTable dt = StilleDb.Tabelle(
+                    "SELECT * FROM " + KaeltebedarfSchema.TAB_LASTGANG + " WHERE ID_Projekt = ? AND " +
+                    KaeltebedarfSchema.SPALTE_DECKUNG + " = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                    StilleDb.Par("@deck", DbParamTyp.VarWChar, KaeltebedarfSchema.DECKUNG_SPLIT));
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        var w = new Z_ProjWaermebedarfModel
+                        {
+                            m_szBezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner")),
+                            Kanal = StilleDb.Text(StilleDb.Feld(r, "Kanal")),
+                        };
+                        Z_ProjektKaeltebedarfCtrl.DeckungLesen(r, w);
+                        if (!Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(w)) continue;
+                        string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(w);
+                        if (grund != null) gruende.Add(new KeyValuePair<string, string>(w.m_szBezeichner, grund));
+                    }
+            }
+            if (gruende.Count == 0 || !KonfigurationCtrl.KuehlbetriebLesen(idProjekt)) return;
+            foreach (KeyValuePair<string, string> g in gruende)
+                befunde.Add(Befund(DEZENTRALE_KAELTE_OHNE_EER, false, 0, 0,
+                    string.Format(MyResource.Resource.SIMWARN_KAELTE_SPLIT_OHNE_EER, g.Key, g.Value)));
         }
 
         /// <summary>

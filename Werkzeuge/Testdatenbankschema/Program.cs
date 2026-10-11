@@ -3443,7 +3443,7 @@ namespace Testdatenbankschema
             }
 
             // ---- Schritt KaeltemittelSchema.SCHRITT (KM4-E1): Kaeltemittel als Stammdatum - Tab_Kaeltemittel_STAMM samt
-            //      Saat (achtzehn Codes VORLAEUFIG) und Katalogschluesseln, ID_Kaeltemittel an Katalog und Projektkopie der
+            //      Saat (achtzehn Codes GESICHERT) und Katalogschluesseln, ID_Kaeltemittel an Katalog und Projektkopie der
             //      Kaeltemaschine mit Zuordnung des Textbestands, Tab_Projekt.Inbetriebnahmejahr. Aus DERSELBEN Quelle wie
             //      SchemaMigration.Schritt_Kaeltemittel.
             //

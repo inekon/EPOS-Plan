@@ -351,6 +351,14 @@ namespace WindowsFormsApplication1
         /// fragt, der Zahlenweg ist derselbe.
         /// </summary>
         public Action<DataRow, double[]> JeProfil;
+
+        /// <summary>
+        /// Wird je GERECHNETER Zuordnungszeile gerufen — mit der ID der Zuordnungszeile (0 bei einer Namensliste der
+        /// Vorschau), ihrem Kopfsatz und ihrer Jahresreihe [kWh], unmittelbar nach <see cref="JeProfil"/> (K3, Konzept
+        /// Kältebedarf 4.1/4.2: die Deckungsart hängt an der ZEILE, nicht am Kopf). Die Reihe gehört der Routine; wer sie
+        /// behalten will, kopiert sie. <c>null</c> = niemand fragt, der Zahlenweg ist derselbe.
+        /// </summary>
+        public Action<int, DataRow, double[]> JeZeile;
     }
 
     /// <summary>
@@ -530,6 +538,9 @@ namespace WindowsFormsApplication1
             /// <summary>ID des Kopfsatzes laut Zuordnungszeile; 0 = über den Namen suchen.</summary>
             public int KopfId;
 
+            /// <summary>ID der Zuordnungszeile selbst (K3: Schlüssel der Deckungsart); 0 = Namensliste der Vorschau.</summary>
+            public int ZeilenId;
+
             /// <summary>Jahressumme der Zuordnungszeile [MWh]; <c>null</c> = nachschlagen.</summary>
             public double? Summe;
 
@@ -555,7 +566,7 @@ namespace WindowsFormsApplication1
             // PW2/BW2: die Kalenderspalte nur, wenn der Schemaschritt gelaufen ist.
             bool mitKalender = BedarfNetzKalenderSchema.KalenderspaltenVorhanden();
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT " + quelle.ZuordnungIdSpalte + " AS KopfId, " + quelle.ZuordnungSummeSpalte +
+                "SELECT ID AS ZeilenId, " + quelle.ZuordnungIdSpalte + " AS KopfId, " + quelle.ZuordnungSummeSpalte +
                 " AS Summe, Bezeichner" +
                 (mitKalender ? ", " + BedarfNetzKalenderSchema.SPALTE_ID_KALENDER + " AS KalenderId" : "") +
                 " FROM " + quelle.ZuordnungTabelle +
@@ -569,6 +580,7 @@ namespace WindowsFormsApplication1
                 {
                     Name = row["Bezeichner"] != DBNull.Value ? row["Bezeichner"].ToString() : "",
                     KopfId = row["KopfId"] != DBNull.Value ? Convert.ToInt32(row["KopfId"]) : 0,
+                    ZeilenId = row["ZeilenId"] != DBNull.Value ? Convert.ToInt32(row["ZeilenId"]) : 0,
                     // NULL heißt wie im Bestand „keine Summe" (0 skaliert nicht).
                     Summe = row["Summe"] != DBNull.Value ? Convert.ToDouble(row["Summe"]) : 0.0,
                     KalenderId = mitKalender && row["KalenderId"] != DBNull.Value ? Convert.ToInt32(row["KalenderId"]) : 0
@@ -803,6 +815,7 @@ namespace WindowsFormsApplication1
                             quelle.Praefix, name, kal.Bezeichner));
                 }
                 info?.JeProfil?.Invoke(kopf, jahreswerte);
+                info?.JeZeile?.Invoke(eintrag.ZeilenId, kopf, jahreswerte);
                 WPPlan.Core.BhkwPlan.VectorenAddieren(jahreswerte, ziel);
                 if (info != null) info.Gerechnet++;
             }

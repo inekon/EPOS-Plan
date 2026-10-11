@@ -105,6 +105,96 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // ---- Die Lastgangzeile (Z_ProjektWaermebedarf, Kanal Kuehlung) - dieselben Regeln ----------------------------
+
+        /// <summary>Gehört die Lastgangzeile zum Kanal Kühlung? Nur dort ist die Deckungsart wirksam (Konzept 5).</summary>
+        public static bool IstKuehlkanal(Z_ProjWaermebedarfModel w) =>
+            w != null && Z_ProjektGebGanglinieCtrl.KanalOderHeizung(w.Kanal) == DbWerte.KANAL_KUEHLUNG;
+
+        /// <summary>
+        /// Prüft die Deckungsfelder einer Lastgangzeile — im Kanal Kühlung nach denselben Regeln wie die Profilzeile
+        /// (<see cref="Deckungspruefung(Z_ProjektKaeltebedarfModel)"/>); jeder andere Kanal ist zulässig, er schreibt stets
+        /// „zentral“ (<see cref="Normalisieren(Z_ProjWaermebedarfModel)"/>).
+        /// </summary>
+        public static string Deckungspruefung(Z_ProjWaermebedarfModel w)
+        {
+            if (w == null) return "keine Zeile";
+            return IstKuehlkanal(w) ? Deckungspruefung(Als(w)) : null;
+        }
+
+        /// <summary>
+        /// Leert die Split-Felder einer Lastgangzeile wie bei der Profilzeile; außerhalb des Kanals Kühlung steht die Zeile
+        /// stets auf „zentral“ mit leeren Split-Feldern.
+        /// </summary>
+        public static void Normalisieren(Z_ProjWaermebedarfModel w)
+        {
+            if (w == null) return;
+            if (!IstKuehlkanal(w)) w.Deckung = KaeltebedarfSchema.DECKUNG_ZENTRAL;
+            Z_ProjektKaeltebedarfModel k = Als(w);
+            Normalisieren(k);
+            w.Deckung = k.Deckung; w.EerWeg = k.EerWeg; w.Eer1 = k.Eer1; w.Taussen1 = k.Taussen1;
+            w.Eer2 = k.Eer2; w.Taussen2 = k.Taussen2; w.KuehlIdCarrier = k.KuehlIdCarrier;
+            w.KuehlEigenerZaehler = k.KuehlEigenerZaehler;
+        }
+
+        /// <summary>Tragen die Lastgangzuordnungen die Deckungsspalten (Schritt <see cref="KaeltebedarfSchema"/>)?</summary>
+        public static bool LastgangDeckungLesbar() =>
+            DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_LASTGANG, KaeltebedarfSchema.SPALTE_DECKUNG);
+
+        /// <summary>
+        /// Die Werte der acht Deckungsspalten einer (normalisierten) Lastgangzeile in der Folge von
+        /// <see cref="KaeltebedarfSchema.DECKUNGSSPALTEN"/> — für den Schreibweg <see cref="WizardCtrl.Add_WaermebedarfExtern"/>.
+        /// </summary>
+        public static DbParam[] DeckungParameter(Z_ProjWaermebedarfModel w) => new[]
+        {
+            new DbParam("@deck", w.Deckung ?? KaeltebedarfSchema.DECKUNG_ZENTRAL),
+            new DbParam("@weg", (object)w.EerWeg ?? DBNull.Value),
+            new DbParam("@e1", (object)w.Eer1 ?? DBNull.Value),
+            new DbParam("@t1", (object)w.Taussen1 ?? DBNull.Value),
+            new DbParam("@e2", (object)w.Eer2 ?? DBNull.Value),
+            new DbParam("@t2", (object)w.Taussen2 ?? DBNull.Value),
+            new DbParam("@car", (object)w.KuehlIdCarrier ?? DBNull.Value),
+            new DbParam("@zae", w.KuehlEigenerZaehler ? 1 : 0),
+        };
+
+        /// <summary>
+        /// Liest die Deckungsfelder einer Lastgangzeile spaltentolerant aus einer gelesenen Zeile (<c>SELECT *</c>); fehlt
+        /// eine Spalte (Stand vor Schritt 213), bleibt der Wert der Vorgabe.
+        /// </summary>
+        public static void DeckungLesen(DataRow r, Z_ProjWaermebedarfModel w)
+        {
+            if (r == null || w == null) return;
+            DataColumnCollection c = r.Table.Columns;
+            object Feld(string spalte) => c.Contains(spalte) ? r[spalte] : null;
+            object deckung = Feld(KaeltebedarfSchema.SPALTE_DECKUNG);
+            w.Deckung = deckung == null || deckung == DBNull.Value || deckung.ToString().Trim().Length == 0
+                        ? KaeltebedarfSchema.DECKUNG_ZENTRAL : deckung.ToString().Trim();
+            object weg = Feld(KaeltebedarfSchema.SPALTE_EER_WEG);
+            w.EerWeg = weg == null || weg == DBNull.Value ? null : weg.ToString();
+            w.Eer1 = Zahl(Feld(KaeltebedarfSchema.SPALTE_EER_1));
+            w.Taussen1 = Zahl(Feld(KaeltebedarfSchema.SPALTE_TAUSSEN_1));
+            w.Eer2 = Zahl(Feld(KaeltebedarfSchema.SPALTE_EER_2));
+            w.Taussen2 = Zahl(Feld(KaeltebedarfSchema.SPALTE_TAUSSEN_2));
+            w.KuehlIdCarrier = Ganz(Feld(KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER));
+            w.KuehlEigenerZaehler = (Ganz(Feld(KaeltebedarfSchema.SPALTE_KUEHL_EIGENER_ZAEHLER)) ?? 0) != 0;
+        }
+
+        /// <summary>Übernimmt die Deckungsfelder von <paramref name="quelle"/> nach <paramref name="ziel"/>.</summary>
+        public static void DeckungUebernehmen(Z_ProjWaermebedarfModel quelle, Z_ProjWaermebedarfModel ziel)
+        {
+            if (quelle == null || ziel == null) return;
+            ziel.Deckung = quelle.Deckung; ziel.EerWeg = quelle.EerWeg; ziel.Eer1 = quelle.Eer1; ziel.Taussen1 = quelle.Taussen1;
+            ziel.Eer2 = quelle.Eer2; ziel.Taussen2 = quelle.Taussen2; ziel.KuehlIdCarrier = quelle.KuehlIdCarrier;
+            ziel.KuehlEigenerZaehler = quelle.KuehlEigenerZaehler;
+        }
+
+        private static Z_ProjektKaeltebedarfModel Als(Z_ProjWaermebedarfModel w) => new Z_ProjektKaeltebedarfModel
+        {
+            Bezeichner = w.m_szBezeichner ?? "",
+            Deckung = w.Deckung, EerWeg = w.EerWeg, Eer1 = w.Eer1, Taussen1 = w.Taussen1, Eer2 = w.Eer2,
+            Taussen2 = w.Taussen2, KuehlIdCarrier = w.KuehlIdCarrier, KuehlEigenerZaehler = w.KuehlEigenerZaehler,
+        };
+
         private static bool ImBereich(double? t) =>
             t != null && t >= KaeltebedarfSchema.TAUSSEN_MIN && t <= KaeltebedarfSchema.TAUSSEN_MAX;
 
