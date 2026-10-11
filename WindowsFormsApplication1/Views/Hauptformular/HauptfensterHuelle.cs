@@ -148,7 +148,7 @@ namespace WindowsFormsApplication1
                     new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogFensterHuelle.Gaben),
                 // Die Kaeltemaschinen des offenen Projekts (KU3-4c) - der Erzeugerdialog als freie Ansicht.
                 ["KaeltemaschineAnlageGaben"] =
-                    new Func<int, IReadOnlyDictionary<string, object>>(KaeltemaschineAnlageHuelle.Gaben),
+                    new Func<int, IReadOnlyDictionary<string, object>>(KaeltemaschineAnlageFensterHuelle.Gaben),
 
                 // DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage PW2, BW2) als freie
                 // Ansicht der Wurzel - dieselbe Bauart wie die Kataloge darueber.
