@@ -79,7 +79,7 @@ Kennzeichen als Parameter aus den Hüllen, nie direkt aus der Registry.
 ## 5 Merge
 
 - `d39e5b83`: origin/ios_migration_september (51 Commits, #948–#957 anderer Sitzungen). Die eigenen
-  Statuszeilen #948/#949 dieser Sitzung wurden auf **#958/#959** umnummeriert. Beim Zusammenführen mit origin am 11.10.2026 (dort waren #958–#968 vergeben) wurden die drei Zeilen dieser Sitzung zuerst auf #969/#970/#971 und nach einem weiteren Zusammenführen (dort #969–#971 vergeben) auf **#972/#973/#974** umnummeriert.
+  Statuszeilen #948/#949 dieser Sitzung wurden auf **#972/#973** umnummeriert.
 - `01dc4314`: Welle 1a. Ressourcen beider Seiten vereinigt; Git legt das gemeinsame schließende
   `</data>` hinter den Block, deshalb beide Seiten plus ein `</data>`; Designer neu erzeugt.
 - `5eb9e5f2`: Welle 1b. Konflikte mit AH-V5 im Einstellungsdialog und -controller beidseitig
@@ -93,6 +93,7 @@ Kennzeichen als Parameter aus den Hüllen, nie direkt aus der Registry.
 - Referenzlauf nicht betroffen (kein Rechenweg).
 - CI: Push `5eb9e5f2` läuft; der Lauf auf `6f166a81` war rot durch die fremde Einstufung von
   `Vorheizzeit_H` (AH-V6 auf origin bringt die Reparatur, mit dem Merge übernommen).
+- Nachtrag: gepusht `5876851d`, Kern-Lauf 38134668642 (kern.yml, ubuntu) grün, abgeschlossen 12:21 UTC.
 
 ## 7 Umgebung
 
