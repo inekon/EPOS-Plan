@@ -9,7 +9,7 @@ RustDesk und mit AS-Q10 iOS abstimmen — evtl nur (c) aus AS-Q9." und danach �
 (remote) zurück, wird später bearbeitet." Dazu der Entscheid „Änderung in der Wiki vornehmen: kein
 TeamViewer als Support" — die beiden Wiki-Quellen nennen seither keinen Produktnamen mehr (1.1).
 Abschnitt 4 ist auf RustDesk umgeschrieben; die Tabelle 4.1 hält den Vergleich als Begründung fest.
-**Stufe 1 ist umgesetzt** (11.10.2026, #974; Protokoll [`2026-10-11_AS1_Entwicklermodus.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS1_Entwicklermodus.md)); die übrigen Stufen aus Abschnitt 8 sind offen. Die Entwicklerseite
+**Die Stufen 1 und 2 sind umgesetzt** (11.10.2026, #974 und #985; Protokolle [`2026-10-11_AS1_Entwicklermodus.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS1_Entwicklermodus.md) und [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); Stufe 3 (3a Dialog „Über EPOS-Plan“, Diagnose, Geste im Dialog; 3b Supportpaket) ist umgesetzt (11.10.2026, #987; Protokoll [`2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md)), die übrigen Stufen aus Abschnitt 8 sind offen. **Offen:** der Betrieb der Fernwartung bei INEKON (Fernwartungsseite, Server, signierter Client; 4.4, 4.8). Die Entwicklerseite
 (Tastenfolgen, Schlüssel, Pfade, Supportablauf) steht im
 [`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](Entwicklerhandbuch_Administration_Support_EPOS-Plan.md),
 mit Word-Fassung daneben.
@@ -194,10 +194,16 @@ Release-Anwendung, auch beim Kunden.
 | Weg | Wann | Handhabung | Wieder aus |
 |---|---|---|---|
 | **Verknüpfung „EPOS-Plan (Entwickler)"** mit `--entwickler` | Entwicklerrechner, Vorführung, Fehlersuche beim Kunden über Fernwartung | Verknüpfung einmal anlegen (das Setup legt sie **nicht** an — sie bleibt dem Entwickler vorbehalten); Start über sie | nächster Start ohne Argument |
-| **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+Alt+E** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" (löscht die Einstellung) |
+| **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+Alt+E** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" oder dieselbe Geste im Dialog (löscht die Einstellung) |
 | **Umgebungsvariable** `EPOS_ENTWICKLER=1` | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf | einmal im System setzen | Variable entfernen |
 
-Die Geste liegt bis Stufe 3 im Hauptfenster (`Hauptfensterrahmen.ProcessCmdKey`), weil „Hilfe → Version“ bis dahin ein Meldungsfeld ist; mit Stufe 3 wandert sie in den Dialog „Über EPOS-Plan“.
+Die Geste wirkt nur im geöffneten Dialog „Über EPOS-Plan“, nicht im Hauptfenster. Unter Windows fängt
+das Fenster (`UeberFenster`) die Tastenfolge über `BlazorDialogForm.Befehlstaste` ab, bevor die WebView
+sie sieht, und schaltet eine Nachricht später: Ist der Modus aus, nach der Rückfrage ein (bei Sperre
+des Administrators eine Meldung), ist er an, aus — läuft er über Umgebung oder Startargument, nennt
+die Meldung den Grund. Danach zeigt der Dialog den neuen Diagnoseblock, und das Hauptfenster versorgt
+Menü, Marke und Titel neu (`HauptfensterHuelle.FreigabeNeuVersorgen`). Das Tippen auf die
+Versionszeile am iPad ist nicht gebaut.
 
 Was eingeschaltet ist, sieht man: die Kopfleiste trägt rechts neben der Versionsnummer die
 **Marke „Entwickler"** (Warnfarbe `--epos-warn`, Tooltip mit der Quelle), der Fenstertitel den
@@ -251,7 +257,7 @@ Herkunftszeile zeigt „aus Projektdatei", „Neu lesen" bleibt möglich (es bra
 | Zapfprofil „Experte" | Anwender (bleibt) | fachliche Stufe des Zapfprofilkonzepts, kein Entwicklerwerkzeug |
 | Gebäude-Rechenweg „Tagesbilanz" | Anwender (bleibt) | Wahlweg laut ADR-006 bis zur Ablösung; sein Ende ist ein eigener Entscheid |
 | „Exportzusage (IDS) öffnen…" | **Entwickler** | Prüfartefakt des Exports; der Export selbst bleibt Anwender |
-| Zapfprofil-Rechenvorgaben (`Zapfprofil.*`) | **Entwickler**, Rubrik „Entwicklung" im Einstellungsdialog | heute ohne Oberfläche; im Modus sichtbar und setzbar statt per Registry |
+| Zapfprofil-Rechenvorgaben (`Zapfprofil.*`) | **Anwender** — Rubrik „Zapfprofil" im Einstellungsdialog | die Rubrik zeigt die fünf Vorgaben allen Anwendern und schreibt sie für alle; leer gilt die Vorgabe des Programms, ungültige Werte verwirft der Leser mit Hinweis |
 | WebView-Entwicklerwerkzeuge | **Entwickler** statt `#if DEBUG` | im Release beim Kunden nutzbar |
 | Prüfhaken der Simulation (`#if DEBUG`) | bleiben Build-Schalter | sie verändern den Rechenweg; ein Laufzeitschalter wäre ein Risiko für den Referenzlauf |
 
@@ -327,15 +333,14 @@ Neuer `Seitenschluessel.Fernwartung`, Zeile in `Menuetabelle.cs`, Fall in `Haupt
 Textschlüssel `MENU_FERNWARTUNG` („Fernwartung…" / „Remote support…"). Der Punkt ist **immer
 sichtbar** und ohne Lizenz **gesperrt** (Zielbild 2): dafür bekommt `Menuepunkt` neben der Stufe
 ein zweites, kleines Datum — `sperrgrund` als Textschlüssel —, das die Hülle beim Zuschnitt setzt
-(`Menuetabelle.Sichtbar(stufe, sperren)`); das `Menueband` zeichnet einen gesperrten Punkt
+(`Menuetabelle.Sichtbar(stufe, sperrgrund)`); das `Menueband` zeichnet einen gesperrten Punkt
 ausgegraut mit dem Grund als Tooltip und löst keinen Sprung aus. Das ist die erste Sperre im Menü;
 sie bleibt Daten (die Hülle entscheidet, die Komponente zeigt).
 
 **Dialog `Dialoge/Hilfe/FernwartungDialog.razor`** (Hülle `EPOS.UI.Daten/Hilfe/FernwartungHuelle.cs`,
 Fenster in der Schale wie `KatalogabgleichFenster`), vier Zonen von oben nach unten:
 
-1. **Kontakt** — Telefon, E-Mail, Zeiten (Ressourcen `SUP_KONTAKT_*`, beide Sprachen; Adresse als
-   `mailto:` über `AdresseOeffnen`). Ohne Lizenz oder ohne Internet ist das der Teil, der immer
+1. **Kontakt** — Telefon (in en-US mit Landesvorwahl), E-Mail, Zeiten (werktags 9–16 Uhr; Ressourcen `SUP_KONTAKT_*`, beide Sprachen; die E-Mail-Adresse ist ein `mailto:`-Link, auch im gesperrten Zustand). Ohne Lizenz oder ohne Internet ist das der Teil, der immer
    nützt.
 2. **Ihre Angaben für den Support** — der Diagnoseblock aus Abschnitt 5 (Version, Schemastand,
    Katalogfassung, Lizenztyp und -nummer, Firma, Gerätekennung-Kurzform, Windows-Fassung, Sprache)
@@ -352,14 +357,13 @@ Fenster in der Schale wie `KatalogabgleichFenster`), vier Zonen von oben nach un
 4. **Fußleiste** nach Hausregel: Füller · „Schließen" (primär). Kein OK/Abbrechen — der Dialog hat
    keinen Arbeitsstand.
 
-Ist die Lizenzbedingung (4.3) nicht erfüllt, bleibt Zone 3 **sichtbar, aber gesperrt**, mit dem Grund
-in einer Hinweiszeile („Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre
-Lizenz unter Hilfe → Lizenz." / für die Testversion: „… steht in der Testversion nicht zur Verfügung;
-Sie erreichen uns per E-Mail.").
+Der Knopf „Fernwartungsseite öffnen“ ist nur frei, wenn die Lizenzbedingung (4.3) erfüllt ist und die Schale den Aufruf zum Öffnen der Adresse mitgibt. Sonst bleibt Zone 3 **sichtbar, der Knopf gesperrt**, mit dem Grund
+in einer Hinweiszeile über ihm („Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre
+Lizenz unter Hilfe → Lizenz." / für die Testversion: „Die Fernwartung steht in der Testversion nicht zur Verfügung. Sie erreichen uns per E-Mail.").
 
 ### 4.3 „Bei vorhandener Lizenz" — die Bedingung
 
-Vier Lesarten, in `LizenzCtrl` als eine Frage `FernwartungErlaubt(LizenzLage)` gebaut, damit die
+Vier Lesarten, in `LizenzCtrl` als eine Frage `FernwartungErlaubt()` (ohne Nebenwirkung; die Regel selbst als `internal FernwartungErlaubt(token, status)`) gebaut, damit die
 Hülle sie stellt und die Komponente nur das Ergebnis sieht:
 
 | Lesart | Bedingung | Folge |
@@ -372,7 +376,7 @@ Hülle sie stellt und die Komponente nur das Ergebnis sieht:
 **Empfehlung: (b) jetzt, (d) als Ausbau** (AS-Q8). (b) deckt den Wortlaut „bei vorhandener Lizenz"
 und lässt die Kunden hinein, die Support am nötigsten haben; der Supportvertrag ist heute nicht im
 Token, und die Grenze „nur mit Vertrag" wäre ohne Server-Erweiterung nicht prüfbar. Der
-`UhrManipuliert`-Fall bleibt gesperrt (der Zustand ist verdächtig; der Kontaktblock bleibt).
+`UhrManipuliert`-Fall bleibt gesperrt (der Zustand ist verdächtig; der Kontaktblock bleibt). Das Lesen des Zeitankers ohne Schreiben (`LizenzManager.AnkerOhneSchreiben`) macht ihn erkennbar, ohne die Lizenzablage zu verändern. Zusätzlich gesperrt sind ein unbekannter Lizenztyp und ein Token, das zu einem fremden Gerät gehört; die Gründe sind `FW_SPERRE_LIZENZ` (ohne Lizenz: Wartungsvertrag, zuerst die Lizenz aktivieren) und `FW_SPERRE_TEST` (Testversion).
 
 ### 4.4 Bereitstellung des Fernwartungsprogramms
 
@@ -461,24 +465,27 @@ im Client. Der Vergleich der Kosten gehört zur Zuarbeit des Anwenders vor Stufe
 
 ## 5 Der Dialog „Über EPOS-Plan" und die Diagnosedaten
 
-Der Menüpunkt *Version* wird vom Meldungsfeld zum Razor-Dialog `Dialoge/Hilfe/UeberDialog.razor`
-(Hülle `UeberHuelle`), denn drei Dinge brauchen denselben Ort: die Diagnosedaten (4.2 Zone 2), der
+Der Menüpunkt *Version* öffnet den Razor-Dialog `Dialoge/Hilfe/UeberDialog.razor`
+(Hülle `EPOS.UI.Daten/Hilfe/UeberHuelle.cs`, Windows-Fenster `Views/Help/UeberFenster.cs`), denn drei Dinge brauchen denselben Ort: die Diagnosedaten (4.2 Zone 2), der
 Kontakt und die Geste des Entwicklermodus (3.2). Inhalt:
 
-- Kopf: Produktname, Claim, Version mit Baudatum, INEKON — wie heute.
+- Kopf: Produktname, Claim, Version mit Baudatum (Schreibzeitpunkt der Programmdatei), INEKON.
 - **Diagnoseblock** (Kern-Baustein `EPOS.Kern/Allgemein/Diagnose/Diagnosedaten.cs`, plattformfrei;
   gibt einen Textblock und Einzelwerte): Programmversion, Plattform und Betriebssystemfassung,
   Sprache, Datenbankpfad, Schemastand (`Tab_Applikation.SchemaVersion` gegen `SchemaStand.Zielversion`),
   Katalogfassung, Lizenztyp, Lizenznummer, Firma, Status, gültig bis, Gerätekennung-Kurzform
   (erste acht Zeichen des Abdrucks — genug zum Wiederfinden im Portal), Protokollordner,
-  Entwicklermodus (Quelle). Knöpfe „Diagnosedaten kopieren" und „Protokollordner öffnen" (Windows).
+  Entwicklermodus (Quelle). Knöpfe „Diagnosedaten kopieren" und „Protokollordner öffnen" (Windows;
+  der Ordner kommt aus `Diagnosedaten.ProtokollordnerPfad`). Ohne Rückruf der Plattform kein Knopf.
 - Kontakt (wie 4.2 Zone 1) und der Knopf „Fernwartung…" (öffnet den Fernwartungsdialog).
 - Fußleiste: Füller · „Schließen".
 
 **Supportpaket (Stufe 3b, AS-Q6):** „Supportpaket speichern…" legt eine ZIP-Datei ab mit
 `Diagnosedaten.txt`, `Ausnahmen.txt` und `Ausnahmen.alt.txt`, `migration_protokoll.txt`,
-dem Auszug aus `Tab_Katalogabgleich` — **ohne Projektdaten und ohne `ki_aktionen.txt`** (es kann
-Eingaben des Anwenders enthalten; nur mit eigenem Haken). Die Datei hängt der Anwender an seine
+dem Auszug aus `Tab_Katalogabgleich` (`Katalogabgleich.txt`, die jüngsten 2 000 Zeilen) — **ohne
+Projektdaten und ohne `ki_aktionen.txt`** (es kann Eingaben des Anwenders enthalten; nur mit eigenem
+Haken „KI-Protokoll beilegen", Vorgabe aus). Fehlende Quellen nennt die Ergebniszeile, ohne Fehler
+(Kern `Allgemein/Support/Supportpaket.cs`). Die Datei hängt der Anwender an seine
 E-Mail; das ist der Supportweg ohne Fernwartung, auch für die Testversion.
 
 Zwei Nebenbefunde aus der Sichtung, die hier nur vermerkt sind (eigene Aufträge): die iOS-Version
@@ -518,7 +525,7 @@ fest, auch dort, wo der Entscheid abweicht.
 | **AS-Q1** | Quellen des Entwicklermodus | (a) Einstellung + Startargument + Umgebungsvariable mit HKLM-Sperre (3.1); (b) nur Startargument und Umgebungsvariable, nichts Dauerhaftes; (c) Lizenztyp „intern" als einzige Quelle | (a) — ein Baustein, vier Quellen, der Administrator geht vor; (c) scheitert am Kundenrechner, auf dem der Entwickler mit der Kundenlizenz arbeitet | **(a)** |
 | **AS-Q2** | Geste zum Einschalten | (a) Tastenfolge Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" mit Rückfrage; (b) wie (a) zusätzlich mit Kennwort (fest in den Ressourcen, kein Geheimnis vor einem Entwickler); (c) sichtbarer Haken im Einstellungsdialog | (a) — die Bereiche sind kein Geheimnis, nur kein Anwenderweg; ein Kennwort hält niemanden auf und kostet Pflege; (c) widerspricht dem Auftrag | **(a)** |
 | **AS-Q3** | Wo verborgene Elemente stehen | (a) am Fachort (Knopf im Importdialog bleibt dort, nur verborgen) und eigener Kopf *Entwicklung* für Werkzeuge ohne Fachort; (b) alles in den Kopf *Entwicklung* | (a) — der Projektdatei-Knopf gehört neben die Dateizeile, sonst bricht der Bedienweg des Imports | **(a)** |
-| **AS-Q4** | Welche Kandidaten aus 3.4 Entwicklerbereich werden | je Zeile ja/nein | wie die Spalte „Empfehlung" in 3.4 — fünf werden Entwicklerbereich (Wiederherstellen im Katalogabgleich, KI-Werkzeuge, IDS-Zusage, Zapfprofil-Rechenvorgaben, WebView-Entwicklerwerkzeuge), vier bleiben Anwender, die Prüfhaken bleiben Build-Schalter | **wie empfohlen** |
+| **AS-Q4** | Welche Kandidaten aus 3.4 Entwicklerbereich werden | je Zeile ja/nein | wie die Spalte „Empfehlung" in 3.4 — fünf werden Entwicklerbereich (Wiederherstellen im Katalogabgleich, KI-Werkzeuge, IDS-Zusage, Zapfprofil-Rechenvorgaben, WebView-Entwicklerwerkzeuge), vier bleiben Anwender, die Prüfhaken bleiben Build-Schalter | **wie empfohlen, mit einer Ausnahme (Entscheid 11.10.2026):** die Zapfprofil-Rechenvorgaben werden Anwenderrubrik „Zapfprofil" („sollte enthalten sein ohne Entwickler-Abhängigkeit") — vier werden Entwicklerbereich, fünf bleiben Anwender; im Code umgesetzt |
 | **AS-Q5** | Bestand aus dem Modus ohne Modus | (a) lesbar und „Neu lesen" möglich, nur Neuanlage verborgen; (b) alles zur Projektdatei verborgen | (a) — verborgene Daten wären verwaiste Daten; die Herkunft bleibt sichtbar | **(a)** |
 | **AS-Q6** | Protokolle und Supportpaket | (a) `ki_aktionen.txt` wandert nach `Logs\`, Supportpaket als ZIP ohne Projektdaten (Stufe 3b); (b) nur Diagnosedaten kopieren, kein Paket | (a) — ein Ordner, eine Datei an die E-Mail; der KI-Auszug nur mit eigenem Haken | **(a)** |
 | **AS-Q7** | Fernwartungswerkzeug | (a) TeamViewer personalisiertes QuickSupport-Modul; (b) AnyDesk Custom Client; (c) Windows Quick Assist; (d) RustDesk | (a) — Bestand bei INEKON, ohne Installation beim Kunden, Service-Warteschlange; (c) als Textzeile | **(d) RustDesk** — eigener Server, keine Lizenzkosten je Helfer, quelloffener Client; Folgen in 4.4 und 4.8; dazu „kein TeamViewer als Support" im Wiki |
@@ -535,8 +542,8 @@ en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fuß
 | Stufe | Inhalt | Abnahme |
 |---|---|---|
 | **1 — Entwicklermodus und Projektdatei** | `Entwicklermodus`, `Freigabestufe` am Menüpunkt, `Menuetabelle.Sichtbar`, Marke, Kopf *Entwicklung* mit den sieben Punkten (3.5), die drei Einstiege der Projektdatei, iOS-Dateifilter, KI-Feldkarten, `Program.Main(args)` | Kern-Filter grün; `EntwicklerbereicheWacheTests`, `MenuebandTests` mit zwei Bäumen; Windows-Build auf Linux (Schale berührt); Sichtprobe: ohne Modus kein Projektdatei-Knopf und kein Kopf *Entwicklung*, mit `--entwickler` beides und die Marke; HKLM-Sperre schlägt alles — **umgesetzt** (11.10.2026, #974) |
-| **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **Zuarbeit des Anwenders vor der Stufe (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur |
-| **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`; Sichtprobe: Textblock vollständig, Geste schaltet |
+| **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **umgesetzt** (11.10.2026, #985, Commit `bb594b7a`; Protokoll [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); **offen beim Anwender (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur, Sichtprobe |
+| **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`, `UeberDialogTests`; Sichtprobe: Textblock vollständig, Geste schaltet — **umgesetzt** (11.10.2026, #987, Commits `fbb0d2c1`, `98b15126`; Protokoll [`2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md)): 3a Dialog und Geste im Dialog, 3b Supportpaket |
 | **4 — Supportvertrag im Token** (auf Zuruf) | `support_bis` im Server, tolerantes Lesen im Client, Lesart (d) wählbar | Serverseite durch den Anwender ausgerollt; Clienttest mit Token ohne und mit Feld |
 
 Reihenfolge: 1 → 2 → 3; Stufe 3 kann mit Stufe 2 zusammen laufen, weil der Diagnoseblock beiden
@@ -546,7 +553,7 @@ wo die Schale berührt ist — dem Windows-Build auf Linux als Teil des Gates.
 **Logbuch-Entwürfe** (Veröffentlichung mit dem nächsten Sammel-Upload, Versionsnummer beim
 Anwender erfragen): „Unter Hilfe → Fernwartung… führt ein Weg zur Fernwartung durch den
 INEKON-Support; Voraussetzung ist eine aktivierte Lizenz." — „Hilfe → Version zeigt jetzt
-die Angaben, die der Support benötigt, mit ‚Diagnosedaten kopieren'." Stufe 1 bekommt keinen
+die Angaben, die der Support benötigt, mit ‚Diagnosedaten kopieren'." — „Unter Hilfe → Version speichert ‚Supportpaket speichern…' die Protokolle für den Support als ZIP-Datei." — „Die Rechenvorgaben des Zapfprofilgenerators stehen im Einstellungsdialog in der Rubrik ‚Zapfprofil'." Stufe 1 bekommt keinen
 Eintrag (Entwicklerbereiche sind nicht Teil der Anwenderdokumentation).
 
 

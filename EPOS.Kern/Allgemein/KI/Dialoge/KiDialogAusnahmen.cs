@@ -160,6 +160,9 @@ namespace WindowsFormsApplication1
                            "Die Namensabfrage gehört zu Neu… und Duplizieren…, die Sätze anlegen."),
             new KiAusnahme("KatalogImportDialog", KiAusnahmegrund.Import,
                            "Der Herstellerimport legt Katalogsätze an."),
+            new KiAusnahme("UeberDialog", KiAusnahmegrund.Export,
+                           "Sein einziges Eingabefeld ist der Haken „KI-Protokoll beilegen“ des Supportpakets; " +
+                           "was an den Support geht, entscheidet der Anwender."),
 
             // ---- Aktionen, Rückfragen, Werkzeuge -------------------------------------
             new KiAusnahme("ProjektWahlDialog", KiAusnahmegrund.Aktion,

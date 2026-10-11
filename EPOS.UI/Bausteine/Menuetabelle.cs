@@ -434,6 +434,9 @@ public static class Menuetabelle
             Menuepunkt.Trennstrich("toolStripSeparator7"),
             new Menuepunkt("MenuItem_Lizenz", "MENU_LIZENZ", Seitenschluessel.Lizenztext),
             new Menuepunkt("MenuItem_Dokumentation", "MENU_DOKUMENTATION", Seitenschluessel.Dokumentation),
+            // Administration und Support, Stufe 2 (Konzept Abschnitt 4.2): immer sichtbar,
+            // ohne bezahlte Lizenz gesperrt - den Grund setzt die Huelle beim Zuschnitt.
+            new Menuepunkt("MenuItem_Fernwartung", "MENU_FERNWARTUNG", Seitenschluessel.Fernwartung),
             Menuepunkt.Trennstrich("MenuItem_TrennerKiHilfe"),
             new Menuepunkt("MenuItem_KiAssistent", "KI_MENUE_ASSISTENT", Seitenschluessel.KiAssistent, kuerzel: "F1"),
         },
@@ -517,7 +520,19 @@ public static class Menuetabelle
     public static IReadOnlyList<Menuepunkt> Sichtbar(Freigabestufe stufe) =>
         _sichtbar.GetOrAdd(stufe, s => Zuschneiden(Eintraege, s));
 
-    private static IReadOnlyList<Menuepunkt> Zuschneiden(IEnumerable<Menuepunkt> punkte, Freigabestufe stufe)
+    /// <summary>
+    /// Der Zuschnitt fuer <paramref name="stufe"/> wie <see cref="Sichtbar(Freigabestufe)"/>,
+    /// dazu mit SPERRGRUENDEN (Konzept Administration und Support, Abschnitt 4.2):
+    /// <paramref name="sperrgrund"/> bekommt das Ziel jedes handelnden Punktes und liefert
+    /// leer (frei) oder den Grund; ein gesperrter Punkt kommt als Kopie mit
+    /// <see cref="Menuepunkt.Sperrgrund"/>. Nicht zwischengespeichert — die Gruende haengen
+    /// am Lizenzstand und koennen sich mit jeder Aktivierung aendern.
+    /// </summary>
+    public static IReadOnlyList<Menuepunkt> Sichtbar(Freigabestufe stufe, Func<string, string> sperrgrund) =>
+        sperrgrund is null ? Sichtbar(stufe) : Zuschneiden(Eintraege, stufe, sperrgrund);
+
+    private static IReadOnlyList<Menuepunkt> Zuschneiden(IEnumerable<Menuepunkt> punkte, Freigabestufe stufe,
+                                                         Func<string, string>? sperrgrund = null)
     {
         var liste = new List<Menuepunkt>();
         foreach (Menuepunkt p in punkte)
@@ -531,11 +546,12 @@ public static class Menuetabelle
             if (p.Stufe > stufe) continue;
             if (!p.Klappt)
             {
-                liste.Add(p);
+                string grund = sperrgrund is null || string.IsNullOrEmpty(p.Ziel) ? "" : sperrgrund(p.Ziel) ?? "";
+                liste.Add(grund.Length == 0 ? p : p.MitSperrgrund(grund));
                 continue;
             }
 
-            IReadOnlyList<Menuepunkt> kinder = Zuschneiden(p.Untereintraege, stufe);
+            IReadOnlyList<Menuepunkt> kinder = Zuschneiden(p.Untereintraege, stufe, sperrgrund);
             // Ohne handelnden Punkt (leere Untermenues sind schon gefallen) faellt der Knoten.
             if (!kinder.Any(k => !k.Trenner)) continue;
 
