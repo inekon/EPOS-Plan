@@ -27,6 +27,22 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class BlazorDienste
     {
+        /// <summary>
+        /// Entwicklerbereich <see cref="Entwicklerbereiche.WEBVIEW_WERKZEUGE"/>: die Entwicklerwerkzeuge der WebView
+        /// (Strg+Umschalt+I) im Debug-Build oder bei <see cref="Entwicklermodus.Aktiv"/>.
+        /// </summary>
+        internal static bool WebviewWerkzeugeFreigegeben
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+                return Entwicklermodus.Aktiv;
+#endif
+            }
+        }
+
         private static readonly object _sperre = new object();
 
         private static IServiceProvider _dienste;
@@ -48,10 +64,11 @@ namespace WindowsFormsApplication1
                     // Alles, was eine BlazorWebView selbst braucht (WebViewManager,
                     // JS-Laufzeit, Dateianbieter).
                     sammlung.AddWindowsFormsBlazorWebView();
-                    #if DEBUG
-                       sammlung.AddBlazorWebViewDeveloperTools();
-                    #endif
-                    // mit STRG+SHIFT+I kann der devTools Dialog zu Debugzwecken geöffnet werden, das dient zur Inspizierung von html + css im webViev
+                    // Entwicklerbereich WEBVIEW_WERKZEUGE: die Entwicklerwerkzeuge der WebView im Debug-Build
+                    // und im Entwicklermodus. Mit STRG+SHIFT+I öffnet sich der DevTools-Dialog zur Inspizierung
+                    // von HTML und CSS in der WebView.
+                    if (WebviewWerkzeugeFreigegeben)
+                        sammlung.AddBlazorWebViewDeveloperTools();
 
                     // Der Zugang zum Hilfesystem fuer <InfoKnopf>: dieselbe
                     // Aufloesung ueber help_mapping.txt und den Wiki-Katalog, die

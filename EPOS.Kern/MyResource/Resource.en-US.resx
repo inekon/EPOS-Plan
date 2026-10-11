@@ -52051,5 +52051,48 @@ chart</value>
   <data name="DIAG_UNBEFRISTET" xml:space="preserve">
     <value>unlimited</value>
   </data>
+  <!-- Administration und Support, Stufe 1 (Welle 1b) -->
+  <data name="KI_ABSAGE_NUR_ENTWICKLER" xml:space="preserve">
+    <value>This function is not enabled in your edition.</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_ENTWICKLUNG" xml:space="preserve">
+    <value>Development</value>
+  </data>
+  <data name="ADM_SET_HINT_ENTWICKLUNG" xml:space="preserve">
+    <value>Calculation defaults of the draw-off profile for development and testing. An empty field means: the programme default applies.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Draw-off profile: temperature of the litre display</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Number in °C with decimal point, e.g. 45; empty = catalogue parameter. Affects only the key figures, never the series.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Draw-off profile: threshold of the hour count</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Number in kW with decimal point, e.g. 0.5; empty = catalogue parameter.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_NENNINHALTE" xml:space="preserve">
+    <value>Draw-off profile: nominal storage volumes</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_NENNINHALTE" xml:space="preserve">
+    <value>List in litres, strictly ascending and positive, separated by semicolon or space, e.g. 300; 400; 500; empty = catalogue parameter.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_KATALOGORDNER" xml:space="preserve">
+    <value>Draw-off profile: folder of the catalogue import</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_KATALOGORDNER" xml:space="preserve">
+    <value>Folder path where the choice of the catalogue package starts; empty = none. The import remembers the last chosen folder here.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_IMPORTORDNER" xml:space="preserve">
+    <value>Draw-off profile: folder of the type-day import</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_IMPORTORDNER" xml:space="preserve">
+    <value>Folder path where the choice of the type-day file starts; empty = none.</value>
+  </data>
+  <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
+    <value>The calculation defaults of the draw-off profile could not be saved: {0}</value>
+  </data>
 </root>
 

@@ -1593,6 +1593,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenvorgaben des Zapfprofils für Entwicklung und Prüfung. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ENTWICKLUNG {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ENTWICKLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gilt nur für neu angelegte Projekte. Vorhandene Projekte behalten ihre Einstellung, ein kopiertes Projekt übernimmt die seiner Vorlage. ähnelt.
         /// </summary>
         public static string ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG {
@@ -1607,6 +1616,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_HINT_PFADE_FEST {
             get {
                 return ResourceManager.GetString("ADM_SET_HINT_PFADE_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl in °C mit Dezimalpunkt, z. B. 45; leer = Parameter des Katalogs. Wirkt nur auf die Kennzahlen, nie auf die Reihe. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordnerpfad, in dem die Wahl der Typtagdatei beginnt; leer = keine Vorgabe. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_IMPORTORDNER {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_IMPORTORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordnerpfad, in dem die Wahl des Katalogpakets beginnt; leer = keine Vorgabe. Der Import merkt sich den zuletzt gewählten Ordner hier. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_KATALOGORDNER {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_KATALOGORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liste in Litern, streng aufsteigend und positiv, getrennt durch Semikolon oder Leerzeichen, z. B. 300; 400; 500; leer = Parameter des Katalogs. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_NENNINHALTE {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_NENNINHALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl in kW mit Dezimalpunkt, z. B. 0.5; leer = Parameter des Katalogs. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_STUNDENSCHWELLE {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_STUNDENSCHWELLE", resourceCulture);
             }
         }
         
@@ -1719,6 +1773,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Temperatur der Literanzeige ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Ordner des Typtagimports ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_IMPORTORDNER {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_IMPORTORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Ordner des Katalogimports ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_KATALOGORDNER {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_KATALOGORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Speicher-Nenninhalte ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_NENNINHALTE {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_NENNINHALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Schwelle der Stundenzählung ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_STUNDENSCHWELLE {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_STUNDENSCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Farbe in der Schreibweise #RRGGBB. ähnelt.
         /// </summary>
         public static string ADM_SET_MSG_FARBE_UNGUELTIG {
@@ -1791,6 +1890,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rechenvorgaben des Zapfprofils konnten nicht gespeichert werden: {0} ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_ZAPF_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_ZAPF_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anwendung ähnelt.
         /// </summary>
         public static string ADM_SET_RUBRIK_ANWENDUNG {
@@ -1814,6 +1922,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_RUBRIK_DIAGRAMME {
             get {
                 return ResourceManager.GetString("ADM_SET_RUBRIK_DIAGRAMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklung ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_ENTWICKLUNG {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_ENTWICKLUNG", resourceCulture);
             }
         }
         
@@ -53694,6 +53811,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_ZURUECKSETZEN {
             get {
                 return ResourceManager.GetString("KFLT_ZURUECKSETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Funktion ist in Ihrer Fassung nicht freigegeben. ähnelt.
+        /// </summary>
+        public static string KI_ABSAGE_NUR_ENTWICKLER {
+            get {
+                return ResourceManager.GetString("KI_ABSAGE_NUR_ENTWICKLER", resourceCulture);
             }
         }
         

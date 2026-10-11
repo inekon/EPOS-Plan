@@ -202,9 +202,11 @@
                 }
             </Vorspann>
             <Zusatzknoepfe>
-                @if (!HilfeBetrieb)
+                @* Entwicklerbereich KI_WERKZEUGE: „Werkzeuge…“ nur mit dem Parameter Entwickler. *@
+                @if (!HilfeBetrieb && Entwickler)
                 {
                     <button type="button" class="epos-knopf" disabled="@Gesperrt"
+                            data-stufe="entwickler" data-bereich="KI_WERKZEUGE"
                             @onclick="WerkzeugeOeffnen">
                         @Texte.Werkzeuge
                     </button>
@@ -230,7 +232,12 @@
             @if (!HilfeBetrieb)
             {
                 <button type="button" class="epos-kichat-link" @onclick="VorschauOeffnen">@Texte.Vorschau</button>
-                <button type="button" class="epos-kichat-link" @onclick="ProtokollOeffnen">@Texte.Protokoll</button>
+                @if (Entwickler)
+                {
+                    @* Entwicklerbereich KI_WERKZEUGE: „Protokoll anzeigen“ nur im Entwicklermodus; „Was wird gesendet?“ bleibt. *@
+                    <button type="button" class="epos-kichat-link" data-stufe="entwickler" data-bereich="KI_WERKZEUGE"
+                            @onclick="ProtokollOeffnen">@Texte.Protokoll</button>
+                }
             }
             @if (!string.IsNullOrEmpty(Texte.Kopieren))
             {
@@ -338,6 +345,12 @@
 
     /// <summary>Die KI ist abgeschaltet — der Chat arbeitet als reine Hilfesuche.</summary>
     [Parameter] public bool HilfeBetrieb { get; set; }
+
+    /// <summary>
+    /// Entwicklerbereich <c>KI_WERKZEUGE</c>: „Werkzeuge…“ und „Protokoll anzeigen“ nur damit; die Hülle setzt es aus
+    /// <c>Entwicklermodus.Aktiv</c>.
+    /// </summary>
+    [Parameter] public bool Entwickler { get; set; }
 
     /// <summary>Liegt ein API-Schlüssel vor?</summary>
     [Parameter] public bool Eingerichtet { get; set; }
