@@ -16,6 +16,7 @@ namespace WindowsFormsApplication1
     /// ruft drei Delegaten, und die machen genau das, was
     /// <c>Form_SpotpreisImport</c> tat: den Dateiwähler öffnen
     /// (<c>Dienste.Datei.DateiOeffnen</c> statt <c>OpenFileDialog</c>), die Datei
+    /// über den Optionendialog „Format und Vorschau“ lesen (IM-4, Jahresfeld) und
     /// über <see cref="SpotpreisImportCtrl"/> prüfen und die geprüfte Reihe
     /// schreiben — mit demselben Fortschrittsmelder.</para>
     ///
@@ -57,10 +58,15 @@ namespace WindowsFormsApplication1
                     Dienste.Datei.DateiOeffnenAsync(MyResource.Resource.PREIS_IMPORT_TITEL,
                                                     filter, null)),
 
-                ["Pruefen"] = new Func<string, Task<SpotpreisPruefung>>(
-                    pfad => Importfang.Starten(pfad, () =>
+                // Format und Vorschau (IM-4): Die Datei geht erst durch den Optionendialog
+                // (Format GanglinienImportFormat.Spotpreis, Jahresfeld); dessen Wege liegen hinter
+                // derselben Fangstelle wie die Pruefung.
+                ["Formatwege"] = GanglinienFormatnaht.Wege(),
+
+                ["Pruefen"] = new Func<string, int, Task<SpotpreisPruefung>>(
+                    (pfad, jahr) => Importfang.Starten(pfad, () =>
                 {
-                    lauf = ctrl.Pruefe(pfad);
+                    lauf = Pruefe(ctrl, pfad, jahr);
                     return new SpotpreisPruefung(
                         lauf.Erfolgreich,
                         (lauf.Protokoll ?? "").Replace("\n", Environment.NewLine),
@@ -97,6 +103,19 @@ namespace WindowsFormsApplication1
                 ["TextNichtGespeichert"] = MyResource.Resource.PREIS_IMPORT_STATUS_NICHT_GESPEICHERT,
                 ["TextPrueft"] = Text_("SPOT_STATUS_PRUEFT", "Datei wird geprüft …")
             };
+        }
+
+        /// <summary>
+        /// Die Pruefung des Imports im Jahr aus „Format und Vorschau“: dieselbe Kalenderaufbereitung
+        /// wie zuvor (<see cref="SpotpreisImportCtrl.Pruefe"/>); ein bestaetigtes Jahr (&gt; 0)
+        /// ersetzt das Jahr der Datei an der Reihe — Werte, Einheit und Raster bleiben die der Datei.
+        /// Ohne Jahr (0) oder mit dem vorgeschlagenen Jahr ist das Ergebnis genau das bisherige.
+        /// </summary>
+        internal static SpotpreisImportCtrl.Lauf Pruefe(SpotpreisImportCtrl ctrl, string pfad, int jahr)
+        {
+            SpotpreisImportCtrl.Lauf lauf = ctrl.Pruefe(pfad);
+            if (jahr > 0 && lauf.Erfolgreich) lauf.Jahr = jahr;
+            return lauf;
         }
 
         /// <summary>

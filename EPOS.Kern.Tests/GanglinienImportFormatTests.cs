@@ -210,5 +210,207 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2025, k.Jahr);
             Assert.Equal(0, new GanglinienImportOptionen().Jahr);
         }
+    
+
+        // ================================================================== Spotpreis
+
+        /// <summary>Eine Spotpreisdatei im Format der Bundesnetzagentur/SMARD: ein Jahr, je Stunde eine Zeile.</summary>
+        private string Spotdatei(int jahr, Func<int, double> preis)
+        {
+            string pfad = Path.Combine(Path.GetTempPath(), "epos-spot-" + Guid.NewGuid().ToString("N") + ".csv");
+            var zeilen = new List<string> { "Datum;von;Zeitzone von;bis;Zeitzone bis;Spotmarktpreis in ct/kWh" };
+            var t = new DateTime(jahr, 1, 1);
+            for (int i = 0; t.Year == jahr; i++, t = t.AddHours(1))
+            {
+                DateTime bis = t.AddHours(1);
+                zeilen.Add(t.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) + ";"
+                           + t.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture) + ";CET;"
+                           + bis.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture) + ";CET;"
+                           + preis(i).ToString("0.000", System.Globalization.CultureInfo.InvariantCulture).Replace('.', ','));
+            }
+            File.WriteAllLines(pfad, zeilen);
+            _dateien.Add(pfad);
+            return pfad;
+        }
+
+        [Fact]
+        public void Der_Spotpreis_ist_Preis_je_Stunde_mit_Preisachse_und_Jahresfeld()
+        {
+            GanglinienImportFormat f = GanglinienImportFormat.Spotpreis();
+            Assert.Equal(GanglinienImportFormat.KENNUNG_SPOTPREIS, f.Kennung);
+            Assert.Equal(DbWerte.PREISREIHE_EINHEIT_CT_KWH, f.Einheit);
+            Assert.Equal("ct/kWh", f.Einheit);
+            Assert.Equal(0, f.Werteanzahl);                 // die DATEI ist frei, die Reihe hat 8 760
+            Assert.True(f.Jahresfeld);
+            Assert.Equal(GanglinienBildart.Jahr, f.Bildart);
+            Assert.False(f.Einheitswahl || f.Rasterwahl || f.Summe || f.Nennleistung);
+            Assert.Equal(Resource.IMPORT_ACHSE_SPOTPREIS, f.Achsentitel);
+            Assert.Equal(Resource.IMPORT_TITEL_SPOTPREIS, f.Titel);
+            Assert.NotNull(f.Dateibild);
+            Assert.NotNull(f.Jahrvorschlag);
+        }
+
+        [Fact]
+        public void Der_Spotpreis_liest_genau_die_Reihe_des_bisherigen_Wegs_und_schlaegt_das_Jahr_der_Datei_vor()
+        {
+            string pfad = Spotdatei(2025, i => 5.0 + (i % 24) * 0.25 - (i == 4000 ? 12.0 : 0.0));
+            SpotpreisImportCtrl.Lauf alt = new SpotpreisImportCtrl().Pruefe(pfad);
+            Assert.True(alt.Erfolgreich);
+
+            GanglinienVorschau v = GanglinienDatei.Erkenne(pfad, GanglinienImportFormat.Spotpreis());
+            Assert.True(v.Lesbar);
+            Assert.Equal(2025, v.Vorschlag.Jahr);
+            GanglinienProbe p = v.Probe;
+
+            Assert.True(p.Erfolgreich, p.Grund);
+            Assert.Equal(8760, p.Werte.Length);
+            Assert.Equal(alt.Reihe.StundenreiheCtKwh, p.Werte);
+            Assert.Equal("8.760 Datenzeilen gelesen → 8.760 Werte in ct/kWh", p.Zeile);
+            Assert.StartsWith("Jahr der Datei 2025 · Mittel ", p.Kennzahlen);
+            Assert.Contains(Resource.IMPORT_ACHSE_SPOTPREIS, SvgSchreiber.Text(p.Modell));
+        }
+
+        [Fact]
+        public void Ein_Schaltjahr_mit_8784_Zeilen_wird_wie_bisher_auf_8760_Stundenpreise_gebracht()
+        {
+            string pfad = Spotdatei(2024, i => 1.0 + i * 0.001);
+            GanglinienProbe p = Probe(pfad, GanglinienImportFormat.Spotpreis());
+
+            Assert.True(p.Erfolgreich, p.Grund);
+            Assert.Equal(8784, p.Datenzeilen);
+            Assert.Equal(new SpotpreisImportCtrl().Pruefe(pfad).Reihe.StundenreiheCtKwh, p.Werte);
+            Assert.Equal(2024, GanglinienDatei.Erkenne(pfad, GanglinienImportFormat.Spotpreis()).Vorschlag.Jahr);
+        }
+
+        [Fact]
+        public void Eine_Spotpreisdatei_ohne_lesbare_Zeile_wird_benannt_abgelehnt()
+        {
+            string pfad = Path.Combine(Path.GetTempPath(), "epos-spot-" + Guid.NewGuid().ToString("N") + ".csv");
+            File.WriteAllLines(pfad, new[] { "Datum;Wert", "kein;1,5", "Datum;2,5" });
+            _dateien.Add(pfad);
+
+            GanglinienProbe p = Probe(pfad, GanglinienImportFormat.Spotpreis());
+            Assert.False(p.Erfolgreich);
+            Assert.Equal(Resource.PREIS_IMPORT_KEINE_DATEN, p.Grund);
+            Assert.Empty(p.Werte);
+        }
+
+        [Fact]
+        public void Das_Jahr_aus_dem_Dialog_ersetzt_nur_das_Jahr_der_Reihe()
+        {
+            string pfad = Spotdatei(2025, i => 3.0 + (i % 7));
+            var ctrl = new SpotpreisImportCtrl();
+            SpotpreisImportCtrl.Lauf alt = ctrl.Pruefe(pfad);
+
+            SpotpreisImportCtrl.Lauf ohne = SpotpreisImportHuelle.Pruefe(ctrl, pfad, 0);
+            SpotpreisImportCtrl.Lauf vorschlag = SpotpreisImportHuelle.Pruefe(ctrl, pfad, 2025);
+            SpotpreisImportCtrl.Lauf anders = SpotpreisImportHuelle.Pruefe(ctrl, pfad, 2030);
+
+            foreach (SpotpreisImportCtrl.Lauf l in new[] { ohne, vorschlag, anders })
+            {
+                Assert.True(l.Erfolgreich);
+                Assert.Equal(alt.Reihe.StundenreiheCtKwh, l.Reihe.StundenreiheCtKwh);
+                Assert.Equal(alt.Protokoll, l.Protokoll);
+            }
+            Assert.Equal(2025, ohne.Jahr);
+            Assert.Equal(2025, vorschlag.Jahr);
+            Assert.Equal(2030, anders.Jahr);
+        }
+
+        // ================================================================== TWW-Messreihe
+
+        /// <summary>Eine Messreihe ab <paramref name="beginn"/> im Raster <paramref name="minuten"/> (Zeitstempel ISO, kWh).</summary>
+        private string Messdatei(DateTime beginn, int minuten, int schritte, Func<int, double> wert, string kopf = "Wert [kWh]")
+        {
+            string pfad = Path.Combine(Path.GetTempPath(), "epos-tww-" + Guid.NewGuid().ToString("N") + ".csv");
+            var zeilen = new List<string> { "Zeitstempel;" + kopf };
+            for (int i = 0; i < schritte; i++)
+                zeilen.Add(beginn.AddMinutes((double)i * minuten).ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)
+                           + ";" + wert(i).ToString(System.Globalization.CultureInfo.InvariantCulture));
+            File.WriteAllLines(pfad, zeilen);
+            _dateien.Add(pfad);
+            return pfad;
+        }
+
+        private static EPOS.UI.Dialoge.Bedarf.TwwMessreiheneingabeDaten Eingabe(int? groesse = null)
+            => new() { GroesseId = groesse, LueckenschwelleAnteil = 0.05 };
+
+        private static Messreihe Alt(string pfad, EPOS.UI.Dialoge.Bedarf.TwwMessreiheneingabeDaten e)
+        {
+            Messreihe r = Messreihenleser.AusText(File.ReadAllText(pfad), Path.GetFileName(pfad),
+                                                  ZapfprofilHuelle.AlsOptionen(e), out ZapfSatz fehler);
+            Assert.True(r != null, fehler?.Klartext);
+            return r;
+        }
+
+        [Fact]
+        public void Die_TWW_Messreihe_zeigt_eine_Tagesansicht_mit_freier_Werteanzahl()
+        {
+            GanglinienImportFormat f = ZapfprofilHuelle.Messformat(Eingabe());
+            Assert.Equal(GanglinienImportFormat.KENNUNG_TWW_MESSREIHE, f.Kennung);
+            Assert.Equal(GanglinienBildart.Tag, f.Bildart);
+            Assert.Equal(0, f.Werteanzahl);
+            Assert.False(f.Jahresfeld);
+            Assert.Equal(Resource.IMPORT_TITEL_TWW_MESSREIHE, f.Titel);
+            Assert.Equal(Resource.IMPORT_ACHSE_TWW_ENERGIE, f.Achsentitel);
+            Assert.Equal("", f.Einheit);                    // „aus der Kopfzeile": erst die Datei nennt sie
+            GanglinienImportFormat vol = ZapfprofilHuelle.Messformat(Eingabe((int)ZapfMessgroesse.Volumen));
+            Assert.Equal("m³", vol.Einheit);
+            Assert.Equal(Resource.IMPORT_ACHSE_TWW_VOLUMEN, vol.Achsentitel);
+        }
+
+        [Fact]
+        public void Die_TWW_Messreihe_liest_wie_das_Einspielen_und_zeigt_den_ersten_vollstaendigen_Tag()
+        {
+            // 15-Minuten-Reihe ab 06:00 über drei Tage: Der erste volle Tag beginnt am 2. Januar 00:00.
+            var beginn = new DateTime(2025, 1, 1, 6, 0, 0);
+            string pfad = Messdatei(beginn, 15, 3 * 96, i => i % 4 == 0 ? 0.4 : 0.1);
+            var e = Eingabe();
+            Messreihe alt = Alt(pfad, e);
+
+            GanglinienProbe p = Probe(pfad, ZapfprofilHuelle.Messformat(e));
+
+            Assert.True(p.Erfolgreich, p.Grund);
+            Assert.Equal(alt.MengeJeSchritt, p.Werte);
+            Assert.Equal("kWh", p.Einheit);
+            Assert.Equal("288 Datenzeilen gelesen → 288 Werte in kWh", p.Zeile);
+            Assert.Equal("3,0 Tage gelesen · gezeigt: 02.01.2025", p.Kennzahlen);
+            Assert.Equal(72, GanglinienTagesbild.ErsterVollerTag(alt));
+            double[] stunden = GanglinienTagesbild.Werte(alt, out DateTime tag);
+            Assert.Equal(new DateTime(2025, 1, 2), tag);
+            Assert.Equal(24, stunden.Length);
+            Assert.All(stunden, s => Assert.Equal(0.7, s, 9));
+            string svg = SvgSchreiber.Text(p.Modell);
+            Assert.Contains(Resource.IMPORT_ACHSE_TAGESSTUNDE, svg);
+            Assert.Contains(Resource.IMPORT_ACHSE_TWW_ENERGIE, svg);
+        }
+
+        [Fact]
+        public void Eine_Tagesreihe_zeigt_die_Tagesmengen_der_ersten_Tage()
+        {
+            string pfad = Messdatei(new DateTime(2025, 3, 1), 1440, 40, i => 2.0 + i, "Volumen [m3]");
+            GanglinienProbe p = Probe(pfad, ZapfprofilHuelle.Messformat(Eingabe()));
+
+            Assert.True(p.Erfolgreich, p.Grund);
+            Assert.Equal("m³", p.Einheit);
+            Assert.Equal("40,0 Tage gelesen · gezeigt: die ersten 31 Tage", p.Kennzahlen);
+            Assert.Contains(Resource.IMPORT_ACHSE_TAG_DER_REIHE, SvgSchreiber.Text(p.Modell));
+        }
+
+        [Fact]
+        public void Eine_Ablehnung_des_Messreihenlesers_ist_die_Ablehnung_im_Optionendialog()
+        {
+            // Ein negativer Wert: Der Leser des Einspielens lehnt ab - mit demselben Satz wie die Prüfung.
+            string pfad = Messdatei(new DateTime(2025, 1, 1), 60, 48, i => i == 5 ? -1.0 : 0.5);
+            var e = Eingabe();
+            GanglinienProbe p = Probe(pfad, ZapfprofilHuelle.Messformat(e));
+
+            Assert.False(p.Erfolgreich);
+            Assert.False(string.IsNullOrEmpty(p.Grund));
+            Assert.Null(Messreihenleser.AusText(File.ReadAllText(pfad), Path.GetFileName(pfad),
+                                                ZapfprofilHuelle.AlsOptionen(e), out ZapfSatz fehler));
+            Assert.Equal(ZapfprofilHuelle.Satztext(fehler), p.Grund);
+            Assert.Empty(p.Werte);
+        }
     }
 }

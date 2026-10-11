@@ -59,6 +59,12 @@ public sealed class GanglinieImportOptionenKiSicht
     /// <summary>Die Kennung des Formats, das der Dialog liest (<c>GANGLINIE</c>, <c>QUELLPROFIL</c> …).</summary>
     public string Format => (_format() ?? GanglinienImportFormat.Ganglinie).Kennung;
 
+    /// <summary>
+    /// Wie die Vorschau die Reihe zeigt: <c>Jahr</c> (Jahresverlauf) oder <c>Tag</c> (Tagesansicht der
+    /// TWW-Messreihe).
+    /// </summary>
+    public string Bildart => (_format() ?? GanglinienImportFormat.Ganglinie).Bildart.ToString();
+
     /// <summary>Feste Werteanzahl des Formats; 0 = frei.</summary>
     public int Werteanzahl => (_format() ?? GanglinienImportFormat.Ganglinie).Werteanzahl;
 

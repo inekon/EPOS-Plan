@@ -44,6 +44,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Reihe als Jahresverlauf (Stundenmittel); <c>null</c> ohne Erfolg.</summary>
         public Zeichenmodell Modell;
 
+        /// <summary>
+        /// Die Kennzahlenzeile des Fachlesers (<see cref="GanglinienImportFormat.Dateibild"/>: Jahr
+        /// und Preisspanne, gelesene Tage); leer ohne.
+        /// </summary>
+        public string Dateikennzahl = "";
+
+        /// <summary>Die Einheit, die erst die Datei nennt (TWW-Messreihe, Größe aus der Kopfzeile); leer = die des Formats.</summary>
+        public string Dateieinheit = "";
+
+        /// <summary>Die Einheit der Werte: die der Datei, sonst die des Formats.</summary>
+        public string Einheit => !string.IsNullOrEmpty(Dateieinheit) ? Dateieinheit : Format?.Einheit ?? "";
+
         /// <summary>Passt die Reihe zu einem Raster (bei einem Sonderformat: zum Format)?</summary>
         public bool Erfolgreich => Modell != null;
 
@@ -69,6 +81,7 @@ namespace WindowsFormsApplication1
                 if (Format.Nennleistung)
                     teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMPORT_PROBE_NENNLEISTUNG,
                                             WerteKw.Max().ToString("N1", CultureInfo.CurrentCulture), Format.Einheit));
+                if (!string.IsNullOrEmpty(Dateikennzahl)) teile.Add(Dateikennzahl);
                 return string.Join(" \u00b7 ", teile);
             }
         }
@@ -89,7 +102,7 @@ namespace WindowsFormsApplication1
                         n, Grund);
                 if (sonder)
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMPORT_PROBE_WERTE, n,
-                                         WerteKw.Length.ToString("N0", CultureInfo.CurrentCulture), Format.Einheit);
+                                         WerteKw.Length.ToString("N0", CultureInfo.CurrentCulture), Einheit);
                 string raster = Raster == GanglinienRaster.Viertelstunde
                     ? MyResource.Resource.IMPORT_PROBE_VIERTEL
                     : MyResource.Resource.IMPORT_PROBE_STUNDE;
@@ -180,6 +193,7 @@ namespace WindowsFormsApplication1
                 double[] werte = roh.Werte ?? Array.Empty<double>();
                 probe.Datenzeilen = werte.Length;
                 probe.ZeilenAbStart = roh.ZeilenAbStart;
+                if (format.Dateibild != null) return MitDateibild(probe, pfad, format);
                 if (!roh.Erfolgreich)
                 {
                     probe.Grund = Grundtext(roh.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler));
@@ -220,6 +234,40 @@ namespace WindowsFormsApplication1
                 probe.Grund = ex.Message;
                 return probe;
             }
+        }
+
+        /// <summary>
+        /// Der Weg eines Formats mit Fachleser (<see cref="GanglinienImportFormat.Dateibild"/>): Er
+        /// liest die Datei so, wie der Import sie danach übernimmt — seine Ablehnung ist der Grund,
+        /// seine Werte stehen gegen Werteanzahl und eigene Prüfung, sein Bild ist das Bild.
+        /// </summary>
+        private static GanglinienProbe MitDateibild(GanglinienProbe probe, string pfad, GanglinienImportFormat format)
+        {
+            GanglinienDateibild b = format.Dateibild(pfad) ?? GanglinienDateibild.Abgelehnt("");
+            double[] werte = b.Werte ?? Array.Empty<double>();
+            if (!string.IsNullOrEmpty(b.Grund) || b.Modell == null)
+            {
+                probe.Grund = string.IsNullOrEmpty(b.Grund) ? MyResource.Resource.IMPORT_PROT_DATEI_LEER : b.Grund;
+                return probe;
+            }
+            if (format.Werteanzahl > 0 && werte.Length != format.Werteanzahl)
+            {
+                probe.Grund = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMPORT_PROBE_WERTEANZAHL,
+                    werte.Length.ToString("N0", CultureInfo.CurrentCulture),
+                    format.Werteanzahl.ToString("N0", CultureInfo.CurrentCulture));
+                return probe;
+            }
+            string eigen = format.Pruefung?.Invoke(werte) ?? "";
+            if (!string.IsNullOrEmpty(eigen))
+            {
+                probe.Grund = eigen;
+                return probe;
+            }
+            probe.WerteKw = werte;
+            probe.Modell = b.Modell;
+            probe.Dateikennzahl = b.Kennzahl ?? "";
+            probe.Dateieinheit = b.Einheit ?? "";
+            return probe;
         }
 
         private static string Grundtext(PruefMeldung fehler)

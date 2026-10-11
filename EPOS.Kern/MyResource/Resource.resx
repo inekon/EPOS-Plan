@@ -52195,5 +52195,50 @@ Chart</value>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Übersprungen (im Projekt zugeordnet): {0}</value>
   </data>
+  <data name="IMPORT_ACHSE_SPOTPREIS" xml:space="preserve">
+    <value>Spotpreis [ct/kWh]</value>
+  </data>
+  <data name="IMPORT_TITEL_SPOTPREIS" xml:space="preserve">
+    <value>Spotmarktpreise einlesen – Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_PROBE_SPOTPREIS" xml:space="preserve">
+    <value>Jahr der Datei {0} · Mittel {1} ct/kWh · Spanne {2} bis {3} ct/kWh</value>
+  </data>
+  <data name="IMPORT_TITEL_TWW_MESSREIHE" xml:space="preserve">
+    <value>Messreihe einlesen – Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_ENERGIE" xml:space="preserve">
+    <value>Zapfenergie [kWh]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_VOLUMEN" xml:space="preserve">
+    <value>Zapfvolumen [m³]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAGESSTUNDE" xml:space="preserve">
+    <value>Stunde des Tages [h]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAG_DER_REIHE" xml:space="preserve">
+    <value>Tag der Reihe</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE" xml:space="preserve">
+    <value>{0} Tage gelesen · gezeigt: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE_TAGESREIHE" xml:space="preserve">
+    <value>{0} Tage gelesen · gezeigt: die ersten {1} Tage</value>
+  </data>
+  <data name="KI_DLG_SPOT_JAHR_ERL" xml:space="preserve">
+    <value>Das Jahr der geprüften Reihe — aus dem Jahresfeld von „Format und Vorschau“; vorgeschlagen ist das Jahr der Datei. Es legt Wochentage und Feiertage fest.</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_NAME" xml:space="preserve">
+    <value>Vorschau der Datei</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_ERL" xml:space="preserve">
+    <value>Die Kennzahlenzeile aus „Format und Vorschau“: gelesene Tage und der gezeigte Tag der Tagesansicht.</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_NAME" xml:space="preserve">
+    <value>Bildart</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
+    <value>Wie die Vorschau die gelesene Reihe zeigt: Jahr (Jahresverlauf) oder Tag (Tagesansicht der TWW-Messreihe).</value>
+  </data>
 </root>
 

@@ -58,6 +58,10 @@ namespace WindowsFormsApplication1
                 ["Pruefen"] = new Func<string, TwwMessreiheneingabeDaten, CancellationToken, Task<TwwMessreihenpruefungDaten>>(
                     (pfad, eingabe, abbruch) => Kulturweitergabe.Starten(
                         () => MessreihePruefen(idProjekt, pfad, eingabe), abbruch)),
+                // Format und Vorschau (IM-4): Tagesansicht der gewaehlten Datei, gelesen mit dem Leser
+                // des Einspielens unter den Eingaben der Maske; Wege hinter der Fangstelle.
+                ["Formatwege"] = GanglinienFormatnaht.Wege(),
+                ["Messformat"] = new Func<TwwMessreiheneingabeDaten, GanglinienImportFormat>(Messformat),
                 ["Texte"] = MessreihenTexte(),
                 ["HilfeSchluessel"] = HILFE_MESSREIHEN
             };
@@ -244,6 +248,26 @@ namespace WindowsFormsApplication1
             d.Angaben.Add(new TwwMessreihenangabeDaten(t.LabelSchalttage, Ganz(reihe.Schalttage)));
             d.Angaben.Add(new TwwMessreihenangabeDaten(t.LabelQuelle, Wert(reihe.Quelle, t)));
             return d;
+        }
+
+        /// <summary>
+        /// <b>Das Format einer Messreihe</b> für „Format und Vorschau“ (IM-4): Tagesansicht statt
+        /// Jahresbild. Gelesen wird mit DEMSELBEN Leser und denselben Optionen wie Prüfung und
+        /// Einspielen (<see cref="AlsOptionen"/>) — eine Ablehnung des Lesers ist die Ablehnung im
+        /// Optionendialog, mit demselben Satz.
+        /// </summary>
+        internal static GanglinienImportFormat Messformat(TwwMessreiheneingabeDaten eingabe)
+        {
+            Messreihenoptionen optionen = AlsOptionen(eingabe);
+            return GanglinienImportFormat.TwwMessreihe(optionen.Groesse, pfad => Tagesbild(pfad, optionen));
+        }
+
+        /// <summary>Die Tagesansicht einer Datei oder die benannte Ablehnung des Lesers.</summary>
+        internal static GanglinienDateibild Tagesbild(string pfad, Messreihenoptionen optionen)
+        {
+            Messreihe reihe = Lesen(pfad, optionen, out ZapfSatz fehler, new List<ZapfSatz>());
+            return reihe == null ? GanglinienDateibild.Abgelehnt(Satztext(fehler))
+                                 : GanglinienTagesbild.AusMessreihe(reihe);
         }
 
         /// <summary>

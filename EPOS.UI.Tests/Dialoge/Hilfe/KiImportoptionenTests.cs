@@ -196,7 +196,7 @@ public sealed class KiImportoptionenTests : EposBunitContext, IDisposable
         (string Bezeichnung, bool Stamm)? gespeichert = null;
         var cut = Render<SpotpreisImportDialog>(p => p
             .Add(x => x.Waehlen, f => Task.FromResult<string?>(@"C:\Daten\spot2026.csv"))
-            .Add(x => x.Pruefen, pfad => Task.FromResult(new SpotpreisPruefung(true, "in Ordnung", 2026)))
+            .Add(x => x.Pruefen, (pfad, jahr) => Task.FromResult(new SpotpreisPruefung(true, "in Ordnung", 2026)))
             .Add(x => x.Speichern, (b, s, f) =>
             {
                 gespeichert = (b, s);

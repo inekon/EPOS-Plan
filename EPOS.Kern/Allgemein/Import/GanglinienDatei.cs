@@ -326,6 +326,18 @@ namespace WindowsFormsApplication1
         public static GanglinienVorschau Erkenne(string pfad) => Erkenne(pfad, null);
 
         /// <summary>
+        /// Das vorgeschlagene Jahr eines Formats mit Jahresfeld (<see cref="GanglinienImportFormat.Jahrvorschlag"/>);
+        /// 0 ohne Jahresfeld, ohne Vorschlag oder wenn die Datei keines hergibt — die Erkennung
+        /// bricht daran nicht.
+        /// </summary>
+        private static int Jahrvorschlag(string pfad, GanglinienImportFormat format)
+        {
+            if (format == null || !format.Jahresfeld || format.Jahrvorschlag == null) return 0;
+            try { return Math.Max(0, format.Jahrvorschlag(pfad)); }
+            catch (Exception) { return 0; }
+        }
+
+        /// <summary>
         /// Wie <see cref="Erkenne(string)"/>; die Probelesung prüft und zeichnet nach dem
         /// <paramref name="format"/> (IM-4). <c>null</c> = die Ganglinie der Importkette.
         /// </summary>
@@ -378,6 +390,7 @@ namespace WindowsFormsApplication1
                         zeilen.GetRange(kopfzeilen, zeilen.Count - kopfzeilen), o.Trennzeichen);
                 SpaltenWaehlen(zeilen, o, kopfzeilen);
                 o.ErsteDatenzeile = ErsteZahlzeile(zeilen, o, kopfzeilen);
+                o.Jahr = Jahrvorschlag(pfad, format);
 
                 for (int i = 0; i < zeilen.Count && i < VorschauZeilen; i++) v.Zeilen.Add(zeilen[i]);
 

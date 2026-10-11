@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using WindowsFormsApplication1.Zeichnung;
 
@@ -10,7 +11,7 @@ namespace WindowsFormsApplication1
         /// <summary>Jahresverlauf über die Jahresstunden (Ganglinie, Quellprofil, Spotpreis).</summary>
         Jahr = 0,
 
-        /// <summary>Tagesansicht (TWW-Messreihen); das Bild liefert der <see cref="GanglinienImportFormat.Bildzeichner"/>.</summary>
+        /// <summary>Tagesansicht (TWW-Messreihen); das Bild liefert <see cref="GanglinienImportFormat.Dateibild"/> oder der <see cref="GanglinienImportFormat.Bildzeichner"/>.</summary>
         Tag = 1
     }
 
@@ -91,7 +92,7 @@ namespace WindowsFormsApplication1
         public Func<double[], double[]> Bildreihe { get; init; }
 
         /// <summary>
-        /// Zeichnet das Bild selbst (Pflicht für <see cref="GanglinienBildart.Tag"/>); <c>null</c> = der
+        /// Zeichnet das Bild selbst (für <see cref="GanglinienBildart.Tag"/> ohne <see cref="Dateibild"/>); <c>null</c> = der
         /// Jahresverlauf aus <see cref="Bildreihe"/>.
         /// </summary>
         public Func<double[], Zeichenmodell> Bildzeichner { get; init; }
@@ -101,6 +102,22 @@ namespace WindowsFormsApplication1
         /// Ablehnung, leer = in Ordnung; <c>null</c> = keine.
         /// </summary>
         public Func<double[], string> Pruefung { get; init; }
+
+        /// <summary>
+        /// Schlägt das Jahr des Jahresfeldes aus der Datei vor (Spotpreis: das Jahr der ersten
+        /// Datenzeile); <c>null</c> oder 0 = kein Vorschlag. Nur mit <see cref="Jahresfeld"/>.
+        /// </summary>
+        public Func<string, int> Jahrvorschlag { get; init; }
+
+        /// <summary>
+        /// <b>Das Bild aus der Datei selbst</b>, gelesen mit dem Fachleser des Formats (Spotpreis:
+        /// Kalenderaufbereitung der Stundenpreise; TWW-Messreihe: Zeitstempel, Lücken, Sommerzeit).
+        /// Hat ein Format ihn, ist ER die Prüfung: Seine Ablehnung ist der Grund, seine Werte sind
+        /// die Werte der Probe, sein Bild ersetzt <see cref="Bildzeichner"/>. Die Wertspalte des
+        /// Dialogs wirkt dann nur auf Vorschautabelle und Zeilenzählung — so liest der Dialog genau,
+        /// was der Weg danach übernimmt. <c>null</c> = die Wertspalte des Dialogs.
+        /// </summary>
+        public Func<string, GanglinienDateibild> Dateibild { get; init; }
 
         /// <summary>Ist das der Lastgang der Importkette (kein Sonderformat)?</summary>
         public bool IstGanglinie => Kennung == KENNUNG_GANGLINIE;
@@ -158,6 +175,90 @@ namespace WindowsFormsApplication1
             TitelSchluessel = nameof(MyResource.Resource.IMPORT_TITEL_QUELLPROFIL),
             Bildreihe = werte => QuellprofilCtrl.Jahresprofil(betriebsart, werte) ?? werte
         };
+
+        /// <summary>
+        /// <b>Die Spotpreisreihe</b>: Preis je Stunde in ct/kWh — so liest die Datei
+        /// (Spalte „Spotmarktpreis in ct/kWh“) und so legt der Import sie ab
+        /// (<see cref="DbWerte.PREISREIHE_EINHEIT_CT_KWH"/>). Die Werteanzahl der DATEI ist frei
+        /// (8 784 Zeilen im Schaltjahr, Lücken, doppelte Stunden der Zeitumstellung); die
+        /// Kalenderaufbereitung (<see cref="SpotpreisImportCtrl.Pruefe"/>) macht daraus immer genau
+        /// 8 760 Stundenpreise, und genau die zeigt das Jahresbild. Preisachse, Jahresfeld mit dem
+        /// Jahr der Datei als Vorschlag.
+        /// </summary>
+        public static GanglinienImportFormat Spotpreis() => new GanglinienImportFormat
+        {
+            Kennung = KENNUNG_SPOTPREIS,
+            Einheit = DbWerte.PREISREIHE_EINHEIT_CT_KWH,
+            AchsenSchluessel = nameof(MyResource.Resource.IMPORT_ACHSE_SPOTPREIS),
+            Farbrolle = Farbrolle.KOSTENPROFIL,
+            Werteanzahl = 0,
+            Jahresfeld = true,
+            TitelSchluessel = nameof(MyResource.Resource.IMPORT_TITEL_SPOTPREIS),
+            Jahrvorschlag = pfad => SpotpreisLeser.LiesDatei(pfad).Jahr,
+            Dateibild = SpotpreisDateibild
+        };
+
+        /// <summary>Die Spotpreisdatei über den Weg des Imports (Leser und Kalenderaufbereitung).</summary>
+        internal static GanglinienDateibild SpotpreisDateibild(string pfad)
+        {
+            SpotpreisImportCtrl.Lauf lauf = new SpotpreisImportCtrl().Pruefe(pfad);
+            if (!lauf.Erfolgreich || lauf.Reihe == null)
+                return GanglinienDateibild.Abgelehnt(string.IsNullOrWhiteSpace(lauf.Protokoll)
+                    ? MyResource.Resource.PREIS_IMPORT_KEINE_DATEN : lauf.Protokoll.Trim());
+            double[] werte = (double[])lauf.Reihe.StundenreiheCtKwh.Clone();
+            GanglinienImportFormat f = Spotpreis();
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string kennzahl = string.Format(k, MyResource.Resource.IMPORT_PROBE_SPOTPREIS,
+                lauf.Jahr.ToString(CultureInfo.InvariantCulture),
+                lauf.Reihe.MittelCtKwh.ToString("0.000", k),
+                lauf.Reihe.MinCtKwh.ToString("0.000", k),
+                lauf.Reihe.MaxCtKwh.ToString("0.000", k));
+            return new GanglinienDateibild(
+                ChartRenderer.JahresverlaufModell("", werte, f.Achsentitel, f.Farbrolle), werte, kennzahl, "");
+        }
+
+        /// <summary>
+        /// <b>Die TWW-Messreihe</b> des Zapfprofils: Tagesansicht statt Jahresbild
+        /// (<see cref="GanglinienTagesbild"/>), Werteanzahl frei (die Auflösung misst der Leser
+        /// aus den Zeitstempeln). Gelesen wird mit dem Leser des Einspielens
+        /// (<see cref="Messreihenleser"/>) unter den Eingaben der Maske — den Strom öffnet die
+        /// Hülle, deshalb kommt <paramref name="dateibild"/> von ihr.
+        /// </summary>
+        /// <param name="groesse">Die gewählte Größe; <c>null</c> = aus der Kopfzeile (Einheit erst aus der Datei).</param>
+        /// <param name="dateibild">Der Leser der Hülle: Pfad → Tagesbild oder benannte Ablehnung.</param>
+        internal static GanglinienImportFormat TwwMessreihe(ZapfMessgroesse? groesse,
+                                                            Func<string, GanglinienDateibild> dateibild)
+            => new GanglinienImportFormat
+            {
+                Kennung = KENNUNG_TWW_MESSREIHE,
+                Einheit = GanglinienTagesbild.Einheit(groesse),
+                AchsenSchluessel = groesse == ZapfMessgroesse.Volumen
+                    ? nameof(MyResource.Resource.IMPORT_ACHSE_TWW_VOLUMEN)
+                    : nameof(MyResource.Resource.IMPORT_ACHSE_TWW_ENERGIE),
+                Farbrolle = Farbrolle.WARMWASSER,
+                Werteanzahl = 0,
+                Bildart = GanglinienBildart.Tag,
+                TitelSchluessel = nameof(MyResource.Resource.IMPORT_TITEL_TWW_MESSREIHE),
+                Dateibild = dateibild
+            };
+    }
+
+    /// <summary>
+    /// Was der Fachleser eines Formats aus der Datei gemacht hat (<see cref="GanglinienImportFormat.Dateibild"/>):
+    /// das Bild, die Werte in der Einheit des Formats, eine Kennzahlenzeile und — bei einer
+    /// Ablehnung — der benannte Grund.
+    /// </summary>
+    /// <param name="Modell">Das Bild; <c>null</c> bei einer Ablehnung.</param>
+    /// <param name="Werte">Die Werte, wie der Weg sie übernimmt.</param>
+    /// <param name="Kennzahl">Eine Zeile zu den Werten (Jahr, Tage); leer = keine.</param>
+    /// <param name="Grund">Der Grund einer Ablehnung; leer bei Erfolg.</param>
+    /// <param name="Einheit">Die Einheit der Werte, wenn erst die Datei sie nennt; leer = die des Formats.</param>
+    public sealed record GanglinienDateibild(Zeichenmodell Modell, double[] Werte, string Kennzahl, string Grund,
+                                             string Einheit = "")
+    {
+        /// <summary>Eine benannte Ablehnung.</summary>
+        public static GanglinienDateibild Abgelehnt(string grund)
+            => new GanglinienDateibild(null, Array.Empty<double>(), "", grund ?? "");
     }
 
     /// <summary>
