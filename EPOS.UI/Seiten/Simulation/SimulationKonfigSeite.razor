@@ -649,6 +649,23 @@
                                                 Aktiv="@(!_daten.Gesperrt)"
                                                 WertChanged="AufheizReserveGesetzt" />
                                     <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_RESERVE" />
+                                    @* Schnellaufheizung (SA3a, E128): die Heizkurve im Vorheizfenster anheben; die Überhöhung
+                                       nur bei Schalter an, leer = Vorgabe 2 K. *@
+                                    <Schalter Bezeichnung="@Resource.SIMKONF_AUFH_LBL_SCHNELL"
+                                              Wert="@Vorheizen.Schnellaufheizung"
+                                              Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="AufheizSchnellGesetzt" />
+                                    @if (Vorheizen.Schnellaufheizung)
+                                    {
+                                        <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_UEBERHOEHUNG"
+                                                    Wert="@Vorheizen.UeberhoehungK"
+                                                    Einheit="K" Min="0"
+                                                    Max="@WindowsFormsApplication1.Vorheizvorgabe.UEBERHOEHUNG_MAX_K"
+                                                    Platzhalter="@Ueberhoehungsvorgabetext"
+                                                    Aktiv="@(!_daten.Gesperrt)"
+                                                    WertChanged="AufheizUeberhoehungGesetzt" />
+                                    }
+                                    <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_SCHNELL" />
                                 }
                                 @switch (Vorheizen.Verfahren)
                                 {
@@ -2225,6 +2242,16 @@
     }
 
     private void AufheizHeizkreisGesetzt(bool an) => VorheizenSchreiben(v => v.MitHeizkreis(an));
+
+    /// <summary>Schnellaufheizung (SA3a): Schalter; aus behält eine gepflegte Überhöhung.</summary>
+    private void AufheizSchnellGesetzt(bool an) => VorheizenSchreiben(v => v.MitSchnellaufheizung(an, v.UeberhoehungK));
+
+    /// <summary>Die Raumsollwert-Überhöhung (&gt; 0 … 10 K); leer = Vorgabe 2 K, 0 lehnt der Kern ab und die Fußzeile meldet.</summary>
+    private void AufheizUeberhoehungGesetzt(double? wert) => VorheizenSchreiben(v => v.MitSchnellaufheizung(v.Schnellaufheizung, wert));
+
+    /// <summary>Der Platzhalter der leeren Überhöhung: „Vorgabe 2 K“.</summary>
+    private static string Ueberhoehungsvorgabetext
+        => Vorgabetext(WindowsFormsApplication1.Vorheizvorgabe.UEBERHOEHUNG_VORGABE_K) + " K";
 
     /// <summary>
     /// Baut das neue Vorheizen und schreibt die ganze Einstellung; verwirft der Kern den Wert (Grenzen des Konstruktors),

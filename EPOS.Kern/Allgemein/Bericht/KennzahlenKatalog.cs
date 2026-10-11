@@ -99,6 +99,9 @@ namespace WindowsFormsApplication1
         /// <summary>Mehrwärme des Vorheizens [MWh/a] (AH-V6), Summe über die Gebäude.</summary>
         public const string SCHLUESSEL_GEB_VORHEIZ_MEHRWAERME = "geb.vorheiz_mehrwaerme";
 
+        /// <summary>Stunden mit Überhöhung der Schnellaufheizung [h/a] (SA3b), Höchstwert über die Gebäude; leer ohne Wirkung.</summary>
+        public const string SCHLUESSEL_GEB_VORHEIZ_UEBERHOEHUNG_STUNDEN = "geb.vorheiz_ueberhoehung_stunden";
+
         /// <summary>
         /// Der Höchstwert einer Größe über die Gebäude des Stands — dieselben Ergebniszeilen wie die Gebäudetafel
         /// (<see cref="ProjektbeschreibungBaustein.GebaeudeZeilen"/>); <c>null</c>, wenn kein Gebäude sie trägt. Stunden und Zeiten
@@ -860,6 +863,12 @@ namespace WindowsFormsApplication1
             l.Add(V(new Kennzahl(SCHLUESSEL_GEB_VORHEIZ_MEHRWAERME, "Mehrwärme des Vorheizens (Summe der Gebäude)",
                 "Additional heat from preheating (sum of buildings)", "MWh/a", GR_GEBAEUDE, "N2", true,
                 v => Gebaeudesumme(v, g => g.Vorheizen?.MehrwaermeMwh))));
+            // SA3b (Katalog v21): die Stunden mit Überhöhung der Schnellaufheizung - wie die Aufheizstunden als Höchstwert der
+            // Gebäude; ohne Wirkung der Überhöhung trägt kein Gebäude einen Wert, die Zeile entfällt.
+            l.Add(new Kennzahl(SCHLUESSEL_GEB_VORHEIZ_UEBERHOEHUNG_STUNDEN, "Stunden mit Überhöhung (Höchstwert der Gebäude)",
+                "Hours with setpoint boost (building maximum)", "h/a", GR_GEBAEUDE, "N0", true,
+                v => Gebaeudehoechstwert(v, g => g.Vorheizen?.UeberhoehungK != null ? g.Vorheizen.UeberhoehungH : null))
+                { Seit = Vorlagenfeldkatalog.FASSUNG_SCHNELLAUFHEIZUNG });
 
             // ---------------- Emissionen (KostenEmissionRechner; null = Faktoren fehlen) ----------------
             // Die Beschriftung NENNT DEN MODUS (Etappe E5, Konzept F7): „CO₂-Emissionen"

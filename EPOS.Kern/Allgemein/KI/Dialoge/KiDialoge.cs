@@ -9570,6 +9570,15 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("aufheiz_heizkreis", "SimulationKiSicht.AufheizHeizkreis",
                                      KiDialogTexte.SimAufheizHeizkreisName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SimAufheizHeizkreisErl),
+                    // Die Schnellaufheizung (SA3a, E128): Schalter bei „Vorgabe" oder „Berechnet", die Ueberhoehung
+                    // nur bei Schalter an - sonst lehnt die Sicht benannt ab.
+                    new KiDialogFeld("aufheiz_schnell", "SimulationKiSicht.AufheizSchnell",
+                                     KiDialogTexte.SimAufheizSchnellName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimAufheizSchnellErl),
+                    new KiDialogFeld("aufheiz_ueberhoehung", "SimulationKiSicht.AufheizUeberhoehungK",
+                                     KiDialogTexte.SimAufheizUeberhoehungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAufheizUeberhoehungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true, min: 0, max: 10),
 
                     // ---- Die Einspeisegrenze (Welle M5, PV3) ------------------------------------
                     //

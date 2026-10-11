@@ -489,7 +489,7 @@ namespace EPOS.Kern.Tests
             // AH-V6 (Katalog v19): der Vorheizsatz je Gebäude, nur mit vorgegebener oder berechneter Vorheizzeit.
             "{{#wenn hat.vorheizen}}", "{{#je gebaeude}}", "{{gebaeude.name}}", "{{gebaeude.ergebnis.vorheizverfahren}}",
             "{{gebaeude.ergebnis.vorheizzeit}}", "{{gebaeude.ergebnis.vorheizleistung}}", "{{gebaeude.ergebnis.vorheiz_tage_verfehlt}}",
-            "{{gebaeude.ergebnis.vorheiz_mehrwaerme}}", "{{/je}}", "{{/wenn}}",
+            "{{gebaeude.ergebnis.vorheiz_mehrwaerme}}", "{{gebaeude.ergebnis.vorheiz_schnellaufheizung}}", "{{/je}}", "{{/wenn}}",
             "{{#je stand}}", "{{stand.anzeige}}", "{{/je}}",
             "{{kapitel.anhang|ohne titel|ebene 2}}",
         };

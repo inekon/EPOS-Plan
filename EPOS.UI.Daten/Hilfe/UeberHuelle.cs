@@ -64,6 +64,8 @@ namespace WindowsFormsApplication1
         /// <param name="entwicklermodusSchalten">Schaltet den Modus und liefert den neuen Block; <c>null</c> = keine Geste.</param>
         /// <param name="anstoss">Der Anstoss der Geste; <c>null</c> = keine Geste.</param>
         /// <param name="supportpaketSpeichern">Speichert das Supportpaket (Haken KI-Protokoll); <c>null</c> = kein Knopf.</param>
+        /// <param name="gesteAusgeloest">Die Geste, im Dialog selbst erkannt (Fokus in der WebView, AltGr): derselbe
+        /// Weg wie das Abfangen der Taste in der Schale; <c>null</c> = folgenlos.</param>
         public static IReadOnlyDictionary<string, object> Gaben(string produktname, string version, string baudatum,
                                                                 string programmversion,
                                                                 Func<string, bool> adresseOeffnen,
@@ -72,7 +74,8 @@ namespace WindowsFormsApplication1
                                                                 Action fernwartungOeffnen = null,
                                                                 Func<string> entwicklermodusSchalten = null,
                                                                 UeberAnstoss anstoss = null,
-                                                                Func<bool, System.Threading.Tasks.Task<SupportpaketAnzeige>> supportpaketSpeichern = null)
+                                                                Func<bool, System.Threading.Tasks.Task<SupportpaketAnzeige>> supportpaketSpeichern = null,
+                                                                Action gesteAusgeloest = null)
         {
             var gaben = new Dictionary<string, object>
             {
@@ -86,6 +89,7 @@ namespace WindowsFormsApplication1
             if (entwicklermodusSchalten != null) gaben["EntwicklermodusSchalten"] = entwicklermodusSchalten;
             if (anstoss != null) gaben["Anstoss"] = anstoss;
             if (supportpaketSpeichern != null) gaben["SupportpaketSpeichern"] = supportpaketSpeichern;
+            if (gesteAusgeloest != null) gaben["GesteAusgeloest"] = gesteAusgeloest;
             return gaben;
         }
 

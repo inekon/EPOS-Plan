@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -254,8 +255,24 @@ namespace WindowsFormsApplication1
         {
             if (v == null) return;
             texte.Add(new KeyValuePair<string, string>(praefix + "Vorheizverfahren", v.Verfahren));
-            foreach ((string schluessel, double? wert) in Vorheizschluessel(v))
+            foreach ((string schluessel, double? wert) in Vorheizschluessel(v).Concat(Schnellaufschluessel(v)))
                 if (wert is double w) skalare.Add(Paar(praefix + schluessel, w));
+        }
+
+        /// <summary>
+        /// Die Zahlenschlüssel der Schnellaufheizung (SA3b, Schritt 217) in der Reihenfolge der Ergebnisspalten (ohne Präfix) —
+        /// leer, solange die Überhöhung an keiner Zone gewirkt hat (<see cref="Vorheizkennzahlen.UeberhoehungK"/> NULL): Dann
+        /// entsteht kein Schlüssel, und die Referenz-CSV bleiben byte-gleich.
+        /// </summary>
+        internal static IEnumerable<(string Schluessel, double? Wert)> Schnellaufschluessel(Vorheizkennzahlen v)
+        {
+            if (v?.UeberhoehungK == null) yield break;
+            yield return ("VorheizUeberhoehungK", v.UeberhoehungK);
+            yield return ("VorheizUeberhoehungH", v.UeberhoehungH);
+            yield return ("VorheizUeberhoehungVorlaufMaxC", v.UeberhoehungVorlaufMaxC);
+            yield return ("VorheizVorlaufgrenzeH", v.VorlaufgrenzeH);
+            yield return ("VorheizUeberhoehungWirkungslosH", v.UeberhoehungWirkungslosH);
+            yield return ("VorheizUeberhoehungSperrzeitH", v.UeberhoehungSperrzeitH);
         }
 
         /// <summary>Die Zahlenschlüssel des Vorheizens in der Reihenfolge der Ergebnisspalten (ohne Präfix).</summary>

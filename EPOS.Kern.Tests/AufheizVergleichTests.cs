@@ -261,7 +261,8 @@ namespace EPOS.Kern.Tests
             // AH-V6 (Katalog v19): die Vorheizkennzahlen der Fassung 2 stehen ab Fassung 19 in derselben Gruppe.
             Assert.All(KennzahlenKatalog.Alle().Where(k => k.Gruppe == KennzahlenKatalog.GR_GEBAEUDE), k =>
             {
-                int seit = k.Schluessel.StartsWith("geb.vorheiz", StringComparison.Ordinal) ? 19 : 16;
+                int seit = k.Schluessel == KennzahlenKatalog.SCHLUESSEL_GEB_VORHEIZ_UEBERHOEHUNG_STUNDEN ? 21
+                         : k.Schluessel.StartsWith("geb.vorheiz", StringComparison.Ordinal) ? 19 : 16;
                 Assert.Equal(seit, k.Seit);
                 Assert.Equal(seit, Vorlagenfeldkatalog.SeitDerKennzahl(k));
                 Assert.True(k.DeltaAnzeigen);

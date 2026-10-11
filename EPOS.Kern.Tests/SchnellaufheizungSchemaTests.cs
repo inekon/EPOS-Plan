@@ -179,6 +179,45 @@ namespace EPOS.Kern.Tests
             Assert.Equal(bestand, KonfigurationCtrl.AufheizvorgabeLesen(projekt));
         }
 
+        /// <summary>
+        /// <b>Die Hüllen (SA3a)</b>: Die Naht der Ergebnishülle (<c>AufheizvorgabeSchreiben</c>, der Weg der Gruppe „Aufheizen vor
+        /// Nutzungsbeginn“) schreibt Schalter und Überhöhung, und das Speichern der Kaskade (Delete + Insert in
+        /// <c>SimulationKonfigHuelle</c>) trägt beide mit — auch „aus“ mit gepflegter Überhöhung.
+        /// </summary>
+        [Fact]
+        public void Die_Huellen_schreiben_die_Schnellaufheizung_und_das_Speichern_der_Kaskade_traegt_sie_mit()
+        {
+            if (!_db.Vorhanden) return;
+            const int projekt = 1065;
+            IEinstellungen vorher = Dienste.Einstellungen;
+            Dienste.Einstellungen = new FluechtigeEinstellungen();
+            try
+            {
+                Aufheizvorgabe bestand = KonfigurationCtrl.AufheizvorgabeLesen(projekt);
+                EPOS.UI.Seiten.Simulation.SimulationParameterDienste wege =
+                    SimulationErgebnisHuelle.Erzeugen(null, projekt, new BedarfsZustand()).ParameterGaben();
+                foreach (Vorheizvorgabe vh in new[]
+                         {
+                             bestand.Vorheizen.MitSchnellaufheizung(true, 4.5),
+                             bestand.Vorheizen.MitSchnellaufheizung(true),
+                             bestand.Vorheizen.MitSchnellaufheizung(false, 2.5),
+                         })
+                {
+                    Aufheizvorgabe v = bestand.MitVorheizen(vh);
+                    Assert.True(wege.AufheizvorgabeSchreiben(v));
+                    Assert.Equal(v, KonfigurationCtrl.AufheizvorgabeLesen(projekt));
+                    var dienste = (EPOS.UI.Seiten.Simulation.SimulationKonfigDienste)
+                        SimulationKonfigHuelle.Erzeugen(projekt).Gaben()["Dienste"];
+                    Assert.True(dienste.Speichern());
+                    Assert.Equal(v, KonfigurationCtrl.AufheizvorgabeLesen(projekt));
+                }
+            }
+            finally
+            {
+                Dienste.Einstellungen = vorher;
+            }
+        }
+
         [Fact]
         public void Schalter_null_oder_null_ist_aus_und_ein_ungueltiger_Satz_die_Sollwertrampe()
         {
