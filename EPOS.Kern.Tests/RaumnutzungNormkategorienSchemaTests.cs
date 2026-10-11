@@ -89,6 +89,28 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void In_Zonenbaum_und_Uebernahmeliste_stehen_die_Wohnprofile_am_Ende_der_DIN_Gruppe()
+        {
+            if (!_db.Vorhanden) return;
+            string dinName = RaumnutzungSaat.KATEGORIE_DIN;
+            var erwartet = new[] { RaumnutzungNormkategorienSchema.WOHNEN_EFH, RaumnutzungNormkategorienSchema.WOHNEN_MFH };
+
+            // Zonenbaum des Imports: die Auswahl der Vorbelegung in der Ordnung des Katalogs.
+            var auswahl = Raumnutzungsvorbelegung.Lesen().Auswahl().Where(a => a.Kategorie == dinName).ToList();
+            Assert.Equal(45, auswahl.Count);
+            Assert.Equal(erwartet, auswahl.Skip(43).Select(a => a.Name));
+            Assert.DoesNotContain(Raumnutzungsvorbelegung.Lesen().Auswahl(),
+                                  a => a.Art == "SIA_2024" || a.Art == "VDI_2078");
+
+            // „Nutzungsprofil übernehmen…“: dieselbe Ordnung, je Kategorie gruppiert, EPOS-Muster vor DIN.
+            var wahl = RaumnutzungHuelle.Profilwahl();
+            Assert.Equal(new[] { RaumnutzungSaat.KATEGORIE_EPOS, dinName }, wahl.Select(w => w.Kategorie).Distinct().ToArray());
+            var dinWahl = wahl.Where(w => w.Kategorie == dinName).ToList();
+            Assert.Equal(erwartet, dinWahl.Skip(43).Select(w => w.Name));
+            Assert.All(dinWahl.Skip(43), w => Assert.True(w.OhneWerte));
+        }
+
+        [Fact]
         public void Die_Wohnprofile_entstehen_ohne_Werte_einmal_und_ein_eigenes_gleichen_Namens_stoert_nicht()
         {
             if (!_db.Vorhanden) return;

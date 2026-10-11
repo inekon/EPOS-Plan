@@ -151,6 +151,9 @@ namespace Auslieferungsvorlage
             bool ok = true;
             int offen = RaumnutzungSchema.OffeneSaat();
             ok &= Befund(offen == 0, "ausgelieferte Saat der Nutzungsprofile vollstaendig: offen " + offen);
+            // E129 (NP6): Die Kategorien SIA 2024 und VDI 2078 sind nicht mehr ausgeliefert, die DIN traegt beide Wohnprofile.
+            int offenNp6 = RaumnutzungNormkategorienSchema.Offen();
+            ok &= Befund(offenNp6 == 0, "Kategorien SIA 2024 und VDI 2078 entfallen, Wohnprofile der DIN stehen (E129): offen " + offenNp6);
 
             string norm = string.Join(", ", RaumnutzungSchema.ARTEN_NORM.Select(a => "'" + a + "'"));
             string normProfile = "SELECT p.\"ID\" FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p JOIN \"" +

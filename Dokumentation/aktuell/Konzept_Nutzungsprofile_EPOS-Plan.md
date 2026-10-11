@@ -61,6 +61,10 @@ erweitert**: Katalog mit Kategorien, änderbare Zuordnung, drei Zugänge. E79 ha
 Welle“ vorgemerkt ([Befund HottCAD-Projektdatei](Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md),
 `PdProfileUsage`); dieses Papier ist diese Welle.
 
+E129 (Anwender, 11.10.2026: „nehme sia und vdi 2078 heraus“; „die DIN 18599-10 Profile für Wohnen fehlen in der
+Auswahl“) nimmt die leeren Kategorien SIA 2024 und VDI 2078 heraus und gibt der Kategorie DIN die zwei Wohnprofile nach
+Tabelle 5 (5.2, 5.3; Stufe NP6).
+
 ### 1.2 Was ausdrücklich bleibt
 
 | Festlegung | Quelle | bleibt, weil |
@@ -489,6 +493,7 @@ Testdaten.
 | **NP3** | Oberfläche: Blatt „Nutzungsprofile“, Profileditor mit Vorschau, Zuordnung, die drei Zugänge, „Als Vorlage speichern“ mit freier Nutzung, Ressourcen in beiden Sprachen, KI-Feldkarten, bunit, Windows-Schale kompiliert | 6–9 PT | NP1, NP2 |
 | **NP4** | CSV-Import und -Export, Übernahme der Profile aus einer Projektdatei in einen eigenen Katalog (bei Ja zu Q46), Wiki-Seite und Nachzüge, Hilfe, Logbuch-Entwurf | 3–4 PT | NP3 |
 | | **zusammen** | **19–28 PT** | |
+| **NP6** | E129: Schemaschritt 219 (`RaumnutzungNormkategorienSchema`) nimmt die Kategorien SIA 2024 und VDI 2078 heraus und legt die zwei Wohnprofile der DIN an; die Arten verschwinden aus Auswahl, Anzeige und Prüfliste; Wiki und Papiere | nachgezogen | NP5b |
 
 Die Referenzbasis bleibt in allen Stufen unverändert. Keine Stufe braucht einen iOS-Lauf (keine `Dienste.*`-Änderung;
 der CSV-Import nutzt den vorhandenen Dateidienst).
@@ -542,7 +547,8 @@ Alle zehn Fragen sind mit **E91** nach Empfehlung entschieden; die Empfehlung is
 
 ### 10.1 Festlegungen
 
-NP-F1 bis NP-F24 in Kapitel 3 — nach Empfehlung, gültig mit E91 und der Beauftragung von NP1.
+NP-F1 bis NP-F24 in Kapitel 3 — nach Empfehlung, gültig mit E91 und der Beauftragung von NP1; NP-F4 und 5.2, 5.3 in der
+Fassung von E129.
 
 ### 10.2 Fragen
 
@@ -613,7 +619,9 @@ Fassung mit Parametersatz und Generator (A). Aus der Fassung mit Vorlagen je Gr�
   [BETRIEB_SQLITE](BETRIEB_SQLITE.md) vor dem Schritt wie bei jedem Tabellenneubau.
 - **Lizenz der Normnamen:** Nummer und Name der DIN-Profile gelten als Tatsachen ohne Werte; ausgeliefert wird nur, was
   der Anwender an seiner Ausgabe bestätigt hat (Q47). Im Zweifel bleibt eine Nummer weg; SIA 2024 und VDI 2078 werden
-  nicht ausgeliefert (5.3, E129).
+  nicht ausgeliefert (5.3, E129). Die Namen der zwei Wohnprofile stehen in einer Konstante
+  (`RaumnutzungNormkategorienSchema.WOHNEN_EFH`, `WOHNEN_MFH`); bestätigt der Anwender andere, ändert ein späterer
+  Schemaschritt sie in den Datenbanken.
 - **Normwerte über die Hintertür:** Werte aus einer Projektdatei (Q46) oder aus der Datenbank des Entwicklers dürfen
   nie in die Auslieferung — die Katalogwache und der Prüfbericht der Auslieferungsvorlage halten die Grenze (NP-F21).
 - **Pufferauslegung:** Wer die Nutzungsspalte umbaut, trifft die Quelle `KONDITIONIERUNG` von `Z_Nutzungsprofil`
