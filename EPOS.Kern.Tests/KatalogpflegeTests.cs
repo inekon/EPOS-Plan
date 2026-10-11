@@ -378,20 +378,20 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Zehn Klassen aus der Datenbank</b> — die technische Klasse <c>SYSTEM</c>
+        /// <b>Elf Klassen aus der Datenbank</b> (KM4-E2-a: dazu <c>FGAS</c>) — die technische Klasse <c>SYSTEM</c>
         /// (Markerzeile der Nachsaat) bleibt aussen vor. <c>EEG</c> ist dabei: Sie steht in
         /// der Datenbank, aber NICHT in der festen Achterliste des Zeilendialogs
         /// (Befund W14c-B5). <c>UMLAGEN</c> kam mit der Generation 7 hinzu (Auftrag US-1).
         /// </summary>
         [Fact]
-        public void DerKatalogMeldetZehnKlassenOhneSystem()
+        public void DerKatalogMeldetElfKlassenOhneSystem()
         {
             if (!_db.Vorhanden) return;
 
             IList<string> klassen = new GesetzKatalog().Klassen();
             Assert.Equal(new[]
             {
-                "CO2_PREIS", "EEG", "EF_BILANZ", "EF_NACHWEIS", "ENERGIESTEUER",
+                "CO2_PREIS", "EEG", "EF_BILANZ", "EF_NACHWEIS", "ENERGIESTEUER", "FGAS",
                 "KWKG", "PEF_NACHWEIS", "STROMSTEUER", "UMLAGEN", "UMSATZSTEUER"
             }, klassen.ToArray());
             Assert.DoesNotContain(DbWerte.GESETZ_KLASSE_SYSTEM, klassen);
@@ -405,6 +405,7 @@ namespace EPOS.Kern.Tests
         [InlineData("EF_BILANZ", 38)]
         [InlineData("EF_NACHWEIS", 30)]
         [InlineData("ENERGIESTEUER", 15)]
+        [InlineData("FGAS", 13)]
         [InlineData("KWKG", 53)]
         [InlineData("PEF_NACHWEIS", 29)]
         [InlineData("STROMSTEUER", 8)]
@@ -486,9 +487,11 @@ namespace EPOS.Kern.Tests
             // ETAPPE E7c3: Generation 8 → 9 ohne neue Zeile — die Generation 9 PFLEGT nur
             // (GesetzKatalog.Nachpflege: Brennstoff 24 mit H_i = H_s = 1,0); die jüngste
             // Saatgeneration bleibt 8.
-            Assert.Equal(226, GesetzKatalog.Vorbelegung().Count);
-            Assert.Equal(9, GesetzKatalog.AktuelleGeneration);
-            Assert.Equal(8, GesetzKatalog.JuengsteSaatgeneration);
+            // KM4-E2-a: 226 → 239 Zeilen, Generation 9 → 10 — die dreizehn F-Gas-Regeln nach
+            // Anhang IV der VO (EU) 2024/573 (Klasse FGAS).
+            Assert.Equal(239, GesetzKatalog.Vorbelegung().Count);
+            Assert.Equal(10, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(10, GesetzKatalog.JuengsteSaatgeneration);
         }
 
         // ==================================================================
@@ -881,16 +884,17 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// <b>Der Klassenvorrat des Zeilendialogs: acht Klassen in dieser Reihenfolge.</b>
-        /// Sie standen bisher als Quelltextliste in der Maske (Befund W14c-B5).
+        /// <b>Der Klassenvorrat des Zeilendialogs: neun Klassen in dieser Reihenfolge.</b>
+        /// Sie standen bisher als Quelltextliste in der Maske (Befund W14c-B5). KM4-E2-a hängt
+        /// <c>FGAS</c> an — die Regeln nach Anhang IV pflegt die Hand in der Pflegemaske (KM4-Q4 b).
         /// </summary>
         [Fact]
-        public void DerKlassenvorratFuehrtAchtKlassenInFesterReihenfolge()
+        public void DerKlassenvorratFuehrtNeunKlassenInFesterReihenfolge()
         {
             Assert.Equal(new[]
             {
                 "KWKG", "STROMSTEUER", "ENERGIESTEUER", "CO2_PREIS",
-                "EF_NACHWEIS", "EF_BILANZ", "PEF_NACHWEIS", "UMSATZSTEUER"
+                "EF_NACHWEIS", "EF_BILANZ", "PEF_NACHWEIS", "UMSATZSTEUER", "FGAS"
             }, GesetzKatalog.KlassenVorrat().ToArray());
         }
 
@@ -943,6 +947,7 @@ namespace EPOS.Kern.Tests
 
                 Assert.Equal("KWK-Gesetz", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_KWKG));
                 Assert.Equal("Stromsteuer", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_STROMSTEUER));
+                Assert.Equal("F-Gase (VO 2024/573, Anhang IV)", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_FGAS));
                 Assert.Equal("EEG", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_EEG));   // unbekannt = Rohwert
                 Assert.Equal("", GesetzKatalog.KlasseAnzeige(null));
 

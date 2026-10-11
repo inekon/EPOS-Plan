@@ -219,6 +219,92 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // ==================================================================
+        //  4 — Generation 10: die F-Gas-Regeln nach Anhang IV (KM4-E2-a)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Die Generation 10 sät die dreizehn F-Gas-Regeln in den Schranken</b>: Klasse
+        /// <c>FGAS</c>, Einheit „-“, Stichtag 2020 bis 2035, Grenze 0 (jedes F-Gas), 150, 750 oder
+        /// 2 500, jede Zeile mit Fundstelle in Anhang IV und einem Schlüssel aus dem Vokabular.
+        /// Gesichert sind alle außer Nr. 7 d (Wortlaut ohne „oder mehr“).
+        /// </summary>
+        [Fact]
+        public void DieGeneration10SaetDieFgasRegelnInDenSchranken()
+        {
+            List<GesetzParameter> fgas = GesetzKatalog.Vorbelegung()
+                .Where(p => p.Klasse == DbWerte.GESETZ_KLASSE_FGAS).ToList();
+
+            Assert.Equal(13, fgas.Count);
+            Assert.Equal(12, fgas.Select(p => p.Schluessel).Distinct().Count());
+            Assert.Equal(GesetzKatalog.GENERATION_FGAS, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(10, GesetzKatalog.GENERATION_FGAS);
+            Assert.All(GesetzKatalog.Vorbelegung().Where(p => p.Generation == 10),
+                       p => Assert.Equal(DbWerte.GESETZ_KLASSE_FGAS, p.Klasse));
+
+            var verworfen = new List<string>();
+            Assert.Equal(13, Kaeltemittelregeln.Zerlegen(fgas, verworfen).Count);
+            Assert.Empty(verworfen);
+
+            foreach (GesetzParameter p in fgas)
+            {
+                Assert.Equal(10, p.Generation);
+                Assert.Equal(DbWerte.GESETZ_EINHEIT_OHNE, p.Einheit);
+                Assert.InRange(p.JahrVon, 2020, 2035);
+                Assert.True(p.Wert.HasValue, p.Schluessel);
+                Assert.Contains(p.Wert.Value, new[] { 0.0, 150.0, 750.0, 2500.0 });
+                Assert.Equal(p.Schluessel.EndsWith("_" + DbWerte.FGAS_KRIT_FGAS, StringComparison.Ordinal),
+                             p.Wert.Value == 0.0);
+                Assert.StartsWith("VO (EU) 2024/573 Anh. IV Nr. ", p.Quelle);
+                Assert.Matches(@"S\. 7[1-5]/86", p.Quelle);
+                Assert.Equal(p.Schluessel == DbWerte.GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP
+                                 ? DbWerte.GESETZ_STATUS_VORLAEUFIG : DbWerte.GESETZ_STATUS_GESICHERT,
+                             p.Status);
+            }
+
+            // Nicht gesät: Nr. 9 a (Füllmenge), Nr. 8 a, Nr. 4 bis 6, Art. 13.
+            Assert.DoesNotContain(fgas, p => p.Quelle.Contains("Nr. 9 Buchst. a,"));
+            Assert.DoesNotContain(fgas, p => p.Quelle.Contains("Nr. 8 Buchst. a,"));
+            Assert.DoesNotContain(fgas, p => p.Schluessel.StartsWith("FGAS_13_", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// <b>Die Nachsaat bringt die Generation 10 in die Datenbank</b> — auf der eigenen
+        /// Arbeitskopie mit abgeräumten F-Gas-Zeilen und dem Marker auf 9; ein zweiter Lauf legt
+        /// nichts an.
+        /// </summary>
+        [Fact]
+        public void DieNachsaatBringtDieFgasRegelnInDieDatenbank()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                int juengere = JuengereGenerationenAbraeumen(9);
+                DataRepository.ExecuteNonQuery(
+                    "UPDATE " + TABELLE + " SET [Wert] = 9 WHERE Schluessel = ?",
+                    new DbParam("@s", DbParamTyp.VarWChar, 60) { Wert = DbWerte.GESETZ_KATALOG_GENERATION });
+                Assert.Empty(new GesetzKatalog().AlleDerKlasse(DbWerte.GESETZ_KLASSE_FGAS));
+
+                GesetzKatalog.StelleKatalogSicher();
+
+                Assert.True(GesetzKatalog.SaatWarnungen.Count == 0,
+                            "Die Nachsaat meldet Warnungen: " + string.Join(" | ", GesetzKatalog.SaatWarnungen));
+                Assert.Equal(13, juengere);
+                Assert.Equal(13, GesetzKatalog.ZuletztNachgesaet);
+
+                var verworfen = new List<string>();
+                IReadOnlyList<KaeltemittelRegel> regeln = Kaeltemittelregeln.Lesen(new GesetzKatalog(), verworfen);
+                Assert.Equal(13, regeln.Count);
+                Assert.Empty(verworfen);
+                Assert.Contains(regeln, r => r.Schluessel == DbWerte.GESETZ_FGAS_IV_SPLIT_UEBER12_GWP &&
+                                             r.Stichtag == 2033 && r.Grenze == 150.0);
+
+                GesetzKatalog.StelleKatalogSicher();
+                Assert.Equal(0, GesetzKatalog.ZuletztNachgesaet);
+            }
+        }
+
         /// <summary>
         /// ETAPPE E7c — räumt die Saatzeilen aller Generationen JÜNGER als
         /// <paramref name="generation"/> aus der Arbeitskopie (Schlüssel, Klasse,
