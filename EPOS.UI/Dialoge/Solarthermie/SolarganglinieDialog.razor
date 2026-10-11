@@ -4,8 +4,12 @@
    die Uebernahmeleiste (Baustein Zweispaltenauswahl), darunter Name und
    Beschreibung als Anzeige. Die Katalogpflege steht an der Katalogseite selbst
    (Baustein GanglinieKatalogseite): Liste mit Beschreibung, Jahresarbeit und
-   Spitze, Vergleichen, Schloss setzen/aufheben, Loeschen und Import... - es gibt
-   keinen Unterdialog "Bearbeiten..." mehr.
+   Spitze; ihre Knoepfe legt der Wirt in die Slots der Zweispaltenauswahl
+   (Katalogauswahl V1, Stufe 4): links in der Katalog-Fussleiste Vergleichen...,
+   Schloss setzen/aufheben..., Loeschen (auf der Auswahl, eine Rueckfrage), rechts
+   Import..., der Formathinweis als Infoknopf im Katalogkopf. Beide Listen fuehren
+   Kaestchen und je Zeile den Stift: er oeffnet die Ganglinie als Ansicht in der
+   Satz-Ueberlagerung (kein Katalogeditor, keine Projektkopie vor dem OK).
 
    KATALOGBETRIEB (Katalogbetrieb="true"): Der Administrationsmenuepunkt
    "Profile & Lastgaenge -> Solarthermie-Ganglinie" oeffnet DENSELBEN Dialog ohne
@@ -49,6 +53,17 @@
                        StandardKurztext="Berechnungsweg Solarthermie" MitAssistent="false" />
         </span>;
 
+        // Der Formathinweis des Imports als Infoknopf im Katalogkopf (keine eigene Zeile, Stufe 4).
+        RenderFragment formathinweis = @<text>
+            @if (Katalogwege.Einlesen is not null || Katalogwege.ImportAbgelehnt.Length > 0)
+            {
+                <span class="epos-ganglinie-formathinweis">
+                    <InfoKnopf Schluessel="@HilfeSchluesselImport" StandardKurztext="@Katalogtexte.ImportHinweis"
+                               MitAssistent="false" />
+                </span>
+            }
+        </text>;
+
         RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
 
         @* DIE GANGLINIE DES GEWAEHLTEN SATZES (DZ1, Konzept 4.9): derselbe Baustein und
@@ -87,47 +102,71 @@
         </div>;
     }
 
+    @* KT-4: Wirft das Lesen des gewaehlten Satzes (Kennzahlen der Ganglinie), nennt dieser Banner den Grund. *@
+    @if (_satzFehler.Length > 0)
+    {
+        <Warnbanner Stufe="@WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+
     @if (Katalogbetrieb)
     {
         <GanglinieKatalogseite @ref="_seite" Wege="@Katalogwege" Profil="@Katalogprofil"
                                Filterstand="@_filterstand" Filtertexte="@Filtertexte"
                                Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
-                               ZeileGewaehlt="BeiKatalogzeile" />
+                               ZeileGewaehlt="BeiKatalogzeile" Listenname="@TitelText"
+                               Formathinweis="@formathinweis" />
         @satzinhalt
     }
     else
     {
+        @* KATALOGAUSWAHL V1, STUFE 4 (Konzept 4.2, 4.5, UeS2): beide Listen mit Kaestchen und Stift, die
+           Katalogknoepfe der Seite in den Slots der Fussleiste, der Formathinweis im Katalogkopf. *@
         <Zweispaltenauswahl Dialogname="Solarganglinie" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                            KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                             UebernehmenText="@LabelHinzu"
-                            UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                            UebernehmenGesperrt="@(KatalogZiele().Count == 0)" Uebernehmen="BeiHinzu"
                             EntfernenText="@LabelEntfernen"
-                            EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen"
-                            SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true">
+                            EntfernenGesperrt="@(ProjektZiele().Count == 0)" Entfernen="BeiEntfernen"
+                            ProjektWahl="@_projektWahl" ProjektSichtbar="@ProjektSchluessel()"
+                            KatalogWahl="@_seite?.Wahl" KatalogSichtbar="@_seite?.Sichtbar"
+                            WahlGeaendert="BeiWahlGeaendert"
+                            KatalogFussName="@_katalogZeile?.Bezeichner"
+                            SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true"
+                            @ref="_zweispalten">
+
+            <KatalogKopf>@formathinweis</KatalogKopf>
 
             <Links>
-                <div class="epos-raster-huelle">
-                    <table class="epos-raster">
-                        <thead>
-                            <tr>
-                                <th>@SpalteWahl</th>
-                                <th>@SpalteName</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (ErzeugerZeile zeile in Zeilen)
-                            {
-                                ErzeugerZeile z = zeile;
-                                <tr class="@(z == _projektZeile ? "epos-zeile--markiert" : null)">
-                                    <td>
-                                        <Zeilenwahl Gewaehlt="@(z == _projektZeile)" Kurztext="@SpalteWahl"
-                                                    Gewaehltwerden="() => ProjektZeileWaehlen(z)" />
-                                    </td>
-                                    <td>@z.Bezeichner</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
+                    <KindInhalt>
+                        <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-kaestchen">
+                            <HeaderTemplate>
+                                <Wahlkaestchen Bereich="Auswahlbereich.Projekt" />
+                            </HeaderTemplate>
+                            <ChildContent>
+                                <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@Projektschluessel(context)"
+                                               Kurztext="@context.Bezeichner" />
+                            </ChildContent>
+                        </TemplateColumn>
+                        <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
+                            <Zeilenwahl Gewaehlt="@(context == _projektZeile)" Kurztext="@SpalteWahl"
+                                        Gewaehltwerden="() => ProjektZeileKlick(context)" />
+                        </TemplateColumn>
+                        <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
+                                        Property="@(z => z.Bezeichner)" Title="@SpalteName" />
+                        @* UeS2: der Stift je Projektzeile - die Ganglinie der Zeile in der Satz-Ueberlagerung
+                           (reine Ansicht: die Projektkopie hat keinen eigenen Speicherweg). *@
+                        <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-stift">
+                            <HeaderTemplate>
+                                <Zeilenstift Kopf="true" />
+                            </HeaderTemplate>
+                            <ChildContent>
+                                <Zeilenstift Hinweis="@Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS"
+                                             Geklickt="@(() => BeiProjektStift(context))" />
+                            </ChildContent>
+                        </TemplateColumn>
+                    </KindInhalt>
+                </Raster>
             </Links>
 
             <Rechts>
@@ -138,8 +177,13 @@
                                        Filterstand="@_filterstand" Filtertexte="@Filtertexte"
                                        Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
                                        ZeileGewaehlt="BeiKatalogzeile"
-                                       ImProjekt="@ProjektBezeichner" />
+                                       ImProjekt="@ProjektBezeichner" Listenname="@TitelText"
+                                       FussImWirt="true" ZustandGeaendert="Nachgezogen"
+                                       Stift="BeiKatalogStift" Formathinweis="@formathinweis" />
             </Rechts>
+
+            <KatalogFuss>@_seite?.Fuss</KatalogFuss>
+            <KatalogFussRechts>@_seite?.FussRechts</KatalogFussRechts>
 
             <Satz>@satzinhalt</Satz>
 
@@ -239,6 +283,9 @@
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Solarganglinie.btn_Help";
 
+    /// <summary>Schlüssel des Infoknopfs am Formathinweis des Imports (Katalogkopf).</summary>
+    [Parameter] public string HilfeSchluesselImport { get; set; } = "Form_Solarganglinie.btn_Help_Import";
+
     // --- Die Ganglinie in der Detailzeile (DZ1) --------------------------------
 
     /// <summary>
@@ -274,6 +321,82 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private GanglinieKatalogseite? _seite;
+    private Zweispaltenauswahl? _zweispalten;
+    private readonly Bereichswahl _projektWahl = new();
+    private string _satzFehler = "";
+
+    /// <summary>Die Mehrfachwahl der Projektliste (Prüfhilfe).</summary>
+    public Bereichswahl ProjektWahl => _projektWahl;
+
+    /// <summary>Der Grund, wenn das Lesen des gewählten Satzes warf (Prüfhilfe, KT-4).</summary>
+    public string Satzfehler => _satzFehler;
+
+    private static string Projektschluessel(ErzeugerZeile z) => z.Schluessel.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    private IReadOnlyList<string> ProjektSchluessel() => Zeilen.Select(Projektschluessel).ToList();
+
+    /// <summary>Die Ziele einer Projektaktion: die angekreuzten Zeilen, sonst die zuletzt gewählte.</summary>
+    private List<ErzeugerZeile> ProjektZiele()
+    {
+        if (_projektWahl.Anzahl > 0)
+            return _projektWahl.Gewaehlte
+                .Select(s => Zeilen.FirstOrDefault(z => Projektschluessel(z) == s))
+                .OfType<ErzeugerZeile>().ToList();
+        return _projektZeile is null ? new() : new() { _projektZeile };
+    }
+
+    /// <summary>Die Ziele einer Katalogaktion: die angekreuzten Sätze, sonst der gewählte.</summary>
+    private IReadOnlyList<Katalogfilterzeile> KatalogZiele()
+        => _seite?.Ziele() ?? (_katalogZeile is null ? Array.Empty<Katalogfilterzeile>() : new[] { _katalogZeile });
+
+    private void ProjektZeileKlick(ErzeugerZeile zeile)
+    {
+        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
+        ProjektZeileWaehlen(zeile);
+    }
+
+    private void BeiWahlGeaendert(Auswahlbereich bereich)
+    {
+        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
+        if (!_projektWahl.IstGewaehlt(s)) return;
+        ErzeugerZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == s);
+        if (zeile is not null && zeile != _projektZeile) ProjektZeileWaehlen(zeile);
+    }
+
+    /// <summary>Die Katalogseite hat ihre Fragmente geändert: der Wirt zeichnet die Slots nach.</summary>
+    private void Nachgezogen() { }
+
+    /// <summary>UeS2: der Stift einer Projektzeile — ihre Ganglinie in der Satz-Überlagerung.</summary>
+    private async Task BeiProjektStift(ErzeugerZeile zeile)
+    {
+        if (_projektZeile != zeile) ProjektZeileKlick(zeile);
+        if (_zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Katalogzeile (die Seite hat sie schon gewählt) — gesperrt oder nicht, die
+    /// Ganglinie öffnet als Ansicht in der Satz-Überlagerung; einen Katalogeditor gibt es nicht.
+    /// </summary>
+    private async Task BeiKatalogStift(Katalogfilterzeile zeile)
+    {
+        if (_katalogZeile?.Bezeichner != zeile.Bezeichner) Katalogzeile_(zeile);
+        if (_zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>
+    /// Die Kennzahlen über die Fangstelle (KT-4): Wirft der Weg, bleibt die Grafik leer, und der Banner
+    /// nennt Satz und Grund (<c>Katalogladung.Satz</c>, Vermerk im Ausnahmeprotokoll).
+    /// </summary>
+    private Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? KennzahlenGefangen => Kennzahlen is null ? null
+        : async wahl =>
+        {
+            _satzFehler = "";
+            try { return await Kennzahlen(wahl); }
+            catch (Exception ex)
+            {
+                Katalogladung.Satz<object>(() => throw ex, wahl.Bezeichner, out _satzFehler);
+                return null;
+            }
+        };
 
     private ErzeugerZeile? _projektZeile;
     private Katalogfilterzeile? _katalogZeile;
@@ -311,7 +434,7 @@
 
     private async Task GrafikLaden(GanglinienWahl wahl)
     {
-        await _grafik.LadenAsync(wahl, Kennzahlen);
+        await _grafik.LadenAsync(wahl, KennzahlenGefangen);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -450,33 +573,47 @@
         return "";
     }
 
+    /// <summary>„In das Projekt übernehmen" — die Auswahl des Katalogs (Kästchen, sonst die Wahl).</summary>
     private void BeiHinzu()
     {
-        if (_katalogZeile is null || Aufnehmen is null) return;
-
-        ErzeugerZeile? neu = Aufnehmen(_katalogZeile.Id);
-        if (neu is null) return;
-
-        Zeilen.Add(neu);
-        ProjektZeileWaehlen(neu);
+        if (Aufnehmen is null) return;
+        ErzeugerZeile? letzte = null;
+        var neue = new List<string>();
+        foreach (Katalogfilterzeile k in KatalogZiele())
+        {
+            ErzeugerZeile? neu = Aufnehmen(k.Id);
+            if (neu is null) continue;
+            Zeilen.Add(neu);
+            neue.Add(Projektschluessel(neu));
+            letzte = neu;
+        }
+        if (letzte is null) return;
+        // Die Wahl folgt der Uebernahme (DZ1-N2): genau die neuen Zeilen.
+        if (neue.Count > 1) _projektWahl.Setzen(neue); else _projektWahl.Leeren();
+        ProjektZeileWaehlen(letzte);
     }
 
     /// <summary>
-    /// „▶": Die GEWÄHLTE Zeile geht — bei zwei Zuordnungen derselben Ganglinie genau
-    /// die markierte.
+    /// „Aus dem Projekt entfernen": die angekreuzten Zeilen, sonst die gewählte — bei zwei Zuordnungen
+    /// derselben Ganglinie genau die markierte.
     /// </summary>
     private void BeiEntfernen()
     {
-        if (_projektZeile is null) return;
-
-        ErzeugerZeile zeile = _projektZeile;
-        Zeilen.Remove(zeile);
-        Entfernen?.Invoke(zeile);
-
-        _projektZeile = null;
-        _name = "";
-        _beschreibung = "";
-        _grafik.Verwerfen();
+        List<ErzeugerZeile> ziele = ProjektZiele();
+        if (ziele.Count == 0) return;
+        foreach (ErzeugerZeile zeile in ziele)
+        {
+            Zeilen.Remove(zeile);
+            Entfernen?.Invoke(zeile);
+        }
+        _projektWahl.Leeren();
+        if (_projektZeile is not null && ziele.Contains(_projektZeile))
+        {
+            _projektZeile = null;
+            _name = "";
+            _beschreibung = "";
+            _grafik.Verwerfen();
+        }
     }
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
@@ -486,7 +623,8 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape" || _seite?.HaeltEsc == true) return Task.CompletedTask;
+        if (e.Key != "Escape" || _seite?.HaeltEsc == true || _zweispalten?.SatzUeberlagerungOffen == true)
+            return Task.CompletedTask;
         return BeiKreuz();
     }
 }

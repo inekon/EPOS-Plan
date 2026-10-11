@@ -276,6 +276,30 @@ namespace EPOS.Kern.Tests
         /// Stromganglinien, drei Waermebedarfe); ein neuer Satz ohne Projekt waere ein
         /// Rueckfall hinter GL-1.
         /// </summary>
+        /// <summary>
+        /// <c>SolarganglinieStammCtrl.ApplyGanglinieToProjekt</c> traegt den Ursprung der
+        /// Projektkopie ein (<c>Tab_Solarganglinie.ID_Stamm</c> = Id des Katalogsatzes,
+        /// Katalogauswahl V1 Stufe 4) — die Kopie findet ihren Katalogsatz ueber die ID.
+        /// </summary>
+        [Fact]
+        public void Solarganglinie_Projektkopie_traegt_ihren_Katalogsatz()
+        {
+            using var _ = new Kulturvorrichtung();
+            if (!_db.Vorhanden) return;
+
+            object kopf = DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_Solarganglinie_STAMM ORDER BY ID LIMIT 1", null);
+            if (kopf is null || kopf == System.DBNull.Value) return;
+            string name = kopf.ToString()!;
+            long stamm = Zahl("SELECT ID FROM Tab_Solarganglinie_STAMM ORDER BY ID LIMIT 1");
+
+            int projekt = ProjektAnlegen("ZR2 Solar Ursprung");
+            int kopie = SolarganglinieStammCtrl.ApplyGanglinieToProjekt(name, projekt);
+
+            Assert.True(kopie > 0);
+            Assert.Equal(stamm, Zahl("SELECT ID_Stamm FROM Tab_Solarganglinie WHERE ID = " + kopie));
+        }
+
         [Fact]
         public void Keine_Ganglinie_der_Projekttabellen_steht_ohne_Projekt()
         {
