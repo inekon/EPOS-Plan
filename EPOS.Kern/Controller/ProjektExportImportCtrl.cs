@@ -101,6 +101,9 @@ namespace WindowsFormsApplication1
             // Betriebskalender der Bedarfsprofile (PW2/BW2): projektuebergreifend, im Ziel ueber den
             // Bezeichner wiedergefunden; fehlt er dort, steht die Zuordnung ohne Kalender.
             { BedarfNetzKalenderSchema.SPALTE_ID_KALENDER, BedarfNetzKalenderSchema.TAB_KALENDER },
+            // Kuehltraeger (KuehlungSchema; Schritt 213 an den Zuordnungen des Kaeltebedarfs, Konzept Kaeltebedarf 3.4):
+            // ein Energietraeger wie carrier_id - am Ziel ueber den Namen wiedergefunden, nie ueber die Original-Id.
+            { KuehlungSchema.SPALTE_KUEHL_ID_CARRIER, "energy_carrier" },
             // TODO: bei Bedarf ID_Stamm / StammID / KategorieID ergänzen.
         };
 
@@ -1292,7 +1295,9 @@ namespace WindowsFormsApplication1
         private static bool IstReiseloserKatalog(string tabelle) =>
             string.Equals(tabelle, PufferAuslegungErgaenzungSchema.TAB_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(tabelle, KatalogkostenUrsprungSchema.TAB_KOSTENVORLAGE, StringComparison.OrdinalIgnoreCase) ||
-            KatalogkostenUrsprungSchema.KOPIEN_OHNE_URSPRUNG.Any(k => string.Equals(tabelle, k.Katalog, StringComparison.OrdinalIgnoreCase));
+            KatalogkostenUrsprungSchema.KOPIEN_OHNE_URSPRUNG.Any(k => string.Equals(tabelle, k.Katalog, StringComparison.OrdinalIgnoreCase)) ||
+            // Der Kaeltebedarfskatalog (Schritt 213) wie die uebrigen Bedarfskataloge: Die Kopie reist ohne Ursprung.
+            string.Equals(tabelle, KaeltebedarfSchema.TAB_KOPF_STAMM, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>Ist das der Wärmepumpenkatalog, auf den <c>Tab_WP.ID_Stamm</c> zeigt?</summary>
         private static bool IstWaermepumpenkatalog(string tabelle) =>
@@ -1376,6 +1381,11 @@ namespace WindowsFormsApplication1
             // Kaeltemitteltabelle sagt am Ziel nichts; VerweiseNachtragen setzt ihn ueber den Code des Textes.
             if (tab.Equals(KaeltemaschineSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&
                 col.Equals(KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+            // Ebenso der Ursprung der Kaeltebedarfskopie (Schritt 213, Welle K2) - wie bei Prozesswaerme und Brauchwasser
+            // (KatalogkostenUrsprungSchema): am Ziel „Ursprung nicht bekannt", damit ein Rueckweg nie einen fremden Satz trifft.
+            if (tab.Equals(KaeltebedarfSchema.TAB_KOPF, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(KaeltebedarfSchema.SPALTE_ID_STAMM, StringComparison.OrdinalIgnoreCase))
                 return DBNull.Value;
             // Ebenso der Katalogverweis der Rueckkuehlwerk-Projektkopie (K-F1).
             if (tab.Equals(RueckkuehlwerkSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&

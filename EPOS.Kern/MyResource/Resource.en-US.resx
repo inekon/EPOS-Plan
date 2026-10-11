@@ -10865,6 +10865,24 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   <data name="SIMENG_KAELTE_PROJEKT_AUS" xml:space="preserve">
     <value>Cooling: The project does not calculate cooling (project setting "Calculate cooling" off). {0} buildings with cooling switched on and {1} load profiles with the cooling channel have no effect.</value>
   </data>
+  <data name="SIMENG_KAELTE_PROJEKT_AUS_PROFILE" xml:space="preserve">
+    <value>Cooling: The project does not calculate cooling (project setting "Calculate cooling" off). {0} buildings with cooling switched on, {1} load profiles with the cooling channel and {2} cooling demand profiles have no effect.</value>
+  </data>
+  <data name="SIMENG_KAELTE_SPLIT_OHNE_EER" xml:space="preserve">
+    <value>Decentralised (split) cooling demand without a valid EER: {0}. The electricity of the decentralised supply cannot be formed; the run is not saved. Please maintain EER method, EER and outdoor temperature of the row.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised (split) cooling demand: {0} rows, {1} MWh/a, peak {2} kW, electricity {3} MWh/a, annual EER {4}. Supplied beside the cooling sequence, without chilled water and without a capacity limit.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DEZENTRAL_EER_NIEDRIG" xml:space="preserve">
+    <value>Decentralised (split) cooling demand: The annual EER {0} is below {1}. Please check the EER values of the split rows against device data.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER" xml:space="preserve">
+    <value>Decentralised (split) cooling demand "{0}": The electricity ({1} MWh/a) enters the electricity balance and billing with the project's electricity carrier; separate billing via the cooling carrier {2} is not yet available for decentralised rows.</value>
+  </data>
+  <data name="SIMWARN_KAELTE_SPLIT_OHNE_EER" xml:space="preserve">
+    <value>Cooling demand "{0}" is supplied decentrally (split) but has no valid EER ({1}) — the run aborts. Please maintain the supply of the row.</value>
+  </data>
   <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
     <value>Hours with simultaneous heating and cooling: {0} h (building "{1}") — switch-over hours in the transition season or zoning that requires both. Heating and cooling demand are not offset against each other.</value>
   </data>

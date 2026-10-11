@@ -98,6 +98,9 @@ namespace WindowsFormsApplication1
                         ? row[SchemaKatalog.SPALTE_ZPW_KANAL]
                         : null);
 
+                // Deckungsart (Schritt 213, Konzept Kaeltebedarf 3.4) - spaltentolerant wie der Kanal.
+                Z_ProjektKaeltebedarfCtrl.DeckungLesen(row, item);
+
                 // Das Element der dynamischen Liste hinzufügen
                 _internalList.Add(item);
             }
@@ -189,20 +192,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Trägt die gespeicherten Kanäle in eine bereits gefüllte Modellliste nach —
-        /// Zuordnung über <c>ID_Z</c>. Zeilen ohne Treffer (neu hinzugefügte
-        /// Ganglinien, <c>ID_Z = 0</c>) behalten ihren Wert.
+        /// Trägt die gespeicherten Kanäle — und mit ihnen die Deckungsart (Schritt 213, Konzept Kältebedarf 3.4) — in
+        /// eine bereits gefüllte Modellliste nach; Zuordnung über <c>ID_Z</c>. Zeilen ohne Treffer (neu hinzugefügte
+        /// Ganglinien, <c>ID_Z = 0</c>) behalten ihren Wert. Ohne die Deckung fiele eine Split-Zeile beim nächsten
+        /// Speichern (Löschen + Neuanlegen) still auf „zentral“ zurück.
         /// </summary>
         public static void KanaeleNachladen(int idProjekt, IEnumerable<Z_ProjWaermebedarfModel> liste)
         {
-            if (liste == null) return;
-            Dictionary<int, string> map = KanaeleLesen(idProjekt);
+            if (liste == null || idProjekt <= 0) return;
+            Z_ProjektGebGanglinieCtrl ctrl = new Z_ProjektGebGanglinieCtrl();
+            ctrl.ReadAll("select * from Z_ProjektWaermebedarf where ID_Projekt=" + idProjekt);
+            var map = new Dictionary<int, Z_ProjWaermebedarfModel>();
+            foreach (Z_ProjWaermebedarfModel gelesen in ctrl.items)
+                if (gelesen.m_ID_Z > 0) map[gelesen.m_ID_Z] = gelesen;
             if (map.Count == 0) return;
 
             foreach (Z_ProjWaermebedarfModel item in liste)
             {
-                string kanal;
-                if (item != null && map.TryGetValue(item.m_ID_Z, out kanal)) item.Kanal = kanal;
+                if (item == null || !map.TryGetValue(item.m_ID_Z, out Z_ProjWaermebedarfModel gespeichert)) continue;
+                item.Kanal = KanalOderHeizung(gespeichert.Kanal);
+                Z_ProjektKaeltebedarfCtrl.DeckungUebernehmen(gespeichert, item);
             }
         }
     }

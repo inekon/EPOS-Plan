@@ -27,6 +27,18 @@ namespace WindowsFormsApplication1
         internal SimulationStrombedarf Strom;
 
         /// <summary>
+        /// Der Kältebedarf je Stunde [kWh] — nur bei <see cref="BedarfsArt.Kaelte"/> (Konzept Kältebedarf 3.3, Welle K2):
+        /// sensible Kälte aus den Profilen (<see cref="ProfilQuelle.Kaelte"/>), ohne Deckung und ohne Erzeuger.
+        /// </summary>
+        internal double[] KaelteStunde;
+
+        /// <summary>Monatssummen des Kältebedarfs [MWh] — nur bei <see cref="BedarfsArt.Kaelte"/>.</summary>
+        internal double[] KaelteMonat;
+
+        /// <summary>Jahressumme des Kältebedarfs [MWh] — nur bei <see cref="BedarfsArt.Kaelte"/>.</summary>
+        internal double Kaeltebedarf;
+
+        /// <summary>
         /// Rechnet die Vorschau den Zapfprofilweg (Umsetzungskonzept Zapfprofilgenerator 2.2,
         /// 5.2)? Dann trägt <see cref="Waerme"/> die Monatssummen von Zapfung und Zirkulation
         /// und <c>Waerme.Zapfprofil</c> das Ergebnis des Generators.
@@ -91,6 +103,7 @@ namespace WindowsFormsApplication1
             var liste = new List<string> { bezeichner };
 
             if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste);
+            if (art == BedarfsArt.Kaelte) return Kaelte(ergebnis, idProjekt, liste);
             return Waerme(ergebnis, art, idProjekt, liste);
         }
 
@@ -148,9 +161,8 @@ namespace WindowsFormsApplication1
 
             if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste, jahressummen);
 
-            // K1: Die Vorschau der Kaelte (ProfilQuelle.Kaelte, Kaeltefarbe) folgt mit dem Dialog; bis dahin bleibt sie
-            // leer - sie faellt NICHT in den Brauchwasserzweig darunter.
-            if (art == BedarfsArt.Kaelte) return ergebnis;
+            // K2: Die Kaelte rechnet ueber ihre eigene Profilquelle - sie faellt NICHT in den Brauchwasserzweig darunter.
+            if (art == BedarfsArt.Kaelte) return Kaelte(ergebnis, idProjekt, liste, jahressummen);
 
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
 
@@ -229,7 +241,7 @@ namespace WindowsFormsApplication1
         private static BedarfsVorschau Waerme(BedarfsVorschau ergebnis, BedarfsArt art,
                                               int idProjekt, List<string> liste)
         {
-            if (art == BedarfsArt.Kaelte) return ergebnis;     // K1: Vorschau der Kaelte folgt mit dem Dialog
+            if (art == BedarfsArt.Kaelte) return Kaelte(ergebnis, idProjekt, liste);
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
 
             if (art == BedarfsArt.Prozesswaerme)
@@ -254,6 +266,38 @@ namespace WindowsFormsApplication1
 
             ergebnis.Waerme = sim;
             ergebnis.Erfolgreich = true;
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Der Kältebedarf</b> (Welle K2, Konzept Kältebedarf 3.3): dieselbe Profilrechnung wie die Prozesswärme
+        /// (<see cref="ProfilBedarf.Rechnen"/>) über <see cref="ProfilQuelle.Kaelte"/>, im Quellmodus der Namensliste
+        /// (<see cref="ProfilBedarf.Vorschaumodus"/>) und mit dem Kalender der Altkonvention wie die übrigen Vorschauen.
+        /// Kein Teiler, keine Deckung, keine Erzeuger — die Vorschau zeigt den Bedarf; was zentral und was dezentral
+        /// gedeckt wird, bucht erst der Lauf (Stufe K3). Meldet die Profilroutine ein unvollständiges Profil, steht
+        /// <see cref="BedarfsVorschau.Erfolgreich"/> auf <c>false</c> (die Meldung gibt die Routine selbst).
+        /// </summary>
+        private static BedarfsVorschau Kaelte(BedarfsVorschau ergebnis, int idProjekt, List<string> liste,
+                                              IReadOnlyDictionary<string, double> jahressummen = null)
+        {
+            if (!KaeltebedarfSchema.TabellenVorhanden()) return ergebnis;
+
+            var moAnfang = new int[12];
+            var moEnde = new int[12];
+            new Classes.Simulation.Init().Monatswerte_berechnen(moAnfang, moEnde);
+
+            ProfilQuelle quelle = ProfilQuelle.Kaelte(ProfilBedarf.Vorschaumodus(liste, idProjekt));
+            quelle.Jahressummen = jahressummen;
+
+            var stunde = new double[8760];
+            var monat = new double[12];
+            bool ok = ProfilBedarf.Rechnen(quelle, idProjekt, liste, ProfilBedarf.WOCHENTAG_ALTKONVENTION,
+                                           moAnfang, moEnde, stunde, monat);
+
+            ergebnis.KaelteStunde = stunde;
+            ergebnis.KaelteMonat = monat;
+            ergebnis.Kaeltebedarf = stunde.Sum() / 1000;
+            ergebnis.Erfolgreich = ok;
             return ergebnis;
         }
 

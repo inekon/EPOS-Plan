@@ -3424,6 +3424,21 @@ namespace WindowsFormsApplication1
             // Die Vorsorge legt sie auf einer noch nicht migrierten Datenbank an.
             bool kanalSpalte = Z_ProjektGebGanglinieCtrl.StelleKanalSpalteSicher();
 
+            // Schritt 213 (Konzept Kaeltebedarf 3.4/5): Die Deckungsart steht wie der Kanal in JEDER Schreibstelle - sonst
+            // fiele eine Split-Zeile beim naechsten Speichern still auf "zentral" zurueck. Nur der Kanal Kuehlung traegt sie;
+            // jeder andere Kanal schreibt "zentral" mit leeren Split-Feldern. Vor dem Schritt bleibt das INSERT wie zuvor.
+            bool deckungSpalten = kanalSpalte && Z_ProjektKaeltebedarfCtrl.LastgangDeckungLesbar();
+            if (deckungSpalten)
+                foreach (var item in list)
+                {
+                    Z_ProjektKaeltebedarfCtrl.Normalisieren(item);
+                    string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(item);
+                    if (grund == null) continue;
+                    DataRepository.FehlerMelden("Die Deckung des Kaeltelastgangs \"" + (item.m_szBezeichner ?? "") +
+                                                "\" ist unzulaessig (" + grund + "). Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+
             foreach (var item in list)
             {
                 // Stamm-Ganglinie (+ Daten) bei Bedarf ins Projekt kopieren und die Projekt-Ganglinie-ID verwenden.
@@ -3445,6 +3460,13 @@ namespace WindowsFormsApplication1
                 if (kanalSpalte)
                     ps.Add(new DbParam("@kanal",
                         Z_ProjektGebGanglinieCtrl.KanalOderHeizung(item.Kanal)));
+                if (deckungSpalten)
+                {
+                    sql = "INSERT INTO Z_ProjektWaermebedarf (ID_Z, ID_Projekt, ID_Ganglinie, Bezeichner, Kanal, Deckung, " +
+                          "Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
+                          "Kuehl_EigenerZaehler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ps.AddRange(Z_ProjektKaeltebedarfCtrl.DeckungParameter(item));
+                }
 
                 if (!DataRepository.ExecuteSQL(sql, ps.ToArray())) return false;
 
