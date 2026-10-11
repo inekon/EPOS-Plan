@@ -1490,6 +1490,17 @@ bisher (Kältemaschinenauswahl, Überlagerung „Simulation…“), je iPad-Fens
 75 px, Banner 83 bis 118 px, Schlussleiste ab 765 px; ohne Token Kopf ab 12 px, Schlussleiste bis 822 px, rot).
 Die Zahlen der Fenster 1 088 × 624 und 520 × 624 sind unverändert.
 
+**Gebäudedialog als Wirt der Katalogauswahl (Stufe 4, 11.10.2026).** Der Fall `gebaeude` der Seite `/fensterprobe` trägt
+Rückweg-Vorschau, Rückweg und Namensprüfung, Projektzeilen mit Kopie, Kühlung und Zonen. Die Probe prüft dort die
+Katalog-Fußleiste (Knöpfe in `.epos-zweispalten-fussleiste`, keine Listenleiste mehr unter dem Katalog), die
+Zusammenfassung der Detailzeile samt Infoknopf im Kopf, die Satz-Überlagerung über „Bearbeiten" (Marke
+`.epos-gebaeude-satzknoepfe`), „Simulation…" aus ihr heraus — die Bedarfsansicht muss in der Fenstermitte über der
+Satz-Überlagerung liegen —, die Satz-Überlagerung über den Stift einer Katalogzeile und die Rückfrage „In die Datenbank
+übernehmen…" mit Kindzeilen. Der Rollbereich der Ansicht „Simulation…" bleibt Befund (Folgeauftrag). Lauf am Wirt
+Release: **1 400 Zustände, 0 Verstöße**, alle Gegenproben rot, Rückgabe 0; Fotos 1 280 × 800 `gebaeude_zusammenfassung`,
+`gebaeude_satzueberlagerung`, `gebaeude_rueckfrage`. Die Fensterprobe öffnet „Simulation…" über die Satz-Überlagerung;
+die Rasterprobe misst den Gebäudedialog mit 46 px Zeilenmaß (die Zeile ist die Wahl, Kästchen für die Mehrfachwahl).
+
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
 **Zweck.** Die Legende neben den Ringen der Ergebnisübersicht (Wärme, Strom, Kälte) steht in einer

@@ -83,7 +83,7 @@ const FENSTERDIALOGE = ['dubletten'];
 // Probe misst hier "nichts rollt ausser den Listen und der Detailzeile".
 const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude'];
 // UeS2: Wirte mit Zusammenfassung - ihre Detailzeile hat keinen Vorrang (DZ1 entfaellt).
-const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren']);
+const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren', 'gebaeude']);   // Gebäude: Stufe 4
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);
@@ -317,14 +317,18 @@ async function warnband(seite, name, melden = true) {
 /** Die Ueberlagerung "Simulation..." des Gebaeudedialogs - Zahlen fuer den Vergleich mit/ohne Marke. */
 async function ueberlagerung(browser, f, marke) {
   const seite = await oeffnen(browser, 'gebaeude', f, marke ? '' : '&marke=0');
+  // Katalogauswahl V1, Stufe 4: „Simulation…" steht in der Satz-Ueberlagerung („Bearbeiten" der Detailzeile);
+  // die Bedarfsansicht oeffnet darueber.
+  await seite.locator('.epos-zweispalten-bearbeiten').click();
+  await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
   await seite.evaluate(() => {
-    const k = [...document.querySelectorAll('body > #app > .epos-dialog button')].find(b => b.textContent.trim() === 'Simulation...');
+    const k = [...document.querySelectorAll('.epos-satzueberlagerung-koerper button')].find(b => b.textContent.trim() === 'Simulation...');
     k.click();
   });
-  await seite.waitForSelector('.epos-ueberlagerung .epos-ueberlagerung-inhalt > .epos-dialog', { timeout: 5000 });
+  await seite.waitForSelector('.epos-ueberlagerung:not(.epos-ueberlagerung--satz) .epos-ueberlagerung-inhalt > .epos-dialog', { timeout: 5000 });
   await seite.waitForTimeout(600);
   const messen = () => seite.evaluate(() => {
-    const u = document.querySelector('.epos-ueberlagerung');
+    const u = document.querySelector('.epos-ueberlagerung:not(.epos-ueberlagerung--satz)');
     const d = u.querySelector('.epos-ueberlagerung-inhalt > .epos-dialog');
     const fuss = d.querySelector(':scope > .epos-leiste:has(> .epos-status)');
     const kopf = d.querySelector(':scope > .epos-dialog-kopf');

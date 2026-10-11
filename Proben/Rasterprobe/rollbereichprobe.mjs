@@ -701,11 +701,66 @@ try {
           await massAbwarten(seite);              // die Satzflaeche zeichnet die Kurve wieder in ihrem Mass
           await mess('nach Satz-Ueberlagerung');
         }
-        // Ueberlagerung offen: Gebaeude -> "Simulation..." (wie die Fensterprobe).
+        // GEBAEUDE (Katalogauswahl V1, Stufe 4): Zusammenfassung, Satz-Ueberlagerung ueber „Bearbeiten", darueber
+        // „Simulation…" (z-Reihenfolge: die Bedarfsansicht liegt oben), der Stift der Katalogzeile, die Rueckfrage.
+        // Der Rollbereich der Ansicht „Simulation…" selbst ist ein eigener Folgeauftrag (Zustand wie bisher).
         if (fall === 'gebaeude') {
-          const k = seite.locator('body > #app > .epos-dialog button', { hasText: 'Simulation...' });
-          if (await k.count()) { await k.first().click(); await seite.waitForSelector('.epos-ueberlagerung', { timeout: 5000 }); await ruhe(seite); await mess('Ueberlagerung offen'); }
-          else { verstoesse.push(`${fall}: Knopf "Simulation..." nicht gefunden`); }
+          const v = (t) => { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${t}`); console.log('  VERSTOSS ' + verstoesse.at(-1)); };
+          const foto = async (name) => { if (FOTOS && fenster.breite === 1280 && fenster.hoehe === 800) await seite.screenshot({ path: `${FOTOS}/${fall}_${name}_${fenster.breite}x${fenster.hoehe}.png` }); };
+          if (await seite.locator('.epos-zweispalten-fussleiste button').count() < 3) v('Katalog-Fussleiste ohne ihre Knoepfe');
+          if (await seite.locator('.epos-zweispalten-bereich--katalog .epos-leiste').count()) v('alte Listenleiste unter dem Katalog');
+          await satz(seite, true);
+          await massAbwarten(seite);
+          if (await seite.locator('.epos-zweispalten-satz--zusammenfassung .epos-satzzusammenfassung-angabe').count() === 0) v('Detailzeile ohne Zusammenfassung');
+          if (await seite.locator('.epos-zweispalten-satz button.epos-gebaeude-simulation').count()) v('„Simulation…" in der Zusammenfassung');
+          if (await seite.locator('.epos-zweispalten-satzkopf .epos-zweispalten-satzkopfknoepfe .epos-hilfepille').count() !== 1) v('Infoknopf fehlt im Kopf der Detailzeile');
+          await mess('Detailzeile auf, Zusammenfassung');
+          await foto('zusammenfassung');
+          await satz(seite, false);
+          await seite.locator('.epos-zweispalten-bearbeiten').click();
+          await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+          await ruhe(seite);
+          await mess('Satz-Ueberlagerung offen');
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Bearbeiten', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke: '.epos-gebaeude-satzknoepfe' }));
+          await foto('satzueberlagerung');
+          const k = seite.locator('.epos-satzueberlagerung-koerper button.epos-gebaeude-simulation');
+          if (await k.count()) {
+            await k.first().click();
+            await seite.waitForSelector('.epos-ueberlagerung:not(.epos-ueberlagerung--satz)', { timeout: 5000 });
+            await ruhe(seite);
+            await mess('Ueberlagerung offen');
+            const oben = await seite.evaluate(() => {
+              const e = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+              const u = e && e.closest('.epos-ueberlagerung');
+              return !!u && !u.classList.contains('epos-ueberlagerung--satz');
+            });
+            if (!oben) v('„Simulation…" liegt nicht ueber der Satz-Ueberlagerung');
+            await seite.locator('.epos-ueberlagerung:not(.epos-ueberlagerung--satz) .epos-ueberlagerung-zu').last().click();
+            await ruhe(seite);
+          } else v('Knopf „Simulation…" nicht in der Satz-Ueberlagerung');
+          await seite.locator('.epos-satzueberlagerung-abbrechen').click();
+          await ruhe(seite);
+          if (await seite.locator('.epos-ueberlagerung--satz').count()) v('Abbrechen schliesst die Satz-Ueberlagerung nicht');
+          const stift = seite.locator('.epos-zweispalten-bereich--katalog .epos-zeilenstift');
+          if (await stift.count()) {
+            await stift.first().click();
+            await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+            await ruhe(seite);
+            pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber den Stift', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke: '.epos-gebaeude-satzknoepfe' }));
+            await seite.locator('.epos-satzueberlagerung-fuss button').last().click();
+            await ruhe(seite);
+          } else v('Katalogliste ohne Stift');
+          await seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-anlagenwahl').first().click();
+          await ruhe(seite);
+          await seite.locator('.epos-zweispalten-bereich--projekt button.epos-gebaeude-in-db').click();
+          await seite.waitForSelector('.epos-rueckweg', { timeout: 5000 });
+          await ruhe(seite);
+          await mess('Rueckfrage offen');
+          if (await seite.locator('.epos-gebaeude-rueckweg-kindzeilen').count() !== 1) v('Rueckfrage ohne Kindzeilen');
+          await foto('rueckfrage');
+          await seite.locator('.epos-rueckweg-fuss button').first().click();
+          await ruhe(seite);
+          if (await seite.locator('.epos-rueckweg').count()) v('Abbrechen schliesst die Rueckfrage nicht');
         }
       }
       await kontext.close();
