@@ -332,6 +332,31 @@ namespace EPOS.Kern.Tests
             Assert.Equal(365, band.Sum(x => x.Ende - x.Beginn + 1));
         }
 
+        /// <summary>
+        /// Die Saison 01.05. bis 30.09. der Kühlung (Auftrag KS): Im Jahresraster der Größe Kühlen stehen Januar bis April
+        /// und Oktober bis Dezember als „außerhalb der Saison“ — ohne und mit angelegtem Kalender; Heizen bleibt unberührt.
+        /// </summary>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Die_Saison_der_Kuehlung_steht_im_Jahresraster_der_Kuehlung(bool kalenderAngelegt)
+        {
+            Konditionierungsgroesse k = Konditionierungsgroesse.Kuehlsoll;
+            Konditionierungsarbeitsstand a = Angelegt();
+            a = Gut(Konditionierungsarbeit.ZelleSetzen(a, Ort(k), DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(26.0)));
+            if (kalenderAngelegt) a = Gut(Konditionierungsarbeit.Anlegen(a, Ort(k)));
+            int von = Feiertage.Gemeinjahrestag(5, 1), bis = Feiertage.Gemeinjahrestag(9, 30);
+            a = Gut(Kalenderbedienung.SaisonSetzen(a, Ort(k), von, bis));
+
+            IReadOnlyList<Rastertag> raster = Kalenderbedienung.Jahresraster(a, Ort(k));
+            foreach (Rastertag t in raster)
+            {
+                bool ausserhalb = t.Monat <= 4 || t.Monat >= 10;
+                Assert.True(ausserhalb == (t.Art == Rastertagart.Saison), $"Tag {t.Tag} ({t.TagImMonat}.{t.Monat}.): {t.Art}");
+            }
+            Assert.DoesNotContain(Kalenderbedienung.Jahresraster(a, Ort(H)), t => t.Art == Rastertagart.Saison);
+        }
+
         [Fact]
         public void Vorlage_fuer_alle_Groessen_legt_jede_Groesse_in_einem_Schritt_an()
         {
