@@ -46,6 +46,24 @@ public sealed class KaeltemaschineKatalogTexte
     // ------------------------------------------------------------ Katalogfelder (K-A)
     public string LabelGeraeteart { get; set; } = Resource.KM_LBL_GERAETEART;
     public string LabelGwp { get; set; } = Resource.KM_LBL_GWP;
+
+    // ------------------------------------------------------------ Kältemittel als Stammdatum (KM4-E3-a)
+    /// <summary>Platzhalter der Klappliste — <c>KM_KMT_KEINS</c>.</summary>
+    public string KaeltemittelKeins { get; set; } = Resource.KM_KMT_KEINS;
+    /// <summary>Eintrag eines Bestandstexts ohne Tabellenzeile, {0} = Text — <c>KM_KMT_NICHT_ZUGEORDNET</c>.</summary>
+    public string KaeltemittelNichtZugeordnet { get; set; } = Resource.KM_KMT_NICHT_ZUGEORDNET;
+    /// <summary>GWP mit Herkunft Tabelle, {0} = Wert — <c>KM_KMT_GWP_TABELLE</c>.</summary>
+    public string GwpAusTabelle { get; set; } = Resource.KM_KMT_GWP_TABELLE;
+    /// <summary>GWP mit Herkunft Gerät, {0} = Wert — <c>KM_KMT_GWP_GERAET</c>.</summary>
+    public string GwpAusGeraet { get; set; } = Resource.KM_KMT_GWP_GERAET;
+    /// <summary>Abweichungshinweis, {0} = Geräte-GWP, {1} = Tabellenwert — <c>KM_KMT_GWP_ABWEICHUNG</c>.</summary>
+    public string GwpAbweichung { get; set; } = Resource.KM_KMT_GWP_ABWEICHUNG;
+    /// <summary>Text ohne Tabellenzeile — <c>KM_KMT_OHNE_ZUORDNUNG</c>.</summary>
+    public string KaeltemittelOhneZuordnung { get; set; } = Resource.KM_KMT_OHNE_ZUORDNUNG;
+    /// <summary>Die Schnellwahl — <c>KM_KMT_GWP_UEBERNEHMEN</c>.</summary>
+    public string GwpUebernehmen { get; set; } = Resource.KM_KMT_GWP_UEBERNEHMEN;
+    /// <summary>Kurztext der Schnellwahl — <c>KM_KMT_GWP_UEBERNEHMEN_TIP</c>.</summary>
+    public string GwpUebernehmenTipp { get; set; } = Resource.KM_KMT_GWP_UEBERNEHMEN_TIP;
     public string LabelFuellmenge { get; set; } = Resource.KM_LBL_FUELLMENGE;
     public string LabelSaisonArt { get; set; } = Resource.KM_LBL_SAISON_ART;
     public string LabelSaisonkennzahl { get; set; } = Resource.KM_LBL_SAISONKENNZAHL;

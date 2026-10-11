@@ -5647,7 +5647,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("nenn_eer", SICHT + "NennEer", KiDialogTexte.KmNennEerName,
                                      KiParameterTyp.Zahl, KiDialogTexte.KmNennEerErl, leerErlaubt: true, min: 0),
                     new KiDialogFeld("kaeltemittel", SICHT + "Kaeltemittel", KiDialogTexte.KmKaeltemittelName,
-                                     KiParameterTyp.Text, KiDialogTexte.KmKaeltemittelErl, leerErlaubt: true),
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmKaeltemittelErl, leerErlaubt: true),
                     new KiDialogFeld("rueckkuehlart", SICHT + "Rueckkuehlart", KiDialogTexte.KmRueckkuehlartName,
                                      KiParameterTyp.Wahl, KiDialogTexte.KmRueckkuehlartErl, leerErlaubt: true),
                     new KiDialogFeld("mindestteillast", SICHT + "Mindestteillast", KiDialogTexte.KmMindestteillastName,

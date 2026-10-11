@@ -99,11 +99,37 @@ namespace WindowsFormsApplication1
         /// Die Stammwerte eines Kältemittels als eine Lesezeile (Konzept 7.3): GWP, F-Gas, natürlich,
         /// Sicherheitsgruppe, PFAS und Belegstand; ein unbekanntes Feld fällt weg. <c>""</c> ohne Satz.
         /// </summary>
-        public static string Lesewerte(KaeltemittelCtrl.Kaeltemittelsatz s)
+        public static string Lesewerte(KaeltemittelCtrl.Kaeltemittelsatz s) => Lesewerte(s, true);
+
+        /// <summary>
+        /// Die Stammwerte ohne das GWP — für den Katalogdialog der Kältemaschine, der das GWP in einer eigenen Zeile mit
+        /// Herkunft zeigt (Konzept 7.1, KM4-Q17). <c>""</c> ohne Satz.
+        /// </summary>
+        public static string LesewerteOhneGwp(KaeltemittelCtrl.Kaeltemittelsatz s) => Lesewerte(s, false);
+
+        /// <summary>
+        /// Ab welchem Anteil das Geräte-GWP (<c>Kaeltemittel_GWP</c>) als abweichend vom Tabellenwert gilt (KM4-Q17 a:
+        /// „Abweichung über 1 % als Hinweis in der Lesezeile“).
+        /// </summary>
+        public const double GWP_ABWEICHUNG_ANTEIL = 0.01;
+
+        /// <summary>
+        /// Weicht das Geräte-GWP vom Tabellenwert ab (KM4-Q17 a)? Nur, wenn beide gesetzt sind und der Unterschied mehr als
+        /// <see cref="GWP_ABWEICHUNG_ANTEIL"/> des Tabellenwerts beträgt; bei Tabellenwert 0 zählt jedes Geräte-GWP ungleich 0.
+        /// </summary>
+        public static bool GwpWeichtAb(double? tabelle, double? geraet)
+        {
+            if (!tabelle.HasValue || !geraet.HasValue) return false;
+            double t = tabelle.Value, g = geraet.Value;
+            if (t == 0) return g != 0;
+            return Math.Abs(g - t) > GWP_ABWEICHUNG_ANTEIL * Math.Abs(t);
+        }
+
+        private static string Lesewerte(KaeltemittelCtrl.Kaeltemittelsatz s, bool mitGwp)
         {
             if (s == null) return "";
             var teile = new List<string>();
-            if (s.GWP.HasValue)
+            if (mitGwp && s.GWP.HasValue)
                 teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KM_LESE_GWP,
                     s.GWP.Value.ToString("#,0.###", CultureInfo.CurrentCulture)));
             if (s.F_Gas.HasValue)

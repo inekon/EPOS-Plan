@@ -475,6 +475,23 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         Assert.Equal(3, p.Gespeichert.Single().Anzahl);
         Assert.True(p.Geschlossen);
     }
+
+    /// <summary>
+    /// KM4-E3-a: Die Zeile „Zulässigkeit“ (E3-b, aus <c>KaeltemaschineKonfiguration</c>) steht im Wirt in der
+    /// Satzüberlagerung genau einmal — der Anlagendialog baut keine zweite.
+    /// </summary>
+    [Fact]
+    public void Die_Zulaessigkeitszeile_steht_im_Satz_genau_einmal()
+    {
+        const string ZEILE = "Zulässigkeit des Kältemittels: ohne Inbetriebnahmejahr nicht geprüft";
+        var p = new Projekt();
+        p.Gespeicherte[0].Zulaessigkeit = ZEILE;
+        var cut = Aufbauen(this, p);
+
+        IElement satz = ProjektStift(cut);
+        Assert.Single(satz.QuerySelectorAll(".epos-herleitung"), h => h.TextContent.Trim() == ZEILE);
+        Assert.Single(cut.FindAll(".epos-herleitung"), h => h.TextContent.Trim() == ZEILE);
+    }
 }
 
 /// <summary>Derselbe Dialog auf der englischen Oberfläche.</summary>

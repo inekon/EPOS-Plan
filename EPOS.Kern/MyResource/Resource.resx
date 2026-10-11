@@ -45813,7 +45813,7 @@ Chart</value>
     <value>Energieeffizienzverhältnis im Nennpunkt; größer als null.</value>
   </data>
   <data name="KI_DLG_KM_KAELTEMITTEL_ERL" xml:space="preserve">
-    <value>Kältemittel als Freitext.</value>
+    <value>Kältemittel als Wahl über den Code der Kältemitteltabelle (z. B. R32); ein Bestandstext ohne Tabellenzeile bleibt als „nicht zugeordnet“ stehen.</value>
   </data>
   <data name="KI_DLG_KM_RUECKKUEHLART_ERL" xml:space="preserve">
     <value>Wie das Gerät seine Wärme abgibt: luftgekühlt, wassergekühlt, Trockenkühler oder Nasskühlturm; die Rückkühlung gehört zur Maschine.</value>
@@ -53217,6 +53217,30 @@ Chart</value>
   </data>
   <data name="KI_KMT_ERL_SORTIERUNG" xml:space="preserve">
     <value>Reihenfolge in der Klappliste; leer ordnet nach dem Code.</value>
+  </data>
+  <data name="KM_KMT_KEINS" xml:space="preserve">
+    <value>— kein Kältemittel —</value>
+  </data>
+  <data name="KM_KMT_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>nicht zugeordnet: {0}</value>
+  </data>
+  <data name="KM_KMT_GWP_TABELLE" xml:space="preserve">
+    <value>GWP {0} — aus der Kältemitteltabelle</value>
+  </data>
+  <data name="KM_KMT_GWP_GERAET" xml:space="preserve">
+    <value>GWP {0} — Geräteangabe</value>
+  </data>
+  <data name="KM_KMT_GWP_ABWEICHUNG" xml:space="preserve">
+    <value>Das Geräte-GWP {0} weicht vom Tabellenwert {1} ab; die Zulässigkeitsprüfung nimmt den Tabellenwert.</value>
+  </data>
+  <data name="KM_KMT_OHNE_ZUORDNUNG" xml:space="preserve">
+    <value>Das Kältemittel steht nicht in der Kältemitteltabelle; die Prüfung nimmt das Geräte-GWP.</value>
+  </data>
+  <data name="KM_KMT_GWP_UEBERNEHMEN" xml:space="preserve">
+    <value>GWP aus Kältemittel übernehmen</value>
+  </data>
+  <data name="KM_KMT_GWP_UEBERNEHMEN_TIP" xml:space="preserve">
+    <value>Setzt das Geräte-GWP auf den Wert der Kältemitteltabelle.</value>
   </data>
 </root>
 

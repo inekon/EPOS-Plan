@@ -100,6 +100,9 @@
                         <KindInhalt>
                             @Kenndatenfelder(_arbeit)
                         </KindInhalt>
+                        <Nachsatz>
+                            @Kaeltemittellesung(_daten, false)
+                        </Nachsatz>
                     </Stammblattgruppe>
 
                     @* TEILLAST UND TAKTEN (KM3-E3-a, Fachkonzept Teillast und Takten 7.1): Teillastrechnung,
@@ -358,6 +361,9 @@
     /// </summary>
     [Parameter] public IReadOnlyList<string>? Rueckkuehlarten { get; set; }
 
+    /// <summary>Die Klappliste „Kältemittel“ aus der Kältemitteltabelle (KM4-E3-a); ohne Gabe leer.</summary>
+    [Parameter] public IReadOnlyList<KaeltemittelWahl>? Kaeltemittelliste { get; set; }
+
     /// <summary>Lädt eine Kältemaschine samt Kennlinie über ihre Id; <c>null</c> = es gibt sie nicht (mehr).</summary>
     [Parameter] public Func<int, KaeltemaschineDaten?>? Lies { get; set; }
 
@@ -614,6 +620,7 @@
             SatzSetzen = BeiZeile,
             SatzEintraege = () => KiMaskenanmeldung.Eintraege(_katalog, z => z.Schluessel, z => z.Bezeichner),
             Rueckkuehlarten = () => Rueckkuehltexte,
+            Kaeltemittelliste = () => KaeltemittelListe,
             TeillastWege = () => Texte.TeillastWege,
             Verdichterregelungen = () => Texte.Verdichterregelungen,
             Randwege = () => Texte.Randwege,
@@ -716,6 +723,51 @@
     private string RueckkuehlText(int? platz)
         => platz is int p && p >= 0 && p < Rueckkuehltexte.Count ? Rueckkuehltexte[p] : "";
 
+    /// <summary>Die Klappliste der Kältemittel — leer ohne Gabe (dann bleibt nur ein Bestandstext wählbar).</summary>
+    private IReadOnlyList<KaeltemittelWahl> KaeltemittelListe => Kaeltemittelliste ?? Array.Empty<KaeltemittelWahl>();
+
+    /// <summary>
+    /// Die Wahl der Klappliste (KM4-E3-a): Platz −1 (Bestandstext) lässt den Text stehen, leer löscht ihn, ein Eintrag
+    /// setzt seinen Code.
+    /// </summary>
+    private void BeiKaeltemittel(KaeltemaschineDaten d, int? platz)
+    {
+        if (platz is int p && p < 0) return;
+        string code = platz is int i && i < KaeltemittelListe.Count ? KaeltemittelListe[i].Code : "";
+        Feld(d, () => d.Kaeltemittel = code);
+    }
+
+    /// <summary>Die Schnellwahl „GWP aus Kältemittel übernehmen“: das Geräte-GWP auf den Tabellenwert.</summary>
+    private void GwpUebernehmen(KaeltemaschineDaten d)
+    {
+        if (KaeltemittelLesung.Eintrag(KaeltemittelListe, d.Kaeltemittel) is KaeltemittelWahl e && e.Gwp.HasValue)
+            Feld(d, () => d.Gwp = e.Gwp);
+    }
+
+    /// <summary>
+    /// <b>Die Lesezeilen des Kältemittels</b> (KM4-E3-a): GWP mit Herkunft (KM4-Q17), Abweichungshinweis, die übrigen
+    /// Stammwerte; mit <paramref name="bedienbar"/> die Schnellwahl. Im Lesemodus steht derselbe Block als Nachsatz der
+    /// Gruppe, ohne Knopf. Die Klasse <c>epos-feld--breit</c> legt den Block im Formularraster über die volle Breite.
+    /// </summary>
+    private RenderFragment Kaeltemittellesung(KaeltemaschineDaten d, bool bedienbar) => __builder =>
+    {
+        IReadOnlyList<string> zeilen = KaeltemittelLesung.Zeilen(KaeltemittelListe, d.Kaeltemittel, d.Gwp, Texte);
+        bool knopf = bedienbar && KaeltemittelLesung.Eintrag(KaeltemittelListe, d.Kaeltemittel)?.Gwp is not null;
+        if (zeilen.Count == 0 && !knopf) return;
+        <div class="epos-feld--breit epos-kaeltemittel-lesung">
+            @foreach (string zeile in zeilen)
+            {
+                <Herleitungszeile Text="@zeile" />
+            }
+            @if (knopf)
+            {
+                <button type="button" class="epos-knopf epos-kaeltemittel-gwp-knopf" title="@Texte.GwpUebernehmenTipp"
+                        disabled="@(!KaeltemittelLesung.SchnellwahlAktiv(KaeltemittelListe, d.Kaeltemittel, d.Gwp))"
+                        @onclick="() => GwpUebernehmen(d)">@Texte.GwpUebernehmen</button>
+            }
+        </div>
+    };
+
     /// <summary>Die siebzehn Kenndaten (zwölf Grundfelder, fünf Katalogfelder K-A) als Felder — im Stammblatt und in „Neu…" dieselben.</summary>
     private RenderFragment Kenndatenfelder(KaeltemaschineDaten d) => __builder =>
     {
@@ -734,8 +786,15 @@
                             Wert="@d.Nennkaelteleistung" WertChanged="w => Feld(d, () => d.Nennkaelteleistung = w)" />
                 <Zahlenfeld Bezeichnung="@Texte.LabelNennEer" Feldname="@Texte.LabelNennEer"
                             Wert="@d.NennEer" WertChanged="w => Feld(d, () => d.NennEer = w)" />
-                <Textfeld Bezeichnung="@Texte.LabelKaeltemittel" Wert="@d.Kaeltemittel"
-                          WertChanged="w => Feld(d, () => d.Kaeltemittel = w ?? string.Empty)" />
+                @* KM4-E3-a (Konzept Kaeltemittel als Stammdatum 7.1): die Klappliste aus der Kaeltemitteltabelle; ein
+                   Bestandstext ohne Treffer bleibt als "nicht zugeordnet: ..." waehlbar. Die Wahl schreibt den Code als
+                   Text, die ID setzt der Schreibweg des Kerns per Code-Abgleich. Darunter ueber die volle Breite die
+                   Lesezeilen und die Schnellwahl "GWP aus Kaeltemittel uebernehmen". *@
+                <Auswahlfeld Bezeichnung="@Texte.LabelKaeltemittel" Eintraege="@KaeltemittelLesung.Eintraege(KaeltemittelListe, d.Kaeltemittel, Texte)"
+                             Platzhalter="@Texte.KaeltemittelKeins"
+                             Auswahl="@KaeltemittelLesung.Platz(KaeltemittelListe, d.Kaeltemittel)"
+                             AuswahlChanged="w => BeiKaeltemittel(d, w)" />
+                @Kaeltemittellesung(d, true)
                 <Auswahlfeld Bezeichnung="@Texte.LabelRueckkuehlart" Eintraege="@Rueckkuehleintraege"
                              Platzhalter="@Texte.RueckkuehlartKeine"
                              Auswahl="@d.RueckkuehlartIndex" AuswahlChanged="w => Feld(d, () => d.RueckkuehlartIndex = w)" />
@@ -1186,7 +1245,7 @@
         new Stammblattwert(Texte.LabelBeschreibung, d.Beschreibung),
         new Stammblattwert(Texte.LabelNennkaelteleistung, Zahl(d.Nennkaelteleistung, "0.###", ""), d.Nennkaelteleistung.HasValue ? Texte.EinheitKw : ""),
         new Stammblattwert(Texte.LabelNennEer, Zahl(d.NennEer, "0.0##", "")),
-        new Stammblattwert(Texte.LabelKaeltemittel, d.Kaeltemittel),
+        new Stammblattwert(Texte.LabelKaeltemittel, KaeltemittelLesung.Anzeige(KaeltemittelListe, d.Kaeltemittel, Texte)),
         new Stammblattwert(Texte.LabelRueckkuehlart, d.RueckkuehlartIndex.HasValue ? RueckkuehlText(d.RueckkuehlartIndex) : Texte.RueckkuehlartKeine),
         new Stammblattwert(Texte.LabelMindestteillast, Zahl(d.Mindestteillast, "0.#", ""), d.Mindestteillast.HasValue ? Texte.EinheitProzent : ""),
         new Stammblattwert(Texte.LabelHilfsstrom, d.Hilfsstrom.HasValue ? Zahl(d.Hilfsstrom, "0.###", "") : Texte.HilfsstromLeer,

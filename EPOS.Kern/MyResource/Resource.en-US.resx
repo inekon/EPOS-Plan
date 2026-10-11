@@ -45806,7 +45806,7 @@ chart</value>
     <value>Energy efficiency ratio at the rating point; greater than zero.</value>
   </data>
   <data name="KI_DLG_KM_KAELTEMITTEL_ERL" xml:space="preserve">
-    <value>Refrigerant as free text.</value>
+    <value>Refrigerant as a choice by the code of the refrigerant table (e.g. R32); an existing text without a table row stays as “not assigned”.</value>
   </data>
   <data name="KI_DLG_KM_RUECKKUEHLART_ERL" xml:space="preserve">
     <value>How the unit rejects its heat: air-cooled, water-cooled, dry cooler or wet cooling tower; heat rejection is part of the machine.</value>
@@ -53210,6 +53210,30 @@ chart</value>
   </data>
   <data name="KI_KMT_ERL_SORTIERUNG" xml:space="preserve">
     <value>Order in the drop-down list; empty sorts by code.</value>
+  </data>
+  <data name="KM_KMT_KEINS" xml:space="preserve">
+    <value>— no refrigerant —</value>
+  </data>
+  <data name="KM_KMT_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>not assigned: {0}</value>
+  </data>
+  <data name="KM_KMT_GWP_TABELLE" xml:space="preserve">
+    <value>GWP {0} — from the refrigerant table</value>
+  </data>
+  <data name="KM_KMT_GWP_GERAET" xml:space="preserve">
+    <value>GWP {0} — device value</value>
+  </data>
+  <data name="KM_KMT_GWP_ABWEICHUNG" xml:space="preserve">
+    <value>The device GWP {0} differs from the table value {1}; the admissibility check uses the table value.</value>
+  </data>
+  <data name="KM_KMT_OHNE_ZUORDNUNG" xml:space="preserve">
+    <value>The refrigerant is not in the refrigerant table; the check uses the device GWP.</value>
+  </data>
+  <data name="KM_KMT_GWP_UEBERNEHMEN" xml:space="preserve">
+    <value>Take GWP from refrigerant</value>
+  </data>
+  <data name="KM_KMT_GWP_UEBERNEHMEN_TIP" xml:space="preserve">
+    <value>Sets the device GWP to the value of the refrigerant table.</value>
   </data>
 </root>
 

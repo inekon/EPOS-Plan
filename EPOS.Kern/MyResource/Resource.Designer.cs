@@ -61985,7 +61985,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel als Freitext. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel als Wahl über den Code der Kältemitteltabelle (z. B. R32); ein Bestandstext ohne Tabellenzeile bleibt als „nicht zugeordnet“ stehen. ähnelt.
         /// </summary>
         public static string KI_DLG_KM_KAELTEMITTEL_ERL {
             get {
@@ -79395,6 +79395,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_KL_TITEL_LEISTUNG {
             get {
                 return ResourceManager.GetString("KM_KL_TITEL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Geräte-GWP {0} weicht vom Tabellenwert {1} ab; die Zulässigkeitsprüfung nimmt den Tabellenwert. ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP {0} — Geräteangabe ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_GERAET {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP {0} — aus der Kältemitteltabelle ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_TABELLE {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die GWP aus Kältemittel übernehmen ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setzt das Geräte-GWP auf den Wert der Kältemitteltabelle. ähnelt.
+        /// </summary>
+        public static string KM_KMT_GWP_UEBERNEHMEN_TIP {
+            get {
+                return ResourceManager.GetString("KM_KMT_GWP_UEBERNEHMEN_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — kein Kältemittel — ähnelt.
+        /// </summary>
+        public static string KM_KMT_KEINS {
+            get {
+                return ResourceManager.GetString("KM_KMT_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet: {0} ähnelt.
+        /// </summary>
+        public static string KM_KMT_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("KM_KMT_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kältemittel steht nicht in der Kältemitteltabelle; die Prüfung nimmt das Geräte-GWP. ähnelt.
+        /// </summary>
+        public static string KM_KMT_OHNE_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("KM_KMT_OHNE_ZUORDNUNG", resourceCulture);
             }
         }
         

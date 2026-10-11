@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Erzeuger;
+﻿using System.Globalization;
+
+namespace EPOS.UI.Dialoge.Erzeuger;
 
 /// <summary>
 /// <b>Der Feldsatz der Verwaltung „Kältemaschinen"</b> (KU3-1) — das plattformfreie Abbild von
@@ -217,3 +219,84 @@ public sealed record KaeltemaschineAuskunftZeile(string Name, double AussenC, do
 
 /// <summary>Der Ausgang der Auskunft: die Zeilen oder der Grund (nichts wird gespeichert).</summary>
 public sealed record KaeltemaschineAuskunftErgebnis(IReadOnlyList<KaeltemaschineAuskunftZeile>? Zeilen, string Meldung);
+
+/// <summary>
+/// <b>Ein Eintrag der Klappliste „Kältemittel“</b> (KM4-E3-a, Konzept Kältemittel als Stammdatum 7.1) — fertig aus der
+/// Hülle über <c>KaeltemittelCtrl.Liste()</c>: <paramref name="Code"/> ist der Schlüssel und der Text, den der Satz
+/// speichert (die ID setzt der Schreibweg des Kerns per Code-Abgleich), <paramref name="Text"/> die Anzeige (Code und
+/// Bezeichnung), <paramref name="Gwp"/> der Tabellenwert und <paramref name="Lesewerte"/> die übrigen Stammwerte
+/// (F-Gas, natürlich, Sicherheitsgruppe, PFAS, Status) als eine Lesezeile.
+/// </summary>
+public sealed record KaeltemittelWahl(int Id, string Code, string Text, double? Gwp, string Lesewerte);
+
+/// <summary>
+/// <b>Die Lesezeilen unter der Klappliste „Kältemittel“</b> (KM4-E3-a) — eine Stelle für Dialog und Tests:
+/// Eintrag zum Text, GWP mit Herkunft nach KM4-Q17 (Tabellenwert vor Geräte-GWP), Abweichungshinweis und die Frage, ob
+/// die Schnellwahl „GWP aus Kältemittel übernehmen“ wirkt.
+/// </summary>
+public static class KaeltemittelLesung
+{
+    /// <summary>Der Listenplatz des Codes (Trim, ohne Groß/Klein); −1 ohne Treffer, <c>null</c> bei leerem Text.</summary>
+    public static int? Platz(IReadOnlyList<KaeltemittelWahl> liste, string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+        string code = text.Trim();
+        for (int i = 0; i < liste.Count; i++)
+            if (string.Equals(liste[i].Code?.Trim(), code, StringComparison.OrdinalIgnoreCase)) return i;
+        return -1;
+    }
+
+    /// <summary>Der Eintrag zum Text; <c>null</c> ohne Treffer oder bei leerem Text.</summary>
+    public static KaeltemittelWahl? Eintrag(IReadOnlyList<KaeltemittelWahl> liste, string? text)
+        => Platz(liste, text) is int i && i >= 0 ? liste[i] : null;
+
+    /// <summary>Die Einträge der Klappliste: ein Bestandstext ohne Treffer zuerst als „nicht zugeordnet: …“ (Platz −1).</summary>
+    public static IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<KaeltemittelWahl> liste, string? text,
+                                                               KaeltemaschineKatalogTexte t)
+    {
+        var l = new List<(int, string)>();
+        if (Platz(liste, text) == -1)
+            l.Add((-1, string.Format(CultureInfo.CurrentCulture, t.KaeltemittelNichtZugeordnet, text!.Trim())));
+        for (int i = 0; i < liste.Count; i++) l.Add((i, liste[i].Text));
+        return l;
+    }
+
+    /// <summary>Die Anzeige des Werts im Lesemodus: Text des Eintrags, sonst „nicht zugeordnet: …“, leer bleibt leer.</summary>
+    public static string Anzeige(IReadOnlyList<KaeltemittelWahl> liste, string? text, KaeltemaschineKatalogTexte t)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return "";
+        return Eintrag(liste, text) is KaeltemittelWahl e
+            ? e.Text
+            : string.Format(CultureInfo.CurrentCulture, t.KaeltemittelNichtZugeordnet, text.Trim());
+    }
+
+    /// <summary>
+    /// Die Lesezeilen in ihrer Reihenfolge: GWP mit Herkunft, Abweichungshinweis, die übrigen Stammwerte; ohne
+    /// Tabellenzeile der Hinweis, dass die Prüfung das Geräte-GWP nimmt. Leere Zeilen fallen weg.
+    /// </summary>
+    public static IReadOnlyList<string> Zeilen(IReadOnlyList<KaeltemittelWahl> liste, string? text, double? geraeteGwp,
+                                               KaeltemaschineKatalogTexte t)
+    {
+        var z = new List<string>();
+        KaeltemittelWahl? e = Eintrag(liste, text);
+        if (e?.Gwp is double tab)
+            z.Add(string.Format(CultureInfo.CurrentCulture, t.GwpAusTabelle, Gwp(tab)));
+        else if (geraeteGwp is double g)
+            z.Add(string.Format(CultureInfo.CurrentCulture, t.GwpAusGeraet, Gwp(g)));
+        if (e is not null && WeichtAb(e, geraeteGwp))
+            z.Add(string.Format(CultureInfo.CurrentCulture, t.GwpAbweichung, Gwp(geraeteGwp!.Value), Gwp(e.Gwp!.Value)));
+        if (e is not null && !string.IsNullOrWhiteSpace(e.Lesewerte)) z.Add(e.Lesewerte);
+        if (e is null && !string.IsNullOrWhiteSpace(text) && liste.Count > 0) z.Add(t.KaeltemittelOhneZuordnung);
+        return z;
+    }
+
+    /// <summary>Weicht das Geräte-GWP vom Tabellenwert des Eintrags ab (KM4-Q17 a, Schwelle des Kerns)?</summary>
+    public static bool WeichtAb(KaeltemittelWahl? e, double? geraeteGwp)
+        => e is not null && WindowsFormsApplication1.KaeltemittelZulaessigkeitszeile.GwpWeichtAb(e.Gwp, geraeteGwp);
+
+    /// <summary>Wirkt die Schnellwahl? Nur mit Tabellenwert und bei leerem oder abweichendem Geräte-GWP.</summary>
+    public static bool SchnellwahlAktiv(IReadOnlyList<KaeltemittelWahl> liste, string? text, double? geraeteGwp)
+        => Eintrag(liste, text) is KaeltemittelWahl e && e.Gwp.HasValue && (!geraeteGwp.HasValue || WeichtAb(e, geraeteGwp));
+
+    private static string Gwp(double wert) => wert.ToString("#,0.###", CultureInfo.CurrentCulture);
+}
