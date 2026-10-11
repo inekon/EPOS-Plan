@@ -147,7 +147,7 @@ Für fossile Brennstoffe wird die CO₂-Abgabe nach dem Brennstoffemissionshande
 == Strommatrix ==
 {{Anker|strommatrix|ht-nt|leistungspreis}}
 
-Aus den Stundenreihen der Simulation entsteht eine Strommatrix mit den Jahressummen von Netzbezug, PV-Einspeisung, KWK-Einspeisung und KWK-Eigenstrom sowie der höchsten Last des Netzbezugs. Bepreist wird der Netzbezug mit dem Stromträger der Kostenverwaltung – Arbeits-, Grund- und Leistungspreis, wahlweise mit einer Leistungspreis-Staffel an der Viertelstundenspitze ([[Kosten und Energiepreise]]) – oder, bei aktiver Tarifstruktur im Rollenmodell, mit den Preisen des Tarifsatzes ([[Programm Dokumentation/Wirtschaftlichkeit#strombezug|Tarifstruktur]]).
+Aus den Stundenreihen der Simulation entsteht eine Strommatrix mit den Jahressummen von Netzbezug, PV-Einspeisung, KWK-Einspeisung und KWK-Eigenstrom sowie der höchsten Last des Netzbezugs. Bepreist wird der Netzbezug mit dem Stromträger der Kostenverwaltung – Arbeits-, Grund- und Leistungspreis, wahlweise mit einer Leistungspreis-Staffel an der Viertelstundenspitze ([[Kosten und Energiepreise]]) – oder, bei aktiver Tarifstruktur im Rollenmodell, mit den Preisen des Tarifsatzes ([[Programm Dokumentation/Wirtschaftlichkeit#strombezug|Tarifstruktur]]). Führt eine Version keinen Erzeuger, der Strom verwendet, gilt für ihren Netzbezug im Vergleich eine eigene Regel: Er wird mit Arbeits- und Grundpreis bepreist, der Leistungspreis wird nicht angesetzt, und ein Hinweis unter der Kostentafel und auf der Ergebnisseite nennt ihn mit Satz und Träger ([[Programm Dokumentation/Wirtschaftlichkeit#bericht-gruppenregel|Netzbezug ohne Stromverwendung]]).
 
 == Emissionsbilanz ==
 {{Anker|emissionsbilanz|kraftwerkspark|referenzkessel}}

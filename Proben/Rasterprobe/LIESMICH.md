@@ -17,8 +17,8 @@ Rechnung und war grün.
 > Die Probe gehört **nicht zur Anwendung**: Sie steht in keiner Projektmappe
 > (`WP-Plan.sln`, `WP-Plan.Kern.slnf`) und wird von keiner CI gebaut — wie der
 > Python-Referenzkern unter `Projekte/Speichersimulation/code/` ist sie Nachweis, kein
-> Werkzeug der Auslieferung. Bildschirmfotos und `node_modules` bleiben draußen
-> (`.gitignore`).
+> Werkzeug der Auslieferung. Die Bildschirmfotos der Messproben und `node_modules` bleiben
+> draußen (`.gitignore`); die Wiki-Bilder aus `wikibilder.mjs` liegen unter `Projekte/Wiki/Dateien/`.
 
 ---
 
@@ -1669,3 +1669,36 @@ keiner sichtbaren. Die Gegenprobe kneift die Trefferzahl zusätzlich auf 30 px u
 bei ausgeblendeter Spalte: Brennstoff, η, Brennwert“). Trefferzahl in allen vier Fällen „40 von 40 Sätzen“ mit
 Hauptwort; Hinweis bei 768 × 1 024 am Heizkessel neben Brennstoff, η und Brennwert, am BHKW neben Brennstoff,
 P_th, σ, η und Motortyp, bei 1 280 × 800 am BHKW neben Motortyp, am Heizkessel neben keiner Spalte.
+
+---
+
+## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
+
+Keine Messprobe, sondern die Quelle der Bildschirmfotos der Wiki-Seiten (Regel: Konzept
+Hilfesystem 14.3, „PNG-Bilder“). Die Seite `/wikibild?bild=<name>` stellt je Gabe genau
+einen echten Dialog von `EPOS.UI` in Fenstergröße, ohne Datenbank, befüllt aus
+`Wirt/Seiten/Wikibeispiele.cs`: neutrale Namen („Kessel 1“, „Hersteller A“, „Speicher 1,
+100 kWh“, „Wohnhaus Musterstraße“), runde Werte, keine Hersteller- und Produktdaten. Die
+Zeilen der Messproben (`Zeilenbau.cs`) taugen dafür nicht — sie tragen echte
+Herstellernamen. Die Reiter des Gebäudeeditors (Konditionierung, Zonen, Zonendialog) nimmt
+das Skript aus `/konditionierungsprobe`, deren Satz ebenfalls neutral ist.
+
+Gaben von `bild`: `heizkessel`, `bhkw`, `waermepumpe`, `pufferspeicher`, `stromspeicher`,
+`photovoltaik`, `solarkollektoren`, `brauchwasser`, `prozesswaerme`, `gebaeude`,
+`kaeltemaschine`; die Kultur wie überall mit `kultur=de-DE`.
+
+```bash
+# Wirt wie oben bauen und starten, dann:
+cd Proben/Rasterprobe
+node wikibilder.mjs --ziel ../../Projekte/Wiki/Dateien [--url http://127.0.0.1:5299] [--nur heizkessel]
+```
+
+Das Skript nimmt je Bild das Dialogelement auf (nicht die leere Seite), Fenster 1280 × 800
+bei `deviceScaleFactor` 1 (die Reiter des Gebäudeeditors in einem hohen Fenster, damit ihr
+Inhalt ganz darin steht), klappt bei den Erzeugern mit Satzbeschreibung und bei Brauchwasser
+und Prozesswärme den Bereich „Gewählter Satz“ auf und schreibt `Bildschirmfoto_<Maske>.png`.
+Es meldet Breite und Größe je Bild; über den Grenzen der Wache `WikiBilderWacheTests`
+(Breite ≤ 1400 px, ≤ 300 KB) versucht es ein kleineres Fenster und endet sonst mit `1`.
+Ein neues Bild bekommt eine Zeile in `Werkzeuge/WikiUpload/dateien.tsv` und wird vor dem
+Einbinden einmal angesehen: Dialog vollständig, deutsche Texte, keine Fehlermeldung, keine
+Produktnamen.

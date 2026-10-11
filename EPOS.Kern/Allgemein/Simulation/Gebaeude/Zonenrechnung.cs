@@ -137,6 +137,11 @@ namespace WindowsFormsApplication1
                 for (int z = 0; z < zonen.Count && z < verfuegbarkeitJeZone.Count; z++)
                     zonen[z].Eingang.Verfuegbarkeit = verfuegbarkeitJeZone[z];
 
+            // Welle V2 (Entwurf Vorheizrampe Fassung 2, 2.4, 2.5): Option 1 — der Vorlauf über dieselben Zonen samt Schranke
+            // der Verfügbarkeit, dann die Pläne; ohne Option 1 geschieht nichts.
+            bool vorheizen = Vorheizplanung.Anwendbar(aufheizvorgabe);
+            if (vorheizen) Vorheizplanung.AnwendenZonen(zonen, aufheizvorgabe, index, idGebaeude, wer, aufheizleistungTestW);
+
             // Die Schleife.
             // Der Jahreslauf über den Gebäude-Stepper (Entwurf AK3 2.2): Vorlauf, dann je Stunde Schritt und Festschreiben.
             var schleife = new Zonenschleife(zonen, wer);
@@ -155,7 +160,9 @@ namespace WindowsFormsApplication1
                 paare.Add(new Zonenpaarzuordnung(a, b, deltaVorlauf[(a, b)], zuordnung[(a, b)], d));
             }
 
+            if (vorheizen) Vorheizplanung.NachweisenZonen(zonen, ergebnisse);
             GebaeudeModellErgebnis summe = Summe(zonen, ergebnisse, schleife, index, idGebaeude, out Aufheizgebaeude aufheiz);
+            if (vorheizen) summe.Vorheizen = Vorheizplanung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan), summe.HeizlastW);
             uhr.Stop();
             return new Mehrzonenergebnis(summe, ergebnisse, zonen, schleife, paare,
                                          uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf, aufheiz);

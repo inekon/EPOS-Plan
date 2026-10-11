@@ -105911,6 +105911,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Übergänge aus „aus“ (Heizperiode, Kalender) bekommen kein Vorheizen und zählen nicht in die Prüfung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} Stunden der Nutzung liegt die Heizlast ohne Aufheizanteil über dem Deckel; dort gilt sie als Grenze. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_FLOOR {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_FLOOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizen {0} h vor Nutzungsbeginn: höchste Heizlast am Nutzungsbeginn {1} kW, Deckel {2} kW, Vorheizleistung {3} kW, Spitze des Laufs {4} kW; {5} Nächte ohne Absenkung; Mehrwärme {6} MWh ({7} %). ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Zonen haben keinen Nutzungsbeginn im Heizkalender; dort wird nicht vorgeheizt. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_OHNE_SPRUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_OHNE_SPRUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Vorheizzeit vorgeben“ rechnet im geschlossenen Kreis (AK3) noch nicht; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_RUECKFALL_AK3 {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_AK3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Vorheizzeit berechnen“ rechnet noch nicht; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_RUECKFALL_BERECHNET {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_BERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude mit Heizkreis sind vom Vorheizen ausgenommen; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_RUECKFALL_HEIZKREIS {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_HEIZKREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für „Vorheizzeit vorgeben“ fehlt die Vorheizzeit; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_RUECKFALL_OHNE_ZEIT {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_OHNE_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter). ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_TAGE {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der zulässige Sprung zum Nutzungsbeginn ist 0: Der Deckel liegt auf der höchsten Heizlast am Nutzungsbeginn, und das Vorheizen braucht meist die ganze Nacht. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_TOLERANZ_NULL {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_TOLERANZ_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf: Die externe Ganglinie {0} hat {1} Werte statt 8760 oder 35040. Die Ganglinie wurde nicht gerechnet - bitte neu einlesen. ähnelt.
         /// </summary>
         public static string SIMENG_WAERMEGANGLINIE_RASTER_PASST_NICHT {

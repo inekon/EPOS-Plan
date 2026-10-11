@@ -192,7 +192,7 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die DREIZEHN Seiten der Rubrik H13 — namentlich (seit der Zusammenführung von
+        /// Die VIERZEHN Seiten der Rubrik H13 — namentlich (seit der Zusammenführung von
         /// Teil A und Teil B am 06.09.2026 beide Teile). Eine gelöschte oder
         /// umbenannte Datei fiele sonst nur dadurch auf, dass niemand sie mehr findet;
         /// der Infoknopf des zugehörigen Dialogs zeigte weiter auf eine Wikiseite, die
@@ -206,7 +206,9 @@ namespace EPOS.Kern.Tests
         {
             "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
             "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
-            "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
+            "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher",
+            // Die Kälteseite: Kältefolge, Rückkühlung, Teillast und Takten der Kältemaschine.
+            "Kühlung"
         };
 
         /// <summary>
@@ -439,7 +441,7 @@ namespace EPOS.Kern.Tests
 
             Assert.True(dateien.Count >= SeitenDerRubrik.Length + 2,
                 "Die Rubrik 'Berechnung' liefert nur " + dateien.Count + " eingebettete Dateien; " +
-                "erwartet sind die dreizehn Seiten plus _Index.wiki und _Bezuege.wiki.");
+                "erwartet sind die vierzehn Seiten plus _Index.wiki und _Bezuege.wiki.");
 
             return dateien;
         }

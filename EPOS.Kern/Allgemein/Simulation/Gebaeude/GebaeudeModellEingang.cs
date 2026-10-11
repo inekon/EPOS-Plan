@@ -282,6 +282,59 @@ namespace WindowsFormsApplication1
         internal double HeizungStrahlungsanteil { get; private set; }
         /// <summary>Heizleistungsgrenze [W]; NaN = unbegrenzt.</summary>
         internal double HeizleistungMaxW { get; private set; }
+
+        /// <summary>
+        /// <b>Die Deckelreihe der Zone</b> [W] je Stunde (8 760 Werte; Entwurf Vorheizrampe Fassung 2, 2.2 und 2.3,
+        /// Welle V1) — die stündliche Leistungsgrenze der Aufheizoptimierung neben dem Skalar
+        /// <see cref="HeizleistungMaxW"/>. <b>Konvention:</b> <c>NaN</c> (ebenso +∞) heißt „keine eigene Grenze in dieser
+        /// Stunde", jeder andere Wert ist endlich und nicht negativ. Wirksam ist je Stunde die kleinere Zahl aus Skalar und
+        /// Reihe (<see cref="HeizleistungMaxBei"/>), mit wirksamer Kopplung danach die Schranke der Verfügbarkeit (AK2,
+        /// <see cref="Stundenrand.MitVerfuegbarkeit"/>). <c>null</c> = keine Reihe: Jede Stunde trägt den Skalar Zeichen
+        /// für Zeichen wie ohne sie. Gesetzt nur über <see cref="HeizleistungMaxReiheSetzen"/>; eine Kopie.
+        /// </summary>
+        internal double[] HeizleistungMaxReiheW { get; private set; }
+
+        /// <summary>
+        /// <b>Setzt die Deckelreihe</b> (<see cref="HeizleistungMaxReiheW"/>) — der Schreibweg des Aufheizplans
+        /// (<see cref="Aufheizoptimierung.PlanSetzen"/>) und der Vorausschau. <c>null</c> nimmt die Reihe zurück. Die Reihe
+        /// wird kopiert; der Eingang hält sie unverändert, auch wenn der Aufrufer sein Feld danach ändert.
+        /// </summary>
+        /// <exception cref="ArgumentException">wenn die Reihe nicht 8 760 Stunden führt oder ein Wert weder „keine Grenze"
+        /// (NaN, +∞) noch endlich und nicht negativ ist.</exception>
+        internal void HeizleistungMaxReiheSetzen(double[] reiheW)
+        {
+            if (reiheW == null)
+            {
+                HeizleistungMaxReiheW = null;
+                return;
+            }
+            if (reiheW.Length != 8760)
+                throw new ArgumentException("Die Deckelreihe muss 8760 Stunden führen.", nameof(reiheW));
+            for (int h = 0; h < reiheW.Length; h++)
+            {
+                double w = reiheW[h];
+                if (double.IsNaN(w) || double.IsPositiveInfinity(w)) continue;
+                if (double.IsInfinity(w) || w < 0.0)
+                    throw new ArgumentException("Die Deckelreihe trägt in Stunde " + h.ToString(CultureInfo.InvariantCulture)
+                                                + " keinen gültigen Wert.", nameof(reiheW));
+            }
+            HeizleistungMaxReiheW = (double[])reiheW.Clone();
+        }
+
+        /// <summary>
+        /// <b>Die wirksame Heizleistungsgrenze der Stunde</b> <paramref name="h"/> [W] vor der Verfügbarkeit: ohne Reihe oder
+        /// mit „keine Grenze" in der Stunde genau <see cref="HeizleistungMaxW"/> (dieselbe Zahl, keine Rechnung — der Lauf
+        /// bleibt bitgleich), sonst die kleinere der beiden Zahlen; NaN = unbegrenzt.
+        /// </summary>
+        internal double HeizleistungMaxBei(int h)
+        {
+            double[] reihe = HeizleistungMaxReiheW;
+            if (reihe == null) return HeizleistungMaxW;
+            double deckel = reihe[h];
+            if (double.IsNaN(deckel) || double.IsPositiveInfinity(deckel)) return HeizleistungMaxW;
+            return double.IsNaN(HeizleistungMaxW) || deckel < HeizleistungMaxW ? deckel : HeizleistungMaxW;
+        }
+
         /// <summary>
         /// Die manuelle Aufheizzeit t [h] des Gebäudes (E59, Festlegung 37; <c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c>),
         /// 1 … 47; <c>null</c> = die Art des Projekts. Jede Zone des Gebäudes trägt denselben Wert (Festlegung 38,
@@ -316,6 +369,12 @@ namespace WindowsFormsApplication1
         /// vorher (N-A3).
         /// </summary>
         internal bool KopplungWirksam { get; private set; }
+
+        /// <summary>
+        /// Erfasst der Lauf die Massen am Stundenende (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V2)? Gesetzt nur von
+        /// <see cref="Vorheizplanung"/>; ohne Schalter rechnet und schreibt jeder Lauf wie zuvor.
+        /// </summary>
+        internal bool MassenErfassen { get; set; }
 
         /// <summary>Die Kennwerte der Übergabe in W und W/K; <c>null</c> ohne wirksame Kopplung.</summary>
         internal Uebergabekennwerte Uebergabe { get; private set; }
@@ -694,13 +753,13 @@ namespace WindowsFormsApplication1
                 if (!KopplungWirksam)
                     return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
                                            PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                           heizleistungMaxW: HeizleistungMaxW,
+                                           heizleistungMaxW: HeizleistungMaxBei(h),
                                            kuehlleistungMaxW: KuehlleistungMaxW,
                                            heizungStrahlungsanteil: HeizungStrahlungsanteil,
                                            zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung));
                 return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                       heizleistungMaxW: HeizleistungMaxW,
+                                       heizleistungMaxW: HeizleistungMaxBei(h),
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
                                        zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
@@ -710,7 +769,7 @@ namespace WindowsFormsApplication1
             }
             return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
                                    PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                   heizleistungMaxW: HeizleistungMaxW,
+                                   heizleistungMaxW: HeizleistungMaxBei(h),
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
                                    zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
@@ -954,13 +1013,13 @@ namespace WindowsFormsApplication1
                 if (!KopplungWirksam)
                     return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                            PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                           heizleistungMaxW: HeizleistungMaxW,
+                                           heizleistungMaxW: HeizleistungMaxBei(h),
                                            kuehlleistungMaxW: KuehlleistungMaxW,
                                            heizungStrahlungsanteil: HeizungStrahlungsanteil,
                                            zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung));
                 return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                       heizleistungMaxW: HeizleistungMaxW,
+                                       heizleistungMaxW: HeizleistungMaxBei(h),
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
                                        zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
@@ -973,7 +1032,7 @@ namespace WindowsFormsApplication1
             // demselben Raumregler; die Wärmeseite, wenn sie wirkt, wie im Zweig darüber.
             return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                    PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                   heizleistungMaxW: HeizleistungMaxW,
+                                   heizleistungMaxW: HeizleistungMaxBei(h),
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
                                    zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),

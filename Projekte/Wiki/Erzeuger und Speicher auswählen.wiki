@@ -46,7 +46,7 @@ Batteriespeicher beschreiben Sie über Kapazität, Leistung, Ladezustandsgrenzen
 == Kühlung und Kälteanlagen ==
 {{Anker|kuehlung|kaeltemaschine}}
 
-Rechnet das Projekt Kälte, decken Kältemaschinen und Wärmepumpen im Kühlbetrieb den Kältebedarf der Gebäude. Die Kachel ''Kühlung und Kälteanlagen'' öffnet den Dialog ''Kältemaschinen im Projekt'' mit Nennkälteleistung, EER, Rückkühlart und Kennfeld, darunter die Schalter ''Wärmepumpen im Kühlbetrieb''; ob gerechnet wird, entscheidet ''Kühlung rechnen'' in der Simulationskonfiguration ([[Programm Dokumentation/Kühlung|Kühlung]]).
+Rechnet das Projekt Kälte, decken Kältemaschinen und Wärmepumpen im Kühlbetrieb den Kältebedarf der Gebäude. Die Kachel ''Kühlung und Kälteanlagen'' öffnet den Dialog ''Kältemaschinen im Projekt'' mit Nennkälteleistung, EER, Rückkühlart und Kennfeld, darunter die Schalter ''Wärmepumpen im Kühlbetrieb''; ob gerechnet wird, entscheidet ''Kühlung rechnen'' in der Simulationskonfiguration. Kälteerzeuger, Rückkühlung, Kältespeicher und die Reihenfolge der Deckung beschreibt [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]], den Kältebedarf der Gebäude [[Programm Dokumentation/Kühlung|Kühlung]].
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
@@ -59,7 +59,8 @@ Rechnet das Projekt Kälte, decken Kältemaschinen und Wärmepumpen im Kühlbetr
 * [[Pufferspeicher]] – nutzbare Kapazität und Hysterese der Bewirtschaftung
 * [[Stromspeicher]] – Kapazität, Leistung und Ladezustand
 * [[Programm Dokumentation/Wechselrichter|Wechselrichter]] – Katalog, Stränge und Eignungsbewertung
-* [[Programm Dokumentation/Kühlung|Kühlung]] – Kältemaschinen und Wärmepumpen im Kühlbetrieb
+* [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]] – Kältemaschinen, Wärmepumpen im Kühlbetrieb und Kältespeicher
+* [[Programm Dokumentation/Kühlung|Kühlung]] – Kältebedarf der Gebäude, Kühlübergabe und Kühlkurve
 * [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]] – Erdsonde und Erdkollektor
 * [[Programm Dokumentation/Gerätekataloge|Gerätekataloge]] – Aufbau der Verwaltungen, Import, Schreibschutz
 

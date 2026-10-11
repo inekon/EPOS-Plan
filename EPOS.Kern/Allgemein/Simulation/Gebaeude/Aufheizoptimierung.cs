@@ -90,9 +90,23 @@ namespace WindowsFormsApplication1
         {
             if (zone == null) throw new ArgumentNullException(nameof(zone));
             Aufheizplan plan = Planen(Aufheizzone.Aus(zone), vorgabe, aufheizleistungTestW);
-            if (plan.Geaendert) zone.Eingang.HeizsollwertMitRampeSetzen(plan.Reihe);
-            zone.AufheizplanSetzen(plan);
+            PlanSetzen(zone, plan);
             return plan;
+        }
+
+        /// <summary>
+        /// <b>Setzt einen fertigen Plan in die Zone</b> — der eine Schreibweg von Plan zu Eingang: die Sollwertreihe, wenn
+        /// mindestens eine Stunde angehoben ist, die Deckelreihe (Welle V1), wenn der Plan eine trägt, und der Plan selbst an
+        /// <see cref="ZonenEingang.Aufheizplan"/>. Der Stepper des AK3-Kreises baut auf demselben Eingang und sieht beide
+        /// Reihen so, wie der Lauf sie sieht. Ohne Deckelreihe wird der Eingang an der Leistungsgrenze nicht berührt.
+        /// </summary>
+        internal static void PlanSetzen(ZonenEingang zone, Aufheizplan plan)
+        {
+            if (zone == null) throw new ArgumentNullException(nameof(zone));
+            if (plan == null) throw new ArgumentNullException(nameof(plan));
+            if (plan.Geaendert) zone.Eingang.HeizsollwertMitRampeSetzen(plan.Reihe);
+            if (plan.Deckelreihe != null) zone.Eingang.HeizleistungMaxReiheSetzen(plan.Deckelreihe);
+            zone.AufheizplanSetzen(plan);
         }
 
         /// <summary>
@@ -109,11 +123,7 @@ namespace WindowsFormsApplication1
             Aufheizzone[] eingaenge = Aufheizzone.AusZonen(zonen);
             var plaene = new Aufheizplan[eingaenge.Length];
             for (int i = 0; i < eingaenge.Length; i++) plaene[i] = Planen(eingaenge[i], vorgabe, aufheizleistungTestW);
-            for (int i = 0; i < plaene.Length; i++)
-            {
-                if (plaene[i].Geaendert) zonen[i].Eingang.HeizsollwertMitRampeSetzen(plaene[i].Reihe);
-                zonen[i].AufheizplanSetzen(plaene[i]);
-            }
+            for (int i = 0; i < plaene.Length; i++) PlanSetzen(zonen[i], plaene[i]);
             return plaene;
         }
 
@@ -277,7 +287,7 @@ namespace WindowsFormsApplication1
         /// (<paramref name="nachbarn"/> <c>null</c>) wörtlich die Außenform der Welle R2; mit Nachbarn θ_eq
         /// in der Nachbarform und die Zuluft θ_Lue an der Stelle der Außenluft (Festlegungen 13, 14).
         /// </summary>
-        private static double PhiStat(Aufheizzone zone, double thetaT, double ta, int tag, double zusatz, double[] nachbarn)
+        internal static double PhiStat(Aufheizzone zone, double thetaT, double ta, int tag, double zusatz, double[] nachbarn)
             => nachbarn == null
                 ? zone.Modell.StationaereHeizlastW(thetaT, ta, zone.AequivalentN(tag, ta), zone.Strahlungsanteil, zusatz)
                 : zone.Modell.StationaereHeizlastW(thetaT, zone.Zuluft(ta, zusatz, nachbarn),
@@ -858,7 +868,7 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        private static int Ring(int h) => ((h % STUNDEN) + STUNDEN) % STUNDEN;
+        internal static int Ring(int h) => ((h % STUNDEN) + STUNDEN) % STUNDEN;
 
         private static int Zaehlen(bool[] tage)
         {

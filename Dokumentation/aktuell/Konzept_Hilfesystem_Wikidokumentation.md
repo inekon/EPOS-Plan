@@ -935,6 +935,21 @@ Die Inhaltsregeln aus Abschnitt 13 gelten für beide Rubriken.
   - Sie enthält kein `<script>`, keine Ereignisattribute, kein `<foreignObject>`, keine
     externen Verweise und kein `<title>`. `wiki_upload.py` prüft das vor jedem Upload.
   - Eine SVG-Grafik kommt nur dort, wo ein Schema mehr zeigt als die Diagrammvorlagen.
+- **PNG-Bilder**
+  - Das Wiki lässt Uploads mit der Endung `png` zu. Zugelassen sind zwei Herkünfte:
+    Diagrammbeispiele aus dem Prüfstand `Proben/ChartProben` (synthetische Reihen, kein Projekt)
+    und Bildschirmfotos der Oberfläche aus dem Wirt der Rasterprobe unter `Proben/Rasterprobe/`.
+  - Dateiname `Diagramm_<Thema>.png` bzw. `Bildschirmfoto_<Maske>.png`, nur ASCII.
+  - Breite höchstens 1400 px, Größe höchstens 300 KB; angezeigt mit `mini|zentriert|800px`.
+  - Die Bildunterschrift nennt die Herkunft: „Beispieldiagramm aus synthetischen Reihen, kein
+    Simulationsergebnis“ bzw. „Bildschirmfoto mit Beispieldaten“.
+  - Im Bild stehen keine Hersteller- und Produktdaten; Beispieldaten tragen neutrale Namen und
+    runde Werte.
+  - Das Bild liegt unter `Projekte/Wiki/Dateien/` und steht in `Werkzeuge/WikiUpload/dateien.tsv`.
+- **Wache:** `EPOS.Kern.Tests/WikiBilderWacheTests` hält `Projekte/Wiki/Dateien/`: nur `svg`
+  und `png` mit ASCII-Namen, je Datei genau eine Zeile in `dateien.tsv` und jede Zeile mit
+  vorhandener Datei, jede Datei in mindestens einer Quelle eingebunden, die Grenzen der PNG
+  und die Verbote der SVG.
 
 ### 14.4 Upload
 

@@ -51819,5 +51819,35 @@ chart</value>
   <data name="SIMKONF_KAELTE_VORGABE_GILT" xml:space="preserve">
     <value>The default sequence already applies. The arrows on the tiles maintain the sequence of the cooling generators.</value>
   </data>
+  <data name="SIMENG_VORH_KENNZAHLEN" xml:space="preserve">
+    <value>Preheating {0} h before occupancy: highest heating load at start of occupancy {1} kW, cap {2} kW, preheating power {3} kW, peak of the run {4} kW; {5} nights without setback; additional heat {6} MWh ({7} %).</value>
+  </data>
+  <data name="SIMENG_VORH_TAGE" xml:space="preserve">
+    <value>On {0} days the room air does not reach the setpoint at the start of occupancy (up to {1} K below).</value>
+  </data>
+  <data name="SIMENG_VORH_FLOOR" xml:space="preserve">
+    <value>In {0} hours of occupancy the heating load without warm-up share exceeds the cap; it applies as the limit there.</value>
+  </data>
+  <data name="SIMENG_VORH_TOLERANZ_NULL" xml:space="preserve">
+    <value>The permitted step at start of occupancy is 0: the cap equals the highest heating load at start of occupancy, and preheating usually takes the whole night.</value>
+  </data>
+  <data name="SIMENG_VORH_OHNE_SPRUNG" xml:space="preserve">
+    <value>{0} heated zones have no start of occupancy in the heating calendar; no preheating there.</value>
+  </data>
+  <data name="SIMENG_VORH_AUS" xml:space="preserve">
+    <value>{0} transitions from “off” (heating period, calendar) get no preheating and are not checked.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_AK3" xml:space="preserve">
+    <value>“Specify preheat time” is not yet calculated in the closed loop (AK3); the setpoint ramp by preheat power applies.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_HEIZKREIS" xml:space="preserve">
+    <value>Buildings with heating circuit are excluded from preheating; the setpoint ramp by preheat power applies.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_OHNE_ZEIT" xml:space="preserve">
+    <value>“Specify preheat time” has no preheat time; the setpoint ramp by preheat power applies.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_BERECHNET" xml:space="preserve">
+    <value>“Calculate preheat time” is not yet calculated; the setpoint ramp by preheat power applies.</value>
+  </data>
 </root>
 

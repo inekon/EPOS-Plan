@@ -5,7 +5,7 @@ Neben dem Wärmebedarf ist der zeitliche Verlauf des '''Strombedarfs''' die zwei
 
 Der Wärmebedarf entsteht als Stundenreihe über das ganze Jahr, für Gebäude nach dem Gebäudemodell VDI 6007; Einzelheiten enthält die Unterseite [[Grundlagen/Wärmebedarfsrechnung|Wärmebedarfsrechnung]].
 
-Warmwasser, Prozesswärme und Strombedarf entstehen aus derselben Profilroutine: zwölf Monatswerte und ein Wochenprofil mit 168 Stundenwerten, gekachelt im Wochentagsraster der Klimaregion. Der Strombedarf wird dabei in ein Viertelstundenraster übertragen, denn Photovoltaik und Stromspeicher bilanzieren Viertelstunde für Viertelstunde; Eigenverbrauch und Speicherbewirtschaftung fielen in Stundenmittelwerten systematisch zu günstig aus. Ein Profil setzt die vier Viertel einer Stunde gleich hoch; echte Viertelstundenspitzen bringt erst ein gemessener Lastgang. Gemessene Lastgänge werden zu den Profilen addiert.
+Warmwasser, Prozesswärme und Strombedarf entstehen aus derselben Profilroutine: zwölf Monatswerte und ein Wochenprofil mit 168 Stundenwerten, gekachelt im [[Grundlagen/Gemeinjahr und Feiertage|Wochentagsraster der Klimaregion]]. Der Strombedarf wird dabei in ein Viertelstundenraster übertragen, denn Photovoltaik und Stromspeicher bilanzieren Viertelstunde für Viertelstunde; Eigenverbrauch und Speicherbewirtschaftung fielen in Stundenmittelwerten systematisch zu günstig aus. Ein Profil setzt die vier Viertel einer Stunde gleich hoch; echte Viertelstundenspitzen bringt erst ein gemessener Lastgang. Gemessene Lastgänge werden zu den Profilen addiert.
 
 == Profilarten ==
 {{Anker|profilarten}}
@@ -44,6 +44,7 @@ Der Jahresstromverbrauch aus der Abrechnung sollte immer mit der Summe des verwe
 * [[Stammdaten und Datenimport]] – Lastprofilkataloge und Import gemessener Lastgänge
 * [[Programm Dokumentation/Strombedarf]] und [[Programm Dokumentation/Stromverbraucher]] – Dialoge für Stromprofile und Stromverbraucher
 * [[Programm Dokumentation/Berechnung/Strombedarf]] – Rechenweg mit Gleichungen
+* [[Grundlagen/Gemeinjahr und Feiertage]] – Wochentage und Feiertage im Rechenjahr
 
 {{Navigation Grundlagen}}
 

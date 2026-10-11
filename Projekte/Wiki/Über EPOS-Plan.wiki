@@ -8,7 +8,7 @@ Das Programm bildet den Wärmebedarf von Gebäuden, Warmwasser und Prozessen ebe
 == Für Neubau, Bestand und Sanierung ==
 {{Anker|fuer-neubau-bestand-und-sanierung}}
 
-Durch die integrierte Wärmebedarfsberechnung eignet sich das Programm für Neubauten ebenso wie für Sanierungen. Gebäude rechnet es Stunde für Stunde nach VDI 6007, auf Wunsch in mehreren Zonen und mit Kühlung. Aus einer umfangreichen Gebäudedatenbank lassen sich Gebäudetypen nach Nutzung und Baualtersklasse übernehmen und mit wenigen Angaben an das konkrete Objekt anpassen. Liegen statt Flächen Verbrauchsdaten vor, kann der Bedarf aus dem Jahresverbrauch an Öl, Gas oder anderen Brennstoffen zurückgerechnet werden – der Jahresgang bleibt physikalisch begründet, die Jahressumme entspricht der Abrechnung. Bestehende Solarthermie- oder Photovoltaikanlagen werden ebenso berücksichtigt wie geplante Erweiterungen.
+Durch die integrierte Wärmebedarfsberechnung eignet sich das Programm für Neubauten ebenso wie für Sanierungen. Gebäude rechnet es Stunde für Stunde nach VDI 6007, auf Wunsch in mehreren Zonen und mit Kühlung. Aus einer umfangreichen Gebäudedatenbank lassen sich Gebäudetypen nach Nutzung und Baualtersklasse übernehmen und mit wenigen Angaben an das konkrete Objekt anpassen; Gebäude aus gbXML-, IFC- und Projektdateien (.sqproj) liest der Gebäudeimport ein. Liegen statt Flächen Verbrauchsdaten vor, kann der Bedarf aus dem Jahresverbrauch an Öl, Gas oder anderen Brennstoffen zurückgerechnet werden – der Jahresgang bleibt physikalisch begründet, die Jahressumme entspricht der Abrechnung. Bestehende Solarthermie- oder Photovoltaikanlagen werden ebenso berücksichtigt wie geplante Erweiterungen.
 
 == Herstellerdaten statt Pauschalwerte ==
 {{Anker|herstellerdaten-statt-pauschalwerte}}
@@ -23,7 +23,7 @@ Die Erzeuger arbeiten in einer frei konfigurierbaren Kaskade; jeder deckt so vie
 == Einfach in der Handhabung ==
 {{Anker|einfach-in-der-handhabung}}
 
-Ein Assistent führt durch neue Projekte und blendet nur die tatsächlich benötigten Schritte ein; die Startseite zeigt für jeden Baustein, ob Daten vorliegen. Kurzhinweise an den Eingabefeldern verweisen auf das passende Kapitel der Online-Dokumentation, und ein Hilfe-Assistent beantwortet Fragen im Kontext des aktuellen Programmbereichs. EPOS-Plan ist eine eigenständige Windows-Anwendung für Windows 10 und 11, benötigt kein Excel und steht in Deutsch und Englisch zur Verfügung.
+Ein Assistent führt durch neue Projekte und blendet nur die tatsächlich benötigten Schritte ein; die Startseite zeigt für jeden Baustein, ob Daten vorliegen. Kurzhinweise an den Eingabefeldern verweisen auf das passende Kapitel der Online-Dokumentation, und ein Hilfe-Assistent beantwortet Fragen im Kontext des aktuellen Programmbereichs und kann in den Masken auf Wunsch Werte setzen. EPOS-Plan läuft als eigenständige Windows-Anwendung (Windows 10 und 11, 64 Bit) und als iOS-App für das iPad. Beide Schalen rechnen mit demselben Rechenkern und derselben Oberfläche, die Oberfläche passt sich auf dem iPad der Fenstergröße an. Das Programm benötigt kein Excel und steht in Deutsch und Englisch zur Verfügung.
 
 Einen vollständigen Überblick geben die [[Programmfunktionen]], die Bedienung beschreibt der [[Programmablauf]], ausgearbeitete Anwendungsfälle finden Sie unter [[Beispiele]].
 
@@ -45,9 +45,9 @@ Am Anfang stand eine Frage, die sich in jedem Projekt neu stellte: Wie groß mus
 === Neuentwicklung als eigenständige Anwendung ===
 {{Anker|neuentwicklung-als-eigenstaendige-anwendung}}
 
-Mit den gewachsenen Anforderungen – höhere Zeitauflösung für Eigenverbrauch und Speicher, größere Datenmengen, moderne Bedienoberfläche, Unabhängigkeit von Office-Versionen – stieß die Excel-Basis an ihre Grenzen. INEKON hat EPOS-Plan deshalb vollständig neu entwickelt: als eigenständige Windows-Anwendung mit eigener Datenbank, eigener Ergebnisdarstellung und einem Rechenkern, der die Wärmeseite in 8.760 Stunden und die Stromseite in 35.040 Viertelstunden abbildet. Hinzugekommen sind unter anderem der automatische Bezug von Klimadaten, Wärmepumpen-Kennfelder mit wählbarer Wärmequelle und Betriebsstrategie, die Bewirtschaftung thermischer Speicher mit Schaltschwellen, die Autarkie- und Eigenverbrauchsanalyse, der CSV-Export sämtlicher Zeitreihen sowie ein Hilfesystem mit Kontexthinweisen und Assistent.
+Mit den gewachsenen Anforderungen – höhere Zeitauflösung für Eigenverbrauch und Speicher, größere Datenmengen, moderne Bedienoberfläche, Unabhängigkeit von Office-Versionen – stieß die Excel-Basis an ihre Grenzen. INEKON hat EPOS-Plan deshalb vollständig neu entwickelt: als eigenständige Anwendung für Windows mit eigener Datenbank, eigener Ergebnisdarstellung und einem plattformfreien Rechenkern, der die Wärmeseite in 8.760 Stunden und die Stromseite in 35.040 Viertelstunden abbildet. Eine App für das iPad rechnet mit demselben Rechenkern; sie ist noch nicht allgemein verfügbar. Hinzugekommen sind unter anderem der automatische Bezug von Klimadaten, Wärmepumpen-Kennfelder mit wählbarer Wärmequelle und Betriebsstrategie, die Bewirtschaftung thermischer Speicher mit Schaltschwellen, die Autarkie- und Eigenverbrauchsanalyse, der CSV-Export sämtlicher Zeitreihen sowie ein Hilfesystem mit Kontexthinweisen und Assistent.
 
-Mit dieser Neuentwicklung beginnt auch die Versionszählung neu: Die erste Ausgabe der neuen Programmgeneration trägt die Version '''1.0.0.0''' und ist im Juli 2026 erschienen. Welche Funktionen mit welcher Version hinzukommen, führt das [[Update-Logbuch]] auf.
+Mit dieser Neuentwicklung beginnt auch die Versionszählung neu. Welche Funktionen mit welcher Version hinzukommen, führt das [[Update-Logbuch]] auf.
 
 == Software-Service ==
 {{Anker|software-service}}

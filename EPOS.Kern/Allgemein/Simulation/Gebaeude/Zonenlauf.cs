@@ -50,6 +50,7 @@ namespace WindowsFormsApplication1
         private readonly bool[] _fahrplan;                  // AK2: Stunden an der Schranke der Verfügbarkeit, nur mit Fahrplan
         private readonly Innenumkehrzaehler _messung;      // Messung RP2a, nur mit Schalter
         private int _gedeckelt;                             // RP2a: Stunden über der Obergrenze der Innenprüfung
+        private readonly double[] _massenAw, _massenIw;    // Welle V2: Massen am Stundenende, nur mit ZonenEingang.MassenErfassen
 
         internal Zonenlauf(ZonenEingang zone)
         {
@@ -75,6 +76,8 @@ namespace WindowsFormsApplication1
             _kRuecklauf = _kuehlgekoppelt ? new double[8760] : null;
             _kBegrenzt = _kuehlgekoppelt ? new double[8760] : null;
             _fahrplan = eingang.FahrplanWirksam ? new bool[8760] : null;
+            _massenAw = eingang.MassenErfassen ? new double[8760] : null;
+            _massenIw = eingang.MassenErfassen ? new double[8760] : null;
         }
 
         /// <summary>Die Zone des Laufs.</summary>
@@ -146,6 +149,11 @@ namespace WindowsFormsApplication1
             _kappung[h] = s.HeizleistungMaxAnteil;
             _kappungH += s.HeizleistungMaxAnteil;
             if (_fahrplan != null) _fahrplan[h] = s.VerfuegbarkeitBegrenzt;
+            if (_massenAw != null)
+            {
+                _massenAw[h] = s.ThetaMAwEnde;
+                _massenIw[h] = s.ThetaMIwEnde;
+            }
             _messung?.Aufnehmen(in s);
             if (s.InnenpruefungGedeckelt) _gedeckelt++;
 
@@ -249,6 +257,8 @@ namespace WindowsFormsApplication1
                 Erdreich = eingang.Erdreich,
                 FahrplanBegrenzt = _fahrplan,
                 Kuehlsollwertreihe = eingang.KuehlungWirksam ? (double[])eingang.ThetaMax.Clone() : null,
+                MassenEndeAw = _massenAw,
+                MassenEndeIw = _massenIw,
             };
         }
 

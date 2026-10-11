@@ -371,6 +371,14 @@ namespace WindowsFormsApplication1
         /// <summary>Wurde mindestens eine Stunde angehoben (s'(h) &gt; s(h))?</summary>
         internal bool Geaendert { get; init; }
 
+        /// <summary>
+        /// <b>Die Deckelreihe</b> [W] je Stunde (Entwurf Vorheizrampe Fassung 2, Welle V1): die stündliche Leistungsgrenze, die
+        /// <see cref="Aufheizoptimierung.PlanSetzen"/> mit der Sollwertreihe in den Eingang der Zone setzt
+        /// (<see cref="GebaeudeModellEingang.HeizleistungMaxReiheSetzen"/>; Konvention dort: NaN = keine eigene Grenze).
+        /// <c>null</c> = keine Reihe — so plant jedes heutige Verfahren, der Lauf bleibt Zeichen für Zeichen derselbe.
+        /// </summary>
+        internal double[] Deckelreihe { get; init; }
+
         /// <summary>Die Rampenmaske: wahr, wo s'(h) &gt; s(h) (Festlegung 10); <c>null</c> bei GEKOPPELT und UNBEHEIZT.</summary>
         internal bool[] Rampenmaske { get; init; }
 
@@ -461,6 +469,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Φ_RH der Zone [W] (<see cref="Aufheizbemessung.AufheizzuschlagW"/>); NaN ohne Bemessung.</summary>
         internal double AufheizzuschlagW => Bemessung?.AufheizzuschlagW ?? double.NaN;
+
+        /// <summary>
+        /// Das Vorheizen nach Option 1 (Entwurf Vorheizrampe Fassung 2, Welle V2): Vorlauf, Deckel, Sprünge und nach dem Lauf
+        /// der Nachweis; <c>null</c> für die Sollwertrampe (<see cref="Vorheizplanung"/>).
+        /// </summary>
+        internal Vorheizplan Vorheizen { get; init; }
     }
 
     /// <summary>

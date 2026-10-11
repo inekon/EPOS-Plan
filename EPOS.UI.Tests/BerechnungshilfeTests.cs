@@ -605,7 +605,7 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     {
         var daten = new TheoryData<string>();
         foreach (string name in new[] { "Heizkessel", "BHKW", "Wärmepumpe", "Pufferspeicher",
-                                        "Solarthermie", "Photovoltaik", "Stromspeicher" })
+                                        "Solarthermie", "Photovoltaik", "Stromspeicher", "Kühlung" })
             daten.Add(name);
         return daten;
     }

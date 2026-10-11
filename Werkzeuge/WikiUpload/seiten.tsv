@@ -41,8 +41,11 @@ Grundlagen/Photovoltaik	Projekte/Wiki/Grundlagen - Photovoltaik.wiki
 Grundlagen/Stromspeicher	Projekte/Wiki/Grundlagen - Stromspeicher.wiki
 Grundlagen/Wechselrichter	Projekte/Wiki/Grundlagen - Wechselrichter.wiki
 Grundlagen/Kühlung	Projekte/Wiki/Grundlagen - Kühlung.wiki
+Grundlagen/Brauchwasser	Projekte/Wiki/Grundlagen - Brauchwasser.wiki
+Grundlagen/Prozesswärme	Projekte/Wiki/Grundlagen - Prozesswärme.wiki
 Programm Dokumentation/Wärmepumpe	Projekte/Wiki/Programm Dokumentation - Wärmepumpe.wiki
 Programm Dokumentation/Wärmequelle Erdreich	Projekte/Wiki/Programm Dokumentation - Wärmequelle Erdreich.wiki
+Programm Dokumentation/Kälteerzeugung	Projekte/Wiki/Programm Dokumentation - Kälteerzeugung.wiki
 Programm Dokumentation/Heizkessel	Projekte/Wiki/Programm Dokumentation - Heizkessel.wiki
 Programm Dokumentation/BHKW	Projekte/Wiki/Programm Dokumentation - BHKW.wiki
 Programm Dokumentation/Solarthermie	Projekte/Wiki/Programm Dokumentation - Solarthermie.wiki
@@ -55,6 +58,7 @@ Programm Dokumentation/Berechnung	EPOS.Kern/Allgemein/Hilfe/Berechnung/_Index.wi
 Programm Dokumentation/Berechnung/BHKW	EPOS.Kern/Allgemein/Hilfe/Berechnung/BHKW.wiki
 Programm Dokumentation/Berechnung/Brauchwasser	EPOS.Kern/Allgemein/Hilfe/Berechnung/Brauchwasser.wiki
 Programm Dokumentation/Berechnung/Heizkessel	EPOS.Kern/Allgemein/Hilfe/Berechnung/Heizkessel.wiki
+Programm Dokumentation/Berechnung/Kühlung	EPOS.Kern/Allgemein/Hilfe/Berechnung/Kühlung.wiki
 Programm Dokumentation/Berechnung/Photovoltaik	EPOS.Kern/Allgemein/Hilfe/Berechnung/Photovoltaik.wiki
 Programm Dokumentation/Berechnung/Prozesswärme	EPOS.Kern/Allgemein/Hilfe/Berechnung/Prozesswärme.wiki
 Programm Dokumentation/Berechnung/Pufferspeicher	EPOS.Kern/Allgemein/Hilfe/Berechnung/Pufferspeicher.wiki
@@ -86,6 +90,11 @@ Grundlagen/Strombedarf und Lastprofile	Projekte/Wiki/Grundlagen - Strombedarf un
 Grundlagen/Vergleich Energiebilanz	Projekte/Wiki/Grundlagen - Vergleich Energiebilanz.wiki
 Grundlagen/Wirtschaftlichkeitsrechnung	Projekte/Wiki/Grundlagen - Wirtschaftlichkeitsrechnung.wiki
 Grundlagen/Wärmebedarfsrechnung	Projekte/Wiki/Grundlagen - Wärmebedarfsrechnung.wiki
+Grundlagen/Gebäudemodell VDI 6007	Projekte/Wiki/Grundlagen - Gebäudemodell VDI 6007.wiki
+Grundlagen/Bauteile am Erdreich	Projekte/Wiki/Grundlagen - Bauteile am Erdreich.wiki
+Grundlagen/Brauchwasser-Zapfprofile	Projekte/Wiki/Grundlagen - Brauchwasser-Zapfprofile.wiki
+Grundlagen/Gemeinjahr und Feiertage	Projekte/Wiki/Grundlagen - Gemeinjahr und Feiertage.wiki
+Grundlagen/Anlagenkopplung und Regelung	Projekte/Wiki/Grundlagen - Anlagenkopplung und Regelung.wiki
 Hilfe-Assistent	Projekte/Wiki/Hilfe-Assistent.wiki
 Industrie und Gewerbe	Projekte/Wiki/Industrie und Gewerbe.wiki
 Installation und Update	Projekte/Wiki/Installation und Update.wiki

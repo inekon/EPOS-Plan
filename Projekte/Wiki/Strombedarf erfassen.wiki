@@ -3,7 +3,7 @@ Beim Schritt '''Strombedarf erfassen''' entsteht der Bedarf auf demselben Weg wi
 == Verbrauchertypen und Wochenprofile ==
 {{Anker|verbrauchertypen-und-wochenprofile|verbrauchertypen}}
 
-Sie wählen einen Verbrauchertyp aus dem Katalog und geben den Jahresverbrauch an; die Verteilung über das Jahr übernehmen die hinterlegten Monatswerte und das Wochenprofil mit 168 Stundenwerten. Je Zuordnung kann ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] Feiertage und Betriebsferien auf das Wochenprofil legen.
+Sie wählen einen Verbrauchertyp aus dem Katalog – darunter die BDEW-Standardlastprofile Strom 2025 für Haushalt, Gewerbe und Landwirtschaft sowie die Netzbezugsprofile für Haushalte mit Photovoltaik – und geben den Jahresverbrauch an; die Verteilung über das Jahr übernehmen die hinterlegten Monatswerte und das Wochenprofil mit 168 Stundenwerten. Je Zuordnung kann ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] Feiertage und Betriebsferien auf das Wochenprofil legen.
 
 == Rechnen in Viertelstundenwerten ==
 {{Anker|rechnen-in-viertelstundenwerten|viertelstundenwerte|zeitraster}}

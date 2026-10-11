@@ -1,4 +1,4 @@
-EPOS-Plan ist eine eigenständige Windows-Anwendung für 64-Bit-Windows ab Windows 10 und benötigt '''kein Excel''': Berechnung, Datenhaltung und Darstellung laufen vollständig im Programm selbst. Der Download erfolgt über unseren Server; den Zugang erhalten Sie im Rahmen des Wartungsvertrags.
+EPOS-Plan ist eine eigenständige Windows-Anwendung für 64-Bit-Windows ab Windows 10 und benötigt '''kein Excel''': Berechnung, Datenhaltung und Darstellung laufen vollständig im Programm selbst. Der Download erfolgt über unseren Server; den Zugang erhalten Sie im Rahmen des Wartungsvertrags. Diese Seite beschreibt die Windows-Anwendung; die iOS-App für das iPad bringt ihre Datenbank mit der Seed-Kopie der Kataloge mit.
 
 == Überblick ==
 {{Anker|ueberblick}}
