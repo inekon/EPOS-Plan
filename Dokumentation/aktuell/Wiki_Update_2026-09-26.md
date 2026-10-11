@@ -268,7 +268,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
 - Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#911)
 
-*Die folgenden sechsundzwanzig Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939, #940, #951, #953, #960 bis #964 und #966) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden siebenundzwanzig Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939, #940, #951, #953, #960 bis #964, #966 und #982) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -296,6 +296,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 11.10.2026: Die Dialoge Strombedarf, Brauchwasser und Prozesswärme folgen der Katalogauswahl der Erzeuger: Jahressumme in der Kopfleiste, Mehrfachwahl, Stift je Zeile, Kurzangaben des gewählten Satzes und Bearbeiten als Überlagerung. (#963)
 - Seit 11.10.2026: Der Gebäudedialog folgt der Katalogauswahl der Erzeugerdialoge: Leisten je Bereich, Stift je Zeile, Kurzangaben des gewählten Satzes und „In die Datenbank übernehmen…“ mit der Wahl neuer Satz oder Ursprung überschreiben; ein übernommenes Gebäude hat sofort seine Kopie im Projekt. (#964)
 - Seit 11.10.2026: Quellprofil, Spotmarktpreise und TWW-Messreihen werden im Dialog „Format und Vorschau“ mit eigener Vorschau eingelesen. (#966)
+- Seit 11.10.2026: Die Startseite hat einen Reiter „Kältebedarf“ mit den Kacheln „Kältebedarf extern“, „Kältebedarfsprofile“ und „Gebäudekühlung“. (#982)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
