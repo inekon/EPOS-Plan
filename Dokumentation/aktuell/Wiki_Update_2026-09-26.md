@@ -174,6 +174,16 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version offen — Aufheizen vor Nutzungsbeginn (Entwurf, Upload ausstehend)
+
+Version beim Anwender zu erfragen; die Wiki-Quellen (Simulation, Gebäude, Mehrzonenmodell, Einstellungen, Gebäudemodell VDI 6007, Simulationsergebnisse, Berichtsvorlagen) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
+
+- Seit 11.10.2026: Die Gruppe „Aufheizen vor Nutzungsbeginn“ in der Simulationskonfiguration bietet drei Verfahren: Sollwertrampe nach Aufheizleistung, Vorheizzeit vorgeben und Vorheizzeit berechnen.
+- Seit 11.10.2026: Für das Vorheizen lassen sich der zulässige Sprung zum Nutzungsbeginn (in % oder kW), die Regelgenauigkeit und die Geltung je Gebäude oder je Zone einstellen.
+- Seit 11.10.2026: Im Zonendialog kann jede Zone eine eigene Vorheizzeit haben.
+- Seit 11.10.2026: In den Programmeinstellungen lässt sich der zulässige Sprung beim Vorheizen für neue Projekte vorbelegen.
+- Seit 11.10.2026: Bericht, Kurzbericht, Kennzahlen, Variantenvergleich und Datenexport zeigen die Vorheizgrößen (Vorheizzeit, Vorheizleistung, Tage ohne Ankunft, Mehrwärme); die Berichtsvorlagen kennen dazu neue Platzhalter.
+
 ### Version offen (Vorschlag 1.2.1) — veröffentlicht 10.10.2026 (Revision 827)
 
 Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
