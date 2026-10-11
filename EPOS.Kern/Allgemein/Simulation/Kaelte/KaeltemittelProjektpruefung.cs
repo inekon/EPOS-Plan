@@ -25,6 +25,25 @@ namespace WindowsFormsApplication1
         string Geraeteklasse, KaeltemittelErgebnis Ergebnis, KaeltemittelRegel Regel);
 
     /// <summary>
+    /// Ein Kälteerzeuger, wie ihn der Bericht braucht (Konzept Kältemittel als Stammdatum 5.3): Art, Gerät, Name,
+    /// Kältemittel-Code und Ergebnisklasse (<c>null</c> = nicht geprüft). Gesammelt von <c>BerichtsDatenSammler</c>,
+    /// gelesen von <see cref="Berichtstabellen.Kaelteerzeuger"/> — die Schreiber lesen keine Datenbank.
+    /// </summary>
+    public sealed record KaeltemittelBerichtszeile(
+        KaeltemittelGeraeteart Art, int? ID_Geraet, string Bezeichner, string Code, KaeltemittelErgebnisklasse? Klasse)
+    {
+        /// <summary>Die Berichtszeilen aus der Prüfung eines Projekts.</summary>
+        public static List<KaeltemittelBerichtszeile> Aus(IEnumerable<KaeltemittelErzeugerpruefung> pruefung)
+        {
+            var l = new List<KaeltemittelBerichtszeile>();
+            if (pruefung == null) return l;
+            foreach (KaeltemittelErzeugerpruefung p in pruefung)
+                if (p != null) l.Add(new KaeltemittelBerichtszeile(p.Art, p.ID_Geraet, p.Bezeichner, p.Code, p.Ergebnis?.Klasse));
+            return l;
+        }
+    }
+
+    /// <summary>
     /// <b>Die Zulässigkeitsprüfung eines Projekts</b> (Konzept Kältemittel als Stammdatum 3.3, 5.1, 5.2) — der
     /// Datenbankweg vor der reinen Klasse <see cref="Kaeltemittelzulaessigkeit"/>: Er liest das Inbetriebnahmejahr
     /// des Projekts, je Kältemaschinen-Anlage die Projektkopie (Geräteart, Nennkälteleistung je Gerät, Verweis
