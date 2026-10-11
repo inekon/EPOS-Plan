@@ -49,8 +49,8 @@ public class EinzeltageKlappgruppeTests : EposBunitContext
     private static void EinzeltagAnlegen(IRenderedComponent<KalenderbedienungAbschnitt> b, string datum, string name)
     {
         Knopf(Wurzel(b), "epos-kalb-einzeltag-neu").Click();
-        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input[type=date]").Change(datum);
-        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input:not([type=date])").Input(name);
+        b.Find(".epos-kalb-einzeltage .epos-kalb-editor .epos-gemeinjahrdatum input").Change(datum);
+        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input:not([inputmode=decimal])").Input(name);
         Knopf(b.Find(".epos-kalb-einzeltage .epos-kalb-editor"), "epos-kalb-uebernehmen").Click();
     }
 
@@ -116,7 +116,7 @@ public class EinzeltageKlappgruppeTests : EposBunitContext
         Assert.Equal("true", EinzeltageKopf(b).GetAttribute("aria-expanded"));
         Assert.NotNull(b.Find(".epos-kalb-einzeltage .epos-klappgruppe-inhalt .epos-kalb-editor"));
 
-        EinzeltagAnlegen(b, "2025-06-02", "Betriebsausflug");
+        EinzeltagAnlegen(b, "02.06.", "Betriebsausflug");
         Assert.Equal(1, Einzeltage(b));
         Assert.Equal("1 Tag", b.Find(".epos-kalb-einzeltage .epos-klappgruppe-zusatz").TextContent);
         Assert.NotNull(b.Find(".epos-kalb-tage tr[data-name='Betriebsausflug']"));
@@ -155,7 +155,7 @@ public class EinzeltageKlappgruppeTests : EposBunitContext
     {
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
-        EinzeltagAnlegen(b, "2025-06-02", "Betriebsausflug");
+        EinzeltagAnlegen(b, "02.06.", "Betriebsausflug");
         EinzeltageKopf(b).Click();
         Assert.False(b.Instance.EinzeltageOffen);
 
