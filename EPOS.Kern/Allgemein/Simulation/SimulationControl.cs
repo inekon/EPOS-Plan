@@ -1108,6 +1108,10 @@ namespace WindowsFormsApplication1
                 KaeltekaskadeRechnen(kanaele);
             }
 
+            // K3 (Konzept Kältebedarf 4.2): der Strom der dezentralen (Split-)Deckung in die Stufenrechnung -
+            // neben der Kaskade, auch ohne Kälteerzeuger. Ohne Split-Zeile ein sofortiger Rücksprung.
+            DezentralenKaeltestromBuchen();
+
             // KU2: Meldungen der Kälteseite und die Deckungsprobe Kälte (Kühlkonzept 4.3 #31) -
             // nach der GANZEN Wärmekaskade. Ohne erhobene Kälte ein sofortiger Rücksprung.
             KaelteseiteAbschliessen(kanaele);

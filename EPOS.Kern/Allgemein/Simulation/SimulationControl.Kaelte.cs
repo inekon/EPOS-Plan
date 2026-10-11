@@ -81,6 +81,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Kaeltestrom_Stufenrechnung_stuendlich;
 
+        /// <summary>
+        /// Der Strom der dezentralen (Split-)Deckung [kWh je Stunde] (K3, Konzept Kältebedarf 4.2) — ein Teil von
+        /// <see cref="Kaeltestrom_Stufenrechnung_stuendlich"/>, hier für Strombilanz und Ergebnis gesondert. <c>null</c>
+        /// ohne dezentral gedeckte Zeile.
+        /// </summary>
+        public double[] Kaeltestrom_Dezentral_stuendlich;
+
         /// <summary>Den Kältezustand des Vorlaufs verwerfen — am Beginn von <see cref="Kaskade_Zweikanalig"/>.</summary>
         private void KaelteseiteZuruecksetzen()
         {
@@ -89,6 +96,7 @@ namespace WindowsFormsApplication1
             _kuehltage = null;
             _waermekanalAbweichungen = 0;
             Kaeltestrom_Stufenrechnung_stuendlich = null;
+            Kaeltestrom_Dezentral_stuendlich = null;
         }
 
         private static string Anzeigename(WErzeugerModel m)
@@ -635,7 +643,9 @@ namespace WindowsFormsApplication1
             {
                 kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
                                               Speicher = KaeltespeicherLesen() };
-                kaskade.Rechnen(kaelte.Kaeltebedarf, simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+                // K3 (Konzept Kältebedarf 4.2): die Kaskade bekommt den Kühlkanal ohne die dezentral gedeckte Kälte -
+                // die Abzugsstelle SimulationKaeltebedarf.BedarfDerKaskade (Andockpunkt für K-D).
+                kaskade.Rechnen(kaelte.BedarfDerKaskade(), simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
             }
             kaelte.DeckungUebernehmen(kaskade);
 
@@ -818,7 +828,8 @@ namespace WindowsFormsApplication1
                     finally { _ak3HeizzeitanteilEcht = false; }
                 }
                 double d = weg.KaelteDeltaKwh[h];
-                kaskade.StundeRechnen(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h], vK);
+                // K3: dieselbe Abzugsstelle je Stunde (SimulationKaeltebedarf.BedarfDerKaskade, Andockpunkt für K-D).
+                kaskade.StundeRechnen(h, kaelte.BedarfDerKaskade(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h]), vK);
                 // Festlegung 14: der Rest der echten Kältestunde ist die Abweichung zur Schätzung der Kälteschranke.
                 double rest = kaskade.Rest_stuendlich[h];
                 kreis?.KaelteRestZaehlen(rest);
@@ -919,6 +930,44 @@ namespace WindowsFormsApplication1
                     summeKwh += e.Strom_stuendlich[h];
                 }
             return reihe;
+        }
+
+        /// <summary>
+        /// <b>Der Strom der dezentralen (Split-)Deckung</b> (K3, Konzept Kältebedarf 4.2) — neben der Kaskade, aber an
+        /// derselben Stelle in die Stufenrechnung wie der Kältestrom der Kaskade: Jahressumme in <see cref="ReststromMwh"/>,
+        /// Viertelstundenverlauf in den Rest, die Reihe in <see cref="Kaeltestrom_Stufenrechnung_stuendlich"/> (Lastreihe des
+        /// Stromspeichers, Strombilanz). Gerufen nach der Kältekaskade und vor dem Abschluss der Kälteseite, auch ohne
+        /// Kälteerzeuger. Ohne dezentral gedeckte Zeile ein sofortiger Rücksprung — der Lauf bleibt Zeichen für Zeichen.
+        /// <para>Ein abweichender Kühlträger der Zeile wird benannt: Die Ergebniszeile kennt je Träger keine dezentrale Menge,
+        /// deshalb rechnet der Strom mit dem Stromträger des Projekts (offener Punkt, Konzept Kältebedarf 4.2).</para>
+        /// </summary>
+        private void DezentralenKaeltestromBuchen()
+        {
+            if (m_bError) return;
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
+            if (kaelte == null || !kaelte.Gerechnet || !kaelte.MitDezentral) return;
+
+            double[] reihe = (double[])kaelte.Strom_Dezentral.Clone();
+            double summeKwh = 0.0;
+            for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++) summeKwh += reihe[h];
+            Kaeltestrom_Dezentral_stuendlich = reihe;
+
+            if (Kaeltestrom_Stufenrechnung_stuendlich == null)
+                Kaeltestrom_Stufenrechnung_stuendlich = (double[])reihe.Clone();
+            else
+                for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++) Kaeltestrom_Stufenrechnung_stuendlich[h] += reihe[h];
+
+            ReststromMwh += summeKwh / 1000.0;
+            Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich,
+                                                            Stundenwerte_zu_viertelstunden(reihe));
+
+            int projekttraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt);
+            foreach (SimulationKaeltebedarf.DezentraleZeile z in kaelte.DezentraleZeilen)
+                if (Kaeltestromabrechnung.Abweichend(z.KuehlIdCarrier, projekttraeger))
+                    Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER, z.Bezeichner,
+                        (z.StromKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                        Emissionsquelle.TraegerName(z.KuehlIdCarrier.Value)));
         }
 
         // =====================================================================

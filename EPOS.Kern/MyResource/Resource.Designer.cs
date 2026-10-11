@@ -105965,6 +105965,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split): {0} Zeilen, {1} MWh/a, Spitze {2} kW, Strom {3} MWh/a, Jahres-EER {4}. Gedeckt neben der Kältefolge, ohne Kaltwasser und ohne Leistungsgrenze. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split): Der Jahres-EER {0} liegt unter {1}. Bitte die EER-Angaben der Split-Zeilen mit Gerätedaten prüfen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DEZENTRAL_EER_NIEDRIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DEZENTRAL_EER_NIEDRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) „{0}&quot;: Der Strom ({1} MWh/a) geht mit dem Stromträger des Projekts in Strombilanz und Abrechnung; eine gesonderte Abrechnung über den Kühlträger {2} ist für dezentrale Zeilen noch nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}&quot;) — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_HEIZEN_UND_KUEHLEN {
@@ -106181,6 +106208,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen&quot; aus). {0} Gebäude mit eingeschalteter Kühlung, {1} Lastgänge mit dem Kanal Kühlung und {2} Kältebedarfsprofile bleiben ohne Wirkung. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_PROJEKT_AUS_PROFILE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_PROJEKT_AUS_PROFILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ ist eine Verdunstungskühlanlage — Anzeige-, Prüf- und Betriebspflichten nach der 42. BImSchV beachten (nur Hinweis, EPOS prüft sie nicht). ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_RKW_BIMSCHV {
@@ -106303,6 +106339,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) ohne rechnenden EER: {0}. Der Strom der dezentralen Deckung lässt sich nicht bilden; der Lauf wird nicht gespeichert. Bitte EER-Weg, EER und Außentemperatur der Zeile pflegen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_SPLIT_OHNE_EER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_SPLIT_OHNE_EER", resourceCulture);
             }
         }
         
@@ -113093,6 +113138,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG {
             get {
                 return ResourceManager.GetString("SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf „{0}&quot; ist dezentral (Split) gedeckt, aber ohne gültigen EER ({1}) — der Lauf bricht ab. Bitte die Deckung der Zeile pflegen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTE_SPLIT_OHNE_EER {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTE_SPLIT_OHNE_EER", resourceCulture);
             }
         }
         

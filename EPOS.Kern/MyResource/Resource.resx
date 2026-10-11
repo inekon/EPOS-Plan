@@ -10848,6 +10848,24 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
   <data name="SIMENG_KAELTE_PROJEKT_AUS" xml:space="preserve">
     <value>Kühlung: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen" aus). {0} Gebäude mit eingeschalteter Kühlung und {1} Lastgänge mit dem Kanal Kühlung bleiben ohne Wirkung.</value>
   </data>
+  <data name="SIMENG_KAELTE_PROJEKT_AUS_PROFILE" xml:space="preserve">
+    <value>Kühlung: Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen" aus). {0} Gebäude mit eingeschalteter Kühlung, {1} Lastgänge mit dem Kanal Kühlung und {2} Kältebedarfsprofile bleiben ohne Wirkung.</value>
+  </data>
+  <data name="SIMENG_KAELTE_SPLIT_OHNE_EER" xml:space="preserve">
+    <value>Kältebedarf dezentral (Split) ohne rechnenden EER: {0}. Der Strom der dezentralen Deckung lässt sich nicht bilden; der Lauf wird nicht gespeichert. Bitte EER-Weg, EER und Außentemperatur der Zeile pflegen.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Kältebedarf dezentral (Split): {0} Zeilen, {1} MWh/a, Spitze {2} kW, Strom {3} MWh/a, Jahres-EER {4}. Gedeckt neben der Kältefolge, ohne Kaltwasser und ohne Leistungsgrenze.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DEZENTRAL_EER_NIEDRIG" xml:space="preserve">
+    <value>Kältebedarf dezentral (Split): Der Jahres-EER {0} liegt unter {1}. Bitte die EER-Angaben der Split-Zeilen mit Gerätedaten prüfen.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER" xml:space="preserve">
+    <value>Kältebedarf dezentral (Split) „{0}": Der Strom ({1} MWh/a) geht mit dem Stromträger des Projekts in Strombilanz und Abrechnung; eine gesonderte Abrechnung über den Kühlträger {2} ist für dezentrale Zeilen noch nicht verfügbar.</value>
+  </data>
+  <data name="SIMWARN_KAELTE_SPLIT_OHNE_EER" xml:space="preserve">
+    <value>Kältebedarf „{0}" ist dezentral (Split) gedeckt, aber ohne gültigen EER ({1}) — der Lauf bricht ab. Bitte die Deckung der Zeile pflegen.</value>
+  </data>
   <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
     <value>Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}") — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet.</value>
   </data>
