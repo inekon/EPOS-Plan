@@ -75,6 +75,14 @@ namespace WindowsFormsApplication1
 
         private const int STUNDEN = 8760;
 
+        /// <summary>
+        /// <b>Interner Schalter SA1b für die Sollwertrampe</b>: <c>true</c> bildet nach dem Setzen der Rampe die Vorlaufreihe der
+        /// Heizkurve am Sollwert mit Rampe neu (<see cref="GebaeudeModellEingang.VorlaufNachSollwertBilden"/>), wie es die neuen
+        /// Verfahren immer tun. Vorgabe <c>false</c> = Bestand (Basis R52): Die Kurve fährt in den Rampenstunden am Sollwert ohne
+        /// Rampe. Kein Datenfeld; nur Messung und Tests setzen ihn, bis der Anwender über die Rampe entscheidet.
+        /// </summary>
+        internal static bool RampeVorlaufNachfuehren;
+
         // =====================================================================
         //  Einstieg des Laufs
         // =====================================================================
@@ -91,6 +99,7 @@ namespace WindowsFormsApplication1
             if (zone == null) throw new ArgumentNullException(nameof(zone));
             Aufheizplan plan = Planen(Aufheizzone.Aus(zone), vorgabe, aufheizleistungTestW);
             PlanSetzen(zone, plan);
+            if (RampeVorlaufNachfuehren) GebaeudeModellEingang.VorlaufNachSollwertBilden(new[] { zone });
             return plan;
         }
 
@@ -106,6 +115,9 @@ namespace WindowsFormsApplication1
             if (plan == null) throw new ArgumentNullException(nameof(plan));
             if (plan.Geaendert) zone.Eingang.HeizsollwertMitRampeSetzen(plan.Reihe);
             if (plan.Deckelreihe != null) zone.Eingang.HeizleistungMaxReiheSetzen(plan.Deckelreihe);
+            // SA1 (E128): die Schnellaufheizung reist wie Sollwert- und Deckelreihe in den Eingang; ohne Schalter kein Aufruf.
+            if (plan.Vorheizen?.UeberhoehungReiheK != null)
+                zone.Eingang.UeberhoehungSetzen(plan.Vorheizen.UeberhoehungReiheK, plan.Vorheizen.UeberhoehungAnkunftC);
             zone.AufheizplanSetzen(plan);
         }
 
@@ -124,6 +136,7 @@ namespace WindowsFormsApplication1
             var plaene = new Aufheizplan[eingaenge.Length];
             for (int i = 0; i < eingaenge.Length; i++) plaene[i] = Planen(eingaenge[i], vorgabe, aufheizleistungTestW);
             for (int i = 0; i < plaene.Length; i++) PlanSetzen(zonen[i], plaene[i]);
+            if (RampeVorlaufNachfuehren) GebaeudeModellEingang.VorlaufNachSollwertBilden(zonen);
             return plaene;
         }
 

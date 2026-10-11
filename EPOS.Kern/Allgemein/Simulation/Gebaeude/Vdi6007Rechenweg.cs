@@ -731,6 +731,21 @@ namespace WindowsFormsApplication1
                     p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE,
                         v.TageOhneAnkunftAnzahl.ToString(k), v.UnterschreitungMaxK.ToString("0.0", k)));
             }
+            // SA1 (E128): die Schnellaufheizung — Kennzahlen, wirkungslos an der Vorlaufgrenze, in der Sperrzeit, ohne Heizkreis.
+            if (v.UeberhoehungK > 0.0)
+                p.HinweisEinmal("vorh-schnell-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_SCHNELL,
+                    v.UeberhoehungK.ToString("0.#", k), v.UeberhoehungStundenH.ToString(k),
+                    double.IsNaN(v.UeberhoehungVorlaufMaxC) ? "–" : v.UeberhoehungVorlaufMaxC.ToString("0.0", k),
+                    v.UeberhoehungBegrenztH.ToString(k)));
+            if (v.UeberhoehungWirkungslosH > 0)
+                p.HinweisEinmal("vorh-schnell-grenze-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_SCHNELL_GRENZE,
+                    v.UeberhoehungWirkungslosH.ToString(k)));
+            if (v.UeberhoehungGesperrtH > 0)
+                p.HinweisEinmal("vorh-schnell-sperrzeit-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_SCHNELL_SPERRZEIT,
+                    v.UeberhoehungGesperrtH.ToString(k)));
+            if (v.ZonenUeberhoehungOhneHeizkreis > 0)
+                p.HinweisEinmal("vorh-schnell-ohne-heizkreis-" + wer, kopf + string.Format(k,
+                    MyResource.Resource.SIMENG_VORH_SCHNELL_OHNE_HEIZKREIS, v.ZonenUeberhoehungOhneHeizkreis.ToString(k)));
             if (v.TageUnerreichbar > 0)
                 p.HinweisEinmal("vorh-unerreichbar-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_UNERREICHBAR,
                     v.TageUnerreichbar.ToString(k)));

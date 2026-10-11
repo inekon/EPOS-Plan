@@ -116,6 +116,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die gesperrten Fensterstunden des Jahres (F20).</summary>
         internal int FensterstundenGesperrt { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Stunden, in denen die Überhöhung den Vorlauf angehoben hat.</summary>
+        internal int UeberhoehungStundenH { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): der höchste Vorlauf in diesen Stunden [°C]; NaN ohne.</summary>
+        internal double UeberhoehungVorlaufMaxC { get; init; } = double.NaN;
+
+        /// <summary>Schnellaufheizung (SA1): Stunden, in denen die Vorlaufgrenze der Anlage die Überhöhung begrenzt hat.</summary>
+        internal int UeberhoehungBegrenztH { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Stunden mit wirkungsloser Überhöhung (Vorlauf schon an der Vorlaufgrenze).</summary>
+        internal int UeberhoehungWirkungslosH { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Fensterstunden mit Überhöhung in einer Sperrzeit (ohne verfügbare Wärme).</summary>
+        internal int UeberhoehungGesperrtH { get; init; }
     }
 
     /// <summary>
@@ -202,6 +217,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Nachweis des Laufs; <c>null</c> vor dem Lauf.</summary>
         internal Vorheiznachweis Nachweis { get; set; }
+
+        /// <summary>Schnellaufheizung (SA1): die Überhöhung Δθ [K] dieser Zone; 0 = aus oder ohne Wirkung (kein Heizkreis).</summary>
+        internal double UeberhoehungK { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Schalter an, aber die Zone hat keinen wirksamen Heizkreis mit Heizkurve.</summary>
+        internal bool UeberhoehungOhneHeizkreis { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Δθ je Stunde in den Fensterstunden, sonst NaN; <c>null</c> = keine.</summary>
+        internal double[] UeberhoehungReiheK { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): der Ankunftsbezug je Fensterstunde [°C]; NaN außerhalb.</summary>
+        internal double[] UeberhoehungAnkunftC { get; init; }
     }
 
     /// <summary>Die Gebäudewerte des Vorheizens (Muster <see cref="Aufheizoptimierung.Gebaeudewerte"/>).</summary>
@@ -307,6 +334,27 @@ namespace WindowsFormsApplication1
         /// <summary>Die Zahl der Vorausschauen aller Zonen (Rechenzeit, 2.4).</summary>
         internal int Vorausschauen { get; init; }
 
+        /// <summary>Schnellaufheizung (SA1): die größte Überhöhung der Zonen [K]; 0 = keine wirksame.</summary>
+        internal double UeberhoehungK { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Stunden mit Überhöhung (Summe der Zonen).</summary>
+        internal int UeberhoehungStundenH { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): der höchste Vorlauf in der Überhöhung [°C]; NaN ohne.</summary>
+        internal double UeberhoehungVorlaufMaxC { get; init; } = double.NaN;
+
+        /// <summary>Schnellaufheizung (SA1): Stunden, in denen die Vorlaufgrenze der Anlage die Überhöhung begrenzt hat.</summary>
+        internal int UeberhoehungBegrenztH { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Stunden mit wirkungsloser Überhöhung (Vorlauf schon an der Vorlaufgrenze).</summary>
+        internal int UeberhoehungWirkungslosH { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Fensterstunden mit Überhöhung in einer Sperrzeit.</summary>
+        internal int UeberhoehungGesperrtH { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Zonen mit Schalter, aber ohne wirksamen Heizkreis mit Heizkurve.</summary>
+        internal int ZonenUeberhoehungOhneHeizkreis { get; init; }
+
         /// <summary>Dieselben Werte mit Leistungen und Energien × <paramref name="faktor"/> (Muster <c>GebaeudeModellErgebnis.Skaliert</c>).</summary>
         internal Vorheizgebaeude Skaliert(double faktor) => this with
         {
@@ -379,8 +427,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Vorausschau der Zone mit P_V, P_K und ε dieser Analyse.</summary>
         internal void VorausschauBilden(ZonenEingang zone, IReadOnlyList<GebaeudeModellErgebnis> alle, double genauigkeitK,
-                                        Vorheizankunftsbezug bezug = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE)
-            => Vorausschau = new Vorheizvorausschau(zone, Zone.Soll, Vorlauf, alle, VorheizleistungW, DeckelW, genauigkeitK, bezug);
+                                        Vorheizankunftsbezug bezug = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE, double ueberhoehungK = 0.0)
+            => Vorausschau = new Vorheizvorausschau(zone, Zone.Soll, Vorlauf, alle, VorheizleistungW, DeckelW, genauigkeitK, bezug,
+                                                    ueberhoehungK);
 
         /// <summary>Das 95-%-Quantil des Bedarfs über die erreichbaren Sprünge [h] (F19, <see cref="Vorheizplanung.Quantil"/>;
         /// 0 ohne erreichbaren Sprung).</summary>
@@ -560,11 +609,14 @@ namespace WindowsFormsApplication1
             else
             {
                 Vorheizanalyse a = Analysieren(az, vorgabe, vorlauf, aufheizleistungTestW);
-                a.VorausschauBilden(zone, null, vorgabe.Vorheizen.GenauigkeitWirksamK, vorgabe.Vorheizen.Ankunftsbezug);
+                a.VorausschauBilden(zone, null, vorgabe.Vorheizen.GenauigkeitWirksamK, vorgabe.Vorheizen.Ankunftsbezug,
+                                    UeberhoehungFuer(vorgabe));
                 if (IstBerechnet(vorgabe)) a.BedarfBestimmen();
                 plan = PlanBilden(a, vorgabe, Vorheizzeit(a, vorgabe));
             }
             Aufheizoptimierung.PlanSetzen(zone, plan);
+            // SA1b: Die Heizkurve folgt im Vorheizfenster dem Sollwert der Stunde (θ_T), nicht dem abgesenkten des Bauers.
+            GebaeudeModellEingang.VorlaufNachSollwertBilden(new[] { zone });
             return plan;
         }
 
@@ -613,7 +665,7 @@ namespace WindowsFormsApplication1
             if (vorgabe.Vorheizen.Geltung == Vorheizgeltung.Gebaeude) GebaeudedeckelVerteilen(analysen, vorgabe.Vorheizen);
             for (int i = 0; i < analysen.Length; i++)
                 analysen[i]?.VorausschauBilden(zonen[i], vorlauf, vorgabe.Vorheizen.GenauigkeitWirksamK,
-                                               vorgabe.Vorheizen.Ankunftsbezug);
+                                               vorgabe.Vorheizen.Ankunftsbezug, UeberhoehungFuer(vorgabe));
 
             var tV = new int[analysen.Length];
             if (IstBerechnet(vorgabe))
@@ -635,6 +687,8 @@ namespace WindowsFormsApplication1
                         ? Unbeheizt(eingaenge[i])
                         : PlanBilden(analysen[i], vorgabe, gemeinsam ? tVGebaeude : tV[i]);
             for (int i = 0; i < plaene.Length; i++) Aufheizoptimierung.PlanSetzen(zonen[i], plaene[i]);
+            // SA1b: der gemeinsame Vorlauf am höchsten Sollwert der Stunde — im Vorheizfenster θ_T —, erst nach allen Plänen.
+            GebaeudeModellEingang.VorlaufNachSollwertBilden(zonen);
             return plaene;
         }
 
@@ -751,6 +805,10 @@ namespace WindowsFormsApplication1
 
         private static bool MitHeizlast(Vorheizanalyse a) => Endlich(a.Zone.AuslegungsheizlastW) && a.Zone.AuslegungsheizlastW > 0.0;
 
+        /// <summary>Die Überhöhung Δθ [K] der Schnellaufheizung für Vorausschau und Plan; 0 = aus (SA1).</summary>
+        internal static double UeberhoehungFuer(Aufheizvorgabe vorgabe)
+            => vorgabe?.Vorheizen != null && vorgabe.Vorheizen.SchnellaufheizungWirksam ? vorgabe.Vorheizen.UeberhoehungWirksamK : 0.0;
+
         private static bool IstBerechnet(Aufheizvorgabe vorgabe) => vorgabe.Vorheizen.Verfahren == Aufheizverfahren.Berechnet;
 
         /// <summary>
@@ -809,6 +867,12 @@ namespace WindowsFormsApplication1
             var liste = new List<Vorheizsprung>();
             var aufheizspruenge = new List<Aufheizsprung>();
             int naechte = 0, stunden = 0, laengste = 0, kuerzesteD = int.MaxValue, unerreichbar = 0, ueber = 0;
+            // SA1 (E128): Schnellaufheizung — Δθ und Ankunftsbezug je Fensterstunde, nur an einer Zone mit wirksamem Heizkreis.
+            bool schnell = vv.SchnellaufheizungWirksam;
+            bool schnellWirkt = schnell && a.Vorausschau != null && a.Vorausschau.UeberhoehungMoeglich;
+            double dTheta = schnellWirkt ? vv.UeberhoehungWirksamK : 0.0;
+            double[] ueberK = schnellWirkt ? Enumerable.Repeat(double.NaN, STUNDEN).ToArray() : null;
+            double[] ueberAnkunft = schnellWirkt ? Enumerable.Repeat(double.NaN, STUNDEN).ToArray() : null;
             for (int i = 0; i < spruenge.Count; i++)
             {
                 (int hs, int d) = spruenge[i];
@@ -850,6 +914,16 @@ namespace WindowsFormsApplication1
                     deckel[h] = Groesser(deckel[h], Math.Max(pK, phiRef));
                     if (h == ende) break;
                     h = Ring(h + 1);
+                }
+                if (schnellWirkt && fenster > 0)
+                {
+                    double ankunft = a.Vorausschau.AnkunftsschwelleC(hs, a.PhiRefSprung[i]);
+                    for (int k = 1; k <= fenster; k++)
+                    {
+                        int h = Ring(hs - k);
+                        ueberK[h] = dTheta;
+                        ueberAnkunft[h] = ankunft;
+                    }
                 }
                 if (fenster > 0)
                 {
@@ -904,6 +978,10 @@ namespace WindowsFormsApplication1
                 VorlaufHeizlastW = a.Vorlauf.HeizlastW,
                 VorlaufMassenAw = a.Vorlauf.MassenEndeAw,
                 VorlaufMassenIw = a.Vorlauf.MassenEndeIw,
+                UeberhoehungK = dTheta,
+                UeberhoehungOhneHeizkreis = schnell && !schnellWirkt,
+                UeberhoehungReiheK = ueberK,
+                UeberhoehungAnkunftC = ueberAnkunft,
             };
             return new Aufheizplan
             {
@@ -1085,10 +1163,36 @@ namespace WindowsFormsApplication1
                                                    last[hs] - sp.PhiRefW, deckelH, bedarf, unerreichbar, abweichung));
             }
 
+            // SA1 (E128): die Stunden der Schnellaufheizung — angehoben, an der Vorlaufgrenze, wirkungslos, in einer Sperrzeit.
+            int ueberH = 0, ueberBegrenzt = 0, ueberWirkungslos = 0, ueberGesperrt = 0;
+            double ueberVorlaufMax = double.NaN;
+            if (vp.UeberhoehungReiheK != null)
+            {
+                double[] vorlaufLauf = lauf.Heizkreis?.VorlaufC;
+                for (int h = 0; h < STUNDEN; h++)
+                {
+                    if (!(vp.UeberhoehungReiheK[h] > 0.0)) continue;
+                    if (lauf.UeberhoehtStunden != null && lauf.UeberhoehtStunden[h])
+                    {
+                        ueberH++;
+                        double v = vorlaufLauf == null ? double.NaN : vorlaufLauf[h];
+                        if (!double.IsNaN(v) && (double.IsNaN(ueberVorlaufMax) || v > ueberVorlaufMax)) ueberVorlaufMax = v;
+                    }
+                    if (lauf.UeberhoehungBegrenztStunden != null && lauf.UeberhoehungBegrenztStunden[h]) ueberBegrenzt++;
+                    if (lauf.UeberhoehungWirkungslosStunden != null && lauf.UeberhoehungWirkungslosStunden[h]) ueberWirkungslos++;
+                    if (e.FahrplanWirksam && FensterstundeGesperrt(e, h)) ueberGesperrt++;
+                }
+            }
+
             double spitze = 0.0;
             for (int h = 0; h < STUNDEN; h++) if (last[h] > spitze) spitze = last[h];
             var nachweis = new Vorheiznachweis
             {
+                UeberhoehungStundenH = ueberH,
+                UeberhoehungVorlaufMaxC = ueberVorlaufMax,
+                UeberhoehungBegrenztH = ueberBegrenzt,
+                UeberhoehungWirkungslosH = ueberWirkungslos,
+                UeberhoehungGesperrtH = ueberGesperrt,
                 Pruefungen = pruefungen,
                 TageOhneAnkunft = tage,
                 UnterschreitungMaxK = unterMax,
@@ -1221,6 +1325,14 @@ namespace WindowsFormsApplication1
                 FensterstundenGesperrt = mit.Sum(v => v.Nachweis?.FensterstundenGesperrt ?? 0),
                 ZonenOhneAuslegungsheizlast = mit.Count(v => v.OhneAuslegungsheizlast),
                 Vorausschauen = mit.Sum(v => v.Vorausschau?.Vorausschauen ?? 0),
+                UeberhoehungK = mit.Max(v => v.UeberhoehungK),
+                UeberhoehungStundenH = mit.Sum(v => v.Nachweis?.UeberhoehungStundenH ?? 0),
+                UeberhoehungVorlaufMaxC = mit.Select(v => v.Nachweis?.UeberhoehungVorlaufMaxC ?? double.NaN)
+                                             .Where(x => !double.IsNaN(x)).DefaultIfEmpty(double.NaN).Max(),
+                UeberhoehungBegrenztH = mit.Sum(v => v.Nachweis?.UeberhoehungBegrenztH ?? 0),
+                UeberhoehungWirkungslosH = mit.Sum(v => v.Nachweis?.UeberhoehungWirkungslosH ?? 0),
+                UeberhoehungGesperrtH = mit.Sum(v => v.Nachweis?.UeberhoehungGesperrtH ?? 0),
+                ZonenUeberhoehungOhneHeizkreis = mit.Count(v => v.UeberhoehungOhneHeizkreis),
             };
         }
 

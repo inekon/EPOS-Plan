@@ -501,6 +501,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Vorlauf der Kurve [°C] OHNE den Deckel des Auslegungsvorlaufs — die Schnellaufheizung (SA1) rechnet mit θ_T + Δθ
+        /// und lässt den Vorlauf bis zum Vorlaufangebot der Anlage (<c>Vorlauf_Max</c>) steigen; NaN jenseits der Heizgrenze.
+        /// </summary>
+        internal double VorlaufUngedeckeltC(double sollC, double aussenC)
+        {
+            double phi = Relativlast(sollC, aussenC);
+            if (!(phi > 0.0)) return double.NaN;
+            return sollC + NiveauK + Steilheit * (Math.Pow(phi, 1.0 / _k.Exponent) * _k.DeltaThetaMNK + phi * _k.SpreizungNK / 2.0);
+        }
+
+        /// <summary>
         /// Die Sollkurve des Rücklaufs [°C] — NICHT der gerechnete Rücklauf, der aus der
         /// tatsächlichen Übergabe entsteht (3.2); beide fallen am Auslegungspunkt zusammen.
         /// </summary>

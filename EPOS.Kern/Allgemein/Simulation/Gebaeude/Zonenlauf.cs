@@ -50,6 +50,9 @@ namespace WindowsFormsApplication1
         private readonly bool[] _fahrplan;                  // AK2: Stunden an der Schranke der Verfügbarkeit, nur mit Fahrplan
         private readonly Innenumkehrzaehler _messung;      // Messung RP2a, nur mit Schalter
         private int _gedeckelt;                             // RP2a: Stunden über der Obergrenze der Innenprüfung
+        // SA1: Stunden mit Überhöhung der Schnellaufheizung (wirksam, an der Vorlaufgrenze, wirkungslos) — erst angelegt, wenn
+        // eine Stunde sie trägt; danach je Stunde geschrieben (auch false, damit ein wiederholter Tag im Kreis sauber bleibt).
+        private bool[] _ueberhoeht, _ueberBegrenzt, _ueberWirkungslos;
         private readonly double[] _massenAw, _massenIw;    // Welle V2: Massen am Stundenende, nur mit ZonenEingang.MassenErfassen
 
         internal Zonenlauf(ZonenEingang zone)
@@ -156,6 +159,9 @@ namespace WindowsFormsApplication1
             }
             _messung?.Aufnehmen(in s);
             if (s.InnenpruefungGedeckelt) _gedeckelt++;
+            Merken(ref _ueberhoeht, h, s.Ueberhoeht);
+            Merken(ref _ueberBegrenzt, h, s.UeberhoehungBegrenzt);
+            Merken(ref _ueberWirkungslos, h, s.UeberhoehungWirkungslos);
 
             if (!Endlich(_heiz[h]) || _heiz[h] < 0.0 || !Endlich(_kuehl[h]) || _kuehl[h] < 0.0
                 || !Endlich(_luft[h]) || !Endlich(_op[h]))
@@ -259,7 +265,20 @@ namespace WindowsFormsApplication1
                 Kuehlsollwertreihe = eingang.KuehlungWirksam ? (double[])eingang.ThetaMax.Clone() : null,
                 MassenEndeAw = _massenAw,
                 MassenEndeIw = _massenIw,
+                UeberhoehtStunden = _ueberhoeht,
+                UeberhoehungBegrenztStunden = _ueberBegrenzt,
+                UeberhoehungWirkungslosStunden = _ueberWirkungslos,
             };
+        }
+
+        private static void Merken(ref bool[] reihe, int h, bool wert)
+        {
+            if (reihe == null)
+            {
+                if (!wert) return;
+                reihe = new bool[8760];
+            }
+            reihe[h] = wert;
         }
 
         /// <summary>
