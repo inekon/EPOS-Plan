@@ -322,7 +322,7 @@ Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen ne
 |-
 | Kostenvorlagen je Komponente || <code>Form_KostenKomponente.btn_Help</code> || [[Programm Dokumentation/Kosten#komponentenliste|Kosten]]
 |-
-| Kostenprofil eines Energieträgers || <code>Form_Kostenprofil.btn_Help</code> || [[Programm Dokumentation/Kosten|Kosten]]
+| Kostenprofil eines Energieträgers || <code>Form_Kostenprofil.btn_Help</code> || [[Programm Dokumentation/Kosten#kostenprofil|Kosten]]
 |-
 | Dialog ''Nutzungsdauern'' || <code>Form_Nutzungsdauer.btn_Help</code> || [[Programm Dokumentation/Kosten#nutzungsdauern|Kosten]]
 |-
