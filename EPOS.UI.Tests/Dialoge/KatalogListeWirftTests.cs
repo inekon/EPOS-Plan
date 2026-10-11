@@ -156,6 +156,22 @@ public class KatalogListeWirftTests : EposBunitContext
         => BannerMitGrund(Render<SolarkollektorenDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
 
     [Fact]
+    public void Solarganglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<PvGanglinieDialog>(b => b
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
+
+    [Fact]
+    public void Solarganglinie_im_Katalogbetrieb_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogbetrieb, true)
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
+
+    [Fact]
     public void KatalogBrowser_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
         => BannerMitGrund(Render<KatalogBrowserDialog>(b => b
             .Add(x => x.Art, KatalogBrowserArt.Heizkessel)
