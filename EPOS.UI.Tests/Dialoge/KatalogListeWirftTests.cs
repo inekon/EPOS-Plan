@@ -136,6 +136,10 @@ public class KatalogListeWirftTests : EposBunitContext
         => OhneBanner(Render<WaermepumpeStammDialog>(b => b.Add(x => x.Liste, Eine)));
 
     [Fact]
+    public void Kaeltemaschinenanlage_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<KaeltemaschineAnlageDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
+
+    [Fact]
     public void Bhkw_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
         => BannerMitGrund(Render<BhkwDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
 

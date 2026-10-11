@@ -153,6 +153,17 @@ public class KatalogSatzWirftTests : EposBunitContext
     }
 
     [Fact]
+    public void Kaeltemaschinenanlage_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<KaeltemaschineAnlageDialog>(b => b
+            .Add(x => x.Katalogprofil, Profil(Anlagenart.Kaeltemaschine))
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Katalogwerte, _ => Wirft<KaeltemaschineGeraetwerte?>()));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
     public void Bhkw_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
     {
         var cut = Render<BhkwDialog>(b => b
