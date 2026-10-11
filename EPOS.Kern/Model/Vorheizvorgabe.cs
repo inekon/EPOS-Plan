@@ -131,6 +131,48 @@ namespace WindowsFormsApplication1
         /// <summary>Der Ankunftsbezug eines Gebäudes mit Heizkreis (interne Wahl für Tests und Messung; Vorgabe F17 (b)).</summary>
         internal Vorheizankunftsbezug Ankunftsbezug { get; init; } = ANKUNFTSBEZUG_VORGABE;
 
+        /// <summary>
+        /// <b>Die Vorgabe der Raumsollwert-Überhöhung</b> Δθ [K] der Schnellaufheizung (SA1, E128) — gesetzt nach der Messung an
+        /// 1054, 1047 und 1058 (Protokoll SA1): die kürzeste Vorheizzeit, die die Nachtabsenkung an den Werktagen erhält, ohne
+        /// die Heizwärme und den Strom der Wärmepumpe merklich zu heben.
+        /// </summary>
+        public const double UEBERHOEHUNG_VORGABE_K = 3.0;
+
+        /// <summary>Die größte zulässige Überhöhung [K] (Bereich &gt; 0 … 10 K).</summary>
+        public const double UEBERHOEHUNG_MAX_K = 10.0;
+
+        /// <summary>
+        /// <b>Schnellaufheizung</b> (SA1, E128, Art (b)): Im Vorheizfenster rechnet die Heizkurve einer Zone mit wirksamem
+        /// Heizkreis mit dem Sollwert θ_T + Δθ, bis die Raumluft den Ankunftsbezug erreicht. Vorgabe aus; wirkt nur mit den
+        /// Verfahren „Vorheizzeit vorgeben“ und „Vorheizzeit berechnet“ (<see cref="SchnellaufheizungWirksam"/>). Bis zum
+        /// Datenweg (SA2) setzen Tests und Messung das Kernobjekt.
+        /// </summary>
+        public bool Schnellaufheizung { get; init; }
+
+        /// <summary>
+        /// Die Überhöhung Δθ [K] der Schnellaufheizung; leer = <see cref="UEBERHOEHUNG_VORGABE_K"/>. Bereich &gt; 0 … 10 K.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">außerhalb des Bereichs.</exception>
+        public double? UeberhoehungK
+        {
+            get => _ueberhoehungK;
+            init
+            {
+                double? w = Zahl(value);
+                if (w.HasValue && (!(w.Value > 0.0) || w.Value > UEBERHOEHUNG_MAX_K))
+                    throw new ArgumentOutOfRangeException(nameof(UeberhoehungK), "Die Überhöhung liegt über 0 und höchstens bei 10 K.");
+                _ueberhoehungK = w;
+            }
+        }
+
+        private readonly double? _ueberhoehungK;
+
+        /// <summary>Die wirksame Überhöhung [K]: der Wert oder die Vorgabe.</summary>
+        public double UeberhoehungWirksamK => _ueberhoehungK ?? UEBERHOEHUNG_VORGABE_K;
+
+        /// <summary>Wirkt die Schnellaufheizung — Schalter an und eines der beiden neuen Verfahren?</summary>
+        public bool SchnellaufheizungWirksam => Schnellaufheizung && Verfahren != Aufheizverfahren.Sollwertrampe;
+
         /// <summary>Rechnet die Einstellung Option 1 (Vorheizzeit vorgeben)?</summary>
         public bool IstVorgabe => Verfahren == Aufheizverfahren.Vorgabe;
 
@@ -181,9 +223,18 @@ namespace WindowsFormsApplication1
         public Vorheizvorgabe MitHeizkreis(bool einbeziehen)
             => Neu(Verfahren, VorheizzeitH, Toleranzart, ToleranzWert, GenauigkeitK, Geltung, einbeziehen);
 
+        /// <summary>Dieselbe Vorgabe mit Schalter und Überhöhung der Schnellaufheizung (SA1); leer = die Vorgabe des Kerns.</summary>
+        public Vorheizvorgabe MitSchnellaufheizung(bool an, double? ueberhoehungK = null)
+            => this with { Schnellaufheizung = an, UeberhoehungK = ueberhoehungK };
+
         private Vorheizvorgabe Neu(Aufheizverfahren verfahren, int? vorheizzeitH, Vorheiztoleranzart art, double? wert,
                                    double? genauigkeitK, Vorheizgeltung geltung, bool heizkreis)
-            => new Vorheizvorgabe(verfahren, vorheizzeitH, art, wert, genauigkeitK, geltung, heizkreis) { Ankunftsbezug = Ankunftsbezug };
+            => new Vorheizvorgabe(verfahren, vorheizzeitH, art, wert, genauigkeitK, geltung, heizkreis)
+               {
+                   Ankunftsbezug = Ankunftsbezug,
+                   Schnellaufheizung = Schnellaufheizung,
+                   UeberhoehungK = UeberhoehungK,
+               };
 
         private static double? Zahl(double? wert)
             => wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value) ? wert : null;

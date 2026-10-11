@@ -106,6 +106,9 @@ namespace WindowsFormsApplication1
             if (plan == null) throw new ArgumentNullException(nameof(plan));
             if (plan.Geaendert) zone.Eingang.HeizsollwertMitRampeSetzen(plan.Reihe);
             if (plan.Deckelreihe != null) zone.Eingang.HeizleistungMaxReiheSetzen(plan.Deckelreihe);
+            // SA1 (E128): die Schnellaufheizung reist wie Sollwert- und Deckelreihe in den Eingang; ohne Schalter kein Aufruf.
+            if (plan.Vorheizen?.UeberhoehungReiheK != null)
+                zone.Eingang.UeberhoehungSetzen(plan.Vorheizen.UeberhoehungReiheK, plan.Vorheizen.UeberhoehungAnkunftC);
             zone.AufheizplanSetzen(plan);
         }
 

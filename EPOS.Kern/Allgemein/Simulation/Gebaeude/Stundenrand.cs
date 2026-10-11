@@ -85,6 +85,9 @@ namespace WindowsFormsApplication1
             Kaelteverfuegbarkeitsgrund = Verfuegbarkeitsgrund.KeineBegrenzung;
             KaelteverfuegbarkeitIstGrenze = false;
             KuehlVorlaufAngebotC = double.NaN;
+            VorlaufAngebotC = double.NaN;
+            UeberhoehungVorlaufRohC = double.NaN;
+            UeberhoehungAnkunftC = double.NaN;
         }
 
         /// <summary>
@@ -166,8 +169,78 @@ namespace WindowsFormsApplication1
                 VerfuegbarkeitIstGrenze = istGrenze,
                 VorlaufC = gekappt ? vorlaufAngebotC : VorlaufC,
                 VorlaufAnlageGekappt = gekappt,
+                VorlaufAngebotC = vorlaufAngebotC,
             };
         }
+
+        /// <summary>
+        /// Das Vorlaufangebot der Anlage dieser Stunde [°C] (<c>Vorlauf_Max</c> der verfügbaren Erzeuger bzw. des Kreises), wie es
+        /// <see cref="MitVerfuegbarkeit"/> mitgebracht hat; NaN = keins. Gelesen nur von der Schnellaufheizung als obere Grenze
+        /// des überhöhten Vorlaufs.
+        /// </summary>
+        internal double VorlaufAngebotC { get; private init; }
+
+        // =====================================================================
+        //  Schnellaufheizung (SA1, E128): Raumsollwert-Überhöhung der Heizkurve im Vorheizfenster
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Rand einer Fensterstunde mit Schnellaufheizung</b>: <paramref name="vorlaufRohC"/> [°C] ist der Vorlauf der
+        /// Heizkurve bei θ_T + Δθ ohne den Deckel des Auslegungsvorlaufs, <paramref name="ankunftC"/> [°C] der Ankunftsbezug
+        /// min(θ_T, θ_stat) − ε des Sprungs. Ob die Überhöhung in der Stunde wirkt, entscheidet erst der Löser am Zustand der
+        /// Massen (<see cref="UeberhoehungAnwenden"/>). Ohne Übergabe, ohne Vorlauf oder ohne Kurvenwert derselbe Rand.
+        /// </summary>
+        internal Stundenrand MitUeberhoehung(double vorlaufRohC, double ankunftC)
+        {
+            if (!MitUebergabe || double.IsNaN(VorlaufC) || double.IsNaN(vorlaufRohC) || double.IsNaN(ankunftC)) return this;
+            return this with { HatUeberhoehung = true, UeberhoehungVorlaufRohC = vorlaufRohC, UeberhoehungAnkunftC = ankunftC };
+        }
+
+        /// <summary>
+        /// <b>Die Überhöhung wirkt</b> (vom Löser gerufen, wenn die Raumluft am Beginn der Stunde den Ankunftsbezug noch nicht
+        /// erreicht hat): der Vorlauf der Übergabe steigt auf den überhöhten Kurvenwert, oben begrenzt am Vorlaufangebot der
+        /// Anlage (<c>Vorlauf_Max</c>; ohne Angebot am Auslegungsvorlauf), nie unter den bisherigen Vorlauf. Steht der Vorlauf
+        /// schon an der Grenze, bleibt die Überhöhung wirkungslos (<see cref="UeberhoehungWirkungslos"/>).
+        /// </summary>
+        internal Stundenrand UeberhoehungAnwenden()
+        {
+            if (!HatUeberhoehung) return this;
+            bool angebot = !double.IsNaN(VorlaufAngebotC);
+            double oben = angebot ? VorlaufAngebotC : Uebergabe.AuslegungVorlaufC;
+            bool begrenzt = UeberhoehungVorlaufRohC > oben;
+            double ziel = begrenzt ? oben : UeberhoehungVorlaufRohC;
+            if (!(ziel > VorlaufC))
+                return this with { HatUeberhoehung = false, UeberhoehungBegrenzt = begrenzt, UeberhoehungWirkungslos = true };
+            return this with
+            {
+                HatUeberhoehung = false,
+                VorlaufC = ziel,
+                VorlaufAnlageGekappt = begrenzt && angebot,
+                UeberhoehungWirksam = true,
+                UeberhoehungBegrenzt = begrenzt,
+            };
+        }
+
+        /// <summary>Derselbe Rand ohne Überhöhung (die Raumluft ist angekommen) — Zeichen für Zeichen der Rand vor ihr.</summary>
+        internal Stundenrand OhneUeberhoehung() => HatUeberhoehung ? this with { HatUeberhoehung = false } : this;
+
+        /// <summary>Trägt der Rand eine noch nicht entschiedene Überhöhung (<see cref="MitUeberhoehung"/>)?</summary>
+        internal bool HatUeberhoehung { get; private init; }
+
+        /// <summary>Der überhöhte Kurvenvorlauf ohne Deckel [°C]; NaN ohne Überhöhung.</summary>
+        internal double UeberhoehungVorlaufRohC { get; private init; }
+
+        /// <summary>Der Ankunftsbezug der Überhöhung [°C]: erreicht die Raumluft ihn, endet sie.</summary>
+        internal double UeberhoehungAnkunftC { get; private init; }
+
+        /// <summary>Hat die Überhöhung den Vorlauf dieser Stunde angehoben?</summary>
+        internal bool UeberhoehungWirksam { get; private init; }
+
+        /// <summary>Hat die Vorlaufgrenze der Anlage die Überhöhung dieser Stunde begrenzt?</summary>
+        internal bool UeberhoehungBegrenzt { get; private init; }
+
+        /// <summary>War die Überhöhung verlangt, aber wirkungslos, weil der Vorlauf schon an der Grenze stand?</summary>
+        internal bool UeberhoehungWirkungslos { get; private init; }
 
         /// <summary>
         /// <b>Der Raumeinfluss der Heizkurve (AK3, H2; Entwurf AK3 Festlegung 23)</b>: derselbe Rand mit dem Vorlauf der
@@ -459,6 +532,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zeitanteil der Stunde mit gesättigter Übergabe am Vorlaufangebot der Anlage [–] (F6); in <see cref="UebergabeBegrenztAnteil"/> enthalten.</summary>
         internal double VorlaufAnlageAnteil { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Hat die Überhöhung den Vorlauf dieser Stunde angehoben?</summary>
+        internal bool Ueberhoeht { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): Hat die Vorlaufgrenze der Anlage die Überhöhung dieser Stunde begrenzt?</summary>
+        internal bool UeberhoehungBegrenzt { get; init; }
+
+        /// <summary>Schnellaufheizung (SA1): verlangt, aber wirkungslos — der Vorlauf stand schon an der Grenze.</summary>
+        internal bool UeberhoehungWirkungslos { get; init; }
 
         /// <summary>
         /// Der Anlagengrund, der neben <see cref="Begrenzungsgrund.Verfuegbarkeit"/> mitreist (Paarungsregel 5.3);

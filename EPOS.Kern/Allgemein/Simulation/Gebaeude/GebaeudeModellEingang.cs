@@ -735,7 +735,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Stundenrand Rand(int h, bool sommerlueftung, double thetaEq, double thetaLue,
                                   bool nachtauskuehlung = false)
-            => MitFahrplan(h, RandOhneFahrplan(h, sommerlueftung, thetaEq, thetaLue, nachtauskuehlung));
+            => MitFahrplan(h, MitUeberhoehung(h, RandOhneFahrplan(h, sommerlueftung, thetaEq, thetaLue, nachtauskuehlung)));
 
         private Stundenrand RandOhneFahrplan(int h, bool sommerlueftung, double thetaEq, double thetaLue,
                                              bool nachtauskuehlung)
@@ -968,7 +968,61 @@ namespace WindowsFormsApplication1
         /// zum Lüftungszweig (Rechenschritte 7.2 — der Zustand gilt die ganze Stunde).
         /// </summary>
         internal Stundenrand Rand(int h, bool sommerlueftung = false, bool nachtauskuehlung = false)
-            => MitFahrplan(h, RandOhneFahrplan(h, sommerlueftung, nachtauskuehlung));
+            => MitFahrplan(h, MitUeberhoehung(h, RandOhneFahrplan(h, sommerlueftung, nachtauskuehlung)));
+
+        // =====================================================================
+        //  Schnellaufheizung (SA1, E128)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Überhöhung je Stunde</b> Δθ [K] der Schnellaufheizung — Δθ in den Fensterstunden des Vorheizplans, sonst NaN;
+        /// <c>null</c> = keine (jede Stunde trägt den Rand Zeichen für Zeichen wie ohne sie). Gesetzt nur über
+        /// <see cref="UeberhoehungSetzen"/> (<see cref="Aufheizoptimierung.PlanSetzen"/>).
+        /// </summary>
+        internal double[] UeberhoehungReiheK { get; private set; }
+
+        /// <summary>Der Ankunftsbezug je Fensterstunde [°C] (min(θ_T, θ_stat) − ε des Sprungs); NaN außerhalb.</summary>
+        internal double[] UeberhoehungAnkunftReiheC { get; private set; }
+
+        /// <summary>
+        /// <b>Setzt die Reihen der Schnellaufheizung</b> (Kopien); <c>null</c> nimmt sie zurück.
+        /// </summary>
+        /// <exception cref="ArgumentException">wenn eine Reihe nicht 8 760 Stunden führt.</exception>
+        internal void UeberhoehungSetzen(double[] reiheK, double[] ankunftC)
+        {
+            if (reiheK == null)
+            {
+                UeberhoehungReiheK = null;
+                UeberhoehungAnkunftReiheC = null;
+                return;
+            }
+            if (reiheK.Length != 8760 || ankunftC == null || ankunftC.Length != 8760)
+                throw new ArgumentException("Die Reihen der Schnellaufheizung müssen 8760 Stunden führen.", nameof(reiheK));
+            UeberhoehungReiheK = (double[])reiheK.Clone();
+            UeberhoehungAnkunftReiheC = (double[])ankunftC.Clone();
+        }
+
+        /// <summary>Kann die Schnellaufheizung an dieser Zone wirken — wirksamer Heizkreis mit Heizkurve?</summary>
+        internal bool UeberhoehungMoeglich => KopplungWirksam && HeizkurveAktiv && Heizkurve != null;
+
+        private Stundenrand MitUeberhoehung(int h, Stundenrand r)
+        {
+            double[] k = UeberhoehungReiheK;
+            if (k == null || !(k[h] > 0.0)) return r;
+            return Ueberhoehen(in r, h, ThetaSoll[h], k[h], UeberhoehungAnkunftReiheC[h]);
+        }
+
+        /// <summary>
+        /// <b>Der Rand mit Überhöhung</b> der Stunde <paramref name="h"/>: der Vorlauf der Heizkurve bei
+        /// <paramref name="sollC"/> + <paramref name="deltaK"/> ohne Deckel des Auslegungsvorlaufs und der Ankunftsbezug
+        /// <paramref name="ankunftC"/>; ob sie wirkt, entscheidet der Löser (<see cref="Zonenmodell2K.Schritt"/>). Ohne
+        /// wirksamen Heizkreis mit Heizkurve derselbe Rand — auch der Weg der Vorausschau.
+        /// </summary>
+        internal Stundenrand Ueberhoehen(in Stundenrand r, int h, double sollC, double deltaK, double ankunftC)
+        {
+            if (!UeberhoehungMoeglich || !(deltaK > 0.0) || double.IsNaN(sollC)) return r;
+            return r.MitUeberhoehung(Heizkurve.VorlaufUngedeckeltC(sollC + deltaK, ThetaOut[h]), ankunftC);
+        }
 
         // =====================================================================
         //  Anlagenkopplung, Stufe AK2 (Konzept Anlagenkopplung 4.5, 5.3, 6.2)
