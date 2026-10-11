@@ -36,9 +36,9 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class RueckkuehlwerkSchema
     {
-        /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht (angemeldet als 214).</summary>
-        // Arbeitskette: hängt beim Merge an die Klasse von Schritt 213 (K1), Nummer 214 — siehe Kopfzeile Statusdatei
-        public const int SCHRITT = KaelteRangSchema.SCHRITT + 1;
+        /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht (214).</summary>
+        // Hängt an Schritt 213 (K1, KaeltebedarfSchema).
+        public const int SCHRITT = KaeltebedarfSchema.SCHRITT + 1;
 
         /// <summary>Der Katalog.</summary>
         public const string TAB_STAMM = "Tab_Rueckkuehlwerk_STAMM";
@@ -250,7 +250,7 @@ namespace WindowsFormsApplication1
         public static bool Vollstaendig() =>
             Tabellen().All(t => DataRepository.TabelleVorhanden(t.Key))
             && SPALTEN.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte))
-            && KatalogfassungSchema.KatalogspaltenVollstaendig(Katalogfassung.Stufe4);
+            && KatalogfassungSchema.KatalogspaltenVollstaendig(Katalogfassung.Stufe5);
 
         /// <summary>Steht der Verweis an der Anlagenzeile? (Leser der Anlagenzeile auf einem älteren Stand.)</summary>
         public static bool AnlagenspaltenVorhanden() =>
@@ -311,7 +311,7 @@ namespace WindowsFormsApplication1
                 }
             }
             // Der Katalogindex (und Katalogspalten, falls eine Fassung ohne sie die Tabelle angelegt haette).
-            foreach (KeyValuePair<string, string> a in KatalogfassungSchema.KatalogspaltenAnweisungen(Katalogfassung.Stufe4).ToList())
+            foreach (KeyValuePair<string, string> a in KatalogfassungSchema.KatalogspaltenAnweisungen(Katalogfassung.Stufe5).ToList())
             {
                 DataRepository.ExecuteNonQuery(a.Value);
                 zeilen.Add(a.Key);

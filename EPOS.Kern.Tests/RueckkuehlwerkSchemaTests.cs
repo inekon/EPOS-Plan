@@ -37,8 +37,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nummer_haengt_an_der_Kette_ist_das_Ziel_und_die_Paketanhebung_fuehrt_Katalog()
         {
-            // Arbeitskette: Beim Merge haengt der Schritt an die Klasse von 213 (K1) und traegt 214.
-            Assert.Equal(KaelteRangSchema.SCHRITT + 1, RueckkuehlwerkSchema.SCHRITT);
+            Assert.Equal(214, RueckkuehlwerkSchema.SCHRITT);
+            Assert.Equal(KaeltebedarfSchema.SCHRITT + 1, RueckkuehlwerkSchema.SCHRITT);
             Assert.Equal(RueckkuehlwerkSchema.SCHRITT, SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == RueckkuehlwerkSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog, s.Wirkung);
