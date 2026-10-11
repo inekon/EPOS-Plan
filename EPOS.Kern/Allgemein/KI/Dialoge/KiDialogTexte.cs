@@ -870,6 +870,29 @@
         internal static string SimAufheizAufschlagHErl => MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_KI_H_ERL;
         internal static string SimAufheizAufschlagProzentName => MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT;
         internal static string SimAufheizAufschlagProzentErl => MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_KI_PROZENT_ERL;
+        // Das Vorheizen (Welle AH-V5): Namen = Beschriftungen der Gruppe.
+        internal static string SimAufheizVerfahrenName => MyResource.Resource.SIMKONF_AUFH_LBL_VERFAHREN;
+        internal static string SimAufheizVerfahrenErl => MyResource.Resource.KI_DLG_SIM_AUFH_VERFAHREN_ERL;
+        internal static string SimAufheizVorheizzeitName => MyResource.Resource.SIMKONF_AUFH_LBL_VORHEIZZEIT;
+        internal static string SimAufheizVorheizzeitErl => MyResource.Resource.KI_DLG_SIM_AUFH_VORHEIZZEIT_ERL;
+        internal static string SimAufheizToleranzArtName => MyResource.Resource.SIMKONF_AUFH_LBL_TOLERANZ;
+        internal static string SimAufheizToleranzArtErl => MyResource.Resource.KI_DLG_SIM_AUFH_TOLERANZ_ART_ERL;
+        internal static string SimAufheizToleranzName => MyResource.Resource.SIMKONF_AUFH_LBL_TOLERANZ_WERT;
+        internal static string SimAufheizToleranzErl => MyResource.Resource.KI_DLG_SIM_AUFH_TOLERANZ_ERL;
+        internal static string SimAufheizGenauigkeitName => MyResource.Resource.SIMKONF_AUFH_LBL_GENAUIGKEIT;
+        internal static string SimAufheizGenauigkeitErl => MyResource.Resource.KI_DLG_SIM_AUFH_GENAUIGKEIT_ERL;
+        internal static string SimAufheizGeltungName => MyResource.Resource.SIMKONF_AUFH_LBL_GELTUNG;
+        internal static string SimAufheizGeltungErl => MyResource.Resource.KI_DLG_SIM_AUFH_GELTUNG_ERL;
+        internal static string SimAufheizHeizkreisName => MyResource.Resource.SIMKONF_AUFH_LBL_HEIZKREIS;
+        internal static string SimAufheizHeizkreisErl => MyResource.Resource.KI_DLG_SIM_AUFH_HEIZKREIS_ERL;
+        // Die Vorheizzeit der Zone (Welle AH-V5).
+        internal static string ZonVorheizzeitName => MyResource.Resource.ZONDLG_LBL_VORHEIZZEIT;
+        internal static string ZonVorheizzeitErl => MyResource.Resource.KI_DLG_ZON_VORHEIZZEIT_ERL;
+        // Die Vorbelegung der Toleranz neuer Projekte (Welle AH-V5, F14 (a)).
+        internal static string AdmsetVorheizArtName => MyResource.Resource.ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_ART;
+        internal static string AdmsetVorheizArtErl => MyResource.Resource.KI_DLG_ADMSET_VORHEIZ_ART_ERL;
+        internal static string AdmsetVorheizWertName => MyResource.Resource.ADM_SET_LBL_NEUE_PROJEKTE_VORHEIZ_WERT;
+        internal static string AdmsetVorheizWertErl => MyResource.Resource.KI_DLG_ADMSET_VORHEIZ_WERT_ERL;
         // Die Einspeisegrenze (Welle M5, PV3): Namen = Beschriftungen des Abschnitts.
         internal static string SimEinspeisegrenzeName => MyResource.Resource.SIMKONF_LBL_EINSPEISEGRENZE;
         internal static string SimEinspeisegrenzeErl => MyResource.Resource.KI_DLG_SIM_EINSPEISEGRENZE_ERL;

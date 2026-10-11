@@ -17,6 +17,8 @@
                           Min="@MIN" Max="@MAX" Aktiv="@(!Gesperrt)"
                           Feldname="@Texte.Label" FehlerZustand="FehlerZustand"
                           Wert="@Wert" WertChanged="Setzen" />
+            @* AH-V5: Dieselbe Spalte trägt bei „Vorheizzeit vorgeben" die Vorheizzeit des Gebäudes. *@
+            <Herleitungszeile Text="@Texte.HinweisVerfahren" />
             @if (Vorschlag?.BemessenH is int bemessen)
             {
                 <div class="epos-zeilenknoepfe epos-aufheizzeit-vorschlag">

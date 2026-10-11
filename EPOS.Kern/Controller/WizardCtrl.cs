@@ -263,6 +263,35 @@ namespace WindowsFormsApplication1
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
 
+        /// <summary>
+        /// Löscht nur die Zuordnungen eines <b>Kanals</b> (<c>DbWerte.KANAL_*</c>) — die Zeilen der übrigen Kanäle
+        /// bleiben unverändert (Konzept Kältebedarf K5, Abschnitt 3.3: ein Modus „nur Kühlung“ lässt die Wärmezeilen
+        /// stehen). Ein leerer Kanal der Zeile zählt wie beim Lesen als Heizung (F18); fehlt die Kanalspalte, sind
+        /// alle Zeilen Heizung. Ein leerer <paramref name="kanal"/> löscht wie die Überladung ohne Kanal alles.
+        /// </summary>
+        public bool Del_WaermebedarfExtern(int projektID, string kanal, DbVorgang vorgang = null)
+        {
+            if (string.IsNullOrWhiteSpace(kanal)) return Del_WaermebedarfExtern(projektID, vorgang);
+
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
+            string gesucht = kanal.Trim();
+            if (!Z_ProjektGebGanglinieCtrl.StelleKanalSpalteSicher())
+                return gesucht != DbWerte.KANAL_HEIZUNG
+                       || DataRepository.ExecuteSQL("DELETE FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ?",
+                              new DbParam[] { new DbParam("@pID", projektID) });
+
+            return DataRepository.ExecuteSQL(
+                "DELETE FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ? AND COALESCE(NULLIF(TRIM(Kanal), ''), ?) = ?",
+                new DbParam[]
+                {
+                    new DbParam("@pID", projektID),
+                    new DbParam("@vorgabe", DbWerte.KANAL_HEIZUNG),
+                    new DbParam("@kanal", gesucht)
+                });
+        }
+
         public bool Del_Projekt_Prozess(int projektID, int ID = 0, DbVorgang vorgang = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
@@ -3334,6 +3363,8 @@ namespace WindowsFormsApplication1
                 // zweiten Anlageweg (ProjektCtrl.Insert). Innerhalb der Klammer des Laufs:
                 // Ein Rollback nimmt den Einstellungssatz mit.
                 KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(projektID);
+                // AH-V4 (F14): ebenso die Vorbelegung der Toleranz des Vorheizens.
+                KonfigurationCtrl.VorheiztoleranzAnfangswertSetzen(projektID);
 
                 // Die Brennstoffe des Projekts entstehen mit ihm - wertgleich zum heutigen Katalog,
                 // innerhalb der Klammer des Laufs (ein Rollback nimmt sie mit).

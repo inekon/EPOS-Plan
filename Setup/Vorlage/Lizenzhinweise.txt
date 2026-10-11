@@ -250,6 +250,14 @@ Lizenztext:  (Datei LICENSE.txt neben den Dateien)
 
 
 ------------------------------------------------------------------------------
+ 8. Marken
+------------------------------------------------------------------------------
+HottCAD ist eine Marke der Hottgenroth Software AG. EPOS-Plan liest
+Projektdateien (.sqproj), die der Anwender mit HottCAD exportiert hat; es
+besteht keine geschäftliche Verbindung zur Hottgenroth Software AG, und es
+werden keine Bestandteile von HottCAD verwendet.
+
+------------------------------------------------------------------------------
 Pflege: je ausgelieferter Paketfassung aus Directory.Packages.props eine Angabe auf
 dieser Seite; der Wächter EPOS.Kern.Tests/LizenzhinweiseWacheTests.cs prüft, dass
 jedes von einem ausgelieferten Projekt referenzierte Paket hier genannt ist,

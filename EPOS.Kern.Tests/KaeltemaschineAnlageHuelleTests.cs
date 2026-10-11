@@ -104,6 +104,43 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Katalogauswahl V1, Stufe 5: Jeder Schlüssel der Gaben ist ein <c>[Parameter]</c> des Dialogs (sonst bräche
+        /// Blazor beim ersten Zeichnen), und die neuen Wege der Zweispaltenauswahl lesen aus dem Kern — Vergleich,
+        /// Kostensumme der Anlage, Kenndatenbilder von Stammsatz und Projektkopie.
+        /// </summary>
+        [Fact]
+        public void Die_Gaben_der_Katalogauswahl_sind_Parameter_und_lesen_aus_dem_Kern()
+        {
+            if (!_db.Vorhanden || !KaeltemaschineSchema.Vollstaendig()) return;
+            IReadOnlyDictionary<string, object> g = KaeltemaschineAnlageHuelle.Gaben(PROJEKT);
+            var parameter = typeof(KaeltemaschineAnlageDialog).GetProperties()
+                .Where(p => p.IsDefined(typeof(Microsoft.AspNetCore.Components.ParameterAttribute), true))
+                .Select(p => p.Name).ToHashSet();
+            Assert.Empty(g.Keys.Where(k => !parameter.Contains(k)));
+            foreach (string k in new[] { "Vergleichsparameter", "Schloss", "KatalogLoeschen", "KatalogGaben", "Kostensumme", "Kennlinienbilder", "Teillastbild" })
+                Assert.True(g.ContainsKey(k), k);
+
+            int stamm = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM " + KaeltemaschineSchema.TAB_STAMM + " WHERE Bezeichner = ?", new DbParam("?", LUFTGEKUEHLT)),
+                CultureInfo.InvariantCulture);
+            Assert.NotEmpty(((Func<string, IReadOnlyList<Parameterwert>>)g["Vergleichsparameter"])(LUFTGEKUEHLT));
+            var bilder = (Func<int, bool, KaeltemaschineKennlinienbilder>)g["Kennlinienbilder"];
+            Assert.NotNull(bilder(stamm, true));
+            Assert.Null(bilder(0, true));
+            Assert.NotNull(((Func<int, bool, WindowsFormsApplication1.Zeichnung.Zeichenmodell>)g["Teillastbild"])(stamm, true));
+
+            int id = ((Func<int, string, int>)g["Anlegen"])(stamm, "KM Kosten");
+            try
+            {
+                Assert.Equal((0.0, 0.0), ((Func<int, (double, double)>)g["Kostensumme"])(id));
+                KaeltemaschineAnlageDaten neu = ((Func<IReadOnlyList<KaeltemaschineAnlageDaten>>)g["Anlagen"])().Single(a => a.AnlagenId == id);
+                Assert.NotNull(bilder(neu.GeraetId!.Value, false));
+            }
+            finally { ((Action<int>)g["Loeschen"])(id); }
+            Assert.NotEqual("", ((Func<int, string>)g["KatalogLoeschen"])(-1));   // kein Satz: benannt abgelehnt
+        }
+
+        /// <summary>
         /// Nachzug zu B2: Ohne Kühlträger steht die Vorauswahl des Kerns (Stromträger des Projekts) in der Wahl; ein
         /// Speichern mit dieser Wahl schreibt keine Abweichung — die Spalte bleibt leer und folgt dem Projekt.
         /// </summary>

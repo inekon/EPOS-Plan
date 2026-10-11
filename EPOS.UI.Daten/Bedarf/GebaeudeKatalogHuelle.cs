@@ -306,6 +306,8 @@ namespace WindowsFormsApplication1
                 KuehlUebergabeArt = z.Kuehl_Uebergabe_Art,
                 KuehlUebergabeExponent = z.Kuehl_Uebergabe_Exponent,
                 KuehlUebergabeLeistungNennKw = z.Kuehl_Uebergabe_Leistung_Nenn,
+                // AH-V5: die Vorheizzeit der Zone (Schritt 215); NULL = wie Gebaeude.
+                VorheizzeitH = z.Vorheizzeit_H,
                 // NP3b (Q41, NP-F14): das zuletzt übernommene Nutzungsprofil; die Kalendernutzung nur zur Anzeige.
                 Nutzungsprofil = z.Nutzungsprofil,
                 // Die Kalendernutzung liest der Kern nur an Projektzonen; im Katalog bleibt sie leer.
@@ -417,6 +419,8 @@ namespace WindowsFormsApplication1
                     z.Kuehl_Uebergabe_Art = d.KuehlUebergabeArt;
                     z.Kuehl_Uebergabe_Exponent = d.KuehlUebergabeExponent;
                     z.Kuehl_Uebergabe_Leistung_Nenn = d.KuehlUebergabeLeistungNennKw;
+                    // AH-V5: die Vorheizzeit der Zone fuehrt der Dialog - leer = wie Gebaeude.
+                    z.Vorheizzeit_H = d.VorheizzeitH;
                     // NP3b: „Nutzungsprofil übernehmen…" setzt den Namen im Arbeitsstand, das OK schreibt ihn.
                     z.Nutzungsprofil = d.Nutzungsprofil;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel

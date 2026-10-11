@@ -81,7 +81,7 @@ public class PvGanglinieDialogTests : EposBunitContext
         var cut = Aufbauen(zeilen, aufnehmen: id => { gerufen = id; return Zeile(100000, "PV Dach West", id); },
                            entfernen: z => entfernt.Add(z));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[1].Click();
         cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
         Assert.Equal(32, gerufen);
         Assert.Equal(2, zeilen.Count);
@@ -143,13 +143,13 @@ public class PvGanglinieDialogTests : EposBunitContext
             Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(katalog)
         });
 
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0].QuerySelector("button")!.Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0].QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl")!.Click();
         var werte = cut.FindAll("input[readonly]").Select(e => e.GetAttribute("value")).ToList();
         Assert.Contains(Resource.PVG_RASTER_VIERTEL, werte);
         Assert.Contains("9,5 MWh", werte);
         Assert.Contains("12,00 kWp", werte);
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[1].QuerySelector("button")!.Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[1].QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl")!.Click();
         werte = cut.FindAll("input[readonly]").Select(e => e.GetAttribute("value")).ToList();
         Assert.Contains(Resource.PVG_RASTER_STUNDE, werte);
         Assert.Contains(Resource.PVG_NENN_NICHT_GEPFLEGT, werte);
@@ -229,7 +229,7 @@ public class PvGanglinieDialogTests : EposBunitContext
         // Ohne Wahl ist der Knopf gesperrt.
         Assert.True(cut.Find("button.epos-nennleistungknopf").HasAttribute("disabled"));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0].QuerySelector("button")!.Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0].QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl")!.Click();
         cut.Find("button.epos-nennleistungknopf").Click();
         Assert.True(cut.Instance.Katalogseite!.NennleistungOffen);
         Assert.True(cut.Instance.Katalogseite.HaeltEsc);
@@ -280,7 +280,7 @@ public class PvGanglinieDialogTests : EposBunitContext
             NennleistungSchreiben = (_, _) => throw new InvalidOperationException("darf nicht schreiben")
         });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0].QuerySelector("button")!.Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0].QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl")!.Click();
         var knopf = cut.Find("button.epos-nennleistungknopf");
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         Assert.Equal(Resource.PVG_MSG_NENN_SCHREIBGESCHUETZT, knopf.GetAttribute("title"));
@@ -403,7 +403,7 @@ public class PvGanglinieDialogTests : EposBunitContext
             .Add(x => x.AusKatalogErneuern, erneuern));
 
     private static void ProjektzeileWaehlen(IRenderedComponent<PvGanglinieDialog> cut, int index)
-        => cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr button")[index].Click();
+        => cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[index].Click();
 
     /// <summary>
     /// Die abweichende Projektzeile trägt das Zeichen samt Satz; markiert, zeigt der Detailblock den Satz und den Knopf
@@ -458,7 +458,7 @@ public class PvGanglinieDialogTests : EposBunitContext
             })
             .Add(x => x.AusKatalogErneuern, _ => throw new InvalidOperationException("darf nicht schreiben")));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[1].Click();
         cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Equal(Resource.PVG_ABW_UNGESPEICHERT, cut.Find(".epos-pvg-ungespeichert").TextContent.Trim());
@@ -497,7 +497,7 @@ public class PvGanglinieDialogTests : EposBunitContext
             .Add(x => x.KatalogAbweichung, _ => "keine Projektkopie")
             .Add(x => x.AusKatalogErneuern, _ => Task.FromResult(new PvGanglinieErneuerung(true, ""))));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr .epos-zeilenzelle--name, tbody tr .epos-anlagenwahl")[1].Click();
         cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Equal(Resource.PVG_ABW_UNGESPEICHERT, cut.Find(".epos-pvg-ungespeichert").TextContent.Trim());

@@ -1227,15 +1227,15 @@ Abschnitt 4 und 8) füllen ihr Fenster; es rollen allein Projektliste, Katalogli
 Detailzeile, keine in der anderen. bunit sieht weder Lage noch Rollbereich — die Probe misst es im echten
 Chromium. Die Seite `/rollbereichprobe?fall=…` trägt ohne Datenbank Pufferspeicher, Stromspeicher,
 Photovoltaik, Solarkollektoren, Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie und die
-Kältemaschinenauswahl (`KaeltemaschineKatalogDialog`); Heizkessel, BHKW, Wärmepumpen und Gebäude nimmt die
-Probe von `/fensterprobe`.
+Kältemaschinen (`KaeltemaschineAnlageDialog` als Wirt des Bausteins, Stufe 5); Heizkessel, BHKW, Wärmepumpen und
+Gebäude nimmt die Probe von `/fensterprobe`, die dazu auch die Kältemaschinen trägt (`/fensterprobe?fall=kaeltemaschine`).
 
 ```bash
 node rollbereichprobe.mjs --url http://127.0.0.1:5299 [--nur <fall>] [--ohne-gegenprobe]
 ```
 
 **Fälle.** Vierzehn Fälle (Heizkessel, BHKW, Wärmepumpen, Gebäude, Pufferspeicher, Stromspeicher, Photovoltaik,
-Solarkollektoren, Bedarfsprofile, Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie, Kältemaschinenauswahl) × zehn
+Solarkollektoren, Bedarfsprofile, Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie, Kältemaschinen) × zehn
 Fenster (1 280 × 800, 1 280 × 720, 1 024 × 768, 1 024 × 700, 1 093 × 614, 1 180 × 820, 1 194 × 834, 1 210 × 834,
 834 × 1 194, 768 × 1 024) × die Zustände Vorgabe, Trennlinie oben (Pos1), Trennlinie unten (Ende), Detailzeile auf bei
 beiden Grenzen, Detailzeile wieder zu, mit der Maus gezogen, neu geladen (die Höhe kommt über `Dienste.Einstellungen`
@@ -1286,6 +1286,20 @@ Dialogkörper rollt, obwohl die Kurve über ihrer Untergrenze steht) müssen rot
 | Wärmebedarf extern | 1 110 × 153 (100) | 1 118 × 154 (80) | 982 × 154 (32) | 982 × 154 (100) | 1 051 × 154 (186) | 726 × 377 |
 | Stromganglinie | 1 110 × 153 (14) | 1 118 × 154 (6) | 982 × 196 | 982 × 154 (26) | 1 051 × 154 (112) | 726 × 451 |
 | Solarthermie-, PV-Ganglinie | 1 110 × 153 (57) | 1 118 × 154 (42) | 982 × 160 | 982 × 154 (62) | 1 051 × 154 (148) | 726 × 396 |
+
+**Stufe 4 (Wärmebedarf extern, Stromganglinie, 11.10.2026).** Der Wirt reicht beiden Dialogen die Katalogpflege
+(Import, Speichern unter, Schloss, Löschen, Verwaltung), damit die Fußleiste wie in der Anwendung steht. Die Probe wählt
+die Projektzeile über ihren Wahlknopf (die Zeile trägt davor ein Kästchen), verlangt mit offener Ganglinie Kopf und
+**eine** Katalogzeile, öffnet nach „Vergrößern“ die Ansicht zusätzlich über den Stift der Projektzeile (nur
+„Schließen“), prüft Importknopf in der Fußleiste, Formathinweis als Infoknopf im Katalogkopf und das Fehlen von
+Knopfleiste und Kontextzeile, und hält **Rest 3**: Für `waermebedarf` und `stromganglinie` rollt der Dialogkörper mit
+offener Ganglinie in 1 280 × 800, 1 280 × 720 und 1 024 × 768 gar nicht (`ROLLT_GAR_NICHT`). Die Gegenprobe
+„Satzfläche 600 px“ setzt dafür auch `--epos-satz-offen-min`. Ergebnis je Fall 110 Zustände, 0 Verstöße; Kurve
+Breite × Höhe in px (Überhang des Dialogkörpers):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 1 024 × 700 | 1 093 × 614 | 768 × 1 024 |
+|---|---|---|---|---|---|---|
+| Wärmebedarf extern, Stromganglinie | 1 110 × 152 (0) | 1 118 × 160 (0) | 982 × 208 (0) | 982 × 151 (11) | 1 051 × 151 (97) | 726 × 463 |
 
 **Heizkessel (Stufe 2a).** Zusätzlich je Fenster: Detailzeile auf mit Kosten (die Satzfläche muss die
 Kostenknöpfe tragen), Überlagerung „Bearbeiten…" für die Projektkopie und für zwei angekreuzte Katalogsätze
@@ -1380,10 +1394,15 @@ Gegenproben rot** — Rückgabe 0; Fensterprobe erfüllt (Gegenprobe rot), `rast
 
 Am selben Stand `diagrammprobe.mjs` erfüllt (41 Schritte, größter Abstand 0,50 px, Gegenprobe ohne Tafel verfehlt).
 
-Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein
-Katalogdialog (`.epos-katalog-dialog` mit `overflow: auto` als Notnagel um Liste und Stammblatt) und kein
-Wirt des Bausteins; die Überlagerung „Simulation…" des Gebäudes rollt als Ganzes um zwei Listen. Beide je
-drei Fenster.
+Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Überlagerung „Simulation…" des
+Gebäudes rollt als Ganzes um zwei Listen, je drei Fenster. Die Kältemaschinen sind seit Stufe 5 Wirt des Bausteins
+und zählen wie jeder Wirt: Zusammenfassung in der Detailzeile, Satz-Überlagerung über „Bearbeiten…", „Bearbeiten"
+und den Stift mit der Marke `.epos-kaeltemaschine-satz` und den Kostenknöpfen im Körper.
+
+**Messung Stufe 5 (Kältemaschine, 11.10.2026):** `rollbereichprobe.mjs --nur kaeltemaschine` 110 Zustände in zehn
+Fenstern, 0 Verstöße, die elf Gegenproben rot (Rückgabe 0); `fensterprobe.mjs --nur kaeltemaschine` erfüllt — in
+1 088 × 624, 520 × 624 und 1 194 × 834 rollen nur die zwei Listen, Gegenproben rot; `rasterprobe.mjs` 29 von 29 Fällen
+erfüllt.
 
 **Grenzen.** Bei 720 und 700 px Fensterhöhe behält der Heizkessel Kopf und zwei Katalogzeilen; die
 Wirte ohne eigenes Zeilenmaß (Stufe 3 und 4: Kontextzeile noch unter dem Kopf) klemmen dort weiter auf
@@ -1514,6 +1533,16 @@ bisher (Kältemaschinenauswahl, Überlagerung „Simulation…“), je iPad-Fens
 Überlagerung 43,7 bis 794,3 px; Gegenprobe ohne Token 4 bis 8 Verstöße je Fall), Bannerprobe erfüllt (Kopf bis
 75 px, Banner 83 bis 118 px, Schlussleiste ab 765 px; ohne Token Kopf ab 12 px, Schlussleiste bis 822 px, rot).
 Die Zahlen der Fenster 1 088 × 624 und 520 × 624 sind unverändert.
+
+**Stufe 4, Solar- und PV-Ganglinie (11.10.2026).** Die Fälle `solarganglinie` und `pvganglinie` messen dazu die
+Fußleiste der Katalogseite in den Slots der `Zweispaltenauswahl` (je ein Knopf Vergleichen, Löschen, Import in
+`.epos-zweispalten-fussleiste`, keine eigene Leiste `.epos-ganglinie-katalogfuss`, der Formathinweis als Infoknopf im
+Katalogkopf), den Stift beider Listen (Satz-Überlagerung als Ansicht, die Kurve füllt den Körper, Esc schließt) und
+die Mehrfachwahl (zwei Kästchen: die Fußleiste nennt „2 Sätze“, Vergleichen frei). Die Wirtseite reicht dafür einen
+Lösch- und einen Einleseweg. Ergebnis (Wirt Release, Chromium headless, `--nur <fall>`): je Fall **140 Zustände,
+0 Verstöße**, Rückgabe 0, die Gegenproben rot. In 1 280 × 800: Stift der Projekt- und der Katalogzeile Überlagerung
+8 bis 792 px, Körper 633 px, Kurve 1 226 × 548 px (Modell 1 224 × 546), Fußleiste „Schließen“; Fußleiste und
+Mehrfachwahl bei offener Detailzeile Projektliste 85 px, Katalogliste 147 px, Satzfläche 251 px (Kurve 153 px).
 
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 

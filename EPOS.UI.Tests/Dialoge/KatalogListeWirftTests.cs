@@ -136,6 +136,10 @@ public class KatalogListeWirftTests : EposBunitContext
         => OhneBanner(Render<WaermepumpeStammDialog>(b => b.Add(x => x.Liste, Eine)));
 
     [Fact]
+    public void Kaeltemaschinenanlage_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<KaeltemaschineAnlageDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
+
+    [Fact]
     public void Bhkw_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
         => BannerMitGrund(Render<BhkwDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
 
@@ -152,8 +156,50 @@ public class KatalogListeWirftTests : EposBunitContext
         => BannerMitGrund(Render<PhotovoltaikDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
 
     [Fact]
+    public void WaermebedarfExtern_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<WaermebedarfExternDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Wirft()))));
+
+    [Fact]
+    public void WaermebedarfExtern_wirft_die_Aufgabe_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<WaermebedarfExternDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromException<IReadOnlyList<Katalogfilterzeile>>(
+                new InvalidOperationException(GRUND)))));
+
+    [Fact]
+    public void Stromganglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<EPOS.UI.Dialoge.Strom.StromganglinieDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Wirft()))));
+
+    [Fact]
+    public void Stromganglinie_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<EPOS.UI.Dialoge.Strom.StromganglinieDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))));
+
+    [Fact]
+    public void WaermebedarfExtern_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<WaermebedarfExternDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Eine()))));
+
+    [Fact]
     public void Solarkollektoren_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
         => BannerMitGrund(Render<SolarkollektorenDialog>(b => b.Add(x => x.Katalogzeilen, Wirft)));
+
+    [Fact]
+    public void Solarganglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
+
+    [Fact]
+    public void PvGanglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<PvGanglinieDialog>(b => b
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
+
+    [Fact]
+    public void Solarganglinie_im_Katalogbetrieb_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<SolarganglinieDialog>(b => b
+            .Add(x => x.Katalogbetrieb, true)
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) })));
 
     [Fact]
     public void KatalogBrowser_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
@@ -296,10 +342,6 @@ public class KatalogListeWirftTests : EposBunitContext
             Verwendung = () => Task.FromResult<IReadOnlyDictionary<string, IReadOnlyList<string>>>(
                 new Dictionary<string, IReadOnlyList<string>>())
         }));
-
-    [Fact]
-    public void Solarganglinie_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
-        => BannerMitGrund(Solarganglinie(new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Wirft()) }));
 
     [Fact]
     public void Solarganglinie_ohne_Ausnahme_zeigt_keinen_Listenbanner()

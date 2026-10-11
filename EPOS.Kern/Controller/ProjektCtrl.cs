@@ -369,6 +369,8 @@ namespace WindowsFormsApplication1
 
             m_ID = neueId;
             KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(neueId);
+            // AH-V4 (F14): die Vorbelegung der Toleranz des Vorheizens, wenn die Programmeinstellung einen Wert traegt.
+            KonfigurationCtrl.VorheiztoleranzAnfangswertSetzen(neueId);
             // Die Brennstoffe des Projekts entstehen mit ihm - wertgleich zum heutigen Katalog.
             ProjektBrennstoffe.Sichern(neueId);
             return true;
