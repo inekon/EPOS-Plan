@@ -48,7 +48,7 @@ Opus 5.5 im Worktree, Zweig `eg3-geste`, Basis `6bfe6a9c`.
 
 Zahlen der Welle: Kern-Filter 0 Fehler; Windows-Schale auf Linux 0 Fehler (17 Warnungen Bestand);
 `EPOS.UI.Tests` 9166 von 9166; `EPOS.Kern.Tests` Filter Wache/Dokumentation 512 von 512.
-Gate der Orchestrierung: `⟨GATE⟩`. Fensterprobe (`fensterprobe.mjs`, `bannerprobe.mjs`): `⟨PROBE⟩`.
+Gate der Orchestrierung: `Kern-Filter 0 Fehler, Windows-Schale auf Linux 0 Fehler, `EPOS.UI.Tests` 9166/9166, `KiKern.Tests` 553/553, `SpeicherEngine.Tests` 397/397, `SpeicherPlanung.Tests` 27/28 (1 übersprungen, Bestand), `EPOS.Kern.Tests` nach Filter 2499/2499; der volle Kern-Lauf ist die CI`. Fensterprobe (`fensterprobe.mjs`, `bannerprobe.mjs`): ``fensterprobe.mjs` und `bannerprobe.mjs` grün mit Gegenproben (drei Fenstermaße; der Über-Dialog ist in den Proben nicht enthalten); Ersatzmessung des Über-Dialogs mit Playwright in vier Fenstermaßen: Kopf und Schlussleiste haften bei langem Inhalt am Fensterrand wie ohne die Regel, die Regel ändert nur die Boxhöhe; bei kurzem Inhalt steht die Schlussleiste wie bisher unter dem Inhalt, nicht am unteren Fensterrand (`margin-top` 10 px statt `auto` — Gestaltungsfrage, Anwenderentscheid)`.
 
 ## 5 Offene Punkte
 
