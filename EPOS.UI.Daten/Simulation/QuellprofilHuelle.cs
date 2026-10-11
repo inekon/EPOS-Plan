@@ -17,11 +17,12 @@ namespace WindowsFormsApplication1
     /// Delegaten; herauskommt die Id, die der Aufrufer an <c>WQ_ID_Quellprofil</c>
     /// schreibt.</para>
     ///
-    /// <para><b>Die Dateiwahl gehört der Plattform.</b> <c>CsvLesen</c> öffnet den
-    /// Wähler über <c>Dienste.Datei</c> und liest die Werte mit
-    /// <c>WaermequelleClass.WerteAusCsv</c> — beides kennt die Komponente nicht.
-    /// <c>null</c> heißt „nichts gelesen"; ein ABGEBROCHENER Wähler liefert dagegen ein
-    /// leeres Feld, damit der Dialog nicht meldet, wo nichts schiefging.</para>
+    /// <para><b>Die Dateiwahl gehört der Plattform.</b> <c>CsvWaehlen</c> öffnet den
+    /// Wähler über <c>Dienste.Datei</c>; gelesen wird über den Optionendialog „Format und
+    /// Vorschau“ mit der Formatbeschreibung des Quellprofils (IM-4) — die Wege dazu
+    /// (<c>CsvWege</c>) liegen hinter der Fangstelle der Importe (<see cref="GanglinienFormatnaht"/>):
+    /// Ein Lesefehler steht im Ausnahmeprotokoll und als Grund im Dialog. Ein ABGEBROCHENER
+    /// Wähler liefert einen leeren Pfad, damit der Dialog nicht meldet, wo nichts schiefging.</para>
     /// </summary>
     internal static class QuellprofilHuelle
     {
@@ -43,7 +44,8 @@ namespace WindowsFormsApplication1
                 ["Profile"] = Profile(idProjekt),
                 ["ProfilLesen"] = new Func<int, QuellprofilInhalt>(ProfilLesen),
                 ["Speichern"] = new Func<QuellprofilInhalt, int>(k => Speichern(idProjekt, k)),
-                ["CsvLesen"] = new Func<int, Task<double[]>>(CsvLesen),
+                ["CsvWaehlen"] = new Func<Task<string>>(CsvWaehlen),
+                ["CsvWege"] = GanglinienFormatnaht.Wege(),
                 ["CsvSpeichern"] = Diagrammexportnaht.Fuer(idProjekt),
                 ["Jahresbild"] = Bildzeichner(daten),
                 ["Werteanzahl"] = new Func<string, int>(DbWerte.QuellprofilWerteanzahl),
@@ -154,26 +156,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der CSV-Weg: Dateiwahl über <c>Dienste.Datei</c>, danach
-        /// <c>WaermequelleClass.WerteAusCsv</c>.
-        ///
-        /// <para>Ein ABGEBROCHENER Wähler liefert ein LEERES Feld, kein <c>null</c>: Der
-        /// Dialog soll nicht melden, wo nichts schiefgegangen ist — der Vorläufer kehrte
-        /// dort ebenfalls still zurück (<c>btnCsv_Click</c>:896).</para>
+        /// Die Dateiwahl des CSV-Wegs über <c>Dienste.Datei</c>; leer = abgebrochen (der
+        /// Vorläufer kehrte dort still zurück, <c>btnCsv_Click</c>:896). Gelesen wird danach über
+        /// den Optionendialog (<see cref="GanglinienFormatnaht"/>).
         /// </summary>
-        private static async Task<double[]> CsvLesen(int soll)
+        private static async Task<string> CsvWaehlen()
         {
             // Der Wähler läuft HINTER dem Blazor-Ereignis (Befund W13‑B‑1,
             // siehe IDateiDienst) - deshalb await statt eines synchronen Aufrufs.
             string pfad = await Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.SIMQ_CSV_DATEIDIALOG_TITEL,
                 MyResource.Resource.SIMQ_CSV_DATEIFILTER, null);
-
-            if (string.IsNullOrEmpty(pfad)) return new double[0];
-
-            // Eine Ausnahme wird vermerkt und ist „unlesbar" (null): Der Dialog nennt dann den
-            // Grund mit der erwarteten Zeilenzahl (SIMQ_MSG_CSV_FEHLER).
-            return await Importfang.Starten<double[]>(pfad, () => WaermequelleClass.WerteAusCsv(pfad, soll), _ => null);
+            return pfad ?? "";
         }
 
         /// <summary>

@@ -4532,6 +4532,30 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
     <value>{0} Datenzeilen gelesen → kein Raster: {1}</value>
   </data>
+  <data name="IMPORT_PROBE_WERTE" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → {1} Werte in {2}</value>
+  </data>
+  <data name="IMPORT_PROBE_ABGELEHNT" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → abgelehnt: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_WERTEANZAHL" xml:space="preserve">
+    <value>Die Datei liefert {0} Werte, erwartet sind genau {1}.</value>
+  </data>
+  <data name="IMPORT_PROBE_SUMME" xml:space="preserve">
+    <value>Jahressumme {0} {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_NENNLEISTUNG" xml:space="preserve">
+    <value>Höchstleistung {0} {1}</value>
+  </data>
+  <data name="IMPORT_TITEL_QUELLPROFIL" xml:space="preserve">
+    <value>Quellprofil einlesen – Format und Vorschau</value>
+  </data>
+  <data name="IMPORT_LBL_JAHR" xml:space="preserve">
+    <value>Jahr der Reihe:</value>
+  </data>
+  <data name="IMPORT_MSG_FORMAT_ABGELEHNT" xml:space="preserve">
+    <value>Die Datei passt nicht zum Format und wird nicht übernommen: {0}</value>
+  </data>
   <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
     <value>Stunde</value>
   </data>
@@ -51408,6 +51432,15 @@ Chart</value>
   </data>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>Ein Tabellenblatt gibt es nur bei einer Excel-Mappe.</value>
+  </data>
+  <data name="KI_DLG_GIO_JAHR_ERL" xml:space="preserve">
+    <value>Das Kalenderjahr der Reihe — nur bei Formaten mit Jahresfeld (etwa Spotpreisen); es legt Wochentage und Feiertage fest.</value>
+  </data>
+  <data name="KI_GIO_FORMAT_FEST" xml:space="preserve">
+    <value>Bei diesem Format steht das Feld fest; es wird nicht angezeigt.</value>
+  </data>
+  <data name="KI_GIO_KEIN_JAHR" xml:space="preserve">
+    <value>Ein Jahresfeld gibt es nur bei Formaten mit Jahr (etwa Spotpreisen).</value>
   </data>
   <data name="KI_DLG_SPOT_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Name, unter dem die Preisreihe abgelegt wird; leer wird er beim Wählen der Datei mit dem Dateinamen vorbelegt.</value>

@@ -1,4 +1,5 @@
 ﻿using KiKern;
+using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Dialoge.Strom;
@@ -13,7 +14,9 @@ namespace EPOS.UI.Dialoge.Strom;
 /// Die Sicht hält keinen Zustand: Gelesen wird der Platz, gesetzt über den Delegaten
 /// <c>setzen</c> — derselbe Weg wie ein Griff in die Klappliste (der Platz wechselt, die Vorschau
 /// bleibt bis „Vorschau aktualisieren" stehen, wie von Hand).</para>
-/// <para><b>Sperrgrund:</b> Ein Tabellenblatt gibt es nur bei einer Excel-Mappe.</para>
+/// <para><b>Sperrgrund:</b> Ein Tabellenblatt gibt es nur bei einer Excel-Mappe. Die
+/// Formatbeschreibung (IM-4, <see cref="GanglinienImportFormat"/>) sperrt, was ihr Format nicht
+/// zeigt: Einheit, Raster und Konvention bei einem Sonderformat, das Jahr ohne Jahresfeld.</para>
 /// </remarks>
 public sealed class GanglinieImportOptionenKiSicht
 {
@@ -22,23 +25,49 @@ public sealed class GanglinieImportOptionenKiSicht
     private readonly Action<string, object?> _setzen;
     private readonly Func<string, IReadOnlyList<KiWahleintrag>> _wahl;
     private readonly Func<bool> _istExcel;
+    private readonly Func<GanglinienImportFormat> _format;
 
     /// <summary>Legt die Sicht über die Plätze des Dialogs.</summary>
     public GanglinieImportOptionenKiSicht(Func<string, int> platz, Func<bool> kopfzeile,
                                           Action<string, object?> setzen,
                                           Func<string, IReadOnlyList<KiWahleintrag>> wahl,
-                                          Func<bool> istExcel)
+                                          Func<bool> istExcel,
+                                          Func<GanglinienImportFormat>? format = null)
     {
         _platz = platz ?? throw new ArgumentNullException(nameof(platz));
         _kopfzeile = kopfzeile ?? throw new ArgumentNullException(nameof(kopfzeile));
         _setzen = setzen ?? throw new ArgumentNullException(nameof(setzen));
         _wahl = wahl ?? throw new ArgumentNullException(nameof(wahl));
         _istExcel = istExcel ?? throw new ArgumentNullException(nameof(istExcel));
+        _format = format ?? (() => GanglinienImportFormat.Ganglinie);
     }
 
     /// <summary>Der Sperrgrund je Katalogfeld (<c>KiMaskenhaken.Sperrgrund</c>); <c>null</c> = frei.</summary>
     public string? Sperrgrund(string feld)
-        => feld == "blatt" && !_istExcel() ? Resource.KI_GIO_NUR_EXCEL : null;
+    {
+        GanglinienImportFormat f = _format() ?? GanglinienImportFormat.Ganglinie;
+        return feld switch
+        {
+            "blatt" when !_istExcel() => Resource.KI_GIO_NUR_EXCEL,
+            "einheit" when !f.Einheitswahl => Resource.KI_GIO_FORMAT_FEST,
+            "raster" or "konvention" when !f.Rasterwahl => Resource.KI_GIO_FORMAT_FEST,
+            "jahr" when !f.Jahresfeld => Resource.KI_GIO_KEIN_JAHR,
+            _ => null
+        };
+    }
+
+    /// <summary>Die Kennung des Formats, das der Dialog liest (<c>GANGLINIE</c>, <c>QUELLPROFIL</c> …).</summary>
+    public string Format => (_format() ?? GanglinienImportFormat.Ganglinie).Kennung;
+
+    /// <summary>Feste Werteanzahl des Formats; 0 = frei.</summary>
+    public int Werteanzahl => (_format() ?? GanglinienImportFormat.Ganglinie).Werteanzahl;
+
+    /// <summary>Das Jahr der Reihe (nur bei Formaten mit Jahresfeld); 0 = keines.</summary>
+    public int Jahr
+    {
+        get => _platz(nameof(Jahr));
+        set => _setzen(nameof(Jahr), value);
+    }
 
     /// <summary>Ist die erste Zeile eine Kopfzeile?</summary>
     public bool Kopfzeile

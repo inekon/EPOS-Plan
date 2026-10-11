@@ -1809,7 +1809,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Importoptionen einer Gangliniendatei — elf Felder ueber die Sichtklasse
+        /// Die Importoptionen einer Gangliniendatei — zwölf Felder ueber die Sichtklasse
         /// <c>EPOS.UI.Dialoge.Strom.GanglinieImportOptionenKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1848,7 +1848,9 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("erste_datenzeile", SICHT + "ErsteDatenzeile", KiDialogTexte.GioErsteDatenzeileName,
                                      KiParameterTyp.Ganzzahl, KiDialogTexte.GioErsteDatenzeileErl),
                     new KiDialogFeld("zeilenzahl", SICHT + "Zeilenzahl", KiDialogTexte.GioZeilenzahlName,
-                                     KiParameterTyp.Ganzzahl, KiDialogTexte.GioZeilenzahlErl)
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.GioZeilenzahlErl),
+                    new KiDialogFeld("jahr", SICHT + "Jahr", KiDialogTexte.GioJahrName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.GioJahrErl)
                 });
         }
 

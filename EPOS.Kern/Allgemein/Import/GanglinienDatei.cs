@@ -56,6 +56,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int Zeilenzahl = 0;
 
+        /// <summary>
+        /// Das Jahr der Reihe aus dem Jahresfeld des Optionendialogs (IM-4, Formate mit
+        /// <see cref="GanglinienImportFormat.Jahresfeld"/>); 0 = keines.
+        /// </summary>
+        public int Jahr = 0;
+
         /// <summary>Die wirksame erste Datenzeile (1-basiert): <see cref="ErsteDatenzeile"/> oder die aus der Kopfzeile.</summary>
         public int ErsteDatenzeileWirksam => ErsteDatenzeile > 0 ? ErsteDatenzeile : (Kopfzeile ? 2 : 1);
 
@@ -74,7 +80,8 @@ namespace WindowsFormsApplication1
                 Konvention = Konvention,
                 Blattname = Blattname,
                 ErsteDatenzeile = ErsteDatenzeile,
-                Zeilenzahl = Zeilenzahl
+                Zeilenzahl = Zeilenzahl,
+                Jahr = Jahr
             };
         }
     }
@@ -316,7 +323,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="pfad">Quelldatei.</param>
         /// <returns>Vorschau samt Vorbelegung; nie <c>null</c>.</returns>
-        public static GanglinienVorschau Erkenne(string pfad)
+        public static GanglinienVorschau Erkenne(string pfad) => Erkenne(pfad, null);
+
+        /// <summary>
+        /// Wie <see cref="Erkenne(string)"/>; die Probelesung prüft und zeichnet nach dem
+        /// <paramref name="format"/> (IM-4). <c>null</c> = die Ganglinie der Importkette.
+        /// </summary>
+        /// <param name="pfad">Quelldatei.</param>
+        /// <param name="format">Die Formatbeschreibung.</param>
+        public static GanglinienVorschau Erkenne(string pfad, GanglinienImportFormat format)
         {
             GanglinienVorschau v = new GanglinienVorschau();
 
@@ -378,7 +393,7 @@ namespace WindowsFormsApplication1
                 v.Lesbar = true;
                 // Die Probe liest mit der Vorbelegung, die zum Zeitpunkt des Zugriffs gilt - eine
                 // nachgezogene Vorbelegung (StundenganglinieDatei.Erkenne) gilt damit auch fuer sie.
-                v.ProbeVormerken(() => GanglinienProbe.Lies(pfad, v.Vorschlag));
+                v.ProbeVormerken(() => GanglinienProbe.Lies(pfad, v.Vorschlag, format));
                 return v;
             }
             catch (Exception ex)
@@ -398,6 +413,17 @@ namespace WindowsFormsApplication1
         /// <param name="optionen">Vom Anwender gesetzte Optionen.</param>
         /// <returns>Vorschau mit unveraendert uebernommenen Optionen; nie <c>null</c>.</returns>
         public static GanglinienVorschau Vorschau(string pfad, GanglinienImportOptionen optionen)
+            => Vorschau(pfad, optionen, null);
+
+        /// <summary>
+        /// Wie <see cref="Vorschau(string, GanglinienImportOptionen)"/>; die Probelesung prüft und
+        /// zeichnet nach dem <paramref name="format"/> (IM-4). <c>null</c> = die Ganglinie.
+        /// </summary>
+        /// <param name="pfad">Quelldatei.</param>
+        /// <param name="optionen">Vom Anwender gesetzte Optionen.</param>
+        /// <param name="format">Die Formatbeschreibung.</param>
+        public static GanglinienVorschau Vorschau(string pfad, GanglinienImportOptionen optionen,
+                                                  GanglinienImportFormat format)
         {
             GanglinienVorschau v = new GanglinienVorschau();
             v.Vorschlag = optionen ?? new GanglinienImportOptionen();
@@ -428,7 +454,7 @@ namespace WindowsFormsApplication1
                 if (v.Lesbar)
                 {
                     GanglinienImportOptionen gewaehlt = v.Vorschlag.Kopie();
-                    v.ProbeVormerken(() => GanglinienProbe.Lies(pfad, gewaehlt));
+                    v.ProbeVormerken(() => GanglinienProbe.Lies(pfad, gewaehlt, format));
                 }
                 return v;
             }

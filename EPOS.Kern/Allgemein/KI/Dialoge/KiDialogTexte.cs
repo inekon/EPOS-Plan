@@ -3183,6 +3183,8 @@
         internal static string GioErsteDatenzeileErl => MyResource.Resource.KI_DLG_GIO_ERSTE_DATENZEILE_ERL;
         internal static string GioZeilenzahlName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_ZEILENZAHL);
         internal static string GioZeilenzahlErl => MyResource.Resource.KI_DLG_GIO_ZEILENZAHL_ERL;
+        internal static string GioJahrName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_JAHR);
+        internal static string GioJahrErl => MyResource.Resource.KI_DLG_GIO_JAHR_ERL;
 
         // Form_SpotpreisImport
         internal static string SpotBezeichnerName => OhneDoppelpunkt(MyResource.Resource.PREIS_IMPORT_LABEL_BEZEICHNER);
