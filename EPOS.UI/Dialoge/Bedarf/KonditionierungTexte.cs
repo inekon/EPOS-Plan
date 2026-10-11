@@ -595,6 +595,24 @@ public sealed class KonditionierungTexte
     public string MeldungGemeinjahr { get; set; }
         = "Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht.";
 
+    /// <summary><c>KOND_TXT_DATUM_FORMAT</c> — sichtbare Formatzeile unter jedem Datumsfeld (auch als title)</summary>
+    public string HinweisDatumFormat { get; set; }
+        = "Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.10. bis 30.04.";
+
+    /// <summary><c>KOND_TXT_DATUM_JAHR</c> — nach einer Eingabe mit Jahr, das verworfen wurde</summary>
+    public string HinweisDatumJahr { get; set; }
+        = "Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr.";
+
+    /// <summary><c>KOND_TXT_PLATZHALTER_DATUM_BEGINN</c> — Platzhalter des ersten Datumsfelds (Saison, Periode, Ferien)</summary>
+    public string PlatzhalterDatumBeginn { get; set; } = "Beginn TT.MM.";
+
+    /// <summary><c>KOND_TXT_PLATZHALTER_DATUM_ENDE</c> — Platzhalter des zweiten Datumsfelds</summary>
+    public string PlatzhalterDatumEnde { get; set; } = "Ende TT.MM.";
+
+    /// <summary><c>KOND_TXT_SAISON_HALB</c> — unter einer Saison mit nur Beginn oder nur Ende</summary>
+    public string HinweisSaisonHalb { get; set; }
+        = "Saison unvollständig: Sie wirkt erst mit Beginn und Ende und ist noch nicht übernommen.";
+
     /// <summary><c>KOND_TXT_HINWEIS_AUS</c> — Bedienhinweis zum Zellzustand „aus“ im Wochenraster</summary>
     public string HinweisAus { get; set; }
         = "„aus“: Die Größe ist in dieser Stunde abgeschaltet (Heizen und Kühlen ohne Betrieb, "

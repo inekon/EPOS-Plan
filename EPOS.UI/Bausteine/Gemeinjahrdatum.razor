@@ -7,9 +7,15 @@
    Rechenkern kennt nur das Gemeinjahr; Befund B13 war genau diese Verwechslung (Ferien im
    laufenden Jahr gerechnet).
 
-   EINGABE "TT.MM." - der letzte Punkt darf fehlen, ein Komma statt eines Punkts geht (die
-   Zifferntastatur eines Tablets bietet oft nur das Komma). Die Umrechnung ist die des Kerns:
-   Feiertage.Gemeinjahrestag hin, Feiertage.Datum zurueck. Der 29.02. und jeder unmoegliche Tag
+   EINGABE "TT.MM." - "TT.MM", "T.M.", "T.M" und "TT.MM.JJJJ" gehen auch (das Jahr wird verworfen,
+   der Hinweis sagt es), ein Komma statt eines Punkts geht (die Zifferntastatur eines Tablets
+   bietet oft nur das Komma). Lesen und Anzeigen stehen EINMAL im Kern (Gemeinjahrdatumtext).
+
+   GEPRUEFT WIRD BEIM VERLASSEN (change: Tab, Klick daneben, Enter), nicht je Tastendruck: Ein
+   angefangener Text ("1", "10.", "10.1") bleibt stehen, nichts wird verworfen oder zurueckgesetzt,
+   auch wenn der Wirt dazwischen neu zeichnet. Ein gueltiger Text steht danach als "TT.MM.".
+   Unter dem Feld steht der Formathinweis (Hinweis, auch als title am Feld), bis eine Fehleingabe
+   ihn durch ihre Meldung ERSETZT. Der 29.02. und jeder unmoegliche Tag
    (31.04., 00.05., 12.13.) sind eine FEHLEINGABE: Das Feld faerbt, meldet seinen Fehlerzustand
    (Feldname) und nennt darunter den Text aus dem Buendel des Wirts (KOND_TXT_GEMEINJAHR) - die
    Farbe allein traegt die Aussage nicht. Nach aussen gemeldet wird dabei nichts, der
@@ -17,8 +23,6 @@
    erlaubt ist, weiss der Dialog (leere Saison = ganzjaehrig). *@
 
 @namespace EPOS.UI.Bausteine
-@using System.Globalization
-@using System.Text.RegularExpressions
 @using WindowsFormsApplication1
 
 <label class="epos-feld epos-feld--kurz epos-gemeinjahrdatum" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
@@ -30,12 +34,17 @@
         <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
                type="text" inputmode="decimal" autocomplete="off" value="@_text"
                aria-invalid="@(Fehlerhaft ? "true" : null)"
+               title="@(string.IsNullOrEmpty(Hinweis) ? null : Hinweis)"
                placeholder="@(string.IsNullOrEmpty(Platzhalter) ? null : Platzhalter)"
-               disabled="@(!Aktiv)" @oninput="BeiEingabe" />
+               disabled="@(!Aktiv)" @oninput="BeiEingabe" @onchange="BeiAenderung" />
     </span>
     @if (Fehlerhaft)
     {
         <span class="epos-gemeinjahrdatum-meldung">@Meldung</span>
+    }
+    else if (Hinweiszeile.Length > 0)
+    {
+        <span class="epos-gemeinjahrdatum-hinweis">@Hinweiszeile</span>
     }
 </label>
 
@@ -49,11 +58,23 @@
     /// <summary>Der Jahrestag 1 … 365 im Gemeinjahr; <c>null</c> bei leerem Feld. Bindbar über @@bind-Wert.</summary>
     [Parameter] public int? Wert { get; set; }
 
-    /// <summary>Meldet jeden gültigen neuen Jahrestag — auch <c>null</c> beim Leeren.</summary>
+    /// <summary>Meldet beim Verlassen jeden gültigen neuen Jahrestag — auch <c>null</c> beim Leeren.</summary>
     [Parameter] public EventCallback<int?> WertChanged { get; set; }
 
-    /// <summary>Leiser Text im LEEREN Feld (etwa „ganzjährig" einer Saison); leer = keiner.</summary>
+    /// <summary>Leiser Text im LEEREN Feld (etwa „Beginn TT.MM."); leer = keiner.</summary>
     [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>
+    /// Die sichtbare Formatzeile unter dem Feld und zugleich sein <c>title</c>
+    /// (<c>KOND_TXT_DATUM_FORMAT</c>); leer = keine. Eine Fehlermeldung ersetzt sie.
+    /// </summary>
+    [Parameter] public string Hinweis { get; set; } = "";
+
+    /// <summary>
+    /// Die Zeile nach einer Eingabe mit Jahr, das verworfen wurde (<c>KOND_TXT_DATUM_JAHR</c>); sie
+    /// steht an Stelle des Formathinweises, bis der Anwender wieder tippt.
+    /// </summary>
+    [Parameter] public string JahrHinweis { get; set; } = "Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr.";
 
     /// <summary>Bedienbar? <c>false</c> sperrt das Feld.</summary>
     [Parameter] public bool Aktiv { get; set; } = true;
@@ -71,44 +92,27 @@
     [Parameter] public string Meldung { get; set; }
         = "Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht.";
 
-    /// <summary>Tag und Monat, getrennt durch Punkt oder Komma; der letzte Trenner darf fehlen.</summary>
-    private static readonly Regex MUSTER = new(
-        @"^\s*(?<tag>[0-9]{1,2})\s*[.,]\s*(?<monat>[0-9]{1,2})\s*[.,]?\s*$", RegexOptions.CultureInvariant);
-
     private string _text = "";
+
+    /// <summary>Der Anwender tippt gerade — der Text gehört ihm, bis er das Feld verlässt.</summary>
+    private bool _tippt;
 
     /// <summary>Der Anwender hat das Feld GELEERT — es bleibt leer, bis er wieder tippt (siehe Zahlenfeld).</summary>
     private bool _geleert;
 
+    /// <summary>Die letzte gültige Eingabe trug ein Jahr, das verworfen wurde.</summary>
+    private bool _jahrVerworfen;
+
     /// <summary>Ist der Text gerade kein Tag im Gemeinjahr? (Prüfhilfe für Tests.)</summary>
     public bool Fehlerhaft { get; private set; }
 
-    /// <summary>
-    /// Der Anzeigetext eines Jahrestags: „TT.MM." über <c>Feiertage.Datum</c>; leer ohne Wert oder
-    /// außerhalb 1 … 365.
-    /// </summary>
-    public static string Anzeigetext(int? jahrestag)
-    {
-        if (jahrestag is not int t || !Feiertage.Datum(t, out int monat, out int tag)) return "";
-        return tag.ToString("00", CultureInfo.InvariantCulture) + "."
-             + monat.ToString("00", CultureInfo.InvariantCulture) + ".";
-    }
+    private string Hinweiszeile => _jahrVerworfen && !string.IsNullOrEmpty(JahrHinweis) ? JahrHinweis : Hinweis ?? "";
 
-    /// <summary>
-    /// Liest „TT.MM." als Jahrestag 1 … 365 über <c>Feiertage.Gemeinjahrestag</c>; <c>false</c> bei
-    /// einem Text, der kein Tag im Gemeinjahr ist — auch beim 29.02.
-    /// </summary>
-    public static bool Lesen(string? text, out int jahrestag)
-    {
-        jahrestag = 0;
-        Match m = MUSTER.Match(text ?? "");
-        if (!m.Success) return false;
-        int t = Feiertage.Gemeinjahrestag(int.Parse(m.Groups["monat"].Value, CultureInfo.InvariantCulture),
-                                          int.Parse(m.Groups["tag"].Value, CultureInfo.InvariantCulture));
-        if (t < 1) return false;
-        jahrestag = t;
-        return true;
-    }
+    /// <summary>Der Anzeigetext eines Jahrestags: „TT.MM." (Kern <c>Gemeinjahrdatumtext</c>).</summary>
+    public static string Anzeigetext(int? jahrestag) => Gemeinjahrdatumtext.Anzeigetext(jahrestag);
+
+    /// <summary>Liest einen Text als Jahrestag 1 … 365 (Kern <c>Gemeinjahrdatumtext</c>).</summary>
+    public static bool Lesen(string? text, out int jahrestag) => Gemeinjahrdatumtext.Lesen(text, out jahrestag);
 
     private async Task FehlerSetzen(bool fehlerhaft)
     {
@@ -119,22 +123,36 @@
 
     protected override void OnParametersSet()
     {
-        // Wie das Zahlenfeld: eine laufende Fehleingabe und ein geleertes Feld bleiben stehen,
-        // und ein Text, der den Wert schon meint, springt nicht auf die Anzeigeform zurück.
+        // Wie das Zahlenfeld: ein angefangener Text, eine laufende Fehleingabe und ein geleertes Feld
+        // bleiben stehen, und ein Text, der den Wert schon meint, springt nicht zurück.
+        if (_tippt) return;
         if (Fehlerhaft) return;
         if (_geleert) return;
         if (!Wert.HasValue && _text.Trim().Length == 0) return;
         if (Wert.HasValue && Lesen(_text, out int vorhanden) && vorhanden == Wert.Value) return;
 
         _text = Anzeigetext(Wert);
+        _jahrVerworfen = false;
     }
 
-    private async Task BeiEingabe(ChangeEventArgs e)
+    /// <summary>Je Tastendruck: nur den Text halten — keine Prüfung, keine Meldung.</summary>
+    private void BeiEingabe(ChangeEventArgs e)
     {
         _text = e.Value?.ToString() ?? "";
+        _tippt = true;
+        _jahrVerworfen = false;
+    }
+
+    /// <summary>Beim Verlassen bzw. Enter: prüfen, melden, gültig als „TT.MM." zeigen.</summary>
+    private async Task BeiAenderung(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+        _tippt = false;
+        _jahrVerworfen = false;
 
         if (_text.Trim().Length == 0)
         {
+            _text = "";
             await FehlerSetzen(false);
             _geleert = true;
             Wert = null;
@@ -144,8 +162,10 @@
 
         _geleert = false;
 
-        if (Lesen(_text, out int jahrestag))
+        if (Gemeinjahrdatumtext.Lesen(_text, out int jahrestag, out bool jahrVerworfen))
         {
+            _text = Anzeigetext(jahrestag);
+            _jahrVerworfen = jahrVerworfen;
             await FehlerSetzen(false);
             Wert = jahrestag;
             await WertChanged.InvokeAsync(jahrestag);

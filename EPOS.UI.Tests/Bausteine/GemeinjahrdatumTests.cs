@@ -35,6 +35,9 @@ public class GemeinjahrdatumTests : EposBunitContext
     [InlineData(" 30.4. ", 120)]
     [InlineData("24.12.", 358)]
     [InlineData("31.12", 365)]
+    [InlineData("1.5.", 121)]
+    [InlineData("01.05.2027", 121)]
+    [InlineData("1.5.2000", 121)]
     public void Tag_und_Monat_ergeben_den_Jahrestag_im_Gemeinjahr(string text, int jahrestag)
     {
         Assert.True(Gemeinjahrdatum.Lesen(text, out int t), text);
@@ -49,6 +52,8 @@ public class GemeinjahrdatumTests : EposBunitContext
     [InlineData("12.13.")]
     [InlineData("32.01.")]
     [InlineData("1.2.3")]
+    [InlineData("29.02.2000")]
+    [InlineData("1.5.27")]
     [InlineData("24/12")]
     [InlineData("abc")]
     [InlineData("24")]
@@ -97,7 +102,7 @@ public class GemeinjahrdatumTests : EposBunitContext
         int? gemeldet = null;
         var cut = Render<Gemeinjahrdatum>(p => p.Add(x => x.WertChanged, (int? w) => gemeldet = w));
 
-        Eingabe(cut).Input("24.12.");
+        Eingabe(cut).Change("24.12.");
 
         Assert.Equal(358, gemeldet);
         Assert.False(cut.Instance.Fehlerhaft);
@@ -115,7 +120,7 @@ public class GemeinjahrdatumTests : EposBunitContext
             .Add(x => x.WertChanged, (int? _) => meldungen++)
             .Add(x => x.FehlerZustand, ((string Feld, bool Fehlerhaft) e) => fehler.Add(e)));
 
-        Eingabe(cut).Input("29.02.");
+        Eingabe(cut).Change("29.02.");
 
         Assert.Equal(0, meldungen);
         Assert.True(cut.Instance.Fehlerhaft);
@@ -129,7 +134,7 @@ public class GemeinjahrdatumTests : EposBunitContext
         Assert.Equal("29.02.", Eingabe(cut).GetAttribute("value"));
 
         // Ein gültiger Tag hebt sie auf.
-        Eingabe(cut).Input("01.03.");
+        Eingabe(cut).Change("01.03.");
         Assert.Equal(1, meldungen);
         Assert.False(cut.Instance.Fehlerhaft);
         Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-meldung"));
@@ -142,7 +147,7 @@ public class GemeinjahrdatumTests : EposBunitContext
         var cut = Render<Gemeinjahrdatum>(p => p
             .Add(x => x.Meldung, "Invalid date: DD.MM. in a common year; there is no 29.02."));
 
-        Eingabe(cut).Input("31.04.");
+        Eingabe(cut).Change("31.04.");
 
         Assert.Equal("Invalid date: DD.MM. in a common year; there is no 29.02.",
                      cut.Find(".epos-gemeinjahrdatum-meldung").TextContent.Trim());
@@ -158,12 +163,101 @@ public class GemeinjahrdatumTests : EposBunitContext
             .Add(x => x.Platzhalter, "ganzjährig")
             .Add(x => x.WertChanged, (int? w) => { gemeldet = w; aufgerufen = true; }));
 
-        Eingabe(cut).Input("");
+        Eingabe(cut).Change("");
 
         Assert.True(aufgerufen);
         Assert.Null(gemeldet);
         Assert.False(cut.Instance.Fehlerhaft);
         Assert.Equal("ganzjährig", Eingabe(cut).GetAttribute("placeholder"));
+    }
+
+    // =================================================================================
+    // Geprüft wird beim Verlassen, nicht je Tastendruck (Auftrag KS)
+    // =================================================================================
+
+    [Fact]
+    public void Waehrend_der_Eingabe_wird_nichts_geprueft_verworfen_oder_gemeldet()
+    {
+        var gemeldet = new List<int?>();
+        var cut = Render<Gemeinjahrdatum>(p => p.Add(x => x.WertChanged, (int? w) => gemeldet.Add(w)));
+        foreach (string text in new[] { "1", "10", "10.", "10.1", "10.10." })
+        {
+            Eingabe(cut).Input(text);
+            Assert.Equal(text, Eingabe(cut).GetAttribute("value"));
+            Assert.False(cut.Instance.Fehlerhaft);
+            Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-meldung"));
+        }
+        Assert.Empty(gemeldet);
+
+        // Ein Neuzeichnen des Wirts mitten in der Eingabe setzt nichts zurück.
+        cut.Render(p => p.Add(x => x.Wert, (int?)null));
+        Assert.Equal("10.10.", Eingabe(cut).GetAttribute("value"));
+
+        Eingabe(cut).Change("10.10.");
+        Assert.Equal(new int?[] { 283 }, gemeldet);
+    }
+
+    [Fact]
+    public void Eine_gueltige_Eingabe_steht_danach_als_TT_MM()
+    {
+        int? gemeldet = null;
+        var cut = Render<Gemeinjahrdatum>(p => p.Add(x => x.WertChanged, (int? w) => gemeldet = w));
+        Eingabe(cut).Input("1.5");
+        Eingabe(cut).Change("1.5");
+        Assert.Equal(121, gemeldet);
+        Assert.Equal("01.05.", Eingabe(cut).GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Ein_Jahr_wird_verworfen_und_der_Hinweis_sagt_es()
+    {
+        int? gemeldet = null;
+        var cut = Render<Gemeinjahrdatum>(p => p
+            .Add(x => x.Hinweis, "Format TT.MM.")
+            .Add(x => x.JahrHinweis, "Ohne Jahr")
+            .Add(x => x.WertChanged, (int? w) => gemeldet = w));
+        Eingabe(cut).Change("01.10.2026");
+        Assert.Equal(274, gemeldet);
+        Assert.Equal("01.10.", Eingabe(cut).GetAttribute("value"));
+        Assert.Equal("Ohne Jahr", cut.Find(".epos-gemeinjahrdatum-hinweis").TextContent.Trim());
+
+        // Weiter tippen holt den Formathinweis zurück.
+        Eingabe(cut).Input("01.1");
+        Assert.Equal("Format TT.MM.", cut.Find(".epos-gemeinjahrdatum-hinweis").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Der_Formathinweis_steht_sichtbar_und_als_Titel_und_weicht_der_Fehlermeldung()
+    {
+        var cut = Render<Gemeinjahrdatum>(p => p
+            .Add(x => x.Hinweis, "Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.10. bis 30.04.")
+            .Add(x => x.Platzhalter, "Beginn TT.MM."));
+        const string hinweis = "Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.10. bis 30.04.";
+        Assert.Equal(hinweis, cut.Find(".epos-gemeinjahrdatum-hinweis").TextContent.Trim());
+        Assert.Equal(hinweis, Eingabe(cut).GetAttribute("title"));
+        Assert.Equal("Beginn TT.MM.", Eingabe(cut).GetAttribute("placeholder"));
+
+        // Die Meldung erscheint erst nach dem Verlassen - und ERSETZT den Hinweis.
+        Eingabe(cut).Input("29.02.");
+        Assert.Single(cut.FindAll(".epos-gemeinjahrdatum-hinweis"));
+        Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-meldung"));
+        Eingabe(cut).Change("29.02.");
+        Assert.Single(cut.FindAll(".epos-gemeinjahrdatum-meldung"));
+        Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-hinweis"));
+        Assert.Equal("29.02.", Eingabe(cut).GetAttribute("value"));
+
+        // Nach gültiger Eingabe ist der Hinweis wieder da.
+        Eingabe(cut).Change("28.02.");
+        Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-meldung"));
+        Assert.Equal(hinweis, cut.Find(".epos-gemeinjahrdatum-hinweis").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Ohne_Hinweis_steht_keine_Zeile_und_kein_Titel()
+    {
+        var cut = Render<Gemeinjahrdatum>();
+        Assert.Empty(cut.FindAll(".epos-gemeinjahrdatum-hinweis"));
+        Assert.False(Eingabe(cut).HasAttribute("title"));
     }
 
     [Fact]
