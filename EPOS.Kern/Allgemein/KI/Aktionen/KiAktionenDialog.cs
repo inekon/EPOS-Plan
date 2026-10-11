@@ -1365,6 +1365,9 @@ namespace WindowsFormsApplication1
         private static string FeldzugangGrund(string genannt, string feld)
         {
             string maske = Maskenschluessel(genannt);
+            // Entwicklerbereich PROJEKTDATEI_KI: ein Feld, das nur der Entwicklermodus führt, sagt benannt ab.
+            string nurEntwickler = KiDialoge.NurEntwicklerAbsage(maske, feld);
+            if (nurEntwickler != null) return nurEntwickler;
             KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
             KiFeldtreffer treffer = KiMaskenbruecke.Feldsuche(maske, feld);
 

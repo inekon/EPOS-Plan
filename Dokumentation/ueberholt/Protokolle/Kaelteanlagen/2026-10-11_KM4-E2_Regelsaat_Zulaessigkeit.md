@@ -111,3 +111,19 @@ Ordnungswachen) 2637 grün; SQL-Dialekt 0 Fundstellen. Basis unverändert.
   `HFCKW` über Saat, Katalogpaket und Testdatenbank, ohne Schemaschritt.
 - **E3:** Dialoge, Projektdaten (Inbetriebnahmejahr), Kachel, Verwaltung, KI‑Sichten (Umsetzungskonzept 3.3).
 - **E4:** Wiki, Logbuch, Konzeptnachzug, Konzepte „wie gebaut“ (Umsetzungskonzept 3.4).
+
+## Nachtrag E2‑c (Status #975): Kältemittelzeilen gesichert
+
+- **Saat** (`KaeltemittelSchema`, neue Konstante `SAAT_STATUS`): alle 18 Codes `GESICHERT`, Werte unverändert.
+  Fundstellen in `GWP_Quelle`: HFKW Anh. I Abschn. 1, S. 65/66 (AR4); HFO/HFCKW Anh. II Abschn. 1, S. 68 (AR6, Wert
+  gilt für alle Isomere); R290, R600a, R1270, R717 Anh. VI, S. 78 (R600a/R1270 Fn. 3); R744 Art. 3 Nr. 1, S. 16
+  (Bezugsgas, in Anh. VI nicht aufgeführt, dort Standard 0 für Gemische, S. 77); Gemische Gemischregel Anh. VI,
+  S. 77, Massenanteile nach der Kältemittelbezeichnung (ISO 817) in `Quelle`. F‑Gas nach Art. 2 Buchst. a, S. 16.
+- **R1233zd(E)** in der Gruppe `HFCKW` (vorher `HFO`); Prüfergebnis über alle Klassen, Leistungen und Jahre gleich,
+  denn HFCKW ist kein HFKW.
+- **Bestehende Datenbanken:** Schritt 216 legt nur fehlende Codes an; der gesicherte Stand kommt über den
+  Katalogabgleich mit dem Katalogpaket (Test `KatalogabgleichTests`: 17 aktualisiert, eine angepasste Zeile
+  behalten). Vor der nächsten Auslieferung die produktive Datenbank abgleichen, sonst trägt das Paket die alten Werte.
+- **Testdatenbank:** nur die 18 Zeilen von `Tab_Kaeltemittel_STAMM` (Status, Gruppe, Quellen, Prüfsumme) geändert,
+  kein Trigger, kein weiterer Stempel; `integrity_check` ok, `foreign_key_check` leer; SHA‑256 `7b2094e0…5d03`.
+- **Abnahme:** Kern gefiltert 2395 grün, Auslieferungsvorlage 62, Windows-Schale 0 Fehler, SQL-Dialekt 0.

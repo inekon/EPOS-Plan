@@ -70,7 +70,7 @@
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
-                       Eintraege="@Eintraege"
+                       Eintraege="@(_eintraegeNeu ?? Eintraege)"
                        Gewaehlt="Springe"
                        Bezeichnung="@MenueBezeichnung" />
 
@@ -97,6 +97,15 @@
                                Dialogname="@_hilfekontext.Dialogname"
                                Aktiv="@AssistentSteht" />
                     <span class="epos-hauptfenster-version">@VersionText</span>
+                    @* DIE MARKE DES ENTWICKLERMODUS (Administration und Support, Stufe 1, Konzept
+                       Abschnitt 3.3): neben der Versionszeile, der Tooltip nennt die Quelle. Leer =
+                       kein Span. Den fertigen Text bringt die Huelle; die Komponente fragt den Kern
+                       nicht. *@
+                    @if (!string.IsNullOrEmpty(_markeNeu ?? EntwicklerMarke))
+                    {
+                        <span class="epos-hauptfenster-entwickler"
+                              title="@(_markeTipNeu ?? EntwicklerMarkeTip)">@(_markeNeu ?? EntwicklerMarke)</span>
+                    }
                 </div>
             </header>
         </Kopfleiste>
@@ -133,8 +142,13 @@
     //  Das Menue
     // =====================================================================
 
-    /// <summary>Die Menuetabelle; Vorgabe ist die des Bestands (58 Punkte).</summary>
-    [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } = Menuetabelle.Eintraege;
+    /// <summary>
+    /// Die Menuetabelle; Vorgabe ist der Baum des Anwenders (<c>Menuetabelle.Sichtbar</c>).
+    /// Der Kopf „Entwicklung" erscheint nur, wenn die Huelle den Zuschnitt der Stufe
+    /// Entwickler hereinreicht.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } =
+        Menuetabelle.Sichtbar(WindowsFormsApplication1.Freigabestufe.Anwender);
 
     /// <summary>Beschriftung der Menueleiste fuer die Sprachausgabe.</summary>
     [Parameter] public string MenueBezeichnung { get; set; } = "Hauptmenü";
@@ -161,6 +175,48 @@
 
     /// <summary>Die fertige Versionszeile, z. B. „Version 1.0.0.0".</summary>
     [Parameter] public string VersionText { get; set; } = "";
+
+    /// <summary>
+    /// Die Marke des Entwicklermodus neben der Versionszeile (<c>ENTW_MARKE</c>); leer =
+    /// keine Marke (Konzept Administration und Support, Abschnitt 3.3).
+    /// </summary>
+    [Parameter] public string EntwicklerMarke { get; set; } = "";
+
+    /// <summary>Der Tooltip der Marke — nennt die Quelle des Modus (<c>ENTW_MARKE_TIP</c>).</summary>
+    [Parameter] public string EntwicklerMarkeTip { get; set; } = "";
+
+    /// <summary>
+    /// Die Naht fuer einen Wechsel der Freigabestufe zur Laufzeit (Tastenfolge, „Entwicklermodus
+    /// ausschalten"): Die Seite reicht beim Start ihren Setzer hinaus — Menuebaum, Marke,
+    /// Tooltip —, und die Huelle ruft ihn nach dem Wechsel. Ein Wurzelparameter laesst sich
+    /// von aussen nicht neu setzen; ohne Naht gaelte der Wechsel erst beim naechsten Start.
+    /// </summary>
+    [Parameter] public Action<Action<IReadOnlyList<Menuepunkt>, string, string>>? FreigabeAnmelden { get; set; }
+
+    // Ueberschreiben die Parameter, sobald die Huelle neu versorgt; null = der Parameter gilt.
+    private IReadOnlyList<Menuepunkt>? _eintraegeNeu;
+    private string? _markeNeu;
+    private string? _markeTipNeu;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FreigabeAnmelden?.Invoke(FreigabeSetzen);
+    }
+
+    /// <summary>Menue und Marke neu versorgen — von jedem Faden aus (zeichnet ueber InvokeAsync).</summary>
+    private void FreigabeSetzen(IReadOnlyList<Menuepunkt> eintraege, string marke, string markeTip)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _band?.Schliessen();
+            _eintraegeNeu = eintraege ?? Menuetabelle.Sichtbar(WindowsFormsApplication1.Freigabestufe.Anwender);
+            _markeNeu = marke ?? "";
+            _markeTipNeu = markeTip ?? "";
+            StateHasChanged();
+        });
+    }
 
     /// <summary>
     /// Der Hilfeschluessel der FENSTERHILFE — im Bestand

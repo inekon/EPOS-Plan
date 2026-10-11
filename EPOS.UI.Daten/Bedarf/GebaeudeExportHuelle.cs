@@ -151,6 +151,8 @@ namespace WindowsFormsApplication1
             ["Speichern"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>(e => Speichern(e?.Plz, e?.Format)),
             ["Formate"] = Formate(),
             ["ZusageOeffnen"] = new Func<Task<string>>(ZusageOeffnen),
+            // Entwicklerbereich EXPORT_IDS: die Exportzusage (IDS) nur im Entwicklermodus.
+            ["ZusageFreigegeben"] = Entwicklermodus.Aktiv,
             ["AnreicherungMoeglich"] = new Func<Task<bool>>(AnreicherungMoeglich),
             ["OriginalWaehlen"] = new Func<Task<GebaeudeAnreicherungWahl>>(OriginalWaehlen),
             ["Anreichern"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>(e => Anreichern(e?.Plz)),

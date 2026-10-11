@@ -1692,6 +1692,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenvorgaben des Zapfprofils für Entwicklung und Prüfung. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ENTWICKLUNG {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ENTWICKLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gilt nur für neu angelegte Projekte. Vorhandene Projekte behalten ihre Einstellung, ein kopiertes Projekt übernimmt die seiner Vorlage. ähnelt.
         /// </summary>
         public static string ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG {
@@ -1715,6 +1724,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_HINT_PFADE_FEST {
             get {
                 return ResourceManager.GetString("ADM_SET_HINT_PFADE_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl in °C mit Dezimalpunkt, z. B. 45; leer = Parameter des Katalogs. Wirkt nur auf die Kennzahlen, nie auf die Reihe. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordnerpfad, in dem die Wahl der Typtagdatei beginnt; leer = keine Vorgabe. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_IMPORTORDNER {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_IMPORTORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordnerpfad, in dem die Wahl des Katalogpakets beginnt; leer = keine Vorgabe. Der Import merkt sich den zuletzt gewählten Ordner hier. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_KATALOGORDNER {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_KATALOGORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liste in Litern, streng aufsteigend und positiv, getrennt durch Semikolon oder Leerzeichen, z. B. 300; 400; 500; leer = Parameter des Katalogs. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_NENNINHALTE {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_NENNINHALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl in kW mit Dezimalpunkt, z. B. 0.5; leer = Parameter des Katalogs. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPF_STUNDENSCHWELLE {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPF_STUNDENSCHWELLE", resourceCulture);
             }
         }
         
@@ -1845,6 +1899,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Temperatur der Literanzeige ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Ordner des Typtagimports ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_IMPORTORDNER {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_IMPORTORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Ordner des Katalogimports ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_KATALOGORDNER {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_KATALOGORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Speicher-Nenninhalte ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_NENNINHALTE {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_NENNINHALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil: Schwelle der Stundenzählung ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_ZAPF_STUNDENSCHWELLE {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_ZAPF_STUNDENSCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Farbe in der Schreibweise #RRGGBB. ähnelt.
         /// </summary>
         public static string ADM_SET_MSG_FARBE_UNGUELTIG {
@@ -1917,6 +2016,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rechenvorgaben des Zapfprofils konnten nicht gespeichert werden: {0} ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_ZAPF_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_ZAPF_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anwendung ähnelt.
         /// </summary>
         public static string ADM_SET_RUBRIK_ANWENDUNG {
@@ -1940,6 +2048,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_RUBRIK_DIAGRAMME {
             get {
                 return ResourceManager.GetString("ADM_SET_RUBRIK_DIAGRAMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklung ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_ENTWICKLUNG {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_ENTWICKLUNG", resourceCulture);
             }
         }
         
@@ -21389,6 +21506,186 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankpfad ähnelt.
+        /// </summary>
+        public static string DIAG_DATENBANKPFAD {
+            get {
+                return ResourceManager.GetString("DIAG_DATENBANKPFAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus ähnelt.
+        /// </summary>
+        public static string DIAG_ENTWICKLERMODUS {
+            get {
+                return ResourceManager.GetString("DIAG_ENTWICKLERMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Firma ähnelt.
+        /// </summary>
+        public static string DIAG_FIRMA {
+            get {
+                return ResourceManager.GetString("DIAG_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätekennung ähnelt.
+        /// </summary>
+        public static string DIAG_GERAETEKENNUNG {
+            get {
+                return ResourceManager.GetString("DIAG_GERAETEKENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gültig bis ähnelt.
+        /// </summary>
+        public static string DIAG_GUELTIG_BIS {
+            get {
+                return ResourceManager.GetString("DIAG_GUELTIG_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogfassung ähnelt.
+        /// </summary>
+        public static string DIAG_KATALOGFASSUNG {
+            get {
+                return ResourceManager.GetString("DIAG_KATALOGFASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nie abgeglichen ähnelt.
+        /// </summary>
+        public static string DIAG_KATALOG_NIE {
+            get {
+                return ResourceManager.GetString("DIAG_KATALOG_NIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Datenbank ähnelt.
+        /// </summary>
+        public static string DIAG_KEINE_DATENBANK {
+            get {
+                return ResourceManager.GetString("DIAG_KEINE_DATENBANK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Lizenz ähnelt.
+        /// </summary>
+        public static string DIAG_KEINE_LIZENZ {
+            get {
+                return ResourceManager.GetString("DIAG_KEINE_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenznummer ähnelt.
+        /// </summary>
+        public static string DIAG_LIZENZNUMMER {
+            get {
+                return ResourceManager.GetString("DIAG_LIZENZNUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzstatus ähnelt.
+        /// </summary>
+        public static string DIAG_LIZENZSTATUS {
+            get {
+                return ResourceManager.GetString("DIAG_LIZENZSTATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenztyp ähnelt.
+        /// </summary>
+        public static string DIAG_LIZENZTYP {
+            get {
+                return ResourceManager.GetString("DIAG_LIZENZTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht ermittelbar ähnelt.
+        /// </summary>
+        public static string DIAG_NICHT_ERMITTELBAR {
+            get {
+                return ResourceManager.GetString("DIAG_NICHT_ERMITTELBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Plattform ähnelt.
+        /// </summary>
+        public static string DIAG_PLATTFORM {
+            get {
+                return ResourceManager.GetString("DIAG_PLATTFORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Programmversion ähnelt.
+        /// </summary>
+        public static string DIAG_PROGRAMMVERSION {
+            get {
+                return ResourceManager.GetString("DIAG_PROGRAMMVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokollordner ähnelt.
+        /// </summary>
+        public static string DIAG_PROTOKOLLORDNER {
+            get {
+                return ResourceManager.GetString("DIAG_PROTOKOLLORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schemastand ähnelt.
+        /// </summary>
+        public static string DIAG_SCHEMASTAND {
+            get {
+                return ResourceManager.GetString("DIAG_SCHEMASTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Ziel {1}) ähnelt.
+        /// </summary>
+        public static string DIAG_SCHEMA_FORMAT {
+            get {
+                return ResourceManager.GetString("DIAG_SCHEMA_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sprache ähnelt.
+        /// </summary>
+        public static string DIAG_SPRACHE {
+            get {
+                return ResourceManager.GetString("DIAG_SPRACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbefristet ähnelt.
+        /// </summary>
+        public static string DIAG_UNBEFRISTET {
+            get {
+                return ResourceManager.GetString("DIAG_UNBEFRISTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
         /// </summary>
         public static string EIN_BERICHT_BTN_LOGO_ENTFERNEN {
@@ -22195,6 +22492,189 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EMQ_WAS_WAERMETRAEGER {
             get {
                 return ResourceManager.GetString("EMQ_WAS_WAERMETRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt noch kein Ausnahmeprotokoll. Erwartet unter:
+        ///{0} ähnelt.
+        /// </summary>
+        public static string ENTW_AUSNAHMEN_FEHLT {
+            get {
+                return ResourceManager.GetString("ENTW_AUSNAHMEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus ist nicht eingeschaltet. ähnelt.
+        /// </summary>
+        public static string ENTW_AUS_NICHT_AKTIV {
+            get {
+                return ResourceManager.GetString("ENTW_AUS_NICHT_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus läuft über das Startargument --entwickler. Starten Sie EPOS-Plan ohne dieses Argument neu. ähnelt.
+        /// </summary>
+        public static string ENTW_AUS_STARTARGUMENT {
+            get {
+                return ResourceManager.GetString("ENTW_AUS_STARTARGUMENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus läuft über die Umgebungsvariable EPOS_ENTWICKLER. Entfernen Sie die Variable und starten Sie EPOS-Plan neu. ähnelt.
+        /// </summary>
+        public static string ENTW_AUS_UMGEBUNG {
+            get {
+                return ResourceManager.GetString("ENTW_AUS_UMGEBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Diagnosedaten stehen in der Zwischenablage. ähnelt.
+        /// </summary>
+        public static string ENTW_DIAGNOSE_KOPIERT {
+            get {
+                return ResourceManager.GetString("ENTW_DIAGNOSE_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus einschalten? Er gilt bis zum Ausschalten. ähnelt.
+        /// </summary>
+        public static string ENTW_EIN_FRAGE {
+            get {
+                return ResourceManager.GetString("ENTW_EIN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Entwicklermodus ist auf diesem Rechner vom Administrator gesperrt. ähnelt.
+        /// </summary>
+        public static string ENTW_EIN_GESPERRT {
+            get {
+                return ResourceManager.GetString("ENTW_EIN_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwickler ähnelt.
+        /// </summary>
+        public static string ENTW_MARKE {
+            get {
+                return ResourceManager.GetString("ENTW_MARKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konnte nicht geöffnet werden:
+        ///{0} ähnelt.
+        /// </summary>
+        public static string ENTW_OEFFNEN_FEHLER {
+            get {
+                return ResourceManager.GetString("ENTW_OEFFNEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner ist nicht vorhanden:
+        ///{0} ähnelt.
+        /// </summary>
+        public static string ENTW_ORDNER_FEHLT {
+            get {
+                return ResourceManager.GetString("ENTW_ORDNER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus über die Einstellung (gilt bis zum Ausschalten) ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_EINSTELLUNG {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_EINSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus vom Administrator gesperrt ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_GESPERRT {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus aus ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_KEINE {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus über das Startargument --entwickler ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_STARTARGUMENT {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_STARTARGUMENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus über die Umgebungsvariable EPOS_ENTWICKLER ähnelt.
+        /// </summary>
+        public static string ENTW_QUELLE_UMGEBUNG {
+            get {
+                return ResourceManager.GetString("ENTW_QUELLE_UMGEBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anwender ähnelt.
+        /// </summary>
+        public static string ENTW_STUFE_ANWENDER {
+            get {
+                return ResourceManager.GetString("ENTW_STUFE_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwickler ähnelt.
+        /// </summary>
+        public static string ENTW_STUFE_ENTWICKLER {
+            get {
+                return ResourceManager.GetString("ENTW_STUFE_ENTWICKLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus ähnelt.
+        /// </summary>
+        public static string ENTW_TITEL {
+            get {
+                return ResourceManager.GetString("ENTW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Entwicklermodus) ähnelt.
+        /// </summary>
+        public static string ENTW_TITELZUSATZ {
+            get {
+                return ResourceManager.GetString("ENTW_TITELZUSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Entwicklerwerkzeuge der Oberfläche sind gerade nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string ENTW_WEBWERKZEUGE_NICHT {
+            get {
+                return ResourceManager.GetString("ENTW_WEBWERKZEUGE_NICHT", resourceCulture);
             }
         }
         
@@ -54652,6 +55132,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Funktion ist in Ihrer Fassung nicht freigegeben. ähnelt.
+        /// </summary>
+        public static string KI_ABSAGE_NUR_ENTWICKLER {
+            get {
+                return ResourceManager.GetString("KI_ABSAGE_NUR_ENTWICKLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KI-Assistent vollständig deaktivieren (keine Übertragung an einen externen Dienst) ähnelt.
         /// </summary>
         public static string KI_ABSCHALTER_ADMIN {
@@ -86144,6 +86633,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_ENGLISCH {
             get {
                 return ResourceManager.GetString("MENU_ENGLISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklung ähnelt.
+        /// </summary>
+        public static string MENU_ENTWICKLUNG {
+            get {
+                return ResourceManager.GetString("MENU_ENTWICKLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklermodus ausschalten ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_AUS {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausnahmeprotokoll öffnen ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_AUSNAHMEN {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_AUSNAHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankordner öffnen ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_DATENBANKORDNER {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_DATENBANKORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagnosedaten kopieren ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_DIAGNOSE {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_DIAGNOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokollordner öffnen ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_PROTOKOLLORDNER {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_PROTOKOLLORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklerwerkzeuge der Oberfläche ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_WEBWERKZEUGE {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_WEBWERKZEUGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungsstand wiederherstellen… ähnelt.
+        /// </summary>
+        public static string MENU_ENTW_WIEDERHERSTELLEN {
+            get {
+                return ResourceManager.GetString("MENU_ENTW_WIEDERHERSTELLEN", resourceCulture);
             }
         }
         

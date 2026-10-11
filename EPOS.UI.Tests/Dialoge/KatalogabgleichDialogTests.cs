@@ -36,8 +36,10 @@ public class KatalogabgleichDialogTests : EposBunitContext
         Func<Task<KatalogabgleichAntwort>>? abgleichen = null,
         Func<string, string, Task<KatalogabgleichAntwort>>? wiederherstellen = null,
         Action<bool>? geschlossen = null,
-        KatalogabgleichStand? stand = null)
+        KatalogabgleichStand? stand = null,
+        bool entwickler = true)
         => Render<KatalogabgleichDialog>(p => p
+            .Add(x => x.Entwickler, entwickler)
             .Add(x => x.Stand, stand ?? STAND)
             .Add(x => x.Pruefen, pruefen)
             .Add(x => x.Abgleichen, abgleichen)
@@ -105,6 +107,25 @@ public class KatalogabgleichDialogTests : EposBunitContext
 
         cut.Find(".epos-knopf--primaer").Click();
         Assert.True(zu);
+    }
+
+    /// <summary>Entwicklerbereich KATALOG_WIEDERHERSTELLEN: ohne Kennzeichen kein „Wiederherstellen“; Prüfen und Abgleichen bleiben.</summary>
+    [Fact]
+    public void Ohne_Entwicklermodus_fehlt_Wiederherstellen()
+    {
+        var ohne = Zeige(Antwort(NEU, BEHALTEN), Antwort(),
+                         (_, _) => Task.FromResult(new KatalogabgleichAntwort(true, "", "", Array.Empty<KatalogabgleichZeile>())),
+                         entwickler: false);
+        ohne.Find(".epos-kabg-pruefen").Click();
+        Assert.Equal(2, ohne.FindAll(".epos-kabg-liste tbody tr").Count);
+        Assert.Empty(ohne.FindAll(".epos-kabg-wiederherstellen"));
+        Assert.Empty(ohne.FindAll("[data-bereich='KATALOG_WIEDERHERSTELLEN']"));
+        Assert.Single(ohne.FindAll(".epos-kabg-abgleichen"));
+
+        var mit = Zeige(Antwort(NEU, BEHALTEN), Antwort(),
+                        (_, _) => Task.FromResult(new KatalogabgleichAntwort(true, "", "", Array.Empty<KatalogabgleichZeile>())));
+        mit.Find(".epos-kabg-pruefen").Click();
+        Assert.Single(mit.FindAll("[data-stufe='entwickler'][data-bereich='KATALOG_WIEDERHERSTELLEN']"));
     }
 
     [Fact]

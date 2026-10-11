@@ -105,7 +105,7 @@ namespace WindowsFormsApplication1
         // entfallen; der Aktionsharnisch prueft seither keine Argumentlisten mehr.
 
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             EinstellungenUebernehmen();
 
@@ -162,6 +162,12 @@ namespace WindowsFormsApplication1
             // danach nur noch beim Speichern der Einstellungen. Ohne Eintrag bleiben es
             // die Hausfarben. Erst NACH Dienste.Einstellungen, denn von dort liest sie.
             Zeichnung.Diagrammfarben.Uebernehmen();
+
+            // DER ENTWICKLERMODUS (Administration und Support, Stufe 1; Konzept Abschnitt 3.3):
+            // EINMAL beim Start ermittelt - Sperre des Administrators, Umgebungsvariable,
+            // Startargument, Einstellung. Erst NACH Dienste.Einstellungen, denn Sperre und
+            // Einstellung liest der Baustein von dort.
+            Entwicklermodus.Ermitteln(args);
 
             // DPI: PER MONITOR V2 (iU9-W16c.4, Anwenderentscheid E-6 / iF21).
             //

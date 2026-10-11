@@ -41,12 +41,14 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
         return pfad;
     }
 
-    private IRenderedComponent<GebaeudeImportDialog> Bauen(string datei, string? projektdatei = null, GebaeudeImportTexte? texte = null)
+    private IRenderedComponent<GebaeudeImportDialog> Bauen(string datei, string? projektdatei = null, GebaeudeImportTexte? texte = null,
+                                                           bool freigegeben = true)
     {
         var huelle = new GebaeudeImportHuelle(ios: false);
         IReadOnlyDictionary<string, object> g = huelle.Gaben();
         return Render<GebaeudeImportDialog>(c =>
         {
+            c.Add(x => x.ProjektdateiFreigegeben, freigegeben);   // Entwicklerbereich PROJEKTDATEI_IMPORT
             c.Add(x => x.Profil, g["Profil"] as GebaeudeImportProfilDaten);
             c.Add(x => x.Baualtersklassen, (IReadOnlyList<string>)g["Baualtersklassen"]);
             c.Add(x => x.DateiWaehlen, (Func<string, Task<GebaeudeDateiwahl?>>)(filter =>
@@ -121,6 +123,36 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
         Einlesen(cut);
         Assert.Contains("*.ifc", _filter.Last());
         Assert.DoesNotContain("sqproj", _filter.Last());
+    }
+
+    /// <summary>
+    /// Entwicklerbereich PROJEKTDATEI_IMPORT (Konzept Administration und Support 3.3 b): ohne Kennzeichen keine Quellen der
+    /// Projektdatei, kein <c>.sqproj</c> im gemeinsamen Filter, kein Element des Bereichs — und ein gelesener Stand aus einer
+    /// Projektdatei bleibt lesbar (AS-Q5).
+    /// </summary>
+    [Fact]
+    public void Ohne_Entwicklermodus_keine_Projektdatei_anlegen_der_gelesene_Stand_bleibt_sichtbar()
+    {
+        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(Sporthaus(), freigegeben: false);
+        IReadOnlyList<string> eintraege = Quellwahl(cut).QuerySelectorAll("option").Where(o => !string.IsNullOrEmpty(o.GetAttribute("value")))
+                                                        .Select(o => o.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "IFC", "gbXML" }, eintraege);
+        Assert.Empty(cut.FindAll("[data-bereich='PROJEKTDATEI_IMPORT']"));
+
+        Einlesen(cut);
+        Assert.DoesNotContain("sqproj", _filter.Last(), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("*.ifc", _filter.Last());
+        Assert.True(cut.Instance.NurProjektdatei);
+        Assert.Contains("Quelle: Projektdatei", cut.Find(".epos-gebimport-quellzeile").TextContent);
+        Assert.Empty(cut.FindAll("[data-bereich='PROJEKTDATEI_IMPORT']"));
+        Assert.Empty(cut.FindAll("[data-stufe='entwickler']"));
+    }
+
+    [Fact]
+    public void Mit_Entwicklermodus_stehen_die_Quellen_der_Projektdatei_im_Bereich()
+    {
+        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(Sporthaus());
+        Assert.Equal(4, Quellwahl(cut).QuerySelectorAll("option").Count(o => !string.IsNullOrEmpty(o.GetAttribute("value"))));
     }
 
     [Fact]

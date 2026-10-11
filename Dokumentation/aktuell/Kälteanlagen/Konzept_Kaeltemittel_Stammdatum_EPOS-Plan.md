@@ -164,11 +164,27 @@ Gruppe 1 von Anhang I, keine Olefine), **natürlich** (für den Hinweis nach KM4
 nach ISO 817 / EN 378‑1 — nur Spalte, Werte nach KM4‑Q3), der **PFAS‑Status** (dreiwertig: Stoff ist PFAS · enthält
 einen PFAS‑Bestandteil · kein PFAS; Herleitung über die Strukturformel, S; Verfahrensstand „geplant, nicht in Kraft“
 als Text, nie als Verbot, KM4‑Q10) und ein **Status** mit dem Vokabular von `Tab_Gesetzesparameter` (`GESICHERT`
-erst nach Prüfung am EUR‑Lex‑Volltext, bis dahin `VORLAEUFIG`).
+nach Prüfung am amtlichen Volltext der Verordnung; eine Anwenderzeile ohne Beleg steht auf `VORLAEUFIG`).
 
-**Ob und woraus gesät wird, entscheidet der Anwender (KM4‑Q2, KM4‑Q3).** Dieses Papier enthält keine Wertetafel.
-Zur Einordnung zwei Beispielwerte mit Vertrauensgrad: R32 GWP 675 (Anhang I, S+P); R1234ze(E) GWP 1,37 (Anhang II,
-S). Der Unterschied zu Altwerten der Fachliteratur (R1234ze = 7 nach AR4) zeigt, warum der Bezug je Zeile steht.
+**Gesicherter Stand der Saat.** Die achtzehn ausgelieferten Codes sind am amtlichen Volltext der Verordnung (EU)
+2024/573 (deutsche Fassung, Amtsblatt, 86 Seiten) geprüft und stehen auf `GESICHERT`; jede Zeile trägt ihre
+Fundstelle (Anhang, Abschnitt, Seite), keine Textabschrift. Alle achtzehn GWP‑Werte stimmen. Die Fundstellen:
+
+| Stoffe | GWP‑Fundstelle | F‑Gas |
+|---|---|---|
+| HFKW R32, R134a | Anh. I Abschn. 1, S. 65 bzw. 66 (AR4) | ja, Art. 2 Buchst. a (Anh. I), S. 16 |
+| HFO R1234yf, R1234ze(E); HFCKW R1233zd(E) | Anh. II Abschn. 1, S. 68 (AR6; der Wert gilt für alle Isomere) | ja, Art. 2 Buchst. a (Anh. II), S. 16 |
+| R290, R717 | Anh. VI, S. 78 (AR6) | nein (nicht in Anh. I bis III) |
+| R600a, R1270 | Anh. VI, S. 78, Fn. 3 (WMO 2018, Wert ≪ 1, angesetzt 0) | nein |
+| R744 | nicht in Anh. VI; GWP 1 aus der Begriffsbestimmung „im Verhältnis zu CO₂“, Art. 3 Nr. 1, S. 16 (Anh. VI setzt einen dort nicht aufgeführten Stoff in einem Gemisch mit 0 an, S. 77) | nein |
+| acht Gemische (R410A, R407C, R404A, R454B, R454C, R452B, R455A, R513A) | Gemischregel Anh. VI, S. 77; Bestandteile aus Anh. I (AR4) und Anh. II/VI (AR6) | ja, Art. 2 Buchst. a (ein Gemisch mit einem Stoff der Anhänge I bis III) |
+
+Die Verordnung nennt für kein Gemisch eine Zusammensetzung; die Massenanteile folgen der Kältemittelbezeichnung
+(ISO 817) und stehen in der Spalte `Quelle`. Der Begriff „fluorierte Treibhausgase“ ergibt sich aus Art. 2 Buchst. a
+(die in den Anhängen I, II und III aufgeführten Stoffe, allein oder als Gemisch), nicht aus Art. 3 Nr. 1, der nur
+das Treibhauspotenzial bestimmt. R1233zd(E) führt die Verordnung als „HFCKW‑1233zd“; die Saat trägt es in der Gruppe
+`HFCKW` — wie ein HFO ein F‑Gas, aber kein HFKW nach Art. 3 Nr. 4, die Regeln urteilen darüber unverändert. Eine
+bestehende Datenbank bekommt diesen Stand über den Katalogabgleich mit dem Katalogpaket der Auslieferung (4.6).
 
 ### 3.2 Zwei Verweise, eine Wahrheit
 
@@ -320,13 +336,13 @@ kein Kind), mit den Metaspalten `ReadOnly`, `Katalog_Schluessel`, `Katalog_Pruef
 | `Bezeichnung` | TEXT | `length ≤ 120` | leer | Stoff‑ oder Gemischname, neutral |
 | `Gruppe` | TEXT | `CHECK (Gruppe IN ('HFKW','HFO','HFCKW','GEMISCH','NATUERLICH','SONSTIGE'))` | leer | Stoffgruppe (Anzeige, Sortierung) |
 | `GWP` | REAL | `CHECK (GWP >= 0)` | nicht prüfbar | GWP₁₀₀ |
-| `GWP_Quelle` | TEXT | `length ≤ 120` | leer | Quelle und Bezug des Werts („Anhang I (AR4)“, „Anhang II (AR6)“, „gewichtet nach Anhang I/VI“) |
+| `GWP_Quelle` | TEXT | `length ≤ 120` | leer | Fundstelle und Bezug des Werts in der Verordnung: Anhang, Abschnitt, Seite und Sachstandsbericht („VO (EU) 2024/573 Anh. I Abschn. 1, S. 65 (AR4)“; Gemische „Gemischregel Anh. VI, S. 77; Bestandteile …“) |
 | `F_Gas` | INTEGER | `CHECK (F_Gas IN (0,1))` | nicht prüfbar für „jedes F‑Gas“ | fluoriertes Treibhausgas im Sinn der Verordnung |
 | `Natuerlich` | INTEGER | `CHECK (Natuerlich IN (0,1))` | kein Hinweis | natürliches Kältemittel |
 | `Sicherheitsgruppe` | TEXT | `CHECK (… IN ('A1','A2L','A2','A3','B1','B2L','B2','B3'))` | leer | ISO 817 / EN 378‑1 (nur Anzeige) |
 | `PFAS_Status` | TEXT | `CHECK (… IN ('PFAS','BESTANDTEIL','KEIN'))` | kein Hinweis | dreiwertig (3.1) |
 | `Status` | TEXT | `CHECK (Status IN ('GESICHERT','VORLAEUFIG','PROGNOSE','ABGEKUENDIGT'))` | `VORLAEUFIG` | Belegstand der Zeile |
-| `Quelle` | TEXT | `length ≤ 120` | leer | Quelle der übrigen Kennzeichen |
+| `Quelle` | TEXT | `length ≤ 120` | leer | Fundstelle der übrigen Kennzeichen: F‑Gas nach Art. 2 Buchst. a (S. 16), bei Gemischen die Massenanteile nach ISO 817, PFAS‑Herleitung |
 | `Sortierung` | INTEGER | — | Code | Reihenfolge der Klappliste |
 
 ### 4.2 Verweis an `Tab_Kaeltemaschine_STAMM` und `Tab_Kaeltemaschine`
@@ -369,6 +385,7 @@ Zeilen. Alternativen: Code‑Festwerte mit Quelle (keine Pflege ohne Auslieferun
 | CSV‑Vorlage der Kältemaschine (`KaeltemaschineImportLeser`, K‑C) | Kopfzeile `Kältemittel` wie heute als Text; der Schreibweg setzt die ID per Code‑Abgleich, ohne Treffer bleibt sie leer mit Info‑Meldung |
 | Copper‑ und Typkennfelder, VDI‑3805‑Wärmepumpe | unverändert (leer bzw. ohne Kältemittel) |
 | Projektpaket | `ID_Kaeltemittel` **reist nicht** (Ausnahme wie `ID_Stamm`); am Ziel setzt der Import sie über den Text: Code‑Abgleich, nur bei genau einem Treffer (Muster `KaeltemaschineSchema.SqlNachtragProjekt`); ohne Treffer bleibt sie leer, der Text trägt den Wert; `Paketanhebung` mit `Art.Import` |
+| Katalogpaket | `Tab_Kaeltemittel_STAMM` reist mit Schlüssel `KMT:…` und Prüfsumme; der Katalogabgleich bringt eine geänderte Saatzeile in eine bestehende Datenbank (gesperrt und unverändert: aktualisiert; vom Anwender angepasst: bleibt). So kommt der gesicherte Stand (3.1) in Datenbanken, die Schritt 216 mit dem vorläufigen Stand angelegt hat — der Schritt selbst legt nur fehlende Codes an |
 
 ## 5 Prüfweg
 
@@ -520,7 +537,7 @@ die Basis.
 Die Nennleistung gilt je Gerät, nicht je Anlagenzeile. Absorption ergibt keinen Befund; Split, Multisplit und VRF an
 Anlagenart 13 sind in KM4 „nicht prüfbar“. Der Code‑Abgleich ist Trim und `OrdinalIgnoreCase` wie
 `Bivalenzvorgaben.IstBekannt`. Die Regelzeilen sind am amtlichen Wortlaut geprüft und tragen `GESICHERT` (Nr. 7 d in
-der Lesart „≥ 750“ nach Anwenderentscheid); Kältemittelzeilen tragen `VORLAEUFIG`, bis sie am Wortlaut geprüft sind. Nicht gesät werden Nr. 9 a
+der Lesart „≥ 750“ nach Anwenderentscheid); die achtzehn Kältemittelzeilen sind ebenso geprüft und tragen `GESICHERT` mit Fundstelle je Zeile (3.1). Nicht gesät werden Nr. 9 a
 (Füllmenge), Nr. 8 a und Nr. 4 bis 6 (keine Geräteklasse) und die 750 bei Sicherheitsausnahme (Höchstwert innerhalb der
 Ausnahme); Sole‑ und Wasser‑Wasser‑Wärmepumpen sind n.b. Die Tabelle steht im Katalogregister (Stufe 3, `KMT` vor `KM`) ohne Projektkopie;
 `ID_Kaeltemittel` ohne Fremdschlüsselzwang, reist nicht im Projektpaket. Die Kältemittelcodes gelten als
@@ -562,5 +579,5 @@ Vorlagenfeld, keine neue Vorlagen‑Katalogfassung.
   Anhänge I, II, IV, VI; drei Berichtigungen des deutschen Texts, Inhalt nicht ermittelt); Verordnung (EU) 517/2014
   (Altwerte); Durchführungsverordnungen 2024/2174, 2026/286, 2026/1975; REACH‑Beschränkungsvorschlag PFAS (ECHA,
   RAC 02.03.2026, SEAC‑Entwurf 10.03.2026); BEG EM und BEG NWG (Sekundärquellen); ISO 817, EN 378‑1, ASHRAE 34;
-  IPCC AR4 und AR6. **Offene Klärung vor dem Säen:** Prüfung jeder Regel und jedes Werts am EUR‑Lex‑Volltext — der
-  Anwender stellt den Text bereit (die Umgebung erreicht EUR‑Lex nicht).
+  IPCC AR4 und AR6. Regeln und Kältemittelwerte sind am amtlichen Volltext der
+  Verordnung (EU) 2024/573 geprüft (vom Anwender bereitgestellt); die Fundstellen stehen je Zeile, 3.1 und 3.3.

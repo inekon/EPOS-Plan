@@ -52665,5 +52665,197 @@ chart</value>
   <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
     <value>How the preview shows the series read: year (annual profile) or day (day view of the DHW measured series).</value>
   </data>
+  <!-- Administration und Support, Stufe 1 -->
+  <data name="ENTW_QUELLE_KEINE" xml:space="preserve">
+    <value>Developer mode off</value>
+  </data>
+  <data name="ENTW_QUELLE_UMGEBUNG" xml:space="preserve">
+    <value>Developer mode via the environment variable EPOS_ENTWICKLER</value>
+  </data>
+  <data name="ENTW_QUELLE_STARTARGUMENT" xml:space="preserve">
+    <value>Developer mode via the start argument --entwickler</value>
+  </data>
+  <data name="ENTW_QUELLE_EINSTELLUNG" xml:space="preserve">
+    <value>Developer mode via the setting (applies until switched off)</value>
+  </data>
+  <data name="ENTW_QUELLE_GESPERRT" xml:space="preserve">
+    <value>Developer mode locked by the administrator</value>
+  </data>
+  <data name="ENTW_AUS_UMGEBUNG" xml:space="preserve">
+    <value>Developer mode is enabled by the environment variable EPOS_ENTWICKLER. Remove the variable and restart EPOS-Plan.</value>
+  </data>
+  <data name="ENTW_AUS_STARTARGUMENT" xml:space="preserve">
+    <value>Developer mode is enabled by the start argument --entwickler. Restart EPOS-Plan without this argument.</value>
+  </data>
+  <data name="ENTW_AUS_NICHT_AKTIV" xml:space="preserve">
+    <value>Developer mode is not switched on.</value>
+  </data>
+  <data name="ENTW_STUFE_ANWENDER" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="ENTW_STUFE_ENTWICKLER" xml:space="preserve">
+    <value>Developer</value>
+  </data>
+  <data name="DIAG_PROGRAMMVERSION" xml:space="preserve">
+    <value>Program version</value>
+  </data>
+  <data name="DIAG_PLATTFORM" xml:space="preserve">
+    <value>Platform</value>
+  </data>
+  <data name="DIAG_SPRACHE" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="DIAG_DATENBANKPFAD" xml:space="preserve">
+    <value>Database path</value>
+  </data>
+  <data name="DIAG_SCHEMASTAND" xml:space="preserve">
+    <value>Schema version</value>
+  </data>
+  <data name="DIAG_KATALOGFASSUNG" xml:space="preserve">
+    <value>Catalogue version</value>
+  </data>
+  <data name="DIAG_LIZENZTYP" xml:space="preserve">
+    <value>Licence type</value>
+  </data>
+  <data name="DIAG_LIZENZNUMMER" xml:space="preserve">
+    <value>Licence number</value>
+  </data>
+  <data name="DIAG_FIRMA" xml:space="preserve">
+    <value>Company</value>
+  </data>
+  <data name="DIAG_LIZENZSTATUS" xml:space="preserve">
+    <value>Licence status</value>
+  </data>
+  <data name="DIAG_GUELTIG_BIS" xml:space="preserve">
+    <value>Valid until</value>
+  </data>
+  <data name="DIAG_GERAETEKENNUNG" xml:space="preserve">
+    <value>Device ID</value>
+  </data>
+  <data name="DIAG_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Log folder</value>
+  </data>
+  <data name="DIAG_ENTWICKLERMODUS" xml:space="preserve">
+    <value>Developer mode</value>
+  </data>
+  <data name="DIAG_NICHT_ERMITTELBAR" xml:space="preserve">
+    <value>not available</value>
+  </data>
+  <data name="DIAG_KEINE_DATENBANK" xml:space="preserve">
+    <value>no database</value>
+  </data>
+  <data name="DIAG_KEINE_LIZENZ" xml:space="preserve">
+    <value>no licence</value>
+  </data>
+  <data name="DIAG_SCHEMA_FORMAT" xml:space="preserve">
+    <value>{0} (target {1})</value>
+  </data>
+  <data name="DIAG_KATALOG_NIE" xml:space="preserve">
+    <value>never synchronised</value>
+  </data>
+  <data name="DIAG_UNBEFRISTET" xml:space="preserve">
+    <value>unlimited</value>
+  </data>
+  <!-- Administration und Support, Stufe 1 (Welle 1a) -->
+  <data name="MENU_ENTWICKLUNG" xml:space="preserve">
+    <value>Development</value>
+  </data>
+  <data name="MENU_ENTW_AUSNAHMEN" xml:space="preserve">
+    <value>Open exception log</value>
+  </data>
+  <data name="MENU_ENTW_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="MENU_ENTW_DATENBANKORDNER" xml:space="preserve">
+    <value>Open database folder</value>
+  </data>
+  <data name="MENU_ENTW_DIAGNOSE" xml:space="preserve">
+    <value>Copy diagnostic data</value>
+  </data>
+  <data name="MENU_ENTW_WEBWERKZEUGE" xml:space="preserve">
+    <value>Developer tools of the interface</value>
+  </data>
+  <data name="MENU_ENTW_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Restore delivery state…</value>
+  </data>
+  <data name="MENU_ENTW_AUS" xml:space="preserve">
+    <value>Switch off developer mode</value>
+  </data>
+  <data name="ENTW_MARKE" xml:space="preserve">
+    <value>Developer</value>
+  </data>
+  <data name="ENTW_TITELZUSATZ" xml:space="preserve">
+    <value>(developer mode)</value>
+  </data>
+  <data name="ENTW_TITEL" xml:space="preserve">
+    <value>Developer mode</value>
+  </data>
+  <data name="ENTW_EIN_FRAGE" xml:space="preserve">
+    <value>Switch on developer mode? It stays on until it is switched off.</value>
+  </data>
+  <data name="ENTW_EIN_GESPERRT" xml:space="preserve">
+    <value>Developer mode has been locked on this computer by the administrator.</value>
+  </data>
+  <data name="ENTW_DIAGNOSE_KOPIERT" xml:space="preserve">
+    <value>The diagnostic data has been copied to the clipboard.</value>
+  </data>
+  <data name="ENTW_AUSNAHMEN_FEHLT" xml:space="preserve">
+    <value>There is no exception log yet. Expected at:
+{0}</value>
+  </data>
+  <data name="ENTW_ORDNER_FEHLT" xml:space="preserve">
+    <value>The folder does not exist:
+{0}</value>
+  </data>
+  <data name="ENTW_OEFFNEN_FEHLER" xml:space="preserve">
+    <value>Could not be opened:
+{0}</value>
+  </data>
+  <data name="ENTW_WEBWERKZEUGE_NICHT" xml:space="preserve">
+    <value>The developer tools of the interface are not available right now.</value>
+  </data>
+  <!-- Administration und Support, Stufe 1 (Welle 1b) -->
+  <data name="KI_ABSAGE_NUR_ENTWICKLER" xml:space="preserve">
+    <value>This function is not enabled in your edition.</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_ENTWICKLUNG" xml:space="preserve">
+    <value>Development</value>
+  </data>
+  <data name="ADM_SET_HINT_ENTWICKLUNG" xml:space="preserve">
+    <value>Calculation defaults of the draw-off profile for development and testing. An empty field means: the programme default applies.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Draw-off profile: temperature of the litre display</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Number in °C with decimal point, e.g. 45; empty = catalogue parameter. Affects only the key figures, never the series.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Draw-off profile: threshold of the hour count</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Number in kW with decimal point, e.g. 0.5; empty = catalogue parameter.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_NENNINHALTE" xml:space="preserve">
+    <value>Draw-off profile: nominal storage volumes</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_NENNINHALTE" xml:space="preserve">
+    <value>List in litres, strictly ascending and positive, separated by semicolon or space, e.g. 300; 400; 500; empty = catalogue parameter.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_KATALOGORDNER" xml:space="preserve">
+    <value>Draw-off profile: folder of the catalogue import</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_KATALOGORDNER" xml:space="preserve">
+    <value>Folder path where the choice of the catalogue package starts; empty = none. The import remembers the last chosen folder here.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_IMPORTORDNER" xml:space="preserve">
+    <value>Draw-off profile: folder of the type-day import</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_IMPORTORDNER" xml:space="preserve">
+    <value>Folder path where the choice of the type-day file starts; empty = none.</value>
+  </data>
+  <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
+    <value>The calculation defaults of the draw-off profile could not be saved: {0}</value>
+  </data>
 </root>
 
