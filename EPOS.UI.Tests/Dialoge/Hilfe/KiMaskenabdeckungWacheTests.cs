@@ -476,7 +476,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // sie und meldet sie als BerichtSeiteKiSicht.Katalogsuche an; das Feld „Schreibweise"
         // ist nur lesbar und zählt nicht.
         new("PlatzhalterkatalogDialog", 1, "die Katalogsuche steht über den Wirt als BerichtSeiteKiSicht.Katalogsuche bereit - das Katalogfeld katalogsuche der Maske Berichtsseite"),
-        new("ProjektKopfSeite", 5),
+        new("ProjektKopfSeite", 6),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
         // Pufferspeicher-Auslegung (Stufe P2): dreizehn Felder im Katalog Form_PufferAuslegung (Klassen,

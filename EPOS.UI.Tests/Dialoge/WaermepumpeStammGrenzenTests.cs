@@ -122,4 +122,65 @@ public class WaermepumpeStammGrenzenTests : EposBunitContext
         d.RuecklaufMaxC = 55.0;
         Assert.Empty(WaermepumpeGeraetegrenzenFelder.Bereichshinweise(d, t));
     }
+
+    // =====================================================================================
+    // KM4-E3-b: die Lesezeile des Kältemittels unter der Klappliste (Konzept 7.3)
+    // =====================================================================================
+
+    private const string LESE_R290 = "GWP 0,02 · kein F-Gas · natürlich · kein PFAS · Status gesichert";
+
+    /// <summary>Die Liste wie oben, R290 mit den Stammwerten aus der Kältemitteltabelle.</summary>
+    private static KaeltemittelEintrag[] ListeMitLesewerten() => new[]
+    {
+        Liste[0] with { Lesewerte = LESE_R290 },
+        Liste[1],
+        Liste[2],
+    };
+
+    [Fact]
+    public void Unter_der_Klappliste_stehen_die_Stammwerte_des_gewaehlten_Kaeltemittels()
+    {
+        WaermepumpeStammDaten d = Satz();
+        d.Kaeltemittelliste = ListeMitLesewerten();
+        d.Kaeltemittel = "R290";
+        var cut = Aufbauen(d);
+
+        Assert.Equal(LESE_R290, cut.Instance.KaeltemittelLesewerte);
+        Assert.Contains(LESE_R290, cut.Markup);
+    }
+
+    [Fact]
+    public void Ohne_Wahl_oder_ohne_Tabellenzeile_steht_keine_Lesezeile()
+    {
+        WaermepumpeStammDaten d = Satz();
+        d.Kaeltemittelliste = ListeMitLesewerten();
+        var cut = Aufbauen(d);
+        Assert.Null(cut.Instance.KaeltemittelLesewerte);
+        Assert.DoesNotContain("GWP", cut.Markup);
+
+        // SONSTIGES hat keine Tabellenzeile; ein Bestandstext ausserhalb der Liste ebenso.
+        d.Kaeltemittel = "SONSTIGES";
+        cut.Render();
+        Assert.Null(cut.Instance.KaeltemittelLesewerte);
+        d.Kaeltemittel = "R-Alt";
+        cut.Render();
+        Assert.Null(cut.Instance.KaeltemittelLesewerte);
+    }
+
+    [Fact]
+    public void Die_Wahl_in_der_Klappliste_zieht_die_Lesezeile_nach_und_die_Klappliste_bleibt()
+    {
+        WaermepumpeStammDaten d = Satz();
+        d.Kaeltemittelliste = ListeMitLesewerten();
+        var cut = Aufbauen(d);
+
+        // Klappliste unverändert: „nicht gewählt" und die drei Codes, ein select, sieben Zahlfelder.
+        Assert.Equal(4, cut.FindAll("option").Count);
+        Assert.Single(cut.FindAll("select"));
+        Assert.Equal(7, cut.FindAll("input").Count);
+
+        cut.Find("select").Change("0");
+        Assert.Equal("R290", d.Kaeltemittel);
+        Assert.Contains(LESE_R290, cut.Markup);
+    }
 }
