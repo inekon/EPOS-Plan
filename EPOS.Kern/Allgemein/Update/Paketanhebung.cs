@@ -420,6 +420,11 @@ namespace WindowsFormsApplication1
             // Zonen erben die Vorheizzeit, die Ergebnisspalten bleiben leer.
             new Stufe(VorheizenSchema.SCHRITT, Art.Ddl,
                       "Vorheizen der Aufheizoptimierung (Verfahren, Vorheizzeit, Toleranz, Geltung; Ergebnisse je Gebäude und Zone)"),
+            // Ein Paket fuehrt keine Kaeltemitteltabelle (sie bleibt im Ziel) und keinen Verweis ID_Kaeltemittel (er reist nicht,
+            // Ausnahme wie ID_Stamm); der Import setzt ihn am Ziel ueber den Text (Code-Abgleich, nur bei genau einem Treffer).
+            // Ein aelteres Paket fuehrt kein Inbetriebnahmejahr; die Spalte kommt leer an (keine Pruefung).
+            new Stufe(KaeltemittelSchema.SCHRITT, Art.Import,
+                      "Kältemittel als Stammdatum (Kältemitteltabelle, Verweis der Kältemaschine über den Code, Inbetriebnahmejahr)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

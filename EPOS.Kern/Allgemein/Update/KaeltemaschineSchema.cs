@@ -143,8 +143,11 @@ namespace WindowsFormsApplication1
             // zur Pruefsumme bei, eine Datenbank vor dem Schritt fuehrt sie nicht (Katalogfassung.VorhandeneFachspalten).
             // KaelteKatalogfelderSchema (Schritt 211): Geraeteart, GWP, Fuellmenge und saisonale Kennzahl haengen dahinter an;
             // die Rueckfuellung belegt die Geraeteart jedes Satzes, der Schritt bildet die Pruefsumme neu.
+            // KaeltemittelSchema (Schritt 216): der Verweis auf die Kaeltemitteltabelle folgt; er geht ueber den Code in
+            // Pruefsumme und Katalogpaket ein (Katalogverweis im Register "KM"), leer traegt er nichts bei.
             Fachspalten = Grundspalten.Concat(KaeltemaschineTeillastSchema.EINGABESPALTEN)
-                                      .Concat(KaelteKatalogfelderSchema.FELDSPALTEN).ToArray();
+                                      .Concat(KaelteKatalogfelderSchema.FELDSPALTEN)
+                                      .Concat(new[] { KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL }).ToArray();
         }
 
         /// <summary>Die Fachspalten der Kennlinie (ohne <c>ID</c>, Fremdschlüssel, <c>ID_Projekt</c>, <c>ReadOnly</c>).</summary>
@@ -316,10 +319,18 @@ namespace WindowsFormsApplication1
         //  Stand und Ausführung
         // =================================================================
 
+        /// <summary>
+        /// Die Katalogtabelle der Kältemaschine im Register. Stufe 3 führt davor die Kältemitteltabelle (Schritt 216);
+        /// dieser Schritt prüft und stempelt allein seinen eigenen Katalog, sonst fände er eine Datenbank vor 216
+        /// „unvollständig“.
+        /// </summary>
+        private static IReadOnlyList<Katalogtabelle> Register() =>
+            Katalogfassung.Stufe3.Where(k => k.Tabelle == TAB_STAMM).ToArray();
+
         /// <summary>Stehen die vier Tabellen samt Katalogspalten?</summary>
         public static bool SchemaVollstaendig() =>
             Tabellen().All(t => DataRepository.TabelleVorhanden(t.Key))
-            && KatalogfassungSchema.KatalogspaltenVollstaendig(Katalogfassung.Stufe3);
+            && KatalogfassungSchema.KatalogspaltenVollstaendig(Register());
 
         /// <summary>Steht das Schema, und trägt der Katalog die Saat samt Katalogschlüssel?</summary>
         public static bool Vollstaendig()
@@ -333,7 +344,7 @@ namespace WindowsFormsApplication1
                     new DbParam("?", b.Bezeichner));
                 if (o == null || o == DBNull.Value || Convert.ToInt32(o, CultureInfo.InvariantCulture) < b.Kennlinie.Count) return false;
             }
-            return KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe3) == 0;
+            return KatalogSchluesselSaat.OffeneSaetze(Register()) == 0;
         }
 
         /// <summary>
@@ -354,7 +365,7 @@ namespace WindowsFormsApplication1
                 bericht?.Add(t.Key + " angelegt");
                 n++;
             }
-            foreach (KeyValuePair<string, string> a in KatalogfassungSchema.KatalogspaltenAnweisungen(Katalogfassung.Stufe3).ToList())
+            foreach (KeyValuePair<string, string> a in KatalogfassungSchema.KatalogspaltenAnweisungen(Register()).ToList())
             {
                 DataRepository.ExecuteNonQuery(a.Value);
                 bericht?.Add(a.Key);
@@ -362,7 +373,7 @@ namespace WindowsFormsApplication1
             }
             if (n == 0) bericht?.Add("Tabellen der Kaeltemaschine vorhanden");
             Saat(bericht);
-            KatalogSchluesselSaat.Ausfuehren(bericht, Katalogfassung.Stufe3);
+            KatalogSchluesselSaat.Ausfuehren(bericht, Register());
             bericht?.Add("KEIN Rechenergebnis aendert sich, der Referenzlauf bleibt byte-gleich");
             return n;
         }

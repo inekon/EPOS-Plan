@@ -5427,6 +5427,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_VORHEIZEN = VorheizenSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaeltemittelSchema.SCHRITT"/> — <b>Kältemittel als Stammdatum</b> (KM4-E1, Entscheid E123):
+        /// <c>Tab_Kaeltemittel_STAMM</c> samt Saat und Katalogschlüsseln, <c>ID_Kaeltemittel</c> an Katalog und Projektkopie
+        /// der Kältemaschine mit Zuordnung des Textbestands, <c>Tab_Projekt.Inbetriebnahmejahr</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest Tabelle, Verweis oder Jahr.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEMITTEL = KaeltemittelSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7946,6 +7955,13 @@ namespace WindowsFormsApplication1
                         "Ein Projekt koennte das Vorheizen (Vorheizzeit vorgeben oder berechnen) nicht speichern. KEIN " +
                         "Rechenergebnis aendert sich - jede Spalte steht auf NULL, und NULL ist die Sollwertrampe.",
                         Schritt_Vorheizen),
+            // KM4-E1: Kaeltemittel als Stammdatum. Quelle ist KaeltemittelSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEMITTEL,
+                        "Tab_Kaeltemittel_STAMM (neu, achtzehn Codes VORLAEUFIG, Register KMT); Tab_Kaeltemaschine_STAMM und " +
+                        "Tab_Kaeltemaschine: ID_Kaeltemittel samt Zuordnung des Textbestands; Tab_Projekt: Inbetriebnahmejahr",
+                        "Ein Kaeltemittel waere kein Stammdatum mit GWP und Quelle, und die Kaeltemaschine verwiese nur ueber " +
+                        "Text darauf. KEIN Rechenergebnis aendert sich - kein Rechenweg liest Tabelle, Verweis oder Jahr.",
+                        Schritt_Kaeltemittel),
         };
 
         /// <summary>
@@ -15336,6 +15352,61 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Kaeltebedarf - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Schemaanweisung(en).") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kältemittel als Stammdatum" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTEMITTEL"/>,
+        /// die Anweisungen bei <see cref="KaeltemittelSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Kaeltemittel(Lauf l)
+        {
+            string nr = KaeltemittelSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltemittelSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            KaeltemittelSchema.Laufergebnis erg;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    erg = KaeltemittelSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltemittelSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kaeltemitteltabelle (Tabelle, Saat, Katalogschluessel, Verweis, Inbetriebnahmejahr) steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kaeltemittel als Stammdatum - " +
+                    (erg.Angelegt == 0 ? "stand bereits." : erg.Angelegt + " Schemaanweisung(en).") +
+                    " " + erg.Saat + " Kaeltemittel gesaet, " + (erg.KatalogZugeordnet + erg.ProjektZugeordnet) +
+                    " Zeile(n) zugeordnet. KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

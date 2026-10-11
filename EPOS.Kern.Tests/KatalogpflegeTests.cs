@@ -67,7 +67,8 @@ namespace EPOS.Kern.Tests
             // KU3-1: die Kaeltemaschine dazu - 26.
             // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen dazu (Schloss) - 27.
             // PVG (Schemaschritt 206): die PV-Ganglinie dazu - 28.
-            Assert.Equal(31, KatalogRegistry.Alle.Count);   // K1: KAELTEBEDARF, KAELTETYP; K-F1: RUECKKUEHLWERK
+            // KM4-E1: die Kaeltemitteltabelle dazu - 32.
+            Assert.Equal(32, KatalogRegistry.Alle.Count);   // K1: KAELTEBEDARF, KAELTETYP; K-F1: RUECKKUEHLWERK
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -83,6 +84,8 @@ namespace EPOS.Kern.Tests
                 "WECHSELRICHTER",
                 // KU3-1: die Kaeltemaschine nach den Erzeugern der Waerme- und Stromseite, vor dem BHKW.
                 "KAELTEMASCHINE",
+                // KM4-E1: die Kaeltemitteltabelle, auf die die Kaeltemaschine ueber die ID verweist.
+                "KAELTEMITTEL",
                 // K-F1: das Rueckkuehlwerk als Glied der Kaeltemaschine gleich hinter ihr.
                 "RUECKKUEHLWERK", "BHKW",
                 "STROMSPEICHER", "GEBAEUDE",
@@ -152,12 +155,14 @@ namespace EPOS.Kern.Tests
                 Assert.False(tww.ImDublettendialog);
                 Assert.Equal(new[] { "Katalogversion" }, tww.SchluesselZusatzSpalten);
             }
-            Assert.Equal(new[] { "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG" },
+            // KM4-E1: eine verwendete Kaeltemittelzeile ist unveraenderlich (Konzept Kaeltemittel 3.2).
+            Assert.Equal(new[] { "KAELTEMITTEL", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG" },
                          KatalogRegistry.Alle.Where(k => k.VerwendungSperrt).Select(k => k.Schluessel).ToArray());
             // Gebaeudesimulation G3: Baustoff und Bauteilaufbau pflegen ihre eigenen
             // Verwaltungen und stehen nicht im Dublettendialog; der Baustoff fuehrt den
             // Hersteller als zweiten Teil des natuerlichen Schluessels.
-            string[] ohneDialog = { "BAUSTOFF", "BAUTEILAUFBAU", "KONDITIONIERUNGSVORLAGE" };
+            // KM4-E1: die Kaeltemitteltabelle ohne Oberflaeche bis KM4-E3.
+            string[] ohneDialog = { "KAELTEMITTEL", "BAUSTOFF", "BAUTEILAUFBAU", "KONDITIONIERUNGSVORLAGE" };
             Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
                                                          && !ohneDialog.Contains(k.Schluessel))
                                              .Select(k => k.Schluessel).ToArray(),
@@ -201,7 +206,8 @@ namespace EPOS.Kern.Tests
                 .Where(k => k.VerwendungsPruefungen.Length > 0)
                 .Select(k => k.Schluessel).ToArray();
             // Gebaeudesimulation G3: der Baustoff - eine Katalogschicht zeigt ueber die ID auf ihn.
-            Assert.Equal(new[] { "BAUSTOFF", "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
+            // KM4-E1: das Kaeltemittel - Katalog und Projektkopie der Kaeltemaschine zeigen ueber die ID darauf.
+            Assert.Equal(new[] { "KAELTEMITTEL", "BAUSTOFF", "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
                                  "STROMVERBRAUCHERTYP", "PROZESSTYP", "KAELTETYP", "GEBAEUDETYP" },
                          mitPruefung);
         }

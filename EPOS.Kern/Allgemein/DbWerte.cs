@@ -3679,5 +3679,64 @@ namespace WindowsFormsApplication1
         {
             KOND_NUTZUNG_WOHNEN, KOND_NUTZUNG_BUERO, KOND_NUTZUNG_SCHULE, KOND_NUTZUNG_SONSTIGE
         };
+
+        // ----------------------------------------------------------------------------------
+        // KAELTEMITTEL (Konzept Kaeltemittel als Stammdatum 4.1, Schritt KaeltemittelSchema, KM4-E1):
+        // die Wertemengen von Tab_Kaeltemittel_STAMM. Persistenzwerte: ASCII, GROSS, eingefroren;
+        // NULL heisst „unbekannt“, nie eine stille Vorgabe. Der Status nimmt das Vokabular des
+        // Gesetzeskatalogs (GESETZ_STATUS_*).
+        // ----------------------------------------------------------------------------------
+
+        /// <summary>Stoffgruppe: teilfluorierter Kohlenwasserstoff.</summary>
+        public const string KAELTEMITTEL_GRUPPE_HFKW = "HFKW";
+
+        /// <summary>Stoffgruppe: Hydrofluorolefin (auch die chlorhaltigen Olefine).</summary>
+        public const string KAELTEMITTEL_GRUPPE_HFO = "HFO";
+
+        /// <summary>Stoffgruppe: teilhalogenierter Fluorchlorkohlenwasserstoff.</summary>
+        public const string KAELTEMITTEL_GRUPPE_HFCKW = "HFCKW";
+
+        /// <summary>Stoffgruppe: Gemisch.</summary>
+        public const string KAELTEMITTEL_GRUPPE_GEMISCH = "GEMISCH";
+
+        /// <summary>Stoffgruppe: natürliches Kältemittel.</summary>
+        public const string KAELTEMITTEL_GRUPPE_NATUERLICH = "NATUERLICH";
+
+        /// <summary>Stoffgruppe: übrige.</summary>
+        public const string KAELTEMITTEL_GRUPPE_SONSTIGE = "SONSTIGE";
+
+        /// <summary>Die Stoffgruppen in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KAELTEMITTEL_GRUPPEN = new[]
+        {
+            KAELTEMITTEL_GRUPPE_HFKW, KAELTEMITTEL_GRUPPE_HFO, KAELTEMITTEL_GRUPPE_HFCKW,
+            KAELTEMITTEL_GRUPPE_GEMISCH, KAELTEMITTEL_GRUPPE_NATUERLICH, KAELTEMITTEL_GRUPPE_SONSTIGE
+        };
+
+        /// <summary>Die Sicherheitsgruppen nach ISO 817 / EN 378-1 (Quelle des <c>CHECK</c>; nur Anzeige).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KAELTEMITTEL_SICHERHEITSGRUPPEN = new[]
+        {
+            "A1", "A2L", "A2", "A3", "B1", "B2L", "B2", "B3"
+        };
+
+        /// <summary>PFAS-Status: der Stoff ist ein PFAS.</summary>
+        public const string KAELTEMITTEL_PFAS = "PFAS";
+
+        /// <summary>PFAS-Status: das Gemisch enthält einen PFAS-Bestandteil.</summary>
+        public const string KAELTEMITTEL_PFAS_BESTANDTEIL = "BESTANDTEIL";
+
+        /// <summary>PFAS-Status: kein PFAS.</summary>
+        public const string KAELTEMITTEL_PFAS_KEIN = "KEIN";
+
+        /// <summary>Die drei PFAS-Status in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KAELTEMITTEL_PFAS_STATUS = new[]
+        {
+            KAELTEMITTEL_PFAS, KAELTEMITTEL_PFAS_BESTANDTEIL, KAELTEMITTEL_PFAS_KEIN
+        };
+
+        /// <summary>Der Belegstand einer Kältemittelzeile — das Vokabular von <c>Tab_Gesetzesparameter.Status</c>.</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KAELTEMITTEL_STATUS = new[]
+        {
+            GESETZ_STATUS_GESICHERT, GESETZ_STATUS_VORLAEUFIG, GESETZ_STATUS_PROGNOSE, GESETZ_STATUS_ABGEKUENDIGT
+        };
     }
 }

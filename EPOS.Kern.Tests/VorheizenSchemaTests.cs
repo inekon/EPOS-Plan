@@ -29,7 +29,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(215, VorheizenSchema.SCHRITT);
             Assert.Equal(RueckkuehlwerkSchema.SCHRITT + 1, VorheizenSchema.SCHRITT);
-            Assert.Equal(VorheizenSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= VorheizenSchema.SCHRITT);   // KM4-E1 haengt 216 an
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == VorheizenSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);

@@ -28438,7 +28438,7 @@ Do you want to allow this?</value>
     <value>Chiller "{0}": the climate data carry no humidity — the wet cooler uses the outdoor temperature − 3 K instead of the wet-bulb temperature in {1} hours.</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_NICHT_GERECHNET" xml:space="preserve">
-    <value>Chiller "{0}": the heat rejection unit "{1}" uses a fixed approach above the reference temperature; not yet calculated: {2}.</value>
+    <value>Chiller "{0}": not yet calculated at the heat rejection unit "{1}": {2}.</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_LUFT_IGNORIERT" xml:space="preserve">
     <value>Chiller "{0}" is air-cooled and has no heat rejection unit — "{1}" is ignored.</value>
@@ -28457,6 +28457,27 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_MERKMAL_REIHE" xml:space="preserve">
     <value>free cooling in series (calculated in parallel)</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_BIMSCHV" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" is an evaporative cooling system — observe the notification, inspection and operating duties of the German 42nd BImSchV (note only, not checked by EPOS).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT" xml:space="preserve">
+    <value>Chiller "{0}": the fan of the heat rejection unit "{1}" ({2} kW) replaces the chiller's heat rejection auxiliary power ({3} kW) — it is not counted twice.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" has no rated capacity — load-dependent approach and fan follow the chillers' load ratio (rated point = full capacity of the hour).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_OHNE_FEUCHTE" xml:space="preserve">
+    <value>Chiller "{0}": the climate has no humidity — the heat rejection unit "{1}" runs dry in {2} hours above the switching limit, without humidification and without water use.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" exceeded its rated capacity in {2} hours — the fan ran at full speed, a load-dependent approach rose above its rated value.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_WASSER_KOSTEN" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; water cost {4} €/a (quantity × water price, not included in the operating costs of the economic analysis).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; no water price at the plant, so no water cost.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Chiller "{0}": in {1} hours the operating point lay outside the performance map (heat rejection {2} to {3} °C, chilled water {4} °C) — the boundary value was used.</value>
@@ -51914,6 +51935,12 @@ chart</value>
   </data>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} heated zones have no design heat load; they receive no share of the building cap and remain uncapped.</value>
+  </data>
+  <data name="KM_LBL_ID_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerant (table reference)</value>
+  </data>
+  <data name="KABG_KATALOG_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerants</value>
   </data>
   <data name="KABG_KATALOG_RUECKKUEHLWERK" xml:space="preserve">
     <value>Heat rejection units</value>

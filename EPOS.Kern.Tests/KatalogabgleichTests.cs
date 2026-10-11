@@ -303,7 +303,8 @@ namespace EPOS.Kern.Tests
             // PVG: Tab_PvGanglinie_STAMM und Tab_PvGanglinieDaten_STAMM dazu (Register "PVG") - 51.
             // K1: Tab_Kaeltebedarf_STAMM und Tab_Kaeltetyp_STAMM dazu (Register "KB"/"KBT") - 53.
             // K-F1: Tab_Rueckkuehlwerk_STAMM dazu (Register "RKW") - 54.
-            Assert.Equal(54, stamm.Count);
+            // KM4-E1: Tab_Kaeltemittel_STAMM dazu (Register "KMT") - 55.
+            Assert.Equal(55, stamm.Count);
             foreach (string s in stamm)
                 Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
                             s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");
@@ -751,6 +752,43 @@ namespace EPOS.Kern.Tests
             Assert.Equal((1, 0, 0, 0), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen));
             Assert.Equal(baustoff, Zahl("SELECT s.ID_Baustoff FROM Tab_Bauteilschicht_STAMM s JOIN Tab_Bauteilaufbau_STAMM a " +
                                         "ON a.ID = s.ID_Aufbau WHERE a.Katalog_Schluessel = 'BTA:PROBEWAND'"));
+        }
+
+        /// <summary>
+        /// <b>KM4-E1-b:</b> Der Verweis der Kältemaschine auf ihr Kältemittel reist im Katalogpaket als Code und wird am Ziel
+        /// aufgelöst — auch wenn das Kältemittel dort fehlt und mit neuer ID eingefügt wird (<c>KMT</c> steht im Register vor
+        /// <c>KM</c>).
+        /// </summary>
+        [Fact]
+        public void Verweis_der_Kaeltemaschine_geht_ueber_den_Code_des_Kaeltemittels()
+        {
+            if (!_db.Vorhanden) return;
+
+            long alt = Zahl("SELECT ID FROM Tab_Kaeltemittel_STAMM WHERE Code = 'R1234ze(E)'");
+            Katalogpaket paket = Katalogpaket.AusBytes(Katalogpaket.AusDatenbank(3).Bytes());
+            Katalogpaketsatz km = paket.Tabellen.Single(t => t.Tabelle == "Tab_Kaeltemaschine_STAMM").Saetze
+                                       .Single(s => s.Schluessel == KaeltemittelSchema.BEISPIEL_SCHLUESSEL);
+            Assert.Equal(KaeltemittelSchema.BEISPIEL_CODE, km.Werte["ID_Kaeltemittel"]);
+            Assert.Contains(paket.Tabellen.Single(t => t.Tabelle == "Tab_Kaeltemittel_STAMM").Saetze,
+                            s => s.Schluessel == "KMT:R1234ZE_E");
+
+            // Am Ziel fehlen das Gerät und das Kältemittel; die Kopie im Projekt behält ihren Text.
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel = ?",
+                                           new DbParam("@s", KaeltemittelSchema.BEISPIEL_SCHLUESSEL));
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Kaeltemittel_STAMM WHERE ID = ?", new DbParam("@id", alt));
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
+            Assert.True(e.Ausgefuehrt, e.Meldung);
+            Assert.Equal(2, e.Neu);
+
+            long neuKmt = Zahl("SELECT ID FROM Tab_Kaeltemittel_STAMM WHERE Code = 'R1234ze(E)'");
+            Assert.NotEqual(alt, neuKmt);
+            Assert.Equal(neuKmt, Zahl("SELECT ID_Kaeltemittel FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel = '" +
+                                      KaeltemittelSchema.BEISPIEL_SCHLUESSEL + "'"));
+            Assert.Equal(km.Pruefsumme, Text("SELECT Katalog_Pruefsumme FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel = '" +
+                                             KaeltemittelSchema.BEISPIEL_SCHLUESSEL + "'"));
+
+            KatalogabgleichErgebnis zweiter = Katalogabgleich.Ausfuehren(paket, nurPruefen: true, erzwingen: true);
+            Assert.False(zweiter.EtwasZuTun);
         }
 
         /// <summary>„Auslieferungsstand wiederherstellen" gilt auch für einen Satz der Stufe 2.</summary>

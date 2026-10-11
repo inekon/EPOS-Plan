@@ -9,7 +9,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
 ## 1 Stand
 
 - **Zweige:** Arbeitszweig `ios_migration_september`; es gibt keinen Sitzungszweig mehr (der alte
-  wurde auf Wunsch gelöscht). Push-Commit dieser Übergabe: `<PUSH>`.
+  wurde auf Wunsch gelöscht). Push-Commit dieser Übergabe: der Commit mit dem Betreff „Merge origin vor dem Übergabe-Push (Welle 13)“ (`git log --grep Übergabe-Push`).
 - **Statuszeilen dieser Sitzung seit dem Kontowechsel vom 08.10.** in `Status_iOS_Migration.md`:
   - #861 Katalogauswahl V1, Stufe 1: Baustein `Zweispaltenauswahl`.
   - #873 Stufe 2: Heizkessel als erster Wirt.
@@ -19,9 +19,9 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   - #910 DZ1 Detailzeile mit Vorrang, Ganglinie in den CSV-Dialogen.
   - #939 ÜS1 Satz-Überlagerung in voller Höhe; #940 ÜS2 Stift, Zusammenfassung, „Bearbeiten“.
   - #942 Wiki-Quellen der Katalogauswahl; #943 Konzept Kältebedarf; #944 K1 Schema 213.
-  - #958 KM5 Kältemaschine; #959 ZR1 Wärmebedarf extern und Stromganglinie; #960 ZR2 Solar- und
-    PV-Ganglinie; #961 BP Bedarfsprofile; #962 GEB Gebäude (Rückweg, Dialog, Überlagerung);
-    #963 diese Übergabe.
+  - #960 KM5 Kältemaschine; #961 ZR1 Wärmebedarf extern und Stromganglinie; #962 ZR2 Solar- und
+    PV-Ganglinie; #963 BP Bedarfsprofile; #964 GEB Gebäude (Rückweg, Dialog, Überlagerung);
+    #965 diese Übergabe.
 - **Katalogauswahl V1:** Stufen 1 bis 5 umgesetzt (Baustein, Heizkessel, sieben Erzeuger,
   Zeitreihen, Bedarfsprofile, Gebäude, Kältemaschine) samt Satz-Überlagerung (ÜS1) und Stift und
   Zusammenfassung (ÜS2).
@@ -34,7 +34,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   lesen, bevor eine Nummer angemeldet wird.
 - Es laufen keine Agenten; es gibt keine offenen Worktrees.
 - **CI:** Die Kern-Läufe der Pushes e6bbae833 (Welle 12) und 77f4ba259 (Welle 13, Teil 1) wurden
-  meist durch fremde Pushes abgebrochen. CI-Vermerke an #905–#910, #939–#944 und #958–#963 stehen
+  meist durch fremde Pushes abgebrochen. CI-Vermerke an #905–#910, #939–#944 und #960–#965 stehen
   aus; nachtragen, sobald ein grüner Kern-Lauf existiert, dessen `headSha` den Push-Commit enthält.
 
 ## 2 Geltende Entscheide (Auswahl)
@@ -164,7 +164,12 @@ Keine Zugangsdaten ins Repository. **Antworten:** auf Deutsch, knapp.
 5. **Sichtabnahme unter Windows** beim Anwender für alle umgestellten Dialoge. Der Wärmepumpen-
    Befund „Kein Satz gewählt“ (Bildschirmfoto 10.10.) ließ sich im Probenwirt nicht nachstellen;
    der Rückfall des Satznamens ist gebaut, bitte unter Windows nachsehen.
-6. **CI-Vermerke** an #905–#910, #939–#944 und #958–#963, siehe Abschnitt 1.
+6. **CI-Vermerke** an #905–#910, #939–#944 und #960–#965, siehe Abschnitt 1.
+7. **Bannerprobe, Fall `gebaeude` rot** (`Proben/Rasterprobe/bannerprobe.mjs`, Fenster 1 088 × 624): Der Auslöser
+   `.epos-gebaeude-in-db` öffnet seit dem Gebäudeumbau die Rückfrage „In die Datenbank übernehmen“ statt einer
+   Meldung, deshalb erscheint kein Banner. Kein Fehler im Dialog; Empfehlung: den Auslöser der Probe auf eine
+   Meldung des Gebäudedialogs umstellen (z. B. Löschen eines gesperrten Satzes) und die Gegenprobe prüfen.
+   Die übrigen Fälle (`heizkessel`, `bhkw`) sind erfüllt.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 
@@ -203,7 +208,7 @@ Berichterstellung, KI-Assistent, Wiki) auf demselben Arbeitszweig; Statusnummern
 Schemaschritte werden schnell vergeben.
 
 Erste Schritte: (1) Stand prüfen: `git status` sauber, keine Konfliktmarker, keine liegen
-gebliebene AGENT_LAEUFT, die Zeilen #905–#910, #939–#944 und #958–#963 tragen ihren CI-Vermerk.
+gebliebene AGENT_LAEUFT, die Zeilen #905–#910, #939–#944 und #960–#965 tragen ihren CI-Vermerk.
 (2) Den Stand in höchstens fünf Zeilen melden. (3) Mit dem Anwender abstimmen, womit
 weitergemacht wird. Empfehlung: Kältebedarf K2 bis K4 als nächste Welle, vorher die offenen
 CI-Vermerke.

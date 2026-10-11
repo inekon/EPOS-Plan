@@ -28445,7 +28445,7 @@ Möchten Sie das zulassen?</value>
     <value>Kältemaschine „{0}": Das Klima führt keine Luftfeuchte — der Nasskühler rechnet in {1} Stunden mit der Außentemperatur − 3 K statt der Feuchtkugeltemperatur.</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_NICHT_GERECHNET" xml:space="preserve">
-    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ rechnet mit fester Annäherung über der Bezugstemperatur; noch nicht gerechnet: {2}.</value>
+    <value>Kältemaschine „{0}“: Am Rückkühlwerk „{1}“ noch nicht gerechnet: {2}.</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_LUFT_IGNORIERT" xml:space="preserve">
     <value>Kältemaschine „{0}“ ist luftgekühlt und kennt kein Rückkühlwerk — „{1}“ bleibt unberücksichtigt.</value>
@@ -28464,6 +28464,27 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_MERKMAL_REIHE" xml:space="preserve">
     <value>freie Kühlung in Reihe (gerechnet wird parallel)</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_BIMSCHV" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ ist eine Verdunstungskühlanlage — Anzeige-, Prüf- und Betriebspflichten nach der 42. BImSchV beachten (nur Hinweis, EPOS prüft sie nicht).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Der Ventilator des Rückkühlwerks „{1}“ ({2} kW) ersetzt den Hilfsstrom der Rückkühlung der Maschine ({3} kW) — er wird nicht doppelt gezählt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ hat keine Nennleistung — lastabhängige Annäherung und Ventilator folgen dem Lastanteil der Maschinen (Nennpunkt = volle Leistung der Stunde).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_OHNE_FEUCHTE" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Klima führt keine Luftfeuchte — das Rückkühlwerk „{1}“ rechnet in {2} Stunden über der Schaltgrenze trocken, ohne Befeuchtung und ohne Wasserverbrauch.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ lag in {2} Stunden über seiner Nennleistung — der Ventilator lief dort voll, eine lastabhängige Annäherung stieg über den Nennwert.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_WASSER_KOSTEN" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; Wasserkosten {4} €/a (Menge × Wasserpreis, nicht in den Betriebskosten der Wirtschaftlichkeit).</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; ohne Wasserpreis an der Anlage keine Wasserkosten.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Kältemaschine „{0}": In {1} Stunden lag der Betriebspunkt außerhalb der Kennlinie (Rückkühlung {2} bis {3} °C, Kaltwasser {4} °C) — gerechnet wurde mit dem Randwert.</value>
@@ -51921,6 +51942,12 @@ Chart</value>
   </data>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt.</value>
+  </data>
+  <data name="KM_LBL_ID_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel (Tabellenverweis)</value>
+  </data>
+  <data name="KABG_KATALOG_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel</value>
   </data>
   <data name="KABG_KATALOG_RUECKKUEHLWERK" xml:space="preserve">
     <value>Rückkühlwerke</value>

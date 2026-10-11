@@ -954,8 +954,20 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_KAELTEMASCHINE: Geraetepreis x Anzahl der Anlagenzeile)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "KaeltemaschineStammCtrl.Speichern (Auslieferungssatz)"),
-            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).Concat(KaeltemaschineTeillast(t)).Concat(KaelteKatalogfelder(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).Concat(KaeltemaschineTeillast(t)).Concat(KaelteKatalogfelder(t))
+             .Concat(KaeltemittelVerweis(t)).ToList();
         }
+
+        /// <summary>
+        /// <b>Der Verweis auf die Kältemitteltabelle</b> (<see cref="KaeltemittelSchema"/>, Schritt 216; KM4-E1): Die Zuordnung
+        /// des Textbestands setzt ihn, Katalogfassung und Prüfsumme führen ihn über den Code; kein Rechenweg liest ihn (die
+        /// Zulässigkeitsprüfung ist KM4-E2), der Dialog zeigt ihn ab KM4-E3.
+        /// </summary>
+        private static IReadOnlyList<ParameterEintrag> KaeltemittelVerweis(Func<string, string> t) => new[]
+        {
+            E(KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL, t("KM_LBL_ID_KAELTEMITTEL"), "", DLG,
+              "KaeltemittelSchema.Zuordnen (Code-Abgleich des Textbestands); Katalogfassung (Verweis ueber den Code)"),
+        };
 
         /// <summary>
         /// <b>Die Katalogfelder der Kälteerzeuger</b> (<see cref="KaelteKatalogfelderSchema"/>, Schritt 211; Stufe K-A): Die
