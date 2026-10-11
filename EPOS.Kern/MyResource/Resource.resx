@@ -13064,9 +13064,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
     <value>nur mit Kühlfunktion</value>
   </data>
-  <data name="WPK_BTN_KATALOG" xml:space="preserve">
-    <value>📋  Modul-Katalog...</value>
-  </data>
   <data name="WPK_SP_MODELL" xml:space="preserve">
     <value>Modell</value>
   </data>
@@ -13240,12 +13237,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="WPS_MSG_NAME_BELEGT" xml:space="preserve">
     <value>Name existiert bereits!</value>
-  </data>
-  <data name="WPA_TITEL" xml:space="preserve">
-    <value>Detailansicht</value>
-  </data>
-  <data name="WPA_LBL_WP" xml:space="preserve">
-    <value>Wärmepumpen Auswahl:</value>
   </data>
   <data name="WPA_GRP_KENNDATEN" xml:space="preserve">
     <value>Wärmepumpen Kenndaten</value>
@@ -50407,6 +50398,12 @@ Chart</value>
   <data name="AUSWAHL_SATZ_BEARBEITEN" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
+  <data name="AUSWAHL_SATZ_KNOEPFE" xml:space="preserve">
+    <value>Aktionen für den gewählten Satz</value>
+  </data>
+  <data name="AUSWAHL_SPERRE_KATALOGSATZ" xml:space="preserve">
+    <value>Katalogsatz wählen</value>
+  </data>
   <data name="AUSWAHL_SATZ_BEARBEITEN_HINWEIS" xml:space="preserve">
     <value>Den gewählten Satz über dem Dialog bearbeiten</value>
   </data>
@@ -51387,15 +51384,6 @@ Chart</value>
   </data>
   <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
     <value>Umstellen braucht genau eine Wärmepumpe im Projekt und genau einen Satz im Katalog.</value>
-  </data>
-  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
-    <value>Anlage…</value>
-  </data>
-  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
-    <value>Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten</value>
-  </data>
-  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
-    <value>Anlage – {0}</value>
   </data>
   <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
     <value>Bitte die Anlage prüfen und mit OK bestätigen.</value>
@@ -52746,6 +52734,9 @@ Chart</value>
   </data>
   <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
     <value>Wie die Vorschau die gelesene Reihe zeigt: Jahr (Jahresverlauf) oder Tag (Tagesansicht der TWW-Messreihe).</value>
+  </data>
+  <data name="WPV_NUR_IM_PROJEKT" xml:space="preserve">
+    <value>Nur im Projekt: Diese Angaben gehören zur Anlage im Projekt, nicht zum Katalogsatz.</value>
   </data>
   <!-- Administration und Support, Stufe 1 -->
   <data name="ENTW_QUELLE_KEINE" xml:space="preserve">

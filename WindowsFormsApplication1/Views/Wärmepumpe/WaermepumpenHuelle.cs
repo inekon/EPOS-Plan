@@ -138,8 +138,8 @@ namespace WindowsFormsApplication1
                 ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
                     n => ParameterUebersichtCtrl.Werte(Anlagenart.Waermepumpe, n, KatalogBrowserHuelle.Text)),
 
-                // "Anlage…" (KA-E-11): die Anlagenseite als Ueberlagerung. Ihr "In Stamm übernehmen…" entfaellt hier -
-                // der Rueckweg steht in der Projekt-Kopfleiste (KA-E-9), eine Handlung hat einen Ort.
+                // AW2: die Anlagenfelder in der Satz-Ueberlagerung des Projektsatzes. Ihr "In Stamm übernehmen…"
+                // entfaellt hier - der Rueckweg steht in der Projekt-Kopfleiste (KA-E-9), eine Handlung hat einen Ort.
                 ["AnlageGaben"] = new Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>(
                     daten =>
                     {
@@ -165,18 +165,16 @@ namespace WindowsFormsApplication1
                 // Katalogpflege im Katalogfuss: Schloss, Loeschen, Bearbeiten… (4.9, ohne Vergleichen und Neu…).
                 ["Schloss"] = Schlosswege.Aus(WPStammCtrl.SchlossSetzen),
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
-                ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    KatalogEditorGaben),
-                ["KatalogsatzWege"] = new Satzbearbeitungswege
-                {
-                    Lesen = id => SatzFelder(false, id),
-                    Speichern = saetze => SammelSchreiben(false, saetze, zuModell)
-                },
-                ["ProjektsatzWege"] = mitKopie ? new Satzbearbeitungswege
-                {
-                    Lesen = id => SatzFelder(true, id),
-                    Speichern = saetze => SammelSchreiben(true, saetze, zuModell)
-                } : null,
+                // AW2: EINE Satz-Ueberlagerung fuer Projekt- und Katalogsatz. Der Katalogsatz schreibt ueber
+                // den Speicherweg des Katalogeditors (KA-E-8), seine Kennlinien ueber dessen Abgleich.
+                // AW2: "Neu…" der Knopfleiste am Satz - der Katalogeditor im Modus Neu.
+                ["NeuGaben"] = new Func<IReadOnlyDictionary<string, object>>(KatalogNeuGaben),
+                ["KatalogSpeichern"] = new Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>(
+                    WaermepumpeStammHuelle.Speichern),
+                ["KatalogKennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(
+                    WaermepumpeStammHuelle.KennlinienZu),
+                ["KatalogKennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
+                    WaermepumpeStammHuelle.KennlinienAbgleichen),
                 // KA-E-9: der Rueckweg "In die Datenbank übernehmen…" - Projektkopie samt Heiz- und Kuehlkennlinie.
                 ["RueckwegWege"] = mitKopie ? RueckwegWege() : null,
                 ["RueckwegBleibtText"] = MyResource.Resource.WPV_RUECK_BLEIBT,
@@ -441,76 +439,12 @@ namespace WindowsFormsApplication1
             _ => Rueckwegsperre.UrsprungUnbekannt,
         };
 
-        // =================================================================================
-        // Die Satzbearbeitung (KA-E-8): Hersteller, Beschreibung, Modulkosten
-        // =================================================================================
-
-        private const string FELD_FIRMA = "Firma";
-        private const string FELD_BESCHREIBUNG = "Beschreibung";
-        private const string FELD_MODULKOSTEN = "Modulkosten";
-
-        /// <summary>Die drei Felder der Satzbearbeitung eines Satzes nach Id (Projektkopie bzw. Katalog).</summary>
-        internal static IReadOnlyList<BrowserFeldwert> SatzFelder(bool projektkopie, int id)
+        /// <summary>AW2: die Gaben des Katalogeditors im Modus Neu („Neu…" der Knopfleiste am Satz).</summary>
+        private static IReadOnlyDictionary<string, object> KatalogNeuGaben()
         {
-            WPStammCtrl.Sammelsatz satz = WPStammCtrl.SammelsatzLesen(projektkopie, id);
-            if (satz == null) return null;
-            return new[]
-            {
-                new BrowserFeldwert { Schluessel = FELD_FIRMA, Bezeichnung = Text_("WPS_LBL_HERSTELLER", "Hersteller") + ":",
-                                      Art = BrowserFeldArt.Text, Editierbar = true, Wert = satz.Felder.Firma },
-                new BrowserFeldwert { Schluessel = FELD_BESCHREIBUNG, Bezeichnung = Text_("WPS_LBL_BESCHREIBUNG", "Beschreibung") + ":",
-                                      Art = BrowserFeldArt.Mehrzeilig, Editierbar = true, Wert = satz.Felder.Beschreibung },
-                new BrowserFeldwert { Schluessel = FELD_MODULKOSTEN, Bezeichnung = Text_("MODK_LBL_MODULKOSTEN", "Modulkosten") + ":",
-                                      Einheit = "€", Art = BrowserFeldArt.Zahl, Editierbar = true,
-                                      Wert = satz.Felder.Modulkosten is double k ? k.ToString(System.Globalization.CultureInfo.CurrentCulture) : "" },
-            };
-        }
-
-        /// <summary>
-        /// Schreibt alle Sätze einer Satzbearbeitung in EINER Transaktion (<see cref="WPStammCtrl.SammelfelderSchreibenAlle"/>).
-        /// Bei den Projektkopien ziehen die Zeilen danach Hersteller, Beschreibung und Modulkosten nach — sonst schriebe der
-        /// Gerätenachzug beim OK den alten Stand der Zeile zurück.
-        /// </summary>
-        internal static KatalogSpeicherErgebnis SammelSchreiben(
-            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze,
-            Dictionary<WaermepumpeAnlageDaten, WErzeugerModel> zuModell = null)
-        {
-            var liste = new List<WPStammCtrl.Sammelaenderung>();
-            foreach (var (id, felder) in saetze ?? Array.Empty<(int, IReadOnlyList<BrowserFeldwert>)>())
-            {
-                string Wert(string schluessel)
-                {
-                    foreach (BrowserFeldwert f in felder ?? Array.Empty<BrowserFeldwert>())
-                        if (f.Schluessel == schluessel) return f.Wert ?? "";
-                    return null;
-                }
-                WPStammCtrl.Sammelsatz alt = WPStammCtrl.SammelsatzLesen(projektkopie, id);
-                string kostenText = Wert(FELD_MODULKOSTEN);
-                double? kosten = alt?.Felder.Modulkosten;
-                if (kostenText != null)
-                {
-                    if (kostenText.Trim().Length == 0) kosten = null;
-                    else if (ZahlText.Parsen(kostenText, out double k)) kosten = k;
-                    else return new KatalogSpeicherErgebnis(false, string.Format(
-                        Text_("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."), alt?.Bezeichner ?? "",
-                        Text_("MODK_LBL_MODULKOSTEN", "Modulkosten")), alt?.Bezeichner ?? "");
-                }
-                liste.Add(new WPStammCtrl.Sammelaenderung(id, new WPStammCtrl.Sammelfelder(
-                    Wert(FELD_FIRMA) ?? alt?.Felder.Firma ?? "", Wert(FELD_BESCHREIBUNG) ?? alt?.Felder.Beschreibung ?? "", kosten)));
-            }
-            WPStammCtrl.SpeicherErgebnis e = WPStammCtrl.SammelfelderSchreibenAlle(projektkopie, liste);
-            if (e.Ok && projektkopie && zuModell != null)
-            {
-                foreach (KeyValuePair<WaermepumpeAnlageDaten, WErzeugerModel> paar in zuModell)
-                {
-                    WPStammCtrl.Sammelaenderung s = liste.Find(x => x.Id == paar.Key.IdWp);
-                    if (s == null) continue;
-                    paar.Key.Firma = paar.Value.Firma = s.Felder.Firma;
-                    paar.Key.Beschreibung = paar.Value.Beschreibung = s.Felder.Beschreibung;
-                    paar.Key.Modulkosten = paar.Value.Modulkosten = (int)Math.Round(s.Felder.Modulkosten ?? 0);
-                }
-            }
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+            var gaben = new Dictionary<string, object>(WaermepumpeStammHuelle.Gaben());
+            gaben["NeuBeimStart"] = true;
+            return gaben;
         }
 
         private static string Text_(string schluessel, string rueckfall)
@@ -520,12 +454,5 @@ namespace WindowsFormsApplication1
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
-
-        /// <summary>
-        /// Die Gaben des Modulkatalogs hinter „Bearbeiten…“ mit dem gewählten Satz als Vorwahl. Eine eigene
-        /// Methode, damit der Parametersatz des Katalogs nicht als Satz des Projektdialogs gelesen wird.
-        /// </summary>
-        private static IReadOnlyDictionary<string, object> KatalogEditorGaben(string name) =>
-            new Dictionary<string, object>(WaermepumpeStammHuelle.Gaben()) { ["Vorwahl"] = name ?? "" };
     }
 }

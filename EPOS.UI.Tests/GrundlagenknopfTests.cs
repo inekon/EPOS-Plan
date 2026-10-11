@@ -342,7 +342,7 @@ public sealed class GrundlagenknopfTests : EposBunitContext
     {
         { "HeizkesselDialog",        "Form_Heizkessel.Grundlagen" },
         { "BhkwDialog",              "Form_BHKWEing.Grundlagen" },
-        { "WaermepumpeAnlageDialog", "Form_WP.Grundlagen" },
+        { "WaermepumpeAnlageFelder", "Form_WP.Grundlagen" },
         { "BetriebsmodusDialog",     "Form_Betriebsmodus.Grundlagen" },
         { "PufferspeicherDialog",    "Form_PufferSp.Grundlagen" },
         { "PufferSpProjektDialog",   "Form_PufferSp_Projekt.Grundlagen" },

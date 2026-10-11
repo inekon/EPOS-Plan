@@ -79,10 +79,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("Rueckwegfrage",                  "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
         new("WaermepumpeStammFelder",         "WaermepumpeStammDialog",      KiMaskennamen.WAERMEPUMPE),
         new("WaermepumpeGeraetegrenzenFelder", "WaermepumpeStammDialog",     KiMaskennamen.WAERMEPUMPE),
-        new("WaermepumpeKonfiguration",       "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
+        new("WaermepumpeKonfiguration",       "WaermepumpeAnlageFelder",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
         // KB-B: die Gruppe „Kühlbetrieb“ (in WaermepumpeKonfiguration, auch im Bereich „Kälte“ der
         // Simulationskonfiguration) und die Betriebseingaben der Kältemaschine (im Dialog und im Bereich „Kälte“).
-        new("WaermepumpeKuehlbetriebGruppe",  "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
+        new("WaermepumpeKuehlbetriebGruppe",  "WaermepumpeAnlageFelder",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
         new("KaeltemaschineKonfiguration",    "KaeltemaschineAnlageDialog",  KiMaskennamen.KAELTEMASCHINE_ANLAGE),
         new("EnergietraegerEinstellungen",    "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
         new("BrennstoffBestandteile",         "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
@@ -562,7 +562,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WaermegangReiter", 3, "die Erzeuger- und die Speicherauswahl (Mehrfachauswahl) stehen als Anzeigeschalter mit im Katalog"),
         // Anwenderauftrag 30.09.2026: das Ganzzahlfeld „Nutzungsdauer" ist in den Kostendialog
         // gegangen, mit ihm das Feld nutzungsdauer der Feldkarte (5 -> 4).
-        new("WaermepumpeAnlageDialog", 4, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
+        new("WaermepumpeAnlageFelder", 4, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
         // KU3-6 (F6): die freie Kühlung über die Wärmequelle — ihr Schalter (ein nacktes input, weich
         // gesperrt über aria-disabled und title) und die Zahlenfelder Grädigkeit und Leistungsgrenze; die
         // Feldkarte führt sie als kuehl_frei, kuehl_frei_graedigkeit, kuehl_frei_leistung (19 -> 22).

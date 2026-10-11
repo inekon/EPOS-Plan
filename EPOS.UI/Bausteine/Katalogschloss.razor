@@ -16,7 +16,13 @@
 @if (Weg is not null)
 {
     Auswahlhandlung? h = _schloss.Handlung(Weg, _ausfuehren, Ziele, NurLesen);
-    @if (h is not null)
+    @if (h is not null && Sperrgrund is string grund)
+    {
+        @* WEICH GESPERRT (AW1): Der Knopf bleibt fokussierbar und nennt seinen Grund; ein Klick meldet ihn. *@
+        <button type="button" class="epos-knopf epos-katalogschloss" aria-disabled="true"
+                title="@grund" @onclick="BeiGesperrtemKlick">@h.Text</button>
+    }
+    else if (h is not null)
     {
         <button type="button" class="epos-knopf epos-katalogschloss"
                 disabled="@(Zeile is null || h.Aus)"
@@ -36,6 +42,15 @@
 
     /// <summary>Geänderte, ungespeicherte Felder des Satzes halten die Rückfrage auf.</summary>
     [Parameter] public bool Ungespeichert { get; set; }
+
+    /// <summary>
+    /// <b>Weiche Sperre mit Grund</b> (AW1): gesetzt ist der Knopf <c>aria-disabled</c>, sein
+    /// Kurztext nennt den Grund, und ein Klick meldet ihn über <see cref="Abgelehnt"/> — etwa
+    /// „Katalogsatz wählen", solange ein Projektsatz gewählt ist. <c>null</c>: wie bisher.
+    /// </summary>
+    [Parameter] public string? Sperrgrund { get; set; }
+
+    private Task BeiGesperrtemKlick() => Abgelehnt.InvokeAsync(Sperrgrund ?? "");
 
     /// <summary>Lesemodus des Wirts: Der Knopf ist hart gesperrt.</summary>
     [Parameter] public bool NurLesen { get; set; }

@@ -14,11 +14,11 @@ namespace WindowsFormsApplication1
     /// Die WINDOWS-HÜLLE der Wärmepumpen-ANLAGE (iU9-W7.4) — der Ersatz für
     /// <c>Wizard_WPItem</c>.
     ///
-    /// <para><b>Sie bearbeitet das Modell an Ort und Stelle.</b> Die acht Aufrufer des
-    /// Vorläufers reichten ein <c>WErzeugerModel</c> aus ihrer Liste herein und lasen
-    /// es nach dem OK wieder aus. Genau das leistet <see cref="Oeffnen"/>: Der Dialog
-    /// bekommt eine KOPIE der Felder, und bei OK überträgt die Hülle sie zurück — in
-    /// dasselbe Objekt, das der Aufrufer hält.</para>
+    /// <para><b>Sie liefert den Parametersatz der Anlagenfelder</b>
+    /// (<c>WaermepumpeAnlageFelder</c>), die die Satz-Überlagerung der Wärmepumpen
+    /// Verwaltung trägt (AW2) — Daten, Senkenzeile, Kühlgaben, Kennlinien-, Kosten- und
+    /// Trägerwege. Ein eigenes Fenster der Anlage gibt es nicht mehr; <see cref="AusModell"/>
+    /// und <see cref="NachModell"/> übertragen die Felder zwischen Modell und Datensatz.</para>
     ///
     /// <para><b>Die Kosten- und die Energieträgerverwaltung bleiben ZWEITE Fenster</b>
     /// (Abweichung A-1 aus Welle 6, unverändert): <see cref="KostenKomponenteHuelle"/>
@@ -29,57 +29,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class WaermepumpeAnlageHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 1126 × 752).</summary>
-        private static readonly Size MASS = new Size(1160, 800);
-
-        /// <summary>
-        /// Zeigt die Detailansicht als eigenes Fenster und schreibt bei OK in
-        /// <paramref name="modell"/> zurück.
-        /// </summary>
-        /// <param name="besitzer">Fenster, über dem der Dialog erscheint.</param>
-        /// <param name="modell">Die Anlagenzeile — sie wird bei OK an Ort und Stelle geändert.</param>
-        /// <param name="projektId">
-        /// Das GEÖFFNETE Projekt. Es dient als Rückfall beim Nachziehen der
-        /// Anlagenzeile; der Vorläufer holte es sich aus <c>Program.startfrm</c>.
-        /// </param>
-        /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
-        internal static bool Oeffnen(IWin32Window besitzer, WErzeugerModel modell, int projektId)
-        {
-            if (modell == null) return false;
-
-            bool ok = false;
-            BlazorDialogForm<WaermepumpeAnlageDialog> dlg = null;
-
-            WaermepumpeAnlageDaten daten = AusModell(modell);
-            // Uebergabegrenze UB-E1: Herleitungszeile und Schnellwahl - gelesen erst beim Zeichnen, je Dialog einmal.
-            BivalenzAbbildung.Lesen(modell, daten);
-
-            var werte = new Dictionary<string, object>(Gaben(besitzer, daten, modell, projektId))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (b)
-                    {
-                        NachModell(daten, modell);
-                        ErzeugerTraegerHuelle.Zuordnen(projektId, false, modell.ID_Carrier);
-                        // Uebergabegrenze UB-E2 (U-2): die Kaeltemittelwahl gehoert dem Geraet (Projektkopie).
-                        BivalenzAbbildung.GeraetSchreiben(daten);
-                    }
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
-
-            dlg = new BlazorDialogForm<WaermepumpeAnlageDialog>(
-                Text_("WPA_TITEL", "Detailansicht"), MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ok;
-        }
-
         /// <summary>
         /// Der PARAMETERSATZ der Detailansicht — für die Anzeige in einer
         /// <c>Ueberlagerung</c> der Wärmepumpen-Verwaltung (W7.5). <c>Geschlossen</c>
@@ -117,7 +66,6 @@ namespace WindowsFormsApplication1
                     ? WaermepumpeKuehlGabenBau.Bauen(projektId, modell != null ? (modell.WQ_Typ ?? "") : null)
                     : null,
 
-                ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
 
                 // W10b-B-3 (08.09.2026): Der Schalter "Extrapolation der WP-Kennlinie
@@ -190,18 +138,6 @@ namespace WindowsFormsApplication1
                             stand != null ? stand.IdWp : 0))
                     : null,
 
-                // W14a-E-10 / S2.2: derselbe Weg wie in der Verwaltung. OHNE die
-                // Spalte "im Projekt verwendet" - diese Maske fuehrt keine
-                // Projektliste, aus der sie sich ergaebe (Q12).
-                ["Katalog"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
-                    () => new WPStammCtrl().Katalogfilterzeilen()),
-                ["Katalogprofil"] = Katalogfilterprofil.Finde(
-                    Anlagenart.Waermepumpe, KatalogBrowserHuelle.Text),
-                // W14a-E-10 / S3.3: die Zeilen des Vergleichs kommen aus DERSELBEN
-                // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
-                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
-                    n => ParameterUebersichtCtrl.Werte(Anlagenart.Waermepumpe, n, KatalogBrowserHuelle.Text)),
-
                 // --- Die STAMMFELDER im Kenndatenblock (Anwenderentscheid 16.09.2026) ---
                 //
                 // SIE GEHOEREN DER PROJEKTKOPIE, NICHT DEM KATALOG. Bis zum Vormittag
@@ -249,14 +185,6 @@ namespace WindowsFormsApplication1
                 ["MeldungUebernahmeReadOnly"] = Text_("WP_STAMM_UEBERNAHME_MSG_READONLY",
                     "Auslieferungssätze werden nicht überschrieben."),
 
-                ["TitelText"] = Text_("WPA_TITEL", "Detailansicht"),
-                ["LabelWpAuswahl"] = Text_("WPA_LBL_WP", "Wärmepumpen Auswahl:"),
-                ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
-
-                // W7-B-1: "Wahl | Hersteller | Typ" - Typ ist die
-                // MODELLBEZEICHNUNG, der Waermepumpentyp bleibt im Kenndatenblock.
-                ["SpalteHersteller"] = Text_("WPV_SP_HERSTELLER", "Hersteller"),
-                ["SpalteTyp"] = Text_("WPV_SP_TYP", "Typ"),
 
                 ["GruppeKenndaten"] = Text_("WPA_GRP_KENNDATEN", "Wärmepumpen Kenndaten"),
                 ["GruppeAuslegung"] = Text_("WPA_GRP_AUSLEGUNG", "Auslegung für Verteilung"),
@@ -290,7 +218,6 @@ namespace WindowsFormsApplication1
                 ["PlatzhalterBild"] = Text_("WPS_PLATZHALTER_BILD", "Keine Kennlinien vorhanden"),
                 ["RuecklaufFormat"] = Text_("WPA_RUECKLAUF_VORSCHLAG", "Übliche Werte: {0} °C"),
                 ["SchliessenText"] = Text_("WPV_BTN_SCHLIESSEN", "Schließen"),
-                ["BtnKatalogText"] = Text_("WPK_BTN_KATALOG", "📋  Modul-Katalog..."),
                 ["BtnKenndatenText"] = Text_("WPS_BTN_KENNDATEN", "Kennliniendaten Ansicht/Bearbeiten..."),
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
@@ -310,20 +237,6 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
-
-        private static IReadOnlyList<WaermepumpeStammZeile> Stammliste()
-        {
-            var ctrl = new WPStammCtrl();
-            ctrl.ReadAll();
-
-            var liste = new List<WaermepumpeStammZeile>();
-            foreach (WPModel m in ctrl.items)
-                // W7-B-1: Der Hersteller gehoert in die Liste, vor die
-                // Modellbezeichnung.
-                liste.Add(new WaermepumpeStammZeile(m.ID, m.WPName ?? "", m.m_bReadOnly,
-                                                    m.Firma ?? ""));
-            return liste;
-        }
 
         /// <summary>
         /// Die Vorlaufstufen eines Geräts (<c>FillVorlaufCombo</c>:125) — seit
