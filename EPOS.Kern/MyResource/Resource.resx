@@ -52732,12 +52732,6 @@ Chart</value>
   <data name="KI_ABSAGE_NUR_ENTWICKLER" xml:space="preserve">
     <value>Diese Funktion ist in Ihrer Fassung nicht freigegeben.</value>
   </data>
-  <data name="ADM_SET_RUBRIK_ENTWICKLUNG" xml:space="preserve">
-    <value>Entwicklung</value>
-  </data>
-  <data name="ADM_SET_HINT_ENTWICKLUNG" xml:space="preserve">
-    <value>Rechenvorgaben des Zapfprofils für Entwicklung und Prüfung. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms.</value>
-  </data>
   <data name="ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
     <value>Zapfprofil: Temperatur der Literanzeige</value>
   </data>
@@ -52885,6 +52879,13 @@ Chart</value>
   </data>
   <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
     <value>Wie die Vorschau die gelesene Reihe zeigt: Jahr (Jahresverlauf) oder Tag (Tagesansicht der TWW-Messreihe).</value>
+  </data>
+  <!-- Administration und Support, Zapfprofil-Nachzug -->
+  <data name="ADM_SET_RUBRIK_ZAPFPROFIL" xml:space="preserve">
+    <value>Zapfprofil</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPFPROFIL" xml:space="preserve">
+    <value>Rechenvorgaben des Zapfprofilgenerators für alle Projekte: Anzeigetemperatur der Literangabe, Stundenschwelle, Nenninhalte der Speicherauswahl und die Startordner für Katalogpaket und Typtage. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms; einen ungültigen Wert verwirft die Rechnung mit Hinweis und rechnet mit der Vorgabe.</value>
   </data>
 </root>
 

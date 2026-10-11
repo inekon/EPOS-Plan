@@ -1692,15 +1692,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenvorgaben des Zapfprofils für Entwicklung und Prüfung. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms. ähnelt.
-        /// </summary>
-        public static string ADM_SET_HINT_ENTWICKLUNG {
-            get {
-                return ResourceManager.GetString("ADM_SET_HINT_ENTWICKLUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gilt nur für neu angelegte Projekte. Vorhandene Projekte behalten ihre Einstellung, ein kopiertes Projekt übernimmt die seiner Vorlage. ähnelt.
         /// </summary>
         public static string ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG {
@@ -1724,6 +1715,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_HINT_PFADE_FEST {
             get {
                 return ResourceManager.GetString("ADM_SET_HINT_PFADE_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenvorgaben des Zapfprofilgenerators für alle Projekte: Anzeigetemperatur der Literangabe, Stundenschwelle, Nenninhalte der Speicherauswahl und die Startordner für Katalogpaket und Typtage. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms; einen ungültigen Wert verwirft die Rechnung mit Hinweis und rechnet mit der Vorgabe. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPFPROFIL", resourceCulture);
             }
         }
         
@@ -2052,15 +2052,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklung ähnelt.
-        /// </summary>
-        public static string ADM_SET_RUBRIK_ENTWICKLUNG {
-            get {
-                return ResourceManager.GetString("ADM_SET_RUBRIK_ENTWICKLUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
         /// </summary>
         public static string ADM_SET_RUBRIK_KLIMA {
@@ -2084,6 +2075,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_RUBRIK_WEB {
             get {
                 return ResourceManager.GetString("ADM_SET_RUBRIK_WEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_ZAPFPROFIL", resourceCulture);
             }
         }
         

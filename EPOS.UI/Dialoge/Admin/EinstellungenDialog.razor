@@ -5,7 +5,7 @@
 
    WOZU. Zwoelf Properties.Settings-Werte, EIN Registry-Schalter (der
    KI-Abschalter) und die Programmeinstellung "Neue Projekte mit Kuehlung anlegen"
-   (Dienste.Einstellungen, E27/K10), sortiert in sechs Rubriken.
+   (Dienste.Einstellungen, E27/K10), sortiert in sieben Rubriken.
 
    DIE RUBRIKENLISTE IST EINE REITERLEISTE (A-16/A-17). Gestapelte
    Dock.Fill-Panels, von denen genau eines sichtbar ist, plus eine Auswahlliste
@@ -196,6 +196,36 @@
                     </KindInhalt>
                 </Reiterblatt>
 
+                @* Die Anwenderrubrik "Zapfprofil" (Konzept Administration und Support 3.4): die fuenf
+                   Rechenvorgaben des Zapfprofilgenerators, fuer jeden Anwender sichtbar und setzbar.
+                   Leer = Vorgabe des Programms; einen ungueltigen Wert verwirft der Leser mit Hinweis. *@
+                <Reiterblatt Schluessel="ZAPFPROFIL" Titel="@Resource.ADM_SET_RUBRIK_ZAPFPROFIL">
+                    <KindInhalt>
+                    <div class="epos-einst-zapfprofil">
+                        <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPFPROFIL" />
+                        <Formularraster Einspaltig="true">
+                            <KindInhalt>
+                            <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" Wert="@_satz.ZapfAnzeigetemperatur"
+                                      WertChanged="@(t => _satz.ZapfAnzeigetemperatur = t)" Einheit="°C" />
+                            <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR" />
+                            <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_STUNDENSCHWELLE" Wert="@_satz.ZapfStundenschwelle"
+                                      WertChanged="@(t => _satz.ZapfStundenschwelle = t)" Einheit="kW" />
+                            <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_STUNDENSCHWELLE" />
+                            <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_NENNINHALTE" Wert="@_satz.ZapfNenninhalte"
+                                      WertChanged="@(t => _satz.ZapfNenninhalte = t)" Einheit="l" />
+                            <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_NENNINHALTE" />
+                            <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_KATALOGORDNER" Wert="@_satz.ZapfKatalogordner"
+                                      WertChanged="@(t => _satz.ZapfKatalogordner = t)" />
+                            <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_KATALOGORDNER" />
+                            <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_IMPORTORDNER" Wert="@_satz.ZapfImportordner"
+                                      WertChanged="@(t => _satz.ZapfImportordner = t)" />
+                            <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_IMPORTORDNER" />
+                            </KindInhalt>
+                        </Formularraster>
+                    </div>
+                    </KindInhalt>
+                </Reiterblatt>
+
                 @* Die sechste Rubrik (DF-1, Anwenderentscheid 20.09.2026 "Die Farben
                    der Diagramme sollen jeweils aenderbar sein"): die Farbe je
                    FARBROLLE, anwendungsweit. Sie steht zwischen KLIMA und ANWENDUNG -
@@ -378,46 +408,13 @@
                     </KindInhalt>
                 </Reiterblatt>
 
-                @* Entwicklerbereich ZAPFPROFIL_VORGABEN (Konzept Administration und Support 3.3 d): die Rubrik
-                   "Entwicklung" mit den fuenf Rechenvorgaben des Zapfprofils - nur mit dem Kennzeichen Entwickler.
-                   Leer = Vorgabe des Lesers; der Kern schreibt sie nur im Entwicklermodus. *@
-                @if (Entwickler)
-                {
-                    <Reiterblatt Schluessel="ENTWICKLUNG" Titel="@Resource.ADM_SET_RUBRIK_ENTWICKLUNG">
-                        <KindInhalt>
-                        <div class="epos-einst-entwicklung" data-stufe="entwickler" data-bereich="ZAPFPROFIL_VORGABEN">
-                            <Herleitungszeile Text="@Resource.ADM_SET_HINT_ENTWICKLUNG" />
-                            <Formularraster Einspaltig="true">
-                                <KindInhalt>
-                                <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" Wert="@_satz.ZapfAnzeigetemperatur"
-                                          WertChanged="@(t => _satz.ZapfAnzeigetemperatur = t)" Einheit="°C" />
-                                <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR" />
-                                <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_STUNDENSCHWELLE" Wert="@_satz.ZapfStundenschwelle"
-                                          WertChanged="@(t => _satz.ZapfStundenschwelle = t)" Einheit="kW" />
-                                <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_STUNDENSCHWELLE" />
-                                <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_NENNINHALTE" Wert="@_satz.ZapfNenninhalte"
-                                          WertChanged="@(t => _satz.ZapfNenninhalte = t)" Einheit="l" />
-                                <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_NENNINHALTE" />
-                                <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_KATALOGORDNER" Wert="@_satz.ZapfKatalogordner"
-                                          WertChanged="@(t => _satz.ZapfKatalogordner = t)" />
-                                <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_KATALOGORDNER" />
-                                <Textfeld Bezeichnung="@Resource.ADM_SET_LBL_ZAPF_IMPORTORDNER" Wert="@_satz.ZapfImportordner"
-                                          WertChanged="@(t => _satz.ZapfImportordner = t)" />
-                                <Herleitungszeile Text="@Resource.ADM_SET_HINT_ZAPF_IMPORTORDNER" />
-                                </KindInhalt>
-                            </Formularraster>
-                        </div>
-                        </KindInhalt>
-                    </Reiterblatt>
-                }
-
             </KindInhalt>
         </Reiter>
     </div>
 
     @* --- Die EINE Fussleiste (DL-2 Nr. 10) --------------------------------
        Standardwerte · Fueller · Abbrechen · OK (primaer). "Standardwerte" wirkt
-       auf ALLE sechs Rubriken zugleich - auf den ganzen Dialog also, nicht auf
+       auf ALLE sieben Rubriken zugleich - auf den ganzen Dialog also, nicht auf
        ein Blatt - und steht deshalb im Aktionsschlitz der Fussleiste, links vom
        Fueller (die Statusspanne der SpeichernLeiste IST der Fueller). Die
        zweite Leiste darueber ist damit entfallen.
@@ -450,12 +447,6 @@
 
     /// <summary>Ist der KI-Assistent abgeschaltet? (<c>KiEinwilligung.Abgeschaltet</c>)</summary>
     [Parameter] public bool KiAbgeschaltet { get; set; }
-
-    /// <summary>
-    /// Entwicklerbereich <c>ZAPFPROFIL_VORGABEN</c>: die Rubrik „Entwicklung“ nur damit; die Hülle setzt es aus
-    /// <c>Entwicklermodus.Aktiv</c>.
-    /// </summary>
-    [Parameter] public bool Entwickler { get; set; }
 
     /// <summary>
     /// Ein maschinenweiter Riegel (HKLM) — dann bleibt der Schalter gesperrt: Er ist
@@ -1078,7 +1069,7 @@
             NeueProjekteMitKuehlung = s?.NeueProjekteMitKuehlung ?? false,
             NeueProjekteVorheizToleranz = s?.NeueProjekteVorheizToleranz,
             NeueProjekteVorheizToleranzArt = s?.NeueProjekteVorheizToleranzArt ?? Vorheiztoleranzart.Prozent,
-            // Die Rubrik "Entwicklung" (ZAPFPROFIL_VORGABEN): kommt immer aus s.
+            // Die Rubrik "Zapfprofil": kommt immer aus s.
             ZapfAnzeigetemperatur = s?.ZapfAnzeigetemperatur ?? "",
             ZapfStundenschwelle = s?.ZapfStundenschwelle ?? "",
             ZapfNenninhalte = s?.ZapfNenninhalte ?? "",

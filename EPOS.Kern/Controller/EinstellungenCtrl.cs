@@ -69,8 +69,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die Einheit der Vorbelegung: Prozent (Vorgabe) oder kW.</summary>
         public Vorheiztoleranzart NeueProjekteVorheizToleranzArt;
 
-        // Entwicklerbereich ZAPFPROFIL_VORGABEN (Rubrik „Entwicklung“): die fünf Rechenvorgaben des Zapfprofils als Text
-        // der Einstellung, leer = Vorgabe (Schlüssel gelöscht). Gelesen immer, geschrieben nur im Entwicklermodus.
+        // Anwenderrubrik „Zapfprofil“: die fünf Rechenvorgaben des Zapfprofils als Text der Einstellung,
+        // leer = Vorgabe (Schlüssel gelöscht). Gelesen und geschrieben für jeden Anwender.
 
         /// <summary><c>Zapfprofil.Anzeigetemperatur</c>: °C, invariante Zahl; leer = Vorgabe.</summary>
         public string ZapfAnzeigetemperatur = "";
@@ -273,13 +273,13 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Entwicklerbereich ZAPFPROFIL_VORGABEN (Konzept Administration und Support 3.3 d)
+        // Anwenderrubrik „Zapfprofil“ (Konzept Administration und Support 3.4)
         // =====================================================================
 
         /// <summary>
         /// Die fünf Schlüssel der Rechenvorgaben des Zapfprofils in <c>Dienste.Einstellungen</c> — dieselben Texte wie bei
         /// ihren Lesern (<c>ZapfprofilCtrl.EINSTELLUNG_*</c>, <c>ZapfprofilHuelle.EINSTELLUNG_KATALOGORDNER</c> und
-        /// <c>EINSTELLUNG_IMPORTORDNER</c>); Fundstelle <see cref="Entwicklerbereiche.ZAPFPROFIL_VORGABEN"/>.
+        /// <c>EINSTELLUNG_IMPORTORDNER</c>).
         /// </summary>
         public const string SCHLUESSEL_ZAPF_ANZEIGETEMPERATUR = "Zapfprofil.Anzeigetemperatur";
         public const string SCHLUESSEL_ZAPF_STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
@@ -305,12 +305,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schreibt die fünf Vorgaben — nur im Entwicklermodus (<see cref="Entwicklerbereiche.ZAPFPROFIL_VORGABEN"/>);
-        /// ein leerer Wert löscht den Schlüssel, dann gilt die Vorgabe des Lesers. Ohne Modus bleibt die Ablage unberührt.
+        /// Schreibt die fünf Vorgaben der Anwenderrubrik „Zapfprofil“; ein leerer Wert löscht den Schlüssel, dann gilt
+        /// die Vorgabe des Lesers. Einen ungültigen Wert verwirft der Leser mit Hinweis und rechnet mit der Vorgabe.
         /// </summary>
         public static void ZapfprofilVorgabenSchreiben(Einstellungensatz s)
         {
-            if (s == null || !Entwicklermodus.Aktiv) return;
+            if (s == null) return;
             ZapfSchreib(SCHLUESSEL_ZAPF_ANZEIGETEMPERATUR, s.ZapfAnzeigetemperatur);
             ZapfSchreib(SCHLUESSEL_ZAPF_STUNDENSCHWELLE, s.ZapfStundenschwelle);
             ZapfSchreib(SCHLUESSEL_ZAPF_NENNINHALTE, s.ZapfNenninhalte);
@@ -409,7 +409,7 @@ namespace WindowsFormsApplication1
                     string.Format(MyResource.Resource.ADM_SET_MSG_KUEHLUNG_FEHLER, ex.Message));
             }
 
-            // Die Rechenvorgaben des Zapfprofils (Rubrik „Entwicklung“) - nur im Entwicklermodus.
+            // Die Rechenvorgaben des Zapfprofils (Anwenderrubrik „Zapfprofil“).
             try
             {
                 ZapfprofilVorgabenSchreiben(s);
