@@ -789,7 +789,8 @@ namespace WindowsFormsApplication1
                 Ansicht = GebaeudeAufbauHuelle.MitAufbau(GebaeudeImportAnsicht.AnsichtDaten(_geometrie, umhaengbar,
                                                              GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag),
                                                              anfrage.Gebaeudeindex >= 0 && anfrage.Gebaeudeindex < (_ablauf.Abbild?.Gebaeude.Count ?? 0)
-                                                                 ? _ablauf.Abbild.Gebaeude[anfrage.Gebaeudeindex] : null), _vorschlag),
+                                                                 ? _ablauf.Abbild.Gebaeude[anfrage.Gebaeudeindex] : null), _vorschlag)
+                          is GebaeudeAnsichtDaten ad ? MitVorschlagsgrund(ad, _vorschlag) : null,
                 ProjektdateiMoeglich = GebaeudeImportAblauf.IstHottcad(_ablauf.Abbild, anfrage.Gebaeudeindex),
                 Projektdatei = ProjektdateiDaten() is GebaeudeProjektdateiDaten pd ? pd with { Einzonenvorschlag = Einzonenvorschlag() } : null,
             };
@@ -1245,6 +1246,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der Grund, warum sich ein Vorschlag nicht übernehmen lässt: seine Fehler, sonst ein allgemeiner Satz.</summary>
+        /// <summary>
+        /// Trägt den Grund ein, warum kein Bauteilvorschlag vorliegt (Auftrag AB) — die Fehler des Vorschlags, etwa nicht
+        /// zugeordnete Räume des Zonenplans. Mit Zeilen bleibt die Ansicht unverändert.
+        /// </summary>
+        internal static GebaeudeAnsichtDaten MitVorschlagsgrund(GebaeudeAnsichtDaten daten, GebaeudeBauteilvorschlag v)
+            => daten == null || v == null || v.Zeilen.Count > 0 ? daten : daten with { Vorschlagsgrund = Ablehnungstext(v) };
+
         private static string Ablehnungstext(GebaeudeBauteilvorschlag v)
         {
             string fehler = v == null ? "" : string.Join(" ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler).Select(Text));

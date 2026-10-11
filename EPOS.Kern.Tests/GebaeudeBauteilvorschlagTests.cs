@@ -920,7 +920,10 @@ namespace EPOS.Kern.Tests
             Nah(2.0 * (12.5 + 40.0 + 20.0), v.FlaecheInnen);
             Nah(v.FlaecheInnen, v.InnenflaecheDateiM2);
             Assert.Equal(0, v.InnenflaechenUnvollstaendig);
-            Assert.Equal("iw-eg (Seite A)", BauteilvorschlagProbe.Zeile(v, "iw-eg", "A").Bauteil.Bezeichner);
+            // Ohne Namen in der Datei der lesbare Name aus Art, Raum und Ausrichtung (Auftrag AB), dazu die Seite.
+            string iw = BauteilvorschlagProbe.Zeile(v, "iw-eg", "A").Bauteil.Bezeichner;
+            Assert.StartsWith(BauteilaufbauCtrl.BauteilartText(DbWerte.BAUTEILART_INNENWAND) + " Wohnen ", iw);
+            Assert.EndsWith(" (Seite A)", iw);
             PruefMeldung m = Assert.Single(v.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.INNEN_BAUTEILE);
             Assert.Equal(new[] { "3", "6", "145", "1.2083" }, m.Werte);
 

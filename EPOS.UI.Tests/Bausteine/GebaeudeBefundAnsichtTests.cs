@@ -115,14 +115,14 @@ public class GebaeudeBefundAnsichtTests : EposBunitContext
         Assert.Equal(new[] { "zonen", "randbedingung", "aufbau", "befund" },
                      ohne.FindAll(".epos-gebansicht-farbmodus button").Select(b => b.GetAttribute("data-farbmodus")));
         IElement gesperrt = Knopf(ohne);
-        Assert.True(gesperrt.HasAttribute("disabled"));
+        Assert.Equal("true", gesperrt.GetAttribute("aria-disabled"));
         Assert.Equal(new GebaeudeAnsichtTexte().BefundOhne, gesperrt.GetAttribute("title"));
         Assert.Equal("Befund", gesperrt.TextContent.Trim());
         gesperrt.Click();
         Assert.Equal("zonen", ohne.Instance.Farbmodus);
 
         IRenderedComponent<GebaeudeAnsicht> cut = Zeige(Daten());
-        Assert.False(Knopf(cut).HasAttribute("disabled"));
+        Assert.Null(Knopf(cut).GetAttribute("aria-disabled"));
         Assert.Null(Knopf(cut).GetAttribute("title"));
         ImBefundmodus(cut);
         Assert.Equal("true", Knopf(cut).GetAttribute("aria-pressed"));
