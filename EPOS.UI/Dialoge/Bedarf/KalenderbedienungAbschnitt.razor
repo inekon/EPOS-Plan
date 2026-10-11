@@ -334,8 +334,18 @@
         </div>
 
         @* ================================================================ Einzeltage *@
-        <section class="epos-kalb-einzeltage" aria-label="@Texte.LabelKalbEinzeltage">
-            <h4 class="epos-kond-abschnitt-titel">@Texte.LabelKalbEinzeltage</h4>
+        @* Eine Klappgruppe (KAL1): beim Oeffnen zugeklappt, die Kopfzeile nennt die Anzahl und traegt
+           „Neu" und „Feiertage laden"; beide klappen auf, damit die neue Zeile zu sehen ist. *@
+        <Klappgruppe Klasse="epos-kalb-einzeltage" TitelKlasse="epos-kond-abschnitt-titel" Titel="@Texte.LabelKalbEinzeltage"
+                     Zusatz="@EinzeltageAnzahltext" @bind-Offen="_einzeltageOffen">
+            <Kopfhandlungen>
+                <button type="button" class="epos-knopf epos-kalb-einzeltag-neu" @attributes="Sperre(Zuordnungssperre)"
+                        @onclick="() => Neu(true)">@Texte.KnopfKalbEinzeltagNeu</button>
+                <button type="button" class="epos-knopf epos-kalb-feiertage-laden" title="@Texte.HinweisKalbFeiertage"
+                        @attributes="Sperre(Zuordnungssperre ?? Handlungssperre(KonditionierungHandlung.FeiertageLaden))"
+                        @onclick="FeiertageLaden">@Texte.KnopfKalbFeiertageLaden</button>
+            </Kopfhandlungen>
+            <ChildContent>
             <div class="epos-kalb-tabellenhuelle">
                 <table class="epos-raster epos-kalb-tabelle epos-kalb-tage">
                     <thead>
@@ -375,15 +385,9 @@
             {
                 @Editor(et)
             }
-            <div class="epos-zeilenknoepfe">
-                <button type="button" class="epos-knopf epos-kalb-einzeltag-neu" @attributes="Sperre(Zuordnungssperre)"
-                        @onclick="() => Neu(true)">@Texte.KnopfKalbEinzeltagNeu</button>
-                <button type="button" class="epos-knopf epos-kalb-feiertage-laden" title="@Texte.HinweisKalbFeiertage"
-                        @attributes="Sperre(Zuordnungssperre ?? Handlungssperre(KonditionierungHandlung.FeiertageLaden))"
-                        @onclick="FeiertageLaden">@Texte.KnopfKalbFeiertageLaden</button>
-            </div>
             <p class="epos-leisezeile">@Texte.HinweisKalbFeiertage</p>
-        </section>
+            </ChildContent>
+        </Klappgruppe>
 
         @* ================================================================ Jahresraster *@
         <section class="epos-kalb-jahresraster" aria-label="@Texte.LabelKalbJahresraster">
@@ -875,6 +879,26 @@
     private int? _quellmonat = 1;
     private int? _zielmonat = 2;
 
+    /// <summary>
+    /// Die Klappgruppe der Einzeltage steht offen (KAL1): beim Öffnen zugeklappt; „Neu", „Feiertage laden"
+    /// und das Bearbeiten eines Einzeltags (auch aus dem Jahresraster) klappen auf. Sie lebt so lange wie der Abschnitt.
+    /// </summary>
+    private bool _einzeltageOffen;
+
+    /// <summary>Steht die Klappgruppe der Einzeltage offen? Prüfhilfe.</summary>
+    public bool EinzeltageOffen => _einzeltageOffen;
+
+    /// <summary>Die Anzahl im Kopf der Einzeltage: „1 Tag", sonst „n Tage".</summary>
+    private string EinzeltageAnzahltext
+    {
+        get
+        {
+            int n = _ansicht?.Zuordnungen.Count(x => x.IstEinzeltag) ?? 0;
+            return n == 1 ? Texte.LabelKlappEinzeltageEiner
+                          : string.Format(CultureInfo.CurrentCulture, Texte.LabelKlappEinzeltageAnzahl, n);
+        }
+    }
+
     /// <summary>Die gewählte Zeile (Band, Jahresraster, Tabelle). Prüfhilfe.</summary>
     public KalenderZeilenschluessel? GewaehlteZeile => _gewaehlt;
 
@@ -885,6 +909,7 @@
             _ = Verweigert.InvokeAsync(grund);
             return;
         }
+        if (einzeltag) _einzeltageOffen = true;
         _editor = new Zeileneditor
         {
             Einzeltag = einzeltag,
@@ -896,6 +921,7 @@
     private void Bearbeiten(KalenderZuordnungszeile z)
     {
         _gewaehlt = z.Schluessel;
+        if (z.IstEinzeltag) _einzeltageOffen = true;
         _editor = new Zeileneditor
         {
             Einzeltag = z.IstEinzeltag,
@@ -1101,6 +1127,7 @@
     private async Task FeiertageLaden()
     {
         if (await Gesperrt(Zuordnungssperre ?? Handlungssperre(KonditionierungHandlung.FeiertageLaden))) return;
+        _einzeltageOffen = true;
         await Danach(Bearbeitung.FeiertageLaden(Bearbeitung.AngelegteGroessen));
     }
 

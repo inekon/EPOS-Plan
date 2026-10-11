@@ -1,0 +1,101 @@
+﻿@* DIE ALLGEMEINE KLAPPGRUPPE: ein Abschnitt mit einer Kopfzeile, die ihn auf- und zuklappt.
+
+   Abgeleitet aus der Klapp-Bauform der Hinweislisten (Hinweisklappe) und der Detailzeile der
+   Zweispaltenauswahl - ohne deren Farbklang der Schwere: ein Abschnitt eines Dialogs, kein Band.
+
+   KOPFZEILE: eine Ueberschrift (h3 oder h4, Klasse TitelKlasse), in ihr EIN echter Knopf mit
+   Klappzeichen, Titel und Zusatz (etwa die Anzahl „9 Tage"). Enter und Leertaste bedient der
+   Browser; aria-expanded und aria-controls sagen der Sprachausgabe, was er tut. Rechts daneben
+   stehen wahlweise Handlungen des Wirts (Kopfhandlungen) - ausserhalb des Klappknopfs, weil ein
+   Knopf keinen Knopf enthalten darf.
+
+   INHALT: nur aufgeklappt im Baum. Die Stellung haelt der Wirt (Offen mit @bind-Offen) oder,
+   ungebunden, der Baustein selbst - so lange, wie er lebt. Setzt der Wirt Offen neu (etwa beim
+   Anlegen einer Zeile), folgt die Gruppe. *@
+
+<section class="@Klassen" aria-label="@Titel">
+    <div class="epos-klappgruppe-kopf">
+        @if (Ebene == 3)
+        {
+            <h3 class="@TitelKlassen">@Knopf</h3>
+        }
+        else
+        {
+            <h4 class="@TitelKlassen">@Knopf</h4>
+        }
+        @if (Kopfhandlungen is not null)
+        {
+            <div class="epos-klappgruppe-handlungen">@Kopfhandlungen</div>
+        }
+    </div>
+    @if (IstOffen)
+    {
+        <div class="epos-klappgruppe-inhalt" id="@_inhaltId">@ChildContent</div>
+    }
+</section>
+
+@code {
+    /// <summary>Der Titel der Gruppe (Knopf und Name des Abschnitts).</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Der Zusatz hinter dem Titel, etwa die Anzahl; leer = keiner.</summary>
+    [Parameter] public string Zusatz { get; set; } = "";
+
+    /// <summary>Die Stufe der Ueberschrift: 3 oder 4 (Vorgabe 4).</summary>
+    [Parameter] public int Ebene { get; set; } = 4;
+
+    /// <summary>Zusaetzliche Klasse der Ueberschrift (das Bild des Wirts).</summary>
+    [Parameter] public string TitelKlasse { get; set; } = "";
+
+    /// <summary>Zusaetzliche Klasse am Abschnitt (Pruefanker des Wirts).</summary>
+    [Parameter] public string Klasse { get; set; } = "";
+
+    /// <summary>Die Stellung: offen oder zugeklappt (Vorgabe zugeklappt).</summary>
+    [Parameter] public bool Offen { get; set; }
+
+    /// <summary>Die Stellung hat sich durch die Kopfzeile geaendert.</summary>
+    [Parameter] public EventCallback<bool> OffenChanged { get; set; }
+
+    /// <summary>Handlungen rechts in der Kopfzeile, auch zugeklappt sichtbar.</summary>
+    [Parameter] public RenderFragment? Kopfhandlungen { get; set; }
+
+    /// <summary>Der Inhalt, nur aufgeklappt im Baum.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Steht die Gruppe offen? (Pruefhilfe)</summary>
+    public bool IstOffen => _offen;
+
+    private bool _offen;
+    private bool? _letzterParameter;
+
+    private readonly string _inhaltId = "epos-klappgruppe-" + Guid.NewGuid().ToString("N")[..8];
+
+    private string Klassen => "epos-klappgruppe" + (IstOffen ? " epos-klappgruppe--offen" : "")
+        + (string.IsNullOrEmpty(Klasse) ? "" : " " + Klasse);
+
+    private string TitelKlassen => "epos-klappgruppe-titel" + (string.IsNullOrEmpty(TitelKlasse) ? "" : " " + TitelKlasse);
+
+    protected override void OnParametersSet()
+    {
+        if (_letzterParameter == Offen) return;
+        _letzterParameter = Offen;
+        _offen = Offen;
+    }
+
+    private RenderFragment Knopf => @<button type="button" class="epos-klappgruppe-knopf"
+                                             aria-expanded="@(IstOffen ? "true" : "false")" aria-controls="@_inhaltId"
+                                             @onclick="Umschalten">
+        <span class="epos-klappgruppe-zeichen" aria-hidden="true">@(IstOffen ? "▾" : "▸")</span>
+        <span class="epos-klappgruppe-text">@Titel</span>
+        @if (!string.IsNullOrEmpty(Zusatz))
+        {
+            <span class="epos-klappgruppe-zusatz">@Zusatz</span>
+        }
+    </button>;
+
+    private async Task Umschalten()
+    {
+        _offen = !_offen;
+        await OffenChanged.InvokeAsync(_offen);
+    }
+}
