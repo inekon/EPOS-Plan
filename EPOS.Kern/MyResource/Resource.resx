@@ -51853,6 +51853,18 @@ Chart</value>
   <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
     <value>Elektrische Zuheizung</value>
   </data>
+  <data name="KFLT_LT_HERSTELLER" xml:space="preserve">
+    <value>Hersteller der Wärmepumpe</value>
+  </data>
+  <data name="KFLT_LT_MODELL" xml:space="preserve">
+    <value>Modellbezeichnung der Wärmepumpe</value>
+  </data>
+  <data name="KFLT_LT_QUELLE" xml:space="preserve">
+    <value>Wärmequelle der Wärmepumpe (Luft, Sole, Wasser)</value>
+  </data>
+  <data name="KFLT_LT_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Kühlleistung im Kühlbetrieb (kW)</value>
+  </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Geräteart des Kälteerzeugers (Kaltwassersatz luft- oder wassergekühlt, mit Freikühlung, Split, Multisplit, VRF, Absorption); leer = nach der Rückkühlart.</value>
   </data>
@@ -52713,6 +52725,198 @@ Chart</value>
   </data>
   <data name="WPV_NUR_IM_PROJEKT" xml:space="preserve">
     <value>Nur im Projekt: Diese Angaben gehören zur Anlage im Projekt, nicht zum Katalogsatz.</value>
+  </data>
+  <!-- Administration und Support, Stufe 1 -->
+  <data name="ENTW_QUELLE_KEINE" xml:space="preserve">
+    <value>Entwicklermodus aus</value>
+  </data>
+  <data name="ENTW_QUELLE_UMGEBUNG" xml:space="preserve">
+    <value>Entwicklermodus über die Umgebungsvariable EPOS_ENTWICKLER</value>
+  </data>
+  <data name="ENTW_QUELLE_STARTARGUMENT" xml:space="preserve">
+    <value>Entwicklermodus über das Startargument --entwickler</value>
+  </data>
+  <data name="ENTW_QUELLE_EINSTELLUNG" xml:space="preserve">
+    <value>Entwicklermodus über die Einstellung (gilt bis zum Ausschalten)</value>
+  </data>
+  <data name="ENTW_QUELLE_GESPERRT" xml:space="preserve">
+    <value>Entwicklermodus vom Administrator gesperrt</value>
+  </data>
+  <data name="ENTW_AUS_UMGEBUNG" xml:space="preserve">
+    <value>Der Entwicklermodus läuft über die Umgebungsvariable EPOS_ENTWICKLER. Entfernen Sie die Variable und starten Sie EPOS-Plan neu.</value>
+  </data>
+  <data name="ENTW_AUS_STARTARGUMENT" xml:space="preserve">
+    <value>Der Entwicklermodus läuft über das Startargument --entwickler. Starten Sie EPOS-Plan ohne dieses Argument neu.</value>
+  </data>
+  <data name="ENTW_AUS_NICHT_AKTIV" xml:space="preserve">
+    <value>Der Entwicklermodus ist nicht eingeschaltet.</value>
+  </data>
+  <data name="ENTW_STUFE_ANWENDER" xml:space="preserve">
+    <value>Anwender</value>
+  </data>
+  <data name="ENTW_STUFE_ENTWICKLER" xml:space="preserve">
+    <value>Entwickler</value>
+  </data>
+  <data name="DIAG_PROGRAMMVERSION" xml:space="preserve">
+    <value>Programmversion</value>
+  </data>
+  <data name="DIAG_PLATTFORM" xml:space="preserve">
+    <value>Plattform</value>
+  </data>
+  <data name="DIAG_SPRACHE" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="DIAG_DATENBANKPFAD" xml:space="preserve">
+    <value>Datenbankpfad</value>
+  </data>
+  <data name="DIAG_SCHEMASTAND" xml:space="preserve">
+    <value>Schemastand</value>
+  </data>
+  <data name="DIAG_KATALOGFASSUNG" xml:space="preserve">
+    <value>Katalogfassung</value>
+  </data>
+  <data name="DIAG_LIZENZTYP" xml:space="preserve">
+    <value>Lizenztyp</value>
+  </data>
+  <data name="DIAG_LIZENZNUMMER" xml:space="preserve">
+    <value>Lizenznummer</value>
+  </data>
+  <data name="DIAG_FIRMA" xml:space="preserve">
+    <value>Firma</value>
+  </data>
+  <data name="DIAG_LIZENZSTATUS" xml:space="preserve">
+    <value>Lizenzstatus</value>
+  </data>
+  <data name="DIAG_GUELTIG_BIS" xml:space="preserve">
+    <value>Gültig bis</value>
+  </data>
+  <data name="DIAG_GERAETEKENNUNG" xml:space="preserve">
+    <value>Gerätekennung</value>
+  </data>
+  <data name="DIAG_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Protokollordner</value>
+  </data>
+  <data name="DIAG_ENTWICKLERMODUS" xml:space="preserve">
+    <value>Entwicklermodus</value>
+  </data>
+  <data name="DIAG_NICHT_ERMITTELBAR" xml:space="preserve">
+    <value>nicht ermittelbar</value>
+  </data>
+  <data name="DIAG_KEINE_DATENBANK" xml:space="preserve">
+    <value>keine Datenbank</value>
+  </data>
+  <data name="DIAG_KEINE_LIZENZ" xml:space="preserve">
+    <value>keine Lizenz</value>
+  </data>
+  <data name="DIAG_SCHEMA_FORMAT" xml:space="preserve">
+    <value>{0} (Ziel {1})</value>
+  </data>
+  <data name="DIAG_KATALOG_NIE" xml:space="preserve">
+    <value>noch nie abgeglichen</value>
+  </data>
+  <data name="DIAG_UNBEFRISTET" xml:space="preserve">
+    <value>unbefristet</value>
+  </data>
+  <!-- Administration und Support, Stufe 1 (Welle 1a) -->
+  <data name="MENU_ENTWICKLUNG" xml:space="preserve">
+    <value>Entwicklung</value>
+  </data>
+  <data name="MENU_ENTW_AUSNAHMEN" xml:space="preserve">
+    <value>Ausnahmeprotokoll öffnen</value>
+  </data>
+  <data name="MENU_ENTW_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Protokollordner öffnen</value>
+  </data>
+  <data name="MENU_ENTW_DATENBANKORDNER" xml:space="preserve">
+    <value>Datenbankordner öffnen</value>
+  </data>
+  <data name="MENU_ENTW_DIAGNOSE" xml:space="preserve">
+    <value>Diagnosedaten kopieren</value>
+  </data>
+  <data name="MENU_ENTW_WEBWERKZEUGE" xml:space="preserve">
+    <value>Entwicklerwerkzeuge der Oberfläche</value>
+  </data>
+  <data name="MENU_ENTW_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Auslieferungsstand wiederherstellen…</value>
+  </data>
+  <data name="MENU_ENTW_AUS" xml:space="preserve">
+    <value>Entwicklermodus ausschalten</value>
+  </data>
+  <data name="ENTW_MARKE" xml:space="preserve">
+    <value>Entwickler</value>
+  </data>
+  <data name="ENTW_TITELZUSATZ" xml:space="preserve">
+    <value>(Entwicklermodus)</value>
+  </data>
+  <data name="ENTW_TITEL" xml:space="preserve">
+    <value>Entwicklermodus</value>
+  </data>
+  <data name="ENTW_EIN_FRAGE" xml:space="preserve">
+    <value>Entwicklermodus einschalten? Er gilt bis zum Ausschalten.</value>
+  </data>
+  <data name="ENTW_EIN_GESPERRT" xml:space="preserve">
+    <value>Der Entwicklermodus ist auf diesem Rechner vom Administrator gesperrt.</value>
+  </data>
+  <data name="ENTW_DIAGNOSE_KOPIERT" xml:space="preserve">
+    <value>Die Diagnosedaten stehen in der Zwischenablage.</value>
+  </data>
+  <data name="ENTW_AUSNAHMEN_FEHLT" xml:space="preserve">
+    <value>Es gibt noch kein Ausnahmeprotokoll. Erwartet unter:
+{0}</value>
+  </data>
+  <data name="ENTW_ORDNER_FEHLT" xml:space="preserve">
+    <value>Der Ordner ist nicht vorhanden:
+{0}</value>
+  </data>
+  <data name="ENTW_OEFFNEN_FEHLER" xml:space="preserve">
+    <value>Konnte nicht geöffnet werden:
+{0}</value>
+  </data>
+  <data name="ENTW_WEBWERKZEUGE_NICHT" xml:space="preserve">
+    <value>Die Entwicklerwerkzeuge der Oberfläche sind gerade nicht verfügbar.</value>
+  </data>
+  <!-- Administration und Support, Stufe 1 (Welle 1b) -->
+  <data name="KI_ABSAGE_NUR_ENTWICKLER" xml:space="preserve">
+    <value>Diese Funktion ist in Ihrer Fassung nicht freigegeben.</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_ENTWICKLUNG" xml:space="preserve">
+    <value>Entwicklung</value>
+  </data>
+  <data name="ADM_SET_HINT_ENTWICKLUNG" xml:space="preserve">
+    <value>Rechenvorgaben des Zapfprofils für Entwicklung und Prüfung. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Zapfprofil: Temperatur der Literanzeige</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
+    <value>Zahl in °C mit Dezimalpunkt, z. B. 45; leer = Parameter des Katalogs. Wirkt nur auf die Kennzahlen, nie auf die Reihe.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Zapfprofil: Schwelle der Stundenzählung</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_STUNDENSCHWELLE" xml:space="preserve">
+    <value>Zahl in kW mit Dezimalpunkt, z. B. 0.5; leer = Parameter des Katalogs.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_NENNINHALTE" xml:space="preserve">
+    <value>Zapfprofil: Speicher-Nenninhalte</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_NENNINHALTE" xml:space="preserve">
+    <value>Liste in Litern, streng aufsteigend und positiv, getrennt durch Semikolon oder Leerzeichen, z. B. 300; 400; 500; leer = Parameter des Katalogs.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_KATALOGORDNER" xml:space="preserve">
+    <value>Zapfprofil: Ordner des Katalogimports</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_KATALOGORDNER" xml:space="preserve">
+    <value>Ordnerpfad, in dem die Wahl des Katalogpakets beginnt; leer = keine Vorgabe. Der Import merkt sich den zuletzt gewählten Ordner hier.</value>
+  </data>
+  <data name="ADM_SET_LBL_ZAPF_IMPORTORDNER" xml:space="preserve">
+    <value>Zapfprofil: Ordner des Typtagimports</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPF_IMPORTORDNER" xml:space="preserve">
+    <value>Ordnerpfad, in dem die Wahl der Typtagdatei beginnt; leer = keine Vorgabe.</value>
+  </data>
+  <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
+    <value>Die Rechenvorgaben des Zapfprofils konnten nicht gespeichert werden: {0}</value>
   </data>
 </root>
 

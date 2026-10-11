@@ -7957,7 +7957,7 @@ namespace WindowsFormsApplication1
                         Schritt_Vorheizen),
             // KM4-E1: Kaeltemittel als Stammdatum. Quelle ist KaeltemittelSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_KAELTEMITTEL,
-                        "Tab_Kaeltemittel_STAMM (neu, achtzehn Codes VORLAEUFIG, Register KMT); Tab_Kaeltemaschine_STAMM und " +
+                        "Tab_Kaeltemittel_STAMM (neu, achtzehn Codes GESICHERT, Register KMT); Tab_Kaeltemaschine_STAMM und " +
                         "Tab_Kaeltemaschine: ID_Kaeltemittel samt Zuordnung des Textbestands; Tab_Projekt: Inbetriebnahmejahr",
                         "Ein Kaeltemittel waere kein Stammdatum mit GWP und Quelle, und die Kaeltemaschine verwiese nur ueber " +
                         "Text darauf. KEIN Rechenergebnis aendert sich - kein Rechenweg liest Tabelle, Verweis oder Jahr.",

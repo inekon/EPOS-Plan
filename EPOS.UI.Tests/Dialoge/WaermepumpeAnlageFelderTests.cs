@@ -2200,4 +2200,91 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
             Schreibnaht.Schreibrecht = vorher;
         }
     }
+
+    // =================================================================================
+    // KT-7: Wirft der Schreibweg, bleibt der Dialog offen und nennt den Grund
+    // =================================================================================
+
+    private const string KT7_GRUND = "Schreibweg gesperrt";
+
+    /// <summary>Führt <paramref name="handlung"/> aus und schreibt die Vermerke des Ausnahmeprotokolls mit.</summary>
+    private static List<string> Kt7Mitschreiben(Action handlung)
+    {
+        var vermerke = new List<string>();
+        void Mitschreiben(string z) { lock (vermerke) vermerke.Add(z); }
+        WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt += Mitschreiben;
+        try { handlung(); }
+        finally { WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt -= Mitschreiben; }
+        return vermerke;
+    }
+
+    /// <summary>Der Banner nennt <paramref name="vorlage"/> samt Grund, das Protokoll hat einen Vermerk.</summary>
+    private static void Kt7GrundSteht(IReadOnlyList<string> vermerke, string banner, string vorlage, string vermerk)
+    {
+        Assert.Contains(vorlage.Split('{')[0], banner);
+        Assert.Contains(KT7_GRUND, banner);
+        lock (vermerke) Assert.Contains(vermerke, v => v.StartsWith(vermerk, StringComparison.Ordinal) && v.Contains(KT7_GRUND));
+    }
+
+    /// <summary>KT-7: Wirft das Lesen der Projektkennlinien, öffnet der Editor nicht, und der Satzbanner nennt den Grund.</summary>
+    [Fact]
+    public void KT7_werfen_die_Kennlinien_zeigt_der_Baustein_den_Grund()
+    {
+        var cut = Aufbauen(projektkopieVorhanden: _ => true,
+                           kennlinien: _ => throw new InvalidOperationException(KT7_GRUND));
+        List<string> vermerke = Kt7Mitschreiben(() => Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click());
+
+        Assert.False(cut.Instance.KennlinieneditorOffen);
+        string banner = string.Join("\n", cut.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Kt7GrundSteht(vermerke, banner.Split('\n').First(b => b.Contains(KT7_GRUND)),
+                      WindowsFormsApplication1.MyResource.Resource.WURZEL_SATZ_FEHLER, "Katalogsatz");
+    }
+
+    [Fact]
+    public void KT7_werfen_die_Vorlaufstufen_zeigt_der_Baustein_den_Grund()
+    {
+        IRenderedComponent<WaermepumpeAnlageFelder>? cut = null;
+        List<string> vermerke = Kt7Mitschreiben(() => cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Vorlaeufe, _ => throw new InvalidOperationException(KT7_GRUND))));
+
+        string banner = string.Join("\n", cut!.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Kt7GrundSteht(vermerke, banner.Split('\n').First(b => b.Contains(KT7_GRUND)),
+                      WindowsFormsApplication1.MyResource.Resource.WURZEL_SATZ_FEHLER, "Katalogsatz");
+    }
+
+    /// <summary>
+    /// KT-7: Wirft das Zurückschreiben der Projektkennlinien beim Abbrechen des Wirts, kommt der Grund zurück
+    /// (der Wirt nennt ihn im Banner), das Protokoll hat einen Vermerk, und es wirft nichts durch.
+    /// </summary>
+    [Fact]
+    public void KT7_wirft_das_Zuruecksetzen_der_Kennlinien_kommt_der_Grund_zurueck()
+    {
+        int abgleiche = 0;
+        var cut = Aufbauen(projektkopieVorhanden: _ => true,
+                           kennlinien: _ => new List<KennlinienZeile> { new() },
+                           kennlinienAbgleichen: (_, _) =>
+                           {
+                               if (++abgleiche > 1) throw new InvalidOperationException(KT7_GRUND);
+                               return true;
+                           });
+        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        cut.FindAll(".epos-ueberlagerung").Last().QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_OK).Click();
+        Assert.True(cut.Instance.KennlinienGeaendert);
+
+        string grund = "";
+        List<string> vermerke = Kt7Mitschreiben(() => grund = cut.Instance.KennlinienZuruecksetzen());
+
+        Assert.Contains(KT7_GRUND, grund);
+        Assert.False(cut.Instance.KennlinienGeaendert);
+        lock (vermerke) Assert.Contains(vermerke, v => v.Contains(KT7_GRUND));
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_zeigt_der_Dialog_keinen_Grund()
+    {
+        List<string> vermerke = Kt7Mitschreiben(() => Aufbauen());
+        lock (vermerke) Assert.Empty(vermerke);
+    }
 }

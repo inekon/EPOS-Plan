@@ -1435,7 +1435,10 @@
     {
         if (_geaendert) { Warnen(MeldungUngespeichert); return; }
         _vorImport = new HashSet<string>(_liste.Select(z => z.Bezeichner), StringComparer.Ordinal);
-        _importGaben = ImportGaben?.Invoke();
+        // KT-7: Wirft die Hülle beim Bereitstellen des Imports, nennt das Warnband den Grund (Katalogladung.Satz).
+        if (ImportGaben is null) return;
+        _importGaben = Katalogladung.Satz(() => ImportGaben(), TitelText, out string fehler);
+        if (fehler.Length > 0) Warnen(fehler);
     }
 
     /// <summary>

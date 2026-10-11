@@ -214,6 +214,8 @@ namespace WindowsFormsApplication1
                 // G5-N (N1-N3): die Nordrichtung des gelesenen Imports und ihr Setzen samt Neulesen.
                 ["NordrichtungDaten"] = new Func<GebaeudeNordrichtungDaten>(NordrichtungDaten),
                 ["NordrichtungSetzen"] = new Func<double?, CancellationToken, Task<GebaeudeLesestand>>(NordrichtungSetzenAsync),
+                // Entwicklerbereich PROJEKTDATEI_IMPORT: Anlegen über die Projektdatei nur im Entwicklermodus.
+                ["ProjektdateiFreigegeben"] = Entwicklermodus.Aktiv,
             };
             // Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofile…" am Zonenbaum - nur mit Projekt, denn ohne
             // Projekt fragt die Hülle keine Datenbank (Prüfstand ohne Datenbank).

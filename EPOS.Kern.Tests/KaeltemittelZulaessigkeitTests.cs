@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -223,6 +224,37 @@ namespace EPOS.Kern.Tests
             Assert.Null(Kaeltemittelzulaessigkeit.EnthaeltHfkw(new KaeltemittelStoff("R999X", "GEMISCH", 10.0, true)));
             Assert.Null(Kaeltemittelzulaessigkeit.EnthaeltHfkw(new KaeltemittelStoff("RX", null, 10.0, true)));
             Assert.Null(Kaeltemittelzulaessigkeit.EnthaeltHfkw(null));
+        }
+
+        /// <summary>
+        /// R1233zd(E) führt die Saat als HFCKW (die Verordnung nennt es „HFCKW-1233zd“, Anhang II). HFCKW ist kein HFKW
+        /// (Art. 3 Nr. 4), aber ein F-Gas (Art. 2 Buchst. a): Die Regeln urteilen über den Saatsatz genau so wie über
+        /// denselben Stoff unter der früheren Gruppe HFO — auch bei einem GWP über 2 500 trifft keine reine HFKW-Regel.
+        /// </summary>
+        [Fact]
+        public void R1233zd_E_der_Saat_ist_HFCKW_kein_HFKW_und_die_Regeln_bleiben_unberuehrt()
+        {
+            KaeltemittelSchema.Kaeltemittel saat = KaeltemittelSchema.SAAT.Single(k => k.Code == "R1233zd(E)");
+            Assert.Equal(DbWerte.KAELTEMITTEL_GRUPPE_HFCKW, saat.Gruppe);
+            Assert.True(saat.FGas);
+            var hfckw = new KaeltemittelStoff(saat.Code, saat.Gruppe, saat.Gwp, saat.FGas);
+            var alsHfo = new KaeltemittelStoff(saat.Code, DbWerte.KAELTEMITTEL_GRUPPE_HFO, saat.Gwp, saat.FGas);
+            Assert.False(Kaeltemittelzulaessigkeit.EnthaeltHfkw(hfckw));
+
+            foreach (string klasse in new[] { K, M, SLW, SLL })
+                foreach (double kw in new[] { 10.0, 14.0, 60.0, 500.0 })
+                    foreach (int jahr in new[] { 2020, 2025, 2027, 2030, 2032, 2035 })
+                    {
+                        KaeltemittelErgebnis a = Pruefe(klasse, kw, hfckw, jahr);
+                        KaeltemittelErgebnis b = Pruefe(klasse, kw, alsHfo, jahr);
+                        Assert.Equal((b.Klasse, b.Regelschluessel, b.Stichtag, b.Grenze),
+                                     (a.Klasse, a.Regelschluessel, a.Stichtag, a.Grenze));
+                    }
+
+            // Mit einem GWP über 2 500 (Probe): die reine HFKW-Regel Nr. 7 a trifft ein HFCKW nicht, ein HFKW schon.
+            Zulaessig(Pruefe(K, 20.0, new KaeltemittelStoff("PROBE-HFCKW", DbWerte.KAELTEMITTEL_GRUPPE_HFCKW, 3000.0, true), 2025));
+            Warnung(Pruefe(K, 20.0, new KaeltemittelStoff("PROBE-HFKW", DbWerte.KAELTEMITTEL_GRUPPE_HFKW, 3000.0, true), 2025),
+                    DbWerte.GESETZ_FGAS_IV_KUEHLER_ALLE_HFKW, 2020, 2500.0);
         }
 
         // ---------------------------------------------------------------- GWP-Vorrang (KM4-Q17 a)

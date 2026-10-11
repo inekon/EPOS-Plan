@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Bausteine;
@@ -41,7 +42,8 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
     /// <summary>Ein gewoehnlicher Punkt, gegebenenfalls mit Untereintraegen.</summary>
     public Menuepunkt(string name, string textSchluessel, string ziel,
                       string argument = "", string bild = "", string kuerzel = "",
-                      bool rechtsBuendig = false, bool katalog = false)
+                      bool rechtsBuendig = false, bool katalog = false,
+                      Freigabestufe stufe = Freigabestufe.Anwender)
     {
         Name = name;
         TextSchluessel = textSchluessel;
@@ -51,6 +53,7 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
         Kuerzel = kuerzel;
         RechtsBuendig = rechtsBuendig;
         Katalog = katalog;
+        Stufe = stufe;
     }
 
     /// <summary>Ein Trennstrich — er traegt weder Text noch Ziel.</summary>
@@ -110,6 +113,14 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
     /// die Wurzel seinen Schluessel fuehrt — ohne eine zweite Liste.</para>
     /// </summary>
     public bool Katalog { get; }
+
+    /// <summary>
+    /// Ab welcher Freigabestufe der Punkt sichtbar ist (Konzept Administration und
+    /// Support, Abschnitt 3.1). Vorgabe <see cref="Freigabestufe.Anwender"/>; ein
+    /// Trennstrich ist immer Anwender. Zugeschnitten wird in
+    /// <see cref="Menuetabelle.Sichtbar"/>, nicht im Band.
+    /// </summary>
+    public Freigabestufe Stufe { get; }
 
     /// <summary>Das Untermenue; leer, wenn der Punkt unmittelbar handelt.</summary>
     public IReadOnlyList<Menuepunkt> Untereintraege => _kinder;

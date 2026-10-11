@@ -869,7 +869,7 @@
         _satzGross = false;
         _satzUeberlagerungFehler = null;
         if (_anlagenmerker is { } merker && _projektZeile is not null)
-            merker.Zurueckschreiben(_projektZeile, TraegerWechseln, Uebernehmen);
+            merker.Zurueckschreiben(_projektZeile, TraegerWechseln, UebernahmeWeg);
         _anlagenmerker = null;
         if (_felder is not null) FelderHolen();
         KostenNachziehen();
@@ -1145,7 +1145,7 @@
         },
         // Nach dem Setzen derselbe Übernahmeweg wie BeiVorlauf/BeiRuecklauf (Arbeitskopie,
         // nicht die Datenbank) - sonst stünde der Wert nur in der Zeile.
-        Uebernommen = z => Uebernehmen?.Invoke(z),
+        Uebernommen = UebernahmeWegKi,
         AlleDaten = new AlleDatenTafel
         {
             Felder = () => _parameterOffen ? _felder : null,
@@ -1224,7 +1224,8 @@
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
                                                        .Replace("{0}", TitelText));
 
-        Uebernehmen(_projektZeile);
+        string grund = ZeileUebernehmen(_projektZeile);
+        if (grund.Length > 0) return KiKern.KiErgebnis.Abgelehnt(grund);
         return KiKern.KiErgebnis.Ok(_projektZeile.Bezeichner, anzahl: 1);
     }
 
@@ -1438,7 +1439,7 @@
         if (_projektZeile is null) return;
         _projektZeile.Vorlauf = wert;
         _projektZeile.TemperaturHerleitung = "";
-        Uebernehmen?.Invoke(_projektZeile);
+        ZeileUebernehmen(_projektZeile);
     }
 
     private void BeiRuecklauf(int? wert)
@@ -1446,8 +1447,31 @@
         if (_projektZeile is null) return;
         _projektZeile.Ruecklauf = wert;
         _projektZeile.TemperaturHerleitung = "";
-        Uebernehmen?.Invoke(_projektZeile);
+        ZeileUebernehmen(_projektZeile);
     }
+
+    /// <summary>
+    /// KT-7: Der Übernahmeweg an den Wirt (<see cref="Uebernehmen"/>) läuft über die Fangstelle
+    /// (<c>Katalogladung.Schreiben</c>). Wirft er, steht der Grund im Banner, das Protokoll hat
+    /// einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    /// <returns>Leer, wenn übernommen; sonst der Grund.</returns>
+    private string ZeileUebernehmen(ErzeugerZeile zeile)
+    {
+        if (Uebernehmen is null) return "";
+        string grund = Katalogladung.Schreiben(() => { Uebernehmen(zeile); return ""; }, zeile.Bezeichner, g => g);
+        if (grund.Length > 0) Melden(grund, true);
+        return grund;
+    }
+
+    /// <summary>Der Übernahmeweg für Merker und KI-Sicht: gefangen, und für die KI wirft er benannt.</summary>
+    private Action<ErzeugerZeile>? UebernahmeWeg => Uebernehmen is null ? null : z => ZeileUebernehmen(z);
+
+    private Action<ErzeugerZeile>? UebernahmeWegKi => Uebernehmen is null ? null : z =>
+    {
+        string grund = ZeileUebernehmen(z);
+        if (grund.Length > 0) throw new InvalidOperationException(grund);
+    };
 
     // =================================================================================
     // Katalogpflege

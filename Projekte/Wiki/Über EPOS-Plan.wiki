@@ -57,7 +57,7 @@ Mit dem Kauf des Programms EPOS-Plan ist automatisch ein Wartungs- und Updatever
 * Telefonische Unterstützung an Werktagen von 9.00 Uhr bis 16.00 Uhr.<br>Telefon: 0711 9959 826 50<br>Fax: 0711 9959 826 59<br>Bitte halten Sie Ihre Kundennummer, Betriebssystemversion und EPOS-Plan-Version bereit.<br>E-Mail: [mailto:info@inekon.de info@inekon.de]
 * Beantwortung von Fragen über das Internet. Antworten auf häufig gestellte Fragen finden Sie in den [[FAQ]] und auf unserer Internetseite unter www.epos-plan.de.
 * Update und Wartung erfolgen über unseren Server.
-* In Problemfällen bieten wir mit TeamViewer eine Fernwartung an.
+* In Problemfällen bieten wir eine Fernwartung an.
 * Aktualisierte Herstellerdaten – von Wärmepumpen über Heizkessel und BHKW-Module bis zu Kollektoren und Speichern – bieten wir über unseren Server zum Download an.
 * Den Zugang zum Server erhalten Sie im Rahmen eines Wartungsvertrages. In den ersten 3 Monaten nach Kauf des Programms ist dieser kostenlos, danach können Sie einen Wartungs- und Updatevertrag abschließen.
 

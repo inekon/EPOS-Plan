@@ -1570,7 +1570,11 @@
     private void ImportOeffnen()
     {
         if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
-        IReadOnlyDictionary<string, object>? gaben = ImportGaben?.Invoke();
+        // KT-7: Wirft die Hülle beim Bereitstellen des Imports, nennt das Warnband den Grund (Katalogladung.Satz).
+        string fehler = "";
+        IReadOnlyDictionary<string, object>? gaben = ImportGaben is null ? null
+            : Katalogladung.Satz(() => ImportGaben(), TitelText, out fehler);
+        if (fehler.Length > 0) { Warnen(fehler); return; }
         if (gaben is null) { Warnen(Texte.ImportPlattform); return; }
         _meldung = "";
         _vorImport = new HashSet<string>(_katalog.Select(z => z.Bezeichner), StringComparer.Ordinal);

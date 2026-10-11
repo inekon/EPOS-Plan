@@ -2709,11 +2709,15 @@ html:has(> body > #app > .epos-fenstermarke) {
     }
 }
 
-/* Haftet ein Banner unter dem Kopf, rechnet das Polster oben seine Hoehe mit: eine
-   Textzeile (20 px) + Polster 2 x --epos-rand + Rahmen 2 px. Ein mehrzeiliges Banner
-   laesst entsprechend weniger Luft. */
+/* Haftet ein Banner unter dem Kopf, rechnet das Polster oben seine Hoehe mit. Die Hoehe
+   ist gemessen: Der Warnbanner meldet sie als --epos-meldung-hoehe (epos-warnbanner.js,
+   ResizeObserver) - ein umbrechender Text und vor allem die aufgeklappte Hinweisliste (bis
+   40 % der Fensterhoehe) machen ihn um ein Vielfaches hoeher als eine Zeile, und das
+   angesprungene Feld laege sonst unter ihm. Rueckfall ohne Messung: eine Textzeile
+   (20 px) + Polster 2 x --epos-rand + Rahmen 2 px. Gemessen: Fensterprobe, Fall
+   „meldungsliste". */
 html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner) {
-    --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + 22px + 3 * var(--epos-rand));
+    --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + var(--epos-meldung-hoehe, calc(22px + 2 * var(--epos-rand))) + var(--epos-rand));
 }
 
 /* WAS IN KOPF ODER FUSS DEN FOKUS BEKOMMT, STEHT SCHON IM BILD - dann gilt
@@ -9965,6 +9969,20 @@ table.epos-simerg-tabelle {
 .epos-hauptfenster-version {
     font-size: 11px;
     color: var(--epos-text-leise);
+}
+/* Die Marke des Entwicklermodus (Administration und Support, Stufe 1): kompakt wie die
+   Versionszeile, in den Warnfarben des Hauses — auffaellig, aber kein Alarm. */
+.epos-hauptfenster-entwickler {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--epos-warn-text);
+    background: var(--epos-warn-flaeche);
+    border: 1px solid var(--epos-warn-rahmen);
+    border-radius: 3px;
+    padding: 0 5px;
+    margin-left: 6px;
+    white-space: nowrap;
+    cursor: default;
 }
 /* Die Hilfepille im Kopf des Hauptfensters: mit der Maus liegt der Rahmen enger
    um die Symbole (Anwenderwunsch), die Symbole selbst bleiben 16 px. Mit dem

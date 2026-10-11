@@ -319,6 +319,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
     }
+    @* KT-7: Wirft das Lesen eines Satzes (Vorlaufstufen, Bilder, Kennlinien), nennt dieser Banner den Grund. *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* --- Ueberlagerung 1: die KONFIGURATION (16.09.2026) --------------------
        Der Block, der bis hierher als Gruppe "Waermeerzeuger Spitzenlast:" in der
@@ -782,6 +787,9 @@
     private string _blatt = "COP";
     private string _warnung = "";
 
+    /// <summary>KT-7: der Grund, wenn das Lesen eines Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     // --- Die KONFIGURATION in der Ueberlagerung (16.09.2026) -------------------
     private bool _konfigOffen;
     private string _konfigWarnung = "";
@@ -1010,10 +1018,17 @@
     /// <summary>Vorlaufstufen, Bilder, Kostenzeile und Stammfelder zum aktuellen Gerät nachziehen.</summary>
     private void Auffrischen()
     {
-        _vorlaufstufen = (Vorlaeufe is not null && Daten.IdWp > 0)
-            ? Vorlaeufe(Daten.IdWp) : Array.Empty<int>();
-        _bilder = (Bilder is not null && Daten.IdWp > 0)
-            ? Bilder(Daten.IdWp) : KennlinienBilder.Leer;
+        // KT-7: Vorlaufstufen und Bilder lesen über die Fangstelle; wirft einer der Wege, bleibt
+        // der Teil leer und der Satzbanner nennt den Grund.
+        _satzFehler = "";
+        int idWp = Daten.IdWp;
+        string satz = Daten.Bezeichner;
+        _vorlaufstufen = (Vorlaeufe is not null && idWp > 0)
+            ? Katalogladung.SatzDazu(() => Vorlaeufe(idWp), satz, ref _satzFehler) ?? Array.Empty<int>()
+            : Array.Empty<int>();
+        _bilder = (Bilder is not null && idWp > 0)
+            ? Katalogladung.SatzDazu(() => Bilder(idWp), satz, ref _satzFehler) ?? KennlinienBilder.Leer
+            : KennlinienBilder.Leer;
         _kostenBereit = KostenBereit?.Invoke() ?? false;
         StammabbildNachziehen();
     }
@@ -1069,9 +1084,18 @@
     {
         if (KennlinienUebernehmen is null || Daten.IdWp <= 0) return;
 
-        int zeilen = KennlinienUebernehmen(Daten.IdWp);
+        // KT-7: Wirft die Übernahme, nennt die Meldung bei den Kennlinien den Grund.
+        string grund = "";
+        int idWp = Daten.IdWp;
+        int zeilen = Katalogladung.Schreiben(() => KennlinienUebernehmen(idWp), Daten.Bezeichner,
+                                             g => { grund = g; return 0; });
 
-        if (zeilen > 0)
+        if (grund.Length > 0)
+        {
+            _kennlinienStufe = WarnStufe.Warnung;
+            _kennlinienMeldung = grund;
+        }
+        else if (zeilen > 0)
         {
             _kennlinienStufe = WarnStufe.Hinweis;
             _kennlinienMeldung = string.Format(TextKennlinienUebernommen, zeilen);
@@ -1161,13 +1185,15 @@
     private bool ExtrapolationUebernehmen(bool wert)
     {
         if (ExtrapolationSchreiben is null) return false;
-        if (ExtrapolationSchreiben(wert))
+        // KT-7: Wirft der Schreibweg, bleibt der Schalter beim gespeicherten Stand und die Meldung nennt den Grund.
+        string grund = "";
+        if (Katalogladung.Schreiben(() => ExtrapolationSchreiben(wert), Daten.Bezeichner, g => { grund = g; return false; }))
         {
             _extrapolation = wert;
             return true;
         }
         _extrapolationSchluessel++;                 // der Schalter zeigt wieder den gespeicherten Stand
-        _kennlinienMeldung = WarnungExtrapolation;
+        _kennlinienMeldung = grund.Length > 0 ? grund : WarnungExtrapolation;
         _kennlinienStufe = WarnStufe.Fehler;
         return false;
     }
@@ -1279,7 +1305,16 @@
         if (!Projektkopie) { NichtGespeichertMelden(); return; }
         if (InStammUebernehmen is null || UebernahmeVorschau is null || NurLesen) return;
 
-        WaermepumpeUebernahmeVorschau? v = UebernahmeVorschau(Daten.IdWp);
+        // KT-7: Wirft die Vorschau, nennt die Meldung bei den Kenndaten den Grund.
+        int idWp = Daten.IdWp;
+        WaermepumpeUebernahmeVorschau? v = Katalogladung.Satz(() => UebernahmeVorschau(idWp), Daten.Bezeichner,
+                                                              out string vorschauFehler);
+        if (vorschauFehler.Length > 0)
+        {
+            _stammMeldung = vorschauFehler;
+            _stammStufe = WarnStufe.Warnung;
+            return;
+        }
         if (v is null || string.IsNullOrEmpty(v.Bezeichner))
         {
             NichtGespeichertMelden();
@@ -1338,7 +1373,12 @@
 
         if (InStammUebernehmen is null) { UebernahmeSchliessen(); return; }
 
-        KatalogSpeicherErgebnis ergebnis = InStammUebernehmen(Daten.IdWp, _mitKennlinien);
+        // KT-7: Wirft die Übernahme, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        int idWp = Daten.IdWp;
+        bool mitKennlinien = _mitKennlinien;
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => InStammUebernehmen(idWp, mitKennlinien),
+                                                                   Daten.Bezeichner,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, Daten.Bezeichner));
 
         _stammStufe = ergebnis.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung;
         _stammMeldung = ergebnis.Meldung ?? "";
@@ -1373,7 +1413,12 @@
         if (!Projektkopie) { NichtGespeichertMelden(); return; }
         if (Kennlinien is null || Daten.IdWp <= 0) return;
 
-        _kennlinienZeilen = Kennlinien(Daten.IdWp).Select(z => z.Kopie()).ToList();
+        // KT-7: Wirft das Lesen der Kennlinien, öffnet der Editor nicht und der Satzbanner nennt den Grund.
+        int idWp = Daten.IdWp;
+        IReadOnlyList<KennlinienZeile>? zeilen = Katalogladung.Satz(() => Kennlinien(idWp), Daten.Bezeichner,
+                                                                    out _satzFehler);
+        if (zeilen is null) return;
+        _kennlinienZeilen = zeilen.Select(z => z.Kopie()).ToList();
     }
 
     private void KenndatenFertig(IReadOnlyList<KennlinienZeile>? stand)
@@ -1382,8 +1427,32 @@
         if (stand is null || NurLesen) return;   // Abbruch
 
         // AW2: der Stand vor der ERSTEN Aenderung - das Abbrechen des Wirts schreibt ihn zurueck.
-        _kennlinienMerker ??= (Daten.IdWp, Kennlinien?.Invoke(Daten.IdWp).Select(z => z.Kopie()).ToList());
-        KennlinienAbgleichen?.Invoke(Daten.IdWp, stand);
+        // KT-7: Merker und Abgleich laufen ueber die Fangstelle; wirft einer, nennt die Meldung bei den
+        // Kennlinien den Grund.
+        int idWp = Daten.IdWp;
+        if (_kennlinienMerker is null)
+        {
+            string merkerFehler = "";
+            List<KennlinienZeile>? vorher = Kennlinien is null ? null
+                : Katalogladung.Satz(() => Kennlinien(idWp), Daten.Bezeichner, out merkerFehler)?
+                      .Select(z => z.Kopie()).ToList();
+            if (merkerFehler.Length > 0)
+            {
+                _kennlinienMeldung = merkerFehler;
+                _kennlinienStufe = WarnStufe.Warnung;
+                return;
+            }
+            _kennlinienMerker = (idWp, vorher);
+        }
+        if (KennlinienAbgleichen is not null)
+        {
+            Katalogladung.Schreiben(() => KennlinienAbgleichen(idWp, stand), Daten.Bezeichner, g =>
+            {
+                _kennlinienMeldung = g;
+                _kennlinienStufe = WarnStufe.Warnung;
+                return false;
+            });
+        }
 
         // Die Bilder lesen Tab_Kenndaten - nach dem Editor stehen sie neu da.
         Auffrischen();
@@ -1491,11 +1560,17 @@
     /// AW2: Abbrechen der Satz-Überlagerung — die Projektkennlinien stehen wieder wie beim Öffnen. Der Editor
     /// schreibt bei seinem OK sofort (die Bilder zeigen den neuen Stand); erst das OK des Wirts behält ihn.
     /// </summary>
-    public void KennlinienZuruecksetzen()
+    /// <returns>KT-7: leer, wenn zurückgeschrieben (oder nichts zu tun); sonst der Grund — das Zurückschreiben
+    /// läuft über die Fangstelle (<c>Katalogladung.Schreiben</c>), der Wirt nennt ihn im Banner.</returns>
+    public string KennlinienZuruecksetzen()
     {
-        if (_kennlinienMerker is not (int id, List<KennlinienZeile> zeilen) || NurLesen) { _kennlinienMerker = null; return; }
-        KennlinienAbgleichen?.Invoke(id, zeilen);
+        if (_kennlinienMerker is not (int id, List<KennlinienZeile> zeilen) || NurLesen || KennlinienAbgleichen is null)
+        {
+            _kennlinienMerker = null;
+            return "";
+        }
         _kennlinienMerker = null;
+        return Katalogladung.Schreiben(() => { KennlinienAbgleichen(id, zeilen); return ""; }, Daten.Bezeichner, g => g);
     }
 
     /// <summary>AW2: das OK des Wirts behält den Stand der Kennlinien.</summary>

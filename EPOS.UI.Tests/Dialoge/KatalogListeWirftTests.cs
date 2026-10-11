@@ -346,4 +346,114 @@ public class KatalogListeWirftTests : EposBunitContext
     [Fact]
     public void Solarganglinie_ohne_Ausnahme_zeigt_keinen_Listenbanner()
         => OhneBanner(Solarganglinie(new GanglinienKatalogwege { Katalogzeilen = Ganglinien }));
+
+    // =================================================================================
+    // KT-7: Bedarfsverwaltung, Gebäudetypen, Baustoffe, Bauteilaufbauten, Gebäudekatalog
+    // =================================================================================
+
+    private static IReadOnlyList<string> WirftNamen() => throw new InvalidOperationException(GRUND);
+
+    private IRenderedComponent<BedarfAdminDialog> BedarfAdmin(Func<IReadOnlyList<Katalogfilterzeile>> zeilen,
+                                                              Func<IReadOnlyList<string>>? typen = null)
+        => Render<BedarfAdminDialog>(b => b
+            .Add(x => x.Art, BedarfsArt.Stromverbraucher)
+            .Add(x => x.TitelText, "Stromverbraucher")
+            .Add(x => x.Katalogzeilen, zeilen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Typen, typen));
+
+    [Fact]
+    public void BedarfAdmin_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(BedarfAdmin(Wirft));
+
+    [Fact]
+    public void BedarfAdmin_wirft_die_Typliste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(BedarfAdmin(Eine, WirftNamen));
+
+    [Fact]
+    public void BedarfAdmin_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(BedarfAdmin(Eine, () => new[] { "Typ" }));
+
+    private IRenderedComponent<GebaeudetypDialog> Gebaeudetyp(Func<IReadOnlyList<Katalogfilterzeile>> zeilen,
+                                                              Func<IReadOnlyDictionary<string, int>>? verwendung = null)
+        => Render<GebaeudetypDialog>(b => b
+            .Add(x => x.Katalogzeilen, zeilen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeudetyp(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Verwendung, verwendung));
+
+    [Fact]
+    public void Gebaeudetyp_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Gebaeudetyp(Wirft));
+
+    [Fact]
+    public void Gebaeudetyp_wirft_die_Verwendung_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Gebaeudetyp(Eine, () => throw new InvalidOperationException(GRUND)));
+
+    [Fact]
+    public void Gebaeudetyp_wirft_die_Namensliste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<GebaeudetypDialog>(b => b.Add(x => x.Typen, WirftNamen)));
+
+    [Fact]
+    public void Gebaeudetyp_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Gebaeudetyp(Eine, () => new Dictionary<string, int>()));
+
+    private IRenderedComponent<BaustoffKatalogDialog> Baustoff(Func<IReadOnlyList<Katalogfilterzeile>> zeilen,
+                                                               Func<IReadOnlyDictionary<int, int>>? verwendung = null)
+        => Render<BaustoffKatalogDialog>(b => b
+            .Add(x => x.Katalogzeilen, zeilen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBaustoff(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Verwendung, verwendung));
+
+    [Fact]
+    public void Baustoff_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Baustoff(Wirft));
+
+    [Fact]
+    public void Baustoff_wirft_die_Verwendung_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Baustoff(Eine, () => throw new InvalidOperationException(GRUND)));
+
+    [Fact]
+    public void Baustoff_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Baustoff(Eine, () => new Dictionary<int, int>()));
+
+    private IRenderedComponent<BauteilaufbauDialog> Bauteilaufbau(Func<IReadOnlyList<Katalogfilterzeile>> zeilen,
+                                                                  Func<IReadOnlyList<BaustoffWahl>>? baustoffe = null)
+        => Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, zeilen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Baustoffe, baustoffe));
+
+    [Fact]
+    public void Bauteilaufbau_wirft_die_Liste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Bauteilaufbau(Wirft));
+
+    [Fact]
+    public void Bauteilaufbau_wirft_die_Baustoffwahl_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Bauteilaufbau(Eine, () => throw new InvalidOperationException(GRUND)));
+
+    [Fact]
+    public void Bauteilaufbau_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Bauteilaufbau(Eine, () => Array.Empty<BaustoffWahl>()));
+
+    [Fact]
+    public void GebaeudeKatalog_wirft_die_Typliste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<GebaeudeKatalogDialog>(b => b
+            .Add(x => x.Gebaeudetypen, WirftNamen)
+            .Add(x => x.Gebaeudearten, () => new[] { "Wohnen" })));
+
+    [Fact]
+    public void GebaeudeKatalog_wirft_die_Artenliste_zeigt_der_Dialog_den_Grund()
+        => BannerMitGrund(Render<GebaeudeKatalogDialog>(b => b
+            .Add(x => x.Gebaeudetypen, () => new[] { "EFH" })
+            .Add(x => x.Gebaeudearten, WirftNamen)));
+
+    [Fact]
+    public void GebaeudeKatalog_ohne_Ausnahme_zeigt_keinen_Listenbanner()
+        => OhneBanner(Render<GebaeudeKatalogDialog>(b => b
+            .Add(x => x.Gebaeudetypen, () => new[] { "EFH" })
+            .Add(x => x.Gebaeudearten, () => new[] { "Wohnen" })));
 }

@@ -876,6 +876,36 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Single(uebernommen);
     }
 
+    /// <summary>KT-7: Wirft der Übernahmeweg, nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen.</summary>
+    [Fact]
+    public void KT7_wirft_die_Uebernahme_nennt_der_Banner_den_Grund_und_der_Dialog_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(uebernehmen: _ => throw new InvalidOperationException("Modell gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+        Satz(cut);
+
+        cut.Find("input[inputmode=decimal]").Input("42");
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Modell gesperrt"));
+        Assert.True(vermerke.Enthaelt("Modell gesperrt"));
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_zeigt_die_Uebernahme_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(uebernehmen: _ => { });
+        Satz(cut);
+
+        cut.Find("input[inputmode=decimal]").Input("42");
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+    }
+
     // =================================================================================
     // W6-E-7: die Herleitung unter der Grenzleistung (07.09.2026)
     // =================================================================================

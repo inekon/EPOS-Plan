@@ -53,9 +53,14 @@
             </span>
         </label>
 
-        <button type="button" class="epos-knopf epos-kieinst-modellneu" @onclick="ModellNeu">
-            @ModellNeuText
-        </button>
+        @* Entwicklerbereich KI_WERKZEUGE: „Modell neu erkennen“ nur mit dem Kennzeichen Entwickler. *@
+        @if (Entwickler)
+        {
+            <button type="button" class="epos-knopf epos-kieinst-modellneu" data-stufe="entwickler" data-bereich="KI_WERKZEUGE"
+                    @onclick="ModellNeu">
+                @ModellNeuText
+            </button>
+        }
     </div>
 
     <p class="epos-kieinst-limit">
@@ -69,7 +74,13 @@
         <p>@HinweisKontingent</p>
     </div>
 
-    <Schalter Bezeichnung="@WegBText" Wert="@_wegB" WertChanged="WegBGeaendert" />
+    @if (Entwickler)
+    {
+        @* Entwicklerbereich KI_WERKZEUGE: „Weg B erzwingen“ nur im Entwicklermodus; ohne bleibt der gelesene Wert unverändert. *@
+        <div class="epos-kieinst-wegb" data-stufe="entwickler" data-bereich="KI_WERKZEUGE">
+            <Schalter Bezeichnung="@WegBText" Wert="@_wegB" WertChanged="WegBGeaendert" />
+        </div>
+    }
 
     @* DIE EINWILLIGUNGSSTUFE „DIALOGDATEN" (Auftrag #200, Anwenderentscheid
        KI-D-Q2). Sie steht HIER und nicht im Chat, weil sie zurueckgenommen werden
@@ -105,6 +116,12 @@
 
     /// <summary>Steht „Rueckfallweg B erzwingen"?</summary>
     [Parameter] public bool WegB { get; set; }
+
+    /// <summary>
+    /// Entwicklerbereich <c>KI_WERKZEUGE</c>: „Modell neu erkennen“ und „Weg B erzwingen“ nur damit; die Hülle setzt es
+    /// aus <c>Entwicklermodus.Aktiv</c>.
+    /// </summary>
+    [Parameter] public bool Entwickler { get; set; }
 
     /// <summary>
     /// Steht die Einwilligungsstufe „Dialogdaten" (Auftrag #200, KI‑D‑Q2)? Die Huelle

@@ -1989,7 +1989,9 @@
     {
         if (ImportGaben is null) return;
         _meldung = "";
-        _importweg = ImportGaben();
+        // KT-7: Wirft die Hülle beim Bereitstellen des Imports, nennt das Warnband den Grund (Katalogladung.Satz).
+        _importweg = Katalogladung.Satz(() => ImportGaben(), TitelText, out string fehler);
+        if (fehler.Length > 0) Melden(fehler, WarnStufe.Warnung);
         _importGaben = _importweg?.Gaben;
         if (_importGaben is null) _importweg = null;
     }

@@ -214,22 +214,27 @@
             @* DIE PROJEKTDATEI (Datenaustauschkonzept 16.4): Knopf, Bilanz und schwerste Meldung; Schluessel steuern. Im Weg
                "nur Projektdatei" (16.1) ist die gelesene Datei selbst die Projektdatei: kein Dazuladen, kein Entfernen. *@
             <div class="epos-gebimport-projektdatei">
-                @if (!NurProjektdatei)
+                @* Entwicklerbereich PROJEKTDATEI_IMPORT (Konzept Administration und Support 3.3 b): Dazuladen, Entfernen und
+                   die Wahl der Zonierung nur mit ProjektdateiFreigegeben; der gelesene Stand darunter bleibt lesbar (AS-Q5). *@
+                @if (!NurProjektdatei && ProjektdateiFreigegeben)
                 {
                 <button type="button" class="epos-knopf epos-gebimport-sq-laden" data-aktion="projektdatei"
+                        data-stufe="entwickler" data-bereich="PROJEKTDATEI_IMPORT"
                         disabled="@(Beschaeftigt || !stand.ProjektdateiMoeglich)"
                         title="@(stand.ProjektdateiMoeglich ? null : Texte.SqKnopfGrund)" @onclick="BeiProjektdatei">@Texte.SqKnopf</button>
                 }
-                @if (stand.Projektdatei is not null && !NurProjektdatei)
+                @if (stand.Projektdatei is not null && !NurProjektdatei && ProjektdateiFreigegeben)
                 {
                     <button type="button" class="epos-knopf epos-gebimport-sq-entfernen" data-aktion="projektdatei-entfernen"
+                            data-stufe="entwickler" data-bereich="PROJEKTDATEI_IMPORT"
                             disabled="@Beschaeftigt" @onclick="BeiProjektdateiEntfernen">@Texte.SqEntfernen</button>
                 }
-                @if (stand.Projektdatei is { Gelesen: true, BeideZonierungen: true } sqw)
+                @if (stand.Projektdatei is { Gelesen: true, BeideZonierungen: true } sqw && ProjektdateiFreigegeben)
                 {
                     string zonierung = _sqZonierung ?? sqw.Zonierung;
                     @* DIE WAHL DER ZONIERUNG (E87, F1): nur bei beiden Zonierungen; der Schluessel steuert, der Text zeigt. *@
                     <select class="epos-eingabe epos-gebimport-sq-zonierung" data-zonierung="@zonierung"
+                            data-stufe="entwickler" data-bereich="PROJEKTDATEI_IMPORT"
                             aria-label="@Texte.SqZonierung" title="@Texte.SqZonierung" disabled="@Beschaeftigt"
                             value="@zonierung" @onchange="BeiZonierung">
                         <option value="@GebaeudeZonierungSchluessel.DIN" selected="@(zonierung == GebaeudeZonierungSchluessel.DIN)">@Texte.SqZonierungDin</option>
@@ -237,11 +242,13 @@
                     </select>
                 }
             </div>
-            @if (ProjektdateiProfile is not null && stand.Projektdatei is { Gelesen: true })
+            @if (ProjektdateiProfile is not null && stand.Projektdatei is { Gelesen: true } && ProjektdateiFreigegeben)
             {
                 @* NP4b (Q46): die Profile der geladenen Projektdatei in eine eigene Kategorie; danach liest der Plan Katalog und Zuordnung neu. *@
-                <EPOS.UI.Dialoge.Bedarf.ProjektdateiProfile Weg="@ProjektdateiProfile" Knopftext="@ProjektdateiProfile.Texte.KnopfImport"
-                                                           Uebernommen="NeuZuordnen" />
+                <div class="epos-gebimport-sq-profile" data-stufe="entwickler" data-bereich="PROJEKTDATEI_IMPORT">
+                    <EPOS.UI.Dialoge.Bedarf.ProjektdateiProfile Weg="@ProjektdateiProfile" Knopftext="@ProjektdateiProfile.Texte.KnopfImport"
+                                                               Uebernommen="NeuZuordnen" />
+                </div>
             }
             @if (stand.Projektdatei is GebaeudeProjektdateiDaten sq)
             {
@@ -1020,6 +1027,13 @@
     /// <summary>Der Dialog ist zu: das Ergebnis nach einer Übernahme, <c>null</c> bei Abbrechen, ✕ und Esc.</summary>
     [Parameter] public EventCallback<GebaeudeImportErgebnis?> Geschlossen { get; set; }
 
+    /// <summary>
+    /// Entwicklerbereich <c>PROJEKTDATEI_IMPORT</c>: die Projektdatei des CAD-Programms anlegen — Quellenwahl „mit/nur
+    /// Projektdatei“, Dazuladen, Entfernen, Zonierungswahl, Profile der Datei, <c>.sqproj</c> im gemeinsamen Filter. Die Hülle
+    /// setzt es aus <c>Entwicklermodus.Aktiv</c>; ohne bleibt ein gelesener Stand mit Projektdatei lesbar (AS-Q5).
+    /// </summary>
+    [Parameter] public bool ProjektdateiFreigegeben { get; set; }
+
     /// <summary>Der Dateiwähler der Projektdatei (Filter <c>.sqproj</c>); <c>null</c> als Antwort = abgebrochen.</summary>
     [Parameter] public Func<Task<string?>>? ProjektdateiWaehlen { get; set; }
 
@@ -1320,7 +1334,8 @@
     public string? Quelle => _quelle;
 
     private IReadOnlyList<GebaeudeImportQuellwahl> Quellenliste
-        => Profil?.Quellen ?? (IReadOnlyList<GebaeudeImportQuellwahl>)Array.Empty<GebaeudeImportQuellwahl>();
+        => (Profil?.Quellen ?? (IReadOnlyList<GebaeudeImportQuellwahl>)Array.Empty<GebaeudeImportQuellwahl>())
+           .Where(q => ProjektdateiFreigegeben || q.Weg == GebaeudeImportWeg.Datei).ToList();
 
     /// <summary>Stabile Ids je Schlüssel: die Stelle in der Liste der Datenseite, ab 1.</summary>
     private IReadOnlyList<(int Id, string Text)> Quelleneintraege
@@ -1347,7 +1362,26 @@
     /// <summary>Der Filter des Dateiwählers: der der gewählten Quelle, sonst der des Profils (alle Formate).</summary>
     private string WirksamerFilter
         => Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Dateifilter
-           ?? Profil?.Dateifilter ?? "";
+           ?? (ProjektdateiFreigegeben ? Profil?.Dateifilter : FilterOhneProjektdatei(Profil?.Dateifilter)) ?? "";
+
+    /// <summary>
+    /// Der gemeinsame Filter ohne die Projektdatei (Entwicklerbereich <c>PROJEKTDATEI_IMPORT</c>): streicht das Muster
+    /// <c>*.sqproj</c> aus Beschreibung und Mustern und den Formatnamen „Projektdatei“ aus der Beschreibung.
+    /// </summary>
+    internal static string? FilterOhneProjektdatei(string? filter)
+    {
+        if (string.IsNullOrEmpty(filter)) return filter;
+        string[] teile = filter.Split('|');
+        for (int i = 0; i < teile.Length; i++)
+        {
+            string t = teile[i];
+            foreach (string muster in new[] { ";*.sqproj", "*.sqproj;", "*.sqproj" })
+                t = t.Replace(muster, "", StringComparison.OrdinalIgnoreCase);
+            if (i % 2 == 0) t = t.Replace(", Projektdatei", "", StringComparison.Ordinal);
+            teile[i] = t;
+        }
+        return string.Join("|", teile);
+    }
 
     /// <summary>
     /// <b>Der Weg „nur Projektdatei“</b>: die gelesene Datei ist eine <c>.sqproj</c> — erkannt am Weg des Kopfs, gleich ob

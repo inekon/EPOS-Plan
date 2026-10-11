@@ -822,6 +822,38 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.True(geschlossen);
     }
 
+    /// <summary>
+    /// KT-7: Wirft der Schreibweg der Hülle, bleibt der Dialog mit seinem Stand offen, die Meldung
+    /// nennt den Grund (<c>WURZEL_SCHREIBEN_FEHLER</c> samt Meldung der Ausnahme), und das
+    /// Ausnahmeprotokoll hat einen Vermerk.
+    /// </summary>
+    [Fact]
+    public void OK_mit_werfendem_Schreibweg_bleibt_offen_und_nennt_den_Grund()
+    {
+        const string GRUND = "Schreibweg gesperrt";
+        var vermerke = new List<string>();
+        void Mitschreiben(string z) { lock (vermerke) vermerke.Add(z); }
+        Ausnahmeprotokoll.Vermerkt += Mitschreiben;
+        try
+        {
+            bool? geschlossen = null;
+            var cut = Aufbauen(speichern: (_, _, _) => throw new InvalidOperationException(GRUND),
+                               geschlossen: b => geschlossen = b);
+
+            Ok(cut);
+
+            Assert.Null(geschlossen);
+            string vorspann = WindowsFormsApplication1.MyResource.Resource.WURZEL_SCHREIBEN_FEHLER.Split('{')[0];
+            Assert.Contains(cut.FindAll(".epos-warnbanner-text"),
+                            e => e.TextContent.StartsWith(vorspann, StringComparison.Ordinal) && e.TextContent.Contains(GRUND));
+            lock (vermerke) Assert.Contains(vermerke, v => v.StartsWith("Katalogsatz", StringComparison.Ordinal) && v.Contains(GRUND));
+        }
+        finally
+        {
+            Ausnahmeprotokoll.Vermerkt -= Mitschreiben;
+        }
+    }
+
     [Fact]
     public void Abbrechen_schreibt_nichts()
     {

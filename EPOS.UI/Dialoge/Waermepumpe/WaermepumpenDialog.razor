@@ -761,10 +761,17 @@
                 _zweispalten?.SatzOffenHalten();
                 return;
             }
+            // KT-7: Wirft die Übernahme ins Modell (Modell und Trägerzuordnung), bleibt die Überlagerung mit den
+            // Eingaben und dem Grund offen; Banner und Protokollvermerk setzt ZeileUebernehmen.
+            _meldung = "";
+            if (ZeileUebernehmen(zeile) is { Length: > 0 } grund)
+            {
+                _satzUeberlagerungFehler = grund;
+                _zweispalten?.SatzOffenHalten();
+                return;
+            }
             _anlage?.KennlinienBehalten();
             _ungeprueft.Remove(zeile);
-            _meldung = "";
-            Uebernehmen?.Invoke(zeile);
             SatzUeberlagerungZu();
             DetailNachziehen();
             return;
@@ -803,12 +810,19 @@
     {
         if (_gewaehlt is WaermepumpeAnlageDaten zeile)
         {
-            _anlage?.KennlinienZuruecksetzen();
+            // KT-7: Wirft das Zurückschreiben der Projektkennlinien, nennt das Band den Grund.
+            if (_anlage?.KennlinienZuruecksetzen() is { Length: > 0 } grund) Melden(grund, true);
             if (_anlagenmerker is not null) zeile.WerteVon(_anlagenmerker);
         }
         else if (_katalogKennlinienMerker is (int id, List<KennlinienZeile> zeilen))
         {
-            KatalogKennlinienAbgleichen?.Invoke(id, zeilen);
+            // KT-7: Wirft das Zurückschreiben, nennt das Band den Grund; die Überlagerung schließt dennoch.
+            if (KatalogKennlinienAbgleichen is not null)
+            {
+                string grund = Katalogladung.Schreiben(() => { KatalogKennlinienAbgleichen(id, zeilen); return ""; },
+                                                       _katalogZeile?.Bezeichner, g => g);
+                if (grund.Length > 0) Melden(grund, true);
+            }
         }
         _katalogKennlinienMerker = null;
         SatzUeberlagerungZu();
@@ -888,7 +902,12 @@
     private void KatalogKennlinienOeffnen()
     {
         if (KatalogKennlinien is null || _katalogZeile is null) return;
-        _katalogKennlinien = KatalogKennlinien(_katalogZeile.Id).Select(z => z.Kopie()).ToList();
+        // KT-7: Wirft das Lesen der Kennlinien, öffnet der Editor nicht und das Band nennt den Grund.
+        Katalogfilterzeile k = _katalogZeile;
+        IReadOnlyList<KennlinienZeile>? zeilen = Katalogladung.Satz(() => KatalogKennlinien(k.Id), k.Bezeichner,
+                                                                    out string fehler);
+        if (zeilen is null) { if (fehler.Length > 0) Melden(fehler, true); return; }
+        _katalogKennlinien = zeilen.Select(z => z.Kopie()).ToList();
     }
 
     private void KatalogKennlinienFertig(IReadOnlyList<KennlinienZeile>? stand)
@@ -896,10 +915,21 @@
         _katalogKennlinien = null;
         if (stand is null || _katalogZeile is null || !KatalogSatzSpeicherbar || KatalogKennlinienAbgleichen is null) return;
         int id = _katalogZeile.Id;
-        _katalogKennlinienMerker ??= (id, KatalogKennlinien?.Invoke(id).Select(z => z.Kopie()).ToList() ?? new List<KennlinienZeile>());
-        KatalogKennlinienAbgleichen(id, stand);
-        string grund = "";
         Katalogfilterzeile k = _katalogZeile;
+        // KT-7: Merker und Abgleich laufen über die Fangstelle; wirft einer, bleibt der Katalog unberührt bzw. beim
+        // gemerkten Stand, und das Band nennt den Grund.
+        if (_katalogKennlinienMerker is null)
+        {
+            string merkerFehler = "";
+            IReadOnlyList<KennlinienZeile>? vorher = KatalogKennlinien is null ? Array.Empty<KennlinienZeile>()
+                : Katalogladung.Satz(() => KatalogKennlinien(id), k.Bezeichner, out merkerFehler);
+            if (vorher is null) { if (merkerFehler.Length > 0) Melden(merkerFehler, true); return; }
+            _katalogKennlinienMerker = (id, vorher.Select(z => z.Kopie()).ToList());
+        }
+        string abgleich = Katalogladung.Schreiben(() => { KatalogKennlinienAbgleichen(id, stand); return ""; },
+                                                  k.Bezeichner, g => g);
+        if (abgleich.Length > 0) { Melden(abgleich, true); return; }
+        string grund = "";
         _bilder = Katalogladung.SatzDazu(() => KatalogBilder?.Invoke(k.Id), k.Bezeichner, ref grund);
         if (grund.Length > 0) Melden(grund, true);
     }
@@ -1106,8 +1136,10 @@
             WaermepumpeAnlageDaten? zeile = Katalogladung.Schreiben(() => Anlegen(z.Bezeichner), z.Bezeichner,
                                                                     g => { grund = g; return (WaermepumpeAnlageDaten?)null; });
             if (zeile is null) continue;
+            // KT-7: Wirft die Übernahme ins Modell, steht die Zeile nicht in der Liste, und die Meldung nennt den Grund.
+            string uebernahme = ZeileUebernehmen(zeile);
+            if (uebernahme.Length > 0) { grund = uebernahme; continue; }
             Zeilen.Add(zeile);
-            Uebernehmen?.Invoke(zeile);
             _ungeprueft.Add(zeile);
             letzte = zeile;
             neu++;
@@ -1290,6 +1322,20 @@
     {
         _meldung = text;
         _meldungStufe = fehler ? WarnStufe.Warnung : WarnStufe.Hinweis;
+    }
+
+    /// <summary>
+    /// KT-7: Der Übernahmeweg an den Wirt (<see cref="Uebernehmen"/>: Modell und Trägerzuordnung)
+    /// läuft über die Fangstelle (<c>Katalogladung.Schreiben</c>). Wirft er, steht der Grund im
+    /// Banner, das Protokoll hat einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    /// <returns>Leer, wenn übernommen; sonst der Grund.</returns>
+    private string ZeileUebernehmen(WaermepumpeAnlageDaten zeile)
+    {
+        if (Uebernehmen is null) return "";
+        string grund = Katalogladung.Schreiben(() => { Uebernehmen(zeile); return ""; }, zeile.Bezeichner, g => g);
+        if (grund.Length > 0) Melden(grund, true);
+        return grund;
     }
 
     /// <summary>

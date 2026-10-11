@@ -874,6 +874,78 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.Contains("Rücklauf zu hoch", cut.Find(".epos-satzueberlagerung-fuss").TextContent);
     }
 
+    /// <summary>
+    /// KT-7: Wirft der Übernahmeweg (Modell und Trägerzuordnung), nennt der Banner den Grund, das Protokoll hat einen
+    /// Vermerk, und die Satz-Überlagerung bleibt mit den Eingaben offen; der Dialog schließt nicht.
+    /// </summary>
+    [Fact]
+    public void KT7_wirft_die_Uebernahme_nennt_der_Banner_den_Grund_und_die_Ueberlagerung_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") };
+        var cut = Aufbauen(zeilen, uebernehmen: _ => throw new InvalidOperationException("Modell gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+
+        Satz(cut);
+        Ok(cut);
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Modell gesperrt"));
+        Assert.True(vermerke.Enthaelt("Modell gesperrt"));
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.True(cut.Instance.DetailOffen);
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_hat_die_Uebernahme_keinen_Vermerk()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(uebernehmen: _ => { });
+
+        Satz(cut);
+        Ok(cut);
+
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.True(vermerke.Leer);
+    }
+
+    /// <summary>KT-7: Wirft das Lesen der Katalogkennlinien, öffnet der Editor nicht, das Band nennt den Grund.</summary>
+    [Fact]
+    public void KT7_wirft_das_Lesen_der_Katalogkennlinien_nennt_das_Band_den_Grund()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(katalog: ZweiSaetze(),
+                           katalogSpeichern: (_, _) => new KatalogSpeicherErgebnis(true, "", ""),
+                           katalogKennlinien: _ => throw new InvalidOperationException("Kenndaten gesperrt"),
+                           katalogKennlinienAbgleichen: (_, _) => true);
+        KatalogzeileWaehlen(cut);
+        Satz(cut).QuerySelector(".epos-wp-katalogkennlinien")!.Click();
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Kenndaten gesperrt"));
+        Assert.True(vermerke.Enthaelt("Kenndaten gesperrt"));
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+    }
+
+    /// <summary>KT-7: Wirft der Abgleich der Katalogkennlinien, nennt das Band den Grund; die Überlagerung bleibt.</summary>
+    [Fact]
+    public void KT7_wirft_der_Abgleich_der_Katalogkennlinien_nennt_das_Band_den_Grund()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(katalog: ZweiSaetze(),
+                           katalogSpeichern: (_, _) => new KatalogSpeicherErgebnis(true, "", ""),
+                           katalogKennlinien: _ => new List<KennlinienZeile> { new() },
+                           katalogKennlinienAbgleichen: (_, _) => throw new InvalidOperationException("Abgleich gesperrt"));
+        KatalogzeileWaehlen(cut);
+        Satz(cut).QuerySelector(".epos-wp-katalogkennlinien")!.Click();
+        cut.FindAll(".epos-ueberlagerung").Last().QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == Resource.ALLG_BTN_OK).Click();
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Abgleich gesperrt"));
+        Assert.True(vermerke.Enthaelt("Abgleich gesperrt"));
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+    }
+
     [Fact]
     public void AW2_Gesperrter_Katalogsatz_steht_nur_lesend_und_wird_nie_ueberschrieben()
     {
