@@ -51675,6 +51675,18 @@ chart</value>
   <data name="KFLT_LT_GERAETEART" xml:space="preserve">
     <value>Unit type</value>
   </data>
+  <data name="KFLT_LT_VLMIN" xml:space="preserve">
+    <value>Minimum flow temperature</value>
+  </data>
+  <data name="KFLT_LT_VLMAX" xml:space="preserve">
+    <value>Maximum flow temperature</value>
+  </data>
+  <data name="KFLT_LT_COP" xml:space="preserve">
+    <value>Coefficient of performance, heating</value>
+  </data>
+  <data name="KFLT_LT_ZUHEIZUNG" xml:space="preserve">
+    <value>Electric backup heater</value>
+  </data>
   <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
     <value>Unit type of the cooling generator (air- or water-cooled chiller, with free cooling, split, multi-split, VRF, absorption); empty = from heat rejection.</value>
   </data>

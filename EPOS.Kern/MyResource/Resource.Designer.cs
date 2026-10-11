@@ -52474,6 +52474,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungszahl im Heizbetrieb ähnelt.
+        /// </summary>
+        public static string KFLT_LT_COP {
+            get {
+                return ResourceManager.GetString("KFLT_LT_COP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nenn-EER ähnelt.
         /// </summary>
         public static string KFLT_LT_EER {
@@ -52506,6 +52515,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_LT_RUECKKUEHLART {
             get {
                 return ResourceManager.GetString("KFLT_LT_RUECKKUEHLART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstvorlauf ähnelt.
+        /// </summary>
+        public static string KFLT_LT_VLMAX {
+            get {
+                return ResourceManager.GetString("KFLT_LT_VLMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestvorlauf ähnelt.
+        /// </summary>
+        public static string KFLT_LT_VLMIN {
+            get {
+                return ResourceManager.GetString("KFLT_LT_VLMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrische Zuheizung ähnelt.
+        /// </summary>
+        public static string KFLT_LT_ZUHEIZUNG {
+            get {
+                return ResourceManager.GetString("KFLT_LT_ZUHEIZUNG", resourceCulture);
             }
         }
         
