@@ -125,7 +125,7 @@ KA‑Q1 bis KA‑Q9 des Entwurfs (Zuordnung in der letzten Spalte).
 | **KA‑E‑18** | Die Knopfleiste des Katalogs (Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…, Neu…) steht in der Zeile „gewählter Satz“; der Stift dort entfällt, die Stifte je Listenzeile bleiben und tun dasselbe wie Bearbeiten…. | 11.10.2026 | AW1 |
 | **KA‑E‑19** | Schloss setzen… und Löschen wirken nur auf Katalogsätze; beim gewählten Projektsatz sind sie weich gesperrt mit Grund „Katalogsatz wählen“. Neu… legt immer einen Katalogsatz an, Vergleichen… vergleicht die Auswahl des Bereichs. | 11.10.2026 | AW1 |
 | **KA‑E‑20** | Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt; „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben dort. | 11.10.2026 | AW1 |
-| **KA‑E‑21** | Geltung zunächst für Heizkessel und Wärmepumpe (Schalter `KnopfleisteAmSatz`); die übrigen Dialoge folgen auf Auftrag. | 11.10.2026 | AW1 |
+| **KA‑E‑21** | Die Knopfleiste am gewählten Satz gilt für alle Wirte der Katalogauswahl: die sieben Erzeugerdialoge, Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie, Bedarfsprofile, Gebäude (Projekt und Assistent) und die Kältemaschine (Schalter `KnopfleisteAmSatz` überall eingeschaltet). | 11.10.2026 | AW1, AW3 |
 | **KA‑E‑22** | Wärmepumpe: Bearbeiten… öffnet für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (Auslegung für Verteilung, Kenndaten mit einer Feldgruppe, Kennlinien); die Auswahlliste des Anlagen-Dialogs entfällt; je Aufruf eine Anlage mit ihrer Kennlinie; Abschnitte ohne Daten beim Katalogsatz weich gesperrt „nur im Projekt“. | 11.10.2026 | AW2 |
 
 ## 4 Zielbild V1
@@ -264,9 +264,9 @@ die Zusammenfassung eine Zeile hoch (29 px in 1 280 × 800); die Projektliste fo
 zugeklappt, 214 px mit der Trennlinie unten, 85 px oben), die Katalogliste gibt nur die Höhe der Detailzeile ab
 (259 → 223 px).
 
-### 4.4a Knopfleiste am gewählten Satz (Heizkessel, Wärmepumpe)
+### 4.4a Knopfleiste am gewählten Satz
 
-Heizkessel und Wärmepumpe führen eine Wahl je Zeile (KA‑E‑17): Das Kästchen markiert nur für Sammelaktionen, die gewählte Projektzeile ist farbig hervorgehoben, und der Klick auf die Zeile wählt. Die Knopfleiste des Katalogs steht in der Zeile „gewählter Satz“ und der Stift dort entfällt (KA‑E‑18); Schloss setzen… und Löschen wirken nur auf Katalogsätze und sind beim Projektsatz mit dem Grund „Katalogsatz wählen“ weich gesperrt (KA‑E‑19). Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt, „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben (KA‑E‑20); der Schalter `KnopfleisteAmSatz` begrenzt die Geltung auf diese zwei Dialoge (KA‑E‑21). Bei der Wärmepumpe öffnet Bearbeiten… für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (KA‑E‑22). Die Knopfmatrix K/S/D und die Abschnitte 4.2 und 4.4 gelten für die übrigen fünf Erzeugerdialoge und die Stufen 4 und 5 weiter, bis sie nachziehen.
+Heizkessel und Wärmepumpe führen eine Wahl je Zeile (KA‑E‑17): Das Kästchen markiert nur für Sammelaktionen, die gewählte Projektzeile ist farbig hervorgehoben, und der Klick auf die Zeile wählt. Die Knopfleiste des Katalogs steht in der Zeile „gewählter Satz“ und der Stift dort entfällt (KA‑E‑18); Schloss setzen… und Löschen wirken nur auf Katalogsätze und sind beim Projektsatz mit dem Grund „Katalogsatz wählen“ weich gesperrt (KA‑E‑19). Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt, „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben (KA‑E‑20); der Schalter `KnopfleisteAmSatz` begrenzt die Geltung auf diese zwei Dialoge (KA‑E‑21). Bei der Wärmepumpe öffnet Bearbeiten… für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (KA‑E‑22). Alle Wirte der Katalogauswahl tragen die Knopfleiste am gewählten Satz; die Knopfmatrix K/S/D und die Abschnitte 4.2 und 4.4 gelten mit dieser Verschiebung (Fußleiste des Katalogs → Zeile ‚gewählter Satz‘). Dialoge ohne Katalogeditor haben kein Neu…, Dialoge ohne Vergleich kein Vergleichen…; Wärmebedarf extern, Stromganglinie und Gebäude führen zusätzlich ‚Vergrößern‘ am Satz.
 
 ### 4.5 Mehrfachauswahl
 
