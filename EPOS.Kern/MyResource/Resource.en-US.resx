@@ -51727,7 +51727,7 @@ chart</value>
     <value>{0} transitions from “off” (heating period, calendar) get no preheating and are not checked.</value>
   </data>
   <data name="SIMENG_VORH_RUECKFALL_AK3" xml:space="preserve">
-    <value>“Specify preheat time” is not yet calculated in the closed loop (AK3); the setpoint ramp by preheat power applies.</value>
+    <value>Preheating (“Specify preheat time” or “Calculate preheat time”) is not yet calculated in the closed loop (AK3); the setpoint ramp by preheat power applies.</value>
   </data>
   <data name="SIMENG_VORH_RUECKFALL_HEIZKREIS" xml:space="preserve">
     <value>Buildings with heating circuit are excluded from preheating; the setpoint ramp by preheat power applies.</value>
@@ -51735,8 +51735,20 @@ chart</value>
   <data name="SIMENG_VORH_RUECKFALL_OHNE_ZEIT" xml:space="preserve">
     <value>“Specify preheat time” has no preheat time; the setpoint ramp by preheat power applies.</value>
   </data>
-  <data name="SIMENG_VORH_RUECKFALL_BERECHNET" xml:space="preserve">
-    <value>“Calculate preheat time” is not yet calculated; the setpoint ramp by preheat power applies.</value>
+  <data name="SIMENG_VORH_BERECHNET" xml:space="preserve">
+    <value>Calculated preheat time: {0} h from the largest requirement of the year (median of the occupancy starts {1} h); it applies at every occupancy start.</value>
+  </data>
+  <data name="SIMENG_VORH_TAGE_BEDARF" xml:space="preserve">
+    <value>On {0} days the room air does not reach the setpoint at occupancy start (up to {1} K below); up to {2} h of preheating would be required instead of {3} h.</value>
+  </data>
+  <data name="SIMENG_VORH_UNERREICHBAR" xml:space="preserve">
+    <value>On {0} days the preheat power does not reach the setpoint at occupancy start even without night setback (unreachable); {1} nights remain without setback.</value>
+  </data>
+  <data name="SIMENG_VORH_ABWEICHUNG" xml:space="preserve">
+    <value>On {0} days the run misses the setpoint at occupancy start that the look-ahead found reachable (neighbouring zones or heating circuit).</value>
+  </data>
+  <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
+    <value>{0} heated zones have no design heat load; they receive no share of the building cap and remain uncapped.</value>
   </data>
 </root>
 

@@ -196,6 +196,23 @@ namespace WindowsFormsApplication1
             return this with { KuehlVorlaufC = kuehlVorlaufC, KuehlVorlaufGekappt = anVorlaufgrenze };
         }
 
+        /// <summary>
+        /// <b>Der Rand einer Vorausschaustunde</b> (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V3a): derselbe Rand mit dem
+        /// Heizsollwert <paramref name="thetaSollC"/> [°C] des Vorheizfensters und der Leistungsgrenze <paramref name="grenzeW"/>
+        /// [W] (NaN = keine) an der Stelle der Grenze des Eingangs. Eine Schranke der Verfügbarkeit (AK2) bleibt wirksam, wenn
+        /// sie kleiner ist — wie in <see cref="MitVerfuegbarkeit"/>.
+        /// </summary>
+        internal Stundenrand MitVorheizen(double thetaSollC, double grenzeW)
+        {
+            bool schranke = !double.IsNaN(VerfuegbarkeitW) && (double.IsNaN(grenzeW) || VerfuegbarkeitW < grenzeW);
+            return this with
+            {
+                ThetaSoll = thetaSollC,
+                HeizleistungMaxW = schranke ? VerfuegbarkeitW : grenzeW,
+                VerfuegbarkeitIstGrenze = schranke,
+            };
+        }
+
         /// <summary>Die Schranke der Anlagenverfügbarkeit dieser Stunde [W]; NaN = keine (AK2).</summary>
         internal double VerfuegbarkeitW { get; private init; }
 
@@ -223,7 +240,7 @@ namespace WindowsFormsApplication1
         internal double ThetaEq { get; }
 
         /// <summary>Heizsollwert der Raumluft [°C]; NaN = keine Heizung.</summary>
-        internal double ThetaSoll { get; }
+        internal double ThetaSoll { get; private init; }
 
         /// <summary>Obere Grenze der Raumluft, Kühlsollwert [°C]; NaN oder +∞ = keine Kühlung.</summary>
         internal double ThetaMax { get; }

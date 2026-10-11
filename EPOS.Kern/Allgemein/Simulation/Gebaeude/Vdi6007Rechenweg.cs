@@ -659,9 +659,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Laufhinweise des Vorheizens</b> (Entwurf Vorheizrampe Fassung 2, 2.5, 2.9; Welle V2) — einmal je Gebäude:
-        /// der Rückfall auf die Sollwertrampe (AK3, Heizkreis-Schalter, keine Vorheizzeit, Verfahren „Berechnet“), sonst
-        /// die Kennzahlen (t_V, Φ_K,max, P_K, P_V, Spitze, Nächte ohne Absenkung, Mehrwärme), die Tage ohne Ankunft, die
-        /// Floor-Stunden, die Toleranz 0, Zonen ohne Sprung und die Übergänge aus „aus“. Ohne Vorheizen schweigt die Methode.
+        /// der Rückfall auf die Sollwertrampe (AK3, Heizkreis-Schalter, keine Vorheizzeit), sonst die Kennzahlen (t_V,
+        /// Φ_K,max, P_K, P_V, Spitze, Nächte ohne Absenkung, Mehrwärme), mit Option 2 die Bemessung von t_V, die Tage ohne
+        /// Ankunft samt Bedarf („nötig wären …“, V3a), die unerreichbaren Tage, die Abweichungen des Laufs von der Vorausschau,
+        /// Zonen ohne Auslegungsheizlast, die Floor-Stunden, die Toleranz 0, Zonen ohne Sprung und die Übergänge aus „aus“.
+        /// Ohne Vorheizen schweigt die Methode.
         /// </summary>
         internal static void HinweisVorheizen(Vorheizrueckfall rueckfall, Vorheizgebaeude v, string wer)
         {
@@ -673,7 +675,6 @@ namespace WindowsFormsApplication1
                 Vorheizrueckfall.Ak3 => MyResource.Resource.SIMENG_VORH_RUECKFALL_AK3,
                 Vorheizrueckfall.Heizkreis => MyResource.Resource.SIMENG_VORH_RUECKFALL_HEIZKREIS,
                 Vorheizrueckfall.OhneVorheizzeit => MyResource.Resource.SIMENG_VORH_RUECKFALL_OHNE_ZEIT,
-                Vorheizrueckfall.Berechnet => MyResource.Resource.SIMENG_VORH_RUECKFALL_BERECHNET,
                 _ => null,
             };
             if (grund != null) p.HinweisEinmal("vorh-rueckfall-" + wer, kopf + grund);
@@ -683,9 +684,28 @@ namespace WindowsFormsApplication1
                 (v.VorheizleistungW / 1000.0).ToString("0.0", k), (v.SpitzeW / 1000.0).ToString("0.0", k),
                 v.NaechteOhneAbsenkung.ToString(k), (v.MehrwaermeKwh / 1000.0).ToString("0.00", k),
                 double.IsNaN(v.MehrwaermeProzent) ? "–" : v.MehrwaermeProzent.ToString("0.0", k)));
+            if (v.Berechnet)
+                p.HinweisEinmal("vorh-berechnet-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_BERECHNET,
+                    v.VorheizzeitMaxH.ToString(k), double.IsNaN(v.BedarfMedianH) ? "–" : v.BedarfMedianH.ToString("0.#", k)));
             if (v.TageOhneAnkunftAnzahl > 0)
-                p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE,
-                    v.TageOhneAnkunftAnzahl.ToString(k), v.UnterschreitungMaxK.ToString("0.0", k)));
+            {
+                if (v.BedarfMaxH > v.VorheizzeitMaxH)
+                    p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE_BEDARF,
+                        v.TageOhneAnkunftAnzahl.ToString(k), v.UnterschreitungMaxK.ToString("0.0", k),
+                        v.BedarfMaxH.ToString(k), v.VorheizzeitMaxH.ToString(k)));
+                else
+                    p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE,
+                        v.TageOhneAnkunftAnzahl.ToString(k), v.UnterschreitungMaxK.ToString("0.0", k)));
+            }
+            if (v.TageUnerreichbar > 0)
+                p.HinweisEinmal("vorh-unerreichbar-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_UNERREICHBAR,
+                    v.TageUnerreichbar.ToString(k), v.NaechteOhneAbsenkung.ToString(k)));
+            if (v.TageAbweichung > 0)
+                p.HinweisEinmal("vorh-abweichung-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_ABWEICHUNG,
+                    v.TageAbweichung.ToString(k)));
+            if (v.ZonenOhneAuslegungsheizlast > 0)
+                p.HinweisEinmal("vorh-ohne-heizlast-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_OHNE_HEIZLAST,
+                    v.ZonenOhneAuslegungsheizlast.ToString(k)));
             if (v.FloorstundenH > 0)
                 p.HinweisEinmal("vorh-floor-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_FLOOR,
                     v.FloorstundenH.ToString(k)));
