@@ -52851,5 +52851,39 @@ Chart</value>
   <data name="UEB_SCHLIESSEN" xml:space="preserve">
     <value>Schließen</value>
   </data>
+  <!-- Administration und Support, Stufe 3 (Welle 3b) -->
+  <data name="SUP_PAKET_KNOPF" xml:space="preserve">
+    <value>Supportpaket speichern…</value>
+  </data>
+  <data name="SUP_PAKET_HAKEN" xml:space="preserve">
+    <value>KI-Protokoll beilegen</value>
+  </data>
+  <data name="SUP_PAKET_HAKEN_HINWEIS" xml:space="preserve">
+    <value>Das KI-Protokoll kann Ihre Eingaben an den Assistenten enthalten.</value>
+  </data>
+  <data name="SUP_PAKET_HINWEIS" xml:space="preserve">
+    <value>Das Supportpaket enthält die Diagnosedaten und die Protokolle des Programms, keine Projektdaten und keine Datenbank. Hängen Sie die Datei an Ihre E-Mail an den Support.</value>
+  </data>
+  <data name="SUP_PAKET_GESPEICHERT" xml:space="preserve">
+    <value>Supportpaket gespeichert: {0}</value>
+  </data>
+  <data name="SUP_PAKET_ENTHALTEN" xml:space="preserve">
+    <value>Enthalten: {0}</value>
+  </data>
+  <data name="SUP_PAKET_FEHLEND" xml:space="preserve">
+    <value>Nicht vorhanden: {0}</value>
+  </data>
+  <data name="SUP_PAKET_FEHLER" xml:space="preserve">
+    <value>Das Supportpaket konnte nicht gespeichert werden: {0}</value>
+  </data>
+  <data name="SUP_PAKET_KEIN_ZIEL" xml:space="preserve">
+    <value>Kein Ziel für das Supportpaket angegeben.</value>
+  </data>
+  <data name="SUP_PAKET_DIALOGTITEL" xml:space="preserve">
+    <value>Supportpaket speichern</value>
+  </data>
+  <data name="SUP_PAKET_DATEIFILTER" xml:space="preserve">
+    <value>ZIP-Archiv (*.zip)|*.zip</value>
+  </data>
 </root>
 

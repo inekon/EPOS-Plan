@@ -121250,6 +121250,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ZIP-Archiv (*.zip)|*.zip ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Supportpaket speichern ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_DIALOGTITEL {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_DIALOGTITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Enthalten: {0} ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_ENTHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht vorhanden: {0} ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_FEHLEND {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_FEHLEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Supportpaket konnte nicht gespeichert werden: {0} ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_FEHLER {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Supportpaket gespeichert: {0} ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KI-Protokoll beilegen ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_HAKEN {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_HAKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das KI-Protokoll kann Ihre Eingaben an den Assistenten enthalten. ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_HAKEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_HAKEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Supportpaket enthält die Diagnosedaten und die Protokolle des Programms, keine Projektdaten und keine Datenbank. Hängen Sie die Datei an Ihre E-Mail an den Support. ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_HINWEIS {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Ziel für das Supportpaket angegeben. ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_KEIN_ZIEL {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_KEIN_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Supportpaket speichern… ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_KNOPF {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe absolut [{0}] ähnelt.
         /// </summary>
         public static string SZP_ABSOLUT {
