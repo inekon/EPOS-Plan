@@ -12,11 +12,11 @@ namespace WindowsFormsApplication1
     /// iteriert, mit gesicherten Massen —, und übernimmt die Stunde erst nach der Konvergenz
     /// (<see cref="Uebernehmen"/>).
     ///
-    /// <para><b>Derselbe Text wie <see cref="Vdi6007Rechenweg.Laufen"/></b>, Anweisung für Anweisung
-    /// auf Vorlauf, Stunde und Ergebnis verteilt; <see cref="Vdi6007Rechenweg.Laufen"/> selbst bleibt
-    /// für ein Gebäude mit höchstens einer Zone wörtlich. Das Orakel: <see cref="Laufen"/> mit einer
-    /// Einzelzone ist bitgleich zu <see cref="Vdi6007Rechenweg.Laufen"/> (<c>ZonenlaufTests</c>, alle
-    /// Fälle des Einzonennetzes).</para>
+    /// <para><b>Der Stundenrumpf des Jahreslaufs</b>, auf Vorlauf, Stunde und Ergebnis verteilt; ein
+    /// Gebäude mit höchstens einer Zone rechnet ihn über den Gebäude-Stepper
+    /// (<see cref="GebaeudeStepper"/>, Entwurf AK3 2.2) in <see cref="Vdi6007Rechenweg.Laufen"/>. Das
+    /// Orakel: die eingefrorenen Reihen des Einzonennetzes (<c>GebaeudeEinzonennetzTests</c>) und die
+    /// Jahresschleife ohne Stepper in <c>GebaeudeStepperTests</c>.</para>
     ///
     /// <para>Ohne Datenbank, ohne Protokoll, einfädig.</para>
     /// </summary>
@@ -26,13 +26,14 @@ namespace WindowsFormsApplication1
         private readonly GebaeudeModellEingang _e;
         private readonly Zonenmodell2K _modell;
         private readonly Sommerlueftungsregel _regel;
+        private readonly Sommerlueftungsregel _nachtregel;
         private double _luftVor = double.NaN, _aussenVor = double.NaN;
 
         private readonly double[] _heiz = new double[8760];
         private double[] _kuehl = new double[8760];
         private readonly double[] _luft = new double[8760];
         private readonly double[] _op = new double[8760];
-        private int _umschaltung, _beides, _sommerStunden;
+        private int _umschaltung, _beides, _sommerStunden, _nachtStunden;
         private double _summeW;
 
         private readonly bool _gekoppelt;
@@ -43,18 +44,27 @@ namespace WindowsFormsApplication1
         private readonly double[] _kVorlauf, _kRuecklauf, _kBegrenzt;
         private double _stundenKl, _stundenKk, _stundenGrenze, _ueberschreitung;
 
+        // Stufe KP3 (Festlegung 20): der Kappungsanteil je Stunde, auch ohne Kopplung - eigener Akkumulator.
+        private readonly double[] _kappung = new double[8760];
+        private double _kappungH;
+        private readonly bool[] _fahrplan;                  // AK2: Stunden an der Schranke der Verfügbarkeit, nur mit Fahrplan
+        private readonly Innenumkehrzaehler _messung;      // Messung RP2a, nur mit Schalter
+        private int _gedeckelt;                             // RP2a: Stunden über der Obergrenze der Innenprüfung
+        private readonly double[] _massenAw, _massenIw;    // Welle V2: Massen am Stundenende, nur mit ZonenEingang.MassenErfassen
+
         internal Zonenlauf(ZonenEingang zone)
         {
             _zone = zone ?? throw new ArgumentNullException(nameof(zone));
             GebaeudeModellEingang eingang = zone.Eingang;
             _e = eingang;
             _modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
+            _messung = _modell.Innenumkehrmessung ? new Innenumkehrzaehler() : null;
 
-            // Sommerlüftung (G2, Rechenschritte 7.2) wie in Vdi6007Rechenweg.Laufen.
-            _regel = !eingang.Sommerlueftung ? null
-                : eingang.KuehlungWirksam
-                    ? new Sommerlueftungsregel(eingang.KuehlSollwert - GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT)
-                    : new Sommerlueftungsregel();
+            // Sommerlüftung (G2, Rechenschritte 7.2) wie in Vdi6007Rechenweg.Laufen - dieselbe
+            // Stelle, damit die Schwellenreihe des Kühlkalenders (KP1b, G2) hier ebenso gilt.
+            _regel = Vdi6007Rechenweg.LueftungsregelBilden(eingang);
+            // Stufe KP1b (Konzept 3.7, P9 b): die zweite Regel je Zone - nur mit bedingtem Anteil.
+            _nachtregel = Vdi6007Rechenweg.NachtauskuehlregelBilden(eingang);
 
             _gekoppelt = eingang.KopplungWirksam;
             _vorlauf = _gekoppelt ? new double[8760] : null;
@@ -65,6 +75,9 @@ namespace WindowsFormsApplication1
             _kVorlauf = _kuehlgekoppelt ? new double[8760] : null;
             _kRuecklauf = _kuehlgekoppelt ? new double[8760] : null;
             _kBegrenzt = _kuehlgekoppelt ? new double[8760] : null;
+            _fahrplan = eingang.FahrplanWirksam ? new bool[8760] : null;
+            _massenAw = eingang.MassenErfassen ? new double[8760] : null;
+            _massenIw = eingang.MassenErfassen ? new double[8760] : null;
         }
 
         /// <summary>Die Zone des Laufs.</summary>
@@ -80,10 +93,20 @@ namespace WindowsFormsApplication1
         internal void Beginnen(double thetaStart) => _modell.Zuruecksetzen(thetaStart);
 
         /// <summary>
-        /// Der Zustand der Sommerlüftung der kommenden Stunde, aus Raum- und Außenluft der Vorstunde
-        /// (einmal je Stunde, vor dem Löser — die Regel schreibt ihren Zustand fort).
+        /// Der Zustand der Sommerlüftung der Stunde <paramref name="h"/>, aus Raum- und Außenluft
+        /// der Vorstunde (einmal je Stunde, vor dem Löser — die Regel schreibt ihren Zustand fort).
+        /// Die Stunde wählt die Schwelle: ohne Kühlkalender dieselbe Zahl wie bisher, mit ihm
+        /// θ_K(h) − 3 K bzw. 23 °C bei „aus" (KP1b, Konzept 3.6).
         /// </summary>
-        internal bool Sommerlueftung() => _regel != null && _regel.Stunde(_luftVor, _aussenVor);
+        internal bool Sommerlueftung(int h) => _regel != null && _regel.Stunde(h, _luftVor, _aussenVor);
+
+        /// <summary>
+        /// Der Zustand der <b>Nachtauskühlung</b> der Stunde <paramref name="h"/> (Stufe KP1b,
+        /// Konzept 3.7) — dieselbe Auswertung wie <see cref="Sommerlueftung"/>, mit dem eigenen
+        /// Außenabstand ΔT der Vorgabe; ohne bedingten Anteil gibt es keine Regel und damit
+        /// <c>false</c>.
+        /// </summary>
+        internal bool Nachtauskuehlung(int h) => _nachtregel != null && _nachtregel.Stunde(h, _luftVor, _aussenVor);
 
         /// <summary>Übernimmt eine Stunde des Vorlaufs (Ergebnis verworfen, nur der Zustand der Vorstunde).</summary>
         internal void VorlaufUebernehmen(int h, in Stundenergebnis v)
@@ -99,9 +122,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.ErgebnisUnplausibel"/>.</exception>
         internal void Uebernehmen(int h, bool sommer, in Stundenergebnis s)
+            => Uebernehmen(h, sommer, false, in s);
+
+        /// <summary>Die übernommene Kühlreihe der Stunde <paramref name="h"/> [kWh] (AK3-K, Fehler 1.1 (a)); 0 vor der Übernahme.</summary>
+        internal double KuehlKwh(int h) => _kuehl[h];
+
+        /// <summary>
+        /// Wie <see cref="Uebernehmen(int, bool, in Stundenergebnis)"/>, dazu der Zustand der
+        /// Nachtauskühlung <paramref name="nacht"/> (Stufe KP1b): Die Stunde zählt, wenn die Regel
+        /// an war <em>und</em> die Stunde einen bedingten Anteil trug (Konzept 3.7).
+        /// </summary>
+        internal void Uebernehmen(int h, bool sommer, bool nacht, in Stundenergebnis s)
         {
             GebaeudeModellEingang eingang = _e;
             if (sommer) _sommerStunden++;
+            if (eingang.Nachtauskuehlstunde(h, nacht)) _nachtStunden++;
             _luftVor = s.ThetaAirMittel;
             _aussenVor = eingang.ThetaOut[h];
             _heiz[h] = s.HeizleistungW;
@@ -111,6 +146,16 @@ namespace WindowsFormsApplication1
             if (s.Abschnitte > 1) _umschaltung++;
             if (s.HeizleistungW > 0.0 && s.KuehlleistungW > 0.0) _beides++;
             _summeW += s.HeizleistungW;
+            _kappung[h] = s.HeizleistungMaxAnteil;
+            _kappungH += s.HeizleistungMaxAnteil;
+            if (_fahrplan != null) _fahrplan[h] = s.VerfuegbarkeitBegrenzt;
+            if (_massenAw != null)
+            {
+                _massenAw[h] = s.ThetaMAwEnde;
+                _massenIw[h] = s.ThetaMIwEnde;
+            }
+            _messung?.Aufnehmen(in s);
+            if (s.InnenpruefungGedeckelt) _gedeckelt++;
 
             if (!Endlich(_heiz[h]) || _heiz[h] < 0.0 || !Endlich(_kuehl[h]) || _kuehl[h] < 0.0
                 || !Endlich(_luft[h]) || !Endlich(_op[h]))
@@ -190,46 +235,87 @@ namespace WindowsFormsApplication1
                 kuehlkreis = KuehlkreisErgebnis.Bilden(eingang, _kVorlauf, _kRuecklauf, _kBegrenzt, _stundenKl, _stundenKk,
                                                        _stundenGrenze, kuehlW, _ueberschreitung);
             }
+            // Stufe KP3 (Welle R4): die Aufheizwerte aus dem Plan der Zone und dem Lauf - nur mit Plan.
+            Aufheizergebnis aufheizung = _zone.Aufheizplan == null
+                ? null
+                : Aufheizergebnis.Bilden(_zone.Aufheizplan, _heiz, _kappung, _kappungH);
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               _heiz, _luft, _op, kuehl, eingang.ThetaMaxWert,
                                               verbrauchAltKwh, 1.0, _umschaltung, _beides,
                                               (double[])eingang.ThetaSoll.Clone(), _sommerStunden,
                                               eingang.KuehlungWirksam
                                                   ? (double?)eingang.KuehlSollwert : null,
-                                              heizkreis, kuehlkreis, eingang.Nachtzeit);
+                                              heizkreis, kuehlkreis, eingang.Nachtzeit,
+                                              eingang.NachtauskuehlungWK != null ? (int?)_nachtStunden : null,
+                                              eingang.Nutzungsmaske, _kappung, _kappungH, aufheizung)
+            {
+                // Stufe KP3 (Festlegungen 26, 28): Kennzeichen fuer Ergebniszeile und Export, keine Rechengroesse.
+                SommerlueftungGesetzt = eingang.Sommerlueftung,
+                HeizkalenderWirksam = eingang.HeizkalenderWirksam,
+                Innenumkehr = _messung?.Ergebnis(),
+                StundenInnenpruefungGedeckelt = _gedeckelt,
+                Erdreich = eingang.Erdreich,
+                FahrplanBegrenzt = _fahrplan,
+                Kuehlsollwertreihe = eingang.KuehlungWirksam ? (double[])eingang.ThetaMax.Clone() : null,
+                MassenEndeAw = _massenAw,
+                MassenEndeIw = _massenIw,
+            };
         }
 
         /// <summary>
         /// <b>Eine Zone ohne Nachbarn als ganzer Lauf</b> — Vorlauf von
         /// <see cref="Vdi6007Rechenweg.VORLAUF_H"/> Stunden ab dem Sollwert der ersten Vorlaufstunde,
-        /// dann das Jahr: derselbe Ablauf wie <see cref="Vdi6007Rechenweg.Laufen"/>, über dieses Objekt
-        /// (das Orakel der Welle W3).
+        /// dann das Jahr, Stunde für Stunde über den Gebäude-Stepper (<see cref="GebaeudeStepper"/>,
+        /// Entwurf AK3 2.2); <see cref="Vdi6007Rechenweg.Laufen"/> rechnet über diesen Weg.
         /// </summary>
         /// <exception cref="ArgumentException">für eine Zone mit Nachbarn — sie rechnet in der Zonenschleife.</exception>
         internal static GebaeudeModellErgebnis Laufen(ZonenEingang zone, int index, int idGebaeude)
         {
-            if (zone == null) throw new ArgumentNullException(nameof(zone));
-            if (zone.Gekoppelt) throw new ArgumentException("Eine gekoppelte Zone rechnet in der Zonenschleife.", nameof(zone));
-            var lauf = new Zonenlauf(zone);
-            ReadOnlySpan<double> keine = ReadOnlySpan<double>.Empty;
+            GebaeudeStepper stepper = GebaeudeStepper.Einzone(zone);
+            stepper.Beginnen();
+            stepper.Jahr();
+            return stepper.Abschluss(index, idGebaeude)[0];
+        }
 
-            int start = 8760 - Vdi6007Rechenweg.VORLAUF_H;
-            lauf.Beginnen(zone.Eingang.ThetaSoll[start]);
-            for (int h = start; h < 8760; h++)
-            {
-                bool sommer = lauf.Sommerlueftung();
-                Stundenrand r = zone.Rand(h, sommer, keine);
-                Stundenergebnis v = lauf.Modell.Schritt(in r);
-                lauf.VorlaufUebernehmen(h, in v);
-            }
-            for (int h = 0; h < 8760; h++)
-            {
-                bool sommer = lauf.Sommerlueftung();
-                Stundenrand r = zone.Rand(h, sommer, keine);
-                Stundenergebnis s = lauf.Modell.Schritt(in r);
-                lauf.Uebernehmen(h, sommer, in s);
-            }
-            return lauf.Ergebnis(index, idGebaeude);
+        /// <summary>
+        /// <b>Der Tagesstand des Laufs</b> (Zonensperre, Entwurf AK3-K 3.2): Massen, Regelzustände, Vorstunde und alle
+        /// Jahreszähler — was über eine Stunde hinaus trägt. Die Stundenreihen schreibt jede Stunde neu; sie brauchen
+        /// keine Sicherung. Mit <see cref="Herstellen"/> rechnet ein Tag danach Zeichen für Zeichen wie vom Tagesbeginn.
+        /// </summary>
+        internal sealed class Tagesstand
+        {
+            internal double Aw, Iw, LuftVor, AussenVor;
+            internal bool Regel, Nachtregel;
+            internal int Umschaltung, Beides, Sommer, Nacht, Gedeckelt;
+            internal double SummeW, KappungH, StundenHl, StundenHg, Unterschreitung, StundenKl, StundenKk, StundenGrenze, Ueberschreitung;
+            internal Innenumkehrzaehler Messung;
+        }
+
+        /// <summary>Sichert den Stand am Tagesbeginn (nach der letzten übernommenen Stunde).</summary>
+        internal Tagesstand Sichern() => new Tagesstand
+        {
+            Aw = _modell.ThetaMAw, Iw = _modell.ThetaMIw, LuftVor = _luftVor, AussenVor = _aussenVor,
+            Regel = _regel != null && _regel.Aktiv, Nachtregel = _nachtregel != null && _nachtregel.Aktiv,
+            Umschaltung = _umschaltung, Beides = _beides, Sommer = _sommerStunden, Nacht = _nachtStunden, Gedeckelt = _gedeckelt,
+            SummeW = _summeW, KappungH = _kappungH, StundenHl = _stundenHl, StundenHg = _stundenHg, Unterschreitung = _unterschreitung,
+            StundenKl = _stundenKl, StundenKk = _stundenKk, StundenGrenze = _stundenGrenze, Ueberschreitung = _ueberschreitung,
+            Messung = _messung?.Kopie(),
+        };
+
+        /// <summary>Stellt einen mit <see cref="Sichern"/> gesicherten Stand wieder her.</summary>
+        internal void Herstellen(Tagesstand t)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            _modell.Zuruecksetzen(t.Aw, t.Iw);
+            _luftVor = t.LuftVor;
+            _aussenVor = t.AussenVor;
+            _regel?.Setzen(t.Regel);
+            _nachtregel?.Setzen(t.Nachtregel);
+            _umschaltung = t.Umschaltung; _beides = t.Beides; _sommerStunden = t.Sommer; _nachtStunden = t.Nacht; _gedeckelt = t.Gedeckelt;
+            _summeW = t.SummeW; _kappungH = t.KappungH; _stundenHl = t.StundenHl; _stundenHg = t.StundenHg;
+            _unterschreitung = t.Unterschreitung; _stundenKl = t.StundenKl; _stundenKk = t.StundenKk;
+            _stundenGrenze = t.StundenGrenze; _ueberschreitung = t.Ueberschreitung;
+            if (_messung != null && t.Messung != null) _messung.Herstellen(t.Messung);
         }
 
         private static bool Endlich(double w) => !double.IsNaN(w) && !double.IsInfinity(w);

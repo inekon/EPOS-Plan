@@ -1,0 +1,83 @@
+﻿@* DAS SCHLOSS IM PROJEKTDIALOG (AD-Q15). Die Erzeugerdialoge eines Projekts
+   (BHKW, Heizkessel, Pufferspeicher, Photovoltaik, Stromspeicher,
+   Solarkollektoren) fuehren ihre eigene Katalogliste mit "Neu..", "Loeschen" und
+   "Bearbeiten..." - ohne Auswahlleiste. Damit auch hier "Schloss setzen..." und
+   "Schloss aufheben..." stehen, buendelt dieser Baustein Knopf und Rueckfrage
+   und rechnet ueber DENSELBEN Baustein Schlossumschaltung wie die Verwaltungen:
+   Beschriftung folgt der Zeile, Rueckfrage mit Vorgabe "Nein", Lesemodus der
+   Lizenz sperrt hart, geschrieben wird ueber den Schlossweg der Huelle.
+
+   DIE VERWENDUNG IM PROJEKT SPERRT NICHTS: Das Projekt fuehrt eine eigene Kopie
+   des Katalogsatzes. Kein Delegat, kein Knopf. *@
+
+@namespace EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+@if (Weg is not null)
+{
+    Auswahlhandlung? h = _schloss.Handlung(Weg, _ausfuehren, Ziele, NurLesen);
+    @if (h is not null)
+    {
+        <button type="button" class="epos-knopf epos-katalogschloss"
+                disabled="@(Zeile is null || h.Aus)"
+                title="@(h.Kurztext.Length > 0 ? h.Kurztext : null)"
+                @onclick="BeiKlick">@h.Text</button>
+    }
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiAntwort" />
+}
+
+@code {
+    /// <summary>Der Schreibweg der Hülle (<c>Schlosswege.Aus(…StammCtrl.SchlossSetzen)</c>); ohne ihn kein Knopf.</summary>
+    [Parameter] public Schlossweg? Weg { get; set; }
+
+    /// <summary>Die gewählte Katalogzeile; ohne sie ist der Knopf gesperrt.</summary>
+    [Parameter] public Katalogfilterzeile? Zeile { get; set; }
+
+    /// <summary>Geänderte, ungespeicherte Felder des Satzes halten die Rückfrage auf.</summary>
+    [Parameter] public bool Ungespeichert { get; set; }
+
+    /// <summary>Lesemodus des Wirts: Der Knopf ist hart gesperrt.</summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Nach dem Schalten: der Statustext; der Wirt liest seine Liste neu.</summary>
+    [Parameter] public EventCallback<string> Geschaltet { get; set; }
+
+    /// <summary>Ein Grund, warum nicht geschaltet wurde (ungespeichert, Lesemodus, Fehler des Kerns).</summary>
+    [Parameter] public EventCallback<string> Abgelehnt { get; set; }
+
+    /// <summary>„Ja" — <c>ALLG_BTN_JA</c>.</summary>
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+
+    /// <summary>„Nein" — <c>ALLG_BTN_NEIN</c>.</summary>
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+
+    private readonly Schlossumschaltung _schloss = new();
+    private EventCallback _ausfuehren;
+
+    /// <summary>Steht die Rückfrage? Der Wirt hält dann Esc zurück.</summary>
+    public bool FrageOffen => _schloss.FrageOffen;
+
+    /// <summary>Ist die Zeile in dieser Sitzung entsperrt worden?</summary>
+    public bool Entsperrt(Katalogfilterzeile? zeile) => _schloss.Entsperrt(zeile);
+
+    private IReadOnlyList<Katalogfilterzeile> Ziele
+        => Zeile is null ? Array.Empty<Katalogfilterzeile>() : new[] { Zeile };
+
+    protected override void OnInitialized()
+        => _ausfuehren = EventCallback.Factory.Create(this, BeiKlick);
+
+    private async Task BeiKlick()
+    {
+        if (NurLesen || Zeile is null) return;
+        string? grund = _schloss.Fragen(Weg, Ziele, Ungespeichert);
+        if (grund is not null) await Abgelehnt.InvokeAsync(grund);
+    }
+
+    private async Task BeiAntwort(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Weg);
+        if (a.Geschrieben) { await Geschaltet.InvokeAsync(a.Status); return; }
+        if (a.Fehler.Length > 0) await Abgelehnt.InvokeAsync(a.Fehler);
+    }
+}

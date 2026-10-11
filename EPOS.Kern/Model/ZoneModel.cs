@@ -106,11 +106,29 @@ namespace WindowsFormsApplication1
         /// <summary>KAK-S1: Nennleistung der Kühlübergabe [kW], sensibel; <c>null</c> = Anteil der Zonenfläche.</summary>
         public double? Kuehl_Uebergabe_Leistung_Nenn;
 
+        /// <summary>AK1z (E63, Schritt <see cref="ZonenUebergabeSchema.SCHRITT"/>): Auslegungsvorlauf der Übergabe [°C]; <c>null</c> = Wert des Gebäudes, sonst Vorgabe der Art.</summary>
+        public double? Auslegung_Vorlauf;
+
+        /// <summary>AK1z: Auslegungsrücklauf der Übergabe [°C]; <c>null</c> = Wert des Gebäudes, sonst Vorgabe der Art.</summary>
+        public double? Auslegung_Ruecklauf;
+
+        /// <summary>AK1z: Auslegungsraumtemperatur [°C]; <c>null</c> = Wert des Gebäudes, sonst Tag-Sollwert der Zone.</summary>
+        public double? Auslegung_Raumtemperatur;
+
+        /// <summary>AK1z: Proportionalband des Reglers [K]; <c>null</c> = Wert des Gebäudes, sonst 1 K.</summary>
+        public double? Regler_Proportionalband;
+
         /// <summary>Herkunft (<see cref="DbWerte.HERKUENFTE"/>); <c>null</c> = nicht angegeben.</summary>
         public string Herkunft;
 
         /// <summary>IFC-GUID oder gbXML-id der Quellentität; <c>null</c> = keine.</summary>
         public string Quellkennung;
+
+        /// <summary>
+        /// NP1 (Schemaschritt <see cref="RaumnutzungSchema.SCHRITT"/>, Q41): der Name des übernommenen Nutzungsprofils als
+        /// Kopie, nie eine ID; <c>null</c> = keins.
+        /// </summary>
+        public string Nutzungsprofil;
 
         /// <summary>Die Bauteile der Zone; beim Speichern gilt die Listenreihenfolge als Rang.</summary>
         public List<BauteilModel> Bauteile = new List<BauteilModel>();

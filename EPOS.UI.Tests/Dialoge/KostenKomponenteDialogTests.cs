@@ -177,7 +177,7 @@ public class KostenKomponenteDialogTests : BunitContext
         var cut = Zeige(p => p.Add(x => x.BannerText, "Alle Beträge sind NETTO."));
 
         Assert.Single(cut.FindAll(".epos-bannerzeile"));
-        cut.Find(".epos-bannerzeile button").Click();
+        cut.Find(".epos-bannerzeile > button").Click();
         Assert.Empty(cut.FindAll(".epos-bannerzeile"));
     }
 
@@ -2192,6 +2192,37 @@ public class KostenKomponenteDialogTests : BunitContext
         var zeilen = cut.FindAll(".epos-zr-satzherkunft");
         Assert.Single(zeilen);
         Assert.Equal(instandhaltung.SatzHerleitung, zeilen[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// AUFTRAG P671 (E30-Rest 1): Eine Zeile, deren Satz aus dem Hilfsenergieanteil der Anlage
+    /// stammt, zeigt den wirksamen Satz schreibgeschützt und nennt die Herkunft unter dem Feld;
+    /// eine Zeile mit eigenem Satz bleibt eingebbar und ohne Herkunftszeile.
+    /// </summary>
+    [Fact]
+    public void Ein_Satz_aus_dem_Hilfsenergieanteil_steht_schreibgeschuetzt_im_Satzfeld()
+    {
+        KostenKomponenteStand mit = Standard();
+        KostenPositionZeile ausAnteil = Zeile(21, "Hilfsenergiekosten", 2.0);
+        ausAnteil.Kette = false;
+        ausAnteil.BetragText = "5.241,35";
+        ausAnteil.SatzGesperrt = true;
+        ausAnteil.SatzHerleitung = "2 % · Satz aus dem Hilfsenergieanteil der Anlage";
+        KostenPositionZeile eigen = Zeile(22, "Hilfsenergiekosten (Strom)", 1.5);
+        eigen.Kette = false;
+        mit.Zeilen = new[] { ausAnteil, eigen };
+
+        var cut = Zeige(stand: mit);
+
+        Assert.Equal("2", Satzfeld(cut, 0).GetAttribute("value"));
+        Assert.True(Satzfeld(cut, 0).HasAttribute("disabled"));
+        var herkunft = Datenzeilen(cut)[0].QuerySelectorAll(".epos-zr-satzherkunft");
+        Assert.Single(herkunft);
+        Assert.Equal(ausAnteil.SatzHerleitung, herkunft[0].TextContent.Trim());
+
+        Assert.Equal("1,5", Satzfeld(cut, 1).GetAttribute("value"));
+        Assert.False(Satzfeld(cut, 1).HasAttribute("disabled"));
+        Assert.Empty(Datenzeilen(cut)[1].QuerySelectorAll(".epos-zr-satzherkunft"));
     }
 
     // =====================================================================

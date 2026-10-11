@@ -82,6 +82,7 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(Dienste.Projekt.Id),
                 ["Regionen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(RegionenLesen),
                 ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
@@ -252,13 +253,17 @@ namespace WindowsFormsApplication1
             // Der Arbeitsfaden bekommt die Kultur des Aufrufers (Auftrag #232): Ein
             // Faden ohne eigene Kultur laese den veraenderlichen prozessweiten
             // Vorgabewert und koennte mitten im Import die Sprache wechseln.
-            return await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.Laufen(
+            // Eine Ausnahme, die der Ablauf nicht selbst benennt, wird ueber die Fangstelle der
+            // Importe zu einem Eingabefehler mit Grund (IM-1).
+            string datei = string.IsNullOrEmpty(auftrag?.TryPfad) ? auftrag?.TryPaketPfad ?? "" : auftrag.TryPfad;
+            return await Importfang.StartenAsync(datei, () => KlimaImportAblauf.Laufen(
                 auftrag,
                 (lon, lat, azimut) => PVGIS_EPW_Downloader.GetTMY(lon, lat, azimut),
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 melder,
                 marke,
-                Bereich));
+                Bereich),
+                a => new KlimaImportErgebnis { Ausgang = KlimaImportAusgang.Eingabefehler, Meldung = a.Text });
         }
 
         // =====================================================================

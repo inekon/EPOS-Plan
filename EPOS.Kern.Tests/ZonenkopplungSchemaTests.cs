@@ -157,9 +157,11 @@ namespace EPOS.Kern.Tests
             Assert.Single(bericht);
 
             List<string> bauteil = DataRepository.SpaltenVonTabelle(SchemaKatalog.TAB_BAUTEIL);
-            Assert.Equal(new[] { "ID_Nachbarzone", "Trennflaeche_Zuordnung" }, bauteil.Skip(bauteil.Count - 2));
+            Assert.Equal(new[] { "ID_Nachbarzone", "Trennflaeche_Zuordnung" }, bauteil.SkipWhile(s => s != "ID_Nachbarzone").Take(2));
             Assert.Equal(ZonenkopplungSchema.SPALTENZAHL_LUFTSTROM, DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_LUFTSTROM).Count);
-            Assert.Equal(ZonenkopplungSchema.SPALTENZAHL_ERGEBNIS, DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_ERGEBNIS).Count);
+            // Die Messlatte traegt dazu die Nachtauskuehlstunden des spaeteren Schritts KP-S1v und die
+            // vierzehn Spalten der Aufheizoptimierung (KP-S3) und Aufheiz_Art (KP-S4, B24).
+            Assert.Equal(ZonenKaeltespitzeSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(ZonenkopplungSchema.TAB_ERGEBNIS).Count);
             foreach (string t in new[] { ZonenkopplungSchema.TAB_LUFTSTROM, ZonenkopplungSchema.TAB_ERGEBNIS })
                 Assert.EndsWith("STRICT", Convert.ToString(DataRepository.ExecuteScalar(
                     "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", new DbParam("@t", t)), CultureInfo.InvariantCulture));
@@ -191,7 +193,7 @@ namespace EPOS.Kern.Tests
             // Das Gebäude fällt mit allen Zonen in EINER Anweisung; NO ACTION prüft erst an ihrem Ende.
             Assert.True(new WizardCtrl().Del_Projekt_ZuordungGebäude(PROJEKT, GEBAEUDE));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID IN (?, ?)", new DbParam("@a", eg), new DbParam("@b", og)));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zonenluftstrom"));
+            Assert.Equal(0L, Zahl(Zonenbestand.LUFTSTROEME));
         }
 
         [Fact]
@@ -327,7 +329,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(F(R.ZONE_MSG_LUFTSTROM_FREMD, 4711), e.Meldung);
 
             Assert.Equal(vorher, Zahl("SELECT COUNT(*) FROM Tab_Zone"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zonenluftstrom"));
+            Assert.Equal(0L, Zahl(Zonenbestand.LUFTSTROEME));
         }
 
         /// <summary>
@@ -405,14 +407,14 @@ namespace EPOS.Kern.Tests
 
             // Unverändert: der Schreibweg bekommt keine Luftströme und lässt sie stehen.
             Assert.Null(a.Zonenstand(true).Luftstroeme);
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
             Assert.Equal(strom.Id, Assert.Single(ctrl.LuftstroemeJeGebaeude(GEBAEUDE)).ID);
 
             // Geändert: abgeglichen unter derselben Id.
             a.LuftstroemeSetzen(new[] { new ZonenluftstromDaten { Id = strom.Id, IdZoneA = og.Id, IdZoneB = eg.Id, Volumenstrom = 120 } });
             Assert.True(a.LuftGeaendert);
             Assert.Equal("", weg.Pruefen!(a.Zonenstand(false)));
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
             ZonenluftstromModel gespeichert = Assert.Single(ctrl.LuftstroemeJeGebaeude(GEBAEUDE));
             Assert.Equal(strom.Id, gespeichert.ID);
             Assert.Equal(120.0, gespeichert.Volumenstrom);
@@ -421,7 +423,7 @@ namespace EPOS.Kern.Tests
             Assert.True(a.ZoneEntfernen(og.Id));
             Assert.Equal(DbWerte.RANDBEDINGUNG_UNBEHEIZT, decke.Randbedingung);
             Assert.Empty(a.Luftstroeme);
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
             BauteilModel d = Assert.Single(ctrl.LesenJeGebaeude(GEBAEUDE)).Bauteile.Single(b => b.Bezeichner == "Decke EG/OG");
             Assert.Equal(DbWerte.RANDBEDINGUNG_UNBEHEIZT, d.Randbedingung);
             Assert.Null(d.ID_Nachbarzone);
@@ -497,7 +499,7 @@ namespace EPOS.Kern.Tests
             int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " G6b");
             Assert.True(kopie > 0);
             Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_ErgebnisZone"));
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Zonenluftstrom"));    // die Kopie trägt den Luftstrom
+            Assert.Equal(2L, Zahl(Zonenbestand.LUFTSTROEME));    // die Kopie trägt den Luftstrom
 
             string ordner = Path.Combine(Path.GetTempPath(), "epos-g6b-transfer-" + Guid.NewGuid().ToString("N").Substring(0, 8));
             Directory.CreateDirectory(ordner);

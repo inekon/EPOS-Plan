@@ -246,7 +246,7 @@ namespace WindowsFormsApplication1
                 WirtschaftlichkeitVerlaufSzenarien verlauf = null;
                 blatt(Blattart.Wirtschaftlichkeit, null, () =>
                 {
-                    verlauf = BlattWirtschaftlichkeit(wb, daten, formeln,
+                    verlauf = BlattWirtschaftlichkeit(wb, daten, konfig, formeln,
                                                       diagramme?.Kontext.Wirtschaft ?? WirtschaftsBerichtswerte.Von(daten));
                     // BV-E8: Die Diagramme der Wirtschaftlichkeit zeigen den Verlauf, den das Blatt zeigt.
                     diagramme?.Kontext.SetzeVerlauf(verlauf);
@@ -271,7 +271,9 @@ namespace WindowsFormsApplication1
             // ETAPPE E8b (U43, Konzept V‑G12): die Anhang-E-Checkliste als letztes Blatt —
             // nur mit dem Baustein „Wirtschaftlichkeit", auf dessen Blöcke sie verweist.
             if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
-                blatt(Blattart.Checkliste, null, () => AnhangECheckliste.SchreibeExcel(wb, AnhangECheckliste.AusBericht(daten)));
+                blatt(Blattart.Checkliste, null, () => AnhangECheckliste.SchreibeExcel(wb,
+                    // VB‑E4: in VALERI-Darstellung nennen die Punkte 1, 7 und 9 die Tafel „Kennzahlen je Szenario“ des Wortberichts.
+                    AnhangECheckliste.AusBericht(daten, null, WirtschaftlichkeitSzenario.ERWARTET, WirtschaftsBerichtswerte.IstValeri(konfig))));
         }
 
         /// <summary>
@@ -311,6 +313,37 @@ namespace WindowsFormsApplication1
                         plan.AufBlatt(ws, k, stand);
                     break;
             }
+        }
+
+        /// <summary>
+        /// <b>Die Häkchen, deren Inhalt ein erzeugtes Blatt trägt</b> (Entscheid BV-Q2 (c)): Das Blatt „Übersicht“
+        /// trägt den Projektkopf und die Komponentenmatrix, der „Vergleich“ den Variantenvergleich,
+        /// Formelmappe, Verlauf und Checkliste die Wirtschaftlichkeit, jedes Detailblatt die Ergebnisse je
+        /// Variante. Die Diagrammdaten (BV-E8) gehören keinem Häkchen: Sie tragen die Zahlen der Diagramme,
+        /// die ohnehin nur auf vorhandenen Blättern stehen. Ein Blatt ohne Häkchen in dieser Tafel entsteht
+        /// immer (<see cref="BlattGewaehlt"/>).
+        /// </summary>
+        internal static readonly IReadOnlyDictionary<Blattart, IReadOnlyList<string>> Blattbausteine =
+            new Dictionary<Blattart, IReadOnlyList<string>>
+            {
+                [Blattart.Uebersicht] = new[] { BerichtsKonfiguration.B_PROJEKT, BerichtsKonfiguration.B_KOMPONENTEN },
+                [Blattart.Vergleich] = new[] { BerichtsKonfiguration.B_VERGLEICH },
+                [Blattart.Wirtschaftlichkeit] = new[] { BerichtsKonfiguration.B_WIRTSCHAFT },
+                [Blattart.Verlauf] = new[] { BerichtsKonfiguration.B_WIRTSCHAFT },
+                [Blattart.Detail] = new[] { BerichtsKonfiguration.B_ERGEBNISSE },
+                [Blattart.Checkliste] = new[] { BerichtsKonfiguration.B_WIRTSCHAFT },
+                [Blattart.Diagrammdaten] = Array.Empty<string>(),
+            };
+
+        /// <summary>
+        /// Trägt dieses Blatt in diesem Bericht Inhalt — ist also mindestens eines seiner Häkchen gesetzt
+        /// (<see cref="Blattbausteine"/>)? Ohne Konfiguration gilt jedes Häkchen als gesetzt.
+        /// </summary>
+        internal static bool BlattGewaehlt(Blattart art, BerichtsKonfiguration konfig)
+        {
+            if (konfig == null) return true;
+            if (!Blattbausteine.TryGetValue(art, out IReadOnlyList<string> bausteine) || bausteine.Count == 0) return true;
+            return bausteine.Any(konfig.IstAktiv);
         }
 
         /// <summary>
@@ -409,7 +442,52 @@ namespace WindowsFormsApplication1
                 r++;
             }
 
+            // PVG: rechnet ein Stand seine Photovoltaik ueber eine PV-Ganglinie, folgen die Kenndaten der
+            // Photovoltaik je Stand - dieselbe Tabelle wie im Word-Bericht.
+            r = PvKenndatenBlock(ws, r + 1, daten);
+
             ws.Columns().AdjustToContents(1, 60);
+        }
+
+        /// <summary>
+        /// <b>Die Kenndaten der Photovoltaik je Stand</b> auf der Übersicht — nur, wenn ein Stand über eine PV-Ganglinie
+        /// rechnet: dieselbe Tabelle wie im Word-Bericht (<see cref="Berichtstabellen.Kenndaten"/>, Gewerk
+        /// „Photovoltaik"), vorn die Quellzeile („Modulmodell" bzw. „Ganglinie ‚Name‘ (…), Nennleistung … kWp",
+        /// <see cref="PvGanglinieAusweis"/>), die Merkmale des Modulmodells beim Ganglinienstand als „entfällt (Ganglinie)".
+        /// Ausweis, keine Kennzahl. Gibt die Zeile hinter dem Block zurück; ohne Ganglinie <paramref name="r"/> unverändert.
+        /// </summary>
+        internal static int PvKenndatenBlock(IXLWorksheet ws, int r, BerichtsDaten daten)
+        {
+            if (daten?.Varianten == null || !daten.Varianten.Any(v => v.Details?.PvGanglinie != null)) return r;
+            Berichtstabelle t = Berichtstabellen.Kenndaten(daten, "Photovoltaik", BerichtTexte.Englisch, BerichtTexte.Kultur);
+            if (t == null || t.IstLeer || t.Kopf == null) return r;
+
+            string titel;
+            try { titel = MyResource.Resource.ResourceManager.GetString("PVG_XLS_KENNDATEN", BerichtTexte.Kultur); }
+            catch { titel = null; }
+            ws.Cell(r, 1).Value = titel ?? "Kenndaten Photovoltaik";
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            r++;
+
+            Action<Tabellenzeile, bool> schreibe = (zeile, kopf) =>
+            {
+                for (int i = 0; i < zeile.Zellen.Count; i++)
+                {
+                    Tabellenzelle z = zeile.Zellen[i];
+                    IXLCell c = ws.Cell(r, 1 + i);
+                    c.Value = z.Text ?? "";
+                    if (i > 0)
+                        c.Style.Alignment.Horizontal = z.Ausrichtung == Tabellenausrichtung.Rechts ? XLAlignmentHorizontalValues.Right
+                            : z.Ausrichtung == Tabellenausrichtung.Mitte ? XLAlignmentHorizontalValues.Center
+                            : XLAlignmentHorizontalValues.Left;
+                    if (!kopf && i > 0 && z.Hinterlegung == Tabellenhinterlegung.Stamm) c.Style.Fill.BackgroundColor = STAMM;
+                }
+                if (kopf) KopfZeile(ws, r, zeile.Zellen.Count);
+                r++;
+            };
+            schreibe(t.Kopf, true);
+            foreach (Tabellenzeile zeile in t.Zeilen) schreibe(zeile, false);
+            return r + 1;
         }
 
         // ------------------------------------------------------------- Vergleich
@@ -441,6 +519,9 @@ namespace WindowsFormsApplication1
             KopfZeile(ws, 1, deltaStart + varianten.Count - 1);
 
             int r = 2;
+            // Anwenderentscheid 29.09.2026: Die Zellen tragen die Einzelzahl; die Fußzeilen der
+            // Gruppenregel werden hier gesammelt und unter der Liste als Anmerkungszeilen gesetzt.
+            var fussnoten = new List<string>();
             // KU2 Welle 3: die Gruppe „Kälte“ zwischen Effizienz und Emissionen (KennzahlenKatalog.GRUPPEN).
             foreach (string gruppe in KennzahlenKatalog.GRUPPEN)
             {
@@ -449,6 +530,8 @@ namespace WindowsFormsApplication1
                         v.Kennzahlen.ContainsKey(x.Schluessel) && v.Kennzahlen[x.Schluessel].HasValue))
                     .ToList();
                 if (zeilen.Count == 0) continue;
+                foreach (string fussnote in daten.StromGruppenregelFussnoten(BerichtTexte.Kultur, gruppe))
+                    if (!fussnoten.Contains(fussnote)) fussnoten.Add(fussnote);
 
                 foreach (Kennzahl kz in zeilen)
                 {
@@ -495,6 +578,13 @@ namespace WindowsFormsApplication1
             tabelle.SetAutoFilter();
             ws.SheetView.Freeze(1, 3);
             ws.Columns().AdjustToContents(1, 45);
+
+            // Die Anmerkungszeilen der Gruppenregel unter der Liste (nach dem Anpassen der Breiten,
+            // damit der lange Satz Spalte A nicht aufweitet): je betroffenem Stand eine Zeile zu
+            // den Kosten und eine zu den Emissionen — die Liste führt beide Gruppen.
+            int hinweiszeile = r + 1;
+            foreach (string fussnote in fussnoten)
+                ws.Cell(hinweiszeile++, 1).Value = fussnote;
         }
 
         // ------------------------------------------------------------- Wirtschaftlichkeit (Phase 6)
@@ -512,6 +602,7 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = kein Verlauf (keine Ergebnisse, Zeitreihen fehlen, Rechenfehler).
         /// </summary>
         private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten,
+                                                                                  BerichtsKonfiguration konfig,
                                                                                   Formelregister formeln,
                                                                                   WirtschaftsBerichtswerte w)
         {
@@ -529,6 +620,27 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 1).Style.Font.Bold = true;
             ws.Cell(r, 1).Style.Font.FontSize = 14;
             r += 1;
+
+            // Fachvorgabe E31 (Nach #582): Das Blatt behält seine drei Spaltengruppen Erwartet, Günstig, Ungünstig. Steht
+            // der Wortbericht in einem anderen Szenario als Erwartet, nennt es die Kopfzeile; bei Erwartet entfällt sie.
+            // Dieselbe Regel wie im Baustein: Fehlt einem Stand das Ergebnis des gewählten Szenarios, gilt Erwartet.
+            string wortszenario = w.Berichtsszenario(konfig, out _);
+            if (wortszenario != WirtschaftlichkeitSzenario.ERWARTET)
+            {
+                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_BER_SZENARIO_WORTBERICHT,
+                                                    VerlaufZeilen.Szenarioname(wortszenario));
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                r += 1;
+            }
+            // VB‑E3 (VB‑Q9 a): In VALERI-Darstellung nennt eine Kopfzeile die Darstellung des Wortberichts; das Blatt
+            // selbst bleibt, wie es ist (seine drei Spaltengruppen sind schon die VALERI-Form). Das Leitszenario ist dann
+            // Erwartet, die Kopfzeile des Szenarios entfällt.
+            if (WirtschaftsBerichtswerte.IstValeri(konfig))
+            {
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BER_VALERI_WORTBERICHT;
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                r += 1;
+            }
 
             if (alle.Count == 0)
             {
@@ -585,12 +697,12 @@ namespace WindowsFormsApplication1
 
             // ETAPPE E7 (Divergenz D3): Die Aktualitätsprüfung gegen den Simulationsstand
             // gab es bisher nur in Word. Ein Excel-Nutzer sah nicht, dass die Zahlen zu
-            // einem anderen Lauf gehören als der Bericht.
+            // einem anderen Lauf gehören als der Bericht. Fachvorgabe E31: im Szenario des Wortberichts.
             var veraltet = new List<string>();
             foreach (VariantenDaten v in daten.Varianten)
             {
                 WirtschaftlichkeitErgebnis ea = alle.FirstOrDefault(x =>
-                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                    x.IdProjekt == v.IdProjekt && x.Szenario == wortszenario);
                 if (ea == null || (ea.Fehlgrund == null && !w.ErgebnisAktuell(ea)))
                     veraltet.Add(v.IstStamm ? "Stamm" : v.Anzeige);
             }
@@ -1255,7 +1367,9 @@ namespace WindowsFormsApplication1
             IXLColumn letzteSpalte = ws.LastColumnUsed();
             if (letzteSpalte != null) breit = Math.Max(breit, letzteSpalte.ColumnNumber());
             for (int i = 2; i <= breit; i++) ws.Column(i).Width = 18;
-            ws.SheetView.FreezeRows(2);
+            // Fixiert bleiben Titel und Parameterzeile — mit der Kopfzeile des Szenarios (E31) oder der VALERI-Darstellung
+            // (VB‑E3) eine Zeile mehr; beide schließen einander aus (VALERI hat das Leitszenario Erwartet).
+            ws.SheetView.FreezeRows(wortszenario == WirtschaftlichkeitSzenario.ERWARTET && !WirtschaftsBerichtswerte.IstValeri(konfig) ? 2 : 3);
             return verlaufSzenarien;
         }
 
@@ -1314,7 +1428,8 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.Bold = true;
                 ws.Range(r, 1, r, 14).Style.Fill.BackgroundColor = GRUPPE;
                 r++;
-                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_HINWEIS;
+                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_MJ_HINWEIS,
+                                                    VerlaufZeilen.Szenarioname(WirtschaftlichkeitSzenario.ERWARTET));
                 ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
                 r += 2;
             }
@@ -1726,7 +1841,8 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 1).Style.Font.Bold = true;
             ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = GRUPPE;
             r++;
-            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_HINWEIS;
+            ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_BK_HINWEIS,
+                                                VerlaufZeilen.Szenarioname(WirtschaftlichkeitSzenario.ERWARTET));
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r += 2;
 
@@ -1980,6 +2096,8 @@ namespace WindowsFormsApplication1
                     "Strombedarf"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.PV_GENUTZT, "PV-Eigenverbrauch"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_STROM, "BHKW-Strom"),
+                // Katalog v12: der Reststrombedarf am BHKW (Stromlast des BHKW-Reiters) — nur mit Reihe.
+                new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_RESTSTROM, "BHKW-Reststrom"),
             };
             if (z.Hat(ZeitreihenSatz.NETZEINSPEISUNG))
             {
@@ -1999,8 +2117,18 @@ namespace WindowsFormsApplication1
                 // die Spalte steht nur, wenn der Lauf einen BHKW-Überschuss hat (Reihe
                 // BHKW_UEBERSCHUSS, Schwelle 0,5 kWh im ZeitreihenExtraktor).
                 spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_UEBERSCHUSS, "BHKW-Einspeisung"));
+                // PV3 (Welle M5): die Abregelung an der Einspeisegrenze - nur, wenn der Lauf eine
+                // hat (Reihe PV_ABREGELUNG, Schwelle 0,5 kWh im ZeitreihenExtraktor).
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.PV_ABREGELUNG, "PV-Abregelung"));
             }
+            // SP1 (Welle M5): der Eigenverbrauch des Speichersystems - nur mit Reihe.
+            spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.SPEICHER_EIGENVERBRAUCH, "Eigenverbrauch Speichersystem"));
             spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.NETZBEZUG, "Netzbezug"));
+            // Katalog v12: die Kälteproduktion des Kältereiters — die gedeckte Kälte je Kälteerzeuger und die
+            // ungedeckte Kälte; nur, wenn der Lauf Kälte rechnet und die Reihe Werte trägt.
+            foreach (string kaelte in z.Kaeltereihen)
+                spalten.Add(new KeyValuePair<string, string>(kaelte, "Kälte " + z.Beschriftung(kaelte)));
+            spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.KAELTEREST, "Kälte ungedeckt"));
             spalten = spalten.Where(s => z.Hat(s.Key)).ToList();
             if (spalten.Count == 0) return r;
 

@@ -1,0 +1,152 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Wärmequelle Erdreich
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Wärmequelle Erdreich.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Wärmequelle Erdreich''' beschreibt die Quelle einer erdgekoppelten Wärmepumpe: Erdkollektor oder Erdsonde, Bodentyp, Klimazone und nutzbare Spreizung. Eine Vorschau zeigt bei jeder Eingabe den Jahresgang der Quelltemperatur. Der Dialog prüft die Auslegung gegen die Grenzwerte der VDI 4640 Blatt 2: ohne Simulationslauf als Vorprüfung aus Heizleistung und COP der Wärmepumpe, nach einem Lauf mit dem gerechneten Entzug.
+
+Wie Erdsonde und Erdkollektor Wärme liefern und welche Entzugsleistungen der Boden trägt, steht unter [[Grundlagen/Wärmequelle Erdreich]]; diese Seite zeigt, wie EPOS-Plan die Quelle einbindet und rechnet.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Die Erdreichquelle gehört zu genau einer Wärmepumpe und liefert ihr die Quelltemperatur jeder Stunde. In der Reihenfolge der Bedienung:
+
+# '''Wärmepumpe mit wählbarer Quelle''' – in der Detailansicht der [[Programm Dokumentation/Wärmepumpe|Wärmepumpen Verwaltung]] der ''Wärmepumpentyp'' ''Sole-Wasser'' oder ''Wasser-Wasser''. Eine Luft-Wasser-Wärmepumpe rechnet immer mit der Außenluft.
+# '''Quelle wählen''' – ''Simulation Konfiguration'' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'', Schritt ''① Konfiguration''): Doppelklick auf den Chip ''Quelle:'' der Wärmepumpe, in der Quellenwahl ''Erdreich (VDI 4640)''. Es öffnet sich ''Wärmequelle Erdreich'' mit dem Namen der Wärmepumpe im Titel.
+# '''Quelle beschreiben''' – Quellsystem mit seinen Maßen, Bodentyp, Klimazone und Spreizung; die Vorschau rechnet mit. ''OK'' speichert die Eingaben an der Wärmepumpe, die Klimazone an der Klimaregion des Projekts.
+# '''Rechnen und prüfen''' – ohne Lauf zeigt die Gruppe ''Auslegungsprüfung nach VDI 4640 Blatt 2'' die ''Vorprüfung aus Auslegungswerten''; nach dem Simulationslauf, auch über ''Simulation'' im Dialog, ersetzt das Laufergebnis sie. Dieselbe Aussage steht im Ergebnisreiter ''Wärmepumpe'' je Erdreichanlage mit Entzug, Spitze und Volllaststunden.
+
+{{Diagramm-Anfang|titel=Einbindung einer Erdreichquelle}}
+{{Fluss-Anfang}}
+{{Flusskasten|Erdsonde|1 × 100 m|rolle=umwelt}}
+{{Flusspfeil|°C}}
+{{Flusskasten|Wärmepumpe A|Sole-Wasser, 6 kW|rolle=waerme}}
+{{Flusspfeil}}
+{{Flusskasten|Speicher 1|200 l|rolle=speicher}}
+{{Flusspfeil}}
+{{Flusskasten|Verbraucher|Heizung, Warmwasser|rolle=waerme}}
+{{Fluss-Ende}}
+{{Fluss-Anfang}}
+{{Flusskasten|Auslegungswerte|Heizleistung und COP bei B0/W35}}
+{{Flusspfeil|Entzugsleistung, Jahresentzug}}
+{{Flusskasten|Vorprüfung|VDI 4640 Blatt 2}}
+{{Fluss-Ende}}
+{{Fluss-Anfang}}
+{{Flusskasten|Simulationslauf|Wärme und Strom je Stunde}}
+{{Flusspfeil|Entzugsspitze, Jahresentzug, Volllaststunden}}
+{{Flusskasten|Auslegungsprüfung|VDI 4640 Blatt 2}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Die Quelltemperatur geht in die Kennlinie der Wärmepumpe ein. Bei der Sonde senkt der Entzug jeder Stunde die Soletemperatur der folgenden Stunden; beim Kollektor wirkt er nicht auf die Temperatur zurück. Gegen die Grenzwerte gehalten wird der Entzug in beiden Fällen – vor dem Lauf aus den Auslegungswerten, danach aus dem Ergebnis des Laufs.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 °C, 7,5 MWh Heizwärme und 2,5 MWh Trinkwarmwasser im Jahr, Fußbodenheizung 35/28 °C, Speicher 1 (Pufferspeicher, 200 l). Die Sole-Wasser-Wärmepumpe A mit 6 kW bezieht ihre Wärme aus einer Erdwärmesonde von 100 m; für den Boden ist Ton/Schluff angenommen.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Detailansicht der Wärmepumpe || ''Wärmepumpentyp'' || Sole-Wasser || nur dann ist die Quelle wählbar
+|-
+| Detailansicht der Wärmepumpe || ''Vorlauf'' / ''Rücklauf'' || 35 / 28 °C || Fußbodenheizung; gerechnet wird mit der Kennlinie für 35 °C
+|-
+| Simulation, Karte der Wärmepumpe || Chip ''Quelle:'' || ''Erdreich (VDI 4640)'' || öffnet ''Wärmequelle Erdreich''
+|-
+| Wärmequelle Erdreich || ''Erdsonde als Quellsystem'' || gewählt || Sonde statt Kollektor
+|-
+| Wärmequelle Erdreich || ''Länge je Sonde [m]'' / ''Anzahl Sonden'' || 100 / 1 || 100 Sondenmeter; mittlere Tiefe 50 m, geothermischer Zuschlag 0,9 K; der Entzug verteilt sich auf die 100 m
+|-
+| Wärmequelle Erdreich || ''Bodentyp'' || ''Ton/Schluff, wassergesättigt'' || <math>\lambda = 1{,}8</math>&nbsp;W/(m·K); bestimmt, wie schnell der Boden um die Sonde Wärme nachleitet, und die Prüfung
+|-
+| Wärmequelle Erdreich || ''Klimazone'' || Vorbelegung der Klimaregion || Vorprüfung und Kollektor nehmen die Volllaststunden der Zone, die Sonde nach dem Lauf die des Laufs
+|-
+| Wärmequelle Erdreich || ''Nutzbare Spreizung [K]'' || 3 || wirkt nur in der Frostprüfung
+|-
+| Betriebsmodus || ''Leistungssteuerung der Wärmepumpe'' || ''Leistungsoptimiert - nur den Bedarf decken'' || die Entzugsspitze folgt dem Bedarf, nicht der vollen Leistung
+|}
+
+'''Was herauskommt und wo es steht.''' Die Vorschau zeigt eine waagerechte Linie: die ungestörte Erdreichtemperatur an der Sonde, das Jahresmittel der Außentemperatur plus 2,4 K, bei 9,5 °C also 11,9 °C. Von ihr geht die Simulation aus; mit jeder Stunde, in der die Wärmepumpe läuft, sinkt die Soletemperatur, am stärksten gegen Ende der Heizzeit, und erholt sich im Sommer. Gerechnet wird das zehnte Betriebsjahr: Die Simulation rechnet die Sonde zweimal, und im zweiten Durchgang tragen die neun Jahre davor die Stundenlast des ersten – den Entzug abzüglich der Kühlwärme, die zurückgeht. Den Verlauf zeigt das Ergebnis als Quelltemperatur der Wärmepumpe; eine Zeile unter der Vorschau weist darauf hin. Vor dem ersten Lauf steht die Vorprüfung: Mit einem COP von 4,5 bei B0/W35 ergibt sich eine Entzugsleistung von 6&nbsp;kW · (1 − 1/4,5) ≈ 4,7&nbsp;kW, also rund 47 W/m, geprüft mit den Volllaststunden der Klimazone. Nach dem Lauf hält die Auslegungsprüfung die spezifische Entzugsleistung – Entzugsspitze geteilt durch 100 m – gegen Tabelle B2, mit der Grundlage ''<math>\lambda = 1{,}8</math>&nbsp;W/(m·K), 1 Sonde(n)'' und den Volllaststunden des Laufs. Für eine Sonde bei <math>\lambda = 1{,}8</math>&nbsp;W/(m·K) lässt die Tabelle rund 49 W/m bei 1&nbsp;200 und rund 40 W/m bei 1&nbsp;800 Volllaststunden zu; eine Entzugsspitze von 5 kW ergibt 50 W/m. Liegt der Istwert darüber, nennt der Hinweis die erforderlichen Sondenmeter. ''CSV…'' in der Leiste des Bildes speichert den Jahresgang der Quelltemperatur als CSV-Datei, siehe [[Datenexport]].
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+{| class="wikitable"
+! Technik !! Wirkung auf die Erdreichquelle !! Wirkung der Erdreichquelle !! So rechnet EPOS-Plan
+|-
+| Wärmepumpe || ihr Entzug, Wärmeproduktion minus Stromaufnahme je Stunde, ist die Größe der Prüfung und senkt die Soletemperatur der Sonde || die Quelltemperatur bestimmt Leistung und Leistungszahl || Sonde: Soletemperatur des Sondenfelds je Stunde, aus dem Entzug bis zur Vorstunde; Kollektor: Jahresgang nach Kusuda, mit der Tiefe gedämpft und verzögert, ohne Rückwirkung des Entzugs.
+|-
+| Klimadaten || Jahresmittel, Amplitude und Zeitpunkt des Minimums der Außentemperatur bilden die Quelltemperatur || – || ohne verwertbare Klimareihe Ersatzwerte 9,5 °C und 8,5 K, die Vorschau nennt sie; die Klimazone nach DIN 4710 gehört zur Klimaregion des Projekts
+|-
+| Pufferspeicher, Betriebsmodus || Laden mit voller Leistung hebt die Entzugsspitze und senkt die Volllaststunden || – || die Ladewärme zählt zum Entzug; ''laufzeitoptimiert'' lädt mit voller Leistung, ''PV-optimiert'' bei genug PV-Überschuss ebenso
+|-
+| Heizstab, Heizkessel || was sie decken, entzieht dem Erdreich nichts || – || gezählt werden nur Wärme und Strom der Wärmepumpe
+|-
+| Kühlbetrieb der Wärmepumpe || die Kühlwärme regeneriert die Sonde: Kälte samt Verdichterarbeit geht in das Sondenfeld zurück und hebt die Soletemperatur || die Soletemperatur bestimmt die Leistungszahl im Kühlbetrieb || Sonde: Rückspeisung je Stunde im Rechenjahr und in den Vorjahren bis zum Betrachtungsjahr (Vorgabe: neun Vorjahre), auch bei freier Kühlung über die Sole; Kollektor: ohne Rückwirkung
+|-
+| Kältemaschine, Solarthermie, Abwärme || keine Regeneration || – || ihre Wärme geht nicht an Sonde oder Kollektor zurück; die Kältemaschine kühlt über ihren Rückkühler gegen die Außenluft
+|-
+| weitere Wärmepumpen || beziehen alle aus dem Erdreich: Entzug nach ihrem Jahresentzug aufgeteilt || – || als Näherung gekennzeichnet; hat eine Wärmepumpe des Projekts eine andere Quelle, bleibt die Prüfung aus
+|}
+
+<!-- Werte nach den Formeln der Rechenwegseite Wärmequelle Erdreich, kein EPOS-Plan-Lauf.
+     Ersatzwerte des Programms: Jahresmittel 9,5 °C, Amplitude 8,5 K, Minimum bei Stunde 480.
+     Kollektor: theta = 9,5 - 8,5 * exp(-z/d) * cos(omega * (t - 480) - z/d) mit z = 1,5 m,
+     Sand feucht (lambda 1,4 W/(m*K), rho*cp 1,90 MJ/(m3*K), d = 2,72 m), omega = 2*pi/8760 1/h,
+     Monatsmittel über die Stunden des Monats (Jahr ohne Schalttag).
+     Sonde: ungestörte Erdreichtemperatur 9,5 + 1,5 + 0,03 * (100/2 - 20) = 11,9 °C; ohne Entzug.
+     Säulenhöhe in Prozent von 14,3 °C (August). -->
+{{Diagramm-Anfang|titel=Quelltemperatur je Monat: Erdkollektor 1,5 m und Erdsonde 100 m}}
+{{Säulen-Anfang|achse=Quelltemperatur in °C, größte Säule 14,3 °C|mindestbreite=400}}
+{{Säule|Jan|umwelt=39|wert=5,6}}
+{{Säule|Feb|umwelt=33|wert=4,7}}
+{{Säule|Mär|umwelt=35|wert=5,0}}
+{{Säule|Apr|umwelt=46|wert=6,5}}
+{{Säule|Mai|umwelt=62|wert=8,9}}
+{{Säule|Jun|umwelt=79|wert=11,4}}
+{{Säule|Jul|umwelt=93|wert=13,3}}
+{{Säule|Aug|umwelt=100|wert=14,3}}
+{{Säule|Sep|umwelt=98|wert=14,0}}
+{{Säule|Okt|umwelt=87|wert=12,4}}
+{{Säule|Nov|umwelt=70|wert=10,1}}
+{{Säule|Dez|umwelt=53|wert=7,6}}
+{{Säule|Sonde|umwelt=83|wert=11,9}}
+{{Säulen-Ende|Monatsmittel des Erdkollektors (Sand, feucht); rechts die ungestörte Erdreichtemperatur an der Erdsonde}}
+{{Legende|umwelt=Quelltemperatur}}
+{{Diagramm-Ende|Beispielwerte, gerundet, nach den Formeln der Rechenwegseite mit den Ersatzwerten des Programms (Jahresmittel 9,5 °C, Amplitude 8,5 K); kein Ergebnis eines EPOS-Plan-Laufs. Der Kollektor ist im Februar am kältesten; die Sonde beginnt bei 11,9 °C, im Lauf liegt ihre Soletemperatur je nach Entzug darunter.}}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Quelle nicht umgestellt.''' Eine Sole-Wasser-Wärmepumpe ohne gewählte Quelle rechnet mit der Außenluft; der Chip ''Quelle:'' der Karte zeigt es. Das Erdreich gilt erst nach der Wahl ''Erdreich (VDI 4640)'' und ''OK''.
+* '''Luft-Wasser-Wärmepumpe.''' Für sie bleibt die Erdreich-Konfiguration wirkungslos und wird weder vorgeprüft noch geprüft; Dialog und Ergebnis nennen den Grund.
+* '''Eine zu kurze Sonde kostet Jahresarbeitszahl.''' Je weniger Sondenmeter den Entzug tragen und je schlechter der Boden leitet, desto tiefer sinkt die Soletemperatur und mit ihr die Leistungszahl. Länge, Anzahl und Bodentyp wirken deshalb auf das Ergebnis, nicht nur auf die Prüfung. Die Sonden stehen in der Vorgabe im Abstand von 6 m in einem möglichst quadratischen Feld; ein engerer Abstand oder eine Reihe ändert die gegenseitige Auskühlung (Eingabe ''Sondenfeld'').
+* '''Rückwirkung nur an der Sonde.''' Der Kollektor rechnet den ungestörten Jahresgang; seine Unterdimensionierung zeigt allein die Auslegungsprüfung.
+* '''Vorjahre wie das Rechenjahr.''' Die neun Jahre vor dem Rechenjahr tragen dessen Stundenlast aus dem ersten Durchgang, auch ohne Vorprüfung und ohne Klimazone; ein Projekt mit Sonde rechnet deshalb etwas länger. Wachsender Bedarf über die Jahre ist nicht abgebildet.
+* '''Vorprüfung und Lauf.''' Ohne Lauf rechnet die Prüfung mit der Entzugsleistung aus den Auslegungswerten der Wärmepumpe; sie kennt weder Betriebsmodus noch Speicherladung, die Prüfung nach einem Lauf ersetzt sie. Fehlen Heizleistung oder COP am Normpunkt der Kennlinie oder die Klimazone, gibt es keine Vorprüfung, und die Gruppe nennt den fehlenden Wert. Sondenmeter, Fläche, Boden und Zone rechnet die Prüfzeile sofort gegen, den gerechneten Entzug nach einem Lauf; ''Simulation'' im Dialog rechnet mit den angezeigten Eingaben, auch wenn sie noch nicht mit ''OK'' gespeichert sind. Das Prüfergebnis wird mit dem Simulationsergebnis gespeichert: Nach einem Programmstart zeigt der Dialog die Prüfung des zuletzt gespeicherten Laufs mit „Stand des Laufs vom …“, bis ein neuer Lauf sie ersetzt.
+* '''Klimazone gehört zur Klimaregion.''' Eine andere Zone gilt für alle Erdreichquellen des Projekts. Ohne Zone gibt es weder die Vorprüfung noch die Prüfung eines Kollektors; die Sonde nimmt nach einem Lauf dessen Volllaststunden.
+* '''Tabelle B2 nur als Auszug.''' Hinterlegt sind <math>\lambda</math> von 1 bis 4 W/(m·K), 1&nbsp;200 bis 2&nbsp;400 Volllaststunden und 1 oder 5 Sonden (bei 2&nbsp;400 h 4) für den Fall „nur Heizen“; außerhalb wird geklemmt, bei der Sondenzahl nicht konservativ – das Ergebnis trägt dann einen Vorbehalt. Die übrigen Betriebsfälle der Norm sind nicht hinterlegt.
+* '''Kollektor tiefer als 10 m.''' Der Dialog lässt es nicht zu; steht in den Daten mehr, rechnet der Lauf die Anlage als Erdsonde und warnt im Protokoll.
+* '''Frostwarnung strenger als die Norm.''' Gewarnt wird, wenn Quelltemperatur minus Spreizung in mehr als 5 % der Betriebsstunden unter 0 °C liegt; die Grenzwerte der Tabelle B2 gelten für −5 °C Soleaustritt bei Spitzenlast.
+
+== Eingaben ==
+
+* {{Anker|quellsystem}}'''Quellsystem''' – ''Erdkollektor'' mit ''Verlegetiefe [m]'' und ''Fläche [m²]'' oder ''Erdsonde'' mit ''Länge je Sonde [m]'' und ''Anzahl Sonden''; jede Rubrik trägt ihr Optionsfeld, gewählt ist genau eines. Ein Kollektor wird nicht tiefer als 10 m verlegt; für größere Tiefen ist die Erdsonde zu wählen. ''OK'' verlangt eine Verlegetiefe über 0 m und eine Kollektorfläche bzw. eine Sondenlänge über 0 m und mindestens eine Sonde.
+* {{Anker|sondenfeld}}'''Sondenfeld''' – nur bei der ''Erdsonde'': ''Sondenabstand [m]'', ''Anordnung'' (quadratisches Raster oder Reihe), ''Bohrlochdurchmesser [mm]'', ''Bohrlochwiderstand [m·K/W]'', ''Kopfüberdeckung [m]'' und ''Betrachtungsjahr''. Ein leeres Feld steht für die Vorgabe nach VDI 4640 Blatt 2, die im Feld als Platzhalter erscheint: 6 m, quadratisch, 150 mm, 0,10 m·K/W, 2 m und das zehnte Betriebsjahr. ''OK'' verlangt Abstand, Durchmesser und Widerstand über 0, eine Kopfüberdeckung ab 0 m und ein Betrachtungsjahr ab 1.
+* {{Anker|bodentyp|kennwerte}}'''Bodentyp''' – dreizehn Böden aus dem Katalog der VDI 4640 Blatt 1 (Entwurf 2021-12), von Ton und Sand über Sandstein und Kalkstein bis Granit und Gneis. Die Zeile darunter zeigt Wärmeleitfähigkeit <math>\lambda</math>, Wärmekapazität <math>\rho \cdot c_{p}</math>, Temperaturleitfähigkeit <math>a</math>, Dämpfungstiefe <math>d</math> und die Bodenart, mit der die Kollektorprüfung rechnet; eigene Zahlenwerte sind dafür nicht einzutragen.
+* {{Anker|klimazone}}'''Klimazone''' – die Zone nach DIN 4710 mit ihren Jahresvolllaststunden, aus der Klimaregion vorbelegt; der Knopf daneben öffnet die Karte ''Klimazonen nach DIN 4710'', auf der ein Klick eine Zone wählt. Ohne zugeordnete Zone gibt es weder die Vorprüfung noch die Prüfung eines Kollektors.
+* {{Anker|spreizung}}'''Nutzbare Spreizung''' – Quelleintritt minus Quellaustritt in K, größer als 0. Liegt die Quelltemperatur abzüglich der Spreizung in mehr als 5 % der Betriebsstunden unter 0 °C, weist die Prüfung darauf hin.
+* {{Anker|vorschau}}'''Vorschau: Jahresgang der Quelltemperatur''' – das Diagramm stellt Quell- und Außentemperatur über das Jahr gegenüber und rechnet bei jeder Eingabe mit; darunter stehen Minimum und Maximum mit ihrem Monat und der Mittelwert. Ohne Klimadaten rechnet sie mit den Ersatzwerten 9,5 °C und 8,5 K und sagt es. Vor einem Simulationslauf zeigt die Vorschau bei der Erdsonde die ungestörte Erdreichtemperatur aus mittlerer Erdreichtemperatur und Tiefenzuschlag, eine Konstante; in der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds. Nach einem Lauf steht als zweite Reihe die gerechnete Temperatur am Quelleintritt daneben (''Quelltemperatur gerechnet (letzter Lauf)''), mit eigener Kennwertzeile: Jahresmittel, Tiefstwert mit Datum und Uhrzeit und Höchstwert mit Datum und Uhrzeit; das gilt auch beim Erdkollektor.
+* {{Anker|auslegungspruefung}}'''Auslegungsprüfung nach VDI 4640 Blatt 2''' – für den Kollektor Entzugsleistung und Jahresentzug je m² gegen Tabelle A2 (Klimazone und Bodenart), für die Sonde die Entzugsleistung je Sondenmeter gegen Tabelle B2 (<math>\lambda</math>, Sondenzahl, Volllaststunden). Istwert, Grenzwert und Grundlage stehen je Prüfzeile da; bei Überschreitung nennt der Hinweis die erforderliche Fläche bzw. Sondenlänge. Ohne Simulationslauf steht dort die ''Vorprüfung aus Auslegungswerten'': Heizleistung und COP jeder Wärmepumpe an der Quelle am Normpunkt ihrer Kennlinie (Sole-Wasser B0/W35), daraus die Entzugsleistung <math>\dot{Q}_\mathrm{E} \approx \dot{Q}_\mathrm{N} \cdot (1 - 1/\mathrm{COP})</math>, über mehrere Wärmepumpen summiert, und der Jahresentzug als Entzugsleistung mal Volllaststunden der Klimazone; Herleitung und Prüfzeilen stehen darunter. Nach einem Simulationslauf ersetzt dessen Ergebnis die Vorprüfung.
+* '''Simulation''' – startet einen Rechenlauf mit den angezeigten Eingaben; seine Entzugsspitze, sein Jahresentzug und seine Volllaststunden ersetzen die Vorprüfung, die gerechnete Reihe und ihre Kennwerte stehen sofort in der Vorschau. Die Eingaben prüft der Knopf wie ''OK'', gespeichert werden sie erst mit ''OK''. Ändert sich nach dem Lauf eine Eingabe, verlangt ein Hinweis einen neuen Lauf.
+
+== Berechnung ==
+Jahresgang der Erdreichtemperatur nach Kusuda, konstante Sondentemperatur und die Auslegungsprüfung nach VDI 4640 Blatt 2 stehen unter [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung: Wärmequelle Erdreich]].
+
+== Siehe auch ==
+
+* [[Grundlagen/Wärmequelle Erdreich]] – Erdsonde, Erdkollektor und Entzugsleistungen
+* [[Grundlagen/Wärmepumpe]] – Wärmequellen, Kennfeld und Jahresarbeitszahl
+* [[Programm Dokumentation/Wärmepumpe#waermequelle|Wärmepumpe: Quelle, Senke und Betriebsmodus]] – die Einstellungen je Maschine
+* [[Programm Dokumentation/Simulation#quelle-erdreich|Simulation: Wärmequelle Erdreich]] – der Weg in diesen Dialog
+* [[Programm Dokumentation/Klimadaten|Klimadaten]] – Klimaregion und Außentemperatur
+
+[[Kategorie:Programm Dokumentation]]

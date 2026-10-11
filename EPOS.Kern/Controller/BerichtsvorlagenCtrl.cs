@@ -115,8 +115,9 @@ namespace WindowsFormsApplication1
     {
         internal Vorlageneintrag(string id, string name, string dateiname, string pfad, Vorlagenquelle quelle,
                                  bool schreibgeschuetzt, bool vorhanden, string pruefsumme, string herkunftspfad,
-                                 DateTime? hinzugefuegt, string rueckfallpfad)
+                                 DateTime? hinzugefuegt, string rueckfallpfad, string zurueckgewiesen = null)
         {
+            Zurueckgewiesen = zurueckgewiesen;
             Id = id;
             Name = name;
             Dateiname = dateiname;
@@ -159,6 +160,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Wann sie hinzugefügt oder zuletzt ersetzt wurde; <c>null</c> ohne Eintrag.</summary>
         public DateTime? Hinzugefuegt { get; }
+
+        /// <summary>
+        /// Die Prüfsumme des Originals, die „Behalten“ zurückgewiesen hat (Konzept 10.2, 10.3);
+        /// <c>null</c> = nichts zurückgewiesen. Solange das Original genau diesen Stand trägt, bleibt die
+        /// Zeile „Original geändert – übernehmen?“ weg (<see cref="BerichtsvorlagenCtrl.OriginalGeaendert"/>).
+        /// </summary>
+        public string Zurueckgewiesen { get; }
 
         /// <summary>Nur bei der fehlenden Standardvorlage: <c>Berichtsvorlage.docx</c>, wenn sie vorliegt.</summary>
         public string Rueckfallpfad { get; }
@@ -648,7 +656,7 @@ namespace WindowsFormsApplication1
             catch (Exception) { schreibgeschuetzt = false; }
             return new Vorlageneintrag(ID_PRAEFIX_EIGEN + datei, Path.GetFileNameWithoutExtension(datei), datei, pfad,
                                        Vorlagenquelle.Eigen, schreibgeschuetzt, File.Exists(pfad), merk?.Pruefsumme,
-                                       merk?.Herkunftspfad, merk?.Hinzugefuegt, null);
+                                       merk?.Herkunftspfad, merk?.Hinzugefuegt, null, merk?.Zurueckgewiesen);
         }
 
         /// <summary>Gehört die Datei in die Liste: Endung der Liste, keine Sperrdatei, nicht versteckt?</summary>
@@ -934,21 +942,139 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Hat sich das Original seit dem Hinzufügen geändert („Original geändert – übernehmen?“,
-        /// Konzept 10.2)? <c>null</c>, wenn es keine Herkunft gibt oder sie nicht lesbar ist.
+        /// Konzept 10.2)? <c>null</c>, wenn es keine Herkunft gibt oder sie nicht lesbar ist — ein
+        /// Original auf einem getrennten Netzlaufwerk bleibt still.
+        ///
+        /// <para>Hat „Behalten“ (<see cref="OriginalBehalten"/>) genau diesen Stand des Originals
+        /// zurückgewiesen, ist die Antwort <c>false</c>: Die Zeile kommt erst wieder, wenn sich das
+        /// Original ERNEUT ändert.</para>
         /// </summary>
         public bool? OriginalGeaendert(Vorlageneintrag eintrag)
         {
-            if (eintrag == null || string.IsNullOrEmpty(eintrag.Herkunftspfad) || string.IsNullOrEmpty(eintrag.Pruefsumme)) return null;
+            if (eintrag == null || string.IsNullOrEmpty(eintrag.Pruefsumme)) return null;
+            string jetzt = HerkunftPruefsumme(eintrag);
+            if (jetzt == null) return null;
+            if (string.Equals(jetzt, eintrag.Pruefsumme, StringComparison.OrdinalIgnoreCase)) return false;
+            return !(!string.IsNullOrEmpty(eintrag.Zurueckgewiesen)
+                     && string.Equals(jetzt, eintrag.Zurueckgewiesen, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Die Prüfsumme des Originals JETZT; <c>null</c> ohne Herkunft, ohne Datei oder wenn sie sich
+        /// nicht lesen lässt (zu groß, gesperrt, Netzlaufwerk getrennt).
+        /// </summary>
+        private static string HerkunftPruefsumme(Vorlageneintrag eintrag)
+        {
+            if (eintrag == null || string.IsNullOrEmpty(eintrag.Herkunftspfad)) return null;
             if (!File.Exists(eintrag.Herkunftspfad)) return null;
+            try { return Vorlagenpruefer.Pruefsumme(LiesDatei(eintrag.Herkunftspfad)); }
+            catch (Exception) { return null; }
+        }
+
+        /// <summary>
+        /// Wurde die Kopie im Vorlagenordner seit dem Hinzufügen SELBST bearbeitet (ihre Prüfsumme weicht
+        /// von der gemerkten ab)? Ohne gemerkte Prüfsumme: nein — dann ist nichts bekannt, was zu retten
+        /// wäre. Lässt sie sich nicht lesen: ja, im Zweifel wird gesichert.
+        /// </summary>
+        private static bool AmOrtBearbeitet(Vorlageneintrag eintrag)
+        {
+            if (eintrag == null || string.IsNullOrEmpty(eintrag.Pruefsumme) || !File.Exists(eintrag.Pfad)) return false;
             try
             {
-                return !string.Equals(Vorlagenpruefer.Pruefsumme(LiesDatei(eintrag.Herkunftspfad)), eintrag.Pruefsumme,
+                return !string.Equals(Vorlagenpruefer.Pruefsumme(LiesDatei(eintrag.Pfad)), eintrag.Pruefsumme,
                                       StringComparison.OrdinalIgnoreCase);
             }
             catch (Exception)
             {
-                return null;
+                return true;
             }
+        }
+
+        /// <summary>
+        /// „Übernehmen“ (Konzept 10.2, 10.3): legt das geänderte Original erneut über die Kopie im
+        /// Vorlagenordner — derselbe Weg wie „Ersetzen…“ (Format- und Endungsprüfung wie beim Hinzufügen,
+        /// eine in Word geöffnete Vorlage bleibt unangetastet), danach stehen Herkunft und Prüfsumme in der
+        /// Ablagedatei auf dem neuen Stand, und eine frühere Zurückweisung fällt.
+        ///
+        /// <para><b>Schutz der Arbeit am Ort.</b> Wurde die Kopie im Vorlagenordner seit dem Hinzufügen
+        /// selbst bearbeitet, wird sie NICHT still überschrieben: Sie wandert zuerst in den Unterordner
+        /// <see cref="ORDNER_ENTFERNT"/> — wie bei „Entfernen“ —, und die Rückmeldung nennt den Ordner.</para>
+        ///
+        /// <para>Die Wahl der Vorlage bleibt, wie sie ist; die Vorgabe der Installation wird nicht angefasst.</para>
+        /// </summary>
+        public Vorlagenergebnis OriginalUebernehmen(Vorlageneintrag eintrag)
+        {
+            if (eintrag == null || eintrag.Quelle != Vorlagenquelle.Eigen)
+                return Ergebnis(Vorlagenergebnisart.Schreibgeschuetzt, T(nameof(R.BV_VORLAGEN_SCHREIBGESCHUETZT)), eintrag);
+            if (string.IsNullOrEmpty(eintrag.Herkunftspfad))
+                return Ergebnis(Vorlagenergebnisart.QuelleFehlt, T(nameof(R.BV_VORLAGEN_ORIGINAL_KEINS), eintrag.Name), eintrag);
+            Vorlagenergebnis fehler = PruefeQuelle(eintrag.Herkunftspfad);
+            if (fehler != null) return fehler;
+            string endung = Path.GetExtension(eintrag.Dateiname);
+            if (!string.Equals(Path.GetExtension(eintrag.Herkunftspfad), endung, StringComparison.OrdinalIgnoreCase))
+                return Ergebnis(Vorlagenergebnisart.FormatAbgelehnt, T(nameof(R.BV_VORLAGEN_ENDUNG), endung), eintrag);
+            if (IstInWordGeoeffnet(eintrag))
+                return Ergebnis(Vorlagenergebnisart.InWordGeoeffnet, T(nameof(R.BV_VORLAGEN_IN_WORD)), eintrag);
+
+            // ERST lesen, dann sichern, dann schreiben: Scheitert das Lesen des Originals, liegt die
+            // Kopie im Vorlagenordner noch da — sonst stünde sie nur im Unterordner „Entfernt“.
+            byte[] bytes;
+            try { bytes = LiesDatei(eintrag.Herkunftspfad); }
+            catch (Exception ex)
+            {
+                return Ergebnis(Vorlagenergebnisart.Fehler,
+                                T(nameof(R.BV_VORLAGEN_NICHT_LESBAR), Path.GetFileName(eintrag.Herkunftspfad), ex.Message), eintrag);
+            }
+
+            string gesichert = null;
+            if (AmOrtBearbeitet(eintrag))
+            {
+                try { gesichert = SichereKopie(eintrag); }
+                catch (Exception ex)
+                {
+                    return Ergebnis(Vorlagenergebnisart.Fehler, T(nameof(R.BV_VORLAGEN_FEHLER), eintrag.Dateiname, ex.Message), eintrag);
+                }
+            }
+
+            Vorlagenergebnis r = LegeBytes(bytes, eintrag.Dateiname, true, eintrag.Herkunftspfad,
+                                           nameof(R.BV_VORLAGEN_ORIGINAL_UEBERNOMMEN));
+            if (!r.Erfolg || gesichert == null) return r;
+            return new Vorlagenergebnis(Vorlagenergebnisart.Erledigt,
+                                        T(nameof(R.BV_VORLAGEN_ORIGINAL_GESICHERT), eintrag.Name, gesichert),
+                                        r.Eintrag, null, r.Zielpfad);
+        }
+
+        /// <summary>
+        /// „Behalten“ (Konzept 10.2): weist DIESEN Stand des Originals zurück — die Vorlage bleibt, wie sie
+        /// ist, und die Zeile „Original geändert – übernehmen?“ kommt erst wieder, wenn sich das Original
+        /// erneut ändert. Gemerkt wird die Prüfsumme des Originals in der Ablagedatei.
+        /// </summary>
+        public Vorlagenergebnis OriginalBehalten(Vorlageneintrag eintrag)
+        {
+            if (eintrag == null || eintrag.Quelle != Vorlagenquelle.Eigen)
+                return Ergebnis(Vorlagenergebnisart.Schreibgeschuetzt, T(nameof(R.BV_VORLAGEN_SCHREIBGESCHUETZT)), eintrag);
+            string jetzt = HerkunftPruefsumme(eintrag);
+            if (jetzt == null)
+                return Ergebnis(Vorlagenergebnisart.QuelleFehlt, T(nameof(R.BV_VORLAGEN_ORIGINAL_KEINS), eintrag.Name), eintrag);
+
+            string ordner = Path.GetDirectoryName(eintrag.Pfad) ?? "";
+            MerkeZurueckweisung(ordner, eintrag.Dateiname, jetzt);
+            return new Vorlagenergebnis(Vorlagenergebnisart.Erledigt, T(nameof(R.BV_VORLAGEN_ORIGINAL_BEHALTEN), eintrag.Name),
+                                        EigenerEintrag(eintrag.Pfad, LiesAblage(ordner)), null, eintrag.Pfad);
+        }
+
+        /// <summary>
+        /// Legt die Kopie im Vorlagenordner als Sicherung in den Unterordner <see cref="ORDNER_ENTFERNT"/> —
+        /// derselbe Weg wie „Entfernen“, nur ohne die Ablage zu vergessen (der neue Stand kommt gleich
+        /// darauf). Gibt den Ordner zurück; wirft, wenn die Datei sich nicht verschieben lässt.
+        /// </summary>
+        private static string SichereKopie(Vorlageneintrag eintrag)
+        {
+            string ordner = Path.GetDirectoryName(eintrag.Pfad) ?? "";
+            string ablage = Path.Combine(ordner, ORDNER_ENTFERNT);
+            Directory.CreateDirectory(ablage);
+            File.Move(eintrag.Pfad, FreierName(ablage, eintrag.Dateiname));
+            return ablage;
         }
 
         private Vorlagenergebnis PruefeQuelle(string quellpfad)
@@ -1598,6 +1724,13 @@ namespace WindowsFormsApplication1
             public string Pruefsumme { get; set; }
 
             public DateTime? Hinzugefuegt { get; set; }
+
+            /// <summary>
+            /// Die Prüfsumme des Originals, die „Behalten“ zurückgewiesen hat (Konzept 10.2, 10.3).
+            /// DULDSAM gelesen: Eine Ablagedatei ohne dieses Feld bleibt gültig, das Feld ist dann
+            /// <c>null</c> — nichts ist zurückgewiesen.
+            /// </summary>
+            public string Zurueckgewiesen { get; set; }
         }
 
         /// <summary>Eingerückt und mit Umlauten im Klartext — die Ablagedatei soll ein Mensch lesen können.</summary>
@@ -1640,6 +1773,21 @@ namespace WindowsFormsApplication1
                 Pruefsumme = pruefsumme,
                 Hinzugefuegt = DateTime.Now,
             });
+            SchreibeAblage(ordner, ablage);
+        }
+
+        /// <summary>
+        /// Merkt die zurückgewiesene Prüfsumme des Originals am Eintrag der Datei („Behalten“), ohne
+        /// Herkunft, Prüfsumme und Zeitpunkt anzutasten. Ohne Eintrag geschieht nichts — dann gibt es
+        /// auch keine Herkunft, über die die Zeile je käme.
+        /// </summary>
+        private static void MerkeZurueckweisung(string ordner, string datei, string pruefsumme)
+        {
+            if (string.IsNullOrEmpty(ordner)) return;
+            Ablage ablage = LiesAblage(ordner);
+            Ablageeintrag merk = ablage.Finde(datei);
+            if (merk == null) return;
+            merk.Zurueckgewiesen = pruefsumme;
             SchreibeAblage(ordner, ablage);
         }
 

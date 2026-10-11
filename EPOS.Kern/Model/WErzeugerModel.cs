@@ -250,6 +250,65 @@
         /// </summary>
         public double? PV_Systemverluste;
 
+        /// <summary>
+        /// Albedo - die Bodenalbedo vor der Anlage (0…1), Photovoltaik und Solarthermie
+        /// (Schemaschritt <see cref="AlbedoSchema.SCHRITT"/>). <b>NULL = 0,2</b>
+        /// (<see cref="Bodenalbedo.VORGABE"/>), also ergebnisneutral; den Rechenwert liefert
+        /// <see cref="Bodenalbedo.Wert(WErzeugerModel)"/>.
+        /// </summary>
+        public double? Albedo;
+
+        // =============================================================================
+        // Anlagenfahrplan (Schemaschritt AnlagenfahrplanSchema.SCHRITT, AK2-1; Anlagenkopplung 8.2)
+        // =============================================================================
+
+        /// <summary>
+        /// <c>Zeitprogramm</c> - 168 Verfügbarkeitsfaktoren 0…1 der Anlage, Montag 00:00 bis Sonntag
+        /// 23:00, als Text im Format des Sollwertprofils (Trennzeichen <c>;</c>). <b>NULL = immer
+        /// verfügbar</b>; gelesen und geprüft von <see cref="Anlagenzeitprogramm"/>. Die Sperrzeit geht
+        /// vor (F7). Eine MODELLspalte: Sie reist durch Löschen + Neuanlegen, NULL bleibt NULL.
+        /// </summary>
+        public string Zeitprogramm;
+
+        /// <summary>
+        /// <c>Vorlauf_Max</c> - das Vorlaufangebot der Anlage [°C]. <b>NULL = <see cref="Vorlauf"/></b>
+        /// (die Anlage bietet ihren projektierten Vorlauf). Eine MODELLspalte, NULL-treu.
+        /// </summary>
+        public double? Vorlauf_Max;
+
+        /// <summary>
+        /// <c>Einbindung</c> - hydraulische Einbindung der Wärmepumpe (<c>DIREKT</c>, <c>PUFFER</c>, <c>WEICHE</c>;
+        /// Schemaschritt <see cref="UebergabegrenzeSchema"/>). <b>NULL = Bestandsweg</b>: ohne Einbindung entsteht
+        /// kein Bivalenzobjekt, die Übergabegrenze ruht (Umsetzungskonzept U‑1). Gelesen, noch nicht geschrieben (UB‑E2‑c).
+        /// </summary>
+        public string Einbindung;
+
+        /// <summary><c>Vorwaermbetrieb</c> - Kessel in Reihe über dem Höchstvorlauf der Wärmepumpe (B3); NULL = aus.</summary>
+        public bool Vorwaermbetrieb;
+
+        // =============================================================================
+        // Freie Kühlung über die Wärmequelle (Schemaschritt FreieKuehlungSoleSchema.SCHRITT, KU3-6a)
+        // =============================================================================
+
+        /// <summary>
+        /// <c>Kuehl_Frei</c> - deckt die Wärmepumpe im Kühlbetrieb Kälte vor dem Verdichter direkt aus
+        /// ihrer Wärmequelle? <b>Vorgabe <c>false</c></b> (Spalte NOT NULL, 0/1). Wirksam nur mit einer
+        /// Sole- oder Wasserquelle (F2). Eine MODELLspalte: Sie reist durch Löschen + Neuanlegen.
+        /// </summary>
+        public bool Kuehl_Frei;
+
+        /// <summary>
+        /// <c>Kuehl_Frei_Graedigkeit_K</c> - die Grädigkeit des Wärmetauschers der freien Kühlung [K],
+        /// 0 … 20. <b>NULL = Festwert</b> der Kälterechnung. Eine MODELLspalte, NULL-treu.
+        /// </summary>
+        public double? Kuehl_Frei_Graedigkeit_K;
+
+        /// <summary>
+        /// <c>Kuehl_Frei_Leistung_kW</c> - die Leistungsgrenze der freien Kühlung [kW], &gt; 0.
+        /// <b>NULL = Kälteleistung der Kennlinie</b> in der Stunde. Eine MODELLspalte, NULL-treu.
+        /// </summary>
+        public double? Kuehl_Frei_Leistung_kW;
+
         // =============================================================================
         // PV-Modellwahl und Wechselrichter (Paket B des PV-Ertragsmodells, Stufe E2)
         // =============================================================================
@@ -330,6 +389,39 @@
         /// von <c>Tab_Energieanlagen</c>, sondern eine eigene Tabelle.</para>
         /// </summary>
         public System.Collections.Generic.List<AnlageStrangModel> PV_Straenge;
+
+        /// <summary>
+        /// Die im Wärmepumpen-Dialog bearbeiteten Sperrfenster (Welle V14, <c>Tab_Sperrfenster</c>) —
+        /// <c>null</c> = nicht angefasst; eine gesetzte Liste (auch leer) schreibt
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c> nach dem Anlegen der Zeile, wie <see cref="PV_Straenge"/>.
+        /// </summary>
+        public System.Collections.Generic.List<Sperrfenster> WP_Sperrfenster;
+
+        // =============================================================================
+        // Kollektorfeld der Solarthermie (Welle M2; Schemaschritt SolarthermieFelderSchema.SCHRITT)
+        // =============================================================================
+        //
+        // Dieselbe Begruendung und dieselbe NULL-Semantik wie bei den PV-Feldern: Der
+        // Speicherweg ist Loeschen + Neuanlegen, was das Modell nicht kennt, geht bei jedem
+        // Speichern verloren. NULL heisst „nie gepflegt, es gilt die Vorgabe" (Solarkreis).
+
+        /// <summary>Pumpenleistung_W - elektrische Leistung der Solarkreispumpe [W]; <b>NULL = keine</b>.</summary>
+        public double? Pumpenleistung_W;
+
+        /// <summary>Solarkreisverluste_Prozent - Wärmeverluste des Solarkreises [%]; <b>NULL = 8 %</b>.</summary>
+        public double? Solarkreisverluste_Prozent;
+
+        /// <summary>Uebertrager_Graedigkeit_K - Grädigkeit des Wärmeübertragers [K]; <b>NULL = 5 K</b>.</summary>
+        public double? Uebertrager_Graedigkeit_K;
+
+        /// <summary>Kollektor_Spreizung_K - Spreizung des Kollektorkreises [K]; <b>NULL = 10 K</b>.</summary>
+        public double? Kollektor_Spreizung_K;
+
+        /// <summary>
+        /// Arbeitstemperatur_Weg - <see cref="DbWerte.SOLAR_ARBEITSTEMPERATUR_FEST"/> oder
+        /// <see cref="DbWerte.SOLAR_ARBEITSTEMPERATUR_SPEICHER"/>; <b>NULL = fest</b>.
+        /// </summary>
+        public string Arbeitstemperatur_Weg;
 
         public WErzeugerModel()
         {

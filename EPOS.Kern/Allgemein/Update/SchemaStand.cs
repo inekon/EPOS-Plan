@@ -676,18 +676,348 @@ namespace WindowsFormsApplication1
         /// kein DML. <b>Ergebnisneutral:</b> Kein Rechenweg las sie. Die Nummer steht allein bei
         /// <see cref="SolarkollektorTemperaturen.SCHRITT"/>.
         /// Mit den KONDITIONIERUNGSPROFILEN (Schritt KP-S1, Stufe KP1; Konzept
-        /// Konditionierungsprofile 5.1, 5.4 und 5.6, Entscheide E52 und E53) steht das Ziel auf
+        /// Konditionierungsprofile 5.1, 5.4 und 5.6, Entscheide E52 und E53) stand das Ziel auf
         /// <see cref="KonditionierungSchema.SCHRITT"/>: die drei STRICT-Tabellen
         /// <c>Tab_Konditionierungskalender</c>, <c>Tab_Konditionierungsperiode</c> und
         /// <c>Tab_Konditionierungsvorgabe</c> samt neun Indizes, reines DDL
         /// (<see cref="KonditionierungSchema"/>). <b>Ergebnisneutral:</b> Die Tabellen entstehen
         /// leer, und ohne angelegten Kalender nimmt der Eingang wörtlich den Bestandszweig. Die
         /// Nummer steht allein bei <see cref="KonditionierungSchema.SCHRITT"/>.
+        /// Mit den KONDITIONIERUNGSVORLAGEN (Schritt KP-S1v, Stufe KP1b; Konzept
+        /// Konditionierungsprofile 5.1, 5.6 und 5.7) steht das Ziel auf
+        /// <see cref="KonditionierungVorlagenSchema.SCHRITT"/>: <c>Tab_Konditionierungsvorlage_STAMM</c>
+        /// mit ihrer Namensregel, der Fremdschlüssel <c>ID_Vorlage</c> an Kalender- und
+        /// Vorgabetabelle per Tabellenneubau, acht Teilindizes der Eindeutigkeit und
+        /// <c>Nachtauskuehlstunden_H</c> an beiden Ergebnistabellen
+        /// (<see cref="KonditionierungVorlagenSchema"/>). <b>Ergebnisneutral:</b> Die Vorlagentabelle
+        /// entsteht leer, der Neubau erhält IDs und Zählerstände, die Ergebnisspalten liest kein
+        /// Rechenweg. Die Nummer steht allein bei <see cref="KonditionierungVorlagenSchema.SCHRITT"/>.
+        /// Mit der BEZUGSART ZIMMER des Zapfprofilgenerators (Auftrag A2, Entscheide E-A2-1, E-A2-3
+        /// und E-A2-4; Nachtrag N34) steht das Ziel auf <see cref="TwwBezugsartSchema.SCHRITT"/>:
+        /// <c>Tab_TwwNutzungsart_STAMM</c> und <c>Tab_TwwBedarfstag_STAMM</c> neu gebaut mit der
+        /// Prüfklausel der Bezugsart 1 bis 8, dazu die Nachführung der gespeicherten Zeilen des
+        /// ausgelieferten Paketteils (<see cref="PaketteilNachfuehrung"/>).
+        /// <b>Ergebnisneutral:</b> Zimmer rechnet wie Betten, und kein Referenzprojekt benutzt die
+        /// Hotelzeile. Die Nummer steht allein bei <see cref="TwwBezugsartSchema.SCHRITT"/>.
+        /// Danach, mit der HEIZGRENZE DER KESSELBEREITSCHAFT (Anwenderentscheid 27.09.2026 zu #568)
+        /// steht das Ziel auf <see cref="KesselHeizgrenzeSchema.SCHRITT"/>: die nullbare Spalte
+        /// <c>Tab_Einstellungen.Kessel_Heizgrenze REAL</c> (NULL = Vorgabe 15 °C), reines DDL
+        /// (<see cref="KesselHeizgrenzeSchema"/>). Die Nummer steht allein bei
+        /// <see cref="KesselHeizgrenzeSchema.SCHRITT"/>.
+        /// Danach, mit den VERFAHRENSVOLUMINA ALS BEZUG DER FÜLLSTANDSLINIE (Auftrag F1,
+        /// Anwenderauftrag 29.09.2026; Nachtrag N36 (d)) stand das Ziel auf
+        /// <see cref="TwwFuellstandSchema.SCHRITT"/>: <c>Tab_TwwProjekt</c> neu gebaut mit der
+        /// Prüfklausel des Füllstandsbezugs 1 bis 8 (<see cref="TwwFuellstandSchema"/>).
+        /// <b>Ergebnisneutral:</b> kein DML, und die Speicherauslegung ist nachrichtlich. Die
+        /// Nummer steht allein bei <see cref="TwwFuellstandSchema.SCHRITT"/>.
+        /// Danach, mit den KENNLINIENSPALTEN DES HEIZKESSELS (Konzept Kesselkennlinie 3.1, Etappe E1,
+        /// #569) steht das Ziel auf <see cref="KesselKennlinieSchema.SCHRITT"/>: fünf Spalten an
+        /// <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c> (η bei 30 % Last, Schalter der
+        /// Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit), reines DDL
+        /// (<see cref="KesselKennlinieSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
+        /// Spalten. Die Nummer steht allein bei <see cref="KesselKennlinieSchema.SCHRITT"/>.
+        /// Danach, mit der SAAT DER 14 AUSGELIEFERTEN KONDITIONIERUNGSVORLAGEN (KP-S1b, Entscheid
+        /// E56 F1 (b); Konzept Konditionierungsprofile 3.5 und 5.7) steht das Ziel auf
+        /// <see cref="KonditionierungsvorlagenSaatSchema.SCHRITT"/>: 14 Vorlagen mit
+        /// <c>ReadOnly = 1</c>, 46 Vorgabezeilen und bei Büro und Schule die neun Feiertagsregeln,
+        /// reines DML (<see cref="KonditionierungsvorlagenSaatSchema"/>). <b>Ergebnisneutral:</b>
+        /// kein Referenzprojekt trägt eine Vorlage. Die Nummer steht allein bei
+        /// <see cref="KonditionierungsvorlagenSaatSchema.SCHRITT"/>.
+        /// Danach, mit dem BRENNWERTKENNZEICHEN DER PROJEKTKESSEL (Konzept Kesselkennlinie, Etappe
+        /// E2b; Anwenderentscheid B-1 vom 30.09.2026) steht das Ziel auf
+        /// <see cref="KesselBrennwertNachzug.SCHRITT"/>: <c>Brennwert</c> = 1 in jeder Projektkopie
+        /// <c>Tab_Heizkessel</c>, deren Katalogsatz ein Brennwertkessel ist (ohne eindeutigen
+        /// Katalogsatz nach der Bauart in der Beschreibung), nur gesetzt, nie gelöscht, reines DML
+        /// (<see cref="KesselBrennwertNachzug"/>). <b>Rechenwirksam:</b> Die Normvorgabe von η₃₀
+        /// folgt der Bauart; die Referenzbasis ist neu eingefroren. Die Nummer steht allein bei
+        /// <see cref="KesselBrennwertNachzug.SCHRITT"/>.
+        /// Danach, mit den ÄNDERUNGSSTEMPELN FÜR KOSTEN, PREISE UND KOSTENKATALOG (Folge von #637)
+        /// steht das Ziel auf <see cref="KostenStempelSchema.SCHRITT"/>: die nullbaren Spalten
+        /// <c>Tab_Projekt.Kosten_Geaendert</c> und <c>Tab_Applikation.Kostenkatalog_Geaendert</c>
+        /// (TEXT) und die Trigger, die sie bei jeder Änderung an Kosten, Preisen,
+        /// Wirtschaftlichkeitsparametern und Kostenkatalog setzen, reines DDL
+        /// (<see cref="KostenStempelSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer,
+        /// und kein Rechenweg liest sie. Die Nummer steht allein bei
+        /// <see cref="KostenStempelSchema.SCHRITT"/>.
+        /// Danach, mit der AUFHEIZOPTIMIERUNG (Stufe KP3, Entwurf KP3 Abschnitt 4; zwei Schritte nach
+        /// Festlegung 23) steht das Ziel auf <see cref="AufheizErgebnisSchema.SCHRITT"/>: zuerst
+        /// <see cref="AufheizvorgabeSchema.SCHRITT"/> (KP-S2) mit den fünf Projektspalten
+        /// <c>Tab_Einstellungen.Aufheizoptimierung</c> (0/1, Vorgabe 0), <c>Aufheiz_Bemessung</c>,
+        /// <c>Aufheiz_Abzug_K</c>, <c>Aufheiz_Reserve</c> und <c>Aufheiz_Art</c> (nullbar, NULL = Vorgabe),
+        /// dann KP-S3 mit je vierzehn nullbaren Ergebnisspalten an <c>Tab_ErgebnisGebaeude</c> und
+        /// <c>Tab_ErgebnisZone</c>, reines DDL (<see cref="AufheizvorgabeSchema"/>,
+        /// <see cref="AufheizErgebnisSchema"/>). <b>Ergebnisneutral:</b> Der Schalter steht überall auf 0,
+        /// die übrigen Spalten auf NULL, und kein Rechenweg liest sie. Die Nummern stehen allein bei
+        /// <see cref="AufheizvorgabeSchema.SCHRITT"/> und <see cref="AufheizErgebnisSchema.SCHRITT"/>.
+        /// Danach, mit der EINHEIT DES BEREITSCHAFTSVERLUSTS (Anwenderentscheid vom 02.10.2026),
+        /// steht das Ziel auf <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>: die Spalte
+        /// <c>Bereitschaft_Einheit</c> (TEXT, Vorgabe kW, Prüfklausel kW oder %) an
+        /// <c>Tab_Heizkessel_STAMM</c> und <c>Tab_Heizkessel</c>, reines DDL
+        /// (<see cref="KesselBereitschaftEinheitSchema"/>). <b>Ergebnisneutral:</b> Jede
+        /// Bestandszeile bekommt kW, die Einheit, in der ihr Wert gerechnet wird. Die Nummer steht
+        /// allein bei <see cref="KesselBereitschaftEinheitSchema.SCHRITT"/>.
+        /// Danach, mit der BODENALBEDO JE ANLAGE (Entscheidungsvorlage Modellgrenzen, PV4), steht
+        /// das Ziel auf <see cref="AlbedoSchema.SCHRITT"/>: die nullbare Spalte <c>Albedo</c>
+        /// (REAL, Prüfklausel 0 … 1) an <c>Tab_Energieanlagen</c>, reines DDL
+        /// (<see cref="AlbedoSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile bleibt NULL
+        /// und rechnet mit der Vorgabe 0,2. Die Nummer steht allein bei
+        /// <see cref="AlbedoSchema.SCHRITT"/>.
+        /// Danach, mit dem TEMPERATURPAAR JE PROZESS (Entscheidungsvorlage Modellgrenzen, PW1 Stufe 1,
+        /// Welle M3a), steht das Ziel auf <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>: die
+        /// nullbaren Spalten <c>Vorlauf</c> und <c>Ruecklauf</c> (REAL, 0 … 250 °C, paarweise, Vorlauf
+        /// nicht unter dem Rücklauf) an <c>Tab_Prozesswaerme_STAMM</c> und <c>Tab_Prozesswaerme</c>
+        /// (<see cref="ProzesswaermeTemperaturSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile
+        /// bleibt ohne Paar und rechnet wie zuvor. Die Nummer steht allein bei
+        /// <see cref="ProzesswaermeTemperaturSchema.SCHRITT"/>.
+        /// Danach, mit den FELDERN DES KOLLEKTORFELDS (Welle M2 Solarthermie der Entscheidungsvorlage
+        /// Modellgrenzen), steht das Ziel auf <see cref="SolarthermieFelderSchema.SCHRITT"/>: an
+        /// <c>Tab_Energieanlagen</c> die nullbaren Spalten <c>Pumpenleistung_W</c>,
+        /// <c>Solarkreisverluste_Prozent</c>, <c>Uebertrager_Graedigkeit_K</c>, <c>Kollektor_Spreizung_K</c>
+        /// und <c>Arbeitstemperatur_Weg</c>, an <c>Tab_Solarkollektoren_STAMM</c> und
+        /// <c>Tab_Solarkollektoren</c> die Bezugsfläche der Kennwerte (TEXT, Vorgabe apertur), reines DDL
+        /// (<see cref="SolarthermieFelderSchema"/>). <b>Ergebnisneutral:</b> Die Anlagenspalten entstehen
+        /// leer und rechnen ihre Vorgaben, jeder Kollektorsatz bekommt die Aperturfläche. Die Nummer steht
+        /// allein bei <see cref="SolarthermieFelderSchema.SCHRITT"/>.
+        /// Danach, mit den NETZVERLUSTEN JE KANAL, der ZIRKULATION IM BESTANDSWEG und dem
+        /// BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen BW4, PW2, BW2,
+        /// Welle M3b), steht das Ziel auf <see cref="BedarfNetzKalenderSchema.SCHRITT"/>: acht nullbare
+        /// Spalten an <c>Tab_Einstellungen</c>, die Tabelle <c>Tab_Betriebskalender</c> und je
+        /// Zuordnungstabelle die nullbare Spalte <c>ID_Betriebskalender</c>
+        /// (<see cref="BedarfNetzKalenderSchema"/>). <b>Ergebnisneutral:</b> Alles bleibt leer, und leer
+        /// rechnet wie zuvor. Die Nummer steht allein bei <see cref="BedarfNetzKalenderSchema.SCHRITT"/>.
+        /// Danach, mit den TEILLASTFELDERN VON WÄRMEPUMPE UND BHKW (Welle M4 der Entscheidungsvorlage
+        /// Modellgrenzen: WP1, BH1, BH2), steht das Ziel auf <see cref="ErzeugerTeillastSchema.SCHRITT"/>:
+        /// an <c>Tab_WP_STAMM</c> und <c>Tab_WP</c> die nullbaren Spalten <c>Mindestleistung_kW</c> und
+        /// <c>Taktverlustfaktor_Cd</c>, an <c>Tab_BHKW_STAMM</c> und <c>Tab_BHKW</c>
+        /// <c>Wirkungsgrad_el_Teillast50</c>, <c>Wirkungsgrad_th_Teillast50</c>, <c>Anfahrverlust_kWh</c> und
+        /// <c>Mindestlaufzeit_min</c>, alle mit Prüfklausel, reines DDL (<see cref="ErzeugerTeillastSchema"/>).
+        /// <b>Ergebnisneutral:</b> Leere Felder rechnen wie zuvor. Die Nummer steht allein bei
+        /// <see cref="ErzeugerTeillastSchema.SCHRITT"/>.
+        /// Danach, mit der EINSPEISEGRENZE UND DER SELBSTENTLADUNG (Welle M5 „Strom in Viertelstunden"
+        /// der Entscheidungsvorlage Modellgrenzen, PV3 und SP1), steht das Ziel auf
+        /// <see cref="StromViertelstundenSchema.SCHRITT"/>: an <c>Tab_Einstellungen</c> die nullbaren
+        /// Spalten <c>Einspeisegrenze_Wert</c> (≥ 0) und <c>Einspeisegrenze_Einheit</c> ('kW'/'%'), an
+        /// <c>Tab_Stromspeicher_STAMM</c> und <c>Tab_Stromspeicher</c> <c>Selbstentladung_Prozent_Monat</c>
+        /// (0 … 20), reines DDL (<see cref="StromViertelstundenSchema"/>). <b>Ergebnisneutral:</b> Alle
+        /// Spalten entstehen leer, leer heißt keine Einspeisegrenze und keine Selbstentladung. Die Nummer
+        /// steht allein bei <see cref="StromViertelstundenSchema.SCHRITT"/>.
+        /// Danach, mit der PUFFERSPEICHER-AUSLEGUNG (Konzept Pufferspeicher-Auslegung, Stufe P1, Welle
+        /// W1), steht das Ziel auf <see cref="PufferAuslegungSchema.SCHRITT"/>: die Tabellen
+        /// <c>Tab_PufferAuslegung</c> und <c>Tab_PufferAuslegungParameter_STAMM</c> samt Saat der
+        /// Vorgabewerte (<see cref="PufferAuslegungSchema"/>). <b>Ergebnisneutral:</b> Die Auslegung
+        /// rechnet und schreibt nur auf Zuruf. Die Nummer steht allein bei
+        /// <see cref="PufferAuslegungSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGEMPFEHLUNG DER HILFSENERGIE AUF WEG B (Auftrag P671, Register
+        /// E30‑Q12, EZ‑24), steht das Ziel auf <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/>: die
+        /// Empfehlungsspannen der Pflichtzeilen „Hilfsenergiekosten“ (BHKW, 2–4 % → 0,5–1,5 %) und
+        /// „Hilfsenergiekosten (Strom)“ (Heizkessel, 4–8 % → 1–2 %) in den Auslieferungsvorlagen,
+        /// reines DML (<see cref="HilfsenergieEmpfehlungNachzug"/>). <b>Ergebnisneutral:</b> Die
+        /// Empfehlung ist Hinweis am Satzfeld, kein Rechenwert; Projektzeilen bleiben unberührt. Die
+        /// Nummer steht allein bei <see cref="HilfsenergieEmpfehlungNachzug.SCHRITT"/>.
+        /// Danach, mit den OPTIONEN DES PUFFERSPEICHERS UND DER THERMISCHEN DESINFEKTION (Welle M7
+        /// „Speicher" der Entscheidungsvorlage Modellgrenzen: PS1 (c), PS1 (a), PS5 (a), BW5), steht das
+        /// Ziel auf <see cref="PufferOptionenSchema.SCHRITT"/>: an <c>Tab_Pufferspeicher</c> die nullbaren
+        /// Spalten <c>Bereitschaft_Weg</c>, <c>Aufstellraum_Temperatur_C</c>, <c>Schicht_Anteile</c>,
+        /// <c>Frischwassermodul</c> und <c>FWM_Graedigkeit_K</c>, an <c>Tab_Einstellungen</c>
+        /// <c>Desinfektion_Aktiv</c>, <c>Desinfektion_Intervall_Tage</c>, <c>Desinfektion_Stunde</c>,
+        /// <c>Desinfektion_Zieltemperatur_C</c> und <c>Desinfektion_Volumen_l</c>, alle mit Prüfklausel,
+        /// reines DDL (<see cref="PufferOptionenSchema"/>). <b>Ergebnisneutral:</b> Leere Felder rechnen
+        /// wie zuvor. Die Nummer steht allein bei <see cref="PufferOptionenSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGFASSUNG und der GESPEICHERTEN ERDREICHPRÜFUNG (Welle M6 der
+        /// Entscheidungsvorlage Modellgrenzen: KU1 Stufe 1, EQ1), steht das Ziel auf
+        /// <see cref="KatalogfassungSchema.SCHRITT"/>: an den acht Katalogtabellen der Stufe 1
+        /// <c>Katalog_Schluessel</c> (eindeutig, Teilindex), <c>Katalog_Pruefsumme</c> und
+        /// <c>Katalog_Ausgelaufen</c>, an <c>Tab_Applikation</c> die <c>Katalogfassung</c>, die Tabellen
+        /// <c>Tab_Katalogabgleich</c> und <c>Tab_ErgebnisErdreich</c> (STRICT) und die Saat von Schlüssel
+        /// und Prüfsumme der ausgelieferten Sätze (<see cref="KatalogfassungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich. Die Nummer steht
+        /// allein bei <see cref="KatalogfassungSchema.SCHRITT"/>.
+        /// Danach, mit der KATALOGFASSUNG DER ÜBRIGEN KATALOGE (Entscheidungsvorlage Modellgrenzen KU1
+        /// Stufe 2), steht das Ziel auf <see cref="KatalogfassungStufe2Schema.SCHRITT"/>: an den sechzehn
+        /// Katalogtabellen der Stufe 2 (<see cref="Katalogfassung.Stufe2"/>) dieselben drei Katalogspalten
+        /// samt Teilindex und die Saat von Schlüssel und Prüfsumme ihrer ausgelieferten Sätze; Klima- und
+        /// Zapfprofilkatalog bleiben benannt ausgenommen (<see cref="Katalogfassung.Ausgenommen"/>).
+        /// <b>Ergebnisneutral:</b> Kein Fachwert und keine Projektkopie ändert sich. Die Nummer steht
+        /// allein bei <see cref="KatalogfassungStufe2Schema.SCHRITT"/>.
+        /// Danach, mit AUFSCHLAG UND MANUELLER AUFHEIZZEIT DER AUFHEIZOPTIMIERUNG (Entscheid E59 samt
+        /// Folgeentscheiden, E60; Entwurf KP3 Abschnitt 4, KP-S4), steht das Ziel auf
+        /// <see cref="AufheizManuellSchema.SCHRITT"/>: an <c>Tab_Einstellungen</c> <c>Aufheiz_Aufschlag_H</c>
+        /// und <c>Aufheiz_Aufschlag_Prozent</c>, an <c>Tab_Gebaeude</c> <c>Aufheizzeit_Manuell_H</c> samt dem
+        /// achten Neubau der Sicht <c>Abfrage_Projektgebaeude</c> (103 Spalten), an <c>Tab_ErgebnisGebaeude</c>
+        /// <c>Aufheiz_Art</c>, <c>Auslegungsheizlast_Kw</c> und <c>Aufheizzuschlag_Kw</c>, an
+        /// <c>Tab_ErgebnisZone</c> <c>Aufheiz_Art</c> und der Zustand <c>GEKOPPELT</c> per kleinem Neubau
+        /// (<see cref="AufheizManuellSchema"/>). <b>Ergebnisneutral:</b> Alle Felder entstehen leer, leer
+        /// heißt kein Aufschlag und keine manuelle Zeit. Die Nummer steht allein bei
+        /// <see cref="AufheizManuellSchema.SCHRITT"/>.
+        /// Danach, mit den PROJEKTKOPIEN DER BRENNSTOFFE UND DER PUFFERAUSLEGUNGS-VORGABEN
+        /// (Anwenderentscheid 03.10.2026), steht das Ziel auf <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>:
+        /// die Tabellen <c>Tab_Brennstoff</c> und <c>Tab_PufferAuslegungParameter</c> (STRICT, je Projekt)
+        /// und ihre wertgleiche Saat; die Konditionierungsvorlagen werden schon bei der Übernahme kopiert
+        /// (<see cref="ProjektkopienKatalogeSchema"/>). <b>Ergebnisneutral:</b> Die Kopien tragen die Werte
+        /// des Stamms. Die Nummer steht allein bei <see cref="ProjektkopienKatalogeSchema.SCHRITT"/>.
+        /// Danach, mit der KONDITIONIERUNGSNUTZUNG AN DER KALENDERKOPIE, steht das Ziel auf
+        /// <see cref="KonditionierungNutzungSchema.SCHRITT"/>: die Spalte <c>Nutzung</c> an
+        /// <c>Tab_Konditionierungskalender</c> samt Saat aus der Herkunftsvorlage
+        /// (<see cref="KonditionierungNutzungSchema"/>). <b>Ergebnisneutral:</b> Der Lauf liest die Nutzung
+        /// nicht. Die Nummer steht allein bei <see cref="KonditionierungNutzungSchema.SCHRITT"/>.
+        /// Danach, mit dem SPERRPROFIL DER WÄRMEPUMPE (Anwenderentscheid 03.10.2026), steht das Ziel auf
+        /// <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/>: die Tabelle <c>Tab_Sperrfenster</c> (STRICT,
+        /// je Anlagenzeile). <b>Ergebnisneutral:</b> Sie kommt leer an. Die Nummer steht allein bei
+        /// <see cref="WaermepumpeSperrprofilSchema.SCHRITT"/>.
+        /// Danach, mit der NUTZUNGSPROFIL-ZUORDNUNG ÜBER IDs und den Zapf-Nutzungsarten Büro, Schule,
+        /// Gewerbe (V31/V32), steht das Ziel auf <see cref="ProzessNutzungSchema.SCHRITT"/>: die Tabellen
+        /// <c>Tab_Nutzungsprofil_STAMM</c> und <c>Z_Nutzungsprofil</c> samt Saat und der Nachtrag der drei
+        /// Nutzungsarten in einen versionierten Zapfkatalog. <b>Ergebnisneutral.</b> Die Nummer steht allein
+        /// bei <see cref="ProzessNutzungSchema.SCHRITT"/>.
+        /// Danach, mit den ERGÄNZUNGEN DER PUFFERSPEICHER-AUSLEGUNG (Welle P4c), steht das Ziel auf
+        /// <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>: an <c>Tab_PufferAuslegung</c> die
+        /// Sitzungseingaben (Kriterienschalter, Expertenweg, Heizlast, Wohneinheiten, Anzeigestufe), an
+        /// <c>Tab_Pufferspeicher</c> <c>ID_Stamm</c> und die Saat des Aufheizkriteriums K12
+        /// (<see cref="PufferAuslegungErgaenzungSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        /// Die Nummer steht allein bei <see cref="PufferAuslegungErgaenzungSchema.SCHRITT"/>.
+        /// Danach, mit dem WIRKSAMEN U-WERT DER BODENPLATTE ALS VORGABE (E65, EV1), steht das Ziel auf
+        /// <see cref="ErdreichVorgabeSchema.SCHRITT"/>: <c>Erdreich_U_Wirksam</c> an <c>Tab_Gebaeude</c> und
+        /// <c>Tab_Gebaeude_STAMM</c> samt neuntem Sichtneubau (<see cref="ErdreichVorgabeSchema"/>).
+        /// <b>Ergebnisneutral:</b> Die Spalten entstehen leer. Die Nummer steht allein bei
+        /// <see cref="ErdreichVorgabeSchema.SCHRITT"/>.
+        /// Danach, mit der WAERMEUEBERGABE JE ZONE (E63, AK1z), steht das Ziel auf
+        /// <see cref="ZonenUebergabeSchema.SCHRITT"/>: Auslegungspunkt und Proportionalband an <c>Tab_Zone</c>,
+        /// mittlere Kreistemperaturen und Begrenzungsstunden an <c>Tab_ErgebnisZone</c>
+        /// (<see cref="ZonenUebergabeSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer. Die Nummer
+        /// steht allein bei <see cref="ZonenUebergabeSchema.SCHRITT"/>.
+        /// Danach, mit der KÄLTEMASCHINE (KU3-1, E67/E68), steht das Ziel auf
+        /// <see cref="KaeltemaschineSchema.SCHRITT"/>: Katalog, Projektkopie und Kennlinien der Kältemaschine
+        /// samt drei Beispielgeräten (<see cref="KaeltemaschineSchema"/>). <b>Ergebnisneutral:</b> Kein Projekt
+        /// führt eine Kältemaschine. Die Nummer steht allein bei <see cref="KaeltemaschineSchema.SCHRITT"/>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = KonditionierungSchema.SCHRITT;
+        /// <see cref="KaeltemaschineAnlageSchema.SCHRITT"/>: die Kältemaschine als Anlage — Anlagentyp, Verweis und
+        /// Anzahl an <c>Tab_Energieanlagen</c>, Kühleingaben an der Projektkopie, Kostenkomponente samt Vorlagen,
+        /// Ergebnistabelle je Maschine (<see cref="KaeltemaschineAnlageSchema"/>). <b>Ergebnisneutral:</b> Kein
+        /// Referenzprojekt führt eine Anlagenzeile der Kältemaschine.
+        /// <see cref="KaeltestromabrechnungSchema.SCHRITT"/>: die Kältestromabrechnung der Kältemaschine — Netzbezug,
+        /// Kühlträger, Abrechnungsart und Stromspitze je Maschine im Ergebnis, der Stempeltrigger der Anlagenzeile mit
+        /// Anzahl und Gerät (<see cref="KaeltestromabrechnungSchema"/>). <b>Ergebnisneutral.</b>
+        /// Danach, mit der KÄLTESPITZE JE ZONE (MZ-Rest), steht das Ziel auf <see cref="ZonenKaeltespitzeSchema.SCHRITT"/>:
+        /// Kältespitze und Kühlstunden an <c>Tab_ErgebnisZone</c> (<see cref="ZonenKaeltespitzeSchema"/>).
+        /// <b>Ergebnisneutral:</b> Die Spalten entstehen leer und bleiben es ohne wirksame Kühlung.
+        /// Danach, mit dem ANLAGENFAHRPLAN (AK2-1), steht das Ziel auf <see cref="AnlagenfahrplanSchema.SCHRITT"/>:
+        /// <c>Zeitprogramm</c> und <c>Vorlauf_Max</c> an <c>Tab_Energieanlagen</c>, sechs Komfort- und
+        /// Fahrplanspalten an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="AnlagenfahrplanSchema"/>).
+        /// <b>Ergebnisneutral:</b> Die Spalten entstehen leer; ohne Kopplung bleiben sie es.
+        /// Danach, mit der FREIEN KÜHLUNG ÜBER DIE WÄRMEQUELLE (KU3-6a), steht das Ziel auf
+        /// <see cref="FreieKuehlungSoleSchema.SCHRITT"/>: Schalter, Grädigkeit und Leistungsgrenze an
+        /// <c>Tab_Energieanlagen</c>, Kälte und Stunden der freien Kühlung an den beiden Ergebnistabellen der
+        /// Wärmepumpe (<see cref="FreieKuehlungSoleSchema"/>). <b>Ergebnisneutral:</b> Der Schalter entsteht aus,
+        /// die übrigen Spalten leer.
+        /// Danach, mit dem AUSWEIS DER VORLAUFWAHL (VW1a), steht das Ziel auf <see cref="VorlaufwahlSchema.SCHRITT"/>:
+        /// Stunden je Kennlinienstützstelle, darüber und darunter an <c>Tab_ErgebnisWaermepumpeModul</c>
+        /// (<see cref="VorlaufwahlSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer.
+        /// Danach, mit dem KATALOG DER NUTZUNGSPROFILE (NP1a), steht das Ziel auf <see cref="RaumnutzungSchema.SCHRITT"/>:
+        /// fünf Katalogtabellen samt Saat, freie Nutzung an Kalender und Vorlage (Tabellenneubau), Profilname an der Zone
+        /// (<see cref="RaumnutzungSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest Katalog oder Zonenspalte.
+        /// Danach, mit der KATEGORIE DIN NACH DIN/TS 18599-10:2025-10 (NP5b, E96), steht das Ziel auf
+        /// <see cref="RaumnutzungDinTsSchema.SCHRITT"/>: Name und Quellenhinweis der Kategorie, Nummern und Namen der
+        /// 43 Nutzungen ohne Werte, Ids bleiben (<see cref="RaumnutzungDinTsSchema"/>). <b>Ergebnisneutral:</b> Kein
+        /// Rechenweg liest den Katalog.
+        /// Danach, mit dem GRUNDRISS JE IMPORTIERTEM RAUM (HC-5), steht das Ziel auf <see cref="RaumgrundrissSchema.SCHRITT"/>:
+        /// <c>Tab_Raumgrundriss</c>, eine Kindliste der Importquelle (<see cref="RaumgrundrissSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; sie entsteht leer.
+        /// Danach, mit den TYPAUFBAUTEN (BA-2), steht das Ziel auf <see cref="TypaufbauSchema.SCHRITT"/>: Spalte
+        /// <c>Typaufbau</c> an Projekt- und Katalogaufbau und die Saat der neun Typaufbauten (<see cref="TypaufbauSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte; kein Referenzprojekt trägt einen Aufbau.
+        /// Danach, mit den BDEW-STANDARDLASTPROFILEN STROM 2025 (SLP25), steht das Ziel auf
+        /// <see cref="StandardlastprofilSchema.SCHRITT"/>: die drei gesperrten Sätze H25, G25 und L25 der „Datenbank
+        /// Strombedarf" — je ein Kopf in <c>Tab_Stromverbraucher_STAMM</c> (Monatswerte, normiert auf 1.000 MWh/a) und ein
+        /// Typprofil in <c>Tab_Stromverbrauchertyp_STAMM</c> (168 Wochenstunden), mit Katalogschlüssel und Prüfsumme
+        /// (<see cref="StandardlastprofilSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze.
+        /// Danach, mit VERWENDETEM AUFSCHLAG UND BEMESSENER AUFHEIZZEIT IM ERGEBNIS (KP3 Welle A, E99), steht das Ziel auf
+        /// <see cref="AufheizAufschlagErgebnisSchema.SCHRITT"/>: <c>Aufheiz_Aufschlag_Verwendet_H</c> und
+        /// <c>Aufheizzeit_Bemessen_H</c> an <c>Tab_ErgebnisGebaeude</c> (<see cref="AufheizAufschlagErgebnisSchema"/>).
+        /// <b>Ergebnisneutral:</b> Der Referenzlauf liest die Ergebnistabelle nicht.
+        /// Danach, mit dem ERDSONDENFELD JE ANLAGE, steht das Ziel auf <see cref="ErdsondenfeldSchema.SCHRITT"/>: sechs
+        /// Kennzahlen des Sondenfeldes an <c>Tab_Energieanlagen</c> (Abstand, Bohrlochdurchmesser, Bohrlochwiderstand,
+        /// Kopfüberdeckung, Betrachtungsjahr, Anordnung; <see cref="ErdsondenfeldSchema"/>). <b>Ergebnisneutral:</b> Die
+        /// Spalten entstehen leer, leer heißt Normvorgabe.
+        /// Danach, mit den BDEW-NETZBEZUGSPROFILEN P25 UND S25 (SLP25b), steht das Ziel auf
+        /// <see cref="StandardlastprofilPvSchema.SCHRITT"/>: zwei weitere gesperrte Sätze der „Datenbank Strombedarf" —
+        /// Netzbezug eines Haushalts mit PV-Anlage (P25) bzw. mit PV-Anlage und Batteriespeicher (S25), keine
+        /// Verbrauchsprofile —, je Kopf und Typprofil mit Katalogschlüssel und Prüfsumme
+        /// (<see cref="StandardlastprofilPvSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze.
+        /// Danach, mit der HERKUNFT DER BAUTEILFLÄCHE (G5-0), steht das Ziel auf <see cref="FlaechenherkunftSchema.SCHRITT"/>:
+        /// <c>Tab_Bauteil.Flaechenherkunft</c> — der Weg der importierten Fläche (Mengensatz, Raumgrenze, Körper,
+        /// schematisch; <see cref="FlaechenherkunftSchema"/>). <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der
+        /// Rechenweg liest sie nicht.
+        /// Danach, mit der STUFE AK3 (Entwurf AK3, Festlegungen 22 und 23), steht das Ziel auf <see cref="Ak3Schema.SCHRITT"/>:
+        /// <c>Heizkurve_Raumeinfluss</c> an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt zehntem Sichtneubau und
+        /// sechs Kennzahlen des geschlossenen Kreises an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3Schema"/>).
+        /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer; kein Referenzprojekt rechnet AK3.
+        /// Danach, mit der HERKUNFT DES NORDWINKELS (G5-N), steht das Ziel auf <see cref="NordrichtungSchema.SCHRITT"/>:
+        /// <c>Tab_Importquelle.Nordwinkel_Herkunft</c> (Datei, Eingabe, Annahme; <see cref="NordrichtungSchema"/>), Bestand
+        /// nachgefüllt aus dem Nordwinkel. <b>Ergebnisneutral:</b> Der Rechenweg liest die Spalte nicht.
+        /// Danach, mit dem IMPORT AUS DER PROJEKTDATEI, steht das Ziel auf <see cref="ProjektdateiImportSchema.SCHRITT"/>:
+        /// Format und Herkunft nehmen den Wert <c>SQPROJ</c> an — Neubau von <c>Tab_Importquelle</c> und der sechs
+        /// Herkunftstabellen mit erweiterter Prüfklausel (<see cref="ProjektdateiImportSchema"/>). <b>Ergebnisneutral:</b>
+        /// Keine Zeile ändert sich.
+        /// Danach, mit den KENNZAHLEN VON AK3-K (Entwurf AK3-K 3.5, Festlegung 20), steht das Ziel auf
+        /// <see cref="Ak3KSchema.SCHRITT"/>: sieben Kennzahlen der Zonensperre und der Kälteseite im Kreis an
+        /// <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3KSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        /// Danach, mit der KÜHLKURVE (Entwurf KK, Festlegungen 1, 3, 7, 12), steht das Ziel auf
+        /// <see cref="KuehlkurveSchema.SCHRITT"/>: fünf Eingabespalten der Kühlkurve an beiden Gebäudetabellen samt elftem
+        /// Sichtneubau, drei Kennzahlen an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="KuehlkurveSchema"/>).
+        /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        /// Danach, mit den TYPKENNFELDERN DER KÄLTEMASCHINEN (KM2), steht das Ziel auf
+        /// <see cref="KaeltemaschinenTypkennfelderSchema.SCHRITT"/>: die eingebauten Typkennfelder als gesperrte Sätze in
+        /// <c>Tab_Kaeltemaschine_STAMM</c> samt Kennlinie, Katalogschlüssel und Prüfsumme
+        /// (<see cref="KaeltemaschinenTypkennfelderSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt ein Typkennfeld.
+        /// Danach, mit den ZONEN IM GEBÄUDEKATALOG (ZK), steht das Ziel auf <see cref="ZonenKatalogSchema.SCHRITT"/>: die
+        /// Katalogzwillinge <c>Tab_Zone_STAMM</c>, <c>Tab_Bauteil_STAMM</c>, <c>Tab_Zonenluftstrom_STAMM</c> und die
+        /// Eigentümerspalte <c>ID_Zone_Stamm</c> an Kalender und Vorgabe der Konditionierung (<see cref="ZonenKatalogSchema"/>).
+        /// <b>Ergebnisneutral:</b> Reines DDL, der Rechenweg liest die Zwillinge nicht.
+        /// Danach, mit ÜBERGABEGRENZE UND BIVALENZ (Umsetzungskonzept Übergabegrenze und Bivalenz, Abschnitt 4), steht das
+        /// Ziel auf <see cref="UebergabegrenzeSchema.SCHRITT"/>: acht Gerätespalten an beiden Wärmepumpentabellen, die
+        /// Rücklaufgrenze an beiden BHKW-Tabellen, Einbindung und Vorwärmbetrieb an der Anlage, Bereiche und Zähler an Modul-
+        /// und Projektergebnis der Wärmepumpe (<see cref="UebergabegrenzeSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten
+        /// entstehen leer.
+        /// Danach, mit der PV-GANGLINIE (PVG), steht das Ziel auf <see cref="PvGanglinieSchema.SCHRITT"/>: Katalog,
+        /// Projektkopie und Zuordnung einer Photovoltaik-Ganglinie im Raster der Datei (<see cref="PvGanglinieSchema"/>).
+        /// <b>Ergebnisneutral:</b> Reines DDL, kein Referenzprojekt führt eine PV-Ganglinie.
+        /// Danach, mit der KALENDERBEDIENUNG STUFE 2 (K2), steht das Ziel auf <see cref="KalenderbedienungSchema.SCHRITT"/>:
+        /// gemeinsamer Kalender „alle Größen" mit Größenmaske, benannte Wochen, Wochenende und Feiertagsland am Gebäude,
+        /// Länderfeiertage als Regeln, Ferienliste als Spiegel der Ferienspalten (<see cref="KalenderbedienungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Gekoppelte Kopien werden eine Gemeinschaftsperiode, die beim Lesen genau in ihre Kalender zurückkehrt.
+        /// Danach, mit KATALOGKOSTEN UND URSPRUNG (Katalogauswahl Stufe 2), steht das Ziel auf
+        /// <see cref="KatalogkostenUrsprungSchema.SCHRITT"/>: <c>ID_KostenVorlage</c> an den acht Katalogen mit Kosten,
+        /// <c>ID_Stamm</c> an den elf Projektkopien ohne Ursprungsverweis (<see cref="KatalogkostenUrsprungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        /// Danach, mit KATALOGKOSTEN INVESTITION (KA‑E‑14), steht das Ziel auf
+        /// <see cref="KatalogkostenInvestitionSchema.SCHRITT"/>: <c>ID_KostenVorlageInvestition</c> an den acht
+        /// Katalogen mit Kosten. <b>Ergebnisneutral:</b> Die Spalte entsteht leer.
+        /// Danach, mit TEILLAST UND TAKTEN DER KÄLTEMASCHINE (KM3), steht das Ziel auf <see cref="KaeltemaschineTeillastSchema.SCHRITT"/>:
+        /// acht Eingabespalten an Katalog und Projektkopie der Kältemaschine, fünf Kennzahlspalten an ihrem Ergebnis
+        /// (<see cref="KaeltemaschineTeillastSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer, jede Maschine
+        /// rechnet auf dem heutigen Weg.
+        /// Danach, mit den KATALOGFELDERN DER KÄLTEERZEUGER (K-A, Entscheid E118), steht das Ziel auf
+        /// <see cref="KaelteKatalogfelderSchema.SCHRITT"/>: Geräteart, GWP und Füllmenge des Kältemittels und saisonale
+        /// Kennzahl an Katalog und Projektkopie der Kältemaschine (<see cref="KaelteKatalogfelderSchema"/>), die Geräteart
+        /// nach der Rückkühlart rückgefüllt. <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalten.
+        /// Danach, mit der PFLEGBAREN KÄLTEFOLGE (KB-D, Entscheid E117 F1), steht das Ziel auf
+        /// <see cref="KaelteRangSchema.SCHRITT"/>: der Rang eines Kälteerzeugers an seiner Anlagenzeile
+        /// (<c>Tab_Energieanlagen.Kaelte_Rang</c>, <see cref="KaelteRangSchema"/>). <b>Ergebnisneutral:</b> Jede Zeile
+        /// steht danach auf NULL, und NULL ist die Vorgabefolge.
+        /// Danach, mit dem KÄLTEBEDARF OHNE GEBÄUDEMODELL (K1, Entscheide E-K1 bis E-K3), steht das Ziel auf
+        /// <see cref="KaeltebedarfSchema.SCHRITT"/>: Kältebedarfsprofile, Typkatalog und Zuordnung mit Deckungsart
+        /// (<see cref="KaeltebedarfSchema"/>), Deckungsspalten an <c>Z_ProjektWaermebedarf</c>, fünf leere Ergebnisspalten,
+        /// sechs neutrale Typsätze (<see cref="KaeltetypSaat"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt ordnet einen
+        /// Kältebedarf zu, jeder Lastgang steht auf „zentral“.
+        /// Danach, mit dem RÜCKKÜHLWERK ALS EIGENEM GLIED (K-F1, Entscheid E120), steht das Ziel auf
+        /// <see cref="RueckkuehlwerkSchema.SCHRITT"/>: Katalog und Projektkopie des Rückkühlwerks, sein Verweis und der
+        /// Wasserpreis an der Anlagenzeile der Kältemaschine, sechs Kennzahlen der Rückkühlung an ihrem Ergebnis
+        /// (<see cref="RueckkuehlwerkSchema"/>). <b>Ergebnisneutral:</b> Der Katalog entsteht leer, alle Spalten stehen auf
+        /// NULL, kein Rechenweg liest sie.
+        public const int Zielversion = RueckkuehlwerkSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

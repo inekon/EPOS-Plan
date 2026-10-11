@@ -38,6 +38,12 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung der Quellentität eines Imports; <c>null</c> = keine.</summary>
         public string Quellkennung;
 
+        /// <summary>
+        /// Der Code des Typaufbaus, aus dem ein Ersatzaufbau des Imports entstand (Schritt 192,
+        /// <see cref="TypaufbauSaattabelle"/>); <c>null</c> = ein echter Aufbau (Datei, Katalog, Anwender).
+        /// </summary>
+        public string Typaufbau;
+
         /// <summary>„Gehört zur Auslieferung" — nur im Katalog.</summary>
         public bool ReadOnly;
 

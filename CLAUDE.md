@@ -17,15 +17,23 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Opus 5.5 orchestriert und arbeitet:** Es plant, zerlegt Aufträge, prüft Ergebnisse,
-  führt zusammen und berichtet; Konzeptarbeit, schwierige Analysen und die Zusammenführung
-  widersprüchlicher Stände übernimmt es selbst oder gibt sie an Agenten mit `model: opus`.
-  **Fable 5.1 nur, wenn Opus eine Aufgabe nachweislich nicht leisten kann** — dann als Agent
-  mit `model: fable` und mit der Begründung im Auftrag.
+- **Fable 5.1 nur, wenn es unbedingt nötig ist:** Es schneidet Aufträge, wählt das Modell,
+  nimmt Ergebnisse ab, entscheidet bei widersprüchlichen Befunden, bereitet Anwenderentscheide
+  vor und berichtet — in knappen Zügen. Alles andere wird delegiert, auch Merges und
+  Konfliktlösung, Gates, CI-Prüfung und CI-Vermerke, Status- und Protokollpflege, Hüllen,
+  Nachzüge und Konzeptabsätze; Fable fasst Dateien nur an, wenn ein Agentenaufruf teurer wäre
+  als die Änderung selbst (eine Zeile, ein Verweis). Geplante Check-ins (Routinen) lösen
+  einen Agenten aus, statt Fable arbeiten zu lassen.
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
-  und Zeit: `model: opus` für Konzeptpapiere, Nachzüge, Implementierung, Tests, Hüllen,
-  Konfliktauflösung und Fehlersuche; `model: sonnet` für Suchen, Dateilisten, kleine
-  Textpflege und Vorlagen; `model: haiku` für Zählungen, Encoding- und Zeilenendenprüfungen.
+  und Zeit:
+
+  | Modell | Aufgaben |
+  |---|---|
+  | `model: opus` (Opus 5.5, `opus-umsetzung`) | Rechenweg, Schema, Tests, Hüllen und Dialoge, Fehlersuche im Code, Konfliktauflösung mit Fachinhalt, Konzeptabsätze mit Fachinhalt, Referenzprojekte und Basen einfrieren |
+  | `model: sonnet` (`sonnet-mechanik`) | Inventare und Suchen, Status-, Protokoll- und Indexpflege nach Vorlage, Ressourcen in beiden Sprachen, Wiki-Quellen und Logbuch-Entwürfe, Gate fahren und Zahlen melden, Merges ohne Fachkonflikt, CI-Protokolle auswerten, Vergleichstabellen aus vorliegenden Zahlen |
+  | `model: haiku` (`haiku-pruefung`) | Zählungen, BOM-, Encoding- und Zeilenendenprüfungen, Konfliktmarker, LFS-Zeiger, Dateilisten |
+  | `model: fable` | nur, wenn die Orchestrierung selbst eine schwierige Analyse in einem frischen Kontext braucht |
+
   Das Modell bei jedem Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
 - **Agentenaufträge** sind vollständig und repo-relativ formuliert (keine absoluten Pfade —
   sie lenken Worktree-Sitzungen in den Hauptbaum), nennen das Ziel, die Abnahme (Build,
@@ -35,6 +43,13 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
   Dateiabzüge.
 - Unabhängige Agenten und Werkzeugaufrufe parallel starten; Ergebnisse abnehmen, indem alle
   plausiblen Schreiborte geprüft werden (Hauptbaum, Worktree, Commits — auch Sync-Commits).
+- **Aufwand nach Aufgabe:** Die Kosten einer Welle wachsen mit Runden × Kontextgröße. Deshalb
+  die Agentendefinitionen unter `.claude/agents/` nutzen (`opus-umsetzung` mittlerer, `sonnet-mechanik`
+  und `haiku-pruefung` niedriger Denkaufwand), einen Auftrag so schneiden, dass ein Agent mit
+  höchstens rund 150 Werkzeugaufrufen auskommt (sonst in Teilaufträge mit frischem Kontext zerlegen),
+  Agenten kein vollständiges Gate fahren lassen — sie bauen, prüfen den SQL-Dialekt und laufen die
+  betroffenen Tests mit `--filter`; das Gate fährt die Orchestrierung einmal nach dem Merge —, und
+  lange Läufe mit genau einem wartenden Befehl im Hintergrund abwarten statt das Protokoll wiederholt zu lesen.
 - **Vor Agentenarbeit im Hauptbaum** die Datei `AGENT_LAEUFT` in der Repowurzel anlegen
   (Auftrag, Sitzung, Beginn; sie steht in `.gitignore`) und **nach der Abnahme löschen**.
   `GitHub_Sync.bat` bricht ab, solange sie liegt — so wandert kein halbfertiger Stand in
@@ -75,7 +90,10 @@ Filter `WP-Plan.Kern.slnf` (die plattformfreien Projekte samt Tests — Grundlag
   = gehört zur Auslieferung), `Z_*` Zuordnung Projekt ↔ Katalog. Fachtabellen sind `STRICT`.
   **Neue Beziehungen über IDs**, nicht über Textfelder. Schemaänderungen laufen als
   nummerierte Schritte über `SchemaMigration`
-  ([`ADR-001`](Dokumentation/aktuell/ADR-001_Schema-Ausrollung.md)); der Rechenkern arbeitet
+  ([`ADR-001`](Dokumentation/aktuell/ADR-001_Schema-Ausrollung.md)); die nächste Nummer meldet jede Sitzung **vor dem Bau** in der
+  Zeile „Schemaschritt angemeldet" im Kopf der Statusdatei an und pusht allein diese Zeile sofort —
+  eine angemeldete Nummer vergibt keine andere Sitzung, die Kette hängt immer über `+ 1` an der
+  Vorgängerklasse, und beim Push der Welle wird die Zeile auf die nächste freie Nummer gesetzt; der Rechenkern arbeitet
   mit festen Rastern (8760 Stunden, 168 Wochenstunden, 365 Tage, 12 Monate, kein Schaltjahr).
 - **SQL-Dialekt:** Regeln in BETRIEB_SQLITE.md Abschnitt 6 (Umlautregel, Verbotsliste der
   Access-Schreibweisen, Boolean-Spalten als 0/1 — neue Spalten mit `CHECK (spalte IN (0,1))`, Sortierung über `IIF`/`CASE`). Zugriffe über `DataRepository` mit
@@ -100,7 +118,7 @@ dotnet build WP-Plan.sln -c Debug -p:Platform=x64          # Windows-Anwendung s
 dotnet build WP-Plan.Kern.slnf -c Release                  # nur die plattformfreien Projekte
 dotnet test  WP-Plan.Kern.slnf -c Release --no-build -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2
 dotnet run --project Proben/ChartProben -c Release          # Diagramm-Renderer ohne Windows
-dotnet run --project EPOS.Referenzlauf -c Release -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049 --ziel <ordner>
+dotnet run --project EPOS.Referenzlauf -c Release -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051 --ziel <ordner>
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis> <neu>
 ```
 
@@ -126,6 +144,10 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
   zuschreibt. Quelltexte: `.cs`, `.csproj`, `.resx` UTF-8 **mit** BOM und CRLF; Markdown
   UTF-8 **ohne** BOM (`.editorconfig`). Ältere Dateien können noch Windows-1252 ohne BOM
   sein — vor dem Bearbeiten die Bytes messen und byte-erhaltend schreiben.
+- **Absturz der Windows-Anwendung ohne Meldung** (Ereignisanzeige: `KERNELBASE.dll`,
+  `0xc000041d`): Die Ursache steht im Ausnahmeprotokoll `Logs\Ausnahmen.txt` neben der
+  Datenbank — zuerst diese Datei anfordern; Vorgehen in
+  [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md) unter „Fallstricke“.
 - Die Python-Werkzeuge der Tabelle unten laufen auf Windows über den Starter `py` (`python3`
   gibt es dort nicht), mit `PYTHONIOENCODING=utf-8` davor, weil sie Unicode ausgeben.
   `Proben/ChartProben` und `EPOS.Referenzlauf` stehen **nicht** im Kern-Filter — wer sie mit
@@ -136,11 +158,12 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 | Werkzeug | Wofür | Aufruf |
 |---|---|---|
 | `Proben/ChartProben` | zeichnet alle Diagrammbilder aus synthetischen Reihen und prüft Maße, Farben und Determinismus, mit Gegenproben; rot, sobald der Renderer eine Windows-API braucht oder sich ein Bild ändert | `dotnet run --project Proben/ChartProben -c Release` |
-| `Proben/Rasterprobe` | misst die virtualisierte `Katalogliste` (QuickGrid `Virtualize`) im echten Browser — Zeilenhöhe, Abstandshalter, Rollbehälter, Sichtbarkeitsmelder. **Vor jeder Änderung an `Raster`, `Katalogliste` oder den `.epos-raster*`-Regeln ziehen**; bunit allein misst das nicht | siehe [`Proben/Rasterprobe/LIESMICH.md`](Proben/Rasterprobe/LIESMICH.md) |
+| `Proben/Rasterprobe` | misst die virtualisierte `Katalogliste` (QuickGrid `Virtualize`) im echten Browser — Zeilenhöhe, Abstandshalter, Rollbehälter, Sichtbarkeitsmelder. **Vor jeder Änderung an `Raster`, `Katalogliste` oder den `.epos-raster*`-Regeln ziehen**; bunit allein misst das nicht. Dazu `fensterprobe.mjs`: Kopf und Schlussleiste der Dialoge im eigenen Fenster (haften, Fokus, Überlagerung, Katalogdialog, mit Gegenprobe) — **vor jeder Änderung an Dialogkopf, Schlussleiste oder dem Abschnitt „Dialog im eigenen Fenster" des Hausblatts ziehen**; `bannerprobe.mjs`: der Meldungsbanner im eigenen Fenster haftet unter dem Kopf (mit Gegenprobe) — **vor jeder Änderung an `Warnbanner` oder seiner Haftregel ziehen**; `diagrammprobe.mjs`: Zeigerbalken und Auskunftszeile folgen der Maus im gezoomten Bild (mit Gegenprobe) — **vor jeder Änderung an `DiagrammSvg` oder seinem Modul ziehen**; `tabellenprobe.mjs`: Kopf und Wert der Ergebnistabellen der Simulationsreiter stehen übereinander (mit Gegenprobe) — **vor jeder Änderung an den `epos-simerg-*`-Regeln ziehen** | siehe [`Proben/Rasterprobe/LIESMICH.md`](Proben/Rasterprobe/LIESMICH.md) |
 | `EPOS.Referenzlauf` | plattformfreier Rechennachweis gegen die eingefrorene Basis (Linux, macOS, CI) | `dotnet run --project EPOS.Referenzlauf -- lauf …` / `… vergleich <ref> <neu>` |
 | `Referenzlauf` (Windows) | die vollständige Suite (`lauf`, `projekt`, `vergleich`, `pruefen`, `liste`, `migration`) | `Referenzlauf.exe <modus> …` |
 | `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` aus der neutralen `.resx`; wiederholbar. **Nach jedem neuen Ressourcenschlüssel ziehen** | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen) |
-| `Werkzeuge/Auslieferungsvorlage` | erzeugt aus einer produktiven `Kenndaten.sqlite` die bereinigte Auslieferungsdatenbank samt Prüfbericht. **Vor jeder Auslieferung ziehen** | `dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle> <ziel> [--beispiele …] [--trocken]` |
+| `Werkzeuge/Standardlastprofile` | leitet aus der BDEW-Excel unter `Quellen/Standardlastprofile/` die Konstanten `EPOS.Kern/Allgemein/Update/StandardlastprofilSaat.cs` ab; wiederholbar | `py Werkzeuge/Standardlastprofile/ableiten.py schreiben` (ohne Argument: nur prüfen) |
+| `Werkzeuge/Auslieferungsvorlage` | erzeugt aus einer produktiven `Kenndaten.sqlite` die bereinigte Auslieferungsdatenbank samt Prüfbericht und schreibt das Katalogpaket der Fassung (`Katalogpaket.json`) daneben. **Vor jeder Auslieferung ziehen** | `dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle> <ziel> [--beispiele …] [--katalogfassung <n>] [--trocken]` |
 | `Werkzeuge/Berichtsvorlage` | bereinigt die Word-Stilvorlage des Berichts (doppelte Stile, Format „EPOS Kapitelkopf“) und baut daraus die Beispielvorlage mit Platzhaltern und mit `--standard` die ausgelieferte Standardvorlage `Berichtsvorlage_Standard.docx`, mit `kurzbericht` den ausgelieferten Kurzbericht je Sprache, alles nur bei grünem `OpenXmlValidator`; `BerichtsvorlageDateiWacheTests` und `AuslieferungsvorlagenWacheTests` halten die Dateien und beide Lieferwege. **Nach jeder Änderung an einer der Vorlagen ziehen**; Einzelheiten in [`LIESMICH.md`](Werkzeuge/Berichtsvorlage/LIESMICH.md) | `dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen <docx>` / `… beispiel <quelle.docx> <ziel.docx> [--standard] [--katalogfassung <n>]` / `… kurzbericht <quelle.docx> <ziel.docx> --sprache de\|en` |
 | `Werkzeuge/ZapfprofilValidierung` | hält den Zapfprofilgenerator gegen **gemessene** Reihen: je Objekt eine Ampel nach den Abnahmekriterien der Stufe Z5 (Band der Dauerlinie, Formabgleich, Energie nach Kalibrierung), dazu die √N-Skalierung über alle Objekte; Bericht in Markdown und CSV. Datenbankfrei, der Katalog kommt aus einem Paketordner oder einer SQLite. **Die Messreihen liegen nie im Repositorium** — eine Wache im Werkzeug hält jeden Absolutwert und jede Mengeneinheit aus dem Bericht; Ablage und Konverter für offen lizenzierte Fremddaten in [`LIESMICH.md`](Werkzeuge/ZapfprofilValidierung/LIESMICH.md) | `dotnet run --project Werkzeuge/ZapfprofilValidierung -c Release -- <ordner> --ziel <berichtordner> [--katalog <sqlite\|paketordner>] [--realisierungen N] [--seed S] [--trocken]` |
 | `Werkzeuge/SqlDialektPruefer` | hält jeden SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und die Verbotsliste | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
@@ -152,32 +175,61 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-26_R23_KesselBereitschaft`, fünfzehn Projekte; die Gebäude rechnen nach VDI 6007 und laufen
-ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
+`2026-10-10_R51_FreieKuehlung`, neunundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
+ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
-Kühlübergabe gekoppelt —, Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator,
+Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
+Stromverbraucher-Zuordnung (über die ID, gehalten von `EPOS.Kern.Tests/StromverbraucherZuordnungTests`),
+Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator (Feiertage zählen im Zapfkalender als Sonntag und liegen im Raster der Klimaregion),
 gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`, Projekt 1049 rechnet als
 Kopie von 1018 ein Kollektorfeld vor BHKW und Kessel, das direkt und über den Puffer deckt —
-mit der Nachrang-Vorgabe 30 % am Puffer, gehalten von `EPOS.Kern.Tests/SolarWaermeMonateTests` —,
-allein Projekt 1040 bis zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
+mit der Nachrang-Vorgabe 30 % am Puffer und der Arbeitstemperatur aus der untersten Zone des
+Puffers, gehalten von `EPOS.Kern.Tests/SolarWaermeMonateTests` —,
+1018 und 1049 rechnen ihr BHKW mit der unteren Grenzleistung ihres Anlagenfelds (Rangfolge Anlage,
+Katalog, Projekt, gehalten von `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests`),
+Projekt 1050 rechnet als Kopie von 1023 einen Brennwertkessel mit gepflegter Kennlinie,
+Brennwertkennlinie am Rückfall-Rücklauf und gepflegten Taktwerten, gehalten von
+`EPOS.Kern.Tests/KesselKennlinieTests`, und steht nicht in der CI-Auswahl,
+die Gebäude rechnen Bauteile am Erdreich mit dem Erdreichwiderstand nach DIN EN ISO 13370,
+Projekt 1051 rechnet als Kopie von 1007 einen Bürobau mit Konditionierungskalendern (Nachtzeile der
+Lüftung, Ferien, Heizperiode) und Aufheizoptimierung, gehalten von
+`EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests`, Projekt 1052 rechnet als Kopie von 1018 das Hotel in
+drei Zonen mit Zonenkalendern, gehalten von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests`, und steht nicht in
+der CI-Auswahl,
+Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude und einer Zone mit eigener Übergabe (Konvektor 70/50 °C, Proportionalband 2 K) — die Übergabe je Zone am gemeinsamen Vorlauf, Rücklauf massenstromgewichtet —, gehalten von `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1056 rechnet als Kopie von 1047 mit Anlagenfahrplan — Nachtsperre der Wärmepumpe 0 bis 6 Uhr, Zeitprogramm 0 in denselben Stunden an Kessel und BHKW, `Vorlauf_Max` 50 °C — und schreibt Komfortstunden, gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1057 rechnet als Kopie von 1029 eine Erdsonde (4 × 90 m, Mergel/Lehm, Klimazone 6) mit Entzugsrückwirkung im Betrachtungsjahr 10, gehalten von `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1058 rechnet als Kopie von 1056 auf Stufe AK3 mit Heizungspuffer an der Wärmepumpe und Raumeinfluss der Heizkurve — der geschlossene Kreis zwischen Gebäude und Erzeugern mit der Kälteseite im Kreis, der Puffer überbrückt die Sperrstunden — und schreibt Komfortstunden und die Kennzahlen des Kreises, gehalten von `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests`,
+Projekt 1059 rechnet als Kopie von 1058 seine Kälte mit einer zu kleinen Kältemaschine und einem Kältespeicher aus 1055 — die Kälteschranke greift —, gehalten von `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1060 rechnet als Kopie von 1056 mit Übergabegrenze — Heizkörper 75/60 °C, Höchstvorlauf 55 °C, Einbindung direkt, Vorwärmbetrieb mit Kessel in Reihe, mit Überströmventil, Rücklauf- und Spreizungsgrenzen —, gehalten von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests`,
+Projekt 1061 rechnet als Kopie von 1058 seinen Kühlvorlauf über eine Kühlkurve am Gebäude — Raumeinfluss 3 K/K, Auslegungsweg Tagesmittel, Kühlvorlauf der Wärmepumpe 12 °C —, gehalten von `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1062 rechnet als Kopie von 1061 das Gebäude in zwei Zonen mit Kühlübergabe je Zone, gehalten von `EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1063 rechnet als Kopie von 1055 seine Kältemaschine mit Teillastkurve, Takten unter der Mindestteillast von 30 % mit dem Vorgabe-Taktverlustfaktor und Gütegrad-Extrapolation an den Kennfeldrändern, gehalten von `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests`,
+Projekt 1064 rechnet als Kopie von 1017 seine Kälte mit freier Kühlung über die Erdsonde der Wärmepumpe — Grädigkeit 4 K, Leistungsgrenze 4 kW, den Rest deckt der Verdichter —, gehalten von `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+die Sole-Wärmepumpen der Referenzprojekte rechnen mit Erdreichquelle (Erdsonde), deren Entzug ohne Taktstrom
+und deren Prüfung je Anlage mit Erdreichquelle, die Wärmepumpen rechnen ihre Kennlinie über den Vorlauf interpoliert,
+1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
+allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
-1030, 1007, 1017, 1045, 1046, 1047 und 1049; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
+1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060 und 1063; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
 
 **Einfrierregeln** — wer eines davon ändert, friert im selben Schritt die Basis neu ein und
 begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 
 - gesäte Emissionsfaktoren der Testdatenbank (`emissionsart`, aktive `emissionswert`,
-  `Tab_Brennstoff_Stamm.CO2/SO2/NOx/Staub`, `energy_project_settings.co2/so2/nox`,
-  Berechnungsmodus eines Referenzprojekts);
+  `Tab_Brennstoff_Stamm.CO2/SO2/NOx/Staub` und die Projektkopien `Tab_Brennstoff` der
+  Referenzprojekte, `energy_project_settings.co2/so2/nox`, Berechnungsmodus eines Referenzprojekts);
 - gesäte PV-Modulkoeffizienten (`alpha_SC`, `beta_OC`, `gamma_PMP`, `T_NOCT`) oder ein neues
   Modul, das ein Referenzprojekt benutzt;
 - der Flottenstand `@Projektflotte` des Projekts 1046 in `Tab_SpeicherAuslegung` und dessen
   Projektzeilen;
 - gesäte Gebäudedaten: `Tab_Gebaeude(_STAMM)` mit `Bauweise`, U-Werten, Flächen, Sollwerten,
   `Luftwechselrate`, `Fensterdurchlassgrad`, `Gebaeude_Modell` und den übrigen Spalten des
-  Gebäudemodells, die Gebäudezuordnungen der Referenzprojekte und
+  Gebäudemodells, die Gebäudezuordnungen der Referenzprojekte, die Konditionierung ihrer Gebäude
+  und Zonen (übernommene Vorlagen sind Kopien am Gebäude) und
   das Anlegen oder Entfernen eines ihrer Gebäude;
 - gesäte Kältedaten: der Projektschalter `Tab_Einstellungen.Kuehlbetrieb` eines Referenzprojekts,
   die Kühleingaben seiner Gebäude (`Kuehlung_Aktiv`, `Kuehl_Sollwert`, `Kuehl_Sollwert_Nacht`,
@@ -185,22 +237,99 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   Kaskadenplatz der Wärmepumpe, ihr Kühlbetrieb, `Kuehl_Vorlauf` und `Kuehl_Hilfsstromanteil`,
   Kühlträger und Abrechnungsart ihrer Anlagenzeile (`Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`)
   und die Kühlkennlinie des Projektgeräts samt Vorlauf-Stützstellen (`Tab_Kenndaten_Kuehlung`);
+- gesäte Kältemaschinendaten eines Referenzprojekts: die Anlagenzeile seiner Kältemaschine (`Kaeltemaschine_Anzahl`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), ihre Projektkopie `Tab_Kaeltemaschine` (Nennkälteleistung, EER, Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung, `Kuehl_Vorlauf`, `Kuehl_Hilfsstromanteil`) samt `Tab_Kenndaten_Kaeltemaschine`, sein Kältespeicher (Pufferzeile mit Verwendung Kälte, Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, Bereitschaftsverlust, Schwellen) und die Kaskade (`Tool_1` bis `Tool_6`), dazu das Anlegen oder Entfernen eines solchen Referenzprojekts; ebenso Kältemaschine und Kältespeicher eines gekoppelten Referenzprojekts auf Stufe AK3;
 - gesäte Auslegungsdaten der Übergabe: die Kopplungsstufe `Tab_Einstellungen.Anlagenkopplung`
-  eines Referenzprojekts, an seinen Gebäuden `Heizkreis_Aktiv` und die Übergabespalten (Art,
-  Exponent, Nennleistung, Auslegungspunkt, Heizkurve, `Regler_Proportionalband`,
+  eines Referenzprojekts (auch die Stufe AK3), an seinen Gebäuden `Heizkreis_Aktiv` und die Übergabespalten (Art,
+  Exponent, Nennleistung, Auslegungspunkt, Heizkurve, `Heizkurve_Raumeinfluss`, `Regler_Proportionalband`,
   `Sollwertprofil`), `Kuehluebergabe_Aktiv`, die Spalten `Kuehl_Uebergabe_*` und
-  `Kuehl_Auslegung_*` und `Kuehl_Vorlaufgrenze`, die Kaskade eines gekoppelten Referenzprojekts
+  `Kuehl_Auslegung_*` und `Kuehl_Vorlaufgrenze`, die Kühlkurve am Gebäude (`Kuehlkurve_Aktiv`, `Kuehlkurve_Fusspunkt`,
+  `Kuehlkurve_Raumeinfluss`, `Kuehlkurve_Auslegung_Weg`, `Kuehlkurve_Auslegung_Aussen`), an seinen Zonen die sieben Übergabespalten von `Tab_Zone` (`Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn`, `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`, `Regler_Proportionalband`), die Kaskade eines gekoppelten Referenzprojekts
   (`Tab_Einstellungen.Tool_1` bis `Tool_4`, sie entscheidet, ob die Wärmepumpe am gerechneten
-  Vorlauf Wärme liefert), dazu das Anlegen oder Entfernen eines gekoppelten Referenzprojekts;
+  Vorlauf Wärme liefert), ihr Anlagenfahrplan in `Tab_Energieanlagen` (Sperrzeit `Sperrung`, `Sperrzeit_von`,
+  `Sperrzeit_bis` samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`), die Heizungspuffer eines gekoppelten
+  Referenzprojekts (Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, Schwellen, Lade- und Entladeleistung, Senkenzuordnung
+  in `Z_AnlageSenke`, Lade-Prioritäten der Erzeuger), die Heizkennlinie `Tab_Kenndaten` seiner Projektwärmepumpe samt
+  Vorlauf-Stützstellen, `Ptherm` seiner Projektkopien `Tab_Heizkessel` und `Tab_BHKW`, auf Stufe AK3 die Kälteseite, die die
+  Kälteschranke bildet (Kälteerzeuger, Kältespeicher, Kaskade), dazu das Anlegen oder Entfernen eines gekoppelten
+  Referenzprojekts, auch eines auf Stufe AK3 mit Kälteseite;
+- die Freigabe der Konditionierung eines Referenzprojekts mit Kühlung: je Gebäude und Zone das „aus“ der Heiz- und
+  Kühlsollwertkalender und die Heiz- und Kühlperiode;
 - gesäte Zapfprofil-Eingaben eines Referenzprojekts: `Tab_TwwProjekt` (`Weg`, Seed,
   Realisierungen, Temperaturen, Bilanzgrenze), seine Zonen (`Tab_TwwZone`) und Wohnungstypen,
-  die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, und das Umstellen eines
+  die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, die Feiertagsregeln des Kerns und das
+  Feiertagsland der Gebäude der Referenzprojekte mit Zapfprofilgenerator, und das Umstellen eines
   Referenzprojekts auf den Generator;
 - gesäte Solardaten des Referenzprojekts 1049: das Kollektorfeld (Kollektorsatz in
-  `Tab_Solarkollektoren`, Modulanzahl, Neigung, Azimut, Senken in `Z_AnlageSenke`), sein Puffer
+  `Tab_Solarkollektoren` samt `Kdfu` und `Bezugsflaeche`, Modulanzahl, Neigung, Azimut, Senken in
+  `Z_AnlageSenke`, die Felder des Solarkreises `Arbeitstemperatur_Weg`, `Uebertrager_Graedigkeit_K`,
+  `Kollektor_Spreizung_K`, `Solarkreisverluste_Prozent`, `Pumpenleistung_W`), sein Puffer
   (Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, `Schwelle_Aus`, `Schwelle_Aus_Nachrang` leer),
   die Lade-Prioritäten der Erzeuger an diesem Puffer und die Kaskade (`Tool_1` bis `Tool_4`),
-  dazu das Anlegen oder Entfernen eines Referenzprojekts mit Solarthermie.
+  dazu das Anlegen oder Entfernen eines Referenzprojekts mit Solarthermie;
+- gesäte Kesseldaten: `Tab_Einstellungen.Kessel_Heizgrenze` und `Kessel_Betriebsbereitschaft`
+  eines Referenzprojekts, die Bereitschaftsleistung seines Kessels, dessen fünf Kennlinienspalten
+  (`Wirkungsgrad_Teillast30`, `Kennlinie_Brennwert`, `Mindestleistung`, `Anfahrverlust_kWh`,
+  `Mindestlaufzeit_min`), sein Schalter `Brennwert` und die Bauart in `Beschreibung`, die über die
+  Normvorgaben von η₃₀ und Mindestleistung entscheiden, beim Referenzprojekt 1050 dazu, was den Rücklauf seiner
+  Brennwertkennlinie bestimmt (Temperaturpaar an Anlage und Kessel, Senken des Kessels,
+  Kopplungsstufe), und das Anlegen oder Entfernen des Referenzprojekts 1050;
+- gesäte Bedarfsdaten eines Referenzprojekts: seine Zuordnungszeilen für Stromverbraucher, Brauchwasser und
+  Prozesswärme (`Z_Projekt_Stromverbraucher`, `Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme` — ID der
+  Projektkopie und gepflegte `Summe`), die zugeordneten Projektkopien samt Typsätzen (`Tab_Stromverbraucher` und
+  `Tab_Stromverbrauchertyp`, `Tab_Brauchwasser` und `Tab_Brauchwassertyp`, `Tab_Prozesswaerme` und `Tab_Prozesstyp`)
+  und das Anlegen oder Entfernen einer solchen Zuordnung;
+- gesäte BHKW-Grenzleistungen der Referenzprojekte: das Anlagenfeld `Tab_Energieanlagen.Grenzleistung`
+  ihrer BHKW-Zeilen, die Katalogspalte `Tab_BHKW.Grenzleistung` ihrer Projektmodule und der Projektwert
+  `Tab_Einstellungen.Leistungsgrenze`;
+- gesäte Stromfelder der Referenzprojekte: die Einspeisegrenze `Tab_Einstellungen.Einspeisegrenze_Wert` und
+  `Einspeisegrenze_Einheit`, an den Projektkopien ihrer Stromspeicher `Standby_Verbrauch` und
+  `Selbstentladung_Prozent_Monat`;
+- gesäte Zonendaten eines Referenzprojekts: seine Zonen in `Tab_Zone` (jede Spalte), ihre Bauteile in `Tab_Bauteil`
+  samt Fläche, U-Wert, Neigung, Azimut, Randbedingung, ψ·L, Aufbau und den Trennflächen (`ID_Nachbarzone`,
+  `Trennflaeche_Zuordnung`), die Luftströme in `Tab_Zonenluftstrom`, an seinen Zonen die drei Kühlübergabespalten von
+  `Tab_Zone` (`Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn`), die Zonenkalender (Vorgabezeilen, Kalender und
+  Perioden mit `ID_Zone`) und die Aufheizvorgabe des Projekts (`Tab_Einstellungen.Aufheizoptimierung` und
+  `Aufheiz_*`), dazu das Anlegen oder Entfernen eines Zonen-Referenzprojekts;
+- gesäte Konditionierungsdaten eines Referenzprojekts: der Referenzkatalogbau „Referenzbau Konditionierung“ (Bauwerte,
+  `Kuehlung_Aktiv`, `Sommerlueftung`, die Kalender mit Perioden und Vorgabezeilen — Ferien, Heizperiode, Nachtzeile der
+  Lüftung mit `Bedingt_K`), das Gebäude von 1051 (alle Gebäudezellen, Zuordnung, manuelle Aufheizzeit), an
+  `Tab_Einstellungen` die Aufheizvorgabe (`Aufheizoptimierung`, `Aufheiz_*`), die Ferien, die Heizperiode und der
+  Schalter `Kuehlbetrieb`, dazu das Anlegen oder Entfernen eines Referenzprojekts mit Konditionierung;
+- gesäte Erdreichdaten der Referenzgebäude: Grundfläche und `k_Wert_Grundflaeche` sowie die U-Werte der Bauteile am
+  Erdreich, die Randbedingung der Grundfläche, das Umfangsfeld `Abmessung_Anschluß_Außenwand_Kellerdecke` und die
+  Wände am Erdreich (Neigung 45° bis 135°); dazu die Festwerte λ_Erd, w und R_se und die Abschnittsobergrenze 8 in
+  `GebaeudeFestwerte`;
+- gesäte Erdreichquellen der Referenzprojekte: an ihren Wärmepumpen-Anlagen in `Tab_Energieanlagen` die Quellfelder
+  `WQ_Typ`, `WQ_Quellsystem`, `WQ_Tiefe`, `WQ_Anzahl`, `WQ_Flaeche`, `WQ_Bodentyp`, `WQ_Spreizung`; die Klimazone
+  `Tab_Klimaregion.Klimazone_DIN4710` ihrer Klimaregion; der Bodenkatalog (λ, ρ·c_p) der benutzten Bodentypen; die
+  Sondenfeldspalten derselben Anlagen (`WQ_Sondenabstand`, `WQ_Bohrlochdurchmesser`, `WQ_Bohrlochwiderstand`,
+  `WQ_Kopfueberdeckung`, `WQ_Betrachtungsjahr`, `WQ_Sondenanordnung` — leer heißt Vorgabe); die Normgeometrie von
+  `Sondenfeldgeometrie` samt den Festwerten in `Erdsondenfeld` (Abstand 6 m, Bohrlochradius 0,075 m, R_b 0,10 m·K/W,
+  Kopfüberdeckung 2 m, Betrachtungsjahr 10, Heizgrenze 15 °C der Startschätzung, quadratische Anordnung); dazu das
+  Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle;
+- gesäte Kühlkurvendaten eines Referenzprojekts mit Kühlkurve: die Kühlkennlinie seiner Kälteerzeuger samt aller
+  Vorlauf-Stützstellen (`Tab_Kenndaten_Kuehlung`, `Tab_Kenndaten_Kaeltemaschine`), `Kaltwasser_Vorlauf_Min`, das
+  Temperaturpaar seines Kältespeichers, die Festwerte der Kühlkurve in `GebaeudeFestwerte` (Mindestabstand des Fußpunkts
+  zum Kühlsollwert 2,5 K, Mindestspanne der Auslegungs-Außentemperatur über dem Kühlsollwert 8 K, Abstand der Eingabe über
+  dem Kühlsollwert 1 K, Bereiche, Vorgabe des Raumeinflusses 3 K/K) und das Abbruchmaß ΔK2
+  (`Anlagenkopplung.ABBRUCH_VORLAUF_K`), dazu das Anlegen oder Entfernen eines Referenzprojekts mit Kühlkurve, auch eines
+  Mehrzonen-Referenzprojekts mit gekoppelter Kälteseite;
+- die Gemeinjahr-Konvention: die Osterregel (Sonntag am nächsten zum Jahrestag 98 und die Abstände der beweglichen
+  Feiertage), die Regel des Buß- und Bettags (letzter Mittwoch vor dem Jahrestag 327), das Wochentagsraster der
+  Klimaregion der Referenzprojekte (es gilt für alle Leser), die Klimaregion-Zuordnung der Referenzprojekte und eine Preisreihe mit Jahr an der aktiven Variante eines Referenzprojekts;
+- gesäte Übergabegrenzdaten eines Referenzprojekts: die acht Gerätespalten seiner Wärmepumpe (`Spreizung_*`,
+  `Mindestvolumenstrom_Prozent`, `Ruecklauf_Max`, `Ruecklauf_Bezug`, `Ruecklauf_Abwertung_ProzentJeK`, `Kaeltemittel`), an
+  seiner Anlage `Einbindung`, `Vorwaermbetrieb` und `Vorlauf_Max`, `Ruecklauf_Max` am BHKW, die Vorgabewerte in
+  `Bivalenzvorgaben`, dazu das Anlegen oder Entfernen eines Referenzprojekts mit Übergabegrenze.
+- gesäte Teillastdaten einer Kältemaschine eines Referenzprojekts: an ihrer Projektkopie `Teillast_Weg`,
+  `Teillastkurve_a`, `Teillastkurve_b`, `Teillastkurve_c`, `Teillastkurve_Lastgrad_Min`, `Taktverlustfaktor_Cd`,
+  `Verdichterregelung`, `Kennfeld_Randweg` und `Mindestteillast_Prozent`, die Festwerte des Rechenwegs (Mindesthub
+  und Extrapolationsweite des Gütegrads, Vorgabekurven je Verdichterregelung, Grenze der Teillaststunden) und die
+  Vorgabe `Waermepumpentakt.VORGABE_CD`, dazu das Anlegen oder Entfernen eines Referenzprojekts mit Teillastkurve.
+- gesäte Daten der freien Kühlung eines Referenzprojekts: an der Anlagenzeile seiner Wärmepumpe `Kuehl_Frei`,
+  `Kuehl_Frei_Graedigkeit_K` und `Kuehl_Frei_Leistung_kW`, die Quelle, die sie trägt (`WQ_Typ` und die Felder der
+  Erdreichquelle), und der Kühlvorlauf der Wärmepumpe, dazu das Anlegen oder Entfernen eines Referenzprojekts mit
+  freier Kühlung.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
@@ -211,8 +340,8 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
 | Workflow | Läuft von selbst | Nur auf Zuruf (*Actions → Run workflow*) |
 |---|---|---|
-| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben, Referenzlauf der sieben Projekte gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
-| [`windows.yml`](.github/workflows/windows.yml) | Job `build-test` bei Push auf `main` und nächtlich 03:00 UTC (**zählt doppelt**); Pushes auf Arbeitszweige lösen ihn nicht aus, der Kern-Lauf auf ubuntu prüft sie | Häkchen „setup“: Job `installer` baut das Installationsprogramm (rund 4 Minuten, Installer als Artefakt) |
+| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben mit Hash-Messlatte (jede Zeile der jüngsten `Proben/ChartProben/Messlatte_*.sha256` muss unverändert in der Liste des Laufs stehen; Vergleich nur auf ubuntu, Liste als Artefakt), Referenzlauf der zehn Projekte der CI-Auswahl gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
+| [`windows.yml`](.github/workflows/windows.yml) | Job `build-test` bei Push auf `main` und nächtlich 03:00 UTC auf dem Arbeitszweig `ios_migration_september` (der geplante Lauf nimmt den Workflow von `main` und checkt den Arbeitszweig aus; **zählt doppelt**); Pushes auf Arbeitszweige lösen ihn nicht aus, der Kern-Lauf auf ubuntu prüft sie | Häkchen „setup“: Job `installer` baut das Installationsprogramm (rund 4 Minuten, Installer als Artefakt) |
 | [`ios.yml`](.github/workflows/ios.yml) | nie | baut die iOS-Hülle auf `macos-26`, startet sie im Simulator und rechnet Projekt 1030 gegen die Basis; 15–20 Minuten, **zählt zehnfach** |
 
 **Regeln:**
@@ -256,8 +385,8 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
   unaufgelöst sind oder Konfliktmarker in den Änderungen stehen.
 - **Regeln für Claude:** kein Commit und kein Push ohne Auftrag; beauftragte Commits sofort,
   atomar und mit genauen Pfaden (`git add <pfad>`, nie `-A`); Betreff kurz (höchstens
-  72 Zeichen), Einzelheiten im Rumpf; Trailer mit dem arbeitenden Modell, gegenwärtig
-  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`;
+  72 Zeichen), Einzelheiten im Rumpf; Trailer mit dem arbeitenden Modell, etwa
+  `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>` oder `… Claude Opus 5.5 …`;
   keine Pull Requests, kein Tag-Push. Reihenfolge einer Welle: **Merge → Gate → Statuszeile und Protokoll →
   Push (auf Zuruf) → iOS-Lauf (nur nach Rückfrage) → Nachweis.**
 - Nach Runden mit parallelen Sitzungen repoweit nach Konfliktmarkern suchen (`^<{7}`, `^={7}$`,

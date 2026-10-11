@@ -43,7 +43,23 @@ namespace WindowsFormsApplication1
         /// <see cref="KatalogImportProfil.Listenspalten"/> und
         /// <see cref="KatalogImportProfil.Zweitfilter"/>.</para>
         /// </summary>
-        Stromspeicher
+        Stromspeicher,
+
+        /// <summary>
+        /// Kältemaschinen nach <c>Tab_Kaeltemaschine_STAMM</c> samt Kennfeld (KM1, Stufe 1 der
+        /// Kälterecherche) — aus zwei offenen Formen: der Kurvendatei PNNL Copper
+        /// (<c>chiller_curves.json</c>, BSD-2) und der CSV-Kennfeldvorlage
+        /// <c>Quellen/Kaeltemaschine_Kennfeldvorlage.csv</c>. Die Form erkennt der Ablauf am Inhalt.
+        /// </summary>
+        Kaeltemaschine,
+
+        /// <summary>
+        /// VDI 3805 Blatt 22 im KÄLTEMODUS (Entscheid E119 vom 10.10.2026): dieselbe Datei, derselbe
+        /// Leser und derselbe Wärmepumpenkatalog wie <see cref="Waermepumpe"/>, aber nur die Geräte,
+        /// die Kälte erzeugen können (<see cref="KuehlfaehigkeitsPruefung"/>). Für Kälteanlagen gibt
+        /// es keine VDI-3805-Daten; der Menüpunkt „Import Kälteanlagen VDI 3805“ führt hierher.
+        /// </summary>
+        WaermepumpeKuehlung
     }
 
     /// <summary>
@@ -395,6 +411,10 @@ namespace WindowsFormsApplication1
                             new ImportDetailfeld("THLEISTUNG",    t("IMP_KAT_FELD_THLEISTUNG"),  t("IMP_KAT_EINH_KWTH")),
                             new ImportDetailfeld("BRENNSTOFF",    t("IMP_KAT_FELD_BRENNSTOFF")),
                             new ImportDetailfeld("WIRKUNGSGRAD",  t("IMP_KAT_FELD_WIRKUNGSGRAD"), t("IMP_KAT_EINH_PROZENT")),
+                            // Konzept Kesselkennlinie 3.4: eta bei 30 % Last und die kleinste
+                            // Leistung aus Satz 710.01 - leer, wenn die Datei keine fuehrt.
+                            new ImportDetailfeld("WIRKUNGSGRAD30", t("IMP_KAT_FELD_WIRKUNGSGRAD30"), t("IMP_KAT_EINH_PROZENT")),
+                            new ImportDetailfeld("MINDESTLEISTUNG", t("IMP_KAT_FELD_MINDESTLEISTUNG"), t("IMP_KAT_EINH_KW")),
                             new ImportDetailfeld("VERLUSTE",      t("IMP_KAT_FELD_VERLUSTE"),     t("IMP_KAT_EINH_KW"))
                         }
                     };
@@ -450,6 +470,8 @@ namespace WindowsFormsApplication1
                     };
 
                 case KatalogImportArt.Waermepumpe:
+                case KatalogImportArt.WaermepumpeKuehlung:
+                    bool kaelte = art == KatalogImportArt.WaermepumpeKuehlung;
                     return new KatalogImportProfil
                     {
                         Art = art,
@@ -460,7 +482,9 @@ namespace WindowsFormsApplication1
                         Unterordner = "VDI_Waermepumpe",
                         UnterordnerRueckfall = "VDI",
                         Dateifilter = VdiFilter,
-                        FilterSpaltentitel = t("IMP_KAT_SP_LEISTUNG_TH"),
+                        // E119: Im Kaeltemodus traegt die Zahlenspalte die Kuehlleistung - nach
+                        // ihr waehlt, wer eine Kaelteanlage plant.
+                        FilterSpaltentitel = kaelte ? t("IMP_KAT_SP_LEISTUNG_KUEHL") : t("IMP_KAT_SP_LEISTUNG_TH"),
                         FilterSpalteneinheit = t("IMP_KAT_EINH_KW"),
                         FilterNachkommastellen = 0,
                         HilfeSchluessel = "Wärmepumpe",
@@ -468,7 +492,7 @@ namespace WindowsFormsApplication1
                         // Sonderfall in der Maske: Der Stromspeicher braucht
                         // dieselbe Zeile fuer die fehlenden Kosten, und zwei
                         // Wege zu einer Zeile liefen auseinander.
-                        Hinweis = t("IMP_KAT_HINWEIS_STUFEN"),
+                        Hinweis = kaelte ? t("IMP_KAT_HINWEIS_KAELTE") : t("IMP_KAT_HINWEIS_STUFEN"),
                         Detailfelder = new[]
                         {
                             new ImportDetailfeld(FeldName,       t("IMP_KAT_FELD_NAME"),  "", editierbar: true),
@@ -548,6 +572,37 @@ namespace WindowsFormsApplication1
                             new ImportDetailfeld(FeldQuelle, t("IMP_KAT_FELD_QUELLE"))
                         }
                     };
+                case KatalogImportArt.Kaeltemaschine:
+                    return new KatalogImportProfil
+                    {
+                        Art = art,
+                        // Der Schluessel des KatalogRegistry (Dubletten, Listenspalten); das Kuerzel
+                        // der Katalogfassung ist "KM".
+                        Katalogschluessel = "KAELTEMASCHINE",
+                        Unterordner = "Kaeltemaschine",
+                        UnterordnerRueckfall = "",
+                        Dateifilter = KaeltemaschineFilter,
+                        FilterSpaltentitel = t("IMP_KAT_SP_KAELTELEISTUNG"),
+                        FilterSpalteneinheit = t("IMP_KAT_EINH_KW"),
+                        FilterNachkommastellen = 0,
+                        HilfeSchluessel = "Kältemaschine",
+                        // Die Hilfe der Art: CSV-Vorlage, Copper-Datei, Lizenz.
+                        Hinweis = t("IMP_KAT_HINWEIS_KAELTEMASCHINE"),
+                        Detailfelder = new[]
+                        {
+                            new ImportDetailfeld(FeldName,           t("IMP_KAT_FELD_NAME"), "", editierbar: true),
+                            new ImportDetailfeld(FeldFirma,          t("IMP_KAT_FELD_FIRMA")),
+                            new ImportDetailfeld("TYP",              t("IMP_KAT_FELD_TYP")),
+                            new ImportDetailfeld("RUECKKUEHLART",    t("IMP_KAT_FELD_RUECKKUEHLART")),
+                            new ImportDetailfeld("KAELTELEISTUNG",   t("IMP_KAT_FELD_KAELTELEISTUNG"), t("IMP_KAT_EINH_KW")),
+                            new ImportDetailfeld("EER",              t("IMP_KAT_FELD_NENN_EER")),
+                            new ImportDetailfeld("MINDESTTEILLAST",  t("IMP_KAT_FELD_MINDESTTEILLAST"), t("IMP_KAT_EINH_PROZENT")),
+                            new ImportDetailfeld("KAELTEMITTEL",     t("IMP_KAT_FELD_KAELTEMITTEL")),
+                            new ImportDetailfeld("PUNKTE",           t("IMP_KAT_FELD_KENNFELDPUNKTE")),
+                            new ImportDetailfeld("BESCHREIBUNG",     t("IMP_KAT_FELD_BESCHREIBUNG")),
+                            new ImportDetailfeld(FeldQuelle,         t("IMP_KAT_FELD_QUELLE"))
+                        }
+                    };
             }
 
             throw new ArgumentOutOfRangeException(nameof(art));
@@ -563,6 +618,8 @@ namespace WindowsFormsApplication1
                 yield return KatalogImportArt.Solarkollektoren;
                 yield return KatalogImportArt.Waermepumpe;
                 yield return KatalogImportArt.Stromspeicher;
+                yield return KatalogImportArt.Kaeltemaschine;
+                yield return KatalogImportArt.WaermepumpeKuehlung;
             }
         }
 
@@ -591,6 +648,9 @@ namespace WindowsFormsApplication1
         /// daraus (oder aus bslib) ausgeleitete Tabelle.
         /// </summary>
         public const string TabellenFilter = "(*.xlsx;*.csv)|*.xlsx;*.csv";
+
+        /// <summary>Dateifilter der Kaeltemaschine: Copper-Kurvendatei oder CSV-Kennfeldvorlage.</summary>
+        public const string KaeltemaschineFilter = "(*.json;*.csv)|*.json;*.csv";
 
         /// <summary>Quellschluessel: die CEC-Speicherliste aus dem NETZ abrufen.</summary>
         public const string QUELLE_CEC_NETZ = "CEC_NETZ";

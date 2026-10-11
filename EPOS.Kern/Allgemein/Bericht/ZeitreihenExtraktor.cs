@@ -49,7 +49,10 @@ namespace WindowsFormsApplication1
                     z.Reihen[ZeitreihenSatz.BHKW_STROM] = D(sim.simulation_bhkw.stromproduktion);
                 }
                 if (sim.bSimulationKessel && sim.simulation_spk != null)
+                {
                     z.Reihen[ZeitreihenSatz.KESSEL_WAERME] = D(sim.simulation_spk.Kesselleistung_stuendlich);
+                    Kesselbetriebswerte(sim, z);
+                }
                 if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null)
                     z.Reihen[ZeitreihenSatz.SOLAR_WAERME] = D(sim.simulation_solarthermie.Waermeproduktion);
 
@@ -60,30 +63,20 @@ namespace WindowsFormsApplication1
 
                     if (sim.Speicherflottennetzbilanz == null)
                     {
-                    // V2 (PV-Konzept § 2.3, Etappe P1): Die Einspeisereihe ist der
-                    // Überschuss NACH der Speicherladung — geladene Energie wirkt als
-                    // vermiedener Netzbezug, nicht als Einspeisung. Ladung je Stunde =
-                    // Summe der vier Viertelstunden (LadungAcKwh der SpeicherEngine).
-                    double[] pvUeb = D(sim.simulation_pv.Ueberschuss);
-                    if (sim.Speicherergebnis != null &&
-                        sim.Speicherergebnis.LadungAcKwh != null &&
-                        sim.Speicherergebnis.LadungAcKwh.Length == pvUeb.Length * 4)
+                    // V2 (PV-Konzept § 2.3, Etappe P1) mit SB1 (a) und PV3: Die Einspeisereihe ist
+                    // der Überschuss NACH der Speicherladung und unter der Einspeisegrenze - je
+                    // Viertelstunde gebildet (SimulationPV.EinspeisungAufteilen), dann zum
+                    // Stundenmittel. Geladene Energie wirkt als vermiedener Netzbezug, nicht als
+                    // Einspeisung; was über der Grenze bleibt, ist Abregelung.
+                    sim.PvEinspeisungAufteilen(out double[] einspeisungKw, out double[] abregelungKw);
+                    z.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = Stunden(sim, einspeisungKw);
+                    if (SimulationPV.ViertelstundenKwh(abregelungKw) > 0.5)
                     {
-                        double[] ladung = sim.Speicherergebnis.LadungAcKwh;
-                        for (int h = 0; h < pvUeb.Length; h++)
-                        {
-                            double lad = ladung[h * 4] + ladung[h * 4 + 1] +
-                                         ladung[h * 4 + 2] + ladung[h * 4 + 3];
-                            pvUeb[h] = Math.Max(0, pvUeb[h] - lad);
-                        }
+                        z.Reihen[ZeitreihenSatz.PV_ABREGELUNG] = Stunden(sim, abregelungKw);
+                        z.Beschriftungen[ZeitreihenSatz.PV_ABREGELUNG] = "PV-Abregelung";
                     }
-                    z.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = pvUeb;
-
-                    // V1: BHKW-Überschuss als eigene Reihe — er stand bis P1 in der
-                    // PV-Überschussreihe (falsches Etikett).
-                    if (sim.simulation_pv.BhkwUeberschussGesamtKwh > 0.5)
-                        z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] =
-                            D(sim.simulation_pv.BhkwUeberschuss);
+                    // V1: Der BHKW-Überschuss ist keine PV-Größe; seine Reihe setzt der
+                    // gemeinsame Zweig unten (Einspeisung des Laufs, mit und ohne PV).
                     }
                 }
 
@@ -106,13 +99,14 @@ namespace WindowsFormsApplication1
                     z.Beschriftungen[ZeitreihenSatz.PV_ABREGELUNG] = "PV-Abregelung";
                 }
 
-                // E29 (#536, Entscheide E27‑Q3 b / E29‑Q1 a / E29‑Q2 a): die BHKW-Einspeisung
-                // auch OHNE Photovoltaik und ohne Flotte — dieselbe Stundenformel wie der
-                // KWK-Split der Strommatrix (SimulationControl.BhkwEinspeisungStuendlich).
-                // Mit PV führt SimulationPV.BhkwUeberschuss dieselbe Größe (Zweig oben,
-                // unverändert), mit Flotte die Flottenbilanz. Dieselbe Schwelle 0,5 kWh.
-                if (sim.Speicherflottennetzbilanz == null &&
-                    !(sim.bSimulationPV && sim.simulation_pv != null))
+                // Die BHKW-Einspeisung ohne Flotte, mit und ohne Photovoltaik: das Stundenmittel
+                // der Viertelstundenbilanz des Laufs (SimulationControl.BhkwEinspeisungDesLaufs).
+                // Dieselbe Reihe lesen BHKW-Reiter und Kennzahl; der KWK-Split der Strommatrix
+                // liest sie aus diesem Satz. Mit Flotte steht oben die Flottenbilanz.
+                // Die Schwelle 0,5 kWh/a bleibt: Ohne nennenswerten Überschuss erscheinen weder
+                // Spalte noch Reihe im Bericht; die Matrix rechnet dann alles als Eigenstrom
+                // (Unterschied zur Kennzahl höchstens 0,5 kWh/a, unter jeder Anzeigestelle).
+                if (sim.Speicherflottennetzbilanz == null)
                 {
                     double[] einspeisung = sim.BhkwEinspeisungDesLaufs();
                     double summe = 0;
@@ -121,10 +115,35 @@ namespace WindowsFormsApplication1
                         z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] = einspeisung;
                 }
 
+                // Katalog v12: die Stromlast des BHKW-Reiters — Strombedarf am BHKW und Reststrombedarf je Stunde,
+                // dieselben Reihen wie das Bild der Seite (SimulationErgebnisCtrl.BhkwStromStunden); Stromproduktion
+                // und Einspeisung stehen oben schon als BHKW_STROM und BHKW_UEBERSCHUSS.
+                if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
+                {
+                    SimulationErgebnisCtrl.BhkwStromreihen bs = SimulationErgebnisCtrl.BhkwStromStunden(sim);
+                    if (bs != null)
+                    {
+                        z.Reihen[ZeitreihenSatz.BHKW_STROMBEDARF] = bs.Strombedarf;
+                        z.Reihen[ZeitreihenSatz.BHKW_RESTSTROM] = bs.Reststrombedarf;
+                    }
+                }
+
                 // Stromspeicher: seit AP2b eigenes Gewerk mit eigenem Flag - der SOC
                 // hing bis dahin am PV-Objekt (simulation_pv.Speicherfuellstand).
                 if (sim.bSimulationSSP)
                     z.Reihen[ZeitreihenSatz.PV_SPEICHER_SOC] = D(sim.Speicherfuellstand_stuendlich);
+
+                // SP1 (Welle M5): der Eigenverbrauch des Speichersystems - Standby aus PV und Netz,
+                // im Flottenpfad der Hilfsverbrauch der Einheiten. Nur mit Eigenverbrauch > 0,5 kWh.
+                if (sim.bSimulationSSP && sim.SpeichersystemEigenverbrauchKwh > 0.5)
+                {
+                    double[] eigen = SpeichersystemEigenverbrauchKw(sim);
+                    if (eigen != null)
+                    {
+                        z.Reihen[ZeitreihenSatz.SPEICHER_EIGENVERBRAUCH] = Stunden(sim, eigen);
+                        z.Beschriftungen[ZeitreihenSatz.SPEICHER_EIGENVERBRAUCH] = "Eigenverbrauch Speichersystem";
+                    }
+                }
 
                 z.Reihen[ZeitreihenSatz.NETZBEZUG] = Stunden(sim, sim.Rest_Strombedarf_viertelstuendlich);
 
@@ -143,12 +162,25 @@ namespace WindowsFormsApplication1
                 Kaeltekaskade kaskade = runner.simulation_Kaeltebedarf != null
                     ? runner.simulation_Kaeltebedarf.Kaskade : null;
                 if (kaskade != null && kaskade.Erzeuger != null)
+                {
+                    // KU3-4d: die Kältemaschinen unter ihrem eigenen Schlüssel - der Platz in der Ergebnisliste
+                    // Kaeltemaschinen (dieselbe Folge wie im SimulationRunner).
+                    int km = 0;
                     foreach (Kaelteerzeuger e in kaskade.Erzeuger)
-                        if (e != null && e.NebenDerStufenrechnung && e.Modulindex >= 0)
-                        {
-                            Netzbezugsspitze s = Netzbezugsspitze.AusReihe(e.Strom_stuendlich);
-                            if (s != null) z.Kaeltestromspitzen[e.Modulindex] = s;
-                        }
+                    {
+                        if (e == null) continue;
+                        if (e.Maschine != null && e.Maschine.TeillastWirksam) z.KaeltemaschineVerdichterstunden[km] = e.StundenVerdichter;
+                        int schluessel = e.Maschine != null ? Kaeltestromabrechnung.SchluesselKaeltemaschine(km++) : e.Modulindex;
+                        if (!e.NebenDerStufenrechnung || (e.Maschine == null && e.Modulindex < 0)) continue;
+                        Netzbezugsspitze s = Netzbezugsspitze.AusReihe(e.Strom_stuendlich);
+                        if (s != null) z.Kaeltestromspitzen[schluessel] = s;
+                    }
+                }
+
+                // Katalog v12: die Kälteproduktion des Kältereiters — je Kälteerzeuger die gedeckte Kälte, dazu die
+                // ungedeckte Kälte; dieselben Reihen wie das Bild der Seite (KaelteProduktionBild.AusLauf). Nur,
+                // wenn das Projekt Kälte rechnet; der Kältebedarf steht als Kanalreihe BEDARF_KUEHLUNG im Satz.
+                Kaeltereihen(runner, z);
 
                 // Restwärme (Referenz des letzten Gewerks → Kopie zwingend).
                 z.Reihen[ZeitreihenSatz.WAERMEREST] = D(sim.Rest_Waermebedarf_stuendlich);
@@ -230,6 +262,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Betrieb je Heizkessel</b> (Konzept Kesselkennlinie 5, Bericht): Jahresnutzungsgrad, Brennwertanteil nach
+        /// Stunden und Wärme und Starts. Keine Rechnung hier — die Zeilen sind die des Kessel-Reiters
+        /// (<see cref="SimulationErgebnisCtrl.Heizkessel"/>), einmal gerufen: Bericht und Oberfläche nennen dieselben Zahlen.
+        /// </summary>
+        private static void Kesselbetriebswerte(SimulationControl sim, ZeitreihenSatz z)
+        {
+            SimulationErgebnisCtrl.HeizkesselErgebnis kessel = SimulationErgebnisCtrl.Heizkessel(sim, null);
+            if (kessel == null) return;
+            foreach (SimulationErgebnisCtrl.KesselModulZeile m in kessel.Module)
+                z.Kessel.Add(new Kesselbetrieb(m.Name, m.JahresnutzungsgradProzent, m.MitBrennwertkennlinie,
+                                               m.BrennwertStundenProzent, m.BrennwertWaermeProzent, m.Starts));
+        }
+
+        /// <summary>
         /// PAKET E2 (Nachtrag zu Konzept 4.4) — die KANALREIHEN: je Bedarfskanal seine
         /// Bedarfsganglinie und, je gerechnetem Erzeuger, die Ganglinie seiner Deckung
         /// AUF DIESEM KANAL.
@@ -270,6 +316,26 @@ namespace WindowsFormsApplication1
                 if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
                     Kanalreihe(z, "BHKW_WAERME", k, sim.DeckungKanalStuendlich(ProjektPuffer.TYP_BHKW, k));
             }
+        }
+
+        /// <summary>
+        /// Katalog v12: die Kältedeckung je Kälteerzeuger (<see cref="ZeitreihenSatz.KAELTE_PRAEFIX"/>, in der Folge der
+        /// Kältekaskade, Beschriftung = Bezeichner der Wärmepumpe) und die ungedeckte Kälte
+        /// (<see cref="ZeitreihenSatz.KAELTEREST"/>). Keine Rechnung — die Reihen sind die des Kältereiters
+        /// (<see cref="KaelteProduktionBild.AusLauf"/>); ohne Kälte bleibt der Satz unberührt.
+        /// </summary>
+        private static void Kaeltereihen(SimulationRunner runner, ZeitreihenSatz z)
+        {
+            KaelteProduktionBild.Reihen r = KaelteProduktionBild.AusLauf(runner.simulation_Kaeltebedarf);
+            if (r == null) return;
+            for (int i = 0; i < r.Erzeuger.Count; i++)
+            {
+                string schluessel = ZeitreihenSatz.KAELTE_PRAEFIX + (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                z.Reihen[schluessel] = r.Erzeuger[i].Werte;
+                z.Beschriftungen[schluessel] = r.Erzeuger[i].Name;
+                z.Kaeltereihen.Add(schluessel);
+            }
+            z.Reihen[ZeitreihenSatz.KAELTEREST] = r.Rest;
         }
 
         /// <summary>Eine Deckungsreihe eintragen — nur, wenn sie überhaupt Werte trägt.</summary>
@@ -338,6 +404,27 @@ namespace WindowsFormsApplication1
         // Kopie einer Reihe (Aliasing-sicher: mehrere Felder der Simulation zeigen auf
         // dasselbe Array). Bis W8-O-5d gab es hier zwei Ueberladungen, float[] und double[];
         // seit der Kern durchgehend in double rechnet, bleibt eine.
+        /// <summary>
+        /// Der Eigenverbrauch des Speichersystems je Viertelstunde [kW] (SP1): Standby aus PV plus aus dem
+        /// Netz, im Flottenpfad der Hilfsverbrauch der Einheiten; <c>null</c> ohne Reihe.
+        /// </summary>
+        private static double[] SpeichersystemEigenverbrauchKw(SimulationControl sim)
+        {
+            if (sim.SpeichersystemStandbyAusPvKw != null && sim.SpeichersystemStandbyAusNetzKw != null &&
+                sim.SpeichersystemStandbyAusPvKw.Length == sim.SpeichersystemStandbyAusNetzKw.Length)
+            {
+                var r = new double[sim.SpeichersystemStandbyAusPvKw.Length];
+                for (int i = 0; i < r.Length; i++)
+                    r[i] = sim.SpeichersystemStandbyAusPvKw[i] + sim.SpeichersystemStandbyAusNetzKw[i];
+                return r;
+            }
+            var intervalle = sim.Speicherflottenergebnis?.Variante?.Intervalle;
+            if (intervalle == null || intervalle.Count == 0) return null;
+            var f = new double[intervalle.Count];
+            for (int i = 0; i < f.Length; i++) f[i] = intervalle[i].HilfsverbrauchKw;
+            return f;
+        }
+
         private static double[] D(double[] q)
         {
             if (q == null) return null;

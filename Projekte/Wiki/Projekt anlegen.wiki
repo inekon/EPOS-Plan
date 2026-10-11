@@ -1,0 +1,56 @@
+'''Projekt anlegen''' ist die erste Stufe des [[Programmablauf|Programmablaufs]]. Der '''Projektassistent''' nimmt für ein neues Projekt die Stammdaten auf und legt die Klimaregion fest; die Komponenten fügen Sie danach über die Reiter der Startseite hinzu. Beim Bearbeiten eines bestehenden Projekts zeigt er zuerst den Komponentenbestand als Kachelfeld.
+
+== Programmstart und Grundeinstellungen ==
+{{Anker|programmstart-und-grundeinstellungen|grundeinstellungen}}
+
+Nach dem Start meldet sich EPOS-Plan mit dem Hauptfenster. In der Kopfzeile stehen Programmname und Version, darunter die Menüleiste mit den Bereichen Projekt, Administration, Hilfe und Sprache. Die Bedienoberfläche steht in Deutsch und Englisch zur Verfügung; ein Wechsel startet das Programm neu, damit alle Beschriftungen übernommen werden.
+
+Vor dem ersten Projekt lohnt ein Blick in {{Menü|Administration|Einstellungen}}. Dort legen Sie den Ordner der Datenbank und die Ordner für Datenbank-Sicherungen und -Importe fest, den Pfad zu den VDI-3805-Herstellerdaten, die Adresse der Online-Dokumentation, die Schnittstellen für Klimadaten und Ortssuche, die Farben der Diagramme und die Vorgaben des Berichts ([[Programm Dokumentation/Einstellungen|Einstellungen]]). Alle Werte lassen sich jederzeit auf die Voreinstellung zurücksetzen.
+
+Die Stammdatenkataloge – Gebäude und Gebäudetypen, Baustoffe und Bauteilaufbauten, Brauchwasser- und Prozessprofile, Brauchwasser-Nutzungsarten, Stromverbraucher, Betriebskalender, Wärmepumpen, Kältemaschinen, Kessel, BHKW-Module, Kollektoren, PV-Module, Wechselrichter, Puffer- und Stromspeicher, Klimaregionen sowie Kosten, Energieträger und gesetzliche Parameter – erreichen Sie ebenfalls über das Menü {{Menü|Administration}}.
+
+{{Hinweis|Werksseitige Datensätze sind schreibgeschützt; eigene Einträge legen Sie daneben an.}}
+
+== Neues Projekt anlegen ==
+{{Anker|neues-projekt-anlegen|assistent}}
+
+Ein neues Projekt starten Sie über {{Menü|Projekt|Neu…}} oder die Karte ''Neues Projekt'' auf der Startseite. Der ''Projektassistent'' öffnet in der ''Projektkonfiguration'': Projektname, Bearbeiter, Kunde und Beschreibung stehen kompakt in zwei Spalten, die Klimaregion wählen Sie aus derselben durchsuchbaren Liste wie auf der Startseite. Projektname und Klimaregion sind Pflichtangaben, alles Weitere lässt sich später ergänzen. ''Weiter ▶'' legt das Projekt an und springt auf den Reiter ''Wärmebedarf''; ein ''Zurück'' gibt es hier nicht, hinaus führen ''Abbrechen'' und das Schließkreuz.
+
+Das Projekt entsteht leer. Gebäude, Bedarfsprofile, Erzeuger und Speicher fügen Sie anschließend über die Reiter der Startseite hinzu – jede Kachel öffnet den zugehörigen Dialog und zeigt mit einem grünen Punkt, sobald Daten im Projekt liegen.
+
+Beim Bearbeiten eines bestehenden Projekts ({{Menü|Projekt|Bearbeiten…}} oder die Karte ''Projekt öffnen/bearbeiten'') zeigt die erste Seite des Assistenten, ''Komponenten auswählen'', dreizehn Kacheln:
+
+* Gebäude, Wärmebedarfsdaten, Prozesswärme
+* Brauchwasser, Standard-Stromlastprofil, Stromlastgang
+* Wärmepumpe, BHKW, Spitzenkessel
+* Solarthermie, Photovoltaik, Stromspeicher
+* Pufferspeicher
+
+Die Kacheln zeigen den tatsächlichen Bestand des Projekts – grün mit der Anzahl (''3 im Projekt'') oder grau (''nicht im Projekt''). Eingeschaltete Kacheln schalten den zugehörigen Schritt des Assistenten frei; ausgeschaltete Schritte werden übersprungen. ''Brauchwasser'' und ''Pufferspeicher'' sind reine Anzeigekacheln (''nur Anzeige''): Ihr Bestand wird gezeigt, zugeordnet werden sie in den Fachdialogen. ''Weiter ▶'' und ''◀ Zurück'' führen durch die eingeschalteten Bausteine; mit ''Speichern'' werden Projekt und alle Zuordnungen in die Datenbank geschrieben, ''Abbrechen'' verwirft den Durchlauf.
+
+== Projekt öffnen, bearbeiten und löschen ==
+{{Anker|projekt-oeffnen-bearbeiten-und-loeschen|projekt-oeffnen}}
+
+Ein bestehendes Projekt öffnen Sie über {{Menü|Projekt|Öffnen…}}. Es erscheint die Projektliste mit den Spalten ''Projektname'', ''Kunde'' und ''Geändert'', darüber ein Suchfeld, das nach Name, Kunde und Beschreibung filtert; ein Klick auf einen Spaltenkopf sortiert um. ''OK'' oder ein Doppelklick öffnet das gewählte Projekt und füllt sämtliche Listen des Hauptfensters: Wärmepumpen, BHKW, Kessel, Speicher, Gebäude, Bedarfsdaten und Erzeuger. Die Karte ''Zuletzt geöffnet'' wechselt direkt zum zuletzt geöffneten Projekt; nur wenn keines gemerkt ist oder das gemerkte gelöscht wurde, erscheint ersatzweise dieselbe Liste, nach ''Geändert'' vorsortiert.
+
+{{Menü|Projekt|Bearbeiten…}} und die Karte ''Projekt öffnen/bearbeiten'' führen dagegen in den Bearbeiten-Modus des Projektassistenten – etwa um nachträglich eine Komponente hinzuzufügen. In der linken Spalte steht dieselbe Projektliste mit Suchfeld über die volle Fensterhöhe; sobald ein Projekt gewählt ist, stehen seine Daten über den Kacheln, und die Kacheln zeigen dessen Bestand. Der Knopf ''Projekt öffnen'' unter der Liste – oder ein Doppelklick auf den Eintrag – wechselt sofort zum gewählten Projekt und schließt den Assistenten: Startseite und ''Zuletzt geöffnet'' übernehmen es, das Detailformular ''Konfiguration Projekt'' bleibt dabei zu und ist weiterhin über {{Menü|Projekt|Öffnen…}} und die Karte ''Projekt Details'' erreichbar.
+
+{{Achtung|Eine ausgeschaltete Kachel entfernt die zugehörigen Daten. Der Assistent fragt vorher im Klartext nach – mit Anzahl und Namen der betroffenen Einträge und der Vorbelegung ''Nein''; gelöscht wird erst beim Speichern und nur nach ausdrücklichem ''Ja''.}}
+
+Eine Kopie unter neuem Namen legt die Karte ''Speichern unter'' an; das Ausgangsprojekt bleibt dabei unverändert.
+
+{{Achtung|Das Löschen eines Projekts entfernt alle zugehörigen Daten und ist deshalb durch eine Sicherheitsabfrage geschützt.}}
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Projektverwaltung]] – Datenbank, projekteigene Kopien und zuletzt geöffnetes Projekt
+* [[Stammdaten und Datenimport]] – Kataloge und Import von Herstellerdaten nach VDI 3805
+* [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse, Sprachumschaltung und Hilfesystem
+* [[Programm Dokumentation/Kurzanleitung|Kurzanleitung]] – der Projektassistent und die Karten der Registerkarte ''Projekt'' im Einzelnen
+
+← [[Programmablauf|Übersicht]] | [[Klimadaten festlegen]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

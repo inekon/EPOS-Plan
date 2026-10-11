@@ -1,0 +1,382 @@
+﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Bereich '''Programm Dokumentation''' enthält die Hilfeseiten, die EPOS-Plan direkt aus dem Programm heraus aufruft – über die Kurzhinweise an den Eingabefeldern, den Menüpunkt {{Menü|Dokumentation}} und den [[Hilfe-Assistent]]en. Die Seiten sind wie die gesamte Dokumentation ohne Anmeldung lesbar, damit die Software sie jederzeit öffnen kann. Nur die Kachel auf der [[Hauptseite]] erscheint ausschließlich für angemeldete Benutzer, weil dieser Bereich in erster Linie der Pflege der Hilfetexte dient.
+
+{{Hinweis|titel=Verweise aus dem Programm|EPOS-Plan verlinkt auf Seitentitel und Sprungmarken dieses Bereichs. Wird eine Seite umbenannt oder eine Sprungmarke entfernt, läuft der Hilfeaufruf im Programm ins Leere. Ist eine Umbenennung unvermeidbar, bleibt der alte Titel als Weiterleitung bestehen; Sprungmarken werden mit [[Vorlage:Anker]] gesetzt und bei Bedarf um neue Namen ergänzt statt gelöscht.}}
+
+== Unterrubriken ==
+{{Anker|unterrubriken|rubriken}}
+
+Die Hilfeseiten dieses Bereichs sind in sieben Unterrubriken geordnet. Jede Seite steht genau einmal; die Rubrik ''Berechnung'' ist eine eigene Unterrubrik mit einer Seite je Rechenweg.
+
+{| class="wikitable"
+! Unterrubrik !! Seiten !! Inhalt
+|-
+| [[#programm-projekt-und-hilfe|Programm, Projekt und Hilfe]] || [[Programm Dokumentation/Programmablauf|Programmablauf]] · [[Programm Dokumentation/Kurzanleitung|Kurzanleitung]] · [[Programm Dokumentation/Projektverwaltung|Projektverwaltung]] · [[Programm Dokumentation/Projekttransfer|Projekttransfer]] · [[Programm Dokumentation/Varianten|Varianten]] · [[Programm Dokumentation/Hilfe-Assistent|Hilfe-Assistent]] · [[Programm Dokumentation/Lizenz|Lizenz]] || Einstieg, Projektverwaltung und Varianten, dazu Hilfe-Assistent und Lizenz.
+|-
+| [[#bedarf|Bedarf]] || [[Programm Dokumentation/Gebäude|Gebäude]] · [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] · [[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]] · [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]] · [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] · [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]] · [[Programm Dokumentation/Kühlung|Kühlung]] · [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]] · [[Programm Dokumentation/Brauchwasser|Brauchwasser]] · [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] · [[Programm Dokumentation/Betriebskalender|Betriebskalender]] · [[Programm Dokumentation/Prozesswärme|Prozesswärme]] · [[Programm Dokumentation/Strombedarf|Strombedarf]] · [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]] || Wärme- und Strombedarf des Projekts: Gebäude, Lastgänge, Brauchwasser, Prozesswärme, Verbraucher.
+|-
+| [[#erzeuger-und-speicher|Erzeuger und Speicher]] || [[Programm Dokumentation/Energieerzeuger|Energieerzeuger]] · [[Programm Dokumentation/Gerätekataloge|Gerätekataloge]] · [[Programm Dokumentation/Heizkessel|Heizkessel]] · [[Programm Dokumentation/BHKW|BHKW]] · [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] · [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]] · [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]] · [[Programm Dokumentation/Solarthermie|Solarthermie]] · [[Programm Dokumentation/Photovoltaik|Photovoltaik]] · [[Programm Dokumentation/Wechselrichter|Wechselrichter]] · [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] · [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] · [[Programm Dokumentation/Stromspeicher|Stromspeicher]] || Die Anlagen des Projekts für Wärme, Strom und Kälte und ihre Kataloge.
+|-
+| [[#simulation|Simulation]] || [[Programm Dokumentation/Klimadaten|Klimadaten]] · [[Programm Dokumentation/Simulation|Simulation]] · [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]] || Klimadaten, Konfiguration des Jahreslaufs und seine Ergebnisse.
+|-
+| [[#kosten-und-wirtschaftlichkeit|Kosten und Wirtschaftlichkeit]] || [[Programm Dokumentation/Kosten|Kosten]] · [[Programm Dokumentation/Wirtschaftlichkeit|Wirtschaftlichkeit]] · [[Programm Dokumentation/Berichte und Kosten|Berichte und Kosten]] · [[Programm Dokumentation/Bericht|Bericht]] · [[Programm Dokumentation/Berichtsvorlagen|Berichtsvorlagen]] · [[Programm Dokumentation/Emissionen|Emissionen]] · [[Programm Dokumentation/Gesetzesparameter|Gesetzesparameter]] || Kosten, Wirtschaftlichkeitsrechnung, Berichte, Emissions- und Gesetzeskataloge.
+|-
+| [[#administration-und-kataloge|Administration und Kataloge]] || [[Programm Dokumentation/Einstellungen|Einstellungen]] · [[Programm Dokumentation/Katalogpflege|Katalogpflege]] || Globale Einstellungen und die Pflege der Kataloge.
+|-
+| [[Programm Dokumentation/Berechnung|Berechnung]] || [[Programm Dokumentation/Berechnung/Simulationsablauf|Simulationsablauf]] · [[Programm Dokumentation/Berechnung/Wärmebedarf|Wärmebedarf]] · [[Programm Dokumentation/Berechnung/Brauchwasser|Brauchwasser]] · [[Programm Dokumentation/Berechnung/Prozesswärme|Prozesswärme]] · [[Programm Dokumentation/Berechnung/Strombedarf|Strombedarf]] · [[Programm Dokumentation/Berechnung/Heizkessel|Heizkessel]] · [[Programm Dokumentation/Berechnung/BHKW|BHKW]] · [[Programm Dokumentation/Berechnung/Wärmepumpe|Wärmepumpe]] · [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Wärmequelle Erdreich]] · [[Programm Dokumentation/Berechnung/Pufferspeicher|Pufferspeicher]] · [[Programm Dokumentation/Berechnung/Kühlung|Kühlung]] · [[Programm Dokumentation/Berechnung/Solarthermie|Solarthermie]] · [[Programm Dokumentation/Berechnung/Photovoltaik|Photovoltaik]] · [[Programm Dokumentation/Berechnung/Stromspeicher|Stromspeicher]] || Wie EPOS-Plan rechnet — Eingangsgrößen, Formelzeichen, Rechenweg, Grenzen und Ergebnisse je Komponente.
+|}
+
+== Hilfeseiten ==
+{{Anker|hilfeseiten|seiten}}
+
+Die folgenden Tabellen sind die Zuordnung, an die sich das Programm hält: 147 Aufrufstellen verweisen auf 42 Unterseiten dieses Bereichs. Wer eine Seite umbenennen möchte, sieht hier, welche Programmstellen daran hängen – die Spalte ''Formular / Schaltfläche'' entspricht der Zuordnungsdatei in der Anwendung. Die Zeilen sind nach Unterrubrik gruppiert und innerhalb der Gruppe nach Hilfeseite geordnet; jede Tabelle lässt sich über die Spaltenköpfe umsortieren.
+
+Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen neben dem Hilfeknopf zwei weitere: ''Berechnungsweg'' führt in die zugehörige Seite der Unterrubrik [[Programm Dokumentation/Berechnung|Berechnung]], ''Grundlagen'' in die gleichnamige Rubrik [[Grundlagen]]. Beide stehen nicht in den folgenden Tabellen; ihr Ziel legt dieselbe Zuordnungsdatei fest wie der Hilfeknopf.
+
+=== Programm, Projekt und Hilfe ===
+{{Anker|programm-projekt-und-hilfe}}
+{| class="wikitable sortable"
+! Programmstelle !! Formular / Schaltfläche !! Hilfeseite
+|-
+| Chatfenster ''Hilfe-Assistent'' || <code>Form_KiChat.btn_Help</code> || [[Programm Dokumentation/Hilfe-Assistent|Hilfe-Assistent]]
+|-
+| Einstellungen des Hilfe-Assistenten || <code>Form_KiEinstellungen.btn_Help</code> || [[Programm Dokumentation/Hilfe-Assistent|Hilfe-Assistent]]
+|-
+| Werkzeugliste ''Aktionen von Hand ausführen'' des Hilfe-Assistenten || <code>KiWerkzeugliste.btn_Help</code> || [[Programm Dokumentation/Hilfe-Assistent#setzen-und-rechnen|Hilfe-Assistent]]
+|-
+| Startseite, Reiter ''Projekt'', Knopf ''Kurzanleitung'' || <code>Form_Start.btn_Help_Kurzanleitung</code> || [[Programm Dokumentation/Kurzanleitung|Kurzanleitung]]
+|-
+| Projektassistent (Neuanlage und Bearbeiten) || <code>AssistentSeite.btn_Help</code> || [[Programm Dokumentation/Kurzanleitung|Kurzanleitung]]
+|-
+| Dialog ''Lizenz und rechtliche Hinweise'' (Menü ''Hilfe'') || <code>Form_Lizenz.btn_Help</code> || [[Programm Dokumentation/Lizenz|Lizenz]]
+|-
+| Dialog ''Lizenz'' – Status und Aktivierung (Administration) || <code>Form_LizenzVerwaltung.btn_Help</code> || [[Programm Dokumentation/Lizenz|Lizenz]]
+|-
+| Kopfband des Hauptfensters, Hilfeknopf ohne aktive Ansicht (Startseite, Projektliste) || <code>Hauptfenster.btn_Help</code> || [[Programm Dokumentation/Programmablauf|Programmablauf]]
+|-
+| Kopfband des Hauptfensters (weiterer Schlüssel für denselben Hilfeknopf) || <code>Form_Start.btn_Help</code> || [[Programm Dokumentation/Programmablauf|Programmablauf]]
+|-
+| Dialog ''Projekt öffnen'' (Projektliste mit Suche) || <code>Form_ProjektAuswahl.btn_Help</code> || [[Programm Dokumentation/Projektverwaltung|Projektverwaltung]]
+|-
+| Dialog ''Projekt löschen'' || <code>Form_ProjektDelete.btn_Help</code> || [[Programm Dokumentation/Projektverwaltung|Projektverwaltung]]
+|-
+| Dialog ''Projekt Speichern unter'' || <code>Form_ProjektSpeichernUnter.btn_Help</code> || [[Programm Dokumentation/Projektverwaltung|Projektverwaltung]]
+|-
+| Dialog ''Importkonflikte'' || <code>Form_ImportKonflikte.btn_Help</code> || [[Programm Dokumentation/Projektverwaltung#konfliktliste|Projektverwaltung]]
+|-
+| Projekt exportieren und importieren || <code>Form_ProjektExportImport.btn_Help</code> || [[Programm Dokumentation/Projektverwaltung#export-import|Projektverwaltung]]
+|-
+| Reiter ''Berichte & Kosten'', Seite ''Übersicht'' || <code>UcBkUebersicht.btn_Help</code> || [[Programm Dokumentation/Varianten|Varianten]]
+|-
+| Übernahmedialog der Übersichtsseite (Reiter ''Berichte & Kosten'') || <code>Form_BkUebernahme.btn_Help</code> || [[Programm Dokumentation/Varianten|Varianten]]
+|}
+
+=== Bedarf ===
+{{Anker|bedarf}}
+{| class="wikitable sortable"
+! Programmstelle !! Formular / Schaltfläche !! Hilfeseite
+|-
+| Dialog ''Brauchwasser Verwaltung'' || <code>Form_Brauchwasser.btn_Help</code> || [[Programm Dokumentation/Brauchwasser|Brauchwasser]]
+|-
+| Stammdaten ''Brauchwassertypen'' (Administration) || <code>Form_Brauchwasser_Admin.btn_Help</code> || [[Programm Dokumentation/Brauchwasser|Brauchwasser]]
+|-
+| Wochengang eines Brauchwassertyps || <code>Form_EingBrauchwasserTyp.btn_Help</code> || [[Programm Dokumentation/Brauchwasser|Brauchwasser]]
+|-
+| Auswertung ''Brauchwasserwärme'' || <code>Form_ErgBrauchwasserwaerme.btn_Help</code> || [[Programm Dokumentation/Brauchwasser|Brauchwasser]]
+|-
+| Überlagerung ''Brauchwasser-Zapfprofil'' des Bedarfsprofil-Dialogs || <code>Form_Zapfprofil.btn_Help</code> || [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]]
+|-
+| Katalog der Brauchwasser-Nutzungsarten (Administration) || <code>Form_Brauchwasser_Nutzungsarten.btn_Help</code> || [[Programm Dokumentation/Brauchwasser-Zapfprofil#katalog|Brauchwasser-Zapfprofil]]
+|-
+| Überlagerung ''VDI-4655-Typtage'' || <code>Form_Brauchwasser_Typtage.btn_Help</code> || [[Programm Dokumentation/Brauchwasser-Zapfprofil#typtage|Brauchwasser-Zapfprofil]]
+|-
+| Überlagerung ''Messdaten'' des Zapfprofils || <code>Form_Brauchwasser_Messreihen.btn_Help</code> || [[Programm Dokumentation/Brauchwasser-Zapfprofil#messdaten|Brauchwasser-Zapfprofil]]
+|-
+| Verwaltung ''Betriebskalender'' (Administration) || <code>Form_Betriebskalender.btn_Help</code> || [[Programm Dokumentation/Betriebskalender|Betriebskalender]]
+|-
+| Dialog ''Eingabe der Gebäudedaten'' || <code>Form_Gebaeude.btn_Help</code> || [[Programm Dokumentation/Gebäude|Gebäude]]
+|-
+| Nutzungsprofile eines Gebäudetyps (Administration) || <code>Form_EingGebTyp.btn_Help</code> || [[Programm Dokumentation/Gebäude#gebaeudetypen|Gebäude]]
+|-
+| Gebäudedaten: Bauteilflächen und U-Werte || <code>Form_Gebaeude1.btn_Help</code> || [[Programm Dokumentation/Gebäude#katalogeditor|Gebäude]]
+|-
+| Gebäudedaten: Raumsolltemperaturen, Wärmebrücken, Ferienzeiten || <code>Form_Gebaeude2.btn_Help</code> || [[Programm Dokumentation/Gebäude#temperaturen-und-ferien|Gebäude]]
+|-
+| Nutzflächen- und Verbrauchsangabe eines Gebäudes || <code>Form_GebWohnflaeche.btn_Help</code> || [[Programm Dokumentation/Gebäude#verbrauch|Gebäude]]
+|-
+| Gebäudeeditor im Projekt (Hülle und Zonen) || <code>GebaeudeProjekt.btn_Help</code> || [[Programm Dokumentation/Gebäude#huelle-und-zonen|Gebäude]]
+|-
+| Dialog ''Zone'' || <code>Zone.btn_Help</code> || [[Programm Dokumentation/Gebäude#zonen|Gebäude]]
+|-
+| Dialog ''Bauteil'' || <code>Bauteil.btn_Help</code> || [[Programm Dokumentation/Gebäude#bauteile|Gebäude]]
+|-
+| Dialog ''Luftaustausch'' zwischen Zonen || <code>Luftaustausch.btn_Help</code> || [[Programm Dokumentation/Gebäude#zonen|Gebäude]]
+|-
+| Abschnitt ''Kühlübergabe'' des Gebäudedialogs || <code>Form_Gebaeude_Kuehluebergabe.btn_Help</code> || [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell VDI 6007]]
+|-
+| Katalog ''Baustoffe'' || <code>BaustoffKatalog.btn_Help</code> || [[Programm Dokumentation/Baustoffe und Bauteilaufbauten#baustoffe|Baustoffe und Bauteilaufbauten]]
+|-
+| Katalog ''Bauteilaufbauten'' || <code>Bauteilaufbau.btn_Help</code> || [[Programm Dokumentation/Baustoffe und Bauteilaufbauten#bauteilaufbauten|Baustoffe und Bauteilaufbauten]]
+|-
+| Blatt ''Nutzungsprofile'' (Katalog und Zuordnung) || <code>Nutzungsprofile.btn_Help</code> || [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]]
+|-
+| Zuordnungsdialog des Gebäudeimports (gbXML, IFC) || <code>Form_GebaeudeImport.btn_Help</code> || [[Programm Dokumentation/Gebäudeimport#zuordnung|Gebäudeimport]]
+|-
+| Gebäudeexport (gbXML) || <code>GebaeudeExport.btn_Help</code> || [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]]
+|-
+| Ansicht ''Baustoff-Zuordnungen…'' des Gebäudedialogs || <code>Baustoffzuordnungen.btn_Help</code> || [[Programm Dokumentation/Gebäudeimport#baustoffzuordnungen|Gebäudeimport]]
+|-
+| Gruppe ''Kühlung'' im Gebäudedialog (Katalogeditor und Verwaltung) || <code>Form_Gebaeude_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kühlung#eingaben|Kühlung]]
+|-
+| Dialog ''Simulation Konfiguration'', Gruppe ''Kühlung'' || <code>Form_Simulation_Config_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kühlung#einschalten|Kühlung]]
+|-
+| Dialog ''Prozesswärme Verwaltung'' || <code>Form_Prozesswaerme.btn_Help</code> || [[Programm Dokumentation/Prozesswärme|Prozesswärme]]
+|-
+| Wochengang eines Prozesstyps || <code>Form_EingProzTyp.btn_Help</code> || [[Programm Dokumentation/Prozesswärme|Prozesswärme]]
+|-
+| Stammdaten ''Prozesse'' (Administration) || <code>Form_Prozesswaerme_Admin.btn_Help</code> || [[Programm Dokumentation/Prozesswärme|Prozesswärme]]
+|-
+| Startseite, Reiter ''Strombedarf'' || <code>Form_Start.btn_Help_Strombedarf</code> || [[Programm Dokumentation/Strombedarf|Strombedarf]]
+|-
+| Importoptionen für Lastgänge || <code>Form_GanglinieImportOptionen.btn_Help</code> || [[Programm Dokumentation/Strombedarf|Strombedarf]]
+|-
+| Stromganglinie zuordnen || <code>Form_Stromganglinie.btn_Help</code> || [[Programm Dokumentation/Strombedarf|Strombedarf]]
+|-
+| Formathinweis der Importknopfleiste, Dialog ''Stromganglinie zuordnen'' || <code>Form_Stromganglinie.btn_Help_Import</code> || [[Programm Dokumentation/Strombedarf|Strombedarf]]
+|-
+| Katalog der Stromganglinien (Administration) || <code>Form_Stromganglinie_Admin.btn_Help</code> || [[Programm Dokumentation/Strombedarf|Strombedarf]]
+|-
+| Dialog ''Strombedarf Verwaltung'' || <code>Form_Stromverbraucher.btn_Help</code> || [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]]
+|-
+| Stammdaten eines Stromverbrauchers || <code>Form_EingDBStromverbraucher.btn_Help</code> || [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]]
+|-
+| Tagesprofil eines Verbrauchertyps || <code>Form_EingStromTyp.btn_Help</code> || [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]]
+|-
+| Ergebnis der Stromverbraucher-Berechnung || <code>Form_ErgStromverbraucher.btn_Help</code> || [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]]
+|-
+| Katalog der Stromverbraucher (Administration) || <code>Form_Stromverbraucher_Admin.btn_Help</code> || [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]]
+|-
+| Startseite, Reiter ''Wärmebedarf'' || <code>Form_Start.btn_Help_Waermebedarf</code> || [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]]
+|-
+| Dialog ''Wärmebedarf Extern'' || <code>Form_Waermebedarf.btn_Help</code> || [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]]
+|-
+| Formathinweis ''CSV-Datei importieren…'', Dialog ''Wärmebedarf Extern'' || <code>Form_Waermebedarf.btn_Help_Import</code> || [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]]
+|-
+| Externe Wärmebedarfsdaten einlesen (Administration) || <code>Form_AdminWaermeeinlesen.btn_Help</code> || [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]]
+|-
+| Auswertung ''Wärmebedarf gesamt'' || <code>Form_ErgProzesswaerme.btn_Help</code> || [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]]
+|}
+
+=== Erzeuger und Speicher ===
+{{Anker|erzeuger-und-speicher}}
+{| class="wikitable sortable"
+! Programmstelle !! Formular / Schaltfläche !! Hilfeseite
+|-
+| Dialog ''BHKW Verwaltung'' || <code>Form_BHKWEing.btn_Help</code> || [[Programm Dokumentation/BHKW|BHKW]]
+|-
+| Datenblatt eines BHKW-Moduls || <code>Form_DBBHKW.btn_Help</code> || [[Programm Dokumentation/BHKW|BHKW]]
+|-
+| Startseite, Reiter ''Energieerzeuger'' || <code>Form_Start.btn_Help_Energieerzeuger</code> || [[Programm Dokumentation/Energieerzeuger|Energieerzeuger]]
+|-
+| Kesselkatalog verwalten (Administration) || <code>Form_Heizkessel_Admin.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#heizkessel|Gerätekataloge]]
+|-
+| Stammdaten ''BHKW'' (Administration) || <code>Form_BHKWAdmin.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#bhkw|Gerätekataloge]]
+|-
+| Dialog ''Datenbank Wärmepumpen'' || <code>Form_WP.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#waermepumpen|Gerätekataloge]]
+|-
+| Kollektorkatalog (Administration) || <code>Form_SolarKollektorenAdmin.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#solarkollektoren|Gerätekataloge]]
+|-
+| Pufferspeicher-Katalog (Administration) || <code>Form_PufferSp_Admin.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#pufferspeicher|Gerätekataloge]]
+|-
+| PV-Modul-Stammdaten (Administration) || <code>Form_AdminPV.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#pv-module|Gerätekataloge]]
+|-
+| Dialog ''Verwaltung Wechselrichter'' || <code>Form_AdminWechselrichter.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#wechselrichter|Gerätekataloge]]
+|-
+| Stromspeicher-Katalog (Administration) || <code>Form_AdminStromspeicher.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#stromspeicher|Gerätekataloge]]
+|-
+| Dialog ''Katalog-Dublettensuche'' (Administration) || <code>Form_KatalogDubletten.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#dubletten|Gerätekataloge]]
+|-
+| Kessel-Stammdaten einlesen (Administration) || <code>Form_Heizkessel_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
+|-
+| Pufferspeicherdaten nach VDI 3805 einlesen || <code>Form_PufferSp_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
+|-
+| Kollektordaten nach VDI 3805 einlesen || <code>Form_SolarKollektoren_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
+|-
+| Wärmepumpendaten einlesen (Administration) || <code>Form_WP_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
+|-
+| Kälteanlagen einlesen – Wärmepumpen mit Kühlfunktion (Administration) || <code>Form_WP_Kaelte_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import-kaelteanlagen|Gerätekataloge]]
+|-
+| Stromspeicherdaten einlesen (Administration) || <code>Form_Stromspeicher_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
+|-
+| Import von PV-Moduldaten (CEC und PAN) || <code>Main_PV_Test.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
+|-
+| Wechselrichter einlesen (CEC und OND) || <code>Form_WechselrichterImport.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
+|-
+| Dialog ''Verwaltung Heizkessel'' || <code>Form_Heizkessel.btn_Help</code> || [[Programm Dokumentation/Heizkessel|Heizkessel]]
+|-
+| Katalogsatz eines Heizkessels bearbeiten || <code>Form_Heizkessel_Bearbeiten.btn_Help</code> || [[Programm Dokumentation/Heizkessel|Heizkessel]]
+|-
+| Dialog ''Verwaltung Photovoltaik Module'' || <code>Form_PV.btn_Help</code> || [[Programm Dokumentation/Photovoltaik|Photovoltaik]]
+|-
+| Optionsgruppe ''Wechselrichter'' im Dialog ''Verwaltung Photovoltaik Module'' || <code>Form_PV_Wechselrichter.btn_Help</code> || [[Programm Dokumentation/Wechselrichter#einbindung|Wechselrichter]]
+|-
+| Dialog ''Verwaltung Pufferspeicher'' || <code>Form_PufferSp.btn_Help</code> || [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]]
+|-
+| Katalogsatz eines Pufferspeichers bearbeiten || <code>Form_PufferSp_Bearbeiten.btn_Help</code> || [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]]
+|-
+| Pufferspeicher im Projekt || <code>Form_PufferSp_Projekt.btn_Help</code> || [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]]
+|-
+| Pufferspeicher-Auslegung || <code>Form_PufferAuslegung.btn_Help</code> || [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]]
+|-
+| Dialog ''Eingabe der Solarkollektoren'' || <code>Form_SolarKollektoren.btn_Help</code> || [[Programm Dokumentation/Solarthermie|Solarthermie]]
+|-
+| Datenblatt eines Solarkollektors || <code>Form_SolarDB.btn_Help</code> || [[Programm Dokumentation/Solarthermie|Solarthermie]]
+|-
+| Solarthermie-Ganglinie zuordnen || <code>Form_Solarganglinie.btn_Help</code> || [[Programm Dokumentation/Solarthermie|Solarthermie]]
+|-
+| Katalog der Solar-Ganglinien (Administration) || <code>Form_Solarganglinie_Admin.btn_Help</code> || [[Programm Dokumentation/Solarthermie#ganglinie-dialog|Solarthermie]]
+|-
+| Dialog ''Stromspeicher'' || <code>Form_Stromspeicher.btn_Help</code> || [[Programm Dokumentation/Stromspeicher|Stromspeicher]]
+|-
+| Lastspitzenkappung || <code>Form_PeakShaving.btn_Help</code> || [[Programm Dokumentation/Stromspeicher|Stromspeicher]]
+|-
+| Auslegungsoptimierung des Stromspeichers || <code>Form_SpeicherOptimierung.btn_Help</code> || [[Programm Dokumentation/Stromspeicher#auslegung-ansicht|Stromspeicher]]
+|-
+| Variantenvergleich Stromspeicher || <code>Form_SpeicherVariantenVergleich.btn_Help</code> || [[Programm Dokumentation/Stromspeicher|Stromspeicher]]
+|-
+| Wärmepumpe des Projekts bearbeiten || <code>Wizard_WPItem.btn_Help</code> || [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]]
+|-
+| Dialog ''Wärmepumpen Verwaltung'' || <code>Form_WPAuswahl.btn_Help</code> || [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]]
+|-
+| Gefilterte Katalogsuche Wärmepumpen || <code>Form_WpFilterAuswahl.btn_Help</code> || [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]]
+|-
+| Kennfeld einer Wärmepumpe || <code>Kenndaten.btn_Help</code> || [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]]
+|-
+| Dialog ''Wärmequelle Erdreich'' || <code>Form_QuelleErdreich.btn_Help</code> || [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]]
+|-
+| Klimazonenkarte (Wärmequelle Erdreich) || <code>Form_Klimazonenkarte.btn_Help</code> || [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]]
+|-
+| Katalogabgleich (Katalog aktualisieren) || <code>Form_Katalogabgleich.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#katalog-aktualisieren|Gerätekataloge]]
+|-
+| Kältemaschinen einlesen (Administration) || <code>Form_Kaeltemaschine_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
+|-
+| Kältemaschinen-Katalog (Administration) || <code>KaeltemaschineKatalog.btn_Help</code> || [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-katalog|Kälteerzeugung]]
+|-
+| Kältemaschine der Anlage im Projekt || <code>KaeltemaschineAnlage.btn_Help</code> || [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-anlage|Kälteerzeugung]]
+|-
+| Gruppe ''Kühlbetrieb'' der Wärmepumpen-Konfiguration || <code>Form_WP_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kälteerzeugung]]
+|-
+| Photovoltaik-Ganglinie im Projekt || <code>Form_PvGanglinie.btn_Help</code> || [[Programm Dokumentation/Photovoltaik#ganglinie|Photovoltaik]]
+|-
+| Katalog der Photovoltaik-Ganglinien (Administration) || <code>Form_PvGanglinie_Admin.btn_Help</code> || [[Programm Dokumentation/Photovoltaik#ganglinie-dialog|Photovoltaik]]
+|}
+
+=== Simulation ===
+{{Anker|simulation}}
+{| class="wikitable sortable"
+! Programmstelle !! Formular / Schaltfläche !! Hilfeseite
+|-
+| Dialog ''Klimadaten'' || <code>Form_Klimadaten.btn_Help</code> || [[Programm Dokumentation/Klimadaten|Klimadaten]]
+|-
+| Dialog ''Simulation Konfiguration'' || <code>Form_Simulation_Config.btn_Help</code> || [[Programm Dokumentation/Simulation|Simulation]]
+|-
+| Startseite, Reiter ''Simulation'' || <code>Form_Start.btn_Help_Simulation</code> || [[Programm Dokumentation/Simulation|Simulation]]
+|-
+| Quellprofil einer Wärmequelle || <code>Form_Quellprofil.btn_Help</code> || [[Programm Dokumentation/Simulation|Simulation]]
+|-
+| Wärmesenken einer Anlage || <code>Form_Waermesenke.btn_Help</code> || [[Programm Dokumentation/Simulation|Simulation]]
+|-
+| Dialog ''Betriebsmodus'' || <code>Form_Betriebsmodus.btn_Help</code> || [[Programm Dokumentation/Simulation|Simulation]]
+|-
+| Dialog ''Wärmequelle Pufferspeicher'' || <code>Form_QuellePufferspeicher.btn_Help</code> || [[Programm Dokumentation/Simulation|Simulation]]
+|-
+| Ergebnisfenster der Jahressimulation || <code>Form_Simulation_Detail.btn_Help</code> || [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]
+|-
+| Dialog ''Simulation Konfiguration'', Gruppe Aufheizung || <code>Form_Simulation_Config_Aufheizung.btn_Help</code> || [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]]
+|}
+
+=== Kosten und Wirtschaftlichkeit ===
+{{Anker|kosten-und-wirtschaftlichkeit}}
+{| class="wikitable sortable"
+! Programmstelle !! Formular / Schaltfläche !! Hilfeseite
+|-
+| Reiter ''Berichte & Kosten'', Seite ''Bericht'' || <code>UcBericht.btn_Help</code> || [[Programm Dokumentation/Bericht|Bericht]]
+|-
+| Startseite, Reiter ''Berichte & Kosten'' || <code>UcBerichteKosten.btn_Help</code> || [[Programm Dokumentation/Berichte und Kosten|Berichte und Kosten]]
+|-
+| Berichtsseite, Überlagerung ''Prüfliste'' || <code>UcBericht.btn_Help_Pruefliste</code> || [[Programm Dokumentation/Berichtsvorlagen#pruefliste|Berichtsvorlagen]]
+|-
+| Berichtsseite, Überlagerung ''Platzhalterkatalog'' || <code>UcBericht.btn_Help_Platzhalterkatalog</code> || [[Programm Dokumentation/Berichtsvorlagen#platzhalterkatalog|Berichtsvorlagen]]
+|-
+| Dialog ''Administration – Globale Anwendungseinstellungen'', Abschnitt ''Bericht'' || <code>Form_AdminSettings.btn_Help_Bericht</code> || [[Programm Dokumentation/Berichtsvorlagen#einstellungen|Berichtsvorlagen]]
+|-
+| Dialog ''Emissionsfaktor-Katalog'' || <code>Form_Emissionskatalog.btn_Help</code> || [[Programm Dokumentation/Emissionen|Emissionen]]
+|-
+| Szenariowerte einer Kostenposition || <code>Form_CaseEingabe.btn_Help</code> || [[Programm Dokumentation/Kosten|Kosten]]
+|-
+| Energieträgerverwaltung || <code>Form_Energietraeger.btn_Help</code> || [[Programm Dokumentation/Kosten#energietraegerverwaltung|Kosten]]
+|-
+| Katalog der Kostenfaktoren (Administration) || <code>Form_KostenAdmin.btn_Help</code> || [[Programm Dokumentation/Kosten|Kosten]]
+|-
+| Kostenvorlagen je Komponente || <code>Form_KostenKomponente.btn_Help</code> || [[Programm Dokumentation/Kosten#komponentenliste|Kosten]]
+|-
+| Kostenprofil eines Energieträgers || <code>Form_Kostenprofil.btn_Help</code> || [[Programm Dokumentation/Kosten|Kosten]]
+|-
+| Dialog ''Nutzungsdauern'' || <code>Form_Nutzungsdauer.btn_Help</code> || [[Programm Dokumentation/Kosten#nutzungsdauern|Kosten]]
+|-
+| Dialog ''Energieträger Variante'' || <code>Form_Kosten_Auswahl.btn_Help</code> || [[Programm Dokumentation/Kosten|Kosten]]
+|-
+| Zeileneditor einer Kostenvorlagenposition (Stift-Symbol) || <code>Form_VorlagenPosition.btn_Help</code> || [[Programm Dokumentation/Kosten#ersatz-restwert-kennzeichen|Kosten]]
+|-
+| Saisonale Leistungspreise || <code>Form_LeistungspreisReihe.btn_Help</code> || [[Programm Dokumentation/Kosten#preiswirkung|Kosten]]
+|-
+| Spotpreise prüfen und übernehmen || <code>Form_SpotpreisImport.btn_Help</code> || [[Programm Dokumentation/Kosten|Kosten]]
+|-
+| Übernahme von Kostenvorlagen ins Projekt || <code>Form_VorlagenUebernahme.btn_Help</code> || [[Programm Dokumentation/Kosten#uebernahme-vorlage|Kosten]]
+|-
+| Dialog ''Gesetzliche Parameter'' (Administration) || <code>Form_Gesetzesparameter.btn_Help</code> || [[Programm Dokumentation/Kosten#gesetzliche-parameter|Kosten]]
+|-
+| Reiter ''Berichte & Kosten'', Seite ''Kosten'' || <code>UcBkKosten.btn_Help</code> || [[Programm Dokumentation/Kosten|Kosten]]
+|-
+| Reiter ''Berichte & Kosten'', Bereich ''Wirtschaftlichkeit'' || <code>UcWirtschaftlichkeit.btn_Help</code> || [[Programm Dokumentation/Wirtschaftlichkeit|Wirtschaftlichkeit]]
+|-
+| Wirkungsliste im Bewertungsblock (Bereich ''Wirtschaftlichkeit'') || <code>UcWirtschaftlichkeit.btn_Help_Wirkungen</code> || [[Programm Dokumentation/Wirtschaftlichkeit#nicht-monetaer|Wirtschaftlichkeit]]
+|-
+| Parameter der Wirtschaftlichkeitsrechnung || <code>Form_WirtschaftlichkeitParameter.btn_Help</code> || [[Programm Dokumentation/Wirtschaftlichkeit#parameter|Wirtschaftlichkeit]]
+|-
+| Parameter der Wirtschaftlichkeitsrechnung, Gruppe ''Risiko'' || <code>Form_WirtschaftlichkeitParameter.btn_Help_Risiko</code> || [[Programm Dokumentation/Wirtschaftlichkeit#risiko|Wirtschaftlichkeit]]
+|-
+| ±-Knopf für Szenariowerte an Trägerpreisen und Erlössätzen || <code>Form_WirtschaftlichkeitSzenariowerte.btn_Help</code> || [[Programm Dokumentation/Wirtschaftlichkeit#szenariowerte|Wirtschaftlichkeit]]
+|-
+| Vergütung für Photovoltaik-Strom || <code>Form_PhotovoltaikVerguetung.btn_Help</code> || [[Programm Dokumentation/Wirtschaftlichkeit#pv-verguetung|Wirtschaftlichkeit]]
+|-
+| Tarifstruktur Strom || <code>Form_Tarifstruktur.btn_Help</code> || [[Programm Dokumentation/Wirtschaftlichkeit#strombezug|Wirtschaftlichkeit]]
+|-
+| Dialog ''BHKW-Wirtschaftlichkeit'' || <code>Form_BhkwWirtschaftlichkeit.btn_Help</code> || [[Programm Dokumentation/Wirtschaftlichkeit#bhkw-wirtschaftlichkeit|Wirtschaftlichkeit]]
+|-
+| Brennstoffe des Projekts || <code>Form_ProjektBrennstoffe.btn_Help</code> || [[Programm Dokumentation/Kosten#brennstoffe-des-projekts|Kosten]]
+|}
+
+=== Administration und Kataloge ===
+{{Anker|administration-und-kataloge}}
+{| class="wikitable sortable"
+! Programmstelle !! Formular / Schaltfläche !! Hilfeseite
+|-
+| Dialog ''Administration – Globale Anwendungseinstellungen'' || <code>Form_AdminSettings.btn_Help</code> || [[Programm Dokumentation/Einstellungen|Einstellungen]]
+|}
+
+=== Berechnung ===
+{{Anker|berechnung-zuordnung}}
+Die Seiten der Unterrubrik [[Programm Dokumentation/Berechnung|Berechnung]] hängen an den Info-Knöpfen der Dialoge, die die jeweilige Komponente pflegen (Schlüssel <code>&lt;Formular&gt;.Berechnung</code> der Zuordnungsdatei); die Aufrufstellen stehen auf der Rubrikstartseite der Berechnung.
+
+Die Inhalte der Unterseiten werden nach und nach ergänzt; das Gerüst jeder Seite – Zweck des Dialogs, Abschnitt ''Eingaben'', Abschnitt ''Siehe auch'' – muss aber stehen bleiben, damit der Hilfeaufruf aus dem Programm nicht ins Leere läuft.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programmfunktionen]] – jeder Dialog und jede Eingabe im Einzelnen erklärt
+* [[Einstellungen, Hilfe und Sprache]] – das dreistufige Hilfesystem von EPOS-Plan
+* [[Hilfe-Assistent]] – Fragen zur Bedienung direkt im Programm
+* [[Grundlagen]] – die fachlichen Hintergründe der Technik, ohne Bezug auf die Bedienung

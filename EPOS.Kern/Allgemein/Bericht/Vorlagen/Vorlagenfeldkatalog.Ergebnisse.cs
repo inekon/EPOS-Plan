@@ -17,6 +17,13 @@ namespace WindowsFormsApplication1
     /// „Stromspeicher“) und ihr Schalter <c>stand.hat_speicherlauf</c>;</item>
     /// <item>die <b>solare Deckung</b> <c>stand.solarthermie.deckung</c> (die Solarthermie-Kachel der Autarkieanalyse).</item>
     /// </list>
+    /// <b>Katalog v12</b> ergänzt zwei Ergebnisbilder (<see cref="Berichtsbilder.ErgebnisbilderFassung12"/>): die Stromlast
+    /// des BHKW (<c>stand.bild.bhkw_strom</c>) und die Kälteproduktion (<c>stand.bild.kaelte_produktion</c>, leer ohne
+    /// Kälte), Word und Excel.
+    /// <b>Katalog v13</b> ergänzt die Kennzahlen der freien Kühlung der Wärmepumpe über die Wärmequelle
+    /// (<c>kaelte.wp.frei</c>, <c>kaelte.wp.frei_stunden</c>; KU3-6) mit ihren erzeugten Einträgen.
+    /// <b>Katalog v14</b> ergänzt die Stunden der Wärmepumpe außerhalb der Kennlinienstützstellen am gerechneten Vorlauf
+    /// (<c>wp.vorlauf.darunter_stunden</c>, <c>wp.vorlauf.darueber_stunden</c>; VW1b, E88) mit ihren erzeugten Einträgen.
     /// Alle im Kontext Stand, ohne Zwilling der Paarsicht; die Positionsform <c>stand.&lt;n&gt;.*</c> gilt für sie wie
     /// für jeden Standwert. Die Quellen lesen nur den Wertesatz — das gespeicherte Ergebnis und den Zeitreihensatz des
     /// Laufs —, nie die Datenbank.
@@ -25,6 +32,69 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Die Fassung der Ergebnisstellen (Katalog v10).</summary>
         internal const int FASSUNG_ERGEBNISSE = 10;
+
+        /// <summary>Die Fassung der Stromlast des BHKW und der Kälteproduktion (Katalog v12).</summary>
+        internal const int FASSUNG_STROM_KAELTE = 12;
+
+        /// <summary>Die Fassung der freien Kühlung der Wärmepumpe über die Wärmequelle (Katalog v13, KU3-6).</summary>
+        internal const int FASSUNG_FREIE_KUEHLUNG_WP = 13;
+
+        /// <summary>Die Fassung des Ausweises der Vorlaufwahl der Wärmepumpe (Katalog v14, VW1b).</summary>
+        internal const int FASSUNG_VORLAUFWAHL_WP = 14;
+
+        /// <summary>
+        /// Die Kennzahlen der Kältemaschine als Anlage (Schemaschritt 183) kamen mit Katalog v12 — ihre erzeugten
+        /// Einträge (Stammzahl, Beschriftung, Einheit) stehen erst ab dieser Fassung, frühere Listen bleiben, wie sie
+        /// ausgeliefert sind.
+        /// </summary>
+        private static readonly HashSet<string> KennzahlenStromKaelte = new(StringComparer.Ordinal)
+        {
+            KennzahlenKatalog.SCHLUESSEL_KM_ERZEUGUNG, KennzahlenKatalog.SCHLUESSEL_KM_STROM,
+            KennzahlenKatalog.SCHLUESSEL_KM_HILFSSTROM, KennzahlenKatalog.SCHLUESSEL_KM_JAZ,
+            KennzahlenKatalog.SCHLUESSEL_KM_FREI, KennzahlenKatalog.SCHLUESSEL_KM_FREI_STUNDEN,
+            KennzahlenKatalog.SCHLUESSEL_KM_TAKT,
+        };
+
+        /// <summary>
+        /// Die Kennzahlen der freien Kühlung der Wärmepumpe über die Wärmequelle (Schemaschritt 187, KU3-6) kamen
+        /// mit Katalog v13 — ihre erzeugten Einträge stehen erst ab dieser Fassung.
+        /// </summary>
+        private static readonly HashSet<string> KennzahlenFreieKuehlungWp = new(StringComparer.Ordinal)
+        {
+            KennzahlenKatalog.SCHLUESSEL_WP_FREI, KennzahlenKatalog.SCHLUESSEL_WP_FREI_STUNDEN,
+        };
+
+        /// <summary>
+        /// Die Kennzahlen der Vorlaufwahl der Wärmepumpe (Schemaschritt 188, VW1b) kamen mit Katalog v14 — ihre
+        /// erzeugten Einträge stehen erst ab dieser Fassung.
+        /// </summary>
+        private static readonly HashSet<string> KennzahlenVorlaufwahlWp = new(StringComparer.Ordinal)
+        {
+            KennzahlenKatalog.SCHLUESSEL_WP_VORLAUF_DARUNTER, KennzahlenKatalog.SCHLUESSEL_WP_VORLAUF_DARUEBER,
+        };
+
+        /// <summary>Die Fassung, seit der die erzeugten Einträge einer Kennzahl im Katalog stehen.</summary>
+        internal static int SeitDerKennzahl(string schluessel) => Math.Max(
+            KennzahlenVorlaufwahlWp.Contains(schluessel) ? FASSUNG_VORLAUFWAHL_WP
+            : KennzahlenFreieKuehlungWp.Contains(schluessel) ? FASSUNG_FREIE_KUEHLUNG_WP
+            : KennzahlenStromKaelte.Contains(schluessel) ? FASSUNG_STROM_KAELTE : 1,
+            schluessel != null && SeitJeKennzahl.TryGetValue(schluessel, out int seit) ? seit : 1);
+
+        /// <summary>
+        /// Das <see cref="Kennzahl.Seit"/> jeder Kennzahl über 1 (Gruppe „Gebäude“: Katalog v16, KP3 Welle O3b) — so liefert auch
+        /// der Weg über den Schlüssel dieselbe Fassung wie der über die Kennzahl. Eine Eigenschaft statt eines Feldinitialisierers:
+        /// Die Reihenfolge der statischen Initialisierer über die Teildateien ist nicht festgelegt.
+        /// </summary>
+        private static Dictionary<string, int> SeitJeKennzahl => _seitJeKennzahl ??=
+            KennzahlenKatalog.Alle().Where(k => k.Seit > 1).ToDictionary(k => k.Schluessel, k => k.Seit, StringComparer.Ordinal);
+
+        private static Dictionary<string, int> _seitJeKennzahl;
+
+        /// <summary>
+        /// Die Fassung, seit der die erzeugten Einträge einer Kennzahl im Katalog stehen: ihr <see cref="Kennzahl.Seit"/>
+        /// (Gruppe „Gebäude“: Katalog v16, KP3 Welle O3b) oder die Fassung ihrer Schlüsselgruppe, die spätere gilt.
+        /// </summary>
+        internal static int SeitDerKennzahl(Kennzahl k) => k == null ? 1 : Math.Max(k.Seit, SeitDerKennzahl(k.Schluessel));
 
         /// <summary>Die Einträge der Fassung 10 in Katalogfolge.</summary>
         private static IEnumerable<Vorlagenfeld> Ergebnisse()
@@ -37,8 +107,10 @@ namespace WindowsFormsApplication1
             {
                 string bild = name;
                 string schluessel = "stand.bild." + bild;
+                int seit = Berichtsbilder.ErgebnisbilderFassung12.Contains(bild, StringComparer.Ordinal)
+                    ? FASSUNG_STROM_KAELTE : FASSUNG_ERGEBNISSE;
                 l.AddRange(Bild(schluessel, S, Vorlagenbedarf.Zeitreihen, true,
-                                w => MitStand(w, v => Ergebnisbild(w, v, bild)), FASSUNG_ERGEBNISSE));
+                                w => MitStand(w, v => Ergebnisbild(w, v, bild)), seit));
                 _bildgroessen[schluessel] = (FAKTOR_BREIT, Bildmass.MIN_BREITE);
             }
 

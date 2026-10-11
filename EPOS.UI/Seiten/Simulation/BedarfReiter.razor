@@ -4,6 +4,11 @@
    (Strombedarf, Viertelstunden), den drei Kanalzeilen aus Paket E1/E2, zwei
    „Details…"-Knoepfen in die Bedarfsergebnisdialoge (W8) und dem CSV-Export.
 
+   CSV AM DIAGRAMM. Der Export steht als Knopf „CSV…“ in der Zoomleiste JEDES der drei
+   Bilder, nicht am Seitenende: Waerme und Strom fuehren dieselbe Datei „Energiebedarf“
+   (Waermelast, Kanaele, Strombedarf - unveraendert), die Kaeltelast die Datei
+   „Kaeltebedarf“.
+
    EINE FUELLLOGIK STATT ZWEIER (Befund W11-B14, A-Zeile). Der Vorlaeufer fuellte
    chart2 auf ZWEI Wegen: beim Lauf ueber ConfigureXAxisWithHours2 mit
    Schrittweite 4 bzw. 10, beim Umschalten ueber ConfigureXAxisWithHours mit
@@ -133,6 +138,7 @@
                          VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                          Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
                          Einheit="kW"
+                         CsvExport="Csv"
                          Palette="@Farbpalette.Aktuell"
                          FarbwahlErlaubt="@Farbwahl"
                          FarbeGewaehlt="FarbeUebernehmen"
@@ -154,6 +160,7 @@
                          VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                          Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
                          Einheit="kW"
+                         CsvExport="Csv"
                          Palette="@Farbpalette.Aktuell"
                          FarbwahlErlaubt="@Farbwahl"
                          FarbeGewaehlt="FarbeUebernehmen"
@@ -208,26 +215,15 @@
                              VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                              Bezeichnung="@Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE"
                              Einheit="kW"
+                             CsvExport="CsvKaelte"
                              Palette="@Farbpalette.Aktuell"
                              FarbwahlErlaubt="@Farbwahl"
                              FarbeGewaehlt="FarbeUebernehmen"
                              FarbeZurueckgesetzt="FarbeVerwerfen" />
-
-                @if (CsvKaelte.HasDelegate)
-                {
-                    <button type="button" class="epos-simerg-knopf" @onclick="CsvKaelte"
-                            title="@Resource.SIM_TOOLTIP_CSV_KAELTE">@Resource.SIM_BTN_CSV_EXPORT</button>
-                }
             </section>
         }
 
     </div>
-
-    @if (Csv.HasDelegate)
-    {
-        <button type="button" class="epos-simerg-knopf" @onclick="Csv"
-                title="@Resource.SIM_TOOLTIP_CSV_BEDARF">@Resource.SIM_BTN_CSV_EXPORT</button>
-    }
 
 </div>
 
@@ -250,10 +246,10 @@
     /// <summary>„Details…" der Stromseite.</summary>
     [Parameter] public EventCallback StromDetails { get; set; }
 
-    /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
+    /// <summary>Der CSV-Export „Energiebedarf“ — Knopf „CSV…“ am Waerme- und am Strombild; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback Csv { get; set; }
 
-    /// <summary>Der CSV-Export der Kälteseite (Stufe KU1); ohne Delegat kein Knopf.</summary>
+    /// <summary>Der CSV-Export der Kälteseite (Stufe KU1) — Knopf „CSV…“ am Kältebild; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback CsvKaelte { get; set; }
 
     /// <summary>Die gewaehlten Kanalschluessel (Pruefhilfe).</summary>

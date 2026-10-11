@@ -56,9 +56,9 @@ namespace WindowsFormsApplication1
         /// Legt die Hülle an und meldet den Hilfebereich.
         /// </summary>
         /// <param name="bedarf">
-        /// Die zwei Bedarfsrechnungen des Projekts — sie werden hier
-        /// WEITERGESCHRIEBEN und von der Startseite für die Kachelbeschriftungen
-        /// weiterverwendet (Befund W11-B3, Entscheid E-5).
+        /// Die zwei Bedarfsrechnungen des Projekts — die Hülle rechnet in ihnen den
+        /// Bedarf des Leerzustands, die Startseite ihre Zusammenfassung (Befund W11-B3,
+        /// Entscheid E-5). Ein Lauf rechnet in eigene Objekte (Anwenderbefund 04.10.2026).
         /// </param>
         /// <remarks>
         /// <para><b>iU9-W16b.4 (Entscheid E-5): kein zweites Fenster mehr.</b> Hier
@@ -106,8 +106,33 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         private readonly int m_ID_Projekt;
-        private readonly SimulationWaermebedarf _waermebedarf;
-        private readonly SimulationStrombedarf _strombedarf;
+
+        /// <summary>
+        /// Die zwei Bedarfsrechnungen des PROJEKTS (<see cref="BedarfsZustand"/>) — geteilt mit
+        /// der Startseite, deren Reiter „Simulation" sie für seine Zusammenfassung jederzeit neu
+        /// rechnet. Sie tragen den Bedarf, solange kein gültiger Lauf steht (Leerzustand,
+        /// „veraltet"); ein Lauf rechnet NICHT in sie hinein.
+        /// </summary>
+        private readonly SimulationWaermebedarf _projektWaerme;
+        private readonly SimulationStrombedarf _projektStrom;
+
+        /// <summary>
+        /// Die Bedarfsrechnungen, die die Hülle ZEIGT: vor dem ersten Lauf die des Projekts,
+        /// nach einem erfolgreichen Lauf die DES LAUFS (<c>sim.simulation_Waermebedarf</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Anwenderbefund 04.10.2026</b> (Projekt 1017, Unterreiter „Kälte Produktion
+        /// Chart"): Der Lauf hängt seine Kältekaskade an die Kälteseite seines Wärmebedarfs
+        /// (<c>SimulationKaeltebedarf.DeckungUebernehmen</c>). Rechnete der Lauf in das geteilte
+        /// Objekt des Projekts, setzte die nächste Bedarfsrechnung der Startseite
+        /// (<c>StartseiteHuelle.Zusammenfassen</c> → <c>Waermebedarf_berechnen</c> →
+        /// <c>SimulationKaeltebedarf.Beginnen</c>) die Kaskade auf <c>null</c> — der Lauf blieb
+        /// gültig, das Bild zeichnete den ganzen Kältebedarf als ungedeckt. Der Lauf rechnet
+        /// seinen Bedarf deshalb in EIGENE Objekte; was er gerechnet hat, ändert danach niemand
+        /// mehr. Der Bericht tut dasselbe (<c>SimulationRunner</c> mit eigenem Bedarf).</para>
+        /// </remarks>
+        private SimulationWaermebedarf _waermebedarf;
+        private SimulationStrombedarf _strombedarf;
 
         private SimulationControl sim = new SimulationControl();
         private readonly KonfigurationCtrl ctrl = new KonfigurationCtrl();
@@ -290,8 +315,10 @@ namespace WindowsFormsApplication1
                                          SimulationStrombedarf strombedarf)
         {
             m_ID_Projekt = idProjekt;
-            _waermebedarf = waermebedarf ?? new SimulationWaermebedarf();
-            _strombedarf = strombedarf ?? new SimulationStrombedarf();
+            _projektWaerme = waermebedarf ?? new SimulationWaermebedarf();
+            _projektStrom = strombedarf ?? new SimulationStrombedarf();
+            _waermebedarf = _projektWaerme;
+            _strombedarf = _projektStrom;
 
             _zustand.ProjektSetzen(idProjekt, "");
 
@@ -376,6 +403,7 @@ namespace WindowsFormsApplication1
 
                 CsvBedarf = CsvBedarf,
                 CsvKaelte = CsvKaelte,
+                CsvGanglinie = CsvGanglinie,
                 CsvWaermepumpe = CsvWaermepumpe,
                 CsvHeizkessel = CsvHeizkessel,
                 CsvSpeicher = CsvSpeicher,
@@ -592,6 +620,12 @@ namespace WindowsFormsApplication1
             d.Speicher.AktiveFlotte = SpeicherFlottenProjektCtrl.AktiveKonfiguration(m_ID_Projekt);
             d.Speicher.FlotteImProjektAktiv = d.Speicher.AktiveFlotte != null;
             d.Speicher.FlottenAenderungOhneNeuenLauf = _flotteProjektGeaendert;
+            if (sim.Speicherflottenkonfiguration?.Optionen?.WirtschaftlicherPeakZielwertKw is double peakZiel &&
+                sim.SpeicherflottenPeakZielHerkunft is FlottenPeakZielHerkunft herkunft)
+            {
+                d.Speicher.PeakZielKw = peakZiel;
+                d.Speicher.PeakZielHerkunft = herkunft;
+            }
             if (sim.Speicherflottenergebnis != null && sim.Speicherflottenkonfiguration != null)
                 d.Speicher.Flottenergebnis = new SpeicherFlottenErgebnis
                 {
@@ -659,9 +693,13 @@ namespace WindowsFormsApplication1
                 int idKlimaregion = projektCtrl.m_ID_Klimaregion;
                 if (idKlimaregion <= 0) return;
 
+                // In die Objekte des PROJEKTS, und die Anzeige zeigt wieder sie: Hier steht kein
+                // gültiger Lauf (Leerzustand oder „veraltet"), also gilt der Bedarf des Projekts.
+                _waermebedarf = _projektWaerme;
+                _strombedarf = _projektStrom;
                 string grund = SimulationLaufCtrl.Bedarf(idProjekt, idKlimaregion,
                                                          ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
-                                                         _waermebedarf, _strombedarf);
+                                                         _projektWaerme, _projektStrom);
 
                 // Ein benannter Abbruch (Zapfprofilgenerator, Umsetzungskonzept 2.2, N8; oder die
                 // Stromrechnung) geht ins Protokoll — die Wärmefelder stehen dann auf 0, nicht auf
@@ -730,10 +768,33 @@ namespace WindowsFormsApplication1
                 Betriebsart = _bhkwBetriebsart,
                 UntersteLeistungsgrenze = _grenzleistungBhkw,
                 Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
+                Heizgrenze = m.Kessel_Heizgrenze,
                 Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
                 Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt),
+                Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt),
+                Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt),
+                Einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt),
+                Desinfektion = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt),
                 Speicher = SpeicherParameter()
             };
+        }
+
+        /// <summary>
+        /// <b>Die Herleitungszeilen der Aufheizoptimierung</b> (Entwurf KP3, Welle D2; Teilkonzept 7.6) — je
+        /// Gebäude eine Zeile aus <see cref="GebaeudeBedarfCtrl.Aufheizbemessung"/> (ohne Jahreslauf, dieselben
+        /// Zahlen wie der Lauf), in der Oberflächensprache; leer mit ausgeschalteter Optimierung oder ohne
+        /// Klimaregion.
+        /// </summary>
+        private IReadOnlyList<string> AufheizHerleitungszeilen()
+        {
+            projektCtrl.ReadSingle(m_ID_Projekt);
+            CultureInfo k = CultureInfo.CurrentCulture;
+            // KP3 O1b (Festlegung 35): der Aufschlag des Projekts fuer n' der Zeile - gelesen wie im Lauf.
+            Aufheizvorgabe vorgabe = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
+            return GebaeudeBedarfCtrl.Aufheizbemessung(m_ID_Projekt, projektCtrl.m_ID_Klimaregion)
+                                     .Select(a => AufheizHerleitungszeile.Zeile(AufheizHerleitungszeile.Aus(a, vorgabe), k))
+                                     .Where(z => z != null)
+                                     .ToList();
         }
 
         /// <summary>
@@ -767,8 +828,13 @@ namespace WindowsFormsApplication1
                         Betriebsart = _bhkwBetriebsart,
                         UntersteLeistungsgrenze = _grenzleistungBhkw,
                         Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
+                        Heizgrenze = m.Kessel_Heizgrenze,
                         Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
-                        Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt)
+                        Anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt),
+                        Aufheizung = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt),
+                        Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt),
+                        Einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt),
+                        Desinfektion = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt)
                     };
                 },
                 // KUEHLUNG RECHNEN (Stufe KU1, Kuehlkonzept 8.3): der eine Schreibweg der
@@ -778,6 +844,22 @@ namespace WindowsFormsApplication1
                 // ANLAGENKOPPLUNG (Konzept Anlagenkopplung 9.4): der eine Schreibweg der
                 // Projektstufe - nach der Regel des Kuehlschalters (Vormerksatz ohne Satz).
                 AnlagenkopplungSchreiben = stufe => KonfigurationCtrl.AnlagenkopplungSetzen(m_ID_Projekt, stufe),
+                // AUFHEIZOPTIMIERUNG (Entwurf KP3, Grundsatz 5; Welle O1): der eine Schreibweg der
+                // Projekteinstellung - die ganze Einstellung in einem UPDATE, nach der Regel des
+                // Kuehlschalters (Vormerksatz ohne Satz).
+                AufheizvorgabeSchreiben = vorgabe => KonfigurationCtrl.AufheizvorgabeSetzen(m_ID_Projekt, vorgabe),
+                // NETZVERLUSTE JE KANAL UND ZIRKULATION (BW4): die ganze Vorgabe in einem UPDATE, nach
+                // der Regel des Kuehlschalters (Vormerksatz ohne Satz).
+                NetzkanaeleSchreiben = vorgabe => KonfigurationCtrl.NetzverlustvorgabeSetzen(m_ID_Projekt, vorgabe),
+                // EINSPEISEGRENZE (Welle M5, PV3): der eine Schreibweg der Projekteinstellung - Wert und
+                // Einheit in einem UPDATE, nach der Regel des Kuehlschalters (Vormerksatz ohne Satz).
+                EinspeisegrenzeSchreiben = grenze => KonfigurationCtrl.EinspeisegrenzeSetzen(m_ID_Projekt, grenze),
+                // THERMISCHE DESINFEKTION (Welle M7, BW5): die ganze Vorgabe in einem UPDATE, nach der Regel
+                // des Kuehlschalters (Vormerksatz ohne Satz).
+                DesinfektionSchreiben = vorgabe => KonfigurationCtrl.DesinfektionSetzen(m_ID_Projekt, vorgabe),
+                // Die Herleitungszeilen je Gebaeude (Welle D2; Festlegung 3, B14): die Aufheizbemessung ohne
+                // Jahreslauf, mit dem Konditionierungssatz wie der Lauf - dieselben Zahlen wie die Ergebniszeile.
+                AufheizHerleitung = AufheizHerleitungszeilen,
                 NetzverlusteSchreiben = (wert, einheit) => KonfigSchreiben(m =>
                 {
                     m.m_Netzverluste = wert;
@@ -799,6 +881,10 @@ namespace WindowsFormsApplication1
                 // uebrigen Anlagenfeldern ueber WaermepumpeKonfigurationSpeichern.
                 BereitschaftSchreiben = wert =>
                     KonfigSchreiben(m => m.m_Kessel_Betriebsbereitschaft = (int)wert),
+                // Die Heizgrenze der Kesselbereitschaft (Schemaschritt 154): derselbe Weg - Update
+                // schreibt sie mit eigenem UPDATE, leer als NULL (= Vorgabe).
+                HeizgrenzeSchreiben = wert =>
+                    KonfigSchreiben(m => m.Kessel_Heizgrenze = wert),
 
                 // ANWENDERWUNSCH 16.09.2026: Der Konfigurationsknopf der
                 // Waermepumpenkarte zeigt die Konfiguration DIESER Anlage. Sie steht
@@ -1352,10 +1438,15 @@ namespace WindowsFormsApplication1
             string fehler = SimulationLaufCtrl.Vorpruefen(m_ID_Projekt, ctrl, idKlimaregion);
             if (fehler != null) return Abbruch(fehler);
 
+            // Der Lauf rechnet seinen Bedarf in EIGENE Objekte (Anwenderbefund 04.10.2026, siehe
+            // _waermebedarf): An ihnen hängen danach seine Ergebnisse (Kältekaskade), und keine
+            // Bedarfsrechnung der Startseite setzt sie mehr zurück.
+            var waermeLauf = new SimulationWaermebedarf();
+            var stromLauf = new SimulationStrombedarf();
             string bedarfsfehler = SimulationLaufCtrl.Bedarf(
                 m_ID_Projekt, idKlimaregion,
                 ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
-                _waermebedarf, _strombedarf);
+                waermeLauf, stromLauf);
 
             // Der Bedarf ist gerechnet - die Vorabrechnung aus BedarfSicherstellen
             // braucht es danach nicht mehr (#236).
@@ -1364,26 +1455,14 @@ namespace WindowsFormsApplication1
             if (bedarfsfehler != null) return Abbruch(Mitkanal(bedarfsfehler));
 
             // Erst ein vollständig erfolgreicher Lauf ersetzt die vorherige Anzeige.
-            // Die Flotte wird am Speicherzweig aus den frisch gerechneten Quellen
-            // vorbereitet; damit funktioniert derselbe Weg auch beim ersten Öffnen.
-            var neuerLauf = new SimulationControl();
-            try
-            {
-                var eingaben = OptimierungVorgaben().Eingaben.Kopie();
-                if (eingaben.Auslegung.Flotte?.Einheiten?.Count > 0 &&
-                    !eingaben.Auslegung.FlottenProjektbetriebDeaktiviert)
-                {
-                    eingaben.Auslegung.FlottenGroessenOptimieren = false;
-                    neuerLauf.SpeicherflottenEingaben = eingaben;
-                }
-            }
-            catch (Exception ex)
-            {
-                return Abbruch("Die Speicher-Einstellungen konnten nicht vorbereitet werden: " + ex.Message);
-            }
+            // Die Flottenvorgabe bildet der Lauf SELBST an seiner Speicherstufe — nach Wärme-
+            // und Strombedarf, aus dem Lastgang ohne Speicher dieses Durchgangs
+            // (Anwenderentscheid 04.10.2026). Damit bekommt schon der erste Lauf dieselbe
+            // Vorgabe wie jeder weitere; ein gespeicherter Stand gilt wie er ist.
+            var neuerLauf = new SimulationControl { SpeicherflotteAusLaufVorbelegen = true };
 
             SimulationLaufCtrl.Bestuecken(neuerLauf, m_ID_Projekt, Tools(),
-                                          _waermebedarf, _strombedarf, ctrl,
+                                          waermeLauf, stromLauf, ctrl,
                                           _grenzleistungBhkw, _bhkwBetriebsart);
 
             _laufAbbruch = new CancellationTokenSource();
@@ -1430,6 +1509,8 @@ namespace WindowsFormsApplication1
                 }
             }
             sim = neuerLauf;
+            _waermebedarf = waermeLauf;
+            _strombedarf = stromLauf;
 
             // Erst JETZT ist ein Ergebnis da, das gespeichert werden darf (Befund N1).
             ZustandSetzen(ErgebnisZustand.Gueltig, "");
@@ -1499,5 +1580,102 @@ namespace WindowsFormsApplication1
                 ok ? MyResource.Resource.SIM_MSG_ERGEBNIS_GESPEICHERT
                    : MyResource.Resource.SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT);
         }
+    }
+
+    /// <summary>
+    /// Die Angaben einer Herleitungszeile der Aufheizoptimierung (Entwurf KP3, Welle D2) — die Auskunft
+    /// <see cref="Aufheizauskunft"/> des Kerns ohne seine Typen, damit die Zeile auch ohne Datenbank geprüft
+    /// werden kann (Hüllentest, beide Kulturen).
+    /// </summary>
+    internal sealed record AufheizHerleitungsdaten(
+        string Gebaeude, string Zustand, string Bemessung, int? AufheizzeitMaxH, double? AussenC,
+        double? LeistungKw, double? LeistungUnskaliertKw, double? Skalierungsfaktor, string Quelle,
+        bool Tagesbilanz = false, string Befund = null, double? ReserveAnteil = null, bool ReserveVorgabe = false,
+        int? RampeN = null, int? RampeNAufschlag = null);
+
+    /// <summary>
+    /// <b>Die Herleitungszeile eines Gebäudes</b> (Teilkonzept 7.6; Entwurf KP3, Festlegung 16): „Name: t_auf,max
+    /// 5 h bei −9,3 °C (kälteste Stunde) · P_auf 34,6 kW Zielleistung", bei UNERREICHBAR der Hinweis, dass keine
+    /// Rampe bis 48 h hält, bei GEKOPPELT „nicht optimiert", auf dem Tagesbilanz-Weg „ohne Aufheizoptimierung",
+    /// bei einem Fehler des Eingangsbauers sein Grund. <b>Faktor ≠ 1</b> (B11): Eingabe bzw. Wert am Katalogbau
+    /// und Faktor; mit Verbrauchsangabe P_auf am Katalogbau und der Satz, dass erst der Lauf den Faktor kennt.
+    /// Zahlen in der Kultur der Oberfläche, Texte aus <c>SIMKONF_AUFH_*</c>.
+    /// </summary>
+    internal static class AufheizHerleitungszeile
+    {
+        /// <summary>Die Angaben aus der Auskunft des Kerns.</summary>
+        internal static AufheizHerleitungsdaten Aus(Aufheizauskunft a)
+            => new AufheizHerleitungsdaten(
+                string.IsNullOrEmpty(a.Gebaeudename) ? a.ID_Gebaeude.ToString(CultureInfo.InvariantCulture) : a.Gebaeudename,
+                a.Zustand, a.Bemessung, a.AufheizzeitMaxH, a.AussenC, a.LeistungKw, a.LeistungUnskaliertKw,
+                a.Skalierungsfaktor, a.Quelle, a.Tagesbilanz, a.Befund, a.ReserveAnteil, a.ReserveVorgabe);
+
+        /// <summary>
+        /// Die Angaben samt Aufschlag (KP3 O1b; E59 (2), Festlegung 35, P16): Bei bemessenem Gebäude ohne manuelle
+        /// Aufheizzeit ist die längste Rampe n = t_auf,max + 1 (Festlegung 37: t = n − 1), n' rechnet der Kern
+        /// (<see cref="Aufheizoptimierung.MitAufschlag(int, Aufheizvorgabe)"/>) — dieselbe Formel wie der Lauf, nur für
+        /// n &gt; 1; ohne Aufschlag, bei n = 1, bei manueller Aufheizzeit, UNERREICHBAR und GEKOPPELT keine Angabe.
+        /// </summary>
+        internal static AufheizHerleitungsdaten Aus(Aufheizauskunft a, Aufheizvorgabe vorgabe)
+        {
+            AufheizHerleitungsdaten d = Aus(a);
+            if (vorgabe == null || !vorgabe.HatAufschlag || a.AufheizzeitManuellH.HasValue
+                || a.Zustand != DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN || a.AufheizzeitMaxH is not int t)
+                return d;
+            int n = t + 1;
+            int nAufschlag = Aufheizoptimierung.MitAufschlag(n, vorgabe);
+            return nAufschlag > n ? d with { RampeN = n, RampeNAufschlag = nAufschlag } : d;
+        }
+
+        /// <summary>Die Zeile; <c>null</c> ohne Bemessung (Schalter aus).</summary>
+        internal static string Zeile(AufheizHerleitungsdaten d, CultureInfo k)
+        {
+            if (d == null) return null;
+            if (!string.IsNullOrEmpty(d.Befund))
+                return string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_FEHLER, d.Gebaeude, d.Befund);
+            if (d.Tagesbilanz)
+                return string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ, d.Gebaeude);
+            if (d.Zustand == null) return null;
+            if (d.Zustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT)
+                return string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT, d.Gebaeude);
+
+            string variante = d.Bemessung == DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG
+                ? MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG
+                : MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE;
+            string quelle = d.Quelle == DbWerte.AUFHEIZ_QUELLE_GRENZE ? MyResource.Resource.SIMKONF_AUFH_QUELLE_GRENZE
+                          : d.Quelle == DbWerte.AUFHEIZ_QUELLE_GEMISCHT ? MyResource.Resource.SIMKONF_AUFH_QUELLE_GEMISCHT
+                          : MyResource.Resource.SIMKONF_AUFH_QUELLE_ZIEL;
+            string aussen = Zahl(d.AussenC, "0.0", k);
+            string leistung = Zahl(d.LeistungKw ?? d.LeistungUnskaliertKw, "0.0", k);
+            string zeile = d.Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR
+                ? string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_UNERREICHBAR, d.Gebaeude, aussen, variante, leistung, quelle)
+                : string.Format(k, MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE, d.Gebaeude, Zahl(d.AufheizzeitMaxH, k), aussen, variante,
+                                leistung, quelle);
+
+            // E64: Mit der Zielleistung wirkt die Aufheizreserve; ist sie leer, nennt die Zeile die Vorgabe als Quelle.
+            if (d.Quelle != DbWerte.AUFHEIZ_QUELLE_GRENZE && d.ReserveAnteil is double rho)
+                zeile += " " + string.Format(k, d.ReserveVorgabe ? MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_RESERVE_VORGABE
+                                                                 : MyResource.Resource.SIMKONF_AUFH_HRL_ZEILE_RESERVE,
+                                             (rho * 100.0).ToString("0.#", k));
+
+            // B11, Festlegung 16: P_auf gilt dem Katalogbau; der Lauf skaliert es wie die Spitzen.
+            if (!d.Skalierungsfaktor.HasValue && d.LeistungUnskaliertKw.HasValue)
+                zeile += " " + MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR_LAUF;
+            else if (d.Skalierungsfaktor is double f && f != 1.0 && d.LeistungUnskaliertKw.HasValue)
+                zeile += " " + string.Format(k, d.Quelle == DbWerte.AUFHEIZ_QUELLE_GRENZE
+                                                    ? MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR_GRENZE
+                                                    : MyResource.Resource.SIMKONF_AUFH_HRL_FAKTOR,
+                                                Zahl(d.LeistungUnskaliertKw, "0.0", k), Zahl(f, "0.###", k));
+
+            // KP3 O1b, Festlegung 35: t_auf,max bleibt die bemessene Zeit; der Aufschlag verlängert die Rampe auf n'.
+            if (d.RampeN is int n && d.RampeNAufschlag is int nAufschlag)
+                zeile += " " + string.Format(k, MyResource.Resource.SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE,
+                                             nAufschlag.ToString(k), n.ToString(k));
+            return zeile;
+        }
+
+        private static string Zahl(double? x, string format, CultureInfo k) => x.HasValue ? x.Value.ToString(format, k) : "—";
+
+        private static string Zahl(int? x, CultureInfo k) => x.HasValue ? x.Value.ToString(k) : "—";
     }
 }

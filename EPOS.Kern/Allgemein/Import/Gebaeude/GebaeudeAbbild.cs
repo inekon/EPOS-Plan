@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -102,6 +103,25 @@ namespace WindowsFormsApplication1
         /// <summary>Die Drehung des Modells gegen Nord [°], wie gelesen; <c>null</c> = die Datei sagt nichts (Annahme 0°).</summary>
         public double? NordwinkelGrad { get; set; }
 
+        /// <summary>
+        /// G5-N: der vom Anwender vorgegebene Nordwinkel [°] (N1/N2, aus „Planoberseite zeigt nach α“); <c>null</c> = keine
+        /// Vorgabe. Der Leser hat die Azimute damit gedreht — statt mit dem Dateiwert bzw. der Annahme.
+        /// </summary>
+        public double? NordwinkelVorgabeGrad { get; set; }
+
+        /// <summary>
+        /// G5-N: <b>Der Nordwinkel, um den die Azimute dieses Abbilds gedreht sind</b> — die Vorgabe, sonst beim IFC-Weg der
+        /// Dateiwert; <c>null</c> = keiner (Annahme Planoberseite = Nord; beim gbXML-Weg stehen die Azimute wie in der Datei).
+        /// Diesen Wert trägt die Quelle (<see cref="GebaeudeQuelle.NordwinkelGrad"/>).
+        /// </summary>
+        public double? NordwinkelWirksamGrad
+            => NordwinkelVorgabeGrad ?? (string.Equals(Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) ? NordwinkelGrad : null);
+
+        /// <summary>G5-N (N6): die Herkunft des wirksamen Nordwinkels.</summary>
+        public Nordwinkelherkunft NordwinkelHerkunft
+            => NordwinkelVorgabeGrad.HasValue ? Nordwinkelherkunft.Eingabe
+             : NordwinkelWirksamGrad.HasValue ? Nordwinkelherkunft.Datei : Nordwinkelherkunft.Annahme;
+
         /// <summary>Ortsangabe der Datei, nur zur Anzeige.</summary>
         public string Ort { get; set; }
 
@@ -145,13 +165,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Baujahr, wie es aus der Datei gezogen ist (IFC: <c>Pset_BuildingCommon.YearOfConstruction</c>,
-        /// erste vierstellige Zahl, <see cref="Baujahrregel"/>); <c>null</c> = keines. Die Zuordnung leitet
+        /// ohne ihn der Baujahr-Rückfall des Lesers, erste vierstellige Zahl, <see cref="Baujahrregel"/>); <c>null</c> = keines. Die Zuordnung leitet
         /// daraus die Baualtersklasse ab, wenn der Anwender keine vorgibt.
         /// </summary>
         public int? Baujahr { get; set; }
 
         /// <summary>Der Text, aus dem <see cref="Baujahr"/> gezogen ist, wie gelesen; <c>null</c> = keiner.</summary>
         public string BaujahrText { get; set; }
+
+        /// <summary>
+        /// Die Baualtersklasse des Gebäudes (Kürzel aus <c>Tab_Gebaeude.Baualtersklasse</c>; Export G7c, IFC
+        /// <c>EPOS_Gebaeude.Baualtersklasse</c>); <c>null</c> = keine. Der Leser lässt sie leer.
+        /// </summary>
+        public string Baualtersklasse { get; set; }
+
+        /// <summary>
+        /// Die Jahresergebnisse des Gebäudes aus dem letzten Rechenlauf (Export G7c, IFC <c>EPOS_Ergebnis</c> am
+        /// <c>IfcBuilding</c>); <c>null</c> = kein Rechenlauf. Der Leser lässt es leer.
+        /// </summary>
+        public AbbildErgebnis Ergebnis { get; set; }
 
         /// <summary>Die Räume des Gebäudes.</summary>
         public List<AbbildRaum> Raeume { get; } = new List<AbbildRaum>();
@@ -188,8 +220,60 @@ namespace WindowsFormsApplication1
         /// <summary>Davon die der 2. Ebene (IFC; <c>IfcRelSpaceBoundary2ndLevel</c> oder nach Name/Beschreibung).</summary>
         public int ZahlGrenzenZweiteEbene { get; set; }
 
+        /// <summary>
+        /// Zahl der Trenndecken, die der IFC-Leser ohne Raumgrenzen aus den Raumbezügen
+        /// (<c>IfcRelReferencedInSpatialStructure</c>) bildet — Decken und Dächer innen, die Räume zweier
+        /// Geschosse referenzieren (Mehrzonenkonzept 6.5). Mit ihnen sind die Geschosszonen (Z4) gekoppelt;
+        /// gbXML führt 0.
+        /// </summary>
+        public int ZahlTrenndeckenReferenz { get; set; }
+
+        /// <summary>
+        /// Koppeln die Trenndecken aus den Raumbezügen (<see cref="ZahlTrenndeckenReferenz"/>) alle Geschosse mit
+        /// beheizten Räumen zu einem Verbund (auch über ein unbeheiztes Geschoss)? Ein Geschosspaar trägt, wenn seine
+        /// Trenndeckenfläche mindestens <see cref="IfcAbbildBauer.TRENNDECKE_ANTEIL_MIN"/> der beheizten Grundfläche des
+        /// kleineren Geschosses erreicht — nach der Schätzung aus den Raummengen (unvollständige Bezüge) gilt das für jedes
+        /// Paar mit beheizten Räumen auf beiden Seiten. Dann ist die Geschosszonierung (Z4) ohne Raumgrenzen die Vorgabe (M7); sonst
+        /// bleibt eine Zone vorgegeben (6.5).
+        /// </summary>
+        public bool GeschosseGekoppelt { get; set; }
+
+        /// <summary>
+        /// Die Flächenpaare der Raumkörper (<see cref="Koerpernachbarschaft"/>): gezählt immer, gebildet nur ohne
+        /// Raumgrenzen (<see cref="KoerperpaareGebildet"/>) — Rangfolge Raumgrenzen vor Körpern vor Raumbezügen.
+        /// </summary>
+        public int ZahlKoerperpaare { get; set; }
+
+        /// <summary>Summe der Trennwände aus den Körperpaaren [m²].</summary>
+        public double KoerperTrennwandM2 { get; set; }
+
+        /// <summary>Summe der Trenndecken aus den Körperpaaren [m²].</summary>
+        public double KoerperTrenndeckeM2 { get; set; }
+
+        /// <summary>Tragen Trennflächen aus den Körperpaaren die Nachbarschaft der Räume (Gebäude ohne Raumgrenzen)?</summary>
+        public bool KoerperpaareGebildet { get; set; }
+
+        /// <summary>
+        /// Koppeln die Trennflächen des Körperwegs der Bauteilflächen (Abstimmung G5, Teil G5-3) alle Geschosse mit beheizten
+        /// Räumen zu einem Verbund (auch über ein unbeheiztes Geschoss)? Dann ist die Geschosszonierung (Z4) ohne Raumgrenzen die
+        /// Vorgabe — wie bei <see cref="GeschosseGekoppelt"/>.
+        /// </summary>
+        public bool KoerperflaechenGekoppelt { get; set; }
+
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
+
+        /// <summary>
+        /// Die Flächen der Raum- und Bauteilkörper nach Randbedingung (<see cref="Flaechenklassifikation"/>, Konzept HottCAD-Verbund
+        /// 4.2); <c>null</c> = kein Raumkörper. Nur Anzeige und Gegenprobe: nie geschrieben, keine Rechengröße.
+        /// </summary>
+        public IReadOnlyList<Flaechengruppenzeile> Flaechengruppen { get; set; }
+
+        /// <summary>Die Bilanz je Gruppe [m²]: Dreiecksflächen der Raumkörper, R7 aus den Öffnungen der Hülle; <c>null</c> = keine.</summary>
+        public IReadOnlyDictionary<Flaechengruppe, double> FlaechengruppenBilanzM2 { get; set; }
+
+        /// <summary>Die Bauteilflächen des Mengensatzes je Gruppe [m²] — die Gegenprobe zur Bilanz; <c>null</c> = keine.</summary>
+        public IReadOnlyDictionary<Flaechengruppe, double> FlaechengruppenMengeM2 { get; set; }
 
         /// <summary>
         /// Der Beschreibungstext, den der Export in <c>Campus/Description</c> schreibt (Produktausweis,
@@ -220,9 +304,55 @@ namespace WindowsFormsApplication1
         public string Anzeigename => string.IsNullOrWhiteSpace(Name) ? Kennung : Name;
     }
 
+    /// <summary>
+    /// Die Jahresergebnisse einer Zone für <c>Results</c> im gbXML-Export (Stufe G7b, Datenaustauschkonzept 5.6);
+    /// jede Größe <c>null</c> = keine.
+    /// </summary>
+    internal sealed class AbbildErgebnis
+    {
+        /// <summary>Jahresheizwärme [kWh].</summary>
+        public double? EnergieKWh { get; set; }
+
+        /// <summary>Heizlast [W].</summary>
+        public double? HeizlastW { get; set; }
+
+        /// <summary>Mittlere Raumlufttemperatur des Jahres [°C].</summary>
+        public double? MitteltemperaturC { get; set; }
+
+        /// <summary>
+        /// Jahreskältebedarf [kWh] — sensibel, ohne Entfeuchtung (Kühlkonzept 9.2); <c>null</c> = die Kühlung ist
+        /// nicht gerechnet.
+        /// </summary>
+        public double? KaeltebedarfKWh { get; set; }
+
+        /// <summary>Kältelast (Spitze) [W]; <c>null</c> = nicht gerechnet oder nicht gespeichert.</summary>
+        public double? KaeltelastW { get; set; }
+
+        /// <summary>Beginn des Rechenjahrs (<c>startTime</c>).</summary>
+        public DateTime Beginn { get; set; }
+
+        /// <summary>Der Zeitpunkt des Rechenlaufs (<c>Tab_Ergebnis.Zeitstempel</c>); <c>null</c> = unbekannt. Nur am Gebäude.</summary>
+        public DateTime? Rechenzeitpunkt { get; set; }
+
+        /// <summary>Der Wetterdatensatz des Rechenlaufs (Klimaregion des Laufs); <c>null</c> = unbekannt. Nur am Gebäude.</summary>
+        public string Wetterdatensatz { get; set; }
+
+        /// <summary>Trägt das Ergebnis eine Kältegröße?</summary>
+        public bool MitKaelte => KaeltebedarfKWh.HasValue || KaeltelastW.HasValue;
+    }
+
     /// <summary>Ein Raum des Abbilds.</summary>
     internal sealed class AbbildRaum
     {
+        /// <summary>Die Jahresergebnisse der Zone dieses Raums (nur Export); <c>null</c> = keine.</summary>
+        public AbbildErgebnis Ergebnis { get; set; }
+
+        /// <summary>
+        /// Nur Export (HC-5, F10): die gespeicherten Grundrisse aller Räume der Zone (<c>Tab_Raumgrundriss</c>) — Gestalt und Lage
+        /// des Exportmodells, keine Rechengröße (<see cref="GrundrissM"/> bleibt unberührt); leer = keine.
+        /// </summary>
+        public IReadOnlyList<Raumgrundriss> Grundrisse { get; set; } = Array.Empty<Raumgrundriss>();
+
         /// <summary>Kennung aus der Datei.</summary>
         public string Kennung { get; set; } = "";
 
@@ -232,8 +362,21 @@ namespace WindowsFormsApplication1
         /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Die HottCAD-Kennung (<c>HSETU_BauteilAllgemein.GUID</c> am <c>IfcSpace</c>) in der Normalform
+        /// <see cref="IfcAbbildBauer.GuidNormalform"/>; sie gleicht <c>BmRoom.GId</c> der Projektdatei, auch wo die
+        /// <c>GlobalId</c> neu vergeben ist. <c>null</c> = keine oder keine GUID.
+        /// </summary>
+        public string HottcadGuid { get; set; }
+
         /// <summary>Fläche [m²]; <c>null</c> = nicht gelesen.</summary>
         public double? FlaecheM2 { get; set; }
+
+        /// <summary>
+        /// Stammt <see cref="FlaecheM2"/> aus dem Grundriss (<see cref="GrundrissM"/>, Gaußsche Trapezformel), weil die Datei
+        /// für den Raum keine Flächenmenge führt (IFC, Mehrzonenkonzept 6.5)? <c>false</c> = aus der Datei oder keine.
+        /// </summary>
+        public bool FlaecheAusGrundriss { get; set; }
 
         /// <summary>Volumen [m³]; <c>null</c> = nicht gelesen.</summary>
         public double? VolumenM3 { get; set; }
@@ -243,6 +386,18 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = nicht gelesen — dann gilt Volumen ÷ Fläche (Umsetzungskonzept 3.4).
         /// </summary>
         public double? HoeheM { get; set; }
+
+        /// <summary>
+        /// Der Körper des Raums aus der Datei (IFC: <c>IfcSpace</c>, Darstellung „Body“; Datenaustauschkonzept 15.3),
+        /// formatfrei in Weltkoordinaten [m]; <c>null</c> = keiner. gbXML bildet ihn aus Schale oder Flächen (17.2, Quelle <see cref="Koerperquelle.AusFlaechen"/>). Nur Anzeige.
+        /// </summary>
+        public Dateikoerper Koerper { get; set; }
+
+        /// <summary>
+        /// Die Kennungen der Bauteile, auf die der Raum verweist (IFC <c>IfcRelReferencedInSpatialStructure</c>), in
+        /// Dateireihenfolge — Eingang der Flächenklassifikation; leer = keine.
+        /// </summary>
+        public List<string> Bezugsbauteile { get; } = new List<string>();
 
         /// <summary>Ist der Raum beheizt?</summary>
         public bool Beheizt { get; set; } = true;
@@ -277,6 +432,25 @@ namespace WindowsFormsApplication1
         /// <summary>Kühlsollwert der Auslegung [°C] (gbXML aus der Zone) — gelesen, aber keinem Zielfeld zugeordnet.</summary>
         public double? SollKuehlenC { get; set; }
 
+        /// <summary>
+        /// Ist eine Nachtabsenkung gesetzt (Nachtsollwert unter dem Tagessollwert; Export G7c, IFC
+        /// <c>Pset_SpaceThermalRequirements.DiscontinuedHeating</c>)? <c>null</c> = unbekannt. Der Leser lässt es leer.
+        /// </summary>
+        public bool? Nachtabsenkung { get; set; }
+
+        /// <summary>
+        /// Luftwechsel durch Nutzerlüftung [1/h] (<c>Luftwechsel_Nutzer</c>; Export G7c, IFC
+        /// <c>Pset_SpaceThermalRequirements.NaturalVentilationRate</c>); <c>null</c> = keiner. Der Leser lässt ihn leer.
+        /// </summary>
+        public double? LuftwechselNutzerJeH { get; set; }
+
+        /// <summary>
+        /// Die Konditionierung der Zone dieses Raums — Nutzung, Matrixzellen und Kalender (IFC <c>EPOS_Zone</c> und
+        /// <c>EPOS_Kalender_*</c>, Datenaustauschkonzept 6.3 und 16.3); <c>null</c> = keine. Der Export setzt sie je Zone
+        /// (nicht auf dem Klassenweg), der IFC-Leser nimmt sie aus einer Datei mit diesen Sätzen zurück.
+        /// </summary>
+        public AbbildKonditionierung Konditionierung { get; set; }
+
         /// <summary>Kennung des Geschosses; <c>null</c> = keine.</summary>
         public string GeschossKennung { get; set; }
 
@@ -289,6 +463,14 @@ namespace WindowsFormsApplication1
         /// (<see cref="AbbildGeschoss.LageM"/>).
         /// </summary>
         public double? GeschossLageM { get; set; }
+
+        /// <summary>
+        /// Der Grundriss des Raums in der waagerechten Projektion [m] (IFC: Profilring der senkrechten Extrusion seiner
+        /// Körperdarstellung, <see cref="IfcRaumgrundriss"/>; je Punkt x, y in Weltkoordinaten, ohne Schlusspunkt);
+        /// <c>null</c> = keiner. Trägt ohne Raumgrenzen die Trenndecke zwischen übereinanderliegenden Räumen
+        /// (Mehrzonenkonzept 6.5). gbXML setzt ihn nie.
+        /// </summary>
+        public IReadOnlyList<double[]> GrundrissM { get; set; }
 
         /// <summary>
         /// Kennung der Zone; <c>null</c> = keine (gbXML <c>@zoneIdRef</c>; IFC die oberste
@@ -326,6 +508,15 @@ namespace WindowsFormsApplication1
         /// Leser lässt ihn leer.
         /// </summary>
         public string ZonenBeschreibung { get; set; }
+
+        /// <summary>
+        /// Die Raumtemperatur eines CAD-Exports [°C] (IFC <c>InsideTemperature (°C)</c> aus einem beliebigen Satz) —
+        /// für die Zonenregel Z6, wenn <see cref="SollHeizenC"/> fehlt, und als Heizsollwert nur auf Wunsch des Anwenders
+        /// (<see cref="GebaeudeCadSollwert"/>, Schalter im Zuordnungsdialog, Vorgabe aus). <c>null</c> = keine.
+        /// <see cref="Raumtyp"/> trägt unter IFC <c>HSETU_RaumAllgemein.RoomType</c> ohne Präfix <c>mrt</c>, sonst
+        /// <c>Pset_SpaceCommon.Category</c> bzw. <c>ObjectType</c> — er benennt die Nutzungsklasse der Regel Z6.
+        /// </summary>
+        public double? RaumtemperaturC { get; set; }
     }
 
     /// <summary>Ein Nachbarraum eines Bauteils samt der Sicht dieses Raums auf die Fläche.</summary>
@@ -360,6 +551,13 @@ namespace WindowsFormsApplication1
         /// <summary>Name aus der Datei; <c>null</c> = keiner.</summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Die HottCAD-Kennung (<c>HSETU_BauteilAllgemein.GUID</c>, Vorkommnis) in der Normalform
+        /// <see cref="IfcAbbildBauer.GuidNormalform"/>; sie gleicht der Level-3-<c>GId</c> der Projektdatei, auch wo die
+        /// <c>GlobalId</c> neu vergeben ist. <c>null</c> = keine oder keine GUID.
+        /// </summary>
+        public string HottcadGuid { get; set; }
+
         /// <summary>Die Art, wie die Datei sie nennt (gbXML <c>@surfaceType</c> bzw. <c>@openingType</c>).</summary>
         public string Quellart { get; set; }
 
@@ -368,6 +566,36 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Randbedingung aus dem Typ; <see cref="Randbedingung.Innen"/> heißt „über die Nachbarn entscheiden".</summary>
         public Randbedingung Randbedingung { get; set; }
+
+        /// <summary>
+        /// Die Randbedingung der ersten Seite (IFC <c>ElementReferences[0].AdjacentType</c> eines CAD-Exports, Konzept
+        /// HottCAD-Verbund 3.1); <see cref="Randbedingung.Innen"/> = beheizt; <c>null</c> = keine Angabe oder <c>btaNone</c>.
+        /// </summary>
+        public Randbedingung? RandbedingungSeiteA { get; set; }
+
+        /// <summary>Die Randbedingung der zweiten Seite (<c>ElementReferences[1].AdjacentType</c>); sonst wie <see cref="RandbedingungSeiteA"/>.</summary>
+        public Randbedingung? RandbedingungSeiteB { get; set; }
+
+        /// <summary>Die Orientierung der ersten Seite [°], 0 = Nord, im Uhrzeigersinn (<c>ElementReferences[0].Orientation (°)</c>); <c>null</c> = keine.</summary>
+        public double? OrientierungSeiteA { get; set; }
+
+        /// <summary>Die Orientierung der zweiten Seite [°] (<c>ElementReferences[1].Orientation (°)</c>); <c>null</c> = keine.</summary>
+        public double? OrientierungSeiteB { get; set; }
+
+        /// <summary>
+        /// <b>Die wirksame Randbedingung aus den beiden Seiten</b>: die nicht beheizte Seite; beide beheizt →
+        /// <see cref="Randbedingung.Innen"/>; <c>null</c> = die Datei führt keine Seiten (dann gilt <see cref="Randbedingung"/>).
+        /// </summary>
+        public Randbedingung? RandbedingungWirksam { get; set; }
+
+        /// <summary>Der Beleg der wirksamen Seite: <see cref="BELEG_KELLERDECKE"/>, <see cref="BELEG_OBERSTE_DECKE"/> oder <c>null</c>.</summary>
+        public string RandbedingungBeleg { get; set; }
+
+        /// <summary>Beleg der Seite <c>btaCellarCeiling</c>: unbeheizt, weil darunter der Keller liegt.</summary>
+        public const string BELEG_KELLERDECKE = "Kellerdecke";
+
+        /// <summary>Beleg der Seite <c>btaUppermostStorey</c>: unbeheizt, weil darüber der Dachraum liegt.</summary>
+        public const string BELEG_OBERSTE_DECKE = "oberste Geschossdecke";
 
         /// <summary>Die angrenzenden Räume in Dateireihenfolge (0 bis 2).</summary>
         public List<AbbildNachbar> Nachbarn { get; } = new List<AbbildNachbar>();
@@ -378,17 +606,74 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Nettofläche [m²], wie die Datei sie selbst angibt (IFC: <c>NetSideArea</c>); <c>null</c> = keine.
         /// Sie ist allein der Rückfall des Fensterabzugs (U14), wenn Brutto − Öffnungen negativ wird —
-        /// die Fläche selbst kommt immer aus <see cref="BruttoflaecheM2"/>.
+        /// die Fläche selbst kommt immer aus <see cref="BruttoflaecheM2"/>. Nennt die Datei keine, setzt der IFC-Import
+        /// für einen Wirt mit Öffnungen Brutto − Öffnungen, nie negativ (Abstimmung G5, Teil G5-2).
         /// </summary>
         public double? NettoflaecheM2 { get; set; }
 
         /// <summary>
+        /// Die Fläche der Öffnungen ohne Füllung (Löcher, <c>IfcOpeningElement</c> ohne Fenster oder Tür) [m²], die den
+        /// Wirt durchdringen (Abstimmung G5, Teil G5-2): Sie gehen in den Abzug wie Fenster und Türen, ohne eigenes
+        /// Bauteil zu werden. 0 = keine; Nischen zählen nicht.
+        /// </summary>
+        public double LochflaecheM2 { get; set; }
+
+        /// <summary>
+        /// Auf welchem Weg <see cref="BruttoflaecheM2"/> entstanden ist (Abstimmung G5, A4): <see cref="WindowsFormsApplication1.Flaechenherkunft.Mengensatz"/>
+        /// oder <see cref="WindowsFormsApplication1.Flaechenherkunft.Koerper"/>; <c>null</c> = keine Fläche oder nicht bestimmt (gbXML).
+        /// Die Polygone der Raumgrenzen nennt erst der Teil der Zonierung (<see cref="Zonenflaeche.Flaechenherkunft"/>).
+        /// </summary>
+        public Flaechenherkunft? Flaechenherkunft { get; set; }
+
+        /// <summary>
+        /// Fläche, Neigung, Azimut und Teilflächen aus dem Bauteilkörper (Stufe G5-1, <see cref="IfcBauteilkoerper"/>);
+        /// <c>null</c> = kein lesbarer Körper. Quelle nur ohne Mengensatz, sonst Gegenprobe (A5).
+        /// </summary>
+        public Bauteilkoerperflaeche Koerperflaeche { get; set; }
+
+        /// <summary>
         /// Gehört das Bauteil ohne jeden Nachbarraum zur Hülle seines Gebäudes? Der IFC-Leser setzt es
-        /// für ein Außenbauteil ohne Raumgrenze (<c>IsExternal = true</c>), das über die räumliche Struktur
-        /// einem Gebäude zugeordnet ist; es zählt dann nach seiner <see cref="Randbedingung"/>. gbXML setzt
-        /// es nie — dort hängt jede Fläche an ihren <c>AdjacentSpaceId</c>.
+        /// für ein Außenbauteil ohne Raumgrenze (<c>IsExternal = true</c> oder die Angrenzung eines
+        /// CAD-Exports: außen, Erdreich, unbeheizt), das über die räumliche Struktur einem Gebäude
+        /// zugeordnet ist und das die Datei nicht ausdrücklich aus der Hüllfläche nimmt; es zählt dann nach
+        /// seiner <see cref="Randbedingung"/>. gbXML setzt es nie — dort hängt jede Fläche an ihren
+        /// <c>AdjacentSpaceId</c>.
         /// </summary>
         public bool HuelleOhneNachbar { get; set; }
+
+        /// <summary>
+        /// Für ein Bauteil der Hülle ohne Nachbarraum gegen <see cref="Randbedingung.Unbeheizt"/> (IFC-Angrenzung
+        /// eines CAD-Exports, Mehrzonenkonzept 6.5): Ist es für die Zone Boden (<c>true</c>, etwa die Kellerdecke)
+        /// oder Decke (<c>false</c>, die oberste Geschossdecke)? <c>null</c> = nach der Bauteilart.
+        /// </summary>
+        public bool? ZonenbodenOhneNachbar { get; set; }
+
+        /// <summary>
+        /// Eine Innenwand ohne jeden Nachbarraum, die einseitig als innere Masse zählt (Mehrzonenkonzept 6.5): Der
+        /// IFC-Leser setzt es für eine Wand innen (<c>IsExternal = FALSE</c> oder die Angrenzung „beheizt" eines
+        /// CAD-Exports) in einem Gebäude ohne Raumgrenzen, der weder Raumgrenzen noch Raumbezüge einen Nachbarn
+        /// geben. Sie zählt mit ihrer Fläche einmal (eine Seite) zur inneren Masse — in der Zonierung in der Zone
+        /// ihres Geschosses. gbXML setzt es nie.
+        /// </summary>
+        public bool InnenEinseitig { get; set; }
+
+        /// <summary>
+        /// Woraus die Nachbarn einer Trenndecke ohne Raumgrenzen stammen (Mehrzonenkonzept 6.5): <see cref="TRENNDECKE_BEZUG"/>,
+        /// <see cref="TRENNDECKE_GESCHOSS"/> oder <see cref="TRENNDECKE_GRUNDRISS"/>; <c>null</c> = keine solche Trenndecke.
+        /// </summary>
+        public string Trenndeckenherkunft { get; set; }
+
+        /// <summary>Die Raumbezüge der Datei (<c>IfcRelReferencedInSpatialStructure</c>) nennen beide Räume.</summary>
+        public const string TRENNDECKE_BEZUG = "BEZUG";
+
+        /// <summary>Die Decke steht im Geschoss eines von zwei übereinanderliegenden Geschossen; die Räume ohne Grundriss.</summary>
+        public const string TRENNDECKE_GESCHOSS = "GESCHOSS";
+
+        /// <summary>Die Grundrisse der beiden Räume überdecken sich; die Fläche ist die Überlappung.</summary>
+        public const string TRENNDECKE_GRUNDRISS = "GRUNDRISS";
+
+        /// <summary>Trenndecke aus einem Flächenpaar der Raumkörper (<see cref="Koerpernachbarschaft"/>).</summary>
+        public const string TRENNDECKE_KOERPER = "KOERPER";
 
         /// <summary>Azimut [°], 0 = Nord, im Uhrzeigersinn; <c>null</c> = unbestimmt (auch bei waagerechten Flächen).</summary>
         public double? AzimutGrad { get; set; }
@@ -404,6 +689,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gesamtenergiedurchlassgrad g [–] einer Öffnung; <c>null</c> = keiner.</summary>
         public double? GWert { get; set; }
+
+        /// <summary>
+        /// Der Rahmenanteil [0–1] einer Öffnung aus der Datei (IFC <c>HSETU_EcoCad.FractionOfFrame</c>, Konzept HottCAD-Verbund
+        /// 3.3); <c>null</c> = keiner, dann gilt die Vorgabe des Gebäudes. Der g-Wert bleibt davon unberührt.
+        /// </summary>
+        public double? Rahmenanteil { get; set; }
+
+        /// <summary>Die Herkunft des <see cref="Rahmenanteil"/>s (<see cref="Importherkunft.Ifc"/>, wenn gelesen).</summary>
+        public Importherkunft RahmenanteilHerkunft { get; set; } = Importherkunft.Leer;
+
+        /// <summary>Der Beleg des <see cref="Rahmenanteil"/>s: Satz, Eigenschaft und Skala der Datei.</summary>
+        public string RahmenanteilBeleg { get; set; }
+
+        /// <summary>
+        /// Die längenbezogenen Wärmebrücken des Bauteils als Summe ψ·L [W/K] (<c>Tab_Bauteil.Psi_L</c>; Export G7c,
+        /// IFC <c>EPOS_Bauteil.WaermebrueckeUA</c>); <c>null</c> = keine. Der Leser lässt sie leer.
+        /// </summary>
+        public double? WaermebrueckeWK { get; set; }
 
         /// <summary>
         /// Breite [m] des Rechtecks, das der Export schreibt (<c>RectangularGeometry/Width</c>, G7a);
@@ -452,6 +755,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyList<double[]> RandpunkteM { get; set; }
 
+        /// <summary>
+        /// Der Körper des Bauteils, wie die Datei ihn zeichnet (Konzept HottCAD-Verbund 3.2: <c>IfcWall</c>, <c>IfcSlab</c>,
+        /// <c>IfcRoof</c>, <c>IfcWindow</c>, <c>IfcDoor</c>); <c>null</c> = keine Darstellung, nicht lesbar oder über der
+        /// Dreiecksgrenze. Nur Anzeige und Flächengruppen, nie Rechengrundlage (ADR-003).
+        /// </summary>
+        public Dateikoerper Koerper { get; set; }
+
+        /// <summary>
+        /// Der Befund des Körpers aus der Datei (Abstimmung G5, B1): nicht oder nur teilweise lesbar, offen, ohne Beschnitt,
+        /// mit nicht angebundenem Loch oder entartet (<see cref="Bauteilbefunde.Koerpergrund"/>); <see cref="Bauteilbefundgrund.Keiner"/>
+        /// = lesbar oder keine Darstellung. Gesetzt allein vom IFC-Leser, auch wo der Körper nur für die Rechnung gelesen wird.
+        /// </summary>
+        public Bauteilbefundgrund Koerpergrund { get; set; }
+
         /// <summary>Meldungen zu genau diesem Bauteil (Geometrie, Aufbau, Verweise).</summary>
         public List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
     }
@@ -476,6 +793,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Randbedingung Lage { get; set; } = Randbedingung.Unbekannt;
 
+        /// <summary>
+        /// Der Teil einer am Gelände geteilten Wand am Erdreich (Körperweg, Hanglage): Tiefe seiner Unterkante unter der
+        /// Geländehöhe [m]. Nur Auskunft des Imports — die Erdreichrechnung (DIN EN ISO 13370) kennt kein Feld je Bauteil und
+        /// nimmt die Tiefe als Fläche der Wände am Erdreich durch den Umfang. <c>null</c> = keine Teilung am Gelände.
+        /// </summary>
+        public double? UnterGelaendeM { get; set; }
+
         /// <summary>Eine virtuelle Grenze (<c>VIRTUAL</c>) — keine Bauteilfläche, sondern eine Luftverbindung.</summary>
         public bool Virtuell { get; set; }
 
@@ -499,11 +823,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyList<double[]> RandpunkteM { get; set; }
 
+        /// <summary>Woher die Grenze stammt: eine Raumgrenze der Datei oder ein Flächenpaar der Raumkörper.</summary>
+        public Grenzherkunft Herkunft { get; set; } = Grenzherkunft.Raumgrenze;
+
         /// <summary>Die Kennung der Gegengrenze aus der Datei (<c>CorrespondingBoundary</c>); <c>null</c> = keine.</summary>
         public string GegenstueckKennung { get; set; }
 
         /// <summary>Der Typ einer Geometrie, die sich nicht auswerten lässt; <c>null</c> = ausgewertet oder keine.</summary>
         public string Geometriefehler { get; set; }
+
+        /// <summary>
+        /// Nur der Körperweg (<see cref="Grenzherkunft.Bauteilkoerper"/>, G5-3): der Azimut der Außennormale aus Sicht des Raums
+        /// [°], 0° = Nord, im Uhrzeigersinn, nach TrueNorth bzw. <c>IfcMapConversion</c>; <c>null</c> = waagerecht oder nicht bestimmt.
+        /// </summary>
+        public double? AzimutGrad { get; set; }
+
+        /// <summary>Nur der Körperweg: die Neigung der Außennormale aus Sicht des Raums [°] (0° = nach oben, 180° = nach unten); <c>null</c> = keine.</summary>
+        public double? NeigungGrad { get; set; }
+
+        /// <summary>
+        /// Nur der Körperweg: Liegt der Raum auf der Gegenseite der maßgeblichen Seite des Bauteilkörpers (G5-1)? Dann gilt der
+        /// Aufbau gespiegelt.
+        /// </summary>
+        public bool Gegenseite { get; set; }
     }
 
     /// <summary>Ein Aufbau (gbXML <c>Construction</c>) mit seinen Schichten.</summary>
@@ -580,7 +922,84 @@ namespace WindowsFormsApplication1
         /// <summary>Trägt die Schicht einen Wärmedurchlasswiderstand — d/λ oder den eingetragenen R-Wert?</summary>
         public bool HatWiderstand => (DickeM > 0.0 && LambdaWmK > 0.0) || RWertM2KW > 0.0;
 
+        /// <summary>Stammt die Schicht aus der HottCAD-Projektdatei (BA-4b)? Dann wird ihr Stoff als Projektkopie übernommen.</summary>
+        public bool AusProjektdatei { get; set; }
+
         /// <summary>Nur R-Wert, keine vollständigen Stoffwerte — die Schicht ist masselos (3.6, Punkt 2).</summary>
         public bool NurRWert => !Vollstaendig && RWertM2KW > 0.0 && !(DickeM > 0.0 && LambdaWmK > 0.0);
+    }
+
+    /// <summary>Ein Konditionierungskalender einer Zone mit seiner Bemerkung (Herkunft und Vermerk, ≤ 200 Zeichen).</summary>
+    internal sealed record AbbildKalender(Konditionierungskalender Kalender, string Bemerkung);
+
+    /// <summary>
+    /// <b>Die Konditionierung einer Zone im Abbild</b> (Datenaustauschkonzept 6.3, 16.3): die Nutzung, die vier Matrixzellen,
+    /// wie die Zone sie rechnet (Heizsollwert Tag und Nacht, Kühlsollwert, Luftwechsel der Nutzer), und die angelegten Kalender
+    /// je Größe. Formatfrei; der IFC-Export schreibt sie als <c>EPOS_Zone</c> und <c>EPOS_Kalender_&lt;Größe&gt;</c>, der
+    /// IFC-Leser liest sie zurück und gibt sie über <see cref="AlsZonenkonditionierung"/> an den Zonenplan.
+    /// </summary>
+    internal sealed class AbbildKonditionierung
+    {
+        /// <summary>Die Nutzung (<c>WOHNEN</c>, <c>BUERO</c>, <c>SCHULE</c>); <c>null</c> = keine.</summary>
+        public string Nutzung { get; set; }
+
+        /// <summary>Heizsollwert Tag [°C] — die Zelle HEIZSOLL/TAG.</summary>
+        public double? HeizsollTagC { get; set; }
+
+        /// <summary>Heizsollwert Nacht [°C] — die Zelle HEIZSOLL/NACHT.</summary>
+        public double? HeizsollNachtC { get; set; }
+
+        /// <summary>Kühlsollwert [°C] — die Zelle KUEHLSOLL/TAG.</summary>
+        public double? KuehlsollC { get; set; }
+
+        /// <summary>Luftwechsel der Nutzer [1/h] — die Zelle LUEFTUNG/TAG.</summary>
+        public double? LuftwechselNutzerJeH { get; set; }
+
+        /// <summary>Die Kalender in der Reihenfolge der Größen (<see cref="Konditionierungsgroessen.Alle"/>).</summary>
+        public List<AbbildKalender> Kalender { get; } = new List<AbbildKalender>();
+
+        /// <summary>Der Kalender einer Größe; <c>null</c> = keiner.</summary>
+        internal AbbildKalender KalenderVon(Konditionierungsgroesse g) => Kalender.Find(k => k.Kalender.Groesse == g);
+
+        /// <summary>Trägt die Zone etwas — eine Zelle, eine Nutzung oder einen Kalender?</summary>
+        internal bool Traegt => Nutzung != null || HeizsollTagC.HasValue || HeizsollNachtC.HasValue || KuehlsollC.HasValue
+                                || LuftwechselNutzerJeH.HasValue || Kalender.Count > 0;
+
+        /// <summary>
+        /// <b>Die Konditionierung für den Zonenplan</b> — derselbe Schreibweg wie die Projektdatei
+        /// (<see cref="ZonenplanCtrl.ProjektdateiUebernehmen"/>): je Größe die Zellen als Vorgaben und der Kalender mit
+        /// Herkunft <see cref="Konditionierungsherkunft.IfcDatei"/>; die Bemerkung nennt die Herkunft „aus IFC-Datei (EPOS)“
+        /// und den mitgereisten Vermerk.
+        /// </summary>
+        internal Zonenkonditionierung AlsZonenkonditionierung(string zone)
+        {
+            var groessen = new List<Groessenkonditionierung>();
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                var vorgaben = new List<Vorgabebeleg>();
+                void Zelle(string zeile, double? wert)
+                {
+                    if (wert is double w && double.IsFinite(w))
+                        vorgaben.Add(new Vorgabebeleg(zeile, Matrixzelle.AusWert(w), null));
+                }
+                if (g == Konditionierungsgroesse.Heizsoll)
+                {
+                    Zelle(DbWerte.KOND_ZEILE_TAG, HeizsollTagC);
+                    Zelle(DbWerte.KOND_ZEILE_NACHT, HeizsollNachtC);
+                }
+                if (g == Konditionierungsgroesse.Kuehlsoll) Zelle(DbWerte.KOND_ZEILE_TAG, KuehlsollC);
+                if (g == Konditionierungsgroesse.Lueftung) Zelle(DbWerte.KOND_ZEILE_TAG, LuftwechselNutzerJeH);
+                AbbildKalender k = KalenderVon(g);
+                groessen.Add(new Groessenkonditionierung
+                {
+                    Groesse = g,
+                    Herkunft = k != null || vorgaben.Count > 0 ? Konditionierungsherkunft.IfcDatei : Konditionierungsherkunft.Vorlage,
+                    Kalender = k?.Kalender,
+                    BemerkungText = k == null ? null : IfcKonditionierungssatz.Herkunftsbemerkung(k.Bemerkung),
+                    Vorgaben = vorgaben,
+                });
+            }
+            return new Zonenkonditionierung { Zone = zone ?? "", Nutzung = Nutzung, Groessen = groessen };
+        }
     }
 }

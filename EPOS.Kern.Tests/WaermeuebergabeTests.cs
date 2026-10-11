@@ -350,5 +350,23 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, s3);
             Assert.Equal(SimulationWaermepumpe.Vorlauflage.Verboten, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 58.0, false, out _));
         }
+
+        /// <summary>
+        /// Die äußeren Stützstellen tragen den Zahlenrand: Ein Vorlauf, der nur im letzten Bit über der
+        /// obersten oder unter der untersten Stützstelle liegt, gilt als innerhalb — der Störungslauf
+        /// (±1 ulp) darf die Lage nicht kippen. Gegenprobe: ein fachlich unterscheidbarer Abstand bleibt außerhalb.
+        /// </summary>
+        [Fact]
+        public void Die_aeusseren_Stuetzstellen_tragen_den_Zahlenrand()
+        {
+            int[] vorlaeufe = { 35, 45, 55 };
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Innerhalb, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, Math.BitIncrement(55.0), false, out int s1));
+            Assert.Equal(2, s1);
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Innerhalb, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 55.0 + 1e-10, true, out _));
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Innerhalb, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, Math.BitDecrement(35.0), false, out int s2));
+            Assert.Equal(0, s2);
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Darueber, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 55.0 + 1e-6, true, out _));
+            Assert.Equal(SimulationWaermepumpe.Vorlauflage.Darunter, SimulationWaermepumpe.VorlaufAuswerten(vorlaeufe, 35.0 - 1e-6, true, out _));
+        }
     }
 }

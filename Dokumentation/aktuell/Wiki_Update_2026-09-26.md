@@ -8,6 +8,42 @@ Epos) mit dem Upload-Skript der Orchestrierung: 18 Seiten (11 ersetzt, 7 neu, Re
 Update-Logbuch, Abschnitt „Version 1.2.0.4 – September 2026“ mit 149 Sätzen (Revision 611); Rücklese byte-gleich.
 Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 26.09.2026“), Statuszeile #556.
 
+**Zweiter Sammel-Upload 29.09.2026, Revisionen 711–723** — 22:01–22:03 UTC (30.09. 00:01–00:03 Uhr) durch die
+Orchestrierung (Cloud-Sitzung Berichterstellung, Benutzer Epos, Bot-Passwort vom Anwender neu erzeugt) mit demselben
+Skript, Quellen im Stand `07d7440a`: 12 Seiten (10 ersetzt, 2 neu) und das Update-Logbuch mit „Version 1.2.6 –
+September 2026“ (4 Sätze) und „Version 1.2.0.5 – September 2026“ (51 Sätze) vor 1.2.0.4; Rücklese byte-gleich,
+0 Parse-Warnungen, Dateien und Weiterleitungen unverändert. Vorprüfung nach Regel 3: Die letzte Revision jeder der
+zwölf Live-Seiten war ein Bot-Upload vom 26.09. oder 28.09. Danach sind alle Seiten aus `seiten.tsv` gleich ihrer
+Repo-Quelle. Statuszeile #614.
+
+**Nach dem Sammel-Upload #614 geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten Upload:**
+Brauchwasser-Zapfprofil (#615: Katalogimport eines Pakets ohne Spalte „Katalogversion“);
+Berichtsvorlagen (#762: Berichtsseite in vier Karten); Wirtschaftlichkeit (#762: Berichtsseite
+in vier Karten; #765: VALERI-Darstellung mit allen drei Szenarien) — beide geändert, Upload
+ausstehend.
+
+| Seite | Revision |
+|---|---|
+| Programm Dokumentation/Simulationsergebnisse | 711 |
+| Programm Dokumentation/Hilfe-Assistent | 712 |
+| Programm Dokumentation/Wirtschaftlichkeit | 713 |
+| Programm Dokumentation/Kosten | 714 |
+| Programm Dokumentation/Gerätekataloge | 715 |
+| Programm Dokumentation/Simulation | 716 |
+| Programm Dokumentation/Varianten | 717 |
+| Programm Dokumentation/Gebäude | 718 |
+| Programm Dokumentation/Brauchwasser-Zapfprofil | 719 |
+| Programm Dokumentation/Berichtsvorlagen | 720 |
+| Programm Dokumentation/Mehrzonenmodell (neu) | 721 |
+| Programm Dokumentation/Projekttransfer (neu) | 722 |
+| Update-Logbuch | 723 |
+
+**Upload auf Zuruf 30.09.2026, Revisionen 724–727** — 04:51–04:52 UTC, Quellen im Stand `d8adcfe2`, nur Seiten
+(Statuszeile #622): Gerätekataloge (724), Gebäude (725), Gebäudeimport (726, Abschnitt „Mehrere Zonen“ aus #620),
+Brauchwasser-Zapfprofil (727). Rücklese byte-gleich, 0 Parse-Warnungen. Das Update-Logbuch blieb unberührt.
+
+**Dritter Sammel-Upload 10.10.2026 (#889), Revisionen 728–828** — durch die Orchestrierung (Benutzer Epos): 99 Seiten (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen; Revisionen 728–826) und das Update-Logbuch (Revision 827); Rücklese byte-gleich, 0 Parse-Warnungen, Dateien und 19 Weiterleitungen unverändert. Vorher waren alle Seiten gegen die Wiki-Regeln geprüft, 47 Live-Seiten ohne Quelle als Repo-Quelle übernommen. **Damit sind alle in Abschnitt 1 als „ausstehend“ vermerkten Punkte veröffentlicht**; die Seite Programm Dokumentation/Gebäudeimport folgte am selben Tag als Revision 828 (Abschnitt 3, Punkt „Befund“). Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 10.10.2026“), Protokoll unter `ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md`, Statuszeile #889.
+
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
 seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
@@ -22,6 +58,8 @@ entschieden 24.09.2026 nach Empfehlung: a; Regel: Konzept Hilfesystem 13.3), mit
 vom 24.09.2026 bestätigt.
 
 ## 1 Seiten für den Sammel-Upload
+
+*Stand 10.10.2026: Die unten als „ausstehend“ vermerkten Änderungen sind mit dem Sammel-Upload #889 (Revisionen 728–828) veröffentlicht, die Seite Gebäudeimport als Revision 828. Der Wortlaut der Tafel bleibt als Geschichte stehen.*
 
 | Wiki-Seite | Repo-Quelle | Was sich geändert hat | Quelle |
 |---|---|---|---|
@@ -68,46 +106,266 @@ dem eigentlichen Hochladen der Seite ist er mitzunehmen.
 **Nach dem Sammel-Upload (#556) geänderte Repo-Quellen — Kandidaten für den nächsten gebündelten
 Upload unter 1.2.0.5:** Gerätekataloge (#552: Zeile Vorlauf/Rücklauf des Solarkollektors entfernt;
 #559: Bereitschaftsverlust des Heizkessels in kW; #567: Leerhinweis an Tracker/Stränge/max.
-Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird),
+Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
 Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung und Speichernutzen;
-#563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter),
-Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration),
+#563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
+Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611;
+#699: Satz zum Platzhalter des Kältebilds im Punkt „Bericht“, ausstehend;
+#843: Kühlsollwert über die Konditionierung — Spalte „Kühlen“, Kühlperiode, Kühlkalender —, Kühlsollwert der Stunde, Nachtauskühlung, ausstehend;
+#879: Abschnitt „Teillast und Takten der Kältemaschine“, ausstehend),
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“;
 #576: Punkt „Wärmelast Jahresganglinie“ mit den gestapelten Bedarfsarten und der Summe als Linie),
 Pufferspeicher (#562: Nachrang-Vorgabe bei Solarthermie, Automatik bei leerem Feld, Meldung ab 80 %,
-Rückfallspreizung ohne Temperaturpaar),
+Rückfallspreizung ohne Temperaturpaar; hochgeladen 28.09.2026 mit #611),
 Brauchwasser-Zapfprofil (#561: Streuung der Realisierungsspitzen mit eigenen Perzentilen P85/P95
 und Zirkulation; Hotel: Bezugsmenge Zimmerzahl, Stufen nach Bedarf je Zimmer; #575: Abschnitt
 „Simulation“ statt „Simulation und monatlicher Verlauf“, der doppelte Weg über „monatlicher
-Verlauf…“ entfällt),
+Verlauf…“ entfällt; #593: Bezugsart Zimmer; #594: Wahl „Speichergröße der Füllstandslinie“ über dem Wochenbild; #608: Verfahrensvolumina als Einträge dieser Wahl),
 Photovoltaik (#564: Knopf „Wechselrichter vorschlagen“ mit Rangliste und Übernahme, „Auslegung vorschlagen“
 mit den Auslegungstemperaturen des Projekts; #565: Modulauswahl je Strang nur mit den Projektmodulen,
 mehr als vier Geräte im Vorschlag gelten als bedingt; #567: die Klappliste „Wechselrichter aus dem
-Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“),
+Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; hochgeladen 28.09.2026 mit #611),
 Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
 gegliedert in einer aufklappbaren Zeile; #582: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
-mit derselben Vorlage und Prüfung),
+mit derselben Vorlage und Prüfung; #698: Platzhalter der Bilder Stromlast-Jahresganglinie des BHKW und
+Kälteproduktion im Absatz „Platzhalter in der App“, ; #855: Kachelzeile „Betriebsbereiche“ im Reiter „Wärmepumpe“, Kopfzeilen im CSV-Export, ; #855: Absatz „Bivalenz“ zu Bivalenzdiagramm, Bivalenztafel und den Kennzahlen `wp.bivalenz.*`, ausstehend),
 Wirtschaftlichkeit (#582: die Knöpfe „Bericht erzeugen“ heißen „Zum Bericht ›“ und wechseln in den
-Bereich Bericht, erzeugt wird dort mit „Erstellen“),
+Bereich Bericht, erzeugt wird dort mit „Erstellen“; #723: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ausstehend),
+BHKW (#723: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ; #854: Feld „Höchster Rücklauf (Abschaltgrenze)“, ausstehend),
 Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungssatz zum geltenden Fahrplan,
 Wochenend- und Feriensollwert als absolute, ganztägige Solltemperatur, Anker `temperaturen-und-ferien`,
 `wochenendabsenkung`, `ferienabsenkung`; #577: „Simulation…“ rechnet auch für ein eben übernommenes,
 noch nicht gespeichertes Gebäude aus dem Arbeitsstand),
-Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt),
+Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt; hochgeladen 28.09.2026 mit #611;
+#843: Herkunft der Eingaben aus den Reitern „Gebäude und Hülle“ und „Konditionierung“, ausstehend),
+Heizkessel, Grundlagen/Kessel und Spitzenlast, Berechnung/Heizkessel (hochgeladen 28.09.2026 mit #611; #843: Kesselmodell mit
+Teillast- und Brennwertkennlinie, Takten und Anfahrverlust, Betriebsbereitschaft und Heizgrenze, Ergebnisreiter, ausstehend),
+Gerätekataloge (#854: Gruppe „Gerätegrenzen“ bei den Wärmepumpen, „Höchster Rücklauf (Abschaltgrenze)“ beim BHKW, ausstehend),
+Wärmepumpe, Grundlagen/Wärmepumpe, Berechnung/Wärmepumpe (hochgeladen 28.09.2026 mit #611; #843: Vorlaufwahl in der Verwaltung,
+Kennlinie in Stunden ohne Heizbedarf, Fundorte der Eingaben, ; #853/#854: Einbindung, Vorwärmbetrieb und Betriebsbereiche in der Konfiguration, Abschnitt „Gerätegrenzen“, ausstehend),
+Grundlagen/Kühlung (hochgeladen 28.09.2026 mit #611; #843: Kühlsollwert über die Konditionierung, ausstehend; #879: Abschnitt „Teillast und Takten der Kältemaschine“, ausstehend),
 Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
-Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern),
+Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern; hochgeladen 28.09.2026 mit #611),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,
 nur ein Paket eines neueren Programmstands wird abgelehnt; #587: die Anhebung reicht jetzt bis Schemastand 61
-zurück, mit allen Umrechnungen der Register 62–92).
+zurück, mit allen Umrechnungen der Register 62–92),
+Gebäudeimport (seit Revision 726: #672: Bauteilsuche; #680, #682, #684, #691, #692: Baujahr, Namensvorschlag, Trenndecken,
+Beheizungsart; #707: Matrixfelder und Kalender; #709–#712: Gebäudedaten ausgeben, Reiter Körper, IFC anreichern; #726,
+#729, #730: Zonenregel, Heizsollwert, Zonenbaum; #727, #784: Dateikörper, Grundriss; #731, #736, #737: Projektdatei
+dazuladen, Zonierungswahl, Flächenfilter; #746, #793, #814: Farbmodi Randbedingung, Aufbau, Befund; #769, #776:
+Nutzungskatalog, Baustoff-Zuordnungen; #792, #825: Aufbauten, Aufbauquelle; #801, #802, #808, #821, #822: Fläche und
+Öffnungen aus Körpern; #813: Nordrichtung; #815, #816: Quelle, nur Projektdatei, Körper aus Flächen; #851: Exporteinstellung, Modellansicht; ausstehend).
+
+**Abgleich mit dem Upload vom 28.09.2026 (#611).** Die Technikdokumentation hat am 28.09.2026 die
+Seiten ihrer Welle hochgeladen und dabei Seiten der Hauptlinie im Stand `363096aa` mitgenommen.
+Erledigt sind damit Kühlung, Pufferspeicher, Photovoltaik und die Rechenwegseiten Wärmebedarf,
+Prozesswärme und Strombedarf. Gerätekataloge und Simulation stehen mit dem Stand `363096aa`
+online; ihre späteren Änderungen der Hauptlinie bleiben ausstehend. Nicht hochgeladen und
+unverändert ausstehend sind Simulationsergebnisse, Wirtschaftlichkeit, Gebäude,
+Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
+
+Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
+neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.)
+### Version offen (Vorschlag 1.2.1) — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
+
+Version noch beim Anwender zu bestätigen.
+
+Die sechs Sätze (#935) sind am 11.10.2026 im Wiki-Abschnitt „Version 1.2.0.10 – Oktober 2026“ veröffentlicht (Revision 933).
+
+- Seit 09.10.2026: Eine Wärmepumpe lässt sich mit Einbindung (direkt, Puffer, Weiche) und Vorwärmbetrieb mit dem Kessel in Reihe rechnen. (#853)
+- Seit 09.10.2026: Wärmepumpen- und BHKW-Katalog führen Gerätegrenzen für Spreizung, Mindestvolumenstrom und Rücklauf. (#854)
+- Seit 09.10.2026: Der Reiter „Wärmepumpe“ der Simulationsergebnisse zeigt die Betriebsbereiche mit Stunden, Wärme und Bivalenzpunkten. (#855)
+- Seit 09.10.2026: Der Bericht enthält ein Bivalenzdiagramm (Word) und eine Bivalenztafel (Word und Excel) mit Prüfhinweisen. (#855)
+- Seit 09.10.2026: Die Berichtsvorlagen kennen die Kennzahlen `wp.bivalenz.*` der Betriebsbereiche. (#855)
+- Seit 09.10.2026: Die Projektdialoge mit Katalogauswahl zeigen Projekt und Katalog gerahmt untereinander mit ziehbarer Trennlinie und einer Zeile für den gewählten Satz; nur die Listen rollen. (#861)
+- Seit 09.10.2026: Der Heizkessel-Dialog arbeitet auf der neuen Katalogauswahl: Bearbeiten je Bereich, Mehrfachbearbeitung mit „für alle gewählten setzen“ und „In die Datenbank übernehmen…“ als neuer Katalogsatz oder als Überschreiben des Ursprungs; Investitions- und Betriebskosten gehen als Vorlage des Katalogsatzes mit. (#873)
+- Seit 10.10.2026: Die Kältemaschine rechnet auf Wunsch ihr Teillastverhalten und das Takten bei kleiner Last; Katalogdialog und Anlagendialog führen die zugehörigen Felder. (#879)
+- Seit 10.10.2026: Der Reiter „Kältegang“ der Simulationsergebnisse zeigt die Kachel „Teillast und Takten der Kältemaschinen“ mit Taktstrom, Starts, Teillastanteil, mittlerem Lastgrad und Jahres-EER ohne Hilfsstrom, der Bericht eine Tafel dazu. (#879)
+- Seit 10.10.2026: Die Kälteerzeugung hat eine eigene Seite unter „Erzeuger und Speicher“. (#935)
+- Seit 10.10.2026: Die Rechenwegseite „Kühlung“ erklärt die Gleichungen; die Kältedialoge tragen Knöpfe zur Berechnung und zu den Grundlagen. (#935)
+- Seit 10.10.2026: Sieben neue Grundlagenseiten: Gebäudemodell VDI 6007, Bauteile am Erdreich, Brauchwasser-Zapfprofile, Gemeinjahr und Feiertage, Anlagenkopplung und Regelung, Brauchwasser und Prozesswärme. (#935)
+- Seit 10.10.2026: Die Programmdokumentation zu Simulation, Gerätekatalogen, Gebäude, Brauchwasser und Prozesswärme ist auf den aktuellen Stand gebracht, mit Konfiguration und hydraulischer Einbindung. (#935)
+- Seit 10.10.2026: Beispieldiagramme und Bildschirmfotos veranschaulichen die Seiten. (#935)
+- Seit 10.10.2026: Die Satzzeile des Bedarfsdialogs zeigt bei gewählter Zeile den gewählten Satz. (#935)
+
+### Version 1.2.0.9 — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
+
+Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
+
+- Seit 09.10.2026: Das Administrationsmenü „Wärmebedarf & Heizung“ heißt „Wärme- und Kälteerzeugung“. (#838)
+- Seit 09.10.2026: Die BHKW-Kachel der Startseite trägt ein Symbol für Kraft-Wärme-Kopplung. (#838)
+- Seit 09.10.2026: Die Kachel „Kühlung und Kälteanlagen“ sieht aus wie die übrigen Kacheln; die Schalter „Wärmepumpen im Kühlbetrieb“ stehen in der Maske der Kältemaschinen. (#838)
+- Seit 09.10.2026: Schließen, Esc und Hintergrundklick führen aus einem Unterblatt (etwa „Vorlagen der Konditionierung“) zum vorigen Blatt zurück, statt den Dialog zu schließen. (#838)
+- Seit 09.10.2026: „Aus dem Projekt entfernen“ in den Verwaltungen Heizkessel, BHKW und Solarkollektoren wird erst mit OK wirksam; Abbrechen lässt den Erzeuger im Projekt. (#838)
+- Seit 09.10.2026: Die Stromspeicher-Auslegung trennt Investitions- und Betriebskosten in zwei Bereiche mit eigener Herkunftswahl. (#838)
+- Seit 09.10.2026: Die Sperrzeiten der Wärmepumpe werden über ein Kästchen ein- und ausgeschaltet und stehen kompakt (Wochentage in einer Reihe) am Ende des Konfigurationsdialogs. (#840)
+- Seit 09.10.2026: Ein Erzeuger ohne Energieträger bekommt einen zulässigen Träger seiner Anlagenart vorgewählt (Wärmepumpe, Photovoltaik und Stromspeicher den Stromträger des Projekts, Kessel und BHKW den Träger ihres Brennstoffs). (#840)
+- Seit 09.10.2026: Die Erdwärme-Vorschau zeigt nach einem Lauf zusätzlich den gerechneten Verlauf der Quelltemperatur. (#840)
+- Seit 09.10.2026: Der Wärmesenke-Dialog nennt beim Heizkreis die Reihenfolge der direkten Deckung (Kaskadenrang der Konfiguration). (#840)
+- Seit 09.10.2026: Die Verwaltung der Kältemaschinen importiert Kennfelder aus Copper-Kurvendateien und aus der offenen CSV-Kennfeldvorlage und lädt auf Knopfdruck 34 eingebaute Typkennfelder (Luft, Trockenkühler, Nasskühler, Wasser; Scroll, Schraube, Turbo, Hubkolben; 20 bis 2 000 kW). (#841)
+- Seit 09.10.2026: Im Reiter „Konditionierung“ öffnet „Kalender bearbeiten…“ die Einzelheiten eines Kalenders als eigenen Abschnitt unter den Karten; die Karten bleiben an ihrem Platz. (#842)
+- Seit 09.10.2026: Die Baualtersklasse eines Gebäudes ist immer wählbar; das Baujahr macht nur noch einen Vorschlag. (#842)
+- Seit 09.10.2026: Der Gebäudeimport leitet die Verwendung (Wohngebäude / Nicht Wohngebäude) aus der Gebäudeart der Datei oder aus den Nutzungen der Räume ab und nennt die Herleitung im Importbericht. (#842)
+- Seit 09.10.2026: Die Solarthermie-Ganglinien werden im Dialog der Startseiten-Kachel gepflegt und importiert (CSV oder Text, Stunden- oder Viertelstundenwerte, Format wird erkannt); der eigene Verwaltungsdialog entfällt, der Menüpunkt öffnet denselben Dialog. (#844)
+- Seit 09.10.2026: Auch das Fensterkreuz eines Dialogs im eigenen Fenster führt erst zum vorigen Blatt zurück. (#846)
+- Seit 09.10.2026: Abbrechen in den Verwaltungen Heizkessel und BHKW nimmt eine beim Übernehmen neu angelegte Energieträger-Variante wieder zurück. (#846)
+- Seit 09.10.2026: Die Kältemaschine zählt bei den zulässigen Energieträgern als Stromverbraucher und bekommt den Stromträger des Projekts vorgewählt. (#846)
+- Seit 09.10.2026: Beim Gebäudeimport ist die Baualtersklasse auch dann wählbar, wenn die Datei ein Baujahr trägt. (#846)
+- Seit 09.10.2026: Ganglinien-Importe erkennen das Dezimalzeichen nur aus den Datenzeilen; ein Komma in der Kopfzeile verfälscht die Werte nicht mehr. (#846)
+- Seit 09.10.2026: Der Reiter „Konditionierung“ hat eine Kalenderbedienung mit Wochenprofilen, Zuordnung von Zeiträumen im Jahr (gemeinsam für alle Größen), Einzeltagen mit Feiertagen, Schnellfeldern für Wochenende, Ferien und Saison und einem anklickbaren Jahresraster; die Matrix dient nur noch als Übersicht. (#847)
+- Seit 09.10.2026: Die Datenbank bringt 34 eingebaute Typkennfelder für Kältemaschinen mit (Luft, Trockenkühler, Nasskühler, Wasser; Scroll, Schraube, Turbo, Hubkolben; 20 bis 2 000 kW). (#848)
+- Seit 09.10.2026: Ein Gebäude-Katalogsatz trägt seine Zonen mit Bauteilen, Luftströmen und Zonen-Konditionierung; „In DB übernehmen“, „Speichern unter“ und die Übernahme ins Projekt kopieren sie mit. (#849)
+- Seit 09.10.2026: Die Zonen eines Gebäudes im Katalog lassen sich im Katalogeditor und über „Zonen bearbeiten …“ in der Gebäudeverwaltung bearbeiten; die Übernahme ins Projekt kopiert sie. (#850)
+- Seit 09.10.2026: Der Strom einer Kältemaschine zählt in Kosten und Emissionen auch dann, wenn sie der einzige Stromverbraucher des Projekts ist. (#852)
+- Seit 09.10.2026: Die Photovoltaik kann statt des Modulmodells mit einer importierten Ganglinie (Stunden- oder Viertelstundenwerte) rechnen; Ganglinien werden im Katalog gepflegt und dem Projekt zugeordnet. (#857)
+- Seit 09.10.2026: Der Import einer PV-Ganglinie fragt die Nennleistung ab und prüft sie gegen die Reihe; Ergebnisreiter und Bericht nennen bei einer Ganglinie die Quelle statt der Moduldaten. (#858)
+- Seit 09.10.2026: Im Kalender eines Gebäudes lassen sich jetzt Wochenendtage, ein Feiertagsland, benannte Ferienzeiträume und benannte Wochenprofile festlegen; jede Zuordnungszeile wählt ihre Größen einzeln. (#863)
+- Seit 09.10.2026: Der Zapfprofilgenerator rechnet mit dem gewählten Wochenende und allen Ferienzeiträumen des Gebäudes; der Tagesbilanz-Weg rechnet weiter mit Samstag und Sonntag und den ersten vier Ferienzeiträumen. (#864)
+- Seit 09.10.2026: Feiertage zählen im Brauchwasser-Zapfprofil immer als Sonntag; die Landesfeiertage richten sich nach dem Feiertagsland des Gebäudes. (#866)
+- Seit 09.10.2026: Die Nennleistung einer PV-Ganglinie lässt sich im Katalog nachträglich bearbeiten; Excel-Bericht und Variantenvergleich nennen die Quelle der Photovoltaik (Modulmodell oder Ganglinie). (#867)
+- Seit 09.10.2026: In der Kalenderbedienung lassen sich alle Ferienzeiträume benennen, auch die ersten vier. (#868)
+- Seit 09.10.2026: Im Dialog Photovoltaik Ganglinie wird eine Projektkopie, die vom Katalog abweicht, gekennzeichnet und lässt sich über „Aus dem Katalog erneuern…“ auf den Katalogstand bringen. (#869)
+- Seit 09.10.2026: Feiertage liegen im Gemeinjahr nach festen Regeln: Ostern ist der Sonntag um den 8. April des Kalenderrasters, ein Jahr gilt nur mit einer Preisreihe. (#874)
+- Seit 10.10.2026: Kalenderbild und Datumsanzeige der Gebäudekalender nennen den Wochentag des 1. Januar der Klimaregion statt eines Bezugsjahrs; Gebäude, Trinkwarmwasser und Bedarfsprofile rechnen mit denselben Wochentagen, eine Preisreihe mit Jahr setzt für alle den Kalender dieses Jahres. (#880)
+- Seit 10.10.2026: Die Verwaltung der Kältemaschinen zeigt ihre Liste mit den Spalten der Wärmepumpen-Verwaltung, einer Spalte „Herkunft“, einem Schalter zum Ausblenden der Typkennfelder, die Kennlinie als Diagramm und den Vergleich mit Kennwerten nebeneinander; unter Windows öffnet sie ein eigenes Fenster. (#881)
+- Seit 10.10.2026: Im Dialog der Kachel „Kühlung und Kälteanlagen“ lassen sich unter „Hinzufügen…“ die Typkennfelder laden und die Katalogverwaltung öffnen. (#881)
+- Seit 10.10.2026: In jedem Katalog verneint ein vorangestelltes „!“ den Trichter einer Textspalte. (#881)
+- Seit 10.10.2026: Ein gekürzter Spaltenkopf in den Katalogen nennt beim Verweilen mit der Maus seinen vollen Namen. (#882)
+- Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
+- Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
+
+*Die folgenden acht Sätze (#886 bis #888, #890, #899 und #911) sind nach dem Sammel-Upload #889 hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer. Die Sätze darüber lagen dem Upload vor; was davon nicht im Logbuch steht (etwa #884, eine Fehlerbehebung), ist nach Regel 13.4 entfallen.*
+
+- Seit 10.10.2026: Die Projektdialoge mit Katalogauswahl passen sich kleinen Bildschirmen an — kompaktere Darstellung unter 1 200 × 800 px und ein Rollbalken, wenn die Höhe nicht reicht. (#886)
+- Seit 10.10.2026: Der BHKW-Dialog folgt dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“. (#887)
+- Seit 10.10.2026: In der Katalogliste der Projektdialoge sind die Spalten wählbar („Spalten…“); im Projekt verwendete Sätze sind farblich gekennzeichnet statt in einer eigenen Spalte. (#888)
+- Seit 10.10.2026: Im Gebäudedialog steht „Bearbeiten…“ in der Kopfleiste der Projektliste. (#888)
+- Seit 10.10.2026: Der Hilfe-Assistent trägt Werte in den Erzeugermasken des Projekts (Heizkessel, BHKW, Photovoltaik, Solarkollektoren, Wärmepumpe) so ein, dass sie beim Speichern erhalten bleiben, und sagt, wenn keine Anlage gewählt ist. (#890)
+- Seit 10.10.2026: Der Hilfe-Assistent nennt gesperrte Felder vor der Rückfrage und wechselt den Energieträger einer Anlage sowie den Leistungspreis der Stromspeicher-Auslegung nicht selbst; das geschieht von Hand in der Maske. (#899)
+- Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
+- Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#911)
+
+*Die folgenden achtzehn Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939 und #940) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+
+- Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
+- Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
+- Seit 10.10.2026: Die Zeitachse der Diagramme nennt unter jeder Stunde das Datum, und der Strich an der Mausstelle folgt der Maus auch im vergrößerten Ausschnitt. (#893)
+- Seit 10.10.2026: Im Dialog Wärme-/Strombedarf zeigt der Reiter Grafik die Jahresganglinie und wahlweise Monats-, Wochen- und Tagessummen je Bedarfsart, jeweils mit CSV-Export. (#894)
+- Seit 10.10.2026: In den Ergebnistabellen der Simulation stehen die Spaltenköpfe über ihren Werten. (#895)
+- Seit 10.10.2026: Der Knopf „CSV…“ am Bild exportiert jede Zeitreihe der Anwendung: Bedarfs-, Klimadaten-, Kostenprofil-, Profil- und Zapfprofilbilder, Ganglinienverwaltungen, Speicherflotte, Lastspitzenkappung, Kapitalwertverlauf und Zahlungsstrom. (#896)
+- Seit 10.10.2026: Auf dem iPad halten die Dialoge und Überlagerungen Statusleiste und Home-Anzeige frei; die Kompaktstufe der Projektdialoge gilt unter 1 280 × 800 Punkten und damit auch auf dem iPad 11 Zoll. (#897)
+- Seit 10.10.2026: Die Dialoge Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe und Photovoltaik folgen dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“; die Wärmepumpe öffnet ihre Anlage als Überlagerung „Anlage…“, die Photovoltaik ihre Stränge als „Stränge und Wechselrichter…“. (#905–#909)
+- Seit 10.10.2026: Die Detailzeile „Gewählter Satz“ nimmt aufgeklappt den Platz unter den Listen; die Dialoge Wärmebedarf extern, Strom-, Solarthermie- und PV-Ganglinie zeigen dort den Lastgang mit Kennzahlen in voller Breite. (#910)
+- Seit 10.10.2026: Nach „In das Projekt übernehmen“ ist nur noch die übernommene Zeile gewählt; „Aus dem Projekt entfernen“ trifft sie. (#910)
+- Seit 10.10.2026: Die Simulation im Dialog Wärmequelle Erdreich rechnet mit den angezeigten Eingaben und zeigt Ergebnis, Verlauf und Kennwerte der Soletemperatur — Jahresmittel, Tiefst- und Höchstwert mit Zeitpunkt — sofort an. (#898)
+- Seit 10.10.2026: Der Kalenderteppich der Konditionierung und der Raumnutzung lässt sich über „CSV…“ als Tabelle mit 365 Tageszeilen (Datum, Wochentag) und 24 Stundenspalten speichern; Zahlungsstrom und Kapitalwertverlauf zählen in der CSV-Datei wie in der Tafel ab Jahr 0. (#900)
+- Seit 10.10.2026: Im Anlagenschema öffnet ein Doppelklick auf Kältemaschine, Rückkühlung, Wärmepumpe im Kühlbetrieb und ihre Quelle den jeweiligen Dialog; der Tooltipp jedes Elements nennt, was der Doppelklick öffnet. (#902)
+- Seit 10.10.2026: Der Import von PV- und Solarganglinien läuft über den Dialog „Format und Vorschau“ mit Formatprüfung, Zeilenzahl und Jahresbild der gelesenen Reihe; die Satzansicht der PV- und Solarganglinien zeigt die Ganglinie als Grafik. (#914)
+- Seit 10.10.2026: Der KI-Assistent meldet Felder, die schon den gewünschten Wert tragen, als „unverändert“ statt als nicht ausgeführte Aktion. (#924)
+- Seit 10.10.2026: Die Hinweise eines Simulationslaufs in der Übersicht der Berichte lassen sich ein- und ausklappen; zugeklappt bleibt eine Zeile mit der Zahl der Hinweise. (#926)
+- Seit 10.10.2026: „Bearbeiten“ öffnet den gewählten Satz in allen Erzeugerdialogen als Überlagerung in voller Höhe mit OK und Abbrechen; die Ganglinien-Dialoge zeigen so die Kurve in voller Größe. (#939)
+- Seit 10.10.2026: Beide Listen tragen je Zeile einen Stift zum Bearbeiten; die Zeile „Gewählter Satz“ zeigt aufgeklappt die Anlagendaten in Kurzform. (#940)
+
+### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
+
+Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.7); veröffentlicht wird jeder Satz erst, wenn sein
+Schemaschritt der Standardlastprofile ausgeliefert ist (H25/G25/L25: 193; P25/S25: 196).
+
+- Seit 07.10.2026: Der Katalog „Datenbank Strombedarf“ enthält zusätzlich die BDEW-Profile P25 und S25 für den Netzbezug von Haushalten mit PV-Anlage bzw. mit PV-Anlage und Batteriespeicher (Netzbezugsprofile, keine Verbrauchsprofile). (SLP25b)
+- Seit 06.10.2026: Der Katalog „Datenbank Strombedarf“ enthält die BDEW-Standardlastprofile Strom 2025 für Haushalt (H25), Gewerbe (G25) und Landwirtschaft (L25), normiert auf 1.000 MWh im Jahr. (SLP25)
+
+### Version 1.2.0.7 — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
+
+Version vom Anwender zu bestätigen (Regel 13.4: ein Satz je Auftrag).
+
+- Seit 06.10.2026: Die Berichtsseite ordnet Varianten und Inhalt links, Vorlage und Ausgabe rechts in vier Karten an. (#762)
+- Seit 06.10.2026: Der Wirtschaftlichkeitsbericht lässt sich mit allen drei Szenarien nebeneinander erstellen (VALERI-Darstellung). (#765)
+
+### Version 1.2.0.6 — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
+
+Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. Ein Satz je Auftrag (Regel 13.4).
+
+- Ein Katalogpaket der Brauchwasser-Nutzungsarten darf die Spalte ‚Katalogversion‘ weglassen; seine Zeilen treten dann der Katalogversion des Katalogs bei, in den sie kommen. (#615)
+- Heizkessel führen im Katalog die Gruppe ‚Kennlinie‘ (Wirkungsgrad bei 30 % Last, Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit); der VDI-3805-Import liest Wirkungsgrade und kleinste Leistung und kennzeichnet Brennwertkessel. (#616)
+- Fehlen einer Datenbank die frei verfügbaren Katalogdaten des Brauchwasser-Zapfprofils, lädt EPOS-Plan sie selbsttätig nach; sie liegen zudem im Programmordner unter Vorlage\Katalogpaket_frei. (#617)
+- Gestapelte Jahresganglinien zeigen jede Schicht als deckendes Band und die Summe als schmalen Rand; je Tag steht die Stunde der Tagesspitze, die Zeile unter dem Bild nennt sie. (#624)
+- Heizkessel rechnen je Stunde mit dem Wirkungsgrad ihrer Laststufe nach einer Teillastkennlinie; ohne gepflegten Wert bei 30 % Last gilt eine Vorgabe nach Bauart. (#625)
+- Heizkessel in bestehenden Projekten übernehmen das Kennzeichen Brennwertkessel aus dem Katalog. (#627)
+- Brennwertkessel mit eingeschalteter Brennwertkennlinie rechnen je Stunde mit dem Rücklauf aus Heizkreis, Speicher oder Temperaturpaar; unter dem Taupunkt steigt ihr Wirkungsgrad. (#627)
+- Die Szenarioabdeckung der Wirtschaftlichkeit zählt die angehakten Versionen samt Referenz und folgt einem Haken sofort. (#603; mit #633 eingetragen, Version bestätigt der Anwender beim Upload)
+- Ändert die Versionsauswahl die Gruppenregel, meldet die Wirtschaftlichkeitsseite die Ergebnisse bis zum nächsten Berechnen als veraltet. (#633 vorläufig; Version bestätigt der Anwender beim Upload)
+- Heizkessel takten unter ihrer Mindestleistung: Die Simulation zählt die Brennerstarts und rechnet je Start einen Anfahrverlust als Brennstoff; leere Felder nehmen Vorgaben. (#630)
+- Der Kesseleditor zeigt in der Gruppe „Kennlinie“ den Wirkungsgrad über der Last als Diagramm, beim Brennwertkessel mit Brennwertkennlinie für 30, 50 und 60 °C Rücklauf. (#635)
+- Berichtsvorlagen können je Variante die Tabelle der Heizkessel mit Jahresnutzungsgrad, Brennwertanteil und Starts zeigen. (#635)
+- Verwaltung Heizkessel: Vorlauf und Rücklauf stehen als Gruppe „Auslegung für Verteilung“ und sind ohne Eintrag mit dem Paar vorbelegt, mit dem die Simulation rechnet. (#636)
+- Wärmepumpe: Die Nutzungsdauer wird im Kostendialog gepflegt; ein fehlender Rücklauf ist aus dem Vorlauf vorbelegt. (#636)
+- Auf der Seite „Kosten“ rechnet „Neu berechnen“ die Wirtschaftlichkeit der Versionen im Vergleich neu. (#637)
+- In langen Dialogfenstern bleiben Kopfzeile und Knopfleiste beim Rollen stehen. (#638)
+- Die im Projekt gepflegte Jahressumme eines Stromverbrauchers gilt auch dann, wenn seine Projektkopie anders heißt als der Katalogeintrag. (#641)
+- Die Wärmegestehungskosten enthalten nur noch die Kosten der Wärmeerzeugung; Haushaltsstrom, Photovoltaik und Stromspeicher zählen nicht mehr mit. Unter den Energiekosten steht je Energieträger die Herleitung Menge × Preis. (#642)
+- Bei Unternehmen des produzierenden Gewerbes mindert die entgangene Entlastung nach § 9b StromStG die Stromgutschrift der Wärmegestehungskosten. (#642)
+- Brauchwasser- und Prozesswärmeprofile rechnen mit ihrer gepflegten Jahressumme auch dann, wenn ihre Projektkopie anders heißt als der Katalogeintrag. (#643)
+- Die Fußzeile unter der Kostentafel des Variantenvergleichs nennt den Leistungspreis des Stromträgers, den die Gruppenregel nicht ansetzt, und bei aktiver Tarifstruktur zusätzlich den abweichenden Leistungspreis des Reststromtarifs. (#644, #649, #654)
+- Die Wirtschaftlichkeitsseite erkennt veraltete Ergebnisse auch nach einem Wechsel der Seite. (#645; Version bestätigt der Anwender beim Upload)
+- Die Wärmegestehungskosten rechnen die Stromsteuer nur einmal und bewerten den Wärmestrom einer Anlage mit dem Preis ihres eigenen Stromträgers. (#650; Version bestätigt der Anwender beim Upload)
+- Der § 9b-Abzug der Wärmegestehungskosten berücksichtigt den Sockelbetrag und übersteigt den Stromsteueranteil nicht. (#653; Version bestätigt der Anwender beim Upload)
+- Die Katalogempfehlung der Hilfsenergiekosten bezieht sich auf den Endenergiebedarf: Heizkessel 1 bis 2 %, BHKW 0,5 bis 1,5 %. (#676; Version bestätigt der Anwender beim Upload)
+- Die Einspeisung des BHKW wird je Viertelstunde bilanziert; der BHKW-Reiter mit seiner Kennzahl, die Strommatrix und die Wirtschaftlichkeit zeigen dieselbe Einspeisung wie der Bericht. (#723; Version bestätigt der Anwender beim Upload)
+- Der Unterreiter „Kälte Produktion Chart“ und die Kältedeckung der Übersicht zeigen die Deckung der Wärmepumpe im Kühlbetrieb auch nach einem Wechsel zur Startseite. (#724; Version bestätigt der Anwender beim Upload)
+- Der Ergebnisreiter Wärmepumpe zeigt die Jahresarbeitszahl der Wärmepumpe und des Systems mit Heizstab sowie eine Spalte JAZ je Modul, wahlweise mit Heizstab. (#749; Version bestätigt der Anwender beim Upload)
+- Die Berichtskennzahl Jahresarbeitszahl rechnet die Heizstabwärme mit. (#749; Version bestätigt der Anwender beim Upload)
+- Im Reiter Energieerzeuger der Startseite ersetzt die Kachel ‚Kühlung und Kälteanlagen‘ den Knopf ‚Kältemaschinen…‘; sie zeigt die Kältemaschinen des Projekts und schaltet den Kühlbetrieb der Wärmepumpen mit Kühlfunktion direkt. (#758; Version bestätigt der Anwender beim Upload)
+- Der Dialog Wärmequelle Erdreich prüft die Auslegung nach VDI 4640 Blatt 2 schon vor dem ersten Simulationslauf als Vorprüfung aus Heizleistung und COP der Wärmepumpe. (#759; Version bestätigt der Anwender beim Upload)
+- Ein ohne Schloss ausgelieferter Katalogsatz, den eine neue Programmfassung gesperrt mitbringt, wird beim Katalogabgleich an Ihren gleichnamigen Satz angebunden, übernimmt den Auslieferungsstand und wird künftig nachgeführt. (#763; Version bestätigt der Anwender beim Upload)
+- Im Gebäudedialog erscheinen Hinweise zu ‚Gebäude in DB löschen‘ und ‚Gebäude in DB ändern…‘ direkt unter den Katalogknöpfen; ein gesperrtes Gebäude nennt den Grund schon am Knopf. (#771; Version bestätigt der Anwender beim Upload)
+- Meldungen in langen Dialogen bleiben beim Rollen unter der Kopfzeile sichtbar und lassen sich mit einem Kreuz ausblenden. (#775; Version bestätigt der Anwender beim Upload)
+- Ein Gebäude lässt sich aus der Datenbank löschen, auch wenn Projekte eine Kopie davon führen; die Projekte behalten ihre Kopie. (#776; Version bestätigt der Anwender beim Upload)
+- Im Gebäudedialog speichern Löschen, ‚Gebäude im Projekt bearbeiten…‘, ‚Exportieren…‘, ‚In DB übernehmen‘ und ‚Simulation…‘ eine eben übernommene Zeile vorher selbst; im Assistenten lässt sich ein Katalogsatz, aus dem eine noch nicht gespeicherte Zeile stammt, erst nach Abschluss löschen; ‚Baustoff-Zuordnungen…‘ steht neben ‚Importieren (gbXML, IFC)…‘, und die Flächenangabe heißt Nutzfläche. (#776; Version bestätigt der Anwender beim Upload)
+- Im Projektassistenten nutzt die Projektliste die volle Fensterhöhe, und über den Kacheln stehen die Daten des gewählten Projekts. (#778; Version bestätigt der Anwender beim Upload)
+- Die Erdwärmesonde rechnet ihre Soletemperatur stündlich aus dem Entzug im zehnten Betriebsjahr, mit Rückspeisung der Kühlwärme. (#797; Version bestätigt der Anwender beim Upload)
+- Im Dialog Wärmequelle Erdreich lassen sich Abstand, Anordnung, Bohrlochdurchmesser, Bohrlochwiderstand, Kopfüberdeckung und Betrachtungsjahr des Sondenfelds je Anlage eingeben. (#797; Version bestätigt der Anwender beim Upload)
+- Bei Komponentenübernahme und Flottenstudie bleiben alle Anlageneinstellungen der Quellanlage erhalten; ein fehlendes Quellprofil oder eine fehlende Kältemaschine wird mitübernommen, und weitere Speicherstücke erhalten Betriebsführung, Senken, Stränge, Sperrfenster und die nach Kapazität angepassten Kosten der vertretenen Anlage. (#803)
+- Die Auslegungsprüfung Erdreich rechnet je Anlage mit Erdreichquelle, auch wenn daneben eine Luft-Wasser-Wärmepumpe arbeitet. (#806)
+- Die Übernahme einer Komponente aus einem anderen Projekt bringt Betriebsführung, Wärmesenken, Pufferverbund, Stränge samt Modulen und Wechselrichtern sowie Sperrzeiten der Anlage mit und meldet Bezüge, die es im Zielprojekt nicht gibt.
+- Bei der Übernahme von Komponenten aus einem anderen Projekt bleiben die Kostenpositionen der ersetzten Anlagen erhalten und hängen an den neuen Anlagen; Positionen ohne Gegenstück erscheinen als ‚ohne Anlagenzuordnung‘.
+- In den Projektdialogen der Anlagen, Gebäude und Bedarfsprofile sowie in der Vorlagenverwaltung der Konditionierung lässt sich das Schloss eines Katalogsatzes direkt setzen und aufheben; gesperrte Sätze werden nie überschrieben. (#829)
+- Beim Gebäudeimport lassen sich IFC-Datei und Projektdatei (.sqproj) zusammen einlesen; enthält die Projektdatei beide Zonierungen, wählen Sie im Feld „DIN-V-18599-Zonen | Simulationszonen“, welche gilt. (#731, #736; Entwurf, Version bestätigt der Anwender beim Upload)
+- Beim IFC-Import ermittelt EPOS-Plan Bauteilflächen und Ausrichtung auch aus den Bauteilkörpern und zieht Fenster, Türen und Durchbrüche von der Wand- und Dachfläche ab. (#814; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Nennt eine IFC- oder gbXML-Datei keine Nordrichtung, fragt der Gebäudeimport danach; die Ausrichtung eines importierten Gebäudes lässt sich im Gebäudedialog nachträglich ändern. (#813; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Die Gebäudeansicht zeigt im Farbmodus „Befund“, welche Bauteile beim Import auffällig sind. (#814; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt; Bedienbegriff vor dem Upload klären, siehe Abschnitt 3)
+- Gebäude lassen sich jetzt allein aus der Projektdatei (.sqproj) importieren; die Quelle wählen Sie im Importdialog. (#815; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Die Gebäudeansicht zeigt Gebäude aus Projektdatei und gbXML jetzt mit Raum- und Bauteilkörpern wie bei IFC, mit allen Farbmodi und dem Bauteil-Steckbrief. (#816; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Passen beim Import von IFC und Projektdatei die Aufbauten beider Dateien nicht zusammen, fragt EPOS-Plan, welche gelten sollen. (#825; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Der Gebäudeimport zeigt die Modellansicht (MVD) einer IFC-Datei und nennt an der Dateiwahl die empfohlene Exporteinstellung: IFC4 mit Basismengen und Raumgrenzen 2. Ebene. (#851; Version bestätigt der Anwender beim Upload)
+
+### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
+
+Anwenderentscheid 29.09.2026: „Logbuch-Satz übernehmen, Version 1.2.6“. Ein Satz je Auftrag (Regel 13.4).
+
+- Eine Wärmepumpe mit Pufferspeicher als Wärmequelle zählt nur noch Stunden als Betriebsstunden, in denen sie Wärme liefert. (#599)
+- Ein Heizkessel zählt Rechenreste unter 10⁻⁹ kWh nicht mehr als Laufstunde oder Start. (#605)
+- Dialoge mit mehreren Hilfeknöpfen bieten den Hilfe-Assistenten nur noch einmal an, am Hilfeknopf im Dialogkopf. (#610)
+- Im Variantenvergleich der Wirtschaftlichkeit trägt der Netzbezug eines Standes ohne stromverwendenden Erzeuger Arbeits- und Grundpreis, aber keinen Leistungspreis; ein Hinweis nennt den Leistungspreis des Stromträgers. (#612; Anwenderentscheid 29.09.2026: „aktuelle Version“)
+
+### Version 1.2.0.5 — nach dem Sammel-Upload (Dialogdesign-Sitzung 26.09.), veröffentlicht 29.09.2026 (Revision 723)
 
 Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload dieses Tages ist
 1.2.0.4, alle Sätze der Dialogdesign-Sitzung erscheinen unter 1.2.0.5. Ein Satz je Auftrag
@@ -136,9 +394,9 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Im Photovoltaik-Dialog schlägt die neue Schaltfläche ‚Wechselrichter vorschlagen‘ die geeigneten Wechselrichter aus dem Katalog vor und übernimmt den gewählten für ‚Auslegung vorschlagen‘. (#564)
 - Photovoltaik: Die Modulauswahl je Strang bietet nur noch die dem Projekt zugeordneten Module; ‚Wechselrichter vorschlagen‘ stuft Aufteilungen mit mehr als vier Geräten als bedingt ein. (#565)
 - Nach dem Erstellen eines Berichts zeigt die Berichtsseite eine kurze Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ‚Öffnen‘; Warnungen stehen sichtbar darunter, alle übrigen Hinweise lassen sich aufklappen. (#565)
-- Seit 26.09.2026: Der Katalogtyp Hotel heißt „Hotel (aus Messung, je Zimmer)“; die Zonenmaske weist auf die Zimmerzahl als Bezugsmenge hin. (#579)
+- Seit 26.09.2026: Der Katalogtyp Hotel heißt „Hotel (aus Messung, je Zimmer)“. (#579)
 - Projektpakete eines älteren Programmstands werden beim Import auf den aktuellen Stand gehoben; abgelehnt wird nur noch ein Paket eines neueren Programmstands. (#580)
-- Die Bereitschaftsverluste des Heizkessels fallen nur an, solange er betriebsbereit ist – an einem Heiztag oder bis 24 Stunden nach dem letzten Lauf. (#568)
+- Die Bereitschaftsverluste des Heizkessels fallen nur an, solange er betriebsbereit ist – an Tagen unter der je Projekt einstellbaren Heizgrenze (Vorgabe 15 °C Tagesmittel) oder bis 24 Stunden nach dem letzten Lauf. (#568, #595)
 - Ein Elektrokessel führt keine eigene Kesselemission mehr; sein Strom bleibt allein im Netzbezug. (#568)
 - Der Kessel-Reiter zeigt Restwärmebedarf und den Anteil aus dem Puffer, Betriebsstunden, Starts und Bereitschaftsverlust je Kessel sowie das Kesselbild als Flächenstapel. (#568)
 - Der Gebäudedialog zeigt unter den Raumtemperaturen einen Satz zum geltenden Fahrplan; Wochenend- und Feriensollwert gelten als eine absolute, ganztägige Solltemperatur, 0 heißt keine Absenkung. (#571)
@@ -150,21 +408,61 @@ Anwenderentscheid 26.09.2026: letzte Zahl um eins erhöht; der Sammel-Upload die
 - Im Photovoltaik-Dialog folgt die Wechselrichter-Klappliste derselben Eignungsbewertung wie „Wechselrichter vorschlagen“; der OND-Import übernimmt Stränge je Tracker. (#567)
 - Der CSV-Export des Heizkessel-Reiters zeigt dieselben drei Reihen wie das Kesselbild. (#586)
 - Projektpakete aus noch älteren Programmständen (ab Schemastand 61) werden beim Import mit allen Umrechnungen auf den aktuellen Stand gehoben. (#587)
+- Das Brauchwasser-Zapfprofil öffnet im selben Dialog statt in einer weiteren Überlagerung; „‹ Brauchwasserwärme“ führt zurück und lässt Listen und Eingaben unverändert. (#589)
+- Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite, Firma und Vorlagenordner stehen in den Einstellungen. (#512)
+- Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts hinterlegen. (#520)
+- Berichte & Kosten zeigt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter mit dem Stand je Reiter statt der dunklen Seitenleiste. (#590)
+- Auf der Berichtsseite lässt sich das Szenario der Wirtschaftlichkeit wählen; der Wortbericht zeigt Kennzahlen, Betriebskosten, Brücke und Mehrjahresübersicht in diesem Szenario. (#591)
+- Im Kostenkapitel des Berichts steht je Stand die Kostenzahl der Einzelbetrachtung; wo die Gruppenregel wirkt, nennt eine Fußzeile die Zahl mit bepreistem Netzbezug und die Menge. (#609)
+- Die Nutzungsart ‚Hotel (aus Messung, je Zimmer)‘ rechnet mit der neuen Bezugsart ‚Zimmer‘; die Zonenmaske nennt Zimmer als Einheit der Bezugsmenge. (#593)
+- Die Speichergröße der Füllstandslinie wird in der Brauchwasser-Auslegung direkt über dem Wochenbild gewählt; jeder Eintrag nennt sein Volumen in Litern. (#594)
+- In der Brauchwasser-Auslegung lässt sich die Speichergröße der Füllstandslinie auch auf das Volumen eines der verglichenen Verfahren setzen, etwa DIN 4708. (#608)
+- Auf der Seite Wirtschaftlichkeit nennen die Platzhaltermarken von Sensitivität, Zahlungsreihen und Zahlungsstrom auch die feste Position der Stände. (#597)
+- In den Einstellungen unter ‚Bericht‘ lassen sich die Word- und die Excel-Vorlage festlegen, mit denen ein Bericht entsteht, solange ein Projekt auf der Berichtsseite keine eigene Vorlage wählt. (#600)
+- Wurde eine hinzugefügte Berichtsvorlage außerhalb des Vorlagenordners geändert, fragt die Berichtsseite, ob die Änderung übernommen werden soll. (#606)
+- Die Häkchen der Berichtsbausteine wirken auch auf die Blätter der Excel-Mappe und richten sich nach der gewählten Excel-Vorlage. (#607)
+- Das Band „bitte neu berechnen“ der Seiten Kosten und Wirtschaftlichkeit erscheint auch, wenn nach der letzten Rechnung Kosten, Preise, Wirtschaftlichkeitsparameter oder der Kostenkatalog bearbeitet wurden, und nennt den Grund. (#647)
+- In der Vorlagenverwaltung der Konditionierung legt „Kopieren nach …“ aus einer Vorlage eine eigene Vorlage einer anderen Größe an: von Heizen nach Kühlen mit wählbarem Komfortsollwert sowie zwischen Geräten und Personen. (#648)
+- Beim Kopieren einer Heizvorlage nach Kühlen lässt sich für die Absenkzeiten ein eigener Kühlsollwert (Vorgabe 28 °C) oder „aus“ wählen. (#651)
+- Fehlt einer Wärmepumpe im Projekt nur die Kühlkennlinie, lässt sie sich im Anlagendialog aus dem Katalog übernehmen. (#655)
+- Der Photovoltaik-Dialog zeigt je Rechenmodell, ob die Anlage abregelt; im Modell „Einfach“ sind die wirkungslosen Wechselrichterwerte gesperrt. (#655)
+- Die Monatssäulen der Autarkie-Analyse folgen den Kalendermonaten. (#655)
+- Projekte mit zehn Wärmepumpen werden gerechnet, mehr werden mit einer Meldung abgelehnt; eine unbrauchbare CSV-Quelle meldet der Lauf als Warnung. (#655)
+- Der Gebäudedialog nennt den Grund, wenn sich kein Wärmebedarf berechnen lässt. (#655)
+- Der IFC-Import liest Räume, Geschosse und Bauteile auch aus CAD-Exporten, die sie über das Enthaltensein anhängen, und übernimmt Flächen, Volumen, U-Werte, Außen- und Innenlage und Himmelsrichtung ersatzweise aus den Eigenschaften der Datei; welcher Wert galt, steht im Importprotokoll. (#657)
+- Die Autarkie-Analyse rechnet ohne Stromspeicher im Projekt mit 0 kWh und sagt es. (#659)
+- Die untere Grenzleistung im Projekt-BHKW gilt vor Katalog- und Projektwert, in allen Betriebsarten. (#659)
+- Ein Bedarfsprofil ohne Typ wird mit Meldung übersprungen; die übrigen Profile werden vollständig gerechnet. (#659)
+- Die Simulationskonfiguration wählt die verbauten Wärmeerzeuger einer leeren Kaskade in der Folge Solarthermie, Wärmepumpe, BHKW, Heizkessel vor. (#661)
+- Der Bereitschaftsverlust eines Heizkessels lässt sich in kW oder in Prozent der Nennleistung angeben. (#661)
+- Der IFC-Import liest Schichtdicken, die ein CAD-Export in Millimetern schreibt, richtig ein und übergeht Folien ohne Wärmewirkung mit Hinweis. (#662)
+- Eine zugeordnete Solarthermieganglinie geht in die Simulation ein. (#665)
+- An Photovoltaik- und Solarthermieanlagen lässt sich die Bodenreflexion (Albedo) angeben; leer rechnet mit 0,2. (#666)
+- Die Speicherauslegung übernimmt die beste Rastervariante mit einem Knopf als Projektflotte. (#666)
+- Ein Prozesswärmesatz trägt ein Temperaturpaar (Vorlauf/Rücklauf); die Simulation wertet Wärmepumpe, Kessel und Puffer am geforderten Prozessvorlauf aus. (#667)
+- Der Katalog liefert acht typische Betriebsweisen der Prozesswärme als Vorlage. (#667)
+- Die Solarthermie rechnet die Kollektortemperatur wahlweise aus dem Speicherzustand mit Übertrager-Grädigkeit statt mit festen 50 °C, berücksichtigt die Diffus-Einfallswinkelkorrektur des Kollektors und führt Solarkreisverluste, Pumpenstrom und die Bezugsfläche der Kennwerte als Eingaben. (#668)
+- Die Netzverluste lassen sich je Kanal (Heizung, Brauchwasser, Prozesswärme) in Prozent oder kWh/a angeben; das Brauchwasser des Bestandswegs kennt eine Zirkulation mit fester Leistung und Laufzeit. (#670)
+- Ein Betriebskalender mit Feiertagen je Bundesland und Betriebsferien wirkt auf Brauchwasser-, Prozesswärme- und Stromprofile. (#670)
+- Ein Gebäude des Projekts lässt sich mit „In DB übernehmen“ als eigener Satz in die Gebäudedatenbank übernehmen. (#671)
+- Die Bauteilliste des IFC-Imports lässt sich durchsuchen, sortieren und je Spalte filtern. (#672)
+- Wärmepumpen rechnen unterhalb ihrer Mindestleistung einen Taktverlust nach EN 14825 samt Starts; BHKW rechnen mit einer Teillastkennlinie und takten unterhalb ihrer Untergrenze mit Anfahrverlust und Mindestlaufzeit. (#673)
+- Photovoltaik, Stromspeicher und Reststrom werden in derselben Viertelstundenauflösung bilanziert; eine Einspeisegrenze mit Abregelung und der Standby des Speichersystems lassen sich angeben. (#674)
+- Der Pufferspeicher rechnet seinen Bereitschaftsverlust wahlweise aus der Zonentemperatur, kennt wählbare Zonenanteile und ein Frischwassermodul; eine thermische Desinfektion des Brauchwassers lässt sich als Projektvorgabe mit Intervall, Uhrzeit und Zieltemperatur rechnen. (#677)
+- Ein Programmupdate gleicht die Gerätekataloge mit dem Auslieferungsstand ab: neue Sätze kommen hinzu, unveränderte werden aktualisiert, eigene Anpassungen bleiben. (#678)
+- Die Prüfung der Wärmequelle Erdreich bleibt mit dem Simulationsergebnis gespeichert. (#678)
+- Der Katalogabgleich beim Programmupdate umfasst alle Gerätekataloge, Baustoffe und Bauteilaufbauten, Brennstoffe, Tagesverteilungen, Gebäude, Konditionierungsvorlagen, Pufferspeicher und Ganglinien; Klimadaten und der Zapfprofilkatalog behalten ihre eigenen Importwege. (#685)
+- Brennstoffe und Pufferauslegungs-Vorgaben liegen je Projekt als Kopie vor; ein Katalogupdate ändert laufende Projekte nicht mehr, und der Dialog „Brennstoffe des Projekts“ zeigt Abweichungen vom Katalog und setzt sie auf Wunsch zurück. (#687)
+- Bauteilschichten sind ab 0,5 mm Dicke zulässig; der IFC-Import übernimmt damit Bleche ab 0,5 mm und übergeht nur noch Folien und Anstriche darunter. (#693)
+- Der Ergebnisreiter der Simulation zeigt bei Projekten mit Kühlbetrieb das Diagramm „Kälte Produktion“; „Autarkie Analyse“ steht ganz rechts. (#694)
+- Der BHKW-Reiter zeigt unter der Wärmelast die Stromlast-Jahresganglinie mit Stromproduktion, Einspeisung, Reststrombedarf und Strombedarf. (#694)
+- Die Hinweise auf der Wirtschaftlichkeitsseite lassen sich ein- und ausklappen. (#694)
+- Der Bericht enthält die Stromlast-Jahresganglinie des BHKW und bei Projekten mit Kühlbetrieb das Kälte-Produktionsbild, in Word und Excel (Platzhalterkatalog Fassung 12). (#698)
+- Der Stromspeicher-Reiter der Simulation nennt, mit welchem Peak-Ziel die Speicherflotte gerechnet hat und woher es stammt; ohne gespeicherten Flottenstand bildet jeder Lauf das Ziel aus seinem eigenen Lastgang. (#720)
+- Die Technikdialoge haben einen Knopf „Grundlagen“, der die Grundlagenseite der Technik im Wiki öffnet. (#611; Anwenderentscheid 29.09.2026)
 
-### Version beim Anwender zu erfragen — Berichtsvorlagen (BV-E1, BV-E2)
-
-**Nicht hochgeladen, Version offen** — die zwei Sätze fehlen im Sammel-Upload vom 26.09.2026 (Revision 611); die Seite
-Berichtsvorlagen selbst ist hochgeladen (Revision 610).
-
-Ob die Sätze zu BV-E1 und BV-E2 mit dem Sammel-Upload unter 1.2.0.4 erscheinen oder unter einer eigenen Versionsnummer, ist
-beim Anwender zu erfragen (Stichwort `bericht`); das Datum folgt der Veröffentlichung.
-
-- Seit 26.09.2026: Berichtsvorlagen führen Kapitel einzeln als Platzhalter; die Berichtsseite graut Kapitel aus, die die
-  gewählte Vorlage nicht führt, und in den Einstellungen lässt sich ein Firmenlogo für die Kopfzeile des Berichts
-  hinterlegen. (#520)
-- Seit 26.09.2026: Der Word-Bericht wird aus einer Vorlage gefüllt: Auf der Berichtsseite lässt sich eine eigene
-  Word-Vorlage mit Platzhaltern wählen, anlegen, hinzufügen und prüfen; den Platzhalterkatalog zeigt die Berichtsseite,
-  Firma und Vorlagenordner stehen in den Einstellungen. (#512)
+Die zwei Sätze der Berichtsvorlagen (BV-E1, BV-E2) fehlen im Sammel-Upload vom 26.09.2026 (Revision 611; die Seite
+Berichtsvorlagen selbst ist mit Revision 610 hochgeladen); Anwenderentscheid 27.09.2026: sie erscheinen unter 1.2.0.5.
 
 *Zu #520 (Stichwort `bericht`):* Ein Satz — Kapitel als Platzhalter, ausgegraute Häkchen und das Firmenlogo. Ohne eigenen
 Satz bleiben die Formatangaben `|ohne titel` und `|ebene`, der Kapitelkopf, die Stelle der Anhang-E-Checkliste aus der
@@ -649,6 +947,8 @@ den Statuszeilen #358–#403; ein eigener Eintrag entfiele als Dopplung nach Reg
   Katalogverwaltungen. (#540)
 - Seit 26.09.2026: Der Katalog der Brauchwasser-Nutzungsarten führt einen Hoteltyp. (#546)
 - Seit 26.09.2026: Ecodesign-Zapfprofile lassen sich in der Auslegung nach Wohneinheiten skalieren. (#546)
+- Im Ergebnisreiter Wärmepumpe steht der Block Auslegung mit dem Diagramm „Leistung über Außentemperatur“ am Ende, unter den Jahresganglinien. (#741)
+- In der Simulation stehen die Reihenschalter von Wärme- und Stromgang nebeneinander in einer Zeile wie in den übrigen Ergebnisreitern. (#742)
 
 *Mit E12 ergänzt:* Statuszeile #377 zählte zu dieser Version „die Logbuch-Sätze 1–14 (+ #361)“;
 für den Rasterfußzeilen-Befund aus #361 (Fußzeile der Rasterkarte bei hoher Zeilenschrift nicht
@@ -781,7 +1081,15 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
   im Abschnitt „Bericht“ der Seite Wirtschaftlichkeit (Anker `bericht-vorlage`); bis zum Upload führen die Hilfeknöpfe
   von Prüfliste, Platzhalterkatalog und Einstellungen › Bericht ins Leere. Mit BV-E2 (#520) wächst die Seite um Kapitel,
   Häkchen und Logo (neue Anker `kapitel`, `haekchen`, `logo`; die Anker der Hilfeschlüssel bleiben). Die Logbuch-Sätze
-  beider Etappen stehen in Abschnitt 2, die Version ist beim Anwender zu erfragen.
+  beider Etappen stehen in Abschnitt 2 unter 1.2.0.5 (Anwenderentscheid 27.09.2026).
+- Die Repo-Quelle der Seite Gebäudeimport nennt den Bedienbegriff „Befund“ (Spalte „Befund“, Farbmodus „Befund“,
+  Filter „Nur Flächen mit Befund“ und „Nur Bauteile mit Befund“), ebenso ein Logbuchsatz unter 1.2.0.6 (Farbmodus der
+  Gebäudeansicht). Das Gegenlese-Muster der Wiki-Regel in `CLAUDE.md` trifft das Wort; die Spalte war schon mit #707
+  als Bestandstreffer vermerkt. Vor dem Upload entscheidet der Anwender: den Bedienbegriff in Oberfläche und Wiki
+  umbenennen (wie die Ampelmeldungen der Seite Photovoltaik mit E12) oder ihn als Bedienbegriff zulassen.
+  Anwenderentscheid 09.10.2026: Wiki-Upload zurückgestellt. Die Zurückstellung ist mit dem Auftrag vom 10.10.2026 (#889) aufgehoben;
+  Anwenderentscheid 10.10.2026: „Befund“ ist für den Wiki-Upload nicht relevant; die Seite Gebäudeimport ist als Revision 828 hochgeladen, der Begriff bleibt als wörtlich zitierte Beschriftung der Oberfläche.
+  Alle übrigen Seiten sind hochgeladen.
 
 ## 4 Ablauf des Uploads
 

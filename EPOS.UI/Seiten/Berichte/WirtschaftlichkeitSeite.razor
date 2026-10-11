@@ -102,12 +102,21 @@
        Gerechnet wird weiterhin NUR auf Zuruf (Vorbild UcWirtschaftlichkeit:
        btn_Berechnen); eine Rechnung beim Oeffnen wuerde jeden Seitenwechsel zu
        einem Simulationslauf machen. *@
-    @if (_warnungen.Count > 0 || _nachrechnen || _simVeraltet)
+    @if (_warnungen.Count > 0 || _nachrechnen || _simVeraltet || GruppenregelVeraltet)
     {
         <div class="epos-wirt-warnband">
             @if (_nachrechnen)
             {
-                <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenText" />
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenBandText" />
+            }
+            @* Anwenderentscheid 30.09.2026 (Register EZ-18): Ein Haken oder die Referenzwahl
+               hat die Staende mit Stromverwendung des Laufs geaendert und damit die
+               Gruppenregel; die gespeicherten Ergebnisse gelten bis zum naechsten
+               "Berechnen" weiter und sind veraltet. Gerechnet wird nur auf Zuruf - der Knopf
+               steht darunter im selben Band. *@
+            @if (GruppenregelVeraltet)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@GruppenregelVeraltetText" />
             }
             @* Anwenderbefund 22.09.2026: Das SIMULATIONSergebnis ist aelter als die
                letzte Projektaenderung. Das stand bis hierher nur als Farbe in der
@@ -118,10 +127,21 @@
             {
                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@SimulationVeraltetText" />
             }
-            @foreach (string w in _warnungen)
-            {
-                <Warnbanner Stufe="WarnStufe.Warnung" Text="@w" />
-            }
+            @* Die Hinweise des Laufs als Klappzeile (Baustein Hinweisklappe, derselbe wie
+               auf Simulations- und Berichtsseite): eingeklappt, sobald mehr als einer
+               vorliegt, ein einzelner steht offen; die Stellung gilt fuer die Sitzung. *@
+            <Hinweisklappe Anzahl="@_warnungen.Count" Stufe="WarnStufe.Warnung"
+                           Klasse="epos-wirt-hinweisklappe"
+                           TextEiner="@Resource.WIRT_HINWEISE_EINER"
+                           TextMehrere="@Resource.WIRT_HINWEISE_MEHRERE"
+                           Schluessel="@HINWEISKLAPPE_SCHLUESSEL" Gedaechtnis="@HinweisGedaechtnis">
+                <div class="epos-wirt-hinweisliste">
+                    @foreach (string w in _warnungen)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@w" />
+                    }
+                </div>
+            </Hinweisklappe>
             @if (Berechnen is not null)
             {
                 <div class="epos-leiste">
@@ -266,8 +286,11 @@
                    SZENARIEN - nach der Bandbreite, vor der Sensitivitaet, wie im Mockup:
                    Die Bandbreite zeigt die Spanne am Ende, der Verlauf, wie sie
                    entsteht. Ohne Datenseite steht nur der Platzhalter. *@
-                <KapitalwertVerlaufAbschnitt @ref="_verlauf" Dienste="@Verlauf" Fassung="@_verlaufFassung"
-                                             Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
+                @* "CSV..." am Kapitalwertverlauf: erste Spalte das Betrachtungsjahr (Raster Jahr). *@
+                <CascadingValue Value="@Jahresexport">
+                    <KapitalwertVerlaufAbschnitt @ref="_verlauf" Dienste="@Verlauf" Fassung="@_verlaufFassung"
+                                                 Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
+                </CascadingValue>
 
                 @Sensitivitaetsteil
 
@@ -346,11 +369,12 @@
                 @* U10 (ETAPPE E9b, E9b-Q3): UNMITTELBAR unter der Annahmentafel der
                    Ausweis "n von m Parametern szenariert" samt der gepflegten Groessen -
                    an der Stelle des Hinweistexts, den die Pflege in den Dialogen
-                   ueberfluessig macht (Konzept § 2.11.7). *@
-                @if (!string.IsNullOrEmpty(_stand.Szenarioabdeckung))
+                   ueberfluessig macht (Konzept § 2.11.7). Er zaehlt die Staende des
+                   Laufs und folgt deshalb, wie die Bandbreite, dem Haken (Ansicht). *@
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenarioabdeckung))
                 {
                     <div class="epos-wirt-szenarioabdeckung">
-                        <Herleitungszeile Text="@_stand.Szenarioabdeckung" />
+                        <Herleitungszeile Text="@_stand.Ansicht.Szenarioabdeckung" />
                     </div>
                 }
 
@@ -461,7 +485,7 @@
                                und drei Wirkungsgrade, die Beurteilung als Anzeige. Der Freitext
                                bleibt als Altfeld lesbar, gekennzeichnet, ohne Eingabe. *@
                             <p class="epos-feld-text">@NichtMonetaerText
-                                <InfoKnopf Schluessel="@WirkungenHilfeSchluessel" />
+                                <InfoKnopf Schluessel="@WirkungenHilfeSchluessel" MitAssistent="false" />
                                 <Vorlagenfeldknopf Vorlagenfeld="tabelle.wirtschaft.nicht_monetaer"
                                                    Stufe="Vorlagenfeldstufe.Aehnlich"
                                                    StufenHinweis="@Resource.VF_ORT_WIRKUNGEN" /></p>
@@ -554,10 +578,10 @@
                         <Herleitungszeile Text="@_stand.Ansicht.Empfehlungszeile" />
                     </div>
                 }
-                @if (!string.IsNullOrEmpty(_stand.Szenarioabdeckung))
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenarioabdeckung))
                 {
                     <div class="epos-wirt-szenarioabdeckung">
-                        <Herleitungszeile Text="@_stand.Szenarioabdeckung" />
+                        <Herleitungszeile Text="@_stand.Ansicht.Szenarioabdeckung" />
                     </div>
                 }
                 <KapitalwertVerlaufAbschnitt Dienste="@Verlauf" Fassung="@_verlaufFassung"
@@ -730,6 +754,17 @@
 
     /// <summary>Liefert den Anzeigestand (Vorbild <c>LadeDaten</c>).</summary>
     [Parameter] public Func<WirtschaftlichkeitStand>? Laden { get; set; }
+
+    /// <summary>
+    /// „CSV…“ an den Jahresreihen der Seite (Kapitalwertverlauf): die Naht der Hülle; das Raster
+    /// ist ausdrücklich „Jahr“. Ohne Delegat kein Knopf.
+    /// </summary>
+    [Parameter] public Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, Zeitraster, Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _jahresexport;
+
+    private Ganglinienexport? Jahresexport => CsvSpeichern is null ? null
+        : _jahresexport ??= new Ganglinienexport(CsvSpeichern, Zeitraster.Jahr);
 
     /// <summary>
     /// Zeigt ein anderes Szenario. Gerechnet wird dabei nichts — die Hülle
@@ -940,9 +975,30 @@
     /// zum Stand passen — der Grund, warum der Knopf daneben steht.</summary>
     [Parameter] public string NachrechnenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN;
 
+    /// <summary>Der Satz des Warnbandes, wenn Kosten, Preise oder Parameter der Gruppe nach der
+    /// Rechnung geändert wurden (<c>WIRT_BAND_NACHRECHNEN_KOSTEN</c>).</summary>
+    [Parameter] public string NachrechnenKostenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN_KOSTEN;
+
+    /// <summary>Der Satz des Warnbandes, wenn der Kostenkatalog nach der Rechnung geändert wurde
+    /// (<c>WIRT_BAND_NACHRECHNEN_KATALOG</c>).</summary>
+    [Parameter] public string NachrechnenKatalogText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN_KATALOG;
+
+    /// <summary>Der Satz des Warnbandes nach dem Grund, den die Hülle beim Lesen nennt
+    /// (<see cref="WirtschaftlichkeitStand.NachrechnenGrund"/>); ohne Grund der allgemeine Satz.</summary>
+    private string NachrechnenBandText => _stand.NachrechnenGrund switch
+    {
+        WindowsFormsApplication1.Ergebnisveraltung.Kosten => NachrechnenKostenText,
+        WindowsFormsApplication1.Ergebnisveraltung.Katalog => NachrechnenKatalogText,
+        _ => NachrechnenText,
+    };
+
     /// <summary>Der Satz des Warnbandes, wenn das SIMULATIONSergebnis einer gewählten
     /// Version älter ist als die letzte Änderung ihres Projekts.</summary>
     [Parameter] public string SimulationVeraltetText { get; set; } = Resource.WIRT_BAND_SIMULATION_VERALTET;
+
+    /// <summary>Der Satz des Warnbandes, wenn die Wahl der Versionen die Gruppenregel geändert
+    /// hat (<see cref="ErgebnisAnsicht.GruppenregelVeraltet"/>, Register EZ‑18).</summary>
+    [Parameter] public string GruppenregelVeraltetText { get; set; } = Resource.WIRT_BAND_GRUPPENREGEL_VERALTET;
 
     // ---- Bewertung nach DIN EN 17463 (AUFTRAG #325) ----------------------
     //
@@ -1064,8 +1120,23 @@
     /// <summary>Die Warnungen des Bandes (Prüfhilfe).</summary>
     public IReadOnlyList<string> Warnungen => _warnungen;
 
+    /// <summary>Schluessel dieser Seite im Sitzungsgedaechtnis der Hinweisklappe.</summary>
+    public const string HINWEISKLAPPE_SCHLUESSEL = "Wirtschaftlichkeit";
+
+    /// <summary>Das Sitzungsgedaechtnis der Hinweisklappe; ohne Angabe das prozessweite
+    /// (<see cref="Hinweisklappe.Sitzung"/>). Pruefstaende reichen ein eigenes herein.</summary>
+    [Parameter] public IDictionary<string, bool>? HinweisGedaechtnis { get; set; }
+
     /// <summary>Steht das Band „Simulationsergebnis veraltet“? (Prüfhilfe)</summary>
     public bool SimulationVeraltet => _simVeraltet;
+
+    /// <summary>
+    /// Steht das Band „Gruppenregel geändert“? Es folgt der Ansicht, die ein Haken, eine
+    /// Referenzwahl oder ein Laden bringt — die Hülle hat die Gruppenregel des Laufs mit der
+    /// der gespeicherten Ergebnisse verglichen (Register EZ‑18). Der Szenariowechsel übernimmt
+    /// nur die szenarioabhängigen Teile und lässt die Fahne stehen. (Auch Prüfhilfe.)
+    /// </summary>
+    public bool GruppenregelVeraltet => _stand.Ansicht?.GruppenregelVeraltet == true;
 
     /// <summary>Läuft gerade eine Berechnung? (Prüfhilfe; der Wirt darf dann nicht schließen.)</summary>
     public bool Beschaeftigt => _laeuft;
@@ -1224,7 +1295,9 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Ohne preventScroll rollt der Browser die hohe Seite ins Bild und schiebt die
+        // Reiterleiste von „Berichte & Kosten" aus dem Blick.
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>Liest Liste, Parameterzeile und Ergebnisse neu ein.</summary>
@@ -1462,7 +1535,7 @@
                         @foreach (MatrixZeile z in tafel.Zeilen)
                         {
                             <tr>
-                                <th scope="row" class="epos-matrix-titel">
+                                <th scope="row" class="epos-matrix-titel" title="@Kurztitel(z)">
                                     @z.Titel
                                     @if (!string.IsNullOrEmpty(z.Kennzeichen))
                                     {
@@ -1529,13 +1602,14 @@
 
     /// <summary>
     /// V‑A (V‑G6): die Sensitivitätstafel mit der Steigungsspalte (Szenario Erwartet) —
-    /// bis E5 nur im Bericht.
+    /// bis E5 nur im Bericht. Die Tafel zeigt mehrere Stände; ihre Marke nennt je Stand
+    /// die Positionsform (<see cref="ErgebnisAnsicht.SensitivitaetPositionen"/>).
     /// </summary>
     private RenderFragment Sensitivitaetsteil => @<div class="epos-wirt-sensitivitaet-teil">
         @if (_stand.Ansicht.Sensitivitaet.Zeilen.Count > 0)
         {
             @Untertitel(Texte.SensitivitaetTitel, "stand.tabelle.sensitivitaet", Vorlagenfeldstufe.Aehnlich,
-                        Resource.VF_ORT_SENSITIVITAET)
+                        Resource.VF_ORT_SENSITIVITAET, positionen: _stand.Ansicht.SensitivitaetPositionen)
             @Tafel(_stand.Ansicht.Sensitivitaet, "epos-raster epos-wirt-tafel epos-wirt-sensitivitaet", false, 0)
         }
     </div>;
@@ -1580,11 +1654,13 @@
                                 @for (int i = 0; i < z.Zellen.Count; i++)
                                 {
                                     string unter = z.Unterwert(i);
+                                    string unterTitel = z.TitelZuUnterwert(i);
                                     <td class="epos-matrix-zelle">
                                         @z.Zellen[i]
                                         @if (unter.Length > 0)
                                         {
-                                            <span class="epos-wirt-nominal">@unter</span>
+                                            <span class="epos-wirt-nominal"
+                                                  title="@(unterTitel.Length > 0 ? unterTitel : null)">@unter</span>
                                         }
                                     </td>
                                 }
@@ -1640,6 +1716,9 @@
     private RenderFragment Zahlungsreihenteil => @<div class="epos-wirt-zahlungsreihen-teil">
         @if (Zahlungsreihe is ZahlungsreihenTafel tafel)
         {
+            @* Die Position des gewaehlten Stands fuer die Positionsform der Marken von Tafel und
+               Zahlungsstrombild (stand.<n>.…, variante.<n>.…); sie folgt der Klappliste. *@
+            <CascadingValue Value="@Standposition(tafel.IdStand)">
             <div class="epos-seite-zeile epos-wirt-zahlungsreihen-wahl">
                 <Auswahlfeld Bezeichnung="@Texte.ZrStand" Eintraege="@_stand.Ansicht.Zahlungsstaende"
                              Auswahl="@tafel.IdStand" AuswahlChanged="BeiZahlungsstand" />
@@ -1660,12 +1739,16 @@
             @if (tafel.Bild is not null)
             {
                 <div class="epos-wirt-zahlungsstrom-teil">
+                    @* "CSV..." am Zahlungsstrombild: erste Spalte das Jahr der Tafel (Raster Jahr). *@
+                    <CascadingValue Value="@Jahresexport">
                     <DiagrammSvg Modell="@tafel.Bild" Kennung="@($"zahlungsstrom-{tafel.IdStand}-{tafel.Szenario}")"
                                  Bezeichnung="@Texte.ZahlungsstromBild" OhneZoom="true" LegendeSchaltbar="false"
                                  Vorlagenfeld="stand.bild.zahlungsstrom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                  VorlagenfeldHinweis="@Resource.VF_ORT_ZAHLUNGSREIHEN" />
+                    </CascadingValue>
                 </div>
             }
+            </CascadingValue>
             @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
             {
                 <Herleitungszeile Text="@_stand.Ansicht.Zahlungshinweis" />
@@ -1705,13 +1788,23 @@
     /// <summary>
     /// BV-E6 (Konzept Berichtsvorlagen 9.4): der Untertitel einer Tafel mit der EINEN Marke
     /// am Tabellenkopf — keine Zeilenmarken; <paramref name="zusatz"/> nennt Zeilen- und
-    /// Spaltenschlüssel für die Aufklappung.
+    /// Spaltenschlüssel für die Aufklappung, <paramref name="positionen"/> die Stände einer
+    /// Tafel über mehrere Stände für die Positionsform (je Stand mit Namen).
     /// </summary>
     private static RenderFragment Untertitel(string titel, string vorlagenfeld, Vorlagenfeldstufe stufe,
-                                             string hinweis, string zusatz = "") => @<div class="epos-vorlagenfeld-zeile">
+                                             string hinweis, string zusatz = "",
+                                             IReadOnlyList<Vorlagenfeldposition>? positionen = null) => @<div class="epos-vorlagenfeld-zeile">
         <p class="epos-untergruppe">@titel</p>
-        <Vorlagenfeldknopf Vorlagenfeld="@vorlagenfeld" Stufe="@stufe" StufenHinweis="@hinweis" Zusatz="@zusatz" />
+        <Vorlagenfeldknopf Vorlagenfeld="@vorlagenfeld" Stufe="@stufe" StufenHinweis="@hinweis" Zusatz="@zusatz"
+                           Positionen="@positionen" />
     </div>;
+
+    /// <summary>
+    /// Die Position eines Stands für die Positionsform der Marken von Mehrjahrestafel und Zahlungsstrombild
+    /// (<see cref="WirtschaftlichkeitStand.Vorlagenfeldpositionen"/>); <c>null</c> = unbekannt, dann keine.
+    /// </summary>
+    private Vorlagenfeldposition? Standposition(int idStand)
+        => _stand.Vorlagenfeldpositionen is { } je && je.TryGetValue(idStand, out Vorlagenfeldposition? p) ? p : null;
 
     /// <summary>
     /// Eine Tafel aus einer Matrix: Spaltenköpfe (falls es welche gibt), je Zeile der
@@ -1765,8 +1858,8 @@
             <tbody>
                 @foreach (MatrixZeile z in m.Zeilen)
                 {
-                    <tr>
-                        <th scope="row" class="epos-matrix-titel">@z.Titel</th>
+                    <tr class="@(z.Leise ? "epos-wirt-herleitungszeile" : null)">
+                        <th scope="row" class="epos-matrix-titel" title="@Kurztitel(z)">@z.Titel</th>
                         @foreach (string zelle in z.Zellen)
                         {
                             <td class="epos-matrix-zelle">@zelle</td>
@@ -1776,6 +1869,11 @@
             </tbody>
         </table>
     </div>;
+
+    /// <summary>Der Kurztext einer Zeile als Tooltip am Titel (die Wärmegestehungskosten sagen,
+    /// was sie umfassen); <c>null</c> = kein Attribut.</summary>
+    private static string? Kurztitel(MatrixZeile z)
+        => string.IsNullOrEmpty(z.Kurztext) ? null : z.Kurztext;
 
     /// <summary>Die Klasse einer Tafelzeile: die Referenzzeile der Bandbreite hinterlegt, eine
     /// Summenzeile (ETAPPE E8a) abgesetzt; sonst keine.</summary>
@@ -1851,11 +1949,13 @@
         foreach ((int Id, string Text) z in _stand.Szenarien)
             if (z.Id == _stand.SzenarioId) { szenario = z.Text; break; }
 
+        // VB‑Q6 a: Die Darstellung „ValERI-Bewertung“ belegt die VALERI-Darstellung des Berichts vor.
+        bool valeri = IstValeri;
         await ZumBericht.InvokeAsync(new BerichtVorbelegung(
             MitWirtschaftlichkeit: true,
             Varianten: new List<int>(_gewaehlt),
-            SzenarioId: _stand.SzenarioId,
-            SzenarioText: szenario));
+            SzenarioId: valeri ? BerichtStand.SZENARIO_VALERI : _stand.SzenarioId,
+            SzenarioText: valeri ? Texte.ZumBerichtValeri : szenario));
     }
 
     // =====================================================================

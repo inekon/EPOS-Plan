@@ -1,18 +1,17 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Brauchwasser | Fassung 3 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Brauchwasser | Fassung 4 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs,
+     EPOS.Kern/Allgemein/Simulation/Desinfektion.cs, EPOS.Kern/Allgemein/Simulation/Betriebskalenderschicht.cs,
      EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Simulation/Init.cs,
      EPOS.Kern/Controller/BedarfsVorschauCtrl.cs, EPOS.Kern/Allgemein/Energieeinheit.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}
 
-Der '''Brauchwasserwaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der zweite der
-drei Bedarfskanaele. Grundlage ist je Profil ein Satz aus '''zwoelf Monatswerten''' und einem
-'''Wochenprofil mit 168 Stundenwerten'''; daraus entsteht der Jahresgang.
+Der '''Brauchwasserwaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der zweite der drei Bedarfskanaele. Grundlage ist je Profil ein Satz aus '''zwoelf Monatswerten''' und einem '''Wochenprofil mit 168 Stundenwerten'''; daraus entsteht der Jahresgang.
 
-Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des
-Trinkwassers, die Zirkulation und die Speicherverluste rechnet '''diese''' Seite nicht — sie
-stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
+Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des Trinkwassers und die Speicherverluste rechnet '''dieser''' Weg nicht — sie stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher. Eine '''Zirkulation''' rechnet er, wenn die Simulationskonfiguration Leistung und Laufzeit dafuer fuehrt (Schritt 5).
+
+Diese Seite beschreibt den '''Bestandsweg''': Rechenweg ''Bestandsprofile'' im Bedarfsprofil-Dialog ''Brauchwasserwärme''. Steht dort der Rechenweg ''Zapfprofil'', entsteht die Reihe stattdessen im '''Zapfprofilgenerator''' aus den Nutzungszonen des Projekts — die Zapfenergie je Zone aus Tagesbedarf, Tagesgang, Wochen- und Monatsanteilen bzw. aus gezogenen Zapfereignissen, die '''Zirkulation''' als eigene Teilreihe daneben; beide zusammen bilden den Brauchwasserkanal, und die Bestandsprofile rechnen nicht mit. Der Kalender des Generators folgt dem Wochentagsraster der Klimaregion; ist eine Zone an ein Gebaeude gebunden, gelten dessen Wochenendtage und alle seine Ferienzeitraeume, und die Feiertage seines Feiertagslands (ohne Gebaeude die bundeseinheitlichen) tragen Sonntagsmenge und Sonntagsgang. Eingaben und Rechenweg des Generators beschreibt die Seite [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]].
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -30,7 +29,11 @@ stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
 |-
 | Jahressumme des Projekts || MWh || Dialog „Brauchwasserwärme", Feld „Jahresverbrauch"; leer oder 0 = Katalogwerte gelten unveraendert
 |-
-| Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion abgeleitet
+| Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion abgeleitet; mit einer Spotpreisreihe mit Jahr der Kalender dieses Jahres
+|-
+| Thermische Desinfektion: Intervall, Stunde, Zieltemperatur, Volumen || d, h, °C, l || Simulationskonfiguration, Abschnitt „Thermische Desinfektion"; leer = 7 Tage, 2 Uhr, 70&nbsp;°C, Volumen der Brauchwasserspeicher
+|-
+| Speichersolltemperatur || °C || Zapfprofilgenerator, Feld „Speichertemperatur"; ohne sie 60&nbsp;°C
 |}
 
 == Formelzeichen und Parameter ==
@@ -43,13 +46,13 @@ Was in die Rechnung hereinkommt:
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
 |-
-| <math>t</math> || Stunde des Jahres, t = 0 … 8 759 || — || Zeitraster (Konstante: 8 760 Stunden je Jahr)
+| <math>t</math> || Stunde des Jahres, <math>t = 0 \dots 8\,759</math> || — || Zeitraster (Konstante: 8 760 Stunden je Jahr)
 |-
-| <math>m</math> || Monat, m = 1 … 12 || — || Zeitraster (Konstante: zwoelf Monatsgrenzen eines Nicht-Schaltjahres)
+| <math>m</math> || Monat, <math>m = 1 \dots 12</math> || — || Zeitraster (Konstante: zwoelf Monatsgrenzen eines Nicht-Schaltjahres)
 |-
-| <math>j</math> || Stunde der Woche, j = 0 … 167 || — || Zeitraster (Konstante: 168 Wochenstunden)
+| <math>j</math> || Stunde der Woche, <math>j = 0 \dots 167</math> || — || Zeitraster (Konstante: 168 Wochenstunden)
 |-
-| <math>w</math> || Wochentag des 1. Januar, w = 0 (Montag) … 6 (Sonntag) || — || aus den Klimadaten abgeleitet, siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Gleichung (1)
+| <math>w</math> || Wochentag des 1. Januar, <math>w = 0</math> (Montag) … <math>6</math> (Sonntag) || — || aus den Klimadaten abgeleitet, siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Gleichung (1)
 |-
 | <math>P_{\mathrm{W}}(j)</math> || Wochenprofil, 168 Stundenwerte || beliebige Skala || Brauchwassertyp-Katalog, Reiter „Wochenwerte"
 |-
@@ -61,7 +64,7 @@ Was in die Rechnung hereinkommt:
 |-
 | <math>n(m)</math> || Nutzungsfaktor des Monats (nur fuer Typen ohne VDI-Jahresgang) || — || Katalogherleitung
 |-
-| <math>\kappa(m)</math> || Kaltwasserfaktor des Monats, 1,083 im Februar bis 0,917 im August || — || Katalogherleitung: gedaempfte Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit 0,8 · 10<sup>−6</sup> m²/s, Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug 41 Tage)
+| <math>\kappa(m)</math> || Kaltwasserfaktor des Monats, 1,083 im Februar bis 0,917 im August || — || Katalogherleitung: gedaempfte Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit <math>0{,}8 \cdot 10^{-6}</math> m²/s, Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug 41 Tage)
 |-
 | <math>1\,000</math> || Umrechnung MWh in kWh || kWh/MWh || Konstante
 |-
@@ -70,6 +73,16 @@ Was in die Rechnung hereinkommt:
 | <math>50</math> || Spreizung von 10 auf 60 °C || K || Konstante des Katalogbezugs
 |-
 | <math>1{,}163</math> || spezifische Waermekapazitaet von Wasser || Wh/(l·K) || Konstante
+|-
+| <math>V_{\mathrm{D}}</math> || aufgeheiztes Volumen der Desinfektion || l || Simulationskonfiguration; leer = Summe der Speicher, die Brauchwasser führen
+|-
+| <math>\vartheta_{\mathrm{Ziel}}</math> || Zieltemperatur der Desinfektion || °C || Simulationskonfiguration; '''Vorgabe: 70'''
+|-
+| <math>\vartheta_{\mathrm{Soll}}</math> || Speichersolltemperatur des Brauchwassers || °C || Zapfprofilgenerator; '''Vorgabe: 60'''
+|-
+| <math>n_{\mathrm{D}}</math> || Intervall der Desinfektion || d || Simulationskonfiguration; '''Vorgabe: 7'''
+|-
+| <math>s_{\mathrm{D}}</math> || Stunde des Tages, in der sie läuft || h || Simulationskonfiguration; '''Vorgabe: 2'''
 |}
 
 === Variablen ===
@@ -83,9 +96,9 @@ Was die Rechnung selbst bildet:
 |-
 | <math>Q_{\mathrm{M}}(m)</math> || Monatswert nach der Skalierung auf die Projektsumme || MWh || (2)
 |-
-| <math>x(t)</math> || gekachelter Wochenprofilwert der Stunde t, noch ohne Energiemass || Skala von P<sub>W</sub> || (3)
+| <math>x(t)</math> || gekachelter Wochenprofilwert der Stunde t, noch ohne Energiemass || Skala von <math>P_{\mathrm{W}}</math> || (3)
 |-
-| <math>S(m)</math> || Summe der gekachelten Werte innerhalb des Monats m || Skala von P<sub>W</sub> || (4)
+| <math>S(m)</math> || Summe der gekachelten Werte innerhalb des Monats m || Skala von <math>P_{\mathrm{W}}</math> || (4)
 |-
 | <math>Q_{\mathrm{TWW}}(t)</math> || Brauchwasserbedarf der Stunde t || kWh || (5)
 |-
@@ -94,6 +107,12 @@ Was die Rechnung selbst bildet:
 | <math>Q_{\mathrm{a,spez}}</math> || Jahresmenge je Bezugseinheit aus der Zapfmenge || MWh/a || (7)
 |-
 | <math>k(m)</math> || Monatsfaktor der Typen ohne VDI-Jahresgang || — || (8)
+|-
+| <math>Q_{\mathrm{D}}</math> || Zusatzbedarf je Desinfektion || kWh || (9)
+|-
+| <math>Q_{\mathrm{D}}(t)</math> || Zusatzbedarf der Stunde t im Brauchwasserkanal || kWh || (10)
+|-
+| <math>d</math> || Tag des Jahres, <math>d = 0 \dots 364</math> || — || Zeitraster
 |}
 
 == Rechenweg ==
@@ -101,19 +120,13 @@ Was die Rechnung selbst bildet:
 
 === 1. Profile des Projekts sammeln ===
 
-Der Lauf holt die Namen aller dem Projekt zugeordneten Brauchwasserprofile und rechnet sie
-'''nacheinander in denselben Zielvektor''' — die Stundenwerte addieren sich. Kopf- und
-Typdaten kommen dabei aus den '''Projektkopien''' der Kataloge, nicht aus dem Katalog
-selbst: Der Anwender darf ein uebernommenes Profil im Projekt aendern, ohne den Katalog zu
-beruehren.
+Der Lauf holt alle dem Projekt zugeordneten Brauchwasserprofile '''ueber die ID ihrer Zuordnungszeile''' und rechnet sie '''nacheinander in denselben Zielvektor''' — die Stundenwerte addieren sich. Kopf- und Typdaten kommen dabei aus den '''Projektkopien''' der Kataloge, nicht aus dem Katalog selbst: Der Anwender darf ein uebernommenes Profil im Projekt aendern, ohne den Katalog zu beruehren. Weil die Zuordnung ueber die ID der Projektkopie laeuft, gelten Kopfsatz und gepflegte Jahressumme auch dann, wenn die Kopie anders heisst als der Katalogsatz.
 
-Findet sich zu einem Namen kein Kopfsatz, geht das Profil mit '''Anteil 0''' ein und der
-Lauf meldet es. Fehlt der Typbezug ganz, bricht die Brauchwasserrechnung ab.
+Findet sich zu einer Zuordnung kein Kopfsatz oder fehlt der Typbezug, geht das Profil mit '''Anteil 0''' ein und der Lauf meldet es; die uebrigen Profile rechnen vollstaendig.
 
 === 2. Jahressumme des Projekts einrechnen ===
 
-Hat der Anwender im Projekt eine eigene Jahressumme hinterlegt, werden die zwoelf
-Monatswerte linear darauf skaliert:
+Hat der Anwender im Projekt eine eigene Jahressumme hinterlegt, werden die zwoelf Monatswerte linear darauf skaliert:
 
 : <math>\displaystyle Q_{\mathrm{a,Kat}} = \sum_{m=1}^{12} Q_{\mathrm{M,Kat}}(m)</math> &nbsp;&nbsp;(1)
 :: <math>Q_{\mathrm{a,Kat}}</math> – Summe der zwoelf Katalog-Monatswerte [MWh]
@@ -124,18 +137,16 @@ Monatswerte linear darauf skaliert:
 :: <math>Q_{\mathrm{M,Kat}}(m)</math> – Monatswert des Profils aus dem Katalog [MWh]
 :: <math>Q_{\mathrm{a,Proj}}</math> – Jahressumme des Projekts; leer oder 0 = keine Skalierung [MWh]
 :: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh]
-Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m)</math> = <math>Q_{\mathrm{M,Kat}}(m)</math>.
 
-Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt, <math>Q_{\mathrm{a,Kat}}</math> aber null, wird das Profil uebersprungen
-und gemeldet — (2) waere sonst 0 · <math>Q_{\mathrm{a,Proj}}</math> / 0 und damit in allen zwoelf Monaten
-unbestimmt.
+Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m) = Q_{\mathrm{M,Kat}}(m)</math>.
+
+Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt, <math>Q_{\mathrm{a,Kat}}</math> aber null, wird das Profil uebersprungen und gemeldet — (2) waere sonst <math>0 \cdot Q_{\mathrm{a,Proj}} / 0</math> und damit in allen zwoelf Monaten unbestimmt.
 
 Die '''Verteilung''' bleibt dabei unveraendert; die Jahressumme aendert nur die Hoehe.
 
 === 3. Wochenprofil auf das Jahr kacheln ===
 
-Das 168-Stunden-Profil wird ab dem '''tatsaechlichen Wochentag des 1. Januar''' fortlaufend
-ueber das Jahr gelegt:
+Das 168-Stunden-Profil wird ab dem '''tatsaechlichen Wochentag des 1. Januar''' fortlaufend ueber das Jahr gelegt:
 
 : <math>\displaystyle x(t) = P_{\mathrm{W}}\left( (w \cdot 24 + t)\ \operatorname{mod}\ 168 \right), \quad t = 0 \dots 8\,759</math> &nbsp;&nbsp;(3)
 :: <math>x(t)</math> – gekachelter Wochenprofilwert der Stunde, noch ohne Energiemass [Skala von <math>P_{\mathrm{W}}</math>]
@@ -143,11 +154,12 @@ ueber das Jahr gelegt:
 :: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
 :: <math>24</math> – Stunden je Tag [h]
 :: <math>168</math> – Stunden je Woche [h]
-Das Wochenprofil ist so gelesen, dass die Stunden 1 bis 24 der Montag sind und 145 bis 168
-der Sonntag; im Index j von (3) sind das j = 0 … 23 bzw. j = 144 … 167.
 
-Ein Wochenprofil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet —
-der naechste Schritt teilte sonst durch null.
+Das Wochenprofil ist so gelesen, dass die Stunden 1 bis 24 der Montag sind und 145 bis 168 der Sonntag; im Index <math>j</math> von (3) sind das <math>j = 0 \dots 23</math> bzw. <math>j = 144 \dots 167</math>.
+
+Ein Wochenprofil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet — der naechste Schritt teilte sonst durch null.
+
+Mit einem '''Betriebskalender''' an der Zuordnung (Auswahl im Bedarfsprofil-Dialog, gepflegt unter ''Betriebskalender'') wird <math>x(t)</math> vor der Normierung tageweise ersetzt: Ein '''Feiertag''' traegt die 24 Werte des Sonntags im Wochenprofil (<math>j = 144 \dots 167</math>), sofern der Kalender „Feiertag wie Sonntag" fuehrt; ein '''Ferientag''' traegt je Stunde <math>s</math> den Ferienfaktor <math>f</math> mal dem Tagesmittel des Wochenprofils, <math>f \cdot \frac{1}{7} \sum_{d=0}^{6} P_{\mathrm{W}}(24 d + s)</math>. Ferien gehen Feiertagen vor. Die Feiertage sind die neun bundeseinheitlichen und, mit gewaehltem Bundesland, die landesweiten Feiertage dieses Landes, nach festen Regeln in das Wochentagsraster des Projekts gelegt (siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 1). Normiert wird danach wie in (4) und (5): Die Monatsmenge bleibt erhalten und verteilt sich auf die uebrigen Tage. Mit „Ferien kuerzen die Monatsmenge" steht im Nenner von (5) statt <math>S(m)</math> die Monatssumme OHNE die Ferientage — die Menge des Monats sinkt dann im Verhaeltnis der Ferienstunden; Feiertage verteilen stets nur um. Ohne Kalender bleibt <math>x(t)</math>, wie es (3) bildet.
 
 === 4. Monatsweise auf die Monatswerte normieren ===
 
@@ -163,17 +175,13 @@ Erst dieser Schritt macht aus der Form eine Energiemenge:
 :: <math>S(m)</math> – Monatssumme derselben Werte nach (4) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach (2) [MWh]
 :: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh]
+
 Aus (5) folgt zweierlei, und beides ist wichtig zu wissen:
 
-* '''Die Skala des Wochenprofils ist frei.''' Ob die 168 Werte in Prozent, in Litern oder in
-  Kilowattstunden stehen, aendert am Ergebnis nichts — x(t) steht in (5) im Zaehler UND ueber
-  S(m) im Nenner, es zaehlt also nur das Verhaeltnis der Werte zueinander. Der mitgelieferte
-  Katalog fuehrt sie als Prozent des Wochenbedarfs (Summe der 168 Werte = 100).
-* '''Die Monatswerte bestimmen allein die Energiemenge.''' Der Faktor 1 000 rechnet die
-  Monatswerte von MWh in kWh.
+* '''Die Skala des Wochenprofils ist frei.''' Ob die 168 Werte in Prozent, in Litern oder in Kilowattstunden stehen, aendert am Ergebnis nichts — <math>x(t)</math> steht in (5) im Zaehler UND ueber <math>S(m)</math> im Nenner, es zaehlt also nur das Verhaeltnis der Werte zueinander. Der mitgelieferte Katalog fuehrt sie als Prozent des Wochenbedarfs (Summe der 168 Werte = 100).
+* '''Die Monatswerte bestimmen allein die Energiemenge.''' Der Faktor 1 000 rechnet die Monatswerte von MWh in kWh.
 
-Die Monatsgrenzen sind Stundenindizes eines '''Nicht-Schaltjahres''' (Januar 0…743,
-Februar 744…1415 und so fort bis Dezember 8016…8759).
+Die Monatsgrenzen sind Stundenindizes eines '''Nicht-Schaltjahres''' (Januar 0…743, Februar 744…1415 und so fort bis Dezember 8016…8759).
 
 === 5. In den Kanal und in die Bilanz ===
 
@@ -183,36 +191,25 @@ Der fertige Vektor geht in den '''Brauchwasserkanal'''. Ausgewiesen wird die Jah
 :: <math>Q_{\mathrm{a}}</math> – ausgewiesene Jahresmenge des Kanals [MWh]
 :: <math>Q_{\mathrm{TWW}}(t)</math> – Brauchwasserbedarf der Stunde nach (5) [kWh]
 :: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh]
-und zwar '''vor''' der Verteilung der Netzverluste. Der Stundenvektor bekommt seinen
-anteiligen Netzverlust danach dazu (siehe
-[[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und
-Gleichung (21) dort) — die Waermepumpe rechnet mit dem Vektor, nicht mit der ausgewiesenen
-Menge.
+
+Diese Menge gilt '''vor''' der Verteilung der Netzverluste. Der Stundenvektor bekommt seinen anteiligen Netzverlust danach dazu (siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und Gleichung (21) dort) — die Waermepumpe rechnet mit dem Vektor, nicht mit der ausgewiesenen Menge.
+
+'''Zirkulation.''' Fuehrt die Simulationskonfiguration eine Zirkulationsleistung <math>P_{\mathrm{zirk}}</math> [kW] und eine Laufzeit <math>t_{\mathrm{Lauf}}</math> [h/d], kommt auf den Brauchwasserkanal eine eigene Teilreihe: in <math>t_{\mathrm{Lauf}}</math> zusammenhaengenden Stunden um die Tagesmitte der Zapfung die Leistung <math>P_{\mathrm{zirk}}</math>, sonst null; die Jahresmenge ist <math>P_{\mathrm{zirk}} \cdot t_{\mathrm{Lauf}} \cdot 365</math> — dieselbe Regel wie die Methode „manuell" des Zapfprofilgenerators. Ausgewiesen wird sie als „davon Zirkulation" neben dem Brauchwasser, das Monatsbild stapelt Zapfung und Zirkulation. Verteilverluste der Trinkwassererwaermung behandeln DIN EN 15316-3 und DIN V 18599-8, den Betrieb der Zirkulation DVGW W 551.
 
 === 6. Der mitgelieferte Katalog ===
 
-Der Auslieferungskatalog fuehrt '''11 Wochen-Stundenprofile''' und '''13 Monatswertsaetze'''.
-Vier davon sind Normdaten aus VDI 6002 Blatt 1 und 2 und deshalb
-schreibgeschuetzt:
+Der Auslieferungskatalog fuehrt '''11 Wochen-Stundenprofile''' und '''13 Monatswertsaetze'''. Vier davon sind Normdaten aus VDI 6002 Blatt 1 und 2 und deshalb schreibgeschuetzt:
 
 * '''Wohnen gross''' (VDI 6002 Blatt 1, Anhang D — Bilder D1 bis D5),
 * '''Studentenwohnheim''' (VDI 6002 Blatt 2, Tabelle 3 und Bilder 2/3),
 * '''Seniorenheim''' (VDI 6002 Blatt 2, Bilder 6/8/9),
 * '''Krankenhaus''' (VDI 6002 Blatt 2, Bild 10; der Jahresgang folgt dem Seniorenheim).
 
-Die uebrigen sieben — MFH Wohnen, EFH Wohnen, Hotel (in drei Jahresgangvarianten),
-Pflegeheim, Buero/Verwaltung, Sportstaette/Duschen, Schule — sind generische Profile des
-Hauses und frei aenderbar.
+Die uebrigen sieben — MFH Wohnen, EFH Wohnen, Hotel (in drei Jahresgangvarianten), Pflegeheim, Buero/Verwaltung, Sportstaette/Duschen, Schule — sind generische Profile des Hauses und frei aenderbar.
 
-Ein schreibgeschuetzter Satz traegt in der Verwaltung ein Schloss. Wer ihn anpassen will,
-dupliziert ihn (''Duplizieren…'') oder hebt sein Schloss auf (''Schloss aufheben…'' in der
-Leiste ueber dem Stammblatt, nach einer Rueckfrage); danach gelten seine Werte als eigene, und
-ein Programm-Update stellt die ausgelieferten nicht wieder her. Umgekehrt sperrt
-''Schloss setzen…'' einen eigenen Satz als Auslieferungssatz, ohne seine Werte anzutasten. Das
-Wochen-Stundenprofil gehoert zum Typ und behaelt dessen eigenes Schloss.
+Ein schreibgeschuetzter Satz traegt in der Verwaltung ein Schloss. Wer ihn anpassen will, dupliziert ihn (''Duplizieren…'') oder hebt sein Schloss auf (''Schloss aufheben…'' in der Leiste ueber dem Stammblatt, nach einer Rueckfrage); danach gelten seine Werte als eigene, und ein Programm-Update stellt die ausgelieferten nicht wieder her. Umgekehrt sperrt ''Schloss setzen…'' einen eigenen Satz als Auslieferungssatz, ohne seine Werte anzutasten. Das Wochen-Stundenprofil gehoert zum Typ und behaelt dessen eigenes Schloss.
 
-Die Monatswerte beziehen sich auf '''60/10 °C''' und eine Bezugseinheit (Person, Bett,
-Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
+Die Monatswerte beziehen sich auf '''60/10 °C''' und eine Bezugseinheit (Person, Bett, Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
 
 : <math>\displaystyle Q_{\mathrm{a,spez}} = \frac{V_{\mathrm{Z}} \cdot 365 \cdot 50 \cdot 1{,}163}{1\,000\,000}</math> &nbsp;&nbsp;(7)
 :: <math>Q_{\mathrm{a,spez}}</math> – Jahresmenge je Bezugseinheit [MWh/a]
@@ -221,32 +218,51 @@ Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
 :: <math>50</math> – Spreizung von 10 auf 60 °C [K]
 :: <math>1{,}163</math> – spezifische Waermekapazitaet von Wasser [Wh/(l·K)]
 :: <math>1\,000\,000</math> – Umrechnung Wh in MWh [Wh/MWh]
-(1,163 Wh/(l·K) ist die spezifische Waermekapazitaet von Wasser, 50 K die Spreizung von 10
-auf 60 °C, der Teiler 1 000 000 rechnet Wh in MWh.) Die Richtwerte <math>V_{\mathrm{Z}}</math> des
-Katalogs stehen in der Parametertabelle.
 
-Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang vor. Dort
-bildet der Katalog ihn als
+(1,163 Wh/(l·K) ist die spezifische Waermekapazitaet von Wasser, 50 K die Spreizung von 10 auf 60 °C, der Teiler 1 000 000 rechnet Wh in MWh.) Die Richtwerte <math>V_{\mathrm{Z}}</math> des Katalogs stehen in der Parametertabelle.
+
+Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang vor. Dort bildet der Katalog ihn als
 
 : <math>\displaystyle k(m) = n(m) \cdot \kappa(m)</math> &nbsp;&nbsp;(8)
 :: <math>k(m)</math> – Monatsfaktor der Typen ohne VDI-Jahresgang [–]
 :: <math>n(m)</math> – Nutzungsfaktor des Monats [–]
 :: <math>\kappa(m)</math> – Kaltwasserfaktor des Monats, 1,083 im Februar bis 0,917 im August [–]
-und normiert auf die unveraenderte Jahressumme. Der Kaltwasserfaktor <math>\kappa(m)</math> kommt aus einer
-gedaempften Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit
-<math>0{,}8 \cdot 10^{-6}</math> m²/s, daraus Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug
-41 Tage) und laeuft ueber das Jahr von 1,083 im Februar bis 0,917 im August. Die
-'''VDI-Typen bekommen diesen Faktor nicht''' — ihre Monatsprofile sind Messwerte des
-Waermebedarfs, in denen der Effekt schon steckt.
+
+Der Monatsfaktor wird auf die unveraenderte Jahressumme normiert. Der Kaltwasserfaktor <math>\kappa(m)</math> kommt aus einer gedaempften Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit <math>0{,}8 \cdot 10^{-6}</math> m²/s, daraus Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug 41 Tage) und laeuft ueber das Jahr von 1,083 im Februar bis 0,917 im August. Die '''VDI-Typen bekommen diesen Faktor nicht''' — ihre Monatsprofile sind Messwerte des Waermebedarfs, in denen der Effekt schon steckt.
+
+=== 7. Thermische Desinfektion (Option) ===
+
+Mit eingeschalteter Desinfektion heizt der Lauf den Brauchwasserspeicher in festen Abständen von der Speichersolltemperatur auf die Zieltemperatur. Ein Ereignis kostet
+
+: <math>\displaystyle Q_{\mathrm{D}} = \frac{V_{\mathrm{D}} \cdot 1{,}163 \cdot \max\left( \vartheta_{\mathrm{Ziel}} - \vartheta_{\mathrm{Soll}} , 0 \right)}{1\,000}</math> &nbsp;&nbsp;(9)
+:: <math>Q_{\mathrm{D}}</math> – Zusatzbedarf je Desinfektion [kWh]
+:: <math>V_{\mathrm{D}}</math> – aufgeheiztes Volumen [l]
+:: <math>1{,}163</math> – spezifische Wärmekapazität von Wasser [Wh/(l·K)], gleich 1,163 kWh/(m³·K)
+:: <math>\vartheta_{\mathrm{Ziel}}</math> – Zieltemperatur [°C]
+:: <math>\vartheta_{\mathrm{Soll}}</math> – Speichersolltemperatur [°C]
+:: <math>1\,000</math> – Umrechnung Wh in kWh [Wh/kWh]
+
+Der Zusatzbedarf steht als eigener Posten im Brauchwasserkanal — am Tag <math>d</math> in der Stunde <math>s_{\mathrm{D}}</math>, wenn <math>d + 1</math> ein Vielfaches des Intervalls ist:
+
+: <math>\displaystyle Q_{\mathrm{D}}(t) = \begin{cases} Q_{\mathrm{D}} & t = 24 \cdot d + s_{\mathrm{D}} \; \mathrm{und} \; (d + 1) \; \operatorname{mod} \; n_{\mathrm{D}} = 0 \\ 0 & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(10)
+:: <math>Q_{\mathrm{D}}(t)</math> – Zusatzbedarf der Stunde [kWh]
+:: <math>Q_{\mathrm{D}}</math> – Zusatzbedarf je Ereignis aus (9) [kWh]
+:: <math>d</math> – Tag des Jahres [–]
+:: <math>s_{\mathrm{D}}</math> – Stunde des Tages [h]
+:: <math>n_{\mathrm{D}}</math> – Intervall [d]
+
+Alle sieben Tage sind das 52 Ereignisse im Jahr. Der Posten kommt nach den Netzverlusten in den Kanal — er ist ein Aufheizen des Speichers, kein Verteilverlust — und steht im Ergebnis als „davon thermische Desinfektion".
+
+'''Wer ihn deckt.''' Der Zusatzbedarf sieht nur Stufen, die die Zieltemperatur erreichen: einen Heizkessel oder ein BHKW mit gepflegtem Vorlauf ab <math>\vartheta_{\mathrm{Ziel}}</math> (ohne gepflegten Vorlauf gilt die Anlage als fähig), eine Wärmepumpe, deren projektierte Kennlinie ihn erreicht, den Heizstab einer Wärmepumpe und einen Brauchwasserspeicher, dessen gepflegter Vorlauf ihn erreicht und den eine solche Anlage lädt. Vor jeder anderen Stufe — auch der Solarthermie — steht er zurück. Was keine Stufe deckt, deckt ein '''Zusatzstrom''' (elektrisch, Wirkungsgrad 1); er steht im Reststrom und als Warnung im Protokoll. Ohne Volumen oder mit <math>\vartheta_{\mathrm{Soll}} \ge \vartheta_{\mathrm{Ziel}}</math> entsteht kein Posten, auch das meldet das Protokoll. Den Rahmen setzt DVGW W 551.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
-* '''Kein Zapfmodell.''' Gerechnet werden Stundenmittelwerte, keine einzelnen Zapfungen. Gleichzeitigkeit, Spitzenzapfung und Bereitschaftsvolumen nach VDI 6002 sind damit '''nicht''' abgedeckt — die Auslegung eines Speichers ist eine andere Rechnung als dieser Bedarf.
+* '''Auf dem Bestandsweg kein Zapfmodell.''' Gerechnet werden Stundenmittelwerte, keine einzelnen Zapfungen. Gleichzeitigkeit, Spitzenzapfung und Bereitschaftsvolumen nach VDI 6002 deckt dieser Weg '''nicht''' ab — einzelne Zapfereignisse und die Auslegung des Speichers rechnet der Zapfprofilgenerator (Rechenweg ''Zapfprofil'').
 * '''Keine Temperaturen im Rechenweg.''' In (1) bis (6) kommt keine Temperatur vor: Der Bedarf kommt als Energiemenge herein. Trinkwarmwassertemperatur, Kaltwassertemperatur und Spreizung stecken in den Katalogwerten — sie stehen nur in (7), also in der HERLEITUNG der Monatswerte. Wer bei anderer Spreizung rechnet, aendert die Monatswerte.
-* '''Keine Zirkulationsverluste als eigener Posten.''' Sie sind entweder in den Katalogwerten enthalten oder ueber die Netzverluste abzubilden.
-* '''Kein Legionellenbetrieb, keine Nachheizung''' als eigener Vorgang.
-* '''Der Wochengang ist starr.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen; Feiertage, Betriebsferien und Belegungsschwankungen bildet allein der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab.
+* '''Die Zirkulation des Bestandswegs ist eine feste Leistung.''' Sie haengt nicht an Temperatur, Leitungslaenge oder Zapfmenge; wer sie aus Leitungsdaten schaetzen will, nimmt den Zapfprofilgenerator mit seinen Methoden.
+* '''Die thermische Desinfektion ist ein Energieposten.''' (9) und (10) rechnen das Aufheizen in einer Stunde ohne Zapfverhalten, Mehrverluste des heißeren Speichers und Zirkulationsspülung; die Prüfung der Stufen vergleicht den gepflegten Vorlauf, nicht den Betriebspunkt der Stunde.
+* '''Der Wochengang ist ein Muster.''' Dasselbe 168-Stunden-Muster <math>P_{\mathrm{W}}</math> gilt fuer alle 52 Wochen; Feiertage und Betriebsferien legt ein Betriebskalender darauf, Belegungsschwankungen bildet der Monatswert <math>Q_{\mathrm{M}}(m)</math> ab.
 * '''Die Monatsnormierung glaettet.''' Wegen (4) und (5) verschiebt der Kalender innerhalb eines Monats nur die Verteilung; die Monatsmenge bleibt, unabhaengig davon, wie viele Wochenenden im Monat liegen.
 * '''EINE Einheit fuer beide Wege.''' Die Brauchwassermenge steht nach (6) in MWh — im '''Lauf''' wie in der '''Vorschau''' der Bedarfsdialoge. Beide Wege gehen durch dieselbe Kernmethode, und die Anzeige rechnet nur noch von MWh auf die gewaehlte Anzeigeeinheit um.
 * '''Ein Programm-Update laesst den Katalog, wie er ist.''' Setup und Programmstart ueberschreiben keinen Katalogsatz und saeen keinen nach: Ein angepasster oder entsperrter Satz bleibt, wie er ist, und neu ausgelieferte Profile kommen in eine bestehende Datenbank nicht von selbst. Die ausgelieferten Werte eines angepassten Satzes gibt es danach nur noch in einer Datenbanksicherung.
@@ -255,14 +271,16 @@ Waermebedarfs, in denen der Effekt schon steckt.
 {{Anker|ergebnisse}}
 
 * '''Dialog „Brauchwasserwärme"''', Knopf „Simulation…" — Jahresmenge und die zwoelf Monatswerte der ausgewaehlten Profile, dazu der monatliche Verlauf.
-* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Brauchwasseranteil im Jahresbedarf.
-* '''Bericht''' — Bedarfsuebersicht.
+* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Brauchwasseranteil im Jahresbedarf, mit Desinfektion die Zeile „davon thermische Desinfektion".
+* '''Bericht''' — Bedarfsuebersicht, mit Desinfektion die Zeile „Thermische Desinfektion" (Intervall, Stunde, Volumen, Zieltemperatur, Jahresmenge).
+* '''Laufprotokoll der Desinfektion''' — Ereignisse, Volumen, Temperaturen und Jahresmenge, wer sie gedeckt hat, und ein Zusatzstrom.
 * '''Laufprotokoll''' — uebersprungene Profile (kein Kopfsatz, kein Wochenprofil, Monatssumme null, Typ nicht definiert).
 
 == Bezüge ==
 {{Anker|bezuege}}
 
 * [[Programm Dokumentation/Brauchwasser|Brauchwasser]] — Bedienung des Dialogs und Katalogpflege
+* [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] — der Rechenweg ''Zapfprofil'': Nutzungszonen, Zirkulation, Auslegung
 * [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — wie der Kanal in den Gesamtbedarf eingeht
 * [[Programm Dokumentation/Berechnung/Prozesswärme|Berechnung: Prozesswärme]] — dieselbe Profilroutine
 * [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]] — dieselbe Profilroutine

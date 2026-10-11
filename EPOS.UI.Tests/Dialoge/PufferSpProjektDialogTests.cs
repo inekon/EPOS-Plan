@@ -1007,14 +1007,14 @@ public class PufferSpProjektDialogTests : EposBunitContext
     /// (Lehre W6‑B‑1).</para>
     /// </summary>
     [Fact]
-    public void Die_drei_Bloecke_stehen_im_Formularraster()
+    public void Die_vier_Bloecke_stehen_im_Formularraster()
     {
         var stand = new Pruefstand();
         stand.Bestand.Add(Speicher(11, "Geschichtet", schichten: 3));
         var cut = Zeige(stand);
 
-        // Eigenschaften, Schichtung, Entladeprioritaet.
-        Assert.Equal(3, cut.FindAll(".epos-formularraster").Count);
+        // Eigenschaften, Bereitschaft und Frischwassermodul (Welle M7), Schichtung, Entladeprioritaet.
+        Assert.Equal(4, cut.FindAll(".epos-formularraster").Count);
         Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
 
         // KEIN Raster ist einspaltig gesetzt: Die Felder tragen hier keine
@@ -1084,6 +1084,160 @@ public class PufferSpProjektDialogTests : EposBunitContext
 
         Assert.NotEmpty(cut.FindAll(".epos-zeilenraster"));
         Assert.Empty(cut.FindAll(".epos-formularraster .epos-zeilenraster"));
+    }
+
+    // =====================================================================
+    //  Welle M7 — Bereitschaft, Zonenanteile, Frischwassermodul, Hinweis HK4
+    // =====================================================================
+
+    /// <summary>Gepflegte Optionen kommen in die Felder und gehen beim Ändern unverändert zurück.</summary>
+    [Fact]
+    public void Die_Optionen_der_Welle_M7_gehen_hin_und_zurueck()
+    {
+        var stand = new Pruefstand();
+        stand.Bestand.Add(new PspPufferstand(11, "Kombispeicher", 800, 1.5, 70, 50, 10, 95, 95, 10, 0,
+            true, true, false,
+            new PspSchichtdaten(4, SchichtAnteile: "0,10;0,16;0,37;0,37",
+                                BereitschaftWeg: WindowsFormsApplication1.DbWerte.PSP_BEREITSCHAFT_TEMPERATUR,
+                                AufstellraumC: 15, Frischwassermodul: true, FwmGraedigkeitK: 7)));
+        var cut = Zeige(stand);
+
+        Volumen(cut, 1200);
+        Ok(cut);
+
+        PspSchichtdaten s = stand.Geaendert!.Schicht;
+        Assert.Equal(WindowsFormsApplication1.DbWerte.PSP_BEREITSCHAFT_TEMPERATUR, s.BereitschaftWeg);
+        Assert.Equal(15.0, s.AufstellraumC);
+        Assert.Equal("0,10;0,16;0,37;0,37", s.SchichtAnteile);
+        Assert.True(s.Frischwassermodul);
+        Assert.Equal(7.0, s.FwmGraedigkeitK);
+    }
+
+    /// <summary>Ohne Optionen bleibt alles leer — Tageswert, gleich große Zonen, kein Modul.</summary>
+    [Fact]
+    public void Ohne_Optionen_bleibt_alles_leer()
+    {
+        var stand = MitZwei();
+        var cut = Zeige(stand);
+        Volumen(cut, 1200);
+        Ok(cut);
+
+        PspSchichtdaten s = stand.Geaendert!.Schicht;
+        Assert.Null(s.BereitschaftWeg);
+        Assert.Null(s.AufstellraumC);
+        Assert.Null(s.SchichtAnteile);
+        Assert.False(s.Frischwassermodul);
+        Assert.Null(s.FwmGraedigkeitK);
+    }
+
+    /// <summary>Der Vorschlagsknopf setzt vier Zonen und die Anteile für Kombispeicher.</summary>
+    [Fact]
+    public void Der_Vorschlag_Kombispeicher_setzt_vier_Zonen()
+    {
+        var stand = new Pruefstand();
+        stand.Bestand.Add(Speicher(11, "Geschichtet", schichten: 2));
+        var cut = Zeige(stand);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Vorschlag Kombispeicher")).Click();
+        Ok(cut);
+
+        Assert.Equal(4, stand.Geaendert!.Schicht.Schichten);
+        Assert.Equal(WindowsFormsApplication1.PufferOptionen.VorschlagKombispeicherText(), stand.Geaendert.Schicht.SchichtAnteile);
+    }
+
+    /// <summary>Anteile, die nicht zur Zonenzahl passen, werden benannt abgelehnt; nichts wird geschrieben.</summary>
+    [Fact]
+    public void Falsche_Anteile_werden_benannt_abgelehnt()
+    {
+        var stand = new Pruefstand();
+        stand.Bestand.Add(new PspPufferstand(11, "Geschichtet", 800, 1.5, 70, 50, 10, 95, 95, 10, 0,
+            true, false, false, new PspSchichtdaten(4, SchichtAnteile: "0,5;0,5")));
+        var cut = Zeige(stand);
+
+        Volumen(cut, 1200);
+        Ok(cut);
+
+        Assert.Null(stand.Geaendert);
+        Assert.Contains("Zonenanteile", cut.Instance.Meldung);
+    }
+
+    /// <summary>HK4: Der Hinweis zum Übertrager steht an den Leistungsgrenzen.</summary>
+    [Fact]
+    public void Der_Hinweis_zum_Uebertrager_steht_an_den_Leistungsgrenzen()
+    {
+        var cut = Zeige(MitZwei());
+        Assert.Contains("Übertrager: Leistung als Entladegrenze eintragen.", cut.Markup);
+    }
+
+    // ============================================================ Kältespeicher (KU3-5)
+
+    /// <summary>
+    /// Ein bestehender Kältespeicher: Nutzung „Kälte" allein im Set, die Temperaturfelder heißen
+    /// Kaltwasser-Vorlauf und -Rücklauf, die Kapazität folgt Rücklauf − Vorlauf, und kein Sperrtext
+    /// sagt mehr, er werde nicht gerechnet.
+    /// </summary>
+    [Fact]
+    public void Ein_Kaeltespeicher_zeigt_Kaltwasserfelder_und_seine_Kapazitaet()
+    {
+        var stand = new Pruefstand();
+        stand.Bestand.Add(Speicher(11, "Kaltwasser", h: false, vorlauf: 6, ruecklauf: 12) with { Kaelte = true });
+        var cut = Zeige(stand);
+
+        Assert.Equal(new[] { 3 }, cut.Instance.KlassenSet);
+        Assert.True(cut.Instance.IstKaeltespeicher);
+        Assert.Contains("Kaltwasser-Vorlauf", cut.Markup);
+        Assert.Contains("Kaltwasser-Rücklauf", cut.Markup);
+        Assert.Contains("5,6", cut.Instance.Qmax);           // 800 l · 1,16 · 6 K / 1 000
+        Assert.DoesNotContain("nicht gerechnet", cut.Markup);
+    }
+
+    /// <summary>Kälte ist ausschließlich: Anhaken wählt die Wärmenutzungen ab und umgekehrt.</summary>
+    [Fact]
+    public void Kaelte_schliesst_die_Waermenutzungen_aus()
+    {
+        var cut = Zeige(MitZwei());
+        Assert.Equal(new[] { 0 }, cut.Instance.KlassenSet);
+        Assert.Contains("Vorlauf", cut.Markup);
+        Assert.DoesNotContain("Kaltwasser-Vorlauf", cut.Markup);
+
+        cut.FindAll("input[type=checkbox]")[3].Change(true);
+        Assert.Equal(new[] { 3 }, cut.Instance.KlassenSet);
+        Assert.Contains("Kaltwasser-Vorlauf", cut.Markup);
+
+        cut.FindAll("input[type=checkbox]")[1].Change(true);
+        Assert.Equal(new[] { 1 }, cut.Instance.KlassenSet);
+        Assert.False(cut.Instance.IstKaeltespeicher);
+    }
+
+    /// <summary>
+    /// Neuanlage eines Kältespeichers: Das Wärmepaar der Systemvorgabe (70/50) ist für Kaltwasser
+    /// vertauscht und wird benannt abgelehnt; 6/12 °C wird mit Kälte und ohne Wärmeflag angelegt.
+    /// </summary>
+    [Fact]
+    public void Ein_neuer_Kaeltespeicher_wird_mit_Kaltwasserpaar_angelegt()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+        Bezeichner(cut, "Kaltwasser");
+        Volumen(cut, 2000);
+        cut.FindAll("input[type=checkbox]")[3].Change(true);
+
+        Uebernehmen(cut);
+        Assert.Contains("Kältespeicher", cut.Instance.Meldung);
+        Assert.Null(stand.Angelegt);
+
+        var felder = cut.FindAll("input.epos-eingabe");
+        felder[3].Input("6");
+        cut.FindAll("input.epos-eingabe")[4].Input("12");
+        Uebernehmen(cut);
+        Assert.Equal(WarnStufe.Erfolg, cut.Instance.MeldungStufe);
+        Ok(cut);
+
+        Assert.NotNull(stand.Angelegt);
+        Assert.True(stand.Angelegt!.Kaelte);
+        Assert.False(stand.Angelegt.Heizung || stand.Angelegt.Brauchwasser || stand.Angelegt.Prozess);
+        Assert.Equal(6, stand.Angelegt.Vorlauf);
+        Assert.Equal(12, stand.Angelegt.Ruecklauf);
     }
 
     // ============================================================ Hilfsgriffe
@@ -1230,5 +1384,36 @@ public class PufferSpProjektDialogTests : EposBunitContext
         Assert.Equal(true, brauchwasser.Lesen());
         Assert.Contains(0, cut.Instance.KlassenSet);
         Assert.Contains(1, cut.Instance.KlassenSet);
+    }
+
+    // =========================================================================
+    //  Stufe P2 — „Auslegen…" öffnet die Pufferspeicher-Auslegung
+    // =========================================================================
+
+    /// <summary>
+    /// Konzept Pufferspeicher-Auslegung, Abschnitt 6: „Auslegen…" reicht den gewählten Speicher an
+    /// die Hülle; die Zeile darunter sagt, dass der Knopf den Dialog ohne Speichern verlässt. Ohne
+    /// Delegat fehlt der Knopf.
+    /// </summary>
+    [Fact]
+    public void Auslegen_reicht_den_gewaehlten_Speicher_an_die_Huelle()
+    {
+        var stand = MitZwei();
+        var geoeffnet = new List<int>();
+        var cut = Render<PufferSpProjektDialog>(p =>
+        {
+            p.Add(x => x.IdProjekt, 1030);
+            p.Add(x => x.IdPuffer, 12);
+            p.Add(x => x.Dienste, stand.Dienste());
+            p.Add(x => x.AuslegenOeffnen, id => geoeffnet.Add(id));
+        });
+
+        Assert.Contains("ohne zu speichern", cut.Find(".epos-psp-auslegen-hinweis").TextContent);
+        cut.Find("button.epos-psp-auslegen").Click();
+        Assert.Equal(new[] { 12 }, geoeffnet);
+        Assert.Equal(0, stand.Schreibzugriffe);
+
+        var ohne = Zeige(MitZwei());
+        Assert.Empty(ohne.FindAll("button.epos-psp-auslegen"));
     }
 }

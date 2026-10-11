@@ -52,15 +52,15 @@ public sealed class GebaeudeKatalogDaten
     public string Verwendung { get; set; } = "Wohngebaeude";
 
     /// <summary>
-    /// Index der Baualtersklasse (0 = 'A' … 12 = 'M', Entscheid E47). Ist <see cref="Baujahr"/>
-    /// gesetzt, FOLGT sie ihm (<see cref="BaujahrUebernehmen"/>, <see cref="KlasseAusBaujahr"/>).
+    /// Index der Baualtersklasse (0 = 'A' … 12 = 'M', Entscheid E47). Das Baujahr SCHLÄGT sie VOR
+    /// (<see cref="BaujahrUebernehmen"/>, <see cref="KlasseVorschlag"/>); gespeichert wird immer diese Wahl.
     /// </summary>
     public int Baualtersklasse { get; set; }
 
     /// <summary>
     /// Das Baujahr (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) — eine Jahreszahl
-    /// 1500 … 2100; <c>null</c> = unbekannt. Ist es gesetzt, FÜHRT es: Die Baualtersklasse folgt aus
-    /// ihm (Entscheid E47, F2). Die Rechnung ändert es nicht.
+    /// 1500 … 2100; <c>null</c> = unbekannt. Ein neues Baujahr schlägt die Baualtersklasse vor und setzt
+    /// sie; eine abweichende Wahl danach gilt. Die Rechnung ändert es nicht.
     /// </summary>
     public int? Baujahr { get; set; }
 
@@ -72,18 +72,26 @@ public sealed class GebaeudeKatalogDaten
     public string? Energiestandard { get; set; }
 
     /// <summary>
-    /// Setzt das Baujahr — und mit ihm die Baualtersklasse, wenn das Jahr eine ergibt (DAS BAUJAHR
-    /// FÜHRT, <c>Gebaeudeklassen.IndexAusBaujahr</c>). Ein leeres oder ungültiges Jahr lässt die
-    /// gewählte Klasse stehen. Hand, Stammblatt und Assistent gehen diesen Weg.
+    /// Der wirksame U-Wert der Bodenplatte samt Erdreich [W/(m²K)] als Vorgabe (Spalte <c>Erdreich_U_Wirksam</c>,
+    /// Entscheid E65); <c>null</c> = die Erdreichkorrektur nach DIN EN ISO 13370.
+    /// </summary>
+    public double? ErdreichUWirksam { get; set; }
+
+    /// <summary>
+    /// Setzt das Baujahr — und, wenn es sich ÄNDERT und eine Klasse ergibt, die Baualtersklasse auf den
+    /// Vorschlag des Jahres (<c>Gebaeudeklassen.IndexAusBaujahr</c>). Ein leeres oder ungültiges Jahr und
+    /// dasselbe Jahr noch einmal lassen die gewählte Klasse stehen. Hand, Stammblatt und Assistent gehen
+    /// diesen Weg; eine Wahl der Klasse danach gilt.
     /// </summary>
     public void BaujahrUebernehmen(int? jahr)
     {
+        bool neu = jahr != Baujahr;
         Baujahr = jahr;
-        if (WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(jahr) is int klasse) Baualtersklasse = klasse;
+        if (neu && WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(jahr) is int klasse) Baualtersklasse = klasse;
     }
 
-    /// <summary>Folgt die Klasse aus dem Baujahr (dann ist die Klappliste gesperrt)?</summary>
-    public bool KlasseAusBaujahr => WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(Baujahr).HasValue;
+    /// <summary>Die Klasse, die das Baujahr vorschlägt; <c>null</c> ohne (gültiges) Baujahr.</summary>
+    public int? KlasseVorschlag => WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(Baujahr);
 
     /// <summary>Index der Bauart (0 = leicht, 1 = schwer, 2 = sehr schwer).</summary>
     public int Bauart { get; set; } = 1;
@@ -173,6 +181,12 @@ public sealed class GebaeudeKatalogDaten
 
     /// <summary>Die vier Ferienenden als Jahrestag.</summary>
     public int[] Ferienende { get; set; } = new int[4];
+
+    /// <summary>Die Wochenendtage als Wochenmaske (Mo = Bit 0 … So = Bit 6); Vorgabe Sa + So (96).</summary>
+    public int Wochenendtage { get; set; } = 96;
+
+    /// <summary>Das Feiertagsland (ISO-Kürzel); <c>null</c> = nur die bundeseinheitlichen Feiertage.</summary>
+    public string? Feiertagsland { get; set; }
 
     // ------------------------------------------- abgeleitet, aus dem Bestand
 
@@ -317,6 +331,12 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Steilheit der Heizkurve [–] (<c>Heizkurve_Steilheit</c>); <c>null</c> = 1,0.</summary>
     public double? HeizkurveSteilheit { get; set; }
 
+    /// <summary>
+    /// Raumeinfluss der Heizkurve k_R [K/K] (<c>Heizkurve_Raumeinfluss</c>, Anlagenkopplung AK3 Festlegung 23);
+    /// <c>null</c> oder 0 = aus. Wirkt nur mit Heizkurve und Stufe AK3.
+    /// </summary>
+    public double? HeizkurveRaumeinfluss { get; set; }
+
     /// <summary>Proportionalband des Raumreglers [K] (<c>Regler_Proportionalband</c>); <c>null</c> = 1,0 K (H1, E25).</summary>
     public double? ReglerProportionalband { get; set; }
 
@@ -357,15 +377,57 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Untere Grenze des Kaltwasser-Vorlaufs [°C] (<c>Kuehl_Vorlaufgrenze</c>) — eine Vorgabe, keine Taupunktrechnung; <c>null</c> = Vorgabe der Art.</summary>
     public double? KuehlVorlaufgrenze { get; set; }
 
+    // ------------------ Kühlkurve (Entwurf KK, Festlegungen 1, 3, 7; Schemaschritt 202)
+    //
+    // Unter der Kühlübergabe: außentemperaturgeführter Kühlvorlauf (Zwei-Punkt-Kurve mit Fußpunkt),
+    // auf Stufe AK3 mit Raumeinfluss. NULL-erhaltend; leer heißt fester Vorlauf (Festlegung 1).
+
+    /// <summary>„Kühlkurve" (<c>Kuehlkurve_Aktiv</c>, 0/1); <c>null</c> = aus, bleibt beim Speichern NULL.</summary>
+    public bool? KuehlkurveAktiv { get; set; }
+
+    /// <summary>Fußpunkt der Kühlkurve [°C] (<c>Kuehlkurve_Fusspunkt</c>, 4 … 22); <c>null</c> = Auslegungsrücklauf der Kühlübergabe.</summary>
+    public double? KuehlkurveFusspunkt { get; set; }
+
+    /// <summary>Raumeinfluss der Kühlkurve k_K [K/K] (<c>Kuehlkurve_Raumeinfluss</c>, 0 … 10); <c>null</c> oder 0 = aus.</summary>
+    public double? KuehlkurveRaumeinfluss { get; set; }
+
+    /// <summary>Auslegungsweg (<c>Kuehlkurve_Auslegung_Weg</c>, <c>DbWerte.KUEHLKURVE_AUSLEGUNG_*</c>); <c>null</c> = Tagesmittel (Weg 2).</summary>
+    public string? KuehlkurveAuslegungWeg { get; set; }
+
+    /// <summary>Auslegungs-Außentemperatur der Kühlung [°C] (<c>Kuehlkurve_Auslegung_Aussen</c>); wirkt nur mit dem Weg „Eingabe".</summary>
+    public double? KuehlkurveAuslegungAussen { get; set; }
+
+    // ------------------ Stufe KP2: Konditionierung (Entwurf KP2 Abschnitt 2; Teilkonzept 3, 7)
+    //
+    // Die neuen Zellen der Vorgabe-Matrix und die Kalender der fünf Größen. Die neun Bestandszellen
+    // bleiben die Felder oben (SollTag, NachtAbsenkung, …, Waermegewinne) — eine Wahrheit
+    // (KonditionierungDaten.Bestandsfeld).
+
+    /// <summary>
+    /// Die Konditionierung des Gebäudes bzw. Katalogbaus im Arbeitsstand; <c>null</c> = die Hülle
+    /// reicht keine (ohne Konditionierungstabellen, ohne Gaben). Sie reist durch denselben Schreibweg
+    /// wie der Feldsatz; ihre <see cref="KonditionierungDaten.Fassung"/> geht in den Abdruck ein.
+    /// </summary>
+    public KonditionierungDaten? Konditionierung { get; set; }
+
+    /// <summary>
+    /// Die manuelle Aufheizzeit des Projektgebäudes [h] (<c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c>, E59; Stufe KP3,
+    /// Welle O2): 1–47, <c>null</c> = Art des Projekts. Nur in der Betriebsart Projekt; ein Katalogsatz trägt sie nicht
+    /// (Festlegung 38) — „Speichern unter" nimmt sie nicht mit. Sie geht in den Abdruck ein.
+    /// </summary>
+    public int? AufheizzeitManuellH { get; set; }
+
     /// <summary>
     /// Eine TIEFE Kopie — der Arbeitsstand des Dialogs. Der hereingereichte Satz bleibt
-    /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg").
+    /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg"); die Konditionierung
+    /// wird samt Kalendern und Perioden mitkopiert.
     /// </summary>
     public GebaeudeKatalogDaten Kopie()
     {
         var k = (GebaeudeKatalogDaten)MemberwiseClone();
         k.Ferienbeginn = (int[])(Ferienbeginn ?? new int[4]).Clone();
         k.Ferienende = (int[])(Ferienende ?? new int[4]).Clone();
+        k.Konditionierung = Konditionierung?.Kopie();
         return k;
     }
 }

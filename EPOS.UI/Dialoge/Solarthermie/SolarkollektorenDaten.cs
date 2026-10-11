@@ -27,4 +27,50 @@ public sealed class SolarkollektorenEingaben
 
     /// <summary>Azimut [°]; <c>null</c> = leeres Feld.</summary>
     public int? Azimut { get; set; }
+
+    /// <summary>Bodenalbedo vor dem Kollektorfeld (0…1); <c>null</c> = leeres Feld (gilt als 0,2).</summary>
+    public double? Albedo { get; set; }
+    // --- Solarkreis (Welle M2 der Entscheidungsvorlage Modellgrenzen) ---------------------
+
+    /// <summary>Leistung der Solarkreispumpe [W]; <c>null</c> = leer (kein Pumpenstrom).</summary>
+    public double? PumpenleistungW { get; set; }
+
+    /// <summary>Verluste des Solarkreises [%]; <c>null</c> = leer (Vorgabe 8 %).</summary>
+    public double? VerlusteProzent { get; set; }
+
+    /// <summary>Grädigkeit des Wärmeübertragers [K]; <c>null</c> = leer (Vorgabe 5 K).</summary>
+    public double? GraedigkeitK { get; set; }
+
+    /// <summary>Spreizung des Kollektorkreises [K]; <c>null</c> = leer (Vorgabe 10 K).</summary>
+    public double? SpreizungK { get; set; }
+
+    /// <summary>Arbeitstemperatur aus dem Speicher (<c>true</c>) statt fest 50 °C.</summary>
+    public bool ArbeitstemperaturAusSpeicher { get; set; }
+
+    /// <summary>
+    /// Der Stand jetzt als eigenes Objekt — der Merker der Satz-Überlagerung (ÜS1): „Abbrechen"
+    /// stellt mit <see cref="Uebernehmen"/> die Eingaben beim Öffnen wieder her.
+    /// </summary>
+    public SolarkollektorenEingaben Kopie() => (SolarkollektorenEingaben)MemberwiseClone();
+
+    /// <summary>Schreibt den Stand von <paramref name="von"/> AN ORT UND STELLE in diese Eingaben.</summary>
+    public void Uebernehmen(SolarkollektorenEingaben von)
+    {
+        Anzahl = von.Anzahl;
+        Neigung = von.Neigung;
+        Azimut = von.Azimut;
+        Albedo = von.Albedo;
+        PumpenleistungW = von.PumpenleistungW;
+        VerlusteProzent = von.VerlusteProzent;
+        GraedigkeitK = von.GraedigkeitK;
+        SpreizungK = von.SpreizungK;
+        ArbeitstemperaturAusSpeicher = von.ArbeitstemperaturAusSpeicher;
+    }
+
+    /// <summary>Weicht der Stand von <paramref name="von"/> ab?</summary>
+    public bool Abweichend(SolarkollektorenEingaben von)
+        => Anzahl != von.Anzahl || Neigung != von.Neigung || Azimut != von.Azimut || Albedo != von.Albedo
+           || PumpenleistungW != von.PumpenleistungW || VerlusteProzent != von.VerlusteProzent
+           || GraedigkeitK != von.GraedigkeitK || SpreizungK != von.SpreizungK
+           || ArbeitstemperaturAusSpeicher != von.ArbeitstemperaturAusSpeicher;
 }

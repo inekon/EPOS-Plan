@@ -250,9 +250,12 @@
                                     Geklickt="BeiKachel"
                                     Ganglinie="@_solarGanglinie"
                                     GanglinieChanged="BeiSolarart"
+                                    PvGanglinie="@_pvGanglinie"
+                                    PvGanglinieChanged="BeiPvart"
                                     KopfText="@ErzeugerKopfText" Text="@ErzeugerText"
                                     TippTitelText="@ErzeugerTippTitelText" TippText="@ErzeugerTippText"
-                                    ProfilText="@SolarProfilText" GanglinieText="@SolarGanglinieText" />
+                                    ProfilText="@SolarProfilText" GanglinieText="@SolarGanglinieText"
+                                    Kuehlung="@Kuehlung" />
                 </KindInhalt>
             </Reiterblatt>
 
@@ -444,6 +447,12 @@
     [Parameter] public Action<bool>? SolarartGewaehlt { get; set; }
 
     /// <summary>
+    /// Die Weiche der Photovoltaikkachel wurde umgestellt (PVG): <c>true</c> = Ganglinie. Die Hülle entscheidet
+    /// damit, welcher Dialog beim Klick aufgeht — wie bei <see cref="SolarartGewaehlt"/>.
+    /// </summary>
+    [Parameter] public Action<bool>? PvartGewaehlt { get; set; }
+
+    /// <summary>
     /// Der Parametersatz des sechsten Reiters (<c>BerichteKostenSeite</c> aus
     /// W5.6); <c>null</c> = der Reiter bleibt leer.
     /// </summary>
@@ -595,6 +604,12 @@
     [Parameter] public string SolarProfilText { get; set; } = "Profil";
     [Parameter] public string SolarGanglinieText { get; set; } = "Ganglinie";
 
+    /// <summary>
+    /// Der Bestand der Kachel „Kühlung“ im Reiter Energieerzeuger (Windows: <c>KuehlungKachelBau.Daten</c>);
+    /// nur durchgereicht. <c>null</c> = die Kachel zeigt ihren Leerhinweis.
+    /// </summary>
+    [Parameter] public Func<KuehlungKachelDaten?>? Kuehlung { get; set; }
+
     [Parameter] public string SimulationKopfText { get; set; } = "Simulation durchführen";
     [Parameter] public string SimulationText { get; set; }
         = "Berechnen Sie die Energieflüsse und Systemleistung.";
@@ -636,6 +651,7 @@
     private KlimaHerkunftGaben? _klimaherkunft;
     private Zusammenfassung? _bericht;
     private bool _solarGanglinie;
+    private bool _pvGanglinie;
 
     /// <summary>
     /// Der Parametersatz der Simulation, beim BETRETEN des Reiters geholt (#220);
@@ -1014,6 +1030,12 @@
     {
         _solarGanglinie = ganglinie;
         SolarartGewaehlt?.Invoke(ganglinie);
+    }
+
+    private void BeiPvart(bool ganglinie)
+    {
+        _pvGanglinie = ganglinie;
+        PvartGewaehlt?.Invoke(ganglinie);
     }
 
     // =====================================================================

@@ -108,10 +108,23 @@
          bleiben beim Anwender; ins Repositorium kommt nur der Bericht mit
          Verhaeltniszahlen. -->
     <InternalsVisibleTo Include="ZapfprofilValidierung" />
+    <!-- UB-E4-a: Proben\ChartProben baut das Bivalenzdiagramm aus Bivalenzherleitung.Rechnen und
+         BivalenzdiagrammModell.Aus (beide internal) - dieselbe Herleitung wie Dialog und Bericht, ohne Abschrift. -->
+    <InternalsVisibleTo Include="ChartProben" />
     <!-- BV-E9: Werkzeuge\Berichtsvorlage erzeugt die ausführliche Excel-Vorlage aus dem Katalog und vergleicht ihren Inhalt
          über BerichtsvorlagenCtrl.Inhaltsschluessel (internal). -->
     <InternalsVisibleTo Include="Berichtsvorlage" />
     <InternalsVisibleTo Include="ZapfprofilValidierung.Tests" />
+    <!-- Und fuer das Saatskript des Referenzprojekts 1051 (Entwurf KP3, Festlegung 32: "ueber die
+         Programmwege, nicht ueber SQL"): Duplizieren und OK-Weg eines Katalogbaus
+         (GebaeudeStammCtrl) und die Gebaeudeliste eines Projekts (WizardCtrl) sind internal. Der
+         Name ist der des dateibasierten Programms (Referenzlaeufe/Skripte/referenzprojekt_1051_konditionierung.cs). -->
+    <InternalsVisibleTo Include="referenzprojekt_1051_konditionierung" />
+    <!-- Und fuer den plattformfreien Referenzlauf: Der Lauf mit der Stoerung "ulp" setzt den
+         AppContext-Schalter Plattformrundung.SCHALTER_ULP und prueft danach
+         Plattformrundung.UlpStoerung - die Naht ist internal, weil ausser dem Referenzlauf
+         niemand sie einschalten soll. -->
+    <InternalsVisibleTo Include="EPOS.Referenzlauf" />
   </ItemGroup>
 
   <ItemGroup>
@@ -185,7 +198,8 @@
   <!-- BAU OHNE xBIM (-p:OhneXbim=true; ADR-003 Aufgabe 7). Nur fuer den   -->
   <!-- Groessenvergleich des iOS-Geraetebaus (ios.yml, Job geraetebau):    -->
   <!-- ohne die Paketzeile und ohne jede Datei, die xBIM anspricht - der   -->
-  <!-- Leser samt Hilfsklassen und die Importmessung. Das Profil bleibt;   -->
+  <!-- Leser samt Hilfsklassen, die Importmessung und der IFC-Schreiber  -->
+  <!-- samt Kennungen (Export\Ifc, ausser IfcErgebnisse). Das Profil bleibt; -->
   <!-- IfcImportProfil.LeserErzeugen lehnt dann benannt ab. Jeder andere   -->
   <!-- Bau (Windows, Filter, Tests, iOS) setzt den Schalter nicht.         -->
   <!-- ================================================================== -->
@@ -199,6 +213,9 @@
     <Compile Remove="Allgemein\Import\Ifc\*.cs" />
     <Compile Include="Allgemein\Import\Ifc\IfcImportProfil.cs" />
     <Compile Remove="Allgemein\Import\Gebaeude\Importmessung.cs;Allgemein\Import\Gebaeude\ImportmessungProben.cs" />
+    <!-- Der IFC-Schreiber (G7c) samt Kennungen spricht xBIM an; die Ergebnisse bleiben (Profil, Abbild). -->
+    <Compile Remove="Allgemein\Export\Ifc\*.cs" />
+    <Compile Include="Allgemein\Export\Ifc\IfcErgebnisse.cs" />
   </ItemGroup>
 
   <!-- ================================================================== -->
@@ -333,6 +350,22 @@
        das KI-Wissen (HilfeWissen) und als Quelle der Wikiseiten (Anwender kopiert sie ins Wiki). -->
   <ItemGroup>
     <EmbeddedResource Include="Allgemein\Hilfe\Berechnung\*.wiki" LogicalName="EPOS.Kern.Hilfe.Berechnung.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Der freie Paketteil des Zapfprofilgenerators (Anwenderentscheid 29.09.2026): Fehlt einer
+       Datenbank die Katalogversion der Brauchwasserparameter, laedt der Kern ihn nach
+       (TwwPaketteilCtrl.Nachladen) - auf Windows und iOS. EINE Quelle: die CSV-Dateien des
+       Repo-Ordners selbst, als Verweis eingebettet, keine Kopie; der feste LogicalName haengt nicht
+       am Ordnerpfad. Nur *.csv - die LIESMICH.md des Ordners ist eine Entwicklerunterlage. Die Wache
+       EPOS.Kern.Tests/TwwPaketteilNachladenTests haelt Ressourcen und Ordner byte-gleich. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\Referenzlaeufe\Katalogpaket_frei\*.csv" Link="Katalogpaket_frei\%(Filename)%(Extension)" LogicalName="EPOS.Kern.Katalogpaket_frei.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- KM1: die eingebauten Typkennfelder der Kaeltemaschinen (Auswahl aus PNNL Copper, BSD-2;
+       Lizenz Quellen/LIZENZ_Kaeltemaschinen_Typkennfelder.txt) - KaeltemaschinenTypkennfelder.Lesen. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Allgemein\Katalog\KaeltemaschinenTypkennfelder.json" LogicalName="EPOS.Kern.Katalog.KaeltemaschinenTypkennfelder.json" />
   </ItemGroup>
 
   <!-- ================================================================== -->

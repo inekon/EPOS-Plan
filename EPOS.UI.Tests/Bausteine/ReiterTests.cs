@@ -1,4 +1,5 @@
-﻿using AngleSharp.Dom;
+﻿using System.Linq;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
 using Microsoft.AspNetCore.Components;
@@ -34,6 +35,57 @@ public class ReiterTests : BunitContext
             (RenderFragment)(x => x.AddMarkupContent(0, "<p id=\"i2\">Inhalt zwei</p>")));
         b.CloseComponent();
     };
+
+    /// <summary>Drei Blaetter A, B (nur mit <paramref name="mitB"/>) und Z - B steht im Markup in der Mitte.</summary>
+    private static RenderFragment DreiBlaetter(bool mitB) => b =>
+    {
+        b.OpenComponent<Reiterblatt>(0);
+        b.AddAttribute(1, "Schluessel", "A");
+        b.AddAttribute(2, "Titel", "A");
+        b.CloseComponent();
+        if (mitB)
+        {
+            b.OpenComponent<Reiterblatt>(3);
+            b.AddAttribute(4, "Schluessel", "B");
+            b.AddAttribute(5, "Titel", "B");
+            b.CloseComponent();
+        }
+        b.OpenComponent<Reiterblatt>(6);
+        b.AddAttribute(7, "Schluessel", "Z");
+        b.AddAttribute(8, "Titel", "Z");
+        b.CloseComponent();
+    };
+
+    private static string[] Leiste(IRenderedComponent<Reiter> cut)
+        => cut.FindAll(".epos-reiter-knopf").Select(k => k.TextContent.Trim()).ToArray();
+
+    /// <summary>
+    /// Anwenderbefund 30.09.2026 (Simulation, Reiter „Solarthermie“ hinter „Ergebnis“): Ein Blatt,
+    /// das erst nach dem ersten Zeichnen erscheint, meldet sich zuletzt an. Mit der
+    /// <see cref="Reiter.Reihenfolge"/> steht es trotzdem an seinem Platz.
+    /// </summary>
+    [Fact]
+    public void Ein_nachgereichtes_Blatt_steht_mit_Reihenfolge_an_seinem_Platz()
+    {
+        var folge = new[] { "A", "B", "Z" };
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, DreiBlaetter(false))
+                                       .Add(x => x.Reihenfolge, folge));
+        Assert.Equal(new[] { "A", "Z" }, Leiste(cut));
+
+        cut.Render(p => p.Add(x => x.KindInhalt, DreiBlaetter(true)).Add(x => x.Reihenfolge, folge));
+
+        Assert.Equal(new[] { "A", "B", "Z" }, Leiste(cut));
+    }
+
+    /// <summary>Die Gegenprobe: Ohne Reihenfolge bleibt die Anmeldefolge - das nachgereichte Blatt steht hinten.</summary>
+    [Fact]
+    public void Ohne_Reihenfolge_bleibt_die_Anmeldefolge()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, DreiBlaetter(false)));
+        cut.Render(p => p.Add(x => x.KindInhalt, DreiBlaetter(true)));
+
+        Assert.Equal(new[] { "A", "Z", "B" }, Leiste(cut));
+    }
 
     [Fact]
     public void Die_Blaetter_melden_sich_selbst_an_und_stehen_in_der_Leiste()
@@ -273,5 +325,172 @@ public class ReiterTests : BunitContext
         cut.FindAll(".epos-reiter-knopf")[1].Click();
 
         Assert.Equal(1, betreten);
+    }
+
+    // =====================================================================
+    //  Zweite Ebene: Kennung, Statuszeile, Leistenende
+    //  (Konzept Navigation Berichte & Kosten, Etappen A1/A2)
+    // =====================================================================
+
+    /// <summary>Zwei Blätter mit Statuszeile: das erste leise ohne Kurzform, das zweite Warnung mit Kurzform.</summary>
+    private static RenderFragment BlaetterMitStatus(string erstesStatus = "3 Versionen") => b =>
+    {
+        b.OpenComponent<Reiterblatt>(0);
+        b.AddAttribute(1, "Schluessel", "EINS");
+        b.AddAttribute(2, "Titel", "Erstes");
+        b.AddAttribute(3, "Status", erstesStatus);
+        b.AddAttribute(4, "KindInhalt",
+            (RenderFragment)(x => x.AddMarkupContent(0, "<p id=\"i1\">Inhalt eins</p>")));
+        b.CloseComponent();
+
+        b.OpenComponent<Reiterblatt>(5);
+        b.AddAttribute(6, "Schluessel", "ZWEI");
+        b.AddAttribute(7, "Titel", "Zweites");
+        b.AddAttribute(8, "Status", "3 Träger · 2 Warnungen");
+        b.AddAttribute(9, "StatusKurz", "2");
+        b.AddAttribute(10, "Statusstufe", Statusstufe.Warnung);
+        b.CloseComponent();
+    };
+
+    [Fact]
+    public void Ohne_Kennung_bleiben_die_Kennungen_wie_sie_waren()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, ZweiBlaetter()));
+
+        Assert.Equal("reiter-EINS", cut.FindAll(".epos-reiter-knopf")[0].Id);
+        Assert.Equal("blatt-EINS", cut.Find(".epos-reiter-blatt").Id);
+    }
+
+    [Fact]
+    public void Die_Kennung_setzt_ihren_Vorsatz_vor_Knopf_und_Blatt()
+    {
+        var cut = Render<Reiter>(p => p
+            .Add(x => x.Kennung, "bk")
+            .Add(x => x.KindInhalt, ZweiBlaetter()));
+
+        IElement knopf = cut.FindAll(".epos-reiter-knopf")[0];
+        Assert.Equal("bk-reiter-EINS", knopf.Id);
+        Assert.Equal("bk-blatt-EINS", knopf.GetAttribute("aria-controls"));
+        Assert.Equal("bk-reiter-ZWEI", cut.FindAll(".epos-reiter-knopf")[1].Id);
+
+        IElement blatt = cut.Find(".epos-reiter-blatt");
+        Assert.Equal("bk-blatt-EINS", blatt.Id);
+        Assert.Equal("bk-reiter-EINS", blatt.GetAttribute("aria-labelledby"));
+    }
+
+    /// <summary>Ein Blatt ohne Status zeichnet seinen Knopf wie immer: nur der Titel, keine Spannen.</summary>
+    [Fact]
+    public void Ohne_Status_traegt_der_Knopf_nur_den_Titel()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, ZweiBlaetter()));
+
+        IElement knopf = cut.FindAll(".epos-reiter-knopf")[0];
+        Assert.Equal("Erstes", knopf.TextContent.Trim());
+        Assert.Empty(knopf.Children);
+        Assert.DoesNotContain("epos-reiter-knopf--status", knopf.ClassName, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Die_Statuszeile_steht_leise_unter_dem_Titel()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, BlaetterMitStatus()));
+
+        IElement knopf = cut.FindAll(".epos-reiter-knopf")[0];
+        Assert.Contains("epos-reiter-knopf--status", knopf.ClassName, StringComparison.Ordinal);
+        Assert.Equal("Erstes", knopf.QuerySelector(".epos-reiter-titel")!.TextContent);
+
+        IElement zeile = knopf.QuerySelector(".epos-reiter-status")!;
+        Assert.Equal("epos-reiter-status", zeile.ClassName);
+        Assert.Null(zeile.QuerySelector(".epos-reiter-warnzeichen"));
+
+        // Ohne Kurzform EIN Text — keine lange und kurze Fassung nebeneinander.
+        Assert.Equal("3 Versionen", Assert.Single(zeile.QuerySelectorAll(".epos-reiter-status-text")).TextContent);
+        Assert.Empty(zeile.QuerySelectorAll(".epos-reiter-status-kurz"));
+    }
+
+    [Fact]
+    public void Die_Warnung_traegt_Zeichen_Warnklasse_und_Kurzform()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, BlaetterMitStatus()));
+
+        IElement zeile = cut.FindAll(".epos-reiter-knopf")[1].QuerySelector(".epos-reiter-status")!;
+        Assert.Contains("epos-reiter-status--warnung", zeile.ClassName, StringComparison.Ordinal);
+
+        IElement zeichen = zeile.QuerySelector(".epos-reiter-warnzeichen")!;
+        Assert.Equal("▲", zeichen.TextContent);
+        Assert.Equal("true", zeichen.GetAttribute("aria-hidden"));
+
+        Assert.Equal("3 Träger · 2 Warnungen", zeile.QuerySelector(".epos-reiter-status-lang")!.TextContent);
+        Assert.Equal("2", zeile.QuerySelector(".epos-reiter-status-kurz")!.TextContent);
+    }
+
+    /// <summary>
+    /// Trägt EIN Blatt eine Statuszeile, tragen alle die zweizeilige Gestalt: Das Blatt ohne
+    /// Stand bekommt Titelspanne und eine leere Zeile (geschütztes Leerzeichen, nur fürs Auge
+    /// verborgen) — kein kleinerer, einzeiliger Knopf, der springt, sobald sein Stand kommt.
+    /// </summary>
+    [Fact]
+    public void Neben_einer_Statuszeile_traegt_ein_Blatt_ohne_Stand_den_Platzhalter()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, BlaetterMitStatus("")));
+
+        IElement knopf = cut.FindAll(".epos-reiter-knopf")[0];
+        Assert.Contains("epos-reiter-knopf--status", knopf.ClassName, StringComparison.Ordinal);
+        Assert.Equal("Erstes", knopf.QuerySelector(".epos-reiter-titel")!.TextContent);
+        IElement zeile = knopf.QuerySelector(".epos-reiter-status")!;
+        Assert.Equal("epos-reiter-status epos-reiter-status--leer", zeile.ClassName);
+        Assert.Equal("true", zeile.GetAttribute("aria-hidden"));
+        Assert.Equal(" ", Assert.Single(zeile.QuerySelectorAll(".epos-reiter-status-text")).TextContent);
+
+        // Kommt der Stand, steht er in derselben Gestalt — ohne Platzhalter.
+        cut.Render(p => p.Add(x => x.KindInhalt, BlaetterMitStatus("1 Version")));
+        cut.WaitForAssertion(() => Assert.Equal("epos-reiter-status",
+            cut.FindAll(".epos-reiter-knopf")[0].QuerySelector(".epos-reiter-status")!.ClassName));
+    }
+
+    /// <summary>Ein neuer Status des Wirts erreicht die Leiste — der Reiter zeichnet sie nach.</summary>
+    [Fact]
+    public void Ein_neuer_Status_erreicht_die_Leiste()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, BlaetterMitStatus("3 Versionen")));
+
+        cut.Render(p => p.Add(x => x.KindInhalt, BlaetterMitStatus("4 Versionen")));
+
+        cut.WaitForAssertion(() => Assert.Equal(
+            "4 Versionen", cut.FindAll(".epos-reiter-knopf")[0].QuerySelector(".epos-reiter-status-text")!.TextContent));
+    }
+
+    [Fact]
+    public void Ohne_Leistenende_bleibt_die_Leiste_allein()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, ZweiBlaetter()));
+
+        Assert.Empty(cut.FindAll(".epos-reiter-kopfzeile"));
+        Assert.Empty(cut.FindAll(".epos-reiter-leistenende"));
+        Assert.Equal("epos-reiter-leiste", cut.Find(".epos-reiter > :first-child").ClassName);
+    }
+
+    /// <summary>
+    /// Das Leistenende steht NEBEN der tablist in derselben Zeile — eine tablist trägt nur
+    /// Reiter, und die Pfeiltasten im Ende wandern nicht durch die Reiter.
+    /// </summary>
+    [Fact]
+    public void Das_Leistenende_steht_neben_der_Leiste_nicht_in_ihr()
+    {
+        RenderFragment ende = b => b.AddMarkupContent(0, "<span id=\"ende\">Stamm: Musterhaus</span>");
+        var cut = Render<Reiter>(p => p
+            .Add(x => x.Leistenende, ende)
+            .Add(x => x.KindInhalt, ZweiBlaetter()));
+
+        IElement kopfzeile = cut.Find(".epos-reiter > .epos-reiter-kopfzeile");
+        Assert.Equal(2, kopfzeile.Children.Length);
+        Assert.Equal("tablist", kopfzeile.Children[0].GetAttribute("role"));
+        Assert.Equal("epos-reiter-leistenende", kopfzeile.Children[1].ClassName);
+        Assert.Equal("Stamm: Musterhaus", kopfzeile.Children[1].QuerySelector("#ende")!.TextContent);
+        Assert.Null(cut.Find(".epos-reiter-leiste").QuerySelector("#ende"));
+
+        // Die Leiste bedient sich wie immer.
+        cut.Find(".epos-reiter-leiste").KeyDown("ArrowRight");
+        Assert.Equal("Inhalt zwei", cut.Find("#i2").TextContent);
     }
 }

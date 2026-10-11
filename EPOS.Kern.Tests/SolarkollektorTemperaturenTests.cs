@@ -45,9 +45,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Nummer folgt lückenlos auf die Katalogsätze M und A. <b>Das Ziel ist sie nicht mehr:</b>
-        /// Mit dem Schritt KP-S1 der Konditionierungsprofile (Stufe KP1) steht der Zielstand auf
-        /// <see cref="KonditionierungSchema.SCHRITT"/> = 151; der Solarschritt bleibt aber der
-        /// unmittelbare Vorgänger — die Kette bleibt lückenlos.
+        /// Mit dem Schritt KP-S1 der Konditionierungsprofile (Stufe KP1) folgt
+        /// <see cref="KonditionierungSchema.SCHRITT"/> = 151, mit KP-S1v (Stufe KP1b)
+        /// <see cref="KonditionierungVorlagenSchema.SCHRITT"/> = 152; der Zielstand liegt darüber oder
+        /// gleich, der Solarschritt bleibt der Anfang dieser Kette — sie bleibt lückenlos.
         /// </summary>
         [Fact]
         public void Die_Nummer_folgt_auf_die_Gebaeudesaat_und_liegt_unter_dem_Ziel()
@@ -55,7 +56,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeSaatSchema.SCHRITT + 1, SolarkollektorTemperaturen.SCHRITT);
             Assert.Equal(150, SolarkollektorTemperaturen.SCHRITT);
             Assert.Equal(SolarkollektorTemperaturen.SCHRITT + 1, KonditionierungSchema.SCHRITT);
-            Assert.Equal(KonditionierungSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.Equal(KonditionierungSchema.SCHRITT + 1, KonditionierungVorlagenSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= KonditionierungVorlagenSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KonditionierungVorlagenSchema.SCHRITT + ".");
         }
 
         /// <summary>Vier Spalten, zwei je Tabelle, in fester Reihenfolge.</summary>

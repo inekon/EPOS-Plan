@@ -22,7 +22,13 @@ namespace WindowsFormsApplication1
         Stromganglinie,
 
         /// <summary>Solarthermieganglinie — <c>Tab_Solarganglinie_STAMM</c> (1 Satz), MIT Beschreibung.</summary>
-        Solarganglinie
+        Solarganglinie,
+
+        /// <summary>
+        /// PV-Ganglinie — <c>Tab_PvGanglinie_STAMM</c> (Schemaschritt 206), MIT Beschreibung und Raster
+        /// (Spalte Zeitintervall, 60 oder 15 Minuten).
+        /// </summary>
+        PvGanglinie
     }
 
     /// <summary>
@@ -95,8 +101,11 @@ namespace WindowsFormsApplication1
         public Katalogspalte(string schluessel, string titel, string einheit = "",
                              Katalogspaltenart art = Katalogspaltenart.Text,
                              bool sortierbar = true, bool filterbar = true,
-                             Katalogspaltenrang rang = Katalogspaltenrang.Immer)
+                             Katalogspaltenrang rang = Katalogspaltenrang.Immer,
+                             bool standardAus = false,
+                             string langtext = "")
         {
+            StandardAus = standardAus;
             Schluessel = schluessel;
             Titel = titel;
             Einheit = einheit ?? "";
@@ -104,7 +113,19 @@ namespace WindowsFormsApplication1
             Sortierbar = sortierbar;
             Filterbar = filterbar && art != Katalogspaltenart.JaNein;
             Rang = rang;
+            Langtext = langtext ?? "";
         }
+
+        /// <summary>
+        /// <b>Der volle Name eines kurzen Spaltenkopfs</b> („Nennkälteleistung" zu „P_N"),
+        /// bereits uebersetzt; leer, wo der Kopf fuer sich spricht. Die Liste nennt ihn
+        /// beim Verweilen (<c>title</c>) und der Hilfstechnik; Sortierung, Trichter und
+        /// Spaltenbreite bleiben beim kurzen <see cref="Kopftext"/>.
+        /// </summary>
+        public string Langtext { get; }
+
+        /// <summary>Traegt die Spalte einen Langtext?</summary>
+        public bool HatLangtext => Langtext.Length > 0;
 
         /// <summary>
         /// <b>Der Rang der Spalte</b> (Vorschlag V2): in welcher Reihenfolge sie weicht,
@@ -112,6 +133,14 @@ namespace WindowsFormsApplication1
         /// weicht nie (V7) — das entscheidet die Liste, nicht das Profil.
         /// </summary>
         public Katalogspaltenrang Rang { get; }
+
+        /// <summary>
+        /// <b>Steht die Spalte ohne gemerkte Spaltenwahl nicht da?</b> (Konzept
+        /// Projektdialoge 4.10.) Die Spalte bleibt waehlbar — ueber „Spalten…“ in der
+        /// Kopfleiste des Katalogs —, in der Standardanzeige fehlt sie. So die Spalte
+        /// „im Projekt verwendet“: Die Verwendung zeigt die Marke am Bezeichner.
+        /// </summary>
+        public bool StandardAus { get; }
 
         /// <summary>Sprachneutraler ASCII-Schluessel — zugleich der Zugriff auf den Wert.</summary>
         public string Schluessel { get; }
@@ -264,6 +293,15 @@ namespace WindowsFormsApplication1
         /// Waermepumpen-Stammliste ebenso.
         /// </summary>
         public bool Geschuetzt { get; set; }
+
+        /// <summary>
+        /// <b>Ist der Satz im Projekt verwendet?</b> (Konzept Projektdialoge 4.10,
+        /// Anwenderentscheid 10.10.2026.) Die Katalogliste zeichnet daran die
+        /// Verwendungsmarke am Bezeichner und toent die Zeile; gesetzt wird es von
+        /// <see cref="Katalogverwendung.Stempeln"/> zusammen mit dem Wert der Spalte
+        /// <see cref="Katalogfilterprofil.SpVerwendet"/>.
+        /// </summary>
+        public bool ImProjekt { get; set; }
 
         /// <summary>Setzt einen Wert und liefert die Zeile zurueck (Baukasten).</summary>
         public Katalogfilterzeile Mit(string schluessel, Katalogwert wert)
@@ -454,6 +492,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SpSpitzeKw = "SPITZE";
 
+        /// <summary>
+        /// Die gepflegte NENNLEISTUNG einer PV-Ganglinie in kWp (<c>Tab_PvGanglinie_STAMM.Nennleistung_kWp</c>);
+        /// leer, wenn sie nicht gepflegt ist — dann rechnet der Lauf mit der Spitze der Reihe.
+        /// </summary>
+        public const string SpNennleistungKwp = "NENNLEISTUNG_KWP";
+
         // ------------------------------------------------------------------
         // Klimaregionen (Auftrag KL-4) - der neunte Katalog
         //
@@ -605,6 +649,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die flächenbezogene Wärmekapazität Σ ρ·c·d eines Aufbaus in kJ/(m²·K).</summary>
         public const string SpKapazitaet = "KAPAZITAET";
 
+        /// <summary>Kältemaschine (KU3-1): Nennkälteleistung [kW] (<c>Tab_Kaeltemaschine_STAMM.Nennkaelteleistung_kW</c>).</summary>
+        public const string SpNennkaelteleistung = "NENNKAELTELEISTUNG";
+
+        /// <summary>Kältemaschine (KU3-1): EER im Nennpunkt (<c>Nenn_EER</c>).</summary>
+        public const string SpEer = "EER";
+
+        /// <summary>Kältemaschine (KU3-1): Rückkühlart als Anzeigetext (<c>KaeltemaschineStammCtrl.RueckkuehlartText</c>).</summary>
+        public const string SpRueckkuehlart = "RUECKKUEHLART";
+
+        /// <summary>Kältemaschine (K-A): Geräteart als Anzeigetext (<c>KaeltemaschineStammCtrl.GeraeteartText</c>).</summary>
+        public const string SpGeraeteart = "GERAETEART";
+
         /// <summary>
         /// <b>Der Ausdruck „ohne Wert"</b> — ein Gleichheitszeichen ohne Operand (Konzept_Katalogfilter
         /// V1: <c>=15</c> heißt „gleich 15", <c>=</c> allein „gleich nichts"). Er trifft genau die
@@ -613,6 +669,14 @@ namespace WindowsFormsApplication1
         /// „Filter zurücksetzen" nimmt ihn mit.
         /// </summary>
         public const string AUSDRUCK_LEER = "=";
+
+        /// <summary>
+        /// <b>Die Verneinung einer Text- oder Kennzeichenspalte</b> — vorangestellt wie
+        /// <c>!Typkennfeld</c>: trifft jede Zelle, die der Rest NICHT trifft. Der Schalter
+        /// „Typkennfelder ausblenden" der Kältemaschinenverwaltung setzt ihn auf die Spalte
+        /// Herkunft — kein zweiter Filterweg, „Filter zurücksetzen" nimmt ihn mit.
+        /// </summary>
+        public const string AUSDRUCK_NICHT = "!";
 
         /// <summary>
         /// Welche der acht Anlagenarten. <b>Nur bei den acht Anlagenkatalogen belegt</b>;
@@ -729,7 +793,8 @@ namespace WindowsFormsApplication1
                             // Form_WpFilterAuswahl nannte ihn so.
                             new Katalogspalte(SpBezeichner,   t("KFLT_SP_MODELL")),
                             new Katalogspalte(SpQuelle,       t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.BeiPlatz),
-                            new Katalogspalte(SpNennleistung, t("KFLT_SP_NENNLEISTUNG"), "kW", Katalogspaltenart.Zahl),
+                            new Katalogspalte(SpNennleistung, t("KFLT_SP_NENNLEISTUNG"), "kW", Katalogspaltenart.Zahl,
+                                              langtext: t("WPS_LBL_NENNLEISTUNG")),
                             new Katalogspalte(SpVlMin,        t("KFLT_SP_VLMIN"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
                             new Katalogspalte(SpVlMax,        t("KFLT_SP_VLMAX"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpZuheizung,    t("KFLT_SP_ZUHEIZUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
@@ -838,6 +903,41 @@ namespace WindowsFormsApplication1
                             new Katalogspalte(SpZyklen,     t("KFLT_SP_ZYKLEN"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit)
                         }
                     };
+
+                // ----------------------------------------------------------
+                // Kaeltemaschine (3 Beispielgeraete, 34 Typkennfelder) - ACHT Spalten
+                // ----------------------------------------------------------
+                // Nach dem Muster der Waermepumpe: Hersteller vorn, dann der
+                // Bezeichner (mit dem Schloss - es haengt am Bezeichner, nicht am
+                // Platz) und der Hauptkennwert; beide Immer. Die weichenden Spalten
+                // kommen in der Folge Hersteller, EER, Rueckkuehlung, Herkunft dazu,
+                // der Typ zuletzt (er sagt fuer die Typkennfelder dasselbe wie die
+                // Herkunft). Die Geraeteart (K-A) kommt nach der Herkunft und vor dem
+                // Typ: solange der Katalog nur Kaltwassersaetze fuehrt, sagt die
+                // Rueckkuehlung mehr; ihre langen Texte duerfen sie nicht verdraengen.
+                case Anlagenart.Kaeltemaschine:
+                    return new Katalogfilterprofil
+                    {
+                        Art = art,
+                        Spalten = new[]
+                        {
+                            new Katalogspalte(SpHersteller,         t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpBezeichner,         t("KFLT_SP_BEZEICHNER")),
+                            new Katalogspalte(SpNennkaelteleistung, t("KFLT_SP_NENNKAELTELEISTUNG"), "kW", Katalogspaltenart.Zahl,
+                                                                    langtext: t("KFLT_LT_NENNKAELTELEISTUNG")),
+                            new Katalogspalte(SpEer,                t("KFLT_SP_EER"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz,
+                                                                    langtext: t("KFLT_LT_EER")),
+                            new Katalogspalte(SpRueckkuehlart,      t("KFLT_SP_RUECKKUEHLART"), rang: Katalogspaltenrang.BeiPlatz,
+                                                                    langtext: t("KFLT_LT_RUECKKUEHLART")),
+                            // Typkennfeld, Auslieferung oder eigen
+                            // (KaeltemaschineStammCtrl.HerkunftText); der Schalter
+                            // „Typkennfelder ausblenden" setzt hier den verneinten Trichter.
+                            new Katalogspalte(SpHerkunft,           t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpGeraeteart,         t("KFLT_SP_GERAETEART"), rang: Katalogspaltenrang.BeiPlatz,
+                                                                    langtext: t("KFLT_LT_GERAETEART")),
+                            new Katalogspalte(SpTyp,                t("KFLT_SP_TYP"), rang: Katalogspaltenrang.Breit)
+                        }
+                    };
             }
 
             throw new ArgumentOutOfRangeException(nameof(art));
@@ -913,11 +1013,11 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(SpBezeichner, t("KFLT_SP_BEZEICHNER"))
             };
 
-            if (art == Zeitreihenart.Stromganglinie)
+            if (art == Zeitreihenart.Stromganglinie || art == Zeitreihenart.PvGanglinie)
                 spalten.Add(new Katalogspalte(SpZeitintervall, t("KFLT_SP_ZEITINTERVALL"), "",
                                               Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
 
-            if (art == Zeitreihenart.Solarganglinie)
+            if (art == Zeitreihenart.Solarganglinie || art == Zeitreihenart.PvGanglinie)
                 spalten.Add(new Katalogspalte(SpBeschreibung, t("KFLT_SP_BESCHREIBUNG"),
                                               rang: Katalogspaltenrang.BeiPlatz));
 
@@ -925,6 +1025,10 @@ namespace WindowsFormsApplication1
                                           Katalogspaltenart.Zahl));
             spalten.Add(new Katalogspalte(SpSpitzeKw, t("KFLT_SP_SPITZE"), "kW",
                                           Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
+
+            if (art == Zeitreihenart.PvGanglinie)
+                spalten.Add(new Katalogspalte(SpNennleistungKwp, t("PVG_SP_NENNLEISTUNG"), "kWp",
+                                              Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
 
             return new Katalogfilterprofil { Schluessel = "ZEITREIHE_" + art, Spalten = spalten };
         }
@@ -1000,6 +1104,10 @@ namespace WindowsFormsApplication1
         /// <para><b>Rang:</b> Name und Flaeche stehen immer; Gebaeudeart und Baualtersklasse bei Platz;
         /// die Verwendung weicht als erste — sie ist die grobe Einteilung, die der Name meist
         /// schon verraet, und eine gefilterte Spalte weicht ohnehin nie.</para>
+        ///
+        /// <para><b>Die sechste Spalte „Kalender"</b> (Entwurf KP2, Festlegung 15) zaehlt die
+        /// angelegten Konditionierungskalender des Katalogbaus (0 … 5); sie weicht mit der
+        /// Verwendung. Die Zahl liefert <c>GebaeudeKatalogkalender.Katalogfilterzeilen</c>.</para>
         /// </summary>
         public static Katalogfilterprofil FuerGebaeude(Func<string, string> text = null)
         {
@@ -1014,10 +1122,19 @@ namespace WindowsFormsApplication1
                     new Katalogspalte(SpGebaeudeart, t("KFLT_SP_GEBAEUDEART"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpVerwendung, t("KFLT_SP_VERWENDUNG"), rang: Katalogspaltenrang.Breit),
                     new Katalogspalte(SpBaualtersklasse, t("KFLT_SP_BAUALTERSKLASSE"), rang: Katalogspaltenrang.BeiPlatz),
-                    new Katalogspalte(SpFlaecheM2, t("KFLT_SP_FLAECHE"), "m²", Katalogspaltenart.Zahl)
+                    new Katalogspalte(SpFlaecheM2, t("KFLT_SP_FLAECHE"), "m²", Katalogspaltenart.Zahl),
+                    new Katalogspalte(SpKonditionierungskalender, t("KOND_MSG_SP_KALENDER"), "",
+                                      Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit)
                 }
             };
         }
+
+        /// <summary>
+        /// <b>„Kalender"</b> eines Katalogbaus (Entwurf KP2, Festlegung 15) — die Zahl der angelegten
+        /// Konditionierungskalender, 0 … 5 (eine je Größe). Nicht <see cref="SpKalender"/>: Der ist die
+        /// Kalenderart einer Brauchwasser-Nutzungsart, ein Text.
+        /// </summary>
+        public const string SpKonditionierungskalender = "KONDKALENDER";
 
         /// <summary>
         /// <b>Die Gebaeudetypen</b> (V16; Bestand A10) — Name, Zahl der Tageskurven und
@@ -1202,7 +1319,7 @@ namespace WindowsFormsApplication1
             var spalten = new List<Katalogspalte>(Spalten)
             {
                 new Katalogspalte(SpVerwendet, t("KFLT_SP_VERWENDET"), "",
-                                  Katalogspaltenart.JaNein)
+                                  Katalogspaltenart.JaNein, standardAus: true)
             };
 
             return new Katalogfilterprofil
@@ -1226,6 +1343,7 @@ namespace WindowsFormsApplication1
                 yield return Anlagenart.Photovoltaik;
                 yield return Anlagenart.Wechselrichter;
                 yield return Anlagenart.Stromspeicher;
+                yield return Anlagenart.Kaeltemaschine;
             }
         }
     }

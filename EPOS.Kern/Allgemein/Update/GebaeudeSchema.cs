@@ -71,8 +71,14 @@ namespace WindowsFormsApplication1
     // Nummer bei BaualtersklassenSchema.SCHRITT). Eine Spalte Energiestandard (TEXT, CHECK auf die
     // elf Codes, NULL = keiner) je Gebaeudetabelle, die Sicht mit ihr HINTER der Nachtzeit neu (102
     // Spalten); dazu die einmalige Umschluesselung der Baualtersklassen (BaualtersklassenSchema). Er
-    // laeuft in Migration, Werkzeug und Testkopie ZULETZT, damit kein aelterer Durchgang die Spalte
-    // wieder aus der Sicht schneidet.
+    // laeuft in Migration, Werkzeug und Testkopie hinter den sechs aelteren Durchgaengen.
+    //
+    // DER ACHTE DURCHGANG: die manuelle Aufheizzeit (Entscheid E59, Entwurf KP3 Abschnitt 4,
+    // KP-S4; Nummer bei AufheizManuellSchema.SCHRITT). Eine Spalte Aufheizzeit_Manuell_H (INTEGER,
+    // 1 bis 47 h, NULL = die Art des Projekts) NUR an Tab_Gebaeude - der Katalog fuehrt sie nicht
+    // (Festlegung 38) -, die Sicht mit ihr HINTER dem Energiestandard neu (103 Spalten). Er laeuft in
+    // Migration, Werkzeug und Testkopie ZULETZT, damit kein aelterer Durchgang die Spalte wieder aus
+    // der Sicht schneidet.
     // ====================================================================================
 
     /// <summary>
@@ -90,7 +96,8 @@ namespace WindowsFormsApplication1
     /// (<see cref="NachtzeitSchema.SCHRITT"/>, E43): Beginn und Ende der Nachtabsenkung je
     /// Gebaeudetabelle und der sechste Sichtneubau; und der siebte Durchgang
     /// (<see cref="BaualtersklassenSchema.SCHRITT"/>, E47): der Energiestandard je Gebaeudetabelle und
-    /// der siebte Sichtneubau.
+    /// der siebte Sichtneubau; und der achte Sichtneubau (<see cref="AufheizManuellSchema.SCHRITT"/>,
+    /// E59): die manuelle Aufheizzeit an <c>Tab_Gebaeude</c>, gebaut von <see cref="AufheizManuellSchema"/>.
     /// </summary>
     public static class GebaeudeSchema
     {
@@ -654,14 +661,176 @@ namespace WindowsFormsApplication1
                                  .Concat(NACHTZEIT_SPALTEN)
                                  .Concat(new[] { SPALTE_ENERGIESTANDARD }));
 
+        // ---- der achte Durchgang: die manuelle Aufheizzeit (E59, KP-S4) ------------------
+
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der des Energiestandards).
+        /// Die manuelle Aufheizzeit des Gebäudes (E59, Festlegung 37): die Aufheizzeit t = n − 1 in Stunden
+        /// wie <c>Aufheizzeit_Max_H</c>, 1 bis 47; NULL = das Gebäude folgt der Art des Projekts. NUR an
+        /// <c>Tab_Gebaeude</c> — der Katalog führt sie nicht (Festlegung 38).
+        /// </summary>
+        public const string SPALTE_AUFHEIZZEIT_MANUELL = "Aufheizzeit_Manuell_H";
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt der manuellen Aufheizzeit (<see cref="AufheizManuellSchema.SCHRITT"/>,
+        /// der achte Durchgang): die 102 aus <see cref="SICHT_ENERGIESTANDARD"/>, dahinter die manuelle
+        /// Aufheizzeit - an der Stelle 102.
+        /// </summary>
+        public static readonly string[] SICHT_AUFHEIZ_MANUELL =
+            SICHT_ENERGIESTANDARD.Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL }).ToArray();
+
+        /// <summary>Die Sichtdefinition der manuellen Aufheizzeit: alle sieben Durchgänge davor und dahinter die manuelle Aufheizzeit.</summary>
+        public static readonly string SQL_VIEW_AUFHEIZ_MANUELL =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL }));
+
+        // ---- der neunte Durchgang: der wirksame U-Wert der Bodenplatte als Vorgabe (E65, EV1) ----
+
+        /// <summary>
+        /// Der wirksame U-Wert der Bodenplatte samt Erdreich [W/(m²K)] als Vorgabe (E65): gesetzt, nimmt die
+        /// Erdreichrechnung ihn als U_g der Bodenbauteile am Erdreich und rechnet kein B′; NULL = die
+        /// Erdreichkorrektur nach DIN EN ISO 13370. An <c>Tab_Gebaeude</c> UND <c>Tab_Gebaeude_STAMM</c>.
+        /// </summary>
+        public const string SPALTE_ERDREICH_U_WIRKSAM = "Erdreich_U_Wirksam";
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt der Erdreichvorgabe (<see cref="ErdreichVorgabeSchema.SCHRITT"/>,
+        /// der neunte Durchgang): die 103 aus <see cref="SICHT_AUFHEIZ_MANUELL"/>, dahinter der wirksame U-Wert der
+        /// Bodenplatte - an der Stelle 103.
+        /// </summary>
+        public static readonly string[] SICHT_ERDREICH_VORGABE =
+            SICHT_AUFHEIZ_MANUELL.Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM }).ToArray();
+
+        /// <summary>Die Sichtdefinition der Erdreichvorgabe: alle acht Durchgänge davor und dahinter der wirksame U-Wert der Bodenplatte.</summary>
+        public static readonly string SQL_VIEW_ERDREICH_VORGABE =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
+                                 .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM }));
+
+        // ---- der zehnte Durchgang: der Raumeinfluss der Heizkurve (Entwurf AK3, Festlegung 23) ----
+
+        /// <summary>
+        /// Der Raumeinfluss der Heizkurve k_R [K/K] (Entwurf AK3 Festlegung 23, Q-AK3-2): Mit Stufe AK3 und
+        /// <c>Heizkurve_Aktiv</c> = 1 hebt der Kreis den Vorlauf der Heizkurve um k_R · (θ_soll − θ_i) der Zone mit der
+        /// größten Unterschreitung an, gekappt am Auslegungsvorlauf und am Vorlaufangebot (<c>Vorlauf_Max</c>).
+        /// NULL oder 0 = aus. An <c>Tab_Gebaeude</c> UND <c>Tab_Gebaeude_STAMM</c>.
+        /// </summary>
+        public const string SPALTE_HEIZKURVE_RAUMEINFLUSS = "Heizkurve_Raumeinfluss";
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt des Raumeinflusses (<see cref="Ak3Schema.SCHRITT"/>, der zehnte
+        /// Durchgang): die 104 aus <see cref="SICHT_ERDREICH_VORGABE"/>, dahinter der Raumeinfluss - an der Stelle 104.
+        /// </summary>
+        public static readonly string[] SICHT_AK3 =
+            SICHT_ERDREICH_VORGABE.Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS }).ToArray();
+
+        /// <summary>Die Sichtdefinition des Raumeinflusses: alle neun Durchgänge davor und dahinter der Raumeinfluss der Heizkurve.</summary>
+        public static readonly string SQL_VIEW_AK3 =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
+                                 .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM })
+                                 .Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS }));
+
+        // ---- der elfte Durchgang: die Kuehlkurve (Entwurf KK, Festlegungen 1, 3, 7; Schemaschritt S1 = 202) ----
+
+        /// <summary>Der Schalter der Kühlkurve (0/1, NULL = aus; Entwurf KK Festlegung 1).</summary>
+        public const string SPALTE_KUEHLKURVE_AKTIV = "Kuehlkurve_Aktiv";
+
+        /// <summary>Der Fußpunkt der Kühlkurve θ_V,F [°C] (4 … 22; NULL = Auslegungsrücklauf der Kühlübergabe, Festlegung 4).</summary>
+        public const string SPALTE_KUEHLKURVE_FUSSPUNKT = "Kuehlkurve_Fusspunkt";
+
+        /// <summary>Der Raumeinfluss der Kühlkurve k_K [K/K] (0 … 10; NULL oder 0 = aus, Festlegung 6).</summary>
+        public const string SPALTE_KUEHLKURVE_RAUMEINFLUSS = "Kuehlkurve_Raumeinfluss";
+
+        /// <summary>Der Auslegungsweg der Kühlkurve (<c>stunde</c>, <c>tagesmittel</c>, <c>eingabe</c>; NULL = <c>tagesmittel</c>, E107).</summary>
+        public const string SPALTE_KUEHLKURVE_AUSLEGUNG_WEG = "Kuehlkurve_Auslegung_Weg";
+
+        /// <summary>Die Auslegungs-Außentemperatur der Kühlkurve [°C] (wirkt nur mit dem Weg <c>eingabe</c>, E107).</summary>
+        public const string SPALTE_KUEHLKURVE_AUSLEGUNG_AUSSEN = "Kuehlkurve_Auslegung_Aussen";
+
+        /// <summary>Die fünf Spalten der Kühlkurve in Sicht- und Anlegereihenfolge.</summary>
+        public static readonly string[] KUEHLKURVE_SPALTEN =
+        {
+            SPALTE_KUEHLKURVE_AKTIV, SPALTE_KUEHLKURVE_FUSSPUNKT, SPALTE_KUEHLKURVE_RAUMEINFLUSS,
+            SPALTE_KUEHLKURVE_AUSLEGUNG_WEG, SPALTE_KUEHLKURVE_AUSLEGUNG_AUSSEN,
+        };
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt der Kühlkurve (<see cref="KuehlkurveSchema.SCHRITT"/>, der elfte
+        /// Durchgang): die 105 aus <see cref="SICHT_AK3"/>, dahinter die fünf Spalten der Kühlkurve - an den Stellen 105 bis 109.
+        /// </summary>
+        public static readonly string[] SICHT_KUEHLKURVE = SICHT_AK3.Concat(KUEHLKURVE_SPALTEN).ToArray();
+
+        /// <summary>Die Sichtdefinition der Kühlkurve: alle zehn Durchgänge davor und dahinter die fünf Spalten der Kühlkurve.</summary>
+        public static readonly string SQL_VIEW_KUEHLKURVE =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
+                                 .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM })
+                                 .Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS })
+                                 .Concat(KUEHLKURVE_SPALTEN));
+
+        /// <summary>
+        /// Die zwei Spalten der Kalenderbedienung Stufe 2 (<see cref="KalenderbedienungSchema"/>): Wochenende und
+        /// Feiertagsland des Gebäudes, in Sicht- und Anlegereihenfolge.
+        /// </summary>
+        public static readonly string[] KALENDER_SPALTEN =
+        {
+            KalenderbedienungSchema.SPALTE_WOCHENENDTAGE, KalenderbedienungSchema.SPALTE_FEIERTAGSLAND,
+        };
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt der Kalenderbedienung (<see cref="KalenderbedienungSchema.SCHRITT"/>, der
+        /// zwölfte Durchgang): die 110 aus <see cref="SICHT_KUEHLKURVE"/>, dahinter Wochenende und Feiertagsland - an den
+        /// Stellen 110 und 111.
+        /// </summary>
+        public static readonly string[] SICHT_KALENDERBEDIENUNG = SICHT_KUEHLKURVE.Concat(KALENDER_SPALTEN).ToArray();
+
+        /// <summary>Die Sichtdefinition der Kalenderbedienung: alle elf Durchgänge davor und dahinter die zwei Kalenderspalten.</summary>
+        public static readonly string SQL_VIEW_KALENDERBEDIENUNG =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
+                                 .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM })
+                                 .Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS })
+                                 .Concat(KUEHLKURVE_SPALTEN)
+                                 .Concat(KALENDER_SPALTEN));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der Kalenderbedienung, K2).
         /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_ENERGIESTANDARD;
+        public static string[] SICHT_AKTUELL => SICHT_KALENDERBEDIENUNG;
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der des Energiestandards).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_ENERGIESTANDARD;
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der Kalenderbedienung, K2).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_KALENDERBEDIENUNG;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)

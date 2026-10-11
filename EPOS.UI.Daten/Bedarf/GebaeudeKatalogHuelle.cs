@@ -46,9 +46,11 @@ namespace WindowsFormsApplication1
         {
             IReadOnlyDictionary<string, object> gaben = Grundgaben(bezeichner, modus);
             if (vorbelegung?.Daten == null) return gaben;
+            GebaeudeKatalogDaten daten = vorbelegung.Daten.Kopie();
+            daten.Konditionierung ??= KonditionierungHuelle.Leer();
             return new Dictionary<string, object>(gaben)
             {
-                ["Daten"] = vorbelegung.Daten.Kopie(),
+                ["Daten"] = daten,
                 ["Vorbelegung"] = vorbelegung.Herleitung ?? ""
             };
         }
@@ -59,7 +61,37 @@ namespace WindowsFormsApplication1
             GebaeudeModel geladen = modus == GebaeudeKatalogModus.Neu
                 ? new GebaeudeModel()
                 : Laden(bezeichner) ?? new GebaeudeModel();
-            return Grundgaben(geladen, modus);
+            IReadOnlyDictionary<string, object> gaben = Grundgaben(geladen, modus);
+
+            // Welle ZK-b: die Zonen des Katalogsatzes, bearbeitbar wie im Projekt. Der Zonenweg findet den Satz
+            // über seinen Namen; der Schreibweg des Kopfs führt ihn nach (Modus Neu legt ihn erst an, „Speichern
+            // unter" arbeitet am neuen Satz weiter).
+            var ziel = new Katalogziel { Name = modus == GebaeudeKatalogModus.Neu ? "" : geladen.Gebaeudename ?? "" };
+            gaben = new Dictionary<string, object>(gaben)
+            {
+                ["Zonen"] = KatalogZonenweg(ziel),
+                ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>((d, istNeu, bez) =>
+                {
+                    GebaeudeKatalogErgebnis e = Schreiben(d, istNeu, bez);
+                    if (e.Erfolg && istNeu) ziel.Name = d.Name ?? "";
+                    return e;
+                })
+            };
+
+            // DAS SCHLOSS ERREICHT DEN EDITOR (Stufe KP2, Befund B11): Ein ausgelieferter Satz
+            // (ReadOnly) steht im Modus Bearbeiten gesperrt da - OK weich gesperrt mit Grund,
+            // „Speichern unter" frei -, statt dass Schreiben ihn erst nach dem OK ablehnt. Die
+            // Ablehnung in Schreiben bleibt als zweite Sicherung.
+            if (modus != GebaeudeKatalogModus.Bearbeiten || string.IsNullOrEmpty(bezeichner)
+                || !new GebaeudeStammCtrl().IsReadOnly(bezeichner))
+                return gaben;
+            return new Dictionary<string, object>(gaben)
+            {
+                ["Gesperrt"] = true,
+                ["SperrGrund"] = Text_("KOND_TXT_HINWEIS_LESEMODUS",
+                    "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ " +
+                    "legt eine bearbeitbare Kopie an.")
+            };
         }
 
         // =================================================================================
@@ -87,15 +119,29 @@ namespace WindowsFormsApplication1
             GebaeudeModel kopie = GebaeudeStammCtrl.LiesProjektkopie(idGebaeude);
             if (idProjekt <= 0 || kopie == null) return null;
 
+            // Stufe KP2: die Konditionierung des PROJEKTGEBÄUDES im Feldsatz und der Weg im Projekt
+            // (mit „aus dem Katalog erneut übernehmen").
+            GebaeudeKatalogDaten daten = AusModell(kopie);
+            daten.Konditionierung = KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude));
+            // Stufe KP3, Welle O2 (E59): die manuelle Aufheizzeit der Projektkopie und ihre Vorschlaege.
+            daten.AufheizzeitManuellH = AufheizauskunftCtrl.ManuellLesen(idGebaeude);
             var gaben = new Dictionary<string, object>(Grundgaben(kopie, GebaeudeKatalogModus.Projekt))
             {
+                ["Daten"] = daten,
+                ["Aufheizzeit"] = Aufheizvorschlaege(idProjekt, idGebaeude),
+                // Der Bezug des Projekts (Kopplung, Referenzjahr, Kuehlbetrieb) wie im Lauf (KP2 U1, 4 (c)).
+                ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Gebaeude, idGebaeude, idProjekt),
+                // „Speichern unter" im PROJEKTMODUS: Der neue Katalogbau bekommt die
+                // Konditionierung des PROJEKTGEBÄUDES mit (Stufe KP1b, Konzept 5.5) — nur die
+                // Gebäudeebene; die Zonenzeilen bleiben zurück und stehen im Befund der
+                // Kernmethode für die Rückfrage, die mit KP2 kommt.
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
-                    (d, istNeu, bez) => istNeu ? Schreiben(d, true, bez) : ProjektSchreiben(idProjekt, idGebaeude, d)),
+                    (d, istNeu, bez) => istNeu
+                        ? Schreiben(d, true, bez, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude))
+                        : ProjektSchreiben(idProjekt, idGebaeude, d)),
                 ["Zonen"] = Zonenweg(idProjekt, idZ, idGebaeude),
                 ["HilfeSchluessel"] = HILFE_PROJEKT
             };
-            gaben.Remove("Lies");
-            gaben.Remove("Katalognamen");
             return gaben;
         }
 
@@ -111,10 +157,38 @@ namespace WindowsFormsApplication1
             string name = vorher.Gebaeudename;
             GebaeudeModel modell = NachModell(daten, vorher);
             modell.Gebaeudename = name;
-            if (!GebaeudeStammCtrl.ProjektkopieUeberschreiben(idGebaeude, idProjekt, modell))
-                return new GebaeudeKatalogErgebnis(false, MyResource.Resource.GEBZ_MSG_GEBAEUDE);
+            // Stufe KP2: Gebaeude samt Konditionierung in EINEM Vorgang (Schritt 1 des OK-Wegs).
+            KonditionierungCtrl.Ergebnis e = GebaeudeStammCtrl.ProjektkopieSchreiben(
+                idGebaeude, idProjekt, modell, KonditionierungHuelle.Schreibstand(daten, Kalendereigentuemer.Gebaeude));
+            if (!e.Ok)
+                return new GebaeudeKatalogErgebnis(false, string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.GEBZ_MSG_GEBAEUDE : e.Meldung);
+            // Stufe KP3, Welle O2 (E59): die manuelle Aufheizzeit gehoert zu den Gebaeudedaten (Schritt 1) - nur
+            // geschrieben, wenn sie sich geaendert hat; eine Datenbank ohne die Spalte lehnt einen Wert benannt ab.
+            if (daten.AufheizzeitManuellH != AufheizauskunftCtrl.ManuellLesen(idGebaeude)
+                && AufheizauskunftCtrl.ManuellSchreiben(idGebaeude, daten.AufheizzeitManuellH) is string grund)
+                return new GebaeudeKatalogErgebnis(false, grund);
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
             return new GebaeudeKatalogErgebnis(true, "");
+        }
+
+        /// <summary>
+        /// Die Vorschläge des Feldes „Aufheizzeit manuell (h)" (Stufe KP3, Welle O2; Festlegung 40): die Auskunft der
+        /// Bemessung der Projektkopie — auch bei ausgeschaltetem Schalter, damit der Vorschlag schon vor dem Einschalten
+        /// steht — mit der bemessenen Zeit und der Spanne aus τ₂ (<see cref="AufheizauskunftCtrl.Vorschlag"/>).
+        /// </summary>
+        internal static AufheizzeitManuellDaten Aufheizvorschlaege(int idProjekt, int idGebaeude)
+        {
+            Aufheizauskunft a = AufheizauskunftCtrl.Projektgebaeude(idProjekt, idGebaeude, true);
+            Aufheizvorschlag v = AufheizauskunftCtrl.Vorschlag(a);
+            return new AufheizzeitManuellDaten
+            {
+                SchalterAn = AufheizauskunftCtrl.SchalterAn(idProjekt),
+                BemessenH = v?.BemessenH,
+                VonH = v?.VonH,
+                BisH = v?.BisH,
+                Tau2H = v == null ? null : a?.Tau2H,
+                Unerreichbar = a?.Zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR,
+            };
         }
 
         /// <summary>
@@ -126,21 +200,75 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeZonenCtrl.SpeichernJeGebaeude"/>).
         ///
         /// <para><b>Was die Oberfläche nicht bearbeitet, bleibt</b>: Die Spalten einer Zone, die der
-        /// Zonendialog nicht führt (Kühl- und Übergabeeingaben, Herkunft; Stufe G6b, A4 (a)), hält der
+        /// Zonendialog nicht führt (Kühleingaben, Herkunft; Stufe G6b, A4 (a)), hält der
         /// Weg je Id fest und schreibt sie unverändert zurück; eine neue Zone trägt die Herkunft
         /// ihres Vorschlags. Ein Duplikat (Stufe G6a, <see cref="ZoneDaten.VorlageId"/>) übernimmt diese
         /// Spalten von seiner Vorlage — ohne deren Herkunft, Quellkennung und Importpaarung.</para>
         /// </summary>
         internal static GebaeudeZonenweg Zonenweg(int idProjekt, int idZ, int idGebaeude)
+            => Zonenweg(Zonenebene.Projekt, idProjekt, idZ, () => idGebaeude);
+
+        /// <summary>
+        /// <b>Der Zonenweg eines Katalogsatzes</b> (Welle ZK-b, Anwenderwunsch 08.10.2026): dieselben Wege wie im
+        /// Projekt, auf den Katalogzwillingen (<see cref="Zonenebene.Katalog"/>). Der Satz wird über seinen Namen
+        /// gefunden (<paramref name="ziel"/>) — im Modus Neu entsteht er erst im ersten Schritt des OK-Wegs, nach
+        /// „Speichern unter" arbeitet der Editor am neuen Satz weiter. Die Bauteile wählen ihren Aufbau aus dem
+        /// Aufbaukatalog (kein Übernahmeschritt); die Übernahme „Gebäude als eine Zone" rechnet mit dem Klima eines
+        /// Projekts und fehlt hier. Ohne Schritt ZK steht der Weg benannt gesperrt da (<see cref="GebaeudeZonenweg.Sperre"/>).
+        /// </summary>
+        internal static GebaeudeZonenweg KatalogZonenweg(Katalogziel ziel)
         {
+            if (!ZonenKatalogSchema.Lesbar())
+                return new GebaeudeZonenweg
+                {
+                    Sperre = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                           MyResource.Resource.GEBZ_SPERRE_OHNE_KATALOGZONEN, ZonenKatalogSchema.SCHRITT)
+                };
+            return Zonenweg(Zonenebene.Katalog, 0, 0, () => ziel.Id());
+        }
+
+        /// <summary>
+        /// Der Katalogsatz, an dem der Zonenweg im Katalog schreibt — über seinen Namen, den der Schreibweg des
+        /// Kopfs nach einem gelungenen Anlegen nachführt.
+        /// </summary>
+        internal sealed class Katalogziel
+        {
+            /// <summary>Der Name des Satzes (<c>Tab_Gebaeude_STAMM.Bezeichner</c>); leer, solange er nicht angelegt ist.</summary>
+            internal string Name { get; set; } = "";
+
+            /// <summary>Die Id des Satzes; 0, solange es ihn nicht gibt.</summary>
+            internal int Id() => string.IsNullOrEmpty(Name) ? 0 : new GebaeudeStammCtrl().Lies(Name)?.ID ?? 0;
+        }
+
+        private static GebaeudeZonenweg Zonenweg(Zonenebene ebene, int idProjekt, int idZ, Func<int> gebaeudeId)
+        {
+            bool katalog = ebene == Zonenebene.Katalog;
+            int idGebaeude = gebaeudeId();
             var zonenCtrl = new GebaeudeZonenCtrl();
             var aufbauCtrl = new BauteilaufbauCtrl();
             var gelesen = new Dictionary<int, ZoneModel>();
-            foreach (ZoneModel z in zonenCtrl.LesenJeGebaeude(idGebaeude)) gelesen[z.ID] = z;
+            // Stufe KP2: die Ebene des Gebaeudes - die Zonen zeigen „vom Gebaeude", wo es einen Kalender angelegt hat.
+            Konditionierungsstand gebaeudeebene = KonditionierungSchema.Lesbar() && idGebaeude > 0
+                ? new KonditionierungCtrl().StandLesen(katalog
+                    ? KonditionierungCtrl.Eigner.Katalogbau(idGebaeude)
+                    : KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), out _)
+                : null;
+            if (idGebaeude > 0)
+                foreach (ZoneModel z in zonenCtrl.LesenJeGebaeude(idGebaeude, ebene)) gelesen[z.ID] = z;
 
-            var projektaufbauten = aufbauCtrl.LesenJeProjekt(idProjekt).Where(a => a != null).ToDictionary(a => a.ID);
-            List<AufbauWahl> projektwahl = projektaufbauten.Values.Select(a => Wahl(a, false)).ToList();
-            List<AufbauWahl> katalogwahl = aufbauCtrl.LesenKatalog().Where(a => a != null).Select(a => Wahl(a, true)).ToList();
+            // Im Katalog zeigen die Bauteile in den Aufbaukatalog: Er ist die Liste „des Satzes", ein Übernahmeschritt
+            // entfällt (ZK-b).
+            var projektaufbauten = (katalog ? aufbauCtrl.LesenKatalog() : aufbauCtrl.LesenJeProjekt(idProjekt))
+                .Where(a => a != null).ToDictionary(a => a.ID);
+            List<AufbauWahl> projektwahl = projektaufbauten.Values.Select(a => Wahl(a, katalog)).ToList();
+            List<AufbauWahl> katalogwahl = katalog
+                ? new List<AufbauWahl>()
+                : aufbauCtrl.LesenKatalog().Where(a => a != null).Select(a => Wahl(a, true)).ToList();
+
+            // Die Konditionierung einer gelesenen Zone der Ebene.
+            KonditionierungCtrl.Eigner Zoneneigner(int idZone)
+                => katalog ? KonditionierungCtrl.Eigner.Katalogzone(gebaeudeId(), idZone)
+                           : KonditionierungCtrl.Eigner.Zone(gebaeudeId(), idZone);
 
             ZoneDaten AlsDaten(ZoneModel z) => new ZoneDaten
             {
@@ -161,6 +289,30 @@ namespace WindowsFormsApplication1
                 Bewohner = z.Bewohner,
                 HeizungStrahlungsanteil = z.Heizung_Strahlungsanteil,
                 HeizleistungMaxKw = z.Heizleistung_Max,
+                // E63 (AK1z): die sieben Uebergabefelder der Zone; NULL = wie Gebaeude.
+                UebergabeArt = z.Uebergabe_Art,
+                UebergabeExponent = z.Uebergabe_Exponent,
+                UebergabeLeistungNennKw = z.Uebergabe_Leistung_Nenn,
+                AuslegungVorlauf = z.Auslegung_Vorlauf,
+                AuslegungRuecklauf = z.Auslegung_Ruecklauf,
+                AuslegungRaumtemperatur = z.Auslegung_Raumtemperatur,
+                ReglerProportionalband = z.Regler_Proportionalband,
+                // KU3-3 (E67/E68): die vier Kühlfelder der Zone; NULL = wie Gebaeude.
+                KuehlungAktiv = z.Kuehlung_Aktiv,
+                KuehlSollwert = z.Kuehl_Sollwert,
+                KuehlSollwertNacht = z.Kuehl_Sollwert_Nacht,
+                KuehlleistungMaxKw = z.Kuehlleistung_Max,
+                // KK4 (Festlegung 15): die drei Kuehluebergabefelder der Zone (Schritt 137); NULL = wie Gebaeude.
+                KuehlUebergabeArt = z.Kuehl_Uebergabe_Art,
+                KuehlUebergabeExponent = z.Kuehl_Uebergabe_Exponent,
+                KuehlUebergabeLeistungNennKw = z.Kuehl_Uebergabe_Leistung_Nenn,
+                // NP3b (Q41, NP-F14): das zuletzt übernommene Nutzungsprofil; die Kalendernutzung nur zur Anzeige.
+                Nutzungsprofil = z.Nutzungsprofil,
+                // Die Kalendernutzung liest der Kern nur an Projektzonen; im Katalog bleibt sie leer.
+                Kalendernutzung = !katalog && z.ID > 0 && RaumnutzungCtrl.Lesbar() ? RaumnutzungCtrl.Kalendernutzung(idGebaeude, z.ID) : null,
+                Konditionierung = z.ID > 0
+                    ? KonditionierungHuelle.Lesen(Zoneneigner(z.ID), gebaeudeebene)
+                    : KonditionierungHuelle.Leer(),
                 Bauteile = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).Select(b =>
                 {
                     AufbauWahl a = b.ID_Aufbau is int id ? projektwahl.FirstOrDefault(x => x.Id == id) : null;
@@ -212,7 +364,7 @@ namespace WindowsFormsApplication1
             };
 
             // Die Zeilen des Kerns aus dem Arbeitsstand (Stufe G6a): Was die Oberflaeche nicht fuehrt
-            // (Kuehl- und Uebergabespalten, G6b A4 a), kommt aus der gelesenen Zeile gleicher Id; ein
+            // (Kuehluebergabe der Zone), kommt aus der gelesenen Zeile gleicher Id; ein
             // Duplikat nimmt es von seiner Vorlage (VorlageId) - ohne Herkunft, Quellkennung und
             // Importpaarung der Vorlage; eine neue Zone ist manuell.
             List<ZoneModel> Zeilen(IReadOnlyList<ZoneDaten> liste)
@@ -247,6 +399,26 @@ namespace WindowsFormsApplication1
                     z.Bewohner = d.Bewohner;
                     z.Heizung_Strahlungsanteil = d.HeizungStrahlungsanteil;
                     z.Heizleistung_Max = d.HeizleistungMaxKw;
+                    // E63 (AK1z): die Uebergabe je Zone fuehrt der Dialog - sie kommt aus dem Arbeitsstand,
+                    // nicht aus der gelesenen Zeile; die Kuehlspalten bleiben, wie sie stehen.
+                    z.Uebergabe_Art = d.UebergabeArt;
+                    z.Uebergabe_Exponent = d.UebergabeExponent;
+                    z.Uebergabe_Leistung_Nenn = d.UebergabeLeistungNennKw;
+                    z.Auslegung_Vorlauf = d.AuslegungVorlauf;
+                    z.Auslegung_Ruecklauf = d.AuslegungRuecklauf;
+                    z.Auslegung_Raumtemperatur = d.AuslegungRaumtemperatur;
+                    z.Regler_Proportionalband = d.ReglerProportionalband;
+                    // KU3-3 (E67/E68): die Kuehlung je Zone fuehrt der Dialog - leer = wie Gebaeude.
+                    z.Kuehlung_Aktiv = d.KuehlungAktiv;
+                    z.Kuehl_Sollwert = d.KuehlSollwert;
+                    z.Kuehl_Sollwert_Nacht = d.KuehlSollwertNacht;
+                    z.Kuehlleistung_Max = d.KuehlleistungMaxKw;
+                    // KK4 (Festlegung 15): die Kuehluebergabe je Zone fuehrt der Dialog - leer = wie Gebaeude.
+                    z.Kuehl_Uebergabe_Art = d.KuehlUebergabeArt;
+                    z.Kuehl_Uebergabe_Exponent = d.KuehlUebergabeExponent;
+                    z.Kuehl_Uebergabe_Leistung_Nenn = d.KuehlUebergabeLeistungNennKw;
+                    // NP3b: „Nutzungsprofil übernehmen…" setzt den Namen im Arbeitsstand, das OK schreibt ihn.
+                    z.Nutzungsprofil = d.Nutzungsprofil;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel
                     {
                         ID = b.Id,
@@ -281,16 +453,50 @@ namespace WindowsFormsApplication1
                     ID = l.Id, ID_ZoneA = l.IdZoneA ?? 0, ID_ZoneB = l.IdZoneB ?? 0, Volumenstrom = l.Volumenstrom ?? 0.0
                 }).ToList();
 
-            Func<ZonenstandDaten, string> speichern = stand =>
+            // OK-Weg, Schritt 3 (Stufe KP2, Befund B10): Zonen, Bauteile, Luftstroeme und die
+            // Konditionierung der Zonen in EINEM Vorgang; zurueck kommt die Zuordnung der vorlaeufigen
+            // Ids, die der Dialog in seinen Arbeitsstand uebernimmt.
+            Func<ZonenstandDaten, ZonenSchreibergebnis> speichern = stand =>
             {
+                int ziel = gebaeudeId();
+                if (ziel <= 0) return ZonenSchreibergebnis.Fehler(MyResource.Resource.GEBZ_MSG_GEBAEUDE);
                 List<ZoneModel> zeilen = Zeilen(stand?.Zonen);
-                GebaeudeZonenCtrl.Ergebnis e = zonenCtrl.SpeichernJeGebaeude(idGebaeude, zeilen, Luft(stand?.Luftstroeme));
-                if (!e.Ok) return e.Meldung ?? "";
+                GebaeudeZonenCtrl.Schreibergebnis e = zonenCtrl.Schreiben(ziel, zeilen, Luft(stand?.Luftstroeme),
+                                                                          Zonenkonditionierung(stand?.Zonen), ebene);
+                if (!e.Ok)
+                    return ZonenSchreibergebnis.Fehler(string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.GEBZ_MSG_GEBAEUDE : e.Meldung);
                 gelesen.Clear();
                 foreach (ZoneModel z in zeilen) gelesen[z.ID] = z;
-                MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
-                return "";
+                if (!katalog) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
+                return new ZonenSchreibergebnis("", e.Zonen, e.Bauteile, e.Luftstroeme);
             };
+
+            // Welle ZK-b: die Zonen des Satzes neu lesen - nach „Speichern unter" im Katalog am neuen Satz (der Kern
+            // hat die gespeicherten Zonen dorthin kopiert); die gemerkten Zeilen folgen.
+            List<ZonenluftstromDaten> LuftLesen(int id)
+                => id <= 0
+                    ? new List<ZonenluftstromDaten>()
+                    : zonenCtrl.LuftstroemeJeGebaeude(id, ebene).Select(l => new ZonenluftstromDaten
+                    {
+                        Id = l.ID, IdZoneA = l.ID_ZoneA, IdZoneB = l.ID_ZoneB, Volumenstrom = l.Volumenstrom
+                    }).ToList();
+            Func<ZonenNeulesung> neulesen = () =>
+            {
+                int id = gebaeudeId();
+                gelesen.Clear();
+                if (id > 0)
+                    foreach (ZoneModel z in zonenCtrl.LesenJeGebaeude(id, ebene)) gelesen[z.ID] = z;
+                gebaeudeebene = KonditionierungSchema.Lesbar() && id > 0
+                    ? new KonditionierungCtrl().StandLesen(katalog
+                        ? KonditionierungCtrl.Eigner.Katalogbau(id)
+                        : KonditionierungCtrl.Eigner.Gebaeude(id), out _)
+                    : null;
+                return new ZonenNeulesung(gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(), LuftLesen(id));
+            };
+
+            // Die Konditionierung der Zonen fuer den Schreibweg (Stufe KP2): nur die mit geaenderter Fassung.
+            static IReadOnlyDictionary<int, Konditionierungsstand> Zonenkonditionierung(IReadOnlyList<ZoneDaten> liste)
+                => KonditionierungHuelle.Zonenstaende(liste);
 
             // Die Pruefregeln des Kerns ueber die ganze Liste samt Kopplung, ohne Datenbank (G6a/G6b).
             Func<ZonenstandDaten, string> pruefen = stand
@@ -313,13 +519,13 @@ namespace WindowsFormsApplication1
             return new GebaeudeZonenweg
             {
                 Zonen = gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(),
-                Luftstroeme = zonenCtrl.LuftstroemeJeGebaeude(idGebaeude).Select(l => new ZonenluftstromDaten
-                {
-                    Id = l.ID, IdZoneA = l.ID_ZoneA, IdZoneB = l.ID_ZoneB, Volumenstrom = l.Volumenstrom
-                }).ToList(),
-                Uebernehmen = uebernehmen,
-                AufbauUebernehmen = aufbauUebernehmen,
+                Luftstroeme = LuftLesen(idGebaeude),
+                // Die Hochrechnung braucht das Klima eines Projekts, der Katalogaufbau steht im Katalog schon zur Wahl.
+                Uebernehmen = katalog ? null : uebernehmen,
+                AufbauUebernehmen = katalog ? null : aufbauUebernehmen,
                 Speichern = speichern,
+                Neulesen = neulesen,
+                Katalog = katalog,
                 Pruefen = pruefen,
                 Hinweise = hinweise,
                 Projektaufbauten = projektwahl,
@@ -329,7 +535,15 @@ namespace WindowsFormsApplication1
                 // kein Luftaustausch - benannt, der Schreibweg des Kerns lehnt sie ebenso ab.
                 KopplungSperre = GebaeudeZonenanschluss.KopplungVorhanden() ? null
                     : string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.GEBZ_SPERRE_KOPPLUNG,
-                                    ZonenkopplungSchema.SCHRITT)
+                                    ZonenkopplungSchema.SCHRITT),
+                // E63 (AK1z): ohne den Schemaschritt der Uebergabe je Zone schreibt der Kern die vier
+                // Auslegungs- und Reglerspalten nicht - benannt gesperrt statt still verloren.
+                UebergabeSperre = GebaeudeZonenanschluss.UebergabespaltenVorhanden() ? null
+                    : string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.ZONDLG_UEBERGABE_SPERRE,
+                                    ZonenUebergabeSchema.SCHRITT),
+                ProjektKoppelt = idProjekt > 0
+                    ? Waermeuebergabe.StufeAn(KonfigurationCtrl.AnlagenkopplungLesen(idProjekt))
+                    : null
             };
         }
 
@@ -341,7 +555,7 @@ namespace WindowsFormsApplication1
             catch (Exception) { u = null; }
             string text = a.Bezeichner ?? "";
             if (!string.IsNullOrEmpty(a.Bauteilart)) text += " · " + BauteilaufbauCtrl.BauteilartText(a.Bauteilart);
-            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u);
+            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau));
         }
 
         /// <summary>Die Baustoffe des Projekts — die Schichten eines Projektaufbaus zeigen auf sie.</summary>
@@ -352,35 +566,41 @@ namespace WindowsFormsApplication1
         private static IReadOnlyDictionary<string, object> Grundgaben(
             GebaeudeModel geladen, GebaeudeKatalogModus modus)
         {
-            // Die Brauchwasser-Zuordnungen des laufenden Projekts. Sie werden erst beim
-            // Oeffnen der Ueberlagerung gelesen; das OK der Profilliste schreibt sie zurueck -
-            // zusammen mit dem Arbeitsstand des Zapfprofils (Behaelter je Oeffnen, 5.2).
-            var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
             GebaeudePrueftexte p = Prueftexte();
+
+            // Stufe KP2: die Konditionierung des Katalogbaus im Feldsatz (ein neuer Satz beginnt leer) und
+            // der Weg des Reiters; im Projekt ersetzt ProjektGaben beides.
+            GebaeudeKatalogDaten daten = AusModell(geladen);
+            daten.Konditionierung = geladen.ID > 0 && modus != GebaeudeKatalogModus.Neu
+                ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Katalogbau(geladen.ID))
+                : KonditionierungHuelle.Leer();
 
             return new Dictionary<string, object>
             {
-                ["Daten"] = AusModell(geladen),
+                ["Daten"] = daten,
                 ["Modus"] = modus,
+                ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Katalogbau, 0),
+                // Stufe KP2, Welle U1: die Texte des Reiters „Konditionierung" und seiner Rückfragen.
+                ["KonditionierungTexte"] = KonditionierungTexteHuelle.Texte(),
+                ["KonditionierungFragen"] = KonditionierungTexteHuelle.Fragen(),
+
+                // Stufe NP3a: der Katalog der Nutzungsprofile als Blatt (Konzept Nutzungsprofile 6.1, NP-F22).
+                ["Raumnutzung"] = RaumnutzungHuelle.Weg(),
+                ["RaumnutzungTexte"] = RaumnutzungHuelle.Texte(),
 
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(
                     () => GebaeudeStammCtrl.Gebaeudetypen()),
                 ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(
                     () => GebaeudeStammCtrl.Gebaeudearten(null)),
                 ["Baualtersklassen"] = GebaeudeStammCtrl.Baualtersklassen(),
-                ["Katalognamen"] = new Func<IReadOnlyList<string>>(
-                    () => GebaeudeStammCtrl.Katalognamen()),
-                ["Lies"] = new Func<string, GebaeudeKatalogDaten>(
-                    n => { GebaeudeModel m = Laden(n); return m == null ? null : AusModell(m); }),
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
                     (d, istNeu, bez) => Schreiben(d, istNeu, bez)),
 
                 // "Brauchwasser..." auf dem zweiten Reiter zeigt die Brauchwasser-Profilliste
                 // des LAUFENDEN Projekts als Ueberlagerung - nur, wo die Schale den Weg
-                // eingehaengt hat (Gebaeudewege).
-                ["BrauchwasserGaben"] = Gebaeudewege.BrauchwasserGaben == null
-                    ? null
-                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser, modus)),
+                // eingehaengt hat (Gebaeudewege). Mit Zapfprofil-Behaelter je Oeffnen (5.2);
+                // die Verwaltung setzt ihren eigenen Weg ohne Behaelter (GebaeudeAdminHuelle).
+                ["BrauchwasserGaben"] = Brauchwasserweg(mitZapfprofil: true),
                 // Kein "BrauchwasserFertig": Das OK der Profilliste schreibt Zuordnungen und
                 // Zapfprofil selbst, bevor sie schliesst (ZapfprofilHuelle.Schreibweg), und markiert
                 // das Projekt nur, wenn es tatsaechlich schreibt - ein OK ohne Aenderung laesst das
@@ -390,6 +610,8 @@ namespace WindowsFormsApplication1
                 // Waermeuebergabe aus dem Kern (Klimareihe des laufenden Projekts, einmal je
                 // Oeffnen gelesen) und das Vorschaubild des Sollwert-Zeitprogramms.
                 ["UebergabeHerleitung"] = Herleitungsweg(Dienste.Projekt.Id),
+                // EV1 (E65): die Erdreichauskunft der Bodenplatte (B' und U_g aus dem Kern).
+                ["ErdreichAuskunft"] = Erdreichweg(),
                 ["WochenVorschau"] = Wochenvorschau(),
 
                 ["Texte"] = Texte(),
@@ -555,6 +777,12 @@ namespace WindowsFormsApplication1
             t.RandErdreich = Text_("GEBK_RAND_ERDREICH", t.RandErdreich);
             t.RandKeller = Text_("GEBK_RAND_KELLER", t.RandKeller);
             t.LabelKellertemperatur = Text_("GEBK_LBL_KELLERTEMPERATUR", t.LabelKellertemperatur);
+            t.LabelErdreichUWirksam = Text_("GEBK_LBL_ERDREICH_U_WIRKSAM", t.LabelErdreichUWirksam);
+            t.HinweisErdreichUWirksam = Text_("GEBK_HINWEIS_ERDREICH_U_WIRKSAM", t.HinweisErdreichUWirksam);
+            t.SperreErdreichUWirksam = Text_("GEBK_SPERRE_ERDREICH_U_WIRKSAM", t.SperreErdreichUWirksam);
+            t.ZeileErdreichRechnung = Text_("GEBK_ZEILE_ERDREICH_RECHNUNG", t.ZeileErdreichRechnung);
+            t.ZeileErdreichVorgabe = Text_("GEBK_ZEILE_ERDREICH_VORGABE", t.ZeileErdreichVorgabe);
+            t.MeldungErdreichU = Text_("GEBK_MSG_ERDREICH_U", t.MeldungErdreichU);
             t.HinweisFensterflaeche = Text_("GEBK_HINWEIS_FENSTER_SUMME", t.HinweisFensterflaeche);
 
             t.LabelHT = Text_("GEBK_LBL_HT", t.LabelHT);
@@ -613,6 +841,7 @@ namespace WindowsFormsApplication1
             t.MeldungKuehlleistung = Text_("GEBK_MSG_KUEHLLEISTUNG", t.MeldungKuehlleistung);
 
             t.HinweisSpeichernUnter = Text_("GEBK_HINWEIS_SPEICHERN_UNTER", t.HinweisSpeichernUnter);
+            t.MeldungSpeichernUnterAngelegt = Text_("GEBK_MSG_SPEICHERN_UNTER_ANGELEGT", t.MeldungSpeichernUnterAngelegt);
 
             // Stufe AK1 (Anlagenkopplung 9.1, 9.2): die Gruppe „Waermeuebergabe" samt Wochenraster.
             t.Uebergabe = UebergabeTexte();
@@ -652,6 +881,8 @@ namespace WindowsFormsApplication1
             u.LabelHeizkurveAktiv = Text_("GEBK_LBL_HEIZKURVE_AKTIV", u.LabelHeizkurveAktiv);
             u.LabelHeizkurveNiveau = Text_("GEBK_LBL_HEIZKURVE_NIVEAU", u.LabelHeizkurveNiveau);
             u.LabelHeizkurveSteilheit = Text_("GEBK_LBL_HEIZKURVE_STEILHEIT", u.LabelHeizkurveSteilheit);
+            u.LabelHeizkurveRaumeinfluss = Text_("AK3_GEBK_LBL_RAUMEINFLUSS", u.LabelHeizkurveRaumeinfluss);
+            u.ZeileRaumeinfluss = Text_("AK3_GEBK_HRL_RAUMEINFLUSS", u.ZeileRaumeinfluss);
             u.LabelProportionalband = Text_("GEBK_LBL_PROPORTIONALBAND", u.LabelProportionalband);
             u.BandFrei = Text_("GEBK_BAND_FREI", u.BandFrei);
             u.LabelBandFrei = Text_("GEBK_LBL_BAND_FREI", u.LabelBandFrei);
@@ -718,6 +949,16 @@ namespace WindowsFormsApplication1
             k.LabelAuslegungRuecklauf = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF", k.LabelAuslegungRuecklauf);
             k.LabelAuslegungRaum = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_RAUM", k.LabelAuslegungRaum);
             k.LabelVorlaufgrenze = Text_("GEBK_LBL_KUEHL_VORLAUFGRENZE", k.LabelVorlaufgrenze);
+            k.LabelKuehlkurve = Text_("GEBK_LBL_KUEHLKURVE_AKTIV", k.LabelKuehlkurve);
+            k.LabelKuehlkurveFusspunkt = Text_("GEBK_LBL_KUEHLKURVE_FUSSPUNKT", k.LabelKuehlkurveFusspunkt);
+            k.LabelKuehlkurveRaumeinfluss = Text_("GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS", k.LabelKuehlkurveRaumeinfluss);
+            k.LabelKuehlkurveWeg = Text_("GEBK_LBL_KUEHLKURVE_WEG", k.LabelKuehlkurveWeg);
+            k.WegStunde = Text_("GEBK_KUEHLKURVE_WEG_STUNDE", k.WegStunde);
+            k.WegTagesmittel = Text_("GEBK_KUEHLKURVE_WEG_TAGESMITTEL", k.WegTagesmittel);
+            k.WegEingabe = Text_("GEBK_KUEHLKURVE_WEG_EINGABE", k.WegEingabe);
+            k.LabelKuehlkurveAussen = Text_("GEBK_LBL_KUEHLKURVE_AUSSEN", k.LabelKuehlkurveAussen);
+            k.ZeileKuehlkurve = Text_("GEBK_ZEILE_KUEHLKURVE", k.ZeileKuehlkurve);
+            k.MeldungFusspunkt = Text_("GEBK_MSG_KUEHLKURVE_FUSSPUNKT", k.MeldungFusspunkt);
             k.VorgabeHergeleitet = Text_("GEBK_VORGABE_HERGELEITET", k.VorgabeHergeleitet);
             k.VorgabeKeineGrenze = Text_("GEBK_VORGABE_KEINE_GRENZE", k.VorgabeKeineGrenze);
             k.ZeileAus = Text_("GEBK_ZEILE_KUEHLUEBERGABE_AUS", k.ZeileAus);
@@ -767,6 +1008,29 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// <b>Die Erdreichauskunft der Bodenplatte</b> (EV1, E65): B′ und U_g, wie der Klassenweg sie für die
+        /// Grundfläche rechnet (<see cref="Erdreichwiderstand.Bauteilsatz"/> mit Grundfläche, ihrem U-Wert, dem
+        /// Umfangsfeld und der Vorgabe <c>Erdreich_U_Wirksam</c>). Ohne Datenbank. <c>null</c>, wenn keine
+        /// Erdreichkorrektur rechnet: Randbedingung Keller oder Außenluft, keine Grundfläche oder kein U-Wert.
+        /// </summary>
+        internal static Func<GebaeudeKatalogDaten, ErdreichAuskunftDaten> Erdreichweg()
+            => d =>
+            {
+                if (d == null) return null;
+                string rand = d.GrundflaecheRandbedingung;
+                if (!string.IsNullOrEmpty(rand) && !string.Equals(rand, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal))
+                    return null;
+                double a = d.Grundflaeche ?? 0.0, u = d.UWertGrundflaeche ?? 0.0;
+                if (!(a > 0.0) || !(u > 0.0)) return null;
+                double vorgabe = d.ErdreichUWirksam is double ug && ug > 0.0 ? ug : double.NaN;
+                Erdreichkennwerte k = Erdreichwiderstand.Bauteilsatz(new[] { (a, 180.0, u) }, a,
+                                                                     d.AnschlussAussenwandKeller ?? 0.0, new double[1], vorgabe);
+                if (k == null) return null;
+                bool istVorgabe = k.Quelle == Erdreichumfangsquelle.Vorgabe;
+                return new ErdreichAuskunftDaten(istVorgabe || double.IsNaN(k.B_M) ? null : k.B_M, k.Ug_WM2K, istVorgabe);
+            };
+
         /// <summary>Die Herleitung der Kälteseite als DTO der Oberfläche; <c>null</c> bleibt <c>null</c>.</summary>
         internal static KuehluebergabeHerleitungDaten Kuehlherleitung(KuehluebergabeHerleitung k)
             => k == null
@@ -790,19 +1054,36 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
+        /// <b>Der Weg zur Brauchwasser-Profilliste des laufenden Projekts</b> — der Delegat
+        /// <c>BrauchwasserGaben</c> des Editors; <c>null</c>, wo die Schale keinen Haken eingehängt
+        /// hat (<see cref="Gebaeudewege"/>). Die Zuordnungen werden erst beim Öffnen der Überlagerung
+        /// gelesen; das OK der Profilliste schreibt sie zurück, zusammen mit dem Arbeitsstand des
+        /// Zapfprofils.
+        /// </summary>
+        /// <param name="mitZapfprofil">
+        /// Reicht der Weg der Profilliste je Öffnen einen frischen Zapfprofil-Behälter
+        /// (Umsetzungskonzept Zapfprofilgenerator 5.2)? <c>false</c> allein aus der Verwaltung
+        /// (<see cref="GebaeudeAdminHuelle"/>).
+        /// </param>
+        internal static Func<IReadOnlyDictionary<string, object>> Brauchwasserweg(bool mitZapfprofil)
+        {
+            if (Gebaeudewege.BrauchwasserGaben == null) return null;
+            var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
+            return () => BrauchwasserGaben(brauchwasser, mitZapfprofil);
+        }
+
+        /// <summary>
         /// Der Parametersatz der Brauchwasser-Profilliste. Die Zuordnungen des laufenden
         /// Projekts werden hier frisch gelesen — der Vorläufer tat dasselbe beim Klick.
         /// </summary>
         private static IReadOnlyDictionary<string, object> BrauchwasserGaben(
-            List<Z_ProjektBrauchwasserModel> ziel, GebaeudeKatalogModus modus)
+            List<Z_ProjektBrauchwasserModel> ziel, bool mitZapfprofil)
         {
             int projektId = Dienste.Projekt.Id;
 
-            // Aus der Verwaltung (Modus Admin) gehoert der Gebaeudekatalog keinem Projekt: Die
-            // Huelle reicht keinen Zapfprofil-Behaelter, der Bedarfsprofil-Dialog zeigt dann weder
-            // Knopf noch Optionsgruppe (Umsetzungskonzept Zapfprofilgenerator 5.2).
-            ZapfprofilBehaelter zapfprofil = modus == GebaeudeKatalogModus.Admin
-                ? null : new ZapfprofilBehaelter(projektId);
+            // Ohne Zapfprofil (die Verwaltung) reicht die Huelle keinen Behaelter; der
+            // Bedarfsprofil-Dialog zeigt dann weder Knopf noch Optionsgruppe (Zapfprofil 5.2).
+            ZapfprofilBehaelter zapfprofil = mitZapfprofil ? new ZapfprofilBehaelter(projektId) : null;
 
             ziel.Clear();
             ziel.AddRange(Z_ProjektBrauchwasserCtrl.LiesProjekt(projektId));
@@ -812,7 +1093,8 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
-                    Name = m.szBezeichner ?? "", Summe = m.Summe
+                    Name = m.szBezeichner ?? "", Summe = m.Summe,
+                    KalenderId = m.ID_Betriebskalender
                 });
 
             Action geaendert = () =>
@@ -822,7 +1104,8 @@ namespace WindowsFormsApplication1
                     ziel.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
-                        szBezeichner = z.Name, Summe = z.Summe
+                        szBezeichner = z.Name, Summe = z.Summe,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
 
@@ -836,9 +1119,34 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der EINE Schreibweg des Editors samt ReadOnly-Sperre und Namensprobe. Angelegt
         /// wird nur unter einem freien Namen; überschrieben wird der URSPRUNGSNAME.
+        ///
+        /// <para><b>Im KATALOGMODUS</b> ist die Quelle der Konditionierung der Ursprungssatz —
+        /// „Speichern unter" wirkt dort wie Duplizieren (Stufe KP1b, Festlegung 10); im Modus Neu
+        /// gibt es keine, und der neue Satz beginnt ohne Matrix und Kalender. Der Dialog übergibt
+        /// bei „Speichern unter" deshalb den URSPRUNGSNAMEN als <paramref name="bezeichner"/>; der
+        /// neue Name steht im Satz selbst (Entwurf KP2, Befund B2).</para>
         /// </summary>
         internal static GebaeudeKatalogErgebnis Schreiben(
             GebaeudeKatalogDaten daten, bool istNeu, string bezeichner)
+            => Schreiben(daten, istNeu, bezeichner, Katalogquelle(bezeichner));
+
+        /// <summary>
+        /// Der Ursprungs-Katalogbau als Eigentümer seiner Konditionierung; <c>null</c> ohne Namen
+        /// (Modus Neu) oder wenn es den Satz nicht gibt.
+        /// </summary>
+        private static KonditionierungCtrl.Eigner Katalogquelle(string bezeichner)
+        {
+            GebaeudeModel m = string.IsNullOrEmpty(bezeichner) ? null : Laden(bezeichner);
+            return m == null || m.ID <= 0 ? null : KonditionierungCtrl.Eigner.Katalogbau(m.ID);
+        }
+
+        /// <summary>
+        /// Derselbe Schreibweg mit ausdrücklicher <paramref name="quelle"/> der Konditionierung —
+        /// im Projektmodus das Projektgebäude, im Katalogmodus der Ursprungssatz.
+        /// </summary>
+        internal static GebaeudeKatalogErgebnis Schreiben(
+            GebaeudeKatalogDaten daten, bool istNeu, string bezeichner,
+            KonditionierungCtrl.Eigner quelle)
         {
             var ctrl = new GebaeudeStammCtrl();
 
@@ -857,9 +1165,21 @@ namespace WindowsFormsApplication1
             // Ueberschreiben trifft den URSPRUNGSNAMEN (WHERE Bezeichner = Gebaeudename).
             if (!istNeu) modell.Gebaeudename = bezeichner;
 
-            bool ok = istNeu ? ctrl.Insert(modell) : ctrl.Overwrite(modell);
-            return new GebaeudeKatalogErgebnis(ok,
-                ok ? "" : Text_("GEBK_MSG_FEHLER", "Fehler beim Speichern!\nAlle Eingaben überprüfen!"));
+            // Stufe KP2: EINE Schreibstelle - neu, bearbeiten und „Speichern unter" schreiben Kopf und
+            // Konditionierung in EINEM Vorgang samt Insert (GebaeudeStammCtrl.KatalogSchreiben).
+            // Die Konditionierung kommt aus dem Arbeitsstand (Festlegung 2): bei einem neuen Satz immer
+            // (so traegt „Speichern unter" sie mit), sonst nur bei geaenderter Fassung; ohne Tabellen
+            // (keine Konditionierung im Feldsatz) die Kopie der Quelle wie bisher.
+            Konditionierungsstand stand = KonditionierungHuelle.Schreibstand(daten, Kalendereigentuemer.Katalogbau, immer: istNeu);
+            GebaeudeStammCtrl.Katalogschreibergebnis ergebnis =
+                GebaeudeStammCtrl.KatalogSchreiben(modell, istNeu, bezeichner, stand, istNeu && stand == null ? quelle : null,
+                                                   istNeu ? quelle : null);
+            return new GebaeudeKatalogErgebnis(ergebnis.Ok,
+                ergebnis.Ok
+                    ? ""
+                    : string.IsNullOrEmpty(ergebnis.Meldung)
+                        ? Text_("GEBK_MSG_FEHLER", "Fehler beim Speichern!\nAlle Eingaben überprüfen!")
+                        : ergebnis.Meldung);
         }
 
         /// <summary>Katalogsatz → Feldsatz.</summary>
@@ -874,11 +1194,13 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
-                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt); ist es gesetzt,
-                // fuehrt es die Klasse (E47, der Arbeitsstand zeigt KlasseWirksam).
+                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt); die gespeicherte
+                // Klasse gilt, das Baujahr schlaegt beim Aendern nur vor.
                 Baujahr = m.Baujahr,
                 // E47: der Energiestandard als Code - NULL bleibt null (keiner).
                 Energiestandard = string.IsNullOrEmpty(m.Energiestandard) ? null : m.Energiestandard,
+                // E65: der wirksame U-Wert der Bodenplatte - NULL bleibt null (Rechnung nach DIN EN ISO 13370).
+                ErdreichUWirksam = m.Erdreich_U_Wirksam,
                 // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise.
                 Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Nutzflaeche),
                 Bauweise = m.Bauweise,
@@ -963,6 +1285,7 @@ namespace WindowsFormsApplication1
                 HeizkurveAktiv = m.Heizkurve_Aktiv,
                 HeizkurveNiveau = m.Heizkurve_Niveau,
                 HeizkurveSteilheit = m.Heizkurve_Steilheit,
+                HeizkurveRaumeinfluss = m.Heizkurve_Raumeinfluss,
                 ReglerProportionalband = m.Regler_Proportionalband,
                 Sollwertprofil = m.Sollwertprofil,
 
@@ -975,7 +1298,14 @@ namespace WindowsFormsApplication1
                 KuehlAuslegungVorlauf = m.Kuehl_Auslegung_Vorlauf,
                 KuehlAuslegungRuecklauf = m.Kuehl_Auslegung_Ruecklauf,
                 KuehlAuslegungRaumtemperatur = m.Kuehl_Auslegung_Raumtemperatur,
-                KuehlVorlaufgrenze = m.Kuehl_Vorlaufgrenze
+                KuehlVorlaufgrenze = m.Kuehl_Vorlaufgrenze,
+
+                // KK (Schritt 202): die Kuehlkurve - NULL bleibt null, der Schalter NULL = aus.
+                KuehlkurveAktiv = m.Kuehlkurve_Aktiv,
+                KuehlkurveFusspunkt = m.Kuehlkurve_Fusspunkt,
+                KuehlkurveRaumeinfluss = m.Kuehlkurve_Raumeinfluss,
+                KuehlkurveAuslegungWeg = m.Kuehlkurve_Auslegung_Weg,
+                KuehlkurveAuslegungAussen = m.Kuehlkurve_Auslegung_Aussen
             };
 
             d.Ferienbeginn = new[]
@@ -988,6 +1318,8 @@ namespace WindowsFormsApplication1
                 (int)m.Ferienende_1, (int)m.Ferienende_2,
                 (int)m.Ferienende_3, (int)m.Ferienende_4
             };
+            d.Wochenendtage = m.Wochenendtage;
+            d.Feiertagsland = m.Feiertagsland;
             return d;
         }
 
@@ -1040,14 +1372,14 @@ namespace WindowsFormsApplication1
             m.Nutzflaeche = wfl;
             m.Raumhoehe = d.Raumhoehe ?? 0;
 
-            // E47 (F2): DAS BAUJAHR FUEHRT - gespeichert wird die Klasse aus dem Baujahr, ohne Baujahr
-            // die gewaehlte.
-            m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(
-                Gebaeudeklassen.IndexWirksam(d.Baujahr, d.Baualtersklasse)).ToString();
+            // Gespeichert wird die gewaehlte Klasse - das Baujahr schlaegt sie nur vor (Anwenderwunsch 08.10.2026).
+            m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(d.Baualtersklasse).ToString();
             // G4a: das Baujahr NULL-erhaltend - leer bleibt NULL ("unbekannt"), nie 0.
             m.Baujahr = d.Baujahr;
             // E47: der Energiestandard als Code - leer bleibt NULL ("keiner").
             m.Energiestandard = string.IsNullOrEmpty(d.Energiestandard) ? null : d.Energiestandard;
+            // E65: der wirksame U-Wert der Bodenplatte - leer bleibt NULL; nur ein Wert über null gilt.
+            m.Erdreich_U_Wirksam = d.ErdreichUWirksam is double ug && ug > 0 ? ug : null;
             m.Gebaeudeart = d.Gebaeudeart ?? "";
             m.Wohngebaeude_Nicht_Wohngebaeude = d.Verwendung ?? VERWENDUNGSWERTE[0];
 
@@ -1079,6 +1411,8 @@ namespace WindowsFormsApplication1
             m.Ferienende_2 = d.Ferienende[1];
             m.Ferienende_3 = d.Ferienende[2];
             m.Ferienende_4 = d.Ferienende[3];
+            m.Wochenendtage = d.Wochenendtage;
+            m.Feiertagsland = d.Feiertagsland;
 
             m.Luftwechselrate = d.Luftwechselrate ?? 0;
             m.WW_Bedarf = d.WwBedarf;
@@ -1123,6 +1457,8 @@ namespace WindowsFormsApplication1
             m.Heizkurve_Aktiv = d.HeizkurveAktiv;
             m.Heizkurve_Niveau = d.HeizkurveNiveau;
             m.Heizkurve_Steilheit = d.HeizkurveSteilheit;
+            // AK3 (Festlegung 23): 0 heißt aus - gespeichert wie eingetragen, NULL bleibt null.
+            m.Heizkurve_Raumeinfluss = d.HeizkurveRaumeinfluss;
             m.Regler_Proportionalband = d.ReglerProportionalband;
             m.Sollwertprofil = d.Sollwertprofil;
 
@@ -1136,6 +1472,13 @@ namespace WindowsFormsApplication1
             m.Kuehl_Auslegung_Ruecklauf = d.KuehlAuslegungRuecklauf;
             m.Kuehl_Auslegung_Raumtemperatur = d.KuehlAuslegungRaumtemperatur;
             m.Kuehl_Vorlaufgrenze = d.KuehlVorlaufgrenze;
+
+            // KK (Schritt 202): die Kuehlkurve, NULL-erhaltend; ein leerer Weg wird NULL (= Tagesmittel).
+            m.Kuehlkurve_Aktiv = d.KuehlkurveAktiv;
+            m.Kuehlkurve_Fusspunkt = d.KuehlkurveFusspunkt;
+            m.Kuehlkurve_Raumeinfluss = d.KuehlkurveRaumeinfluss;
+            m.Kuehlkurve_Auslegung_Weg = string.IsNullOrEmpty(d.KuehlkurveAuslegungWeg) ? null : d.KuehlkurveAuslegungWeg;
+            m.Kuehlkurve_Auslegung_Aussen = d.KuehlkurveAuslegungAussen;
 
             return m;
         }
@@ -1181,6 +1524,19 @@ namespace WindowsFormsApplication1
         }
 
         internal static string Titel() => Text_("GEBK_TITEL", "Gebäudedaten: Flächen, U-Werte");
+
+        /// <summary>
+        /// G5-N (N5/N6): der Abschnitt „Ausrichtung“ des Gebäudedialogs — gespeicherte Richtung der Planoberseite, Nordwinkel,
+        /// Herkunft und Schnellwahl; ohne Importquelle nicht änderbar (<see cref="GebaeudeAusrichtungHuelle.Lesen"/>).
+        /// </summary>
+        internal static EPOS.UI.Dialoge.Import.GebaeudeAusrichtungDaten Ausrichtung(int idGebaeude) => GebaeudeAusrichtungHuelle.Lesen(idGebaeude);
+
+        /// <summary>
+        /// G5-N (N5): „Ausrichtung ändern“ — dreht alle Bauteile des Gebäudes in einem Vorgang und speichert den neuen
+        /// Nordwinkel an der Quelle; liefert die Zahl der gedrehten Bauteile (<see cref="GebaeudeAusrichtungHuelle.Aendern"/>).
+        /// </summary>
+        internal static EPOS.UI.Dialoge.Import.GebaeudeAusrichtungErgebnis AusrichtungAendern(int idGebaeude, double planoberseiteGrad)
+            => GebaeudeAusrichtungHuelle.Aendern(idGebaeude, planoberseiteGrad);
 
         private static string Text_(string schluessel, string rueckfall)
         {

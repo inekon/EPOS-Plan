@@ -1,0 +1,26 @@
+Der '''Wärmebedarf''' entsteht aus bis zu vier Anteilen, die getrennt erfasst und anschließend stundenweise addiert werden: Gebäudeheizwärme, Warmwasser, Prozesswärme und – falls vorhanden – ein extern eingelesener Lastgang. Ergänzend lassen sich Netzverluste aufschlagen.
+
+== Eingaben ==
+
+* '''Gebäudedaten''' – ein Gebäude aus dem Katalog wählen und ins Projekt übernehmen oder aus einer gbXML- oder IFC-Datei importieren; als Bezugsgröße dient die Nutzfläche oder, wenn vorhanden, der Jahresverbrauch an Öl, Gas oder Brennstoff. Der Wärmebedarf wird stündlich nach VDI 6007 gerechnet, je Gebäude ist die Tagesbilanz als Bestandsweg wählbar; ''Gebäude im Projekt bearbeiten…'' öffnet Hülle, Zonen und Konditionierung der Projektkopie, ''Simulation…'' rechnet den Wärmebedarf des markierten Gebäudes.
+* '''Brauchwasserwärme''' – ein Profil aus dem Katalog wählen und den Jahresverbrauch angeben; hinterlegte Monatsanteile und ein Wochenprofil aus 168 Stundenwerten verteilen ihn über das Jahr. Wahlweise erzeugt der Zapfprofilgenerator den Bedarf aus Nutzungszonen ([[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]]).
+* '''Prozesswärme''' – nach demselben Muster erfasst; für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag an, wahlweise mit Vorlauf und Rücklauf des Prozesses.
+* '''Wärmebedarf Extern''' – im gleichnamigen Dialog übernehmen Sie eine Ganglinie aus der Datenbank ins Projekt oder lesen über ''Einlesen/Bearbeiten…'' eine Stundenreihe ein; sie wird zum berechneten Bedarf addiert.
+* '''Netzverluste''' – im Block ''Weitere Einstellungen'' der Simulationskonfiguration: ein Gesamtwert in Prozent oder kWh/a, der je Stunde anteilig auf die Kanäle verteilt wird, oder je Kanal – Heizung, Brauchwasser, Prozesswärme – ein eigener Wert als gleichmäßiger Betrag über das Jahr; dazu die Zirkulation des Brauchwassers mit Leistung und Laufzeit ([[Programm Dokumentation/Simulation#netzverluste-je-kanal|Simulation: Netzverluste je Kanal]]).
+* '''Betriebskalender''' – Feiertage und Betriebsferien je Profilzuordnung von Brauchwasser und Prozesswärme ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
+* '''Grafik''' – der Reiter ''Grafik'' im Dialog Wärme-/Strombedarf zeigt die Bedarfsart als Jahresganglinie mit Zoomleiste. Eine Zeile mit zwei Knopfgruppen wählt die Bedarfsart (''Prozesse'', ''Gebäude'', ''Brauchwasser'', mehrere zugleich möglich) und das Zeitraster (''Jahr'', ''Monat'', ''Woche'', ''Tag''); Monat, Woche und Tag zeigen die Summen als gestapelte Säulen. ''CSV…'' am Bild speichert die gewählte Ansicht als CSV-Datei, siehe [[Datenexport]].
+
+== Berechnung ==
+
+Wie aus Gebäuden, Ganglinien, Brauchwasser und Prozesswärme die stündliche Wärmelast des Projekts entsteht – Formeln, Kanäle und die Verteilung der Netzverluste – steht unter [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+
+== Siehe auch ==
+
+* [[Wärmebedarf erfassen]] – der zugehörige Schritt im Programmablauf mit allen vier Anteilen
+* [[Grundlagen/Wärmebedarfsrechnung]] – das Rechenverfahren hinter dem Jahresgang
+* [[Programm Dokumentation/Gebäude|Gebäude]] – Katalog, Projektkopie, Hülle und Zonen, Konditionierung
+* [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] – das stündliche Gebäudemodell und seine Eingaben
+* [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] – Gebäude aus gbXML- und IFC-Dateien übernehmen
+* [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]] – der Katalog der Nutzungsprofile für Gebäude und Zonen
+
+[[Kategorie:Programm Dokumentation]]

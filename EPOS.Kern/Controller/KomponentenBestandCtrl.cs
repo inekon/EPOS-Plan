@@ -26,8 +26,9 @@ namespace WindowsFormsApplication1
     /// <list type="number">
     /// <item>die Zusatzbedingung <c>ID_WP/ID_Solar/… &gt; 0</c> entfällt — es zählt
     ///       allein <c>ID_Type</c>, wie in der Bitmaske;</item>
-    /// <item>„Solar" gilt wie in der Bitmaske auch dann als vorhanden, wenn nur eine
-    ///       Solarganglinie zugeordnet ist.</item>
+    /// <item>„Solar" gilt auch dann als vorhanden, wenn nur eine Solarganglinie
+    ///       zugeordnet ist — aber nur eine VOLLSTÄNDIGE (8 760 Werte), denn nur sie
+    ///       rechnet (Folgeauftrag 4, <see cref="SolarganglinieWeiche"/>).</item>
     /// </list>
     /// </para>
     /// <para>
@@ -225,29 +226,33 @@ namespace WindowsFormsApplication1
             wbctrl.ReadAll("select * from Z_ProjektWaermebedarf where ID_Projekt=" + idProjekt);
             for (int n = 0; n < wbctrl.rows; n++) Merken(WAERMEBEDARF, wbctrl.items[n].m_szBezeichner);
 
-            Z_ProjektProzesswaermeCtrl prozctrl = new Z_ProjektProzesswaermeCtrl();
-            prozctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < prozctrl.rows; n++) Merken(PROZESS, prozctrl.items[n].szProzessname);
+            // SV1/SV2: Prozesswaerme, Brauchwasser und Stromverbraucher nennen je Zeile die
+            // Projektkopie, auf die die Zeile per ID zeigt - wie die Kacheln der Startseite -,
+            // nicht den Bezeichner der Zuordnungszeile.
+            foreach (Z_ProjektProzesswaermeModel pw in Z_ProjektProzesswaermeCtrl.LiesProjekt(idProjekt))
+                Merken(PROZESS, pw.szProzessname);
 
-            Z_ProjektBrauchwasserCtrl bwctrl = new Z_ProjektBrauchwasserCtrl();
-            bwctrl.ReadAll("select * from Z_Projekt_Brauchwasser where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < bwctrl.rows; n++) Merken(BRAUCHWASSER, bwctrl.items[n].szBezeichner);
+            foreach (Z_ProjektBrauchwasserModel bw in Z_ProjektBrauchwasserCtrl.LiesProjekt(idProjekt))
+                Merken(BRAUCHWASSER, bw.szBezeichner);
 
-            Z_ProjektStromverbraucherCtrl svctrl = new Z_ProjektStromverbraucherCtrl();
-            svctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < svctrl.rows; n++) Merken(STROMSTD, svctrl.items[n].m_szVerbraucher);
+            foreach (Z_ProjektStromverbraucherModel sv in Z_ProjektStromverbraucherCtrl.LiesProjekt(idProjekt))
+                Merken(STROMSTD, sv.m_szVerbraucher);
 
             Z_ProjektStromganglinieCtrl sgctrl = new Z_ProjektStromganglinieCtrl();
             sgctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + idProjekt);
             for (int n = 0; n < sgctrl.rows; n++) Merken(STROMLASTGANG, sgctrl.items[n].m_szStromganglinie);
 
-            // Solar: die Bitmaske der Startmaske setzt das Bit auch bei einer blossen
-            // Solarganglinie. Die Ganglinie wird beim Abwaehlen NICHT geloescht (der
-            // Assistent fasst Z_ProjektSolarganglinie nirgends an) - sie steht deshalb
-            // nur im Vorhanden-Merkmal, nicht in der Namensliste.
-            Z_ProjektSolarganglinieCtrl solgctrl = new Z_ProjektSolarganglinieCtrl();
-            solgctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + idProjekt);
-            if (solgctrl.rows > 0) _eintraege[SOLAR].Vorhanden = true;
+            // Solar: Ohne Anlagenzeile gilt die Solarthermie nur dann als vorhanden, wenn
+            // die Weiche auf Ganglinie steht, die Simulation sie also rechnet
+            // (Folgeauftrag 4, SolarganglinieWeiche): eine zugeordnete Ganglinie mit
+            // vollstaendigen 8 760 Werten. Eine unvollstaendige Ganglinie faerbt den
+            // Statuspunkt nicht - der Lauf rechnet dann das Kollektorfeld. Die Ganglinie
+            // steht nur im Vorhanden-Merkmal, nicht in der Namensliste.
+            if (SolarganglinieWeiche.Lesen(idProjekt).Vollstaendig) _eintraege[SOLAR].Vorhanden = true;
+
+            // PV (PVG, Schemaschritt 206): dieselbe Regel - eine vollstaendige PV-Ganglinie rechnet anstelle der
+            // Module und faerbt den Statuspunkt der Kachel auch ohne Anlagenzeile.
+            if (PvGanglinieWeiche.Lesen(idProjekt).Vollstaendig) _eintraege[PV].Vorhanden = true;
         }
 
         /// <summary>Namen der zugeordneten Gebäude (Verbund wie in <c>WizardParent.LoadZGeb</c>).</summary>

@@ -22,6 +22,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Aus Fläche und Seitenverhältnis gebildet und je Geschoss gereiht — die Anordnung ist erfunden.</summary>
         Schematisch = 1,
+
+        /// <summary>
+        /// Gestalt und Lage aus dem Raumkörper der Datei, als Prisma (HC-5, <see cref="Koerpergrundriss"/>): der Grundriss
+        /// ist abgeleitet, Dachschrägen und Höhenversprünge gehen benannt verloren.
+        /// </summary>
+        Dateikoerper = 2,
     }
 
     /// <summary>Wie ein Umriss hergeleitet ist — der Beleg zu <see cref="Geometrieherkunft"/>.</summary>
@@ -44,6 +50,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kein Umriss: weder Raumgrenzen noch eine Fläche.</summary>
         Keine = 5,
+
+        /// <summary>Aus den Bodendreiecken des Dateikörpers, in die Grundrissebene projiziert (<see cref="Koerpergrundriss"/>, Stufe 1).</summary>
+        KoerperBoden = 6,
+
+        /// <summary>Ohne Bodendreiecke aus den Deckendreiecken des Dateikörpers (<see cref="Koerpergrundriss"/>, Stufe 2).</summary>
+        KoerperDecke = 7,
+
+        /// <summary>Die konvexe Hülle aller Punkte des Dateikörpers — Einbuchtungen gehen verloren (Stufe 3).</summary>
+        KoerperHuelle = 8,
     }
 
     /// <summary>Wo eine Grenze am Raum steht.</summary>
@@ -116,6 +131,12 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeAggregation.Sektor"/>); <c>null</c> = keine Himmelsrichtung.
         /// </summary>
         internal int? Sektor { get; init; }
+
+        /// <summary>
+        /// HC-5c: der wahre Azimut einer Wand aus Sicht des Raums [°] (dieselbe Quelle wie <see cref="Sektor"/>); <c>null</c> =
+        /// keiner — dann gilt die Mitte des Sektors.
+        /// </summary>
+        internal double? AzimutGrad { get; init; }
     }
 
     /// <summary>Ein Raum des Eingangs — im Weg <see cref="Zonengeometrie.AusFlaechen"/> auch eine Zone als Ganzes.</summary>
@@ -145,8 +166,17 @@ namespace WindowsFormsApplication1
         /// <summary>Lichte Höhe [m] der Datei; <c>null</c> = keine (dann gilt V/A).</summary>
         internal double? HoeheM { get; init; }
 
+        /// <summary>Der Körper aus der Datei (15.3), nur Anzeige; <c>null</c> = keiner (gbXML, Export, nicht lesbar).</summary>
+        internal Dateikoerper Koerper { get; init; }
+
         /// <summary>Die Seiten des Raums in der Reihenfolge der Bauteile.</summary>
         internal List<Umrissseite> Seiten { get; } = new List<Umrissseite>();
+
+        /// <summary>
+        /// Die Grundrisse des Raums (HC-5, <see cref="Raumgrundriss"/>) — beim Import frisch aus dem Dateikörper abgeleitet, beim
+        /// Export die gespeicherten aller Räume der Zone; leer = keiner. Nur Gestalt und Lage: Sie speisen weder Fläche noch Zonierung.
+        /// </summary>
+        internal IReadOnlyList<Raumgrundriss> Grundrisse { get; init; } = Array.Empty<Raumgrundriss>();
     }
 
     /// <summary>
@@ -206,6 +236,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Wandgrenzen auf dieser Kante in der Reihenfolge der Seiten; leer = keine bekannt.</summary>
         internal IReadOnlyList<Grenzverweis> Grenzen { get; }
+
+        /// <summary>
+        /// Die Strecken der Wände auf dieser Kante (Stufe G7b), vom Startpunkt der Kante gemessen und lückenlos —
+        /// nur am schematischen Rechteck; leer = keine (Umriss aus Raumgrenzen). Innere Masse desselben Raums
+        /// steht auf keiner Strecke.
+        /// </summary>
+        internal IReadOnlyList<Kantenabschnitt> Abschnitte { get; init; } = Array.Empty<Kantenabschnitt>();
     }
 
     /// <summary>Ein Polygon eines Umrisses in der Grundrissebene.</summary>
@@ -239,6 +276,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Boden- bzw. Deckengrenze, aus der das Polygon stammt; <c>null</c> = schematisch.</summary>
         internal Grenzverweis Quelle { get; }
+
+        /// <summary>
+        /// Die Löcher des Polygons [m] (x, y), je Loch im Uhrzeigersinn, ohne Schlusspunkt — nur aus einem
+        /// <see cref="Raumgrundriss"/>; leer = keine.
+        /// </summary>
+        internal IReadOnlyList<IReadOnlyList<double[]>> Loecher { get; init; } = Array.Empty<IReadOnlyList<double[]>>();
+
+        /// <summary>Aus einem <see cref="Raumgrundriss"/>: der Boden des Prismas [m]; sonst <c>null</c>.</summary>
+        internal double? PrismaBodenM { get; init; }
+
+        /// <summary>Aus einem <see cref="Raumgrundriss"/>: die Höhe des Prismas [m] (Spanne des Körpers); sonst <c>null</c>.</summary>
+        internal double? PrismaHoeheM { get; init; }
+
+        /// <summary>Trägt das Polygon ein Prisma aus einem <see cref="Raumgrundriss"/>?</summary>
+        internal bool IstPrisma => PrismaBodenM.HasValue && PrismaHoeheM > 0.0;
     }
 
     /// <summary>Der Umriss eines Raums: seine Polygone, Boden, Decke und was an keiner Kante steht.</summary>
@@ -294,6 +346,40 @@ namespace WindowsFormsApplication1
 
         /// <summary>Wände ohne Kante (kein Ring, kein Sektor, keine passende Kante) und Grenzen unbestimmter Stellung — benannt statt verloren.</summary>
         internal IReadOnlyList<Grenzverweis> OhneKante { get; init; } = Array.Empty<Grenzverweis>();
+
+        /// <summary>Liegt das schematische Rechteck an einem Nachbarraum mit gemeinsamer Trennfläche an (Stufe G7b)?</summary>
+        internal bool Angelegt { get; init; }
+
+        /// <summary>
+        /// Die Bodengrenzen des schematischen Rechtecks als Streifen quer zur Kante 0, entlang der Kante 0 gemessen
+        /// [m], lückenlos, je Grenze im Verhältnis ihrer Fläche (Stufe G7b); leer = keine oder kein Rechteck.
+        /// </summary>
+        internal IReadOnlyList<Kantenabschnitt> BodenStreifen { get; init; } = Array.Empty<Kantenabschnitt>();
+
+        /// <summary>Die Deckengrenzen des schematischen Rechtecks als Streifen wie <see cref="BodenStreifen"/>.</summary>
+        internal IReadOnlyList<Kantenabschnitt> DeckenStreifen { get; init; } = Array.Empty<Kantenabschnitt>();
+
+        /// <summary>
+        /// Der Körper des Raums, wie die Datei ihn zeichnet (Datenaustauschkonzept 15.3) — „aus Datei“; <c>null</c> =
+        /// kein Dateikörper. Nur Anzeige: Er ersetzt weder <see cref="Polygone"/> noch <see cref="Herkunft"/> und speist
+        /// weder Fläche noch Zonierung.
+        /// </summary>
+        internal Dateikoerper Koerper { get; init; }
+
+        /// <summary>Die Vermerke der Grundrisse (HC-5), aufsteigend und ohne Doppel; leer = keine oder kein Grundriss.</summary>
+        internal IReadOnlyList<Grundrissvermerk> Grundrissvermerke { get; init; } = Array.Empty<Grundrissvermerk>();
+
+        /// <summary>Stehen die Polygone als Prismen aus gespeicherten bzw. abgeleiteten Grundrissen (HC-5)?</summary>
+        internal bool AusGrundriss => Polygone.Count > 0 && Polygone.All(p => p.IstPrisma);
+
+        /// <summary>
+        /// HC-5c: die Bauteilplatten an den Prismen (<see cref="Zonengeometrie"/>, Kantenzuordnung) — Wände je Kante, Boden- und
+        /// Deckenstreifen; je Bauteil die größte Platte zuerst. Leer = kein Prisma oder kein Bauteil.
+        /// </summary>
+        internal IReadOnlyList<Grundrissplatte> Platten { get; init; } = Array.Empty<Grundrissplatte>();
+
+        /// <summary>HC-5c: Nennt die Quelle der Grundrisse keinen Nordwinkel (Modell-Nord = Nord angenommen)?</summary>
+        internal bool NordwinkelAngenommen { get; init; }
 
         public override string ToString() => Name + " (" + Herkunft + ", " + Polygone.Count.ToString(CultureInfo.InvariantCulture) + " Polygone)";
     }
@@ -418,11 +504,17 @@ namespace WindowsFormsApplication1
     /// je Zone in der Reihenfolge der Datei, in Zeilen gereiht; Nord oben, die Kanten Süd, Ost, Nord, West
     /// tragen die Wände ihres Sektors. <b>Diese Anordnung ist erfunden</b> — Herkunft
     /// <see cref="Geometrieherkunft.Schematisch"/>, Pflicht an Bild und Datei.</item>
+    /// <item><b>Aneinanderlegen</b> (Stufe G7b, Datenaustauschkonzept 5.5 Punkt 3): Räume mit gemeinsamer
+    /// Trennwand (<see cref="Nachbarpaare"/>) stehen als Block, die Strecken der Trennwand deckungsgleich —
+    /// flächentreu gestreckt, nie gedreht, keine Polygonvereinigung; ein Paar, dessen Trennwand bei beiden
+    /// Räumen nicht auf gegenüberliegenden Himmelsseiten liegt, bleibt getrennt (Hinweis
+    /// <see cref="NICHT_ANGELEGT"/>); eine widersprüchliche Anordnung ist benannt abgelehnt
+    /// (<see cref="AnordnungAbgelehnt"/>). Die Gegenstücke der Paare sind nachgezogen.</item>
     /// <item><b>Determinismus:</b> dieselbe Eingabe ergibt dieselben Polygone in derselben Reihenfolge — nur
     /// Listen in fester Folge, Sortierung über Höhenlage und Ordinalvergleich.</item>
     /// </list>
     /// </summary>
-    internal sealed class Zonengeometrie
+    internal sealed partial class Zonengeometrie
     {
         // ==================================================================
         //  Meldungen (Schlüssel formatfrei, Präfix ZGEO_)
@@ -436,6 +528,10 @@ namespace WindowsFormsApplication1
         internal const string QUADRAT = "ZGEO_QUADRAT";
         /// <summary>W — {0} Zahl, {1} Beispiele: Räume weder mit Raumgrenzen noch mit Fläche — nicht im Grundriss.</summary>
         internal const string OHNE_FLAECHE = "ZGEO_OHNE_FLAECHE";
+        /// <summary>I — {0} Zahl, {1} Beispiele: Räume als Prisma aus dem Grundriss ihres Dateikörpers (HC-5).</summary>
+        internal const string DATEIKOERPER = "ZGEO_DATEIKOERPER";
+        /// <summary>I — {0} Zahl, {1} Beispiele: Die Quelle der Grundrisse nennt keinen Nordwinkel; Modell-Nord = Nord angenommen (HC-5c).</summary>
+        internal const string NORDWINKEL_ANGENOMMEN = "ZGEO_NORDWINKEL_ANGENOMMEN";
 
         // ==================================================================
         //  Festwerte
@@ -498,11 +594,36 @@ namespace WindowsFormsApplication1
         /// <summary>Trägt die Geometrie einen schematischen Umriss? Dann ist „schematisch" Pflicht an Bild und Datei.</summary>
         internal bool Schematisch => Raeume.Any(r => r.Herkunft == Geometrieherkunft.Schematisch && r.Polygone.Count > 0);
 
+        /// <summary>Trägt mindestens ein Raum einen Körper aus der Datei (15.3)?</summary>
+        internal bool HatDateikoerper => Raeume.Any(r => r.Koerper != null);
+
+        /// <summary>Die Dreiecke aller Dateikörper (15.4: die Ansicht hält sie gegen <see cref="Dateikoerper.DREIECKSGRENZE"/>).</summary>
+        internal int DateikoerperDreiecke => Raeume.Sum(r => r.Koerper?.DreieckZahl ?? 0);
+
+        /// <summary>
+        /// Die Nachbarpaare (Stufe G7b): je Trennfläche, die genau zwei Räume teilen, beide Seiten — mit dem
+        /// nachgezogenen Gegenstück und dem Stand des Aneinanderlegens; nach Bauteilkennung geordnet.
+        /// </summary>
+        internal IReadOnlyList<Nachbarpaar> Nachbarpaare { get; private set; } = Array.Empty<Nachbarpaar>();
+
+        /// <summary>
+        /// Ist das Aneinanderlegen für mindestens eine Gruppe benannt abgelehnt (widersprüchliche Anordnung)?
+        /// Dann steht die Gruppe gereiht wie ohne Nachbarn, die Meldung <see cref="ANORDNUNG_ABGELEHNT"/> nennt das
+        /// Paar, und der gbXML-Export schreibt keine Raumgeometrie (Stufe 2 benannt abgelehnt).
+        /// </summary>
+        internal bool AnordnungAbgelehnt => Nachbarpaare.Any(p => p.Abgelehnt);
+
         /// <summary>Die Drehung des Modells gegen Nord [°], wie gelesen; <c>null</c> = keine Angabe.</summary>
         internal double? NordwinkelGrad { get; private set; }
 
         /// <summary>Gilt die Drehung für die Azimute der Kanten?</summary>
         internal bool NordwinkelAngewandt { get; private set; }
+
+        /// <summary>
+        /// HC-5c: die Drehung der Prismenkanten gegen Nord [°] (wahrer Azimut = Modellazimut − Drehung); <c>null</c> = kein Prisma.
+        /// Der Export schreibt sie als Nordrichtung, wenn kein Raum schematisch ist.
+        /// </summary>
+        internal double? PrismenDrehungGrad { get; private set; }
 
         /// <summary>Der Umriss eines Raums; <c>null</c> = kein solcher Raum.</summary>
         internal Raumumriss Raum(string kennung)
@@ -575,9 +696,26 @@ namespace WindowsFormsApplication1
                         e.Herleitung = Umrissherleitung.Decke;
                     }
                 }
+                // HC-5: der Grundriss je Raum vor dem Rechteckersatz. Echte Raumgrenzen behalten Vorrang; ein Grundriss aus dem
+                // Dateikörper geht dem Umriss aus Körperpaaren oder Raumbezügen vor (dieselbe Regel wie die Ablage).
+                Geometrieherkunft? ausGrundriss = null;
+                if (r.Grundrisse.Count > 0 && (e.Polygone.Count == 0 || r.Grundrisse.Any(g => g.Herkunft == Geometrieherkunft.Dateikoerper)))
+                {
+                    List<Umrisspolygon> prismen = AusGrundrissen(r.Grundrisse, drehung);
+                    if (prismen.Count > 0)
+                    {
+                        e.Polygone = prismen;
+                        e.Platziert.Clear();
+                        e.Herleitung = r.Grundrisse[0].Herleitung;
+                        e.Grundrissvermerke = r.Grundrisse.SelectMany(g => g.Vermerke).Distinct().OrderBy(v => v).ToList();
+                        e.NordwinkelAngenommen = r.Grundrisse.Any(g => g.NordwinkelUnbekannt);
+                        ausGrundriss = r.Grundrisse.Any(g => g.Herkunft == Geometrieherkunft.Dateikoerper)
+                            ? Geometrieherkunft.Dateikoerper : Geometrieherkunft.Raumgrenzen;
+                    }
+                }
                 if (e.Polygone.Count > 0)
                 {
-                    e.Herkunft = Geometrieherkunft.Raumgrenzen;
+                    e.Herkunft = ausGrundriss ?? Geometrieherkunft.Raumgrenzen;
                     e.OhneKante = r.Seiten.Where(s => s.Verweis != null && (s.Verweis.Stellung == Grenzstellung.Unbestimmt
                                                      || (s.Verweis.Stellung == Grenzstellung.Wand && !e.Platziert.Contains(s))))
                                           .Select(s => s.Verweis).ToList();
@@ -595,11 +733,20 @@ namespace WindowsFormsApplication1
                 entwurf.Add(e);
             }
 
+            // HC-5c: die Bauteilplatten an den Grundriss-Prismen (Konzept 11.4 „Körper“).
+            PlattenZuordnen(entwurf);
+            z.PrismenDrehungGrad = Prismendrehung(entwurf, drehung);
+
+            // Die Nachbarpaare und die Kanten der Wände am Rechteck (Stufe G7b).
+            List<Paarentwurf> paare = Paare(entwurf);
+            Kantenzuordnung(entwurf, paare);
+
             // Die Rechtecke je Geschoss reihen: rechts neben den Umrissen aus Raumgrenzen, je Zone in der
-            // Reihenfolge der Datei (Räume ohne Zone zuletzt), in Zeilen.
+            // Reihenfolge der Datei (Räume ohne Zone zuletzt), in Zeilen — Räume mit gemeinsamer Trennfläche
+            // aneinandergelegt als ein Block.
             for (int g = 0; g < geordnet.Count; g++)
             {
-                List<Umrissentwurf> echt = entwurf.Where(e => e.Geschoss == g && e.Herkunft == Geometrieherkunft.Raumgrenzen).ToList();
+                List<Umrissentwurf> echt = entwurf.Where(e => e.Geschoss == g && e.Herkunft != Geometrieherkunft.Schematisch && e.Polygone.Count > 0).ToList();
                 List<Umrissentwurf> ersatz = entwurf.Where(e => e.Geschoss == g && e.Herkunft == Geometrieherkunft.Schematisch && e.L > 0.0)
                                               .OrderBy(e => e.Zone < 0 ? int.MaxValue : e.Zone).ToList();
                 if (ersatz.Count == 0) continue;
@@ -610,8 +757,12 @@ namespace WindowsFormsApplication1
                     x0 = punkte.Max(p => p[0]) + ABSTAND_BLOCK_M;
                     oben = punkte.Max(p => p[1]);
                 }
-                Reihen(ersatz, x0, oben);
+                Reihen(Anlegen(ersatz, paare), x0, oben);
             }
+
+            // Die Gegenstücke der Paare nachziehen (M13): jede Seite verweist auf die Gegenseite.
+            Dictionary<Grenzverweis, Grenzverweis> nachgezogen = Nachziehen(paare);
+            foreach (Umrissentwurf e in entwurf) Ersetzen(e, nachgezogen);
 
             // Die Umrisse der Räume.
             var raeume = new List<Raumumriss>(entwurf.Count);
@@ -637,6 +788,13 @@ namespace WindowsFormsApplication1
                     Boden = e.Boden,
                     Decke = e.Decke,
                     OhneKante = e.OhneKante,
+                    Angelegt = e.Angelegt,
+                    BodenStreifen = e.BodenStreifen,
+                    DeckenStreifen = e.DeckenStreifen,
+                    Koerper = r.Koerper,
+                    Grundrissvermerke = e.Grundrissvermerke,
+                    Platten = e.Platten,
+                    NordwinkelAngenommen = e.NordwinkelAngenommen,
                 });
             }
             z.Raeume = raeume;
@@ -680,7 +838,7 @@ namespace WindowsFormsApplication1
                         Zone = i,
                         Geschoss = g,
                         Raeume = hier,
-                        Herkunft = hier.All(r => r.Herkunft == Geometrieherkunft.Raumgrenzen) ? Geometrieherkunft.Raumgrenzen : Geometrieherkunft.Schematisch,
+                        Herkunft = Gesamtherkunft(hier),
                         FlaecheM2 = hier.Sum(r => r.PolygonflaecheM2),
                         HoeheM = HoeheAus(stellen.Select(k => eingang.Raeume[k])) ?? uz.HoeheM,
                     });
@@ -693,8 +851,7 @@ namespace WindowsFormsApplication1
                     Name = uz.Name ?? "",
                     IstBeheizt = uz.IstBeheizt,
                     Handgeaendert = uz.Handgeaendert,
-                    Herkunft = eigene.Count > 0 && eigene.All(r => r.Herkunft == Geometrieherkunft.Raumgrenzen)
-                        ? Geometrieherkunft.Raumgrenzen : Geometrieherkunft.Schematisch,
+                    Herkunft = eigene.Count > 0 ? Gesamtherkunft(eigene) : Geometrieherkunft.Schematisch,
                     FlaecheM2 = uz.FlaecheM2,
                     VolumenM3 = uz.VolumenM3,
                     HoeheM = uz.HoeheM,
@@ -703,7 +860,8 @@ namespace WindowsFormsApplication1
             }
             z.Zonen = zonen;
             z.Umrisse = umrisse;
-            z.Meldungen = Melden(raeume);
+            z.Nachbarpaare = paare.Select(p => p.Abschluss(nachgezogen)).ToList();
+            z.Meldungen = Melden(raeume).Concat(Paarmeldungen(paare)).ToList();
             return z;
         }
 
@@ -720,7 +878,17 @@ namespace WindowsFormsApplication1
             internal List<Grenzverweis> Boden = new List<Grenzverweis>();
             internal List<Grenzverweis> Decke = new List<Grenzverweis>();
             internal List<Grenzverweis> OhneKante = new List<Grenzverweis>();
+            internal List<Grundrissvermerk> Grundrissvermerke = new List<Grundrissvermerk>();
+            internal List<Grundrissplatte> Platten = new List<Grundrissplatte>();
+            internal bool NordwinkelAngenommen;
             internal double L, B;
+
+            // Stufe G7b — Lage und Kanten des schematischen Rechtecks (nie gedreht).
+            internal double X, Y;
+            internal bool Angelegt;
+            internal List<Kantenabschnitt> BodenStreifen = new List<Kantenabschnitt>();
+            internal List<Kantenabschnitt> DeckenStreifen = new List<Kantenabschnitt>();
+            internal readonly Dictionary<Umrissseite, int> Kante = new Dictionary<Umrissseite, int>();
         }
 
         // ------------------------------------------------------------------
@@ -915,51 +1083,36 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Reiht die Rechtecke eines Geschosses in Zeilen ab (<paramref name="x0"/>, <paramref name="oben"/>)
+        /// Reiht die Blöcke eines Geschosses in Zeilen ab (<paramref name="x0"/>, <paramref name="oben"/>)
         /// nach rechts und unten, oben bündig, Abstand <see cref="ABSTAND_M"/>: Die Zeilenbreite ist die Breite
-        /// eines Blocks im Verhältnis <see cref="BLOCK_SEITENVERHAELTNIS"/> aus der Fläche aller Rechtecke samt
-        /// Abständen, mindestens das breiteste Rechteck. Nord oben: die Kanten eines Rechtecks laufen Süd, Ost,
-        /// Nord, West, und jede trägt die Wände ihres Sektors.
+        /// eines Blocks im Verhältnis <see cref="BLOCK_SEITENVERHAELTNIS"/> aus der Fläche aller Blöcke samt
+        /// Abständen, mindestens der breiteste Block. Ein Block ist ein Rechteck oder eine Gruppe
+        /// aneinandergelegter Rechtecke (Stufe G7b). Nord oben: die Kanten eines Rechtecks laufen
+        /// Süd, Ost, Nord, West, und jede trägt die Wände ihres Sektors.
         /// </summary>
-        private static void Reihen(List<Umrissentwurf> ersatz, double x0, double oben)
+        private static void Reihen(List<Rechteckblock> bloecke, double x0, double oben)
         {
-            double breite = Math.Max(ersatz.Max(e => e.L),
-                                     Math.Sqrt(BLOCK_SEITENVERHAELTNIS * ersatz.Sum(e => (e.L + ABSTAND_M) * (e.B + ABSTAND_M))));
+            double breite = Math.Max(bloecke.Max(b => b.Breite),
+                                     Math.Sqrt(BLOCK_SEITENVERHAELTNIS * bloecke.Sum(b => (b.Breite + ABSTAND_M) * (b.Tiefe + ABSTAND_M))));
             double x = x0, zeileOben = oben, zeileHoehe = 0.0;
             int inZeile = 0;
-            foreach (Umrissentwurf e in ersatz)
+            foreach (Rechteckblock b in bloecke)
             {
-                if (inZeile > 0 && x - x0 + e.L > breite)
+                if (inZeile > 0 && x - x0 + b.Breite > breite)
                 {
                     zeileOben -= zeileHoehe + ABSTAND_M;
                     x = x0;
                     zeileHoehe = 0.0;
                     inZeile = 0;
                 }
-                double unten = zeileOben - e.B;
-                var punkte = new List<double[]>
+                foreach (Umrissentwurf e in b.Glieder)
                 {
-                    new[] { x, unten }, new[] { x + e.L, unten }, new[] { x + e.L, zeileOben }, new[] { x, zeileOben },
-                };
-                // Kante 0 Süd, 1 Ost, 2 Nord, 3 West — Sektor 0 Nord → Kante 2, 1 Ost → 1, 2 Süd → 0, 3 West → 3.
-                int[] kanteJeSektor = { 2, 1, 0, 3 };
-                double[] azimut = { 180.0, 90.0, 0.0, 270.0 };
-                double[] laenge = { e.L, e.B, e.L, e.B };
-                var jeKante = new List<Grenzverweis>[] { new List<Grenzverweis>(), new List<Grenzverweis>(), new List<Grenzverweis>(), new List<Grenzverweis>() };
-                var ohne = new List<Grenzverweis>();
-                foreach (Umrissseite s in e.Raum.Seiten)
-                {
-                    if (s.Verweis == null || s.Verweis.Stellung == Grenzstellung.Boden || s.Verweis.Stellung == Grenzstellung.Decke) continue;
-                    if (s.Verweis.Stellung == Grenzstellung.Wand && s.Sektor is int sektor && sektor >= 0 && sektor < 4)
-                        jeKante[kanteJeSektor[sektor]].Add(s.Verweis);
-                    else ohne.Add(s.Verweis);
+                    e.X = x + (e.X - b.MinX);
+                    e.Y = zeileOben - b.Tiefe + (e.Y - b.MinY);
+                    Rechteckpolygon(e);
                 }
-                var kanten = new List<Umrisskante>(4);
-                for (int i = 0; i < 4; i++) kanten.Add(new Umrisskante(i, laenge[i], azimut[i], jeKante[i]));
-                e.Polygone = new List<Umrisspolygon> { new Umrisspolygon(punkte, kanten, e.L * e.B, null, null) };
-                e.OhneKante = ohne;
-                x += e.L + ABSTAND_M;
-                zeileHoehe = Math.Max(zeileHoehe, e.B);
+                x += b.Breite + ABSTAND_M;
+                zeileHoehe = Math.Max(zeileHoehe, b.Tiefe);
                 inZeile++;
             }
         }
@@ -982,7 +1135,64 @@ namespace WindowsFormsApplication1
             Sammel(SEITENVERHAELTNIS, PruefStufe.Info, r => r.Herleitung == Umrissherleitung.Seitenverhaeltnis);
             Sammel(QUADRAT, PruefStufe.Info, r => r.Herleitung == Umrissherleitung.Quadrat);
             Sammel(OHNE_FLAECHE, PruefStufe.Warnung, r => r.Polygone.Count == 0);
+            Sammel(DATEIKOERPER, PruefStufe.Info, r => r.Herkunft == Geometrieherkunft.Dateikoerper && r.Polygone.Count > 0);
+            Sammel(NORDWINKEL_ANGENOMMEN, PruefStufe.Info, r => r.AusGrundriss && r.NordwinkelAngenommen);
             return meldungen;
+        }
+
+        /// <summary>
+        /// Die Herkunft mehrerer Räume (Zone, Zonenumriss): aus Raumgrenzen nur, wenn es jeder ist; aus dem Dateikörper, wenn
+        /// keiner schematisch ist; sonst schematisch.
+        /// </summary>
+        private static Geometrieherkunft Gesamtherkunft(IReadOnlyCollection<Raumumriss> raeume)
+        {
+            if (raeume.All(r => r.Herkunft == Geometrieherkunft.Raumgrenzen)) return Geometrieherkunft.Raumgrenzen;
+            if (raeume.All(r => r.Herkunft != Geometrieherkunft.Schematisch)) return Geometrieherkunft.Dateikoerper;
+            return Geometrieherkunft.Schematisch;
+        }
+
+        /// <summary>
+        /// <b>Die Polygone aus Grundrissen</b> (HC-5): je Außenring ein Polygon mit seinen Löchern (sie folgen ihm in der Folge
+        /// der Ringe), den Kanten samt Azimut der Außennormalen (dieselbe Nordregel wie die Raumgrenzen; keine Wand auf einer
+        /// Kante) und dem Prisma von <see cref="Raumgrundriss.BodenM"/> um <see cref="Raumgrundriss.HoeheM"/>. Die Fläche ist die
+        /// des Rings ohne seine Löcher. Koordinaten wie gespeichert: Modellsystem, Nordwinkel nicht eingerechnet.
+        /// </summary>
+        internal static List<Umrisspolygon> AusGrundrissen(IReadOnlyList<Raumgrundriss> grundrisse, double drehung)
+        {
+            var polygone = new List<Umrisspolygon>();
+            foreach (Raumgrundriss g in grundrisse)
+            {
+                if (g == null || !(g.HoeheM > 0.0)) continue;
+                for (int i = 0; i < g.Ringe.Count; i++)
+                {
+                    Grundrissring aussen = g.Ringe[i];
+                    if (aussen.IstLoch || aussen.PunkteMm.Count < 3) continue;
+                    var loecher = new List<IReadOnlyList<double[]>>();
+                    double flaeche = aussen.FlaecheM2;
+                    for (int j = i + 1; j < g.Ringe.Count && g.Ringe[j].IstLoch; j++)
+                    {
+                        loecher.Add(g.Ringe[j].PunkteM);
+                        flaeche -= g.Ringe[j].FlaecheM2;
+                    }
+                    IReadOnlyList<double[]> punkte = aussen.PunkteM;
+                    double dreh = g.DrehungGrad ?? drehung;   // HC-5c: die Drehung der Quelle, sonst die des Eingangs
+                    var kanten = new List<Umrisskante>(punkte.Count);
+                    for (int k = 0; k < punkte.Count; k++)
+                    {
+                        double[] a = punkte[k], b = punkte[(k + 1) % punkte.Count];
+                        double dx = b[0] - a[0], dy = b[1] - a[1], laenge = Math.Sqrt(dx * dx + dy * dy);
+                        double? azimut = laenge > PUNKT_GLEICH_M ? Normiert(ModellAzimut(dy / laenge, -dx / laenge) - dreh) : (double?)null;
+                        kanten.Add(new Umrisskante(k, laenge, azimut, Array.Empty<Grenzverweis>()));
+                    }
+                    polygone.Add(new Umrisspolygon(punkte, kanten, Math.Max(0.0, flaeche), g.BodenM, null)
+                    {
+                        Loecher = loecher,
+                        PrismaBodenM = g.BodenM,
+                        PrismaHoeheM = g.HoeheM,
+                    });
+                }
+            }
+            return polygone;
         }
 
         /// <summary>Der Azimut einer waagerechten Richtung im Modellsystem [°]: gegen +y, im Uhrzeigersinn (+x = 90°), in [0, 360).</summary>

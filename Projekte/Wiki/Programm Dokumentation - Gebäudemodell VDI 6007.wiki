@@ -18,11 +18,11 @@ Fassen Sie den Schalter nicht an, rechnet das Gebäude mit der Vorgabe des Progr
 == Eingaben ==
 {{Anker|eingaben}}
 
-Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Raumtemperaturen samt Absenkung, Wochenende und Ferien. Führt ein Gebäude im Projekt Zonen, nimmt das Modell die Hülle statt aus der Tabelle aus den Bauteilen seiner Zonen (siehe [[#bauteilweg|Bauteilweg]]); mit zwei und mehr Zonen rechnet es jede Zone für sich, gekoppelt über Trennflächen und Luftaustausch (siehe [[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]).
+Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Konditionierung: Heiz- und Kühlsollwerte, Lüftung, Geräte und Personen als Matrix mit Kalendern aus Absenkung, Wochenende, Ferien und Saison (siehe [[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Reiter „Konditionierung"]]). Unter VDI 6007 ist die Matrix die Vorgabe, ein angelegter Kalender geht ihr vor. Führt ein Gebäude im Projekt Zonen, nimmt das Modell die Hülle statt aus der Tabelle aus den Bauteilen seiner Zonen (siehe [[#bauteilweg|Bauteilweg]]); mit zwei und mehr Zonen rechnet es jede Zone für sich, gekoppelt über Trennflächen und Luftaustausch (siehe [[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]).
 
-Für einen Satz des Gebäudekatalogs pflegen Sie dieselben Angaben im Stammblatt der Gebäudeverwaltung (Menü '''Administration''' › ''Gebäude'' › ''Bearbeiten''): unter ''Kenndaten'' Wohn-/Nutzfläche und Bauart, unter ''Hülle'' Kennwert und Größe je Bauteil samt der Randbedingung der Bodenplatte, dazu ''Fenster nach Orientierung'', ''Kenngrößen'' und aufklappbar ''Alle Daten'' mit Raumtemperaturen, Ferien, Modellparametern, Rechenweg und Kühlung. ''Speichern'' prüft sie mit denselben Regeln wie der Gebäudedialog; ''Neu…'' legt einen neuen Satz über dessen Eingabemaske an. Einen Wärmebedarf zeigt die Verwaltung nicht – er hängt an der Klimaregion und den Angaben des Projekts und steht im Gebäudedialog des Projekts unter ''Simulation…''.
+Für einen Satz des Gebäudekatalogs pflegen Sie dieselben Angaben im Stammblatt der Gebäudeverwaltung (Menü '''Administration''' › ''Gebäude'' › ''Bearbeiten''): unter ''Kenndaten'' Wohn-/Nutzfläche und Bauart, unter ''Hülle'' Kennwert und Größe je Bauteil samt der Randbedingung der Bodenplatte, dazu ''Fenster nach Orientierung'', ''Kenngrößen'' und aufklappbar ''Alle Daten'' mit der Konditionierung, den Modellparametern, dem Rechenweg und der Kühlung. ''Speichern'' prüft sie mit denselben Regeln wie der Gebäudedialog; ''Neu…'' legt einen neuen Satz über dessen Eingabemaske an. Einen Wärmebedarf zeigt die Verwaltung nicht – er hängt an der Klimaregion und den Angaben des Projekts und steht im Gebäudedialog des Projekts unter ''Simulation…''.
 
-Wie ein Gebäude gekühlt wird – Haken, Kühlsollwert und Kühlleistungsgrenze in der Gruppe ''Kühlung'' –, beschreibt die Seite [[Programm Dokumentation/Kühlung|Kühlung]].
+Wie ein Gebäude gekühlt wird – Haken, Kühlsollwert und Kühlleistungsgrenze in der Gruppe ''Kühlung'' –, beschreibt die Seite [[Programm Dokumentation/Kühlung|Kühlung]]. Ob an einem Tag geheizt oder gekühlt wird, regelt die [[Programm Dokumentation/Gebäude#freigabe|Freigabe Heizen und Kühlen]] der Konditionierung: Eine Zone wird an einem Tag entweder geheizt oder gekühlt, nie beides.
 
 Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, die als grauer Text im Feld steht; gespeichert wird dann kein Wert, sondern „leer".
 
@@ -41,7 +41,7 @@ Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, 
 |-
 | Heizleistungsgrenze || unbegrenzt || größte Heizleistung in kW; darüber sinkt die Raumtemperatur unter den Sollwert
 |-
-| Randbedingung der Bodenplatte || Erdreich || ''Erdreich'' (Temperatur in 1 m Tiefe aus dem Jahresgang der Außenluft), ''Keller'' (unbeheizter Keller mit der Kellertemperatur, Vorgabe 10 °C) oder ''Außenluft''
+| Randbedingung der Bodenplatte || Erdreich || ''Erdreich'' (Temperatur in 1 m Tiefe aus dem Jahresgang der Außenluft; der Wärmedurchgang der Bodenplatte samt Erdreich nach DIN EN ISO 13370 aus Grundfläche und freiliegendem Umfang, oder mit dem ''Wirksamen U-Wert Bodenplatte'' als Vorgabe unmittelbar, siehe [[Programm Dokumentation/Gebäude#flaechen|Gebäude: Hülle]]), ''Keller'' (unbeheizter Keller mit der Kellertemperatur, Vorgabe 10 °C) oder ''Außenluft''
 |-
 | Außenbauteile mit Strahlung || aus || siehe [[#strahlung|Strahlung auf die Außenbauteile]]
 |-
@@ -60,18 +60,18 @@ Wie das Modell die Hülle abbildet, hängt davon ab, ob das Gebäude im Projekt 
 * '''Klassenweg''' – ohne Zone. Das Modell rechnet mit den U-Wert-Gruppen der Hülle – Außenwand, Fenster, Dach, Bodenplatte und Sonstiges, je mit U-Wert und Fläche – und nimmt die Speichermasse aus der Bauweise. Die Kennwerte der beiden Speicher leitet es daraus nach einem festen Schema ab.
 * '''Bauteilweg''' – mit Zonen. Das Modell rechnet über die Bauteile der Zone, jedes mit Fläche, Randbedingung, Neigung, Azimut und, wo zugeordnet, seinem Schichtaufbau. Mit zwei und mehr Zonen rechnet jede Zone so für sich; wie die Zonen gekoppelt werden, beschreibt die Seite [[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]].
 
-'''Reduktion der Bauteile.''' Jeden Schichtaufbau reduziert das Modell nach VDI 6007 Blatt 1, Gl. (1)–(24), über die Kettenmatrix seiner Schichten auf Widerstand und Kapazität. Die Bezugsperiode gilt je Bauteil und beträgt 7 Tage oder 2 Tage nach Gl. (10a)–(10d); welche gilt, hängt am Verhältnis R₁;rel / C₁;rel. Die Bauteile werden zu zwei Gruppen zusammengefasst: die Außenbauteile einseitig, die Innenbauteile – Innenwände und Decken innerhalb der Zone – symmetrisch. Fenster und Vorhangfassaden bilden den Fensterzweig nach Gl. (25)/(26) und rechnen mit ihrem U-Wert. Die Kennwerte eines einzelnen Aufbaus – R, U, C und T_BT – zeigt die Seite [[Programm Dokumentation/Baustoffe und Bauteilaufbauten#summen|Baustoffe und Bauteilaufbauten]].
+'''Reduktion der Bauteile.''' Jeden Schichtaufbau reduziert das Modell nach VDI 6007 Blatt 1, Gl. (1)–(24), über die Kettenmatrix seiner Schichten auf Widerstand und Kapazität. Die Bezugsperiode gilt je Bauteil und beträgt 7 Tage oder 2 Tage nach Gl. (10a)–(10d); welche gilt, hängt am Verhältnis <math>R_{1;\mathrm{rel}} / C_{1;\mathrm{rel}}</math>. Die Bauteile werden zu zwei Gruppen zusammengefasst: die Außenbauteile einseitig, die Innenbauteile – Innenwände und Decken innerhalb der Zone – symmetrisch. Fenster und Vorhangfassaden bilden den Fensterzweig nach Gl. (25)/(26) und rechnen mit ihrem U-Wert. Die Kennwerte eines einzelnen Aufbaus – <math>R</math>, <math>U</math>, <math>C</math> und <math>T_{\mathrm{BT}}</math> – zeigt die Seite [[Programm Dokumentation/Baustoffe und Bauteilaufbauten#summen|Baustoffe und Bauteilaufbauten]].
 
 '''Bauteile ohne Schichten.''' Ein Bauteil ohne Aufbau, nur mit U-Wert, rechnet in seiner Gruppe wie im Klassenweg. Trägt eine ganze Gruppe keine Schichten, nimmt sie ihre Kapazität aus der Bauweise. Eine Zone, die aus den U-Wert-Gruppen übernommen ist und keine Aufbauten trägt, rechnet darum wie der Klassenweg.
 
-'''Sonne und Außenseite.''' Die solaren Gewinne rechnet das Modell je Fensterbauteil mit dessen Neigung und Azimut: Ein geneigtes Fenster, etwa ein Dachfenster, bekommt die Einstrahlung seiner Neigung, ein waagerechtes Fenster die Globalstrahlung. g-Wert, Rahmenanteil und Verschattungsfaktor nimmt es vom Bauteil, leer vom Gebäude. Die äquivalente Außentemperatur bildet das Modell je Bauteil und gewichtet sie mit U·A: ein Bauteil an Außenluft mit der Außenluft – bei eingeschalteter [[#strahlung|Strahlung auf die Außenbauteile]] mit der Einstrahlung seiner eigenen Neigung und Richtung –, ein Bauteil am Erdreich mit der Erdreichtemperatur, ein Bauteil an einem unbeheizten Raum mit der Kellertemperatur des Gebäudes und eine koppelnde Trennfläche mit der Raumluft ihrer Nachbarzone.
+'''Sonne und Außenseite.''' Die solaren Gewinne rechnet das Modell je Fensterbauteil mit dessen Neigung und Azimut: Ein geneigtes Fenster, etwa ein Dachfenster, bekommt die Einstrahlung seiner Neigung, ein waagerechtes Fenster die Globalstrahlung. g-Wert, Rahmenanteil und Verschattungsfaktor nimmt es vom Bauteil, leer vom Gebäude. Die äquivalente Außentemperatur bildet das Modell je Bauteil und gewichtet sie mit <math>U \cdot A</math>: ein Bauteil an Außenluft mit der Außenluft – bei eingeschalteter [[#strahlung|Strahlung auf die Außenbauteile]] mit der Einstrahlung seiner eigenen Neigung und Richtung –, ein Bauteil am Erdreich mit der Erdreichtemperatur, ein Bauteil an einem unbeheizten Raum mit der Kellertemperatur des Gebäudes und eine koppelnde Trennfläche mit der Raumluft ihrer Nachbarzone.
 
 '''Echte Hülle.''' Mit Zone rechnet das Gebäude ohne Hochrechnung: Der Skalierungsfaktor ist 1, die Bezugsfläche ist die Nutzfläche der Zone – leer die des Gebäudes. Eine eingetragene Fläche oder ein Verbrauch im Projekt wird nicht zurückgerechnet; ein Hinweis im Protokoll nennt das. Über den '''Flächenschlüssel''' – den Anteil der Zonenfläche an der Nutzfläche des Gebäudes – folgen der Zone anteilig:
 
 * das Luftvolumen – eingetragen oder Nutzfläche der Zone × Raumhöhe – und mit ihm der Lüftungsleitwert und die Sommerlüftung;
 * die Speichermasse der Bauweise einer Gruppe ohne Schichten, Bauweise je m² × Zonenfläche;
 * die inneren Wärmegewinne, die im Gebäude als Leistung in W stehen, nicht je m²;
-* die Innenbauteilfläche f_IW · A_f aus dem Innenflächenfaktor und der Zonenfläche.
+* die Innenbauteilfläche <math>f_{\mathrm{IW}} \cdot A_{\mathrm{f}}</math> aus dem Innenflächenfaktor und der Zonenfläche.
 
 Sollwerte, Raumhöhe, Luftwechsel, innere Gewinne, Bewohner und die Heizleistungsgrenze kann die Zone selbst tragen; ein leeres Feld übernimmt den Wert des Gebäudes, innere Gewinne und Bewohner nach dem Flächenschlüssel und mit mehreren Zonen auch die Heizleistungsgrenze. Die Kühlung kommt vom Gebäude. Das Protokoll der Simulation nennt je Gebäude die Zone, die Zahl ihrer Bauteile und wie viele davon einen Schichtaufbau tragen.
 
@@ -85,7 +85,7 @@ Ein Beispiel: ''Gebäude 1'' führt die Zone ''Gebäude'' mit 250 m² Nutzfläch
 Ohne weitere Angaben rechnet das Modell mit '''idealer Regelung''': In jeder Stunde kommt genau die Wärme in den Raum, die den Sollwert hält – begrenzt nur durch die Heizleistungsgrenze. Mit der '''Wärmeübergabe''' rechnet es statt dessen den Heizkreis des Gebäudes: Heizkörper oder Heizflächen geben je nach Vorlauftemperatur nur eine bestimmte Leistung ab, ein Raumregler öffnet nach der Abweichung vom Sollwert, und reicht die Übergabe nicht, sinkt die Raumtemperatur. Die Spitze nach einer Nachtabsenkung wird dadurch gekappt und auf mehrere Stunden verteilt, und die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf.
 
 Gerechnet wird der Heizkreis, wenn drei Dinge zusammenkommen:
-* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'';
+* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'' oder einer höheren Stufe;
 * im Gebäude ist der Haken '''Übergabe rechnen (statt idealer Regelung)''' gesetzt;
 * eine Übergabeart ist gewählt: '''Radiator''', '''Flächenheizung''' oder '''Konvektor'''. ''ideal'' rechnet wie ohne Haken.
 
@@ -111,6 +111,8 @@ Die Eingaben stehen im Gebäudedialog in der Gruppe '''Wärmeübergabe''' unter 
 | Niveau / Steilheit der Heizkurve || 0 K / 1 || verschieben bzw. neigen die Heizkurve
 |-
 | Proportionalband des Raumreglers || 1 K || Schnellwahl 0,5 K, 1 K, 2 K oder frei von 0 bis 5 K; 0 K ist die ideale Regelung mit der Grenze der Übergabe
+|-
+| Raumeinfluss der Heizkurve || leer (aus) || k<sub>R</sub> in K/K, 0 bis 10: Der Vorlauf steigt je Kelvin, um das die kälteste Zone derselben Stunde unter ihrem Sollwert liegt, um k<sub>R</sub>; er bleibt am Auslegungsvorlauf und an der Vorlaufgrenze des Erzeugers gekappt. Leer oder 0 schaltet den Einfluss aus; er wirkt nur mit der Anlagenkopplung ''geschlossener Kreis (AK3)'' und eingeschalteter Heizkurve
 |}
 
 Die hergeleiteten Zahlen stehen als Vorgabe im Feld und in einer Zeile darunter, sobald der Gebäudedialog in einem Projekt mit Klimaregion geöffnet ist. Widersprüchliche Angaben meldet ''OK'' mit beiden Werten: ein Auslegungsvorlauf, der nicht über der Raumtemperatur liegt, ein Rücklauf außerhalb von Raumtemperatur und Vorlauf, eine Auslegungs-Außentemperatur über der Raumtemperatur.
@@ -123,7 +125,7 @@ Die hergeleiteten Zahlen stehen als Vorgabe im Feld und in einer Zeile darunter,
 Ein gekühltes Gebäude rechnet ohne weitere Angaben mit '''idealer Kühlung''': In jeder Stunde wird genau die Kälte in den Raum gebracht, die den Kühlsollwert hält – begrenzt nur durch die Kühlleistungsgrenze. Mit der '''Kühlübergabe''' rechnet es statt dessen die Kühlflächen oder Gebläsekonvektoren des Gebäudes: Sie nehmen je nach Kaltwasser-Vorlauf nur eine bestimmte Leistung auf, derselbe Raumregler wie beim Heizen öffnet nach der Abweichung vom Kühlsollwert, und reicht die Übergabe nicht, steigt die Raumtemperatur über den Kühlsollwert.
 
 Gerechnet wird die Kühlübergabe, wenn diese Dinge zusammenkommen:
-* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'', und die Projekteinstellung ''Kühlung rechnen'' ist eingeschaltet;
+* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'' oder einer höheren Stufe, und die Projekteinstellung ''Kühlung rechnen'' ist eingeschaltet;
 * das Gebäude wird gekühlt – Haken und Kühlsollwert, siehe [[Programm Dokumentation/Kühlung#eingaben|Kühlung]];
 * im Gebäude ist der Haken '''Kühlübergabe rechnen (statt idealer Kühlung)''' gesetzt;
 * eine Kühlübergabeart ist gewählt: '''Kühldecke''', '''Flächenkühlung''' oder '''Gebläsekonvektor'''. ''ideal'' rechnet wie ohne Haken.
@@ -148,14 +150,60 @@ Die Eingaben stehen in der Gruppe '''Kühlung''' im Abschnitt '''Kühlübergabe'
 
 Den Strahlungsanteil bringt die Art mit (Kühldecke und Flächenkühlung 0,5, Gebläsekonvektor 0); er hat kein eigenes Feld. Der Raumregler ist derselbe wie beim Heizen und nimmt dessen Proportionalband.
 
-'''Kaltwasser-Vorlauf.''' Der Vorlauf der Kühlübergabe ist fest: der kälteste Kühl-Vorlauf der Wärmepumpen im [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlbetrieb]] des Projekts, ohne solche Anlage der Auslegungsvorlauf. Liegt er unter der Vorlaufgrenze, mischt das Gebäude auf die Grenze hoch; die Wärmepumpe rechnet weiter an ihrem Kühl-Vorlauf. Eine Vorlaufgrenze über dem Auslegungsvorlauf ist erlaubt – die Nennleistung wird dann nie erreicht, und eine Zeile unter den Feldern sagt es.
+'''Kaltwasser-Vorlauf.''' Ohne [[#kuehlkurve|Kühlkurve]] ist der Vorlauf der Kühlübergabe fest: der kälteste Kühl-Vorlauf der Wärmepumpen im [[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kühlbetrieb]] des Projekts, ohne solche Anlage der Auslegungsvorlauf. Liegt er unter der Vorlaufgrenze, mischt das Gebäude auf die Grenze hoch; die Wärmepumpe rechnet weiter an ihrem Kühl-Vorlauf. Eine Vorlaufgrenze über dem Auslegungsvorlauf ist erlaubt – die Nennleistung wird dann nie erreicht, und eine Zeile unter den Feldern sagt es.
 
 Unter den Feldern steht, ob die Kühlübergabe im geöffneten Projekt wirkt und woran es fehlt, der Auslegungstag mit seiner Kühllast, der Kaltwasser-Vorlauf und seine Herkunft. Zwei Zeilen stehen immer da: '''Die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze''' – EPOS-Plan prüft nicht, ob an der Kühlfläche Tauwasser ausfällt –, und die Kühlübergabe rechnet '''sensibel, ohne Entfeuchtung'''. Widersprüchliche Angaben meldet ''OK'' mit den Werten: Vorlauf, Rücklauf und Raumtemperatur des Auslegungspunkts müssen aufsteigen.
+
+=== Kühlkurve ===
+{{Anker|kuehlkurve}}
+
+Rechnet das Projekt mit der Anlagenkopplung ''geschlossener Kreis (AK3)'', kann ein Gebäude mit Kühlübergabe seinen Kaltwasser-Vorlauf gleiten lassen. Mit dem Haken '''Kühlkurve (gleitender Kühlvorlauf)''' im Abschnitt ''Kühlübergabe'' folgt der Vorlauf der Außentemperatur und der Raumtemperatur: An milden Tagen bleibt das Kaltwasser wärmer und die Kälteerzeuger arbeiten mit besserer Leistungszahl; an heißen Tagen und wenn der Raum zu warm wird, sinkt der Vorlauf.
+
+Die Kurve hat zwei Punkte. Solange die Außenluft nicht über dem Kühlsollwert der Stunde liegt, gilt der '''Fußpunkt'''; ab der '''Auslegungs-Außentemperatur''' gilt der Auslegungsvorlauf der Kühlübergabe; dazwischen fällt der Vorlauf linear. Der '''Raumeinfluss''' senkt den Vorlauf zusätzlich, wenn der Raum über dem Kühlsollwert liegt; maßgeblich ist die Zone mit der größten Überschreitung derselben Stunde. Der Vorlauf bleibt mindestens 2,5 K unter dem Kühlsollwert, er wird nicht kälter, als die Kälteerzeuger liefern können, und nie kälter als die '''Untere Vorlaufgrenze''' – diese Grenze gilt vor allen anderen.
+
+{| class="wikitable"
+! Eingabe !! Vorgabe !! Bedeutung
+|-
+| Kühlkurve (gleitender Kühlvorlauf) || aus || schaltet die Kurve ein; beim Einschalten erhält ein leerer Raumeinfluss den Vorgabewert
+|-
+| Fußpunkt der Kühlkurve || Auslegungsrücklauf der Kühlübergabe || Vorlauf in °C, 4 bis 22, bei Außenluft am Kühlsollwert und darunter; er darf nicht unter dem Auslegungsvorlauf liegen – ''OK'' meldet es, und ein solcher Wert rechnet als waagrechte Kurve am Auslegungsvorlauf
+|-
+| Raumeinfluss der Kühlkurve || leer (aus); beim Einschalten 3 K/K || k in K/K, 0 bis 10: Der Vorlauf sinkt je Kelvin, um das die Zone über ihrem Kühlsollwert liegt, um k. Leer oder 0 schaltet den Einfluss aus
+|-
+| Auslegungs-Außentemperatur Kühlung || wärmstes Tagesmittel || woraus der zweite Punkt der Kurve kommt: ''höchste Stundentemperatur der Klimareihe'', ''wärmstes Tagesmittel'' der Klimareihe, mindestens Kühlsollwert + 8 K, oder ''Eingabe''
+|-
+| Auslegungs-Außentemperatur (Eingabe) || – || °C, 0 bis 60, nur mit dem Weg ''Eingabe''; liegt sie nicht mehr als 1 K über dem Kühlsollwert oder fehlt sie, rechnet der Lauf mit dem wärmsten Tagesmittel und sagt es im Laufprotokoll
+|}
+
+Die Vorgaben sind Vorgaben von EPOS-Plan, keine Normwerte. Unter den Feldern nennt eine Zeile Fußpunkt, Auslegungsvorlauf und Auslegungs-Außentemperatur, mit denen gerechnet wird. Die Wärmepumpe im Kühlbetrieb und die Kältemaschine rechnen in jeder Stunde am Vorlauf der Kurve, die [[Programm Dokumentation/Kälteerzeugung#kaelteschranke|Kälteschranke]] ebenso. Auf den Stufen ''aus'' und ''Heizkreis (AK1)'' wirkt die Kurve nicht, es gilt der feste Kaltwasser-Vorlauf. Mit mehreren Zonen gilt die Kurve für den Kaltwasserkreis des Gebäudes am niedrigsten Kühlsollwert der gekühlten Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]).
+
+Hat ein Lauf mit Kühlkurve gerechnet, zeigen das Ergebnis des Gebäudes und der Bericht (Tafel „Kühlkurve“) drei Kennzahlen des Projekts: den mittleren verlangten Kühlvorlauf der Kühlstunden, die Summe der Absenkung durch den Raumeinfluss in Kelvinstunden und die Kühlstunden, in denen die Kurve an der Vorlaufgrenze stand.
+
+[[Datei:Diagramm_Kuehlvorlauf_Ruecklauf.png|mini|zentriert|800px|Kühlvorlauf und Kühlrücklauf eines Gebäudes über das Jahr, gestrichelt die Auslegungswerte. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
+== Komfortstunden ==
+{{Anker|komfort}}
+
+Rechnet ein Gebäude gekoppelt, kann die Raumtemperatur unter den Sollwert fallen – weil die Übergabe nicht reicht oder weil die Anlage nach ihren [[Programm Dokumentation/Energieerzeuger#betriebszeiten|Betriebszeiten]] nicht zur Verfügung steht. Die '''Komfortstunden''' zählen das:
+
+* '''Unterschreitungsstunden''' – Stunden der Nutzungszeit, in denen die Raumluft mehr als '''1,0 K''' unter dem Heizsollwert liegt;
+* '''Kelvinstunden''' – die Summe dieser Unterschreitungen in Kh; sie sagt, wie tief die Raumtemperatur fiel;
+* '''Längste Strecke''' – die längste zusammenhängende Folge solcher Stunden.
+
+Die Schwelle 1,0 K ist eine Vorgabe von EPOS-Plan, kein Normwert. Gezählt wird nur in der '''Nutzungszeit''', also in den Stunden, in denen der Tagsollwert gilt; eine Stunde in der Nachtabsenkung oder mit Heizung aus zählt nicht. Bei mehreren Zonen zählt eine Stunde, wenn eine beheizte Zone die Schwelle reißt; die Kelvinstunden sind nach der Fläche der Zonen gewichtet. Mit Kühlung zählen die '''Überschreitungsstunden''' und ihre Kelvinstunden spiegelbildlich die Stunden über dem Kühlsollwert.
+
+'''Komfort neben Restbedarf.''' Mit Kopplung ist ein Teil der Unterdeckung keine fehlende Wärme mehr, sondern eine gesunkene Raumtemperatur. Deshalb steht neben den Komfortstunden immer der '''Restbedarf''' des Projekts – im Bedarfsdialog wie im Bericht.
+
+'''Feste Last.''' Im Lauf mit Fahrplan rechnet nur ein Gebäude nach VDI 6007 mit Wärmeübergabe ''mit Rückwirkung''. Jedes andere Gebäude – auf dem Rechenweg Tagesbilanz oder ohne Wärmeübergabe – geht als '''feste Last''' ein: Es zehrt an der Verfügbarkeit der Anlage, sein Bedarf bleibt aber wie ohne Fahrplan, und es hat keine Komfortstunden. Der Bericht nennt je Gebäude den Bedarfsbegriff und je Projekt die Zahl der Gebäude als feste Last.
+
+'''Profilweg.''' Die Verfügbarkeit der Anlagen rechnet das Programm einmal je Projekt vorab; ein Pufferspeicher geht nur als Vorrat über die Dauer einer Sperre ein. Die Komfortstunden sind deshalb eine Näherung und eher zu hoch als zu niedrig; der Bericht nennt das.
+
+[[Datei:Diagramm_Raumtemperatur_Komfort.png|mini|zentriert|800px|Raumtemperatur und Sollwert einer Woche; grün markiert die Stunden, in denen der Raum den Sollwert unterschreitet. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
 == Lüftung ==
 {{Anker|lueftung}}
 
-Der Luftwechsel des Modells ist die Summe aus '''Infiltration''' und '''Nutzerlüftung'''. Ist nur eines der beiden Felder gefüllt, gilt für das andere seine Vorgabe. Sind beide leer, rechnet das Modell mit der '''Luftwechselrate''' des Gebäudes; fehlt auch sie, mit der Summe der beiden Vorgaben, 0,7 1/h. Unter den Feldern steht, mit welchem Luftwechsel gerechnet wird und woher er kommt. Der Lüftungswärmeverlust H_ve der Hülltabelle folgt diesem Wert.
+Der Luftwechsel des Modells ist die Summe aus '''Infiltration''' und '''Nutzerlüftung'''. Ist nur eines der beiden Felder gefüllt, gilt für das andere seine Vorgabe. Sind beide leer, rechnet das Modell mit der '''Luftwechselrate''' des Gebäudes; fehlt auch sie, mit der Summe der beiden Vorgaben, 0,7 1/h. Unter den Feldern steht, mit welchem Luftwechsel gerechnet wird und woher er kommt. Der Lüftungswärmeverlust <math>H_{\mathrm{ve}}</math> der Hülltabelle folgt diesem Wert.
 
 == Sommerlüftung ==
 {{Anker|sommerlueftung}}
@@ -165,6 +213,37 @@ Mit eingeschalteter '''Sommerlüftung''' öffnen die Nutzer an warmen Tagen die 
 Die Sommerlüftung senkt Kühlbedarf und Überhitzungsstunden. Auf den Heizbedarf wirkt sie kaum.
 
 Bei einem gekühlten Gebäude (siehe [[Programm Dokumentation/Kühlung|Kühlung]]) liegt die Schwelle nicht bei 23 °C, sondern 3 K unter dem Kühlsollwert: Die Nutzer öffnen die Fenster, bevor gekühlt wird.
+
+== Heizperiode ==
+{{Anker|heizperiode}}
+
+Die '''Heizperiode''' ist die Saison der Heizspalte der Konditionierung (siehe [[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Reiter „Konditionierung"]]): Start und Ende als Datum, innerhalb wird geheizt, außerhalb steht der Heizsollwert auf ''aus''. Dort rechnet das Modell ohne Heizung, der Raum schwingt frei; leer heißt ganzjährig. Die Kühlperiode wirkt ebenso auf die Kühlspalte ([[Programm Dokumentation/Kühlung#kuehlperiode|Kühlung]]).
+
+Die Heizperiode schneidet Bedarf ab, den die Raumheizung sonst gedeckt hätte. Liegt die Raumluft einer beheizten Zone außerhalb der Heizperiode in Nutzungsstunden unter dem Tagwert der Heizspalte, zählt der Lauf diese Stunden und nennt die Zahl und die größte Unterschreitung in K als Hinweis im Protokoll; die Rechnung läuft weiter. Wer den Bedarf dort decken will, verlängert die Heizperiode.
+
+== Nachtauskühlung ==
+{{Anker|nachtauskuehlung}}
+
+Die Zelle ''Nacht'' der Lüftungsspalte trägt einen erhöhten Luftwechsel der Nutzerlüftung in 1/h mit eigenem Nachtfenster (''von–bis''; leer gilt das Nachtfenster der Heizspalte) und einem Temperaturabstand ''ΔT Außenluft''. Die Nachtauskühlung wirkt immer '''bedingt''', einen Schalter gibt es nicht: Der Überschuss über den Tageswert gilt nur in den Stunden des Nachtfensters, in denen die Raumluft der Vorstunde über der Schwelle liegt und die Außenluft mindestens ΔT kühler ist; sonst gilt der Tageswert. Die Schwelle ist wie bei der [[#sommerlueftung|Sommerlüftung]] 23 °C, in der Kühlperiode eines gekühlten Gebäudes 3 K unter dem Kühlsollwert. ΔT ist 2 K, einstellbar von 0 bis 5 K; geschlossen wird mit 1 K Hysterese. Eine unbedingte Nachtauskühlung gibt es nicht, weil sie auch in Winternächten lüftete und die Heizwärme höbe.
+
+Sind Sommerlüftung und Nachtauskühlung gesetzt, gilt der größere Luftwechsel. Die Wirkung: Die Raumluft ist am Morgen kühler, es gibt weniger Überhitzungsstunden und mit wirksamer Kühlung weniger Kühlenergie am Folgetag. Die Zahl der Stunden steht als ''Stunden mit Nachtauskühlung'' im Wärmebedarf, im Export und im Bericht, nur wenn eine Nachtauskühlung gesetzt ist.
+
+== Aufheizoptimierung ==
+{{Anker|aufheizoptimierung}}
+
+Nach einer Absenkung springt der Heizsollwert im Kalender auf den Tagwert zurück. Ohne Aufheizoptimierung verlangt das Modell die Wärme für den Sprung in einer Stunde, die Leistungsspitze liegt weit über der stationären Last. Mit '''Aufheizoptimierung''' ersetzt das Modell den Sprung durch eine '''Aufheizrampe''': Der Sollwert steigt in einer berechneten Zahl von Stunden vor der Nutzung in Stufen an, sodass die Heizleistung die '''Aufheizleistung''' nicht übersteigt. Die Spitze sinkt, die Wärme für die Absenkung bleibt.
+
+* '''Schalter und Gültigkeit''' – die Aufheizoptimierung ist eine Projekteinstellung ([[Programm Dokumentation/Simulation#aufheizoptimierung|Simulation: Aufheizoptimierung]]) und ausgeschaltet, solange sie niemand einschaltet. Sie gilt für Gebäude nach VDI 6007, mit Zonen je beheizter Zone mit deren eigenen Massen, Heizleistung und Kalender. Ein Gebäude ohne Zonen mit Anlagenkopplung ''Heizkreis (AK1)'' wird nicht optimiert, die Wärmeübergabe begrenzt dort die Leistung; der Lauf nennt das. Der Rechenweg Tagesbilanz kennt keine Rampe.
+* '''Aufheizleistung''' – die Heizleistungsgrenze des Gebäudes oder der Zone; führt sie keine, die stationäre Last an der kältesten Stunde zuzüglich der '''Aufheizreserve''' (Vorgabe 20 %). Als Quelle nennt das Ergebnis ''Heizleistungsgrenze'' oder ''Zielleistung''.
+* '''Bemessung''' – die Außentemperatur der Bemessung ist die kälteste Stunde des Klimajahrs (Vorgabe); wahlweise ''kälteste Stunde − ΔT_K'' mit einem Abzug von 0 bis 10 K, Vorgabe 2 K, als Reserve für kältere Jahre. Aus Gebäude, Aufheizleistung und Außentemperatur folgt die '''längste Aufheizzeit''' bis höchstens 48 Stunden.
+* {{Anker|aufheizaufschlag}}'''Aufschlag''' – ein Zuschlag auf die Länge der Rampe, in Stunden (0 bis 24) und in Prozent (0 bis 100). Es gilt der größere der beiden Werte; der Aufschlag wirkt nur auf Rampen mit mehr als einer Stufe und nicht auf eine manuell gesetzte Aufheizzeit. Die Rampe ist nie länger als 48 Stunden.
+* '''Manuelle Aufheizzeit''' – ein Gebäude kann seine Aufheizzeit vorgeben (1 bis 47 Stunden); sie ersetzt die Bemessung ([[Programm Dokumentation/Gebäude#aufheizzeit-manuell|Gebäude: Aufheizzeit manuell]]).
+* '''Art der Aufheizzeit''' – ''täglich'' (Vorgabe): Jeder Tag rechnet seine Aufheizzeit nach der kleinsten Außentemperatur seines Fensters, höchstens die längste; an milden Tagen entsteht keine Rampe und keine Mehrwärme. ''Fest'': Jeder Tag heizt so lange vor wie der Bemessungsfall, mit mehr Wärme an milden Tagen.
+* '''Grenzen der Rampe''' – eine Rampe ist nie länger als die Absenkung davor; verlangt die Rechnung mehr, füllt die Rampe die Absenkung, und der Lauf meldet, dass die Absenkung dort weitgehend wirkungslos ist. Der Sollwert der Rampe bleibt 1 K unter dem Kühlsollwert.
+* '''Auslegungsgröße''' – für die Auslegung der Heizung zählt die stationäre Auslegungsheizlast zuzüglich des Aufheizzuschlags; die ideale Spitze der Last bei ausgeschalteter Aufheizoptimierung ist keine Auslegungsgröße. Die Auslegungsheizlast entsteht auch ohne Anlagenkopplung, an der Auslegungs-Außentemperatur und mit jeder beheizten Zone an ihrer Auslegungsraumtemperatur.
+* '''Geregelte Heizlast im Zonenmodell''' – die Raumtemperatur, bei der die geregelte Heizlast einer Zone umkehrt, bestimmt das Modell exakt als Nullstelle der Ableitung der Heizlast; es sucht sie nicht durch Probieren.
+
+Ein unsaniertes Gebäude braucht mit den Vorgaben oft keine Rampe, weil seine Sprungspitze nur wenig über der stationären Last und innerhalb der Reserve liegt. Die Optimierung wirkt in gut gedämmten Gebäuden und dort, wo die Heizleistungsgrenze knapp gesetzt ist. Ergebnisse und Hinweise beschreibt [[Programm Dokumentation/Simulationsergebnisse#gebaeudekennzahlen|Simulationsergebnisse: Gebäudekennzahlen]].
 
 == Strahlung auf die Außenbauteile ==
 {{Anker|strahlung}}
@@ -176,7 +255,7 @@ Für die Abstrahlung braucht das Modell die '''atmosphärische Gegenstrahlung'''
 == Klimadaten ==
 {{Anker|klimadaten}}
 
-Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur, Global-, Direkt- und Diffusstrahlung und, wenn vorhanden, die Gegenstrahlung. Die Einstrahlung auf die vier Fassaden – auf dem [[#bauteilweg|Bauteilweg]] auf jede Neigung und Richtung eines Bauteils – rechnet es selbst, mit einem Himmelsmodell, das die Richtung der Sonne berücksichtigt. Der Sonnenstand gilt zum Anfang jeder Stunde – derselbe Sonnenstand wie bei Photovoltaik und Solarthermie. Wochenenden und Ferien folgen dem Kalender des Projekts. Vor dem 1. Januar rechnet das Modell die letzten 30 Tage des Jahres als Vorlauf, damit die Speichermasse zu Jahresbeginn eingeschwungen ist.
+Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur, Global-, Direkt- und Diffusstrahlung und, wenn vorhanden, die Gegenstrahlung. Die Einstrahlung auf die vier Fassaden – auf dem [[#bauteilweg|Bauteilweg]] auf jede Neigung und Richtung eines Bauteils – rechnet es selbst, mit einem Himmelsmodell, das die Richtung der Sonne berücksichtigt. Der Sonnenstand gilt zum Anfang jeder Stunde – derselbe Sonnenstand wie bei Photovoltaik und Solarthermie. Wochenenden, Feiertage und Ferien folgen den Kalendern des Gebäudes; die Wochentage des Jahres richten sich nach dem Wochentag des 1. Januar der Klimaregion. Vor dem 1. Januar rechnet das Modell die letzten 30 Tage des Jahres als Vorlauf, damit die Speichermasse zu Jahresbeginn eingeschwungen ist.
 
 == Ergebnisse ==
 {{Anker|ergebnisse}}
@@ -184,7 +263,8 @@ Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur
 Der Knopf ''Simulation…'' im Gebäudedialog öffnet den '''Wärmebedarf Gebäude'''. Auf dem Rechenweg VDI 6007 zeigt er neben Wärmebedarf, höchster Wärmelast und Vollbenutzungsstunden:
 
 * '''mittlere Raumtemperatur''' in der Nutzungszeit – außerhalb der Nachtzeit des Gebäudes (''Nachtabsenkung von … bis'', ohne Angabe 22 bis 6 Uhr, siehe [[Programm Dokumentation/Gebäude#nachtzeit|Nachtzeit]]);
-* '''Stunden mit Sommerlüftung'''.
+* '''Stunden mit Sommerlüftung''';
+* '''Stunden mit Nachtauskühlung''' – nur, wenn eine Nachtauskühlung gesetzt ist (siehe [[#nachtauskuehlung|Nachtauskühlung]]).
 
 Darunter steht der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite:
 
@@ -204,13 +284,15 @@ Das Bild '''Raumtemperatur''' zeigt den Jahresverlauf der Raumluft und der opera
 Rechnet das Gebäude mit [[#heizkreis|Wärmeübergabe]], zeigt der Wärmebedarf zusätzlich:
 * in der Zeile '''Rechenweg''' den Zusatz ''gekoppelt (AK1)'';
 * zwei Kacheln: '''Vorlauf / Rücklauf''' – die Mittel über die Stunden mit Heizbetrieb, darunter Übergabeart und Auslegungspunkt – und '''Stunden mit begrenzter Übergabe''', in denen die Übergabe weniger lieferte, als der Sollwert verlangte;
-* das Bild '''Vorlauf und Rücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Heizbetrieb bleiben im Bild leer.
-Der Bericht führt dieselben Zahlen je Gebäude im Abschnitt ''Heizkreis und Übergabe''.
+* das Bild '''Vorlauf und Rücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Heizbetrieb bleiben im Bild leer. Der Bericht führt dieselben Zahlen je Gebäude im Abschnitt ''Heizkreis und Übergabe''.
+* die Kacheln der [[#komfort|Komfortstunden]] – Unterschreitungsstunden, Kelvinstunden, längste Strecke – und daneben den '''Restbedarf''' des Projekts aus dem letzten Lauf; nicht erhobene Werte stehen als „—“. Im Lauf mit Fahrplan kommen der Bedarfsbegriff (''mit Rückwirkung'' oder ''feste Last'') und die Stunden am Fahrplan dazu. Auf Stufe ''geschlossener Kreis (AK3)'' stehen die Komfortkennzahlen in Ergebnis und Bericht ebenso; die Stunden am Fahrplan bleiben dort leer, ihre Entsprechung sind die ''Stunden an der Schranke'' des Kreises;
+* das Bild '''Raumtemperatur und Sollwert''' für die Woche mit der größten Unterschreitung: Raumluft und Sollwert als zwei Linien, die gezählten Unterschreitungsstunden markiert. Der Bericht führt Komfortstunden und Restbedarf im Abschnitt ''Komfort und Restbedarf''.
+
+Rechnet das Projekt mit der Anlagenkopplung ''geschlossener Kreis (AK3)'', zeigt der Wärmebedarf die Gruppe '''Geschlossener Kreis (AK3), Projekt, letzter Lauf''' mit fünf Kacheln: '''Durchläufe je Stunde (Mittel / Höchstwert)''', '''Fallwechsel''', '''Stunden an der Schranke''', '''Stunden mit leerem Speicher''' und '''Stunden mit Restbedarf'''. Die Zahlen gelten für das ganze Projekt und stammen aus dem letzten Projektlauf; ohne Lauf mit AK3 stehen sie leer. Der Bericht führt sie in der Tafel ''Anlagenkopplung AK3 – geschlossener Kreis''. Die Auskunft des Bedarfsdialogs rechnet ohne geschlossenen Kreis auf dem Profilweg und trägt den Hinweis ''Berechnet ohne geschlossenen Kreis''; der Projektlauf rechnet den Kreis. Rechnet das Projekt Kälte, stehen daneben die Kennzahlen der [[Programm Dokumentation/Kühlung#kennzahlen|Zonensperre und der Kälteseite im Kreis]].
 
 Rechnet das Gebäude mit [[#kuehluebergabe|Kühlübergabe]], trägt die Zeile '''Rechenweg''' ebenfalls den Zusatz ''gekoppelt (AK1)'', und der Abschnitt '''Kältebedarf''' zeigt zusätzlich:
 * zwei Kacheln: '''Kühlvorlauf / Kühlrücklauf''' – die Mittel über die Stunden mit Kühlbetrieb, darunter Art, Auslegungspunkt und der Vermerk ''sensibel'' – und '''Stunden mit begrenzter Kühlübergabe''', in denen die Kühlübergabe weniger aufnahm, als der Kühlsollwert verlangte, davon die Stunden an der Vorlaufgrenze;
-* das Bild '''Kühlvorlauf und Kühlrücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Kühlbetrieb bleiben im Bild leer.
-Die Stunden mit begrenzter Kühlübergabe sind keine Überhitzungsstunden: Diese zählen die Stunden über der oberen Raumtemperatur. Der Bericht führt die Zahlen je Gebäude im Abschnitt ''Kältekreis und Kühlübergabe''.
+* das Bild '''Kühlvorlauf und Kühlrücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Kühlbetrieb bleiben im Bild leer. Die Stunden mit begrenzter Kühlübergabe sind keine Überhitzungsstunden: Diese zählen die Stunden über der oberen Raumtemperatur. Der Bericht führt die Zahlen je Gebäude im Abschnitt ''Kältekreis und Kühlübergabe''.
 
 Bei einem Gebäude mit mehreren Zonen zeigt der Wärmebedarf zusätzlich die Gruppe ''Zonen'' mit einer Zeile je Zone und die Wahl ''Diagramme für:''; die Kennzahlen des Gebäudes entstehen dann aus den Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#ergebnisse|Mehrzonenmodell]]).
 
@@ -224,8 +306,9 @@ Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistu
 * Die Verschattung ist ein pauschaler Faktor, keine Geometrie.
 * Ohne eingeschaltete Kühlung ist der Kühlbedarf eine Auskunft über das Gebäude und geht in keinen Kanal. Mit Kühlung geht er als Kältebedarf in den Kanal ''Kühlung'' und bleibt ungedeckt, weil kein Wärmeerzeuger Kälte deckt (siehe [[Programm Dokumentation/Kühlung|Kühlung]]).
 * Der Kühlbedarf ist sensible Kälte ohne Entfeuchtung.
-* Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude''' und gilt wie die Kühlübergabe für ein Gebäude mit höchstens einer Zone – mit mehreren Zonen rechnen Heizung und Kühlung je Zone ideal; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm.
-* Die Kühlübergabe kennt '''einen Kaltwasserkreis je Gebäude''' mit festem Vorlauf; eine Kühlkurve und eine Wahl der Kühlkennlinie je Stunde gibt es nicht, und die Flächenkühlung rechnet ohne Estrichmasse. Sie rechnet sensibel ohne Entfeuchtung, die Vorlaufgrenze ist eine Vorgabe, keine Taupunktrechnung. Ein eigenes Zeitprogramm für den Kühlsollwert gibt es nicht.
+* Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude'''; mit mehreren Zonen stellt jede Zone ihre eigene Übergabe am gemeinsamen Vorlauf ein (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]). Ebenso stellt jede gekühlte Zone ihre eigene Kühlübergabe am gemeinsamen Kaltwasser-Vorlauf ein; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm.
+* Der Fahrplan der Anlagen ist eine Vorabrechnung je Projekt ohne Ladezustand der Speicher; die Komfortschwelle ist ein fester Wert von 1,0 K.
+* Die Kühlübergabe kennt '''einen Kaltwasserkreis je Gebäude''' mit einem Vorlauf; die [[#kuehlkurve|Kühlkurve]] gibt es nur auf der Stufe ''geschlossener Kreis (AK3)'' und nur am Gebäude, nicht je Zone, und die Flächenkühlung rechnet ohne Estrichmasse. Sie rechnet sensibel ohne Entfeuchtung, die Vorlaufgrenze ist eine Vorgabe, keine Taupunktrechnung. Ein eigenes Zeitprogramm für den Kühlsollwert gibt es nicht.
 * Ohne Zone rechnet das Modell wie der Bestandsweg das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch. Mit Zonen rechnet es die Hülle seiner Zonen ohne Hochrechnung.
 
 [[Kategorie:Programm Dokumentation]]

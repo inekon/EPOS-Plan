@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Das Zapfprofil</b> (Umsetzungskonzept Zapfprofilgenerator 5.2, 5.5): Bei
     /// Brauchwasser hängt die Hülle den Einstieg der plattformfreien
-    /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für die fünfte Überlagerung, die
+    /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für das Zapfprofil-Blatt, die
     /// Optionsgruppe „Rechenweg Brauchwasser" über einen <see cref="ZapfprofilBehaelter"/> je
     /// Öffnen, der Knopf „Simulation" mit dessen Arbeitsstand. Geschrieben wird
     /// im OK des Dialogs, bevor er schließt, im selben Vorgang wie die Zuordnungen
@@ -39,6 +39,18 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Gewünschtes Innenmaß (Vorläufer: 1004 × 636 bzw. 964 × 574).</summary>
         private static readonly Size MASS = new Size(1000, 720);
+
+        /// <summary>
+        /// Das Wunschmaß des Zapfprofil-BLATTES (N35, Nachtrag zu #572): dasselbe Maß, auf das
+        /// die Überlagerung des Gebäudekatalogs sich über
+        /// <c>.epos-ueberlagerung:has(.epos-blatt--breit)</c> weitet (<c>epos-ueberlagerung--breit</c>,
+        /// 1400 px) — im eigenen Fenster gibt es diese Überlagerung nicht, die Hülle wünscht das
+        /// Maß deshalb selbst, sobald sie den Zapfprofil-Weg reicht
+        /// (<see cref="EPOS.UI.Dienste.Fenstermass.MitUeberlagerung"/>); sonst stünde das
+        /// zweispaltige Blatt im 1000-px-Fenster ebenso beschnitten wie zuvor die Überlagerung
+        /// (Befund vom 26.09.2026).
+        /// </summary>
+        private static readonly Size ZAPFPROFIL_MASS = new Size(1400, 720);
 
         /// <summary>Die vorläufige Id einer noch nicht gespeicherten Zuordnung.</summary>
         private const int STARTINDEX = 100000;
@@ -51,24 +63,8 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
                                      List<Z_ProjektProzesswaermeModel> modelle)
         {
-            var zeilen = new List<BedarfsProfilZeile>();
-            foreach (Z_ProjektProzesswaermeModel m in modelle)
-                zeilen.Add(new BedarfsProfilZeile
-                {
-                    IdZ = m.ID_Z, IdStamm = m.ID_Prozesswaerme,
-                    Name = m.szProzessname ?? "", Summe = m.Summe
-                });
-
-            Action geaendert = () =>
-            {
-                modelle.Clear();
-                foreach (BedarfsProfilZeile z in zeilen)
-                    modelle.Add(new Z_ProjektProzesswaermeModel
-                    {
-                        ID_Z = z.IdZ, ID_Projekt = projektId, ID_Prozesswaerme = z.IdStamm,
-                        szProzessname = z.Name, Summe = z.Summe
-                    });
-            };
+            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle);
+            Action geaendert = ProzessRueckweg(projektId, zeilen, modelle);
 
             return Zeigen(besitzer, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
                           wizard: false);
@@ -83,7 +79,8 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.m_ID_Z, IdStamm = m.m_ID_Stromverbraucher,
-                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe
+                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe,
+                    KalenderId = m.ID_Betriebskalender
                 });
 
             Action geaendert = () =>
@@ -93,7 +90,8 @@ namespace WindowsFormsApplication1
                     modelle.Add(new Z_ProjektStromverbraucherModel
                     {
                         m_ID_Z = z.IdZ, m_ID_Projekt = projektId, m_ID_Stromverbraucher = z.IdStamm,
-                        m_szVerbraucher = z.Name, m_Summe = z.Summe
+                        m_szVerbraucher = z.Name, m_Summe = z.Summe,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
 
@@ -116,7 +114,8 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
-                    Name = m.szBezeichner ?? "", Summe = m.Summe
+                    Name = m.szBezeichner ?? "", Summe = m.Summe,
+                    KalenderId = m.ID_Betriebskalender
                 });
 
             Action geaendert = () =>
@@ -126,7 +125,8 @@ namespace WindowsFormsApplication1
                     modelle.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
-                        szBezeichner = z.Name, Summe = z.Summe
+                        szBezeichner = z.Name, Summe = z.Summe,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
 
@@ -144,15 +144,41 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyDictionary<string, object> AssistentGabenProzess(
             int projektId, List<Z_ProjektProzesswaermeModel> modelle)
         {
+            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle);
+            Action geaendert = ProzessRueckweg(projektId, zeilen, modelle);
+
+            return Gaben(null, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
+                         wizard: true);
+        }
+
+        /// <summary>
+        /// Die Zeilen der Prozesswärme samt Temperaturpaar der Projektkopie (PW1 Stufe 1) — EINE
+        /// Stelle für Verwaltung und Assistent.
+        /// </summary>
+        private static List<BedarfsProfilZeile> ProzessZeilen(List<Z_ProjektProzesswaermeModel> modelle)
+        {
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektProzesswaermeModel m in modelle)
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Prozesswaerme,
-                    Name = m.szProzessname ?? "", Summe = m.Summe
+                    Name = m.szProzessname ?? "", Summe = m.Summe,
+                    Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf,
+                    TemperaturGeaendert = m.TemperaturGeaendert,
+                    KalenderId = m.ID_Betriebskalender
                 });
+            return zeilen;
+        }
 
-            Action geaendert = () =>
+        /// <summary>
+        /// Der Rückweg der Prozesswärme in die Modelle des Aufrufers — mit Temperaturpaar und
+        /// Änderungskennzeichen; geschrieben wird beim Speichern des Projekts
+        /// (<c>WizardCtrl.Add_Projekt_Prozess</c>).
+        /// </summary>
+        private static Action ProzessRueckweg(int projektId, List<BedarfsProfilZeile> zeilen,
+                                              List<Z_ProjektProzesswaermeModel> modelle)
+        {
+            return () =>
             {
                 modelle.Clear();
                 foreach (BedarfsProfilZeile z in zeilen)
@@ -160,12 +186,12 @@ namespace WindowsFormsApplication1
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId,
                         ID_Prozesswaerme = z.IdStamm,
-                        szProzessname = z.Name, Summe = z.Summe
+                        szProzessname = z.Name, Summe = z.Summe,
+                        Vorlauf = z.Vorlauf, Ruecklauf = z.Ruecklauf,
+                        TemperaturGeaendert = z.TemperaturGeaendert,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
-
-            return Gaben(null, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
-                         wizard: true);
         }
 
         /// <summary>Der PARAMETERSATZ der STROMVERBRAUCHER-Seite des Assistenten (Seite 5).</summary>
@@ -177,7 +203,8 @@ namespace WindowsFormsApplication1
                 zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.m_ID_Z, IdStamm = m.m_ID_Stromverbraucher,
-                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe
+                    Name = m.m_szVerbraucher ?? "", Summe = m.m_Summe,
+                    KalenderId = m.ID_Betriebskalender
                 });
 
             Action geaendert = () =>
@@ -188,7 +215,8 @@ namespace WindowsFormsApplication1
                     {
                         m_ID_Z = z.IdZ, m_ID_Projekt = projektId,
                         m_ID_Stromverbraucher = z.IdStamm,
-                        m_szVerbraucher = z.Name, m_Summe = z.Summe
+                        m_szVerbraucher = z.Name, m_Summe = z.Summe,
+                        ID_Betriebskalender = z.KalenderId
                     });
             };
 
@@ -215,7 +243,15 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<BedarfsProfileDialog>(Titel(art), MASS, werte);
+            // N35: mit Zapfprofil-Weg (Brauchwasser, behaelter gesetzt) wuenscht das Fenster
+            // mindestens das breite Mass des Blattes - sonst wuerde das Blatt im 1000-px-Fenster
+            // ebenso beschnitten wie bis #572 die Ueberlagerung.
+            (int breite, int hoehe) = behaelter != null
+                ? EPOS.UI.Dienste.Fenstermass.MitUeberlagerung(
+                    MASS.Width, MASS.Height, ZAPFPROFIL_MASS.Width, ZAPFPROFIL_MASS.Height)
+                : (MASS.Width, MASS.Height);
+
+            dlg = new BlazorDialogForm<BedarfsProfileDialog>(Titel(art), new Size(breite, hoehe), werte);
             using (dlg)
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
@@ -247,6 +283,7 @@ namespace WindowsFormsApplication1
 
             var gaben = new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["Art"] = art,
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
@@ -255,6 +292,9 @@ namespace WindowsFormsApplication1
                 // W14a-E-10 / S3.1: die Katalogliste des Hauses statt der zwei- bis
                 // dreispaltigen Tabelle. Sie kommt aus EINER Abfrage und traegt fuenf
                 // Spalten plus "im Projekt verwendet" (Q12).
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) => BedarfStammCtrl.SchlossSetzen(art, ids, gesperrt)),
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     () => BedarfStammCtrl.Katalogfilterzeilen(art)),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerBedarf(art, BedarfAdminHuelle.Filtertext)
@@ -366,6 +406,15 @@ namespace WindowsFormsApplication1
                 ["HilfeSchluesselBerechnung"] = BerechnungsSchluessel(art),
                 ["HilfeKurztextBerechnung"] = BerechnungsKurztext(art)
             };
+
+            // PW2/BW2: die Betriebskalender zur Wahl je Zuordnung - nur, wenn es die Tabelle gibt.
+            if (BetriebskalenderCtrl.TabelleVorhanden())
+                BetriebskalenderHuelle.WahlEinhaengen(gaben);
+
+            // PW1 Stufe 1: das Temperaturpaar je Prozess - die Pruefung steht im Kern
+            // (Prozesstemperatur.Paarpruefung), dieselbe wie die Pruefklauseln des Schemas.
+            if (art == BedarfsArt.Prozesswaerme)
+                gaben["TemperaturPruefen"] = new Func<double?, double?, string>(Prozesstemperatur.Paarpruefung);
 
             // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,
             // BEVOR der Dialog schliesst - lehnt der Schreibweg ab, bleibt er offen und nennt den
@@ -498,7 +547,8 @@ namespace WindowsFormsApplication1
                     var p = new ProzesswaermeStammCtrl();
                     p.ReadSingle(name);
                     return p.rows > 0
-                        ? new BedarfsProfilInfo(name, p.m_szBeschreibung ?? "", p.m_szTyp ?? "")
+                        ? new BedarfsProfilInfo(name, p.m_szBeschreibung ?? "", p.m_szTyp ?? "",
+                                                p.m_Vorlauf, p.m_Ruecklauf)
                         : null;
 
                 default:
@@ -520,12 +570,16 @@ namespace WindowsFormsApplication1
                                                      "Bezeichner", name);
             if (idStamm <= 0) return null;
 
+            // PW1 Stufe 1: die Vorbelegung des Katalogs - die Kopie übernimmt sie beim Speichern.
+            (double? vorlauf, double? ruecklauf) = BedarfStammCtrl.Temperaturpaar(art, name);
             return new BedarfsProfilZeile
             {
                 IdZ = naechsteId[0]++,      // noch nicht gespeichert, also noch unbekannt
                 IdStamm = idStamm,
                 Name = name ?? "",
-                Summe = BedarfStammCtrl.Jahressumme(art, name)
+                Summe = BedarfStammCtrl.Jahressumme(art, name),
+                Vorlauf = vorlauf,
+                Ruecklauf = ruecklauf
             };
         }
 

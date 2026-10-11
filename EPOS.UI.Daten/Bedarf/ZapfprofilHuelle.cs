@@ -720,10 +720,6 @@ namespace WindowsFormsApplication1
                 Auslieferung = n.ReadOnly,
                 Waehlbar = vollstaendig,
                 Sperrgrund = vollstaendig ? "" : Text_("ZPG_KAT_SPERRE_TAGESGANG", "Der Tagesgangsatz dieser Nutzungsart ist unvollständig."),
-                // Kennwerte je Zimmer bei der Bezugsart Betten: der Hinweis am Feld der Bezugsmenge.
-                HinweisBezugsmenge = n.BezugsmengeIstZimmerzahl
-                    ? Text_("ZPG_HINW_BEZUGSMENGE_ZIMMER", "Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl")
-                    : "",
                 // Die Vorgaben der höheren Stufen (Z4) — Bezug und Faktoren des Katalogs, nie ein Beleg.
                 Kalenderart = (int)n.Kalender,
                 Kalender = Kalendername(n.Kalender),
@@ -1486,7 +1482,8 @@ namespace WindowsFormsApplication1
                 liste.Add(new Z_ProjektBrauchwasserModel
                 {
                     ID_Z = z.IdZ, ID_Projekt = idProjekt, ID_Brauchwasser = z.IdStamm,
-                    szBezeichner = z.Name, Summe = z.Summe
+                    szBezeichner = z.Name, Summe = z.Summe,
+                    ID_Betriebskalender = z.KalenderId
                 });
 
             ZapfprofilSpeicherergebnis e;

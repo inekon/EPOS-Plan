@@ -89,6 +89,21 @@ namespace WindowsFormsApplication1
         internal double KuehlVorlaufAnlageC { get; set; } = double.NaN;
 
         /// <summary>
+        /// KK3 (Entwurf KK 2.3): der kälteste erreichbare Erzeugervorlauf der Kälteseite [°C] — die Untergrenze der Kühlkurve
+        /// am gleitenden Erzeuger (<see cref="GebaeudeModellEingang.KuehlkurveUntergrenzeSetzen"/>). NaN = keiner; gesetzt nur
+        /// auf Stufe AK3 mit Kühlbetrieb.
+        /// </summary>
+        internal double KuehlVorlaufErzeugerMinC { get; set; } = double.NaN;
+
+        /// <summary>
+        /// <b>Die Schranke der Anlagenverfügbarkeit je Zone</b> (AK2, 5.3, 6.2) für den nächsten Aufruf — von
+        /// der Fassade verteilt (Projekt → Gebäude → Zone) und auf den Rechenmaßstab dieses Wegs umgerechnet;
+        /// Eintrag 0 gilt dem Gebäude ohne Zonenschleife. <c>null</c> = keine Schranke, der Bestand. Das Modul
+        /// liest damit keine Anlagendaten: Es bekommt die fertige Reihe.
+        /// </summary>
+        internal IReadOnlyList<Anlagenverfuegbarkeit[]> VerfuegbarkeitJeZone { get; set; }
+
+        /// <summary>
         /// Verhältnis wirkliches Gebäude : Katalogbau für eine FEST eingetragene Nennleistung der
         /// Übergabe (H7) — gesetzt von der Fassade; NaN = hergeleitet rechnen (erster Lauf der
         /// Verhältnisrechnung). Ohne feste Nennleistung wirkungslos.
@@ -101,6 +116,29 @@ namespace WindowsFormsApplication1
         /// dem Lauf, der zählt.
         /// </summary>
         internal bool Probelauf { get; set; }
+
+        /// <summary>
+        /// Die Aufheizoptimierung des PROJEKTS (<c>Tab_Einstellungen.Aufheizoptimierung</c>, KP-S2) —
+        /// gesetzt von der Fassade vor jedem Aufruf, wie <see cref="Kuehlbetrieb"/>; Vorgabe „aus".
+        /// <b>Schalter aus = kein Aufruf</b> (Entwurf KP3, Grundsatz 3): Ohne ihn ruft der Weg
+        /// <see cref="Aufheizoptimierung"/> nicht, und jede Zahl bleibt, wie sie war.
+        /// </summary>
+        internal Aufheizvorgabe Aufheizvorgabe { get; set; } = Aufheizvorgabe.Aus;
+
+        /// <summary>
+        /// <b>Testnaht der Grenzfallprobe</b> (N-AH8): P_auf statt der Bemessung [W]; NaN = keine. Mit
+        /// +∞ ist überall n = 1, und der Lauf bleibt bitgleich zu „aus".
+        /// </summary>
+        internal double AufheizleistungTestW { get; set; } = double.NaN;
+
+        /// <summary>
+        /// Der Aufheizplan der letzten Einzonenrechnung dieses Wegs (Welle R2); <c>null</c> ohne Schalter,
+        /// im Mehrzonenweg und bei einem Fehler. Im Mehrzonenweg (Welle R3) stehen die Pläne je Zone an
+        /// <see cref="Mehrzonenergebnis.Eingaenge"/> (<see cref="ZonenEingang.Aufheizplan"/>) und die
+        /// Gebäudewerte in <see cref="Mehrzonenergebnis.Aufheizgebaeude"/> von <see cref="LetztesMehrzonenergebnis"/>.
+        /// Das Gebäudeergebnis trägt sie als <see cref="GebaeudeModellErgebnis.Aufheizung"/> (Welle R4).
+        /// </summary>
+        internal Aufheizplan LetzterAufheizplan { get; private set; }
 
         /// <summary>
         /// Zahl der Gebäuderechnungen dieses Wegs seit seinem Bau — die Probe „Ein Lauf, zwei
@@ -120,10 +158,11 @@ namespace WindowsFormsApplication1
         public bool Rechnen(ProjektGebaeudeModel gebaeude, int index, double[] ziel,
                             KlimakalenderGemeinsam gemeinsam, out double verbrauchAltKwh)
         {
+            LetzterAufheizplan = null;
             // Die Weiche nach der Zahl der Zonen (Stufe G6b): ab zwei Zonen bis zur Grenze der
             // Regelklasse (GebaeudeZonenregeln.Rechenbar) die Zonenschleife; darüber lehnt der
             // Eingangsbauer das Gebäude benannt ab (MehrereZonen, mit der Grenze).
-            if (gebaeude?.Zonen != null && gebaeude.Zonen.Count >= 2 && GebaeudeZonenregeln.Rechenbar(gebaeude.Zonen.Count))
+            if (Mehrzonenweg(gebaeude))
                 return RechnenMehrzonen(gebaeude, index, ziel, gemeinsam, out verbrauchAltKwh);
 
             verbrauchAltKwh = 0.0;
@@ -138,21 +177,40 @@ namespace WindowsFormsApplication1
                 if (gemeinsam == null)
                     throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig, wer + ": Der Klimakalender des Laufs fehlt.");
 
-                // Stufe KP1: die Konditionierung des Projektgebaeudes - null heisst woertlich der
-                // Bestandszweig (Konzept Konditionierungsprofile 6). Der Lauf liest ausschliesslich
-                // Projektmatrix und Projektkalender, nie den Katalog.
-                Konditionierungssatz konditionierung = Konditionierungdatenweg.Satz(
-                    gebaeude, gemeinsam.WochenendeOrtszeit, gemeinsam.Referenzjahr,
-                    Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
-                    Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
+                GebaeudeModellEingang eingang = EingangBauen(gebaeude, gemeinsam);
 
-                GebaeudeModellEingang eingang = GebaeudeModellEingang.Bauen(
-                    gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
-                    gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
-                    Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC,
-                    konditionierung);
+                // Stufe KP3 (Entwurf KP3, Festlegungen 1 und 2): die Aufheizrampe NACH dem Bauen -
+                // Uebergabe, Kaelte, F21 und die stuendliche Kuehlpruefung haben die Reihe ohne Rampe
+                // gesehen; ThetaSoll traegt danach die Rampe. Schalter aus = kein Aufruf (Grundsatz 3).
+                // Welle V2 (Entwurf Vorheizrampe Fassung 2, 2.5): Option 1 rechnet erst den Vorlauf ohne Vorheizen und setzt
+                // dann Fenster und Deckelreihe; die Sollwertrampe (Vorgabe) bleibt Zeichen für Zeichen der Bestand.
+                LetzterAufheizplan = AufheizplanEinzone(eingang, index, gebaeude.ID_Gebaeude, out Vorheizrueckfall rueckfall);
 
-                GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude);
+                GebaeudeModellErgebnis ergebnis = Laufen(eingang, index, gebaeude.ID_Gebaeude, LetzterAufheizplan);
+                if (LetzterAufheizplan?.Vorheizen != null)
+                {
+                    Vorheizplanung.NachweisenEinzone(eingang, LetzterAufheizplan, ergebnis);
+                    ergebnis.Vorheizen = Vorheizplanung.Gebaeudewerte(new[] { LetzterAufheizplan });
+                }
+
+                // AK3-W3b (Entwurf AK3 2.1 Schritt 3): Im AK3-Weg ist dieser Lauf Pass 1; daneben entsteht aus
+                // DEMSELBEN Eingang ein zweiter, noch nicht eingeschwungener Stepper für den Kreis. Ohne Erfassung
+                // (jeder Lauf außer AK3) und im Probelauf geschieht nichts. KK5a: auch ein Gebäude allein mit gekoppelter
+                // Kälteseite (Muster KreisMitZonen).
+                bool kreis = Ak3Erfassen != null && !Probelauf && (eingang.KopplungWirksam || eingang.KuehlKopplungWirksam);
+                if (kreis)
+                {
+                    // AK3-W3d: eine Fabrik statt eines Steppers — jeder Feldlauf der Erdsonde (Konzept Simulationsablauf
+                    // 23.4) baut seinen Kreis aus einem frischen, noch nicht eingeschwungenen Stepper.
+                    GebaeudeModellEingang quelle = eingang;
+                    Aufheizplan plan = LetzterAufheizplan;
+                    Ak3Erfassen(index, gebaeude, () =>
+                    {
+                        ZonenEingang kreis = ZonenEingang.Einzeln(quelle);
+                        if (plan != null) kreis.AufheizplanSetzen(plan);
+                        return GebaeudeStepper.Einzone(kreis);
+                    });
+                }
 
                 Array.Copy(ergebnis.HeizlastW, ziel, 8760);
                 verbrauchAltKwh = ergebnis.VerbrauchAltKwh;
@@ -160,6 +218,9 @@ namespace WindowsFormsApplication1
 
                 if (!Probelauf)
                 {
+                    HinweisReserveVorgabe(Aufheizvorgabe);
+                    // V3b: Im AK3-Weg nennt der Abschluss des Kreises die Kennzahlen des Vorheizens (Nachweis am Kreisergebnis).
+                    HinweisVorheizen(rueckfall, kreis ? null : ergebnis.Vorheizen, wer);
                     Melden(eingang, ergebnis, gemeinsam, wer);
                     KopplungMelden(eingang, ergebnis, gebaeude, wer);
                 }
@@ -197,22 +258,34 @@ namespace WindowsFormsApplication1
                 if (gemeinsam == null)
                     throw new GebaeudeModellException(GebaeudeModellFehler.KlimadatenUnvollstaendig, wer + ": Der Klimakalender des Laufs fehlt.");
 
-                var klima = new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
-                                              gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug);
-                // Stufe KP1: EINE Naht fuer alle Zonen - der Datenweg liest je Zone ihren Satz
-                // (Konzept 3.4); das Referenzjahr kommt aus dem Klimakalender des Laufs (F11).
-                bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
-                bool kondKuehlung = Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue;
-                Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, klima, Kuehlbetrieb, Anlagenkopplung, index,
-                    gebaeude.ID_Gebaeude,
-                    idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
-                                                           gemeinsam.Referenzjahr, kondKopplung, kondKuehlung, idZone));
+                // Stufe KP3 (Festlegung 1): die Aufheizrampen am Ende von ZonenEingang.Bauen, in beiden
+                // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
+                // Welle V2: Rückfall auf die Sollwertrampe (AK3, Heizkreis-Schalter) vor dem Bau der Zonen.
+                Aufheizvorgabe vorgabeZonen = VorgabeZonen(gebaeude, out Vorheizrueckfall rueckfall);
+                Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index,
+                    gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam),
+                    vorgabeZonen, AufheizleistungTestW,
+                    AnlagenVorlaufC, VerfuegbarkeitJeZone, KuehlVorlaufAnlageC, KuehlVorlaufErzeugerMinC);
                 LetztesMehrzonenergebnis = m;
+
+                // AK3-W3c (Entwurf AK3 2.6): Im AK3-Weg ist dieser Lauf Pass 1 auch für das Mehrzonengebäude; daneben
+                // entsteht aus DENSELBEN Zonen (zustandslos, samt Aufheizplänen) eine zweite, noch nicht eingeschwungene
+                // Zonenschleife für den Kreis — Anlage außen, Zonen innen. Ohne Erfassung geschieht nichts.
+                // KZ2 (Kreis mit gekühlten Zonen): mit dem Kernschalter bekommt jedes Mehrzonengebäude mit einer heiz- ODER
+                // kühlgekoppelten Zone den Kreis, auch ohne heizgekoppelte erste Zone; ohne Schalter Zeichen für Zeichen wie bisher.
+                bool kreis = Ak3Erfassen != null && !Probelauf && m.Eingaenge.Count > 0 && KreisMitZonen(m.Eingaenge);
+                if (kreis)
+                    Ak3Erfassen(index, gebaeude, () => GebaeudeStepper.Mehrzonen(new Zonenschleife(m.Eingaenge, wer)));
 
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
                 verbrauchAltKwh = m.Gebaeude.VerbrauchAltKwh;
                 _traeger.Setzen(index, m.Gebaeude);
-                if (!Probelauf) MeldenMehrzonen(m, gemeinsam, wer);
+                if (!Probelauf)
+                {
+                    HinweisReserveVorgabe(Aufheizvorgabe);
+                    HinweisVorheizen(rueckfall, kreis ? null : m.Gebaeude.Vorheizen, wer);
+                    MeldenMehrzonen(m, gemeinsam, wer);
+                }
                 return true;
             }
             catch (GebaeudeModellException ex)
@@ -222,6 +295,134 @@ namespace WindowsFormsApplication1
                     (ex.Message.StartsWith(wer, StringComparison.Ordinal) ? ex.Message : wer + ": " + ex.Message));
                 return false;
             }
+        }
+
+        // =====================================================================
+        //  Die Eingänge des Laufs - auch für die Auskunft ohne Jahreslauf
+        // =====================================================================
+
+        /// <summary>
+        /// Bekommt ein Mehrzonengebäude im AK3-Weg den Kreis? Ja, sobald eine Zone eine wirksame Heiz- oder Kühlkopplung trägt (KZ2).
+        /// </summary>
+        internal static bool KreisMitZonen(IReadOnlyList<ZonenEingang> zonen)
+            => zonen.Any(z => z.Eingang.KopplungWirksam || z.Eingang.KuehlKopplungWirksam);
+
+        /// <summary>Rechnet das Gebäude in der Zonenschleife (ab zwei Zonen bis zur Grenze der Regelklasse, Stufe G6b)?</summary>
+        internal static bool Mehrzonenweg(ProjektGebaeudeModel gebaeude)
+            => gebaeude?.Zonen != null && gebaeude.Zonen.Count >= 2 && GebaeudeZonenregeln.Rechenbar(gebaeude.Zonen.Count);
+
+        /// <summary>Die Aufheizvorgabe, wenn sie eingeschaltet ist; sonst <c>null</c> (Grundsatz 3: kein Aufruf).</summary>
+        private Aufheizvorgabe AufheizvorgabeAn => Aufheizvorgabe != null && Aufheizvorgabe.An ? Aufheizvorgabe : null;
+
+        /// <summary>
+        /// <b>Die Weiche des Aufheizens eines Einzonengebäudes</b> (Welle V3b: eine Stelle für Lauf und Auskunft): Rückfall
+        /// prüfen, dann Option 1/2 (<see cref="Vorheizplanung.AnwendenEinzone"/>: Vorlauf, Plan) oder die Sollwertrampe
+        /// (<see cref="Aufheizoptimierung.Anwenden"/>); Schalter aus = kein Aufruf, <c>null</c>. Vorher setzt sie die Schranke der
+        /// Verfügbarkeit (AK2). Der Plan steht danach im Eingang.
+        /// </summary>
+        internal Aufheizplan AufheizplanEinzone(GebaeudeModellEingang eingang, int index, int idGebaeude, out Vorheizrueckfall rueckfall)
+        {
+            // AK2: die Schranke der Verfügbarkeit (ein Eingang = Eintrag 0) — vor dem Vorlauf des Vorheizens.
+            if (VerfuegbarkeitJeZone != null && VerfuegbarkeitJeZone.Count > 0)
+                eingang.Verfuegbarkeit = VerfuegbarkeitJeZone[0];
+            rueckfall = Vorheizplanung.Rueckfall(Aufheizvorgabe, Anlagenkopplung, eingang.KopplungWirksam);
+            Aufheizvorgabe vorgabe = Vorheizplanung.Wirksam(Aufheizvorgabe, rueckfall);
+            if (Vorheizplanung.Anwendbar(vorgabe))
+                return Vorheizplanung.AnwendenEinzone(eingang, vorgabe, index, idGebaeude, AufheizleistungTestW);
+            if (vorgabe != null && vorgabe.An)
+                return Aufheizoptimierung.Anwenden(ZonenEingang.Einzeln(eingang), vorgabe, AufheizleistungTestW);
+            return null;
+        }
+
+        /// <summary>
+        /// Die wirksame Aufheizvorgabe der Zonen eines Mehrzonengebäudes (Welle V3b: eine Stelle für Lauf und Auskunft) —
+        /// eingeschaltet oder <c>null</c>, bei Rückfall mit der Sollwertrampe.
+        /// </summary>
+        private Aufheizvorgabe VorgabeZonen(ProjektGebaeudeModel gebaeude, out Vorheizrueckfall rueckfall)
+        {
+            rueckfall = Vorheizplanung.Rueckfall(AufheizvorgabeAn, Anlagenkopplung,
+                                                 Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung));
+            return Vorheizplanung.Wirksam(AufheizvorgabeAn, rueckfall);
+        }
+
+        /// <summary>
+        /// <b>Der Eingang eines Gebäudes ohne Zonenschleife</b> — mit dem Konditionierungssatz und den Schaltern
+        /// dieses Wegs, wie <see cref="Rechnen"/> ihn baut (Stufe KP1: <c>null</c> als Satz heißt wörtlich der
+        /// Bestandszweig, Konzept Konditionierungsprofile 6; der Lauf liest ausschließlich Projektmatrix und
+        /// Projektkalender, nie den Katalog). Der Rumpf ist ausgelagert, damit die Auskunft der Aufheizbemessung
+        /// (Entwurf KP3, Welle D2, B14) denselben Eingang bekommt — <c>SimulationWaermebedarf.UebergabeEingang</c>
+        /// baut ohne Satz.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung des Eingangsbauers.</exception>
+        internal GebaeudeModellEingang EingangBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam)
+        {
+            Konditionierungssatz konditionierung = Konditionierungdatenweg.Satz(
+                gebaeude, gemeinsam.WochenendeOrtszeit, gemeinsam.Feiertagsjahr,
+                Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
+                Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
+
+            GebaeudeModellEingang e = GebaeudeModellEingang.Bauen(
+                gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
+                gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
+                Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC,
+                konditionierung);
+            // KK3: am gleitenden Erzeuger die Untergrenze der Kühlkurve (nur mit wirksamer Kurve, sonst ohne Wirkung).
+            e.KuehlkurveUntergrenzeSetzen(KuehlVorlaufErzeugerMinC);
+            return e;
+        }
+
+        /// <summary>
+        /// <b>Die Zonen eines Mehrzonengebäudes vor dem Jahr</b> (Entwurf KP3, Welle D2, Festlegung 3) — dieselben
+        /// Eingänge wie in <see cref="RechnenMehrzonen"/> (<see cref="Zonenrechnung.ZonenBauen"/>: 4-K-Regel, dann
+        /// die Zonen samt Aufheizplänen bei eingeschalteter Vorgabe), ohne Zonenschleife und Jahr des Gebäudes.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException">bei jedem benannten Fehler der Zonen oder der Kopplung.</exception>
+        internal IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam, int index)
+        {
+            // V3b: dieselbe Weiche wie der Lauf — Rückfall, dann mit Option 1/2 Vorlauf und Pläne in Zonenrechnung.ZonenBauen.
+            return Zonenrechnung.ZonenBauen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude,
+                                        Zonenkonditionierung(gebaeude, gemeinsam), VorgabeZonen(gebaeude, out _), AufheizleistungTestW,
+                                        out _, out _, out _, out _, AnlagenVorlaufC, KuehlVorlaufAnlageC,
+                                        KuehlVorlaufErzeugerMinC, VerfuegbarkeitJeZone);
+        }
+
+        private GebaeudeKlima Zonenklima(KlimakalenderGemeinsam gemeinsam)
+            => new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
+                                 gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug);
+
+        /// <summary>
+        /// Stufe KP1: EINE Naht für alle Zonen — der Datenweg liest je Zone ihren Satz (Konzept 3.4); das
+        /// Wochentagsraster kommt aus dem Klimakalender des Laufs (E115).
+        /// </summary>
+        private Func<long?, Konditionierungssatz> Zonenkonditionierung(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam)
+        {
+            bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
+            // KU3-3: die Kühlung wirkt je Zone (Schalter und Sollwert der Zone, sonst des Gebäudes).
+            return idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
+                                                          gemeinsam.Feiertagsjahr, kondKopplung,
+                                                          KuehlungWirksamFuer(gebaeude, idZone, Kuehlbetrieb), idZone);
+        }
+
+        /// <summary>
+        /// <b>Wirkt die Kühlung an einer Zone?</b> (KU3-3, E67/E68) — Projektschalter, dann der Schalter
+        /// <c>Kuehlung_Aktiv</c> und der Sollwert <c>Kuehl_Sollwert</c> der Zone, NULL = der des Gebäudes
+        /// (dieselbe Kaskade wie <see cref="Zonenvorgaben"/>). Ohne Zone (oder unbekannte Zone) die Regel
+        /// des Gebäudes.
+        /// </summary>
+        internal static bool KuehlungWirksamFuer(ProjektGebaeudeModel gebaeude, long? idZone, bool kuehlbetrieb)
+        {
+            bool aktiv = gebaeude.Kuehlung_Aktiv;
+            double? soll = gebaeude.Kuehl_Sollwert;
+            if (idZone.HasValue && gebaeude.Zonen != null)
+                foreach (GebaeudeZonensatz z in gebaeude.Zonen)
+                {
+                    if (z == null || z.ZonenId != idZone.Value) continue;
+                    Zoneneingaben e = z.EingabenOderNutzflaeche();
+                    aktiv = e.KuehlungAktiv ?? aktiv;
+                    soll = e.KuehlSollwert ?? soll;
+                    break;
+                }
+            return kuehlbetrieb && aktiv && soll.HasValue;
         }
 
         /// <summary>
@@ -254,14 +455,45 @@ namespace WindowsFormsApplication1
                     string.Format(k, MyResource.Resource.SIMENG_G6_MUSTERWECHSEL, wer,
                                   (s.Musterwechsel + s.MusterNichtHaltbar).ToString(k), s.MusterNichtHaltbar.ToString(k)));
 
+            // Stufe KP1b: die Konditionierungshinweise je Zone - Eingang und Ergebnis stehen an
+            // derselben Stelle der beiden Listen (Zonenrechnung.Rechnen).
+            for (int z = 0; z < m.Zonen.Count && z < m.Eingaenge.Count; z++)
+            {
+                string werZone = wer + ", " + m.Eingaenge[z].Bezeichnung;
+                HinweisNutzungsmaske(m.Eingaenge[z].Eingang, werZone);
+                HinweisUntertemperatur(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
+                HinweisAbschnitte(m.Zonen[z], werZone);
+                HinweisZonensperre(m.Zonen[z].Zonensperre, werZone);
+                HinweisKuehlNachtwert(m.Eingaenge[z].Eingang, werZone);
+                HinweisNachtauskuehlung(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
+                // E63: die begrenzte Wärmeübergabe je gekoppelter Zone, benannt wie im Einzonenweg.
+                HeizkreisErgebnis hz = m.Zonen[z].Heizkreis;
+                if (m.Eingaenge[z].Eingang.KopplungWirksam && hz != null && hz.UebergabeBegrenztStundenH > 0.0)
+                    p.HinweisEinmal("ak-uebergabe-begrenzt-" + werZone,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABE_BEGRENZT, werZone,
+                                      hz.UebergabeBegrenztStundenH.ToString("0.#", k),
+                                      hz.GroessteUnterschreitungK.ToString("0.0#", k)));
+                // Entwurf KK (KZ1): die begrenzte Kühlübergabe je kühlgekoppelter Zone, benannt wie im Einzonenweg.
+                KuehlkreisErgebnis kz = m.Zonen[z].Kuehlkreis;
+                if (m.Eingaenge[z].Eingang.Gebaeudekuehlkreis != null && kz != null && kz.UebergabeBegrenztStundenH > 0.0)
+                    p.HinweisEinmal("ak-kuehluebergabe-begrenzt-" + werZone,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLUEBERGABE_BEGRENZT, werZone,
+                                      kz.UebergabeBegrenztStundenH.ToString("0.#", k),
+                                      kz.VorlaufgrenzeStundenH.ToString("0.#", k),
+                                      kz.GroessteUeberschreitungK.ToString("0.0#", k)));
+            }
+            // Stufe KP3 (Festlegung 21): die Laufhinweise der Aufheizoptimierung einmal je Gebaeude.
+            if (m.Gebaeude.Vorheizen == null) HinweisAufheizung(m.Gebaeude.Aufheizung, wer);
+            HinweisErdreichumfang(m.Gebaeude.Erdreich, wer);
+
             if (!(m.Gebaeude.VerbrauchAltKwh > 0.0))
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " hat im Jahreslauf keinen Heizbedarf.");
             if (m.Eingaenge.Any(z => z.Eingang.ErdreichErsatzwerte))
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " — der Jahresgang der Außentemperatur ist " +
                           "unplausibel; die Erdreichtemperatur steht auf den Ersatzwerten des Erdreichmodells.");
             p.HinweisEinmal("vdi6007-wochenende",
-                "Gebäudemodell VDI 6007: Wochenendmaske aus dem Ortszeit-Kalender des Referenzjahres " +
-                gemeinsam.Referenzjahr.ToString(CultureInfo.InvariantCulture) + "; Probe gegen Tab_Klimadaten.WE: " +
+                "Gebäudemodell VDI 6007: Wochenendmaske im Wochentagsraster des Projekts (" +
+                gemeinsam.Raster + "); Probe gegen Tab_Klimadaten.WE: " +
                 (gemeinsam.WochenendProbeAbweichungen == 0
                     ? "gleich."
                     : gemeinsam.WochenendProbeAbweichungen.ToString(CultureInfo.InvariantCulture) + " Tage verschieden (Befund der Probe, kein Rechenfehler)."));
@@ -271,162 +503,373 @@ namespace WindowsFormsApplication1
             => m.Eingaenge.FirstOrDefault(z => z.ZonenId == id)?.Bezeichnung ?? id.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
-        /// Der eine Lauf eines Gebäudes ohne Protokoll: Vorlauf 720 h, Jahreslauf 8 760 h,
-        /// Plausibilität der Reihen. Liefert das <b>unskalierte</b> Ergebnis.
+        /// <b>Die Sommerlüftungsregel eines Eingangs</b> — die eine Stelle für alle drei Laufwege
+        /// (Einzone, <see cref="Zonenlauf"/>, <see cref="Zonenschleife"/>): ohne Schalter keine
+        /// Regel; mit Kühlkalender die Schwellenreihe θ_K(h) − 3 K bzw. 23 °C bei „aus" (Stufe
+        /// KP1b, Konzept 3.6); mit wirksamer Kühlung ohne Kalender die Konstante θ_kuehl − 3 K;
+        /// sonst der Festwert — die zwei letzten Zweige wörtlich wie im Bestand.
         /// </summary>
-        /// <exception cref="GebaeudeModellException">bei jedem Fehler des Lösers oder der Plausibilität.</exception>
-        internal static GebaeudeModellErgebnis Laufen(GebaeudeModellEingang eingang, int index, int idGebaeude)
-        {
-            if (eingang == null) throw new ArgumentNullException(nameof(eingang));
+        internal static Sommerlueftungsregel LueftungsregelBilden(GebaeudeModellEingang eingang)
+            => !eingang.Sommerlueftung ? null
+                : RegelMitSchwelle(eingang, GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_AUSSEN);
 
-            var modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
+        /// <summary>
+        /// <b>Die Regel der Nachtauskühlung eines Eingangs</b> (Stufe KP1b, Konzept 3.7, P9 (b)) —
+        /// dieselbe <see cref="Sommerlueftungsregel"/> mit derselben Schwelle je Stunde, nur mit dem
+        /// Außenabstand ΔT der Vorgabe (<c>Bedingt_K</c>, leer = 2 K). Sie entsteht <b>nur</b>, wenn
+        /// es überhaupt einen bedingten Anteil gibt
+        /// (<see cref="GebaeudeModellEingang.NachtauskuehlungWK"/>); sonst <c>null</c> — keine Regel,
+        /// keine Zählung, und der Zusatzleitwert bleibt der Bestandsausdruck.
+        /// </summary>
+        internal static Sommerlueftungsregel NachtauskuehlregelBilden(GebaeudeModellEingang eingang)
+            => eingang.NachtauskuehlungWK == null || eingang.Nachtauskuehlung == null ? null
+                : RegelMitSchwelle(eingang, eingang.Nachtauskuehlung.AbstandK);
 
-            // Sommerlüftung (G2, Rechenschritte 7.2): einmal je Stunde am Stundenbeginn aus
-            // Raumluft und Außenluft der Vorstunde; ohne Schalter bleibt sie aus. Mit wirksamer
-            // Kühlung (KU1) folgt die Schwelle dem Kühlsollwert: θ_kuehl − 3 K (Kühlkonzept
-            // 3.4) - sonst läge sie fest über dem Sollwert und die Lüftung griffe nie, bzw. weit
-            // darunter und lüftete gegen die Kühlung an. Ohne Kühlung bleibt der Festwert.
-            Sommerlueftungsregel regel = !eingang.Sommerlueftung ? null
+        /// <summary>
+        /// Die Schwelle einer der beiden Regeln — die EINE Stelle (Konzept 3.6): mit Kühlkalender
+        /// die Reihe θ_K(h) − 3 K bzw. 23 °C bei „aus"; mit wirksamer Kühlung ohne Kalender die
+        /// Konstante θ_kuehl − 3 K; sonst der Festwert 23 °C. Die zwei letzten Zweige stehen
+        /// wörtlich wie im Bestand.
+        /// </summary>
+        private static Sommerlueftungsregel RegelMitSchwelle(GebaeudeModellEingang eingang, double abstandAussenK)
+            => eingang.KuehlkalenderWirksam
+                ? new Sommerlueftungsregel(eingang.ThetaMax, abstandAussenK)
                 : eingang.KuehlungWirksam
-                    ? new Sommerlueftungsregel(eingang.KuehlSollwert - GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT)
-                    : new Sommerlueftungsregel();
-            double luftVor = double.NaN, aussenVor = double.NaN;
+                    ? new Sommerlueftungsregel(eingang.KuehlSollwert - GebaeudeFestwerte.SOMMERLUEFTUNG_ABSTAND_KUEHLSOLLWERT,
+                                               abstandAussenK)
+                    : new Sommerlueftungsregel(GebaeudeFestwerte.SOMMERLUEFTUNG_SCHWELLE, abstandAussenK);
 
-            // Vorlauf: die letzten 30 Tage des Jahres, Startwert der Sollwert der ersten
-            // Vorlaufstunde (Rechenschritte 7.1); die Ergebnisse werden verworfen. Der
-            // Lüftungszustand läuft über die Jahresgrenze weiter wie der Zustand der Massen.
-            int start = 8760 - VORLAUF_H;
-            modell.Zuruecksetzen(eingang.ThetaSoll[start]);
-            for (int h = start; h < 8760; h++)
+        /// <summary>
+        /// <b>Der Startwert des Vorlaufs</b> [°C] (Rechenschritte 7.1): der Heizsollwert der ersten
+        /// Vorlaufstunde. Steht er auf „aus" (NaN, Stufe KP1b, Konzept 3.6), gilt die Regel der
+        /// unbeheizten Zone — das Mittel von θ_eq über die Vorlaufstunden (N1.56 Festlegung 7) —,
+        /// und der Lauf nennt es im Protokoll; ein NaN als Startzustand bräche den Lauf ab.
+        /// Ohne „aus" steht hier wörtlich der Bestandsausdruck.
+        /// </summary>
+        internal static double VorlaufStartwertC(GebaeudeModellEingang eingang, int start)
+        {
+            double soll = eingang.ThetaSoll[start];
+            if (Endlich(soll)) return soll;
+            HinweisVorlaufstartAus(eingang);
+            return eingang.StartwertUnbeheiztC(start);
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis auf den wirksam gewordenen Kühl-Nachtwert</b> (Stufe KP1b, R14): Ohne
+        /// Konditionierungszeile rechnet der Bestandszweig mit der Konstante <c>Kuehl_Sollwert</c> —
+        /// der Nachtwert der Spalte bleibt wirkungslos. Erst der abgeleitete Kühlkalender trägt ihn
+        /// in die Reihe; das nennt der Lauf. Ohne ihn schweigt die Methode.
+        /// </summary>
+        internal static void HinweisKuehlNachtwert(GebaeudeModellEingang e, string wer)
+        {
+            if (e.KuehlNachtwertStundenH <= 0) return;
+            SimulationProtokoll.Aktuell.HinweisEinmal("kond-kuehl-nacht-" + wer,
+                "Gebäudemodell VDI 6007: " + wer + " — " +
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_KUEHL_NACHT,
+                              e.KuehlNachtwertC.ToString("0.0#", CultureInfo.CurrentCulture),
+                              e.KuehlNachtwertStundenH.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// <b>Die Hinweise der Nachtauskühlung</b> (Stufe KP1b, Konzept 3.7): Trägt die
+        /// Lüftungsspalte keinen Tagwert, gibt es keinen bedingten Anteil — der Kalender wirkt
+        /// unbedingt, und der Lauf sagt es (P9 lässt sich ohne n_T nicht anwenden). Gibt es einen,
+        /// nennt der Lauf die Stunden, in denen die Regel einschaltete. Ohne Lüftungskalender
+        /// schweigt die Methode.
+        /// </summary>
+        internal static void HinweisNachtauskuehlung(GebaeudeModellEingang e, GebaeudeModellErgebnis r, string wer)
+        {
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            if (e.NachtauskuehlungOhneTagwert)
             {
-                bool sommer = regel != null && regel.Stunde(luftVor, aussenVor);
-                Stundenrand r = eingang.Rand(h, sommer);
-                Stundenergebnis v = modell.Schritt(in r);
-                luftVor = v.ThetaAirMittel;
-                aussenVor = eingang.ThetaOut[h];
+                p.HinweisEinmal("kond-nachtkuehl-ohne-tag-" + wer,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.SIMENG_KOND_NACHTKUEHL_OHNE_TAG, wer));
+                return;
             }
+            if (e.NachtauskuehlungWK == null || r == null || !r.StundenMitNachtauskuehlung.HasValue) return;
+            p.HinweisEinmal("kond-nachtkuehl-" + wer,
+                "Gebäudemodell VDI 6007: " + wer + " — " +
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_NACHTKUEHL_STUNDEN,
+                              e.Nachtauskuehlung.ToString(),
+                              r.StundenMitNachtauskuehlung.Value.ToString(CultureInfo.InvariantCulture)));
+        }
 
-            var heiz = new double[8760];
-            var kuehl = new double[8760];
-            var luft = new double[8760];
-            var op = new double[8760];
-            int umschaltung = 0, beides = 0, sommerStunden = 0;
-            double summeW = 0.0;
+        /// <summary>
+        /// <b>Der Laufhinweis der Obergrenze der Innenprüfung</b> (Rechenweg RP2a, <c>SIMENG_ZONE_ABSCHNITTE</c>):
+        /// einmal je Gebäude bzw. Zone, wenn Stunden eine innere Umkehr erkannt, aber wegen
+        /// <see cref="Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE"/> nicht mehr an ihr geschnitten haben. Sonst still.
+        /// </summary>
+        internal static void HinweisAbschnitte(GebaeudeModellErgebnis r, string wer)
+        {
+            if (r == null || r.StundenInnenpruefungGedeckelt == 0) return;
+            SimulationProtokoll.Aktuell.HinweisEinmal("zone-abschnitte-" + wer,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_ZONE_ABSCHNITTE, wer,
+                              r.StundenInnenpruefungGedeckelt.ToString(CultureInfo.InvariantCulture),
+                              Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE.ToString(CultureInfo.InvariantCulture)));
+        }
 
-            // Anlagenkopplung (AK1): die Reihen des Heizkreises - nur mit wirksamer Kopplung.
-            bool gekoppelt = eingang.KopplungWirksam;
-            double[] vorlauf = gekoppelt ? new double[8760] : null;
-            double[] ruecklauf = gekoppelt ? new double[8760] : null;
-            double[] begrenzt = gekoppelt ? new double[8760] : null;
-            double stundenHl = 0.0, stundenHg = 0.0, unterschreitung = 0.0;
+        /// <summary>
+        /// <b>Der Laufhinweis des Erdreichumfangs</b> (Rechenweg RP2a, <c>SIMENG_ERDREICH_UMFANG</c>): einmal je Gebäude,
+        /// wenn der Erdreichwiderstand nach DIN EN ISO 13370 mit dem flächengleichen Quadrat rechnet, weil kein
+        /// (plausibler) Umfang vorliegt. Sonst still.
+        /// </summary>
+        internal static void HinweisErdreichumfang(Erdreichkennwerte e, string wer)
+        {
+            if (e == null || e.Quelle != Erdreichumfangsquelle.Quadrat) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("erdreich-umfang-" + wer,
+                string.Format(k, MyResource.Resource.SIMENG_ERDREICH_UMFANG, wer, e.Umfang_M.ToString("0.#", k),
+                              e.B_M.ToString("0.##", k), e.Ug_WM2K.ToString("0.###", k)));
+        }
 
-            // Die Kälteseite (Schritt K, E37): die Reihen des Kältekreises - nur mit wirksamer
-            // Kühlkopplung, der Spiegel der Heizkreisreihen.
-            bool kuehlgekoppelt = eingang.KuehlKopplungWirksam;
-            double[] kVorlauf = kuehlgekoppelt ? new double[8760] : null;
-            double[] kRuecklauf = kuehlgekoppelt ? new double[8760] : null;
-            double[] kBegrenzt = kuehlgekoppelt ? new double[8760] : null;
-            double stundenKl = 0.0, stundenKk = 0.0, stundenGrenze = 0.0, ueberschreitung = 0.0;
+        /// <summary>
+        /// <b>Der Hinweis auf Untertemperatur außerhalb der Heizperiode</b> (Stufe KP1b, E53,
+        /// Konzept 3.6): Die Heizperiode schneidet Bedarf ab, den die Raumheizung sonst gedeckt
+        /// hätte. Gezählt werden die <b>Nutzungsstunden</b> an den Tagen <b>außerhalb</b> der
+        /// Heizperiode, in denen die gelöste Raumluft einer <b>beheizten</b> Zone unter dem
+        /// Tagwert der Heizspalte liegt; genannt werden Zahl und tiefste Unterschreitung in K.
+        /// <b>Der Lauf rechnet weiter</b> — es ist ein Hinweis, kein Fehler.
+        ///
+        /// <para>„Außerhalb" ist der Tag, dessen Quelle die <b>Saisonperiode</b> ist
+        /// (<see cref="Konditionierungssatz.HeizperiodeAussen"/>) — dieselbe Wahl, die der Lauf
+        /// rechnet. Stundenweises „aus" <em>innerhalb</em> der Heizperiode zählt nicht: Es ist der
+        /// Wochenplan, nicht die Saison.</para>
+        ///
+        /// <para>Ohne Heizkalender, ohne wirkende Saisonperiode, ohne Tagwert der Heizspalte und
+        /// für eine unbeheizte Zone schweigt die Methode.</para>
+        /// </summary>
+        internal static void HinweisUntertemperatur(GebaeudeModellEingang e, GebaeudeModellErgebnis r, string wer)
+        {
+            bool[] aussen = e.HeizperiodeAussen;
+            double? tagwert = e.Konditionierung?.HeizTagwertC;
+            if (aussen == null || r == null || !e.IstBeheizt || !tagwert.HasValue) return;
 
+            double grenze = tagwert.Value;
+            int stunden = 0;
+            double tiefste = 0.0;
             for (int h = 0; h < 8760; h++)
             {
-                bool sommer = regel != null && regel.Stunde(luftVor, aussenVor);
-                if (sommer) sommerStunden++;
-                Stundenrand r = eingang.Rand(h, sommer);
-                Stundenergebnis s = modell.Schritt(in r);
-                luftVor = s.ThetaAirMittel;
-                aussenVor = eingang.ThetaOut[h];
-                heiz[h] = s.HeizleistungW;
-                kuehl[h] = s.KuehlleistungW / 1000.0;      // W über eine Stunde → kWh
-                luft[h] = s.ThetaAirMittel;
-                op[h] = s.ThetaOpMittel;
-                if (s.Abschnitte > 1) umschaltung++;
-                if (s.HeizleistungW > 0.0 && s.KuehlleistungW > 0.0) beides++;
-                summeW += s.HeizleistungW;
-
-                if (!Endlich(heiz[h]) || heiz[h] < 0.0 || !Endlich(kuehl[h]) || kuehl[h] < 0.0
-                    || !Endlich(luft[h]) || !Endlich(op[h]))
-                    throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
-                        eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
-                        " liefert eine nicht endliche oder negative Größe.");
-
-                if (gekoppelt)
-                {
-                    vorlauf[h] = s.VorlaufC;
-                    ruecklauf[h] = s.RuecklaufC;
-                    begrenzt[h] = s.UebergabeBegrenztAnteil;
-                    stundenHl += s.HeizleistungMaxAnteil;
-                    stundenHg += s.HeizgrenzeAnteil;
-                    if (s.UebergabeBegrenzt && eingang.ThetaSoll[h] - s.ThetaAirMittel > unterschreitung)
-                        unterschreitung = eingang.ThetaSoll[h] - s.ThetaAirMittel;
-
-                    // Plausibilität des Heizkreises: NaN nur gemeinsam (Heizgrenze), sonst endlich,
-                    // und der Rücklauf liegt nie über dem Vorlauf (Φ ≥ 0, W_H > 0).
-                    bool nanV = double.IsNaN(s.VorlaufC), nanR = double.IsNaN(s.RuecklaufC);
-                    if (nanV != nanR || (!nanV && (!Endlich(s.VorlaufC) || !Endlich(s.RuecklaufC)
-                                                   || s.RuecklaufC - s.VorlaufC > Rechenrand.Zu(s.VorlaufC))))
-                        throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
-                            eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
-                            " liefert einen unplausiblen Heizkreis (Vorlauf " + s.VorlaufC.ToString("G6", CultureInfo.InvariantCulture) +
-                            " °C, Rücklauf " + s.RuecklaufC.ToString("G6", CultureInfo.InvariantCulture) + " °C).");
-                }
-
-                if (kuehlgekoppelt)
-                {
-                    kVorlauf[h] = s.KuehlVorlaufC;
-                    kRuecklauf[h] = s.KuehlRuecklaufC;
-                    kBegrenzt[h] = s.KuehlUebergabeBegrenztAnteil;
-                    stundenKl += s.KuehlleistungMaxAnteil;
-                    stundenKk += s.KeineKaelteAnteil;
-                    stundenGrenze += s.VorlaufgrenzeAnteil;
-                    if (s.KuehlUebergabeBegrenzt && s.ThetaAirMittel - eingang.ThetaMax[h] > ueberschreitung)
-                        ueberschreitung = s.ThetaAirMittel - eingang.ThetaMax[h];
-
-                    // Plausibilität des Kältekreises (Spiegel): NaN nur gemeinsam, sonst endlich,
-                    // und der Rücklauf liegt nie unter dem Vorlauf (Φ_c ≥ 0, W_K > 0).
-                    bool nanV = double.IsNaN(s.KuehlVorlaufC), nanR = double.IsNaN(s.KuehlRuecklaufC);
-                    if (nanV != nanR || (!nanV && (!Endlich(s.KuehlVorlaufC) || !Endlich(s.KuehlRuecklaufC)
-                                                   || s.KuehlVorlaufC - s.KuehlRuecklaufC > Rechenrand.Zu(s.KuehlVorlaufC))))
-                        throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
-                            eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
-                            " liefert einen unplausiblen Kältekreis (Vorlauf " + s.KuehlVorlaufC.ToString("G6", CultureInfo.InvariantCulture) +
-                            " °C, Rücklauf " + s.KuehlRuecklaufC.ToString("G6", CultureInfo.InvariantCulture) + " °C).");
-                }
+                if (!aussen[h / 24] || !r.NutzungBei(h)) continue;
+                double fehlt = grenze - r.Raumtemperatur[h];
+                if (!(fehlt > 0.0)) continue;
+                stunden++;
+                if (fehlt > tiefste) tiefste = fehlt;
             }
+            if (stunden == 0) return;
 
-            // E32: Ohne wirksame Kühlung läuft das Gebäude frei - der Löser hat keine obere
-            // Grenze und darf nie kühlen. Eine Kühlleistung wäre ein Fehler des Lösers, keine
-            // Zahl, die still verschwinden darf; und eine Kühlreihe gibt es dann nicht.
-            if (!eingang.KuehlungWirksam)
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("kond-untertemperatur-" + wer,
+                "Gebäudemodell VDI 6007: " + wer + " — " +
+                string.Format(k, MyResource.Resource.SIMENG_KOND_UNTERTEMPERATUR,
+                              stunden.ToString(CultureInfo.InvariantCulture),
+                              grenze.ToString("0.0#", k), tiefste.ToString("0.0#", k)));
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis auf die Vorgabe der Aufheizreserve</b> (E64, <c>SIMENG_AUFH_RESERVE_VORGABE</c>): Mit
+        /// eingeschalteter Aufheizoptimierung und leerer Reserve des Projekts (<see cref="Aufheizvorgabe.Reserve"/>)
+        /// rechnet der Lauf mit <see cref="AufheizvorgabeSchema.RESERVE_VORGABE"/> — einmal je Projekt und Lauf
+        /// im Protokoll (Stufe Hinweis). Ausgeschaltet oder mit gesetzter Reserve schweigt die Methode.
+        /// </summary>
+        internal static void HinweisReserveVorgabe(Aufheizvorgabe vorgabe)
+        {
+            if (vorgabe == null || !vorgabe.An || vorgabe.Reserve.HasValue) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("aufh-reserve-vorgabe",
+                "Gebäudemodell VDI 6007: " + string.Format(k, MyResource.Resource.SIMENG_AUFH_RESERVE_VORGABE,
+                                                            (AufheizvorgabeSchema.RESERVE_VORGABE * 100.0).ToString("0.#", k)));
+        }
+
+        /// <summary>
+        /// <b>Die Laufhinweise des Vorheizens</b> (Entwurf Vorheizrampe Fassung 2, 2.5, 2.9; Welle V2) — einmal je Gebäude:
+        /// der Rückfall auf die Sollwertrampe (Heizkreis-Schalter, keine Vorheizzeit), sonst die Kennzahlen (t_V,
+        /// Φ_K,max, P_K, P_V, Spitze, Nächte ohne Absenkung, Mehrwärme), mit Option 2 die Bemessung von t_V, die Tage ohne
+        /// Ankunft samt Bedarf („nötig wären …“, V3a; mit Option 2 die Tage über dem Quantil t_V, F19), die unerreichbaren Tage,
+        /// die Fensterstunden in einer Sperrzeit (F20), die Abweichungen des Laufs von der Vorausschau,
+        /// Zonen ohne Auslegungsheizlast, die Floor-Stunden, die Toleranz 0, Zonen ohne Sprung und die Übergänge aus „aus“.
+        /// Ohne Vorheizen schweigt die Methode.
+        /// </summary>
+        internal static void HinweisVorheizen(Vorheizrueckfall rueckfall, Vorheizgebaeude v, string wer)
+        {
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string kopf = "Gebäudemodell VDI 6007: " + wer + " — ";
+            string grund = rueckfall switch
             {
-                for (int h = 0; h < 8760; h++)
-                    if (kuehl[h] != 0.0)
-                        throw new GebaeudeModellException(GebaeudeModellFehler.ErgebnisUnplausibel,
-                            eingang.Bezeichnung + ": Die Stunde " + h.ToString(CultureInfo.InvariantCulture) +
-                            " kühlt, obwohl die Kühlung nicht wirksam ist (freier Lauf, E32).");
-                kuehl = null;
-            }
-
-            double verbrauchAltKwh = summeW / 1000.0;
-            HeizkreisErgebnis heizkreis = gekoppelt
-                ? HeizkreisErgebnis.Bilden(eingang, vorlauf, ruecklauf, begrenzt, stundenHl, stundenHg, heiz, unterschreitung)
-                : null;
-            // Der Kältebedarf je Stunde (kWh = mittlere kW) als Gewicht der Mittel, in W wie die Heizseite.
-            KuehlkreisErgebnis kuehlkreis = null;
-            if (kuehlgekoppelt)
+                Vorheizrueckfall.Heizkreis => MyResource.Resource.SIMENG_VORH_RUECKFALL_HEIZKREIS,
+                Vorheizrueckfall.OhneVorheizzeit => MyResource.Resource.SIMENG_VORH_RUECKFALL_OHNE_ZEIT,
+                _ => null,
+            };
+            if (grund != null) p.HinweisEinmal("vorh-rueckfall-" + wer, kopf + grund);
+            if (v == null) return;
+            p.HinweisEinmal("vorh-kennzahlen-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_KENNZAHLEN,
+                v.VorheizzeitMaxH.ToString(k), (v.PhiKMaxW / 1000.0).ToString("0.0", k), (v.DeckelW / 1000.0).ToString("0.0", k),
+                (v.VorheizleistungW / 1000.0).ToString("0.0", k), (v.SpitzeW / 1000.0).ToString("0.0", k),
+                v.NaechteOhneAbsenkung.ToString(k), (v.MehrwaermeKwh / 1000.0).ToString("0.00", k),
+                double.IsNaN(v.MehrwaermeProzent) ? "–" : v.MehrwaermeProzent.ToString("0.0", k)));
+            if (v.Berechnet)
+                p.HinweisEinmal("vorh-berechnet-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_BERECHNET,
+                    v.VorheizzeitMaxH.ToString(k), double.IsNaN(v.BedarfMedianH) ? "–" : v.BedarfMedianH.ToString("0.#", k),
+                    Vorheizplanung.BEDARF_QUANTIL_PROZENT.ToString(k), v.BedarfMaxH.ToString(k),
+                    v.SpruengeUeberVorheizzeit.ToString(k)));
+            // F19 (V3c): Mit Option 2 meldet der Hinweis die Tage, deren Bedarf über dem Quantil t_V liegt.
+            if (v.Berechnet && v.TageUeberVorheizzeit > 0)
+                p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE_BEDARF,
+                    v.TageUeberVorheizzeit.ToString(k), v.UnterschreitungUeberVorheizzeitK.ToString("0.0", k),
+                    v.BedarfMaxH.ToString(k), v.VorheizzeitMaxH.ToString(k)));
+            else if (v.TageOhneAnkunftAnzahl > 0)
             {
-                var kuehlW = new double[8760];
-                for (int h = 0; h < 8760; h++) kuehlW[h] = kuehl[h] * 1000.0;
-                kuehlkreis = KuehlkreisErgebnis.Bilden(eingang, kVorlauf, kRuecklauf, kBegrenzt, stundenKl, stundenKk,
-                                                       stundenGrenze, kuehlW, ueberschreitung);
+                if (v.BedarfMaxH > v.VorheizzeitMaxH)
+                    p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE_BEDARF,
+                        v.TageOhneAnkunftAnzahl.ToString(k), v.UnterschreitungMaxK.ToString("0.0", k),
+                        v.BedarfMaxH.ToString(k), v.VorheizzeitMaxH.ToString(k)));
+                else
+                    p.HinweisEinmal("vorh-tage-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_TAGE,
+                        v.TageOhneAnkunftAnzahl.ToString(k), v.UnterschreitungMaxK.ToString("0.0", k)));
             }
-            return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
-                                              heiz, luft, op, kuehl, eingang.ThetaMaxWert,
-                                              verbrauchAltKwh, 1.0, umschaltung, beides,
-                                              (double[])eingang.ThetaSoll.Clone(), sommerStunden,
-                                              eingang.KuehlungWirksam
-                                                  ? (double?)eingang.KuehlSollwert : null,
-                                              heizkreis, kuehlkreis, eingang.Nachtzeit);
+            if (v.TageUnerreichbar > 0)
+                p.HinweisEinmal("vorh-unerreichbar-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_UNERREICHBAR,
+                    v.TageUnerreichbar.ToString(k), v.NaechteOhneAbsenkung.ToString(k)));
+            // F20 (V3c): ohne freie Fensterstunde ein eigener Text — das Fenster liegt ganz in der Sperrzeit.
+            if (v.TageSperrzeit > 0)
+                p.HinweisEinmal("vorh-sperrzeit-" + wer, kopf + string.Format(k,
+                    v.FreiUhr.Any(x => x) ? MyResource.Resource.SIMENG_VORH_SPERRZEIT : MyResource.Resource.SIMENG_VORH_SPERRZEIT_GANZ,
+                    v.TageSperrzeit.ToString(k), Vorheizplanung.Uhrzeiten(v.SperrUhr), v.FensterstundenGesperrt.ToString(k),
+                    Vorheizplanung.Uhrzeiten(v.FreiUhr)));
+            if (v.TageAbweichung > 0)
+                p.HinweisEinmal("vorh-abweichung-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_ABWEICHUNG,
+                    v.TageAbweichung.ToString(k)));
+            if (v.ZonenOhneAuslegungsheizlast > 0)
+                p.HinweisEinmal("vorh-ohne-heizlast-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_OHNE_HEIZLAST,
+                    v.ZonenOhneAuslegungsheizlast.ToString(k)));
+            if (v.FloorstundenH > 0)
+                p.HinweisEinmal("vorh-floor-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_FLOOR,
+                    v.FloorstundenH.ToString(k)));
+            if (v.ToleranzNull)
+                p.HinweisEinmal("vorh-toleranz-null-" + wer, kopf + MyResource.Resource.SIMENG_VORH_TOLERANZ_NULL);
+            if (v.ZonenOhneSprung > 0)
+                p.HinweisEinmal("vorh-ohne-sprung-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_OHNE_SPRUNG,
+                    v.ZonenOhneSprung.ToString(k)));
+            if (v.SpruengeAus > 0)
+                p.HinweisEinmal("vorh-aus-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_AUS,
+                    v.SpruengeAus.ToString(k)));
+        }
+
+        /// <summary>
+        /// <b>Die Kennzahlen der Zonensperre</b> (Entwurf AK3-K 3.5; Welle KZ): Tage mit Sperre der Gegenseite, Stunden und
+        /// gesperrte Energie des Probetags, Tage mit beiden Freigaben — nur mit wirksamer Kühlung. Bis S1
+        /// (K4) allein dieser Laufhinweis.
+        /// </summary>
+        internal static void HinweisZonensperre(Zonensperrkennzahl z, string wer)
+        {
+            if (z == null) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("zonensperre-" + wer,
+                string.Format(k, MyResource.Resource.SIMENG_ZONENSPERRE, wer, z.Tage.ToString(k), z.Kuehltage.ToString(k),
+                              z.Heiztage.ToString(k), z.Stunden.ToString(k), z.GesperrtKwh.ToString("0.0", k),
+                              z.HeizenGesperrtKwh.ToString("0.0", k), z.KuehlenGesperrtKwh.ToString("0.0", k),
+                              z.TageBeides.ToString(k)));
+        }
+
+        /// <summary>
+        /// <b>Die Laufhinweise der Aufheizoptimierung</b> (Entwurf KP3, Festlegung 21; Teilkonzept 4.8) —
+        /// einmal je Gebäude im Protokoll, mit Zahl in der Kultur des Anwenders; die Zähler stehen in der
+        /// Ergebniszeile (<see cref="Aufheizergebnis"/>). <b>Der Lauf rechnet weiter</b> — es sind Hinweise.
+        /// <list type="bullet">
+        /// <item><b>W1</b> Aufheizleistung reicht nicht: Tage ohne haltendes n ≤ 48, Unterzahl P_auf ≤ Φ_stat;
+        /// auch bei unerreichbarer Bemessung ohne einen solchen Tag (Festlegung 17).</item>
+        /// <item><b>W2</b> durch die Absenkdauer begrenzt: die Tage mit n − 1 = D bei größerem Bedarf; dazu der
+        /// Bemessungshinweis, wenn t_auf,max die kürzeste Absenkdauer der gerampten Sprünge erreicht
+        /// (Festlegung 18).</item>
+        /// <item><b>W3</b> Nachweisband: die Tage, an denen der Lauf es verlässt (Festlegung 19).</item>
+        /// <item><b>W4</b> Übergang aus „aus" ohne Rampe, Unterzahl Beginn der Heizperiode.</item>
+        /// <item><b>W5</b> gekoppeltes Gebäude nicht optimiert, ohne Zahl.</item>
+        /// </list>
+        /// Ohne Aufheizwerte (Schalter aus) und für ein Gebäude ohne beheizte Planung schweigt die Methode.
+        /// </summary>
+        internal static void HinweisAufheizung(Aufheizergebnis a, string wer)
+        {
+            if (a == null) return;
+            SimulationProtokoll p = SimulationProtokoll.Aktuell;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string kopf = "Gebäudemodell VDI 6007: " + wer + " — ";
+            if (a.Gekoppelt)
+            {
+                p.HinweisEinmal("aufh-w5-" + wer, kopf + MyResource.Resource.SIMENG_AUFH_W5);
+                return;
+            }
+            if (!a.Geplant) return;
+
+            int w1 = a.AufheiztageUnerreichbar ?? 0;
+            if (w1 > 0 || a.AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR)
+                p.HinweisEinmal("aufh-w1-" + wer, kopf +
+                    string.Format(k, MyResource.Resource.SIMENG_AUFH_W1, w1.ToString(k), (a.TageUnterStationaer ?? 0).ToString(k)));
+            int w2 = a.AufheiztageBegrenzt ?? 0;
+            if (w2 > 0)
+                p.HinweisEinmal("aufh-w2-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_AUFH_W2, w2.ToString(k)));
+            if (a.AufheizzeitMaxH is int tMax && a.KuerzesteAbsenkdauerH is int dMin && tMax >= dMin)
+                p.HinweisEinmal("aufh-w2-bemessung-" + wer, kopf +
+                    string.Format(k, MyResource.Resource.SIMENG_AUFH_W2_BEMESSUNG, tMax.ToString(k), dMin.ToString(k)));
+            int w3 = a.AufheiztageNachweisband ?? 0;
+            if (w3 > 0)
+                p.HinweisEinmal("aufh-w3-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_AUFH_W3, w3.ToString(k)));
+            int w4 = a.AufheizspruengeAus ?? 0;
+            if (w4 > 0)
+                p.HinweisEinmal("aufh-w4-" + wer, kopf +
+                    string.Format(k, MyResource.Resource.SIMENG_AUFH_W4, w4.ToString(k), (a.SpruengeAusHeizperiode ?? 0).ToString(k)));
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis auf einen Personenkalender ohne Anwesenheitsstunde</b> (Stufe KP1b, F16):
+        /// Dann gibt es keine Nutzungszeit aus der Anwesenheit; die Kennzahlen zählen nach der
+        /// Nachtzeit wie ohne Kalender. Ohne diesen Fall schweigt die Methode.
+        /// </summary>
+        internal static void HinweisNutzungsmaske(GebaeudeModellEingang e, string wer)
+        {
+            if (!e.NutzungsmaskeLeer) return;
+            SimulationProtokoll.Aktuell.HinweisEinmal("kond-nutzung-leer-" + wer,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_NUTZUNG_LEER, wer));
+        }
+
+        /// <summary>
+        /// Der Hinweis zum Vorlaufstart bei „aus" (Stufe KP1b, G1) — einmal je Eingang; die
+        /// Zonenschleife bildet ihre Startwerte selbst (mit den Nachbarn) und ruft nur ihn.
+        /// </summary>
+        internal static void HinweisVorlaufstartAus(GebaeudeModellEingang eingang)
+        {
+            string wer = eingang.Zone == null
+                ? eingang.Bezeichnung
+                : eingang.Bezeichnung + ", " + eingang.Zone.Bezeichnung;
+            SimulationProtokoll.Aktuell.HinweisEinmal("kond-start-aus-" + wer,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_START_AUS, wer,
+                              VORLAUF_H.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        /// <summary>
+        /// Der eine Lauf eines Gebäudes ohne Protokoll: Vorlauf 720 h, Jahreslauf 8 760 h,
+        /// Plausibilität der Reihen. Liefert das <b>unskalierte</b> Ergebnis. Gerechnet wird über den
+        /// Gebäude-Stepper der Einzelzone (<see cref="GebaeudeStepper"/>, Entwurf AK3 2.2) — eine
+        /// Schleife über die 8 760 Stunden, derselbe Rechenweg wie jede Stunde des Steppers.
+        /// </summary>
+        /// <param name="aufheizplan">Der Aufheizplan des Eingangs (Entwurf KP3, Welle R4): mit ihm trägt das
+        /// Ergebnis die Aufheizwerte samt W3 und Rampenmaske; <c>null</c> = Schalter aus, das Ergebnis bleibt,
+        /// wie es war.</param>
+        /// <exception cref="GebaeudeModellException">bei jedem Fehler des Lösers oder der Plausibilität.</exception>
+        /// <summary>
+        /// <b>Erfassung des AK3-Wegs</b> (AK3-W3b): gesetzt nur während der Bedarfsrechnung eines Laufs mit
+        /// Stufe AK3; bekommt je gekoppeltem Gebäude (Zeilenindex, Zeile) die Fabrik des Steppers für den Kreis —
+        /// je Feldlauf ein frischer, noch nicht eingeschwungener Stepper (AK3-W3d). <c>null</c> = der heutige Lauf.
+        /// </summary>
+        internal Action<int, ProjektGebaeudeModel, Func<GebaeudeStepper>> Ak3Erfassen { get; set; }
+
+        internal static GebaeudeModellErgebnis Laufen(GebaeudeModellEingang eingang, int index, int idGebaeude,
+                                                     Aufheizplan aufheizplan = null)
+        {
+            if (eingang == null) throw new ArgumentNullException(nameof(eingang));
+            ZonenEingang zone = ZonenEingang.Einzeln(eingang);
+            if (aufheizplan != null) zone.AufheizplanSetzen(aufheizplan);
+            return Zonenlauf.Laufen(zone, index, idGebaeude);
         }
 
         /// <summary>
@@ -458,7 +901,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1)
+            // AK3-K (Festlegung 10): Rechnet der Projektlauf die Stufe im geschlossenen Kreis (AK3), entfällt der Satz
+            // „gebaut ist die Stufe AK1“ — der Kreis meldet sich selbst (Ak3Vorbereiten), eine Auskunft nennt ihre Rückstufe.
+            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1 && !Ak3Kernstufe.Wirksam(e.AnlagenkopplungStufe))
                 p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
                     string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
 
@@ -481,6 +926,28 @@ namespace WindowsFormsApplication1
             if (e.KuehlungWirksam && !e.KuehlKopplungWirksam && !e.KuehluebergabeAktiv)
                 p.HinweisEinmal("ak-kaelteseite-ideal-" + id,
                     string.Format(k, MyResource.Resource.SIMENG_AK_KAELTESEITE_IDEAL, wer));
+        }
+
+        /// <summary>
+        /// Die Meldungen der Kühlkurve (Entwurf KK, Festlegungen 3 und 18; E107) — je Gebäude und Lauf einmal: der Rückfall des
+        /// Auslegungswegs „eingabe“ auf das wärmste Tagesmittel und die Fußpunktregel. Ohne wirksame Kühlkurve schweigt sie.
+        /// </summary>
+        internal static void KuehlkurveMelden(GebaeudeModellEingang e, SimulationProtokoll p, string id, string wer)
+        {
+            Kuehlkurve kurve = e.Kuehlkurve;
+            if (!e.KuehlkurveWirksam || kurve == null) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            if (kurve.AuslegungRueckfall)
+                p.HinweisEinmal("kk-auslegung-rueckfall-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLKURVE_EINGABE_RUECKFALL, wer,
+                                  double.IsNaN(kurve.AuslegungEingabeC) ? "—" : kurve.AuslegungEingabeC.ToString("0.#", k),
+                                  e.KuehlSollwert.ToString("0.#", k),
+                                  GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_EINGABE_ABSTAND_K.ToString("0.#", k),
+                                  kurve.AuslegungAussenC.ToString("0.#", k)));
+            if (kurve.FusspunktGeklemmt)
+                p.HinweisEinmal("kk-fusspunkt-geklemmt-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLKURVE_FUSSPUNKT_GEKLEMMT, wer,
+                                  kurve.FusspunktEingabeC.ToString("0.#", k), kurve.AuslegungVorlaufC.ToString("0.#", k)));
         }
 
         /// <summary>
@@ -514,7 +981,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1)
+            // AK3-K (Festlegung 10): Rechnet der Projektlauf die Stufe im geschlossenen Kreis (AK3), entfällt der Satz
+            // „gebaut ist die Stufe AK1“ — der Kreis meldet sich selbst (Ak3Vorbereiten), eine Auskunft nennt ihre Rückstufe.
+            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1 && !Ak3Kernstufe.Wirksam(e.AnlagenkopplungStufe))
                 p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
                     string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
 
@@ -532,12 +1001,14 @@ namespace WindowsFormsApplication1
             else if (e.KuehlVorlaufGekappt)
                 p.HinweisEinmal("ak-kuehl-vorlauf-gemischt-" + id,
                     string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_VORLAUF_GEMISCHT, wer,
-                                  e.KuehlVorlaufQuelleC.ToString("0.#", k), e.KuehlVorlaufC.ToString("0.#", k)));
+                                  e.KuehlVorlaufQuelleC.ToString("0.#", k), e.KuehlVorlaufFestC.ToString("0.#", k)));
 
             if (e.KuehlGrenzeUeberAuslegung)
                 p.HinweisEinmal("ak-kuehl-grenze-ueber-auslegung-" + id,
                     string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG, wer,
                                   e.KuehlVorlaufgrenzeC.ToString("0.#", k), e.KuehlUebergabe.AuslegungVorlaufC.ToString("0.#", k)));
+
+            KuehlkurveMelden(e, p, id, wer);
 
             if (e.KuehlUebergabeArt == DbWerte.KUEHLUEBERGABE_FLAECHENKUEHLUNG)
                 p.HinweisEinmal("ak-flaechenkuehlung-estrich", MyResource.Resource.SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH);
@@ -572,6 +1043,14 @@ namespace WindowsFormsApplication1
                 p.Hinweis("Gebäudemodell VDI 6007: " + wer + " — " +
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KOND_OHNE_HEIZUNG,
                                       e.StundenOhneHeizungH.ToString(CultureInfo.InvariantCulture)));
+            HinweisKuehlNachtwert(e, wer);
+            HinweisNachtauskuehlung(e, r, wer);
+            HinweisNutzungsmaske(e, wer);
+            HinweisUntertemperatur(e, r, wer);
+            HinweisAbschnitte(r, wer);
+            HinweisErdreichumfang(r.Erdreich, wer);
+            if (r.Vorheizen == null) HinweisAufheizung(r.Aufheizung, wer);
+            HinweisZonensperre(r.Zonensperre, wer);
             if (e.Bauteilweg)
             {
                 // Stufe G3: welcher Weg rechnet, und jeder eingetragene U-Wert, der um mehr als
@@ -593,14 +1072,14 @@ namespace WindowsFormsApplication1
                     (8760 - e.StundenMitGegenstrahlung).ToString(CultureInfo.InvariantCulture) +
                     " Stunden keine Gegenstrahlung — dort rechnet nur der kurzwellige Term (Δθ_lw = 0).");
             p.HinweisEinmal("vdi6007-wochenende",
-                "Gebäudemodell VDI 6007: Wochenendmaske aus dem Ortszeit-Kalender des Referenzjahres " +
-                gemeinsam.Referenzjahr.ToString(CultureInfo.InvariantCulture) + "; Probe gegen Tab_Klimadaten.WE: " +
+                "Gebäudemodell VDI 6007: Wochenendmaske im Wochentagsraster des Projekts (" +
+                gemeinsam.Raster + "); Probe gegen Tab_Klimadaten.WE: " +
                 (gemeinsam.WochenendProbeAbweichungen == 0
                     ? "gleich."
                     : gemeinsam.WochenendProbeAbweichungen.ToString(CultureInfo.InvariantCulture) + " Tage verschieden (Befund der Probe, kein Rechenfehler)."));
         }
 
-        private static string Bezeichnung(ProjektGebaeudeModel g)
+        internal static string Bezeichnung(ProjektGebaeudeModel g)
         {
             if (g == null) return "Gebäude";
             return string.IsNullOrEmpty(g.Gebaeudename)

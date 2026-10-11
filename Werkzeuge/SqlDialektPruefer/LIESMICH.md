@@ -173,6 +173,13 @@ Liste erweitert, schreibt dazu, **warum** eine Datei Access sprechen darf. Das
 frühere Hauswerkzeug `EposSqliteMigrator/` ist aus dem Repository entfernt; die Windows-Suite
 `Referenzlauf/` (Modus `migration`) liegt außerhalb der geprüften Wurzeln.
 
+**Fremdes Schema** — die Liste `FREMDSCHEMA` nennt ganze Dateien, deren SQL nicht die eigene
+Datenbank spricht: zurzeit allein `EPOS.Kern/Allgemein/Import/Sqproj/SqprojLeser.cs`, der
+Leser der HottCAD-Projektdatei (`.sqproj`, nur lesend, feste Texte). Ihre Texte laufen
+gegen die Musterregeln der Verbotsliste, aber nicht mit `EXPLAIN` gegen die Testdatenbank
+(dort gibt es diese Tabellen nicht); die Schlusszeile zählt sie als „fremdes Schema“. Wer
+die Liste erweitert, schreibt dazu, welches Schema die Datei spricht.
+
 **Die rund 150 dynamischen Texte** lassen sich nicht abschließend beurteilen, weil ihr
 Tabellen- oder Spaltenname erst zur Laufzeit entsteht (`KomponentenUebernahmeCtrl`,
 `ProjektExportImportCtrl`, `DublettenPruefung`, `AnlagePufferVerbundCtrl` …). Für sie sind

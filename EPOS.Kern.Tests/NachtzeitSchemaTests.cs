@@ -142,7 +142,8 @@ namespace EPOS.Kern.Tests
                 Assert.EndsWith("STRICT", ddl.TrimEnd(), StringComparison.Ordinal);
                 foreach (string s in GebaeudeSchema.NACHTZEIT_SPALTEN)
                 {
-                    Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE " + s + " IS NOT NULL"));
+                    // Ausser dem Gebäude von 1051 und seinem Referenzkatalogbau (Nachtzeit aus „Büro", KP3, RP1).
+                    Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + t + "] WHERE " + s + " IS NOT NULL" + Konditionierungsbestand.Ausser(t)));
                     Assert.Contains(GebaeudeSchema.SqliteNachtstunde(s), ddl, StringComparison.Ordinal);
                 }
             }
@@ -437,7 +438,8 @@ namespace EPOS.Kern.Tests
                 foreach (string s in GebaeudeSchema.NACHTZEIT_SPALTEN)
                 {
                     Assert.Equal(1L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('" + t + "') WHERE name = '" + s + "'"));
-                    Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM [" + t + "] WHERE " + s + " IS NOT NULL"));
+                    Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM [" + t + "] WHERE " + s + " IS NOT NULL" +
+                                                  Konditionierungsbestand.Ausser(t)));   // ohne 1051 (KP3, RP1)
                 }
             using (SqliteCommand cmd = verbindung.CreateCommand())
             {

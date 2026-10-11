@@ -15,17 +15,20 @@ namespace EPOS.Kern.Tests
     /// <list type="bullet">
     ///   <item><description><b>−21.895.377,28 €</b>: der Kernweg über den GESPEICHERTEN Lauf 212
     ///   vom 30.08.2026 (<see cref="WirtschaftlichkeitAnkerTests"/>, ohne Zeitreihen).</description></item>
-    ///   <item><description><b>−31.142.971,06 €</b>: der Berichtsweg, frisch simuliert mit
+    ///   <item><description><b>−30.873.773,32 €</b>: der Berichtsweg, frisch simuliert mit
     ///   Zeitreihen (<c>PvAusweisStromMatrixTests</c>) — der fachliche Anker des Projekts.</description></item>
     /// </list>
     ///
     /// <para><b>Die Ursache ist der veraltete Lauf, nicht die Rechnung.</b> Lauf 212 stammt
     /// von vor Befund B‑1: Seine Kesselzeile führt keinen Brennstoff (5.403,1 MWh Wärme bei
     /// Verbrauch 0, <c>KesselVerbrauchFehlt</c>), und sein BHKW rechnete noch mit dem
-    /// Wirkungsgrad vor R10 (1.048,27 statt rund 1.241,5 MWh). Beides fehlt dem Kernweg in
+    /// Wirkungsgrad vor R10 (1.048,27 statt rund 1.241,5 MWh). Der frische Lauf verbrennt
+    /// im Kessel 5.240,16 MWh Gas — ein Brennwertkessel mit der Normvorgabe von η₃₀
+    /// (Kessel E2b, Schemaschritt 158), der unter seiner Mindestleistung taktet und je Start
+    /// den Anfahrverlust zahlt (Kessel E4; vor E4 5.203,2 MWh, vor E2b 5.403,1 MWh). Beides fehlt dem Kernweg in
     /// den Energiekosten (Gas 0,08 €/kWh) und in der CO₂-Abgabe (55 €/t); dazu der
     /// geklemmte Netzbezug (E27, +0,39 MWh × 0,25 €/kWh). Die Energiekosten liegen damit
-    /// um 447.807,10 €/a, die CO₂-Abgabe um 73.872,08 €/a höher; über 20 Jahre mit p_E
+    /// um 434.771,90 €/a, die CO₂-Abgabe um 71.721,28 €/a höher; über 20 Jahre mit p_E
     /// (Barwertfaktor 17,7267) erklärt das die Differenz bis auf den KWKG-Split des
     /// Berichtswegs (Zeitreihen, rund 54 € Barwert).</para>
     ///
@@ -120,7 +123,7 @@ namespace EPOS.Kern.Tests
             Weg alt = Kernweg();
             Weg neu = Berichtsweg();
             Assert.False(neu.Variante.KesselVerbrauchFehlt);
-            Assert.Equal(-31142971.06, neu.Ergebnis.Kapitalwert.Value, 2);
+            Assert.Equal(-30873773.32, neu.Ergebnis.Kapitalwert.Value, 2);
 
             double gas = KostenEmissionRechner.ArbeitspreisJeKwh(PROJEKT, ERDGAS_E).Value;
             Assert.Equal(0.08, gas, 9);
@@ -128,7 +131,7 @@ namespace EPOS.Kern.Tests
             // Brennstoffe: der Kessel ganz, das BHKW mit seinem Mehrverbrauch.
             double dKessel = Kessel(neu.Variante.Ergebnis) - Kessel(alt.Variante.Ergebnis);
             double dBhkw = Bhkw(neu.Variante.Ergebnis) - Bhkw(alt.Variante.Ergebnis);
-            Assert.Equal(5403.1, dKessel, 6);
+            Assert.Equal(5240.16, dKessel, 6);
             Assert.True(dBhkw > 190 && dBhkw < 196, "BHKW-Mehrverbrauch " + dBhkw);
             double dBrennstoff = (neu.Ergebnis.EnergiekostenJahr.Value - neu.Variante.StromkostenNetz.Value)
                                - (alt.Ergebnis.EnergiekostenJahr.Value - alt.Variante.StromkostenNetz.Value);
@@ -139,9 +142,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(97.50, dNetz, 2);
 
             double dEnergie = neu.Ergebnis.EnergiekostenJahr.Value - alt.Ergebnis.EnergiekostenJahr.Value;
-            Assert.Equal(447807.10, dEnergie, 2);
+            Assert.Equal(434771.90, dEnergie, 2);
             double dCo2 = neu.Ergebnis.CO2AbgabeJahr - alt.Ergebnis.CO2AbgabeJahr;
-            Assert.Equal(73872.08, dCo2, 2);
+            Assert.Equal(71721.28, dCo2, 2);
 
             // Betriebskosten und Investition sind in beiden Wegen gleich.
             Assert.Equal(alt.Ergebnis.BetriebskostenJahr.Value, neu.Ergebnis.BetriebskostenJahr.Value, 9);
@@ -152,7 +155,7 @@ namespace EPOS.Kern.Tests
             double dEinnahmen = neu.Ergebnis.BarwertEinnahmen.Value - alt.Ergebnis.BarwertEinnahmen.Value;
             Assert.True(Math.Abs(dEinnahmen) < 100, "KWKG-Split " + dEinnahmen);
             double dKw = neu.Ergebnis.Kapitalwert.Value - alt.Ergebnis.Kapitalwert.Value;
-            Assert.Equal(-9247593.78, dKw, 1);
+            Assert.Equal(-8978396.05, dKw, 1);
             // Rest unter 5 €: Die Rechnung trägt die ungerundeten Jahresbeträge, die
             // Zerlegung die auf Cent gerundeten.
             double rest = dKw - (-(dEnergie + dCo2) * BWF_PE + dEinnahmen);

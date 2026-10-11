@@ -1,0 +1,75 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Solarkollektoren
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Solarkollektoren.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+'''Solarkollektoren''' wandeln Sonneneinstrahlung unmittelbar in Wärme um und übertragen sie an ein Wärmeträgermedium. Sie decken vor allem die Trinkwarmwasserbereitung und unterstützen bei ausreichender Fläche auch die Heizung; anders als Photovoltaik liefern sie keinen Strom, sondern direkt nutzbare Wärme.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip|wirkungsgradmodell}}
+
+Ein Absorber nimmt die Einstrahlung auf und gibt die Wärme an ein durchströmendes Medium ab; eine transparente Abdeckung und die Dämmung auf der Rückseite begrenzen die Verluste an die Umgebung. Wie viel davon nutzbar bleibt, beschreibt der Kollektorwirkungsgrad nach EN 12975: Er sinkt mit steigender Temperaturdifferenz zwischen Kollektor und Umgebung, bezogen auf die Einstrahlung – ausgedrückt als <math>(T_{\mathrm{m}} - T_{\mathrm{a}}) / G</math> –, zunächst linear, bei großer Differenz zusätzlich quadratisch, bis er bei geringer Einstrahlung und hoher Übertemperatur auf null fällt.
+
+<!-- Modell: Flachkollektor nach EN 12975, η = η0 − a1·(Tm−Ta)/G − a2·(Tm−Ta)²/G mit η0 = 0,80,
+     a1 = 3,5 W/(m²·K), a2 = 0,015 W/(m²·K²) und G = 1 000 W/m²; negative Werte als 0.
+     Säulenhöhe in Prozent des größten Werts (η0 = 80 %), keinem Produkt zugeordnet. -->
+{{Diagramm-Anfang|titel=Kollektorwirkungsgrad über der bezogenen Übertemperatur}}
+{{Säulen-Anfang|achse=Kollektorwirkungsgrad [%]}}
+{{Säule|0|solar=100|wert=80 %}}
+{{Säule|0,03|solar=85|wert=68 %}}
+{{Säule|0,06|solar=67|wert=54 %}}
+{{Säule|0,09|solar=45|wert=36 %}}
+{{Säule|0,12|solar=21|wert=16 %}}
+{{Säule|0,15|solar=0|wert=0 %}}
+{{Säulen-Ende|(Tm−Ta)/G in m²·K/W}}
+{{Diagramm-Ende|Prinzipbild: Flachkollektor bei 1 000 W/m², Beispielwerte gerundet.}}
+
+== Kennzahlen ==
+{{Anker|kennzahlen|ausrichtung-und-neigung}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! typischer Bereich
+|-
+| Aperturfläche || wirksame, der Einstrahlung ausgesetzte Kollektorfläche || 2–3 m² je Modul
+|-
+| Optischer Wirkungsgrad (<math>\eta_{0}</math>) || Anteil der Einstrahlung, der ohne Temperaturverlust nutzbar wäre || 0,75–0,85 (Flachkollektor), höher bei Vakuumröhre
+|-
+| Wärmeverlustkoeffizient (<math>a_{1}</math>) || linearer Wärmeverlust je Kelvin Übertemperatur || 3–4 W/(m²·K), niedriger bei Vakuumröhre
+|-
+| Neigung || Winkel der Kollektorebene gegen die Horizontale || 30–45° für den Jahresertrag, steiler für Wintergewinn
+|-
+| Azimut || Abweichung der Ausrichtung von Süden || bis ±30° nur wenige Prozent Ertragsverlust
+|-
+| Spezifischer Jahresertrag || nutzbare Wärme je m² Aperturfläche und Jahr || rund 350–500 kWh/(m²·a) bei Warmwasseranwendung
+|}
+
+== Typische Größen ==
+{{Anker|typische-groessen}}
+
+* Einfamilienhaus (Warmwasser): 4–6 m² Kollektorfläche, 300–500 Liter Solarspeicher.
+* Mehrfamilienhaus (Warmwasser mit Zirkulation): häufig 20–40 m², abhängig von Wohnungszahl und Zirkulationsverlust.
+* Gewerbe und Hotellerie (Vorwärmung vor einem weiteren Erzeuger): 30 m² und mehr, abgestimmt auf Tagesbedarf und Speichergröße.
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen|kollektortypen|speicher-und-nutzung}}
+
+Flachkollektoren sind der Standard für Warmwasser und Heizungsunterstützung im Wohnbau: robust, preiswert, mit guter Leistung bei mäßigen Temperaturdifferenzen. Vakuumröhrenkollektoren verlieren weniger Wärme und bleiben deshalb bei hohen Betriebstemperaturen oder niedrigen Außentemperaturen im Vorteil, sind dafür teurer.
+
+Solarthermie liefert nur, wenn die Sonne scheint, und braucht immer einen Abnehmer – einen aktuellen Bedarf oder einen Speicher –, sonst geht der Ertrag ungenutzt verloren. Sie deckt deshalb nie den ganzen Jahresbedarf allein, sondern einen Anteil, der mit Fläche und Speicher wächst und bei zu großer Kollektorfläche in einen wachsenden, nicht mehr nutzbaren Überschuss übergeht. Für Prozesswärme über rund 100 °C braucht es Sonderbauformen, und als alleiniger Wärmeerzeuger im Winter reicht sie nicht; sie ergänzt einen anderen Erzeuger, statt ihn zu ersetzen.
+
+[[Datei:Einbindung_Solarthermie_Puffer.svg|mini|zentriert|800px|Solarthermie mit Wärmetauscher unten im geschichteten Pufferspeicher, Nachheizung und Entnahme oben. Prinzipbild.]]
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan|abbildung-in-epos-plan}}
+
+Der Katalog der Kollektortypen liegt unter Administration → Wärme- und Kälteerzeugung → Solarkollektoren; im Projekt legt die Kachel Solarthermie der Startseite das Kollektorfeld im Dialog „Eingabe der Solarkollektoren“ an, eingebunden wird es in der Simulationskonfiguration. Wie Kollektorfeld, Speicher und Nachheizung dort zusammenwirken, zeigt [[Programm Dokumentation/Solarthermie#einbindung|Einbindung]], ein Beispiel mit realen Größen steht unter [[Programm Dokumentation/Solarthermie#beispiel|Beispiel]], das Zusammenspiel mit anderen Erzeugern unter [[Programm Dokumentation/Solarthermie#zusammenspiel|Zusammenspiel]] und was dabei zu beachten ist unter [[Programm Dokumentation/Solarthermie#fallstricke|Fallstricke]]. Der Rechenweg nach EN 12975 steht unter [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programm Dokumentation/Solarthermie|Programm Dokumentation: Solarthermie]] – Einbindung, Beispiel, Zusammenspiel und Fallstricke
+* [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]] – der Rechenweg nach EN 12975
+* [[Grundlagen/Pufferspeicher|Grundlagen: Pufferspeicher]] – der häufigste Speicher hinter dem Kollektorfeld
+* [[Grundlagen/Hydraulikschemata|Hydraulikschemata]] – die hydraulische Einbindung als Prinzipschema
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

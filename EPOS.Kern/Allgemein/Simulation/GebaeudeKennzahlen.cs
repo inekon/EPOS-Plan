@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -16,11 +17,26 @@ namespace WindowsFormsApplication1
     /// aus dem <see cref="GebaeudeModellErgebnis"/> des Merkplatzes (skaliert nach E8); fehlt
     /// es, bleiben sie <c>null</c>.</para>
     ///
+    /// <para><b>Aufheizoptimierung</b> (Entwurf KP3, Welle D2; Abschnitt 4, Grundsatz 4): Die Aufheizwerte des
+    /// Laufs (<see cref="GebaeudeModellErgebnis.Aufheizung"/>, je Gebäude und je Zone) gehen nach den NULL-Regeln
+    /// der Festlegung 25 in die Zeile (<see cref="Aufheizwerte"/>) — NULL heißt „Schalter aus" oder
+    /// Tagesbilanz-Weg. Die <b>Sommerlüftungsstunden</b> sind NULL ohne Sommerlüftung (Festlegung 26, B17), wie
+    /// die Nachtauskühlstunden; das Modell behält seine Zahl und trägt das Kennzeichen
+    /// <see cref="GebaeudeModellErgebnis.SommerlueftungGesetzt"/>.</para>
+    ///
     /// <para>Ohne Datenbank, ohne Zustand. Der Rechenweg des Laufs bleibt unberührt: gelesen
     /// wird eine Kopie der Reihe.</para>
     /// </summary>
     internal static class GebaeudeKennzahlen
     {
+        /// <summary>
+        /// <b>Werden am Gebäude Komfortkennzahlen erhoben?</b> (AK2-2b, F8) Nur am gekoppelten Gebäude des VDI-Wegs:
+        /// Heizkreis (AK1), Kältekreis (E37) oder Fahrplan (AK2) war wirksam. Altweg und ungekoppelte Gebäude
+        /// bekommen keine — sie haben keine Rückwirkung (F5).
+        /// </summary>
+        internal static bool KomfortErhoben(GebaeudeModellErgebnis vdi)
+            => vdi != null && (vdi.Heizkreis != null || vdi.Kuehlkreis != null || vdi.FahrplanBegrenzt != null);
+
         /// <summary>
         /// Die Ergebniszeile eines Gebäudes.
         /// </summary>
@@ -69,14 +85,31 @@ namespace WindowsFormsApplication1
                             DeltaThetaMaxK = double.IsNaN(z.DeltaThetaMaxK) ? (double?)null : z.DeltaThetaMaxK,
                             DurchlaeufeMax = z.DurchlaeufeMax,
                             MusterwechselH = z.MusterwechselH,
-                        });
+                            NachtauskuehlstundenH = z.Ergebnis.StundenMitNachtauskuehlung,
+                            // Stufe KP3 (Festlegung 26, E54 je Zone): NULL ohne Sommerlueftung.
+                            SommerlueftungsstundenH = Sommerlueftungsstunden(z.Ergebnis),
+                            // E63 (AK1z): der Kreis der gekoppelten Zone; NULL bei idealer Zone.
+                            VorlaufMittelC = z.Ergebnis.Heizkreis is HeizkreisErgebnis zk && !double.IsNaN(zk.VorlaufMittelC) ? zk.VorlaufMittelC : (double?)null,
+                            RuecklaufMittelC = z.Ergebnis.Heizkreis is HeizkreisErgebnis zr && !double.IsNaN(zr.RuecklaufMittelC) ? zr.RuecklaufMittelC : (double?)null,
+                            UebergabeBegrenztH = z.Ergebnis.Heizkreis?.UebergabeBegrenztStundenH,
+                            // Schritt 185 (MZ-Rest): die Kälte der Zone wie im Bedarfsdialog - NULL ohne wirksame Kühlung.
+                            KaeltespitzeKw = z.Ergebnis.KaeltespitzeKw,
+                            KuehlstundenH = z.Ergebnis.StundenMitKuehlbedarf,
+                        }.MitAufheizwerten(Aufheizwerte(z.Ergebnis.Aufheizung, zone: true)));
 
                 e.KuehlenergieMwh = vdi.KuehlenergieMwh;
                 e.KuehlstundenH = vdi.StundenMitKuehlbedarf;
                 e.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
                 e.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
-                e.SommerlueftungsstundenH = vdi.StundenMitSommerlueftung;
+                // Stufe KP3 (Festlegung 26, B17): NULL ohne Sommerlueftung wie die Nachtauskuehlstunden -
+                // das Modell behaelt seine Zahl, die Zeile unterscheidet „nicht gesetzt" von „0 h".
+                e.SommerlueftungsstundenH = Sommerlueftungsstunden(vdi);
+                // Stufe KP1b (Konzept 3.7): NULL heisst "keine Nachtauskuehlung gesetzt" (E30).
+                e.NachtauskuehlstundenH = vdi.StundenMitNachtauskuehlung;
                 e.ObereRaumtemperaturC = vdi.ThetaMax;
+
+                // Stufe KP3 (Entwurf Abschnitt 4, Festlegung 25): die Aufheizwerte - NULL heisst Schalter aus.
+                e.MitAufheizwerten(Aufheizwerte(vdi.Aufheizung, zone: false));
 
                 // Anlagenkopplung (AK1): die Kennzahlen des Heizkreises je Gebäude.
                 HeizkreisErgebnis hk = vdi.Heizkreis;
@@ -86,6 +119,27 @@ namespace WindowsFormsApplication1
                     e.VorlaufMittelC = double.IsNaN(hk.VorlaufMittelC) ? (double?)null : hk.VorlaufMittelC;
                     e.RuecklaufMittelC = double.IsNaN(hk.RuecklaufMittelC) ? (double?)null : hk.RuecklaufMittelC;
                     e.UebergabeBegrenztStundenH = hk.UebergabeBegrenztStundenH;
+                }
+
+                // Anlagenkopplung (AK2): die Stunden an der Schranke der Verfügbarkeit - null ohne Fahrplan.
+                e.FahrplanBegrenztStundenH = vdi.FahrplanBegrenztStunden;
+
+                // Anlagenkopplung (AK2-2b, 5.5, F8, F9): die Komfortkennzahlen - nur am gekoppelten Gebaeude.
+                if (KomfortErhoben(vdi))
+                {
+                    Komfortkennzahlen heiz = Komfortkennzahlen.Heizseite(vdi);
+                    if (heiz != null)
+                    {
+                        e.KomfortUnterschreitungsstundenH = heiz.Stunden;
+                        e.KomfortKelvinstundenKh = heiz.Kelvinstunden;
+                        e.KomfortLaengsteStreckeH = heiz.LaengsteStrecke;
+                    }
+                    Komfortkennzahlen kuehl = Komfortkennzahlen.Kuehlseite(vdi);
+                    if (kuehl != null)
+                    {
+                        e.KomfortUeberschreitungsstundenH = kuehl.Stunden;
+                        e.KomfortKelvinstundenKuehlungKh = kuehl.Kelvinstunden;
+                    }
                 }
 
                 // Kälteseite (E37): die Kennzahlen des Kältekreises je Gebäude.
@@ -100,6 +154,120 @@ namespace WindowsFormsApplication1
                 }
             }
             return e;
+        }
+
+        /// <summary>
+        /// Die Sommerlüftungsstunden der Ergebniszeile (Entwurf KP3, Festlegung 26, B17): die Zahl des Modells,
+        /// wenn eine Sommerlüftung gesetzt ist, sonst <c>null</c> — wie die Nachtauskühlstunden (E30).
+        /// </summary>
+        internal static int? Sommerlueftungsstunden(GebaeudeModellErgebnis vdi)
+            => vdi != null && vdi.SommerlueftungGesetzt ? vdi.StundenMitSommerlueftung : (int?)null;
+
+        /// <summary>
+        /// <b>Die vierzehn Aufheizwerte einer Ergebniszeile</b> (Entwurf KP3, Abschnitt 4, Grundsatz 4,
+        /// Festlegung 25) aus den Aufheizwerten des Laufs — die EINE Stelle der NULL-Regeln, aus der
+        /// Gebäudezeile, Zonenzeile und Ergebnisexport lesen. <c>null</c> heißt „Schalter aus" oder
+        /// Tagesbilanz-Weg: dann bleibt jede Spalte NULL.
+        /// <list type="bullet">
+        /// <item><c>Aufheiz_Bemessung</c> nur am Gebäude; GEKOPPELT und UNBEHEIZT tragen nur Zustand und
+        /// <c>HeizleistungMax_H</c> (so liefert sie schon der Lauf); UNERREICHBAR ohne t_auf,max.</item>
+        /// <item><b>P_auf nur endlich und über null</b> (Spalte <c>CHECK (&gt; 0)</c>): Die Testnaht der
+        /// Grenzfallprobe (N-AH8) setzt P_auf = +∞ — das ist keine Leistung, die Spalte bleibt NULL; ebenso
+        /// eine Grenze <c>Heizleistung_Max</c> = 0.</item>
+        /// <item><b>Eine gekoppelte Zone</b> (Mehrzonenweg mit AK1 als idealer Last) trägt den Zustand GEKOPPELT
+        /// und <c>HeizleistungMax_H</c> wie das gekoppelte Gebäude — die Zustandsspalte von <c>Tab_ErgebnisZone</c>
+        /// kennt GEKOPPELT seit dem Schritt KP-S4 (<see cref="AufheizManuellSchema"/>, Befund D2). Ein Gebäude hat
+        /// keinen Zustand UNBEHEIZT und eine Zone keine Quelle GEMISCHT — beides entsteht im Lauf nicht.</item>
+        /// <item><b>E59/E60</b> (Festlegungen 39, 41): <c>Aufheiz_Art</c> an Gebäude und Zone (TAEGLICH, FEST oder
+        /// MANUELL; die Zone erbt die Art ihres Gebäudes), bei MANUELL <c>Aufheizzeit_Max_H</c> = der manuelle Wert;
+        /// <c>Auslegungsheizlast_Kw</c> (&gt; 0) und <c>Aufheizzuschlag_Kw</c> (≥ 0) nur am Gebäude und nur endlich;
+        /// die manuelle Aufheizzeit für den Ergebnisexport.</item>
+        /// <item><c>HeizleistungMax_H</c> nur endlich.</item>
+        /// </list>
+        /// </summary>
+        /// <param name="a">Die Aufheizwerte des Gebäudes bzw. der Zone (skaliert wie die Spitzen).</param>
+        /// <param name="zone">Die Zeile einer Zone (<c>Tab_ErgebnisZone</c>)?</param>
+        internal static Aufheizkennzahlen Aufheizwerte(Aufheizergebnis a, bool zone)
+        {
+            if (a == null || a.AufheizZustand == null) return null;
+            string zustand = a.AufheizZustand;
+            if (!zone && zustand == DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT) return null;
+            string quelle = a.AufheizLeistungsquelle;
+            if (zone && quelle == DbWerte.AUFHEIZ_QUELLE_GEMISCHT) quelle = null;
+            return new Aufheizkennzahlen
+            {
+                AufheizZustand = zustand,
+                AufheizBemessung = zone ? null : a.AufheizBemessung,
+                AufheizArt = a.AufheizArt,
+                AufheizzeitManuellH = zone ? null : a.AufheizzeitManuellH,
+                AuslegungsheizlastKw = zone ? null : a.AuslegungsheizlastKw is double hl && hl > 0.0 && !double.IsInfinity(hl) ? hl : (double?)null,
+                AufheizzuschlagKw = zone ? null : a.AufheizzuschlagKw is double rh && rh >= 0.0 && !double.IsInfinity(rh) ? rh : (double?)null,
+                AufheizzeitMaxH = zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR ? null : a.AufheizzeitMaxH,
+                AufheizAussenC = Endlich(a.AufheizAussenC),
+                AufheizLeistungKw = a.AufheizLeistungKw is double p && p > 0.0 && !double.IsInfinity(p) ? p : (double?)null,
+                AufheizLeistungsquelle = quelle,
+                Aufheiztage = a.Aufheiztage,
+                AufheiztageBegrenzt = a.AufheiztageBegrenzt,
+                AufheiztageUnerreichbar = a.AufheiztageUnerreichbar,
+                AufheiztageNachweisband = a.AufheiztageNachweisband,
+                AufheizstundenH = a.AufheizstundenH,
+                AufheizzeitLaengsteH = a.AufheizzeitLaengsteH,
+                AufheizspruengeAus = a.AufheizspruengeAus,
+                HeizleistungMaxStundenH = Endlich(a.HeizleistungMaxStundenH),
+                // E99 (Schritt 194): nur am Gebäude; die Zone erbt die Aufheizzeit, der Bericht liest die Gebäudezeile.
+                AufheizAufschlagVerwendetH = zone ? null : a.AufheizAufschlagVerwendetH,
+                AufheizzeitBemessenH = zone || zustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR ? null : a.AufheizzeitBemessenH,
+            };
+        }
+
+        private static double? Endlich(double? x)
+            => x is double w && !double.IsNaN(w) && !double.IsInfinity(w) ? w : (double?)null;
+
+        /// <summary>Setzt die Aufheizwerte in die Gebäudezeile; <c>null</c> lässt sie NULL.</summary>
+        private static ErgebnisGebaeudeModel MitAufheizwerten(this ErgebnisGebaeudeModel e, Aufheizkennzahlen a)
+        {
+            if (a == null) return e;
+            e.AufheizZustand = a.AufheizZustand;
+            e.AufheizBemessung = a.AufheizBemessung;
+            e.AufheizArt = a.AufheizArt;
+            e.AuslegungsheizlastKw = a.AuslegungsheizlastKw;
+            e.AufheizzuschlagKw = a.AufheizzuschlagKw;
+            e.AufheizzeitMaxH = a.AufheizzeitMaxH;
+            e.AufheizAussenC = a.AufheizAussenC;
+            e.AufheizLeistungKw = a.AufheizLeistungKw;
+            e.AufheizLeistungsquelle = a.AufheizLeistungsquelle;
+            e.Aufheiztage = a.Aufheiztage;
+            e.AufheiztageBegrenzt = a.AufheiztageBegrenzt;
+            e.AufheiztageUnerreichbar = a.AufheiztageUnerreichbar;
+            e.AufheiztageNachweisband = a.AufheiztageNachweisband;
+            e.AufheizstundenH = a.AufheizstundenH;
+            e.AufheizzeitLaengsteH = a.AufheizzeitLaengsteH;
+            e.AufheizAufschlagVerwendetH = a.AufheizAufschlagVerwendetH;
+            e.AufheizzeitBemessenH = a.AufheizzeitBemessenH;
+            e.AufheizspruengeAus = a.AufheizspruengeAus;
+            e.HeizleistungMaxStundenH = a.HeizleistungMaxStundenH;
+            return e;
+        }
+
+        /// <summary>Setzt die Aufheizwerte in die Zonenzeile (ohne Bemessung); <c>null</c> lässt sie NULL.</summary>
+        private static ErgebnisZoneModel MitAufheizwerten(this ErgebnisZoneModel z, Aufheizkennzahlen a)
+        {
+            if (a == null) return z;
+            z.AufheizZustand = a.AufheizZustand;
+            z.AufheizArt = a.AufheizArt;
+            z.AufheizzeitMaxH = a.AufheizzeitMaxH;
+            z.AufheizAussenC = a.AufheizAussenC;
+            z.AufheizLeistungKw = a.AufheizLeistungKw;
+            z.AufheizLeistungsquelle = a.AufheizLeistungsquelle;
+            z.Aufheiztage = a.Aufheiztage;
+            z.AufheiztageBegrenzt = a.AufheiztageBegrenzt;
+            z.AufheiztageUnerreichbar = a.AufheiztageUnerreichbar;
+            z.AufheiztageNachweisband = a.AufheiztageNachweisband;
+            z.AufheizstundenH = a.AufheizstundenH;
+            z.AufheizzeitLaengsteH = a.AufheizzeitLaengsteH;
+            z.AufheizspruengeAus = a.AufheizspruengeAus;
+            z.HeizleistungMaxStundenH = a.HeizleistungMaxStundenH;
+            return z;
         }
 
         /// <summary>
@@ -135,5 +303,63 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < werte.Length; i++) if (max < werte[i]) max = werte[i];
             return max;
         }
+    }
+
+    /// <summary>
+    /// <b>Die Aufheizwerte einer Ergebniszeile</b> (Entwurf KP3, Abschnitt 4; Schritt 161) nach den NULL-Regeln
+    /// der Festlegung 25 (<see cref="GebaeudeKennzahlen.Aufheizwerte"/>) — Feldnamen wie
+    /// <see cref="ErgebnisGebaeudeModel"/>. Gebäudezeile, Zonenzeile und Ergebnisexport lesen nur sie.
+    /// </summary>
+    internal sealed record Aufheizkennzahlen
+    {
+        internal string AufheizZustand { get; init; }
+        internal string AufheizBemessung { get; init; }
+        internal string AufheizArt { get; init; }
+        internal int? AufheizzeitManuellH { get; init; }
+        internal double? AuslegungsheizlastKw { get; init; }
+        internal double? AufheizzuschlagKw { get; init; }
+        internal int? AufheizzeitMaxH { get; init; }
+        internal double? AufheizAussenC { get; init; }
+        internal double? AufheizLeistungKw { get; init; }
+        internal string AufheizLeistungsquelle { get; init; }
+        internal int? Aufheiztage { get; init; }
+        internal int? AufheiztageBegrenzt { get; init; }
+        internal int? AufheiztageUnerreichbar { get; init; }
+        internal int? AufheiztageNachweisband { get; init; }
+        internal int? AufheizstundenH { get; init; }
+        internal int? AufheizzeitLaengsteH { get; init; }
+        internal int? AufheizspruengeAus { get; init; }
+        internal double? HeizleistungMaxStundenH { get; init; }
+
+        /// <summary>E99: verwendeter Aufschlag [h] — nur Gebäude, nicht im Ergebnisexport.</summary>
+        internal int? AufheizAufschlagVerwendetH { get; init; }
+
+        /// <summary>E99: bemessene Aufheizzeit [h] — nur Gebäude, nicht im Ergebnisexport.</summary>
+        internal int? AufheizzeitBemessenH { get; init; }
+
+        /// <summary>
+        /// Die Zahlen der Zeile in fester Reihenfolge, nur die gesetzten — Schlüssel = Feldname (Ergebnisexport,
+        /// Festlegung 28). Die drei Texte (Zustand, Bemessung, Quelle) gehen getrennt.
+        /// </summary>
+        internal IEnumerable<KeyValuePair<string, double>> Zahlen()
+        {
+            if (AufheizzeitMaxH is int t) yield return Paar(nameof(AufheizzeitMaxH), t);
+            if (AufheizAussenC is double ta) yield return Paar(nameof(AufheizAussenC), ta);
+            if (AufheizLeistungKw is double p) yield return Paar(nameof(AufheizLeistungKw), p);
+            if (Aufheiztage is int d) yield return Paar(nameof(Aufheiztage), d);
+            if (AufheiztageBegrenzt is int w2) yield return Paar(nameof(AufheiztageBegrenzt), w2);
+            if (AufheiztageUnerreichbar is int w1) yield return Paar(nameof(AufheiztageUnerreichbar), w1);
+            if (AufheiztageNachweisband is int w3) yield return Paar(nameof(AufheiztageNachweisband), w3);
+            if (AufheizstundenH is int sh) yield return Paar(nameof(AufheizstundenH), sh);
+            if (AufheizzeitLaengsteH is int l) yield return Paar(nameof(AufheizzeitLaengsteH), l);
+            if (AufheizspruengeAus is int w4) yield return Paar(nameof(AufheizspruengeAus), w4);
+            if (HeizleistungMaxStundenH is double k) yield return Paar(nameof(HeizleistungMaxStundenH), k);
+            // E97 (Festlegung 41): die Teile der Auslegungsgröße wie die Spalten Auslegungsheizlast_Kw und
+            // Aufheizzuschlag_Kw - nur am Gebäude gesetzt (Aufheizwerte), sonst entsteht kein Schlüssel.
+            if (AuslegungsheizlastKw is double hl) yield return Paar(nameof(AuslegungsheizlastKw), hl);
+            if (AufheizzuschlagKw is double rh) yield return Paar(nameof(AufheizzuschlagKw), rh);
+        }
+
+        private static KeyValuePair<string, double> Paar(string k, double v) => new KeyValuePair<string, double>(k, v);
     }
 }

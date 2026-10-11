@@ -483,6 +483,27 @@ public sealed class StilblattTests
         Assert.Contains(".epos-raster th.epos-simerg-zahl", css, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// <b>Kopf und Wert stehen übereinander</b> (Auftrag TA, 10.10.2026). Die
+    /// Ergebnistabellen der Simulationsreiter nehmen die Breite ihres Inhalts
+    /// (<c>table.epos-simerg-tabelle</c> schlägt <c>width: 100%</c> von
+    /// <c>.epos-raster</c>), und ein Zahlenkopf steht auch in Kennzahlentabelle
+    /// und Variantenvergleich rechts, deren Hausregel links setzt.
+    /// </summary>
+    [Fact]
+    public void TA_Ergebnistabellen_nehmen_die_Inhaltsbreite_und_Zahlenkoepfe_stehen_rechts()
+    {
+        string breite = Regelblock("table.epos-simerg-tabelle");
+        Assert.Contains("width: auto", breite, StringComparison.Ordinal);
+        Assert.Contains("align-self: flex-start", breite, StringComparison.Ordinal);   // Flex-Block dehnt sonst
+
+        string koepfe = Regelblock(".epos-simerg-kennzahlen th.epos-simerg-zahl");
+        Assert.Contains("text-align: right", koepfe, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.Contains(".epos-simerg-vergleich th.epos-simerg-zahl", css, StringComparison.Ordinal);
+    }
+
     // ---------------------------------------------------------------------
     //  #186: Gruppenkopf-Balken und Kopfzelle des Zeilenrasters
     // ---------------------------------------------------------------------
@@ -604,6 +625,27 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Anwenderbefund 29.09.2026 (Wärmelast Jahresganglinie, WebView2): Die Kurven lagen
+    /// unter der Nulllinie und rechts über der Achse.</b> Die Maßregel des Diagramms
+    /// („füllt die Breite, behält sein Seitenverhältnis“) stand als NACHFAHRENregel da und
+    /// traf auch das innere <c>&lt;svg class="epos-flaeche"&gt;</c> der Zeichenfläche. Dessen
+    /// Breite und Höhe sind SVG-2-Geometrieeigenschaften: <c>width: 100%</c> und
+    /// <c>height: auto</c> zogen es auf das ganze Bild (im Chromium am Baustein gemessen:
+    /// Attribut 1 050 × 360, berechnet 1 240 × 560). Die Regel trifft deshalb nur das
+    /// ÄUSSERE SVG, das Kind der Fläche.
+    /// </summary>
+    [Fact]
+    public void Die_Massregel_des_Diagramms_trifft_nur_das_aeussere_SVG()
+    {
+        string block = Regelblock(".epos-diagramm-svg-flaeche > svg {");
+        Assert.Contains("width: 100%", block, StringComparison.Ordinal);
+        Assert.Contains("height: auto", block, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.DoesNotContain("\n.epos-diagramm-svg-flaeche svg {", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Stufe G6c, Welle D2: der Grundriss des Gebäudeimports.</b> Die zehn Zonenfarben stehen als Token in
     /// <c>:root</c> und kommen über die Klasse der Stelle an Fläche und Legende; ohne Zone grau, schematisch
     /// gestrichelt, der Rand bei jedem Maßstab 1 px (<c>vector-effect</c>). Im Kontrastmodus Canvas mit
@@ -638,6 +680,18 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// Der Zonenbaum: Die Liste der nicht zugeordneten Räume dockt neben dem Baum an und bricht schmal darunter um; die
+    /// Knopfleisten brechen um; die Sperre am OK steht in der Warnfarbe (Token).
+    /// </summary>
+    [Fact]
+    public void ZB_Der_Zonenbaum_dockt_die_offenen_Raeume_an_und_die_Knopfleisten_brechen_um()
+    {
+        Assert.Contains("min-width: 0", Regelblock(".epos-gebimport-offenspalte {"), StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-gebimport-planleiste,"), StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-stufe-warnung)", Regelblock(".epos-gebimport-okhinweis {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Auftrag #572 (Befund 26.09.2026):</b> Die Zapfprofil-Überlagerung IN der
     /// Überlagerung „Brauchwasser…" stand nicht im Fenster, sondern im Kasten der äußeren —
     /// links und rechts abgeschnitten, mit Querrollbalken, die Wirtsliste schien unten durch.
@@ -656,7 +710,8 @@ public sealed class StilblattTests
 
         Assert.DoesNotContain("transform", block, StringComparison.Ordinal);
         Assert.Contains("position: fixed", block, StringComparison.Ordinal);
-        Assert.Contains("inset: 0", block, StringComparison.Ordinal);
+        // Zwischen den sicheren Abstaenden des Geraets (unter Windows 0, also inset: 0).
+        Assert.Contains("inset: var(--epos-sicher-oben) 0 var(--epos-sicher-unten)", block, StringComparison.Ordinal);
         Assert.Contains("margin: auto", block, StringComparison.Ordinal);
         Assert.Contains("height: fit-content", block, StringComparison.Ordinal);
         Assert.Contains("overflow-x: hidden", block, StringComparison.Ordinal);
@@ -704,6 +759,395 @@ public sealed class StilblattTests
         // Die SpeichernLeiste traegt ihre Statusspanne als direktes Kind - daran haengt die Regel.
         string leiste = File.ReadAllText(Path.Combine(Wwwroot(), "..", "Bausteine", "SpeichernLeiste.razor"));
         Assert.Matches(@"<div class=""epos-leiste"">[\s\S]*?<span class=""epos-status ", leiste);
+    }
+
+    /// <summary>
+    /// <b>Nachtrag N35 zu #572 (Blattwechsel):</b> Das Zapfprofil steht als BLATT im Dialog
+    /// „Brauchwasser…" statt als Überlagerung in der Überlagerung. Damit es nichts von seinem Wirt
+    /// verliert, tragen drei Regeln, was die Überlagerung ihm gab: Das Blatt weitet die tragende
+    /// Überlagerung auf das breite Maß (der Gebäudekatalog weiß nichts vom Blatt), seine Fußleiste
+    /// haftet wie die einer eingebetteten Komponente, und der eingebettete Dialog trägt keinen
+    /// zweiten Rand. Gemessen (Chromium, 1 280 × 800 und 1 024 × 700): Überlagerung 1 229 bzw.
+    /// 983 px breit, Querüberlauf 0, eine Überlagerung statt zwei, zwei Hilfepillen.
+    /// </summary>
+    [Fact]
+    public void N35_Das_Blatt_weitet_die_Ueberlagerung_und_haftet_mit_seiner_Fussleiste()
+    {
+        string breit = Regelblock(".epos-ueberlagerung:has(.epos-blatt--breit) {");
+        Assert.Contains("width: min(96vw, 1400px)", breit, StringComparison.Ordinal);
+        Assert.Contains("max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)))", breit, StringComparison.Ordinal);
+
+        // Dasselbe Maß wie die ausdrückliche Zusatzklasse - eine Zahl, zwei Wege.
+        string ausdruecklich = Regelblock(".epos-ueberlagerung--breit {");
+        Assert.Contains("width: min(96vw, 1400px)", ausdruecklich, StringComparison.Ordinal);
+
+        string fuss = Regelblock(".epos-blatt-inhalt > .epos-dialog > .epos-leiste:has(> .epos-status) {");
+        Assert.Contains("position: sticky", fuss, StringComparison.Ordinal);
+        Assert.Contains("bottom: calc(-1 * var(--epos-karte-rand))", fuss, StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-karte-flaeche)", fuss, StringComparison.Ordinal);
+
+        Assert.Contains("--epos-ueberlagerung-fuss: calc(", Regelblock(
+            ".epos-ueberlagerung:has(.epos-blatt-inhalt > .epos-dialog > .epos-leiste > .epos-status) {"),
+            StringComparison.Ordinal);
+
+        string dialog = Regelblock(".epos-blatt-inhalt > .epos-dialog {");
+        Assert.Contains("padding: 0", dialog, StringComparison.Ordinal);
+
+        // Der Baustein traegt die Klassen, an denen die Regeln haengen.
+        string blatt = File.ReadAllText(Path.Combine(Wwwroot(), "..", "Bausteine", "Blattwechsel.razor"));
+        Assert.Contains("class=\"epos-blatt-inhalt\"", blatt, StringComparison.Ordinal);
+        Assert.Contains("class=\"epos-blatt @ZusatzKlasse\"", blatt, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Konzept Navigation Berichte &amp; Kosten, Variante A (A1/A2):</b> Die dunkle
+    /// Seitennavigation mit ihren sechs Festfarben ist fort; die Statuszeile der Reiter warnt
+    /// mit dem TOKEN <c>--epos-warn-text</c> und im Kontrastmodus mit einer Systemfarbe, die
+    /// Kurzform steht erst unter 900 px, und das Leistenende bricht dort in eine eigene Zeile.
+    /// </summary>
+    [Fact]
+    public void BN_A_Die_Statuszeile_der_Reiter_warnt_mit_Token_und_kuerzt_unter_900px()
+    {
+        // Zeilenenden normalisieren: Der Windows-Arbeitsbaum haelt das Blatt mit CRLF,
+        // die mehrzeiligen Suchtexte unten stehen mit LF.
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.DoesNotContain(".epos-navigation", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("#23282d", css, StringComparison.OrdinalIgnoreCase);
+
+        Assert.Contains("color: var(--epos-warn-text)", Regelblock(".epos-reiter-status--warnung"), StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-text-leise)", Regelblock(".epos-reiter-status {"), StringComparison.Ordinal);
+        Assert.Contains("display: none", Regelblock(".epos-reiter-status-kurz"), StringComparison.Ordinal);
+        Assert.Contains("min-height: 52px", Regelblock(".epos-reiter-knopf--status"), StringComparison.Ordinal);
+
+        int schmal = css.IndexOf(
+            "@media (max-width: 900px) {\n    .epos-reiter-status-lang {\n        display: none;\n    }\n\n"
+            + "    .epos-reiter-status-kurz {\n        display: inline;\n    }", StringComparison.Ordinal);
+        Assert.True(schmal > 0, "Die Kurzform unter 900 px fehlt");
+        int ende = css.IndexOf(".epos-reiter-kopfzeile > .epos-reiter-leistenende {\n        flex: 1 1 100%;", schmal,
+                               StringComparison.Ordinal);
+        Assert.True(ende > schmal && ende < css.IndexOf("\n}\n", schmal, StringComparison.Ordinal),
+                    "Das Leistenende bricht unter 900 px nicht in eine eigene Zeile");
+
+        int kontrast = css.IndexOf(".epos-reiter-status--warnung { color: LinkText; }", StringComparison.Ordinal);
+        Assert.True(kontrast > 0 && kontrast > css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal)
+                    && css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal) > schmal,
+                    "Der Kontrastmodus der Warnung fehlt");
+    }
+
+    /// <summary>
+    /// Die <b>Bereichszeile</b> (Berichte &amp; Kosten): Der Modifikator <c>epos-reiter--bereich</c>
+    /// hebt die Reiterzeile über Token hervor — Titelgröße aus
+    /// <c>--epos-schriftgroesse-bereichsreiter</c> (15 px, kleiner als der Kacheltitel der
+    /// Hauptreiter), eigene Fläche, aktiver Reiter hell mit dem Unterstrich des Hauses, 2-px-Linie,
+    /// Knopf mit Statuszeile 56 px. Keine Festfarbe, und im Kontrastmodus tragen Linie und
+    /// Unterstrich den Zustand. Die Hausregeln der übrigen Reiter bleiben unverändert.
+    /// </summary>
+    [Fact]
+    public void Die_Bereichszeile_hebt_die_Reiterzeile_ueber_Token_hervor()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.Contains("--epos-schriftgroesse-bereichsreiter: 15px;", css, StringComparison.Ordinal);
+
+        const string Wurzel = ".epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile";
+        string zeile = Regelblock(Wurzel + " {");
+        Assert.Contains("background: var(--epos-flaeche);", zeile, StringComparison.Ordinal);
+        Assert.Contains("border-bottom: 2px solid var(--epos-rahmen);", zeile, StringComparison.Ordinal);
+
+        Assert.Contains("font-size: var(--epos-schriftgroesse-bereichsreiter);",
+            Regelblock(Wurzel + " > .epos-reiter-leiste .epos-reiter-titel"), StringComparison.Ordinal);
+        Assert.Contains("font-size: var(--epos-schriftgroesse);",
+            Regelblock(Wurzel + " > .epos-reiter-leiste .epos-reiter-status"), StringComparison.Ordinal);
+        Assert.Contains("min-height: 56px",
+            Regelblock(Wurzel + " > .epos-reiter-leiste > .epos-reiter-knopf--status"), StringComparison.Ordinal);
+        string aktiv = Regelblock(Wurzel + " > .epos-reiter-leiste > .epos-reiter-knopf--aktiv");
+        Assert.Contains("background: var(--epos-flaeche-hell);", aktiv, StringComparison.Ordinal);
+        Assert.Contains("border-bottom-color: var(--epos-quelle-rahmen);", aktiv, StringComparison.Ordinal);
+
+        // Keine Festfarbe in den Regeln des Modifikators.
+        foreach (string block in css.Split('}').Where(b => b.Contains(".epos-reiter--bereich", StringComparison.Ordinal)))
+        {
+            string rumpf = block[(block.LastIndexOf('{') + 1)..];
+            Assert.DoesNotMatch(@"#[0-9a-fA-F]{3,8}\b|rgb\(", rumpf);
+        }
+
+        // Kontrastmodus: Linie und Unterstrich tragen den Zustand.
+        int kontrast = css.IndexOf(Wurzel + " > .epos-reiter-leiste > .epos-reiter-knopf--aktiv {\n        border-bottom-color: Highlight;",
+                                   StringComparison.Ordinal);
+        Assert.True(kontrast > 0 && css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal)
+                    > css.IndexOf(Wurzel + " {", StringComparison.Ordinal),
+                    "Der Kontrastmodus der Bereichszeile fehlt");
+
+        // Die Hausleiste bleibt leise: Ihre Grundregeln tragen weiter 12 px und 52 px.
+        Assert.Contains("font-size: 12px;", Regelblock(".epos-reiter-status {"), StringComparison.Ordinal);
+        Assert.Contains("min-height: 52px", Regelblock(".epos-reiter-knopf--status"), StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-text-leise);", Regelblock(".epos-reiter-knopf {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Stufe KP2, Welle U0b (Entwurf KP2 Festlegung 7):</b> Das Wochenraster der Kalenderkarten
+    /// ordnet sich nach der Breite seines BEHÄLTERS an — Container-Abfrage wie der Katalograhmen,
+    /// keine Medienabfrage —: je Tag 4 × 6 als Vorgabe, 2 × 12 ab 600 px, 7 × 24 als feste Tabelle ab
+    /// 1 150 px; jede Zelle behält das Berührungsmaß. „aus" ist ein eigener Zellzustand, nicht nur
+    /// eine Farbe. Ohne die Zusätze bleibt das Raster des Bestands (AK1) stehen, wie es war. Die
+    /// Maße im Browser misst die Wirtseite <c>/konditionierungsprobe</c> der Rasterprobe.
+    /// </summary>
+    [Fact]
+    public void KP2_Das_Wochenraster_bricht_am_Behaelter_um_und_aus_ist_ein_eigener_Zustand()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+
+        string wurzel = Regelblock(".epos-wochenraster--umbrechend {");
+        Assert.Contains("container-type: inline-size", wurzel, StringComparison.Ordinal);
+        Assert.Contains("container-name: epos-wochenraster", wurzel, StringComparison.Ordinal);
+
+        Assert.Contains("grid-template-columns: repeat(6, minmax(var(--epos-touchziel), 1fr))",
+                        Regelblock(".epos-wochenraster--umbrechend .epos-wochenraster-tabelle tbody tr {"),
+                        StringComparison.Ordinal);
+        Assert.Contains("content: attr(data-stunde)",
+                        Regelblock(".epos-wochenraster--umbrechend .epos-wochenraster-tabelle td::before {"),
+                        StringComparison.Ordinal);
+
+        string mittel = Abfrageblock(css, "@container epos-wochenraster (min-width: 600px) {");
+        Assert.Contains("grid-template-columns: 3rem repeat(12, minmax(var(--epos-touchziel), 1fr))", mittel,
+                        StringComparison.Ordinal);
+        Assert.Contains("grid-row: span 2", mittel, StringComparison.Ordinal);
+
+        string breit = Abfrageblock(css, "@container epos-wochenraster (min-width: 1150px) {");
+        Assert.Contains("table-layout: fixed", breit, StringComparison.Ordinal);
+        // 46 px Tagesspalte + 24 × (44 px Zelle + 2 px Polster) = 1 150 px: An der Schwelle hat
+        // jede Zelle ihr Berührungsmaß (mit 3rem waren es 43,9 px, gemessen im Browser).
+        Assert.Contains("width: 46px", breit, StringComparison.Ordinal);
+        Assert.Contains("display: table-row;", breit, StringComparison.Ordinal);
+        Assert.Contains("content: none", breit, StringComparison.Ordinal);
+
+        // Der Bestand: ohne Zusatz rollt das Raster quer in seiner Hülle, die Zelle hat ihr Maß.
+        Assert.Contains("overflow-x: auto", Regelblock(".epos-wochenraster-huelle {"), StringComparison.Ordinal);
+        Assert.Contains("width: 3.6em", Regelblock(".epos-wochenraster-tabelle .epos-eingabe {"), StringComparison.Ordinal);
+
+        string aus = Regelblock(".epos-eingabe--aus {");
+        Assert.Contains("border-style: dashed", aus, StringComparison.Ordinal);
+        Assert.Contains("font-style: italic", aus, StringComparison.Ordinal);
+        Assert.DoesNotContain("#", aus, StringComparison.Ordinal);   // Farben nur als Token
+    }
+
+    /// <summary>
+    /// <b>Stufe KP2, Welle U1 (Teilkonzept 7.1, Entwurf KP2 Festlegung 7):</b> Der Reiter
+    /// „Konditionierung" bricht am BEHÄLTER um, nicht am Fenster — in der Überlagerung griffe eine
+    /// Medienabfrage nie. Schmal (Vorgabe) steht nur die Spalte und die Karte der gewählten Größe, die
+    /// fünf Reiter darüber; ab 900 px Behälterbreite die ganze Matrix als Tabelle (feste Spaltenanteile,
+    /// jedes Feld nimmt die Breite seiner Zelle) und die Karten darunter, die Reiter fallen. Die
+    /// Beschriftung einer Zelle wird nur vorgelesen (die Tabelle trägt Kopf und Zeile), und die weich
+    /// gesperrte Kühlspalte ist ein Knopf in der Zellenbreite. Farben nur als Token.
+    /// </summary>
+    [Fact]
+    public void KP2_Der_Reiter_Konditionierung_bricht_am_Behaelter_bei_900_px_um()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+
+        string wurzel = Regelblock(".epos-kond {");
+        Assert.Contains("container-type: inline-size", wurzel, StringComparison.Ordinal);
+        Assert.Contains("container-name: epos-kond", wurzel, StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", wurzel, StringComparison.Ordinal);
+
+        string tabelle = Regelblock(".epos-kond-matrix {");
+        Assert.Contains("table-layout: fixed", tabelle, StringComparison.Ordinal);
+        Assert.Contains("width: 100%", tabelle, StringComparison.Ordinal);
+        Assert.Contains("width: 100%", Regelblock(".epos-kond-zelle .epos-eingabe {"), StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", Regelblock(".epos-kond-zelle .epos-eingabe {"), StringComparison.Ordinal);
+
+        // Schmal: die übrigen Spalten und Karten sind aus; kein display:flex an einer Zelle.
+        int schmal = css.IndexOf("\n.epos-kond-matrix th[scope=col]:not(.epos-kond--aktiv),\n" +
+                                 ".epos-kond-matrix td.epos-kond-zelle:not(.epos-kond--aktiv),\n" +
+                                 ".epos-kond-karte:not(.epos-kond--aktiv),\n" +
+                                 ".epos-kond-karte-einzelheiten:not(.epos-kond--aktiv) {\n    display: none;", StringComparison.Ordinal);
+        Assert.True(schmal > 0, "Die schmale Anordnung (nur die gewählte Spalte) fehlt");
+        Assert.DoesNotContain("display: flex", Regelblock(".epos-kond-zelle {"), StringComparison.Ordinal);
+
+        string breit = Abfrageblock(css, "@container epos-kond (min-width: 900px) {");
+        Assert.Contains(".epos-kond-groessen {\n        display: none;", breit, StringComparison.Ordinal);
+        Assert.Contains("display: table-cell;", breit, StringComparison.Ordinal);
+        Assert.Contains(".epos-kond-karte:not(.epos-kond--aktiv),\n    .epos-kond-karte-einzelheiten:not(.epos-kond--aktiv) {\n        display: block;", breit, StringComparison.Ordinal);
+
+        // Die Einzelheiten einer Karte (Anwendermeldung 08.10.2026): ein eigener Abschnitt über die ganze Zeile UNTER
+        // allen Karten; die aufgeklappte Karte selbst nimmt keine ganze Zeile mehr - sonst spränge sie aus ihrer Reihe.
+        string einzelheiten = Regelblock(".epos-kond-karte-einzelheiten {");
+        Assert.Contains("grid-column: 1 / -1", einzelheiten, StringComparison.Ordinal);
+        Assert.Contains("order: 1", einzelheiten, StringComparison.Ordinal);
+        Assert.DoesNotContain("grid-column", Regelblock(".epos-kond-karte--offen {"), StringComparison.Ordinal);
+        Assert.DoesNotContain("@media", css.Substring(css.IndexOf("\n.epos-kond {", StringComparison.Ordinal),
+                                                     css.IndexOf("/* FORMULARRASTER (Anwenderwunsch", StringComparison.Ordinal)
+                                                     - css.IndexOf("\n.epos-kond {", StringComparison.Ordinal)),
+                              StringComparison.Ordinal);
+
+        // Die Beschriftung der Zelle ist nur vorgelesen - sichtbar versteckt, nicht display:none.
+        string text = Regelblock(".epos-kond-zelle .epos-feld-text {");
+        Assert.Contains("clip-path: inset(50%)", text, StringComparison.Ordinal);
+        Assert.DoesNotContain("display: none", text, StringComparison.Ordinal);
+
+        Assert.Contains("width: 100%", Regelblock(".epos-kond-gesperrt {"), StringComparison.Ordinal);
+
+        // Die Knopfzeilen (Kopf und Karte) brechen zwischen den Knöpfen um, nie im Wort — gemessen in der
+        // Konditionierungsprobe: „Zurückneh|men“ bei 390 px, „Verwerfe|n“ in der Karte bei 1 180 px.
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-kond-kopf,"), StringComparison.Ordinal);
+        // Fünf Karten in einer Reihe, sobald die Matrix als Tabelle steht (Behälter ab 900 px).
+        Assert.Contains("repeat(auto-fill, minmax(200px, 1fr))", breit, StringComparison.Ordinal);
+
+        foreach (string regel in new[] { ".epos-kond-matrix th,", ".epos-kond-leer {", ".epos-kond-karte {",
+                                         ".epos-kond-karte-zustand {" })
+            Assert.DoesNotContain("#", Regelblock(regel), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Stufe KP2, Welle U2 — gemessen in der Konditionierungsprobe:</b> In der Karte (ab 900 px rund
+    /// 200 px breit) überdeckte der Knopf „Übernehmen" die Auswahlliste der Vorlagen um 61 bis 84 px — die
+    /// Liste hielt als Flexkind ihren längsten Eintrag als Mindestmaß; jetzt bricht die Zeile um und die
+    /// Liste darf schrumpfen. Und der Kopf eines Blatts brach nicht um: Bei 390 px ragte der Titel der
+    /// Vorlagenverwaltung neben „‹ {Wirtstitel}" 57 px aus dem Blatt, die Überlagerung rollte quer.
+    /// </summary>
+    /// <summary>
+    /// K1b (Konzept 7.8, E110): Die Kalenderbedienung hält das Berührungsmaß an Zellen und Tagen, rollt Wochenprofil,
+    /// Tabellen und Jahresraster im eigenen Kasten statt der Seite, liegt nur mit der Maus enger, färbt die Tagesarten
+    /// über Tokens und sichert Warnung und Wahl für erzwungene Farben. Ihr Block steht VOR dem Reiterblock, damit
+    /// zwischen .epos-kond und dem Formularraster keine Medienabfrage steht.
+    /// </summary>
+    [Fact]
+    public void K1b_Die_Kalenderbedienung_haelt_das_Beruehrungsmass_und_rollt_im_eigenen_Kasten()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.Contains("min-height: var(--epos-touchziel)", Regelblock(".epos-kalb-zelle {"), StringComparison.Ordinal);
+        Assert.Contains("min-height: var(--epos-touchziel)", Regelblock(".epos-kalb-jahrtag {"), StringComparison.Ordinal);
+        Assert.Contains("repeat(7, minmax(var(--epos-touchziel), 1fr))", Regelblock(".epos-kalb-woche {"), StringComparison.Ordinal);
+        Assert.Contains("overflow-x: auto", Regelblock(".epos-kalb-rolle {"), StringComparison.Ordinal);
+        Assert.Contains("overflow-x: auto", Regelblock(".epos-kalb-tabellenhuelle {"), StringComparison.Ordinal);
+        Assert.Contains("var(--epos-kalb-ferien)", css, StringComparison.Ordinal);
+        Assert.True(css.IndexOf("    --epos-kalb-ferien:", StringComparison.Ordinal) < css.IndexOf("\n.epos-kalb {", StringComparison.Ordinal));
+
+        int block = css.IndexOf("\n.epos-kalb {", StringComparison.Ordinal);
+        int reiter = css.IndexOf("\n.epos-kond {", StringComparison.Ordinal);
+        Assert.True(block > 0 && block < reiter, "Der Block der Kalenderbedienung steht nicht vor dem Reiterblock");
+        string eigen = css.Substring(block, reiter - block);
+        Assert.Contains("@media (pointer: fine) {\n    .epos-kalb .epos-kalb-woche {", eigen, StringComparison.Ordinal);
+        Assert.Contains("@media (forced-colors: active) {\n    .epos-kalb-warnung,", eigen, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void KP2_U2_Vorlagenwahl_und_Blattkopf_brechen_um_statt_zu_ueberdecken()
+    {
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-kond-vorlagewahl {"), StringComparison.Ordinal);
+        Assert.Contains("flex: 1 1 10rem", Regelblock(".epos-kond-vorlagewahl > .epos-feld {"), StringComparison.Ordinal);
+        Assert.Contains("min-width: 0",
+                        Regelblock(".epos-kond-vorlagewahl .epos-feld-zeile > select.epos-eingabe {"), StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-blatt-kopf {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Stufe KP2, Welle U3 — gemessen in der Konditionierungsprobe:</b> Die Periodenliste der Karte im
+    /// Einzelnen brach bei 390 px (Behälter 314 px) zwanzig Wörter mitten im Wort („Karfrei|tag“,
+    /// „Weihnachts|tag“), weil fünf Spalten neben den Knöpfen standen. Unter 600 px fallen jetzt „Art“ und
+    /// „Von–Bis“ (der Zeitraum steht leise unter dem Namen), Rang und Wert werden schmal.
+    /// </summary>
+    [Fact]
+    public void KP2_U3_Die_Periodenliste_bricht_schmal_nicht_im_Wort()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.Contains("table-layout: fixed", Regelblock(".epos-kond-periodentabelle {"), StringComparison.Ordinal);
+        Assert.Contains("container-name: epos-kond-perioden", Regelblock(".epos-kond-perioden {"), StringComparison.Ordinal);
+        Assert.Contains("display: none", Regelblock(".epos-kond-periode-zeitraum-schmal {"), StringComparison.Ordinal);
+
+        string schmal = Abfrageblock(css, "@container epos-kond-perioden (max-width: 599.98px) {");
+        Assert.Contains(".epos-kond-periodentabelle .epos-kond-periode-art,\n    .epos-kond-periodentabelle .epos-kond-periode-zeitraum {\n        display: none;",
+                        schmal, StringComparison.Ordinal);
+        Assert.Contains(".epos-kond-periode-zeitraum-schmal {\n        display: block;", schmal, StringComparison.Ordinal);
+        Assert.Contains("th.epos-kond-periode-wert {\n        width: 4rem;", schmal, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Die Hilfepille hält das Berührungsmaß</b> (Stufe KP2, Welle U1, Nebenbefund aus U0b): Beide
+    /// Felder — Fragezeichen und Assistent — und der Ring des KI-Knopfs sind mindestens
+    /// <c>--epos-touchziel</c> (44 px) hoch und breit; das Hausmaß 28 px des WinForms-Vorbilds
+    /// (<c>--epos-infoknopf</c>) gilt in der Oberfläche nicht mehr — gemessen waren 28 × 26 px.
+    /// </summary>
+    [Fact]
+    public void KP2_Die_Hilfepille_und_der_KI_Ring_halten_das_Beruehrungsmass()
+    {
+        // Die Felder bestimmen die Höhe; eine feste Höhe der Pille schnitte mit overflow: hidden die
+        // Trefferfläche ab.
+        Assert.DoesNotContain("height:", Regelblock(".epos-hilfepille {"), StringComparison.Ordinal);
+        string feld = Regelblock(".epos-hilfepille__feld {");
+        Assert.Contains("min-width: var(--epos-touchziel)", feld, StringComparison.Ordinal);
+        Assert.Contains("min-height: var(--epos-touchziel)", feld, StringComparison.Ordinal);
+
+        string ring = Regelblock(".epos-kiknopf {");
+        Assert.Contains("width: var(--epos-touchziel)", ring, StringComparison.Ordinal);
+        Assert.Contains("height: var(--epos-touchziel)", ring, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.DoesNotContain("var(--epos-infoknopf)", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Gebäude-Katalogeditor ist nicht auf 1 160 px gedeckelt</b> (Stufe KP2, Welle U1,
+    /// Nebenbefund aus U0b; Vorbild <c>.epos-wp-anlage</c>): Die Matrix aus fünf Spalten ist keine
+    /// Bandwurmzeile — im breiten Fenster und in der breiten Überlagerung nimmt der Editor die Breite,
+    /// und der Behälter der Konditionierung bricht an SEINER Breite um.
+    /// </summary>
+    [Fact]
+    public void KP2_Der_Gebaeudeeditor_nimmt_die_Breite_ohne_Deckel()
+    {
+        Assert.Contains("max-width: 1160px", Regelblock(".epos-dialog {"), StringComparison.Ordinal);
+        Assert.Contains("max-width: none", Regelblock(".epos-dialog.epos-gebk-editor {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Die Berichtsseite in vier Karten (Anordnung B, BL-Q1 bis BL-Q5):</b> Die rechte Spalte ist ein Bedienblock
+    /// fester Breite <c>minmax(420px, 480px)</c> (Vorbild <c>.epos-simreiter</c>), unter 900 px steht alles
+    /// einspaltig — ohne <c>order</c>, die Markup-Folge ist die Lesefolge. Die Karten tragen Token statt Festfarben,
+    /// im Hochkontrast einen Systemrahmen.
+    /// </summary>
+    [Fact]
+    public void BL_B_Die_Berichtsseite_steht_in_zwei_Spalten_mit_fester_rechter_Breite()
+    {
+        string raster = Regelblock(".epos-bericht-raster {");
+        Assert.Contains("grid-template-columns: minmax(0, 1fr) minmax(420px, 480px)", raster, StringComparison.Ordinal);
+        Assert.Contains("min-width: 0", Regelblock(".epos-bericht-spalte {"), StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        int regel = css.IndexOf("\n.epos-bericht-raster {", StringComparison.Ordinal);
+        string schmal = Abfrageblock(css.Substring(regel), "@media (max-width: 900px) {");
+        Assert.Contains(".epos-bericht-raster {\n        grid-template-columns: minmax(0, 1fr);", schmal, StringComparison.Ordinal);
+        Assert.DoesNotContain("order:", schmal, StringComparison.Ordinal);
+
+        string karte = Regelblock(".epos-bericht-karte {");
+        Assert.Contains("border: 1px solid var(--epos-karte-rahmen)", karte, StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-karte-flaeche)", karte, StringComparison.Ordinal);
+        Assert.Contains("padding: var(--epos-karte-rand)", karte, StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-karte-titel)", Regelblock(".epos-bericht-kartentitel {"), StringComparison.Ordinal);
+        foreach (string r in new[] { ".epos-bericht-raster {", ".epos-bericht-spalte {", ".epos-bericht-karte {",
+                                     ".epos-bericht-kartentitel {", ".epos-bericht-ausloesen {",
+                                     ".epos-bericht-ausloesen .epos-herleitung {" })
+            Assert.DoesNotContain("#", Regelblock(r), StringComparison.Ordinal);
+
+        string hoch = Abfrageblock(css.Substring(regel), "@media (forced-colors: active) {");
+        Assert.Contains(".epos-bericht-karte {\n        border: 1px solid CanvasText;", hoch, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Der Rumpf einer At-Regel (<c>@container …</c>, <c>@media …</c>) samt ihrer Regeln — bis zur
+    /// Klammer, die sie schließt.
+    /// </summary>
+    private static string Abfrageblock(string css, string kopf)
+    {
+        int a = css.IndexOf("\n" + kopf, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Abfrage \"" + kopf + "\" steht nicht im Hausblatt");
+        int auf = css.IndexOf('{', a);
+        int tiefe = 0;
+        for (int i = auf; i < css.Length; i++)
+        {
+            if (css[i] == '{') tiefe++;
+            else if (css[i] == '}' && --tiefe == 0) return css.Substring(auf + 1, i - auf - 1);
+        }
+        Assert.Fail("Die Abfrage \"" + kopf + "\" wird nicht geschlossen");
+        return "";
     }
 
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>

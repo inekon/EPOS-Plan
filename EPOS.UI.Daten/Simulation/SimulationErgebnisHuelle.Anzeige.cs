@@ -109,6 +109,11 @@ namespace WindowsFormsApplication1
                     zeilen.Add(new KaelteerzeugerAnzeige(z.Bezeichner, z.Vorlauf, z.KaelteMwh, z.StromMwh, z.Eer,
                                                          z.NetzbezugMwh, KuehltraegerText(z)));
                 d.Erzeuger = zeilen;
+                // KM3-E3-b: die Kachelzeile je Kaeltemaschine mit Teillastweg - die Formeln des Kerns.
+                d.Teillast = k.Erzeuger.Where(z => z.Teillast != null).Select(z => new KaeltemaschineTeillastKachel(
+                    z.Bezeichner, z.TaktstromKwh, z.Teillast.Starts,
+                    KaeltemaschineTeillastKennzahlen.TeillastanteilProzent(z.Teillast.Teillaststunden, z.Verdichterstunden),
+                    z.Teillast.Lastgrad_Mittel, KaeltemaschineTeillastKennzahlen.JazVerdichter(z.Teillast))).ToList();
                 d.Legende = Legende(SegmenteKaelte(k));
             }
             return d;
@@ -853,8 +858,10 @@ namespace WindowsFormsApplication1
             d.HatPv = p.Photovoltaik;
             d.HatSolarthermie = p.Solarthermie;
 
-            double[] pvProd = sim.simulation_pv.pvPotentialGesamt_stuendlich;
-            double[] stromBedarf = sim.simulation_pv.Strombedarf_stuendlich;
+            // SB1 (a): Die Was-wäre-wenn-Rechnung nimmt dieselben Viertelstundenreihen wie der Lauf -
+            // die glatte PV-Reihe und den Viertelstundenbedarf der PV-Stufe.
+            double[] pvProd = sim.simulation_pv.Stromproduktion_Theoretisch_viertelstunde;
+            double[] stromBedarf = sim.simulation_pv.Strombedarf;
 
             // Der Kollektorertrag: nutzbarer Ertrag (Direktdeckung + Speicherladung) plus
             // der verworfene Überschuss.
@@ -963,17 +970,22 @@ namespace WindowsFormsApplication1
             return d;
         }
 
+        /// <summary>Die Legende einer Füllstandsreihe: der Name, beim Kältespeicher mit seiner Rolle (KU3-4d).</summary>
+        internal static string SpeicherLegende(SimulationPufferspeicher sp)
+            => sp.Verwendung == SimulationPufferspeicher.VERWENDUNG_KAELTE ? sp.Anzeige() : sp.BezeichnerAnzeige();
+
         /// <summary>Je Speicher eine Füllstandsreihe — Schlüssel wie im Vorläufer.</summary>
         private List<Ganglinienreihe> Speicherreihen()
         {
             var liste = new List<Ganglinienreihe>();
-            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+            // KU3-4d: die Kältespeicher hinter den Wärmespeichern, gekennzeichnet „Name (Kältespeicher)".
+            List<SimulationPufferspeicher> speicher = sim.SpeicherSamtKaelte();
 
             for (int i = 0; i < speicher.Count; i++)
             {
                 SimulationPufferspeicher sp = speicher[i];
                 if (sp == null) continue;
-                liste.Add(new Ganglinienreihe(sp.Schluessel(i), sp.BezeichnerAnzeige(), true));
+                liste.Add(new Ganglinienreihe(sp.Schluessel(i), SpeicherLegende(sp), true));
             }
             return liste;
         }

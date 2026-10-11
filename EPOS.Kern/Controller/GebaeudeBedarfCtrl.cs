@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 
 namespace WindowsFormsApplication1
@@ -34,6 +35,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Gebäudename der Projektkopie.</summary>
         internal string Name = "";
+
+        /// <summary>
+        /// Die benannte Rückstufe (Entwurf AK3 Festlegung 20): Mit Stufe AK3 rechnet die Auskunft ohne geschlossenen
+        /// Kreis auf dem Profilweg (<see cref="Ak3Kernstufe.Rueckstufetext"/>); <c>null</c> ohne Rückstufe.
+        /// </summary>
+        internal string Rueckstufe;
 
         /// <summary>Die 8 760 Stundenwerte der Heizwärme in <b>kW</b>.</summary>
         internal double[] Stundenwerte = new double[8760];
@@ -92,8 +99,29 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int? UeberhitzungsstundenH;
 
-        /// <summary>Stunden mit eingeschalteter Sommerlüftung [h] — nur VDI-Weg.</summary>
+        /// <summary>
+        /// Stunden mit eingeschalteter Sommerlüftung [h] — nur VDI-Weg und nur, wenn eine Sommerlüftung gesetzt
+        /// ist, sonst <c>null</c> (Entwurf KP3, Festlegung 26, B17; Muster der Nachtauskühlstunden); dieselbe
+        /// Zahl, die der Lauf als <c>Sommerlueftungsstunden_H</c> nach <c>Tab_ErgebnisGebaeude</c> schreibt.
+        /// </summary>
         internal int? SommerlueftungsstundenH;
+
+        /// <summary>
+        /// <b>Die Ergebniszeile des Gebäudes</b> (E30; Entwurf KP3, Grundsatz 4, B20) — gebildet von
+        /// <see cref="GebaeudeKennzahlen.Bilden"/>, derselben Stelle, aus der der Lauf
+        /// <c>Tab_ErgebnisGebaeude</c> füllt: Hier stehen die Aufheizwerte (Zustand, Bemessung, t_auf,max,
+        /// T_a,B, P_auf samt Quelle, Rampentage, W1–W4, Kappungsstunden; NULL = Schalter aus) und je Zone
+        /// <see cref="ErgebnisGebaeudeModel.Zonen"/> in der Reihenfolge von <see cref="Zonen"/>. Der
+        /// Bedarfsdialog (Welle O2) liest die Aufheizwerte von hier; <c>null</c> ohne Ergebnis.
+        /// </summary>
+        internal ErgebnisGebaeudeModel Ergebniszeile;
+
+        /// <summary>
+        /// Stunden mit wirksamer Nachtauskühlung [h] (Konzept Konditionierungsprofile 3.7) — nur
+        /// VDI-Weg und nur, wenn eine Nachtauskühlung gesetzt ist, sonst <c>null</c>; dieselbe Zahl,
+        /// die der Lauf als <c>Nachtauskuehlstunden_H</c> nach <c>Tab_ErgebnisGebaeude</c> schreibt.
+        /// </summary>
+        internal int? NachtauskuehlstundenH;
 
         /// <summary>Raumlufttemperatur je Stunde [°C]; <c>null</c> auf dem Tagesbilanz-Weg.</summary>
         internal double[] RaumtemperaturC;
@@ -106,6 +134,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die obere Raumtemperatur [°C] — obere Kante des Sollwertbands; <c>null</c> ohne VDI-Lauf.</summary>
         internal double? ObereRaumtemperaturC;
+
+        /// <summary>
+        /// Die gezählten Unterschreitungsstunden der Heizseite (Anlagenkopplung AK2, 5.5) — die Maske der
+        /// <c>Komfortkennzahlen</c>, aus der das Bild „Raumtemperatur und Sollwert" seine Woche wählt (E80);
+        /// <c>null</c>, solange am Gebäude kein Komfort erhoben ist (ungekoppelt, Tagesbilanz).
+        /// </summary>
+        internal bool[] KomfortMaske;
 
         // ---- Stufe KU1: der Abschnitt „Kältebedarf" (Kühlkonzept 8.4; E21, F-K18) ----
 
@@ -136,11 +171,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int? StundenHeizenUndKuehlen;
 
+        /// <summary>Die Heizwärme in diesen Stunden [kWh] (KU3-3, F-K15); <c>null</c> außerhalb des Mehrzonenwegs mit Kühlung.</summary>
+        internal double? GleichzeitigHeizenKwh;
+
+        /// <summary>Der Kältebedarf in diesen Stunden [kWh] (KU3-3, F-K15); <c>null</c> wie <see cref="GleichzeitigHeizenKwh"/>.</summary>
+        internal double? GleichzeitigKuehlenKwh;
+
         /// <summary>Rechnet das PROJEKT Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>)?</summary>
         internal bool KuehlbetriebProjekt;
 
         /// <summary>Trägt das Gebäude „Gebäude wird gekühlt" (<c>Kuehlung_Aktiv</c>)?</summary>
         internal bool KuehlungAktiv;
+
+        /// <summary>
+        /// Die Erdreichkennwerte nach DIN EN ISO 13370 des VDI-Laufs (B′, U_g, R_g);
+        /// <c>null</c> ohne VDI-Lauf oder ohne Bauteil am Erdreich.
+        /// </summary>
+        internal Erdreichkennwerte Erdreich;
 
         /// <summary>
         /// Der wirksame Kühlsollwert [°C] — gesetzt genau dann, wenn der Lauf das Gebäude kühlt
@@ -270,6 +317,24 @@ namespace WindowsFormsApplication1
         /// <summary>Die obere Raumtemperatur der Zone [°C].</summary>
         internal double ObereRaumtemperaturC;
 
+        /// <summary>
+        /// Stunden mit wirksamer Nachtauskühlung der Zone [h]; <c>null</c> ohne Nachtauskühlung —
+        /// die Zahl, die der Lauf nach <c>Tab_ErgebnisZone</c> schreibt.
+        /// </summary>
+        internal int? NachtauskuehlstundenH;
+
+        /// <summary>
+        /// Stunden mit eingeschalteter Sommerlüftung der Zone [h]; <c>null</c> ohne Sommerlüftung (Entwurf KP3,
+        /// Festlegung 26, E54 je Zone) — die Zahl, die der Lauf nach <c>Tab_ErgebnisZone</c> schreibt.
+        /// </summary>
+        internal int? SommerlueftungsstundenH;
+
+        /// <summary>
+        /// Die Zeile der Zone aus <see cref="GebaeudeKennzahlen.Bilden"/> — dieselbe, die der Lauf nach
+        /// <c>Tab_ErgebnisZone</c> schreibt, samt Aufheizwerten der Zone (Entwurf KP3, B20).
+        /// </summary>
+        internal ErgebnisZoneModel Ergebniszeile;
+
         /// <summary>Die Heizlast je Stunde [kW]; <c>null</c> für eine unbeheizte Zone.</summary>
         internal double[] HeizlastKw;
 
@@ -281,6 +346,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Heizsollwert je Stunde [°C]; <c>null</c> für eine unbeheizte Zone.</summary>
         internal double[] HeizsollwertC;
+
+        /// <summary>Jahressumme des Kältebedarfs der Zone [MWh] (KU3-3); <c>null</c> ohne wirksame Kühlung der Zone.</summary>
+        internal double? KaeltebedarfMwh;
+
+        /// <summary>Die höchste Stunde des Kältebedarfs der Zone [kW] (KU3-3); <c>null</c> wie <see cref="KaeltebedarfMwh"/>.</summary>
+        internal double? KaeltespitzeKw;
+
+        /// <summary>Stunden mit Kältebedarf der Zone [h] (KU3-3); <c>null</c> wie <see cref="KaeltebedarfMwh"/>.</summary>
+        internal int? KuehlstundenH;
     }
 
     /// <summary>
@@ -370,7 +444,9 @@ namespace WindowsFormsApplication1
             // braucht keinen Rang, siehe HeizwaermeEinesGebaeudes.
             var werte = new double[STUNDEN_JAHR];
             int vorher = SimulationProtokoll.Aktuell.Fehler.Count;
-            if (!sim.HeizwaermeEinesGebaeudes(gebaeude, 0, werte))
+            // AK2-2b: im gekoppelten Projekt mit demselben Anlagenfahrplan wie der Lauf - sonst zeigte die
+            // Auskunft andere Zahlen als der Lauf.
+            if (!sim.HeizwaermeEinesGebaeudesWieImLauf(idProjekt, idKlimaregion, gebaeude, werte))
             {
                 // Der benannte Grund aus dem Laufprotokoll (Stufe G6a) - dieselbe Lesart wie beim
                 // Hochrechnungsfaktor der Uebernahme.
@@ -385,6 +461,8 @@ namespace WindowsFormsApplication1
 
             ergebnis.Name = gebaeude.Gebaeudename ?? "";
             ergebnis.Stundenwerte = werte;
+            // Festlegung 20: mit Stufe AK3 rechnet die Auskunft auf dem Profilweg - benannt.
+            ergebnis.Rueckstufe = sim.Ak3Rueckstufe ? Ak3Kernstufe.Rueckstufetext : null;
 
             // ZEICHENGLEICH zum Lauf: dort steht "kanalHeizung.Sum() / 1000" - eine
             // double-Summe durch eine GANZE Zahl, also eine double-Division. Ein
@@ -405,11 +483,16 @@ namespace WindowsFormsApplication1
             GebaeudeModellErgebnis vdi = sim.GebaeudeErgebnisse.Ergebnis(0);
             if (vdi != null)
             {
+                // Anlagenkopplung AK2 (5.5, E80): die Maske der Heizseite - nur am gekoppelten Gebaeude.
+                if (GebaeudeKennzahlen.KomfortErhoben(vdi))
+                    ergebnis.KomfortMaske = Komfortkennzahlen.Heizseite(vdi)?.Maske;
                 ergebnis.KuehlenergieMwh = vdi.KuehlenergieMwh;
+                ergebnis.Erdreich = vdi.Erdreich;
                 ergebnis.KuehlstundenH = vdi.StundenMitKuehlbedarf;
                 ergebnis.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
                 ergebnis.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
-                ergebnis.SommerlueftungsstundenH = vdi.StundenMitSommerlueftung;
+                ergebnis.SommerlueftungsstundenH = GebaeudeKennzahlen.Sommerlueftungsstunden(vdi);
+                ergebnis.NachtauskuehlstundenH = vdi.StundenMitNachtauskuehlung;
                 ergebnis.RaumtemperaturC = vdi.Raumtemperatur;
                 ergebnis.OperativeTemperaturC = vdi.OperativeTemperatur;
                 ergebnis.HeizsollwertC = vdi.Heizsollwert;
@@ -436,6 +519,8 @@ namespace WindowsFormsApplication1
                     WPPlan.Core.BhkwPlan.MonatsSumme(kuehl, ergebnis.KuehlMonatswerteMwh,
                                                      sim.mo_anfang, sim.mo_ende);
                     ergebnis.StundenHeizenUndKuehlen = vdi.StundenHeizenUndKuehlen;
+                    ergebnis.GleichzeitigHeizenKwh = vdi.GleichzeitigHeizenKwh;
+                    ergebnis.GleichzeitigKuehlenKwh = vdi.GleichzeitigKuehlenKwh;
                 }
                 ergebnis.KuehlSollwertC = vdi.KuehlSollwert;
 
@@ -468,11 +553,40 @@ namespace WindowsFormsApplication1
                     ergebnis.KuehlAuslegungRuecklaufC = kk.AuslegungRuecklaufC;
                 }
             }
+            // Stufe KP3 (Grundsatz 4, B20): die Ergebniszeile des Laufs aus DERSELBEN Stelle (E30) - mit den
+            // Aufheizwerten des Gebaeudes und je Zone; die Reihe ist schon in kW wie im Lauf.
+            ergebnis.Ergebniszeile = GebaeudeKennzahlen.Bilden(0, gebaeude.ID_Gebaeude, gebaeude.Gebaeudename,
+                                                               ergebnis.Modell, werte, vdi);
+            for (int k = 0; k < ergebnis.Zonen.Count && k < ergebnis.Ergebniszeile.Zonen.Count; k++)
+                ergebnis.Zonen[k].Ergebniszeile = ergebnis.Ergebniszeile.Zonen[k];
             ergebnis.KuehlbetriebProjekt = sim.KuehlbetriebProjekt;
             ergebnis.KuehlungAktiv = gebaeude.Kuehlung_Aktiv;
             ergebnis.KuehlleistungMaxKw = ergebnis.KuehlSollwertC.HasValue ? gebaeude.Kuehlleistung_Max : null;
             ergebnis.Erfolgreich = true;
             return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Die Aufheizbemessung je Gebäude des Projekts, ohne Jahreslauf</b> (Entwurf KP3, Welle D2;
+        /// Grundsatz 3, Festlegung 3, B14) — die Auskunft hinter den Herleitungszeilen der Projekteinstellung
+        /// „Aufheizoptimierung". Je Gebäude in der Reihenfolge des Laufs
+        /// (<see cref="SimulationWaermebedarf.AufheizbemessungEinesGebaeudes"/>, Klimakalender und Schalter des
+        /// Projekts wie im Lauf); leer ohne Projekt, ohne Klimaregion oder mit ausgeschalteter Optimierung.
+        /// Gelesen, nicht geschrieben.
+        /// </summary>
+        internal static IReadOnlyList<Aufheizauskunft> Aufheizbemessung(int idProjekt, int idKlimaregion)
+        {
+            var liste = new List<Aufheizauskunft>();
+            if (idProjekt <= 0 || idKlimaregion <= 0) return liste;
+            if (!KonfigurationCtrl.AufheizvorgabeLesen(idProjekt).An) return liste;
+
+            var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
+            sim.KlimakalenderLesen(idKlimaregion);
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(idProjekt);
+            for (int i = 0; i < ctrl.rows; i++)
+                liste.Add(sim.AufheizbemessungEinesGebaeudes(ctrl.items[i]));
+            return liste;
         }
 
         /// <summary>
@@ -491,8 +605,14 @@ namespace WindowsFormsApplication1
                 MittlereRaumtemperaturC = r.MittlereRaumtemperaturHeizzeit,
                 UeberhitzungsstundenH = r.Ueberhitzungsstunden,
                 ObereRaumtemperaturC = r.ThetaMax,
+                NachtauskuehlstundenH = r.StundenMitNachtauskuehlung,
+                SommerlueftungsstundenH = GebaeudeKennzahlen.Sommerlueftungsstunden(r),
                 RaumtemperaturC = r.Raumtemperatur,
-                OperativeTemperaturC = r.OperativeTemperatur
+                OperativeTemperaturC = r.OperativeTemperatur,
+                // KU3-3: die Kälte der Zone aus ihrem Ergebnis - nur mit wirksamer Kühlung (E32).
+                KaeltebedarfMwh = r.KuehlenergieMwh,
+                KaeltespitzeKw = r.KaeltespitzeKw,
+                KuehlstundenH = r.StundenMitKuehlbedarf
             };
             if (z.IstBeheizt)
             {
@@ -504,6 +624,145 @@ namespace WindowsFormsApplication1
                 zone.HeizsollwertC = r.Heizsollwert;
             }
             return zone;
+        }
+
+        /// <summary>
+        /// <b>Der Wärmerestbedarf des Projekts aus dem letzten gespeicherten Lauf</b> [MWh/a] (Anlagenkopplung 5.5,
+        /// AK2-3): die Zahl, die neben den Komfortstunden steht — mit Kopplung ist ein Teil der Unterdeckung eine
+        /// gesunkene Raumtemperatur. Gelesen, nicht gerechnet; <c>null</c> ohne Projekt oder ohne Lauf.
+        /// </summary>
+        internal static double? RestbedarfDesProjektsMwh(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT e.Waermerestbedarf FROM " + ErgebnisCtrl.TAB_ENERGIE + " e INNER JOIN " +
+                    ErgebnisCtrl.TAB_KOPF + " k ON k.ID = e.ID_Ergebnis WHERE k.ID_Projekt = ? ORDER BY k.ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0 || dt.Rows[0][0] == DBNull.Value) return null;
+                return Convert.ToDouble(dt.Rows[0][0], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Kennzahlen des geschlossenen Kreises aus dem letzten gespeicherten Lauf</b> (Anlagenkopplung AK3,
+        /// Festlegung 22; W4b): sie stehen im Bedarfsdialog neben Komfort und Restbedarf. Gelesen, nicht gerechnet;
+        /// <c>null</c> ohne Projekt, ohne Lauf, vor dem Schemaschritt oder wenn der letzte Lauf den Kreis nicht rechnete.
+        /// </summary>
+        internal static Ak3Kennzahlen Ak3KennzahlenDesProjekts(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                if (!Ak3Schema.ErgebnisspaltenVorhanden()) return null;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + string.Join(", ", Ak3Schema.SPALTEN_ERGEBNIS.Select(sp => "e." + sp)) + " FROM " +
+                    ErgebnisCtrl.TAB_ENERGIE + " e INNER JOIN " + ErgebnisCtrl.TAB_KOPF +
+                    " k ON k.ID = e.ID_Ergebnis WHERE k.ID_Projekt = ? ORDER BY k.ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+                return Ak3Kennzahlen.Aus(new ErgebnisEnergiebedarfModel
+                {
+                    Ak3DurchlaeufeMittel = r[Ak3Schema.SPALTE_DURCHLAEUFE_MITTEL] is DBNull ? null
+                        : Convert.ToDouble(r[Ak3Schema.SPALTE_DURCHLAEUFE_MITTEL], CultureInfo.InvariantCulture),
+                    Ak3DurchlaeufeMax = Ganz(r, Ak3Schema.SPALTE_DURCHLAEUFE_MAX),
+                    Ak3Fallwechsel = Ganz(r, Ak3Schema.SPALTE_FALLWECHSEL),
+                    Ak3SchrankeStundenH = Ganz(r, Ak3Schema.SPALTE_SCHRANKE_STUNDEN),
+                    Ak3SpeicherLeerStundenH = Ganz(r, Ak3Schema.SPALTE_SPEICHER_LEER_STUNDEN),
+                    Ak3RestbedarfStundenH = Ganz(r, Ak3Schema.SPALTE_RESTBEDARF_STUNDEN),
+                });
+            }
+            catch
+            {
+                return null;
+            }
+
+            static int? Ganz(DataRow r, string spalte)
+                => r[spalte] is DBNull ? null : Convert.ToInt32(r[spalte], CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// <b>Die Kennzahlen von AK3-K aus dem letzten gespeicherten Lauf</b> (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre
+        /// und Kälteseite im Kreis, im Bedarfsdialog neben den Kennzahlen des Kreises. Gelesen, nicht gerechnet; <c>null</c>
+        /// ohne Projekt, ohne Lauf, vor dem Schemaschritt oder wenn der letzte Lauf keine der beiden Seiten erhob.
+        /// </summary>
+        internal static Ak3KKennzahlen Ak3KKennzahlenDesProjekts(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                if (!Ak3KSchema.ErgebnisspaltenVorhanden()) return null;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + string.Join(", ", Ak3KSchema.SPALTEN_ERGEBNIS.Select(sp => "e." + sp)) + " FROM " +
+                    ErgebnisCtrl.TAB_ENERGIE + " e INNER JOIN " + ErgebnisCtrl.TAB_KOPF +
+                    " k ON k.ID = e.ID_Ergebnis WHERE k.ID_Projekt = ? ORDER BY k.ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+                return Ak3KKennzahlen.Aus(new ErgebnisEnergiebedarfModel
+                {
+                    ZonensperreTage = Ganz(r, Ak3KSchema.SPALTE_ZONENSPERRE_TAGE),
+                    ZonensperreHeizenGesperrtMwh = Zahl(r, Ak3KSchema.SPALTE_ZONENSPERRE_HEIZEN_MWH),
+                    ZonensperreKuehlenGesperrtMwh = Zahl(r, Ak3KSchema.SPALTE_ZONENSPERRE_KUEHLEN_MWH),
+                    Ak3KaelteschrankeStundenH = Ganz(r, Ak3KSchema.SPALTE_KAELTESCHRANKE_STUNDEN),
+                    Ak3UmschaltStundenH = Ganz(r, Ak3KSchema.SPALTE_UMSCHALT_STUNDEN),
+                    Ak3KaelterestStundenH = Ganz(r, Ak3KSchema.SPALTE_KAELTEREST_STUNDEN),
+                    Ak3KaelterestMwh = Zahl(r, Ak3KSchema.SPALTE_KAELTEREST_MWH),
+                });
+            }
+            catch
+            {
+                return null;
+            }
+
+            static int? Ganz(DataRow r, string spalte)
+                => r[spalte] is DBNull ? null : Convert.ToInt32(r[spalte], CultureInfo.InvariantCulture);
+
+            static double? Zahl(DataRow r, string spalte)
+                => r[spalte] is DBNull ? null : Convert.ToDouble(r[spalte], CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// <b>Die Kennzahlen der Kühlkurve aus dem letzten gespeicherten Lauf</b> (Entwurf KK, Festlegung 12; Schritt 202):
+        /// mittlerer Kühlvorlauf, Absenkung durch den Raumeinfluss und Stunden an der Vorlaufgrenze, im Bedarfsdialog neben
+        /// den Kennzahlen der Kälteseite im Kreis. Gelesen, nicht gerechnet; <c>null</c> ohne Projekt, ohne Lauf, vor dem
+        /// Schemaschritt oder wenn der letzte Lauf keine wirksame Kühlkurve rechnete.
+        /// </summary>
+        internal static KuehlkurveKennzahlen KuehlkurveKennzahlenDesProjekts(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                if (!KuehlkurveSchema.ErgebnisspaltenVorhanden()) return null;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + string.Join(", ", KuehlkurveSchema.SPALTEN_ERGEBNIS.Select(sp => "e." + sp)) + " FROM " +
+                    ErgebnisCtrl.TAB_ENERGIE + " e INNER JOIN " + ErgebnisCtrl.TAB_KOPF +
+                    " k ON k.ID = e.ID_Ergebnis WHERE k.ID_Projekt = ? ORDER BY k.ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+                return KuehlkurveKennzahlen.Aus(new ErgebnisEnergiebedarfModel
+                {
+                    KuehlkurveVorlaufMittelC = Zahl(r, KuehlkurveSchema.SPALTE_VORLAUF_MITTEL),
+                    KuehlkurveAbsenkungKh = Zahl(r, KuehlkurveSchema.SPALTE_ABSENKUNG_KH),
+                    KuehlkurveVorlaufgrenzeStundenH = r[KuehlkurveSchema.SPALTE_VORLAUFGRENZE_STUNDEN] is DBNull
+                        ? null
+                        : Convert.ToInt32(r[KuehlkurveSchema.SPALTE_VORLAUFGRENZE_STUNDEN], CultureInfo.InvariantCulture),
+                });
+            }
+            catch
+            {
+                return null;
+            }
+
+            static double? Zahl(DataRow r, string spalte)
+                => r[spalte] is DBNull ? null : Convert.ToDouble(r[spalte], CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -649,6 +908,11 @@ namespace WindowsFormsApplication1
             {
                 DataRow stamm = GebaeudeStammCtrl.Katalogzeile(idStamm, name);
                 g = stamm == null ? null : ProjektGebaeudeCtrl.AusZeile(Kopiezeile(stamm, idProjekt));
+                // Stufe KP1b (Befund NB3): Die Vorschau reicht den Katalogbau herein - sein Kalender
+                // und seine Matrix reisen beim OK mit (CopyFromStamm), also rechnet die Vorschau
+                // schon jetzt damit. Ohne ihn las der Datenweg ID_Gebaeude = 0 und fand nichts.
+                if (g != null && stamm.Table.Columns.Contains("ID") && stamm["ID"] != DBNull.Value)
+                    g.KonditionierungKatalogbau = Convert.ToInt64(stamm["ID"], CultureInfo.InvariantCulture);
             }
             if (g == null) return null;
 

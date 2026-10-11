@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Katalogauswahl Übersicht</title>
+<meta name="description" content="Übersicht der fünf spielbaren Mockups zu den Projektdialogen mit Katalogauswahl: je Variante ein Vorschaubild, eine kurze Bedienanleitung und eine Prüfliste zum Ausprobieren.">
+<!--
+  UEBERSICHT der spielbaren Mockups V1 bis V5 zum Konzept
+  Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md.
+  Der Anwender probiert alle fuenf Varianten selbst aus und waehlt danach; diese Seite
+  gibt deshalb KEINE Empfehlung. Eigenstaendig bis auf die Vorschaubilder (PNG daneben).
+  Farben woertlich aus EPOS.UI/wwwroot/epos-ui.css. Die Haekchen der Pruefliste merkt sich
+  nur dieser Browser (localStorage, bei Sperre ohne Gedaechtnis).
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+    --epos-schriftgroesse-kartentitel: 16px;
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-flaeche: #f5f4ef;
+    --epos-quelle-rahmen: #378ADD;
+    --epos-quelle-text: #185FA5;
+    --epos-senke-rahmen: #D85A30;
+    --epos-schema-versorgung: #1D9E75;
+    --epos-stufe-fehler: rgb(176, 0, 32);
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-rahmen-hover: #3B82F6;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-titel: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-ecke: 6px;
+    --epos-karte-rand: 16px;
+    --epos-touchziel: 44px;
+    --epos-flaeche-gedaempft: #efefef;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: var(--epos-schriftgroesse)/1.45 var(--epos-schrift); color: var(--epos-text); background: var(--epos-flaeche); }
+.mk-streifen { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 6px 16px; font-size: 12px;
+    border-bottom: 1px dashed var(--epos-stufe-fehler); background: var(--epos-flaeche-gedaempft); }
+.mk-streifen b { color: var(--epos-stufe-fehler); }
+.mk-streifen a { color: var(--epos-quelle-text); text-decoration: none; padding: 1px 6px; border-radius: 4px; }
+.mk-streifen a:hover { background: var(--epos-karte-flaeche); }
+.mk-legende { display: flex; flex-wrap: wrap; gap: 12px; }
+.mk-legende span::before { content: ""; display: inline-block; width: 14px; height: 10px; margin-right: 4px; vertical-align: -1px; }
+.mk-leg-proj::before { background: var(--epos-schema-versorgung); }
+.mk-leg-kat::before { background: var(--epos-quelle-rahmen); }
+.mk-leg-satz::before { background: var(--epos-senke-rahmen); }
+main { max-width: 1240px; margin: 0 auto; padding: 16px; }
+h1 { margin: 4px 0 6px; font-size: 20px; color: var(--epos-karte-titel); }
+h2 { margin: 24px 0 8px; font-size: var(--epos-schriftgroesse-kartentitel); color: var(--epos-karte-titel); }
+.einleitung { max-width: 80ch; margin: 0 0 6px; color: var(--epos-text-leise); }
+.karten { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 16px; }
+.karte { display: flex; flex-direction: column; background: var(--epos-karte-flaeche); border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke); overflow: hidden; }
+.karte a.bild { display: block; border-bottom: 1px solid var(--epos-rahmen-leise); }
+.karte a.bild:hover { outline: 2px solid var(--epos-karte-rahmen-hover); outline-offset: -2px; }
+.karte img { display: block; width: 100%; height: auto; }
+.karte-rumpf { display: flex; flex-direction: column; gap: 8px; padding: 12px var(--epos-karte-rand) var(--epos-karte-rand); flex: 1 1 auto; }
+.karte h3 { margin: 0; font-size: 15px; color: var(--epos-karte-titel); }
+.karte p { margin: 0; }
+.karte .los { margin-top: auto; align-self: flex-start; display: inline-flex; align-items: center; min-height: var(--epos-touchziel); padding: 4px 16px;
+    color: var(--epos-gruppenkopf-text); background: var(--epos-karte-titel); border-radius: var(--epos-ecke); text-decoration: none; font-weight: 600; }
+.karte .los:hover { background: var(--epos-quelle-text); }
+.gemeinsam { max-width: 90ch; padding: 10px 14px; background: var(--epos-karte-flaeche); border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); }
+.gemeinsam p { margin: 0 0 6px; } .gemeinsam p:last-child { margin: 0; }
+.tabelle-huelle { overflow-x: auto; background: var(--epos-karte-flaeche); border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--epos-rahmen-leise); text-align: left; vertical-align: middle; }
+thead th { background: var(--epos-flaeche); border-bottom-color: var(--epos-rahmen); white-space: nowrap; }
+td.haken, th.haken { width: 56px; text-align: center; }
+td.haken input { width: 18px; height: 18px; cursor: pointer; }
+tbody tr:last-child td { border-bottom: 0; }
+.leise { color: var(--epos-text-leise); }
+.knopf { font: inherit; min-height: 32px; padding: 2px 12px; border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche); cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="mk-streifen">
+  <b>Mockups Katalogauswahl · Übersicht</b>
+  <nav aria-label="Varianten"><a href="Projektdialog_Katalogauswahl_V1.html">V1</a><a href="Projektdialog_Katalogauswahl_V2.html">V2</a><a href="Projektdialog_Katalogauswahl_V3.html">V3</a><a href="Projektdialog_Katalogauswahl_V4.html">V4</a><a href="Projektdialog_Katalogauswahl_V5.html">V5</a></nav>
+  <span class="mk-legende"><span class="mk-leg-proj">Projekt – ändert die Projektliste</span><span class="mk-leg-kat">Katalog – Datenbank als Liste</span><span class="mk-leg-satz">Gewählter Satz – seine Daten</span></span>
+</div>
+<main>
+  <h1>Projektdialoge mit Katalogauswahl – fünf Varianten zum Ausprobieren</h1>
+  <p class="einleitung">Jede Variante zeigt den Dialog „Verwaltung BHKW“ mit demselben Datenbestand (20 Katalogsätze, zwei davon gesperrt, zwei Module im Projekt, eines davon gegenüber dem Katalog geändert) und derselben Spiellogik. Alles läuft im Browser; „Zurücksetzen“ oben im Mockup stellt den Ausgangsbestand wieder her. Das Bild zeigt den Ausgangszustand bei 1 280 × 800, bei V3 mit geöffneter Schublade.</p>
+
+  <section class="karten" aria-label="Varianten">
+    <article class="karte">
+      <a class="bild" href="Projektdialog_Katalogauswahl_V1.html"><img src="Projektdialog_Katalogauswahl_V1.png" width="1280" height="800" alt="Vorschau V1: Projektliste oben, Katalog darunter, gewählter Satz als Zeile unten"></a>
+      <div class="karte-rumpf">
+        <h3>V1 · Gerahmt und gestapelt</h3>
+        <p>Oben die Projektliste, darunter der Katalog, unten der gewählte Satz als aufklappbare Zeile – dieselbe Reihenfolge wie heute, aber gerahmt.</p>
+        <p>Im Katalog Häkchen setzen und „▲ In das Projekt übernehmen“ drücken. Bearbeiten, „→ DB…“ und Entfernen für das Projekt stehen im grünen Kopf, die Katalogpflege im Fuß des Katalogs.</p>
+        <a class="los" href="Projektdialog_Katalogauswahl_V1.html">V1 ausprobieren</a>
+      </div>
+    </article>
+    <article class="karte">
+      <a class="bild" href="Projektdialog_Katalogauswahl_V2.html"><img src="Projektdialog_Katalogauswahl_V2.png" width="1280" height="800" alt="Vorschau V2: Katalog links, Pfeile in der Mitte, Projekt rechts, Satz unten"></a>
+      <div class="karte-rumpf">
+        <h3>V2 · Nebeneinander (Transferliste)</h3>
+        <p>Katalog links, Projekt rechts, dazwischen die Pfeile „Hinzufügen“, „Entfernen“ und „→ DB…“. Der gewählte Satz steht im Band darunter.</p>
+        <p>Links Häkchen setzen und „→ Hinzufügen“ drücken; rechts Häkchen setzen und „← Entfernen“ oder „⇐ → DB…“ für den Rückweg in die Datenbank.</p>
+        <a class="los" href="Projektdialog_Katalogauswahl_V2.html">V2 ausprobieren</a>
+      </div>
+    </article>
+    <article class="karte">
+      <a class="bild" href="Projektdialog_Katalogauswahl_V3.html"><img src="Projektdialog_Katalogauswahl_V3.png" width="1280" height="800" alt="Vorschau V3: Projektliste mit Katalog als Schublade von rechts"></a>
+      <div class="karte-rumpf">
+        <h3>V3 · Projekt im Mittelpunkt, Katalog als Schublade</h3>
+        <p>Der Dialog zeigt nur das Projekt mit seinem gewählten Satz. „＋ Aus Katalog hinzufügen…“ öffnet den Katalog als Schublade von rechts.</p>
+        <p>In der Schublade Häkchen setzen und „＋ Ins Projekt“ drücken; Esc oder ✕ schließt sie. Projektzeilen tragen „€“, „DB“ und „−“ als Zeilenknöpfe.</p>
+        <a class="los" href="Projektdialog_Katalogauswahl_V3.html">V3 ausprobieren</a>
+      </div>
+    </article>
+    <article class="karte">
+      <a class="bild" href="Projektdialog_Katalogauswahl_V4.html"><img src="Projektdialog_Katalogauswahl_V4.png" width="1280" height="800" alt="Vorschau V4: Reiter Im Projekt und Katalog links, Detailspalte rechts"></a>
+      <div class="karte-rumpf">
+        <h3>V4 · Reiter Projekt | Katalog mit Detailspalte</h3>
+        <p>Links zwei Reiter „Im Projekt“ und „Katalog (Datenbank)“, rechts die Detailspalte des gewählten Satzes. Mit Komponenten im Projekt öffnet der Reiter „Im Projekt“.</p>
+        <p>Im Reiter „Katalog“ Häkchen setzen und „＋ In das Projekt übernehmen“ drücken – der Reiter bleibt offen für weitere Sätze.</p>
+        <a class="los" href="Projektdialog_Katalogauswahl_V4.html">V4 ausprobieren</a>
+      </div>
+    </article>
+    <article class="karte">
+      <a class="bild" href="Projektdialog_Katalogauswahl_V5.html"><img src="Projektdialog_Katalogauswahl_V5.png" width="1280" height="800" alt="Vorschau V5: eine Liste mit angehefteten Projektzeilen und Zeilenknöpfen, Detailspalte rechts"></a>
+      <div class="karte-rumpf">
+        <h3>V5 · Eine Liste mit Zeilenaktionen</h3>
+        <p>Eine Liste: oben angeheftet die Projektzeilen, darunter der Katalog. Jede Zeile trägt ihre Knöpfe – im Katalog ＋ ✎ Schloss Papierkorb, im Projekt ✎ € DB −.</p>
+        <p>Mit Häkchen erscheint eine Sammelleiste für mehrere Sätze; der Filterchip „nur Projekt“ blendet den Katalog aus.</p>
+        <a class="los" href="Projektdialog_Katalogauswahl_V5.html">V5 ausprobieren</a>
+      </div>
+    </article>
+  </section>
+
+  <h2>In allen Varianten gleich</h2>
+  <div class="gemeinsam">
+    <p><b>Wählen:</b> Ein Klick wählt den Satz für die Details; Häkchen, Strg+Klick oder Leertaste wählen mehrere, Umschalt+Klick einen Bereich, das Häkchen im Kopf alle Treffer. Alle Knöpfe eines Bereichs wirken auf seine Auswahl.</p>
+    <p><b>Tastatur:</b> Pfeil hoch und runter in der Liste, Enter übernimmt, Entf entfernt aus dem Projekt bzw. löscht nach Rückfrage, Esc schließt Überlagerung und Schublade. Doppelklick auf eine Katalogzeile übernimmt sie.</p>
+    <p><b>Leiste oben im Mockup</b> (gehört nicht zum Dialog): Sprünge zu den Varianten, Fenstergröße 1 280 × 800, 1 280 × 720 und 1 024 × 700 für einen kleinen Bildschirm, „Zurücksetzen“ und die Randnotiz zu den übrigen Dialogen.</p>
+  </div>
+
+  <h2>Prüfliste zum Ausprobieren</h2>
+  <p class="einleitung">Die Häkchen merkt sich nur dieser Browser. <button class="knopf" type="button" id="leeren">Häkchen leeren</button></p>
+  <div class="tabelle-huelle">
+    <table>
+      <thead><tr><th>Ablauf</th><th class="haken">V1</th><th class="haken">V2</th><th class="haken">V3</th><th class="haken">V4</th><th class="haken">V5</th></tr></thead>
+      <tbody id="pruefliste"></tbody>
+    </table>
+  </div>
+</main>
+<script>
+(function () {
+  'use strict';
+  var PUNKTE = [
+    ['suchen', 'Ein Modul suchen (z. B. „*Biogas*“ oder „BHKW ?0 kW*“) und ins Projekt übernehmen'],
+    ['drei', 'Drei Module auf einmal übernehmen – Summe und Häkchen „im Projekt“ beobachten'],
+    ['kosten', 'Investitions-, Betriebs- oder Energiekosten eines Projektsatzes öffnen'],
+    ['sperren', 'Einen Katalogsatz sperren und dann bearbeiten oder löschen wollen'],
+    ['projektsatz', 'Projektsatz bearbeiten (die Projektkopie, der Katalog bleibt)'],
+    ['katalogsatz', 'Katalogsatz bearbeiten (auch einen gesperrten)'],
+    ['dreibearbeiten', 'Drei Sätze auf einmal bearbeiten – blättern und ein Feld „für alle gewählten setzen“'],
+    ['indb', 'Geänderten Projektsatz in die Datenbank übernehmen (neu anlegen oder Ursprung überschreiben)'],
+    ['klein', 'Kleines Fenster 1 024 × 700 einstellen und alles noch einmal erreichen']
+  ];
+  var SCHLUESSEL = 'mk-katalogauswahl-pruefliste';
+  var stand = {};
+  try { stand = JSON.parse(localStorage.getItem(SCHLUESSEL) || '{}') || {}; } catch (e) { stand = {}; }
+  function merke() { try { localStorage.setItem(SCHLUESSEL, JSON.stringify(stand)); } catch (e) { /* ohne Gedaechtnis */ } }
+  var tb = document.getElementById('pruefliste');
+  tb.innerHTML = PUNKTE.map(function (p) {
+    return '<tr><td>' + p[1] + '</td>' + [1, 2, 3, 4, 5].map(function (v) {
+      var k = p[0] + '-V' + v;
+      return '<td class="haken"><input type="checkbox" data-k="' + k + '" aria-label="' + p[1] + ' in V' + v + '"' + (stand[k] ? ' checked' : '') + '></td>';
+    }).join('') + '</tr>';
+  }).join('');
+  tb.addEventListener('change', function (e) { var k = e.target.dataset.k; if (!k) return; stand[k] = e.target.checked; merke(); });
+  document.getElementById('leeren').addEventListener('click', function () {
+    stand = {}; merke();
+    Array.prototype.forEach.call(tb.querySelectorAll('input'), function (i) { i.checked = false; });
+  });
+})();
+</script>
+</body>
+</html>

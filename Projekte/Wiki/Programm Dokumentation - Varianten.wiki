@@ -11,7 +11,7 @@ Der Dialog '''Projektvarianten''' legt Varianten eines Projekts an und stellt si
 * {{Anker|speicherflotte}}'''Stromspeicher der Variante''' – die Kopie übernimmt den Stromspeicher des Stammprojekts mitsamt seiner Speicherflotte, ihren Einheiten, dem Betriebsziel und dem Peak-Ziel; die Einheiten zeigen dabei auf die Speicheranlagen der Kopie. Danach gehört die Flotte der Variante: Jede Variante führt ihre eigene Speicherflotte, ändert sie für sich und aktiviert oder deaktiviert sie je Projekt. Die Wirtschaftlichkeit nennt je Spalte, womit gerechnet wurde – siehe [[Programm Dokumentation/Wirtschaftlichkeit#speicherkontext|Stromspeicher in der Vergleichsgruppe]].
 * {{Anker|pv-verguetung}}'''PV-Vergütung der Variante''' – die Angaben der EEG-Vergütung kopiert die neue Variante nicht: Sie übernimmt die Vergütung ihres Stammprojekts, und eine Änderung dort erreicht sie im nächsten Rechenlauf. Eigene Werte bekommt sie im Reiter [[Programm Dokumentation/Kosten#ertragbonus|Ertrag/Bonus]] der Kostenverwaltung mit der Wahl ''eigene Vergütung''; vorgelegt werden dabei die Werte des Stammprojekts. Der flache Einspeisesatz der Wirtschaftlichkeitsparameter gilt wie Zins und Betrachtungszeitraum für die ganze Gruppe. Wird ein Projekt an einen anderen Rechner gegeben ([[Programm Dokumentation/Projekttransfer]]), reist seine Vergütung mit: Ein Stammprojekt samt seinen Varianten behält Werte und Wahl; eine einzeln ausgegebene Variante, die übernimmt, bekommt die Werte ihres Stammprojekts beigelegt und führt sie am Ziel als eigene, wenn das Stammprojekt dort nicht vorhanden ist. Fehlt dem Stammprojekt eine angewendete Vergütung, gibt es nichts weiterzugeben – die Meldung des Einlesens sagt es, und die Wirtschaftlichkeit führt einen Hinweis, dass der flache Einspeisesatz gilt. Übernimmt eine Variante die Vergütung, ohne dass ihr Stammprojekt noch besteht oder eine Verknüpfung führt, weist ein Kohärenzhinweis darauf hin.
 * '''Variante löschen''' – entfernt die gewählte Variante; das Stammprojekt bleibt unberührt. Übernimmt eine Variante die Vergütung ihres Stammprojekts und wird dieses gelöscht, erhält sie dessen Werte zuvor als eigene.
-* '''Simulation starten''' – rechnet die beteiligten Projekte neu, damit der Vergleich auf einem einheitlichen Stand steht.
+* '''Simulation starten''' – rechnet die beteiligten Projekte neu, damit der Vergleich auf einem einheitlichen Stand steht. Danach meldet eine Zeile je Projekt das Ergebnis mit der Zahl der Hinweise des Laufs; ''Hinweise anzeigen'' klappt die Liste auf.
 * '''Bericht erstellen…''' und '''Wirtschaftlichkeit (Kapitalwertmethode)…''' – erzeugen den Word- und Excel-Bericht der Gruppe beziehungsweise öffnen die Kapitalwertrechnung.
 
 == Varianten am Projekt-Auswahlfeld ==
@@ -21,7 +21,28 @@ Eine Variante lässt sich auch unmittelbar am Auswahlfeld ''Projekt:'' der Start
 
 * '''➕ Neue Variante anlegen…''' – öffnet den Dialog ''Als Variante speichern'' (derselbe Dialog steht im Menü ''Projekt'' unter ''Als Variante speichern…''). Ohne weitere Angabe legt er die Variante als Kopie des aktuellen Standes an – auch aus einer geöffneten Variante heraus, dann bezogen auf deren Stammprojekt. Mit dem Kästchen '''Inhalt aus einem bestehenden Projekt übernehmen''' erscheint darunter die Projektliste: Die Variante übernimmt dann den Inhalt des dort gewählten Projekts – Anlagen, Bedarfe, Zeitreihen und Energieträgereinstellungen –, während Name und Zugehörigkeit zur Vergleichsgruppe weiter vom Stammprojekt kommen. Als Bezeichner trägt das Programm den Namen des gewählten Projekts ein; ein selbst eingetippter Bezeichner bleibt stehen. Unter dem Feld steht laufend der Name, den die neue Variante bekommen wird (''Stamm - Bezeichner'', bei schon vergebenem Namen mit Zählnummer); ''Variante anlegen'' bleibt gesperrt, solange der Bezeichner fehlt oder bei gesetztem Kästchen kein Projekt gewählt ist. Danach führt das Auswahlfeld die neue Variante, und ein Band meldet die Anlage.
 * '''✏️ Variante umbenennen…''' – erscheint nur, wenn das geöffnete Projekt eine Variante ist. Der bestehende Bezeichner ist vorbelegt; mit dem neuen Bezeichner ändern sich auch der Projektname (''Stamm - Bezeichner''), das Kopfband und der Fenstertitel. Ein Stammprojekt bekommt seinen Namen dagegen über ''Speichern unter…''.
-* '''Umbenennen in der Übersicht''' – dieselbe Umbenennung steht im Bereich ''Berichte & Kosten'' auf der Seite ''Übersicht'' als vierter Knopf der Variantenzeile, hinter Anlegen, Löschen und Simulieren; frei ist er, sobald eine Variante gewählt ist.
+* '''Umbenennen in der Übersicht''' – dieselbe Umbenennung steht im Bereich ''Berichte & Kosten'' auf dem Reiter ''Übersicht'' als vierter Knopf der Variantenzeile, hinter Anlegen, Löschen und Simulieren; frei ist er, sobald eine Variante gewählt ist.
+
+== Unterschiede übernehmen ==
+{{Anker|uebernahme|komponentenuebernahme}}
+
+Im Bereich ''Berichte & Kosten'', Reiter ''Übersicht'', zeigt die Seite zur markierten Variante die Tafel ''Unterschiede zum Stammprojekt'' mit Gewerk, Merkmal, Wert im Stamm und Wert der Variante. Jede Zeile trägt den Knopf '''Übernehmen'''; lässt sich eine Zeile nicht übernehmen, steht dort ein Gedankenstrich, dessen Kurztext den Grund nennt. Im Dialog wählt ''Quelle:'' das Stammprojekt (Vorgabe) oder eine andere Variante der Gruppe; Ziel ist die markierte Variante. ''OK'' schreibt, danach gelten die Ergebnisse des Ziels als veraltet, bis die Simulation neu läuft.
+
+* '''Merkmal übernehmen''' – eine Zeile mit einem einzelnen Merkmal zeigt den Wert der Quelle und den Wert des Ziels und setzt den Wert der Quelle. Den Bezeichner einer Komponente übernimmt nur die ganze Komponente.
+* '''Komponenten übernehmen''' – die Zeile des Komponentenbestands eines Gewerks (Wärmepumpe, BHKW, Spitzenkessel, Solarthermie, Photovoltaik, Pufferspeicher, Stromspeicher) ersetzt den Bestand des Ziels durch den der Quelle; der Dialog zeigt dazu, welche Anlagen angelegt, ersetzt und entfernt werden. Die Anlagen bringen alle Einstellungen mit, dazu Betriebsführung, Wärmesenken, Pufferverbund, Stränge samt Modulen und Wechselrichtern sowie Sperrzeiten. Fehlt dem Ziel ein Quellprofil, eine Kältemaschine oder ein Wechselrichter, kommt er als Projektkopie mit; Bezüge ohne eindeutiges Gegenstück im Ziel bleiben leer, und die Meldung nennt sie.
+* '''Kosten''' – die Kostenpositionen der ersetzten Anlagen bleiben mit ihren Beträgen erhalten und hängen an den neuen Anlagen. Positionen ohne Gegenstück stehen danach ''ohne Anlagenzuordnung'' ([[Programm Dokumentation/Kosten#ohne-anlagenzuordnung|Kosten]]). Weicht eine unveränderte Position jetzt vom Planwert der Technik ab, nennt die Meldung sie.
+
+== Gebäude im Variantenvergleich ==
+{{Anker|gebaeude-vergleich}}
+
+Der Vergleich der Varianten führt die Kennzahlgruppe ''Gebäude'' mit der Abweichung je Kennzahl: Nachtauskühl-, Sommerlüftungs- und Aufheizstunden, die maximale Aufheizzeit sowie die Summen der Aufheizleistung und der Auslegungsgröße. Je Stand steht dazu die Gebäudetafel mit Rechenweg, Spitzen, Lüftungs- und Aufheizzeilen.
+
+Die Abweichungsmerkmale nennen, worin sich zwei Varianten bei der Aufheizung unterscheiden: der Schalter, die Bemessung, der Abzug, die Reserve, die Art der Aufheizzeit, ''Aufschlag (h)'' und ''Aufschlag (%)'' sowie die manuelle Aufheizzeit je Gebäude.
+
+== Photovoltaik im Variantenvergleich ==
+{{Anker|pv-quelle}}
+
+Rechnet mindestens einer der beiden Stände die Photovoltaik über eine PV-Ganglinie, nennt der Vergleich in der Gruppe ''Photovoltaik'' die Zeile ''Quelle'': ''Modulmodell'' oder Name, Raster und Nennleistung der Ganglinie. Sie erscheint nur, wenn sich die Quellen beider Stände unterscheiden.
 
 == Siehe auch ==
 

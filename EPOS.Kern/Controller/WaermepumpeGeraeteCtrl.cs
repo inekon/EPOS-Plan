@@ -118,6 +118,24 @@ namespace WindowsFormsApplication1
             return e.Ok ? null : e.Meldung;
         }
 
+        /// <summary>
+        /// Schaltet allein den <b>Kühlbetrieb</b> einer Projektkopie um und lässt Kaltwasser-Vorlauf und
+        /// Hilfsstromanteil, wie sie stehen — für die Auswahl „Wärmepumpen im Kühlbetrieb“ der Kachel
+        /// „Kühlung“ (Startseite, Reiter Energieerzeuger). Derselbe Schreibweg wie im
+        /// Konfigurationsdialog (<see cref="KuehlkonfigurationNachziehen"/> und damit
+        /// <see cref="WPCtrl.KuehlkonfigurationSchreiben"/> samt Sperrgründen).
+        /// </summary>
+        /// <returns><c>null</c> = geschrieben oder nichts zu tun; sonst der Grund im Klartext.</returns>
+        internal static string KuehlbetriebUmschalten(int idWp, int idProjekt, bool an)
+        {
+            if (idWp <= 0 || idProjekt <= 0) return null;
+            WPCtrl projekt = new WPCtrl();
+            projekt.ReadAll("ID=" + idWp);
+            if (projekt.items.Count == 0) return null;   // keine Projektkopie - nichts zu schreiben
+            WPModel ist = projekt.items[0];
+            return KuehlkonfigurationNachziehen(idWp, idProjekt, an, ist.KuehlVorlauf, ist.KuehlHilfsstromanteil);
+        }
+
         // =================================================================================
         // Der Schreibweg der STAMMFELDER in die Projektkopie (Anwenderentscheid 16.09.2026)
         // =================================================================================
@@ -224,6 +242,85 @@ namespace WindowsFormsApplication1
             WPStammCtrl stamm = new WPStammCtrl();
             stamm.ReadAll("ID=" + idWp);
             return stamm.rows > 0 ? stamm.items[0] : null;
+        }
+
+        /// <summary>
+        /// Das Kältemittel eines Geräts (<c>Kaeltemittel</c>, Schemaschritt <see cref="UebergabegrenzeSchema"/>) —
+        /// Projektkopie vor Stammkatalog wie <see cref="Geraetedaten"/>; <c>null</c> = leer, kein Gerät oder Spalte fehlt.
+        /// </summary>
+        internal static string KaeltemittelLesen(int idWp)
+        {
+            if (idWp <= 0) return null;
+            foreach (string tabelle in new[] { UebergabegrenzeSchema.TAB_WP, UebergabegrenzeSchema.TAB_WP_STAMM })
+            {
+                if (!DataRepository.SpalteVorhanden(tabelle, UebergabegrenzeSchema.SPALTE_KAELTEMITTEL)) continue;
+                System.Data.DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + UebergabegrenzeSchema.SPALTE_KAELTEMITTEL + " FROM " + tabelle + " WHERE ID = ?",
+                    new DbParam("@id", idWp));
+                if (dt == null || dt.Rows.Count == 0) continue;
+                object w = dt.Rows[0][0];
+                return w == null || w == DBNull.Value || string.IsNullOrWhiteSpace(Convert.ToString(w))
+                    ? null : Convert.ToString(w).Trim();
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Die acht Gerätespalten der Übergabegrenze (UB‑E3, <see cref="Geraetegrenzen"/>) eines Geräts: die Projektkopie
+        /// <c>Tab_WP</c>; mit <paramref name="mitStamm"/> wie <see cref="KaeltemittelLesen"/> Projektkopie vor Stammkatalog
+        /// (Dialog). Der Lauf liest nur die Projektkopie, wie die Taktwerte. <c>null</c> = kein Gerät oder Spalten fehlen.
+        /// </summary>
+        internal static Geraetespalten GeraetespaltenLesen(int idWp, bool mitStamm)
+        {
+            if (idWp <= 0) return null;
+            string[] tabellen = mitStamm
+                ? new[] { UebergabegrenzeSchema.TAB_WP, UebergabegrenzeSchema.TAB_WP_STAMM }
+                : new[] { UebergabegrenzeSchema.TAB_WP };
+            foreach (string tabelle in tabellen)
+            {
+                if (!DataRepository.SpalteVorhanden(tabelle, UebergabegrenzeSchema.SPALTE_KAELTEMITTEL)) continue;
+                System.Data.DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + UebergabegrenzeSchema.SPALTE_SPREIZUNG_AUSLEGUNG + ", " + UebergabegrenzeSchema.SPALTE_SPREIZUNG_MAX +
+                    ", " + UebergabegrenzeSchema.SPALTE_SPREIZUNG_MIN + ", " + UebergabegrenzeSchema.SPALTE_MINDESTVOLUMENSTROM +
+                    ", " + UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX + ", " + UebergabegrenzeSchema.SPALTE_RUECKLAUF_BEZUG +
+                    ", " + UebergabegrenzeSchema.SPALTE_RUECKLAUF_ABWERTUNG + ", " + UebergabegrenzeSchema.SPALTE_KAELTEMITTEL +
+                    " FROM " + tabelle + " WHERE ID = ?",
+                    new DbParam("@id", idWp));
+                if (dt == null || dt.Rows.Count == 0) continue;
+                System.Data.DataRow r = dt.Rows[0];
+                double? Zahl(int i)
+                {
+                    object w = r[i];
+                    if (w == null || w == DBNull.Value) return null;
+                    double d = Convert.ToDouble(w, System.Globalization.CultureInfo.InvariantCulture);
+                    return double.IsNaN(d) ? (double?)null : d;
+                }
+                object km = r[7];
+                string kaeltemittel = km == null || km == DBNull.Value || string.IsNullOrWhiteSpace(Convert.ToString(km))
+                    ? null : Convert.ToString(km).Trim();
+                return new Geraetespalten(Zahl(0), Zahl(1), Zahl(2), Zahl(3), Zahl(4), Zahl(5), Zahl(6), kaeltemittel);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Schreibt das Kältemittel in die <b>Projektkopie</b> <c>Tab_WP</c> (Schnellwahl, Umsetzungskonzept 6.3); leer als
+        /// NULL. Der Stammkatalog wird hier nie geändert (Stammblatt, UB‑E3). <c>false</c>, wenn die Projektkopie fehlt,
+        /// die Spalte fehlt oder das UPDATE scheitert.
+        /// </summary>
+        internal static bool KaeltemittelSchreiben(int idWp, string kaeltemittel)
+        {
+            if (idWp <= 0 || !DataRepository.SpalteVorhanden(UebergabegrenzeSchema.TAB_WP, UebergabegrenzeSchema.SPALTE_KAELTEMITTEL))
+                return false;
+            System.Data.DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID FROM " + UebergabegrenzeSchema.TAB_WP + " WHERE ID = ?", new DbParam("@id", idWp));
+            if (dt == null || dt.Rows.Count == 0) return false;
+            return DataRepository.ExecuteSQL(
+                "UPDATE " + UebergabegrenzeSchema.TAB_WP + " SET " + UebergabegrenzeSchema.SPALTE_KAELTEMITTEL +
+                " = ? WHERE ID = ?",
+                ProjektPuffer.Par("@kaeltemittel", DbParamTyp.VarWChar,
+                    string.IsNullOrWhiteSpace(kaeltemittel) ? null : kaeltemittel.Trim()),
+                new DbParam("@id", idWp));
         }
     }
 }

@@ -1,0 +1,59 @@
+Beim Schritt '''Ergebnisse auswerten und Kosten hinterlegen''' stehen nach dem Lauf die Ergebnisse in Reitern bereit – zuerst die ''Übersicht'' mit den Deckungsanteilen, dann der Reiter ''Wärme-/Strombedarf'', je ein Reiter je gerechnetem Erzeuger mit Jahresganglinien, Kennzahlen und Modultabellen und zuletzt der Reiter ''Ergebnis''. Parallel dazu erfassen Sie im Kostenmodul die Investitions-, Betriebs- und Energiekosten der Anlage, sodass technische und wirtschaftliche Bewertung auf demselben Datenstand beruhen.
+
+{{Tipp|Sehen Sie sich zuerst diese vier Größen an: den Anteil der Zusatzheizung, den Bivalenzpunkt, die Vollbenutzungsstunden und den Restwärmebedarf. Bleibt Restwärme offen, trägt die Auslegung die Spitzen nicht. Auf der Stromseite geben Eigenverbrauchsquote und Autarkiegrad die Antwort auf die Speicherfrage.}}
+
+== Energiebedarf ==
+{{Anker|energiebedarf|jahresdauerlinie}}
+
+Der Reiter ''Wärme-/Strombedarf'' zeigt Wärmelast und Strombedarf als Jahresganglinie oder – mit ''sortiert'' – als Jahresdauerlinie mit Maximum und Jahressumme; die Wärmelast liegt gestapelt nach Heizung, Brauchwasser und Prozesswärme vor, die Summe als Linie. Rechnet das Projekt Kälte, steht dort auch der Block ''Kälte'' mit der Kältelast.
+
+== Auswertung je Erzeuger ==
+{{Anker|auswertung-je-erzeuger|erzeuger}}
+
+Der Reiter ''Wärmepumpe'' weist Wärmebedarfsdeckung, Bivalenzpunkt, Speicherkapazität, durchschnittliche Vollbenutzungsstunden, minimale Spitzenkesselleistung und die Jahresarbeitszahl – der Wärmepumpe und mit Heizstab – aus, dazu Ganglinien für Produktion, Stromverbrauch und Speichertemperaturen, die Betriebsbereiche einer Wärmepumpe mit Einbindung, die Auslegungsprüfung einer Erdreichquelle, eine Modultabelle mit JAZ je Modul und am Ende das Diagramm ''Leistung über Außentemperatur''.
+
+Für ''Heizkessel'', ''BHKW'', ''Solarthermie'', ''Photovoltaik'' und ''Stromspeicher'' gibt es entsprechende Reiter mit Deckungsanteil, Produktion, Restbedarf, Verbrauchs- und Emissionswerten: der Heizkessel mit Laufstunden, Starts, Bereitschaftsverlust, Jahresnutzungsgrad und Brennwertanteil, das BHKW mit Wärmelast, Stromlast und Einspeisung, die Solarthermie mit Kollektorertrag brutto, genutzt und Überschuss, die Photovoltaik mit Abregelung, der Stromspeicher mit dem Peak-Ziel der Speicherflotte. Rechnet eine Kältemaschine ihr Teillastverhalten, zeigt das Blatt ''Kälteproduktion'' des Reiters ''Ergebnis'' Taktstrom, Starts und Jahres-EER.
+
+== Ergebnisseite und Autarkieanalyse ==
+{{Anker|ergebnisseite-und-autarkieanalyse|ergebnisseite|autarkie}}
+
+Die ''Übersicht'' ist ein Dashboard mit den Spalten ''Wärme'' und ''Strom'': je Spalte die Kaskade des Laufs, die Kennzahlen Bedarf, Deckung durch Erzeuger und Rest, der Deckungsring mit Legende und die Erzeugertabelle; bei Kälte folgt der Block ''Kältedeckung'' mit einem dritten Ring.
+
+Der Reiter ''Ergebnis'' führt die Blätter ''Wärmeproduktion'', ''Stromproduktion'', bei Kälte ''Kälteproduktion'' und ganz rechts ''Autarkie-Analyse''. Die Produktionsblätter zeigen Erzeuger und Speicherinhalt als Jahresganglinie mit ein- und ausblendbaren Reihen, die Kälteproduktion je Kälteerzeuger die gedeckte und die ungedeckte Kälte; die Autarkie-Analyse stellt monatsweise Direktverbrauch, Speichernutzung und Netzbezug gegenüber, bei Solarthermie die solare Deckung je Monat, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad, Speichernutzen und CO₂-Einsparung aus. Das Ergebnis lässt sich je Projekt speichern.
+
+Rechnet das Projekt mit Anlagenkopplung, zeigt das Ergebnis eines gekoppelten Gebäudes, wie weit Übergabe und Erzeuger den Raum versorgt haben: Komfortstunden neben dem Restbedarf und auf Stufe ''geschlossener Kreis (AK3)'' die Kennzahlen des Kreises ([[Programm Dokumentation/Simulationsergebnisse#kopplungskennzahlen|Kennzahlen der Anlagenkopplung]]). Bei einer Wärmepumpe mit Einbindung nennt der Reiter ''Wärmepumpe'' die Stunden und die Wärme je Betriebsbereich und die Bivalenzpunkte.
+
+{{Tipp|Ändern Sie jeweils nur eine Größe – Vorlauftemperatur, Maschinengröße, Speichervolumen, Betriebsmodus – und rechnen Sie erneut; so bleibt der Effekt jeder Entscheidung sichtbar.}}
+
+== Zeitreihen exportieren ==
+{{Anker|zeitreihen-exportieren|export|csv}}
+
+Der Knopf ''CSV…'' in der Leiste jedes Zeitreihendiagramms speichert die Reihen des Bildes als CSV-Datei, beim Energiebedarf und den Seiten der Erzeuger mit Zeitstempel und Außentemperatur; die Monatsbilder tragen den Knopf ebenso – siehe [[Datenexport]].
+
+== Kosten hinterlegen ==
+{{Anker|kosten-hinterlegen|kosten|energiepreise}}
+
+Erst wenn die Technik steht, lohnt die Kostenerfassung, denn dann liegen die Mengen fest. Die Kostenverwaltung gliedert sich in Investitions-, Betriebs- und Energiekosten: je Komponente Positionen mit festem Betrag oder einem Satz je Bezugsgröße – etwa je kW, je kWp, je kWh, je Liter oder in Prozent der Investition –, Nutzungsdauer und einer Bandbreite zwischen günstigem und ungünstigem Fall; die im Technikmodul hinterlegten Anlagenkosten lassen sich als Planwert übernehmen, Kostenvorlagen und die Nutzungsdauertabelle (AfA) belegen Positionen und Sätze vor.
+
+In der Energieträgerverwaltung pflegen Sie je Energieträger Arbeits-, Grund- und Leistungspreis – beim Stromträger den Leistungspreis wahlweise als zweistufige Staffel –, Heiz- beziehungsweise Brennwert und die Emissionsfaktoren aus dem Emissionskatalog; die Brennstoffe liegen je Projekt als Kopie vor. Die Seite ''Kosten'' des Bereichs ''Berichte & Kosten'' zeigt die Kosten je Version und rechnet mit ''Neu berechnen'' die Wirtschaftlichkeit neu ([[Programm Dokumentation/Kosten|Programm-Dokumentation: Kosten]]).
+
+== Wirtschaftlichkeit und Bericht ==
+{{Anker|wirtschaftlichkeit-und-bericht|bewertung}}
+
+Auf dem erfassten Kostenstand bewertet die [[Wirtschaftlichkeit]] das Projekt und seine Varianten nach der Kapitalwertmethode gemäß DIN EN 17463 – in den Szenarien Ungünstig, Erwartet und Günstig, mit Einstufung je Version, Sensitivitäten, KWKG-Zuschlag, CO₂-Abgabe und Emissionsbilanz. Für die Weitergabe fasst [[Varianten und Bericht]] die Vergleichsgruppe in einem Word-Bericht aus einer Berichtsvorlage und einer Excel-Arbeitsmappe zusammen; jeder Berichtslauf simuliert die beteiligten Projekte zuvor neu.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Ergebnisdarstellung]] – Registerkarten, Kennzahlen und Diagramme im Einzelnen
+* [[Datenexport]] – Umfang und Aufbau der CSV-Dateien
+* [[Kosten und Energiepreise]] – Kostenpositionen, Preise und Emissionsfaktoren
+* [[Grundlagen/Wirtschaftlichkeitsrechnung]] – Bewertung der erfassten Kosten
+* [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]] – die Reiter des Ergebnisses und die Bedienung der Diagramme
+* [[Programm Dokumentation/Kosten|Programm-Dokumentation: Kosten]] – Kostenverwaltung, Energieträger, Nutzungsdauern
+
+← [[Simulation konfigurieren und starten]] | [[Programmablauf|Übersicht]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

@@ -1,0 +1,198 @@
+﻿@namespace EPOS.UI.Bausteine
+@using EPOS.UI.Dialoge.Bedarf
+@*
+   DER BAUTEILSTECKBRIEF (Konzept Bauteilaufbau beim Import 5.4, BA-3; Anwenderentscheid vom 06.10.2026): eine Tafel
+   neben der Gebaeudeansicht, die zeigt, was die Rechnung ueber ein Bauteil weiss - Kopf (Name, Art, Kennung, Stufe in
+   der Farbe des Farbmodus "Aufbau"), Rechengroessen (Flaeche, Azimut, Neigung, Randbedingung, U mit Herkunft und dem
+   Hinweis bei mehr als 10 % Abweichung, R1, C1 und Kapazitaet), den Aufbau als Schichtliste innen -> aussen mit Herkunft
+   je Wert (weggelassene Schichten ausgegraut mit Grund, ein Ersatzaufbau mit Typ und Abgleich), bei Fenster und Tuer U,
+   g und Rahmen. Er schreibt nichts: Die Spruenge (Baustoffzuordnung, Bauteildialog) sind Rueckrufe des Wirts - kein
+   Delegat, kein Knopf. Gesteuert wird ueber Werte (data-stufe, data-herkunft), nie ueber einen Text.
+   G5-3: Die Zeile "Befund" nennt den Befund des Bauteils (Farbpunkt aus GebaeudeAnsichtBefundstufen, Name vom Wirt, im
+   Kontrastmodus ueber data-befund gemustert) und seinen Grund; "Herkunft der Flaeche" nennt den Weg der Flaeche (Mengensatz,
+   Raumgrenze, Koerper, schematisch; leer bei Eingabe von Hand), data-flaechenherkunft traegt den gespeicherten Wert.
+*@
+
+<aside class="epos-steckbrief" aria-label="@Texte.Titel" data-kennung="@Daten.Kennung"
+       data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(Daten.Stufe)">
+    <div class="epos-steckbrief-kopf">
+        <span class="epos-gebansicht-farbfeld" style="@("background:" + GebaeudeAnsichtAufbaustufen.Farbe(Daten.Stufe))" aria-hidden="true"></span>
+        <h3 class="epos-steckbrief-name">@Daten.Name</h3>
+        @if (Geschlossen.HasDelegate)
+        {
+            <button type="button" class="epos-knopf epos-steckbrief-schliessen" aria-label="@Texte.Schliessen" title="@Texte.Schliessen"
+                    @onclick="() => Geschlossen.InvokeAsync()"><span aria-hidden="true">✕</span></button>
+        }
+    </div>
+    <dl class="epos-steckbrief-werte">
+        <dt>@Texte.Kennung</dt><dd class="epos-steckbrief-kennung">@Daten.Kennung</dd>
+        <dt>@Texte.Stufe</dt><dd class="epos-steckbrief-stufe">@Stufentext</dd>
+        <dt>@Texte.Befund</dt>
+        <dd class="epos-steckbrief-befund" data-befund="@GebaeudeAnsichtBefundstufen.Schluessel(Daten.Befund)">
+            <span class="epos-gebansicht-farbfeld" data-befund="@GebaeudeAnsichtBefundstufen.Schluessel(Daten.Befund)"
+                  style="@("background:" + GebaeudeAnsichtBefundstufen.Farbe(Daten.Befund))" aria-hidden="true"></span>
+            <span class="epos-steckbrief-befundname">@Befundtext</span>
+            @if (Daten.Befundgrund.Length > 0)
+            {
+                <span class="epos-steckbrief-grund epos-steckbrief-befundgrund">@Daten.Befundgrund</span>
+            }
+        </dd>
+        <dt>@Texte.Rand</dt><dd>@Daten.Art · @Daten.Randbedingung</dd>
+        @if (!string.IsNullOrEmpty(Koerper))
+        {
+            <dt>@Texte.Koerper</dt>
+            <dd class="epos-steckbrief-koerper" data-koerper="@(KoerperAbgeleitet == true ? "abgeleitet" : "datei")">@Koerper</dd>
+        }
+    </dl>
+
+    <h4 class="epos-steckbrief-gruppe">@Texte.GruppeRechnung</h4>
+    <dl class="epos-steckbrief-werte">
+        <dt>@Texte.Flaeche</dt><dd class="epos-steckbrief-flaeche">@Daten.Flaeche</dd>
+        <dt>@Texte.Flaechenherkunft</dt>
+        <dd class="epos-steckbrief-flaechenherkunft" data-flaechenherkunft="@(Daten.FlaechenherkunftSchluessel.Length > 0 ? Daten.FlaechenherkunftSchluessel : null)">@Daten.Flaechenherkunft</dd>
+        <dt>@Texte.Azimut</dt><dd>@Daten.Azimut</dd>
+        <dt>@Texte.Neigung</dt><dd>@Daten.Neigung</dd>
+        <dt>@Texte.UWert</dt>
+        <dd class="epos-steckbrief-u" data-herkunft="@Daten.UHerkunftSchluessel">
+            @Daten.UWert <span class="epos-steckbrief-herkunft">@Daten.UHerkunft</span>
+        </dd>
+        @if (Daten.Transparent)
+        {
+            <dt>@Texte.GWert</dt><dd class="epos-steckbrief-g">@Daten.GWert</dd>
+            <dt>@Texte.Rahmen</dt><dd class="epos-steckbrief-rahmen">@Daten.Rahmenanteil</dd>
+        }
+        else
+        {
+            <dt>@Texte.R1</dt><dd class="epos-steckbrief-r1">@Strich(Daten.R1)</dd>
+            <dt>@Texte.C1</dt><dd class="epos-steckbrief-c1">@Strich(Daten.C1)</dd>
+            <dt>@Texte.Kapazitaet</dt><dd class="epos-steckbrief-kapazitaet">@Strich(Daten.Kapazitaet)</dd>
+        }
+    </dl>
+    @if (Daten.UHinweis.Length > 0)
+    {
+        <p class="epos-kond-feldmeldung epos-steckbrief-uhinweis" role="note">@Daten.UHinweis</p>
+    }
+    @if (!Daten.Transparent)
+    {
+        <p class="epos-leisezeile epos-steckbrief-anzeige">@(Daten.Rechengrund.Length > 0 ? Daten.Rechengrund : Texte.Anzeige)</p>
+
+        <h4 class="epos-steckbrief-gruppe">@Texte.GruppeAufbau</h4>
+        @if (Daten.Aufbau.Length == 0)
+        {
+            <p class="epos-leisezeile epos-steckbrief-keinaufbau">@Texte.KeinAufbau</p>
+        }
+        else
+        {
+            <p class="epos-steckbrief-aufbau" data-herkunft="@Daten.AufbauHerkunftSchluessel">
+                @Daten.Aufbau <span class="epos-steckbrief-herkunft">@Daten.AufbauHerkunft</span>
+            </p>
+        }
+        @if (Daten.Aufbaurang.Length > 0)
+        {
+            <p class="epos-leisezeile epos-steckbrief-rang">@Daten.Aufbaurang</p>
+        }
+        @if (Daten.Ersatz.Length > 0)
+        {
+            <p class="epos-leisezeile epos-steckbrief-ersatz">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Ersatz, Daten.Ersatz)</p>
+        }
+        @if (Daten.Schichten.Count > 0)
+        {
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-steckbrief-schichten">
+                    <thead>
+                        <tr>
+                            <th>@Texte.SpalteSchicht</th>
+                            <th class="epos-gebimport-zahl">@Texte.SpalteDicke</th>
+                            <th class="epos-gebimport-zahl">@Texte.SpalteLambda</th>
+                            <th class="epos-gebimport-zahl">@Texte.SpalteRho</th>
+                            <th class="epos-gebimport-zahl">@Texte.SpalteCp</th>
+                            <th>@Texte.SpalteHerkunft</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Daten.Schichten.Count; i++)
+                        {
+                            BauteilsteckbriefSchicht s = Daten.Schichten[i];
+                            <tr @key="i" class="@(s.Weggelassen ? "epos-steckbrief-schicht epos-steckbrief-schicht--weggelassen" : "epos-steckbrief-schicht")"
+                                data-herkunft="@s.HerkunftSchluessel" data-weggelassen="@(s.Weggelassen ? "true" : null)">
+                                <td>
+                                    @s.Name
+                                    @if (s.Weggelassen)
+                                    {
+                                        <span class="epos-steckbrief-grund">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Weggelassen, s.Grund)</span>
+                                    }
+                                </td>
+                                <td class="epos-gebimport-zahl">@s.Dicke</td>
+                                <td class="epos-gebimport-zahl">@s.Lambda</td>
+                                <td class="epos-gebimport-zahl">@s.Rohdichte</td>
+                                <td class="epos-gebimport-zahl">@s.Cp</td>
+                                <td class="epos-steckbrief-herkunft">@s.Herkunft</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        @if (Daten.Fehlt.Length > 0)
+        {
+            <p class="epos-leisezeile epos-steckbrief-fehlt">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Fehlt, Daten.Fehlt)</p>
+        }
+    }
+
+    @if (Sprungmaterial is not null || (ZumBauteil.HasDelegate && Daten.IdBauteil is not null))
+    {
+        <div class="epos-steckbrief-spruenge">
+            @if (Sprungmaterial is { } material)
+            {
+                <button type="button" class="epos-knopf epos-steckbrief-baustoff" data-material="@material"
+                        @onclick="() => ZurBaustoffzuordnung.InvokeAsync(material)">@Texte.ZurBaustoffzuordnung</button>
+            }
+            @if (ZumBauteil.HasDelegate && Daten.IdBauteil is int id)
+            {
+                <button type="button" class="epos-knopf epos-steckbrief-bauteil"
+                        @onclick="() => ZumBauteil.InvokeAsync(id)">@Texte.ZumBauteil</button>
+            }
+        </div>
+    }
+    <p class="epos-leisezeile epos-steckbrief-nuranzeige">@Texte.NurAnzeige</p>
+</aside>
+
+@code {
+    /// <summary>Der Steckbrief.</summary>
+    [Parameter, EditorRequired] public BauteilsteckbriefDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen.</summary>
+    [Parameter] public BauteilsteckbriefTexte Texte { get; set; } = new();
+
+    /// <summary>Der Name der Stufe (vom Wirt aus seinen Ansichtstexten); leer = der Schlüssel.</summary>
+    [Parameter] public string? StufenName { get; set; }
+
+    /// <summary>Der Sprung in den Abschnitt „Baustoffe" mit dem Schlüssel des Materialnamens; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback<string> ZurBaustoffzuordnung { get; set; }
+
+    /// <summary>Der Sprung in den Bauteildialog mit der Id des gespeicherten Bauteils; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback<int> ZumBauteil { get; set; }
+
+    /// <summary>Schließt die Tafel; ohne Delegat kein Kreuz.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Der Name des Befunds (vom Wirt aus seinen Ansichtstexten); leer = der Schlüssel.</summary>
+    [Parameter] public string? BefundName { get; set; }
+
+    /// <summary>Die Zeile „Körper" (Datenaustauschkonzept 17.5): Weg und Vermerke als fertiger Text; leer = keine Zeile.</summary>
+    [Parameter] public string? Koerper { get; set; }
+
+    /// <summary>Ist der Körper aus Flächen der Datei gebildet (sonst aus der Datei)? <c>null</c> = keiner.</summary>
+    [Parameter] public bool? KoerperAbgeleitet { get; set; }
+
+    private string Befundtext => string.IsNullOrEmpty(BefundName) ? GebaeudeAnsichtBefundstufen.Schluessel(Daten.Befund) : BefundName;
+
+    private string Stufentext => string.IsNullOrEmpty(StufenName) ? GebaeudeAnsichtAufbaustufen.Schluessel(Daten.Stufe) : StufenName;
+
+    /// <summary>Der Materialschlüssel des Sprungs: die erste Schicht mit Schlüssel — nur mit Delegat.</summary>
+    private string? Sprungmaterial => ZurBaustoffzuordnung.HasDelegate
+        ? Daten.Schichten.Where(s => !s.Weggelassen).Select(s => s.Materialschluessel).FirstOrDefault(m => !string.IsNullOrEmpty(m))
+        : null;
+
+    private static string Strich(string text) => text.Length > 0 ? text : "–";
+}

@@ -194,7 +194,62 @@ namespace Auslieferungsvorlage.Tests
             // 152 seit KP1a der Gebaeudesimulation (Schemaschritt 151, KonditionierungSchema, #583):
             // Tab_Konditionierungskalender, Tab_Konditionierungsperiode und Tab_Konditionierungsvorgabe,
             // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
-            Assert.Equal(152, befund.Strict);
+            //
+            // 153 seit KP1b der Gebaeudesimulation (Schemaschritt 152, KonditionierungVorlagenSchema):
+            // Tab_Konditionierungsvorlage_STAMM, STRICT von ihrer ersten Zeile an; Kalender- und
+            // Vorgabetabelle bleiben nach ihrem Neubau STRICT (der Zieltext traegt ") STRICT" weiter).
+            //
+            // 154 seit der Welle M3b (Schemaschritt 166, BedarfNetzKalenderSchema): Tab_Betriebskalender,
+            // STRICT von ihrer ersten Zeile an und in der Vorlage LEER; die Kalenderspalten der drei
+            // Zuordnungstabellen sind ADD COLUMN und aendern die Zahl nicht. Die Schritte 167
+            // (ErzeugerTeillastSchema) und 168 (StromViertelstundenSchema) sind ADD COLUMN und aendern
+            // die Zahl nicht.
+            //
+            // 156 seit der Pufferauslegung P1 (Schemaschritt 169, PufferAuslegungSchema):
+            // Tab_PufferAuslegung (LEER) und Tab_PufferAuslegungParameter_STAMM (mit Saat), beide STRICT
+            // von ihrer ersten Zeile an. Schritt 170 (HilfsenergieEmpfehlungNachzug) ist reines DML und
+            // Schritt 171 (PufferOptionenSchema) ADD COLUMN; beide lassen die Zahl stehen.
+            //
+            // 158 seit dem Schemaschritt der Katalogfassung (Schritt 172, KatalogfassungSchema, Welle M6:
+            // KU1 Stufe 1 und EQ1): Tab_Katalogabgleich und Tab_ErgebnisErdreich, STRICT von ihrer ersten
+            // Zeile an.
+            //
+            // 160 seit dem Schemaschritt der Projektkopien (ProjektkopienKatalogeSchema, Anwenderentscheid
+            // 03.10.2026): Tab_Brennstoff und Tab_PufferAuslegungParameter, STRICT von ihrer ersten Zeile an.
+            //
+            // 163 seit den Schemaschritten 177 (WaermepumpeSperrprofilSchema: Tab_Sperrfenster) und 178
+            // (ProzessNutzungSchema: Tab_Nutzungsprofil_STAMM, Z_Nutzungsprofil), STRICT von ihrer ersten
+            // Zeile an. Die Schritte 176 (KonditionierungNutzungSchema) und 179 (PufferAuslegungErgaenzungSchema)
+            // sind ADD COLUMN und aendern die Zahl nicht.
+            //
+            // 167 seit dem Schemaschritt 182 (KaeltemaschineSchema, KU3-1): Tab_Kaeltemaschine(_STAMM) und
+            // Tab_Kenndaten_Kaeltemaschine(_STAMM), STRICT von ihrer ersten Zeile an. Die Schritte 180 und 181
+            // sind ADD COLUMN und aendern die Zahl nicht.
+            // 168 seit dem Schemaschritt 183 (KaeltemaschineAnlageSchema, KU3-4): Tab_ErgebnisKaeltemaschine,
+            // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            // 173 seit dem Schemaschritt 189 (RaumnutzungSchema, NP1a): die fuenf Tabellen des Katalogs der
+            // Nutzungsprofile, STRICT von ihrer ersten Zeile an; der Neubau von Kalender und Vorlage haelt STRICT.
+            //
+            // 174 seit dem Schemaschritt 191 (RaumgrundrissSchema, HC-5): Tab_Raumgrundriss, STRICT von ihrer ersten Zeile
+            // an und in der Vorlage LEER.
+            //
+            // 177 seit dem Schemaschritt 204 (ZonenKatalogSchema, ZK): Tab_Zone_STAMM, Tab_Bauteil_STAMM und
+            // Tab_Zonenluftstrom_STAMM, STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            // 182 seit dem Schemaschritt 206 (PvGanglinieSchema, PVG): Tab_PvGanglinie(_STAMM), Tab_PvGanglinieDaten(_STAMM)
+            // und Z_ProjektPvGanglinie, STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            // 183 seit dem Schemaschritt 207 (KalenderbedienungSchema, K2): Tab_Konditionierungswoche, STRICT von ihrer ersten
+            // Zeile an und in der Vorlage LEER; der Neubau von Kalender und Periode haelt STRICT.
+            //
+            // 188 seit dem Schemaschritt 213 (KaeltebedarfSchema, K1): Tab_Kaeltebedarf(_STAMM), Tab_Kaeltetyp(_STAMM) und
+            // Z_Projekt_Kaeltebedarf, STRICT von ihrer ersten Zeile an.
+            //
+            // 190 seit dem Schemaschritt 214 (RueckkuehlwerkSchema, K-F1): Tab_Rueckkuehlwerk(_STAMM),
+            // STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            Assert.Equal(190, befund.Strict);
         }
 
         // =============================================================================
@@ -248,7 +303,7 @@ namespace Auslieferungsvorlage.Tests
 
             Assert.True(befund.Tabellen, "Die Tabellen der Importherkunft fehlen in der Vorlage.");
             Assert.Equal(0L, befund.Zeilen);
-            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0)",
+            Assert.Contains("ok      Importablage leer (Tab_Importquelle 0, Tab_Importzuordnung 0, Tab_Raumgrundriss 0)",
                             File.ReadAllText(_v.Ziel + ".bericht.txt"));
         }
 
@@ -279,7 +334,7 @@ namespace Auslieferungsvorlage.Tests
                 foreach (DataRow r in t.Rows)
                 {
                     string name = Convert.ToString(r["name"]);
-                    if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
+                    if (!name.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase)) continue;
                     if (name.StartsWith("Tab_Tww", StringComparison.Ordinal)) continue;
                     if (!DataRepository.SpalteVorhanden(name, "ReadOnly")) ohneReadOnly.Add(name);
                 }
@@ -288,17 +343,23 @@ namespace Auslieferungsvorlage.Tests
                         "SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\" WHERE \"ReadOnly\" = 1")),
                     Katalog: Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\"")),
                     Leer: Convert.ToInt64(DataRepository.ExecuteScalar(
-                        "SELECT (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\") + (SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\") + " +
+                        // Die Typaufbauten (Schritt 192, BA-2) sind Auslieferung und zählen nicht als Projektrest.
+                        "SELECT (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"Typaufbau\" IS NULL) + " +
+                        "(SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\" WHERE \"ID_Aufbau\" NOT IN " +
+                        "(SELECT \"ID\" FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"Typaufbau\" IS NOT NULL)) + " +
                         "(SELECT COUNT(*) FROM \"Tab_Baustoff\") + (SELECT COUNT(*) FROM \"Tab_Bauteilaufbau\") + " +
                         "(SELECT COUNT(*) FROM \"Tab_Bauteilschicht\") + (SELECT COUNT(*) FROM \"Tab_Zone\") + " +
                         "(SELECT COUNT(*) FROM \"Tab_Bauteil\") + (SELECT COUNT(*) FROM \"Tab_Zonenluftstrom\") + " +
                         "(SELECT COUNT(*) FROM \"Tab_ErgebnisZone\")")),
+                    Typaufbauten: Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"ReadOnly\" = 1 AND \"Typaufbau\" IS NOT NULL")),
                     OhneReadOnly: ohneReadOnly);
             });
 
             Assert.Equal(BaustoffSchema.Saat.Count, befund.Saat);
             Assert.Equal(befund.Saat, befund.Katalog);
             Assert.Equal(0, befund.Leer);
+            Assert.Equal(TypaufbauSaattabelle.Alle.Count, befund.Typaufbauten);   // die Saat der Typaufbauten bleibt
 
             Assert.Contains("Tab_Bauteilschicht_STAMM", befund.OhneReadOnly);
             string pruefbericht = File.ReadAllText(_v.Ziel + ".bericht.txt");
@@ -337,11 +398,12 @@ namespace Auslieferungsvorlage.Tests
                 Verweise: Convert.ToInt64(DataRepository.ExecuteScalar(
                     NutzungsdauerSchema.ZaehlungZuordnung()))));
 
-            Assert.Equal(NutzungsdauerSchema.Saat.Length, befund.Zeilen);
-            Assert.Equal(NutzungsdauerSchema.Saat.Length, befund.Auslieferung);
+            // Die Saat und die Gerätezeile der Kältemaschine, die Schritt 183 sät (KaeltemaschineAnlageSchema).
+            Assert.Equal(NutzungsdauerSchema.Saat.Length + 1, befund.Zeilen);
+            Assert.Equal(NutzungsdauerSchema.Saat.Length + 1, befund.Auslieferung);
 
-            // Genau eine Standardzeile je Technik - zehn Kostenkomponenten.
-            Assert.Equal(10, befund.Standard);
+            // Genau eine Standardzeile je Technik - elf Kostenkomponenten, die elfte aus Schritt 183.
+            Assert.Equal(11, befund.Standard);
 
             // Die Vorlagenpositionen behalten ihre Positionsart.
             Assert.True(befund.Verweise > 0,
@@ -401,7 +463,7 @@ namespace Auslieferungsvorlage.Tests
             foreach (DataRow r in tabellen.Rows)
             {
                 string t = Convert.ToString(r["name"]);
-                if (t.EndsWith("_STAMM", StringComparison.Ordinal) || t == "Tab_Applikation" || t == "Tab_Projekt")
+                if (t.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase) || t == "Tab_Applikation" || t == "Tab_Projekt")
                     continue;
                 foreach (string s in new[] { "ID_Projekt", "ProjektID" })
                     if (DataRepository.SpalteVorhanden(t, s)) { ergebnis.Add(Tuple.Create(t, s)); break; }

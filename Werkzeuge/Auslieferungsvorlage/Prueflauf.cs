@@ -33,6 +33,13 @@ namespace Auslieferungsvorlage
         internal IReadOnlyList<string> TwwMitnahmen { get; set; } = new List<string>();
 
         /// <summary>
+        /// Lief der Lauf mit <c>--kataloge alle</c> (Vorgabe)? Dann bleiben eigene Katalogzeilen
+        /// stehen, und eine eigene Konditionierungsvorlage ist kein Befund; mit
+        /// <c>--kataloge readonly</c> ist sie einer.
+        /// </summary>
+        internal bool KatalogeVollstaendig { get; set; } = true;
+
+        /// <summary>
         /// Die sechs Fragen, die eine GEOEFFNETE Datenbank beantwortet. Die siebte —
         /// liegen Beidateien daneben? — kann erst danach gestellt werden und steht
         /// deshalb in <see cref="Dateipruefung"/>: Solange die Zugriffsschicht die Datei
@@ -99,8 +106,241 @@ namespace Auslieferungsvorlage
 
             // ---- 7. Zapfprofil-Kataloge (Konzept Zapfprofilgenerator 3.2, 6 (b), (c)) --
             ok &= new TwwKataloge(_bericht).Pruefen(Eingaben, TwwMitnahmen);
+
+            // ---- 8. Konditionierung (Konzept Konditionierungsprofile 5.5, 5.7, E54) ----
+            ok &= Konditionierung();
+
+            // ---- 9. Nutzungsprofile (Konzept Nutzungsprofile NP-F21) -----------------
+            ok &= Nutzungsprofile();
             return ok;
         }
+
+        // =================================================================================
+        //  Die neunte Frage — der Katalog der Nutzungsprofile (Konzept Nutzungsprofile NP-F21)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Was der Katalog der Nutzungsprofile in der Vorlage trägt.</b> Gezählt werden je Kategorie die Profile
+        /// (gesperrt und eigen) und die Zuordnungen; geprüft wird dreierlei: die ausgelieferte Saat steht vollständig
+        /// (<see cref="RaumnutzungSchema.OffeneSaat"/>), <b>kein Kennwert, kein Zeilenbild, kein Stundenprofil in einer
+        /// Normkategorie</b> (DIN V 18599-10, SIA 2024, VDI 2078 — Normwerte werden nie ausgeliefert) und in jedem Modus
+        /// keine eigene Zeile mehr (NP-F21, Q46). Steht der Schemaschritt nicht, ist das ein Hinweis.
+        /// </summary>
+        private bool Nutzungsprofile()
+        {
+            _bericht.Leer();
+            _bericht.Zeile("Nutzungsprofile");
+            if (!DataRepository.TabelleVorhanden(RaumnutzungSchema.TAB_KATALOG))
+            {
+                _bericht.Zeile("        Schemaschritt " + RaumnutzungSchema.SCHRITT + " steht nicht — nichts zu pruefen");
+                return true;
+            }
+
+            DataTable kategorien = DataRepository.GetDataTable(
+                "SELECT k.\"Bezeichner\", k.\"Art\", " +
+                "(SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p WHERE p.\"ID_Katalog\" = k.\"ID\" AND p.\"ReadOnly\" = 1) AS gesperrt, " +
+                "(SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p WHERE p.\"ID_Katalog\" = k.\"ID\" AND p.\"ReadOnly\" = 0) AS eigen " +
+                "FROM \"" + RaumnutzungSchema.TAB_KATALOG + "\" k ORDER BY k.\"Reihenfolge\", k.\"Bezeichner\"");
+            foreach (DataRow r in kategorien.Rows)
+                _bericht.Zeile("        Kategorie " + Convert.ToString(r["Bezeichner"]).PadRight(20) + " (" + Convert.ToString(r["Art"]) +
+                               ")  Profile gesperrt " + Convert.ToString(r["gesperrt"]) + ", eigen " + Convert.ToString(r["eigen"]));
+            long zuordnungen = Vorlagenbau.Zaehle(RaumnutzungSchema.TAB_ZUORDNUNG);
+            _bericht.Zeile("        Zuordnungen: " + zuordnungen);
+            _bericht.Leer();
+
+            bool ok = true;
+            int offen = RaumnutzungSchema.OffeneSaat();
+            ok &= Befund(offen == 0, "ausgelieferte Saat der Nutzungsprofile vollstaendig: offen " + offen);
+
+            string norm = string.Join(", ", RaumnutzungSchema.ARTEN_NORM.Select(a => "'" + a + "'"));
+            string normProfile = "SELECT p.\"ID\" FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p JOIN \"" +
+                                 RaumnutzungSchema.TAB_KATALOG + "\" k ON k.\"ID\" = p.\"ID_Katalog\" WHERE k.\"Art\" IN (" + norm + ")";
+            long kennwerte = Vorlagenbau.Zaehle2(
+                "SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ID\" IN (" + normProfile + ") AND (" +
+                string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => "\"" + s.Spalte + "\" IS NOT NULL")) + ")");
+            long zeilen = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
+            long stunden = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
+            ok &= Befund(kennwerte + zeilen + stunden == 0,
+                         "Werte in Normkategorien: Profile mit Kennwert " + kennwerte + ", Zeilenbild " + zeilen + ", Stundenprofile " +
+                         stunden + "   (Normwerte werden nie ausgeliefert)");
+
+            long eigene = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_KATALOG + "\" WHERE \"ReadOnly\" = 0")
+                          + Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ReadOnly\" = 0")
+                          + Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" WHERE \"ReadOnly\" = 0");
+            // NP-F21, Q46: Eigene Kategorien, Profile und Zuordnungen fallen in JEDEM Modus - auch eine Kategorie aus einer
+            // Projektdatei, deren Werte aus der lizenzierten Software des Anwenders stammen (NP4b).
+            ok &= Befund(eigene == 0, KatalogeVollstaendig
+                ? "eigene Zeilen des Katalogs der Nutzungsprofile: " + eigene + "   (fallen in jedem Modus, NP-F21)"
+                : "eigene Zeilen des Katalogs der Nutzungsprofile nach --kataloge readonly: " + eigene);
+            return ok;
+        }
+
+        // =================================================================================
+        //  Die achte Frage — die Konditionierung (Konzept Konditionierungsprofile 5.5)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Was an Konditionierung in der Vorlage steckt</b> — und ob es dorthin gehört.
+        ///
+        /// <para><b>Gezählt</b> wird zweimal: die Vorlagen je Größe, getrennt nach gesperrt
+        /// (<c>ReadOnly = 1</c>, sie gehören zur Auslieferung) und eigen, und Kalender, Vorgaben und
+        /// Perioden je <b>Eigentümerart</b> — Gebäude, Zone, Katalogbau, Vorlage. Die vier Arten sind
+        /// dieselben, die die Teilindizes des Schemaschritts führen; sie stehen dort als Bedingung,
+        /// statt hier abgeschrieben zu werden.</para>
+        ///
+        /// <para><b>Geprüft</b> wird fünferlei, jeder Befund mit Zahl:</para>
+        /// <list type="number">
+        /// <item><b>Die ausgelieferten Vorlagen der Saat</b> (KP-S1b, E56) — jede der 14 aus
+        /// <see cref="KonditionierungsvorlagenSaattabelle"/> steht unter Größe und Namen gesperrt
+        /// (<c>ReadOnly = 1</c>) in der Vorlage; eine fehlende ist ein Befund, weitere gesperrte
+        /// Vorlagen sind keiner.</item>
+        /// <item><b>Vorlageninhalt in fremder Größe</b> — eine Vorlage gehört genau EINER Größe
+        /// (P11); der Controller hält das, hier fällt es auf, wenn es jemand umgangen hat.</item>
+        /// <item><b>Vorlagen mit Nennwert oder Saison</b> (E54) — Vorgabezeilen <c>NENNWERT</c> und
+        /// <c>SAISON</c>, ein <c>Nennwert</c> am Kalender und Perioden der Arten <c>FERIEN</c> und
+        /// <c>BETRIEBSPAUSE</c>; beides gehört dem Objekt und bleibt beim Ziel.</item>
+        /// <item><b>Waisen</b> — was <c>foreign_key_check</c> an den drei Tabellen meldet. Erst der
+        /// Fremdschlüssel aus Schritt <see cref="KonditionierungVorlagenSchema.SCHRITT"/> macht die
+        /// Frage beantwortbar.</item>
+        /// <item><b>Eigene Vorlagen</b> nach <c>--kataloge readonly</c> — sie müssten über die
+        /// ReadOnly-Regel gefallen sein, samt Kalendern, Perioden und Vorgaben (Kaskade).</item>
+        /// </list>
+        ///
+        /// <para>Steht der Schemaschritt nicht, gibt es nichts zu prüfen — das ist ein
+        /// <b>Hinweis</b>, kein Fehler: Eine ältere Quelle kennt die Tabellen nicht.</para>
+        /// </summary>
+        private bool Konditionierung()
+        {
+            _bericht.Leer();
+            _bericht.Zeile("Konditionierung");
+
+            if (!DataRepository.TabelleVorhanden(KonditionierungVorlagenSchema.TAB_VORLAGE))
+            {
+                _bericht.Zeile("        Schemaschritt " + KonditionierungVorlagenSchema.SCHRITT +
+                               " steht nicht — nichts zu pruefen");
+                return true;
+            }
+
+            // ---- Die Vorlagen je Groesse ------------------------------------------
+            long gesperrt = 0, eigen = 0;
+            foreach (string groesse in DbWerte.KOND_GROESSEN)
+            {
+                long g = Vorlagen(groesse, "\"ReadOnly\" = 1");
+                long e = Vorlagen(groesse, "\"ReadOnly\" IS NULL OR \"ReadOnly\" = 0");
+                gesperrt += g;
+                eigen += e;
+                _bericht.Zeile("        Vorlagen " + groesse.PadRight(10) + " gesperrt " + g + ", eigen " + e);
+            }
+            _bericht.Zeile("        Vorlagen gesamt: gesperrt " + gesperrt + ", eigen " + eigen);
+
+            // ---- Kalender, Vorgaben und Perioden je Eigentuemerart ------------------
+            _bericht.Leer();
+            foreach (KonditionierungVorlagenSchema.Teilindex i in KonditionierungVorlagenSchema.Teilindizes)
+            {
+                long zeilen = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + i.Tabelle + "\" WHERE " +
+                                                  i.Bedingung);
+                string was = string.Equals(i.Tabelle, KonditionierungSchema.TAB_KALENDER,
+                                           StringComparison.Ordinal)
+                    ? "Kalender "
+                    : "Vorgaben ";
+                string zusatz = "";
+                if (string.Equals(i.Tabelle, KonditionierungSchema.TAB_KALENDER, StringComparison.Ordinal))
+                    zusatz = ", Perioden " + Perioden(i.Bedingung);
+                _bericht.Zeile("        " + was + i.Eigentuemer.PadRight(20) + " " + zeilen + zusatz);
+            }
+
+            // ---- Die fuenf Pruefungen ---------------------------------------------
+            _bericht.Leer();
+            bool ok = true;
+
+            // Die ausgelieferten Vorlagen der Saat (KP-S1b, E56): alle 14 gesperrt unter Groesse und Name.
+            int saat = 0;
+            var fehlend = new List<string>();
+            foreach (KonditionierungsvorlagenSaat s in KonditionierungsvorlagenSaattabelle.Alle)
+            {
+                object n = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Konditionierungsvorlage_STAMM\" WHERE \"Groesse\" = ? AND " +
+                    "\"Bezeichner\" = ? AND \"ReadOnly\" = 1",
+                    new DbParam("@g", s.Kennwort), new DbParam("@b", s.Bezeichner));
+                if (n != null && Convert.ToInt64(n, CultureInfo.InvariantCulture) == 1) saat++;
+                else fehlend.Add(s.ToString());
+            }
+            ok &= Befund(saat == KonditionierungsvorlagenSaattabelle.VORLAGEN,
+                         "ausgelieferte Vorlagen der Saat: " + saat + " von " + KonditionierungsvorlagenSaattabelle.VORLAGEN +
+                         " gesperrt" + (fehlend.Count == 0 ? "" : "   (es fehlen " + string.Join(", ", fehlend) + ")"));
+
+            long fremd = Vorlagenbau.Zaehle2(SqlFremdeGroesse(KonditionierungSchema.TAB_VORGABE))
+                         + Vorlagenbau.Zaehle2(SqlFremdeGroesse(KonditionierungSchema.TAB_KALENDER));
+            ok &= Befund(fremd == 0, "Vorlageninhalt in fremder Groesse: " + fremd +
+                                     " Zeile(n)   (eine Vorlage gehoert genau EINER Groesse)");
+
+            long nennwertZeilen = Vorlagenbau.Zaehle2(
+                "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_VORGABE +
+                "\" WHERE \"ID_Vorlage\" IS NOT NULL AND \"Zeile\" IN ('" +
+                DbWerte.KOND_ZEILE_NENNWERT + "', '" + DbWerte.KOND_ZEILE_SAISON + "')");
+            long nennwertKalender = Vorlagenbau.Zaehle2(
+                "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_KALENDER +
+                "\" WHERE \"ID_Vorlage\" IS NOT NULL AND \"Nennwert\" IS NOT NULL");
+            long matrixperioden = Vorlagenbau.Zaehle2(
+                "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p JOIN \"" +
+                KonditionierungSchema.TAB_KALENDER + "\" k ON k.\"ID\" = p.\"ID_Kalender\" " +
+                "WHERE k.\"ID_Vorlage\" IS NOT NULL AND p.\"Art\" IN ('" +
+                DbWerte.KOND_ART_FERIEN + "', '" + DbWerte.KOND_ART_BETRIEBSPAUSE + "')");
+            long e54 = nennwertZeilen + nennwertKalender + matrixperioden;
+            ok &= Befund(e54 == 0, "Vorlagen mit Nennwert oder Saison (E54): " + e54 +
+                                   "   (Zeilen " + nennwertZeilen + ", Kalender " + nennwertKalender +
+                                   ", Perioden " + matrixperioden + ")");
+
+            long waisen = Vorlagenbau.Zaehle2(
+                "SELECT COUNT(*) FROM pragma_foreign_key_check WHERE \"table\" IN ('" +
+                KonditionierungSchema.TAB_KALENDER + "', '" + KonditionierungSchema.TAB_PERIODE +
+                "', '" + KonditionierungSchema.TAB_VORGABE + "')");
+            ok &= Befund(waisen == 0, "Waisen in den drei Tabellen (foreign_key_check): " + waisen);
+
+            if (KatalogeVollstaendig)
+                _bericht.Zeile("        eigene Vorlagen: " + eigen +
+                               "   (Modus alle — sie bleiben; mit --kataloge readonly fielen sie)");
+            else
+                ok &= Befund(eigen == 0, "eigene Vorlagen nach --kataloge readonly: " + eigen +
+                                         "   (die ReadOnly-Regel raeumt sie samt Kaskade)");
+
+            return ok;
+        }
+
+        /// <summary>Eine Prüfzeile im Muster der übrigen: „ok" oder „FEHLER" vor dem Text.</summary>
+        private bool Befund(bool gut, string text)
+        {
+            _bericht.Zeile((gut ? "ok      " : "FEHLER  ") + text);
+            return gut;
+        }
+
+        /// <summary>Die Vorlagen einer Größe unter einer Bedingung.</summary>
+        private static long Vorlagen(string groesse, string bedingung)
+            => Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + KonditionierungVorlagenSchema.TAB_VORLAGE +
+                                   "\" WHERE \"Groesse\" = '" + groesse + "' AND (" + bedingung + ")");
+
+        /// <summary>Die Perioden der Kalender, die der Eigentümerbedingung genügen.</summary>
+        private static long Perioden(string kalenderbedingung)
+            => Vorlagenbau.Zaehle2(
+                "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p JOIN \"" +
+                KonditionierungSchema.TAB_KALENDER + "\" k ON k.\"ID\" = p.\"ID_Kalender\" WHERE " +
+                Auf("k", kalenderbedingung));
+
+        /// <summary>
+        /// Dieselbe Eigentümerbedingung, auf einen Tabellenalias bezogen — die Bedingungen der
+        /// Teilindizes nennen ihre Spalten ohne Alias, im <c>JOIN</c> braucht es ihn.
+        /// </summary>
+        private static string Auf(string alias, string bedingung)
+            => bedingung.Replace("\"ID_", alias + ".\"ID_", StringComparison.Ordinal);
+
+        /// <summary>
+        /// Zeilen, deren Größe nicht die ihrer Vorlage ist. Der Vergleich läuft über die Vorlage,
+        /// nicht über eine Liste erlaubter Größen — so trifft er auch eine künftige sechste.
+        /// </summary>
+        private static string SqlFremdeGroesse(string tabelle)
+            => "SELECT COUNT(*) FROM \"" + tabelle + "\" t JOIN \"" +
+               KonditionierungVorlagenSchema.TAB_VORLAGE + "\" v ON v.\"ID\" = t.\"ID_Vorlage\" " +
+               "WHERE t.\"Groesse\" <> v.\"Groesse\"";
 
         /// <summary>
         /// Die siebte Frage, gestellt NACH dem Schliessen aller Verbindungen: Eine
@@ -176,7 +416,7 @@ namespace Auslieferungsvorlage
         }
 
         /// <summary>
-        /// <b>Beide Tabellen der Importherkunft sind leer</b> (Datenaustauschkonzept 7.4,
+        /// <b>Die drei Tabellen der Importherkunft sind leer</b> (Datenaustauschkonzept 7.4, HC-5 mit <c>Tab_Raumgrundriss</c>,
         /// Softwarearchitektur Gebäudesimulation 2.6). <c>Tab_Importquelle</c> trägt Dateiname und
         /// SHA-256 jeder eingelesenen gbXML- oder IFC-Datei, <c>Tab_Importzuordnung</c> die Kennungen
         /// ihrer Entitäten — in einer ausgelieferten <c>Kenndaten.sqlite</c> wären das Spuren fremder
@@ -188,7 +428,7 @@ namespace Auslieferungsvorlage
         {
             var teile = new List<string>();
             bool ok = true;
-            foreach (string t in new[] { ImportzuordnungSchema.TAB_QUELLE, ImportzuordnungSchema.TAB_ZUORDNUNG })
+            foreach (string t in new[] { ImportzuordnungSchema.TAB_QUELLE, ImportzuordnungSchema.TAB_ZUORDNUNG, RaumgrundrissSchema.TAB })
             {
                 if (!DataRepository.TabelleVorhanden(t))
                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
 using SpeicherEngine;
 
@@ -44,6 +45,8 @@ namespace WindowsFormsApplication1
         internal const string SP_AUFBAU = "AUFBAU";
         internal const string SP_HERKUNFT = "HERKUNFT";
         internal const string SP_BEFUND = "BEFUND";
+        /// <summary>G5-3: die Herkunft der Fläche (Mengensatz, Raumgrenze, Körper, schematisch).</summary>
+        internal const string SP_FLAECHENHERKUNFT = "FLAECHENHERKUNFT";
 
         private static string Leer => MyResource.Resource.GIMP_WERT_LEER;
 
@@ -54,8 +57,11 @@ namespace WindowsFormsApplication1
         /// <param name="z">Die Zonierung der Anfrage.</param>
         /// <param name="v">Der Bauteilvorschlag darauf; <c>null</c> = keiner.</param>
         /// <param name="haken">Die Haken der Raumliste (Raumkennung → beheizt).</param>
+        /// <param name="plan">Der Zonenplan der Anfrage (Zonenbaum); <c>null</c> = keiner.</param>
+        /// <param name="schritt">Was der letzte Schritt am Plan ergab.</param>
         internal static GebaeudeZonierungDaten ZonierungDaten(GebaeudeZonierung z, GebaeudeBauteilvorschlag v,
-                                                              IReadOnlyDictionary<string, bool> haken)
+                                                              IReadOnlyDictionary<string, bool> haken, Zonenplan plan = null,
+                                                              (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) schritt = default)
         {
             if (z == null || z.Gebaeude == null || z.Regeln.Count <= 1) return null;
             bool mehr = GebaeudeImportHuelle.Mehrzonig(z);
@@ -78,6 +84,7 @@ namespace WindowsFormsApplication1
                     Volumen = MitEinheit(iz.VolumenM3, "m³"),
                     Beheizt = iz.IstBeheizt,
                     Hinweis = Zonenhinweis(iz),
+                    Sollwert = mitVorschlag ? MitEinheit(v.Zonen[i].Raumsolltemperatur_Tag, "°C") : "",
                     Raumliste = iz.Raeume.Select(r => Raumdaten(z, r, h)).ToList(),
                 });
             }
@@ -98,7 +105,194 @@ namespace WindowsFormsApplication1
                 Flaechenprofil = mitVorschlag ? Flaechenprofil() : null,
                 Flaechen = mitVorschlag ? Flaechen(z, v) : Array.Empty<GebaeudeFlaechenzeileDaten>(),
                 Ablehnungen = Ablehnungen(z),
+                Plan = plan == null ? null : PlanDaten(plan, z, zonen, schritt),
             };
+        }
+
+        /// <summary>
+        /// <b>Der Zonenplan als Daten des Zonenbaums</b>: je Zone Schlüssel, Name, Nutzung, Beheizung, Räume, Fläche und der
+        /// Sollwert der gebildeten Zone; die nicht zugeordneten Räume; Geschosse und Nutzungen der Klapplisten; die Meldung des
+        /// letzten Schritts. Der Schlüssel im Grundriss ist der der gebildeten Zonierung — aus dem Plan der Planschlüssel,
+        /// aus der Regel (noch kein Schritt) der Schlüssel der Regelzone, aus der die Planzone stammt.
+        /// </summary>
+        internal static GebaeudeZonenplanDaten PlanDaten(Zonenplan plan, GebaeudeZonierung z, IReadOnlyList<GebaeudeZonenzeileDaten> zonen,
+                                                         (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) schritt)
+        {
+            bool ausPlan = ReferenceEquals(z?.Plan, plan);
+            var gebildet = new HashSet<string>(z?.Zonen.Select(x => x.Schluessel) ?? Enumerable.Empty<string>(), StringComparer.Ordinal);
+            var liste = new List<GebaeudePlanzoneDaten>();
+            RaumnutzungTexte kurz = null;
+            foreach (Planzone pz in plan.Zonen)
+            {
+                string ansicht = ausPlan ? pz.Schluessel : pz.Herkunft ?? "";
+                if (!gebildet.Contains(ansicht)) ansicht = "";
+                IReadOnlyList<AbbildRaum> raeume = plan.RaeumeVon(pz.Schluessel);
+                double? flaeche = raeume.Any(r => r.FlaecheM2 > 0.0) ? raeume.Where(r => r.FlaecheM2 > 0.0).Sum(r => r.FlaecheM2.Value) : 0.0;
+                liste.Add(new GebaeudePlanzoneDaten
+                {
+                    Schluessel = pz.Schluessel,
+                    Ansichtsschluessel = ansicht,
+                    Name = pz.Name,
+                    Nutzung = pz.Profil?.Schluessel,
+                    Beheizt = plan.ZoneBeheizt(pz.Schluessel),
+                    Raeume = raeume.Count.ToString(CultureInfo.CurrentCulture),
+                    Flaeche = MitEinheit(flaeche, "m²"),
+                    Sollwert = pz.Projektdatei?.HeizsollTag is double sq ? MitEinheit(sq, "°C")
+                             : zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? sw : Leer,
+                    Raumliste = raeume.Select(r => Planraum(plan, r)).ToList(),
+                    AusProjektdatei = pz.Projektdatei != null && !pz.Projektdatei.AusIfc,
+                    Herkunft = pz.Projektdatei == null || pz.Projektdatei.AusIfc ? ""
+                             : pz.Projektdatei.Zonierung == SqprojZonierung.Din18599 ? GebaeudeZonierungSchluessel.HERKUNFT_DIN
+                             : pz.Projektdatei.Zonierung == SqprojZonierung.Simulation ? GebaeudeZonierungSchluessel.HERKUNFT_SIMULATION
+                             : GebaeudePlanschrittArt.PROJEKTDATEI,
+                    HerkunftText = pz.Projektdatei == null || pz.Projektdatei.AusIfc ? ""
+                                 : pz.Projektdatei.Zonierung == SqprojZonierung.Din18599 ? MyResource.Resource.GIMP_DLG_SQ_HERKUNFT_DIN
+                                 : pz.Projektdatei.Zonierung == SqprojZonierung.Simulation ? MyResource.Resource.GIMP_DLG_SQ_HERKUNFT_SIM
+                                 : MyResource.Resource.GIMP_DLG_SQ_HERKUNFT,
+                    Profiltext = pz.Projektdatei?.Profilnummer is int nr
+                        ? Formatieren(MyResource.Resource.GIMP_DLG_SQ_PROFIL, nr.ToString(CultureInfo.CurrentCulture)) : "",
+                    Herleitung = Herleitung(plan.Vorbelegung, pz, ref kurz),
+                });
+            }
+            int n = plan.Zonen.Count + 1;
+            string neu = Formatieren(MyResource.Resource.GIMP_DLG_PLAN_ZONE_NEU, n);
+            while (plan.Zonen.Any(x => string.Equals(x.Name, neu, StringComparison.OrdinalIgnoreCase)))
+                neu = Formatieren(MyResource.Resource.GIMP_DLG_PLAN_ZONE_NEU, ++n);
+            return new GebaeudeZonenplanDaten
+            {
+                Zonen = liste,
+                NichtZugeordnet = plan.NichtZugeordnet.Select(r => Planraum(plan, r)).ToList(),
+                Ausserhalb = plan.RaeumeAusserhalb.Count,
+                Geschosse = plan.Geschosse.Select(g => new GebaeudeZonenregelDaten(g, Geschosstext(plan, g))).ToList(),
+                Nutzungen = Nutzungsliste(plan),
+                Nutzungsgruppen = Nutzungsgruppen(plan),
+                Einzonig = plan.Zonen.Count(x => plan.RaeumeVon(x.Schluessel).Count > 0) <= 1,
+                NeuerName = neu,
+                Schrittmeldung = schritt.Meldung == null ? null : GebaeudeImportHuelle.MeldungDaten(schritt.Meldung),
+                LetzterAbgelehnt = schritt.Abgelehnt,
+                Verworfen = schritt.Verworfen,
+            };
+        }
+
+        /// <summary>
+        /// <b>Die Nutzungen der Klappliste</b> (Konzept Nutzungsprofile NP-F23): die Profile des Katalogs in der Ordnung der
+        /// Kategorien (Schlüssel <c>#&lt;Id&gt;</c>, Text der Profilname); ohne Katalog die alten Kennungen mit ihren Texten;
+        /// dazu jeder Text einer Planzone, zu dem kein Profil passt — er bleibt wählbar, solange er an der Zone steht.
+        /// </summary>
+        internal static IReadOnlyList<GebaeudeZonenregelDaten> Nutzungsliste(Zonenplan plan)
+            => Nutzungseintraege(plan).Select(e => e.Eintrag).ToList();
+
+        /// <summary>
+        /// <b>Die Nutzungen der Klappliste je Kategorie</b> (Konzept Nutzungsprofile 6.2, Zeile „Zonenbaum des Imports“): zuerst
+        /// ohne Gruppe (Titel leer) die Einträge ohne Kategorie — die alten Kennungen ohne Katalog und jeder Text einer Planzone,
+        /// zu dem kein Profil passt, mit dem Zusatz „(nicht im Katalog)“ —, dann je Kategorie ihre Profile in der Ordnung des
+        /// Katalogs; „keine“ steht davor als Platzhalter. Dieselben Einträge wie <see cref="Nutzungsliste"/>.
+        /// </summary>
+        internal static IReadOnlyList<GebaeudeNutzungsgruppe> Nutzungsgruppen(Zonenplan plan)
+        {
+            List<(GebaeudeZonenregelDaten Eintrag, string Kategorie)> alle = Nutzungseintraege(plan);
+            var gruppen = new List<GebaeudeNutzungsgruppe>();
+            List<GebaeudeZonenregelDaten> ohne = alle.Where(e => e.Kategorie == null).Select(e => e.Eintrag).ToList();
+            if (ohne.Count > 0) gruppen.Add(new GebaeudeNutzungsgruppe("", ohne));
+            foreach (string kategorie in alle.Select(e => e.Kategorie).Where(k => k != null).Distinct(StringComparer.Ordinal))
+                gruppen.Add(new GebaeudeNutzungsgruppe(kategorie,
+                    alle.Where(e => string.Equals(e.Kategorie, kategorie, StringComparison.Ordinal)).Select(e => e.Eintrag).ToList()));
+            return gruppen;
+        }
+
+        /// <summary>Die Einträge der Klappliste mit dem Namen ihrer Kategorie (<c>null</c> = ohne).</summary>
+        private static List<(GebaeudeZonenregelDaten Eintrag, string Kategorie)> Nutzungseintraege(Zonenplan plan)
+        {
+            var liste = new List<(GebaeudeZonenregelDaten Eintrag, string Kategorie)>();
+            foreach ((string schluessel, string name, string art, string kategorie) in plan.Vorbelegung.Auswahl())
+                liste.Add((new GebaeudeZonenregelDaten(schluessel, art == null ? Kennungstext(name) : name),
+                           art == null || string.IsNullOrWhiteSpace(kategorie) ? null : kategorie.Trim()));
+            foreach (Planprofil p in plan.Zonen.Select(z => z.Profil).Where(p => p != null && !p.Id.HasValue))
+                if (!liste.Any(x => string.Equals(x.Eintrag.Schluessel, p.Schluessel, StringComparison.Ordinal)))
+                    liste.Add((new GebaeudeZonenregelDaten(p.Schluessel, Profiltext(p)), null));
+            return liste;
+        }
+
+        /// <summary>
+        /// Der Anzeigetext eines Profilverweises ohne Id: eine alte Kennung mit ihrem Text, ein Text ohne Profil mit dem Zusatz
+        /// „(nicht im Katalog)“ (<see cref="Planprofil.BEFUND_NICHT_IM_KATALOG"/>).
+        /// </summary>
+        internal static string Profiltext(Planprofil p)
+            => p == null ? "" : p.NichtImKatalog ? Formatieren(MyResource.Resource.RNP_IMP_NICHT_IM_KATALOG, p.Name ?? "") : Kennungstext(p.Name);
+
+        /// <summary>
+        /// <b>Die Herleitungszeile einer Zone</b> (Konzept Nutzungsprofile 6.2, NP-F16): Profil und Kategorie, die Quelle der
+        /// Vorbelegung (<see cref="Planzone.Quelle"/>: IFC-Klasse, Raumtyp, DIN-Nummer der Projektdatei, Nutzung der Datei,
+        /// früherer Import, von Hand), die Größen, die die Datei liefert (sie gehen dem Profil vor), und die Kennwerte des
+        /// Profils in Kurzform. <c>null</c> ohne Profil und ohne Quelle.
+        /// </summary>
+        internal static GebaeudeProfilherleitung Herleitung(Raumnutzungsvorbelegung v, Planzone pz, ref RaumnutzungTexte kurz)
+        {
+            Planprofil p = pz?.Profil;
+            Profilquelle q = pz?.Quelle;
+            if (p == null && q == null) return null;
+            Raumnutzungsprofil profil = p?.Id is long id ? v?.Profil(id) : null;
+            string kennwerte = "";
+            if (profil != null && !profil.IstLeer)
+            {
+                kurz ??= RaumnutzungHuelle.Texte();
+                kennwerte = RaumnutzungHuelle.Kurzform(profil, kurz);
+            }
+            return new GebaeudeProfilherleitung(
+                p == null ? MyResource.Resource.GIMP_DLG_PLAN_NUTZUNG_KEINE : Profiltext(p),
+                p?.Id is long k ? v?.Kategorie(k)?.Trim() ?? "" : "",
+                q?.Art ?? "", Quellentext(q), Dateigroessen(pz.Projektdatei), kennwerte);
+        }
+
+        /// <summary>Die Quelle der Vorbelegung als Text („aus IFC-Klasse Buero“, „aus DIN-Nr. 1 der Projektdatei“, „von Hand“).</summary>
+        internal static string Quellentext(Profilquelle q) => q?.Art switch
+        {
+            RaumnutzungSchema.ZUORDNUNG_IFC => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_IFC, q.Schluessel ?? ""),
+            RaumnutzungSchema.ZUORDNUNG_HOTTCAD => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_RAUMTYP, q.Schluessel ?? ""),
+            RaumnutzungSchema.ZUORDNUNG_DIN => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_DIN, q.Schluessel ?? ""),
+            Profilquelle.DATEI => MyResource.Resource.RNP_IMP_QUELLE_DATEI,
+            Profilquelle.GESPEICHERT => MyResource.Resource.RNP_IMP_QUELLE_GESPEICHERT,
+            Profilquelle.HAND => MyResource.Resource.RNP_IMP_QUELLE_HAND,
+            _ => "",
+        };
+
+        /// <summary>
+        /// Die Größen, die die Datei liefert (Ganglinie, DIN-Nutzungsprofil oder EPOS-Kalender — nicht die Vorlage), als „Heizen
+        /// und Personen aus der Datei“ (Rangfolge Datei vor Profil, NP-F16); leer = keine.
+        /// </summary>
+        internal static string Dateigroessen(Zonenkonditionierung k)
+        {
+            if (k == null) return "";
+            List<string> namen = k.Groessen.Where(g => g.Herkunft != Konditionierungsherkunft.Vorlage)
+                                  .Select(g => Konditionierungsarbeit.Groessenname(g.Groesse)).ToList();
+            if (namen.Count == 0) return "";
+            string liste = namen.Count == 1 ? namen[0]
+                         : string.Join(", ", namen.Take(namen.Count - 1)) + " " + MyResource.Resource.RNP_IMP_UND + " " + namen[namen.Count - 1];
+            return Formatieren(MyResource.Resource.RNP_IMP_AUS_DATEI, liste);
+        }
+
+        /// <summary>Der Anzeigetext einer alten Kennung; jeder andere Text bleibt, wie er ist.</summary>
+        private static string Kennungstext(string kennung) => kennung switch
+        {
+            DbWerte.KOND_NUTZUNG_WOHNEN => MyResource.Resource.KOND_LBL_NUTZUNG_WOHNEN,
+            DbWerte.KOND_NUTZUNG_BUERO => MyResource.Resource.KOND_LBL_NUTZUNG_BUERO,
+            DbWerte.KOND_NUTZUNG_SCHULE => MyResource.Resource.KOND_LBL_NUTZUNG_SCHULE,
+            _ => kennung ?? "",
+        };
+
+        private static string Geschosstext(Zonenplan plan, string kennung)
+        {
+            string name = plan.Gebaeude.Geschosse.FirstOrDefault(s => s.Kennung == kennung)?.Anzeigename;
+            return string.IsNullOrWhiteSpace(name) ? kennung ?? Leer : name;
+        }
+
+        private static GebaeudePlanraumDaten Planraum(Zonenplan plan, AbbildRaum r)
+        {
+            var zeile = new GebaeudeRaumzeile(r, plan.Haken);
+            string geschoss = plan.Gebaeude.Geschosse.FirstOrDefault(s => s.Kennung == r.GeschossKennung)?.Anzeigename
+                              ?? (string.IsNullOrWhiteSpace(r.GeschossName) ? Leer : r.GeschossName.Trim());
+            return new GebaeudePlanraumDaten(r.Kennung, zeile.Anzeigename, geschoss, MitEinheit(r.FlaecheM2, "m²"),
+                                             plan.Beheizt(r), zeile.BeheiztLautDatei);
         }
 
         /// <summary>Die Meldungen des Kerns, mit denen er eine Zuordnung von Hand ablehnt (Welle D2).</summary>
@@ -227,7 +421,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Spalten der Liste „Flächen je Zone": Zone, Bauteil (die elastische Spalte), Art, Fläche,
-        /// Azimut, Neigung, Randbedingung, Nachbarzone, U-Wert, Aufbau, Herkunft und Befund. Zone,
+        /// Azimut, Neigung, Randbedingung, Nachbarzone, U-Wert, Aufbau, Herkunft und Befund, zuletzt die Herkunft der
+        /// Fläche („Fläche aus", G5-3). Zone,
         /// Bauteil, Fläche, Randbedingung, U-Wert und Befund stehen immer; die übrigen weichen, wenn die
         /// Liste schmal wird.
         /// </summary>
@@ -249,6 +444,7 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(SP_AUFBAU, MyResource.Resource.GIMP_FL_SP_AUFBAU, rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_HERKUNFT, MyResource.Resource.GIMP_DLG_SP_HERKUNFT, rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_BEFUND, MyResource.Resource.GIMP_FL_SP_BEFUND),
+                new Katalogspalte(SP_FLAECHENHERKUNFT, MyResource.Resource.GIMP_FL_SP_FLAECHENHERKUNFT, rang: Katalogspaltenrang.BeiPlatz),
             });
         }
 
@@ -291,6 +487,9 @@ namespace WindowsFormsApplication1
                 if (ohneGegenstueck) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_OHNE_GEGENSTUECK);
                 if (ohneU) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_OHNE_UWERT);
                 if (geschaetzt) befund.Add(MyResource.Resource.GIMP_FL_BEFUND_GESCHAETZT);
+                // Trennfläche aus den Raumkörpern: der Beleg (Raumpaar, Fläche) in den Befund, die Herkunft „aus Datei (Körper)“.
+                bool koerper = zl.Beleg?.Schluessel == GebaeudeBauteilzeile.BELEG_KOERPER;
+                if (koerper) befund.Add(GebaeudeZuordnungsModell.BelegText(zl.Beleg));
 
                 Importherkunft herkunft = GebaeudeZuordnungsModell.HerkunftAusSchluessel(b.Herkunft);
                 string zone = zl.Zone >= 0 && zl.Zone < v.Zonen.Count ? v.Zonen[zl.Zone].Bezeichner : Leer;
@@ -302,6 +501,7 @@ namespace WindowsFormsApplication1
                     .MitText(SP_ZONE, zone)
                     .MitText(SP_ART, BauteilaufbauCtrl.BauteilartText(b.Bauteilart))
                     .MitZahl(SP_FLAECHE, b.Flaeche, 2)
+                    .MitText(SP_FLAECHENHERKUNFT, GebaeudeAufbauHuelle.FlaechenherkunftText(b.Flaechenherkunft))
                     .MitZahl(SP_AZIMUT, b.Azimut.HasValue ? Azimut(b.Azimut.Value) : (double?)null, 1)
                     .MitZahl(SP_NEIGUNG, b.Neigung, 1)
                     .MitText(SP_RAND, GebaeudeImportHuelle.RandText(b.Randbedingung))
@@ -310,10 +510,11 @@ namespace WindowsFormsApplication1
                                    : b.ID_Aufbau.HasValue ? Katalogwert.AusText(MyResource.Resource.GIMP_BT_AUS_SCHICHTEN)
                                    : Katalogwert.Leer)
                     .MitText(SP_AUFBAU, aufbau)
-                    .MitText(SP_HERKUNFT, GebaeudeZuordnungsModell.HerkunftText(herkunft))
+                    .MitText(SP_HERKUNFT, koerper ? MyResource.Resource.GIMP_HERKUNFT_IFC_KOERPER : GebaeudeZuordnungsModell.HerkunftText(herkunft))
                     .MitText(SP_BEFUND, string.Join("; ", befund));
                 zeile.Schluessel = i.ToString(CultureInfo.InvariantCulture);
-                zeilen.Add(new GebaeudeFlaechenzeileDaten(zeile, befund.Count > 0, ohneGegenstueck, ohneU));
+                zeilen.Add(new GebaeudeFlaechenzeileDaten(zeile, befund.Count > 0, ohneGegenstueck, ohneU,
+                                                          GebaeudeAnsichtBefundstufen.MitBefund(GebaeudeAufbauHuelle.Befund(zl.Befund))));
             }
             return zeilen;
         }

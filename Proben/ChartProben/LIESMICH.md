@@ -13,7 +13,7 @@ Neben den Maßproben stehen **Gegenproben**: zwei Zeichenwege, die sich untersch
 Renderer stillschweigend überginge, bestünde jede Maß- und Farbprüfung und täte trotzdem
 nichts. Dazu kommt die Versatzprobe der Legendenzeilen (`… (Versatz … px)`).
 
-Die Probe läuft in `kern.yml` bei jedem Push.
+Die Probe läuft in `kern.yml` bei jedem Push, auf ubuntu samt Vergleich mit der Hash-Messlatte.
 
 ---
 
@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-09-26.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-10-10.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-09-26.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-10-10.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -57,10 +57,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **218 Bilder**; **183** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **254 Bilder**; **222** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-09-26.sha256` nennt alle 183 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-10.sha256` nennt alle 222 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -69,8 +69,10 @@ gegen diese Datei.
   getauschten Rolle; ihre zwei Bilder stehen **nicht** in der Ablage und nicht in der
   Messlatte — sonst hinge die eingefrorene Liste an einer Einstellung.
 - **Wann sie neu eingefroren wird.** Nur, wenn ein Bild sich **bewusst** ändern soll — die
-  Etappe E4 des Konzepts nennt den Fall (Linien gebündelt statt jeder n-te). Dann entsteht
-  eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt.
+  Etappe E4 des Konzepts nennt den Fall (Linien gebündelt statt jeder n-te), die Stufenregel
+  des Stapels (Abschnitt „Gestapelte Jahresganglinien" unten) ist einer. Dann entsteht
+  eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt; die
+  Commit-Nachricht nennt die geänderten Bilder und den Grund.
 - **Wann sie nachgezogen wird.** Kommen Proben hinzu, ohne dass sich ein Bild ändert, zieht der
   nächste Lauf auf dem Linux-Läufer die Liste nach: `--ablage` und `--hashes` ergeben
   `Messlatte_<Datum>.sha256`; jede Zeile der bisherigen Datei muss darin unverändert stehen —
@@ -84,6 +86,14 @@ gegen diese Datei.
   Plattform; auf Windows weichen deshalb **alle Hashes** ab, obwohl die Probe dort dieselben
   Bilder mit 0 Verstößen meldet. Der Text-Diff gegen die Messlatte gilt
   auf dem Linux-Läufer; auf Windows zählt das strukturelle Ergebnis der Probe.
+- **Die CI hält sie.** Auf ubuntu läuft die Probe in `kern.yml` mit `--hashes`; der Schritt
+  „ChartProben-Messlatte (nur ubuntu)“ prüft, dass **jede** Zeile der jüngsten
+  `Messlatte_*.sha256` unverändert in der Hashliste des Laufs steht, und nennt die Zahl der
+  unveränderten Zeilen. Eine geänderte oder fehlende Zeile macht ihn rot und nennt die Bilder;
+  zusätzliche Zeilen sind neue Proben, er zählt sie und bleibt grün. Die Hashliste liegt auch
+  bei Rot als Artefakt `chartproben-hashliste-ubuntu-latest` bei — von dort übernimmt sie ein
+  bewusstes Neueinfrieren oder Nachziehen. Ein Schriftwechsel im Läuferabbild macht den Schritt
+  ebenfalls rot; er nennt das Abbild im Protokoll. Auf macOS wird nicht verglichen.
 - **Bildgleichheit auf Windows nachweisen.** Wer dort prüfen will, ob ein Umbau ein Bild verändert
   hat, baut den Vergleichsstand in einem Worktree (`git worktree add --detach <ordner> <basis>`),
   lässt die Probe dort und am HEAD mit `--ablage` und `--hashes` laufen und vergleicht die beiden
@@ -425,12 +435,205 @@ Das sind **22 Maßproben** und 22 Schriftproben; die Maßproben ergeben **22 neu
 Messlatte, die Schriftproben zeichnen kein PNG. Die Bilder im festen Maß bleiben unverändert: Ein
 neuer Parameter hat eine Vorgabe, die das Bild byte-gleich lässt (`EPOS.Kern/CLAUDE.md`, „Bericht").
 
-## Wärmelast mit gestapelten Bedarfsarten
+## Gestapelte Jahresganglinien
 
 `ganglinie_normiert_gestapelt` zeichnet die normierte Ganglinie so, wie sie die Bedarfsseite
 zeigt: Heizung, Brauchwasser und Prozesswärme als Flächen übereinander
-(`Stapelart.Flaeche`), die Summe als Linie darunter, die als Rand auf der Oberkante steht, und
-der Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normierten Ganglinie
-tragen keine Flächenreihe und bleiben byte-gleich — auf Windows nachgewiesen wie oben
-beschrieben: alle Bilder des Stands davor gleich, eines neu. Die Zeile der Messlatte zieht der
-nächste Lauf auf dem Linux-Läufer nach.
+(`Stapelart.Flaeche`), die Summe als schmaler Rand auf der Oberkante des Stapels und der
+Jahreshöchstwert der Summe als Bezugswert. Die übrigen Bilder der normierten Ganglinie tragen
+keine Flächenreihe.
+
+Jedes gestapelte Bild mit mehr Werten als Bildpunktspalten folgt der **Stufenregel des
+Stapels** (`Pfadregel.Stufen`, `Pfadregel.Spitzenstunden`, `Pfadregel.Stundenwerte`,
+`Pfadregel.Stufenstuecke`, `Pfadregel.Treppe` in
+`EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs`): Eine
+Stapelschicht und jede Linie, die einen Stapel begleitet (`Datenreihe.Huelle` — Summe, Kontur,
+Kanten), zeichnet je Stufe eine waagrechte Kante — im Jahresbild je Tag, solange ein Tag
+schmaler als vier Bildpunktspalten ist, sonst je Spalte —, und zwar ALLE mit den Werten
+derselben Stunde: der **Spitzenstunde** der Bezugsgröße (`Datenreihe.Bezug`: die Bedarfs- oder
+Summenlinie, sonst die Kontur, sonst die Oberkante des Stapels; bei Gleichstand die erste
+Stunde). So summieren sich die Schichten je Stufe zur Oberkante, die Dicke jeder Schicht ist
+ihr Wert in dieser Stunde, und ein taktender Erzeuger steht nicht als Band auf Nennleistung da.
+Nachbarschichten teilen ihre Kante genau, die Schichten decken voll, und PNG und Druck malen sie
+von der Achse, die oberste zuerst — keine Lücke, nichts scheint durch, die Summe liegt als Rand
+auf der Oberkante. Unter dem Achsentitel steht „je Tag die Stunde der Tagesspitze“
+(`CHART_HINWEIS_STUFE_TAG`). Die überlagerte Produktion der Wärmepumpenseite (eine Säulengruppe
+über einer Flächengruppe) steht als Kanten über dem Bedarf, nicht halbtransparent. Die
+Dauerlinie stapelt nicht.
+
+**Eine Lücke bleibt Lücke.** Ein nicht endlicher Wert (NaN — etwa „aus“ einer Kalenderwoche)
+wählt keine Spitzenstunde; eine Stufe ohne endlichen Bezugswert nimmt ihre erste Stunde. Steht
+eine Reihe in der Spitzenstunde einer Stufe nicht endlich da — eine Schicht an Ober- oder
+Unterkante —, ist die Stufe für sie eine Lücke: Die Treppe bricht dort ab und setzt danach mit
+eigenem Teilpfad neu an (`Pfadregel.Stufenstuecke`; im SVG je Stück ein Teilpfad, eine Schicht
+mit `Z` geschlossen, im PNG je Stück ein Vieleck oder Linienzug). Die Lücke steht nie als Null
+da, keine Nachbarstufe reicht in sie hinein, und die Zeigerzeile nennt die Schicht in dieser
+Stufe nicht. Ein Vormittag „aus“ an einem Tag mit der Spitze am Abend ist deshalb keine Lücke,
+ein Tag, dem allein die Spitzenstunde fehlt, schon. Die Proben stehen in `PfadregelTests.cs`
+(`EineLueckeBleibtLuecke`), `SvgSchreiberTests.cs`
+(`EineStapelschichtMitLueckeZeigtDieLueckeAlsLuecke`) und `ChartRendererTests.cs`
+(`Eine_Luecke_im_Stapel_bleibt_im_PNG_eine_Luecke`); kein Probebild trägt eine Stapelschicht mit
+Lücke, die Messlatte berührt das nicht.
+
+Die Regel ändert genau die zwölf Bilder mit dichtem Stapel: `ganglinie_normiert_gestapelt`,
+`erzeugerstapel_waerme`, `erzeugerstapel_strom_viertelstunden`, `erzeugerstapel_zwei_speicher`,
+`erzeugerstapel_neun_reihen` samt `…_wenige` und `…_viele`, `erzeugerstapel_fenster` samt
+`…_a` und `…_b` sowie `erzeugerstapel_zweite_achse_a` und `…_b` (`erzeugerstapel_fenster` und
+`…_fenster_b` zeichnen einen Ausschnitt, der nicht dichter ist als die Spalten — sie ändern sich
+nur durch die deckenden Schichten). Byte-gleich bleiben die Dauerlinien
+(`erzeugerstapel_kessel_sortiert`, `ganglinie_normiert_sortiert`), die Bilder ohne
+Stapelschicht (`erzeugerstapel_solar_zwei_linien`) und der Berichtsstapel `jahresverlauf_waerme`
+(Tagesmittel, nicht dichter als die Spalten). Die Proben „Schichten summieren sich in jeder
+Stufe zur Oberkante“, „kein taktender Erzeuger als Nennleistungsband“, „keine Löcher“ und „Summe
+scheint nicht durch“ stehen in `EPOS.Kern.Tests/ChartRendererTests.cs` und
+`PfadregelTests.cs`, die Treppen in `SvgSchreiberTests.cs`.
+
+## Konditionierungsprofile (KP2, Welle K4): Teppichbild und Woche mit Lücke
+
+`ChartRenderer.KalenderteppichModell` (Datei `ChartRenderer.Kalenderteppich.cs`) zeichnet das Teppichbild eines
+Kalenders aus `Kalenderteppich` (Kern): x die 365 Tage des Bezugsjahres, y die 24 Stunden, Farbe der Wert. Stunden
+gleicher Farbstufe und Folgetage mit denselben Läufen und derselben Quelle werden zu Rechtecken; „aus" ist die eigene
+Rolle `RASTER_LOCH` mit einer Schraffur als EIN Streckenzug je Fläche; über 2 000 Elementen zeichnet das Bild benannt
+gröber. `KalenderwocheModell` ist die Woche einer Größe mit Einheit; NaN („aus") bricht die Fläche des Stundenprofils
+(ohne NaN ist das Stundenprofil bitgleich). Die Proben stehen in `Program.Kalenderteppich.cs`, Bezugsjahr 2025:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `kalenderteppich_heizen_buero` | Heizen „Büro" mit Neujahr, Herbstferien und Heizperiode; 1244 × 464, `HEIZWAERME` und `RASTER_LOCH` |
+| Maßprobe | `kalenderteppich_lueftung_aus` | Lüftung, nachts und am Wochenende „aus"; `SERIE_6` und `RASTER_LOCH` |
+| Maßprobe | `kalenderwoche_aus` | die Lüftungswoche mit „aus" als Lücke; `PROFILLINIE` und die Profilfläche |
+| Gegenprobe | `kalenderteppich_aus_wirkt` | dieselbe Woche mit 0 statt „aus" zeichnet anders |
+| Gegenprobe | `kalenderteppich_ferien_wirkt` | Heizen mit und ohne Herbstferien |
+| Gegenprobe | `kalenderwoche_luecke_wirkt` | die Woche mit und ohne Lücke |
+| SVG-Probe | `svg_c_kalenderteppich_heizen_buero`, `svg_c_kalenderteppich_lueftung_aus` | Pixelbildprobe der Gruppe (c): jedes Feld mit `data-wert`, Titel, Legende schaltet vorhandene Elemente |
+| SVG-Probe | `svg_kalenderteppich_grenze_und_aus` | jedes Teppichbild höchstens 2 000 Elemente (Büro 169, Lüftung 521, Grenzbild 121), das Grenzbild nennt seine Vergröberung; jedes „aus"-Feld `RASTER_LOCH` mit genau einer Schraffur in `RAHMEN`; die Werte am Feld wörtlich |
+| SVG-Probe | `svg_kalenderwoche_luecke` | die Fläche der Woche zerfällt in fünf Teilpfade (roh und gebündelt), kein „NaN", die Einheit steht an der Reihe; ohne Lücke ein Zug |
+
+Das sind drei Maßproben und drei Gegenproben — **9 neue Bilder** — und vier SVG-Proben. Die
+Teppichbilder ändern kein Bild von vorher. Die Woche ist ein Stundenprofil ohne Stapelschicht
+und geht deshalb nicht über die Stufenregel des Stapels; ihre Lücke ist die des Flächenzugs
+(`SvgSchreiber.Flaechenzug`). `Messlatte_2026-09-30.sha256` trägt beide Stände — die neun
+Teppichbilder und die zwölf Bilder der Stufenregel (Abschnitt oben). Die Windows-Messliste des
+Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: diese zwölf Zeilen geändert,
+neun neu, alle übrigen gleich.
+
+## Kesselkennlinie (Konzept Kesselkennlinie 5): die kleine Kurve des Kesseleditors
+
+`ChartRenderer.KesselkennlinieModell` (Datei `ChartRenderer.Kesselkennlinie.cs`) zeichnet den Wirkungsgrad über der Last,
+720 × 430: x die Laststufe in Prozent der Nennleistung, y der Wirkungsgrad als Faktor, eine Linie samt Punktmarken je
+Reihe — mit Brennwertkennlinie eine je Rücklauf (30, 50, 60 °C), ohne sie eine. Ein reines Pixelbild ohne Zeichenfläche wie
+die Kennlinien der Wärmepumpe; jede Punktmarke nennt ihren Wert, jede Linie führt eine Datenreihe mit der Last als x-Stelle,
+Linien und Legendenfelder tragen die Serienrolle. Die Punkte rechnet der Kern (`Kesselkennlinie.Kurven`) aus fest
+verdrahteten, neutralen Katalogwerten (Gas-Brennwertkessel, η₁₀₀ 0,97, η₃₀ 1,07). Die Proben stehen in
+`Program.Kesselkennlinie.cs`:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `kesselkennlinie_brennwert` | drei Rückläufe in `SERIE_1` bis `SERIE_3` |
+| Maßprobe | `kesselkennlinie_teillast` | die Teillastkennlinie allein in `SERIE_1` |
+| Gegenprobe | `kesselkennlinie_brennwert_wirkt` | der Schalter Brennwertkennlinie kommt im Bild an |
+| Gegenprobe | `kesselkennlinie_eta30_wirkt` | ein gepflegtes η₃₀ zeichnet anders als die Normvorgabe |
+| SVG-Probe | `svg_kesselkennlinie_brennwert` | Pixelbild der Gruppe (b): keine Zeichenfläche, Reihenbefehle mit Marke, Datenreihen mit x-Stelle |
+| SVG-Probe | `svg_kesselkennlinie_werte` | 30 Werte an den Punktmarken, die Prüfpunkte wörtlich („Last 30 % · Rücklauf 30 °C: 1,070“, „Last 100 % · Rücklauf 60 °C: 0,970“), drei Legendeneinträge; ohne Brennwertkennlinie eine Linie |
+
+Das sind zwei Maßproben und zwei Gegenproben — **6 neue Bilder** — und zwei SVG-Proben. Kein Bild von vorher ändert sich:
+Die 194 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-09-30.sha256`, dazu die sechs neuen. Die
+Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: sechs Zeilen neu, alle übrigen
+gleich.
+
+## Die Stromlast des BHKW: das zweite Bild des BHKW-Reiters
+
+Unter der Wärmelast zeigt der BHKW-Reiter die „Stromlast Jahresganglinie“ (`Bilder.BhkwStrom`): die
+Stromproduktion als Säule, darüber Stromeinspeisung, Reststrombedarf und Strombedarf als Linien, in den
+Farbrollen des Stromgangs (`STROM_BHKW`, `UEBERSCHUSS`, `REST`, `BEDARF`). Gezeichnet wird über
+`ChartRenderer.ErzeugerStapel` wie die Wärmelast; die synthetischen Reihen stehen zueinander wie im Lauf
+(Einspeisung = Produktion über dem Bedarf, Reststrom = Bedarf über der Produktion). Die Proben stehen in
+`Program.BhkwStrom.cs`:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `bhkw_strom_ganglinie` | vier Reihen über den Monaten in den vier Farbrollen |
+| Maßprobe | `bhkw_strom_sortiert` | dieselben Reihen als Dauerlinie über den Jahresstunden |
+| Gegenprobe | `bhkw_strom_reihenwahl_wirkt` | die Abwahl der Einspeisung kommt im Bild an |
+| Gegenprobe | `bhkw_strom_sortiert_wirkt` | „sortiert“ zeichnet anders als die Ganglinie |
+| SVG-Probe | `svg_bhkw_strom_ganglinie` | das Modell der Zeichenfläche: Flächen, Linien, Datenreihen |
+
+Das sind zwei Maßproben und zwei Gegenproben — **6 neue Bilder** — und eine SVG-Probe. Kein Bild von vorher ändert
+sich: Die 200 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-10-03.sha256`, dazu die sechs
+neuen. Die Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: sechs Zeilen
+neu, alle übrigen gleich.
+
+## Kälteproduktion (Ergebnisreiter „Kälte Produktion Chart“)
+
+`KaelteProduktionBild` (Datei `EPOS.Kern/Allgemein/Bericht/KaelteProduktionBild.cs`) zeichnet die Jahresganglinie der
+Kälteerzeugung, 1 240 × 560, über `ChartRenderer.ErzeugerStapelModell`: je Kälteerzeuger seine gedeckte Kälte als Säule
+(erster Erzeuger in `WAERME_WP`), darauf die ungedeckte Kälte in `REST`, darüber der Kältebedarf als Linie in `BEDARF`.
+Die synthetischen Reihen stehen in `Program.cs` (`KaelteProduktionSatz`): ein Bedarf mit Sommerspitze, die Wärmepumpe
+deckt bis 30 kW.
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `kaelte_produktion` | Wärmepumpe, ungedeckte Kälte und Kältebedarf in ihren Rollenfarben |
+| Maßprobe | `kaelte_produktion_ohne_erzeuger` | ohne Kälteerzeuger ist der ganze Bedarf ungedeckt: Rest und Bedarfslinie |
+
+Das sind **2 neue Bilder**. Kein Bild von vorher ändert sich: Die 200 Zeilen der bisherigen Messlatte stehen unverändert
+in `Messlatte_2026-10-03.sha256`, dazu die zwei neuen. Die Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`)
+ist auf Windows nachzuziehen: zwei Zeilen neu, alle übrigen gleich.
+
+## Raumtemperatur und Sollwert (Anlagenkopplung AK2, Bedarfsdialog)
+
+`ChartRenderer.Komfortwoche` zeichnet die Woche mit der größten Unterschreitung (`Komfortwoche.GroessteUnterschreitung`),
+1 240 × 560: die Raumluft in `SERIE_1`, den Heizsollwert gestrichelt in `SERIE_3` und die gezählten
+Unterschreitungsstunden als dritte Reihe in `SERIE_2` — nur in diesen Stunden, sonst Lücke. Die synthetische Woche steht
+in `Program.Anlagenkopplung.cs`: Sollwert 21/17 °C, an den ersten drei Morgen 1,5 bis 3 K Unterschreitung.
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `komfortwoche_gebaeude` | Raumluft, Markierung und Sollwert in ihren Rollenfarben |
+| Gegenprobe | `komfortwoche_markierung_wirkt` | die Markierung der Unterschreitung kommt im Bild an |
+| SVG-Probe | `svg_komfortwoche_markierung` | drei Reihenpfade; die Markierung zerfällt in einen Teilpfad je Morgen, kein „NaN“ |
+
+Das sind eine Maßprobe und eine Gegenprobe — **3 neue Bilder** — und eine SVG-Probe. Kein Bild von vorher ändert sich:
+Die 208 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-10-05.sha256`, dazu die drei neuen. Die
+Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: drei Zeilen neu, alle übrigen
+gleich.
+
+## Bivalenzdiagramm der Wärmepumpe (Übergabegrenze UB‑E4)
+
+`ChartRenderer.Bivalenzdiagramm` zeichnet das `BivalenzdiagrammModell` (900 × 540): Leistung über der Außentemperatur mit
+den Bereichsflächen „nur Kessel“ (`WAERME_KESSEL`), „Vorwärmung“ (`UEBERSCHUSS`), „parallel“ (`SERIE_3`) und „Wärmepumpe
+allein“ (`SERIE_2`), der Heizlast (`BEDARF`), dem Kennfeld bei Höchstvorlauf (gestrichelt, `SERIE_3`), der Übergabegrenze
+(gepunktet, `SERIE_8`), der Wärmepumpe als Fläche (`SERIE_2`), wahlweise den Stundenpunkten (`SERIE_5`) und den Marken
+θ_biv,1, θ_biv,2, Abschaltpunkt und „nach Kennfeld“. Ohne Übergabedaten steht der Platzhalter „kein Bivalenzdiagramm —
+Kopplung aus“. Herleitung und Modell rechnet der Kern aus dem Zahlenbeispiel des Fachkonzepts (Heizkörper 75/60/20 °C,
+10 kW; Gebäude 10 kW bei −12 °C; Kennfeld 7 bis 9 kW; σ_min 3 K; teilparallel mit Vorwärmbetrieb, Abschaltpunkt −10 °C);
+die Proben stehen in `Program.Bivalenzdiagramm.cs`:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `bivalenzdiagramm` | Heizlast, Kennfeld und Übergabegrenze in ihren Rollenfarben, Determinismus |
+| Maßprobe | `bivalenzdiagramm_stunden` | dasselbe mit 400 synthetischen Stundenpunkten in `SERIE_5` |
+| Maßprobe | `bivalenzdiagramm_platzhalter` | der Platzhalter ohne Übergabedaten |
+| Gegenprobe | `bivalenz_kennfeld_wirkt` | ein anderes Kennfeld (6 statt 7 kW bei −7 °C) zeichnet anders |
+| Gegenprobe | `bivalenz_vorwaermung_wirkt` | ohne Vorwärmbetrieb zwei Flächen statt drei |
+| Gegenprobe | `bivalenz_stunden_wirkt` | die Stundenpunkte kommen im Bild an |
+| Gegenprobe | `bivalenz_platzhalter_wirkt` | der Platzhalter ist ein eigenes Bild |
+
+Das sind drei Maß- und vier Gegenproben — **11 neue Bilder**. Kein Bild von vorher ändert sich: Die 211 Zeilen von
+`Messlatte_2026-10-05.sha256` stehen unverändert in `Messlatte_2026-10-09.sha256`, dazu die elf neuen. Die
+Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: elf Zeilen neu, alle übrigen
+gleich.
+
+## Stundenachse mit Datum (Auftrag GX)
+
+Jede Stundenachse eines Zeitreihenbildes nennt unter der Jahresstunde das **Datum des Gemeinjahres** (365 Tage, kein
+Jahr; Stunde 0 = 1. Januar, 00:00), in der Oberflächensprache aus dem Ressourcenkatalog (`CHART_ACHSE_MONATSKUERZEL`,
+`CHART_ACHSE_DATUM_MUSTER`: de „8. Sep.“, en „Sep 8“), bei einem Ausschnitt unter einem Tag dazu die Uhrzeit. Die Regel
+steht einmal in `Zeitachse` (Kern); `ChartRenderer.XAchse`, `XAchseFenster` und die Achsenteilung der Oberfläche
+(`ChartRenderer.Datumszeile`) gehen darüber. Die Datumszeile steht in 13 pt bei `rc.Bottom + 26`, Achsentitel
+(„Jahresstunden [h] · Datum“) und Stufenhinweis rücken um 18 Bildpunkte tiefer. Die Dauerlinie (sortiert) und die
+Monatsachse der Vollansicht bleiben ohne Datum, ebenso Wochen- und Tagesprofile und Kennlinien.
+
+Keine Probe kommt hinzu; **29 Bilder ändern sich bewusst** — alle mit Stundenachse oder Ausschnitt einer
+Jahresreihe: `erzeugerstapel_fenster`, `erzeugerstapel_fenster_a`, `erzeugerstapel_fenster_b`, `erzeugerstapel_solar_zwei_linien`, `ganglinie_normiert_fenster`, `ganglinie_normiert_fenster_a`, `ganglinie_normiert_fenster_b`, `jahresgang_fenster_b`, `jahresverlauf_tag`, `jahresverlauf_tag_fenster_a`, `jahresverlauf_tag_fenster_b`, `jahresverlauf_woche`, `jahresverlauf_woche_fenster_b`, `klimadaten_temperatur_fenster`, `kuehlvorlauf_auslegung_wirkt_a`, `kuehlvorlauf_auslegung_wirkt_b`, `kuehlvorlauf_luecke_wirkt_a`, `kuehlvorlauf_luecke_wirkt_b`, `kuehlvorlauf_ruecklauf_gebaeude`, `raumtemperatur_gebaeude`, `raumtemperatur_sollband_wirkt_a`, `raumtemperatur_sollband_wirkt_b`, `temperaturverlauf_ein_speicher`, `temperaturverlauf_zwei_speicher`, `vorlauf_auslegung_wirkt_a`, `vorlauf_auslegung_wirkt_b`, `vorlauf_luecke_wirkt_a`, `vorlauf_luecke_wirkt_b`, `vorlauf_ruecklauf_gebaeude`. Die übrigen 193 Zeilen von `Messlatte_2026-10-09.sha256` stehen unverändert in
+`Messlatte_2026-10-10.sha256`. Die Windows-Messliste des Gates ist auf Windows neu zu ziehen: genau diese Zeilen ändern sich.

@@ -216,6 +216,10 @@ namespace WindowsFormsApplication1
             new Eintrag("Tab_Kenndaten", new[] { "ID_Projekt" },
                         "Tab_WP", "ID_WP", "ID", "ID_Projekt"),
             new Eintrag("Tab_Klimadaten", "ID_Projekt"),
+            // K1: Kaeltebedarf - die Kopie vor ihrem Typ (wie Tab_Prozesswaerme / Tab_Prozesstyp).
+            new Eintrag("Tab_Kaeltebedarf", "ID_Projekt"),
+            new Eintrag("Tab_Kaeltetyp", new[] { "ID_Projekt" },
+                        "Tab_Kaeltebedarf", "ID_Kaeltebedarf", "ID", "ID_Projekt"),
             new Eintrag("Tab_PV", "ID_Projekt"),
             new Eintrag("Tab_ProjektPhotovoltaik", "ID_Projekt"),
             new Eintrag("Tab_Prozesswaerme", "ID_Projekt"),
@@ -492,7 +496,7 @@ namespace WindowsFormsApplication1
                 {
                     // DER LEGACY-MODUS DARF DIE VERBINDUNG NICHT UEBERLEBEN - die Klammer
                     // fuer einen Abbruch zwischen den beiden PRAGMAs (Muster aus Schritt 81).
-                    try { v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
+                    try { if (v.Offen) v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
                     catch (Exception) { /* die Verbindung ist dann ohnehin am Ende */ }
                 }
             }

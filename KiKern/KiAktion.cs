@@ -58,6 +58,9 @@ namespace KiKern
         /// <param name="beispiel">
         /// Ein Satz, wie der Anwender diese Aktion im Chat erfragt. Siehe <see cref="Beispiel"/>.
         /// </param>
+        /// <param name="ohneAenderung">
+        /// Leerlaufpruefung einer Schreibaktion. Siehe <see cref="OhneAenderung"/>.
+        /// </param>
         /// <param name="datenbankwirksam">
         /// Kann diese Aktion den Datenbestand veraendern? Siehe
         /// <see cref="Datenbankwirksam"/>. Nur eine <paramref name="formularaktion"/> darf
@@ -77,7 +80,8 @@ namespace KiKern
                         bool formularaktion = false,
                         bool datenbankwirksam = true,
                         string? titel = null,
-                        string? beispiel = null)
+                        string? beispiel = null,
+                        Func<KiAufruf, string?>? ohneAenderung = null)
         {
             if (!KiName.IstGueltig(name))
                 throw new ArgumentException(
@@ -126,6 +130,7 @@ namespace KiKern
             AusfuehrenLang = ausfuehrenLang;
             Vorbedingung = vorbedingung;
             Vorschau = vorschau;
+            OhneAenderung = ohneAenderung;
             Wirkung = wirkung ?? (stufe == Schutzstufe.Lesen ? KiTexte.WirkungLesen : "");
             Umkehrbar = umkehrbar;
             Formularaktion = formularaktion;
@@ -214,6 +219,15 @@ namespace KiKern
 
         /// <summary>Trockenlauf fuer die Bestaetigung (Stufe 2/3). Schreibt nichts.</summary>
         public Func<KiAufruf, string>? Vorschau { get; }
+
+        /// <summary>
+        /// Leerlaufpruefung nach bestandener <see cref="Vorbedingung"/>: Liefert sie einen
+        /// Text, traegt der Stand bereits, was verlangt war. Der Ausfuehrer fragt dann
+        /// NICHT nach einer Bestaetigung und meldet <see cref="KiErgebnis.OhneAenderung"/>
+        /// mit diesem Text - ein Erfolg, keine Absage. <c>null</c> = es gibt etwas zu tun.
+        /// Liest nur, schreibt nie.
+        /// </summary>
+        public Func<KiAufruf, string?>? OhneAenderung { get; }
 
         /// <summary>Ein Satz „was danach anders ist".</summary>
         public string Wirkung { get; }

@@ -1,28 +1,158 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Pufferspeicher
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Der Dialog '''Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus und ordnet sie dem Projekt zu. Der Speicher entkoppelt Wärmeerzeugung und Wärmebedarf; seine nutzbare Kapazität ergibt sich aus dem Volumen und der nutzbaren Temperaturspreizung.
+Der Dialog '''Verwaltung Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus und ordnet sie dem Projekt zu. Der Speicher entkoppelt Wärmeerzeugung und Wärmebedarf; seine nutzbare Kapazität ergibt sich aus dem Volumen und der nutzbaren Temperaturspreizung.
+
+Warum ein Speicher Erzeugung und Bedarf entkoppelt und wie Schichtung und Verluste wirken, beschreibt [[Grundlagen/Pufferspeicher]]; hier steht, wie Sie ihn in EPOS-Plan anlegen, einstellen und mit den Erzeugern verschalten.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Ein Speicher rechnet nur mit, wenn ihn mindestens ein Erzeuger über seine Wärmesenken lädt.
+
+# {{Anker|kennwerte|volumen|bereitschaftsverlust}}'''Katalog''' – Gesamtvolumen und Bereitschaftsverluste (kWh je 24 h) sind die Kennwerte des Geräts. Sie stehen unter ''Administration → Energiesysteme → Pufferspeicher''; Herstellerdaten nach VDI 3805 liest ''Administration → Daten & Import → Import Pufferspeicher VDI 3805'' ein.
+# '''Projekt''' – auf der Startseite im Reiter ''Energieerzeuger'' öffnet die Kachel ''Pufferspeicher'' den Dialog ''Verwaltung Pufferspeicher''. ''In das Projekt übernehmen'' holt einen Speicher aus ''Pufferspeicher aus Datenbank''; das Projekt erhält eine eigene Kopie.
+# {{Anker|nutzbare-kapazitaet|kapazitaet|spreizung}}'''Eigenschaften''' – ''Pufferspeicher anlegen / verwalten…'' in der ''Simulation Konfiguration'' oder ''Pufferspeicher anlegen…'' im Senkendialog öffnet ''Pufferspeicher im Projekt''. Dort stehen ''Verwendung'', Vor- und Rücklauf, Schwellen und Schichtung; ''Neuer Pufferspeicher'' legt einen Speicher auch ohne Katalog an. Der Dialog zeigt die nutzbare Kapazität <math>Q_{\mathrm{max}} = \text{Volumen [l]} \times 1{,}16 \times (\text{Vorlauf} - \text{Rücklauf}) / 1\,000</math> in kWh: 1 000 l fassen mit 20 K Spreizung 23,2 kWh, mit 10 K nur 11,6 kWh.
+# {{Anker|zuordnung-zu-erzeugern}}'''Zuordnung zu den Erzeugern''' – in ''Wärmesenke - <Anlage>'' nennt eine Zeile mit dem Ziel Pufferspeicher für Heizung, Brauchwasser, Prozesswärme oder Kombi den ''Pufferspeicher'' und die ''Ladeprio''. Ein Speicher kann mehreren Erzeugern dienen; wer ihn in welcher Reihenfolge und bis wohin lädt, zeigt ''Pufferspeicher im Projekt'' in der Gruppe ''Ladereihenfolge dieses Speichers (aus den Erzeugerzuordnungen)''.
+
+<!-- Q_max = 1 000 l · 1,16 Wh/(l·K) · (55 − 45) K / 1 000 = 11,6 kWh -->
+{{Diagramm-Anfang|titel=Einbindung von Speicher 1 in Beispiel A}}
+{{Fluss-Anfang}}
+{{Flusskasten|Wärmepumpe A|25 kW|rolle=waerme}}
+{{Flusspfeil|Rang 2: lädt}}
+{{Flusskasten|Speicher 1|1 000 l, 11,6 kWh|rolle=speicher}}
+{{Flusspfeil|entlädt}}
+{{Flusskasten|Heizkreis|55/45 °C|rolle=waerme}}
+{{Fluss-Ende}}
+{{Fluss-Anfang}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Wärmepumpe A|Kaskade 1|rolle=waerme}}
+{{Flusskasten|Kessel 1|Kaskade 2, 50 kW|rolle=kessel}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|Rang 1: direkt}}
+{{Flusskasten|Heizung und Warmwasser|80 und 20 MWh/a|rolle=waerme}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Oben die Puffersenke: Was die Wärmepumpe über den Bedarf hinaus erzeugt, lädt Speicher 1, der es in späteren Stunden an den Heizkreis abgibt. Unten die Direktdeckung in der Reihenfolge der Kaskade; der Kessel lädt den Speicher nicht und rechnet hinter der Stufe von Wärmepumpe und Speicher.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+Das Mehrfamilienhaus der Beispielanlage A (12 Wohnungen, 80 MWh Heizwärme und 20 MWh Trinkwarmwasser im Jahr, Heizkörper 55/45 °C) heizt mit der Luft-Wasser-Wärmepumpe A (rund 25 kW) und Kessel 1 (50 kW) für die Spitzenlast. Speicher 1 mit 1 000 l nimmt auf, was die Wärmepumpe über den Bedarf hinaus erzeugt.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Verwaltung Pufferspeicher || ''Pufferspeicher aus Datenbank'' → ''In das Projekt übernehmen'' || Speicher mit 1 000 l || Volumen und Bereitschaftsverluste kommen aus dem Katalog
+|-
+| Pufferspeicher im Projekt || ''Bezeichner:'' / ''Verwendung:'' || Speicher 1 / Heizung || der Speicher entlädt nur in den Heizkreis; das Warmwasser deckt die Wärmepumpe direkt
+|-
+| Pufferspeicher im Projekt || ''Gesamtvolumen [l]:'' / ''Bereitschaftsverl. [kWh/24h]:'' || 1 000 / 2 || Werte des Katalogsatzes
+|-
+| Pufferspeicher im Projekt || ''Vorlauf [°C]:'' / ''Rücklauf [°C]:'' || 55 / 45 || Auslegung der Heizkörper; der Dialog zeigt <math>Q_{\mathrm{max}}</math> 11,6&nbsp;kWh
+|-
+| Pufferspeicher im Projekt || ''Einschaltschwelle [%]:'' / ''Abschaltschwelle [%]:'' / ''… nachrangig [%]:'' / ''Mindestfüllstand/Notreserve [%]:'' || 10 / 95 / leer / 10 || Vorgaben; ohne Solarthermie gilt ein leeres Nachrang-Feld wie die Abschaltschwelle, der Mindestfüllstand wirkt nur mit BHKW
+|-
+| Simulation Konfiguration || Reihenfolge unter ''Komponenten der Simulation'' || 1 Wärmepumpe, 2 Heizkessel || die Wärmepumpe deckt vor dem Kessel; die Vorwahl einer neuen Kaskade stellt den Kessel nach vorn – Karte der Wärmepumpe mit ▲ vor den Kessel, dann ''Konfiguration speichern''
+|-
+| Betriebsmodus - Wärmepumpe A || ''Leistungssteuerung der Wärmepumpe:'' || Laufzeitoptimiert - maximale Leistung || Vorgabe: volle Leistung, der Überschuss über den Bedarf lädt Speicher 1; mit ''PV-optimiert'' lädt sie nur bei PV-Überschuss, mit ''Leistungsoptimiert'' gar nicht
+|-
+| Wärmesenke - Wärmepumpe A || Rang 1: ''Ziel'' / ''Bedarfsart'' || Heizkreis (direkte Deckung des Bedarfs) / Beides (Warmwasser zuerst) || die Wärmepumpe deckt zuerst direkt
+|-
+| Wärmesenke - Wärmepumpe A || Rang 2: ''Ziel'' / ''Pufferspeicher'' / ''Ladeprio'' || Pufferspeicher Heizung / Speicher 1 / nach Vorgabe (20 - Wärmepumpe) || einziger Lader, er füllt bis 95 %
+|-
+| Wärmesenke - Kessel 1 || Rang 1 || Heizkreis (direkte Deckung des Bedarfs) / Beides (Warmwasser zuerst) || ohne Puffersenke deckt der Kessel nur den Rest und füllt den Speicher nicht
+|}
+
+'''Was zu erwarten ist und wo Sie es prüfen.''' 11,6 kWh entsprechen knapp einer halben Stunde Volllast der Wärmepumpe. Nach dem Lauf zeigt der Reiter ''Wärmepumpe'' der Simulationsergebnisse die Tabelle der Pufferspeicher mit Kapazität, Ladung, Entladung, Verlusten, Vollzyklen und Füllstand am Jahresende. Die Verluste bleiben unter 730 kWh im Jahr: 2 kWh je Tag bei vollem Speicher, weniger bei geringerem Füllstand. ''Minimale Spitzenkesselleistung:'' im selben Reiter nennt die größte Stundenlast, die nach Wärmepumpe, Speicher und Heizstab offen bleibt – Kessel 1 rechnet erst danach; den Füllstand über das Jahr zeigt ''Ergebnis → Wärme Produktion Chart'' mit der Auswahl ''Speicher:''.
+
+'''Welche Größe passt.''' Einen Vorschlag nach VDI 4645 und Betriebssimulation – mit Mindestlaufzeit, Sperrzeit und Taktziel – rechnet die [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher-Auslegung]]; ''Auslegen…'' im Dialog öffnet sie für den markierten Speicher. Für den Vergleich im Jahreslauf rechnen Sie mehrere Volumina als [[Programm Dokumentation/Varianten|Varianten]], die sich nur im Volumen unterscheiden, und vergleichen Sie den Anteil des Kessels im Reiter ''Heizkessel'', die Minimale Spitzenkesselleistung, die Verluste und den Füllstand. Takten und Mindestlaufzeiten bildet der Jahreslauf nicht ab; ein größerer Speicher zeigt sich dort nicht in weniger Takten – das Taktziel prüft die Auslegung.
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+{{Anker|bilanzierung-in-der-simulation|speicherinhalt}}Der Speicher rechnet nicht für sich: Er ist Senke der Erzeuger und Quelle der Bedarfsdeckung. EPOS-Plan bilanziert seinen Füllstand Stunde für Stunde in dieser Folge:
+# '''Vorab entladen''' – ist der Speicher nicht im Nachladebetrieb, deckt er zuerst den Bedarf der Kanäle seiner ''Verwendung''.
+# '''Direkt decken''' – die Erzeuger decken in der Reihenfolge der Kaskade über ihre Direktsenken.
+# '''Laden''' – die Puffersenken, Rang für Rang und je Rang nach ''Ladeprio''. Jeder Erzeuger lädt mit dem, was ihm nach der Direktdeckung bleibt, bis zu seiner Obergrenze.
+# '''Nachentladen''' – was dann noch offen ist, deckt der Speicher aus seinem Vorrat.
+# '''Bereitschaftsverlust''' – am Stundenende ein Vierundzwanzigstel des Tageswerts, anteilig zum Füllstand: Ein halb voller Speicher verliert halb so viel.
+
+Diese Stundenschleife ist die Speicherstufe. In ihr rechnen die Wärmepumpe und jeder Erzeuger, der einen Speicher lädt oder als Quelle nutzt; ein Erzeuger ohne Speicherbeteiligung rechnet an seinem Kaskadenplatz vor oder nach der ganzen Stufe – Kessel 1 im Beispiel A also nach Wärmepumpe, Speicher 1 und Heizstab ([[Programm Dokumentation/Berechnung/Simulationsablauf#rechenweg|Berechnung: Simulationsablauf]]).
+
+{{Anker|bewirtschaftung|hysterese|einschaltschwelle}}'''Schwellen.''' Die ''Abschaltschwelle'' ist die Obergrenze des vorrangigen Laders, der Anlage mit der kleinsten ''Ladeprio'' an diesem Speicher. Nachrangige Lader füllen bis ''… nachrangig [%]''; ist das Feld leer, gilt die Abschaltschwelle, lädt aber eine Solarthermie vorrangig, gelten 30 %. Eine ''eigene Ladeobergrenze'' an der Senke geht beidem vor. Die ''Einschaltschwelle'' schaltet keinen Erzeuger: Fällt der Füllstand auf sie oder reicht der Speicher beim Vorab-Entladen nicht für den Bedarf der Stunde, geht er in den Nachladebetrieb und deckt nicht mehr vorab, bis ein Lader ihn auf die Abschaltschwelle gebracht hat. Der ''Mindestfüllstand/Notreserve'' begrenzt die Entnahme nur an Speichern, die ein BHKW lädt.
+
+<!-- Prinzipbild der Obergrenzen nach der Regel des Programms:
+     vorrangiger Lader bis Abschaltschwelle 95 %;
+     nachrangige Lader: Feld „… nachrangig“ leer ohne Solarthermie = Abschaltschwelle = 95 %,
+     leer mit vorrangiger Solarthermie = min(30 %, 95 %) = 30 %, gepflegt = der Wert (hier 50 %).
+     Säulenhöhe = Prozent der nutzbaren Kapazität Q_max. -->
+{{Diagramm-Anfang|titel=Bis wohin die Lader einen Speicher füllen}}
+{{Säulen-Anfang|achse=Füllstand in % der nutzbaren Kapazität}}
+{{Säule|leer, ohne Solarthermie|waerme=95|netz=5|wert=95 %}}
+{{Säule|leer, Solarthermie vorrangig|waerme=30|solar=65|netz=5|wert=30 %}}
+{{Säule|gepflegt 50 %|waerme=50|solar=45|netz=5|wert=50 %}}
+{{Säulen-Ende|Feld „… nachrangig [%]:“; Zahl über der Säule: Obergrenze der nachrangigen Lader}}
+{{Legende|waerme=füllen alle Lader|solar=füllt nur der vorrangige Lader|netz=über der Abschaltschwelle, wird nicht geladen}}
+{{Diagramm-Ende|Prinzipbild mit den Vorgaben Einschaltschwelle 10 % und Abschaltschwelle 95 %.}}
+
+{| class="wikitable"
+! Technik !! Wirkung auf den Speicher !! Wirkung des Speichers !! So rechnet EPOS-Plan
+|-
+| Wärmepumpe || lädt, was sie über den Bedarf hinaus erzeugt || nimmt ihren Überschuss auf und gibt ihn in Stunden ab, in denen ihre Leistung nicht reicht || Vorgabe-''Ladeprio'' 20; über den Bedarf hinaus lädt sie im Betriebsmodus ''Laufzeitoptimiert'', mit ''PV-optimiert'' bis zum PV-Überschuss, mit ''Leistungsoptimiert'' nur, wenn sie keine Direktsenke hat
+|-
+| Solarthermie || lädt vorrangig bis zur Abschaltschwelle || nimmt Ertrag auf, der über den Momentanbedarf hinausgeht || Vorgabe-''Ladeprio'' 10; leeres ''… nachrangig'' begrenzt die übrigen Lader auf 30 %; siehe [[Programm Dokumentation/Solarthermie#zusammenspiel|Solarthermie]]
+|-
+| BHKW || lädt bis zu seiner Obergrenze || freier Speicherraum lässt es auch bei kleinem Bedarf laufen || schaltet gegen offenen Bedarf plus freien Raum bis zur Obergrenze; Vorgabe-''Ladeprio'' 30; nur hier wirkt der Mindestfüllstand
+|-
+| Heizkessel || lädt mit seiner freien Leistung bis zu seiner Obergrenze, wenn er eine Puffersenke hat || – || Vorgabe-''Ladeprio'' 40; ohne Puffersenke deckt er nur direkt
+|-
+| weitere Speicher || – || – || welcher Speicher eines Kanals zuerst entlädt, bestimmt die ''Entladepriorität'', ''automatisch'' ist die beste ''Ladeprio'' seiner Lader; der ''Parallelverbund'' im Senkendialog führt mehrere Speicher als einen Vorrat
+|}
+
+{{Anker|geschlossener-kreis|ak3}}'''Heizungspuffer im geschlossenen Kreis (AK3).''' Steht die Anlagenkopplung auf ''Geschlossener Kreis (AK3)'', gleicht EPOS-Plan stündlich Raumtemperatur, Bedarf und Vorlauf mit der Leistung ab, die Erzeuger und Heizungspuffer liefern können. Der Inhalt eines Heizungspuffers an der Wärmepumpe zählt dann zur verfügbaren Leistung und überbrückt Sperrstunden der Wärmepumpe; abgezogen wird der Vorrang von Brauchwasser, Prozess und Netzverlust ([[Programm Dokumentation/Simulation#anlagenkopplung|Simulation: Anlagenkopplung]]). Die Einbindung ''Puffer'' der Wärmepumpe rechnet die Ladeseite mit dem Rücklauf aus der untersten Pufferzone ([[Programm Dokumentation/Wärmepumpe#einbindung-hydraulik|Wärmepumpe: Einbindung]]). Bei gekühlten Gebäuden begrenzt ein Speicher mit der Nutzung ''Kälte'' die Raumkühlung als Teil der Kälteschranke ([[Programm Dokumentation/Kälteerzeugung#kaelteschranke|Kühlung]]).
+
+{{Anker|speicher-als-waermequelle}}'''Speicher als Wärmequelle.''' Eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe und ein Heizkessel können einen Pufferspeicher als Quelle nutzen – etwa im Booster-Betrieb, in dem eine zweite Wärmepumpe den von der ersten geladenen Speicher anzapft. Gewählt wird das über ''Quelle: …'' an der Karte der Anlage; der Dialog ''Wärmequelle Pufferspeicher'' fragt für die Wärmepumpe ''Quelltemperatur [°C]:'', ''nutzbare Spreizung [K]:'' und ''Regeneration [kW]:''. Die Wärmepumpe entzieht dem Speicher je Stunde ihre Verdampferwärme; ist er leer, wird ihre Leistung begrenzt. Eine Luft-Wasser-Wärmepumpe nutzt immer die Außenluft; BHKW und Solarthermie haben keinen Quellbezug.
+
+[[Datei:Diagramm_Speicherverlauf.png|mini|zentriert|800px|Füllstand mehrerer Speicher in einer Winter-, Übergangs- und Sommerwoche. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Kleine Spreizung, kleiner Speicher.''' Die Kapazität wächst mit Vorlauf minus Rücklauf: 1 000 l mit 5 K fassen 5,8 kWh. Ein neuer Speicher übernimmt als Vorbelegung den kleinsten Vorlauf und den größten Rücklauf der Erzeuger im Projekt – bei unterschiedlichen Erzeugern schrumpft die Spreizung dabei. Fehlt das Temperaturpaar, rechnet der Lauf mit 10 K und nennt das an der Speicherkachel. Prüfen Sie die Anzeige <math>Q_{\mathrm{max}}</math>.
+* '''Freie Eingabe ohne Verluste.''' Ein Speicher, den Sie ohne Katalog anlegen, beginnt mit ''Bereitschaftsverl.'' 0; die Bilanz kennt dann keinen Verlust. Tragen Sie den Wert aus dem Datenblatt ein.
+* '''Der Kessel füllt den Speicher.''' Hat ein Heizkessel eine Puffersenke, lädt er mit seiner freien Leistung bis zu seiner Obergrenze – ohne Solarthermie am Speicher und mit leerem ''… nachrangig'' bis zur Abschaltschwelle. Seine Wärme deckt dann in den folgenden Stunden vorab, was sonst die Wärmepumpe gedeckt hätte; die ''Ladereihenfolge'' des Speichers zeigt den Kessel mit ''lädt bis'' 95 %. Abhilfe: den Kessel nur mit der Direktsenke führen, ''… nachrangig [%]'' senken oder an seiner Senke eine ''eigene Ladeobergrenze'' setzen.
+* '''Verwendung und Ziel passen nicht.''' Die Senke bietet alle Speicher des Projekts an; führt die ''Verwendung'' des Speichers den Kanal des Ziels nicht, wird die Zuordnung gespeichert und als unplausibel gemeldet. Ein Speicher, den keine Senke nennt, wird nie geladen; die Ladereihenfolge zeigt dann „(keine Anlage lädt diesen Speicher)“.
+* '''Schichten 1.''' Mit ''Schichten:'' 1 rechnet der Speicher als ein Vorrat; Entnahmehöhen, Einspeisehöhe und Nutztemperatur wirken erst ab zwei Schichten.
+* '''Wo die Speicherwerte stehen.''' Die Tabelle je Speicher steht im Reiter ''Wärmepumpe''; darunter nennt je Speicher eine Zeile den Bereitschaftsverlust nach Temperatur und die Stunden, in denen das Frischwassermodul nicht zapfen konnte. Ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht, und es bleibt der Füllstand im ''Wärme Produktion Chart''.
+* {{Anker|wirkung-in-der-jahresbilanz|speicherverluste}}'''Verluste in der Jahresbilanz.''' Ladung minus Entladung eines Jahres ergibt die Bereitschaftsverluste, zuzüglich der Änderung des Füllstands. Die Erzeuger liefern deshalb etwas mehr Wärme, als der Bedarf verlangt.
+* '''Was der Jahreslauf nicht abbildet.''' Takten, Mindestlaufzeiten und Anlaufverluste – gerechnet wird im Stundenraster – und Massenströme. Ein Wärmeübertrager zwischen Puffer und Kessel wirkt nur über seine Leistung: Tragen Sie sie als ''Entladeleistung max.'' ein. Das Frischwassermodul prüft je Stunde die Temperatur der obersten Zone, Zapfspitzen innerhalb der Stunde sieht es nicht.
+* '''Zonenanteile ohne Schichten.''' ''Zonenanteile'' wirken erst ab zwei Schichten, und ihre Zahl muss zur Schichtenzahl passen; ''Vorschlag Kombispeicher'' setzt beides zusammen.
 
 == Eingaben ==
 
 === Katalog und Projektzuordnung ===
 
-* '''Filtern nach Hersteller und Volumen''' – schränkt die Liste ''Pufferspeicher aus Datenbank'' ein.
-* '''Auswahl ins Projekt''' – der übernommene Speicher erscheint in der Liste ''ausgewählt im Projekt''; beim Zuordnen entsteht eine projekteigene Kopie.
-* '''Modul''' – Name, Hersteller und Speichertyp.
-* '''Gesamtvolumen''' – das Volumen des Speichers; es bestimmt zusammen mit der Spreizung die nutzbare Kapazität.
-* '''Bereitschaftsverluste''' – in Kilowattstunden je Tag; die Simulation bilanziert sie stündlich mit.
-* '''Alle Daten anzeigen''' – der Aufklapper zeigt den Katalogsatz des gewählten Speichers und lässt ihn bearbeiten; dort stehen auch die Investitionskosten (€), der Betrag, der in die Wirtschaftlichkeit eingeht. Die Zuordnung zum Erzeuger sowie die Ein- und Abschaltschwellen legen Sie im Dialog ''Simulation Konfiguration'' fest.
+Der Dialog ''Verwaltung Pufferspeicher'' hat drei gerahmte Bereiche übereinander: ''Im Projekt'' (oben), ''Katalog (Datenbank)'' und ''Gewählter Satz''. Die Trennlinie zwischen den beiden Listen lässt sich ziehen; die Aufteilung wird je Dialog gemerkt. Beide Listen kennen die Mehrfachwahl mit Kästchen und mit dem Kästchen im Spaltenkopf; die Knöpfe eines Bereichs wirken auf die gewählten Zeilen. Ein Doppelklick oder Enter auf einer Katalogzeile übernimmt sie in das Projekt. Der Stift in einer Zeile öffnet den Satz zum Bearbeiten – in der Projektliste die Projektkopie, in der Katalogliste den Katalogsatz; ein gesperrter Katalogsatz ist nur lesbar, bis das Schloss aufgehoben ist. Auf kleinen Bildschirmen (iPad) werden die Elemente kompakter, Rollbalken erscheinen nur dort, wo sie nötig sind.
+
+Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehmen, Rückweg und die Zeile ''Gewählter Satz'' — steht unter [[Programm Dokumentation/Gerätekataloge#katalogauswahl|Gerätekataloge: Katalogauswahl im Projektdialog]]. Beim Pufferspeicher stehen in der Kopfleiste ''Im Projekt'' die Summe der Gesamtvolumina in Litern und ''Auslegen…''; ohne gewählte Projektzeile öffnet ''Auslegen…'' die Auslegung für einen neuen Speicher, mit gewählter Zeile die Auslegung dieser Zeile, beides wie Abbrechen den Dialog verlassend. Der Katalogfuß führt kein ''Neu…''; neue Katalogsätze entstehen in der Verwaltung im Menü, mit ''Speichern unter'' im Katalogeditor oder über den Rückweg ''In die Datenbank übernehmen…''. Dabei gehen Hersteller, Speichertyp, Bereitschaftsverluste, Gesamtvolumen und Investitionskosten in den Katalog; Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung, Senken, Verbünde und Lade-Prioritäten bleiben im Projekt.
+[[Datei:Bildschirmfoto_Pufferspeicher.png|mini|zentriert|800px|Verwaltung Pufferspeicher – Bildschirmfoto mit Beispieldaten.]]
+
+* '''Katalog (Datenbank)''' – Suchfeld ''Suche über alle Spalten:'' (mit den Platzhaltern ''*'' und ''?'') und Trefferzahl; Spalten Bezeichner, Hersteller, Speichertyp, Volumen in l und Bereitschaftsverluste in kWh/d. Die Spaltenköpfe sortieren und filtern, ''Spalten…'' wählt die angezeigten Spalten, und ein farbiger Punkt ''im Projekt verwendet'' kennzeichnet Katalogzeilen, die im Projekt stehen. ''In das Projekt übernehmen'' legt von den gewählten Katalogsätzen je eine Projektkopie an; die Zeile im Projekt bleibt mit dem Katalogsatz verknüpft. Die Fußleiste führt ''Vergleichen…'' (ab zwei gewählten Sätzen), ''Schloss setzen…''/''Schloss aufheben…'', ''Löschen'' und ''Bearbeiten…''. ''Löschen'' entfernt die gewählten Katalogsätze nach einer Rückfrage für alle Projekte. Gesperrte Katalogsätze (Auslieferungssätze) sind nur lesbar, bis das Schloss aufgehoben ist. Bei mehreren gewählten Sätzen öffnet ''Bearbeiten…'' die Mehrfachbearbeitung (‹ 1 von n ›), in der ''für alle gewählten setzen'' einen Wert in allen gewählten Sätzen einträgt; gespeichert wird in einem Zug – alle Sätze oder keiner. Das Volumenfeld des Filters nimmt auch einen Bereich wie ''200..500''.
+* '''Im Projekt''' – die Speicher des Projekts mit der Summe des Volumens. ''Aus dem Projekt entfernen'' nimmt die gewählten Zeilen aus der Liste; die Projektkopie wird erst mit ''OK'' gelöscht. ''Bearbeiten…'' öffnet die Projektkopien der gewählten Speicher. ''In die Datenbank übernehmen…'' legt aus den gewählten Projektsätzen neue Katalogsätze unter neuem Namen an oder überschreibt deren Ursprungssatz (nur, wenn er nicht gesperrt ist); die Rückfrage zeigt als Vorschau die Abweichungen. Ein Name, der im Katalog schon vergeben ist, wird abgelehnt.
+* '''Gewählter Satz''' – zugeklappt zeigt er die Marke ''Projektsatz'' oder ''Katalogsatz'', den Namen und die Kenndaten des Satzes; aufgeklappt eine kurze Zusammenfassung der Anlagendaten (Volumen, Bereitschaftsverluste, Vorlauf und Rücklauf, Nutzung, Kosten). ''Bearbeiten'' rechts öffnet den Satz als Überlagerung in voller Höhe mit allen Feldern, beim Projektsatz mit den Kostenknöpfen. ''OK'' speichert, ''Abbrechen'' verwirft alle Eingaben der Überlagerung samt den Anlagenfeldern. Die Zuordnung zum Erzeuger sowie die Ein- und Abschaltschwellen legen Sie im Dialog ''Simulation Konfiguration'' fest.
+* '''Gesamtvolumen und Bereitschaftsverluste''' – das Volumen bestimmt zusammen mit der Spreizung die nutzbare Kapazität; die Bereitschaftsverluste in Kilowattstunden je Tag bilanziert die Simulation stündlich mit. Beide stehen in der Überlagerung ''Bearbeiten'', dort auch die Investitionskosten (€), der Betrag, der in die Wirtschaftlichkeit eingeht.
 
 === Pufferspeicher im Projekt ===
 
-* {{Anker|speicherliste}}'''Pufferspeicher im Projekt''' – die Liste führt die Speicher des Projekts mit ihren Kennzahlen; der markierte Eintrag bestimmt, was die Gruppen darunter zeigen. ''Neuer Pufferspeicher'' beginnt eine leere Zeile, ''Anlegen'' bzw. ''Übernehmen'' prüft die Felder und stellt die Zeile in die Liste, ''Entfernen'' nimmt die markierte Zeile wieder heraus. Alle drei wirken in der Liste; gespeichert wird sie mit ''OK''.
+* {{Anker|speicherliste}}'''Pufferspeicher im Projekt''' – die Liste ''Im Projekt'' führt die Speicher des Projekts; der markierte Eintrag bestimmt, was der Bereich ''Gewählter Satz'' zeigt. ''Auslegen…'' in der Kopfleiste öffnet die Auslegung ([[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]]) für einen neuen Speicher, bei markierter Projektzeile für diesen. ''In das Projekt übernehmen'' und ''Aus dem Projekt entfernen'' wirken in der Liste; gespeichert wird sie mit ''OK''. Die Gruppen darunter erreichen Sie über ''Bearbeiten'' im Gewählten Satz.
 * {{Anker|eigenschaften}}'''Eigenschaften des gewählten Speichers''' – die Gruppe fasst zusammen, womit die Simulation rechnet: Bezeichner, Volumen, Bereitschaftsverluste, Nutzung, Temperaturen und Schaltschwellen.
-* {{Anker|nutzung}}'''Nutzung (Klassen-Set): Heizung, Brauchwasser, Prozesswärme''' – drei Häkchen bestimmen, welche der drei Kanäle dieser Speicher bedient; mindestens einer muss gesetzt sein. Das Klassen-Set bestimmt allein, wofür der Speicher zur Verfügung steht.
+* {{Anker|nutzung}}'''Nutzung (Klassen-Set): Heizung, Brauchwasser, Prozesswärme''' – drei Häkchen bestimmen, welche der drei Kanäle dieser Speicher bedient; mindestens einer muss gesetzt sein. Das Klassen-Set bestimmt allein, wofür der Speicher zur Verfügung steht. Die Nutzung ''Kälte'' macht den Speicher zum Kältespeicher ([[Programm Dokumentation/Kälteerzeugung#kaeltespeicher|Kühlung]]).
 * {{Anker|temperaturen}}'''Vorlauf- und Rücklauftemperatur''' – in °C. Aus der Differenz und dem Volumen ergibt sich die nutzbare Kapazität des Speichers. Fehlen die beiden Werte, rechnet die Simulation mit einer Spreizung von 10 K; die Speicherkachel der ''Simulation Konfiguration'' weist darauf hin.
 * {{Anker|schwellen}}'''Ein- und Abschaltschwelle, nachrangige Schwelle''' – in Prozent des Speicherinhalts. Unterhalb der Einschaltschwelle wird geladen, bei der Abschaltschwelle endet die Ladung; die nachrangige Schwelle liegt dazwischen und gilt für Erzeuger, die diesen Speicher nur nachrangig laden. Ist die nachrangige Schwelle leer und lädt eine Solarthermie den Speicher vorrangig, gilt für die nachrangigen Erzeuger 30 %, damit der Speicher Platz für die solare Wärme behält; ohne Solarthermie gilt bei leerem Feld die Abschaltschwelle. Leer heißt '''Automatik''': Ein neuer Speicher beginnt mit leerem Feld, und neben dem Feld steht, welcher Wert gilt und warum („leer = Automatik: 30 % (Solarthermie am Puffer)“). Ein eingetragener Wert gilt immer; wer ihn löscht, stellt auf Automatik zurück. Hält ein nachrangiger Erzeuger einen Speicher mit Solarthermie bis 80 % oder höher geladen, meldet die ''Simulation Konfiguration'' das an der Solaranlage.
 * {{Anker|mindestfuellstand}}'''Mindestfüllstand / Notreserve''' – in Prozent. Der Vorrat unterhalb dieses Werts bleibt der Entladung im BHKW-Pfad entzogen, damit ein BHKW anlaufen kann; alle anderen Erzeuger entladen den Speicher unverändert bis 0.
-* {{Anker|schichtung}}'''Schichtung und Leistungsgrenzen''' – ''Schichten'' legt fest, ob der Speicher als ein Vorrat (1) oder geschichtet (2 bis 10) rechnet. ''Ladeleistung max.'' und ''Entladeleistung max.'' begrenzen die Leistung in kW, 0 bedeutet unbegrenzt. Ab zwei Schichten kommen Höhe in m, effektive Wärmeleitfähigkeit λ in W/(m·K) und die Nutztemperatur Brauchwasser in °C hinzu.
+* {{Anker|schichtung}}'''Schichtung und Leistungsgrenzen''' – ''Schichten'' legt fest, ob der Speicher als ein Vorrat (1) oder geschichtet (2 bis 10) rechnet. ''Ladeleistung max.'' und ''Entladeleistung max.'' begrenzen die Leistung in kW, 0 bedeutet unbegrenzt. Ab zwei Schichten kommen Höhe in m, effektive Wärmeleitfähigkeit <math>\lambda</math> in W/(m·K) und die Nutztemperatur Brauchwasser in °C hinzu. Unter den Leistungsgrenzen steht der Hinweis ''Übertrager: Leistung als Entladegrenze eintragen.''
+* {{Anker|zonenanteile}}'''Zonenanteile von oben''' – ab zwei Schichten die Volumenanteile der Zonen, oben beginnend und durch Semikolon getrennt, etwa ''0,10;0,16;0,37;0,37''. Die Summe muss 1 ergeben, die Zahl der Anteile der Schichtenzahl entsprechen; sonst nennt der Dialog beim ''OK'' den Grund. Leer heißt gleich große Zonen. ''Vorschlag Kombispeicher'' setzt vier Schichten mit 0,10 / 0,16 / 0,37 / 0,37 – Bereitschaftsteil, Übergang und zwei Heizungszonen.
+* {{Anker|bereitschaft}}'''Bereitschaft und Frischwassermodul''' – ''Bereitschaftsverlust:'' wählt zwischen ''Tageswert anteilig zum Füllstand'' (Vorgabe) und ''nach Temperatur je Zone''. Nach Temperatur verliert jede Zone im Verhältnis ihrer Temperatur über dem ''Aufstellraum'' (°C, leer = 20 °C); der Bereitschaftswert gilt dabei für 45 K Temperaturdifferenz. Ein leerer Speicher verliert so nichts, ein heißer mehr als mit dem Tageswert. ''Frischwassermodul'' lässt das Brauchwasser nur aus der obersten Zone zapfen, solange sie die Zapftemperatur plus ''Grädigkeit Frischwassermodul'' (K, leer = 5 K) hält; sonst deckt die nächste Stufe der Kaskade. Das Modul wirkt nur an einem Speicher mit der Nutzung Brauchwasser. Die Zapftemperatur kommt aus dem [[Programm Dokumentation/Brauchwasser-Zapfprofil|Zapfprofil]], ohne Zapfprofil gelten 60 °C.
 * {{Anker|entnahmehoehe}}'''Entnahmehöhe je Kanal''' – bei geschichtetem Speicher je Kanal die Höhe, aus der entnommen wird (0 = unten, 1 = oben; leer = Standard). Angeboten werden nur die Kanäle des eingestellten Klassen-Sets.
 * {{Anker|ladeordnung}}'''Ladereihenfolge dieses Speichers''' – die Gruppe zeigt, welche Erzeuger diesen Speicher laden und in welcher Reihenfolge. Sie ist eine Anzeige: Gepflegt wird die Reihenfolge über die Wärmesenken der Erzeuger im Dialog ''Simulation Konfiguration''.
 * {{Anker|entladeprioritaet}}'''Entladepriorität''' – bestimmt, an welcher Stelle dieser Speicher entladen wird, wenn mehrere Speicher denselben Kanal bedienen. Ein Hinweis daneben nennt die sich daraus ergebende Position.
@@ -30,12 +160,13 @@ Der Dialog '''Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus u
 
 == Siehe auch ==
 
-* [[Pufferspeicher]] – Bewirtschaftung, Hysterese und Speicher als Wärmequelle
+* [[Programm Dokumentation/Solarthermie|Solarthermie]] – Kollektorfeld, das den Puffer direkt und nachrangig lädt
+* [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] – lädt den Puffer; eine Sole- oder Wasser-Wasser-Wärmepumpe kann ihn auch als Wärmequelle nutzen
+* [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] – das Volumen nach VDI 4645 und Betriebssimulation vorschlagen und übernehmen
 * [[Grundlagen/Pufferspeicher]] – die fachlichen Hintergründe
 
 [[Kategorie:Programm Dokumentation]]
 
 
 == Berechnung ==
-Nutzbare Kapazitaet, Lade- und Entladeregelung und die Bereitschaftsverluste stehen unter
-[[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]].
+Nutzbare Kapazitaet, Lade- und Entladeregelung und die Bereitschaftsverluste stehen unter [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]].

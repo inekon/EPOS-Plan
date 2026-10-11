@@ -1,4 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿using System;
+
+namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die Randbedingungen EINER Blockstunde für <see cref="Zonenmodell2K.Schritt"/>
@@ -75,7 +77,161 @@
             Uebergabe = uebergabe;
             VorlaufC = vorlaufC;
             ReglerbandK = reglerbandK;
+            VerfuegbarkeitW = double.NaN;
+            Verfuegbarkeitsgrund = Verfuegbarkeitsgrund.KeineBegrenzung;
+            VerfuegbarkeitIstGrenze = false;
+            VorlaufAnlageGekappt = false;
+            KaelteverfuegbarkeitW = double.NaN;
+            Kaelteverfuegbarkeitsgrund = Verfuegbarkeitsgrund.KeineBegrenzung;
+            KaelteverfuegbarkeitIstGrenze = false;
+            KuehlVorlaufAngebotC = double.NaN;
         }
+
+        /// <summary>
+        /// <b>Die Kälteschranke (AK3-K, Entwurf 4.2)</b> — das Gegenstück zu <see cref="MitVerfuegbarkeit"/>: derselbe Rand
+        /// mit der Schranke des Kälteangebots <paramref name="schrankeW"/> [W] samt Anlagengrund und dem festen Kühlvorlauf,
+        /// an dem das Angebot gebildet wurde, <paramref name="kuehlVorlaufC"/> [°C]. Die wirksame Kühlgrenze ist
+        /// min(<see cref="KuehlleistungMaxW"/>, Schranke) — ist es die Schranke, kappt der Löser im vorhandenen Fall
+        /// <c>Kuehlgrenze</c> mit ihr (der Raum wird wärmer) und nennt den Kühlgrund
+        /// <see cref="Begrenzungsgrund.Verfuegbarkeit"/>; liegt sie darüber, bleibt die Grenze Zeichen für Zeichen dieselbe.
+        /// Der Kühlvorlauf ist fest (W6) und wird nur mitgeführt. NaN heißt jeweils „keine Grenze".
+        /// </summary>
+        internal Stundenrand MitKaelteverfuegbarkeit(double schrankeW, Verfuegbarkeitsgrund grund, double kuehlVorlaufC)
+        {
+            double schranke = double.IsNaN(schrankeW) ? double.NaN : Math.Max(schrankeW, 0.0);
+            bool istGrenze = !double.IsNaN(schranke) && (double.IsNaN(KuehlleistungMaxW) || schranke < KuehlleistungMaxW);
+            // Entwurf KK (KZ1): an einer Zone im Kühlkreis des Gebäudes wirkt das Vorlaufangebot der Schranke - der Spiegel
+            // der Heizseite: kälter als die Anlage anbietet, wird der Kühlvorlauf der Zone nie. Sonst nur mitgeführt (W6).
+            bool angebot = KuehlVorlaufAmAngebot && MitKuehluebergabe && !double.IsNaN(kuehlVorlaufC)
+                           && !double.IsNaN(KuehlVorlaufC) && kuehlVorlaufC > KuehlVorlaufC;
+            return this with
+            {
+                KuehlVorlaufC = angebot ? kuehlVorlaufC : KuehlVorlaufC,
+                KuehlVorlaufAngebotGekappt = angebot,
+                KuehlleistungMaxW = istGrenze ? schranke : KuehlleistungMaxW,
+                KaelteverfuegbarkeitW = schranke,
+                Kaelteverfuegbarkeitsgrund = grund,
+                KaelteverfuegbarkeitIstGrenze = istGrenze,
+                KuehlVorlaufAngebotC = kuehlVorlaufC,
+            };
+        }
+
+        /// <summary>
+        /// Wirkt das Vorlaufangebot der Kälteschranke am Kühlvorlauf (Entwurf KK, KZ1)? Nur an einer Zone im Kühlkreis eines
+        /// Mehrzonengebäudes gesetzt (<see cref="GebaeudeModellEingang.Gebaeudekuehlkreis"/>), sonst <c>false</c>.
+        /// </summary>
+        internal bool KuehlVorlaufAmAngebot { get; init; }
+
+        /// <summary>Hob das Vorlaufangebot der Kälteschranke den Kühlvorlauf dieser Stunde an (KZ1)?</summary>
+        internal bool KuehlVorlaufAngebotGekappt { get; private init; }
+
+        /// <summary>Die Schranke des Kälteangebots dieser Stunde [W]; NaN = keine (AK3-K).</summary>
+        internal double KaelteverfuegbarkeitW { get; private init; }
+
+        /// <summary>Der Anlagengrund zur Kälteschranke (Paarungsregel 5.3).</summary>
+        internal Verfuegbarkeitsgrund Kaelteverfuegbarkeitsgrund { get; private init; }
+
+        /// <summary>Ist die Kälteschranke die kleinere Kühlgrenze — trägt <see cref="KuehlleistungMaxW"/> sie?</summary>
+        internal bool KaelteverfuegbarkeitIstGrenze { get; private init; }
+
+        /// <summary>Der feste Kühlvorlauf, an dem das Kälteangebot gebildet wurde [°C]; NaN = keiner (nur mitgeführt).</summary>
+        internal double KuehlVorlaufAngebotC { get; private init; }
+
+        /// <summary>
+        /// Der Anlagengrund, der eine Kappung an der Kälteschranke begleitet (Paarungsregel 5.3): der Grund des Angebots;
+        /// nennt er keinen, ist die Summe der Kälteleistungen die Grenze — <see cref="Verfuegbarkeitsgrund.Leistungsgrenze"/>.
+        /// </summary>
+        internal Verfuegbarkeitsgrund GrundBeiKaeltekappung
+            => Kaelteverfuegbarkeitsgrund == Verfuegbarkeitsgrund.KeineBegrenzung ? Verfuegbarkeitsgrund.Leistungsgrenze : Kaelteverfuegbarkeitsgrund;
+
+        /// <summary>
+        /// <b>Die vierte Grenze (AK2, 4.5; Schritt H)</b>: derselbe Rand mit der Schranke der Anlagenverfügbarkeit
+        /// <paramref name="schrankeW"/> [W] samt Grund und dem Vorlaufangebot der Anlage
+        /// <paramref name="vorlaufAngebotC"/> [°C]. Die kleinere der beiden Leistungsgrenzen gilt — ist es die
+        /// Schranke, kappt der Löser mit ihr und nennt den Grund <see cref="Begrenzungsgrund.Verfuegbarkeit"/>;
+        /// liegt sie darüber, bleibt die Leistungsgrenze Zeichen für Zeichen dieselbe. Beim Vorlauf gewinnt die
+        /// kleinere Zahl von Heizkurve und Angebot (F6, <see cref="Begrenzungsgrund.VorlaufAnlage"/>). NaN heißt
+        /// jeweils „keine Grenze". Nur mit Übergabe wirkt der Vorlauf.
+        /// </summary>
+        internal Stundenrand MitVerfuegbarkeit(double schrankeW, Verfuegbarkeitsgrund grund, double vorlaufAngebotC)
+        {
+            double schranke = double.IsNaN(schrankeW) ? double.NaN : Math.Max(schrankeW, 0.0);
+            bool istGrenze = !double.IsNaN(schranke) && (double.IsNaN(HeizleistungMaxW) || schranke < HeizleistungMaxW);
+            bool gekappt = MitUebergabe && !double.IsNaN(vorlaufAngebotC) && !double.IsNaN(VorlaufC) && vorlaufAngebotC < VorlaufC;
+            return this with
+            {
+                HeizleistungMaxW = istGrenze ? schranke : HeizleistungMaxW,
+                VerfuegbarkeitW = schranke,
+                Verfuegbarkeitsgrund = grund,
+                VerfuegbarkeitIstGrenze = istGrenze,
+                VorlaufC = gekappt ? vorlaufAngebotC : VorlaufC,
+                VorlaufAnlageGekappt = gekappt,
+            };
+        }
+
+        /// <summary>
+        /// <b>Der Raumeinfluss der Heizkurve (AK3, H2; Entwurf AK3 Festlegung 23)</b>: derselbe Rand mit dem Vorlauf der
+        /// Übergabe um <paramref name="anhebungK"/> [K] angehoben, oben gekappt an <paramref name="obenC"/> [°C] (NaN = keine
+        /// Grenze) und nie unter dem bisherigen Vorlauf. Ohne Übergabe, ohne Vorlauf oder ohne positive Anhebung derselbe
+        /// Rand, Zeichen für Zeichen.
+        /// </summary>
+        internal Stundenrand MitAnhebung(double anhebungK, double obenC)
+        {
+            if (!MitUebergabe || double.IsNaN(VorlaufC) || !(anhebungK > 0.0)) return this;
+            double ziel = VorlaufC + anhebungK;
+            if (!double.IsNaN(obenC) && ziel > obenC) ziel = Math.Max(VorlaufC, obenC);
+            return ziel == VorlaufC ? this : this with { VorlaufC = ziel };
+        }
+
+        /// <summary>
+        /// <b>Der Raumeinfluss der Kühlkurve (KK3; Entwurf KK 2.2)</b>: derselbe Rand mit dem Kühlvorlauf
+        /// <paramref name="kuehlVorlaufC"/> [°C] — der abgesenkte, vom Aufrufer schon gekappte Vorlauf — und dem Befund der
+        /// Vorlaufgrenze <paramref name="anVorlaufgrenze"/>. Ohne Kühlübergabe, ohne Vorlauf oder ohne Änderung derselbe
+        /// Rand, Zeichen für Zeichen.
+        /// </summary>
+        internal Stundenrand MitKuehlvorlauf(double kuehlVorlaufC, bool anVorlaufgrenze)
+        {
+            if (!MitKuehluebergabe || double.IsNaN(KuehlVorlaufC) || double.IsNaN(kuehlVorlaufC)) return this;
+            if (kuehlVorlaufC.Equals(KuehlVorlaufC) && anVorlaufgrenze == KuehlVorlaufGekappt) return this;
+            return this with { KuehlVorlaufC = kuehlVorlaufC, KuehlVorlaufGekappt = anVorlaufgrenze };
+        }
+
+        /// <summary>
+        /// <b>Der Rand einer Vorausschaustunde</b> (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V3a): derselbe Rand mit dem
+        /// Heizsollwert <paramref name="thetaSollC"/> [°C] des Vorheizfensters und der Leistungsgrenze <paramref name="grenzeW"/>
+        /// [W] (NaN = keine) an der Stelle der Grenze des Eingangs. Eine Schranke der Verfügbarkeit (AK2) bleibt wirksam, wenn
+        /// sie kleiner ist — wie in <see cref="MitVerfuegbarkeit"/>.
+        /// </summary>
+        internal Stundenrand MitVorheizen(double thetaSollC, double grenzeW)
+        {
+            bool schranke = !double.IsNaN(VerfuegbarkeitW) && (double.IsNaN(grenzeW) || VerfuegbarkeitW < grenzeW);
+            return this with
+            {
+                ThetaSoll = thetaSollC,
+                HeizleistungMaxW = schranke ? VerfuegbarkeitW : grenzeW,
+                VerfuegbarkeitIstGrenze = schranke,
+            };
+        }
+
+        /// <summary>Die Schranke der Anlagenverfügbarkeit dieser Stunde [W]; NaN = keine (AK2).</summary>
+        internal double VerfuegbarkeitW { get; private init; }
+
+        /// <summary>Der Grund der Anlagenseite zur Schranke (Paarungsregel 5.3).</summary>
+        internal Verfuegbarkeitsgrund Verfuegbarkeitsgrund { get; private init; }
+
+        /// <summary>
+        /// Der Anlagengrund, der eine Kappung an der Schranke begleitet (Paarungsregel 5.3): der Grund des Fahrplans;
+        /// nennt er keinen, ist die Summe der Nennleistungen die Grenze — <see cref="Verfuegbarkeitsgrund.Leistungsgrenze"/>.
+        /// So trägt jede gekappte Stunde einen Grund (Probe 11.1, F-A12).
+        /// </summary>
+        internal Verfuegbarkeitsgrund GrundBeiKappung
+            => Verfuegbarkeitsgrund == Verfuegbarkeitsgrund.KeineBegrenzung ? Verfuegbarkeitsgrund.Leistungsgrenze : Verfuegbarkeitsgrund;
+
+        /// <summary>Ist die Schranke der Verfügbarkeit die kleinere Leistungsgrenze — trägt <see cref="HeizleistungMaxW"/> sie?</summary>
+        internal bool VerfuegbarkeitIstGrenze { get; private init; }
+
+        /// <summary>Steht der Vorlauf am Angebot der Anlage, weil die Heizkurve mehr verlangt (F6)?</summary>
+        internal bool VorlaufAnlageGekappt { get; private init; }
 
         /// <summary>Außenlufttemperatur am masselosen Zweig [°C].</summary>
         internal double ThetaOut { get; }
@@ -84,7 +240,7 @@
         internal double ThetaEq { get; }
 
         /// <summary>Heizsollwert der Raumluft [°C]; NaN = keine Heizung.</summary>
-        internal double ThetaSoll { get; }
+        internal double ThetaSoll { get; private init; }
 
         /// <summary>Obere Grenze der Raumluft, Kühlsollwert [°C]; NaN oder +∞ = keine Kühlung.</summary>
         internal double ThetaMax { get; }
@@ -98,11 +254,17 @@
         /// <summary>Konvektive Last an der Raumluft [W].</summary>
         internal double PhiConv { get; }
 
-        /// <summary>Größte Heizleistung [W]; NaN = unbegrenzt.</summary>
-        internal double HeizleistungMaxW { get; }
+        /// <summary>
+        /// Größte Heizleistung [W]; NaN = unbegrenzt. Mit der Schranke der Verfügbarkeit (AK2) die kleinere der
+        /// beiden Grenzen (<see cref="MitVerfuegbarkeit"/>).
+        /// </summary>
+        internal double HeizleistungMaxW { get; private init; }
 
-        /// <summary>Größte Kühlleistung [W], als positiver Betrag; NaN = unbegrenzt.</summary>
-        internal double KuehlleistungMaxW { get; }
+        /// <summary>
+        /// Größte Kühlleistung [W], als positiver Betrag; NaN = unbegrenzt. Mit der Kälteschranke (AK3-K) die kleinere der
+        /// beiden Grenzen (<see cref="MitKaelteverfuegbarkeit"/>).
+        /// </summary>
+        internal double KuehlleistungMaxW { get; private init; }
 
         /// <summary>Strahlungsanteil der Heizübergabe [–], 0 = rein konvektiv.</summary>
         internal double HeizungStrahlungsanteil { get; }
@@ -126,7 +288,7 @@
         /// Vorlauf der Stunde [°C] aus Heizkurve oder Festwert (Schritt E); NaN = Heizkurve aus
         /// (Heizgrenze) — die Übergabe liefert dann nichts. Nur mit <see cref="Uebergabe"/>.
         /// </summary>
-        internal double VorlaufC { get; }
+        internal double VorlaufC { get; private init; }
 
         /// <summary>Proportionalband Xp des Raumreglers [K]; 0 = ideale Regelung mit Grenze (H1, E25).</summary>
         internal double ReglerbandK { get; }
@@ -147,13 +309,13 @@
         internal Uebergabekennwerte KuehlUebergabeGespiegelt { get; }
 
         /// <summary>Fester Kaltwasser-Vorlauf der Stunde [°C], schon auf die Vorlaufgrenze hochgemischt (7.2). Nur mit Kühlübergabe.</summary>
-        internal double KuehlVorlaufC { get; }
+        internal double KuehlVorlaufC { get; private init; }
 
         /// <summary>Strahlungsanteil der Kühlübergabe [–] (Vorgabe der Art); verteilt wie die Heizseite.</summary>
         internal double KuehlStrahlungsanteil { get; }
 
         /// <summary>Steht der Kaltwasser-Vorlauf an der Vorlaufgrenze, weil die Anlage kälter liefert (7.2)?</summary>
-        internal bool KuehlVorlaufGekappt { get; }
+        internal bool KuehlVorlaufGekappt { get; private init; }
 
         /// <summary>Rechnet die Kühlung als Kühlübergabe (Anlagenkopplung, Schritt K, E37)?</summary>
         internal bool MitKuehluebergabe => KuehlUebergabeGespiegelt != null;
@@ -170,7 +332,9 @@
     ///
     /// <para><b>Anlagenkopplung (AK1).</b> Mit Übergabe trägt die Stunde zusätzlich Vorlauf,
     /// Rücklauf zur GELIEFERTEN Leistung (H6), den überwiegenden Begrenzungsgrund und die
-    /// Zeitanteile der Gründe; ohne Übergabe stehen sie auf NaN bzw. null. Mit Kühlübergabe
+    /// Zeitanteile der Gründe; ohne Übergabe stehen sie auf NaN bzw. null — bis auf den
+    /// Kappungsanteil <see cref="HeizleistungMaxAnteil"/>, den jede Stunde trägt (Entwurf KP3,
+    /// Festlegung 20). Mit Kühlübergabe
     /// (Schritt K, E37) trägt sie dasselbe für die Kälteseite, je Seite getrennt.</para>
     /// </summary>
     internal readonly struct Stundenergebnis
@@ -278,7 +442,10 @@
         /// <summary>Zeitanteil der Stunde, in dem die Übergabe die Grenze war [–], 0 … 1.</summary>
         internal double UebergabeBegrenztAnteil { get; }
 
-        /// <summary>Zeitanteil der Stunde, in dem <c>Heizleistung_Max</c> gekappt hat [–].</summary>
+        /// <summary>
+        /// Zeitanteil der Stunde, in dem <c>Heizleistung_Max</c> gekappt hat [–], 0 … 1 — mit und ohne
+        /// Übergabe (Entwurf KP3, Befund B1, Festlegung 20).
+        /// </summary>
         internal double HeizleistungMaxAnteil { get; }
 
         /// <summary>Zeitanteil der Stunde an der Heizgrenze der Übergabe [–] (Heizkurve aus oder Vorlauf nicht über der Raumluft).</summary>
@@ -286,6 +453,34 @@
 
         /// <summary>War die Übergabe in dieser Stunde die Grenze — ja/nein?</summary>
         internal bool UebergabeBegrenzt => UebergabeBegrenztAnteil > 0.0;
+
+        /// <summary>Zeitanteil der Stunde an der Schranke der Anlagenverfügbarkeit [–], 0 … 1 (AK2, <c>VERFUEGBARKEIT</c>).</summary>
+        internal double VerfuegbarkeitAnteil { get; init; }
+
+        /// <summary>Zeitanteil der Stunde mit gesättigter Übergabe am Vorlaufangebot der Anlage [–] (F6); in <see cref="UebergabeBegrenztAnteil"/> enthalten.</summary>
+        internal double VorlaufAnlageAnteil { get; init; }
+
+        /// <summary>
+        /// Der Anlagengrund, der neben <see cref="Begrenzungsgrund.Verfuegbarkeit"/> mitreist (Paarungsregel 5.3);
+        /// <see cref="Verfuegbarkeitsgrund.KeineBegrenzung"/>, wenn die Schranke in der Stunde nicht gekappt hat.
+        /// </summary>
+        internal Verfuegbarkeitsgrund Verfuegbarkeitsgrund { get; init; }
+
+        /// <summary>Hat die Schranke der Verfügbarkeit in dieser Stunde gekappt — ja/nein?</summary>
+        internal bool VerfuegbarkeitBegrenzt => VerfuegbarkeitAnteil > 0.0;
+
+        /// <summary>
+        /// Zeitanteil der Stunde, in dem die Kälteschranke (AK3-K, <see cref="Stundenrand.MitKaelteverfuegbarkeit"/>) die
+        /// Kühlleistung gekappt hat [–]; mit Kühlübergabe aus dem Kühlgrund <see cref="Begrenzungsgrund.Verfuegbarkeit"/>,
+        /// sonst aus dem Fall <c>Kuehlgrenze</c>. 0 ohne Kälteschranke.
+        /// </summary>
+        internal double KaelteverfuegbarkeitAnteil { get; init; }
+
+        /// <summary>Der Anlagengrund zur Kappung an der Kälteschranke (Paarungsregel 5.3); sonst keiner.</summary>
+        internal Verfuegbarkeitsgrund Kaelteverfuegbarkeitsgrund { get; init; }
+
+        /// <summary>Hat die Kälteschranke in dieser Stunde gekappt — ja/nein?</summary>
+        internal bool KaelteverfuegbarkeitBegrenzt => KaelteverfuegbarkeitAnteil > 0.0;
 
         // ---- die Kälteseite der Kopplung (Schritt K, E37) ----
 
@@ -318,5 +513,30 @@
 
         /// <summary>War die Kühlübergabe in dieser Stunde die Grenze — ja/nein?</summary>
         internal bool KuehlUebergabeBegrenzt => KuehlUebergabeBegrenztAnteil > 0.0;
+
+        /// <summary>
+        /// <b>Messung der inneren Lastumkehr</b> (Rechenweg RP2a; nur mit eingeschalteter Messung, sonst 0):
+        /// die Leistung mit falschem Vorzeichen [J], die geregelte Abschnitte dieser Stunde im Innern
+        /// verrechnet haben, obwohl Mittel und Endpunkt zulässig waren.
+        /// </summary>
+        internal double MessungUmkehrJ { get; init; }
+
+        /// <summary>Zahl der Abschnitte dieser Stunde mit innerer Lastumkehr (Messung RP2a).</summary>
+        internal int MessungUmkehrAbschnitte { get; init; }
+
+        /// <summary>
+        /// Die Bandverletzung im Innern der Totband-Abschnitte dieser Stunde [K·s] (Messung RP2a): das
+        /// Integral, um das die Raumluft das Band [θ_soll; θ_max] verlässt, obwohl Anfang und Ende im Band liegen.
+        /// </summary>
+        internal double MessungBandKs { get; init; }
+
+        /// <summary>Zahl der Totband-Abschnitte dieser Stunde mit innerer Bandverletzung (Messung RP2a).</summary>
+        internal int MessungBandAbschnitte { get; init; }
+
+        /// <summary>
+        /// Hat die Stunde eine innere Umkehr erkannt, an der sie wegen der Obergrenze
+        /// (<see cref="Zonenmodell2K.INNENPRUEFUNG_ABSCHNITTE"/>) nicht mehr geschnitten hat (Rechenweg RP2a)?
+        /// </summary>
+        internal bool InnenpruefungGedeckelt { get; init; }
     }
 }

@@ -20,6 +20,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine Vorlage (<c>Tab_Konditionierungsvorlage_STAMM</c>) — die Tabelle entsteht mit KP1b.</summary>
         Vorlage,
+
+        /// <summary>
+        /// Eine Zone eines Katalogbaus (<c>Tab_Zone_STAMM</c>, Schritt ZK); <c>ID_Gebaeude_Stamm</c> ist der Katalogbau
+        /// der Zone.
+        /// </summary>
+        Katalogzone,
     }
 
     /// <summary>
@@ -112,6 +118,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>„wie Wochentag X“ (1 … 7), sonst <c>null</c>.</summary>
         public int? WieWochentag { get; set; }
+
+        /// <summary>
+        /// Die Größenmaske einer Periode des gemeinsamen Kalenders (<c>Gilt_Fuer</c>, Bit k = k-te Größe in
+        /// <see cref="DbWerte.KOND_GROESSEN"/>); <c>null</c> in einem Größenkalender.
+        /// </summary>
+        public int? GiltFuer { get; set; }
+
+        /// <summary>Der Verweis auf eine benannte Woche (<c>ID_Woche</c>); die gelesene <see cref="Woche"/> ist dann deren Text.</summary>
+        public long? IdWoche { get; set; }
     }
 
     /// <summary>

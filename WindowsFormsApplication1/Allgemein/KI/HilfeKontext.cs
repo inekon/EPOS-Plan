@@ -104,6 +104,8 @@ namespace WindowsFormsApplication1
             { "Form_Gesetzesparameter",      B_ADMIN },
             { "Form_GesetzparameterZeile",   B_ADMIN },
             { "Form_KatalogDubletten",       B_ADMIN },
+            { "Form_Katalogabgleich",        B_ADMIN },
+            { "Form_ProjektBrennstoffe",     B_ADMIN },
             // iU9-W15c: Beide Lizenzmasken sind Razor-Komponenten. Die
             // Klassennamen bleiben hier stehen - sie sind der Schluessel, unter dem
             // HilfeAutomatik ein geoeffnetes Fenster erkennt -, und die zwei
@@ -200,9 +202,7 @@ namespace WindowsFormsApplication1
             // Eintrag mehr.
 
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
-            // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
-            // Razor-Komponente SolarganglinieAdminDialog; der Bereich bleibt.
-            { "SolarganglinieAdminDialog",   B_SOLARTHERMIE },
+            // Projekt und Katalog der Solarthermieganglinien sind EIN Dialog.
             { "SolarganglinieDialog",        B_SOLARTHERMIE },
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },

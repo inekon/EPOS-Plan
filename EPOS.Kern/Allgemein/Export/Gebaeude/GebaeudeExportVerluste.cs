@@ -50,12 +50,19 @@ namespace WindowsFormsApplication1
             ["Kuehl_Sollwert"] = V, ["Kuehlleistung_Max"] = V, ["Kuehlung_Aktiv"] = V, ["Kuehl_Sollwert_Nacht"] = V,
             ["Uebergabe_Art"] = V, ["Uebergabe_Exponent"] = V, ["Uebergabe_Leistung_Nenn"] = V,
             ["Kuehl_Uebergabe_Art"] = V, ["Kuehl_Uebergabe_Exponent"] = V, ["Kuehl_Uebergabe_Leistung_Nenn"] = V,
+            // Schritt 181 (E63, AK1z): der Auslegungspunkt und das Proportionalband der Zone.
+            ["Auslegung_Vorlauf"] = V, ["Auslegung_Ruecklauf"] = V, ["Auslegung_Raumtemperatur"] = V,
+            ["Regler_Proportionalband"] = V,
+            // NP1 (Schritt 189, Q41): die Textkopie des Profilnamens an der Zone. Der Export nimmt sie nicht mit;
+            // die Nutzung der Zone führt der IFC-Export als Zelle Nutzung von EPOS_Zone aus den Kalenderkopien
+            // (RaumnutzungCtrl.ProfilUebernehmen schreibt beides zugleich), und der Import setzt sie dort wieder.
+            ["Nutzungsprofil"] = N,
         };
 
         /// <summary>Die Felder eines Bauteils.</summary>
         internal static readonly IReadOnlyDictionary<string, Exporteinstufung> Bauteil = new Dictionary<string, Exporteinstufung>
         {
-            ["ID"] = N, ["ID_Zone"] = N, ["Rang"] = N, ["Herkunft"] = N, ["Quellkennung"] = N,
+            ["ID"] = N, ["ID_Zone"] = N, ["Rang"] = N, ["Herkunft"] = N, ["Quellkennung"] = N, ["Flaechenherkunft"] = N,
             ["Bezeichner"] = R, ["Bauteilart"] = R, ["Flaeche"] = R, ["Randbedingung"] = R,
             ["ID_Aufbau"] = R, ["U_Wert"] = R, ["g_Wert"] = R, ["Neigung"] = R, ["Azimut"] = R,
             ["Rahmenanteil"] = V, ["Verschattungsfaktor"] = V, ["Psi_L"] = V,
@@ -92,6 +99,19 @@ namespace WindowsFormsApplication1
             ["Kuehl_Uebergabe_Leistung_Nenn"] = V, ["Kuehl_Auslegung_Vorlauf"] = V, ["Kuehl_Auslegung_Ruecklauf"] = V,
             ["Kuehl_Auslegung_Raumtemperatur"] = V, ["Kuehl_Vorlaufgrenze"] = V,
             ["Nachtabsenkung_Beginn"] = V, ["Nachtabsenkung_Ende"] = V, ["Wochenende"] = V, ["Ferien"] = V,
+            // E59 (Festlegung 38): die manuelle Aufheizzeit - die Datei traegt sie nicht, der Import schreibt NULL.
+            ["Aufheizzeit_Manuell_H"] = V,
+            // E65: der wirksame U-Wert der Bodenplatte als Vorgabe - die Datei traegt ihn nicht, der Import schreibt NULL.
+            ["Erdreich_U_Wirksam"] = V,
+            // AK3 (Festlegung 23): der Raumeinfluss der Heizkurve - die Datei traegt ihn nicht, der Import schreibt NULL.
+            ["Heizkurve_Raumeinfluss"] = V,
+            // KK (KuehlkurveSchema.SCHRITT): die Kuehlkurve - die Datei traegt sie nicht, der Import schreibt NULL; gesetzt
+            // wird sie als Verlust benannt (Getragen). Projektpaket und Katalogpaket tragen die Spalten.
+            ["Kuehlkurve_Aktiv"] = V, ["Kuehlkurve_Fusspunkt"] = V, ["Kuehlkurve_Raumeinfluss"] = V,
+            ["Kuehlkurve_Auslegung_Weg"] = V, ["Kuehlkurve_Auslegung_Aussen"] = V,
+            // K2 (KalenderbedienungSchema.SCHRITT): Wochenende und Feiertagsland - die Datei traegt sie nicht, der Import
+            // schreibt NULL (Vorgabe Sa + So, nur bundeseinheitliche Feiertage); gesetzt werden sie als Verlust benannt.
+            ["Wochenendtage"] = V, ["Feiertagsland"] = V,
             ["Ferienbeginn_1"] = V, ["Ferienende_1"] = V, ["Ferienbeginn_2"] = V, ["Ferienende_2"] = V,
             ["Ferienbeginn_3"] = V, ["Ferienende_3"] = V, ["Ferienbeginn_4"] = V, ["Ferienende_4"] = V,
             ["Gebaeude_Modell"] = N, ["WW_Bedarf"] = N, ["spez_Waermeverbrauch"] = N, ["Waermebedarf"] = N,
@@ -102,17 +122,27 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Der Name des Verlusts „Kalender": Das Gebäude oder eine Zone trägt einen angelegten
+        /// Konditionierungskalender; die Datei trägt keinen Zeitplan, nur je Raum einen Heizsollwert
+        /// (Entwurf KP2, Festlegung 9). Kein Modellfeld — er steht allein in <see cref="Getragen"/>.
+        /// </summary>
+        internal const string KALENDER = "Kalender";
+
+        /// <summary>
         /// Die benannten Verluste, die ein Satz tatsächlich trägt — die Feldnamen der Zonen und Bauteile
         /// mit einem gesetzten Wert, dazu die Gebäudefelder, die der Export nie mitnimmt (Sollwerte außer
-        /// Tag, Bauweise). Sortiert, damit die Meldung stabil ist.
+        /// Tag, Bauweise), und <see cref="KALENDER"/>, wenn <paramref name="kalender"/> sagt, dass ein
+        /// angelegter Kalender mitreist. Sortiert, damit die Meldung stabil ist.
         /// </summary>
-        internal static IReadOnlyList<string> Getragen(ProjektGebaeudeModel g, IEnumerable<ZoneModel> zonen)
+        internal static IReadOnlyList<string> Getragen(ProjektGebaeudeModel g, IEnumerable<ZoneModel> zonen,
+                                                       bool kalender = false)
         {
             var namen = new SortedSet<string>(System.StringComparer.Ordinal)
             {
                 "Raumsolltemperatur_Nachtabsenkung", "Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien",
                 "Maximaleraumtemperatur", "Bauweise",
             };
+            if (kalender) namen.Add(KALENDER);
             if (g != null)
             {
                 if (g.Luftwechsel_Nutzer.HasValue) namen.Add("Luftwechsel_Nutzer");
@@ -122,6 +152,16 @@ namespace WindowsFormsApplication1
                 if (g.Rahmenanteil.HasValue) namen.Add("Rahmenanteil");
                 if (g.Verschattungsfaktor.HasValue) namen.Add("Verschattungsfaktor");
                 if (!string.IsNullOrWhiteSpace(g.Uebergabe_Art)) namen.Add("Uebergabe_Art");
+                if (g.Aufheizzeit_Manuell_H.HasValue) namen.Add("Aufheizzeit_Manuell_H");
+                if (g.Erdreich_U_Wirksam.HasValue) namen.Add("Erdreich_U_Wirksam");
+                if (g.Heizkurve_Raumeinfluss.HasValue) namen.Add("Heizkurve_Raumeinfluss");
+                if (g.Kuehlkurve_Aktiv) namen.Add("Kuehlkurve_Aktiv");
+                if (g.Kuehlkurve_Fusspunkt.HasValue) namen.Add("Kuehlkurve_Fusspunkt");
+                if (g.Kuehlkurve_Raumeinfluss.HasValue) namen.Add("Kuehlkurve_Raumeinfluss");
+                if (!string.IsNullOrWhiteSpace(g.Kuehlkurve_Auslegung_Weg)) namen.Add("Kuehlkurve_Auslegung_Weg");
+                if (g.Kuehlkurve_Auslegung_Aussen.HasValue) namen.Add("Kuehlkurve_Auslegung_Aussen");
+                if (g.Wochenendtage != KalenderbedienungSchema.WOCHENENDE_VORGABE) namen.Add("Wochenendtage");
+                if (!string.IsNullOrWhiteSpace(g.Feiertagsland)) namen.Add("Feiertagsland");
             }
             foreach (ZoneModel z in zonen ?? new List<ZoneModel>())
             {

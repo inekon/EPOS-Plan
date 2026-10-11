@@ -205,6 +205,7 @@ public static class SpeicherFlottenProjektCtrl
             ?? throw new InvalidOperationException("Die EPOS-Zeitreihen oder Speicherparameter konnten nicht vorbereitet werden.");
         FlottenEingang input = SpeicherFlottenStudieCtrl.Eingang(vorbereitung);
         FlottenStudieKonfiguration config = SpeicherFlottenStudieCtrl.Konfiguration(vorbereitung.Eingaben);
+        config.Optionen.PvEinspeisegrenzeWeichKw = WeicheEinspeisegrenze(sim);
         SpeicherFlottenProjektLauf lauf = Rechnen(input, config, vorbereitung.Kontext,
             Planer(config), cancellationToken);
         bool bewertbar = vorbereitung.Eingaben.Auslegung.VerwendeteKosten?.NichtBewertbar != true;
@@ -259,6 +260,7 @@ public static class SpeicherFlottenProjektCtrl
                 "Die EPOS-Zeitreihen oder Speicherparameter konnten nicht vorbereitet werden.");
         FlottenEingang input = SpeicherFlottenStudieCtrl.Eingang(vorbereitung);
         FlottenStudieKonfiguration config = SpeicherFlottenStudieCtrl.Konfiguration(vorbereitung.Eingaben);
+        config.Optionen.PvEinspeisegrenzeWeichKw = WeicheEinspeisegrenze(sim);
         SpeicherFlottenProjektLauf lauf = Rechnen(input, config, vorbereitung.Kontext,
             Planer(config), cancellationToken);
 
@@ -283,6 +285,10 @@ public static class SpeicherFlottenProjektCtrl
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(config);
         FlottenStudieKonfiguration snapshot = SpeicherAuslegungKopie.Von(config);
+        // PV3: Die weiche Einspeisegrenze ist ein Laufwert und nicht serialisiert - die Kopie trägt
+        // sie deshalb nicht von selbst.
+        if (snapshot.Optionen != null && config.Optionen != null)
+            snapshot.Optionen.PvEinspeisegrenzeWeichKw = config.Optionen.PvEinspeisegrenzeWeichKw;
         FlottenStudienErgebnis studie = FlottenSimulator.Simuliere(input, snapshot, planer, cancellationToken);
         if (!studie.Variante.Zulaessig)
             throw new InvalidOperationException("Die aktivierte Speicherflotte ist unzulässig: " +
@@ -379,6 +385,16 @@ public static class SpeicherFlottenProjektCtrl
                 throw new InvalidOperationException("Die Preisdatei muss für den Projektlauf genau 35.040 ausgerichtete Viertelstunden enthalten.");
         }
     }
+
+    /// <summary>
+    /// Die WEICHE Einspeisegrenze des Projektlaufs [kW] (Welle M5, PV3): die Einspeisegrenze der
+    /// Projekteinstellung, wie der PV-Lauf sie aufgelöst hat; <c>null</c> ohne PV-Lauf oder ohne Grenze.
+    /// Die Flotte regelt PV darüber ab, nachdem sie geladen hat; ihre harte Grenze bleibt unberührt.
+    /// </summary>
+    internal static double? WeicheEinspeisegrenze(SimulationControl sim)
+        => sim != null && sim.bSimulationPV && sim.simulation_pv != null
+            ? sim.simulation_pv.EinspeisegrenzeKw
+            : null;
 
     private static IFlottenPlaner Planer(FlottenStudieKonfiguration config)
     {

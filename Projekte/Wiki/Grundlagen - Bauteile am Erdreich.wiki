@@ -1,0 +1,55 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Bauteile am Erdreich
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Bauteile am Erdreich.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Ein '''Bauteil am Erdreich''' – Bodenplatte, Kellerboden oder Kellerwand – gibt seine Wärme nicht an die Außenluft ab, sondern an den Boden darunter und daneben. Das Erdreich wirkt dabei wie eine zusätzliche, dicke Dämmschicht: Der Wärmestrom muss einen weiten Weg durch den Boden nehmen, bevor er die Oberfläche erreicht. EPOS-Plan rechnet diesen Weg nach DIN EN ISO 13370 als '''Erdreichwiderstand'''.
+
+== Worum es geht ==
+{{Anker|worum-es-geht}}
+
+Unter der Mitte einer großen Bodenplatte ist der Weg zur Außenluft lang, am Rand kurz. Der Wärmestrom fließt deshalb vor allem über den Plattenrand ab, und eine große, kompakte Platte verliert je Quadratmeter deutlich weniger als eine kleine oder langgestreckte. Diese Geometrie fasst das {{Anker|charakteristisches-mass}}'''charakteristische Bodenplattenmaß''' zusammen: <math>B' = A / (0{,}5 \cdot P)</math> mit der Grundfläche <math>A</math> und dem freiliegenden Umfang <math>P</math>. Je größer <math>B'</math>, desto kleiner der Wärmedurchgang der Platte samt Erdreich.
+
+[[Datei:Bauteil_Erdreich.svg|mini|600px|Prinzipbild: Wärmestrom einer Bodenplatte durch das Erdreich, Randweg und Mittelweg, charakteristisches Maß B′ und Erdreichtemperatur in 1 m Tiefe.]]
+
+== So rechnet EPOS-Plan ==
+{{Anker|so-rechnet-epos-plan}}
+
+* {{Anker|erdreichwiderstand}}'''Erdreichwiderstand in Reihe.''' Zum Wärmedurchlasswiderstand des Bauteils tritt der Widerstand des Erdreichs <math>R_{\mathrm{g}}</math>. Der wirksame U-Wert ist <math>U_{\mathrm{wirk}} = 1 / (1/U + R_{\mathrm{g}})</math> und damit nie größer als der eingetragene U-Wert.
+* {{Anker|bodenplatte}}'''Bodenplatte.''' Aus <math>B'</math> und der wirksamen Gesamtdicke des Bodenaufbaus folgt nach der Norm der Wärmedurchgang der Platte samt Erdreich; für gut gedämmte Platten gilt eine eigene, einfachere Beziehung. Ein Kellerboden in der Tiefe <math>z</math> rechnet ebenso, mit einem Zuschlag für die Tiefe.
+* {{Anker|kellerwand}}'''Kellerwand.''' Bauteile am Erdreich mit einer Neigung zwischen 45° und 135° gelten als Wand und rechnen nach dem Ansatz der Norm für Kellerwände; flachere gelten als Boden.
+* {{Anker|erdreichtemperatur}}'''Randtemperatur.''' Auf der Erdseite steht die Erdreichtemperatur in 1&nbsp;m Tiefe, gedämpft und zeitversetzt aus dem Jahresgang der Außenluft abgeleitet; ein äußerer Wärmeübergang entfällt, weil das Bauteil keine Luft berührt.
+* {{Anker|festwerte}}'''Festwerte.''' Die Rechnung verwendet feste Annahmen: Wärmeleitfähigkeit des Erdreichs <math>\lambda = 2{,}0</math>&nbsp;W/(m·K) (Sand oder Kies; der Vorgabewert der Norm bei unbekannter Bodenart), Wanddicke <math>w = 0{,}3</math>&nbsp;m in der wirksamen Gesamtdicke und der äußere Übergangswiderstand <math>R_{\mathrm{se}} = 0{,}04</math>&nbsp;m²·K/W allein in den Formeln der Norm.
+
+== Eingaben und Wirkung ==
+{{Anker|eingaben-und-wirkung}}
+
+{| class="wikitable"
+! Eingabe !! Wirkung
+|-
+| Grundfläche || geht als <math>A</math> in <math>B'</math> ein; ohne Grundfläche zählen die Bodenbauteile am Erdreich
+|-
+| Umfang (Anschluss Außenwand–Kellerdecke) || freiliegender Umfang <math>P</math>; fehlt er oder ist er kleiner als der Umfang eines flächengleichen Kreises, gilt das flächengleiche Quadrat <math>P = 4\sqrt{A}</math>
+|-
+| Randbedingung der Bodenplatte || nur ''Erdreich'' rechnet nach DIN EN ISO 13370; ''Keller'' rechnet mit der Kellertemperatur, ''Außenluft'' wie ein Außenbauteil
+|-
+| U-Wert des Bauteils || Wärmedurchlass des Aufbaus ohne Erdreich
+|-
+| Wirksamer U-Wert Bodenplatte || ein eingetragener Wert gilt unmittelbar als U-Wert der Platte samt Erdreich; <math>B'</math> wird dann nicht gerechnet
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* Wer den U-Wert der Bodenplatte schon samt Erdreich ermittelt hat, trägt ihn als ''wirksamen U-Wert'' ein – nicht als U-Wert des Bauteils, sonst zählt das Erdreich doppelt.
+* Ein fehlender Umfang macht die Platte zum Quadrat; bei langgestreckten Grundrissen unterschätzt das den Randverlust.
+* Die Festwerte stehen für Sand oder Kies, den Vorgabewert bei unbekannter Bodenart; Ton, Schluff oder Fels leiten anders.
+
+== Weiterführend ==
+{{Anker|weiterfuehrend}}
+
+* [[Grundlagen/Gebäudemodell VDI 6007]] – das Stundenmodell, in das die Bauteile am Erdreich eingehen
+* [[Programm Dokumentation/Gebäude#flaechen|Gebäude: Hülle]] – Randbedingung, Umfang und wirksamer U-Wert im Dialog
+* [[Grundlagen/Wärmequelle Erdreich]] – das Erdreich als Wärmequelle der Wärmepumpe
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

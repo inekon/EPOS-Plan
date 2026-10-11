@@ -66,6 +66,16 @@
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* --- STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): Liste
            LINKS ueber die ganze Hoehe, rechts Auswahlleiste und STAMMBLATT - so
@@ -145,8 +155,16 @@
                     @* H13: der Weg in die Wikirubrik "Berechnung" - Modul und
                        Wechselrichter fuehren auf dieselbe Seite "Photovoltaik". *@
                     <div class="epos-berechnungshilfe">
+                        @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation,
+                           Abschnitt 7) - der Schluessel steht im Profil wie der des Rechenwegs;
+                           der Wechselrichter fuehrt auf seine EIGENE Grundlagenseite. *@
+                        @if (!string.IsNullOrEmpty(Profil.GrundlagenSchluessel))
+                        {
+                            <InfoKnopf Schluessel="@Profil.GrundlagenSchluessel"
+                                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                        }
                         <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
-                                   StandardKurztext="@Profil.BerechnungsKurztext" />
+                                   StandardKurztext="@Profil.BerechnungsKurztext" MitAssistent="false" />
                     </div>
                 </Nachsatz>
             </Stammblatt>
@@ -243,6 +261,12 @@
 
     /// <summary>Die Datenwege der Huelle.</summary>
     [Parameter] public ModulKatalogWege Wege { get; set; } = new();
+
+    /// <summary>
+    /// Der beim Oeffnen gewaehlte Satz (Bezeichner) — „Bearbeiten…" eines einzelnen Katalogsatzes im Projektdialog
+    /// (Katalogauswahl V1, KA-E-13). Leer oder unbekannt: die erste Zeile, wie bisher.
+    /// </summary>
+    [Parameter] public string? Vorwahl { get; set; }
 
     /// <summary>
     /// <b>Alle Parameter des gewaehlten Moduls samt ihrer Verwendung</b>
@@ -641,7 +665,8 @@
         foreach (string name in namen)
         {
             var felder = new List<Vergleichsfeld>();
-            foreach (ModulFeldwert f in Wege.Detail(name) ?? Array.Empty<ModulFeldwert>())
+            foreach (ModulFeldwert f in Katalogladung.SatzDazu(() => Wege.Detail(name), name, ref _satzFehler)
+                                        ?? Array.Empty<ModulFeldwert>())
             {
                 if (f.Schluessel == ModulKatalogProfil.FeldBezeichner) continue;
                 string titel = f.Feldname + (f.Einheit.Length > 0 ? " [" + f.Einheit + "]" : "");
@@ -678,6 +703,12 @@
             : Resource.ADM_SCHLOSS;
     }
 
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     protected override void OnInitialized()
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
@@ -689,7 +720,10 @@
 
         if (ProfilVorgabe is null) _profil = ModulKatalogProfil.Finde(Art);
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Filterprofil.Art);
+        _gewaehlt = Vorwahl ?? "";
         ListeAufbauen();
+        // ListeAufbauen laedt das Detail nur, wenn es die Wahl selbst setzt; die Vorwahl laedt es hier.
+        if (_gewaehlt.Length > 0 && _gewaehlt == Vorwahl) DetailLaden();
 
         // KI-F5: DREI Katalogschluessel auf EINER Komponente - welcher gilt, sagt die
         // Auspraegung. Das Wahlfeld der Zelltechnologie loest die Bruecke ueber die
@@ -786,7 +820,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =====================================================================
@@ -799,7 +833,7 @@
     /// </summary>
     private void ListeAufbauen()
     {
-        _zeilen = Wege.Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _zeilen = Katalogladung.Lesen(Wege.Katalogzeilen, Profil.Titel, out _listeFehler);
 
         _geschuetzt = new HashSet<string>(_zeilen.Where(z => z.Geschuetzt).Select(z => z.Bezeichner),
                                           StringComparer.Ordinal);
@@ -836,8 +870,11 @@
         // und nicht am Satz — dann stehen lauter Leerwerte darin.
         _uebersicht = Uebersicht?.Invoke(_gewaehlt) ?? Array.Empty<Parameterwert>();
 
+        _satzFehler = "";
         if (_gewaehlt.Length == 0) { _felder = new List<ModulFeldwert>(); return; }
-        _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<ModulFeldwert>()).ToList();
+        // KT-4: Warf das Lesen, ist das Stammblatt leer; der Banner nennt den Grund.
+        _felder = (Katalogladung.Satz(() => Wege.Detail?.Invoke(_gewaehlt), _gewaehlt, out _satzFehler)
+                   ?? Array.Empty<ModulFeldwert>()).ToList();
     }
 
     /// <summary>
@@ -1013,7 +1050,10 @@
     /// </remarks>
     private KatalogSpeicherErgebnis Schreiben()
     {
-        KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_felder, _neu, _schluessel);
+        // KT-4: Wirft der Schreibweg, bleiben die Felder stehen und die Meldung nennt den Grund.
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Wege.Speichern!(_felder, _neu, _schluessel),
+                                                                   _gewaehlt,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, _gewaehlt));
 
         if (!ergebnis.Ok)
         {
@@ -1208,7 +1248,8 @@
         var gruende = new List<string>();
         foreach (string name in _loeschziele)
         {
-            KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(name);
+            KatalogSpeicherErgebnis ergebnis = Katalogladung.Loeschen(() => Wege.Loeschen(name), name,
+                                                                      g => new KatalogSpeicherErgebnis(false, g, name));
             if (ergebnis.Ok)
             {
                 geloescht++;

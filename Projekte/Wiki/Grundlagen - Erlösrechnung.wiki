@@ -1,0 +1,36 @@
+Auf der Ertragsseite entscheidet nicht die erzeugte Energiemenge, sondern deren Verwertung. Dieselbe Kilowattstunde Strom hat einen völlig unterschiedlichen Wert, je nachdem ob sie im Objekt selbst genutzt wird oder ins Netz fließt. Deshalb ist die zeitaufgelöste Simulation die Voraussetzung für eine belastbare '''Erlösrechnung''' – erst sie zeigt, welcher Anteil der Erzeugung wann auf welchen Bedarf trifft.
+
+== Erlösarten bei Stromerzeugung ==
+{{Anker|erloesarten-bei-stromerzeugung|eigenverbrauch}}
+
+Der '''Eigenverbrauch''' ist in der Regel die wertvollste Verwertung: Er ersetzt Strombezug zum vollen Arbeitspreis einschließlich Netzentgelten, Abgaben und Umlagen. Der '''ins Netz eingespeiste Überschuss''' wird dagegen nach den jeweils geltenden Regelungen vergütet und liegt meist deutlich darunter. Bei Kraft-Wärme-Kopplung kommen die Zuschläge nach dem Kraft-Wärme-Kopplungsgesetz hinzu, die für eingespeisten und für selbst genutzten Strom in unterschiedlicher Höhe gewährt werden, sowie gegebenenfalls vermiedene Netznutzungsentgelte und Erstattungen im Zusammenhang mit der Energiesteuer. Bei Photovoltaik sind Einspeisevergütung, Direktvermarktung und Modelle der Stromlieferung an Dritte zu unterscheiden.
+
+{{Hinweis|Da sich die gesetzlichen Rahmenbedingungen häufig ändern, versteht sich diese Aufzählung als Systematik, nicht als Rechtsauskunft. Die jeweils geltenden Sätze, Fristen und Voraussetzungen sind für das konkrete Projekt zu prüfen – sie hängen unter anderem von Leistungsklasse, Inbetriebnahmedatum, Brennstoff und Betreibermodell ab.}}
+
+== Wärmeerlöse ==
+{{Anker|waermeerloese}}
+
+Wird Wärme geliefert – etwa in einem Nahwärmenetz oder bei Contracting –, entstehen Erlöse aus Arbeits-, Grund- und gegebenenfalls Leistungspreis. Maßgeblich ist die tatsächlich an der Übergabestelle gelieferte Wärme; Netz- und Speicherverluste mindern die verkaufbare Menge und gehören deshalb in die Bilanz. Bei Eigennutzung tritt an die Stelle des Erlöses die vermiedene Wärmebereitstellung aus der Referenzvariante.
+
+== Datengrundlage aus der Simulation ==
+{{Anker|datengrundlage-aus-der-simulation}}
+
+EPOS-Plan liefert die dafür nötigen Mengen zeitaufgelöst: Stromerzeugung aus BHKW und Photovoltaik, davon direkt genutzt, in den Speicher geladen und eingespeist, den verbleibenden Netzbezug, die Wärmeproduktion je Erzeuger, Betriebsstunden, Brennstoffeinsatz sowie Rest- und Überschussmengen. Damit lassen sich Eigenverbrauchsquote und Autarkiegrad ebenso bestimmen wie die Mengen, auf die Vergütungen und Zuschläge anzuwenden sind. Für die weitere Auswertung stehen sämtliche Zeitreihen als CSV-Export bereit.
+
+In der Wirtschaftlichkeitsrechnung bucht EPOS-Plan eingespeisten BHKW-Strom mit Vergütung, KWK-Zuschlag und Energiesteuer-Entlastung; selbst genutzter Strom zählt als vermiedener Bezug zum Arbeitspreis des Netzbezugs. Weil dieser Arbeitspreis die Stromsteuer bereits enthält, zählt die Stromsteuer nur einmal. Die Sätze für KWK-Zuschlag, Steuern und CO₂-Preis führt der Katalog der gesetzlichen Parameter, die Vergütung des PV-Stroms ein eigener Vergütungsdialog; Einzelheiten beschreibt [[Programm Dokumentation/Wirtschaftlichkeit]].
+
+== Typische Stellschrauben ==
+{{Anker|typische-stellschrauben}}
+
+Der Eigenverbrauchsanteil lässt sich mit vergleichsweise geringem Aufwand erhöhen – durch eine Ost-West-Aufteilung der Photovoltaik, durch einen Batteriespeicher, durch den PV-optimierten Betrieb der Wärmepumpe oder durch stromgeführten Betrieb des BHKW. Weil jede dieser Maßnahmen Investitionen auslöst, ist der Nutzen jeweils gegen die Mehrkosten zu stellen; die Rechnung dazu beschreibt die [[Grundlagen/Wirtschaftlichkeitsrechnung|Wirtschaftlichkeitsrechnung]], die Kostenseite die [[Grundlagen/Kostenrechnung|Kostenrechnung]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Kosten und Energiepreise]] – Programmfunktion: Preise, Vergütungen und Zuschläge hinterlegen
+* [[Ergebnisdarstellung]] – Eigenverbrauch, Einspeisung und Autarkiegrad im Ergebnis
+* [[Programm Dokumentation/Gesetzesparameter]] – KWK-Zuschläge, Steuersätze und CO₂-Preis mit ihren Rechtsständen
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

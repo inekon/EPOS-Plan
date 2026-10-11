@@ -61,6 +61,8 @@ namespace WindowsFormsApplication1
         public const string B_HEIZKESSEL = "Heizkessel";
         /// <summary>Hilfe.</summary>
         public const string B_HILFE = "Hilfe";
+        /// <summary>Kältemaschine (Katalog und Anlage).</summary>
+        public const string B_KAELTEMASCHINE = "Kältemaschine";
         /// <summary>Klimadaten.</summary>
         public const string B_KLIMADATEN = "Klimadaten";
         /// <summary>Kosten und Preise.</summary>
@@ -114,7 +116,7 @@ namespace WindowsFormsApplication1
         {
             BEREICH_UNBEKANNT,
             B_ADMIN, B_ASSISTENT, B_BERICHT, B_BHKW, B_BRAUCHWASSER, B_GEBAEUDE,
-            B_HAUPTFENSTER, B_HEIZKESSEL, B_HILFE, B_KLIMADATEN, B_KOSTEN, B_LIZENZ,
+            B_HAUPTFENSTER, B_HEIZKESSEL, B_HILFE, B_KAELTEMASCHINE, B_KLIMADATEN, B_KOSTEN, B_LIZENZ,
             B_PHOTOVOLTAIK, B_PROJEKT, B_PROZESSWAERME, B_PUFFERSPEICHER, B_SIMULATION,
             B_SOLARTHERMIE, B_STROMSPEICHER, B_STROMVERBRAUCHER, B_VARIANTEN,
             B_WAERMEBEDARF, B_WAERMEPUMPE, B_WIRTSCHAFT,
@@ -221,6 +223,8 @@ namespace WindowsFormsApplication1
             { "Form_Heizkessel",               B_HEIZKESSEL },
             { "Form_ImportKonflikte",          B_PROJEKT },
             { "Form_KatalogDubletten",         B_ADMIN },
+            { "Form_Katalogabgleich",          B_ADMIN },
+            { "Form_ProjektBrennstoffe",       B_ADMIN },
             { "Form_KiChat",                   B_HILFE },
             { "Form_KiEinstellungen",          B_HILFE },
             { "Form_Klimadaten",               B_KLIMADATEN },
@@ -255,6 +259,16 @@ namespace WindowsFormsApplication1
             { "Form_WechselrichterImport",     B_PHOTOVOLTAIK },
             { "Form_Wirtschaftlichkeit",       B_WIRTSCHAFT },
             { "Form_Zapfprofil",               B_BRAUCHWASSER },
+            // Die Kältemaschine (KU3): Katalog- und Anlagendialog tragen eigene Hilfeschluessel.
+            { "KaeltemaschineKatalog",         B_KAELTEMASCHINE },
+            { "KaeltemaschineAnlage",          B_KAELTEMASCHINE },
+            // KM1: der Katalogimport der Kaeltemaschine (Form_Kaeltemaschine_einlesen).
+            { "Form_Kaeltemaschine",           B_KAELTEMASCHINE },
+            // Die Betriebskalender gelten fuer Brauchwasser, Prozesswaerme und Strom; ihr Bereich
+            // ist der des Simulationslaufs, in dem sie wirken.
+            { "Form_Betriebskalender",         B_SIMULATION },
+            // Die Pufferspeicher-Auslegung (Stufe P2) gehoert zum Pufferspeicher.
+            { "Form_PufferAuslegung",          B_PUFFERSPEICHER },
             { "GebaeudeExport",                B_GEBAEUDE },
             { "GebaeudeProjekt",               B_GEBAEUDE },
             { "Hauptfenster",                  B_HAUPTFENSTER },
@@ -262,6 +276,8 @@ namespace WindowsFormsApplication1
             { "KiWerkzeugliste",               B_HILFE },
             { "Luftaustausch",                 B_GEBAEUDE },
             { "Main_PV_Test",                  B_PHOTOVOLTAIK },
+            // Das Blatt "Nutzungsprofile" (Katalog der Nutzungsprofile) gehoert zum Gebaeude.
+            { "Nutzungsprofile",               B_GEBAEUDE },
             { "UcBericht",                     B_BERICHT },
             { "UcBkKosten",                    B_KOSTEN },
             { "UcBkUebersicht",                B_VARIANTEN },

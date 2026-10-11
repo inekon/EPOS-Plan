@@ -74,6 +74,9 @@ namespace WindowsFormsApplication1
     internal sealed class GebaeudeImportHuelle
     {
         private readonly GebaeudeImportAblauf _ablauf = new GebaeudeImportAblauf();
+
+        /// <summary>Der Ablauf der Hülle — für Prüfstände (Abbild vorgeben, Stand der Projektdatei lesen).</summary>
+        internal GebaeudeImportAblauf Ablauf => _ablauf;
         private readonly GebaeudeImportProfil _festesProfil;
         private readonly int _idProjekt;
         private readonly bool _ios;
@@ -81,8 +84,19 @@ namespace WindowsFormsApplication1
         private GebaeudeImportSatz _satz;
         private GebaeudeBauteilvorschlag _vorschlag;
         private GebaeudeZonierung _zonierung;
+
+        /// <summary>Der Zonenplan der letzten Zuordnung bzw. Prüfung (Zonenbaum); <c>null</c> = keiner (eine Regel oder abgelehnt).</summary>
+        private Zonenplan _plan;
+
+        /// <summary>Was der letzte Schritt am Plan ergab: seine Meldung, ob er abgelehnt ist, wie viele frühere nicht mehr griffen.</summary>
+        private (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) _schritt;
         private Zonengeometrie _geometrie;
         private bool _alsZone;
+        /// <summary>Der Index des zuletzt zugeordneten Gebäudes der Datei (für die Konditionierung im Einzonenweg).</summary>
+        private int _gebaeudeindex;
+
+        /// <summary>Was die Übernahme der Projektdatei am Plan ergab (Schritt <see cref="GebaeudePlanschrittArt.PROJEKTDATEI"/>); <c>null</c> = keine.</summary>
+        private SqprojZonenergebnis _sqZonen;
 
         private IBaustoffabgleichQuelle _abgleichsquelle;
         private BaustoffabgleichDaten _abzug;
@@ -90,8 +104,9 @@ namespace WindowsFormsApplication1
         private IReadOnlyDictionary<string, int?> _baustoffzuordnungen = new Dictionary<string, int?>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für gbXML und IFC, das Profil
-        /// folgt der Endung der gewählten Datei.
+        /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für IFC, gbXML und die Projektdatei
+        /// (<c>.sqproj</c>), das Profil folgt der Endung der gewählten Datei; die Quellenwahl des Dialogs
+        /// (<see cref="Quellen"/>) setzt nur den Filter.
         /// </summary>
         /// <param name="idProjekt">Das Projekt für den Hinweis „schon importiert"; 0 = keines — dann fragt die Hülle keine Datenbank.</param>
         /// <param name="ios">
@@ -102,12 +117,14 @@ namespace WindowsFormsApplication1
         {
             _idProjekt = idProjekt;
             _ios = ios ?? OperatingSystem.IsIOS();
+            _ablauf.ProjektdateiMaxBytes = SqprojProfil.GrenzeFuerPlattform(_ios);
         }
 
         /// <summary>Die Hülle EINES Profils; die Größengrenze wird für die Plattform belegt (<paramref name="ios"/> wie oben).</summary>
         internal GebaeudeImportHuelle(GebaeudeImportProfil profil, int idProjekt = 0, bool? ios = null)
         {
             _ios = ios ?? OperatingSystem.IsIOS();
+            _ablauf.ProjektdateiMaxBytes = SqprojProfil.GrenzeFuerPlattform(_ios);
             _festesProfil = MitPlattformgrenze(profil ?? throw new ArgumentNullException(nameof(profil)));
             _profil = _festesProfil;
             _idProjekt = idProjekt;
@@ -189,16 +206,34 @@ namespace WindowsFormsApplication1
                 ["Lesen"] = new Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>(LesenAsync),
                 ["Zuordnen"] = new Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>(Zuordnen),
                 ["Pruefen"] = new Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>(Pruefen),
+                ["ProjektdateiWaehlen"] = new Func<Task<string>>(ProjektdateiWaehlenAsync),
+                ["ProjektdateiLesen"] = new Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>(ProjektdateiLesenAsync),
+                ["ProjektdateiEntfernen"] = new Action(ProjektdateiEntfernen),
+                // Die Wahl der Aufbauquelle nach angeschlagener Standprüfung (Anwenderentscheid vom 08.10.2026).
+                ["AufbauquelleWaehlen"] = new Func<string, GebaeudeProjektdateiDaten>(AufbauquelleWaehlen),
+                // G5-N (N1-N3): die Nordrichtung des gelesenen Imports und ihr Setzen samt Neulesen.
+                ["NordrichtungDaten"] = new Func<GebaeudeNordrichtungDaten>(NordrichtungDaten),
+                ["NordrichtungSetzen"] = new Func<double?, CancellationToken, Task<GebaeudeLesestand>>(NordrichtungSetzenAsync),
             };
+            // Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofile…" am Zonenbaum - nur mit Projekt, denn ohne
+            // Projekt fragt die Hülle keine Datenbank (Prüfstand ohne Datenbank).
+            if (_idProjekt > 0)
+            {
+                gaben["Raumnutzung"] = RaumnutzungHuelle.Weg();
+                if (ProjektdateiProfileHuelle.ImportWeg(() => _ablauf.Projektdatei) is ProjektdateiProfileWeg pd)
+                    gaben["ProjektdateiProfile"] = pd;   // NP4b (Q46)
+                gaben["RaumnutzungTexte"] = RaumnutzungHuelle.Texte();
+                gaben["RaumnutzungGroessen"] = KonditionierungTexteHuelle.Texte();
+            }
             if (uebernehmen != null) gaben["Uebernehmen"] = uebernehmen;
             return gaben;
         }
 
         /// <summary>
         /// Was das Format ausmacht, als Daten für die Komponente — mit festem Profil dessen Angaben,
-        /// sonst die beider Formate: Formatnamen, der gemeinsame Filter, die Grenze je Format und
-        /// Plattform („gbXML 25 MB · IFC 50 MB"), die Zonierungsregeln beider und der gemeinsame
-        /// Hilfeschlüssel.
+        /// sonst die aller drei Formate: Formatnamen, der gemeinsame Filter, die Grenze je Format und
+        /// Plattform („gbXML 25 MB · IFC 50 MB · Projektdatei 250 MB"), die Zonierungsregeln aller, der
+        /// gemeinsame Hilfeschlüssel und die Einträge der Quellenwahl (<see cref="Quellen"/>).
         /// </summary>
         internal GebaeudeImportProfilDaten ProfilDaten()
         {
@@ -208,9 +243,10 @@ namespace WindowsFormsApplication1
                     _festesProfil.Dateifilter,
                     _festesProfil.MaxBytes > 0 ? GebaeudeZuordnungsModell.GroesseText(_festesProfil.MaxBytes) : "",
                     _festesProfil.Zonierungsregeln.Select(GebaeudeZuordnungsModell.ZonenregelText).ToList(),
-                    _festesProfil.HilfeSchluessel);
+                    _festesProfil.HilfeSchluessel,
+                    Exporthinweis: GebaeudeZuordnungsModell.ExporthinweisText(_festesProfil));
 
-            IReadOnlyList<GebaeudeImportProfil> alle = BeideProfile();
+            IReadOnlyList<GebaeudeImportProfil> alle = AlleProfile();
             return new GebaeudeImportProfilDaten(
                 string.Join(", ", alle.Select(GebaeudeZuordnungsModell.FormatText)),
                 GebaeudeImportProfil.DATEIFILTER_ALLE,
@@ -218,12 +254,59 @@ namespace WindowsFormsApplication1
                                        .Select(p => GebaeudeZuordnungsModell.FormatText(p) + " " +
                                                     GebaeudeZuordnungsModell.GroesseText(p.MaxBytes))),
                 alle.SelectMany(p => p.Zonierungsregeln).Select(GebaeudeZuordnungsModell.ZonenregelText).Distinct().ToList(),
-                GebaeudeImportProfil.HILFE_ZUORDNUNG);
+                GebaeudeImportProfil.HILFE_ZUORDNUNG,
+                Quellen(),
+                // Ohne gewählte Quelle der Hinweis des IFC-Profils: IFC ist der Weg, auf dem die Exporteinstellung zählt.
+                GebaeudeZuordnungsModell.ExporthinweisText(alle.OfType<IfcImportProfil>().FirstOrDefault()));
         }
 
-        /// <summary>Beide Formate mit der Grenze der Plattform der Hülle — gbXML zuerst.</summary>
-        private IReadOnlyList<GebaeudeImportProfil> BeideProfile()
-            => new[] { MitPlattformgrenze(new GbxmlImportProfil()), MitPlattformgrenze(new IfcImportProfil()) };
+        /// <summary>
+        /// Die drei Formate mit der Grenze der Plattform der Hülle — gbXML, IFC, Projektdatei; die Grenze der Projektdatei
+        /// über <see cref="SqprojImportProfil.GrenzeFuerPlattform"/> (iOS enger als Windows). Eine zu große Datei lehnt
+        /// <see cref="DateiWaehlenAsync"/> benannt ab (<c>ZU_GROSS</c> des Profils).
+        /// </summary>
+        internal IReadOnlyList<GebaeudeImportProfil> AlleProfile()
+            => new GebaeudeImportProfil[]
+            {
+                MitPlattformgrenze(new GbxmlImportProfil()),
+                MitPlattformgrenze(new IfcImportProfil()),
+                MitPlattformgrenze(new SqprojImportProfil()),
+            };
+
+        /// <summary>
+        /// <b>Die Quellenwahl des Dialogs</b>: „IFC“ und „gbXML“ mit dem Filter ihres Profils, „IFC + Projektdatei“ (IFC lesen,
+        /// danach die Projektdatei dazuladen) mit dem IFC-Filter und „Nur Projektdatei (.sqproj)“ mit dem Filter
+        /// <c>GIMP_DLG_SQ_FILTER</c>, den der iOS-Adapter in seine Typkennung übersetzt. Mit festem Profil keine Wahl.
+        /// </summary>
+        internal IReadOnlyList<GebaeudeImportQuellwahl> Quellen()
+        {
+            if (_festesProfil != null) return Array.Empty<GebaeudeImportQuellwahl>();
+            var ifc = new IfcImportProfil();
+            var gbxml = new GbxmlImportProfil();
+            string ifcText = GebaeudeZuordnungsModell.FormatText(ifc);
+            string ifcHinweis = GebaeudeZuordnungsModell.ExporthinweisText(ifc);
+            return new[]
+            {
+                new GebaeudeImportQuellwahl(QUELLE_IFC, ifcText, ifc.Dateifilter, Exporthinweis: ifcHinweis),
+                new GebaeudeImportQuellwahl(QUELLE_GBXML, GebaeudeZuordnungsModell.FormatText(gbxml), gbxml.Dateifilter),
+                new GebaeudeImportQuellwahl(QUELLE_IFC_PROJEKTDATEI, Formatieren(MyResource.Resource.GIMP_DLG_QUELLE_MIT_SQPROJ, ifcText),
+                                            ifc.Dateifilter, GebaeudeImportWeg.MitProjektdatei, ifcHinweis),
+                new GebaeudeImportQuellwahl(QUELLE_PROJEKTDATEI, MyResource.Resource.GIMP_DLG_QUELLE_SQPROJ,
+                                            MyResource.Resource.GIMP_DLG_SQ_FILTER, GebaeudeImportWeg.NurProjektdatei),
+            };
+        }
+
+        /// <summary>Schlüssel der Quellenwahl: IFC allein (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_IFC = GebaeudeQuelle.FORMAT_IFC;
+
+        /// <summary>Schlüssel der Quellenwahl: gbXML allein (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_GBXML = GebaeudeQuelle.FORMAT_GBXML;
+
+        /// <summary>Schlüssel der Quellenwahl: IFC lesen, danach die Projektdatei dazuladen.</summary>
+        internal const string QUELLE_IFC_PROJEKTDATEI = "IFC_SQPROJ";
+
+        /// <summary>Schlüssel der Quellenwahl: allein die Projektdatei (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_PROJEKTDATEI = GebaeudeQuelle.FORMAT_SQPROJ;
 
         /// <summary>Belegt die Größengrenze eines Profils für die Plattform der Hülle (Softwarearchitektur 1.5, Regel 2).</summary>
         private GebaeudeImportProfil MitPlattformgrenze(GebaeudeImportProfil profil)
@@ -337,6 +420,53 @@ namespace WindowsFormsApplication1
             return Lesestand(zahl, profil);
         }
 
+        /// <summary>
+        /// G5-N (N1–N3): <b>Die Nordrichtung des gelesenen Imports</b> für den Zuordnungsdialog — was die Datei nennt (Wert
+        /// oder nichts), die wirksame Richtung der Planoberseite, ihre Herkunft und die Schnellwahl; <c>null</c> vor dem Lesen.
+        /// </summary>
+        internal GebaeudeNordrichtungDaten NordrichtungDaten() => GebaeudeAusrichtungHuelle.Daten(_ablauf.Abbild);
+
+        /// <summary>
+        /// G5-N (N2): <b>Setzt die Richtung der Planoberseite</b> und liest die Datei damit neu (aus dem Puffer des Ablaufs, die
+        /// Projektdatei bleibt): Alle Azimute, Grundrisse und die Ansicht folgen dem neuen Nordwinkel genau einmal.
+        /// <c>null</c> = keine Eingabe (Dateiwert bzw. Annahme Planoberseite = Nord). Danach ist neu zuzuordnen
+        /// (<see cref="ZuordnenMitNordrichtung"/>).
+        /// </summary>
+        internal GebaeudeLesestand NordrichtungSetzen(double? planoberseiteGrad, CancellationToken abbruch = default)
+        {
+            if (_ablauf.Abbild == null || _profil == null) return new GebaeudeLesestand(false, null, Array.Empty<string>(), Array.Empty<GebaeudeImportMeldung>());
+            _satz = null;
+            int zahl = _ablauf.NordwinkelVorgeben(Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad), null, abbruch);
+            return Lesestand(zahl, _profil);
+        }
+
+        /// <summary>
+        /// G5-N (N2): <see cref="NordrichtungSetzen"/> im Arbeitsfaden (Kulturweitergabe) — eine große Datei liest nicht im
+        /// Oberflächenfaden neu.
+        /// </summary>
+        internal async Task<GebaeudeLesestand> NordrichtungSetzenAsync(double? planoberseiteGrad, CancellationToken abbruch)
+        {
+            if (_ablauf.Abbild == null || _profil == null) return NordrichtungSetzen(planoberseiteGrad, abbruch);
+            _satz = null;
+            double? nordwinkel = Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad);
+            int zahl = await Kulturweitergabe.Starten(() => _ablauf.NordwinkelVorgeben(nordwinkel, null, abbruch), abbruch);
+            return Lesestand(zahl, _profil);
+        }
+
+        /// <summary>
+        /// G5-N (N2): <b>Neu zuordnen mit gesetzter Nordrichtung</b> — liest neu, wenn die Richtung von der wirksamen abweicht,
+        /// und ordnet dann mit <paramref name="anfrage"/> zu. Ein Lesefehler ergibt einen leeren Stand.
+        /// </summary>
+        internal GebaeudeImportStand ZuordnenMitNordrichtung(GebaeudeZuordnungsanfrage anfrage, double? planoberseiteGrad)
+        {
+            if (_ablauf.Abbild == null) return new GebaeudeImportStand();
+            double? neu = Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad);
+            double? vorgabe = _ablauf.Abbild.NordwinkelVorgabeGrad;
+            bool gleich = neu.HasValue == vorgabe.HasValue && (!neu.HasValue || Math.Abs(neu.Value - vorgabe.Value) <= 1e-9);
+            if (!gleich && !NordrichtungSetzen(planoberseiteGrad).Gelesen) return new GebaeudeImportStand();
+            return Zuordnen(anfrage);
+        }
+
         private GebaeudeLesestand Lesestand(int zahl, GebaeudeImportProfil profil)
         {
             List<GebaeudeImportMeldung> meldungen = _ablauf.Meldungen.Select(MeldungDaten).ToList();
@@ -353,7 +483,9 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.FormatText(profil),
                 GebaeudeZuordnungsModell.SchemaText(profil, q.Schemastand),
                 GebaeudeZuordnungsModell.GroesseText(q.Groesse),
-                GebaeudeZuordnungsModell.ZonenregelText(q.Zonenregel));
+                GebaeudeZuordnungsModell.ZonenregelText(q.Zonenregel),
+                profil.Format == GebaeudeQuelle.FORMAT_SQPROJ ? GebaeudeImportWeg.NurProjektdatei : GebaeudeImportWeg.Datei,
+                GebaeudeZuordnungsModell.ModellansichtText(_ablauf.Abbild));
             return new GebaeudeLesestand(true, kopf, _ablauf.Gebaeude.ToList(), meldungen, SchonImportiertText(q));
         }
 
@@ -379,6 +511,230 @@ namespace WindowsFormsApplication1
                 : iso ?? "";
 
         // =================================================================================
+        // Projektdatei dazuladen (HottCAD, Datenaustauschkonzept 16.4)
+        // =================================================================================
+
+        /// <summary>
+        /// Der Dateiwähler der Plattform mit dem Filter <c>.sqproj</c> (<c>GIMP_DLG_SQ_FILTER</c>; der iOS-Adapter übersetzt die
+        /// Endung in seine Typkennung). <c>null</c> = abgebrochen.
+        /// </summary>
+        internal async Task<string> ProjektdateiWaehlenAsync()
+        {
+            string pfad = await Dienste.Datei.DateiOeffnenAsync(MyResource.Resource.GIMP_DLG_SQ_TITEL, MyResource.Resource.GIMP_DLG_SQ_FILTER, null);
+            return string.IsNullOrEmpty(pfad) ? null : pfad;
+        }
+
+        /// <summary>
+        /// <b>Lädt die Projektdatei zum Gebäude dazu</b>: öffnet sie als Strom und reicht Strom und Namen an den Ablauf
+        /// (<see cref="GebaeudeImportAblauf.ProjektdateiLesen(Stream, string, int, CancellationToken)"/>) — im Arbeitsfaden; die
+        /// Größengrenze, die Prüfung auf HottCAD und das Lesen der Arbeitskopie liegen im Kern, jede Ablehnung kommt benannt
+        /// zurück, die IFC-Daten bleiben.
+        /// </summary>
+        internal async Task<GebaeudeProjektdateiDaten> ProjektdateiLesenAsync(string pfad, int gebaeudeindex, CancellationToken abbruch)
+        {
+            string name = GebaeudeQuelle.NurName(pfad ?? "");
+            string fehler = null;
+            await Kulturweitergabe.Starten(() =>
+            {
+                FileStream strom;
+                try
+                {
+                    strom = File.OpenRead(pfad);
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException
+                                           || ex is ArgumentException || ex is NotSupportedException)
+                {
+                    fehler = ex.Message;
+                    return 0;
+                }
+                using (strom) ProjektdateiLesen(strom, name, gebaeudeindex, abbruch);
+                return 0;
+            }, abbruch);
+            if (fehler == null) return ProjektdateiDaten();
+            ProjektdateiEntfernen();
+            GebaeudeImportMeldung grund = MeldungDaten(new PruefMeldung(PruefStufe.Fehler, SqprojProtokoll.LESEFEHLER, fehler));
+            return new GebaeudeProjektdateiDaten { Dateiname = name, Ablehnung = grund, Meldungen = new[] { grund }, Schwerste = grund };
+        }
+
+        /// <summary>Lädt die Projektdatei aus einem Strom dazu (der Weg beider Plattformen und der Prüfstände).</summary>
+        internal GebaeudeProjektdateiDaten ProjektdateiLesen(Stream strom, string dateiname, int gebaeudeindex, CancellationToken abbruch = default)
+        {
+            _sqZonen = null;
+            _ablauf.ProjektdateiLesen(strom, dateiname, gebaeudeindex, abbruch);
+            return ProjektdateiDaten();
+        }
+
+        /// <summary>Die wirksame Größengrenze der Projektdatei dieser Plattform (<see cref="SqprojProfil.GrenzeFuerPlattform"/>).</summary>
+        internal long ProjektdateiGrenze => _ablauf.ProjektdateiMaxBytes;
+
+        /// <summary>„Projektdatei entfernen“: der Stand ohne Projektdatei, die IFC-Daten bleiben.</summary>
+        internal void ProjektdateiEntfernen()
+        {
+            _ablauf.ProjektdateiEntfernen();
+            _sqZonen = null;
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag des Einzonenwegs</b> (NP2b-4, Anwenderentscheid 06.10.2026): Liefert die Projektdatei eine
+        /// DIN-Nummer (Zählung DIN/TS 18599-10:2025), nennt die Zeile das Profil der Zuordnung samt Kategorie und den Weg „Nutzungsprofil übernehmen…“
+        /// im Gebäudeeditor; automatisch wird kein Profil gesetzt. Leer ohne Nummer oder wenn die Zuordnung auf „keine“ führt.
+        /// </summary>
+        private string Einzonenvorschlag()
+        {
+            if (_ablauf.Gebaeudeprofilnummer(_gebaeudeindex) is not int nr) return "";
+            Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
+            Planprofil p = v.AusDinNummer(nr);
+            if (p == null) return "";
+            string kategorie = p.Id is long id ? v.Kategorie(id)?.Trim() : null;
+            string profil = GebaeudeImportZonen.Profiltext(p) + (string.IsNullOrEmpty(kategorie) ? "" : " · " + kategorie);
+            return Formatieren(MyResource.Resource.RNP_IMP_EINZONE_VORSCHLAG, nr.ToString(CultureInfo.CurrentCulture), profil);
+        }
+
+        /// <summary>
+        /// <b>Die Projektdatei als Daten des Kopfs</b>: Datei, Fassung, Abgleich, Zonen, Zeitprofile, Abschnitte, nach der
+        /// Übernahme die Zonen je Größe und Herkunft; alle Meldungen, die schwerste (Fehler vor Warnung) als Banner.
+        /// <c>null</c> ohne Projektdatei.
+        /// </summary>
+        internal GebaeudeProjektdateiDaten ProjektdateiDaten()
+        {
+            SqprojStand p = _ablauf.Projektdatei;
+            if (p == null) return null;
+            List<GebaeudeImportMeldung> meldungen = p.Meldungen.Concat(_sqZonen?.Meldungen ?? Enumerable.Empty<PruefMeldung>())
+                                                     .Select(MeldungDaten).ToList();
+            if (p.Abgelehnt)
+            {
+                GebaeudeImportMeldung grund = MeldungDaten(p.Ablehnung);
+                if (!meldungen.Any(m => m.Kennung == grund.Kennung)) meldungen.Insert(0, grund);
+                return new GebaeudeProjektdateiDaten { Dateiname = p.Dateiname ?? "", Ablehnung = grund, Meldungen = meldungen, Schwerste = grund };
+            }
+            var groessen = new List<GebaeudeProjektdateiGroesse>();
+            if (_sqZonen != null)
+                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                {
+                    int gang = _sqZonen.Zonenzahl(g, Konditionierungsherkunft.Ganglinie);
+                    int nutz = _sqZonen.Zonenzahl(g, Konditionierungsherkunft.Nutzungsprofil);
+                    if (gang + nutz == 0) continue;
+                    groessen.Add(new GebaeudeProjektdateiGroesse(Konditionierungsgroessen.Kennwort(g),
+                        Formatieren(MyResource.Resource.GIMP_DLG_SQ_GROESSE_WERT, Konditionierungsarbeit.Groessenname(g), gang, nutz), gang, nutz));
+                }
+            return new GebaeudeProjektdateiDaten
+            {
+                Dateiname = p.Dateiname ?? "",
+                Fassung = p.Fassung ?? "",
+                Abgeglichen = p.Abgeglichen,
+                NichtAbgeglichen = p.NichtAbgeglichen,
+                OhneGegenstueck = p.IfcOhneGegenstueck,
+                Zonen = p.Zonen,
+                HatDinZonen = p.HatDinZonen,
+                HatSimulationszonen = p.HatSimulationszonen,
+                Gewaehlt = Zonierungsschluessel(p.Gewaehlt),
+                Zonierung = Zonierungsschluessel(p.Zonierung),
+                ZonierungText = Formatieren(MyResource.Resource.GIMP_DLG_SQ_ZONIERUNG_WERT, SqprojZonen.Bezeichnung(p.Zonierung),
+                                            SqprojZonen.Belegte(p.Abbild, p.Abgleich, p.Zonierung)),
+                Uebernommen = _sqZonen?.Uebernommen,
+                Zeitprofile = p.Zeitprofile,
+                Abschnitte = p.Abschnitte,
+                RaeumeOhneTreffer = p.Abgleich?.OhneTreffer.Select(r => r.ToString()).ToList() ?? new List<string>(),
+                Groessen = groessen,
+                Meldungen = meldungen,
+                Schwerste = meldungen.Where(m => m.Stufe != WarnStufe.Hinweis)
+                                     .OrderBy(m => m.Stufe == WarnStufe.Fehler ? 0 : 1).FirstOrDefault(),
+                Standpruefung = StandpruefungDaten(p.Standpruefung),
+                Aufbauquelle = AufbauquelleSchluessel(p.Aufbauquelle),
+            };
+        }
+
+        // =================================================================================
+        // Standprüfung und Aufbauquelle (Anwenderentscheid vom 08.10.2026) — der Dialog: Aufbauquellenwahl
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Wählt die Aufbauquelle</b> (<see cref="GebaeudeAufbauquelleSchluessel"/>) und bildet den Bauteilvorschlag mit den Eingaben
+        /// der letzten Anfrage neu, ohne eine Datei zu lesen. Liefert den Stand der Projektdatei danach; <c>null</c> ohne Projektdatei.
+        /// Ein unbekannter Schlüssel lässt die Wahl unverändert.
+        /// </summary>
+        internal GebaeudeProjektdateiDaten AufbauquelleWaehlen(string schluessel)
+        {
+            Aufbauquelle? wahl = schluessel switch
+            {
+                GebaeudeAufbauquelleSchluessel.PROJEKTDATEI => Aufbauquelle.Projektdatei,
+                GebaeudeAufbauquelleSchluessel.DATEI => Aufbauquelle.Ifc,
+                GebaeudeAufbauquelleSchluessel.OFFEN => Aufbauquelle.Offen,
+                _ => null,
+            };
+            if (wahl.HasValue && _ablauf.AufbauquelleWaehlen(wahl.Value, Math.Max(0, _gebaeudeindex)) && _vorschlag != null)
+                _vorschlagWiederholen?.Invoke();
+            return ProjektdateiDaten();
+        }
+
+        // Der letzte Aufruf von VorschlagBilden mit seinen Eingaben — für das Neubilden nach der Wahl der Aufbauquelle.
+        private Action _vorschlagWiederholen;
+
+        /// <summary>Der Schlüssel der Aufbauquelle.</summary>
+        internal static string AufbauquelleSchluessel(Aufbauquelle q) => q switch
+        {
+            Aufbauquelle.Offen => GebaeudeAufbauquelleSchluessel.OFFEN,
+            Aufbauquelle.Projektdatei => GebaeudeAufbauquelleSchluessel.PROJEKTDATEI,
+            _ => GebaeudeAufbauquelleSchluessel.DATEI,
+        };
+
+        /// <summary>Die Standprüfung als Daten des Dialogs; <c>null</c> = nicht geprüft.</summary>
+        internal static GebaeudeStandpruefungDaten StandpruefungDaten(Standpruefung p)
+        {
+            if (p == null) return null;
+            return new GebaeudeStandpruefungDaten
+            {
+                Angeschlagen = p.Angeschlagen,
+                Verglichen = p.Verglichen,
+                Abweichend = p.Abweichend,
+                AbweichendM2 = p.AbweichendM2,
+                HuellflaecheM2 = p.HuellflaecheM2,
+                AnteilProzent = 100.0 * p.Anteil,
+                JeArt = p.JeArt.Select(a => new GebaeudeStandpruefungArtDaten(BauteilaufbauCtrl.BauteilartText(GebaeudeZonenabbildung.ArtFuerZeile(a.Art)),
+                                                                             a.Verglichen, a.Abweichend, a.MedianUIfc, a.MedianUProjektdatei)).ToList(),
+                Beispiele = p.Beispiele.Select(b => new GebaeudeStandpruefungBeispielDaten(b.Bauteil,
+                                                        BauteilaufbauCtrl.BauteilartText(GebaeudeZonenabbildung.ArtFuerZeile(b.Art)),
+                                                        b.FlaecheM2, b.UIfc, b.UProjektdatei, b.AufbauIfc, b.AufbauProjektdatei)).ToList(),
+                Anzeichen = p.Anzeichen.Select(a => new GebaeudeStandanzeichenDaten(a switch
+                {
+                    Standanzeichen.KopieNachModellstand => "kopie",
+                    Standanzeichen.BaujahrAbweichend => "baujahr",
+                    _ => "dicke",
+                }, p.Anzeichentext(a))).ToList(),
+                Meldung = p.Meldung() is PruefMeldung m ? Text(m) : "",
+            };
+        }
+
+        /// <summary>
+        /// Der Schritt <see cref="GebaeudePlanschrittArt.PROJEKTDATEI"/>: die Zonen der Projektdatei in den Plan — erst auf einer
+        /// Kopie; übernimmt sie keine Zone (oder fehlt die Projektdatei), lehnt der Schritt ab und der Plan bleibt. Angenommen
+        /// reicht er die Bilanz als Hinweis weiter.
+        /// </summary>
+        private Planschritt ProjektdateiSchritt(Zonenplan plan, string zonierung)
+        {
+            SqprojStand p = _ablauf.Projektdatei;
+            if (p == null || p.Abgelehnt)
+                return new Planschritt(false, new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.NICHT_GELESEN));
+            // Der Wechsel der Zonierung liest nicht neu: das Abbild bleibt, gerechnet wird mit der anderen Zonierung (E87, F1).
+            if (ZonierungAus(zonierung) is SqprojZonierung z) p.Gewaehlt = z;
+            SqprojZonenergebnis probe = _ablauf.ProjektdateiUebernehmen(plan.Kopie());
+            PruefMeldung bilanz = probe.Meldungen.LastOrDefault(m => m.Schluessel == SqprojProtokoll.BILANZ);
+            if (probe.Uebernommen == 0)
+                return new Planschritt(false, bilanz == null ? null : new PruefMeldung(PruefStufe.Warnung, bilanz.Schluessel, bilanz.Werte));
+            _sqZonen = _ablauf.ProjektdateiUebernehmen(plan);
+            return new Planschritt(true, bilanz);
+        }
+
+        /// <summary>Die Zonierung zum Schlüssel (<see cref="GebaeudeZonierungSchluessel"/>); <c>null</c> = keiner/unbekannt.</summary>
+        internal static SqprojZonierung? ZonierungAus(string schluessel)
+            => schluessel == GebaeudeZonierungSchluessel.DIN ? SqprojZonierung.Din18599
+             : schluessel == GebaeudeZonierungSchluessel.SIMULATION ? SqprojZonierung.Simulation : null;
+
+        /// <summary>Der Schlüssel einer Zonierung.</summary>
+        internal static string Zonierungsschluessel(SqprojZonierung z)
+            => z == SqprojZonierung.Simulation ? GebaeudeZonierungSchluessel.SIMULATION : GebaeudeZonierungSchluessel.DIN;
+
+        // =================================================================================
         // Zuordnen und Prüfen
         // =================================================================================
 
@@ -392,35 +748,53 @@ namespace WindowsFormsApplication1
             if (anfrage == null || _ablauf.Abbild == null) return new GebaeudeImportStand();
 
             IReadOnlyDictionary<string, bool> haken = anfrage.BeheiztUebersteuert ?? new Dictionary<string, bool>();
-            GebaeudeImportSatz satz = _ablauf.Zuordnen(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken);
+            // Die Klasse: eine ausdrückliche Wahl gilt vor der aus dem Baujahr der Datei (Anwenderwunsch 08.10.2026).
+            _klasseUebersteuert = anfrage.KlasseGewaehlt;
+            GebaeudeImportSatz satz = _ablauf.Zuordnen(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken,
+                                                       anfrage.RaumtemperaturAlsSollwert, _klasseUebersteuert);
             foreach (KeyValuePair<string, double?> hand in anfrage.Handwerte ?? new Dictionary<string, double?>())
                 satz.ManuellSetzen(hand.Key, hand.Value);
             satz.FolgevorgabenNachziehen();
             _satz = satz;
+            _gebaeudeindex = anfrage.Gebaeudeindex;
+            _typwahl = anfrage.Typwahl;
 
             // Zonierung und Bauteilvorschlag mit derselben Klasse und denselben Raumhaken — jede
             // Anfrage (Regel, Klasse, Gebäude, Raumhaken, Handwert, Baustoffzuordnung, Zuordnung von
             // Hand) bildet sie neu, mit dem Namensabgleich samt den Zuordnungen des Dialogs.
             VorschlagBilden(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), anfrage.Zonenregel, haken,
-                            anfrage.Baustoffzuordnungen, anfrage.Umhaengungen);
+                            anfrage.Baustoffzuordnungen, anfrage.Umhaengungen, anfrage.RaumtemperaturAlsSollwert,
+                            anfrage.Planschritte, anfrage.Plangrundhaken);
+            bool umhaengbar = Mehrzonig(_zonierung) || (_plan != null && anfrage.Planschritte is { Count: > 0 });
 
             return new GebaeudeImportStand
             {
+                CadSollwertMoeglich = satz.CadSollwertMoeglich,
                 Kopftext = GebaeudeZuordnungsModell.KopfText(satz),
-                Vorschlagsname = string.IsNullOrWhiteSpace(satz.Gebaeudename) ? satz.Gebaeudekennung : satz.Gebaeudename,
+                Vorschlagsname = GebaeudeZuordnungsModell.Vorschlagsname(satz),
                 Raeume = _ablauf.Raeume(anfrage.Gebaeudeindex, haken).Select(RaumDaten).ToList(),
                 Zeilen = satz.Zeilen.Select(ZeileDaten).ToList(),
-                Meldungen = satz.Meldungen.Select(MeldungDaten).ToList(),
+                // Die Verwendung, die die Datei hergibt, mit Herleitung (Anwenderwunsch 08.10.2026) - als letzte Meldung.
+                Meldungen = satz.Meldungen.Concat(satz.Verwendung?.Herleitung is PruefMeldung vm ? new[] { vm } : Array.Empty<PruefMeldung>())
+                                .Select(MeldungDaten).ToList(),
                 ManuellHerkunftText = GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Manuell),
                 Bauteile = BauteileDaten(_vorschlag),
                 Baustoffe = BaustoffeDaten(_vorschlag, anfrage.Baustoffzuordnungen),
+                Aufbauten = GebaeudeAufbauHuelle.Aufbauliste(_vorschlag),
                 KlasseDerDatei = GebaeudeZuordnungsModell.KlasseDerDatei(satz),
                 KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
-                Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken),
-                Ansicht = GebaeudeImportAnsicht.AnsichtDaten(_geometrie, Mehrzonig(_zonierung),
-                                                             GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag)),
+                Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken, _plan, _schritt),
+                Ansicht = GebaeudeAufbauHuelle.MitAufbau(GebaeudeImportAnsicht.AnsichtDaten(_geometrie, umhaengbar,
+                                                             GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag),
+                                                             anfrage.Gebaeudeindex >= 0 && anfrage.Gebaeudeindex < (_ablauf.Abbild?.Gebaeude.Count ?? 0)
+                                                                 ? _ablauf.Abbild.Gebaeude[anfrage.Gebaeudeindex] : null), _vorschlag),
+                ProjektdateiMoeglich = GebaeudeImportAblauf.IstHottcad(_ablauf.Abbild, anfrage.Gebaeudeindex),
+                Projektdatei = ProjektdateiDaten() is GebaeudeProjektdateiDaten pd ? pd with { Einzonenvorschlag = Einzonenvorschlag() } : null,
             };
         }
+
+        /// <summary>Die Klasse der letzten Anfrage ist die ausdrückliche Wahl des Anwenders (gilt vor dem Baujahr der Datei).</summary>
+        private bool _klasseUebersteuert;
 
         /// <summary>
         /// <b>Zonierung, Bauteilvorschlag und Grundriss einer Anfrage</b> (Stufe G6c): die Zonierung nach
@@ -431,13 +805,117 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void VorschlagBilden(int index, char? klasse, string regel, IReadOnlyDictionary<string, bool> haken,
                                      IReadOnlyDictionary<string, int?> zuordnungen,
-                                     IReadOnlyList<GebaeudeRaumumhaengung> umhaengungen = null)
+                                     IReadOnlyList<GebaeudeRaumumhaengung> umhaengungen = null, bool cadSollwert = false,
+                                     IReadOnlyList<GebaeudePlanschritt> schritte = null,
+                                     IReadOnlyDictionary<string, bool> grundhaken = null)
         {
+            bool klasseUebersteuert = _klasseUebersteuert;
+            _vorschlagWiederholen = () =>
+            {
+                _klasseUebersteuert = klasseUebersteuert;
+                VorschlagBilden(index, klasse, regel, haken, zuordnungen, umhaengungen, cadSollwert, schritte, grundhaken);
+            };
             _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken, umhaengungen);
+            _plan = null;
+            _schritt = (null, false, 0);
+            _sqZonen = null;
+            if (_zonierung != null && _zonierung.Regeln.Count > 1 && !_zonierung.Abgelehnt)
+            {
+                // DER ZONENPLAN (Zonenbaum): der Regelvorschlag mit den Haken vor dem ersten Schritt, darauf die Schritte
+                // in ihrer Reihenfolge, zuletzt die heutigen Haken. Ohne Schritt bleibt die Zonierung die der Regel.
+                bool mitSchritten = schritte is { Count: > 0 };
+                List<Raumumhaengung> hand = umhaengungen?.Where(u => u != null).Select(u => new Raumumhaengung(u.Raum, u.Zielzone)).ToList();
+                _plan = Zonenplan.Vorschlag(_ablauf.Abbild, index, _zonierung.Regel, mitSchritten ? grundhaken ?? haken : haken, hand);
+                if (mitSchritten)
+                {
+                    _schritt = Auflegen(_plan, schritte, ProjektdateiSchritt);
+                    foreach (AbbildRaum r in _plan.Gebaeude.Raeume)
+                    {
+                        bool soll = GebaeudeRaumzeile.BeheiztWirksam(r, haken);
+                        if (_plan.Beheizt(r) != soll) _plan.BeheizungSetzen(r.Kennung, soll);
+                    }
+                    _zonierung = _plan.Zonieren();
+                }
+            }
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
-                                                         Mehrzonig(_zonierung) ? _zonierung : null);
-            _geometrie = GebaeudeGrundriss.Bilden(_ablauf.Abbild, index, _zonierung);
+                                                         Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert, _typwahl,
+                                                         klasseUebersteuert);
+            // HC-5: der frisch abgeleitete Grundriss je Raum vor dem Rechteckersatz (dieselben, die der Import speichert).
+            _geometrie = GebaeudeGrundriss.BildenMitGrundriss(_ablauf.Abbild, index, _zonierung, out _);
         }
+
+        /// <summary>
+        /// <b>Legt die Schritte des Zonenbaums auf den Plan</b>, in ihrer Reihenfolge. Ein abgelehnter Schritt lässt den Plan
+        /// unverändert; ist es der letzte, steht seine Meldung im Stand (der Dialog nimmt ihn wieder heraus), ein früherer
+        /// zählt als verworfen. Ein angenommener letzter Schritt reicht seinen Hinweis weiter (etwa Räume anderer Beheizung).
+        /// </summary>
+        internal static (PruefMeldung Meldung, bool Abgelehnt, int Verworfen) Auflegen(Zonenplan plan, IReadOnlyList<GebaeudePlanschritt> schritte,
+                                                                                       Func<Zonenplan, string, Planschritt> projektdatei = null)
+        {
+            int verworfen = 0;
+            PruefMeldung meldung = null;
+            bool abgelehnt = false;
+            for (int i = 0; i < schritte.Count; i++)
+            {
+                Planschritt e = Schritt(plan, schritte[i], projektdatei);
+                bool letzter = i == schritte.Count - 1;
+                if (!e.Ok && !letzter) verworfen++;
+                if (letzter)
+                {
+                    meldung = e.Meldung;
+                    abgelehnt = !e.Ok;
+                }
+            }
+            return (meldung, abgelehnt, verworfen);
+        }
+
+        private static Planschritt Schritt(Zonenplan plan, GebaeudePlanschritt s, Func<Zonenplan, string, Planschritt> projektdatei)
+        {
+            if (s == null) return new Planschritt(true);
+            IReadOnlyList<string> raeume = s.Raeume ?? Array.Empty<string>();
+            switch (s.Art)
+            {
+                case GebaeudePlanschrittArt.ANLEGEN: return plan.ZoneAnlegen(s.Name, s.Nutzung);
+                case GebaeudePlanschrittArt.UMBENENNEN: return plan.ZoneUmbenennen(s.Zone, s.Name);
+                case GebaeudePlanschrittArt.NUTZUNG: return plan.NutzungSetzen(s.Zone, s.Nutzung);
+                case GebaeudePlanschrittArt.AUFHEBEN: return plan.ZonierungAufheben();
+                case GebaeudePlanschrittArt.PROJEKTDATEI:
+                    return projektdatei?.Invoke(plan, s.Zonierung) ?? new Planschritt(false, new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.NICHT_GELESEN));
+                case GebaeudePlanschrittArt.ZUORDNEN: return plan.Zuordnen(raeume, s.Zone);
+                case GebaeudePlanschrittArt.GESCHOSS: return plan.GeschossZuordnen(s.Geschoss, s.Zone);
+                case GebaeudePlanschrittArt.REST: return plan.RestNachRegelZuordnen(s.Regel);
+                case GebaeudePlanschrittArt.HAKEN:
+                    return raeume.Count == 1 ? plan.BeheizungSetzen(raeume[0], s.Beheizt) : new Planschritt(true);
+                case GebaeudePlanschrittArt.LOESCHEN:
+                {
+                    // Alle oder keine: auf einer Kopie gelöscht, erst dann am Plan.
+                    Zonenplan probe = plan.Kopie();
+                    foreach (string z in s.Zonen ?? Array.Empty<string>())
+                    {
+                        Planschritt e = probe.ZoneLoeschen(z);
+                        if (!e.Ok) return e;
+                    }
+                    foreach (string z in s.Zonen ?? Array.Empty<string>()) plan.ZoneLoeschen(z);
+                    return new Planschritt(true);
+                }
+                case GebaeudePlanschrittArt.EIGENE:
+                {
+                    // Ein Raum als eigene Zone: eine neue Zone mit seinem Namen (im Plan frei), dann der Raum hinein.
+                    AbbildRaum raum = raeume.Count == 1
+                        ? plan.Gebaeude.Raeume.FirstOrDefault(r => string.Equals(r.Kennung, raeume[0], StringComparison.Ordinal)) : null;
+                    if (raum == null) return plan.Zuordnen(raeume.Count == 0 ? new[] { "" } : raeume.Take(1), null);
+                    string basis = Zonenplan.Raumname(raum);
+                    Planschritt neu = plan.ZoneAnlegen(basis, null);
+                    for (int n = 2; !neu.Ok && neu.Meldung?.Schluessel?.EndsWith(Zonenplan.PLAN_NAME_DOPPELT, StringComparison.Ordinal) == true; n++)
+                        neu = plan.ZoneAnlegen(basis + " " + n.ToString(CultureInfo.InvariantCulture), null);
+                    return neu.Ok ? plan.Zuordnen(new[] { raum.Kennung }, neu.Schluessel) : neu;
+                }
+                default: return new Planschritt(true);
+            }
+        }
+
+        /// <summary>Der Zonenplan der letzten Zuordnung bzw. Prüfung; <c>null</c> ohne.</summary>
+        internal Zonenplan Plan => _plan;
 
         /// <summary>
         /// Die Zonierung eines Gebäudes nach <paramref name="regel"/>, sonst nach der Vorgabe, mit den
@@ -483,7 +961,12 @@ namespace WindowsFormsApplication1
 
             // Als Zone mit Bauteilen gewählt, aber der Vorschlag lässt sich nicht bilden: benannt
             // abgelehnt, nicht still als Summenweg übernommen.
-            if (ergebnis.AlsZone && (_vorschlag == null || _vorschlag.Abgelehnt))
+            // Der Zonenplan mit nicht zugeordneten Räumen wird nicht gespeichert (dieselbe Prüfung des Kerns).
+            if (_plan?.Abschlusspruefung() is PruefMeldung offen) meldungen.Add(MeldungDaten(offen));
+            // Anwenderentscheid vom 08.10.2026: Nach angeschlagener Standprüfung sperrt die offene Aufbauquelle die Übernahme.
+            PruefMeldung quelleOffen = _ablauf.Aufbauquellenpruefung();
+            if (quelleOffen != null) meldungen.Add(MeldungDaten(quelleOffen));
+            if (quelleOffen == null && ergebnis.AlsZone && (_vorschlag == null || _vorschlag.Abgelehnt))
                 meldungen.Add(new GebaeudeImportMeldung(WarnStufe.Fehler, GebaeudeZuordnungsModell.StufeText(PruefStufe.Fehler),
                     Formatieren(MyResource.Resource.GIMP_DLG_ALS_ZONE_NICHT, Ablehnungstext(_vorschlag)), ALS_ZONE_NICHT));
             if (meldungen.Any(m => m.Stufe == WarnStufe.Fehler)) return meldungen;
@@ -526,8 +1009,10 @@ namespace WindowsFormsApplication1
         internal GebaeudeImportSatz SatzAusErgebnis(GebaeudeImportErgebnis ergebnis)
         {
             if (ergebnis == null || _ablauf.Abbild == null) return null;
+            _klasseUebersteuert = ergebnis.KlasseGewaehlt;
             GebaeudeImportSatz satz = _ablauf.Zuordnen(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse),
-                                                       ergebnis.BeheiztUebersteuert);
+                                                       ergebnis.BeheiztUebersteuert, ergebnis.RaumtemperaturAlsSollwert,
+                                                       _klasseUebersteuert);
             foreach (GebaeudeFeldzeileDaten z in ergebnis.Zeilen ?? Array.Empty<GebaeudeFeldzeileDaten>())
             {
                 if (z == null) continue;
@@ -536,11 +1021,14 @@ namespace WindowsFormsApplication1
             }
             satz.FolgevorgabenNachziehen();
             _satz = satz;
+            _gebaeudeindex = ergebnis.Gebaeudeindex;
 
             // Zonierung und Bauteilvorschlag zum Ergebnis — mit Regel und Baustoffzuordnungen des
-            // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt.
+            // Dialogs — und ob das Gebäude als Zone(n) mit Bauteilen kommt. BA-3: die Typwahl je Ersatzaufbau reist mit.
+            _typwahl = ergebnis.Typwahl;
             VorschlagBilden(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse), ergebnis.Zonenregel,
-                            ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen, ergebnis.Umhaengungen);
+                            ergebnis.BeheiztUebersteuert, ergebnis.Baustoffzuordnungen, ergebnis.Umhaengungen,
+                            ergebnis.RaumtemperaturAlsSollwert, ergebnis.Planschritte, ergebnis.Plangrundhaken);
             _alsZone = ergebnis.AlsZone && !_vorschlag.Abgelehnt;
             _baustoffzuordnungen = Wirksame(ergebnis.Baustoffzuordnungen, _vorschlag);
             return satz;
@@ -711,7 +1199,7 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.RaumGrundText(r),
                 r.Uebersteuert);
 
-        private static GebaeudeImportMeldung MeldungDaten(PruefMeldung m)
+        internal static GebaeudeImportMeldung MeldungDaten(PruefMeldung m)
             => new GebaeudeImportMeldung(
                 m.Stufe == PruefStufe.Fehler ? WarnStufe.Fehler : m.Stufe == PruefStufe.Warnung ? WarnStufe.Warnung : WarnStufe.Hinweis,
                 GebaeudeZuordnungsModell.StufeText(m.Stufe),
@@ -729,6 +1217,9 @@ namespace WindowsFormsApplication1
         /// Kopfzeile der Zone, die Zeilen, die Zeile zur inneren Masse und die Meldungen; <c>null</c>
         /// ohne Vorschlag.
         /// </summary>
+        /// <summary>BA-3: die Typwahl je Ersatzaufbau der letzten Anfrage (E95-4); <c>null</c> = die Vorgabe.</summary>
+        private IReadOnlyDictionary<string, string> _typwahl;
+
         internal static GebaeudeBauteileDaten BauteileDaten(GebaeudeBauteilvorschlag v)
         {
             if (v == null) return null;
@@ -744,6 +1235,8 @@ namespace WindowsFormsApplication1
                     : Formatieren(MyResource.Resource.GIMP_BT_KOPF, zone.Bezeichner, GebaeudeZuordnungsModell.ZahlText(zone.Nutzflaeche),
                                   v.Zeilen.Count, v.Aufbauten.Count),
                 Zeilen = v.Zeilen.Select(BauteilzeileDaten).ToList(),
+                Profil = v.Zeilen.Count > 0 ? Bauteilprofil() : null,
+                Liste = v.Zeilen.Select(Bauteilfilterzeile).ToList(),
                 Innenweg = zone == null ? "" : InnenwegText(v),
                 Meldungen = v.Meldungen.Select(MeldungDaten).ToList(),
             };
@@ -774,6 +1267,59 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.HerkunftText(herkunft),
                 GebaeudeZuordnungsModell.HerkunftSchluessel(herkunft),
                 z.Kennung);
+        }
+
+        /// <summary>Der Schlüssel des Profils der Bauteilliste (eine Zone).</summary>
+        internal const string PROFIL_BAUTEILE = "GEBIMPORT_BAUTEILE";
+
+        /// <summary>
+        /// Die Spalten der Bauteilliste (eine Zone) in der Katalogliste mit Suche, Sortierung und
+        /// Trichter je Spalte: Bauteil (die elastische Spalte), Art, Fläche, U-Wert,
+        /// Azimut, Neigung, Randbedingung, Herkunft und zuletzt die Herkunft der Fläche („Fläche aus", G5-3); die Einheit steht im Spaltenkopf. Bauteil, Fläche,
+        /// U-Wert und Randbedingung stehen immer, die übrigen weichen, wenn die Liste schmal wird.
+        /// </summary>
+        internal static Katalogfilterprofil Bauteilprofil()
+        {
+            return Katalogfilterprofil.AusSpalten(PROFIL_BAUTEILE, new[]
+            {
+                new Katalogspalte(Katalogfilterprofil.SpBezeichner, MyResource.Resource.GIMP_DLG_SP_BAUTEIL),
+                new Katalogspalte(GebaeudeImportZonen.SP_ART, MyResource.Resource.GIMP_DLG_SP_ART, rang: Katalogspaltenrang.BeiPlatz),
+                new Katalogspalte(GebaeudeImportZonen.SP_FLAECHE, MyResource.Resource.GIMP_DLG_SP_FLAECHE, "m²", Katalogspaltenart.Zahl),
+                new Katalogspalte(GebaeudeImportZonen.SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²K)", Katalogspaltenart.Zahl),
+                new Katalogspalte(GebaeudeImportZonen.SP_AZIMUT, MyResource.Resource.GIMP_DLG_SP_AZIMUT, "°", Katalogspaltenart.Zahl,
+                                  rang: Katalogspaltenrang.BeiPlatz),
+                new Katalogspalte(GebaeudeImportZonen.SP_NEIGUNG, MyResource.Resource.GIMP_DLG_SP_NEIGUNG, "°", Katalogspaltenart.Zahl,
+                                  rang: Katalogspaltenrang.Breit),
+                new Katalogspalte(GebaeudeImportZonen.SP_RAND, MyResource.Resource.GIMP_DLG_SP_RAND),
+                new Katalogspalte(GebaeudeImportZonen.SP_HERKUNFT, MyResource.Resource.GIMP_DLG_SP_HERKUNFT, rang: Katalogspaltenrang.Breit),
+                new Katalogspalte(GebaeudeImportZonen.SP_FLAECHENHERKUNFT, MyResource.Resource.GIMP_FL_SP_FLAECHENHERKUNFT,
+                                  rang: Katalogspaltenrang.BeiPlatz),
+            });
+        }
+
+        /// <summary>
+        /// Eine Bauteilzeile als Zeile der Katalogliste: die Zahlen als Zahlen (Fläche auf zwei, U-Wert auf drei,
+        /// Azimut und Neigung auf eine Nachkommastelle — der Azimut wie <see cref="AzimutText"/>), der U-Wert
+        /// eines geschichteten Bauteils als „aus Schichten". Der Schlüssel ist die Stelle im Vorschlag.
+        /// </summary>
+        private static Katalogfilterzeile Bauteilfilterzeile(GebaeudeBauteilzeile z, int i)
+        {
+            BauteilModel b = z.Bauteil;
+            Importherkunft herkunft = GebaeudeZuordnungsModell.HerkunftAusSchluessel(b.Herkunft);
+            var zeile = new Katalogfilterzeile(i, b.Bezeichner ?? "")
+                .MitText(Katalogfilterprofil.SpBezeichner, b.Bezeichner ?? "")
+                .MitText(GebaeudeImportZonen.SP_ART, BauteilaufbauCtrl.BauteilartText(b.Bauteilart))
+                .MitZahl(GebaeudeImportZonen.SP_FLAECHE, b.Flaeche, 2)
+                .MitText(GebaeudeImportZonen.SP_FLAECHENHERKUNFT, GebaeudeAufbauHuelle.FlaechenherkunftText(b.Flaechenherkunft))
+                .Mit(GebaeudeImportZonen.SP_UWERT, b.U_Wert.HasValue ? Katalogwert.AusZahl(b.U_Wert, 3)
+                                                   : b.ID_Aufbau.HasValue ? Katalogwert.AusText(MyResource.Resource.GIMP_BT_AUS_SCHICHTEN)
+                                                   : Katalogwert.Leer)
+                .MitZahl(GebaeudeImportZonen.SP_AZIMUT, b.Azimut.HasValue ? GebaeudeImportZonen.Azimut(b.Azimut.Value) : (double?)null, 1)
+                .MitZahl(GebaeudeImportZonen.SP_NEIGUNG, b.Neigung, 1)
+                .MitText(GebaeudeImportZonen.SP_RAND, RandText(b.Randbedingung))
+                .MitText(GebaeudeImportZonen.SP_HERKUNFT, GebaeudeZuordnungsModell.HerkunftText(herkunft));
+            zeile.Schluessel = i.ToString(CultureInfo.InvariantCulture);
+            return zeile;
         }
 
         /// <summary>
@@ -850,7 +1396,12 @@ namespace WindowsFormsApplication1
         internal GebaeudeImportHerkunft Herkunft
             => _satz == null || Quelle == null ? null
              : new GebaeudeImportHerkunft(QuelleDesLaufs, GebaeudeImportCtrl.Einzonenpaarungen(_satz), _alsZone ? _vorschlag : null,
-                                          _baustoffzuordnungen.Count > 0 ? _baustoffzuordnungen : null);
+                                          _baustoffzuordnungen.Count > 0 ? _baustoffzuordnungen : null,
+                                          // Einzonenweg mit Projektdatei (SQ-3): das Gebäude nimmt die Konditionierung der
+                                          // Gebäudegruppe bzw. der einen Zone als Gebäudekalender.
+                                          !_alsZone || _vorschlag?.Mehrzonig != true ? _ablauf.Gebaeudekonditionierung(_gebaeudeindex) : null,
+                                          // HC-5: der Grundriss je Raum aus Raumgrenzen bzw. Dateikörper, gespeichert an der Quelle.
+                                          GebaeudeRaumgrundrisse.Bilden(_ablauf.Abbild, _gebaeudeindex));
 
         /// <summary>
         /// Die Quelle, wie sie gemerkt wird: Kommt das Gebäude mit mehreren Zonen (Stufe G6c), trägt sie die
@@ -886,8 +1437,27 @@ namespace WindowsFormsApplication1
             // Die Folgevorgaben (innere Gewinne, Nachtsollwert) nach den Handänderungen des Dialogs.
             ergebnis = Nachgezogen(ergebnis);
             string vorgaben = Vorgabentext(ergebnis);
-            return new GebaeudeVorbelegung(NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis),
-                                           vorgaben.Length == 0 ? Vorbelegungstext : Vorbelegungstext + " " + vorgaben);
+            GebaeudeKatalogDaten daten = NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis);
+            Gebaeudeverwendung.Ergebnis verwendung = SatzAusErgebnis(ergebnis)?.Verwendung;
+            VerwendungSetzen(daten, verwendung);
+            string text = vorgaben.Length == 0 ? Vorbelegungstext : Vorbelegungstext + " " + vorgaben;
+            if (verwendung?.Herleitung is PruefMeldung m) text = (text + " " + GebaeudeZuordnungsModell.MeldungText(m)).Trim();
+            return new GebaeudeVorbelegung(daten, text);
+        }
+
+        /// <summary>
+        /// <b>Die Verwendung aus der Datei in den vorbelegten Satz</b> (<see cref="Gebaeudeverwendung"/>): Gibt die Datei sie her,
+        /// gilt sie; ohne Anhaltspunkt bleibt die Vorgabe des neuen Satzes. Widerspricht die Gebäudeart des Satzes (die Vorgabe
+        /// eines neuen Satzes ist ein Einfamilienhaus) einem Nichtwohngebäude, wird sie „Sonstige“ — sonst stünde ein
+        /// Verwaltungsbau als Einfamilienhaus da.
+        /// </summary>
+        internal static void VerwendungSetzen(GebaeudeKatalogDaten d, Gebaeudeverwendung.Ergebnis verwendung)
+        {
+            if (d == null || verwendung?.Verwendung is not string wert) return;
+            d.Verwendung = wert;
+            if (string.Equals(wert, GebaeudeStammCtrl.FILTERWERT_SONSTIGE, StringComparison.Ordinal)
+                && Gebaeudeverwendung.WohnenAusGebaeudeart(d.Gebaeudeart) == true)
+                d.Gebaeudeart = GEBAEUDEART_SONSTIGE;
         }
 
         /// <summary>
@@ -910,6 +1480,9 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Der Weg „als Katalogsatz ablegen" — Abbildung auf den Gebäudeeditor
         // =================================================================================
+
+        /// <summary>Die Gebäudeart eines Nichtwohngebäudes ohne nähere Angabe (ein Wert des Katalogs, nie übersetzt).</summary>
+        internal const string GEBAEUDEART_SONSTIGE = "Sonstige";
 
         /// <summary>
         /// <b>Bildet ein Ergebnis auf die Felder des Gebäudeeditors ab</b> — der Weg „als

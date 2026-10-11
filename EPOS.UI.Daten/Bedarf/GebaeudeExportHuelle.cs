@@ -17,7 +17,20 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die DATENSEITE des Gebäudeexports (<c>GebaeudeExportDialog</c>; Gebäudesimulation G7a, Welle W3,
-    /// Softwarearchitektur 3.2) — eine Hülle je Klick auf „Exportieren (gbXML)…".
+    /// Softwarearchitektur 3.2) — eine Hülle je Klick auf „Exportieren…".
+    ///
+    /// <para><b>Das Format</b> (Stufe G7c) wählt der Dialog aus <see cref="Formate"/>; die Eingabe trägt
+    /// den Steuerwert (<see cref="GebaeudeQuelle.FORMAT_GBXML"/>, <see cref="GebaeudeQuelle.FORMAT_IFC"/>),
+    /// und die Hülle bildet daraus das Profil (<see cref="MitFormat"/>). Dateifilter und Endung folgen
+    /// <see cref="GebaeudeExportProfil.Dateifilter"/>. Bricht der Schreiber ab (<c>Bytes == 0</c>, die
+    /// Schemaprüfung des IFC-Schreibers), entsteht keine Datei und nichts wird geteilt: Der Dialog zeigt
+    /// den Abbruch mit den Meldungen. Geschrieben wird deshalb zuerst in den Speicher, erst danach
+    /// fragt die Dateiwahl.</para>
+    ///
+    /// <para><b>Die Exportzusage</b> (<see cref="ZusageOeffnen"/>) ist die IDS der Auslieferung
+    /// (<see cref="ZUSAGE_DATEI"/>) neben der Vorlagendatenbank: Windows öffnet sie mit dem
+    /// zugeordneten Programm, iOS gibt sie über das Teilen weiter — beides über
+    /// <see cref="IDateiDienst.MitSystemOeffnen"/>.</para>
     ///
     /// <para><b>Einmal lesen, oft bilden.</b> Der erste Aufruf von <see cref="Vorbereiten"/> liest den
     /// <see cref="GebaeudeExportSatz"/> über die Controller des Laufs — auf dem Klassenweg samt der
@@ -31,6 +44,16 @@ namespace WindowsFormsApplication1
     /// still überschreibt. Geschrieben wird ganz oder gar nicht (erst in den Speicher, dann die Datei); auf
     /// iOS öffnet danach das Teilen (<c>MitSystemOeffnen</c>). Die Rückmeldung nennt den Pfad.</para>
     ///
+    /// <para><b>Die Anreicherung der Originaldatei</b> (Stufe G7d, Datenaustauschkonzept 6.6) steht beim Format IFC
+    /// neben der eigenen Datei, wenn das Gebäude eine IFC-Importquelle hat (<see cref="AnreicherungMoeglich"/>). Der
+    /// Anwender wählt die Originaldatei erneut (<see cref="OriginalWaehlen"/>, <c>DateiOeffnenAsync</c>); die Hülle
+    /// liest sie einmal in den Speicher, bestimmt die Importquelle
+    /// (<see cref="GebaeudeExportAblauf.AnreicherungsQuelle"/>) und gibt die Vorschau (Sperren oder Beipackzettel).
+    /// <see cref="Anreichern"/> schreibt zuerst in den Speicher; eine Verweigerung oder <c>Bytes == 0</c> fragt keine
+    /// Dateiwahl, schreibt keine Datei und teilt nichts. Der Dateivorschlag ist nie der Originalname
+    /// (<see cref="GebaeudeExportAblauf.Dateivorschlag"/>). Quellen und Zuordnungen liest
+    /// <see cref="GebaeudeImportCtrl"/>.</para>
+    ///
     /// <para><b>Texte.</b> Die Meldungen des Kerns sind sprachneutral (<see cref="PruefMeldung"/>); die
     /// Hülle setzt sie über <see cref="GanglinienProtokollText"/> in die Oberflächensprache, und ein Wert,
     /// der ein Grundcode ist (<c>GEXP_GRUND_*</c>), wird dabei selbst übersetzt. Die Dateitexte folgen dem
@@ -41,6 +64,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Vorsilbe der übersetzten Grundcodes in den Werten einer Meldung.</summary>
         internal const string GRUND = "GEXP_GRUND_";
 
+        /// <summary>Die Exportzusage der Auslieferung (IDS) neben der Vorlagendatenbank (<c>{app}\Vorlage</c>).</summary>
+        internal const string ZUSAGE_DATEI = "EPOS_Export.ids";
+
         private static readonly Regex CODE = new Regex("^[A-Z][A-Z0-9_]*$", RegexOptions.CultureInvariant);
 
         private readonly int _idProjekt;
@@ -49,8 +75,18 @@ namespace WindowsFormsApplication1
         private readonly bool _ios;
         private readonly Func<int, int, GebaeudeExportSatz> _leser;
         private readonly Func<GebaeudeExportProfil> _profil;
+        private readonly Func<GebaeudeExportPlan, Stream, GebaeudeExportProfil, GebaeudeExportBilanz> _schreiber;
+        private readonly Func<int, List<ImportquelleModel>> _quellen;
+        private readonly Func<int, List<ImportzuordnungModel>> _zuordnungen;
+        private readonly Func<GebaeudeExportPlan, Stream, ImportquelleModel, IReadOnlyList<ImportzuordnungModel>, Stream,
+                              GebaeudeExportProfil, GebaeudeAnreicherungBilanz> _anreicherer;
         private readonly GebaeudeExportAblauf _ablauf = new GebaeudeExportAblauf();
         private GebaeudeExportSatz _satz;
+
+        /// <summary>Die gewählte Originaldatei (einmal gelesen) samt Name und Importquelle; <c>null</c> = keine.</summary>
+        private byte[] _original;
+        private string _originalName;
+        private ImportquelleModel _quelle;
 
         /// <summary>Wie oft der Satz gelesen wurde — Prüfhilfe (einmal je Hülle).</summary>
         internal int Lesungen { get; private set; }
@@ -63,11 +99,28 @@ namespace WindowsFormsApplication1
         /// <param name="name">Der Anzeigename des Gebäudes — Grundlage des Dateinamens.</param>
         /// <param name="ios">Die Plattform: <c>null</c> = die laufende; ein Prüfstand stellt sie ein.</param>
         /// <param name="leser">Liest den Satz; <c>null</c> = <see cref="GebaeudeExportSatz.Lesen"/>.</param>
-        /// <param name="profil">Das Profil je Plan; <c>null</c> = <see cref="Profil"/>.</param>
+        /// <param name="profil">Das Profil je Plan (Format gbXML; das Format der Eingabe setzt <see cref="MitFormat"/>);
+        /// <c>null</c> = <see cref="Profil"/>.</param>
+        /// <param name="schreiber">Schreibt den Plan in den Speicher; <c>null</c> = <see cref="GebaeudeExportAblauf.Schreiben"/>.
+        /// Ein Prüfstand stellt hier einen Abbruch (<c>Bytes == 0</c>) ein.</param>
+        /// <param name="quellen">Die Importquellen je Gebäude; <c>null</c> = <see cref="GebaeudeImportCtrl.LesenQuellen"/>.</param>
+        /// <param name="zuordnungen">Die Zuordnungen je Quelle; <c>null</c> = <see cref="GebaeudeImportCtrl.LesenZuordnungen"/>.</param>
+        /// <param name="anreicherer">Reichert an; <c>null</c> = <see cref="GebaeudeExportAblauf.Anreichern"/>. Ein Prüfstand
+        /// stellt hier eine Verweigerung oder eine Bilanz ein.</param>
         internal GebaeudeExportHuelle(int idProjekt, int idZ, string name, bool? ios = null,
                                       Func<int, int, GebaeudeExportSatz> leser = null,
-                                      Func<GebaeudeExportProfil> profil = null)
+                                      Func<GebaeudeExportProfil> profil = null,
+                                      Func<GebaeudeExportPlan, Stream, GebaeudeExportProfil, GebaeudeExportBilanz> schreiber = null,
+                                      Func<int, List<ImportquelleModel>> quellen = null,
+                                      Func<int, List<ImportzuordnungModel>> zuordnungen = null,
+                                      Func<GebaeudeExportPlan, Stream, ImportquelleModel, IReadOnlyList<ImportzuordnungModel>, Stream,
+                                           GebaeudeExportProfil, GebaeudeAnreicherungBilanz> anreicherer = null)
         {
+            _quellen = quellen ?? (g => new GebaeudeImportCtrl().LesenQuellen(g));
+            _zuordnungen = zuordnungen ?? (q => new GebaeudeImportCtrl().LesenZuordnungen(q));
+            _anreicherer = anreicherer ?? ((plan, original, quelle, zu, ziel, p)
+                => _ablauf.Anreichern(plan, original, quelle, zu, ziel, p, CancellationToken.None));
+            _schreiber = schreiber ?? ((plan, ziel, p) => _ablauf.Schreiben(plan, ziel, p, CancellationToken.None));
             _idProjekt = idProjekt;
             _idZ = idZ;
             _name = name ?? "";
@@ -94,17 +147,107 @@ namespace WindowsFormsApplication1
         /// <summary>Der Parametersatz dieser Hülle.</summary>
         internal IReadOnlyDictionary<string, object> Gaben(bool geaendert) => new Dictionary<string, object>
         {
-            ["Vorbereiten"] = new Func<string, Task<GebaeudeExportAnsicht>>(Vorbereiten),
-            ["Speichern"] = new Func<string, Task<GebaeudeExportErgebnis>>(Speichern),
+            ["Vorbereiten"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportAnsicht>>(e => Vorbereiten(e?.Plz, e?.Format)),
+            ["Speichern"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>(e => Speichern(e?.Plz, e?.Format)),
+            ["Formate"] = Formate(),
+            ["ZusageOeffnen"] = new Func<Task<string>>(ZusageOeffnen),
+            ["AnreicherungMoeglich"] = new Func<Task<bool>>(AnreicherungMoeglich),
+            ["OriginalWaehlen"] = new Func<Task<GebaeudeAnreicherungWahl>>(OriginalWaehlen),
+            ["Anreichern"] = new Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>(e => Anreichern(e?.Plz)),
             ["GespeicherterStand"] = geaendert,
             ["Texte"] = Texte(_ios),
         };
 
-        /// <summary>Das Textbündel; auf iOS heißt der Speicherknopf „Speichern und teilen…".</summary>
+        /// <summary>Das Textbündel; auf iOS heißen Speicher- und Zusageknopf „… teilen…".</summary>
         internal static GebaeudeExportTexte Texte(bool ios) => new GebaeudeExportTexte
         {
             Speichern = ios ? R.GEXP_BTN_SPEICHERN_IOS : R.GEXP_BTN_SPEICHERN,
+            Zusage = ios ? R.GEXP_BTN_ZUSAGE_IOS : R.GEXP_BTN_ZUSAGE,
         };
+
+        /// <summary>
+        /// Die wählbaren Formate in Anzeigereihenfolge — gbXML (Vorgabe) und IFC. Der Steuerwert ist der
+        /// Persistenzwert <see cref="GebaeudeQuelle"/>.<c>FORMAT_*</c>, die Texte kommen aus den Ressourcen;
+        /// IFC führt die Exportzusage (IDS).
+        /// </summary>
+        internal static IReadOnlyList<GebaeudeExportFormat> Formate() => new[]
+        {
+            new GebaeudeExportFormat(GebaeudeQuelle.FORMAT_GBXML, R.GEXP_FORMAT_GBXML, R.GEXP_STUFE_SCHEMATISCH),
+            new GebaeudeExportFormat(GebaeudeQuelle.FORMAT_IFC, R.GEXP_FORMAT_IFC, R.GEXP_STUFE_DATEN, MitZusage: true,
+                                     MitAnreicherung: true),
+        };
+
+        /// <summary>Der Steuerwert eines Formats; leer = gbXML.</summary>
+        internal static string Formatwert(string format)
+            => string.IsNullOrWhiteSpace(format) ? GebaeudeQuelle.FORMAT_GBXML : format.Trim();
+
+        /// <summary>
+        /// Das Profil zum Format: dasselbe Profil, wenn das Format schon stimmt, sonst eine Kopie mit
+        /// Sprache, Uhr, Lizenztyp, Fassung und Gebäudearten des Vorbilds. Ein unbekanntes Format wirft.
+        /// </summary>
+        internal static GebaeudeExportProfil MitFormat(GebaeudeExportProfil vorbild, string format)
+        {
+            string wert = Formatwert(format);
+            if (string.Equals(vorbild.Format, wert, StringComparison.Ordinal)) return vorbild;
+            return new GebaeudeExportProfil(vorbild.Sprache, vorbild.Uhr, vorbild.Testlizenz, vorbild.Programmversion,
+                                            vorbild.Gebaeudetypen, wert);
+        }
+
+        /// <summary>Der Dateifilter des Speicherdialogs: Dateityp aus den Ressourcen, Muster aus dem Profil.</summary>
+        internal static string Dateifilter(GebaeudeExportProfil profil)
+            => (profil.IstIfc ? R.GEXP_DATEITYP_IFC : R.GEXP_DATEITYP_GBXML) + " " + profil.Dateifilter;
+
+        /// <summary>Die Endung zum Dateifilter des Profils (<c>.xml</c>, <c>.ifc</c>).</summary>
+        internal static string Endung(GebaeudeExportProfil profil)
+        {
+            string filter = profil.Dateifilter;
+            int i = filter.LastIndexOf("*.", StringComparison.Ordinal);
+            return i < 0 ? ".xml" : filter.Substring(i + 1).Trim();
+        }
+
+        /// <summary>Der Ort der Exportzusage: neben der Vorlagendatenbank der Auslieferung.</summary>
+        internal static string ZusagePfad(string auslieferungsvorlage)
+        {
+            string ordner = string.IsNullOrEmpty(auslieferungsvorlage) ? "" : Path.GetDirectoryName(auslieferungsvorlage) ?? "";
+            return Path.Combine(ordner, ZUSAGE_DATEI);
+        }
+
+        /// <summary>
+        /// Die Exportzusage der Auslieferung: neben der Vorlagendatenbank (<see cref="IPfade.Auslieferungsvorlage"/>,
+        /// unter Windows <c>{app}\Vorlage</c>), ersatzweise im Unterordner <c>Vorlage</c> neben dem Ordner der
+        /// Berichtsvorlagen (auf iOS das Anwendungspaket, dorthin legt die <c>MauiAsset</c>-Zeile sie). Liegt
+        /// sie an keinem der Orte, ist es der erste — die Meldung nennt, wo gesucht wurde.
+        /// </summary>
+        internal static string ZusageFinden(IPfade pfade)
+        {
+            string erster = ZusagePfad(pfade.Auslieferungsvorlage);
+            if (File.Exists(erster)) return erster;
+            string berichte = pfade.Berichtsvorlagen;
+            string paket = string.IsNullOrEmpty(berichte) ? null : Path.GetDirectoryName(berichte.TrimEnd('/', '\\'));
+            if (!string.IsNullOrEmpty(paket))
+            {
+                string zweiter = Path.Combine(paket, "Vorlage", ZUSAGE_DATEI);
+                if (File.Exists(zweiter)) return zweiter;
+            }
+            return erster;
+        }
+
+        /// <summary>
+        /// Öffnet (Windows) bzw. teilt (iOS) die Exportzusage. <c>null</c> bei Erfolg, sonst der benannte
+        /// Grund: Die Datei fehlt, oder die Plattform kann sie nicht öffnen.
+        /// </summary>
+        internal async Task<string> ZusageOeffnen()
+        {
+            string pfad;
+            try { pfad = ZusageFinden(Dienste.Pfade); }
+            catch (Exception ex) { return Format(R.GEXP_MSG_ZUSAGE_FEHLT, ex.Message); }
+            if (!File.Exists(pfad)) return Format(R.GEXP_MSG_ZUSAGE_FEHLT, pfad);
+
+            bool offen;
+            try { offen = await Kulturweitergabe.Starten(() => Dienste.Datei.MitSystemOeffnen(pfad)); }
+            catch (Exception) { offen = false; }
+            return offen ? null : Format(R.GEXP_MSG_ZUSAGE_FEHLER, pfad);
+        }
 
         /// <summary>Die Beschriftung des Knopfs im Gebäudedialog — auf iOS mit „teilen".</summary>
         internal static string Knopftext(bool? ios = null)
@@ -132,12 +275,12 @@ namespace WindowsFormsApplication1
         /// Bildet den Plan zur Postleitzahl und gibt seine Ansicht. Wirft nicht: Was sich nicht lesen lässt,
         /// kommt als Ablehnung mit Grund zurück.
         /// </summary>
-        internal async Task<GebaeudeExportAnsicht> Vorbereiten(string plz)
+        internal async Task<GebaeudeExportAnsicht> Vorbereiten(string plz, string format = GebaeudeQuelle.FORMAT_GBXML)
         {
             try
             {
                 GebaeudeExportSatz satz = await Satz();
-                return Ansicht(_ablauf.Vorbereiten(satz.MitPlz(plz), _profil()));
+                return Ansicht(_ablauf.Vorbereiten(satz.MitPlz(plz), MitFormat(_profil(), format)));
             }
             catch (Exception ex)
             {
@@ -147,10 +290,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Speicherweg: Plan zur Postleitzahl, Dateiwahl der Plattform, Schreiben — ganz oder gar nicht —,
-        /// auf iOS danach das Teilen. Eine abgebrochene Dateiwahl ist <see cref="GebaeudeExportErgebnis.Abbruch"/>.
+        /// Der Speicherweg: Plan zur Postleitzahl und zum Format, Schreiben in den Speicher, Dateiwahl der
+        /// Plattform, Datei — ganz oder gar nicht —, auf iOS danach das Teilen. Eine abgebrochene Dateiwahl ist
+        /// <see cref="GebaeudeExportErgebnis.Abbruch"/>; ein abgebrochenes Schreiben (<c>Bytes == 0</c>) kommt
+        /// mit seinen Meldungen zurück, ohne Dateiwahl, Datei und Teilen.
         /// </summary>
-        internal async Task<GebaeudeExportErgebnis> Speichern(string plz)
+        internal async Task<GebaeudeExportErgebnis> Speichern(string plz, string format = GebaeudeQuelle.FORMAT_GBXML)
         {
             Speicherungen++;
             GebaeudeExportPlan plan;
@@ -158,7 +303,7 @@ namespace WindowsFormsApplication1
             try
             {
                 GebaeudeExportSatz satz = await Satz();
-                profil = _profil();
+                profil = MitFormat(_profil(), format);
                 plan = _ablauf.Vorbereiten(satz.MitPlz(plz), profil);
             }
             catch (Exception ex)
@@ -168,14 +313,28 @@ namespace WindowsFormsApplication1
             if (plan.Abgelehnt)
                 return new GebaeudeExportErgebnis(false, false, Format(R.GEXP_ABGELEHNT, Text(plan.Ablehnung)));
 
-            string pfad = await Dienste.Datei.DateiSpeichernAsync(R.GEXP_DATEIDIALOG_TITEL, R.GEXP_DATEIFILTER,
-                                                                   Dateivorschlag(_name, _satz?.Gebaeude?.ID_Gebaeude ?? 0, _ios));
-            if (string.IsNullOrWhiteSpace(pfad)) return GebaeudeExportErgebnis.Abbruch;
-
-            long bytes;
+            (GebaeudeExportBilanz Bilanz, byte[] Inhalt) geschrieben;
             try
             {
-                bytes = await Kulturweitergabe.Starten(() => SchreibenNach(pfad, plan, profil));
+                geschrieben = await Kulturweitergabe.Starten(() => SchreibenInSpeicher(plan, profil));
+            }
+            catch (Exception ex)
+            {
+                return new GebaeudeExportErgebnis(false, false, Format(R.GEXP_MSG_FEHLER, ex.Message));
+            }
+            if (geschrieben.Bilanz.Bytes == 0 || geschrieben.Inhalt.Length == 0)
+                return new GebaeudeExportErgebnis(false, false, R.GEXP_MSG_NICHTS_GESCHRIEBEN,
+                                                  Meldungen(geschrieben.Bilanz.Meldungen));
+
+            string pfad = await Dienste.Datei.DateiSpeichernAsync(R.GEXP_DATEIDIALOG_TITEL, Dateifilter(profil),
+                                                                   Dateivorschlag(_name, _satz?.Gebaeude?.ID_Gebaeude ?? 0, _ios,
+                                                                                  Endung(profil)));
+            if (string.IsNullOrWhiteSpace(pfad)) return GebaeudeExportErgebnis.Abbruch;
+
+            long bytes = geschrieben.Inhalt.LongLength;
+            try
+            {
+                await Kulturweitergabe.Starten(() => { File.WriteAllBytes(pfad, geschrieben.Inhalt); return bytes; });
             }
             catch (Exception ex)
             {
@@ -183,6 +342,178 @@ namespace WindowsFormsApplication1
             }
 
             string text = Format(R.GEXP_MSG_GESPEICHERT, pfad, bytes);
+            if (_ios)
+            {
+                bool geteilt;
+                try { geteilt = Dienste.Datei.MitSystemOeffnen(pfad); }
+                catch (Exception) { geteilt = false; }
+                if (!geteilt) text = Format(R.GEXP_MSG_TEILEN_FEHLER, pfad);
+            }
+            return new GebaeudeExportErgebnis(true, false, text);
+        }
+
+        // =================================================================================
+        // Anreicherung der Originaldatei (Stufe G7d)
+        // =================================================================================
+
+        /// <summary>Die Importquellen des Gebäudes — abseits des Oberflächenfadens; leer ohne Gebäude.</summary>
+        private async Task<List<ImportquelleModel>> Quellen()
+        {
+            GebaeudeExportSatz satz = await Satz();
+            int idGebaeude = satz?.Gebaeude?.ID_Gebaeude ?? 0;
+            if (idGebaeude <= 0) return new List<ImportquelleModel>();
+            return await Kulturweitergabe.Starten(() => _quellen(idGebaeude)) ?? new List<ImportquelleModel>();
+        }
+
+        /// <summary>
+        /// Hat das Gebäude eine IFC-Importquelle? Nur dann bietet der Dialog die Anreicherung an. Wirft nicht:
+        /// Was sich nicht lesen lässt, ist „nein".
+        /// </summary>
+        internal async Task<bool> AnreicherungMoeglich()
+        {
+            try
+            {
+                return GebaeudeExportAblauf.AnreicherungsQuelle(await Quellen(), Array.Empty<byte>()) != null;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Die Wahl der Originaldatei: Dateiwähler der Plattform (<c>DateiOeffnenAsync</c>, Filter IFC), die Datei
+        /// einmal in den Speicher, die Importquelle dazu und die Vorschau der Anreicherung. <c>null</c> = die
+        /// Dateiwahl ist abgebrochen (die bisherige Wahl bleibt). Eine nicht lesbare Datei, eine fremde oder
+        /// gesperrte Quelle kommen als Verweigerung mit Grund zurück.
+        /// </summary>
+        internal async Task<GebaeudeAnreicherungWahl> OriginalWaehlen()
+        {
+            GebaeudeExportProfil ifc = MitFormat(_profil(), GebaeudeQuelle.FORMAT_IFC);
+            string pfad = await Dienste.Datei.DateiOeffnenAsync(R.GEXP_ANR_DATEIDIALOG_TITEL, Dateifilter(ifc), null);
+            if (string.IsNullOrWhiteSpace(pfad)) return null;
+
+            string name = GebaeudeQuelle.NurName(pfad);
+            _original = null;
+            _originalName = name;
+            _quelle = null;
+            byte[] inhalt;
+            try
+            {
+                inhalt = await Kulturweitergabe.Starten(() => File.ReadAllBytes(pfad));
+            }
+            catch (Exception ex)
+            {
+                return new GebaeudeAnreicherungWahl(name, R.GEXP_ANR_KEINE_QUELLE, Array.Empty<GebaeudeExportMeldung>(),
+                                                    Format(R.GEXP_ANR_MSG_LESEFEHLER, ex.Message));
+            }
+
+            ImportquelleModel quelle;
+            IReadOnlyList<PruefMeldung> vorschau;
+            try
+            {
+                quelle = GebaeudeExportAblauf.AnreicherungsQuelle(await Quellen(), inhalt);
+                vorschau = await Kulturweitergabe.Starten(() =>
+                {
+                    using var strom = new MemoryStream(inhalt, writable: false);
+                    return _ablauf.AnreicherungVorschau(strom, quelle);
+                });
+            }
+            catch (Exception ex)
+            {
+                return new GebaeudeAnreicherungWahl(name, R.GEXP_ANR_KEINE_QUELLE, Array.Empty<GebaeudeExportMeldung>(),
+                                                    Format(R.GEXP_ANR_MSG_LESEFEHLER, ex.Message));
+            }
+
+            PruefMeldung sperre = vorschau.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
+            if (sperre == null)
+            {
+                _original = inhalt;
+                _quelle = quelle;
+            }
+            return new GebaeudeAnreicherungWahl(name, Quelltext(quelle), Meldungen(vorschau),
+                                                sperre == null ? null : Text(sperre));
+        }
+
+        /// <summary>Die Importquelle als Anzeigetext: Dateiname und Importzeitpunkt in der Oberflächenkultur.</summary>
+        internal static string Quelltext(ImportquelleModel quelle)
+        {
+            if (quelle == null) return R.GEXP_ANR_KEINE_QUELLE;
+            string zeit = quelle.Zeitpunkt ?? "";
+            if (DateTime.TryParse(zeit, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime t))
+                zeit = t.ToString("g", CultureInfo.CurrentCulture);
+            return Format(R.GEXP_ANR_QUELLE, quelle.Dateiname ?? "", zeit);
+        }
+
+        /// <summary>
+        /// Der Weg der Anreicherung: Plan zur Postleitzahl im Format IFC, die Zuordnungen der Quelle, Anreichern in
+        /// den Speicher, dann die Dateiwahl mit dem Vorschlag <c>…_EPOS.ifc</c>, die Datei — ganz oder gar nicht —,
+        /// auf iOS das Teilen. Ohne freigegebene Originaldatei, bei einer Verweigerung oder <c>Bytes == 0</c>
+        /// entsteht nichts; die Meldungen kommen mit zurück.
+        /// </summary>
+        internal async Task<GebaeudeExportErgebnis> Anreichern(string plz)
+        {
+            Speicherungen++;
+            if (_original == null || _quelle == null)
+                return new GebaeudeExportErgebnis(false, false, R.GEXP_ANR_SPERRE_DATEI);
+
+            GebaeudeExportPlan plan;
+            GebaeudeExportProfil profil;
+            IReadOnlyList<ImportzuordnungModel> zuordnungen;
+            try
+            {
+                GebaeudeExportSatz satz = await Satz();
+                profil = MitFormat(_profil(), GebaeudeQuelle.FORMAT_IFC);
+                plan = _ablauf.Vorbereiten(satz.MitPlz(plz), profil);
+                int idQuelle = _quelle.ID;
+                zuordnungen = plan.Abgelehnt ? null
+                    : await Kulturweitergabe.Starten(() => _zuordnungen(idQuelle)) ?? new List<ImportzuordnungModel>();
+            }
+            catch (Exception ex)
+            {
+                return new GebaeudeExportErgebnis(false, false, Format(R.GEXP_MSG_VORBEREITUNG_FEHLER, ex.Message));
+            }
+            if (plan.Abgelehnt)
+                return new GebaeudeExportErgebnis(false, false, Format(R.GEXP_ABGELEHNT, Text(plan.Ablehnung)));
+
+            byte[] original = _original;
+            ImportquelleModel quelle = _quelle;
+            (GebaeudeAnreicherungBilanz Bilanz, byte[] Inhalt) geschrieben;
+            try
+            {
+                geschrieben = await Kulturweitergabe.Starten(() =>
+                {
+                    using var ein = new MemoryStream(original, writable: false);
+                    using var aus = new MemoryStream();
+                    GebaeudeAnreicherungBilanz b = _anreicherer(plan, ein, quelle, zuordnungen, aus, profil);
+                    return (b, aus.ToArray());
+                });
+            }
+            catch (Exception ex)
+            {
+                return new GebaeudeExportErgebnis(false, false, Format(R.GEXP_MSG_FEHLER, ex.Message));
+            }
+            GebaeudeAnreicherungBilanz bilanz = geschrieben.Bilanz;
+            if (bilanz == null || bilanz.Verweigert || !bilanz.Geschrieben || bilanz.Bytes == 0 || geschrieben.Inhalt.Length == 0)
+                return new GebaeudeExportErgebnis(false, false, R.GEXP_ANR_MSG_NICHTS_GESCHRIEBEN,
+                                                  Meldungen(bilanz?.Meldungen));
+
+            string pfad = await Dienste.Datei.DateiSpeichernAsync(R.GEXP_DATEIDIALOG_TITEL, Dateifilter(profil),
+                                                                   GebaeudeExportAblauf.Dateivorschlag(_originalName));
+            if (string.IsNullOrWhiteSpace(pfad)) return GebaeudeExportErgebnis.Abbruch;
+
+            long bytes = geschrieben.Inhalt.LongLength;
+            try
+            {
+                await Kulturweitergabe.Starten(() => { File.WriteAllBytes(pfad, geschrieben.Inhalt); return bytes; });
+            }
+            catch (Exception ex)
+            {
+                return new GebaeudeExportErgebnis(false, false, Format(R.GEXP_MSG_FEHLER, ex.Message));
+            }
+
+            string text = Format(R.GEXP_ANR_MSG_GESPEICHERT, pfad, bytes, bilanz.Objekte, bilanz.Ergaenzt,
+                                 bilanz.Ersetzt, bilanz.Uebersprungen);
             if (_ios)
             {
                 bool geteilt;
@@ -203,14 +534,15 @@ namespace WindowsFormsApplication1
             return _satz;
         }
 
-        /// <summary>Schreibt erst in den Speicher, dann die Datei — ein Fehler hinterlässt keine halbe Datei.</summary>
-        private long SchreibenNach(string pfad, GebaeudeExportPlan plan, GebaeudeExportProfil profil)
+        /// <summary>
+        /// Schreibt in den Speicher — die Datei entsteht erst danach, ein Fehler oder Abbruch hinterlässt
+        /// keine halbe und keine leere Datei.
+        /// </summary>
+        private (GebaeudeExportBilanz, byte[]) SchreibenInSpeicher(GebaeudeExportPlan plan, GebaeudeExportProfil profil)
         {
             using var speicher = new MemoryStream();
-            _ablauf.Schreiben(plan, speicher, profil, CancellationToken.None);
-            byte[] inhalt = speicher.ToArray();
-            File.WriteAllBytes(pfad, inhalt);
-            return inhalt.LongLength;
+            GebaeudeExportBilanz bilanz = _schreiber(plan, speicher, profil);
+            return (bilanz, speicher.ToArray());
         }
 
         // =================================================================================
@@ -219,13 +551,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Ansicht eines Plans: jede Meldung als Anzeigetext, die Ablehnung als Grund.</summary>
         internal static GebaeudeExportAnsicht Ansicht(GebaeudeExportPlan plan)
-        {
-            var meldungen = plan.Meldungen
+            => new GebaeudeExportAnsicht(Meldungen(plan.Meldungen), plan.Abgelehnt ? Text(plan.Ablehnung) : null);
+
+        /// <summary>Meldungen des Kerns als Anzeigezeilen.</summary>
+        internal static IReadOnlyList<GebaeudeExportMeldung> Meldungen(IEnumerable<PruefMeldung> meldungen)
+            => (meldungen ?? Array.Empty<PruefMeldung>())
                 .Select(m => new GebaeudeExportMeldung(Stufe(m.Stufe), GanglinienProtokollText.StufeText(m.Stufe),
                                                        Text(m), m.Schluessel))
                 .ToList();
-            return new GebaeudeExportAnsicht(meldungen, plan.Abgelehnt ? Text(plan.Ablehnung) : null);
-        }
 
         /// <summary>Der Anzeigetext einer Meldung; ein Wert, der ein Grundcode ist, wird mit übersetzt.</summary>
         internal static string Text(PruefMeldung m)
@@ -256,7 +589,7 @@ namespace WindowsFormsApplication1
         /// Der Dateivorschlag: der Gebäudename, ohne Zeichen, die ein Dateisystem nicht nimmt; auf iOS mit
         /// der Gebäude-ID dahinter, damit ein zweites Gebäude gleichen Namens die Datei nicht still ersetzt.
         /// </summary>
-        internal static string Dateivorschlag(string name, int idGebaeude, bool ios)
+        internal static string Dateivorschlag(string name, int idGebaeude, bool ios, string endung = ".xml")
         {
             var sb = new StringBuilder();
             foreach (char c in (name ?? "").Trim())
@@ -264,7 +597,7 @@ namespace WindowsFormsApplication1
             string stamm = sb.ToString().Trim().TrimEnd('.');
             if (stamm.Length == 0) stamm = GebaeudeExportProfil.PROGRAMMNAME;
             if (ios && idGebaeude > 0) stamm += "_" + idGebaeude.ToString(CultureInfo.InvariantCulture);
-            return stamm + ".xml";
+            return stamm + (string.IsNullOrEmpty(endung) ? ".xml" : endung);
         }
 
         private static string Format(string vorlage, params object[] werte)

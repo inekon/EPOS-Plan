@@ -628,7 +628,7 @@ Der Anwenderwunsch W6‑E‑2 („Wechselrichter – ausgegraut. Import liegt ni
 Anlegen/Bearbeiten liegt nicht vor …") holt die hier zweimal zurückgestellten Punkte nach vorn —
 Entscheidungsfrage **Q5** (Wechselrichter als Anlagenparameter statt eigenem Katalog) und Stufe
 **E3** (Stringauslegung); sie sind deshalb in ein eigenes Papier
-[`Konzept_Wechselrichter_EPOS-Plan.md`](Konzept_Wechselrichter_EPOS-Plan.md) ausgelagert, samt
+[`Konzept_Wechselrichter_EPOS-Plan.md`](../ueberholt/Konzept_Wechselrichter_EPOS-Plan.md) ausgelagert, samt
 Mockup `Dokumentation/aktuell/Mockups/Wechselrichter_Mockup_2026-09-06.html`. Es schlägt einen
 Katalog `Tab_Wechselrichter_STAMM` mit Projektkopie, die Strangzuordnung `Z_AnlageStrang`
 (Migrationsschritte ab 97), eine Kennlinie aus sechs Stützstellen, den CEC-Wechselrichterimport und den Rechenweg
@@ -636,4 +636,4 @@ Module → Strang → MPPT → Gerät → Clipping vor; **ohne Strangzuordnung b
 Papiers Zeichen für Zeichen erhalten**, damit die Bitgleichheit gegen
 `Referenzlaeufe/2026-09-05_R2_Zeitbasis` bestehen bleibt. Alle zehn Entscheidungsfragen
 W6‑E‑2‑Q1…Q10 sind am 06.09.2026 entschieden, die Stufen S1, S2 und S3 sind umgesetzt
-(siehe [`Konzept_Wechselrichter_EPOS-Plan.md`](Konzept_Wechselrichter_EPOS-Plan.md), Kapitel 8).
+(siehe [`Konzept_Wechselrichter_EPOS-Plan.md`](../ueberholt/Konzept_Wechselrichter_EPOS-Plan.md), Kapitel 8).

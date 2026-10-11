@@ -156,6 +156,120 @@ namespace WindowsFormsApplication1
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string VorlageExcelDatei { get; set; }
 
+        // --- Protokoll: der zuletzt erstellte Bericht (Konzept Navigation Berichte & Kosten, A3) ---
+
+        /// <summary>
+        /// Zeitpunkt, zu dem für diese Vergleichsgruppe zuletzt ein Bericht erfolgreich erstellt
+        /// wurde — Ortszeit, invariant im Format <see cref="ZEITFORMAT"/>; <c>null</c> = noch keiner.
+        ///
+        /// <para><b>Kein Feld der Eingabe:</b> Geschrieben wird er allein über
+        /// <c>BerichtCtrl.MerkeErstellt</c>; <c>BerichtCtrl.Speichere</c> behält den gespeicherten
+        /// Wert, solange die übergebene Konfiguration keinen neueren trägt — sonst löschte jedes
+        /// Merken der Häkchen oder der Vorlagenwahl den Zeitpunkt. Er steht im JSON der Tabelle
+        /// <c>Berichtskonfiguration</c> und braucht deshalb keinen Schemaschritt; ohne Wert wird
+        /// er nicht geschrieben, und ältere Fassungen lesen das JSON unverändert.</para>
+        /// </summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string ZuletztErstellt { get; set; }
+
+        /// <summary>Das Format von <see cref="ZuletztErstellt"/> (invariant, sekundengenau).</summary>
+        public const string ZEITFORMAT = "yyyy-MM-ddTHH:mm:ss";
+
+        /// <summary>
+        /// <see cref="ZuletztErstellt"/> als Zeitpunkt; <c>null</c>, wenn keiner gespeichert ist
+        /// oder der Text sich nicht lesen lässt (duldsam wie der übrige Leseweg).
+        /// </summary>
+        [JsonIgnore]
+        public DateTime? ZuletztErstelltAm
+        {
+            get { return LiesZeitstempel(ZuletztErstellt); }
+        }
+
+        /// <summary>Liest einen Text im Format <see cref="ZEITFORMAT"/>; <c>null</c> = leer oder unlesbar.</summary>
+        public static DateTime? LiesZeitstempel(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return null;
+            return DateTime.TryParseExact(text.Trim(), ZEITFORMAT, CultureInfo.InvariantCulture,
+                                          DateTimeStyles.None, out DateTime zeit)
+                ? zeit
+                : (DateTime?)null;
+        }
+
+        /// <summary>Der Text für <see cref="ZuletztErstellt"/> zu einem Zeitpunkt.</summary>
+        public static string Zeitstempel(DateTime zeitpunkt)
+        {
+            return zeitpunkt.ToString(ZEITFORMAT, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582): der Schlüssel aus
+        /// <see cref="WirtschaftlichkeitSzenario"/> — <see cref="WirtschaftlichkeitSzenario.ERWARTET"/> (Vorgabe),
+        /// <see cref="WirtschaftlichkeitSzenario.BEST"/> oder <see cref="WirtschaftlichkeitSzenario.WORST"/>. Gemerkt wie
+        /// die übrige Auswahl mit „Erstellen“, ohne Schemaschritt. Tolerant gelesen wie <see cref="VorlageWordQuelle"/>;
+        /// ein fehlendes, leeres oder unbekanntes Feld liest sich als Erwartet
+        /// (<see cref="WirtschaftlichkeitSzenario.Normiere"/>) — Altbestand und alte Vorlagenpakete bleiben gültig.
+        /// </summary>
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        public string Szenario
+        {
+            get { return _szenario; }
+            set { _szenario = WirtschaftlichkeitSzenario.Normiere(value); }
+        }
+
+        private string _szenario = WirtschaftlichkeitSzenario.ERWARTET;
+
+        /// <summary>Szenariodarstellung: ein Szenario (<see cref="Szenario"/>) im ganzen Baustein — die Vorgabe.</summary>
+        public const string DARSTELLUNG_EINZELN = "EINZELN";
+
+        /// <summary>
+        /// Szenariodarstellung „Alle drei Szenarien (VALERI)“ (Etappe VB‑E1, Entscheide VB‑Q2 a, VB‑Q3 a): je Stand eine
+        /// Tafel „Kennzahlen je Szenario“ mit Ungünstig | Erwartet | Günstig; alle übrigen Tafeln, Bilder und Positionen
+        /// stehen im Leitszenario Erwartet.
+        /// </summary>
+        public const string DARSTELLUNG_VALERI = "VALERI";
+
+        /// <summary>
+        /// Die Szenariodarstellung des Wirtschaftlichkeitsberichts: <see cref="DARSTELLUNG_EINZELN"/> (Vorgabe) oder
+        /// <see cref="DARSTELLUNG_VALERI"/>. Ein eigenes Feld neben <see cref="Szenario"/>, das davon unberührt bleibt.
+        /// Duldsam gelesen (<see cref="NormiereDarstellung"/>): fehlend, leer, unbekannt oder von anderer Art heißt
+        /// einzeln. Geschrieben wird das Feld nur in VALERI-Darstellung — das JSON einer Einzelwahl bleibt byte-gleich,
+        /// und ältere Fassungen lesen es unverändert.
+        /// </summary>
+        [JsonIgnore]
+        public string Szenariodarstellung
+        {
+            get { return _szenariodarstellung; }
+            set { _szenariodarstellung = NormiereDarstellung(value); }
+        }
+
+        private string _szenariodarstellung = DARSTELLUNG_EINZELN;
+
+        /// <summary>Steht der Wirtschaftlichkeitsbericht in VALERI-Darstellung?</summary>
+        [JsonIgnore]
+        public bool IstValeri { get { return _szenariodarstellung == DARSTELLUNG_VALERI; } }
+
+        /// <summary>Das Feld <see cref="Szenariodarstellung"/> im JSON: nur in VALERI-Darstellung geschrieben.</summary>
+        [JsonInclude]
+        [JsonPropertyName(nameof(Szenariodarstellung))]
+        [JsonConverter(typeof(TolerantTextKonverter))]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        private string SzenariodarstellungJson
+        {
+            get { return IstValeri ? DARSTELLUNG_VALERI : null; }
+            set { Szenariodarstellung = value; }
+        }
+
+        /// <summary>
+        /// Der Schlüssel einer Szenariodarstellung: <see cref="DARSTELLUNG_VALERI"/> (Groß-/Kleinschreibung und Rand
+        /// gleich), sonst <see cref="DARSTELLUNG_EINZELN"/>.
+        /// </summary>
+        public static string NormiereDarstellung(string wert)
+        {
+            return string.Equals(wert?.Trim(), DARSTELLUNG_VALERI, StringComparison.OrdinalIgnoreCase)
+                ? DARSTELLUNG_VALERI : DARSTELLUNG_EINZELN;
+        }
+
         /// <summary>Standardkonfiguration (Bausteine laut Katalog-Standard).</summary>
         public static BerichtsKonfiguration Standard()
         {

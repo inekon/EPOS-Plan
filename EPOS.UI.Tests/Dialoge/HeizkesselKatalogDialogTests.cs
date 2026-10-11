@@ -4,6 +4,7 @@ using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -91,18 +92,19 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
     // =================================================================================
 
     [Fact]
-    public void Die_zwei_Gruppen_der_Karte_stehen()
+    public void Die_drei_Gruppen_der_Karte_stehen()
     {
-        // Seit dem 15.09.2026 nur noch ZWEI: "Kosten", "Emissionen nach BEHG-V" und
-        // "Emissionsfaktoren…" sind entfallen (Anwenderentscheid: der Bearbeiten-Dialog
-        // traegt keine Kosten und keine Emissionen). Aufgerufen werden sie weiterhin
-        // ueber die Knopfleiste.
+        // Seit dem 15.09.2026 ohne "Kosten", "Emissionen nach BEHG-V" und
+        // "Emissionsfaktoren…" (Anwenderentscheid: der Bearbeiten-Dialog traegt keine
+        // Kosten und keine Emissionen; aufgerufen werden sie ueber die Knopfleiste). Dazu
+        // kommt die Gruppe "Kennlinie" (Konzept Kesselkennlinie, Etappe E1).
         var cut = Aufbauen();
 
         var titel = cut.FindAll(".epos-gruppenkopf-titel");
-        Assert.Equal(2, titel.Count);
+        Assert.Equal(3, titel.Count);
         Assert.Equal("Kessel", titel[0].TextContent);
         Assert.Equal("Technische Daten", titel[1].TextContent);
+        Assert.Equal("Kennlinie", titel[2].TextContent);
     }
 
     [Fact]
@@ -116,17 +118,22 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         // Nutzungsdauer und die fuenf Emissionsfaktoren sind entfallen. Die zwei
         // Ganzzahlen (Vorlauf/Ruecklauf) bleiben, ebenso die zwei Texte, die
         // Beschreibung und der Schalter. Von den zwei Auswahllisten bleibt die eine
-        // (Brennstoff) - cb_WartungEinheit gehoerte zu den Kosten.
-        Assert.Equal(4, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);
+        // (Brennstoff) - cb_WartungEinheit gehoerte zu den Kosten. Die Gruppe "Kennlinie"
+        // (Konzept Kesselkennlinie, Etappe E1) bringt drei Zahlenfelder (eta bei 30 % Last,
+        // Mindestleistung, Anfahrverlust), ein Ganzzahlfeld (Mindestlaufzeit) und einen
+        // Schalter (Brennwertkennlinie).
+        Assert.Equal(7, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal(3, cut.FindAll("input[inputmode=numeric]").Count);
         // Zahlen- und Ganzzahlfeld sind ebenfalls type="text" (type="number" wuerde je
         // nach Browsersprache eines der beiden Trennzeichen verweigern) - die reinen
         // Textfelder tragen als einzige KEIN inputmode.
         Assert.Equal(2, cut.FindAll("input[type=text]:not([inputmode])").Count);
-        Assert.Equal(8, cut.FindAll("input[type=text]").Count);
+        Assert.Equal(12, cut.FindAll("input[type=text]").Count);
         Assert.Single(cut.FindAll("textarea"));
-        Assert.Single(cut.FindAll("select"));
-        Assert.Single(cut.FindAll("input[type=checkbox]"));
+        // Die zweite Auswahlliste ist die Einheit des Bereitschaftsverlusts (kW oder % der
+        // Nennleistung, Anwenderentscheid 02.10.2026).
+        Assert.Equal(2, cut.FindAll("select").Count);
+        Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);
 
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
         Assert.Contains("Kesselbezeichnung:", texte);
@@ -137,9 +144,15 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.Contains("Wirkungsgrad Gas, Biogas, Holz und Sonstiges:", texte);
         Assert.Contains("Wirkungsgrad Öl:", texte);
         Assert.Contains("Betriebsbereitschaftsverluste:", texte);
+        Assert.Contains("Einheit Bereitschaftsverlust:", texte);
         Assert.Contains("Brennwertkessel", texte);
         Assert.Contains("Vorlauf:", texte);
         Assert.Contains("Rücklauf:", texte);
+        Assert.Contains("Wirkungsgrad bei 30 % Last:", texte);
+        Assert.Contains("Brennwertkennlinie", texte);
+        Assert.Contains("Mindestleistung:", texte);
+        Assert.Contains("Anfahrverlust je Start:", texte);
+        Assert.Contains("Mindestlaufzeit:", texte);
 
         // Und was NICHT mehr dasteht - der eigentliche Gegenstand der Aenderung.
         Assert.DoesNotContain("Investitionskosten:", texte);
@@ -285,6 +298,233 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.Equal(285.0, uebergeben.NOx);
         Assert.Equal(370.0, uebergeben.CO);
         Assert.Equal(0.0, uebergeben.Staub);
+    }
+
+    // =================================================================================
+    // Die Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1)
+    // =================================================================================
+
+    /// <summary>
+    /// Leer heißt hier „Vorgabe", nicht 0: Die vier Zahlenfelder tragen den Platzhalter,
+    /// ein leeres Feld geht als <c>null</c> an den Speicherweg (die Hülle schreibt NULL),
+    /// ein gepflegter Wert unverändert.
+    /// </summary>
+    [Fact]
+    public void Die_Kennlinie_bleibt_leer_statt_null_zu_werden()
+    {
+        var daten = Bestand();
+        daten.Wirkungsgrad_Teillast30 = 1.07;
+        HeizkesselKatalogDaten? uebergeben = null;
+        var cut = Aufbauen(daten, ueberschreiben: d =>
+        {
+            uebergeben = d;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Name);
+        });
+
+        var dezimal = cut.FindAll("input[inputmode=decimal]");
+        Assert.Equal("1,07", dezimal[4].GetAttribute("value"));
+        foreach (int i in new[] { 5, 6 })
+            Assert.Equal("Vorgabe", dezimal[i].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe", cut.FindAll("input[inputmode=numeric]")[2].GetAttribute("placeholder"));
+        Assert.Contains(cut.FindAll(".epos-leisezeile"), p => p.TextContent.StartsWith("Leer = Vorgabe"));
+
+        cut.FindAll("input[inputmode=decimal]")[4].Input("");
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.NotNull(uebergeben);
+        Assert.Null(uebergeben!.Wirkungsgrad_Teillast30);
+        Assert.Null(uebergeben.Mindestleistung);
+        Assert.Null(uebergeben.Anfahrverlust_kWh);
+        Assert.Null(uebergeben.Mindestlaufzeit_min);
+    }
+
+    /// <summary>
+    /// Die Brennwertkennlinie ist nur beim Brennwertkessel bedienbar; fällt der Schalter
+    /// „Brennwertkessel", fällt sie mit.
+    /// </summary>
+    [Fact]
+    public void Die_Brennwertkennlinie_haengt_am_Brennwertkessel()
+    {
+        var daten = Bestand();
+        daten.Kennlinie_Brennwert = true;
+        var cut = Aufbauen(daten);
+
+        var schalter = cut.FindAll("input[type=checkbox]");
+        Assert.False(schalter[1].HasAttribute("disabled"));
+        Assert.True(schalter[1].HasAttribute("checked"));
+
+        schalter[0].Change(false);
+
+        Assert.False(daten.Brennwert);
+        Assert.False(daten.Kennlinie_Brennwert);
+        Assert.True(cut.FindAll("input[type=checkbox]")[1].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Anwenderentscheid 02.10.2026: Der Bereitschaftsverlust steht in kW ODER % der Nennleistung.
+    /// Die Wahl steht neben dem Wert, kommt aus den Daten und schreibt in den Arbeitsstand; die
+    /// Einheit hinter dem Wertfeld folgt ihr.
+    /// </summary>
+    [Fact]
+    public void Die_Einheit_des_Bereitschaftsverlusts_ist_waehlbar()
+    {
+        var daten = Bestand();
+        var cut = Aufbauen(daten);
+
+        var wahl = cut.FindAll("select")[1];
+        Assert.Equal(new[] { "kW", "% der Nennleistung" }, wahl.QuerySelectorAll("option").Select(o => o.TextContent));
+        Assert.True(wahl.QuerySelector("option[value='1']")!.HasAttribute("selected"));
+        Assert.False(daten.BereitschaftProzent);
+        Assert.Contains("kW", cut.FindAll(".epos-einheit").Select(e => e.TextContent));
+
+        wahl.Change(HeizkesselKatalogDialog.BB_EINHEIT_PROZENT.ToString(CultureInfo.InvariantCulture));
+
+        Assert.True(daten.BereitschaftProzent);
+        Assert.Equal(1.5, daten.Betriebsbereitschaftverlust);       // der Wert bleibt, nur die Einheit wechselt
+        Assert.Contains("%", cut.FindAll(".epos-einheit").Select(e => e.TextContent));
+
+        cut.FindAll("select")[1].Change(HeizkesselKatalogDialog.BB_EINHEIT_KW.ToString(CultureInfo.InvariantCulture));
+        Assert.False(daten.BereitschaftProzent);
+    }
+
+    /// <summary>Eine in Prozent gespeicherte Einheit steht beim Öffnen gewählt da.</summary>
+    [Fact]
+    public void Die_gespeicherte_Prozenteinheit_steht_gewaehlt()
+    {
+        var daten = Bestand();
+        daten.BereitschaftProzent = true;
+        var cut = Aufbauen(daten);
+
+        Assert.True(cut.FindAll("select")[1].QuerySelector("option[value='2']")!.HasAttribute("selected"));
+        Assert.Contains("%", cut.FindAll(".epos-einheit").Select(e => e.TextContent));
+    }
+
+    /// <summary>
+    /// Anwenderentscheid 30.09.2026 („Nur im Kesseldialog"): Ein Brennwertkessel ohne
+    /// Brennwertkennlinie trägt unter dem Schalter einen RUHIGEN Hinweis — eine Herleitungszeile,
+    /// keine Warnkarte: Ohne Kennlinie wirkt der Rücklauf nicht. Mit Kennlinie oder ohne
+    /// Brennwertkessel steht er nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_Brennwertkessel_ohne_Kennlinie_traegt_den_ruhigen_Hinweis()
+    {
+        var daten = Bestand();   // Brennwertkessel, Brennwertkennlinie aus
+        var cut = Aufbauen(daten);
+
+        var hinweis = cut.FindAll(".epos-hzkk-ohne-kennlinie");
+        Assert.Single(hinweis);
+        Assert.Contains("Rücklauf wirkt nicht", hinweis[0].TextContent);
+        Assert.Contains("epos-herleitung", hinweis[0].GetAttribute("class"));
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+        Assert.True(cut.Instance.OhneBrennwertkennlinie);
+
+        // Kennlinie an: Der Hinweis fällt.
+        cut.FindAll("input[type=checkbox]")[1].Change(true);
+        Assert.Empty(cut.FindAll(".epos-hzkk-ohne-kennlinie"));
+
+        // Wieder aus, dann kein Brennwertkessel mehr: Ohne Brennwertkessel steht er nicht.
+        cut.FindAll("input[type=checkbox]")[1].Change(false);
+        Assert.Single(cut.FindAll(".epos-hzkk-ohne-kennlinie"));
+        cut.FindAll("input[type=checkbox]")[0].Change(false);
+        Assert.Empty(cut.FindAll(".epos-hzkk-ohne-kennlinie"));
+        Assert.False(cut.Instance.OhneBrennwertkennlinie);
+    }
+
+    /// <summary>Der Hinweis kommt als Parameter herein — die Hülle setzt ihn aus den Ressourcen (de/en).</summary>
+    [Fact]
+    public void Der_Hinweis_ohne_Kennlinie_laesst_sich_uebersetzen()
+    {
+        const string EN = "Condensing boiler without condensing curve: the return temperature has no effect.";
+        var cut = Render<HeizkesselKatalogDialog>(p => p
+            .Add(x => x.Daten, Bestand())
+            .Add(x => x.Brennstoffe, Brennstoffe)
+            .Add(x => x.HinweisOhneKennlinie, EN));
+
+        Assert.Equal(EN, cut.Find(".epos-hzkk-ohne-kennlinie").TextContent);
+    }
+
+    // =================================================================================
+    // Die kleine Kurve der Gruppe „Kennlinie" (Konzept Kesselkennlinie 5)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Kurve folgt dem ARBEITSSTAND: Jede Eingabe in ein Feld, das sie bestimmt (η₃₀, Schalter
+    /// Brennwertkennlinie), holt das Bild neu — ungespeichert, mit den Feldern, wie der Dialog sie gerade führt. Eine
+    /// Eingabe in ein fremdes Feld holt es nicht: Das Modell bleibt dieselbe Referenz, und <c>DiagrammSvg</c> behält
+    /// seinen Knotenbaum.
+    /// </summary>
+    [Fact]
+    public void Die_Kurve_folgt_dem_Arbeitsstand()
+    {
+        var gesehen = new List<(double? Eta30, bool Kennlinie)>();
+        var daten = Bestand();
+        var cut = Render<HeizkesselKatalogDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Brennstoffe, Brennstoffe)
+            .Add(x => x.Kennlinienbild, d =>
+            {
+                gesehen.Add((d.Wirkungsgrad_Teillast30, d.Kennlinie_Brennwert));
+                return HeizkesselKennlinienbild.Modell(d);
+            }));
+
+        var bild = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>();
+        Assert.Equal("hzkk-kennlinie", bild.Instance.Kennung);
+        Assert.Single(gesehen);
+        Assert.Single(bild.Instance.Modell!.Reihen);   // ohne Brennwertkennlinie eine Linie
+
+        cut.FindAll("input[inputmode=decimal]")[4].Input("1,07");
+        Assert.Equal(2, gesehen.Count);
+        Assert.Equal(1.07, gesehen[^1].Eta30);
+        Assert.Equal(1.07, daten.Wirkungsgrad_Teillast30);   // der Arbeitsstand, nicht gespeichert
+
+        cut.FindAll("input[type=checkbox]")[1].Change(true);
+        Assert.Equal(3, gesehen.Count);
+        Assert.True(gesehen[^1].Kennlinie);
+        Assert.Equal(3, cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell!.Reihen.Count);
+
+        // Ein Feld, das die Kurve nicht bestimmt: kein neues Bild, dieselbe Modellreferenz.
+        var vorher = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell;
+        cut.FindAll("input[type=text]")[1].Input("Anderes Werk");
+        Assert.Equal(3, gesehen.Count);
+        Assert.Same(vorher, cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell);
+        Assert.Equal(3, cut.Instance.Kennlinienbilder);
+    }
+
+    /// <summary>Ohne Delegat steht kein Bild — ein Wirt ohne Kern (Vorschau, Test) zeichnet die Gruppe ohne Kurve.</summary>
+    [Fact]
+    public void Ohne_Delegat_steht_keine_Kurve()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>());
+        Assert.Equal(0, cut.Instance.Kennlinienbilder);
+    }
+
+    /// <summary>
+    /// Die Hülle rechnet das Bild aus DERSELBEN Kernfunktion wie der Lauf (<c>Kesselkennlinie.Kurven</c>): mit
+    /// Brennwertkennlinie drei Rückläufe, die die Prüfpunkte treffen; ohne Energieträger gilt die 1 wie beim
+    /// Speichern, ohne Brennwertkessel wirkt der Schalter Brennwertkennlinie nicht.
+    /// </summary>
+    [Fact]
+    public void Das_Bild_der_Huelle_kommt_aus_der_Kernfunktion_des_Laufs()
+    {
+        var daten = Bestand();   // Erdgas, Brennwertkessel, η₁₀₀ 0,94
+        daten.Wirkungsgrad_Teillast30 = 1.04;
+        daten.Kennlinie_Brennwert = true;
+
+        var m = HeizkesselKennlinienbild.Modell(daten);
+        var kurven = WindowsFormsApplication1.Kesselkennlinie.Kurven(0.94, 0.9, 3, true, "Prüfsatz", 1.04, true);
+        Assert.Equal(3, m.Reihen.Count);
+        for (int i = 0; i < 3; i++)
+            Assert.Equal(kurven[i].Punkte.Select(p => p.Wirkungsgrad), m.Reihen[i].Werte);
+        Assert.Equal(1.04, m.Reihen[0].Werte[2], 12);   // 30 % Last bei 30 °C = η₃₀
+        Assert.Equal(0.94, m.Reihen[2].Werte[^1], 12);  // Nennlast über dem Taupunkt = η₁₀₀
+
+        daten.Brennstoff = null;
+        Assert.Equal(3, HeizkesselKennlinienbild.Modell(daten).Reihen.Count);   // ohne Wahl: 1 (Stadtgas)
+
+        daten.Brennwert = false;   // der Schalter bleibt gesetzt, wirkt aber nur beim Brennwertkessel
+        Assert.Single(HeizkesselKennlinienbild.Modell(daten).Reihen);
+        Assert.Null(HeizkesselKennlinienbild.Modell(null!));
     }
 
     [Fact]

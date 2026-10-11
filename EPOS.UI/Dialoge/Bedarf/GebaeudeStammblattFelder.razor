@@ -9,10 +9,18 @@
        Die Spalte U*A des Editors faellt weg: 340 bis 440 px tragen drei Spalten,
        die Summe steht in der Herleitungszeile.
      * FENSTER NACH ORIENTIERUNG: Nord, Sued, Ost, West; die Summen gerechnet.
-     * KENNGROESSEN: Flaeche je Nutzer, innere Waermegewinne, Raumhoehe,
-       Fensterdurchlassgrad, Luftwechselrate.
-     * ALLE DATEN, aufklappbar: Raumtemperaturen, Ferien, die Modellparameter
-       (VDI 6007) samt Rechenweg und die Kuehlung.
+     * KENNGROESSEN: Flaeche je Nutzer, Raumhoehe, Fensterdurchlassgrad,
+       Luftwechselrate.
+     * ALLE DATEN, aufklappbar: die Modellparameter (VDI 6007) samt Rechenweg, die
+       Waermeuebergabe und die Kuehlung.
+
+   DIE ALTFELDER STEHEN IM BLATT "KONDITIONIERUNG" (E56 F3 (a); Stufe KP2, Welle U4).
+   Sollwerte, Nachtzeit, Ferienzeitraeume, innere Waermegewinne, Infiltration, Nutzerlueftung,
+   Sommerlueftung, Kuehlsollwert und Maximalraumtemperatur traegt das breite Blatt, das die
+   Stammblattgruppe "Konditionierung" des Wirts oeffnet (GebaeudeAdminDialog) - wie der Reiter
+   "Konditionierung" des Katalogeditors. Hier sagt es eine Zeile in "Alle Daten"
+   (HinweisAltfelder); die Befunde dieser Felder springen ins Blatt
+   (GebaeudeArbeitsstand.IstKonditionierungsfeld).
 
    EINE WAHRHEIT. Die Felder schreiben in den ARBEITSSTAND des Wirts
    (GebaeudeArbeitsstand) ueber dieselben Wege wie der Katalogeditor - Bauart und
@@ -109,8 +117,24 @@ else
                                     Wert="@Arbeit.Stand.Kellertemperatur"
                                     WertChanged="@(w => Setze(() => Arbeit.Stand.Kellertemperatur = w))" />
                     }
+                    @* EV1 (E65): der wirksame U-Wert der Bodenplatte als Vorgabe *@
+                    <Zahlenfeld Bezeichnung="@Feld(Texte.LabelErdreichUWirksam)" Einheit="W/(m²K)"
+                                Platzhalter="@Texte.HinweisErdreichUWirksam"
+                                Titel="@(Arbeit.ErdreichVorgabeWirkt ? Texte.HinweisErdreichUWirksam : Texte.SperreErdreichUWirksam)"
+                                Aktiv="@Arbeit.ErdreichVorgabeWirkt"
+                                Feldname="@Feld(Texte.LabelErdreichUWirksam)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.ErdreichUWirksam"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.ErdreichUWirksam = w))" />
                 </KindInhalt>
             </Formularraster>
+            @if (!Arbeit.ErdreichVorgabeWirkt)
+            {
+                <Herleitungszeile Text="@Texte.SperreErdreichUWirksam" />
+            }
+            else if (Arbeit.ErdreichAuskunftZeile(Texte, ErdreichAuskunft?.Invoke(Arbeit.Stand)) is { Length: > 0 } erdreichZeile)
+            {
+                <Herleitungszeile Text="@erdreichZeile" />
+            }
             <Herleitungszeile Text="@Leitwertzeile" />
             <Herleitungszeile Text="@Beschriftungen.HinweisHuelle" />
         </KindInhalt>
@@ -157,10 +181,6 @@ else
                                 Feldname="@Prueftexte.FeldFlaecheNutzer" FehlerZustand="FehlerMelden"
                                 Wert="@Arbeit.Stand.FlaecheNutzer"
                                 WertChanged="@(w => Setze(() => Arbeit.Stand.FlaecheNutzer = w))" />
-                    <Zahlenfeld Bezeichnung="@Beschriftungen.LabelWaermegewinne" Einheit="W" Min="0"
-                                Feldname="@Prueftexte.FeldWaermegewinne" FehlerZustand="FehlerMelden"
-                                Wert="@Arbeit.Stand.Waermegewinne"
-                                WertChanged="@(w => Setze(() => Arbeit.Stand.Waermegewinne = w))" />
                     <Zahlenfeld Bezeichnung="@Beschriftungen.LabelRaumhoehe" Einheit="m" Min="0"
                                 Feldname="@Prueftexte.FeldRaumhoehe" FehlerZustand="FehlerMelden"
                                 Wert="@Arbeit.Stand.Raumhoehe"
@@ -179,86 +199,20 @@ else
         </KindInhalt>
     </Stammblattgruppe>
 
-    @* ---- Alle Daten: Temperaturen, Ferien, Modellparameter, Kuehlung ------ *@
+    @* ---- Alle Daten: Modellparameter, Uebergabe, Kuehlung ----------------- *@
     <Stammblattgruppe Titel="@Beschriftungen.AlleDaten">
         <KindInhalt>
             @Aufklapper
             @if (AlleDatenOffen)
             {
                 <div class="epos-gebaeude-alledaten">
-                    <p class="epos-stammblattwerte-abschnitt">@Beschriftungen.GruppeRaumtemperaturen</p>
-                    <Formularraster>
-                        <KindInhalt>
-                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelSollTag" Einheit="°C"
-                                        Feldname="@Beschriftungen.LabelSollTag" FehlerZustand="FehlerMelden"
-                                        Wert="@Arbeit.Stand.SollTag"
-                                        WertChanged="@(w => Setze(() => Arbeit.Stand.SollTag = w))" />
-                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelNachtAbsenkung" Einheit="°C"
-                                        Feldname="@Beschriftungen.LabelNachtAbsenkung" FehlerZustand="FehlerMelden"
-                                        Wert="@Arbeit.Stand.NachtAbsenkung"
-                                        WertChanged="@(w => Setze(() => Arbeit.Stand.NachtAbsenkung = w))" />
-                            @* Die Nachtzeit (E43) - dieselben Felder wie im Katalogeditor. *@
-                            <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelNachtBeginn" Einheit="h"
-                                          Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
-                                          Platzhalter="@Vorgabe(Nachtzeit.VORGABE_BEGINN)"
-                                          Feldname="@Prueftexte.FeldNachtBeginn" FehlerZustand="FehlerMelden"
-                                          Wert="@Arbeit.Stand.NachtBeginn"
-                                          WertChanged="@(w => Setze(() => Arbeit.Stand.NachtBeginn = w))" />
-                            <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelNachtEnde" Einheit="h"
-                                          Min="@Nachtzeit.STUNDE_MIN" Max="@Nachtzeit.STUNDE_MAX"
-                                          Platzhalter="@Vorgabe(Nachtzeit.VORGABE_ENDE)"
-                                          Feldname="@Prueftexte.FeldNachtEnde" FehlerZustand="FehlerMelden"
-                                          Wert="@Arbeit.Stand.NachtEnde"
-                                          WertChanged="@(w => Setze(() => Arbeit.Stand.NachtEnde = w))" />
-                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelMaxTemperatur" Einheit="°C"
-                                        Feldname="@Beschriftungen.LabelMaxTemperatur" FehlerZustand="FehlerMelden"
-                                        Wert="@Arbeit.Stand.MaxTemperatur"
-                                        WertChanged="@(w => Setze(() => Arbeit.Stand.MaxTemperatur = w))" />
-                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelWEAbsenkung" Einheit="°C"
-                                        Platzhalter="@Texte.PlatzhalterKeine"
-                                        Feldname="@Beschriftungen.LabelWEAbsenkung" FehlerZustand="FehlerMelden"
-                                        Wert="@Arbeit.Stand.WochenendAbsenkung"
-                                        WertChanged="@(w => Setze(() => Arbeit.Stand.WochenendAbsenkung = w))" />
-                            <Zahlenfeld Bezeichnung="@Beschriftungen.LabelSollFerien" Einheit="°C"
-                                        Platzhalter="@Texte.PlatzhalterKeine"
-                                        Feldname="@Beschriftungen.LabelSollFerien" FehlerZustand="FehlerMelden"
-                                        Wert="@Arbeit.Stand.SollFerien"
-                                        WertChanged="@(w => Setze(() => Arbeit.Stand.SollFerien = w))" />
-                        </KindInhalt>
-                    </Formularraster>
-                    <Herleitungszeile Text="@Arbeit.Sollwertzeile" />
-
-                    <p class="epos-stammblattwerte-abschnitt">@Beschriftungen.GruppeFerienAnfang</p>
-                    <Formularraster>
-                        <KindInhalt>
-                            @for (int i = 0; i < 4; i++)
-                            {
-                                int n = i;
-                                <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + Beschriftungen.LabelTag)"
-                                              Min="1" Max="31" Wert="@Arbeit.BeginnTag[n]"
-                                              WertChanged="@(w => Setze(() => Arbeit.BeginnTag[n] = w))" />
-                                <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelMonat" Min="1" Max="12"
-                                              Wert="@Arbeit.BeginnMonat[n]"
-                                              WertChanged="@(w => Setze(() => Arbeit.BeginnMonat[n] = w))" />
-                            }
-                        </KindInhalt>
-                    </Formularraster>
-
-                    <p class="epos-stammblattwerte-abschnitt">@Beschriftungen.GruppeFerienEnde</p>
-                    <Formularraster>
-                        <KindInhalt>
-                            @for (int i = 0; i < 4; i++)
-                            {
-                                int n = i;
-                                <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + Beschriftungen.LabelTag)"
-                                              Min="1" Max="31" Wert="@Arbeit.EndeTag[n]"
-                                              WertChanged="@(w => Setze(() => Arbeit.EndeTag[n] = w))" />
-                                <Ganzzahlfeld Bezeichnung="@Beschriftungen.LabelMonat" Min="1" Max="12"
-                                              Wert="@Arbeit.EndeMonat[n]"
-                                              WertChanged="@(w => Setze(() => Arbeit.EndeMonat[n] = w))" />
-                            }
-                        </KindInhalt>
-                    </Formularraster>
+                    @* Stufe KP2, Welle U4 (E56 F3 (a)): Raumtemperaturen, Nachtzeit, Ferienzeitraeume,
+                       Waermegewinne, Infiltration, Nutzerlueftung, Sommerlueftung, Kuehlsollwert und
+                       Maximalraumtemperatur stehen im Blatt "Konditionierung" - die Zeile sagt, wo. *@
+                    @if (HinweisAltfelder.Length > 0)
+                    {
+                        <Herleitungszeile Text="@HinweisAltfelder" />
+                    }
 
                     <p class="epos-stammblattwerte-abschnitt">@Texte.GruppeModellparameter</p>
                     <Formularraster>
@@ -296,29 +250,14 @@ else
                             <Schalter Bezeichnung="@Texte.LabelAussenStrahlung"
                                       Wert="@Arbeit.Stand.AussenbauteileStrahlung"
                                       WertChanged="@(w => Setze(() => Arbeit.Stand.AussenbauteileStrahlung = w))" />
-                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelInfiltration)" Einheit="1/h" Min="0.01" Max="10"
-                                        Platzhalter="@Arbeit.LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselInfiltration, Texte)"
-                                        Feldname="@Feld(Texte.LabelInfiltration)" FehlerZustand="FehlerMelden"
-                                        Wert="@Arbeit.Stand.LuftwechselInfiltration"
-                                        WertChanged="@(w => Setze(() => Arbeit.Stand.LuftwechselInfiltration = w))" />
-                            <Zahlenfeld Bezeichnung="@Feld(Texte.LabelNutzerlueftung)" Einheit="1/h" Min="0" Max="10"
-                                        Platzhalter="@Arbeit.LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselNutzer, Texte)"
-                                        Feldname="@Feld(Texte.LabelNutzerlueftung)" FehlerZustand="FehlerMelden"
-                                        Wert="@Arbeit.Stand.LuftwechselNutzer"
-                                        WertChanged="@(w => Setze(() => Arbeit.Stand.LuftwechselNutzer = w))" />
-                            <Schalter Bezeichnung="@Texte.LabelSommerlueftung"
-                                      Wert="@Arbeit.Stand.Sommerlueftung"
-                                      WertChanged="@(w => Setze(() => Arbeit.Stand.Sommerlueftung = w))" />
+                            @* Die Lueftung des Stundenmodells (Infiltration, Nutzerlueftung, Sommerlueftung)
+                               steht in der Spalte "Lueftung" des Blatts "Konditionierung" (E56 F3 (a)). *@
                             <Auswahlfeld Bezeichnung="@Feld(Texte.LabelRechenweg)" Eintraege="@Rechenwegeintraege"
                                          Auswahl="@(Arbeit.IstVdi6007 ? 0 : 1)"
                                          AuswahlChanged="@(i => Setze(() => Arbeit.RechenwegWaehlen(i)))" />
                         </KindInhalt>
                     </Formularraster>
                     <Herleitungszeile Text="@Arbeit.Luftwechselzeile(Texte)" />
-                    @if (Arbeit.Stand.Sommerlueftung)
-                    {
-                        <Herleitungszeile Text="@GebaeudeArbeitsstand.Sommerlueftungszeile(Texte)" />
-                    }
                     <Herleitungszeile Text="@Arbeit.Rechenwegzeile(Texte)" />
                     <Herleitungszeile Text="@Texte.HinweisModellparameter" />
 
@@ -333,6 +272,14 @@ else
                                                    Kennung="gebaeude-admin-sollwertprofil" />
 
                     <p class="epos-stammblattwerte-abschnitt">@Texte.GruppeKuehlung</p>
+                    @* Hilfe zur Kuehlung (Konzept Technikdokumentation, Abschnitt 7) -
+                       dasselbe Knopfpaar wie im Katalogeditor (GebaeudeKatalogDialog). *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_Gebaeude_Kuehlung.btn_Help"
+                                   StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" MitAssistent="false" />
+                        <InfoKnopf Schluessel="Form_Gebaeude_Kuehlung.Grundlagen"
+                                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                    </div>
                     <Formularraster>
                         <KindInhalt>
                             <Schalter Bezeichnung="@Texte.LabelKuehlungAktiv"
@@ -340,13 +287,8 @@ else
                                       WertChanged="@(w => Setze(() => Arbeit.KuehlungSetzen(w, Texte)))" />
                             @if (Arbeit.Stand.KuehlungAktiv)
                             {
-                                <Zahlenfeld Bezeichnung="@Feld(Texte.LabelKuehlSollwert)" Einheit="°C"
-                                            Min="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN"
-                                            Max="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX"
-                                            Platzhalter="@Texte.VorgabeKuehlungAus"
-                                            Feldname="@Feld(Texte.LabelKuehlSollwert)" FehlerZustand="FehlerMelden"
-                                            Wert="@Arbeit.Stand.KuehlSollwert"
-                                            WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlSollwert = w))" />
+                                @* Der Kuehlsollwert steht in der Spalte "Kuehlen" des Blatts
+                                   "Konditionierung" (E56 F3 (a)). *@
                                 <Zahlenfeld Bezeichnung="@Feld(Texte.LabelKuehlleistungMax)" Einheit="kW" Min="0.01"
                                             Platzhalter="@Texte.VorgabeUnbegrenzt"
                                             Feldname="@Feld(Texte.LabelKuehlleistungMax)" FehlerZustand="FehlerMelden"
@@ -408,11 +350,20 @@ else
     /// <summary>Die Herleitung der Wärmeübergabe aus dem Kern (über die Hülle); <c>null</c> = ohne Zahl.</summary>
     [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? UebergabeHerleitung { get; set; }
 
+    /// <summary>Die Erdreichauskunft der Bodenplatte (B′ und U_g, EV1/E65); <c>null</c> = keine Auskunftszeile.</summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, ErdreichAuskunftDaten?>? ErdreichAuskunft { get; set; }
+
     /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms; <c>null</c> = kein Bild.</summary>
     [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }
 
     /// <summary>Entprellung der Herleitung [ms]; 0 = sofort (Prüfstand).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>
+    /// Die leise Zeile in „Alle Daten": wo die Altfelder stehen (KOND_TXT_VERWALTUNG_ALTFELDER,
+    /// E56 F3 (a)); leer = keine Zeile.
+    /// </summary>
+    [Parameter] public string HinweisAltfelder { get; set; } = "";
 
     /// <summary>Der Knopf, der „Alle Daten" auf- und zuklappt (derselbe wie der Aufklapper der Parameterübersicht).</summary>
     private RenderFragment Aufklapper => @<button type="button" class="epos-modulparameter-knopf"
@@ -455,9 +406,6 @@ else
         (0, Texte.RechenwegVdi6007),
         (1, Texte.RechenwegTagesbilanz)
     };
-
-    private string Ferienname(int n)
-        => Beschriftungen.Ferienzeitraeume.Count > n ? Beschriftungen.Ferienzeitraeume[n] : "";
 
     private string Vorgabe(double wert) => GebaeudeArbeitsstand.Vorgabe(wert, Texte);
 

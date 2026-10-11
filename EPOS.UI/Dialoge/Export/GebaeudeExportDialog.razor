@@ -1,10 +1,14 @@
-﻿@* GEBAEUDEEXPORT (gbXML) - die Daten EINES Projektgebaeudes als Datei ausgeben (Gebaeudesimulation
-   G7a, Welle W3; Softwarearchitektur 3.2; Ueberlagerung im Gebaeudedialog hinter dem Knopf
-   "Exportieren (gbXML)...").
+﻿@* GEBAEUDEEXPORT (gbXML oder IFC) - die Daten EINES Projektgebaeudes als Datei ausgeben
+   (Gebaeudesimulation G7a/G7c; Softwarearchitektur 3.2; Ueberlagerung im Gebaeudedialog hinter dem
+   Knopf "Exportieren...").
 
-   FEST STEHEN Format (gbXML) und Umfang (Daten ohne Geometrie) - sie sind Text, keine Felder. Frei
-   ist nur die Postleitzahl; sie wird nicht gespeichert und bestimmt, ob die Datei einen Standort
-   und eine Nordrichtung traegt.
+   DAS FORMAT waehlt eine Optionsgruppe (Formate der Huelle: Steuerwert GebaeudeQuelle.FORMAT_*,
+   Anzeigetext und Umfang aus den Ressourcen; Vorgabe der erste Eintrag, gbXML). Der Umfang steht als
+   Text daneben. Ein Formatwechsel bildet den Plan sofort neu - die Meldungen unterscheiden sich je
+   Format - und nimmt die Bestaetigung zurueck. Fuehrt das Format eine Exportzusage (IFC: die IDS der
+   Auslieferung), steht ein Knopf, der sie oeffnet (Windows) bzw. teilt (iOS). Ohne Formatliste
+   (aeltere Wirte) steht das Format als Text. Frei ist dazu die Postleitzahl; sie wird nicht
+   gespeichert und bestimmt, ob die Datei einen Standort und eine Nordrichtung traegt.
 
    VOR DEM SCHREIBEN steht die Meldungsliste des Kerns (GebaeudeExportAblauf.Vorbereiten): was fehlt,
    ersetzt oder gewechselt wird, der Vorbehalt der Ersatzschichtung - und eine Ablehnung. Eine
@@ -20,8 +24,18 @@
 
    GESCHRIEBEN WIRD NUR IM OK-WEG ("Speichern..."): Der Speicherweg der Huelle fragt die Dateiwahl der
    Plattform und schreibt; eine abgebrochene Dateiwahl laesst den Dialog offen und still, ein Fehler
-   steht im Banner, ein Erfolg schliesst den Dialog und gibt die Rueckmeldung (mit Pfad) an den
+   steht im Banner - ein abgebrochenes Schreiben (Schemapruefung des IFC-Schreibers) samt seinen
+   Meldungen in der Liste, ohne Datei und ohne Teilen -, ein Erfolg schliesst den Dialog und gibt die Rueckmeldung (mit Pfad) an den
    Wirt. Abbrechen, Esc und das Kreuz geben null und rufen den Speicherweg nie.
+
+   DIE ORIGINALDATEI ANREICHERN (Stufe G7d, Datenaustauschkonzept 6.6): Fuehrt das gewaehlte Format die
+   Anreicherung (IFC) und hat das Gebaeude eine Importquelle des Formats (Gabe AnreicherungMoeglich), steht
+   eine zweite Wahl "Eigene Datei schreiben" / "Originaldatei anreichern" (Vorgabe: eigene Datei). Beim
+   Anreichern waehlt der Anwender die Originaldatei erneut (Gabe OriginalWaehlen); der Dialog zeigt
+   Dateiname, Importquelle und die Meldungen der Vorschau. Eine Verweigerung nennt ihren Grund und bietet
+   "Stattdessen eigene Datei schreiben" (wechselt mit denselben Eingaben auf die erste Wahl); eine Freigabe
+   verlangt die Bestaetigung des Beipackzettels - erst dann ruft "Speichern..." den Anreicherungsweg
+   (Gabe Anreichern), der unter neuem Namen speichert.
 
    TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
 
@@ -53,10 +67,85 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <dl class="epos-gebexport-kopf">
-        <dt>@Texte.Format</dt><dd>@Texte.FormatGbxml</dd>
-        <dt>@Texte.Stufe</dt><dd>@Texte.StufeDaten</dd>
-    </dl>
+    @if (Formate.Count > 1)
+    {
+        <Optionsgruppe Bezeichnung="@Texte.Format" Eintraege="@Formateintraege" Auswahl="@Formatindex"
+                       AuswahlChanged="BeiFormat" Aktiv="@(!_speichertGerade)" />
+        <dl class="epos-gebexport-kopf">
+            <dt>@Texte.Stufe</dt><dd>@Umfangtext</dd>
+        </dl>
+    }
+    else
+    {
+        <dl class="epos-gebexport-kopf">
+            <dt>@Texte.Format</dt><dd>@(AktuellesFormat?.Text ?? Texte.FormatGbxml)</dd>
+            <dt>@Texte.Stufe</dt><dd>@Umfangtext</dd>
+        </dl>
+    }
+
+    @if (AktuellesFormat is { MitZusage: true } && ZusageOeffnen is not null)
+    {
+        <div class="epos-gebexport-zusage">
+            <button type="button" class="epos-knopf epos-gebexport-zusageknopf" disabled="@_speichertGerade"
+                    @onclick="BeiZusage">@Texte.Zusage</button>
+            <Herleitungszeile Text="@Texte.ZusageHinweis" />
+        </div>
+    }
+
+    @if (AnreicherungSichtbar)
+    {
+        <Optionsgruppe Bezeichnung="@Texte.Weg" Eintraege="@Wegeintraege" Auswahl="@_weg"
+                       AuswahlChanged="BeiWeg" Aktiv="@(!_speichertGerade && !_waehltGerade)" />
+        @if (Anreichernd)
+        {
+            <div class="epos-gebexport-anreicherung">
+                <Herleitungszeile Text="@Texte.AnreicherungHinweis" />
+                <button type="button" class="epos-knopf epos-gebexport-originalknopf"
+                        disabled="@(_speichertGerade || _waehltGerade)" @onclick="BeiOriginalWaehlen">@Texte.OriginalWaehlen</button>
+                @if (_wahl is not null)
+                {
+                    <dl class="epos-gebexport-kopf epos-gebexport-original">
+                        <dt>@Texte.Originaldatei</dt><dd class="epos-gebexport-originalname">@_wahl.Dateiname</dd>
+                        <dt>@Texte.Importquelle</dt><dd class="epos-gebexport-quelle">@_wahl.Quelle</dd>
+                    </dl>
+                    @if (_wahl.Grund is string grund)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Format(Texte.Verweigert, grund)" />
+                        <button type="button" class="epos-knopf epos-gebexport-stattknopf"
+                                disabled="@_speichertGerade" @onclick="BeiStattEigene">@Texte.StattEigene</button>
+                    }
+                    @if (_wahl.Meldungen.Count > 0)
+                    {
+                        <div class="epos-raster-huelle">
+                            <table class="epos-raster epos-gebexport-anrmeldungen">
+                                <thead>
+                                    <tr>
+                                        <th>@Texte.SpalteStufe</th>
+                                        <th>@Texte.SpalteMeldung</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < _wahl.Meldungen.Count; i++)
+                                    {
+                                        GebaeudeExportMeldung m = _wahl.Meldungen[i];
+                                        <tr @key="i" class="@Meldungsklasse(m)" data-schluessel="@m.Schluessel">
+                                            <td>@m.Stufentext</td>
+                                            <td class="epos-gebexport-meldungstext">@m.Text</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    @if (!_wahl.Verweigert)
+                    {
+                        <Schalter Bezeichnung="@Texte.BeipackBestaetigen" Wert="@_beipackBestaetigt"
+                                  WertChanged="BeiBeipack" Aktiv="@(!_speichertGerade)" />
+                    }
+                }
+            </div>
+        }
+    }
 
     <Formularraster Einspaltig="true">
         <KindInhalt>
@@ -132,13 +221,44 @@
     /// liest die Daten; jeder weitere bildet den Plan ohne Datenbank neu. Kein Delegat = keine Meldungen,
     /// und Speichern bleibt gesperrt.
     /// </summary>
-    [Parameter] public Func<string, Task<GebaeudeExportAnsicht>>? Vorbereiten { get; set; }
+    [Parameter] public Func<GebaeudeExportEingabe, Task<GebaeudeExportAnsicht>>? Vorbereiten { get; set; }
 
     /// <summary>
     /// Der Speicherweg: Plan zur Postleitzahl, Dateiwahl der Plattform, Schreiben (auf iOS danach Teilen).
     /// Gerufen NUR im OK-Weg, nach der Bestätigung.
     /// </summary>
-    [Parameter] public Func<string, Task<GebaeudeExportErgebnis>>? Speichern { get; set; }
+    [Parameter] public Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>? Speichern { get; set; }
+
+    /// <summary>
+    /// Die wählbaren Formate (Stufe G7c) in Anzeigereihenfolge; das erste ist die Vorgabe. Leer = ein
+    /// fester Weg ohne Wahl (der Text <see cref="GebaeudeExportTexte.FormatGbxml"/> steht im Kopf).
+    /// </summary>
+    [Parameter] public IReadOnlyList<GebaeudeExportFormat> Formate { get; set; } = Array.Empty<GebaeudeExportFormat>();
+
+    /// <summary>
+    /// Öffnet (Windows) bzw. teilt (iOS) die Exportzusage des Formats — die IDS der Auslieferung. Gibt
+    /// <c>null</c> bei Erfolg, sonst den benannten Grund (fehlende Datei, kein Programm). Kein Delegat =
+    /// kein Knopf.
+    /// </summary>
+    [Parameter] public Func<Task<string?>>? ZusageOeffnen { get; set; }
+
+    /// <summary>
+    /// Hat das Gebäude eine Importquelle, deren Originaldatei angereichert werden kann (Stufe G7d)? Gerufen
+    /// einmal beim Öffnen. Kein Delegat oder <c>false</c> = keine Wahl des Ausgabewegs.
+    /// </summary>
+    [Parameter] public Func<Task<bool>>? AnreicherungMoeglich { get; set; }
+
+    /// <summary>
+    /// Die Wahl der Originaldatei: Dateiwähler der Plattform, Importquelle und Vorschau (Sperren oder
+    /// Beipackzettel). <c>null</c> = die Dateiwahl ist abgebrochen.
+    /// </summary>
+    [Parameter] public Func<Task<GebaeudeAnreicherungWahl?>>? OriginalWaehlen { get; set; }
+
+    /// <summary>
+    /// Der Anreicherungsweg (Stufe G7d): Anreichern der gewählten Originaldatei, Dateiwahl unter neuem Namen,
+    /// Schreiben (auf iOS danach Teilen). Gerufen NUR im OK-Weg, nach beiden Bestätigungen.
+    /// </summary>
+    [Parameter] public Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>? Anreichern { get; set; }
 
     /// <summary>Hat der Wirt ungespeicherte Änderungen an dieser Zeile? Dann steht der Hinweis „gespeicherter Stand".</summary>
     [Parameter] public bool GespeicherterStand { get; set; }
@@ -163,6 +283,7 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private string _plz = "";
+    private string _format = "";
     private bool _bestaetigt;
     private bool _speichertGerade;
     private GebaeudeExportAnsicht? _ansicht;
@@ -170,6 +291,23 @@
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
     private CancellationTokenSource? _entprellung;
     private int _fassung;
+
+    /// <summary>Der Ausgabeweg als Position der Optionsgruppe — nie als Anzeigetext.</summary>
+    private const int WEG_EIGEN = 0, WEG_ANREICHERN = 1;
+    private int _weg = WEG_EIGEN;
+    private bool _anreicherbar;
+    private bool _waehltGerade;
+    private bool _beipackBestaetigt;
+    private GebaeudeAnreicherungWahl? _wahl;
+
+    /// <summary>Wird die Originaldatei angereichert? (Prüfhilfe für die Tests.)</summary>
+    public bool Anreichernd => AnreicherungSichtbar && _weg == WEG_ANREICHERN;
+
+    /// <summary>Die gewählte Originaldatei (Prüfhilfe für die Tests); <c>null</c> = keine.</summary>
+    public GebaeudeAnreicherungWahl? Wahl => _wahl;
+
+    /// <summary>Ist der Beipackzettel bestätigt? (Prüfhilfe für die Tests.)</summary>
+    public bool BeipackBestaetigt => _beipackBestaetigt;
 
     /// <summary>Die Ansicht des Plans (Prüfhilfe für die Tests); <c>null</c>, solange sie gelesen wird.</summary>
     public GebaeudeExportAnsicht? Ansicht => _ansicht;
@@ -183,18 +321,38 @@
     /// <summary>Sind die Meldungen bestätigt? (Prüfhilfe für die Tests.)</summary>
     public bool Bestaetigt => _bestaetigt;
 
+    /// <summary>Der Steuerwert des gewählten Formats; leer ohne Formatliste (Prüfhilfe für die Tests).</summary>
+    public string Formatwert => _format;
+
+    /// <summary>Hält das gewählte Format in der Liste; ohne gültige Wahl gilt das erste (gbXML).</summary>
+    protected override void OnParametersSet() => FormatAbgleichen();
+
+    private void FormatAbgleichen()
+    {
+        if (Formate.Count > 0 && !Formate.Any(f => f.Wert == _format)) _format = Formate[0].Wert;
+    }
+
     protected override void OnInitialized()
     {
+        FormatAbgleichen();   // vor dem ersten Plan (OnInitializedAsync läuft vor OnParametersSet)
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_EXPORT, () => KiSicht(), KiHaken());
     }
 
-    protected override Task OnInitializedAsync() => Neubilden();
+    protected override async Task OnInitializedAsync()
+    {
+        await Neubilden();
+        if (AnreicherungMoeglich is not null && Anreichern is not null && OriginalWaehlen is not null)
+        {
+            try { _anreicherbar = await AnreicherungMoeglich(); }
+            catch (Exception) { _anreicherbar = false; }
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
@@ -240,8 +398,37 @@
     private string Ablehnungstext
         => _ansicht is { Ablehnung: string grund } ? Format(Texte.Abgelehnt, grund) : "";
 
+    /// <summary>Das gewählte Format; <c>null</c> ohne Formatliste.</summary>
+    private GebaeudeExportFormat? AktuellesFormat => Formate.FirstOrDefault(f => f.Wert == _format);
+
+    /// <summary>Der Umfang der Datei zum gewählten Format.</summary>
+    private string Umfangtext => AktuellesFormat?.Umfang ?? Texte.StufeDaten;
+
+    /// <summary>Die Einträge der Optionsgruppe: Position und Anzeigetext — der Steuerwert bleibt in <see cref="Formate"/>.</summary>
+    private IReadOnlyList<(int Id, string Text)> Formateintraege
+        => Formate.Select((f, i) => (i, f.Text)).ToList();
+
+    private int? Formatindex
+    {
+        get
+        {
+            for (int i = 0; i < Formate.Count; i++)
+                if (Formate[i].Wert == _format) return i;
+            return null;
+        }
+    }
+
+    private GebaeudeExportEingabe Eingabe() => new(_plz, _format);
+
+    /// <summary>Steht die Wahl des Ausgabewegs? Nur beim Format mit Anreicherung und mit Importquelle.</summary>
+    private bool AnreicherungSichtbar => _anreicherbar && AktuellesFormat is { MitAnreicherung: true };
+
+    /// <summary>Die Einträge der Wegwahl: Position und Anzeigetext.</summary>
+    private IReadOnlyList<(int Id, string Text)> Wegeintraege
+        => new[] { (WEG_EIGEN, Texte.WegEigen), (WEG_ANREICHERN, Texte.WegAnreichern) };
+
     /// <summary>Der Grund der weichen Sperre von „Speichern…": die fehlende Bestätigung.</summary>
-    private string? OkSperrgrund => _ansicht is not null && !_bestaetigt ? Texte.SperreBestaetigen : null;
+    private string? OkSperrgrund => _ansicht is null ? null : Pruefen();
 
     private static string Meldungsklasse(GebaeudeExportMeldung m) => m.Stufe switch
     {
@@ -257,8 +444,70 @@
     }
 
     // =================================================================================
-    // Postleitzahl und Neubildung des Plans
+    // Format, Exportzusage, Postleitzahl und Neubildung des Plans
     // =================================================================================
+
+    /// <summary>
+    /// Ein Formatwechsel bildet den Plan sofort neu (die Meldungen unterscheiden sich je Format) und
+    /// nimmt die Bestätigung zurück: Bestätigt waren die Meldungen des anderen Formats.
+    /// </summary>
+    private async Task BeiFormat(int? index)
+    {
+        if (index is not int i || i < 0 || i >= Formate.Count || _speichertGerade) return;
+        if (Formate[i].Wert == _format) return;
+        _format = Formate[i].Wert;
+        _bestaetigt = false;
+        _meldung = "";
+        _entprellung?.Cancel();
+        _ansicht = null;
+        await Neubilden();
+    }
+
+    /// <summary>Der Ausgabeweg: eigene Datei oder Originaldatei anreichern. Die gewählte Datei bleibt stehen.</summary>
+    private void BeiWeg(int? id)
+    {
+        if (id is not int w || _speichertGerade || _waehltGerade) return;
+        if (w != WEG_EIGEN && w != WEG_ANREICHERN) return;
+        _weg = w;
+        _meldung = "";
+    }
+
+    /// <summary>Wählt die Originaldatei; eine abgebrochene Dateiwahl lässt die bisherige stehen.</summary>
+    private async Task BeiOriginalWaehlen()
+    {
+        if (OriginalWaehlen is null || _waehltGerade || _speichertGerade) return;
+        _waehltGerade = true;
+        _meldung = "";
+        GebaeudeAnreicherungWahl? wahl;
+        try { wahl = await OriginalWaehlen(); }
+        finally { _waehltGerade = false; }
+        if (wahl is null) return;
+        _wahl = wahl;
+        _beipackBestaetigt = false;
+    }
+
+    /// <summary>Nach einer Verweigerung: dieselben Eingaben, aber eine eigene Datei.</summary>
+    private void BeiStattEigene()
+    {
+        if (_speichertGerade) return;
+        _weg = WEG_EIGEN;
+        _meldung = "";
+    }
+
+    private void BeiBeipack(bool wert)
+    {
+        _beipackBestaetigt = wert;
+        if (wert && _meldung == Texte.SperreBeipack) _meldung = "";
+    }
+
+    /// <summary>Die Exportzusage öffnen bzw. teilen; ein Grund steht im Banner.</summary>
+    private async Task BeiZusage()
+    {
+        if (ZusageOeffnen is null) return;
+        string? grund = await ZusageOeffnen();
+        _meldung = grund ?? "";
+        _meldungStufe = WarnStufe.Fehler;
+    }
 
     private async Task BeiPlz(string wert)
     {
@@ -289,7 +538,7 @@
     {
         if (Vorbereiten is null) return;
         int fassung = ++_fassung;
-        GebaeudeExportAnsicht ansicht = await Vorbereiten(_plz);
+        GebaeudeExportAnsicht ansicht = await Vorbereiten(Eingabe());
         if (fassung != _fassung) return;
         bool warAbgelehnt = _ansicht?.Abgelehnt ?? false;
         _ansicht = ansicht;
@@ -315,6 +564,12 @@
         if (_ansicht is null) return Texte.Vorbereitung;
         if (_ansicht.Abgelehnt) return Ablehnungstext;
         if (!_bestaetigt) return Texte.SperreBestaetigen;
+        if (Anreichernd)
+        {
+            if (_wahl is null) return Texte.SperreOriginal;
+            if (_wahl.Grund is string grund) return Format(Texte.Verweigert, grund);
+            if (!_beipackBestaetigt) return Texte.SperreBeipack;
+        }
         return null;
     }
 
@@ -330,7 +585,8 @@
             _meldungStufe = WarnStufe.Hinweis;
             return;
         }
-        if (Speichern is null) return;
+        Func<GebaeudeExportEingabe, Task<GebaeudeExportErgebnis>>? weg = Anreichernd ? Anreichern : Speichern;
+        if (weg is null) return;
 
         _entprellung?.Cancel();
         _meldung = "";
@@ -338,7 +594,7 @@
         GebaeudeExportErgebnis ergebnis;
         try
         {
-            ergebnis = await Speichern(_plz);
+            ergebnis = await weg(Eingabe());
         }
         finally
         {
@@ -348,6 +604,8 @@
         if (ergebnis.Abgebrochen) return;
         if (!ergebnis.Gespeichert)
         {
+            if (ergebnis.Meldungen is not null)
+                _ansicht = new GebaeudeExportAnsicht(ergebnis.Meldungen, null);
             _meldung = ergebnis.Text;
             _meldungStufe = WarnStufe.Fehler;
             return;

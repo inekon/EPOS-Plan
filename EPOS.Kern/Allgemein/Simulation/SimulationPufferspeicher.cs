@@ -46,6 +46,64 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string VERWENDUNG_KOMBI = DbWerte.PSP_VERWENDUNG_KOMBI;
 
+        /// <summary>
+        /// Verwendung „Kaelte": KALTWASSERSPEICHER der Kältekaskade (KU3-5, Entscheid E68;
+        /// Kühlkonzept 4.6, 5.5). Gerechnet wird auf demselben <see cref="SOC"/> wie jeder Puffer,
+        /// nur gespiegelt gelesen: Der Füllstand ist der KÄLTEvorrat [kWh] — kalt heißt geladen.
+        /// Die Kapazität folgt aus Volumen und Spreizung Rücklauf − Vorlauf (<see cref="InitKaelte"/>),
+        /// der Bereitschaftsverlust ist der WÄRMEEINTRAG aus der Umgebung und zehrt den Vorrat nach
+        /// derselben füllstandsanteiligen Regel wie beim Wärmepuffer (<see cref="StundeAbschliessen"/>).
+        /// Ein Kältespeicher bedient allein den Kühlkanal und steht in keiner Wärmeordnung.
+        /// </summary>
+        public const string VERWENDUNG_KAELTE = DbWerte.PSP_VERWENDUNG_KAELTE;
+
+        /// <summary>Vorgabe Kaltwasser-Vorlauf [°C], wenn das Temperaturpaar des Kältespeichers leer ist.</summary>
+        public const int KAELTE_VORLAUF_VORGABE = 6;
+
+        /// <summary>Vorgabe Kaltwasser-Rücklauf [°C], wenn das Temperaturpaar des Kältespeichers leer ist.</summary>
+        public const int KAELTE_RUECKLAUF_VORGABE = 12;
+
+        /// <summary>Kaltwasser-Vorlauf des Kältespeichers [°C] (der geladene, kalte Zustand); 0 ohne Kälte.</summary>
+        public int KaltVorlauf = 0;
+
+        /// <summary>Kaltwasser-Rücklauf des Kältespeichers [°C] (der entladene, warme Zustand); 0 ohne Kälte.</summary>
+        public int KaltRuecklauf = 0;
+
+        /// <summary>true, wenn das Temperaturpaar des Kältespeichers auf die Vorgabe 6/12 °C fiel.</summary>
+        public bool KaeltepaarVorgabe = false;
+
+        /// <summary>true = Kaltwasserspeicher der Kältekaskade (<see cref="VERWENDUNG_KAELTE"/>).</summary>
+        public bool IstKaelte
+        {
+            get { return Verwendung == VERWENDUNG_KAELTE; }
+        }
+
+        /// <summary>
+        /// Initialisiert einen KÄLTESPEICHER (KU3-5): Kapazität = Volumen · 1,16 Wh/(l·K) ·
+        /// (Rücklauf − Vorlauf). Ein leeres oder vertauschtes Paar (Rücklauf ≤ Vorlauf oder ein Wert
+        /// ≤ 0) fällt auf die Vorgabe <see cref="KAELTE_VORLAUF_VORGABE"/>/<see cref="KAELTE_RUECKLAUF_VORGABE"/>
+        /// zurück und wird in <see cref="KaeltepaarVorgabe"/> vermerkt. Der Speicher rechnet einschichtig;
+        /// die Temperaturachse der Schichtebene ist die gespiegelte (der warme Rücklauf oben), ihre
+        /// Kennzahlen T_oben werden für den Kältespeicher nicht erhoben.
+        /// </summary>
+        public void InitKaelte(double volumenLiter, int vorlauf, int ruecklauf, double bereitschaftsverlusteProTag)
+        {
+            KaeltepaarVorgabe = !(vorlauf > 0 && ruecklauf > vorlauf);
+            if (KaeltepaarVorgabe)
+            {
+                vorlauf = KAELTE_VORLAUF_VORGABE;
+                ruecklauf = KAELTE_RUECKLAUF_VORGABE;
+            }
+            KaltVorlauf = vorlauf;
+            KaltRuecklauf = ruecklauf;
+            Verwendung = VERWENDUNG_KAELTE;
+            SchichtenAnzahl = 1;
+            BereitschaftTemperatur = false;
+
+            // Init rechnet ΔT = erstes − zweites Argument: der warme Rücklauf zuerst.
+            Init(volumenLiter, ruecklauf, vorlauf, bereitschaftsverlusteProTag);
+        }
+
         public string Bezeichner = "";
         public string Erzeuger = "";
 
@@ -477,6 +535,7 @@ namespace WindowsFormsApplication1
             Array.Clear(T_unten_stuendlich, 0, T_unten_stuendlich.Length);
             SchichtInvarianteVerletzungen = 0;
             SchichtInvarianteMaxAbweichung = 0;
+            BereitschaftTemperaturKwh = 0;
             BudgetZuruecksetzen();
             SchichtenAufbauen();
         }
@@ -657,7 +716,13 @@ namespace WindowsFormsApplication1
             // es kein Schichtpaar und die Methode tut nichts.
             Schicht_Ausgleich();
 
-            if (Q_max > 0 && SOC > 0)
+            // PS1 (c): Weg „temperatur" - je Zone H · a_i · (ϑ_i − ϑ_Raum); ohne die Option der
+            // Tageswert darunter, Anweisung für Anweisung wie zuvor.
+            if (BereitschaftTemperatur && !IstQuelle && Q_max > 0 && VL_eff > RL_eff && _schicht != null)
+            {
+                BereitschaftNachTemperatur();
+            }
+            else if (Q_max > 0 && SOC > 0)
             {
                 // Der Anteil ist auf 1 begrenzt: Mit dem Durchlass (Laden mit
                 // hydraulischer Weiche) kann SOC innerhalb einer Stunde über Q_max
@@ -742,6 +807,14 @@ namespace WindowsFormsApplication1
             // PAKET P1 (Befund E1-O5): die beiden Temperaturkennzahlen der OBERSTEN
             // Schicht aus derselben Ganglinie - Jahresmittel und Jahresminimum.
             Schicht_Kennzahlen();
+
+            // KU3-5: Der Kältespeicher hat keine Speichertemperatur „oben" im Sinn des Wärmepuffers -
+            // NULL heißt „nicht erhoben", wie beim Quellspeicher.
+            if (IstKaelte)
+            {
+                T_oben_Mittel = null;
+                T_oben_Min = null;
+            }
         }
 
         // ------------------------------------------------------------------
@@ -841,6 +914,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool VerwendungBedient(int kanal)
         {
+            // KU3-5: Der Kältespeicher bedient allein den Kühlkanal.
+            if (Verwendung == VERWENDUNG_KAELTE)
+                return kanal == Kanal.KUEHLUNG;
             if (Verwendung == VERWENDUNG_KOMBI)
                 return kanal == Kanal.HEIZUNG || kanal == Kanal.BRAUCHWASSER;
             if (Verwendung == VERWENDUNG_BRAUCHWASSER)
@@ -1112,14 +1188,34 @@ namespace WindowsFormsApplication1
             if (Q_max <= 0) return false;
 
             if (!LaedtGerade && SOC <= Q_max * SchwelleEin) LaedtGerade = true;
-            if (LaedtGerade && Rechenrand.SchwelleErreicht(SOC, Q_max * SchwelleAus)) LaedtGerade = false;
+            if (LaedtGerade && AbschaltschwelleErreicht()) LaedtGerade = false;
 
             return !LaedtGerade;
+        }
+
+        /// <summary>
+        /// Hat der Füllstand die ABSCHALTSCHWELLE <c>Q_max · SchwelleAus</c> erreicht — mit
+        /// dem Zahlenrand aus <see cref="Rechenrand"/>. Die EINE Prüfung dieser Schwelle:
+        /// <see cref="HystereseFortschreiben"/> nimmt sie, und die Abschaltprüfung der
+        /// Phase G in <c>Kaskadenschleife</c> nimmt sie auch.
+        ///
+        /// <para><b>Warum auch Phase G den Rand braucht</b> (Plattformbefund PB‑1,
+        /// Anwenderentscheid vom 29.09.2026): Die Nachentladung der Phase E steuert einen
+        /// vollen Speicher um <c>Q_max · (1 − SchwelleAus)</c> auf genau diese Marke — und
+        /// in Gleitkomma landet sie ein ulp darüber oder darunter. Ohne Rand entschied dort
+        /// das letzte Bit, ob der Speicher im Ladebetrieb bleibt: in Projekt 1008 bei 1 634
+        /// von 4 677 Prüfungen, und zwischen Windows und Linux verschieden, weil deren
+        /// C-Bibliotheken <c>Math.Sin</c>/<c>Exp</c> im letzten Bit verschieden runden.</para>
+        /// </summary>
+        public bool AbschaltschwelleErreicht()
+        {
+            return Rechenrand.SchwelleErreicht(SOC, Q_max * SchwelleAus);
         }
 
         /// <summary>Anzeigetext der Rolle (lokalisiert seit Paket 9 / L6).</summary>
         public string RolleAnzeige()
         {
+            if (Verwendung == VERWENDUNG_KAELTE) return MyResource.Resource.PSP_ROLLE_KAELTESPEICHER;
             return (Verwendung == VERWENDUNG_QUELLE)
                 ? MyResource.Resource.PSP_ROLLE_QUELLSPEICHER
                 : MyResource.Resource.PSP_ROLLE_SENKENSPEICHER;
@@ -1290,6 +1386,38 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double EinspeisehoeheAktuell = 1.0;
 
+        // --- Optionen der Welle M7 (Konzept Simulationsablauf 21) ------------------------------
+
+        /// <summary>
+        /// PS1 (c): Bereitschaftsverlust je Zone aus dem Verlustkoeffizienten
+        /// <c>H = Q_B · 1000 / (24 · 45 K)</c> und der Übertemperatur gegen den Aufstellraum
+        /// (<c>Tab_Pufferspeicher.Bereitschaft_Weg = 'temperatur'</c>). <c>false</c> (die Vorgabe) =
+        /// Tageswert anteilig zum Füllstand, Anweisung für Anweisung wie zuvor.
+        /// </summary>
+        public bool BereitschaftTemperatur = false;
+
+        /// <summary>Temperatur des Aufstellraums [°C] für <see cref="BereitschaftTemperatur"/>; Vorgabe 20 °C.</summary>
+        public double AufstellraumC = PufferOptionen.AUFSTELLRAUM_VORGABE_C;
+
+        /// <summary>
+        /// PS1 (a): Volumenanteile der Zonen von oben, Summe 1, Länge = Zonenzahl
+        /// (<c>Tab_Pufferspeicher.Schicht_Anteile</c>, geprüft mit <see cref="PufferOptionen.AnteilePruefen"/>).
+        /// <c>null</c> (die Vorgabe) = gleich große Zonen, Anweisung für Anweisung wie zuvor.
+        /// </summary>
+        public double[] SchichtAnteile;
+
+        /// <summary>
+        /// PS5 (a): Der Brauchwasserkanal zapft über ein Frischwassermodul aus der obersten Zone —
+        /// nur, solange sie <see cref="FwmMindestC"/> hält. <c>false</c> = kein Modul.
+        /// </summary>
+        public bool Frischwassermodul = false;
+
+        /// <summary>Mindesttemperatur oben für das Frischwassermodul [°C] = ϑ_Zapf + ΔT_FWM; NaN = keine.</summary>
+        public double FwmMindestC = double.NaN;
+
+        /// <summary>Bereitschaftsverlust des Laufs auf dem Weg „temperatur" [kWh] — Teil von <see cref="Verluste_gesamt"/>.</summary>
+        public double BereitschaftTemperaturKwh = 0;
+
         /// <summary>Stundenganglinie der obersten Schicht [°C]; 0, wo keine Schichtrechnung läuft.</summary>
         public double[] T_oben_stuendlich = new double[8760];
 
@@ -1327,6 +1455,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Wärmekapazität einer Schicht [kWh/K] — <c>_schichtMax / (VL_eff − RL_eff)</c>.</summary>
         private double _schichtKapazitaet;
+
+        /// <summary>PS1 (a): wirksame Zonenanteile von oben; <c>null</c> = gleich große Zonen.</summary>
+        private double[] _anteile;
+
+        /// <summary>PS1 (a): Energie einer vollen Zone je Zone [kWh]; <c>null</c> = gleich große Zonen.</summary>
+        private double[] _schichtMaxJe;
+
+        /// <summary>PS1 (a): Wärmekapazität je Zone [kWh/K]; <c>null</c> = gleich große Zonen.</summary>
+        private double[] _schichtKapJe;
+
+        /// <summary>PS1 (a): Wärmedurchgang je Zonenpaar [kWh/K]; <c>null</c> = gleich große Zonen.</summary>
+        private double[] _leitwertJe;
 
         /// <summary>Wärmedurchgang je Schichtpaar und Stunde [kWh/K] (Konzept 7.4 Punkt 3).</summary>
         private double _leitwert;
@@ -1446,6 +1586,45 @@ namespace WindowsFormsApplication1
             {
                 for (int i = 0; i < n; i++) _schichtFlaeche[i] = 1;
             }
+
+            // PS1 (a) - ZONENANTEILE. Nur mit gepflegten Anteilen passender Länge und mehr als einer
+            // Zone; sonst bleiben die Felder null und jede Zonenoperation rechnet mit Q_max / N wie
+            // zuvor. Größe, Kapazität, Mantelfläche und Leitweg je Zone folgen dem Anteil:
+            //   E_max,i = Q_max · a_i,  A_i = π · D · H · a_i (+ Deckel),  k_i = λ · A_quer / (H · (a_i + a_i+1) / 2)
+            _anteile = null;
+            _schichtMaxJe = null;
+            _schichtKapJe = null;
+            _leitwertJe = null;
+            if (n > 1 && SchichtAnteile != null && SchichtAnteile.Length == n)
+            {
+                _anteile = (double[])SchichtAnteile.Clone();
+                _schichtMaxJe = new double[n];
+                _schichtKapJe = new double[n];
+                for (int i = 0; i < n; i++)
+                {
+                    _schichtMaxJe[i] = (Q_max > 0) ? Q_max * _anteile[i] : 0;
+                    _schichtKapJe[i] = (spreizung > 0) ? _schichtMaxJe[i] / spreizung : 0;
+                }
+
+                _leitwertJe = new double[n - 1];
+                for (int i = 0; i < n - 1; i++)
+                {
+                    double abstand = hoehe * (_anteile[i] + _anteile[i + 1]) / 2.0;
+                    _leitwertJe[i] = (hoehe > 0 && quer > 0 && abstand > 0) ? lambda * quer / abstand / 1000.0 : 0;
+                }
+
+                if (quer > 0 && hoehe > 0)
+                {
+                    double durchmesser = Math.Sqrt(4.0 * quer / Math.PI);
+                    for (int i = 0; i < n; i++) _schichtFlaeche[i] = Math.PI * durchmesser * hoehe * _anteile[i];
+                    _schichtFlaeche[0] += quer;
+                    _schichtFlaeche[n - 1] += quer;
+                }
+                else
+                {
+                    for (int i = 0; i < n; i++) _schichtFlaeche[i] = _anteile[i] * n;
+                }
+            }
         }
 
         /// <summary>
@@ -1461,7 +1640,7 @@ namespace WindowsFormsApplication1
             if (_schicht == null || i < 0 || i >= _schicht.Length) return RL_eff;
             if (_schichtMax <= 0) return RL_eff;
 
-            double f = _schicht[i] / _schichtMax;
+            double f = _schicht[i] / EmaxVon(i);
             if (f < 0) f = 0;
             else if (f > 1) f = 1;
             return RL_eff + f * (VL_eff - RL_eff);
@@ -1593,6 +1772,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Entnehmbar am Stundenbeginn</b> [kWh] für einen Kanal (Entwurf AK3 2.5, Festlegung 6) — der
+        /// Speicheranteil der Angebotsfunktion: das Minimum aus <see cref="SOC"/>, dem Entladebudget der
+        /// Stunde <paramref name="stunde"/>, <see cref="EntnahmeObergrenze"/> und
+        /// <see cref="EntladefaehigkeitKanal"/>, nie unter 0.
+        ///
+        /// <para><b>Rein lesend:</b> Die Methode ändert weder Ladezustand noch Budget noch Schichten. Gelesen
+        /// wird der Stand nach <see cref="StundeAbschliessen"/> der Vorstunde; hat die Stunde ihr Budget noch
+        /// nicht begonnen (<see cref="StundeBeginnen"/>), gilt das volle Budget der Stunde
+        /// (<see cref="EntladeleistungMax"/>, sonst unbegrenzt), wie <see cref="StundeBeginnen"/> es setzen
+        /// würde, sonst der verbleibende Rest (<see cref="Entnahmefaehigkeit"/>). Die Entnahmetemperatur folgt
+        /// <see cref="TNutz"/> des Kanals, nicht dem Vorlauf der Stunde (benannt, Festlegung 6).</para>
+        /// </summary>
+        public double EntnehmbarAmStundenbeginn(int stunde, int kanal = Kanal.HEIZUNG)
+        {
+            double budget = _budgetStunde == stunde
+                ? Entnahmefaehigkeit()
+                : (EntladeleistungMax > 0 ? EntladeleistungMax : double.MaxValue);
+            double m = Math.Min(Math.Min(SOC, budget), Math.Min(EntnahmeObergrenze(), EntladefaehigkeitKanal(kanal)));
+            return m > 0 ? m : 0;
+        }
+
+        /// <summary>
         /// Schichtindex zu einer Anschlusshöhe 0…1 (1 = oben ⇒ Index 0, 0 = unten ⇒
         /// Index N−1). Werte außerhalb gelten als oben — dieselbe Auslegung wie NULL in
         /// der Datenbank.
@@ -1601,6 +1802,19 @@ namespace WindowsFormsApplication1
         {
             int n = (_schicht != null) ? _schicht.Length : 1;
             if (hoehe >= 1 || hoehe < 0) return 0;
+
+            // PS1 (a): Die Tiefe von oben trifft die Zone, deren Band sie enthält.
+            if (_anteile != null)
+            {
+                double tiefe = 1.0 - hoehe;
+                double kante = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    kante += _anteile[i];
+                    if (tiefe < kante) return i;
+                }
+                return n - 1;
+            }
 
             int idx = (int)Math.Floor((1.0 - hoehe) * n);
             if (idx < 0) idx = 0;
@@ -1638,7 +1852,7 @@ namespace WindowsFormsApplication1
         /// <summary>Füllt eine Schicht bis <see cref="_schichtMax"/> und meldet die aufgenommene Menge.</summary>
         private double Fuellen(int i, double menge)
         {
-            double frei = _schichtMax - _schicht[i];
+            double frei = EmaxVon(i) - _schicht[i];
             if (frei <= 0) return 0;
 
             double teil = (menge < frei) ? menge : frei;
@@ -1697,7 +1911,11 @@ namespace WindowsFormsApplication1
         {
             if (_schicht == null || _schicht.Length < 2) return;
 
-            if (_leitwert > 0 && _schichtKapazitaet > 0)
+            if (_anteile != null)
+            {
+                AusgleichMitAnteilen();
+            }
+            else if (_leitwert > 0 && _schichtKapazitaet > 0)
             {
                 for (int i = 0; i < _schicht.Length - 1; i++)
                 {
@@ -1727,6 +1945,75 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// PS1 (a): Wärmeleitung zwischen Zonen ungleicher Größe — je Paar <c>ΔQ = k_i · ΔT</c>, gekappt
+        /// auf 25 % der Temperaturdifferenz an der kleineren Kapazität des Paars (stabil und monoton wie
+        /// bei gleichen Zonen).
+        /// </summary>
+        private void AusgleichMitAnteilen()
+        {
+            for (int i = 0; i < _schicht.Length - 1; i++)
+            {
+                double k = _leitwertJe[i];
+                double kap = Math.Min(_schichtKapJe[i], _schichtKapJe[i + 1]);
+                if (!(k > 0) || !(kap > 0)) continue;
+
+                double dT = SchichtTemperatur(i + 1) - SchichtTemperatur(i);
+                if (dT == 0) continue;
+
+                double q = k * dT;
+                double max = AUSGLEICH_KAPPUNG * Math.Abs(dT) * kap;
+                if (q > max) q = max;
+                else if (q < -max) q = -max;
+
+                _schicht[i] += q;
+                _schicht[i + 1] -= q;
+            }
+
+            Schicht_Klemmen();
+        }
+
+        /// <summary>
+        /// PS1 (a): Inversionsmischung bei Zonen ungleicher Größe — dieselbe Blockmittelung, aber auf dem
+        /// FÜLLGRAD (Temperatur) und mit den Volumenanteilen gewichtet.
+        /// </summary>
+        private void InversionMitAnteilen()
+        {
+            int n = _schicht.Length;
+            var wert = new double[n];
+            var gewicht = new double[n];
+            var laenge = new int[n];
+            int bloecke = 0;
+
+            for (int i = 0; i < n; i++)
+            {
+                double emax = EmaxVon(i);
+                wert[bloecke] = emax > 0 ? _schicht[i] / emax : 0;
+                gewicht[bloecke] = _anteile[i];
+                laenge[bloecke] = 1;
+                bloecke++;
+
+                while (bloecke > 1 && wert[bloecke - 2] < wert[bloecke - 1])
+                {
+                    double g = gewicht[bloecke - 2] + gewicht[bloecke - 1];
+                    double f = (wert[bloecke - 2] * gewicht[bloecke - 2] + wert[bloecke - 1] * gewicht[bloecke - 1]) / g;
+                    int l = laenge[bloecke - 2] + laenge[bloecke - 1];
+                    bloecke--;
+                    wert[bloecke - 1] = f;
+                    gewicht[bloecke - 1] = g;
+                    laenge[bloecke - 1] = l;
+                }
+            }
+
+            int index = 0;
+            for (int b = 0; b < bloecke; b++)
+                for (int k = 0; k < laenge[b]; k++)
+                {
+                    _schicht[index] = wert[b] * EmaxVon(index);
+                    index++;
+                }
+        }
+
+        /// <summary>
         /// INVERSIONSMISCHUNG (Auftrieb, Konzept 7.4 Punkt 3): Ist eine untere Schicht
         /// wärmer als die darüber, werden beide volumengewichtet gemischt — bei gleichen
         /// Schichtvolumina ist das das arithmetische Mittel. Wiederholt, bis die
@@ -1746,6 +2033,7 @@ namespace WindowsFormsApplication1
         private void Schicht_Inversion()
         {
             if (_schicht == null || _schicht.Length < 2) return;
+            if (_anteile != null) { InversionMitAnteilen(); return; }
 
             int n = _schicht.Length;
             int bloecke = 0;
@@ -1824,6 +2112,88 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// PS1 (c) — BEREITSCHAFTSVERLUST NACH TEMPERATUR (Konzept Simulationsablauf 21): je Zone
+        /// <c>Q_i = H · a_i · (ϑ_i − ϑ_Raum) · 1 h</c> mit <c>H = Q_B · 1000 / (24 · 45 K)</c>, höchstens der
+        /// Inhalt der Zone über dem Rücklauf. Ein leerer Speicher (alle Zonen auf Rücklauf) verliert
+        /// nichts; ein voller mehr als mit dem Tageswert, sobald seine Temperatur mehr als 45 K über dem
+        /// Aufstellraum liegt. Der Durchfluss einer Stunde trägt keinen Verlust.
+        /// </summary>
+        private void BereitschaftNachTemperatur()
+        {
+            double h = PufferOptionen.VerlustkoeffizientWK(VerlustProStunde * 24.0);
+            if (!(h > 0)) return;
+
+            double summe = 0;
+            for (int i = 0; i < _schicht.Length; i++)
+            {
+                double v = PufferOptionen.ZonenverlustKwh(h, AnteilVon(i), SchichtTemperatur(i), AufstellraumC, _schicht[i]);
+                if (v <= 0) continue;
+                _schicht[i] -= v;
+                if (_schicht[i] < 0) _schicht[i] = 0;
+                summe += v;
+            }
+            if (summe <= 0) return;
+
+            SOC -= summe;
+            if (SOC < 0) SOC = 0;
+            Verluste_gesamt += summe;
+            BereitschaftTemperaturKwh += summe;
+
+            // Der Deckel lässt die oberste Zone etwas stärker abkühlen - Auftrieb wie im Tageswert.
+            Schicht_Inversion();
+        }
+
+        /// <summary>Volumenanteil der Zone <paramref name="i"/>: gepflegt (PS1 (a)) oder 1/N.</summary>
+        private double AnteilVon(int i)
+        {
+            int n = _schicht != null ? _schicht.Length : 1;
+            if (_anteile != null && i >= 0 && i < _anteile.Length) return _anteile[i];
+            return 1.0 / n;
+        }
+
+        /// <summary>Energie einer VOLLEN Zone <paramref name="i"/> [kWh] — <c>Q_max · a_i</c> bzw. <c>Q_max / N</c>.</summary>
+        private double EmaxVon(int i)
+        {
+            return _schichtMaxJe != null ? _schichtMaxJe[i] : _schichtMax;
+        }
+
+        /// <summary>
+        /// PS5 (a) — ENTNAHMEFÄHIGKEIT DES FRISCHWASSERMODULS [kWh]: was der Brauchwasserkanal in dieser
+        /// Stunde aus dem Speicher zapfen darf, ohne dass die oberste Zone unter
+        /// <see cref="FwmMindestC"/> fällt. Hält sie die Temperatur nicht, nur der Durchfluss. Geschichtet:
+        /// Inhalt der zugänglichen Zonen, die die Mindesttemperatur halten; eine Zone: der Inhalt über der
+        /// Mindesttemperatur. Ohne Modul <c>double.MaxValue</c> — ohne Wirkung.
+        /// </summary>
+        public double FrischwasserEntnahmefaehigkeit()
+        {
+            if (!Frischwassermodul || double.IsNaN(FwmMindestC)) return double.MaxValue;
+            if (_schicht == null || Q_max <= 0) return double.MaxValue;
+
+            double durchfluss = SOC - Q_max;
+            if (durchfluss < 0) durchfluss = 0;
+            if (!(VL_eff > RL_eff)) return durchfluss;
+
+            double grenze = FwmMindestC;
+            if (!Rechenrand.SchwelleErreicht(SchichtTemperatur(0), grenze)) return durchfluss;
+
+            if (_schicht.Length == 1)
+            {
+                double sockel = EmaxVon(0) * (grenze - RL_eff) / (VL_eff - RL_eff);
+                if (sockel < 0) sockel = 0;
+                double ueber = _schicht[0] - sockel;
+                return durchfluss + (ueber > 0 ? ueber : 0);
+            }
+
+            double summe = 0;
+            for (int i = SchichtIndex(Entnahmehoehe[Kanal.BRAUCHWASSER]); i < _schicht.Length; i++)
+            {
+                if (_schicht[i] <= 0) continue;
+                if (Rechenrand.SchwelleErreicht(SchichtTemperatur(i), grenze)) summe += _schicht[i];
+            }
+            return durchfluss + summe;
+        }
+
         /// <summary>Hält jede Schicht im zulässigen Band [0, E_max] ⇔ [RL_eff, VL_eff].</summary>
         private void Schicht_Klemmen()
         {
@@ -1832,7 +2202,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < _schicht.Length; i++)
             {
                 if (_schicht[i] < 0) _schicht[i] = 0;
-                else if (_schicht[i] > _schichtMax) _schicht[i] = _schichtMax;
+                else if (_schicht[i] > EmaxVon(i)) _schicht[i] = EmaxVon(i);
             }
         }
 

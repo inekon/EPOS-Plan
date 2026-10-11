@@ -663,7 +663,7 @@ namespace WindowsFormsApplication1
             foreach (KostenPositionZeile z in _zeilen)
             {
                 Bindung b;
-                if (!z.Schreibbar || !_bindungen.TryGetValue(z, out b)) continue;
+                if (!z.Schreibbar || z.SatzGesperrt || !_bindungen.TryGetValue(z, out b)) continue;
                 KostenVorlagenPosition p = b.Position;
 
                 // Der Satz der Tabelle für diese Position — derselbe Kern wie Übernahme und
@@ -794,6 +794,15 @@ namespace WindowsFormsApplication1
             };
             _bindungen[z] = new Bindung { Position = p, Projektzeile = pz };
 
+            // AUFTRAG P671 (E30-Rest 1): Stammt der Satz aus dem Hilfsenergieanteil der Anlage,
+            // zeigt das Feld ihn schreibgeschützt — die Zeile selbst trägt keinen Satz, und das
+            // bleibt so (Nachziehen schreibt ihn nicht zurück).
+            if (pz != null && pz.SatzAusAnlagenanteil.HasValue)
+            {
+                z.Satz = pz.SatzAusAnlagenanteil;
+                z.SatzGesperrt = true;
+            }
+
             BemessungKatalog.Info info = BemessungInfo(p.Bemessung);
             z.BemessungId = info != null ? (int?)BemessungIndex(info) : null;
             z.Einheit = EinheitVon(info);
@@ -862,6 +871,11 @@ namespace WindowsFormsApplication1
                 ? NutzungsdauerSatzCtrl.Herleitungszeile(
                       Satztafel().Vorgabe(KomponentenId, p.Bezeichnung), p.Satz)
                 : "";
+
+            // AUFTRAG P671 (E30-Rest 1): WOHER der gesperrte Satz kommt — fertig aus dem Kern
+            // (KostenProjektPositionenCtrl, Vermerk der Herleitung in beiden Sprachen).
+            if (z.SatzGesperrt && pz != null && pz.SatzAusAnlagenanteil.HasValue)
+                z.SatzHerleitung = pz.SatzAusAnlagenanteilZeile ?? "";
         }
 
         // =====================================================================
@@ -1005,7 +1019,10 @@ namespace WindowsFormsApplication1
                 z.Einheit = EinheitVon(info);
             }
 
-            p.Satz = z.Satz;
+            // AUFTRAG P671: Ein gesperrter Satz (aus dem Hilfsenergieanteil der Anlage) gehört der
+            // Anlage, nicht der Position — er geht nie in die Position, sonst hätte er als eigener
+            // Satz Vorrang vor dem Anteil (E30‑Q2 a).
+            if (!z.SatzGesperrt) p.Satz = z.Satz;
             p.Nutzungsdauer = _invest ? z.Nutzungsdauer : p.Nutzungsdauer;
 
             // KL4/§ 5.4: absolut ⇒ Satz und Betrag sind EIN Wert; sonst bleibt der
@@ -1019,7 +1036,8 @@ namespace WindowsFormsApplication1
             // ETAPPE E10/9: Der Betrag folgt dem Satz, der IN DER ZEILE steht — ein leeres
             // Satzfeld rechnet wie im Kern mit nichts. Die Nutzungsdauertabelle wirkt allein
             // über „Sätze vorbelegen…", das ihren Satz ausdrücklich in die Zeile schreibt.
-            if (info != null && info.Absolut) p.BetragNetto = p.Satz;
+            if (z.SatzGesperrt) { /* Betrag bleibt der des Rechenwegs (Anteil × Basis × Strompreis) */ }
+            else if (info != null && info.Absolut) p.BetragNetto = p.Satz;
             else if (ProjektModus && b.Projektzeile != null)
                 p.BetragNetto = BetriebskostenCtrl.Betrag(
                     p.Bemessung, 0, b.Projektzeile.Basis, p.Satz, p.IstErloes);

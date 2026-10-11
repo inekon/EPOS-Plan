@@ -59,7 +59,7 @@ namespace EPOS.Kern.Tests
             "Kuehluebergabe_Aktiv", "Kuehl_Uebergabe_Art", "Kuehl_Uebergabe_Exponent",
             "Kuehl_Uebergabe_Leistung_Nenn", "Kuehl_Auslegung_Vorlauf", "Kuehl_Auslegung_Ruecklauf",
             "Kuehl_Auslegung_Raumtemperatur", "Kuehl_Vorlaufgrenze",
-            "Baujahr",
+            "Baujahr", "Erdreich_U_Wirksam",
         };
 
         // =============================================================================
@@ -241,7 +241,7 @@ namespace EPOS.Kern.Tests
                 "Kuehlung_Aktiv = 1, Kuehl_Sollwert = 26, Kuehluebergabe_Aktiv = 1, Kuehl_Uebergabe_Art = ?, " +
                 "Kuehl_Uebergabe_Exponent = 1.1, Kuehl_Uebergabe_Leistung_Nenn = 12.5, Kuehl_Auslegung_Vorlauf = 16, " +
                 "Kuehl_Auslegung_Ruecklauf = 19, Kuehl_Auslegung_Raumtemperatur = 26, Kuehl_Vorlaufgrenze = 18, " +
-                "Baujahr = 1987, Baualtersklasse = 'H', Energiestandard = 'EH55' WHERE ID = ?",   // E47: die Klasse zum Baujahr (1984 bis 1994)
+                "Baujahr = 1987, Baualtersklasse = 'H', Energiestandard = 'EH55', Erdreich_U_Wirksam = 0.27 WHERE ID = ?",   // E47: die Klasse zum Baujahr (1984 bis 1994)
                 new DbParam("@a", Waermeuebergabevorgaben.Arten.First(a => Waermeuebergabevorgaben.ArtRechnet(a))),
                 new DbParam("@k", Waermeuebergabevorgaben.KuehlArten.First(a => Waermeuebergabevorgaben.KuehlArtRechnet(a))),
                 new DbParam("@id", id));
@@ -296,6 +296,7 @@ namespace EPOS.Kern.Tests
 
             var sicht = new HashSet<string>(Spalten("Abfrage_Projektgebaeude"), StringComparer.OrdinalIgnoreCase);
             string[] fehlen = Spalten(PROJEKT)
+                // Verweise auf Kataloge sind keine Fachspalten (ID_Gebaeude_Stamm).
                 .Where(s => s != "ID_ProjektGebaeude" && s != "ID_Gebaeude_Stamm" && !sicht.Contains(s))
                 .ToArray();
             Assert.True(fehlen.Length == 0, "Es fehlen in der Sicht: " + string.Join(", ", fehlen));
@@ -354,7 +355,8 @@ namespace EPOS.Kern.Tests
             DataTable dt = DataRepository.GetDataTable("SELECT * FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", id));
             Assert.Single(dt.Rows);
             var zeile = new Dictionary<string, object>(StringComparer.Ordinal);
-            foreach (DataColumn c in dt.Columns) zeile[c.ColumnName] = dt.Rows[0][c];
+            foreach (DataColumn c in dt.Columns)
+                if (!Katalogfassung.IstKatalogspalte(c.ColumnName)) zeile[c.ColumnName] = dt.Rows[0][c];   // KU1: kein Fachwert
             return zeile;
         }
 

@@ -44,6 +44,7 @@ namespace WindowsFormsApplication1
                 ["ProfilLesen"] = new Func<int, QuellprofilInhalt>(ProfilLesen),
                 ["Speichern"] = new Func<QuellprofilInhalt, int>(k => Speichern(idProjekt, k)),
                 ["CsvLesen"] = new Func<int, Task<double[]>>(CsvLesen),
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(idProjekt),
                 ["Jahresbild"] = Bildzeichner(daten),
                 ["Werteanzahl"] = new Func<string, int>(DbWerte.QuellprofilWerteanzahl),
 
@@ -170,8 +171,9 @@ namespace WindowsFormsApplication1
 
             if (string.IsNullOrEmpty(pfad)) return new double[0];
 
-            return await SpeicherEngine.Kulturweitergabe.Starten(
-                () => WaermequelleClass.WerteAusCsv(pfad, soll));
+            // Eine Ausnahme wird vermerkt und ist „unlesbar" (null): Der Dialog nennt dann den
+            // Grund mit der erwarteten Zeilenzahl (SIMQ_MSG_CSV_FEHLER).
+            return await Importfang.Starten<double[]>(pfad, () => WaermequelleClass.WerteAusCsv(pfad, soll), _ => null);
         }
 
         /// <summary>

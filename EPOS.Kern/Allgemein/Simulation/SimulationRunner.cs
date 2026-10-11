@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Linq;
 using System.Threading;
 
@@ -187,6 +187,8 @@ namespace WindowsFormsApplication1
             // Energiebedarf: Wärme- und Strombedarf rechnen (ohne Diagramm-/Textbox-Ausgabe).
             simulation_Waermebedarf.Netzverluste = netzverluste;
             simulation_Waermebedarf.Netzverluste_Einheit = ctrl.m_szNetzverlusteEinheit;
+            // Der Projektlauf: nur er rechnet mit Stufe AK3 den geschlossenen Kreis (Festlegung 20).
+            simulation_Waermebedarf.Projektlauf = true;
             simulation_Waermebedarf.Waermebedarf_berechnen(idProjekt, nKlimaregion);
 
             // Zapfprofilgenerator (Umsetzungskonzept 2.2, N8): Kann der Generatorweg für das
@@ -258,6 +260,105 @@ namespace WindowsFormsApplication1
         //
         // Sie rechnen nichts Neues. Jeder Rumpf ist der Ausdruck, der vorher an seiner
         // Stelle stand - der Referenzlauf ist das Gate dafuer.
+
+        /// <summary>Restbedarf einer Stunde, ab dem sie als Restbedarfsstunde des Kreises zählt [kWh] (Festlegung 15).</summary>
+        internal const double AK3_RESTBEDARF_SCHWELLE_KWH = 1e-6;
+
+        /// <summary>
+        /// <b>Die Kennzahlen des geschlossenen Kreises in der Projektzeile</b> (Entwurf AK3, Festlegung 22; Spalten
+        /// <see cref="Ak3Schema.SPALTEN_ERGEBNIS"/>): Durchläufe im Mittel und höchstens, Fallwechsel (Stützstelle der
+        /// Wärmepumpe und Betriebsfall je Zone), Stunden an der Schranke, Stunden mit leerem Speicher und Stunden mit
+        /// Restbedarf der Kaskade (&gt; <see cref="AK3_RESTBEDARF_SCHWELLE_KWH"/>, Festlegung 15). Ohne Kreis — jede Stufe
+        /// außer AK3 — bleibt alles NULL.
+        /// </summary>
+        internal static void Ak3SpaltenSetzen(ErgebnisEnergiebedarfModel e, Anlagenkopplung kreis, double[] restKwh)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            if (kreis == null || kreis.Stunden == 0) return;
+            e.Ak3DurchlaeufeMittel = kreis.DurchlaeufeMittel;
+            e.Ak3DurchlaeufeMax = kreis.DurchlaeufeMax;
+            e.Ak3Fallwechsel = kreis.StuetzstellenWechsel + kreis.FallWechsel;
+            e.Ak3SchrankeStundenH = kreis.StundenAnDerSchranke;
+            e.Ak3SpeicherLeerStundenH = kreis.StundenSpeicherLeer;
+            int rest = 0;
+            if (restKwh != null)
+                foreach (double r in restKwh)
+                    if (r > AK3_RESTBEDARF_SCHWELLE_KWH) rest++;
+            e.Ak3RestbedarfStundenH = rest;
+        }
+
+        /// <summary>
+        /// <b>Die Kennzahlen von AK3-K in der Projektzeile</b> (Entwurf AK3-K 3.5, Festlegung 20; Spalten
+        /// <see cref="Ak3KSchema.SPALTEN_ERGEBNIS"/>): die Zonentage mit Sperre der Gegenseite und die gesperrte Energie
+        /// des Probetags, wenn die Zonensperre lief; die Stunden an der Kälteschranke, die Umschaltstunden und der
+        /// Kälte-Restbedarf, wenn der Kreis auf AK3 die Kälteseite rechnete. Sonst bleibt die Seite NULL.
+        /// </summary>
+        internal static void Ak3KSpaltenSetzen(ErgebnisEnergiebedarfModel e, Zonensperrkennzahl sperre, Anlagenkopplung kreis,
+                                               bool kaelteImKreis)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            if (sperre != null)
+            {
+                e.ZonensperreTage = sperre.Tage;
+                e.ZonensperreHeizenGesperrtMwh = sperre.HeizenGesperrtKwh / 1000.0;
+                e.ZonensperreKuehlenGesperrtMwh = sperre.KuehlenGesperrtKwh / 1000.0;
+            }
+            if (kaelteImKreis && kreis != null && kreis.Stunden > 0 && kreis.Kaelteschranke != null)
+            {
+                e.Ak3KaelteschrankeStundenH = kreis.StundenAnDerKaelteschranke;
+                e.Ak3UmschaltStundenH = kreis.StundenUmschaltung;
+                e.Ak3KaelterestStundenH = kreis.KaelteRestStunden;
+                e.Ak3KaelterestMwh = kreis.KaelteRestKwh / 1000.0;
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Kennzahlen der Kühlkurve in der Projektzeile</b> (Entwurf KK, Festlegung 12; Spalten
+        /// <see cref="KuehlkurveSchema.SPALTEN_ERGEBNIS"/>): der mittlere verlangte Kühlvorlauf der Kühlstunden, die Summe der
+        /// Absenkung durch den Raumeinfluss und die Stunden an der Vorlaufgrenze — nur, wenn der Kreis eine wirksame Kühlkurve
+        /// rechnete (<see cref="Anlagenkopplung.KuehlRaumeinfluss"/>); sonst bleibt die Seite NULL und die Zeile wie vorher.
+        /// </summary>
+        internal static void KuehlkurveSpaltenSetzen(ErgebnisEnergiebedarfModel e, Anlagenkopplung kreis)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            KuehlRaumeinfluss k2 = kreis?.KuehlRaumeinfluss;
+            if (k2 == null || kreis.Stunden <= 0) return;
+            double mittel = k2.KuehlVorlaufMittelC;
+            e.KuehlkurveVorlaufMittelC = double.IsNaN(mittel) ? (double?)null : mittel;
+            e.KuehlkurveAbsenkungKh = k2.AbsenkungSummeKh;
+            e.KuehlkurveVorlaufgrenzeStundenH = k2.StundenAnVorlaufgrenze;
+        }
+
+        /// <summary>
+        /// <b>Die Spalten des Schemaschritts 186 in der Projektzeile</b> (Anlagenkopplung 8.3; AK2-2a, AK2-2b): die
+        /// Stunden an der Schranke des Fahrplans und die Komfortkennzahlen des Projekts (5.5, F8, F9). Erhoben wird
+        /// für jedes Projekt, dessen Fahrplan lief — Anlagenkopplung ab AK1 und mindestens ein gekoppeltes Gebäude
+        /// auf dem VDI-Weg (F12, E83) —, auch ohne greifende Schranke: dann steht <c>Fahrplan_Begrenzt_Stunden</c>
+        /// auf 0, nicht NULL. Ein Projekt ohne Fahrplan schreibt alle NULL und damit dieselbe Zeile wie vorher
+        /// (Referenzlauf byte-gleich, <c>SpaltenNurMitWert</c>). Eine Seite ohne erhobenes Gebäude bleibt NULL.
+        /// Auf Stufe AK3 (Entwurf AK3) wirkt der Fahrplan über die Schranke des Kreises, nicht über das Fahrplanobjekt:
+        /// dort stehen die Komfortkennzahlen (<paramref name="komfortErhoben"/>), <c>Fahrplan_Begrenzt_Stunden</c>
+        /// bleibt NULL — seine Entsprechung ist <c>Ak3_Schranke_Stunden</c>.
+        /// </summary>
+        internal static void AnlagenfahrplanSpaltenSetzen(ErgebnisEnergiebedarfModel e, bool fahrplanWirksam,
+                                                          int fahrplanStunden, bool komfortErhoben,
+                                                          Komfortkennzahlen heizen, Komfortkennzahlen kuehlen)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            if (fahrplanWirksam) e.FahrplanBegrenztStundenH = Math.Max(0, fahrplanStunden);
+            if (!fahrplanWirksam && !komfortErhoben) return;
+            if (heizen != null)
+            {
+                e.KomfortUnterschreitungsstundenH = heizen.Stunden;
+                e.KomfortKelvinstundenKh = heizen.Kelvinstunden;
+                e.KomfortLaengsteStreckeH = heizen.LaengsteStrecke;
+            }
+            if (kuehlen != null)
+            {
+                e.KomfortUeberschreitungsstundenH = kuehlen.Stunden;
+                e.KomfortKelvinstundenKuehlungKh = kuehlen.Kelvinstunden;
+            }
+        }
 
         /// <summary>
         /// EIGENANTEIL der Waermepumpe [MWh]: Direktdeckung (Phase B) plus der ihr
@@ -409,6 +510,32 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.UebergabeBegrenztStundenH = heizkreis.UebergabeBegrenztStundenH;
             }
 
+            // ANLAGENKOPPLUNG AK2 (8.3; F12, E83): die Stunden, in denen der Fahrplan in mindestens einem Gebaeude
+            // gekappt hat, und die Komfortkennzahlen - fuer jedes Projekt, dessen Fahrplan lief (Kopplung ab AK1,
+            // ein gekoppeltes Gebaeude auf dem VDI-Weg), auch ohne greifende Schranke (dann 0 Stunden). Ein
+            // Projekt ohne Fahrplan schreibt NULL und dieselbe Zeile wie vorher (SpaltenNurMitWert).
+            // AK3 (Entwurf AK3): der Fahrplan wirkt ueber die Schranke des Kreises - die Komfortkennzahlen stehen auch
+            // dann, wenn der Kreis gerechnet hat; Fahrplan_Begrenzt_Stunden bleibt NULL (Entsprechung Ak3_Schranke_Stunden).
+            bool fahrplanWirksam = simulation_Waermebedarf.FahrplanWirksam;
+            bool komfortErhoben = fahrplanWirksam || simulation_Waermebedarf.Ak3?.Kreis != null;
+            int fahrplanStunden = fahrplanWirksam ? simulation_Waermebedarf.FahrplanBegrenztStunden() : 0;
+            (Komfortkennzahlen komfortHeizen, Komfortkennzahlen komfortKuehlen) = komfortErhoben
+                ? simulation_Waermebedarf.KomfortProjekt()
+                : (null, null);
+            AnlagenfahrplanSpaltenSetzen(m.Energiebedarf, fahrplanWirksam, fahrplanStunden, komfortErhoben, komfortHeizen, komfortKuehlen);
+
+            // ANLAGENKOPPLUNG AK3 (Entwurf AK3, Festlegung 22): die Kennzahlen des geschlossenen Kreises - nur, wenn der
+            // Kreis gerechnet hat, sonst NULL ("nicht erhoben") und dieselbe Zeile wie vorher (SpaltenNurMitWert).
+            Ak3SpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.Ak3?.Kreis, sim.Rest_Waermebedarf_stuendlich);
+
+            // AK3-K (Festlegung 20): Zonensperre und Kaelteseite im Kreis - nur, wenn sie liefen, sonst NULL und dieselbe
+            // Zeile wie vorher (SpaltenNurMitWert).
+            Ak3KSpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.ZonensperreProjekt(), simulation_Waermebedarf.Ak3?.Kreis,
+                              simulation_Waermebedarf.Ak3 != null);
+
+            // KK (Festlegung 12): die Kennzahlen der Kühlkurve - nur mit wirksamer Kurve im Kreis, sonst NULL (SpaltenNurMitWert).
+            KuehlkurveSpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.Ak3?.Kreis);
+
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.
             KuehlkreisProjekt kuehlkreis = simulation_Waermebedarf.Kuehlkreis;
@@ -422,6 +549,11 @@ namespace WindowsFormsApplication1
             // ENTSCHEID E30: die Kennzahlen je Gebaeude, wie die Gebaeudeschleife des Laufs
             // sie gebildet hat - ErgebnisCtrl.Save legt sie nach Tab_ErgebnisGebaeude.
             m.Gebaeude.AddRange(simulation_Waermebedarf.GebaeudeKennzahlenListe);
+
+            // EQ1 (Entscheidungsvorlage Modellgrenzen): die Erdreichpruefung des Laufs, wie
+            // ErdreichAuswertung.AusLauf sie am Ende des Laufs abgelegt hat - ErgebnisCtrl.Save legt
+            // sie nach Tab_ErgebnisErdreich. Reine Auswertung, kein Rechenweg.
+            m.Erdreich.AddRange(ErdreichErgebnisSpeicher.Zeilen(ErdreichAuswertung.FuerProjekt(idProjekt), m.Zeitstempel));
 
             // Detail: Waermepumpe (nur wenn gerechnet), Werte wie in der WP-Ansicht (MWh).
             if (sim.bSimulationWP)
@@ -567,6 +699,23 @@ namespace WindowsFormsApplication1
                 {
                     w.Kaelteproduktion_WP = kaskade.DeckungGesamtKwh / 1000.0;
                     w.Stromverbrauch_Kuehlung = kaskade.StromGesamtKwh / 1000.0;
+
+                    // KU3-2: Rechnet eine Kältemaschine mit, gehören ihre Kälte und ihr Strom nicht
+                    // zur Wärmepumpe - dann die Summe allein der Wärmepumpen. Ohne Kältemaschine
+                    // bleibt es Zeichen für Zeichen die Summe der Kaskade.
+                    if (kaskade.Erzeuger.Any(e => e.Maschine != null))
+                    {
+                        w.Kaelteproduktion_WP = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.KaelteGesamtKwh) / 1000.0;
+                        w.Stromverbrauch_Kuehlung = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.StromGesamtKwh) / 1000.0;
+                    }
+
+                    // KU3-6 (F4): freie Kühlung über die Wärmequelle - nur, wenn sie an einer Wärmepumpe
+                    // wirksam ist; sonst bleiben beide Felder null und die Spalten NULL.
+                    if (kaskade.Erzeuger.Any(e => e.Maschine == null && e.FreieKuehlungSole))
+                    {
+                        w.FreieKuehlung_MWh = kaskade.Erzeuger.Where(e => e.Maschine == null).Sum(e => e.KaelteFreiKwh) / 1000.0;
+                        w.FreieKuehlung_Stunden = kaskade.StundenFreieKuehlungWp;
+                    }
                 }
 
                 // Modulauflistung.
@@ -580,10 +729,57 @@ namespace WindowsFormsApplication1
                     mo.Heizstab = wp.Modul_Heizstab[i] / 1000.0;
                     mo.Betriebsstunden = wp.Modul_WP_Laufzeit[i];
                     if (kaskade != null) KaelteseiteDesModuls(mo, kaskade, i);
+                    // VW1a (Schemaschritt 188, E88): der Ausweis der Kennlinienwahl am gerechneten Vorlauf -
+                    // nur fuer ein Modul mit Kennlinienwahl; sonst bleiben die drei Felder null.
+                    SimulationWaermepumpe.VorlaufwahlAusweis vw = wp.VorlaufwahlDesModuls(i);
+                    if (vw != null)
+                    {
+                        mo.Vorlaufwahl_Stunden = vw.StundenText;
+                        mo.Vorlauf_Darueber_Stunden = vw.Darueber;
+                        mo.Vorlauf_Darunter_Stunden = vw.Darunter;
+                    }
+                    // UB-E2 (Schemaschritt 205): die Betriebsbereiche - nur fuer ein Modul mit Bivalenzobjekt
+                    // (Einbindung gesetzt, U-1); sonst bleibt das Feld null und die Spalten NULL.
+                    mo.Bereiche = BereicheDesModuls(wp.BivalenzDesModuls(i));
                     w.Module.Add(mo);
                 }
+                w.Bereiche = Bereichskennzahlen.Summe(w.Module.Select(x => x.Bereiche));
 
                 m.Waermepumpe = w;
+            }
+
+            // KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine - nur mit gerechneter Kaeltekaskade.
+            {
+                SimulationKaeltebedarf kk = sim.simulation_Waermebedarf != null ? sim.simulation_Waermebedarf.Kaelteseite : null;
+                Kaeltekaskade kas = (kk != null && kk.Gerechnet) ? kk.Kaskade : null;
+                if (kas != null)
+                    foreach (Kaelteerzeuger e in kas.Erzeuger)
+                        if (e != null && e.Maschine != null)
+                            m.Kaeltemaschinen.Add(new ErgebnisKaeltemaschineModel
+                            {
+                                ID_Kaeltemaschine = e.Maschine.Id > 0 ? (int?)e.Maschine.Id : null,
+                                Bezeichner = e.Bezeichner ?? "",
+                                Anzahl = Math.Max(1, e.Maschine.Anzahl),
+                                Kaelteproduktion_MWh = e.KaelteGesamtKwh / 1000.0,
+                                Stromverbrauch_MWh = e.StromGesamtKwh / 1000.0,
+                                Hilfsstrom_MWh = e.HilfsstromGesamtKwh / 1000.0,
+                                FreieKuehlung_MWh = e.KaelteFreiKwh / 1000.0,
+                                FreieKuehlung_Stunden = e.StundenFreieKuehlung,
+                                Taktstunden = e.Taktstunden,
+                                Unterdeckung_MWh = e.OffenAnLeistungsgrenzeKwh / 1000.0,
+                                Stunden_Leistungsgrenze = e.StundenLeistungsgrenze,
+                                // KU3-4d (Schritt 184): die Abrechnung des Kaeltestroms wie an der Modulzeile der WP.
+                                Kaeltestrom_Netzbezug_MWh = e.NetzbezugKwh / 1000.0,
+                                Kuehl_CarrierId = e.Kuehltraeger > 0 ? (int?)e.Kuehltraeger : null,
+                                Kuehl_EigenerZaehler = e.Kuehltraeger > 0 ? (bool?)e.EigenerZaehler : null,
+                                Stromspitze_kW = Kaeltestromabrechnung.Stundenspitze(e.Strom_stuendlich),
+                                // KM3 (Schritt 210): nur mit Teillast_Weg bzw. Randweg GUETEGRAD belegt, sonst NULL.
+                                Taktstrom_MWh = e.Maschine.TeillastWirksam ? (double?)(e.TaktstromKwh / 1000.0) : null,
+                                Starts = e.Maschine.TeillastWirksam ? (int?)e.Starts : null,
+                                Teillaststunden = e.Maschine.TeillastWirksam ? (int?)e.StundenTeillast : null,
+                                Lastgrad_Mittel = e.Maschine.TeillastWirksam ? (double?)e.LastgradMittel : null,
+                                Stunden_Extrapoliert = e.Maschine.GuetegradWirksam ? (int?)e.StundenExtrapoliert : null,
+                            });
             }
 
             // Detail: BHKW (nur wenn gerechnet). Werte wie in der BHKW-Ergebnisansicht (MWh/a).
@@ -1018,30 +1214,25 @@ namespace WindowsFormsApplication1
                     // doppelt gezählt.
                     pvm.Ueberschuss = sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0;
                 }
-                else if (sim.Speicherergebnis != null &&
-                    sim.Speicherergebnis.LadungAcKwh != null &&
-                    sim.Speicherergebnis.LadungAcKwh.Length == pvs.Ueberschuss_viertelstunde.Length)
-                {
-                    double[] ladungKwh = sim.Speicherergebnis.LadungAcKwh;
-                    double einspKwh = 0;
-                    for (int vi = 0; vi < ladungKwh.Length; vi++)
-                        einspKwh += Math.Max(0,
-                            pvs.Ueberschuss_viertelstunde[vi] * 0.25 - ladungKwh[vi]);
-                    pvm.Ueberschuss = einspKwh / 1000.0;
-                }
                 else
-                    pvm.Ueberschuss = pvs.Ueberschuss.Sum() / 1000.0;
+                {
+                    // SB1 (a) und PV3: die Einspeisung je Viertelstunde nach der Speicherladung
+                    // und unter der Einspeisegrenze - dieselbe Aufteilung wie Reiter und Bericht
+                    // (SimulationPV.EinspeisungAufteilen). Ohne Speicher und ohne Grenze ist das
+                    // der Überschuss.
+                    sim.PvEinspeisungAufteilen(out double[] einspeisungKw, out _);
+                    pvm.Ueberschuss = SimulationPV.ViertelstundenKwh(einspeisungKw) / 1000.0;
+                }
                 // E28 (#535, E28‑Q3 a): der Stufeneingang je Viertelstunde bei 0 geklemmt - ein
                 // BHKW-Überschuss davor ist kein negativer Strombedarf der PV-Zeile.
                 pvm.Strombedarf = SimulationControl.NetzbezugGeklemmt(pvs.Strombedarf).Sum() / 4000.0;
                 pvm.Reststrombedarf = sim.Speicherflottennetzbilanz != null
                     ? sim.Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
                     : sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
-                // E29 (#536, Restpunkt E28 (a), Entscheid E29‑Q10 a): der Nenner je Stunde bei 0
-                // geklemmt wie in der PV-Schleife (SimulationPV: bedarf = max(0, bedarfRoh)) -
+                // E29 (#536, Entscheid E29‑Q10 a) mit SB1 (a): der Nenner je VIERTELSTUNDE bei 0
+                // geklemmt wie in der PV-Bilanz (SimulationPV.Bilanzieren: bedarf = max(0, bedarfRoh)) -
                 // ein BHKW-Überschuss davor mindert den Bedarf nicht, die Deckung bleibt ≤ 100 %.
-                // Ohne negative Stunde dasselbe Array, also bitgleich.
-                double pvBedarfKwh = SimulationControl.NetzbezugGeklemmt(pvs.Strombedarf_stuendlich).Sum();
+                double pvBedarfKwh = SimulationControl.NetzbezugGeklemmt(pvs.Strombedarf).Sum() / 4.0;
                 pvm.Strombedarfsdeckung = (pvBedarfKwh > 0)
                     ? pvs.Stromproduktion.Sum() * 100.0 / pvBedarfKwh : 0;
                 pvm.MaxSolareLeistung = pvs.MaxPSolar;
@@ -1063,7 +1254,8 @@ namespace WindowsFormsApplication1
             // Senken-Puffer (sim.puffer_wp) UND jeder Quellspeicher der WP-Module;
             // die Rolle steht in Verwendung. Quelle ist dieselbe Speicherliste, aus
             // der sich auch Navigator, CSV-Export und die Ergebnistabelle speisen.
-            foreach (SimulationPufferspeicher sp in sim.AlleSpeicher())
+            // KU3-5: die Kältespeicher hinter den Wärmespeichern - Verwendung „Kaelte", Entladung im Kühlkanal.
+            foreach (SimulationPufferspeicher sp in sim.AlleSpeicher().Concat(sim.Kaeltespeicher()))
             {
                 var pz = new ErgebnisPufferspeicherModel
                 {
@@ -1202,6 +1394,36 @@ namespace WindowsFormsApplication1
         /// ein abweichender Kühlträger samt Abrechnungsart. Ein Modul, das nicht kühlt, trägt 0 — die
         /// Kältekaskade hat gerechnet, dieses Gerät nur nicht gekühlt. Werte in MWh.
         /// </summary>
+        /// <summary>
+        /// UB‑E2 (Umsetzungskonzept 3.3): die Betriebsbereiche eines Moduls aus seinem Bivalenzobjekt — Stunden und Wärme
+        /// je Bereich (B0 und B4 als „nur Kessel"), die Zähler der Spreizungs- und Rücklaufgrenze (UB‑E3), die
+        /// Bivalenzpunkte und Φ_UE,max bei Auslegung. <c>null</c> ohne Bivalenzobjekt.
+        /// </summary>
+        internal static Bereichskennzahlen BereicheDesModuls(Bivalenzmodul b)
+        {
+            if (b == null) return null;
+            double? Punkt(double v) => double.IsNaN(v) || double.IsInfinity(v) ? (double?)null : v;
+            Bivalenzpunkte? p = b.Punkte;
+            return new Bereichskennzahlen
+            {
+                Stunden = new int?[]
+                {
+                    b.Stunden(Betriebsbereich.WpAllein), b.Stunden(Betriebsbereich.Parallel),
+                    b.Stunden(Betriebsbereich.Vorwaermung), b.NurKesselStunden,
+                },
+                Mwh = new double?[]
+                {
+                    b.WaermeKwh(Betriebsbereich.WpAllein) / 1000.0, b.WaermeKwh(Betriebsbereich.Parallel) / 1000.0,
+                    b.WaermeKwh(Betriebsbereich.Vorwaermung) / 1000.0, b.NurKesselKwh / 1000.0,
+                },
+                Spreizung_Unterschritten_h = b.SpreizungUnterschrittenStunden,
+                Ruecklauf_Ueberschritten_h = b.RuecklaufUeberschrittenStunden,
+                Bivalenzpunkt_1 = p.HasValue ? Punkt(p.Value.ErsterC) : null,
+                Bivalenzpunkt_2 = p.HasValue ? Punkt(p.Value.ZweiterC) : null,
+                Uebergabe_Max_kW = Punkt(b.UebergabeMaxAuslegungKw),
+            };
+        }
+
         internal static void KaelteseiteDesModuls(ErgebnisWaermepumpeModulModel mo, Kaeltekaskade kaskade,
                                                   int modulindex)
         {
@@ -1216,6 +1438,12 @@ namespace WindowsFormsApplication1
                 mo.Kaelteproduktion = e.KaelteGesamtKwh / 1000.0;
                 mo.Stromverbrauch_Kuehlung = e.StromGesamtKwh / 1000.0;
                 mo.Kaeltestrom_Netzbezug = e.NetzbezugKwh / 1000.0;
+                // KU3-6 (F4): die freie Kühlung über die Wärmequelle - nur, wenn sie wirksam ist.
+                if (e.FreieKuehlungSole)
+                {
+                    mo.FreieKuehlung_MWh = e.KaelteFreiKwh / 1000.0;
+                    mo.FreieKuehlung_Stunden = e.StundenFreieKuehlung;
+                }
                 if (e.Kuehltraeger > 0)
                 {
                     mo.Kuehl_CarrierId = e.Kuehltraeger;

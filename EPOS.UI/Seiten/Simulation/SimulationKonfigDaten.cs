@@ -133,6 +133,12 @@ public sealed class SimulationKonfigDaten
     /// 0, steht dort nichts.
     /// </summary>
     public bool KaskadeGepflegt;
+
+    /// <summary>
+    /// Der Bereich „Kälte“ (Entwurf Kältebereich 3, Welle KB-A): Projektschalter, Kälteerzeuger in Rechenfolge,
+    /// Kältespeicher und freie Kühlung — aus dem Kernleser der Kältefolge. Nie <c>null</c>.
+    /// </summary>
+    public KaeltebereichDaten Kaeltebereich = new KaeltebereichDaten();
 }
 
 /// <summary>
@@ -264,6 +270,12 @@ public sealed class SimulationKonfigDienste
     public Action<int, EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten>? QuelleErdreichSchreiben;
 
     /// <summary>
+    /// Der Erdreich-Dialog endet ohne OK (Abbrechen, ✕, Esc): Die Hülle verwirft einen Lauf des
+    /// Dialogs, der mit ungespeicherten Eingaben gerechnet hat.
+    /// </summary>
+    public Action<int>? QuelleErdreichAbgebrochen;
+
+    /// <summary>
     /// Der CSV-Zweig: Datei waehlen, das Profil pruefen, den Pfad schreiben. Die
     /// Rueckmeldung traegt bei einem unlesbaren Profil dessen Meldung.
     /// </summary>
@@ -293,6 +305,52 @@ public sealed class SimulationKonfigDienste
     /// ueber den Rueckwegstapel der <c>AppWurzel</c> hierher zurueck, nach ①.
     /// </remarks>
     public Action? AuslegungOeffnen;
+
+    /// <summary>
+    /// Wechselt auf die Ansicht „Pufferspeicher-Auslegung" (Konzept Pufferspeicher-Auslegung,
+    /// Stufe P2) — der Knopf „Pufferspeicher auslegen…" unter „Pufferspeicher anlegen /
+    /// verwalten…". Das Argument ist der Projektpuffer (<c>0</c> = keiner: die Klasse kommt aus
+    /// dem Projekt, die Übernahme legt einen neuen an). <b>Ohne Delegat kein Knopf.</b>
+    /// </summary>
+    public Action<int>? PufferAuslegungOeffnen;
+
+    /// <summary>
+    /// Der Kühlbetrieb einer Wärmepumpe im Bereich „Kälte“ (Welle KB-A; Aufnehmen = an, Entfernen = aus) —
+    /// derselbe Kernweg wie der Kühlschalter der Wärmepumpen-Konfiguration
+    /// (<c>WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten</c>), schreibt SOFORT. Parameter: Projektkopie
+    /// (<c>Tab_WP.ID</c>) und Zielzustand; Rückgabe <c>null</c> = geschrieben, sonst der Sperrgrund. <c>null</c> als
+    /// Delegat = kein Schreibweg; dann steht kein Schalter da.
+    /// </summary>
+    public Func<int, bool, string?>? KuehlbetriebWpSchreiben;
+
+    /// <summary>
+    /// Rückt einen Kälteerzeuger im Bereich „Kälte“ einen Platz nach vorn oder hinten (Welle KB-D, Entscheid E117 F1) —
+    /// Kernweg <c>KaeltefolgeCtrl.Verschieben</c>, schreibt SOFORT die ganze Folge als gepflegte. Parameter: Anlagen-ID
+    /// (<see cref="KaelteerzeugerZeile.IdAnlage"/>) und Richtung (<c>-1</c> = nach vorn, <c>+1</c> = nach hinten); Rückgabe
+    /// <c>null</c> = geschrieben, sonst der Grund. <c>null</c> als Delegat = kein Schreibweg; dann stehen keine Pfeile da.
+    /// </summary>
+    public Func<int, int, string?>? KaelteVerschieben;
+
+    /// <summary>
+    /// Stellt die Vorgabefolge der Kälteerzeuger wieder her (Welle KB-D) — Kernweg <c>KaeltefolgeCtrl.VorgabeSetzen</c>,
+    /// schreibt SOFORT. Rückgabe <c>null</c> = geschrieben, sonst der Grund. <c>null</c> als Delegat = kein Knopf.
+    /// </summary>
+    public Func<string?>? KaelteVorgabefolge;
+
+    /// <summary>
+    /// Die Konfiguration EINER Kältemaschinen-Anlage im Bereich „Kälte“ (Welle KB-B, Entwurf Kältebereich 3.3) —
+    /// Parameter: <c>Tab_Energieanlagen.ID</c>; Rückgabe <c>null</c> = die Anlage steht nicht (mehr) im Projekt.
+    /// <c>null</c> als Delegat = kein Weg; dann steht kein Knopf „Konfiguration…“, und der Doppelklick im Schema
+    /// öffnet den Dialog „Kältemaschinen im Projekt“ über die Navigation.
+    /// </summary>
+    public Func<int, EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben?>? KaeltemaschineKonfigurationLaden;
+
+    /// <summary>
+    /// Der OK-Weg der Kältemaschinen-Konfiguration: prüft mit den Regeln des Kerns
+    /// (<c>KaeltemaschineAnlageCtrl.Pruefen</c>) und schreibt Anlagenzeile und Kühleingaben in einem Vorgang
+    /// (<c>KaeltemaschineAnlageCtrl.Speichern</c>). Rückgabe <c>null</c> oder leer = geschrieben, sonst der Grund.
+    /// </summary>
+    public Func<EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten, string?>? KaeltemaschineKonfigurationSpeichern;
 }
 
 /// <summary>Ein waehlbarer Quellentyp: Steuerwert und Anzeigetext.</summary>

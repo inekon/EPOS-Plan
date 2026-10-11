@@ -143,10 +143,10 @@ namespace EPOS.Kern.Tests
                 Assert.Contains("Tab_Gebaeude." + s, GebaeudeSchema.SQL_VIEW_UEBERGABE, StringComparison.Ordinal);
                 Assert.DoesNotContain("Tab_Gebaeude." + s, GebaeudeSchema.SQL_VIEW_KUEHLUNG, StringComparison.Ordinal);
             }
-            // Die GELTENDE Sicht ist die des letzten Durchgangs (des Energiestandards, E47); sie beginnt mit
-            // der Sicht von AK-S1 an denselben Stellen.
+            // Die GELTENDE Sicht ist die des letzten Durchgangs (der manuellen Aufheizzeit, E59); sie beginnt
+            // mit der Sicht von AK-S1 an denselben Stellen.
             Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SICHT_AKTUELL.Take(90));
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_KALENDERBEDIENUNG, GebaeudeSchema.SQL_VIEW_AKTUELL);
         }
 
         /// <summary>
@@ -332,26 +332,33 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
             Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SichtSpalten().Take(90));
 
-            // Gesät ist allein das Referenzprojekt der Anlagenkopplung 1047 (Einfrierregel „gesäte
-            // Auslegungsdaten der Übergabe", anlagenkopplung_1047_referenzprojekt.py): die Stufe AK1
-            // und am Gebäude 10653 Heizkreis, Radiator und Heizkurve, alles Übrige leer.
+            // Gesät sind allein das Referenzprojekt der Anlagenkopplung 1047 (Einfrierregel „gesäte
+            // Auslegungsdaten der Übergabe", anlagenkopplung_1047_referenzprojekt.py) und das Referenzprojekt
+            // Zonen mit Heizkreis 1054 (AK1z, referenzprojekt_1054_zonen_heizkreis.cs): je die Stufe AK1
+            // und am Gebäude Heizkreis, Radiator und Heizkurve, alles Übrige leer. Dazu die Kopie von 1047 im
+            // Referenzprojekt des Fahrplans 1056 (AK2-4, referenzprojekt_1056_fahrplan.py) mit denselben Zellen und deren
+            // Kopie im Referenzprojekt AK3 1058 (AK3-W5a, referenzprojekt_1058_ak3.py), dort mit der Stufe AK3, und die Kopie von 1056 im Referenzprojekt Übergabegrenze 1060 (UB-E2-d) mit
+            // Heizkörpern 75/60 °C.
+            const string GEBAEUDE_1054 = "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1054, 1056, 1058, 1059, 1061, 1062))";
             foreach (SchemaSpalte s in AnlagenkopplungSchema.UebergabeSpalten().Concat(AnlagenkopplungSchema.Ergebnisspalten))
             {
                 string ausser = s.Tabelle == "Tab_Gebaeude"
-                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture)
+                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + " AND ID NOT IN " + GEBAEUDE_1054 +
+                      " AND ID NOT IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1060)"
                     : s.Tabelle == "Tab_Einstellungen"
-                        ? " AND ID_Projekt <> " + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture)
+                        ? " AND ID_Projekt NOT IN (" + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", 1054, 1056, 1058, 1059, 1060, 1061, 1062)"
                         : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));
                 if (!GebaeudeSchema.UEBERGABE_SCHALTER.Contains(s.Name))
                     Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" + ausser));
             }
-            Assert.Equal(DbWerte.ANLAGENKOPPLUNG_AK1, Convert.ToString(DataRepository.ExecuteScalar(
-                "SELECT Anlagenkopplung FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                new DbParam("?", PROJEKT_REFERENZ_KOPPLUNG)), CultureInfo.InvariantCulture));
-            DataRow referenz = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
-                                                           new DbParam("?", GEBAEUDE_REFERENZ_KOPPLUNG)).Rows[0];
+            foreach (int projekt in new[] { PROJEKT_REFERENZ_KOPPLUNG, 1054 })
+                Assert.Equal(DbWerte.ANLAGENKOPPLUNG_AK1, Convert.ToString(DataRepository.ExecuteScalar(
+                    "SELECT Anlagenkopplung FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                    new DbParam("?", projekt)), CultureInfo.InvariantCulture));
+            foreach (DataRow referenz in DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ? OR ID IN " + GEBAEUDE_1054,
+                                                                     new DbParam("?", GEBAEUDE_REFERENZ_KOPPLUNG)).Rows)
             foreach (SchemaSpalte s in GebaeudeSchema.Uebergabespalten.Where(x => x.Tabelle == "Tab_Gebaeude"))
             {
                 if (GebaeudeSchema.UEBERGABE_SCHALTER.Contains(s.Name))

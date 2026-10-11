@@ -1,4 +1,4 @@
-@page "/katalogprobe"
+﻿@page "/katalogprobe"
 @using Microsoft.AspNetCore.WebUtilities
 @using EPOS.UI.Dialoge.Klimadaten
 @using EPOS.UI.Dialoge.Bedarf
@@ -95,16 +95,22 @@
             break;
 
         case "solar":
-            <SolarganglinieAdminDialog Katalogzeilen="@(() => Task.FromResult(ZeitreihenZeilen()))"
+            @* Projekt und Katalog der Solarthermieganglinien sind EIN Dialog; der
+               Menuepunkt oeffnet ihn ohne Projekt (Katalogbetrieb). *@
+            <EPOS.UI.Dialoge.Solarthermie.SolarganglinieDialog Katalogbetrieb="true"
+                                       Katalogwege="@(new GanglinienKatalogwege
+                                       {
+                                           Katalogzeilen = () => Task.FromResult(ZeitreihenZeilen()),
+                                           HatProjektzuordnung = _ => Task.FromResult(false),
+                                           Loeschen = _ => Task.FromResult(true),
+                                           Schloss = ProbeSchloss,
+                                           Verwendung = Verwendung,
+                                           Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, false, "", "", "")),
+                                           DateiWaehlen = _ => Task.FromResult<string?>(null),
+                                           Ordner = "D:\\VDI-3805-Daten\\Solarthermie"
+                                       })"
                                        Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, Uebersetzt)"
                                        Filterstandvorgabe="@_filterstand"
-                                       HatProjektzuordnung="@(_ => Task.FromResult(false))"
-                                       Loeschen="@(_ => Task.FromResult(true))"
-                                       Schloss="@ProbeSchloss"
-                                       Ansicht="@GanglinieAnsicht" Verwendung="@Verwendung"
-                                       Einlesen="@((_, _) => Task.FromResult(new EPOS.UI.Dialoge.Solarthermie.SolarganglinieImportErgebnis()))"
-                                       DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
-                                       Ordner="D:\VDI-3805-Daten\Solarthermie"
                                        Geschlossen="@(b => { })" />
             break;
 
@@ -238,13 +244,15 @@
                das Zeilenmass 53 px (kein ZeileIstWahl, keine Tastenfuehrung). zeilen=<n> ist
                die Zahl der Katalogsaetze (ab 120 virtualisiert, bis 6 654); die Projektliste
                traegt zwei Zeilen. Profil und Zeilen sind EINE Instanz je Seite - wie in der
-               Huelle, die sie einmal je Parametersatz baut. *@
+               Huelle, die sie einmal je Parametersatz baut. Der Leer-Weg ProjektGaben zeigt
+               "Bearbeiten..." in der Kopfleiste "Im Projekt" wie in der Huelle. *@
             <GebaeudeDialog Zeilen="@GebaeudeProjektzeilen"
                             Katalogzeilen="@(() => GebaeudeZeilen)"
                             Katalogprofil="@GebaeudeProfil"
                             Filterstandvorgabe="@_filterstand"
                             StammDetail="@GebaeudeStammdetail"
                             StammSatz="@GebaeudeStammsatz"
+                            ProjektGaben="@(_ => null)"
                             Geschlossen="@(b => { })" />
             break;
 
@@ -620,7 +628,7 @@
         Detail = BrowserFelder,
         Existiert = _ => false,
         Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
-        Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
+        Speichern = (n, _) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
         Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n),
         Schloss = ProbeSchloss,
         // Block 4 (Konzept 7.1 d): "Import..." wie im Verwaltungsfenster der

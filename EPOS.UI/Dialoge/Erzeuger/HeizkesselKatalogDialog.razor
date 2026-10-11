@@ -41,6 +41,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Kosten
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -107,13 +108,22 @@
                         Wert="@Daten.Wirkungsgrad_Oel" WertChanged="w => Daten.Wirkungsgrad_Oel = w"
                         FehlerZustand="BeiFehlerZustand" />
 
-            <Zahlenfeld Bezeichnung="@LabelBBVerlust" Einheit="kW" Feldname="@LabelBBVerlustKurz"
+            @* DER BEREITSCHAFTSVERLUST IN kW ODER % DER NENNLEISTUNG (Anwenderentscheid
+               02.10.2026): Wert und Einheit stehen nebeneinander, die Einheit hinter dem Feld
+               folgt der Wahl. Die Grenzen je Einheit (kW: 0 bis Nennleistung, %: 0 bis 100)
+               prueft der Kern beim Speichern und nennt sie in der Meldung - eine feste
+               Obergrenze im Feld veraltete mit jeder Aenderung von Leistung oder Einheit. *@
+            <Zahlenfeld Bezeichnung="@LabelBBVerlust" Einheit="@BBEinheitText"
+                        Feldname="@LabelBBVerlustKurz" Min="0"
                         Wert="@Daten.Betriebsbereitschaftverlust"
                         WertChanged="w => Daten.Betriebsbereitschaftverlust = w"
                         FehlerZustand="BeiFehlerZustand" />
+            <Auswahlfeld Bezeichnung="@LabelBBEinheit" Eintraege="@BBEinheiten"
+                         Auswahl="@(Daten.BereitschaftProzent ? BB_EINHEIT_PROZENT : BB_EINHEIT_KW)"
+                         AuswahlChanged="w => Daten.BereitschaftProzent = w == BB_EINHEIT_PROZENT" />
 
             <Schalter Bezeichnung="@LabelBrennwert" Wert="@Daten.Brennwert"
-                      WertChanged="w => Daten.Brennwert = w" />
+                      WertChanged="BeiBrennwert" />
 
             <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlaufKurz"
                           Wert="@Daten.Vorlauf" WertChanged="w => Daten.Vorlauf = w"
@@ -123,6 +133,61 @@
                           FehlerZustand="BeiFehlerZustand" />
                 </KindInhalt>
             </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* KENNLINIE (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1). Anders als oben heisst
+       ein LEERES Feld hier nicht 0, sondern "nicht gepflegt" - dann gilt die Vorgabe
+       (Entscheid F1); der Platzhalter sagt es im Feld. Die Brennwertkennlinie ist nur
+       beim Brennwertkessel bedienbar; der Controller lehnt sie sonst benannt ab. *@
+    <Gruppenkopf Titel="@GruppeKennlinie">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelTeillast30" Einheit="@HinweisTeillast30"
+                        Feldname="@LabelTeillast30Kurz" Platzhalter="@PlatzhalterVorgabe"
+                        Wert="@Daten.Wirkungsgrad_Teillast30"
+                        WertChanged="w => Daten.Wirkungsgrad_Teillast30 = w"
+                        FehlerZustand="BeiFehlerZustand" />
+            <Schalter Bezeichnung="@LabelKennlinieBrennwert" Wert="@Daten.Kennlinie_Brennwert"
+                      Aktiv="@Daten.Brennwert"
+                      WertChanged="w => Daten.Kennlinie_Brennwert = w && Daten.Brennwert" />
+            @* Anwenderentscheid 30.09.2026 („Nur im Kesseldialog"): ein ruhiger Hinweis unter dem
+               Schalter, solange ein Brennwertkessel ohne Brennwertkennlinie rechnet - dann wirkt der
+               Ruecklauf nicht. Keine Warnkarte vor dem Lauf. Als Herleitungszeile spannt er ueber
+               die volle Breite und steht so unter seinem Schalter, nicht neben einem fremden Feld. *@
+            @if (OhneBrennwertkennlinie)
+            {
+                <p class="epos-herleitung epos-hzkk-ohne-kennlinie">@HinweisOhneKennlinie</p>
+            }
+            <Zahlenfeld Bezeichnung="@LabelMindestleistung" Einheit="kW"
+                        Feldname="@LabelMindestleistungKurz" Platzhalter="@PlatzhalterVorgabe" Min="0"
+                        Wert="@Daten.Mindestleistung" WertChanged="w => Daten.Mindestleistung = w"
+                        FehlerZustand="BeiFehlerZustand" />
+            <Zahlenfeld Bezeichnung="@LabelAnfahrverlust" Einheit="kWh"
+                        Feldname="@LabelAnfahrverlustKurz" Platzhalter="@PlatzhalterVorgabe" Min="0"
+                        Wert="@Daten.Anfahrverlust_kWh" WertChanged="w => Daten.Anfahrverlust_kWh = w"
+                        FehlerZustand="BeiFehlerZustand" />
+            <Ganzzahlfeld Bezeichnung="@LabelMindestlaufzeit" Einheit="min"
+                          Feldname="@LabelMindestlaufzeitKurz" Platzhalter="@PlatzhalterVorgabe"
+                          Min="1" Max="60"
+                          Wert="@Daten.Mindestlaufzeit_min" WertChanged="w => Daten.Mindestlaufzeit_min = w"
+                          FehlerZustand="BeiFehlerZustand" />
+                </KindInhalt>
+            </Formularraster>
+            <p class="epos-leisezeile">@HinweisKennlinie</p>
+
+            @* DIE KLEINE KURVE (Konzept Kesselkennlinie 5): der Wirkungsgrad ueber der Last bei 30, 50
+               und 60 °C Ruecklauf, ohne Brennwertkennlinie eine Linie. Sie folgt dem ARBEITSSTAND, auch
+               ungespeicherten Eingaben; die Huelle rechnet sie im Kern aus derselben Funktion wie der Lauf.
+               Das Modell wird nur neu geholt, wenn sich ein Feld aendert, das die Kurve bestimmt - sonst
+               verwuerfe jeder Tastendruck in einem fremden Feld mit dem Knotenbaum auch die abgewaehlten
+               Linien der Legende. *@
+            @if (Kennlinienbild is not null)
+            {
+                <DiagrammSvg Modell="@AktuellesKennlinienbild()" Kennung="hzkk-kennlinie"
+                             Bezeichnung="@BildKennlinieText" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -230,11 +295,95 @@
     [Parameter] public string HinweisWirkungsgrad { get; set; } = "(z. B. 0,9)";
     [Parameter] public string LabelBBVerlust { get; set; } = "Betriebsbereitschaftsverluste:";
     [Parameter] public string LabelBBVerlustKurz { get; set; } = "Betriebsbereitschaftsverluste";
+
+    /// <summary>Beschriftung der Einheitenwahl des Bereitschaftsverlusts.</summary>
+    [Parameter] public string LabelBBEinheit { get; set; } = "Einheit Bereitschaftsverlust:";
+
+    /// <summary>
+    /// Die Einträge der Einheitenwahl: <see cref="BB_EINHEIT_KW"/> und
+    /// <see cref="BB_EINHEIT_PROZENT"/> mit ihrem Anzeigetext. Der Persistenzwert bleibt in der
+    /// Hülle (Drei-Schichten-Regel); der Dialog kennt nur die Wahl.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> BBEinheiten { get; set; } =
+        new (int, string)[] { (BB_EINHEIT_KW, "kW"), (BB_EINHEIT_PROZENT, "% der Nennleistung") };
+
+    /// <summary>Kennung der Wahl „kW" in <see cref="BBEinheiten"/>.</summary>
+    public const int BB_EINHEIT_KW = 1;
+
+    /// <summary>Kennung der Wahl „% der Nennleistung" in <see cref="BBEinheiten"/>.</summary>
+    public const int BB_EINHEIT_PROZENT = 2;
+
+    /// <summary>Die Einheit hinter dem Wertfeld — folgt der Wahl.</summary>
+    private string BBEinheitText => Daten.BereitschaftProzent ? "%" : "kW";
     [Parameter] public string LabelBrennwert { get; set; } = "Brennwertkessel";
     [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
     [Parameter] public string LabelVorlaufKurz { get; set; } = "Vorlauf";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
     [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
+
+    // Gruppe „Kennlinie" (Konzept Kesselkennlinie, Etappe E1).
+    [Parameter] public string GruppeKennlinie { get; set; } = "Kennlinie";
+    [Parameter] public string LabelTeillast30 { get; set; } = "Wirkungsgrad bei 30 % Last:";
+    [Parameter] public string LabelTeillast30Kurz { get; set; } = "Wirkungsgrad bei 30 % Last";
+    [Parameter] public string HinweisTeillast30 { get; set; } = "(z. B. 1,05)";
+    [Parameter] public string LabelKennlinieBrennwert { get; set; } = "Brennwertkennlinie";
+    [Parameter] public string LabelMindestleistung { get; set; } = "Mindestleistung:";
+    [Parameter] public string LabelMindestleistungKurz { get; set; } = "Mindestleistung";
+    [Parameter] public string LabelAnfahrverlust { get; set; } = "Anfahrverlust je Start:";
+    [Parameter] public string LabelAnfahrverlustKurz { get; set; } = "Anfahrverlust je Start";
+    [Parameter] public string LabelMindestlaufzeit { get; set; } = "Mindestlaufzeit:";
+    [Parameter] public string LabelMindestlaufzeitKurz { get; set; } = "Mindestlaufzeit";
+    [Parameter] public string PlatzhalterVorgabe { get; set; } = "Vorgabe";
+    [Parameter] public string HinweisKennlinie { get; set; } =
+        "Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel.";
+
+    /// <summary>
+    /// Der ruhige Hinweis unter dem Schalter „Brennwertkennlinie“, solange ein Brennwertkessel ohne
+    /// sie rechnet (Anwenderentscheid 30.09.2026, „Nur im Kesseldialog“).
+    /// </summary>
+    [Parameter] public string HinweisOhneKennlinie { get; set; } =
+        "Brennwertkessel ohne Brennwertkennlinie: Der Rücklauf wirkt nicht, der Kessel rechnet allein mit seiner Teillastkennlinie.";
+
+    /// <summary>
+    /// Steht der Hinweis „Brennwertkessel ohne Kennlinie“? Bei <c>Brennwert</c> = 1 und ausgeschalteter
+    /// Brennwertkennlinie (Pruefhilfe fuer Tests).
+    /// </summary>
+    public bool OhneBrennwertkennlinie => Daten.Brennwert && !Daten.Kennlinie_Brennwert;
+
+    /// <summary>
+    /// Das Bild der Gruppe „Kennlinie“ zum Arbeitsstand: der Wirkungsgrad über der Last (Konzept Kesselkennlinie 5).
+    /// Die Hülle rechnet es im Kern — dieselbe Funktion wie der Lauf, leere Felder mit der Normvorgabe. Ohne Delegat
+    /// steht kein Bild.
+    /// </summary>
+    [Parameter] public Func<HeizkesselKatalogDaten, Zeichenmodell?>? Kennlinienbild { get; set; }
+
+    /// <summary>Die Bezeichnung des Bilds für die Sprachausgabe.</summary>
+    [Parameter] public string BildKennlinieText { get; set; } = "Wirkungsgrad über der Last";
+
+    /// <summary>Die Felder, die die Kurve bestimmen, beim letzten Holen des Bilds.</summary>
+    private (double? Gas, double? Oel, int? Brennstoff, bool Brennwert, string? Beschreibung, double? Eta30,
+             bool KennlinieBrennwert)? _kurvenstand;
+
+    private Zeichenmodell? _kennlinienbild;
+
+    /// <summary>Wie oft das Bild geholt wurde (Pruefhilfe fuer Tests).</summary>
+    public int Kennlinienbilder { get; private set; }
+
+    /// <summary>
+    /// Das Bild zum Arbeitsstand, zwischengespeichert: neu geholt nur, wenn sich Wirkungsgrade, Energieträger,
+    /// Brennwertschalter, Beschreibung (die Bauart „Standard…“), η₃₀ oder der Schalter Brennwertkennlinie geändert haben.
+    /// </summary>
+    private Zeichenmodell? AktuellesKennlinienbild()
+    {
+        if (Kennlinienbild is null) return null;
+        var stand = (Daten.Wirkungsgrad_Gas, Daten.Wirkungsgrad_Oel, Daten.Brennstoff, Daten.Brennwert,
+                     Daten.Beschreibung, Daten.Wirkungsgrad_Teillast30, Daten.Kennlinie_Brennwert);
+        if (_kurvenstand == stand) return _kennlinienbild;
+        _kurvenstand = stand;
+        _kennlinienbild = Kennlinienbild(Daten);
+        Kennlinienbilder++;
+        return _kennlinienbild;
+    }
 
     // HIER STANDEN DIE TEXTE der Gruppen "Kosten" (GruppeKosten, LabelInvest,
     // LabelInvestKurz, LabelWartung, LabelWartungKurz, LabelWartungEinheit,
@@ -372,7 +521,17 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    /// <summary>
+    /// Der Schalter Brennwertkessel: Fällt er, fällt die Brennwertkennlinie mit — sie ist nur
+    /// beim Brennwertkessel zulässig (Konzept Kesselkennlinie 3.1).
+    /// </summary>
+    private void BeiBrennwert(bool wert)
+    {
+        Daten.Brennwert = wert;
+        if (!wert) Daten.Kennlinie_Brennwert = false;
     }
 
     private void BeiName(string wert)

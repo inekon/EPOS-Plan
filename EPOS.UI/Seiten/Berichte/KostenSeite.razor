@@ -33,9 +33,22 @@
 
    DIE ZWEI EINSTIEGE STEHEN IN EINER UEBERLAGERUNG. Die Kostenverwaltung und
    die Energietraegerverwaltung sind seit Welle 4 Razor-Komponenten; als
-   zweites Fenster waeren sie eine zweite WebView (Risiko R2). *@
+   zweites Fenster waeren sie eine zweite WebView (Risiko R2).
+
+   "NEU BERECHNEN" STEHT RECHTS IN DERSELBEN KOPFREIHE. Die Energiekosten der
+   Kacheln und der Gegenueberstellung sind der zuletzt GESPEICHERTE Lauf der
+   Wirtschaftlichkeit; bis zu diesem Knopf blieben dort alte Werte stehen, bis
+   der Anwender im Reiter Wirtschaftlichkeit neu rechnete. Der Knopf ruft den
+   Rechenweg DERSELBEN Wirtschaftlichkeitshuelle der Gruppe (Parameter
+   Berechnen) mit den gewaehlten Versionen der geteilten Vergleichswahl ohne
+   Stamm - keine zweite Rechnung. Waehrend des Laufs steht darunter der
+   Fortschritt samt Abbrechen, danach liest die Seite ihren Stand neu. Ohne
+   Rechenweg (Pruefstand, Seite ohne Gruppe) gibt es den Knopf nicht. Passen
+   gespeicherte Ergebnisse nicht mehr zum Simulationslauf, steht dasselbe Band
+   wie auf der Wirtschaftlichkeitsseite ueber Gegenueberstellung und Kacheln. *@
 
 @namespace EPOS.UI.Seiten.Berichte
+@using System.Globalization
 @using EPOS.UI.Dialoge.Kosten
 @using WindowsFormsApplication1
 @implements IDisposable
@@ -52,15 +65,43 @@
     <div class="epos-leiste epos-kostenkopf">
         @if (TraegerGaben is not null)
         {
-            <button type="button" class="epos-knopf" disabled="@(!_stand.Bedienbar)"
+            <button type="button" class="epos-knopf" disabled="@(!_stand.Bedienbar || _laeuft)"
                     @onclick="TraegerOeffnen">@TraegerText</button>
         }
         @if (VerwaltungGaben is not null)
         {
-            <button type="button" class="epos-knopf" disabled="@(!_stand.Bedienbar)"
+            <button type="button" class="epos-knopf" disabled="@(!_stand.Bedienbar || _laeuft)"
                     @onclick="VerwaltungOeffnen">@VerwaltungText</button>
         }
+        @* Kein Delegat, kein Knopf: Ohne Rechenweg der Huelle steht er nicht da. *@
+        @if (Berechnen is not null)
+        {
+            <button type="button" class="epos-knopf epos-kosten-neuberechnen"
+                    disabled="@(!_stand.Bedienbar || _laeuft)" title="@NeuBerechnenKurztext"
+                    @onclick="NeuBerechnen">@NeuBerechnenText</button>
+        }
     </div>
+
+    @if (_laeuft)
+    {
+        @* Balken, Text und Abbrechen eines laufenden Laufs - das Hausmuster der
+           Fortschrittsanzeige, direkt unter dem Knopf, der ihn gestartet hat. *@
+        <div class="epos-fortschritt epos-kosten-fortschritt" role="status">
+            <progress class="epos-fortschritt-balken" max="@_gesamt" value="@_aktuell"
+                      aria-label="@LabelFortschritt"></progress>
+            <span class="epos-fortschritt-text">@_laufText</span>
+            @if (Abbrechen is not null)
+            {
+                <button type="button" class="epos-knopf epos-fortschritt-abbruch"
+                        @onclick="LaufAbbrechen">@AbbrechenText</button>
+            }
+        </div>
+    }
+
+    @if (_stand.Nachrechnen)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenBandText" />
+    }
 
     @* KOSTEN IM VERGLEICH (Anwenderwunsch 08.09.2026, W5-B-5): die drei Kategorien
        je Version der Gruppe nebeneinander, gesteuert von derselben Vergleichswahl
@@ -70,7 +111,7 @@
     {
         <Vergleichswahl Bezeichnung="@LabelVergleich" Eintraege="@Vergleichseintraege"
                         Gewaehlt="@_stand.GewaehlteVarianten" FestTipp="@StammFestTipp"
-                        GewaehltChanged="BeiVergleich" />
+                        Aktiv="@(!_laeuft)" GewaehltChanged="BeiVergleich" />
     }
     @if (_stand.Vergleich.Count > 0)
     {
@@ -214,7 +255,7 @@
 
     @if (!string.IsNullOrEmpty(_status))
     {
-        <p class="epos-status">@_status</p>
+        <p class="@(_statusFehler ? "epos-status epos-status--fehler" : "epos-status")">@_status</p>
     }
 
     @* --------------------------------------------------- Unterdialoge *@
@@ -321,6 +362,19 @@
     /// <summary>Löscht die losen Positionen und liefert die Meldung.</summary>
     [Parameter] public Func<KostenZeile, string>? Loeschen { get; set; }
 
+    /// <summary>
+    /// Der Rechenweg des Knopfes „Neu berechnen": DERSELBE Delegat wie <c>Berechnen</c> der
+    /// Wirtschaftlichkeitsseite derselben Gruppe (die Hülle reicht ihn aus derselben
+    /// Wirtschaftlichkeitshülle herein). Die Seite gibt die gewählten Versionen der geteilten
+    /// Vergleichswahl OHNE Stamm mit und meldet den Fortschritt über den zweiten Parameter.
+    /// <b><c>null</c> heißt: kein Knopf</b> — ein Prüfstand, eine Plattform ohne Rechenweg oder
+    /// eine Seite ohne Vergleichsgruppe; die Seite zeichnet dann wie bisher.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<int>, Action<Laufschritt>, Task<LaufErgebnis>>? Berechnen { get; set; }
+
+    /// <summary>Bricht den laufenden Rechenweg ab; <c>null</c> = kein Abbrechen-Knopf am Fortschritt.</summary>
+    [Parameter] public Action? Abbrechen { get; set; }
+
     /// <summary>Hilfeschlüssel — der der alten Maske.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "UcBkKosten.btn_Help";
 
@@ -346,6 +400,45 @@
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
 
+    // ---- „Neu berechnen" — dieselben Texte wie auf der Wirtschaftlichkeitsseite ----
+
+    /// <summary>Beschriftung des Knopfes (<c>WIRT_BTN_NEU_BERECHNEN</c>).</summary>
+    [Parameter] public string NeuBerechnenText { get; set; } = Resource.WIRT_BTN_NEU_BERECHNEN;
+
+    /// <summary>Kurztext am Knopf: Was gerechnet wird (<c>BK_KOSTEN_NEU_BERECHNEN_TIPP</c>).</summary>
+    [Parameter] public string NeuBerechnenKurztext { get; set; } = Resource.BK_KOSTEN_NEU_BERECHNEN_TIPP;
+
+    /// <summary>Das Band, wenn angezeigte Werte aus einem älteren Lauf stammen (<c>WIRT_BAND_NACHRECHNEN</c>).</summary>
+    [Parameter] public string NachrechnenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN;
+
+    /// <summary>Das Band, wenn Kosten, Preise oder Parameter nach der Rechnung geändert wurden
+    /// (<c>WIRT_BAND_NACHRECHNEN_KOSTEN</c>).</summary>
+    [Parameter] public string NachrechnenKostenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN_KOSTEN;
+
+    /// <summary>Das Band, wenn der Kostenkatalog nach der Rechnung geändert wurde
+    /// (<c>WIRT_BAND_NACHRECHNEN_KATALOG</c>).</summary>
+    [Parameter] public string NachrechnenKatalogText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN_KATALOG;
+
+    /// <summary>Der Satz des Bandes nach seinem Grund (<see cref="KostenStand.NachrechnenGrund"/>).</summary>
+    private string NachrechnenBandText => _stand.NachrechnenGrund switch
+    {
+        Ergebnisveraltung.Kosten => NachrechnenKostenText,
+        Ergebnisveraltung.Katalog => NachrechnenKatalogText,
+        _ => NachrechnenText,
+    };
+
+    /// <summary>Beschriftung des Fortschrittsbalkens für die Sprachausgabe (<c>BKS_LBL_FORTSCHRITT</c>).</summary>
+    [Parameter] public string LabelFortschritt { get; set; } = Resource.BKS_LBL_FORTSCHRITT;
+
+    /// <summary>Der Abbrechen-Knopf am Fortschritt (<c>ALLG_BTN_ABBRECHEN</c>).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Die Statuszeile nach einem Abbruch (<c>BK_BER_STATUS_ABGEBROCHEN</c>).</summary>
+    [Parameter] public string StatusAbgebrochen { get; set; } = Resource.BK_BER_STATUS_ABGEBROCHEN;
+
+    /// <summary>Die Statuszeile, wenn der Rechenweg selbst scheitert (<c>WIRT_MSG_RECHENFEHLER</c>, {0} = Grund).</summary>
+    [Parameter] public string RechenfehlerText { get; set; } = Resource.WIRT_MSG_RECHENFEHLER;
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -364,8 +457,22 @@
     private KostenZeile? _loeschzeile;
     private string _loeschfrage = "";
 
+    /// <summary>Läuft „Neu berechnen"? Dann sind Knöpfe und Vergleichswahl gesperrt.</summary>
+    private bool _laeuft;
+    private int _aktuell, _gesamt = 1;
+    private string _laufText = "";
+
+    /// <summary>Trägt die Statuszeile einen Fehler? Dann steht sie in der Fehlerfarbe.</summary>
+    private bool _statusFehler;
+
+    /// <summary>Die Seite ist entsorgt — ein Lauf, der danach endet, zeichnet nichts mehr.</summary>
+    private bool _entsorgt;
+
     /// <summary>Statuszeile (Prüfhilfe).</summary>
     public string Status => _status;
+
+    /// <summary>Läuft gerade „Neu berechnen"? (Prüfhilfe)</summary>
+    public bool Beschaeftigt => _laeuft;
 
     /// <summary>Der offene Bereich (Prüfhilfe).</summary>
     public Unterdialog OffenerUnterdialog => _offen;
@@ -446,13 +553,19 @@
     };
 
     /// <inheritdoc/>
-    public void Dispose() => _kiMaske?.Dispose();
+    public void Dispose()
+    {
+        _entsorgt = true;
+        _kiMaske?.Dispose();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Ohne preventScroll rollt der Browser die hohe Seite ins Bild und schiebt die
+        // Reiterleiste von „Berichte & Kosten" aus dem Blick.
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>Liest alle angezeigten Werte neu (nach der Pflege, nach Simulation).</summary>
@@ -460,6 +573,7 @@
     {
         _stand = Laden?.Invoke() ?? new KostenStand();
         _status = _stand.Statuszeile ?? "";
+        _statusFehler = false;
 
         // Die Markierung gilt nur, solange die Zeile noch da ist.
         bool nochDa = false;
@@ -498,6 +612,7 @@
     /// <summary>Die Wahl geht an die Huelle; die Gegenueberstellung kommt aus dem neuen Stand.</summary>
     private void BeiVergleich(IReadOnlyList<int> ids)
     {
+        if (_laeuft) return;
         VergleichGewaehlt?.Invoke(ids);
         Auffrischen();
     }
@@ -538,7 +653,7 @@
 
     private void VerwaltungOeffnen()
     {
-        if (!_stand.Bedienbar || VerwaltungGaben is null) return;
+        if (!_stand.Bedienbar || _laeuft || VerwaltungGaben is null) return;
 
         IReadOnlyDictionary<string, object>? gaben = VerwaltungGaben(GewaehlteZeile());
         if (gaben is null) return;
@@ -548,7 +663,7 @@
 
     private void TraegerOeffnen()
     {
-        if (!_stand.Bedienbar || TraegerGaben is null) return;
+        if (!_stand.Bedienbar || _laeuft || TraegerGaben is null) return;
 
         IReadOnlyDictionary<string, object>? gaben = TraegerGaben(GewaehlteZeile());
         if (gaben is null) return;
@@ -580,8 +695,9 @@
     {
         // Die EINE Bedingung beider Wege: Nur die lose Zeile lässt sich
         // löschen. Der Knopf steht nur dort — der Doppelklick hängt an jeder
-        // Zeile und endet hier.
-        if (!z.Loeschbar || LoeschFrage is null) return;
+        // Zeile und endet hier. Waehrend „Neu berechnen" laeuft, wird nichts geloescht -
+        // der Lauf liest gerade dieselben Positionen.
+        if (!z.Loeschbar || LoeschFrage is null || _laeuft) return;
         string frage = LoeschFrage(z);
         if (string.IsNullOrEmpty(frage))
         {
@@ -606,4 +722,85 @@
         Auffrischen();
         if (!string.IsNullOrEmpty(meldung)) _status = meldung;
     }
+
+    // =====================================================================
+    // „Neu berechnen" — der Lauf der Wirtschaftlichkeitsseite derselben Gruppe
+    // =====================================================================
+
+    /// <summary>
+    /// Die Stände des Laufs: die gewählten Versionen der geteilten Vergleichswahl, ohne
+    /// Stamm — wie der Knopf der Wirtschaftlichkeitsseite sie seinem Rechenweg gibt. Die
+    /// Referenz der Gruppe, die dort nicht abwählbar ist, legt die Hülle dazu.
+    /// </summary>
+    private List<int> GewaehlteVariantenOhneStamm()
+    {
+        var stamm = new HashSet<int>();
+        foreach (VarianteZeile v in _stand.Versionen)
+            if (v.IstStamm) stamm.Add(v.IdProjekt);
+
+        var varianten = new List<int>();
+        foreach (int id in _stand.GewaehlteVarianten)
+            if (!stamm.Contains(id) && !varianten.Contains(id)) varianten.Add(id);
+        return varianten;
+    }
+
+    private async Task NeuBerechnen()
+    {
+        if (_laeuft || !_stand.Bedienbar || Berechnen is null) return;
+
+        List<int> varianten = GewaehlteVariantenOhneStamm();
+
+        _laeuft = true;
+        _aktuell = 0;
+        _gesamt = 1;
+        _laufText = "";
+        StateHasChanged();
+
+        try
+        {
+            LaufErgebnis erg = await Berechnen(varianten, Melden);
+            if (_entsorgt) return;
+
+            if (erg.Abgebrochen)
+            {
+                _status = StatusAbgebrochen;
+                _statusFehler = false;
+                return;
+            }
+
+            // Kacheln, Gegenueberstellung, Band und Statuszeile „Stand: …" aus dem neuen
+            // gespeicherten Lauf. Ein Fehler des Laufs steht danach in der Statuszeile — nie still.
+            Auffrischen();
+            if (!string.IsNullOrEmpty(erg.Fehler))
+            {
+                _status = erg.Fehler;
+                _statusFehler = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            if (_entsorgt) return;
+            _status = string.Format(CultureInfo.CurrentCulture, RechenfehlerText, ex.Message);
+            _statusFehler = true;
+        }
+        finally
+        {
+            _laeuft = false;
+            if (!_entsorgt) StateHasChanged();
+        }
+    }
+
+    /// <summary>Ein Schritt des Laufs — er kommt vom Arbeitsfaden, gezeichnet wird im Verteiler.</summary>
+    private void Melden(Laufschritt s)
+    {
+        _ = InvokeAsync(() =>
+        {
+            if (_entsorgt) return;
+            if (s.Gesamt > 0) { _gesamt = s.Gesamt; _aktuell = Math.Min(s.Aktuell, s.Gesamt); }
+            _laufText = s.Gesamt > 0 ? $"({s.Aktuell}/{s.Gesamt}) {s.Text}" : s.Text;
+            StateHasChanged();
+        });
+    }
+
+    private void LaufAbbrechen() => Abbrechen?.Invoke();
 }

@@ -1,0 +1,44 @@
+<includeonly>{{#switch:{{{1|}}}
+|waerme=#c56a1a
+|kessel=#8c5a3c
+|bhkw=#a33b5a
+|solar=#b38600
+|strom=#2f74b5
+|speicher=#7b4fa3
+|umwelt=#3e8e4e
+|kaelte=#1f9bb0
+|netz=#7a828c
+|#default=var(--epos-rahmen)
+}}</includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Diagrammfarbe
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Diagrammfarbe.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Diagrammfarbe ==
+
+Liefert die Farbe einer '''Rolle''' für die Diagrammvorlagen. Jede Technik hat in allen Diagrammen dieselbe Farbe; die Farben sind so gewählt, dass sie in heller und dunkler Darstellung erkennbar bleiben.
+
+{| class="wikitable"
+! Rolle !! Farbe !! Verwendung
+|-
+| <code>waerme</code> || <span style="display:inline-block;width:2em;height:1em;background:#c56a1a"></span> || Wärme, Wärmepumpe
+|-
+| <code>kessel</code> || <span style="display:inline-block;width:2em;height:1em;background:#8c5a3c"></span> || Heizkessel, Brennstoff
+|-
+| <code>bhkw</code> || <span style="display:inline-block;width:2em;height:1em;background:#a33b5a"></span> || Blockheizkraftwerk
+|-
+| <code>solar</code> || <span style="display:inline-block;width:2em;height:1em;background:#b38600"></span> || Solarthermie, Photovoltaik, Einstrahlung
+|-
+| <code>strom</code> || <span style="display:inline-block;width:2em;height:1em;background:#2f74b5"></span> || Strom, Stromverbrauch, Heizstab
+|-
+| <code>speicher</code> || <span style="display:inline-block;width:2em;height:1em;background:#7b4fa3"></span> || Pufferspeicher, Stromspeicher
+|-
+| <code>umwelt</code> || <span style="display:inline-block;width:2em;height:1em;background:#3e8e4e"></span> || Umweltwärme, Erdreich, Wärmequelle
+|-
+| <code>kaelte</code> || <span style="display:inline-block;width:2em;height:1em;background:#1f9bb0"></span> || Kälte, Kühlung
+|-
+| <code>netz</code> || <span style="display:inline-block;width:2em;height:1em;background:#7a828c"></span> || Stromnetz, Verluste, Rest
+|}
+
+Aufruf: <code><nowiki>{{Diagrammfarbe|waerme}}</nowiki></code> ergibt <code>#c56a1a</code>. Eine unbekannte Rolle ergibt die Rahmenfarbe der Seite.
+
+Benutzt von [[Vorlage:Säule]], [[Vorlage:Legende]] und [[Vorlage:Flusskasten]].
+</noinclude>

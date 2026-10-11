@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,10 +13,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// Der Reiter „Berichte &amp; Kosten" (iU9-W5.6), Vorbild
 /// <c>Views/BerichteKosten/UcBerichteKosten</c> (810 Z., K4).
 ///
-/// <para>Soll: die senkrechte Navigation mit vier Einträgen, die Kopfzeile mit
-/// Titel und Stammnamen, genau EINE sichtbare Seite, der Hinweis statt der
-/// Seite ohne Stammprojekt und der Projektwechsel über den
-/// <c>SeitenZustand</c> — ohne Neuaufbau der Hülle.</para>
+/// <para>Soll (Konzept Navigation Berichte &amp; Kosten, Variante A): die vier Bereiche
+/// als Reiterzeile auf dem Hausbaustein <c>Reiter</c> mit Statuszeile je Reiter, rechts in
+/// derselben Zeile Stammname, Platzhalter-Umschalter, Hilfe und — als Ansicht — der
+/// Rückweg; genau EINE sichtbare Seite, der Hinweis statt der Seite ohne Stammprojekt und
+/// der Projektwechsel über den <c>SeitenZustand</c> — ohne Neuaufbau der Hülle.</para>
 /// </summary>
 public class BerichteKostenSeiteTests : BunitContext
 {
@@ -70,26 +72,35 @@ public class BerichteKostenSeiteTests : BunitContext
 
     private IRenderedComponent<BerichteKostenSeite> Zeige(
         Action<Bunit.ComponentParameterCollectionBuilder<BerichteKostenSeite>>? mehr = null,
-        bool mitStamm = true)
+        bool mitStamm = true, Func<string>? stamm = null)
     {
         _gefragt.Clear();
         return Render<BerichteKostenSeite>(p =>
         {
             p.Add(x => x.SeitenGaben, (string s) => Gaben(s, mitStamm));
-            p.Add(x => x.Kopf, (string s) => "Kopf " + s + "  ·  Musterhaus");
+            p.Add(x => x.Stamm, stamm ?? (() => "Musterhaus"));
             mehr?.Invoke(p);
         });
     }
 
+    /// <summary>Die vier Reiterknöpfe des Rahmens — an ihrem Vorsatz, nicht an einem Reiter einer Seite.</summary>
     private static IReadOnlyList<IElement> Navknoepfe(IRenderedComponent<BerichteKostenSeite> cut)
-        => cut.FindAll(".epos-navigation-knopf");
+        => cut.FindAll("button[role='tab'][id^='bk-reiter-']");
+
+    /// <summary>Die Reiterleiste des Rahmens (die erste; eine Seite darunter darf eigene tragen).</summary>
+    private static IElement Leiste(IRenderedComponent<BerichteKostenSeite> cut)
+        => cut.Find(".epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste");
+
+    /// <summary>Das Ende der Reiterzeile des Rahmens.</summary>
+    private static IElement Leistenende(IRenderedComponent<BerichteKostenSeite> cut)
+        => cut.Find(".epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leistenende");
 
     // =====================================================================
     // Aufbau
     // =====================================================================
 
     [Fact]
-    public void Die_Navigation_traegt_vier_Eintraege_in_der_Reihenfolge_des_Vorlaeufers()
+    public void Die_Reiterzeile_traegt_vier_Reiter_in_der_Reihenfolge_des_Vorlaeufers()
     {
         var cut = Zeige();
 
@@ -102,14 +113,56 @@ public class BerichteKostenSeiteTests : BunitContext
     }
 
     [Fact]
-    public void Die_Navigation_meldet_sich_als_Reiterleiste()
+    public void Die_Reiterzeile_ist_der_Hausbaustein_Reiter()
     {
         var cut = Zeige();
 
-        Assert.Equal("tablist", cut.Find(".epos-navigation-liste").GetAttribute("role"));
+        Assert.Equal("tablist", Leiste(cut).GetAttribute("role"));
         Assert.Equal("tab", Navknoepfe(cut)[0].GetAttribute("role"));
         Assert.Equal("true", Navknoepfe(cut)[0].GetAttribute("aria-selected"));
-        Assert.Equal("tabpanel", cut.Find(".epos-navigation-inhalt").GetAttribute("role"));
+
+        IElement blatt = cut.Find("#bk-blatt-UEBERSICHT");
+        Assert.Equal("tabpanel", blatt.GetAttribute("role"));
+        Assert.Equal("bk-reiter-UEBERSICHT", blatt.GetAttribute("aria-labelledby"));
+
+        // Die dunkle Seitennavigation gibt es nicht mehr.
+        Assert.DoesNotContain("epos-navigation", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Die Reiterzeile ist die BEREICHSZEILE unter den Hauptreitern: Der Wirt des Reiters
+    /// trägt den Modifikator <c>epos-reiter--bereich</c>, und nur er — ein Reiter einer Seite
+    /// darunter bleibt bei der leisen Hausleiste.
+    /// </summary>
+    [Fact]
+    public void Der_Wirt_der_Reiterzeile_traegt_den_Modifikator_der_Bereichszeile()
+    {
+        var cut = Zeige();
+
+        IElement wirt = cut.Find(".epos-berichtekosten");
+        Assert.Contains("epos-reiter--bereich", wirt.ClassList);
+        Assert.Single(cut.FindAll(".epos-reiter--bereich"));
+        IElement leiste = Assert.Single(cut.FindAll(
+            ".epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste"));
+        Assert.Equal("tablist", leiste.GetAttribute("role"));
+        Assert.Equal(4, leiste.QuerySelectorAll("button[role='tab'][id^='bk-reiter-']").Length);
+    }
+
+    /// <summary>
+    /// Die Startseite trägt selbst einen <c>Reiter</c> (und die Simulationsseite einen mit
+    /// „UEBERSICHT"): Die Knöpfe und Blätter dieses Rahmens tragen den Vorsatz „bk", damit
+    /// keine HTML-Kennung doppelt steht.
+    /// </summary>
+    [Fact]
+    public void Die_Kennungen_tragen_den_Vorsatz_bk()
+    {
+        var cut = Zeige();
+
+        Assert.Equal(new[] { "bk-reiter-UEBERSICHT", "bk-reiter-KOSTEN", "bk-reiter-WIRTSCHAFT", "bk-reiter-BERICHT" },
+                     Navknoepfe(cut).Select(k => k.Id).ToArray());
+        Assert.Equal("bk-blatt-KOSTEN", Navknoepfe(cut)[1].GetAttribute("aria-controls"));
+        Assert.Empty(cut.FindAll("#reiter-UEBERSICHT"));
+        Assert.Empty(cut.FindAll("#blatt-UEBERSICHT"));
     }
 
     [Fact]
@@ -137,12 +190,35 @@ public class BerichteKostenSeiteTests : BunitContext
         Assert.Equal(BerichteKostenSeite.SEITE_UEBERSICHT, cut.Instance.AktiveSeite);
     }
 
+    /// <summary>
+    /// BN-Q3: Stammname, Platzhalter-Umschalter und Hilfe stehen RECHTS in der Reiterzeile —
+    /// neben der <c>tablist</c>, nicht in ihr; eine eigene Kopfzeile gibt es nicht.
+    /// </summary>
     [Fact]
-    public void Die_Kopfzeile_nennt_Seite_und_Stammnamen()
+    public void Das_Leistenende_traegt_Stammnamen_Umschalter_und_Hilfe()
     {
-        var cut = Zeige();
+        var cut = Zeige(p => p.Add(x => x.StammBeschriftung, "Stamm:"));
 
-        Assert.Contains("Musterhaus", cut.Find(".epos-navigation-kopf").TextContent);
+        IElement ende = Leistenende(cut);
+        IElement stamm = ende.QuerySelector(".epos-berichtekosten-stamm")!;
+        Assert.Equal("Stamm:", stamm.QuerySelector(".epos-berichtekosten-stamm-beschriftung")!.TextContent);
+        Assert.Equal("Musterhaus", stamm.QuerySelector(".epos-berichtekosten-stamm-name")!.TextContent);
+        Assert.Equal("Stamm: Musterhaus", stamm.GetAttribute("title"));
+        Assert.NotNull(ende.QuerySelector(".epos-vorlagenfeld-umschalter"));
+        Assert.NotNull(ende.QuerySelector(".epos-hilfepille"));
+
+        // Nicht in der tablist: die trägt nur die vier Reiter.
+        Assert.Null(Leiste(cut).QuerySelector(".epos-vorlagenfeld-umschalter"));
+        Assert.Equal(4, Leiste(cut).Children.Length);
+    }
+
+    [Fact]
+    public void Ohne_Stammnamen_steht_im_Leistenende_keiner()
+    {
+        var cut = Zeige(stamm: () => "");
+
+        Assert.Empty(cut.FindAll(".epos-berichtekosten-stamm"));
+        Assert.NotNull(Leistenende(cut).QuerySelector(".epos-vorlagenfeld-umschalter"));
     }
 
     // =====================================================================
@@ -179,19 +255,24 @@ public class BerichteKostenSeiteTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-kennzahlkachel"));
     }
 
+    /// <summary>Wie jeder Reiter des Hauses: ← → wandern, Pos1 und Ende springen, und die Gaben folgen.</summary>
     [Fact]
-    public void Pfeil_ab_und_auf_wandern_durch_die_Navigation()
+    public void Pfeil_rechts_und_links_wandern_durch_die_Reiter()
     {
         var cut = Zeige();
 
-        cut.Find(".epos-navigation-liste").KeyDown("ArrowDown");
+        Leiste(cut).KeyDown("ArrowRight");
         Assert.Equal(BerichteKostenSeite.SEITE_KOSTEN, cut.Instance.AktiveSeite);
+        Assert.Contains(BerichteKostenSeite.SEITE_KOSTEN, _gefragt);
 
-        cut.Find(".epos-navigation-liste").KeyDown("ArrowUp");
+        Leiste(cut).KeyDown("ArrowLeft");
         Assert.Equal(BerichteKostenSeite.SEITE_UEBERSICHT, cut.Instance.AktiveSeite);
 
-        cut.Find(".epos-navigation-liste").KeyDown("End");
+        Leiste(cut).KeyDown("End");
         Assert.Equal(BerichteKostenSeite.SEITE_BERICHT, cut.Instance.AktiveSeite);
+
+        Leiste(cut).KeyDown("Home");
+        Assert.Equal(BerichteKostenSeite.SEITE_UEBERSICHT, cut.Instance.AktiveSeite);
     }
 
     [Fact]
@@ -280,7 +361,7 @@ public class BerichteKostenSeiteTests : BunitContext
         // Knopf, der nichts tut.
         var cut = Zeige();
 
-        Assert.Empty(cut.FindAll(".epos-navigation-zurueck"));
+        Assert.Empty(cut.FindAll(".epos-berichtekosten-zurueck"));
     }
 
     [Fact]
@@ -293,8 +374,12 @@ public class BerichteKostenSeiteTests : BunitContext
             .Add(x => x.ZurueckText, "◀ Zurück")
             .Add(x => x.Geschlossen, () => gemeldet++));
 
-        var knopf = cut.Find(".epos-navigation-zurueck");
+        var knopf = cut.Find(".epos-berichtekosten-zurueck");
         Assert.Equal("◀ Zurück", knopf.TextContent.Trim());
+
+        // Er steht im Ende der Reiterzeile, rechts außen wie das „← zurück" der Simulation.
+        Assert.Contains("epos-berichtekosten-zurueck", Leistenende(cut).Children.Last().ClassName,
+                        StringComparison.Ordinal);
 
         knopf.Click();
 
@@ -451,6 +536,54 @@ public class BerichteKostenSeiteTests : BunitContext
     }
 
     /// <summary>
+    /// VB‑Q6 a: Steht die Wirtschaftlichkeitsseite in der Darstellung „ValERI-Bewertung“, belegt „Zum Bericht ›“ die
+    /// Klappliste der Berichtsseite mit dem vierten Eintrag „Alle drei Szenarien (VALERI)“ vor, und die leise Zeile nennt
+    /// ihn; in der Darstellung „Kennzahlen“ bleibt es beim Szenario der Einzelheiten.
+    /// </summary>
+    [Fact]
+    public void Zum_Bericht_aus_der_ValERI_Darstellung_belegt_alle_drei_Szenarien_vor()
+    {
+        const string VALERI = "Alle drei Szenarien (VALERI)";
+        IReadOnlyDictionary<string, object>? Gaben(string s)
+        {
+            IReadOnlyDictionary<string, object>? g = GabenMitGruppe(s);
+            if (s != BerichteKostenSeite.SEITE_BERICHT) return g;
+            var laden = (Func<BerichtStand>)g!["Laden"];
+            return new Dictionary<string, object>
+            {
+                ["Laden"] = new Func<BerichtStand>(() =>
+                {
+                    BerichtStand b = laden();
+                    b.Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig"), (BerichtStand.SZENARIO_VALERI, VALERI) };
+                    return b;
+                }),
+                ["BausteinWirtschaft"] = WIRTSCHAFT
+            };
+        }
+
+        var cut = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.SeitenGaben, (string s) => Gaben(s))
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_WIRTSCHAFT));
+        cut.FindAll(".epos-wirt-umschalter-knopf")[1].Click();               // „ValERI-Bewertung“
+        cut.FindAll(".epos-wirt-berichtknopf")[0].Click();
+
+        Assert.Equal(BerichteKostenSeite.SEITE_BERICHT, cut.Instance.AktiveSeite);
+        BerichtSeite bericht = cut.FindComponent<BerichtSeite>().Instance;
+        Assert.Equal(BerichtStand.SZENARIO_VALERI, bericht.Szenariowahl);
+        Assert.Contains(WIRTSCHAFT, bericht.AktiveBausteine);
+        // Die leise Zeile trägt den eigenen Satz der VALERI-Darstellung aus der Oberflächensprache (BK_BER_VORBELEGT_VALERI).
+        Assert.Equal(bericht.Vorbelegungszeile.Trim(), cut.Find(".epos-bericht-vorbelegt").TextContent.Trim());
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.BK_BER_VORBELEGT_VALERI.Split("{0}")[0], bericht.Vorbelegungszeile);
+
+        // Gegenprobe: aus der Darstellung „Kennzahlen“ das Szenario der Einzelheiten (Günstig).
+        var kennzahlen = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.SeitenGaben, (string s) => Gaben(s))
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_WIRTSCHAFT));
+        kennzahlen.FindAll(".epos-wirt-berichtknopf")[0].Click();
+        Assert.Equal(1, kennzahlen.FindComponent<BerichtSeite>().Instance.Szenariowahl);
+    }
+
+    /// <summary>
     /// Ohne Ergebnisse ist der Knopf weich gesperrt: Ein Klick wechselt nicht, und nichts
     /// wartet auf die Berichtsseite.
     /// </summary>
@@ -472,5 +605,222 @@ public class BerichteKostenSeiteTests : BunitContext
 
         Assert.Equal(BerichteKostenSeite.SEITE_WIRTSCHAFT, cut.Instance.AktiveSeite);
         Assert.Null(cut.Instance.WartendeVorbelegung);
+    }
+
+    // =====================================================================
+    //  Statuszeile je Reiter (Konzept Navigation Berichte & Kosten, A2/A3)
+    // =====================================================================
+
+    /// <summary>Kurzstände wie in Mockup A: leise, Warnung mit Kurzform, bester Kapitalwert, zuletzt erstellt.</summary>
+    private static Reiterstatus? Kurzstaende(string seite) => seite switch
+    {
+        BerichteKostenSeite.SEITE_UEBERSICHT => new Reiterstatus("3 Versionen · simuliert", "3 Versionen"),
+        BerichteKostenSeite.SEITE_KOSTEN => new Reiterstatus("3 Energieträger · 2 Warnungen", "2", Statusstufe.Warnung),
+        BerichteKostenSeite.SEITE_WIRTSCHAFT => new Reiterstatus("beste: mit PV, +61.500 €", "+61.500 €"),
+        BerichteKostenSeite.SEITE_BERICHT => new Reiterstatus("zuletzt 26.09.2026 18:12", "26.09. 18:12"),
+        _ => null
+    };
+
+    [Fact]
+    public void Jeder_Reiter_traegt_seinen_Kurzstand_als_Statuszeile()
+    {
+        var cut = Zeige(p => p.Add(x => x.Status, (string s) => Kurzstaende(s)));
+
+        var knoepfe = Navknoepfe(cut);
+        Assert.All(knoepfe, k => Assert.Contains("epos-reiter-knopf--status", k.ClassName, StringComparison.Ordinal));
+
+        Assert.Equal("Übersicht", knoepfe[0].QuerySelector(".epos-reiter-titel")!.TextContent.Trim());
+        Assert.Equal("3 Versionen · simuliert", knoepfe[0].QuerySelector(".epos-reiter-status-lang")!.TextContent.Trim());
+        Assert.Equal("3 Versionen", knoepfe[0].QuerySelector(".epos-reiter-status-kurz")!.TextContent.Trim());
+        Assert.Contains("+61.500 €", knoepfe[2].QuerySelector(".epos-reiter-status")!.TextContent, StringComparison.Ordinal);
+        Assert.Equal("26.09. 18:12", knoepfe[3].QuerySelector(".epos-reiter-status-kurz")!.TextContent.Trim());
+    }
+
+    /// <summary>Eine Warnung trägt Warnklasse UND Zeichen — das Zeichen nur für das Auge.</summary>
+    [Fact]
+    public void Die_Warnung_der_Kosten_traegt_das_Warnzeichen()
+    {
+        var cut = Zeige(p => p.Add(x => x.Status, (string s) => Kurzstaende(s)));
+
+        IElement kosten = Navknoepfe(cut)[1];
+        IElement zeile = kosten.QuerySelector(".epos-reiter-status")!;
+        Assert.Contains("epos-reiter-status--warnung", zeile.ClassName, StringComparison.Ordinal);
+        IElement zeichen = zeile.QuerySelector(".epos-reiter-warnzeichen")!;
+        Assert.Equal("▲", zeichen.TextContent);
+        Assert.Equal("true", zeichen.GetAttribute("aria-hidden"));
+        Assert.Equal("2", zeile.QuerySelector(".epos-reiter-status-kurz")!.TextContent.Trim());
+
+        // Die leisen Reiter tragen kein Zeichen.
+        Assert.Null(Navknoepfe(cut)[0].QuerySelector(".epos-reiter-warnzeichen"));
+        Assert.DoesNotContain("--warnung", Navknoepfe(cut)[0].QuerySelector(".epos-reiter-status")!.ClassName,
+                              StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Ein Reiter OHNE Kurzstand neben Reitern MIT trägt dieselbe zweizeilige Gestalt: Titel in
+    /// derselben Klasse, darunter eine leere Statuszeile gleicher Höhe — sonst stünde er kleiner
+    /// und einzeilig da und spränge, sobald sein Stand kommt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Kurzstand_traegt_der_Reiter_Titel_und_leere_Statuszeile()
+    {
+        var cut = Zeige(p => p.Add(x => x.Status,
+            (string s) => s == BerichteKostenSeite.SEITE_BERICHT ? new Reiterstatus("zuletzt 26.09.2026 18:12") : null));
+
+        IElement uebersicht = Navknoepfe(cut)[0];
+        Assert.Contains("epos-reiter-knopf--status", uebersicht.ClassName, StringComparison.Ordinal);
+        Assert.Equal("Übersicht", uebersicht.QuerySelector(".epos-reiter-titel")!.TextContent.Trim());
+        IElement leer = uebersicht.QuerySelector(".epos-reiter-status")!;
+        Assert.Contains("epos-reiter-status--leer", leer.ClassName, StringComparison.Ordinal);
+        Assert.Equal("true", leer.GetAttribute("aria-hidden"));
+        Assert.Equal(" ", leer.QuerySelector(".epos-reiter-status-text")!.TextContent);
+
+        // Ohne eigene Kurzform steht EIN Text — keine lange und kurze Fassung nebeneinander.
+        IElement bericht = Navknoepfe(cut)[3];
+        Assert.Single(bericht.QuerySelectorAll(".epos-reiter-status-text"));
+        Assert.Empty(bericht.QuerySelectorAll(".epos-reiter-status-kurz"));
+    }
+
+    /// <summary>
+    /// Anwendermeldung 08.10.2026: Beim ersten Zeichnen kennt die Hülle den Stand der Kosten noch
+    /// nicht (er entsteht erst beim Laden ihrer Seite). Trotzdem tragen ALLE vier Reiter vom
+    /// ersten Zeichnen an Titel und Statuszeile mit denselben Klassen.
+    /// </summary>
+    [Fact]
+    public void Beim_ersten_Zeichnen_tragen_alle_Reiter_Titel_und_Statuszeile()
+    {
+        var cut = Zeige(p => p.Add(x => x.Status, (string s) => s switch
+        {
+            BerichteKostenSeite.SEITE_UEBERSICHT => new Reiterstatus("1 Version · simuliert"),
+            BerichteKostenSeite.SEITE_WIRTSCHAFT => new Reiterstatus("nicht berechnet"),
+            BerichteKostenSeite.SEITE_BERICHT => new Reiterstatus("noch keiner erstellt", "—"),
+            _ => null
+        }));
+
+        var knoepfe = Navknoepfe(cut);
+        Assert.Equal(4, knoepfe.Count);
+        Assert.All(knoepfe, k =>
+        {
+            Assert.Contains("epos-reiter-knopf--status", k.ClassName, StringComparison.Ordinal);
+            Assert.Single(k.QuerySelectorAll(".epos-reiter-titel"));
+            Assert.Single(k.QuerySelectorAll(".epos-reiter-status"));
+            Assert.NotEmpty(k.QuerySelectorAll(".epos-reiter-status-text"));
+        });
+        Assert.Equal("Kosten", knoepfe[1].QuerySelector(".epos-reiter-titel")!.TextContent.Trim());
+    }
+
+    /// <summary>Gegenprobe: Kennt KEIN Reiter einen Stand, bleibt die Leiste einzeilig.</summary>
+    [Fact]
+    public void Ohne_jeden_Kurzstand_bleibt_die_Leiste_einzeilig()
+    {
+        var cut = Zeige(p => p.Add(x => x.Status, (string s) => (Reiterstatus?)null));
+
+        Assert.All(Navknoepfe(cut), k =>
+        {
+            Assert.DoesNotContain("epos-reiter-knopf--status", k.ClassName, StringComparison.Ordinal);
+            Assert.Empty(k.QuerySelectorAll(".epos-reiter-titel"));
+            Assert.Empty(k.QuerySelectorAll(".epos-reiter-status"));
+        });
+        Assert.Equal("Kosten", Navknoepfe(cut)[1].TextContent.Trim());
+    }
+
+    /// <summary>Ein Fehler der Hülle kostet nur die Zeile, nie die Seite.</summary>
+    [Fact]
+    public void Ein_Fehler_im_Kurzstand_kostet_nur_die_Zeile()
+    {
+        var cut = Zeige(p => p.Add(x => x.Status, (string s) => throw new InvalidOperationException("kaputt")));
+
+        Assert.Equal(4, Navknoepfe(cut).Count);
+        Assert.Empty(cut.FindAll(".epos-reiter-status"));
+    }
+
+    /// <summary>
+    /// Ein geänderter Kurzstand (Seite geladen, Bericht erstellt) zeichnet die Reiterzeile neu —
+    /// OHNE neue Gaben und ohne die offene Seite neu aufzubauen.
+    /// </summary>
+    [Fact]
+    public void Ein_geaenderter_Kurzstand_zeichnet_nur_die_Reiterzeile_neu()
+    {
+        var zustand = new SeitenZustand();
+        Reiterstatus? bericht = new Reiterstatus("noch keiner erstellt", "—");
+        string stamm = "";
+        var cut = Zeige(p => p
+            .Add(x => x.Zustand, zustand)
+            .Add(x => x.Status, (string s) => s == BerichteKostenSeite.SEITE_BERICHT ? bericht : null),
+            stamm: () => stamm);
+
+        UebersichtSeite vorher = cut.FindComponent<UebersichtSeite>().Instance;
+        int gefragt = _gefragt.Count;
+
+        bericht = new Reiterstatus("zuletzt 27.09.2026 14:05", "27.09. 14:05");
+        stamm = "Musterhaus";
+        zustand.KurzstandMelden();
+
+        cut.WaitForAssertion(() =>
+            Assert.Contains("zuletzt 27.09.2026 14:05", Navknoepfe(cut)[3].TextContent, StringComparison.Ordinal));
+        Assert.Equal("Musterhaus", cut.Find(".epos-berichtekosten-stamm-name").TextContent);
+        Assert.Contains("Musterhaus", Leistenende(cut).TextContent, StringComparison.Ordinal);
+        Assert.Equal(gefragt, _gefragt.Count);
+        Assert.Same(vorher, cut.FindComponent<UebersichtSeite>().Instance);
+        Assert.Equal(BerichteKostenSeite.SEITE_UEBERSICHT, cut.Instance.AktiveSeite);
+    }
+
+    /// <summary>Nach dem Entsorgen hört die Seite auch auf den Kurzstand nicht mehr.</summary>
+    [Fact]
+    public void Nach_dem_Entsorgen_meldet_auch_der_Kurzstand_nicht_mehr()
+    {
+        var zustand = new SeitenZustand();
+        int gefragt = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.Zustand, zustand)
+            .Add(x => x.Status, (string s) => { gefragt++; return null; }));
+
+        cut.Instance.Dispose();
+        int vorher = gefragt;
+        zustand.KurzstandMelden();
+
+        Assert.Equal(vorher, gefragt);
+    }
+
+    /// <summary>
+    /// Der Menüsprung „Varianten und Bericht…" mit Ziel „Kosten" stellt den REITER um — dieselben
+    /// Seitenschlüssel, derselbe Seitenwunsch der Hülle.
+    /// </summary>
+    [Fact]
+    public void Der_Seitenwunsch_stellt_den_aktiven_Reiter_um()
+    {
+        var zustand = new SeitenZustand();
+        string wunsch = "";
+        var cut = Zeige(p => p
+            .Add(x => x.Zustand, zustand)
+            .Add(x => x.Seitenwunsch, () => { string w = wunsch; wunsch = ""; return w; }));
+
+        wunsch = BerichteKostenSeite.SEITE_KOSTEN;
+        zustand.Auffrischen();
+
+        cut.WaitForAssertion(() => Assert.Equal("true", Navknoepfe(cut)[1].GetAttribute("aria-selected")));
+        Assert.Equal("false", Navknoepfe(cut)[0].GetAttribute("aria-selected"));
+        Assert.Equal("0", Navknoepfe(cut)[1].GetAttribute("tabindex"));
+        Assert.NotNull(cut.Find("#bk-blatt-KOSTEN"));
+        Assert.Empty(cut.FindAll("#bk-blatt-UEBERSICHT"));
+    }
+
+    /// <summary>
+    /// Jede der vier Seiten fokussiert beim ersten Zeichnen ihre Wurzel (Tastaturbedienung) —
+    /// aber mit <c>preventScroll</c>: Sonst rollt der Browser die hohe Seite ins Bild und die
+    /// Reiterleiste verschwindet aus dem Blick (Anwenderbefund 06.10.2026, gemessen mit
+    /// <c>Proben/Rasterprobe/berichtescrollprobe.mjs</c>).
+    /// </summary>
+    [Fact]
+    public void Jede_Seite_fokussiert_ihre_Wurzel_ohne_zu_rollen()
+    {
+        var cut = Zeige();
+        for (int i = 1; i < 4; i++) Navknoepfe(cut)[i].Click();
+
+        var fokusse = JSInterop.Invocations
+            .Where(a => a.Identifier == "Blazor._internal.domWrapper.focus")
+            .ToList();
+        Assert.True(fokusse.Count >= 4, $"nur {fokusse.Count} Fokusaufrufe für vier Seiten");
+        Assert.All(fokusse, a => Assert.Equal(true, a.Arguments[1]));
     }
 }

@@ -99,25 +99,32 @@ namespace WindowsFormsApplication1
 
             var gaben = new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
                 ["Geaendert"] = geaendert,
 
                 // Stufe G3, Welle K: der Katalog ist die Katalogliste des Hauses - dieselben
                 // Zeilen und dasselbe Profil wie die Gebaeudeverwaltung (GebaeudeAdminHuelle);
-                // den Filterstand holt der Dialog aus dem Register, geteilt mit ihr.
+                // den Filterstand holt der Dialog aus dem Register, geteilt mit ihr. KP2 K4
+                // (Festlegung 15): samt Spalte „Kalender" - die angelegten Kalender je Katalogbau.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(GebaeudeStammCtrl.SchlossSetzen),
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
-                    () => GebaeudeStammCtrl.Katalogfilterzeilen()),
+                    () => GebaeudeKatalogkalender.Katalogfilterzeilen()),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeude(s => Text_(s, s)),
                 ["StammDetail"] = new Func<string, GebaeudeStammDetail>(Stammdetail),
                 ["StammSatz"] = new Func<string, GebaeudeProjektZeile>(
                     name => Aufnehmen(name, projektId, naechsteId)),
-                // Die Loeschsperre der Gebaeudeverwaltung gilt auch hier - eine Wahrheit im
-                // Kern (GebaeudeStammCtrl.Loeschsperrgrund): Auslieferungssatz oder von einem
-                // Projekt gefuehrt heisst benannte Absage statt Rueckfrage. Geloescht wird
-                // ueber GebaeudeStammCtrl.Loeschen, das dieselbe Sperre noch einmal haelt und
-                // keinen Meldungskasten oeffnet.
+                // Die Loeschsperre - eine Wahrheit im Kern (GebaeudeStammCtrl.Loeschsperrgrund):
+                // allein ein Auslieferungssatz heisst benannte Absage statt Rueckfrage. Ein Satz,
+                // den Projekte fuehren, ist loeschbar (Anwenderentscheid 06.10.2026); die
+                // Rueckfrage nennt sie samt ihrer bleibenden Kopie (Loeschhinweis). Geloescht
+                // wird ueber GebaeudeStammCtrl.Loeschen, das dieselbe Sperre noch einmal haelt
+                // und keinen Meldungskasten oeffnet.
                 ["KatalogLoeschsperre"] = new Func<string, string>(GebaeudeStammCtrl.Loeschsperrgrund),
+                ["KatalogLoeschhinweis"] = new Func<string, string>(GebaeudeStammCtrl.Loeschhinweis),
                 ["KatalogLoeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
                 ["MeldungLoeschFehler"] = Text_("BADM_MSG_LOESCHEN_FEHLER",
                     "Der Datensatz konnte nicht aus der Datenbank gelöscht werden."),
@@ -130,6 +137,18 @@ namespace WindowsFormsApplication1
                 // Stufe G4, Welle 4 (A17): der Gebaeudeimport - je Klick ein neuer Weg.
                 ["ImportGaben"] = new Func<GebaeudeImportweg>(
                     () => Importweg(projektId, naechsteId, ausstehend, Vorgemerkt(zeilen, ausstehend))),
+                // HC-4 (HottCAD-Verbund 6.5, E87 F3): "Datei erneut lesen" - die Quelle je Zeile und
+                // der Leseweg; geschrieben wird nichts, die Ansicht lebt allein im Dialog.
+                ["Importquelle"] = new Func<GebaeudeProjektZeile, GebaeudeImportquelleAngabe>(
+                    z => { idsNachziehen(); return GebaeudeNeulesenHuelle.Angabe(z); }),
+                ["DateiNeuLesen"] = new Func<GebaeudeProjektZeile, Task<GebaeudeNeulesestand>>(
+                    z => { idsNachziehen(); return new GebaeudeNeulesenHuelle().LesenAsync(z); }),
+                // G5-N (N5/N6): der Abschnitt "Ausrichtung" - je Zeile die gespeicherte Richtung der Planoberseite;
+                // eine Zeile ohne Projektkopie oder ohne Importquelle ist nicht aenderbar (Hinweis statt Eingabe).
+                ["Ausrichtung"] = new Func<GebaeudeProjektZeile, EPOS.UI.Dialoge.Import.GebaeudeAusrichtungDaten>(
+                    z => { idsNachziehen(); return GebaeudeKatalogHuelle.Ausrichtung(AusrichtungsGebaeude(z)); }),
+                ["AusrichtungAendern"] = new Func<GebaeudeProjektZeile, double, EPOS.UI.Dialoge.Import.GebaeudeAusrichtungErgebnis>(
+                    (z, planoberseite) => { idsNachziehen(); return GebaeudeKatalogHuelle.AusrichtungAendern(AusrichtungsGebaeude(z), planoberseite); }),
                 ["BtnImportText"] = Text_("GEB_BTN_IMPORT", "Importieren (gbXML, IFC)…"),
                 ["BtnImportHinweis"] = Text_("GEB_BTN_IMPORT_HINWEIS",
                     "Ein Gebäude aus einer gbXML- oder IFC-Datei als neuen Katalogsatz anlegen und in die Projektliste übernehmen"),
@@ -150,6 +169,14 @@ namespace WindowsFormsApplication1
                     z => { idsNachziehen(); return z == null || !z.HatProjektkopie ? null : GebaeudeKatalogHuelle.ProjektGaben(projektId, z.IdZ); }),
                 ["ZeileAuffrischen"] = new Action<GebaeudeProjektZeile>(z => KennwerteSetzen(z, projektId)),
 
+                // "In DB uebernehmen": die Projektkopie der Zeile als neuer Anwendersatz im Katalog
+                // (GebaeudeStammCtrl.AusProjektUebernehmen) - schreibt sofort; die Projektliste
+                // bleibt unberuehrt. Eine Zeile ohne Projektkopie wird benannt abgelehnt.
+                ["InDbVorschlag"] = new Func<GebaeudeProjektZeile, string>(
+                    z => { idsNachziehen(); return z == null || !z.HatProjektkopie ? "" : GebaeudeStammCtrl.NamensvorschlagAusProjekt(z.IdZ); }),
+                ["InDbUebernehmen"] = new Func<GebaeudeProjektZeile, string, GebaeudeDbUebernahme>(
+                    (z, name) => { idsNachziehen(); return InDbUebernehmen(z, name); }),
+
                 // Die Gebaeudetypen-Verwaltung liegt noch in der Windows-Schale - ein
                 // Haken der Naht (Gebaeudewege); ohne ihn kein Knopf.
                 ["GebaeudetypGaben"] = Gebaeudewege.GebaeudetypGaben,
@@ -159,7 +186,8 @@ namespace WindowsFormsApplication1
                 // eigene Komponente (GebaeudeAdminHuelle) und kennt diesen Weg nicht.
                 // Gerechnet wird aus dem Arbeitsstand - auch eine eben übernommene Zeile ohne
                 // Projektkopie, vor dem OK; allein eine Importzeile, deren Zone mit Bauteilen erst
-                // der Speicherweg anlegt, wartet auf das OK.
+                // der Speicherweg anlegt, rechnet nicht - der Dialog speichert sie zuvor still, im
+                // Assistenten wartet sie auf dessen Abschluss.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     z =>
                     {
@@ -225,11 +253,26 @@ namespace WindowsFormsApplication1
                 ["MeldungGeloescht"] = Text_("GEB_MSG_GELOESCHT", "Gebäude gelöscht!"),
                 ["MeldungKeineWahl"] = Text_("GEB_MSG_KEINE_WAHL", "Gebäude in DB auswählen!"),
                 ["MeldungKeinBedarf"] = Text_("GEB_MSG_KEIN_BEDARF",
-                    "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. "
-                    + "Bitte das Projekt speichern und eine Klimaregion auswählen."),
+                    "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen."),
 
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
+
+            // Anwenderentscheid 06.10.2026: der STILLE Speicherweg der Projektliste - derselbe wie OK
+            // (WizardCtrl.Speichere_Projekt_Gebaeudeliste, ein Abgleich), nur ohne Schliessen. Der Dialog
+            // ruft ihn vor dem Loeschen eines Katalogsatzes, aus dem eine ungespeicherte Zeile stammt,
+            // und vor "Gebaeude im Projekt bearbeiten..." / "Exportieren..." einer ungespeicherten Zeile.
+            // Das spaetere OK findet dann nichts mehr zu schreiben. Der Assistent speichert erst am
+            // Ende seiner Seiten - dort kein stiller Weg, es bleibt bei der weichen Sperre.
+            if (!wizard)
+            {
+                gaben["ListeSpeichern"] = new Func<string>(
+                    () => ListeSpeichern(projektId, zeilen, modelle, geaendert, idsNachziehen));
+                // Die Rueckfrage nennt auch DIESES Projekt, wenn seine ungespeicherte Zeile aus dem
+                // Satz stammt - ihre Kopie entsteht mit dem stillen Speichern vor dem Loeschen.
+                gaben["KatalogLoeschhinweis"] = new Func<string, string>(
+                    name => GebaeudeStammCtrl.Loeschhinweis(name, AusstehendAus(zeilen, name) ? projektName : null));
+            }
 
             // Stufe G7a (Welle W3): der Gebaeudeexport im Format gbXML - nur bei angeschaltetem
             // Freigabeschalter (vor einer Auslieferung aus); ohne Delegat kein Knopf. Eine Zeile ohne
@@ -246,6 +289,41 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
+
+        /// <summary>
+        /// <b>Der stille Speicherweg</b>: die Fachliste aus den Zeilen neu aufbauen, in EINEM Vorgang
+        /// abgleichen (<see cref="WizardCtrl.Speichere_Projekt_Gebaeudeliste"/>), danach die echten Ids
+        /// und Kennwerte an die Zeilen ziehen — dieselben Objekte, die Wahl des Dialogs bleibt. Eine nun
+        /// gespeicherte Importzeile verliert ihren Schlüssel der ausstehenden Herkunft: Die Herkunft
+        /// steht an ihrer Kopie. Leer bei Erfolg, sonst die Meldung des Kerns.
+        /// </summary>
+        private static string ListeSpeichern(int projektId, List<GebaeudeProjektZeile> zeilen,
+                                             List<Z_ProjGebModel> modelle, Action geaendert, Action idsNachziehen)
+        {
+            geaendert();
+            (bool gelungen, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(projektId, modelle);
+            if (!gelungen)
+                return string.IsNullOrEmpty(meldung) ? MyResource.Resource.GEB_MSG_LISTE_NICHT_GESPEICHERT : meldung;
+            idsNachziehen();
+            foreach (GebaeudeProjektZeile z in zeilen)
+            {
+                bool neu = !z.HatProjektkopie;
+                KennwerteSetzen(z, projektId);
+                if (neu && z.HatProjektkopie) z.Herkunftsschluessel = null;
+            }
+            return "";
+        }
+
+        /// <summary>Stammt eine noch ungespeicherte Zeile aus dem Katalogsatz <paramref name="name"/>?</summary>
+        private static bool AusstehendAus(IEnumerable<GebaeudeProjektZeile> zeilen, string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            GebaeudeModel m = new GebaeudeStammCtrl().Lies(name);
+            if (m == null || m.ID <= 0) return false;
+            foreach (GebaeudeProjektZeile z in zeilen)
+                if (!z.HatProjektkopie && z.IdKatalog == m.ID) return true;
+            return false;
+        }
 
         private static GebaeudeStammDetail Stammdetail(string name)
         {
@@ -288,6 +366,26 @@ namespace WindowsFormsApplication1
                 Rechenweg = Rechenwegtext(m.Gebaeude_Modell),
                 HgesWK = Gebaeudehuellbilanz.GesamtWK(m)
             };
+        }
+
+        /// <summary>
+        /// „In DB übernehmen" — der Weg des Kerns (<see cref="GebaeudeStammCtrl.AusProjektUebernehmen"/>)
+        /// als Antwort für den Dialog: bei Erfolg die Statuszeile (mit Zonen: dazu, dass sie im
+        /// Projekt bleiben), sonst die benannte Absage, am Namensfeld oder in der Abfrage.
+        /// </summary>
+        internal static GebaeudeDbUebernahme InDbUebernehmen(GebaeudeProjektZeile z, string name)
+        {
+            if (z == null || !z.HatProjektkopie)
+                return new GebaeudeDbUebernahme(false, "", MyResource.Resource.GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE);
+
+            GebaeudeStammCtrl.ProjektuebernahmeErgebnis e = GebaeudeStammCtrl.AusProjektUebernehmen(z.IdZ, name);
+            if (!e.Ok) return new GebaeudeDbUebernahme(false, "", e.Meldung, e.AmNamen);
+
+            string text = e.Zonen > 0
+                ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_ZONEN,
+                                e.Name, e.Zonen, e.Bauteile)
+                : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_UEBERNOMMEN, e.Name);
+            return new GebaeudeDbUebernahme(true, e.Name, text);
         }
 
         // =================================================================================
@@ -531,6 +629,13 @@ namespace WindowsFormsApplication1
         {
             return Text_("GEB_TITEL", "Eingabe der Gebäudedaten");
         }
+
+        /// <summary>
+        /// G5-N: das Projektgebäude (<c>Tab_Gebaeude.ID</c>) einer Zeile für die Ausrichtung; 0 = keines (ohne Projektkopie
+        /// oder eben aufgenommen) — dann liefert die Hülle die gesperrte Ausrichtung.
+        /// </summary>
+        private static int AusrichtungsGebaeude(GebaeudeProjektZeile z)
+            => z == null || !z.HatProjektkopie || z.IdZ <= 0 || z.IdZ >= STARTINDEX ? 0 : GebaeudeBedarfCtrl.TabGebaeudeId(z.IdZ);
 
         private static string Text_(string schluessel, string rueckfall)
         {

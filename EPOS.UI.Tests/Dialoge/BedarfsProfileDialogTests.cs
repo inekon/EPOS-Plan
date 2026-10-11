@@ -116,10 +116,10 @@ public class BedarfsProfileDialogTests : EposBunitContext
     /// eigenes Element neben dem Text.
     /// </summary>
     private static IElement Uebernehmen(IRenderedComponent<BedarfsProfileDialog> cut)
-        => cut.FindAll(".epos-zweispalten-uebernahme button")[0];
+        => cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0];
 
     private static IElement Entfernen(IRenderedComponent<BedarfsProfileDialog> cut)
-        => cut.FindAll(".epos-zweispalten-uebernahme button")[1];
+        => cut.FindAll(".epos-zweispalten-knopf--entfernen")[0];
 
     // =================================================================================
     // Feldbestand JE AUSPRAEGUNG
@@ -145,7 +145,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         // Stromverbraucher keine; der Unterschied war Bestand, keine Fachaussage.
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
 
         foreach (string t in new[] { "Prozess in DB ändern", "Prozess in DB neu",
@@ -183,7 +183,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Contains("Summe aller ausgewählten Strombedarfe:", cut.Markup);
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Stromverbraucher ändern..."));
     }
@@ -201,7 +201,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Contains("Summe Brauchwasserprofile:", cut.Markup);
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Profil in DB ändern"));
     }
@@ -273,6 +273,27 @@ public class BedarfsProfileDialogTests : EposBunitContext
 
         Assert.Single(zeilen);
         Assert.Equal(1, zeilen[0].IdZ);
+    }
+
+    [Fact]
+    public void Die_Satzzeile_nennt_die_gewaehlte_Projektzeile()
+    {
+        var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, "Wohnhaus 10 Wohnungen") });
+
+        string satz = cut.Find(".epos-zweispalten-satzname").TextContent.Trim();
+
+        Assert.Equal("Wohnhaus 10 Wohnungen", satz);
+        Assert.Contains("epos-zweispalten-marke--satz", cut.Markup);
+    }
+
+    [Fact]
+    public void Die_Satzzeile_nennt_die_gewaehlte_Katalogzeile()
+    {
+        var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, "Wohnhaus 10 Wohnungen") });
+
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();   // erste Katalogzeile
+
+        Assert.Equal("Profil A", cut.Find(".epos-zweispalten-satzname").TextContent.Trim());
     }
 
     // =================================================================================
@@ -808,12 +829,12 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen(BedarfsArt.Prozesswaerme);
 
-        var bereiche = cut.FindAll(".epos-zweispalten > div")
+        var bereiche = cut.FindAll(".epos-zweispalten > *")
                           .Select(e => e.ClassName ?? "").ToList();
 
-        Assert.Equal(3, bereiche.Count);
+        Assert.True(bereiche.Count >= 3);
         Assert.Contains("epos-zweispalten-spalte--oben", bereiche[0]);
-        Assert.Contains("epos-zweispalten-uebernahme", bereiche[1]);
+        Assert.Contains("epos-zweispalten-trenner", bereiche[1]);
         Assert.Contains("epos-zweispalten-spalte--unten", bereiche[2]);
 
         // Beide Listen stehen weiterhin in ihrem Rahmen (Befund W9-B-2).
@@ -935,6 +956,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         => Render<BedarfsProfileDialog>(p => p
             .Add(x => x.Art, art)
             .Add(x => x.TitelText, "Brauchwasserwärme")
+            .Add(x => x.KopfbandText, "Brauchwasserwärme")
             .Add(x => x.Zeilen, zeilen ?? new List<BedarfsProfilZeile> { Zeile(1) })
             .Add(x => x.Katalogzeilen, Katalogzeilen)
             .Add(x => x.Katalogprofil, Profil(art))
@@ -1014,12 +1036,15 @@ public class BedarfsProfileDialogTests : EposBunitContext
         ZapfprofilKnopf(cut)!.Click();
         Assert.True(cut.Instance.ZapfprofilOffen);
 
-        // „Ein Titel, eine Stelle": die Überlagerung trägt Titel und Kreuz.
-        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
-        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
-        Assert.Equal("Brauchwasser-Zapfprofil", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        // N35: Das Blatt trägt Rückknopf und Titel, kein eigenes Kreuz — der eingebettete
+        // ZapfprofilDialog zeigt deshalb keinen eigenen h1, und der Haupt-Inhalt (Katalog,
+        // "Simulation" ...) ist vom Baum verschwunden.
+        Assert.Equal("‹ Brauchwasserwärme", cut.Find(".epos-blatt-zurueck").TextContent);
+        Assert.Empty(cut.FindAll(".epos-blatt-inhalt h1.epos-dialog-titel"));
+        Assert.Equal("Brauchwasser-Zapfprofil", cut.Find(".epos-blatt-titel").TextContent);
+        Assert.DoesNotContain("Simulation", cut.FindAll(".epos-leiste button").Select(b => b.TextContent));
 
-        cut.FindAll(".epos-ueberlagerung-inhalt .epos-leiste .epos-knopf--primaer").Last().Click();
+        cut.FindAll(".epos-blatt-inhalt .epos-leiste .epos-knopf--primaer").Last().Click();
 
         Assert.False(cut.Instance.ZapfprofilOffen);
         Assert.NotNull(uebernommen);
@@ -1031,9 +1056,13 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Null(gesetzt);   // den Weg des OK trägt der übernommene Stand, nicht die Optionsgruppe
     }
 
-    /// <summary>Abbrechen im Zapfprofil lässt Stand und Weg stehen; Esc schließt nur die Überlagerung.</summary>
+    /// <summary>
+    /// N35: Abbrechen im Zapfprofil lässt Stand und Weg stehen; Esc führt nur vom Blatt zurück
+    /// (kein Abbrechen des Wirtsdialogs — derselbe Grundsatz wie beim Kreuz der abgelösten
+    /// Überlagerung).
+    /// </summary>
     [Fact]
-    public void Abbrechen_im_Zapfprofil_laesst_alles_stehen_und_Esc_schliesst_nur_die_Ueberlagerung()
+    public void Abbrechen_im_Zapfprofil_laesst_alles_stehen_und_Esc_fuehrt_nur_vom_Blatt_zurueck()
     {
         bool uebernommen = false;
         bool geschlossen = false;
@@ -1044,19 +1073,106 @@ public class BedarfsProfileDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(geschlossen);
 
-        cut.FindAll(".epos-ueberlagerung-inhalt button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        cut.FindAll(".epos-blatt-inhalt button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
 
         Assert.False(cut.Instance.ZapfprofilOffen);
         Assert.False(uebernommen);
         Assert.False(geschlossen);
         Assert.Equal(ZapfprofilWeg.Bestand, cut.Instance.Rechenweg);
 
-        // Esc in der Überlagerung schließt nur sie.
+        // Esc auf dem Blatt führt nur dorthin zurück, es schließt nicht den Wirtsdialog.
         ZapfprofilKnopf(cut)!.Click();
-        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        cut.Find(".epos-blatt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(cut.Instance.ZapfprofilOffen);
         Assert.False(uebernommen);
         Assert.False(geschlossen);
+    }
+
+    /// <summary>N35: Der Rückknopf „‹ {Wirtstitel}" führt ebenso zurück wie Esc, ohne zu übernehmen.</summary>
+    [Fact]
+    public void Der_Rueckknopf_fuehrt_vom_Blatt_zurueck_ohne_zu_uebernehmen()
+    {
+        bool uebernommen = false;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, uebernommen: _ => uebernommen = true,
+                                     wegGesetzt: _ => { });
+
+        ZapfprofilKnopf(cut)!.Click();
+        Assert.True(cut.Instance.ZapfprofilOffen);
+
+        cut.Find(".epos-blatt-zurueck").Click();
+
+        Assert.False(cut.Instance.ZapfprofilOffen);
+        Assert.False(uebernommen);
+        Assert.Equal(ZapfprofilWeg.Bestand, cut.Instance.Rechenweg);
+        // Der Haupt-Inhalt (Katalog, "Simulation" ...) steht wieder.
+        Assert.NotNull(ZapfprofilKnopf(cut));
+    }
+
+    /// <summary>
+    /// N35: Hin und zurück bleibt der Arbeitsstand des Wirts — die übernommene Summe, der
+    /// angefangene Wert im Eingabefeld —, und es wird nichts geschrieben; geschrieben wird
+    /// erst mit dem OK des Wirts, auch nach einem Besuch auf dem Blatt.
+    /// </summary>
+    [Fact]
+    public void Der_Arbeitsstand_des_Wirts_uebersteht_den_Blattwechsel_und_das_OK_schreibt_weiter()
+    {
+        int geschrieben = 0;
+        bool? geschlossen = null;
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1) };
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { }, zeilen: zeilen,
+                                     geschlossen: b => geschlossen = b,
+                                     speichern: () => { geschrieben++; return ""; });
+
+        cut.Find("input[inputmode=decimal]").Input("33,5");
+        Knopf(cut, "Übernehmen").Click();
+        cut.Find("input[inputmode=decimal]").Input("44,5");   // angefangen, nicht übernommen
+
+        ZapfprofilKnopf(cut)!.Click();
+        cut.Find(".epos-blatt-zurueck").Click();
+
+        Assert.Equal(33.5, zeilen[0].Summe, 6);
+        Assert.Equal("44,5", cut.Find("input[inputmode=decimal]").GetAttribute("value"));
+        Assert.Same(zeilen[0], cut.Instance.Gewaehlt);
+        Assert.Equal(0, geschrieben);
+
+        // Auch das OK des Blattes schreibt nicht - es übernimmt nur in den Arbeitsstand.
+        ZapfprofilKnopf(cut)!.Click();
+        cut.FindAll(".epos-blatt-inhalt .epos-leiste .epos-knopf--primaer").Last().Click();
+        Assert.False(cut.Instance.ZapfprofilOffen);
+        Assert.Equal(0, geschrieben);
+        Assert.Null(geschlossen);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Equal(1, geschrieben);
+        Assert.True(geschlossen);
+    }
+
+    /// <summary>
+    /// N35: Nur EINE Ebene zeigt ihre Hilfe. Auf dem Blatt stehen die zwei Hilfepillen des
+    /// Zapfprofils und keine des Wirts (sein Kopf ist vom Baum), zurück stehen die zwei des
+    /// Wirts — und in beiden Fällen gibt es keine Überlagerung, die eine dritte Ebene machte.
+    /// </summary>
+    [Fact]
+    public void Auf_dem_Blatt_steht_nur_die_Hilfe_des_Blattes_und_keine_Ueberlagerung()
+    {
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { });
+
+        Assert.Equal(2, cut.FindAll(".epos-hilfepille").Count);
+        Assert.Empty(cut.FindAll(".epos-blatt-inhalt"));
+
+        ZapfprofilKnopf(cut)!.Click();
+
+        Assert.Equal(2, cut.FindAll(".epos-hilfepille").Count);
+        Assert.Equal(2, cut.FindAll(".epos-blatt-inhalt .epos-hilfepille").Count);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+        Assert.Single(cut.FindAll(".epos-blatt"));
+        Assert.Contains("epos-blatt--breit", cut.Find(".epos-blatt").ClassList);
+
+        cut.Find(".epos-blatt-zurueck").Click();
+
+        Assert.Equal(2, cut.FindAll(".epos-hilfepille").Count);
+        Assert.Empty(cut.FindAll(".epos-blatt-inhalt"));
     }
 
     /// <summary>ZU4: Zurückschalten geht über die Optionsgruppe und meldet den Weg an die Hülle (die Zonen bleiben dort).</summary>
@@ -1251,9 +1367,9 @@ public class BedarfsProfileDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Überlagerung „Brauchwasser-Zapfprofil" ist eine EIGENE Maske</b> (Welle #458,
-    /// Stufe 3a): Solange sie offen steht, meint der Assistent sie; geht sie zu, meint er
-    /// wieder die Bedarfsprofile.
+    /// <b>Das Zapfprofil-Blatt „Brauchwasser-Zapfprofil" ist eine EIGENE Maske</b> (Welle #458,
+    /// Stufe 3a; N35: Blatt statt Überlagerung): Solange es offen steht, meint der Assistent
+    /// es; geht es zu, meint er wieder die Bedarfsprofile.
     /// </summary>
     [Fact]
     public void Das_offene_Zapfprofil_ist_die_aktive_Maske_des_Assistenten()
@@ -1266,7 +1382,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL));
         Assert.Equal(KiMaskennamen.ZAPFPROFIL, KiMaskenbruecke.AktiveMaske());
 
-        cut.FindAll(".epos-ueberlagerung-inhalt button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        cut.FindAll(".epos-blatt-inhalt button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
         Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ZAPFPROFIL));
         Assert.Equal(KiMaskennamen.BEDARFSPROFILE, KiMaskenbruecke.AktiveMaske());
     }

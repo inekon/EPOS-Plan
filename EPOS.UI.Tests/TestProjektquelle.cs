@@ -130,6 +130,16 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? BaustoffKatalogGaben() => BaustoffKatalog;
 
+    /// <summary>Der Parametersatz der Verwaltung „Kältemaschinen" (KU3-1).</summary>
+    internal IReadOnlyDictionary<string, object>? KaeltemaschineKatalog { get; set; }
+
+    public IReadOnlyDictionary<string, object>? KaeltemaschineKatalogGaben() => KaeltemaschineKatalog;
+
+    /// <summary>Der Parametersatz des Erzeugerdialogs „Kältemaschinen im Projekt" (KU3-4c).</summary>
+    internal IReadOnlyDictionary<string, object>? KaeltemaschineAnlage { get; set; }
+
+    public IReadOnlyDictionary<string, object>? KaeltemaschineAnlageGaben(int idProjekt) => KaeltemaschineAnlage;
+
     /// <summary>Der Parametersatz der Verwaltung „Bauteilaufbauten".</summary>
     internal IReadOnlyDictionary<string, object>? BauteilaufbauKatalog { get; set; }
 
@@ -196,4 +206,16 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? StromspeicherAuslegungGaben(int idProjekt)
         => Auslegung;
+
+    /// <summary>Der Parametersatz der Ansicht „Pufferspeicher-Auslegung" (Stufe P2).</summary>
+    internal IReadOnlyDictionary<string, object>? PufferAuslegung { get; set; }
+
+    /// <summary>Für welches Projekt die Wurzel zuletzt die Pufferspeicher-Auslegung erfragte.</summary>
+    internal int? PufferAuslegungRuf { get; private set; }
+
+    public IReadOnlyDictionary<string, object>? PufferAuslegungGaben(int idProjekt)
+    {
+        PufferAuslegungRuf = idProjekt;
+        return PufferAuslegung;
+    }
 }

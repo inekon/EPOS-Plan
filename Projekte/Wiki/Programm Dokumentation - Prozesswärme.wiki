@@ -1,0 +1,99 @@
+Der Dialog '''Prozesswärme''' verwaltet die Prozesswärmeprofile des Projekts. Prozesswärme wird unabhängig vom Gebäude erfasst: Für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag an.
+
+== Konfiguration im Überblick ==
+{{Anker|konfiguration}}
+
+Prozesswärme ist Wärme für Produktion, Reinigung, Trocknung oder Lüftungsanlagen einer Halle – Bedarf, der nicht vom Wetter abhängt, sondern vom Betrieb. Sie wird in vier Schritten eingerichtet:
+
+# '''Prozess wählen''' – im Bedarfsprofil-Dialog ''Prozesswärme'' eine Betriebsweise aus dem Katalog ins Projekt übernehmen. Der Katalog liefert acht Schichtmodelle als Vorlage: Einschicht, Zweischicht und Dreischicht an fünf Tagen, Durchlaufbetrieb an sieben Tagen, Reinigung/Spülen, Trocknung/Lackierung, Waschen/Bäder und Raumlufttechnik einer Halle.
+# '''Menge und Verlauf festlegen''' – den Jahresverbrauch eintragen; Monatswerte und das Wochenprofil aus 168 Stundenwerten verteilen ihn. Ein Betriebskalender an der Zuordnung legt Feiertage und Betriebsferien darauf.
+# '''Temperaturniveau setzen''' – ''Vorlauf'' und ''Rücklauf'' des Prozesses. Mit dem Paar prüft die Simulation je Stunde, welcher Erzeuger und welcher Speicher den Prozess erreicht.
+# '''Einbinden''' – in der ''Simulation Konfiguration'' erhält jeder Erzeuger, der den Prozess decken soll, die Wärmesenke ''Prozesswärme'' oder ''Pufferspeicher Prozesswärme'' (siehe [[#einbindung|Einbindung in die Anlage]]).
+
+Jeder Prozess ist im Projekt eine eigene Zuordnung mit gepflegter Jahressumme, das Profil eine Kopie des Katalogsatzes. Mehrere Prozesse mit verschiedenen Temperaturniveaus laufen nebeneinander und addieren sich im Prozesskanal.
+
+[[Datei:Wochenprofil_Prozesswaerme.svg|mini|600px|Prinzipbild: Wochenprofile im Ein- und Zweischichtbetrieb, unten dieselbe Woche mit einem Feiertag aus dem Betriebskalender.]]
+
+Hintergrund zu Lastgang, Temperaturniveau und Einbindung unter [[Grundlagen/Prozesswärme|Grundlagen: Prozesswärme]].
+
+[[Datei:Bildschirmfoto_Prozesswaerme.png|mini|zentriert|800px|Prozesswärme – Bildschirmfoto mit Beispieldaten.]]
+
+== Eingaben ==
+
+* '''Datenbank Prozesswärme und ausgewählte Prozesse im Projekt''' – einen Prozess auswählen und ins Projekt übernehmen; mehrere Prozesse nebeneinander sind möglich.
+* '''Name, Beschreibung und Typ''' – die Stammangaben des Prozesses.
+* '''Jährlicher Prozesswärmebedarf''' – der Jahresverbrauch des gewählten Prozesses; ''Summe aller ausgew. Prozesse'' weist die Summe aus.
+* '''Ändern des Jahresverbrauchs''' – einen neuen Jahreswert in der Einheit eintragen, die das Feld ''Einheit:'' wählt (MWh oder kWh), und mit ''Übernehmen'' anwenden; das Wochenprofil bleibt dabei erhalten – es ist faktisch der Schichtplan.
+* '''Simulation''' – rechnet mit dem Jahresverbrauch, der im Dialog steht, auch vor dem Speichern, und zeigt Monatswerte und Jahresganglinie zur Kontrolle. ''CSV…'' in der Leiste des Bildes speichert die Jahresganglinie als CSV-Datei, siehe [[Datenexport]].
+* '''Prozess und Typ in DB''' – neu anlegen, ändern und löschen; hier werden Monatswerte und das Wochenprofil aus 168 Stundenwerten gepflegt. Der Katalog liefert acht typische Betriebsweisen als Vorlage.
+* '''Temperaturniveau des Prozesses''' – ''Vorlauf'' und ''Rücklauf'' in °C, beide oder keines; ''Temperaturen übernehmen'' setzt sie, gespeichert wird mit ''OK''. Leer rechnet der Prozess als reine Wärmemenge; mit Temperaturpaar werten Wärmepumpe, Kessel und Puffer am geforderten Prozessvorlauf aus.
+* '''Betriebskalender''' – je Zuordnung des Projekts wählt die Gruppe ''Betriebskalender'' einen Kalender mit Feiertagen und Betriebsferien, der das Wochenprofil tageweise ersetzt ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
+
+== Berechnung ==
+
+Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwerte des Prozesswärmebedarfs werden und wie das Temperaturniveau in den Lauf eingeht, steht unter [[Programm Dokumentation/Berechnung/Prozesswärme|Berechnung: Prozesswärme]].
+
+== Einbindung in die Anlage ==
+{{Anker|einbindung}}
+
+Die Prozesswärme ist ein eigener Wärmekanal der Simulation, getrennt von Heizung und Brauchwasser. Ein Erzeuger deckt ihn nur, wenn eine seiner Wärmesenken ihn bedient; die Senke ''Heizkreis'' bedient ihn nicht. Eingestellt wird das in der ''Simulation Konfiguration'' über ''Wärmesenken…'' je Anlage ([[Programm Dokumentation/Simulation#senkenliste|Wärmesenken einer Anlage]]).
+
+[[Datei:Einbindung_Prozesswaerme.svg|mini|600px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
+
+* '''Direktsenke Prozesswärme''' – das Ziel ''Prozesswärme'' deckt den Prozess in der Stunde des Bedarfs unmittelbar. Eine neu angelegte Anlage erhält diese Senke auf dem nächsten Rang nach dem Heizkreis, wenn das Projekt bereits Prozesswärme führt.
+* '''Puffer für Prozesswärme''' – das Ziel ''Pufferspeicher Prozesswärme'' lädt einen Speicher, dessen ''Nutzung'' Prozesswärme einschließt. Er gleicht Schichtwechsel und Anfahrspitzen aus und erlaubt einem kleineren Erzeuger, über den Tag vorzuladen.
+* '''Rangfolge der Senken''' – die Senkenliste einer Anlage wird von oben beliefert: Steht die Prozesswärme auf Rang 1 und der Heizkreis auf Rang 2, deckt die Anlage zuerst den Prozess und gibt den Rest der Stunde an die Heizung. Über mehrere Erzeuger entscheidet die Kaskade.
+* '''Vorrang bei knappem Vorrat''' – die Pufferspeicher bedienen bei knappem Vorrat in der Vorbelegung zuerst das Brauchwasser, dann die Prozesswärme, dann die Heizung.
+
+'''Temperaturniveau.''' Trägt ein Prozess ein Temperaturpaar, bildet die Simulation je Stunde den höchsten geforderten Vorlauf aller laufenden Prozesse und ihren mengengewichteten Rücklauf. Daran wird gemessen:
+* Ein '''Erzeuger''', der diesen Vorlauf nicht erreicht, deckt den Prozess in dieser Stunde nicht und bedient seine übrigen Senken weiter. Der Heizkessel zählt mit dem gepflegten Vorlauf seiner Anlage; ohne gepflegten Vorlauf gilt er als erreichend.
+* Eine '''Wärmepumpe''' mit Direktsenke Prozesswärme rechnet die ganze Stunde an der untersten Kennlinie, die den Prozessvorlauf erreicht; über der obersten Kennlinie entscheidet die Projekteinstellung zur Extrapolation.
+* Ein '''Brennwertkessel''' mit Kennlinie sieht für seinen Prozessanteil den Rücklauf des Prozesses.
+* Ein '''geschichteter Pufferspeicher''' gibt an den Prozess nur aus Schichten ab, die den Prozessvorlauf halten; ein ungeschichteter mit Temperaturpaar gibt nichts ab, wenn sein Vorlauf darunter liegt.
+
+Ohne Temperaturpaar ist der Prozess eine reine Wärmemenge, die jeder zugeordnete Erzeuger deckt. Führt ein Erzeuger die Direktsenke Prozesswärme und liegt sein Vorlauf unter dem höchsten Prozessvorlauf, meldet das Laufprotokoll es vor der ersten Stunde.
+
+Prinzipschemata zur Einbindung stehen unter [[Grundlagen/Hydraulikschemata#brauchwasser-und-prozesswaerme|Grundlagen: Hydraulikschemata]].
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+Ein Betrieb braucht im Jahr 200&nbsp;MWh Prozesswärme bei 80/60&nbsp;°C im Zweischichtbetrieb und daneben Heizwärme für die Halle. Ein Heizkessel deckt den Prozess über einen Puffer, eine Wärmepumpe die Heizung.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Prozesswärme || ''Datenbank Prozesswärme'' → ins Projekt übernehmen || Zweischicht 5 Tage || Montag bis Freitag 6 bis 22 Uhr als Vorlage
+|-
+| Prozesswärme || ''Ändern des Jahresverbrauchs'' / ''Einheit:'' || 200 / MWh || skaliert die Monatswerte, das Wochenprofil bleibt
+|-
+| Prozesswärme || ''Temperaturniveau des Prozesses'' || Vorlauf 80 °C / Rücklauf 60 °C || die Simulation misst Erzeuger und Speicher am Prozessvorlauf
+|-
+| Prozesswärme || ''Betriebskalender'' || ein Kalender mit Feiertagen und drei Wochen Betriebsferien im August || Feiertage tragen den Sonntag, Ferientage den Ferienfaktor
+|-
+| Pufferspeicher im Projekt || ''Nutzung'' / ''Schichten'' || Prozesswärme / 4 || nur Schichten ab 80 °C geben an den Prozess ab
+|-
+| Wärmesenken des Heizkessels || Rang 1 / Rang 2 || Pufferspeicher Prozesswärme / Heizkreis || der Prozess hat Vorrang, der Rest heizt
+|-
+| Wärmesenken der Wärmepumpe || Rang 1 || Heizkreis || sie erreicht 80 °C nicht und bleibt bei der Heizung
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Keine Senke für den Prozess.''' Eine Anlage, die vor der Prozesswärme angelegt wurde, behält ihre Senken; deckt keine Anlage den Prozesskanal, bleibt er ungedeckt. Die Senke ''Prozesswärme'' ist dann von Hand zu ergänzen.
+* '''Vorlauf zu niedrig.''' Mit Temperaturpaar deckt ein Erzeuger unter dem Prozessvorlauf nichts; das Laufprotokoll nennt die Stunden ohne Prozessdeckung je Erzeuger.
+* '''Wärmepumpe am hohen Vorlauf.''' Bedient eine Wärmepumpe Prozess und Heizung in derselben Stunde, rechnet sie die ganze Stunde an der Kennlinie des Prozessvorlaufs – auch die Heizwärme und die Pufferladung.
+* '''Ein Temperaturpaar je Prozess.''' Wechselnde Niveaus innerhalb des Jahres lassen sich nur als getrennte Prozesse abbilden; Lastgänge mit Kanal Prozesswärme tragen kein Temperaturniveau.
+* '''Nutzwärme, nicht Brennstoff.''' Der Jahresverbrauch ist die Wärme am Prozess; Verteilverluste bildet der Netzverlust des Kanals ab.
+
+== Siehe auch ==
+
+* [[Wärmebedarf erfassen]] – Prozesswärme als einer der vier Anteile des Wärmebedarfs
+* [[Industrie und Gewerbe]] – Temperaturniveaus, Schichtprofile und Abwärme als Wärmequelle
+* [[Grundlagen/Prozesswärme]] – Lastgang, Temperaturniveau und Einbindung der Prozesswärme
+* [[Grundlagen/Hydraulikschemata]] – Prinzipschemata für Erzeuger, Speicher und Senken
+* [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] – Nutzung, Schichtung und Entnahmehöhe
+* [[Programm Dokumentation/Betriebskalender|Betriebskalender]] – Feiertage und Betriebsferien im Wochenprofil
+
+[[Kategorie:Programm Dokumentation]]

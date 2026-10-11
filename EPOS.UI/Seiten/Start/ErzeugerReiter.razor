@@ -1,7 +1,8 @@
 ﻿@* Reiter 4 der Startseite: „Energieerzeuger" (iU9-W16b.2).
 
    Vorbild: Form_Start.tabPage4 - Kopfzeile (label29), Erlaeuterung (label28),
-   SIEBEN Bildkacheln, ein Tippkasten (label58/label59) und die ZWEI
+   SIEBEN Bildkacheln, dazu die Kachel „Kuehlung und Kaelteanlagen“ mit eigenem Symbol
+   (oeffnet die Kaeltemaschinen des Projekts), ein Tippkasten (label58/label59) und die ZWEI
    Auswahlknoepfe der Solarthermie (radioButton_KollektorProfil /
    radioButton_Ganglinie).
 
@@ -20,10 +21,14 @@
    dahin trug JEDE der sieben Kacheln den Wirt epos-startkachel-mit-wahl, und
    die Optionsgruppe stand als eigener Kasten UNTER der Solarthermiekarte -
    zwischen zwei gerahmten Nachbarkacheln las sie sich wie ein Zusatz zum
-   ganzen Reiter. Jetzt bekommt NUR die Solarthermiekachel den Wirt, und der
+   ganzen Reiter. Jetzt bekommt NUR die Solarthermie den Wirt, und der
    traegt den Kartenrahmen; die Kachel darin gibt ihren eigenen ab (Stilblatt),
    beides zusammen ist EINE Karte. Ueber das Markup ginge es nicht: Eine Kachel
-   IST ein <button>, und ein <button> darf keine Auswahlknoepfe enthalten. *@
+   IST ein <button>, und ein <button> darf keine Auswahlknoepfe enthalten.
+
+   DIE PHOTOVOLTAIK TRAEGT DIESELBE WEICHE (PVG, Schemaschritt 206, Anwenderwunsch 08.10.2026):
+   "Profil" oeffnet die Verwaltung der Module, "Ganglinie" den Dialog "Photovoltaik Ganglinie".
+   Gleiche Bauform, eigener Zustand (PvGanglinie), eigener Rueckruf. *@
 
 @namespace EPOS.UI.Seiten.Start
 
@@ -39,12 +44,14 @@
 
     <Kachelraster Hoechstbreite="404">
         <KindInhalt>
+            @{ KuehlungKachelDaten? kuehlung = Kuehlung?.Invoke(); }
             @foreach (StartKachel kachel in Kacheln)
             {
                 StartKachel k = kachel;
 
-                @if (k.Schluessel == Kachelschluessel.Solarthermie)
+                @if (k.Schluessel == Kachelschluessel.Solarthermie || k.Schluessel == Kachelschluessel.Photovoltaik)
                 {
+                    bool pv = k.Schluessel == Kachelschluessel.Photovoltaik;
                     @* DIE EINZIGE Kachel mit einer Weiche. Der Kartenrahmen liegt
                        hier am WIRT, nicht an der Kachel: Eine Kachel ist ein
                        <button> und darf keine Auswahlknoepfe enthalten (ein Klick
@@ -66,8 +73,8 @@
                            auf der Kachel darueber (Stilblatt). *@
                         <div class="epos-startkachel-wahl">
                             <Optionsgruppe Bezeichnung="@k.Titel" Eintraege="@Solararten"
-                                           Auswahl="@(Ganglinie ? GANGLINIE : PROFIL)"
-                                           AuswahlChanged="@(id => ArtWaehlen(id == GANGLINIE))" />
+                                           Auswahl="@((pv ? PvGanglinie : Ganglinie) ? GANGLINIE : PROFIL)"
+                                           AuswahlChanged="@(id => pv ? PvArtWaehlen(id == GANGLINIE) : ArtWaehlen(id == GANGLINIE))" />
                         </div>
                     </div>
                 }
@@ -81,8 +88,29 @@
                             Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
                 }
             }
+
+            @* DIE KACHEL „KUEHLUNG UND KAELTEANLAGEN": eine Kachel wie jede andere - Titel, eine
+               Beschreibungszeile, Statuspunkt (gruen, sobald das Projekt eine Kaeltemaschine oder eine
+               Waermepumpe im Kuehlbetrieb fuehrt). Ein Klick oeffnet den Erzeugerdialog der Kaeltemaschinen
+               (freie Ansicht KAELTEMASCHINE_ANLAGE ueber Dienste.Navigation, auf beiden Plattformen derselbe
+               Weg); dort stehen unter der Anlagenliste auch die Schalter „Waermepumpen im Kuehlbetrieb"
+               (Anwenderwunsch 08.10.2026: kein Detailtext in der Kachel). *@
+            <Kachel Titel="@KuehlungTitelText"
+                    Beschreibung="@KuehlungText"
+                    Zustand="@KuehlungZustand(kuehlung)"
+                    Bild="@Kachelbilder.KuehlungQuelle"
+                    Bildklasse="@Kachelbilder.KLASSE_SYMBOL"
+                    Zusatzklasse="epos-startkachel-kuehlung"
+                    Geklickt="KaeltemaschinenOeffnen" />
         </KindInhalt>
     </Kachelraster>
+
+    @* KT-2: Ein Klick auf die Kachel „Kuehlung und Kaelteanlagen" endet nie still - geht die
+       Ansicht nicht auf, steht der Grund hier, nach dem Versuch. *@
+    @if (!string.IsNullOrEmpty(_oeffnenFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_oeffnenFehler" />
+    }
 
     <Warnbanner Stufe="WarnStufe.Hinweis" Text="@(TippTitelText + ": " + TippText)" />
 </div>
@@ -102,6 +130,15 @@
 
     /// <summary>Meldet den Wechsel der Weiche — für <c>@@bind-Ganglinie</c>.</summary>
     [Parameter] public EventCallback<bool> GanglinieChanged { get; set; }
+
+    /// <summary>
+    /// Die Weiche der Photovoltaikkachel (PVG): <c>false</c> = Profil (die Module, Vorbelegung),
+    /// <c>true</c> = Ganglinie.
+    /// </summary>
+    [Parameter] public bool PvGanglinie { get; set; }
+
+    /// <summary>Meldet den Wechsel der Photovoltaik-Weiche — für <c>@@bind-PvGanglinie</c>.</summary>
+    [Parameter] public EventCallback<bool> PvGanglinieChanged { get; set; }
 
     /// <summary>Überschrift (<c>label29</c>).</summary>
     [Parameter] public string KopfText { get; set; } = "Energieerzeuger auswählen";
@@ -126,6 +163,59 @@
     /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Energieerzeuger";
 
+    /// <summary>
+    /// Der Bestand der Kachel „Kühlung“ (Kältemaschinen, Wärmepumpen mit Kühlfunktion, Projektschalter
+    /// „Kühlung rechnen“); bei jedem Zeichnen gefragt, damit die Kachel nach dem Erzeugerdialog und nach
+    /// einem Schalter den gespeicherten Stand zeigt. <c>null</c> = keine Gaben, die Kachel zeigt den Leerhinweis.
+    /// </summary>
+    [Parameter] public Func<KuehlungKachelDaten?>? Kuehlung { get; set; }
+
+    /// <summary>Titel der Kachel „Kühlung“.</summary>
+    [Parameter] public string KuehlungTitelText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_TITEL;
+
+    /// <summary>Beschreibung der Kachel „Kühlung“.</summary>
+    [Parameter] public string KuehlungText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_E_KUEHL_TEXT;
+
+    /// <summary>Grüner Punkt, sobald das Projekt eine Kältemaschine oder eine Wärmepumpe im Kühlbetrieb führt.</summary>
+    private static Kachelstand KuehlungZustand(KuehlungKachelDaten? d)
+        => d is not null && (d.Kaeltemaschinen.Count > 0 || d.Waermepumpen.Any(w => w.Kuehlbetrieb))
+            ? Kachelstand.An
+            : Kachelstand.Aus;
+
+    /// <summary>Format „Die Ansicht „{0}“ konnte nicht geöffnet werden: {1}“ (Ressource WURZEL_ANSICHT_FEHLER).</summary>
+    [Parameter] public string AnsichtFehlerText { get; set; } = WindowsFormsApplication1.MyResource.Resource.WURZEL_ANSICHT_FEHLER;
+
+    /// <summary>Grund ohne angemeldete Oberfläche (Ressource WURZEL_KEINE_OBERFLAECHE).</summary>
+    [Parameter] public string KeineOberflaecheText { get; set; } = WindowsFormsApplication1.MyResource.Resource.WURZEL_KEINE_OBERFLAECHE;
+
+    /// <summary>Grund, wenn die Oberfläche die Ansicht nicht führt (Ressource WURZEL_NICHT_GEFUEHRT).</summary>
+    [Parameter] public string NichtGefuehrtText { get; set; } = WindowsFormsApplication1.MyResource.Resource.WURZEL_NICHT_GEFUEHRT;
+
+    /// <summary>Warum die Ansicht „Kühlung und Kälteanlagen“ beim letzten Klick nicht aufging; leer = sie ging auf.</summary>
+    private string _oeffnenFehler = "";
+
+    /// <summary>Was der Banner nach einem gescheiterten Klick sagt; leer = nichts.</summary>
+    public string OeffnenFehler => _oeffnenFehler;
+
+    /// <summary>
+    /// Öffnet den Erzeugerdialog der Kältemaschinen über <c>Dienste.Navigation</c>. Lehnt die Naht ab
+    /// (<c>false</c>), steht der Grund im Banner des Reiters (KT-2, Hausblatt „benannt ablehnen, nie still
+    /// übergehen“): ohne gezeichnete Wurzel „keine Oberfläche“, sonst „führt die Ansicht nicht“. Was die
+    /// Wurzel danach beim Aufbau der Ansicht ablehnt (kein Projekt, Ausnahme in den Gaben), zeigt sie selbst
+    /// über der Startseite — ihr Wechsel läuft auf dem Renderfaden nach, die Rückgabe kennt ihn noch nicht.
+    /// </summary>
+    private void KaeltemaschinenOeffnen()
+    {
+        _oeffnenFehler = "";
+        bool offen = WindowsFormsApplication1.Dienste.Navigation
+            .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, "");
+        if (offen) return;
+
+        string grund = EPOS.UI.Dienste.Navigationsziel.Aktuell is null ? KeineOberflaecheText : NichtGefuehrtText;
+        _oeffnenFehler = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                       AnsichtFehlerText, KuehlungTitelText, grund);
+    }
+
     /// <summary>Die Stellung „Profil" der Weiche.</summary>
     private const int PROFIL = 0;
 
@@ -141,5 +231,12 @@
         if (Ganglinie == ganglinie) return Task.CompletedTask;
         Ganglinie = ganglinie;
         return GanglinieChanged.InvokeAsync(ganglinie);
+    }
+
+    private Task PvArtWaehlen(bool ganglinie)
+    {
+        if (PvGanglinie == ganglinie) return Task.CompletedTask;
+        PvGanglinie = ganglinie;
+        return PvGanglinieChanged.InvokeAsync(ganglinie);
     }
 }

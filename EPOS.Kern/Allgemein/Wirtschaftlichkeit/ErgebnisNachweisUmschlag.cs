@@ -57,8 +57,23 @@ namespace WindowsFormsApplication1
         /// <para><b>Fassung 11 (Etappe E16, V‑G3):</b> Jede Betriebskostenposition trägt ihre
         /// Wiederholperiode (<c>KostenPositionNachweis.Wiederholperiode</c>), geschrieben nur
         /// bei n ≥ 2. Einer älteren Fassung fehlt sie; ihre Positionen lesen sich „jährlich" —
-        /// die Aussage des damaligen Laufs.</para></summary>
-        public const int FASSUNG = 11;
+        /// die Aussage des damaligen Laufs.</para>
+        /// <para><b>Fassung 12:</b> die Energiekosten je Träger (<see cref="EnergiekostenJeTraeger"/>),
+        /// die Herleitungszeilen „Menge × Preis" unter den Energiekosten. Einer älteren Fassung fehlt
+        /// die Aufstellung; die Zeile sagt dann, dass sie mit der nächsten Rechnung vorliegt.</para>
+        /// <para><b>Fassung 13 (P646):</b> kein neues Feld — die Fassung kennzeichnet den Lauf, dessen
+        /// Wärmegestehungskosten die Stromsteuer einmal zählen und den Wärmestrom zum Preis des eigenen
+        /// Stromträgers bewerten (<see cref="FASSUNG_WAERMEGESTEHUNG"/>).</para></summary>
+        public const int FASSUNG = 13;
+
+        /// <summary>
+        /// Die erste Fassung, deren Lauf die Wärmegestehungskosten nach der heutigen Regel rechnet
+        /// (<see cref="Waermegestehung"/>): <b>12</b> = Umfang nur Wärmeerzeugung (#642), <b>13</b> =
+        /// Stromsteuer einmal und Strompreis des eigenen Trägers (P646). Ein Lauf mit älterem
+        /// Umschlag — oder ganz ohne — trägt eine Zahl nach einer früheren Regel; die Kennzahl sagt es
+        /// (<see cref="WirtschaftlichkeitErgebnis.GestehungAlteFormel"/>).
+        /// </summary>
+        public const int FASSUNG_WAERMEGESTEHUNG = 13;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
@@ -81,6 +96,9 @@ namespace WindowsFormsApplication1
 
         /// <inheritdoc cref="WirtschaftlichkeitErgebnis.EnergiekostenJeAnlage"/>
         public List<EnergieAnlageNachweis> EnergiekostenJeAnlage = new List<EnergieAnlageNachweis>();
+
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.EnergiekostenJeTraeger"/>
+        public List<EnergieTraegerNachweis> EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
 
         // ---- ETAPPE E8c (Fassung 9, E8b‑Q3) — das Startjahr je Betriebskostenposition ----
         //
@@ -227,6 +245,7 @@ namespace WindowsFormsApplication1
                 {
                     KwkgModule = e.KwkgModule ?? new List<KwkgModulNachweis>(),
                     EnergiekostenJeAnlage = e.EnergiekostenJeAnlage ?? new List<EnergieAnlageNachweis>(),
+                    EnergiekostenJeTraeger = e.EnergiekostenJeTraeger ?? new List<EnergieTraegerNachweis>(),
                     Betriebskosten = e.Betriebskosten ?? new List<KostenPositionNachweis>(),
                     KohaerenzHinweise = e.KohaerenzHinweise ?? new List<KohaerenzHinweis>(),
                     VermiedenMengeMWh = e.VermiedenMengeMWh,
@@ -302,6 +321,7 @@ namespace WindowsFormsApplication1
                 // Antwort, null wäre eine Falle für jeden Leser.
                 if (u.KwkgModule == null) u.KwkgModule = new List<KwkgModulNachweis>();
                 if (u.EnergiekostenJeAnlage == null) u.EnergiekostenJeAnlage = new List<EnergieAnlageNachweis>();
+                if (u.EnergiekostenJeTraeger == null) u.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
                 if (u.Betriebskosten == null) u.Betriebskosten = new List<KostenPositionNachweis>();
                 if (u.KohaerenzHinweise == null) u.KohaerenzHinweise = new List<KohaerenzHinweis>();
                 if (u.EnergiesteuerNachweise == null)
@@ -325,6 +345,12 @@ namespace WindowsFormsApplication1
             if (e == null) return;
             e.KwkgModule = KwkgModule;
             e.EnergiekostenJeAnlage = EnergiekostenJeAnlage;
+            // Fassung 12 — einem älteren Umschlag fehlt die Aufstellung je Träger: leere Liste.
+            e.EnergiekostenJeTraeger = EnergiekostenJeTraeger ?? new List<EnergieTraegerNachweis>();
+            // Fassung 13 — vor ihr rechnete der Lauf die Wärmegestehungskosten nach einer früheren
+            // Regel (bis 11 Kapitalwert des ganzen Projekts, 12 Stromsteuer im Modus ERLOES doppelt,
+            // Wärmestrom zum Netzpreis); die Kennzahl trägt dann den Vermerk (P646).
+            e.GestehungAlteFormel = Version < FASSUNG_WAERMEGESTEHUNG;
             e.Betriebskosten = Betriebskosten;
             e.KohaerenzHinweise = KohaerenzHinweise;
             e.VermiedenMengeMWh = VermiedenMengeMWh;

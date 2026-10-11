@@ -88,8 +88,36 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class Standardfahrplan
     {
+        // =================================================================
+        //  Die Rangbänder — die EINE Stelle (N1.61 Nr. 5, Entwurf KP1b Nr. 12)
+        // =================================================================
+        //
+        // Der groessere Rang gewinnt. Die vier Baender liegen so uebereinander, dass jede
+        // Ebene die schwaechere schlaegt und keine eine staerkere verdeckt:
+        //
+        //   100 … 108   Feiertage als Regel   (neun, UNTER den Ferien)
+        //   200 … 203   Ferien 200 + k        (der Generator, vier Zeitraeume)
+        //   310 … 899   eigene und uebernommene Perioden
+        //   900         Saison (Betriebspause)
+        //
+        // WARUM DIE FEIERTAGE UNTEN LIEGEN: Ein Feiertag IN den Ferien soll den Ferienwert
+        // behalten. Stuenden die Feiertage ueber den Ferien, gaelte an ihnen „wie Sonntag"
+        // — bei Ferien „aus" und Sonntag 16 Grad wuerde also mitten in den Ferien geheizt.
+
+        /// <summary>Der Rang der ersten Feiertagsregel; die neun bekommen 100 + k — <b>unter</b> den Ferien.</summary>
+        public const int RANG_FEIERTAG = 100;
+
+        /// <summary>Der Rang der letzten Feiertagsregel (<see cref="RANG_FEIERTAG"/> + 8).</summary>
+        public const int RANG_FEIERTAG_LETZTER = RANG_FEIERTAG + 8;
+
         /// <summary>Der Rang der ersten Ferienperiode; die vier Zeiträume bekommen 200 + k (Konzept 3.3).</summary>
         public const int RANG_FERIEN = 200;
+
+        /// <summary>Der kleinste Rang einer eigenen oder übernommenen Periode — <b>über</b> den Ferien.</summary>
+        public const int RANG_EIGEN = 310;
+
+        /// <summary>Der größte Rang einer eigenen oder übernommenen Periode — <b>unter</b> der Saison.</summary>
+        public const int RANG_EIGEN_LETZTER = 899;
 
         /// <summary>Der Rang der Betriebspause aus der Saisonzeile — <b>über</b> den Perioden der Matrix (Konzept 3.2, 3.3).</summary>
         public const int RANG_SAISON = 900;
@@ -114,8 +142,25 @@ namespace WindowsFormsApplication1
         /// </param>
         public static Fahrplanlesung Erzeugen(Vorgabematrix matrix, Konditionierungsgroesse groesse,
                                               bool rundlaufPruefen)
+            => Erzeugen(matrix, groesse, rundlaufPruefen, null);
+
+        /// <summary>
+        /// <b>Erzeugt den Kalender einer Größe aus der Matrix, mit eigener Woche</b> (Befund NP4c): wie
+        /// <see cref="Erzeugen(Vorgabematrix, Konditionierungsgroesse, bool)"/>; trägt die Spalte aber keine Angabe
+        /// (weder Standardwoche noch Zeile Tag), gilt <paramref name="eigeneWoche"/> als Grundangabe — die Standardwoche,
+        /// die eine Vorlage oder ein Profil selbst mitbringt (Stundenprofil, NP-F9). Ferien, Saison und Nennwert kommen
+        /// weiter aus der Spalte. Mit <c>null</c> bitgleich zur Erzeugung ohne eigene Woche.
+        /// </summary>
+        /// <param name="matrix">Die wirksame Matrix des Eigentümers (nach der Kaskade, F2).</param>
+        /// <param name="groesse">Die Größe, deren Kalender entsteht.</param>
+        /// <param name="rundlaufPruefen">Wie bei der Erzeugung ohne eigene Woche; die eigene Woche wird mitgeprüft.</param>
+        /// <param name="eigeneWoche">Eine Grundangabe der Art <see cref="Angabeart.Woche"/> oder <c>null</c>.</param>
+        public static Fahrplanlesung Erzeugen(Vorgabematrix matrix, Konditionierungsgroesse groesse,
+                                              bool rundlaufPruefen, Kalenderangabe eigeneWoche)
         {
             if (matrix == null) throw new ArgumentNullException(nameof(matrix));
+            if (eigeneWoche != null && eigeneWoche.Art != Angabeart.Woche)
+                throw new ArgumentException("Die eigene Woche muss eine Standardwoche sein.", nameof(eigeneWoche));
             Matrixspalte s = matrix.Spalte(groesse);
             Matrixeingang b = matrix.Bestand;
 
@@ -128,6 +173,7 @@ namespace WindowsFormsApplication1
             if (woche != null) grund = Kalenderangabe.AusWoche(woche);
             else if (s.Tag.Belegt && s.Tag.Aus) grund = Kalenderangabe.Abgeschaltet;
             else if (s.Tag.Belegt) grund = Kalenderangabe.AusWert(s.Tag.Wert);
+            else if (eigeneWoche != null) grund = eigeneWoche;
             else return Kein(groesse);
 
             // ---- Ebene 3: Ferien und Saison als Perioden ----
@@ -210,9 +256,9 @@ namespace WindowsFormsApplication1
             if (!nachtWirksam && !weWirksam) return null;      // konstante Grundangabe
 
             // Das Nachtfenster der Spalte; leer heißt das der Heizspalte (F19), und deren leeres
-            // heißt die Vorgabe 22-6 Uhr.
-            int? von = s.Nacht.Von ?? matrix.Heizsoll.Nacht.Von ?? b.NachtBeginn;
-            int? bis = s.Nacht.Bis ?? matrix.Heizsoll.Nacht.Bis ?? b.NachtEnde;
+            // heißt die Vorgabe 22-6 Uhr. EINE Stelle (Vorgabematrix.Nachtfenster), damit die
+            // Nachtauskuehlung (KP1b, Konzept 3.7) genau dieses Fenster sieht.
+            matrix.Nachtfenster(groesse, out int? von, out int? bis);
             NachtzeitBefund nb = Nachtzeit.Pruefen(von, bis);
             if (nb != NachtzeitBefund.Gueltig)
                 return new Fahrplanlesung(Fahrplanbefund.NachtzeitUngueltig, null, groesse, nb.ToString());
@@ -227,7 +273,7 @@ namespace WindowsFormsApplication1
             for (int w = 0; w < 7; w++)
                 for (int st = 0; st < Kalenderwoche.TAGESSTUNDEN; st++)
                     woche[Kalenderwoche.Stelle(w, st)] =
-                        w >= 5 && weWirksam ? wochenende
+                        weWirksam && KalenderbedienungSchema.IstWochenendtag(b.Wochenendtage, w) ? wochenende
                         : nacht.IstNacht(st) ? nachtwert
                         : tag;
             return null;
@@ -264,6 +310,19 @@ namespace WindowsFormsApplication1
                 perioden.Add(Kalenderregel.Zeitraum(RANG_FERIEN + k, DbWerte.KOND_ART_FERIEN,
                                                     BEZEICHNER_FERIEN + " " + Z(k + 1),
                                                     (int)von, (int)bis, angabe));
+            }
+
+            // Die Ferienliste ab dem fuenften Zeitraum (Konzept 7.8, Stufe 2): dieselbe Angabe auf dem Rang ihrer
+            // Ferienperiode im gemeinsamen Kalender (204 ... 309), aufsteigend; ohne Liste byte-gleich der Bestand.
+            int rang = RANG_FERIEN + Matrixeingang.FERIENZEITRAEUME;
+            foreach (Ferienzeile f in b.WeitereFerien ?? Array.Empty<Ferienzeile>())
+            {
+                if (f == null) continue;
+                if (rang > Kalendergemeinschaft.RANG_FERIENLISTE_LETZTER || !Jahrestag(f.Beginn) || !Jahrestag(f.Ende))
+                    return new Fahrplanlesung(Fahrplanbefund.FerienzeitraumUngueltig, null, groesse, f.Name ?? "");
+                string name = string.IsNullOrWhiteSpace(f.Name) ? BEZEICHNER_FERIEN + " " + Z(rang - RANG_FERIEN + 1) : f.Name.Trim();
+                perioden.Add(Kalenderregel.Zeitraum(rang, DbWerte.KOND_ART_FERIEN, name, f.Beginn, f.Ende, angabe));
+                rang++;
             }
             return null;
         }

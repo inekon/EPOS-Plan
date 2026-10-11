@@ -402,7 +402,10 @@ namespace EPOS.Kern.Tests
             // Satzes je Betriebskostenposition (Satz aus der Nutzungsdauertabelle).
             // E16 (V‑G3): alt 10, neu 11 — Fassung 11 trägt zusätzlich die Wiederholperiode
             // je Betriebskostenposition („alle n Jahre").
-            Assert.Equal(11, ErgebnisNachweisUmschlag.FASSUNG);
+            // Wärmegestehung/Energiekosten je Träger: alt 11, neu 12 — Fassung 12 trägt
+            // zusätzlich die Aufstellung „Menge × Preis" je Energieträger.
+            // P646: alt 12, neu 13 — kein neues Feld, Kennung der Wärmegestehung nach EZ‑21.
+            Assert.Equal(13, ErgebnisNachweisUmschlag.FASSUNG);
 
             string grund;
             string text = ErgebnisNachweisUmschlag.Schreiben(
@@ -667,7 +670,15 @@ namespace EPOS.Kern.Tests
         /// betragstragend sind 6, und 5 davon (die Kopien der Zeilen von 1040) ohne Dauer —
         /// zusammen 115 von 122, 32 von 39. Das Referenzprojekt Solarthermie 1049 (Kopie von
         /// 1018) bringt dessen 11 Positionen mit, alle ohne Dauer, eine betragstragend (das
-        /// BHKW) — zusammen 126 von 133, 33 von 40.
+        /// BHKW) — zusammen 126 von 133, 33 von 40. Das Referenzprojekt Kesselkennlinie 1050 (Kopie
+        /// von 1023) bringt dessen 2 Positionen mit (Wärmepumpe und Kessel), beide ohne Dauer und
+        /// betragstragend — zusammen 128 von 135, 35 von 42. Das Zonenprojekt 1052 (Kopie von 1018, G6d)
+        /// bringt wie 1049 dessen 11 Positionen mit — zusammen 139 von 146, 36 von 43. Das Referenzprojekt
+        /// Konditionierung 1051 (Kopie von 1007, KP3) bringt dessen 8 Positionen mit, alle ohne Dauer —
+        /// zusammen 147 von 154. Das Prüfprojekt 1053 (Kopie von 1018) bringt wie 1049 dessen 11 Positionen mit —
+        /// zusammen 158 von 165, 37 von 44. Das Referenzprojekt 1054 (Kopie von 1052, AK1z) bringt wie 1052 dessen
+        /// 11 Positionen mit — zusammen 169 von 176, 38 von 45. Das Referenzprojekt Erdsonde 1057 (Kopie von 1029) bringt
+        /// dessen 4 Positionen mit, alle ohne Dauer, zwei betragstragend — zusammen 173 von 180, 40 von 47.
         /// </summary>
         [Fact]
         public void Die_Testdatenbank_traegt_27_von_33_betragstragenden_Positionen_ohne_Dauer()
@@ -675,8 +686,8 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.Equal(133, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
-            Assert.Equal(126, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
+            Assert.Equal(180, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
+            Assert.Equal(173, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
                                   "AND (Nutzungsdauer IS NULL OR Nutzungsdauer < 1)"));
 
             int ohne = 0, alle = 0, hinweise = 0;
@@ -692,11 +703,12 @@ namespace EPOS.Kern.Tests
                 alle += h.Alle;
                 hinweise += h.Zeilen.Count;
             }
-            Assert.Equal(33, ohne);
-            Assert.Equal(40, alle);
+            Assert.Equal(40, ohne);
+            Assert.Equal(47, alle);
             // Einen Hinweis tragen nur Techniken mit Vorgabe unter T = 20 a: die Wärmepumpe
-            // (18 a) in 1019, 1023, 1024, 1032, 1040 und 1048, das BHKW (15 a) in 1018, 1031 und 1049.
-            Assert.Equal(9, hinweise);
+            // (18 a) in 1019, 1023, 1024, 1032, 1040, 1048 und 1050, das BHKW (15 a) in 1018, 1031,
+            // 1049, 1052, 1053 und 1054.
+            Assert.Equal(13, hinweise);
         }
 
         /// <summary>
@@ -763,6 +775,8 @@ namespace EPOS.Kern.Tests
                 ctrl.LadeErgebnisse(new List<int> { WOEHLER, WOEHLER_TEST1, WOEHLER_TEST2 });
             Assert.Equal(9, gespeichert.Count);
             Assert.All(gespeichert, e => Assert.True(e.OhneNachweis));
+            // P646: ohne Umschlag ist die Wärmegestehung die mit dem Kapitalwert des Projekts.
+            Assert.All(gespeichert, e => Assert.True(e.GestehungAlteFormel));
             Assert.All(gespeichert, e => Assert.Equal(R.WIRT_NACHWEIS_NAECHSTE_RECHNUNG,
                                                       ValeriAusweis.NachweisKennzeichen(e)));
 
@@ -779,6 +793,7 @@ namespace EPOS.Kern.Tests
                 new WirtschaftlichkeitCtrl().LadeErgebnisse(new List<int> { 1040, 1041, 1042 });
             Assert.Equal(9, neu.Count);
             Assert.All(neu, e => Assert.False(e.OhneNachweis));
+            Assert.All(neu, e => Assert.False(e.GestehungAlteFormel));   // Fassung 13
         }
 
         // =====================================================================
@@ -843,9 +858,10 @@ namespace EPOS.Kern.Tests
             Assert.StartsWith("Stamm, Test1, Test2: ", stand.Nutzungsdauerhinweise[0]);
             Assert.Equal(string.Format(DE, R.WIRT_T_OHNE_DAUER, 20), stand.Zeitraumzeile);
             // ETAPPE E9b: an der Stelle des Hinweistexts der Ausweis „n von m Parametern
-            // szenariert" — gezählt über die ganze Gruppe (Stamm, Test1, Test2).
-            Assert.Matches(@"^\d+ von \d+ Parametern szenariert", stand.Szenarioabdeckung);
-            Assert.DoesNotContain("Was ein Szenario heute variiert", stand.Szenarioabdeckung);
+            // szenariert" — gezählt über die Stände des Laufs (Stamm, Test1, Test2, alle
+            // angehakt); er steht an der Ansicht, weil er dem Haken folgt.
+            Assert.Matches(@"^\d+ von \d+ Parametern szenariert", ansicht.Szenarioabdeckung);
+            Assert.DoesNotContain("Was ein Szenario heute variiert", ansicht.Szenarioabdeckung);
             Assert.Equal(4, stand.Deklarationen.Count);
         }
 

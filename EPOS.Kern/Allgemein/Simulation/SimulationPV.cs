@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,9 +8,26 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Photovoltaik-Modul der Simulationskette: Erzeugung, Direktverbrauch,
-    /// Überschuss und Reststrom im Stundenraster.
+    /// Überschuss, Reststrom und Abregelung im Viertelstundenraster.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// <b>Bilanz in Viertelstunden (Welle M5, SB1 a).</b> Der Ertrag entsteht aus
+    /// stündlichen Klimadaten je Stunde; die Bilanz gegen den Strombedarf läuft in
+    /// den 35 040 Viertelstunden des Jahres. Der Stundenertrag wird dazu
+    /// energieerhaltend nach dem Sonnenstand auf seine vier Viertel verteilt
+    /// (<see cref="Viertelgewichte"/>): <c>P_q = P_h · 4 · cos θ_z,q / Σ cos θ_z</c>,
+    /// ohne Sonne gleichmäßig. Direktverbrauch, Überschuss, Reststrom und Abregelung
+    /// entstehen je Viertel aus EINER Auflösung; die Stundenreihen sind die
+    /// Mittelwerte ihrer vier Viertel und dienen nur dem Ausweis.
+    /// </para>
+    /// <para>
+    /// <b>Einspeisegrenze (PV3).</b> Mit gesetzter Projekteinstellung
+    /// (<see cref="KonfigurationCtrl.EinspeisegrenzeLesen"/>) wird je Viertel
+    /// höchstens <c>P_grenz</c> eingespeist; der Rest des Überschusses ist
+    /// <see cref="Abregelung_viertelstunde"/>. Ein Stromspeicher lädt VOR der
+    /// Abregelung (<see cref="EinspeisungAufteilen"/>).
+    /// </para>
     /// <para>
     /// <b>Reine PV-Rechnung seit AP2b.</b> Bis dahin steckte hier eine zweite,
     /// verlustfreie Batterielogik (Fachkonzept 8.2, Rudiment 2): Sie lud aus dem
@@ -39,9 +57,40 @@ namespace WindowsFormsApplication1
         // Input-Arrays (15-Minuten-Werte vom Lastprofil)
         public double[] Strombedarf = new double[8760 * 4];
 
-        // Interne Stunden-Arrays für die Simulation
+        /// <summary>
+        /// Stundenmittel des übergebenen Viertelstundenbedarfs [kWh je Stunde] — NUR Ausweis
+        /// (<c>pv_strombedarf.csv</c>). Die Bilanz rechnet seit SB1 (a) je Viertelstunde auf
+        /// <see cref="Strombedarf"/>.
+        /// </summary>
         public double[] Strombedarf_stuendlich = new double[8760];
         public double[] pvPotentialGesamt_stuendlich = new double[8760];
+
+        /// <summary>
+        /// Die PV-Erzeugung nach Wechselrichter je Viertelstunde [kW], energieerhaltend nach dem
+        /// Sonnenstand aus dem Stundenertrag verteilt (SB1 a) — die glatte Reihe, mit der Bilanz,
+        /// Stromspeicher und Speicherflotte rechnen. Das Mittel der vier Viertel ist
+        /// <see cref="Stromproduktion_Theoretisch"/> der Stunde.
+        /// </summary>
+        public double[] Stromproduktion_Theoretisch_viertelstunde = new double[8760 * 4];
+
+        /// <summary>
+        /// Die abgeregelte PV-Leistung je Viertelstunde [kW] ohne Speicher (PV3): Überschuss über der
+        /// Einspeisegrenze. Ohne Grenze ein Nullvektor.
+        /// </summary>
+        public double[] Abregelung_viertelstunde = new double[8760 * 4];
+
+        /// <summary>Stundenmittel von <see cref="Abregelung_viertelstunde"/> [kWh je Stunde].</summary>
+        public double[] Abregelung = new double[8760];
+
+        /// <summary>Jahressumme der Abregelung ohne Speicher [kWh].</summary>
+        public double AbregelungGesamtKwh = 0;
+
+        /// <summary>
+        /// Die Einspeisegrenze dieses Laufs [kW] am Netzanschlusspunkt; <c>null</c> = keine (PV3).
+        /// Gelesen in <see cref="Berechnung"/>; Aufrufer ohne Datenbank setzen sie über
+        /// <see cref="Bilanzieren"/>.
+        /// </summary>
+        public double? EinspeisegrenzeKw = null;
 
         // Ergebnis-Arrays (Stündlich)
         public double[] Stromproduktion_Theoretisch = new double[8760];
@@ -60,6 +109,9 @@ namespace WindowsFormsApplication1
         /// nicht auf 0, damit die SpeicherEngine ihn laden kann). Er ist KEINE
         /// PV-Erzeugung und gehört nicht in <see cref="Ueberschuss"/> — sonst würde
         /// er als PV-Einspeisung vergütet. Hier getrennt ausgewiesen [kWh je Stunde].
+        /// Im Lauf ist das dieselbe Größe wie <see cref="SimulationControl.BhkwEinspeisungDesLaufs"/>
+        /// (Stundenmittel der Viertelstundenbilanz aus <see cref="SimulationControl.BhkwUeberschussKw(double)"/>);
+        /// Bericht, Reiter und Wirtschaftlichkeit lesen die Reihe des Laufs, nicht diese.
         /// </summary>
         public double[] BhkwUeberschuss = new double[8760];
 
@@ -148,31 +200,54 @@ namespace WindowsFormsApplication1
             Array.Clear(Stromproduktion_viertelstunde, 0, Stromproduktion_viertelstunde.Length);
             Array.Clear(Reststrom_viertelstunde, 0, Reststrom_viertelstunde.Length);
             Array.Clear(Ueberschuss_viertelstunde, 0, Ueberschuss_viertelstunde.Length);
+
+            // Welle M5 (SB1 a, PV3): die glatte Erzeugungsreihe und die Abregelung.
+            Array.Clear(Stromproduktion_Theoretisch_viertelstunde, 0, Stromproduktion_Theoretisch_viertelstunde.Length);
+            Array.Clear(Abregelung_viertelstunde, 0, Abregelung_viertelstunde.Length);
+            Array.Clear(Abregelung, 0, Abregelung.Length);
+            AbregelungGesamtKwh = 0;
+            EinspeisegrenzeKw = null;
         }
 
         public double[] Berechnung(int ID_Projekt)
         {
             WErzeugerCtrl ctrl = new WErzeugerCtrl();
-            RecordSet rs = new RecordSet();
             int nID_Klimaregion = 0;
             double Lon = 0, Lat = 0;
 
             Init();
 
-            // Bedarf von 15-Min auf 1-Std mitteln
+            // SB1 (a): Das Stundenmittel des Bedarfs bleibt nur als Ausweis stehen - die Bilanz
+            // rechnet unten je Viertelstunde auf Strombedarf.
             Strombedarf_stuendlich = Viertelstunden_zu_stunden(Strombedarf);
 
+            // Die Klimazeilen der letzten gerechneten Anlage - aus ihnen entstehen die
+            // Viertelgewichte (alle Anlagen eines Projekts teilen dieselbe Klimaregion).
+            SolardatenCtrl klimaFuerViertel = null;
+
             // Geodaten laden
-            rs.Open("select * from Tab_Projekt where ID=" + ID_Projekt);
-            if (rs.Next()) nID_Klimaregion = (int)rs.Read("ID_Klimaregion");
-            rs.Close();
+            DataTable projekt = DataRepository.GetDataTable(
+                "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?", new DbParam("@id", ID_Projekt));
+            if (projekt != null && projekt.Rows.Count > 0)
+                nID_Klimaregion = Convert.ToInt32(projekt.Rows[0]["ID_Klimaregion"]);
 
             KlimaregionCtrl ctrlklima = new KlimaregionCtrl();
-            ctrlklima.ReadSingle("select * from Tab_Klimaregion where ID=" + nID_Klimaregion);
+            ctrlklima.ReadSingle("SELECT * FROM Tab_Klimaregion WHERE ID = ?", new DbParam("@id", nID_Klimaregion));
             if (ctrlklima.rows > 0) { Lon = ctrlklima.Longitude; Lat = ctrlklima.Latitude; }
 
+            // PVG (Schemaschritt 206): DIE WEICHE MODULE / GANGLINIE. Ist dem Projekt eine vollstaendige
+            // PV-Ganglinie zugeordnet, ersetzt sie die Modulrechnung ganz; eine unvollstaendige meldet ihren
+            // Mangel, und die Module rechnen. Ohne Zuordnung (jedes Referenzprojekt) bleibt der Weg unberuehrt.
+            PvGanglinieWeiche.Stand ganglinie = PvGanglinieWeiche.Lesen(ID_Projekt);
+            if (ganglinie.Zugeordnet && !ganglinie.Vollstaendig)
+                SimulationProtokoll.Aktuell.WarnungEinmal("pv-ganglinie-mangel-" + ID_Projekt,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIM_PV_GANGLINIE_MANGEL,
+                                  ganglinie.Bezeichner, ganglinie.Mangel));
+            if (ganglinie.RechnetGanglinie)
+                return GanglinieRechnen(ID_Projekt, ganglinie, nID_Klimaregion, Lon, Lat);
+
             // PV-POTENTIAL ALLER MODULE SAMMELN
-            ctrl.ReadAllFilter("ID_Projekt=" + ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
+            ctrl.LesenJeTyp(ID_Projekt, WizardItemClass.PV_TYP);
 
             // S3.2: die Strangebene. GELESEN WIRD NUR, WENN MINDESTENS EINE ANLAGE DEN
             // SCHALTER TRAEGT - die Vorrangregel steht vor dem Zugriff, nicht dahinter
@@ -244,6 +319,10 @@ namespace WindowsFormsApplication1
                 double etaWr = ctrl.items[n].PV_WrWirkungsgrad ?? WR_WIRKUNGSGRAD_VORGABE;
                 double systemFaktor = 1.0 - (ctrl.items[n].PV_Systemverluste ?? SYSTEMVERLUSTE_VORGABE) / 100.0;
 
+                // PV4: die Bodenalbedo JE ANLAGE. NULL = 0,2 (Bodenalbedo.VORGABE), damit ist der
+                // Vorgabefall bitgleich zum Bestand.
+                double albedo = Bodenalbedo.Wert(ctrl.items[n]);
+
                 // E2 (Paket B): die Modellweiche je Anlage. NULL und jeder unbekannte
                 // Wert heissen EINFACH - der Rechenweg aus Paket A.
                 bool erweitert = IstErweitert(ctrl.items[n]);
@@ -252,6 +331,7 @@ namespace WindowsFormsApplication1
                 // der Sonnenstand rechnet weiter auf UTC-Basis.
                 SolardatenCtrl ctrldat = new SolardatenCtrl();
                 ctrldat.ReadOrtszeit(nID_Klimaregion, ID_Projekt);
+                klimaFuerViertel = ctrldat;
 
                 double prodSummeMod = 0;
 
@@ -317,7 +397,8 @@ namespace WindowsFormsApplication1
                         // dt.DayOfYear). Bis Paket A stand hier i/24, also 0…364.
                         double effStr = SolarCalculator.CalculateHourly(Lon, Lat, ctrl.items[n].m_Neigung, ctrl.items[n].m_Azimut,
                                         zeile.Globalstrahlung, zeile.Direktstrahlung,
-                                        zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc);
+                                        zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc,
+                                        albedo);
 
                         if (effStr > MaxPSolar) MaxPSolar = effStr;
 
@@ -364,7 +445,8 @@ namespace WindowsFormsApplication1
                         double gT = SolarCalculator.CalculateHourlyHayDavies(
                                         Lon, Lat, ctrl.items[n].m_Neigung, ctrl.items[n].m_Azimut,
                                         zeile.Globalstrahlung, zeile.Direktstrahlung,
-                                        zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc);
+                                        zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc,
+                                        albedo);
 
                         if (gT > MaxPSolar) MaxPSolar = gT;
 
@@ -425,46 +507,264 @@ namespace WindowsFormsApplication1
                 });
             }
 
-            // SCHRITT: ZEITSCHRITT-SIMULATION (VERBRAUCH)
-            for (int i = 0; i < 8760; i++)
+            // SB1 (a): DIE VIERTELGEWICHTE - der Sonnenstand in der Mitte jeder Viertelstunde.
+            double[] gewichte = Viertelgewichte(klimaFuerViertel, Lon, Lat);
+
+            Bilanzieren(gewichte, EinspeisegrenzeAufloesen(ID_Projekt));
+
+            return Stromproduktion_viertelstunde;
+        }
+
+        /// <summary>
+        /// PV3: DIE EINSPEISEGRENZE des Projekts, in kW aufgelöst (Prozent auf die installierte PV-Leistung,
+        /// <see cref="PhotovoltaikCtrl.KwpDesProjekts"/> — bei einer rechnenden PV-Ganglinie deren
+        /// Kennleistung). <c>null</c> = keine Grenze, der Lauf rechnet wie ohne das Feld.
+        /// </summary>
+        private static double? EinspeisegrenzeAufloesen(int ID_Projekt)
+        {
+            Einspeisegrenze grenze = KonfigurationCtrl.EinspeisegrenzeLesen(ID_Projekt);
+            double? grenzeKw = null;
+            if (grenze.Gesetzt)
             {
-                double erzeugung = pvPotentialGesamt_stuendlich[i];
-                double bedarfRoh = Strombedarf_stuendlich[i];
+                double kwp = grenze.InProzent ? PhotovoltaikCtrl.KwpDesProjekts(ID_Projekt) : 0.0;
+                grenzeKw = grenze.Kw(kwp);
+                if (!grenzeKw.HasValue)
+                    SimulationProtokoll.Aktuell.WarnungEinmal("pv-einspeisegrenze-ohne-kwp-" + ID_Projekt,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIM_PV_EINSPEISEGRENZE_OHNE_KWP,
+                                      grenze.Wert.Value));
+            }
+            return grenzeKw;
+        }
 
-                // V1 (PV-Konzept § 2.3, Etappe P1): Ein NEGATIVER Restbedarf ist
-                // BHKW-Überschuss — kein Bedarf und keine PV-Größe. Ohne die Klemme
-                // wurde Min(erzeugung, bedarf) negativ und der BHKW-Überschuss
-                // wanderte über „erzeugung − direktVerbrauch" in die PV-Einspeise-
-                // reihe (Projekt 1018: 24.532 negative Viertelstunden). Für Projekte
-                // ohne BHKW-Überschuss ist bedarfRoh nie negativ — ihr Ergebnis
-                // bleibt identisch (Abnahmekriterium P1).
-                double bedarf = Math.Max(0, bedarfRoh);
-                BhkwUeberschuss[i] = (double)Math.Max(0, -bedarfRoh);
+        /// <summary>
+        /// <b>Der Ganglinienweg</b> (PVG, Schemaschritt 206): Die zugeordnete PV-Ganglinie ersetzt die
+        /// Modulrechnung. Im <b>Stundenraster</b> wird sie zum Stundenertrag
+        /// <see cref="pvPotentialGesamt_stuendlich"/> und nach dem Sonnenstand auf die Viertel verteilt —
+        /// dieselben <see cref="Viertelgewichte"/> wie die Module; im <b>Viertelstundenraster</b> gehen
+        /// ihre Werte unmittelbar in die Bilanz (die Stundenreihe ist das Mittel der vier Viertel). Die
+        /// Einspeisegrenze wirkt wie im Modulweg, ihre Prozentbasis ist die Kennleistung der Ganglinie.
+        /// </summary>
+        private double[] GanglinieRechnen(int idProjekt, PvGanglinieWeiche.Stand g, int idKlimaregion,
+                                          double lon, double lat)
+        {
+            double[] stunden = g.Stundenwerte();
+            Array.Copy(stunden, pvPotentialGesamt_stuendlich, Math.Min(stunden.Length, pvPotentialGesamt_stuendlich.Length));
 
-                Stromproduktion_Theoretisch[i] = (double)erzeugung;
+            Modul_Ergebnisse.Add(new PVModulErgebnis
+            {
+                Name = g.Bezeichner,
+                Flaeche = 0,
+                Anzahl = 0,
+                StromproduktionKwh = g.SummeKwh,
+                Geraete = Leer,
+                Ganglinie = PvGanglinieAusweis.Aus(g)
+            });
 
-                // Direktverbrauch - seit AP2b der EINZIGE Verrechnungsschritt hier.
-                double direktVerbrauch = Math.Min(erzeugung, bedarf);
+            double? grenzeKw = EinspeisegrenzeAufloesen(idProjekt);
+            if (g.Viertelstunden)
+            {
+                BilanzierenKern(null, g.Werte, grenzeKw);
+            }
+            else
+            {
+                var klima = new SolardatenCtrl();
+                klima.ReadOrtszeit(idKlimaregion, idProjekt);
+                BilanzierenKern(Viertelgewichte(klima, lon, lat), null, grenzeKw);
+            }
+            return Stromproduktion_viertelstunde;
+        }
 
-                // Ergebnisse für diese Stunde festschreiben
-                Ueberschuss[i] = (double)(erzeugung - direktVerbrauch);   // Was ins Netz geht
-                Reststrom[i] = (double)(bedarf - direktVerbrauch);        // Was vom Netz kommt
-                Stromproduktion[i] = (double)direktVerbrauch;             // Genutzte Produktion
+        /// <summary>
+        /// <b>Die Bilanz aus einer Viertelstundenreihe</b> (PVG): Die Erzeugung je Viertel ist
+        /// <paramref name="erzeugungViertelKw"/> selbst, der Stundenertrag das Mittel der vier Viertel.
+        /// Datenbankfrei — der Weg einer PV-Ganglinie im Viertelstundenraster, Tests rufen ihn unmittelbar.
+        /// </summary>
+        /// <param name="erzeugungViertelKw">35 040 Viertelstundenwerte der Erzeugung [kW].</param>
+        /// <param name="einspeisegrenzeKw">Die Einspeisegrenze [kW]; <c>null</c> = keine.</param>
+        public void BilanzierenViertel(double[] erzeugungViertelKw, double? einspeisegrenzeKw)
+        {
+            const int VIERTEL = 4;
+            int stunden = pvPotentialGesamt_stuendlich.Length;
+            for (int h = 0; h < stunden; h++)
+            {
+                int q = h * VIERTEL;
+                pvPotentialGesamt_stuendlich[h] = q + 3 < erzeugungViertelKw.Length
+                    ? (erzeugungViertelKw[q] + erzeugungViertelKw[q + 1] + erzeugungViertelKw[q + 2] + erzeugungViertelKw[q + 3]) / 4.0
+                    : 0.0;
+            }
+            BilanzierenKern(null, erzeugungViertelKw, einspeisegrenzeKw);
+        }
 
-                if (erzeugung > Stromproduktion_Max) Stromproduktion_Max = erzeugung;
+        /// <summary>
+        /// <b>Die Bilanz in Viertelstunden</b> (Welle M5, SB1 a und PV3) — aus dem Stundenertrag
+        /// <see cref="pvPotentialGesamt_stuendlich"/> und dem Viertelstundenbedarf
+        /// <see cref="Strombedarf"/>. Datenbankfrei; <see cref="Berechnung"/> ruft sie nach dem
+        /// Ertragslauf, Tests rufen sie unmittelbar.
+        ///
+        /// <para>Je Viertel q der Stunde h: Erzeugung <c>P_q = P_h · 4 · w_q</c> (Gewichte je Stunde
+        /// mit Summe 1, ohne Gewicht gleichmäßig <c>P_q = P_h</c>); Direktverbrauch
+        /// <c>min(P_q, max(0, Last_q))</c>; Überschuss und Reststrom als Rest; ein negativer Bedarf ist
+        /// BHKW-Überschuss (V1) und keine PV-Größe. Mit Einspeisegrenze ist die Abregelung
+        /// <c>max(0, Ü_q − P_grenz)</c>. Die Stundenreihen sind die Mittel ihrer vier Viertel.</para>
+        /// </summary>
+        /// <param name="gewichte">35 040 Viertelgewichte (Summe je Stunde 1) oder <c>null</c> = gleichmäßig.</param>
+        /// <param name="einspeisegrenzeKw">Die Einspeisegrenze [kW]; <c>null</c> = keine.</param>
+        public void Bilanzieren(double[] gewichte, double? einspeisegrenzeKw)
+            => BilanzierenKern(gewichte, null, einspeisegrenzeKw);
+
+        /// <summary>
+        /// Der Kern der Bilanz: die Erzeugung je Viertel aus <paramref name="viertelKw"/>, wenn gesetzt
+        /// (Ganglinie im Viertelstundenraster), sonst aus Stundenertrag und Gewicht wie in
+        /// <see cref="Bilanzieren"/>.
+        /// </summary>
+        private void BilanzierenKern(double[] gewichte, double[] viertelKw, double? einspeisegrenzeKw)
+        {
+            const int VIERTEL = 4;
+            int stunden = pvPotentialGesamt_stuendlich.Length;
+            int n = stunden * VIERTEL;
+
+            EinspeisegrenzeKw = einspeisegrenzeKw.HasValue && einspeisegrenzeKw.Value >= 0.0
+                ? einspeisegrenzeKw : null;
+
+            if (Stromproduktion_Theoretisch_viertelstunde.Length != n) Stromproduktion_Theoretisch_viertelstunde = new double[n];
+            if (Stromproduktion_viertelstunde.Length != n) Stromproduktion_viertelstunde = new double[n];
+            if (Reststrom_viertelstunde.Length != n) Reststrom_viertelstunde = new double[n];
+            if (Ueberschuss_viertelstunde.Length != n) Ueberschuss_viertelstunde = new double[n];
+            if (Abregelung_viertelstunde.Length != n) Abregelung_viertelstunde = new double[n];
+
+            Stromproduktion_Max = 0;
+            for (int h = 0; h < stunden; h++)
+            {
+                double ertrag = pvPotentialGesamt_stuendlich[h];
+                Stromproduktion_Theoretisch[h] = (double)ertrag;
+
+                double prodSumme = 0, uebSumme = 0, restSumme = 0, bhkwSumme = 0, abrSumme = 0;
+                for (int k = 0; k < VIERTEL; k++)
+                {
+                    int q = h * VIERTEL + k;
+
+                    // Die Erzeugung des Viertels: energieerhaltend nach dem Sonnenstand.
+                    double erzeugung = viertelKw != null
+                        ? (q < viertelKw.Length ? viertelKw[q] : 0.0)
+                        : gewichte != null && !double.IsNaN(gewichte[q])
+                            ? ertrag * VIERTEL * gewichte[q]
+                            : ertrag;
+                    Stromproduktion_Theoretisch_viertelstunde[q] = erzeugung;
+
+                    double bedarfRoh = q < Strombedarf.Length ? Strombedarf[q] : 0.0;
+
+                    // V1 (PV-Konzept § 2.3, Etappe P1): Ein NEGATIVER Restbedarf ist
+                    // BHKW-Überschuss — kein Bedarf und keine PV-Größe.
+                    double bedarf = Math.Max(0, bedarfRoh);
+                    // Dieselbe Formel wie die Einspeisereihe des Laufs
+                    // (SimulationControl.BhkwEinspeisung_viertelstuendlich) auf demselben Rest.
+                    double bhkw = SimulationControl.BhkwUeberschussKw(bedarfRoh);
+
+                    double direkt = Math.Min(erzeugung, bedarf);
+                    double ueberschuss = erzeugung - direkt;
+                    double rest = bedarf - direkt;
+                    double abregelung = EinspeisegrenzeKw.HasValue
+                        ? Math.Max(0, ueberschuss - EinspeisegrenzeKw.Value)
+                        : 0.0;
+
+                    Stromproduktion_viertelstunde[q] = direkt;
+                    Ueberschuss_viertelstunde[q] = ueberschuss;
+                    Reststrom_viertelstunde[q] = rest;
+                    Abregelung_viertelstunde[q] = abregelung;
+
+                    prodSumme += direkt;
+                    uebSumme += ueberschuss;
+                    restSumme += rest;
+                    bhkwSumme += bhkw;
+                    abrSumme += abregelung;
+
+                    if (erzeugung > Stromproduktion_Max) Stromproduktion_Max = erzeugung;
+                }
+
+                // Die Stundenreihen: das Mittel der vier Viertel [kWh je Stunde].
+                Stromproduktion[h] = prodSumme / VIERTEL;
+                Ueberschuss[h] = uebSumme / VIERTEL;
+                Reststrom[h] = restSumme / VIERTEL;
+                BhkwUeberschuss[h] = bhkwSumme / VIERTEL;
+                Abregelung[h] = abrSumme / VIERTEL;
             }
 
-            // SUMMEN & KONVERTIERUNG
+            // SUMMEN [kWh]
             StromproduktionGesamtKwh = Stromproduktion.Sum();
             StromproduktionTheoretischGesamtKwh = Stromproduktion_Theoretisch.Sum();
             BhkwUeberschussGesamtKwh = BhkwUeberschuss.Sum();
+            AbregelungGesamtKwh = Abregelung.Sum();
+        }
 
-            // Für den Chart aufbereiten
-            Stromproduktion_viertelstunde = Stundenwerte_zu_viertelstunden(Stromproduktion);
-            Reststrom_viertelstunde = Stundenwerte_zu_viertelstunden(Reststrom);
-            Ueberschuss_viertelstunde = Stundenwerte_zu_viertelstunden(Ueberschuss);
+        /// <summary>
+        /// <b>Die Viertelgewichte des Jahres</b> (SB1 a): je Stunde vier Gewichte mit Summe 1,
+        /// proportional zum Kosinus des Zenitwinkels in der Mitte jeder Viertelstunde
+        /// (<see cref="SolarCalculator.KosinusZenitwinkel"/>, UTC-Herkunft der Klimazeile; die Zeile
+        /// steht für das Intervall ab ihrer Stunde). Steht die Sonne in allen vier Vierteln unter dem
+        /// Horizont, ist das Gewicht <c>NaN</c> — die Stunde verteilt gleichmäßig.
+        /// </summary>
+        /// <param name="klima">Die Klimazeilen in Ortszeit; <c>null</c> = alle gleichmäßig.</param>
+        /// <returns>35 040 Gewichte; Stunden ohne Klimazeile tragen <c>NaN</c>.</returns>
+        internal static double[] Viertelgewichte(SolardatenCtrl klima, double lon, double lat)
+        {
+            var w = new double[8760 * 4];
+            for (int q = 0; q < w.Length; q++) w[q] = double.NaN;
+            if (klima == null) return w;
 
-            return Stromproduktion_viertelstunde;
+            int stunden = Math.Min(klima.rows, 8760);
+            var c = new double[4];
+            for (int h = 0; h < stunden; h++)
+            {
+                SolardatenModel zeile = klima.items[h];
+                double summe = 0.0;
+                for (int k = 0; k < 4; k++)
+                {
+                    c[k] = SolarCalculator.KosinusZenitwinkel(lon, lat, zeile.TagUtc,
+                                                              zeile.StundeUtc + (k + 0.5) / 4.0);
+                    summe += c[k];
+                }
+                if (!(summe > 0.0)) continue;
+                for (int k = 0; k < 4; k++) w[h * 4 + k] = c[k] / summe;
+            }
+            return w;
+        }
+
+        /// <summary>
+        /// <b>Einspeisung und Abregelung nach der Speicherladung</b> (PV3, Laden vor Abregeln) je
+        /// Viertelstunde [kW]: Was der Speicher aus dem Überschuss lädt, geht nicht ins Netz und wird
+        /// nicht abgeregelt; vom Rest wird bis zur Einspeisegrenze eingespeist, darüber abgeregelt.
+        /// Ohne Ladereihe ist das die Aufteilung ohne Speicher.
+        /// </summary>
+        /// <param name="ladungKwh">Ladung je Viertelstunde [kWh] (SpeicherEngine, <c>LadungAcKwh</c>) oder <c>null</c>.</param>
+        /// <param name="standbyAusPvKw">Aus dem Überschuss gedeckter Standby des Speichersystems je
+        /// Viertelstunde [kW] (SP1) oder <c>null</c>.</param>
+        /// <param name="einspeisungKw">Eingespeiste PV-Leistung je Viertelstunde [kW].</param>
+        /// <param name="abregelungKw">Abgeregelte PV-Leistung je Viertelstunde [kW].</param>
+        public void EinspeisungAufteilen(double[] ladungKwh, double[] standbyAusPvKw,
+                                         out double[] einspeisungKw, out double[] abregelungKw)
+        {
+            int n = Ueberschuss_viertelstunde.Length;
+            einspeisungKw = new double[n];
+            abregelungKw = new double[n];
+            bool mitLadung = ladungKwh != null && ladungKwh.Length == n;
+            bool mitStandby = standbyAusPvKw != null && standbyAusPvKw.Length == n;
+            for (int q = 0; q < n; q++)
+            {
+                double ueb = Ueberschuss_viertelstunde[q];
+                if (mitLadung) ueb = Math.Max(0, ueb - ladungKwh[q] * 4.0);
+                if (mitStandby) ueb = Math.Max(0, ueb - standbyAusPvKw[q]);
+                double ein = EinspeisegrenzeKw.HasValue ? Math.Min(ueb, EinspeisegrenzeKw.Value) : ueb;
+                einspeisungKw[q] = ein;
+                abregelungKw[q] = ueb - ein;
+            }
+        }
+
+        /// <summary>Jahressumme einer Viertelstundenreihe in kW als Energie [kWh].</summary>
+        public static double ViertelstundenKwh(double[] reiheKw)
+        {
+            double summe = 0;
+            if (reiheKw != null) foreach (double w in reiheKw) summe += w;
+            return summe / 4.0;
         }
 
         // --- Hilfsmethoden ---
@@ -1207,6 +1507,9 @@ namespace WindowsFormsApplication1
 
             var einstrahlung = new double[neigungen.Count];
 
+            // PV4: die Bodenalbedo der Anlage gilt fuer alle ihre Straenge.
+            double albedo = Bodenalbedo.Wert(anlage);
+
             for (int i = 0; i < stunden; i++)
             {
                 SolardatenModel zeile = ctrldat.items[i];
@@ -1217,11 +1520,12 @@ namespace WindowsFormsApplication1
                         ? SolarCalculator.CalculateHourlyHayDavies(
                               Lon, Lat, neigungen[k], azimute[k],
                               zeile.Globalstrahlung, zeile.Direktstrahlung,
-                              zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc)
+                              zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc, albedo)
                         : SolarCalculator.CalculateHourly(
                               Lon, Lat, neigungen[k], azimute[k],
                               zeile.Globalstrahlung, zeile.Direktstrahlung,
-                              zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc);
+                              zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc,
+                              albedo);
 
                     if (einstrahlung[k] > MaxPSolar) MaxPSolar = einstrahlung[k];
                 }
@@ -1491,6 +1795,12 @@ namespace WindowsFormsApplication1
     public class PVModulErgebnis
     {
         public string Name = "";
+
+        /// <summary>
+        /// Der Ausweis der PV-Ganglinie, wenn diese Zeile die rechnende Ganglinie ist (PVG); <c>null</c> im
+        /// Modulmodell. Ausweis, kein Rechenweg: Ergebnisreiter und Bericht nennen damit die Quelle.
+        /// </summary>
+        public PvGanglinieAusweis Ganglinie;
         public double Flaeche;          // m^2 gesamt
         public bool FlaecheGeschaetzt;  // W11b-B-8: aus P_STC / Wirkungsgrad, Katalog ohne Masse
         public long Anzahl;             // Modulanzahl

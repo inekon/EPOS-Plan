@@ -48,6 +48,13 @@ namespace WindowsFormsApplication1
         private readonly List<int> _gruppe = new List<int>();
 
         /// <summary>
+        /// Die Position jedes Stands der Gruppe in der Folge des Berichts (Stamm = 1) — für die Positionsform der
+        /// Platzhaltermarken an Sensitivität, Mehrjahrestafel und Zahlungsstrombild (Konzept Berichtsvorlagen 4.5, 9.4).
+        /// </summary>
+        private Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition> _positionen =
+            new Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition>();
+
+        /// <summary>
         /// Die gespeicherten Simulationsstände der Gruppe (VF-1, Teil C) — Grundlage des
         /// Satzes „Ergebnisse aus gespeicherten Läufen vom …". Genommen wird der
         /// ÄLTESTE: Er begrenzt, wie frisch die Tabelle insgesamt ist.
@@ -86,6 +93,28 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die wirksame Referenz der Gruppe beim letzten <see cref="Laden"/> (0 = keine).</summary>
         private int _referenzWirksam;
+
+        /// <summary>
+        /// Der Ausweis „n von m Parametern szenariert", wie <see cref="Szenarioabdeckung"/> ihn
+        /// zuletzt gezählt hat, und sein Schlüssel (Sprache und Stände des Laufs): Ein
+        /// Szenariowechsel zählt nicht neu, ein Haken schon; <see cref="Laden"/> verwirft ihn.
+        /// </summary>
+        private string _abdeckung = "";
+        private string _abdeckungSchluessel;
+
+        /// <summary>
+        /// Anwenderentscheid 30.09.2026 (Register EZ‑18), seit EZ‑19 der Lauf für Ergebnisse
+        /// OHNE Laufvermerk: Jedes gespeicherte Ergebnis trägt die Stände seines Laufs selbst
+        /// (<see cref="WirtschaftlichkeitErgebnis.LaufStaende"/>), und gegen diese Läufe prüft
+        /// <see cref="Ansicht"/>, ob die Wahl die Gruppenregel geändert hat
+        /// (<see cref="Laufvermerk.GruppenregelVeraltet"/>) — auch nach einem Seitenwechsel und
+        /// für einen neu angehakten Stand aus einem älteren Lauf. Nur eine Zeile aus dem
+        /// Altbestand ohne Vermerk zählt zu diesem Lauf: gesetzt von <see cref="Berechnen"/> mit
+        /// den Ständen, die er gerechnet hat, und vorher einmal beim ersten <see cref="Laden"/>
+        /// mit den Ständen des Laufs, wie ihn die Wahl dann bildet. Weder ein Haken noch eine
+        /// Referenzwahl noch ein erneutes Laden setzt ihn. <c>null</c> = noch nicht geladen.
+        /// </summary>
+        private List<int> _ergebnisLauf;
 
         /// <summary>Die Verlaufshülle der Seite (ETAPPE E6).</summary>
         private KapitalwertVerlaufHuelle Verlauf
@@ -132,6 +161,12 @@ namespace WindowsFormsApplication1
         internal Func<AnhangEStellen> AnhangEStellenLaden { get; set; }
 
         /// <summary>
+        /// Die gespeicherten Ergebnisse sind neu gelesen oder neu gerechnet — der Wirt liest den
+        /// Kurzstand der Reiterzeile daraufhin neu (Konzept Navigation Berichte &amp; Kosten, A2).
+        /// </summary>
+        internal event Action Geladen;
+
+        /// <summary>
         /// Die Szenarien als Nummer. Die PERSISTENZWERTE
         /// (<c>Tab_ErgebnisWirtschaftlichkeit.Szenario</c>) kennt nur diese
         /// Hülle — sie dürfen weder in die Komponente noch in eine <c>.resx</c>.
@@ -158,6 +193,8 @@ namespace WindowsFormsApplication1
             var gaben = new Dictionary<string, object>
             {
                 ["Laden"] = new Func<WirtschaftlichkeitStand>(Laden),
+                ["CsvSpeichern"] = new Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, Zeitraster, Task>(
+                    (m, t, r) => CsvExportClass.ExportDiagramm(m, t, Dienste.Projekt.Id, r)),
 
                 // ETAPPE E5 (U2, V‑1/K8): der Umschalter "Kennzahlen / ValERI-Bewertung"
                 // als Sitzungswahl - dieselbe geteilte Instanz wie Haekchen und Sicht.
@@ -239,9 +276,11 @@ namespace WindowsFormsApplication1
             var stand = new WirtschaftlichkeitStand();
 
             var zeilen = new List<VarianteZeile>();
+            var folge = new List<(int IdProjekt, bool IstStamm)>();
             _namen.Clear();
             _gruppe.Clear();
             _simStaende.Clear();
+            _abdeckungSchluessel = null;   // Parameter und Preise frisch zählen
             try
             {
                 foreach (BerichtsDatenSammler.VariantenStatus st in
@@ -266,6 +305,7 @@ namespace WindowsFormsApplication1
                     });
                     if (st.SimStand.HasValue) _simStaende.Add(st.SimStand.Value);
                     _gruppe.Add(st.IdProjekt);
+                    folge.Add((st.IdProjekt, st.IstStamm));
                     _namen[st.IdProjekt] = st.IstStamm
                         ? MyResource.Resource.BK_ART_STAMM
                         : (string.IsNullOrEmpty(st.Variantenname) ? st.Projektname : st.Variantenname);
@@ -273,6 +313,12 @@ namespace WindowsFormsApplication1
             }
             catch { }
             stand.Varianten = zeilen;
+
+            // Die Positionen der Stände für die Positionsform der Marken (stand.<n>.…, variante.<n>.…): dieselbe Folge
+            // wie der Bericht (BerichtsDatenSammler: Stamm zuerst, dann die Varianten der Gruppe), gezählt über ALLE
+            // Varianten — ein Bericht mit Teilauswahl zählt nur die gewählten, das sagt der Hinweis der Marke.
+            _positionen = VorlagenfeldpositionHuelle.Je(folge);
+            stand.Vorlagenfeldpositionen = _positionen;
 
             // Die Vergleichswahl ist die GETEILTE der drei Seiten (W5-B-5, 08.09.2026):
             // Vorgabe alle Versionen der Gruppe (Vorbild AktualisiereListe), abgewaehlt
@@ -316,6 +362,11 @@ namespace WindowsFormsApplication1
             // Vergleich, auch wenn sie nicht angehakt ist.
             _referenzzeile = stand.Referenzzeile ?? "";
             _referenzWirksam = wahl.IdReferenz;
+
+            // EZ‑18/EZ‑19: Den Lauf gespeicherter Ergebnisse nennt ihr Laufvermerk; nur für eine
+            // Zeile ohne Vermerk (Altbestand) gilt beim ersten Laden der Lauf der Wahl, danach
+            // setzt ihn allein „Berechnen" neu.
+            if (_ergebnisLauf == null) _ergebnisLauf = Laufstaende().Select(s => s.Key).ToList();
 
             var szenarien = new List<ValueTuple<int, string>>();
             for (int i = 0; i < SZENARIEN.Length; i++)
@@ -375,8 +426,15 @@ namespace WindowsFormsApplication1
             // eine Kennzahl“ nichts zu tun. Solange beide hier zusammenhingen, blieb die
             // Statuszeile bei genau den Zeilen stumm, bei denen der Anwender am ehesten
             // neu rechnen muss.
-            bool veraltet = _ergebnisse.Count > 0 &&
-                            _ergebnisse.Any(x => !_ctrl.ErgebnisAktuell(x));
+            //
+            // UND DER GRUND (Folge von #637): Veraltung ist die Regel hinter ErgebnisAktuell -
+            // jüngerer Simulationslauf, geänderte Kosten der Gruppe, geänderter Kostenkatalog.
+            // Über alle gespeicherten Zeilen gilt der gewichtigste; Statuszeile und Band nennen ihn.
+            Ergebnisveraltung grund = Ergebnisveraltung.Keine;
+            foreach (WirtschaftlichkeitErgebnis x in _ergebnisse)
+                grund = KostenAenderungsstempel.Vorrang(grund, _ctrl.Veraltung(x));
+            bool veraltet = grund != Ergebnisveraltung.Keine;
+            stand.NachrechnenGrund = grund;
             BilanzenAuffrischen();
             stand.Ansicht = Ansicht(0);
 
@@ -386,7 +444,7 @@ namespace WindowsFormsApplication1
             stand.Statuszeile = _ergebnisse.Count == 0
                 ? T("WIRT_STATUS_KEINE", "Noch keine Wirtschaftlichkeitsberechnung gespeichert — bitte „Berechnen“.")
                 : veraltet
-                    ? T("WIRT_STATUS_VERALTET", "⚠ Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand — bitte „Berechnen“.")
+                    ? StatusVeraltet(grund)
                     : string.Format(T("WIRT_STATUS_STAND", "Gespeicherte Ergebnisse vom {0}."),
                                     _ergebnisse[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
 
@@ -434,10 +492,9 @@ namespace WindowsFormsApplication1
             stand.Nutzungsdauerhinweise = nutzungsdauer.Zeilen;
             stand.Vereinfachungszeile = Vereinfachungszeile(stand.MitPhotovoltaik);
 
-            // ETAPPE E5 (U10, V‑A) und E9b (E9b-Q3): unter der Annahmentafel der Ausweis
-            // "n von m Parametern szenariert" (an der Stelle des Hinweistexts) und die
-            // Deklarationszeilen der Bewertung - beide an der Gruppe, nicht an der Wahl.
-            stand.Szenarioabdeckung = Szenarioabdeckung();
+            // ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung - an der Gruppe, nicht
+            // an der Wahl. Der Ausweis "n von m Parametern szenariert" darüber zählt die
+            // Stände des Laufs und steht deshalb an der Ansicht (Szenarioabdeckung).
             stand.Deklarationen = Deklarationen();
 
             // ETAPPE E5 Teil b (U2): die Annahmentafel ueber dem Ausweis und der
@@ -458,6 +515,7 @@ namespace WindowsFormsApplication1
             // Arbeitsstand der Seite den geladenen Stand nicht mitverändert.
             stand.Wirkungen = _wirkungen.Select(w => w.Kopie()).ToList();
 
+            Geladen?.Invoke();
             return stand;
         }
 
@@ -585,22 +643,68 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q2, E9b‑Q3): der Ausweis
         /// „n von m Parametern szenariert" unter der Annahmentafel — an der Stelle des
-        /// Hinweistexts, den die Pflege in den Dialogen überflüssig macht. Gezählt wird
-        /// über die GANZE Vergleichsgruppe, nicht über die Wahl — dieselben Stände wie die
-        /// Nutzungsdauer-Hinweise darüber; die Regel steht im Kern
+        /// Hinweistexts, den die Pflege in den Dialogen überflüssig macht. Gezählt werden
+        /// die Stände des LAUFS (<see cref="Laufstaende"/>) — dieselbe Menge, über die der
+        /// Lauf seine Gruppenregel bestimmt (Konzept § 3.5, → Register R‑EZ, EZ‑15), und
+        /// dieselbe, die der Bericht zählt; die Regel steht im Kern
         /// (<see cref="SzenarioAbdeckung.Lesen"/>). Ein Lesefehler kostet die Zeile.
         /// </summary>
         private string Szenarioabdeckung()
         {
+            List<KeyValuePair<int, string>> staende = Laufstaende();
+            string schluessel = CultureInfo.CurrentUICulture.Name + "|" + BerichtTexte.Kultur.Name + "|" +
+                                string.Join(",", staende.Select(s => s.Key.ToString(CultureInfo.InvariantCulture)));
+            if (_abdeckungSchluessel == schluessel) return _abdeckung;
+
+            string satz;
             try
             {
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
-                var staende = new List<KeyValuePair<int, string>>();
-                foreach (int id in _gruppe)
-                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
-                return SzenarioAbdeckung.Lesen(p, staende).Satz(BerichtTexte.Kultur);
+                satz = SzenarioAbdeckung.Lesen(p, staende).Satz(BerichtTexte.Kultur);
             }
-            catch { return ""; }
+            catch { satz = ""; }
+            _abdeckung = satz;
+            _abdeckungSchluessel = schluessel;
+            return satz;
+        }
+
+        /// <summary>
+        /// Anwenderentscheid 30.09.2026 (Register EZ‑18) und 02.10.2026 (EZ‑19): Ändert die Wahl —
+        /// ein Haken, die Referenz — die Stände mit Stromverwendung gegenüber dem Lauf, aus dem die
+        /// Ergebnisse der gewählten Stände stammen (ihr Laufvermerk, ohne Vermerk
+        /// <see cref="_ergebnisLauf"/>; tragen sie verschiedene Vermerke, jeder dieser Läufe), gilt
+        /// eine andere Gruppenregel; die gespeicherten Ergebnisse bleiben bis zum nächsten
+        /// „Berechnen" stehen und sind veraltet. Die Regel steht im Kern
+        /// (<see cref="Laufvermerk.GruppenregelVeraltet"/>, darin
+        /// <see cref="WirtschaftlichkeitCtrl.StromGruppenregelGeaendert"/>). Ohne gespeicherte
+        /// Ergebnisse gibt es nichts, was veralten könnte; ein Lesefehler kostet die Fahne, nie
+        /// die Ansicht.
+        /// </summary>
+        private bool GruppenregelVeraltet()
+        {
+            if (_ergebnisLauf == null || _ergebnisse.Count == 0) return false;
+            try
+            {
+                return Laufvermerk.GruppenregelVeraltet(
+                    _ergebnisse, Laufstaende().Select(s => s.Key), _ergebnisLauf);
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.15 und § 3.5 — die Stände des LAUFS in der Folge der Gruppe: der Stamm,
+        /// die angehakten Varianten und die wirksame Referenz, die nicht aus dem Vergleich
+        /// fallen kann. Genau sie rechnet „Berechnen" (die Seite reicht die angehakten
+        /// Varianten samt Referenz an den Sammler, der den Stamm immer führt), und über sie
+        /// bestimmt der Lauf die Gruppenregel „Strombedarf ohne Verwendung".
+        /// </summary>
+        private List<KeyValuePair<int, string>> Laufstaende()
+        {
+            var staende = new List<KeyValuePair<int, string>>();
+            foreach (int id in _gruppe)
+                if (Vergleich.IstGewaehlt(id, _idStamm) || id == _referenzWirksam)
+                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
+            return staende;
         }
 
         /// <summary>
@@ -867,7 +971,8 @@ namespace WindowsFormsApplication1
                     : string.Format(kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS, bandbreite.Referenzname),
                 // ETAPPE E6 (Nachtrag E5b, Frage (4)): das Spannenbild neben der Tafel.
                 Spannenbild = Spannenbild(bandbreite),
-                Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur),
+                Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur, out List<int> sensitivitaetStaende),
+                SensitivitaetPositionen = Positionen(sensitivitaetStaende),
                 Nachweiszeile = WirtschaftlichkeitBewertung.Nachweiszeile(
                     WirtschaftlichkeitBewertung.StaendeOhneNachweis(staendeDerAnsicht, _ergebnisse)),
                 Rahmen = Rahmentafel(gewaehlt, idReferenz, kultur),
@@ -919,6 +1024,14 @@ namespace WindowsFormsApplication1
             ansicht.Laufwirkung = ZahlungsreihenAnsicht.Laufwirkung(gliederungen, ansicht.Leitversion,
                                                                     Name(ansicht.Leitversion), kultur);
 
+            // ETAPPE E9b (U10): der Ausweis „n von m Parametern szenariert" über die Stände des
+            // Laufs — er folgt einem Haken wie die Bandbreite, nicht der Szenario-Klappliste.
+            ansicht.Szenarioabdeckung = Szenarioabdeckung();
+
+            // EZ‑18: Hat die Wahl die Gruppenregel geändert, sind die gezeigten Ergebnisse bis
+            // zum nächsten „Berechnen" veraltet — die Seite sagt es im Warnband.
+            ansicht.GruppenregelVeraltet = GruppenregelVeraltet();
+
             // ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien der
             // gezeigten Stände gerechnet sind und woher ihre Annahmen kommen (Regel des Kerns).
             ansicht.Szenariofuss = Szenariofuss(spaltenIds, kultur);
@@ -948,8 +1061,10 @@ namespace WindowsFormsApplication1
             // Regel, und sie steht in WirtschaftlichkeitZeilen.Sichtbare.
             // KONZEPT § 2.9 und § 2.15: Die Zeilendefinition kennzeichnet die REFERENZ -
             // in Sicht 2 den Stand A, sonst die Referenz der Gruppe (idReferenz oben).
+            // Anwenderentscheid 30.09.2026: die Seite zeigt unter den Energiekosten je Träger die
+            // Herleitung „Menge × Preis" (mitHerleitung) — die Berichte rufen ohne sie.
             List<WirtZeile> definition = WirtschaftlichkeitZeilen.Sichtbare(
-                WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache, idReferenz), _ergebnisse);
+                WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache, idReferenz, true), _ergebnisse);
 
             // ETAPPE E5 Teil b (U2, V‑A): die KENNZAHLTAFEL im Erwartungsfall - dieselben
             // Zeilen der Definition, mit Label "nachrichtlich" und Zellwarnung.
@@ -1239,9 +1354,11 @@ namespace WindowsFormsApplication1
         /// ETAPPE E5 Teil b: eine Zeile der Definition als Matrixzeile — Titel (mit
         /// Einzug), je Spalte die Anzeige („— ‹Grund›" ohne Wert, Q16), der Abschnitt, das
         /// Label „nachrichtlich" (V‑3) und je Zelle die Warnung (V‑A, mehrdeutiger
-        /// Zinsfuß). Eine Überschrift trägt leere Zellen, eine Spalte ohne Ergebnis „—".
+        /// Zinsfuß; Wärmegestehungskosten eines gespeicherten Laufs vor Fassung 13, P646). Eine
+        /// Überschrift trägt leere Zellen, eine Spalte ohne Ergebnis „—". <c>internal</c> für die
+        /// bUnit-Probe der Ergebnisansicht — dieselbe Abbildung, die die Seite bekommt.
         /// </summary>
-        private static MatrixZeile Matrixzeile(WirtZeile z, List<WirtschaftlichkeitErgebnis> spalten,
+        internal static MatrixZeile Matrixzeile(WirtZeile z, List<WirtschaftlichkeitErgebnis> spalten,
                                                CultureInfo kultur, string abschnitt)
         {
             var zellen = new List<string>();
@@ -1257,7 +1374,11 @@ namespace WindowsFormsApplication1
                 Zellen = zellen,
                 Abschnitt = abschnitt,
                 Kennzeichen = z.Nachrichtlich ? ValeriAusweis.NachrichtlichLabel() : "",
-                Zellwarnungen = warnungen
+                Zellwarnungen = warnungen,
+                // Der Kurztext der Kennzahl (Tooltip am Titel) und die leise Herleitungszeile
+                // kommen aus der Zeilendefinition des Kerns — die Seite urteilt nicht selbst.
+                Kurztext = z.Kurztext ?? "",
+                Leise = z.Herleitung
             };
         }
 
@@ -1275,10 +1396,13 @@ namespace WindowsFormsApplication1
         /// (<see cref="WirtschaftlichkeitBewertung.Sensitivitaetszeilen"/>) — dieselbe
         /// Auswahl wie im Bericht.
         /// </summary>
+        /// <param name="staendeDerTafel">Die Stände, deren Zeilen die Tafel zeigt, in ihrer Folge — für die
+        /// Positionsform der Marke (<see cref="ErgebnisAnsicht.SensitivitaetPositionen"/>).</param>
         private ErgebnisMatrix SensitivitaetTafel(List<KeyValuePair<int, string>> staende, int idReferenz,
-                                                  CultureInfo kultur)
+                                                  CultureInfo kultur, out List<int> staendeDerTafel)
         {
             var tafel = new ErgebnisMatrix();
+            staendeDerTafel = new List<int>();
             List<SensitivitaetZeile> zeilen;
             try
             {
@@ -1315,10 +1439,25 @@ namespace WindowsFormsApplication1
                             : "—"
                     }
                 });
+                if (!staendeDerTafel.Contains(z.IdProjekt)) staendeDerTafel.Add(z.IdProjekt);
                 vorher = z.IdProjekt;
             }
             tafel.Zeilen = matrix;
             return tafel;
+        }
+
+        /// <summary>
+        /// Die Positionen der genannten Stände für die Marke einer Tafel über mehrere Stände — in ihrer Folge, je mit dem
+        /// Namen, den die Tafel zeigt; ein Stand ohne bekannte Position fällt weg.
+        /// </summary>
+        private IReadOnlyList<EPOS.UI.Dienste.Vorlagenfeldposition> Positionen(IEnumerable<int> staende)
+        {
+            var liste = new List<EPOS.UI.Dienste.Vorlagenfeldposition>();
+            if (staende == null) return liste;
+            foreach (int id in staende)
+                if (_positionen.TryGetValue(id, out EPOS.UI.Dienste.Vorlagenfeldposition p) && p != null)
+                    liste.Add(p.MitName(Name(id)));
+            return liste;
         }
 
         /// <summary>
@@ -1552,7 +1691,13 @@ namespace WindowsFormsApplication1
                 }, ct);
 
                 _tarifCache = null;
+                // EZ‑18: Die gezeigten Ergebnisse gehören jetzt zu diesem Lauf — seine Stände sind
+                // die, gegen die ein Haken die Gruppenregel prüft (EZ‑19: jedes Ergebnis trägt sie
+                // ohnehin als Laufvermerk; dieser Lauf gilt für Zeilen ohne Vermerk).
+                if (_letzteDaten != null)
+                    _ergebnisLauf = _letzteDaten.Varianten.Where(v => v != null).Select(v => v.IdProjekt).ToList();
                 BilanzenAuffrischen();
+                Geladen?.Invoke();
 
                 return new LaufErgebnis
                 {
@@ -1583,9 +1728,47 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void Abbrechen()
+        /// <summary>Bricht den laufenden Lauf ab — auch den, den der Kosten-Reiter gestartet hat.</summary>
+        internal void Abbrechen()
         {
             if (_cts != null) _cts.Cancel();
+        }
+
+        /// <summary>
+        /// Der Rechenweg des Knopfes „Neu berechnen" auf dem Kosten-Reiter derselben Gruppe:
+        /// DERSELBE Lauf wie <see cref="Berechnen"/> — dieselbe Sammlung, dieselbe Rechnung,
+        /// dasselbe Speichern, derselbe Kurzstand der Reiterzeile (<see cref="Geladen"/>) —, nur
+        /// mit den Ständen aus <see cref="MitReferenz"/>.
+        /// </summary>
+        internal Task<LaufErgebnis> BerechnenMitReferenz(IReadOnlyList<int> variantenIds,
+                                                          Action<Laufschritt> melder)
+        {
+            return Berechnen(MitReferenz(variantenIds), melder);
+        }
+
+        /// <summary>
+        /// Die Stände eines Laufs aus den gewählten Versionen der geteilten Vergleichswahl:
+        /// ohne Stamm (er rechnet immer mit), und die wirksame Referenz der Gruppe kommt dazu,
+        /// auch wenn sie abgewählt ist — sie ist die Unterlassensalternative und kann nicht aus
+        /// dem Vergleich fallen, gegen den sie gehalten wird (Konzept § 2.9). Dieselbe Regel, nach
+        /// der <see cref="Laden"/> die Referenz in die Wahl der Seite legt, aus der ihr Knopf
+        /// „Berechnen" die Stände nimmt; die Referenz löst <see cref="Referenzwahl.Bestimme(IEnumerable{int}, int, int, Func{int, string})"/>
+        /// gegen die frisch gelesene Gruppe auf.
+        /// </summary>
+        internal List<int> MitReferenz(IReadOnlyList<int> variantenIds)
+        {
+            var varianten = new List<int>();
+            if (variantenIds != null)
+                foreach (int id in variantenIds)
+                    if (id != _idStamm && !varianten.Contains(id)) varianten.Add(id);
+
+            var gruppe = new List<int>();
+            foreach (VariantenCtrl.VarianteInfo vi in new VariantenCtrl().LadeGruppe(_idStamm, _stammName))
+                gruppe.Add(vi.IdProjekt);
+            int referenz = Referenzwahl.Bestimme(gruppe, _idStamm, Gruppenreferenz(), null).IdReferenz;
+
+            if (referenz > 0 && referenz != _idStamm && !varianten.Contains(referenz)) varianten.Add(referenz);
+            return varianten;
         }
 
         // =====================================================================
@@ -1687,6 +1870,26 @@ namespace WindowsFormsApplication1
         private static string Strich(string grund)
         {
             return string.IsNullOrEmpty(grund) ? "—" : "— " + grund;
+        }
+
+        /// <summary>
+        /// Die Statuszeile veralteter Ergebnisse nach ihrem Grund. Jede beginnt mit dem
+        /// Warnzeichen — an ihm erkennt die Seite, dass das Band mit dem Rechenknopf steht.
+        /// </summary>
+        private static string StatusVeraltet(Ergebnisveraltung grund)
+        {
+            switch (grund)
+            {
+                case Ergebnisveraltung.Kosten:
+                    return T("WIRT_STATUS_VERALTET_KOSTEN",
+                             "⚠ Kosten, Preise oder Wirtschaftlichkeitsparameter wurden nach der Rechnung geändert — bitte „Berechnen“.");
+                case Ergebnisveraltung.Katalog:
+                    return T("WIRT_STATUS_VERALTET_KATALOG",
+                             "⚠ Der Kostenkatalog wurde nach der Rechnung geändert — bitte „Berechnen“.");
+                default:
+                    return T("WIRT_STATUS_VERALTET",
+                             "⚠ Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand — bitte „Berechnen“.");
+            }
         }
 
         private static string T(string schluessel, string rueckfall)

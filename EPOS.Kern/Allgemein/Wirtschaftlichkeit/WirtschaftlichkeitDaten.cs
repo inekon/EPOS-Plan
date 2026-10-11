@@ -802,12 +802,15 @@ namespace WindowsFormsApplication1
             // Herkunft „wie Betrieb". Ein Satz, der die Ersatzbeschaffungen fortschreibt,
             // gehört zu den Annahmen des Laufs; ihn nur bei Pflege zu nennen hieße, den
             // Regelfall zu verschweigen.
-            string t = "i = " + Zinssatz.ToString("N1", kultur) + " % · T = " + Betrachtungszeitraum +
-                   " a · Preissteigerung Energie " + PreissteigerungEnergie.ToString("N1", kultur) +
-                   " %/a, Betrieb " + PreissteigerungBetrieb.ToString("N1", kultur) +
-                   " %/a, Investition/Ersatz " + PreisInvestWirksam.ToString("N1", kultur) +
-                   " %/a (" + (PreissteigerungInvestition.HasValue ? "gepflegt" : "wie Betrieb") +
-                   ") · Einspeisevergütung " + Einspeiseverguetung.ToString("N3", kultur) + " €/kWh";
+            // KP3-A1d: alle Festtexte aus Ressourcen in der Sprache der Berichtskultur, Zahlen und Datum in derselben Kultur.
+            string t = string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_KOPF", kultur,
+                    "i = {0} % · T = {1} a · Preissteigerung Energie {2} %/a, Betrieb {3} %/a, Investition/Ersatz {4} %/a ({5}) · Einspeisevergütung {6} €/kWh"),
+                Zinssatz.ToString("N1", kultur), Betrachtungszeitraum.ToString(kultur),
+                PreissteigerungEnergie.ToString("N1", kultur), PreissteigerungBetrieb.ToString("N1", kultur),
+                PreisInvestWirksam.ToString("N1", kultur),
+                PreissteigerungInvestition.HasValue ? RessourceIn("WPAR_PREIS_I_GEPFLEGT", kultur, "gepflegt")
+                                                    : RessourceIn("WPAR_PREIS_I_WIE_B", kultur, "wie Betrieb"),
+                Einspeiseverguetung.ToString("N3", kultur));
             if (CO2Preis > 0)
                 t += " · CO₂ (BEHG) " + CO2Preis.ToString("N0", kultur) + " €/t";
             // ETAPPE BK1 — die Zeile nennt nur noch die PROJEKTWEITEN KWK-Angaben, und
@@ -818,14 +821,18 @@ namespace WindowsFormsApplication1
             // Nachweistafel (KwkgModulNachweis).
             if (KwkgAktivierung.IstAktiv(IdStamm))
             {
-                t += " · KWKG (Sätze je Anlage";
+                t += RessourceIn("BV_A1D_NACHWEIS_KWKG", kultur, " · KWKG (Sätze je Anlage");
                 if (KwkgAbschlagNegativ > 0)
-                    t += ", Negativpreis-Abschlag " + KwkgAbschlagNegativ.ToString("N1", kultur) + " %";
+                    t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_KWKG_NEGATIV", kultur, ", Negativpreis-Abschlag {0} %"),
+                                       KwkgAbschlagNegativ.ToString("N1", kultur));
+                // Das Datum im kurzen Format der Berichtskultur: de-DE „dd.MM.yyyy“, en-US „M/d/yyyy“.
                 t += KwkgStichtag.HasValue
-                    ? ", Stichtag " + KwkgStichtag.Value.ToString("dd.MM.yyyy", kultur)
-                    : ", Stichtag ungeprüft";
+                    ? string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_KWKG_STICHTAG", kultur, ", Stichtag {0}"),
+                                    KwkgStichtag.Value.ToString("d", kultur))
+                    : RessourceIn("BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT", kultur, ", Stichtag ungeprüft");
                 if (KwkgInbetriebnahme.HasValue)
-                    t += ", Förderbeginn " + KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", kultur);
+                    t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN", kultur, ", Förderbeginn {0}"),
+                                       KwkgInbetriebnahme.Value.ToString("d", kultur));
                 t += ")";
             }
             // ETAPPE E4: die Steuerangaben gehören in die Nachweiszeile, sobald sie
@@ -834,23 +841,65 @@ namespace WindowsFormsApplication1
             if (!string.Equals(EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE, StringComparison.Ordinal) &&
                 !string.IsNullOrEmpty(EnergiesteuerWahl))
             {
-                t += " · Energiesteuer " + EnergiesteuerWahl + " (" + AufteilungMethode + ")";
+                // Die Steuerwerte (PARAGRAF_53, ENERGETISCH …) über ihre Anzeigenamen — dieselben Texte wie die Wahllisten; der Wert
+                // steht hinter Doppelpunkt und Komma, nie in Klammern (die Anzeigenamen tragen selbst welche).
+                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_ENERGIESTEUER", kultur, " · Energiesteuer: {0}, {1}"),
+                                   Anzeigename(EnergiesteuerWahl, kultur), Anzeigename(AufteilungMethode, kultur));
                 if (Jahresnutzungsgrad.HasValue)
-                    t += ", Nutzungsgrad " + Jahresnutzungsgrad.Value.ToString("N1", kultur) + " %";
+                    t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_NUTZUNGSGRAD", kultur, ", Nutzungsgrad {0} %"),
+                                       Jahresnutzungsgrad.Value.ToString("N1", kultur));
             }
             if (!string.Equals(Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE, StringComparison.Ordinal) &&
                 !string.IsNullOrEmpty(Unternehmensart))
-                t += " · Unternehmensart " + Unternehmensart;
+                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_UNTERNEHMENSART", kultur, " · Unternehmensart: {0}"),
+                                   Anzeigename(Unternehmensart, kultur));
             if (HocheffizienzNachweis || RaeumlicherZusammenhang)
-                t += " · Stromsteuer: hocheffizient " + (HocheffizienzNachweis ? "ja" : "nein") +
-                     ", räumlicher Zusammenhang " + (RaeumlicherZusammenhang ? "ja" : "nein");
+                // Der Vermerk in der Sprache der Berichtskultur (KP3-A1b); die Wahrheitswerte aus den Ja/Nein-Texten, klein.
+                t += string.Format(kultur, RessourceIn("BV_A1B_NACHWEIS_STROMSTEUER", kultur, " · Stromsteuer: hocheffizient {0}, räumlicher Zusammenhang {1}"),
+                                   JaNeinIn(HocheffizienzNachweis, kultur), JaNeinIn(RaeumlicherZusammenhang, kultur));
             if (EinspeiseverguetungKWK.HasValue && EinspeiseverguetungKWK.Value != 0)
-                t += " · Einspeisevergütung KWK " +
-                     EinspeiseverguetungKWK.Value.ToString("N3", kultur) + " €/kWh";
+                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_EINSPEISUNG_KWK", kultur, " · Einspeisevergütung KWK {0} €/kWh"),
+                                   EinspeiseverguetungKWK.Value.ToString("N3", kultur));
             // ETAPPE E15 (V‑G7): das Risiko nur, wenn es gepflegt ist — ohne Pflege bleibt die
             // Zeile Zeichen für Zeichen die von vorher.
             t += RisikoModul.Nachweis(this, kultur);
             return t;
+        }
+
+        /// <summary>Ein Ressourcentext in der Sprache der übergebenen Kultur; fehlt er, der deutsche Rückfall.</summary>
+        private static string RessourceIn(string schluessel, System.Globalization.CultureInfo kultur, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel, kultur); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        /// <summary>
+        /// Der Anzeigename eines Steuerwerts der Nachweiszeile (Energiesteuer, Aufteilung, Unternehmensart) in der Sprache
+        /// der übergebenen Kultur — dieselben Ressourcen wie die Wahllisten des Parameterdialogs. Ein unbekannter Wert
+        /// erscheint, wie er ist.
+        /// </summary>
+        private static string Anzeigename(string steuerwert, System.Globalization.CultureInfo kultur)
+        {
+            switch (steuerwert)
+            {
+                case DbWerte.ENERGIESTEUER_WAHL_53: return RessourceIn("BHW_W_ES_53", kultur, steuerwert);
+                case DbWerte.ENERGIESTEUER_WAHL_53A: return RessourceIn("BHW_W_ES_53A", kultur, steuerwert);
+                case DbWerte.ENERGIESTEUER_WAHL_54: return RessourceIn("BHW_W_ES_54", kultur, steuerwert);
+                case DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF: return RessourceIn("BHW_W_AUF_VOLL", kultur, steuerwert);
+                case DbWerte.AUFTEILUNG_ENERGETISCH: return RessourceIn("BHW_W_AUF_ENERGETISCH", kultur, steuerwert);
+                case DbWerte.UNTERNEHMENSART_PROD_GEWERBE: return RessourceIn("BHW_W_UA_PROD", kultur, steuerwert);
+                case DbWerte.UNTERNEHMENSART_LAND_FORST: return RessourceIn("BHW_W_UA_LAND", kultur, steuerwert);
+                default: return steuerwert ?? "";
+            }
+        }
+
+        /// <summary>„ja“/„nein“ (englisch „yes“/„no“) in der Sprache der übergebenen Kultur.</summary>
+        private static string JaNeinIn(bool wert, System.Globalization.CultureInfo kultur)
+        {
+            string t = wert ? RessourceIn("ALLG_BTN_JA", kultur, "Ja") : RessourceIn("ALLG_BTN_NEIN", kultur, "Nein");
+            return t.ToLower(kultur);
         }
 
         /// <summary>Flache Kopie (z. B. für den Kapitalwert-Verlauf mit abweichendem
@@ -1111,6 +1160,31 @@ namespace WindowsFormsApplication1
         public const string BEST = "Best";
         public const string WORST = "Worst";
         public static readonly string[] Alle = { ERWARTET, BEST, WORST };
+
+        /// <summary>
+        /// Das Szenario als gültiger Schlüssel: <see cref="BEST"/> und <see cref="WORST"/> bleiben, alles
+        /// andere — <c>null</c>, leer, unbekannt — ist <see cref="ERWARTET"/>, die Vorgabe.
+        /// </summary>
+        public static string Normiere(string szenario)
+        {
+            if (string.Equals(szenario, BEST, StringComparison.Ordinal)) return BEST;
+            if (string.Equals(szenario, WORST, StringComparison.Ordinal)) return WORST;
+            return ERWARTET;
+        }
+
+        /// <summary>
+        /// Der Anzeigename eines Szenarios in einer ausdrücklich genannten Sprache (<c>WIRT_SZEN_*</c>) —
+        /// „Erwartet“, „Günstig“, „Ungünstig“; ein unbekanntes Szenario heißt wie die Vorgabe.
+        /// </summary>
+        public static string Name(string szenario, System.Globalization.CultureInfo kultur)
+        {
+            string schluessel = Normiere(szenario) == BEST ? "WIRT_SZEN_BEST"
+                              : Normiere(szenario) == WORST ? "WIRT_SZEN_WORST" : "WIRT_SZEN_ERWARTET";
+            string text = null;
+            try { text = MyResource.Resource.ResourceManager.GetString(schluessel, kultur); }
+            catch (Exception) { text = null; }
+            return string.IsNullOrEmpty(text) ? Normiere(szenario) : text;
+        }
     }
 
     /// <summary>
@@ -1509,6 +1583,23 @@ namespace WindowsFormsApplication1
             new List<EnergieAnlageNachweis>();
 
         /// <summary>
+        /// Die Energiekosten je Energieträger — Menge × Arbeitspreis, Grund- und Leistungspreis und
+        /// der Anteil an der CO₂-Abgabe des ersten Jahres (<see cref="EnergieTraegerNachweis"/>),
+        /// aus denselben Zahlen wie <see cref="EnergiekostenJahr"/>. Sie trägt die
+        /// Herleitungszeilen unter „Energiekosten" und reist im Nachweisumschlag mit (Fassung 12);
+        /// leer bei einem gespeicherten Lauf ohne diese Aufstellung.
+        /// </summary>
+        public List<EnergieTraegerNachweis> EnergiekostenJeTraeger =
+            new List<EnergieTraegerNachweis>();
+
+        /// <summary>
+        /// Die Zerlegung des Zählers der Wärmegestehungskosten dieses Laufs
+        /// (<see cref="Waermegestehung.Zerlegung"/>) — reine Auskunft des frischen Laufs, nicht
+        /// gespeichert; <c>null</c> ohne Kennzahl oder bei einem geladenen Stand.
+        /// </summary>
+        internal Waermegestehung.Zerlegung GestehungZerlegung;
+
+        /// <summary>
         /// ETAPPE B2 (Konzept BHKW-Wirtschaftlichkeit § 4.1, BW2/BF2) — die Zeilen der
         /// Kohärenzprüfung: Widersprüche zwischen einer gebuchten Steuergutschrift und
         /// dem Steueranteil, den der erfasste Energiepreis ausweist. Leere Liste =
@@ -1567,6 +1658,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool OhneNachweis;
 
+        /// <summary>
+        /// Anwenderentscheid 02.10.2026 (Register EZ‑19) — der <b>Laufvermerk</b>: die Stände
+        /// des Laufs, aus dem dieses Ergebnis stammt, aufsteigend mit Komma (<c>1030,1031,1033</c>;
+        /// <see cref="Laufvermerk.Schreiben"/>). <c>Berechne</c> setzt ihn für jeden Lauf,
+        /// <c>Persistiere</c> schreibt ihn in <c>Lauf_Staende</c>, <c>LadeErgebnisse</c> liest ihn
+        /// zurück. Leer = Altbestand ohne Vermerk (Spalte NULL).
+        /// </summary>
+        public string LaufStaende = "";
+
         // Stufe W3 (Phase 8)
         public double? StromkostenTarif;       // Reststromkosten nach Rollentarif [€/a] (null = Flat-Rechnung)
         public string Hinweis;                 // nicht-fataler Hinweis (z. B. Tarif ohne Stundenreihen)
@@ -1593,7 +1693,24 @@ namespace WindowsFormsApplication1
         public double? KapitalwertDiff;        // KW gegenüber Stamm [€] (null beim Stamm)
         public double? AnnuitaetKW;            // KapitalwertDiff × a(i,T) [€/a] (null beim Stamm)
         public double? AmortisationJahre;      // dynamisch, ohne Restwert (null = nie/Stamm)
-        public double? Gestehungskosten;       // Wärmegestehungskosten [€/kWh]
+        /// <summary>
+        /// Wärmegestehungskosten [€/kWh] — nur die Wärmeerzeugung: Anlagen, Brennstoff, Strom der
+        /// Wärmeerzeuger, abzüglich ihrer Erlöse, annuisiert, je kWh Wärmebedarf; Haushaltsstrom,
+        /// PV und Stromspeicher zählen nicht (<see cref="Waermegestehung"/>).
+        /// </summary>
+        public double? Gestehungskosten;
+
+        /// <summary>
+        /// <c>true</c> = dieses Ergebnis ist geladen und trägt einen Nachweisumschlag vor der Fassung
+        /// <see cref="ErgebnisNachweisUmschlag.FASSUNG_WAERMEGESTEHUNG"/> oder keinen: Seine
+        /// <see cref="Gestehungskosten"/> sind nach einer früheren Regel gerechnet (bis Fassung 11 mit dem
+        /// Kapitalwert des ganzen Projekts, Fassung 12 mit doppelter Stromsteuer im Modus ERLOES und dem
+        /// Wärmestrom zum Netzpreis). Die
+        /// Kennzahl sagt es (<c>WIRT_GESTEHUNG_ALTER_LAUF</c>), wie die Zeile „Menge × Preis" bei
+        /// einem Lauf ohne Aufstellung; die Zahl nur der Wärmeerzeugung liegt mit der nächsten
+        /// Rechnung vor. Ein frisch gerechnetes Ergebnis trägt immer <c>false</c>.
+        /// </summary>
+        public bool GestehungAlteFormel;
 
         /// <summary>null = Rechnung vollständig; sonst Begründung („kein Arbeitspreis …").</summary>
         public string Fehlgrund;
@@ -1653,6 +1770,124 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kosten dieser Anlage [€/a] — ohne Grund- und Leistungspreis.</summary>
         public double KostenEur;
+    }
+
+    /// <summary>
+    /// Die ENERGIEKOSTEN EINES ENERGIETRÄGERS: Menge in seiner Abrechnungseinheit × Arbeitspreis,
+    /// dazu sein Grund- und Leistungspreis — so, wie sie in die Jahressumme
+    /// <see cref="WirtschaftlichkeitErgebnis.EnergiekostenJahr"/> eingegangen sind. Gebildet vom
+    /// <see cref="KostenEmissionRechner"/> aus denselben Mengen und Preisen wie die Summe; hier wird
+    /// nichts zweites gerechnet.
+    ///
+    /// <para><b>Zwei Leser.</b> Die Herleitungszeile unter „Energiekosten" („7.850 kWh ×
+    /// 0,35 €/kWh + 120 €/a Grundpreis + CO₂ 450 €/a") und die Wärmegestehungskosten
+    /// (<see cref="Waermegestehung.Energiekosten"/>), die je Träger nur den Einsatz der
+    /// Wärmeerzeuger und ihren Anteil an Grund- und Leistungspreis nehmen.</para>
+    ///
+    /// <para><b>Persistiert im Nachweisumschlag</b> (Fassung 12); einem älteren Umschlag fehlt die
+    /// Aufstellung, dann sagt die Herleitungszeile, dass sie mit der nächsten Rechnung vorliegt.</para>
+    /// </summary>
+    public class EnergieTraegerNachweis
+    {
+        /// <summary><c>energy_carrier.id</c> des Trägers.</summary>
+        public int CarrierId;
+
+        /// <summary>Name des Energieträgers, mit dem gerechnet wurde.</summary>
+        public string Traeger = "";
+
+        /// <summary>Der Träger bepreist den Netzbezug des Projekts (Stromträger des Projekts).</summary>
+        public bool Netzstrom;
+
+        /// <summary>Bepreiste Menge [MWh/a], heizwertbezogen (Strom: Netzbezug des Trägers).</summary>
+        public double MengeMWh;
+
+        /// <summary>Menge in der ABRECHNUNGSEINHEIT des Trägers (Liter, kg, m³, kWh) — die Größe,
+        /// mit der der Arbeitspreis multipliziert wurde.</summary>
+        public double MengeAbrechnung;
+
+        /// <summary>Abrechnungseinheit des Trägers; „kWh" bei Abrechnung je kWh.</summary>
+        public string Einheit = "";
+
+        /// <summary>Arbeitspreis je Abrechnungseinheit [€].</summary>
+        public double PreisJeEinheit;
+
+        /// <summary>Arbeitskosten [€/a] = <see cref="MengeAbrechnung"/> × <see cref="PreisJeEinheit"/>.</summary>
+        public double ArbeitEur;
+
+        /// <summary>Grundpreis des Trägers [€/a] (bei eigenen Kältestromzählern je Zähler summiert).</summary>
+        public double GrundpreisEur;
+
+        /// <summary>Leistungsanteil des Trägers [€/a] (vorgehaltene Leistung bzw. Bezugsspitze).</summary>
+        public double LeistungEur;
+
+        /// <summary>
+        /// Anteil des Trägers an der CO₂-Abgabe des ersten Jahres [€/a] — gesetzt von der
+        /// Wirtschaftlichkeit (<see cref="MitCo2Abgabe"/>); 0 ohne abgabepflichtige Menge.
+        /// </summary>
+        public double Co2AbgabeEur;
+
+        /// <summary>Abgabepflichtige CO₂-Menge dieses Trägers [t/a] (reines CO₂, BEHG) — der
+        /// Schlüssel, nach dem die CO₂-Abgabe auf die Träger aufgeteilt wird.</summary>
+        public double BehgT;
+
+        /// <summary>Menge flüssiger Biomasse, die ohne Nachhaltigkeitsnachweis abgabepflichtig
+        /// würde [MWh/a] (L13) — der zweite Teil desselben Schlüssels.</summary>
+        public double BiogenBehgMWh;
+
+        /// <summary>Einsatz der WÄRMEERZEUGER auf diesem Träger [MWh/a] — Brennstoff von Kessel und
+        /// BHKW, beim Stromträger der Strom von Wärmepumpe, Heizstab und Elektrokessel.</summary>
+        public double WaermeMengeMWh;
+
+        /// <summary>Verbrauch ALLER Verbraucher dieses Trägers [MWh/a] — die Bezugsgröße des
+        /// Anteils der Wärmeerzeuger an Grund- und Leistungspreis.</summary>
+        public double VerbrauchGesamtMWh;
+
+        /// <summary>Arbeitskosten der Wärmemenge [€/a] (beim Strom ohne Anrechnung von
+        /// PV-Eigenverbrauch: Wärmestrom × Arbeitspreis; der Strom einer Anlage mit eigenem
+        /// Stromträger zu dessen Arbeitspreis, Register EZ‑6 —
+        /// <see cref="Waermegestehung.WaermestromArbeitEur"/>).</summary>
+        public double WaermeArbeitEur;
+
+        /// <summary>Energiekosten des Trägers [€/a] = Arbeit + Grundpreis + Leistungsanteil.</summary>
+        public double SummeEur() { return ArbeitEur + GrundpreisEur + LeistungEur; }
+
+        /// <summary>Flache Kopie.</summary>
+        public EnergieTraegerNachweis Kopie() { return (EnergieTraegerNachweis)MemberwiseClone(); }
+
+        /// <summary>
+        /// Die Aufstellung mit dem Anteil jedes Trägers an der CO₂-Abgabe des ersten Jahres —
+        /// als KOPIE (die Aufstellung der Variante bleibt unberührt). Aufgeteilt wird
+        /// <paramref name="co2AbgabeEur"/> nach der abgabepflichtigen Menge
+        /// (<see cref="BehgT"/>, dazu <see cref="BiogenBehgMWh"/> × Standardwert ohne
+        /// Nachweis): dieselbe Menge, aus der die Abgabe entstand, also keine zweite Rechnung.
+        /// </summary>
+        internal static List<EnergieTraegerNachweis> MitCo2Abgabe(IList<EnergieTraegerNachweis> quelle,
+                                                                 double co2AbgabeEur,
+                                                                 double efOhneNachweisGJeKwh)
+        {
+            var liste = new List<EnergieTraegerNachweis>();
+            if (quelle == null) return liste;
+            double summe = 0.0;
+            foreach (EnergieTraegerNachweis t in quelle)
+                if (t != null) summe += Gewicht(t, efOhneNachweisGJeKwh);
+            foreach (EnergieTraegerNachweis t in quelle)
+            {
+                if (t == null) continue;
+                EnergieTraegerNachweis k = t.Kopie();
+                k.Co2AbgabeEur = summe > 0 && co2AbgabeEur != 0
+                    ? co2AbgabeEur * Gewicht(t, efOhneNachweisGJeKwh) / summe : 0.0;
+                liste.Add(k);
+            }
+            return liste;
+        }
+
+        private static double Gewicht(EnergieTraegerNachweis t, double efOhneNachweisGJeKwh)
+        {
+            double g = Math.Max(0.0, t.BehgT);
+            if (efOhneNachweisGJeKwh > 0 && t.BiogenBehgMWh > 0)
+                g += t.BiogenBehgMWh * efOhneNachweisGJeKwh / 1000.0;
+            return g;
+        }
     }
 
     /// <summary>

@@ -1,0 +1,660 @@
+﻿@* DIE VORLAGENVERWALTUNG DER KONDITIONIERUNG (Stufe KP2, Welle U2; Teilkonzept Konditionierungsprofile
+   3.5, 7.4; Entwurf KP2 Festlegung 13; E56 F4 (a)) - aus jeder Kalenderkarte ("Vorlagen verwalten") als
+   BLATT im Gebaeude-Katalogeditor, auf beiden Plattformen, kein Menuepunkt.
+
+   AUFBAU. Oben die leise Zeile "sofort gespeichert", darunter der Umschalter der Groesse (fuenf Knoepfe,
+   role=tab; die Groesse der Karte, aus der das Blatt kam, steht vorn), dann die LISTE der Vorlagen dieser
+   Groesse in der Reihenfolge des Kerns - die ausgelieferten zuerst mit Kennzeichen (Schloss), die
+   eigenen ohne - mit Nutzung und den Zeilenhandlungen, die IMMER sichtbar sind: Umbenennen, Duplizieren,
+   Kopieren nach ..., Loeschen. Ein Klick auf den Namen waehlt die Zeile; unter der Liste stehen ihre
+   Beschreibung und die VORSCHAU der Woche am Ziel (dieselbe Rechnung wie in der Karte, die Wahl der Karte
+   bleibt).
+
+   KOPIEREN NACH ... (Teilkonzept 3.5, 7.4). Eine Vorlage - auch eine ausgelieferte - wird eine EIGENE
+   Vorlage einer anderen Groesse. Welche Ziele es gibt, sagt der Kern (Heizen -> Kuehlen, Geraete <->
+   Personen); die Abfrage ist eine kleine Ueberlagerung mit Titel und Kreuz und zeigt NUR diese Ziele, den
+   Namen der Quelle als Vorschlag und bei Heizen -> Kuehlen die Felder des Komfort- und des Absenksollwerts
+   (Vorgaben und Grenzen aus dem Kern; das Absenkfeld nimmt dazu "aus" wie die Zellen der Matrix). Der
+   Absenksollwert gilt in den Absenkzeiten der Quelle - ueberall, wo ihr Heizsollwert unter dem Tagwert
+   liegt. Kuehl- und Lueftungsvorlagen haben kein Ziel: Der Knopf steht weich gesperrt da, der Grund am
+   Knopf. Ein Doppelname in der Zielliste steht am Namensfeld, ein ungueltiger Sollwert an seinem Feld -
+   ein Absenksollwert unter dem Komfortsollwert am Absenkfeld; nach dem Kopieren zeigt das Blatt die
+   Zielliste mit der neuen Vorlage gewaehlt.
+
+   DAS SCHLOSS. Eine ausgelieferte Vorlage laesst sich nur duplizieren: Umbenennen und Loeschen stehen
+   WEICH gesperrt da (aria-disabled, der Grund als Kurztext, der Versuch meldet ihn).
+
+   SOFORT MIT EIGENEM OK (Festlegung 13). Jede Handlung schreibt, sobald sie bestaetigt ist - nicht erst
+   mit dem OK des Editors: Umbenennen mit "Speichern" am Namensfeld (ein Doppelname wird AM FELD
+   genannt), Duplizieren mit dem Klick (die Kopie heisst "Name (Kopie)"), Loeschen nach der Rueckfrage
+   (Vorgabe "Nein"; sie nennt, dass kein Gebaeude beruehrt wird). Eine leise Zeile sagt, was geschah.
+   Kein Delegat, kein Knopf; Esc und "< Wirt" fuehren zurueck (der Blattwechsel), ein offenes
+   Umbenennen verfaellt dabei wie Abbrechen. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<div class="epos-kond-verwaltung">
+    @* Das Banner des Blattes: Der Kopf des Editors steht nicht, solange das Blatt offen ist - ein Grund
+       oder eine Ablehnung erscheint deshalb hier, erst nach dem Versuch und mit Verfall. *@
+    @if (_meldung is not null)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" Verfaellt="@MELDUNGSDAUER" Verfallen="() => _meldung = null" />
+    }
+    <p class="epos-leisezeile epos-kond-verwaltung-sofort">@Texte.HinweisVorlageSofort</p>
+
+    <div class="epos-kond-verwaltung-groessen" role="tablist" aria-label="@Texte.LabelGroesse">
+        @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+        {
+            KonditionierungGroesse groesse = g;
+            bool aktiv = groesse == _groesse;
+            <button type="button" role="tab" class="epos-knopf epos-kond-verwaltung-groesse @(aktiv ? "epos-knopf--gewaehlt" : "")"
+                    aria-selected="@(aktiv ? "true" : "false")" tabindex="@(aktiv ? 0 : -1)"
+                    data-groesse="@((int)groesse)" @onclick="() => GroesseWaehlen(groesse)">@Bearbeitung.Groessenname(groesse)</button>
+        }
+    </div>
+
+    @if (Liste.Count == 0)
+    {
+        <p class="epos-leisezeile epos-kond-verwaltung-leer">@Texte.TextVorlagenLeer</p>
+    }
+    else
+    {
+        // Die Ziele von „Kopieren nach …" gelten je Größe, nicht je Zeile: einmal je Zeichenlauf.
+        string? kopierSperre = KopierSperre;
+        <div class="epos-raster-huelle epos-raster-huelle--frei epos-kond-verwaltung-liste">
+            <table class="epos-raster epos-kond-vorlagenliste" data-groesse="@((int)_groesse)">
+                <thead>
+                    <tr>
+                        <th>@Texte.SpalteName</th>
+                        <th>@Texte.LabelVorlageNutzung</th>
+                        <th class="epos-zellenaktionen">@Texte.SpalteAktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (KonditionierungVorlageDaten v in Liste)
+                    {
+                        KonditionierungVorlageDaten vorlage = v;
+                        bool gewaehlt = vorlage.Id == _gewaehlt;
+                        bool umbenennen = vorlage.Id == _umbenennen;
+                        string? schloss = vorlage.Ausgeliefert ? Texte.GrundVorlageGesperrt : null;
+                        <tr @key="vorlage.Id" data-vorlage="@vorlage.Id" class="@(gewaehlt ? "epos-kond-vorlage--gewaehlt" : "")"
+                            aria-selected="@(gewaehlt ? "true" : "false")">
+                            <td class="epos-kond-vorlage-namenszelle">
+                                @if (umbenennen)
+                                {
+                                    <div class="epos-kond-vorlage-name @(_nameFehler is null ? "" : "epos-kond-feldfehler")">
+                                        <Textfeld Bezeichnung="@Texte.LabelVorlageName" Wert="@_neuerName"
+                                                  WertChanged="NameGeaendert" Hoechstlaenge="80" />
+                                        @if (_nameFehler is not null)
+                                        {
+                                            <p class="epos-kond-feldmeldung" role="alert">@_nameFehler</p>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <button type="button" class="epos-textknopf epos-kond-vorlage-zeigen"
+                                            aria-pressed="@(gewaehlt ? "true" : "false")"
+                                            @onclick="() => Zeigen(vorlage.Id)">@vorlage.Name</button>
+                                    @if (vorlage.Ausgeliefert)
+                                    {
+                                        <Kennzeichen Kurztext="@Texte.GrundVorlageGesperrt" />
+                                    }
+                                }
+                            </td>
+                            <td>@Nutzungstext(vorlage.Nutzung)</td>
+                            <td class="epos-zellenaktionen">
+                                <span class="epos-zellenaktionen-inhalt">
+                                    @if (umbenennen)
+                                    {
+                                        <button type="button" class="epos-knopf epos-knopf--primaer epos-kond-umbenennen-schreiben"
+                                                @onclick="UmbenennenSchreiben">@Texte.KnopfSpeichern</button>
+                                        <button type="button" class="epos-knopf epos-kond-umbenennen-abbrechen"
+                                                @onclick="UmbenennenAbbrechen">@Texte.KnopfAbbrechen</button>
+                                    }
+                                    else
+                                    {
+                                        @if (Bearbeitung.Weg.VorlageUmbenennen is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-umbenennen"
+                                                    aria-disabled="@(schloss is null ? null : "true")"
+                                                    title="@(schloss ?? Texte.KnopfUmbenennen)"
+                                                    aria-label="@(vorlage.Name + " – " + Texte.KnopfUmbenennen)"
+                                                    @onclick="() => Umbenennen(vorlage, schloss)">@Texte.KnopfUmbenennen</button>
+                                        }
+                                        @if (Bearbeitung.Weg.VorlageDuplizieren is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-duplizieren"
+                                                    aria-label="@(vorlage.Name + " – " + Texte.KnopfDuplizieren)"
+                                                    @onclick="() => Duplizieren(vorlage)">@Texte.KnopfDuplizieren</button>
+                                        }
+                                        @if (Bearbeitung.Weg.Bietet(KonditionierungHandlung.VorlageKopieren))
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-kopieren-nach"
+                                                    aria-disabled="@(kopierSperre is null ? null : "true")"
+                                                    title="@(kopierSperre ?? Texte.HinweisKopierenNach)"
+                                                    aria-label="@(vorlage.Name + " – " + Texte.KnopfKopierenNach)"
+                                                    @onclick="() => KopierenOeffnen(vorlage, kopierSperre)">@Texte.KnopfKopierenNach</button>
+                                        }
+                                        @if (_schloss.Handlung(Bearbeitung.Weg.VorlageSchloss, EventCallback.Empty,
+                                                               new[] { Schlosszeile(vorlage) }, false) is { } schlosshandlung)
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-schloss"
+                                                    disabled="@schlosshandlung.Aus"
+                                                    title="@schlosshandlung.Kurztext"
+                                                    aria-label="@(vorlage.Name + " – " + schlosshandlung.Text)"
+                                                    @onclick="() => SchlossFragen(vorlage)">@schlosshandlung.Text</button>
+                                        }
+                                        @if (Bearbeitung.Weg.VorlageLoeschen is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-loeschen"
+                                                    aria-disabled="@(schloss is null ? null : "true")"
+                                                    title="@(schloss ?? Texte.KnopfLoeschen)"
+                                                    aria-label="@(vorlage.Name + " – " + Texte.KnopfLoeschen)"
+                                                    @onclick="() => Loeschen(vorlage, schloss)">@Texte.KnopfLoeschen</button>
+                                        }
+                                    }
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (_zeile is not null)
+    {
+        <p class="epos-leisezeile epos-kond-verwaltung-zeile" role="status">@_zeile</p>
+    }
+
+    @if (Gewaehlt is KonditionierungVorlageDaten auswahl)
+    {
+        <div class="epos-kond-verwaltung-vorschau">
+            @if (auswahl.Beschreibung.Length > 0)
+            {
+                <p class="epos-leisezeile epos-kond-vorlage-beschreibung">@auswahl.Beschreibung</p>
+            }
+            <p class="epos-leisezeile epos-kond-vorschau-vorlage">@string.Format(CultureInfo.CurrentCulture, Texte.TextVorschauVorlage, auswahl.Name)</p>
+            @if (Bearbeitung.Weg.WochenVorschau is not null)
+            {
+                <DiagrammSvg Modell="@_modell" Kennung="@("kond-verwaltung-vorschau-" + (int)_groesse)"
+                             Bezeichnung="@Texte.LabelVorschauWoche" Einheit="@Einheit" OhneZoom="true" />
+            }
+        </div>
+    }
+
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage" VorgabeNein="true"
+                Beantwortet="SchlossBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+    <Rueckfrage Offen="@(_loeschen is not null)" TitelText="@Texte.KnopfLoeschen" Frage="@Loeschfrage" VorgabeNein="true"
+                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+
+    @* "KOPIEREN NACH ..." - ein kurzer Unterdialog als Ueberlagerung mit Titel und Kreuz (Esc und Kreuz wie
+       Abbrechen). Die Optionsgruppe fuehrt nur die erlaubten Ziele der Quelle, darunter je Ziel die Regel;
+       die Sollwertfelder stehen nur, wo die Richtung neue Sollwerte braucht. "Kopieren" schreibt SOFORT. *@
+    <Ueberlagerung Offen="@(_kopieren is not null)" Titel="@Kopiertitel" Geschlossen="KopierenAbbrechen">
+        <KindInhalt>
+            <div class="epos-kond-kopieren">
+                <Formularraster Einspaltig="true">
+                    <KindInhalt>
+                        <Optionsgruppe Bezeichnung="@Texte.LabelKopierziel" Eintraege="@Kopierzieleintraege"
+                                       Auswahl="@_kopierziel" AuswahlChanged="KopierzielGewaehlt"
+                                       Beschreibungen="@Kopierregeln" />
+                        <div class="epos-kond-vorlage-name @(_kopierNameFehler is null ? "" : "epos-kond-feldfehler")">
+                            <Textfeld Bezeichnung="@Texte.LabelVorlageName" Wert="@_kopierName"
+                                      WertChanged="KopierNameGeaendert" Hoechstlaenge="80" />
+                            @if (_kopierNameFehler is not null)
+                            {
+                                <p class="epos-kond-feldmeldung" role="alert">@_kopierNameFehler</p>
+                            }
+                        </div>
+                        @if (GewaehltesKopierziel is { Komfortsollwert: not null } mitSollwert)
+                        {
+                            <div class="epos-kond-kopieren-sollwert @(_kopierSollwertFehler is null ? "" : "epos-kond-feldfehler")">
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKomfortsollwert" Einheit="°C" Wert="@_kopierSollwert"
+                                            WertChanged="KopierSollwertGeaendert" Min="@mitSollwert.Min" Max="@mitSollwert.Max"
+                                            Feldname="@Texte.LabelKomfortsollwert" FehlerZustand="SollwertFehlerZustand" />
+                                @if (_kopierSollwertFehler is not null)
+                                {
+                                    <p class="epos-kond-feldmeldung" role="alert">@_kopierSollwertFehler</p>
+                                }
+                            </div>
+                            <div class="epos-kond-kopieren-absenkwert @(_kopierAbsenkFehler is null ? "" : "epos-kond-feldfehler")">
+                                <Zahlenfeld Bezeichnung="@Texte.LabelAbsenksollwert" Einheit="°C" Wert="@_kopierAbsenkwert"
+                                            Titel="@Texte.HinweisAbsenksollwert" AusText="@Texte.ZelleAus"
+                                            WertChanged="KopierAbsenkwertGeaendert" Min="@mitSollwert.Min" Max="@mitSollwert.Max"
+                                            Feldname="@Texte.LabelAbsenksollwert" FehlerZustand="AbsenkFehlerZustand" />
+                                @if (_kopierAbsenkFehler is not null)
+                                {
+                                    <p class="epos-kond-feldmeldung" role="alert">@_kopierAbsenkFehler</p>
+                                }
+                            </div>
+                        }
+                    </KindInhalt>
+                </Formularraster>
+                @if (_kopierFehler is not null)
+                {
+                    <p class="epos-kond-feldmeldung epos-kond-kopieren-fehler" role="alert">@_kopierFehler</p>
+                }
+                <p class="epos-leisezeile epos-kond-kopieren-sofort">@Texte.HinweisVorlageSofort</p>
+                <SpeichernLeiste OkText="@Texte.KnopfKopieren" AbbrechenText="@Texte.KnopfAbbrechen"
+                                 Ergebnis="KopierenErgebnis" />
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Die Bearbeitung des Editors — sie trägt den Weg (Liste, Handlungen, Vorschau).</summary>
+    [Parameter, EditorRequired] public KonditionierungBearbeitung Bearbeitung { get; set; } = default!;
+
+    /// <summary>Die Größe, deren Liste beim Öffnen vorn steht (die der Karte, aus der das Blatt kam).</summary>
+    [Parameter] public KonditionierungGroesse Groesse { get; set; }
+
+    /// <summary>Die Texte der Konditionierung.</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Rückfragen der Konditionierung (Löschen).</summary>
+    [Parameter] public KonditionierungFragetexte Fragen { get; set; } = new();
+
+    /// <summary>„Ja" der Rückfrage.</summary>
+    [Parameter] public string JaText { get; set; } = "Ja";
+
+    /// <summary>„Nein" der Rückfrage.</summary>
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Meldet jede geschriebene Handlung — der Wirt zeichnet die Karten mit den neuen Listen.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private KonditionierungGroesse _groesse;
+    private bool _gesetzt;
+    private long? _gewaehlt;
+    private long? _umbenennen;
+    private string _neuerName = "";
+    private string? _nameFehler;
+    private KonditionierungVorlageDaten? _loeschen;
+    private string? _zeile;
+    private WindowsFormsApplication1.Zeichnung.Zeichenmodell? _modell;
+
+    /// <summary>Die gewählte Größe des Umschalters. Prüfhilfe für die Tests.</summary>
+    public KonditionierungGroesse AktiveGroesse => _groesse;
+
+    protected override void OnParametersSet()
+    {
+        if (_gesetzt) return;
+        _gesetzt = true;
+        _groesse = Groesse;
+        // Vorn steht, was die Karte gewählt hat; sonst nichts.
+        _gewaehlt = Bearbeitung.GewaehlteVorlage(_groesse)?.Id;
+        _modell = _gewaehlt is long id ? Bearbeitung.Vorschau(_groesse, id) : null;
+    }
+
+    private IReadOnlyList<KonditionierungVorlageDaten> Liste => Bearbeitung.Vorlagen(_groesse);
+
+    private KonditionierungVorlageDaten? Gewaehlt => _gewaehlt is long id ? Liste.FirstOrDefault(v => v.Id == id) : null;
+
+    private string Einheit => _groesse switch
+    {
+        KonditionierungGroesse.Lueftung => "1/h",
+        KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen => "%",
+        _ => "°C"
+    };
+
+    /// <summary>Die Nutzung als Anzeige — die vier alten Kennungen übersetzt, ein Profilname wie er ist (NP-F15).</summary>
+    private string Nutzungstext(string? n) => Texte.Nutzungsanzeige(n);
+
+    private string Loeschfrage
+        => _loeschen is null
+            ? ""
+            : string.Format(CultureInfo.CurrentCulture, Fragen.VorlageLoeschen, _loeschen.Name) + " "
+              + string.Format(CultureInfo.CurrentCulture, Texte.HinweisVorlageLoeschen, _loeschen.Name);
+
+    private void GroesseWaehlen(KonditionierungGroesse g)
+    {
+        if (g == _groesse) return;
+        _groesse = g;
+        _gewaehlt = null;
+        _modell = null;
+        UmbenennenAbbrechen();
+    }
+
+    private void Zeigen(long id)
+    {
+        _gewaehlt = id;
+        _modell = Bearbeitung.Vorschau(_groesse, id);
+    }
+
+    // ------------------------------------------------------------ Umbenennen (am Namensfeld)
+
+    private async Task Umbenennen(KonditionierungVorlageDaten v, string? schloss)
+    {
+        if (schloss is not null)
+        {
+            await Melden(schloss, WarnStufe.Hinweis);
+            return;
+        }
+        _umbenennen = v.Id;
+        _neuerName = v.Name;
+        _nameFehler = null;
+    }
+
+    private void NameGeaendert(string w)
+    {
+        _neuerName = w ?? "";
+        _nameFehler = null;
+    }
+
+    private void UmbenennenAbbrechen()
+    {
+        _umbenennen = null;
+        _neuerName = "";
+        _nameFehler = null;
+    }
+
+    private async Task UmbenennenSchreiben()
+    {
+        if (_umbenennen is not long id) return;
+        KonditionierungVorlageErgebnis e = Bearbeitung.VorlageUmbenennen(id, _neuerName);
+        if (!e.Ok)
+        {
+            if (e.AmNamen) _nameFehler = e.Meldung;
+            else await Melden(e.Meldung, WarnStufe.Warnung);
+            return;
+        }
+        UmbenennenAbbrechen();
+        _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageUmbenannt, e.Vorlage?.Name ?? "");
+        await Geaendert.InvokeAsync();
+    }
+
+    // ------------------------------------------------------------ Duplizieren und Löschen
+
+    private async Task Duplizieren(KonditionierungVorlageDaten v)
+    {
+        KonditionierungVorlageErgebnis e = Bearbeitung.VorlageDuplizieren(v.Id);
+        if (!e.Ok)
+        {
+            await Melden(e.Meldung, WarnStufe.Warnung);
+            return;
+        }
+        _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageDupliziert, e.Vorlage?.Name ?? "", v.Name);
+        if (e.Vorlage is not null) Zeigen(e.Vorlage.Id);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task Loeschen(KonditionierungVorlageDaten v, string? schloss)
+    {
+        if (schloss is not null)
+        {
+            await Melden(schloss, WarnStufe.Hinweis);
+            return;
+        }
+        _loeschen = v;
+    }
+
+    private async Task LoeschenBeantwortet(bool? antwort)
+    {
+        KonditionierungVorlageDaten? v = _loeschen;
+        _loeschen = null;
+        if (antwort != true || v is null) return;
+        KonditionierungVorlageErgebnis e = Bearbeitung.VorlageLoeschen(v.Id);
+        if (!e.Ok)
+        {
+            await Melden(e.Meldung, WarnStufe.Warnung);
+            return;
+        }
+        if (_gewaehlt == v.Id)
+        {
+            _gewaehlt = null;
+            _modell = null;
+        }
+        _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageGeloescht, v.Name);
+        await Geaendert.InvokeAsync();
+    }
+
+    // ------------------------------------------------------------ Kopieren nach … (Teilkonzept 3.5, 7.4)
+
+    private static readonly IReadOnlyList<KonditionierungKopierziel> KEINE_ZIELE = Array.Empty<KonditionierungKopierziel>();
+
+    /// <summary>Die Quelle der offenen Abfrage „Kopieren nach …"; <c>null</c> = die Abfrage ist zu.</summary>
+    private KonditionierungVorlageDaten? _kopieren;
+    private IReadOnlyList<KonditionierungKopierziel> _kopierziele = KEINE_ZIELE;
+    private int? _kopierziel;
+    private string _kopierName = "";
+    private double? _kopierSollwert;
+    private bool _sollwertFehleingabe;
+    /// <summary>Der Absenksollwert der Abfrage; <see cref="double.NaN"/> = „aus".</summary>
+    private double? _kopierAbsenkwert;
+    private bool _absenkFehleingabe;
+    private string? _kopierNameFehler;
+    private string? _kopierSollwertFehler;
+    private string? _kopierAbsenkFehler;
+    private string? _kopierFehler;
+
+    /// <summary>Steht die Abfrage „Kopieren nach …"? Prüfhilfe für die Tests.</summary>
+    public bool KopierenOffen => _kopieren is not null;
+
+    /// <summary>
+    /// Der Grund des weich gesperrten „Kopieren nach …" in der Liste der gewählten Größe — sie hat kein Ziel
+    /// (Kühlen, Lüftung); <c>null</c> = es gibt eins.
+    /// </summary>
+    private string? KopierSperre
+        => Bearbeitung.Kopierziele(_groesse).Count > 0
+            ? null
+            : string.Format(CultureInfo.CurrentCulture, Texte.GrundKeinKopierziel, Bearbeitung.Groessenname(_groesse));
+
+    private KonditionierungKopierziel? GewaehltesKopierziel
+        => _kopierziele.FirstOrDefault(z => (int)z.Ziel == _kopierziel);
+
+    private string Kopiertitel
+        => _kopieren is null ? "" : string.Format(CultureInfo.CurrentCulture, Texte.LabelKopierenNach, _kopieren.Name);
+
+    /// <summary>Die Einträge der Zielwahl — nur die erlaubten Ziele der Quelle.</summary>
+    private IReadOnlyList<(int Id, string Text)> Kopierzieleintraege
+        => _kopierziele.Select(z => ((int)z.Ziel, Bearbeitung.Groessenname(z.Ziel))).ToList();
+
+    /// <summary>Unter jedem Ziel die Regel, nach der kopiert wird.</summary>
+    private IReadOnlyDictionary<int, string> Kopierregeln
+        => _kopierziele.ToDictionary(z => (int)z.Ziel,
+                                     z => z.Komfortsollwert is null ? Texte.HinweisKopierenDirekt : Texte.HinweisKopierenZeitstruktur);
+
+    /// <summary>
+    /// Öffnet die Abfrage: das erste erlaubte Ziel gewählt, der Name der Quelle als Vorschlag, bei Heizen →
+    /// Kühlen die Vorgaben des Komfort- und des Absenksollwerts. Ohne Ziel meldet der Versuch den Grund.
+    /// </summary>
+    private async Task KopierenOeffnen(KonditionierungVorlageDaten v, string? sperre)
+    {
+        IReadOnlyList<KonditionierungKopierziel> ziele = sperre is null ? Bearbeitung.Kopierziele(v.Groesse) : KEINE_ZIELE;
+        if (ziele.Count == 0)
+        {
+            await Melden(sperre ?? string.Format(CultureInfo.CurrentCulture, Texte.GrundKeinKopierziel,
+                                                 Bearbeitung.Groessenname(v.Groesse)), WarnStufe.Hinweis);
+            return;
+        }
+        UmbenennenAbbrechen();
+        _kopieren = v;
+        _kopierziele = ziele;
+        _kopierName = v.Name;
+        _kopierNameFehler = null;
+        _kopierFehler = null;
+        KopierzielSetzen(ziele[0]);
+    }
+
+    private void KopierzielGewaehlt(int? id)
+    {
+        if (_kopierziele.FirstOrDefault(z => (int)z.Ziel == id) is not KonditionierungKopierziel ziel) return;
+        KopierzielSetzen(ziel);
+        _kopierNameFehler = null;           // der Name gilt in der Liste des Ziels
+        _kopierFehler = null;
+    }
+
+    private void KopierzielSetzen(KonditionierungKopierziel ziel)
+    {
+        _kopierziel = (int)ziel.Ziel;
+        _kopierSollwert = ziel.Komfortsollwert;
+        _sollwertFehleingabe = false;
+        _kopierSollwertFehler = null;
+        _kopierAbsenkwert = ziel.Absenksollwert;
+        _absenkFehleingabe = false;
+        _kopierAbsenkFehler = null;
+    }
+
+    private void KopierNameGeaendert(string w)
+    {
+        _kopierName = w ?? "";
+        _kopierNameFehler = null;
+    }
+
+    private void KopierSollwertGeaendert(double? w)
+    {
+        _kopierSollwert = w;
+        _kopierSollwertFehler = null;
+    }
+
+    private void SollwertFehlerZustand((string Feld, bool Fehlerhaft) zustand)
+    {
+        _sollwertFehleingabe = zustand.Fehlerhaft;
+        if (!zustand.Fehlerhaft) _kopierSollwertFehler = null;
+    }
+
+    private void KopierAbsenkwertGeaendert(double? w)
+    {
+        _kopierAbsenkwert = w;
+        _kopierAbsenkFehler = null;
+    }
+
+    private void AbsenkFehlerZustand((string Feld, bool Fehlerhaft) zustand)
+    {
+        _absenkFehleingabe = zustand.Fehlerhaft;
+        if (!zustand.Fehlerhaft) _kopierAbsenkFehler = null;
+    }
+
+    /// <summary>Abbrechen, Esc und das Kreuz: Die Abfrage geht zu, geschrieben wird nichts.</summary>
+    private void KopierenAbbrechen()
+    {
+        _kopieren = null;
+        _kopierziele = KEINE_ZIELE;
+        _kopierziel = null;
+        _kopierName = "";
+        _kopierSollwert = null;
+        _sollwertFehleingabe = false;
+        _kopierAbsenkwert = null;
+        _absenkFehleingabe = false;
+        _kopierNameFehler = null;
+        _kopierSollwertFehler = null;
+        _kopierAbsenkFehler = null;
+        _kopierFehler = null;
+    }
+
+    private Task KopierenErgebnis(bool ok)
+    {
+        if (ok) return KopierenSchreiben();
+        KopierenAbbrechen();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Das eigene OK der Abfrage: schreibt SOFORT. Eine Ablehnung des Namens steht am Namensfeld, eine des
+    /// Komfortsollwerts am Sollwertfeld, eine des Absenksollwerts am Absenkfeld, jede andere in der Abfrage; sie
+    /// bleibt dann offen. Danach zeigt das
+    /// Blatt die Liste der Zielgröße mit der neuen Vorlage gewählt.
+    /// </summary>
+    private async Task KopierenSchreiben()
+    {
+        if (_kopieren is not KonditionierungVorlageDaten quelle || GewaehltesKopierziel is not KonditionierungKopierziel ziel)
+            return;
+        bool mitSollwert = ziel.Komfortsollwert is not null;
+        if (mitSollwert && (_sollwertFehleingabe || _absenkFehleingabe))
+        {
+            // Ein Feld trägt keine gültige Angabe - kopiert würde sonst mit dem letzten gültigen Wert.
+            if (_sollwertFehleingabe)
+                _kopierSollwertFehler = string.Format(CultureInfo.CurrentCulture, Texte.MeldungKomfortsollwert,
+                                                      Zahl(ziel.Min), Zahl(ziel.Max));
+            if (_absenkFehleingabe)
+                _kopierAbsenkFehler = string.Format(CultureInfo.CurrentCulture, Texte.MeldungAbsenksollwert,
+                                                    Zahl(ziel.Min), Zahl(ziel.Max), Texte.ZelleAus);
+            return;
+        }
+
+        KonditionierungVorlageErgebnis e = Bearbeitung.VorlageKopieren(
+            quelle.Id, new KonditionierungVorlageKopie(ziel.Ziel, _kopierName, mitSollwert ? _kopierSollwert : null)
+            {
+                Absenksollwert = mitSollwert ? _kopierAbsenkwert : null,
+            });
+        if (!e.Ok)
+        {
+            if (e.AmNamen) _kopierNameFehler = e.Meldung;
+            else if (e.AmSollwert) _kopierSollwertFehler = e.Meldung;
+            else if (e.AmAbsenkwert) _kopierAbsenkFehler = e.Meldung;
+            else _kopierFehler = e.Meldung;
+            return;
+        }
+
+        KopierenAbbrechen();
+        _groesse = ziel.Ziel;
+        _zeile = string.Format(CultureInfo.CurrentCulture, Texte.TextVorlageKopiert, e.Vorlage?.Name ?? "",
+                               Bearbeitung.Groessenname(ziel.Ziel), quelle.Name, Bearbeitung.Groessenname(quelle.Groesse));
+        if (e.Vorlage is not null) Zeigen(e.Vorlage.Id);
+        else
+        {
+            _gewaehlt = null;
+            _modell = null;
+        }
+        await Geaendert.InvokeAsync();
+    }
+
+    private static string Zahl(double w) => w.ToString("0.##", CultureInfo.CurrentCulture);
+
+    /// <summary>Wie lange ein Hinweis des Blattes steht.</summary>
+    private static readonly TimeSpan MELDUNGSDAUER = TimeSpan.FromSeconds(8);
+
+    private string? _meldung;
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Der Grund bzw. die Ablehnung im Banner des Blattes. Prüfhilfe: der letzte Text.</summary>
+    public string? Meldung => _meldung;
+
+    private Task Melden(string text, WarnStufe stufe)
+    {
+        if (!string.IsNullOrEmpty(text))
+        {
+            _meldung = text;
+            _meldungStufe = stufe;
+        }
+        return Task.CompletedTask;
+    }
+
+    // ------------------------------------------------------------ Schloss setzen / aufheben (AD-Q15)
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" — dieselbe Rechnung wie in den Verwaltungen.</summary>
+    private readonly Schlossumschaltung _schloss = new();
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? Prüfhilfe für die Tests.</summary>
+    public bool Schlossfrage => _schloss.FrageOffen;
+
+    /// <summary>Die Vorlage als Zeile der Schlossumschaltung: Id, Name und ob sie das Schloss trägt.</summary>
+    private static Katalogfilterzeile Schlosszeile(KonditionierungVorlageDaten v)
+        => new((int)v.Id, v.Name) { Geschuetzt = v.Ausgeliefert };
+
+    /// <summary>Der Klick: Rückfrage in beiden Richtungen, Vorgabe „Nein"; ein offenes Umbenennen hält sie auf.</summary>
+    private async Task SchlossFragen(KonditionierungVorlageDaten v)
+    {
+        string? grund = _schloss.Fragen(Bearbeitung.Weg.VorlageSchloss, new[] { Schlosszeile(v) }, _umbenennen is not null);
+        if (grund is not null) await Melden(grund, WarnStufe.Warnung);
+    }
+
+    /// <summary>Nach dem „Ja": schalten, die Liste neu lesen, die leise Zeile sagt, was geschah.</summary>
+    private async Task SchlossBeantwortet(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Bearbeitung.Weg.VorlageSchloss);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) await Melden(a.Fehler, WarnStufe.Warnung);
+            return;
+        }
+        Bearbeitung.VorlagenNeuLaden();
+        _zeile = a.Status;
+        await Geaendert.InvokeAsync();
+    }
+}

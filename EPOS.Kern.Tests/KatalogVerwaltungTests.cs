@@ -327,7 +327,8 @@ namespace EPOS.Kern.Tests
         /// </summary>
         /// <remarks>
         /// Die Zahlen sind die Spaltenzahlen der vier Tabellen minus zwei:
-        /// <c>Tab_Heizkessel_STAMM</c> 23, <c>Tab_BHKW_STAMM</c> 27,
+        /// <c>Tab_Heizkessel_STAMM</c> 28 (mit den fünf Kennlinienspalten, Konzept Kesselkennlinie E1),
+        /// <c>Tab_BHKW_STAMM</c> 27,
         /// <c>Tab_Solarkollektoren_STAMM</c> 14 (ohne Vor- und Rücklauf, die mit
         /// <c>SolarkollektorTemperaturen.SCHRITT</c> entfallen sind), <c>Tab_Pufferspeicher_STAMM</c> 8.
         /// Bis zum Entscheid waren es 8 / 8 / 8 / 6 — der Detailblock der vier
@@ -338,9 +339,12 @@ namespace EPOS.Kern.Tests
         {
             var erwartet = new Dictionary<KatalogBrowserArt, int>
             {
-                [KatalogBrowserArt.Heizkessel] = 21,
-                [KatalogBrowserArt.Bhkw] = 27,
-                [KatalogBrowserArt.Solarkollektoren] = 12,
+                // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27.
+                [KatalogBrowserArt.Heizkessel] = 27,
+                // BHKW: mit der Gruppe Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3) 32.
+                [KatalogBrowserArt.Bhkw] = 32,
+                // Solarkollektoren: mit der Bezugsfläche der Kennwerte (Welle M2, ST6) 13.
+                [KatalogBrowserArt.Solarkollektoren] = 13,
                 [KatalogBrowserArt.Pufferspeicher] = 6
             };
 
@@ -391,10 +395,13 @@ namespace EPOS.Kern.Tests
             // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die zwei
             // ABGELEITETEN Groessen: die Investition je kWel (W14a-E-8-B3) und den
             // GESAMTwirkungsgrad, die Summe der zwei Anteile (Anwenderentscheid
-            // 20.09.2026): 20 / 24 / 11 / 5.
-            Assert.Equal(20, heiz.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(11, solar.Detailfelder.Count(f => f.Editierbar));
+            // 20.09.2026): 26 / 24 / 11 / 5 - beim Heizkessel mit den fuenf Feldern der
+            // Kennlinie (Konzept Kesselkennlinie, Etappe E1) und der Einheit des
+            // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026), beim BHKW mit den vier
+            // Feldern von Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3) 29.
+            Assert.Equal(26, heiz.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(29, bhkw.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(12, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
 
             foreach (var art in KatalogBrowserProfil.AlleArten)
@@ -552,7 +559,8 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Der Detailblock des Heizkesselbrowsers: die acht Bestandsfelder unveraendert
         /// — die Zahlen mit <c>F2</c>, der Brennstoff als Nachschlag, <c>NULL</c> als
-        /// leerer Text — innerhalb des vollen Satzes von einundzwanzig.
+        /// leerer Text — innerhalb des vollen Satzes von sechsundzwanzig (mit den fünf Feldern
+        /// der Kennlinie, Konzept Kesselkennlinie E1).
         /// </summary>
         [Fact]
         public void Heizkessel_Katalogsatz_zeigt_die_acht_Felder_wie_der_Bestand()
@@ -564,8 +572,9 @@ namespace EPOS.Kern.Tests
             var satz = ctrl.KatalogsatzAnzeige("GC7000F 22 23 - MX25");
 
             Assert.NotNull(satz);
-            Assert.Equal(21, satz.Count);
+            Assert.Equal(27, satz.Count);
             Assert.Equal("GC7000F 22 23 - MX25", satz[KatalogBrowserProfil.FeldBezeichner]);
+            Assert.Equal("kW", satz[KatalogBrowserProfil.FeldBBEinheit]);
             Assert.Equal("Brennwert-Kessel", satz[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal(ctrl.Brennstoffart[2], satz[KatalogBrowserProfil.FeldBrennstoff]);
             Assert.Equal("22,00", satz[KatalogBrowserProfil.FeldPtherm]);
@@ -917,8 +926,7 @@ namespace EPOS.Kern.Tests
             var vorher = BHKWStammCtrl.KatalogsatzAnzeige("2G 250kw.el Gas");
             var felder = new BHKWStammCtrl.AnzeigefelderBhkw("W14a-Probe", 1, 2, 3, 4, 5);
 
-            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben("2G 250kw.el Gas", felder,
-                                                                schreibschutzUebergehen: false);
+            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben("2G 250kw.el Gas", felder);
             Assert.False(ergebnis.Ok);
             Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
 
@@ -1003,11 +1011,12 @@ namespace EPOS.Kern.Tests
             // W14a-E-10-Q7 (Migrationsschritt 68, 07.09.2026): Der Stromspeicher
             // bekommt sein Feld "Firma" - VIERZEHN statt dreizehn, davon acht im
             // Bestandsblock. Er war der einzige Modulkatalog ohne dieses Feld.
-            Assert.Equal(14, sp.Felder.Count);
+            // Welle M5 (SP1): dazu die Selbstentladung im Block Geraetetechnik - FUENFZEHN.
+            Assert.Equal(15, sp.Felder.Count);
             Assert.Equal(15, pv.Felder.Count);
 
             Assert.Equal(8, sp.Felder.Count(f => f.Gruppe == 0));
-            Assert.Equal(6, sp.Felder.Count(f => f.Gruppe == 1));
+            Assert.Equal(7, sp.Felder.Count(f => f.Gruppe == 1));
             Assert.Equal(15, pv.Felder.Count(f => f.Gruppe == 0));
             Assert.Equal("", pv.GruppeZwei);
 

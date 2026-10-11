@@ -23,6 +23,9 @@ namespace WindowsFormsApplication1
         /// <summary>Persistenzwert des Formats IFC (<c>Tab_Importquelle.Format</c>).</summary>
         public const string FORMAT_IFC = "IFC";
 
+        /// <summary>Persistenzwert des Formats Projektdatei (<c>.sqproj</c>, <see cref="DbWerte.IMPORT_FORMAT_SQPROJ"/>).</summary>
+        public const string FORMAT_SQPROJ = DbWerte.IMPORT_FORMAT_SQPROJ;
+
         /// <summary>Legt eine Quelle an; <paramref name="dateiname"/> darf einen Pfad tragen, er wird abgeschnitten.</summary>
         public GebaeudeQuelle(string format, string dateiname, string hash, long groesse, string schemastand,
                               string zeitpunkt, string programmfassung, string zonenregel, int fehlendeEntitaeten)
@@ -67,6 +70,16 @@ namespace WindowsFormsApplication1
         /// kennt keinen Verlustkanal und führt 0.
         /// </summary>
         public int FehlendeEntitaeten { get; }
+
+        /// <summary>
+        /// HC-5c/G5-N: der Nordwinkel [°], um den die Azimute des Imports gedreht sind (<see cref="GebaeudeAbbild.NordwinkelWirksamGrad"/>:
+        /// die Vorgabe des Anwenders, sonst der IFC-Dateiwert); <c>null</c> = keiner (Annahme Planoberseite = Nord). Geschrieben
+        /// normiert nach <c>Tab_Importquelle.Nordwinkel_Grad</c>.
+        /// </summary>
+        public double? NordwinkelGrad { get; init; }
+
+        /// <summary>G5-N (N6): die Herkunft von <see cref="NordwinkelGrad"/> — Datei, Eingabe oder Annahme.</summary>
+        public Nordwinkelherkunft NordwinkelHerkunft { get; init; }
 
         /// <summary>
         /// Schneidet jeden Pfadanteil ab — unter Windows <c>\</c>, unter iOS und Linux <c>/</c>, und

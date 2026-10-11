@@ -373,7 +373,7 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | Heizsollwert | heating setpoint | untere Kante des Sollwertbands im Bild „Raumtemperatur" |
 | obere Raumtemperatur | maximum indoor temperature | Bestandsfeld `Maximaleraumtemperatur`; obere Kante des Sollwertbands |
 | Überhitzungsstunden | overheating hours | Stunden der Nutzungszeit über der oberen Raumtemperatur |
-| Vergleich der Rechenwege | comparison of calculation methods | Tabelle im Bedarfsdialog, bis Stufe GA |
+| Vergleich der Rechenwege | comparison of calculation methods | Tabelle im Bedarfsdialog, dauerhaft (E89) |
 | Baustoff | building material | Katalog „Baustoffe" (Stufe G3) |
 | herstellerneutral | manufacturer-neutral | Baustoff ohne Hersteller (Norm- oder Richtwert) |
 | Bauteilaufbau | construction build-up | Katalog „Bauteilaufbauten"; Schichten innen → außen |
@@ -396,6 +396,121 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | Projektkopie | project copy | die Zeile eines Gebäudes im Projekt (Tab_Gebaeude) |
 | Hülle und Zonen | envelope and zones | Knopf des Gebäudedialogs |
 | Katalogsatz | catalogue record | ein Satz des Gebäudekatalogs |
+
+### Konditionierungsprofile
+
+Die Begriffe des Reiters „Konditionierung" im Gebäude-Katalogeditor: Vorgabe-Matrix, Kalender, Vorlagen und
+Aufheizoptimierung (Konzept [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 7.7, Entwurf
+[KP2](../ueberholt/2026-09-29_Entwurf_KP2.md) 5; Ressourcen `KOND_LBL_*`, `KOND_BTN_*`, `KOND_TXT_*`). Sie stehen
+**vor** den englischen Ressourcenwerten fest (Entscheid E28 zu U4, wie oben). Was in dieser Tafel schon steht, gilt
+unverändert weiter: Infiltration, Nutzerlüftung, Sommerlüftung, Heizsollwert, obere Raumtemperatur, Überhitzungsstunden,
+Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg. Die Vorlagennamen („Wohnen", „Büro",
+„Schule") sind Daten und bleiben deutsch (§ 10); übersetzt wird ihre **Nutzung** als Anzeigewert.
+
+| DE | EN | Anmerkung |
+|---|---|---|
+| Konditionierung | conditioning | Oberbegriff für Sollwerte, Lüftung und innere Gewinne einer Zone; Reiter „Konditionierung" → „Conditioning" (`KOND_LBL_REITER`) |
+| Vorgabe-Matrix | defaults matrix | die Tabelle des Reiters (fünf Größen × Nennwert, Tag, Nacht, Wochenende, Ferien, Saison), aus der der Generator die Kalender macht; Kurzform „Matrix" → „matrix" |
+| Größe (der Konditionierung) | quantity | eine der fünf Größen Heizen, Kühlen, Lüftung, Geräte, Personen; je Größe ein Kalender und eine Vorlagenliste; die Kennwörter `HEIZSOLL` … `PERSONEN` sind Persistenzwerte (§ 10) |
+| Heizen | heating | Größe: Heizsollwert in °C, auch „aus"; Spalte „Heizen °C" (`KOND_LBL_SPALTE_HEIZEN`); Heizsollwert → heating setpoint (oben) |
+| Kühlen | cooling | Größe: Kühlsollwert in °C, auch „aus"; wirkt nur mit Kühlbetrieb im Projekt (§ 6); Spalte „Kühlen °C" (`KOND_LBL_SPALTE_KUEHLEN`) |
+| Kühlsollwert | cooling setpoint | wie Heizsollwert (oben, § 4); die Bestandstexte `GEBK_LBL_KUEHL_SOLLWERT` und `GEBK_ZEILE_KUEHLUNG_*` schreiben noch „set point" |
+| Lüftung | ventilation | Größe: Nutzerlüftung in 1/h, die Infiltration bleibt konstant darunter (Begriffe oben); Spalte „Lüftung 1/h" (`KOND_LBL_SPALTE_LUEFTUNG`) |
+| Geräte | equipment | Größe: Geräte und Anlage einschließlich Beleuchtung, als Anteil 0 … 100 % eines Nennwerts in W; Spalte „Geräte W bzw. %" → „Equipment W or %" |
+| Personen | people | Größe: Anwesenheit der Personen als Anteil eines Nennwerts (Zahl × 70 W, sensible Wärme); Spalte „Personen W bzw. %" → „People W or %" |
+| Anwesenheit | occupancy | Anteil 0 … 100 % im Kalender der Größe Personen; Zeitstruktur „wie Anwesenheit" → „as occupancy" |
+| Nennwert | nominal value | Zeile der Matrix: der Bezugswert in W (Geräte, Personen) bzw. die Infiltration in 1/h, auf den sich die Anteile beziehen; **nicht** „Nennleistung" (→ rated output, § 6) |
+| Interne Wärmegewinne | internal heat gains | Summe aus Geräten und Personen; Feld `Interne_Waermegewinne`, Bestand `GEBK_LBL_WAERMEGEWINNE` |
+| Jahresmittel | annual mean | Mittel über die 8760 Stunden; Herleitungszeile der Gewinne unter der Matrix (`KOND_TXT_JAHRESMITTEL`) |
+| Maximalraumtemperatur | maximum indoor temperature | Zusatzzeile neben der Matrix: die Grenze der Überhitzungsstunden (Feld `Maximaleraumtemperatur`); dieselbe Größe wie „obere Raumtemperatur" (oben), Bestand `GEBK_LBL_MAXTEMPERATUR` schreibt „Maximum room temperature" |
+| Kalender (abgeleitet / angelegt) | calendar (derived / created) | Stundenreihe (8760 Werte) einer Größe je Zone; abgeleitet = der Lauf erzeugt ihn aus der Matrix, angelegt = Zeilen in der Datenbank, die Matrix ist dann nur Vorgabe |
+| Kalenderkarte | calendar card | einklappbare Karte je Größe unter der Matrix mit einer Zustandszeile: „aus der Matrix" → „from the matrix", „aus Vorlage Büro" → „from template Büro", „angelegt, 3 eigene Perioden" → „created, 3 own periods" |
+| Grundangabe | base value | Ebene 1 des Kalenders: ein Wert oder „aus" |
+| Standardwoche | standard week | Ebene 2 des Kalenders: 168 Zellen von Montag 00:00 bis Sonntag 23:00; „Wochenprofil" (§ 7) bleibt der allgemeine Begriff |
+| Wochenraster | weekly grid | der Baustein zur Standardwoche: 7 × 24 Zellen mit dem Zellzustand „aus" |
+| Periode | period | Ebene 3 des Kalenders: Beginn und Ende (Jahrestage im Gemeinjahr) oder eine Feiertagsregel, mit Rang und Art; **nicht** „Bezugsperiode" (§ 13 oben) |
+| Rang | rank | 1 … 999, eindeutig je Kalender; die ranghöchste Periode eines Tages gilt |
+| Art (einer Periode) | type | Zeitraum, Ferien, Feiertag, Betriebspause → date range, holidays, public holiday, operating break; die Persistenzwerte `ZEITRAUM`, `FERIEN`, `FEIERTAG`, `BETRIEBSPAUSE` bleiben deutsch (§ 10) |
+| Betriebspause | operating break | Art einer Periode: „aus" außerhalb der Saison; der Generator bildet Heiz- und Kühlperiode darauf ab |
+| eigene Periode | own period | von Hand angelegt, nicht Teil des Matrixbereichs; im Kartenzustand „angelegt, 3 eigene Perioden" |
+| Ausnahmetag | exception day | ein einzelner Tag mit eigener Angabe, angelegt als Periode über einen Tag; bleibt wie die eigenen Perioden beim erneuten Anwenden der Matrix |
+| Matrixbereich | matrix area | Standardwoche, Ferien- und Saisonperioden eines Kalenders — das ersetzt „Matrix erneut anwenden" |
+| Heizperiode | heating period | Saison der Heizspalte: Start und Ende als Datum im Gemeinjahr; innerhalb wird geheizt, außerhalb steht die Größe auf „aus"; leer = ganzjährig |
+| Kühlperiode | cooling period | dasselbe für die Kühlspalte |
+| Saison | season | Zeile der Matrix für Heiz- bzw. Kühlperiode (Start, Ende); leer = ganzjährig → „year-round" |
+| Nachtauskühlung | night purge ventilation | erhöhter Luftwechsel im Nachtfenster der Lüftungsspalte, nur bedingt wirksam (wie die Sommerlüftung: Raumluft über der Schwelle, Außenluft mindestens ΔT kühler); Kernmeldungen `SIMENG_KOND_NACHTKUEHL_*` schreiben noch „night cooling" |
+| Nachtauskühlstunden | night purge ventilation hours | Kennzahl `Nachtauskuehlstunden_H` in Bedarfsdialog, Ergebnis und Bericht |
+| Sommerlüftungsstunden | summer ventilation hours | Kennzahl `Sommerlueftungsstunden_H`, neben den Nachtauskühlstunden |
+| Nachtfenster | night window | die Nachtzeit einer Spalte (von / bis, volle Stunde 0 … 23), leer = das der Heizspalte; bei Heizen „Nachtabsenkung von / bis" (oben) |
+| Aufheizzeit | preheat time | Dauer der Aufheizrampe vor einem Sprung des Heizsollwerts nach oben (Stufe KP3) |
+| Aufheizleistung | preheat power | die Leistung, mit der die Aufheizung bemessen wird (Stufe KP3) |
+| Aufheizreserve | preheat reserve | der Zuschlag auf die stationäre Last bei der Bemessung der Aufheizleistung (Projekteinstellung, Stufe KP3); Feld „Aufheizreserve ρ" → „Preheat reserve ρ" in %, 1 … 100, Vorgabe 20 %, gespeichert als Anteil |
+| Aufheizoptimierung | preheat optimisation | Projekteinstellung neben Kühlbetrieb und Anlagenkopplung: Schalter, Bemessung, Art täglich oder fest (Stufe KP3); Schreibweise „optimisation" wie „utilisation" (§ 6); Schalter „Aufheizoptimierung rechnen" → „Calculate preheat optimisation" (`SIMKONF_AUFH_*`) |
+| Bemessung (der Aufheizzeit) | design basis | woran die längste Aufheizzeit bemessen wird: „kälteste Stunde" → „coldest hour" (Vorgabe), „kälteste Stunde − ΔT_K" → „coldest hour − ΔT_K"; die Persistenzwerte `STUNDE`, `STUNDE_ABZUG` bleiben (§ 10); Bemessungsfall → design case |
+| Abzug ΔT_K | deduction ΔT_K | um wie viel K die Bemessung (b) kälter rechnet als die kälteste Stunde (0 … 10 K, Vorgabe 2 K) |
+| Art der Aufheizzeit | preheat time mode | „täglich" → „daily" (Vorgabe: jeder Tag nach seiner Außentemperatur), „fest" → „fixed" (jeder Tag so lange wie der Bemessungsfall); die Persistenzwerte `TAEGLICH`, `FEST` bleiben (§ 10) |
+| Aufheizzuschlag | heating-up capacity | der Teil der Aufheizleistung über der stationären Last, P_auf − Φ_stat; mit der Auslegungsheizlast die Auslegungsgröße (Muster Φ_RH der DIN EN 12831-1, englische Fassung „heating-up capacity"); nicht mit „Aufschlag" verwechseln |
+| Aufschlag (der Aufheizzeit) | surcharge | Projektvorgabe in Stunden und in Prozent, um die jede Rampe eines Kalendersprungs mit n > 1 länger wird, es gilt der größere Wert (Stufe KP3); Felder „Aufschlag (h)" → „Surcharge (h)", „Aufschlag (%)" → „Surcharge (%)" (`SIMKONF_AUFH_AUFSCHLAG_*`) |
+| Aufheizrampe, Rampe | preheat ramp, ramp | der stufenweise Anstieg des Heizsollwerts vor einem Sprung nach oben (Stufe KP3); „längste Rampe" → „longest ramp" in der Herleitungszeile mit Aufschlag |
+| Stufe, Stufenzahl n (der Rampe) | step, step count n | eine Stunde der Rampe, n = Aufheizzeit + 1; mit Aufschlag n′ (Formelzeichen bleiben); „n′ = 9 statt 6 Stufen" → „n′ = 9 instead of 6 steps" (`SIMKONF_AUFH_AUFSCHLAG_HRL_ZEILE`) |
+| Absenkung (Ende der) | setback (end of the) | die Absenkzeit vor dem Sprung, die eine Rampe höchstens füllt (D + 1); wie „Nachtabsenkung" → „night setback" |
+| Aufheizzeit manuell | manual preheat time | je Gebäude eingegebene Aufheizzeit in h, dritte Art neben „täglich" und „fest" → „manual"; Persistenzwert `MANUELL` in `Aufheiz_Art` bleibt (§ 10) |
+| Vorschlag | suggestion | Wert neben einem Feld, den der Anwender übernehmen kann, hier die bemessene Aufheizzeit und die Spanne aus der Zeitkonstante des Gebäudes; „Übernehmen" → „Apply" (§ 8); nicht „proposal" |
+| Herleitungszeile | derivation line | leise Zeile unter einem Feld oder Abschnitt, die sagt, woraus ein Wert folgt — bei der Aufheizoptimierung je Gebäude „t_auf,max … bei … · P_auf … · C_w …"; das Wort selbst steht in keiner Beschriftung |
+| Auslegungsgröße (der Heizung) | design capacity | Auslegungsheizlast plus Aufheizzuschlag, Φ_HL + Φ_RH (E60); Zeile „Auslegungsgröße Φ_HL + Φ_RH" → „Design capacity Φ_HL + Φ_RH" in der Gruppe „Aufheizung" → „Preheating" des Bedarfsdialogs (`GEBB_AUFH_*`) |
+| Auslegungsheizlast | design heat load | die stationäre Last Φ_HL am Auslegungspunkt (Muster DIN EN 12831-1); nicht „design load" allein |
+| ideale Spitze | ideal peak | die höchste Stundenlast des Laufs mit idealer Regelung; bei ausgeschalteter Aufheizoptimierung keine Auslegungsgröße |
+| Rampentage | ramp days | Tage mit einer Aufheizrampe (n > 1); dazu „längste Rampe" → „longest ramp" |
+| Kappungsstunden | capping hours | Σ der Kappungsanteile an der Heizleistungsgrenze in h |
+| Nachweisband | verification band | Band, in dem die Stundenleistung einer Rampe bleiben soll (W3) |
+| Spanne (der Aufheizzeit) | range | Vorschlag [t_u; t_o] aus der Zeitkonstante τ₂ neben „Aufheizzeit manuell (h)"; „sinnvolle Spanne" → „sensible range" (`KOND_AUFH_MANUELL_*`) |
+| Aufheizen vor Nutzungsbeginn | preheating before occupancy | Gruppe der Aufheizoptimierung mit Verfahrenswahl (Fassung 2, E122/E124); Schalter „Aufheizen rechnen“ → „Calculate preheating“ (`SIMKONF_AUFH_GRP`, `SIMKONF_AUFH_LBL_SCHALTER`) |
+| Verfahren (der Aufheizung) | method | „Sollwertrampe nach Aufheizleistung“ → „Setpoint ramp by preheat power“ (Bestand), „Vorheizzeit vorgeben“ → „Specify preheat time“, „Vorheizzeit berechnen“ → „Calculate preheat time“ (`SIMKONF_AUFH_VERFAHREN_*`) |
+| Vorheizzeit | preheat time | die Stunden vor dem Kalendersprung, in denen der Sollwert schon auf dem Zielwert steht (Verfahren mit Deckel); vorgegeben oder berechnet, berechnet gilt sie an jedem Sprung; dasselbe Englisch wie „Aufheizzeit“ der Rampe, die beiden Verfahren schließen sich aus; Feld „Vorheizzeit (h)“ → „Preheat time (h)“ |
+| Vorheizfenster | preheat window | die Vorheizzeit vor einem Kalendersprung, Leistung höchstens min(Deckel, verfügbare Heizleistung) |
+| Deckel (der Heizleistung) | cap | höchste Heizlast einer Nutzungsbeginn-Stunde des Jahres ohne Aufheizen plus zulässiger Sprung, stündlich wirksam vom Nutzungsbeginn bis zum Ende der Nutzung; nicht der Deckel n ≤ 48 der Rampe |
+| zulässiger Sprung | permitted step | Toleranz des Deckels in % der höchsten Heizlast am Nutzungsbeginn oder in kW, Vorgabe 20 %; „Zulässiger Sprung zum Nutzungsbeginn“ → „Permitted step at start of occupancy“ (`SIMKONF_AUFH_LBL_TOLERANZ`) |
+| Regelgenauigkeit | control accuracy | Ankunftskriterium ε der Verfahren mit Deckel, 0,5 / 1 / 2 K oder Eingabe, Vorgabe 1 K; „Regelgenauigkeit (K)“ → „Control accuracy (K)“ |
+| verfügbare Heizleistung | available heating power | Heizleistungsgrenze der Zone, sonst Heizlast der kältesten Stunde plus Leistungsreserve |
+| Ferien | holidays | Zeile der Matrix und Art der Periode; Bestand „Holiday setpoint (all day)" (`GEBK_LBL_SOLL_FERIEN`); **nicht** „vacation" |
+| Ferienzeitraum | holiday period | datierter Zeitraum (`Ferienbeginn_1` … `Ferienende_4`) des Gebäudes, gilt für alle Spalten; Datum im Gemeinjahr; Bestand „Holiday start" / „Holiday end" |
+| Feiertag | public holiday | wie § 14 (Tagtyp: Sonn-/Feiertag); die neun bundeseinheitlichen Feiertage stehen als Regel und wirken „wie Sonntag" → „as Sunday"; Länderfeiertage sind gewöhnliche Perioden |
+| Bezugsjahr | reference year | das Jahr, dessen Wochentage und Feiertage Vorschau, Teppichbild und Lauf verwenden; nicht „Bezugsperiode" (§ 13 oben) |
+| Gemeinjahr | common year | Jahr mit 365 Tagen ohne 29.02.; Kalender und Ferienzeiträume rechnen darin, ohne Jahresdatum; die Wochentage folgen dem Wochentagsraster (weekday grid) des Projekts — im Regelfall dem der Klimaregion, mit Preisreihenjahr dem des echten Jahres samt seinen Feiertagsdaten, für Gebäudelauf, Zapfkalender und Bedarfsprofile dasselbe —, Ostern ist im Regelfall dessen Sonntag am nächsten zum 8. April (Easter convention); „TT.MM." → „DD.MM." |
+| Zeitfenster | time window | Werkzeug der Karte: Tage, von, bis, Wert — der Weg zur Standardwoche ohne Zellenarbeit |
+| Zeitstruktur übernehmen | apply time structure | Werkzeug der Karte für Kühlen, Lüftung und Geräte: „wie Heizung" → „as heating" oder „wie Anwesenheit" → „as occupancy"; Übernehmen → Apply (§ 8) |
+| Teppichbild | carpet plot | Jahresbild der Vorschau: Tage × Stunden, Farbe = Wert, „aus" als eigene Fläche; die Unterschrift nennt das Bezugsjahr |
+| aus (Zellzustand) | off | Zustand einer Zelle bei Heizen und Kühlen und in der Standardwoche jeder Größe (Lüftung 0 1/h, Anteile 0 %); das Kennwort „aus" in gespeicherten Wochen (`KOND_WOCHE_AUS`) bleibt deutsch (§ 10) |
+| Kalender anlegen | create calendar | Knopf der Matrix: schreibt die Kalender aus der Matrix; „Verwerfen" → „Discard" löscht sie und kehrt zur Matrix zurück |
+| Matrix erneut anwenden | reapply matrix | ersetzt nur den Matrixbereich, eigene Perioden und Ausnahmetage bleiben; die Rückfrage nennt beides |
+| Zurücknehmen | undo | nimmt den letzten Schritt des Arbeitsstands zurück |
+| Vorlage | template | vorbefüllter Kalender einer Größe, ausgeliefert oder eigen; Auswahlliste je Kalenderkarte, Zeile „Vorlage" der Matrix |
+| Vorlage übernehmen | apply template | wirkt auf Gebäude, Zone oder Katalogbau und nur auf eine Größe (Übernehmen → Apply, § 8); Nennwert und Saison des Ziels bleiben |
+| Vorlage in allen Größen übernehmen | apply template to all quantities | Abkürzung in der Kopfzelle der Zeile „Vorlage" (E57): die Liste „alle Größen" → „all quantities" führt jeden Namen aus mindestens einer Liste; eine Rückfrage für alle Größen, eine Größe ohne gleichnamige Vorlage bleibt; kein Satzbegriff |
+| Als Vorlage speichern | save as template | Knopf der Karte: Name, Beschreibung, Nutzung; ohne Nennwert und Saison; wird sofort gespeichert |
+| Vorlagen verwalten | manage templates | Blatt im Katalogeditor, aus jeder Kalenderkarte; fünf Listen mit Umschalter der Größe |
+| Nutzung (einer Vorlage) | type of use | Wohnen, Büro, Schule, Sonstige → residential, office, school, other; Anzeigewerte, die Persistenzwerte `WOHNEN`, `BUERO`, `SCHULE`, `SONSTIGE` bleiben deutsch (§ 10); vgl. Nutzungsart (§ 14) |
+| ausgeliefert / eigen | delivered / own | Vorlage oder Katalogsatz der Auslieferung (`ReadOnly`) bzw. vom Anwender angelegt |
+| gesperrt (Schloss) | locked | Sätze und Vorlagen der Auslieferung; „nur lesbar" → „read-only"; der Lesemodus nennt den Grund |
+| Speichern unter | save as | legt eine bearbeitbare Kopie unter neuem Namen an; Bestand `GEBK_HINWEIS_SPEICHERN_UNTER` |
+| Duplizieren | duplicate | Kopie einer ausgelieferten Vorlage oder eines Katalogsatzes; Kernmeldungen „Duplicate…" |
+| Umbenennen | rename | eigene Vorlagen in der Verwaltung |
+| Kopieren nach … | copy to … | Handlung der Vorlagenverwaltung: eine Vorlage als eigene Vorlage einer anderen Größe — Heizen → Kühlen, Geräte ↔ Personen |
+| Komfortsollwert | comfort setpoint | der Kühlsollwert, den „Kopieren nach …" von Heizen nach Kühlen in jede Zelle setzt, deren Heizsollwert den Tagwert der Vorlage erreicht (Vorgabe 26 °C) |
+| Absenksollwert | setback setpoint | der Kühlsollwert, den „Kopieren nach …" von Heizen nach Kühlen in die Absenkzeiten setzt – jede Zelle mit Heizsollwert unter dem Tagwert (Vorgabe 28 °C, wählbar „aus“; nie unter dem Komfortsollwert) |
+| Tagwert | day value | der Heizsollwert der Zeile „Tag“ einer Vorlage, ohne Tagzeile ihr höchster Heizsollwert – die Schwelle der Absenkzeit bei „Kopieren nach …" |
+| Katalogbau | catalogue building | ein Gebäude des Gebäudekatalogs, Träger von Matrix und Kalendern; „Katalogsatz" (oben) ist der allgemeine Begriff |
+| Aus dem Katalog erneut übernehmen | reapply from the catalogue | Knopf im Reiterkopf (nur im Projekt): ersetzt die Gebäudeebene samt Bestandszellen, die Zonen bleiben |
+| erben / vom Gebäude | inherit / from the building | Zone: eine leere Zelle erbt den Gebäudewert, Platzhalter „Vorgabe …" → „Default value …" (Vorgabe, oben); Kartenzustand „vom Gebäude" → „from the building" |
+| Vom Gebäude übernehmen und anpassen | copy from building and adjust | Zone: legt eine eigene Kopie des Gebäudekalenders an |
+| Kalender im Einzelnen | calendar details | Knopf der Kalenderkarte: klappt Grundangabe, Wochenraster, Zeitfenster, Periodenliste, Werkzeuge und Teppichbild auf |
+| Freigabe (Heizen frei / Kühlen frei / beides / keines) | release (heating released / cooling released / both / none) | Jahresband im Reiter „Konditionierung“: je Ort und Tag, welche Seite der Kalender freigibt (`KOND_LBL_FREIGABE*`); „aus“ sperrt die Seite für den Tag |
+| Tagesbetriebsart je Zone, Probetag | daily operating mode per zone, trial day | Laufhinweis `SIMENG_ZONENSPERRE`: an einem Tag mit beiden Freigaben entscheidet der Probetag, ob die Zone heizt oder kühlt; die Gegenseite ist gesperrt (locked) |
+| In den Kalender übernehmen | apply to calendar | Knopf der Gruppe „Wärmeübergabe": das Sollwert-Zeitprogramm wird die Standardwoche des Heizkalenders (Übernehmen → Apply, § 8) |
+
+Abweichende Bestandstexte: Die Kernmeldungen `SIMENG_KOND_*` (Stufe KP1) schreiben an einigen Stellen „heating season",
+„night cooling", „input matrix" und „set point", der Gebäudedialog (`GEBK_*`) „set point" und „Maximum room temperature".
+Für neue Schlüssel gilt diese Tafel (§ 12).
 
 ## 14. Trinkwarmwasser und Zapfprofil
 

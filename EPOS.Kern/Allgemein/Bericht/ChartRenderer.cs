@@ -38,8 +38,11 @@ namespace WindowsFormsApplication1
     ///
     /// Feste Farbzuordnung je Erzeuger über alle Diagramme (Konzept Kap. 6):
     /// WP blau, BHKW orange, Kessel grau, Solar gelb, PV grün, Netz/Rest neutral.
+    ///
+    /// <para>Das Teppichbild der Kalenderkarte steht in der zweiten Hälfte
+    /// <c>ChartRenderer.Kalenderteppich.cs</c> (Welle K4).</para>
     /// </summary>
-    public static class ChartRenderer
+    public static partial class ChartRenderer
     {
         // Palette (identisch zum Bestandsbericht).
         public static readonly SKColor C_WP = new SKColor(0x41, 0x72, 0xC4);
@@ -89,6 +92,22 @@ namespace WindowsFormsApplication1
             /// vergleichen Bilder.</para>
             /// </summary>
             public Strichart Strichart;
+
+            /// <summary>
+            /// Der FARBTON des Eintrags — die <see cref="Farbrolle"/> der Reihe, zu der er
+            /// gehört (<see cref="Reihe.Ton"/>). Farbfeld und Rand nehmen dann DIESE Rolle und
+            /// nicht die Rückwärtssuche über <see cref="Farbe"/>: <see cref="Farbe"/> ist die
+            /// gegen <see cref="Farbpalette.Aktuell"/> aufgelöste Farbe, die Rückwärtssuche
+            /// kennt aber nur die Hausfarben. Trägt eine Rolle beim Anwender den Hausfarbwert
+            /// einer ANDEREN (Summe Wärmebedarf auf #FF0000, der Hausfarbe der Heizwärme), fände
+            /// sie jene — und das Feld stünde in deren Anwenderfarbe statt in der eigenen.
+            ///
+            /// <para><b>Vorgabe <c>null</c></b>: der Weg über <see cref="Farbe"/> und die
+            /// Rückwärtssuche, für einen Eintrag ohne Rolle. Mit der Vorgabe-Palette lösen beide
+            /// Wege auf denselben Wert auf — jedes Bild bleibt byte-gleich, die ChartProben
+            /// vergleichen Bilder.</para>
+            /// </summary>
+            public Farbton Ton;
 
             public Segment(string l, double w, SKColor f) { Label = l; Wert = w; Farbe = f; }
 
@@ -295,7 +314,7 @@ namespace WindowsFormsApplication1
                 float sweep = (float)(Math.Max(s.Wert, 0) / total * 360.0);
                 float von = start;                 // fest fuer die Klammer
                 z.Markiert("reihe:" + (s.Label ?? ""), Anteilwert(s.Label, s.Wert, total),
-                           zs => Kreissegment(zs, rect, von, sweep, Flaeche(s.Farbe)));
+                           zs => Kreissegment(zs, rect, von, sweep, Flaeche(Ton(s))));
                 start += sweep;
             }
             z.Ellipse(rect.Left, rect.Top, rect.Width, rect.Height,
@@ -311,7 +330,7 @@ namespace WindowsFormsApplication1
                     // Legende - derselbe Schluessel wie am Segment.
                     z.Markiert("legende:" + (s.Label ?? ""), ze =>
                     {
-                        ze.Rechteck(ex, ey, 28f, 28f, null, Flaeche(s.Farbe));
+                        ze.Rechteck(ex, ey, 28f, 28f, null, Flaeche(Ton(s)));
                         ze.Rechteck(ex, ey, 28f, 28f, rahmen);
                         Text(ze, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", Zahlkultur) + " %",
                              lf, Farbrolle.TEXT, ex + 40f, ey + 1f);
@@ -548,7 +567,7 @@ namespace WindowsFormsApplication1
             string[] titelWoche = (string[])WOCHENTITEL.Clone();
 
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 520);
-            List<Segment> leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            List<Segment> leg = reihen.Select(r => Eintrag(r)).ToList();
             float umbruch = mass.HasValue ? W - 30f : 0f;
             float mehr = mass.HasValue ? (LegendenZeilen(leg, 70f, umbruch) - 1) * LEGENDE_ZEILE : 0f;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(190f + mehr + STUFE2_MIN_FLAECHE));
@@ -571,7 +590,7 @@ namespace WindowsFormsApplication1
                     Reihe reihe = r;
                     bild.Markiert("reihe:" + reihe.Name, zr =>
                         ZeichneLinie(zr, rc, Ausschnitt(reihe.Werte, fenster[feld], 168),
-                                     0, max, reihe.Farbe, 3f));
+                                     0, max, Ton(reihe), 3f));
                 }
                 // Y-Beschriftung nur links.
                 if (p == 0)
@@ -670,7 +689,7 @@ namespace WindowsFormsApplication1
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
             // Die Legende bricht bei W − 70 um und hat zwei Zeilen Platz; im Zielmaß räumt die
             // Zeichenfläche jeder weiteren Zeile Platz.
-            List<Segment> leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            List<Segment> leg = reihen.Select(r => Eintrag(r)).ToList();
             float mehr = mass.HasValue ? Math.Max(0, LegendenZeilen(leg, 70f, W - 70f) - 2) * LEGENDE_ZEILE : 0f;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(230f + mehr + STUFE2_MIN_FLAECHE));
 
@@ -690,7 +709,7 @@ namespace WindowsFormsApplication1
                     Reihe reihe = r;
                     bild.Markiert("reihe:" + reihe.Name, zr =>
                         ZeichneLinie(zr, rc, Ausschnitt(reihe.Werte, fenster[feld], 168),
-                                     min, max, reihe.Farbe, 3f));
+                                     min, max, Ton(reihe), 3f));
                 }
 
                 if (p == 0)
@@ -764,7 +783,7 @@ namespace WindowsFormsApplication1
                                              Bildmass? mass = null)
         {
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
-            var leg = stapel.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            var leg = stapel.Select(r => Eintrag(r)).ToList();
             if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
             // Stufe 2: Die Legende bricht an der Breite um, die Zeichenfläche räumt ihr den Platz.
             float umbruch = mass.HasValue ? W - 30f : 0f;
@@ -786,7 +805,10 @@ namespace WindowsFormsApplication1
 
             AchsenRaster(z, rc, max, xticks.Key, xticks.Value, n);
 
-            // Stapel von unten nach oben zeichnen (kumulierte Flächen).
+            // Stapel von unten nach oben zeichnen (kumulierte Flächen). Führen die Reihen
+            // mehr Werte, als die Fläche Bildpunktspalten hat, zeigen alle Schichten je Stufe
+            // die Spitzenstunde der Bedarfslinie, sonst der Stapelsumme (Stufenregel).
+            double[] stapelbezug = linie ?? summe;
             var unten = new double[n];
             foreach (Reihe r in stapel)
             {
@@ -795,12 +817,13 @@ namespace WindowsFormsApplication1
                 Reihe reihe = r;
                 double[] unterkante = unten, oberkante = oben;
                 z.Markiert("reihe:" + reihe.Name, zr =>
-                    ZeichneFlaeche(zr, rc, unterkante, oberkante, max, reihe.Farbe));
+                    ZeichneFlaeche(zr, rc, unterkante, oberkante, max, Ton(reihe, STAPELFLAECHE_DECKUNG),
+                                   bezug: stapelbezug));
                 unten = oben;
             }
             if (linie != null)
                 z.Markiert("reihe:" + linienName, zr =>
-                    ZeichneLinie(zr, rc, linie, 0, max, C_BEDARF, 3f));
+                    ZeichneLinie(zr, rc, linie, 0, max, C_BEDARF.Ton(), 3f));
 
             Legende(z, leg, 90f, H - 64f - mehr, umbruch);
             return z;
@@ -817,7 +840,7 @@ namespace WindowsFormsApplication1
                                              Bildmass? mass = null)
         {
             int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
-            var leg = reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            var leg = reihen.Select(r => Eintrag(r)).ToList();
             float umbruch = mass.HasValue ? W - 30f : 0f;
             float mehr = mass.HasValue ? (LegendenZeilen(leg, 90f, umbruch) - 1) * LEGENDE_ZEILE : 0f;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(180f + mehr + STUFE2_MIN_FLAECHE));
@@ -833,7 +856,7 @@ namespace WindowsFormsApplication1
             {
                 Reihe reihe = r;
                 z.Markiert("reihe:" + reihe.Name, zr =>
-                    ZeichneLinie(zr, rc, reihe.Werte, 0, max, reihe.Farbe,
+                    ZeichneLinie(zr, rc, reihe.Werte, 0, max, Ton(reihe),
                                  Traegt(reihe, Farbrolle.BEDARF, C_BEDARF) ? 3.5f : 2.5f));
             }
 
@@ -862,7 +885,7 @@ namespace WindowsFormsApplication1
             float umbruch = 0f, mehr = 0f;
             if (mass.HasValue)
             {
-                var vorab = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+                var vorab = serien.Select(r => Eintrag(r)).ToList();
                 if (linie != null) vorab.Add(new Segment(linienName, 0, C_BEDARF));
                 umbruch = W - 30f;
                 mehr = (LegendenZeilen(vorab, 90f, umbruch) - 1) * LEGENDE_ZEILE;
@@ -913,7 +936,7 @@ namespace WindowsFormsApplication1
                     z.Markiert("reihe:" + (r.Name ?? ""),
                                Elementwert(monat + WERT_TRENNER + (r.Name ?? ""),
                                            r.Werte[im], "N0", einheit),
-                               zs => zs.Rechteck(x0, oben, bBreit, hoehe, null, Flaeche(rr.Farbe)));
+                               zs => zs.Rechteck(x0, oben, bBreit, hoehe, null, Flaeche(Ton(rr))));
                     unten -= hoehe;
                 }
                 if (einspeisung != null)
@@ -924,7 +947,7 @@ namespace WindowsFormsApplication1
                                Elementwert(monat + WERT_TRENNER + (e.Name ?? ""),
                                            e.Werte[im], "N0", einheit),
                                zs => zs.Rechteck(x0 + bBreit + slot * 0.06f, rc.Bottom - hoehe,
-                                                 bSchmal, hoehe, null, Flaeche(e.Farbe)));
+                                                 bSchmal, hoehe, null, Flaeche(Ton(e))));
                 }
             }
 
@@ -938,9 +961,18 @@ namespace WindowsFormsApplication1
                            zl => Linienzug(zl, punkte, Stift(C_BEDARF, 3f)));
             }
 
-            var leg = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            var leg = serien.Select(r => Eintrag(r)).ToList();
             if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
             Legende(z, leg, 90f, H - 56f - mehr, umbruch);
+            // Die Reihen stehen im Modell, ohne Zeichnung — „CSV…“ schreibt sie je Monat.
+            Saeulenreihen(z, serien.Where(r => r?.Werte != null && r.Werte.Length >= 12).ToList(), 12, einheit);
+            if (linie != null && linie.Length >= 12)
+            {
+                var linienwerte = new double[12];
+                Array.Copy(linie, linienwerte, 12);
+                z.FuegeReihe(new Datenreihe(linienName ?? "", C_BEDARF.Ton(), 0f, null, linienwerte,
+                                            Einheit: string.IsNullOrEmpty(einheit) ? null : einheit));
+            }
             return z;
         }
 
@@ -1028,7 +1060,7 @@ namespace WindowsFormsApplication1
             float mehr = 0f;
             if (mass.HasValue && reihen != null)
                 mehr = Math.Max(0, LegendenZeilen(reihen.Where(r => r.Werte != null)
-                                                        .Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
+                                                        .Select(r => Eintrag(r, r.Strichart)).ToList(),
                                                   110f, W - 30f) - 2) * LEGENDE_ZEILE;
             mehr += fussMehr;
             if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(220f + mehr + STUFE2_MIN_FLAECHE));
@@ -1073,7 +1105,7 @@ namespace WindowsFormsApplication1
                 Strichmuster muster = Strichfolge(r.Strichart);
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     Linienzug(zr, punkte,
-                              Stift(r.Farbe, staerke, muster, Strichverbindung.Rund)));
+                              Stift(Ton(r), staerke, muster, Strichverbindung.Rund)));
 
                 // Dieselbe Reihe in DATENWERTEN, ungekuerzt (DG-E2-2) - mit ihrem
                 // EIGENEN Fenster, damit eine kuerzere Reihe im SVG dort endet, wo sie
@@ -1088,7 +1120,7 @@ namespace WindowsFormsApplication1
             // Strichart. Im Wortbericht ist dieses Bild der einzige Ort, an dem die
             // Versionen nebeneinander stehen; ohne Legende wären die Linien
             // ununterscheidbar.
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r, r.Strichart)).ToList(),
                     110f, H - 104f - mehr, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
             if (fusszeilen.Count > 0)
                 using (var f = Schrift(14f, kursiv: true))
@@ -2786,6 +2818,13 @@ namespace WindowsFormsApplication1
                         Text(zm, ersatzText, f, Farbrolle.TEXT, links + 30f, ky - 1f);
                 });
             }
+            // Die Reihen stehen im Modell, ohne Zeichnung — „CSV…“ schreibt sie je Jahr der Tafel.
+            for (int i = 0; i < gueltig.Count; i++)
+            {
+                var werte = new double[n];
+                for (int t = 0; t < n; t++) werte[t] = Zahlungsbetrag(gueltig[i], t);
+                z.FuegeReihe(new Datenreihe(gueltig[i].Name ?? "", farben[i].Ton(), 0f, null, werte, Einheit: "€"));
+            }
             return z;
         }
 
@@ -3081,7 +3120,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
                     110f, 76f, W - 30f);
 
             // Vorzeichenfaehige Skala mit "schoenen" Stufen (5 Rasterlinien) -
@@ -3140,7 +3179,7 @@ namespace WindowsFormsApplication1
                     }
                 });
             }
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt, true));
 
             using (var f = Schrift(15f))
             {
@@ -3196,7 +3235,7 @@ namespace WindowsFormsApplication1
                 }
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     Linienzug(zr, punkte.ToArray(),
-                              Stift(r.Farbe, staerke, null, Strichverbindung.Rund)));
+                              Stift(Ton(r), staerke, null, Strichverbindung.Rund)));
 
                 // DG-E2-2: dieselbe Reihe zusaetzlich in DATENWERTEN, ungekuerzt. Der
                 // Pixelpfad darueber bleibt dem PNG; der SVG-Weg zeichnet aus dieser
@@ -3417,8 +3456,12 @@ namespace WindowsFormsApplication1
                                             temperaturen, yTitel));
             }
 
-            Legende(z, gueltig.Select(r => new Segment(
-                        r.Vorlauf.ToString(Zahlkultur) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
+            // Das Farbfeld nimmt DIESELBE Serienrolle wie die Linie darüber - über die
+            // Rückwärtssuche fände C_SERIEN[0] die wertgleiche BHKW-Rolle, und eine eigene
+            // Farbe der Serie 1 erreichte die Legende nie.
+            Legende(z, gueltig.Select((r, i) => new Segment(
+                        r.Vorlauf.ToString(Zahlkultur) + "°C", 0, C_SERIEN[i % C_SERIEN.Length])
+                        { Ton = Farbton.Aus(Serienrolle(i)) })
                     .ToList(), 90f, H - 96f, W - 30f);
             return z;
         }
@@ -3650,6 +3693,11 @@ namespace WindowsFormsApplication1
                              rc.Bottom + 8f));
                 }
 
+            // Die Reihe steht im Modell, ohne Zeichnung — „CSV…“ schreibt die zwölf Monatswerte.
+            var monatswerte = new double[12];
+            Array.Copy(werte, monatswerte, 12);
+            z.FuegeReihe(new Datenreihe(titel ?? "", ton, 0f, null, monatswerte,
+                                        Einheit: string.IsNullOrEmpty(einheit) ? null : einheit));
             return z;
         }
 
@@ -3696,9 +3744,20 @@ namespace WindowsFormsApplication1
         /// <para><b>Eine Reihe, eine Fläche mit Randlinie</b> (DG-E3-2): Füllung in
         /// <c>C_PROFILFLAECHE</c>, Rand in <c>C_PROFILLINIE</c> mit Stärke 2 — dieselben
         /// zwei Farben, die das PNG zieht.</para>
+        ///
+        /// <para><b>Ein nicht endlicher Wert ist eine LÜCKE</b> (Welle K4, Befund B12): „aus" einer
+        /// Kalenderwoche kommt als NaN. Die Fläche und ihre Randlinie brechen dort ab — je
+        /// zusammenhängendem Stück eine Fläche (ab dem linken Rand seines ersten Fachs) und eine
+        /// Linie; die Datenreihe trägt die NaN weiter, der SVG-Weg zeichnet je Stück einen
+        /// geschlossenen Teilpfad. Früher setzte <c>Math.Max(0, NaN)</c> einen NaN-Bildpunkt ab.
+        /// <b>Ohne Lücke bleibt das Bild bitgleich</b> — derselbe Rumpf wie zuvor.</para>
         /// </summary>
+        /// <param name="einheit">Die Einheit der Werte für die Zeigerzeile
+        /// (<see cref="Datenreihe.Einheit"/>), etwa „°C", „1/h" oder „%" je Größe der Kalenderkarte;
+        /// <c>null</c> = keine (der Bestand, das PNG ist ohnehin gleich).</param>
         public static Zeichenmodell StundenprofilModell(string titel, double[] werte, int intervall,
-                                                        string xTitel, string yTitel)
+                                                        string xTitel, string yTitel,
+                                                        string einheit = null)
         {
             int W = 1244, H = 464;
             var z = Modell(W, H);
@@ -3714,8 +3773,9 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
+            // Eine Luecke (K4) zaehlt nicht mit: +unendlich machte die Achse unbrauchbar.
             double maxWert = 0;
-            foreach (double w in werte) if (w > maxWert) maxWert = w;
+            foreach (double w in werte) if (Endlich(w) && w > maxWert) maxWert = w;
             double max = (maxWert > 0 ? maxWert : 1) * 1.1;
 
             // y-Raster in fünf Stufen; die Zahlen tragen so viele Stellen, wie der
@@ -3766,37 +3826,83 @@ namespace WindowsFormsApplication1
                                            new Datenfenster(0, werte.Length, 0, max),
                                            Achsenart.Index);
 
-            // Die Fläche: ein Punkt je Wert, am rechten Rand seines Fachs — Stunde n
-            // steht für das Intervall (n-1, n], wie im Vorläufer.
-            var punkte = new SKPoint[werte.Length];
-            for (int i = 0; i < werte.Length; i++)
-            {
-                float x = rc.Left + (float)(i + 1) / werte.Length * rc.Width;
-                float y = (float)(rc.Bottom - Math.Max(0, werte[i]) / max * rc.Height);
-                punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
-            }
-
-            var flaechenzug = new SKPoint[punkte.Length + 3];
-            flaechenzug[0] = new SKPoint(rc.Left, rc.Bottom);
-            flaechenzug[1] = new SKPoint(rc.Left, punkte[0].Y);
-            Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
-            flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
-
             // Das Bild nennt die Reihe nicht (es fuehrt keine Legende); ihr Name ist
             // deshalb die Beschriftung der y-Achse - sie benennt die Groesse.
             string name = string.IsNullOrEmpty(yTitel) ? (titel ?? "") : yTitel;
-            z.Markiert("reihe:" + name, zr =>
+
+            if (werte.All(Endlich))
             {
-                Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
-                Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
-            });
+                // Die Fläche: ein Punkt je Wert, am rechten Rand seines Fachs — Stunde n
+                // steht für das Intervall (n-1, n], wie im Vorläufer.
+                var punkte = new SKPoint[werte.Length];
+                for (int i = 0; i < werte.Length; i++)
+                {
+                    float x = rc.Left + (float)(i + 1) / werte.Length * rc.Width;
+                    float y = (float)(rc.Bottom - Math.Max(0, werte[i]) / max * rc.Height);
+                    punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                }
+
+                var flaechenzug = new SKPoint[punkte.Length + 3];
+                flaechenzug[0] = new SKPoint(rc.Left, rc.Bottom);
+                flaechenzug[1] = new SKPoint(rc.Left, punkte[0].Y);
+                Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
+                flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
+
+                z.Markiert("reihe:" + name, zr =>
+                {
+                    Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
+                    Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
+                });
+            }
+            else
+            {
+                // WELLE K4 (B12): Je zusammenhaengendem Stueck endlicher Werte eine Flaeche
+                // und eine Linie - dieselben Formeln wie oben; die Flaeche beginnt am LINKEN
+                // Rand des ersten Fachs des Stuecks (fuer das erste Stueck ab Stunde 0 ist
+                // das rc.Left, wie oben).
+                var stuecke = new List<(SKPoint[] Flaechenzug, SKPoint[] Punkte)>();
+                int n = werte.Length;
+                int i = 0;
+                while (i < n)
+                {
+                    while (i < n && !Endlich(werte[i])) i++;
+                    if (i >= n) break;
+                    int anfang = i;
+                    while (i < n && Endlich(werte[i])) i++;
+
+                    var punkte = new SKPoint[i - anfang];
+                    for (int k = anfang; k < i; k++)
+                    {
+                        float x = rc.Left + (float)(k + 1) / n * rc.Width;
+                        float y = (float)(rc.Bottom - Math.Max(0, werte[k]) / max * rc.Height);
+                        punkte[k - anfang] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                    }
+                    float links = rc.Left + (float)anfang / n * rc.Width;
+                    var flaechenzug = new SKPoint[punkte.Length + 3];
+                    flaechenzug[0] = new SKPoint(links, rc.Bottom);
+                    flaechenzug[1] = new SKPoint(links, punkte[0].Y);
+                    Array.Copy(punkte, 0, flaechenzug, 2, punkte.Length);
+                    flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
+                    stuecke.Add((flaechenzug, punkte));
+                }
+
+                z.Markiert("reihe:" + name, zr =>
+                {
+                    foreach ((SKPoint[] flaechenzug, SKPoint[] punkte) in stuecke)
+                    {
+                        Vieleck(zr, flaechenzug, Flaeche(C_PROFILFLAECHE));
+                        Linienzug(zr, punkte, Stift(C_PROFILLINIE, 2f, null, Strichverbindung.Rund));
+                    }
+                });
+            }
 
             // EINE Datenreihe fuer beides (DG-E3-2): Fuellung, Randfarbe, Randstaerke.
             // Ihr Fenster beginnt bei 1 - der erste Wert steht am rechten Rand des
-            // ersten Fachs.
+            // ersten Fachs. Eine Luecke traegt sie als NaN weiter; der SVG-Weg bricht
+            // die Flaeche dort (SvgSchreiber.Flaechenzug).
             z.FuegeReihe(new Datenreihe(name, C_PROFILFLAECHE.Ton(), 2f, null, werte,
                                         new Datenfenster(1, werte.Length, 0, max),
-                                        Reihenart.Flaeche, null, C_PROFILLINIE.Ton()));
+                                        Reihenart.Flaeche, null, C_PROFILLINIE.Ton(), null, einheit));
 
             return z;
         }
@@ -3874,7 +3980,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r, r.Strichart)).ToList(),
                     100f, legendeY, W - 30f);
 
             int n = gueltig[0].Werte.Length;
@@ -4087,7 +4193,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, eintraege.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(), 100f, legendeY, W - 30f);
+            Legende(z, eintraege.Select(r => Eintrag(r, r.Strichart)).ToList(), 100f, legendeY, W - 30f);
 
             // --- x-Stellen: die übergebenen (aufsteigend, endlich, gleich lang) oder der Index ---
             bool eigeneX = xWerte != null && xWerte.Length == n
@@ -4393,7 +4499,7 @@ namespace WindowsFormsApplication1
                         }
                 });
             }
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt, true));
 
             using (var f = Schrift(15f))
                 z.Markiert("yachse", zy =>
@@ -4565,26 +4671,59 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Gestapelte Bedarfsarten.</b> Reihen mit
         /// <see cref="Stapelart.Flaeche"/> sind SUMMANDEN: In der Ganglinie liegen sie als
-        /// kumulierte Flächen übereinander, in ihrer Listenfolge von unten nach oben —
-        /// die Oberkante ist ihre Summe je Stunde. Alle übrigen Reihen bleiben Linien und
-        /// liegen UNTER dem Stapel wie die Kontur im Erzeugerstapel: Die Summenlinie steht
-        /// als Rand auf seiner Oberkante. Eine
+        /// kumulierte, DECKENDE Flächen übereinander, in ihrer Listenfolge von unten nach
+        /// oben — die Oberkante ist ihre Summe je Stunde. Alle übrigen Reihen bleiben
+        /// Linien und liegen UNTER dem Stapel wie die Kontur im Erzeugerstapel: Der
+        /// deckende Stapel verbirgt sie bis auf die halbe Strichbreite über seiner
+        /// Oberkante — die Summenlinie ist ein schmaler Rand obenauf und steht nur dort
+        /// frei, wo Schichten abgewählt sind. Führen die Reihen mehr Werte, als die Fläche
+        /// Bildpunktspalten hat, gilt die Stufenregel des Stapels
+        /// (<see cref="Pfadregel.Stufen"/>): Schichten und Linien zeichnen je Stufe — im
+        /// Jahresbild je Tag — ihren Wert in der SPITZENSTUNDE der Summenlinie (ohne Linie:
+        /// der Stapeloberkante, <see cref="Datenreihe.Bezug"/>), die Linien als
+        /// <see cref="Datenreihe.Huelle"/>; unter der Achse steht dazu ein Hinweis. Eine
         /// Flächenschicht trägt im Modell ihre Oberkante als <c>Werte</c> und die Summe
         /// darunter als <c>Unten</c> — dieselbe Form wie im Erzeugerstapel. In der
         /// Dauerlinie wird NICHT gestapelt: Jede Reihe ist dort für sich sortiert, eine
         /// Summe aus sortierten Reihen wäre frei erfunden (dieselbe Regel wie
         /// <see cref="ErzeugerStapelModell"/>). Ohne Flächenreihe bleibt das Bild
         /// byte-gleich.</para>
+        ///
+        /// <para><b>Die Zeichenfläche in Behältergröße</b> (DZ1‑N2): Mit
+        /// <paramref name="breite"/> und <paramref name="hoehe"/> entsteht das Modell in
+        /// genau dieser Größe — die Oberfläche zeichnet es 1:1, Achsen und Schrift bleiben
+        /// unverzerrt. Unter <see cref="KOMPAKT_HOEHE"/> steht es kompakt: kein Titel (der
+        /// Name steht über dem Bild), Achsentitel und Legende in einer Kopfzeile, die
+        /// Prozentachse bei weniger als <see cref="PROZENT_FEIN_AB"/> Bildpunkten Höhe in
+        /// 50‑%-Schritten. Ohne Maß (Vorgabe <c>0</c>) bleibt das Bild 1 240 × 560 und
+        /// byte-gleich.</para>
         /// </summary>
+        /// <param name="breite">Breite der Zeichenfläche in px; <c>0</c> = 1 240.</param>
+        /// <param name="hoehe">Höhe der Zeichenfläche in px; <c>0</c> = 560.</param>
         public static Zeichenmodell GanglinieNormiertModell(string titel, IReadOnlyList<Reihe> reihen,
                                                             string yTitel, Achse achse, bool sortiert,
                                                             Achsenfenster fenster = null,
-                                                            double bezugswert = 0)
+                                                            double bezugswert = 0,
+                                                            int breite = 0, int hoehe = 0)
         {
-            int W = 1240, H = 560;
+            bool mitMass = breite > 0 && hoehe > 0;
+            int W = mitMass ? Math.Max(breite, MASS_MIN_BREITE) : 1240;
+            int H = mitMass ? Math.Max(hoehe, MASS_MIN_HOEHE) : 560;
+            bool kompakt = mitMass && H < KOMPAKT_HOEHE;
+            // R1: im Behältermaß die Schrift der Oberfläche, die Abstände im selben Maßstab.
+            Behaeltersatz satz = !mitMass ? null
+                : new Behaeltersatz(kompakt ? Behaeltersatz.PUNKT_KOMPAKT : Behaeltersatz.PUNKT_DIALOG);
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
-            var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
+            if (!kompakt)
+            {
+                if (satz == null) z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
+                else z.Markiert("titel", zt =>
+                {
+                    using (var f = Schrift(satz, 22f, fett: true))
+                        Text(zt, titel ?? "", f, Farbrolle.STAMM, Px(satz, 24f), Px(satz, 16f));
+                });
+            }
+            var rc = SKRect.Create(Px(satz, 100f), Px(satz, 110f), W - Px(satz, 140f), H - Px(satz, 200f));
 
             List<Reihe> ganz = Brauchbare(reihen);
             List<Reihe> gueltig = fenster == null
@@ -4592,12 +4731,25 @@ namespace WindowsFormsApplication1
                 : Brauchbare(Zugeschnitten(ganz, fenster));
             if (gueltig.Count == 0)
             {
-                z.Markiert("leerhinweis", zl => Leerhinweis(zl, rc));
+                z.Markiert("leerhinweis", zl => Leerhinweis(zl, rc, satz));
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
-                    100f, 66f, W - 30f);
+            if (kompakt)
+            {
+                // Kopfzeile: Achsentitel links, Legende rechts daneben; die Fläche darunter.
+                float legendeX;
+                using (var f = Schrift(satz, 15f)) legendeX = rc.Left + f.MeasureText(yTitel ?? "") + Px(satz, 24f);
+                float legende = Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
+                                        legendeX, Px(satz, 4f), W - Px(satz, 30f), satz);
+                float oben = Px(satz, KOMPAKT_OBEN) + (legende - Px(satz, LEGENDE_ZEILE));
+                bool mitStufe = !sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
+                float unten = Px(satz, mitStufe ? KOMPAKT_UNTEN + 20f : KOMPAKT_UNTEN);
+                rc = SKRect.Create(Px(satz, 100f), oben, W - Px(satz, 140f), Math.Max(20f, H - oben - unten));
+            }
+            else
+                Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
+                        Px(satz, 100f), Px(satz, 66f), W - Px(satz, 30f), satz);
 
             // Der gemeinsame Bezugswert (siehe Kopf) — aus der GANZEN Reihe, damit
             // 100 % im Ausschnitt dasselbe heisst wie in der Vollansicht.
@@ -4610,13 +4762,14 @@ namespace WindowsFormsApplication1
             if (bezugswert > bezug && !double.IsInfinity(bezugswert)) bezug = bezugswert;
             if (bezug <= 0) bezug = 1;
 
-            z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc));
+            int prozentSchritt = rc.Height < PROZENT_FEIN_AB ? 50 : 20;
+            z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc, prozentSchritt, satz));
             Achsenkreuz(z, rc);
-            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, gueltig[0].Werte.Length));
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, ganz[0].Werte.Length));
-            using (var f = Schrift(15f))
+            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, gueltig[0].Werte.Length, !sortiert, satz));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, ganz[0].Werte.Length, !sortiert, satz));
+            using (var f = Schrift(satz, 15f))
                 z.Markiert("yachse", zy =>
-                    Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
+                    Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - Px(satz, 24f)));
 
             // DIE ZEICHENFLAECHE: x die Stuetzstellen des Bildes, y die Prozentachse.
             double xVon = fenster == null ? 0.0
@@ -4629,33 +4782,73 @@ namespace WindowsFormsApplication1
             // DIE LINIEN ZUERST, DER STAPEL DARÜBER (siehe Kopf) — dieselbe Zeichenlage
             // wie die Kontur im Erzeugerstapel: Die Summenlinie ist die Oberkante des
             // Stapels; über ihm gezeichnet deckte ihr Stundenzickzack die oberste Schicht
-            // zu. Unter ihm steht sie als Rand auf der Oberkante und bleibt ganz sichtbar,
-            // sobald eine Schicht abgewählt ist.
+            // zu. Unter dem DECKENDEN Stapel bleibt von ihr nur die halbe Strichbreite
+            // über der Oberkante stehen — ein schmaler Rand —, und ganz sichtbar ist sie
+            // nur, wo eine Schicht abgewählt ist. Bei dichten Reihen zeichnet sie dafür
+            // dieselbe Treppe in den Spitzenstunden wie die Oberkante (Huelle); roh
+            // füllte ihr Zickzack je Bildpunktspalte die ganze Spanne und schien durch.
             bool stapeln = !sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
+            // Das Tagesraster der Stufenregel steht auf dem Jahresanfang: die Laenge der
+            // GANZEN Reihe und der Beginn des Ausschnitts.
+            int gesamtN = ganz.Max(r => r.Werte.Length);
+            int abN = (int)xVon;
 
+            // Die Linien in Prozent - einmal gerechnet, weil die Summenlinie zugleich die
+            // BEZUGSGROESSE der Stufenregel ist.
+            var linien = new List<(Reihe Reihe, double[] Prozent)>();
             foreach (Reihe r in gueltig)
             {
                 if (stapeln && r.Stapelgruppe == Stapelart.Flaeche) continue;
                 double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
-                double[] prozent = Normiert(werte, bezug);
+                linien.Add((r, Normiert(werte, bezug)));
+            }
+
+            // DIE SPITZENSTUNDE JE STUFE (Stufenregel des Stapels): Bei dichten Reihen
+            // zeigen alle Schichten und Linien je Stufe - im Jahresbild je Tag - ihren Wert
+            // in der Stunde, in der die Summenlinie (die Bedarfslinie, sonst die erste
+            // Linie) ihre Stufenspitze hat; ohne Linie die Oberkante des Stapels. So bleibt
+            // der Stapel additiv, und seine Oberkante trifft die Summe.
+            List<Reihe> stapel = null;
+            double[] stapelbezug = null;
+            if (stapeln)
+            {
+                stapel = gueltig.Where(r => r.Stapelgruppe == Stapelart.Flaeche)
+                                .Select(r => Mit(r, Normiert(r.Werte, bezug)))
+                                .ToList();
+                (Reihe Reihe, double[] Prozent) summenlinie =
+                    linien.FirstOrDefault(l => Traegt(l.Reihe, Farbrolle.BEDARF, C_BEDARF));
+                if (summenlinie.Reihe == null && linien.Count > 0) summenlinie = linien[0];
+                stapelbezug = summenlinie.Reihe != null
+                    ? summenlinie.Prozent
+                    : Stapeloberkante(stapel, Stapelart.Flaeche, stapel.Max(r => r.Werte.Length));
+            }
+
+            foreach ((Reihe r, double[] prozent) in linien)
+            {
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    ZeichneLinie(zr, rc, prozent, 0, Y_PROZENT_MAX, r.Farbe, staerke));
+                {
+                    if (stapeln) ZeichneHuelle(zr, rc, prozent, 0, Y_PROZENT_MAX, Ton(r), staerke, gesamtN, abN, stapelbezug);
+                    else ZeichneLinie(zr, rc, prozent, 0, Y_PROZENT_MAX, Ton(r), staerke);
+                });
 
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, prozent,
                                             new Datenfenster(xVon, xVon + prozent.Length - 1,
-                                                             0, Y_PROZENT_MAX)));
+                                                             0, Y_PROZENT_MAX),
+                                            Huelle: stapeln, Bezug: stapeln ? stapelbezug : null));
             }
 
             if (stapeln)
             {
-                List<Reihe> stapel = gueltig.Where(r => r.Stapelgruppe == Stapelart.Flaeche)
-                                            .Select(r => Mit(r, Normiert(r.Werte, bezug)))
-                                            .ToList();
                 int n = stapel.Max(r => r.Werte.Length);
                 StapelZeichnen(z, rc, stapel, Stapelart.Flaeche, n, Y_PROZENT_MAX, 0f, 1f,
-                               (byte)210, z,
-                               new Datenfenster(xVon, xVon + n - 1, 0, Y_PROZENT_MAX));
+                               STAPEL_DECKEND, z,
+                               new Datenfenster(xVon, xVon + n - 1, 0, Y_PROZENT_MAX),
+                               gesamtN, abN, bezug: stapelbezug);
+                // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
+                // sagt welche (nur bei dichten Reihen).
+                bool hinweisUnterDatum = DatumUnterMarken(fenster, achse, sortiert, gesamtN);
+                z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamtN, n, hinweisUnterDatum, satz));
             }
 
             return z;
@@ -4663,6 +4856,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Obergrenze der Prozentachse — woertlich aus <c>init_Chart</c> :3378.</summary>
         private const double Y_PROZENT_MAX = 100.2;
+
+        /// <summary>Unter dieser Höhe [px] steht die Ganglinie mit Maß kompakt (ohne Titel, Kopfzeile).</summary>
+        public const int KOMPAKT_HOEHE = 400;
+
+        /// <summary>Kleinste Zeichenfläche mit Maß [px] — darunter wird nicht verkleinert.</summary>
+        public const int MASS_MIN_BREITE = 320, MASS_MIN_HOEHE = 120;
+
+        /// <summary>Oberkante der Fläche in der Kompaktform [px]: Kopfzeile mit Achsentitel und Legende.</summary>
+        private const float KOMPAKT_OBEN = 30f;
+
+        /// <summary>Platz unter der Fläche in der Kompaktform [px]: Marken (+8) und x-Achsentitel (+30).</summary>
+        private const float KOMPAKT_UNTEN = 50f;
+
+        /// <summary>Unter dieser Flächenhöhe [px] teilt die Prozentachse in 50‑%-Schritten statt 20 %.</summary>
+        private const float PROZENT_FEIN_AB = 120f;
 
         // ------------------------------------------------------------------ B2 / B3
 
@@ -4677,11 +4885,23 @@ namespace WindowsFormsApplication1
         /// <c>NavigatorWaerme.SerienAufbauen</c> :587-635):</para>
         /// <list type="number">
         ///   <item>Die KONTUR („Gesamt") liegt UNTER dem Stapel — sie ist die Summe und
-        ///   darf ihn nicht ueberdecken.</item>
-        ///   <item>Der STAPEL in Kaskadenreihenfolge, von unten nach oben.</item>
+        ///   darf ihn nicht ueberdecken. Unter den DECKENDEN Schichten bleibt von ihr die
+        ///   halbe Strichbreite als Rand ueber der Oberkante stehen.</item>
+        ///   <item>Der STAPEL in Kaskadenreihenfolge, von unten nach oben; jede Schicht
+        ///   deckt.</item>
         ///   <item>Die LINIEN darueber, in ihrer Listenreihenfolge — die letzte liegt
         ///   ganz oben (im Bestand ist das der Waermebedarf).</item>
         /// </list>
+        ///
+        /// <para><b>Dichte Reihen (Stufenregel des Stapels, <see cref="Pfadregel.Stufen"/>).</b>
+        /// Fuehren die Reihen mehr Werte, als die Flaeche Bildpunktspalten hat, zeichnen
+        /// Schichten, Kontur und Linien je Stufe — im Jahresbild je Tag — ihren Wert in EINER
+        /// Stunde, der Spitzenstunde der Bezugsgroesse (<see cref="Datenreihe.Bezug"/>: die
+        /// Bedarfslinie, sonst die Kontur, sonst die Oberkante des Stapels): Die Schichten
+        /// sind geschlossene Baender, die sich je Stufe zur Oberkante summieren, Kontur und
+        /// Linien liegen als Kante auf ihnen (<see cref="Datenreihe.Huelle"/>), statt je
+        /// Bildpunktspalte die ganze Spanne ihres Stundenzickzacks zu fuellen; unter der
+        /// Achse steht dazu ein Hinweis. Die Reihen der zweiten Achse bleiben Linien.</para>
         ///
         /// <para><b>Sortiert wird NICHT gestapelt</b> (<c>GanglinienDarstellung.Stapeltyp</c>):
         /// In der Dauerlinie ist jede Reihe fuer sich sortiert, eine Summe daraus waere
@@ -4701,8 +4921,9 @@ namespace WindowsFormsApplication1
         /// gelten (Anwenderbefund: Bild „Waermelast Jahresganglinie" der Waermepumpe).
         /// Jetzt nur noch nebeneinander, wenn die Achse keine Stundenachse ist UND die
         /// Reihen wenige Stuetzstellen haben; sonst liegen beide Gruppen UEBEREINANDER
-        /// ueber der vollen Breite, die Saeulengruppe halbtransparent, damit die Flaeche
-        /// darunter sichtbar bleibt (siehe <see cref="StapelZeichnen"/>).</para>
+        /// ueber der vollen Breite, die Saeulengruppe als KANTEN (je Schicht die Oberkante
+        /// ihrer Summe in ihrer Farbe), damit die Flaeche darunter sichtbar bleibt und sich
+        /// keine Mischfarbe bildet (siehe <see cref="StapelZeichnen"/>).</para>
         /// </summary>
         /// <param name="titel">Ueberschrift.</param>
         /// <param name="stapel">Die gestapelten Reihen in Kaskadenreihenfolge.</param>
@@ -4798,10 +5019,10 @@ namespace WindowsFormsApplication1
             // Legende: Kontur zuerst (sie steht im Bestand als erste Serie), dann der
             // Stapel, dann die Linien, zuletzt die Reihen der zweiten Achse.
             var leg = new List<Segment>();
-            if (mitKontur) leg.Add(new Segment(kontur.Name, 0, kontur.Farbe));
-            leg.AddRange(stapelG.Select(r => new Segment(r.Name, 0, r.Farbe)));
-            leg.AddRange(linienG.Select(r => new Segment(r.Name, 0, r.Farbe)));
-            leg.AddRange(y2G.Select(r => new Segment(r.Name, 0, r.Farbe)));
+            if (mitKontur) leg.Add(Eintrag(kontur));
+            leg.AddRange(stapelG.Select(r => Eintrag(r)));
+            leg.AddRange(linienG.Select(r => Eintrag(r)));
+            leg.AddRange(y2G.Select(r => Eintrag(r)));
 
             // AUFTRAG #240: DIE LEGENDE MACHT SICH SELBST PLATZ - dasselbe Muster
             // wie in Verlaufsbild (W11b-B-28). Ein Waermebild mit zwei Speichern,
@@ -4844,8 +5065,8 @@ namespace WindowsFormsApplication1
 
             z.Markiert("yachse", zy => YRasterOhneKreuz(zy, rc, max));
             Achsenkreuz(z, rc);
-            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, n));
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
+            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, n, !sortiert));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt, !sortiert));
             using (var f = Schrift(15f))
                 z.Markiert("yachse", zy =>
                     Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
@@ -4856,16 +5077,48 @@ namespace WindowsFormsApplication1
             z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks,
                                            Zeitachsenart(sortiert));
 
-            // (1) Kontur UNTER dem Stapel.
+            // Steht ein Stapel im Bild, begleiten ihn Kontur und Linien: Bei dichten
+            // Reihen zeichnen sie die Treppe ihrer Werte in den Spitzenstunden (Huelle),
+            // derselben Stunde je Stufe wie die Schichten - roh fuellte jede je
+            // Bildpunktspalte die ganze Spanne ihres Zickzacks und deckte die Schichten zu.
+            // In der Dauerlinie gibt es keinen Stapel; dort bleiben alle Reihen Linien.
+            bool mitStapel = !sortiert && stapelG.Count > 0;
+            int abN = (int)xVon;
+
+            // DIE SPITZENSTUNDE JE STUFE (Stufenregel des Stapels): Bei dichten Reihen
+            // zeigen alle Schichten, Kanten, die Kontur und die Linien je Stufe - im
+            // Jahresbild je Tag - ihren Wert in EINER Stunde: der, in der die BEZUGSGROESSE
+            // ihre Stufenspitze hat. Das ist die Bedarfslinie, sonst die Kontur (die Summe),
+            // sonst die Oberkante des Stapels - bei zwei ueberlagerten Gruppen die der
+            // Flaechengruppe, des Bedarfs. So bleibt der Stapel additiv; je Schicht der eigene
+            // Hoechstwert zeigte einen taktenden Erzeuger als Band auf Nennleistung.
+            double[] stapelbezug = null;
+            if (mitStapel)
+            {
+                Reihe bedarfslinie = linienG.FirstOrDefault(r => Traegt(r, Farbrolle.BEDARF, C_BEDARF));
+                Stapelart bezugsgruppe = stapelG.Any(r => r.Stapelgruppe == Stapelart.Flaeche) ? Stapelart.Flaeche
+                                       : stapelG.Any(r => r.Stapelgruppe == Stapelart.Saeule) ? Stapelart.Saeule
+                                       : Stapelart.Keine;
+                stapelbezug = bedarfslinie != null ? bedarfslinie.Werte
+                            : mitKontur ? kontur.Werte
+                            : Stapeloberkante(stapelG, bezugsgruppe, n);
+            }
+
+            // (1) Kontur UNTER dem Stapel — unter den DECKENDEN Schichten bleibt von ihr
+            // die halbe Strichbreite als Rand über der Oberkante stehen.
             if (mitKontur)
             {
                 double[] konturwerte = sortiert ? AbsteigendKopie(kontur.Werte) : kontur.Werte;
                 float konturstaerke = kontur.Breite > 0 ? kontur.Breite : 4f;
                 z.Markiert("reihe:" + (kontur.Name ?? ""), zr =>
-                    ZeichneLinie(zr, rc, konturwerte, 0, max, kontur.Farbe, konturstaerke));
+                {
+                    if (mitStapel) ZeichneHuelle(zr, rc, konturwerte, 0, max, Ton(kontur), konturstaerke, gesamt, abN, stapelbezug);
+                    else ZeichneLinie(zr, rc, konturwerte, 0, max, Ton(kontur), konturstaerke);
+                });
                 z.FuegeReihe(new Datenreihe(kontur.Name ?? "", Ton(kontur), konturstaerke,
                                             null, konturwerte,
-                                            Reihenfenster(fensterLinks, konturwerte.Length)));
+                                            Reihenfenster(fensterLinks, konturwerte.Length),
+                                            Huelle: mitStapel, Bezug: stapelbezug));
             }
 
             // (2) Der Stapel.
@@ -4877,7 +5130,7 @@ namespace WindowsFormsApplication1
                     double[] werte = AbsteigendKopie(r.Werte);
                     float staerke = r.Breite > 0 ? r.Breite : 4f;
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                        ZeichneLinie(zr, rc, werte, 0, max, r.Farbe, staerke));
+                        ZeichneLinie(zr, rc, werte, 0, max, Ton(r), staerke));
                     z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                                 Reihenfenster(fensterLinks, werte.Length)));
                 }
@@ -4898,29 +5151,45 @@ namespace WindowsFormsApplication1
                 bool nebeneinander = zweiGruppen && achse != Achse.Jahresstunden &&
                                      n <= NEBENEINANDER_GRENZE;
 
+                // Jede Schicht DECKT: Unter ihr liegen Raster und Kontur, und beide
+                // schienen bei 210 (und bei 150 fuer eine Saeulengruppe allein) durch.
                 StapelZeichnen(z, rc, stapelG, Stapelart.Flaeche, n, max,
                                nebeneinander ? -0.22f : 0f, nebeneinander ? 0.5f : 1f,
-                               (byte)210, z, fensterLinks);
-                // Ueberlagert (nicht nebeneinander): die Saeulengruppe (Produktion)
-                // HALBTRANSPARENT ueber der Flaeche (Bedarf), damit der Bedarf darunter
-                // sichtbar bleibt.
+                               STAPEL_DECKEND, z, fensterLinks, gesamt, abN, bezug: stapelbezug);
+                // Ueberlagert (nicht nebeneinander): Die Saeulengruppe (Produktion) liegt
+                // ueber der Flaeche (Bedarf), und beide meinen dieselben Stunden. Als
+                // halbtransparente Flaeche mischte sie sich mit dem Bedarf zu Farben, die
+                // in keiner Legende stehen; sie steht deshalb als KANTEN darueber - je
+                // Schicht die Oberkante ihrer Summe in ihrer Farbe, der Bedarf darunter
+                // bleibt deckend sichtbar. Steht die Saeulengruppe allein, deckt sie.
+                bool ueberlagert = zweiGruppen && !nebeneinander;
                 StapelZeichnen(z, rc, stapelG, Stapelart.Saeule, n, max,
                                nebeneinander ? 0.22f : 0f, nebeneinander ? 0.5f : 1f,
-                               nebeneinander ? (byte)210 : (byte)150, z, fensterLinks);
+                               STAPEL_DECKEND, z, fensterLinks, gesamt, abN,
+                               alsKanten: ueberlagert, bezug: stapelbezug);
                 // Reihen ohne ausdrueckliche Gruppe bilden den gemeinsamen Stapel.
                 StapelZeichnen(z, rc, stapelG, Stapelart.Keine, n, max, 0f, 1f,
-                               (byte)210, z, fensterLinks);
+                               STAPEL_DECKEND, z, fensterLinks, gesamt, abN, bezug: stapelbezug);
+                // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
+                // sagt welche (nur mit Stapel, bei dichten Reihen und ueber die volle Breite).
+                bool hinweisUnterDatum = DatumUnterMarken(fenster, achse, sortiert, gesamt);
+                if (mitStapel && !nebeneinander) z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamt, n, hinweisUnterDatum));
             }
 
-            // (3) Die Linien darueber, in Zeichenreihenfolge.
+            // (3) Die Linien darueber, in Zeichenreihenfolge — ueber einem Stapel als
+            // Huelle (siehe oben): eine Kante auf den Schichten, kein Band ueber ihnen.
             foreach (Reihe r in linienG)
             {
                 double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
                 float staerke = r.Breite > 0 ? r.Breite : 2.5f;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    ZeichneLinie(zr, rc, werte, 0, max, r.Farbe, staerke));
+                {
+                    if (mitStapel) ZeichneHuelle(zr, rc, werte, 0, max, Ton(r), staerke, gesamt, abN, stapelbezug);
+                    else ZeichneLinie(zr, rc, werte, 0, max, Ton(r), staerke);
+                });
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
-                                            Reihenfenster(fensterLinks, werte.Length)));
+                                            Reihenfenster(fensterLinks, werte.Length),
+                                            Huelle: mitStapel, Bezug: stapelbezug));
             }
 
             // (4) B3 — die zweite y-Achse mit EIGENER, GEMEINSAMER Skala.
@@ -4949,7 +5218,7 @@ namespace WindowsFormsApplication1
                     double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
                     float staerke = r.Breite > 0 ? r.Breite : 2f;
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                        ZeichneLinie(zr, rc, werte, 0, max2, r.Farbe, staerke));
+                        ZeichneLinie(zr, rc, werte, 0, max2, Ton(r), staerke));
                     // DG-E3-12: Die Reihe SAGT, dass sie rechts steht — die Oberfläche
                     // muss es nicht mehr aus ihrer y-Spanne erraten.
                     z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
@@ -5003,10 +5272,30 @@ namespace WindowsFormsApplication1
             foreach (Reihe r in stapel)
             {
                 if (r.Stapelgruppe != gruppe) continue;
-                for (int i = 0; i < n && i < r.Werte.Length; i++) summe[i] += Math.Max(r.Werte[i], 0);
+                for (int i = 0; i < n && i < r.Werte.Length; i++) summe[i] += Stapelbeitrag(r.Werte[i]);
             }
             return n > 0 ? summe.Max() : 0;
         }
+
+        /// <summary>
+        /// <b>Der Beitrag eines Werts zur Lage des Stapels</b>: nicht negativ, und eine LÜCKE
+        /// (nicht endlich) trägt nichts bei — die Schichten darüber liegen dort, als fehlte die
+        /// Schicht mit der Lücke; sie selbst zeigt die Lücke als Lücke (<see cref="StapelZeichnen"/>).
+        /// </summary>
+        private static double Stapelbeitrag(double wert) => Endlich(wert) ? Math.Max(wert, 0) : 0.0;
+
+        /// <summary>
+        /// Die Deckung einer Stapelschicht: voll. Eine Schicht ist ein geschlossenes Band;
+        /// was unter ihr liegt (Raster, Kontur, Summenlinie), scheint nicht durch.
+        /// </summary>
+        private const byte STAPEL_DECKEND = 255;
+
+        /// <summary>
+        /// Die Strichstärke der KANTEN einer überlagerten Stapelgruppe (die Produktion über
+        /// dem Bedarf der Wärmepumpenseite, Befund W11b-B-18) — dieselbe wie die Linien über
+        /// einem Stapel.
+        /// </summary>
+        private const float STAPEL_KANTE = 2.5f;
 
         /// <summary>
         /// Zeichnet EINE Stapelgruppe als kumulierte Flaechen.
@@ -5014,9 +5303,10 @@ namespace WindowsFormsApplication1
         /// Zeichenflaeche verschieben und schmaelern die Gruppe, damit zwei Gruppen
         /// nebeneinander stehen koennen. <paramref name="alpha"/> (Windows-Abnahme
         /// 09.09.2026, Befund W11b-B-18): stehen zwei Gruppen stattdessen UEBEREINANDER
-        /// (volle Breite je Gruppe), zeichnet die OBERE Gruppe mit einem niedrigeren Wert
-        /// halbtransparent, damit die untere sichtbar bleibt; die Vorgabe 210 entspricht
-        /// der bisherigen, undurchsichtigeren Flaeche.
+        /// (volle Breite je Gruppe), steht die OBERE Gruppe als Kanten darüber
+        /// (<paramref name="alsKanten"/>), damit die untere sichtbar bleibt; sonst deckt jede
+        /// Schicht (<see cref="STAPEL_DECKEND"/>). Dichte Reihen bündelt
+        /// <see cref="ZeichneFlaeche"/> nach der Stufenregel des Stapels.
         /// </summary>
         /// <param name="modell">
         /// Das Modell, dem die Schichten zusätzlich als <c>Datenreihe</c> beigelegt
@@ -5028,11 +5318,31 @@ namespace WindowsFormsApplication1
         /// Verschiebung, die <paramref name="versatz"/> und <paramref name="breite"/>
         /// im Bild machen (DG-E3-1).
         /// </param>
+        /// <param name="gesamt">Die Länge der GANZEN Reihen (das Tagesraster der
+        /// Stufenregel); <c>0</c> = die gezeichnete Länge.</param>
+        /// <param name="ab">Der erste Index des Ausschnitts in den ganzen Reihen.</param>
+        /// <param name="alsKanten">
+        /// Die Gruppe liegt ÜBER einer anderen (Befund W11b-B-18): Jede Schicht zeichnet
+        /// statt ihrer Fläche die Oberkante ihrer Summe als Hüllkurve in ihrer Farbe
+        /// (<see cref="STAPEL_KANTE"/>). Im Modell ist sie eine <see cref="Reihenart.Linie"/>
+        /// mit <c>Huelle</c> und der Summe darunter als <c>Unten</c> — die Oberfläche nennt
+        /// am Zeiger damit den Beitrag der Schicht. Gezeichnet wird von oben nach unten:
+        /// Wo eine Schicht nichts beiträgt, fällt ihre Kante auf die der Schicht darunter,
+        /// und dort steht die untere obenauf.
+        /// </param>
+        /// <param name="bezug">
+        /// Die Bezugsgröße der Stufenregel (<see cref="Datenreihe.Bezug"/>): Bei dichten
+        /// Reihen zeigt jede Schicht je Stufe ihren Wert in der Spitzenstunde DIESER Reihe —
+        /// dieselbe Stunde für alle Schichten und Linien des Bildes. <c>null</c> = die
+        /// Oberkante jeder Schicht für sich (nur für Reihen, die nie dicht sind).
+        /// </param>
         private static void StapelZeichnen(IZeichenziel z, SKRect rc, List<Reihe> stapel,
                                            Stapelart gruppe, int n, double max,
-                                           float versatz, float breite, byte alpha = 210,
+                                           float versatz, float breite, byte alpha = STAPEL_DECKEND,
                                            Zeichenmodell modell = null,
-                                           Datenfenster fenster = null)
+                                           Datenfenster fenster = null,
+                                           int gesamt = 0, int ab = 0, bool alsKanten = false,
+                                           double[] bezug = null)
         {
             var teil = stapel.Where(r => r.Stapelgruppe == gruppe).ToList();
             if (teil.Count == 0) return;
@@ -5052,25 +5362,120 @@ namespace WindowsFormsApplication1
             }
 
             var unten = new double[n];
+            var kanten = new List<(Reihe Reihe, double[] Oben, double[] Unten)>();
+            var baender = new List<(Reihe Reihe, double[] Oben, double[] Unten)>();
             foreach (Reihe r in teil)
             {
                 var oben = new double[n];
                 for (int i = 0; i < n; i++)
-                    oben[i] = unten[i] + (i < r.Werte.Length ? Math.Max(r.Werte[i], 0) : 0);
+                    oben[i] = unten[i] + (i < r.Werte.Length ? Stapelbeitrag(r.Werte[i]) : 0);
+
+                // EINE LUECKE (Reihe.Luecken, ein nicht endlicher Wert) bleibt Luecke: Die
+                // Oberkante der Schicht ist dort NaN - SVG- und PNG-Weg lassen die Stelle aus,
+                // die Stufenregel die Stufe (Kopf der Stufenregel in Pfadregel) -, die Schichten
+                // darueber liegen auf der Summe ohne sie (Stapelbeitrag). Ohne Luecke ist die
+                // Lage fuer die naechste Schicht genau die Oberkante.
+                double[] lage = oben;
+                for (int i = 0; i < n && i < r.Werte.Length; i++)
+                {
+                    if (Endlich(r.Werte[i])) continue;
+                    if (ReferenceEquals(lage, oben)) oben = (double[])oben.Clone();
+                    oben[i] = double.NaN;
+                }
 
                 double[] unterkante = unten;
-                z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    ZeichneFlaeche(zr, ziel, unterkante, oben, max, r.Farbe, alpha));
+                if (alsKanten)
+                {
+                    kanten.Add((r, oben, unterkante));
+                    unten = lage;
+                    continue;
+                }
+                baender.Add((r, oben, unterkante));
 
                 // DG-E3-2: dieselbe Schicht als FLAECHE in Datenwerten - Oberkante die
                 // Stapelsumme bis hierher, Unterkante die Summe darunter. Die Farbe
-                // traegt dieselbe Deckung wie im Bild.
+                // traegt dieselbe Deckung wie im Bild; eine deckende Schicht traegt den
+                // Ton ihrer Rolle ohne Abwandlung.
                 if (modell != null)
-                    modell.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r, alpha),
+                    modell.FuegeReihe(new Datenreihe(r.Name ?? "",
+                                                     alpha == STAPEL_DECKEND ? Ton(r) : Ton(r, alpha),
                                                      0f, null, oben, gruppenfenster,
-                                                     Reihenart.Flaeche, unterkante));
-                unten = oben;
+                                                     Reihenart.Flaeche, unterkante, Bezug: bezug));
+                unten = lage;
             }
+
+            // DAS BILD (PNG, Druck): Eine DECKENDE Schicht malt von der Achse bis zu ihrer
+            // Oberkante, von der obersten Schicht abwaerts - jede liegt so auf der Farbe der
+            // Schicht darueber und nicht auf dem Hintergrund, und keine zwei Flaechen teilen
+            // eine Kante (sonst schiene entlang der Kante der Hintergrund anteilig durch).
+            // Sichtbar bleibt von jeder genau ihr Band. Die Datenreihen oben tragen weiter
+            // die Baender - die Oberflaeche blendet eine Schicht einzeln aus.
+            var achse = new double[n];
+            for (int k = baender.Count - 1; k >= 0; k--)
+            {
+                (Reihe r, double[] oben, double[] unterkante) = baender[k];
+                double[] boden = alpha == STAPEL_DECKEND ? achse : unterkante;
+                z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                    ZeichneFlaeche(zr, ziel, boden, oben, max, Ton(r, alpha), gesamt, ab, bezug));
+            }
+
+            // Die Kanten einer ueberlagerten Gruppe, von der obersten Schicht abwaerts.
+            for (int k = kanten.Count - 1; k >= 0; k--)
+            {
+                (Reihe r, double[] oben, double[] unterkante) = kanten[k];
+                float staerke = r.Breite > 0 ? r.Breite : STAPEL_KANTE;
+                z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                    ZeichneHuelle(zr, ziel, oben, 0, max, Ton(r), staerke, gesamt, ab, bezug));
+                if (modell != null)
+                    modell.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, oben,
+                                                     gruppenfenster, Reihenart.Linie, unterkante,
+                                                     Huelle: true, Bezug: bezug));
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Oberkante EINER Stapelgruppe</b> je Stützstelle — dieselbe Summe, die
+        /// <see cref="StapelZeichnen"/> Schicht für Schicht aufbaut (negative Werte zählen
+        /// nicht). Sie ist die Bezugsgröße der Stufenregel, wenn das Bild keine Summen- oder
+        /// Bedarfslinie führt.
+        /// </summary>
+        private static double[] Stapeloberkante(List<Reihe> stapel, Stapelart gruppe, int n)
+        {
+            var oben = new double[n];
+            foreach (Reihe r in stapel)
+            {
+                if (r.Stapelgruppe != gruppe) continue;
+                for (int i = 0; i < n; i++)
+                    oben[i] = oben[i] + (i < r.Werte.Length ? Stapelbeitrag(r.Werte[i]) : 0);
+            }
+            return oben;
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis unter dem Achsentitel eines zusammengefassten Stapelbilds.</b> Führen
+        /// die Reihen mehr Werte, als die Fläche Bildpunktspalten hat, zeigt jede Stufe die
+        /// Werte EINER Stunde — der Spitzenstunde der Bezugsgröße (Stufenregel des Stapels);
+        /// der Hinweis sagt das, je Tag oder je Bildpunkt. Ohne Zusammenfassung steht er nicht.
+        /// Er trägt die Marke <c>xachse</c>: Im Ausschnitt zeichnet die Oberfläche Achse und
+        /// Hinweis selbst.
+        /// </summary>
+        /// <param name="gesamt">Die Länge der ganzen Reihe (das Tagesraster); <c>0</c> = <paramref name="n"/>.</param>
+        /// <param name="n">Die gezeichneten Werte.</param>
+        /// <param name="unterDatum">Die Marken tragen eine Datumszeile (<see cref="Zeitachse"/>):
+        /// Achsentitel und Hinweis rücken um diese Zeile tiefer.</param>
+        private static void Stufenhinweis(IZeichenziel z, SKRect rc, int gesamt, int n, bool unterDatum = false,
+                                          Behaeltersatz satz = null)
+        {
+            int spalten = Bildpunktspalten(rc);
+            if (n <= spalten) return;
+            string text = Pfadregel.TagesStufen(gesamt > 0 ? gesamt : n, n, spalten)
+                ? MyResource.Resource.CHART_HINWEIS_STUFE_TAG
+                : MyResource.Resource.CHART_HINWEIS_STUFE_SPALTE;
+            if (string.IsNullOrEmpty(text)) return;
+            using (var f = Schrift(satz, 13f))
+                Text(z, text, f, Farbrolle.ACHSE,
+                     rc.Left + (rc.Width - f.MeasureText(text)) / 2f,
+                     rc.Bottom + Px(satz, 52f) + Px(satz, unterDatum ? DATUMSZEILE_VERSATZ : 0f));
         }
 
         // ------------------------------------------------------------------ B4
@@ -5142,7 +5547,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, Undurchsichtig(r.Farbe))).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
                     100f, 56f, W - 30f);
 
             double xRoh0 = gueltig.Min(r => r.Punkte.Min(p => p.X));
@@ -5198,8 +5603,9 @@ namespace WindowsFormsApplication1
 
             foreach (Punktreihe r in gueltig)
             {
-                // Die Reihenfarbe kommt von AUSSEN und behaelt die Rueckwaertssuche.
-                Zeichnung.Fuellung punkt = Flaeche(r.Farbe);
+                // Die Rolle der Reihe gilt; nur eine Reihe ohne Rolle geht durch die
+                // Rueckwaertssuche.
+                Zeichnung.Fuellung punkt = Flaeche(Ton(r));
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                 {
                     foreach (var p in r.Punkte)
@@ -5232,6 +5638,14 @@ namespace WindowsFormsApplication1
         {
             return new SKColor(f.Red, f.Green, f.Blue);
         }
+
+        /// <summary>
+        /// Der Legendeneintrag einer Punktreihe: das Farbfeld DECKEND — die Deckung der
+        /// Wolke gehört zum Bildaufbau, nicht zur Farbe. Mit Rolle ist es die Rolle mit
+        /// voller Deckung, ohne Rolle <see cref="Undurchsichtig"/> und die Rückwärtssuche.
+        /// </summary>
+        private static Segment Eintrag(Punktreihe r)
+            => new Segment(r.Name, 0, Undurchsichtig(r.Farbe)) { Ton = r.Ton?.MitDeckung(255) };
 
         // ------------------------------------------------------------------ B5
 
@@ -5395,8 +5809,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c).
         ///
-        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche, keine
-        /// <c>Datenreihe</c>. Jede Stapelschicht trägt <c>reihe:&lt;Reihenname&gt;</c>
+        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche; die Reihen stehen
+        /// nur als <c>Datenreihe</c> ohne Zeichnung im Modell, damit „CSV…“ sie schreiben kann
+        /// (<see cref="Saeulenreihen"/>). Jede Stapelschicht trägt <c>reihe:&lt;Reihenname&gt;</c>
         /// — denselben Schlüssel, den der Helfer <see cref="Legende"/> als
         /// <c>legende:&lt;Reihenname&gt;</c> setzt — und als Wert
         /// „Jan · Eigenverbrauch: 1.234 kWh", im Zahlenformat SEINER y-Achse.</para>
@@ -5426,7 +5841,7 @@ namespace WindowsFormsApplication1
 
             // Legende OBEN und ZENTRIERT (Docking.Top, StringAlignment.Center).
             float legendenbreite = Legendenbreite(gueltig);
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+            Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
                     Math.Max(20f, (W - legendenbreite) / 2f), 68f, W - 20f);
 
             var summe = new double[12];
@@ -5465,15 +5880,17 @@ namespace WindowsFormsApplication1
                     if (hoehe <= 0) continue;
                     float oben = unten - hoehe;   // fest fuer die Klammer
                     Reihe rr = r;
-                    // Die Reihenfarbe kommt von AUSSEN und behaelt die Rueckwaertssuche.
+                    // Die Rolle der Reihe gilt; nur eine Reihe ohne Rolle geht durch die
+                    // Rueckwaertssuche.
                     z.Markiert("reihe:" + (r.Name ?? ""),
                                Elementwert(monat + WERT_TRENNER + (r.Name ?? ""),
                                            rr.Werte[im], format, einheit),
-                               zs => zs.Rechteck(x0, oben, balken, hoehe, null, Flaeche(rr.Farbe)));
+                               zs => zs.Rechteck(x0, oben, balken, hoehe, null, Flaeche(Ton(rr))));
                     unten -= hoehe;
                 }
             }
 
+            Saeulenreihen(z, gueltig, 12, einheit);
             return z;
         }
 
@@ -5637,6 +6054,54 @@ namespace WindowsFormsApplication1
             return werte;
         }
 
+        /// <summary>
+        /// <b>RAUMTEMPERATUR UND SOLLWERT — DIE WOCHE MIT DER GRÖSSTEN UNTERSCHREITUNG</b> (Anlagenkopplung AK2,
+        /// Konzept 9.4, E80): Raumluft und Heizsollwert über 168 Stunden als zwei Linien, der Sollwert gestrichelt;
+        /// die gezählten Unterschreitungsstunden stehen als dritte Reihe auf der Raumluft — nur in diesen Stunden,
+        /// sonst Lücke (<see cref="Reihe.Luecken"/>). Gezeichnet wie die <see cref="Raumtemperatur"/>:
+        /// vorzeichenfähige Achse, Mindestspanne 5 K. Eine fehlende Reihe entfällt still; ohne Maske entfällt die
+        /// Markierung.
+        /// </summary>
+        public static byte[] Komfortwoche(string titel, double[] raumluft, double[] sollwert, bool[] unterschreitung,
+                                          Komfortwochennamen namen, Achsenfenster fenster = null)
+            => SkiaMaler.Png(KomfortwocheModell(titel, raumluft, sollwert, unterschreitung, namen, fenster));
+
+        /// <summary>Dasselbe Bild als Zeichenmodell — der Weg der Oberfläche (<c>DiagrammSvg</c>).</summary>
+        public static Zeichenmodell KomfortwocheModell(string titel, double[] raumluft, double[] sollwert,
+                                                       bool[] unterschreitung, Komfortwochennamen namen,
+                                                       Achsenfenster fenster = null)
+        {
+            namen ??= new Komfortwochennamen();
+            var reihen = new List<Reihe>();
+            if (raumluft != null)
+                reihen.Add(new Reihe(namen.Raumluft, raumluft, Farbrolle.SERIE_1));
+            if (sollwert != null)
+                reihen.Add(new Reihe(namen.Sollwert, sollwert, Farbrolle.SERIE_3,
+                                     Stapelart.Keine, Strichart.Gestrichelt));
+            if (raumluft != null && unterschreitung != null && unterschreitung.Any(b => b))
+            {
+                var markiert = new double[raumluft.Length];
+                for (int h = 0; h < markiert.Length; h++)
+                    markiert[h] = h < unterschreitung.Length && unterschreitung[h] ? raumluft[h] : double.NaN;
+                reihen.Add(new Reihe(namen.Unterschreitung, markiert, Farbrolle.SERIE_2) { Luecken = true });
+            }
+            return VerlaufsbildModell(titel, reihen, true, TEMPERATUR_MINDESTSPANNE, fenster,
+                                      yTitel: namen.Achse);
+        }
+
+        /// <summary>Die Legendennamen und der Achsentitel des Bildes „Raumtemperatur und Sollwert" — die Texte reicht der Aufrufer.</summary>
+        public sealed class Komfortwochennamen
+        {
+            /// <summary>Legende der Raumlufttemperatur.</summary>
+            public string Raumluft { get; init; } = "Raumluft";
+            /// <summary>Legende des Heizsollwerts.</summary>
+            public string Sollwert { get; init; } = "Sollwert";
+            /// <summary>Legende der markierten Unterschreitungsstunden.</summary>
+            public string Unterschreitung { get; init; } = "Unterschreitung";
+            /// <summary>Titel der y-Achse; <c>null</c> = keiner.</summary>
+            public string Achse { get; init; } = "°C";
+        }
+
         /// <summary>Die Legendennamen und der Achsentitel des Bildes „Vorlauf und Rücklauf" — die Texte reicht der Aufrufer.</summary>
         public sealed class VorlaufRuecklaufnamen
         {
@@ -5772,8 +6237,8 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            var leg = gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
-            if (mitY2) leg.Add(new Segment(zweiteAchse.Name, 0, zweiteAchse.Farbe));
+            var leg = gueltig.Select(r => Eintrag(r)).ToList();
+            if (mitY2) leg.Add(Eintrag(zweiteAchse));
 
             // W11b-B-28: DIE LEGENDE MACHT SICH SELBST PLATZ. Bei vier Eintraegen
             // (Bezug ohne, Bezug mit, Speicherleistung, Ladezustand) bricht sie in
@@ -5839,8 +6304,8 @@ namespace WindowsFormsApplication1
                         Text(zy, yTitel, f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
 
             int n = mitY1 ? gueltig[0].Werte.Length : zweiteAchse.Werte.Length;
-            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, Achse.Jahresstunden, n));
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
+            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, Achse.Jahresstunden, n, !sortiert));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt, !sortiert));
 
             // DIE ZEICHENFLAECHE SAMT DATENFENSTER DER LINKEN ACHSE (Etappe E3).
             double xVon = fenster == null ? 0.0 : Math.Max(0, Math.Min(gesamt, fenster.Von));
@@ -5854,7 +6319,7 @@ namespace WindowsFormsApplication1
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
                 Strichmuster muster = Strichfolge(r.Strichart);
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    VerlaufLinie(zr, rc, werte, min, max, r.Farbe, staerke, r.Strichart, r.Luecken && !sortiert));
+                    VerlaufLinie(zr, rc, werte, min, max, Ton(r), staerke, r.Strichart, r.Luecken && !sortiert));
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, werte,
                                             Reihenfenster(fensterLinks, werte.Length)));
             }
@@ -5870,7 +6335,7 @@ namespace WindowsFormsApplication1
                 float staerke2 = zweiteAchse.Breite > 0 ? zweiteAchse.Breite : 2f;
                 Strichmuster muster2 = Strichfolge(zweiteAchse.Strichart);
                 z.Markiert("reihe:" + (zweiteAchse.Name ?? ""), zr =>
-                    VerlaufLinie(zr, rc, w2, 0, max2, zweiteAchse.Farbe, staerke2,
+                    VerlaufLinie(zr, rc, w2, 0, max2, Ton(zweiteAchse), staerke2,
                                  zweiteAchse.Strichart));
                 // DG-E3-12: Die Reihe SAGT, dass sie rechts steht.
                 z.FuegeReihe(new Datenreihe(zweiteAchse.Name ?? "", Ton(zweiteAchse),
@@ -5880,14 +6345,14 @@ namespace WindowsFormsApplication1
 
                 z.Markiert("yachse2", zy2 =>
                 {
-                    zy2.Linie(rc.Right, rc.Top, rc.Right, rc.Bottom, Stift(zweiteAchse.Farbe, 2f));
+                    zy2.Linie(rc.Right, rc.Top, rc.Right, rc.Bottom, Stift(Ton(zweiteAchse), 2f));
                     using (var f = Schrift(15f))
                     {
                         for (int i = 0; i <= 4; i++)
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(zy2, wert.ToString("N0", Zahlkultur), f, zweiteAchse.Farbe,
+                            Text(zy2, wert.ToString("N0", Zahlkultur), f, Ton(zweiteAchse),
                                  rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
 
@@ -5898,7 +6363,7 @@ namespace WindowsFormsApplication1
                         // Bild - und weil er rechts endet, kommt er dem linken
                         // Achsentitel bei rc.Left nicht in die Quere.
                         string t2 = y2Titel ?? "";
-                        Text(zy2, t2, f, zweiteAchse.Farbe,
+                        Text(zy2, t2, f, Ton(zweiteAchse),
                              W - 20f - f.MeasureText(t2), rc.Top - 24f);
                     }
                 });
@@ -5919,7 +6384,7 @@ namespace WindowsFormsApplication1
         /// zu lassen - beides braucht der Verlauf, und beides braucht der Stapel nicht.
         /// </remarks>
         private static void VerlaufLinie(IZeichenziel z, SKRect rc, double[] werte,
-                                         double min, double max, SKColor farbe,
+                                         double min, double max, Farbton ton,
                                          float staerke, Strichart strichart, bool luecken = false)
         {
             if (werte == null || werte.Length < 2 || max - min <= 0.0) return;
@@ -5927,7 +6392,7 @@ namespace WindowsFormsApplication1
             int schrittweite = Math.Max(1, werte.Length / (int)rc.Width);
             if (luecken)
             {
-                VerlaufLinieMitLuecken(z, rc, werte, min, max, farbe, staerke, strichart, schrittweite);
+                VerlaufLinieMitLuecken(z, rc, werte, min, max, ton, staerke, strichart, schrittweite);
                 return;
             }
             var punkte = new List<SKPoint>();
@@ -5939,7 +6404,7 @@ namespace WindowsFormsApplication1
             }
 
             Linienzug(z, punkte.ToArray(),
-                      Stift(farbe, staerke, Strichfolge(strichart), Strichverbindung.Rund));
+                      Stift(ton, staerke, Strichfolge(strichart), Strichverbindung.Rund));
         }
 
         /// <summary>
@@ -5948,10 +6413,10 @@ namespace WindowsFormsApplication1
         /// einem einzigen Punkt zeichnet nichts — eine Linie braucht zwei.
         /// </summary>
         private static void VerlaufLinieMitLuecken(IZeichenziel z, SKRect rc, double[] werte,
-                                                   double min, double max, SKColor farbe,
+                                                   double min, double max, Farbton ton,
                                                    float staerke, Strichart strichart, int schrittweite)
         {
-            var stift = Stift(farbe, staerke, Strichfolge(strichart), Strichverbindung.Rund);
+            var stift = Stift(ton, staerke, Strichfolge(strichart), Strichverbindung.Rund);
             var punkte = new List<SKPoint>();
             for (int i = 0; i < werte.Length; i += schrittweite)
             {
@@ -7084,8 +7549,8 @@ namespace WindowsFormsApplication1
             // Verlaufsbild (W11b-B-28): Jede Zeile über der ersten schiebt die
             // Zeichenfläche um ihre Höhe nach unten.
             var leg = new List<Segment>();
-            if (mitSaeulen) leg.Add(new Segment(netto.Name, 0, netto.Farbe));
-            foreach (Reihe r in linien) leg.Add(new Segment(r.Name, 0, r.Farbe));
+            if (mitSaeulen) leg.Add(Eintrag(netto));
+            foreach (Reihe r in linien) leg.Add(Eintrag(r));
             float legendenhoehe = Legende(z, leg, LEGENDE_X, LEGENDE_Y, W - 30f);
             float schub = Math.Max(0f, legendenhoehe - LEGENDE_ZEILE);
             if (schub > 0f) rc = SKRect.Create(rc.Left, rc.Top + schub, rc.Width, rc.Height - schub);
@@ -7162,7 +7627,7 @@ namespace WindowsFormsApplication1
             // DIE SÄULEN — je Jahr eine, negative in Rot.
             if (mitSaeulen)
             {
-                var gut = Flaeche(netto.Farbe);
+                var gut = Flaeche(Ton(netto));
                 var schlecht = Flaeche(C_RASTER_SCHLECHT);
                 string saeulenmarke = "reihe:" + (netto.Name ?? "");
                 z.Markiert(saeulenmarke, zr =>
@@ -7207,7 +7672,7 @@ namespace WindowsFormsApplication1
                 // Namen (Regel der Gruppe (c)); die Zeigerzeile liest die Reihe.
                 z.Markiert("reihe:" + (r.Name ?? ""), r.Name ?? "", zr =>
                     Linienzug(zr, punkte,
-                              Stift(r.Farbe, staerke, muster, Strichverbindung.Rund)));
+                              Stift(Ton(r), staerke, muster, Strichverbindung.Rund)));
                 z.FuegeReihe(Jahresreihe(r, jahre, n, staerke));
             }
 
@@ -7276,11 +7741,11 @@ namespace WindowsFormsApplication1
                    r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w));
         }
 
-        private static void Leerhinweis(IZeichenziel z, SKRect rc)
+        private static void Leerhinweis(IZeichenziel z, SKRect rc, Behaeltersatz satz = null)
         {
-            using (var f = Schrift(18f))
+            using (var f = Schrift(satz, 18f))
                 Text(z, BerichtTexte.T("Keine Simulationsdaten vorhanden."), f, Farbrolle.ACHSE,
-                     rc.Left, rc.Top + 20f);
+                     rc.Left, rc.Top + Px(satz, 20f));
         }
 
         /// <summary>Eine absteigend sortierte KOPIE — dieselbe Regel wie <see cref="Ganglinie.Dauerlinie"/>.</summary>
@@ -7308,16 +7773,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Derselbe Block ohne das Achsenkreuz — siehe <see cref="BedarfsRasterOhneKreuz"/>.</summary>
-        private static void ProzentRasterOhneKreuz(IZeichenziel z, SKRect rc)
+        private static void ProzentRasterOhneKreuz(IZeichenziel z, SKRect rc, int schritt = 20,
+                                                   Behaeltersatz satz = null)
         {
             var raster = Stift(Farbrolle.RASTER, 1f);
-            using (var f = Schrift(15f))
-                for (int p = 0; p <= 100; p += 20)
+            using (var f = Schrift(satz, 15f))
+                for (int p = 0; p <= 100; p += schritt)
                 {
                     float y = (float)(rc.Bottom - p / Y_PROZENT_MAX * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = p.ToString(Zahlkultur) + " %";
-                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - Px(satz, 6f),
                          y - TextHoehe(f) / 2f);
                 }
         }
@@ -7365,10 +7831,15 @@ namespace WindowsFormsApplication1
         /// Marken (<see cref="XAchsentitel"/>); er kommt aus dem Ressourcenkatalog und
         /// wechselt damit die Sprache mit der Oberfläche.</para>
         /// </summary>
-        private static void XAchse(IZeichenziel z, SKRect rc, Achse achse, int n)
+        /// <param name="datum">Die Achse zählt die ZEIT (keine Dauerlinie): Unter jeder
+        /// Stundenmarke steht dann das Datum des Gemeinjahres (<see cref="Zeitachse"/>), sofern
+        /// die Reihe ein ganzes Jahresraster ist.</param>
+        private static void XAchse(IZeichenziel z, SKRect rc, Achse achse, int n, bool datum = false,
+                                   Behaeltersatz satz = null)
         {
+            bool mitDatum = achse == Achse.Jahresstunden && datum && Zeitachse.WerteJeStunde(n) > 0;
             var raster = Stift(Farbrolle.RASTER, 1f);
-            using (var f = Schrift(15f))
+            using (var f = Schrift(satz, 15f))
             {
                 if (achse == Achse.Monate)
                 {
@@ -7377,7 +7848,7 @@ namespace WindowsFormsApplication1
                         float x = rc.Left + m / 12f * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
                         string lab = m.ToString(Zahlkultur);
-                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + Px(satz, 8f));
                     }
                 }
                 else
@@ -7393,14 +7864,48 @@ namespace WindowsFormsApplication1
                         float x = rc.Left + (float)(index / (n - 1)) * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
                         string lab = h.ToString("N0", Zahlkultur);
-                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + Px(satz, 8f));
+                        if (mitDatum) Datumszeile(z, x, rc, Zeitachse.Markentext(h, Zeitachse.STUNDEN_JAHR), satz);
                     }
                 }
             }
 
             XAchsentitel(z, rc, achse == Achse.Monate
                                 ? MyResource.Resource.CHART_ACHSE_MONAT
-                                : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
+                                : mitDatum ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM
+                                           : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN,
+                         mitDatum, satz);
+        }
+
+        /// <summary>
+        /// Um so viel rücken Achsentitel und Stufenhinweis tiefer, wenn unter den
+        /// Stundenmarken eine Datumszeile steht.
+        /// </summary>
+        public const float DATUMSZEILE_VERSATZ = 18f;
+
+        /// <summary>
+        /// <b>Die Datumszeile einer Stundenmarke</b> (Auftrag GX): zweite Zeile unter der
+        /// Stundenzahl, etwas kleiner (13 pt), mittig unter der Marke. Die Stundenzahl steht
+        /// bei <c>rc.Bottom + 8</c>, die Datumszeile bei <c>rc.Bottom + 26</c>; der Titel
+        /// rückt um <see cref="DATUMSZEILE_VERSATZ"/> nach unten.
+        /// </summary>
+        private static void Datumszeile(IZeichenziel z, float x, SKRect rc, string text,
+                                        Behaeltersatz satz = null)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            using (var f = Schrift(satz, 13f))
+                Text(z, text, f, Farbrolle.ACHSE, x - f.MeasureText(text) / 2f, rc.Bottom + Px(satz, 26f));
+        }
+
+        /// <summary>
+        /// Trägt die x-Achse eines Zeitreihenbildes eine Datumszeile? Im Ausschnitt jede
+        /// Zeitachse eines Jahresrasters, in der Vollansicht nur die Stundenachse — die
+        /// Monatsachse nennt ihre Monate schon. Die Dauerlinie (sortiert) nie.
+        /// </summary>
+        private static bool DatumUnterMarken(Achsenfenster fenster, Achse achse, bool sortiert, int gesamt)
+        {
+            if (sortiert || Zeitachse.WerteJeStunde(gesamt) == 0) return false;
+            return fenster != null || achse == Achse.Jahresstunden;
         }
 
         /// <summary>
@@ -7411,12 +7916,14 @@ namespace WindowsFormsApplication1
         /// liegt <c>rc.Bottom</c> bei 460…470 und die Bildhöhe bei 542…560 — der Titel
         /// bleibt damit innerhalb der Fläche, und kein Bildmaß ändert sich.
         /// </summary>
-        private static void XAchsentitel(IZeichenziel z, SKRect rc, string titel)
+        private static void XAchsentitel(IZeichenziel z, SKRect rc, string titel, bool unterDatum = false,
+                                         Behaeltersatz satz = null)
         {
             if (string.IsNullOrEmpty(titel)) return;
-            using (var f = Schrift(15f))
+            using (var f = Schrift(satz, 15f))
                 Text(z, titel, f, Farbrolle.ACHSE,
-                     rc.Left + (rc.Width - f.MeasureText(titel)) / 2f, rc.Bottom + 30f);
+                     rc.Left + (rc.Width - f.MeasureText(titel)) / 2f,
+                     rc.Bottom + Px(satz, 30f) + Px(satz, unterDatum ? DATUMSZEILE_VERSATZ : 0f));
         }
 
         // =================================================================== Schrift
@@ -7456,6 +7963,45 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Schriftmass Schrift(float punkt, bool fett = false, bool kursiv = false)
             => new Schriftmass(new Zeichnung.Schrift(punkt, fett, kursiv));
+
+        /// <summary>
+        /// <b>Schrift und Abstände eines Bildes im Behältermaß</b> (R1 zu DZ1‑N2). Ein Bild, das
+        /// die Oberfläche 1:1 in ihren Behälter stellt, schreibt in der Schrift der Oberfläche
+        /// statt in den Punktgrößen des Berichts: <see cref="Punkt"/> gilt für JEDEN Text, und
+        /// die festen Abstände der Hilfen (Marken, Achsentitel, Legendenzeile und -feld)
+        /// schrumpfen mit <see cref="Faktor"/> — dem Verhältnis zur Achsenschrift 15 pt des
+        /// Bestands —, damit die Kurve den gewonnenen Platz bekommt.
+        ///
+        /// <para><b>Warum ein Parameter</b> und kein Zustand: Die Hilfen nehmen den Satz als
+        /// letzten, optionalen Parameter; <c>null</c> (Vorgabe) ist der Bestand. Jeder andere
+        /// Aufrufer bleibt damit unberührt, und das Bild ohne Maß bleibt byte-gleich.</para>
+        /// </summary>
+        private sealed class Behaeltersatz
+        {
+            /// <summary>Schrift der Oberfläche: 13 px = 9,75 pt.</summary>
+            public const float PUNKT_DIALOG = 9.75f;
+
+            /// <summary>Schrift der Kompaktstufe der Oberfläche: 12 px = 9 pt.</summary>
+            public const float PUNKT_KOMPAKT = 9f;
+
+            /// <summary>Achsenschrift des Bestands, auf die sich <see cref="Faktor"/> bezieht.</summary>
+            private const float PUNKT_BESTAND = 15f;
+
+            public Behaeltersatz(float punkt) { Punkt = punkt; Faktor = punkt / PUNKT_BESTAND; }
+
+            /// <summary>Punktgröße jedes Textes des Bildes.</summary>
+            public float Punkt { get; }
+
+            /// <summary>Maßstab der festen Abstände gegenüber dem Bestand.</summary>
+            public float Faktor { get; }
+        }
+
+        /// <summary>Die Schrift eines Bildes im Behältermaß; ohne <paramref name="satz"/> die Punktgröße des Bestands.</summary>
+        private static Schriftmass Schrift(Behaeltersatz satz, float punkt, bool fett = false)
+            => Schrift(satz == null ? punkt : satz.Punkt, fett);
+
+        /// <summary>Ein fester Abstand [px] im Behältermaß; ohne <paramref name="satz"/> unverändert.</summary>
+        private static float Px(Behaeltersatz satz, float px) => satz == null ? px : px * satz.Faktor;
 
         /// <summary>Zeilenhöhe einer Schrift — Ersatz für <c>MeasureString(...).Height</c>.</summary>
         private static float TextHoehe(Schriftmass f) => f.Hoehe;
@@ -7534,6 +8080,27 @@ namespace WindowsFormsApplication1
             if (r == null) return Farbton.Aus(Farbrolle.UNBENANNT);
             return r.Ton ?? r.Farbe.Ton();
         }
+
+        /// <summary>
+        /// Der Farbton eines Legendeneintrags — dieselbe Regel wie bei der Reihe: sein
+        /// <see cref="Segment.Ton"/>, sonst die Rückwärtssuche über die Farbe.
+        /// </summary>
+        private static Farbton Ton(Segment s)
+        {
+            if (s == null) return Farbton.Aus(Farbrolle.UNBENANNT);
+            return s.Ton ?? s.Farbe.Ton();
+        }
+
+        /// <summary>
+        /// <b>Der Legendeneintrag einer Reihe</b>: ihr Name, ihre Farbe und ihr
+        /// <see cref="Reihe.Ton"/> — das Farbfeld trägt damit DIESELBE Rolle wie die Linie oder
+        /// Fläche der Reihe, auch wenn der Anwender ihr den Hausfarbwert einer anderen Rolle
+        /// gegeben hat. Eine Reihe ohne Rolle bleibt beim Farbwert und der Rückwärtssuche.
+        /// </summary>
+        /// <param name="strichart">Die Strichart, die das Feld zeigt — nur, wo das Bild sie in
+        /// der Legende nennt; Vorgabe <see cref="Strichart.Durchgezogen"/> (gefülltes Feld).</param>
+        private static Segment Eintrag(Reihe r, Strichart strichart = Strichart.Durchgezogen)
+            => new Segment(r.Name, 0, r.Farbe, strichart) { Ton = r.Ton };
 
         /// <summary>Trägt die Reihe DIESE Rolle? (Ohne Rolle entscheidet der Farbwert.)</summary>
         private static bool Traegt(Reihe r, Farbrolle rolle, SKColor hausfarbe)
@@ -7790,36 +8357,181 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <param name="ton">Der Farbton der Linie — bei einer Reihe <see cref="Ton(Reihe)"/>,
+        /// damit ihre Rolle gilt und nicht die Rückwärtssuche über den aufgelösten Farbwert.</param>
         private static void ZeichneLinie(IZeichenziel z, SKRect rc, double[] werte,
-                                         double min, double max, SKColor farbe, float staerke)
+                                         double min, double max, Farbton ton, float staerke)
         {
             if (werte == null || werte.Length < 2) return;
             int schritt = Math.Max(1, werte.Length / (int)rc.Width);
-            var punkte = new List<SKPoint>();
+            // Ein nicht endlicher Wert ist eine LUECKE: Die Linie bricht dort ab und setzt beim
+            // naechsten endlichen Wert neu an - wie der SVG-Weg. Ohne Luecke ein einziger Zug.
+            var stuecke = new List<List<SKPoint>> { new List<SKPoint>() };
             for (int i = 0; i < werte.Length; i += schritt)
             {
+                if (!Endlich(werte[i]))
+                {
+                    if (stuecke[stuecke.Count - 1].Count > 0) stuecke.Add(new List<SKPoint>());
+                    continue;
+                }
                 float x = rc.Left + (float)i / (werte.Length - 1) * rc.Width;
                 float y = rc.Bottom - (float)((werte[i] - min) / (max - min) * rc.Height);
-                punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+                stuecke[stuecke.Count - 1].Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
             }
-            if (punkte.Count >= 2)
-                Linienzug(z, punkte.ToArray(),
-                          Stift(farbe, staerke, null, Strichverbindung.Rund));
+            foreach (List<SKPoint> punkte in stuecke)
+                if (punkte.Count >= 2)
+                    Linienzug(z, punkte.ToArray(),
+                              Stift(ton, staerke, null, Strichverbindung.Rund));
         }
 
+        /// <summary>
+        /// Die Bildpunktspalten eines Rechtecks — die Zahl, nach der die Stufenregel des
+        /// Stapels (<see cref="Pfadregel.Stufen"/>) bündelt. Dieselbe Rundung wie im
+        /// SVG-Weg, damit PNG und Bildschirm dieselben Stufen zeigen.
+        /// </summary>
+        private static int Bildpunktspalten(SKRect rc) => (int)Math.Max(1.0, Math.Round(rc.Width));
+
+        /// <summary>
+        /// Die Stufen einer Reihe von <paramref name="n"/> Werten über dem Rechteck
+        /// (<see cref="Pfadregel.Stufen"/>): je Tag im Jahresbild, sonst je Bildpunktspalte.
+        /// </summary>
+        /// <param name="gesamt">Die Länge der GANZEN Reihe; <c>0</c> = <paramref name="n"/>
+        /// (kein Ausschnitt).</param>
+        /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe.</param>
+        private static IReadOnlyList<Stufe> Stapelstufen(SKRect rc, int n, int gesamt, int ab)
+            => Pfadregel.Stufen(gesamt > 0 ? gesamt : n, ab, n, Bildpunktspalten(rc));
+
+        /// <summary>
+        /// <b>Die Treppe der Stufenwerte in Bildpunkten</b> (Stufenregel des Stapels, siehe
+        /// <see cref="Pfadregel"/>): je Stufe eine waagrechte Kante auf dem Wert der Reihe in
+        /// der Spitzenstunde der Stufe, von links nach rechts — für die Stufen
+        /// <paramref name="von"/> … <paramref name="bis"/>, ein Stück ohne Lücke
+        /// (<see cref="Pfadregel.Stufenstuecke"/>).
+        /// </summary>
+        private static List<SKPoint> Treppenpunkte(SKRect rc, IReadOnlyList<Stufe> stufen, double[] stufenwerte,
+                                                   int von, int bis, double min, double max)
+        {
+            var punkte = new List<SKPoint>();
+            foreach ((double anteil, double wert) in Pfadregel.Treppe(stufen, stufenwerte, von, bis))
+            {
+                float x = rc.Left + (float)(rc.Width * anteil);
+                float y = rc.Bottom - (float)((wert - min) / (max - min) * rc.Height);
+                punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+            }
+            return punkte;
+        }
+
+        /// <summary>
+        /// Die Spitzenstunde je Stufe (<see cref="Pfadregel.Spitzenstunden"/>) nach der
+        /// Bezugsgröße des Bildes — ohne sie (oder bei anderer Länge) nach den eigenen Werten
+        /// der Reihe; dieselbe Wahl wie der SVG-Weg.
+        /// </summary>
+        private static int[] Spitzenstunden(IReadOnlyList<Stufe> stufen, double[] bezug, double[] eigene)
+            => Pfadregel.Spitzenstunden(bezug != null && eigene != null && bezug.Length == eigene.Length
+                                            ? bezug : eigene, stufen);
+
+        /// <summary>
+        /// <b>Eine Linie, die einen Stapel begleitet</b> (die Summe, die Kontur, der Bedarf
+        /// über den Erzeugern): Führt sie mehr Werte, als das Rechteck Bildpunktspalten
+        /// hat, zeichnet sie die Treppe ihrer Werte in den Spitzenstunden — dieselbe Stunde
+        /// je Stufe wie die Schichten des Stapels —, statt je Spalte die ganze Spanne ihres
+        /// Zickzacks zu füllen. Sonst ist sie <see cref="ZeichneLinie"/>. Eine Stufe, in deren
+        /// Spitzenstunde sie nicht endlich ist, bleibt eine Lücke: je Stück ohne Lücke ein
+        /// eigener Linienzug, wie der SVG-Weg.
+        /// </summary>
+        /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
+        /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe.</param>
+        /// <param name="bezug">Die Bezugsgröße des Bildes (<see cref="Datenreihe.Bezug"/>);
+        /// <c>null</c> = die eigenen Werte.</param>
+        private static void ZeichneHuelle(IZeichenziel z, SKRect rc, double[] werte,
+                                          double min, double max, Farbton ton, float staerke,
+                                          int gesamt = 0, int ab = 0, double[] bezug = null)
+        {
+            if (werte == null || werte.Length <= Bildpunktspalten(rc))
+            {
+                ZeichneLinie(z, rc, werte, min, max, ton, staerke);
+                return;
+            }
+            IReadOnlyList<Stufe> stufen = Stapelstufen(rc, werte.Length, gesamt, ab);
+            double[] stufenwerte = Pfadregel.Stundenwerte(werte, Spitzenstunden(stufen, bezug, werte));
+            foreach ((int von, int bis) in Pfadregel.Stufenstuecke(stufenwerte))
+            {
+                List<SKPoint> punkte = Treppenpunkte(rc, stufen, stufenwerte, von, bis, min, max);
+                if (punkte.Count >= 2)
+                    Linienzug(z, punkte.ToArray(), Stift(ton, staerke, null, Strichverbindung.Rund));
+            }
+        }
+
+        /// <summary>
+        /// Deckung der Schichten im gestapelten Jahresverlauf (<see cref="StapelDiagrammModell"/>) —
+        /// der Wert, den <see cref="ZeichneFlaeche"/> bis dahin als Vorgabe führte.
+        /// </summary>
+        private const byte STAPELFLAECHE_DECKUNG = 210;
+
+        /// <param name="gesamt">Die Länge der ganzen Reihe; <c>0</c> = kein Ausschnitt.</param>
+        /// <param name="ab">Der erste Index des Ausschnitts in der ganzen Reihe.</param>
+        /// <param name="bezug">Die Bezugsgröße des Bildes (<see cref="Datenreihe.Bezug"/>);
+        /// <c>null</c> = die Oberkante der Schicht.</param>
+        /// <param name="ton">Der FERTIGE Farbton der Schicht samt Deckung — bei einer Reihe
+        /// <see cref="Ton(Reihe, byte)"/>: Ihre Rolle gilt, und nur eine Reihe ohne Rolle geht
+        /// mit Farbwert und Deckung durch die Rückwärtssuche.</param>
         private static void ZeichneFlaeche(IZeichenziel z, SKRect rc, double[] unten,
-                                           double[] oben, double max, SKColor farbe,
-                                           byte alpha = 210)
+                                           double[] oben, double max, Farbton ton,
+                                           int gesamt = 0, int ab = 0,
+                                           double[] bezug = null)
         {
             int n = oben.Length;
+
+            // DIE STUFENREGEL DES STAPELS: Mehr Werte als Bildpunktspalten gehen als
+            // Treppe der Werte in den Spitzenstunden - Oberkante vorwaerts, Unterkante
+            // (die Oberkante der Schicht darunter, dieselben Zahlen in derselben Stunde)
+            // rueckwaerts. Jede Stufe ist damit bis zur Kante gedeckt, und die Dicke der
+            // Schicht ist ihr Wert in der Spitzenstunde; bis hierher stand jeder siebte
+            // Wert, und die Kante zickzackte von Bildpunkt zu Bildpunkt. Eine Stufe, in
+            // deren Spitzenstunde eine Kante nicht endlich ist, bleibt eine LUECKE: je Stueck
+            // ohne Luecke ein eigenes Vieleck, wie der SVG-Weg (Kopf der Stufenregel).
+            if (n > Bildpunktspalten(rc))
+            {
+                IReadOnlyList<Stufe> stufen = Stapelstufen(rc, n, gesamt, ab);
+                int[] stunden = Spitzenstunden(stufen, bezug, oben);
+                double[] kantenwerte = Pfadregel.Stundenwerte(oben, stunden);
+                double[] bodenwerte = Pfadregel.Stundenwerte(unten, stunden);
+                foreach ((int von, int bis) in Pfadregel.Stufenstuecke(kantenwerte, bodenwerte))
+                {
+                    List<SKPoint> kante = Treppenpunkte(rc, stufen, kantenwerte, von, bis, 0, max);
+                    List<SKPoint> boden = Treppenpunkte(rc, stufen, bodenwerte, von, bis, 0, max);
+                    boden.Reverse();
+                    kante.AddRange(boden);
+                    if (kante.Count >= 3)
+                        Vieleck(z, kante.ToArray(), Flaeche(ton));
+                }
+                return;
+            }
+
+            // Je Stueck, in dem Ober- und Unterkante endlich sind, ein Vieleck: die Oberkante
+            // vorwaerts, die Unterkante rueckwaerts. Eine LUECKE (nicht endlich) bricht die
+            // Flaeche wie im SVG-Weg; ohne Luecke ist es ein einziges Vieleck.
             int schritt = Math.Max(1, n / (int)rc.Width);
-            var pfad = new List<SKPoint>();
+            var stuecke = new List<List<int>> { new List<int>() };
             for (int i = 0; i < n; i += schritt)
-                pfad.Add(Punkt(rc, i, n, oben[i], max));
-            for (int i = ((n - 1) / schritt) * schritt; i >= 0; i -= schritt)
-                pfad.Add(Punkt(rc, i, n, unten[i], max));
-            if (pfad.Count >= 3)
-                Vieleck(z, pfad.ToArray(), Flaeche(farbe.WithAlpha(alpha)));
+            {
+                if (!Endlich(oben[i]) || !Endlich(unten[i]))
+                {
+                    if (stuecke[stuecke.Count - 1].Count > 0) stuecke.Add(new List<int>());
+                    continue;
+                }
+                stuecke[stuecke.Count - 1].Add(i);
+            }
+            foreach (List<int> stueck in stuecke)
+            {
+                var pfad = new List<SKPoint>();
+                foreach (int i in stueck)
+                    pfad.Add(Punkt(rc, i, n, oben[i], max));
+                for (int k = stueck.Count - 1; k >= 0; k--)
+                    pfad.Add(Punkt(rc, stueck[k], n, unten[stueck[k]], max));
+                if (pfad.Count >= 3)
+                    Vieleck(z, pfad.ToArray(), Flaeche(ton));
+            }
         }
 
         private static SKPoint Punkt(SKRect rc, int i, int n, double wert, double max)
@@ -7867,17 +8579,18 @@ namespace WindowsFormsApplication1
         /// Farbwähler öffnet (Farbrollen, Bedienung Teil 2).</para>
         /// </summary>
         private static float Legende(IZeichenziel z, List<Segment> eintraege, float x, float y,
-                                     float umbruchBei = 0)
+                                     float umbruchBei = 0, Behaeltersatz satz = null)
         {
             float startX = x;
             int zeilen = 1;
             var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
-            using (var f = Schrift(16f))
+            float feld = Px(satz, 22f), zeile = Px(satz, LEGENDE_ZEILE);
+            using (var f = Schrift(satz, 16f))
                 foreach (Segment s in eintraege)
                 {
-                    float breite = 40f + f.MeasureText(s.Label ?? "") + 24f;
+                    float breite = Px(satz, 40f) + f.MeasureText(s.Label ?? "") + Px(satz, 24f);
                     if (umbruchBei > 0 && x > startX && x + breite > umbruchBei)
-                    { x = startX; y += LEGENDE_ZEILE; zeilen++; }   // Umbruch bei vielen Serien (Review 11)
+                    { x = startX; y += zeile; zeilen++; }   // Umbruch bei vielen Serien (Review 11)
 
                     float ex = x, ey = y;      // fest fuer die Klammer der Marke
                     z.Markiert("legende:" + (s.Label ?? ""), ze =>
@@ -7887,16 +8600,18 @@ namespace WindowsFormsApplication1
                         // sonst sagt die Legende über die Strichart nichts, und im
                         // Schwarz-Weiß-Ausdruck sind zwei Linien nicht auseinanderzuhalten.
                         // ETAPPE E6: dasselbe für die gepunktete Linie, in IHRER Folge.
+                        // Das Feld trägt die ROLLE des Eintrags (Segment.Ton), wo er eine hat -
+                        // dieselbe wie die Linie oder Fläche seiner Reihe.
                         if (s.Strichart != Strichart.Durchgezogen)
-                            ze.Rechteck(ex, ey, 22f, 22f, Stift(s.Farbe, 3f, Strichfolge(s.Strichart)));
+                            ze.Rechteck(ex, ey, feld, feld, Stift(Ton(s), 3f, Strichfolge(s.Strichart)));
                         else
-                            ze.Rechteck(ex, ey, 22f, 22f, null, Flaeche(s.Farbe));
-                        ze.Rechteck(ex, ey, 22f, 22f, rahmen);
-                        Text(ze, s.Label, f, Farbrolle.TEXT, ex + 28f, ey + 1f);
+                            ze.Rechteck(ex, ey, feld, feld, null, Flaeche(Ton(s)));
+                        ze.Rechteck(ex, ey, feld, feld, rahmen);
+                        Text(ze, s.Label, f, Farbrolle.TEXT, ex + Px(satz, 28f), ey + Px(satz, 1f));
                     });
                     x += breite;
                 }
-            return zeilen * LEGENDE_ZEILE;
+            return zeilen * zeile;
         }
 
         /// <summary>
@@ -8205,26 +8920,30 @@ namespace WindowsFormsApplication1
         /// <para>Auch ein Monatsbild bekommt im Fenster Stundenmarken: Monatsgrenzen
         /// sagen im Ausschnitt nichts mehr, die Stunde schon.</para>
         /// </summary>
-        private static void XAchseFenster(IZeichenziel z, SKRect rc, Achsenfenster f, int gesamt)
+        private static void XAchseFenster(IZeichenziel z, SKRect rc, Achsenfenster f, int gesamt, bool datum = false,
+                                          Behaeltersatz satz = null)
         {
             double stundenJeWert = gesamt > Kanalsatz.STUNDEN_JAHR ? 0.25 : 1.0;
             double h0 = f.Von * stundenJeWert;
             double h1 = (f.Bis - 1) * stundenJeWert;
             if (h1 - h0 < 1e-9) return;
+            bool mitDatum = datum && Zeitachse.WerteJeStunde(gesamt) > 0;
 
             var raster = Stift(Farbrolle.RASTER, 1f);
-            using (var schrift = Schrift(15f))
+            using (var schrift = Schrift(satz, 15f))
                 foreach ((double h, string lab) in Stundenteilung(h0, h1))
                 {
                     float x = rc.Left + (float)((h - h0) / (h1 - h0)) * rc.Width;
                     z.Linie(x, rc.Top, x, rc.Bottom, raster);
                     Text(z, lab, schrift, Farbrolle.ACHSE,
-                         x - schrift.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                         x - schrift.MeasureText(lab) / 2f, rc.Bottom + Px(satz, 8f));
+                    if (mitDatum) Datumszeile(z, x, rc, Zeitachse.Markentext(h, h1 - h0), satz);
                 }
 
             // #234: derselbe Achsentitel wie in der Vollansicht - im Fenster zaehlt die
             // Achse IMMER Jahresstunden, auch wenn das Bild sonst Monatsgrenzen traegt.
-            XAchsentitel(z, rc, MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
+            XAchsentitel(z, rc, mitDatum ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM
+                                         : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN, mitDatum, satz);
         }
 
         /// <summary>
@@ -8293,6 +9012,15 @@ namespace WindowsFormsApplication1
 
             if (flaeche.X == Achsenart.Stunden)
             {
+                // EINE VIERTELSTUNDENREIHE zaehlt auf x ihre Stuetzstelle, beschriftet wird
+                // aber die JAHRESSTUNDE (Auftrag GX) - geteilt in Stunden, gesetzt in Stellen.
+                int jeStunde = Zeitachse.WerteJeStunde(flaeche);
+                if (jeStunde > 1)
+                {
+                    foreach ((double stunde, string text) in Stundenteilung(von / jeStunde, bis / jeStunde))
+                        liste.Add((stunde * jeStunde, text));
+                    return liste;
+                }
                 foreach ((int stunde, string text) in
                          Jahresstundenteilung((int)Math.Ceiling(von), (int)Math.Floor(bis)))
                     liste.Add((stunde, text));
@@ -8313,6 +9041,24 @@ namespace WindowsFormsApplication1
                 // der Streuwolke und der Schnittkurve.
                 liste.Add((wert, (wert == 0 ? 0.0 : wert).ToString(format, Zahlkultur)));
             return liste;
+        }
+
+        /// <summary>
+        /// <b>Die zweite Zeile einer Marke der Achsenteilung</b> (Auftrag GX): auf der
+        /// Stundenachse einer Jahresreihe das Datum des Gemeinjahres, bei einem Ausschnitt
+        /// unter einem Tag dazu die Uhrzeit (<see cref="Zeitachse.Markentext"/>) — dieselbe
+        /// Regel wie im Bild. Leer auf jeder anderen Achse (Index, Wert, Dauerlinie,
+        /// Reihe ohne Jahresraster).
+        /// </summary>
+        /// <param name="flaeche">Die Zeichenfläche des Modells.</param>
+        /// <param name="wert">Die Stelle der Marke auf x (aus <see cref="Achsenteilung"/>).</param>
+        /// <param name="von">Linker Rand des Ausschnitts.</param>
+        /// <param name="bis">Rechter Rand des Ausschnitts.</param>
+        public static string Datumszeile(Zeichenflaeche flaeche, double wert, double von, double bis)
+        {
+            int jeStunde = Zeitachse.WerteJeStunde(flaeche);
+            if (jeStunde == 0) return "";
+            return Zeitachse.Markentext(wert / jeStunde, (bis - von) / jeStunde);
         }
 
         /// <summary>

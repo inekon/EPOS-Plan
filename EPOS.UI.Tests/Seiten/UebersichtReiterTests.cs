@@ -957,4 +957,175 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Empty(block.QuerySelectorAll(".epos-simueb-kaeltetabelle"));
         Assert.DoesNotContain(Resource.SIMUEB_LBL_JAZ_KAELTE, block.TextContent, StringComparison.Ordinal);
     }
+
+    // =====================================================================
+    //  Die Legende neben dem Ring — eine Form für Wärme, Strom und Kälte
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Alle drei Ringe tragen dieselbe Legende:</b> Ringzeile mit Ring und Legendenblock,
+    /// je Eintrag Farbkästchen, Name und EIN Zahlenpaar (Menge, Anteil) — das Paar rückt als
+    /// Ganzes in die zweite Zeile, wenn neben dem Namen kein Platz ist. Breite und Umbruch misst
+    /// <c>Proben/Rasterprobe/legendenprobe.mjs</c>; hier steht die Struktur.
+    /// </summary>
+    [Fact]
+    public void Waerme_Strom_und_Kaelte_tragen_dieselbe_Legendenstruktur()
+    {
+        var seite = ZeichnenMitKaelteerzeuger(_ring);
+
+        var zeilen = seite.FindAll("div.epos-simueb-ringzeile");
+        Assert.Equal(3, zeilen.Count);
+        foreach (var zeile in zeilen)
+        {
+            Assert.Equal(new[] { "epos-simueb-ring", "epos-simueb-legendenblock" },
+                         zeile.Children.Select(c => c.ClassName).ToArray());
+            var listen = zeile.QuerySelectorAll("ul.epos-simueb-legende");
+            Assert.Single(listen);
+            Assert.NotEmpty(listen[0].Children);
+            foreach (var li in listen[0].Children)
+            {
+                Assert.Equal("LI", li.TagName);
+                Assert.Equal(new[] { "epos-simueb-farbe", "epos-simueb-legende-name", "epos-simueb-legende-zahlen" },
+                             li.Children.Select(c => c.ClassName).ToArray());
+                Assert.Equal(new[] { "epos-simueb-legende-wert", "epos-simueb-legende-anteil" },
+                             li.Children[2].Children.Select(c => c.ClassName).ToArray());
+            }
+        }
+
+        // Wärme und Strom schliessen mit der Summenzeile, die Kälte ohne.
+        Assert.Equal(2, seite.FindAll("li.epos-simueb-legende-summe").Count);
+        Assert.Contains("62,5 %", zeilen[0].QuerySelector("li .epos-simueb-legende-anteil")!.TextContent);
+        Assert.Contains("40,0 %", zeilen[2].QuerySelector("li .epos-simueb-legende-anteil")!.TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Regel als Regel:</b> Die Ringzeile ist ein Container, unter 520 px Außenbreite
+    /// steht die Legende unter dem Ring, und kein Legendenelement bricht im Wort.
+    /// </summary>
+    [Fact]
+    public void Das_Stilblatt_bricht_die_Legende_nur_an_Wortgrenzen()
+    {
+        var d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+        Assert.NotNull(d);
+        string css = System.IO.File.ReadAllText(System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))
+                                   .Replace("\r\n", "\n");
+
+        int a = css.IndexOf(".epos-simueb-ringzeile {", StringComparison.Ordinal);
+        int e = css.IndexOf(".epos-simueb-legende-summe {", a, StringComparison.Ordinal);
+        Assert.True(a > 0 && e > a);
+        string block = css.Substring(a, e - a);
+
+        Assert.Contains("container-type: inline-size;", block, StringComparison.Ordinal);
+        Assert.Contains("@container epos-simueb-ringzeile (max-width: 499.98px)", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("overflow-wrap: anywhere", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("word-break", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("@media", block, StringComparison.Ordinal);
+    }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Die Übersicht folgt derselben Regel mit eigener Sprache: Ihre Köpfe
+    /// stehen rechts, nur Namens- und Textspalten links — Kopf und Zelle tragen
+    /// dieselbe Klasse (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Uebersichtstabellen_richten_Kopf_und_Wert_gleich_aus()
+    {
+        var tabellen = Zeichnen(Daten()).FindAll("table.epos-simueb-tabelle");
+        Assert.NotEmpty(tabellen);
+        foreach (var tabelle in tabellen)
+        {
+            var koepfe = tabelle.QuerySelectorAll("thead tr").Last().Children
+                .Where(c => c.LocalName == "th").ToArray();
+            static string Seite(AngleSharp.Dom.IElement z)
+                => z.ClassList.Contains("epos-simueb-name") || z.ClassList.Contains("epos-simueb-text")
+                    ? "links" : "rechts";
+            Assert.Equal("links", Seite(koepfe[0]));
+            foreach (var zeile in tabelle.QuerySelectorAll("tbody tr"))
+            {
+                var zellen = zeile.Children.ToArray();
+                if (zellen.Length != koepfe.Length || zellen.Any(z => z.HasAttribute("colspan"))) continue;
+                for (int i = 0; i < koepfe.Length; i++)
+                    Assert.Equal(Seite(koepfe[i]), Seite(zellen[i]));
+            }
+        }
+    }
+
+    // =====================================================================
+    //  Die Kennzahlenzeile — keine Kachel überlappt (Wärme, Strom, Kälte)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Zahl und Einheit stehen in EINEM Element:</b> Jedes Kennzahlenband (Wärme, Strom,
+    /// Kälte zweimal) trägt nur Kacheln, jede Kachel schliesst mit dem Wertelement, und darin
+    /// stehen die Zahl als Text und die Einheit als einziges Kind <c>small</c> — das Element,
+    /// das das Stilblatt nicht umbrechen lässt. Breite und Überlappung misst
+    /// <c>Proben/Rasterprobe/kennzahlenprobe.mjs</c>; hier steht die Struktur.
+    /// </summary>
+    [Fact]
+    public void Jede_Kennzahl_traegt_Zahl_und_Einheit_in_einem_Element()
+    {
+        var seite = ZeichnenMitKaelteerzeuger(_ring);
+
+        var baender = seite.FindAll("div.epos-simueb-kennzahlen");
+        Assert.Equal(4, baender.Count);
+        foreach (var band in baender)
+        {
+            Assert.NotEmpty(band.Children);
+            foreach (var kachel in band.Children)
+            {
+                Assert.Contains("epos-simueb-kennzahl", kachel.ClassList);
+                var wert = kachel.Children[^1];
+                Assert.Equal("epos-simueb-kennzahl-wert", wert.ClassName);
+                Assert.Single(wert.Children);
+                Assert.Equal("SMALL", wert.Children[0].TagName);
+                string zahl = wert.TextContent.Substring(0, wert.TextContent.Length - wert.Children[0].TextContent.Length);
+                Assert.False(string.IsNullOrWhiteSpace(zahl));
+                Assert.DoesNotContain(" ", zahl.Trim(), StringComparison.Ordinal);
+            }
+        }
+        Assert.Equal("MWh/a", baender[0].QuerySelector(".epos-simueb-kennzahl-wert small")!.TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Regel als Regel:</b> Das Kennzahlenband ist ein Container, unter 480 px stehen die
+    /// Kacheln untereinander, der Wert bricht nicht um, und keine Kachel wird schmaler als ihr
+    /// Inhalt — kein <c>minmax(0, …)</c>-Raster, kein <c>min-width: 0</c>, kein Wortbruch, kein
+    /// Abschneiden.
+    /// </summary>
+    [Fact]
+    public void Das_Stilblatt_haelt_die_Kennzahlen_als_Container_ohne_Ueberlappung()
+    {
+        var d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+        Assert.NotNull(d);
+        string css = System.IO.File.ReadAllText(System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))
+                                   .Replace("\r\n", "\n");
+
+        int a = css.IndexOf(".epos-simueb-kennzahlen {", StringComparison.Ordinal);
+        int e = css.IndexOf(".epos-simueb-eigenverbrauch {", a, StringComparison.Ordinal);
+        Assert.True(a > 0 && e > a);
+        string block = css.Substring(a, e - a);
+
+        Assert.Contains("container-type: inline-size;", block, StringComparison.Ordinal);
+        Assert.Contains("container-name: epos-simueb-kennzahlen;", block, StringComparison.Ordinal);
+        Assert.Contains("@container epos-simueb-kennzahlen (max-width: 479.98px)", block, StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap;", block, StringComparison.Ordinal);
+
+        int w = block.IndexOf("\n.epos-simueb-kennzahl-wert {", StringComparison.Ordinal);
+        Assert.True(w >= 0);
+        Assert.Contains("white-space: nowrap;", block.Substring(w, block.IndexOf('}', w) - w), StringComparison.Ordinal);
+
+        Assert.DoesNotContain("minmax(0", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("min-width: 0", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("overflow-wrap: anywhere", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("word-break", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("text-overflow", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("overflow: hidden", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("@media", block, StringComparison.Ordinal);
+    }
 }

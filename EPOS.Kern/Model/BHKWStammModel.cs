@@ -58,6 +58,27 @@
         // NEU in der STAMM-Tabelle (Boolean NOT NULL): schreibgeschuetzter Datensatz
         public bool m_bReadOnly;
 
+        // Welle M4 (Schemaschritt ErzeugerTeillastSchema.SCHRITT): Teillastkennlinie (BH1) und
+        // Takten (BH2). Leer heißt „nicht gepflegt" - das Modul rechnet dann wie zuvor.
+
+        /// <summary>η_el bei 50 % elektrischer Last als Faktor (BH1); <c>null</c> = wie Volllast.</summary>
+        public double? m_Wirkungsgrad_el_Teillast50;
+
+        /// <summary>η_th bei 50 % elektrischer Last als Faktor (BH1); <c>null</c> = wie Volllast.</summary>
+        public double? m_Wirkungsgrad_th_Teillast50;
+
+        /// <summary>Anfahrverlust je Start [kWh Brennstoff] (BH2); <c>null</c> = nicht gepflegt.</summary>
+        public double? m_Anfahrverlust_kWh;
+
+        /// <summary>Mindestlaufzeit je Start [min] (BH2); <c>null</c> = nicht gepflegt.</summary>
+        public int? m_Mindestlaufzeit_min;
+
+        /// <summary>
+        /// <c>Ruecklauf_Max</c> [°C] — die Abschaltgrenze des Rücklaufs (UB‑E3, U‑3): darüber liefert das Modul nichts.
+        /// <c>null</c> = keine Grenze.
+        /// </summary>
+        public double? m_Ruecklauf_Max;
+
         public BHKWStammModel()
         {
             m_ID = 0;

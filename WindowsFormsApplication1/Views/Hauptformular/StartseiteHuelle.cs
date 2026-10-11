@@ -43,6 +43,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Weiche der Solarthermiekachel (Profil / Ganglinie).</summary>
         private bool _solarGanglinie;
 
+        /// <summary>Die Weiche der Photovoltaikkachel (PVG): <c>true</c> = Ganglinie.</summary>
+        private bool _pvGanglinie;
+
         /// <summary>Ein einmaliger Kurzhinweis für die Seite; leer = keiner.</summary>
         private string _kurzhinweis = "";
 
@@ -90,6 +93,9 @@ namespace WindowsFormsApplication1
                 ["ProjektId"] = new Func<int>(() => _kontext.Id),
                 ["Varianten"] = new Func<IReadOnlyList<(int Id, string Name)>>(Varianten),
                 ["VarianteGewaehlt"] = new Action<int>(VarianteWechseln),
+                // Die Kachel „Kühlung und Kälteanlagen“ im Reiter Energieerzeuger: ihr Bestand (Statuspunkt)
+                // aus der plattformfreien Hülle (EPOS.UI.Daten), je Aufruf mit dem offenen Projekt.
+                ["Kuehlung"] = new Func<KuehlungKachelDaten>(() => KuehlungKachelBau.Daten(_kontext.Id)),
                 // Variante anlegen und umbenennen AM KOPFBAND (Anwenderwunsch 08.09.2026):
                 // derselbe Weg wie das Menue "Als Variante speichern…", nur meldet er als
                 // Banner der Seite statt als MessageBox.
@@ -106,6 +112,7 @@ namespace WindowsFormsApplication1
                 ["KlimaHerkunft"] = new Func<KlimaHerkunftGaben>(Klimaherkunft),
                 ["Bericht"] = new Func<Zusammenfassung>(Zusammenfassen),
                 ["SolarartGewaehlt"] = new Action<bool>(an => _solarGanglinie = an),
+                ["PvartGewaehlt"] = new Action<bool>(an => _pvGanglinie = an),
                 ["Kurzhinweis"] = new Func<string>(KurzhinweisAbholen),
                 ["Fehlerhinweis"] = new Func<string>(FehlerhinweisAbholen),
                 ["BerichteGaben"] = BerichteGaben(),
@@ -999,6 +1006,14 @@ namespace WindowsFormsApplication1
 
         private void Photovoltaik(IWin32Window wirt)
         {
+            // PVG (Schemaschritt 206): die Weiche der Kachel - "Ganglinie" oeffnet den Dialog
+            // "Photovoltaik Ganglinie"; er schreibt seine Zuordnungen beim OK selbst.
+            if (_pvGanglinie)
+            {
+                PvGanglinieHuelle.Oeffnen(wirt, _kontext.Id);
+                return;
+            }
+
             // Woertlich pBox_PV_Click (:1374-1412).
             List<WErzeugerModel> liste = Anlagen(WizardItemClass.PV_TYP);
             if (PhotovoltaikHuelle.Oeffnen(wirt, _kontext.Id, WizardItemClass.PV_TYP, liste))

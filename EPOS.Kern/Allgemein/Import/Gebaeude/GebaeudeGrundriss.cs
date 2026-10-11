@@ -39,17 +39,35 @@ namespace WindowsFormsApplication1
         /// <param name="abbild">Das gelesene Abbild.</param>
         /// <param name="index">Das Gebäude (eines je Lauf).</param>
         /// <param name="zonierung">Die Zonierung desselben Gebäudes; <c>null</c> = keine.</param>
-        internal static Zonengeometrie Bilden(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung = null)
-            => Zonengeometrie.AusRaumgrenzen(Eingang(abbild, index, zonierung));
+        /// <param name="grundrisse">Die Grundrisse je Raum (HC-5) nach ihrer Quellkennung; <c>null</c> = die am Raum des Abbilds
+        /// (<see cref="AbbildRaum.Grundrisse"/>, Export).</param>
+        internal static Zonengeometrie Bilden(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung = null,
+                                              IReadOnlyList<Raumgrundriss> grundrisse = null)
+            => Zonengeometrie.AusRaumgrenzen(Eingang(abbild, index, zonierung, grundrisse));
+
+        /// <summary>
+        /// <b>Die Zonengeometrie mit dem frisch abgeleiteten Grundriss je Raum</b> (HC-5; Import und „Datei erneut lesen“): dieselben
+        /// Grundrisse, die der Import speichert (<see cref="GebaeudeRaumgrundrisse.Bilden"/>), stehen vor dem Rechteckersatz.
+        /// </summary>
+        internal static Zonengeometrie BildenMitGrundriss(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung,
+                                                          out IReadOnlyList<Raumgrundriss> grundrisse)
+        {
+            grundrisse = GebaeudeRaumgrundrisse.Bilden(abbild, index);
+            return Bilden(abbild, index, zonierung, grundrisse);
+        }
 
         /// <summary>Der formatfreie Eingang der Zonengeometrie (Regeln: Klassenkopf).</summary>
-        internal static Umrisseingang Eingang(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung = null)
+        internal static Umrisseingang Eingang(GebaeudeAbbild abbild, int index, GebaeudeZonierung zonierung = null,
+                                              IReadOnlyList<Raumgrundriss> grundrisse = null)
         {
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return new Umrisseingang();
             AbbildGebaeude g = abbild.Gebaeude[index];
             bool ifc = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal);
-            double drehung = ifc ? abbild.NordwinkelGrad ?? 0.0 : 0.0;
-            var e = new Umrisseingang { NordwinkelGrad = abbild.NordwinkelGrad, NordwinkelAngewandt = ifc };
+            // G5-N: Eine Vorgabe des Anwenders gilt bei beiden Formaten — der Leser hat die Azimute damit gedreht.
+            bool angewandt = ifc || abbild.NordwinkelVorgabeGrad.HasValue;
+            double? nordwinkel = abbild.NordwinkelVorgabeGrad ?? abbild.NordwinkelGrad;
+            double drehung = angewandt ? nordwinkel ?? 0.0 : 0.0;
+            var e = new Umrisseingang { NordwinkelGrad = nordwinkel, NordwinkelAngewandt = angewandt };
 
             // Geschosse: die der Datei (IFC), dazu je Raum Kennung, Name und Lage (gbXML).
             foreach (AbbildGeschoss s in g.Geschosse)
@@ -64,6 +82,11 @@ namespace WindowsFormsApplication1
             if (mitZonen)
                 foreach (Importzone z in zonierung.Zonen)
                     e.Zonen.Add(new Umrisszone(z.Schluessel, z.Name, z.IstBeheizt, z.FlaecheM2, z.VolumenM3, z.HoeheM, z.Handgeaendert));
+
+            // Grundrisse je Raum nach ihrer (gekürzten) Quellkennung.
+            var jeKennung = new Dictionary<string, Raumgrundriss>(StringComparer.Ordinal);
+            foreach (Raumgrundriss gr in grundrisse ?? Array.Empty<Raumgrundriss>())
+                if (gr?.Quellkennung != null) jeKennung.TryAdd(gr.Quellkennung, gr);
 
             // Räume in der Reihenfolge der Datei.
             var jeRaum = new Dictionary<string, (AbbildRaum Abbild, Umrissraum Umriss)>(StringComparer.Ordinal);
@@ -80,6 +103,10 @@ namespace WindowsFormsApplication1
                     FlaecheM2 = r.FlaecheM2,
                     VolumenM3 = r.VolumenM3,
                     HoeheM = r.HoeheM,
+                    Koerper = r.Koerper,
+                    Grundrisse = grundrisse == null
+                        ? r.Grundrisse ?? Array.Empty<Raumgrundriss>()
+                        : jeKennung.TryGetValue(Quellkennung.Kuerzen(r.Kennung), out Raumgrundriss eigener) ? new[] { eigener } : Array.Empty<Raumgrundriss>(),
                 };
                 jeRaum[r.Kennung] = (r, u);
                 e.Raeume.Add(u);
@@ -122,6 +149,7 @@ namespace WindowsFormsApplication1
                     RandpunkteM = s.Grenze != null ? s.Grenze.RandpunkteM : b.RandpunkteM,
                     FlaecheM2 = s.Grenze?.FlaecheM2 ?? Anteil(b.BruttoflaecheM2, lage, raeume),
                     Sektor = stellung == Grenzstellung.Wand ? Sektor(b, s.Grenze, pos, drehung) : null,
+                    AzimutGrad = stellung == Grenzstellung.Wand ? Azimut(b, s.Grenze, pos, drehung) : null,
                 });
             }
         }
@@ -177,6 +205,18 @@ namespace WindowsFormsApplication1
                 return GebaeudeAggregation.Sektor(Zonengeometrie.ModellAzimut(n[0], n[1]) - drehung);
             if (b.AzimutGrad is double a) return GebaeudeAggregation.Sektor(pos > 0 ? a + 180.0 : a);
             return null;
+        }
+
+        /// <summary>HC-5c: der wahre Azimut einer Wand aus Sicht des Raums [°] — dieselbe Quelle wie <see cref="Sektor"/>, in [0, 360).</summary>
+        private static double? Azimut(AbbildBauteil b, AbbildGrenze grenze, int pos, double drehung)
+        {
+            double? a = null;
+            if (grenze?.Normale is double[] n && n.Length >= 2 && Math.Sqrt(n[0] * n[0] + n[1] * n[1]) > 1e-6)
+                a = Zonengeometrie.ModellAzimut(n[0], n[1]) - drehung;
+            else if (b.AzimutGrad is double w) a = pos > 0 ? w + 180.0 : w;
+            if (!a.HasValue) return null;
+            double r = a.Value % 360.0;
+            return r < 0.0 ? r + 360.0 : r + 0.0;
         }
 
         /// <summary>

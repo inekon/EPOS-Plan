@@ -239,6 +239,16 @@ namespace WindowsFormsApplication1
         /// lieferte.</para>
         /// </summary>
         public static int Referenzjahr(int idProjekt)
+            => Preisreihenjahr(idProjekt) ?? DbWerte.SOLAR_REFERENZJAHR_STANDARD;
+
+        /// <summary>
+        /// <b>Das Jahr der Preisreihe</b> der aktiven Stromspeicher-Variante eines Projekts —
+        /// <c>null</c>, wenn das Projekt keine Preisreihe mit Jahr trägt (der Regelfall, E114). Nur mit
+        /// diesem Jahr liegen die beweglichen Feiertage auf echten Daten
+        /// (<see cref="Gemeinjahrkalender"/>); ohne es ist kein Jahresdatum relevant.
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt; 0 oder kleiner = Katalog, ohne Jahr.</param>
+        public static int? Preisreihenjahr(int idProjekt)
         {
             try
             {
@@ -254,11 +264,12 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                // Still: Das Referenzjahr entscheidet nur ueber zwei Umstelltage. Ein
-                // Lesefehler darf den Lauf nicht anhalten, der Rueckfall ist eindeutig.
+                // Still: Das Jahr entscheidet nur ueber zwei Umstelltage und die Lage der
+                // beweglichen Feiertage. Ein Lesefehler darf den Lauf nicht anhalten, der
+                // Rueckfall (kein Jahr) ist eindeutig.
                 Console.WriteLine("Referenzjahr der Zeitbasis nicht lesbar: " + ex.Message);
             }
-            return DbWerte.SOLAR_REFERENZJAHR_STANDARD;
+            return null;
         }
 
         /// <summary>Leert Liste und Hilfslisten - eine Stelle statt vier.</summary>

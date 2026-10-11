@@ -3,6 +3,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -190,6 +191,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Strombedarf_Verbraucher_viertelstuendlich = new double[8760 * 4];
 
+        /// <summary>
+        /// Die BHKW-Einspeisung des Laufs ohne Speicherflotte [kW je Viertelstunde] — die EINE
+        /// Quelle der Einspeisung: je Viertelstunde der BHKW-Strom, den die Verbraucher des
+        /// Anschlusses nach der Kaskade nicht abnehmen, <c>max(0, −Rest_q)</c> auf den Rest nach
+        /// der Kaskade (<see cref="BhkwUeberschussKw"/>). Die Kaskade zieht den BHKW-Strom
+        /// stundenkonstant und ungeklemmt ab; ein negativer Viertelstundenrest ist Überschuss.
+        /// Gebildet unabhängig davon, ob Photovoltaik rechnet; <see cref="SimulationPV.BhkwUeberschuss"/>
+        /// ist dieselbe Größe im Stundenmittel (gleiche Eingangsreihe, gleiche Formel). Die
+        /// Reihe schließt die Bilanz Netzbezug + PV-Eigenverbrauch + BHKW-Strom − Einspeisung =
+        /// Bedarf aller Verbraucher je Viertelstunde. <c>null</c> ohne BHKW. Mit Speicherflotte gilt
+        /// ihre Bilanz (<c>Speicherflottennetzbilanz.BhkwNetzeinspeisungKw</c>).
+        /// </summary>
+        public double[] BhkwEinspeisung_viertelstuendlich = null;
+
         public bool bSimulationWP = false;
         public bool bSimulationKessel = false;
         public bool bSimulationSolarthermie = false;
@@ -219,6 +234,35 @@ namespace WindowsFormsApplication1
         public SpeicherEngine.SpeicherErgebnis Speicherergebnis = null;
 
         /// <summary>
+        /// Der Eigenverbrauch des Speichersystems im Lauf [kWh/a] (Welle M5, SP1): der Standby der
+        /// Speicheranlagen, im Flottenpfad der Hilfsverbrauch der Einheiten. 0 ohne Standby.
+        /// </summary>
+        public double SpeichersystemEigenverbrauchKwh = 0;
+
+        /// <summary>
+        /// Aus dem PV-Überschuss gedeckter Standby je Viertelstunde [kW] (SP1); <c>null</c> ohne
+        /// Standby oder im Flottenpfad (dort steht er in der Flottenbilanz).
+        /// </summary>
+        public double[] SpeichersystemStandbyAusPvKw = null;
+
+        /// <summary>
+        /// Aus dem Netz gedeckter Standby je Viertelstunde [kW] (SP1); <c>null</c> ohne Standby. Er
+        /// steht im Netzbezug (<see cref="Rest_Strombedarf_viertelstuendlich"/>).
+        /// </summary>
+        public double[] SpeichersystemStandbyAusNetzKw = null;
+
+        /// <summary>
+        /// Einspeisung und Abregelung der Photovoltaik je Viertelstunde [kW] nach der Speicherladung
+        /// und dem Standby aus PV-Überschuss (SB1 a, PV3, SP1) — die eine Aufteilung, die Ergebnis,
+        /// Reiter und Bericht lesen. Im Flottenpfad gilt die Flottenbilanz, nicht diese Methode.
+        /// </summary>
+        public void PvEinspeisungAufteilen(out double[] einspeisungKw, out double[] abregelungKw)
+        {
+            simulation_pv.EinspeisungAufteilen(Speicherergebnis?.LadungAcKwh, SpeichersystemStandbyAusPvKw,
+                                               out einspeisungKw, out abregelungKw);
+        }
+
+        /// <summary>
         /// Parametersatz, Variante und Anlagenbezug des Speicherlaufs (AP3b) —
         /// belegt zusammen mit <see cref="Speicherergebnis"/>.
         /// </summary>
@@ -236,6 +280,20 @@ namespace WindowsFormsApplication1
         /// und Einzelspeicher und wird durch den Lauf nicht persistiert.
         /// </summary>
         public SpeicherOptimierungEingaben SpeicherflottenEingaben { get; set; }
+
+        /// <summary>
+        /// Bildet <see cref="SpeicherflottenEingaben"/> im Lauf selbst — nach der
+        /// Bedarfsrechnung und vor der Speicherstufe — aus dem Lastgang DIESES Laufs
+        /// (<see cref="SpeicherflotteVorbelegen"/>). Ein vorher gesetzter Stand wird dabei
+        /// ersetzt; ohne Flotteneinheiten bleibt er leer.
+        /// </summary>
+        public bool SpeicherflotteAusLaufVorbelegen { get; set; }
+
+        /// <summary>
+        /// Herkunft des Peak-Ziels, mit dem die Flotte dieses Laufs gerechnet hat;
+        /// <c>null</c>, solange der Lauf keine Flottenvorgabe gebildet hat.
+        /// </summary>
+        public FlottenPeakZielHerkunft? SpeicherflottenPeakZielHerkunft { get; set; }
 
         /// <summary>Vollständiger Lauf zum instanzbezogenen Flottenstand.</summary>
         public SpeicherFlottenProjektLauf Speicherflottenlauf { get; internal set; }
@@ -379,7 +437,25 @@ namespace WindowsFormsApplication1
 
             using (DataRepository.EngineModus())
             {
+                // Erdsonde (Konzept Simulationsablauf 23.4): Der erste Lauf rechnet mit einer
+                // Startschätzung der Vorjahre. Hat er ein Sondenfeld gerechnet, wiederholt ein
+                // zweiter Lauf den ganzen Durchgang — die Wärmepumpe rechnet in der Stundenschleife
+                // der Speicherstufe zusammen mit Speichern, Kessel und BHKW, ein Teildurchgang hätte
+                // keinen eigenen Zustand. Ohne Sondenfeld bleibt es bei einem Lauf.
+                simulation_wp.FeldvorgabeSetzen(null);
+                SimulationProtokoll.Meldestand stand = SimulationProtokoll.Aktuell.Merken();
+                // AK3-W3d: Jeder Durchgang beginnt im AK3-Weg bei Pass 1 mit frischem Kreis (sonst nichts).
+                simulation_Waermebedarf?.Ak3FeldlaufBeginnen();
                 Do_Simulation_Intern(ID_Projekt, fortschritt, abbruch);
+
+                Dictionary<int, SimulationWaermepumpe.Feldvorgabe> vorgabe = FeldvorgabeAusLauf();
+                if (vorgabe != null)
+                {
+                    SimulationProtokoll.Aktuell.ZuruecksetzenAuf(stand);
+                    simulation_wp.FeldvorgabeSetzen(vorgabe);
+                    simulation_Waermebedarf?.Ak3FeldlaufBeginnen();
+                    Do_Simulation_Intern(ID_Projekt, null, abbruch);
+                }
                 DbFehlerUebernehmen();
             }
         }
@@ -442,11 +518,13 @@ namespace WindowsFormsApplication1
             // Laufwechsel nicht überleben.
             _schichtzeilen = null;
             _anschlusshoehen = null;
+            _zapftemperatur = null;
 
             Array.Clear(Rest_Waermebedarf_stuendlich, 0, Rest_Waermebedarf_stuendlich.Length);
             Array.Clear(Rest_Strombedarf_viertelstuendlich, 0, Rest_Strombedarf_viertelstuendlich.Length);
             Array.Clear(Strombedarf_Verbraucher_viertelstuendlich, 0, Strombedarf_Verbraucher_viertelstuendlich.Length);
-            
+            BhkwEinspeisung_viertelstuendlich = null;
+
             simulation_wp.Init();
             simulation_solarthermie.Init();
             simulation_spk.Init();
@@ -531,6 +609,9 @@ namespace WindowsFormsApplication1
             // Speicherergebnis des Vorlaufs verwerfen - sonst zeigten Chart und
             // Kennzahlen die Werte eines früheren Projekts an.
             Speicherergebnis = null;
+            SpeichersystemEigenverbrauchKwh = 0;
+            SpeichersystemStandbyAusPvKw = null;
+            SpeichersystemStandbyAusNetzKw = null;
             Speicherflottenergebnis = null;
             Speicherflottenkonfiguration = null;
             Speicherflottennetzbilanz = null;
@@ -561,6 +642,8 @@ namespace WindowsFormsApplication1
 
 
             Phase(fortschritt, abbruch, Laufphase.Kaskade, 0.10);
+            // AK3-W3b: der AK3-Weg an der Kaskade (Naht, Vektorstufen als Schleifenmitglieder); sonst nichts.
+            Ak3Einrichten();
             Kaskade_Zweikanalig();
 
             // E26 (Befund N3): der Bedarf aller Verbraucher vor jeder Eigenerzeugung — der
@@ -571,6 +654,12 @@ namespace WindowsFormsApplication1
                 Strombedarf_Verbraucher_viertelstuendlich = AddVectors(
                     Strombedarf_Verbraucher_viertelstuendlich,
                     Stundenwerte_zu_viertelstunden(simulation_bhkw.stromproduktion));
+
+            // Die BHKW-Einspeisung des Laufs je Viertelstunde: der negative Rest nach der
+            // Kaskade. Dieselbe Reihe sieht die PV-Stufe als Eingang (SimulationPV.BhkwUeberschuss).
+            BhkwEinspeisung_viertelstuendlich = null;
+            if (bSimulationBHKW && simulation_bhkw.stromproduktion != null)
+                BhkwEinspeisung_viertelstuendlich = BhkwUeberschussKw(Rest_Strombedarf_viertelstuendlich);
 
             // Photovoltaik abziehen
             Phase(fortschritt, abbruch, Laufphase.Photovoltaik, 0.60);
@@ -612,6 +701,14 @@ namespace WindowsFormsApplication1
             // Beschaffen der Lastreihe auswertet.
             // ***********************************************************************
             Phase(fortschritt, abbruch, Laufphase.Stromspeicher, 0.75);
+
+            // Die Flottenvorgabe aus DIESEM Lauf (Anwenderentscheid 04.10.2026): Wärme- und
+            // Strombedarf und alle Erzeuger vor der Speicherstufe sind gerechnet, der Lastgang
+            // ohne Speicher steht fest. Nur auf Anforderung (Ergebnishülle); der Runner und der
+            // Referenzlauf rechnen unverändert.
+            if (SpeicherflotteAusLaufVorbelegen && !SpeicherflotteVorbelegen(ID_Projekt))
+                return;
+
             if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER ||
                 SpeicherflottenEingaben != null ||
                 (SpeicherflotteAktiv != null && SpeicherflotteAktiv(m_ID_Projekt)))
@@ -620,7 +717,16 @@ namespace WindowsFormsApplication1
                 if (temp != null)
                 {
                     if (!SpeicherflotteErsetztReststrom)
+                    {
                         Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
+
+                        // SP1 (Welle M5): Was der Standby nicht aus PV-Überschuss deckt, kommt aus
+                        // dem Netz - nie aus der Batterie. Ohne Standby bleibt der Vektor, wie er ist.
+                        if (SpeichersystemStandbyAusNetzKw != null &&
+                            SpeichersystemStandbyAusNetzKw.Length == Rest_Strombedarf_viertelstuendlich.Length)
+                            Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich,
+                                                                            SpeichersystemStandbyAusNetzKw);
+                    }
                     bSimulationSSP = true;
                 }
             }
@@ -694,17 +800,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void EnergietraegerZuordnungLesen(int idType, string gewerk, Dictionary<string, int> ziel)
         {
-            RecordSet rs = new RecordSet();
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + idType);
-            while (rs.Next())
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Bezeichner, ID_Carrier FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                new DbParam("@proj", m_ID_Projekt), new DbParam("@typ", idType));
+            if (dt == null) return;
+
+            foreach (DataRow r in dt.Rows)
             {
-                object bezeichner = rs.Read("Bezeichner");
-                object carrier = rs.Read("ID_Carrier");
+                object bezeichner = r["Bezeichner"];
+                object carrier = r["ID_Carrier"];
 
                 if (bezeichner == null || bezeichner == DBNull.Value)
                 {
                     Protokoll.Warnung("Energieträger-Zuordnung: Eine " + gewerk + "-Anlage des Projekts " +
-                                      "(Tab_Energieanlagen ID " + rs.GetString("ID") + ") trägt keinen " +
+                                      "(Tab_Energieanlagen ID " + Convert.ToString(r["ID"], System.Globalization.CultureInfo.InvariantCulture) + ") trägt keinen " +
                                       "Bezeichner - Brennstoff, Kosten und Emissionen dieser Anlage können " +
                                       "im Bericht keinem Energieträger zugeordnet werden.");
                     continue;
@@ -721,7 +830,6 @@ namespace WindowsFormsApplication1
 
                 ziel.TryAdd(bezeichner.ToString(), Convert.ToInt32(carrier));
             }
-            rs.Close();
         }
 
         // ===================================================================
@@ -773,11 +881,6 @@ namespace WindowsFormsApplication1
             // ihre Stelle tritt die Energieprobe der Kanalbildung (Konzept 11.3), die
             // SimulationWaermebedarf selbst in das Lauf-Protokoll meldet.
             Kanalsatz kanaele = simulation_Waermebedarf.KanaeleDrei();
-
-            // #568: Raumwärmebedarf VOR der Kaskade - die Heizperiode, in der ein Kessel
-            // betriebsbereit gehalten wird (SimulationSPK.IstBetriebsbereit). Eine Kopie:
-            // Die Stufen schreiben die Kanäle in place fort.
-            _raumwaermeVorKaskade = (double[])kanaele.Bedarf[Kanal.HEIZUNG].Clone();
 
             // KU2: die Kälteseite des Vorlaufs verwerfen (Kälteerzeuger, Tagesbetriebsart).
             KaelteseiteZuruecksetzen();
@@ -840,7 +943,15 @@ namespace WindowsFormsApplication1
             // NACH der gesamten Speicherstufe.
             ZwischenstufenAufnehmen();
 
+            // AK3-W2 (Festlegung 13): im AK3-Weg auch die Vektorstufen VOR der Speicherstufe.
+            // Nicht wählbar - ohne den Schalter bleibt die Zuordnung wie oben.
+            if (Ak3VektorstufenInSchleife) Ak3VektorstufenAufnehmen();
+
             bool schleifeGelaufen = false;
+
+            // BW5 (Konzept Simulationsablauf 21): Der Zusatzbedarf der Desinfektion steht vor jeder Stufe
+            // zurück, die die Zieltemperatur nicht erreicht. Ohne Desinfektion null - alles wie zuvor.
+            DesinfektionVorbereiten(kanaele);
 
             for (int i = 0; i < 4; i++)
             {
@@ -861,7 +972,8 @@ namespace WindowsFormsApplication1
                     // hier stand bis dahin ein dritter Parameter ctrl_konfig.model.m_WP_Heizstab.
                     Speicherstufe_Rechnen(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich),
-                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
+                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft,
+                        ctrl_konfig.model.Kessel_Heizgrenze);
 
                     if (m_bError)
                         for (int k = 0; k < Kanal.ANZAHL; k++)
@@ -909,7 +1021,11 @@ namespace WindowsFormsApplication1
                         bSimulationKessel = true;
                     }
 
-                    if (_solarInSchleife) bSimulationSolarthermie = true;
+                    if (_solarInSchleife)
+                    {
+                        bSimulationSolarthermie = true;
+                        SolarPumpenstromBuchen();
+                    }
 
                     if (_bhkwInSchleife)
                     {
@@ -925,12 +1041,16 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
+                // BW5: eine Vektorstufe, die die Zieltemperatur erreicht, sieht den Zusatzbedarf.
+                double[] desinfektionVorher = DesinfektionFreigebenVektor(tool[i], kanaele);
+
                 if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL)
                 {
                     // Vektorstufe: zweikanalig, aber ohne Speicherbeteiligung.
                     Simulation_SPK_Ctrl_Zweikanalig(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich),
-                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
+                        ctrl_konfig.model.m_Kessel_Betriebsbereitschaft,
+                        ctrl_konfig.model.Kessel_Heizgrenze);
 
                     temp = Stundenwerte_zu_viertelstunden(simulation_spk.Stromverbrauch_stuendlich);
                     Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
@@ -943,6 +1063,7 @@ namespace WindowsFormsApplication1
                     Simulation_Solarthermie_Ctrl_Zweikanalig(kanaele);
 
                     bSimulationSolarthermie = true;
+                    SolarPumpenstromBuchen();
                 }
                 else if (tool[i] == DbWerte.ERZEUGER_BHKW)
                 {
@@ -961,7 +1082,13 @@ namespace WindowsFormsApplication1
 
                     bSimulationBHKW = true;
                 }
+
+                if (desinfektionVorher != null)
+                    _desinfektion.ZurueckhaltenJahr(kanaele.Bedarf[Kanal.BRAUCHWASSER], desinfektionVorher, tool[i]);
             }
+
+            // BW5: Was keine Stufe gedeckt hat, deckt der benannte Zusatzstrom.
+            DesinfektionAbschliessen();
 
             // Ergebnis der Wärmeseite: die Summe der DREI Restkanäle (Paket K2). Ein
             // EIGENER Vektor - kein Alias auf das Ausgangsarray eines Moduls (B0-2).
@@ -972,9 +1099,196 @@ namespace WindowsFormsApplication1
 
             WaermeUnterdeckungMelden(Rest_Waermebedarf_stuendlich);
 
+            // KU3-2 (Kühlkonzept 5.5): Ohne Wärmepumpe in der Schleife hat der Lauf noch keine
+            // Kälteerzeuger zusammengestellt - dann rechnen hier die Kältemaschinen allein, vor der
+            // Stufenrechnung des Stroms. Ohne Kältemaschine im Projekt ein sofortiger Rücksprung.
+            if (!_wpInSchleife && !m_bError)
+            {
+                if (_kaeltestunde == null) KaelteerzeugerVorbereiten();
+                KaeltekaskadeRechnen(kanaele);
+            }
+
             // KU2: Meldungen der Kälteseite und die Deckungsprobe Kälte (Kühlkonzept 4.3 #31) -
             // nach der GANZEN Wärmekaskade. Ohne erhobene Kälte ein sofortiger Rücksprung.
             KaelteseiteAbschliessen(kanaele);
+        }
+
+        // =====================================================================================
+        //  BW5 — Thermische Desinfektion (Konzept Simulationsablauf 21)
+        // =====================================================================================
+
+        /// <summary>Die Deckung der Desinfektion dieses Laufs; <c>null</c> ohne Desinfektion.</summary>
+        private Desinfektionsdeckung _desinfektion;
+
+        /// <summary>Zusatzstrom der Desinfektion je Stunde [kWh] — was keine Stufe gedeckt hat; 0 ohne.</summary>
+        public double[] Desinfektion_Zusatzstrom_stuendlich = new double[8760];
+
+        /// <summary>Zusatzstrom der Desinfektion im Jahr [kWh].</summary>
+        public double DesinfektionZusatzstromKwh = 0;
+
+        /// <summary>Gedeckter Zusatzbedarf der Desinfektion je Stufe [kWh] — für Protokoll und Tests.</summary>
+        public IReadOnlyDictionary<string, double> DesinfektionGedecktJeStufe =>
+            _desinfektion != null ? _desinfektion.GedecktJeStufe : new Dictionary<string, double>();
+
+        /// <summary>PS5 (a): Stunden je Puffer-ID, in denen das Frischwassermodul die Entnahme begrenzte.</summary>
+        public readonly Dictionary<int, int> FrischwasserBegrenzteStunden = new Dictionary<int, int>();
+
+        private void FrischwasserstundenUebernehmen(Kaskadenschleife schleife)
+        {
+            FrischwasserBegrenzteStunden.Clear();
+            foreach (SimulationPufferspeicher sp in speicherRegistry.Values)
+            {
+                if (sp == null || !sp.Frischwassermodul) continue;
+                FrischwasserBegrenzteStunden[sp.ID_Pufferspeicher] = schleife.FwmBegrenzteStunden(sp);
+            }
+        }
+
+        /// <summary>
+        /// Legt die Deckung an und nimmt den Zusatzbedarf aus dem Brauchwasserkanal — er wird vor jeder
+        /// fähigen Stufe freigegeben. Ohne Desinfektion bleibt alles, wie es war.
+        /// </summary>
+        private void DesinfektionVorbereiten(Kanalsatz kanaele)
+        {
+            _desinfektion = null;
+            Array.Clear(Desinfektion_Zusatzstrom_stuendlich, 0, Desinfektion_Zusatzstrom_stuendlich.Length);
+            DesinfektionZusatzstromKwh = 0;
+
+            SimulationWaermebedarf b = simulation_Waermebedarf;
+            if (b == null || !(b.Brauchwasser_Desinfektion_Mwh > 0)) return;
+
+            _desinfektion = new Desinfektionsdeckung((double[])b.Brauchwasser_Desinfektion_stuendlich.Clone(),
+                                                     b.DesinfektionZielC);
+            _desinfektion.AusKanalNehmen(kanaele.Bedarf[Kanal.BRAUCHWASSER]);
+        }
+
+        /// <summary>
+        /// Erreicht eine Vektorstufe die Zieltemperatur? Dann gibt sie den Zusatzbedarf frei und liefert den
+        /// Kanalstand davor; sonst <c>null</c>.
+        /// </summary>
+        private double[] DesinfektionFreigebenVektor(string stufe, Kanalsatz kanaele)
+        {
+            if (_desinfektion == null) return null;
+            bool faehig = stufe == DbWerte.ERZEUGER_HEIZKESSEL ? AnlagenErreichenZiel(WizardItemClass.KESSEL_TYP)
+                        : stufe == DbWerte.ERZEUGER_BHKW ? AnlagenErreichenZiel(WizardItemClass.BHKW_TYP)
+                        : false;
+            if (!faehig) return null;
+            return _desinfektion.FreigebenJahr(kanaele.Bedarf[Kanal.BRAUCHWASSER]);
+        }
+
+        /// <summary>Die Fähigkeiten der Erzeugerarten in der Speicherstufe (vor ihrem Lauf).</summary>
+        private void DesinfektionFaehigkeitSetzen()
+        {
+            double ziel = _desinfektion.ZielC;
+            _desinfektion.FaehigJeArt[ProjektPuffer.TYP_WP] = _wpInSchleife && simulation_wp.ErreichtVorlauf(ziel);
+            _desinfektion.FaehigJeArt[ProjektPuffer.TYP_KESSEL] = AnlagenErreichenZiel(WizardItemClass.KESSEL_TYP);
+            _desinfektion.FaehigJeArt[ProjektPuffer.TYP_BHKW] = AnlagenErreichenZiel(WizardItemClass.BHKW_TYP);
+            _desinfektion.FaehigJeArt[ProjektPuffer.TYP_SOLARTHERMIE] = false;
+            _desinfektion.HeizstabFaehig = _wpInSchleife && simulation_wp.HeizstabVorhanden();
+
+            // Speicher, die den Zusatzbedarf abgeben dürfen: Brauchwasser, gepflegtes Paar mit Vorlauf über
+            // dem Ziel, und mindestens eine ladende Anlage, die das Ziel erreicht.
+            foreach (SimulationPufferspeicher sp in speicherRegistry.Values)
+            {
+                if (sp == null || sp.IstQuelle || !sp.BedientKanal(Kanal.BRAUCHWASSER)) continue;
+                if (sp.RueckfallDeltaT > 0 || !Rechenrand.SchwelleErreicht(sp.VL_eff, ziel)) continue;
+                if (LaderErreichtZiel(sp.ID_Pufferspeicher)) _desinfektion.FaehigeSpeicher.Add(sp.ID_Pufferspeicher);
+            }
+        }
+
+        /// <summary>Lädt eine Anlage, die die Zieltemperatur erreicht, diesen Speicher (Senkenzeile)?</summary>
+        private bool LaderErreichtZiel(int idPuffer)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT a.ID, a.ID_Type, a.Vorlauf FROM Tab_Energieanlagen a WHERE a.ID_Projekt = ? AND " +
+                "(a.WS_ID_Puffer = ? OR a.WS_ID_Puffer2 = ? OR a.ID IN (SELECT s.ID_Anlage FROM Z_AnlageSenke s WHERE s.ID_Puffer = ?))",
+                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
+                StilleDb.Par("@p1", DbParamTyp.Integer, idPuffer),
+                StilleDb.Par("@p2", DbParamTyp.Integer, idPuffer),
+                StilleDb.Par("@p3", DbParamTyp.Integer, idPuffer));
+            if (dt == null) return false;
+            foreach (DataRow r in dt.Rows)
+            {
+                int typ = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"));
+                if (typ == WizardItemClass.WP_TYP)
+                {
+                    if (_wpInSchleife && simulation_wp.ErreichtVorlauf(_desinfektion.ZielC)) return true;
+                }
+                else if (typ == WizardItemClass.KESSEL_TYP || typ == WizardItemClass.BHKW_TYP)
+                {
+                    if (AnlageErreichtZiel(r, typ)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Erreicht eine Anlage dieser Art die Zieltemperatur? Heizkessel über die Kette Anlage →
+        /// Heizkessel (<see cref="KesselTemperaturpaarGepflegt"/>), BHKW über den Vorlauf der Anlage; ohne
+        /// gepflegten Vorlauf gilt sie als fähig (dieselbe Regel wie beim Prozessvorlauf, Abschnitt 15 (b)).
+        /// </summary>
+        private bool AnlagenErreichenZiel(int typ)
+        {
+            DataTable dt = StilleDb.Tabelle("SELECT ID, Vorlauf FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                                            StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
+                                            StilleDb.Par("@typ", DbParamTyp.Integer, typ));
+            if (dt == null) return false;
+            foreach (DataRow r in dt.Rows)
+                if (AnlageErreichtZiel(r, typ)) return true;
+            return false;
+        }
+
+        /// <summary>Eine Anlagenzeile (ID, Vorlauf) eines Heizkessels oder BHKW gegen die Zieltemperatur.</summary>
+        private bool AnlageErreichtZiel(DataRow r, int typ)
+        {
+            double? vorlauf;
+            if (typ == WizardItemClass.KESSEL_TYP)
+                vorlauf = KesselVorlaufGepflegt(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
+            else
+            {
+                int v = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf"));
+                vorlauf = v > 0 ? v : (double?)null;
+            }
+            return !vorlauf.HasValue || Rechenrand.SchwelleErreicht(vorlauf.Value, _desinfektion.ZielC);
+        }
+
+        /// <summary>
+        /// Was nach allen Stufen vom Zusatzbedarf offen ist, deckt ein BENANNTER ZUSATZSTROM (elektrisch,
+        /// Wirkungsgrad 1) - er geht in den Rest-Strombedarf. Dazu die Bilanz im Protokoll.
+        /// </summary>
+        private void DesinfektionAbschliessen()
+        {
+            if (_desinfektion == null) return;
+
+            Array.Copy(_desinfektion.Offen, Desinfektion_Zusatzstrom_stuendlich, 8760);
+            DesinfektionZusatzstromKwh = Desinfektion_Zusatzstrom_stuendlich.Sum();
+
+            foreach (KeyValuePair<string, double> e in _desinfektion.GedecktJeStufe)
+                Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_DESINF_GEDECKT,
+                                                e.Key, e.Value));
+
+            if (DesinfektionZusatzstromKwh > 0)
+            {
+                ReststromMwh += DesinfektionZusatzstromKwh / 1000.0;
+                double[] temp = Stundenwerte_zu_viertelstunden(Desinfektion_Zusatzstrom_stuendlich);
+                Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
+                Protokoll.Warnung(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_DESINF_ZUSATZSTROM,
+                                                DesinfektionZusatzstromKwh, _desinfektion.ZielC));
+            }
+        }
+
+        /// <summary>
+        /// ST1 (Welle M2 Solarthermie): der PUMPENSTROM der Solarkreise als Verbraucher am Anschluss —
+        /// an der Position der Solarthermie in den Rest des Strombedarfs, wie der Strom der
+        /// Wärmepumpe. Ohne gepflegte Pumpenleistung und ohne Hilfsenergieanteil ist die Reihe 0 und
+        /// der Vektor bleibt unberührt (bitgleich).
+        /// </summary>
+        private void SolarPumpenstromBuchen()
+        {
+            SimulationSolarthermie st = simulation_solarthermie;
+            if (st == null || !(st.PumpenstromGesamtKwh > 0)) return;
+
+            double[] pumpe = Stundenwerte_zu_viertelstunden(st.Pumpenstrom_stuendlich);
+            Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, pumpe);
         }
 
         /// <summary>
@@ -1042,6 +1356,20 @@ namespace WindowsFormsApplication1
             }
 
             return wp >= 0 && kessel > wp;
+        }
+
+        /// <summary>
+        /// UB‑E2: die Raumtemperatur der Stunde eines gekoppelten Gebäudes (<c>ID_Gebaeude</c>) aus dem Gebäudemodell;
+        /// NaN, solange sie nicht vorliegt (dann rechnet die Übergabegrenze mit der Auslegungsraumtemperatur).
+        /// </summary>
+        private double BivalenzRaumtemperatur(int idGebaeude, int stunde)
+        {
+            var alle = simulation_Waermebedarf?.GebaeudeErgebnisse?.Alle;
+            if (alle == null) return double.NaN;
+            foreach (GebaeudeModellErgebnis e in alle)
+                if (e != null && e.ID_Gebaeude == idGebaeude && e.Raumtemperatur != null && stunde >= 0 && stunde < e.Raumtemperatur.Length)
+                    return e.Raumtemperatur[stunde];
+            return double.NaN;
         }
 
         /// <summary>true, wenn <c>Tool_1..4</c> den Erzeuger enthält.</summary>
@@ -1148,12 +1476,6 @@ namespace WindowsFormsApplication1
         private bool _solarInSchleife = false;
         private bool _kesselInSchleife = false;
 
-        /// <summary>
-        /// Raumwärmebedarf des Projekts vor der Kaskade [kWh je Stunde] (#568) — die
-        /// Heizperiode der Kessel-Betriebsbereitschaft. Gesetzt am Anfang von
-        /// <see cref="Kaskade_Zweikanalig"/>.
-        /// </summary>
-        private double[] _raumwaermeVorKaskade;
         private bool _bhkwInSchleife = false;
 
         /// <summary>
@@ -1296,9 +1618,14 @@ namespace WindowsFormsApplication1
         ///   5. die gemeinsame Stundenschleife A–G (<see cref="Kaskadenschleife"/>).
         ///
         /// Die Kanäle werden dabei in place fortgeschrieben.
+        ///
+        /// <para><paramref name="nBereitschaft"/> und <paramref name="heizgrenze"/> sind die
+        /// Betriebsbereitschaft [h/a] und die Heizgrenze [°C] des Projekts
+        /// (<c>Tab_Einstellungen.Kessel_Betriebsbereitschaft</c>, <c>.Kessel_Heizgrenze</c>;
+        /// <c>null</c> = Vorgabe) — der Kessel liest sie samt der Außentemperatur des Laufs.</para>
         /// </summary>
         private void Speicherstufe_Rechnen(Kanalsatz kanaele, double[] Strombedarf,
-                                           int nBereitschaft)
+                                           int nBereitschaft, double? heizgrenze)
         {
             WaermequelleClass.SchemaSicherstellen();
 
@@ -1321,6 +1648,15 @@ namespace WindowsFormsApplication1
                 // ANLAGENKOPPLUNG (AK1, 6.1): der gerechnete Vorlauf des Heizkreises für die
                 // Kennlinienwahl - null ohne gekoppeltes Gebäude, dann wie im Bestand.
                 simulation_wp.Heizkreisvorlauf = simulation_Waermebedarf?.Heizkreis?.VorlaufC;
+                // UB-E2 (Umsetzungskonzept 3.2 Schritte 1, 2, 6): Rücklauf des Heizkreises, Kaskadenfolge und Raumtemperatur
+                // der gekoppelten Gebäude - wirksam nur für ein Modul mit Bivalenzobjekt (Einbindung gesetzt, U-1).
+                simulation_wp.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
+                simulation_wp.KesselInKaskade = KaskadeEnthaelt(DbWerte.ERZEUGER_HEIZKESSEL);
+                simulation_wp.VorDemKessel = KesselHinterWaermepumpe();
+                simulation_wp.BivalenzRaumtemperatur = BivalenzRaumtemperatur;
+                // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - null ohne Prozess mit
+                // Temperaturpaar, dann wie im Bestand.
+                simulation_wp.Prozesstemperatur = simulation_Waermebedarf?.ProzessTemperatur;
                 simulation_wp.PV_Ueberschuss_stuendlich = PV_Ueberschuss_Vorabberechnen();
                 simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
                 // Den Heizstab holt sich das Modul seit dem 16.09.2026 je Anlage selbst
@@ -1330,6 +1666,8 @@ namespace WindowsFormsApplication1
                 // selbst aus den Kanälen - im zweikanaligen Weg ist der Kanal die Wahrheit,
                 // nicht ein vorab zugewiesener Summenvektor.
 
+                // V14: der Kalender der Wärmerechnung für die Wochentagsmaske der Sperrfenster.
+                simulation_wp.SperrWochentagJan1 = simulation_Waermebedarf != null ? simulation_Waermebedarf.WochentagJan1 : -1;
                 m_bError = !simulation_wp.Vorbereiten_Zweikanalig();
                 if (m_bError)
                 {
@@ -1346,6 +1684,9 @@ namespace WindowsFormsApplication1
             if (_solarInSchleife)
             {
                 Solar_Liste_Laden();
+                // ST2 (Welle M2): der gerechnete Heizkreisrücklauf als Eintrittsseite eines Felds
+                // mit Arbeitstemperatur aus dem Speicher, das keinen Puffer lädt.
+                simulation_solarthermie.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
                 if (!simulation_solarthermie.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
                     m_bError = true;
@@ -1365,7 +1706,11 @@ namespace WindowsFormsApplication1
                 simulation_spk.Strombedarf_stuendlich =
                     NetzbezugGeklemmt((double[])stromStufeneingang.Clone());
                 simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
-                simulation_spk.Raumwaermebedarf_Projekt = _raumwaermeVorKaskade;
+                // #568, Anwenderentscheid 27.09.2026: Heiztag = Tagesmittel der Aussentemperatur
+                // des Laufs unter der Heizgrenze des Projekts.
+                simulation_spk.Aussentemperatur_Projekt = Stundentemperatur;
+                simulation_spk.Vorgabe_Heizgrenze = heizgrenze;
+                KesselRuecklaufEingaengeSetzen();
 
                 if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
                 {
@@ -1386,6 +1731,7 @@ namespace WindowsFormsApplication1
                 simulation_bhkw.strombedarf = (double[])stromStufeneingang.Clone();
                 simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
                 simulation_bhkw.modeBHKW = modeBHKW;
+                simulation_bhkw.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC; // UB-E3: Ruecklaufgrenze
                 // Der skalare Pendelspeicher ist im zweikanaligen Weg abgelöst - die
                 // Kapazität kommt aus dem zugeordneten SimulationPufferspeicher
                 // (Konzept 6.5, zweiter Punkt). Der Wert bleibt auf 0, damit ein
@@ -1428,6 +1774,14 @@ namespace WindowsFormsApplication1
             // zusätzlich die Eintrittstemperatur.
             QuellbezuegeAufbauen(kontext);
 
+            // KESSELKENNLINIE E3: Stufe (b) der Rücklaufkette - der Senkenspeicher eines Kessels mit
+            // Brennwertkennlinie. Erst jetzt, weil die Registry offen sein muss.
+            KesselRuecklaufSpeicherSetzen();
+
+            // WELLE M2 (ST2): der Senkenpuffer eines Kollektorfelds mit Arbeitstemperatur aus dem
+            // Speicher. Ebenfalls erst jetzt, weil die Registry offen sein muss.
+            SolarTemperaturSpeicherSetzen();
+
             // PAKET B1 (Konzept 8.2, L8): Temperaturkopplung der Wärmepumpen-Module.
             // MUSS hier stehen - nach QuellspeicherUebernehmen (erst dort wird die
             // eigene Quellinstanz durch die GETEILTE Registry-Instanz ersetzt, und genau
@@ -1444,14 +1798,34 @@ namespace WindowsFormsApplication1
 
             schleife.Kontext = kontext;
             schleife.Bedarfsreihenfolge = BedarfsreihenfolgeAufbauen();
+            // PW1 Stufe 1 (d): die Entnahme des Prozesskanals aus den Speichern.
+            schleife.Prozesstemperatur = simulation_Waermebedarf?.ProzessTemperatur;
+            // BW5: die Deckung der Desinfektion - fähig ist, wer die Zieltemperatur erreicht.
+            schleife.Desinfektion = _desinfektion;
+            if (_desinfektion != null) DesinfektionFaehigkeitSetzen();
+            // AK3-W2: die Bedarfsnaht der Kaskadenstunde; null = Jahresvektor (heutiger Weg).
+            schleife.Stundenbedarf = Stundenbedarf;
 
             // KU2 (Kühlkonzept 5.2, 5.5): die Wärmepumpen im Kühlbetrieb und die
             // Tagesbetriebsart - VOR der Stundenschleife, denn am Kühltag ist ihr Heizkanal
             // gesperrt. Ohne Kühlbetrieb bleibt das Wärmepumpenmodul unberührt.
             if (_wpInSchleife) KaelteerzeugerVorbereiten();
+            // AK3-K (Festlegung 16): im AK3-Weg die Kältestunde je Stunde nach der Wärmestunde.
+            schleife.NachStunde = Ak3KaeltestundeEinrichten();
 
             // --- 5. Stundenschleife A–G ------------------------------------------------
-            m_bError = !schleife.Rechnen(kanaele);
+            // AK3-W3b: im AK3-Weg mit benanntem Abbruch des Kreises und Nachführen der Bedarfsseite.
+            m_bError = !(Stundenbedarf is Ak3Stundenbedarf ? Ak3Rechnen(schleife, kanaele) : schleife.Rechnen(kanaele));
+
+            // PW1 Stufe 1: was das Temperaturniveau des Prozesskanals am Kessel und an den
+            // Speichern bewirkt hat (die Wärmepumpe meldet selbst). Ohne Niveau still.
+            if (!m_bError)
+            {
+                if (_kesselInSchleife) simulation_spk.ProzessMelden();
+                schleife.ProzessMelden();
+                schleife.FrischwasserMelden();
+                FrischwasserstundenUebernehmen(schleife);
+            }
 
             // D5a: Der Zyklus-Guard der Rechenebenen bricht dialogfrei ab; sein Text
             // gehört in denselben Fehlerkanal wie die übrigen Abbrüche.
@@ -1634,23 +2008,37 @@ namespace WindowsFormsApplication1
         {
             simulation_wp.wp_list.Clear();
 
-            // Gepflegte Priorität zuerst, ungepflegte (NULL/0) hinten — dieselbe Regel wie
-            // Hydraulikbild und Erzeugerkarten (Ladeordnung.SqlAnlagenprio).
-            DataTable dt = StilleDb.Tabelle(
-                "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
-                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
-                StilleDb.Par("@proj", DbParamTyp.Integer, m_ID_Projekt),
-                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
-
-            if (dt == null)
+            List<int> ids = WaermepumpenanlagenLesen(m_ID_Projekt);
+            if (ids == null)
             {
                 Protokoll.Warnung("Speicherstufe: Die Wärmepumpen des Projekts " + m_ID_Projekt +
                                   " ließen sich nicht lesen - die Stufe rechnet ohne Module.");
                 return;
             }
 
+            simulation_wp.wp_list.AddRange(ids);
+        }
+
+        /// <summary>
+        /// Die Wärmepumpen-Anlagen eines Projekts in Modulfolge — die Liste, aus der
+        /// <see cref="WP_Liste_Laden"/> die Module baut und <see cref="Kaeltefolge.Lesen"/> die Folge der
+        /// Wärmepumpen im Kühlbetrieb liest. <c>null</c> bei einem Lesefehler.
+        /// </summary>
+        internal static List<int> WaermepumpenanlagenLesen(int idProjekt)
+        {
+            // Gepflegte Priorität zuerst, ungepflegte (NULL/0) hinten — dieselbe Regel wie
+            // Hydraulikbild und Erzeugerkarten (Ladeordnung.SqlAnlagenprio).
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? " +
+                "ORDER BY " + Ladeordnung.SqlAnlagenprio(null) + ", ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
+            if (dt == null) return null;
+
+            var ids = new List<int>();
             foreach (DataRow r in dt.Rows)
-                simulation_wp.wp_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
+                ids.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
+            return ids;
         }
 
         /// <summary>Kesselliste und Anlagen-IDs (wie <see cref="Simulation_SPK_Ctrl"/>); N9 wie oben,
@@ -1712,18 +2100,18 @@ namespace WindowsFormsApplication1
         /// <see cref="Ladeordnung.SqlAnlagenprio"/> (gepflegte Priorität zuerst, dann ID) —
         /// wie Wärmepumpen, Kessel und Kollektorfelder.
         ///
-        /// <c>bhkwGrenzL</c> wird hier aus der ANLAGE vorbelegt (Prozentwert / 100);
-        /// <c>SimulationBHKW.Moduldaten_Einlesen</c> überschreibt den Wert anschließend
-        /// aus dem Katalog, sofern dort eine Grenzleistung hinterlegt ist. Der KATALOGWERT
-        /// wird dort seit dem Einheiten-Fix dieses Pakets ebenfalls durch 100 geteilt -
-        /// vorher trug er als Prozentzahl (z. B. 50) in eine Formel ein, die einen Faktor
-        /// erwartet (0,5). Siehe die Begründung in <c>Moduldaten_Einlesen</c>.
+        /// Das ANLAGENFELD der unteren Grenzleistung geht in Prozent nach
+        /// <c>bhkw_anlagen_grenzleistung</c>; <c>SimulationBHKW.Grenzfaktor</c> löst daraus
+        /// mit Katalog- und Projektwert die Untergrenze je Modul auf — das Anlagenfeld gilt,
+        /// sobald es gepflegt ist (Befund BHKW-Untergrenze, Papier „Verbesserungen
+        /// 29.09.2026"). Bis dahin überschrieb der Katalog- bzw. Projektwert es immer.
         /// </summary>
         private void BHKW_Liste_Laden()
         {
             simulation_bhkw.bhkw_list.Clear();
             simulation_bhkw.bhkw_list_Namen.Clear();
             simulation_bhkw.bhkw_anlagen_ids.Clear();
+            simulation_bhkw.bhkw_anlagen_grenzleistung.Clear();
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT ID_BHKW, ID, Bezeichner, Grenzleistung FROM Tab_Energieanlagen " +
@@ -1739,17 +2127,14 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            int i = 0;
             foreach (DataRow r in dt.Rows)
             {
                 simulation_bhkw.bhkw_list.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID_BHKW")));
                 simulation_bhkw.bhkw_anlagen_ids.Add(StilleDb.Zahl(StilleDb.Feld(r, "ID")));
                 simulation_bhkw.bhkw_list_Namen.Add(StilleDb.Text(StilleDb.Feld(r, "Bezeichner")));
 
-                if (i < SimulationBHKW.MAX_BHKW)
-                    simulation_bhkw.bhkwGrenzL[i] =
-                        (double)(StilleDb.Kommazahl(StilleDb.Feld(r, "Grenzleistung")) / 100.0);
-                i++;
+                simulation_bhkw.bhkw_anlagen_grenzleistung.Add(
+                    (double)StilleDb.Kommazahl(StilleDb.Feld(r, "Grenzleistung")));
             }
         }
 
@@ -1771,6 +2156,7 @@ namespace WindowsFormsApplication1
             simulation_bhkw.strombedarf = Strombedarf;
             simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
             simulation_bhkw.modeBHKW = modeBHKW;
+            simulation_bhkw.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC; // UB-E3: Ruecklaufgrenze
             simulation_bhkw.kapazitaetPendelspeicher = 0.0;
 
             if (!simulation_bhkw.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, senkenzuordnungen) &&
@@ -2031,10 +2417,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Heizkessel als zweikanalige VEKTORSTUFE (Paket 5): eigene Jahresschleife an der
-        /// Kaskadenposition, ohne Speicherbeteiligung.
+        /// Kaskadenposition, ohne Speicherbeteiligung. Betriebsbereitschaft und Heizgrenze wie
+        /// bei <see cref="Speicherstufe_Rechnen"/>.
         /// </summary>
         private void Simulation_SPK_Ctrl_Zweikanalig(Kanalsatz kanaele, double[] Strombedarf,
-                                                     int nBereitschaft)
+                                                     int nBereitschaft, double? heizgrenze)
         {
             SPK_Liste_Laden();
 
@@ -2043,7 +2430,9 @@ namespace WindowsFormsApplication1
             // (Tab_ErgebnisHeizkessel.Strombedarf/Reststrombedarf), wie E27‑Q4 beim BHKW.
             simulation_spk.Strombedarf_stuendlich = NetzbezugGeklemmt(Strombedarf);
             simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
-            simulation_spk.Raumwaermebedarf_Projekt = _raumwaermeVorKaskade;
+            simulation_spk.Aussentemperatur_Projekt = Stundentemperatur;
+            simulation_spk.Vorgabe_Heizgrenze = heizgrenze;
+            KesselRuecklaufEingaengeSetzen();
 
             if (!simulation_spk.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten()) &&
                 !string.IsNullOrEmpty(simulation_spk.Fehlertext))
@@ -2058,6 +2447,8 @@ namespace WindowsFormsApplication1
         {
             Solar_Liste_Laden();
 
+            // ST2 (Welle M2): ohne Puffer ist der gerechnete Heizkreisrücklauf die Eintrittsseite.
+            simulation_solarthermie.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
             simulation_solarthermie.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, Senkenlisten());
         }
 
@@ -2109,6 +2500,16 @@ namespace WindowsFormsApplication1
                 if (!speicherRegistry.TryGetValue(id, out sp) || sp == null) continue;
 
                 if (sp.IstQuelle) { sp.ImRechenpfad = true; continue; }
+
+                // KU3-5: Ein Kältespeicher als Wärmesenke einer Anlage ist ein Datenfehler (der Dialog
+                // lässt ihn nicht zu) - er rechnet nur in der Kältekaskade, benannt statt still.
+                if (sp.IstKaelte)
+                {
+                    Protokoll.WarnungEinmal("kaeltespeicher-als-waermesenke-" + id,
+                        string.Format(MyResource.Resource.SIMENG_KAELTESPEICHER_ALS_WAERMESENKE, sp.BezeichnerAnzeige()));
+                    sp.ImRechenpfad = false;
+                    continue;
+                }
 
                 if (verbundMitglieder.Contains(id))
                 {
@@ -2821,6 +3222,10 @@ namespace WindowsFormsApplication1
                 ? PufferSpCtrl.KlassenSetLesen(sp.ID_Pufferspeicher)
                 : PufferSpCtrl.KlassenSetAusVerwendung(sp.Verwendung);
 
+            // KU3-5: Ein Kältespeicher hat kein Wärmeflag und behält seine Verwendung - er rechnet
+            // allein in der Kältekaskade (RegistryFuerZweikanaligOeffnen nimmt ihn heraus).
+            if (set.Kaelte) { sp.Verwendung = SimulationPufferspeicher.VERWENDUNG_KAELTE; return; }
+
             sp.KlassenSetSetzen(set.Heizung, set.Brauchwasser, set.Prozess);
 
             string rolle = PufferSpCtrl.VerwendungAusKlassenSet(set.Heizung, set.Brauchwasser,
@@ -3363,6 +3768,83 @@ namespace WindowsFormsApplication1
             sp.EntladeleistungMax =
                 StilleDb.Kommazahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX), 0);
             if (sp.EntladeleistungMax < 0) sp.EntladeleistungMax = 0;
+
+            PufferoptionenUebernehmen(sp, r);
+        }
+
+        /// <summary>
+        /// WELLE M7 (Konzept Simulationsablauf 21): die Optionen der Projektkopie — Bereitschaftsweg und
+        /// Aufstellraum (PS1 (c)), Zonenanteile (PS1 (a)) und Frischwassermodul (PS5 (a)). Jede leere
+        /// Spalte (und eine Datenbank ohne die Spalten) lässt die Vorgabe stehen: Tageswert, gleich große
+        /// Zonen, kein Modul — der Speicher rechnet dann Anweisung für Anweisung wie zuvor.
+        /// </summary>
+        private void PufferoptionenUebernehmen(SimulationPufferspeicher sp, DataRow r)
+        {
+            // PS1 (c): Bereitschaft nach Temperatur.
+            sp.BereitschaftTemperatur = PufferOptionen.IstTemperaturweg(
+                StilleDb.Text(StilleDb.Feld(r, PufferOptionenSchema.SPALTE_BEREITSCHAFT_WEG)));
+            object raum = StilleDb.Feld(r, PufferOptionenSchema.SPALTE_AUFSTELLRAUM);
+            sp.AufstellraumC = PufferOptionen.Aufstellraum(
+                raum == null ? (double?)null : StilleDb.Kommazahl(raum, PufferOptionen.AUFSTELLRAUM_VORGABE_C));
+            if (sp.BereitschaftTemperatur)
+                Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PSP_BEREITSCHAFT_TEMPERATUR,
+                    sp.BezeichnerAnzeige(), PufferOptionen.VerlustkoeffizientWK(sp.VerlustProStunde * 24.0), sp.AufstellraumC));
+
+            // PS1 (a): Zonenanteile - geprüft; eine abgelehnte Angabe rechnet gleich große Zonen.
+            sp.SchichtAnteile = null;
+            string anteile = StilleDb.Text(StilleDb.Feld(r, PufferOptionenSchema.SPALTE_SCHICHT_ANTEILE));
+            if (!string.IsNullOrWhiteSpace(anteile) && sp.SchichtenAnzahl > 1)
+            {
+                string fehler = PufferOptionen.AnteilePruefen(anteile, sp.SchichtenAnzahl, out double[] a);
+                if (fehler == null) sp.SchichtAnteile = a;
+                else Protokoll.WarnungEinmal("psp-anteile-" + sp.ID_Pufferspeicher,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PSP_ANTEILE_ABGELEHNT,
+                                  sp.BezeichnerAnzeige(), fehler));
+            }
+
+            // PS5 (a): Frischwassermodul - nur an einem Speicher, der Brauchwasser führt.
+            sp.Frischwassermodul = false;
+            sp.FwmMindestC = double.NaN;
+            if (StilleDb.Zahl(StilleDb.Feld(r, PufferOptionenSchema.SPALTE_FRISCHWASSERMODUL), 0) == 1)
+            {
+                if (!sp.BedientKanal(Kanal.BRAUCHWASSER))
+                {
+                    Protokoll.WarnungEinmal("psp-fwm-ohne-bw-" + sp.ID_Pufferspeicher,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PSP_FWM_OHNE_BRAUCHWASSER,
+                                      sp.BezeichnerAnzeige()));
+                    return;
+                }
+                object g = StilleDb.Feld(r, PufferOptionenSchema.SPALTE_FWM_GRAEDIGKEIT);
+                double graedigkeit = PufferOptionen.FwmGraedigkeit(
+                    g == null ? (double?)null : StilleDb.Kommazahl(g, PufferOptionen.FWM_GRAEDIGKEIT_VORGABE_K));
+                double zapf = ZapftemperaturDesProjekts();
+                sp.Frischwassermodul = true;
+                sp.FwmMindestC = PufferOptionen.FwmMindesttemperatur(zapf, graedigkeit);
+                Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PSP_FWM,
+                    sp.BezeichnerAnzeige(), zapf, graedigkeit, sp.FwmMindestC));
+            }
+        }
+
+        /// <summary>Die Zapftemperatur des Projekts für das Frischwassermodul [°C], einmal je Lauf gelesen.</summary>
+        private double? _zapftemperatur;
+
+        /// <summary>
+        /// Die Zapftemperatur [°C] — die höchste der Zonen des Zapfprofilgenerators; ohne sie 60 °C mit
+        /// Hinweis (der Bestandsweg führt keine Temperatur).
+        /// </summary>
+        private double ZapftemperaturDesProjekts()
+        {
+            if (_zapftemperatur.HasValue) return _zapftemperatur.Value;
+            double? z = TwwTemperaturen.ZapftemperaturC(m_ID_Projekt);
+            if (!z.HasValue)
+            {
+                Protokoll.HinweisEinmal("tww-zapftemperatur-vorgabe",
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_TWW_ZAPF_VORGABE,
+                                  PufferOptionen.ZAPFTEMPERATUR_VORGABE_C));
+                z = PufferOptionen.ZAPFTEMPERATUR_VORGABE_C;
+            }
+            _zapftemperatur = z;
+            return z.Value;
         }
 
         /// <summary>
@@ -3533,11 +4015,11 @@ namespace WindowsFormsApplication1
 
             foreach (DataRow r in dt.Rows)
             {
-                if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (!string.Equals(ErdreichLaufvorgabe.Quelltyp(idAnlage, StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))),
                                    WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
                     continue;
 
-                int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
                 int idType = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"));
                 int idPuffer = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
                 if (idAnlage <= 0 || idPuffer <= 0) continue;
@@ -4130,6 +4612,115 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// KESSELKENNLINIE E3 — die Eingänge der Rücklaufkette vor dem Aufbau der Kessel: (a) der
+        /// gerechnete Rücklauf des Heizkreises (Anlagenkopplung AK1; <c>null</c> ohne gekoppeltes
+        /// Gebäude, wie der Vorlauf der Wärmepumpe) und (c) der Leseweg des gepflegten Paars. Beide
+        /// fragt der Kessel nur, wenn er mit der Brennwertkennlinie rechnet.
+        /// </summary>
+        private void KesselRuecklaufEingaengeSetzen()
+        {
+            simulation_spk.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
+            // UB-E2: Stufe „Vorwärmer" der Rücklaufkette - NaN ohne Bivalenzobjekt, dann wie im Bestand.
+            simulation_spk.Vorwaermvorlauf = _wpInSchleife ? simulation_wp?.Vorwaermvorlauf : null;
+            simulation_spk.RuecklaufPaarLesen = KesselRuecklaufGepflegt;
+            // PW1 Stufe 1: das Temperaturniveau des Prozesskanals und der gepflegte Vorlauf des
+            // Kessels (dieselbe Kette Anlage -> Heizkessel) - gefragt nur mit Temperaturniveau.
+            simulation_spk.Prozesstemperatur = simulation_Waermebedarf?.ProzessTemperatur;
+            simulation_spk.VorlaufPaarLesen = KesselVorlaufGepflegt;
+        }
+
+        /// <summary>
+        /// Der Rücklauf des GEPFLEGTEN Paars einer Kesselanlage [°C] — Stufe (c) der Rücklaufkette,
+        /// über dieselbe Kette Anlage → Heizkessel wie der Kessel-Hub
+        /// (<see cref="KesselTemperaturpaarGepflegt"/>); <c>null</c> ohne vollständiges Paar.
+        /// </summary>
+        private static double? KesselRuecklaufGepflegt(int idAnlage)
+        {
+            return KesselTemperaturpaarGepflegt(idAnlage, out _, out double ruecklauf) ? ruecklauf : (double?)null;
+        }
+
+        /// <summary>
+        /// Der Vorlauf des GEPFLEGTEN Paars einer Kesselanlage [°C] — für die Prüfung, ob der Kessel den
+        /// geforderten Prozessvorlauf erreicht (PW1 Stufe 1); dieselbe Kette wie
+        /// <see cref="KesselRuecklaufGepflegt"/>, <c>null</c> ohne vollständiges Paar.
+        /// </summary>
+        private static double? KesselVorlaufGepflegt(int idAnlage)
+        {
+            return KesselTemperaturpaarGepflegt(idAnlage, out double vorlauf, out _) ? vorlauf : (double?)null;
+        }
+
+        /// <summary>
+        /// KESSELKENNLINIE E3 — Stufe (b) der Rücklaufkette: Für jeden Kessel mit Brennwertkennlinie der
+        /// erste Pufferspeicher seiner Senkenliste in Rangfolge (dieselbe Wahl wie das Bezugspaar
+        /// „Berechnet", <see cref="BerechnetesBezugspaar"/>), als Instanz dieses Laufs aus der Registry.
+        /// Der Kessel liest ihn je Stunde einmal (<c>RL_eff</c>, geschichtet die unterste Schicht).
+        /// </summary>
+        private void KesselRuecklaufSpeicherSetzen()
+        {
+            if (!_kesselInSchleife || simulation_spk == null) return;
+
+            for (int index = 0; index < simulation_spk.KesselAnzahl; index++)
+            {
+                if (!simulation_spk.RechnetMitBrennwertkennlinie(index)) continue;
+                Senkenliste senken = simulation_spk.KesselSenke(index);
+                if (senken == null) continue;
+
+                foreach (Senkenzeile z in senken.Zeilen)
+                {
+                    if (z == null || !z.IstPuffersenke || z.IDPuffer <= 0) continue;
+
+                    SimulationPufferspeicher ziel;
+                    if (!speicherRegistry.TryGetValue(z.IDPuffer, out ziel) || ziel == null) continue;
+                    if (ziel.VL_eff <= ziel.RL_eff) continue;
+
+                    simulation_spk.RuecklaufSpeicherSetzen(index, ziel);
+                    Protokoll.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_KESSEL_RUECKLAUF_SPEICHER,
+                        simulation_spk.spk_list[index], ziel.BezeichnerAnzeige(),
+                        ziel.Geschichtet
+                            ? MyResource.Resource.SIMENG_KESSEL_RUECKLAUF_UNTERSTE_SCHICHT
+                            : ziel.RL_eff.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) + " °C"));
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// WELLE M2 (ST2) — für jedes Kollektorfeld mit Arbeitstemperatur aus dem Speicher der erste
+        /// Pufferspeicher seiner Senkenliste in Rangfolge, als Instanz dieses Laufs aus der Registry.
+        /// Das Feld liest je Stunde dessen unterste Zone (<c>T_unten</c>, am Ende der Vorstunde).
+        /// Ohne Puffer bleibt der Heizkreisrücklauf der Anlagenkopplung, sonst die feste Temperatur.
+        /// </summary>
+        private void SolarTemperaturSpeicherSetzen()
+        {
+            if (!_solarInSchleife || simulation_solarthermie == null) return;
+
+            for (int f = 0; f < simulation_solarthermie.FelderAnzahl; f++)
+            {
+                if (!simulation_solarthermie.ArbeitstemperaturAusSpeicher(f)) continue;
+                Senkenliste senken = simulation_solarthermie.FeldSenke(f);
+                if (senken == null) continue;
+
+                foreach (Senkenzeile z in senken.Zeilen.OrderBy(s => s.Rang))
+                {
+                    if (z == null || !z.IstPuffersenke || z.IDPuffer <= 0) continue;
+
+                    SimulationPufferspeicher ziel;
+                    if (!speicherRegistry.TryGetValue(z.IDPuffer, out ziel) || ziel == null) continue;
+                    if (ziel.VL_eff <= ziel.RL_eff) continue;
+
+                    simulation_solarthermie.TemperaturSpeicherSetzen(f, ziel);
+                    Protokoll.Hinweis("Solarthermie: Das Kollektorfeld (Anlage " +
+                        simulation_solarthermie.solar_anlagen_ids[f] + ") bildet seine Arbeitstemperatur aus " +
+                        "der untersten Zone des Puffers „" + ziel.BezeichnerAnzeige() + "“ plus Grädigkeit und " +
+                        "halber Spreizung.");
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
         /// PAKET B2 — das GEPFLEGTE Temperaturpaar eines Kessels: erst die ANLAGE
         /// (<c>Tab_Energieanlagen.Vorlauf</c>/<c>[Rücklauf]</c> — die Spalte trägt dort
         /// den Umlaut, siehe <c>ProjektPuffer.SQL_SYSTEM_RUECKLAUF</c>), dann der
@@ -4379,15 +4970,17 @@ namespace WindowsFormsApplication1
         {
             // Läuft überhaupt eine Wärmepumpe im PV-Modus?
             bool pvModus = false;
-            RecordSet rs = new RecordSet();
-            rs.Open("select ID from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt +
-                    " and ID_Type=" + WizardItemClass.WP_TYP);
-            while (rs.Next())
+            DataTable wpAnlagen = DataRepository.GetDataTable(
+                "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                new DbParam("@proj", m_ID_Projekt), new DbParam("@typ", WizardItemClass.WP_TYP));
+            if (wpAnlagen != null)
             {
-                string modus = WaermequelleClass.WertLesen((int)rs.Read("ID"), "BM_Typ") as string;
-                if (modus == WaermequelleClass.MODUS_PV) { pvModus = true; break; }
+                foreach (DataRow r in wpAnlagen.Rows)
+                {
+                    string modus = WaermequelleClass.WertLesen(Convert.ToInt32(r["ID"]), "BM_Typ") as string;
+                    if (modus == WaermequelleClass.MODUS_PV) { pvModus = true; break; }
+                }
             }
-            rs.Close();
 
             if (!pvModus || tool == null || tool.Length < 5 || tool[4] != DbWerte.ERZEUGER_PHOTOVOLTAIK) return null;
 
@@ -4551,53 +5144,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die BHKW-Einspeisung je Stunde [kWh] (E29 #536, Entscheid E29‑Q1 a): der BHKW-Strom,
-        /// den die Verbraucher des Anschlusses nach der PV-Eigennutzung nicht abnehmen —
-        /// wörtlich die Stundenformel des KWK-Splits in <see cref="StromMatrix.Baue"/>
-        /// (<c>eigen = min(BHKW, max(0, Bedarf − PV-Eigenverbrauch))</c>, Einspeisung
-        /// <c>= max(0, BHKW − eigen)</c>). Die Strommatrix rechnet weiter selbst; die
-        /// Gleichheit hält ein Test. Ohne Bedarfsreihe ist alles Eigenstrom (wie dort).
+        /// Der BHKW-Überschuss je Viertelstunde [kW] aus dem Rest der Kaskade: <c>max(0, −Rest_q)</c>.
+        /// Die Kaskade zieht den BHKW-Strom ungeklemmt ab; was danach negativ steht, nimmt kein
+        /// Verbraucher des Anschlusses ab und geht ins Netz. Die EINE Formel der BHKW-Einspeisung
+        /// ohne Speicherflotte — <see cref="BhkwEinspeisung_viertelstuendlich"/> und
+        /// <see cref="SimulationPV.BhkwUeberschuss"/> bilden sich beide daraus.
         /// </summary>
-        /// <param name="bhkwStrom">BHKW-Erzeugung [kWh je Stunde].</param>
-        /// <param name="bedarfGesamt">Strombedarf aller Verbraucher vor jeder Eigenerzeugung
-        /// [kWh je Stunde] (<see cref="ZeitreihenSatz.STROMBEDARF_GESAMT"/>).</param>
-        /// <param name="pvGenutzt">PV-Eigenverbrauch [kWh je Stunde]; <c>null</c> ohne PV.</param>
-        internal static double[] BhkwEinspeisungStuendlich(double[] bhkwStrom, double[] bedarfGesamt,
-                                                            double[] pvGenutzt)
+        internal static double BhkwUeberschussKw(double restKw) => restKw < 0 ? -restKw : 0.0;
+
+        /// <summary>Die Reihe zu <see cref="BhkwUeberschussKw(double)"/> [kW je Viertelstunde].</summary>
+        internal static double[] BhkwUeberschussKw(double[] restKw)
         {
-            if (bhkwStrom == null) return null;
-            var einspeisung = new double[bhkwStrom.Length];
-            for (int h = 0; h < bhkwStrom.Length; h++)
-            {
-                double erz = bhkwStrom[h];
-                double eigen = erz;
-                if (bedarfGesamt != null && h < bedarfGesamt.Length)
-                {
-                    double bedarfNachPv = bedarfGesamt[h];
-                    if (pvGenutzt != null && h < pvGenutzt.Length) bedarfNachPv -= pvGenutzt[h];
-                    if (bedarfNachPv < 0) bedarfNachPv = 0;
-                    eigen = Math.Min(erz, bedarfNachPv);
-                }
-                einspeisung[h] = Math.Max(0, erz - eigen);
-            }
-            return einspeisung;
+            if (restKw == null) return null;
+            var e = new double[restKw.Length];
+            for (int q = 0; q < restKw.Length; q++) e[q] = BhkwUeberschussKw(restKw[q]);
+            return e;
         }
 
         /// <summary>
-        /// Die BHKW-Einspeisung dieses Laufs je Stunde [kWh] (E29 #536) aus BHKW-Strom,
-        /// <see cref="Strombedarf_Verbraucher_viertelstuendlich"/> (Stundenmittel) und dem
-        /// PV-Eigenverbrauch — <c>null</c> ohne BHKW. Eine aktivierte Speicherflotte führt
+        /// Die BHKW-Einspeisung dieses Laufs je Stunde [kWh] — das Stundenmittel der
+        /// Viertelstundenreihe <see cref="BhkwEinspeisung_viertelstuendlich"/> (Viertelstundenbilanz).
+        /// Reiter, Kennzahl, Zeitreihensatz (<c>BHKW_UEBERSCHUSS</c>) und über ihn der KWK-Split der
+        /// Strommatrix lesen diese Reihe. <c>null</c> ohne BHKW. Eine aktivierte Speicherflotte führt
         /// ihre eigene BHKW-Einspeisung (Flottenbilanz); diese Methode kennt sie nicht.
         /// </summary>
         internal double[] BhkwEinspeisungDesLaufs()
         {
-            if (!bSimulationBHKW || simulation_bhkw == null || simulation_bhkw.stromproduktion == null)
-                return null;
-            double[] bedarf = Strombedarf_Verbraucher_viertelstuendlich != null
-                ? Viertelstunden_zu_Stundenwerte_Mittelwert(Strombedarf_Verbraucher_viertelstuendlich)
-                : null;
-            double[] pv = bSimulationPV && simulation_pv != null ? simulation_pv.Stromproduktion : null;
-            return BhkwEinspeisungStuendlich(simulation_bhkw.stromproduktion, bedarf, pv);
+            if (!bSimulationBHKW || BhkwEinspeisung_viertelstuendlich == null) return null;
+            return Viertelstunden_zu_Stundenwerte_Mittelwert(BhkwEinspeisung_viertelstuendlich);
         }
 
         public double[] Stundenwerte_zu_viertelstunden(double[] stundenwerte)
@@ -4634,21 +5208,31 @@ namespace WindowsFormsApplication1
 
         private double[] Simulation_Photovoltaik_Ctrl(double[] Strombedarf)
         {
-            RecordSet rs = new RecordSet();
-
-            rs.Open("select * from Tab_Energieanlagen where ID_Projekt=" + m_ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
+            DataTable pvAnlagen = DataRepository.GetDataTable(
+                "SELECT ID_PV FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                new DbParam("@proj", m_ID_Projekt), new DbParam("@typ", WizardItemClass.PV_TYP));
 
             simulation_pv.photovoltaik_list.Clear();
-            while (rs.Next())
+            if (pvAnlagen != null)
             {
-                simulation_pv.photovoltaik_list.Add((int)rs.Read("ID_PV"));
+                foreach (DataRow r in pvAnlagen.Rows)
+                    simulation_pv.photovoltaik_list.Add(Convert.ToInt32(r["ID_PV"]));
             }
-            rs.Close();
 
             simulation_pv.Strombedarf = Strombedarf;
 
             // Simulation starten
             double[] temp = simulation_pv.Berechnung(m_ID_Projekt);
+
+            // PV3: Die Einspeisegrenze steht im Protokoll - mit der Abregelung OHNE Speicher; ein
+            // Speicher lädt vor dem Abregeln, sein Lauf folgt.
+            if (simulation_pv.EinspeisegrenzeKw.HasValue)
+                Protokoll.Hinweis(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIM_PV_EINSPEISEGRENZE_HINWEIS,
+                    simulation_pv.EinspeisegrenzeKw.Value, simulation_pv.AbregelungGesamtKwh,
+                    simulation_pv.StromproduktionTheoretischGesamtKwh > 0
+                        ? simulation_pv.AbregelungGesamtKwh / simulation_pv.StromproduktionTheoretischGesamtKwh * 100.0
+                        : 0.0));
 
             TestePVAnlage();
 

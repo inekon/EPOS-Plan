@@ -195,6 +195,7 @@ namespace WindowsFormsApplication1
             m.m_Leistungskosten = 0.0;
             m.m_InvestitionFix = 0.0;
             m.m_StandbyVerbrauch = 0.0;
+            m.m_Selbstentladung = 0.0;
         }
 
         private static void GeraetefelderLesen(StromspeicherModel m, DataTable dt, DataRow row)
@@ -216,6 +217,11 @@ namespace WindowsFormsApplication1
 
             if (dt.Columns.Contains("Standby_Verbrauch") && row["Standby_Verbrauch"] != DBNull.Value)
                 m.m_StandbyVerbrauch = Convert.ToDouble(row["Standby_Verbrauch"]);
+
+            // Welle M5 (SP1): die Selbstentladung - vor dem Schemaschritt fehlt die Spalte.
+            if (dt.Columns.Contains(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG) &&
+                row[StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG] != DBNull.Value)
+                m.m_Selbstentladung = Convert.ToDouble(row[StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG]);
         }
 
         // --- STAMM -> PROJEKT KOPIE (analog HeizkesselCtrl/BHKWCtrl) ---
@@ -277,8 +283,9 @@ namespace WindowsFormsApplication1
                 // vor dem Schritt ab.
                 string sql = @"INSERT INTO Tab_Stromspeicher
                     (ID, ID_Projekt, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten,
-                     Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                     Selbstentladung_Prozent_Monat)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -296,10 +303,16 @@ namespace WindowsFormsApplication1
                     P("@cver", ColOrNull(s, "Verschleisskosten")),
                     P("@cpow", ColOrNull(s, "Leistungskosten")),
                     P("@ifix", ColOrNull(s, "Investition_Fix")),
-                    P("@stby", ColOrNull(s, "Standby_Verbrauch"))
+                    P("@stby", ColOrNull(s, "Standby_Verbrauch")),
+                    P("@selbst", ColOrNull(s, StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG))
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
+                // Der Ursprung der Kopie (Schemaschritt KatalogkostenUrsprungSchema): Der Rueckweg „In die Datenbank
+                // uebernehmen…" kann ihn dann ueberschreiben, und die Satzvorlagen gehen der Standardvorlage vor.
+                if (ok && KatalogkostenUrsprungSchema.UrsprungLesbar("Tab_Stromspeicher"))
+                    DataRepository.ExecuteSQL("UPDATE [Tab_Stromspeicher] SET [ID_Stamm] = ? WHERE [ID] = ?",
+                                              new DbParam("@st", stammId), new DbParam("@id", neueId));
                 return ok ? neueId : -1;
             }
             catch (Exception ex)

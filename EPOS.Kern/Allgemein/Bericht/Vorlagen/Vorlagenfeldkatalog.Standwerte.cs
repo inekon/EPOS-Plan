@@ -34,6 +34,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Standwerte (Etappe BV-E4).</summary>
         private const int FASSUNG_STAND = 3;
 
+        /// <summary>
+        /// Die Fassung der Lüftungs- und Aufheizwerte je Gebäude (<c>gebaeude.ergebnis.*</c>, <c>hat.aufheizung</c>; Katalog v16,
+        /// Entwurf KP3 Welle O3a, E58 F4 (b), E60) — im Entwurf als „Fassung 12“ geplant, die inzwischen vergeben war.
+        /// </summary>
+        internal const int FASSUNG_AUFHEIZUNG = 16;
+
         /// <summary>Musterschlüssel der Kennzahlen des laufenden Stands.</summary>
         public const string MUSTER_STAND_KENNZAHL = "stand.kennzahl.<k>";
 
@@ -326,7 +332,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.kennzahl." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Kennzahlwert(w, v, s)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Bedarf = bedarf,
@@ -340,7 +346,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.delta." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Abweichung(w, v, s, false)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Bedarf = bedarf,
@@ -349,7 +355,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.delta_prozent." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Abweichung(w, v, s, true)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = "N1",
                     Einheit = "%",
                     Bedarf = bedarf,
@@ -379,7 +385,7 @@ namespace WindowsFormsApplication1
                     yield return new Vorlagenfeld(a.Vorsilbe + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Gruppe,
                         w => UeberStaende(w, s, wert))
                     {
-                        Seit = FASSUNG_STAND,
+                        Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                         Format = k.Format,
                         Einheit = k.Einheit,
                         Bedarf = s == KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN ? Vorlagenbedarf.Zeitreihen : Vorlagenbedarf.Keiner,
@@ -570,8 +576,56 @@ namespace WindowsFormsApplication1
                 Zahl("gebaeude.ergebnis.kuehlstunden", w => MitGebaeudeergebnis(w, true, e => e.KuehlstundenH), "N0", "h/a"),
                 Zahl("gebaeude.ergebnis.raumtemperatur", w => MitGebaeudeergebnis(w, true, e => e.MittlereRaumtemperaturC), "N1", "°C"),
                 Zahl("gebaeude.ergebnis.ueberhitzungsstunden", w => MitGebaeudeergebnis(w, true, e => e.UeberhitzungsstundenH), "N0", "h/a"),
+            }.Concat(Aufheizwerte());
+        }
+
+        /// <summary>
+        /// <b>Katalog v16 (KP3 Welle O3a; E58 F4 (b), E60):</b> die Lüftungs- und Aufheizwerte des laufenden Gebäudes aus der
+        /// Ergebniszeile des Laufs — dieselben Zahlen wie die Gebäudetafel (<see cref="Aufheizbericht"/>), nur auf dem Weg nach
+        /// VDI 6007. Ohne Aufheizrechnung (Schalter aus) sind die Aufheizwerte leer; die Hinweise W1–W5 stehen ohne Anlass als
+        /// leerer Text.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Aufheizwerte()
+        {
+            const Vorlagenfeldkontext GB = Vorlagenfeldkontext.Gebaeude;
+            Vorlagenfeld Zahl(string rest, Func<ErgebnisGebaeudeModel, object> wert, string format, string einheit) =>
+                new Vorlagenfeld("gebaeude.ergebnis." + rest, Vorlagenfeldart.Zahl, GB, w => MitGebaeudeergebnis(w, true, wert))
+                { Seit = FASSUNG_AUFHEIZUNG, Format = format, Einheit = einheit };
+            Vorlagenfeld Text(string rest, Func<Berichtswerte, ErgebnisGebaeudeModel, object> wert) =>
+                new Vorlagenfeld("gebaeude.ergebnis." + rest, Vorlagenfeldart.Text, GB, w => MitGebaeudeergebnis(w, true, e => wert(w, e)))
+                { Seit = FASSUNG_AUFHEIZUNG };
+
+            return new[]
+            {
+                Zahl("nachtauskuehlstunden", e => e.NachtauskuehlstundenH, "N0", "h/a"),
+                Zahl("sommerlueftungsstunden", e => e.SommerlueftungsstundenH, "N0", "h/a"),
+                Text("aufheizzustand", (w, e) => Leer(Aufheizbericht.Zustandtext(e.AufheizZustand, w.Kultur))),
+                Text("aufheizart", (w, e) => Leer(Aufheizbericht.Arttext(e, w.Kultur))),
+                Zahl("aufheizzeit", e => e.AufheizzeitMaxH, "N0", "h"),
+                Zahl("aufheizzeit_manuell", e => e.AufheizArt == DbWerte.AUFHEIZ_ART_MANUELL ? e.AufheizzeitMaxH : null, "N0", "h"),
+                Zahl("aufheiz_aussentemperatur", e => e.AufheizAussenC, "N1", "°C"),
+                Zahl("aufheizleistung", e => e.AufheizLeistungKw, "N1", "kW"),
+                Text("aufheizquelle", (w, e) => Leer(Aufheizbericht.Quellentext(e.AufheizLeistungsquelle, w.Kultur))),
+                Zahl("aufheiztage", e => e.Aufheiztage, "N0", null),
+                Zahl("aufheizstunden", e => e.AufheizstundenH, "N0", "h/a"),
+                Zahl("aufheizzeit_laengste", e => e.AufheizzeitLaengsteH, "N0", "h"),
+                // E99 (Schritt 194): verwendeter Aufschlag und bemessene Aufheizzeit aus der Ergebniszeile.
+                Zahl("aufschlag_verwendet", e => e.AufheizAufschlagVerwendetH, "N0", "h"),
+                Zahl("aufheizzeit_bemessen", e => e.AufheizzeitBemessenH, "N0", "h"),
+                Zahl("aufheiztage_begrenzt", e => e.AufheiztageBegrenzt, "N0", null),
+                Zahl("aufheiztage_unerreichbar", e => e.AufheiztageUnerreichbar, "N0", null),
+                Zahl("kappungsstunden", e => e.HeizleistungMaxStundenH, "N1", "h/a"),
+                Zahl("auslegungsheizlast", e => e.AuslegungsheizlastKw, "N1", "kW"),
+                Zahl("aufheizzuschlag", e => e.AufheizzuschlagKw, "N1", "kW"),
+                Zahl("auslegungsgroesse", e => Aufheizbericht.Auslegungsgroesse(e), "N1", "kW"),
+                new Vorlagenfeld("gebaeude.ergebnis.aufheizhinweise", Vorlagenfeldart.Text, GB,
+                    w => MitGebaeudeergebnis(w, true, e => string.Join("\n", Aufheizbericht.Hinweise(e, w.Kultur))))
+                { Seit = FASSUNG_AUFHEIZUNG, Leerwert = "" },
             };
         }
+
+        /// <summary>Ein leerer Text heißt „kein Wert“ (Leerwert des Felds statt eines leeren Laufs).</summary>
+        private static object Leer(string text) => string.IsNullOrEmpty(text) ? null : text;
 
         /// <summary>
         /// Die Datenschalter <c>hat.*</c> (Konzept 4.5, 4.7): im Block <c>je stand</c> für den laufenden Stand, außerhalb
@@ -593,6 +647,9 @@ namespace WindowsFormsApplication1
                 Neu("hat.emissionsbilanz", Vorlagenfeldart.Schalter, G, w => Hat(w, v => HatEmissionsbilanz(w, v))),
                 Neu("hat.sensitivitaet", Vorlagenfeldart.Schalter, G, w => Hat(w, v => HatSensitivitaet(w, v))),
                 Neu("hat.emissionsmodus_gwp", Vorlagenfeldart.Schalter, G, w => Hat(w, v => EmissionsAusweis.IstAequivalent(v.EmissionsModus))),
+                // Katalog v16 (KP3 Welle O3a): ein Gebäude des Stands hat mit Aufheizoptimierung gerechnet.
+                new Vorlagenfeld("hat.aufheizung", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatAufheizung))
+                    { Seit = FASSUNG_AUFHEIZUNG },
             };
         }
 
@@ -614,7 +671,7 @@ namespace WindowsFormsApplication1
                     yield return new Vorlagenfeld(STAND + (a ? "a." : "b.") + f.Schluessel.Substring(STAND.Length), f.Art,
                         Vorlagenfeldkontext.Gruppe, w => ImPaar(w, vorbild, standA))
                     {
-                        Seit = FASSUNG_STAND,
+                        Seit = Math.Max(FASSUNG_STAND, f.Seit),
                         Format = f.Format,
                         Einheit = f.Einheit,
                         Leerwert = f.Leerwert,

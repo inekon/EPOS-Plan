@@ -32,7 +32,8 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// <c>NurLesen="true"</c>, <c>Auswahlfeld</c>, <c>Suchauswahl</c>, <c>Datumsfeld</c>,
 /// <c>Farbfeld</c>, <c>Schalter</c>; <c>Bausteine/</c>: <c>Optionsgruppe</c>,
 /// <c>EnergietraegerWahl</c>, <c>Katalogfelder</c> ohne <c>NurLesen="true"</c>, dazu die Anzeigestufe
-/// der Platzhalter <c>Vorlagenfeldumschalter</c>, BV-E6) und nackte
+/// der Platzhalter <c>Vorlagenfeldumschalter</c>, BV-E6, und das Datum im Gemeinjahr
+/// <c>Gemeinjahrdatum</c>, KP2) und nackte
 /// <c>input</c>/<c>select</c>/<c>textarea</c>. <c>Dateiwahl</c> ist ein Dateidialog und
 /// kein Einstellwert; Listen und Filter (<c>Katalogliste</c>, <c>Mehrfachauswahl</c>,
 /// <c>Spaltenfilter</c>, <c>Vergleichswahl</c>, <c>Zeilenwahl</c>) sind Auswahlen, keine
@@ -70,8 +71,19 @@ public sealed class KiMaskenabdeckungWacheTests
     private static readonly Wirt[] WIRTE =
     {
         new("PvModellFelder",                 "PhotovoltaikDialog",          KiMaskennamen.PHOTOVOLTAIK),
+        // Die Satzbearbeitung „Bearbeiten…" der Katalogauswahl (Stufe 2) steht als Ueberlagerung im
+        // Projektdialog; der Assistent arbeitet ueber „Alle Daten" der Detailzeile desselben Wirts.
+        new("Satzbearbeitung",                "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
+        // Die Rueckfrage „In die Datenbank übernehmen…“ (Stufe 2b) steht ebenso als Ueberlagerung im Projektdialog;
+        // sie fragt nur (Wahl und Name), der Assistent arbeitet ueber denselben Wirt.
+        new("Rueckwegfrage",                  "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
         new("WaermepumpeStammFelder",         "WaermepumpeStammDialog",      KiMaskennamen.WAERMEPUMPE),
+        new("WaermepumpeGeraetegrenzenFelder", "WaermepumpeStammDialog",     KiMaskennamen.WAERMEPUMPE),
         new("WaermepumpeKonfiguration",       "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
+        // KB-B: die Gruppe „Kühlbetrieb“ (in WaermepumpeKonfiguration, auch im Bereich „Kälte“ der
+        // Simulationskonfiguration) und die Betriebseingaben der Kältemaschine (im Dialog und im Bereich „Kälte“).
+        new("WaermepumpeKuehlbetriebGruppe",  "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
+        new("KaeltemaschineKonfiguration",    "KaeltemaschineAnlageDialog",  KiMaskennamen.KAELTEMASCHINE_ANLAGE),
         new("EnergietraegerEinstellungen",    "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
         new("BrennstoffBestandteile",         "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
         new("StrompreisDetails",              "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
@@ -84,6 +96,12 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherFlottenWirtschaftBlock", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("LeistungspreisBlock",            "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("OptimierungBlock",               "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
+        // Freigabe der Masken, Teil C: die zwei Ergebnisansichten der Flotte - ihre Schalter sind
+        // die Spalte „anzeige" des Wirts (Register Ergebnisanzeige). Die Betriebsansicht steht
+        // zugleich im StromspeicherReiter der Simulation und meldet sich dort beim Register der
+        // SimulationSeite; die Tafel kennt einen Wirt je Kind, hier steht der Hauptwirt.
+        new("SpeicherFlottenGroessenAnsicht", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
+        new("SpeicherFlottenErgebnisAnsicht", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("SimulationKonfigSeite",          "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SpeicherParameterBlock",         "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION),
@@ -97,6 +115,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("HeizkesselReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("PhotovoltaikReiter",             "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SolarthermieReiter",             "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("KaeltegangReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("StromgangReiter",                "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("StromspeicherReiter",            "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("WaermegangReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
@@ -125,6 +144,34 @@ public sealed class KiMaskenabdeckungWacheTests
         // E37 (Anlagenkopplung 8.1): der Unterabschnitt „Kühlübergabe" der Gruppe „Kühlung" -
         // derselbe Baustein in beiden Wirten, dieselben acht Felder über GebaeudeKatalogKiSicht.
         new("GebaeudeKuehluebergabeFelder",   "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U1 (Teilkonzept Konditionierungsprofile 7.1): der Reiter „Konditionierung" des
+        // Katalogeditors - Maximalraumtemperatur und Ferien im Reiter, die Vorgabe-Matrix darin. Der
+        // Editor meldet sie als Form_Gebaeude1 an. KP2, Welle U4: Die Verwaltung trägt denselben
+        // Baustein im Blatt „Konditionierung" (Form_Gebaeude_Admin, dieselben Felder über
+        // GebaeudeKatalogKiSicht); die Tabelle führt je Kind EINEN Wirt.
+        new("KonditionierungReiter",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        new("KonditionierungMatrix",          "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP3 O2 (E59): „Aufheizzeit manuell (h)" im Reiter „Konditionierung" - nur in der Betriebsart Projekt.
+        new("AufheizzeitManuellFeld",         "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U2 (Teilkonzept 7.4): die Kalenderkarte mit der Auswahlliste der Vorlagen ihrer Größe.
+        new("Kalenderkarte",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U2 (E56 F4 (a)): die Vorlagenverwaltung als Blatt im Katalogeditor.
+        new("KonditionierungVorlagenverwaltung", "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // NP3a (Konzept Nutzungsprofile 6.1, NP-F22): das Blatt „Nutzungsprofile" im Katalogeditor - der
+        // Katalog ist projektübergreifend (NP-F3) und schreibt sofort; der WIRT meldet an, nicht das Blatt.
+        new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
+        new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // NP4c (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9): Zeilenbild- und Stundenprofil-Editor im Profileditor des
+        // Blatts (über RaumnutzungBildEditor) - dieselbe Anmeldung wie das Blatt.
+        new("RaumnutzungZeilenbildEditor",       "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        new("RaumnutzungStundenEditor",          "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U3 (Teilkonzept 7.5): der Inhalt der aufgeklappten Kalenderkarte.
+        new("KalenderkarteInhalt",            "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // KP2, Welle U3 (Festlegung 15): die Periodenliste der aufgeklappten Kalenderkarte.
+        new("Periodenliste",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // K1b (Konzept 7.8, E110): die Kalenderbedienung im Abschnitt „Kalender {Größe} im Einzelnen".
+        new("KalenderbedienungAbschnitt",     "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
 
         // Berichtsvorlagen BV-E1 (Konzept 9.7, 10.2): der Platzhalterkatalog steht als
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
@@ -196,6 +243,17 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BaustoffKatalogDialog", 8, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
         new("BauteilaufbauDialog", 4),
         new("BauteilschichtenFelder", 6),
+
+        // KU3-1: die Verwaltung der Kaeltemaschinen - zwoelf Kenndaten als EIN Fragment fuer
+        // Stammblatt und „Neu…" (Rueckkuehlart als Auswahlfeld) und das Kennlinienraster mit vier
+        // Zahlen je Punkt (die Spalten punkt_* der Feldkarte).
+        // KM3-E3-a: dazu die acht Felder der Gruppe „Teillast und Takten“ (drei Auswahlen, fünf Zahlen).
+        new("KaeltemaschineKonfiguration", 6, "die Betriebseingaben der Kältemaschine (KB-B) - im Dialog unter der Karte „KaeltemaschineAnlage“, im Bereich „Kälte“ der Simulationskonfiguration als Überlagerung derselben Felder"),
+        new("KaeltemaschineKatalogDialog", 35, "der Werkzeugschalter „Typkennfelder ausblenden“ setzt den Filter der Liste; die Typkennfeldwahl der Schnellwahlen (eine Auswahl, Nennkälteleistung und Nenn-EER der Skalierung) und die Paare der Auskunft „Teillastpunkte prüfen…“ sind Eingaben einer Rechnung ohne Speicherung, keine Werte der Maske"),
+        // KU3-4c: der Erzeugerdialog der Kaeltemaschinen - Name, Anzahl, Kaltwasservorlauf, Hilfsstrom,
+        // Kuehltraeger und eigener Zaehler der gewaehlten Anlage (die Felder der Feldkarte); die Katalogliste
+        // der Geraetewahl ist eine Auswahl, kein Wert.
+        new("KaeltemaschineAnlageDialog", 1, "die Schalter „Wärmepumpen im Kühlbetrieb“ schreiben beim OK den Kühlbetrieb des Geräts über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, keine Eingabe der Kältemaschine"),
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
@@ -204,29 +262,61 @@ public sealed class KiMaskenabdeckungWacheTests
         // wird mit Klicks. Der Bauteildialog führt vierzehn Maskenfelder (Art, Bezeichnung, Fläche,
         // Azimut, Neigung, Randbedingung, Nachbarzone, Zuordnung, g-Wert, Rahmenanteil, Verschattung,
         // ψ·L, U-Wert, Aufbau im Projekt); die Suchauswahl des Katalogaufbaus ist bewusst draußen.
-        new("ZonenDialog", 16),
+        // KP2 U4: Sollwerte, Infiltration, Nutzerlüftung und Gewinne stehen in der Zonenmatrix
+        // (Baustein KonditionierungMatrix über ZonenKonditionierung, dieselben Katalogfelder; die übrigen
+        // Zellen sind die Felder kond_* der Zonenkarte, Feldtafel ZonenKiSicht): 16 → 9.
+        // E63 (AK1z): der Abschnitt „Übergabe“ - Art und sechs Zahlenfelder (Katalogfelder uebergabe_*,
+        // auslegung_*, proportionalband): 9 → 16.
+        // BA-3: der Filter „Ohne vollständige Zuordnung“ der Bauteiltabelle - eine Ansichtswahl, kein Wert der Zone
+        // (bewusst draußen): 18 → 19.
+        // KK4 (Entwurf KK Festlegung 15): die Kühlübergabe der Zone - Art und zwei Zahlenfelder (Katalogfelder
+        // kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung): 19 → 22.
+        new("ZonenDialog", 22),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
         new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),
         // Stufe G7a (W3): der Gebaeudeexport - die Postleitzahl und die Bestaetigung der Meldungen;
         // die Bestaetigung liest der Assistent nur, setzen kann sie allein der Anwender.
-        new("GebaeudeExportDialog", 2, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen"),
+        // Freigabe der Importdialoge, Teil A (10.10.2026): alle Eingabestellen im Katalog.
+        new("SpeicherFlottenCsvDialog", 26),
+        new("GanglinieImportOptionenDialog", 9),
+        new("SpotpreisImportDialog", 2, "die Dateiwahl (Betriebssystemdialog) und das Protokoll zählen nicht; Bezeichnung und Ablage stehen im Katalog"),
+        new("ImportKonflikteDialog", 2, "Name und Aktion je Zeile stehen als Spalten im Katalog"),
+        // Freigabe der Masken, Teil C (10.10.2026).
+        new("VorlagenUebernahmeDialog", 6),
+        new("ProjektTransferDialog", 3, "die Projektliste und die Variantenwahl des Exports (Mengen von Verweisen) und die Dateiwahl bleiben beim Anwender; Zielname, Konfliktmodus und Sicherung stehen im Katalog"),
+        new("ProjektBrennstoffeDialog", 2, "das Zahlenfeld steht in einer Schleife über die zehn Werte der Bearbeitung, die alle im Katalog stehen"),
+        new("KatalogDublettenDialog", 1),
+        // Freigabe der Masken, Teil B (10.10.2026): der Gebäudeimport mit seinen Kopfeingaben.
+        new("GebaeudeImportDialog", 31, "im Katalog stehen die acht Kopfeingaben (Baualtersklasse, Quelle, Gebäude, " +
+            "Name, Heizsollwert aus der Datei, Zonenregel, Zonierung, als Zone mit Bauteilen) und die Nordrichtung " +
+            "(ein Baustein ohne gezählte Eingabe); draußen bleiben die Eingaben je Raum, Feldzeile, Zone, Baustoff und " +
+            "Aufbauzeile (Haken, Werte, Namen, Nutzungen — Zeilen, keine Kopfwerte), die Mengenwahlen der Zonen und Räume " +
+            "(Haken je Zeile für eine Massenaktion), die Eingaben der Schritte am Zonenplan (neue Zone, Geschoss, Regel " +
+            "für den Rest, Ziel- und Raumwahl im Grundriss, Ausweg-Haken — sie wirken erst mit ihrem Knopf), die fünf " +
+            "Filter der Listen (Anzeige, kein Einstellwert) und die Dateiwahl (Betriebssystemdialog)"),
+        new("GebaeudeExportDialog", 5, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen; die Formatwahl gbXML/IFC trifft der Anwender, sie nimmt die Bestätigung zurück; die Wahl „Originaldatei anreichern“ und die Bestätigung des Beipackzettels (fremde Datei verändert weitergeben) sind Handlungen des Anwenders, die eine Dateiwahl voraussetzen"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 
         new("BedarfAdminDialog", 3),
-        new("BedarfErgebnisDialog", 4),
+        new("BedarfErgebnisDialog", 2, "die Knopfgruppen Bedarfsart und Zeitraster des Grafikreiters sind Schaltknöpfe; der Assistent setzt sie über „grafiksicht“, „jahresverlauf“ und „zeitstufe“"),
         new("BedarfReiter", 3),
-        new("BedarfsProfileDialog", 3),
+        // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
+        new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
+        // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
+        // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.
+        new("BetriebskalenderDialog", 8),
         new("BedarfstagKonstruktor", 10, "Zapfprofil Z4, Gruppe 2b: Bezugsart und Bezugsmenge des Tags (Felder bezugsart, bezugsmenge)"),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter in der Kopfzeile.
         new("BerichteKostenSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),
         // Berichtsvorlagen BV-E1 (Konzept 10.2): die Vorlagenwahl der Gruppe „Vorlage" (2 → 3) -
         // das Katalogfeld „vorlage" der Maske Berichtsseite (KiDialoge.BerichtVorlagenfeld) über
         // BerichtSeiteKiSicht.Vorlage samt VorlageWahl.
-        new("BerichtSeite", 6, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl), die Wahl der Excel-Vorlage das Katalogfeld excel_vorlage (BerichtSeiteKiSicht.ExcelVorlage samt ExcelVorlageWahl, BV-E7); die Musterwahl von „Neue Vorlage…“ (Standardvorlage oder Kurzbericht) steht in der Überlagerung und wählt nur die Quelle einer Kopie, ebenso die Musterwahl von „Neue Excel-Vorlage…“ (Excel-Standardmappe oder ausführliche Excel-Vorlage, BV-E9)"),
+        new("BerichtSeite", 7, "die Vorlagenwahl ist das Katalogfeld vorlage (BerichtSeiteKiSicht.Vorlage samt VorlageWahl), die Wahl der Excel-Vorlage das Katalogfeld excel_vorlage (BerichtSeiteKiSicht.ExcelVorlage samt ExcelVorlageWahl, BV-E7); die Musterwahl von „Neue Vorlage…“ (Standardvorlage oder Kurzbericht) steht in der Überlagerung und wählt nur die Quelle einer Kopie, ebenso die Musterwahl von „Neue Excel-Vorlage…“ (Excel-Standardmappe oder ausführliche Excel-Vorlage, BV-E9)"),
         new("BhkwWirtschaftlichkeitDialog", 39),
-        new("BhkwReiter", 5),
+        // Die Stromlast unter der Wärmelast: vier Reihenschalter mehr, „sortiert" gilt für beide Bilder (5 → 9).
+        new("BhkwReiter", 9),
         new("BrennstoffBestandteile", 2),
         new("CaseEingabeDialog", 7),
         // Berichtsvorlagen BV-E1 (Konzept 10.3): die Firma der Rubrik „Bericht" (9 → 10) - das
@@ -234,7 +324,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // eine Dateiwahl und zählt hier nicht, steht aber als bericht_vorlagenordner im Katalog.
         // BV-E2 (Entscheid BV-E2-1): das Logo der Rubrik „Bericht" ist eine Dateiwahl und zählt hier nicht
         // (die Zahl bleibt 10), steht aber als Katalogfeld bericht_logo über EinstellungenKiSicht.BerichtLogo.
-        new("EinstellungenDialog", 10, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2)"),
+        // Die zwei Vorgaben der Installation (Konzept Berichtsvorlagen 10.3) sind zwei Auswahlfelder: 10 → 12.
+        new("EinstellungenDialog", 12, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2); die zwei Vorgaben der Installation sind die Wahlfelder bericht_vorgabe_word und bericht_vorgabe_excel"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),
@@ -253,19 +344,34 @@ public sealed class KiMaskenabdeckungWacheTests
         // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
         // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
         // GebaeudeKiSicht auf den Filterstand; eigene Eingabestellen trägt die Maske keine mehr: 4 → 0.
-        new("GebaeudeDialog", 0, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
-            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand"),
+        // „In DB übernehmen": das Namensfeld der Abfrage gehört zur Handlung, die mit eigenem OK sofort
+        // einen Katalogsatz schreibt — kein Einstellwert der Maske: 0 → 1.
+        new("GebaeudeDialog", 1, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
+            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand; der Name der Abfrage „In DB übernehmen“ " +
+            "gehört zur Handlung, die mit eigenem OK sofort schreibt"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
         // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.
-        new("GebaeudeKatalogDialog", 49),
-        new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
-            "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
+        // KP2 U0b: Die Betriebsart „Admin" fällt und mit ihr die Klappliste des Namens; der Name
+        // ist allein das Textfeld (Katalogfeld name): 49 → 48.
+        // KP2 U1: Der zweite Reiter ist „Konditionierung" - Raumtemperaturen, Nachtzeit,
+        // Maximalraumtemperatur und Ferien wandern in die Bausteine KonditionierungReiter und
+        // KonditionierungMatrix (dieselben Katalogfelder): 48 → 37.
+        // KP2 U1, E56 F3 (a): Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und
+        // Kühlsollwert stehen nur noch im Reiter „Konditionierung" (Katalogfelder unverändert): 37 → 32.
+        new("GebaeudeKatalogDialog", 33),
+        new("GebaeudeKuehluebergabeFelder", 13, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
+            "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze; " +
+            "dazu die fünf der Kühlkurve (KK4) - kuehlkurve_aktiv, _fusspunkt, _raumeinfluss, _auslegung_weg, _auslegung_aussen"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.
-        new("GebaeudeStammblattFelder", 38, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
-            "des Hüll-Rasters ist gerechnet, die Ferien sind die Spalten ferien_*"),
-        new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
-            "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster"),
+        // KP2 U4, E56 F3 (a): Sollwerte, Nachtzeit, Ferien, Wärmegewinne, Infiltration, Nutzerlüftung,
+        // Sommerlüftung und Kühlsollwert stehen im Blatt „Konditionierung" der Verwaltung (Bausteine
+        // KonditionierungReiter und KonditionierungMatrix, dieselben Katalogfelder): 38 → 22.
+        new("GebaeudeStammblattFelder", 23, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
+            "des Hüll-Rasters ist gerechnet"),
+        new("GebaeudeWaermeuebergabeFelder", 14, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
+            "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster; " +
+            "der Raumeinfluss der Heizkurve ist heizkurve_raumeinfluss (AK3-W4b)"),
         new("GebaeudeWohnflaecheDialog", 5, "der Schalter „dezentral“ steht in beiden Zweigen (mit und ohne Zone) - EIN Katalogfeld"),
         new("GebaeudetypDialog", 6, "Name, Beschreibung und Kurvenzahl von „Neu…“ gehören zur Aktion Anlegen (KI‑D‑Q11)"),
         new("GesetzeskatalogDialog", 1),
@@ -274,8 +380,78 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KatalogBrowserDialog", 2, "Stammblatt über die Feldtafel des Profils"),
         new("KapitalwertVerlaufAbschnitt", 3),
         new("KennlinienEditorDialog", 7),
+        // KP2 U1: die Vorgabe-Matrix - ein Zahlenfeld je Zelle (in der Schleife EIN Tag), das
+        // Nachtfenster je Spalte, ΔT der Nachtauskühlung und Start/Ende der Saison. KP2 U5 (E57): dazu
+        // die Liste „alle Größen“ in der Kopfzelle der Zeile „Vorlage“ (kond_vorlage_alle): 5 → 6.
+        new("KonditionierungMatrix", 6, "die Bestandszellen tragen ihre Katalogfelder (soll_tag, " +
+            "nachtabsenkung, nacht_beginn/nacht_ende, wochenendabsenkung, soll_ferien, kuehl_sollwert, " +
+            "luftwechsel_infiltration, luftwechsel_nutzer, waermegewinne); die übrigen Zellen, „aus“, " +
+            "Nachtfenster, ΔT und Saison die Felder kond_* aus dem Profil KiKonditionierungsfelder (Feldtafel); " +
+            "die Liste „alle Größen“ das Feld kond_vorlage_alle mit der Aktion der einen Rückfrage"),
+        // KP2 U1: Maximalraumtemperatur, Sommerlüftung und die vier Ferienzeiträume (Katalogfelder
+        // max_temperatur, sommerlueftung, ferien_*) - aus dem Katalogeditor hierher gewandert.
+        new("KonditionierungReiter", 6),
+        // KP3 O2 (E59): das Feld „Aufheizzeit manuell (h)" (Katalogfeld aufheizzeit_manuell); „Übernehmen" setzt
+        // denselben Wert aus dem Vorschlag und ist keine eigene Eingabestelle.
+        new("AufheizzeitManuellFeld", 1),
+        // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als
+        // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,
+        // Beschreibung und Nutzung der Abfrage „Als Vorlage speichern…“ (Festlegung 13: eine Handlung mit
+        // eigenem OK, die sofort schreibt).
+        // NP3b (NP-F15): die Nutzung der Abfrage ist freier Text, dazu die Vorschläge aus dem Katalog der
+        // Nutzungsprofile als Suchauswahl, die den Text setzt: 4 → 5.
+        new("Kalenderkarte", 5, "die Auswahlliste der Vorlagen führt die Feldkarte als kond_<größe>_vorlage mit der " +
+            "Aktion von „Übernehmen“; Name, Beschreibung, Nutzung (freier Text) und der Vorschlag aus dem Katalog " +
+            "gehören zur Handlung „Als Vorlage speichern…“, die mit eigenem OK sofort schreibt — kein Einstellwert des Gebäudes"),
+        // KP2 U2 (E56 F4 (a), Festlegung 13): das Namensfeld von „Umbenennen“ in der Vorlagenverwaltung; dazu
+        // Zielgröße, Name, Komfort- und Absenksollwert der Abfrage „Kopieren nach …“ (Teilkonzept 3.5, 7.4): 4 → 5.
+        // NP3a (Konzept Nutzungsprofile 6.1, NP-F3): die Felder des Profileditors und der Zuordnung stehen am
+        // KATALOG der Nutzungsprofile, nicht am Gebäude - der Katalog gilt projektübergreifend und jede
+        // Handlung schreibt sofort mit eigenem Knopf. NP3c: Die 28 Kennwerte des Profileditors führt die
+        // Feldkarte KiNutzungsprofilfelder (np_*, Feldtafel am Entwurf des Blatts), dazu die Kategorie (nur
+        // lesbar) und die Zuordnungszeilen als Raster zum Lesen; die Zahl bleibt 31.
+        new("RaumnutzungBlatt", 30, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
+            "Außenluft samt Einheit und die Lasten führt die Feldkarte KiNutzungsprofilfelder als np_* am ENTWURF " +
+            "des Profileditors (in den Katalog erst mit „Speichern“ des Blatts, NP-F3); die Nutzungstage im Jahr sind " +
+            "abgeleitet (E93), eine Lesezeile ohne Eingabe, und stehen nur lesbar als np_tage_jahr; die Zuordnungszeilen (Art, " +
+            "Schlüssel, Profil) stehen als Raster zum Lesen. Profilwahl je Zeile sowie Art und Schlüssel einer neuen " +
+            "Zeile gehören zu Handlungen, die sofort in den Katalog schreiben — Klicks des Anwenders"),
+        // NP4a (Konzept Nutzungsprofile 6.1, 6.4): Zielkategorie und Name einer neuen Kategorie des CSV-Imports, die
+        // Kategorie des Exports.
+        new("RaumnutzungCsvAustausch", 3, "Zielkategorie und Name der neuen Kategorie gehören zur Handlung „CSV importieren…“, die " +
+            "erst mit „Übernehmen“ in den Katalog schreibt, die Kategorie zur Handlung „CSV exportieren…“, die eine Datei " +
+            "schreibt — Dateiwahlen und Klicks des Anwenders, kein Einstellwert des Gebäudes"),
+        // NP4c (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9): Wert, Nachtfenster und ΔT je Zeile des Zeilenbilds und die
+        // 24 Stundenwerte je Tagesart samt Einfügefeld - der ENTWURF des Profileditors; die Feldkarte führt Zeilenbild und
+        // Stundenprofile als Raster zum Lesen (np_zeilenbild_*, np_stunden_*) und den Umschalter je Größe nur lesbar
+        // (np_weg_*): bearbeitet wird im Blatt, in den Katalog erst mit „Speichern“.
+        new("RaumnutzungZeilenbildEditor", 3, "Wert, Nachtfenster und ΔT je Zeile führt die Feldkarte als Raster zum Lesen " +
+            "(np_zeilenbild_*) am Entwurf des Profileditors; in den Katalog erst mit „Speichern“ des Blatts"),
+        new("RaumnutzungStundenEditor", 2, "die Stundenwerte führt die Feldkarte als Raster zum Lesen (np_stunden_*); das " +
+            "Einfügefeld ist die Angabe der Handlung „Einfügen“, kein Einstellwert"),
+        new("KonditionierungVorlagenverwaltung", 5, "der neue Name gehört zur Handlung „Umbenennen“, Zielgröße, Name, " +
+            "Komfort- und Absenksollwert zur Handlung „Kopieren nach …“; beide schreiben mit eigenem OK sofort — kein " +
+            "Einstellwert des Gebäudes"),
+        // KP2 U3 (Teilkonzept 7.5): die Grundangabe der aufgeklappten Karte (die Standardwoche steht im
+        // Baustein Wochenraster) und Tage, Von, Bis und Wert des Werkzeugs „Zeitfenster“.
+        new("KalenderkarteInhalt", 4, "die Grundangabe und die Standardwoche führt die Feldkarte als " +
+            "kond_<größe>_woche (die Woche als Text; eine Grundangabe ist eine Woche mit 168 gleichen Werten); " +
+            "Von, Bis und Wert des Zeitfensters sind Angaben der Handlung „Zeitfenster eintragen“, kein Einstellwert"),
+        // KP2 U3 (Festlegung 15): Art, Name, Von, Bis, Feiertagsregel, Angabe, Wert und Wochentag des Formulars
+        // „Periode hinzufügen“ / „Periode bearbeiten“.
+        new("Periodenliste", 8, "Art, Name, Tage, Feiertagsregel und Angabe sind Angaben der Handlung „Periode " +
+            "hinzufügen“ bzw. „Periode bearbeiten“ mit eigenem „Übernehmen“ — keine Einstellwerte des Gebäudes"),
+        // K1b (Konzept 7.8, E110): Ferien von/bis, Saison von/bis, Vorlage „alle Größen", Pinselwert, Ziel, Quell- und
+        // Zieltag, Monat und Zielmonat, dazu der Zeileneditor (Datum, Bezeichnung, Wirkung, Profil, Wochentag, Wert).
+        // K2-U (Stufe 2): Feiertagsland, Bezeichnung eines Ferienzeitraums, Name einer benannten Woche.
+        new("KalenderbedienungAbschnitt", 22, "die Werte von Wochenende und Ferien sind dieselben Matrixzellen wie in der Matrix (Feldname gleich); Ferien und Saison führt die Feldkarte als Bestandsfelder des Gebäudes " +
+            "(Ferienzeiträume, kond_<größe>_saison); Pinselwert, Ziel, Quell- und Zieltag, die Monate und die Felder des " +
+            "Zeileneditors sind Angaben der Handlungen „Pinsel“, „Woche/Tag/Monat kopieren“ und „Zeile übernehmen“ — " +
+            "keine Einstellwerte des Gebäudes; die Wahl „Vorlage (alle Größen)“ führt die Rückfrage der Matrix; Feiertagsland und " +
+            "Ferienbezeichnung sind Handlungen der Kalenderbedienung über dem Arbeitsstand (FeiertagslandSetzen, " +
+            "FerienlisteSetzen), der Name einer benannten Woche ist die Angabe von „Woche anlegen“/„Umbenennen“"),
         new("KlimadatenDialog", 7),
-        new("KomponentenKonfigurationDialog", 3),
+        new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),
         new("KostenSeite", 0),
         new("KostenfaktorKatalogDialog", 1),
@@ -291,17 +467,36 @@ public sealed class KiMaskenabdeckungWacheTests
         // Berichtsvorlagen BV-E1: die Suche des Platzhalterkatalogs - der Wirt BerichtSeite führt
         // sie und meldet sie als BerichtSeiteKiSicht.Katalogsuche an; das Feld „Schreibweise"
         // ist nur lesbar und zählt nicht.
-        new("PlatzhalterkatalogDialog", 1, "die Katalogsuche steht über den Wirt als BerichtSeiteKiSicht.Katalogsuche bereit; Katalogfeld katalogsuche der Maske Berichtsseite im Kern nachzuziehen (BV-E1)"),
+        new("PlatzhalterkatalogDialog", 1, "die Katalogsuche steht über den Wirt als BerichtSeiteKiSicht.Katalogsuche bereit - das Katalogfeld katalogsuche der Maske Berichtsseite"),
         new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
-        new("PufferSpProjektDialog", 20),
-        new("PvModellFelder", 3),
-        new("QuelleErdreichDialog", 9),
+        // Pufferspeicher-Auslegung (Stufe P2): dreizehn Felder im Katalog Form_PufferAuslegung (Klassen,
+        // Vorlage, Gerätetyp, Zweiterzeuger, Übergabeart, Heizgrenze, Anlagenvolumen, Sperrprofil und die
+        // drei Ziele). Draußen bleiben die Anzeigestufe (Sitzungseinstellung), die Kriterienschalter der
+        // Karten (eine Schleife über die Vorlage), Ziel und Bezeichnung der Übernahme (Angaben der
+        // Handlung „Übernehmen") und die Expertenfelder (Heizlast, eigenes Sperrfenster, Expertenweg,
+        // kleinste Dauerleistung, Zirkulation, Wohneinheiten, Puffertemperatur, Spreizung).
+        new("PufferAuslegungSeite", 28, "Anzeigestufe, Kriterienschalter der Karten, Angaben der Übernahme (samt Schaltern " +
+            "„Sperrprofil an die Wärmepumpe schreiben“ und „Katalogsatz als Herkunft merken“) und " +
+            "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
+        new("PufferSpProjektDialog", 25),
+        new("PvGanglinieDialog", 0),
+        new("PvModellFelder", 4),
+        new("QuelleErdreichDialog", 15),
         new("QuellePufferspeicherDialog", 8),
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
             "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),
-        new("SimulationKonfigSeite", 4),
+        // KP3 O1 (Entwurf KP3, Abschnitt 3): der Abschnitt „Aufheizoptimierung" mit Schalter, Bemessung,
+        // ΔT_K, Aufheizreserve und Art - die Feldkarte führt sie als aufheizoptimierung, aufheiz_bemessung,
+        // aufheiz_abzug, aufheiz_reserve und aufheiz_art (4 → 9).
+        // Welle M3b (BW4): Netzverluste je Kanal mit Einheit und die Zirkulation des Bestandswegs - die
+        // Feldkarte führt sie als netzverlust_* und zirkulation_* (9 → 17).
+        // Welle M5 (PV3): der Abschnitt „Einspeisegrenze" mit Wert und Einheit - die Feldkarte führt sie
+        // als einspeisegrenze und einspeisegrenze_einheit (17 → 19).
+        // KP3 O1b (E59 (2)): der Aufschlag unter der Art in Stunden und Prozent - die Feldkarte führt
+        // ihn als aufheiz_aufschlag_h und aufheiz_aufschlag_prozent (Aufheizoptimierung 9 → 11, 24 → 26).
+        new("SimulationKonfigSeite", 26),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter
         // (Vorlagenfeldumschalter, Aus · Marken · Schlüssel) im Kopf der Ergebnisansicht (0 → 1).
         new("SimulationSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),
@@ -314,12 +509,17 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherFlottenWirtschaftBlock", 6),
         new("SpeicherParameterBlock", 20),
         new("SpeicherZeitreihenDialog", 16),
+        new("Rueckwegfrage", 5, "Wahl „neu“/„überschreiben“ je Satz und für alle sowie der Name des neuen Katalogsatzes — eine Rückfrage vor dem Schreiben in den Katalog, kein Projektwert"),
+        new("Satzbearbeitung", 2, "„für alle gewählten setzen“ überträgt einen Wert auf die übrigen Sätze der Auswahl — eine Bearbeitungshilfe, kein eigener Datenwert"),
         new("Startseite", 2, "die Projekt- und Variantenwahl im Kopfband öffnet ein anderes Projekt — Navigation, kein Einstellwert"),
         new("StromganglinieAdminDialog", 1),
+        new("KaeltegangReiter", 1, "der Schalter „sortiert“ steht als Anzeigeschalter im Katalog"),
         new("StromgangReiter", 1, "die Serienauswahl (Mehrfachauswahl) steht als Anzeigeschalter mit im Katalog"),
         new("StrompreisDetails", 3),
         new("StromspeicherAuslegungSeite", 0),
         new("StromspeicherReiter", 2),
+        new("SpeicherFlottenErgebnisAnsicht", 6, "alle Schalter und Wahlen stehen je Option als Zeile der Spalte „anzeige“ des Wirts"),
+        new("SpeicherFlottenGroessenAnsicht", 3, "Einheit und die Stellen beider Schieber stehen je Option als Zeile der Spalte „anzeige“ des Wirts"),
         // Zapfprofil Z4, Gruppe 2b: der Tagesgang-Editor (Tagtyp, Stundenanteile und Wochenfaktoren als
         // Zahlenreihen, Vorlage, Katalogversion der Kopie).
         new("TagesgangEditor", 5),
@@ -349,10 +549,26 @@ public sealed class KiMaskenabdeckungWacheTests
         new("VorlagenPositionDialog", 9),
         new("VorlagenZeile", 4),
         new("WaermegangReiter", 3, "die Erzeuger- und die Speicherauswahl (Mehrfachauswahl) stehen als Anzeigeschalter mit im Katalog"),
-        new("WaermepumpeAnlageDialog", 5, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
-        new("WaermepumpeKonfiguration", 14, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
-            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld"),
-        new("WaermepumpeReiter", 8),
+        // Anwenderauftrag 30.09.2026: das Ganzzahlfeld „Nutzungsdauer" ist in den Kostendialog
+        // gegangen, mit ihm das Feld nutzungsdauer der Feldkarte (5 -> 4).
+        new("WaermepumpeAnlageDialog", 4, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
+        // KU3-6 (F6): die freie Kühlung über die Wärmequelle — ihr Schalter (ein nacktes input, weich
+        // gesperrt über aria-disabled und title) und die Zahlenfelder Grädigkeit und Leistungsgrenze; die
+        // Feldkarte führt sie als kuehl_frei, kuehl_frei_graedigkeit, kuehl_frei_leistung (19 -> 22).
+        // UB-E1 (Übergabegrenze U-2): die Klappliste „Kältemittel“ der Schnellwahl (22 -> 23).
+        // Anwenderwunsch 08.10.2026: das Kästchen „Sperrzeiten vorhanden“ über den Fenstern (23 -> 24).
+        // UB-E2: die Gruppe „Bivalenz und Übergabe“ bringt die Klappliste „Einbindung“ und den Schalter „Vorwärmbetrieb“
+        // (24 -> 26); beide stehen in der KI-Sicht („einbindung“, „vorwaermbetrieb“), ebenso jetzt „kaeltemittel“ (Spalte
+        // Kaeltemittel des Geräts). Die Lesewerte der Gruppe sind Text und keine Eingabestellen.
+        new("WaermepumpeKonfiguration", 17, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+            "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld; das Zeitprogramm der Gruppe „Betriebszeiten“ ist ein " +
+            "Wochenraster mit 168 Faktoren und steht nicht in der KI-Sicht, der höchste Vorlauf als „vorlauf_max“; " +
+            "die vier Felder je Sperrfenster (Beginn, Dauer, " +
+            "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“; das Kästchen " +
+            "„Sperrzeiten vorhanden“ ist derselbe Wert wie „sperrfenster“ leer oder nicht leer; Einbindung, Vorwärmbetrieb und " +
+            "Kältemittel stehen als „einbindung“, „vorwaermbetrieb“ und „kaeltemittel“ in der KI-Sicht"),
+        new("WaermepumpeKuehlbetriebGruppe", 9, "die Gruppe „Kühlbetrieb“ (KB-B) unter der Karte der Wärmepumpen-Konfiguration; die zwei nackten inputs sind der weich gesperrte Kühlschalter und der Schalter „freie Kühlung“ (Grund im title) - dieselben Werte wie die Katalogfelder der Maske"),
+        new("WaermepumpeReiter", 9, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog"),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.
         new("WirtschaftlichkeitSeite", 8, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
@@ -528,7 +744,11 @@ public sealed class KiMaskenabdeckungWacheTests
                     "Nur " + geltung.Count(k => k.Angemeldet) + " Anmeldungen gefunden.");
         Assert.True(geltung.Count(k => k.Eingaben.Count > 0) > 100,
                     "Nur " + geltung.Count(k => k.Eingaben.Count > 0) + " Dateien mit Eingabefeldern.");
-        Assert.True(KiDialogAusnahmen.Alle.Count > 20, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
+        // Die Ausnahmeliste schrumpft mit der Freigabe der Importdialoge (Anwenderauftrag
+        // 10.10.2026) auf zwölf Einträge — der Assistent selbst, Lizenz und Schlüssel und die
+        // bewusst ausgenommenen Rückfragen bleiben. Die Schwelle hält den Bestand gegen eine
+        // Wache, die ihre Liste nicht mehr findet, nicht gegen die Freigabe.
+        Assert.True(KiDialogAusnahmen.Alle.Count >= 10, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
     }
 
     /// <summary>
@@ -836,6 +1056,10 @@ public sealed class KiMaskenabdeckungWacheTests
         "Farbfeld", "Schalter", "Optionsgruppe", "EnergietraegerWahl", "Katalogfelder",
         // BV-E6 (Konzept 9.7 „Anmeldung, Texte"): die Anzeigestufe der Platzhalter.
         "Vorlagenfeldumschalter",
+        // KP2, Welle U0b: das Datum im Gemeinjahr (Saison, Perioden der Konditionierung).
+        "Gemeinjahrdatum",
+        // KP2, Welle U1: das Nachtfenster als EIN Feld „22–6“.
+        "Stundenfenster",
         "input", "select", "textarea"
     };
 

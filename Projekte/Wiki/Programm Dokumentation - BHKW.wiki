@@ -1,0 +1,228 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/BHKW
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - BHKW.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Verwaltung BHKW''' wählt Blockheizkraftwerks-Module aus dem Katalog aus und ordnet sie dem Projekt zu. Ein Modul erzeugt Wärme und Strom gleichzeitig und wird über thermische und elektrische Leistung, die beiden Wirkungsgrade und die untere Grenzleistung beschrieben. In der Simulation deckt es an seinem Platz der Erzeugerkaskade Wärme, und sein Strom mindert den Strombedarf des Projekts.
+
+Wie ein BHKW arbeitet und wie es ausgelegt wird, steht unter [[Grundlagen/BHKW]]; diese Seite zeigt, wie Sie es in EPOS-Plan einbinden und wie es mit Kessel, Speicher und Photovoltaik zusammen rechnet.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Ein BHKW durchläuft fünf Stationen:
+
+# '''Katalog.''' Die Moduldaten pflegt ''Administration → Wärme- und Kälteerzeugung → BHKW'' ([[Programm Dokumentation/Gerätekataloge#bhkw|Gerätekataloge: BHKW]]).
+# '''Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''BHKW'' die ''Verwaltung BHKW''. ''In das Projekt übernehmen'' fragt den Energieträger und seine Variante ab und legt eine '''projekteigene Kopie''' der Moduldaten an; mit ihr rechnet die Simulation. Vorlauf und Rücklauf kommen vorbelegt aus dem Katalog; mehrere Module sind möglich. ''Aus dem Projekt entfernen'' wird erst mit ''OK'' wirksam; ''Abbrechen'' nimmt auch die in dieser Sitzung neu angelegten Projektkopien und Energieträger-Varianten zurück.
+# '''Pufferspeicher.''' Einen Speicher legen Sie mit der Kachel ''Pufferspeicher'' oder in der ''Simulation Konfiguration'' mit ''Pufferspeicher anlegen / verwalten…'' an; mit dem BHKW verbunden wird er als dessen Wärmesenke.
+# '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…''). In der Reihenfolge der Kaskade decken die Erzeuger den Bedarf jeder Stunde. Die Seite schlägt ein angelegtes BHKW selbst vor, solange die Kaskade nicht von Hand gepflegt ist: in der Folge der Ladeprioritäten Solarthermie, Wärmepumpe, BHKW, Heizkessel – also hinter Solarthermie und Wärmepumpe und vor dem Heizkessel, in einer noch nie gespeicherten Kaskade ebenso wie in einer gespeicherten. Ordnen Sie mit den Pfeilen und legen Sie die Reihenfolge mit ''Konfiguration speichern'' fest; erst dann rechnet die Simulation mit dem BHKW ([[#fallstricke|Fallstricke]]). ''Wärmesenke bearbeiten'' legt fest, wohin die Wärme geht; ''Konfiguration…'' stellt ''Betriebsart'' und ''Untere Leistungsgrenze der Module'' ein – beide gelten für das ganze Projekt.
+# '''Ergebnis.''' Nach ''Simulation starten'' zeigt der Reiter ''BHKW'' Wärme, Strom, Betrieb und Brennstoff ([[#ergebnisse|Ergebnisse]]).
+
+{{Diagramm-Anfang|titel=Kaskade im Beispiel B: wer den Wärmebedarf einer Stunde deckt}}
+{{Fluss-Anfang}}
+{{Flusskasten|Wärmebedarf der Stunde|Heizung und Warmwasser}}
+{{Flusspfeil}}
+{{Flusskasten|Platz 1: Solarthermie|50 m², nur Warmwasser|rolle=solar}}
+{{Flusspfeil|offener Rest}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Platz 2: BHKW 1|30 kW el, 60 kW th|rolle=bhkw}}
+{{Flusspfeil|Überschuss laden, später entladen|richtung=unten}}
+{{Flusskasten|Speicher 1|3&nbsp;000 l, Brauchwasser|rolle=speicher}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|offener Rest}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Platz 3: Kessel 1|150 kW|rolle=kessel}}
+{{Flusspfeil|darüber|richtung=unten}}
+{{Flusskasten|Kessel 2|150 kW|rolle=kessel}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|offener Rest}}
+{{Flusskasten|Restwärmebedarf|bleibt ungedeckt|rolle=netz}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Solarthermie und BHKW 1 laden Speicher 1 und rechnen in einer Stundenschleife; Kessel 1 und 2 teilen sich den Platz des Heizkessels und decken danach nacheinander.}}
+
+Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darüber hinaus entsteht, lädt es in Speicher 1, und der deckt in späteren Stunden. Solarthermie und BHKW laden denselben Speicher und rechnen deshalb in einer gemeinsamen Stundenschleife, der Speicherstufe. Die Kessel laden im Beispiel keinen Puffer und rechnen deshalb an ihrem Platz hinter dieser Stufe auf dem Rest ([[Programm Dokumentation/Berechnung/Simulationsablauf#rechenweg|Berechnung: Simulationsablauf]]). Der Platz in der Kaskade ordnet die direkte Deckung; welcher Erzeuger einen Puffer zuerst lädt, entscheidet die ''Ladeprio'' seiner Wärmesenke – Vorgabe Solarthermie 10, Wärmepumpe 20, BHKW 30, Kessel 40 –, der Platz nur bei gleicher Priorität.
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+'''Beispiel B''' ist ein Hotel mit 80 Zimmern: Heizlast 250 kW bei −12 °C, im Jahr 420 MWh Heizwärme, 220 MWh Trinkwarmwasser und 450 MWh Strom, Heizkörper 60/45 °C und Lüftung. BHKW 1 (30 kW elektrisch, 60 kW thermisch) trägt mit Speicher 1 (Pufferspeicher, 3&nbsp;000 l) die Grundlast, Kessel 1 und Kessel 2 mit je 150 kW decken die Spitze, 50 m² Solarthermie arbeiten dem Warmwasser zu, 100 kWp Photovoltaik liefern Strom.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Verwaltung BHKW || ''Module in Datenbank'' || Erdgas-Modul, <math>P_{\mathrm{el}}</math> 30&nbsp;kW, <math>P_{\mathrm{th}}</math> 60&nbsp;kW (<math>\sigma = 0{,}5</math>) || rund ein Viertel der Heizlast; Warmwasser und Heizung geben ihm fast das ganze Jahr Arbeit
+|-
+| BHKW Eigenschaften (''Bearbeiten...'') || ''Elektrischer Wirkungsgrad:'', ''Thermischer Wirkungsgrad:'' || 0,30 und 0,60; ''Ges. Wirkungsgrad:'' 0,90 || der Gesamtwirkungsgrad bestimmt den Brennstoff: <math>(\text{Wärme} + \text{Strom}) / 0{,}90</math>. Vor dem Übernehmen prüfen – die Projektkopie behält die Werte
+|-
+| Energieträger Variante || ''Energieträger:'', ''Energieträger Varianten Bezeichnung:'' || Erdgas, ein eigener Variantenname || über den Energieträger laufen Preis und Emissionsfaktor des Brennstoffs
+|-
+| Verwaltung BHKW || ''Vorlauf'', ''Rücklauf'' || 80 °C, 50 °C || der Vorlauf liegt über dem des Puffers; sonst meldet der Lauf, das BHKW könne den Speicher nie auf Solltemperatur laden
+|-
+| Pufferspeicher im Projekt || ''Bezeichner:'', ''Gesamtvolumen [l]:'', ''Vorlauf [°C]:'', ''Rücklauf [°C]:'', ''Verwendung:'' || Speicher 1, 3&nbsp;000, 60, 35, Brauchwasser || nutzbar rund 87 kWh (3&nbsp;000 l · 1,16 Wh/(l·K) · 25 K); ein Warmwasserspeicher nimmt auch im Sommer ab. Vorrangig lädt ihn die Solarthermie, das BHKW nachrangig ([[Programm Dokumentation/Solarthermie#beispiel|Solarthermie: Beispiel]])
+|-
+| Simulation Konfiguration || Kaskade || Platz 1 Solarthermie, Platz 2 BHKW, Platz 3 Heizkessel || Sind alle drei angelegt, bevor die Kaskade gespeichert ist, schlägt die Seite genau diese Folge vor. Die Solarthermie deckt hier nur direkt und steht deshalb vorn: ''Konfiguration speichern''
+|-
+| Wärmesenke - BHKW 1 || Rang 1: ''Ziel'', ''Bedarfsart'' || ''Heizkreis (direkte Deckung des Bedarfs)'', ''Beides (Warmwasser zuerst)'' || die Vorbelegung beim Anlegen: zuerst der laufende Bedarf
+|-
+| Wärmesenke - BHKW 1 || Rang 2: ''Ziel'', ''Pufferspeicher'' || ''Pufferspeicher Brauchwasser'', Speicher 1 || was über den Bedarf hinaus entsteht, geht in den Warmwasserspeicher – so läuft das Modul auch bei kleiner Last
+|-
+| Wärmesenke - BHKW 1 || Rang 2: ''Ladeprio'' || nach Vorgabe (30 - BHKW) || nachrangig hinter der Solarthermie (10): bei leerem ''… nachrangig [%]'' lädt das BHKW bis 30 %, rund 26 kWh; der Raum darüber bleibt der Solarwärme
+|-
+| Konfiguration an der Karte des BHKW || ''Betriebsart'' || ''Wärmegeführt'' || das Modul folgt dem Wärmebedarf; sein Strom deckt den Eigenbedarf, Überschuss wird eingespeist
+|-
+| Konfiguration an der Karte des BHKW || ''Untere Leistungsgrenze der Module'' || 30 % || gilt für Module ohne eigene Grenzleistung (Katalogwert 0); dann bleibt BHKW 1 unter 18 kW Wärmeraum aus
+|-
+| Wärmesenke - Kessel 1, Kessel 2 || ''Ziel'' || ''Heizkreis (direkte Deckung des Bedarfs)'' || die Kessel laden den Puffer nicht und lassen ihn dem BHKW
+|-
+| Wärmesenke - Kollektorfeld || Rang 1: ''Bedarfsart'' / Rang 2: ''Ziel'', ''Pufferspeicher'', ''Ladeprio'' || ''nur Warmwasser'' / ''Pufferspeicher Brauchwasser'', Speicher 1, nach Vorgabe (10 - Solarthermie) || die Kollektoren arbeiten dem Warmwasser zu und laden Speicher 1 vorrangig ([[Programm Dokumentation/Solarthermie#beispiel|Solarthermie: Beispiel]])
+|}
+
+'''Was zu erwarten ist.''' Im vereinfachten Modell unten deckt das BHKW gut die Hälfte der Jahreswärme mit rund 5&nbsp;900 thermischen Vollbenutzungsstunden, Kessel 1 rund 40 %, Kessel 2 wenige Prozent. EPOS-Plan rechnet zusätzlich mit Klimadaten, Puffer, Untergrenze und Solarthermie; seine Zahlen stehen in den Reitern ''BHKW'' (''Wärmeproduktion'', ''davon in den Speicher'', ''Stromproduktion'', ''Stromeinspeisung'', ''Vbh thermisch, Summe Module'') und ''Heizkessel''. Der mittlere Strombedarf des Hotels liegt mit rund 51 kW über der elektrischen Leistung des BHKW; Stromeinspeisung ist deshalb kaum zu erwarten.
+
+<!-- Modell der Dauerlinie, keine Rechnung von EPOS-Plan.
+     Geordnete Heizlast: L_H(h) = 250 kW * (1 - h / 5 500 h)^k fuer h < 5 500 h, sonst 0;
+     k = 250 kW * 5 500 h / 420 MWh - 1 = 2,27 (Heizwaerme 420 MWh im Jahr).
+     Warmwasser als gleichmaessige Grundlast: 220 MWh / 8 760 h = 25 kW; Solarthermie nicht beruecksichtigt.
+     BHKW 1 deckt in jeder Stunde min(L; 60 kW); Pufferspeicher und Untergrenze vernachlaessigt.
+     Kessel 1 deckt den Rest bis 150 kW, Kessel 2 darueber.
+     Je Saeule das Mittel von 730 Stunden; Hoehe in Prozent der groessten Saeule (240 kW = 100).
+     Ergebnis des Modells: BHKW 356 MWh (56 %), 5 930 thermische Vollbenutzungsstunden, Strom 178 MWh;
+     Kessel 1 263 MWh (41 %), Kessel 2 22 MWh (3 %) in rund 700 Stunden. -->
+{{Diagramm-Anfang|titel=Beispiel B: Dauerlinie mit BHKW-Grundlast und Kesselspitze}}
+{{Säulen-Anfang|achse=mittlere Wärmelast in kW}}
+{{Säule|730|bhkw=25|kessel=75|wert=240}}
+{{Säule|1460|bhkw=25|kessel=49|wert=177}}
+{{Säule|2190|bhkw=25|kessel=27|wert=126}}
+{{Säule|2920|bhkw=25|kessel=11|wert=86}}
+{{Säule|3650|bhkw=23|kessel=1|wert=57}}
+{{Säule|4380|bhkw=16|wert=38}}
+{{Säule|5110|bhkw=12|wert=28}}
+{{Säule|5840|bhkw=10.5|wert=25}}
+{{Säule|6570|bhkw=10.5|wert=25}}
+{{Säule|7300|bhkw=10.5|wert=25}}
+{{Säule|8030|bhkw=10.5|wert=25}}
+{{Säule|8760|bhkw=10.5|wert=25}}
+{{Säulen-Ende|Stunden des Jahres, nach Wärmelast geordnet; je Säule das Mittel von 730 Stunden}}
+{{Legende|bhkw=BHKW 1|kessel=Kessel 1 und 2}}
+{{Diagramm-Ende|Beispielwerte, gerundet. Vereinfachtes Modell ohne Solarthermie und Pufferspeicher, keine Rechnung von EPOS-Plan.}}
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+{| class="wikitable"
+! Technik !! Wirkung auf das BHKW !! Wirkung vom BHKW !! So rechnet EPOS-Plan
+|-
+| Heizkessel (Kessel 1 und 2) || übernehmen Spitze und Reserve || senkt ihre Laufzeit und ihren Brennstoff || Das BHKW steht vor den Kesseln; Kessel 1 deckt den Rest bis 150 kW, Kessel 2 darüber ([[Programm Dokumentation/Heizkessel#zusammenspiel|Heizkessel: Zusammenspiel]]). Lädt ein Kessel denselben Puffer, lädt er nach dem BHKW (Ladepriorität 40 gegen 30), belegt aber Speicherraum.
+|-
+| Pufferspeicher || vergrößert den Wärmeraum der Stunde um den freien Speicher || lädt den Puffer, der später selbst deckt || Mit Puffer als Senke läuft das Modul voll, solange offener Bedarf und freier Speicher seine Nennleistung aufnehmen; ohne Puffer rechnet es nur gegen den Momentanbedarf. Mindestfüllstand und Schwellen: [[Programm Dokumentation/Pufferspeicher#mindestfuellstand|Pufferspeicher]].
+|-
+| Solarthermie || senkt im Sommer den Wärmebedarf und damit die Laufzeit || – || Lädt die Solarthermie denselben Puffer vorrangig (Ladepriorität 10), lädt ihn das BHKW bei leerer nachrangiger Schwelle nur bis 30 % ([[Programm Dokumentation/Pufferspeicher#schwellen|Pufferspeicher: Schwellen]]).
+|-
+| Photovoltaik || deckt nur, was nach dem BHKW-Strom offen ist || senkt den Eigenverbrauch der PV und erhöht ihre Einspeisung || Der BHKW-Strom mindert den Strombedarf an seinem Platz der Kaskade, also vor der Photovoltaik. Ein BHKW-Überschuss wird getrennt von der PV-Einspeisung ausgewiesen.
+|-
+| Stromspeicher || – || der BHKW-Überschuss kann ihn laden || nur, wenn im Reiter ''Stromspeicher'' unter ''Zulässige Ladequellen'' der Schalter ''BHKW-Überschuss'' gesetzt ist
+|-
+| Wärmepumpe, Heizstab, Elektrokessel, Kältestrom || ihr Strom ist Last, die der BHKW-Strom derselben Stunde decken kann || – || Der BHKW-Abzug im Strombedarf wird nicht auf 0 begrenzt; später gerechnete Verbraucher derselben Viertelstunde nutzen so den Überschuss. Nur der Kältestrom einer Wärmepumpe mit ''eigenem Zähler'' bleibt außen vor ([[Programm Dokumentation/Kälteerzeugung#abrechnung|Kühlung: Stromträger und Abrechnung]]).
+|-
+| Wirtschaftlichkeit || – || KWK-Zuschlag, Vergütung und Steuern hängen an Strommenge und Vollbenutzungsstunden || [[Programm Dokumentation/Wirtschaftlichkeit#bhkw-wirtschaftlichkeit|Wirtschaftlichkeit: BHKW-Wirtschaftlichkeit]]
+|}
+
+{{Diagramm-Anfang|titel=Strom einer Stunde: in welcher Reihenfolge gedeckt wird}}
+{{Fluss-Anfang}}
+{{Flusskasten|Strombedarf der Stunde|Gebäude und elektrische Wärmeerzeuger}}
+{{Flusspfeil|zuerst}}
+{{Flusskasten|BHKW 1|30 kW el|rolle=bhkw}}
+{{Flusspfeil|Rest}}
+{{Flusskasten|Photovoltaik|100 kWp|rolle=solar}}
+{{Flusspfeil|Rest}}
+{{Flusskasten|Stromspeicher|entlädt, falls vorhanden|rolle=speicher}}
+{{Flusspfeil|Rest}}
+{{Flusskasten|Netzbezug|rolle=netz}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Überschüsse von BHKW und Photovoltaik laden einen Stromspeicher, soweit sie als Ladequelle zugelassen sind, und werden sonst eingespeist; der BHKW-Überschuss steht getrennt von der PV-Einspeisung.}}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Den Kaskadenplatz prüfen.''' Die Simulation rechnet ein BHKW nur auf einem gespeicherten Platz der Kaskade. Vorgeschlagen wird es von selbst vor dem Kessel; in einer von Hand gepflegten Kaskade bleibt die Reihenfolge, die Sie gesetzt haben – hinter einem Kessel bekäme es nur, was die Kessel offen lassen. Nach einem Handgriff an der Kaskade – ''+ aufnehmen'', ''×'' oder Pfeil – ist sie von Hand gepflegt; steht dann kein BHKW darin, kommt ein später angelegtes nicht mehr von selbst hinein. Die Seite nennt es in einer Hinweisleiste, der Lauf in einer Meldung über den Ergebnissen; aufgenommen wird es mit ''+ aufnehmen''.
+* {{Anker|pendelspeicher|taktung}}'''Pendelspeicher und Takten.''' Einen eigenen Pendelspeicher führt der Dialog nicht; diese Rolle übernimmt ein Pufferspeicher als Wärmesenke. Gerechnet wird stündlich: Ein Modul läuft voll, moduliert oder gar nicht. Taktung, Mindestlaufzeiten, Anfahr- und Stillstandsverluste und ein Teillastwirkungsgrad kommen im Modell nicht vor.
+* '''Vollbenutzungsstunden sind keine Betriebsstunden.''' Die Werte des Reiters teilen die Jahresarbeit durch die Nennleistung. Ein Modul, das ein Jahr lang zur Hälfte moduliert, hat 8&nbsp;760 Betriebsstunden, aber 4&nbsp;380 Vollbenutzungsstunden; die Summe über mehrere Module kann 8&nbsp;760 übersteigen.
+* '''Welche Untergrenze gilt.''' Jedes Modul rechnet in allen drei Betriebsarten mit dem Feld ''Untere Grenzleistung des ausgewählten Moduls'' der Verwaltung, sobald dort ein Wert über 0 steht; sonst mit der unteren Grenzleistung, die es aus dem Katalog mitbringt; steht auch dort 0, gilt die ''Untere Leistungsgrenze der Module'' der Konfiguration, und deren 0 heißt: keine Untergrenze. Unter seiner Untergrenze bleibt ein Modul in der Stunde aus – es sei denn, sein Katalogsatz führt einen Anfahrverlust oder eine Mindestlaufzeit; dann taktet es (siehe [[#teillast|Teillast und Takten]]). Ein Wert über 100&nbsp;% ist ungültig: Der Lauf meldet ihn und nimmt den nächsten.
+* '''Eine Betriebsart, eine Senke.''' Die Betriebsart gilt für das ganze Projekt, und die Fahrweisen schalten alle Module gemeinsam zu. Für die ganze BHKW-Stufe gilt die Wärmesenke eines führenden Moduls; weicht ein anderes davon ab, warnt das Laufprotokoll.
+* '''Stromgeführt verwirft Wärme, ohne Einspeisung regelt ab.''' Stromgeführt entsteht Wärme nach dem Strombedarf; was weder den Bedarf deckt noch in einen Puffer passt, zeigt der Reiter als ''Wärmeüberschuß (*)'' – verloren, der Brennstoff aber verbraucht. ''ohne Stromeinspeisung'' lässt ein Modul aus, wenn der Strombedarf der Stunde nicht reicht, auch wenn Wärme gebraucht würde; dann springen die Kessel ein.
+* '''Katalog und Projekt sind getrennt.''' ''Bearbeiten'' (Stift oder Knopf im Gewählten Satz) ändert den Katalogsatz; ein übernommenes Modul rechnet weiter mit seiner Projektkopie. Damit eine Katalogänderung wirkt, nehmen Sie es aus dem Projekt und übernehmen es neu.
+* '''Höchstens zehn Module''' je Projekt; mit mehr bricht der Lauf ab und nennt den Grund.
+
+== Eingaben ==
+
+=== Katalog und Projektliste ===
+
+Der Dialog ''Verwaltung BHKW'' hat drei gerahmte Bereiche übereinander: ''Im Projekt'' (oben), ''Katalog (Datenbank)'' und ''Gewählter Satz''. Die Trennlinie zwischen den beiden Listen lässt sich ziehen; die Aufteilung wird je Dialog gemerkt. Beide Listen kennen die Mehrfachwahl mit Kästchen und mit dem Kästchen im Spaltenkopf; die Knöpfe eines Bereichs wirken auf die gewählten Zeilen. Ein Doppelklick oder Enter auf einer Katalogzeile übernimmt sie in das Projekt. Der Stift in einer Zeile öffnet den Satz zum Bearbeiten – in der Projektliste die Projektkopie, in der Katalogliste den Katalogsatz; ein gesperrter Katalogsatz ist nur lesbar, bis das Schloss aufgehoben ist. Auf kleinen Bildschirmen (iPad) werden die Elemente kompakter, Rollbalken erscheinen nur dort, wo sie nötig sind.
+
+Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehmen, Rückweg und die Zeile ''Gewählter Satz'' — steht unter [[Programm Dokumentation/Gerätekataloge#katalogauswahl|Gerätekataloge: Katalogauswahl im Projektdialog]]. Beim BHKW gilt zusätzlich: ''Spalten…'' bietet Bezeichner, Hersteller, Brennstoff, <math>P_{\mathrm{el}}</math>, <math>P_{\mathrm{th}}</math>, <math>\sigma</math>, <math>\eta</math> und Motortyp an; ''Vergleichen…'' stellt ab zwei gewählten Modulen deren Kennwerte nebeneinander; ''Bearbeiten…'' eines einzelnen ungesperrten Katalogmoduls öffnet ''BHKW Eigenschaften''. Die Überlagerung ''Bearbeiten'' der Zeile ''Gewählter Satz'' zeigt die Gruppe ''Modul'' mit allen Daten und beim Projektsatz die Grenzleistung der Anlage, Energieträger und Kostenknöpfe. ''In die Datenbank übernehmen…'' nimmt die Gerätewerte samt Teillast, Takten und Rücklaufgrenze in den Katalog; die Grenzleistung der Anlage bleibt im Projekt, die Grenzleistung des Moduls geht mit.
+[[Datei:Bildschirmfoto_BHKW.png|mini|zentriert|800px|Verwaltung BHKW – Bildschirmfoto mit Beispieldaten.]]
+
+* {{Anker|auswahl-aus-dem-katalog|katalog|leistungsklasse}}'''Katalog (Datenbank)''' – Suchfeld ''Suche über alle Spalten:'' (mit den Platzhaltern ''*'' und ''?'') und Trefferzahl; Spalten Bezeichner, Hersteller, Brennstoff, <math>P_{\mathrm{el}}</math> und <math>P_{\mathrm{th}}</math> in kW, <math>\sigma</math> (Stromkennzahl), <math>\eta</math> und Motortyp. Die Spaltenköpfe sortieren und filtern, ''Spalten…'' wählt die angezeigten Spalten, und ein farbiger Punkt ''im Projekt verwendet'' kennzeichnet Katalogzeilen, die im Projekt stehen. ''In das Projekt übernehmen'' legt von den gewählten Katalogsätzen je eine Projektkopie an; die Zeile im Projekt bleibt mit dem Katalogsatz verknüpft. Die Fußleiste führt ''Vergleichen…'' (ab zwei gewählten Sätzen), ''Schloss setzen…''/''Schloss aufheben…'', ''Löschen'', ''Bearbeiten…'' und rechts ''Neu…''; ''Neu…'' fragt einen Namen ab und öffnet damit ''BHKW Eigenschaften'' für einen neuen Katalogeintrag. ''Löschen'' entfernt die gewählten Katalogsätze nach einer Rückfrage für alle Projekte. Gesperrte Katalogsätze (Auslieferungssätze) sind nur lesbar, bis das Schloss aufgehoben ist. Bei mehreren gewählten Sätzen öffnet ''Bearbeiten…'' die Mehrfachbearbeitung (‹ 1 von n ›), in der ''für alle gewählten setzen'' einen Wert in allen gewählten Sätzen einträgt; gespeichert wird in einem Zug – alle Sätze oder keiner.
+* '''Im Projekt''' – die Module des Projekts mit der Summe ''Summe aller ausgewählten Module [kWth]'', der thermischen Leistung. Beim Übernehmen öffnet sich ''Energieträger Variante'' ([[Programm Dokumentation/Kosten#energietraegerverwaltung|Kosten: Energieträgerverwaltung]]), vorgewählt ist der Träger mit dem Brennstoff des Moduls. ''Aus dem Projekt entfernen'' nimmt die gewählten Zeilen aus der Liste; die Projektkopie wird erst mit ''OK'' gelöscht. ''Bearbeiten…'' öffnet die Projektkopien der gewählten Module. ''In die Datenbank übernehmen…'' legt aus den gewählten Projektsätzen neue Katalogsätze unter neuem Namen an oder überschreibt deren Ursprungssatz (nur, wenn er nicht gesperrt ist); die Rückfrage zeigt als Vorschau die Abweichungen. Ein Name, der im Katalog schon vergeben ist, wird abgelehnt.
+* '''Gewählter Satz''' – zugeklappt zeigt er die Marke ''Projektsatz'' oder ''Katalogsatz'', den Namen und die Kenndaten des Satzes; aufgeklappt eine kurze Zusammenfassung der Anlagendaten (Leistung elektrisch und thermisch, Brennstoff, Wirkungsgrade, Energieträger, Grenzleistung, Vorlauf und Rücklauf, Senken, Kosten). ''Bearbeiten'' rechts öffnet den Satz als Überlagerung in voller Höhe mit allen Feldern, beim Projektsatz mit den Kostenknöpfen. ''OK'' speichert, ''Abbrechen'' verwirft alle Eingaben der Überlagerung samt den Anlagenfeldern.
+* '''OK''' und '''Abbrechen''' – ''OK'' speichert die Liste des Projekts, ''Abbrechen'' verwirft die Änderungen und nimmt in dieser Sitzung neu angelegte Projektkopien und Energieträger-Varianten zurück.
+
+=== Modul ===
+
+* '''Modul-Name''', '''Brennstoff Typ''', '''Hersteller''', '''thermische Leistung [kWth]''', '''elektrische Leistung [kWel]''', '''Beschreibung''' – Anzeige des markierten Moduls; bei einer Zeile des Projekts aus dessen Projektkopie.
+* '''Brennstoff Variante''' – nur bei einer Zeile des Projekts: wechselt die Variante des Energieträgers.
+* '''Untere Grenzleistung des ausgewählten Moduls''' – in Prozent, an der Anlage des Projekts gespeichert; bei 0 nennt die Zeile darunter die Projektvorgabe. Welche Grenze die Simulation verwendet, steht unter [[#fallstricke|Fallstricke]].
+* '''Vorlauf''' und '''Rücklauf''' – in °C, aus dem Katalog vorbelegt und je Anlage änderbar. Die Rechnung des BHKW verwendet sie nicht; sie dienen der Prüfung gegen den Zielspeicher und bei Anlagenkopplung dem Vorlauf gekoppelter Gebäude ohne Heizkurve.
+* {{Anker|bhkw-ruecklauf-max}}'''Höchster Rücklauf (Abschaltgrenze)''' – in °C; liegt der Rücklauf des Heizkreises darüber, liefert das Modul in dieser Stunde nicht. Leer heißt keine Grenze. Das Feld steht im Katalog und in der Verwaltung des Projekts.
+* '''Senken: …''' – die Wärmesenken der Anlage; gepflegt werden sie in der ''Simulation Konfiguration''.
+* '''Investitionskosten…''', '''Betriebskosten…''', '''Energiekosten…''' – die Kosten des Moduls für die Wirtschaftlichkeit; '''Bearbeiten...''' öffnet ''BHKW Eigenschaften'' für den markierten Katalogsatz.
+
+=== Kennwerte des Moduls ===
+{{Anker|kennwerte|modulationsgrenze|gesamtwirkungsgrad}}
+
+''Bearbeiten'' (Stift oder Knopf im Gewählten Satz) zeigt die Kennwerte des Katalogsatzes:
+
+* '''Thermische Leistung''' und '''Elektrische Leistung''' – in kW; ihr Verhältnis ist die Stromkennzahl <math>\sigma</math>. Ohne Teillastwerte gilt sie auch in Teillast.
+* '''Elektrischer Wirkungsgrad''' und '''Thermischer Wirkungsgrad''' – Faktoren; '''Ges. Wirkungsgrad''' ist ihre Summe. Er bestimmt den Brennstoff: <math>\text{Verbrauch} = (\text{Wärme} + \text{Strom}) / \text{Gesamtwirkungsgrad}</math>.
+* '''Untere Grenzleistung''' – in Prozent der Nennleistung. Ein Modul bleibt aus, wenn der Wärmeraum (wärmegeführt) bzw. der Strombedarf der Stunde (stromgeführt, ohne Einspeisung) unter diesem Anteil seiner Nennleistung liegt; steht hier 0, gilt die Projektvorgabe. Ein Wert in der Verwaltung des Projekts geht diesem Katalogwert vor.
+* '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
+* Die Emissionsfelder sind Herstellerangaben und rechnen nicht mit.
+
+=== Teillast und Takten ===
+{{Anker|teillast|teillastkennlinie|takten|anfahrverlust|mindestlaufzeit}}
+
+Die Gruppe ''Teillast und Takten'' in ''BHKW Eigenschaften'' und die gleichnamigen Felder in der Überlagerung ''Bearbeiten'' beschreiben das Modul unter Volllast. Alle vier Felder dürfen leer bleiben; dann rechnet das Modul mit den Volllastwerten und bleibt unter seiner Untergrenze aus.
+
+* '''El. Wirkungsgrad bei 50 % Last''' und '''Th. Wirkungsgrad bei 50 % Last''' – Faktoren wie die Volllastwerte (z.&nbsp;B. 0,27 und 0,62). Zwischen 50&nbsp;% und Volllast verlaufen beide Wirkungsgrade geradlinig, darunter gilt der Wert bei 50&nbsp;%. Damit ändern sich in Teillast die Stromkennzahl und der Brennstoff: Ein Modul, dessen elektrischer Wirkungsgrad in Teillast fällt, braucht für dieselbe Strommenge mehr Brennstoff. Ein leeres Feld heißt „wie Volllast". Die kleine Kurve neben den Feldern zeigt beide Wirkungsgrade über der Last.
+* '''Anfahrverlust je Start''' – in kWh Brennstoff, der je Start zusätzlich verbraucht wird.
+* '''Mindestlaufzeit''' – in Minuten je Start, höchstens 60; leer gelten 10 Minuten, sobald ein Anfahrverlust gepflegt ist.
+
+Mit einem Anfahrverlust oder einer Mindestlaufzeit '''taktet''' ein Modul unter seiner Untergrenze, statt in der Stunde auszubleiben – sofern der Wärmeraum der Stunde (offener Bedarf plus freier Puffer) mindestens einen Mindestlauf aufnimmt, also die Wärme der Untergrenze über die Mindestlaufzeit: Es deckt den Wärmeraum, den Strombedarf oder – ohne Einspeisung – das Kleinere von beiden in kurzen Läufen an der Untergrenze. Die Simulation zählt dabei die Starts der Stunde so, wie Mindestläufe die Wärme brauchen, und schlägt je Start den Anfahrverlust auf den Brennstoff. Ohne Untergrenze (0 in allen drei Ebenen) taktet kein Modul.
+
+=== Betriebsart ===
+{{Anker|fahrweise|betriebsart|strategie}}
+
+''Konfiguration…'' an der Karte eines BHKW in der ''Simulation Konfiguration'' stellt die ''Betriebsart'' für alle Module des Projekts ein:
+
+* {{Anker|waermegefuehrt}}'''Wärmegeführt''' – die Vorgabe. Das Modul folgt dem Wärmeraum der Stunde, also offenem Bedarf plus freiem Puffer: Volllast, wenn er die Nennleistung aufnimmt, sonst Teillast bis zur Untergrenze. Der Strom deckt den Eigenbedarf, Überschuss wird eingespeist.
+* {{Anker|stromgefuehrt}}'''Stromgeführt''' – das Modul folgt dem Strombedarf, die Wärme fällt mit an. Was weder den Bedarf deckt noch in einen Puffer passt, ist Wärmeüberschuss.
+* {{Anker|ohne-einspeisung}}'''ohne Stromeinspeisung''' – das Modul erzeugt nie mehr Strom, als in der Stunde gebraucht wird; reicht der Strombedarf nicht für die Untergrenze, bleibt es aus.
+* '''Untere Leistungsgrenze der Module''' – in Prozent, für ein neues Projekt 30 %; sie gilt für jedes Modul ohne eigene Grenzleistung, 0 heißt keine Untergrenze.
+
+== Berechnung ==
+
+Fahrweisen, Stromkennzahl und die Rolle des Puffers stehen unter [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]]. Der Brennstoffverbrauch ist die Summe aus Wärme und Strom geteilt durch den Gesamtwirkungsgrad, mit Teillastwerten und beim Takten zuzüglich des Mehrbrennstoffs aus Teillast und Anfahrten; die Emissionen rechnen mit den Faktoren des Energieträgers ([[Programm Dokumentation/Emissionen|Emissionen]]), CO führt die Bilanz nicht.
+
+=== Ergebnisse ===
+{{Anker|ergebnisse|betriebsstunden|modultabelle}}
+
+Der Reiter ''BHKW'' der Simulationsergebnisse zeigt in der Gruppe ''Wärme'' Bedarf, ''Wärmeproduktion'', ''Wärmeüberschuß (*)'', ''davon in den Speicher'', ''aus dem Speicher gedeckt'', ''Wärmebedarfsdeckung'' und ''Restwärmebedarf''; in der Gruppe ''Strom'' ''Strombedarf'', ''Stromproduktion'', ''Stromeinspeisung'', ''Strombedarfsdeckung'' und ''Reststrombedarf''. Die Gruppe ''Betrieb'' nennt Vollbenutzungsstunden – ''Vbh thermisch, Summe Module'', ''Vbh thermisch, Mittel Module'' und ''Vollbenutzungsstunden elektrisch'' –, gezählte Laufstunden weist der Reiter nicht aus. Es folgen der ''Brennstoffverbrauch'' je Brennstoff, die Modultabelle mit Wärme- und Stromproduktion je Modul – rechnet ein Modul mit Teillastwerten, mit der Spalte ''Mehrbrennstoff Teillast'', taktet eines, mit ''Starts'' und ''Anfahrverlust'' – und zwei Diagramme: die ''Wärmelast Jahresganglinie'' mit Wärmeproduktion, Speicherladung, Restwärme und Wärmebedarf und darunter die ''Stromlast Jahresganglinie'' mit Stromproduktion, Stromeinspeisung, Reststrombedarf und Strombedarf. Die Einspeisung des BHKW ist die Viertelstundenbilanz des Laufs: je Viertelstunde der BHKW-Strom über dem Strombedarf; der Reiter ''BHKW'', der Bericht und die Wirtschaftlichkeit zeigen dieselbe Einspeisung. Die Stromeinspeisung ist der BHKW-Strom, den die Verbraucher nicht abnehmen, der Reststrombedarf der Strombedarf, den das BHKW in der Stunde nicht deckt. Jede Reihe lässt sich über ihren Schalter einzeln abwählen; der Schalter ''sortiert'' zeigt beide Diagramme als Jahresdauerlinie ([[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]).
+
+== Siehe auch ==
+
+* [[Grundlagen/BHKW]] – die fachlichen Hintergründe
+* [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]] – der Rechenweg mit Formeln
+* [[Programm Dokumentation/Heizkessel|Heizkessel]] – die Spitzenkessel im Beispiel B
+* [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] – Schwellen, Mindestfüllstand und Ladereihenfolge
+* [[Programm Dokumentation/Wirtschaftlichkeit#bhkw-wirtschaftlichkeit|Wirtschaftlichkeit: BHKW-Wirtschaftlichkeit]] – Einspeisevergütung, KWKG und Steuern
+* [[Programm Dokumentation/Gerätekataloge#bhkw|Gerätekataloge: BHKW]] – Pflege des Katalogs
+
+[[Kategorie:Programm Dokumentation]]

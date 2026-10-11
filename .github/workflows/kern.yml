@@ -210,13 +210,67 @@ jobs:
           python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite
 
       # iU7-7: Der Renderer des Berichts liegt seit iU7-5 im Kern. Die Probe
-      # zeichnet neun Bilder aus synthetischen Reihen und prueft je Bild
+      # zeichnet jedes Diagrammbild aus synthetischen Reihen und prueft je Bild
       # PNG-Signatur, Bildmasse, Farbvorkommen und Determinismus - ohne
       # Datenbank, ohne Oberflaeche. Sie faellt rot aus, sobald der Renderer
       # eine Windows-API braucht ODER sich das Bild aendert. Eigene .sln,
       # deshalb nicht im Solution-Filter; gebaut wird sie vom dotnet run.
+      # Auf ubuntu schreibt sie mit --hashes zusaetzlich die Hashliste ALLER
+      # Bilder (auch der Gegen- und Versatzproben) fuer den naechsten Schritt.
       - name: ChartProben (Renderer plattformfrei)
-        run: dotnet run --project Proben/ChartProben -c Release
+        id: chartproben
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            dotnet run --project Proben/ChartProben -c Release -- --hashes artifacts/chartproben-hashliste/hashliste.sha256
+          else
+            dotnet run --project Proben/ChartProben -c Release
+          fi
+
+      # Die Hash-Messlatte (Proben/ChartProben/LIESMICH.md, "Die Hash-Messlatte"):
+      # JEDE Zeile der juengsten Proben/ChartProben/Messlatte_*.sha256 muss
+      # unveraendert in der Hashliste des Laufs stehen. Eine geaenderte oder
+      # fehlende Zeile macht den Schritt rot und nennt die Bilder; zusaetzliche
+      # Zeilen sind neue Proben - sie werden gezaehlt und sind erlaubt. Der
+      # Schritt laeuft auch, wenn die Probe selbst rot ist: Dann nennt er, welche
+      # Bilder sich geaendert haben.
+      # NUR ubuntu: Die Messlatte ist auf dem Linux-Laeufer eingefroren. Die
+      # Systemschriften gehen in jedes Bild ein; auf macOS wiche jeder Hash ab.
+      - name: ChartProben-Messlatte (nur ubuntu)
+        if: matrix.os == 'ubuntu-latest' && (success() || steps.chartproben.outcome == 'failure')
+        run: |
+          liste=artifacts/chartproben-hashliste/hashliste.sha256
+          messlatte=$(ls Proben/ChartProben/Messlatte_*.sha256 2>/dev/null | sort | tail -n 1)
+          if [ -z "$messlatte" ]; then
+            echo "::error::Keine Messlatte Proben/ChartProben/Messlatte_*.sha256 gefunden."
+            exit 1
+          fi
+          if [ ! -s "$liste" ]; then
+            echo "::error::Die Probe hat keine Hashliste geschrieben ($liste)."
+            exit 1
+          fi
+          echo "Messlatte: $messlatte"
+          echo "Hashliste: $liste (Laeuferabbild ${ImageOS:-?} ${ImageVersion:-?})"
+          awk -v messlatte="$(basename "$messlatte")" '
+            function abweichung(art, bild, text) {
+              print art bild text
+              aus++
+              if (aus <= 10) betroffen = betroffen (aus > 1 ? ", " : "") bild
+              else if (aus == 11) betroffen = betroffen ", ..."
+            }
+            FNR == NR  { if (NF) { lauf[$0] = 1; hash[$2] = $1; name[++n] = $2 }; next }
+            NF == 0    { next }
+                       { zeilen++; alt[$2] = 1 }
+            $0 in lauf { gleich++; next }
+            $2 in hash { abweichung("GEAENDERT: ", $2, "  Messlatte " $1 "  Lauf " hash[$2]); next }
+                       { abweichung("FEHLT:     ", $2, "  Messlatte " $1 "  - im Lauf nicht gezeichnet") }
+            END {
+              for (i = 1; i <= n; i++) if (!(name[i] in alt)) { print "NEU:       " name[i]; neu++ }
+              printf "%s: %d von %d Zeilen unveraendert, %d geaendert oder fehlend, %d neue Bilder ohne Messlattenzeile.\n", messlatte, gleich, zeilen, aus, neu
+              if (zeilen == 0) { print "::error::Die Messlatte " messlatte " ist leer."; exit 1 }
+              if (aus > 0) { print "::error::ChartProben-Messlatte: " aus " von " zeilen " Zeilen geaendert oder fehlend: " betroffen; exit 1 }
+              if (neu > 0) print "::notice::" neu " neue ChartProben-Bilder ohne Messlattenzeile - die Messlatte aus dem Artefakt chartproben-hashliste-ubuntu-latest nachziehen."
+            }
+          ' "$liste" "$messlatte"
 
       # Die Bilder selbst als Artefakt - bei einer Abweichung will man sie
       # ansehen und nicht nur die Byte-Zahl lesen.
@@ -226,6 +280,16 @@ jobs:
         with:
           name: chartproben-${{ matrix.os }}
           path: artifacts/chartproben
+          retention-days: 14
+
+      # Die Hashliste des Laufs als Artefakt, auch bei Rot: Ein bewusstes
+      # Neueinfrieren oder Nachziehen der Messlatte uebernimmt sie von hier.
+      - name: ChartProben-Hashliste als Artefakt
+        if: always() && matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: chartproben-hashliste-${{ matrix.os }}
+          path: artifacts/chartproben-hashliste
           retention-days: 14
 
       # iU3: Der Rechenkern soll nicht nur uebersetzen, sondern rechnen. Der
@@ -270,34 +334,138 @@ jobs:
       # R23 (26.09.2026): dieselben sieben Projekte; neu eingefroren, weil der
       # Heizkessel seinen Bereitschaftsverlust nur in betriebsbereiten Stunden
       # traegt und der Elektrokessel keine Kesselemission mehr fuehrt.
-      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049
+      # R24 (27.09.2026): dieselben sieben Projekte; neu eingefroren, weil ein
+      # Heiztag der Kesselbereitschaft das Tagesmittel der Aussentemperatur
+      # unter der Heizgrenze des Projekts ist (Vorgabe 15 Grad C).
+      # R25 (29.09.2026): dieselben sieben Projekte; neu eingefroren auf Windows,
+      # weil die Abschaltpruefung der Phase G den Zahlenrand traegt und ein Rest
+      # im Quellspeicher einer Waermepumpe als leer gilt (Plattformbefund PB-1).
+      # Auf ubuntu erwartet: PASS; byte-verschieden im Band heizstab.csv von
+      # 1007 und 1046 (Reste von 1e-17 kWh, UCRT gegen glibc).
+      # R26 (29.09.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil ein Kessel erst ab dem Zahlenrand laeuft (Rechenrest keine
+      # Laufstunde, nur 1024); gegen R25 byte-verschieden unter den sieben
+      # allein heizstab.csv von 1007 und 1046 (Plattformwechsel).
+      # R27 (30.09.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil der Heizkessel je Stunde mit dem Wirkungsgrad seiner Laststufe
+      # rechnet (Kesselkennlinie E2) und aggregate.csv je Kessel fuenf
+      # Kennlinienschluessel fuehrt; unter den sieben aendern sich nur diese
+      # Schluessel. Das Referenzprojekt 1050 steht in der Basis, nicht hier.
+      # R28 (30.09.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil Schemaschritt 158 die Brennstoffkessel der Projektkopien nach ihrem
+      # Katalogsatz als Brennwertkessel kennzeichnet (Kesselkennlinie E2b, eta30
+      # = eta100 + 0,06) und aggregate.csv je Kessel vier Brennwertschluessel
+      # fuehrt (E3); unter den sieben aendern sich Brennstoff, Nutzungsgrad und
+      # Kesselemissionen von 1007, 1030, 1045, 1046 und 1049, alle Zeitreihen
+      # bleiben byte-gleich. Die Brennwertkennlinie rechnet allein 1050.
+      # R29 (30.09.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil jeder Brennstoffkessel unter seiner Mindestleistung taktet
+      # (Kesselkennlinie E4: Starts je Taktstunde, Anfahrverlust je Start, leere
+      # Felder mit den Normvorgaben) und aggregate.csv je Kessel sechs
+      # Taktschluessel fuehrt; unter den sieben aendern sich Starts, Brennstoff,
+      # Nutzungsgrad und Kesselemissionen von 1007, 1030, 1045, 1046 und 1049
+      # (1045 und 1049 auch die Gasspitze), 1017 und 1047 (Elektrokessel) nur um
+      # die neuen Schluessel; alle Zeitreihen bleiben byte-gleich.
+      # R30 (30.09.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil die Zuordnung Projekt-Stromverbraucher ueber die ID gilt (SV1): Die
+      # gepflegte Jahressumme der Zuordnungszeile greift auch bei umbenannter
+      # Projektkopie, Kopf- und Typsatz kommen nur aus dem eigenen Projekt. Unter
+      # den sieben aendern sich allein 1017 und 1047 (Strombedarf 672 -> 15
+      # MWh/a, Netzbezug, Reststrom, Stromspeicher; je fuenf Dateien), die
+      # uebrigen fuenf bleiben byte-gleich.
+      # R31 (02.10.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil die untere Grenzleistung des BHKW aus dem Anlagenfeld wirkt (RB1:
+      # Anlagenfeld vor Katalog vor Projekt, in allen drei Betriebsarten). Unter
+      # den sieben aendert sich allein 1049 (Anlagenfeld 35 statt Projekt 30 %:
+      # BHKW-Waerme 52,00 -> 49,09 MWh/a, Kessel 6,32 -> 9,23 MWh/a; fuenf
+      # Dateien), die uebrigen sechs bleiben byte-gleich.
+      # R32 (02.10.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil das Kollektorfeld von 1049 seine Arbeitstemperatur aus der untersten
+      # Zone des Puffers bildet (Welle M2 Solarthermie, ST2 mit ST4). Unter den
+      # sieben aendert sich allein 1049 (genutzte Solarwaerme 10,73 -> 9,38 MWh/a,
+      # Ueberschuss 27,13 -> 19,73 MWh/a; zwoelf Dateien), die uebrigen sechs
+      # bleiben byte-gleich.
+      # R33 (02.10.2026): dieselben sieben Projekte; neu eingefroren auf Linux,
+      # weil die Photovoltaik je Viertelstunde bilanziert (Welle M5, SB1 a). Unter
+      # den sieben aendern sich 1007, 1045 und 1046 (Direktverbrauch -0,05 bis
+      # -0,1 %, Einspeisung und Restbezug entsprechend), die uebrigen vier bleiben
+      # byte-gleich.
+      # R34 (03.10.2026): dazu 1051 (Konditionierung); neu eingefroren auf Linux,
+      # weil die Bauteile am Erdreich mit dem Erdreichwiderstand nach DIN EN ISO
+      # 13370 rechnen. Die Gebaeude mit Erdreichbauteilen aendern ihre Heizwaerme,
+      # 1030 (ohne Gebaeudemodell) bleibt byte-gleich.
+      # R42 (07.10.2026): dazu 1058 (RP-AK3, Stufe AK3 mit Heizungspuffer);
+      # die Waermepumpe interpoliert ihre Kennlinie ueber den Vorlauf (AK3-I).
+      # Unter den acht aendert sich allein 1047 (WP-Strom -0,48 %), die
+      # uebrigen sieben bleiben byte-gleich.
+      # R43 (07.10.2026): dieselben neun Projekte; die Gebaeude heizen und
+      # kuehlen eine Zone nie am selben Tag (Zonensperre), auf AK3 steht die
+      # Kaelteseite im Kreis (AK3-K). Unter den neun aendern sich 1017, 1047
+      # und 1058, die uebrigen sechs bleiben byte-gleich; RP-AK3K 1059 steht
+      # nicht in der CI-Auswahl.
+      # R44 (08.10.2026): dieselben neun Projekte, alle byte-gleich; neu sind
+      # RP-KK 1061 (Kuehlkurve) und RP-KKZ 1062 (Kuehlkurve, zwei Zonen),
+      # beide nicht in der CI-Auswahl.
+      # R45 (09.10.2026): dazu 1060 (Uebergabegrenze: Heizkoerper 75/60 Grad C,
+      # Hoechstvorlauf 55 Grad C, Einbindung direkt, Vorwaermbetrieb); die neun
+      # Projekte bleiben byte-gleich.
+      # R46 (09.10.2026): dieselben zehn Projekte; allein 1060 aendert sich
+      # (Geraetegrenzen: Ruecklaufgrenze am gemischten Ruecklauf), die neun
+      # uebrigen bleiben byte-gleich.
+      # R47 (09.10.2026): dieselben zehn Projekte; allein 1045 aendert sich
+      # (Feiertage zaehlen im Zapfkalender als Sonntag), die neun uebrigen
+      # bleiben byte-gleich.
+      # R49 (10.10.2026): auf dem Stand R48 (Gemeinjahr) dazu 1063 (Kaeltemaschine mit Teillast und Takten);
+      # die zehn uebrigen bleiben byte-gleich.
+      # R50 (10.10.2026): Wochentagsraster der Klimaregion fuer alle Leser (E115); 1051 aendert sich
+      # (kein Tag mit begrenzter Aufheizzeit mehr), die zehn uebrigen bleiben byte-gleich.
+      # R51 (10.10.2026): dazu 1064 (freie Kuehlung ueber die Waermequelle), nicht in der
+      # CI-Auswahl; die elf Projekte bleiben byte-gleich.
+      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
           dotnet run --project EPOS.Referenzlauf -c Release --no-build --
           lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
-          --projekte 1030,1007,1017,1045,1046,1047,1049 --ziel artifacts/reflauf/${{ matrix.os }}_kern
+          --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063 --ziel artifacts/reflauf/${{ matrix.os }}_kern
 
       # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
       # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-09-26_R23_KesselBereitschaft
+      - name: Vergleich mit Referenzbasis 2026-10-10_R51_FreieKuehlung
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1060 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R51_FreieKuehlung/Projekt_1063 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
-          for p in 1030 1007 1017 1045 1046 1047 1049; do
+          for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060 1063; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
+
+      # Plattformnachweis (Befund PB-1, Basis R34): dieselben Projekte noch
+      # einmal mit --stoerung ulp. Exp, Sin, Cos, Asin und Acos der Naht
+      # Plattformrundung (Gebaeudematrix, Sonnenstand, Erdreich, Kollektor,
+      # Tagesbilanz) runden dann wie eine andere C-Bibliothek: etwa jedes
+      # sechzehnte Ergebnis um +-1 ulp verschoben. Keine Betriebsentscheidung darf
+      # daran kippen - gestoert gegen ungestoert muss GESAMT PASS sein, Exit 1 bei
+      # FAIL macht den Job rot. Der gestoerte Lauf wird nie eingefroren.
+      - name: Plattformnachweis - gestoerter Lauf gegen ungestoerten
+        if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: |
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063 --ziel artifacts/reflauf/${{ matrix.os }}_stoerung --stoerung ulp
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/${{ matrix.os }}_kern artifacts/reflauf/${{ matrix.os }}_stoerung
 
       - name: Ergebnis-CSV als Artefakt
         if: always() && hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''

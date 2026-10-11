@@ -219,7 +219,14 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <param name="Ausgang">Welcher der vier Faelle eingetreten ist.</param>
         /// <param name="Meldung">Bereits lokalisiert; die Oberflaeche zeigt ihn als Banner.</param>
-        public sealed record VariantenErgebnis(int CarrierId, VariantenAnlage Ausgang, string Meldung);
+        public sealed record VariantenErgebnis(int CarrierId, VariantenAnlage Ausgang, string Meldung)
+        {
+            /// <summary>
+            /// Ist der Katalogtraeger (<c>energy_carrier</c>) in DIESEM Aufruf neu entstanden? <c>false</c>, wenn
+            /// ein gleichnamiger wiederverwendet wurde - dann nimmt <see cref="AnlageZuruecknehmen"/> ihn nie weg.
+            /// </summary>
+            public bool KatalogNeu { get; init; }
+        }
 
         /// <summary>
         /// Legt die Energietraegervariante an - Katalogtraeger, Preishistorie und
@@ -266,12 +273,19 @@ namespace WindowsFormsApplication1
             EnergietraegerDaten daten = Ergaenzen(brennstoffId);
 
             // Default-Werte (reine Lesezugriffe) VOR der Transaktion ermitteln.
-            double default_arbeitspreis = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", brennstoffId));
-            double default_grundpreis = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", brennstoffId));
-            double default_leistungspreis = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", brennstoffId));
-            double default_co2 = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "CO2", brennstoffId));
-            double default_so2 = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "SO2", brennstoffId));
-            double default_nox = ZuDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "NOx", brennstoffId));
+            // In einem Projekt die Vorgaben der Projektkopie (ProjektBrennstoffe.Sicht), sonst des Katalogs.
+            string quelle = ProjektBrennstoffe.Sicht(projektId, out DbParam[] sicht);
+            DataTable dtBs = DataRepository.GetDataTable(
+                "SELECT bs.Standard_Arbeitspreis, bs.Standard_Grundpreis, bs.Standard_Leistungspreis, bs.CO2, bs.SO2, bs.NOx " +
+                "FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                ProjektBrennstoffe.Mit(sicht, new DbParam("@bs", brennstoffId)));
+            DataRow rBs = dtBs != null && dtBs.Rows.Count > 0 ? dtBs.Rows[0] : null;
+            double default_arbeitspreis = ZuDouble(rBs?["Standard_Arbeitspreis"]);
+            double default_grundpreis = ZuDouble(rBs?["Standard_Grundpreis"]);
+            double default_leistungspreis = ZuDouble(rBs?["Standard_Leistungspreis"]);
+            double default_co2 = ZuDouble(rBs?["CO2"]);
+            double default_so2 = ZuDouble(rBs?["SO2"]);
+            double default_nox = ZuDouble(rBs?["NOx"]);
 
             int carrierId;
 
@@ -292,6 +306,7 @@ namespace WindowsFormsApplication1
                     }
 
                     // Katalog-Datensatz nur anlegen, wenn wirklich neu.
+                    bool katalogNeu = carrierId < 0;
                     if (carrierId < 0)
                     {
                         var pTraeger = new List<DbParam>
@@ -338,7 +353,8 @@ namespace WindowsFormsApplication1
                         return new VariantenErgebnis(carrierId, VariantenAnlage.Vorgemerkt,
                                                      Text("ETVAR_MSG_VORGEMERKT",
                                                           "Energieträgervariante vorgemerkt. Die Preis- und " +
-                                                          "Emissionssätze werden beim Speichern des Projekts angelegt."));
+                                                          "Emissionssätze werden beim Speichern des Projekts angelegt."))
+                        { KatalogNeu = katalogNeu };
                     }
 
                     // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln.
@@ -389,7 +405,8 @@ namespace WindowsFormsApplication1
                     v.Commit();
                     return new VariantenErgebnis(carrierId, VariantenAnlage.Angelegt,
                                                  Text("ETVAR_MSG_ANGELEGT",
-                                                      "Energieträgervariante erfolgreich angelegt."));
+                                                      "Energieträgervariante erfolgreich angelegt."))
+                    { KatalogNeu = katalogNeu };
                 }
                 catch (Exception ex)
                 {
@@ -398,6 +415,107 @@ namespace WindowsFormsApplication1
                         Text("ETVAR_MSG_SPEICHERFEHLER", "Fehler beim Speichern: ") + ex.Message);
                 }
             }
+        }
+
+        /// <summary>Der Ausgang von <see cref="AnlageZuruecknehmen"/>.</summary>
+        public enum Ruecknahme
+        {
+            /// <summary>Nichts angelegt, nichts zu tun.</summary>
+            Nichts,
+
+            /// <summary>Die Projektzuordnung (Preis und Einstellungen) ist entfernt; der Katalogtraeger bleibt.</summary>
+            ZuordnungEntfernt,
+
+            /// <summary>Zuordnung (falls neu) und Katalogtraeger sind entfernt.</summary>
+            TraegerEntfernt,
+
+            /// <summary>Eine Anlagenzeile, Preisreihe, Emissions- oder Ergebniszeile verweist darauf - alles bleibt.</summary>
+            Verwiesen
+        }
+
+        /// <summary>
+        /// Nimmt zurueck, was <see cref="Anlegen"/> in einer abgebrochenen Dialogsitzung neu geschrieben hat
+        /// (Anwenderwunsch 08.10.2026, Nachzug zur Projektkopievormerkung): Ein Erzeugerdialog legt die
+        /// Traegervariante beim Uebernehmen sofort an; bricht der Anwender ab, soll sie nicht stehen bleiben.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Nur was neu war.</b> <paramref name="zuordnungNeu"/> (Ausgang <see cref="VariantenAnlage.Angelegt"/>)
+        /// erlaubt, <c>energy_price</c> und <c>energy_Project_settings</c> DIESES Projekts zu entfernen;
+        /// <paramref name="katalogNeu"/> (<see cref="VariantenErgebnis.KatalogNeu"/>) zusaetzlich den Katalogtraeger.
+        /// Ein wiederverwendeter Traeger oder eine schon bestehende Zuordnung bleibt immer.</para>
+        /// <para><b>Nur ohne Verweis.</b> Die Zuordnung bleibt, solange eine Anlagenzeile des Projekts
+        /// (<c>ID_Carrier</c>, <c>Kuehl_ID_Carrier</c>) oder eine Preisreihe des Projekts auf den Traeger zeigt;
+        /// der Katalogtraeger bleibt, solange irgendeine Anlagenzeile, Projektzuordnung, Preiszeile, Preisreihe,
+        /// Emissionszeile oder Ergebniszeile ihn nennt. Eine Transaktion.</para>
+        /// </remarks>
+        public static Ruecknahme AnlageZuruecknehmen(int projektId, int carrierId, bool zuordnungNeu, bool katalogNeu)
+        {
+            if (carrierId <= 0 || (!zuordnungNeu && !katalogNeu)) return Ruecknahme.Nichts;
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    bool zuordnungEntfernt = false;
+                    if (zuordnungNeu && projektId > 0)
+                    {
+                        int verweise = Zahl(v,
+                            "SELECT (SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND (ID_Carrier = ? OR Kuehl_ID_Carrier = ?)) " +
+                            "+ (SELECT COUNT(*) FROM Tab_Preisreihe WHERE ID_Projekt = ? AND ID_Energietraeger = ?)",
+                            new DbParam("@p1", projektId), new DbParam("@c1", carrierId), new DbParam("@c2", carrierId),
+                            new DbParam("@p2", projektId), new DbParam("@c3", carrierId));
+                        if (verweise > 0)
+                        {
+                            v.Rollback();
+                            return Ruecknahme.Verwiesen;
+                        }
+                        v.Ausfuehren("DELETE FROM energy_price WHERE ID_Projekt = ? AND carrier_id = ?",
+                            new DbParam("@p", projektId), new DbParam("@c", carrierId));
+                        v.Ausfuehren("DELETE FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                            new DbParam("@p", projektId), new DbParam("@c", carrierId));
+                        zuordnungEntfernt = true;
+                    }
+
+                    if (katalogNeu)
+                    {
+                        int verweise = Zahl(v,
+                            "SELECT (SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Carrier = ? OR Kuehl_ID_Carrier = ?) " +
+                            "+ (SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Energieträger = ?) " +
+                            "+ (SELECT COUNT(*) FROM energy_price WHERE carrier_id = ?) " +
+                            "+ (SELECT COUNT(*) FROM Tab_Preisreihe WHERE ID_Energietraeger = ?) " +
+                            "+ (SELECT COUNT(*) FROM emissionswert WHERE carrier_id = ?) " +
+                            "+ (SELECT COUNT(*) FROM Tab_ErgebnisBHKWModul WHERE carrier_id = ?) " +
+                            "+ (SELECT COUNT(*) FROM Tab_ErgebnisHeizkesselModul WHERE carrier_id = ?) " +
+                            "+ (SELECT COUNT(*) FROM Tab_ErgebnisWaermepumpeModul WHERE Kuehl_carrier_id = ?) " +
+                            "+ (SELECT COUNT(*) FROM Tab_ErgebnisKaeltemaschine WHERE Kuehl_ID_Carrier = ?)",
+                            new DbParam("@c1", carrierId), new DbParam("@c2", carrierId), new DbParam("@c3", carrierId),
+                            new DbParam("@c4", carrierId), new DbParam("@c5", carrierId), new DbParam("@c6", carrierId),
+                            new DbParam("@c7", carrierId), new DbParam("@c8", carrierId), new DbParam("@c9", carrierId),
+                            new DbParam("@c10", carrierId));
+                        if (verweise == 0)
+                        {
+                            v.Ausfuehren("DELETE FROM energy_carrier WHERE id = ?", new DbParam("@c", carrierId));
+                            v.Commit();
+                            return Ruecknahme.TraegerEntfernt;
+                        }
+                    }
+
+                    v.Commit();
+                    return zuordnungEntfernt ? Ruecknahme.ZuordnungEntfernt
+                         : katalogNeu ? Ruecknahme.Verwiesen : Ruecknahme.Nichts;
+                }
+                catch
+                {
+                    try { v.Rollback(); } catch { /* der Originalfehler zaehlt */ }
+                    throw;
+                }
+            }
+        }
+
+        private static int Zahl(DbVorgang v, string sql, params DbParam[] p)
+        {
+            object o = v.Skalar(sql, p);
+            return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
         }
 
         /// <summary>

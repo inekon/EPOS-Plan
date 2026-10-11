@@ -225,6 +225,11 @@ namespace WindowsFormsApplication1
                                          true /* immer frisch simulieren */, mitZeitreihen,
                                          melder, abbruch);
 
+            // Anwenderentscheid 29.09.2026: Führt der Bericht Stände einer Vergleichsgruppe,
+            // hält er je betroffenem Stand die Gruppenzahl für die Fußzeile bereit — die Zahlen
+            // des Standes selbst bleiben die Einzelzahl.
+            StromGruppenzahlErmitteln(daten);
+
             // Q6: die Sicht als Momentaufnahme VOR dem Rechnen — sie ändert sich während
             // des Berichtslaufs nicht mehr.
             if (daten != null) daten.Sicht = sicht != null ? sicht.Kopie() : null;
@@ -602,23 +607,14 @@ namespace WindowsFormsApplication1
             // melden. Dieselbe Behandlung wie die Ersatzannahmen eines
             // Simulationslaufs (LaufmeldungenUebernehmen).
             if (v.CO2StrommixRueckfall && _daten != null)
-                _daten.Melde(v, Berichtshinweisstufe.Warnung,
-                               "Der Netzstrom rechnet mit dem Strommix-Vorgabewert (" +
-                               KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH.ToString(
-                                   "0.#", System.Globalization.CultureInfo.InvariantCulture) +
-                               " g/kWh) — dem Projekt ist kein Stromträger mit gepflegtem " +
-                               "Emissionsfaktor zugeordnet. Die CO₂-Kennzahlen stammen " +
-                               "insoweit nicht aus den Projektdaten.");
+                _daten.Melde(v, Berichtshinweisstufe.Warnung, TextStrommixRueckfall());
 
             // SP-W1: Dasselbe Muster für den Leistungspreis des Stromträgers. Er ist
             // gepflegt, aber der Lauf hat keine Zeitreihen geführt — ohne Bezugsspitze
             // gibt es keine Basis, und der Anteil entfällt. Das sieht wie ein zu
             // günstiges Ergebnis aus, wenn es niemand sagt.
             if (!string.IsNullOrEmpty(v.LeistungspreisOhneSpitze) && _daten != null)
-                _daten.Melde(v, Berichtshinweisstufe.Warnung,
-                               "Für den Stromträger „" + v.LeistungspreisOhneSpitze +
-                               "“ ist ein Leistungspreis gepflegt, der Lauf führt aber keine " +
-                               "Bezugsspitze — der Leistungsanteil fehlt in den Energiekosten.");
+                _daten.Melde(v, Berichtshinweisstufe.Warnung, TextLeistungspreisOhneSpitze(v));
 
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Dasselbe Muster für die
             // zweite stille Lücke der Kostenkette — ein Heizkessel hat Wärme erzeugt,
@@ -638,7 +634,151 @@ namespace WindowsFormsApplication1
             try { v.Details = ProjektDetails.Lade(v.IdProjekt); }
             catch { v.Details = null; }
 
+            // 6b. UB-E4: die Bivalenzwerte (Herleitung aus den Projektdaten) fuer Bild und Tafel „Bivalenz und Uebergabe“.
+            try { v.Bivalenz = BivalenzBerichtsquelle.Lade(v.IdProjekt); }
+            catch { v.Bivalenz = null; }
+
+            // 6c. KM3-E3-b: die Lesewerte der Teillastrechnung der Kaeltemaschinen (Projektkopien) fuer die Tafel.
+            v.KaeltemaschineTeillast = KaeltemaschineTeillastBerichtsquelle.Lade(v.IdProjekt);
+
+            // 6a. Pufferspeicher-Auslegung (Stufe P3): die gespeicherten Zeilen des Stamms samt
+            //     Nachrechnung — nur lesend; ohne Zeile entfällt der Abschnitt der Projektbeschreibung.
+            if (v.IstStamm)
+            {
+                try { v.Pufferauslegungen = PufferAuslegungCtrl.Gespeichert(v.IdProjekt).ToList(); }
+                catch { v.Pufferauslegungen = new List<PufferAuslegungGespeichert>(); }
+            }
+
             // 7. Zeitreihen für Ganglinien: Phase 3 (In-Memory-Lauf liefert die Reihen).
+        }
+
+        /// <summary>Die Warnung zum Strommix-Vorgabewert des Netzstroms (Befund 30.08.2026).</summary>
+        private static string TextStrommixRueckfall()
+        {
+            return "Der Netzstrom rechnet mit dem Strommix-Vorgabewert (" +
+                   KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH.ToString(
+                       "0.#", System.Globalization.CultureInfo.InvariantCulture) +
+                   " g/kWh) — dem Projekt ist kein Stromträger mit gepflegtem " +
+                   "Emissionsfaktor zugeordnet. Die CO₂-Kennzahlen stammen " +
+                   "insoweit nicht aus den Projektdaten.";
+        }
+
+        /// <summary>Die Warnung zum Leistungspreis ohne Bezugsspitze (SP-W1).</summary>
+        private static string TextLeistungspreisOhneSpitze(VariantenDaten v)
+        {
+            return "Für den Stromträger „" + v.LeistungspreisOhneSpitze +
+                   "“ ist ein Leistungspreis gepflegt, der Lauf führt aber keine " +
+                   "Bezugsspitze — der Leistungsanteil fehlt in den Energiekosten.";
+        }
+
+        /// <summary>
+        /// <b>DIE GRUPPENZAHL FÜR DIE FUSSZEILE</b> (Anwenderentscheid 29.09.2026): Führt der
+        /// Bericht Stände einer Vergleichsgruppe und verwendet einer davon Strom
+        /// (<see cref="WirtschaftlichkeitCtrl.StromGruppenregel"/>), hält der Schritt je betroffenem
+        /// Stand fest, was er an Energiekosten und Emissionen trüge, wenn sein Netzbezug nach der
+        /// Gruppenregel bepreist und bewertet wäre (<see cref="VariantenDaten.Gruppenzahl"/>).
+        ///
+        /// <para><b>DER STAND SELBST BLEIBT UNBERÜHRT.</b> Gerechnet wird auf einer KOPIE — genau
+        /// wie in <c>WirtschaftlichkeitCtrl.Szenariodaten</c>. Kostenkapitel, Übersicht, Platzhalter
+        /// und Mappe zeigen deshalb weiter die Einzelzahl des Standes, wie Kostenseite und Übersicht
+        /// der App; die Gruppenzahl steht allein in der Fußzeile unter den Tafeln der Kosten und der
+        /// Emissionen. Das Kapitel Wirtschaftlichkeit rechnet seine Gruppenzahl für sich, aus seinen
+        /// eigenen Ergebnissen — dieselbe Zahl, anderer Weg.</para>
+        ///
+        /// <para>Ein Stand allein ist keine Gruppe, und ohne Stromverwender in der Gruppe wirkt die
+        /// Regel nicht — dann bleibt jede Gruppenzahl leer, und unter den Tafeln steht nichts.</para>
+        ///
+        /// <para>Den Leistungspreis des Trägers setzt die Regel nicht an (Anwenderentscheid
+        /// 29.09.2026, Register EZ‑17) — die Gruppenzahl enthält ihn nicht. Führt der Träger einen,
+        /// meldet der Schritt ihn als HINWEIS (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>
+        /// der Kopie) — in der Hinweisliste des Berichtslaufs, wo der Sammler auch den
+        /// Leistungspreis ohne Bezugsspitze meldet, im selben Wortlaut wie die Hinweiszeile der
+        /// Wirtschaftlichkeit. Satz und Träger legt er dazu an die Gruppenzahl
+        /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>); die Fußzeile unter der Kostentafel
+        /// nennt sie.</para>
+        ///
+        /// <para><b>Im Rollentarif</b> (Register EZ‑18; Anwenderentscheid 02.10.2026) bleibt der
+        /// Trägersatz stehen. Wirkt der Tarif an der Kopie — dieselbe Bedingung wie in
+        /// <c>WirtschaftlichkeitCtrl.RechneProjekt</c>: Tarif der Gruppe wirksam, die Kopie ohne
+        /// Strombedarf ohne Verwendung — und führt sein Reststromtarif einen Leistungspreis, der sich
+        /// von dem des Trägers unterscheidet (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>), nennen
+        /// Hinweis und Fußzeile ZUSÄTZLICH den Leistungspreis des Reststromtarifs
+        /// (<see cref="StromGruppenzahl.LeistungspreisTarifModell"/>, beim Modell MONATLICH mit
+        /// <see cref="StromGruppenzahl.LeistungspreisTarifMonatspreis"/>). Den Tarif lädt derselbe
+        /// Controllerweg wie im Kapitel Wirtschaftlichkeit (<see cref="WirtschaftlichkeitCtrl.LadeTarif"/>).
+        /// Die Gruppenzahl selbst rechnet der Berichtsweg weiter mit den Preisen des Trägers.</para>
+        /// </summary>
+        internal static void StromGruppenzahlErmitteln(BerichtsDaten daten)
+        {
+            if (daten == null || daten.Varianten == null || daten.Varianten.Count < 2) return;
+            Dictionary<int, List<string>> regel;
+            try { regel = WirtschaftlichkeitCtrl.StromGruppenregel(daten); }
+            catch (Exception) { return; }       // ohne Antwort bleibt die Regel je Stand
+            if (regel.Count == 0) return;
+
+            // EZ‑18: der Tarif der Gruppe, einmal — ohne Antwort bleibt es beim Trägersatz.
+            TarifParameter tarif;
+            try { tarif = new WirtschaftlichkeitCtrl().LadeTarif(daten.IdStamm); }
+            catch (Exception) { tarif = null; }
+
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                if (v == null || v.Fehler != null || v.Ergebnis == null) continue;
+                if (!regel.TryGetValue(v.IdProjekt, out List<string> verwender)) continue;
+
+                // Die KOPIE trägt die Regel; KostenEmissionRechner.Berechne belegt jedes Feld neu,
+                // das es anfasst, und schreibt die Kennzahlen des Standes nicht — das Original
+                // behält Zahl für Zahl seine Einzelbetrachtung.
+                VariantenDaten kopie = v.Kopie();
+                kopie.StromImVergleichBepreisen = true;
+                kopie.StromGruppenregelVerwender = verwender;
+                try { KostenEmissionRechner.Berechne(kopie); }
+                catch (Exception) { continue; } // ohne Zahl keine Fußzeile — nie auf Kosten des Berichts
+
+                // Hat die Regel an diesem Stand gar nicht gewirkt (er führt selbst Stromverwendung
+                // oder keinen Netzbezug), gibt es nichts zu vermerken.
+                if (!kopie.StromGruppenregelMWh.HasValue) continue;
+
+                // EZ‑18: Wirkt der Rollentarif, nennt die Fußzeile neben dem Leistungspreis des
+                // Trägers den des Reststromtarifs, den die Regel ebenso nicht ansetzt — nur, wenn er
+                // sich von dem des Trägers unterscheidet.
+                bool rollentarif = tarif != null && tarif.Wirksam &&
+                                   !kopie.StrombedarfOhneVerwendungMWh.HasValue;
+                bool tarifsatz = rollentarif && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom) &&
+                                 !StromTarifRechner.TarifLeistungspreisWieTraeger(tarif.Reststrom,
+                                                                                   kopie.LeistungspreisNichtAngesetztMonatssatz);
+                string tarifModell = tarifsatz ? WirtschaftlichkeitCtrl.Leistungsmodelltext(tarif.Reststrom) : null;
+                double? tarifMonatspreis = tarifsatz && StromTarifRechner.TarifJeMonat(tarif.Reststrom)
+                    ? tarif.Reststrom.MonatspreisEurKWMonat : (double?)null;
+
+                v.Gruppenzahl = new StromGruppenzahl
+                {
+                    EnergiekostenEuroJahr = kopie.Energiekosten,
+                    CO2TonnenJahr = kopie.CO2Gesamt,
+                    NetzbezugMWh = kopie.StromGruppenregelMWh.Value,
+                    Verwender = verwender,
+                    // EZ‑17: der Leistungspreis, den die Gruppenzahl nicht enthält — für den Satz
+                    // der Fußzeile unter der Kostentafel; im Rollentarif (EZ‑18) dazu der
+                    // abweichende Leistungspreis des Reststromtarifs.
+                    LeistungspreisSatz = kopie.LeistungspreisNichtAngesetztSatz,
+                    LeistungspreisTraeger = kopie.LeistungspreisNichtAngesetztSatz != null
+                        ? kopie.LeistungspreisNichtAngesetztTraeger : null,
+                    LeistungspreisTarifModell = tarifModell,
+                    LeistungspreisTarifMonatspreis = tarifMonatspreis,
+                };
+
+                // EZ‑17: ein Hinweis, keine Warnung — gerechnet ist nach der Regel, benannt wird der
+                // Leistungspreis des Trägers, den die Gruppenzahl nicht enthält; im Rollentarif
+                // (EZ‑18) dazu der abweichende des Reststromtarifs im Wortlaut der Hinweiszeile der
+                // Wirtschaftlichkeit mit seinem Modell.
+                if (!string.IsNullOrEmpty(kopie.LeistungspreisNichtAngesetzt))
+                    daten.Melde(v, Berichtshinweisstufe.Hinweis, kopie.LeistungspreisNichtAngesetzt);
+                if (tarifModell != null)
+                    daten.Melde(v, Berichtshinweisstufe.Hinweis,
+                        string.Format(BerichtTexte.Kultur,
+                                      WirtschaftlichkeitCtrl.HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
+                                      tarifModell));
+            }
         }
 
         /// <summary>Die betroffenen Kessel als Aufzählung für die Meldung (B-1/N1).</summary>

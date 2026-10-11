@@ -160,7 +160,8 @@ public class StromspeicherReiterTests : EposBunitContext
     /// <summary>Die Knöpfe DES BILDES (CSV, Vergleich) — nicht die des Parameterblocks.</summary>
     private static IReadOnlyList<AngleSharp.Dom.IElement> Bildknoepfe(
         IRenderedComponent<StromspeicherReiter> seite)
-        => seite.FindAll("section.epos-simerg-diagrammzeile button.epos-simerg-knopf");
+        => seite.FindAll("section.epos-simerg-diagrammzeile button.epos-diagramm-csv, "
+                         + "section.epos-simerg-diagrammzeile button.epos-simerg-knopf");
 
     /// <summary>Der letzte Auftrag des Betriebsbildes — der, den der Reiter gerade zeigt.</summary>
     private Bildauftrag Letzter => _auftraege.Last(a => a.Bild == Bilder.SpeicherBetrieb);
@@ -788,5 +789,51 @@ public class StromspeicherReiterTests : EposBunitContext
                      seite.FindComponent<DiagrammSvg>()
                           .FindAll("button.epos-diagramm-knopf")
                           .Select(k => k.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// Anwenderentscheid 04.10.2026: Nach dem Lauf nennt der Reiter, welches Peak-Ziel gegolten
+    /// hat und woher es stammt — je Herkunft mit ihrem Text; ohne Flottenlauf keine Zeile.
+    /// </summary>
+    [Theory]
+    [InlineData(FlottenPeakZielHerkunft.Lastgang)]
+    [InlineData(FlottenPeakZielHerkunft.Gespeichert)]
+    [InlineData(FlottenPeakZielHerkunft.Rueckfall)]
+    public void Herkunft_des_Peak_Ziels_steht_nach_dem_Lauf(FlottenPeakZielHerkunft herkunft)
+    {
+        var daten = Daten();
+        daten.PeakZielKw = 42.5;
+        daten.PeakZielHerkunft = herkunft;
+
+        var seite = Zeichnen(daten);
+
+        var zeile = seite.Find("p.epos-simerg-peakherkunft");
+        Assert.Equal(herkunft.ToString(), zeile.GetAttribute("data-herkunft"));
+        Assert.Equal(StromspeicherReiter.PeakZielZeile(42.5, herkunft), zeile.TextContent.Trim());
+        string quelle = herkunft switch
+        {
+            FlottenPeakZielHerkunft.Lastgang => WindowsFormsApplication1.MyResource.Resource.SIMERG_SP_PEAKZIEL_LASTGANG,
+            FlottenPeakZielHerkunft.Gespeichert => WindowsFormsApplication1.MyResource.Resource.SIMERG_SP_PEAKZIEL_GESPEICHERT,
+            _ => WindowsFormsApplication1.MyResource.Resource.SIMERG_SP_PEAKZIEL_RUECKFALL
+        };
+        Assert.Contains(quelle, zeile.TextContent);
+        Assert.Contains(42.5.ToString("N1", CultureInfo.CurrentCulture), zeile.TextContent);
+
+        Assert.Empty(Zeichnen(Daten()).FindAll("p.epos-simerg-peakherkunft"));
+    }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Kennzahlentabelle: der Wertkopf (und der Vergleichskopf) rechts wie
+    /// die Werte, Kennzahl und Einheit links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Kennzahlentabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabellen = Zeichnen(Daten(vergleich: true)).FindAll("table.epos-simerg-kennzahlen");
+        Assert.NotEmpty(tabellen);
+        Assert.All(Tabellenausrichtung.PruefeAlle(tabellen), n => Assert.Equal(2, n));
+        Tabellenausrichtung.TextkopfLinks(tabellen[0], 0);
     }
 }

@@ -141,6 +141,10 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_FELD_STUFEN": return Resource.IMP_KAT_FELD_STUFEN;
                 case "IMP_KAT_FELD_MAXVORLAUF": return Resource.IMP_KAT_FELD_MAXVORLAUF;
                 case "IMP_KAT_FELD_KUEHLLEISTUNG": return Resource.IMP_KAT_FELD_KUEHLLEISTUNG;
+                // Konzept Kesselkennlinie, Etappe E1: eta bei 30 % Last und die kleinste
+                // Leistung aus Satz 710.01 (Heizkessel).
+                case "IMP_KAT_FELD_WIRKUNGSGRAD30": return Resource.IMP_KAT_FELD_WIRKUNGSGRAD30;
+                case "IMP_KAT_FELD_MINDESTLEISTUNG": return Resource.IMP_KAT_FELD_MINDESTLEISTUNG;
 
                 // W13-E-2 (07.09.2026), Stufe S1 — der Stromspeicherimport.
                 case "IMP_KAT_FELD_MODELL": return Resource.IMP_KAT_FELD_MODELL;
@@ -154,6 +158,7 @@ namespace EPOS.UI.Dialoge.Import
                 // ein Kopf ist keine Feldbeschriftung.
                 case "IMP_KAT_SP_EINTRAG": return Resource.IMP_KAT_SP_EINTRAG;
                 case "IMP_KAT_SP_LEISTUNG_TH": return Resource.IMP_KAT_SP_LEISTUNG_TH;
+                case "IMP_KAT_SP_LEISTUNG_KUEHL": return Resource.IMP_KAT_SP_LEISTUNG_KUEHL;
                 case "IMP_KAT_SP_VOLUMEN": return Resource.IMP_KAT_SP_VOLUMEN;
                 case "IMP_KAT_SP_APERTUR": return Resource.IMP_KAT_SP_APERTUR;
                 case "IMP_KAT_SP_QUELLE": return Resource.IMP_KAT_SP_QUELLE;
@@ -168,6 +173,7 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_QUELLE_BSLIB": return Resource.IMP_KAT_QUELLE_BSLIB;
                 case "IMP_KAT_HINWEIS_KOSTEN": return Resource.IMP_KAT_HINWEIS_KOSTEN;
                 case "IMP_KAT_HINWEIS_STUFEN": return Resource.IMP_KAT_HINWEIS_STUFEN;
+                case "IMP_KAT_HINWEIS_KAELTE": return Resource.IMP_KAT_HINWEIS_KAELTE;
 
                 case "IMP_KAT_EINH_KWTH": return Resource.IMP_KAT_EINH_KWTH;
                 case "IMP_KAT_EINH_KW": return Resource.IMP_KAT_EINH_KW;
@@ -189,6 +195,16 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_PROT_AUFSTELLUNG": return Resource.IMP_KAT_PROT_AUFSTELLUNG;
                 case "IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE": return Resource.IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE;
                 case "IMP_KAT_PROT_KUEHLBLOCK_ACHSE": return Resource.IMP_KAT_PROT_KUEHLBLOCK_ACHSE;
+                // E119: der Kaelteimport - Bilanz und je uebergangenem Geraet der Grund.
+                case "IMP_KAT_PROT_KAELTE_BILANZ": return Resource.IMP_KAT_PROT_KAELTE_BILANZ;
+                case "IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE": return Resource.IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE;
+                case "IMP_KAT_PROT_KAELTE_HEIZLAGE": return Resource.IMP_KAT_PROT_KAELTE_HEIZLAGE;
+                case "IMP_KAT_PROT_KAELTE_ACHSEN": return Resource.IMP_KAT_PROT_KAELTE_ACHSEN;
+                case "IMP_KAT_PROT_KAELTE_UNGUELTIG": return Resource.IMP_KAT_PROT_KAELTE_UNGUELTIG;
+                case "IMP_KAT_PROT_KAELTE_NENNKUEHL": return Resource.IMP_KAT_PROT_KAELTE_NENNKUEHL;
+                // VDI-K2: aus der Kuehlkennlinie abgeleitete Nennkuehlleistung - je Geraet und Bilanz.
+                case "IMP_KAT_PROT_KAELTE_ABGELEITET": return Resource.IMP_KAT_PROT_KAELTE_ABGELEITET;
+                case "IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ": return Resource.IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ;
 
                 case "IMP_TXT_KEIN_PFAD": return Resource.IMP_TXT_KEIN_PFAD;
                 case "IMP_TXT_LESEFEHLER": return Resource.IMP_TXT_LESEFEHLER;
@@ -214,6 +230,18 @@ namespace EPOS.UI.Dialoge.Import
                 case "SPIMP_MSG_CEC_FEHLER": return Resource.SPIMP_MSG_CEC_FEHLER;
                 case "SPIMP_MSG_CEC_ALT": return Resource.SPIMP_MSG_CEC_ALT;
                 case "SPIMP_MSG_CEC_KEINE_QUELLE": return Resource.SPIMP_MSG_CEC_KEINE_QUELLE;
+
+                // KM1 - der Kaeltemaschinenimport (Copper-Kurvendatei, CSV-Kennfeldvorlage).
+                case "IMP_KAT_FELD_RUECKKUEHLART": return Resource.IMP_KAT_FELD_RUECKKUEHLART;
+                case "IMP_KAT_FELD_KAELTELEISTUNG": return Resource.IMP_KAT_FELD_KAELTELEISTUNG;
+                case "IMP_KAT_FELD_NENN_EER": return Resource.IMP_KAT_FELD_NENN_EER;
+                case "IMP_KAT_FELD_MINDESTTEILLAST": return Resource.IMP_KAT_FELD_MINDESTTEILLAST;
+                case "IMP_KAT_FELD_KAELTEMITTEL": return Resource.IMP_KAT_FELD_KAELTEMITTEL;
+                case "IMP_KAT_FELD_KENNFELDPUNKTE": return Resource.IMP_KAT_FELD_KENNFELDPUNKTE;
+                case "IMP_KAT_SP_KAELTELEISTUNG": return Resource.IMP_KAT_SP_KAELTELEISTUNG;
+                case "IMP_KAT_HINWEIS_KAELTEMASCHINE": return Resource.IMP_KAT_HINWEIS_KAELTEMASCHINE;
+                case "KM_IMP_MSG_UEBERGANGEN": return Resource.KM_IMP_MSG_UEBERGANGEN;
+                case "KM_IMP_MSG_LEER": return Resource.KM_IMP_MSG_LEER;
 
                 default: return schluessel;
             }

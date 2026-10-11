@@ -1,0 +1,101 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Nutzungsprofile
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Nutzungsprofile.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Das Blatt '''Nutzungsprofile''' verwaltet den Katalog der Nutzungsprofile. Ein Nutzungsprofil beschreibt, wie ein Raum oder eine Zone genutzt wird: Sollwerte für Heizen und Kühlen, Lüftung, Geräte und Personen, dazu die Nutzungszeiten. Gebäude und Zonen übernehmen daraus ihre [[Programm Dokumentation/Gebäude#kalender|Kalender]]; der [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] ordnet den Zonen einer Datei ein Profil zu.
+
+Das Programm liefert nur die Struktur aus: die Kategorien, dazu Profile mit Nummer und Name. Werte aus Normen oder Richtlinien liefert es nicht mit; Sie tragen sie selbst ein oder importieren sie aus einer CSV-Datei.
+
+== Aufruf ==
+
+Das Blatt hat keinen Menüpunkt. Es öffnet sich über
+* ''Nutzungsprofile verwalten…'' im Reiter ''Konditionierung'' des Katalogeditors und des Gebäudeeditors im Projekt (siehe [[Programm Dokumentation/Gebäude#nutzungsprofil|Gebäude]]),
+* ''Nutzungsprofile…'' im Zonenbaum des [[Programm Dokumentation/Gebäudeimport|Gebäudeimports]].
+
+Nach dem Schließen liest die aufrufende Maske Katalog und Zuordnung neu. Der Katalog gilt für alle Projekte. Das Blatt hat keine Schlussleiste: Anlegen, Umbenennen, Duplizieren und Löschen schreiben sofort, den Entwurf eines Profils schreibt ''Speichern'' im Profileditor.
+
+
+== Bereiche ==
+
+Das Blatt trägt zwei Reiter: ''Profile'' mit Katalogbaum und Profileditor und ''Zuordnung''.
+
+=== Katalogbaum ===
+
+Links stehen die Kategorien mit ihren Profilen, nach Nummer und Name sortiert. Die Suche findet Nummer und Name.
+
+* '''EPOS-Muster''' – ausgelieferte Muster zum Einstieg, schreibgeschützt (Schloss).
+* '''DIN/TS 18599-10''' – ausgeliefert sind Nummern und Namen der 43 Nutzungen der Ausgabe 2025-10, ohne Werte. Zum Eintragen von Werten ''Duplizieren''.
+* '''SIA 2024''' und '''VDI 2078''' – ausgelieferte, zunächst leere Kategorien.
+* '''Eigene Kategorien''' – Ihre eigenen Kataloge, frei bearbeitbar.
+
+Unter dem Baum stehen ''Neue Kategorie…'', ''Neues Profil…'', ''Duplizieren'' (auch in eine andere Kategorie), ''Umbenennen'' und ''Löschen''. Ausgelieferte Kategorien und Profile lassen sich nur duplizieren.
+
+=== Profileditor ===
+
+Rechts steht das gewählte Profil: Kategorie, Nummer, Name, Beschreibung und Quellenhinweis, darunter die Kennwerte mit Einheit und Grenzen in vier Gruppen:
+
+* '''Nutzungszeit und Woche''' – ''Nutzung von'' und ''bis'', ''Betrieb von'' und ''bis'', die ''Nutzungstage der Woche'' und ''Feiertage wie Sonntag''.
+* '''Sollwerte Heizen und Kühlen''' – ''Heizen im Betrieb'' und ''Heizen außerhalb'' (oder ''Heizen außerhalb aus''), ebenso für das Kühlen.
+* '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels.
+* '''Personen, Geräte und Beleuchtung''' – ''Fläche je Person'', ''Wärme je Person'', ''Gerätelast'', je der Anteil ''im Betrieb'' und ''außerhalb'', dazu ''Beleuchtung'' und ''Gleichzeitigkeit der Beleuchtung''. Die Beleuchtung zählt zu den Geräten: Deren Nennwert am Ziel ist Gerätelast plus Beleuchtung mal Gleichzeitigkeit, mal Fläche.
+
+''Speichern'' schreibt den Entwurf des Profils in den Katalog, ''Abbrechen'' verwirft den Entwurf, ''Vorschau'' rechnet die Vorschau neu.
+
+* '''Je Größe ein Umschalter''' ''aus Kennwerten | Zeilenbild | Stundenprofil'' – er bestimmt, woraus die Größe (Heizsollwert, Kühlsollwert, Lüftung, Geräte, Personen) ihren Verlauf bekommt.
+* '''Zeilenbild''' – die vier Zeilen ''Tag'', ''Nacht'' (mit Zeitfenster), ''Wochenende'' und ''Ferien'', je mit Wert oder ''aus''.
+* '''Stundenprofil''' – 24 Werte je Tagesart. Es gibt zwei Tagesarten: ''Werktag'' und ''nutzungsfreier Tag''. Werte lassen sich aus der Zwischenablage einfügen.
+* '''Vorschau''' – Woche und Teppichbild je Größe an einem neutralen Ziel: Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien vom 1. bis 14. August.
+* '''Nutzungstage im Jahr''' – eine Lesezeile; die Zahl folgt aus dem Wochenmuster und den Feiertagen und lässt sich nicht eingeben.
+
+=== Reiter Zuordnung ===
+
+Die Tabelle ordnet einem Schlüssel ein Profil zu: Art (DIN-Nummer oder IFC-Klasse), Schlüssel und Profil. Die Auswahl des Profils ist nach Kategorien gegliedert und kennt ''keine''; sie wirkt sofort, auch in ausgelieferten Zeilen. Ausgelieferte Zeilen tragen ein Schloss und lassen sich nicht löschen; eigene Zeilen entfernt ''Löschen'' nach einer Rückfrage. Eine neue Zeile entsteht unter der Tabelle aus ''Art'' und ''Schlüssel'' mit ''Zeile anlegen''. Der Gebäudeimport nutzt diese Tabelle, um Zonen ein Profil vorzuschlagen.
+
+== Bedienung ==
+
+=== Profil anlegen ===
+
+# ''Duplizieren'' an einem ausgelieferten Profil, oder ''Neues Profil'' in einer eigenen Kategorie.
+# Kennwerte eintragen; je Größe wählen, ob sie aus Kennwerten, aus dem Zeilenbild oder aus einem Stundenprofil entsteht.
+# In der Vorschau prüfen, was ein Ziel daraus bekäme.
+
+=== Nutzungsprofil übernehmen ===
+
+Im Reiter ''Konditionierung'' von Gebäudeeditor, Verwaltung Gebäude, Katalogbau und Zonendialog öffnet ''Nutzungsprofil übernehmen…'' die Liste der Profile nach Kategorien, mit Vorschau. Die Nennwertzeile zeigt, wie der Nennwert entsteht (Fläche mal Kennwert). Trägt das Ziel schon Kalender, fragt das Programm vor dem Ersetzen nach. Die Nutzungstage ergeben sich abzüglich der Ferien des Ziels; geschrieben wird mit ''OK''. Personen- und Gerätewerte eines Profils bleiben getrennt. Die Kalender tragen den Profilnamen als Nutzung.
+
+Die Nutzung einer Vorlage ist ein freier Text; beim Eintippen bietet das Programm die Namen aus dem Katalog an.
+
+=== CSV importieren und exportieren ===
+
+Im Kopf des Blatts stehen ''CSV importieren…'' und ''CSV exportieren…''. Beim Import wählen Sie die Datei und eine eigene Zielkategorie; eine Vorschau zeigt je Zeile, was übernommen wird und was nicht, und geschrieben wird erst mit ''Übernehmen''. Der Export schreibt dasselbe Format; die Datei lässt sich wieder einlesen.
+
+== CSV-Format ==
+
+Die Datei ist UTF-8 mit Semikolon als Trennzeichen und Dezimalpunkt. Die erste Zeile nennt die Spalten, jede weitere Zeile ist ein Profil. Der Export schreibt UTF-8 mit Kennzeichen für Tabellenprogramme; der Import liest mit und ohne.
+
+* ''Nummer'' und ''Bezeichner'' sind Pflicht; ''Beschreibung'' und die Kennwerte sind frei.
+* Unbekannte Spalten werden mit Meldung übergangen; fehlende Werte bleiben leer. Die Spalte ''Nutzungstage_Jahr'' wird übergangen, weil die Zahl abgeleitet ist.
+* '''Stundenprofil''': Spalte <code>Stunden_&lt;Größe&gt;_&lt;Tagesart&gt;</code> mit 24 Werten, durch Leerzeichen getrennt. Größe: <code>HEIZSOLL</code>, <code>KUEHLSOLL</code>, <code>LUEFTUNG</code>, <code>GERAETE</code> oder <code>PERSONEN</code>; Tagesart: <code>WERKTAG</code> oder <code>FREI</code>.
+* '''Zeilenbild''': Spalte <code>Zeile_&lt;Größe&gt;_&lt;Zeile&gt;</code> mit <code>TAG</code>, <code>NACHT</code>, <code>WOCHENENDE</code> oder <code>FERIEN</code>. Die Zelle enthält den Wert, <code>aus</code> oder <code>-</code> und, durch Leerzeichen getrennt, <code>von=</code>, <code>bis=</code> oder <code>bedingt=</code> mit einer Zahl.
+
+Beispiel mit runden Werten:
+
+<pre>
+Nummer;Bezeichner;Beschreibung;Stunden_PERSONEN_WERKTAG;Zeile_HEIZSOLL_TAG
+900;Beispielnutzung A;Phantasiewerte;0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0;20
+901;Beispielnutzung B;Phantasiewerte;;21 von=7 bis=18
+</pre>
+
+== Hinweise ==
+
+* Ausgelieferte Profile sind schreibgeschützt; ändern lässt sich nur eine Kopie.
+* Ein Profil ohne Werte, etwa ein DIN-Profil, überträgt nichts. Die Vorschau zeigt das an.
+* Im Gebäudeimport mit nur einer Zone setzt das Programm kein Profil von selbst; es nennt den Vorschlag, den Sie im Gebäudeeditor zuweisen.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programm Dokumentation/Gebäude]] – der Reiter ''Konditionierung'' mit Matrix, Kalendern und Vorlagen
+* [[Programm Dokumentation/Gebäudeimport]] – Zonen und ihre Nutzung beim Import
+* [[Programm Dokumentation/Mehrzonenmodell]] – Kalender je Zone
+
+[[Kategorie:Programm Dokumentation]]

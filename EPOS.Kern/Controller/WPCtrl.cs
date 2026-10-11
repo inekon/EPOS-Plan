@@ -432,8 +432,11 @@ namespace WindowsFormsApplication1
         public static string KuehlbetriebSperrgrund(int idWp, int idProjekt)
         {
             if (!KenndatenKuehlungCtrl.HatKenndatenProjekt(idWp))
-                return Text("WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE",
-                    "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.");
+                return KuehlkennlinieNachholbar(idWp)
+                    ? Text("WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN",
+                        "Das Projekt führt für dieses Gerät keine Kühlkennlinie, der Katalog führt eine — sie lässt sich im Anlagendialog unter „Wärmepumpen Kenndaten“ mit „Kühlkennlinie aus dem Katalog übernehmen“ holen. Bis dahin bleibt der Kühlbetrieb gesperrt.")
+                    : Text("WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE",
+                        "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.");
 
             try
             {
@@ -472,6 +475,45 @@ namespace WindowsFormsApplication1
             return StilleDb.Zahl(n);
         }
 
+        /// <summary>Eine Wärmepumpe des Projekts mit Kühlfunktion (<see cref="KuehlfaehigeGeraete"/>).</summary>
+        /// <param name="IdWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        /// <param name="Bezeichner">Der Anzeigename des Geräts.</param>
+        /// <param name="Kuehlbetrieb">Läuft das Gerät im Kühlbetrieb mit (<c>Tab_WP.Kuehlbetrieb</c>)?</param>
+        /// <param name="Sperrgrund">Warum sich der Kühlbetrieb nicht einschalten lässt; <c>null</c> = frei.</param>
+        public sealed record KuehlfaehigesGeraet(int IdWp, string Bezeichner, bool Kuehlbetrieb, string Sperrgrund);
+
+        /// <summary>
+        /// <b>Die Wärmepumpen eines Projekts mit Kühlfunktion</b> — die Geräte seiner
+        /// Wärmepumpen-Anlagen (dieselbe Auswahl wie <see cref="AnlagenImKuehlbetrieb"/>), die eine
+        /// Kühlkennlinie im Projekt führen oder eine aus dem Katalog nachholen können
+        /// (<see cref="KuehlkennlinieNachholbar"/>). Ein Gerät ohne Kühlkennlinie kann nicht kühlen und
+        /// fehlt in der Liste. Je Gerät der Stand von <c>Tab_WP.Kuehlbetrieb</c> und der Sperrgrund des
+        /// Schreibwegs (<see cref="KuehlbetriebSperrgrund"/>). Ein Gerät, das mehrere Anlagen tragen,
+        /// steht einmal. Dialogfrei; leere Liste bei jedem Fehler.
+        /// </summary>
+        public static IReadOnlyList<KuehlfaehigesGeraet> KuehlfaehigeGeraete(int idProjekt)
+        {
+            var liste = new List<KuehlfaehigesGeraet>();
+            if (idProjekt <= 0) return liste;
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT DISTINCT w.ID AS ID, w.Bezeichner AS Bezeichner, w.Kuehlbetrieb AS Kuehlbetrieb " +
+                "FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ? AND w.ID_Projekt = ? ORDER BY w.ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP),
+                StilleDb.Par("@wproj", DbParamTyp.Integer, idProjekt));
+            if (dt == null) return liste;
+            foreach (DataRow r in dt.Rows)
+            {
+                int idWp = Convert.ToInt32(r["ID"]);
+                if (!KenndatenKuehlungCtrl.HatKenndatenProjekt(idWp) && !KuehlkennlinieNachholbar(idWp)) continue;
+                bool an = r["Kuehlbetrieb"] != DBNull.Value && Convert.ToInt64(r["Kuehlbetrieb"]) != 0;
+                string name = r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString();
+                liste.Add(new KuehlfaehigesGeraet(idWp, name, an, KuehlbetriebSperrgrund(idWp, idProjekt)));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// <b>Der Kaltwasser-Vorlauf des Kältekanals</b> [°C] (Anlagenkopplung, Kälteseite E37,
         /// 7.2) — der feste Vorlauf, den die Anlage einem kühlgekoppelten Gebäude liefert: der
@@ -480,7 +522,9 @@ namespace WindowsFormsApplication1
         /// <see cref="AnlagenImKuehlbetrieb"/>). <c>Kuehl_Vorlauf</c> NULL heißt der kleinste
         /// Stützwert der Kühlkennlinie des Geräts (K21), wie im Lauf der Wärmepumpe. Benannte
         /// Regel: Das Gebäude mischt auf seine Vorlaufgrenze hoch, kälter als die Anlage wird es
-        /// nie. NaN, wenn keine Anlage einen Wert trägt. Dialogfrei; NaN bei jedem Fehler.
+        /// nie. Trägt keine Wärmepumpe einen Wert, gilt der Vorlauf der Kältemaschinen
+        /// (<see cref="KuehlVorlaufDerKaeltemaschinen"/>, AK3-K Festlegung 12); NaN, wenn auch dort keiner steht.
+        /// Dialogfrei; NaN bei jedem Fehler.
         /// </summary>
         public static double KuehlVorlaufDesKaeltekanals(int idProjekt)
         {
@@ -502,6 +546,85 @@ namespace WindowsFormsApplication1
                 if (double.IsNaN(wert) || double.IsInfinity(wert)) continue;
                 if (double.IsNaN(kaeltester) || wert < kaeltester) kaeltester = wert;
             }
+            if (double.IsNaN(kaeltester)) kaeltester = KuehlVorlaufDerKaeltemaschinen(idProjekt);
+            return kaeltester;
+        }
+
+        /// <summary>
+        /// <b>Der Kaltwasser-Vorlauf aus den Kältemaschinen</b> (AK3-K, Festlegung 12): Trägt keine Wärmepumpe im
+        /// Kühlbetrieb einen Vorlauf — ein Projekt nur mit Kältemaschine —, gilt der KÄLTESTE Vorlauf der
+        /// Kältemaschinen-Anlagen nach der Regel von <see cref="Kaeltemaschine.AusModell"/>: <c>Kuehl_Vorlauf</c> der
+        /// Projektkopie, ohne ihn die kleinste Kaltwasser-Stützstelle der Kennlinie (K21), mindestens
+        /// <c>Kaltwasser_Vorlauf_Min</c>. NaN, wenn keine Maschine einen Wert trägt. Dialogfrei; NaN bei jedem Fehler.
+        /// </summary>
+        internal static double KuehlVorlaufDerKaeltemaschinen(int idProjekt)
+        {
+            if (idProjekt <= 0) return double.NaN;
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT k.Kuehl_Vorlauf AS Vorlauf, k.Kaltwasser_Vorlauf_Min AS Untergrenze, " +
+                "(SELECT MIN(c.Kaltwassertemperatur) FROM Tab_Kenndaten_Kaeltemaschine c WHERE c.ID_Kaeltemaschine = k.ID) AS Stuetzwert " +
+                "FROM Tab_Energieanlagen a JOIN Tab_Kaeltemaschine k ON k.ID = a.ID_Kaeltemaschine " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KM_TYP));
+            if (dt == null) return double.NaN;
+            double kaeltester = double.NaN;
+            foreach (DataRow r in dt.Rows)
+            {
+                object v = r["Vorlauf"] != DBNull.Value ? r["Vorlauf"] : r["Stuetzwert"];
+                if (v == null || v == DBNull.Value) continue;
+                double wert = Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+                if (r["Untergrenze"] != DBNull.Value)
+                {
+                    double unten = Convert.ToDouble(r["Untergrenze"], System.Globalization.CultureInfo.InvariantCulture);
+                    if (wert < unten) wert = unten;
+                }
+                if (double.IsNaN(wert) || double.IsInfinity(wert)) continue;
+                if (double.IsNaN(kaeltester) || wert < kaeltester) kaeltester = wert;
+            }
+            return kaeltester;
+        }
+
+        /// <summary>
+        /// <b>Der kälteste erreichbare Erzeugervorlauf des Kältekanals</b> [°C] (Entwurf KK 2.3, KK3) — die Untergrenze der
+        /// Kühlkurve, wenn der Erzeuger gleitet: je Wärmepumpe im Kühlbetrieb die kleinste Vorlauf-Stützstelle ihrer
+        /// Kühlkennlinie (ohne Kennlinie ihr <c>Kuehl_Vorlauf</c>), je Kältemaschine <c>Kaltwasser_Vorlauf_Min</c>, ohne ihn
+        /// die kleinste Kaltwasser-Stützstelle (ohne Kennlinie ihr <c>Kuehl_Vorlauf</c>) — dieselben Regeln wie
+        /// <see cref="Kuehlkennlinie"/> und <see cref="Kaeltemaschine.AusModell"/> am Stundenvorlauf; davon der kälteste.
+        /// NaN, wenn kein Erzeuger einen Wert trägt. Dialogfrei; NaN bei jedem Fehler.
+        /// </summary>
+        public static double KuehlVorlaufUntergrenzeDesKaeltekanals(int idProjekt)
+        {
+            if (idProjekt <= 0) return double.NaN;
+            DataTable wp = StilleDb.Tabelle(
+                "SELECT w.Kuehl_Vorlauf AS Vorlauf, " +
+                "(SELECT MIN(k.Vorlauf) FROM Tab_Kenndaten_Kuehlung k WHERE k.ID_WP = w.ID) AS Stuetzwert " +
+                "FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ? AND w.Kuehlbetrieb = 1",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
+            DataTable km = StilleDb.Tabelle(
+                "SELECT k.Kuehl_Vorlauf AS Vorlauf, k.Kaltwasser_Vorlauf_Min AS Stuetzwert, " +
+                "(SELECT MIN(c.Kaltwassertemperatur) FROM Tab_Kenndaten_Kaeltemaschine c WHERE c.ID_Kaeltemaschine = k.ID) AS Kennlinie " +
+                "FROM Tab_Energieanlagen a JOIN Tab_Kaeltemaschine k ON k.ID = a.ID_Kaeltemaschine " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KM_TYP));
+            double kaeltester = double.NaN;
+            void Nehmen(object v)
+            {
+                if (v == null || v == DBNull.Value) return;
+                double wert = Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+                if (double.IsNaN(wert) || double.IsInfinity(wert)) return;
+                if (double.IsNaN(kaeltester) || wert < kaeltester) kaeltester = wert;
+            }
+            if (wp != null)
+                foreach (DataRow r in wp.Rows)
+                    Nehmen(r["Stuetzwert"] != DBNull.Value ? r["Stuetzwert"] : r["Vorlauf"]);
+            if (km != null)
+                foreach (DataRow r in km.Rows)
+                    Nehmen(r["Stuetzwert"] != DBNull.Value ? r["Stuetzwert"]
+                           : r["Kennlinie"] != DBNull.Value ? r["Kennlinie"] : r["Vorlauf"]);
             return kaeltester;
         }
 
@@ -531,6 +654,30 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Fehler bei der Suche nach dem Projektgeraet: " + ex.Message);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Die Bauart des Geraets (<c>Typ</c>: Luft-Wasser, Sole-Wasser, Wasser-Wasser) —
+        /// Projektkopie vor Katalog, wie die Anlagenzeile sie in <c>ID_WP</c> fuehrt;
+        /// <c>null</c>, wenn es das Geraet nicht gibt. KU3-6 (F2): Der Sperrgrund der freien
+        /// Kuehlung ueber die Waermequelle fragt sie, bevor der Lauf sie benannt ablehnt.
+        /// </summary>
+        public static string BauartDesGeraets(int idWp, int idProjekt)
+        {
+            if (idWp <= 0) return null;
+            try
+            {
+                string sql = ProjektgeraetVorhanden(idWp, idProjekt)
+                    ? "SELECT Typ FROM Tab_WP WHERE ID = ?"
+                    : "SELECT Typ FROM Tab_WP_STAMM WHERE ID = ?";
+                object v = DataRepository.ExecuteScalar(sql, new DbParam("@id", idWp));
+                return v == null || v == DBNull.Value ? null : Convert.ToString(v);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Lesen der Bauart: " + ex.Message);
+                return null;
             }
         }
 
@@ -810,6 +957,12 @@ namespace WindowsFormsApplication1
                         }
 
                         v.Commit();
+
+                        // Welle M4 (WP1): Mindestleistung und C_d des Katalogsatzes reisen mit - NULL
+                        // bleibt NULL; ohne die Spalten (nicht migrierte Datenbank) nichts.
+                        ErzeugerTeillastWerte.WpKopieren(sHead, neueId);
+                        // UB-E3-b: die acht Geraetespalten der Uebergabegrenze ebenso - leer bleibt leer.
+                        GeraetegrenzWerte.WpKopieren(sHead, "Tab_WP", neueId);
                         return neueId;
                     }
                     catch (Exception ex)
@@ -864,15 +1017,7 @@ namespace WindowsFormsApplication1
                     " FROM Tab_WP WHERE ID = ?", new DbParam("@id", projektWpId));
                 if (kopf == null || kopf.Rows.Count == 0) return -1;
 
-                string bez = kopf.Rows[0]["Bezeichner"] == DBNull.Value
-                    ? "" : kopf.Rows[0]["Bezeichner"].ToString();
-
-                // Der KATALOGVERWEIS zuerst (Schemaschritt 80), der Name als Rückfall.
-                // Sonst holte der Knopf die Stützstellen eines gleichnamigen Fremdsatzes,
-                // sobald jemand den eigenen Katalogsatz umbenannt hat.
-                int stammId = Verweis(kopf.Rows[0]);
-                if (stammId <= 0)
-                    stammId = DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bez);
+                int stammId = KatalogsatzDerKopie(kopf.Rows[0]);
                 if (stammId <= 0) return 0;
 
                 bool waermeFehlt = Zeilenzahl("SELECT COUNT(*) FROM Tab_Kenndaten WHERE ID_WP = ?", projektWpId) == 0;
@@ -955,6 +1100,53 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Der Katalogsatz einer Gerätekopie: der KATALOGVERWEIS zuerst (Schemaschritt 80),
+        /// der Bezeichner als Rückfall. Sonst holte der Knopf die Stützstellen eines
+        /// gleichnamigen Fremdsatzes, sobald jemand den eigenen Katalogsatz umbenannt hat.
+        /// 0, wenn keiner gefunden wird.
+        /// </summary>
+        private static int KatalogsatzDerKopie(DataRow kopf)
+        {
+            int stammId = Verweis(kopf);
+            if (stammId > 0) return stammId;
+
+            string bez = kopf["Bezeichner"] == DBNull.Value ? "" : kopf["Bezeichner"].ToString();
+            return DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bez);
+        }
+
+        /// <summary>
+        /// Lässt sich an dieser Gerätekopie allein die KÜHLkennlinie nachholen? Wahr, wenn
+        /// <c>Tab_Kenndaten_Kuehlung</c> für die Kopie keine Zeile führt und ihr Katalogsatz
+        /// (Verweis vor Bezeichner, wie <see cref="KennlinienAusKatalog"/>) eine Kühlkennlinie
+        /// hat. Der Knopf „Kühlkennlinie aus dem Katalog übernehmen" erscheint nur dann; eine
+        /// vorhandene Kühlkennlinie (etwa die der Referenzprojekte) rührt er nicht an.
+        /// </summary>
+        /// <param name="projektWpId">Die Gerätekopie (<c>Tab_WP.ID</c>).</param>
+        public static bool KuehlkennlinieNachholbar(int projektWpId)
+        {
+            if (projektWpId <= 0) return false;
+            try
+            {
+                DataTable kopf = DataRepository.GetDataTable(
+                    "SELECT * FROM Tab_WP WHERE ID = ?", new DbParam("@id", projektWpId));
+                if (kopf == null || kopf.Rows.Count == 0) return false;
+
+                if (Zeilenzahl("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?", projektWpId) > 0)
+                    return false;
+
+                int stammId = KatalogsatzDerKopie(kopf.Rows[0]);
+                if (stammId <= 0) return false;
+
+                return Zeilenzahl("SELECT COUNT(*) FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ?", stammId) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Pruefung der Kuehlkennlinie: " + ex.Message);
+                return false;
+            }
+        }
+
         /// <summary>Zeilenzahl einer Zaehlabfrage mit einer Geraete-Id.</summary>
         /// <summary>
         /// Der Katalogverweis einer Projektzeile (<c>Tab_WP.ID_Stamm</c>) als Zahl;
@@ -1009,6 +1201,10 @@ namespace WindowsFormsApplication1
             ziel.KuehlHilfsstromanteil = Belegt(dt, row, KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL)
                 ? (double?)Convert.ToDouble(row[KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL])
                 : null;
+
+            // Welle M4 (WP1): Mindestleistung und C_d reisen auf demselben Leseweg - NULL-treu, eine
+            // fehlende Spalte (Datenbank vor ErzeugerTeillastSchema.SCHRITT) gilt wie NULL.
+            ErzeugerTeillastWerte.WpAusZeile(ziel, row);
         }
 
         /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>

@@ -85,6 +85,19 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
+        /// Die Welle M2 Solarthermie (Schemaschritt <c>SolarthermieFelderSchema.SCHRITT</c>) hat
+        /// die fuenf Felder des Kollektorfelds ergaenzt - <c>Pumpenleistung_W</c>,
+        /// <c>Solarkreisverluste_Prozent</c>, <c>Uebertrager_Graedigkeit_K</c>,
+        /// <c>Kollektor_Spreizung_K</c> und <c>Arbeitstemperatur_Weg</c>. MODELLspalten: Der
+        /// Kollektordialog schreibt sie, <c>SimulationSolarthermie</c> liest sie. Alle nullbar,
+        /// NULL = Vorgabe.
+        /// Schemaschritt <see cref="AlbedoSchema.SCHRITT"/> (Entscheidungsvorlage Modellgrenzen,
+        /// PV4) hat <c>Albedo</c> ergaenzt - die Bodenalbedo der Photovoltaik- und
+        /// Solarthermie-Anlage, nullbar, NULL = Vorgabe 0,2. Eine MODELLspalte: Die
+        /// Anlagendialoge schreiben sie, PV- und Solarthermie-Rechner lesen sie.
+        /// </para>
+        ///
+        /// <para>
         /// NICHT VOLLSTAENDIG, MIT ABSICHT: Die FACHSPALTEN - KWKG je Anlage (Schritt 22),
         /// Steuerwahl/Hilfsenergie je Anlage (Schritt 61), Quell-Entnahmehoehe, Quellprofil
         /// und Temperaturmodus (Schritte 54/55) - fuehrt die Anweisung NICHT. Sie gehoeren
@@ -96,8 +109,49 @@ namespace WindowsFormsApplication1
         /// die der Lauf angelegt hat (Block FS1).
         /// </para>
         /// </summary>
-        public const string SQL_ANLAGE_INSERT = @"INSERT INTO Tab_Energieanlagen
-                        (ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis,
+        public const string SQL_ANLAGE_INSERT = "INSERT INTO Tab_Energieanlagen (" + SPALTEN_BESTAND + ", " +
+                        SPALTEN_FAHRPLAN + ", " + SPALTEN_FREIE_KUEHLUNG + ", " + SPALTEN_UEBERGABE +
+                        ") VALUES (" + WERTE_BESTAND + ", ?,?, ?,?,?, ?,?)";
+
+        /// <summary>
+        /// Dieselbe Anweisung OHNE die zwei Spalten der Uebergabegrenze (Einbindung, Vorwaermbetrieb; Schemaschritt
+        /// <see cref="UebergabegrenzeSchema"/>) - fuer eine Datenbank auf dem Stand der freien Kuehlung. Gewaehlt wird
+        /// allein in <see cref="Einfuegen"/>.
+        /// </summary>
+        public const string SQL_ANLAGE_INSERT_OHNE_UEBERGABE = "INSERT INTO Tab_Energieanlagen (" + SPALTEN_BESTAND + ", " +
+                        SPALTEN_FAHRPLAN + ", " + SPALTEN_FREIE_KUEHLUNG +
+                        ") VALUES (" + WERTE_BESTAND + ", ?,?, ?,?,?)";
+
+        /// <summary>Die zwei Spalten der Uebergabegrenze an der Anlage (<see cref="UebergabegrenzeSchema.SPALTEN_ANLAGE"/>).</summary>
+        private const string SPALTEN_UEBERGABE =
+            UebergabegrenzeSchema.SPALTE_EINBINDUNG + ", " + UebergabegrenzeSchema.SPALTE_VORWAERMBETRIEB;
+
+        /// <summary>
+        /// Dieselbe Anweisung OHNE die drei Spalten der freien Kuehlung ueber die Waermequelle (Schemaschritt
+        /// <see cref="FreieKuehlungSoleSchema.SCHRITT"/>), mit dem Anlagenfahrplan - fuer eine Datenbank auf dem
+        /// Stand des Fahrplans. Gewaehlt wird allein in <see cref="Einfuegen"/>.
+        /// </summary>
+        public const string SQL_ANLAGE_INSERT_OHNE_FREIE_KUEHLUNG = "INSERT INTO Tab_Energieanlagen (" + SPALTEN_BESTAND +
+                        ", " + SPALTEN_FAHRPLAN + ") VALUES (" + WERTE_BESTAND + ", ?,?)";
+
+        /// <summary>Die zwei Spalten des Anlagenfahrplans (<see cref="AnlagenfahrplanSchema.SPALTEN_ANLAGE"/>).</summary>
+        private const string SPALTEN_FAHRPLAN =
+            AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM + ", " + AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX;
+
+        /// <summary>Die drei Spalten der freien Kuehlung (<see cref="FreieKuehlungSoleSchema.SPALTEN_ANLAGE"/>).</summary>
+        private const string SPALTEN_FREIE_KUEHLUNG = FreieKuehlungSoleSchema.SPALTE_KUEHL_FREI + ", " +
+            FreieKuehlungSoleSchema.SPALTE_GRAEDIGKEIT + ", " + FreieKuehlungSoleSchema.SPALTE_LEISTUNG;
+
+        /// <summary>
+        /// Dieselbe Anweisung OHNE die zwei Spalten des Anlagenfahrplans (Schemaschritt
+        /// <see cref="AnlagenfahrplanSchema.SCHRITT"/>) und ohne die drei der freien Kuehlung - fuer eine Datenbank vor dem Schritt, etwa einen
+        /// aelteren Stand auf iOS. Gewaehlt wird allein in <see cref="Einfuegen"/>.
+        /// </summary>
+        public const string SQL_ANLAGE_INSERT_OHNE_FAHRPLAN =
+            "INSERT INTO Tab_Energieanlagen (" + SPALTEN_BESTAND + ") VALUES (" + WERTE_BESTAND + ")";
+
+        /// <summary>Die Spalten der Anweisung bis einschliesslich <c>Albedo</c> - alles vor dem Anlagenfahrplan.</summary>
+        private const string SPALTEN_BESTAND = @"ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis,
                          Vorlauf, Rücklauf, Bivalenter_Betrieb, Abschaltpunkt, Nutzungszeit, Grenzleistung,
                          Kollektormodulanzahl, PV_Leistung, Neigung, Azimut, ID_Type,
                          ID_WP, ID_Solar, ID_PV, ID_SP, ID_KESSEL, ID_BHKW, ID_PUFFER,
@@ -111,15 +165,60 @@ namespace WindowsFormsApplication1
                          PV_WrWirkungsgrad, PV_Systemverluste,
                          PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100,
                          PV_Wechselrichterweg,
-                         Kuehl_ID_Carrier, Kuehl_EigenerZaehler)
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
+                         Kuehl_ID_Carrier, Kuehl_EigenerZaehler,
+                         Pumpenleistung_W, Solarkreisverluste_Prozent, Uebertrager_Graedigkeit_K,
+                         Kollektor_Spreizung_K, Arbeitstemperatur_Weg,
+                         Albedo";
+
+        /// <summary>Die Platzhalter zu <see cref="SPALTEN_BESTAND"/>.</summary>
+        private const string WERTE_BESTAND = @"?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,
                                 ?,
-                                ?,?)";
+                                ?,?,
+                                ?,?,?,
+                                ?,?,
+                                ?";
+
+        /// <summary>
+        /// <b>Die Anweisung samt Parametern, passend zum Stand der Datenbank</b> - der EINE Weg, auf dem
+        /// eine Anlagenzeile entsteht. Traegt die Datenbank die zwei Spalten des Anlagenfahrplans
+        /// (Schemaschritt <see cref="AnlagenfahrplanSchema.SCHRITT"/>) und die drei der freien Kuehlung
+        /// (Schemaschritt <see cref="FreieKuehlungSoleSchema.SCHRITT"/>), schreibt er sie NULL-erhaltend mit;
+        /// sonst entfallen Spalten und Parameter des fehlenden Schritts von hinten her (Muster der AK1-Spalten:
+        /// Spaltenliste nur, wenn die Spalte vorhanden ist). Ohne Fahrplan entfaellt auch die freie Kuehlung -
+        /// der spaetere Schritt setzt den frueheren voraus.
+        /// </summary>
+        /// <param name="mitFahrplan">Der Stand der Datenbank, wenn der Aufrufer ihn VOR seinem Vorgang
+        /// erfragt hat (<see cref="AnlagenfahrplanSchema.AnlagenspaltenVorhanden"/>); <c>null</c> = hier fragen.</param>
+        /// <param name="mitFreierKuehlung">Ebenso fuer die freie Kuehlung
+        /// (<see cref="FreieKuehlungSoleSchema.AnlagenspaltenVorhanden"/>); <c>null</c> = hier fragen.</param>
+        public static (string Sql, DbParam[] Werte) Einfuegen(int projektID, WErzeugerModel item,
+                                                               Dictionary<int, bool> pufferCache = null,
+                                                               bool? mitFahrplan = null,
+                                                               bool? mitFreierKuehlung = null,
+                                                               bool? mitUebergabe = null)
+        {
+            DbParam[] werte = AnlagenParameter(projektID, item, pufferCache);
+            bool fahrplan = mitFahrplan ?? AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
+            bool frei = fahrplan && (mitFreierKuehlung ?? FreieKuehlungSoleSchema.AnlagenspaltenVorhanden());
+            bool uebergabe = frei && (mitUebergabe ?? UebergabegrenzeSchema.AnlagenspaltenVorhanden());
+            if (uebergabe) return (SQL_ANLAGE_INSERT, werte);
+            if (frei)
+            {
+                var ohneUebergabe = new DbParam[werte.Length - UebergabegrenzeSchema.SPALTEN_ANLAGE.Count];
+                Array.Copy(werte, ohneUebergabe, ohneUebergabe.Length);
+                return (SQL_ANLAGE_INSERT_OHNE_UEBERGABE, ohneUebergabe);
+            }
+            int weg = UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count +
+                      (fahrplan ? 0 : AnlagenfahrplanSchema.SPALTEN_ANLAGE.Count);
+            var ohne = new DbParam[werte.Length - weg];
+            Array.Copy(werte, ohne, ohne.Length);
+            return (fahrplan ? SQL_ANLAGE_INSERT_OHNE_FREIE_KUEHLUNG : SQL_ANLAGE_INSERT_OHNE_FAHRPLAN, ohne);
+        }
 
         /// <summary>
         /// Parameter zu <see cref="SQL_ANLAGE_INSERT"/>, exakt in der Reihenfolge der
@@ -253,9 +352,53 @@ namespace WindowsFormsApplication1
                         // wird geschrieben, alles andere als NULL - die Spalte kennt keine
                         // DDL-Vorgabe, und 0 hiesse dasselbe wie NULL.
                         ProjektPuffer.Par("@kuehlzaehler", DbParamTyp.Integer,
-                            EigenerZaehlerOderNull(item.Kuehl_EigenerZaehler))
+                            EigenerZaehlerOderNull(item.Kuehl_EigenerZaehler)),
+
+                        // --- Kollektorfeld der Solarthermie (Welle M2) -------------------
+                        // Ausdruecklicher Typ wie bei den PV-Feldern: NULL ist der Regelfall
+                        // ("es gilt die Vorgabe").
+                        ProjektPuffer.Par("@solpumpe",   DbParamTyp.Double,   Wert(item.Pumpenleistung_W)),
+                        ProjektPuffer.Par("@solverl",    DbParamTyp.Double,   Wert(item.Solarkreisverluste_Prozent)),
+                        ProjektPuffer.Par("@solgraed",   DbParamTyp.Double,   Wert(item.Uebertrager_Graedigkeit_K)),
+                        ProjektPuffer.Par("@solspreiz",  DbParamTyp.Double,   Wert(item.Kollektor_Spreizung_K)),
+                        ProjektPuffer.Par("@solweg",     DbParamTyp.VarWChar, item.Arbeitstemperatur_Weg),
+                        // --- Bodenalbedo (Schemaschritt AlbedoSchema.SCHRITT; PV4) ----------
+                        // NULL = Vorgabe 0,2. Ein Wert ausserhalb 0..1 waere ein Verstoss gegen
+                        // die Pruefklausel und liesse das INSERT nach dem DELETE scheitern -
+                        // er faellt deshalb zu NULL, wie ein Verweis ins Leere.
+                        ProjektPuffer.Par("@albedo", DbParamTyp.Double,
+                            Bodenalbedo.Zulaessig(item.Albedo) ? Wert(item.Albedo) : null),
+                        // --- Anlagenfahrplan (Schemaschritt AnlagenfahrplanSchema.SCHRITT, AK2-1) ------
+                        // Zwei Parameter vor den drei der freien Kuehlung: Einfuegen schneidet sie auf einer
+                        // Datenbank vor dem Schritt ab. NULL = immer verfuegbar bzw. Vorlauf der Anlage; der Text
+                        // reist unveraendert (geprueft wird beim Lesen, Anlagenzeitprogramm).
+                        ProjektPuffer.Par("@zeitprog", DbParamTyp.VarWChar, item.Zeitprogramm),
+                        ProjektPuffer.Par("@vorlmax",  DbParamTyp.Double,   Wert(item.Vorlauf_Max)),
+                        // --- Freie Kuehlung ueber die Waermequelle (Schemaschritt FreieKuehlungSoleSchema.SCHRITT,
+                        // KU3-6a) - die LETZTEN drei Parameter: Einfuegen schneidet sie auf einer Datenbank vor dem
+                        // Schritt ab. Der Schalter ist 0/1 (NOT NULL, Vorgabe 0). Graedigkeit und Leistungsgrenze:
+                        // NULL = Festwert bzw. Kaelteleistung der Kennlinie; ein Wert ausserhalb der Pruefklausel
+                        // faellt zu NULL, statt das INSERT nach dem DELETE scheitern zu lassen (Muster Albedo).
+                        ProjektPuffer.Par("@kuehlfrei",      DbParamTyp.Integer, item.Kuehl_Frei ? 1 : 0),
+                        ProjektPuffer.Par("@kuehlfreigraed", DbParamTyp.Double,
+                            FreieKuehlungGraedigkeitZulaessig(item.Kuehl_Frei_Graedigkeit_K) ? Wert(item.Kuehl_Frei_Graedigkeit_K) : null),
+                        ProjektPuffer.Par("@kuehlfreileist", DbParamTyp.Double,
+                            FreieKuehlungLeistungZulaessig(item.Kuehl_Frei_Leistung_kW) ? Wert(item.Kuehl_Frei_Leistung_kW) : null),
+                        // --- Einbindung und Vorwaermbetrieb (Schemaschritt UebergabegrenzeSchema, UB-E2) - die LETZTEN
+                        // zwei Parameter: Einfuegen schneidet sie auf einer Datenbank vor dem Schritt ab. NULL = Bestandsweg
+                        // (U-1); eine unbekannte Einbindung faellt zu NULL, statt das INSERT nach dem DELETE scheitern zu lassen.
+                        ProjektPuffer.Par("@einbindung", DbParamTyp.VarWChar, Bivalenzpruefung.EinbindungNormiert(item.Einbindung)),
+                        ProjektPuffer.Par("@vorwaerm",   DbParamTyp.Integer, item.Vorwaermbetrieb ? 1 : 0)
                     };
         }
+
+        /// <summary>Die Pruefklausel der Graedigkeit: NULL oder 0 ... 20 K (<see cref="FreieKuehlungSoleSchema"/>).</summary>
+        public static bool FreieKuehlungGraedigkeitZulaessig(double? k)
+            => !k.HasValue || (k.Value >= 0.0 && k.Value <= 20.0);
+
+        /// <summary>Die Pruefklausel der Leistungsgrenze: NULL oder &gt; 0 kW (<see cref="FreieKuehlungSoleSchema"/>).</summary>
+        public static bool FreieKuehlungLeistungZulaessig(double? kw)
+            => !kw.HasValue || kw.Value > 0.0;
 
         /// <summary>
         /// Nullable-Wert als Parameterwert: <c>null</c> bleibt <c>null</c> und wird von

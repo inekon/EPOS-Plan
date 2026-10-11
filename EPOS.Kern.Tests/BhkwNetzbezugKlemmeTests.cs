@@ -120,12 +120,13 @@ namespace EPOS.Kern.Tests
             Assert.True(l.Sim.Rest_Strombedarf_viertelstuendlich.All(x => x >= 0), "negativer Netzbezug");
             Assert.Equal(0.0, l.Ergebnis.Energiebedarf.Stromrestbedarf);
             Assert.Equal(0.0, l.Ergebnis.BHKW.Reststrombedarf);
-            Assert.Equal(27.4575, l.Ergebnis.BHKW.Stromproduktion, 4);
+            // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575 MWh BHKW-Strom.
+            Assert.Equal(18.0688, l.Ergebnis.BHKW.Stromproduktion, 4);
 
             StromMatrix m = StromMatrix.Baue(l.Reihen, new TarifParameter());
             Assert.Equal(0.0, m.BezugGesamtMWh);
             Assert.Equal(0.0, m.KwkEigenGesamtMWh);
-            Assert.Equal(27.4575, m.KwkEinspeisungGesamtMWh, 4);
+            Assert.Equal(18.0688, m.KwkEinspeisungGesamtMWh, 4);
 
             // Rollentarif 0,30 €/kWh: vor E27 −8.237,25 €/a Reststromkosten (Gutschrift).
             StromErloesErgebnis r = Rollentarif(m);
@@ -140,8 +141,13 @@ namespace EPOS.Kern.Tests
             BerichtsDaten daten = Sammle(1018);
             VariantenDaten v = daten.Varianten.Single(x => x.IdProjekt == 1018);
             // E27: vor E27 13,0557 t/a — der negative Netzbezug (−27,46 MWh × 435 g/kWh
-            // = −11,9451 t/a) stand als Gutschrift darin.
-            Assert.Equal(25.0008, v.CO2Gesamt.Value, 4);
+            // = −11,9451 t/a) stand als Gutschrift darin. Kessel E2b (Schemaschritt 158): Der
+            // Kessel rechnet als Brennwertkessel mit der Normvorgabe von η₃₀ und verbrennt
+            // weniger Gas; vor E2b 25,0008 t/a. Kessel E4 (Takten): Der Kessel läuft im Mittel bei 3 %
+            // seiner Nennleistung, taktet in fast jeder Laufstunde und zahlt je Start den
+            // Anfahrverlust (+1,11 MWh Gas); vor E4 24,8496 t/a. RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): Das BHKW
+            // läuft weniger (Strom 27,46 → 25,55 MWh), der Kessel deckt mehr; vor RB1 25,116 t/a.
+            Assert.Equal(18.5568, v.CO2Gesamt.Value, 4);
         }
 
         // =====================================================================
@@ -190,11 +196,12 @@ namespace EPOS.Kern.Tests
             Assert.Same(rest, SimulationControl.NetzbezugGeklemmt(rest));
             Assert.True(rest.All(x => x == 0.0 && !double.IsNegative(x)));
             Assert.Equal(0.0, l.Sim.ReststromMwh);
-            Assert.Equal(27457.510347756746, l.Sim.simulation_pv.BhkwUeberschussGesamtKwh, 6);
+            // Vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27 457,510347756746 kWh.
+            Assert.Equal(18068.781081846886, l.Sim.simulation_pv.BhkwUeberschussGesamtKwh, 6);
             Assert.Equal(0.0, l.Ergebnis.BHKW.Reststrombedarf);
 
             StromMatrix m = StromMatrix.Baue(l.Reihen, new TarifParameter());
-            Assert.Equal(27.4575, m.KwkEinspeisungGesamtMWh, 4);
+            Assert.Equal(18.0688, m.KwkEinspeisungGesamtMWh, 4);
             Assert.Equal(6.5997, m.EinspeisungPvGesamtMWh, 4);
         }
 

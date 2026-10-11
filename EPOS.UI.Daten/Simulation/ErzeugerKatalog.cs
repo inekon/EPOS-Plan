@@ -36,15 +36,18 @@ namespace WindowsFormsApplication1
     public static class ErzeugerKatalog
     {
         /// <summary>
-        /// Wärmeerzeuger in der Reihenfolge der Auswahlfelder 1–4 der Konfiguration.
-        /// Reihenfolge und Umfang sind unverändert gegenüber dem Bestand.
+        /// Wärmeerzeuger in der Folge der Vorgabe-Ladeprioritäten — Solarthermie (10),
+        /// Wärmepumpe (20), BHKW (30), Heizkessel (40), <c>Ladeordnung.VorgabeLadeprio</c>.
+        /// In dieser Folge wählt die Simulationskonfiguration die verbauten Anlagen eines
+        /// Projekts mit ungepflegter Kaskade vor (<c>Kaskade.Vorwaehlen</c>) und zeigt die
+        /// noch nicht aufgenommenen als verfügbare Karten.
         /// </summary>
         public static readonly string[] WAERMEERZEUGER =
         {
-            DbWerte.ERZEUGER_BHKW,
-            DbWerte.ERZEUGER_HEIZKESSEL,
             DbWerte.ERZEUGER_SOLARTHERMIE,
-            DbWerte.ERZEUGER_WAERMEPUMPE
+            DbWerte.ERZEUGER_WAERMEPUMPE,
+            DbWerte.ERZEUGER_BHKW,
+            DbWerte.ERZEUGER_HEIZKESSEL
         };
 
         /// <summary>Stromerzeuger (Auswahlfeld 5).</summary>

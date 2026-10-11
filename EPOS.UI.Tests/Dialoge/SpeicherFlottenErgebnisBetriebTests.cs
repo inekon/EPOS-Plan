@@ -44,6 +44,27 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
     // Kopfzeile, Kacheln und Banner
     // =====================================================================
 
+    /// <summary>
+    /// CSV am Bild (CSV-2): Jahreskonten an der Jahresprojektion, Zeitreihen an Netz- und
+    /// Ladezustandsbild — derselbe Text wie zuvor an den Knöpfen; die alten Knöpfe entfallen.
+    /// </summary>
+    [Fact]
+    public void Die_CSV_Exporte_stehen_an_den_Bildern()
+    {
+        var texte = new List<string>();
+        var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p
+            .Add(x => x.Ergebnis, Vollstaendig())
+            .Add(x => x.Csv, EventCallback.Factory.Create<string>(this, t => texte.Add(t))));
+
+        // Jahresprojektion und Netzbild (das Ladezustandsbild erst auf Wunsch).
+        var knoepfe = cut.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv");
+        Assert.True(knoepfe.Count >= 2);
+        foreach (var k in cut.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv").ToList())
+            k.Click();
+        Assert.Equal(knoepfe.Count, texte.Count);
+        Assert.All(texte, t => Assert.False(string.IsNullOrEmpty(t)));
+    }
+
     [Fact]
     public void Ergebnis_erklaert_den_berechneten_Betrieb_und_nicht_erreichten_Peak()
     {
@@ -434,6 +455,62 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
     // =====================================================================
 
     /// <summary>Das Diagramm mit dieser Bildbeschreibung (Etappe DG-E3).</summary>
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Masken, Teil C): Schalter als Spalte des Wirts
+    // =====================================================================
+
+    /// <summary>
+    /// Die Schalter der Ansicht sind Zeilen der Spalte „anzeige" der Stromspeicher-Auslegung:
+    /// „sortiert" und eine Option des Zeitraums gehen über <c>feld_setzen</c> am Wirt den Weg des
+    /// Bedienelements; „aus" auf der gewählten Option lehnt benannt ab; mit der Ansicht fällt
+    /// die Anmeldung beim Register.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_setzt_sortiert_und_den_Zeitraum_ueber_die_Spalte_des_Wirts()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var anzeige = new EPOS.UI.Seiten.Simulation.Ergebnisanzeige();
+            var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p
+                .AddCascadingValue(anzeige).Add(x => x.Ergebnis, Ergebnis()));
+            var sicht = new EPOS.UI.Seiten.Strom.StromspeicherKiSicht(() => null, () => null,
+                                                                      () => Array.Empty<FlottenHinweis>())
+            {
+                ErgebnisschalterLesen = () => anzeige.Schalter
+            };
+            using var anmeldung = EPOS.UI.Dienste.KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
+                () => sicht, new KiMaskenhaken { Sperrgrund = sicht.Sperrgrund });
+            string Zeile(string name)
+                => "anzeige_" + (anzeige.Schalter.Select(s => s.Name).ToList().IndexOf(name) + 1);
+
+            KiKern.KiErgebnis sortiert = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Setzen(
+                KiMaskennamen.STROMSPEICHER_AUSLEGUNG, Zeile(Resource.SIM_CHK_SORTIERT), "true"));
+            Assert.True(sortiert.Status == KiKern.KiStatus.Ausgefuehrt, sortiert.Text);
+            Assert.True(cut.Instance.Sortiert);
+
+            string tag = Resource.FLOTTE_LBL_ZEITRAUM + ": " + Resource.BERG_STUFE_TAG;
+            Assert.Equal(KiKern.KiStatus.Ausgefuehrt, (await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Setzen(
+                KiMaskennamen.STROMSPEICHER_AUSLEGUNG, Zeile(tag), "true"))).Status);
+            cut.WaitForAssertion(() => Assert.True(cut.FindAll("fieldset.epos-optionsgruppe label.epos-option")
+                .Single(l => l.QuerySelector(".epos-feld-text")!.TextContent.Trim() == Resource.BERG_STUFE_TAG)
+                .QuerySelector("input")!.HasAttribute("checked")));
+
+            // Eine Wahl hat immer eine Option: „aus" auf der gewählten wird benannt abgelehnt.
+            KiKern.KiErgebnis aus = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Setzen(
+                KiMaskennamen.STROMSPEICHER_AUSLEGUNG, Zeile(tag), "false"));
+            Assert.NotEqual(KiKern.KiStatus.Ausgefuehrt, aus.Status);
+
+            cut.Instance.Dispose();
+            Assert.Empty(anzeige.Schalter);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
     private static IRenderedComponent<EPOS.UI.Bausteine.DiagrammSvg> Bild(
         IRenderedComponent<SpeicherFlottenErgebnisAnsicht> cut, string bezeichnung)
         => cut.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>()

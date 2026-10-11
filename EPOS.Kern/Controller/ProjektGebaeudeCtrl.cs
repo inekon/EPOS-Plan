@@ -105,6 +105,12 @@ namespace WindowsFormsApplication1
             if (row["Abmessung_Anschluß_Außenwand_Kellerdecke"] != DBNull.Value) item.Abmessung_Anschluß_Außenwand_Kellerdecke = Convert.ToDouble(row["Abmessung_Anschluß_Außenwand_Kellerdecke"]);
             if (row["Luftwechselrate"] != DBNull.Value) item.Luftwechselrate = Convert.ToDouble(row["Luftwechselrate"]);
             if (row["Wochenende"] != DBNull.Value) item.Wochenende = Convert.ToDouble(row["Wochenende"]);
+            if (row.Table.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) &&
+                row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE] != DBNull.Value)
+                item.Wochenendtage = Convert.ToInt32(row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE], System.Globalization.CultureInfo.InvariantCulture);
+            if (row.Table.Columns.Contains(KalenderbedienungSchema.SPALTE_FEIERTAGSLAND) &&
+                row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND] != DBNull.Value)
+                item.Feiertagsland = Convert.ToString(row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND], System.Globalization.CultureInfo.InvariantCulture);
             if (row["Ferien"] != DBNull.Value) item.Ferien = Convert.ToDouble(row["Ferien"]);
             if (row["Ferienbeginn_1"] != DBNull.Value) item.Ferienbeginn_1 = Convert.ToDouble(row["Ferienbeginn_1"]);
             if (row["Ferienende_1"] != DBNull.Value) item.Ferienende_1 = Convert.ToDouble(row["Ferienende_1"]);
@@ -195,6 +201,24 @@ namespace WindowsFormsApplication1
             // Der Energiestandard (E47, siebter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
             // auf einer Sicht ohne die Spalte bleibt er null (keiner); ein Leertext gilt wie NULL.
             item.Energiestandard = TextOderNull(row, GebaeudeSchema.SPALTE_ENERGIESTANDARD);
+
+            // Die manuelle Aufheizzeit (E59, achter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
+            // auf einer Sicht ohne die Spalte bleibt sie null (das Gebaeude folgt der Art des Projekts).
+            item.Aufheizzeit_Manuell_H = GanzzahlOderNull(row, GebaeudeSchema.SPALTE_AUFHEIZZEIT_MANUELL);
+
+            // Der wirksame U-Wert der Bodenplatte (E65, neunter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
+            // auf einer Sicht ohne die Spalte bleibt er null (Erdreichkorrektur nach DIN EN ISO 13370).
+            item.Erdreich_U_Wirksam = ZahlOderNull(row, GebaeudeSchema.SPALTE_ERDREICH_U_WIRKSAM);
+            // Der Raumeinfluss der Heizkurve (AK3, zehnter Sichtneubau): NULL-ERHALTEND beim Namen gelesen - auf einer
+            // Sicht ohne die Spalte bleibt er null (aus).
+            item.Heizkurve_Raumeinfluss = ZahlOderNull(row, GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS);
+            // Die Kuehlkurve (KK, elfter Sichtneubau): NULL-ERHALTEND beim Namen gelesen - auf einer Sicht ohne die
+            // Spalten bleibt sie aus (fester Vorlauf, Festlegung 1).
+            item.Kuehlkurve_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AKTIV);
+            item.Kuehlkurve_Fusspunkt = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHLKURVE_FUSSPUNKT);
+            item.Kuehlkurve_Raumeinfluss = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHLKURVE_RAUMEINFLUSS);
+            item.Kuehlkurve_Auslegung_Weg = TextOderNull(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_WEG);
+            item.Kuehlkurve_Auslegung_Aussen = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_AUSSEN);
             return item;
         }
 

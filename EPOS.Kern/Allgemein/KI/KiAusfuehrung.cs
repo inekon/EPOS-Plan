@@ -386,6 +386,14 @@ namespace WindowsFormsApplication1
                     return Abweisen(beginn, aufruf, projektId,
                                     KiErgebnis.Abgelehnt(befund.Grund).MitMeldungen(befund.Meldungen));
 
+                // ---- Nichts zu aendern: Der Stand traegt bereits, was verlangt war. Ohne
+                //      Aenderung gibt es nichts zu bestaetigen - der Versuch endet hier als
+                //      ERFOLG (Status Ausgefuehrt, Anzahl 0) und nicht als Absage, mit
+                //      derselben einen Protokollzeile (Anwendermeldung 10.10.2026).
+                if (befund.Unveraendert != null)
+                    return Abweisen(beginn, aufruf, projektId,
+                                    KiErgebnis.OhneAenderung(befund.Unveraendert).MitMeldungen(befund.Meldungen));
+
                 // ---- Der Bestaetigungstext stammt AUSSCHLIESSLICH aus dem Kern
                 //      (Fachkonzept 3.5, Punkt 2) - nie aus Modelltext.
                 DateTime jetzt = Uhr();
@@ -650,6 +658,7 @@ namespace WindowsFormsApplication1
         {
             internal string Vorschau = "";
             internal string Grund;
+            internal string Unveraendert;
             internal string[] Meldungen = Array.Empty<string>();
         }
 
@@ -667,9 +676,16 @@ namespace WindowsFormsApplication1
                 try
                 {
                     string grund = aktion.Vorbedingung != null ? aktion.Vorbedingung(aufruf) : null;
+                    string gleich = string.IsNullOrWhiteSpace(grund) && aktion.OhneAenderung != null
+                        ? aktion.OhneAenderung(aufruf)
+                        : null;
                     if (!string.IsNullOrWhiteSpace(grund))
                     {
                         befund.Grund = grund;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(gleich))
+                    {
+                        befund.Unveraendert = gleich;
                     }
                     else
                     {
@@ -721,8 +737,15 @@ namespace WindowsFormsApplication1
                 try
                 {
                     string grund = aktion.Vorbedingung != null ? aktion.Vorbedingung(aufruf) : null;
+                    // Zwischen Vorschau und Klick kann der Stand den Wert inzwischen tragen:
+                    // dann nichts setzen und den Erfolg „unveraendert" melden.
+                    string gleich = string.IsNullOrWhiteSpace(grund) && aktion.OhneAenderung != null
+                        ? aktion.OhneAenderung(aufruf)
+                        : null;
                     ergebnis = !string.IsNullOrWhiteSpace(grund)
                         ? KiErgebnis.Abgelehnt(grund)
+                        : !string.IsNullOrWhiteSpace(gleich)
+                            ? KiErgebnis.OhneAenderung(gleich)
                         : aktion.AusfuehrenLang != null
                             ? aktion.AusfuehrenLang(aufruf, umgebung)
                             : aktion.Ausfuehren(aufruf);

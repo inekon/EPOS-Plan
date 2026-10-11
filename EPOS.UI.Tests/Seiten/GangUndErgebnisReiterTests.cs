@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.Zeichnung;
 using Xunit;
+using R = WindowsFormsApplication1.MyResource.Resource;
 
 namespace EPOS.UI.Tests.Seiten;
 
@@ -216,7 +217,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         (int Kanal, IReadOnlyList<string> Erz, IReadOnlyList<string> Sp) gemeldet = (0, [], []);
         var seite = WaermeZeichnen(w => gemeldet = w);
 
-        seite.Find("button.epos-simerg-knopf").Click();
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
 
         Assert.Equal(-1, gemeldet.Kanal);
         Assert.NotNull(gemeldet.Erz);
@@ -510,7 +511,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         IReadOnlyList<string> gemeldet = Array.Empty<string>();
         var seite = StromZeichnen(r => gemeldet = r);
 
-        seite.Find("button.epos-simerg-knopf").Click();
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
         Assert.Equal(new[] { "GESAMT" }, gemeldet);
     }
 
@@ -791,5 +792,216 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
 
         Assert.Equal(new[] { "simerg-monate" }, Kennungen(seite));
+    }
+
+    // =====================================================================
+    // Kaelte Produktion Chart und die Folge der Blaetter
+    // =====================================================================
+
+    private readonly Ganglinienstand _kaelteStand = new Ganglinienstand();
+
+    private IRenderedComponent<ErgebnisReiter> ErgebnisMitKaelteZeichnen()
+        => Render<ErgebnisReiter>(p =>
+        {
+            p.Add(x => x.Autarkie, Autarkie());
+            p.Add(x => x.Modell, Modell);
+            p.Add(x => x.WaermegangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>wg</i>")));
+            p.Add(x => x.StromgangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>sg</i>")));
+            p.Add(x => x.KaeltegangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>kg</i>")));
+        });
+
+    private static List<string> Blattfolge<T>(IRenderedComponent<T> seite) where T : IComponent
+        => seite.FindAll("button[role='tab']").Select(b => b.Id ?? "").ToList();
+
+    /// <summary>
+    /// <b>Die Folge der Blaetter:</b> Waerme, Strom, ganz rechts die Autarkie-Analyse —
+    /// und sie bleibt das Blatt, das beim Oeffnen aktiv ist.
+    /// </summary>
+    [Fact]
+    public void Ohne_Kaelte_steht_die_Autarkie_rechts_und_ist_aktiv()
+    {
+        var seite = ErgebnisZeichnen(Autarkie());
+
+        Assert.Equal(new[] { "reiter-WAERMEGANG", "reiter-STROMGANG", "reiter-AUTARKIE" }, Blattfolge(seite));
+        Assert.Equal("AUTARKIE", seite.Instance.AktivesBlatt);
+        Assert.DoesNotContain("reiter-KAELTEGANG", seite.Markup);
+    }
+
+    /// <summary>
+    /// <b>Mit Kaelte vier Blaetter:</b> Waerme, Strom, Kaelte, Autarkie-Analyse; aktiv
+    /// bleibt die Autarkie, und das Kaelteblatt zeigt den Inhalt des Wirts.
+    /// </summary>
+    [Fact]
+    public void Mit_Kaelte_steht_der_Kaeltereiter_vor_der_Autarkie()
+    {
+        var seite = ErgebnisMitKaelteZeichnen();
+
+        Assert.Equal(new[] { "reiter-WAERMEGANG", "reiter-STROMGANG", "reiter-KAELTEGANG", "reiter-AUTARKIE" },
+                     Blattfolge(seite));
+        Assert.Equal("AUTARKIE", seite.Instance.AktivesBlatt);
+
+        seite.Find("button[role='tab'][id='reiter-KAELTEGANG']").Click();
+        Assert.Equal("KAELTEGANG", seite.Instance.AktivesBlatt);
+        Assert.Contains("<i>kg</i>", seite.Markup);
+    }
+
+    private IRenderedComponent<KaeltegangReiter> KaelteZeichnen()
+        => Render<KaeltegangReiter>(p =>
+        {
+            p.Add(x => x.Modell, Modell);
+            p.Add(x => x.Gedaechtnis, _kaelteStand);
+        });
+
+    /// <summary>
+    /// KM3-E3-b (Fachkonzept Teillast und Takten 7.2): die Kachelzeile „Teillast und Takten“ steht nur mit einer
+    /// Kaeltemaschine mit Teillastweg - je Maschine Taktstrom, Starts, Teillastanteil, Lastgrad, Jahres-EER ohne Hilfsstrom.
+    /// </summary>
+    [Fact]
+    public void Kaeltegang_zeigt_die_Kachelzeile_Teillast_nur_mit_Weg()
+    {
+        var ohne = KaelteZeichnen();
+        Assert.Empty(ohne.FindAll("[data-kachel='km-teillast']"));
+
+        var mit = Render<KaeltegangReiter>(p =>
+        {
+            p.Add(x => x.Modell, Modell);
+            p.Add(x => x.Gedaechtnis, _kaelteStand);
+            p.Add(x => x.Teillast, new[] { new KaeltemaschineTeillastKachel("KM 1", 17.27, 717, 25.5, 0.70, 3.85) });
+        });
+        var block = mit.Find("[data-kachel='km-teillast'] section[data-anlage='KM 1']");
+        string text = block.TextContent;
+        Assert.Contains(R.SIM_KACHEL_KM_TEILLAST, text);
+        foreach (string label in new[] { R.SIM_LBL_KM_TAKTSTROM, R.SIM_LBL_KM_STARTS, R.SIM_LBL_KM_TEILLASTANTEIL,
+                                         R.SIM_LBL_KM_LASTGRAD, R.SIM_LBL_KM_JAZ_VERDICHTER })
+            Assert.Contains(label, text);
+        Assert.Contains(17.27.ToString("N2", System.Globalization.CultureInfo.CurrentCulture), text);
+        Assert.Contains(717.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), text);
+        Assert.Contains(3.85.ToString("N2", System.Globalization.CultureInfo.CurrentCulture), text);
+    }
+
+    /// <summary>
+    /// <b>Der Bildauftrag des Kaeltebilds:</b> Bild <c>KAELTEGANG</c>, ohne Reihenwahl,
+    /// im SVG-Baustein unter <c>simerg-kaeltegang</c>; „sortiert" schaltet die Dauerlinie.
+    /// </summary>
+    [Fact]
+    public void Kaeltegang_meldet_seinen_Bildauftrag_und_schaltet_sortiert()
+    {
+        var seite = KaelteZeichnen();
+
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.Kaeltegang && !a.Sortiert && a.Reihen is null);
+        Assert.Equal(new[] { "simerg-kaeltegang" },
+                     seite.FindComponents<DiagrammSvg>().Select(k => k.Instance.Kennung).ToArray());
+
+        _auftraege.Clear();
+        seite.FindAll("input[type='checkbox']")[0].Change(true);
+
+        Assert.True(seite.Instance.Sortiert);
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.Kaeltegang && a.Sortiert);
+        Assert.True(_kaelteStand.Sortiert);
+    }
+
+    /// <summary>
+    /// Katalog v12: Das Kaeltebild traegt die Marke <c>stand.bild.kaelte_produktion</c>, „aehnlich im Bericht" (der
+    /// Bericht zeigt das Jahr ohne „sortiert").
+    /// </summary>
+    [Fact]
+    public void Kaeltegang_traegt_sein_Vorlagenfeld()
+    {
+        DiagrammSvg bild = KaelteZeichnen().FindComponents<DiagrammSvg>().Single().Instance;
+        Assert.Equal("stand.bild.kaelte_produktion", bild.Vorlagenfeld);
+        Assert.Equal(Vorlagenfeldstufe.Aehnlich, bild.VorlagenfeldStufe);
+        Assert.NotNull(Vorlagenfeldkatalog.Finde(bild.Vorlagenfeld));
+    }
+
+    /// <summary>„sortiert" uebersteht den Neuaufbau des Blatts (Sitzungsgedaechtnis).</summary>
+    [Fact]
+    public void Kaeltegang_liest_sortiert_aus_dem_Gedaechtnis()
+    {
+        _kaelteStand.Merken(-1, true, false, null);
+
+        var seite = KaelteZeichnen();
+
+        Assert.True(seite.Instance.Sortiert);
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.Kaeltegang && a.Sortiert);
+    }
+
+    /// <summary>
+    /// <b>Die Reihenschalter stehen nebeneinander</b> (Anwenderwunsch 05.10.2026): Jede
+    /// Reihenwahl des Wärme- und des Stromgangs ist eine waagerechte, umbrechende Zeile
+    /// (<c>epos-mehrfachauswahl--zeile</c>) — dieselbe Bauart wie die Schalterzeilen
+    /// (<c>epos-simerg-schalter</c>) der übrigen Reiter.
+    /// </summary>
+    [Fact]
+    public void Die_Reihenwahl_von_Waerme_und_Stromgang_steht_waagerecht()
+    {
+        var waerme = WaermeZeichnen();
+        var strom = StromZeichnen();
+
+        Assert.Equal(2, waerme.FindAll("div.epos-mehrfachauswahl").Count);
+        Assert.All(waerme.FindAll("div.epos-mehrfachauswahl"),
+            e => Assert.Contains("epos-mehrfachauswahl--zeile", e.ClassList));
+        Assert.Single(strom.FindAll("div.epos-mehrfachauswahl"));
+        Assert.All(strom.FindAll("div.epos-mehrfachauswahl"),
+            e => Assert.Contains("epos-mehrfachauswahl--zeile", e.ClassList));
+        Assert.Empty(waerme.FindAll("div.epos-simerg-spalten"));
+    }
+
+    /// <summary>
+    /// <b>Wache über alle Reiter der Simulationsseite:</b> Jede Mehrfachauswahl unter
+    /// <c>EPOS.UI/Seiten/Simulation</c> ist eine Reihenwahl über einem Bild und steht
+    /// deshalb waagerecht — ein neuer Reiter fällt hier auf, wenn er die senkrechte
+    /// Dialogliste übernimmt.
+    /// </summary>
+    [Fact]
+    public void Jede_Mehrfachauswahl_der_Simulationsseite_ist_waagerecht()
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+        Assert.NotNull(d);
+
+        var ohne = new List<string>();
+        int gefunden = 0;
+        foreach (string datei in Directory.GetFiles(Path.Combine(d!.FullName, "EPOS.UI", "Seiten", "Simulation"), "*.razor"))
+        {
+            string text = File.ReadAllText(datei);
+            int pos = 0;
+            while ((pos = text.IndexOf("<Mehrfachauswahl", pos, StringComparison.Ordinal)) >= 0)
+            {
+                int ende = text.IndexOf("/>", pos, StringComparison.Ordinal);
+                string tag = text.Substring(pos, ende - pos);
+                gefunden++;
+                if (!tag.Contains("Waagerecht=\"true\"", StringComparison.Ordinal))
+                    ohne.Add(Path.GetFileName(datei));
+                pos = ende;
+            }
+        }
+
+        Assert.True(gefunden >= 3, $"nur {gefunden} Mehrfachauswahl gefunden");
+        Assert.Empty(ohne);
+    }
+
+    /// <summary>
+    /// CSV am Diagramm: Der Kältegang trägt „CSV…“ über die Naht der Kaskade; der Klick gibt das
+    /// gezeigte Modell samt Titel weiter, der Schreiber macht daraus Kopf plus je Stützstelle eine Zeile.
+    /// </summary>
+    [Fact]
+    public void Kaeltegang_traegt_CSV_am_Diagramm()
+    {
+        var exporte = new List<(Zeichenmodell Modell, string Titel)>();
+        var naht = new Ganglinienexport((m, t) => { exporte.Add((m, t)); return Task.CompletedTask; });
+        var seite = Render<KaeltegangReiter>(p => p
+            .Add(x => x.Modell, Modell)
+            .Add(x => x.Gedaechtnis, _kaelteStand)
+            .AddCascadingValue(naht));
+
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        Assert.Single(exporte);
+        IReadOnlyList<ZeitreihenSpalte> spalten = ZeitreihenCsv.AusModell(exporte[0].Modell);
+        Assert.NotEmpty(spalten);
+        string[] zeilen = ZeitreihenCsv.Text(ZeitreihenCsv.RasterAus(spalten), spalten)
+                                       .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(spalten.Max(s => s.Werte.Length) + 1, zeilen.Length);
     }
 }

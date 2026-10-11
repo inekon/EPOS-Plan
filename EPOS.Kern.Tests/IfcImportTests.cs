@@ -377,19 +377,19 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Ohne_Mengen_wird_gemeldet_und_nicht_aus_Geometrie_abgeleitet()
+        public void Ohne_Mengen_kommt_die_Flaeche_aus_dem_Bauteilkoerper()
         {
+            // Stufe G5-1: Die Wände tragen keinen Mengensatz, aber ihren Körper — die Fläche folgt aus ihm, benannt.
             GebaeudeImportAblauf a = Lesen("ifc4_ohne_mengen.ifc");
-            PruefMeldung m = a.Meldungen.Single(x => x.Schluessel == P + "KEINE_MENGEN");
-            Assert.Equal(PruefStufe.Warnung, m.Stufe);
+            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "KEINE_MENGEN");
+            PruefMeldung m = a.Meldungen.Single(x => x.Schluessel == P + "FLAECHE_KOERPER");
+            Assert.Equal(PruefStufe.Info, m.Stufe);
             Assert.Equal("4", m.Werte[0]);
             Assert.True(Hat(a.Abbild.Gebaeude[0].Meldungen, P + "KEINE_RAEUME", PruefStufe.Warnung));
 
             GebaeudeImportSatz s = a.Zuordnen(0, 'E');
             Assert.Null(Wert(s, GebaeudeZielfelder.NUTZFLAECHE));
-            GebaeudeFeldzeile wand = s.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND);
-            Assert.Equal(0.0, wand.Wert);
-            Assert.Equal(PruefStufe.Warnung, wand.Markierung);
+            Nah(90.0, Wert(s, GebaeudeZielfelder.FLAECHE_AUSSENWAND));
             Assert.Contains(GebaeudeImportAblauf.Pruefen(s), x => x.Schluessel == G + "PFLICHT_FEHLT");
         }
 
@@ -461,6 +461,19 @@ namespace EPOS.Kern.Tests
             foreach (string datei in Directory.GetFiles(Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Import", "Ifc"), "*.cs"))
                 Assert.False(Regex.IsMatch(Code(datei), @"\bXbim\.Ifc(2x3|4x3|4)\.(?!Interfaces\b)[A-Z]"),
                     Path.GetFileName(datei) + " nennt eine schemagebundene xBIM-Klasse.");
+
+            // Dieselbe Wache für die Exportseite (Stufe G7d: die Anreicherung lädt die Fremddatei erneut): kein
+            // Typübergehen, und jeder Ladeaufruf übergibt als vierten Wert null.
+            string[] export = Directory.GetFiles(Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Export", "Ifc"), "*.cs");
+            Assert.Contains(export, d => Path.GetFileName(d) == "IfcAnreicherung.cs");
+            foreach (string datei in export.Concat(Directory.GetFiles(Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Import", "Ifc"), "*.cs")))
+            {
+                string text = Code(datei);
+                Assert.False(Regex.IsMatch(text, @"\b(ignoreTypes|SkipTypes)\b"), Path.GetFileName(datei) + " übergeht Entitätstypen.");
+                foreach (Match aufruf in Regex.Matches(text, @"\.LoadStep21\(([^;]*)\)\s*;"))
+                    Assert.True(Regex.IsMatch(aufruf.Groups[1].Value, @",\s*null\s*$"),
+                        Path.GetFileName(datei) + ": LoadStep21 ohne null als vierten Wert: " + aufruf.Value);
+            }
         }
 
         [Fact]
@@ -618,6 +631,26 @@ namespace EPOS.Kern.Tests
             GebaeudeImportSatz ohneJahr = GebaeudeAggregation.Bilden(a, 0, 'G', null, new IfcImportProfil());
             Assert.Equal('G', ohneJahr.Baualtersklasse);
             Assert.Equal(Importherkunft.Manuell, ohneJahr.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE).Herkunft);
+        }
+
+        /// <summary>
+        /// Der vorgeschlagene Name des neuen Gebäudes: der Name des Gebäudes in der Datei; ohne ihn der Dateiname ohne
+        /// Endung statt der <c>GlobalId</c>.
+        /// </summary>
+        [Fact]
+        public void Ohne_Gebaeudenamen_schlaegt_der_Dialog_den_Dateinamen_vor()
+        {
+            GebaeudeImportAblauf a = Lesen("ifc4_zwei_gebaeude.ifc");
+            Assert.Equal("Gebäude A", GebaeudeZuordnungsModell.Vorschlagsname(a.Zuordnen(0, null)));
+
+            a.Abbild.Gebaeude[0].Name = null;
+            GebaeudeImportSatz ohneName = a.Zuordnen(0, null);
+            Assert.Equal("ifc4_zwei_gebaeude", GebaeudeZuordnungsModell.Vorschlagsname(ohneName));
+            Assert.Contains("„" + ohneName.Gebaeudekennung + "“", GebaeudeZuordnungsModell.KopfText(ohneName));   // der Kopf nennt die Kennung
+
+            a.Abbild.Gebaeude[0].Name = "  ";
+            Assert.Equal("ifc4_zwei_gebaeude", GebaeudeZuordnungsModell.Vorschlagsname(a.Zuordnen(0, null)));
+            Assert.Equal("", GebaeudeZuordnungsModell.Vorschlagsname(null));
         }
 
         [Fact]

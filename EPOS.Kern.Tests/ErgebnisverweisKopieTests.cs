@@ -384,7 +384,11 @@ namespace EPOS.Kern.Tests
             ErgebnisCtrl.TAB_PUFFER, ErgebnisCtrl.TAB_SP, ErgebnisCtrl.TAB_GEB,
             WirtschaftlichkeitCtrl.TAB_ERGEBNIS, WirtschaftlichkeitCtrl.TAB_SENS, WirtschaftlichkeitCtrl.TAB_MATRIX,
             // Gebaeudesimulation G6b (Schritt S-G, A6): das Ergebnis je Zone am Gebaeudeergebnis.
-            SchemaKatalog.TAB_ERGEBNISZONE
+            SchemaKatalog.TAB_ERGEBNISZONE,
+            // EQ1 (Entscheidungsvorlage Modellgrenzen, Welle M6): die gespeicherte Erdreichpruefung.
+            KatalogfassungSchema.TAB_ERGEBNIS_ERDREICH,
+            // KU3-4 (Schritt 183): das Ergebnis je Kaeltemaschine.
+            KaeltemaschineAnlageSchema.TAB_ERGEBNIS
         };
 
         private static bool Ergebnistabelle(string tabelle)

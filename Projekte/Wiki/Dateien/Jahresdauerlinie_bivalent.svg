@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Jahresdauerlinie der Heizleistung bei bivalent-parallelem Betrieb (Prinzipbild)
+
+Inhalt: Die stündliche Heizleistung eines Jahres ist nach Größe sortiert aufgetragen, links
+die kälteste Stunde, rechts die wärmste. Unter der Leistungsgrenze der Wärmepumpe liegt ihr
+Anteil (Grundlast), darüber der Anteil des Kessels (Spitzenlast). Der Bivalenzpunkt ist der
+Schnitt der Leistungsgrenze mit der Kurve: Links davon laufen beide Erzeuger, rechts davon
+reicht die Wärmepumpe allein.
+
+Modell der Kurve (kein Rechenergebnis von EPOS-Plan):
+  Außentemperatur der t-ten Stunde, aufsteigend sortiert, als Normalverteilung:
+    theta(t) = 10 °C + 7,5 K * z((t + 0,5) / 8760), z = Quantil der Standardnormalverteilung
+  Heizleistung in Prozent der Heizlast, linear zwischen Heizgrenze und Normaußentemperatur:
+    p(t) = (14 °C - theta(t)) / (14 °C - (−12 °C)), begrenzt auf 0 bis 100 Prozent
+  Leistungsgrenze der Wärmepumpe vereinfacht konstant bei 55 Prozent der Heizlast; bei
+  einer Luft-Wasser-Wärmepumpe sinkt die Leistung mit der Außentemperatur, die Grenze fiele
+  dann nach links ab.
+  Modellwerte: rund 1 800 Vollbenutzungsstunden, Heizbedarf in rund 6 200 Stunden,
+  Bivalenzpunkt nach rund 740 Stunden, Anteil der Wärmepumpe an der Heizwärme rund 95
+  Prozent. Die Achsen tragen keine Werte einer bestimmten Anlage.
+
+Darstellung: Farben nach Vorlage:Diagrammfarbe (waerme für die Wärmepumpe, kessel für den
+Kessel). Prinzipbild.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="508" viewBox="0 0 880 508" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <rect x="1" y="1" width="878" height="506" rx="12" fill="#fcfcfb" stroke="#d0d7de" stroke-width="1"/>
+  <text x="28" y="38" font-size="18" fill="#1f2328" font-weight="600">Jahresdauerlinie der Heizleistung bei bivalentem Betrieb</text>
+  <text x="28" y="61" font-size="14" fill="#57606a">Stündliche Heizleistung eines Jahres, nach Größe sortiert</text>
+  <!-- Raster und Achsen -->
+  <path d="M104,337 L844,337" stroke="#e4e7eb" stroke-width="1"/>
+  <path d="M104,262 L844,262" stroke="#e4e7eb" stroke-width="1"/>
+  <path d="M104,187 L844,187" stroke="#e4e7eb" stroke-width="1"/>
+  <path d="M104,112 L844,112" stroke="#e4e7eb" stroke-width="1"/>
+  <path d="M272.9,112 L272.9,412" stroke="#e4e7eb" stroke-width="1"/>
+  <path d="M441.9,112 L441.9,412" stroke="#e4e7eb" stroke-width="1"/>
+  <path d="M610.8,112 L610.8,412" stroke="#e4e7eb" stroke-width="1"/>
+  <text x="94" y="416.5" font-size="13" fill="#57606a" text-anchor="end">0 %</text>
+  <text x="94" y="341.5" font-size="13" fill="#57606a" text-anchor="end">25 %</text>
+  <text x="94" y="266.5" font-size="13" fill="#57606a" text-anchor="end">50 %</text>
+  <text x="94" y="191.5" font-size="13" fill="#57606a" text-anchor="end">75 %</text>
+  <text x="94" y="116.5" font-size="13" fill="#57606a" text-anchor="end">100 %</text>
+  <text x="104" y="434" font-size="13" fill="#57606a" text-anchor="middle">0</text>
+  <text x="272.9" y="434" font-size="13" fill="#57606a" text-anchor="middle">2 000</text>
+  <text x="441.9" y="434" font-size="13" fill="#57606a" text-anchor="middle">4 000</text>
+  <text x="610.8" y="434" font-size="13" fill="#57606a" text-anchor="middle">6 000</text>
+  <text x="844" y="434" font-size="13" fill="#57606a" text-anchor="end">8 760</text>
+  <text x="474" y="460" font-size="14" fill="#1f2328" text-anchor="middle">Stunden im Jahr</text>
+  <text x="38" y="262" font-size="14" fill="#1f2328" text-anchor="middle" transform="rotate(-90 38 262)">Heizleistung in % der Heizlast</text>
+  <!-- Anteil der Wärmepumpe (unter der Leistungsgrenze) -->
+  <path d="M104,412 L104,247 L166.8,247 L171.6,250.6 L180,256.3 L188.5,261.6 L196.9,266.6 L205.4,271.2 L213.8,275.6 L222.3,279.7 L230.7,283.7 L239.2,287.5 L247.6,291.2 L256.1,294.7 L264.5,298.1 L272.9,301.4 L281.4,304.7 L289.8,307.8 L298.3,310.9 L306.7,313.9 L315.2,316.8 L323.6,319.7 L332.1,322.5 L340.5,325.3 L349,328 L357.4,330.7 L365.9,333.4 L374.3,336.1 L382.8,338.7 L391.2,341.3 L399.7,343.8 L408.1,346.4 L416.6,348.9 L425,351.4 L433.5,353.9 L441.9,356.4 L450.3,358.9 L458.8,361.4 L467.2,363.9 L475.7,366.4 L484.1,368.8 L492.6,371.3 L501,373.8 L509.5,376.3 L517.9,378.8 L526.4,381.3 L534.8,383.8 L543.3,386.4 L551.7,388.9 L560.2,391.5 L568.6,394.1 L577.1,396.7 L585.5,399.4 L594,402.1 L602.4,404.8 L610.8,407.5 L619.3,410.3 L624.3,412 L624.3,412 Z" fill="#c56a1a" fill-opacity="0.32"/>
+  <!-- Anteil des Kessels (Spitze über der Leistungsgrenze) -->
+  <path d="M104,112 L104.1,112 L104.3,112 L104.5,112 L104.8,112 L105.3,113.4 L105.7,121.1 L106.5,132.3 L107.4,140.6 L108.6,150.1 L109.9,157.6 L111.6,165.6 L113.3,172.2 L115.8,180.4 L118.4,187.1 L120.9,193 L124.3,199.7 L127.7,205.6 L131.9,212 L136.1,217.7 L141.2,223.7 L146.2,229.2 L152.2,234.9 L158.1,240.1 L164.8,245.5 L166.8,247 L104,247 Z" fill="#8c5a3c" fill-opacity="0.88"/>
+  <path d="M104,112 L104,412 L844,412" fill="none" stroke="#57606a" stroke-width="1.2"/>
+  <!-- Leistungsgrenze der Wärmepumpe -->
+  <path d="M104,247 L844,247" stroke="#1f2328" stroke-width="1.6" stroke-dasharray="7 5"/>
+  <text x="840" y="239" font-size="13" fill="#1f2328" text-anchor="end">Leistungsgrenze der Wärmepumpe</text>
+  <!-- Dauerlinie der Heizleistung -->
+  <path d="M104,112 L104.1,112 L104.3,112 L104.5,112 L104.8,112 L105.3,113.4 L105.7,121.1 L106.5,132.3 L107.4,140.6 L108.6,150.1 L109.9,157.6 L111.6,165.6 L113.3,172.2 L115.8,180.4 L118.4,187.1 L120.9,193 L124.3,199.7 L127.7,205.6 L131.9,212 L136.1,217.7 L141.2,223.7 L146.2,229.2 L152.2,234.9 L158.1,240.1 L164.8,245.5 L166.8,247 L171.6,250.6 L180,256.3 L188.5,261.6 L196.9,266.6 L205.4,271.2 L213.8,275.6 L222.3,279.7 L230.7,283.7 L239.2,287.5 L247.6,291.2 L256.1,294.7 L264.5,298.1 L272.9,301.4 L281.4,304.7 L289.8,307.8 L298.3,310.9 L306.7,313.9 L315.2,316.8 L323.6,319.7 L332.1,322.5 L340.5,325.3 L349,328 L357.4,330.7 L365.9,333.4 L374.3,336.1 L382.8,338.7 L391.2,341.3 L399.7,343.8 L408.1,346.4 L416.6,348.9 L425,351.4 L433.5,353.9 L441.9,356.4 L450.3,358.9 L458.8,361.4 L467.2,363.9 L475.7,366.4 L484.1,368.8 L492.6,371.3 L501,373.8 L509.5,376.3 L517.9,378.8 L526.4,381.3 L534.8,383.8 L543.3,386.4 L551.7,388.9 L560.2,391.5 L568.6,394.1 L577.1,396.7 L585.5,399.4 L594,402.1 L602.4,404.8 L610.8,407.5 L619.3,410.3 L624.3,412" fill="none" stroke="#1f2328" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Bivalenzpunkt und Beschriftungen -->
+  <path d="M166.8,253 L166.8,412" stroke="#57606a" stroke-width="1"/>
+  <circle cx="166.8" cy="247" r="5.5" fill="#1f2328" stroke="#fcfcfb" stroke-width="2"/>
+  <text x="180.8" y="237" font-size="13" fill="#1f2328" font-weight="600">Bivalenzpunkt</text>
+  <path d="M121.6,202 L191.6,154 L201.6,154" fill="none" stroke="#57606a" stroke-width="1"/>
+  <text x="207.6" y="158.5" font-size="13" fill="#1f2328" font-weight="600">Kessel: Spitzenlast</text>
+  <text x="298.3" y="364" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Wärmepumpe: Grundlast</text>
+  <text x="734.1" y="400" font-size="13" fill="#57606a" text-anchor="middle">keine Heizlast</text>
+  <!-- Legende -->
+  <rect x="560" y="129" width="18" height="14" rx="3" fill="#c56a1a" fill-opacity="0.32"/>
+  <text x="586" y="140.5" font-size="13" fill="#57606a">Anteil Wärmepumpe</text>
+  <rect x="560" y="153" width="18" height="14" rx="3" fill="#8c5a3c" fill-opacity="0.88"/>
+  <text x="586" y="164.5" font-size="13" fill="#57606a">Anteil Kessel</text>
+  <path d="M556,184 L580,184" stroke="#1f2328" stroke-width="2.2"/>
+  <text x="586" y="188.5" font-size="13" fill="#57606a">Heizleistung, nach Größe sortiert</text>
+  <text x="28" y="490" font-size="13" fill="#57606a">Prinzipbild · vereinfachtes Modell, keine Werte einer bestimmten Anlage</text>
+</svg>

@@ -211,16 +211,18 @@ public class KatalogImportDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// <b>Heizkessel</b> (Blatt 3, die Referenzausprägung): sieben Detailfelder,
+    /// <b>Heizkessel</b> (Blatt 3, die Referenzausprägung): neun Detailfelder,
     /// Titel und Filterbeschriftung aus dem Profil.
     /// </summary>
     [Fact]
-    public void Heizkessel_zeigt_seine_sieben_Detailfelder()
+    public void Heizkessel_zeigt_seine_neun_Detailfelder()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel);
 
+        // Neun seit der Kesselkennlinie (Etappe E1): dazu eta bei 30 % Last und die
+        // kleinste Leistung aus Satz 710.01.
         Assert.Equal("Heizkessel Einlesen", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Equal(7, cut.FindAll(".epos-katalogimport-details label").Count);
+        Assert.Equal(9, cut.FindAll(".epos-katalogimport-details label").Count);
 
         string felder = cut.Find(".epos-katalogimport-details").TextContent;
         Assert.Contains("Name:", felder);
@@ -229,11 +231,35 @@ public class KatalogImportDialogTests : EposBunitContext
         Assert.Contains("thermische Leistung: [kWth]", felder);
         Assert.Contains("Brennstoff:", felder);
         Assert.Contains("Wirkungsgrad: [%]", felder);
+        Assert.Contains("Wirkungsgrad bei 30 % Last: [%]", felder);
+        Assert.Contains("Mindestleistung: [kW]", felder);
         Assert.Contains("Bereitschaftsverluste: [kW]", felder);
 
         // S3.4: Die gefilterte Groesse ist eine SPALTE geworden - der Kopf traegt
         // sie ohne "von:", denn ein Spaltenkopf ist keine Feldbeschriftung.
         Assert.Contains("Th. Leistung [kW]", cut.Find("thead").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Jede Beschriftung ist übersetzt.</b> <see cref="Texte.Zu"/> führt die Schlüssel
+    /// einzeln; einer, den es nicht kennt, stünde als „IMP_…“ auf dem Schirm — so geschehen
+    /// mit den zwei Detailfeldern der Kesselkennlinie, bis diese Probe dazukam.
+    /// </summary>
+    [Fact]
+    public void Jede_Auspraegung_uebersetzt_ihre_Beschriftungen()
+    {
+        foreach (KatalogImportArt art in Enum.GetValues<KatalogImportArt>())
+        {
+            KatalogImportProfil p = KatalogImportProfil.Finde(art, Texte.Zu);
+            foreach (ImportDetailfeld f in p.Detailfelder)
+            {
+                Assert.DoesNotContain("IMP_", f.Bezeichnung ?? "", StringComparison.Ordinal);
+                Assert.DoesNotContain("IMP_", f.Einheit ?? "", StringComparison.Ordinal);
+            }
+            foreach (KatalogImportSpalte s in p.Listenspalten)
+                Assert.DoesNotContain("IMP_", s.Titel ?? "", StringComparison.Ordinal);
+            Assert.DoesNotContain("IMP_", p.Hinweis ?? "", StringComparison.Ordinal);
+        }
     }
 
     /// <summary><b>Pufferspeicher</b> (Blatt 20): fünf Detailfelder, Volumenfilter.</summary>
@@ -300,6 +326,24 @@ public class KatalogImportDialogTests : EposBunitContext
         Assert.Contains("Kühlleistung: [kWcool]", felder);
 
         Assert.Contains("* 0=modulierend", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Import für Kälteanlagen</b> (Entscheid E119): dieselbe Maske wie die Wärmepumpe, mit
+    /// eigenem Titel, der Kühlleistung als Zahlenspalte und dem Hinweis, dass nur kühlfähige
+    /// Geräte angeboten werden.
+    /// </summary>
+    [Fact]
+    public void Kaelteimport_zeigt_Titel_Kuehlleistungsspalte_und_Hinweis()
+    {
+        var cut = Bauen(KatalogImportArt.WaermepumpeKuehlung);
+
+        Assert.Equal("Kälteanlagen Einlesen – Wärmepumpen mit Kühlfunktion",
+                     cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Equal(10, cut.FindAll(".epos-katalogimport-details label").Count);
+        Assert.Contains("Kühlleistung [kW]", cut.Find("thead").TextContent);
+        Assert.Contains("nur Wärmepumpen mit gültiger Kühlkennlinie", cut.Markup);
+        Assert.Contains("fehlt die Nennkühlleistung, gilt die größte Kälteleistung der Kennlinie", cut.Markup);
     }
 
     /// <summary>Nur die Wärmepumpe trägt den Stufenhinweis.</summary>
@@ -1647,5 +1691,45 @@ public class KatalogImportDialogTests : EposBunitContext
         };
         return new KatalogVorpruefung(pruefungen, new[] { "kessel klein" }, konflikt,
                                       KatalogImportAblauf.AllesImportieren(pruefungen));
+    }
+
+    /// <summary>
+    /// <b>Kältemaschine</b> (KM1): Titel und Hilfe der Art — die Hilfe nennt die CSV-Kennfeldvorlage, die
+    /// Copper-Kurvendatei und deren Lizenz; Filterspalte ist die Nennkälteleistung.
+    /// </summary>
+    [Fact]
+    public void Die_Kaeltemaschine_traegt_Titel_und_Hilfe_mit_Vorlage_und_Lizenz()
+    {
+        var cut = Bauen(KatalogImportArt.Kaeltemaschine);
+
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.IMP_KAT_TITEL_KAELTEMASCHINE,
+                     cut.Find(".epos-dialog-titel").TextContent.Trim());
+        string hilfe = WindowsFormsApplication1.MyResource.Resource.IMP_KAT_HINWEIS_KAELTEMASCHINE;
+        Assert.Contains(hilfe, string.Concat(cut.Nodes.Select(n => n.TextContent)));
+        Assert.Contains("Kaeltemaschine_Kennfeldvorlage.csv", hilfe, StringComparison.Ordinal);
+        Assert.Contains("chiller_curves.json", hilfe, StringComparison.Ordinal);
+        Assert.Contains("BSD-2", hilfe, StringComparison.Ordinal);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.IMP_KAT_SP_KAELTELEISTUNG, cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Kältemaschine</b> (K-C): Die Hilfe am Import nennt die beiden neuen Vorlagen „Nennwerte“ und „Ökodesign-Datenblatt
+    /// A–D“ und das gewählte Typkennfeld im Leseprotokoll — in beiden Sprachen mit denselben Dateinamen.
+    /// </summary>
+    [Fact]
+    public void Die_Kaeltemaschine_nennt_die_Vorlagen_Nennwerte_und_Oekodesign()
+    {
+        var cut = Bauen(KatalogImportArt.Kaeltemaschine);
+        string text = string.Concat(cut.Nodes.Select(n => n.TextContent));
+        Assert.Contains("Kaeltemaschine_Nennwertvorlage.csv", text, StringComparison.Ordinal);
+        Assert.Contains("Kaeltemaschine_Oekodesignvorlage.csv", text, StringComparison.Ordinal);
+        Assert.Contains("A–D", text, StringComparison.Ordinal);
+        Assert.Contains("Typkennfeld", text, StringComparison.Ordinal);
+
+        string englisch = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+            "IMP_KAT_HINWEIS_KAELTEMASCHINE", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+        Assert.Contains("Kaeltemaschine_Nennwertvorlage.csv", englisch, StringComparison.Ordinal);
+        Assert.Contains("Kaeltemaschine_Oekodesignvorlage.csv", englisch, StringComparison.Ordinal);
+        Assert.DoesNotContain("Typkennfeld", englisch, StringComparison.Ordinal);
     }
 }

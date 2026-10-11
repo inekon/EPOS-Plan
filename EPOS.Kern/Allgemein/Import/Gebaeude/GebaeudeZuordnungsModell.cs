@@ -33,6 +33,7 @@ namespace WindowsFormsApplication1
             {
                 case Importherkunft.Ifc: return MyResource.Resource.GIMP_HERKUNFT_IFC;
                 case Importherkunft.GbXml: return MyResource.Resource.GIMP_HERKUNFT_GBXML;
+                case Importherkunft.Sqproj: return MyResource.Resource.GIMP_HERKUNFT_SQPROJ;
                 case Importherkunft.Katalog: return MyResource.Resource.GIMP_HERKUNFT_KATALOG;
                 case Importherkunft.Vorgabe: return MyResource.Resource.GIMP_HERKUNFT_VORGABE;
                 case Importherkunft.VorgabeFrei: return MyResource.Resource.GIMP_HERKUNFT_VORGABEFREI;
@@ -175,6 +176,19 @@ namespace WindowsFormsApplication1
         /// <summary>Der Anzeigetext der Stufe einer Meldung.</summary>
         public static string StufeText(PruefStufe stufe) => GanglinienProtokollText.StufeText(stufe);
 
+        /// <summary>Der Hinweis zur Exporteinstellung an der Dateiwahl; leer = das Format hat keinen.</summary>
+        public static string ExporthinweisText(GebaeudeImportProfil profil)
+            => (profil == null ? null : Ressource(profil.ExporthinweisSchluessel)) ?? "";
+
+        /// <summary>
+        /// Die Modellansicht (MVD) eines IFC-Abbilds für den Dialogkopf („ReferenceView_V1.2“, sonst „keine Angabe“);
+        /// <c>null</c> = kein IFC-Abbild — dann zeigt der Kopf keine Zeile.
+        /// </summary>
+        internal static string ModellansichtText(GebaeudeAbbild abbild)
+            => abbild is IfcGebaeudeAbbild ifc
+                ? IfcModellansicht.Anzeige(ifc.Modellansichten) ?? MyResource.Resource.GIMP_WERT_KEINE_MVD
+                : null;
+
         /// <summary>Die Schemaanzeige des Dialogkopfs, etwa „gbXML-Version 0.37".</summary>
         public static string SchemaText(GebaeudeImportProfil profil, string schemastand)
         {
@@ -193,7 +207,7 @@ namespace WindowsFormsApplication1
             int ausDatei = 0, vorgabe = 0, leer = 0;
             foreach (GebaeudeFeldzeile z in satz.Zeilen)
             {
-                if (z.Herkunft == Importherkunft.GbXml || z.Herkunft == Importherkunft.Ifc) ausDatei++;
+                if (ImportherkunftWerte.IstDatei(z.Herkunft)) ausDatei++;
                 else if (ImportherkunftWerte.IstVorgabe(z.Herkunft)) vorgabe++;
                 else if (!z.HatWert) leer++;
             }
@@ -207,15 +221,50 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Gebäudenamen, die ein CAD-Export als Platzhalter schreibt (ohne Groß-/Kleinschreibung, ohne
+        /// Leerraum am Rand verglichen): Sie weichen im Namensvorschlag eines IFC-Imports dem Dateinamen.
+        /// </summary>
+        public static readonly IReadOnlyList<string> PLATZHALTERNAMEN = new[] { "Gebäude", "Gebaeude", "Building", "Default Building", "Haus" };
+
+        /// <summary>Ist der Name ein Platzhalter (<see cref="PLATZHALTERNAMEN"/>)?</summary>
+        public static bool IstPlatzhaltername(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            string n = name.Trim();
+            foreach (string p in PLATZHALTERNAMEN)
+                if (string.Equals(p, n, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// <b>Der vorgeschlagene Name des neuen Gebäudes</b>: der Name aus der Datei (IFC: <c>IfcBuilding.Name</c>,
+        /// sonst <c>LongName</c>; gbXML: <c>Building/Name</c>); trägt die Datei keinen — bei IFC auch, wenn er ein
+        /// Platzhalter ist (<see cref="PLATZHALTERNAMEN"/>, Protokoll <c>IMP_IFC_PROT_NAME_PLATZHALTER</c>) —, der
+        /// Dateiname ohne Endung; eine Kennung wie die <c>GlobalId</c> taugt nicht als Katalogname; ohne Datei die
+        /// Kennung. Der Anwender kann ihn im Dialog ändern.
+        /// </summary>
+        public static string Vorschlagsname(GebaeudeImportSatz satz)
+        {
+            if (satz == null) return "";
+            bool platzhalter = string.Equals(satz.Quelle?.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
+                               && IstPlatzhaltername(satz.Gebaeudename);
+            if (!string.IsNullOrWhiteSpace(satz.Gebaeudename) && !platzhalter) return satz.Gebaeudename.Trim();
+            string datei = satz.Quelle?.Dateiname;
+            string ohneEndung = string.IsNullOrWhiteSpace(datei) ? null : System.IO.Path.GetFileNameWithoutExtension(datei.Trim());
+            return string.IsNullOrWhiteSpace(ohneEndung) ? satz.Gebaeudekennung ?? "" : ohneEndung.Trim();
+        }
+
+        /// <summary>
         /// Die Klasse, die der Satz aus dem Baujahr der Datei zog, als Index der Klappliste (0 = A …
-        /// 12 = M); <c>null</c>, wenn die Datei kein Baujahr trägt. Das Baujahr führt (E47): Der Dialog
-        /// zeigt diese Klasse in der Klappliste und sperrt die Wahl; die Aggregation rechnet mit ihr.
+        /// 12 = M); <c>null</c>, wenn die Datei kein Baujahr trägt oder der Anwender ausdrücklich gewählt hat.
+        /// Das Baujahr SCHLÄGT VOR (Anwenderwunsch 08.10.2026, wie im Gebäudeeditor): Ohne eigene Wahl zeigt der
+        /// Dialog diese Klasse in der Klappliste, und die Aggregation rechnet mit ihr; die Wahl bleibt frei.
         /// </summary>
         public static int? KlasseDerDatei(GebaeudeImportSatz satz)
         {
             GebaeudeFeldzeile bak = satz?.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE);
             if (bak == null || !satz.Baualtersklasse.HasValue) return null;
-            if (bak.Herkunft != Importherkunft.Ifc && bak.Herkunft != Importherkunft.GbXml) return null;
+            if (!ImportherkunftWerte.IstDatei(bak.Herkunft)) return null;
             return GebaeudeStammCtrl.KlassenIndex(satz.Baualtersklasse.Value.ToString());
         }
 
@@ -233,7 +282,7 @@ namespace WindowsFormsApplication1
             {
                 GebaeudeFeldzeile z = satz.Zeile(feld);
                 if (z == null) continue;
-                if (z.Herkunft == Importherkunft.Ifc || z.Herkunft == Importherkunft.GbXml) ausDatei++;
+                if (ImportherkunftWerte.IstDatei(z.Herkunft)) ausDatei++;
                 else if (ImportherkunftWerte.IstVorgabe(z.Herkunft)
                          && (z.Beleg?.Schluessel == GebaeudeVorgaben.BELEG_KLASSE || z.Beleg?.Schluessel == GebaeudeVorgaben.BELEG_FREI))
                     ausKlasse++;
@@ -241,9 +290,20 @@ namespace WindowsFormsApplication1
             CultureInfo k = CultureInfo.CurrentCulture;
             string wirkung = Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_WIRKUNG, ausKlasse.ToString(k),
                                          GebaeudeVorgaben.Klassenfelder.Count.ToString(k), ausDatei.ToString(k));
-            if (!KlasseDerDatei(satz).HasValue) return wirkung;
-            return Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_AUS_BAUJAHR, satz.Baujahr?.ToString(k) ?? "") + " " + wirkung;
+            if (KlasseDerDatei(satz).HasValue)
+                return Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_AUS_BAUJAHR, satz.Baujahr?.ToString(k) ?? "") + " " + wirkung;
+            // Eigene Wahl trotz Baujahr: dieselbe Vorschlagszeile wie im Gebäudeeditor („Vorschlag aus dem Baujahr
+            // 1985: 1984 bis 1994 – abweichende Wahl gilt.").
+            if (KlasseVorschlag(satz).HasValue && satz.Baujahr is int jahr)
+                return Gebaeudeklassen.AusBaujahrText(jahr) + " " + wirkung;
+            return wirkung;
         }
+
+        /// <summary>
+        /// Die Klasse, die das Baujahr der Datei VORSCHLÄGT (Index 0 = A … 12 = M), gleich ob sie gilt oder der
+        /// Anwender abweichend gewählt hat; <c>null</c> ohne (gültiges) Baujahr.
+        /// </summary>
+        public static int? KlasseVorschlag(GebaeudeImportSatz satz) => Gebaeudeklassen.IndexAusBaujahr(satz?.Baujahr);
 
         /// <summary>Die Plausibilität am OK-Weg — dieselbe Prüfung wie <see cref="GebaeudeImportAblauf.Pruefen"/>.</summary>
         public static IReadOnlyList<PruefMeldung> Pruefe(GebaeudeImportSatz satz, string katalogname = null)
@@ -267,6 +327,7 @@ namespace WindowsFormsApplication1
             {
                 case ImportherkunftWerte.GBXML: return Importherkunft.GbXml;
                 case ImportherkunftWerte.IFC: return Importherkunft.Ifc;
+                case ImportherkunftWerte.SQPROJ: return Importherkunft.Sqproj;
                 case ImportherkunftWerte.KATALOG: return Importherkunft.Katalog;
                 case ImportherkunftWerte.MANUELL: return Importherkunft.Manuell;
                 case ImportherkunftWerte.VORGABE: return Importherkunft.Vorgabe;

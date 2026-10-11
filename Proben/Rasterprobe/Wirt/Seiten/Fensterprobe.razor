@@ -1,0 +1,379 @@
+﻿@page "/fensterprobe"
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Dialoge.Admin
+@using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Waermepumpe
+@inject NavigationManager Navigation
+
+@*  DIE FENSTERPROBE (Anwenderentscheid 30.09.2026, "Kopf+Fuss fest") - Pruefstand, nicht
+    Auslieferung.
+
+    Sie stellt einen echten Dialog so in den Browser, wie BlazorDialogForm ihn unter Windows
+    zeigt: als WURZEL in #app, dahinter in #app die Fenstermarke (Fensterwurzel) - dasselbe
+    DOM wie body > div#app > .epos-dialog + span.epos-fenstermarke in der WebView2, ohne
+    Datenbank. Gemessen wird von
+    fensterprobe.mjs (LIESMICH.md), ob Kopfzeile und Schlussleiste am Fenster haften, ob das
+    letzte Inhaltselement ueber dem Fuss sichtbar wird, ob ein angesprungenes Feld sichtbar
+    bleibt, ob Ueberlagerung und Katalogdialog unveraendert stehen.
+
+    Gaben ueber die Adresse:
+      ?fall=heizkessel     HeizkesselDialog, zwei Projektzeilen, Katalog, Kostenknoepfe
+      ?fall=bhkw           BhkwDialog, ebenso
+      ?fall=waermepumpen   WaermepumpenDialog mit eingebetteter Detailansicht; die
+                           Temperaturpruefung schlaegt an (Warnband im Fussblock der Detailansicht)
+      ?fall=gebaeude       GebaeudeDialog mit "Simulation..." (Waermebedarf als Ueberlagerung)
+      ?fall=dubletten      KatalogDublettenDialog - das Protokoll steht UNTER der Schlussleiste
+      ?fall=katalog        BedarfAdminDialog (Katalogdialog, .epos-katalog-dialog)
+      ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
+                           "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
+                           "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
+                           ohne den Schalter steht alles wie fuer die Fensterprobe
+      ?marke=0             OHNE Fenstermarke - die Gegenprobe: der Dialog steht wie ohne die Regel
+      ?zeilen=40           Katalogzeilen
+      ?verwendet=1         Heizkessel und BHKW: die erste Projektzeile heisst wie die zweite
+                           Katalogzeile - die Katalogliste traegt Verwendungsmarke und Legende
+                           (Spaltenwahlprobe in katalogprobe.mjs, Konzept 4.10)
+      ?summe=<text>        Heizkessel und BHKW: die Summe der Projekt-Kopfleiste (Vorgabe 240 bzw. 80)
+      ?kultur=de-DE|en-US  Kultur und Sprache; Program.cs setzt sie. *@
+
+<div id="app">
+    @switch (_fall)
+    {
+        case "heizkessel":
+            <HeizkesselDialog Zeilen="@ErzeugerZeilen("Kessel")"
+                              Katalogprofil="@HeizkesselProfil"
+                              Katalogzeilen="@(() => HeizkesselZeilen)"
+                              Filterstandvorgabe="@_filterstand"
+                              KatalogDetail="@(n => Detail(n))"
+                              ProjektDetail="@(n => Detail("Kessel " + n))"
+                              Varianten="@(_ => new[] { (5, "Erdgas E Variante"), (6, "Erdgas LL Variante") })"
+                              Vorbereiten="@Vorbereitung"
+                              TraegerGaben="@(_ => new Dictionary<string, object> { ["Energietraeger"] = new[] { (3, "Erdgas E") } })"
+                              Aufnehmen="@(_aufnahme ? (id, t) => Aufnahme("Kessel", id) : null)"
+                              KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                              EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
+                              Katalogfelder="@(_ => Felder())"
+                              ProjektsatzWege="@SatzWege"
+                              KatalogsatzWege="@SatzWege"
+                              RueckwegWege="@RueckWege"
+                              RueckwegBleibtText="Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage."
+                              NeuGaben="@(() => new Dictionary<string, object>())"
+                              SummePtherm="@(() => _summe ?? "240")"
+                              Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "bhkw":
+            <BhkwDialog Zeilen="@ErzeugerZeilen("Modul")"
+                        Katalogprofil="@BhkwProfil"
+                        Katalogzeilen="@(() => BhkwZeilen)"
+                        Filterstandvorgabe="@_filterstand"
+                        KatalogDetail="@(n => Detail(n))"
+                        ProjektDetail="@(n => Detail(n))"
+                        Varianten="@(_ => new[] { (5, "Erdgas E Variante") })"
+                        Kostensumme="@(_ => (95000.0, 6200.0))"
+                        Vorbereiten="@Vorbereitung"
+                        TraegerGaben="@(_ => new Dictionary<string, object> { ["Energietraeger"] = new[] { (3, "Erdgas E") } })"
+                        Aufnehmen="@(_aufnahme ? (id, t) => Aufnahme("Modul", id) : null)"
+                        SummePtherm="@(() => _summe ?? "80")"
+                        KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                        EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
+                        Katalogfelder="@(_ => Felder())"
+                        ProjektsatzWege="@SatzWege"
+                        Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "waermepumpen":
+            <WaermepumpenDialog Zeilen="@WpZeilen"
+                                Katalog="@(() => WpKatalog)"
+                                Katalogprofil="@WpProfil"
+                                AnlageGaben="@WpAnlageGaben"
+                                ProjektSatz="@(d => new WaermepumpeStammDaten { Id = 1, Name = d.Bezeichner, Firma = d.Firma, Nennleistung = d.Nennleistung, Heizstab = 6 })"
+                                ProjektsatzWege="@SatzWege"
+                                KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                Kostensumme="@(_ => (18000.0, 300.0))"
+                                Anlegen="@(n => WpZeile(n))"
+                                Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "gebaeude":
+            <GebaeudeDialog Zeilen="@GebaeudeProjektzeilen"
+                            Katalogzeilen="@(() => GebaeudeZeilen)"
+                            Katalogprofil="@GebaeudeProfil"
+                            Filterstandvorgabe="@_filterstand"
+                            StammDetail="@GebaeudeStammdetail"
+                            StammSatz="@GebaeudeStammsatz"
+                            BedarfGaben="@GebaeudeBedarfGaben"
+                            InDbUebernehmen="@(_meldung ? (_, _) => null! : null)"
+                            Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "dubletten":
+            <KatalogDublettenDialog Kataloge="@(new List<(string, string)> { ("WP", "Wärmepumpen"), ("PV", "Photovoltaik") })"
+                                    Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "katalog":
+            <BedarfAdminDialog Art="BedarfsArt.Stromverbraucher"
+                               Katalogzeilen="@(() => BedarfZeilen)"
+                               Katalogprofil="@BedarfProfil"
+                               Filterstandvorgabe="@_filterstand"
+                               Kopf="@(n => n.Length > 0 ? ("Beschreibung " + n, "Typ " + n) : ((string, string)?)null)"
+                               Jahressumme="@(n => n.Length > 0 ? "123,45" : "")"
+                               Loeschen="@(_ => BedarfLoeschAusgang.Geloescht)"
+                               Exists="@(_ => false)"
+                               Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        default:
+            <p>unbekannter Fall: @_fall</p>
+            break;
+    }
+    @if (_marke)
+    {
+        <Fenstermarke />
+    }
+</div>
+<p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
+
+@code {
+    private string _fall = "heizkessel";
+    private bool _marke = true;
+    private bool _meldung;
+    private bool _verwendet;
+    private string? _summe;
+    private int _anzahl = 40;
+    private string _ausgang = "";
+    private readonly Katalogfilterstand _filterstand = new();
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
+        if (abfrage.TryGetValue("marke", out var m)) _marke = m.ToString() != "0";
+        if (abfrage.TryGetValue("meldung", out var g)) _meldung = g.ToString() == "1";
+        if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
+        if (abfrage.TryGetValue("verwendet", out var v)) _verwendet = v.ToString() == "1";
+        if (abfrage.TryGetValue("summe", out var s)) _summe = s.ToString();
+        if (abfrage.TryGetValue("aufnahme", out var u)) _aufnahme = u.ToString() == "1";
+    }
+
+    /// <summary>Mit ?aufnahme=1 nimmt „In das Projekt übernehmen" eine Zeile auf (Katalogprobe DZ1‑N2).</summary>
+    private bool _aufnahme;
+    private int _naechsteZeile = 900;
+
+    /// <summary>Die neue Projektzeile einer Übernahme - der Dialog fügt sie selbst an und wählt sie.</summary>
+    private AufnahmeErgebnis Aufnahme(string praefix, int stammId)
+    {
+        int n = ++_naechsteZeile;
+        return new AufnahmeErgebnis(new ErzeugerZeile { Schluessel = n, Bezeichner = praefix + " neu " + n, GeraetId = n,
+                                                        CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 });
+    }
+
+    /// <summary>Die Traegerwahl der Erzeugerdialoge; mit ?meldung=1 schlaegt sie fehl.</summary>
+    private TraegerVorbereitung Vorbereitung(int _) => _meldung
+        ? new TraegerVorbereitung(Array.Empty<(int, string)>(), null, "Bannerprobe: Der Energieträger des Katalogsatzes wurde in den Stammdaten nicht gefunden.")
+        : new TraegerVorbereitung(new[] { (3, "Erdgas E") }, 3);
+
+    private void Beendet(bool ok) => _ausgang = ok ? "ok" : "abbrechen";
+
+    /// <summary>Die Beschriftungen aus der Ressource - sonst stuenden die Schluessel im Kopf.</summary>
+    private static string Uebersetzt(string schluessel)
+        => Resource.ResourceManager.GetString(schluessel) ?? schluessel;
+
+    // ------------------------------------------------ Heizkessel: Bearbeiten je Bereich (Katalogauswahl Stufe 2)
+    private Satzbearbeitungswege? _satzWege;
+    private Satzbearbeitungswege SatzWege => _satzWege ??= new Satzbearbeitungswege
+    {
+        Lesen = _ => Felder(),
+        Speichern = _ => new KatalogSpeicherErgebnis(true, "", "")
+    };
+
+    // ------------------------------------------------ Heizkessel: Rueckweg „In die Datenbank übernehmen…" (Stufe 2b)
+    // Drei Zeilen mit allen Lagen der Rueckfrage: ueberschreibbar, gesperrt, Ursprung nicht bekannt.
+    private Rueckwegwege? _rueckWege;
+    private Rueckwegwege RueckWege => _rueckWege ??= new Rueckwegwege
+    {
+        Vorschau = _ => new[]
+        {
+            new Rueckwegvorschlag(1, "Kessel 1", "Kessel 1", Rueckwegsperre.Keine, "Kessel 1 (Projekt)"),
+            new Rueckwegvorschlag(2, "Kessel 2", "Kessel 2", Rueckwegsperre.Gesperrt, "Kessel 2 (Projekt)"),
+            new Rueckwegvorschlag(3, "Kessel 3 mit einem langen Namen fuer die Breite", "", Rueckwegsperre.UrsprungUnbekannt,
+                                  "Kessel 3 mit einem langen Namen fuer die Breite"),
+        },
+        NameBelegt = n => n == "Kessel A",
+        Uebernehmen = _ => new KatalogSpeicherErgebnis(true, "3 Sätze in die Datenbank übernommen.", "")
+    };
+
+    // ------------------------------------------------ Heizkessel und BHKW
+    private Katalogfilterprofil? _heizkesselProfil, _bhkwProfil;
+    private Katalogfilterprofil HeizkesselProfil
+        => _heizkesselProfil ??= Katalogfilterprofil.MitVerwendung(Anlagenart.Heizkessel, Uebersetzt);
+    private Katalogfilterprofil BhkwProfil
+        => _bhkwProfil ??= Katalogfilterprofil.MitVerwendung(Anlagenart.Bhkw, Uebersetzt);
+
+    private IReadOnlyList<Katalogfilterzeile>? _heizkesselZeilen, _bhkwZeilen;
+    private IReadOnlyList<Katalogfilterzeile> HeizkesselZeilen
+        => _heizkesselZeilen ??= Zeilenbau.Voll(HeizkesselProfil, _anzahl);
+    private IReadOnlyList<Katalogfilterzeile> BhkwZeilen
+        => _bhkwZeilen ??= Zeilenbau.Voll(BhkwProfil, _anzahl);
+
+    private List<ErzeugerZeile>? _erzeugerZeilen;
+
+    /// <summary>Mit ?verwendet=1 heisst die erste Projektzeile wie die zweite Katalogzeile (4.10).</summary>
+    private string Erstname(string praefix) => !_verwendet
+        ? praefix + " 1"
+        : (praefix == "Kessel" ? HeizkesselZeilen : BhkwZeilen)[1].Bezeichner;
+
+    /// <summary>Zwei Projektzeilen - eine Liste mit Inhalt, die erste ist gewaehlt.</summary>
+    private List<ErzeugerZeile> ErzeugerZeilen(string praefix) => _erzeugerZeilen ??= new List<ErzeugerZeile>
+    {
+        new() { Schluessel = 1, Bezeichner = Erstname(praefix), GeraetId = 100, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 },
+        new() { Schluessel = 2, Bezeichner = praefix + " 2", GeraetId = 101, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 },
+    };
+
+    private static ErzeugerDetail Detail(string name) => new(
+        name, "Beschreibung des Satzes " + name,
+        new[] { ("Brennstoff Typ:", "Erdgas E"), ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") },
+        ("Brennwertkessel", true),
+        new ErzeugerKennwerte { PthermKw = 120, PelKw = 60 });   // UeS2b: die Zahlwerte der Zusammenfassung
+
+    /// <summary>Die Felder des Aufklappers "Alle Daten anzeigen" - ein Text, eine Zahl, ein Schalter.</summary>
+    private static List<BrowserFeldwert> Felder() => new()
+    {
+        new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldFirma, Bezeichnung = "Hersteller:",
+                              Art = BrowserFeldArt.Text, Editierbar = true, Wert = "Musterwerk" },
+        new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldInvestitionskosten, Bezeichnung = "Investitionskosten:",
+                              Einheit = "€", Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "12000" },
+    };
+
+    // ------------------------------------------------------- Waermepumpen
+    private List<WaermepumpeAnlageDaten>? _wpZeilen;
+    private List<WaermepumpeAnlageDaten> WpZeilen => _wpZeilen ??= new List<WaermepumpeAnlageDaten>
+    {
+        WpZeile("WP 1"), WpZeile("WP 2")
+    };
+
+    private static WaermepumpeAnlageDaten WpZeile(string name, int nennleistung = 12) => new()
+    {
+        Bezeichner = name,
+        Firma = "Musterwerk",
+        IdWp = 1,
+        Vorlauf = 35,
+        Ruecklauf = 28,
+        Nennleistung = nennleistung,
+        Betriebsart = DbWerte.WP_BETRIEBSART_PARALLEL,
+        Typ = "Sole-Wasser",   // UeS2b: die Quelle der Zusammenfassung
+        SperrzeitVon = 0,
+        SperrzeitBis = 0,
+        HeizstabLeistung = 6
+    };
+
+    private Katalogfilterprofil? _wpProfil;
+    private Katalogfilterprofil WpProfil
+        => _wpProfil ??= Katalogfilterprofil.MitVerwendung(Anlagenart.Waermepumpe, Uebersetzt);
+
+    private IReadOnlyList<Katalogfilterzeile>? _wpKatalog;
+    private IReadOnlyList<Katalogfilterzeile> WpKatalog => _wpKatalog ??= Zeilenbau.Voll(WpProfil, _anzahl);
+
+    /// <summary>
+    /// Der Parametersatz der eingebetteten Detailansicht. Die Temperaturpruefung schlaegt an -
+    /// ein OK-Versuch setzt das Warnband in den Fussblock der Detailansicht (W7-B-2).
+    /// </summary>
+    private IReadOnlyDictionary<string, object> WpAnlageGaben(WaermepumpeAnlageDaten daten)
+        => new Dictionary<string, object>
+        {
+            ["Daten"] = daten,
+            ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(
+                () => new[] { new WaermepumpeStammZeile(1, daten.Bezeichner, false),
+                              new WaermepumpeStammZeile(2, "WP Neu", false) }),
+            ["TemperaturenPruefen"] = new Func<int?, int?, string?>(
+                (_, _) => "Die Vorlauftemperatur liegt über der Grenze der Wärmepumpe (Probe).")
+        };
+
+    // ----------------------------------------------------------- Gebaeude
+    private IReadOnlyList<Katalogfilterzeile>? _gebaeudeZeilen;
+    private IReadOnlyList<Katalogfilterzeile> GebaeudeZeilen
+        => _gebaeudeZeilen ??= Zeilenbau.Voll(GebaeudeProfil, _anzahl);
+
+    private Katalogfilterprofil? _gebaeudeProfil;
+    private Katalogfilterprofil GebaeudeProfil => _gebaeudeProfil ??= Katalogfilterprofil.FuerGebaeude(Uebersetzt);
+
+    private List<GebaeudeProjektZeile>? _gebaeudeProjektzeilen;
+    private int _naechsteIdZ = 100000;
+
+    private List<GebaeudeProjektZeile> GebaeudeProjektzeilen => _gebaeudeProjektzeilen ??=
+        GebaeudeZeilen.Take(2).Select((z, i) => Projektzeile(z, i + 1)).ToList();
+
+    private static GebaeudeProjektZeile Projektzeile(Katalogfilterzeile z, int idZ) => new()
+    {
+        IdZ = idZ,
+        IdGebaeude = z.Id,
+        IdKatalog = z.Id,
+        Name = z.Bezeichner,
+        Art = z.Text(Katalogfilterprofil.SpGebaeudeart),
+        Beschreibung = "Beschreibung des Gebaeudes " + z.Bezeichner,
+        Wohnflaeche = z.Zahl(Katalogfilterprofil.SpFlaecheM2) ?? 0,
+        Einheit = "Wohnfläche [m²]",
+        Jahresnutzungsgrad = 1,
+        Rechenweg = "VDI 6007",
+        HgesWK = 512.3
+    };
+
+    private GebaeudeStammDetail? GebaeudeStammdetail(string name)
+    {
+        Katalogfilterzeile? z = GebaeudeZeilen.FirstOrDefault(x => x.Bezeichner == name);
+        return z is null ? null : new GebaeudeStammDetail(z.Bezeichner, z.Text(Katalogfilterprofil.SpGebaeudeart),
+            "Beschreibung des Gebaeudes " + z.Bezeichner, z.Text(Katalogfilterprofil.SpFlaecheM2), "VDI 6007", 512.3);
+    }
+
+    private GebaeudeProjektZeile? GebaeudeStammsatz(string name)
+    {
+        Katalogfilterzeile? z = GebaeudeZeilen.FirstOrDefault(x => x.Bezeichner == name);
+        return z is null ? null : Projektzeile(z, _naechsteIdZ++);
+    }
+
+    // Die zwei Bilder der Waermebedarfsansicht - je EINE Instanz (DiagrammSvg vergleicht die Referenz).
+    private static readonly Zeichenmodell GANG = Ganglinie(false);
+    private static readonly Zeichenmodell DAUER = Ganglinie(true);
+    private static readonly Zeichenmodell RAUM = Ganglinie(false, "Raumtemperatur", "°C");
+
+    private static Zeichenmodell Ganglinie(bool sortiert, string reihe = "Wärmebedarf", string einheit = "kW")
+    {
+        var werte = new double[8760];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 20.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0) + 5.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        if (sortiert) Array.Sort(werte, (a, b) => b.CompareTo(a));
+        return ChartRenderer.GanglinieNormiertModell(reihe + " Jahresganglinie",
+            new[] { new ChartRenderer.Reihe(reihe, werte, ChartRenderer.C_BEDARF) },
+            einheit, ChartRenderer.Achse.Jahresstunden, sortiert);
+    }
+
+    /// <summary>"Simulation..." - der Waermebedarf des gewaehlten Gebaeudes als Ueberlagerung.</summary>
+    private IReadOnlyDictionary<string, object>? GebaeudeBedarfGaben(GebaeudeProjektZeile zeile)
+    {
+        var monate = new double[12];
+        for (int m = 0; m < 12; m++) monate[m] = 52.84 / 12.0;
+        return new Dictionary<string, object>
+        {
+            ["Daten"] = new GebaeudeBedarfDaten
+            {
+                Name = zeile.Name,
+                HeizwaermeMwh = 52.84,
+                MaxLastKw = 31.5,
+                VollbenutzungsstundenH = 1677.0,
+                MonatswerteMwh = monate
+            },
+            ["Bildauftrag"] = new Func<bool, Zeichenmodell?>(s => s ? DAUER : GANG),
+            ["BildauftragRaumtemperatur"] = new Func<Zeichenmodell?>(() => RAUM)
+        };
+    }
+
+    // ------------------------------------------------------ Katalogdialog
+    private Katalogfilterprofil? _bedarfProfil;
+    private Katalogfilterprofil BedarfProfil
+        => _bedarfProfil ??= Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, Uebersetzt);
+
+    private IReadOnlyList<Katalogfilterzeile>? _bedarfZeilen;
+    private IReadOnlyList<Katalogfilterzeile> BedarfZeilen => _bedarfZeilen ??= Zeilenbau.Voll(BedarfProfil, _anzahl);
+}

@@ -47,6 +47,7 @@ namespace WindowsFormsApplication1
             (KennzahlenKatalog.GR_ENERGIE, "energiebilanz"),
             (KennzahlenKatalog.GR_EFFIZIENZ, "effizienz"),
             (KennzahlenKatalog.GR_KAELTE, "kaelte"),
+            (KennzahlenKatalog.GR_GEBAEUDE, "gebaeude"),
             (KennzahlenKatalog.GR_EMISSION, "emissionen"),
             (KennzahlenKatalog.GR_KOSTEN, "kosten"),
         };
@@ -242,7 +243,10 @@ namespace WindowsFormsApplication1
             VariantenDaten stamm = daten?.Varianten?.FirstOrDefault(v => v.IstStamm);
             if (stamm == null) return Leer(nameof(R.BV_GRUND_KEIN_STAMM), kultur);
             string tabelle = ProjektDetails.GewerkTabellen.FirstOrDefault(g => g.Key == gewerk).Value;
-            bool vorhanden = daten.Varianten.Any(v => v.Details != null && v.Details.HatGewerk(gewerk));
+            // PVG: rechnet ein Stand seine Photovoltaik ueber eine PV-Ganglinie, steht vorn die Quelle, und die
+            // Merkmale des Modulmodells stehen bei ihm als „entfaellt (Ganglinie)".
+            bool ganglinie = gewerk == "Photovoltaik" && daten.Varianten.Any(v => v.Details?.PvGanglinie != null);
+            bool vorhanden = ganglinie || daten.Varianten.Any(v => v.Details != null && v.Details.HatGewerk(gewerk));
             var merkmale = tabelle == null ? new List<AbweichungsErmittler.Merkmal>()
                                            : AbweichungsErmittler.Felder.Where(f => f.Tabelle == tabelle).ToList();
             if (!vorhanden || merkmale.Count == 0) return Leer(nameof(R.BV_GRUND_NICHT_VERFUEGBAR), kultur);
@@ -253,12 +257,31 @@ namespace WindowsFormsApplication1
             t.MitKopf(new[] { Zellen.Kopf(BerichtTexte.T("Merkmal", englisch), Tabellenausrichtung.Links) }
                 .Concat(spalten.Select(v => Zellen.Kopf(Standkopf(v, englisch)))));
 
+            if (ganglinie)
+            {
+                var quelle = new List<Tabellenzelle> { Zellen.Text(Grund("PVG_AUSWEIS_MERKMAL_QUELLE", kultur)) };
+                foreach (VariantenDaten v in spalten)
+                {
+                    PvGanglinieAusweis a = v.Details?.PvGanglinie;
+                    string wert = a != null ? a.Text(kultur) : Grund("PVG_AUSWEIS_MODULMODELL", kultur);
+                    quelle.Add(Zellen.Text(wert, Tabellenausrichtung.Links,
+                                           Zellen.RolleWenn(v.IstStamm), h: Zellen.StammWenn(v.IstStamm)));
+                }
+                t.Zeile(quelle);
+            }
+
             foreach (AbweichungsErmittler.Merkmal f in merkmale)
             {
                 var zellen = new List<Tabellenzelle> { Zellen.Text(f.Label) };
                 foreach (VariantenDaten v in spalten)
                 {
                     ProjektDetails d = v.Details;
+                    if (ganglinie && d?.PvGanglinie != null)
+                    {
+                        zellen.Add(Zellen.Text(PvGanglinieAusweis.Entfaellt(kultur), Tabellenausrichtung.Mitte,
+                                               Zellen.RolleWenn(v.IstStamm), h: Zellen.StammWenn(v.IstStamm)));
+                        continue;
+                    }
                     DataRow zeile = (d != null && d.Komponenten.ContainsKey(gewerk)) ? d.Komponenten[gewerk] : null;
                     string wert = zeile == null ? Tabellenzelle.STRICH : AbweichungsErmittler.Formatiere(zeile, f);
                     zellen.Add(Zellen.Text(wert, wert == Tabellenzelle.STRICH ? Tabellenausrichtung.Mitte : Tabellenausrichtung.Rechts,
@@ -290,7 +313,7 @@ namespace WindowsFormsApplication1
             foreach (Abweichung a in v.Abweichungen)
                 t.Zeile(new[]
                 {
-                    Zellen.Text(a.Gewerk),
+                    Zellen.Text(AbweichungsErmittler.Gewerkname(a.Gewerk)),
                     Zellen.Text(a.Merkmal),
                     Zellen.Text(a.WertStamm, Tabellenausrichtung.Mitte, Tabellenrolle.Stamm, h: Tabellenhinterlegung.Stamm),
                     Zellen.Text(a.WertVariante, Tabellenausrichtung.Mitte),
@@ -393,10 +416,19 @@ namespace WindowsFormsApplication1
             t.MitKopf(kopf);
 
             int breite = kopf.Count;
+            // Anwenderentscheid 29.09.2026: Die Zellen tragen die EINZELZAHL je Stand — wie
+            // Kostenseite und Übersicht der App. Wo die Gruppenregel „Strombedarf ohne Verwendung"
+            // gewirkt hat, nennt eine Fußzeile unter der Tafel daneben die Zahl mit bepreistem
+            // Netzbezug und die Menge: unter der Kostentafel die Energiekosten, unter der
+            // Emissionstafel das CO₂. Sie werden hier gesammelt und unten angehängt, damit eine
+            // Tafel über mehrere Gruppen (Vergleichsgesamt) beide Sätze in ihrer Folge trägt.
+            var fussnoten = new List<string>();
             foreach (string gruppe in gruppen)
             {
                 List<Kennzahl> zeilen = Gruppenzeilen(daten, gruppe);
                 if (zeilen.Count == 0) continue;
+                foreach (string fussnote in daten.StromGruppenregelFussnoten(kultur, gruppe))
+                    if (!fussnoten.Contains(fussnote)) fussnoten.Add(fussnote);
                 if (mitGruppenzeilen)
                 {
                     var gz = new List<Tabellenzelle>
@@ -426,6 +458,7 @@ namespace WindowsFormsApplication1
                     t.Zeile(zellen);
                 }
             }
+            foreach (string fussnote in fussnoten) t.Hinweis(fussnote);
             if (t.IstLeer) t.Leergrund = Grund(nameof(R.BV_GRUND_NICHT_VERFUEGBAR), kultur);
             return t;
         }
@@ -538,6 +571,176 @@ namespace WindowsFormsApplication1
                     zeile("Photovoltaik", strich, z(m.Photovoltaik.Stromproduktion), Tabellenzelle.STRICH, strich);
             }
             if (t.IstLeer) t.Leergrund = Grund(nameof(R.BV_GRUND_NICHT_VERFUEGBAR), kultur);
+            return t;
+        }
+
+        /// <summary>
+        /// <b><c>stand.tabelle.heizkessel</c></b> (Katalog v11, Konzept Kesselkennlinie 5) — der Betrieb je Heizkessel eines
+        /// Stands: Jahresnutzungsgrad η_eff, Anteil des Brennwertbetriebs nach Stunden und nach Wärme, Starts im Jahr.
+        /// </summary>
+        /// <remarks>
+        /// Gelesen werden die Werte des Laufs im Zeitreihensatz (<see cref="ZeitreihenSatz.Kessel"/>) — Brennwertstunden,
+        /// Brennwertwärme und Starts stehen nicht im gespeicherten Ergebnis. Ein Kessel ohne Brennwertkennlinie hat keinen
+        /// Brennwertbetrieb: Strich statt 0, wie im Kessel-Reiter. Ohne Zeitreihensatz bleibt die Tabelle mit Grund leer,
+        /// ohne Kessel ebenso.
+        /// </remarks>
+        public static Berichtstabelle Heizkessel(VariantenDaten v, bool englisch, CultureInfo kultur)
+        {
+            if (v == null) return Leer(nameof(R.BV_GRUND_KEIN_STAND), kultur);
+            if (v.Zeitreihen == null) return Leer(nameof(R.BV_GRUND_KEINE_ZEITREIHEN), kultur);
+            List<Kesselbetrieb> kessel = v.Zeitreihen.Kessel ?? new List<Kesselbetrieb>();
+            if (kessel.Count == 0) return Leer(nameof(R.BV_GRUND_KEIN_HEIZKESSEL), kultur);
+
+            var t = new Berichtstabelle().Feste(2755, 1700, 1700, 1700, 1500);
+            t.MitKopf(new[]
+            {
+                Zellen.Kopf(BerichtTexte.T("Heizkessel", englisch), Tabellenausrichtung.Links),
+                Zellen.Kopf(BerichtTexte.T("Jahresnutzungsgrad [%]", englisch)),
+                Zellen.Kopf(BerichtTexte.T("Brennwertbetrieb Stunden [%]", englisch)),
+                Zellen.Kopf(BerichtTexte.T("Brennwertbetrieb Wärme [%]", englisch)),
+                Zellen.Kopf(BerichtTexte.T("Starts [1/a]", englisch)),
+            });
+            Tabellenzelle strich = Zellen.Zahl(Tabellenzelle.STRICH, null, null);
+            foreach (Kesselbetrieb k in kessel.Where(k => k != null))
+                t.Zeile(new[]
+                {
+                    Zellen.Text(string.IsNullOrWhiteSpace(k.Name) ? Tabellenzelle.STRICH : k.Name),
+                    Zellen.Zahl(Tabellenformat.F(k.JahresnutzungsgradProzent, 1, kultur), k.JahresnutzungsgradProzent, "N1", einheit: "%"),
+                    k.MitBrennwertkennlinie
+                        ? Zellen.Zahl(Tabellenformat.F(k.BrennwertStundenProzent, 0, kultur), k.BrennwertStundenProzent, "N0", einheit: "%")
+                        : strich,
+                    k.MitBrennwertkennlinie
+                        ? Zellen.Zahl(Tabellenformat.F(k.BrennwertWaermeProzent, 0, kultur), k.BrennwertWaermeProzent, "N0", einheit: "%")
+                        : strich,
+                    Zellen.Zahl(Tabellenformat.F(k.Starts, 0, kultur), k.Starts, "N0"),
+                });
+            return t;
+        }
+
+        /// <summary>
+        /// <b><c>stand.tabelle.bivalenz</c></b> (Katalog v17, UB‑E4, Fachkonzept Übergabegrenze 7.3) — die Tafel „Bivalenz
+        /// und Übergabe“: Höchstvorlauf; Übergabegrenze in kW, als Anteil der Heizlast und ihr Rücklauf; Bivalenzpunkte
+        /// berechnet, eingegeben und maßgebend; Stunden und Wärme je Betriebsbereich; Anteil nach § 43 GModG. Darunter
+        /// die Hinweiszeilen ohne Feld: Stundenmodell, und nur wenn sie zutreffen die Prüfhinweise Anfahrgrenze und
+        /// Mindestrücklauf (UB‑Q10).
+        /// </summary>
+        /// <remarks>
+        /// Die Herleitung (Höchstvorlauf, Übergabe, maßgebender und eingegebener Punkt, Hybrid-Anteil) kommt aus den
+        /// Projektdaten (<see cref="VariantenDaten.Bivalenz"/>), die berechneten Bivalenzpunkte und die Bereiche aus dem
+        /// gespeicherten Lauf. Ohne beides bleibt die Tafel mit Grund leer.
+        /// </remarks>
+        public static Berichtstabelle Bivalenz(VariantenDaten v, CultureInfo kultur)
+        {
+            if (v == null) return Leer(nameof(R.BV_GRUND_KEIN_STAND), kultur);
+            BivalenzBerichtswerte b = v.Bivalenz;
+            ErgebnisWaermepumpeModel wp = v.Ergebnis?.Waermepumpe;
+            Bereichskennzahlen bereiche = wp?.Bereiche;
+            Bereichskennzahlen modul = wp?.Module?.Select(m => m?.Bereiche).FirstOrDefault(x => x != null &&
+                (x.Bivalenzpunkt_1.HasValue || x.Bivalenzpunkt_2.HasValue || x.Uebergabe_Max_kW.HasValue));
+            if (b == null && bereiche == null) return Leer(nameof(R.BV_GRUND_KEINE_BIVALENZ), kultur);
+
+            var t = new Berichtstabelle().Feste(6655, 2700);
+            t.MitKopf(new[]
+            {
+                Zellen.Kopf(Grund(nameof(R.BER_BIV_GROESSE), kultur), Tabellenausrichtung.Links),
+                Zellen.Kopf(Grund(nameof(R.BER_BIV_WERT), kultur)),
+            });
+            void Zeile(string text, double? wert, int stellen)
+            {
+                bool da = wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value);
+                string format = "N" + stellen;
+                t.Zeile(new[]
+                {
+                    Zellen.Text(text),
+                    da ? Zellen.Zahl(Tabellenformat.F(wert.Value, stellen, kultur), wert.Value, format)
+                       : Zellen.Zahl(Tabellenzelle.STRICH, null, null),
+                });
+            }
+            Zeile(Grund(nameof(R.BER_BIV_HOECHSTVORLAUF), kultur), b?.HoechstvorlaufC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_UEBERGABE_KW), kultur), b != null && b.MitUebergabe ? b.UebergabeKw : modul?.Uebergabe_Max_kW, 1);
+            Zeile(Grund(nameof(R.BER_BIV_UEBERGABE_ANTEIL), kultur), b?.UebergabeAnteilProzent, 0);
+            Zeile(Grund(nameof(R.BER_BIV_UEBERGABE_RUECKLAUF), kultur), b?.RuecklaufC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_PUNKT1), kultur), modul?.Bivalenzpunkt_1 ?? b?.ErsterC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_PUNKT2), kultur), modul?.Bivalenzpunkt_2 ?? b?.ZweiterC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_PUNKT_EINGEGEBEN), kultur), b?.EingegebenC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_PUNKT_MASSGEBEND), kultur), b?.MassgebendC, 1);
+            string[] namen =
+            {
+                nameof(R.SIM_BEREICH_WP_ALLEIN), nameof(R.SIM_BEREICH_PARALLEL),
+                nameof(R.SIM_BEREICH_VORWAERMUNG), nameof(R.SIM_BEREICH_NUR_KESSEL),
+            };
+            for (int i = 0; i < namen.Length; i++)
+            {
+                string bereich = Grund(namen[i], kultur);
+                Zeile(string.Format(kultur, Grund(nameof(R.BER_BIV_STUNDEN), kultur), bereich),
+                      bereiche?.Stunden[i] is int h ? h : (double?)null, 0);
+                Zeile(string.Format(kultur, Grund(nameof(R.BER_BIV_WAERME), kultur), bereich), bereiche?.Mwh[i], 2);
+            }
+            Zeile(Grund(nameof(R.BER_BIV_HYBRID), kultur), b?.HybridAnteilProzent, 0);
+            Zeile(Grund(nameof(R.BER_BIV_HYBRID_MINDEST), kultur), b?.HybridMindestanteilProzent, 0);
+
+            // FK 7.3: die Hinweiszeilen ohne Feld.
+            t.Hinweis(Grund(nameof(R.BER_HINWEIS_STUNDENMODELL), kultur));
+            if (b != null && b.HinweisAnfahrgrenze) t.Hinweis(Grund(nameof(R.BER_HINWEIS_ANFAHRGRENZE), kultur));
+            if (b != null && b.HinweisMindestruecklauf) t.Hinweis(Grund(nameof(R.BER_HINWEIS_MINDESTRUECKLAUF), kultur));
+            return t;
+        }
+
+        /// <summary>
+        /// <b><c>stand.tabelle.km_teillast</c></b> (Katalog v18, KM3‑E3‑b, Fachkonzept Teillast und Takten 5.4) — die Tafel
+        /// „Teillast und Takten der Kältemaschinen“: je Maschine mit Teillastweg eine Spalte mit Weg und Herkunft,
+        /// Verdichterregelung, C_d, Taktstunden, Starts, Taktstrom, Teillaststunden, Teillastanteil, mittlerem Lastgrad,
+        /// extrapolierten Stunden und Jahres-EER ohne Hilfsstrom; darunter der Hinweis zum Stundenmodell.
+        /// </summary>
+        /// <remarks>
+        /// Die Zahlen kommen aus dem gespeicherten Lauf (<c>Tab_ErgebnisKaeltemaschine</c>), die Lesewerte aus den
+        /// Projektkopien (<see cref="VariantenDaten.KaeltemaschineTeillast"/>), die Verdichterstunden des Teillastanteils aus
+        /// dem Zeitreihensatz. Ohne Maschine mit Weg bleibt die Tafel mit Grund leer.
+        /// </remarks>
+        public static Berichtstabelle KaeltemaschineTeillast(VariantenDaten v, CultureInfo kultur)
+        {
+            if (v == null) return Leer(nameof(R.BV_GRUND_KEIN_STAND), kultur);
+            List<ErgebnisKaeltemaschineModel> alle = v.Ergebnis?.Kaeltemaschinen ?? new List<ErgebnisKaeltemaschineModel>();
+            var km = alle.Select((k, i) => (Platz: i, K: k)).Where(x => KaeltemaschineTeillastKennzahlen.MitWeg(x.K)).ToList();
+            if (km.Count == 0) return Leer(nameof(R.BV_GRUND_KEINE_KM_TEILLAST), kultur);
+
+            int breite = Math.Max(1200, 5155 / km.Count);
+            var t = new Berichtstabelle().Feste(new[] { 4200 }.Concat(Enumerable.Repeat(breite, km.Count)).ToArray());
+            t.MitKopf(new[] { Zellen.Kopf(Grund(nameof(R.BER_BIV_GROESSE), kultur), Tabellenausrichtung.Links) }
+                .Concat(km.Select(x => Zellen.Kopf(string.IsNullOrWhiteSpace(x.K.Bezeichner) ? "–" : x.K.Bezeichner))).ToArray());
+
+            KaeltemaschineTeillastLesewerte Lese(ErgebnisKaeltemaschineModel k)
+                => k.ID_Kaeltemaschine is int id && v.KaeltemaschineTeillast != null
+                   && v.KaeltemaschineTeillast.TryGetValue(id, out KaeltemaschineTeillastLesewerte w) ? w : null;
+            void Textzeile(string res, Func<KaeltemaschineTeillastLesewerte, string> text)
+                => t.Zeile(new[] { Zellen.Text(Grund(res, kultur)) }
+                    .Concat(km.Select(x => Lese(x.K) is { } w ? Zellen.Text(text(w), Tabellenausrichtung.Rechts)
+                                                              : Zellen.Zahl(Tabellenzelle.STRICH, null, null))).ToArray());
+            void Zeile(string res, Func<(int Platz, ErgebnisKaeltemaschineModel K), double?> wert, int stellen)
+                => t.Zeile(new[] { Zellen.Text(Grund(res, kultur)) }
+                    .Concat(km.Select(x =>
+                    {
+                        double? z = wert(x);
+                        return z is double d && !double.IsNaN(d) && !double.IsInfinity(d)
+                            ? Zellen.Zahl(Tabellenformat.F(d, stellen, kultur), d, "N" + stellen)
+                            : Zellen.Zahl(Tabellenzelle.STRICH, null, null);
+                    })).ToArray());
+
+            Dictionary<int, int> vs = v.Zeitreihen?.KaeltemaschineVerdichterstunden;
+            Textzeile(nameof(R.BER_KMT_WEG), w => w.WegText(kultur));
+            Textzeile(nameof(R.BER_KMT_REGELUNG), w => w.RegelungText(kultur));
+            Textzeile(nameof(R.BER_KMT_CD), w => w.CdText(kultur));
+            Zeile(nameof(R.BER_KMT_TAKTSTUNDEN), x => x.K.Taktstunden, 0);
+            Zeile(nameof(R.BER_KMT_STARTS), x => x.K.Starts, 0);
+            Zeile(nameof(R.BER_KMT_TAKTSTROM), x => x.K.Taktstrom_MWh * 1000.0, 2);
+            Zeile(nameof(R.BER_KMT_TEILLASTSTUNDEN), x => x.K.Teillaststunden, 0);
+            Zeile(nameof(R.BER_KMT_TEILLASTANTEIL), x => KaeltemaschineTeillastKennzahlen.TeillastanteilProzent(
+                x.K.Teillaststunden, vs != null && vs.TryGetValue(x.Platz, out int n) ? n : (int?)null), 1);
+            Zeile(nameof(R.BER_KMT_LASTGRAD), x => x.K.Lastgrad_Mittel, 2);
+            Zeile(nameof(R.BER_KMT_EXTRAPOLIERT), x => x.K.Stunden_Extrapoliert, 0);
+            Zeile(nameof(R.BER_KMT_JAZ), x => KaeltemaschineTeillastKennzahlen.JazVerdichter(x.K), 2);
+
+            t.Hinweis(Grund(nameof(R.BER_HINWEIS_STUNDENMODELL), kultur));
             return t;
         }
 

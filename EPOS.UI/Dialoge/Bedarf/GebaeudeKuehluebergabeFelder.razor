@@ -30,6 +30,12 @@
 {
     <div class="gebk-kuehluebergabe">
         <p class="epos-stammblattwerte-abschnitt">@K.Unterabschnitt</p>
+        @* Hilfe zur Kuehluebergabe: ihr Abschnitt der Seite zum Gebaeudemodell
+           (Konzept Technikdokumentation, Abschnitt 7). *@
+        <div class="epos-berechnungshilfe">
+            <InfoKnopf Schluessel="Form_Gebaeude_Kuehluebergabe.btn_Help"
+                       StandardKurztext="@Resource.HILFE_KUEHLUEBERGABE_KNOPF" MitAssistent="false" />
+        </div>
         <Formularraster>
             <KindInhalt>
                 <Schalter Bezeichnung="@K.LabelAktiv"
@@ -77,6 +83,36 @@
                                 Feldname="@Feld(K.LabelVorlaufgrenze)" FehlerZustand="FehlerMelden"
                                 Wert="@Arbeit.Stand.KuehlVorlaufgrenze"
                                 WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlVorlaufgrenze = w))" />
+                    @* Entwurf KK: die Kuehlkurve - beim Einschalten traegt der Haken den Vorgabewert des Raumeinflusses
+                       ein (E106, Q-KK-5 (b)); leere Felder heissen Vorgabe, der Haken aus heisst fester Vorlauf. *@
+                    <Schalter Bezeichnung="@K.LabelKuehlkurve"
+                              Wert="@(Arbeit.Stand.KuehlkurveAktiv == true)"
+                              WertChanged="@(w => Setze(() => Arbeit.KuehlkurveSetzen(w)))" />
+                    @if (Arbeit.KuehlkurveFelderSichtbar)
+                    {
+                        <Zahlenfeld Bezeichnung="@K.LabelKuehlkurveFusspunkt" Einheit="°C"
+                                    Min="@KuehlkurveSchema.FUSSPUNKT_MIN" Max="@KuehlkurveSchema.FUSSPUNKT_MAX"
+                                    Platzhalter="@GebaeudeArbeitsstand.UebergabeVorgabe(Arbeit.KuehlAuslegungRuecklaufWirksam, Texte)"
+                                    Feldname="@Feld(K.LabelKuehlkurveFusspunkt)" FehlerZustand="KurveFehlerMelden"
+                                    Wert="@Arbeit.Stand.KuehlkurveFusspunkt"
+                                    WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlkurveFusspunkt = w))" />
+                        <Zahlenfeld Bezeichnung="@K.LabelKuehlkurveRaumeinfluss" Einheit="K/K"
+                                    Min="0" Max="@KuehlkurveSchema.RAUMEINFLUSS_MAX"
+                                    Feldname="@Feld(K.LabelKuehlkurveRaumeinfluss)" FehlerZustand="KurveFehlerMelden"
+                                    Wert="@Arbeit.Stand.KuehlkurveRaumeinfluss"
+                                    WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlkurveRaumeinfluss = w))" />
+                        <Auswahlfeld Bezeichnung="@K.LabelKuehlkurveWeg" Eintraege="@Arbeit.KuehlkurveWegeintraege(Texte)"
+                                     Auswahl="@Arbeit.KuehlkurveWegIndex"
+                                     AuswahlChanged="@(i => Setze(() => Arbeit.KuehlkurveWegWaehlen(i)))" />
+                        @if (Arbeit.KuehlkurveAussenSichtbar)
+                        {
+                            <Zahlenfeld Bezeichnung="@K.LabelKuehlkurveAussen" Einheit="°C"
+                                        Min="@KuehlkurveSchema.AUSSEN_MIN" Max="@KuehlkurveSchema.AUSSEN_MAX"
+                                        Feldname="@Feld(K.LabelKuehlkurveAussen)" FehlerZustand="KurveFehlerMelden"
+                                        Wert="@Arbeit.Stand.KuehlkurveAuslegungAussen"
+                                        WertChanged="@(w => Setze(() => Arbeit.Stand.KuehlkurveAuslegungAussen = w))" />
+                        }
+                    }
                 }
             </KindInhalt>
         </Formularraster>
@@ -91,6 +127,10 @@
             @if (Arbeit.KuehlGrenzeHinweis(Texte) is { Length: > 0 } hinweis)
             {
                 <Herleitungszeile Text="@hinweis" />
+            }
+            @if (Arbeit.KuehlkurveFelderSichtbar)
+            {
+                <Herleitungszeile Text="@Arbeit.KuehlkurveZeile(Texte)" />
             }
             <Herleitungszeile Text="@K.ZeileGrenze" />
             <Herleitungszeile Text="@K.ZeileSensibel" />
@@ -143,6 +183,12 @@
     private Task FehlerMelden((string Feld, bool Fehlerhaft) e)
     {
         Arbeit.KuehlFehlerMelden(e);
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task KurveFehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        Arbeit.KuehlkurveFehlerMelden(e);
         return Geaendert.InvokeAsync();
     }
 

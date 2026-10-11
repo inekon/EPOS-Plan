@@ -109,7 +109,7 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.InfoBedienung"
                    Dialogname="@Texte.Titel" />
         <InfoKnopf Schluessel="@HilfeRechenweg" StandardKurztext="@Texte.InfoRechenweg"
-                   Dialogname="@Texte.Titel" />
+                   Dialogname="@Texte.Titel" MitAssistent="false" />
         @if (TitelAnzeigen)
         {
             <Schliesskreuz Geschlossen="Abbrechen" />
@@ -251,10 +251,6 @@
                                             Einheit="@(art?.Bezugsgroesse ?? "")" Wert="@zone.Bezugsmenge"
                                             WertChanged="BezugsmengeSetzen" />
                                 <Herleitungszeile Text="@Texte.HinweisBezugsmengeEinheit" />
-                                @if (!string.IsNullOrEmpty(art?.HinweisBezugsmenge))
-                                {
-                                    <Herleitungszeile Text="@art.HinweisBezugsmenge" />
-                                }
                                 @if (WirksameMenge(zone, art) is double wirksam)
                                 {
                                     <Herleitungszeile Text="@Format(Texte.HinweisBezugsmengeWohnungstabelle, Zahl(wirksam, "0.##"), art!.Bezugsgroesse)" />
@@ -340,7 +336,7 @@
                         <KindInhalt>
                             <div class="epos-zapfprofil-gruppenhilfe">
                                 <InfoKnopf Schluessel="@HILFE_BELEGUNG" StandardKurztext="@Texte.GruppeBelegung"
-                                           Dialogname="@Texte.Titel" />
+                                           Dialogname="@Texte.Titel" MitAssistent="false" />
                             </div>
                             @if (art?.Wohnen == true)
                             {
@@ -508,7 +504,7 @@
                         <KindInhalt>
                             <div class="epos-zapfprofil-gruppenhilfe">
                                 <InfoKnopf Schluessel="@HILFE_SCHAETZHILFEN" StandardKurztext="@Texte.GruppeSchaetzhilfen"
-                                           Dialogname="@Texte.Titel" />
+                                           Dialogname="@Texte.Titel" MitAssistent="false" />
                             </div>
                             <p class="epos-leisezeile">@Texte.HinweisSchaetzhilfen</p>
                             <Formularraster>
@@ -655,7 +651,7 @@
                         <KindInhalt>
                             <div class="epos-zapfprofil-gruppenhilfe">
                                 <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Format(Texte.GruppeFachwerte, zone.Name)"
-                                           Dialogname="@Texte.Titel" />
+                                           Dialogname="@Texte.Titel" MitAssistent="false" />
                             </div>
                             <Formularraster>
                                 <KindInhalt>
@@ -692,7 +688,7 @@
                                         <KindInhalt>
                                             <div class="epos-zapfprofil-gruppenhilfe">
                                                 <InfoKnopf Schluessel="@HILFE_TYPTAGE" StandardKurztext="@Texte.GruppeTyptage"
-                                                           Dialogname="@Texte.Titel" />
+                                                           Dialogname="@Texte.Titel" MitAssistent="false" />
                                             </div>
                                             <Schalter Bezeichnung="@Texte.LabelTyptageAktiv" Wert="@_eingabe.TyptageAktiv"
                                                       Aktiv="@TyptageDa" WertChanged="TyptageAktivSetzen" />
@@ -798,7 +794,7 @@
                     <KindInhalt>
                         <div class="epos-zapfprofil-gruppenhilfe">
                             <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Texte.GruppeFachwerteGebaeude"
-                                       Dialogname="@Texte.Titel" />
+                                       Dialogname="@Texte.Titel" MitAssistent="false" />
                         </div>
                         <Formularraster>
                             <KindInhalt>
@@ -919,7 +915,7 @@
                                             <div class="epos-zapfprofil-gruppenhilfe">
                                                 <h4>@Texte.GruppeVergleich</h4>
                                                 <InfoKnopf Schluessel="@HILFE_VERGLEICH" StandardKurztext="@Texte.GruppeVergleich"
-                                                           Dialogname="@Texte.Titel" />
+                                                           Dialogname="@Texte.Titel" MitAssistent="false" />
                                             </div>
                                             @if (Messvergleich is not null)
                                             {
@@ -1048,7 +1044,7 @@
                             <div class="epos-zapfprofil-gruppenhilfe">
                                 <h4>@Texte.GruppeWarnliste</h4>
                                 <InfoKnopf Schluessel="@HILFE_WARNLISTE" StandardKurztext="@Texte.GruppeWarnliste"
-                                           Dialogname="@Texte.Titel" />
+                                           Dialogname="@Texte.Titel" MitAssistent="false" />
                             </div>
                             <p class="epos-leisezeile">@Texte.WarnlisteUnter</p>
                             @if (Warnliste.Count == 0)
@@ -1630,7 +1626,7 @@
         StatusNachziehen();
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <inheritdoc/>

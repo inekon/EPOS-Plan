@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
     /// <c>Building/@id</c> (<see cref="Einzonenpaarungen"/>); die übrigen Zielarten trägt der Weg
     /// schon, befüllt werden sie mit G6c.</para>
     /// </summary>
-    public sealed class GebaeudeImportCtrl
+    public sealed partial class GebaeudeImportCtrl
     {
         /// <summary>Was ein Schreibversuch ergeben hat; bei Erfolg die Kennung der neuen Quelle.</summary>
         public sealed record Ergebnis(bool Ok, string Meldung, int IdImportquelle)
@@ -54,13 +54,39 @@ namespace WindowsFormsApplication1
         public List<ImportquelleModel> LesenQuellen(int idGebaeude)
         {
             DataTable t = DataRepository.GetDataTable(
-                "SELECT " + QUELLSPALTEN + " FROM \"" + ImportzuordnungSchema.TAB_QUELLE + "\" q " +
+                "SELECT " + QUELLSPALTEN + (RaumgrundrissSchema.NordwinkelVorhanden() ? ", q.\"" + RaumgrundrissSchema.SPALTE_NORDWINKEL + "\"" : "") +
+                (NordherkunftVorhanden() ? ", q.\"" + SPALTE_NORDWINKEL_HERKUNFT + "\"" : "") +
+                " FROM \"" + ImportzuordnungSchema.TAB_QUELLE + "\" q " +
                 "WHERE q.\"ID_Gebaeude\" = ? ORDER BY q.\"ID\" DESC",
                 new DbParam("@g", idGebaeude));
             var liste = new List<ImportquelleModel>();
             if (t == null) return liste;
             foreach (DataRow r in t.Rows) liste.Add(Quelle(r));
             return liste;
+        }
+
+        /// <summary>
+        /// <b>Die Quellen der Projektkopie einer Zuordnung</b> (HC-4, „Datei erneut lesen“): <c>Z_ProjektGebaeude.ID</c>
+        /// → <c>Tab_Gebaeude.ID</c> der Kopie → ihre Quellen, die jüngste zuerst. Leer, wenn die Zuordnung keine
+        /// Projektkopie hat oder das Gebäude nicht importiert ist; nie <c>null</c>. Liest nur.
+        /// </summary>
+        public List<ImportquelleModel> LesenQuellenDerZuordnung(int idZ)
+        {
+            if (idZ <= 0) return new List<ImportquelleModel>();
+            int idGebaeude = GebaeudeBedarfCtrl.TabGebaeudeId(idZ);
+            return idGebaeude <= 0 ? new List<ImportquelleModel>() : LesenQuellen(idGebaeude);
+        }
+
+        /// <summary>
+        /// Die Quellkennung des Gebäudes EINER Quelle — die Paarung mit Ziel Gebäude (gbXML <c>Building/@id</c>, IFC
+        /// <c>IfcBuilding.GlobalId</c>); <c>""</c> ohne. Damit findet das erneute Lesen das Gebäude in einer Datei mit
+        /// mehreren (<see cref="GebaeudeNeulesen.Gebaeudeindex"/>).
+        /// </summary>
+        public string Gebaeudekennung(ImportquelleModel quelle)
+        {
+            if (quelle == null || quelle.ID <= 0) return "";
+            return LesenZuordnungen(quelle.ID)
+                .FirstOrDefault(z => z.ID_Gebaeude.HasValue && z.ID_Gebaeude.Value == quelle.ID_Gebaeude)?.Quellkennung ?? "";
         }
 
         /// <summary>Die Paarungen EINER Quelle in Anlegereihenfolge; nie <c>null</c>.</summary>
@@ -207,13 +233,19 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Mit <paramref name="vorgang"/> läuft das Schreiben im Vorgang des Aufrufers (als
         /// Sicherungspunkt), sonst in einem eigenen. Eine Ablehnung schreibt nichts.</para>
+        ///
+        /// <para><b>HC-5:</b> Mit <paramref name="grundrisse"/> schreibt derselbe Vorgang je Raum eine Zeile in
+        /// <c>Tab_Raumgrundriss</c>; die Zone kommt aus der Paarung des Raums mit dem Ziel Zone (über die Kennung der
+        /// Datei, nicht über einen Namen), ohne Paarung bleibt sie NULL.</para>
         /// </summary>
         internal Ergebnis SchreibeHerkunft(int idGebaeude, GebaeudeQuelle quelle,
-                                           IReadOnlyList<GebaeudeQuellzuordnung> zuordnungen, DbVorgang vorgang = null)
+                                           IReadOnlyList<GebaeudeQuellzuordnung> zuordnungen, DbVorgang vorgang = null,
+                                           IReadOnlyList<Raumgrundriss> grundrisse = null)
         {
             List<GebaeudeQuellzuordnung> liste = (zuordnungen ?? Array.Empty<GebaeudeQuellzuordnung>()).ToList();
             string fehler = Pruefen(quelle, liste);
             if (fehler != null) return Ergebnis.Fehler(fehler);
+            bool mitNordwinkel = RaumgrundrissSchema.NordwinkelVorhanden();
 
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
             try
@@ -256,12 +288,24 @@ namespace WindowsFormsApplication1
                         string.Join(", ", ImportzuordnungSchema.Quellspalten.Select(s => "\"" + s + "\"")) + ") VALUES (" +
                         BaustoffCtrl.Fragezeichen(ImportzuordnungSchema.Quellspalten.Count) + ")",
                         Quellwerte(idGebaeude, quelle).ToArray());
+                    // HC-5c: der Nordwinkel der Datei an derselben Quelle (Schritt RaumgrundrissSchema.SCHRITT).
+                    if (mitNordwinkel) NordwinkelSchreiben(v, idQuelle, quelle.NordwinkelGrad, quelle.NordwinkelHerkunft);
 
                     string einfuegen = "INSERT INTO \"" + ImportzuordnungSchema.TAB_ZUORDNUNG + "\" (" +
                                        string.Join(", ", ImportzuordnungSchema.Zuordnungsspalten.Select(s => "\"" + s + "\"")) +
                                        ") VALUES (" + BaustoffCtrl.Fragezeichen(ImportzuordnungSchema.Zuordnungsspalten.Count) + ")";
                     foreach ((GebaeudeQuellzuordnung paarung, int ziel) in zeilen)
                         v.Ausfuehren(einfuegen, Zuordnungswerte(idQuelle, paarung, ziel).ToArray());
+
+                    // HC-5: die Grundrisse je Raum an dieselbe Quelle, die Zone aus der Paarung Raum -> Zone.
+                    if (grundrisse is { Count: > 0 })
+                    {
+                        var zoneJeKennung = new Dictionary<string, int>(StringComparer.Ordinal);
+                        foreach ((GebaeudeQuellzuordnung paarung, int ziel) in zeilen)
+                            if (paarung.Ziel == ImportZiel.Zone)
+                                zoneJeKennung.TryAdd(Quellkennung.Kuerzen(paarung.Quellkennung), ziel);
+                        GrundrisseEinfuegen(v, idQuelle, grundrisse, zoneJeKennung);
+                    }
 
                     v.Commit();
                     return Ergebnis.Gut(idQuelle);
@@ -349,7 +393,7 @@ namespace WindowsFormsApplication1
 
         private static ImportquelleModel Quelle(DataRow r)
         {
-            return new ImportquelleModel
+            var m = new ImportquelleModel
             {
                 ID = Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture),
                 ID_Gebaeude = Convert.ToInt32(r["ID_Gebaeude"], CultureInfo.InvariantCulture),
@@ -361,8 +405,13 @@ namespace WindowsFormsApplication1
                 Zeitpunkt = BaustoffCtrl.TextAus(r, "Zeitpunkt") ?? "",
                 Programmfassung = BaustoffCtrl.TextAus(r, "Programmfassung"),
                 Zonenregel = BaustoffCtrl.TextAus(r, "Zonenregel"),
-                FehlendeEntitaeten = BaustoffCtrl.GanzAus(r, "FehlendeEntitaeten") ?? 0
+                FehlendeEntitaeten = BaustoffCtrl.GanzAus(r, "FehlendeEntitaeten") ?? 0,
+                NordwinkelGrad = r.Table.Columns.Contains(RaumgrundrissSchema.SPALTE_NORDWINKEL)
+                    ? BaustoffCtrl.ZahlAus(r, RaumgrundrissSchema.SPALTE_NORDWINKEL) : null,
             };
+            m.NordwinkelHerkunft = Nordherkunft(m.NordwinkelGrad,
+                r.Table.Columns.Contains(SPALTE_NORDWINKEL_HERKUNFT) ? BaustoffCtrl.TextAus(r, SPALTE_NORDWINKEL_HERKUNFT) : null);
+            return m;
         }
 
         private static List<ImportzuordnungModel> Zuordnungen(DataTable t)
@@ -410,7 +459,13 @@ namespace WindowsFormsApplication1
     /// <param name="Vorschlag">Der Bauteilvorschlag, wenn das Gebäude als Zone mit Bauteilen kommt; <c>null</c> = nur die Summenfelder.</param>
     /// <param name="Baustoffzuordnungen">Die Zuordnungen des Dialogs, normalisierter Materialname → Katalogbaustoff
     /// (<c>Tab_Baustoff_STAMM.ID</c>), <c>null</c> als Wert = die gemerkte Zuordnung entfernen; <c>null</c> = keine.</param>
+    /// <param name="Gebaeudekonditionierung">Einzonenweg mit Projektdatei: die Konditionierung der Gebäudegruppe bzw. der
+    /// einen Zone, die das Gebäude als Gebäudekalender nimmt (<see cref="SqprojZonen.Gebaeudekonditionierung"/>); <c>null</c> = keine.</param>
+    /// <param name="Raumgrundrisse">HC-5: die Grundrisse je Raum (<see cref="GebaeudeRaumgrundrisse.Bilden"/>), die
+    /// <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/> an die Quelle schreibt; <c>null</c> = keine.</param>
     internal sealed record GebaeudeImportHerkunft(GebaeudeQuelle Quelle, IReadOnlyList<GebaeudeQuellzuordnung> Paarungen,
                                                   GebaeudeBauteilvorschlag Vorschlag = null,
-                                                  IReadOnlyDictionary<string, int?> Baustoffzuordnungen = null);
+                                                  IReadOnlyDictionary<string, int?> Baustoffzuordnungen = null,
+                                                  Zonenkonditionierung Gebaeudekonditionierung = null,
+                                                  IReadOnlyList<Raumgrundriss> Raumgrundrisse = null);
 }

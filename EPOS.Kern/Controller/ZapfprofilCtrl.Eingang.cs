@@ -25,7 +25,8 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Gebundenes Gebäude (A8): nur vorbelegen.</b> Eine Zone mit <c>ID_Gebaeude</c>
     /// übernimmt die Ferienzeiten des Gebäudes nur, wenn sie selbst keine trägt und das
-    /// Gebäude seine Ferien führt (<c>Ferien</c> über der Schwelle des Gebäudemodells), und
+    /// Gebäude seine Ferien führt (<c>Ferien</c> über der Schwelle des Gebäudemodells; mit angelegtem
+    /// Heizkalender dessen Perioden der Art FERIEN, Entwurf KP2 Festlegung 10), und
     /// seine Fläche (<c>Wohnflaeche_gesamt</c>, sonst <c>Nutzflaeche</c>) nur, wenn sie
     /// selbst keine trägt (<see cref="Mengengeruest.HatEigeneFlaeche"/>). Die Gebäudefläche zählt
     /// einmal (N8): Zonen desselben Gebäudes mit eigener Fläche ziehen diese ab, der Rest geht zu
@@ -62,11 +63,12 @@ namespace WindowsFormsApplication1
             Parametersatz ps = Parameter();
             katalog ??= Katalog();
 
-            IReadOnlyList<ZonenStand> zonen = MitGebaeude(idProjekt, stand.Zonen ?? new ZonenStand[0], katalog);
+            var vorhinweise = new List<ZapfHinweis>();
+            IReadOnlyList<ZonenStand> zonen = MitGebaeude(idProjekt, stand.Zonen ?? new ZonenStand[0], katalog, vorhinweise,
+                                                         wochentagJan1);
             // Die Anzeige (4.0, 4.6): Laufangabe des Dialogs, sonst die Einstellung, sonst die Vorgabe des
             // Parametersatzes; eine ungültige Einstellung nennt ein Hinweis, dann gilt die Vorgabe. Ob der
             // Wert taugt (θ_Anzeige über θ̄_KW, Schwelle nicht negativ), prüft der Rechenweg.
-            var vorhinweise = new List<ZapfHinweis>();
             double? anzeigeC = stand.Anzeige?.AnzeigetemperaturC ?? EinstellungZahl(EINSTELLUNG_ANZEIGETEMPERATUR, vorhinweise)
                                ?? Vorgabe(ps, ZapfParameter.ANZEIGETEMPERATUR);
             double? schwelleKw = stand.Anzeige?.SchwelleKw ?? EinstellungZahl(EINSTELLUNG_STUNDENSCHWELLE, vorhinweise)
@@ -375,10 +377,13 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Zonen mit den Vorbelegungen ihres gebundenen Gebäudes: Ferien, wenn die Zone
         /// keine trägt, und die Fläche — Gebäudefläche minus die eigenen Flächen der Zonen
-        /// desselben Gebäudes, geteilt unter den Zonen ohne eigene Fläche (N8).
+        /// desselben Gebäudes, geteilt unter den Zonen ohne eigene Fläche (N8). Kommen die Ferien
+        /// aus einem Heizkalender mit mehr Ferienperioden, als eine Zone Paare führt, nennt es ein
+        /// Hinweis in <paramref name="hinweise"/> (Entwurf KP2, Festlegung 10).
         /// </summary>
         private static IReadOnlyList<ZonenStand> MitGebaeude(int idProjekt, IReadOnlyList<ZonenStand> zonen,
-                                                             IReadOnlyList<Nutzungsart> katalog)
+                                                             IReadOnlyList<Nutzungsart> katalog,
+                                                             ICollection<ZapfHinweis> hinweise, int wochentagJan1)
         {
             var gebaeude = new Dictionary<int, GebaeudeAngaben>();
             var flaechenteiler = new Dictionary<int, int>();
@@ -394,19 +399,29 @@ namespace WindowsFormsApplication1
                 else
                     flaechenteiler[g] = (flaechenteiler.TryGetValue(g, out int n) ? n : 0) + 1;
             }
-            if (gebaeude.Count == 0) return zonen;
-
+            // Feiertage zählen im Zapfkalender unter jeder Wochenendmaske als Sonntag (E112): Jede Zone bekommt die
+            // Feiertage des Kerns nach der Konvention des Gemeinjahrs — das eine Wochentagsraster des Projekts (E115:
+            // Raster der Klimaregion, mit Preisreihenjahr der Kalender dieses Jahres; dieselbe Auflösung wie der Gebäudelauf) —,
+            // mit gebundenem Gebäude nach dessen Feiertagsland, sonst die bundeseinheitlichen.
+            Gemeinjahrkalender bezugsjahr = Konditionierungdatenweg.Raster(idProjekt, wochentagJan1);
+            IReadOnlyList<int> bund = null;
             var ergebnis = new List<ZonenStand>(zonen.Count);
             foreach (ZonenStand z in zonen)
             {
                 if (z?.IdGebaeude == null || !gebaeude.TryGetValue(z.IdGebaeude.Value, out GebaeudeAngaben a) || a == null)
                 {
-                    ergebnis.Add(z);
+                    ergebnis.Add(z != null && z.Feiertage == null
+                        ? z with { Feiertage = bund ??= Landesfeiertage.Jahrestage(null, bezugsjahr) }
+                        : z);
                     continue;
                 }
                 ZonenStand neu = z;
                 if (a.FerienAktiv && !FerienGesetzt(z))
                     neu = neu with { Ferienbeginn = (int?[])a.Ferienbeginn.Clone(), Ferienende = (int?[])a.Ferienende.Clone() };
+                if (a.Wochenendtage.HasValue) neu = neu with { Wochenendtage = a.Wochenendtage };
+                // Die Feiertage aus den Regeln des Kerns nach der Konvention, bundeseinheitlich und nach dem Feiertagsland
+                // des Gebäudes — unter jeder Wochenendmaske (Zapfkalender.Kennzeichen).
+                neu = neu with { Feiertage = Landesfeiertage.Jahrestage(a.Feiertagsland, bezugsjahr) };
                 double rest = a.FlaecheM2.HasValue
                     ? a.FlaecheM2.Value - (eigeneFlaechen.TryGetValue(z.IdGebaeude.Value, out double abzug) ? abzug : 0.0)
                     : 0.0;
@@ -418,12 +433,22 @@ namespace WindowsFormsApplication1
             return ergebnis;
         }
 
+        /// <summary>Die Ferienpaare einer Zone (<see cref="ZonenStand.Ferienbeginn"/>, <c>Tab_TwwZone.Ferienbeginn_1…4</c>).</summary>
+        internal const int FERIENPAARE = 4;
+
         private sealed class GebaeudeAngaben
         {
+            internal string Name;
             internal double? FlaecheM2;
             internal bool FerienAktiv;
-            internal int?[] Ferienbeginn = new int?[4];
-            internal int?[] Ferienende = new int?[4];
+            internal int?[] Ferienbeginn = new int?[FERIENPAARE];
+            internal int?[] Ferienende = new int?[FERIENPAARE];
+
+            /// <summary>Die Wochenmaske des Gebäudes (<c>Wochenendtage</c>, Mo = Bit 0); <c>null</c> = Vorgabe Sa + So.</summary>
+            internal int? Wochenendtage;
+
+            /// <summary>Das Feiertagsland des Gebäudes (ISO-Kürzel); <c>null</c> = nur die bundeseinheitlichen Feiertage.</summary>
+            internal string Feiertagsland;
         }
 
         /// <summary>
@@ -446,6 +471,16 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Fläche und Ferien eines Gebäudes des Projekts aus <c>Tab_Gebaeude</c>; <c>null</c>, wenn
         /// es die Zeile nicht gibt oder sie zu einem anderen Projekt gehört.
+        ///
+        /// <para><b>Die Ferien aus dem Heizkalender</b> (Entwurf KP2, Festlegung 10; Teilkonzept
+        /// Konditionierungsprofile 5.5): Trägt das Gebäude einen angelegten Heizkalender, ruhen die
+        /// Ferienspalten samt Merker für diese Größe: Trägt er eine Periode der Art FERIEN, kommen die Ferien aus
+        /// ALLEN Ferienperioden des gemeinsamen Kalenders des Gebäudes (Rang 200 … 309, Konzept 7.8 Stufe 2; ohne
+        /// gemeinsamen Kalender aus allen FERIEN-Perioden des Heizkalenders); ein Kalender ohne FERIEN-Periode belegt
+        /// keine Ferien vor. Ohne Heizkalender gilt wörtlich der Bestandszweig (die vier Spalten mit Merker).</para>
+        ///
+        /// <para><b>Das Wochenende</b> kommt aus <c>Wochenendtage</c> (leer = Samstag und Sonntag,
+        /// <see cref="Zapfkalender.Kennzeichen"/>).</para>
         /// </summary>
         private static GebaeudeAngaben GebaeudeLesen(int idProjekt, int idGebaeude)
         {
@@ -455,10 +490,43 @@ namespace WindowsFormsApplication1
             DataRow r = dt.Rows[0];
 
             var a = new GebaeudeAngaben();
+            a.Name = dt.Columns.Contains("Gebaeudename") ? Text(r, "Gebaeudename") : "";
             double? wohn = dt.Columns.Contains("Wohnflaeche_gesamt") ? ZahlOderNull(r, "Wohnflaeche_gesamt") : null;
             double? nutz = dt.Columns.Contains("Nutzflaeche") ? ZahlOderNull(r, "Nutzflaeche") : null;
             if (wohn.HasValue && wohn.Value > 0 && !double.IsInfinity(wohn.Value)) a.FlaecheM2 = wohn.Value;
             else if (nutz.HasValue && nutz.Value > 0 && !double.IsInfinity(nutz.Value)) a.FlaecheM2 = nutz.Value;
+
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) && r[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE] != DBNull.Value)
+                a.Wochenendtage = Convert.ToInt32(r[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE], CultureInfo.InvariantCulture);
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_FEIERTAGSLAND) && r[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND] != DBNull.Value)
+                a.Feiertagsland = Convert.ToString(r[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND], CultureInfo.InvariantCulture);
+
+            Konditionierungskalender heizkalender = Heizkalender(idGebaeude);
+            if (heizkalender != null)
+            {
+                var perioden = new List<(int Beginn, int Ende)>();
+                foreach (Kalenderregel p in heizkalender.Perioden)        // absteigend nach Rang
+                    if (!p.IstFeiertag && string.Equals(p.Art, DbWerte.KOND_ART_FERIEN, StringComparison.Ordinal))
+                        perioden.Add((p.Beginn, p.Ende));
+                a.FerienAktiv = perioden.Count > 0;
+                // Die Ferienliste des Gebäudes (Konzept 7.8, Stufe 2): alle Ferienperioden seines gemeinsamen Kalenders,
+                // Rang 200 … 309 — ohne gemeinsamen Kalender die FERIEN-Perioden des Heizkalenders, alle.
+                List<Ferienzeile> liste = Kalendergemeinschaft.Ferienperioden(
+                    Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude)));
+                if (liste.Count > 0)
+                {
+                    perioden.Clear();
+                    foreach (Ferienzeile f in liste) perioden.Add((f.Beginn, f.Ende));
+                }
+                a.Ferienbeginn = new int?[Math.Max(FERIENPAARE, perioden.Count)];
+                a.Ferienende = new int?[a.Ferienbeginn.Length];
+                for (int i = 0; i < perioden.Count; i++)
+                {
+                    a.Ferienbeginn[i] = perioden[i].Beginn;
+                    a.Ferienende[i] = perioden[i].Ende;
+                }
+                return a;
+            }
 
             double? ferien = dt.Columns.Contains("Ferien") ? ZahlOderNull(r, "Ferien") : null;
             a.FerienAktiv = ferien.HasValue && ferien.Value > GebaeudeFestwerte.FERIEN_FLAG_SCHWELLE;
@@ -469,6 +537,18 @@ namespace WindowsFormsApplication1
                 a.Ferienende[i] = Jahrestag(dt, r, "Ferienende_" + n);
             }
             return a;
+        }
+
+        /// <summary>
+        /// Der angelegte Heizkalender eines Projektgebäudes über den Leser des Controllers; <c>null</c> ohne
+        /// ihn, ohne Konditionierungstabellen oder wenn seine Zeile ungültig ist (der Leser nennt sie dann
+        /// benannt, der Lauf bricht an ihr ab).
+        /// </summary>
+        private static Konditionierungskalender Heizkalender(int idGebaeude)
+        {
+            Dictionary<Konditionierungsgroesse, Konditionierungskalender> kalender =
+                new KonditionierungCtrl().Kalender(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), out _);
+            return kalender.TryGetValue(Konditionierungsgroesse.Heizsoll, out Konditionierungskalender k) ? k : null;
         }
 
         /// <summary>Ein Jahrestag des Gebäudes, gerundet und auf 0 … 366 begrenzt (Wertemenge der Zonenspalten); fehlend = <c>null</c>.</summary>

@@ -156,7 +156,8 @@ public class ParameteruebersichtTests : EposBunitContext
 
     /// <summary>
     /// „nicht verwendet" erscheint dort, wo der Katalog es sagt — die fünf Maße der
-    /// Wärmepumpe aus dem VDI-3805-Import und die drei Spalten des Kühlbetriebs am Erzeuger
+    /// Wärmepumpe aus dem VDI-3805-Import, <c>maxPtherm</c> (kein Dialog, kein Import, keine
+    /// Rechnung, nicht im Bericht) und die drei Spalten des Kühlbetriebs am Erzeuger
     /// (KU-S3, Schemaschritt 114), die vor KU2 Welle 2 kein Rechenweg liest.
     /// </summary>
     [Fact]
@@ -166,7 +167,10 @@ public class ParameteruebersichtTests : EposBunitContext
         k.Find("button.epos-modulparameter-knopf").Click();
 
         Assert.Contains(T("PARV_VERW_KEINE"), k.Markup);
-        Assert.Equal(8, k.FindAll("span.epos-verwendung--keine").Count);
+        // 9 Fachspalten ohne Verwendung, dazu die drei Katalogspalten des Katalogabgleichs (KU1 Stufe 1):
+        // Schluessel, Pruefsumme und Auslaufkennzeichen sind keine Rechengroessen. Die acht
+        // Geraetespalten der Uebergabegrenze liest die Simulation (Geraetegrenzen).
+        Assert.Equal(12, k.FindAll("span.epos-verwendung--keine").Count);
     }
 
     /// <summary>

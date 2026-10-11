@@ -50,11 +50,24 @@ namespace EPOS.Kern.Tests
             // und eine „kg" mehr - die drei Trägerzeilen von 1017. ETAPPE E24 (§ 6.3 Nr. 24): eine
             // Zeile „Nm³" mehr - die Erdgaszeile von 1023 (Kopie der Zeile von 1030). Das Prüfprojekt
             // PV mit Preisen 1048: je eine Zeile „kWh" (Strom) und „Nm³" (Erdgas, Kopie von 1040).
-            // Das Referenzprojekt Solarthermie 1049: eine Zeile „Nm³" (Erdgas, Kopie von 1018).
-            Assert.Equal(9, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
-            Assert.Equal(20, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
+            // Das Referenzprojekt Solarthermie 1049: eine Zeile „Nm³" (Erdgas, Kopie von 1018). Das
+            // Referenzprojekt Kesselkennlinie 1050: je eine Zeile „kWh" und „Nm³" (Kopie von 1023). Das
+            // Zonenprojekt 1052 (G6d): eine Zeile „Nm³" (Erdgas, Kopie von 1018). Das Prüfprojekt 1053
+            // „Test BHKW mit PV ohne Kaskade": eine Zeile „Nm³" (Erdgas, Kopie von 1018). Das Referenzprojekt
+            // Zonen mit Heizkreis 1054 (AK1z): eine Zeile „Nm³" (Erdgas, Kopie von 1052). Das Referenzprojekt
+            // Kältemaschine 1055 (KU3-4b, Kopie von 1017): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt
+            // Fahrplan 1056 (AK2-4, Kopie von 1047): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt
+            // Erdsonde 1057 (Kopie von 1029): eine Zeile „Nm³". Das Referenzprojekt AK3 1058 (AK3-W5a, Kopie von
+            // 1056): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt AK3-K 1059 (AK3-K-K5a, Kopie von
+            // 1058): zwei Zeilen „kWh" und eine „kg". Die Referenzprojekte Kühlkurve 1061 (Kopie von 1058) und
+            // 1062 (Kopie von 1061): je zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt Übergabegrenze 1060 (Kopie
+            // von 1056): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt Kältemaschine mit Teillast 1063 (KM3,
+            // Kopie von 1055): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt Freie Kühlung 1064 (Kopie von
+            // 1017): zwei Zeilen „kWh" und eine „kg".
+            Assert.Equal(28, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
+            Assert.Equal(25,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
             Assert.Equal(4, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'L'"));
-            Assert.Equal(2, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
+            Assert.Equal(11,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
 
             // Die Regel nach kWh (51: kWh → kWh am Stromträger) trägt „kWh", die
             // Identitätsregel des Erdgases die Abrechnungseinheit.

@@ -40,6 +40,10 @@ namespace WindowsFormsApplication1
     ///    verwendet, setzt die Wirtschaftlichkeit auf ihrer Kopie
     ///    <see cref="VariantenDaten.StromImVergleichBepreisen"/> — dann wird der
     ///    Netzbezug bepreist und bewertet, ohne Zuordnung mit dem Auslieferungsträger.
+    ///    Bepreist wird er mit Arbeits- und Grundpreis; den LEISTUNGSPREIS setzt ein Stand
+    ///    ohne stromverwendenden Erzeuger nicht an — er ist dort eine Größe der
+    ///    Lastoptimierung und wird benannt (Anwenderentscheid 29.09.2026, Register EZ‑17;
+    ///    <see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>).
     ///  - CO2Brennstoff (BEHG-Basis, Phase 7/W2): nur ABGABEPFLICHTIGE Träger —
     ///    Brennstoff-Kategorien Gas/Öl/Koks/Kohle/Sonstige (Tab_BrennstoffKategorien),
     ///    ausgenommen „Biogas“. Näherung: Bio-Heizöl-Blends zählen voll als fossil,
@@ -265,6 +269,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Leistungspreis der Gruppenregel</b> (Anwenderentscheid 29.09.2026, Register
+        /// EZ‑17): Bepreist der Vergleich den Netzbezug eines Standes ohne stromverwendenden
+        /// Erzeuger (<see cref="VariantenDaten.StromImVergleichBepreisen"/>), setzt er Arbeits-
+        /// und Grundpreis an, den Leistungspreis des Trägers nicht — bei einem solchen Stand ist
+        /// er eine Größe der Lastoptimierung. Führt der Träger einen, nennt ihn dieser Hinweis.
+        /// {0} = der Leistungspreis (<see cref="LeistungspreisSatz"/>), {1} = der Stromträger.
+        /// </summary>
+        internal static string HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT
+        {
+            get
+            {
+                return T("WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT",
+                    "Leistungspreis {0} des Stromträgers „{1}“ nicht angesetzt: Der Stand führt " +
+                    "keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe " +
+                    "der Lastoptimierung.");
+            }
+        }
+
+        /// <summary>
         /// MyResource mit deutschem Rückfall (Drei-Schichten-Regel) — dasselbe Muster
         /// wie <c>WirtschaftlichkeitCtrl.T</c> und <c>KohaerenzPruefung.T</c>. Der
         /// Rückfall greift auf einer Ressourcendatei ohne den Schlüssel.
@@ -316,7 +339,12 @@ namespace WindowsFormsApplication1
                 v.StromGruppenregelMWh = null;
                 v.BezugsspitzeKW = null;
                 v.LeistungspreisOhneSpitze = null;
+                v.LeistungspreisNichtAngesetzt = null;
+                v.LeistungspreisNichtAngesetztSatz = null;
+                v.LeistungspreisNichtAngesetztTraeger = null;
+                v.LeistungspreisNichtAngesetztMonatssatz = null;
                 KaeltestromZuruecksetzen(v);
+                v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
         }
@@ -332,7 +360,18 @@ namespace WindowsFormsApplication1
             v.StrombedarfOhneVerwendungMWh = null;   // Anwenderentscheid 22.09.2026
             v.StromGruppenregelMWh = null;           // Gruppenregel (nur im Vergleich gesetzt)
             v.LeistungspreisOhneSpitze = null;
+            v.LeistungspreisNichtAngesetzt = null;   // EZ‑17 (nur im Vergleich gesetzt)
+            v.LeistungspreisNichtAngesetztSatz = null;
+            v.LeistungspreisNichtAngesetztTraeger = null;
+            v.LeistungspreisNichtAngesetztMonatssatz = null;
             KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
+            v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
+
+            // DIE AUFSTELLUNG JE TRÄGER (Herleitungszeile „Menge × Preis" unter den Energiekosten,
+            // Wärmegestehungskosten): Sie entsteht NEBEN den Summen unten, aus denselben Mengen und
+            // Preisen, und rührt keine Summe an — Brennstoffe, dann der Netzbezug, dann die
+            // abweichenden Kühlträger.
+            var traegerListe = new List<EnergieTraegerNachweis>();
 
             // Die Bezugsspitze ist eine HERLEITUNG des Laufs, kein Preisergebnis: Sie
             // steht auch dann an der Variante, wenn kein Leistungspreis gepflegt ist —
@@ -459,13 +498,9 @@ namespace WindowsFormsApplication1
             bool stromAusRueckfall = false;
             if (stromCarrierKosten <= 0)
             {
-                int rueckfall = StandardStromTraeger(v.IdProjekt);
-                // GRUPPENREGEL „Strombedarf ohne Verwendung": Ein Stand ohne eigene
-                // Stromverwendung, dessen Netzbezug im Vergleich bepreist wird, bekommt
-                // denselben Auslieferungsträger — ohne die Vorbedingung der elektrischen
-                // Welt, die ihn sonst ausschließt. Der Rückfall wird vermerkt wie jeder.
-                if (rueckfall <= 0 && v.StromImVergleichBepreisen)
-                    rueckfall = ProjektEnergietraegerCtrl.StromTraegerImVergleich(v.IdProjekt);
+                // Die Wahl steht EINMAL in StromTraegerRueckfall — die Kohärenzprüfung der
+                // Stromsteuer fragt dieselbe (Register EZ‑18).
+                int rueckfall = StromTraegerRueckfall(v.IdProjekt, v.StromImVergleichBepreisen);
                 if (rueckfall > 0) { stromCarrierKosten = rueckfall; stromAusRueckfall = true; }
             }
 
@@ -476,6 +511,7 @@ namespace WindowsFormsApplication1
             {
                 // ETAPPE E9a (Schritt C): im Szenariolauf mit den wirksamen Szenariopreisen.
                 TraegerInfo info = LadeTraeger(v.IdProjekt, kv.Key, szenario);
+                EnergieTraegerNachweis brennstoffEintrag = null;   // Aufstellung je Träger
 
                 // L13: die MENGE biogener Träger — unabhängig davon, ob ein Faktor
                 // gepflegt ist. Die Konventionsfrage entscheidet der Aufrufer.
@@ -498,6 +534,30 @@ namespace WindowsFormsApplication1
                         kosten = kv.Value * 1000.0 * info.PreisArbeit.Value;   // €/kWh direkt
                     if (info.Grundpreis.HasValue) kosten += info.Grundpreis.Value;   // je Träger einmal p. a.
                     brennstoffKosten += kosten;
+
+                    // Die Aufstellung je Träger: dieselbe Menge, derselbe Preis. Den Brennstoff
+                    // setzen allein Wärmeerzeuger ein (Kessel, BHKW) — Wärmemenge = Verbrauch.
+                    bool ueberHi = info.EffHi.HasValue && info.EffHi.Value > 0;
+                    double mengeAbr = ueberHi ? kv.Value * 1000.0 / info.EffHi.Value : kv.Value * 1000.0;
+                    double arbeit = mengeAbr * info.PreisArbeit.Value;
+                    brennstoffEintrag = new EnergieTraegerNachweis
+                    {
+                        CarrierId = kv.Key,
+                        Traeger = TraegerName(kv.Key),
+                        MengeMWh = kv.Value,
+                        MengeAbrechnung = mengeAbr,
+                        Einheit = ueberHi ? info.Abrechnungseinheit : "kWh",
+                        PreisJeEinheit = info.PreisArbeit.Value,
+                        ArbeitEur = arbeit,
+                        GrundpreisEur = info.Grundpreis ?? 0.0,
+                        WaermeMengeMWh = kv.Value,
+                        VerbrauchGesamtMWh = kv.Value,
+                        WaermeArbeitEur = arbeit,
+                        BehgT = info.BehgPflichtig && info.CO2.HasValue && info.CO2.Value > 0
+                            ? kv.Value * info.CO2.Value / 1000.0 : 0.0,
+                        BiogenBehgMWh = info.BehgBiogen ? kv.Value : 0.0
+                    };
+                    traegerListe.Add(brennstoffEintrag);
                 }
                 else
                 {
@@ -540,6 +600,7 @@ namespace WindowsFormsApplication1
                         brennstoffKosten += anteil;
                         leistungsAnteil += anteil;
                         leistungGepflegt = true;
+                        if (brennstoffEintrag != null) brennstoffEintrag.LeistungEur += anteil;
                     }
                 }
 
@@ -590,10 +651,14 @@ namespace WindowsFormsApplication1
             //
             // DIE GRUPPENREGEL: Im VERGLEICH einer Gruppe, in der ein anderer Stand Strom
             // verwendet (ProjektEnergietraegerCtrl.GruppeVerwendetStrom), setzt die
-            // Wirtschaftlichkeit auf ihrer Kopie der Variante StromImVergleichBepreisen.
+            // Wirtschaftlichkeit auf ihrer KOPIE der Variante StromImVergleichBepreisen; der
+            // Berichtslauf ebenso auf einer Kopie, allein für die Gruppenzahl der Fußzeile
+            // (BerichtsDatenSammler.StromGruppenzahlErmitteln).
             // Dann wird der Netzbezug bepreist und bewertet wie bei jedem Stand mit
-            // Stromverwendung; v.StromGruppenregelMWh trägt die Menge für den Hinweis.
-            // Die Einzelbetrachtung setzt das Feld nie — dort gilt die Regel je Stand.
+            // Stromverwendung — bepreist mit Arbeits- und Grundpreis, OHNE Leistungspreis
+            // (Anwenderentscheid 29.09.2026, EZ‑17; Regel unten beim Netzbezug);
+            // v.StromGruppenregelMWh trägt die Menge für den Hinweis.
+            // Am Stand selbst steht das Feld nie — dort gilt die Regel je Stand.
             bool ohneVerwendungImStand =
                 ProjektEnergietraegerCtrl.StromOhneVerwendung(v.IdProjekt, netzbezugMWh);
             bool stromOhneVerwendung = ohneVerwendungImStand && !v.StromImVergleichBepreisen;
@@ -649,6 +714,7 @@ namespace WindowsFormsApplication1
             // die CO₂-Seite den ZUGEORDNETEN (stromCarrier). Sind beide gleich — der
             // Regelfall —, wird auch nur EINMAL geladen. Ohne Verwendung gar nicht.
             double? projektArbeitspreis = null;   // KU2 Welle 3: für den Ausweis des Kältestroms
+            EnergieTraegerNachweis netzEintrag = null;   // Aufstellung je Träger
             if (!stromOhneVerwendung && stromCarrierKosten > 0)
             {
                 // ETAPPE E9a (Schritt C): im Szenariolauf mit den wirksamen Szenariopreisen
@@ -657,7 +723,25 @@ namespace WindowsFormsApplication1
                 // Szenario-Strompreis nicht wirkt (E9a‑Q7).
                 TraegerInfo preistraeger = LadeTraeger(v.IdProjekt, stromCarrierKosten, szenario);
                 v.SzenarioStrompreisGepflegt = preistraeger.SzenarioGepflegt;
-                if (preistraeger.LeistungSzenarioGepflegt &&
+
+                // ---- DER LEISTUNGSPREIS NUR BEI STROMVERWENDUNG (Anwenderentscheid
+                // 29.09.2026, Register EZ‑17) ----
+                //
+                // „Der Leistungspreis bei Netzbezug eines Standes ohne stromverwendenden
+                // Erzeuger ist nur für die Lastoptimierung relevant. Der Leistungspreis wird
+                // ansonsten nur für stromverwendende Erzeuger verwendet, sofern angegeben."
+                //
+                // Die Gruppenregel setzt StromImVergleichBepreisen nur an Ständen OHNE
+                // stromverwendenden Erzeuger (WirtschaftlichkeitCtrl.StromGruppenregel). Ihr
+                // Netzbezug trägt Arbeits- und Grundpreis des Trägers — gleich, ob er
+                // zugeordnet ist oder der Auslieferungsträger einspringt —, den Leistungspreis
+                // (Staffel, Saisonreihe, Satz) nicht. Führt der Träger einen, wird er benannt
+                // (v.LeistungspreisNichtAngesetzt) statt still zu entfallen. Die Lastoptimierung
+                // (Speicherauslegung) liest ihn weiter; Stände mit Stromverwendung rechnen
+                // unverändert. Ein Szenario-Leistungspreis bleibt dann ebenfalls ohne Wirkung —
+                // aus diesem Grund, nicht wegen Staffel oder Saisonreihe.
+                bool leistungspreisAusgesetzt = v.StromImVergleichBepreisen;
+                if (!leistungspreisAusgesetzt && preistraeger.LeistungSzenarioGepflegt &&
                     (preistraeger.Staffel.Gepflegt || preistraeger.ReiheJeKW != null))
                     SzenarioLeistungOhneWirkung(v, stromCarrierKosten);
                 stromPreisTraeger = TraegerName(stromCarrierKosten);
@@ -667,6 +751,33 @@ namespace WindowsFormsApplication1
                     // E34: ohne den Anteil der abweichenden Kühlträger (sonst der ganze Netzbezug).
                     stromKosten = netzbezugProjektMWh * 1000.0 * preistraeger.PreisArbeit.Value;
                     if (preistraeger.Grundpreis.HasValue) stromKosten += preistraeger.Grundpreis.Value;
+
+                    // Die Aufstellung je Träger: der Netzbezug des Projektträgers mit Arbeits- und
+                    // Grundpreis (der Leistungsanteil kommt unten dazu). Für die Wärmegestehung dazu
+                    // der Strom der Wärmeerzeuger — zum Arbeitspreis, ohne Anrechnung von
+                    // PV-Eigenverbrauch — und der Verbrauch aller Verbraucher des Anschlusses.
+                    // EZ‑6 gilt auch hier (P646): Der Strom einer Anlage mit EIGENEM Stromträger
+                    // zählt zu dessen Arbeitspreis (Waermegestehung.WaermestromArbeitEur); die
+                    // Menge, der Preis des Eintrags und damit die Stromgutschrift bleiben beim
+                    // Träger, der den Netzbezug bepreist.
+                    netzEintrag = new EnergieTraegerNachweis
+                    {
+                        CarrierId = stromCarrierKosten,
+                        Traeger = stromPreisTraeger ?? "",
+                        Netzstrom = true,
+                        MengeMWh = netzbezugProjektMWh,
+                        MengeAbrechnung = netzbezugProjektMWh * 1000.0,
+                        Einheit = "kWh",
+                        PreisJeEinheit = preistraeger.PreisArbeit.Value,
+                        ArbeitEur = netzbezugProjektMWh * 1000.0 * preistraeger.PreisArbeit.Value,
+                        GrundpreisEur = preistraeger.Grundpreis ?? 0.0,
+                        WaermeMengeMWh = Waermegestehung.WaermestromMWh(m),
+                        VerbrauchGesamtMWh = Waermegestehung.StromverbrauchGesamtMWh(m)
+                    };
+                    netzEintrag.WaermeArbeitEur = Waermegestehung.WaermestromArbeitEur(
+                        netzEintrag.WaermeMengeMWh, preistraeger.PreisArbeit.Value,
+                        EigenerWaermestrom(v.IdProjekt, m, stromkessel, stromCarrierKosten, szenario));
+                    traegerListe.Add(netzEintrag);
 
                     // ---- DER LEISTUNGSPREIS DES STROMTRÄGERS (Anwenderentscheid
                     // 17.09.2026, SP-E-1 a / Q1 Viertelstunde) ----
@@ -709,19 +820,28 @@ namespace WindowsFormsApplication1
                     //
                     // E35: Dieselbe Regel bepreist die eigene Spitze eines Kältestromzählers
                     // (LeistungsanteilStrom, unten beim Kältestrom) — eine Regel, zwei Spitzen.
+                    //
+                    // EZ‑17: Ein Stand ohne stromverwendenden Erzeuger setzt den Leistungspreis
+                    // nicht an (leistungspreisAusgesetzt, oben) — auch nicht bei bekannter Spitze.
                     if (LeistungspreisStrom(preistraeger))
                     {
-                        Netzbezugsspitze spitze = v.Zeitreihen != null ? v.Zeitreihen.Bezugsspitze : null;
-                        if (spitze != null && spitze.JahrKW > 0)
-                        {
-                            double anteilStrom = LeistungsanteilStrom(preistraeger, spitze);
-
-                            stromKosten += anteilStrom;
-                            leistungsAnteil += anteilStrom;
-                            leistungGepflegt = true;
-                        }
+                        if (leistungspreisAusgesetzt)
+                            LeistungspreisNichtAngesetztVermerken(v, stromCarrierKosten, preistraeger);
                         else
-                            LeistungspreisOhneSpitzeVermerken(v, stromCarrierKosten);
+                        {
+                            Netzbezugsspitze spitze = v.Zeitreihen != null ? v.Zeitreihen.Bezugsspitze : null;
+                            if (spitze != null && spitze.JahrKW > 0)
+                            {
+                                double anteilStrom = LeistungsanteilStrom(preistraeger, spitze);
+                                netzEintrag.LeistungEur = anteilStrom;
+
+                                stromKosten += anteilStrom;
+                                leistungsAnteil += anteilStrom;
+                                leistungGepflegt = true;
+                            }
+                            else
+                                LeistungspreisOhneSpitzeVermerken(v, stromCarrierKosten);
+                        }
                     }
 
                     // Der Vermerk steht NUR, wenn der Rückfall auch wirklich einen
@@ -792,7 +912,15 @@ namespace WindowsFormsApplication1
                 // E9a: im Szenariolauf mit dem wirksamen Szenariopreis des Kühlträgers - derselbe
                 // Leseweg wie für den Stromträger des Projekts.
                 TraegerInfo kt = LadeTraeger(v.IdProjekt, a.Traeger, szenario);
-                if (kt.PreisArbeit.HasValue) kuehlKosten += a.MengeMwh * 1000.0 * kt.PreisArbeit.Value;
+                if (kt.PreisArbeit.HasValue)
+                {
+                    kuehlKosten += a.MengeMwh * 1000.0 * kt.PreisArbeit.Value;
+                    // Aufstellung je Träger: Kältestrom — kein Einsatz eines Wärmeerzeugers.
+                    EnergieTraegerNachweis ke = KuehlEintrag(traegerListe, a.Traeger, kt.PreisArbeit.Value);
+                    ke.MengeMWh += a.MengeMwh;
+                    ke.MengeAbrechnung += a.MengeMwh * 1000.0;
+                    ke.ArbeitEur += a.MengeMwh * 1000.0 * kt.PreisArbeit.Value;
+                }
                 else
                 {
                     string name = TraegerName(a.Traeger);
@@ -829,6 +957,7 @@ namespace WindowsFormsApplication1
                 if (kt.Grundpreis.HasValue && kt.Grundpreis.Value > 0)
                 {
                     kuehlKosten += kt.Grundpreis.Value;
+                    KuehlEintrag(traegerListe, z.Traeger, kt.PreisArbeit ?? 0.0).GrundpreisEur += kt.Grundpreis.Value;
                     zaehlerZeilen.Add(new EnergieAnlageNachweis
                     {
                         Anlage = string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_ENK_KAELTESTROM_ZAEHLER_GRUND, z.Anlage),
@@ -845,8 +974,16 @@ namespace WindowsFormsApplication1
                 if (v.Zeitreihen == null || v.Zeitreihen.Kaeltestromspitzen == null ||
                     !v.Zeitreihen.Kaeltestromspitzen.TryGetValue(z.Modulindex, out eigene) || eigene == null)
                 {
-                    LeistungspreisOhneSpitzeVermerken(v, z.Traeger);
-                    continue;
+                    // KU3-4d: Die Kältemaschine speichert ihre Jahresspitze (Schritt 184) - sie trägt den Satz je
+                    // Jahr und die Staffel auch ohne Zeitreihen; Monatswerte kennt nur der Lauf.
+                    bool nurJahr = kt.Staffel.Gepflegt || (kt.ReiheJeKW == null &&
+                        !string.Equals(kt.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal));
+                    if (!(nurJahr && z.StromspitzeKw.HasValue))
+                    {
+                        LeistungspreisOhneSpitzeVermerken(v, z.Traeger);
+                        continue;
+                    }
+                    eigene = new Netzbezugsspitze { JahrKW = z.StromspitzeKw.Value };
                 }
                 if (!(eigene.JahrKW > 0)) continue;      // kein Kältestrom - keine Spitze, kein Anteil
 
@@ -854,6 +991,7 @@ namespace WindowsFormsApplication1
                 kuehlKosten += anteil;
                 leistungsAnteil += anteil;
                 leistungGepflegt = true;
+                KuehlEintrag(traegerListe, z.Traeger, kt.PreisArbeit ?? 0.0).LeistungEur += anteil;
                 double basis = LeistungsbasisKW(kt, eigene);
                 zaehlerZeilen.Add(new EnergieAnlageNachweis
                 {
@@ -943,6 +1081,9 @@ namespace WindowsFormsApplication1
             if (energie.HasValue && (kuehlAnteile.Count > 0 || kuehlZaehler.Count > 0))
                 energie = kuehlOhnePreis.Count > 0 ? (double?)null : energie.Value + kuehlKosten;
             v.Energiekosten = energie;
+            // Die Aufstellung je Träger steht nur neben einer bestimmten Summe — eine Herleitung
+            // ohne Summe wäre eine halbe Rechnung.
+            if (energie.HasValue) v.EnergiekostenJeTraeger = traegerListe;
 
             // AUFTRAG #267 — KEIN STILLES NULL. Bleibt die Zahl aus, steht ab hier im
             // Klartext, WORAN es liegt und WAS zu tun ist. Die Reihenfolge ist die der
@@ -1074,6 +1215,108 @@ namespace WindowsFormsApplication1
             foreach (string vorhanden in v.LeistungspreisOhneSpitze.Split(new[] { ", " }, StringSplitOptions.None))
                 if (string.Equals(vorhanden, name, StringComparison.Ordinal)) return;
             v.LeistungspreisOhneSpitze += ", " + name;
+        }
+
+        /// <summary>
+        /// Anwenderentscheid 29.09.2026 (Register EZ‑17) — vermerkt den Leistungspreis des
+        /// Stromträgers, den die Gruppenregel an einem Stand ohne stromverwendenden Erzeuger NICHT
+        /// ansetzt (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>): der Hinweis mit
+        /// Satz und Träger, in der Sprache des Laufs wie die übrigen Hinweise. Dasselbe Muster wie
+        /// <see cref="LeistungspreisOhneSpitzeVermerken"/> — benannt statt still. Es gibt je Stand
+        /// genau einen Stromträger des Netzbezugs, der Vermerk steht also einmal.
+        /// </summary>
+        private static void LeistungspreisNichtAngesetztVermerken(VariantenDaten v, int carrierId, TraegerInfo t)
+        {
+            string name = TraegerName(carrierId);
+            if (string.IsNullOrEmpty(name)) name = "?";
+            string satz = LeistungspreisSatz(t);
+            v.LeistungspreisNichtAngesetzt = string.Format(BerichtTexte.Kultur,
+                HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT, satz, name);
+            // Satz und Träger auch einzeln — für die Fußzeile unter der Kostentafel des Berichts.
+            v.LeistungspreisNichtAngesetztSatz = satz;
+            v.LeistungspreisNichtAngesetztTraeger = name;
+            // Der Satz je Monat, wenn der Träger je Monat bemisst — für den Vergleich mit dem
+            // Monatspreis des Reststromtarifs (Register EZ‑18).
+            v.LeistungspreisNichtAngesetztMonatssatz = LeistungspreisMonatssatz(t);
+        }
+
+        /// <summary>
+        /// Der Leistungspreis eines Stromträgers in €/(kW·Monat), wenn er ihn je Monat bemisst —
+        /// in der Rangfolge der Rechnung (<see cref="LeistungsanteilStrom"/>): Eine Staffel bemisst
+        /// je Jahr (<c>null</c>); eine Saisonreihe zählt nur, wenn ihre zwölf Sätze gleich sind
+        /// (Toleranz 1e‑9), dann ihr Satz; sonst der Satz mit <c>price_power_modus</c> MONAT. Ein
+        /// Satz je Jahr ergibt <c>null</c>.
+        /// </summary>
+        private static double? LeistungspreisMonatssatz(TraegerInfo t)
+        {
+            if (t == null || t.Staffel.Gepflegt) return null;
+            if (t.ReiheJeKW != null)
+            {
+                if (t.ReiheJeKW.Length != 12) return null;
+                double erster = t.ReiheJeKW[0];
+                foreach (double satz in t.ReiheJeKW)
+                    if (Math.Abs(satz - erster) > 1e-9) return null;
+                return erster;
+            }
+            if (t.PreisLeistung.HasValue &&
+                string.Equals(t.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                return t.PreisLeistung.Value;
+            return null;
+        }
+
+        /// <summary>
+        /// Der Leistungspreis eines Stromträgers als Text, in der Rangfolge der Rechnung
+        /// (<see cref="LeistungsanteilStrom"/>): die Staffel vor der Saisonreihe (Summe der zwölf
+        /// Monatssätze) vor dem Satz je Monat oder je Jahr. Nur für einen Träger mit
+        /// <see cref="LeistungspreisStrom"/>. Zahlen in der Kultur des Berichts.
+        /// </summary>
+        private static string LeistungspreisSatz(TraegerInfo t)
+        {
+            System.Globalization.CultureInfo k = BerichtTexte.Kultur;
+            if (t.Staffel.Gepflegt)
+            {
+                double grenze = Math.Max(0.0, t.Staffel.GrenzeKW ?? 0.0);
+                double preis2 = t.Staffel.Preis2EurKWa ?? 0.0;
+                // Eine Grenze ≤ 0 heißt „alles zum Preis der zweiten Stufe" (LeistungspreisStaffel).
+                if (grenze <= 0.0) return preis2.ToString("N2", k) + " €/(kW·a)";
+                return string.Format(k, T("WIRT_LP_SATZ_STAFFEL",
+                        "{0} €/(kW·a) bis {1} kW, darüber {2} €/(kW·a)"),
+                    (t.Staffel.Preis1EurKWa ?? 0.0).ToString("N2", k),
+                    grenze.ToString("#,##0.#", k), preis2.ToString("N2", k));
+            }
+            if (t.ReiheJeKW != null)
+            {
+                double summe = 0.0;
+                foreach (double satz in t.ReiheJeKW) summe += satz;
+                return string.Format(k, T("WIRT_LP_SATZ_SAISON", "{0} €/(kW·a) aus zwölf Monatssätzen"),
+                    summe.ToString("N2", k));
+            }
+            double wert = t.PreisLeistung ?? 0.0;
+            if (string.Equals(t.LeistungsModus, DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                return string.Format(k, T("WIRT_LP_SATZ_MONAT", "{0} €/(kW·Monat)"), wert.ToString("N2", k));
+            return wert.ToString("N2", k) + " €/(kW·a)";
+        }
+
+        /// <summary>
+        /// Der Eintrag eines abweichenden Kühlträgers in der Aufstellung je Träger — je Träger
+        /// einer, angelegt beim ersten Bedarf (Kältestrom anteilig, eigener Zähler mit Grund- und
+        /// Leistungspreis). Kältestrom ist kein Einsatz eines Wärmeerzeugers: Wärmemenge 0.
+        /// </summary>
+        private static EnergieTraegerNachweis KuehlEintrag(List<EnergieTraegerNachweis> liste,
+                                                           int carrierId, double arbeitspreis)
+        {
+            foreach (EnergieTraegerNachweis t in liste)
+                if (t != null && !t.Netzstrom && t.CarrierId == carrierId && t.WaermeMengeMWh == 0.0)
+                    return t;
+            var neu = new EnergieTraegerNachweis
+            {
+                CarrierId = carrierId,
+                Traeger = TraegerName(carrierId),
+                Einheit = "kWh",
+                PreisJeEinheit = arbeitspreis
+            };
+            liste.Add(neu);
+            return neu;
         }
 
         private static void AnlageZeile(List<EnergieAnlageNachweis> ziel, int idProjekt,
@@ -1360,6 +1603,70 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Wärmestrom der Anlagen mit eigenem Stromträger</b> (Register EZ‑6, gilt seit P646
+        /// auch in der Wärmegestehung): je Erzeugerzeile (<see cref="Waermegestehung.WaermestromJeModul"/>)
+        /// deren Anlage einen eigenen, dem Projekt zugeordneten ELECTRICITY-Träger führt
+        /// (<see cref="ProjektEnergietraegerCtrl.EigeneStromTraeger"/> — dieselbe Erkennung wie der
+        /// Endenergie-Auflöser), der vom bepreisenden Träger <paramref name="netzCarrier"/> abweicht:
+        /// Menge und Arbeitspreis dieses Trägers im Szenario. Verbunden wird über den Bezeichner der
+        /// Anlage, der zugleich der Modulname ist.
+        ///
+        /// <para>Leere Liste — dann rechnet die Wärmegestehung Zeichen für Zeichen wie ohne diese
+        /// Auskunft —, wenn keine Anlage einen eigenen Stromträger führt (der Regelfall: dann ist
+        /// es nur die eine Abfrage der Karte), alle eigenen Träger der Netzträger sind oder eine
+        /// Abfrage scheitert.</para>
+        /// </summary>
+        private static List<Waermegestehung.EigenerStrom> EigenerWaermestrom(
+            int idProjekt, ErgebnisModel m, ICollection<string> elektrokessel, int netzCarrier, string szenario)
+        {
+            var liste = new List<Waermegestehung.EigenerStrom>();
+            if (idProjekt <= 0 || m == null) return liste;
+            try
+            {
+                Dictionary<int, int> eigene = ProjektEnergietraegerCtrl.EigeneStromTraeger(idProjekt);
+                if (eigene == null || eigene.Count == 0) return liste;
+
+                var traegerJeName = new Dictionary<string, int>(StringComparer.Ordinal);
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                    new DbParam("@p", idProjekt));
+                if (dt == null) return liste;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r["ID"] == DBNull.Value || r["Bezeichner"] == DBNull.Value) continue;
+                    int carrier;
+                    if (!eigene.TryGetValue(Convert.ToInt32(r["ID"]), out carrier) || carrier == netzCarrier)
+                        continue;
+                    string name = Convert.ToString(r["Bezeichner"]).Trim();
+                    if (name.Length > 0 && !traegerJeName.ContainsKey(name)) traegerJeName[name] = carrier;
+                }
+                if (traegerJeName.Count == 0) return liste;
+
+                var preise = new Dictionary<int, double?>();
+                foreach (KeyValuePair<string, double> zeile in Waermegestehung.WaermestromJeModul(m, elektrokessel))
+                {
+                    int carrier;
+                    if (!traegerJeName.TryGetValue(zeile.Key, out carrier)) continue;
+                    double? preis;
+                    if (!preise.TryGetValue(carrier, out preis))
+                    {
+                        preis = ArbeitspreisJeKwh(idProjekt, carrier, szenario);
+                        preise[carrier] = preis;
+                    }
+                    liste.Add(new Waermegestehung.EigenerStrom
+                    {
+                        Modul = zeile.Key,
+                        CarrierId = carrier,
+                        MengeMWh = zeile.Value,
+                        PreisJeKwh = preis
+                    });
+                }
+            }
+            catch { liste.Clear(); }
+            return liste;
+        }
+
+        /// <summary>
         /// Der AUSLIEFERUNGS-Stromträger eines Projekts, wenn ihm keiner zugeordnet ist —
         /// <see cref="ProjektEnergietraegerCtrl.StandardStromTraeger"/>, also genau die
         /// Fassung, die auch die Kostenseite anzeigt und der Assistent zuordnet
@@ -1378,6 +1685,29 @@ namespace WindowsFormsApplication1
         private static int StandardStromTraeger(int idProjekt)
         {
             return Emissionsquelle.KatalogStromTraeger(idProjekt);
+        }
+
+        /// <summary>
+        /// <b>Der Rückfallträger, mit dem der Netzbezug eines Standes ohne zugeordneten
+        /// Stromträger bepreist wird</b> — die EINE Wahl für Kostenrechnung und
+        /// Kohärenzprüfung der Stromsteuer (<c>KohaerenzPruefung</c>, Register EZ‑18): der
+        /// Auslieferungsträger des Katalogs (<see cref="StandardStromTraeger"/>, nur mit
+        /// elektrischer Welt); für einen Stand ohne eigene Stromverwendung, dessen Netzbezug
+        /// die Gruppenregel im Vergleich bepreist (<paramref name="imVergleich"/> =
+        /// <see cref="VariantenDaten.StromImVergleichBepreisen"/>), derselbe Träger ohne diese
+        /// Vorbedingung (<see cref="ProjektEnergietraegerCtrl.StromTraegerImVergleich"/>).
+        /// 0 = keiner. Ob dem Projekt ein Träger zugeordnet ist, fragt der Aufrufer vorher.
+        /// </summary>
+        internal static int StromTraegerRueckfall(int idProjekt, bool imVergleich)
+        {
+            int rueckfall = StandardStromTraeger(idProjekt);
+            // GRUPPENREGEL „Strombedarf ohne Verwendung": Ein Stand ohne eigene
+            // Stromverwendung, dessen Netzbezug im Vergleich bepreist wird, bekommt
+            // denselben Auslieferungsträger — ohne die Vorbedingung der elektrischen
+            // Welt, die ihn sonst ausschließt. Der Rückfall wird vermerkt wie jeder.
+            if (rueckfall <= 0 && imVergleich)
+                rueckfall = ProjektEnergietraegerCtrl.StromTraegerImVergleich(idProjekt);
+            return rueckfall;
         }
 
         /// <summary>
@@ -1594,11 +1924,13 @@ namespace WindowsFormsApplication1
             // noch die EINSTUFUNG des Trägers.
             try
             {
+                // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
                 DataTable b = DataRepository.GetDataTable(
                     "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
-                    "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
+                    "INNER JOIN " + quelle + " AS bs ON ec.id_brennstoff = bs.ID " +
                     "WHERE ec.id = ?",
-                    new DbParam("@c", carrierId));
+                    ProjektBrennstoffe.Mit(sicht, new DbParam("@c", carrierId)));
                 if (b != null && b.Rows.Count > 0)
                 {
                     // BEHG-pflichtig: Kategorien 1 Gas / 2 Öl / 3 Koks / 4 Kohle /

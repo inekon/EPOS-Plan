@@ -271,27 +271,59 @@ public class BedarfReiterTests : EposBunitContext
     }
 
     [Fact]
-    public void Ohne_Rueckruf_bleiben_die_drei_Knoepfe_weg()
+    public void Ohne_Rueckruf_bleiben_die_Knoepfe_weg()
     {
         var seite = Zeichnen(Daten());
         Assert.Empty(seite.FindAll("button.epos-simerg-knopf"));
+        Assert.Empty(seite.FindAll("button.epos-diagramm-csv"));
     }
 
+    /// <summary>
+    /// „Details…“ steht unter Wärme- und Strombild, „CSV…“ in der Zoomleiste BEIDER Bilder —
+    /// beide CSV-Knöpfe führen die Datei „Energiebedarf“ (derselbe Rückruf).
+    /// </summary>
     [Fact]
-    public void Die_drei_Knoepfe_melden_ihren_Klick()
+    public void Die_Knoepfe_melden_ihren_Klick()
     {
         int w = 0, s = 0, c = 0;
         var seite = Zeichnen(Daten(), () => w++, () => s++, () => c++);
 
-        var knoepfe = seite.FindAll("button.epos-simerg-knopf");
-        Assert.Equal(3, knoepfe.Count);
-        knoepfe[0].Click();
-        knoepfe[1].Click();
-        knoepfe[2].Click();
+        var details = seite.FindAll("button.epos-simerg-knopf");
+        Assert.Equal(2, details.Count);
+        details[0].Click();
+        details[1].Click();
+
+        var csv = seite.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv");
+        Assert.Equal(2, csv.Count);
+        csv[0].Click();
+        csv[1].Click();
 
         Assert.Equal(1, w);
         Assert.Equal(1, s);
-        Assert.Equal(1, c);
+        Assert.Equal(2, c);
+    }
+
+    /// <summary>
+    /// CSV AM DIAGRAMM: Der Knopf steht in der Zoomleiste rechts neben „1:1“, mit derselben
+    /// Knopfklasse wie „Bereich“ und „1:1“ und mit Beschriftung für Hilfstechnik; am Seitenende
+    /// steht kein Exportknopf mehr.
+    /// </summary>
+    [Fact]
+    public void Der_CSV_Knopf_steht_in_der_Zoomleiste_rechts_neben_1_1()
+    {
+        var seite = Zeichnen(Daten(), csv: () => { });
+
+        foreach (var leiste in seite.FindAll("div.epos-diagramm-leiste"))
+        {
+            var knoepfe = leiste.QuerySelectorAll("button.epos-diagramm-knopf").ToList();
+            Assert.Equal(3, knoepfe.Count);
+            Assert.Equal("1:1", knoepfe[1].TextContent.Trim());
+            Assert.Contains("epos-diagramm-csv", knoepfe[2].ClassName);
+            Assert.Equal("CSV…", knoepfe[2].TextContent.Trim());
+            Assert.Equal("Jahresganglinie als CSV speichern", knoepfe[2].GetAttribute("aria-label"));
+        }
+        Assert.Empty(seite.FindAll("div.epos-simerg-block > button"));
+        Assert.DoesNotContain("CSV Export", seite.Markup);
     }
 
     // =====================================================================
@@ -415,11 +447,11 @@ public class BedarfReiterTests : EposBunitContext
     [Fact]
     public void Der_Kaelte_CSV_Knopf_meldet_seinen_Klick()
     {
-        Assert.Empty(ZeichnenMitKaelte(MitKaelte()).FindAll("section.epos-simerg-kaelte button.epos-simerg-knopf"));
+        Assert.Empty(ZeichnenMitKaelte(MitKaelte()).FindAll("section.epos-simerg-kaelte button.epos-diagramm-csv"));
 
         int n = 0;
         var seite = ZeichnenMitKaelte(MitKaelte(), () => n++);
-        seite.Find("section.epos-simerg-kaelte button.epos-simerg-knopf").Click();
+        seite.Find("section.epos-simerg-kaelte div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
 
         Assert.Equal(1, n);
     }

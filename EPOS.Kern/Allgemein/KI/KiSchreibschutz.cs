@@ -10,9 +10,8 @@ namespace WindowsFormsApplication1
     /// <remarks>
     /// <para>
     /// <b>Der Assistent umgeht NIE einen Schreibschutz</b> - auch nicht mit Bestaetigung.
-    /// <c>SchreibschutzUebergehen</c> (<c>BHKWStammCtrl.cs:157</c>) wird an keiner Stelle
-    /// des Assistenten gesetzt; wer einen geschuetzten Satz aendern will, nimmt den
-    /// Fachdialog. Diese Klasse ist die Stelle, an der das nachweisbar wird.
+    /// Wer einen geschuetzten Satz aendern will, hebt im Fachdialog erst das Schloss auf
+    /// („Schloss aufheben…“); eine Freigabe fuer einen einzelnen Vorgang gibt es nicht. Diese Klasse ist die Stelle, an der das nachweisbar wird.
     /// </para>
     /// <para>
     /// <b>Zwei Sperren, nicht eine.</b>
@@ -25,7 +24,7 @@ namespace WindowsFormsApplication1
     /// <b>Schematolerant wie der Bestand.</b> Nicht jede Tabelle fuehrt <c>ReadOnly</c>.
     /// Geprueft wird deshalb ueber <c>DataTable.Columns.Contains("ReadOnly")</c> - genau
     /// das Muster, mit dem <c>BHKWStammCtrl</c>, <c>GebaeudeStammCtrl</c>,
-    /// <c>ProzesswaermeCtrl</c> und die uebrigen den Wert lesen. Fuehrt die Tabelle das
+    /// <c>ProzesswaermeStammCtrl</c> und die uebrigen den Wert lesen. Fuehrt die Tabelle das
     /// Feld nicht, gibt es dort auch keinen Schreibschutz - und die Wache greift, sobald
     /// eine Migration das Feld nachtraegt, ohne dass hier etwas zu aendern waere.
     /// </para>

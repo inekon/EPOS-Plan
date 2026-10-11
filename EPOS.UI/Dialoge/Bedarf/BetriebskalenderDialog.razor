@@ -1,0 +1,373 @@
+﻿@* Die BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2; Konzept
+   Simulationsablauf 17) - der Verwaltungsdialog der Tabelle Tab_Betriebskalender.
+
+   WOZU. Ein Wochenprofil von 168 Stunden gilt sonst fuer alle 52 Wochen. Ein Betriebskalender legt
+   Feiertage (bundeseinheitlich, mit Bundesland dazu die Landesfeiertage) und bis zu vier
+   Betriebsferien auf das Wochenprofil einer Profilzuordnung - Brauchwasser, Prozesswaerme oder
+   Strom. Gewaehlt wird er je Zuordnung im Bedarfsprofil-Dialog des Projekts.
+
+   AUFBAU. Oben die Wahl des Kalenders mit "Neu" und "Loeschen", darunter die Felder des gewaehlten
+   Satzes. Eine Aenderung lebt bis "Speichern" (oder OK) im Arbeitsstand - dieselbe Regel wie in
+   den uebrigen Verwaltungsdialogen; "Loeschen" fragt zurueck und schreibt sofort, die Zuordnungen,
+   die den Kalender nutzen, stehen danach ohne ihn.
+
+   TASTATUR: Esc schliesst zuerst eine offene Rueckfrage, dann den Dialog. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Resource.BKAL_TITEL</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Resource.BKAL_TITEL" />
+        <Schliesskreuz Geschlossen="@(() => Beenden(false))" />
+    </div>
+
+    <p class="epos-kontextzeile">@Resource.BKAL_KONTEXT</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-kontextleiste">
+        <Auswahlfeld Bezeichnung="@Resource.BKAL_LBL_LISTE" Eintraege="@ListenEintraege"
+                     Auswahl="@(_satz.Id > 0 ? _satz.Id : null)" AuswahlChanged="KalenderWaehlen"
+                     Platzhalter="@(_liste.Count == 0 ? Resource.BKAL_LEER : Resource.BKAL_NEU_PLATZHALTER)" />
+        <button type="button" class="epos-knopf" @onclick="Neu">@Resource.BKAL_BTN_NEU</button>
+        <button type="button" class="epos-knopf" aria-disabled="@(_satz.Id > 0 ? null : "true")"
+                title="@Resource.BKAL_BTN_LOESCHEN" @onclick="LoeschenFragen">@Resource.BKAL_BTN_LOESCHEN</button>
+    </div>
+
+    <Formularraster>
+        <KindInhalt>
+            <Textfeld Bezeichnung="@Resource.BKAL_LBL_BEZEICHNER" Wert="@_satz.Bezeichner" Hoechstlaenge="100"
+                      WertChanged="@(w => Feld(() => _satz.Bezeichner = w ?? ""))" />
+            <Auswahlfeld Bezeichnung="@Resource.BKAL_LBL_BUNDESLAND" Eintraege="@LaenderEintraege"
+                         Auswahl="@LandIndex" AuswahlChanged="LandGewaehlt" />
+            <Schalter Bezeichnung="@Resource.BKAL_LBL_FEIERTAG" Wert="@_satz.FeiertagWieSonntag"
+                      WertChanged="@(w => Feld(() => _satz.FeiertagWieSonntag = w))" />
+            @for (int i = 0; i < FERIEN; i++)
+            {
+                int ii = i;
+                <Gemeinjahrdatum Bezeichnung="@string.Format(CultureInfo.CurrentCulture, Resource.BKAL_LBL_FERIEN_VON, ii + 1)"
+                                 Feldname="@("ferien" + (ii + 1) + "_von")" Meldung="@Resource.KOND_TXT_GEMEINJAHR"
+                                 Wert="@_satz.Von[ii]" WertChanged="@(w => Feld(() => _satz.Von[ii] = w))" />
+                <Gemeinjahrdatum Bezeichnung="@string.Format(CultureInfo.CurrentCulture, Resource.BKAL_LBL_FERIEN_BIS, ii + 1)"
+                                 Feldname="@("ferien" + (ii + 1) + "_bis")" Meldung="@Resource.KOND_TXT_GEMEINJAHR"
+                                 Wert="@_satz.Bis[ii]" WertChanged="@(w => Feld(() => _satz.Bis[ii] = w))" />
+            }
+            <Zahlenfeld Bezeichnung="@Resource.BKAL_LBL_FAKTOR" Feldname="@Resource.BKAL_LBL_FAKTOR" Einheit="%"
+                        Min="0" Max="100" Nachkommastellen="0" Wert="@_satz.FerienfaktorProzent"
+                        WertChanged="@(w => Feld(() => _satz.FerienfaktorProzent = w ?? 0))" />
+            <Schalter Bezeichnung="@Resource.BKAL_LBL_KUERZEN" Wert="@_satz.FerienKuerzen"
+                      WertChanged="@(w => Feld(() => _satz.FerienKuerzen = w))" />
+        </KindInhalt>
+    </Formularraster>
+    <Herleitungszeile Text="@Resource.BKAL_HRL_FEIERTAG" />
+    <Herleitungszeile Text="@Resource.BKAL_HRL_FAKTOR" />
+    <Herleitungszeile Text="@Resource.BKAL_HRL_KUERZEN" />
+    @if (Herleitung is not null)
+    {
+        <Herleitungszeile Text="@Herleitung(_satz)" />
+    }
+
+    <SpeichernLeiste @ref="_leiste" MitSpeichern="true" SatzMarkiert="true"
+                     Geaendert="@_geaendert" Gespeichertwerden="@(() => { SpeichernKlick(); })"
+                     OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                     Ergebnis="Beenden" />
+
+    <Rueckfrage Offen="@(_frage.Length > 0)" Frage="@_frage" TitelText="@Resource.BKAL_TITEL"
+                JaText="@Resource.ALLG_BTN_JA" NeinText="@Resource.ALLG_BTN_NEIN"
+                Beantwortet="FrageBeantwortet" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben
+    // =====================================================================
+
+    /// <summary>Liest alle Kalender (nach Bezeichner); <c>null</c> = keine Datenquelle.</summary>
+    [Parameter] public Func<IReadOnlyList<BetriebskalenderDaten>>? Laden { get; set; }
+
+    /// <summary>Die Länder zur Wahl (Kennung und Name); leer = nur die bundeseinheitlichen Feiertage.</summary>
+    [Parameter] public IReadOnlyList<Bundeslandeintrag> Laender { get; set; } = Array.Empty<Bundeslandeintrag>();
+
+    /// <summary>Prüft einen Satz mit den Regeln des Kerns; <c>null</c> = gültig, sonst der Grund.</summary>
+    [Parameter] public Func<BetriebskalenderDaten, string?>? Pruefen { get; set; }
+
+    /// <summary>Schreibt einen Kalender; Rückgabe <c>null</c> = gelungen (die ID steht danach im Satz), sonst der Grund.</summary>
+    [Parameter] public Func<BetriebskalenderDaten, string?>? Speichern { get; set; }
+
+    /// <summary>Löscht einen Kalender; Rückgabe <c>null</c> = gelungen, sonst der Grund.</summary>
+    [Parameter] public Func<int, string?>? Loeschen { get; set; }
+
+    /// <summary>Wie viele Profilzuordnungen nutzen den Kalender?</summary>
+    [Parameter] public Func<int, int>? Verwendungen { get; set; }
+
+    /// <summary>Die Auskunftszeile zum Arbeitsstand (Feiertage und Ferientage im Rechenjahr); <c>null</c> = keine.</summary>
+    [Parameter] public Func<BetriebskalenderDaten, string>? Herleitung { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Der Hilfeschlüssel des Infoknopfs.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Betriebskalender.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private const int FERIEN = BetriebskalenderDaten.FERIEN;
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private SpeichernLeiste? _leiste;
+
+    private List<BetriebskalenderDaten> _liste = new();
+    private BetriebskalenderDaten _satz = new();
+    private bool _geaendert;
+    private bool _geschrieben;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+    private string _frage = "";
+
+    /// <summary>Der Arbeitsstand (Prüfhilfe für Tests).</summary>
+    public BetriebskalenderDaten Satz => _satz;
+
+    /// <summary>Die Meldung im Banner (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die offene Rückfrage (Prüfhilfe für Tests).</summary>
+    public string OffeneFrage => _frage;
+
+    protected override void OnInitialized()
+    {
+        Nachladen(0);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BETRIEBSKALENDER, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =====================================================================
+    // Der Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BetriebskalenderKiSicht? _kiSicht;
+
+    private BetriebskalenderKiSicht KiSicht()
+    {
+        return _kiSicht ??= new BetriebskalenderKiSicht
+        {
+            KalenderLesen = () => _satz.Id > 0 ? _satz.Id : null,
+            KalenderSetzen = id => KalenderWaehlen(id),
+            KalenderEintraege = () => KiMaskenanmeldung.Eintraege(ListenEintraege, z => z.Id, z => z.Text),
+            BezeichnungLesen = () => _satz.Bezeichner ?? "",
+            BezeichnungSetzen = w => Feld(() => _satz.Bezeichner = w ?? ""),
+            BundeslandLesen = () => _satz.Bundesland ?? "",
+            BundeslandSetzen = BundeslandSetzen,
+            BundeslandEintraege = () => KiMaskenanmeldung.Eintraege(
+                LaenderEintraege, z => z.Id == 0 ? "" : Laender[z.Id - 1].Kennung, z => z.Text),
+            FeiertagLesen = () => _satz.FeiertagWieSonntag,
+            FeiertagSetzen = w => Feld(() => _satz.FeiertagWieSonntag = w),
+            VonLesen = i => _satz.Von[i],
+            VonSetzen = (i, w) => Feld(() => _satz.Von[i] = w),
+            BisLesen = i => _satz.Bis[i],
+            BisSetzen = (i, w) => Feld(() => _satz.Bis[i] = w),
+            FaktorLesen = () => _satz.FerienfaktorProzent,
+            FaktorSetzen = w => Feld(() => _satz.FerienfaktorProzent = w ?? 0),
+            KuerzenLesen = () => _satz.FerienKuerzen,
+            KuerzenSetzen = w => Feld(() => _satz.FerienKuerzen = w)
+        };
+    }
+
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    // =====================================================================
+    // Anzeige
+    // =====================================================================
+
+    /// <summary>Die Kalender der Wahl.</summary>
+    private IReadOnlyList<(int Id, string Text)> ListenEintraege
+        => _liste.Select(k => (k.Id, k.Bezeichner ?? "")).ToList();
+
+    /// <summary>Die Länder der Wahl: 0 = nur die bundeseinheitlichen Feiertage, 1 … n die Gaben.</summary>
+    private IReadOnlyList<(int Id, string Text)> LaenderEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)> { (0, Resource.BKAL_BUNDESLAND_KEINES) };
+            for (int i = 0; i < Laender.Count; i++) l.Add((i + 1, Laender[i].Name));
+            return l;
+        }
+    }
+
+    private int LandIndex
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_satz.Bundesland)) return 0;
+            for (int i = 0; i < Laender.Count; i++)
+                if (Laender[i].Kennung == _satz.Bundesland) return i + 1;
+            return 0;
+        }
+    }
+
+    // =====================================================================
+    // Bedienung
+    // =====================================================================
+
+    private void Feld(Action setzen)
+    {
+        setzen();
+        _geaendert = true;
+        _meldung = "";
+        _leiste?.Leeren();
+    }
+
+    private void LandGewaehlt(int? index)
+    {
+        int i = index ?? 0;
+        Feld(() => _satz.Bundesland = i <= 0 || i > Laender.Count ? null : Laender[i - 1].Kennung);
+    }
+
+    /// <summary>Der Weg des Assistenten: Kennung oder leer; eine fremde lehnt die Maske benannt ab.</summary>
+    private void BundeslandSetzen(string? kennung)
+    {
+        string k = (kennung ?? "").Trim();
+        if (k.Length > 0 && !Laender.Any(l => l.Kennung == k))
+            throw new InvalidOperationException(Resource.BKAL_MSG_BUNDESLAND);
+        Feld(() => _satz.Bundesland = k.Length == 0 ? null : k);
+    }
+
+    /// <summary>Ein anderer Kalender — ungespeicherte Eingaben am vorigen verfallen.</summary>
+    private void KalenderWaehlen(int? id)
+    {
+        BetriebskalenderDaten? k = _liste.FirstOrDefault(x => x.Id == id);
+        if (k is null) return;
+        Zeigen(k);
+    }
+
+    private void Neu()
+    {
+        Zeigen(new BetriebskalenderDaten());
+        _meldung = "";
+    }
+
+    private void Zeigen(BetriebskalenderDaten k)
+    {
+        _satz = k.Kopie();
+        _geaendert = false;
+        _leiste?.Leeren();
+    }
+
+    /// <summary>Ein halber Zeitraum ist eine Fehleingabe — benannt, nicht still verworfen.</summary>
+    private bool HalberZeitraum()
+    {
+        for (int i = 0; i < FERIEN; i++)
+            if (_satz.Von[i].HasValue != _satz.Bis[i].HasValue) return true;
+        return false;
+    }
+
+    private void Nachladen(int auswahl)
+    {
+        _liste = new List<BetriebskalenderDaten>(Laden?.Invoke() ?? Array.Empty<BetriebskalenderDaten>());
+        BetriebskalenderDaten? k = _liste.FirstOrDefault(x => x.Id == auswahl) ?? _liste.FirstOrDefault();
+        Zeigen(k ?? new BetriebskalenderDaten());
+    }
+
+    private bool SpeichernKlick()
+    {
+        if (Speichern is null) return false;
+        if (HalberZeitraum())
+        {
+            Melden(Resource.BKAL_MSG_FERIEN_DATUM, WarnStufe.Warnung);
+            _leiste?.Fehler();
+            return false;
+        }
+
+        BetriebskalenderDaten k = _satz.Kopie();
+        string? grund = Pruefen?.Invoke(k) ?? Speichern(k);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund!, WarnStufe.Warnung);
+            _leiste?.Fehler();
+            return false;
+        }
+
+        _geschrieben = true;
+        Nachladen(k.Id);
+        Melden(Resource.BKAL_MSG_GESPEICHERT, WarnStufe.Hinweis);
+        _leiste?.Gespeichert();
+        return true;
+    }
+
+    private void LoeschenFragen()
+    {
+        if (_satz.Id <= 0)
+        {
+            Melden(Resource.BKAL_MSG_NICHT_GESPEICHERT, WarnStufe.Hinweis);
+            return;
+        }
+        int n = Verwendungen?.Invoke(_satz.Id) ?? 0;
+        _frage = string.Format(CultureInfo.CurrentCulture, Resource.BKAL_FRAGE_LOESCHEN, _satz.Bezeichner, n);
+    }
+
+    private void FrageBeantwortet(bool? antwort)
+    {
+        _frage = "";
+        if (antwort != true || Loeschen is null) return;
+        string? grund = Loeschen(_satz.Id);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund!, WarnStufe.Warnung);
+            return;
+        }
+        _geschrieben = true;
+        Nachladen(0);
+        Melden(Resource.BKAL_MSG_GELOESCHT, WarnStufe.Hinweis);
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    // =====================================================================
+    // Ausgänge
+    // =====================================================================
+
+    private async Task Beenden(bool ok)
+    {
+        if (ok && _geaendert && !SpeichernKlick()) return;   // OK schreibt; scheitert es, bleibt der Dialog offen
+        await Geschlossen.InvokeAsync(ok || _geschrieben);
+    }
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (!string.Equals(e.Key, "Escape", StringComparison.Ordinal)) return;
+        if (_frage.Length > 0)
+        {
+            _frage = "";
+            return;
+        }
+        await Beenden(false);
+    }
+}

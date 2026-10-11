@@ -46,8 +46,10 @@ namespace WindowsFormsApplication1
     /// <item><b>Fensterabzug (U14):</b> A_Wand = Brutto − Σ Fenster − Σ Außentüren derselben Fläche;
     /// negativ → die Nettofläche der Datei, wenn sie eine angibt (IFC: <c>NetSideArea</c>), sonst 0 und
     /// Zeile Fehler. Der Bruttowert wird mitgeführt.</item>
-    /// <item><b>Baualtersklasse:</b> die gewählte; ohne sie die aus dem Baujahr der Datei
-    /// (<see cref="Baujahrregel"/>, A…M für jedes Jahr), Herkunft der Datei.</item>
+    /// <item><b>Baualtersklasse:</b> trägt die Datei ein Baujahr, die Klasse daraus (<see cref="Baujahrregel"/>,
+    /// A…M für jedes Jahr, Herkunft der Datei) — sie ist der VORSCHLAG; eine ausdrücklich gewählte Klasse
+    /// (<c>klasseUebersteuert</c>) gilt vor ihm (Anwenderwunsch 08.10.2026, wie im Gebäudeeditor). Ohne Baujahr
+    /// die gewählte bzw. vorgegebene.</item>
     /// <item><b>Luftwechsel:</b> gelesen nur auf die Infiltration (D12); liest die Datei für keinen
     /// beheizten Raum einen, gelten die Vorgaben des Stundenmodells (0,3 und 0,4 1/h).</item>
     /// <item><b>U-Werte:</b> flächengewichtet je Gruppe, U = Σ(U·A)/ΣA; fehlt der U-Wert bei mehr
@@ -119,19 +121,29 @@ namespace WindowsFormsApplication1
 
         /// <summary>Bildet den Satz eines Gebäudes.</summary>
         /// <param name="uebersteuert">Raumkennung → beheizt (die Haken der Raumliste); <c>null</c> = keine.</param>
+        /// <param name="raumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen"
+        /// (<see cref="GebaeudeCadSollwert"/>); wirkt nur, wenn <see cref="GebaeudeImportSatz.CadSollwertMoeglich"/>.</param>
+        /// <param name="uWirksam">Das U eines Bauteils aus einer anderen Quelle, das dem eingetragenen vorgeht (Aufbauquelle
+        /// „Projektdatei“, <see cref="SqprojStand.UWirksam"/>); <c>null</c> bzw. Rückgabe <c>null</c> = das U der Datei.</param>
+        /// <param name="klasseUebersteuert">Der Anwender hat <paramref name="klasse"/> ausdrücklich gewählt: Sie gilt vor der
+        /// Klasse aus dem Baujahr der Datei. <c>false</c> = <paramref name="klasse"/> ist nur die Vorgabe des Dialogs.</param>
         internal static GebaeudeImportSatz Bilden(GebaeudeAbbild abbild, int index, char? klasse,
                                                   GebaeudeQuelle quelle, GebaeudeImportProfil profil,
-                                                  IReadOnlyDictionary<string, bool> uebersteuert = null)
+                                                  IReadOnlyDictionary<string, bool> uebersteuert = null,
+                                                  bool raumtemperaturAlsSollwert = false,
+                                                  Func<AbbildBauteil, double?> uWirksam = null,
+                                                  bool klasseUebersteuert = false)
         {
             AbbildGebaeude g = abbild.Gebaeude[index];
-            Importherkunft datei = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
-                ? Importherkunft.Ifc : Importherkunft.GbXml;
-            // Die Klasse (Entscheid E47, F2): Das Baujahr führt — trägt die Datei eines, gilt die
-            // Klasse daraus (A…M für jedes Jahr); nur ohne Baujahr die gewählte.
-            char? k = null;
+            // Die Herkunft der gelesenen Zahlen je Format — die Projektdatei trägt ihre eigene (SQPROJ), die Herkunft bleibt wahr.
+            Importherkunft datei = ImportherkunftWerte.AusFormat(abbild.Format);
+            // Die Klasse (Entscheid E47, F2): Das Baujahr schlägt vor — trägt die Datei eines, gilt die
+            // Klasse daraus (A…M für jedes Jahr), es sei denn, der Anwender hat ausdrücklich gewählt
+            // (Anwenderwunsch 08.10.2026: die Klasse ist immer wählbar); ohne Baujahr die gewählte.
+            char? k = klasseUebersteuert ? Klasse(klasse) : null;
             Func<AbbildRaum, bool> istBeheizt = r => GebaeudeRaumzeile.BeheiztWirksam(r, uebersteuert);
             bool klasseAusBaujahr = false;
-            if (g.Baujahr is int jahr)
+            if (!k.HasValue && g.Baujahr is int jahr)
             {
                 k = Baujahrregel.Klasse(jahr);
                 klasseAusBaujahr = k.HasValue;
@@ -173,7 +185,7 @@ namespace WindowsFormsApplication1
             List<Posten> posten = einordnung.Huelle.Select(h => Einordnen(h, zaehler, z)).ToList();
             Trennflaechen(einordnung.Paare, profil, meldungen);
             Oeffnungen(posten, profil, z, meldungen);
-            UWerte(posten, meldungen);
+            UWerte(posten, meldungen, uWirksam);
             foreach (KeyValuePair<string, double[]> e in zaehler)
                 meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + e.Key,
                     Zahl(e.Value[0]), Zahl(e.Value[1])));
@@ -192,7 +204,8 @@ namespace WindowsFormsApplication1
             Fenster(aktiv, datei, k, z, meldungen);
             Waermebruecken(k, z);
             Lueftung(beheizt, datei, z, meldungen);
-            Sollwerte(beheizt, datei, z, meldungen);
+            bool cadMoeglich = GebaeudeCadSollwert.Moeglich(beheizt);
+            Sollwerte(beheizt, datei, z, meldungen, profil, g.Anzeigename, cadMoeglich && raumtemperaturAlsSollwert);
 
             // Prüfgrößen und abgeleitete Felder (gesamte Fensterfläche, Bauweise) übernimmt nie jemand.
             foreach (GebaeudeFeldzeile r in zeilen)
@@ -216,6 +229,8 @@ namespace WindowsFormsApplication1
             {
                 Uebersteuerungen = abweichungen,
                 Baujahr = g.Baujahr,
+                CadSollwertMoeglich = cadMoeglich,
+                CadSollwertAktiv = cadMoeglich && raumtemperaturAlsSollwert,
             };
 
             // Obergrenze der Zonen (3.3) — für X4 ist es genau eine.
@@ -579,16 +594,16 @@ namespace WindowsFormsApplication1
         /// Die U-Werte der Hüllenbauteile, ihrer Fenster und Türen — nach dem Einordnen, weil erst
         /// dann die Randbedingung feststeht; Öffnungen ohne eigene Neigung nehmen die ihres Wirts.
         /// </summary>
-        private static void UWerte(List<Posten> posten, List<PruefMeldung> meldungen)
+        private static void UWerte(List<Posten> posten, List<PruefMeldung> meldungen, Func<AbbildBauteil, double?> uWirksam)
         {
             var gemeldet = new HashSet<string>(StringComparer.Ordinal);
             foreach (Posten p in posten)
             {
-                p.U = UWert(p.Bauteil, p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+                p.U = uWirksam?.Invoke(p.Bauteil) ?? UWert(p.Bauteil, p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
                 foreach (Fensterposten f in p.Fenster)
-                    f.U = UWert(f.Oeffnung, f.Oeffnung.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+                    f.U = uWirksam?.Invoke(f.Oeffnung) ?? UWert(f.Oeffnung, f.Oeffnung.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
                 foreach (Posten t in p.Tueren)
-                    t.U = UWert(t.Bauteil, t.Bauteil.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+                    t.U = uWirksam?.Invoke(t.Bauteil) ?? UWert(t.Bauteil, t.Bauteil.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
             }
         }
 
@@ -643,9 +658,10 @@ namespace WindowsFormsApplication1
                 double? azimut = HatHimmelsrichtung(s) ? s.AzimutGrad : null;
                 foreach (AbbildBauteil o in h.Fenster)
                 {
+                    // Ohne Richtung der Wand die des Fensters selbst (der IFC-Leser ergänzt sie aus dem eigenen Körper).
                     p.Fenster.Add(new Fensterposten
                     {
-                        Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut, G = o.GWert,
+                        Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut ?? (HatHimmelsrichtung(o) ? o.AzimutGrad : null), G = o.GWert,
                     });
                     if (!o.BruttoflaecheM2.HasValue && !p.Verworfen)
                         z[GebaeudeZielfelder.FENSTER_GESAMT].Markieren(PruefStufe.Warnung);
@@ -1032,9 +1048,14 @@ namespace WindowsFormsApplication1
         /// trägt, sonst die Vorgabe 20 °C; der Nachtsollwert als Vorgabe 18 °C, höchstens der
         /// Tagsollwert; die Nachtzeit als Vorgabe 22 bis 6 Uhr, übernommen als ausdrückliche Werte. Jede
         /// Vorgabe mit Herkunft „Vorgabe" und Beleg, änderbar im Dialog und im Editor.
+        ///
+        /// <para><b>Die Raumtemperatur der Datei</b> (<paramref name="cad"/>, nur auf Wunsch des Anwenders und nur ohne
+        /// Norm-Sollwert): der Tagsollwert ist das flächengewichtete Mittel der CAD-Raumtemperaturen der beheizten
+        /// Räume (<see cref="GebaeudeCadSollwert"/>), Herkunft Datei mit Beleg <c>GIMP_BELEG_SOLLWERT_CAD</c>; über
+        /// 2 K Spanne ein Hinweis. Der Name einer Zone trägt nie einen Sollwert.</para>
         /// </summary>
         private static void Sollwerte(List<AbbildRaum> beheizt, Importherkunft datei, Dictionary<string, GebaeudeFeldzeile> z,
-                                      List<PruefMeldung> meldungen)
+                                      List<PruefMeldung> meldungen, GebaeudeImportProfil profil, string gebaeudename, bool cad)
         {
             GebaeudeFeldzeile tag = z[GebaeudeZielfelder.SOLL_TAG];
             tag.VorgabeWert = GebaeudeStammCtrl.SOLLTEMPERATUR_TAG_VORGABE;
@@ -1049,6 +1070,14 @@ namespace WindowsFormsApplication1
                 else
                     meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + "SOLLWERT_UNEINHEITLICH",
                         Zahl(min), Zahl(max), Zahl(werte.Count), Zahl(beheizt.Count - werte.Count)));
+            }
+            else if (cad && GebaeudeCadSollwert.Bilden(beheizt) is GebaeudeCadSollwert.Mittel m)
+            {
+                Setzen(tag, m.Wert, datei, new GebaeudeBeleg(GebaeudeCadSollwert.BELEG,
+                    Zahl(m.Raeume), Zahl(m.MinC), Zahl(m.MaxC), Zahl(m.OhneTemperatur)));
+                if (m.SpanneGross)
+                    meldungen.Add(new PruefMeldung(PruefStufe.Warnung, profil.Meldung(GebaeudeCadSollwert.SOLLWERT_CAD_SPANNE),
+                        gebaeudename ?? "", Zahl(m.MinC), Zahl(m.MaxC), Zahl(GebaeudeCadSollwert.SPANNE_GRENZE_K)));
             }
             if (!tag.Wert.HasValue) VorgabeUebernehmen(tag);
 

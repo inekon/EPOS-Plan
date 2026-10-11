@@ -272,9 +272,29 @@ public sealed class PvStrangTexte
     public string OptionKatalog { get; set; } =
         T("PVS_OPT_KATALOG", "mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping");
 
-    /// <summary>Die Zeile im Weg „vereinfacht" — <c>PVS_HINWEIS_VEREINFACHT</c>, mit {0} = Wirkungsgrad.</summary>
+    /// <summary>
+    /// Die Zeile im Weg „vereinfacht" im Modell EINFACH — <c>PVS_HINWEIS_VEREINFACHT</c>,
+    /// mit {0} = Wirkungsgrad. Dort gilt der feste Wirkungsgrad; die Anlagenwerte
+    /// (AC-Nennleistung, Kennlinie) wirken nicht.
+    /// </summary>
     public string HinweisVereinfacht { get; set; } =
-        T("PVS_HINWEIS_VEREINFACHT", "Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.");
+        T("PVS_HINWEIS_VEREINFACHT",
+          "Modell „Einfach“: Die Anlage rechnet mit dem festen Wirkungsgrad {0} und ohne Clipping; die Anlagenwerte des Wechselrichters wirken in diesem Modell nicht.");
+
+    /// <summary>
+    /// Die Zeile im Weg „vereinfacht" im Modell ERWEITERT mit eingetragener
+    /// AC-Nennleistung — <c>PVS_HINWEIS_ERWEITERT_CLIPPING</c>, {0} = AC-Nennleistung in kW.
+    /// </summary>
+    public string HinweisErweitertClipping { get; set; } =
+        T("PVS_HINWEIS_ERWEITERT_CLIPPING",
+          "Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte und regelt oberhalb der AC-Nennleistung von {0} kW ab (Clipping).");
+
+    /// <summary>
+    /// Dieselbe Zeile ohne AC-Nennleistung — <c>PVS_HINWEIS_ERWEITERT_OHNE_AC</c>.
+    /// </summary>
+    public string HinweisErweitertOhneAc { get; set; } =
+        T("PVS_HINWEIS_ERWEITERT_OHNE_AC",
+          "Modell „Erweitert“: Die Anlage rechnet mit der Wechselrichter-Kennlinie der Anlagenwerte, ohne AC-Nennleistung ohne Clipping. Ist eine AC-Nennleistung eingetragen, regelt EPOS-Plan oberhalb davon ab.");
 
     /// <summary>
     /// Die Zeile, wenn „mit Wechselrichter" gewählt, aber kein Strang angelegt ist —

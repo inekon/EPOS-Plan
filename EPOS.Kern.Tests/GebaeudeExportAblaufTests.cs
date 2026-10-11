@@ -137,7 +137,8 @@ namespace EPOS.Kern.Tests
 
             // Ohne Namensabgleich: Kandidat (i) ist ein masseloser Aufbau — die Zeile trägt nur U.
             GebaeudeBauteilvorschlag ohne = GebaeudeBauteilvorschlag.Bilden(abbildI, 0, 'E', null, new GbxmlImportProfil());
-            Assert.False(ohne.Zeilen.Single(x => x.Kennung == "epos-bauteil-1001").Bauteil.ID_Aufbau.HasValue);
+            GebaeudeBauteilzeile zOhne = ohne.Zeilen.Single(x => x.Kennung == "epos-bauteil-1001");
+            Assert.True(!zOhne.Bauteil.ID_Aufbau.HasValue || zOhne.Typaufbau != null);   // BA-2: höchstens ein Ersatzaufbau
             _ausgabe.WriteLine("Luftschicht-Rückweg: (i) mit Namensabgleich vollständig als Luftschicht (ρ leer), U = "
                                + uI.ToString("R", CultureInfo.InvariantCulture) + "; (ii) vollständig als Schicht mit ρ = 5, U gleich; "
                                + "(i) ohne Namensabgleich masselos. Festgeschrieben: (i).");
@@ -325,7 +326,7 @@ namespace EPOS.Kern.Tests
             double r = 1.0 / u - rSi - rSe;
             Assert.Equal(u, 1.0 / (rSi + w.DickeM / w.LambdaWmK + rSe), 12);
             Assert.Equal(kappa, w.RhoKgM3 * w.CpJkgK * w.DickeM, 6);
-            Assert.InRange(w.DickeM, 0.001, 1.0);
+            Assert.InRange(w.DickeM, GebaeudeFestwerte.SCHICHT_DICKE_MIN_M, GebaeudeFestwerte.SCHICHT_DICKE_MAX_M);
             Assert.InRange(w.LambdaWmK, GebaeudeFestwerte.LAMBDA_MIN_WMK, GebaeudeFestwerte.LAMBDA_MAX_WMK);
             Assert.InRange(w.RhoKgM3, GebaeudeFestwerte.ROHDICHTE_MIN_KGM3, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3);
             double vorzug = kappa / (GebaeudeExportAblauf.RHO_VORZUG_KGM3 * GebaeudeExportAblauf.CP_ERSATZ_JKGK);

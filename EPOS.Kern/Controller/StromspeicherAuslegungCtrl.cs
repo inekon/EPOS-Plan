@@ -643,7 +643,11 @@ namespace WindowsFormsApplication1
             FlottenStudieKonfiguration flotte = eingaben?.Auslegung?.Flotte;
             try
             {
-                if (flotte != null && flotte.Einheiten.Count > 0)
+                // Vor dem ersten Lauf (Lauf ohne Strombedarf) gibt es keine EPOS-Reihe: Dann
+                // gilt gleich der Rueckfall, statt die Beschaffung scheitern zu lassen.
+                if (flotte != null && flotte.Einheiten.Count > 0 &&
+                    (SpeicherFlottenStudieCtrl.LastgangGerechnet(_lauf) ||
+                     !SpeicherAuslegungCtrl.BrauchtEposReihe(eingaben.Auslegung)))
                 {
                     // Derselbe Zwischenspeicher wie die Vorpruefung (Auftrag #254): Der
                     // Vorschlag liest genau dieselbe Istreihe.
@@ -712,6 +716,57 @@ namespace WindowsFormsApplication1
                 SpeicherFlottenProjektCtrl.Aktivieren(_projektId, ergebnis);
                 SpeicherOptimierungEingaben aktuell = ergebnis.Eingaben.Kopie();
                 aktuell.Auslegung.Flotte = SpeicherAuslegungKopie.Von(ergebnis.Konfiguration);
+                aktuell.Auslegung.FlotteImProjektAktiv = false;
+                aktuell.Auslegung.FlottenProjektbetriebDeaktiviert = false;
+                SpeicherAuslegungCtrl.Speichern(_projektId, SpeicherAuslegungCtrl.Anlage(_projektId),
+                    SpeicherAuslegungCtrl.AktuellerStand, aktuell);
+                ProjektflotteGeaendert = true;
+                return "";
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        /// <summary>
+        /// <b>„Beste Variante übernehmen"</b> (Entscheidungsvorlage Modellgrenzen, SP2): Der
+        /// beste Rasterpunkt einer Auslegungssuche wird die Speicherflotte des Projekts — als
+        /// feste Flotte ohne Suchachsen im Arbeitsstand der Ansicht und aktiviert für den
+        /// Projektlauf (<c>@Projektflotte</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Was geschrieben wird</b> — zwei Zeilen in <c>Tab_SpeicherAuslegung</c>,
+        /// sonst nichts: der Projektflottenstand <c>@Projektflotte</c> über
+        /// <see cref="SpeicherFlottenProjektCtrl.Aktivieren"/> (dieselbe Prüfung wie
+        /// „Diese Flotte für die Projektsimulation aktivieren": zulässiger bester Kandidat,
+        /// vollständige Zeitreihen, Projektquellen) und der Arbeitsstand
+        /// (<see cref="SpeicherAuslegungCtrl.AktuellerStand"/>) mit der besten Flotte,
+        /// Suchmethode „Nur bewerten" und ohne Achsen.</para>
+        /// <para><b>Kein Simulationsergebnis.</b> Weder die Ergebnistabellen noch die
+        /// Anlagen- und Variantenzeilen des Projekts werden berührt; das Simulationsergebnis
+        /// bleibt das Ergebnis EINES Laufs mit gespeicherten Eingaben, und der nächste
+        /// Projektlauf rechnet die übernommene Flotte.</para>
+        /// </remarks>
+        /// <param name="ergebnis">Das Laufergebnis mit Auslegungssuche.</param>
+        /// <returns>Leer bei Erfolg, sonst der Grund.</returns>
+        public string BesteVarianteUebernehmen(SpeicherFlottenErgebnis ergebnis)
+        {
+            FlottenAuslegungErgebnis auslegung = ergebnis?.Auslegung;
+            if (auslegung == null) return MyResource.Resource.FLOTTE_BESTE_MSG_KEINE_SUCHE;
+            if (auslegung.NullvarianteGewonnen || auslegung.BesteKonfiguration == null ||
+                auslegung.BesteKonfiguration.Einheiten == null || auslegung.BesteKonfiguration.Einheiten.Count == 0)
+                return MyResource.Resource.FLOTTE_BESTE_MSG_NULLVARIANTE;
+
+            // Der Projektstand wird geschrieben - der Zwischenspeicher der Vorpruefung
+            // faellt (#254).
+            ZwischenspeicherVerwerfen();
+            try
+            {
+                SpeicherFlottenProjektCtrl.Aktivieren(_projektId, ergebnis);
+
+                SpeicherOptimierungEingaben aktuell = ergebnis.Eingaben.Kopie();
+                aktuell.Auslegung.Flotte = SpeicherAuslegungKopie.Von(auslegung.BesteKonfiguration);
+                aktuell.Auslegung.Flotte.Auslegung.Achsen.Clear();
+                aktuell.Auslegung.Flotte.Auslegung.Suchmethode = FlottenSuchmethode.Bewerten;
+                aktuell.Auslegung.FlottenGroessenOptimieren = false;
                 aktuell.Auslegung.FlotteImProjektAktiv = false;
                 aktuell.Auslegung.FlottenProjektbetriebDeaktiviert = false;
                 SpeicherAuslegungCtrl.Speichern(_projektId, SpeicherAuslegungCtrl.Anlage(_projektId),

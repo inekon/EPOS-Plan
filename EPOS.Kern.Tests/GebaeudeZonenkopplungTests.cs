@@ -417,18 +417,23 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_Kuehlwerte_kommen_vom_Gebaeude()
+        public void Die_Kuehlwerte_der_Zone_ersetzen_die_des_Gebaeudes()
         {
-            // A4 (a): Tab_Zone.Kuehl_* bleiben ungelesen.
+            // KU3-3 (E67/E68): Tab_Zone.Kuehl_* werden gelesen - NULL erbt vom Gebäude.
             var zone = new ZoneModel
             {
                 ID = -1, Bezeichner = "Z", Kuehlung_Aktiv = false, Kuehl_Sollwert = 22.0, Kuehl_Sollwert_Nacht = 25.0, Kuehlleistung_Max = 1.0,
             };
             Zonenvorgaben v = Zonenvorgaben.Bilden(zone, Gebaeude(), 2);
-            Assert.True(v.KuehlungAktiv);
-            Assert.Equal(new Vorgabewert(26.0, Vorgabeherkunft.Gebaeude), v.KuehlSollwert);
-            Assert.Equal(new Vorgabewert(null, Vorgabeherkunft.Leer), v.KuehlSollwertNacht);
-            Assert.Equal(new Vorgabewert(8.0, Vorgabeherkunft.Gebaeude), v.KuehlleistungMaxKw);
+            Assert.False(v.KuehlungAktiv);
+            Assert.Equal(new Vorgabewert(22.0, Vorgabeherkunft.Zone), v.KuehlSollwert);
+            Assert.Equal(new Vorgabewert(25.0, Vorgabeherkunft.Zone), v.KuehlSollwertNacht);
+            Assert.Equal(new Vorgabewert(1.0, Vorgabeherkunft.Zone), v.KuehlleistungMaxKw);
+
+            Zonenvorgaben leer = Zonenvorgaben.Bilden(new ZoneModel { ID = -2, Bezeichner = "L" }, Gebaeude(), 2);
+            Assert.True(leer.KuehlungAktiv);
+            Assert.Equal(new Vorgabewert(26.0, Vorgabeherkunft.Gebaeude), leer.KuehlSollwert);
+            Assert.Equal(new Vorgabewert(null, Vorgabeherkunft.Leer), leer.KuehlSollwertNacht);
         }
 
         [Fact]

@@ -1,0 +1,157 @@
+EPOS-Plan ist eine eigenständige Windows-Anwendung für 64-Bit-Windows ab Windows 10 und benötigt '''kein Excel''': Berechnung, Datenhaltung und Darstellung laufen vollständig im Programm selbst. Der Download erfolgt über unseren Server; den Zugang erhalten Sie im Rahmen des Wartungsvertrags. Diese Seite beschreibt die Windows-Anwendung; die iOS-App für das iPad bringt ihre Datenbank mit der Seed-Kopie der Kataloge mit.
+
+== Überblick ==
+{{Anker|ueberblick}}
+
+Der Abschnitt [[Installation und Update#installation|Installation]] führt Schritt für Schritt durch die Erstinstallation – vom Download über das Setup bis zu den Einstellungen, die nach dem ersten Start sinnvoll sind. Wer eine vorhandene Installation aktualisiert, folgt stattdessen dem Abschnitt [[Installation und Update#update|Update]]. Die Hardware- und Softwarevoraussetzungen sind unter [[Systemvoraussetzungen]] zusammengestellt; die Programmpakete liegen im geschützten Bereich unserer Website ({{Website|/downloads/|Download}}).
+
+== Installation ==
+{{Anker|installation}}
+
+=== Vor der Installation ===
+{{Anker|vor-der-installation|in-vorbereitung}}
+
+Halten Sie zwei Dinge bereit: Ihre Zugangsdaten für den Downloadbereich und Administratorrechte auf dem Rechner.
+
+Auf einem Rechner, auf dem bereits eine ältere Fassung installiert ist, sichern Sie vorab das Programmverzeichnis und die Datenverzeichnisse. Eine Neuinstallation über eine bestehende Version hinweg ist nicht vorgesehen – dafür gibt es das Update.
+
+=== Schritt 1: Installationspaket herunterladen ===
+{{Anker|schritt-1-installationspaket-herunterladen|in-download}}
+
+Melden Sie sich mit Benutzername und Kennwort an unserem Server an. Beide erhalten Sie mit der Rechnung oder auf Anfrage unter [mailto:info@inekon.de info@inekon.de]. Wählen Sie im Benutzermenü den Bereich Downloads. Je nach Zugriffsrechten sehen Sie mehrere Kategorien; für EPOS-Plan sind die Kategorien EPOS-Plan und Update maßgeblich.
+
+Laden Sie das Installationsprogramm der aktuellen Version herunter; es heißt <code>EPOS-Plan_Setup_</code> mit der Versionsnummer dahinter. Dieselbe Datei dient der Erstinstallation und dem Update. Liegt sie als ZIP-Archiv vor, entpacken Sie das Archiv vollständig in einen lokalen Ordner, bevor Sie das Setup starten – ein Start direkt aus dem geöffneten ZIP-Archiv heraus führt regelmäßig dazu, dass mitgelieferte Dateien nicht gefunden werden.
+
+=== Schritt 2: Setup ausführen ===
+{{Anker|schritt-2-setup-ausfuehren|in-setup}}
+
+Starten Sie das Installationsprogramm mit der rechten Maustaste über ''Als Administrator ausführen''. Windows fragt gegebenenfalls nach einer Bestätigung durch die Benutzerkontensteuerung. Meldet der SmartScreen-Filter eine unbekannte Anwendung, wählen Sie ''Weitere Informationen'' und anschließend ''Trotzdem ausführen''.
+
+Der Setup-Assistent führt durch die Wahl der Sprache, die Bestätigung der Lizenzvereinbarung, die Hinweise zur Installation, die Auswahl des Zielordners und der Komponenten – die Herstellerdaten nach VDI 3805 sind abwählbar – sowie die Zusatzaufgaben, etwa ein Symbol auf dem Desktop; danach installiert er und richtet bei Bedarf die Laufzeitkomponenten ein. Übernehmen Sie den vorgeschlagenen Zielordner, sofern Sie keinen zwingenden Grund für einen anderen Pfad haben. Wählen Sie einen abweichenden Ordner, achten Sie darauf, dass alle Benutzer dort Leserechte besitzen.
+
+Fehlen Laufzeitkomponenten, installiert das Setup sie mit. Die Programmlaufzeit selbst ist im Installationspaket enthalten; nachinstalliert wird, falls sie fehlt, die '''Microsoft Edge WebView2 Runtime''', auf der die Dialoge und Ansichten von EPOS-Plan laufen. Der Rechner muss dafür kurzzeitig online sein.
+
+=== Was das Setup einrichtet ===
+{{Anker|was-das-setup-einrichtet|in-eingerichtet}}
+
+Nach Abschluss finden Sie das Programm im Startmenü unter EPOS-Plan. Im Zielordner liegen die Programmdateien, die Datenbankvorlage im Unterordner <code>Vorlage</code> und, sofern gewählt, die Herstellerdaten im Unterordner <code>VDI-3805-Daten</code>. Das Setup legt außerdem den Ordner <code>%ProgramData%\EPOS_PLAN</code> an und richtet ihn so ein, dass alle Benutzer des Rechners darin schreiben dürfen – nur so lässt sich die spätere Datenbank auch von einem zweiten Windows-Konto benutzen. Daneben führt EPOS-Plan zwei Datenverzeichnisse: gemeinsame Daten unter <code>%ProgramData%\WP-Plan</code> und benutzerbezogene Daten unter <code>%LocalAppData%\WP-Plan</code>. Dort landen unter anderem importierte Klimadaten, Zwischenspeicher und der lokale Hilfe-Cache.
+
+Die Kenndaten-Datenbank selbst entsteht erst beim ersten Programmstart: EPOS-Plan kopiert die mitgelieferte Vorlage aus dem Ordner <code>Vorlage</code> des Programmverzeichnisses in den eben angelegten Datenordner – mit den Stammdaten und den Beispielprojekten – und prüft die Kopie, bevor es weiterstartet. Liegt dort schon eine Datenbank, etwa aus einer früheren Installation, rührt EPOS-Plan sie nicht an. Fehlt die Vorlage im Programmverzeichnis, nennt die Startmeldung beide Orte – wo die Datenbank erwartet und wo die Vorlage gesucht wurde – und das Programm startet nicht.
+
+Die Kenndaten-Datenbank ist eine SQLite-Datei mit dem Namen <code>Kenndaten.sqlite</code>, die EPOS-Plan ohne Fremdtreiber liest und schreibt. Ordner und Dateiname zeigt {{Menü|Administration|Einstellungen}} (Voreinstellung: <code>%ProgramData%\EPOS_PLAN</code> und <code>Kenndaten.sqlite</code>); eine Änderung dort wirkt erst beim nächsten Programmstart. Benutzerbezogene Einstellungen – Ausgabepfade, Sprache, Zustimmung zur Lizenz und die Angaben zum Hilfe-Assistenten – speichert EPOS-Plan in der Registrierung unter <code>HKEY_CURRENT_USER\Software\wp-plan</code>. Sie bleiben bei einem Update erhalten und lassen sich durch Löschen dieses Schlüssels vollständig zurücksetzen.
+
+=== Schritt 3: Erster Programmstart ===
+{{Anker|schritt-3-erster-programmstart|in-erststart}}
+
+Beim ersten Start zeigt EPOS-Plan die Lizenzvereinbarung mit den rechtlichen Hinweisen und der Liste der verwendeten Komponenten. Lesen Sie den Text und bestätigen Sie ihn; die Zustimmung wird benutzerbezogen vermerkt und beim nächsten Start nicht erneut abgefragt. Über {{Menü|Hilfe|Lizenz}} ist der vollständige Text jederzeit wieder abrufbar, dort auch zum Drucken und Speichern.
+
+Anschließend öffnet sich das Hauptfenster mit der Startseite. Sinnvoll ist es, zunächst ein mitgeliefertes Beispielprojekt zu öffnen und einmal durchzurechnen – damit prüfen Sie in einem Zug den Datenbankzugriff, die Klimadaten und die Ergebnisdarstellung. Läuft die Simulation durch und erscheinen die Jahresganglinien, ist die Installation vollständig funktionsfähig.
+
+=== Schritt 4: Grundeinstellungen ===
+{{Anker|schritt-4-grundeinstellungen|in-einstellungen}}
+
+Drei Einstellungen lohnen sich gleich zu Beginn. Erstens der '''Speicherort für CSV-Exporte''': Er wird beim ersten Export abgefragt und danach gemerkt. Zweitens der '''Pfad zu VDI-3805-Datensätzen''', falls Sie Herstellerdaten in diesem Format nutzen; ohne diesen Pfad stehen nur die Kennfelder der Datenbank zur Verfügung. Drittens der '''Hilfe-Assistent'''.
+
+Der Hilfe-Assistent beantwortet Fragen zur Bedienung in natürlicher Sprache. Er ist optional und benötigt einen eigenen Zugangsschlüssel, den Sie im Chatfenster unter ''Einstellungen…'' hinterlegen. Derselbe Dialog zeigt das Tageslimit an: Es liegt fest bei 50 Anfragen je Arbeitsplatz und Tag und lässt sich nicht heraufsetzen. Ohne Schlüssel bleibt die Suche in der Hilfe uneingeschränkt nutzbar, sie arbeitet vollständig lokal. Vor der ersten Anfrage legt das Programm einen Rechtshinweis zur Datenübertragung vor; ohne Zustimmung wird nichts gesendet. Übertragen werden dann ausschließlich Hilfetexte, Ihre Frage und die Angabe, in welchem Bereich Sie arbeiten – keine Projekt-, Kunden- oder Simulationsdaten. Was der Assistent darüber hinaus kann, steht unter [[Hilfe-Assistent]].
+
+Prüfen Sie außerdem unter {{Menü|Administration|Einstellungen}} die Ordner der Datenbank sowie die Adresse der Online-Dokumentation ([[Programm Dokumentation/Einstellungen|Einstellungen]]). Anschließend empfiehlt sich ein Blick in die Kurzanleitung unter [[Erste Schritte]], die in zehn Schritten durch ein vollständiges Projekt führt.
+
+=== Datenablage und Datensicherung ===
+{{Anker|datenablage-und-datensicherung|in-daten}}
+
+In die Datensicherung gehören drei Orte: die Kenndaten-Datenbank (Voreinstellung <code>%ProgramData%\EPOS_PLAN</code>, den eingestellten Ort zeigt {{Menü|Administration|Einstellungen}}), das gemeinsame Datenverzeichnis unter <code>%ProgramData%\WP-Plan</code> und das benutzerbezogene Verzeichnis unter <code>%LocalAppData%\WP-Plan</code>. Damit sind Stammdaten, Projekte, importierte Klimadaten und eigene Kennfelder erfasst. Die Registrierungseinstellungen sind demgegenüber schnell wiederhergestellt und müssen nicht gesichert werden.
+
+'''Schließen Sie EPOS-Plan, bevor Sie die Datenbank kopieren.''' Bei geschlossenem Programm genügt eine einfache Dateikopie von <code>Kenndaten.sqlite</code>. Liegen daneben noch <code>Kenndaten.sqlite-wal</code> und <code>Kenndaten.sqlite-shm</code>, ist das Programm noch nicht beendet oder war abgestürzt – eine Kopie wäre dann unvollständig. Kopieren, verschieben oder löschen Sie diese beiden Dateien niemals einzeln; sie gehören zur Datenbank. Muss im laufenden Betrieb gesichert werden, legt ein SQLite-Werkzeug mit dem Befehl <code>VACUUM INTO</code> eine in sich geschlossene Kopie an, ohne das Programm zu stören.
+
+{{Achtung|Sichern Sie vor größeren Eingriffen in die Stammdaten – etwa vor dem Import einer umfangreichen Herstellerdatenbank – eine Kopie der Datenbankdatei. Gelöschte Datensätze lassen sich innerhalb des Programms nicht zurückholen.}}
+
+=== Mehrplatzbetrieb und Netzlaufwerke ===
+{{Anker|mehrplatzbetrieb-und-netzlaufwerke|in-netzwerk}}
+
+EPOS-Plan wird als Einzelplatzlizenz überlassen; für mehrere Arbeitsplätze wird je Platz eine Lizenz benötigt. Jeder Arbeitsplatz führt dabei seine eigene Datenbank auf einem '''lokalen Laufwerk'''. Auf ein Netzlaufwerk gehört die Datenbankdatei nicht – auf Netzfreigaben arbeitet dieses Dateiformat nicht zuverlässig. Sollen Projekte zwischen Arbeitsplätzen ausgetauscht werden, ist der vorgesehene Weg der Projektexport als ''.wpx''-Paket, siehe [[Projektverwaltung#projekte-austauschen|Projekte austauschen]].
+
+Mehrere Windows-Konten '''desselben''' Rechners können sich dagegen eine Datenbank teilen; das Setup richtet den Datenbankordner so ein, dass alle Benutzer darin schreiben dürfen. Gleichzeitiges Bearbeiten desselben Projekts ist auch dann zu vermeiden – eine echte Mehrbenutzer-Projektverwaltung ist nicht abgebildet.
+
+Bei einer Installation über Softwareverteilung lässt sich das Setup unbeaufsichtigt ausführen. Die Laufzeitkomponenten sollten in diesem Fall vorab über die Verteilung bereitgestellt werden, weil ihre Installation Administratorrechte und einen Internetzugang benötigt.
+
+=== Fehlersuche beim ersten Start ===
+{{Anker|fehlersuche-beim-ersten-start|in-fehler}}
+
+'''„Die Datenbank kann nicht geöffnet werden“.''' Prüfen Sie zuerst, ob die Datenbankdatei am eingestellten Ort liegt – Ordner und Dateiname zeigt {{Menü|Administration|Einstellungen}}, die Voreinstellung ist <code>%ProgramData%\EPOS_PLAN\Kenndaten.sqlite</code>. Meldet das Programm fehlende Schreibrechte, hat das angemeldete Konto kein Änderungsrecht am Datenbankordner; das kommt vor allem bei Beständen aus einer älteren Installation vor und lässt sich vom Administrator einmalig für den Ordner nachziehen. Liegen nach einem Absturz noch die Dateien <code>Kenndaten.sqlite-wal</code> und <code>Kenndaten.sqlite-shm</code> daneben, löschen Sie diese '''nicht''' von Hand – der nächste Programmstart räumt sie selbst auf.
+
+'''Das Programm startet, aber Dialoge oder Ansichten bleiben leer.''' Dann fehlt die '''Microsoft Edge WebView2 Runtime'''. Die Programmlaufzeit selbst ist im Installationspaket enthalten und muss nicht getrennt installiert werden; die WebView2-Laufzeit installiert das Setup nach, wofür der Rechner kurzzeitig online sein muss. Konnte sie nicht installiert werden, weist das Setup darauf hin. Sie lässt sich jederzeit nachträglich einrichten – im Zweifel hilft der Support weiter.
+
+'''Einstellungen oder Exporte werden nicht gespeichert.''' Dann fehlen Schreibrechte im gewählten Zielordner. Legen Sie Exporte in einem Verzeichnis unterhalb Ihres Benutzerprofils ab oder lassen Sie die Rechte für das Programmverzeichnis anpassen. Für den laufenden Betrieb sind sonst keine erhöhten Rechte erforderlich.
+
+'''Klimadaten oder Ortssuche funktionieren nicht.''' Beides benötigt eine Internetverbindung. In Netzen mit Proxy oder strenger Firewall müssen die Adressen des europäischen Strahlungsdatendienstes PVGIS und des Ortsverzeichnisses freigegeben sein. Alle Berechnungen laufen ausschließlich lokal; ohne Internet arbeiten Sie mit den bereits importierten Klimadaten weiter.
+
+=== Deinstallation ===
+{{Anker|deinstallation|in-deinstallation}}
+
+EPOS-Plan wird über die Windows-Einstellungen unter Apps entfernt. Dabei fragt die Deinstallation einmal nach, ob auch die Datenbank unter <code>%ProgramData%\EPOS_PLAN</code> samt dem Sicherungsordner <code>DB-Backup</code> gelöscht werden soll; die Voreinstellung ist ''Nein''. Dieser Ordner gehört allen Windows-Konten des Rechners gemeinsam – ein bestätigtes ''Ja'' löscht also auch die Projekte der anderen Konten mit, und dafür gibt es keinen Rückweg. Die beiden Datenverzeichnisse und die Registrierungseinstellungen bleiben in jedem Fall erhalten, damit eine spätere Neuinstallation auf Ihre Daten zugreifen kann. Sollen auch diese verschwinden, löschen Sie nach der Deinstallation die Ordner <code>%ProgramData%\WP-Plan</code> und <code>%LocalAppData%\WP-Plan</code> sowie den Registrierungsschlüssel <code>HKEY_CURRENT_USER\Software\wp-plan</code>. Die Laufzeitkomponenten werden nicht mitentfernt, da andere Programme sie nutzen können.
+
+== Update ==
+{{Anker|update}}
+
+Ein Update bringt eine vorhandene EPOS-Plan-Installation auf den aktuellen Stand. Es tauscht die Programmdateien aus und lässt Ihre Daten unberührt. Enthält ein Update Änderungen am Datenmodell, führt EPOS-Plan die notwendige Anpassung der Datenbank beim ersten Start automatisch durch. Was sich von Version zu Version geändert hat, steht im [[Update-Logbuch]].
+
+=== Wer bekommt Updates ===
+{{Anker|wer-bekommt-updates|up-wer}}
+
+Mit dem Kauf von EPOS-Plan ist ein Wartungs- und Updatevertrag verbunden. Er ist in den ersten drei Monaten kostenfrei; danach fällt ein jährlicher Beitrag an. Updates werden ausschließlich im Rahmen dieses Vertrags bereitgestellt – einen anderen Weg, das Programm zu aktualisieren, gibt es nicht. Zugang zum Server erhalten Sie mit der Rechnung oder auf Anfrage unter [mailto:info@inekon.de info@inekon.de]. Näheres zu den Leistungen steht unter [[Über EPOS-Plan#software-service|Software-Service]].
+
+=== Vor dem Update: Datensicherung ===
+{{Anker|vor-dem-update-datensicherung|up-vorher}}
+
+Sichern Sie vor jedem Update Ihre Daten. Das betrifft die Kenndaten-Datenbank <code>Kenndaten.sqlite</code> (Voreinstellung <code>%ProgramData%\EPOS_PLAN</code>) sowie die beiden Datenverzeichnisse <code>%ProgramData%\WP-Plan</code> und <code>%LocalAppData%\WP-Plan</code>. Schließen Sie EPOS-Plan vorher; bei geschlossenem Programm genügt ein einfaches Kopieren der Ordner an einen anderen Ort, und Sie haben im Zweifelsfall einen vollständigen Rückweg – Einzelheiten unter [[Installation und Update#datenablage-und-datensicherung|Datenablage und Datensicherung]].
+
+Halten Sie außerdem fest, welche Version derzeit installiert ist; sie steht im Programm unter {{Menü|Hilfe|Version}}. Schließen Sie EPOS-Plan vor dem Update vollständig.
+
+=== Schritt 1: Update-Datei herunterladen ===
+{{Anker|schritt-1-update-datei-herunterladen|up-download}}
+
+Melden Sie sich mit Benutzername und Kennwort an unserem Server an und wählen Sie im Benutzermenü den Bereich Downloads. Für EPOS-Plan sind die Kategorien EPOS-Plan und Update maßgeblich.
+
+Laden Sie das Installationsprogramm der neuen Version herunter – es ist dieselbe Datei wie für eine Erstinstallation. Liegt sie als ZIP-Archiv vor, entpacken Sie das Archiv vollständig in einen lokalen Ordner, bevor Sie das Setup starten; ein Start aus dem geöffneten Archiv heraus führt zu Fehlern, weil mitgelieferte Dateien fehlen.
+
+=== Schritt 2: Update einspielen ===
+{{Anker|schritt-2-update-einspielen|up-setup}}
+
+Starten Sie das Installationsprogramm mit der rechten Maustaste über ''Als Administrator ausführen''. Bestätigen Sie die Rückfrage der Benutzerkontensteuerung. Das Setup erkennt die vorhandene Installation und schlägt ihren Zielordner vor; übernehmen Sie ihn. Läuft EPOS-Plan noch, bietet das Setup an, das Programm zu schließen. Über die Schaltfläche ''Zurück'' lassen sich Eingaben korrigieren, ''Installieren'' startet den Vorgang.
+
+Ausgetauscht werden dabei ausschließlich die Programmdateien. Unberührt bleiben die Kenndaten-Datenbank mit Ihren Stamm- und Projektdaten, die beiden Datenverzeichnisse sowie Ihre benutzerbezogenen Einstellungen in der Registrierung. Auch die Zustimmung zur Lizenzvereinbarung und der Zugangsschlüssel des Hilfe-Assistenten bleiben erhalten. Ein Update ändert keine Startmenü-Verknüpfung; das Programm wird danach wie gewohnt gestartet.
+
+=== Schritt 3: Nach dem Update prüfen ===
+{{Anker|schritt-3-nach-dem-update-pruefen|up-danach}}
+
+Starten Sie EPOS-Plan und öffnen Sie {{Menü|Hilfe|Version}}. Steht dort die erwartete neue Versionsnummer, ist das Update angekommen; die installierte Version zeigt das Programm außerdem in der Kopfzeile. Zeigt das Fenster noch die alte Nummer, wurde in ein anderes Verzeichnis installiert als in das, aus dem die Verknüpfung startet – siehe [[Installation und Update#wenn-etwas-schiefgeht|Wenn etwas schiefgeht]].
+
+Rechnen Sie danach ein bestehendes Projekt einmal durch und vergleichen Sie die Kennzahlen mit dem letzten Stand. Kleine Abweichungen können gewollt sein, wenn eine Berechnungsmethode verfeinert wurde; das [[Update-Logbuch]] nennt solche Änderungen ausdrücklich. Größere, unerklärliche Unterschiede melden Sie uns bitte mit Projektnamen und beiden Versionsnummern.
+
+=== Datenbank-Aktualisierungen ===
+{{Anker|datenbank-aktualisierungen|up-datenbanken}}
+
+Neue und geänderte Sätze der mitgelieferten Kataloge – etwa Wärmepumpen, Kessel, BHKW-Module oder PV-Module – bringt das Update als Katalogpaket mit. Beim ersten Start der neuen Version gleicht EPOS-Plan den Datenbestand damit ab: zuvor legt es eine Sicherung im Ordner <code>DB-Backup</code> neben der Datenbank an, eigene Sätze und Projektdaten fasst der Abgleich nicht an. Von Hand stoßen Sie den Abgleich über {{Menü|Administration|Daten & Import|Katalog aktualisieren…}} an.
+
+Herstellerdaten in den Formaten VDI 3805, CEC, PVsyst und bslib werden dagegen nicht automatisch übernommen, sondern im Programm über {{Menü|Administration|Daten & Import}} eingelesen; so behalten Sie die Kontrolle darüber, was in Ihrem Datenbestand landet. Sichern Sie die Datenbankdatei, bevor Sie eine größere Herstellerdatenbank einspielen.
+
+=== Mehrere Arbeitsplätze ===
+{{Anker|mehrere-arbeitsplaetze|up-mehrplatz}}
+
+Bei mehreren Arbeitsplätzen sollten alle Rechner auf demselben Versionsstand gehalten werden – schon damit ausgetauschte Projektpakete überall gelesen werden können. Spielen Sie das Update möglichst zeitnah auf allen Plätzen ein und schließen Sie das Programm währenddessen überall. Jeder Arbeitsplatz führt seine eigene Datenbank; eine notwendige Anpassung des Datenmodells läuft deshalb an jedem Platz beim ersten Start nach dem Update ab.
+
+=== Wenn etwas schiefgeht ===
+{{Anker|wenn-etwas-schiefgeht|up-fehler}}
+
+'''Die alte Version läuft weiter.''' Dann wurde in einen anderen Ordner installiert. Prüfen Sie über die Eigenschaften der Startmenü-Verknüpfung, welches Verzeichnis tatsächlich gestartet wird, und wiederholen Sie das Update mit genau diesem Pfad. Doppelte Installationen in verschiedenen Ordnern sollten Sie anschließend entfernen, um Verwechslungen zu vermeiden.
+
+'''Das Setup meldet gesperrte Dateien.''' EPOS-Plan läuft noch – auch dann, wenn kein Fenster sichtbar ist. Lassen Sie das Setup das Programm schließen oder beenden Sie es selbst, prüfen Sie im Task-Manager, ob der Prozess noch aktiv ist, und starten Sie das Setup erneut. In seltenen Fällen hilft nur ein Neustart des Rechners.
+
+'''Zurück auf die vorherige Version.''' Spielen Sie die gesicherten Ordner an ihren ursprünglichen Ort zurück. Weil ein Update weder die Datenablage noch die Einstellungen verändert, ist das in aller Regel unproblematisch. Bitte melden Sie uns in diesem Fall, was zum Rückschritt geführt hat – solche Rückmeldungen fließen unmittelbar in die nächste Version ein.
+
+== Unterstützung ==
+{{Anker|unterstuetzung}}
+
+Im Rahmen des Wartungsvertrags erreichen Sie uns werktags von 9 bis 16 Uhr unter +49 711 9959 826 50 oder per E-Mail an [mailto:info@inekon.de info@inekon.de]; bei Bedarf über Fernwartung mit TeamViewer. Halten Sie bitte Kundennummer, Windows-Version sowie die alte und die neue EPOS-Plan-Version bereit – letztere finden Sie im Programm unter {{Menü|Hilfe|Version}}. Weitere Antworten stehen in den [[FAQ]] und in den [[Programmfunktionen]].
+
+[[Kategorie:Installation]]

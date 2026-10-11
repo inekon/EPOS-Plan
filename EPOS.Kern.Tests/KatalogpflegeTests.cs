@@ -64,7 +64,10 @@ namespace EPOS.Kern.Tests
         {
             // Zapfprofilgenerator, Stufe Z0 (P8): drei Tww-Kataloge dazu - 23.
             // Gebaeudesimulation G3 (Welle B, W21): Baustoff und Bauteilaufbau dazu - 25.
-            Assert.Equal(25, KatalogRegistry.Alle.Count);
+            // KU3-1: die Kaeltemaschine dazu - 26.
+            // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen dazu (Schloss) - 27.
+            // PVG (Schemaschritt 206): die PV-Ganglinie dazu - 28.
+            Assert.Equal(31, KatalogRegistry.Alle.Count);   // K1: KAELTEBEDARF, KAELTETYP; K-F1: RUECKKUEHLWERK
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -77,15 +80,21 @@ namespace EPOS.Kern.Tests
                 // W6-E-2: "WECHSELRICHTER" steht NACH "PV" - er gehoert zur
                 // selben Anlage und wird nach dem Modul gepflegt.
                 "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV",
-                "WECHSELRICHTER", "BHKW",
+                "WECHSELRICHTER",
+                // KU3-1: die Kaeltemaschine nach den Erzeugern der Waerme- und Stromseite, vor dem BHKW.
+                "KAELTEMASCHINE",
+                // K-F1: das Rueckkuehlwerk als Glied der Kaeltemaschine gleich hinter ihr.
+                "RUECKKUEHLWERK", "BHKW",
                 "STROMSPEICHER", "GEBAEUDE",
                 // Gebaeudesimulation G3 (W21): die zwei Kataloge der Gebaeudehuelle beim Gebaeude.
                 "BAUSTOFF", "BAUTEILAUFBAU",
                 "KLIMAREGION", "BRAUCHWASSER", "BRAUCHWASSERTYP",
                 // Zapfprofilgenerator (P8): die drei Tww-Kataloge beim Brauchwasser.
                 "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
-                "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
-                "STROMGANGLINIE", "SOLARGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP"
+                "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP", "KAELTEBEDARF", "KAELTETYP",
+                "STROMGANGLINIE", "SOLARGANGLINIE", "PVGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP",
+                // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen (Schloss der Vorlagenverwaltung).
+                "KONDITIONIERUNGSVORLAGE"
             };
             Assert.Equal(erwartet, KatalogRegistry.Alle.Select(k => k.Schluessel).ToArray());
         }
@@ -148,14 +157,18 @@ namespace EPOS.Kern.Tests
             // Gebaeudesimulation G3: Baustoff und Bauteilaufbau pflegen ihre eigenen
             // Verwaltungen und stehen nicht im Dublettendialog; der Baustoff fuehrt den
             // Hersteller als zweiten Teil des natuerlichen Schluessels.
-            string[] ohneDialog = { "BAUSTOFF", "BAUTEILAUFBAU" };
+            string[] ohneDialog = { "BAUSTOFF", "BAUTEILAUFBAU", "KONDITIONIERUNGSVORLAGE" };
             Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
                                                          && !ohneDialog.Contains(k.Schluessel))
                                              .Select(k => k.Schluessel).ToArray(),
                          KatalogRegistry.Dublettendialog.Select(k => k.Schluessel).ToArray());
             Assert.All(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
-                                                       && k.Schluessel != "BAUSTOFF"),
+                                                       && k.Schluessel != "BAUSTOFF"
+                                                       && k.Schluessel != "KONDITIONIERUNGSVORLAGE"),
                        k => Assert.Empty(k.SchluesselZusatzSpalten));
+            // Die Konditionierungsvorlagen: derselbe Name einmal je Groesse.
+            Assert.Equal(new[] { "Groesse" },
+                         KatalogRegistry.Finde("KONDITIONIERUNGSVORLAGE").SchluesselZusatzSpalten);
             Assert.Equal(new[] { BaustoffSchema.SPALTE_HERSTELLER },
                          KatalogRegistry.Finde("BAUSTOFF").SchluesselZusatzSpalten);
         }
@@ -189,7 +202,7 @@ namespace EPOS.Kern.Tests
                 .Select(k => k.Schluessel).ToArray();
             // Gebaeudesimulation G3: der Baustoff - eine Katalogschicht zeigt ueber die ID auf ihn.
             Assert.Equal(new[] { "BAUSTOFF", "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
-                                 "STROMVERBRAUCHERTYP", "PROZESSTYP", "GEBAEUDETYP" },
+                                 "STROMVERBRAUCHERTYP", "PROZESSTYP", "KAELTETYP", "GEBAEUDETYP" },
                          mitPruefung);
         }
 
@@ -220,7 +233,8 @@ namespace EPOS.Kern.Tests
         // Welle #485 (Schritt GebaeudeKatalogReparatur.SCHRITT): acht Testreste geloescht -
         // 269 Saetze, und die Inhaltsgruppe der inhaltsgleichen Testreste "Z2-EFH-A-S*" faellt.
         // E51 (Schemaschritt GebaeudeSaatSchema.SCHRITT): sechs Katalogsätze der Klassen M und A dazu.
-        [InlineData("GEBAEUDE", 275, 0, 9)]
+        // KP3, RP1: der Referenzkatalogbau des Referenzprojekts 1051 (Kopie von Verw_I_40) dazu.
+        [InlineData("GEBAEUDE", 276, 0, 9)]
         [InlineData("KLIMAREGION", 32, 0, 1)]
         [InlineData("BRAUCHWASSER", 16, 0, 0)]
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
@@ -229,16 +243,19 @@ namespace EPOS.Kern.Tests
         // aus VDI 6002 abgeleitete (ZU19; Wohnen gross, Ein- und Zweifamilienhaus,
         // Studentenwohnheim, Seniorenheim, Krankenhaus) und "Hotel (aus Messung, je Zimmer)" (ZU36), sechs
         // Tagesgangsaetze (der fiktive, je einer der vier eigenen abgeleiteten Formen und der des
-        // Hotels), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), alle Status EIGEN.
-        [InlineData("TWW_NUTZUNGSART", 9, 0, 0)]
-        [InlineData("TWW_TAGESGANGSATZ", 6, 0, 0)]
+        // Hotels), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), dazu Buero, Schule, Gewerbe (V31) mit je eigenem Satz, alle Status EIGEN.
+        [InlineData("TWW_NUTZUNGSART", 12, 0, 0)]
+        [InlineData("TWW_TAGESGANGSATZ", 9, 0, 0)]
         [InlineData("TWW_BEDARFSTAG", 12, 0, 0)]
-        [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
-        [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
-        [InlineData("PROZESSWAERME", 32, 0, 1)]
-        [InlineData("PROZESSTYP", 20, 0, 2)]
+        // Schritt 193 (StandardlastprofilSchema): die drei BDEW-Standardlastprofile H25, G25, L25 je mit Typprofil dazu;
+        // Schritt 196 (StandardlastprofilPvSchema): die zwei BDEW-Netzbezugsprofile P25, S25 je mit Typprofil dazu.
+        [InlineData("STROMVERBRAUCHER", 46, 0, 0)]
+        [InlineData("STROMVERBRAUCHERTYP", 45, 0, 1)]
+        [InlineData("PROZESSWAERME", 40, 0, 1)]   // 32 + acht Betriebsweisen (PW5)
+        [InlineData("PROZESSTYP", 28, 0, 2)]      // 20 + acht Wochenprofile (PW5)
         [InlineData("STROMGANGLINIE", 3, 0, 0)]
         [InlineData("SOLARGANGLINIE", 1, 0, 0)]
+        [InlineData("PVGANGLINIE", 0, 0, 0)]
         [InlineData("WAERMEBEDARF", 4, 0, 1)]
         [InlineData("GEBAEUDETYP", 12, 0, 0)]
         public void DerScanMeldetDieEingefrorenenZahlen(string schluessel, int saetze,
@@ -278,7 +295,7 @@ namespace EPOS.Kern.Tests
         [InlineData("HEIZKESSEL", 63)]
         [InlineData("BHKW", 79)]
         [InlineData("PV", 6)]
-        [InlineData("GEBAEUDE", 275)]
+        [InlineData("GEBAEUDE", 276)]   // 275 + der Referenzkatalogbau von 1051 (KP3, RP1)
         public void VergebeneNamenZaehltJedenSatz(string schluessel, int anzahl)
         {
             if (!_db.Vorhanden) return;

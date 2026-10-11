@@ -17,7 +17,13 @@ Dateien gegen diese Liste.
 
 **Die gefüllte Datei gehört nie ins Repositorium.** Sie wird außerhalb aufbewahrt (beim Anwender, im
 Auslieferungspaket), und `Referenzlaeufe/Normzahlen/` ist für den Lauf der Auslieferungsvorlage
-ausdrücklich gesperrt.
+ausdrücklich gesperrt. **In der Entwicklungsumgebung** kommt die gefüllte Kopie der Vorlage nach
+[`Referenzlaeufe/Normzahlen/Katalogpaket_A100/`](../Normzahlen/LIESMICH.md) und bleibt lokal:
+`.gitignore` schließt den Ordner aus, Setup und eingebettete Ressourcen des Kerns führen ihn nie, und
+`EPOS.Kern.Tests/TwwNormpaketLokalTests` spielt ihn, wenn er vollständig vorliegt, über den
+Katalogimport zur Probe ein. Das Setup liefert allein diese Vorlage (Platzhalter) nach
+`{app}\Vorlage\Katalogpaket_A100` aus, daneben den freien Paketteil nach
+`{app}\Vorlage\Katalogpaket_frei`.
 
 ## Die vier Dateien
 
@@ -33,7 +39,9 @@ Der Katalogimport nimmt über diese vier Dateien hinaus drei **wahlfreie** an �
 ## Schritt für Schritt
 
 1. **Den Ordner kopieren** — außerhalb des Repositoriums, etwa nach
-   `…\EPOS-Katalogpakete\A100\`. In diesem Ordner hier wird nichts ausgefüllt.
+   `…\EPOS-Katalogpakete\A100\`; in der Entwicklungsumgebung nach
+   `Referenzlaeufe/Normzahlen/Katalogpaket_A100/` (bleibt lokal). In diesem Ordner hier wird nichts
+   ausgefüllt.
 2. **Je Typ eine Zeile** in `Tab_TwwNutzungsart_STAMM.csv` anlegen; `ID` fortlaufend, `Bezeichner`
    aus der Liste unten (oder ein eigener Name), `Katalogversion` für alle Zeilen desselben Pakets
    gleich (etwa `A100-1`).

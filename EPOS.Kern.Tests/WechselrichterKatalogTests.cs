@@ -913,7 +913,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Die Spalten einer Tabelle in Schemareihenfolge.</summary>
         private static List<string> Spalten(string tabelle)
         {
-            return DataRepository.SpaltenVonTabelle(tabelle) ?? new List<string>();
+            // Die drei Katalogspalten (KU1) sind kein Fachwert und stehen nur am Katalog.
+            return (DataRepository.SpaltenVonTabelle(tabelle) ?? new List<string>())
+                   .Where(s => !Katalogfassung.IstKatalogspalte(s)).ToList();
         }
 
         /// <summary>

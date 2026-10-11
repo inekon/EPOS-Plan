@@ -91,6 +91,7 @@
 @namespace EPOS.UI.Bausteine
 @using System.Globalization
 @using WindowsFormsApplication1
+@using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.JSInterop
 @inject IJSRuntime Js
 @implements IAsyncDisposable
@@ -100,76 +101,17 @@
 <div class="@Wurzelklasse">
 
     @* ---------------- ZONE A - die EINE Suchzeile (5.6.4) ---------------- *@
-    <div class="epos-katalog-suchzeile">
-        <label class="epos-katalog-suchfeld">
-            <span class="epos-katalog-suchbeschriftung">@Texte.Suche</span>
-            <input type="search" class="epos-eingabe" value="@Stand.Suche"
-                   placeholder="@Texte.SuchePlatzhalter" aria-label="@Texte.Suche"
-                   @oninput="BeiSuche" />
-        </label>
-
-        @* EIN SCHALTER DES WIRTS (Konzept Administrationsdialoge 3.1, Zone 2; Stufe 4):
-           "nur mit Kuehlfunktion" der Waermepumpenverwaltung. Er setzt einen Trichter
-           im Filterstand, nie einen zweiten Filterweg - deshalb steht er hier in der
-           Werkzeugleiste und nicht ueber der Liste. *@
-        @if (Werkzeug is not null)
-        {
-            <span class="epos-katalog-werkzeug">@Werkzeug</span>
-        }
-
-        @* DER ALLE-SCHALTER DER MEHRFACHWAHL (W13-B-5, Windows-Abnahme 08.09.2026):
-           ein Kontrollkaestchen in der Suchzeile, das alle SICHTBAREN Zeilen waehlt
-           oder abwaehlt. Es steht nur da, wenn der Wirt es bedient (Allewahl) - die
-           Regel der Wahl bleibt beim Wirt, die Liste meldet nur "alle" und ihre
-           gefilterten Zeilen. Nicht im Spaltenkopf: Der Kopf ist die Sortierzeile. *@
-        @if (Mehrfach && Allewahl.HasDelegate && _gefiltert.Count > 0)
-        {
-            @* EINMAL fragen, dreimal benutzen (Befund #212): AlleSichtbarenGewaehlt
-               fragt den Wirt ZEILE FUER ZEILE, und der antwortet je nach Wirt in
-               O(n) - bei 6 654 Saetzen kostete der Stand des Schalters dreimal je
-               Zeichenlauf, was er einmal kosten darf. *@
-            bool alleGewaehlt = AlleSichtbarenGewaehlt;
-            <label class="epos-wahl-alle"
-                   title="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
-                <input type="checkbox" checked="@alleGewaehlt"
-                       aria-label="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
-                       @onchange="BeiAllewahl" />
-                <span>@Texte.AlleWaehlen</span>
-            </label>
-        }
-
-        <span class="epos-leiste-fueller"></span>
-
-        <span class="epos-katalog-treffer">@Trefferzeile</span>
-
-        @* VERGLEICHEN (Frage Q3, Stufe S3.3): frei, sobald ZWEI oder DREI Zeilen
-           markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
-           sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
-           markiert (Strg-Klick ist unsichtbar).
-
-           UND ER STEHT NUR DA, WO ES ETWAS ZU VERGLEICHEN GIBT (Vergleichbar,
-           Auftraege KL-4 und MN-1): Die Klimaregionen sind keine Geraete mit
-           Kennwerten - ihr "Vergleich" waere der von Bezeichner, Standort und
-           Datum nebeneinander, also die Liste selbst noch einmal; die
-           gesetzlichen Parameter fuehren Jahreszeilen EINES Satzes, und die
-           liest man untereinander. Ein Knopf, der nichts Neues zeigt, ist ein
-           Bedienelement ohne Gewinn (dieselbe Begruendung, aus der eine
-           JaNein-Spalte keinen Trichter traegt). *@
-        @* Mit KAESTCHEN (Stufe 3, V6) vergleicht die Auswahlleiste des Wirts -
-           hier stuende derselbe Knopf ein zweites Mal. *@
-        @if (!Mehrfach && Vergleichbar && !KaestchenAktiv)
-        {
-            <button type="button" class="epos-katalog-vergleichknopf"
-                    disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
-                    @onclick="BeiVergleichen">@Vergleichtext</button>
-        }
-
-        @if (Stand.Gesetzt)
-        {
-            <button type="button" class="epos-katalog-ruecksetzer"
-                    @onclick="BeiZuruecksetzen">@Texte.Zuruecksetzen</button>
-        }
-    </div>
+    @if (Kopfleistenort is not null)
+    {
+        @* IN DER KATALOGAUSWAHL steht die Suchzeile in der Kopfleiste des Katalogs
+           (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.8) - dieselbe Zeile, ein
+           anderer Ort; Zustand und Handler bleiben hier. *@
+        <SectionContent SectionId="Kopfleistenort">@Suchzeile</SectionContent>
+    }
+    else
+    {
+        @Suchzeile
+    }
 
     @if (_markierhinweis.Length > 0)
     {
@@ -179,7 +121,7 @@
     @* ---------------- ZONE B oben - die Liste ---------------------------- *@
     <Raster TZeile="Katalogfilterzeile" Zeilen="@_rasterzeilen" @ref="_raster"
             Virtualisiert="@Virtualisiert" Zeilenhoehe="@Zeilenmass"
-            Zeilenklasse="@(ZeilenwahlAktiv ? _zeilenklasse : null)"
+            Zeilenklasse="@_zeilenklasse"
             Tastenfuehrung="@(ZeilenwahlAktiv ? _tastenfuehrung : default)"
             Tastenbeschriftung="@Texte.Listenbeschriftung">
         <KindInhalt>
@@ -249,13 +191,16 @@
             </TemplateColumn>
             }
 
-            @for (int i = 0; i < Profil.Spalten.Count; i++)
+            @* NUR DIE ANGEZEIGTEN SPALTEN (Konzept 4.10): ohne gemerkte Spaltenwahl die
+               Spalten des Profils ausser den standardmaessig abgewaehlten ("im Projekt
+               verwendet"), mit gemerkter Wahl genau die gewaehlten. *@
+            @for (int i = 0; i < _angezeigt.Count; i++)
             {
-                Katalogspalte spalte = Profil.Spalten[i];
+                Katalogspalte spalte = _angezeigt[i];
                 // Das Popover oeffnet in der rechten Haelfte nach LINKS. Seit Spalten
                 // weichen koennen (V2), steht rechts nicht mehr sicher die letzte des
                 // Profils - die Haelfte des Profils ist die ehrlichere Grenze.
-                bool rechtsbuendig = i > 0 && i >= Profil.Spalten.Count / 2;
+                bool rechtsbuendig = i > 0 && i >= _angezeigt.Count / 2;
 
                 <TemplateColumn TGridItem="Katalogfilterzeile" Class="@Spaltenklasse(spalte)">
                     <HeaderTemplate>
@@ -264,15 +209,20 @@
                             {
                                 <button type="button" class="epos-spaltenkopf-titel"
                                         title="@Kurztext(Texte.Sortieren, spalte)"
-                                        aria-label="@Kurztext(Texte.Sortieren, spalte)"
+                                        aria-label="@Sortiername(spalte)"
                                         @onclick="@(() => BeiSortieren(spalte))">
-                                    <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                                    @* Der Langtext eines kurzen Kopfs („Nennkälteleistung" zu
+                                       „P_N") steht am TEXT, nicht am Knopf: Beim Verweilen auf
+                                       dem Text gewinnt der innere title, auf dem Pfeil bleibt
+                                       „Sortieren nach …". Die Hilfstechnik hört ihn im Namen
+                                       des Sortierknopfs. Ohne Langtext kein Attribut. *@
+                                    <span class="epos-spaltenkopf-text" title="@Langtitel(spalte)">@spalte.Kopftext</span>
                                     <span class="epos-sortierpfeil" aria-hidden="true">@Sortierzeichen(spalte)</span>
                                 </button>
                             }
                             else
                             {
-                                <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                                <span class="epos-spaltenkopf-text" title="@Langtitel(spalte)">@spalte.Kopftext</span>
                             }
 
                             @if (spalte.Filterbar)
@@ -326,6 +276,10 @@
                                       aria-current="@(fokus ? "true" : null)"
                                       @onclick="@(e => BeiZeilenklick(context, e))">
                                     <span class="epos-zeilenzelle-text">@context.Text(spalte.Schluessel)</span>
+                                    @if (context.ImProjekt)
+                                    {
+                                        @Verwendungsmarke
+                                    }
                                     @if (context.Geschuetzt)
                                     {
                                         <Kennzeichen Kurztext="@Texte.Schloss" />
@@ -339,13 +293,21 @@
                                       @onclick="@(e => BeiZeilenklick(context, e))">@context.Text(spalte.Schluessel)</span>
                             }
                         }
-                        else if (context.Geschuetzt && Spaltenraenge.IstElastisch(spalte))
+                        else if ((context.Geschuetzt || context.ImProjekt) && Spaltenraenge.IstElastisch(spalte))
                         {
-                            @* Das Schloss auch hier (V10) - neben dem gedimmten Namen. *@
+                            @* Das Schloss auch hier (V10) - neben dem gedimmten Namen; davor die
+                               Verwendungsmarke (4.10). *@
                             <span class="epos-bezeichner-schloss">
                                 <span class="@Zellenklasse(context)"
                                       title="@Zellkurztext(spalte, context)">@context.Text(spalte.Schluessel)</span>
-                                <Kennzeichen Kurztext="@Texte.Schloss" />
+                                @if (context.ImProjekt)
+                                {
+                                    @Verwendungsmarke
+                                }
+                                @if (context.Geschuetzt)
+                                {
+                                    <Kennzeichen Kurztext="@Texte.Schloss" />
+                                }
                             </span>
                         }
                         else
@@ -355,6 +317,22 @@
                         }
                     </ChildContent>
                 </TemplateColumn>
+            }
+
+            @* DER STIFT JE ZEILE (UeS2): eine schmale Spalte am Ende, nur mit Rueckruf. Sie
+               steht ausserhalb der Spaltenwahl (nicht in _angezeigt) und aendert das Zeilenmass
+               nicht. Der Klick waehlt die Zeile (ohne Zusatztasten, ohne Kaestchen) und ruft
+               den Rueckruf des Wirts. *@
+            @if (Bearbeiten.HasDelegate)
+            {
+            <TemplateColumn TGridItem="Katalogfilterzeile" Class="epos-spalte-stift">
+                <HeaderTemplate>
+                    <Zeilenstift Kopf="true" />
+                </HeaderTemplate>
+                <ChildContent>
+                    <Zeilenstift Hinweis="@BearbeitenHinweis" Geklickt="@(() => BeiStift(context))" />
+                </ChildContent>
+            </TemplateColumn>
             }
         </KindInhalt>
     </Raster>
@@ -413,6 +391,127 @@
 }
 
 @code {
+    /// <summary>
+    /// Der Ort der Suchzeile, den eine umgebende <c>Zweispaltenauswahl</c> kaskadiert: Dann
+    /// steht die Suchzeile in deren Katalog-Kopfleiste statt über der Liste.
+    /// </summary>
+    [CascadingParameter(Name = Zweispaltenauswahl.KOPFLEISTENORT)] public object? Kopfleistenort { get; set; }
+
+    /// <summary>ZONE A - die EINE Suchzeile (5.6.4).</summary>
+    private RenderFragment Suchzeile => @<text>
+    <div class="epos-katalog-suchzeile">
+        <label class="epos-katalog-suchfeld">
+            <span class="epos-katalog-suchbeschriftung">@Texte.Suche</span>
+            <input type="search" class="epos-eingabe" value="@Stand.Suche"
+                   placeholder="@Texte.SuchePlatzhalter" aria-label="@Texte.Suche"
+                   @oninput="BeiSuche" />
+        </label>
+
+        @* EIN SCHALTER DES WIRTS (Konzept Administrationsdialoge 3.1, Zone 2; Stufe 4):
+           "nur mit Kuehlfunktion" der Waermepumpenverwaltung. Er setzt einen Trichter
+           im Filterstand, nie einen zweiten Filterweg - deshalb steht er hier in der
+           Werkzeugleiste und nicht ueber der Liste. *@
+        @if (Werkzeug is not null)
+        {
+            <span class="epos-katalog-werkzeug">@Werkzeug</span>
+        }
+
+        @* DER ALLE-SCHALTER DER MEHRFACHWAHL (W13-B-5, Windows-Abnahme 08.09.2026):
+           ein Kontrollkaestchen in der Suchzeile, das alle SICHTBAREN Zeilen waehlt
+           oder abwaehlt. Es steht nur da, wenn der Wirt es bedient (Allewahl) - die
+           Regel der Wahl bleibt beim Wirt, die Liste meldet nur "alle" und ihre
+           gefilterten Zeilen. Nicht im Spaltenkopf: Der Kopf ist die Sortierzeile. *@
+        @if (Mehrfach && Allewahl.HasDelegate && _gefiltert.Count > 0)
+        {
+            @* EINMAL fragen, dreimal benutzen (Befund #212): AlleSichtbarenGewaehlt
+               fragt den Wirt ZEILE FUER ZEILE, und der antwortet je nach Wirt in
+               O(n) - bei 6 654 Saetzen kostete der Stand des Schalters dreimal je
+               Zeichenlauf, was er einmal kosten darf. *@
+            bool alleGewaehlt = AlleSichtbarenGewaehlt;
+            <label class="epos-wahl-alle"
+                   title="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
+                <input type="checkbox" checked="@alleGewaehlt"
+                       aria-label="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
+                       @onchange="BeiAllewahl" />
+                <span>@Texte.AlleWaehlen</span>
+            </label>
+        }
+
+        <span class="epos-leiste-fueller"></span>
+
+        @* DIE TREFFERZAHL kuerzt nie mit Auslassung (4.10): Bei Platzmangel faellt zuerst das
+           Hauptwort weg ("40 von 40"), das Suchfeld gibt davor nach. *@
+        <span class="epos-katalog-treffer" title="@Trefferzeile"><span class="epos-katalog-treffer-zahl">@Trefferzahl</span>@if (Trefferwort.Length > 0)
+        {<span class="epos-katalog-treffer-wort">@Trefferwort</span>}</span>
+
+        @* DIE LEGENDE DER VERWENDUNGSMARKE (4.10): nur, wenn mindestens eine Zeile im
+           Projekt verwendet ist. *@
+        @if (HatVerwendete)
+        {
+            <span class="epos-katalog-verwendetlegende" title="@Texte.VerwendetHinweis">
+                <span class="epos-verwendet-marke" aria-hidden="true"></span>
+                <span class="epos-katalog-verwendetlegende-text">@Texte.VerwendetLegende</span>
+            </span>
+        }
+
+        @* DIE SPALTENWAHL (4.10): nur, wo ein Dialogname die Wahl merken kann. *@
+        @if (SpaltenwahlAktiv)
+        {
+            <Spaltenwahl Spalten="@WaehlbareSpalten" Angezeigt="@_istAngezeigt" Stufe="@_stufeZu"
+                         Gemerkt="@(_spaltenwahl is not null)" Texte="@Texte"
+                         Offen="@SpaltenwahlOffen" OffenChanged="SpaltenwahlOffenSetzen"
+                         Umgeschaltet="SpalteUmschalten" Standard="SpaltenStandard" />
+        }
+
+        @* VERGLEICHEN (Frage Q3, Stufe S3.3): frei, sobald ZWEI oder DREI Zeilen
+           markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
+           sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
+           markiert (Strg-Klick ist unsichtbar).
+
+           UND ER STEHT NUR DA, WO ES ETWAS ZU VERGLEICHEN GIBT (Vergleichbar,
+           Auftraege KL-4 und MN-1): Die Klimaregionen sind keine Geraete mit
+           Kennwerten - ihr "Vergleich" waere der von Bezeichner, Standort und
+           Datum nebeneinander, also die Liste selbst noch einmal; die
+           gesetzlichen Parameter fuehren Jahreszeilen EINES Satzes, und die
+           liest man untereinander. Ein Knopf, der nichts Neues zeigt, ist ein
+           Bedienelement ohne Gewinn (dieselbe Begruendung, aus der eine
+           JaNein-Spalte keinen Trichter traegt). *@
+        @* Mit KAESTCHEN (Stufe 3, V6) vergleicht die Auswahlleiste des Wirts -
+           hier stuende derselbe Knopf ein zweites Mal. *@
+        @if (!Mehrfach && Vergleichbar && !KaestchenAktiv)
+        {
+            <button type="button" class="epos-katalog-vergleichknopf"
+                    disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
+                    @onclick="BeiVergleichen">@Vergleichtext</button>
+        }
+
+        @if (Stand.Gesetzt)
+        {
+            <button type="button" class="epos-katalog-ruecksetzer"
+                    @onclick="BeiZuruecksetzen">@Texte.Zuruecksetzen</button>
+        }
+    </div>
+    </text>;
+
+    /// <summary>
+    /// <b>Vergleicht die genannten Zeilen</b> (Schlüssel) in der Vergleichsüberlagerung — für
+    /// einen Wirt, der „Vergleichen…" selbst trägt (Katalog-Fußleiste der Katalogauswahl).
+    /// Weniger als zwei bekannte Zeilen: nichts.
+    /// </summary>
+    public void Vergleichen(IReadOnlyList<string> schluessel)
+    {
+        ArgumentNullException.ThrowIfNull(schluessel);
+        var geraete = new List<Katalogfilterzeile>();
+        foreach (string s in schluessel)
+            foreach (Katalogfilterzeile z in Zeilen)
+                if (z.Schluessel == s) { geraete.Add(z); break; }
+        if (geraete.Count < 2) return;
+        _vergleich = Vergleichsparameter is null ? AusSpalten(geraete) : AusParametern(geraete);
+        _markierhinweis = "";
+        _vergleichOffen = true;
+        StateHasChanged();
+    }
+
     /// <summary>
     /// Die Spalten dieses Katalogs — <c>Katalogfilterprofil.Finde(art, uebersetzer)</c>.
     /// Ohne Profil zeichnet die Komponente nichts.
@@ -640,6 +739,8 @@
     protected override void OnInitialized()
     {
         _zeilenklasse = Zeilenklasse;
+        _istAngezeigt = IstAngezeigt;
+        _stufeZu = StufeZu;
         _tastenfuehrung = EventCallback.Factory.Create<KeyboardEventArgs>(this, BeiTaste);
     }
 
@@ -649,6 +750,18 @@
     /// Eine Frage je Zeile in O(1) (höchstens drei Markierungen).
     /// </summary>
     private string? Zeilenklasse(Katalogfilterzeile zeile)
+    {
+        // Ohne Zeilenwahl traegt die Zeile nur die Toenung der Verwendung (4.10).
+        if (!ZeilenwahlAktiv) return zeile.ImProjekt ? VERWENDET_KLASSE : null;
+        string? k = Zeilenklasse_(zeile);
+        if (!zeile.ImProjekt) return k;
+        return k is null ? VERWENDET_KLASSE : k + " " + VERWENDET_KLASSE;
+    }
+
+    /// <summary>Die Zeilenklasse einer im Projekt verwendeten Zeile (Konzept 4.10).</summary>
+    public const string VERWENDET_KLASSE = "epos-zeile--verwendet";
+
+    private string? Zeilenklasse_(Katalogfilterzeile zeile)
     {
         bool gewaehlt = zeile.Schluessel == Gewaehlt;
         bool markiert = _markiertMenge.Count > 0 && _markiertMenge.Contains(zeile.Schluessel);
@@ -812,6 +925,23 @@
 
     /// <summary>Ein Doppelklick auf eine Zeile („wählen und übernehmen", W6‑E‑5).</summary>
     [Parameter] public EventCallback<Katalogfilterzeile> Doppelklick { get; set; }
+
+    /// <summary>
+    /// <b>Der Stift je Zeile</b> (UeS2): Gesetzt trägt jede Zeile am Ende einen Stiftknopf
+    /// „Bearbeiten". Sein Klick wählt die Zeile (wie ein blanker Klick, ohne Kästchen und
+    /// ohne Markierung) und ruft danach diesen Rückruf mit der Zeile.
+    /// </summary>
+    [Parameter] public EventCallback<Katalogfilterzeile> Bearbeiten { get; set; }
+
+    /// <summary>Kurztext des Stifts; leer = „Bearbeiten" (<c>AUSWAHL_ZEILE_BEARBEITEN</c>).</summary>
+    [Parameter] public string? BearbeitenHinweis { get; set; }
+
+    /// <summary>Der Stift einer Zeile: erst wählen (falls nicht gewählt), dann der Rückruf.</summary>
+    private async Task BeiStift(Katalogfilterzeile zeile)
+    {
+        if (zeile.Schluessel != Gewaehlt) await Waehlen(zeile);
+        await Bearbeiten.InvokeAsync(zeile);
+    }
 
     /// <summary>
     /// Ein Klick in der Mehrfachwahl. <paramref name="Index"/> ist die Stelle in der
@@ -985,7 +1115,9 @@
     {
         GewaehlteNachziehen();
         ZeigeanlassNachziehen();
+        bool neueWahl = SpaltenwahlLaden();
         Neuberechnen();
+        if (neueWahl) RaengeRechnen();
     }
 
     /// <summary>
@@ -1153,6 +1285,21 @@
                       _gefiltert.Count.ToString("N0", CultureInfo.CurrentCulture),
                       Zeilen.Count.ToString("N0", CultureInfo.CurrentCulture));
 
+    /// <summary>Die Trefferzahl ohne Hauptwort; trägt der Wirt eine eigene Zeile, steht sie ganz hier.</summary>
+    private string Trefferzahl
+    {
+        get
+        {
+            string kurz = string.Format(CultureInfo.CurrentCulture, Texte.TrefferKurz,
+                                        _gefiltert.Count.ToString("N0", CultureInfo.CurrentCulture),
+                                        Zeilen.Count.ToString("N0", CultureInfo.CurrentCulture));
+            return Trefferzeile.StartsWith(kurz, StringComparison.Ordinal) ? kurz : Trefferzeile;
+        }
+    }
+
+    /// <summary>Das Hauptwort der Trefferzahl samt Leerzeichen („ Sätzen“) — es weicht zuerst.</summary>
+    private string Trefferwort => Trefferzeile.Substring(Trefferzahl.Length);
+
     private Task BeiSuche(ChangeEventArgs e)
     {
         Stand.Suche = e.Value?.ToString() ?? "";
@@ -1218,6 +1365,18 @@
     private static string Kurztext(string muster, Katalogspalte spalte) =>
         string.Format(CultureInfo.CurrentCulture, muster ?? "{0}", spalte.Kopftext);
 
+    // Langtext am Spaltenkopf: null laesst Blazor das Attribut weglassen.
+    private static string? Langtitel(Katalogspalte spalte) =>
+        spalte.HatLangtext ? spalte.Langtext : null;
+
+    // Name des Sortierknopfs fuer die Hilfstechnik: mit Langtext
+    // „Sortieren nach Nennkälteleistung (P_N [kW])", sonst wie der Tooltip.
+    private string Sortiername(Katalogspalte spalte) =>
+        spalte.HatLangtext
+            ? string.Format(CultureInfo.CurrentCulture, Texte.Sortieren ?? "{0}",
+                            spalte.Langtext + " (" + spalte.Kopftext + ")")
+            : Kurztext(Texte.Sortieren, spalte);
+
     private string Platzhalter(Katalogspalte spalte) =>
         spalte.Art == Katalogspaltenart.Zahl ? Texte.PlatzhalterZahl : Texte.PlatzhalterText;
 
@@ -1262,6 +1421,162 @@
         zeile.Geschuetzt ? "epos-gesperrt" : "";
 
     // =====================================================================
+    //  Spaltenwahl und Verwendungsmarke (Konzept Projektdialoge 4.10)
+    // =====================================================================
+
+    /// <summary>Präfix des Einstellungsschlüssels der Spaltenwahl; dahinter steht der Dialogname.</summary>
+    public const string SPALTEN_PRAEFIX = "Katalogauswahl.Spalten.";
+
+    /// <summary>
+    /// Die umgebende Katalogauswahl — sie reicht den <c>Dialogname</c>, unter dem die
+    /// Spaltenwahl gemerkt wird (derselbe Name wie bei der Trennlinie).
+    /// </summary>
+    [CascadingParameter] public Zweispaltenauswahl? Auswahlrahmen { get; set; }
+
+    /// <summary>
+    /// Name, unter dem die Spaltenwahl gemerkt wird, wenn die Liste nicht in einer
+    /// Katalogauswahl steht. Leer und ohne Katalogauswahl: kein Knopf „Spalten…“.
+    /// </summary>
+    [Parameter] public string? Spaltenwahlname { get; set; }
+
+    private string SpaltenwahlName =>
+        !string.IsNullOrEmpty(Spaltenwahlname) ? Spaltenwahlname : Auswahlrahmen?.Dialogname ?? "";
+
+    /// <summary>Der Einstellungsschlüssel der Spaltenwahl (Prüfhilfe für Tests).</summary>
+    public string Spaltenschluessel => SPALTEN_PRAEFIX + SpaltenwahlName;
+
+    /// <summary>Die gemerkte Wahl (Spaltenschlüssel); <c>null</c> = Standardanzeige.</summary>
+    private HashSet<string>? _spaltenwahl;
+    private string? _spaltenwahlFuer;
+
+    /// <summary>Die angezeigten Spalten in der Folge des Profils.</summary>
+    private List<Katalogspalte> _angezeigt = new();
+    private readonly HashSet<string> _angezeigtMenge = new(StringComparer.Ordinal);
+    private Func<Katalogspalte, bool>? _istAngezeigt;
+
+    /// <summary>Die Stufe, ab der eine Spalte steht (0 = immer) — für den Hinweis der Spaltenwahl.</summary>
+    private Func<Katalogspalte, int>? _stufeZu;
+
+    private int StufeZu(Katalogspalte spalte)
+        => _hatRaenge && _stufen.TryGetValue(spalte.Schluessel, out int stufe) ? stufe : 0;
+
+    /// <summary>Die Schlüssel der angezeigten Spalten (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> AngezeigteSpalten => _angezeigt.Select(s => s.Schluessel).ToList();
+
+    /// <summary>Gilt eine gemerkte Spaltenwahl (Prüfhilfe für Tests)?</summary>
+    public bool SpaltenGewaehlt => _spaltenwahl is not null;
+
+    /// <summary>Ist die Auswahl „Spalten…“ offen?</summary>
+    public bool SpaltenwahlOffen { get; private set; }
+
+    private Task SpaltenwahlOffenSetzen(bool offen)
+    {
+        SpaltenwahlOffen = offen;
+        return Task.CompletedTask;
+    }
+
+    private bool SpaltenwahlAktiv => SpaltenwahlName.Length > 0 && WaehlbareSpalten.Count > 0;
+
+    /// <summary>Was sich wählen lässt: jede Spalte des Profils außer dem Bezeichner.</summary>
+    private IReadOnlyList<Katalogspalte> WaehlbareSpalten =>
+        Profil is null
+            ? Array.Empty<Katalogspalte>()
+            : Profil.Spalten.Where(s => !Spaltenraenge.IstElastisch(s)).ToList();
+
+    private bool IstAngezeigt(Katalogspalte spalte) => _angezeigtMenge.Contains(spalte.Schluessel);
+
+    /// <summary>
+    /// Steht die Spalte da? Der Bezeichner immer; ohne gemerkte Wahl jede Spalte außer den
+    /// standardmäßig abgewählten (Rang 2 weicht dann weiter nach der Breite); mit gemerkter
+    /// Wahl genau die gewählten.
+    /// </summary>
+    private bool Sichtbar(Katalogspalte spalte) =>
+        Spaltenraenge.IstElastisch(spalte)
+        || (_spaltenwahl is null ? !spalte.StandardAus : _spaltenwahl.Contains(spalte.Schluessel));
+
+    private void AngezeigteRechnen()
+    {
+        _angezeigt = Profil is null ? new List<Katalogspalte>() : Profil.Spalten.Where(Sichtbar).ToList();
+        _angezeigtMenge.Clear();
+        foreach (Katalogspalte s in _angezeigt) _angezeigtMenge.Add(s.Schluessel);
+    }
+
+    /// <summary>
+    /// Liest die gemerkte Wahl, sobald der Dialogname feststeht oder wechselt. Unbekannte
+    /// Schlüssel (ein Profil ohne diese Spalte) fallen still heraus.
+    /// </summary>
+    private bool SpaltenwahlLaden()
+    {
+        string name = SpaltenwahlName;
+        if (name == _spaltenwahlFuer) return false;
+        _spaltenwahlFuer = name;
+        _spaltenwahl = null;
+        if (name.Length == 0) return true;
+
+        string? text = null;
+        try { text = WindowsFormsApplication1.Dienste.Einstellungen?.Lies(Spaltenschluessel, null); }
+        catch (Exception) { text = null; }
+        if (string.IsNullOrWhiteSpace(text)) return true;
+
+        _spaltenwahl = new HashSet<string>(
+            text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+            StringComparer.Ordinal);
+        return true;
+    }
+
+    /// <summary>
+    /// Ein Kästchen der Spaltenwahl: Aus dem angezeigten Stand wird eine gemerkte Wahl mit
+    /// dieser Spalte mehr oder weniger. Gemerkt wird je Dialog als Text (Schlüssel
+    /// kommagetrennt in der Folge des Profils).
+    /// </summary>
+    private void SpalteUmschalten(string schluessel)
+    {
+        var neu = new HashSet<string>(StringComparer.Ordinal);
+        foreach (Katalogspalte s in WaehlbareSpalten)
+            if (_angezeigtMenge.Contains(s.Schluessel)) neu.Add(s.Schluessel);
+        if (!neu.Remove(schluessel)) neu.Add(schluessel);
+        _spaltenwahl = neu;
+
+        string text = string.Join(",", WaehlbareSpalten.Where(s => neu.Contains(s.Schluessel)).Select(s => s.Schluessel));
+        // Eine leere Wahl (nur der Bezeichner) braucht ein Zeichen, sonst liest sie sich als Standard.
+        try { WindowsFormsApplication1.Dienste.Einstellungen?.Schreib(Spaltenschluessel, text.Length == 0 ? "," : text); }
+        catch (Exception) { /* ohne Ablage gilt die Wahl bis zum Schliessen */ }
+        _offen = "";
+        RaengeRechnen();
+    }
+
+    /// <summary>„Standard“: Die gemerkte Wahl fällt, es gilt die Standardanzeige; die Auswahl schließt.</summary>
+    private void SpaltenStandard()
+    {
+        // Die Auswahl schliesst: „Standard“ ist eine abschliessende Handlung, und der
+        // Knopf ist danach gesperrt - der Fokus faende sonst keinen Ort.
+        _spaltenwahl = null;
+        SpaltenwahlOffen = false;
+        try { WindowsFormsApplication1.Dienste.Einstellungen?.Loesche(Spaltenschluessel); }
+        catch (Exception) { }
+        RaengeRechnen();
+    }
+
+    /// <summary>Ist mindestens eine Zeile im Projekt verwendet? Dann steht die Legende.</summary>
+    private bool HatVerwendete
+    {
+        get
+        {
+            if (Zeilen is null) return false;
+            foreach (Katalogfilterzeile z in Zeilen) if (z.ImProjekt) return true;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// DIE VERWENDUNGSMARKE (4.10, Anwenderentscheid 10.10.2026): ein Punkt in der
+    /// Projektfarbe hinter dem Bezeichner, der Hinweis beim Zeigen nennt die Bedeutung.
+    /// </summary>
+    private RenderFragment Verwendungsmarke => @<span class="epos-verwendet-marke" role="img"
+                                                      title="@Texte.VerwendetHinweis"
+                                                      aria-label="@Texte.VerwendetHinweis"></span>;
+
+    // =====================================================================
     //  Spalten nach Rang (Konzept Administrationsdialoge, V2 und V7)
     // =====================================================================
 
@@ -1275,7 +1590,8 @@
     private string Wurzelklasse =>
         (_hatRaenge ? "epos-katalogliste epos-katalogliste--raenge" : "epos-katalogliste")
         + (ZeilenwahlAktiv ? " epos-katalogliste--zeilenwahl" : "")
-        + (KaestchenAktiv ? " epos-katalogliste--kaestchen" : "");
+        + (KaestchenAktiv ? " epos-katalogliste--kaestchen" : "")
+        + (_spaltenwahl is not null ? " epos-katalogliste--spaltenwahl" : "");
 
     private bool _hatRaenge;
 
@@ -1299,7 +1615,10 @@
     /// </summary>
     private void RaengeRechnen()
     {
-        _hatRaenge = Spaltenraenge.HatRaenge(Profil);
+        AngezeigteRechnen();
+        // Mit gemerkter Spaltenwahl stehen genau die gewaehlten Spalten - keine weicht
+        // nach der Breite (4.10); die Liste rollt dann in ihrem Raster waagerecht.
+        _hatRaenge = _spaltenwahl is null && Spaltenraenge.HatRaenge(_angezeigt);
         if (Profil is null || !_hatRaenge)
         {
             _stufen = new Dictionary<string, int>();
@@ -1317,7 +1636,7 @@
 
         // Ohne Wahlspalte (V4) hat die Liste deren 60 px mehr fuer ihre Spalten - die
         // Kaestchenspalte (V6) nimmt sie wieder.
-        _stufen = Spaltenraenge.Stufen(Profil, _laengen, Festgehalten,
+        _stufen = Spaltenraenge.Stufen(_angezeigt, _laengen, Festgehalten,
                                        mitWahlspalte: !ZeilenwahlAktiv || KaestchenAktiv);
         BalkenErsatzRechnen();
     }
@@ -1336,11 +1655,11 @@
         _balkenErsatz = "";
         _balkenAb = 0;
         // Mit Kaestchen (V6) ist die erste Zelle das Kaestchen - sie weicht nie.
-        if (!ZeilenwahlAktiv || KaestchenAktiv || Profil is null || Profil.Spalten.Count < 2) return;
+        if (!ZeilenwahlAktiv || KaestchenAktiv || Profil is null || _angezeigt.Count < 2) return;
 
-        if (!_stufen.TryGetValue(Profil.Spalten[0].Schluessel, out int erste) || erste <= 0) return;
+        if (!_stufen.TryGetValue(_angezeigt[0].Schluessel, out int erste) || erste <= 0) return;
 
-        foreach (Katalogspalte s in Profil.Spalten)
+        foreach (Katalogspalte s in _angezeigt)
             if (_stufen.TryGetValue(s.Schluessel, out int st) && st == 0)
             {
                 _balkenErsatz = s.Schluessel;

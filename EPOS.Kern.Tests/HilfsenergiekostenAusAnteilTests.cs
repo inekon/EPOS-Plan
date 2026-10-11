@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using EPOS.UI.Dialoge.Kosten;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -278,6 +279,81 @@ namespace EPOS.Kern.Tests
             Assert.True(HilfsenergieAusAnteil.Plane(PROJEKT).Leer);
             Assert.Equal(vorher.BetriebSofort, nachher.BetriebSofort);
             Assert.Equal(vorher.EndenergieSofort, nachher.EndenergieSofort);
+        }
+
+        /// <summary>
+        /// AUFTRAG P671 (E30-Rest 1): Das Kostenraster bekommt den WIRKSAMEN Satz einer Zeile, deren
+        /// Satz aus dem Anteil stammt, samt Herkunftszeile — die Zeile selbst bleibt ohne Satz. Trägt
+        /// die Position einen eigenen Satz, gilt er, und es gibt keinen Satz aus dem Anteil.
+        /// </summary>
+        [Fact]
+        public void Das_Kostenraster_bekommt_den_Satz_aus_dem_Anteil()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            const int K_BHKW = 7;
+            Anteil(BHKW_GROSS, 2.0);
+            KostenProjektPositionenCtrl.Zeile z = KostenProjektPositionenCtrl
+                .Lies(PROJEKT, K_BHKW, DbWerte.KOSTEN_KATEGORIE_BETRIEB, BHKW_GROSS)
+                .Find(x => x.Raster.Id == ZEILE_GROSS);
+            Assert.NotNull(z);
+            Assert.Equal(2.0, z.SatzAusAnlagenanteil);
+            Assert.Null(z.Raster.Satz);
+            Assert.Equal("2 % · Satz aus dem Hilfsenergieanteil der Anlage", z.SatzAusAnlagenanteilZeile);
+            Assert.True(z.Raster.BetragNetto > 0, "Der Betrag aus dem Anteil fehlt.");
+
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_ProjektWerte SET Einheitpreis = 3 WHERE ID = ?",
+                new DbParam("@id", DbParamTyp.Integer) { Wert = ZEILE_GROSS });
+            KostenProjektPositionenCtrl.Zeile eigen = KostenProjektPositionenCtrl
+                .Lies(PROJEKT, K_BHKW, DbWerte.KOSTEN_KATEGORIE_BETRIEB, BHKW_GROSS)
+                .Find(x => x.Raster.Id == ZEILE_GROSS);
+            Assert.Null(eigen.SatzAusAnlagenanteil);
+            Assert.Equal("", eigen.SatzAusAnlagenanteilZeile);
+            Assert.Equal(3.0, eigen.Raster.Satz);
+        }
+
+        /// <summary>
+        /// AUFTRAG P671 (E30-Rest 1), die Hülle des Kostenrasters: Die Zeile mit Satz aus dem
+        /// Anteil zeigt 2 % im gesperrten Satzfeld samt Herkunft; Nachziehen behält den Betrag des
+        /// Rechenwegs, und „Speichern" schreibt den Satz NICHT in die Position — sie bleibt ohne
+        /// eigenen Satz und rechnet weiter aus dem Anteil. Die übrigen Zeilen sind nicht gesperrt.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_zeigt_den_Satz_aus_dem_Anteil_gesperrt_und_schreibt_ihn_nicht()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Anteil(BHKW_GROSS, 2.0);
+            double betrag = WirtschaftlichkeitCtrl.BetriebNachId(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET)[ZEILE_GROSS].BetragJahr;
+
+            IReadOnlyDictionary<string, object> gaben =
+                KostenKomponenteHuelle.GabenProjekt(PROJEKT, "", null, true, BHKW_GROSS);
+            var laden = (Func<KostenKomponenteKontext, KostenKomponenteStand>)gaben["Laden"];
+            KostenKomponenteStand stand = laden(new KostenKomponenteKontext((int?)gaben["EintragVorwahl"], false, null));
+
+            KostenPositionZeile z = stand.Zeilen.Single(x => x.Id == ZEILE_GROSS);
+            Assert.True(z.SatzGesperrt);
+            Assert.Equal(2.0, z.Satz);
+            Assert.Equal("2 % · Satz aus dem Hilfsenergieanteil der Anlage", z.SatzHerleitung);
+            Assert.All(stand.Zeilen.Where(x => x.Id != ZEILE_GROSS), x => Assert.False(x.SatzGesperrt));
+            string betragText = z.BetragText;
+
+            var nachziehen = (Action<KostenPositionZeile>)gaben["Nachziehen"];
+            nachziehen(z);
+            Assert.Equal(betragText, z.BetragText);
+            Assert.Equal(2.0, z.Satz);
+
+            var speichern = (Func<bool>)gaben["Speichern"];
+            Assert.True(speichern());
+            object satz = DataRepository.ExecuteScalar("SELECT Einheitpreis FROM Tab_ProjektWerte WHERE ID = ?",
+                new DbParam("@id", DbParamTyp.Integer) { Wert = ZEILE_GROSS });
+            Assert.True(satz == null || satz == DBNull.Value, "Der Satz aus dem Anteil ging in die Position.");
+            KostenPositionNachweis n = WirtschaftlichkeitCtrl.BetriebNachId(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET)[ZEILE_GROSS];
+            Assert.Equal(HilfsenergieAusAnteil.HERKUNFT_ANLAGENANTEIL, n.SatzHerkunft);
+            Assert.Equal(betrag, n.BetragJahr, 6);
         }
 
         /// <summary>Ein Elektrokessel bekommt keine Hilfsenergiekosten aus dem Anteil — seine

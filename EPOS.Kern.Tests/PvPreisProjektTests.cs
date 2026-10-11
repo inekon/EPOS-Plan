@@ -52,12 +52,22 @@ namespace EPOS.Kern.Tests
         private const string BEST = WirtschaftlichkeitSzenario.BEST;
         private const string WORST = WirtschaftlichkeitSzenario.WORST;
 
-        // Die Kapitalwerte des Projekts (frisch simuliert, 25.09.2026). Sie bewegen sich mit
+        // Die Kapitalwerte des Projekts (frisch simuliert, 30.09.2026). Sie bewegen sich mit
         // jeder Änderung am Rechenweg, die 1048 trifft — dann nachziehen, wie die Anker
         // von 1030. Die Beziehungen der übrigen Fälle bleiben davon unberührt.
-        private const double KW_ERWARTET = -237134.7270351314;
-        private const double KW_BEST = -204001.50754334457;
-        private const double KW_WORST = -279852.53447363194;
+        // Kessel E2b (Schemaschritt 158): Der kopierte Gaskessel trägt das Brennwertkennzeichen
+        // seines Katalogsatzes und rechnet mit der Normvorgabe von η₃₀ — weniger Brennstoff;
+        // vorher −237.134,7270351314 / −204.001,50754334457 / −279.852,53447363194.
+        // Kessel E4 (Takten): Der Kessel taktet unter der Mindestleistung (Normvorgabe) und zahlt
+        // je Start den Anfahrverlust — mehr Brennstoff; vorher −235.093,77985765776 /
+        // −202.123,0925563547 / −277.543,44727093074.
+        // Welle M5 (SB1 a, Basis R33): die PV-Bilanz je Viertelstunde - weniger Direktverbrauch, mehr
+        // Einspeisung; vorher -236.955,12368351375 / -203.836,20702448947 / -279.649,33479979425.
+        // RP2a (Erdreich nach DIN EN ISO 13370): weniger Heizwärme; vorher -237.037,6798966473 /
+        // -203.893,2343538603 / -279.761,1716219004.
+        private const double KW_ERWARTET = -233268.8052907059;
+        private const double KW_BEST = -200453.20166795506;
+        private const double KW_WORST = -275444.28444738826;
 
         /// <summary>Die kopierten Investitionszeilen der Vorlage 1040 (20 Zeilen, Erwartet).</summary>
         private const double INVEST_KOPIE = 54975.5;

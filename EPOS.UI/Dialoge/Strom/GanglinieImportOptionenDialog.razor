@@ -34,6 +34,9 @@
 @using System.Globalization
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@using KiKern
+@using EPOS.UI.Dienste
+@implements IDisposable
 
 <div class="epos-dialog epos-importoptionen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -42,6 +45,11 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         <Schliesskreuz Geschlossen="BeiAbbrechen" />
     </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@WarnStufe.Warnung" Text="@_meldung" />
+    }
 
     <p class="epos-importoptionen-datei">@DateiZeile</p>
 
@@ -96,6 +104,24 @@
             }
         </KindInhalt>
     </Raster>
+
+    @* DIE GELESENE REIHE: Zeilenzahl und erkanntes Raster (oder der Grund, warum es keines gibt) und
+       die Reihe als Jahresbild - aus der Probelesung der ganzen Datei unter den gewaehlten Optionen
+       (GanglinienVorschau.Probe, gerechnet im Kern). Sie entsteht mit "Vorschau aktualisieren" neu;
+       eine unlesbare Datei zeigt kein Bild, ihr Grund steht im Banner. "CSV..." am Bild kommt ueber
+       die Export-Kaskade des Wirts. *@
+    @if (_probe is not null)
+    {
+        <p class="epos-leisezeile epos-importoptionen-probe" role="status">@_probe.Zeile</p>
+        @if (_probe.Modell is not null)
+        {
+            <Gruppenkopf Titel="@GruppeGrafik" />
+            <div class="epos-importoptionen-bild">
+                <DiagrammSvg Modell="@_probe.Modell" Kennung="@("importoptionen-" + _probeNummer)"
+                             Bezeichnung="@BildTitel" Einheit="kW" Palette="@WindowsFormsApplication1.Zeichnung.Farbpalette.Aktuell" />
+            </div>
+        }
+    }
 
     @* Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 1 Satz 1):
        Aktionen · Fueller · Abbrechen · OK (primaer, zuletzt). "Aktualisieren"
@@ -157,8 +183,14 @@
     [Parameter] public string AktualisierenText { get; set; } = Resource.IMPORT_BTN_AKTUALISIEREN;
     [Parameter] public string VorlageVorschau { get; set; } = Resource.IMPORT_GRP_VORSCHAU;
     [Parameter] public string HinweisText { get; set; } = Resource.IMPORT_HINWEIS_OPTIONEN;
+    /// <summary>Banner, wenn „Vorschau aktualisieren" mit den gewählten Optionen nichts lesen kann ({0} = Grund).</summary>
+    [Parameter] public string VorlageUnlesbar { get; set; } = Resource.IMPORT_MSG_VORSCHAU_UNLESBAR;
     [Parameter] public string SpalteZeile { get; set; } = Resource.IMPORT_SPALTE_ZEILE;
     [Parameter] public string VorlageSpalte { get; set; } = Resource.IMPORT_SPALTE_N;
+    /// <summary>Gruppenkopf über dem Bild der gelesenen Reihe — <c>IMPORT_GRP_GRAFIK</c>.</summary>
+    [Parameter] public string GruppeGrafik { get; set; } = Resource.IMPORT_GRP_GRAFIK;
+    /// <summary>Titel des Bildes (auch Name der CSV) — <c>IMPORT_BILD_TITEL</c>.</summary>
+    [Parameter] public string BildTitel { get; set; } = Resource.IMPORT_BILD_TITEL;
 
     /// <summary>
     /// Beschriftung des Fussknopfes. WOERTLICH <c>SIM_BTN_OK</c> und nicht
@@ -185,6 +217,11 @@
     private bool _kopfzeile;
 
     private GanglinienVorschau? _vorschau;
+    private GanglinienProbe? _probe;
+    private int _probeNummer;
+
+    /// <summary>Die Probelesung der ganzen Datei unter den gewählten Optionen; <c>null</c> = keine (Prüfhilfe).</summary>
+    public GanglinienProbe? Probe => _probe;
     private List<string> _blattnamen = new();
 
     private IReadOnlyList<(int Id, string Text)> _trennzeichen = Array.Empty<(int, string)>();
@@ -242,15 +279,95 @@
     {
         if (_vorschau is not null) return;      // schon aufgebaut
         _vorschau = Erkennung;
+        ProbeSetzen(Erkennung);
         ListenFuellen(Erkennung);
         OptionenInDialog(Erkennung?.Vorschlag ?? new GanglinienImportOptionen());
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Importdialoge, Teil A)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GanglinieImportOptionenKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiSicht = new GanglinieImportOptionenKiSicht(KiPlatz, () => _kopfzeile, KiSetzen, KiWahl, () => IstExcel);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf. <b>Keine Prüfung und kein
+    /// Speicherweg:</b> Der Dialog prüft am OK nichts, und OK gibt die Optionen an den Wirt
+    /// zurück — das bestätigt der Anwender. „Vorschau aktualisieren" ist ein Knopf.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Sperrgrund = f => _kiSicht?.Sperrgrund(f)
+    };
+
+    private int KiPlatz(string feld) => feld switch
+    {
+        nameof(GanglinieImportOptionenKiSicht.Trennzeichen) => _iTrennzeichen,
+        nameof(GanglinieImportOptionenKiSicht.Dezimaltrenner) => _iDezimal,
+        nameof(GanglinieImportOptionenKiSicht.Wertspalte) => _iWertspalte,
+        nameof(GanglinieImportOptionenKiSicht.Zeitspalte) => _iZeitspalte,
+        nameof(GanglinieImportOptionenKiSicht.Einheit) => _iEinheit,
+        nameof(GanglinieImportOptionenKiSicht.Raster) => _iRaster,
+        nameof(GanglinieImportOptionenKiSicht.Konvention) => _iKonvention,
+        nameof(GanglinieImportOptionenKiSicht.Blatt) => _iBlatt,
+        _ => throw new InvalidOperationException(feld)
+    };
+
+    private IReadOnlyList<KiWahleintrag> KiWahl(string feld)
+    {
+        IReadOnlyList<(int Id, string Text)> liste = feld switch
+        {
+            nameof(GanglinieImportOptionenKiSicht.Trennzeichen) => _trennzeichen,
+            nameof(GanglinieImportOptionenKiSicht.Dezimaltrenner) => _dezimal,
+            nameof(GanglinieImportOptionenKiSicht.Wertspalte) => _wertspalten,
+            nameof(GanglinieImportOptionenKiSicht.Zeitspalte) => _zeitspalten,
+            nameof(GanglinieImportOptionenKiSicht.Einheit) => _einheit,
+            nameof(GanglinieImportOptionenKiSicht.Raster) => _raster,
+            nameof(GanglinieImportOptionenKiSicht.Konvention) => _konvention,
+            _ => _blaetter
+        };
+        return KiMaskenanmeldung.Eintraege(liste, z => z.Id, z => z.Text);
+    }
+
+    /// <summary>
+    /// Der Handweg je Feld — wie die Klappliste: der Platz wechselt, die Vorschau bleibt bis
+    /// „Vorschau aktualisieren" stehen. Danach zeichnet sich die Maske neu.
+    /// </summary>
+    private void KiSetzen(string feld, object? wert)
+    {
+        int platz = wert as int? ?? 0;
+        switch (feld)
+        {
+            case nameof(GanglinieImportOptionenKiSicht.Kopfzeile): _kopfzeile = wert is true; break;
+            case nameof(GanglinieImportOptionenKiSicht.Trennzeichen): _iTrennzeichen = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Dezimaltrenner): _iDezimal = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Wertspalte): _iWertspalte = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Zeitspalte): _iZeitspalte = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Einheit): _iEinheit = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Raster): _iRaster = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Konvention): _iKonvention = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Blatt): _iBlatt = platz; break;
+            default: throw new InvalidOperationException(feld);
+        }
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private static IReadOnlyList<(int, string)> Paare(IReadOnlyList<string> texte)
@@ -328,18 +445,40 @@
     // Vorschau aktualisieren (Aktualisieren_Click)
     // =====================================================================
 
+    private string _meldung = "";
+
+    /// <summary>Der Banner des Dialogs (Prüfhilfe); leer ohne Meldung.</summary>
+    public string Meldung => _meldung;
+
     private async Task BeiAktualisieren()
     {
         if (Vorschau is null) return;
 
         GanglinienImportOptionen behalten = Optionen();
         GanglinienVorschau? neu = await Vorschau(Pfad, behalten);
-        if (neu is null || !neu.Lesbar) return;
+        if (neu is null || !neu.Lesbar)
+        {
+            // Nicht still bleiben (IM-1): Der Grund steht im Banner, Optionen und alte Vorschau bleiben.
+            PruefMeldung? fehler = neu?.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
+            string grund = fehler is null ? Resource.IMPORT_PROT_DATEI_LEER : GanglinienProtokollText.Text(fehler);
+            _meldung = string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageUnlesbar, grund);
+            _probe = null;
+            return;
+        }
+        _meldung = "";
+        ProbeSetzen(neu);
 
         // Woertlich: Die Listen werden neu gefuellt, die OPTIONEN aber gerettet.
         _vorschau = neu;
         ListenFuellen(neu);
         OptionenInDialog(behalten);
+    }
+
+    /// <summary>Die Probelesung einer lesbaren Vorschau; eine unlesbare hat keine.</summary>
+    private void ProbeSetzen(GanglinienVorschau? vorschau)
+    {
+        _probe = vorschau is not null && vorschau.Lesbar ? vorschau.Probe : null;
+        _probeNummer++;
     }
 
     // =====================================================================

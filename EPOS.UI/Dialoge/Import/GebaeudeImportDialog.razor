@@ -38,26 +38,41 @@
    Bilanz (Zonen, beheizte Flaeche, beheiztes Volumen, Summe Aussen- und Trennflaeche) und ein
    Warnbanner mit der schwersten Meldung der Zonierung; ueber der Obergrenze dazu der Knopf, der die
    vorgeschlagene groebere Regel waehlt (M12). Ergibt die Regel mehrere Zonen, heisst der Schalter
-   "Als Zonen mit Bauteilen uebernehmen", und statt der Bauteiltabelle stehen zwei Abschnitte: die
-   ZONEN (schlichte Tabelle; je Zone aufklappbar die Raeume mit Geschoss, Flaeche, Beheizungsregel und
-   Beleg; der Haken "beheizt" stellt alle Raeume der Zone um) und die FLAECHEN JE ZONE als
+   "Als Zonen mit Bauteilen uebernehmen", und statt der Bauteiltabelle stehen die FLAECHEN JE ZONE als
    virtualisierte Katalogliste (Suche und Trichter der Liste, dazu die Filter "nur Fehler", "nur ohne
-   Gegenstueck", "nur ohne U-Wert", die die Zeilen VOR der Liste einschraenken). Ohne Wahl (eine
-   Regel) und unter einer Regel mit einer Zone bleibt alles wie im Einzonenweg. Eine neue Datei und
-   ein anderes Gebaeude setzen die Regel auf die Vorgabe zurueck.
+   Gegenstueck", "nur ohne U-Wert", die die Zeilen VOR der Liste einschraenken). Ohne Wahl (eine Regel)
+   bleibt alles wie im Einzonenweg. Eine neue Datei und ein anderes Gebaeude setzen die Regel auf die
+   Vorgabe zurueck; ein Regelwechsel bildet den Plan neu - mit Schritten erst nach Rueckfrage.
 
-   DER GRUNDRISS (Stufe G6c, Welle D2; Mehrzonenkonzept 6.7): Neben der Zonenliste - im schmalen
-   Fenster darunter - steht die GebaeudeAnsicht je Geschoss; ohne Zonenliste steht sie als eigener
-   Abschnitt und ist reine Anzeige. Unter einer Regel mit mehreren Zonen waehlt ihr Kopf die
-   Zielzone ("Raeume zuordnen zu", dazu "als eigene Zone"); ein Klick auf einen Raum - oder die
-   Raumwahl des Geschosses mit "Umhaengen", der Weg ohne Grundriss fuer Raeume ohne Umriss und fuer
-   die Tastatur - haengt ihn um: Die Zuordnung (Raumkennung und Zonenschluessel, nie ein Name) kommt
-   HINTER die bisherigen in die Anfrage, der Kern bildet Zonen, Bilanz, Vorschlag und Grundriss neu.
-   Wirkt sie nicht, faellt sie wieder heraus, und die Meldung des Kerns steht am Grundriss; bei
-   ungleicher Beheizung bietet der Dialog dort den Raumhaken "beheizt" als Ausweg an - erst wenn der
-   Anwender ihn umstellt, wird zugeordnet, nie still. Die Zuordnungen reisen im Ergebnis
-   (Umhaengungen) und werden erst mit der Gebaeudeliste gespeichert. Ein Regelwechsel verwirft sie
-   nach Rueckfrage, eine neue Datei und ein anderes Gebaeude ohne Frage.
+   DER ZONENBAUM (Entscheid E79, Muster des Zonierungsdialogs): Unter einer Regelwahl steht der
+   ZONENPLAN des Kerns als Baum Gebaeude -> Zonen -> Raeume (schlichte Tabelle: je Zone Auswahlhaken,
+   Aufklappen, Name als Eingabe, Nutzung als Klappliste Wohnen/Buero/Schule/keine, Haken "beheizt" fuer
+   alle Raeume der Zone, Flaeche, Raumzahl, Heizsollwert; aufgeklappt die Raeume mit Auswahlhaken,
+   Geschoss, Beheizung und Flaeche), rechts - im schmalen Fenster darunter - die Liste "Nicht
+   zugeordnete Raeume" mit Auswahlhaken (leer mit Leerhinweis). Die Knopfleiste darunter wirkt auf die
+   Wahl: "Zone hinzufuegen" (Zeile mit Name, Vorgabe "Zone n", und Nutzung), "Zone(n) loeschen" (ihre
+   Raeume wandern nach rechts), "Zonierung aufheben" (Rueckfrage; alle Raeume nach rechts), "Raeume zur
+   ausgewaehlten Zone hinzufuegen" (genau eine Zone gewaehlt), "Geschoss zur Zone" (Klappliste Geschoss)
+   und "Rest nach Regel zuordnen" (Klappliste der Regeln, nur die nicht zugeordneten). Jeder Knopf ist
+   ein SCHRITT am Plan: Die Anfrage traegt die Schritte in ihrer Reihenfolge (nur Schluessel und
+   Kennungen) samt den Haken vor dem ersten Schritt, die Huelle legt sie auf den Regelvorschlag. Lehnt
+   der Kern einen Schritt ab, faellt er wieder heraus und seine Meldung steht als Banner - bei
+   ungleicher Beheizung mit dem Raumhaken "beheizt" als Ausweg; erst wenn der Anwender ihn umstellt,
+   folgt der Schritt, nie still. Ein Raumhaken nach dem ersten Schritt ist selbst ein Schritt (der Raum
+   bleibt in seiner Zone). Ergibt der Plan genau eine Zone, bleibt der Einzonenweg: der Baum zeigt sie,
+   Name und Nutzung werden nicht uebernommen, der Hinweis am Schalter sagt es. Ziehen mit der Maus ist
+   nicht Teil des Baums.
+
+   DER GRUNDRISS (Stufe G6c, Welle D2; Mehrzonenkonzept 6.7) steht als eigener Abschnitt unter dem
+   Baum, je Geschoss. Sobald der Plan mehrere Zonen hat oder Schritte traegt, waehlt sein Kopf die
+   Zielzone des Plans ("Raeume zuordnen zu", dazu "als eigene Zone"); ein Klick auf einen Raum - oder
+   die Raumwahl des Geschosses mit "Umhaengen", der Weg ohne Grundriss fuer Raeume ohne Umriss und fuer
+   die Tastatur - ist ein Schritt "zuordnen" bzw. "eigene Zone". Nicht zugeordnete Raeume stehen grau
+   ohne Zone.
+
+   DIE SPERRE AM OK: Solange Raeume nicht zugeordnet sind, ist OK WEICH gesperrt (aria-disabled, der
+   Grund mit Zahl als title); ueber der Leiste steht der Hinweis mit "Rest nach Regel zuordnen". Die
+   Raeume, die die Regel bewusst ausserhalb laesst, sperren nicht.
 
    OK PRUEFT UND UEBERNIMMT, ABBRECHEN VERWIRFT (Hausregel "Jeder Dialog traegt OK und
    Abbrechen"). OK ruft den Pruefdelegaten (dieselbe Pruefung des Kerns wie am Schreibweg);
@@ -67,6 +82,27 @@
    OHNE SCHREIBDELEGAT ist OK WEICH gesperrt (aria-disabled mit Grund, der Versuch meldet sich):
    Ein OK, das schliesst, ohne zu uebernehmen, behauptete eine Uebernahme, die nicht stattfand.
 
+   DIE PROJEKTDATEI DES CAD-PROGRAMMS (.sqproj, Datenaustauschkonzept 16.4): Neben der Dateizeile im Kopf steht der
+   Knopf "Projektdatei dazuladen (.sqproj)" - nur aktiv, wenn die Datenseite fuer das gewaehlte Gebaeude meldet, dass die
+   Gebaeudedatei aus dem passenden CAD-Programm stammt (ProjektdateiMoeglich), sonst ausgegraut mit dem Grund als
+   Tooltip. Er oeffnet den Dateidienst mit dem Filter .sqproj und reicht den Pfad an die Huelle, die Strom und Namen an den
+   Kern gibt; jede Ablehnung (zu gross, fehlende Tabelle, keine lesbare Datei) steht als Banner, die Gebaeudedaten
+   bleiben. Gelesen zeigt der Kopf die Bilanz (Datei, Fassung, Raeume abgeglichen / nicht abgeglichen / ohne
+   Gegenstueck, Zonen, Zeitprofile und Abschnitte, nach der Uebernahme die Zonen je Groesse, das Uebersprungene mit
+   Grund) und die schwerste Meldung als Banner. Die Uebernahme der Zonen ist ein SCHRITT am Zonenplan (PROJEKTDATEI) -
+   bestehen schon Schritte von Hand, erst nach Rueckfrage; ohne Zonenbaum sagt ein Hinweis, dass nichts uebernommen
+   wird. DIE ZONIERUNG (E87): Traegt die Projektdatei beide Zonierungen (DIN-V-18599-Zonen und Simulationszonen mit
+   abgeglichenen Raeumen), steht neben dem Knopf das Wahlfeld "DIN-V-18599-Zonen | Simulationszonen" (data-zonierung,
+   Vorgabe DIN); sonst gilt ohne Wahl die vorhandene. Die Wahl reist im Schritt PROJEKTDATEI mit (Schluessel din/sim) - ein
+   Wechsel liest nicht neu, sondern baut den Zonenplan mit der anderen Zonierung neu auf; bestehen Schritte von Hand, erst
+   nach Rueckfrage (Vorgabe "Nein" stellt die Wahl zurueck). Die Bilanz nennt die wirksame Zonierung mit der Zahl ihrer
+   Zonen. Der Baum zeigt die Zonen der Projektdatei mit Nutzung, Profilnummer (Tooltip) und Heizsollwert Tag aus der
+   Ganglinie, je Zone die Herkunft "aus Projektdatei (DIN-Zonen)" bzw. "(Simulationszonen)" (data-herkunft
+   projektdatei-din / projektdatei-sim); rechts stehen die nicht zugeordneten Raeume
+   und darunter die Raeume der Projektdatei ohne Gegenstueck. "Projektdatei entfernen" setzt Stand und Plan zurueck;
+   ein anderes Gebaeude entfernt sie ebenfalls. Gespeichert wird wie immer in einem Vorgang - der Kern schreibt die
+   Konditionierung je Zone mit dem Beleg in der Bemerkung des Kalenders.
+
    WAEHREND EINES LAUFS steht KEIN Kreuz: Esc bricht dann den Lauf ab, statt zu schliessen
    (Muster ImportUeberlagerung/KatalogImportDialog). Waehrend der Uebernahme ist Esc ohne
    Wirkung. Enter ist nicht belegt. *@
@@ -74,6 +110,8 @@
 @namespace EPOS.UI.Dialoge.Import
 @using System.Globalization
 @using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dienste
+@using KiKern
 @using WindowsFormsApplication1
 @implements IDisposable
 
@@ -97,15 +135,33 @@
         <KindInhalt>
             @* Ohne eigene Wahl zeigt die Klappliste die Klasse, die der Import aus dem Baujahr der
                Datei zog - der Satz rechnet schon mit ihr; der Hinweis nennt, wie viele Werte sie
-               fuellt (eine Datei mit eigenen U-Werten laesst ihr nur die Waermebruecken). *@
-            <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@(_stand?.KlasseDerDatei ?? _klasse)"
-                         AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt && _stand?.KlasseDerDatei is null)" />
+               fuellt (eine Datei mit eigenen U-Werten laesst ihr nur die Waermebruecken). Die Wahl
+               bleibt frei wie im Gebaeudeeditor (Anwenderwunsch 08.10.2026): Eine eigene Wahl gilt vor
+               dem Baujahr, die Zeile darunter nennt dann den Vorschlag aus dem Baujahr. *@
+            <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@KlasseAngezeigt"
+                         AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt)" />
             <Herleitungszeile Text="@(_stand is { KlassenHinweis.Length: > 0 } s ? s.KlassenHinweis : Texte.KlasseHinweis)" />
-            <Dateiwahl Bezeichnung="@Texte.Datei" KnopfText="@Texte.DateiKnopf" Filter="@(Profil?.Dateifilter ?? "")"
+            @if (Quellenliste.Count > 0)
+            {
+                @* DIE QUELLENWAHL (Datenaustauschkonzept 16.1): je Format, Format mit Projektdatei, nur Projektdatei - sie setzt den
+                   Filter des Dateiwaehlers; ohne Wahl gilt der gemeinsame Filter, und die Quelle folgt der Endung der Datei. *@
+                <div class="epos-gebimport-quellwahl" data-quelle="@(_quelle ?? "")">
+                    <Auswahlfeld Bezeichnung="@Texte.Quellwahl" Eintraege="@Quelleneintraege" Auswahl="@QuellenId(_quelle)"
+                                 AuswahlChanged="BeiQuelle" Platzhalter="@Texte.QuellwahlAlle" Aktiv="@(!Beschaeftigt)" />
+                </div>
+            }
+            <Dateiwahl Bezeichnung="@Texte.Datei" KnopfText="@Texte.DateiKnopf" Filter="@WirksamerFilter"
                        Pfad="@_dateianzeige" Waehlen="@Waehler" PfadChanged="BeiDatei" Aktiv="@(!Beschaeftigt)" />
             @if (GrenzeText.Length > 0)
             {
                 <Herleitungszeile Text="@GrenzeText" />
+            }
+            @if (Exporthinweis.Length > 0)
+            {
+                @* Der Hinweis zur Exporteinstellung des gewaehlten Formats (ohne Wahl der des Profils) - leise, kein Banner. *@
+                <div class="epos-gebimport-exporthinweis">
+                    <Herleitungszeile Text="@Exporthinweis" />
+                </div>
             }
         </KindInhalt>
     </Formularraster>
@@ -121,13 +177,151 @@
         <Gruppenkopf Titel="@Texte.GruppeQuelle" />
         @if (_lesestand.Kopf is GebaeudeImportKopf kopf)
         {
+            <div class="epos-gebimport-quellzeile" data-quelle="@GelesenerWeg">
+                <Herleitungszeile Text="@Format(Texte.Quellzeile, Quellentext(kopf, stand))" />
+            </div>
             <dl class="epos-gebimport-kopf">
                 <dt>@Texte.KopfDatei</dt><dd>@kopf.Dateiname</dd>
                 <dt>@Texte.KopfFormat</dt><dd>@kopf.Format</dd>
                 <dt>@Texte.KopfSchema</dt><dd>@kopf.Schema</dd>
+                @if (kopf.Modellansicht is string mvd)
+                {
+                    <dt>@Texte.KopfModellansicht</dt><dd class="epos-gebimport-mvd">@mvd</dd>
+                }
                 <dt>@Texte.KopfGroesse</dt><dd>@kopf.Groesse</dd>
                 <dt>@Texte.KopfZonenregel</dt><dd>@(stand.Zonierung?.RegelText ?? kopf.Zonenregel)</dd>
             </dl>
+        }
+        @if (_nord is GebaeudeNordrichtungDaten nord)
+        {
+            @* G5-N (N1-N3): DIE NORDRICHTUNG gleich unter dem Dateikopf - immer sichtbar; im Warnstil, solange sie nur
+               angenommen (die Datei nennt keine) oder nur vorgeschlagen ist (die Datei nennt einen Wert, die Huelle wendet ihn
+               nicht still an: erst "Uebernehmen" bzw. das bestaetigte Feld; formatneutral ueber Herkunft und Dateiwert). Eine Aenderung liest die Datei neu und ordnet
+               neu zu, ohne den Dialog zu verlassen; Handaenderungen bleiben. Ohne Delegat eine reine Anzeige. *@
+            bool angenommen = string.Equals(nord.Herkunft, "ANNAHME", StringComparison.Ordinal);
+            bool vorschlag = angenommen && nord.DateiPlanoberseiteGrad.HasValue;
+            <div class="epos-gebimport-nordrichtung" data-herkunft="@nord.Herkunft">
+                <Gruppenkopf Titel="@Texte.GruppeNordrichtung" />
+                <Nordrichtungswahl Wert="@(vorschlag ? nord.DateiPlanoberseiteGrad : nord.PlanoberseiteGrad)"
+                                   OnWert="BeiNordrichtung" Schnellwahl="@nord.Schnellwahl" Beschriftung="@nord.Beschriftung"
+                                   DateiText="@nord.DateiText" Herkunft="@nord.Herkunft" HerkunftText="@nord.HerkunftText"
+                                   Vorschlag="@vorschlag" Unbestaetigt="@angenommen" Hervorgehoben="@angenommen"
+                                   Aktiv="@(NordrichtungSetzen is not null && !Beschaeftigt)" />
+            </div>
+        }
+        @if (ProjektdateiLesen is not null || NurProjektdatei)
+        {
+            @* DIE PROJEKTDATEI (Datenaustauschkonzept 16.4): Knopf, Bilanz und schwerste Meldung; Schluessel steuern. Im Weg
+               "nur Projektdatei" (16.1) ist die gelesene Datei selbst die Projektdatei: kein Dazuladen, kein Entfernen. *@
+            <div class="epos-gebimport-projektdatei">
+                @if (!NurProjektdatei)
+                {
+                <button type="button" class="epos-knopf epos-gebimport-sq-laden" data-aktion="projektdatei"
+                        disabled="@(Beschaeftigt || !stand.ProjektdateiMoeglich)"
+                        title="@(stand.ProjektdateiMoeglich ? null : Texte.SqKnopfGrund)" @onclick="BeiProjektdatei">@Texte.SqKnopf</button>
+                }
+                @if (stand.Projektdatei is not null && !NurProjektdatei)
+                {
+                    <button type="button" class="epos-knopf epos-gebimport-sq-entfernen" data-aktion="projektdatei-entfernen"
+                            disabled="@Beschaeftigt" @onclick="BeiProjektdateiEntfernen">@Texte.SqEntfernen</button>
+                }
+                @if (stand.Projektdatei is { Gelesen: true, BeideZonierungen: true } sqw)
+                {
+                    string zonierung = _sqZonierung ?? sqw.Zonierung;
+                    @* DIE WAHL DER ZONIERUNG (E87, F1): nur bei beiden Zonierungen; der Schluessel steuert, der Text zeigt. *@
+                    <select class="epos-eingabe epos-gebimport-sq-zonierung" data-zonierung="@zonierung"
+                            aria-label="@Texte.SqZonierung" title="@Texte.SqZonierung" disabled="@Beschaeftigt"
+                            value="@zonierung" @onchange="BeiZonierung">
+                        <option value="@GebaeudeZonierungSchluessel.DIN" selected="@(zonierung == GebaeudeZonierungSchluessel.DIN)">@Texte.SqZonierungDin</option>
+                        <option value="@GebaeudeZonierungSchluessel.SIMULATION" selected="@(zonierung == GebaeudeZonierungSchluessel.SIMULATION)">@Texte.SqZonierungSim</option>
+                    </select>
+                }
+            </div>
+            @if (ProjektdateiProfile is not null && stand.Projektdatei is { Gelesen: true })
+            {
+                @* NP4b (Q46): die Profile der geladenen Projektdatei in eine eigene Kategorie; danach liest der Plan Katalog und Zuordnung neu. *@
+                <EPOS.UI.Dialoge.Bedarf.ProjektdateiProfile Weg="@ProjektdateiProfile" Knopftext="@ProjektdateiProfile.Texte.KnopfImport"
+                                                           Uebernommen="NeuZuordnen" />
+            }
+            @if (stand.Projektdatei is GebaeudeProjektdateiDaten sq)
+            {
+                @if (sq.Schwerste is GebaeudeImportMeldung sqs && !(AufbauquelleFrageOffen && sqs.Text == sq.Standpruefung?.Meldung))
+                {
+                    <div class="epos-gebimport-sqbanner" data-kennung="@sqs.Kennung">
+                        <Warnbanner Stufe="@sqs.Stufe" Text="@sqs.Text" />
+                    </div>
+                }
+                @* DIE WAHL DER AUFBAUQUELLE (Anwenderentscheid vom 08.10.2026): nach angeschlagener Standpruefung die Rueckfrage mit
+                   drei Wegen ohne Vorgabe; danach die gewaehlte Quelle als leise Zeile, aenderbar bis zur Uebernahme. Solange die
+                   Rueckfrage steht, traegt sie den Befund - das Banner derselben Warnung entfaellt. *@
+                <Aufbauquellenwahl Pruefung="@sq.Standpruefung" Wahl="@sq.Aufbauquelle" Texte="@Texte"
+                                   Aktiv="@(!Beschaeftigt && AufbauquelleWaehlen is not null)"
+                                   Gewaehlt="BeiAufbauquelle" NeuExportierenGewaehlt="BeiNeuExport" />
+                @if (sq.Gelesen)
+                {
+                    IReadOnlyList<GebaeudeImportMeldung> uebersprungen = Uebersprungen(sq);
+                    <dl class="epos-gebimport-kopf epos-gebimport-sqbilanz">
+                        <dt>@Texte.SqGruppe</dt><dd data-wert="datei">@sq.Dateiname</dd>
+                        <dt>@Texte.SqFassung</dt><dd data-wert="fassung">@sq.Fassung</dd>
+                        <dt>@Texte.SqRaeume</dt><dd data-wert="raeume">@Format(Texte.SqRaeumeWert, sq.Abgeglichen, sq.NichtAbgeglichen, sq.OhneGegenstueck)</dd>
+                        <dt>@Texte.SqZonierung</dt><dd data-wert="zonierung">@sq.ZonierungText</dd>
+                        <dt>@Texte.SqZonen</dt><dd data-wert="zonen">@(sq.Uebernommen is int u ? Format(Texte.SqZonenWert, u, sq.Zonen) : Format(Texte.SqZonenOffen, sq.Zonen))</dd>
+                        <dt>@Texte.SqProfile</dt><dd data-wert="profile">@Format(Texte.SqProfileWert, sq.Zeitprofile, sq.Abschnitte)</dd>
+                        @if (sq.Groessen.Count > 0)
+                        {
+                            <dt>@Texte.SqJeGroesse</dt>
+                            <dd>
+                                <ul class="epos-gebimport-sqliste">
+                                    @foreach (GebaeudeProjektdateiGroesse g in sq.Groessen)
+                                    {
+                                        <li data-groesse="@g.Schluessel">@g.Text</li>
+                                    }
+                                </ul>
+                            </dd>
+                        }
+                        @if (uebersprungen.Count > 0)
+                        {
+                            <dt>@Texte.SqUebersprungen</dt>
+                            <dd>
+                                <ul class="epos-gebimport-sqliste epos-gebimport-squebersprungen">
+                                    @foreach (GebaeudeImportMeldung m in uebersprungen)
+                                    {
+                                        <li data-kennung="@m.Kennung">@m.Text</li>
+                                    }
+                                </ul>
+                            </dd>
+                        }
+                    </dl>
+                    @* NP2b-4 (Anwenderentscheid 06.10.2026): im Einzonenweg der Vorschlag aus der DIN-Nummer der Datei als
+                       Hinweis - kein Auswahlfeld, gesetzt wird nichts; zugewiesen wird im Gebaeudeeditor. *@
+                    @if (sq.Einzonenvorschlag.Length > 0 && (stand.Zonierung is not { Einzonig: false } || !AlsZoneWirksam))
+                    {
+                        <div class="epos-gebimport-sqvorschlag">
+                            <Herleitungszeile Text="@sq.Einzonenvorschlag" />
+                        </div>
+                    }
+                    @if (UnbeheizteOffen)
+                    {
+                        @* Weg "nur Projektdatei" (16.1): eine Zone der Datei mit unbeheizten Raeumen laesst diese offen, bis ihre
+                           Beheizung entschieden ist - leise, die Sperre am OK nennt die Zahl. *@
+                        <div class="epos-gebimport-squnbeheizt">
+                            <Herleitungszeile Text="@Texte.SqNurUnbeheizt" />
+                        </div>
+                    }
+                    @if (stand.Zonierung?.Plan is null)
+                    {
+                        <Herleitungszeile Text="@Texte.SqKeinPlan" />
+                    }
+                    else if (sq.Uebernommen is null)
+                    {
+                        <div class="epos-gebimport-projektdatei">
+                            <button type="button" class="epos-knopf" data-aktion="projektdatei-uebernehmen" disabled="@Beschaeftigt"
+                                    @onclick="ZonenDerProjektdatei">@Texte.SqUebernehmen</button>
+                        </div>
+                    }
+                    <Herleitungszeile Text="@Texte.SqHinweis" />
+                }
+            }
         }
         @if (!string.IsNullOrEmpty(_lesestand.SchonImportiert))
         {
@@ -145,6 +339,16 @@
             </KindInhalt>
         </Formularraster>
         <Herleitungszeile Text="@stand.Kopftext" />
+        @if (stand.CadSollwertMoeglich)
+        {
+            @* DER HEIZSOLLWERT AUS DER RAUMTEMPERATUR DER DATEI: nur, wenn beheizte Raeume eine CAD-Raumtemperatur
+               tragen und kein Norm-Sollwert vorliegt; Vorgabe aus (Normtemperatur). Der Schalter laeuft wie die
+               Uebersteuerungen in den Kern und ordnet neu zu - das Sollwertfeld bleibt danach von Hand aenderbar. *@
+            <div class="epos-gebimport-cadsollwert" data-schluessel="@GebaeudeImportSchalter.RAUMTEMPERATUR_ALS_SOLLWERT">
+                <Schalter Bezeichnung="@Texte.CadSollwert" Wert="@_cadSollwert" WertChanged="BeiCadSollwert" Aktiv="@(!Beschaeftigt)" />
+            </div>
+            <Herleitungszeile Text="@Texte.CadSollwertHinweis" />
+        }
 
         @if (stand.Zonierung is GebaeudeZonierungDaten zon)
         {
@@ -263,11 +467,257 @@
         </div>
         <Herleitungszeile Text="@Texte.ZeilenHinweis" />
 
+        @if (stand.Zonierung is { Plan: GebaeudeZonenplanDaten plan } zplan)
+        {
+            @* DER ZONENBAUM (Mehrzonenkonzept 6.4, Muster des Zonierungsdialogs): links der Baum Gebaeude -> Zonen ->
+               Raeume, rechts - im schmalen Fenster darunter - die nicht zugeordneten Raeume. Jede Zone und jeder Raum
+               traegt einen Auswahlhaken (data-zone, data-raum); die Knopfleiste darunter wirkt auf die Wahl. Jeder
+               Knopf ist ein Schritt am Zonenplan des Kerns; lehnt er ab, steht seine Meldung als Banner, bei
+               ungleicher Beheizung mit dem Raumhaken als Ausweg. *@
+            <Gruppenkopf Titel="@Texte.GruppeZonen" />
+            @* Stufe NP3b (Konzept Nutzungsprofile 6.2, NP-F22): der Katalog der Nutzungsprofile als Überlagerung; nach dem
+               Schließen liest der Plan Katalog und Zuordnung neu. Kein Delegat, kein Knopf. *@
+            @if (Raumnutzung is not null)
+            {
+                <div class="epos-zeilenknoepfe epos-gebimport-nutzungsprofile">
+                    <button type="button" class="epos-knopf epos-gebimport-nutzungsprofile-oeffnen"
+                            @onclick="() => _nutzungsblatt = true">@RaumnutzungTexte.KnopfProfileImport</button>
+                </div>
+            }
+            @if (_konflikt is Umhaengkonflikt k)
+            {
+                @Konfliktbanner(k)
+            }
+            else if (_planhinweis is GebaeudeImportMeldung hinweis)
+            {
+                <div class="epos-gebimport-planbanner" data-kennung="@hinweis.Kennung">
+                    <Warnbanner Stufe="@hinweis.Stufe" Text="@hinweis.Text" />
+                </div>
+            }
+            <div class="epos-gebimport-zonenblock">
+                <div class="epos-gebimport-zonenspalte">
+                    <div class="epos-raster-huelle">
+                        <table @key="_planfassung" class="epos-raster epos-raster--bearbeitbar epos-gebimport-zonenbaum">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th>@Texte.SpalteZone</th>
+                                    <th>@Texte.SpalteNutzung</th>
+                                    <th>@Texte.SpalteBeheizt</th>
+                                    <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
+                                    <th class="epos-gebimport-zahl">@Texte.SpalteRaeume</th>
+                                    <th class="epos-gebimport-zahl">@Texte.SpalteSollwert</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="epos-gebimport-baumwurzel">
+                                    <td></td>
+                                    <td></td>
+                                    <td colspan="6">@Format(Texte.PlanWurzel, _name.Trim().Length > 0 ? _name.Trim() : stand.Vorschlagsname)</td>
+                                </tr>
+                                @foreach (GebaeudePlanzoneDaten zone in plan.Zonen)
+                                {
+                                    bool offen = _offeneZonen.Contains(zone.Schluessel);
+                                    string klapptext = Format(offen ? Texte.ZoneZuklappen : Texte.ZoneAufklappen, zone.Name);
+                                    <tr @key="zone.Schluessel" class="epos-gebimport-planzone" data-zone="@zone.Schluessel"
+                                        data-herkunft="@(zone.Herkunft.Length > 0 ? zone.Herkunft : null)">
+                                        <td>
+                                            <input type="checkbox" class="epos-gebimport-wahl" checked="@_zonenwahl.Contains(zone.Schluessel)"
+                                                   aria-label="@Format(Texte.ZoneWaehlen, zone.Name)" disabled="@Beschaeftigt"
+                                                   @onchange="e => BeiZonenwahl(zone, e)" />
+                                        </td>
+                                        <td>
+                                            <button type="button" class="epos-knopf epos-gebimport-aufklappen"
+                                                    aria-expanded="@(offen ? "true" : "false")" title="@klapptext" aria-label="@klapptext"
+                                                    @onclick="() => BeiAufklappen(zone.Schluessel)">@(offen ? "▾" : "▸")</button>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="epos-eingabe epos-gebimport-zonenname" value="@zone.Name"
+                                                   aria-label="@Format(Texte.ZoneName, zone.Name)" disabled="@Beschaeftigt"
+                                                   @onchange="e => BeiUmbenennen(zone, e)" />
+                                            @if (zone.AusProjektdatei)
+                                            {
+                                                <span class="epos-leisezeile epos-gebimport-sqherkunft"
+                                                      title="@(zone.Profiltext.Length > 0 ? zone.Profiltext : null)">@(zone.HerkunftText.Length > 0 ? zone.HerkunftText : Texte.SqHerkunft)</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <select class="epos-eingabe epos-gebimport-nutzung" aria-label="@Format(Texte.ZoneNutzung, zone.Name)"
+                                                    title="@(zone.Profiltext.Length > 0 ? zone.Profiltext : null)"
+                                                    disabled="@Beschaeftigt" value="@(zone.Nutzung ?? "")" @onchange="e => BeiNutzung(zone, e)">
+                                                <option value="" selected="@(zone.Nutzung is null)">@Texte.NutzungKeine</option>
+                                                @* Konzept Nutzungsprofile 6.2: die Profile je Kategorie als optgroup; ohne Gruppe
+                                                   die alten Kennungen und Texte "(nicht im Katalog)". *@
+                                                @foreach (GebaeudeNutzungsgruppe gruppe in plan.Nutzungsgruppen)
+                                                {
+                                                    @if (gruppe.Titel.Length == 0)
+                                                    {
+                                                        @foreach (GebaeudeZonenregelDaten n in gruppe.Eintraege)
+                                                        {
+                                                            <option value="@n.Schluessel" selected="@(n.Schluessel == zone.Nutzung)">@n.Text</option>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <optgroup label="@gruppe.Titel">
+                                                            @foreach (GebaeudeZonenregelDaten n in gruppe.Eintraege)
+                                                            {
+                                                                <option value="@n.Schluessel" selected="@(n.Schluessel == zone.Nutzung)">@n.Text</option>
+                                                            }
+                                                        </optgroup>
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                        <td>
+                                            @if (zone.Beheizt is bool warm)
+                                            {
+                                                <Schalter Bezeichnung="@Format(Texte.ZoneBeheizt, zone.Name)" Wert="@warm"
+                                                          WertChanged="b => BeiZoneBeheizt(zone, b)" Aktiv="@(!Beschaeftigt)" />
+                                            }
+                                            else
+                                            {
+                                                <span class="epos-leisezeile">@Texte.ZoneLeer</span>
+                                            }
+                                        </td>
+                                        <td class="epos-gebimport-zahl">@zone.Flaeche</td>
+                                        <td class="epos-gebimport-zahl">@zone.Raeume</td>
+                                        <td class="epos-gebimport-zahl epos-gebimport-zonensollwert">@zone.Sollwert</td>
+                                    </tr>
+                                    @* Konzept Nutzungsprofile 6.2: die Herleitungszeile unter der Zone - Profil und Kategorie, Quelle
+                                       der Vorbelegung, Groessen aus der Datei (NP-F16), Kennwerte in Kurzform. *@
+                                    @if (zone.Herleitung is GebaeudeProfilherleitung herleitung)
+                                    {
+                                        <tr @key="@(zone.Schluessel + "|herleitung")" class="epos-gebimport-planherleitung" data-zone="@zone.Schluessel"
+                                            data-quelle="@(herleitung.Quellart.Length > 0 ? herleitung.Quellart : null)">
+                                            <td></td>
+                                            <td></td>
+                                            <td colspan="6"><Herleitungszeile Text="@herleitung.Text" /></td>
+                                        </tr>
+                                    }
+                                    @if (offen)
+                                    {
+                                        foreach (GebaeudePlanraumDaten raum in zone.Raumliste)
+                                        {
+                                            <tr @key="raum.Kennung" class="epos-gebimport-planraum" data-raum="@raum.Kennung">
+                                                <td></td>
+                                                <td>
+                                                    <input type="checkbox" class="epos-gebimport-wahl" checked="@_raumwahlen.Contains(raum.Kennung)"
+                                                           aria-label="@Format(Texte.RaumWaehlen, raum.Name)" disabled="@Beschaeftigt"
+                                                           @onchange="e => BeiRaumwahlHaken(raum.Kennung, e)" />
+                                                </td>
+                                                <td class="epos-gebimport-planraumname" title="@raum.Kennung">@raum.Name</td>
+                                                <td>@raum.Geschoss</td>
+                                                <td>@(raum.Beheizt ? Texte.Ja : Texte.Nein)</td>
+                                                <td class="epos-gebimport-zahl">@raum.Flaeche</td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    @if (_neueZone)
+                    {
+                        <div class="epos-gebimport-neuezone">
+                            <Textfeld Bezeichnung="@Texte.PlanName" Wert="@_neuName" WertChanged="w => _neuName = w ?? string.Empty" />
+                            <Auswahlfeld Bezeichnung="@Texte.PlanNutzung" Eintraege="@Nutzungsliste(plan)" Auswahl="@NeuNutzungStelle(plan)"
+                                         AuswahlChanged="i => NeuNutzungWaehlen(plan, i)" Platzhalter="@Texte.NutzungKeine" Aktiv="@(!Beschaeftigt)" />
+                            <button type="button" class="epos-knopf epos-gebimport-anlegen-ok" disabled="@Beschaeftigt"
+                                    @onclick="() => BeiAnlegen(plan)">@Texte.PlanAnlegenOk</button>
+                            <button type="button" class="epos-knopf epos-gebimport-anlegen-verwerfen"
+                                    @onclick="() => _neueZone = false">@Texte.PlanAnlegenVerwerfen</button>
+                        </div>
+                    }
+                    <div class="epos-gebimport-planleiste" role="group" aria-label="@Texte.GruppeZonen">
+                        <button type="button" class="epos-knopf" data-aktion="anlegen" disabled="@(Beschaeftigt || _neueZone)"
+                                @onclick="() => BeiZoneHinzufuegen(plan)">@Texte.PlanAnlegen</button>
+                        <button type="button" class="epos-knopf" data-aktion="loeschen" disabled="@(Beschaeftigt || GewaehlteZonen(plan).Count == 0)"
+                                @onclick="() => BeiLoeschen(plan)">@Texte.PlanLoeschen</button>
+                        <button type="button" class="epos-knopf" data-aktion="aufheben" disabled="@Beschaeftigt"
+                                @onclick="() => _aufhebenFrage = true">@Texte.PlanAufheben</button>
+                        <button type="button" class="epos-knopf" data-aktion="zuordnen"
+                                disabled="@(Beschaeftigt || Zielzone(plan) is null || GewaehlteRaeume(plan).Count == 0)"
+                                title="@Texte.PlanZuordnenGrund" @onclick="() => BeiRaeumeZuordnen(plan)">@Texte.PlanZuordnen</button>
+                    </div>
+                    <div class="epos-gebimport-planleiste">
+                        <Auswahlfeld Bezeichnung="@Texte.PlanGeschoss" Eintraege="@Geschossliste(plan)" Auswahl="@Geschossstelle(plan)"
+                                     AuswahlChanged="i => _plangeschoss = i" Aktiv="@(!Beschaeftigt)" />
+                        <button type="button" class="epos-knopf" data-aktion="geschoss"
+                                disabled="@(Beschaeftigt || Zielzone(plan) is null || plan.Geschosse.Count == 0)"
+                                title="@Texte.PlanZuordnenGrund" @onclick="() => BeiGeschossZuordnen(plan)">@Texte.PlanGeschossKnopf</button>
+                    </div>
+                    <div class="epos-gebimport-planleiste">
+                        <Auswahlfeld Bezeichnung="@Texte.PlanRestRegel" Eintraege="@Regelliste(zplan)" Auswahl="@Reststelle(zplan)"
+                                     AuswahlChanged="i => _restregel = i" Aktiv="@(!Beschaeftigt)" />
+                        <button type="button" class="epos-knopf" data-aktion="rest"
+                                disabled="@(Beschaeftigt || plan.NichtZugeordnet.Count == 0)"
+                                @onclick="() => BeiRest(zplan)">@Texte.PlanRest</button>
+                    </div>
+                    <Herleitungszeile Text="@(plan.Einzonig ? Texte.PlanEinzonig : Texte.PlanHinweis)" />
+                </div>
+                <div class="epos-gebimport-offenspalte">
+                    <h3 class="epos-gebimport-offentitel">@Format(Texte.PlanOffenTitel, plan.NichtZugeordnet.Count)</h3>
+                    @if (plan.NichtZugeordnet.Count == 0)
+                    {
+                        <p class="epos-leisezeile epos-gebimport-offen-leer">@Texte.PlanOffenLeer</p>
+                    }
+                    else
+                    {
+                        <div class="epos-raster-huelle">
+                            <table class="epos-raster epos-gebimport-offen">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>@Texte.SpalteRaum</th>
+                                        <th>@Texte.SpalteGeschoss</th>
+                                        <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (GebaeudePlanraumDaten raum in plan.NichtZugeordnet)
+                                    {
+                                        <tr @key="raum.Kennung" data-raum="@raum.Kennung">
+                                            <td>
+                                                <input type="checkbox" class="epos-gebimport-wahl" checked="@_raumwahlen.Contains(raum.Kennung)"
+                                                       aria-label="@Format(Texte.RaumWaehlen, raum.Name)" disabled="@Beschaeftigt"
+                                                       @onchange="e => BeiRaumwahlHaken(raum.Kennung, e)" />
+                                            </td>
+                                            <td title="@raum.Kennung">@raum.Name</td>
+                                            <td>@raum.Geschoss</td>
+                                            <td class="epos-gebimport-zahl">@raum.Flaeche</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    @if (plan.Ausserhalb > 0)
+                    {
+                        <Herleitungszeile Text="@Format(Texte.PlanAusserhalb, plan.Ausserhalb)" />
+                    }
+                    @if (stand.Projektdatei is { Gelesen: true, RaeumeOhneTreffer.Count: > 0 } sqo)
+                    {
+                        <h3 class="epos-gebimport-offentitel">@Format(Texte.SqOhneTreffer, sqo.RaeumeOhneTreffer.Count)</h3>
+                        <ul class="epos-gebimport-sqliste epos-gebimport-sqohnetreffer">
+                            @foreach (string r in sqo.RaeumeOhneTreffer)
+                            {
+                                <li>@r</li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        }
+
         @if (stand.Bauteile is GebaeudeBauteileDaten bauteile)
         {
             @* DER BAUTEILVORSCHLAG (Stufe G4b): eine Zone mit echten Bauteilen statt der Summen.
                Der Schalter ist vorbelegt "ein", wenn der Vorschlag sich bilden laesst; sonst "aus"
-               und gesperrt, der Grund steht daneben. Eine schlichte Tabelle ohne Virtualisierung. *@
+               und gesperrt, der Grund steht daneben. *@
             GebaeudeZonierungDaten? mehrere = stand.Zonierung is { Einzonig: false } z ? z : null;
             <Gruppenkopf Titel="@Texte.GruppeBauteile" />
             <div class="epos-gebimport-bauteile">
@@ -278,102 +728,14 @@
                     <span class="epos-gebimport-bauteile-ablehnung">@Format(Texte.AlsZoneNicht, bauteile.Ablehnung)</span>
                 }
             </div>
-            <Herleitungszeile Text="@(mehrere is null ? Texte.AlsZoneHinweis : Texte.AlsZonenHinweis)" />
+            <Herleitungszeile Text="@(mehrere is not null ? Texte.AlsZonenHinweis
+                                      : stand.Zonierung?.Plan is { Einzonig: true } ? Texte.AlsZonePlanHinweis : Texte.AlsZoneHinweis)" />
             @if (bauteile.Kopftext.Length > 0)
             {
                 <p class="epos-leisezeile epos-gebimport-bauteile-kopf">@bauteile.Kopftext</p>
             }
             @if (mehrere is not null)
             {
-                @* DIE ZONEN: eine schlichte Tabelle (hoechstens so viele Zeilen wie Zonen); je Zone
-                   aufklappbar die Raeume. Der Haken "beheizt" stellt alle Raeume der Zone um. Daneben -
-                   im schmalen Fenster darunter - der GRUNDRISS mit der Zuordnung von Hand (Welle D2);
-                   die Zonenliste selbst bleibt in Spalten und Zeilen, wie sie ist. *@
-                <Gruppenkopf Titel="@Texte.GruppeZonen" />
-                <div class="epos-gebimport-zonenblock">
-                    <div class="epos-gebimport-zonenspalte">
-                        <div class="epos-raster-huelle">
-                            <table class="epos-raster epos-raster--bearbeitbar epos-gebimport-zonen">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>@Texte.SpalteZone</th>
-                                        <th>@Texte.SpalteRegel</th>
-                                        <th class="epos-gebimport-zahl">@Texte.SpalteRaeume</th>
-                                        <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
-                                        <th class="epos-gebimport-zahl">@Texte.SpalteVolumen</th>
-                                        <th>@Texte.SpalteBeheizt</th>
-                                        <th>@Texte.SpalteHinweis</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @for (int i = 0; i < mehrere.Zonen.Count; i++)
-                                    {
-                                        GebaeudeZonenzeileDaten zone = mehrere.Zonen[i];
-                                        bool offen = _offeneZonen.Contains(zone.Name);
-                                        string klapptext = Format(offen ? Texte.ZoneZuklappen : Texte.ZoneAufklappen, zone.Name);
-                                        <tr @key="i" class="epos-gebimport-zone" data-zone="@zone.Name">
-                                            <td>
-                                                <button type="button" class="epos-knopf epos-gebimport-aufklappen"
-                                                        aria-expanded="@(offen ? "true" : "false")" title="@klapptext" aria-label="@klapptext"
-                                                        @onclick="() => BeiAufklappen(zone)">@(offen ? "▾" : "▸")</button>
-                                            </td>
-                                            <td>@zone.Name</td>
-                                            <td>@zone.Regel</td>
-                                            <td class="epos-gebimport-zahl">@zone.Raeume</td>
-                                            <td class="epos-gebimport-zahl">@zone.Flaeche</td>
-                                            <td class="epos-gebimport-zahl">@zone.Volumen</td>
-                                            <td>
-                                                <Schalter Bezeichnung="@Format(Texte.ZoneBeheizt, zone.Name)" Wert="@zone.Beheizt"
-                                                          WertChanged="b => BeiZoneBeheizt(zone, b)" Aktiv="@(!Beschaeftigt)" />
-                                            </td>
-                                            <td class="epos-gebimport-grund">@zone.Hinweis</td>
-                                        </tr>
-                                        @if (offen)
-                                        {
-                                            <tr @key="(-1 - i)" class="epos-gebimport-zonenraeume">
-                                                <td></td>
-                                                <td colspan="7">
-                                                    <table class="epos-raster epos-gebimport-zonenraumliste">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>@Texte.SpalteRaum</th>
-                                                                <th>@Texte.SpalteGeschoss</th>
-                                                                <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
-                                                                <th>@Texte.SpalteBeheizungsregel</th>
-                                                                <th>@Texte.SpalteBeleg</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            @foreach (GebaeudeZonenraumDaten raum in zone.Raumliste)
-                                                            {
-                                                                <tr data-raum="@raum.Kennung">
-                                                                    <td title="@raum.Kennung">@raum.Name</td>
-                                                                    <td>@raum.Geschoss</td>
-                                                                    <td class="epos-gebimport-zahl">@raum.Flaeche</td>
-                                                                    <td>@raum.Beheizungsregel</td>
-                                                                    <td class="epos-gebimport-grund">@raum.Beleg</td>
-                                                                </tr>
-                                                            }
-                                                        </tbody>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                        <Herleitungszeile Text="@Texte.ZonenHinweis" />
-                    </div>
-                    @if (stand.Ansicht is GebaeudeAnsichtDaten ansicht)
-                    {
-                        <div class="epos-gebimport-grundrissspalte">
-                            @Grundriss(stand, ansicht)
-                        </div>
-                    }
-                </div>
-
                 @* DIE FLAECHEN JE ZONE: die virtualisierte Katalogliste (eine Datei kann ueber 2 000 Flaechen
                    tragen). Die drei Filter schraenken die Zeilen VOR der Liste ein; Suche, Sortierung und
                    Trichter sind die der Liste. Die Zeile ist die Wahl - gewaehlt wird nur zum Ansehen. *@
@@ -384,11 +746,14 @@
                 }
                 else
                 {
+                    <p class="epos-leisezeile epos-gebimport-flaechenfilter-hinweis">@Texte.FilterErlaeuterung</p>
                     <div class="epos-gebimport-flaechenfilter">
-                        <Schalter Bezeichnung="@Texte.FilterFehler" Wert="@_nurFehler" WertChanged="b => BeiFilter(ref _nurFehler, b)" />
-                        <Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
-                                  WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" />
-                        <Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" />
+                        <span title="@Texte.FilterFehlerHinweis"><Schalter Bezeichnung="@Texte.FilterFehler" Wert="@_nurFehler" WertChanged="b => BeiFilter(ref _nurFehler, b)" /></span>
+                        <span title="@Texte.FilterOhneGegenstueckHinweis"><Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
+                                  WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" /></span>
+                        <span title="@Texte.FilterOhneUWertHinweis"><Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" /></span>
+                        <span class="epos-gebimport-filter-bauteilbefund" title="@Texte.FilterBauteilbefundHinweis"><Schalter Bezeichnung="@Texte.FilterBauteilbefund"
+                                  Wert="@_nurBauteilbefund" WertChanged="b => BeiFilter(ref _nurBauteilbefund, b)" /></span>
                     </div>
                     <div class="epos-gebimport-flaechen">
                         <Katalogliste Profil="@mehrere.Flaechenprofil" Zeilen="@_flaechenzeilen" Filterstand="@_flaechenfilter"
@@ -396,45 +761,23 @@
                                       Vergleichbar="false" VirtualisierenAb="@VIRTUALISIEREN_AB" />
                     </div>
                     <Herleitungszeile Text="@Texte.FlaechenHinweis" />
+                    <p class="epos-leisezeile epos-gebimport-flaechenherkunft-hinweis">@Texte.FlaechenherkunftHinweis</p>
                 }
             }
-            else if (bauteile.Zeilen.Count == 0)
+            else if (bauteile.Profil is null || bauteile.Liste.Count == 0)
             {
                 <p class="epos-leisezeile epos-gebimport-bauteile-leer">@Texte.KeineBauteile</p>
             }
             else
             {
-                <div class="epos-raster-huelle">
-                    <table class="epos-raster epos-gebimport-bauteilliste">
-                        <thead>
-                            <tr>
-                                <th>@Texte.SpalteBauteil</th>
-                                <th>@Texte.SpalteArt</th>
-                                <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
-                                <th class="epos-gebimport-zahl">@Texte.SpalteUWert</th>
-                                <th class="epos-gebimport-zahl">@Texte.SpalteAzimut</th>
-                                <th class="epos-gebimport-zahl">@Texte.SpalteNeigung</th>
-                                <th>@Texte.SpalteRand</th>
-                                <th>@Texte.SpalteHerkunft</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (int i = 0; i < bauteile.Zeilen.Count; i++)
-                            {
-                                GebaeudeBauteilzeileDaten b = bauteile.Zeilen[i];
-                                <tr @key="i" data-kennung="@b.Kennung">
-                                    <td title="@b.Kennung">@b.Bezeichner</td>
-                                    <td>@b.Art</td>
-                                    <td class="epos-gebimport-zahl">@b.Flaeche</td>
-                                    <td class="epos-gebimport-zahl">@b.UWert</td>
-                                    <td class="epos-gebimport-zahl">@b.Azimut</td>
-                                    <td class="epos-gebimport-zahl">@b.Neigung</td>
-                                    <td>@b.Randbedingung</td>
-                                    <td class="@("epos-gebimport-herkunft epos-gebimport-herkunft--" + (b.HerkunftSchluessel ?? "").ToLowerInvariant())">@b.HerkunftText</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                @* DIE BAUTEILE DER ZONE: dieselbe virtualisierte Katalogliste wie die Flaechen je Zone - Suche
+                   ueber alle Spalten, Sortierung und Trichter je Spalte, die Zaehlung "n von m Saetzen". Eine
+                   grosse Datei traegt ueber hundert Bauteile. Die Zeile ist die Wahl, gewaehlt wird nur zum
+                   Ansehen; der Filterstand ueberdauert ein Neuzuordnen. *@
+                <div class="epos-gebimport-bauteilliste">
+                    <Katalogliste Profil="@bauteile.Profil" Zeilen="@bauteile.Liste" Filterstand="@_bauteilfilter"
+                                  ZeileIstWahl="true" Gewaehlt="@_bauteilGewaehlt" GewaehltChanged="BeiBauteil"
+                                  Vergleichbar="false" VirtualisierenAb="@VIRTUALISIEREN_AB" />
                 </div>
             }
             @if (bauteile.Innenweg.Length > 0)
@@ -466,14 +809,19 @@
             }
         }
 
-        @if (!MitZonenliste(stand) && stand.Ansicht is { Geschosse.Count: > 0 } grundriss)
+        @if (stand.Ansicht is { Geschosse.Count: > 0 } grundriss)
         {
-            @* DER GRUNDRISS OHNE ZONENLISTE (eine Zone, eine Regel oder kein Bauteilvorschlag): dieselbe
-               Ansicht als eigener Abschnitt; zuordnen laesst sich nur unter einer Regel mit mehreren Zonen. *@
+            @* DER GRUNDRISS als eigener Abschnitt unter dem Zonenbaum; zuordnen laesst sich, sobald der Zonenplan
+               mehrere Zonen hat oder von Hand gepflegt ist - ein Klick ordnet den Raum der Zielzone zu. *@
             <Gruppenkopf Titel="@Texte.GruppeGrundriss" />
             <div class="epos-gebimport-grundriss">
                 @Grundriss(stand, grundriss)
             </div>
+        }
+
+        @if (stand.Bauteile is not null)
+        {
+            @Aufbauliste(stand)
         }
 
         @if (stand.Baustoffe is { Zeilen.Count: > 0 } baustoffe)
@@ -504,8 +852,14 @@
                         @foreach (GebaeudeMaterialzeileDaten eintrag in baustoffe.Zeilen)
                         {
                             GebaeudeMaterialzeileDaten z = eintrag;
-                            <tr @key="z.Name" class="@Baustoffzeilenklasse(z)" data-schluessel="@z.Schluessel">
-                                <td class="epos-gebimport-materialname">@z.Name</td>
+                            <tr @key="z.Name" class="@(Baustoffzeilenklasse(z) + (z.Schluessel == _baustoffziel ? " epos-gebimport-baustoff--ziel" : ""))" data-schluessel="@z.Schluessel">
+                                <td class="epos-gebimport-materialname">
+                                    @if (z.Schluessel == _baustoffziel)
+                                    {
+                                        <span class="epos-gebimport-zielmarke" tabindex="-1" @ref="_baustoffmarke"></span>
+                                    }
+                                    @z.Name
+                                </td>
                                 <td class="epos-gebimport-zahl">@z.Schichten.ToString(CultureInfo.CurrentCulture)</td>
                                 <td class="@("epos-gebimport-abgleich epos-gebimport-abgleich--" + (z.AbgleichSchluessel ?? "").ToLowerInvariant())"
                                     title="@(z.Beleg.Length > 0 ? z.Beleg : null)">@z.Abgleich</td>
@@ -580,16 +934,52 @@
         <p class="epos-leisezeile epos-gebimport-leer">@Texte.Leer</p>
     }
 
+    @if (_stand?.Zonierung is { Plan: { NichtZugeordnet.Count: > 0 } offenplan } zrest)
+    {
+        @* Die Sperre am OK nennt die Zahl der nicht zugeordneten Raeume und bietet den Rest nach Regel an. *@
+        <div class="epos-gebimport-okhinweis" role="status">
+            <span>@Format(Texte.PlanOkGesperrt, offenplan.NichtZugeordnet.Count)</span>
+            <button type="button" class="epos-knopf" data-aktion="rest-ok" disabled="@Beschaeftigt"
+                    @onclick="() => BeiRest(zrest)">@Texte.PlanRest</button>
+        </div>
+    }
+
     <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" OkErlaubt="@(!Beschaeftigt)"
                      OkSperrgrund="@OkSperrgrund" Ergebnis="BeiLeiste" />
 
     @* Die Rueckfrage vor einem Regelwechsel, solange Zuordnungen von Hand bestehen - Vorgabe "Nein":
        Die Handarbeit ginge verloren. Esc antwortet "Nein" (die Ueberlagerung faengt die Taste). *@
     <Rueckfrage Offen="@(_regelFrage is not null)" TitelText="@Texte.RegelFrageTitel"
-                Frage="@Format(Texte.RegelFrage, _umhaengungen.Count)" VorgabeNein="true"
+                Frage="@Format(Texte.RegelFrage, _planschritte.Count)" VorgabeNein="true"
                 Beantwortet="RegelBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
+
+    @* Die Rueckfrage vor "Zonierung aufheben" - Vorgabe "Nein", Esc antwortet "Nein". *@
+    <Rueckfrage Offen="@_aufhebenFrage" TitelText="@Texte.PlanAufhebenTitel" Frage="@Texte.PlanAufhebenFrage" VorgabeNein="true"
+                Beantwortet="AufhebenBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
+
+    @* Die Rueckfrage vor der Uebernahme der Zonen der Projektdatei, solange Schritte von Hand bestehen - Vorgabe "Nein". *@
+    <Rueckfrage Offen="@_sqFrage" TitelText="@Texte.SqFrageTitel" Frage="@Format(Texte.SqFrage, _planschritte.Count)" VorgabeNein="true"
+                Beantwortet="SqBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
+    @* "Abbrechen und neu exportieren" (Aufbauquelle): der Hinweis, dann endet der Import ohne Uebernahme - Vorgabe "Zurueck". *@
+    <Rueckfrage Offen="@_neuExportFrage" TitelText="@Texte.AqNeuExportTitel" Frage="@Texte.AqNeuExportFrage" VorgabeNein="true"
+                Beantwortet="NeuExportBeantwortet" JaText="@Texte.AqNeuExportJa" NeinText="@Texte.AqNeuExportNein" />
+    @* Die Rueckfrage vor dem Wechsel der Zonierung, solange Schritte von Hand bestehen - Vorgabe "Nein" stellt die Wahl zurueck. *@
+    <Rueckfrage Offen="@_sqZonierungFrage" TitelText="@Texte.SqFrageTitel" Frage="@Format(Texte.SqZonierungFrage, Handschritte)" VorgabeNein="true"
+                Beantwortet="SqZonierungBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
 </div>
 
+
+@* Stufe NP3b: der Katalog der Nutzungsprofile als Überlagerung des Zonenbaums. *@
+<Ueberlagerung Offen="@_nutzungsblatt" Titel="@RaumnutzungTexte.Blatt" Zusatzklasse="epos-gebimport-nutzungsblatt"
+               Geschlossen="NutzungsprofileGeschlossen">
+    <KindInhalt>
+        @if (_nutzungsblatt && Raumnutzung is not null)
+        {
+            <EPOS.UI.Dialoge.Bedarf.RaumnutzungBlatt Katalogweg="@Raumnutzung" Texte="@RaumnutzungTexte"
+                                                    GroessenTexte="@RaumnutzungGroessen" KiZugang="@RaumnutzungKi" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
 @code {
     // =====================================================================
     // Gaben — die Datenseite liegt in der Huelle
@@ -630,8 +1020,69 @@
     /// <summary>Der Dialog ist zu: das Ergebnis nach einer Übernahme, <c>null</c> bei Abbrechen, ✕ und Esc.</summary>
     [Parameter] public EventCallback<GebaeudeImportErgebnis?> Geschlossen { get; set; }
 
+    /// <summary>Der Dateiwähler der Projektdatei (Filter <c>.sqproj</c>); <c>null</c> als Antwort = abgebrochen.</summary>
+    [Parameter] public Func<Task<string?>>? ProjektdateiWaehlen { get; set; }
+
+    /// <summary>Lädt die Projektdatei zum Gebäude (Pfad, Gebäudeindex) dazu; <c>null</c> = kein Knopf.</summary>
+    [Parameter] public Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>? ProjektdateiLesen { get; set; }
+
+    /// <summary>G5-N (N1–N3): die Nordrichtung des gelesenen Imports; <c>null</c> = vor dem Lesen bzw. ohne Weg.</summary>
+    [Parameter] public Func<GebaeudeNordrichtungDaten?>? NordrichtungDaten { get; set; }
+
+    /// <summary>
+    /// G5-N (N2): setzt die Richtung der Planoberseite und liest die Datei damit neu (im Arbeitsfaden der Hülle); danach
+    /// ordnet der Dialog neu zu. Kein Delegat = die Nordrichtung ist nur Anzeige.
+    /// </summary>
+    [Parameter] public Func<double?, CancellationToken, Task<GebaeudeLesestand>>? NordrichtungSetzen { get; set; }
+
+    /// <summary>
+    /// Die Wahl der Aufbauquelle an der Datenseite (Schlüssel <see cref="GebaeudeAufbauquelleSchluessel"/>): setzt die Wahl, bildet den
+    /// Bauteilvorschlag neu und liefert den Stand der Projektdatei; <c>null</c> = keine Wahl möglich (die Knöpfe sind gesperrt).
+    /// </summary>
+    [Parameter] public Func<string, GebaeudeProjektdateiDaten?>? AufbauquelleWaehlen { get; set; }
+
+    /// <summary>„Projektdatei entfernen“ an der Datenseite.</summary>
+    [Parameter] public Action? ProjektdateiEntfernen { get; set; }
+
+    /// <summary>„Nutzungsprofile der Datei übernehmen…“ (NP4b, Q46): die Profile der geladenen Projektdatei in eine eigene Kategorie.</summary>
+    [Parameter] public EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileWeg? ProjektdateiProfile { get; set; }
+
     /// <summary>Die Beschriftungen (Bündel).</summary>
     [Parameter] public GebaeudeImportTexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Der Weg des Nutzungsprofilkatalogs (Stufe NP3b; Konzept Nutzungsprofile 6.2) — „Nutzungsprofile…" am Zonenbaum
+    /// öffnet das Blatt als Überlagerung. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public RaumnutzungWeg? Raumnutzung { get; set; }
+
+    /// <summary>Die Texte des Nutzungsprofilkatalogs (Präfix <c>RNP_</c>).</summary>
+    [Parameter] public RaumnutzungTexte RaumnutzungTexte { get; set; } = new();
+
+    /// <summary>
+    /// Der Zugang des Assistenten zum Blatt (NP2b-5a, wie im Gebäudeeditor): Der Wirt reicht ihn, seine Sicht löst darüber
+    /// die Felder <c>np_*</c> auf; <c>null</c> = das Blatt bleibt ohne Assistenten.
+    /// </summary>
+    [Parameter] public RaumnutzungKiZugang? RaumnutzungKi { get; set; }
+
+    /// <summary>Die Namen der Größen und Zeilen für die Vorschau des Blatts (Bündel der Konditionierung).</summary>
+    [Parameter] public KonditionierungTexte RaumnutzungGroessen { get; set; } = new();
+
+    /// <summary>Steht der Katalog der Nutzungsprofile als Überlagerung (Stufe NP3b)?</summary>
+    private bool _nutzungsblatt;
+
+    /// <summary>Steht der Katalog der Nutzungsprofile offen? Prüfhilfe für die Tests.</summary>
+    public bool NutzungsprofileOffen => _nutzungsblatt;
+
+    /// <summary>
+    /// Das Schließen der Überlagerung „Nutzungsprofile": Der Katalog hat sofort geschrieben (NP-F3); der Plan liest
+    /// Katalog und Zuordnung neu, Handänderungen bleiben (dieselbe Anfrage).
+    /// </summary>
+    private void NutzungsprofileGeschlossen()
+    {
+        _nutzungsblatt = false;
+        NeuZuordnen();
+    }
 
     /// <summary>
     /// Der Hilfeschlüssel, solange das Profil keinen nennt — die eigene Seite „Gebäudeimport",
@@ -648,6 +1099,7 @@
     private bool _ersterAufbau = true;
 
     private int? _klasse;
+    private bool _klasseGewaehlt;
     private string _pfad = "";
     private string _dateianzeige = "";
 
@@ -658,6 +1110,7 @@
     private CancellationTokenSource? _abbruch;
 
     private GebaeudeLesestand? _lesestand;
+    private GebaeudeNordrichtungDaten? _nord;
     private int _gebaeudeIndex;
     private GebaeudeImportStand? _stand;
     private List<GebaeudeFeldzeileDaten> _zeilen = new();
@@ -681,21 +1134,64 @@
     /// <summary>Die Zuordnungen des Abschnitts „Baustoffe", wie sie im Ergebnis stünden (Prüfhilfe für Tests).</summary>
     public IReadOnlyDictionary<string, int?> Baustoffzuordnungen => _baustoffzuordnungen;
 
+    /// <summary>
+    /// Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" — Vorgabe aus; eine neue Datei und ein
+    /// anderes Gebäude setzen ihn zurück.
+    /// </summary>
+    private bool _cadSollwert;
+
+    /// <summary>Der Schalter, wie er wirkt: nur, solange der Stand ihn anbietet (Prüfhilfe für Tests).</summary>
+    public bool CadSollwertWirksam => _cadSollwert && (_stand?.CadSollwertMoeglich ?? true);
+
     /// <summary>Die gewählte Zonenregel (Schlüssel); <c>null</c> = die Vorgabe der Datei. Eine neue Datei und ein anderes Gebäude setzen sie zurück.</summary>
     private string? _regel;
 
-    /// <summary>Die aufgeklappten Zonen (Name).</summary>
+    /// <summary>Die aufgeklappten Zonen (Planschlüssel).</summary>
     private readonly HashSet<string> _offeneZonen = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Die Zuordnungen von Hand in ihrer Reihenfolge (Welle D2) — nur die, die gewirkt haben; eine abgelehnte
-    /// fällt wieder heraus. Ein Regelwechsel verwirft sie nach Rückfrage, eine neue Datei und ein anderes Gebäude
-    /// ohne Frage.
+    /// Die Schritte am Zonenplan in ihrer Reihenfolge (Zonenbaum) — nur die, die der Kern angenommen hat; ein abgelehnter fällt
+    /// wieder heraus. Ein Regelwechsel verwirft sie nach Rückfrage, eine neue Datei und ein anderes Gebäude ohne Frage.
     /// </summary>
-    private readonly List<GebaeudeRaumumhaengung> _umhaengungen = new();
+    private readonly List<GebaeudePlanschritt> _planschritte = new();
 
-    /// <summary>Die Zuordnungen von Hand, wie sie im Ergebnis stünden (Prüfhilfe für Tests).</summary>
-    public IReadOnlyList<GebaeudeRaumumhaengung> Umhaengungen => _umhaengungen;
+    /// <summary>Die Schritte am Zonenplan, wie sie im Ergebnis stünden (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<GebaeudePlanschritt> Planschritte => _planschritte;
+
+    /// <summary>Die Haken vor dem ersten Schritt — mit ihnen bildet der Kern den Plan, bevor er die Schritte auflegt.</summary>
+    private IReadOnlyDictionary<string, bool>? _plangrundhaken;
+
+    /// <summary>Die Auswahlhaken des Baums: Zonen (Planschlüssel) und Räume (Kennung, aus Baum und rechter Liste).</summary>
+    private readonly HashSet<string> _zonenwahl = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _raumwahlen = new(StringComparer.Ordinal);
+
+    /// <summary>Die Zeile „Zone hinzufügen": offen, Name, Nutzung (Stelle in der Liste; <c>null</c> = keine).</summary>
+    private bool _neueZone;
+    private string _neuName = "";
+    /// <summary>
+    /// Die gewählte Nutzung der Zeile „Zone hinzufügen“ als SCHLÜSSEL (NP2b-3): Nach dem Blatt „Nutzungsprofile…“ liest der
+    /// Plan Katalog und Zuordnung neu, die Liste kann sich verschieben — die Wahl bleibt dieselbe Nutzung; fehlt sie danach,
+    /// ist keine gewählt. <c>null</c> = keine.
+    /// </summary>
+    private string? _neuNutzung;
+
+    /// <summary>Die Wahl der Klapplisten „Geschoss" und „Regel für den Rest" (Stelle); <c>null</c> = die Vorgabe.</summary>
+    private int? _plangeschoss, _restregel;
+
+    /// <summary>Steht die Rückfrage vor „Zonierung aufheben"?</summary>
+    private bool _aufhebenFrage;
+
+    /// <summary>Steht die Rückfrage vor „Zonierung aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool AufhebenFrageOffen => _aufhebenFrage;
+
+    /// <summary>Der Hinweis des letzten angenommenen Schritts (etwa Räume anderer Beheizung); <c>null</c> = keiner.</summary>
+    private GebaeudeImportMeldung? _planhinweis;
+
+    /// <summary>Die Fassung des Baums — sie erneuert Namensfeld und Klappliste nach einer Ablehnung.</summary>
+    private int _planfassung;
+
+    /// <summary>Die Zahl der nicht zugeordneten Räume — solange sie nicht 0 ist, ist OK gesperrt.</summary>
+    public int NichtZugeordnet => Plan?.NichtZugeordnet.Count ?? 0;
 
     /// <summary>Der Wert „als eigene Zone" der Zielzone.</summary>
     private const string EIGENE_ZONE = "";
@@ -720,7 +1216,8 @@
 
     /// <summary>Eine Zuordnung, die der Kern abgelehnt hat, mit seiner Meldung — und bei ungleicher Beheizung dem Ausweg.</summary>
     private sealed record Umhaengkonflikt(string Raum, string Name, string? Zielzone, string Zielname, string Text,
-                                          string? Kennung, bool Beheizung, bool RaumBeheizt, bool ZielBeheizt);
+                                          string? Kennung, bool Beheizung, bool RaumBeheizt, bool ZielBeheizt,
+                                          GebaeudePlanschritt? Schritt = null);
 
     private Umhaengkonflikt? _konflikt;
 
@@ -731,7 +1228,7 @@
     private string _notiz = "";
 
     /// <summary>Die Filter der Flächenliste — sie schränken die Zeilen vor der Liste ein.</summary>
-    private bool _nurFehler, _nurOhneGegenstueck, _nurOhneUWert;
+    private bool _nurFehler, _nurOhneGegenstueck, _nurOhneUWert, _nurBauteilbefund;
 
     /// <summary>Suche, Sortierung und Trichter der Flächenliste — sie überdauern ein Neuzuordnen.</summary>
     private Katalogfilterstand _flaechenfilter = new();
@@ -739,10 +1236,19 @@
     /// <summary>Die gewählte Fläche (Schlüssel der Zeile); nur zum Ansehen.</summary>
     private string _flaecheGewaehlt = "";
 
+    /// <summary>Suche, Sortierung und Trichter der Bauteilliste (eine Zone) — sie überdauern ein Neuzuordnen.</summary>
+    private Katalogfilterstand _bauteilfilter = new();
+
+    /// <summary>Das gewählte Bauteil (Schlüssel der Zeile); nur zum Ansehen.</summary>
+    private string _bauteilGewaehlt = "";
+
+    /// <summary>Suche und Spaltenfilter der Bauteilliste (Prüfhilfe für Tests).</summary>
+    public Katalogfilterstand Bauteilfilter => _bauteilfilter;
+
     /// <summary>Die Zeilen der Flächenliste nach den drei Filtern — EINE Instanz je Menge (die Liste vergleicht nach Referenz).</summary>
     private IReadOnlyList<Katalogfilterzeile> _flaechenzeilen = Array.Empty<Katalogfilterzeile>();
 
-    /// <summary>Ab so vielen Zeilen virtualisiert die Flächenliste (Hausregel W6-B-2).</summary>
+    /// <summary>Ab so vielen Zeilen virtualisieren Flächen- und Bauteilliste (Hausregel W6-B-2).</summary>
     private const int VIRTUALISIEREN_AB = 120;
 
     /// <summary>Die Zeilen der Flächenliste nach den Filtern (Prüfhilfe für Tests).</summary>
@@ -777,10 +1283,95 @@
 
     private bool Beschaeftigt => _laeuft || _schreibt;
 
+    /// <summary>Steht die Rückfrage vor der Übernahme der Zonen der Projektdatei?</summary>
+    private bool _sqFrage;
+
+    // Der Hinweis vor „Abbrechen und neu exportieren“ (Aufbauquelle).
+    private bool _neuExportFrage;
+
+    /// <summary>Steht die Rückfrage vor der Übernahme der Zonen der Projektdatei offen (Prüfhilfe für Tests)?</summary>
+    public bool ProjektdateiFrageOffen => _sqFrage;
+
+    /// <summary>Die gewählte Zonierung der Projektdatei (<see cref="GebaeudeZonierungSchluessel"/>); <c>null</c> = die der Datenseite.</summary>
+    private string? _sqZonierung;
+
+    /// <summary>Die Wahl vor einem Wechsel, der auf die Rückfrage wartet.</summary>
+    private string? _sqZonierungAlt;
+
+    /// <summary>Steht die Rückfrage vor dem Wechsel der Zonierung?</summary>
+    private bool _sqZonierungFrage;
+
+    /// <summary>Steht die Rückfrage vor dem Wechsel der Zonierung offen (Prüfhilfe für Tests)?</summary>
+    public bool ZonierungFrageOffen => _sqZonierungFrage;
+
     private string WirksamerHilfeSchluessel
         => Profil is { HilfeSchluessel.Length: > 0 } p ? p.HilfeSchluessel : HilfeSchluessel;
 
     private string GrenzeText => string.IsNullOrEmpty(Profil?.Groessengrenze) ? "" : Format(Texte.Grenze, Profil.Groessengrenze);
+
+    // ---------------------------------------------------------------------
+    // Die Quellenwahl (Datenaustauschkonzept 16.1)
+    // ---------------------------------------------------------------------
+
+    /// <summary>Der Schlüssel der gewählten Quelle (Datenseite); <c>null</c> = alle Formate, die Endung entscheidet.</summary>
+    private string? _quelle;
+
+    /// <summary>Die gewählte Quelle (Prüfhilfe für Tests); nach dem Lesen einer <c>.sqproj</c> über „alle“ die Projektdatei.</summary>
+    public string? Quelle => _quelle;
+
+    private IReadOnlyList<GebaeudeImportQuellwahl> Quellenliste
+        => Profil?.Quellen ?? (IReadOnlyList<GebaeudeImportQuellwahl>)Array.Empty<GebaeudeImportQuellwahl>();
+
+    /// <summary>Stabile Ids je Schlüssel: die Stelle in der Liste der Datenseite, ab 1.</summary>
+    private IReadOnlyList<(int Id, string Text)> Quelleneintraege
+        => Quellenliste.Select((q, i) => (i + 1, q.Text)).ToList();
+
+    private int? QuellenId(string? schluessel)
+    {
+        if (schluessel is null) return null;
+        for (int i = 0; i < Quellenliste.Count; i++)
+            if (string.Equals(Quellenliste[i].Schluessel, schluessel, StringComparison.Ordinal)) return i + 1;
+        return null;
+    }
+
+    private void BeiQuelle(int? id)
+        => _quelle = id is int i && i >= 1 && i <= Quellenliste.Count ? Quellenliste[i - 1].Schluessel : null;
+
+    /// <summary>Der Hinweis zur Exporteinstellung an der Dateiwahl: der der gewählten Quelle, sonst der des Profils.</summary>
+    private string Exporthinweis
+        => (_quelle is null
+                ? Profil?.Exporthinweis
+                : Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Exporthinweis)
+           ?? "";
+
+    /// <summary>Der Filter des Dateiwählers: der der gewählten Quelle, sonst der des Profils (alle Formate).</summary>
+    private string WirksamerFilter
+        => Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Dateifilter
+           ?? Profil?.Dateifilter ?? "";
+
+    /// <summary>
+    /// <b>Der Weg „nur Projektdatei“</b>: die gelesene Datei ist eine <c>.sqproj</c> — erkannt am Weg des Kopfs, gleich ob
+    /// über die Quellenwahl oder über „alle Formate“ gewählt.
+    /// </summary>
+    public bool NurProjektdatei => _lesestand?.Kopf?.Weg == GebaeudeImportWeg.NurProjektdatei;
+
+    /// <summary>Der Weg der gewählten Quelle; ohne Wahl der einer Gebäudedatei.</summary>
+    private GebaeudeImportWeg GewaehlterWeg
+        => Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Weg ?? GebaeudeImportWeg.Datei;
+
+    /// <summary>Der Weg des gelesenen Laufs (<c>data-quelle</c> der Quellzeile): mit dazugeladener Projektdatei „MitProjektdatei“.</summary>
+    public GebaeudeImportWeg GelesenerWeg
+        => NurProjektdatei ? GebaeudeImportWeg.NurProjektdatei
+         : _stand?.Projektdatei is { Gelesen: true } ? GebaeudeImportWeg.MitProjektdatei
+         : GebaeudeImportWeg.Datei;
+
+    /// <summary>Der Text der Quellzeile: das Format der Datei, nach dem Dazuladen „… + Projektdatei“.</summary>
+    private string Quellentext(GebaeudeImportKopf kopf, GebaeudeImportStand stand)
+        => GelesenerWeg == GebaeudeImportWeg.MitProjektdatei ? Format(Texte.QuelleMitProjektdatei, kopf.Format) : kopf.Format;
+
+    /// <summary>Im Weg „nur Projektdatei“: Räume, die keine Zone aufnimmt, weil ihre Beheizung offen ist.</summary>
+    private bool UnbeheizteOffen
+        => NurProjektdatei && Plan is { } p && p.NichtZugeordnet.Any(r => !r.Beheizt || !r.BeheiztLautDatei);
 
     private IReadOnlyList<(int Id, string Text)> Klassenliste
         => Baualtersklassen.Select((text, index) => (index, text)).ToList();
@@ -793,7 +1384,18 @@
         => Beschaeftigt ? null
          : _stand is null ? Texte.OkOhneDatei
          : Uebernehmen is null ? Texte.OkOhneWeg
+         : NichtZugeordnet > 0 ? Format(Texte.PlanOkGesperrt, NichtZugeordnet)
+         : AufbauquelleFrageOffen ? Format(Texte.AqSperre, Math.Round(_stand.Projektdatei!.Standpruefung!.AnteilProzent, 1).ToString(CultureInfo.CurrentCulture))
          : null;
+
+    /// <summary>
+    /// Steht die Rückfrage der Aufbauquelle offen (Standprüfung angeschlagen, Wahl offen)? Dann ist OK gesperrt, mit demselben
+    /// Grund wie die Prüfung der Datenseite.
+    /// </summary>
+    public bool AufbauquelleFrageOffen => _stand?.Projektdatei is { AufbauquelleOffen: true, Standpruefung.Angeschlagen: true };
+
+    /// <summary>Steht der Hinweis vor „Abbrechen und neu exportieren“ offen (Prüfhilfe für Tests)?</summary>
+    public bool NeuExportFrageOffen => _neuExportFrage;
 
     private Func<string, Task<string?>>? Waehler => DateiWaehlen is null ? null : WaehlenUndPruefen;
 
@@ -806,13 +1408,23 @@
     protected override void OnInitialized()
     {
         _klasse = GueltigeKlasse(BaualtersklasseVorgabe);
+
+        _kiSicht = new GebaeudeImportKiSicht(KiLesen, KiSetzen, KiWahl, KiSperrgrund);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_IMPORT, () => _kiSicht, KiHaken());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_baustoffzielNeu)
+        {
+            _baustoffzielNeu = false;
+            // Rollen gewollt: der Sprung aus Steckbrief oder Aufbauliste führt zur Zeile des Materialnamens.
+            try { await _baustoffmarke.FocusAsync(preventScroll: false); }
+            catch (Exception) { /* die Zeile ist nicht (mehr) gezeichnet */ }
+        }
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private int? GueltigeKlasse(int? index)
@@ -861,14 +1473,17 @@
         _fortschrittText = "";
         _meldung = "";
         _lesestand = null;
+        _nord = null;
         _stand = null;
         _zeilen = new List<GebaeudeFeldzeileDaten>();
         _gebaeudeIndex = 0;
+        _klasseGewaehlt = false;   // ein neues Baujahr schlägt neu vor (wie im Gebäudeeditor)
         _uebersteuert.Clear();
         _handwerte.Clear();
         _handhaken.Clear();
         _baustoffzuordnungen.Clear();
         _alsZoneWahl = null;
+        _cadSollwert = false;
         ZonenZuruecksetzen();
         _name = "";
         _nameGeaendert = false;
@@ -888,6 +1503,7 @@
             {
                 _lesestand = stand;
                 NeuZuordnen();
+                _nord = NordrichtungDaten?.Invoke();
             }
             else
             {
@@ -907,6 +1523,73 @@
             _abbruch?.Dispose();
             _abbruch = null;
         }
+        await NachDemLesen();
+    }
+
+    /// <summary>
+    /// Die Quelle nach dem Lesen (16.1): Eine <c>.sqproj</c> ist der Weg „nur Projektdatei“ — die Wahl folgt der Endung, und die
+    /// Zonen der Datei gehen gleich als Schritt in den Plan. Beim Weg „Gebäudedatei + Projektdatei“ öffnet sich danach die Wahl
+    /// der Projektdatei; ist sie für diese Datei nicht möglich, nennt eine Meldung den Grund des gesperrten Knopfs.
+    /// </summary>
+    private async Task NachDemLesen()
+    {
+        if (_lesestand is null || _stand is null) return;
+        if (NurProjektdatei)
+        {
+            _quelle = Quellenliste.FirstOrDefault(q => q.Weg == GebaeudeImportWeg.NurProjektdatei)?.Schluessel;
+            if (_stand.Projektdatei is { Gelesen: true } && Plan is not null && _planschritte.Count == 0) ZonenDerProjektdatei();
+            return;
+        }
+        if (GewaehlterWeg == GebaeudeImportWeg.NurProjektdatei) _quelle = null;
+        if (GewaehlterWeg != GebaeudeImportWeg.MitProjektdatei || ProjektdateiLesen is null) return;
+        if (_stand.ProjektdateiMoeglich) await BeiProjektdatei();
+        else Melden(Texte.SqKnopfGrund, WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// G5-N (N2): <b>Eine neue Richtung der Planoberseite</b> — die Hülle liest die Datei damit neu (Ladezustand wie beim
+    /// Lesen, Esc bricht ab), danach wird neu zugeordnet: Bauteilliste, Ansicht und Meldungen folgen. Gebäudewahl, Klasse,
+    /// Raumhaken und Handänderungen bleiben — es ist dieselbe Datei.
+    /// </summary>
+    private async Task BeiNordrichtung(double planoberseite)
+    {
+        if (NordrichtungSetzen is null || _lesestand is null || Beschaeftigt) return;
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = Texte.NordrichtungLaeuft;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        try
+        {
+            GebaeudeLesestand stand = await NordrichtungSetzen(planoberseite, _abbruch.Token);
+            if (stand.Gelesen && stand.Gebaeude.Count > 0)
+            {
+                _lesestand = stand;
+                if (_gebaeudeIndex >= stand.Gebaeude.Count) _gebaeudeIndex = 0;
+            }
+            else
+            {
+                string text = string.Join(Environment.NewLine, stand.Meldungen.Select(m => m.Text));
+                Melden(text.Length > 0 ? text : Texte.NichtGelesen, WarnStufe.Fehler);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Abgebrochen: Es gilt, was die Hülle danach führt - unten neu gefragt.
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+        string meldung = _meldung;
+        WarnStufe stufe = _meldungStufe;
+        NeuZuordnen();
+        if (meldung.Length > 0 && _meldung.Length == 0) Melden(meldung, stufe);
+        _nord = NordrichtungDaten?.Invoke();
     }
 
     // =====================================================================
@@ -926,7 +1609,10 @@
         => new(_gebaeudeIndex, _klasse, new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
                new Dictionary<string, double?>(_handwerte, StringComparer.Ordinal),
                new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
-               _regel, _umhaengungen.Count > 0 ? _umhaengungen.ToList() : null);
+               _regel, null, CadSollwertWirksam,
+               _planschritte.Count > 0 ? _planschritte.ToList() : null, _planschritte.Count > 0 ? _plangrundhaken : null,
+               _typwahl.Count > 0 ? new Dictionary<string, string>(_typwahl, StringComparer.Ordinal) : null,
+               _klasseGewaehlt);
 
     private void StandUebernehmen(GebaeudeImportStand stand)
     {
@@ -940,22 +1626,39 @@
     // Mehrere Zonen — Regel, Zonen, Flächen (Stufe G6c)
     // =====================================================================
 
-    /// <summary>Ein neuer Kontext (Datei, Gebäude): Regel, Aufklappen, Filter und Wahl der Flächenliste auf Anfang.</summary>
+    /// <summary>Ein neuer Kontext (Datei, Gebäude): Regel, Aufklappen, Filter und Wahl der Flächen- und der Bauteilliste auf Anfang.</summary>
     private void ZonenZuruecksetzen()
     {
         _regel = null;
         _offeneZonen.Clear();
-        _umhaengungen.Clear();
+        PlanZuruecksetzen();
         _konflikt = null;
         _notiz = "";
         _regelFrage = null;
         _ziel = null;
         _geschoss = null;
         _raumwahl = null;
-        _nurFehler = _nurOhneGegenstueck = _nurOhneUWert = false;
+        _nurFehler = _nurOhneGegenstueck = _nurOhneUWert = _nurBauteilbefund = false;
         _flaechenfilter = new Katalogfilterstand();
         _flaecheGewaehlt = "";
         _flaechenzeilen = Array.Empty<Katalogfilterzeile>();
+        _bauteilfilter = new Katalogfilterstand();
+        _bauteilGewaehlt = "";
+    }
+
+    /// <summary>Der Zonenplan auf Anfang: keine Schritte, keine Wahl, keine offene Zeile, keine Frage.</summary>
+    private void PlanZuruecksetzen()
+    {
+        _planschritte.Clear();
+        _plangrundhaken = null;
+        _zonenwahl.Clear();
+        _raumwahlen.Clear();
+        _neueZone = false;
+        _plangeschoss = _restregel = null;
+        _aufhebenFrage = false;
+        _sqFrage = false;
+        _sqZonierungFrage = false;
+        _planhinweis = null;
     }
 
     private static IReadOnlyList<(int Id, string Text)> Regelliste(GebaeudeZonierungDaten zon)
@@ -989,7 +1692,7 @@
     private void RegelWaehlen(string regel)
     {
         if (string.Equals(regel, _stand?.Zonierung?.Regel, StringComparison.Ordinal)) return;
-        if (_umhaengungen.Count > 0)
+        if (_planschritte.Count > 0)
         {
             _regelFrage = regel;
             return;
@@ -1000,7 +1703,7 @@
     private void RegelSetzen(string regel)
     {
         _regel = regel;
-        _umhaengungen.Clear();
+        PlanZuruecksetzen();
         _ziel = null;
         _offeneZonen.Clear();
         _meldung = "";
@@ -1016,30 +1719,9 @@
         else _regelwahlFassung++;
     }
 
-    private void BeiAufklappen(GebaeudeZonenzeileDaten zone)
-    {
-        if (!_offeneZonen.Remove(zone.Name)) _offeneZonen.Add(zone.Name);
-    }
-
-    /// <summary>Der Haken „beheizt" einer Zone: alle ihre Räume umgestellt, danach bildet sich die Zonierung neu.</summary>
-    private void BeiZoneBeheizt(GebaeudeZonenzeileDaten zone, bool beheizt)
-    {
-        foreach (GebaeudeZonenraumDaten raum in zone.Raumliste)
-        {
-            if (beheizt == raum.BeheiztLautDatei) _uebersteuert.Remove(raum.Kennung);
-            else _uebersteuert[raum.Kennung] = beheizt;
-        }
-        _meldung = "";
-        NeuZuordnen();
-    }
-
     // =====================================================================
     // Grundriss und Zuordnung von Hand (Stufe G6c, Welle D2)
     // =====================================================================
-
-    /// <summary>Steht die Zonenliste (mehrere Zonen mit Bauteilvorschlag)? Dann dockt der Grundriss dort an.</summary>
-    private static bool MitZonenliste(GebaeudeImportStand stand)
-        => stand.Bauteile is not null && stand.Zonierung is { Einzonig: false };
 
     /// <summary>
     /// Der Grundriss samt Zuordnung von Hand: die Zielzone im Kopf, die Ansicht, die Meldung einer abgelehnten
@@ -1057,18 +1739,11 @@
             </div>
         }
         <GebaeudeAnsicht Daten="@ansicht" GewaehlteZone="@Zielzone(ansicht)" Geschoss="@_geschoss" GeschossChanged="BeiGeschoss"
-                         RaumUmgehaengt="BeiUmhaengen" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht" />
-        if (_konflikt is Umhaengkonflikt k)
+                         RaumUmgehaengt="BeiUmhaengen" ZoneGewaehlt="BeiZoneGewaehlt" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht"
+                         ZurBaustoffzuordnung="BeiBaustoffsprung" />
+        if (_konflikt is Umhaengkonflikt k && stand.Zonierung?.Plan is null)
         {
-            <div class="epos-gebimport-ausweg" data-raum="@k.Raum" data-kennung="@k.Kennung">
-                <Warnbanner Stufe="WarnStufe.Warnung" Text="@k.Text" />
-                @if (k.Beheizung)
-                {
-                    <Schalter Bezeichnung="@Format(Texte.BeheiztTitel, k.Name)" Wert="@k.RaumBeheizt"
-                              WertChanged="BeiAusweg" Aktiv="@(!Beschaeftigt)" />
-                    <Herleitungszeile Text="@Format(Texte.Ausweg, k.Name, k.Zielname)" />
-                }
-            </div>
+            @Konfliktbanner(k)
         }
         if (_notiz.Length > 0)
         {
@@ -1095,42 +1770,82 @@
         }
     };
 
-    /// <summary>Die Zielzone eines Klicks: der Schlüssel der gewählten Zone, sonst der ersten; <c>null</c> = als eigene Zone.</summary>
-    private string? Zielzone(GebaeudeAnsichtDaten ansicht)
+    /// <summary>Die abgelehnte Zuordnung mit der Meldung des Kerns — bei ungleicher Beheizung samt Raumhaken als Ausweg.</summary>
+    private RenderFragment Konfliktbanner(Umhaengkonflikt k) => __builder =>
     {
-        if (_ziel == EIGENE_ZONE) return null;
-        if (ansicht.Zone(_ziel) is GebaeudeAnsichtZone z) return z.Schluessel;
-        return ansicht.Zonen.Count > 0 ? ansicht.Zonen[0].Schluessel : null;
+        <div class="epos-gebimport-ausweg" data-raum="@k.Raum" data-kennung="@k.Kennung">
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@k.Text" />
+            @if (k.Beheizung)
+            {
+                <Schalter Bezeichnung="@Format(Texte.BeheiztTitel, k.Name)" Wert="@k.RaumBeheizt"
+                          WertChanged="BeiAusweg" Aktiv="@(!Beschaeftigt)" />
+                <Herleitungszeile Text="@Format(Texte.Ausweg, k.Name, k.Zielname)" />
+            }
+        </div>
+    };
+
+    /// <summary>Der Zonenplan des Stands; <c>null</c> = keiner (eine Regel oder abgelehnt).</summary>
+    private GebaeudeZonenplanDaten? Plan => _stand?.Zonierung?.Plan;
+
+    /// <summary>
+    /// Die Zielzone eines Klicks im Plan (Planschlüssel): die gewählte, sonst die erste Zone; <see cref="EIGENE_ZONE"/> = als
+    /// eigene Zone abtrennen; <c>null</c> ohne Zone.
+    /// </summary>
+    private string? PlanZiel()
+    {
+        if (Plan is not GebaeudeZonenplanDaten plan) return null;
+        if (_ziel == EIGENE_ZONE) return EIGENE_ZONE;
+        if (_ziel is not null && plan.Zonen.Any(z => z.Schluessel == _ziel)) return _ziel;
+        return plan.Zonen.Count > 0 ? plan.Zonen[0].Schluessel : EIGENE_ZONE;
     }
 
-    /// <summary>Die Einträge der Zielzone: die Zonen in Rangfolge (Id = Stelle + 1), dann „als eigene Zone" (Id 0).</summary>
+    /// <summary>Die Zielzone für den Grundriss — der Schlüssel, unter dem er die Zielzone des Plans führt; <c>null</c> = keine.</summary>
+    private string? Zielzone(GebaeudeAnsichtDaten ansicht)
+    {
+        string? ziel = PlanZiel();
+        GebaeudePlanzoneDaten? zone = Plan?.Zonen.FirstOrDefault(z => z.Schluessel == ziel);
+        return zone is { Ansichtsschluessel.Length: > 0 } ? zone.Ansichtsschluessel : null;
+    }
+
+    /// <summary>Die Einträge der Zielzone: die Zonen des Plans (Id = Stelle + 1), dann „als eigene Zone" (Id 0).</summary>
     private IReadOnlyList<(int Id, string Text)> Zielliste(GebaeudeAnsichtDaten ansicht)
     {
-        var liste = new List<(int Id, string Text)>(ansicht.Zonen.Count + 1);
-        for (int i = 0; i < ansicht.Zonen.Count; i++) liste.Add((i + 1, ansicht.Zonen[i].Name));
+        IReadOnlyList<GebaeudePlanzoneDaten> zonen = Plan?.Zonen ?? Array.Empty<GebaeudePlanzoneDaten>();
+        var liste = new List<(int Id, string Text)>(zonen.Count + 1);
+        for (int i = 0; i < zonen.Count; i++) liste.Add((i + 1, zonen[i].Name));
         liste.Add((0, Texte.EigeneZone));
         return liste;
     }
 
     private int? Zielstelle(GebaeudeAnsichtDaten ansicht)
     {
-        string? ziel = Zielzone(ansicht);
-        if (ziel is null) return 0;
-        for (int i = 0; i < ansicht.Zonen.Count; i++)
-            if (string.Equals(ansicht.Zonen[i].Schluessel, ziel, StringComparison.Ordinal)) return i + 1;
+        string? ziel = PlanZiel();
+        if (ziel == EIGENE_ZONE) return 0;
+        IReadOnlyList<GebaeudePlanzoneDaten> zonen = Plan?.Zonen ?? Array.Empty<GebaeudePlanzoneDaten>();
+        for (int i = 0; i < zonen.Count; i++)
+            if (zonen[i].Schluessel == ziel) return i + 1;
         return null;
     }
 
     private void BeiZiel(int? id)
     {
-        if (_stand?.Ansicht is not GebaeudeAnsichtDaten ansicht || id is not int i) return;
+        if (Plan is not GebaeudeZonenplanDaten plan || id is not int i) return;
         if (i == 0) _ziel = EIGENE_ZONE;
-        else if (i - 1 < ansicht.Zonen.Count) _ziel = ansicht.Zonen[i - 1].Schluessel;
+        else if (i - 1 < plan.Zonen.Count) _ziel = plan.Zonen[i - 1].Schluessel;
         _konflikt = null;
         _notiz = "";
     }
 
     private void BeiGeschoss(string kennung) => _geschoss = kennung;
+
+    /// <summary>Ein Klick auf einen Körper der Ansicht wählt die Zone des Plans, die er zeigt, als Ziel der Zuordnung.</summary>
+    private void BeiZoneGewaehlt(string schluessel)
+    {
+        if (_stand?.Ansicht is not { Umhaengbar: true } || Plan?.Zonen.FirstOrDefault(z => z.Ansichtsschluessel == schluessel) is not { } zone) return;
+        _ziel = zone.Schluessel;
+        _konflikt = null;
+        _notiz = "";
+    }
 
     /// <summary>Der gewählte Raum des Wegs ohne Grundriss — im gezeigten Geschoss, sonst dessen erster.</summary>
     private GebaeudeAnsichtRaum? GewaehlterRaum(GebaeudeAnsichtDaten ansicht)
@@ -1171,80 +1886,264 @@
         _raumwahl = g.Raeume[i].Kennung;
     }
 
-    /// <summary>Der Klick im Grundriss: Raum und Zielzone, wie die Ansicht sie meldet.</summary>
-    private void BeiUmhaengen(GebaeudeRaumumhaengung wunsch) => Umhaengen(wunsch);
+    /// <summary>Der Klick im Grundriss: der Raum in die Zielzone des Plans.</summary>
+    private void BeiUmhaengen(GebaeudeRaumumhaengung wunsch) => Umhaengen(wunsch.Raum);
 
     /// <summary>„Umhängen" — der Weg ohne Grundriss: der gewählte Raum in die Zielzone des Kopfs.</summary>
     private void BeiUmhaengenKnopf()
     {
         if (_stand?.Ansicht is not { Umhaengbar: true } ansicht || GewaehlterRaum(ansicht) is not GebaeudeAnsichtRaum raum) return;
-        Umhaengen(new GebaeudeRaumumhaengung(raum.Kennung, Zielzone(ansicht)));
+        Umhaengen(raum.Kennung);
     }
 
     /// <summary>
-    /// <b>Eine Zuordnung von Hand</b>: Die Anfrage bekommt sie hinter die bisherigen (<c>MitUmhaengung</c>), der Kern
-    /// bildet Zonen, Bilanz, Vorschlag und Grundriss neu. Liegt der Raum danach dort, wo er hin sollte, bleibt sie;
-    /// sonst fällt sie wieder heraus, der Stand bleibt der ohne sie, und die Meldung des Kerns, mit der er sie
-    /// abgelehnt hat, steht am Grundriss — bei ungleicher Beheizung samt dem Raumhaken als Ausweg. Eine Zuordnung
-    /// ohne Wirkung („liegt schon dort") fragt den Kern nicht und kommt nicht in die Liste.
+    /// <b>Eine Zuordnung im Grundriss</b> ist ein Schritt am Zonenplan: der Raum in die Zielzone (<c>ZUORDNEN</c>) oder als eigene
+    /// Zone (<c>EIGENE</c>). Lehnt der Kern ab, steht seine Meldung im Zonenbaum — bei ungleicher Beheizung samt dem Raumhaken
+    /// als Ausweg. Eine Zuordnung ohne Wirkung („liegt schon dort") fragt den Kern nicht.
     /// </summary>
-    private void Umhaengen(GebaeudeRaumumhaengung wunsch)
+    private void Umhaengen(string kennung)
     {
-        if (Beschaeftigt || Zuordnen is null || _lesestand is null || _stand?.Ansicht is not { Umhaengbar: true } ansicht) return;
-        if (ansicht.Raum(wunsch.Raum) is not GebaeudeAnsichtRaum raum) return;
+        if (Beschaeftigt || _stand?.Ansicht is not { Umhaengbar: true } ansicht || Plan is not GebaeudeZonenplanDaten plan) return;
+        if (ansicht.Raum(kennung) is not GebaeudeAnsichtRaum raum) return;
+        _konflikt = null;
+        _notiz = "";
+        string? ziel = PlanZiel();
+        if (ziel is null) return;
+        if (ziel == EIGENE_ZONE)
+        {
+            Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.EIGENE, new[] { raum.Kennung }));
+            return;
+        }
+        GebaeudePlanzoneDaten? zone = plan.Zonen.FirstOrDefault(z => z.Schluessel == ziel);
+        if (zone is not null && zone.Raumliste.Any(r => r.Kennung == raum.Kennung))
+        {
+            _notiz = Format(Texte.SchonDort, raum.Name, zone.Name);
+            return;
+        }
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.ZUORDNEN, new[] { raum.Kennung }, ziel));
+    }
+
+    // =====================================================================
+    // Der Zonenbaum — Schritte am Zonenplan (Mehrzonenkonzept 6.4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Ein Schritt am Zonenplan</b>: Die Anfrage bekommt ihn hinter die bisherigen, der Kern legt alle auf den Regelvorschlag
+    /// und bildet Zonen, Bilanz, Vorschlag und Grundriss neu. Lehnt er ab, fällt der Schritt wieder heraus, der Stand ist der
+    /// ohne ihn, und die Meldung des Kerns steht als Banner. Ein angenommener Schritt mit Hinweis (etwa Räume anderer
+    /// Beheizung, die bleiben, wo sie sind) zeigt ihn. Vor dem ersten Schritt merkt sich der Dialog die Haken des Plans.
+    /// </summary>
+    private bool Schritt(GebaeudePlanschritt schritt)
+    {
+        if (Beschaeftigt || Zuordnen is null || _lesestand is null) return false;
         _meldung = "";
         _konflikt = null;
         _notiz = "";
+        _planhinweis = null;
+        GebaeudeZonenplanDaten? vorher = Plan;
+        bool erster = _planschritte.Count == 0;
+        if (erster) _plangrundhaken = new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal);
+        _planschritte.Add(schritt);
+        GebaeudeImportStand neu = Zuordnen(Anfrage());
+        GebaeudeZonenplanDaten? plan = neu.Zonierung?.Plan;
+        if (plan is { LetzterAbgelehnt: true })
+        {
+            _planschritte.RemoveAt(_planschritte.Count - 1);
+            if (erster) _plangrundhaken = null;
+            StandUebernehmen(Zuordnen(Anfrage()));
+            _planfassung++;
+            if (plan.Schrittmeldung is GebaeudeImportMeldung grund) _konflikt = Konflikt(schritt, grund, vorher);
+            return false;
+        }
+        StandUebernehmen(neu);
+        _planhinweis = plan?.Schrittmeldung;
+        if (plan is not null)
+        {
+            _zonenwahl.RemoveWhere(z => plan.Zonen.All(x => x.Schluessel != z));
+            if (_ziel is not null && _ziel != EIGENE_ZONE && plan.Zonen.All(x => x.Schluessel != _ziel)) _ziel = null;
+        }
+        return true;
+    }
 
-        string? ziel = wunsch.Zielzone;
-        if (ziel is not null && string.Equals(raum.Zone, ziel, StringComparison.Ordinal))
+    /// <summary>
+    /// Die Ablehnung eines Schritts als Banner. Bei ungleicher Beheizung (Zuordnen) nennt sie den ersten Raum, der nicht zur
+    /// Zielzone passt, und bietet seinen Haken „beheizt" als Ausweg an; stellt der Anwender ihn um, folgt der Schritt.
+    /// </summary>
+    private Umhaengkonflikt Konflikt(GebaeudePlanschritt schritt, GebaeudeImportMeldung grund, GebaeudeZonenplanDaten? plan)
+    {
+        string kennung = grund.Kennung ?? "";
+        bool beheizung = kennung.EndsWith("_PLAN_BEHEIZUNG", StringComparison.Ordinal)
+                         && schritt.Art == GebaeudePlanschrittArt.ZUORDNEN && plan is not null;
+        if (beheizung)
         {
-            _notiz = Format(Texte.SchonDort, raum.Name, ansicht.Zone(ziel)?.Name ?? ziel);
-            return;
+            var alle = plan!.Zonen.SelectMany(z => z.Raumliste).Concat(plan.NichtZugeordnet).ToList();
+            List<GebaeudePlanraumDaten> wahl = (schritt.Raeume ?? Array.Empty<string>())
+                .Select(k => alle.FirstOrDefault(r => r.Kennung == k)).OfType<GebaeudePlanraumDaten>().ToList();
+            GebaeudePlanzoneDaten? ziel = plan.Zonen.FirstOrDefault(z => z.Schluessel == schritt.Zone);
+            var bleibende = ziel?.Raumliste.Where(r => wahl.All(w => w.Kennung != r.Kennung)).ToList() ?? new List<GebaeudePlanraumDaten>();
+            bool warm = bleibende.Count > 0 ? bleibende.Any(r => r.Beheizt) : wahl.Count > 0 && wahl[0].Beheizt;
+            if (wahl.FirstOrDefault(r => r.Beheizt != warm) is GebaeudePlanraumDaten anders)
+                return new Umhaengkonflikt(anders.Kennung, anders.Name, schritt.Zone, ziel?.Name ?? "", grund.Text, grund.Kennung,
+                                           true, anders.Beheizt, warm, schritt);
         }
-
-        int vorher = _stand.Zonierung?.Ablehnungen.Count ?? 0;
-        GebaeudeImportStand neu = Zuordnen(Anfrage().MitUmhaengung(raum.Kennung, ziel));
-        GebaeudeAnsichtRaum? danach = neu.Ansicht?.Raum(raum.Kennung);
-        bool gewirkt = danach is not null && (ziel is null
-            ? !string.Equals(danach.Zone, raum.Zone, StringComparison.Ordinal)
-            : string.Equals(danach.Zone, ziel, StringComparison.Ordinal));
-        if (gewirkt)
-        {
-            _umhaengungen.Add(new GebaeudeRaumumhaengung(raum.Kennung, ziel));
-            StandUebernehmen(neu);
-            return;
-        }
-
-        // Ohne Wirkung: Die Zuordnung fällt wieder heraus — der Stand ist der der Liste ohne sie, die Datenseite
-        // ordnet dafür noch einmal zu (sie merkt sich den letzten Vorschlag).
-        IReadOnlyList<GebaeudeImportMeldung> ablehnungen = neu.Zonierung?.Ablehnungen ?? Array.Empty<GebaeudeImportMeldung>();
-        StandUebernehmen(Zuordnen(Anfrage()));
-        if (ablehnungen.Count > vorher)
-        {
-            GebaeudeImportMeldung grund = ablehnungen[ablehnungen.Count - 1];
-            GebaeudeAnsichtZone? zielzone = ansicht.Zone(ziel);
-            bool beheizung = zielzone is not null && zielzone.Beheizt != raum.Beheizt;
-            _konflikt = new Umhaengkonflikt(raum.Kennung, raum.Name, ziel, zielzone?.Name ?? "", grund.Text, grund.Kennung,
-                                            beheizung, raum.Beheizt, zielzone?.Beheizt ?? raum.Beheizt);
-        }
-        else if (ziel is null)
-        {
-            _notiz = Format(Texte.SchonEigene, raum.Name);
-        }
+        return new Umhaengkonflikt("", "", schritt.Zone, "", grund.Text, grund.Kennung, false, false, false, schritt);
     }
 
     /// <summary>
     /// Der Ausweg bei ungleicher Beheizung: der Raumhaken „beheizt" — umgestellt vom Anwender, nie still. Passt die
-    /// Beheizung danach zur Zielzone, folgt die Zuordnung, die er verlangt hatte.
+    /// Beheizung danach zur Zielzone, folgt der Schritt, den er verlangt hatte.
     /// </summary>
     private void BeiAusweg(bool beheizt)
     {
         if (Beschaeftigt || _konflikt is not Umhaengkonflikt k) return;
-        RaumhakenSetzen(k.Raum, beheizt);
+        HakenAendern(k.Raum, beheizt);
         _meldung = "";
         NeuZuordnen();
-        if (beheizt == k.ZielBeheizt) Umhaengen(new GebaeudeRaumumhaengung(k.Raum, k.Zielzone));
+        if (beheizt == k.ZielBeheizt && k.Schritt is not null) Schritt(k.Schritt);
+    }
+
+    /// <summary>
+    /// Ein Raumhaken „beheizt": wie die Raumliste, und — sobald der Plan Schritte trägt — zugleich als Schritt am Plan, damit
+    /// Zonen und Schlüssel stehen bleiben (der Raum bleibt in seiner Zone).
+    /// </summary>
+    private void HakenAendern(string raum, bool beheizt)
+    {
+        RaumhakenSetzen(raum, beheizt);
+        if (_planschritte.Count > 0)
+            _planschritte.Add(new GebaeudePlanschritt(GebaeudePlanschrittArt.HAKEN, new[] { raum }, Beheizt: beheizt));
+    }
+
+    private void BeiAufklappen(string schluessel)
+    {
+        if (!_offeneZonen.Remove(schluessel)) _offeneZonen.Add(schluessel);
+    }
+
+    /// <summary>Der Haken „beheizt" einer Zone: alle ihre Räume umgestellt, danach bildet sich die Zonierung neu.</summary>
+    private void BeiZoneBeheizt(GebaeudePlanzoneDaten zone, bool beheizt)
+    {
+        foreach (GebaeudePlanraumDaten raum in zone.Raumliste) HakenAendern(raum.Kennung, beheizt);
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    private void BeiZonenwahl(GebaeudePlanzoneDaten zone, ChangeEventArgs e)
+    {
+        if (e.Value is true) _zonenwahl.Add(zone.Schluessel);
+        else _zonenwahl.Remove(zone.Schluessel);
+        if (_zonenwahl.Count == 1) _ziel = _zonenwahl.First();
+    }
+
+    private void BeiRaumwahlHaken(string kennung, ChangeEventArgs e)
+    {
+        if (e.Value is true) _raumwahlen.Add(kennung);
+        else _raumwahlen.Remove(kennung);
+    }
+
+    /// <summary>Die gewählten Zonen in Planreihenfolge.</summary>
+    private IReadOnlyList<string> GewaehlteZonen(GebaeudeZonenplanDaten plan)
+        => plan.Zonen.Where(z => _zonenwahl.Contains(z.Schluessel)).Select(z => z.Schluessel).ToList();
+
+    /// <summary>Die gewählten Räume aus Baum und rechter Liste, in Planreihenfolge.</summary>
+    private IReadOnlyList<string> GewaehlteRaeume(GebaeudeZonenplanDaten plan)
+        => plan.Zonen.SelectMany(z => z.Raumliste).Concat(plan.NichtZugeordnet)
+               .Where(r => _raumwahlen.Contains(r.Kennung)).Select(r => r.Kennung).Distinct().ToList();
+
+    /// <summary>Die Zielzone der Knöpfe: genau eine gewählte Zone; sonst keine.</summary>
+    private string? Zielzone(GebaeudeZonenplanDaten plan)
+    {
+        IReadOnlyList<string> zonen = GewaehlteZonen(plan);
+        return zonen.Count == 1 ? zonen[0] : null;
+    }
+
+    private static IReadOnlyList<(int Id, string Text)> Nutzungsliste(GebaeudeZonenplanDaten plan)
+        => plan.Nutzungen.Select((n, i) => (i, n.Text)).ToList();
+
+    /// <summary>Die Stelle der gewählten Nutzung in der Liste des Plans; <c>null</c> = keine oder nicht mehr darin.</summary>
+    private int? NeuNutzungStelle(GebaeudeZonenplanDaten plan)
+    {
+        for (int i = 0; i < plan.Nutzungen.Count; i++)
+            if (string.Equals(plan.Nutzungen[i].Schluessel, _neuNutzung, StringComparison.Ordinal)) return i;
+        return null;
+    }
+
+    private void NeuNutzungWaehlen(GebaeudeZonenplanDaten plan, int? stelle)
+        => _neuNutzung = stelle is int i && i >= 0 && i < plan.Nutzungen.Count ? plan.Nutzungen[i].Schluessel : null;
+
+    /// <summary>„Zone hinzufügen": öffnet die Zeile mit Name (Vorgabe „Zone n") und Nutzung.</summary>
+    private void BeiZoneHinzufuegen(GebaeudeZonenplanDaten plan)
+    {
+        _neueZone = true;
+        _neuName = plan.NeuerName;
+        _neuNutzung = null;
+    }
+
+    private void BeiAnlegen(GebaeudeZonenplanDaten plan)
+    {
+        string? nutzung = NeuNutzungStelle(plan) is int i ? plan.Nutzungen[i].Schluessel : null;
+        if (Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.ANLEGEN, Name: _neuName, Nutzung: nutzung))) _neueZone = false;
+    }
+
+    /// <summary>„Zone(n) löschen": die gewählten Zonen; ihre Räume stehen danach rechts.</summary>
+    private void BeiLoeschen(GebaeudeZonenplanDaten plan)
+    {
+        IReadOnlyList<string> zonen = GewaehlteZonen(plan);
+        if (zonen.Count == 0) return;
+        if (Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.LOESCHEN, Zonen: zonen))) _zonenwahl.Clear();
+    }
+
+    /// <summary>Die Antwort der Rückfrage „Zonierung aufheben": nur „Ja" hebt auf.</summary>
+    private void AufhebenBeantwortet(bool? antwort)
+    {
+        _aufhebenFrage = false;
+        if (antwort == true) Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.AUFHEBEN));
+    }
+
+    /// <summary>„Räume zur ausgewählten Zone hinzufügen": die gewählten Räume — alle oder keiner.</summary>
+    private void BeiRaeumeZuordnen(GebaeudeZonenplanDaten plan)
+    {
+        if (Zielzone(plan) is not string ziel) return;
+        IReadOnlyList<string> raeume = GewaehlteRaeume(plan);
+        if (raeume.Count == 0) return;
+        if (Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.ZUORDNEN, raeume, ziel))) _raumwahlen.Clear();
+    }
+
+    private static IReadOnlyList<(int Id, string Text)> Geschossliste(GebaeudeZonenplanDaten plan)
+        => plan.Geschosse.Select((g, i) => (i, g.Text)).ToList();
+
+    private int? Geschossstelle(GebaeudeZonenplanDaten plan)
+        => _plangeschoss is int i && i >= 0 && i < plan.Geschosse.Count ? i : plan.Geschosse.Count > 0 ? 0 : null;
+
+    /// <summary>„Geschoss zur Zone": die gleich beheizten Räume des Geschosses in die gewählte Zone.</summary>
+    private void BeiGeschossZuordnen(GebaeudeZonenplanDaten plan)
+    {
+        if (Zielzone(plan) is not string ziel || Geschossstelle(plan) is not int i) return;
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.GESCHOSS, Zone: ziel, Geschoss: plan.Geschosse[i].Schluessel));
+    }
+
+    private int? Reststelle(GebaeudeZonierungDaten zon)
+        => _restregel is int i && i >= 0 && i < zon.Regeln.Count ? i : Regelstelle(zon);
+
+    /// <summary>„Rest nach Regel zuordnen": nur die nicht zugeordneten Räume, nach der gewählten Regel.</summary>
+    private void BeiRest(GebaeudeZonierungDaten zon)
+    {
+        if (Reststelle(zon) is not int i) return;
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.REST, Regel: zon.Regeln[i].Schluessel));
+    }
+
+    /// <summary>Der Name einer Zone im Baum — leer oder doppelt lehnt der Kern ab.</summary>
+    private void BeiUmbenennen(GebaeudePlanzoneDaten zone, ChangeEventArgs e)
+    {
+        string name = e.Value?.ToString() ?? "";
+        if (name == zone.Name) return;
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.UMBENENNEN, Zone: zone.Schluessel, Name: name));
+    }
+
+    /// <summary>Die Nutzung einer Zone (Wohnen, Büro, Schule oder keine).</summary>
+    private void BeiNutzung(GebaeudePlanzoneDaten zone, ChangeEventArgs e)
+    {
+        string? nutzung = e.Value?.ToString() is { Length: > 0 } n ? n : null;
+        if (nutzung == zone.Nutzung) return;
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.NUTZUNG, Zone: zone.Schluessel, Nutzung: nutzung));
     }
 
     /// <summary>Setzt den Haken „beheizt" eines Raums wie die Raumliste: gleich der Datei = keine Übersteuerung.</summary>
@@ -1263,12 +2162,14 @@
 
     private void BeiFlaeche(string schluessel) => _flaecheGewaehlt = schluessel ?? "";
 
+    private void BeiBauteil(string schluessel) => _bauteilGewaehlt = schluessel ?? "";
+
     /// <summary>Die Zeilen der Flächenliste nach den drei Filtern — neu nur nach Zuordnen oder Filterwechsel.</summary>
     private void FlaechenFiltern()
     {
         IReadOnlyList<GebaeudeFlaechenzeileDaten> alle = _stand?.Zonierung?.Flaechen ?? Array.Empty<GebaeudeFlaechenzeileDaten>();
         _flaechenzeilen = alle.Where(f => (!_nurFehler || f.Fehler) && (!_nurOhneGegenstueck || f.OhneGegenstueck)
-                                          && (!_nurOhneUWert || f.OhneUWert))
+                                          && (!_nurOhneUWert || f.OhneUWert) && (!_nurBauteilbefund || f.MitBauteilbefund))
                               .Select(f => f.Zeile).ToList();
     }
 
@@ -1289,9 +2190,16 @@
         return z;
     }
 
+    /// <summary>Die Klasse in der Klappliste: die eigene Wahl, sonst die aus dem Baujahr der Datei, sonst die Vorgabe.</summary>
+    private int? KlasseAngezeigt => _klasseGewaehlt ? _klasse : _stand?.KlasseDerDatei ?? _klasse;
+
+    /// <summary>Hat der Anwender die Klasse ausdrücklich gewählt? Dann gilt sie vor dem Baujahr der Datei.</summary>
+    public bool KlasseGewaehlt => _klasseGewaehlt;
+
     private void BeiKlasse(int? index)
     {
         _klasse = GueltigeKlasse(index);
+        _klasseGewaehlt = _klasse is not null;
         _meldung = "";
         NeuZuordnen();
     }
@@ -1301,21 +2209,162 @@
         if (index is not int i || _lesestand is null || i < 0 || i >= _lesestand.Gebaeude.Count || i == _gebaeudeIndex) return;
         // Ein anderes Gebäude ist ein Kontextwechsel — ohne Übertrag.
         _gebaeudeIndex = i;
+        _klasseGewaehlt = false;
         _uebersteuert.Clear();
         _handwerte.Clear();
         _handhaken.Clear();
         _baustoffzuordnungen.Clear();
         _alsZoneWahl = null;
+        _cadSollwert = false;
         ZonenZuruecksetzen();
         _nameGeaendert = false;
+        _meldung = "";
+        // Die Projektdatei gehört zum Gebäude — ein anderes nimmt sie nicht mit.
+        if (_stand?.Projektdatei is not null) ProjektdateiEntfernen?.Invoke();
+        NeuZuordnen();
+    }
+
+    // =====================================================================
+    // Projektdatei dazuladen (Datenaustauschkonzept 16.4)
+    // =====================================================================
+
+    /// <summary>Die Meldungen der Projektdatei ohne Bilanz und Fassung — das Übersprungene mit Grund.</summary>
+    private static IReadOnlyList<GebaeudeImportMeldung> Uebersprungen(GebaeudeProjektdateiDaten sq)
+        => sq.Meldungen.Where(m => m.Kennung is not null && !m.Kennung.EndsWith("_BILANZ", StringComparison.Ordinal)
+                                   && !m.Kennung.EndsWith("_FASSUNG", StringComparison.Ordinal)
+                                   && !m.Kennung.EndsWith("_ZONIERUNG", StringComparison.Ordinal)
+                                   && !m.Kennung.EndsWith("_ZONIERUNG_EINE", StringComparison.Ordinal)).ToList();
+
+    /// <summary>Trägt der Plan die Zonen der Projektdatei?</summary>
+    private bool PlanMitProjektdatei => _planschritte.Exists(s => s.Art == GebaeudePlanschrittArt.PROJEKTDATEI);
+
+    /// <summary>
+    /// Der Knopf „Projektdatei dazuladen“: Dateiwahl, Lesen über die Datenseite (mit Abbruch), dann die Übernahme der Zonen
+    /// als Schritt am Plan. Eine frühere Übernahme fällt mit der neuen Datei weg; eine Ablehnung steht als Banner.
+    /// </summary>
+    private async Task BeiProjektdatei()
+    {
+        if (Beschaeftigt || ProjektdateiLesen is null || _stand is not { ProjektdateiMoeglich: true }) return;
+        string? pfad = ProjektdateiWaehlen is null ? null : await ProjektdateiWaehlen();
+        if (string.IsNullOrEmpty(pfad)) return;
+
+        _laeuft = true;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        GebaeudeProjektdateiDaten? sq = null;
+        try
+        {
+            sq = await ProjektdateiLesen(pfad, _gebaeudeIndex, _abbruch.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Abgebrochen — still.
+        }
+        finally
+        {
+            _laeuft = false;
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+        if (PlanMitProjektdatei)
+        {
+            PlanZuruecksetzen();
+            _offeneZonen.Clear();
+        }
+        _sqZonierung = null;
+        if (sq is { Gelesen: true }) ZonenDerProjektdatei();
+        else NeuZuordnen();
+    }
+
+    /// <summary>Die Zonen der Projektdatei in den Plan — mit Schritten von Hand erst nach Rückfrage.</summary>
+    private void ZonenDerProjektdatei()
+    {
+        NeuZuordnen();
+        if (_stand?.Zonierung?.Plan is null || Beschaeftigt) return;
+        if (_planschritte.Count > 0)
+        {
+            _sqFrage = true;
+            return;
+        }
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI, Zonierung: _sqZonierung));
+    }
+
+    /// <summary>Die Antwort der Rückfrage: „Ja“ verwirft die Schritte von Hand und übernimmt die Zonen der Projektdatei.</summary>
+    private void SqBeantwortet(bool? antwort)
+    {
+        _sqFrage = false;
+        if (antwort != true) return;
+        PlanZuruecksetzen();
+        _offeneZonen.Clear();
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI, Zonierung: _sqZonierung));
+    }
+
+    /// <summary>Die Schritte von Hand am Plan (alle außer der Übernahme der Projektdatei).</summary>
+    private int Handschritte => _planschritte.Count(s => s.Art != GebaeudePlanschrittArt.PROJEKTDATEI);
+
+    /// <summary>
+    /// Das Wahlfeld der Zonierung (E87, F1): trägt der Plan die Zonen der Projektdatei, baut der Wechsel ihn mit der anderen
+    /// Zonierung neu auf — mit Schritten von Hand erst nach Rückfrage; sonst gilt die Wahl für die nächste Übernahme.
+    /// </summary>
+    private void BeiZonierung(ChangeEventArgs e)
+    {
+        string? neu = e.Value as string;
+        string aktuell = _sqZonierung ?? _stand?.Projektdatei?.Zonierung ?? GebaeudeZonierungSchluessel.DIN;
+        if (Beschaeftigt || neu is not (GebaeudeZonierungSchluessel.DIN or GebaeudeZonierungSchluessel.SIMULATION) || neu == aktuell) return;
+        _sqZonierungAlt = _sqZonierung;
+        _sqZonierung = neu;
+        if (!PlanMitProjektdatei) return;
+        if (Handschritte > 0)
+        {
+            _sqZonierungFrage = true;
+            return;
+        }
+        ZonierungNeuAufbauen();
+    }
+
+    /// <summary>Die Antwort der Rückfrage vor dem Wechsel: „Ja“ baut den Plan neu auf, sonst gilt die alte Wahl.</summary>
+    private void SqZonierungBeantwortet(bool? antwort)
+    {
+        _sqZonierungFrage = false;
+        if (antwort == true) ZonierungNeuAufbauen();
+        else _sqZonierung = _sqZonierungAlt;
+    }
+
+    /// <summary>Verwirft die Schritte und übernimmt die Zonen der Projektdatei mit der gewählten Zonierung neu.</summary>
+    private void ZonierungNeuAufbauen()
+    {
+        PlanZuruecksetzen();
+        _offeneZonen.Clear();
+        Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI, Zonierung: _sqZonierung));
+    }
+
+    /// <summary>„Projektdatei entfernen“: Stand ohne Projektdatei; trug der Plan ihre Zonen, steht wieder der Regelvorschlag.</summary>
+    private void BeiProjektdateiEntfernen()
+    {
+        if (Beschaeftigt) return;
+        ProjektdateiEntfernen?.Invoke();
+        _sqZonierung = null;
+        if (PlanMitProjektdatei)
+        {
+            PlanZuruecksetzen();
+            _offeneZonen.Clear();
+        }
         _meldung = "";
         NeuZuordnen();
     }
 
     private void BeiBeheizt(GebaeudeRaumzeileDaten raum, bool beheizt)
     {
-        if (beheizt == raum.BeheiztLautDatei) _uebersteuert.Remove(raum.Kennung);
-        else _uebersteuert[raum.Kennung] = beheizt;
+        HakenAendern(raum.Kennung, beheizt);
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    /// <summary>Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" — ordnet neu zu.</summary>
+    private void BeiCadSollwert(bool wert)
+    {
+        if (Beschaeftigt || wert == _cadSollwert) return;
+        _cadSollwert = wert;
         _meldung = "";
         NeuZuordnen();
     }
@@ -1397,7 +2446,10 @@
                new Dictionary<string, bool>(_uebersteuert, StringComparer.Ordinal),
                _zeilen.ToList(), AlsZoneWirksam,
                new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
-               Zonenregel, _umhaengungen.Count > 0 ? _umhaengungen.ToList() : null);
+               Zonenregel, null, CadSollwertWirksam,
+               _planschritte.Count > 0 ? _planschritte.ToList() : null, _planschritte.Count > 0 ? _plangrundhaken : null,
+               _typwahl.Count > 0 ? new Dictionary<string, string>(_typwahl, StringComparer.Ordinal) : null,
+               _klasseGewaehlt);
 
     private async Task BeiLeiste(bool ok)
     {
@@ -1411,6 +2463,7 @@
         // Die weiche Sperre meldet den Versuch.
         if (_stand is null) { Melden(Texte.OkOhneDatei, WarnStufe.Hinweis); return; }
         if (Uebernehmen is null) { Melden(Texte.OkOhneWeg, WarnStufe.Hinweis); return; }
+        if (NichtZugeordnet > 0) { Melden(Format(Texte.PlanOkGesperrt, NichtZugeordnet), WarnStufe.Hinweis); return; }
 
         GebaeudeImportErgebnis ergebnis = ErgebnisBauen();
         IReadOnlyList<GebaeudeImportMeldung> befund = Pruefen?.Invoke(ergebnis) ?? Array.Empty<GebaeudeImportMeldung>();
@@ -1443,6 +2496,27 @@
     }
 
     /// <summary>Abbrechen, ✕ und Esc: verwirft, ohne zu prüfen und ohne zu übernehmen; ein Lesegang wird abgebrochen.</summary>
+    /// <summary>Die Wahl der Aufbauquelle: an der Datenseite setzen, dann neu zuordnen — die Zuordnung zeigt U und Herkunft der Quelle.</summary>
+    private void BeiAufbauquelle(string schluessel)
+    {
+        if (Beschaeftigt || AufbauquelleWaehlen is null) return;
+        AufbauquelleWaehlen(schluessel);
+        NeuZuordnen();
+    }
+
+    /// <summary>„Abbrechen und neu exportieren“: erst der Hinweis, das Beenden nach der Bestätigung.</summary>
+    private void BeiNeuExport()
+    {
+        if (Beschaeftigt) return;
+        _neuExportFrage = true;
+    }
+
+    private async Task NeuExportBeantwortet(bool? ja)
+    {
+        _neuExportFrage = false;
+        if (ja == true) await BeiAbbrechen();
+    }
+
     private async Task BeiAbbrechen()
     {
         if (_schreibt) return;
@@ -1453,7 +2527,8 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_regelFrage is not null) return Task.CompletedTask;   // die Rückfrage antwortet „Nein"
+        if (_nutzungsblatt) return Task.CompletedTask;   // die Überlagerung der Nutzungsprofile schließt selbst
+        if (_regelFrage is not null || _aufhebenFrage || _neuExportFrage) return Task.CompletedTask;   // die Rückfrage antwortet „Nein"
         if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
         if (_schreibt) return Task.CompletedTask;
         return BeiAbbrechen();
@@ -1467,8 +2542,132 @@
 
     public void Dispose()
     {
+        _kiMaske?.Dispose();
         try { _abbruch?.Cancel(); }
         catch (ObjectDisposedException) { }
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Masken, Teil B): nur die Kopfeingaben
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GebaeudeImportKiSicht? _kiSicht;
+
+    /// <summary>Die Plätze der Zonierungswahl: 1 = DIN, 2 = Simulation.</summary>
+    private static readonly string[] KI_ZONIERUNGEN = { GebaeudeZonierungSchluessel.DIN, GebaeudeZonierungSchluessel.SIMULATION };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> meldet, was gegen die Übernahme steht (dieselbe
+    /// weiche Sperre und dieselbe Prüfung der Datenseite wie „Übernehmen"). <b>Kein Speicherweg:</b> „Übernehmen" legt das
+    /// Gebäude sofort in der Datenbank an und bleibt ein Klick des Anwenders. Solange gelesen oder geschrieben wird, ist die
+    /// Maske schreibgeschützt.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = KiPruefen,
+        Schreibgeschuetzt = () => Beschaeftigt,
+        Schreibschutzgrund = () => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_LAEUFT,
+        Sperrgrund = f => _kiSicht?.Sperrgrund(f)
+    };
+
+    private string KiPruefen()
+    {
+        if (Beschaeftigt) return WindowsFormsApplication1.MyResource.Resource.KI_GIMP_LAEUFT;
+        if (OkSperrgrund is string sperre) return sperre;
+        if (_stand is null || Pruefen is null) return "";
+        IEnumerable<string> fehler = Pruefen(ErgebnisBauen()).Where(m => m.Stufe == WarnStufe.Fehler).Select(m => m.Text);
+        return string.Join(Environment.NewLine, fehler);
+    }
+
+    private object? KiLesen(string feld) => feld switch
+    {
+        nameof(GebaeudeImportKiSicht.Baualtersklasse) => KlasseAngezeigt,
+        nameof(GebaeudeImportKiSicht.Quelle) => QuellenId(_quelle),
+        nameof(GebaeudeImportKiSicht.Gebaeude) => _lesestand is null ? null : _gebaeudeIndex,
+        nameof(GebaeudeImportKiSicht.Name) => _name,
+        nameof(GebaeudeImportKiSicht.CadSollwert) => _cadSollwert,
+        nameof(GebaeudeImportKiSicht.Nordrichtung) => _nord is GebaeudeNordrichtungDaten nord
+            ? (string.Equals(nord.Herkunft, "ANNAHME", StringComparison.Ordinal) && nord.DateiPlanoberseiteGrad.HasValue
+                   ? nord.DateiPlanoberseiteGrad : nord.PlanoberseiteGrad)
+            : null,
+        nameof(GebaeudeImportKiSicht.Zonenregel) => _stand?.Zonierung is GebaeudeZonierungDaten zon ? Regelstelle(zon) : null,
+        nameof(GebaeudeImportKiSicht.Zonierung) => KiZonierungsplatz(),
+        nameof(GebaeudeImportKiSicht.AlsZone) => AlsZoneWirksam,
+        _ => throw new InvalidOperationException(feld)
+    };
+
+    /// <summary>Der Platz der gezeigten Zonierung (wie die Klappliste: eigene Wahl, sonst die der Projektdatei).</summary>
+    private int? KiZonierungsplatz()
+    {
+        if (_stand?.Projektdatei is not { Gelesen: true } sq) return null;
+        int i = Array.IndexOf(KI_ZONIERUNGEN, _sqZonierung ?? sq.Zonierung);
+        return i < 0 ? null : i + 1;
+    }
+
+    /// <summary>Die Wahl je Feld — dieselben Listen wie die Bedienelemente.</summary>
+    private IReadOnlyList<KiWahleintrag> KiWahl(string feld)
+    {
+        IEnumerable<(int Id, string Text)> liste = feld switch
+        {
+            nameof(GebaeudeImportKiSicht.Baualtersklasse) => Klassenliste,
+            nameof(GebaeudeImportKiSicht.Quelle) => Quelleneintraege,
+            nameof(GebaeudeImportKiSicht.Gebaeude) => Gebaeudeliste,
+            nameof(GebaeudeImportKiSicht.Zonenregel) => _stand?.Zonierung is GebaeudeZonierungDaten zon
+                ? Regelliste(zon) : Array.Empty<(int, string)>(),
+            nameof(GebaeudeImportKiSicht.Zonierung) => new[] { (1, Texte.SqZonierungDin), (2, Texte.SqZonierungSim) },
+            _ => Array.Empty<(int, string)>()
+        };
+        return KiMaskenanmeldung.Eintraege(liste, z => z.Id, z => z.Text);
+    }
+
+    /// <summary>
+    /// Der Sperrgrund je Katalogfeld: was der Dialog in seinem jetzigen Schritt nicht führt, und ein Wechsel, vor dem er
+    /// wegen Zuordnungen von Hand nachfragt — die Rückfrage beantwortet der Anwender, nie der Assistent.
+    /// </summary>
+    private string? KiSperrgrund(string feld) => feld switch
+    {
+        "quelle" when Quellenliste.Count == 0 => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEINE_QUELLWAHL,
+        "gebaeude" or "name" or "cad_sollwert" or "nordrichtung" or "zonenregel" or "zonierung" or "als_zone"
+            when _stand is null || _lesestand is null => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_ERST_LESEN,
+        "gebaeude" when _lesestand!.Gebaeude.Count < 2 => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_EIN_GEBAEUDE,
+        "cad_sollwert" when !_stand!.CadSollwertMoeglich => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEIN_CADSOLLWERT,
+        "nordrichtung" when _nord is null || NordrichtungSetzen is null => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEINE_NORDRICHTUNG,
+        "zonenregel" when _stand!.Zonierung is null => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEINE_ZONENREGEL,
+        "zonenregel" when _planschritte.Count > 0 => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_RUECKFRAGE,
+        "zonierung" when _stand!.Projektdatei is not { Gelesen: true, BeideZonierungen: true } => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEINE_ZONIERUNGSWAHL,
+        "zonierung" when PlanMitProjektdatei && Handschritte > 0 => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_RUECKFRAGE,
+        "als_zone" when _stand!.Bauteile is not { Moeglich: true }
+            => _stand.Bauteile is { } bt ? Format(Texte.AlsZoneNicht, bt.Ablehnung) : WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEIN_BAUTEILVORSCHLAG,
+        _ => null
+    };
+
+    /// <summary>
+    /// Der Handweg je Feld — wie das Bedienelement: Klasse, Gebäude und Sollwertschalter ordnen neu zu, die Zonenregel bildet
+    /// den Vorschlag neu, die Zonierung den Plan der Projektdatei, die Nordrichtung liest die Datei neu.
+    /// </summary>
+    private void KiSetzen(string feld, object? wert)
+    {
+        switch (feld)
+        {
+            case nameof(GebaeudeImportKiSicht.Baualtersklasse): BeiKlasse(wert as int?); break;
+            case nameof(GebaeudeImportKiSicht.Quelle): BeiQuelle(wert as int?); break;
+            case nameof(GebaeudeImportKiSicht.Gebaeude): BeiGebaeude(wert as int?); break;
+            case nameof(GebaeudeImportKiSicht.Name): BeiName(wert as string ?? ""); break;
+            case nameof(GebaeudeImportKiSicht.CadSollwert): BeiCadSollwert(wert is true); break;
+            case nameof(GebaeudeImportKiSicht.Nordrichtung):
+                if (wert is double grad) _ = InvokeAsync(() => BeiNordrichtung(grad));
+                break;
+            case nameof(GebaeudeImportKiSicht.Zonenregel): BeiRegel(wert as int?); break;
+            case nameof(GebaeudeImportKiSicht.Zonierung):
+                if (wert is int platz && platz >= 1 && platz <= KI_ZONIERUNGEN.Length)
+                    BeiZonierung(new ChangeEventArgs { Value = KI_ZONIERUNGEN[platz - 1] });
+                break;
+            case nameof(GebaeudeImportKiSicht.AlsZone): BeiAlsZone(wert is true); break;
+            default: throw new InvalidOperationException(feld);
+        }
+        _ = InvokeAsync(StateHasChanged);
     }
 
     // =====================================================================
@@ -1483,6 +2682,167 @@
     };
 
     /// <summary>Gelb, wo ein Name einen Baustoff braucht und keinen trifft; vorgemerkt, wo der Dialog etwas geändert hat.</summary>
+    // =====================================================================
+    //  Liste „Bauteilaufbauten" (Konzept Bauteilaufbau 5.4 b, BA-3)
+    // =====================================================================
+
+    /// <summary>Der Materialname, zu dem der letzte Sprung führte (Abschnitt „Baustoffe"); <c>null</c> = keiner.</summary>
+    private string? _baustoffziel;
+    private bool _baustoffzielNeu;
+    private ElementReference _baustoffmarke;
+
+    /// <summary>Zeigt die Liste nur die Stufen B und C?</summary>
+    private bool _nurBC;
+
+    /// <summary>Die Typwahl je Ersatzaufbau (E95-4): Schlüssel → Code; reist in Anfrage und Ergebnis, gespeichert wird nichts.</summary>
+    private readonly Dictionary<string, string> _typwahl = new(StringComparer.Ordinal);
+
+    /// <summary>Die Typwahl des Dialogs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyDictionary<string, string> Typwahl => _typwahl;
+
+    /// <summary>Eine andere Typwahl: Der Vorschlag wird neu gebildet, der Ersatzaufbau auf den gewählten Typ abgeglichen.</summary>
+    private void BeiTyp(GebaeudeAufbaulistenzeileDaten zeile, ChangeEventArgs e)
+    {
+        if (Beschaeftigt || zeile.Typschluessel is not { } schluessel || e.Value?.ToString() is not { Length: > 0 } code) return;
+        if (string.Equals(code, zeile.Typcode, StringComparison.Ordinal)) return;
+        _typwahl[schluessel] = code;
+        _meldung = "";
+        NeuZuordnen();
+    }
+
+    /// <summary>Die aufgeklappten Zeilen (Schlüssel).</summary>
+    private readonly HashSet<string> _aufbauOffen = new(StringComparer.Ordinal);
+
+    /// <summary>Das Ziel des letzten Sprungs in die Baustoffe (Prüfhilfe für Tests).</summary>
+    public string? Baustoffziel => _baustoffziel;
+
+    /// <summary>Der Sprung in den Abschnitt „Baustoffe" (aus Steckbrief oder Liste): markiert die Zeile und rollt zu ihr.</summary>
+    private void BeiBaustoffsprung(string schluessel)
+    {
+        _baustoffziel = schluessel;
+        _baustoffzielNeu = true;
+    }
+
+    private void BeiAufbauzeile(string schluessel)
+    {
+        if (!_aufbauOffen.Remove(schluessel)) _aufbauOffen.Add(schluessel);
+    }
+
+    /// <summary>
+    /// Die Liste „Bauteilaufbauten": je Aufbau Stufe, Art, Zahl und Fläche der Bauteile, U der Datei, U aus den Schichten,
+    /// C₁,korr je m², was fehlt; aufgeklappt die Schichten. Handlungen: Schichten zeigen, Baustoff zuordnen (Sprung). Eine
+    /// schlichte Tabelle ohne Virtualisierung — die Zahl der Aufbauten ist klein (je Konstruktion einer).
+    /// </summary>
+    private RenderFragment Aufbauliste(GebaeudeImportStand stand) => __builder =>
+    {
+        IReadOnlyList<GebaeudeAufbaulistenzeileDaten> zeilen = stand.Aufbauten;
+        <Gruppenkopf Titel="@Texte.GruppeAufbauten" />
+        @if (zeilen.Count == 0)
+        {
+            <p class="epos-leisezeile epos-gebimport-aufbauten-leer">@Texte.AbLeer</p>
+            return;
+        }
+        <label class="epos-gebimport-aufbaufilter">
+            <input type="checkbox" checked="@_nurBC" @onchange="e => _nurBC = e.Value is true" />
+            @Texte.AbNurBC
+        </label>
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-gebimport-aufbauten">
+                <thead>
+                    <tr>
+                        <th>@Texte.AbSpalteStufe</th>
+                        <th>@Texte.AbSpalteAufbau</th>
+                        <th>@Texte.AbSpalteArt</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteBauteile</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteFlaeche</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteUDatei</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteUSchichten</th>
+                        <th class="epos-gebimport-zahl">@Texte.AbSpalteC1</th>
+                        <th>@Texte.AbSpalteFehlt</th>
+                        <th>@Texte.AbSpalteHandlung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (GebaeudeAufbaulistenzeileDaten eintrag in zeilen.Where(z => !_nurBC || GebaeudeAnsichtAufbaustufen.Unvollstaendig(z.Stufe)))
+                    {
+                        GebaeudeAufbaulistenzeileDaten z = eintrag;
+                        bool offen = _aufbauOffen.Contains(z.Schluessel);
+                        <tr @key="z.Schluessel" class="@(offen ? "epos-gebimport-aufbauzeile epos-gebimport-aufbauzeile--offen" : "epos-gebimport-aufbauzeile")"
+                            data-schluessel="@z.Schluessel" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(z.Stufe)">
+                            <td>
+                                <span class="epos-gebansicht-farbfeld" style="@("background:" + GebaeudeAnsichtAufbaustufen.Farbe(z.Stufe))" aria-hidden="true"></span>
+                                @Texte.Ansicht.Stufenname(z.Stufe)
+                            </td>
+                            <td>
+                                @z.Aufbau
+                                @if (z.Typaufbau.Length > 0)
+                                {
+                                    <span class="epos-leisezeile epos-gebimport-typaufbau">@z.Typaufbau</span>
+                                }
+                                @if (z.Aufbaurang.Length > 0)
+                                {
+                                    <span class="epos-leisezeile epos-gebimport-aufbaurang" data-herkunft="@z.AufbauHerkunftSchluessel">@z.Aufbaurang</span>
+                                }
+                            </td>
+                            <td>@z.Art</td>
+                            <td class="epos-gebimport-zahl">@z.Bauteile.ToString(CultureInfo.CurrentCulture)</td>
+                            <td class="epos-gebimport-zahl">@z.Flaeche</td>
+                            <td class="epos-gebimport-zahl">@z.UDatei</td>
+                            <td class="epos-gebimport-zahl">@z.USchichten</td>
+                            <td class="epos-gebimport-zahl">@z.C1korr</td>
+                            <td class="epos-gebimport-aufbaufehlt">@z.Fehlt</td>
+                            <td>
+                                <div class="epos-gebimport-aufbauhandlungen">
+                                    @if (z.Typschluessel is not null && z.Typen.Count > 1)
+                                    {
+                                        <select class="epos-eingabe epos-gebimport-typwahl" aria-label="@Texte.AbTyp" title="@Texte.AbTyp" disabled="@Beschaeftigt"
+                                                value="@z.Typcode" @onchange="e => BeiTyp(z, e)">
+                                            @foreach (GebaeudeZonenregelDaten t in z.Typen)
+                                            {
+                                                <option @key="t.Schluessel" value="@t.Schluessel" selected="@(t.Schluessel == z.Typcode)">@t.Text</option>
+                                            }
+                                        </select>
+                                    }
+                                    @if (z.Schichten.Count > 0)
+                                    {
+                                        <button type="button" class="epos-knopf epos-gebimport-aufbauschichten" aria-expanded="@(offen ? "true" : "false")"
+                                                @onclick="() => BeiAufbauzeile(z.Schluessel)">@Texte.AbSchichten</button>
+                                    }
+                                    @if (z.Materialschluessel is { } material && stand.Baustoffe is { Zeilen.Count: > 0 })
+                                    {
+                                        <button type="button" class="epos-knopf epos-gebimport-aufbaubaustoff" data-material="@material"
+                                                @onclick="() => BeiBaustoffsprung(material)">@Texte.AbZurBaustoff</button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                        string schichtschluessel = z.Schluessel + "|s";
+                        @if (offen)
+                        {
+                            <tr @key="schichtschluessel" class="epos-gebimport-aufbauschichtzeile">
+                                <td colspan="10">
+                                    <ul class="epos-gebimport-aufbauschichtliste">
+                                        @foreach (BauteilsteckbriefSchicht sch in z.Schichten)
+                                        {
+                                            <li class="@(sch.Weggelassen ? "epos-steckbrief-schicht--weggelassen" : null)" data-herkunft="@sch.HerkunftSchluessel">
+                                                @sch.Name · @sch.Dicke · λ @sch.Lambda · ρ @sch.Rohdichte · c @sch.Cp · @sch.Herkunft
+                                                @if (sch.Weggelassen)
+                                                {
+                                                    <span class="epos-steckbrief-grund">(@sch.Grund)</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <Herleitungszeile Text="@Texte.AbHinweis" />
+    };
+
     private static string? Baustoffzeilenklasse(GebaeudeMaterialzeileDaten z)
     {
         string klasse = (z.OhneTreffer ? "epos-gebimport-zeile--gelb " : "") + (z.Vorgemerkt ? "epos-gebimport-baustoff--vorgemerkt" : "");

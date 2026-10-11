@@ -183,13 +183,13 @@ namespace EPOS.UI.Bausteine;
 /// die zwei Punkte unter „Brauchwasser" hinzu, mit der Gebaeudesimulation G3 die zwei
 /// Kataloge unter „Gebaeude". Also
 /// 54 Bestandspunkte
-/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 - 1 + 2 + 2 = 63, dazu 13 Trennstriche
+/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 - 1 + 2 + 2 + 1 = 64, dazu 13 Trennstriche
 /// (8 aus dem Bestand und die 5 aus MN-1: vier in der obersten Ebene des
 /// Kopfes "Administration", einer in "Daten &amp; Import").</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 63 Punkten handeln <b>49</b>, 14 klappen auf.
+/// vier klappen nur auf; von den 64 Punkten handeln <b>50</b>, 14 klappen auf.
 /// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
 /// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
@@ -200,7 +200,11 @@ namespace EPOS.UI.Bausteine;
 /// (19.09.2026) faellt der zweite Weg zur Lizenzverwaltung (47 -> 46), weil
 /// derselbe Dialog unter Hilfe -> Lizenz steht. Mit dem Zapfprofilgenerator
 /// (5.4) waechst sie um den Katalog der Brauchwasser-Nutzungsarten (46 -> 47), mit der
-/// Gebaeudesimulation G3 um die Kataloge der Baustoffe und der Bauteilaufbauten (47 -> 49).</para>
+/// Gebaeudesimulation G3 um die Kataloge der Baustoffe und der Bauteilaufbauten (47 -> 49), mit den Betriebskalendern der Bedarfsprofile um deren Verwaltung (49 -> 50). Mit E119
+/// kommt unter „Daten &amp; Import" der Import fuer Kaelteanlagen hinzu (Waermepumpen mit
+/// Kuehlfunktion aus VDI 3805) - ein echter neuer Weg -, mit K-C (E118) dahinter der Import der
+/// Kaeltemaschinen (CSV-Vorlage, Copper-Kurvendatei), ebenfalls ein echter Weg; die Zaehlung der
+/// Tests steht damit bei 70 Punkten, von denen 56 handeln.</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -267,6 +271,7 @@ public static class Menuetabelle
             new Menuepunkt("MenuItem_Klimadaten", "MENU_KLIMADATEN", Seitenschluessel.Klimadaten, bild: "Menu4"),
             // MN-1: Ort | Anlagen
             Menuepunkt.Trennstrich("MenuItem_TrennerAdminOrt"),
+            // Rubrik „Wärme- und Kälteerzeugung“ (Schlüssel MENU_WBUND_HEIZUNG, Name historisch).
             new Menuepunkt("MenuItem_WBundHeizung", "MENU_WBUND_HEIZUNG", "", bild: "Menu1")
             {
                 // Zapfprofilgenerator 5.4: aus dem Punkt wird ein Untermenue mit
@@ -288,11 +293,20 @@ public static class Menuetabelle
                     new Menuepunkt("MenuItem_WaermebedarfExtern", "MENU_WAERMEBEDARF_EXTERN", Seitenschluessel.WaermebedarfExternAdmin),
                     new Menuepunkt("MenuItem_Prozesswaerme", "MENU_PROZESSWAERME", Seitenschluessel.ProzesswaermeAdmin),
                     new Menuepunkt("MenuItem_SolThermGanglinie", "MENU_SOL_THERM_GANGLINIE", Seitenschluessel.SolarganglinieAdmin),
+                    // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien - derselbe Dialog wie an der Kachel, ohne Projekt.
+                    new Menuepunkt("MenuItem_PvGanglinie", "MENU_PV_GANGLINIE", Seitenschluessel.PvGanglinieAdmin),
+                    // Entscheidungsvorlage Modellgrenzen PW2/BW2: die Betriebskalender der
+                    // Bedarfsprofile (Feiertage, Betriebsferien) - sie gelten fuer Brauchwasser,
+                    // Prozesswaerme und Strom und stehen deshalb bei den Profilen.
+                    new Menuepunkt("MenuItem_Betriebskalender", "MENU_BETRIEBSKALENDER", Seitenschluessel.Betriebskalender),
                 },
                 new Menuepunkt("MenuItem_Kessel", "MENU_KESSEL", Seitenschluessel.HeizkesselAdmin, katalog: true),
                 // W16c-E-6: aus "Energiesysteme" hierher.
                 new Menuepunkt("MenuItem_BHKW", "MENU_BHKW", Seitenschluessel.BhkwAdmin, katalog: true),
                 new Menuepunkt("MenuItem_WP", "MENU_WP", Seitenschluessel.WpAdministration, katalog: true),
+                // KU3-1: die Kaeltemaschinen neben der Waermepumpe (Seitenschluessel.KaeltemaschineKatalog) -
+                // unter Windows ein eigenes Fenster wie die Waermepumpe, auf iOS eine freie Ansicht der Wurzel.
+                new Menuepunkt("MenuItem_Kaeltemaschinen", "MENU_KAELTEMASCHINEN", Seitenschluessel.KaeltemaschineKatalog, katalog: true),
                 // W16c-E-6: aus "Energiesysteme" hierher - und dabei aus seinem
                 // Untermenue heraus. Es fuehrte nur "Bearbeiten"
                 // (MenuItem_ST_Bearbeiten); das Ziel ist unveraendert
@@ -337,6 +351,10 @@ public static class Menuetabelle
             {
                 new Menuepunkt("MenuItem_Kostenvorlagen", "KDLG_MENUE_VORLAGEN", Seitenschluessel.Kostenverwaltung),
                 new Menuepunkt("MenuItem_Energietraeger", "KDLG_MENUE_ENERGIETRAEGER", Seitenschluessel.EnergietraegerVerwaltung),
+                // Anwenderentscheid 03.10.2026: die Projektkopie des Brennstoffkatalogs, gleich
+                // hinter den Energietraegern - sie liefert deren Heizwerte, Emissionsfaktoren und
+                // Preisvorgaben im Projekt.
+                new Menuepunkt("MenuItem_ProjektBrennstoffe", "PBRS_MENUE", Seitenschluessel.ProjektBrennstoffe),
                 // ANWENDERENTSCHEID ND-Q3 (14.09.2026), Stufe S1 des Konzepts
                 // "Nutzungsdauer je Technik und Positionsart": die
                 // Nutzungsdauertabelle als DRITTER Eintrag der Rubrik, neben
@@ -360,6 +378,13 @@ public static class Menuetabelle
                 // Pufferspeicher, Photovoltaik, Stromspeicher.
                 new Menuepunkt("MenuItem_Import_Heizkessel", "MENU_IMPORT_HEIZKESSEL", Seitenschluessel.HeizkesselImport),
                 new Menuepunkt("MeniItem_VDI3805", "MENU_VDI3805", Seitenschluessel.WpImport),
+                // E119 (10.10.2026): Fuer Kaelteanlagen gibt es keine VDI-3805-Daten - der
+                // Import fuer Kaelteanlagen liest Blatt 22 und bietet nur die Waermepumpen
+                // mit Kuehlfunktion an. Er steht deshalb gleich hinter dem Waermepumpenimport.
+                new Menuepunkt("MeniItem_VDI3805_Kaelte", "MENU_VDI3805_KAELTE", Seitenschluessel.WpKaelteImport),
+                // K-C (E118): die Kaeltemaschinen aus der CSV-Vorlage (Kennfeld, Nennwerte, Oekodesign A-D)
+                // oder einer Copper-Kurvendatei - derselbe Importdialog wie der Knopf im Katalog.
+                new Menuepunkt("MenuItem_Import_Kaeltemaschinen", "MENU_IMPORT_KAELTEMASCHINEN", Seitenschluessel.KaeltemaschineImport),
                 new Menuepunkt("MenuItem_ST_Import", "MENU_ST_IMPORT", Seitenschluessel.SolarkollektorenImport),
                 new Menuepunkt("MenuItem_PufferSp_VDI3805", "MENU_PUFFER_SP_VDI3805", Seitenschluessel.PufferSpImport),
                 // W16c-E-7: derselbe Zwischenknoten wie unter
@@ -389,6 +414,10 @@ public static class Menuetabelle
                 // Dubletten entstehen BEIM Einlesen; die Pruefung gehoert ans
                 // Ende derselben Rubrik. Ihr Bild hatte sie nie.
                 new Menuepunkt("MenuItem_KatalogDubletten", "ADM_DUBLETTEN_MENUE", Seitenschluessel.KatalogDubletten),
+                // KU1 Stufe 1 (Entscheidungsvorlage Modellgrenzen): der Abgleich der
+                // Gerätekataloge mit dem Katalogpaket der Auslieferung - Pflege der
+                // eingelesenen Kataloge wie die Dublettensuche, deshalb hier.
+                new Menuepunkt("MenuItem_Katalogabgleich", "KABG_MENUE", Seitenschluessel.Katalogabgleich),
             },
             // MN-1: Daten & Import | Einstellungen
             Menuepunkt.Trennstrich("MenuItem_TrennerAdminImport"),

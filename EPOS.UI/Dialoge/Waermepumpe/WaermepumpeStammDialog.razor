@@ -87,6 +87,16 @@
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* DAS SCHEMA IST SEIT W14a-E-10 DASSELBE WIE BEIM HEIZKESSEL UND BEI DEN
        PV-MODULEN - der Kern des Anwenderentscheids: "Das Schema des Dialogs sollte
@@ -205,6 +215,15 @@
                             </Reiter>
                         </KindInhalt>
                     </Stammblattgruppe>
+                    @* DIE GERAETEGRENZEN (UB-E3-b): Kaeltemittel und die sieben Zahlspalten der
+                       Uebergabegrenze. Ein Auslieferungssatz zeigt sie als Lesewerte. *@
+                    <Stammblattgruppe Titel="@_felderTexte.GruppeGeraetegrenzen" Lesemodus="@NurLesbar"
+                                      Werte="@(NurLesbar ? WaermepumpeGeraetegrenzenFelder.Grenzwerte(Daten, _felderTexte) : null)">
+                        <KindInhalt>
+                            <WaermepumpeGeraetegrenzenFelder Daten="@Daten" Texte="@_felderTexte"
+                                                             Aktiv="@(!NurLesbar)" Geaendert="BeiFeldAenderung" />
+                        </KindInhalt>
+                    </Stammblattgruppe>
                 </Gruppen>
                 <Kenndaten>
                     @* DAS FELDRASTER STEHT IM BAUSTEIN WaermepumpeStammFelder - derselbe
@@ -231,8 +250,11 @@
                        Schluessel traegt den Zusatz "_Stamm" (A-1: den kuerzeren hat der
                        Anlagendialog). *@
                     <div class="epos-berechnungshilfe">
+                        @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation, Abschnitt 7). *@
+                        <InfoKnopf Schluessel="Form_WP_Stamm.Grundlagen"
+                                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
                         <InfoKnopf Schluessel="Form_WP_Stamm.Berechnung"
-                                   StandardKurztext="Berechnung: Wärmepumpe" />
+                                   StandardKurztext="Berechnung: Wärmepumpe" MitAssistent="false" />
                     </div>
                 </Nachsatz>
             </Stammblatt>
@@ -405,6 +427,9 @@
 
     /// <summary><c>true</c> = mit „Beenden" geschlossen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Der Satz, der beim Öffnen gewählt ist (Name); leer oder unbekannt = die erste Zeile.</summary>
+    [Parameter] public string? Vorwahl { get; set; }
 
     // --- Feste Listen ----------------------------------------------------------
 
@@ -848,7 +873,8 @@
         foreach (string name in namen)
         {
             Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == name);
-            WaermepumpeStammDaten? d = zeile is null ? null : Satz?.Invoke(zeile.Id);
+            WaermepumpeStammDaten? d = zeile is null ? null
+                : Katalogladung.SatzDazu(() => Satz?.Invoke(zeile.Id), zeile.Bezeichner, ref _satzFehler);
             saetze.Add(Vergleichsfelder(d, zeile?.Geschuetzt == true));
         }
         _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
@@ -931,6 +957,12 @@
         _felderTexte.EinheitEuro = EinheitEuro;
     }
 
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     protected override void OnInitialized()
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
@@ -945,8 +977,12 @@
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Anlagenart.Waermepumpe);
 
         ListeNeuLaden();
-        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
-        if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus; aus dem Projektdialog kommt
+        // der Satz vorgewaehlt (Katalogauswahl V1, KA-E-13: "Bearbeiten…" auf einen ungesperrten Katalogsatz).
+        Katalogfilterzeile? vorwahl = string.IsNullOrEmpty(Vorwahl) ? null
+            : _liste.FirstOrDefault(z => z.Bezeichner == Vorwahl);
+        if (vorwahl is not null) ZeileWaehlen(vorwahl);
+        else if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
 
         // KI-F1b: Die vier Klapplisten der Stammfelder sind WAHLFELDER; ihre Einträge
         // sind genau die Listen, die der Baustein zeichnet.
@@ -956,7 +992,11 @@
                                                                         Leistungsstufen, s => s, s => s)),
                                           ("aufstellung", () => KiMaskenanmeldung.Eintraege(
                                                                         Aufstellungen, s => s, s => s)),
-                                          ("baujahr", Baujahreintraege));
+                                          ("baujahr", Baujahreintraege),
+                                          // UB-E3-b: die Kaeltemittel der Gruppe "Geraetegrenzen" - Schluessel ist der Code.
+                                          ("kaeltemittel", () => KiMaskenanmeldung.Eintraege(
+                                                                        Daten.Kaeltemittelliste, e => e.Code,
+                                                                        e => _felderTexte.KaeltemittelText(e.Code))));
     }
 
     /// <summary>Die Baujahre als Wahleinträge — Schlüssel und Text sind die Jahreszahl (KI-F1b).</summary>
@@ -1014,12 +1054,12 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private void ListeNeuLaden()
     {
-        _liste = Liste?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _liste = Katalogladung.Lesen(Liste, TitelText, out _listeFehler);
 
         // Kaestchen verschwundener Zeilen fallen (V6); ein laufender Vergleich liest neu.
         _auswahl.Abgleichen(_liste.Select(z => z.Schluessel));
@@ -1054,7 +1094,8 @@
         // Die Projektsperre der Fokuszeile - der Grund am weich gesperrten "Loeschen".
         _gesperrtDurch = zeile.Geschuetzt ? null : GesperrtDurch?.Invoke(zeile.Bezeichner);
 
-        WaermepumpeStammDaten? satz = Satz?.Invoke(zeile.Id);
+        // KT-4: Warf das Lesen, bleibt der zuvor gezeigte Satz stehen; der Banner nennt den Grund.
+        WaermepumpeStammDaten? satz = Katalogladung.Satz(() => Satz?.Invoke(zeile.Id), zeile.Bezeichner, out _satzFehler);
         if (satz is not null) Daten = satz;
 
         // W14a-E-8: Die Uebersicht folgt der Auswahl - sie liest ueber den
@@ -1100,7 +1141,9 @@
             return;
         }
 
-        KatalogSpeicherErgebnis ergebnis = Speichern(Daten, _neu);
+        // KT-4: Wirft der Schreibweg, bleiben die Eingaben stehen und die Meldung nennt den Grund.
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Speichern(Daten, _neu), _gewaehlt,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, _gewaehlt));
         if (!ergebnis.Ok)
         {
             SpeichernAbgelehnt(ergebnis.Meldung);
@@ -1224,7 +1267,8 @@
         _hatKuehlung = false;
         _kuehlung = false;
         _bilder = KennlinienBilder.Leer;
-        Daten = new WaermepumpeStammDaten();
+        // UB-E3-b: die Klappliste der Kaeltemittel kommt mit dem Satz der Huelle und bleibt fuer die Neuanlage stehen.
+        Daten = new WaermepumpeStammDaten { Kaeltemittelliste = Daten.Kaeltemittelliste };
     }
 
     /// <summary>
@@ -1278,7 +1322,12 @@
                 if (!gruende.Contains(grund)) gruende.Add(grund);
                 continue;
             }
-            if (!Loeschen(name)) continue;
+            if (!Katalogladung.Loeschen(() => Loeschen(name), name, out string loeschGrund))
+            {
+                // KT-4: Warf der Löschweg, nennt das Warnband den Grund.
+                if (loeschGrund.Length > 0 && !gruende.Contains(loeschGrund)) gruende.Add(loeschGrund);
+                continue;
+            }
             geloescht++;
             if (name == _gewaehlt) fokusWeg = true;
         }

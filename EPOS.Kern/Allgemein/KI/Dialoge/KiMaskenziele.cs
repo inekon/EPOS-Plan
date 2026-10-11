@@ -202,6 +202,33 @@ namespace WindowsFormsApplication1
         public const string BAUTEILAUFBAU_KATALOG = "BAUTEILAUFBAU_KATALOG";
 
         /// <summary>
+        /// Der Seitenschluessel der Verwaltung „Kältemaschinen" (KU3-1) — dieselbe Lage wie
+        /// <see cref="BAUSTOFF_KATALOG"/>: eine freie Ansicht der Wurzel
+        /// (<c>Seitenschluessel.KaeltemaschineKatalog</c>, dieselbe Zeichenkette).
+        /// </summary>
+        public const string KAELTEMASCHINE_KATALOG = "KAELTEMASCHINE_KATALOG";
+
+        /// <summary>
+        /// Der Seitenschluessel des Erzeugerdialogs „Kältemaschinen im Projekt" (KU3-4c) — eine freie Ansicht
+        /// der Wurzel fuer das offene Projekt (<c>Seitenschluessel.KaeltemaschineAnlage</c>, dieselbe Zeichenkette).
+        /// </summary>
+        public const string KAELTEMASCHINE_ANLAGE = "KAELTEMASCHINE_ANLAGE";
+
+        /// <summary>
+        /// Der Seitenschluessel der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) —
+        /// dieselbe Lage wie <see cref="BAUSTOFF_KATALOG"/>: eine freie Ansicht der Wurzel
+        /// (<c>Seitenschluessel.Betriebskalender</c>, dieselbe Zeichenkette).
+        /// </summary>
+        public const string BETRIEBSKALENDER = "BETRIEBSKALENDER";
+
+        /// <summary>
+        /// Der Seitenschluessel der Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung, Stufe
+        /// P2) — eine freie Ansicht der Wurzel (<c>Seitenschluessel.PufferAuslegung</c>, dieselbe
+        /// Zeichenkette). Ohne Arbeitsgang oeffnet sie fuer das Projekt einen neuen Puffer.
+        /// </summary>
+        public const string PUFFER_AUSLEGUNG = "PUFFER_AUSLEGUNG";
+
+        /// <summary>
         /// Der Seitenschluessel des Dialogs „Als Variante speichern" (Welle KI‑F6).
         /// </summary>
         /// <remarks>
@@ -352,6 +379,9 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.GEBAEUDE_ADMIN,   Masken.GebaeudeAdmin },
                 { KiMaskennamen.GEBAEUDE_KATALOG, Masken.GebaeudeAdmin },
                 { KiMaskennamen.GEBAEUDE,         STARTSEITE },
+                // Freigabe der Masken, Teil B: Der GEBAEUDEIMPORT geht als Ueberlagerung der
+                // Gebaeudemaske des Projekts auf (Knopf „Importieren…") - deshalb dasselbe Ziel.
+                { KiMaskennamen.GEBAEUDE_IMPORT,  STARTSEITE },
 
                 // Die Wohn-/Nutzflaechenangabe haengt an einer gewaehlten PROJEKTZEILE
                 // und geht ueber den Knopf „Aendern…" auf; kontextfrei gibt es sie
@@ -382,6 +412,15 @@ namespace WindowsFormsApplication1
                 // Menuepunkte - freie Ansichten der Wurzel.
                 { KiMaskennamen.BAUSTOFF_KATALOG, BAUSTOFF_KATALOG },
                 { KiMaskennamen.BAUTEILAUFBAU, BAUTEILAUFBAU_KATALOG },
+                { KiMaskennamen.KAELTEMASCHINE_KATALOG, KAELTEMASCHINE_KATALOG },
+                { KiMaskennamen.KAELTEMASCHINE_ANLAGE, KAELTEMASCHINE_ANLAGE },
+
+                // Die Betriebskalender der Bedarfsprofile (PW2, BW2) - eine freie Ansicht wie die
+                // zwei Kataloge darueber.
+                { KiMaskennamen.BETRIEBSKALENDER, BETRIEBSKALENDER },
+
+                // Die Pufferspeicher-Auslegung (Stufe P2) - eine freie Ansicht wie die Stromspeicher-Auslegung.
+                { KiMaskennamen.PUFFER_AUSLEGUNG, PUFFER_AUSLEGUNG },
 
                 // Profil und Kopfsatz eines Bedarfstyps gehen als Ueberlagerung aus den
                 // drei Bedarfsverwaltungen auf. Eine Komponente bedient alle drei
@@ -433,6 +472,8 @@ namespace WindowsFormsApplication1
                 // Knopf „Bearbeiten…" IN diesen Masken.
                 { KiMaskennamen.WAERMEBEDARF_EXTERN, STARTSEITE },
                 { KiMaskennamen.SOLARGANGLINIE,      STARTSEITE },
+                // Die PV-GANGLINIEN gehen ebenso aus der Kachel „Photovoltaik" der Startseite auf.
+                { KiMaskennamen.PV_GANGLINIE,        STARTSEITE },
 
                 // Die KLIMADATEN haengen am Menuepunkt „Administration → Klimadaten" -
                 // siehe KLIMADATEN.
@@ -549,6 +590,25 @@ namespace WindowsFormsApplication1
                 // Begruendung wie bei den Ueberlagerungen der
                 // Energietraegerverwaltung.
                 { KiMaskennamen.SPEICHER_ZEITREIHEN, STROMSPEICHER_AUSLEGUNG },
+                // Das FORMAT einer CSV-Datei der Flotte geht ebenso als Ueberlagerung der
+                // Stromspeicher-Auslegung auf und braucht eine gewaehlte Datei.
+                { KiMaskennamen.SPEICHER_FLOTTEN_CSV, STROMSPEICHER_AUSLEGUNG },
+                // Die IMPORTOPTIONEN einer Ganglinie gehen im Einlesen einer Gangliniendatei auf
+                // (Stromganglinien, Lastspitzenkappung, Waermebedarf); kontextfrei gibt es sie nicht,
+                // ihr Ziel ist die Stromganglinien-Verwaltung, aus der der Anwender einliest.
+                { KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, Masken.StromganglinieAdmin },
+                // Der SPOTPREISIMPORT geht als Ueberlagerung aus der Energietraegerverwaltung auf.
+                { KiMaskennamen.SPOTPREIS_IMPORT, ENERGIETRAEGER_VERWALTUNG },
+                // Die KONFLIKTLISTE geht nur im Lauf eines Herstellerimports auf; kontextfrei gibt
+                // es sie nicht - ihr Ziel ist die Startseite wie bei den Ueberlagerungen des Gebaeudes.
+                { KiMaskennamen.IMPORT_KONFLIKTE, STARTSEITE },
+                // Freigabe der Masken, Teil C: Die UEBERNAHME geht als Ueberlagerung der
+                // Kostenverwaltung einer Anlage auf; Projekttransfer, Brennstoffe des Projekts und
+                // Dublettenwerkzeug sind Menuepunkte mit eigenem Seitenschluessel der AppWurzel.
+                { KiMaskennamen.VORLAGEN_UEBERNAHME, KOSTENVERWALTUNG },
+                { KiMaskennamen.PROJEKT_TRANSFER, "PROJEKT_TRANSFER" },
+                { KiMaskennamen.PROJEKT_BRENNSTOFFE, "PROJEKT_BRENNSTOFFE" },
+                { KiMaskennamen.KATALOG_DUBLETTEN, "KATALOG_DUBLETTEN" },
 
                 // ---- Welle KI-F6: BERICHTE und PROJEKT -----------------------
                 //
@@ -623,6 +683,8 @@ namespace WindowsFormsApplication1
                 // steht ebenfalls auf dem Erzeugerreiter, und welche der zwei
                 // Masken aufgeht, entscheidet die Weiche der Kachel.
                 { KiMaskennamen.SOLARGANGLINIE,           REITER_ERZEUGER },
+                // Die PV-GANGLINIEN haengen an der Kachel „Photovoltaik" des Erzeugerreiters.
+                { KiMaskennamen.PV_GANGLINIE,             REITER_ERZEUGER },
 
                 // Gebaeudedaten, Wohnflaeche und der gerechnete Bedarf gehen aus der
                 // Kachel „Gebaeudedaten eingeben" auf, die externen Ganglinien aus

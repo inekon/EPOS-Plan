@@ -271,4 +271,35 @@ namespace WindowsFormsApplication1
     /// <see cref="LoeschStand.NameLeer"/> 0.
     /// </param>
     public sealed record LoeschBefund(LoeschStand Stand, string Projektname, string Fehlertext = "", int Anzahl = 1);
+
+    /// <summary>
+    /// Der Steckbrief des in der Projektliste des Assistenten markierten Projekts
+    /// (Anwenderwunsch 06.10.2026): was die Datenbank zu einem Projekt
+    /// fuehrt, in EINER Abfrage gelesen. Ein Feld, das die Datenbank nicht fuehrt,
+    /// bleibt leer bzw. <c>null</c> — die Oberflaeche laesst es dann weg.
+    /// </summary>
+    /// <param name="Id"><c>Tab_Projekt.ID</c>.</param>
+    /// <param name="Name">Projektname.</param>
+    /// <param name="Beschreibung"><c>Tab_Projekt.Beschreibung</c>.</param>
+    /// <param name="Kunde"><c>Tab_Projekt.Kunde</c>.</param>
+    /// <param name="Bearbeiter"><c>Tab_Projekt.Bearbeiter</c>.</param>
+    /// <param name="Erstellt"><c>Tab_Projekt.Erstelldatum</c>.</param>
+    /// <param name="Geaendert"><c>Tab_Projekt.Aenderungsdatum</c>.</param>
+    /// <param name="Klimaregion">Name der Klimaregion (Stammname, ueber
+    /// <c>KlimaregionStammCtrl.NameZuProjektregion</c>).</param>
+    /// <param name="StammName">Ist das Projekt eine Variante: der Name ihres Stammprojekts.</param>
+    /// <param name="Varianten">Wie viele Varianten von diesem Projekt abgeleitet sind.</param>
+    /// <param name="LetzteSimulation">Juengster Zeitstempel in <c>Tab_Ergebnis</c>.</param>
+    public sealed record ProjektSteckbrief(
+        int Id,
+        string Name,
+        string Beschreibung = "",
+        string Kunde = "",
+        string Bearbeiter = "",
+        DateTime? Erstellt = null,
+        DateTime? Geaendert = null,
+        string Klimaregion = "",
+        string StammName = "",
+        int Varianten = 0,
+        DateTime? LetzteSimulation = null);
 }

@@ -75,6 +75,18 @@ public sealed class PufferSpProjektKiSicht
     public Func<double?>? EntladeleistungLesen { get; init; }
     public Action<double?>? EntladeleistungSetzen { get; init; }
 
+    // Welle M7 (Konzept Simulationsablauf 21).
+    public Func<bool>? BereitschaftTemperaturLesen { get; init; }
+    public Action<bool>? BereitschaftTemperaturSetzen { get; init; }
+    public Func<double?>? AufstellraumLesen { get; init; }
+    public Action<double?>? AufstellraumSetzen { get; init; }
+    public Func<string>? ZonenanteileLesen { get; init; }
+    public Action<string>? ZonenanteileSetzen { get; init; }
+    public Func<bool>? FrischwassermodulLesen { get; init; }
+    public Action<bool>? FrischwassermodulSetzen { get; init; }
+    public Func<double?>? FwmGraedigkeitLesen { get; init; }
+    public Action<double?>? FwmGraedigkeitSetzen { get; init; }
+
     public Func<int?>? EntladeprioritaetLesen { get; init; }
     public Action<int?>? EntladeprioritaetSetzen { get; init; }
 
@@ -86,6 +98,9 @@ public sealed class PufferSpProjektKiSicht
 
     public Func<bool>? NutzungProzessLesen { get; init; }
     public Action<bool>? NutzungProzessSetzen { get; init; }
+
+    public Func<bool>? NutzungKaelteLesen { get; init; }
+    public Action<bool>? NutzungKaelteSetzen { get; init; }
 
     public Func<double?>? EntnahmeHeizungLesen { get; init; }
     public Action<double?>? EntnahmeHeizungSetzen { get; init; }
@@ -205,6 +220,41 @@ public sealed class PufferSpProjektKiSicht
         set => LadeleistungSetzen?.Invoke(value);
     }
 
+    /// <summary>Bereitschaftsverlust nach Temperatur je Zone (sonst Tageswert anteilig zum Füllstand).</summary>
+    public bool BereitschaftNachTemperatur
+    {
+        get => BereitschaftTemperaturLesen?.Invoke() ?? false;
+        set => BereitschaftTemperaturSetzen?.Invoke(value);
+    }
+
+    /// <summary>Temperatur des Aufstellraums [°C]; leer heißt 20 °C.</summary>
+    public double? Aufstellraum
+    {
+        get => AufstellraumLesen?.Invoke();
+        set => AufstellraumSetzen?.Invoke(value);
+    }
+
+    /// <summary>Zonenanteile von oben, durch Semikolon getrennt; leer heißt gleich groß.</summary>
+    public string Zonenanteile
+    {
+        get => ZonenanteileLesen?.Invoke() ?? "";
+        set => ZonenanteileSetzen?.Invoke(value ?? "");
+    }
+
+    /// <summary>Frischwassermodul am Speicher.</summary>
+    public bool Frischwassermodul
+    {
+        get => FrischwassermodulLesen?.Invoke() ?? false;
+        set => FrischwassermodulSetzen?.Invoke(value);
+    }
+
+    /// <summary>Grädigkeit des Frischwassermoduls [K]; leer heißt 5 K.</summary>
+    public double? FwmGraedigkeit
+    {
+        get => FwmGraedigkeitLesen?.Invoke();
+        set => FwmGraedigkeitSetzen?.Invoke(value);
+    }
+
     /// <summary>Die höchste Entladeleistung [kW]; leer heißt „unbegrenzt".</summary>
     public double? Entladeleistung
     {
@@ -247,6 +297,13 @@ public sealed class PufferSpProjektKiSicht
     {
         get => NutzungProzessLesen?.Invoke() ?? false;
         set => NutzungProzessSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Speicher ist ein Kältespeicher (Kaltwasser) und versorgt allein die Kühlung (KU3-5).</summary>
+    public bool NutzungKaelte
+    {
+        get => NutzungKaelteLesen?.Invoke() ?? false;
+        set => NutzungKaelteSetzen?.Invoke(value);
     }
 
     // =====================================================================

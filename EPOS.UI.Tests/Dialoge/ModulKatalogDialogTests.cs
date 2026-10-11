@@ -111,7 +111,8 @@ public class ModulKatalogDialogTests : EposBunitContext
     // =================================================================================
 
     [Theory]
-    [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 14)]
+    // Welle M5 (SP1): der Stromspeicher führt dazu die Selbstentladung - 15 Felder.
+    [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 15)]
     [InlineData(ModulKatalogArt.Photovoltaik, "Administration Photovoltaik Module", 14)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Felder(
         ModulKatalogArt art, string titel, int felder)
@@ -154,6 +155,28 @@ public class ModulKatalogDialogTests : EposBunitContext
 
         var pv = Aufbauen(ModulKatalogArt.Photovoltaik);
         Assert.Single(pv.FindAll(".epos-formulargruppe-titel"));
+    }
+
+    /// <summary>
+    /// Welle M5 (SP1): Standby und Selbstentladung stehen in der Gerätetechnik mit ihren Einheiten und
+    /// Hinweisen; beide dürfen leer bleiben.
+    /// </summary>
+    [Fact]
+    public void Der_Stromspeicher_fuehrt_Standby_und_Selbstentladung()
+    {
+        var profil = Profil(ModulKatalogArt.Stromspeicher);
+        var standby = profil.Felder.Single(f => f.Schluessel == ModulKatalogProfil.FeldStandby);
+        var selbst = profil.Felder.Single(f => f.Schluessel == ModulKatalogProfil.FeldSelbstentladung);
+        Assert.Equal("W", standby.Einheit);
+        Assert.Equal("%/Monat", selbst.Einheit);
+        Assert.Equal(1, selbst.Gruppe);
+        Assert.True(selbst.LeerErlaubt);
+        Assert.False(string.IsNullOrEmpty(selbst.Hinweis));
+        Assert.False(string.IsNullOrEmpty(standby.Hinweis));
+
+        var cut = Aufbauen(ModulKatalogArt.Stromspeicher);
+        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+        Assert.Contains(selbst.Bezeichnung, texte);
     }
 
     /// <summary>
@@ -413,8 +436,8 @@ public class ModulKatalogDialogTests : EposBunitContext
         Assert.NotNull(gesehen);
         Assert.Equal("Modul A", schluessel);
         // VIERZEHN seit W14a-E-10-Q7 (Migrationsschritt 68): der Stromspeicher
-        // fuehrt jetzt auch das Feld "Firma".
-        Assert.Equal(14, gesehen!.Count);
+        // fuehrt jetzt auch das Feld "Firma"; FUENFZEHN mit der Selbstentladung (Welle M5, SP1).
+        Assert.Equal(15, gesehen!.Count);
     }
 
     [Fact]

@@ -338,17 +338,19 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
     /// für die Sätze, die in der Projektliste des Wirtes stehen.
     /// </summary>
     [Fact]
-    public void Die_Spalte_im_Projekt_verwendet_kommt_aus_der_Projektliste()
+    public void Die_Verwendungsmarke_kommt_aus_der_Projektliste()
     {
         var cut = Aufbauen(profil: ProfilMitVerwendung, imProjekt: new[] { "CS-127" });
 
+        // Konzept 4.10: Marke am Bezeichner statt Spalte - die Spalte ist standardmaessig aus.
         var kopf = cut.FindAll(".epos-raster th").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Contains(kopf, k => k.StartsWith("im Projekt verwendet"));
+        Assert.DoesNotContain(kopf, k => k.StartsWith("im Projekt verwendet"));
 
-        // Genau EINE Zeile traegt „Ja".
+        // Genau EINE Zeile traegt die Marke, und es ist CS-127.
         var zeilen = cut.FindAll(".epos-raster tbody tr");
-        int ja = zeilen.Count(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja");
-        Assert.Equal(1, ja);
+        var markiert = zeilen.Where(z => z.QuerySelector(".epos-verwendet-marke") is not null).ToList();
+        Assert.Single(markiert);
+        Assert.Contains("CS-127", markiert[0].TextContent);
     }
 
     /// <summary>Ohne die Spalte im Profil gibt es sie auch im Markup nicht.</summary>

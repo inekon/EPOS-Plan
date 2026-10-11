@@ -57,6 +57,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Fußzeilen zur Gruppenregel „Strombedarf ohne Verwendung" unter der Tafel der
+        /// Kennzahlgruppe <paramref name="gruppe"/> (<see cref="KennzahlenKatalog.GR_KOSTEN"/>
+        /// oder <see cref="KennzahlenKatalog.GR_EMISSION"/>) in der Sprache
+        /// <paramref name="kultur"/> — je Stand, an dem die Regel in diesem Lauf gewirkt hat, eine
+        /// Zeile (<see cref="VariantenDaten.StromGruppenregelFussnote"/>), in der Folge der Stände.
+        ///
+        /// <para>DIE TAFEL SELBST ZEIGT DIE EINZELZAHL (Anwenderentscheid 29.09.2026) — die
+        /// Fußzeile nennt daneben die Zahl MIT bepreistem Netzbezug und die Menge. Leer, wenn die
+        /// Regel an keinem Stand gewirkt hat; dann steht unter der Tafel nichts.</para>
+        /// </summary>
+        public List<string> StromGruppenregelFussnoten(System.Globalization.CultureInfo kultur, string gruppe)
+        {
+            var fussnoten = new List<string>();
+            if (Varianten == null) return fussnoten;
+            foreach (VariantenDaten v in Varianten)
+            {
+                string f = v?.StromGruppenregelFussnote(kultur, gruppe);
+                if (!string.IsNullOrEmpty(f) && !fussnoten.Contains(f)) fussnoten.Add(f);
+            }
+            return fussnoten;
+        }
+
+        /// <summary>
         /// Wirtschaftlichkeits-Ergebnisse DIESES Berichtslaufs, frisch gerechnet über
         /// <c>BerichtsDatenSammler.SammleFuerBericht</c> (Nutzeranforderung 15.08.2026:
         /// ein Bericht steht nie auf einer übersprungenen Rechnung). Leer = die
@@ -152,6 +175,22 @@ namespace WindowsFormsApplication1
         /// Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung (Phase 2).</summary>
         public ProjektDetails Details;
 
+        /// <summary>Die gespeicherten Pufferspeicher-Auslegungen des Stamms samt Nachrechnung
+        /// (<see cref="PufferAuslegungCtrl.Gespeichert"/>); leer = keine Zeile, der Abschnitt entfällt.</summary>
+        public List<PufferAuslegungGespeichert> Pufferauslegungen = new List<PufferAuslegungGespeichert>();
+
+        /// <summary>
+        /// UB‑E4: die Bivalenzwerte des Stands (Herleitung der ersten Wärmepumpe mit Einbindung, Prüfhinweise) für Bild
+        /// und Tafel „Bivalenz und Übergabe“; <c>null</c> = keine Wärmepumpe mit Einbindung oder nicht erhoben.
+        /// </summary>
+        public BivalenzBerichtswerte Bivalenz;
+
+        /// <summary>
+        /// KM3‑E3‑b: die Lesewerte der Teillastrechnung je Projektkopie einer Kältemaschine (<c>ID_Kaeltemaschine</c>) für
+        /// die Tafel „Teillast und Takten der Kältemaschinen“; leer ohne Kältemaschine.
+        /// </summary>
+        public Dictionary<int, KaeltemaschineTeillastLesewerte> KaeltemaschineTeillast = new Dictionary<int, KaeltemaschineTeillastLesewerte>();
+
         /// <summary>Kennzahlwerte je Katalogschlüssel (null = für dieses Projekt nicht verfügbar).</summary>
         public Dictionary<string, double?> Kennzahlen = new Dictionary<string, double?>();
 
@@ -197,6 +236,48 @@ namespace WindowsFormsApplication1
         /// Ersatzannahme wird benannt, nicht verschwiegen.</para>
         /// </summary>
         public string LeistungspreisOhneSpitze;
+
+        /// <summary>
+        /// <b>Der Leistungspreis, den die Gruppenregel nicht ansetzt</b> (Anwenderentscheid
+        /// 29.09.2026, Register EZ‑17): Bepreist der Vergleich den Netzbezug eines Standes ohne
+        /// stromverwendenden Erzeuger (<see cref="StromImVergleichBepreisen"/>), rechnet er
+        /// Arbeits- und Grundpreis des Trägers, den Leistungspreis nicht — bei einem solchen
+        /// Stand ist er eine Größe der Lastoptimierung. Führt der Träger einen (Staffel,
+        /// Saisonreihe oder Satz), steht hier der Hinweis mit Satz und Träger
+        /// (<c>WIRT_HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT</c>, in der Sprache des Laufs);
+        /// <c>null</c> = kein solcher Fall.
+        ///
+        /// <para>Dieselbe Behandlung wie <see cref="LeistungspreisOhneSpitze"/>: Ein gepflegter
+        /// Leistungspreis, der nicht in die Energiekosten geht, wird benannt, nicht verschwiegen.
+        /// Die Wirtschaftlichkeit hängt den Satz an die Hinweise des Standes, der Berichtslauf an
+        /// seine Hinweisliste.</para>
+        /// </summary>
+        public string LeistungspreisNichtAngesetzt;
+
+        /// <summary>
+        /// Der Satz des nicht angesetzten Leistungspreises (Register EZ‑17) als Text in der Kultur
+        /// des Laufs — Staffel, Saisonreihe oder Satz je Monat bzw. Jahr; gesetzt zusammen mit
+        /// <see cref="LeistungspreisNichtAngesetzt"/>, <c>null</c> = kein solcher Fall. Die Fußzeile
+        /// unter der Kostentafel nennt ihn (<see cref="StromGruppenzahl.LeistungspreisSatz"/>).
+        /// </summary>
+        public string LeistungspreisNichtAngesetztSatz;
+
+        /// <summary>
+        /// Der Stromträger, dessen Leistungspreis die Gruppenregel nicht ansetzt (Register EZ‑17,
+        /// Anzeigename); gesetzt zusammen mit <see cref="LeistungspreisNichtAngesetzt"/>,
+        /// <c>null</c> = kein solcher Fall.
+        /// </summary>
+        public string LeistungspreisNichtAngesetztTraeger;
+
+        /// <summary>
+        /// Der Satz des nicht angesetzten Leistungspreises (Register EZ‑17) in €/(kW·Monat), wenn
+        /// der Stromträger ihn je Monat bemisst — <c>price_power_modus</c> MONAT oder eine
+        /// Saisonreihe aus zwölf gleichen Sätzen; <c>null</c> bei einem Satz je Jahr, einer Staffel,
+        /// einer Saisonreihe mit verschiedenen Sätzen und ohne solchen Fall. Der Berichtslauf und die
+        /// Hinweiszeile der Wirtschaftlichkeit vergleichen ihn mit dem Monatspreis des Reststromtarifs
+        /// (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>).
+        /// </summary>
+        public double? LeistungspreisNichtAngesetztMonatssatz;
         public double? CO2Gesamt;          // t/a
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
@@ -286,6 +367,16 @@ namespace WindowsFormsApplication1
             new List<EnergieAnlageNachweis>();
 
         /// <summary>
+        /// Die Energiekosten JE TRÄGER dieses Laufs (<see cref="EnergieTraegerNachweis"/>): Menge ×
+        /// Arbeitspreis, Grund- und Leistungspreis, dazu je Träger der Einsatz der Wärmeerzeuger und
+        /// der Verbrauch aller Verbraucher — aus denselben Mengen und Preisen wie
+        /// <see cref="Energiekosten"/>. Leer, solange <see cref="Energiekosten"/> nicht bestimmbar
+        /// ist.
+        /// </summary>
+        public List<EnergieTraegerNachweis> EnergiekostenJeTraeger =
+            new List<EnergieTraegerNachweis>();
+
+        /// <summary>
         /// <b>WARUM <see cref="Energiekosten"/> nicht bestimmbar ist</b> — im Klartext
         /// und mit dem Ausweg; <c>null</c>, solange die Zahl steht. Gesetzt von
         /// <see cref="KostenEmissionRechner"/> an genau der Stelle, an der er die
@@ -354,16 +445,35 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>DIE GRUPPENREGEL „Strombedarf ohne Verwendung"</b> — EINGABE des
-        /// <see cref="KostenEmissionRechner"/>, gesetzt allein von der Wirtschaftlichkeit
-        /// auf einer KOPIE der Variante (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>):
-        /// Verwendet ein anderer Stand derselben Vergleichsgruppe Strom
+        /// <see cref="KostenEmissionRechner"/>, gesetzt allein auf einer KOPIE der Variante:
+        /// von der Wirtschaftlichkeit (<c>WirtschaftlichkeitCtrl.Szenariodaten</c>) und vom
+        /// Berichtslauf für die Gruppenzahl der Fußzeile
+        /// (<c>BerichtsDatenSammler.StromGruppenzahlErmitteln</c>): Verwendet ein anderer
+        /// Stand derselben Vergleichsgruppe Strom
         /// (<see cref="ProjektEnergietraegerCtrl.GruppeVerwendetStrom"/>), bepreist und
         /// bewertet auch dieser Stand seinen Netzbezug, obwohl er selbst keinen Erzeuger
         /// führt, der Strom verwendet — sonst erschiene die Stromersparnis der Variante als
-        /// Mehrkosten. Die Einzelbetrachtung (Kostenseite, Übersicht, Sammler) setzt das
-        /// Feld nie; dort gilt die Regel je Stand.
+        /// Mehrkosten. <b>AM STAND SELBST STEHT DAS FELD NIE</b>: Einzelbetrachtung
+        /// (Kostenseite, Übersicht, der Sammler der Wirtschaftlichkeitsseite) und Kostenkapitel
+        /// des Berichts zeigen die Einzelzahl; dort gilt die Regel je Stand.
+        ///
+        /// <para>Bepreist wird mit Arbeits- und Grundpreis; den Leistungspreis setzt ein Stand
+        /// ohne stromverwendenden Erzeuger nicht an (Anwenderentscheid 29.09.2026, Register
+        /// EZ‑17; benannt in <see cref="LeistungspreisNichtAngesetzt"/>). Das Feld steht nur an
+        /// Kopien solcher Stände — die Gruppenregel setzt es an keinem Stromverwender.</para>
         /// </summary>
         public bool StromImVergleichBepreisen;
+
+        /// <summary>
+        /// <b>DIE GRUPPENZAHL DIESES STANDES</b> (Anwenderentscheid 29.09.2026) — was der Stand
+        /// an Energiekosten und Emissionen trüge, wenn sein Netzbezug nach der Gruppenregel
+        /// bepreist und bewertet wäre. Gerechnet auf einer KOPIE des Standes, damit seine eigenen
+        /// Zahlen die Einzelzahl bleiben; <c>null</c>, solange die Gruppenregel an diesem Stand
+        /// nicht gewirkt hat. Gesetzt allein vom Berichtslauf
+        /// (<c>BerichtsDatenSammler.StromGruppenzahlErmitteln</c>) — sie steht nur in der Fußzeile
+        /// unter den Tafeln der Kosten und der Emissionen, in keiner Zelle.
+        /// </summary>
+        public StromGruppenzahl Gruppenzahl;
 
         /// <summary>
         /// AUSGABE zur Gruppenregel: der Netzbezug [MWh/a], der in diesem Lauf NUR wegen
@@ -379,6 +489,146 @@ namespace WindowsFormsApplication1
         /// <see cref="StromImVergleichBepreisen"/>.
         /// </summary>
         public List<string> StromGruppenregelVerwender;
+
+        /// <summary>
+        /// <b>DIE FUSSZEILE UNTER DER TAFEL</b> (Anwenderentscheid 29.09.2026) — die Zeile, die
+        /// unter der Tafel der Kennzahlgruppe <paramref name="gruppe"/> steht, wenn die
+        /// Gruppenregel an diesem Stand gewirkt hat: Stand, die Stände mit Stromverwendung, die
+        /// bepreiste Menge und die Zahl MIT bepreistem Netzbezug — Energiekosten [€/a] unter der
+        /// Tafel der Kosten (<see cref="KennzahlenKatalog.GR_KOSTEN"/>), CO₂ [t/a] unter der Tafel
+        /// der Emissionen (<see cref="KennzahlenKatalog.GR_EMISSION"/>). Dieselbe Auskunft wie die
+        /// Hinweiszeile der Wirtschaftlichkeit (<c>WIRT_HINWEIS_STROM_GRUPPENREGEL</c>), um die
+        /// Zahl erweitert; die Zahlformate sind die der Tafelzeilen (N0 bzw. N1).
+        ///
+        /// <para><c>null</c> für jede andere Gruppe, ohne Gruppenzahl
+        /// (<see cref="Gruppenzahl"/> leer) und wenn der Gruppenzahl gerade die Zahl dieser Tafel
+        /// fehlt — dann steht keine Fußzeile.</para>
+        ///
+        /// <para>Unter der Kostentafel folgt, durch ein Leerzeichen getrennt, der Satz zum
+        /// Leistungspreis, den die Gruppenzahl nicht enthält (Register EZ‑17;
+        /// <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS"/>) — nur, wenn der Stromträger einen führt
+        /// (<see cref="StromGruppenzahl.LeistungspreisSatz"/>). Wirkt der Rollentarif (Register EZ‑18)
+        /// und unterscheidet sich der Leistungspreis seines Reststromtarifs von dem des Trägers
+        /// (<see cref="StromGruppenzahl.LeistungspreisTarifModell"/>), folgt danach der Satz zum
+        /// Leistungspreis des Reststromtarifs — beim Modell MONATLICH mit dem Monatspreis
+        /// (<see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT"/>,
+        /// <see cref="StromGruppenzahl.LeistungspreisTarifMonatspreis"/>), sonst mit dem Modell
+        /// (<see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF"/>). Die Emissionsfußzeile nennt
+        /// keinen.</para>
+        /// </summary>
+        public string StromGruppenregelFussnote(System.Globalization.CultureInfo kultur, string gruppe)
+        {
+            if (Gruppenzahl == null) return null;
+            bool kosten = gruppe == KennzahlenKatalog.GR_KOSTEN;
+            if (!kosten && gruppe != KennzahlenKatalog.GR_EMISSION) return null;
+            double? zahl = kosten ? Gruppenzahl.EnergiekostenEuroJahr : Gruppenzahl.CO2TonnenJahr;
+            if (!zahl.HasValue) return null;
+
+            System.Globalization.CultureInfo k = kultur ?? BerichtTexte.Kultur;
+            string schluessel = kosten ? SCHLUESSEL_FUSSNOTE_KOSTEN : SCHLUESSEL_FUSSNOTE_EMISSION;
+            string vorlage = null;
+            try { vorlage = MyResource.Resource.ResourceManager.GetString(schluessel, k); }
+            catch (Exception) { vorlage = null; }
+            if (string.IsNullOrEmpty(vorlage)) vorlage = kosten ? FUSSNOTE_KOSTEN : FUSSNOTE_EMISSION;
+            string satz;
+            try
+            {
+                satz = string.Format(k, vorlage, Anzeige,
+                                     WirtschaftlichkeitCtrl.Zitiert(Gruppenzahl.Verwender, vorlage),
+                                     Gruppenzahl.NetzbezugMWh.ToString("N1", k),
+                                     zahl.Value.ToString(kosten ? "N0" : "N1", k));
+            }
+            catch (FormatException) { satz = vorlage; }
+
+            // Register EZ‑17: Unter der Kostentafel nennt die Fußzeile den Leistungspreis, den die
+            // Gruppenzahl nicht enthält — nur dort: zuerst den des Stromträgers, wenn er einen
+            // führt; im Rollentarif (EZ‑18) danach den des Reststromtarifs, wenn er sich von dem
+            // des Trägers unterscheidet (der Sammler setzt das Merkmal nur dann).
+            if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisSatz))
+                satz += " " + LeistungspreisFussnote(k);
+            if (kosten && !string.IsNullOrEmpty(Gruppenzahl.LeistungspreisTarifModell))
+                satz += " " + LeistungspreisTarifFussnote(k);
+            return satz;
+        }
+
+        /// <summary>
+        /// Der Satz zum nicht angesetzten Leistungspreis (Register EZ‑17) für die Fußzeile unter der
+        /// Kostentafel: Satz und Stromträger aus der <see cref="Gruppenzahl"/>, Wortlaut aus der
+        /// Ressource <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS"/>.
+        /// </summary>
+        private string LeistungspreisFussnote(System.Globalization.CultureInfo k)
+        {
+            string vorlage = null;
+            try { vorlage = MyResource.Resource.ResourceManager.GetString(SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS, k); }
+            catch (Exception) { vorlage = null; }
+            if (string.IsNullOrEmpty(vorlage)) vorlage = FUSSNOTE_LEISTUNGSPREIS;
+            try
+            {
+                return string.Format(k, vorlage, Gruppenzahl.LeistungspreisSatz,
+                                     Gruppenzahl.LeistungspreisTraeger ?? "?");
+            }
+            catch (FormatException) { return vorlage; }
+        }
+
+        /// <summary>
+        /// Der Satz zum nicht angesetzten Leistungspreis des Reststromtarifs (Register EZ‑18) für die
+        /// Fußzeile unter der Kostentafel: beim Modell MONATLICH der Monatspreis aus der
+        /// <see cref="Gruppenzahl"/> (Ressource <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT"/>,
+        /// <c>N2</c> in der Kultur des Laufs), sonst das Modell (Ressource
+        /// <see cref="SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF"/>).
+        /// </summary>
+        private string LeistungspreisTarifFussnote(System.Globalization.CultureInfo k)
+        {
+            string vorlage = null;
+            if (Gruppenzahl.LeistungspreisTarifMonatspreis.HasValue)
+            {
+                try { vorlage = MyResource.Resource.ResourceManager.GetString(SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT, k); }
+                catch (Exception) { vorlage = null; }
+                if (string.IsNullOrEmpty(vorlage)) vorlage = FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT;
+                try { return string.Format(k, vorlage, Gruppenzahl.LeistungspreisTarifMonatspreis.Value.ToString("N2", k)); }
+                catch (FormatException) { return vorlage; }
+            }
+            try { vorlage = MyResource.Resource.ResourceManager.GetString(SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF, k); }
+            catch (Exception) { vorlage = null; }
+            if (string.IsNullOrEmpty(vorlage)) vorlage = FUSSNOTE_LEISTUNGSPREIS_TARIF;
+            try { return string.Format(k, vorlage, Gruppenzahl.LeistungspreisTarifModell); }
+            catch (FormatException) { return vorlage; }
+        }
+
+        internal const string SCHLUESSEL_FUSSNOTE_KOSTEN = "BV_FUSSNOTE_GRUPPENREGEL_KOSTEN";
+        internal const string SCHLUESSEL_FUSSNOTE_EMISSION = "BV_FUSSNOTE_GRUPPENREGEL_EMISSION";
+        internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS";
+        internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF";
+        internal const string SCHLUESSEL_FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT = "BV_FUSSNOTE_GRUPPENREGEL_LEISTUNGSPREIS_TARIF_MONAT";
+
+        /// <summary>Rückfall der Fußzeile unter der Kostentafel, falls die Ressource fehlt.</summary>
+        internal const string FUSSNOTE_KOSTEN =
+            "Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von " +
+            "{2} MWh/a bepreist und bewertet (Gruppenregel) — die Energiekosten betragen dann {3} €/a. " +
+            "Die Tafel weist die Einzelbetrachtung des Standes aus.";
+
+        /// <summary>Rückfall der Fußzeile unter der Emissionstafel, falls die Ressource fehlt.</summary>
+        internal const string FUSSNOTE_EMISSION =
+            "Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von " +
+            "{2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. " +
+            "Die Tafel weist die Einzelbetrachtung des Standes aus.";
+
+        /// <summary>Rückfall des Satzes zum nicht angesetzten Leistungspreis (Register EZ‑17), den die
+        /// Fußzeile unter der Kostentafel anhängt, falls die Ressource fehlt; {0} = Satz, {1} = Träger.</summary>
+        internal const string FUSSNOTE_LEISTUNGSPREIS =
+            "Den Leistungspreis {0} des Stromträgers „{1}“ setzt die Gruppenregel nicht an.";
+
+        /// <summary>Rückfall des Satzes zum nicht angesetzten Leistungspreis des Reststromtarifs
+        /// (Register EZ‑18) bei den Modellen STAFFEL und JAHRESHOECHSTLAST, den die Fußzeile unter der
+        /// Kostentafel im Rollentarif nach <see cref="FUSSNOTE_LEISTUNGSPREIS"/> anhängt, falls die
+        /// Ressource fehlt; {0} = Modell.</summary>
+        internal const string FUSSNOTE_LEISTUNGSPREIS_TARIF =
+            "Den Leistungspreis des Reststromtarifs nach dem Modell „{0}“ setzt die Gruppenregel nicht an.";
+
+        /// <summary>Rückfall des Satzes zum nicht angesetzten Leistungspreis des Reststromtarifs
+        /// (Register EZ‑18) beim Modell MONATLICH, falls die Ressource fehlt; {0} = Monatspreis.</summary>
+        internal const string FUSSNOTE_LEISTUNGSPREIS_TARIF_MONAT =
+            "Den Leistungspreis des Reststromtarifs von {0} €/(kW·Monat) setzt die Gruppenregel nicht an.";
 
         // ---------------------------------------------------------------------------
         // KÄLTESTROM (Stufe KU2 Welle 3; Kühlkonzept 6.1–6.3; Entscheid E34) — gesetzt vom
@@ -491,11 +741,79 @@ namespace WindowsFormsApplication1
         }
     }
 
+    /// <summary>
+    /// <b>Die Gruppenzahl eines Standes</b> (Anwenderentscheid 29.09.2026) — was der Stand an
+    /// Energiekosten und Emissionen trüge, wenn sein Netzbezug nach der Gruppenregel „Strombedarf
+    /// ohne Verwendung" bepreist und bewertet wäre. Der Berichtslauf rechnet sie auf einer KOPIE
+    /// des Standes (<c>BerichtsDatenSammler.StromGruppenzahlErmitteln</c>); die Zahlen des Standes
+    /// selbst bleiben die Einzelzahl.
+    ///
+    /// <para>Sie erscheint allein in der FUSSZEILE unter den Tafeln der Kosten und der Emissionen
+    /// (<see cref="VariantenDaten.StromGruppenregelFussnote"/>) — in keiner Zelle und in keiner
+    /// weiteren Auskunft. Das Kapitel Wirtschaftlichkeit rechnet dieselbe Zahl für sich, aus
+    /// seinen eigenen Ergebnissen.</para>
+    /// </summary>
+    public class StromGruppenzahl
+    {
+        /// <summary>Die Energiekosten [€/a] mit bepreistem Netzbezug; <c>null</c> = nicht bestimmbar.</summary>
+        public double? EnergiekostenEuroJahr;
+
+        /// <summary>Die Emissionen [t/a] mit bewertetem Netzbezug, im Modus des Laufs; <c>null</c> = nicht bestimmbar.</summary>
+        public double? CO2TonnenJahr;
+
+        /// <summary>Die Menge des Netzbezugs [MWh/a], die allein wegen der Gruppenregel zählt.</summary>
+        public double NetzbezugMWh;
+
+        /// <summary>Die Stände der Gruppe, die Strom verwenden (Anzeigenamen) — sie lösen die Regel aus.</summary>
+        public List<string> Verwender;
+
+        /// <summary>Der Leistungspreis des Stromträgers als Text, den die Gruppenzahl nicht enthält
+        /// (Register EZ‑17); <c>null</c>, wenn der Träger keinen führt. Die Fußzeile unter der
+        /// Kostentafel nennt ihn.</summary>
+        public string LeistungspreisSatz;
+
+        /// <summary>Der Stromträger zu <see cref="LeistungspreisSatz"/> (Anzeigename); <c>null</c>
+        /// ohne Leistungspreis.</summary>
+        public string LeistungspreisTraeger;
+
+        /// <summary>Das Leistungspreismodell des Reststromtarifs im Klartext der Tarifstruktur, das die
+        /// Gruppenregel nicht ansetzt (Register EZ‑18); <c>null</c>, wenn kein Rollentarif wirkt, der
+        /// Reststromtarif keinen Leistungspreis führt oder sein Leistungspreis dem des Trägers gleich
+        /// ist (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>). Die Fußzeile nennt den
+        /// Leistungspreis des Reststromtarifs dann zusätzlich zu <see cref="LeistungspreisSatz"/>.</summary>
+        public string LeistungspreisTarifModell;
+
+        /// <summary>Der Monatspreis des Reststromtarifs [€/(kW·Monat)] zu
+        /// <see cref="LeistungspreisTarifModell"/>, nur beim Modell MONATLICH; <c>null</c> sonst. Ist er
+        /// gesetzt, nennt die Fußzeile den Preis statt des Modells.</summary>
+        public double? LeistungspreisTarifMonatspreis;
+    }
+
     /// <summary>Eine Zeile der Abweichungstabelle „Merkmal · Stamm · Variante" (Kap. 4, Baustein 4).</summary>
+    /// <summary>
+    /// Der Betrieb EINES Heizkessels im Lauf (Konzept Kesselkennlinie 5, Bericht) — die Zeile der Tabelle
+    /// <c>stand.tabelle.heizkessel</c>.
+    /// </summary>
+    /// <param name="Name">Bezeichner des Kessels.</param>
+    /// <param name="JahresnutzungsgradProzent">η_eff: Nutzwärme durch Brennstoffeinsatz über das Jahr [%] — samt Teillast,
+    /// Brennwertnutzung, Anfahr- und Bereitschaftsverlust.</param>
+    /// <param name="MitBrennwertkennlinie">Rechnet der Kessel mit der Brennwertkennlinie? Nur dann gibt es einen
+    /// Brennwertbetrieb.</param>
+    /// <param name="BrennwertStundenProzent">Anteil der Laufstunden mit Rücklauf unter dem Taupunkt [%].</param>
+    /// <param name="BrennwertWaermeProzent">Anteil der Wärme dieser Stunden an der Wärme der Laufstunden [%].</param>
+    /// <param name="Starts">Starts im Jahr nach Konzept 4.2; beim Elektrokessel seine Laufphasen.</param>
+    public sealed record Kesselbetrieb(string Name, double JahresnutzungsgradProzent, bool MitBrennwertkennlinie,
+                                       double BrennwertStundenProzent, double BrennwertWaermeProzent, int Starts);
+
     public class Abweichung
     {
         public string Gewerk = "";      // z. B. "Wärmepumpe", "Gebäude", "Anlage"
-        public string Merkmal = "";     // z. B. "Vorlauftemperatur"
+        public string Merkmal = "";     // Anzeigetext in der Anzeige-/Berichtssprache, z. B. "Vorlauftemperatur"
+
+        /// <summary>Der sprachfreie Schlüssel der Zeile: <see cref="AbweichungsErmittler.SCHLUESSEL_BESTAND"/>,
+        /// <see cref="AbweichungsErmittler.SCHLUESSEL_ANZAHL"/> oder „Tabelle.Spalte“ des Merkmals
+        /// (<see cref="AbweichungsErmittler.Schluessel"/>). Zuordnen über ihn, nie über <see cref="Merkmal"/>.</summary>
+        public string Schluessel = "";
         public string WertStamm = "";
         public string WertVariante = "";
     }
@@ -530,6 +848,12 @@ namespace WindowsFormsApplication1
         /// die BHKW-Einspeisung jedes Laufs mit BHKW-Überschuss: ohne Flotte die Stundenformel
         /// des KWK-Splits (auch ohne PV), mit Flotte die BHKW-Einspeisung der Flottenbilanz.</summary>
         public const string BHKW_UEBERSCHUSS = "BHKW_Ueberschuss";
+        /// <summary>Katalog v12: der Strombedarf am Eingang des BHKW (<c>SimulationBHKW.strombedarf</c>) — die Linie
+        /// „Strombedarf“ der Stromlast des BHKW-Reiters (<c>SimulationErgebnisCtrl.BhkwStromStunden</c>).</summary>
+        public const string BHKW_STROMBEDARF = "BHKW_Strombedarf";
+        /// <summary>Katalog v12: Strombedarf am BHKW minus Stromproduktion je Stunde, nie unter 0 — die Linie
+        /// „Reststrombedarf“ der Stromlast des BHKW-Reiters.</summary>
+        public const string BHKW_RESTSTROM = "BHKW_Reststrom";
         public const string KESSEL_WAERME = "Kessel_Waerme";
         public const string SOLAR_WAERME = "Solar_Waerme";
         public const string PV_GENUTZT = "PV_Genutzt";
@@ -538,11 +862,35 @@ namespace WindowsFormsApplication1
         public const string NETZEINSPEISUNG = "Netzeinspeisung";
         /// <summary>Davon direkt aus der Batterie; nicht als PV- oder BHKW-Einspeisung zählen.</summary>
         public const string BATTERIE_EINSPEISUNG = "Batterie_Einspeisung";
-        /// <summary>Von der aktivierten Flotte tatsächlich abgeregelte PV-Energie.</summary>
+        /// <summary>
+        /// Abgeregelte PV-Energie: von der aktivierten Flotte, sonst an der Einspeisegrenze der
+        /// Projekteinstellung nach der Speicherladung (Welle M5, PV3).
+        /// </summary>
         public const string PV_ABREGELUNG = "PV_Abregelung";
+        /// <summary>
+        /// Eigenverbrauch des Speichersystems (Standby, Welle M5, SP1) — nur, wenn der Lauf einen hat.
+        /// </summary>
+        public const string SPEICHER_EIGENVERBRAUCH = "Speicher_Eigenverbrauch";
         public const string NETZBEZUG = "Netzbezug";
         public const string WAERMEREST = "Waermerest";
         public const string PV_SPEICHER_SOC = "PVSpeicher_SOC";
+
+        /// <summary>
+        /// Katalog v12: die <b>ungedeckte Kälte</b> je Stunde [kWh] (<c>Kaeltekaskade.Rest_stuendlich</c>; ohne
+        /// Kälteerzeuger der ganze Kältebedarf). Steht im Satz, sobald das Projekt Kälte rechnet — auch mit lauter
+        /// Nullen; ihr Vorhandensein (<see cref="RechnetKaelte"/>) ist das Zeichen „Kälte gerechnet“.
+        /// </summary>
+        public const string KAELTEREST = "Kaelterest";
+
+        /// <summary>Katalog v12: Präfix der Kältedeckung je Kälteerzeuger (<c>KAELTE_&lt;n&gt;</c>, n ab 1 in der Folge
+        /// der Kältekaskade); der Anzeigetext ist der Bezeichner der Wärmepumpe (<see cref="Beschriftungen"/>).</summary>
+        public const string KAELTE_PRAEFIX = "KAELTE_";
+
+        /// <summary>Die Schlüssel der Kältedeckung je Erzeuger in der Folge der Kältekaskade (Katalog v12).</summary>
+        public List<string> Kaeltereihen = new List<string>();
+
+        /// <summary>Rechnet der Lauf Kälte (die Reihe <see cref="KAELTEREST"/> steht im Satz)?</summary>
+        public bool RechnetKaelte => Reihen.ContainsKey(KAELTEREST);
 
         // ---------------------------------------------------------------------
         // PAKET E1 (Konzept 6.3, Befund S-1): Der Wärmespeicher-Füllstand läuft JE
@@ -670,6 +1018,23 @@ namespace WindowsFormsApplication1
         /// nicht als Reihe.</para>
         /// </summary>
         public Dictionary<int, Netzbezugsspitze> Kaeltestromspitzen = new Dictionary<int, Netzbezugsspitze>();
+
+        /// <summary>
+        /// KM3 (Fachkonzept Teillast und Takten 5.3): die Verdichterstunden je Kältemaschine mit Teillastweg — Schlüssel
+        /// ist der Platz in der Ergebnisliste <c>Kaeltemaschinen</c>. Nenner des Teillastanteils; das Ergebnis speichert
+        /// ihn nicht, darum kommt er aus dem Lauf des Zeitreihensatzes.
+        /// </summary>
+        public Dictionary<int, int> KaeltemaschineVerdichterstunden = new Dictionary<int, int>();
+
+        /// <summary>
+        /// <b>Der Betrieb je Heizkessel</b> (Konzept Kesselkennlinie 5, Bericht): Jahresnutzungsgrad, Anteil des
+        /// Brennwertbetriebs nach Stunden und Wärme und Starts — in der Folge der Kessel des Laufs. Leer ohne Kessel.
+        ///
+        /// <para>Brennwertstunden, Brennwertwärme und Starts stehen nicht im gespeicherten Ergebnis; sie kennt nur der
+        /// Lauf. Sie reisen deshalb wie <see cref="Bezugsspitze"/> als Werte des Laufs mit — eingesammelt über
+        /// <c>SimulationErgebnisCtrl.Heizkessel</c>, dieselben Zahlen, die der Kessel-Reiter zeigt.</para>
+        /// </summary>
+        public List<Kesselbetrieb> Kessel = new List<Kesselbetrieb>();
 
         /// <summary>
         /// Schlüssel der Wärmespeicher-Füllstandsreihen in STABILER Reihenfolge (die

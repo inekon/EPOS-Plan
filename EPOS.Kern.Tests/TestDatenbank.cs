@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -122,8 +124,16 @@ namespace EPOS.Kern.Tests
     public sealed class TestDatenbank : IDisposable
     {
         /// <summary>
-        /// Namensanfang jeder Arbeitskopie unter <see cref="Path.GetTempPath"/>; es folgen acht
-        /// Hexziffern. Der Aufraeumlauf fasst nur Ordner an, die GENAU diesem Muster folgen.
+        /// Namensanfang jeder Arbeitskopie unter <see cref="Path.GetTempPath"/>; es folgen die
+        /// Prozesskennung des Besitzers, ein Bindestrich und acht Hexziffern
+        /// (<c>epos-kerntest-4711-0a1b2c3d</c>). Der Aufraeumlauf fasst nur Ordner an, die GENAU
+        /// diesem Muster folgen - oder dem aelteren ohne Prozesskennung.
+        ///
+        /// <para><b>Warum die Prozesskennung.</b> Testlaeufe aus mehreren Worktrees laufen
+        /// gleichzeitig ueber dasselbe <c>/tmp</c>. Lebt der Prozess im Namen noch, ist die Kopie
+        /// tabu - unabhaengig davon, ob die Besitzmarke auf dem Dateisystem wirkt. Die Marke und
+        /// die Schonfrist bleiben die zweite Sicherung, fuer eine wiederverwendete Kennung und
+        /// fuer Kopien des aelteren Musters.</para>
         /// </summary>
         internal const string ORDNER_PRAEFIX = "epos-kerntest-";
 
@@ -152,7 +162,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Der Name, den der Konstruktor vergibt - und nur diesen raeumt der Aufraeumlauf.</summary>
         private static readonly Regex KOPIEORDNER =
-            new Regex("^" + ORDNER_PRAEFIX + "[0-9a-f]{8}$", RegexOptions.CultureInvariant);
+            new Regex("^" + ORDNER_PRAEFIX + "(?:(?<pid>[0-9]{1,10})-)?[0-9a-f]{8}$", RegexOptions.CultureInvariant);
 
         /// <summary>1, sobald der Aufraeumlauf dieses Prozesses gelaufen ist.</summary>
         private static int _aufraeumlaufGelaufen;
@@ -199,7 +209,7 @@ namespace EPOS.Kern.Tests
 
                 VerwaisteKopienEinmalAufraeumen();
 
-                _ordner = Path.Combine(wurzel, ORDNER_PRAEFIX + Guid.NewGuid().ToString("N").Substring(0, 8));
+                _ordner = Path.Combine(wurzel, Ordnername(Environment.ProcessId));
                 Directory.CreateDirectory(_ordner);
                 _besitzmarke = new FileStream(Path.Combine(_ordner, BESITZMARKE), FileMode.CreateNew,
                                               FileAccess.Write, FileShare.None);
@@ -222,6 +232,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Steht eine beschreibbare Arbeitskopie? Sonst ueberspringt der Fall.</summary>
         public bool Vorhanden { get; }
+
+        /// <summary>Der Name eines neuen Kopieordners des Prozesses <paramref name="prozess"/>.</summary>
+        internal static string Ordnername(int prozess)
+            => ORDNER_PRAEFIX + prozess.ToString(CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N").Substring(0, 8);
 
         /// <summary>Der Kopieordner, <c>null</c> ohne Kopie - fuer die Aufraeumproben.</summary>
         internal string Ordner => _ordner;
@@ -769,6 +783,250 @@ namespace EPOS.Kern.Tests
                 // und Werkzeug; wiederholbar, KEIN DML - die Tabellen entstehen leer.
                 KonditionierungSchema.Ausfuehren(null);
 
+                // Schritt KonditionierungVorlagenSchema.SCHRITT (KP-S1v, Stufe KP1b; Konzept
+                // Konditionierungsprofile 5.1/5.6/5.7): Tab_Konditionierungsvorlage_STAMM, der
+                // Fremdschluessel ID_Vorlage per Tabellenneubau, acht Teilindizes der Eindeutigkeit und
+                // Nachtauskuehlstunden_H an beiden Ergebnistabellen. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar - steht alles, oeffnet er keinen Vorgang.
+                KonditionierungVorlagenSchema.Ausfuehren(null);
+                // Schritt KesselHeizgrenzeSchema.SCHRITT (Anwenderentscheid 27.09.2026 zu #568): die
+                // nullbare Spalte Tab_Einstellungen.Kessel_Heizgrenze. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML - NULL rechnet die Vorgabe 15 °C.
+                KesselHeizgrenzeSchema.Ausfuehren(null);
+
+                // Schritt TwwBezugsartSchema.SCHRITT (Auftrag A2, Zapfprofilgenerator N34): die Bezugsart
+                // Zimmer - Neubau von Tab_TwwNutzungsart_STAMM und Tab_TwwBedarfstag_STAMM mit der
+                // Pruefklausel 1..8 und die Nachfuehrung der Paketzeilen in einem frueheren Stand. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar - eine fertige Tabelle wird
+                // uebersprungen (die Testdatenbank traegt sie).
+                TwwBezugsartSchema.Ausfuehren(null);
+
+                // Schritt TwwFuellstandSchema.SCHRITT (Auftrag F1, Zapfprofilgenerator N36 (d)): die
+                // Verfahrensvolumina als Bezug der Fuellstandslinie - Neubau von Tab_TwwProjekt mit der
+                // Pruefklausel 1..8 am Fuellstandsbezug. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar und KEIN DML - eine fertige Tabelle wird uebersprungen.
+                TwwFuellstandSchema.Ausfuehren(null);
+
+                // Schritt KesselKennlinieSchema.SCHRITT (Konzept Kesselkennlinie, Etappe E1, #569): fuenf
+                // Kennlinienspalten an Tab_Heizkessel_STAMM und Tab_Heizkessel. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar, KEIN DML - die Spalten entstehen leer bzw. mit 0.
+                KesselKennlinieSchema.Ausfuehren(null);
+
+                // Schritt KonditionierungsvorlagenSaatSchema.SCHRITT (KP-S1b, E56 F1 (b)): die 14
+                // ausgelieferten Konditionierungsvorlagen samt Vorgabezeilen und Feiertagsregeln. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; NACH den Tabellen der Schritte 151 und
+                // 152; wiederholbar - gesaet wird nur unter fehlender Groesse und fehlendem Namen.
+                KonditionierungsvorlagenSaatSchema.Ausfuehren(null);
+
+                // Schritt KesselBrennwertNachzug.SCHRITT (Kesselkennlinie E2b, Anwenderentscheid B-1): das
+                // Brennwertkennzeichen der Projektkessel nach Katalogsatz oder Beschreibung. Aus DERSELBEN
+                // Quelle wie Migration und Werkzeug; wiederholbar - nur gesetzt, nie geloescht.
+                KesselBrennwertNachzug.Ausfuehren(null);
+
+                // Schritt KostenStempelSchema.SCHRITT (Folge von #637): die Stempelspalten
+                // Tab_Projekt.Kosten_Geaendert und Tab_Applikation.Kostenkatalog_Geaendert samt ihren
+                // Triggern. Aus DERSELBEN Quelle wie Migration und Werkzeug; ZULETZT, damit kein
+                // Nachzug davor die Stempel einer frischen Kopie setzt; wiederholbar, KEIN DML.
+                KostenStempelSchema.Ausfuehren(null);
+
+                // Schritte AufheizvorgabeSchema.SCHRITT und AufheizErgebnisSchema.SCHRITT (KP-S2 und
+                // KP-S3, Entwurf KP3 Abschnitt 4): die fuenf Spalten der Aufheizoptimierung an
+                // Tab_Einstellungen und je vierzehn Ergebnisspalten an Tab_ErgebnisGebaeude und
+                // Tab_ErgebnisZone. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN
+                // DML - der Schalter steht auf 0, alles uebrige leer.
+                AufheizvorgabeSchema.Ausfuehren(null);
+                AufheizErgebnisSchema.Ausfuehren(null);
+
+                // Schritt KesselBereitschaftEinheitSchema.SCHRITT (Anwenderentscheid 02.10.2026): die
+                // Einheit des Bereitschaftsverlusts an Tab_Heizkessel_STAMM und Tab_Heizkessel, Vorgabe
+                // kW. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML - ein
+                // ALTER TABLE loest keinen Stempeltrigger aus.
+                KesselBereitschaftEinheitSchema.Ausfuehren(null);
+
+                // Schritt AlbedoSchema.SCHRITT (Entscheidungsvorlage Modellgrenzen, PV4): die
+                // Bodenalbedo an Tab_Energieanlagen, nullbar, leer = 0,2. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar, KEIN DML.
+                AlbedoSchema.Ausfuehren(null);
+                // Schritt ProzesswaermeTemperaturSchema.SCHRITT (Welle M3a, PW1 Stufe 1): das
+                // Temperaturpaar je Prozess an Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme, leer. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar.
+                ProzesswaermeTemperaturSchema.Ausfuehren(null);
+                // Schritt SolarthermieFelderSchema.SCHRITT (Welle M2 Solarthermie): die Felder des
+                // Kollektorfelds an Tab_Energieanlagen (leer) und die Bezugsflaeche an
+                // Tab_Solarkollektoren(_STAMM), Vorgabe apertur. Aus DERSELBEN Quelle wie Migration
+                // und Werkzeug; wiederholbar, KEIN DML.
+                SolarthermieFelderSchema.Ausfuehren(null);
+                // Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste je
+                // Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die Kalenderspalte
+                // der drei Zuordnungstabellen, alles leer. Aus DERSELBEN Quelle wie Migration und Werkzeug.
+                BedarfNetzKalenderSchema.Ausfuehren(null);
+                // Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder von
+                // Waermepumpe (Tab_WP(_STAMM)) und BHKW (Tab_BHKW(_STAMM)), alle leer. Aus DERSELBEN
+                // Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
+                ErzeugerTeillastSchema.Ausfuehren(null);
+                // Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+                // Einspeisegrenze an Tab_Einstellungen und die Selbstentladung an
+                // Tab_Stromspeicher(_STAMM), leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                StromViertelstundenSchema.Ausfuehren(null);
+
+                // Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
+                // Auslegungstabelle (leer) und die Vorgabetabelle samt Saat. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar.
+                PufferAuslegungSchema.Ausfuehren(null);
+
+                // Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, E30-Q12, EZ-24): die
+                // Empfehlungsspannen der Hilfsenergie von BHKW und Heizkessel in den
+                // Auslieferungsvorlagen auf Weg B. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // reines DML, wiederholbar, Projektzeilen unberuehrt.
+                HilfsenergieEmpfehlungNachzug.Ausfuehren(null);
+
+                // Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
+                // Pufferspeichers an Tab_Pufferspeicher und die thermische Desinfektion an
+                // Tab_Einstellungen, leer. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN DML.
+                PufferOptionenSchema.Ausfuehren(null);
+                // Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1, EQ1): die Katalogspalten
+                // der Stufe-1-Kataloge samt Saat von Schluessel und Pruefsumme der ausgelieferten Saetze,
+                // Tab_Applikation.Katalogfassung, Tab_Katalogabgleich und Tab_ErgebnisErdreich. Aus
+                // DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
+                KatalogfassungSchema.Ausfuehren(null);
+                // Schritt KatalogfassungStufe2Schema.SCHRITT (KU1 Stufe 2): dieselben Katalogspalten an
+                // den uebrigen Katalogen samt Saat. Aus DERSELBEN Quelle wie Migration und Werkzeug;
+                // wiederholbar, KEIN Fachwert aendert sich.
+                KatalogfassungStufe2Schema.Ausfuehren(null);
+
+                // Schritt AufheizManuellSchema.SCHRITT (KP-S4, Entscheid E59, E60; Entwurf KP3 Abschnitt
+                // 4): Aufschlag an Tab_Einstellungen, manuelle Aufheizzeit an Tab_Gebaeude samt achtem
+                // Sichtneubau, Aufheiz_Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, GEKOPPELT an
+                // der Zone per kleinem Neubau. Aus DERSELBEN Quelle wie Migration und Werkzeug; ZULETZT,
+                // damit kein aelterer Sichtdurchgang oben (Energiestandard) die Spalte wieder aus der Sicht
+                // schneidet; wiederholbar, KEIN DML an Bestandsdaten.
+                AufheizManuellSchema.Ausfuehren(null);
+                // Schritt ProjektkopienKatalogeSchema.SCHRITT (Anwenderentscheid 03.10.2026, nach 174): die
+                // Projektkopien der Brennstoffe und der Pufferauslegungs-Vorgaben samt wertgleicher Saat.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN Fachwert aendert sich.
+                ProjektkopienKatalogeSchema.Ausfuehren(null);
+                // Schritt KonditionierungNutzungSchema.SCHRITT (nach 175): die Nutzung der Vorlage am
+                // Kalender des Projekts samt Saat aus der Herkunft in Bemerkung. Aus DERSELBEN Quelle wie
+                // Migration und Werkzeug; wiederholbar, KEIN Rechenergebnis aendert sich.
+                KonditionierungNutzungSchema.Ausfuehren(null);
+                // Schritt WaermepumpeSperrprofilSchema.SCHRITT (Welle V14): die Tabelle Tab_Sperrfenster,
+                // leer. Aus DERSELBEN Quelle wie Migration und Werkzeug; wiederholbar, KEIN DML.
+                WaermepumpeSperrprofilSchema.Ausfuehren(null);
+                // Schritt ProzessNutzungSchema.SCHRITT (V31/V32): Zuordnung der Nutzungsprofile und die
+                // Zapf-Nutzungsarten Buero/Schule/Gewerbe. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                ProzessNutzungSchema.Ausfuehren(null);
+                // Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Wellen P4c/P4d): die Sitzungseingaben der
+                // Pufferauslegung, ID_Stamm am Projektpuffer, Saat des Aufheizkriteriums. Aus DERSELBEN Quelle
+                // wie Migration und Werkzeug; die Spalten bleiben leer.
+                PufferAuslegungErgaenzungSchema.Ausfuehren(null);
+                // Schritt ErdreichVorgabeSchema.SCHRITT (EV1, E65): Erdreich_U_Wirksam an beiden Gebaeudetabellen
+                // samt neuntem Sichtneubau - ZULETZT, weil aeltere Durchgaenge die Sicht in ihrer Form bauen.
+                ErdreichVorgabeSchema.Ausfuehren(null);
+                // Schritt ZonenUebergabeSchema.SCHRITT (AK1z, E63): Auslegungspunkt und Regler je Zone, Kreiswerte im
+                // Zonenergebnis. Ohne Sicht; die Spalten bleiben leer.
+                ZonenUebergabeSchema.Ausfuehren(null);
+                // Schritt KaeltemaschineSchema.SCHRITT (KU3-1): Katalog, Projektkopie und Kennlinien der
+                // Kaeltemaschine samt Saat. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                KaeltemaschineSchema.Ausfuehren(null);
+                // Schritt KaeltemaschineAnlageSchema.SCHRITT (KU3-4): die Kaeltemaschine als Anlage samt
+                // Kostenkomponente und Ergebnistabelle. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                KaeltemaschineAnlageSchema.Ausfuehren(null);
+                // Schritt KaeltestromabrechnungSchema.SCHRITT (KU3-4d): Abrechnungsspalten je Maschine und der
+                // erneuerte Stempeltrigger der Anlagenzeile. Aus DERSELBEN Quelle; wiederholbar, ergebnisneutral.
+                KaeltestromabrechnungSchema.Ausfuehren(null);
+                // Schritt ZonenKaeltespitzeSchema.SCHRITT (MZ-Rest): Kaeltespitze und Kuehlstunden je Zone im
+                // Zonenergebnis. Ohne Sicht; die Spalten bleiben leer.
+                ZonenKaeltespitzeSchema.Ausfuehren(null);
+                // Schritt AnlagenfahrplanSchema.SCHRITT (AK2-1): Zeitprogramm und Vorlauf_Max am Erzeuger, Komfort-
+                // und Fahrplanspalten im Energiebedarf. Ohne Saat; die Spalten bleiben leer.
+                AnlagenfahrplanSchema.Ausfuehren(null);
+                // Schritt FreieKuehlungSoleSchema.SCHRITT (KU3-6a): Schalter, Graedigkeit und Leistungsgrenze der
+                // freien Kuehlung am Erzeuger, ihre Zaehler im Ergebnis der Waermepumpe. Ohne Saat.
+                FreieKuehlungSoleSchema.Ausfuehren(null);
+                // Schritt VorlaufwahlSchema.SCHRITT (VW1a): Stunden je Kennlinienstuetzstelle, darueber und darunter
+                // an der Modulzeile des Waermepumpenergebnisses. Ohne Saat; die Spalten bleiben leer.
+                VorlaufwahlSchema.Ausfuehren(null);
+                // Schritt RaumnutzungSchema.SCHRITT (NP1a): Katalog der Nutzungsprofile samt Saat, freie Nutzung an
+                // Kalender und Vorlage (Tabellenneubau), Tab_Zone.Nutzungsprofil. Wiederholbar, ergebnisneutral.
+                RaumnutzungSchema.Ausfuehren(null);
+                // Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E96): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
+                // Nummern und Namen ohne Werte, Ids bleiben; Zuordnung DIN nach der Zaehlung 2025 samt 19 und 20. Wiederholbar.
+                RaumnutzungDinTsSchema.Ausfuehren(null);
+
+                // Schritt RaumgrundrissSchema.SCHRITT (HC-5): Tab_Raumgrundriss an der Importquelle. Ohne Saat, leer.
+                RaumgrundrissSchema.Ausfuehren(null);
+                // Schritt TypaufbauSchema.SCHRITT (BA-2): Spalte Typaufbau an Projekt und Katalog, Saat der Typaufbauten.
+                TypaufbauSchema.Ausfuehren(null);
+                // Schritt StandardlastprofilSchema.SCHRITT (SLP25): die BDEW-Standardlastprofile Strom 2025 als gesperrte
+                // Saetze der Datenbank Strombedarf, Katalogschluessel und Pruefsumme. Wiederholbar.
+                StandardlastprofilSchema.Ausfuehren(null);
+                // Schritt AufheizAufschlagErgebnisSchema.SCHRITT (KP3 Welle A, E99): verwendeter Aufschlag und bemessene
+                // Aufheizzeit an Tab_ErgebnisGebaeude, leer. Wiederholbar.
+                AufheizAufschlagErgebnisSchema.Ausfuehren(null);
+                // Schritt ErdsondenfeldSchema.SCHRITT: Geometrie und Bohrlochkennwerte des Sondenfeldes an
+                // Tab_Energieanlagen, leer (= Normvorgabe). Wiederholbar.
+                ErdsondenfeldSchema.Ausfuehren(null);
+                // Schritt StandardlastprofilPvSchema.SCHRITT (SLP25b): die BDEW-Netzbezugsprofile P25 und S25 als gesperrte
+                // Saetze der Datenbank Strombedarf, Katalogschluessel und Pruefsumme. Wiederholbar.
+                StandardlastprofilPvSchema.Ausfuehren(null);
+                // Schritt FlaechenherkunftSchema.SCHRITT (G5-0): Tab_Bauteil.Flaechenherkunft, leer. Wiederholbar.
+                FlaechenherkunftSchema.Ausfuehren(null);
+                // Schritt Ak3Schema.SCHRITT (AK3, Festlegungen 22 und 23): Heizkurve_Raumeinfluss an beiden
+                // Gebaeudetabellen samt zehntem Sichtneubau, die Kennzahlen des Kreises an Tab_ErgebnisEnergiebedarf,
+                // leer. ZULETZT, weil er die Sicht in seiner Form baut. Wiederholbar.
+                Ak3Schema.Ausfuehren(null);
+                // Schritt NordrichtungSchema.SCHRITT (G5-N): Tab_Importquelle.Nordwinkel_Herkunft, Bestand nachgefuellt
+                // (Nordwinkel vorhanden -> DATEI, NULL -> ANNAHME). Wiederholbar.
+                NordrichtungSchema.Ausfuehren(null);
+                // Schritt ProjektdateiImportSchema.SCHRITT: Format und Herkunft SQPROJ - Neubau von Tab_Importquelle und
+                // der sechs Herkunftstabellen mit erweiterter Pruefklausel. Wiederholbar.
+                ProjektdateiImportSchema.Ausfuehren(null);
+                // Schritt Ak3KSchema.SCHRITT (AK3-K, Festlegung 20): die Kennzahlen der Zonensperre und der Kaelteseite
+                // im Kreis an Tab_ErgebnisEnergiebedarf, leer. Wiederholbar.
+                Ak3KSchema.Ausfuehren(null);
+                // Schritt KuehlkurveSchema.SCHRITT (KK, Festlegungen 1, 3, 7, 12): die Kuehlkurve an beiden
+                // Gebaeudetabellen samt elftem Sichtneubau, die Kennzahlen an Tab_ErgebnisEnergiebedarf, leer.
+                // ZULETZT, weil er die Sicht in seiner Form baut. Wiederholbar.
+                KuehlkurveSchema.Ausfuehren(null);
+                // Schritt KaeltemaschinenTypkennfelderSchema.SCHRITT (KM2): die eingebauten Typkennfelder der
+                // Kaeltemaschinen als gesperrte Katalogsaetze samt Kennlinie, Schluessel und Pruefsumme. Wiederholbar.
+                KaeltemaschinenTypkennfelderSchema.Ausfuehren(null);
+                // Schritt ZonenKatalogSchema.SCHRITT (ZK): die Katalogzwillinge der Zonentabellen und ID_Zone_Stamm an der
+                // Konditionierung, reines DDL. Wiederholbar.
+                ZonenKatalogSchema.Ausfuehren(null);
+                // Schritt UebergabegrenzeSchema.SCHRITT (UB, Abschnitt 4): Grenzen an Waermepumpe und BHKW, Einbindung und
+                // Vorwaermbetrieb an der Anlage, Bereiche und Zaehler im Ergebnis, leer. Wiederholbar.
+                UebergabegrenzeSchema.Ausfuehren(null);
+                // Schritt PvGanglinieSchema.SCHRITT (PVG): Katalog, Projektkopie und Zuordnung der PV-Ganglinie, reines DDL.
+                // Wiederholbar.
+                PvGanglinieSchema.Ausfuehren(null);
+                // Schritt KalenderbedienungSchema.SCHRITT (K2): gemeinsamer Kalender, Wochen, Wochenende, Laenderregeln,
+                // Ferienliste samt Migration. Wiederholbar.
+                KalenderbedienungSchema.Ausfuehren(null);
+                // Schritt KatalogkostenUrsprungSchema.SCHRITT (KA1): ID_KostenVorlage an den Katalogen mit Kosten,
+                // ID_Stamm an den Projektkopien ohne Ursprung, reines DDL. Wiederholbar.
+                KatalogkostenUrsprungSchema.Ausfuehren(null);
+                // Schritt KatalogkostenInvestitionSchema.SCHRITT (KA1): ID_KostenVorlageInvestition an den Katalogen mit
+                // Kosten, reines DDL. Wiederholbar.
+                KatalogkostenInvestitionSchema.Ausfuehren(null);
+                // Schritt KaeltemaschineTeillastSchema.SCHRITT (KM3): Teillast und Takten an Katalog, Projektkopie und Ergebnis
+                // der Kaeltemaschine, leer; Ergaenzung der Typkennfelder. Wiederholbar.
+                KaeltemaschineTeillastSchema.Ausfuehren(null);
+                // Schritt KaelteKatalogfelderSchema.SCHRITT (K-A): Geraeteart, GWP, Fuellmenge, saisonale Kennzahl an Katalog und
+                // Projektkopie, die Geraeteart nach der Rueckkuehlart rueckgefuellt. Wiederholbar.
+                KaelteKatalogfelderSchema.Ausfuehren(null);
+                // Schritt KaelteRangSchema.SCHRITT (KB-D): Kaelte_Rang an Tab_Energieanlagen, leer = Vorgabefolge, reines DDL.
+                // Wiederholbar.
+                KaelteRangSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfSchema.SCHRITT (K1): Kaeltebedarfsprofile, Typkatalog, Zuordnung mit Deckungsart,
+                // Deckungsspalten an Z_ProjektWaermebedarf ('zentral'), Saat der sechs Typsaetze. Wiederholbar.
+                KaeltebedarfSchema.Ausfuehren(null);
+                // Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Katalog und Projektkopie des Rueckkuehlwerks, Verweis und
+                // Wasserpreis an der Anlage, Kennzahlen am Ergebnis der Kaeltemaschine, leer, reines DDL. Wiederholbar.
+                RueckkuehlwerkSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
@@ -1089,11 +1347,13 @@ namespace EPOS.Kern.Tests
         /// Zahl zurueck.
         ///
         /// <para><b>Verwaist ist ein Ordner</b>, dessen Name genau dem Muster des Konstruktors
-        /// folgt, in dem keine Datei gesperrt ist und dessen Besitzer nicht mehr lebt: Traegt er
-        /// eine <see cref="BESITZMARKE"/>, ist sie frei; traegt er keine (eine Kopie von einem
+        /// folgt, dessen Prozess (Kennung im Namen) nicht mehr lebt, in dem keine Datei gesperrt
+        /// ist und dessen Besitzer auch nach der Marke fort ist: Traegt er eine
+        /// <see cref="BESITZMARKE"/>, ist sie frei; traegt er keine (eine Kopie von einem
         /// Stand vor der Marke), liegt seine letzte Regung mindestens
         /// <paramref name="schonfrist"/> vor <paramref name="jetztUtc"/>. Die Kopie eines
-        /// laufenden Tests - auch aus einer anderen Sitzung - bleibt damit unberuehrt.</para>
+        /// laufenden Tests - auch aus einer anderen Sitzung - bleibt damit unberuehrt; ein
+        /// Loeschversuch, der an einer Sperre scheitert, wird uebersprungen.</para>
         /// </summary>
         internal static int VerwaisteKopienAufraeumen(string wurzel, DateTime jetztUtc, TimeSpan schonfrist)
         {
@@ -1102,7 +1362,9 @@ namespace EPOS.Kern.Tests
             {
                 try
                 {
-                    if (!KOPIEORDNER.IsMatch(Path.GetFileName(ordner))) continue;
+                    Match name = KOPIEORDNER.Match(Path.GetFileName(ordner));
+                    if (!name.Success) continue;
+                    if (name.Groups["pid"].Success && ProzessLebt(name.Groups["pid"].Value)) continue;
                     if (!Verwaist(ordner, jetztUtc, schonfrist)) continue;
                     Directory.Delete(ordner, true);
                     geloescht++;
@@ -1111,6 +1373,24 @@ namespace EPOS.Kern.Tests
                 catch (UnauthorizedAccessException) { /* dito */ }
             }
             return geloescht;
+        }
+
+        /// <summary>
+        /// Lebt der Prozess mit dieser Kennung? Im Zweifel ja - eine Kopie bleibt lieber einen Lauf
+        /// laenger liegen, als dass ein laufender Test seine Datenbank verliert.
+        /// </summary>
+        internal static bool ProzessLebt(string kennung)
+        {
+            if (!int.TryParse(kennung, NumberStyles.None, CultureInfo.InvariantCulture, out int pid) || pid <= 0)
+                return false;
+            try
+            {
+                using (Process p = Process.GetProcessById(pid))
+                    return !p.HasExited;
+            }
+            catch (ArgumentException) { return false; }          // kein Prozess mit dieser Kennung
+            catch (InvalidOperationException) { return false; }  // schon beendet
+            catch (Exception) { return true; }                   // fremder Prozess, kein Zugriff: lebt
         }
 
         private static bool Verwaist(string ordner, DateTime jetztUtc, TimeSpan schonfrist)

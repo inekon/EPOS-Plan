@@ -193,6 +193,16 @@ public static class Seitenschluessel
     /// </remarks>
     public const string StromspeicherAuslegung = "STROMSPEICHER_AUSLEGUNG";
 
+    /// <summary>
+    /// Die Ansicht „Pufferspeicher-Auslegung" (<c>Seiten.Pufferspeicher.PufferAuslegungSeite</c>;
+    /// Konzept Pufferspeicher-Auslegung, Stufe P2) — eine freie Ansicht nach dem Muster der
+    /// Stromspeicher-Auslegung, ohne Menüpunkt und ohne <c>Masken.*</c>-Zwilling. Die Wege hinein:
+    /// „Pufferspeicher auslegen…" in ① Konfiguration, „Auslegen…" in der Pufferverwaltung und in der
+    /// Kachel Pufferspeicher; der Arbeitsgang (Projekt, Zielpuffer) ist vorher bei
+    /// <c>PufferAuslegungHuelle</c> angemeldet.
+    /// </summary>
+    public const string PufferAuslegung = "PUFFER_AUSLEGUNG";
+
     // =====================================================================
     //  K7 (iU9-W16c.0, Entscheid E-2) - die 25 Maskenschluessel des Kerns
     //
@@ -233,8 +243,17 @@ public static class Seitenschluessel
     /// <summary>Stammdaten Solarganglinien (Razor seit W14b.2).</summary>
     public const string SolarganglinieAdmin = WindowsFormsApplication1.Masken.SolarganglinieAdmin;
 
+    /// <summary>Stammdaten PV-Ganglinien (PVG, Schemaschritt 206) — der Dialog „Photovoltaik Ganglinie" ohne Projekt.</summary>
+    public const string PvGanglinieAdmin = WindowsFormsApplication1.Masken.PvGanglinieAdmin;
+
     /// <summary>Herstellerdaten Waermepumpen einlesen (Razor seit W13.1).</summary>
     public const string WpImport = WindowsFormsApplication1.Masken.WpImport;
+
+    /// <summary>Herstellerdaten Kälteanlagen einlesen: Wärmepumpen mit Kühlfunktion aus VDI 3805 (E119).</summary>
+    public const string WpKaelteImport = WindowsFormsApplication1.Masken.WpKaelteImport;
+
+    /// <summary>Kältemaschinen einlesen: CSV-Vorlage (Kennfeld, Nennwerte, Ökodesign A–D) oder Copper-Kurvendatei (K-C).</summary>
+    public const string KaeltemaschineImport = WindowsFormsApplication1.Masken.KaeltemaschineImport;
 
     /// <summary>Stammdaten Heizkessel (Razor seit W14a.1).</summary>
     public const string HeizkesselAdmin = WindowsFormsApplication1.Masken.HeizkesselAdmin;
@@ -364,6 +383,29 @@ public static class Seitenschluessel
     /// </summary>
     public const string BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG";
 
+    /// <summary>
+    /// Menue „Administration -> Wärme- und Kälteerzeugung -> Kältemaschinen" (<c>KaeltemaschineKatalogDialog</c>,
+    /// KU3-1) — dieselbe Lage wie <see cref="BaustoffKatalog"/>: eine freie Ansicht der Wurzel auf beiden
+    /// Plattformen; der Kern fuehrt dieselbe Zeichenkette als Ziel des Assistenten
+    /// (<c>KiMaskenziele.KAELTEMASCHINE_KATALOG</c>).
+    /// </summary>
+    public const string KaeltemaschineKatalog = "KAELTEMASCHINE_KATALOG";
+
+    /// <summary>
+    /// Der Erzeugerdialog „Kältemaschinen im Projekt" (<c>KaeltemaschineAnlageDialog</c>, KU3-4c) — eine freie
+    /// Ansicht der Wurzel für das offene Projekt auf beiden Plattformen; Einstieg ist der Knopf
+    /// „Kältemaschinen…" im Reiter „Energieerzeuger" der Startseite. Der Kern führt dieselbe Zeichenkette als
+    /// Ziel des Assistenten (<c>KiMaskenziele.KAELTEMASCHINE_ANLAGE</c>).
+    /// </summary>
+    public const string KaeltemaschineAnlage = "KAELTEMASCHINE_ANLAGE";
+
+    /// <summary>
+    /// Menue „Administration -> Wärme- und Kälteerzeugung -> Profile &amp; Lastgänge -> Betriebskalender"
+    /// (<c>BetriebskalenderDialog</c>; Entscheidungsvorlage Modellgrenzen PW2, BW2) — eine freie
+    /// Ansicht der Wurzel wie die Kataloge der Gebäudesimulation.
+    /// </summary>
+    public const string Betriebskalender = "BETRIEBSKALENDER";
+
     /// <summary>Menue „Administration -> Kosten -> Kostenverwaltung…" (<c>KostenKomponenteDialog</c>, W4.2).</summary>
     public const string Kostenverwaltung = "KOSTENVERWALTUNG";
 
@@ -393,6 +435,28 @@ public static class Seitenschluessel
     /// <summary>Menue „Administration -> Katalog-Dubletten" (<c>KatalogDublettenDialog</c>, W14c.5).</summary>
     public const string KatalogDubletten = "KATALOG_DUBLETTEN";
 
+    /// <summary>
+    /// Menue „Administration -> Daten &amp; Import -> Katalog aktualisieren…"
+    /// (<c>KatalogabgleichDialog</c>, Entscheidungsvorlage Modellgrenzen KU1 Stufe 1).
+    /// </summary>
+    /// <remarks>
+    /// Der Weg fuehrt ueber die Windows-Huelle (<c>HauptfensterHuelle.Weg</c>) in ein modales
+    /// Fenster. Auf iOS faellt der Schluessel durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort liegt kein Katalogpaket der Auslieferung.
+    /// </remarks>
+    public const string Katalogabgleich = "KATALOGABGLEICH";
+
+    /// <summary>
+    /// Menue „Administration -> Kosten -> Brennstoffe des Projekts…"
+    /// (<c>ProjektBrennstoffeDialog</c>, Anwenderentscheid 03.10.2026: Projektkopie des Brennstoffkatalogs).
+    /// </summary>
+    /// <remarks>
+    /// Der Weg fuehrt ueber die Windows-Huelle (<c>HauptfensterHuelle.Weg</c>) in ein modales
+    /// Fenster. Auf iOS faellt der Schluessel durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort liest das Projekt seine Kopien, gepflegt werden sie unter Windows.
+    /// </remarks>
+    public const string ProjektBrennstoffe = "PROJEKT_BRENNSTOFFE";
+
     /// <summary>Menue „Administration -> Lizenz…" (<c>LizenzVerwaltungDialog</c>, W15c.5).</summary>
     public const string LizenzVerwaltung = "LIZENZ_VERWALTUNG";
 
@@ -420,11 +484,11 @@ public static class Seitenschluessel
         Projektliste, Energietraeger, BhkwWirtschaftlichkeit,
         SimulationKonfiguration, SimulationErgebnis, Simulation,
         KiAssistent, Assistent,
-        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung,
+        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
-        StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,
-        WpImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
+        StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin, PvGanglinieAdmin,
+        WpImport, WpKaelteImport, KaeltemaschineImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
         BrauchwasserNutzungsarten,
         SolarkollektorenImport, PvImport, WechselrichterAdmin, WechselrichterImport,
@@ -433,9 +497,9 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
-        BaustoffKatalog, BauteilaufbauKatalog,
-        Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
-        Gesetzeskatalog, KatalogDubletten, LizenzVerwaltung, Lizenztext,
+        BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
+        Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
+        Gesetzeskatalog, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
     };
 }

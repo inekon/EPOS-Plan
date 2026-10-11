@@ -36,10 +36,9 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968",
       "1969 bis 1978", "1979 bis 1983", "1984 bis 1994", "1995 bis 2001", "2002 bis 2009",
       "2010 bis 2015", "2016 bis 2020", "ab 2021" };
-    private static readonly string[] NAMEN = { "Haus A", "Haus B", "Hotel C" };
     private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
 
-    private const string REITER2 = "Temperaturen und Ferien";
+    private const string REITER2 = "Konditionierung";
 
     public GebaeudeKatalogDialogTests()
     {
@@ -93,19 +92,18 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         GebaeudeKatalogDaten? daten = null,
         GebaeudeKatalogModus modus = GebaeudeKatalogModus.Bearbeiten,
         Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? speichern = null,
-        Func<string, GebaeudeKatalogDaten?>? lies = null,
         Func<IReadOnlyDictionary<string, object>>? brauchwasser = null,
         Action<bool>? geschlossen = null,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        KonditionierungWeg? konditionierung = null)
         => Render<GebaeudeKatalogDialog>(p => p
             .Add(x => x.Daten, daten ?? Satz())
+            .Add(x => x.Konditionierung, konditionierung)
             .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.Modus, modus)
             .Add(x => x.Gebaeudetypen, () => TYPEN)
             .Add(x => x.Gebaeudearten, () => ARTEN)
             .Add(x => x.Baualtersklassen, KLASSEN)
-            .Add(x => x.Katalognamen, () => NAMEN)
-            .Add(x => x.Lies, lies ?? (n => Satz(n)))
             .Add(x => x.Speichern, speichern ?? ((_, _, _) => new GebaeudeKatalogErgebnis(true, "")))
             .Add(x => x.BrauchwasserGaben, brauchwasser)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
@@ -174,18 +172,29 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.DoesNotContain("Fläschen", cut.Markup);
     }
 
+    /// <summary>
+    /// Der zweite Reiter ist „Konditionierung" (Stufe KP2, Welle U1, Festlegung 6): die Vorgabe-Matrix
+    /// mit den Bestandszellen (ohne Weg bedienbar), das Nachtfenster als EIN Feld, die
+    /// Maximalraumtemperatur und die Ferienzeiträume des Gebäudes.
+    /// </summary>
     [Fact]
-    public void Der_zweite_Reiter_traegt_Raumtemperaturen_und_Ferien()
+    public void Der_zweite_Reiter_traegt_Matrix_und_Ferien()
     {
         var cut = Aufbauen();
         ReiterWaehlen(cut, REITER2);
 
-        // 5 Raumtemperaturen, dazu 2 Ganzzahlfelder der Nachtzeit (E43) und 16 fuer die vier
-        // Ferienzeitraeume.
-        Assert.Equal(5, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Equal(18, cut.FindAll("input[inputmode=numeric]").Count);
+        // Ohne Weg sind die Bestandszellen bedienbar: Heizen Tag, Nacht, Wochenende, Ferien; die
+        // Infiltration und die Nutzerlueftung; die inneren Waermegewinne - dazu die
+        // Maximalraumtemperatur (8). Die Kuehlspalte ist ohne „Gebaeude wird gekuehlt" weich gesperrt.
+        // Das Nachtfenster ist EIN Feld (E43), dazu 16 fuer die vier Ferienzeitraeume.
+        Assert.Equal(8, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal(17, cut.FindAll("input[inputmode=numeric]").Count);
 
-        Assert.Contains("Raumtemperaturen", cut.Markup);
+        Assert.Single(cut.FindAll("table.epos-kond-matrix"));
+        Assert.Equal(new[] { "Heizen °C", "Kühlen °C", "Lüftung 1/h", "Geräte W bzw. %", "Personen W bzw. %" },
+                     cut.FindAll("table.epos-kond-matrix th[scope=col]").Select(t => t.TextContent.Trim()));
+        Assert.Equal(new[] { "Nennwert", "Tag", "Nacht", "Wochenende", "Ferien", "Saison" },
+                     cut.FindAll("table.epos-kond-matrix th[scope=row]").Select(t => t.TextContent.Trim()));
         Assert.Contains("Ferien Anfang", cut.Markup);
         Assert.Contains("Ferien Ende", cut.Markup);
         Assert.Contains("Winter :", cut.Markup);
@@ -435,17 +444,70 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
               .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
               .QuerySelector("input")!;
 
+    /// <summary>
+    /// Die Wurzel trägt die Marke des breiten Editors (<c>epos-gebk-editor</c>): Das Stilblatt nimmt ihr
+    /// den Deckel der <c>.epos-dialog</c> (Stufe KP2, Welle U1; <c>StilblattTests</c>).
+    /// </summary>
     [Fact]
-    public void Die_Lueftungsfelder_stehen_bei_den_Modellparametern()
+    public void Die_Wurzel_traegt_die_Marke_des_breiten_Editors()
+    {
+        var cut = Aufbauen();
+        IElement wurzel = cut.Find("div.epos-dialog");
+        Assert.Contains("epos-gebk-editor", wurzel.ClassName);
+    }
+
+    /// <summary>
+    /// <b>Die Altfelder stehen nur noch im Reiter „Konditionierung"</b> (Stufe KP2, Welle U1; E56 F3 (a)):
+    /// Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung und Maximalraumtemperatur.
+    /// Der erste Reiter behält Luftwechselrate, „Gebäude wird gekühlt", Kühlleistungsgrenze und
+    /// Kühlübergabe und sagt in einer Herleitungszeile, wo die übrigen stehen.
+    /// </summary>
+    [Fact]
+    public void Die_Altfelder_stehen_nur_im_Reiter_Konditionierung()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        daten.KuehlungAktiv = true;
+        daten.KuehlSollwert = 26;
+        var cut = Aufbauen(daten);
+
+        List<string> reiter1 = cut.FindAll("label.epos-feld .epos-feld-text, label.epos-schalter .epos-feld-text")
+                                  .Select(t => t.TextContent.Trim()).ToList();
+        foreach (string alt in new[] { "Interne Wärmegewinne :", "Infiltration :", "Nutzerlüftung :", "Kühlsollwert :",
+                                       "Maximalraumtemperatur :", "Sommerlüftung" })
+            Assert.DoesNotContain(alt, reiter1);
+        Assert.NotNull(Eingabe(cut, "Luftwechselrate :"));
+        Assert.NotNull(Kaestchen(cut, "Gebäude wird gekühlt"));
+        Assert.NotNull(Eingabe(cut, "Kühlleistungsgrenze :"));
+        Assert.Contains("Sollwerte, Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und Maximalraumtemperatur " +
+                        "stehen im Reiter „Konditionierung“.", cut.Markup);
+
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("400", Eingabe(cut, "Geräte · Nennwert").GetAttribute("value"));
+        Assert.NotNull(Eingabe(cut, "Lüftung · Infiltration"));
+        Assert.NotNull(Eingabe(cut, "Lüftung · Nutzerlüftung"));
+        Assert.Equal("26", Eingabe(cut, "Kühlen · Tag").GetAttribute("value"));
+        Assert.NotNull(Eingabe(cut, "Maximalraumtemperatur :"));
+        Assert.NotNull(Kaestchen(cut, "Sommerlüftung"));
+    }
+
+    /// <summary>
+    /// Infiltration und Nutzerlüftung stehen in der Spalte „Lüftung" der Matrix, die Sommerlüftung
+    /// in den Zusatzzeilen (E56 F3 (a)); die Herleitung des Luftwechsels bleibt im ersten Reiter
+    /// unter der Luftwechselrate.
+    /// </summary>
+    [Fact]
+    public void Die_Lueftungsfelder_stehen_in_der_Spalte_Lueftung()
     {
         var cut = Aufbauen();
 
-        Assert.NotNull(Eingabe(cut, "Infiltration :"));
-        Assert.NotNull(Eingabe(cut, "Nutzerlüftung :"));
-        Assert.NotNull(Kaestchen(cut, "Sommerlüftung"));
         // Beide leer: der VDI-Weg rechnet mit der Luftwechselrate - sie steht in der Herleitung.
         Assert.Contains("VDI 6007 rechnet mit 0,50 1/h (Luftwechselrate des Gebäudes).", cut.Markup);
-        Assert.Equal("", Eingabe(cut, "Infiltration :").GetAttribute("placeholder") ?? "");
+
+        ReiterWaehlen(cut, REITER2);
+        Assert.NotNull(Eingabe(cut, "Lüftung · Infiltration"));
+        Assert.NotNull(Eingabe(cut, "Lüftung · Nutzerlüftung"));
+        Assert.NotNull(Kaestchen(cut, "Sommerlüftung"));
+        Assert.Equal("", Eingabe(cut, "Lüftung · Infiltration").GetAttribute("placeholder") ?? "");
     }
 
     [Fact]
@@ -454,10 +516,12 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         GebaeudeKatalogDaten daten = Satz();
         daten.Modell = DbWerte.GEBAEUDE_MODELL_VDI6007;
         var cut = Aufbauen(daten);
+        ReiterWaehlen(cut, REITER2);
 
-        Eingabe(cut, "Infiltration :").Input("0,2");
+        Eingabe(cut, "Lüftung · Infiltration").Input("0,2");
 
-        Assert.Equal("Vorgabe 0,4", Eingabe(cut, "Nutzerlüftung :").GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 0,4", Eingabe(cut, "Lüftung · Nutzerlüftung").GetAttribute("placeholder"));
+        ReiterWaehlen(cut, "Gebäude und Hülle");
         Assert.Contains("VDI 6007 rechnet mit 0,60 1/h (Infiltration + Nutzerlüftung).", cut.Markup);
         // H_ve folgt auf dem VDI-Weg dem wirksamen Luftwechsel.
         Assert.Equal(Wk(0.6 * 150 * 2.5 * 0.34), Eingabe(cut, "H_ve Lüftung :").GetAttribute("value"));
@@ -474,7 +538,8 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.False(geschrieben.Sommerlueftung);
 
         var cut2 = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
-        Eingabe(cut2, "Nutzerlüftung :").Input("0,8");
+        ReiterWaehlen(cut2, REITER2);
+        Eingabe(cut2, "Lüftung · Nutzerlüftung").Input("0,8");
         Kaestchen(cut2, "Sommerlüftung").Change(true);
         Assert.Contains("steigt der Luftwechsel auf 2,0 1/h", cut2.Markup);
         Ok(cut2);
@@ -487,9 +552,10 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     public void Eine_Infiltration_von_0_faerbt_das_Feld()
     {
         var cut = Aufbauen();
-        Eingabe(cut, "Infiltration :").Input("0");
+        ReiterWaehlen(cut, REITER2);
+        Eingabe(cut, "Lüftung · Infiltration").Input("0");
 
-        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Infiltration :").ClassName ?? "");
+        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Lüftung · Infiltration").ClassName ?? "");
     }
 
     [Fact]
@@ -718,19 +784,19 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         var cut = Aufbauen();
         ReiterWaehlen(cut, REITER2);
 
-        // Die ersten zwei Ganzzahlfelder sind Beginn und Ende der Nachtzeit (E43).
+        // Das erste Feld mit Ziffern ist das Nachtfenster der Heizspalte (E43, ein Feld „22–6").
         var ganzzahl = cut.FindAll("input[inputmode=numeric]");
-        ganzzahl[2].Input("1");    // Winter Beginn: 1.2.  -> Jahrestag 32
-        ganzzahl[3].Input("2");
+        ganzzahl[1].Input("1");    // Winter Beginn: 1.2.  -> Jahrestag 32
+        ganzzahl[2].Input("2");
         var ende = cut.FindAll("input[inputmode=numeric]");
-        ende[10].Input("1");       // Winter Ende:   1.3.  -> Jahrestag 60 > 32
-        ende[11].Input("3");
+        ende[9].Input("1");        // Winter Ende:   1.3.  -> Jahrestag 60 > 32
+        ende[10].Input("3");
 
         ReiterWaehlen(cut, "Gebäude und Hülle");
         Ok(cut);
 
         Assert.Contains("Jahresgrenze", cut.Instance.Meldung);
-        Assert.Equal("TEMPERATUREN", cut.Instance.AktiverReiter);
+        Assert.Equal("KONDITIONIERUNG", cut.Instance.AktiverReiter);
     }
 
     // =================================================================================
@@ -813,21 +879,118 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal("Haus A", bezeichner);
     }
 
+    // =================================================================================
+    // „Speichern unter" — der nicht schließende Zweitknopf (E27; Entwurf KP2, B1, B2, Festlegung 2)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Katalogmodus:</b> Der Delegat bekommt den Satz unter dem NEUEN Namen und als Bezeichner den
+    /// URSPRUNGSNAMEN — unter ihm sucht die Hülle die Quelle der Konditionierung (B2). Der Dialog bleibt
+    /// offen und meldet den neuen Satz (B1); danach arbeitet er am neuen Satz weiter: Das nächste OK
+    /// überschreibt ihn, nicht das Original.
+    /// </summary>
     [Fact]
-    public void Speichern_unter_legt_unter_dem_neuen_Namen_an_und_schliesst()
+    public void Speichern_unter_legt_aus_dem_Ursprungssatz_an_und_arbeitet_am_neuen_Satz_weiter()
     {
-        string bezeichner = "";
-        bool? neu = null;
+        var aufrufe = new List<(bool IstNeu, string Bezeichner, string Name)>();
         bool? geschlossen = null;
-        var cut = Aufbauen(speichern: (_, istNeu, bez) => { neu = istNeu; bezeichner = bez; return new(true, ""); },
+        var cut = Aufbauen(speichern: (d, istNeu, bez) => { aufrufe.Add((istNeu, bez, d.Name)); return new(true, ""); },
                            geschlossen: b => geschlossen = b);
 
         cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus Kopie");
         Knopf(cut, "Speichern unter").Click();
 
-        Assert.True(neu);
-        Assert.Equal("Haus Kopie", bezeichner);
+        var (istNeu, bezeichner, name) = Assert.Single(aufrufe);
+        Assert.True(istNeu);
+        Assert.Equal("Haus A", bezeichner);
+        Assert.Equal("Haus Kopie", name);
+        Assert.Null(geschlossen);
+        Assert.Equal("Katalogsatz „Haus Kopie“ angelegt.", cut.Instance.Meldung);
+        Assert.Contains("Katalogsatz „Haus Kopie“ angelegt.", cut.Find(".epos-warnbanner--erfolg").TextContent);
+        Assert.Equal("Haus Kopie", cut.Instance.Ursprungsname);
+
+        Ok(cut);
+
+        Assert.Equal(2, aufrufe.Count);
+        Assert.False(aufrufe[1].IstNeu);
+        Assert.Equal("Haus Kopie", aufrufe[1].Bezeichner);
         Assert.True(geschlossen);
+    }
+
+    /// <summary>
+    /// Nach „Speichern unter" meldet auch Abbrechen <c>true</c> zurück — der Aufrufer frischt seine
+    /// Listen auf, denn ein Katalogsatz ist geschrieben.
+    /// </summary>
+    [Fact]
+    public void Nach_Speichern_unter_meldet_Abbrechen_geschrieben()
+    {
+        bool? geschlossen = null;
+        var cut = Aufbauen(geschlossen: b => geschlossen = b);
+
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus Kopie");
+        Knopf(cut, "Speichern unter").Click();
+        Assert.Null(geschlossen);
+
+        Knopf(cut, "Abbrechen").Click();
+
+        Assert.True(geschlossen);
+    }
+
+    /// <summary>
+    /// <b>Projektmodus:</b> „Speichern unter" legt den Katalogsatz an und lässt den Projektzustand
+    /// unberührt — der Dialog bleibt offen, der Ursprungsname bleibt der der Projektkopie, und das
+    /// folgende OK schreibt die Projektkopie vollständig (Schritt 1 wird nicht übersprungen).
+    /// </summary>
+    [Fact]
+    public void Speichern_unter_im_Projekt_bleibt_offen_und_OK_schreibt_danach_die_Projektkopie()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner, string Name, double? Raumhoehe)>();
+        bool? geschlossen = null;
+        var cut = Aufbauen(modus: GebaeudeKatalogModus.Projekt,
+                           speichern: (d, istNeu, bez) => { aufrufe.Add((istNeu, bez, d.Name, d.Raumhoehe)); return new(true, ""); },
+                           geschlossen: b => geschlossen = b);
+
+        Eingabe(cut, "Raumhöhe :").Input("3");
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus Katalog");
+        Knopf(cut, "Speichern unter").Click();
+
+        var (istNeu, bezeichner, name, hoehe) = Assert.Single(aufrufe);
+        Assert.True(istNeu);
+        Assert.Equal("Haus A", bezeichner);
+        Assert.Equal("Haus Katalog", name);
+        Assert.Equal(3.0, hoehe);
+        Assert.Null(geschlossen);
+        Assert.Equal("Katalogsatz „Haus Katalog“ angelegt.", cut.Instance.Meldung);
+        Assert.Equal("Haus A", cut.Instance.Ursprungsname);
+
+        Ok(cut);
+
+        Assert.Equal(2, aufrufe.Count);
+        Assert.False(aufrufe[1].IstNeu);
+        Assert.Equal("Haus A", aufrufe[1].Bezeichner);
+        Assert.Equal(3.0, aufrufe[1].Raumhoehe);
+        Assert.True(geschlossen);
+    }
+
+    /// <summary>Eine abgelehnte Anlage (etwa ein vergebener Name) meldet und hält den Dialog am Ursprungssatz.</summary>
+    [Fact]
+    public void Ein_abgelehntes_Speichern_unter_haelt_den_Ursprungssatz()
+    {
+        bool? geschlossen = null;
+        var cut = Aufbauen(speichern: (_, istNeu, _) => istNeu
+                               ? new GebaeudeKatalogErgebnis(false, "Ein Gebäude mit diesem Namen steht schon im Katalog.")
+                               : new GebaeudeKatalogErgebnis(true, ""),
+                           geschlossen: b => geschlossen = b);
+
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus B");
+        Knopf(cut, "Speichern unter").Click();
+
+        Assert.Equal("Ein Gebäude mit diesem Namen steht schon im Katalog.", cut.Instance.Meldung);
+        Assert.Equal("Haus A", cut.Instance.Ursprungsname);
+        Assert.Null(geschlossen);
+
+        Knopf(cut, "Abbrechen").Click();
+        Assert.False(geschlossen);
     }
 
     // =================================================================================
@@ -873,25 +1036,26 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal("Neubau", bezeichner);
     }
 
+    /// <summary>
+    /// <b>Drei Betriebsarten, der Name ist immer ein Textfeld</b> (Stufe KP2, Welle U0b): Die
+    /// Betriebsart „Admin" — der Name als Klappliste aller Katalogsätze — ist entfallen; die
+    /// Gebäudeverwaltung ist eine eigene Komponente und ruft den Editor nur für „Neu…".
+    /// </summary>
     [Fact]
-    public void Im_Modus_Admin_ist_der_Name_eine_Klappliste_ohne_Speichern_unter()
+    public void Es_gibt_drei_Betriebsarten_und_der_Name_ist_ein_Textfeld()
     {
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin);
+        Assert.Equal(new[] { "Bearbeiten", "Neu", "Projekt" }, Enum.GetNames<GebaeudeKatalogModus>());
 
-        Assert.NotNull(Klappliste(cut, "Name :"));
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Speichern unter");
-        Assert.Contains("Haus A", cut.Markup);
-        Assert.Contains("Hotel C", cut.Markup);
-    }
+        foreach (GebaeudeKatalogModus modus in Enum.GetValues<GebaeudeKatalogModus>())
+        {
+            var cut = Aufbauen(modus: modus);
+            Assert.Equal("input", Feld(cut, "Name :").QuerySelector("input, select")!.LocalName);
+            Assert.Equal("Haus A", Eingabe(cut, "Name :").GetAttribute("value"));
+        }
 
-    [Fact]
-    public void Im_Modus_Admin_laedt_der_Namenswechsel_den_gewaehlten_Satz()
-    {
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin);
-
-        Klappliste(cut, "Name :").Change("2");   // Hotel C
-
-        Assert.Equal("Hotel C", cut.Instance.Ursprungsname);
+        // Die Parameter der Klappliste gibt es nicht mehr.
+        Assert.Null(typeof(GebaeudeKatalogDialog).GetProperty("Katalognamen"));
+        Assert.Null(typeof(GebaeudeKatalogDialog).GetProperty("Lies"));
     }
 
     // =================================================================================
@@ -913,33 +1077,43 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// DAS BAUJAHR FÜHRT (E47, F2): Mit Baujahr zeigt die Klappliste die Klasse aus dem Jahr, ist
-    /// gesperrt, die Herleitungszeile sagt es — und gespeichert wird diese Klasse. Ohne Baujahr ist sie
-    /// wieder wählbar.
+    /// DAS BAUJAHR SCHLÄGT VOR (Anwenderwunsch 08.10.2026, ändert E47 F2): Die Klappliste ist immer aktiv; ein
+    /// gespeicherter Satz zeigt seine gespeicherte Klasse, auch wenn das Baujahr eine andere vorschlüge. Ein
+    /// neues Baujahr setzt die Klasse auf den Vorschlag, eine abweichende Wahl danach gilt und wird gespeichert.
     /// </summary>
     [Fact]
-    public void Das_Baujahr_fuehrt_die_Baualtersklasse()
+    public void Das_Baujahr_schlaegt_die_Baualtersklasse_vor_und_die_Wahl_bleibt_frei()
     {
         GebaeudeKatalogDaten daten = Satz();
-        daten.Baualtersklasse = 0;       // gespeichert A - das Baujahr sagt E
+        daten.Baualtersklasse = 0;       // gespeichert A - das Baujahr schlüge E vor
         daten.Baujahr = 1965;
         GebaeudeKatalogDaten geschrieben = null!;
         var cut = Aufbauen(daten, speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
 
         IElement klasse = Klappliste(cut, "Baualtersklasse :");
-        Assert.NotNull(klasse.GetAttribute("disabled"));
-        Assert.Equal("1958 bis 1968", klasse.QuerySelector("option[selected]")!.TextContent.Trim());
-        Assert.Contains("Die Klasse folgt aus dem Baujahr 1965", cut.Markup);
+        Assert.Null(klasse.GetAttribute("disabled"));
+        Assert.Equal("bis 1859", klasse.QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.Contains("Vorschlag aus dem Baujahr 1965: 1958 bis 1968 – abweichende Wahl gilt.", cut.Markup);
         Ok(cut);
-        Assert.Equal(4, geschrieben.Baualtersklasse);
+        Assert.Equal(0, geschrieben.Baualtersklasse);
+        Assert.Equal(1965, geschrieben.Baujahr);
 
-        // Ein neues Baujahr zieht die Klasse nach; ohne Baujahr ist sie wieder wählbar.
+        // Ein neues Baujahr setzt den Vorschlag; eine andere Wahl gilt und wird gespeichert.
         cut = Aufbauen(Satz(), speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
         Eingabe(cut, "Baujahr :").Input("2018");
         Assert.Equal("2016 bis 2020", Klappliste(cut, "Baualtersklasse :").QuerySelector("option[selected]")!.TextContent.Trim());
-        Assert.NotNull(Klappliste(cut, "Baualtersklasse :").GetAttribute("disabled"));
-        Eingabe(cut, "Baujahr :").Input("");
         Assert.Null(Klappliste(cut, "Baualtersklasse :").GetAttribute("disabled"));
+        Klappliste(cut, "Baualtersklasse :").Change("9");
+        Assert.Equal("2002 bis 2009", Klappliste(cut, "Baualtersklasse :").QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.Contains("Vorschlag aus dem Baujahr 2018: 2016 bis 2020 – abweichende Wahl gilt.", cut.Markup);
+        Ok(cut);
+        Assert.Equal(2018, geschrieben.Baujahr);
+        Assert.Equal(9, geschrieben.Baualtersklasse);
+
+        // Ohne Baujahr ist die Klasse frei wählbar, die Zeile sagt es.
+        cut = Aufbauen(Satz(), speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        Eingabe(cut, "Baujahr :").Input("");
+        Assert.Contains("Ohne Baujahr frei wählbar.", cut.Markup);
         Klappliste(cut, "Baualtersklasse :").Change("2");
         Ok(cut);
         Assert.Null(geschrieben.Baujahr);
@@ -1150,23 +1324,6 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.Equal(9876, geschrieben);
     }
 
-    [Fact]
-    public void Das_Laden_leitet_die_Bauart_aus_der_gespeicherten_Bauweise_ab()
-    {
-        GebaeudeKatalogDaten geladen = Satz("Hotel C");
-        geladen.WohnflaecheGesamt = 100;
-        geladen.Bauweise = 10000;      // spez. 100 -> sehr schwer
-        geladen.Bauart = 0;            // absichtlich unpassend
-
-        var cut = Aufbauen(modus: GebaeudeKatalogModus.Admin, lies: _ => geladen);
-
-        Klappliste(cut, "Name :").Change("2");     // Hotel C
-
-        Assert.Equal("Hotel C", cut.Instance.Ursprungsname);
-        Assert.Equal(2, cut.Instance.Arbeitsstand.Bauart);
-        Assert.Equal(10000, cut.Instance.Arbeitsstand.Bauweise);
-    }
-
     // =================================================================================
     // Die Ableitungen des zweiten Reiters - jetzt im OK-Weg
     // =================================================================================
@@ -1178,7 +1335,7 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
         ReiterWaehlen(cut, REITER2);
 
-        cut.FindAll("input[inputmode=decimal]")[2].Input("0");
+        Eingabe(cut, "Maximalraumtemperatur :").Input("0");
         Ok(cut);
 
         Assert.Equal(24, geschrieben.MaxTemperatur);
@@ -1191,8 +1348,8 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
         ReiterWaehlen(cut, REITER2);
 
-        cut.FindAll("input[inputmode=decimal]")[3].Input("16");   // Wochenendabsenkung
-        cut.FindAll("input[inputmode=decimal]")[4].Input("15");   // Soll in Ferien
+        Eingabe(cut, "Soll am Wochenende (ganztägig)").Input("16");
+        Eingabe(cut, "Soll in Ferien (ganztägig)").Input("15");
         Ok(cut);
 
         Assert.Equal(1, geschrieben.Wochenende);
@@ -1209,10 +1366,10 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         var cut = Aufbauen();
         ReiterWaehlen(cut, REITER2);
 
-        cut.FindAll("input[inputmode=decimal]")[3].Input("0");    // Soll am Wochenende
+        Eingabe(cut, "Soll am Wochenende (ganztägig)").Input("0");
         Assert.Contains("Das Wochenende rechnet wie die Werktage", cut.Instance.Sollwertzeile);
 
-        cut.FindAll("input[inputmode=decimal]")[3].Input("16");
+        Eingabe(cut, "Soll am Wochenende (ganztägig)").Input("16");
         Assert.Contains("ganztägig 16 °C, auch nachts", cut.Instance.Sollwertzeile);
         Assert.Contains(cut.Instance.Sollwertzeile.Split(' ')[0], cut.Markup);
     }
@@ -1228,7 +1385,7 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
         ReiterWaehlen(cut, REITER2);
 
-        cut.FindAll("input[inputmode=decimal]")[3].Input("16");   // Wochenendabsenkung
+        Eingabe(cut, "Soll am Wochenende (ganztägig)").Input("16");
         Ok(cut);
 
         Assert.Equal(700, geschrieben.WwBedarf);
@@ -1522,9 +1679,10 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Mit Haken: Kühlsollwert und Kühlleistungsgrenze mit ihrer Vorgabe als Platzhalter
-    /// („Kühlung aus", „unbegrenzt") — und die Herleitungszeile nennt die Prüfregel mit dem
-    /// höchsten Heizsollwert des Satzes (Tag 20 °C, Nacht 17 °C).
+    /// Mit Haken: die Kühlleistungsgrenze mit ihrer Vorgabe als Platzhalter („unbegrenzt") und der
+    /// Kühlsollwert in der Spalte „Kühlen" der Matrix („Kühlung aus", E56 F3 (a)) — die
+    /// Herleitungszeile nennt die Prüfregel mit dem höchsten Heizsollwert des Satzes (Tag 20 °C,
+    /// Nacht 17 °C).
     /// </summary>
     [Fact]
     public void Mit_Haken_stehen_Sollwert_und_Grenze_mit_ihrer_Vorgabe()
@@ -1533,11 +1691,13 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
         Kaestchen(cut, "Gebäude wird gekühlt").Change(true);
 
-        Assert.Equal("Vorgabe: Kühlung aus", Eingabe(cut, "Kühlsollwert :").GetAttribute("placeholder"));
         Assert.Equal("Vorgabe: unbegrenzt", Eingabe(cut, "Kühlleistungsgrenze :").GetAttribute("placeholder"));
-        Assert.Equal("", Eingabe(cut, "Kühlsollwert :").GetAttribute("value") ?? "");
         Assert.Contains("mindestens 1 K über dem höchsten Heizsollwert liegen (20,0 °C)", Kuehlgruppe(cut));
         Assert.Contains("Maximalraumtemperatur (24,0 °C)", Kuehlgruppe(cut));
+
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("Vorgabe: Kühlung aus", Eingabe(cut, "Kühlen · Tag").GetAttribute("placeholder"));
+        Assert.Equal("", Eingabe(cut, "Kühlen · Tag").GetAttribute("value") ?? "");
     }
 
     /// <summary>
@@ -1569,8 +1729,9 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
 
         Kaestchen(cut, "Gebäude wird gekühlt").Change(true);
-        Eingabe(cut, "Kühlsollwert :").Input("26");
         Eingabe(cut, "Kühlleistungsgrenze :").Input("12,5");
+        ReiterWaehlen(cut, REITER2);
+        Eingabe(cut, "Kühlen · Tag").Input("26");
         Ok(cut);
 
         Assert.True(geschrieben.KuehlungAktiv);
@@ -1598,9 +1759,11 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.False(geschrieben);
         Assert.Contains("Der Kühlsollwert 22,5 °C liegt nicht mindestens 1 K über dem höchsten Heizsollwert 22,0 °C",
                         cut.Instance.Meldung);
+        // Der Kühlsollwert steht in der Matrix (Stufe KP2, E56 F3 (a)): OK springt auf „Konditionierung".
+        Assert.Equal("KONDITIONIERUNG", cut.Instance.AktiverReiter);
+        Eingabe(cut, "Kühlen · Tag").Input("23");
+        ReiterWaehlen(cut, "Gebäude und Hülle");
         Assert.Contains("(22,0 °C)", Kuehlgruppe(cut));
-
-        Eingabe(cut, "Kühlsollwert :").Input("23");
         Ok(cut);
         Assert.True(geschrieben);
     }
@@ -1619,9 +1782,10 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
         Ok(cut);
         Assert.Contains("zwischen 15 und 35 °C", cut.Instance.Meldung);
+        Assert.Equal("KONDITIONIERUNG", cut.Instance.AktiverReiter);
 
-        Eingabe(cut, "Kühlsollwert :").Input("36");
-        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Kühlsollwert :").ClassName);
+        Eingabe(cut, "Kühlen · Tag").Input("36");
+        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Kühlen · Tag").ClassName);
         Assert.Equal(40.0, cut.Instance.Arbeitsstand.KuehlSollwert);
     }
 
@@ -1651,7 +1815,9 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     /// <b>Bestandsweg-Gebäude (E20; 8.6, erster Zusatzfall)</b> — der Wächter gegen einen
     /// Rückfall auf U2: Die Gruppe ist SICHTBAR und BEARBEITBAR, trägt die Herleitungszeile
     /// „Tagesbilanz (Bestandsweg) liefert keine Kühllast", und KEIN Feld ist gesperrt. Auf
-    /// VDI 6007 fehlt die Zeile. Der Fall steht in der Löschliste der Stufe GA.
+    /// VDI 6007 fehlt die Zeile. Der Kühlsollwert steht in der Matrix, und die zeigt auf dem
+    /// Tagesbilanz-Weg nur die Felder, die er liest (Teilkonzept Konditionierungsprofile 2.2) —
+    /// mit VDI 6007 ist die Zelle da. Der Fall steht in der Löschliste der Stufe GA.
     /// </summary>
     [Fact]
     public void Ein_Bestandsweg_Gebaeude_zeigt_die_Gruppe_bearbeitbar_mit_Hinweis()
@@ -1665,13 +1831,16 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         const string HINWEIS = "Tagesbilanz (Bestandsweg) liefert keine Kühllast";
         Assert.Contains(HINWEIS, Kuehlgruppe(cut));
         Assert.False(Kaestchen(cut, "Gebäude wird gekühlt").HasAttribute("disabled"));
-        Assert.False(Eingabe(cut, "Kühlsollwert :").HasAttribute("disabled"));
         Assert.False(Eingabe(cut, "Kühlleistungsgrenze :").HasAttribute("disabled"));
-        Assert.Equal("26", Eingabe(cut, "Kühlsollwert :").GetAttribute("value"));
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("—", cut.Find("td.epos-kond-zelle[data-groesse='1'][data-zeile='1']").TextContent.Trim());
 
+        ReiterWaehlen(cut, "Gebäude und Hülle");
         Klappliste(cut, "Rechenweg :").Change("0");       // VDI 6007
         Assert.DoesNotContain(HINWEIS, Kuehlgruppe(cut));
-        Assert.NotNull(Eingabe(cut, "Kühlsollwert :"));
+        ReiterWaehlen(cut, REITER2);
+        Assert.False(Eingabe(cut, "Kühlen · Tag").HasAttribute("disabled"));
+        Assert.Equal("26", Eingabe(cut, "Kühlen · Tag").GetAttribute("value"));
     }
 
     /// <summary>Der Assistent liest und setzt die drei Kühlfelder über den Arbeitsstand.</summary>
@@ -1700,7 +1869,75 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.True(cut.Instance.Arbeitsstand.KuehlungAktiv);
         Assert.Equal(26.0, cut.Instance.Arbeitsstand.KuehlSollwert);
         Assert.Equal(8.0, cut.Instance.Arbeitsstand.KuehlleistungMax);
-        Assert.Equal("26", Eingabe(cut, "Kühlsollwert :").GetAttribute("value"));
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("26", Eingabe(cut, "Kühlen · Tag").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// <b>Der Assistent liest und setzt die Zellen der Vorgabe-Matrix</b> (Stufe KP2, Welle U1) — als
+    /// Felder der Tafel aus dem Profil <c>KiKonditionierungsfelder</c>, über denselben Weg wie die Zellen
+    /// des Reiters: eine neue Zelle, „aus", eine Bestandszelle unter ihrem Namen (<c>soll_tag</c>) und ein
+    /// Nachtfenster, dessen erste Grenze auf die zweite wartet. Ohne Konditionierung nennt er den Grund.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_und_setzt_die_Zellen_der_Matrix()
+    {
+        var aufrufe = new List<string>();
+        var weg = new KonditionierungWeg
+        {
+            ZelleSetzen = (s, o, z, c) =>
+            {
+                aufrufe.Add(o.Groesse + " " + z);
+                GebaeudeKatalogDaten g = s.Gebaeude.Kopie();
+                g.Konditionierung ??= new KonditionierungDaten();
+                KonditionierungZelle ziel = g.Konditionierung.Spalte(o.Groesse).Zelle(z);
+                ziel.Wert = c.Wert;
+                ziel.Aus = c.Aus;
+                ziel.Von = c.Von;
+                ziel.Bis = c.Bis;
+                if (o.Groesse == KonditionierungGroesse.Heizen && z == KonditionierungZeile.Tag) g.SollTag = c.Wert;
+                g.Konditionierung.Weiterzaehlen();
+                return KonditionierungErgebnis.Gut(new KonditionierungStand(g, s.Zonen));
+            }
+        };
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Konditionierung = new KonditionierungDaten();
+        var cut = Aufbauen(daten, konditionierung: weg);
+
+        WindowsFormsApplication1.KiFeldzugang Feld(string name)
+            => KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, name)!;
+
+        Feld("kond_geraete_tag").Setzen(80.0);
+        Assert.Equal(80.0, Feld("kond_geraete_tag").Lesen());
+        Assert.Equal(new[] { "Geraete Tag" }, aufrufe);
+
+        Feld("kond_heizen_nacht_aus").Setzen(true);
+        Assert.Equal(true, Feld("kond_heizen_nacht_aus").Lesen());
+
+        // Die Bestandszelle unter ihrem Namen - über den Weg der Matrix.
+        Feld("soll_tag").Setzen(21.0);
+        Assert.Equal("Heizen Tag", aufrufe[^1]);
+        Assert.Equal(21.0, cut.Instance.Arbeitsstand.SollTag);
+
+        // Ein Nachtfenster hat nur beide Grenzen zusammen: die erste wartet.
+        int vorher = aufrufe.Count;
+        Feld("kond_geraete_nacht_von").Setzen(20);
+        Assert.Equal(vorher, aufrufe.Count);
+        Assert.Equal(20, Feld("kond_geraete_nacht_von").Lesen());
+        Feld("kond_geraete_nacht_bis").Setzen(5);
+        Assert.Equal("Geraete Nacht", aufrufe[^1]);
+        Assert.Equal(5, Feld("kond_geraete_nacht_bis").Lesen());
+
+        cut.Render();
+        ReiterWaehlen(cut, REITER2);
+        Assert.Equal("80", Eingabe(cut, "Geräte · Tag").GetAttribute("value"));
+        Assert.Equal("20–5", Eingabe(cut, "Geräte · Nachtfenster").GetAttribute("value"));
+
+        // Ohne Konditionierung (ohne Tabellen, ohne Gaben): benannt abgelehnt.
+        Aufbauen();
+        var fehler = Assert.Throws<InvalidOperationException>(() => Feld("kond_geraete_tag").Setzen(50.0));
+        Assert.Contains("Konditionierung", fehler.Message);
+        Assert.Null(Feld("kond_geraete_tag").Lesen());
     }
 
     // =================================================================================
@@ -1708,8 +1945,8 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>
-    /// <b>Beginn und Ende stehen gleich hinter „Nachtabsenkung auf"</b>: zwei Ganzzahlfelder auf dem
-    /// zweiten Reiter, leer mit der Vorgabe (22 bzw. 6 Uhr) als Platzhalter.
+    /// <b>Das Nachtfenster steht in der Nachtzelle der Heizspalte</b> (Stufe KP2, Welle U1): EIN Feld
+    /// „von–bis" gleich hinter „Nachtabsenkung auf", leer mit der Vorgabe 22–6 Uhr als Platzhalter.
     /// </summary>
     [Fact]
     public void Die_Nachtzeit_steht_hinter_der_Nachtabsenkung_mit_der_Vorgabe_als_Platzhalter()
@@ -1717,19 +1954,17 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         var cut = Aufbauen();
         ReiterWaehlen(cut, REITER2);
 
-        IElement beginn = Eingabe(cut, "Nachtabsenkung von :");
-        IElement ende = Eingabe(cut, "Nachtabsenkung bis :");
-        Assert.Equal("numeric", beginn.GetAttribute("inputmode"));
-        Assert.Equal("", beginn.GetAttribute("value") ?? "");
-        Assert.Equal("", ende.GetAttribute("value") ?? "");
-        Assert.Equal("Vorgabe 22", beginn.GetAttribute("placeholder"));
-        Assert.Equal("Vorgabe 6", ende.GetAttribute("placeholder"));
+        IElement fenster = Eingabe(cut, "Heizen · Nachtfenster");
+        Assert.Equal("numeric", fenster.GetAttribute("inputmode"));
+        Assert.Equal("", fenster.GetAttribute("value") ?? "");
+        Assert.Equal("22–6", fenster.GetAttribute("placeholder"));
 
-        List<string> beschriftungen = cut.FindAll("label.epos-feld .epos-feld-text").Select(e => e.TextContent.Trim()).ToList();
-        int nacht = beschriftungen.IndexOf("Nachtabsenkung auf :");
-        Assert.True(nacht >= 0);
-        Assert.Equal(nacht + 1, beschriftungen.IndexOf("Nachtabsenkung von :"));
-        Assert.Equal(nacht + 2, beschriftungen.IndexOf("Nachtabsenkung bis :"));
+        // In derselben Zelle wie die Nachtabsenkung, gleich dahinter.
+        IElement zelle = cut.Find("td.epos-kond-zelle[data-groesse='0'][data-zeile='2']");
+        List<string> beschriftungen = zelle.QuerySelectorAll("label.epos-feld .epos-feld-text")
+                                           .Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Heizen · Nacht", "Heizen · Nachtfenster" }, beschriftungen);
+        Assert.Equal("17", Eingabe(cut, "Heizen · Nacht").GetAttribute("value"));
     }
 
     /// <summary>Eine gesetzte Nachtzeit reist in den Satz; leer bleibt leer (NULL = Vorgabe), nie 0.</summary>
@@ -1747,56 +1982,71 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         daten.NachtEnde = 7;
         cut = Aufbauen(daten, speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
         ReiterWaehlen(cut, REITER2);
-        Assert.Equal("21", Eingabe(cut, "Nachtabsenkung von :").GetAttribute("value"));
-        Eingabe(cut, "Nachtabsenkung von :").Input("23");
-        Eingabe(cut, "Nachtabsenkung bis :").Input("5");
+        Assert.Equal("21–7", Eingabe(cut, "Heizen · Nachtfenster").GetAttribute("value"));
+        Eingabe(cut, "Heizen · Nachtfenster").Input("23-5");
         Ok(cut);
         Assert.Equal(23, geschrieben.NachtBeginn);
         Assert.Equal(5, geschrieben.NachtEnde);
+
+        // Geleert heißt wieder die Vorgabe: NULL.
+        cut = Aufbauen(daten, speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        ReiterWaehlen(cut, REITER2);
+        Eingabe(cut, "Heizen · Nachtfenster").Input("");
+        Ok(cut);
+        Assert.Null(geschrieben.NachtBeginn);
+        Assert.Null(geschrieben.NachtEnde);
     }
 
     /// <summary>
-    /// Nur eine Grenze oder Beginn = Ende hält den OK-Weg an — mit der Regel des Kerns
-    /// (<c>Nachtzeit.Pruefen</c>), und der Editor springt auf den zweiten Reiter.
+    /// Nur eine Grenze oder Beginn = Ende (aus einem geladenen Satz — das Feld selbst nimmt nur ein
+    /// ganzes Fenster an) hält den OK-Weg an — mit der Regel des Kerns (<c>Nachtzeit.Pruefen</c>), und
+    /// der Editor springt auf den Reiter „Konditionierung".
     /// </summary>
     [Theory]
-    [InlineData("22", "", "beide eingeben oder beide leer lassen (leer = 22 bis 6 Uhr)")]
-    [InlineData("", "6", "beide eingeben oder beide leer lassen")]
-    [InlineData("5", "5", "dürfen nicht gleich sein")]
+    [InlineData(22, null, "beide eingeben oder beide leer lassen (leer = 22 bis 6 Uhr)")]
+    [InlineData(null, 6, "beide eingeben oder beide leer lassen")]
+    [InlineData(5, 5, "dürfen nicht gleich sein")]
     public void Eine_halbe_oder_leere_Nachtzeit_haelt_OK_an_und_springt_auf_den_zweiten_Reiter(
-        string beginn, string ende, string teil)
+        int? beginn, int? ende, string teil)
     {
         bool geschrieben = false;
-        var cut = Aufbauen(speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
-        ReiterWaehlen(cut, REITER2);
-        if (beginn.Length > 0) Eingabe(cut, "Nachtabsenkung von :").Input(beginn);
-        if (ende.Length > 0) Eingabe(cut, "Nachtabsenkung bis :").Input(ende);
+        GebaeudeKatalogDaten daten = Satz();
+        daten.NachtBeginn = beginn;
+        daten.NachtEnde = ende;
+        var cut = Aufbauen(daten, speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
 
-        ReiterWaehlen(cut, "Gebäude und Hülle");
         Ok(cut);
 
         Assert.False(geschrieben);
         Assert.Contains(teil, cut.Instance.Meldung);
-        Assert.Equal("TEMPERATUREN", cut.Instance.AktiverReiter);
+        Assert.Equal("KONDITIONIERUNG", cut.Instance.AktiverReiter);
     }
 
-    /// <summary>Eine Stunde außerhalb 0 … 23 oder eine Kommazahl färbt das Feld und wird nicht gespeichert.</summary>
+    /// <summary>
+    /// Eine Stunde außerhalb 0 … 23, eine Kommazahl oder ein halbes Fenster färbt das Feld, wird nicht
+    /// übernommen, und OK springt mit dem Namen des Felds auf den Reiter „Konditionierung".
+    /// </summary>
     [Theory]
-    [InlineData("24")]
-    [InlineData("-1")]
-    [InlineData("22,5")]
+    [InlineData("24-6")]
+    [InlineData("-1-6")]
+    [InlineData("22,5-6")]
+    [InlineData("22")]
+    [InlineData("5-5")]
     public void Eine_Stunde_ausserhalb_des_Tages_faerbt_das_Feld(string eingabe)
     {
         bool geschrieben = false;
         var cut = Aufbauen(speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
         ReiterWaehlen(cut, REITER2);
 
-        Eingabe(cut, "Nachtabsenkung von :").Input(eingabe);
+        Eingabe(cut, "Heizen · Nachtfenster").Input(eingabe);
 
-        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Nachtabsenkung von :").ClassName ?? "");
+        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Heizen · Nachtfenster").ClassName ?? "");
         Assert.Null(cut.Instance.Arbeitsstand.NachtBeginn);
+        ReiterWaehlen(cut, "Gebäude und Hülle");
         Ok(cut);
         Assert.False(geschrieben);
+        Assert.Contains("Heizen · Nachtfenster", cut.Instance.Meldung);
+        Assert.Equal("KONDITIONIERUNG", cut.Instance.AktiverReiter);
     }
 
     /// <summary>Der Assistent liest und setzt Beginn und Ende über den Arbeitsstand.</summary>
@@ -1819,5 +2069,113 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
         Assert.Equal(23, cut.Instance.Arbeitsstand.NachtBeginn);
         Assert.Equal(5, cut.Instance.Arbeitsstand.NachtEnde);
+    }
+
+    // =================================================================================
+    // Das Schloss erreicht den Editor (Stufe KP2, Welle U0b; Befund B11)
+    // =================================================================================
+
+    private const string SPERRGRUND =
+        "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine bearbeitbare Kopie an.";
+
+    /// <summary>Ein ausgelieferter Satz im Modus Bearbeiten, wie die Hülle ihn reicht.</summary>
+    private IRenderedComponent<GebaeudeKatalogDialog> AufbauenGesperrt(
+        List<(bool IstNeu, string Bezeichner)> aufrufe, Action<bool>? geschlossen = null)
+        => Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, Satz())
+            .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+            .Add(x => x.Gebaeudetypen, () => TYPEN)
+            .Add(x => x.Gebaeudearten, () => ARTEN)
+            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Speichern, (_, istNeu, bez) => { aufrufe.Add((istNeu, bez)); return new GebaeudeKatalogErgebnis(true, ""); })
+            .Add(x => x.Gesperrt, true)
+            .Add(x => x.SperrGrund, SPERRGRUND)
+            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    /// <summary>
+    /// <b>Ein gesperrter Satz nennt seinen Grund, und OK schreibt nicht</b>: die Grundzeile mit
+    /// Schloss, OK WEICH gesperrt (anklickbar, <c>aria-disabled</c>, der Grund als <c>title</c>),
+    /// der Versuch meldet den Grund, schreibt nichts und hält den Dialog offen.
+    /// </summary>
+    [Fact]
+    public void Ein_gesperrter_Satz_nennt_seinen_Grund_und_OK_schreibt_nicht()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        bool? geschlossen = null;
+        var cut = AufbauenGesperrt(aufrufe, b => geschlossen = b);
+
+        IElement zeile = cut.Find(".epos-gebk-sperrzeile");
+        Assert.Contains(SPERRGRUND, zeile.TextContent);
+        Assert.NotNull(zeile.QuerySelector(".epos-schloss"));
+        Assert.True(cut.Instance.IstGesperrt);
+
+        IElement ok = cut.Find(".epos-leiste button.epos-knopf--primaer");
+        Assert.False(ok.HasAttribute("disabled"));
+        Assert.Equal("true", ok.GetAttribute("aria-disabled"));
+        Assert.Equal(SPERRGRUND, ok.GetAttribute("title"));
+
+        Ok(cut);
+
+        Assert.Empty(aufrufe);
+        Assert.Null(geschlossen);
+        Assert.Equal(SPERRGRUND, cut.Instance.Meldung);
+        Assert.Contains(SPERRGRUND, cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// „Speichern unter" bleibt am gesperrten Satz frei — es legt eine eigene Kopie an. Quelle ist der
+    /// ausgelieferte Ursprungssatz (B2); der Dialog bleibt offen und arbeitet an der Kopie weiter (B1), das
+    /// nächste OK trifft sie und nicht den ausgelieferten Satz.
+    /// </summary>
+    [Fact]
+    public void Speichern_unter_bleibt_am_gesperrten_Satz_frei()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        var cut = AufbauenGesperrt(aufrufe);
+
+        IElement knopf = Knopf(cut, "Speichern unter");
+        Assert.False(knopf.HasAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("disabled"));
+
+        cut.FindAll("input[type=text]").First(i => i.GetAttribute("value") == "Haus A").Input("Haus A (eigen)");
+        Knopf(cut, "Speichern unter").Click();
+
+        Assert.Equal(new[] { (true, "Haus A") }, aufrufe);
+        Assert.False(cut.Instance.IstGesperrt);   // der neue Satz ist ein eigener
+        Assert.Equal("Haus A (eigen)", cut.Instance.Ursprungsname);
+
+        Ok(cut);
+
+        Assert.Equal(new[] { (true, "Haus A"), (false, "Haus A (eigen)") }, aufrufe);
+    }
+
+    /// <summary>Ohne Sperre steht keine Grundzeile, und OK trägt weder Sperre noch Grund.</summary>
+    [Fact]
+    public void Ohne_Sperre_steht_keine_Grundzeile_und_OK_ist_frei()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-gebk-sperrzeile"));
+        IElement ok = cut.Find(".epos-leiste button.epos-knopf--primaer");
+        Assert.False(ok.HasAttribute("aria-disabled"));
+        Assert.False(ok.HasAttribute("title"));
+        Assert.False(cut.Instance.IstGesperrt);
+    }
+
+    /// <summary>Für den Assistenten ist der gesperrte Satz schreibgeschützt — mit Grund und Weg.</summary>
+    [Fact]
+    public async Task Der_Assistent_schreibt_einen_gesperrten_Satz_nicht()
+    {
+        var aufrufe = new List<(bool IstNeu, string Bezeichner)>();
+        AufbauenGesperrt(aufrufe);
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.GEBAEUDE_KATALOG);
+        Assert.True(haken.IstSchreibgeschuetzt());
+        Assert.Equal(SPERRGRUND, haken.Schutzgrund());
+
+        KiKern.KiErgebnis ergebnis = await haken.Speichern!();
+        Assert.False(ergebnis.Erfolg);
+        Assert.Equal(SPERRGRUND, ergebnis.Text);
+        Assert.Empty(aufrufe);
     }
 }

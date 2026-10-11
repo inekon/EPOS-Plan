@@ -326,6 +326,25 @@ namespace EPOS.Kern.Tests
             Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
         }
 
+        /// <summary>
+        /// Katalog v12: der Baukasten mit dem Lauf von 1018 (BHKW, Stromlast) und 1017 (Kälteproduktion) — beide Bilder als
+        /// Excel-Diagramm, ohne unbekannte Stelle, ohne übrigen Platzhalter, Diagramme gültig.
+        /// </summary>
+        [Theory]
+        [InlineData(1018)]
+        [InlineData(1017)]
+        public void Baukasten_fuellt_Stromlast_und_Kaelteproduktion_aus_dem_Lauf(int projekt)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BerichtsDaten daten = new BerichtsDatenSammler().SammleFuerBericht(
+                projekt, "Probe " + projekt, new List<int>(), true, null, System.Threading.CancellationToken.None);
+            var (e, pfad) = Fuelle(ExcelBaukasten.Erzeuge(false), daten, "baukasten_" + projekt + ".xlsx");
+            Assert.Empty(e.Unbekannte);
+            Assert.Empty(Uebrige(pfad));
+            Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
+        }
+
         /// <summary>Die englische Vorlage füllt einen englischen Bericht ebenso.</summary>
         [Fact]
         public void Englische_Vorlage_fuellt_die_Gruppe_1019()

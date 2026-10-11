@@ -22,8 +22,14 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class WaermepumpeKuehlGabenBau
     {
-        /// <summary>Die Kühlgaben für ein Projekt; <c>null</c> ohne Projekt.</summary>
-        internal static WaermepumpeKuehlGaben Bauen(int idProjekt)
+        /// <summary>
+        /// Die Kühlgaben für ein Projekt; <c>null</c> ohne Projekt. Mit dem Quellentyp der
+        /// Anlagenzeile (<c>WQ_Typ</c>, leer = Außenluft) trägt der Satz auch den Sperrgrund
+        /// der freien Kühlung über die Wärmequelle (KU3-6, F2: Bauart je Gerät aus dem Kern,
+        /// Quelle aus der Zeile); ohne Quellentyp bleibt er <c>null</c>, und der Wirt reicht
+        /// ihn selbst (Simulation › Konfiguration kennt ihn je Karte).
+        /// </summary>
+        internal static WaermepumpeKuehlGaben Bauen(int idProjekt, string wqTypDerAnlage = null)
         {
             if (idProjekt <= 0) return null;
 
@@ -36,7 +42,11 @@ namespace WindowsFormsApplication1
                 Vorlaeufe = idWp => Vorlaeufe(idWp, idProjekt),
                 Sperrgrund = idWp => Sperrgrund(idWp, idProjekt),
                 Stromtraeger = traeger,
-                ProjektStromtraeger = Kaeltestromabrechnung.Projekttraeger(idProjekt)
+                ProjektStromtraeger = Kaeltestromabrechnung.Projekttraeger(idProjekt),
+                FreiSperrgrund = wqTypDerAnlage is null
+                    ? null
+                    : idWp => WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus(
+                        WPCtrl.BauartDesGeraets(idWp, idProjekt), wqTypDerAnlage, null)
             };
         }
 

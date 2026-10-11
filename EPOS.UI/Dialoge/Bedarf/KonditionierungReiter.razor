@@ -1,0 +1,480 @@
+﻿@* DER REITER "KONDITIONIERUNG" (Stufe KP2, Welle U1; Teilkonzept Konditionierungsprofile 7.1, 7.2;
+   Entwurf KP2 Festlegungen 1, 3, 4, 6, 7; E56 F2 (a), F3 (a), F5 (a)) - der Inhalt des zweiten Reiters
+   des Gebaeude-Katalogeditors in allen Betriebsarten (Projekt, Neu, Bearbeiten).
+
+   AUFBAU, von oben: der Kopf mit "Aus dem Katalog erneut uebernehmen..." (nur Projekt) und
+   "Zuruecknehmen" (eine Stufe); darunter ein Behaelter (Container epos-kond) mit Umbruch bei 900 px
+   BEHAELTERbreite: breit die Matrix als Tabelle und die fuenf Kalenderkarten darunter, schmal fuenf
+   Reiter je Groesse mit Matrixspalte und Karte (dasselbe Markup, das Stilblatt blendet um). Unter der
+   Matrix die Herleitungszeilen (Sollwertfahrplan, Jahresmittel der Gewinne), daneben die Zusatzzeilen
+   - Maximalraumtemperatur, Sommerlueftung und die Ferienzeitraeume des Gebaeudes, die fuer alle
+   Spalten gelten.
+
+   GESCHRIEBEN WIRD MIT OK. Jede Handlung geht ueber die KonditionierungBearbeitung und den Weg des
+   Kerns in den Arbeitsstand; Abbrechen verwirft sie. Rueckfragen entstehen VOR der Handlung aus dem
+   Befund des Wegs und nennen, was ersetzt wird und was bleibt, die Zonen mit Namen (Festlegung 3);
+   Vorgabe "Nein", wo ersetzt wird.
+
+   BENANNT GESPERRT. Ohne Konditionierungstabellen (oder ohne Gaben) nennt eine leise Zeile den Grund;
+   Karten, neue Zellen und Handlungen stehen dann nicht da, die Bestandszellen bleiben bedienbar - sie
+   stehen nach E56 F3 (a) nur noch hier. Ein ausgelieferter Satz steht im LESEMODUS: Werte als Text,
+   der Grund im Kopf des Dialogs, "Speichern unter" bleibt frei. Auf dem Tagesbilanz-Weg zeigt die
+   Matrix nur die Felder des Altwegs (Teilkonzept 2.2). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<div class="epos-kond">
+
+    @if (!Lesemodus && (ZeigtKatalogErneut || Bearbeitung.MitWeg))
+    {
+        <div class="epos-zeilenknoepfe epos-kond-kopf">
+            @if (ZeigtKatalogErneut)
+            {
+                <button type="button" class="epos-knopf epos-kond-katalog-erneut"
+                        @onclick="KatalogErneut">@Texte.KnopfKatalogErneut</button>
+            }
+            @if (Bearbeitung.MitWeg)
+            {
+                string? grund = Bearbeitung.KannZuruecknehmen ? null : Texte.GrundNichtsZurueck;
+                <button type="button" class="epos-knopf epos-kond-zuruecknehmen"
+                        aria-disabled="@(grund is null ? null : "true")"
+                        title="@(grund ?? Texte.HinweisZuruecknehmen)"
+                        @onclick="Zuruecknehmen">@Texte.KnopfZuruecknehmen</button>
+            }
+        </div>
+    }
+
+    @* Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofil übernehmen…" - in den Arbeitsstand, mit OK
+       geschrieben; kein Delegat, kein Knopf. *@
+    @if (Bearbeitung.MitWeg && !Altweg)
+    {
+        <NutzungsprofilUebernahme Bearbeitung="@Bearbeitung" Texte="@ProfilTexte" Lesemodus="@Lesemodus"
+                                  Geaendert="Geaendert" />
+    }
+
+    @if (Bearbeitung.Sperrgrund is string sperre)
+    {
+        <p class="epos-leisezeile epos-kond-sperrzeile">@sperre</p>
+    }
+    @if (Altweg)
+    {
+        <p class="epos-leisezeile epos-kond-altweg">@Texte.HinweisTagesbilanz</p>
+    }
+
+    @* Die fuenf Reiter der schmalen Anordnung - breit blendet das Stilblatt sie aus. *@
+    <div class="epos-kond-groessen" role="tablist" aria-label="@Texte.LabelGroesse">
+        @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+        {
+            KonditionierungGroesse groesse = g;
+            bool aktiv = groesse == _groesse;
+            <button type="button" role="tab" class="epos-knopf epos-kond-groesse @(aktiv ? "epos-knopf--gewaehlt" : "")"
+                    aria-selected="@(aktiv ? "true" : "false")" tabindex="@(aktiv ? 0 : -1)"
+                    data-groesse="@((int)groesse)" @onclick="() => _groesse = groesse">@Bearbeitung.Groessenname(groesse)</button>
+        }
+    </div>
+
+    <KonditionierungMatrix Bearbeitung="@Bearbeitung" Texte="@Texte" HuelleTexte="@HuelleTexte"
+                           Lesemodus="@Lesemodus" Kuehlsperre="@Kuehlsperre" Altweg="@Altweg"
+                           AktiveGroesse="@_groesse" PlatzhalterPersonen="@PersonenPlatzhalter"
+                           Uebersicht="@(Bearbeitung.MitKalenderbedienung && !Altweg)"
+                           VorlageZeigen="VorlageZeigen"
+                           Geaendert="Geaendert" FehlerZustand="FehlerZustand" />
+
+    @if (!string.IsNullOrEmpty(Sollwertzeile))
+    {
+        <Herleitungszeile Text="@Sollwertzeile" />
+    }
+    @if (Kuehlsperre is not null && !Lesemodus)
+    {
+        <p class="epos-leisezeile epos-kond-kuehlgrund">@Kuehlsperre</p>
+    }
+    @if (Jahresmittel is string mittel)
+    {
+        <Herleitungszeile Text="@mittel" />
+    }
+    @if (Bearbeitung.MitWeg && !Altweg)
+    {
+        <p class="epos-leisezeile">@Texte.HinweisVdi6007</p>
+
+        <div class="epos-kond-karten">
+            @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            {
+                KonditionierungGroesse groesse = g;
+                <Kalenderkarte @key="groesse" Groesse="@groesse" Titel="@Bearbeitung.Groessenname(groesse)"
+                               Zustand="@Bearbeitung.Zustand(groesse)" Angelegt="@Bearbeitung.Angelegt(groesse)"
+                               Aktiv="@(groesse == _groesse)" Lesemodus="@Lesemodus" Texte="@Texte"
+                               Anlegen="@Rueckruf(KonditionierungHandlung.Anlegen, () => Bearbeitung.Anlegen(groesse))"
+                               Verwerfen="@Rueckruf(KonditionierungHandlung.Verwerfen, () => Bearbeitung.Verwerfen(groesse))"
+                               MatrixErneut="@Rueckruf(KonditionierungHandlung.MatrixErneut, () => Bearbeitung.MatrixErneut(groesse))"
+                               Vorlagen="@(Bearbeitung.MitVorlagen ? Bearbeitung.Vorlagen(groesse) : null)"
+                               GewaehlteVorlage="@Bearbeitung.GewaehlteVorlage(groesse)?.Id"
+                               VorlageGewaehlt="@(id => VorlageWaehlen(groesse, id))"
+                               Uebernehmen="@Rueckruf(KonditionierungHandlung.VorlageUebernehmen, () => Bearbeitung.VorlageUebernehmen(groesse))"
+                               UebernehmenSperre="@(groesse == KonditionierungGroesse.Kuehlen ? Kuehlsperre : null)"
+                               Verweigert="Verweigert"
+                               Nutzungsvorschlaege="@Bearbeitung.Nutzungsvorschlaege()"
+                               LabelNutzungVorschlag="@ProfilTexte.LabelNutzungVorschlag"
+                               AlsVorlageSpeichern="@(Bearbeitung.Bietet(KonditionierungHandlung.AlsVorlageSpeichern)
+                                                      ? e => Bearbeitung.AlsVorlageSpeichern(groesse, e) : null)"
+                               VorlageGespeichert="VorlagenGeaendert" Abgelehnt="Abgelehnt"
+                               VorlagenVerwalten="@(VorlagenVerwalten.HasDelegate && Bearbeitung.MitVerwaltung
+                                                    ? EventCallback.Factory.Create(this, () => VorlagenVerwalten.InvokeAsync(groesse))
+                                                    : default)"
+                               Vorschau="@(Bearbeitung.Weg.WochenVorschau is null ? null : () => Bearbeitung.Vorschau(groesse))"
+                               Vorschauschluessel="@Bearbeitung.Vorschauschluessel(groesse)" EntprellungMs="@EntprellungMs"
+                               Aufgeklappt="@(KartenAufgeklappt || groesse == AufgeklappteGroesse)"
+                               ListeZeigen="@(_listeZeigen.TryGetValue(groesse, out int anlass) ? anlass : 0)"
+                               VorschauLeer="@Bearbeitung.VorschauLeergrund(groesse)"
+                               Einzelheiten="@(MitEinzelheiten ? Einzelheiten(groesse) : null)" />
+            }
+        </div>
+
+        @* Das Jahresband der Freigabe (Entwurf AK3-K 3.3): je Ort Heizen frei, Kühlen frei, beides, keines. *@
+        <Freigabeband Baender="@Bearbeitung.Freigabebaender()" Texte="@Texte" />
+    }
+
+    @* Die Zusatzzeilen neben der Matrix (Teilkonzept 3.3): Maximalraumtemperatur und Sommerlueftung;
+       darunter die Ferienzeitraeume des Gebaeudes - sie gelten fuer alle Spalten. *@
+    <div class="epos-kond-zusatz">
+        <Formularraster>
+            <KindInhalt>
+                @if (Lesemodus)
+                {
+                    <Textfeld Bezeichnung="@LabelMaxTemperatur" Einheit="°C" NurLesen="true"
+                              Wert="@Zahlen.Anzeigetext(Arbeit.Stand.MaxTemperatur)" />
+                    <Textfeld Bezeichnung="@HuelleTexte.LabelSommerlueftung" NurLesen="true"
+                              Wert="@(Arbeit.Stand.Sommerlueftung ? JaText : NeinText)" />
+                }
+                else
+                {
+                    <Zahlenfeld Bezeichnung="@LabelMaxTemperatur" Einheit="°C"
+                                Feldname="@Feldname(LabelMaxTemperatur)" FehlerZustand="FehlerZustand"
+                                Wert="@Arbeit.Stand.MaxTemperatur" WertChanged="MaxTemperaturSetzen" />
+                    @* Die Sommerlueftung des Stundenmodells (Stufe G2) - ein Modellparameter, deshalb
+                       auch auf dem Tagesbilanz-Weg da (E20). *@
+                    <Schalter Bezeichnung="@HuelleTexte.LabelSommerlueftung"
+                              Wert="@Arbeit.Stand.Sommerlueftung" WertChanged="SommerlueftungSetzen" />
+                }
+            </KindInhalt>
+        </Formularraster>
+        @if (Arbeit.Stand.Sommerlueftung)
+        {
+            <Herleitungszeile Text="@GebaeudeArbeitsstand.Sommerlueftungszeile(HuelleTexte)" />
+        }
+    </div>
+
+    @if (Lesemodus)
+    {
+        <Gruppenkopf Titel="@Texte.LabelFerienzeitraeume">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            <Textfeld Bezeichnung="@Ferienname(i)" NurLesen="true" Wert="@Ferientext(i)" />
+                        }
+                    </KindInhalt>
+                </Formularraster>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+    else
+    {
+        <Gruppenkopf Titel="@GruppeFerienAnfang">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            int n = i;
+                            <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + LabelTag)"
+                                          Min="1" Max="31" Wert="@Arbeit.BeginnTag[n]"
+                                          WertChanged="w => FerienSetzen(() => Arbeit.BeginnTag[n] = w)" />
+                            <Ganzzahlfeld Bezeichnung="@LabelMonat" Min="1" Max="12"
+                                          Wert="@Arbeit.BeginnMonat[n]"
+                                          WertChanged="w => FerienSetzen(() => Arbeit.BeginnMonat[n] = w)" />
+                        }
+                    </KindInhalt>
+                </Formularraster>
+            </KindInhalt>
+        </Gruppenkopf>
+
+        <Gruppenkopf Titel="@GruppeFerienEnde">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            int n = i;
+                            <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + LabelTag)"
+                                          Min="1" Max="31" Wert="@Arbeit.EndeTag[n]"
+                                          WertChanged="w => FerienSetzen(() => Arbeit.EndeTag[n] = w)" />
+                            <Ganzzahlfeld Bezeichnung="@LabelMonat" Min="1" Max="12"
+                                          Wert="@Arbeit.EndeMonat[n]"
+                                          WertChanged="w => FerienSetzen(() => Arbeit.EndeMonat[n] = w)" />
+                        }
+                    </KindInhalt>
+                </Formularraster>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    <Rueckfrage Offen="@(Bearbeitung.OffeneFrage is not null)" TitelText="@(Bearbeitung.OffeneFrage?.Titel ?? "")"
+                Frage="@(Bearbeitung.OffeneFrage?.Text ?? "")" VorgabeNein="@(Bearbeitung.OffeneFrage?.VorgabeNein ?? true)"
+                Beantwortet="Beantwortet" JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>Die Bearbeitung des Arbeitsstands — der Wirt hält sie, damit auch der Assistent sie nimmt.</summary>
+    [Parameter, EditorRequired] public KonditionierungBearbeitung Bearbeitung { get; set; } = default!;
+
+    /// <summary>Die Texte der Konditionierung.</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Texte der VDI-Struktur (Platzhalter der Lüftung und der Kühlung).</summary>
+    [Parameter] public GebaeudeHuelleTexte HuelleTexte { get; set; } = new();
+
+    /// <summary>Die Texte von „Nutzungsprofil übernehmen…" (Bündel des Nutzungsprofilkatalogs, Präfix <c>RNP_</c>).</summary>
+    [Parameter] public RaumnutzungTexte ProfilTexte { get; set; } = new();
+
+    /// <summary>Steht der Editor in der Betriebsart Projekt? Nur dann „Aus dem Katalog erneut übernehmen…" (Festlegung 4).</summary>
+    [Parameter] public bool Projekt { get; set; }
+
+    /// <summary>Lesemodus eines ausgelieferten Satzes (Werte als Text, keine Handlung).</summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary>Rechnet das Gebäude auf dem Tagesbilanz-Weg? Dann nur die Felder des Altwegs.</summary>
+    [Parameter] public bool Altweg { get; set; }
+
+    /// <summary>Der Grund der weich gesperrten Kühlspalte; <c>null</c> = bedienbar.</summary>
+    [Parameter] public string? Kuehlsperre { get; set; }
+
+    /// <summary>Die Herleitungszeile des Sollwertfahrplans (Heizspalte) unter der Matrix.</summary>
+    [Parameter] public string Sollwertzeile { get; set; } = "";
+
+    /// <summary>Beschriftung der Maximalraumtemperatur (Bestand <c>GEBK_LBL_MAXTEMPERATUR</c>).</summary>
+    [Parameter] public string LabelMaxTemperatur { get; set; } = "Maximalraumtemperatur :";
+
+    /// <summary>Die Gruppen der Ferienzeiträume (Bestand <c>GEBK_GRP_FERIEN_ANFANG</c>/<c>_ENDE</c>).</summary>
+    [Parameter] public string GruppeFerienAnfang { get; set; } = "Ferien Anfang";
+
+    /// <summary>Die Gruppe des Ferienendes.</summary>
+    [Parameter] public string GruppeFerienEnde { get; set; } = "Ferien Ende";
+
+    /// <summary>Die vier Ferienzeiträume in ihrer festen Reihenfolge.</summary>
+    [Parameter] public IReadOnlyList<string> Ferienzeitraeume { get; set; } = new[] { "Winter :", "Ostern :", "Sommer :", "Herbst :" };
+
+    /// <summary>Beschriftung „Tag :".</summary>
+    [Parameter] public string LabelTag { get; set; } = "Tag :";
+
+    /// <summary>Beschriftung „Monat :".</summary>
+    [Parameter] public string LabelMonat { get; set; } = "Monat :";
+
+    /// <summary>„Ja" der Rückfragen.</summary>
+    [Parameter] public string JaText { get; set; } = "Ja";
+
+    /// <summary>„Nein" der Rückfragen.</summary>
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Meldet jede Änderung des Arbeitsstands — der Wirt zeichnet neu (Banner, Herleitungen).</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Meldet den Fehlerzustand eines Felds an den Arbeitsstand.</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    /// <summary>Entprellung der Vorschau in den Karten [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>
+    /// Öffnet die Vorlagenverwaltung als Blatt des Wirts (E56 F4 (a)) — mit der Größe der Karte;
+    /// ohne Rückruf (oder ohne Handlungen der Verwaltung im Weg) kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback<KonditionierungGroesse> VorlagenVerwalten { get; set; }
+
+    /// <summary>
+    /// Die Größe, die beim Aufbau vorn steht (schmale Anordnung) — der Wirt reicht die der Karte, aus der
+    /// das Blatt der Vorlagenverwaltung kam, damit der Rückweg dort landet; Vorgabe Heizen.
+    /// </summary>
+    [Parameter] public KonditionierungGroesse Vorn { get; set; } = KonditionierungGroesse.Heizen;
+
+    /// <summary>Stehen die Kalenderkarten beim Aufbau aufgeklappt (Prüfstand der Karte im Einzelnen)?</summary>
+    [Parameter] public bool KartenAufgeklappt { get; set; }
+
+    /// <summary>
+    /// Die Karte, die beim Aufbau aufgeklappt steht — der Wirt reicht Heizen nach „In den Kalender
+    /// übernehmen" an der Wärmeübergabe; <c>null</c> = keine.
+    /// </summary>
+    [Parameter] public KonditionierungGroesse? AufgeklappteGroesse { get; set; }
+
+    protected override void OnInitialized() => _groesse = Vorn;
+
+    /// <summary>
+    /// Bietet der Weg die Karte im Einzelnen (Welle U3)? Mit Grundangabe oder Standardwoche — „kein
+    /// Delegat, kein Knopf".
+    /// </summary>
+    private bool MitEinzelheiten
+        => Bearbeitung.Bietet(KonditionierungHandlung.Grundangabe) || Bearbeitung.Bietet(KonditionierungHandlung.Standardwoche);
+
+    /// <summary>Der Inhalt der aufgeklappten Karte einer Größe.</summary>
+    private RenderFragment Einzelheiten(KonditionierungGroesse g) => @<text>
+        @if (Bearbeitung.MitKalenderbedienung)
+        {
+            @* Die Kalenderbedienung (Konzept 7.8, E110; Welle K1b): Schnellfelder, Wochenprofile, Zuordnung,
+               Einzeltage und Jahresraster - darunter Grundangabe, Werte je Stunde, Perioden und Jahresvorschau. *@
+            <KalenderbedienungAbschnitt @key="g" Bearbeitung="@Bearbeitung" Groesse="@g" Texte="@Texte"
+                               Tagesnamen="@HuelleTexte.Uebergabe.Raster.Tagesnamen"
+                               Geaendert="@InhaltGeaendert" Verweigert="Verweigert" />
+            <h4 class="epos-kond-abschnitt-titel epos-kalb-werte-titel">@Texte.LabelKalbWerteJeStunde</h4>
+        }
+        <KalenderkarteInhalt Bearbeitung="@Bearbeitung" Groesse="@g"
+            Texte="@Texte" Rastertexte="@HuelleTexte.Uebergabe.Raster" Lesemodus="@Lesemodus"
+            Geaendert="@InhaltGeaendert" FehlerZustand="FehlerZustand" Verweigert="Verweigert"
+            EntprellungMs="@EntprellungMs" />
+    </text>;
+
+    /// <summary>Eine Handlung der aufgeklappten Karte: der Reiter zeichnet neu (Zustand, Vorschau), dann der Wirt.</summary>
+    private EventCallback InhaltGeaendert => EventCallback.Factory.Create(this, () => Geaendert.InvokeAsync());
+
+    /// <summary>Die Größe, deren Spalte und Karte schmal vorn stehen.</summary>
+    private KonditionierungGroesse _groesse = KonditionierungGroesse.Heizen;
+
+    /// <summary>Die gewählte Größe der schmalen Anordnung. Prüfhilfe für die Tests.</summary>
+    public KonditionierungGroesse AktiveGroesse => _groesse;
+
+    private GebaeudeArbeitsstand Arbeit => Bearbeitung.Arbeit;
+
+    private bool ZeigtKatalogErneut => Projekt && Bearbeitung.Bietet(KonditionierungHandlung.KatalogErneut);
+
+    private string Ferienname(int n) => Ferienzeitraeume.Count > n ? Ferienzeitraeume[n] : "";
+
+    /// <summary>Ein Ferienzeitraum als Text („24.07.–03.09."); „—" ohne Angabe (Lesemodus).</summary>
+    private string Ferientext(int n)
+    {
+        static string Datum(int? tag, int? monat)
+            => tag is int t && monat is int m
+                ? t.ToString("00", CultureInfo.InvariantCulture) + "." + m.ToString("00", CultureInfo.InvariantCulture) + "."
+                : "";
+        string von = Datum(Arbeit.BeginnTag[n], Arbeit.BeginnMonat[n]), bis = Datum(Arbeit.EndeTag[n], Arbeit.EndeMonat[n]);
+        return von.Length == 0 && bis.Length == 0 ? Texte.PlatzhalterLeer : von + "–" + bis;
+    }
+
+    private static string Feldname(string beschriftung) => GebaeudeArbeitsstand.Feld(beschriftung);
+
+    /// <summary>Ein Rückruf nur, wenn der Weg die Handlung bietet („kein Delegat, kein Knopf").</summary>
+    private EventCallback Rueckruf(KonditionierungHandlung h, Action handlung)
+        => Bearbeitung.Bietet(h) ? EventCallback.Factory.Create(this, async () => { handlung(); await Geaendert.InvokeAsync(); })
+                                 : default;
+
+    /// <summary>
+    /// Die Herleitung der Lasten (P1): der Vorschlag des Personen-Nennwerts (Zahl × 70 W) und die
+    /// Jahresmittel unter der Matrix; <c>null</c> ohne Weg oder ohne Delegat.
+    /// </summary>
+    private KonditionierungLasten? Lasten
+    {
+        get
+        {
+            if (!Bearbeitung.MitWeg || Altweg || Bearbeitung.Weg.Lasten is null) return null;
+            try { return Bearbeitung.Weg.Lasten(Bearbeitung.Eingabestand(), null); }
+            catch (Exception) { return null; }
+        }
+    }
+
+    private KonditionierungLasten? _lasten;
+
+    private string PersonenPlatzhalter
+        => _lasten is { PersonenNennwertW: > 0 } l ? Zahlen.Anzeigetext(Math.Round(l.PersonenNennwertW, 1)) : "";
+
+    /// <summary>Die Zeile der Jahresmittel (Teilkonzept 7.2): Geräte, Personen, Summe in W und W/m², die Gesamtangabe.</summary>
+    private string? Jahresmittel
+    {
+        get
+        {
+            if (_lasten is not KonditionierungLasten l) return null;
+            double summe = l.GeraeteJahresmittelW + l.PersonenJahresmittelW;
+            double? flaeche = l.NutzflaecheM2 is double a && a > 0 ? a : null;
+            return string.Format(CultureInfo.CurrentCulture, Texte.TextJahresmittel,
+                                 Zahlen.Anzeigetext(Math.Round(l.GeraeteJahresmittelW, 0)),
+                                 Zahlen.Anzeigetext(Math.Round(l.PersonenJahresmittelW, 0)),
+                                 Zahlen.Anzeigetext(Math.Round(summe, 0)),
+                                 flaeche is double f ? Zahlen.Anzeigetext(Math.Round(summe / f, 2)) : "—",
+                                 Zahlen.Anzeigetext(Arbeit.Stand.Waermegewinne));
+        }
+    }
+
+    protected override void OnParametersSet() => _lasten = Lasten;
+
+    private async Task MaxTemperaturSetzen(double? w)
+    {
+        Arbeit.Stand.MaxTemperatur = w;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task SommerlueftungSetzen(bool an)
+    {
+        Arbeit.Stand.Sommerlueftung = an;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task FerienSetzen(Action setzen)
+    {
+        setzen();
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task KatalogErneut()
+    {
+        Bearbeitung.KatalogErneut();
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task Zuruecknehmen()
+    {
+        Bearbeitung.Zuruecknehmen();
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Eine Vorlage wurde geschrieben: Die Karten zeigen die neu gelesenen Listen.</summary>
+    private async Task VorlagenGeaendert() => await Geaendert.InvokeAsync();
+
+    /// <summary>Eine benannte Ablehnung einer Karte (etwa „Als Vorlage speichern…"): die Warnung im Banner.</summary>
+    private async Task Abgelehnt(string meldung)
+    {
+        if (!string.IsNullOrEmpty(meldung)) Bearbeitung.Melden?.Invoke(meldung, WarnStufe.Warnung);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Der Versuch an einer weich gesperrten Handlung einer Karte: der Grund als Hinweis.</summary>
+    private async Task Verweigert(string grund)
+    {
+        Bearbeitung.Melden?.Invoke(grund, WarnStufe.Hinweis);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Je Größe der Anlass, die Auswahlliste der Karte zu zeigen (ein Zähler je Klick auf die Zeile „Vorlage").</summary>
+    private readonly Dictionary<KonditionierungGroesse, int> _listeZeigen = new();
+
+    /// <summary>
+    /// Die Zeile „Vorlage" der Matrix (Teilkonzept 7.2): Die Größe kommt nach vorn (schmal ihr Reiter), und
+    /// die Karte fokussiert die Gruppe ihrer Auswahlliste und rollt sie ins Bild.
+    /// </summary>
+    private void VorlageZeigen(KonditionierungGroesse g)
+    {
+        _groesse = g;
+        _listeZeigen[g] = (_listeZeigen.TryGetValue(g, out int n) ? n : 0) + 1;
+    }
+
+    /// <summary>Die Wahl der Auswahlliste einer Karte — sie ändert den Arbeitsstand nicht.</summary>
+    private async Task VorlageWaehlen(KonditionierungGroesse g, long? id)
+    {
+        Bearbeitung.VorlageWaehlen(g, id);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task Beantwortet(bool? antwort)
+    {
+        Bearbeitung.Beantworten(antwort);
+        await Geaendert.InvokeAsync();
+    }
+}

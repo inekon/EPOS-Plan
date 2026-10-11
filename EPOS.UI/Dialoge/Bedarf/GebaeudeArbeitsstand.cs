@@ -99,12 +99,19 @@ public sealed class GebaeudeArbeitsstand
     //  Die Zonen eines Projektgebäudes (Gebäudesimulation G3, Welle D2; G6a)
     // =====================================================================
     //
-    // Ein Katalogsatz trägt keine Zonen (Softwarearchitektur 2.9); ein Gebäude im Projekt bis zu
+    // Ein Katalogsatz trägt Zonen (Schritt ZK), bearbeitet werden sie im Projekt; ein Gebäude im Projekt bis zu
     // GebaeudeZonenregeln.Hoechstzahl() (G6a), und der Lauf rechnet sie alle (G6b). Die Zonen gehören
     // zum Arbeitsstand wie die Felder: Übernehmen, Anlegen, Öffnen, Duplizieren, Umordnen und
     // Entfernen ändern nur ihn, geschrieben wird im OK-Weg des Editors (Softwarearchitektur 3.3).
     // JEDE Änderung trifft ihre Zone über die Id — nie über „die erste" (G6a, Risiko 2: ein Ersetzen
     // der ganzen Liste löschte beim OK still alle übrigen Zonen).
+
+    /// <summary>
+    /// <b>Steht ein Feld im Reiter „Konditionierung"?</b> (Stufe KP2, Welle U1) — der Katalogeditor setzt
+    /// es; dann hängen eine Fehleingabe dort, die inneren Wärmegewinne und der Kühlsollwert an diesem
+    /// Reiter (E56 F3 (a)). <c>null</c> (das Stammblatt der Verwaltung) = die Gruppen wie bisher.
+    /// </summary>
+    public Func<string, bool>? IstKonditionierungsfeld { get; set; }
 
     /// <summary>Die Zonen im Arbeitsstand in Listenfolge (= Rang); leer = keine Zone (Klassenweg).</summary>
     public List<ZoneDaten> Zonen { get; private set; } = new();
@@ -120,8 +127,11 @@ public sealed class GebaeudeArbeitsstand
     /// </summary>
     private int _kleinsteId = -1;
 
-    /// <summary>Führt der Arbeitsstand ein Gebäude im Projekt (mit Zonenweg)? Ein Katalogsatz nicht.</summary>
+    /// <summary>Führt der Arbeitsstand einen Zonenweg (im Projekt oder, Welle ZK-b, im Katalog)?</summary>
     public bool MitZonenweg { get; private set; }
+
+    /// <summary>Führt der Arbeitsstand einen Katalogsatz (Welle ZK-b)? Dann rechnet er nicht selbst — die Zeile nennt die Übernahme.</summary>
+    public bool ImKatalog { get; private set; }
 
     /// <summary>
     /// Die Luftströme zwischen den Zonen im Arbeitsstand (Stufe G6b) — sie gehören zum Arbeitsstand wie
@@ -132,10 +142,15 @@ public sealed class GebaeudeArbeitsstand
     /// <summary>Die Luftströme beim Laden bzw. nach dem letzten Schreiben — Vergleich für <see cref="LuftGeaendert"/>.</summary>
     private List<ZonenluftstromDaten> _luftGeschrieben = new();
 
-    /// <summary>Übernimmt die Zonen eines Projektgebäudes — beim Öffnen des Editors in der Betriebsart Projekt.</summary>
-    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg, IReadOnlyList<ZonenluftstromDaten>? luftstroeme = null)
+    /// <summary>
+    /// Übernimmt die Zonen eines Gebäudes — beim Öffnen des Editors und nach dem Neulesen;
+    /// <paramref name="katalog"/>: die Zonen eines Katalogsatzes (Welle ZK-b).
+    /// </summary>
+    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg, IReadOnlyList<ZonenluftstromDaten>? luftstroeme = null,
+                           bool katalog = false)
     {
         MitZonenweg = mitZonenweg;
+        ImKatalog = katalog;
         Zonen = (zonen ?? Array.Empty<ZoneDaten>()).Select(z => z.Kopie()).ToList();
         Luftstroeme = (luftstroeme ?? Array.Empty<ZonenluftstromDaten>()).Select(l => l.Kopie()).ToList();
         _kleinsteId = Math.Min(-1, Zonen.Count == 0 ? -1 : Zonen.Min(z => z.Id));
@@ -147,6 +162,36 @@ public sealed class GebaeudeArbeitsstand
     {
         _zonenGeschrieben = Zonen.Select(z => z.Kopie()).ToList();
         _luftGeschrieben = Luftstroeme.Select(l => l.Kopie()).ToList();
+    }
+
+    /// <summary>
+    /// <b>Die endgültigen Ids nach dem Schreiben</b> (Stufe KP2, Befund B10): Jede neue Zone bekommt die
+    /// Id, die der Kern ihr gab, jedes Bauteil die seine (in Listenfolge), die Luftströme ebenso — und
+    /// jeder Bezug darauf (Nachbarzone, Zonen eines Luftstroms, Vorlage eines Duplikats) folgt. Danach
+    /// trägt der Arbeitsstand dieselben Ids wie die Datenbank; ein zweites OK legt nichts noch einmal an.
+    /// Aufgerufen VOR <see cref="ZonenGeschrieben"/>.
+    /// </summary>
+    public void IdsUebernehmen(ZonenSchreibergebnis ergebnis)
+    {
+        if (ergebnis is null || !ergebnis.Ok) return;
+        int Zone(int id) => ergebnis.Zonen.TryGetValue(id, out int neu) ? neu : id;
+        foreach (ZoneDaten z in Zonen)
+        {
+            z.Id = Zone(z.Id);
+            if (z.VorlageId is int vorlage) z.VorlageId = Zone(vorlage);
+            if (ergebnis.Bauteile.TryGetValue(z.Id, out IReadOnlyList<int>? ids) && ids.Count == z.Bauteile.Count)
+                for (int i = 0; i < ids.Count; i++) z.Bauteile[i].Id = ids[i];
+            foreach (BauteilDaten b in z.Bauteile)
+                if (b.IdNachbarzone is int nachbar) b.IdNachbarzone = Zone(nachbar);
+        }
+        bool luft = ergebnis.Luftstroeme is { } l && l.Count == Luftstroeme.Count;
+        for (int i = 0; i < Luftstroeme.Count; i++)
+        {
+            ZonenluftstromDaten s = Luftstroeme[i];
+            if (luft) s.Id = ergebnis.Luftstroeme![i];
+            if (s.IdZoneA is int a) s.IdZoneA = Zone(a);
+            if (s.IdZoneB is int b) s.IdZoneB = Zone(b);
+        }
     }
 
     /// <summary>
@@ -312,17 +357,53 @@ public sealed class GebaeudeArbeitsstand
     }
 
     /// <summary>
+    /// <b>Alle Zonen werden zu neuen</b> (Welle ZK-b) — nach „Speichern unter" im Katalog, wenn der Arbeitsstand vom
+    /// gespeicherten Stand abweicht: Der neue Satz soll die Zonen tragen, wie sie hier stehen. Jede Zone mit
+    /// gespeicherter Id bekommt eine vorläufige (ihre Vorlage bleibt die alte Zeile, deren übrige Spalten die Hülle
+    /// übernimmt), jedes gespeicherte Bauteil eine vorläufige, jeder Luftstrom gilt als neu; Nachbarzonen und die
+    /// Zonen der Luftströme folgen. Die Konditionierung jeder Zone zählt als geändert — der OK-Weg schreibt sie ganz.
+    /// Danach weicht der Arbeitsstand vom Vergleichsstand ab, das Schreiben ersetzt die Zonen des Ziels.
+    /// </summary>
+    public void ZonenAlsNeu()
+    {
+        var neu = new Dictionary<int, int>();
+        foreach (ZoneDaten z in Zonen.Where(z => z.Id > 0)) neu[z.Id] = NeueId();
+        int Zone(int id) => neu.TryGetValue(id, out int n) ? n : id;
+        foreach (ZoneDaten z in Zonen)
+        {
+            if (z.Id > 0) z.VorlageId ??= z.Id;
+            z.Id = Zone(z.Id);
+            int bauteilId = 0;
+            foreach (BauteilDaten b in z.Bauteile) bauteilId = Math.Min(bauteilId, b.Id);
+            foreach (BauteilDaten b in z.Bauteile)
+            {
+                if (b.Id > 0) b.Id = --bauteilId;
+                if (b.IdNachbarzone is int nachbar) b.IdNachbarzone = Zone(nachbar);
+            }
+            if (z.Konditionierung is not null) z.Konditionierung.Fassung++;
+        }
+        foreach (ZonenluftstromDaten l in Luftstroeme)
+        {
+            l.Id = 0;
+            if (l.IdZoneA is int a) l.IdZoneA = Zone(a);
+            if (l.IdZoneB is int b) l.IdZoneB = Zone(b);
+        }
+    }
+
+    /// <summary>
     /// Die Herleitungszeile „Rechenweg der Hülle" — in BEIDEN Stellungen (Softwarearchitektur 3.2
     /// Regel 3): Klassenweg über die U-Wert-Gruppen und die Bauweise, oder Bauteilweg mit der Zone
-    /// (bzw. der Zahl der Zonen) und der Zahl der Bauteile; für einen Katalogsatz der Klassenweg samt
-    /// dem Satz, dass er keine Zonen trägt.
+    /// (bzw. der Zahl der Zonen) und der Zahl der Bauteile; für einen Katalogsatz ohne Zone der Klassenweg samt
+    /// dem Satz, dass die Übernahme ins Projekt Zonen kopiert, mit Zonen deren Zahl und dass das Gebäude im
+    /// Projekt nach dem Zonenmodell rechnet (Welle ZK-b).
     /// </summary>
     public string Huellwegzeile(GebaeudeZonenTexte t)
     {
-        if (!MitZonenweg) return t.ZeileKatalog;
-        if (Zonen.Count == 0) return t.ZeileKlassenweg;
         CultureInfo c = CultureInfo.CurrentCulture;
         string bauteile = Zonen.Sum(z => z.Bauteile.Count).ToString(c);
+        if (ImKatalog || !MitZonenweg)
+            return Zonen.Count == 0 ? t.ZeileKatalog : string.Format(c, t.ZeileKatalogZonen, Zonen.Count.ToString(c), bauteile);
+        if (Zonen.Count == 0) return t.ZeileKlassenweg;
         return Zonen.Count == 1
             ? string.Format(c, t.ZeileBauteilweg, Zonen[0].Bezeichner, bauteile)
             : string.Format(c, t.ZeileBauteilwegZonen, Zonen.Count.ToString(c), bauteile);
@@ -408,6 +489,19 @@ public sealed class GebaeudeArbeitsstand
         => GebaeudeZonenCtrl.Hinweise(Zonen.Select(z => new GebaeudeZonenCtrl.Zonenangabe(z.Bezeichner, z.Nutzflaeche,
                z.Bauteile.Select(b => (b.Bauteilart, b.Randbedingung!)).ToList())), Stand.WohnflaecheGesamt);
 
+    /// <summary>
+    /// Übernimmt Ferienzeiträume, die ein Schritt der Konditionierung gesetzt hat („aus dem Katalog
+    /// erneut übernehmen", „Zurücknehmen"; Stufe KP2, Welle U1), als Jahrestage in den Feldsatz und
+    /// in Tag und Monat der Felder.
+    /// </summary>
+    public void FerienUebernehmen(int[]? beginn, int[]? ende)
+    {
+        if (beginn is null || ende is null || beginn.Length < 4 || ende.Length < 4) return;
+        Stand.Ferienbeginn = (int[])beginn.Clone();
+        Stand.Ferienende = (int[])ende.Clone();
+        FerienZerlegen();
+    }
+
     private void FerienZerlegen()
     {
         for (int n = 0; n < 4; n++)
@@ -465,32 +559,30 @@ public sealed class GebaeudeArbeitsstand
     // ---- Baualtersklasse und Energiestandard (Entscheid E47) --------------------------------
 
     /// <summary>
-    /// Die Klasse, die die Klappliste ZEIGT: die aus dem Baujahr, sonst die gewählte (DAS BAUJAHR FÜHRT,
-    /// F2). Gespeichert wird dieselbe (<c>Gebaeudeklassen.IndexWirksam</c> in der Hülle).
+    /// Die Klasse, die die Klappliste ZEIGT und die gespeichert wird: die gewählte. Das Baujahr schlägt sie
+    /// nur vor (<see cref="BaujahrSetzen"/>); die Klappliste ist immer aktiv (Anwenderwunsch 08.10.2026).
     /// </summary>
-    public int KlasseWirksam => Gebaeudeklassen.IndexWirksam(Stand.Baujahr, Stand.Baualtersklasse);
+    public int KlasseWirksam => Stand.Baualtersklasse;
 
-    /// <summary>Folgt die Klasse aus dem Baujahr? Dann ist die Klappliste gesperrt.</summary>
-    public bool KlasseAusBaujahr => Stand.KlasseAusBaujahr;
+    /// <summary>Die Klasse, die das Baujahr vorschlägt; <c>null</c> ohne (gültiges) Baujahr.</summary>
+    public int? KlasseVorschlag => Stand.KlasseVorschlag;
 
-    /// <summary>Die Klassenwahl — nur ohne Baujahr wirksam; mit Baujahr bleibt die Klasse aus dem Jahr.</summary>
-    public void KlasseWaehlen(int? index)
-    {
-        if (KlasseAusBaujahr) return;
-        Stand.Baualtersklasse = index ?? 0;
-    }
+    /// <summary>Die Klassenwahl — sie gilt immer, auch wenn sie vom Vorschlag des Baujahrs abweicht.</summary>
+    public void KlasseWaehlen(int? index) => Stand.Baualtersklasse = index ?? 0;
 
-    /// <summary>Das Baujahr — die Klasse folgt ihm, wenn es eine ergibt.</summary>
+    /// <summary>Das Baujahr — ein neues Jahr setzt die Klasse auf seinen Vorschlag.</summary>
     public void BaujahrSetzen(int? jahr) => Stand.BaujahrUebernehmen(jahr);
 
     /// <summary>
-    /// Die Herleitungszeile unter der Klappliste der Klasse: mit Baujahr „Die Klasse folgt aus dem
-    /// Baujahr …", dann die Quelle der Einteilung (IWU 2015, Stein/Loga 2025).
+    /// Die Herleitungszeile unter der Klappliste der Klasse: mit Baujahr „Vorschlag aus dem Baujahr 1985:
+    /// 1984 bis 1994 – abweichende Wahl gilt.", ohne „Ohne Baujahr frei wählbar.", dann die Quelle der
+    /// Einteilung (IWU 2015, Stein/Loga 2025).
     /// </summary>
     public string KlassenHerleitung
-        => KlasseAusBaujahr && Stand.Baujahr is int jahr
-            ? Gebaeudeklassen.AusBaujahrText(jahr) + " " + Gebaeudeklassen.Quelle()
-            : Gebaeudeklassen.Quelle();
+        => (KlasseVorschlag is not null && Stand.Baujahr is int jahr
+               ? Gebaeudeklassen.AusBaujahrText(jahr)
+               : Gebaeudeklassen.OhneBaujahrText())
+           + " " + Gebaeudeklassen.Quelle();
 
     /// <summary>
     /// Die Einträge der Klappliste Energiestandard (Id = Platz in <c>Energiestandard.CODES</c>): die
@@ -540,6 +632,25 @@ public sealed class GebaeudeArbeitsstand
         };
         string geladen = RandBeimLaden ?? DbWerte.GRUND_ERDREICH;
         Stand.GrundflaecheRandbedingung = gewaehlt == geladen ? RandBeimLaden : gewaehlt;
+    }
+
+    /// <summary>
+    /// Wirkt die Vorgabe des wirksamen U-Werts der Bodenplatte (EV1, E65)? Nur bei Randbedingung Erdreich —
+    /// sonst ist das Feld weich gesperrt, sein Wert bleibt erhalten.
+    /// </summary>
+    public bool ErdreichVorgabeWirkt => Randindex == 0;
+
+    /// <summary>
+    /// <b>Die Auskunftszeile der Erdreichkorrektur</b> (EV1, E65) aus der Auskunft des Kerns: B′ und U_g
+    /// gerechnet, bei Vorgabe „U_g = Vorgabe …"; leer, wenn keine Erdreichkorrektur rechnet (Randbedingung
+    /// Keller oder Außenluft, keine Grundfläche, keine Auskunft).
+    /// </summary>
+    public string ErdreichAuskunftZeile(GebaeudeHuelleTexte t, ErdreichAuskunftDaten? a)
+    {
+        if (a is null || !ErdreichVorgabeWirkt) return "";
+        string ug = a.UgWM2K.ToString("N2", CultureInfo.CurrentCulture);
+        if (a.Vorgabe || a.BStrichM is not double b) return t.ZeileErdreichVorgabe.Replace("{0}", ug);
+        return t.ZeileErdreichRechnung.Replace("{0}", b.ToString("N2", CultureInfo.CurrentCulture)).Replace("{1}", ug);
     }
 
     /// <summary>Der Listenplatz der Randbedingung: 0 Erdreich, 1 Keller, 2 Außenluft.</summary>
@@ -802,7 +913,10 @@ public sealed class GebaeudeArbeitsstand
 
     /// <summary>
     /// Der Abdruck des Stands für die Herleitung — ändert er sich, ist die hergeleitete Zahl
-    /// neu zu bilden. Er umfasst jede Eigenschaft des Feldsatzes samt der Ferienfelder.
+    /// neu zu bilden. Er umfasst jede Eigenschaft des Feldsatzes samt der Ferienfelder; die
+    /// Konditionierung vertritt ihre <see cref="KonditionierungDaten.Fassung"/> (Stufe KP2,
+    /// Befund B10: ihre Listen sähe der Abdruck sonst nicht, und ein zweites OK des Projekts
+    /// übersprünge eine geänderte Konditionierung).
     /// </summary>
     public string Abdruck()
     {
@@ -811,6 +925,7 @@ public sealed class GebaeudeArbeitsstand
         {
             object? w = p.GetValue(Stand);
             if (w is int[] feld) sb.Append(string.Join(",", feld));
+            else if (w is KonditionierungDaten k) sb.Append("K").Append(k.Fassung.ToString(CultureInfo.InvariantCulture));
             else if (w is IFormattable f) sb.Append(f.ToString(null, CultureInfo.InvariantCulture));
             else sb.Append(w);
             sb.Append('|');
@@ -908,6 +1023,95 @@ public sealed class GebaeudeArbeitsstand
         for (int i = 0; i < Waermeuebergabevorgaben.KuehlArten.Count; i++)
             l.Add((i, t.Kuehluebergabe.Artname(Waermeuebergabevorgaben.KuehlArten[i])));
         return l;
+    }
+
+    // ---- Die Kühlkurve (Entwurf KK, Festlegungen 1, 3, 6, 7, 18) ----
+
+    /// <summary>Die Fehlerfelder der Kühlkurve — sie fallen, sobald die Kurve ausgeschaltet wird.</summary>
+    private readonly HashSet<string> _kurveFehlerfelder = new();
+
+    /// <summary>Stehen die Felder der Kühlkurve da? Die Kühlübergabe rechnet und der Haken „Kühlkurve" ist gesetzt.</summary>
+    public bool KuehlkurveFelderSichtbar => KuehlUebergabeAktiv && Stand.KuehlkurveAktiv == true;
+
+    /// <summary>
+    /// Der Haken „Kühlkurve" (Festlegung 6, E106 Q-KK-5 (b)): Beim Einschalten trägt er in ein leeres Raumeinflussfeld den
+    /// Vorgabewert ein — ein Dialogwert, die Rechnung kennt keine Vorgabe. Beim Ausschalten bleiben die Werte stehen; eine
+    /// Fehleingabe in einem ausgeblendeten Feld hält den Speicherweg nicht mehr an.
+    /// </summary>
+    public void KuehlkurveSetzen(bool wert)
+    {
+        Stand.KuehlkurveAktiv = wert;
+        if (wert && Stand.KuehlkurveRaumeinfluss is null)
+            Stand.KuehlkurveRaumeinfluss = Waermeuebergabevorgaben.KUEHLKURVE_RAUMEINFLUSS_VORGABE;
+        if (!wert)
+        {
+            foreach (string f in _kurveFehlerfelder) Fehlerfelder.Remove(f);
+            _kurveFehlerfelder.Clear();
+        }
+    }
+
+    /// <summary>Ein Feld der Kühlkurve meldet seinen Fehlerzustand — gemerkt für das Ausschalten.</summary>
+    public void KuehlkurveFehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        KuehlFehlerMelden(e);
+        if (e.Fehlerhaft) _kurveFehlerfelder.Add(e.Feld); else _kurveFehlerfelder.Remove(e.Feld);
+    }
+
+    /// <summary>Der Listenplatz des Auslegungswegs; leer = Tagesmittel (Weg 2, Vorgabe); ein unbekannter Wert = −1.</summary>
+    public int KuehlkurveWegIndex
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Stand.KuehlkurveAuslegungWeg)) return 1;
+            for (int i = 0; i < Waermeuebergabevorgaben.KuehlkurveWege.Count; i++)
+                if (Waermeuebergabevorgaben.KuehlkurveWege[i] == Stand.KuehlkurveAuslegungWeg) return i;
+            return -1;
+        }
+    }
+
+    /// <summary>Die Einträge des Auslegungswegs: die drei Wege — ein unbekannter gespeicherter Wert vorangestellt.</summary>
+    public IReadOnlyList<(int Id, string Text)> KuehlkurveWegeintraege(GebaeudeHuelleTexte t)
+    {
+        var l = new List<(int, string)>();
+        if (KuehlkurveWegIndex < 0) l.Add((-1, Stand.KuehlkurveAuslegungWeg ?? ""));
+        for (int i = 0; i < Waermeuebergabevorgaben.KuehlkurveWege.Count; i++)
+            l.Add((i, t.Kuehluebergabe.Wegname(Waermeuebergabevorgaben.KuehlkurveWege[i])));
+        return l;
+    }
+
+    /// <summary>
+    /// Wählt den Auslegungsweg über seinen Listenplatz. Das Tagesmittel ist die Vorgabe: War das Feld leer, bleibt es leer
+    /// (NULL-erhaltend wie „ideal" bei der Art).
+    /// </summary>
+    public void KuehlkurveWegWaehlen(int? index)
+    {
+        if (index is null || index.Value < 0 || index.Value >= Waermeuebergabevorgaben.KuehlkurveWege.Count) return;
+        string gewaehlt = Waermeuebergabevorgaben.KuehlkurveWege[index.Value];
+        if (gewaehlt == DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL && string.IsNullOrEmpty(Stand.KuehlkurveAuslegungWeg)) return;
+        Stand.KuehlkurveAuslegungWeg = gewaehlt;
+    }
+
+    /// <summary>Steht der Weg „Eingabe"? Nur dann ist die Auslegungs-Außentemperatur ein Feld.</summary>
+    public bool KuehlkurveAussenSichtbar
+        => KuehlkurveFelderSichtbar && Stand.KuehlkurveAuslegungWeg == DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE;
+
+    /// <summary>Der Auslegungsrücklauf der Kühlung, der gilt: das Feld, sonst die Vorgabe der Art (Fußpunkt leer, Festlegung 4).</summary>
+    public double? KuehlAuslegungRuecklaufWirksam
+        => Stand.KuehlAuslegungRuecklauf ?? Waermeuebergabevorgaben.KuehlRuecklauf(Stand.KuehlUebergabeArt);
+
+    /// <summary>Die Herleitungszeile der Kühlkurve: Fußpunkt und Auslegungsvorlauf als Zahlen, dazu der Auslegungsweg.</summary>
+    public string KuehlkurveZeile(GebaeudeHuelleTexte t)
+    {
+        KuehluebergabeTexte k = t.Kuehluebergabe;
+        double? fuss = Stand.KuehlkurveFusspunkt ?? KuehlAuslegungRuecklaufWirksam;
+        double? vorlauf = KuehlAuslegungVorlaufWirksam;
+        string weg = KuehlkurveWegIndex >= 0
+            ? k.Wegname(Waermeuebergabevorgaben.KuehlkurveWege[KuehlkurveWegIndex])
+            : Stand.KuehlkurveAuslegungWeg ?? "";
+        if (Stand.KuehlkurveAuslegungWeg == DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE && Stand.KuehlkurveAuslegungAussen is double a)
+            weg += " " + Zahl(a, 1) + " °C";
+        return string.Format(CultureInfo.CurrentCulture, k.ZeileKuehlkurve,
+                             fuss is double f ? Zahl(f, 1) : "—", vorlauf is double v ? Zahl(v, 1) : "—", weg);
     }
 
     /// <summary>Die Raumtemperatur im Auslegungspunkt der Kühlung, die gilt: das Feld, sonst der Kühlsollwert.</summary>
@@ -1281,7 +1485,9 @@ public sealed class GebaeudeArbeitsstand
             return Huelle(p.MeldungNameFehlt);
 
         foreach (string feld in Fehlerfelder)
-            return Huelle(t.MeldungUngueltig.Replace("{0}", feld));
+            return IstKonditionierungsfeld?.Invoke(feld) == true
+                ? Konditionierung(t.MeldungUngueltig.Replace("{0}", feld))
+                : Huelle(t.MeldungUngueltig.Replace("{0}", feld));
 
         // Das Baujahr (G4a): leer ist erlaubt (unbekannt), sonst gilt der Bereich der Spalte -
         // dieselbe Grenze, an der die Datenbank mit ihrem CHECK abweist.
@@ -1331,7 +1537,10 @@ public sealed class GebaeudeArbeitsstand
             (Stand.FensterflaecheSued, p.FeldFFSued)
         };
         foreach ((double? wert, string name) in pflicht)
-            if (wert is null) return Huelle(string.Format(p.MeldungZahlFehlt, name));
+            if (wert is null)
+                return name == p.FeldWaermegewinne && IstKonditionierungsfeld is not null
+                    ? Konditionierung(string.Format(p.MeldungZahlFehlt, name))
+                    : Huelle(string.Format(p.MeldungZahlFehlt, name));
 
         if (!(Stand.WohnflaecheGesamt > 0)) return Huelle(t.MeldungNutzflaeche);
         if (!(Stand.FlaecheNutzer > 0)) return Huelle(t.MeldungFlaecheNutzer);
@@ -1354,6 +1563,11 @@ public sealed class GebaeudeArbeitsstand
             && uMittel >= Gebaeudehuellbilanz.U_OPAK_MITTEL_MAX)
             return Huelle(t.MeldungRRest);
 
+        // EV1 (E65): die Vorgabe des wirksamen U-Werts der Bodenplatte - dieselbe Grenze wie der CHECK
+        // (> 0). Geprüft auch bei gesperrtem Feld (Keller, Außenluft), denn der Wert bleibt erhalten.
+        if (Stand.ErdreichUWirksam is double ug && !(ug > 0 && !double.IsInfinity(ug)))
+            return Huelle(t.MeldungErdreichU);
+
         if (SummeOstWest is null) return Huelle(t.MeldungOstWest);
 
         double bauweise = BauweiseNachfuehren
@@ -1372,12 +1586,12 @@ public sealed class GebaeudeArbeitsstand
             if (Stand.KuehlSollwert is double soll)
             {
                 if (soll < Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN || soll > Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX)
-                    return Kuehlung(string.Format(t.MeldungKuehlsollwertBereich,
+                    return Kuehlsoll(string.Format(t.MeldungKuehlsollwertBereich,
                                                 Zahl(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN, 0),
                                                 Zahl(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX, 0)));
                 double heizMax = HoechsterHeizsollwert;
                 if (soll < heizMax + Gebaeudemodellvorgaben.KuehlsollwertAbstand)
-                    return Kuehlung(string.Format(t.MeldungKuehlsollwertHeizung, Zahl(soll, 1), Zahl(heizMax, 1),
+                    return Kuehlsoll(string.Format(t.MeldungKuehlsollwertHeizung, Zahl(soll, 1), Zahl(heizMax, 1),
                                                 Zahl(Gebaeudemodellvorgaben.KuehlsollwertAbstand, 0)));
             }
             if (Stand.KuehlleistungMax is double grenze && !(grenze > 0))
@@ -1404,6 +1618,12 @@ public sealed class GebaeudeArbeitsstand
     private static GebaeudePruefbefund Huelle(string meldung) => new(meldung, GebaeudePruefbereich.Huelle);
 
     private static GebaeudePruefbefund Kuehlung(string meldung) => new(meldung, GebaeudePruefbereich.Kuehlung);
+
+    /// <summary>Eine Regel am Kühlsollwert: im Editor die Matrix (E56 F3 (a)), im Stammblatt die Gruppe „Kühlung".</summary>
+    private GebaeudePruefbefund Kuehlsoll(string meldung)
+        => IstKonditionierungsfeld is not null ? Konditionierung(meldung) : Kuehlung(meldung);
+
+    private static GebaeudePruefbefund Konditionierung(string meldung) => new(meldung, GebaeudePruefbereich.Konditionierung);
 
     /// <summary>Eine Regel des zweiten Reiters (Raumtemperaturen, Nachtzeit, Ferien).</summary>
     private static GebaeudePruefbefund Temperaturen(string meldung) => new(meldung, GebaeudePruefbereich.Ferien);
@@ -1438,7 +1658,8 @@ public sealed class GebaeudeArbeitsstand
         if (Stand.HeizkurveAktiv)
         {
             b = Bereich(Stand.HeizkurveNiveau, u.LabelHeizkurveNiveau, Waermeuebergabevorgaben.NIVEAU_MIN, Waermeuebergabevorgaben.NIVEAU_MAX)
-                ?? Bereich(Stand.HeizkurveSteilheit, u.LabelHeizkurveSteilheit, Waermeuebergabevorgaben.STEILHEIT_MIN, Waermeuebergabevorgaben.STEILHEIT_MAX);
+                ?? Bereich(Stand.HeizkurveSteilheit, u.LabelHeizkurveSteilheit, Waermeuebergabevorgaben.STEILHEIT_MIN, Waermeuebergabevorgaben.STEILHEIT_MAX)
+                ?? Bereich(Stand.HeizkurveRaumeinfluss, u.LabelHeizkurveRaumeinfluss, 0, Ak3Schema.RAUMEINFLUSS_MAX);
             if (b is not null) return b;
         }
         if (Stand.UebergabeLeistungNennKw is double nenn && !(nenn > 0)) return Uebergabe(u.MeldungNennleistung);
@@ -1496,6 +1717,20 @@ public sealed class GebaeudeArbeitsstand
         if (b is not null) return b;
         if (Stand.KuehlUebergabeLeistungNennKw is double nenn && !(nenn > 0)) return Kuehlung(k.MeldungNennleistung);
 
+        // Die Kühlkurve (Festlegungen 7 und 18): Bereiche, die Eingabe nur mit dem Weg „Eingabe", die Fußpunktregel.
+        if (Stand.KuehlkurveAktiv == true)
+        {
+            GebaeudePruefbefund? kk =
+                Bereich(Stand.KuehlkurveFusspunkt, k.LabelKuehlkurveFusspunkt, KuehlkurveSchema.FUSSPUNKT_MIN, KuehlkurveSchema.FUSSPUNKT_MAX)
+                ?? Bereich(Stand.KuehlkurveRaumeinfluss, k.LabelKuehlkurveRaumeinfluss, 0, KuehlkurveSchema.RAUMEINFLUSS_MAX)
+                ?? (Stand.KuehlkurveAuslegungWeg == DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE
+                    ? Bereich(Stand.KuehlkurveAuslegungAussen, k.LabelKuehlkurveAussen, KuehlkurveSchema.AUSSEN_MIN, KuehlkurveSchema.AUSSEN_MAX)
+                    : null);
+            if (kk is not null) return kk;
+            if (Stand.KuehlkurveFusspunkt is double fuss && KuehlAuslegungVorlaufWirksam is double av && fuss < av)
+                return Kuehlung(string.Format(k.MeldungFusspunkt, Zahl(fuss, 1), Zahl(av, 1)));
+        }
+
         string art = Stand.KuehlUebergabeArt!;
         double vorlauf = Stand.KuehlAuslegungVorlauf ?? Waermeuebergabevorgaben.KuehlVorlauf(art)!.Value;
         double ruecklauf = Stand.KuehlAuslegungRuecklauf ?? Waermeuebergabevorgaben.KuehlRuecklauf(art)!.Value;
@@ -1528,8 +1763,7 @@ public sealed class GebaeudeArbeitsstand
     {
         if (BauweiseNachfuehren) BauweiseBilden();
 
-        // E47 (F2): DAS BAUJAHR FUEHRT - geschrieben wird die Klasse, die die Klappliste zeigt.
-        Stand.Baualtersklasse = KlasseWirksam;
+        // Die Baualtersklasse ist die gewaehlte (das Baujahr schlaegt nur vor) - hier ist nichts abzuleiten.
 
         Stand.FensterflaecheOstWest = SummeOstWest ?? 0;
 
@@ -1603,6 +1837,7 @@ public sealed class GebaeudeArbeitsstand
 
         T(a.Modell, g.Modell); T(a.GrundflaecheRandbedingung, g.GrundflaecheRandbedingung);
         Z(a.Kellertemperatur, g.Kellertemperatur);
+        Z(a.ErdreichUWirksam, g.ErdreichUWirksam);
         Z(a.Rahmenanteil, g.Rahmenanteil); Z(a.Verschattungsfaktor, g.Verschattungsfaktor);
         Z(a.MasseanteilAussen, g.MasseanteilAussen); Z(a.Innenflaechenfaktor, g.Innenflaechenfaktor);
         Z(a.HeizungStrahlungsanteil, g.HeizungStrahlungsanteil); Z(a.HeizleistungMax, g.HeizleistungMax);
@@ -1610,7 +1845,11 @@ public sealed class GebaeudeArbeitsstand
         Z(a.LuftwechselInfiltration, g.LuftwechselInfiltration); Z(a.LuftwechselNutzer, g.LuftwechselNutzer);
         B(a.Sommerlueftung, g.Sommerlueftung);
         B(a.KuehlungAktiv, g.KuehlungAktiv); Z(a.KuehlSollwert, g.KuehlSollwert);
-        Z(a.KuehlleistungMax, g.KuehlleistungMax);
+        Z(a.KuehlSollwertNacht, g.KuehlSollwertNacht); Z(a.KuehlleistungMax, g.KuehlleistungMax);
+
+        // Stufe KP2, Welle U4: die Konditionierung zählt als EIN Feld, sobald ein Schritt ihre Fassung
+        // weitergezählt hat — „Speichern" der Verwaltung schreibt sie dann mit.
+        I(a.Konditionierung?.Fassung ?? 0, g.Konditionierung?.Fassung ?? 0);
 
         // Stufe AK1: die dreizehn Felder der Wärmeübergabe (das Zeitprogramm als EIN Feld).
         B(a.HeizkreisAktiv, g.HeizkreisAktiv); T(a.UebergabeArt, g.UebergabeArt);
@@ -1619,6 +1858,7 @@ public sealed class GebaeudeArbeitsstand
         Z(a.AuslegungRaumtemperatur, g.AuslegungRaumtemperatur); Z(a.AuslegungAussentemperatur, g.AuslegungAussentemperatur);
         B(a.HeizkurveAktiv, g.HeizkurveAktiv); Z(a.HeizkurveNiveau, g.HeizkurveNiveau);
         Z(a.HeizkurveSteilheit, g.HeizkurveSteilheit); Z(a.ReglerProportionalband, g.ReglerProportionalband);
+        Z(a.HeizkurveRaumeinfluss, g.HeizkurveRaumeinfluss);
         T(a.Sollwertprofil, g.Sollwertprofil);
 
         // E37: die acht Felder der Kühlübergabe.
@@ -1626,6 +1866,11 @@ public sealed class GebaeudeArbeitsstand
         Z(a.KuehlUebergabeExponent, g.KuehlUebergabeExponent); Z(a.KuehlUebergabeLeistungNennKw, g.KuehlUebergabeLeistungNennKw);
         Z(a.KuehlAuslegungVorlauf, g.KuehlAuslegungVorlauf); Z(a.KuehlAuslegungRuecklauf, g.KuehlAuslegungRuecklauf);
         Z(a.KuehlAuslegungRaumtemperatur, g.KuehlAuslegungRaumtemperatur); Z(a.KuehlVorlaufgrenze, g.KuehlVorlaufgrenze);
+
+        // KK: die fünf Felder der Kühlkurve.
+        B(a.KuehlkurveAktiv == true, g.KuehlkurveAktiv == true); Z(a.KuehlkurveFusspunkt, g.KuehlkurveFusspunkt);
+        Z(a.KuehlkurveRaumeinfluss, g.KuehlkurveRaumeinfluss); T(a.KuehlkurveAuslegungWeg, g.KuehlkurveAuslegungWeg);
+        Z(a.KuehlkurveAuslegungAussen, g.KuehlkurveAuslegungAussen);
 
         for (int i = 0; i < 4; i++)
         {
@@ -1659,6 +1904,8 @@ public sealed class GebaeudeArbeitsstand
         return new GebaeudeKatalogKiSicht
         {
             StandLesen = () => Stand,
+            Konditionierung = wege.Konditionierung,
+            Nutzungsprofile = wege.Nutzungsprofile,
 
             NameLesen = wege.NameLesen,
             NameSetzen = wege.NameSetzen,
@@ -1727,7 +1974,13 @@ public sealed class GebaeudeArbeitsstand
             // E37: der Unterabschnitt „Kühlübergabe" über dieselben Wege.
             KuehluebergabeSetzen = KuehluebergabeSetzen,
             KuehlUebergabeArtSetzen = w => KiKuehlArtSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
-            KuehlUebergabeArtEintraege = () => KiKuehlArteintraege(wege.Texte ?? new GebaeudeHuelleTexte())
+            KuehlUebergabeArtEintraege = () => KiKuehlArteintraege(wege.Texte ?? new GebaeudeHuelleTexte()),
+
+            // KK: die Kühlkurve - Haken und Weg über die Wege der Bedienelemente.
+            KuehlkurveSetzen = KuehlkurveSetzen,
+            KuehlkurveWegSetzen = KiKuehlkurveWegSetzen,
+            KuehlkurveWegEintraege = () => Waermeuebergabevorgaben.KuehlkurveWege
+                .Select(w => new KiWahleintrag(w, (wege.Texte ?? new GebaeudeHuelleTexte()).Kuehluebergabe.Wegname(w))).ToList()
         };
     }
 
@@ -1743,6 +1996,20 @@ public sealed class GebaeudeArbeitsstand
                 return null;
             }
         return string.Format(t.Kuehluebergabe.MeldungArtUnbekannt, gesucht);
+    }
+
+    /// <summary>Der Auslegungsweg des Assistenten: der Steuerwert über denselben Weg wie die Klappliste; leer = Tagesmittel.</summary>
+    private string? KiKuehlkurveWegSetzen(string wert)
+    {
+        string gesucht = (wert ?? "").Trim();
+        if (gesucht.Length == 0) gesucht = DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL;
+        for (int i = 0; i < Waermeuebergabevorgaben.KuehlkurveWege.Count; i++)
+            if (string.Equals(Waermeuebergabevorgaben.KuehlkurveWege[i], gesucht, StringComparison.OrdinalIgnoreCase))
+            {
+                KuehlkurveWegWaehlen(i);
+                return null;
+            }
+        return string.Join(", ", Waermeuebergabevorgaben.KuehlkurveWege);
     }
 
     private static IReadOnlyList<KiWahleintrag> KiKuehlArteintraege(GebaeudeHuelleTexte t)
@@ -1836,8 +2103,11 @@ public sealed class GebaeudeArbeitsstand
 /// <param name="Bereich">Wo das Feld der Regel steht — der Dialog zeigt es dort.</param>
 public sealed record GebaeudePruefbefund(string Meldung, GebaeudePruefbereich Bereich)
 {
-    /// <summary>Hängt die Regel am zweiten Reiter des Editors (Temperaturen und Ferien)?</summary>
-    public bool Temperaturen => Bereich == GebaeudePruefbereich.Ferien;
+    /// <summary>
+    /// Hängt die Regel am zweiten Reiter des Editors („Konditionierung": Matrix, Nachtfenster, Ferien,
+    /// Maximalraumtemperatur)?
+    /// </summary>
+    public bool Temperaturen => Bereich is GebaeudePruefbereich.Ferien or GebaeudePruefbereich.Konditionierung;
 }
 
 /// <summary>
@@ -1856,7 +2126,14 @@ public enum GebaeudePruefbereich
     Waermeuebergabe,
 
     /// <summary>Raumtemperaturen, Nachtzeit und Ferien (zweiter Reiter des Editors, „Alle Daten" des Stammblatts).</summary>
-    Ferien
+    Ferien,
+
+    /// <summary>
+    /// Ein Feld der Vorgabe-Matrix, das nach E56 F3 (a) allein im Reiter „Konditionierung" steht
+    /// (innere Wärmegewinne, Kühlsollwert, eine Fehleingabe in der Matrix; Stufe KP2, Welle U1) — im
+    /// Stammblatt der Verwaltung stehen sie weiter bei ihren Gruppen.
+    /// </summary>
+    Konditionierung
 }
 
 /// <summary>
@@ -1903,6 +2180,19 @@ public sealed class GebaeudeKiWege
 
     /// <summary>Der Name des Ferienzeitraums je Zeile (Winter, Ostern, Sommer, Herbst).</summary>
     public Func<int, string>? Ferienname { get; init; }
+
+    /// <summary>
+    /// Die Bearbeitung der Vorgabe-Matrix (Stufe KP2) — der Katalogeditor (Reiter, Welle U1) und die
+    /// Verwaltung (Blatt, Welle U4) reichen sie: Dann beantwortet die Sicht die Felder der Vorgabe-Matrix,
+    /// und die Bestandszellen gehen über denselben Weg wie die Zellen des Reiters.
+    /// </summary>
+    public KonditionierungBearbeitung? Konditionierung { get; init; }
+
+    /// <summary>
+    /// Der Zugang zum Blatt „Nutzungsprofile" (NP3c) — nur der Katalogeditor trägt das Blatt; die Sicht
+    /// beantwortet darüber die Felder <c>np_*</c> und die Zuordnungszeilen.
+    /// </summary>
+    public RaumnutzungKiZugang? Nutzungsprofile { get; init; }
 
     /// <summary>Die Texte der VDI-Struktur — für die Namen der Übergabearten und die Ablehnungen der Wärmeübergabe.</summary>
     public GebaeudeHuelleTexte? Texte { get; init; }
@@ -2044,4 +2334,11 @@ public sealed class GebaeudePrueftexte
         Huellbauteil.Sonstiges => FeldSonstigeFlaechen,
         _ => t.Zeile(b) + " L"
     };
+
+    /// <summary>
+    /// Eine flache Kopie — für einen Wirt, der einen Feldnamen anders nennt als die Hülle (die
+    /// Gebäudeverwaltung nennt die inneren Wärmegewinne mit dem Namen der Matrixzelle, Stufe KP2,
+    /// Welle U4), ohne das hereingereichte Bündel zu ändern.
+    /// </summary>
+    public GebaeudePrueftexte Kopie() => (GebaeudePrueftexte)MemberwiseClone();
 }

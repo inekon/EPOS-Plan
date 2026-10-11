@@ -42,6 +42,8 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   sein Tooltip erschiene nie; die **weiche Sperre** ist `aria-disabled="true"` plus ein Handler,
   der den Versuch MELDET. Beide Bauarten stehen in EINER Stilregel, denn **zwei Zustände müssen
   SICHTBAR verschieden sein**.
+- **Blätter zuerst:** Kreuz, Esc und Hintergrundklick einer `Ueberlagerung` führen erst ein offenes Blatt
+  (`Blattwechsel`, angemeldet im `Blattstapel`) zurück; erst vom Wurzelblatt aus schließt der Dialog; Fensterkreuz und Alt+F4 eines Dialogs im eigenen Fenster tun über den `Fensterschliessweg` dasselbe.
 - **Tastatur:** Esc schließt überall, wobei jeder Wirt erst seine Überlagerungsschalter prüft;
   **Enter** bestätigt nur in reinen OK-Dialogen — wo ein Knopf sofort schreibt, bleibt es
   unbelegt. **Kein Delegat, kein Knopf.**
@@ -109,10 +111,15 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Eine LISTE steht in einem festen Rahmen mit Rollbalken:** `.epos-raster-huelle` trägt
   `max-height: var(--epos-listenhoehe)`, `overflow: auto` und einen stehenden Spaltenkopf — eine
   Höchsthöhe, Rückweg `Begrenzt="false"`; im `Katalograhmen` (siehe unten) fällt die Höchsthöhe.
-- **Projekt ↔ Datenbank immer über `Zweispaltenauswahl`:** Projektliste oben mit Höhengrenze,
-  darunter die Übernahmeleiste (je ein Zeichen ▲/▼ als `aria-hidden`-Element, nie im
-  Ressourcentext), darunter die Katalogliste über die ganze Breite; Filter darüber, Detailblöcke
-  darunter.
+- **Projekt ↔ Datenbank immer über `Zweispaltenauswahl`** (Katalogauswahl V1 „Gerahmt und
+  gestapelt", [Konzept](../Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)):
+  drei gerahmte Bereiche mit Kopfleiste und Kennfarbe — „Im Projekt" (mit „▼ Aus dem Projekt
+  entfernen"), darunter die ziehbare Trennlinie (Höhe je Dialog über `Dienste.Einstellungen`,
+  Schlüssel `Katalogauswahl.Trenner.<Dialogname>`), „Katalog (Datenbank)" (mit „▲ In das Projekt
+  übernehmen", Enter und Doppelklick übernehmen) und die zugeklappte Detailzeile „gewählter Satz".
+  Der Wirt nennt `Dialogname` und reicht Projektliste (`Links`), Katalogliste samt Fußleiste
+  (`Rechts`) und seinen Detailblock (`Satz`) hinein; die Zeichen ▲/▼ stehen als
+  `aria-hidden`-Element, nie im Ressourcentext.
 - **Ein KATALOGDIALOG nutzt die Höhe:** Wurzel `epos-katalog-dialog`, Baustein `Katalograhmen` mit
   zwei Anordnungen. Ohne Stammblatt: `Liste` und `Eingabe` (`Gestapelt`, wo sie untereinander
   gehören), Umbruch bei **900 CSS-Pixeln**; die Liste hat keine Maximalhöhe mehr und nimmt die
@@ -184,8 +191,38 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Komponente keinen eigenen (`epos-dialog-kopf--ohnetitel`) — über `TitelText=""` oder ein
   eigenes `TitelAnzeigen`, am Tag der Einbettung RECHTS von `@attributes`. Wache:
   `UeberlagerungstitelTests`; ein `@attributes`-Satz bleibt dort Handarbeit (bunit-Fall im Wirt).
+- **Im eigenen Fenster stehen Kopf und Schlussleiste fest:** `BlazorDialogForm` meldet an
+  `#app` die `Fensterwurzel<T>` an, die hinter dem Dialog die `Fenstermarke` zeichnet — EINE
+  Wurzelkomponente; keine zweite an `body::after` (belegt der BlazorWebView selbst, eine zweite
+  Anmeldung beendet den Prozess wortlos). Dann haften das erste Kind der Dialogwurzel (`.epos-dialog-kopf`)
+  oben und die Leiste mit dem Primärknopf als eigenem Kind unten, nur der Inhalt rollt
+  (`epos-ui.css`, „Dialog im eigenen Fenster"; nicht in Katalogdialogen, Überlagerung und Blatt).
+  **Die Projektdialoge mit Katalogauswahl** (Baustein `Zweispaltenauswahl`) sind ebenfalls
+  ausgenommen: Sie füllen ihr Fenster, und es rollen allein Projektliste, Katalogliste und die
+  aufgeklappte Detailzeile, keine in der anderen — Detailblock des Wirts als Abschnitt `Satz` in
+  den Baustein, nichts darunter; gemessen mit `Proben/Rasterprobe/rollbereichprobe.mjs`.
+  Deshalb steht der Kopf zuerst, und **eine Knopfzeile mitten im Inhalt trägt keinen
+  Primärknopf** — Wache `FensterrahmenTests`, gemessen mit `Proben/Rasterprobe/fensterprobe.mjs`.
+- **Eine Meldung im Fensterdialog ist der `Warnbanner` als unmittelbares Kind der Dialogwurzel:**
+  Dort haftet er unter dem Kopf (und über der Schlussleiste, steht er tiefer) und trägt ein Kreuz
+  zum Ausblenden; in Überlagerung, Blatt und Seite rollt er mit. Kein eigenes Banner-Markup; eine
+  Meldung zu einer Leiste mitten im Inhalt steht in einem Block unter ihr (`.epos-katalogmeldung`)
+  und haftet nicht — Wache `FensterrahmenTests`, gemessen mit `Proben/Rasterprobe/bannerprobe.mjs`.
 - **Ein Dialog IN einem Dialog:** Unterdialoge erscheinen als `Ueberlagerung` im selben Fenster,
   nie als zweite `BlazorWebView`; der Wirt splattet ihren Parametersatz aus `Gaben()`.
+- **Ein Unterdialog mit eigenen Spalten, eigenen Überlagerungen oder mehr als einer Bildschirmhöhe
+  ist ein BLATT, keine Überlagerung:** Der Baustein `Blattwechsel` tauscht den Inhalt des Wirts
+  gegen das Blatt (der Wirt zeichnet seinen Haupt-Inhalt nur bei geschlossenem Blatt), Kopfzeile
+  `‹ {Wirtstitel}` · Titel · Hilfepille nur, wo der Dialog darin keine eigene trägt. Rückknopf und
+  Esc führen zurück wie das Kreuz einer `Ueberlagerung` und fragen den Dialog nicht; das Blatt
+  hält Esc mit `stopPropagation` bei sich, sonst schlösse der Esc-Halter des Wirts mit. Der
+  Dialog darin trägt `TitelAnzeigen="false"` (Wache `SchliesskreuzWacheTests`, Fall 4). Rollstand
+  und Fokus trägt der Baustein (`epos-blatt.js`: Stand des Rollbehälters vor dem Tausch merken,
+  Blatt oben, Rückweg wiederherstellen; Fokus auf die Kopfzeile ohne zu rollen), der Wirt
+  fokussiert beim Rückweg seine Wurzel mit `preventScroll`. `epos-blatt--breit` weitet die
+  tragende Überlagerung auf das breite Maß (`:has`), im eigenen Fenster wünscht die Hülle das
+  Maß (`Fenstermass.MitUeberlagerung`). Die `Ueberlagerung` bleibt für kurze Unterdialoge ohne
+  eigene Unterdialoge; Überlagerungen stecken höchstens eine Ebene tief in einer Überlagerung.
 - **Jedes Diagramm der Oberfläche ist ein `Zeichenmodell` im Baustein `DiagrammSvg`.** Die Hülle
   holt `ChartRenderer.…Modell(…)` aus dem Kern und reicht es als `Modell` herein; der Baustein
   macht daraus über `SvgSchreiber.Baum` Razor-Elemente. Es gibt **keinen PNG-Weg in der
@@ -203,6 +240,12 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
     Achsenseite aus `Datenreihe.Achsenseite`. **Ein Bild ohne Zeichenfläche hat keinen Zoom** und
     zeigt statt dessen den `data-wert` des Elements unter dem Zeiger; bei Ring und Kuchen ist die
     Legende zusätzlich nicht schaltbar (`LegendeSchaltbar="false"`).
+  - **„CSV…“ am Bild für jede Zeitreihe:** Ein Wirt führt `[Parameter] CsvSpeichern`
+    (Modell, Titel, Raster), legt `Ganglinienexport` als Kaskade um sein Markup und bekommt den
+    Delegat von seiner Hülle über `Diagrammexportnaht.Fuer(kennung)`; jedes Bild darunter, das
+    Reihen führt, trägt den Knopf, das Raster folgt der Länge (8 760, 35 040, 365, 168, 52, 24,
+    12) oder steht ausdrücklich (Jahr; das Raster Jahr zählt ab 0). Kennlinien und Punktwolken (x = Wert) nicht. Der Kalenderteppich trägt keine Datenreihen, sondern die Tafel 365 × 24 (`Zeichenmodell.Tafel`, Record `Tagesstundentafel`, Raster `Zeitraster.Kalendertag`); `Ganglinienexport.Passt` erkennt die Tafel, der Schreiber ist `ZeitreihenCsv.Kalenderteppich`, der Knopf kommt über die Export-Kaskade des Wirts. Wache
+    `CsvAmBildWacheTests`.
   - **Die Farbwahl am Bild steht einmal** in `Bausteine/Farbwahlwirt.cs`: Ein Wirt schreibt
     `@inherits Farbwahlwirt` und reicht `FarbwahlErlaubt`/`FarbeGewaehlt`/`FarbeZurueckgesetzt`
     samt `Palette` durch. **Kein Delegat, kein Wähler.**
@@ -226,7 +269,7 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Layout schiebt.
 - **Ausgabe und Übernahme eines Ergebnisses stehen im Schlitz WERKZEUG, nicht in der Fußleiste:**
   Knöpfe, die auf das gerechnete Ergebnis einer Verwaltung wirken (Lastspitzenkappung:
-  „CSV-Export“, „In Variante übernehmen“), stehen nach der Suche in `.epos-werkzeughandlungen`,
+  „In Variante übernehmen“; die CSV trägt der Knopf „CSV…“ am Lastgangbild), stehen nach der Suche in `.epos-werkzeughandlungen`,
   beieinander und ohne Textumbruch; im schmalen Fenster, wo das Stammblatt die Werkzeugleiste
   verdeckt, reicht der Wirt dasselbe Fragment zusätzlich als `Stammblatt.Kopfhandlungen` (nur
   schmal sichtbar, in der Zeile von „‹ Liste“). Die Fußleiste bleibt dem Gerüst vorbehalten
@@ -256,6 +299,11 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Ein Baustein hängt sein Schließen NICHT an `focusout`** (es feuert auch bei Fokuswechseln
   INNERHALB, und Berührung setzt keinen Fokus): Beim Klick daneben schließt eine
   **Schließfläche** (`position: fixed; inset: 0`) mit **drei z-Ebenen**.
+- **Ein Erstfokus rollt nicht: `FocusAsync(preventScroll: true)`**, sonst steht der Vermerk
+  `Rollen gewollt: <Grund>` in derselben oder der Vorzeile. Eine eingebettete Ansicht fokussiert
+  sich nicht selbst, ihr Wirt fokussiert seine äußere Wurzel. Wache
+  [`FokusOhneRollenWacheTests`](../EPOS.UI.Tests/FokusOhneRollenWacheTests.cs), Probe
+  [`fokusprobe.mjs`](../Proben/Rasterprobe/fokusprobe.mjs).
 - **Jede Ebene einer verschachtelten Aufklapp-Struktur führt ihren EIGENEN Offen-Zustand — am
   besten als PFAD** (`_pfad[0]` erste Ebene, `_pfad[1]` zweite): Das gibt Ausschluss je Ebene und
   das Mitfallen ganzer Untermenüs.
@@ -352,6 +400,9 @@ Sitzung), denn ein `static`-Feld wäre Zustand, den keine Probe zurücksetzt; R�
 **Jeder Dialog bietet den Hilfe-Assistenten an — und kein Dialog setzt ihn selbst:** Der KI-Knopf
 steckt im `InfoKnopf`, weil der den Hilfeschlüssel trägt, aus dem der Kern den Bereich ableitet;
 `<InfoKnopf Schluessel="…" Dialogname="…" />` genügt, `MitAssistent="false"` braucht einen Grund.
+**Ein KI-Knopf je Dialog:** Trägt ein Dialog mehrere Pillen (Rechenweg, Import, Gruppen- oder
+Feldhilfe), führt nur die Kopfpille den Assistenten; jede weitere setzt `MitAssistent="false"` —
+eine Überlagerung ist ein eigener Dialog. Wache `KiKnopfEinmalWacheTests`.
 **Soll der Dialog seine Feldwerte mitgeben, meldet er sie an** — die Feldliste steht
 im Kern (`KiDialoge`), der Dialog meldet in `OnInitialized` nur, wo sie liegen
 (`KiMaskenanmeldung.Fuer(name, () => Daten, KiHaken())`): als **Delegat**, nicht als Instanz, und
@@ -361,7 +412,10 @@ AKTIONSNAMEN denselben Weg wie der Knopf. **Führt ein Dialog seine Felder als D
 (Katalogbrowser), erzeugt der Kern die Feldkarte aus demselben Profil und die Sichtklasse beantwortet
 sie als `IKiFeldtafel` über den Schlüssel — keine zweite Feldliste von Hand. Die Wahl des Satzes einer
 Verwaltung ist `satzwahl` und bleibt frei, wenn `Schreibgeschuetzt` einen Auslieferungssatz meldet;
-`Schreibschutzgrund` nennt den Weg („Duplizieren…"). **Eine Maske mit Eingabefeldern ist angemeldet, Baustein eines
+`Schreibschutzgrund` nennt den Weg („Duplizieren…"). `Sperrgrund` sperrt **einzelne Felder** (Schlüssel → Grund,
+ohne Ausnahme für Satzwahl und `np_*`) vor der Bestätigung: Ein Feld, dessen Handweg sofort in die Datenbank schreibt
+(Energieträger der Erzeugermasken), setzt der Assistent nicht, er sagt es; ohne gewählte Projektzeile, wenn die
+Einzelwahl nicht greift, sperrt `ErzeugerSperre` die Zeilenfelder. **Eine Maske mit Eingabefeldern ist angemeldet, Baustein eines
 anmeldenden Wirts oder steht mit Grund in `KiDialogAusnahmen`** — `KiMaskenabdeckungWacheTests` hält das samt
 Eingabebilanz: Eine neue Eingabe braucht ein Katalogfeld oder einen Grund (`BewusstDraussen`, Vermerk und Zahl in
 `EINGABESTELLEN`).

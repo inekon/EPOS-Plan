@@ -187,6 +187,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double KwpDesProjekts(int idProjekt)
         {
+            // PVG (Schemaschritt 206): Rechnet das Projekt seine Photovoltaik ueber eine PV-Ganglinie, ist deren
+            // Kennleistung die installierte Leistung (gepflegte Nennleistung, sonst die Spitze der Ganglinie) -
+            // die Module rechnen dann nicht. Ohne Zuordnung bleibt es bei der Summe der Module.
+            PvGanglinieWeiche.Stand ganglinie = PvGanglinieWeiche.Lesen(idProjekt);
+            if (ganglinie.RechnetGanglinie) return ganglinie.KennleistungKwp;
             return KwpSumme(idProjekt, 0);
         }
 
@@ -433,6 +438,11 @@ namespace WindowsFormsApplication1
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
+                // Der Ursprung der Kopie (Schemaschritt KatalogkostenUrsprungSchema): Der Rueckweg „In die Datenbank
+                // uebernehmen…" kann ihn dann ueberschreiben, und die Satzvorlagen gehen der Standardvorlage vor.
+                if (ok && KatalogkostenUrsprungSchema.UrsprungLesbar(PhotovoltaikStammCtrl.TABELLE_PROJEKT))
+                    DataRepository.ExecuteSQL("UPDATE [Tab_PV] SET [ID_Stamm] = ? WHERE [ID] = ?",
+                                              new DbParam("@st", stammId), new DbParam("@id", neueId));
                 return ok ? neueId : -1;
             }
             catch (Exception ex)

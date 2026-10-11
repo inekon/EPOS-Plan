@@ -77,6 +77,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal bool Handgeaendert { get; set; }
 
+        /// <summary>
+        /// Das Nutzungsprofil der Zone aus dem <see cref="Zonenplan"/> (<see cref="Planzone.Profil"/>); <c>null</c> = keine.
+        /// Beim Speichern wird es über den Generator übernommen (<see cref="ZonenplanCtrl.NutzungUebernehmen"/>).
+        /// </summary>
+        internal Planprofil Profil { get; set; }
+
+        /// <summary>Der Name der Nutzung (<see cref="Planprofil.Name"/>); <c>null</c> = keine.</summary>
+        internal string Nutzung => Profil?.Name;
+
+        /// <summary>Die Konditionierung aus der HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
+        internal Zonenkonditionierung Projektdatei { get; set; }
+
         public override string ToString() => Name + " (" + Raeume.Count.ToString(CultureInfo.InvariantCulture) + " Räume)";
     }
 
@@ -107,6 +119,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die in der Geometrie schon ausgeschnittenen Öffnungen [m²] (Innenränder der Ebene, 6.2).</summary>
         internal double AusschnittM2 { get; set; }
 
+        /// <summary>
+        /// Auf welchem Weg <see cref="BruttoM2"/> entstanden ist (A4): aus den Polygonen der Raumgrenzen
+        /// (<see cref="WindowsFormsApplication1.Flaechenherkunft.Raumgrenze"/>), sonst der Weg der Bauteilfläche
+        /// (<see cref="AbbildBauteil.Flaechenherkunft"/>); <c>null</c> = nicht bestimmt.
+        /// </summary>
+        internal Flaechenherkunft? Flaechenherkunft { get; set; }
+
         /// <summary>Wurde die Fläche des Bauteils ohne Geometrie nach der Zahl der Grenzen aufgeteilt?</summary>
         internal bool Aufgeteilt { get; set; }
 
@@ -124,6 +143,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Öffnungen (Fenster, Türen), die auf diesem Teil liegen.</summary>
         internal List<AbbildBauteil> Oeffnungen { get; } = new List<AbbildBauteil>();
+
+        /// <summary>
+        /// Die Grenzen der Datei, aus denen ein Außenteil besteht (nur mit Geometrie) — der
+        /// Bauteilvorschlag führt daraus je Orientierung eine Teilfläche (<see cref="Teilflaechen"/>); leer = keine.
+        /// </summary>
+        internal List<AbbildGrenze> Grenzen { get; } = new List<AbbildGrenze>();
+
+        /// <summary>
+        /// Die Fläche einer Öffnung, die über mehrere Zonen reicht, in diesem Teil [m²] (nach den Flächen ihrer Grenzen je Zone);
+        /// fehlt sie, liegt die ganze Öffnung hier.
+        /// </summary>
+        internal Dictionary<AbbildBauteil, double> Oeffnungsanteile { get; } = new Dictionary<AbbildBauteil, double>();
+
+        /// <summary>Die Fläche der Öffnung <paramref name="o"/> in diesem Teil [m²]; <c>null</c> = die Öffnung trägt keine.</summary>
+        internal double? OeffnungM2(AbbildBauteil o) => Oeffnungsanteile.TryGetValue(o, out double a) ? a : o.BruttoflaecheM2;
 
         /// <summary>Die größere Beschreibung einer Trennfläche (Gegenprobe), sonst die eigene [m²].</summary>
         internal double? GroessereM2 => BruttoM2 is double a ? (GegenseiteM2 is double b ? Math.Max(a, b) : a) : GegenseiteM2;
@@ -167,8 +201,10 @@ namespace WindowsFormsApplication1
     /// <item><b>Regeln</b> in der Rangfolge der Konzepte — IFC: Z1 nach den Zonen der Datei, Z2 nach der
     /// Klassifikation, Z3 nach der Nutzung, Z4 je Geschoss, Z5 eine Zone; gbXML: X1 nach <c>Zone</c> (nur
     /// bei weniger Zonen als Räumen), X2 je Geschoss, X3 je Raum, X4 eine Zone. <b>Vorgabe</b> (M7): IFC Z4,
-    /// wenn mehr als ein Geschoss Räume trägt und die Datei Raumgrenzen führt, sonst Z5; gbXML X1, sonst
-    /// X2, sonst X4. Ohne Raumgrenzen ist Z4 nur auf ausdrückliche Wahl zu haben, mit Warnung — die
+    /// wenn mehr als ein Geschoss Räume trägt und die Datei Raumgrenzen führt oder — ohne sie — die
+    /// Trenndecken aus den Raumbezügen alle beheizten Geschosse koppeln
+    /// (<see cref="AbbildGebaeude.GeschosseGekoppelt"/>), sonst Z5; gbXML X1, sonst X2, sonst X4. Ohne
+    /// Raumgrenzen und ohne solche Kopplung ist Z4 nur auf ausdrückliche Wahl zu haben, mit Warnung — die
     /// Geschosszonen wären entkoppelt (6.5); Z1 bis Z3 brauchen die Grenzen.</item>
     /// <item><b>Beheizung:</b> Eine Zone fasst nur Räume gleichen Zustands (Regeln B1…B6 des Lesers bzw.
     /// <c>@conditionType</c>, übersteuert durch die Haken der Raumliste); die unbeheizten Räume einer Gruppe
@@ -234,6 +270,8 @@ namespace WindowsFormsApplication1
         internal const string ZONE_ZU_KLEIN = "ZONE_ZU_KLEIN";
         /// <summary>I — {0} Zone: keine Fläche gegen Außenluft oder Erdreich.</summary>
         internal const string ZONE_OHNE_AUSSEN = "ZONE_OHNE_AUSSEN";
+        /// <summary>I — {0} Zone, {1} Fläche: unbeheizt ohne jede Fläche — entfällt, die Räume bleiben außerhalb der Zonen.</summary>
+        internal const string ZONE_OHNE_FLAECHEN = "ZONE_OHNE_FLAECHEN";
         /// <summary>W — {0} Zahl der Zonen, {1} Grenze, {2} vorgeschlagene Regel, {3} deren Zonenzahl: zu viele Zonen.</summary>
         internal const string ZU_VIELE_ZONEN_VORSCHLAG = "ZU_VIELE_ZONEN_VORSCHLAG";
         /// <summary>I — {0} Zone A, {1} Zone B, {2} Fläche: virtuelle Grenze — Vorschlag eines Luftaustauschs.</summary>
@@ -254,6 +292,12 @@ namespace WindowsFormsApplication1
         internal const string UMHAENGEN_EINZONIG = "UMHAENGEN_EINZONIG";
         /// <summary>W — {0} Zone, {1} Fläche, {2} Mindestgröße: nach der Zuordnung von Hand zu klein — bleibt, nicht zugeschlagen.</summary>
         internal const string ZONE_ZU_KLEIN_HAND = "ZONE_ZU_KLEIN_HAND";
+        /// <summary>Meldung (W): Räume des Plans in keiner Zone — Zahl und bis fünf Namen.</summary>
+        internal const string RAEUME_NICHT_ZUGEORDNET = "RAEUME_NICHT_ZUGEORDNET";
+        /// <summary>Meldung (I): eine Zone des Plans ohne Raum — 0 m², sie wird nicht übernommen.</summary>
+        internal const string ZONE_LEER = "ZONE_LEER";
+        /// <summary>Meldung (W): eine Zone des Plans mit beheizten und unbeheizten Räumen.</summary>
+        internal const string PLAN_BEHEIZUNG_GEMISCHT = "PLAN_BEHEIZUNG_GEMISCHT";
 
         // ==================================================================
         //  Festwerte
@@ -347,6 +391,15 @@ namespace WindowsFormsApplication1
         /// <summary>Hat mindestens eine Zuordnung von Hand gewirkt?</summary>
         internal bool Handzuordnung { get; private set; }
 
+        /// <summary>Der Zonenplan, aus dem gebildet ist; <c>null</c> = der Regelvorschlag.</summary>
+        internal Zonenplan Plan { get; private set; }
+
+        /// <summary>Die Namen der Zonen des Plans ohne Raum, in Planreihenfolge — in der Bilanz mit 0 m².</summary>
+        internal List<string> LeereZonen { get; } = new List<string>();
+
+        /// <summary>Die Räume dieses Gebäudes in keiner Zone des Plans, in Dateireihenfolge; leer ohne Plan.</summary>
+        internal List<AbbildRaum> NichtZugeordnet { get; } = new List<AbbildRaum>();
+
         /// <summary>
         /// <b>Hängt einen Raum um</b> (Stufe G6c, Welle D): die Zonierung derselben Datei, Regel und Haken mit
         /// dieser Zuordnung hinter den bisherigen — <paramref name="zielzone"/> ist der Schlüssel einer Zone,
@@ -392,12 +445,22 @@ namespace WindowsFormsApplication1
                     && g.Raeume.Select(r => Nutzung(r.Name)).Distinct(StringComparer.Ordinal).Count() < g.Raeume.Count)
                     regeln.Add(IfcImportProfil.ZONENREGEL_Z3);
                 if (geschosse > 1) regeln.Add(IfcImportProfil.ZONENREGEL_Z4);
+                if (g.Raeume.Count > 1)
+                {
+                    int gruppen = Z6Gruppen(g.Raeume, r => r.Beheizt).Select(x => x.Kennung + "|" + (x.Warm ? "B" : "U"))
+                                                                    .Distinct(StringComparer.Ordinal).Count();
+                    if (gruppen > 1 && gruppen < g.Raeume.Count) regeln.Add(IfcImportProfil.ZONENREGEL_Z6);
+                }
                 regeln.Add(IfcImportProfil.ZONENREGEL_Z5);
-                string vorgabe = grenzen && geschosse > 1 ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
+                string vorgabe = (grenzen || g.GeschosseGekoppelt || g.KoerperflaechenGekoppelt) && geschosse > 1
+                    ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
                 return (regeln, vorgabe, grenzen);
             }
+            // Die Projektdatei (SQPROJ) läuft über die X-Regeln wie gbXML: Ihre Zonen (Simulationszone vor Nutzungszone, vom Leser
+            // als Zone des Raums gesetzt) sind die Vorgabe, sobald es eine gibt — auch wenn jeder Raum seine eigene Zone ist.
+            bool sqproj = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal);
             int zonen = g.Raeume.Select(r => r.ZonenKennung).Where(z => z != null).Distinct(StringComparer.Ordinal).Count();
-            bool x1 = zonen >= 1 && zonen < g.Raeume.Count;
+            bool x1 = zonen >= 1 && (zonen < g.Raeume.Count || sqproj);
             if (x1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X1);
             if (geschosse > 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X2);
             if (g.Raeume.Count > 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X3);
@@ -437,9 +500,12 @@ namespace WindowsFormsApplication1
         /// <param name="regel">Die gewählte Regel; <c>null</c> = die Vorgabe.</param>
         /// <param name="beheiztUebersteuert">Die Haken der Raumliste, Raumkennung → beheizt; <c>null</c> = wie gelesen.</param>
         /// <param name="umhaengungen">Die Zuordnungen von Hand in ihrer Reihenfolge (Welle D); <c>null</c> = keine.</param>
+        /// <param name="plan">Der Zonenplan (Mehrzonenkonzept 6.4): Zonen, Namen, Nutzung und Räume kommen allein aus ihm;
+        /// Regel und Umhängungen wirken dann nicht, die Mindestgröße M8 schlägt nichts zu. <c>null</c> = der Regelvorschlag.</param>
         internal static GebaeudeZonierung Bilden(GebaeudeAbbild abbild, int index, string regel = null,
                                                  IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
-                                                 IReadOnlyList<Raumumhaengung> umhaengungen = null)
+                                                 IReadOnlyList<Raumumhaengung> umhaengungen = null,
+                                                 Zonenplan plan = null)
         {
             var z = new GebaeudeZonierung();
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return z;
@@ -462,20 +528,38 @@ namespace WindowsFormsApplication1
             z.Regeln = regeln;
             z.Vorgabe = vorgabe;
             z.HatRaumgrenzen = grenzen;
-            z.Regel = regel ?? vorgabe;
-            if (!grenzen)
+            z.Regel = plan?.Regel ?? regel ?? vorgabe;
+            z.Plan = plan;
+            // Trennflächen aus den Raumkörpern tragen die Nachbarschaft wie Raumgrenzen (6.2); Z1 bis Z3 bleiben an diese gebunden.
+            bool koerper = !grenzen && z.Gebaeude.KoerperpaareGebildet;
+            if (!grenzen && !z.Gebaeude.GeschosseGekoppelt && !koerper)
                 z.Melden(PruefStufe.Warnung, KEINE_GRENZEN, z.Gebaeude.Anzeigename);
-            else if (string.Equals(z.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) && z.Gebaeude.ZahlGrenzenZweiteEbene == 0)
+            else if (grenzen && string.Equals(z.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) && z.Gebaeude.ZahlGrenzenZweiteEbene == 0)
                 z.Melden(PruefStufe.Warnung, NUR_1STLEVEL, z.Gebaeude.Anzeigename, Ganz(z.Gebaeude.ZahlGrenzen));
             if (!regeln.Contains(z.Regel))
             {
                 z.Melden(PruefStufe.Fehler, ZONENREGEL_UNGUELTIG, z.Regel, string.Join(", ", regeln));
                 return z;
             }
-            z.Einzonig = IstEinzonig(z.Regel);
+            z.Einzonig = plan == null && IstEinzonig(z.Regel);
 
             double gesamt = z.Gebaeude.Raeume.Where(r => r.FlaecheM2 > 0.0).Sum(r => r.FlaecheM2.Value);
             z.MindestflaecheM2 = Math.Max(MINDESTFLAECHE_M2, MINDESTANTEIL * gesamt);
+
+            if (plan != null)
+            {
+                // Der Plan ist die Zonierung von Hand: keine Regel, kein Zuschlag nach M8, keine entfallende Zone.
+                bool bezugPlan = !grenzen && (z.Gebaeude.GeschosseGekoppelt || koerper);
+                if (!grenzen && !bezugPlan) z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
+                z.AusPlanGruppieren(plan);
+                z.Seiten(melden: false);
+                z.KleineMelden();
+                z.Seiten(melden: true);
+                if (bezugPlan && !z.BeheizteVerbunden())
+                    z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
+                z.Abschluss();
+                return z;
+            }
 
             z.Gruppieren();
             if (z.Einzonig)
@@ -484,14 +568,20 @@ namespace WindowsFormsApplication1
                 z.Melden(PruefStufe.Info, ZONENREGEL, z.Regel, Ganz(z.Zonen.Count), z.Vorgabe);
                 return z;
             }
-            if (!grenzen)
+            // Ohne Raumgrenzen und ohne tragende Trenndecken aus den Raumbezügen sind die Zonen entkoppelt (6.5); mit
+            // ihnen nur, wenn sie nicht alle beheizten Zonen verbinden (geprüft nach den Seiten, mit den Haken).
+            bool bezug = !grenzen && (z.Gebaeude.GeschosseGekoppelt || koerper);
+            if (!grenzen && !bezug)
                 z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
 
             z.Seiten(melden: false);
             z.Zuschlagen();
             z.HandzuordnungAnwenden();
+            z.OhneFlaechenEntfallen();
             z.KleineMelden();
             z.Seiten(melden: true);
+            if (bezug && !z.BeheizteVerbunden())
+                z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
             z.Abschluss();
             return z;
         }
@@ -503,6 +593,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Räume in Zonen je Regel und Beheizung, in Dateireihenfolge.</summary>
         private void Gruppieren()
         {
+            if (Regel == IfcImportProfil.ZONENREGEL_Z6) { Z6Gruppieren(); return; }
             var jeSchluessel = new Dictionary<string, Importzone>(StringComparer.Ordinal);
             foreach (AbbildRaum r in Gebaeude.Raeume)
             {
@@ -524,6 +615,42 @@ namespace WindowsFormsApplication1
                 string partner = u.Schluessel.Substring(0, u.Schluessel.Length - 1) + "B";
                 if (jeSchluessel.ContainsKey(partner)) u.Name += " (unbeheizt)";
             }
+            ZuordnungNeu();
+        }
+
+        /// <summary>
+        /// Die Zonen aus dem Plan in Planreihenfolge, die Räume je Zone in Dateireihenfolge. Eine Zone ohne Raum steht in
+        /// <see cref="LeereZonen"/> (Info), die Räume ohne Zone in <see cref="NichtZugeordnet"/> (Warnung, Zahl und bis
+        /// fünf Namen); beide liegen außerhalb der Zonen und zählen nicht zur Zonenfläche.
+        /// </summary>
+        private void AusPlanGruppieren(Zonenplan plan)
+        {
+            foreach (Planzone pz in plan.Zonen)
+            {
+                List<AbbildRaum> raeume = Gebaeude.Raeume
+                    .Where(r => string.Equals(plan.ZoneVon(r.Kennung), pz.Schluessel, StringComparison.Ordinal)).ToList();
+                if (raeume.Count == 0)
+                {
+                    LeereZonen.Add(pz.Name);
+                    Melden(PruefStufe.Info, ZONE_LEER, pz.Name);
+                    continue;
+                }
+                bool warm = raeume.Any(_beheizt);
+                if (raeume.Any(r => _beheizt(r) != warm)) Melden(PruefStufe.Warnung, PLAN_BEHEIZUNG_GEMISCHT, pz.Name);
+                var zone = new Importzone
+                {
+                    Schluessel = pz.Schluessel, Name = pz.Name, IstBeheizt = warm, Profil = pz.Profil, Projektdatei = pz.Projektdatei,
+                    Quellkennung = pz.Quellkennung ?? (raeume.Count == 1 ? raeume[0].Kennung : Gebaeude.Kennung),
+                    Handgeaendert = pz.Angelegt || pz.Geaendert,
+                };
+                zone.Raeume.AddRange(raeume);
+                Zonen.Add(zone);
+            }
+            NichtZugeordnet.AddRange(plan.NichtZugeordnet);
+            if (NichtZugeordnet.Count > 0)
+                Melden(PruefStufe.Warnung, RAEUME_NICHT_ZUGEORDNET, Ganz(NichtZugeordnet.Count),
+                       Liste(NichtZugeordnet.Select(Zonenplan.Raumname).ToList()));
+            Handzuordnung = Zonen.Any(x => x.Handgeaendert);
             ZuordnungNeu();
         }
 
@@ -610,6 +737,7 @@ namespace WindowsFormsApplication1
             internal double[] Normale;
             internal string Gegenstueck;
             internal int Partner = -1;
+            internal AbbildGrenze Grenze;
         }
 
         private readonly List<string> _ohneGegenstueck = new List<string>();
@@ -666,7 +794,7 @@ namespace WindowsFormsApplication1
                         Kennung = g.Kennung, Raum = g.RaumKennung, Zone = ZoneOderArt(g.RaumKennung),
                         Lage = g.Lage == Randbedingung.Unbekannt ? s.Randbedingung : g.Lage,
                         Flaeche = g.FlaecheM2, Ausschnitt = g.AusschnittM2, Punkt = g.SchwerpunktM, Normale = g.Normale,
-                        Gegenstueck = g.GegenstueckKennung,
+                        Gegenstueck = g.GegenstueckKennung, Grenze = g,
                     });
                 }
                 foreach (var a in virtuell.Where(v => v.Zone >= 0))
@@ -684,11 +812,11 @@ namespace WindowsFormsApplication1
                     seiten.Add(new Seite { Kennung = n.Kennung, Raum = n.Kennung, Zone = ZoneOderArt(n.Kennung), Lage = s.Randbedingung });
                 return seiten;
             }
-            if (s.HuelleOhneNachbar && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich))
+            if (s.HuelleOhneNachbar && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich
+                                        || s.Randbedingung == Randbedingung.Unbeheizt))
             {
                 // Ohne Raumgrenze: die Zone des Geschosses (Z4), sonst die erste beheizte Zone.
-                int zone = Zonen.FindIndex(z => z.IstBeheizt && s.GeschossKennung != null && z.Raeume.Any(r => r.GeschossKennung == s.GeschossKennung));
-                if (zone < 0) zone = Zonen.FindIndex(z => z.IstBeheizt);
+                int zone = Geschosszone(s);
                 if (zone >= 0) seiten.Add(new Seite { Kennung = s.Kennung, Zone = zone, Lage = s.Randbedingung });
             }
             return seiten;
@@ -696,10 +824,52 @@ namespace WindowsFormsApplication1
 
         private static bool Aussen(Randbedingung r) => r == Randbedingung.Aussenluft || r == Randbedingung.Erdreich;
 
+        /// <summary>Die Zone eines Bauteils ohne Raum: die beheizte Zone seines Geschosses (Z4), sonst die erste beheizte; −1 = keine.</summary>
+        private int Geschosszone(AbbildBauteil s)
+        {
+            int zone = Zonen.FindIndex(z => z.IstBeheizt && s.GeschossKennung != null && z.Raeume.Any(r => r.GeschossKennung == s.GeschossKennung));
+            return zone >= 0 ? zone : Zonen.FindIndex(z => z.IstBeheizt);
+        }
+
+        /// <summary>Hängen alle beheizten Zonen über Trennflächen (auch über unbeheizte Zonen) zusammen?</summary>
+        private bool BeheizteVerbunden()
+        {
+            var warm = Enumerable.Range(0, Zonen.Count).Where(i => Zonen[i].IstBeheizt).ToList();
+            if (warm.Count < 2) return true;
+            var erreicht = new HashSet<int> { warm[0] };
+            bool weiter = true;
+            while (weiter)
+            {
+                weiter = false;
+                foreach (Zonenflaeche f in Flaechen.Where(f => f.Rand == Zonenrand.Zone && f.Nachbarzone >= 0))
+                    if (erreicht.Contains(f.Zone) != erreicht.Contains(f.Nachbarzone)) { erreicht.Add(f.Zone); erreicht.Add(f.Nachbarzone); weiter = true; }
+            }
+            return warm.All(erreicht.Contains);
+        }
+
         private void Bauteil(AbbildBauteil s, List<Zonenflaeche> teile, Dictionary<(int, int), double> luft)
         {
+            // Eine Innenwand ohne Nachbarraum (IFC ohne Raumgrenzen): einseitig innere Masse in der Zone ihres Geschosses (6.5).
+            if (s.InnenEinseitig && s.Nachbarn.Count == 0 && s.Grenzen.Count == 0)
+            {
+                int zone = Geschosszone(s);
+                if (zone >= 0) teile.Add(new Zonenflaeche { Bauteil = s, Zone = zone, Rand = Zonenrand.Innen, BruttoM2 = s.BruttoflaecheM2,
+                                                             Flaechenherkunft = s.Flaechenherkunft });
+                return;
+            }
             List<Seite> seiten = SeitenVon(s, luft, out bool geometrie);
             if (seiten.Count == 0) return;
+            int erster = teile.Count;
+            Teile(s, teile, seiten, geometrie);
+            // Der Weg der Fläche je Teil (A4): Polygone der Raumgrenzen, Grenzen aus Körpern (Raumkörperpaare, G7f-4, und
+            // Bauteilkörper, G5-3), sonst der Weg der Bauteilfläche.
+            bool koerper = s.Grenzen.Count > 0 && s.Grenzen.All(g => g.Herkunft == Grenzherkunft.Koerper || g.Herkunft == Grenzherkunft.Bauteilkoerper);
+            for (int i = erster; i < teile.Count; i++)
+                teile[i].Flaechenherkunft = !geometrie ? s.Flaechenherkunft : koerper ? Flaechenherkunft.Koerper : Flaechenherkunft.Raumgrenze;
+        }
+
+        private void Teile(AbbildBauteil s, List<Zonenflaeche> teile, List<Seite> seiten, bool geometrie)
+        {
             double? brutto = s.BruttoflaecheM2;
 
             // Außen: je Zone ein Teil. Mit Geometrie die Polygonflächen, sonst das Bauteil — auf mehrere
@@ -710,17 +880,33 @@ namespace WindowsFormsApplication1
                 var zonen = aussen.Select(x => x.Zone).Distinct().OrderBy(x => x).ToList();
                 bool teilen = !geometrie && zonen.Count > 1;
                 if (teilen) _aufgeteilt.Add(s.Kennung);
+                // Eine am Gelände geteilte Wand des Körperwegs (Hanglage) führt je Zone einen Teil am Erdreich und einen an der
+                // Außenluft; sonst entscheidet je Zone eine Seite am Erdreich für den ganzen Teil.
+                bool gelaende = geometrie && s.Grenzen.Count > 0 && s.Grenzen.All(g => g.Herkunft == Grenzherkunft.Bauteilkoerper)
+                                && s.Grenzen.Any(g => g.UnterGelaendeM.HasValue);
+                var randgruppen = new List<(int Zone, List<Seite> Hier)>();
                 foreach (int z in zonen)
                 {
-                    List<Seite> hier = aussen.Where(x => x.Zone == z).ToList();
+                    List<Seite> alle = aussen.Where(x => x.Zone == z).ToList();
+                    if (gelaende && alle.Any(x => x.Lage == Randbedingung.Erdreich) && alle.Any(x => x.Lage != Randbedingung.Erdreich))
+                    {
+                        randgruppen.Add((z, alle.Where(x => x.Lage == Randbedingung.Erdreich).ToList()));
+                        randgruppen.Add((z, alle.Where(x => x.Lage != Randbedingung.Erdreich).ToList()));
+                    }
+                    else randgruppen.Add((z, alle));
+                }
+                foreach ((int z, List<Seite> hier) in randgruppen)
+                {
                     Randbedingung lage = hier.Any(x => x.Lage == Randbedingung.Erdreich) ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
-                    teile.Add(new Zonenflaeche
+                    var teil = new Zonenflaeche
                     {
                         Bauteil = s, Zone = z, Rand = lage == Randbedingung.Erdreich ? Zonenrand.Erdreich : Zonenrand.Aussenluft,
                         BruttoM2 = geometrie ? hier.Sum(x => x.Flaeche.Value) : brutto * hier.Count / aussen.Count,
                         AusschnittM2 = geometrie ? hier.Sum(x => x.Ausschnitt) : 0.0,
                         Aufgeteilt = teilen, Raum = hier[0].Raum,
-                    });
+                    };
+                    if (geometrie) teil.Grenzen.AddRange(hier.Where(x => x.Grenze != null).Select(x => x.Grenze));
+                    teile.Add(teil);
                 }
             }
 
@@ -787,13 +973,16 @@ namespace WindowsFormsApplication1
             if (!unbekannt)
             {
                 // Das Gegenüber aus den Nachbarn des Bauteils (die Einordnung der Einzonen-Zuordnung).
-                ohne = !s.Nachbarn.Any(n => n.Kennung != x.Raum) && !s.Grenzen.Any(g => g.RaumKennung != null && g.RaumKennung != x.Raum);
+                // Ein Hüllbauteil ohne Nachbarraum gegen unbeheizt nennt sein Gegenüber durch die Angrenzung der Datei.
+                ohne = !s.HuelleOhneNachbar
+                       && !s.Nachbarn.Any(n => n.Kennung != x.Raum) && !s.Grenzen.Any(g => g.RaumKennung != null && g.RaumKennung != x.Raum);
             }
-            teile.Add(new Zonenflaeche
+            var teil = new Zonenflaeche
             {
                 Bauteil = s, Zone = x.Zone, Rand = Zonenrand.Unbeheizt, BruttoM2 = flaeche, AusschnittM2 = ausschnitt,
                 OhneGegenstueck = ohne, Raum = x.Raum,
-            });
+            };
+            teile.Add(teil);
             if (ohne)
             {
                 _ohneGegenstueck.Add(s.Kennung);
@@ -892,8 +1081,10 @@ namespace WindowsFormsApplication1
             if (teile.Count == 0) return;
             foreach (AbbildBauteil o in s.Oeffnungen)
             {
+                if (Aufteilen(o, teile)) continue;
                 var zonen = new HashSet<int>(o.Grenzen.Where(g => g.RaumKennung != null).Select(g => ZoneOderArt(g.RaumKennung)).Where(z => z >= 0));
                 List<Zonenflaeche> passend = teile.Where(t => zonen.Contains(t.Zone) && (t.Nachbarzone < 0 || zonen.Count < 2 || zonen.Contains(t.Nachbarzone))).ToList();
+                passend = NachLage(o, passend);
                 if (passend.Count == 0)
                 {
                     passend = teile;
@@ -904,6 +1095,241 @@ namespace WindowsFormsApplication1
                 ziel.Oeffnungen.Add(o);
                 if (ziel.Rand == Zonenrand.Zone)
                     teile.FirstOrDefault(t => t.Rand == Zonenrand.Zone && t.Zone == ziel.Nachbarzone && t.Nachbarzone == ziel.Zone)?.Oeffnungen.Add(o);
+            }
+        }
+
+        /// <summary>
+        /// Die Teile, deren Rand zur Lage der Grenzen der Öffnung passt — ein Kellerfenster über Gelände geht an den Teil an der
+        /// Außenluft einer am Gelände geteilten Wand, nicht an den größeren am Erdreich. Ohne passenden Teil alle.
+        /// </summary>
+        private static List<Zonenflaeche> NachLage(AbbildBauteil o, List<Zonenflaeche> teile)
+        {
+            if (teile.Count < 2 || !teile.Any(t => t.Rand == Zonenrand.Erdreich) || !teile.Any(t => t.Rand == Zonenrand.Aussenluft)) return teile;
+            var lagen = o.Grenzen.Where(g => g.RaumKennung != null && !g.Virtuell).Select(g => g.Lage).ToList();
+            Zonenrand? rand = lagen.Count > 0 && lagen.All(l => l == Randbedingung.Erdreich) ? Zonenrand.Erdreich
+                            : lagen.Count > 0 && lagen.All(l => l == Randbedingung.Aussenluft) ? Zonenrand.Aussenluft : (Zonenrand?)null;
+            if (rand == null) return teile;
+            List<Zonenflaeche> passend = teile.Where(t => t.Rand == rand.Value || (t.Rand != Zonenrand.Erdreich && t.Rand != Zonenrand.Aussenluft)).ToList();
+            return passend.Any(t => t.Rand == rand.Value) ? passend : teile;
+        }
+
+        /// <summary>
+        /// <b>Eine Öffnung über mehrere Zonen</b>: Liegen die Grenzen einer Öffnung (der Datei oder aus den Körpern) mit Fläche
+        /// in zwei oder mehr Zonen und hat jede davon einen Außenteil des Bauteils, geht die Öffnung an jeden dieser Teile mit
+        /// dem Anteil ihrer Bruttofläche nach den Flächen ihrer Grenzen je Zone (<see cref="Zonenflaeche.Oeffnungsanteile"/>) —
+        /// abgezogen wird je Teil nur sein Anteil. Sonst <c>false</c>: Es gilt die Regel des größten Teils.
+        /// </summary>
+        private bool Aufteilen(AbbildBauteil o, List<Zonenflaeche> teile)
+        {
+            if (!(o.BruttoflaecheM2 > 0.0)) return false;
+            var jeZone = new SortedDictionary<int, double>();
+            foreach (AbbildGrenze g in o.Grenzen)
+            {
+                if (g.RaumKennung == null || g.Virtuell) continue;
+                int z = ZoneOderArt(g.RaumKennung);
+                if (z < 0 || !(g.FlaecheM2 > 0.0)) return false;
+                jeZone[z] = (jeZone.TryGetValue(z, out double f) ? f : 0.0) + g.FlaecheM2.Value;
+            }
+            if (jeZone.Count < 2) return false;
+            var ziele = new List<(Zonenflaeche Teil, double Flaeche)>();
+            foreach (KeyValuePair<int, double> e in jeZone)
+            {
+                Zonenflaeche t = NachLage(o, teile.Where(x => x.Zone == e.Key && (x.Rand == Zonenrand.Aussenluft || x.Rand == Zonenrand.Erdreich)).ToList())
+                                      .OrderByDescending(x => x.BruttoM2 ?? 0.0).FirstOrDefault();
+                if (t == null) return false;
+                ziele.Add((t, e.Value));
+            }
+            double summe = ziele.Sum(x => x.Flaeche);
+            foreach ((Zonenflaeche t, double f) in ziele)
+            {
+                t.Oeffnungen.Add(o);
+                t.Oeffnungsanteile[o] = o.BruttoflaecheM2.Value * f / summe;
+            }
+            return true;
+        }
+
+        // ------------------------------------------------------------------
+        //  Regel Z6: nach Raumtemperatur und Nutzung
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Die Nutzungsklassen (Z6) in fester Reihenfolge — sprachneutrale Schlüssel; der Anzeigetext steht in
+        /// <c>GIMP_NUTZUNG_&lt;KLASSE&gt;</c>.
+        /// </summary>
+        internal static readonly IReadOnlyList<string> NUTZUNGSKLASSEN = new[]
+        {
+            "Buero", "Wohnen", "Schlafen", "Gastronomie", "Kueche", "Sport", "Verkehr", "Sanitaer", "Lager", "Technik", "Sonstige",
+        };
+
+        /// <summary>Die Klasse ohne Zuordnung.</summary>
+        internal const string NUTZUNG_SONSTIGE = "Sonstige";
+
+        /// <summary>Der Raumtyp der Datei (ohne Präfix <c>mrt</c>, Groß-/Kleinschreibung egal) → Nutzungsklasse.</summary>
+        private static readonly IReadOnlyDictionary<string, string> RAUMTYP_KLASSE = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Office"] = "Buero", ["Conference"] = "Buero", ["Examination"] = "Buero",
+            ["Living"] = "Wohnen", ["Child"] = "Wohnen", ["Guests"] = "Wohnen",
+            ["Sleeping"] = "Schlafen",
+            ["Restaurant"] = "Gastronomie", ["Eating"] = "Gastronomie",
+            ["Kitchen"] = "Kueche",
+            ["Fitness"] = "Sport", ["Sauna"] = "Sport",
+            ["Hall"] = "Verkehr", ["HallWay"] = "Verkehr", ["Stairway"] = "Verkehr", ["Ante"] = "Verkehr",
+            ["WC"] = "Sanitaer", ["Bath"] = "Sanitaer", ["Shower"] = "Sanitaer", ["Locker"] = "Sanitaer",
+            ["Store"] = "Lager", ["StorageRoom"] = "Lager", ["Basement"] = "Lager", ["Roof"] = "Lager",
+            ["CentralHeating"] = "Technik", ["Connection"] = "Technik",   // Anschlussräume (Hausanschluss, Heizung, Lüftung)
+            ["AdjoiningRoom"] = "Sonstige", ["Workshop"] = "Sonstige",
+        };
+
+        /// <summary>
+        /// Die Namensmuster je Klasse (Teilwort, klein; deutsch und englisch, die Muster der Regel B4 eingeschlossen) in
+        /// Prüfreihenfolge — die erste Klasse mit Treffer gilt.
+        /// </summary>
+        private static readonly (string Klasse, string[] Muster)[] NAME_KLASSE =
+        {
+            ("Sanitaer", new[] { "wc", "bad", "dusch", "umkleide", "sanit", "toilet", "bath", "shower", "washroom", "locker" }),
+            ("Kueche", new[] { "küche", "kueche", "kitchen" }),
+            ("Gastronomie", new[] { "restaurant", "gastst", "gastraum", "speiseraum", "kantine", "cafe", "café", "bistro", "dining", "canteen" }),
+            ("Schlafen", new[] { "schlaf", "sleep", "bedroom" }),
+            ("Buero", new[] { "büro", "buero", "office", "besprech", "konferenz", "meeting", "conference" }),
+            ("Sport", new[] { "sport", "fitness", "gym", "turn", "sauna" }),
+            ("Verkehr", new[] { "flur", "diele", "treppe", "foyer", "eingang", "windfang", "corridor", "hallway", "stair", "lobby", "entrance" }),
+            ("Technik", new[] { "technik", "heizraum", "heizung", "schacht", "aufzug", "hausanschluss", "verteiler", "lüftung", "plant", "shaft", "server", "mechanical" }),
+            ("Lager", new[] { "lager", "abstell", "keller", "garage", "carport", "dachboden", "speicher", "store", "storage", "basement", "attic" }),
+            ("Wohnen", new[] { "wohn", "living", "kinderzimmer", "guest" }),
+        };
+
+        /// <summary>
+        /// <b>Die Nutzungsklasse eines Raums</b> (Z6): aus dem Raumtyp der Datei über eine feste Tabelle, sonst aus dem
+        /// Raumnamen (<see cref="Nutzung"/>) über Namensmuster, sonst <see cref="NUTZUNG_SONSTIGE"/>. Ein sprachneutraler
+        /// Schlüssel aus <see cref="NUTZUNGSKLASSEN"/>.
+        /// </summary>
+        internal static string Nutzungsklasse(AbbildRaum r)
+        {
+            if (r == null) return NUTZUNG_SONSTIGE;
+            string typ = (r.Raumtyp ?? "").Trim();
+            if (typ.Length > 3 && typ.StartsWith("mrt", StringComparison.Ordinal)) typ = typ.Substring(3);
+            if (typ.Length > 0 && RAUMTYP_KLASSE.TryGetValue(typ, out string klasse)) return klasse;
+            string name = Nutzung(r.Name);
+            if (name.Length > 0)
+                foreach ((string k, string[] muster) in NAME_KLASSE)
+                    if (muster.Any(m => name.Contains(m, StringComparison.Ordinal))) return k;
+            return NUTZUNG_SONSTIGE;
+        }
+
+        /// <summary>Der Anzeigetext einer Nutzungsklasse (<c>GIMP_NUTZUNG_&lt;KLASSE&gt;</c>); ohne Ressource der Schlüssel.</summary>
+        internal static string NutzungText(string klasse)
+            => Ressource("GIMP_NUTZUNG_" + (klasse ?? "").ToUpperInvariant()) ?? klasse ?? "";
+
+        /// <summary>Die auf ganze °C gerundete Raumsolltemperatur (Z6): Heizsollwert, sonst Raumtemperatur der Datei.</summary>
+        internal static double? Z6Temperatur(AbbildRaum r)
+        {
+            double? t = r?.SollHeizenC ?? r?.RaumtemperaturC;
+            return t.HasValue && !double.IsNaN(t.Value) && !double.IsInfinity(t.Value)
+                ? Math.Round(t.Value, MidpointRounding.AwayFromZero) : (double?)null;
+        }
+
+        /// <summary>
+        /// <b>Die Gruppen der Regel Z6</b> je Raum in Dateireihenfolge: Kennung <c>T|&lt;°C&gt;</c> aus Beheizung und gerundeter
+        /// Temperatur; ein Raum ohne Temperatur geht zur Temperaturgruppe gleicher Beheizung, in der seine Nutzungsklasse die
+        /// größte Fläche hat (Gleichstand: die wärmere), sonst in die Gruppe <c>N|&lt;Klasse&gt;</c> („ohne Sollwert").
+        /// </summary>
+        internal static List<(AbbildRaum Raum, string Kennung, bool Warm, double? Temperatur, string Klasse)> Z6Gruppen(
+            IEnumerable<AbbildRaum> raeume, Func<AbbildRaum, bool> beheizt)
+        {
+            var liste = raeume.Select(r => (Raum: r, Warm: beheizt(r), T: Z6Temperatur(r), Klasse: Nutzungsklasse(r))).ToList();
+            var ergebnis = new List<(AbbildRaum, string, bool, double?, string)>(liste.Count);
+            foreach (var x in liste)
+            {
+                double? t = x.T;
+                if (!t.HasValue)
+                    t = liste.Where(y => y.T.HasValue && y.Warm == x.Warm && y.Klasse == x.Klasse)
+                             .GroupBy(y => y.T.Value)
+                             .Select(gr => (T: gr.Key, A: gr.Sum(y => y.Raum.FlaecheM2 > 0.0 ? y.Raum.FlaecheM2.Value : 0.0)))
+                             .OrderByDescending(k => k.A).ThenByDescending(k => k.T)
+                             .Select(k => (double?)k.T).FirstOrDefault();
+                string kennung = t.HasValue ? "T|" + t.Value.ToString("0", CultureInfo.InvariantCulture) : "N|" + x.Klasse;
+                ergebnis.Add((x.Raum, kennung, x.Warm, t, x.Klasse));
+            }
+            return ergebnis;
+        }
+
+        /// <summary>Die Solltemperatur je Zonenschlüssel (Z6); <c>null</c> = ohne Sollwert.</summary>
+        private readonly Dictionary<string, double?> _z6Temperatur = new Dictionary<string, double?>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Die Zonen der Regel Z6: gebäudeweit je Gruppe, in fester Ordnung — absteigend nach Solltemperatur (ohne Sollwert
+        /// zuletzt), beheizt vor unbeheizt, dann Name ordinal; die Räume einer Zone in Dateireihenfolge.
+        /// </summary>
+        private void Z6Gruppieren()
+        {
+            var jeSchluessel = new Dictionary<string, Importzone>(StringComparer.Ordinal);
+            var zonen = new List<Importzone>();
+            foreach (var x in Z6Gruppen(Gebaeude.Raeume, _beheizt))
+            {
+                string schluessel = Regel + "|" + x.Kennung + "|" + (x.Warm ? "B" : "U");
+                if (!jeSchluessel.TryGetValue(schluessel, out Importzone zone))
+                {
+                    zone = new Importzone { Schluessel = schluessel, IstBeheizt = x.Warm, Quellkennung = Gebaeude.Kennung };
+                    jeSchluessel[schluessel] = zone;
+                    _z6Temperatur[schluessel] = x.Temperatur;
+                    zonen.Add(zone);
+                }
+                zone.Raeume.Add(x.Raum);
+            }
+            foreach (Importzone zone in zonen)
+            {
+                double? t = _z6Temperatur[zone.Schluessel];
+                List<string> klassen = zone.Raeume.GroupBy(Nutzungsklasse)
+                    .Select(gr => (Klasse: gr.Key, A: gr.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0), N: gr.Count()))
+                    .OrderByDescending(k => k.A).ThenByDescending(k => k.N).ThenBy(k => k.Klasse, StringComparer.Ordinal)
+                    .Take(3).Select(k => NutzungText(k.Klasse)).ToList();
+                string kopf = t.HasValue
+                    ? t.Value.ToString("0", CultureInfo.InvariantCulture) + " °C"
+                    : Ressource("GIMP_ZONE_OHNE_SOLLWERT") ?? "ohne Sollwert";
+                zone.Name = kopf + " – " + string.Join(", ", klassen);
+                string partner = zone.Schluessel.Substring(0, zone.Schluessel.Length - 1) + "B";
+                if (!zone.IstBeheizt && jeSchluessel.ContainsKey(partner))
+                    zone.Name += " " + (Ressource("GIMP_ZONE_UNBEHEIZT") ?? "(unbeheizt)");
+            }
+            Zonen.AddRange(zonen.OrderBy(z => _z6Temperatur[z.Schluessel].HasValue ? 0 : 1)
+                                .ThenByDescending(z => _z6Temperatur[z.Schluessel] ?? 0.0)
+                                .ThenBy(z => z.IstBeheizt ? 0 : 1)
+                                .ThenBy(z => z.Name, StringComparer.Ordinal));
+            ZuordnungNeu();
+        }
+
+        /// <summary>
+        /// Die Zone gleicher Beheizung mit der nächstliegenden Solltemperatur zu Zone <paramref name="i"/> (M8 unter Z6, vor
+        /// der größten gemeinsamen Grenzfläche); bei Gleichstand der Temperatur die mit der größeren gemeinsamen Fläche
+        /// (<paramref name="nachbarn"/>), dann die größere Zone, dann die frühere. Ohne Sollwert auf einer Seite gilt der
+        /// Abstand als unendlich. −1 = keine.
+        /// </summary>
+        private int NaechsteTemperatur(int i, IReadOnlyDictionary<int, double> nachbarn)
+        {
+            double? ti = _z6Temperatur.TryGetValue(Zonen[i].Schluessel, out double? a) ? a : null;
+            return Enumerable.Range(0, Zonen.Count)
+                .Where(j => j != i && Zonen[j].IstBeheizt == Zonen[i].IstBeheizt)
+                .Select(j =>
+                {
+                    double? tj = _z6Temperatur.TryGetValue(Zonen[j].Schluessel, out double? b) ? b : null;
+                    double abstand = ti.HasValue && tj.HasValue ? Math.Abs(ti.Value - tj.Value) : double.MaxValue;
+                    return (J: j, Abstand: abstand, Gemeinsam: nachbarn.TryGetValue(j, out double g) ? g : 0.0, Flaeche: Zonen[j].FlaecheM2 ?? 0.0);
+                })
+                .OrderBy(k => k.Abstand).ThenByDescending(k => k.Gemeinsam).ThenByDescending(k => k.Flaeche).ThenBy(k => k.J)
+                .Select(k => k.J).DefaultIfEmpty(-1).First();
+        }
+
+        /// <summary>Ein Text der Ressourcen in der Kultur der Ressourcen; <c>null</c> = keiner.</summary>
+        private static string Ressource(string schluessel)
+        {
+            try
+            {
+                string text = MyResource.Resource.ResourceManager.GetString(schluessel, MyResource.Resource.Culture);
+                return string.IsNullOrEmpty(text) ? null : text;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
@@ -925,6 +1351,16 @@ namespace WindowsFormsApplication1
                     foreach (Zonenflaeche f in Flaechen.Where(f => f.Zone == i && f.Rand == Zonenrand.Zone
                                                                     && Zonen[f.Nachbarzone].IstBeheizt == Zonen[i].IstBeheizt))
                         nachbarn[f.Nachbarzone] = (nachbarn.TryGetValue(f.Nachbarzone, out double w) ? w : 0.0) + (f.GroessereM2 ?? 0.0);
+                    if (Regel == IfcImportProfil.ZONENREGEL_Z6)
+                    {
+                        // Z6: stets zur Zone gleicher Beheizung mit der nächstliegenden Solltemperatur — vor der Grenzfläche.
+                        int naechste = NaechsteTemperatur(i, nachbarn);
+                        if (naechste < 0) continue;
+                        klein = i;
+                        ziel = naechste;
+                        gemeinsam = nachbarn.TryGetValue(naechste, out double g) ? g : 0.0;
+                        break;
+                    }
                     if (nachbarn.Count == 0 || nachbarn.Values.Max() <= 0.0) continue;
                     KeyValuePair<int, double> best = nachbarn.OrderByDescending(n => n.Value).ThenBy(n => n.Key).First();
                     klein = i;
@@ -942,6 +1378,29 @@ namespace WindowsFormsApplication1
                 ZuordnungNeu();
                 Seiten(melden: false);
             }
+        }
+
+        /// <summary>
+        /// <b>Eine unbeheizte Zone ohne jede Fläche entfällt</b> (Mehrzonenkonzept 6.5): keine Hülle, keine Trennfläche, keine
+        /// innere Masse — der Bauteilweg rechnet keine Zone ohne Bauteil, und sie koppelt an nichts. Ihre Räume bleiben
+        /// außerhalb der Zonen (unbeheizt), benannt (<see cref="ZONE_OHNE_FLAECHEN"/>, I). Das tritt ohne Raumgrenzen auf, wenn
+        /// die Datei die Hüllbauteile eines unbeheizten Raums nicht zur Hülle zählt und kein Bezug ihn mit einem beheizten
+        /// Raum verbindet. Eine von Hand gebildete Zone bleibt.
+        /// </summary>
+        private void OhneFlaechenEntfallen()
+        {
+            bool entfallen = false;
+            for (int i = Zonen.Count - 1; i >= 0; i--)
+            {
+                if (Zonen[i].IstBeheizt || Zonen[i].Handgeaendert) continue;
+                if (Flaechen.Any(f => f.Zone == i || (f.Rand == Zonenrand.Zone && f.Nachbarzone == i))) continue;
+                Melden(PruefStufe.Info, ZONE_OHNE_FLAECHEN, Zonen[i].Name, Zahl(Zonen[i].FlaecheM2 ?? 0.0));
+                Zonen.RemoveAt(i);
+                entfallen = true;
+            }
+            if (!entfallen) return;
+            ZuordnungNeu();
+            Seiten(melden: false);
         }
 
         /// <summary>

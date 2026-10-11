@@ -91,6 +91,67 @@ namespace WindowsFormsApplication1
         /// <see cref="DataRepository.EngineModus"/>, Verschachtelung ist zulässig).
         /// </para>
         /// </remarks>
+        /// <summary>
+        /// Der Standby des Speichersystems (Welle M5, SP1) aus Eingang und Ladereihe des Speicherlaufs:
+        /// belegt <see cref="SpeichersystemStandbyAusPvKw"/>, <see cref="SpeichersystemStandbyAusNetzKw"/>
+        /// und <see cref="SpeichersystemEigenverbrauchKwh"/>. Ohne Standby bleibt alles leer.
+        /// </summary>
+        private void StandbyAufteilen(StromspeicherLaufKontext kontext, SpeicherEngine.SpeicherErgebnis ergebnis)
+        {
+            double standbyKw = kontext?.Parameter?.StandbyKw ?? 0.0;
+            if (!(standbyKw > 0.0) || kontext.Eingang == null) return;
+
+            SpeicherEngine.StandbyBilanz bilanz = SpeicherEngine.Speichersystem.Standby(
+                kontext.Eingang.LastKw, kontext.Eingang.PvKw, ergebnis?.LadungAcKwh,
+                standbyKw, StromspeicherSimCtrl.INTERVALL_H);
+            kontext.Standby = bilanz;
+            SpeichersystemStandbyAusPvKw = bilanz.AusPvKw;
+            SpeichersystemStandbyAusNetzKw = bilanz.AusNetzKw;
+            SpeichersystemEigenverbrauchKwh = bilanz.GesamtKwh;
+        }
+
+        /// <summary>
+        /// Die Flottenvorgabe aus dem laufenden Durchgang (Anwenderentscheid 04.10.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para>Gerufen an der Speicherstufe, wenn <see cref="SpeicherflotteAusLaufVorbelegen"/>
+        /// gesetzt ist: Der Strombedarf und alle Reihen, aus denen
+        /// <see cref="StromspeicherSimCtrl.BaueLastreihe"/> den Lastgang ohne Speicher bildet,
+        /// sind dann gerechnet. Die Vorbelegung ist dieselbe wie auf der Auslegungsseite
+        /// (<see cref="StromspeicherAuslegungCtrl.Vorgaben"/>) — mit diesem Lauf als Lauf.
+        /// Damit bekommt der erste Lauf dieselbe Vorgabe wie jeder weitere.</para>
+        /// <para>Ein gespeicherter Stand (<c>@Aktuell</c>) bleibt wie er ist; dann ist die
+        /// Herkunft <see cref="FlottenPeakZielHerkunft.Gespeichert"/>.</para>
+        /// </remarks>
+        /// <returns><c>false</c>, wenn die Vorgaben nicht gebildet werden konnten — der
+        /// Grund steht dann in <see cref="Fehlertext"/>, der Lauf bricht ab.</returns>
+        private bool SpeicherflotteVorbelegen(int ID_Projekt)
+        {
+            SpeicherflottenEingaben = null;
+            SpeicherflottenPeakZielHerkunft = null;
+            try
+            {
+                var auslegung = new StromspeicherAuslegungCtrl(ID_Projekt);
+                auslegung.LaufUebernehmen(this);
+                SpeicherOptimierungVorgaben vorgaben = auslegung.Vorgaben();
+                SpeicherOptimierungEingaben eingaben = vorgaben.Eingaben.Kopie();
+                if (eingaben.Auslegung?.Flotte?.Einheiten?.Count > 0 &&
+                    !eingaben.Auslegung.FlottenProjektbetriebDeaktiviert)
+                {
+                    eingaben.Auslegung.FlottenGroessenOptimieren = false;
+                    SpeicherflottenEingaben = eingaben;
+                    SpeicherflottenPeakZielHerkunft = vorgaben.PeakZielHerkunft;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                FehlertextAufnehmen(string.Format(
+                    MyResource.Resource.SIMERG_SP_VORGABEN_FEHLER, ex.Message));
+                return false;
+            }
+        }
+
         internal double[] SpeicherlaufAusfuehren(int ID_Projekt,
             System.Threading.CancellationToken abbruch = default)
         {
@@ -112,6 +173,9 @@ namespace WindowsFormsApplication1
                     Speicherflottenergebnis = lauf.Studie;
                     Speicherflottenkonfiguration = lauf.Konfiguration;
                     Speicherflottenlauf = lauf;
+                    // Ohne Laufvorgabe rechnet die aktivierte Projektflotte: ihr Peak-Ziel ist gespeichert.
+                    if (SpeicherflottenEingaben == null)
+                        SpeicherflottenPeakZielHerkunft = FlottenPeakZielHerkunft.Gespeichert;
                     if (!string.IsNullOrWhiteSpace(lauf.Hinweis)) Protokoll.Hinweis(lauf.Hinweis);
                     Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.Kopie(
                         lauf.Kompatibilitaetsergebnis.SoCKwh);
@@ -132,6 +196,13 @@ namespace WindowsFormsApplication1
                     Rest_Strombedarf_viertelstuendlich =
                         (double[])Speicherflottennetzbilanz.NetzbezugKw.Clone();
                     SpeicherflotteErsetztReststrom = true;
+
+                    // SP1 (Welle M5): Der Eigenverbrauch des Speichersystems ist im Flottenpfad der
+                    // Hilfsverbrauch der Einheiten - er steht bereits als Standortlast in der Bilanz.
+                    double hilfsKwh = 0;
+                    foreach (SpeicherEngine.FlottenIntervallErgebnis iv in lauf.Studie.Variante.Intervalle)
+                        hilfsKwh += iv.HilfsverbrauchKw * StromspeicherSimCtrl.INTERVALL_H;
+                    SpeichersystemEigenverbrauchKwh = hilfsKwh;
                     return new double[Rest_Strombedarf_viertelstuendlich.Length];
                 }
                 catch (OperationCanceledException) { throw; }
@@ -188,6 +259,11 @@ namespace WindowsFormsApplication1
 
             Speicherergebnis = ergebnis;
             Speicherkontext = ctrl.LetzterKontext;
+
+            // SP1 (Welle M5): der Standby des Speichersystems - aus dem PV-Überschuss nach der Ladung,
+            // sonst aus dem Netz. Ohne Standby keine Reihe, der Lauf bleibt, wie er war.
+            StandbyAufteilen(ctrl.LetzterKontext, ergebnis);
+
             Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.Kopie(ergebnis.SoCKwh);
             Speicherfuellstand_stuendlich = Viertelstunden_zu_Stundenwerte_Mittelwert(Speicherfuellstand_viertelstuendlich);
 

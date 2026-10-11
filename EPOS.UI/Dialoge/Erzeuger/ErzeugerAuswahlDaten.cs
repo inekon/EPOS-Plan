@@ -44,6 +44,15 @@ public sealed class ErzeugerZeile
     /// <summary>Rücklauftemperatur [°C]; <c>null</c> = leeres Feld.</summary>
     public int? Ruecklauf { get; set; }
 
+    /// <summary>
+    /// Die HERKUNFT eines vorbelegten Paars (Anwenderauftrag 30.09.2026) — fertig formuliert
+    /// von der Hülle (Kern: <c>AnlagenTemperaturen.Herleitung</c>), etwa „Vorgabe 70/50 °C —
+    /// so rechnet die Simulation ohne Eintrag.". Leer = das Paar ist das der Anlage, nichts
+    /// wurde vorbelegt; eine Eingabe in Vorlauf oder Rücklauf leert es. Nur beim Heizkessel
+    /// belegt.
+    /// </summary>
+    public string TemperaturHerleitung { get; set; } = "";
+
     /// <summary>Untere Grenzleistung — nur beim BHKW belegt.</summary>
     public double? Grenzleistung { get; set; }
 
@@ -65,11 +74,28 @@ public sealed class ErzeugerZeile
     /// <summary>Anzahl Module — nur bei der Photovoltaik belegt (im Modell ein <c>double</c>).</summary>
     public double? AnzahlModule { get; set; }
 
+    // --- Kollektorfeld der Solarthermie (Welle M2) — nur beim Solarkollektor belegt ----------
+    /// <summary>Leistung der Solarkreispumpe [W]; <c>null</c> = nicht gepflegt.</summary>
+    public double? SolarPumpenleistungW { get; set; }
+    /// <summary>Verluste des Solarkreises [%]; <c>null</c> = Vorgabe 8 %.</summary>
+    public double? SolarkreisverlusteProzent { get; set; }
+    /// <summary>Grädigkeit des Wärmeübertragers [K]; <c>null</c> = Vorgabe 5 K.</summary>
+    public double? SolarGraedigkeitK { get; set; }
+    /// <summary>Spreizung des Kollektorkreises [K]; <c>null</c> = Vorgabe 10 K.</summary>
+    public double? SolarSpreizungK { get; set; }
+    /// <summary>Arbeitstemperatur aus dem Speicher statt fest 50 °C.</summary>
+    public bool SolarArbeitstemperaturAusSpeicher { get; set; }
+
     // --- Photovoltaik, Paket A/B des PV-Ertragsmodells (Merge 5, aus Form_PV nachgezogen) ----
     /// <summary>Wechselrichter-Wirkungsgrad als Faktor; NULL = 0,95 (Bestand). Nur Modell EINFACH.</summary>
     public double? WrWirkungsgrad { get; set; }
     /// <summary>Systemverluste in Prozent; NULL = 0.</summary>
     public double? Systemverluste { get; set; }
+    /// <summary>
+    /// Bodenalbedo vor der Anlage (0…1); NULL = 0,2. Bei Photovoltaik und Solarthermie belegt
+    /// (<c>Tab_Energieanlagen.Albedo</c>).
+    /// </summary>
+    public double? Albedo { get; set; }
     /// <summary>Rechenmodell ERWEITERT gewaehlt (sonst EINFACH, der Rechenweg des Bestands).</summary>
     public bool ModellErweitert { get; set; }
     /// <summary>Wechselrichter (nur ERWEITERT): AC-Nennleistung in kW; NULL = ohne Clipping.</summary>
@@ -139,11 +165,16 @@ public sealed record KatalogZeile(int Id, string Bezeichner, string Eigenschafte
 /// Ein Ja/Nein-Merkmal mit Beschriftung, <c>null</c> = keines. Beim Heizkessel ist das
 /// „Brennwertkessel".
 /// </param>
+/// <param name="Kennwerte">
+/// Die Zahlwerte des Satzes für die Zusammenfassung der Detailzeile (UeS2b) — unabhängig
+/// von den Beschriftungen der <paramref name="Felder"/>; <c>null</c> = keine.
+/// </param>
 public sealed record ErzeugerDetail(
     string Bezeichner,
     string Beschreibung,
     IReadOnlyList<(string Feld, string Wert)> Felder,
-    (string Feld, bool Wert)? Schalter = null)
+    (string Feld, bool Wert)? Schalter = null,
+    ErzeugerKennwerte? Kennwerte = null)
 {
     /// <summary>
     /// Ist der Anzeigewert eine ZAHL? Dann bekommt sein Feld im
@@ -180,6 +211,28 @@ public sealed record ErzeugerDetail(
 // ohne dass eine Hülle sie belegte.
 
 /// <summary>
+/// <b>Die Zahlwerte eines Satzes</b> für die Zusammenfassung der Detailzeile (UeS2b): Die
+/// Hülle setzt sie aus dem Modell, der Dialog formatiert sie samt Einheit. So liest die
+/// Zusammenfassung nicht an den Beschriftungen der Anzeigefelder (Ressourcen) — jeder Wirt,
+/// auch der Probenwirt, zeigt die Angaben, sobald er die Zahl reicht. Leer = keine Angabe.
+/// </summary>
+public sealed record ErzeugerKennwerte
+{
+    /// <summary>Thermische Leistung in kW (Heizkessel, BHKW).</summary>
+    public double? PthermKw { get; init; }
+    /// <summary>Elektrische Leistung in kW (BHKW).</summary>
+    public double? PelKw { get; init; }
+    /// <summary>Lade- und Entladeleistung in kW (Stromspeicher).</summary>
+    public double? LeistungKw { get; init; }
+    /// <summary>Speichervolumen in l (Pufferspeicher).</summary>
+    public double? VolumenLiter { get; init; }
+    /// <summary>Nutzbare Kapazität in kWh (Stromspeicher).</summary>
+    public double? KapazitaetKwh { get; init; }
+    /// <summary>Nennleistung eines Moduls in W (Photovoltaik).</summary>
+    public double? ModulleistungW { get; init; }
+}
+
+/// <summary>
 /// Was der Kern beisteuert, bevor eine Zeile aufgenommen werden kann — die Werte, die
 /// <c>btn_Kessel_Hinzu_Click</c> aus dem Stammsatz las, plus die Auswahlliste des
 /// Energieträger-Unterdialogs.
@@ -205,3 +258,15 @@ public sealed record TraegerVorbereitung(
 /// unterschied das nicht — er zeigte alle vier Ausgänge als schlichte Meldung.
 /// </param>
 public sealed record AufnahmeErgebnis(ErzeugerZeile? Zeile, string Meldung = "", bool Fehler = false);
+
+/// <summary>
+/// <b>Die projektbezogenen Werte eines Pufferspeichers</b> für die Zusammenfassung der
+/// Detailzeile (UeS2b): Temperaturpaar, Schwellen und Verwendung stehen an der Projektkopie,
+/// gepflegt im Projektspeicher-Dialog — die Verwaltung zeigt sie nur kurz an.
+/// </summary>
+/// <param name="Vorlauf">Vorlauf in °C; <c>null</c> oder 0 = nicht gepflegt.</param>
+/// <param name="Ruecklauf">Rücklauf in °C; <c>null</c> oder 0 = nicht gepflegt.</param>
+/// <param name="SchwelleEin">Einschaltschwelle in %.</param>
+/// <param name="SchwelleAus">Abschaltschwelle in %.</param>
+/// <param name="Verwendung">Die wirksame Verwendung als Anzeigetext; leer = keine.</param>
+public sealed record Pufferangaben(int? Vorlauf, int? Ruecklauf, double? SchwelleEin, double? SchwelleAus, string Verwendung);

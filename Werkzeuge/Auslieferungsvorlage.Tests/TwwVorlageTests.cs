@@ -112,7 +112,7 @@ namespace Auslieferungsvorlage.Tests
             string paket = PaketSchreiben(o, parameterStatus: TwwSchema.STATUS_AUSLIEFERUNG,
                                           parameterHerkunft: TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--katalogpaket", paket);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--katalogpaket", paket);
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Tww-Paket   " + paket, e.Ausgabe);
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv  ->  1 Zeile(n)", e.Ausgabe);
@@ -216,7 +216,7 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Freier Paketteil: " + Path.Combine(Werkzeuglauf.Repowurzel, "Referenzlaeufe", "Katalogpaket_frei"), e.Ausgabe);
             Assert.Contains("Katalogversion der Paketteil-Zeilen: FREI-1 (der Katalog fuehrt keine eigene)", e.Ausgabe);
@@ -363,7 +363,7 @@ namespace Auslieferungsvorlage.Tests
             File.AppendAllText(Path.Combine(paket, TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv"),
                 gleich + ";99.0;-;" + VERSION + ";" + QUELLE + ";" + VERSION + ";EIGENKONSTRUKTION;AUSLIEFERUNG\n", new UTF8Encoding(false));
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--katalogpaket", paket);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--katalogpaket", paket);
             Assert.True(e.Code == 0, e.Alles);
             int n = Paketteil(TwwSchema.TAB_TWW_PARAMETER_STAMM).Count;
             Assert.Contains("eingespielt: " + TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv  ->  " + (n - 1) + " von " + n + " Zeile(n)", e.Ausgabe);
@@ -377,6 +377,49 @@ namespace Auslieferungsvorlage.Tests
                 Assert.Equal(99.0, Convert.ToDouble(r["Wert"]));
                 Assert.Equal(TwwSchema.HERKUNFT_EIGENKONSTRUKTION, Convert.ToString(r["Herkunftsart"]));
                 Assert.Equal(n - 1, PaketteilParameter("", null));
+            });
+        }
+
+        /// <summary>
+        /// <b>T15 (Auftrag A2, E-A2-4 c):</b> Ein Katalogpaket, das vor der Bezugsart Zimmer gebaut wurde,
+        /// führt die Hotelzeile des Paketteils im früheren Stand — „Hotel (aus Messung)" mit Betten. Sie
+        /// kommt unter dem heutigen Namen mit der Bezugsart Zimmer in die Vorlage (dieselbe Regel wie
+        /// Schemaschritt und Katalogimport), der Paketteil trifft danach ihren natürlichen Schlüssel und
+        /// tritt zurück: EINE Hotelzeile, keine zweite. Der Bericht nennt beides.
+        /// </summary>
+        [Fact]
+        public void T15_Eine_Hotelzeile_im_frueheren_Stand_kommt_im_heutigen_in_die_Vorlage()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            string paket = PaketSchreiben(o, parameterStatus: TwwSchema.STATUS_AUSLIEFERUNG,
+                                          parameterHerkunft: TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+            string arten = Path.Combine(paket, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv");
+            string text = File.ReadAllText(arten, Encoding.UTF8);
+            Assert.Contains("\n60;Paketnutzung;" + VERSION + ";1;", text);
+            text = text.Replace("\n60;Paketnutzung;" + VERSION + ";1;", "\n60;Hotel (aus Messung);" + VERSION + ";3;")
+                       .Replace(";" + QUELLE + ";" + VERSION + ";EIGENKONSTRUKTION", ";" + QUELLE + ";FREI-1;EIGENKONSTRUKTION");
+            File.WriteAllText(arten, text, new UTF8Encoding(false));
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--katalogpaket", paket);
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("frueherer Stand: " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv Zeile 2: \"Hotel (aus Messung)\" " +
+                            "(Bezugsart Betten) gelesen als \"Hotel (aus Messung, je Zimmer)\" (Bezugsart Zimmer)", e.Ausgabe);
+            Assert.Contains("MELDUNG " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " \"Hotel (aus Messung, je Zimmer)\" (" + VERSION +
+                            "): das Katalogpaket fuehrt dieselbe Zeile — die Zeile des Paketteils tritt zurueck", e.Ausgabe);
+
+            Lesen(ziel, () =>
+            {
+                Assert.DoesNotContain("Hotel (aus Messung)", Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                DataRow r = Assert.Single(DataRepository.GetDataTable(
+                    "SELECT * FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner LIKE 'Hotel (aus Messung%'").Rows.Cast<DataRow>());
+                Assert.Equal(60L, Convert.ToInt64(r["ID"]));
+                Assert.Equal("Hotel (aus Messung, je Zimmer)", Convert.ToString(r["Bezeichner"]));
+                Assert.Equal((long)ZapfBezugsart.Zimmer, Convert.ToInt64(r["Bezugsart"]));
+                Assert.Equal(TwwSchema.STATUS_AUSLIEFERUNG, Convert.ToString(r["Status"]));
             });
         }
 
@@ -418,7 +461,7 @@ namespace Auslieferungsvorlage.Tests
 
             Lesen(quelle, () => Assert.Equal(3L, Zahl(TwwSchema.TAB_TWW_TYPTAG_IMPORT)));
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--katalogleerung-zulassen");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Tab_TwwTyptag_IMPORT geleert (Typtage des lizenzierten Anwenders, nie in der Vorlage)", e.Ausgabe);
             Assert.Contains("ok      keine Zeile aus einem Normimport", e.Ausgabe);
@@ -436,6 +479,9 @@ namespace Auslieferungsvorlage.Tests
 
         /// <summary>Anfang der Quelle der Nutzungsart "Hotel (aus Messung, je Zimmer)" (ZU36).</summary>
         private const string QUELLE_HOTEL = "Mittel aus drei Hotels, ";
+
+        /// <summary>Quelle der Setzungen Büro, Schule, Gewerbe (V31).</summary>
+        private const string QUELLE_SETZUNG_NICHTWOHNEN = "Setzung nach DIN EN 12831-3 Profilfamilie";
 
         /// <summary>
         /// <b>T13 (ZU20, ZU36):</b> Die fuenf aus VDI 6002 ABGELEITETEN Nutzungsarten des freien Paketteils
@@ -455,7 +501,7 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("ok      keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
             Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
@@ -479,8 +525,10 @@ namespace Auslieferungsvorlage.Tests
                     {
                         string herkunft = Convert.ToString(r[g + "_Herkunftsart"]);
                         Assert.Equal(z[g + "_Herkunftsart"], herkunft);
-                        Assert.StartsWith(herkunft == TwwSchema.HERKUNFT_VERFAHREN ? QUELLE_VDI_ABGELEITET : QUELLE_HOTEL,
-                                          Convert.ToString(r[g + "_Quelle"]));
+                        string quelle = Convert.ToString(r[g + "_Quelle"]);
+                        if (herkunft == TwwSchema.HERKUNFT_VERFAHREN) Assert.StartsWith(QUELLE_VDI_ABGELEITET, quelle);
+                        else Assert.True(quelle.StartsWith(QUELLE_HOTEL, StringComparison.Ordinal) ||
+                                         quelle == QUELLE_SETZUNG_NICHTWOHNEN, quelle);
                         Assert.Contains(herkunft, new[] { TwwSchema.HERKUNFT_VERFAHREN, TwwSchema.HERKUNFT_EIGENKONSTRUKTION });
                         Assert.Equal(z[g + "_Quelle"], Convert.ToString(r[g + "_Quelle"]));
                     }
@@ -508,8 +556,9 @@ namespace Auslieferungsvorlage.Tests
                              Convert.ToInt64(DataRepository.ExecuteScalar(
                                  "SELECT COUNT(*) FROM Tab_TwwTagesgang_STAMM WHERE (Herkunftsart = ? AND " +
                                  "Quelle LIKE 'abgeleitet aus VDI 6002 Blatt %') OR (Herkunftsart = ? AND " +
-                                 "Quelle LIKE 'Mittel aus drei Hotels%')", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN),
-                                 new DbParam("?", TwwSchema.HERKUNFT_EIGENKONSTRUKTION))));
+                                 "(Quelle LIKE 'Mittel aus drei Hotels%' OR Quelle = ?))", new DbParam("?", TwwSchema.HERKUNFT_VERFAHREN),
+                                 new DbParam("?", TwwSchema.HERKUNFT_EIGENKONSTRUKTION), new DbParam("?", QUELLE_SETZUNG_NICHTWOHNEN))));
+                Assert.Contains(PaketteilNamen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM), n => n == "Büro (Setzung)");
                 Assert.Contains(PaketteilNamen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM), n => n == "Hotel (aus Messung, je Zimmer)");
                 // Der Tagesgangsatz behaelt den Namen ohne Zusatz: "je Zimmer" betrifft die Bezugsmenge (#579).
                 Assert.Contains(PaketteilNamen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM), n => n == "Hotel (aus Messung)");
@@ -527,7 +576,7 @@ namespace Auslieferungsvorlage.Tests
             string paket = PaketSchreiben(o, parameterStatus: TwwSchema.STATUS_EIGEN,
                                           parameterHerkunft: TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--katalogpaket", paket);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--katalogpaket", paket);
             Assert.True(e.Code == 5, e.Alles);
             Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv Zeile 2: Status \"EIGEN\"", e.Fehlerausgabe);
             Assert.False(File.Exists(ziel), "Bei einem Abbruch darf keine Zieldatei entstehen.");
@@ -543,7 +592,7 @@ namespace Auslieferungsvorlage.Tests
             string paket = PaketSchreiben(o, parameterStatus: TwwSchema.STATUS_AUSLIEFERUNG,
                                           parameterHerkunft: TwwSchema.HERKUNFT_FIKTIV);
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"),
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, o.Datei("Kenndaten.sqlite"),
                                                            "--katalogpaket", paket, "--trocken");
             Assert.True(e.Code == 5, e.Alles);
             Assert.Contains("FEHLER  keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
@@ -603,7 +652,7 @@ namespace Auslieferungsvorlage.Tests
                             "Der Export des Beispielprojekts ist fehlgeschlagen.");
             });
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"),
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, o.Datei("Kenndaten.sqlite"),
                                                            "--beispiele", beispiel, "--trocken");
             Assert.True(e.Code == 5, e.Alles);
             Assert.Contains("FEHLER  keine Zeile mit Status IMPORT", e.Ausgabe);
@@ -624,7 +673,7 @@ namespace Auslieferungsvorlage.Tests
             string quelle = Path.Combine(ordner, "quelle.sqlite");
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"), "--trocken");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, o.Datei("Kenndaten.sqlite"), "--trocken");
             Assert.True(e.Code == 5, e.Alles);
             Assert.Contains("FEHLER  keine Eingabe aus den lokalen Normdaten (ZU11", e.Ausgabe);
             Assert.Contains(quelle, e.Ausgabe);
@@ -646,7 +695,7 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
 
             // Negativ: kein Beispielpaket, also kein Projekt in der Vorlage — der Posten ist gruen.
-            Werkzeuglauf.Ergebnis ohne = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"), "--trocken");
+            Werkzeuglauf.Ergebnis ohne = Werkzeuglauf.StartenMitAusnahmen(quelle, o.Datei("Kenndaten.sqlite"), "--trocken");
             Assert.True(ohne.Code == 0, ohne.Alles);
             Assert.Contains("ok      kein Beispielprojekt mit " + TwwSchema.SPALTE_TYPTAGE_AKTIV + " = 1 bei leerer " +
                             TwwSchema.TAB_TWW_TYPTAG_IMPORT, ohne.Ausgabe);
@@ -672,7 +721,7 @@ namespace Auslieferungsvorlage.Tests
                             "Der Export des Beispielprojekts ist fehlgeschlagen.");
             });
 
-            Werkzeuglauf.Ergebnis mit = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten2.sqlite"),
+            Werkzeuglauf.Ergebnis mit = Werkzeuglauf.StartenMitAusnahmen(quelle, o.Datei("Kenndaten2.sqlite"),
                                                              "--beispiele", beispiel, "--trocken");
             Assert.True(mit.Code == 5, mit.Alles);
             Assert.Contains("FEHLER  kein Beispielprojekt mit " + TwwSchema.SPALTE_TYPTAGE_AKTIV + " = 1 bei leerer " +
@@ -791,7 +840,7 @@ namespace Auslieferungsvorlage.Tests
                 new DbParam("?", VERSION), new DbParam("?", herkunft), new DbParam("?", status)));
         }
 
-        /// <summary>Die Rueckfallversion der Paketteil-Zeilen (TwwKataloge.KATALOGVERSION_FREI).</summary>
+        /// <summary>Die Rueckfallversion der Paketteil-Zeilen (ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, Regel N38).</summary>
         private const string TwwKatalogversionFrei = "FREI-1";
 
         /// <summary>Der Vorgabesatz einer Gruppe im Paketteil (Steuerspalte <c>Gruppe</c>).</summary>

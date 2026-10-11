@@ -126,12 +126,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Wertliste der Herkunft als SQL-Literal — die EINE Quelle aller vier
-        /// <c>CHECK</c>-Klauseln (Baustoff, Aufbau, Zone, Bauteil). Konstant zusammengesetzt aus
+        /// <c>CHECK</c>-Klauseln (Baustoff, Aufbau, Zone, Bauteil). Den sechsten Wert <c>SQPROJ</c> trägt eine
+        /// nachgezogene Datenbank ab Schritt <see cref="ProjektdateiImportSchema.SCHRITT"/>. Konstant zusammengesetzt aus
         /// <see cref="DbWerte"/>; der Nachweis hält sie gegen <see cref="DbWerte.HERKUENFTE"/>.
         /// </summary>
         public const string WERTE_HERKUNFT =
             "'" + DbWerte.HERKUNFT_MANUELL + "','" + DbWerte.HERKUNFT_KATALOG + "','" +
-            DbWerte.HERKUNFT_IFC + "','" + DbWerte.HERKUNFT_GBXML + "','" + DbWerte.HERKUNFT_VORGABE + "'";
+            DbWerte.HERKUNFT_IFC + "','" + DbWerte.HERKUNFT_GBXML + "','" + DbWerte.HERKUNFT_VORGABE + "','" +
+            DbWerte.HERKUNFT_SQPROJ + "'";
 
         /// <summary>
         /// <b>Die Ids unterhalb dieser Grenze gehören der Auslieferungssaat</b> — die Normsaat

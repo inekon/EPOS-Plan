@@ -113,6 +113,7 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
                 }
             },
             Nachweiszeile = "Stamm, WP klein: Nachweis liegt mit der nächsten Rechnung vor",
+            Szenarioabdeckung = "3 von 16 Parametern szenariert: Betrachtungszeitraum, Mengenänderung, Arbeitspreis Erdgas E",
             Rahmen = new ErgebnisMatrix
             {
                 Zeilen = new[]
@@ -141,7 +142,6 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Parameterzeile = "Parameter: 20 a, 3,0 %",
         Zeitraumzeile = "Betrachtungszeitraum T = 20 a · Nutzungsdauern 15 bis 25 a",
         Nutzungsdauerhinweise = new[] { "Stamm, WP klein: 1 von 4 Positionen ohne Nutzungsdauer (Planung, 21.888 €)" },
-        Szenarioabdeckung = "3 von 16 Parametern szenariert: Betrachtungszeitraum, Mengenänderung, Arbeitspreis Erdgas E",
         Deklarationen = new[]
         {
             "Rechnung nominal",
@@ -380,6 +380,98 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     // =====================================================================
+    //  Wärmegestehung (Anwenderentscheid 30.09.2026) — Kurztext und Herleitungszeile
+    // =====================================================================
+
+    /// <summary>
+    /// Die Wärmegestehungskosten sagen am Titel, was sie umfassen (Kurztext als Tooltip), und
+    /// unter den Energiekosten steht je Energieträger eine LEISE Herleitungszeile „Menge × Preis"
+    /// — beides kommt fertig aus der Hülle, die Seite zeichnet es nur.
+    /// </summary>
+    [Fact]
+    public void Die_Kennzahl_traegt_ihren_Kurztext_und_die_Herleitungszeile_ist_leise()
+    {
+        const string kurz = "Kosten der Wärmeerzeugung (Anlagen, Brennstoff, Strom der Wärmeerzeuger, abzüglich " +
+                            "ihrer Erlöse), annuisiert, je kWh Wärmebedarf; Haushaltsstrom, PV und Stromspeicher zählen nicht";
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Kennzahltafel = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Kennzahl", "Stamm", "WP klein", "BHKW" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "Wärmegestehungskosten [€/kWh]", Abschnitt = MatrixZeile.ABSCHNITT_KENNZAHL,
+                                  Kurztext = kurz, Zellen = new[] { "0,120", "0,110", "0,130" } },
+                new MatrixZeile { Titel = "Kapitalwert gegenüber Stamm [€]", Abschnitt = MatrixZeile.ABSCHNITT_KENNZAHL,
+                                  Zellen = new[] { "(Referenz)", "12.300", "-4.100" } }
+            }
+        };
+        stand.Ansicht.Matrix = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Kennzahl", "Stamm", "WP klein", "BHKW" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "Energiekosten [€/a]", Zellen = new[] { "2.748", "3.100", "4.200" } },
+                new MatrixZeile { Titel = "    Strom: Menge × Preis", Leise = true,
+                                  Zellen = new[] { "7.850 kWh × 0,35 €/kWh", "—", "—" } }
+            }
+        };
+        var cut = Zeige(stand);
+
+        IReadOnlyList<IElement> kennzahlen = cut.Find(".epos-wirt-kennzahltafel").QuerySelectorAll("tbody tr").ToList();
+        Assert.Equal(kurz, kennzahlen[0].QuerySelector("th")!.GetAttribute("title"));
+        Assert.False(kennzahlen[1].QuerySelector("th")!.HasAttribute("title"));   // ohne Kurztext kein Attribut
+
+        IReadOnlyList<IElement> gliederung = cut.Find(".epos-wirt-gliederung").QuerySelectorAll("tbody tr").ToList();
+        Assert.DoesNotContain("epos-wirt-herleitungszeile", gliederung[0].ClassList);
+        Assert.Contains("epos-wirt-herleitungszeile", gliederung[1].ClassList);
+        Assert.Equal("7.850 kWh × 0,35 €/kWh", gliederung[1].QuerySelectorAll("td")[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// P646 (Befund 6): Ein gespeicherter Lauf mit Nachweisumschlag der Fassung 12 (#642) trägt die
+    /// Wärmegestehungskosten nach einer früheren Regel — die Kennzahl zeigt an seiner Zelle den
+    /// Vermerk „… mit der nächsten Rechnung" (Zeichen in der Zelle, Zeile unter der Tafel); ein Lauf
+    /// der Fassung 13 nicht. Die Zeile kommt aus der Zeilendefinition des Kerns
+    /// über dieselbe Abbildung der Hülle, die die Seite bekommt.
+    /// </summary>
+    [Fact]
+    public void Ein_Lauf_der_Fassung_12_zeigt_den_Vermerk_an_den_Waermegestehungskosten()
+    {
+        var alt = new WindowsFormsApplication1.WirtschaftlichkeitErgebnis
+        {
+            IdProjekt = STAMM, IstStamm = true, Gestehungskosten = 0.12
+        };
+        WindowsFormsApplication1.ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":12}")!.Uebernimm(alt);
+        var neu = new WindowsFormsApplication1.WirtschaftlichkeitErgebnis { IdProjekt = WP, Gestehungskosten = 0.11 };
+        WindowsFormsApplication1.ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":13}")!.Uebernimm(neu);
+        var spalten = new List<WindowsFormsApplication1.WirtschaftlichkeitErgebnis> { alt, neu };
+
+        WindowsFormsApplication1.WirtZeile geste = WindowsFormsApplication1.WirtschaftlichkeitZeilen
+            .Kennzahlen(spalten, new WindowsFormsApplication1.TarifParameter(), 0, true)
+            .Single(z => z.Schluessel == "GESTEHUNGSKOSTEN");
+        MatrixZeile zeile = WindowsFormsApplication1.WirtschaftlichkeitSeiteGaben.Matrixzeile(
+            geste, spalten, CultureInfo.GetCultureInfo("de-DE"), MatrixZeile.ABSCHNITT_KENNZAHL);
+
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Kennzahltafel = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Kennzahl", "Stamm", "WP klein" },
+            Zeilen = new[] { zeile }
+        };
+        var cut = Zeige(stand);
+
+        string vermerk = WindowsFormsApplication1.MyResource.Resource.WIRT_GESTEHUNG_ALTER_LAUF;
+        Assert.Contains("nächsten Rechnung", vermerk);
+        IReadOnlyList<IElement> zellen = cut.Find(".epos-wirt-kennzahltafel").QuerySelectorAll("tbody td").ToList();
+        Assert.Equal(2, zellen.Count);
+        Assert.Equal(vermerk, zellen[0].QuerySelector(".epos-wirt-zellwarnung")!.GetAttribute("title"));
+        Assert.Null(zellen[1].QuerySelector(".epos-wirt-zellwarnung"));
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent == "⚠ Stamm — " + zeile.Titel + ": " + vermerk);
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"), e => e.TextContent.StartsWith("⚠ WP klein"));
+    }
+
+    // =====================================================================
     //  U4 — Bandbreite nebeneinander, Klappliste nur für die Tafeln darunter
     // =====================================================================
 
@@ -507,7 +599,12 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
             {
                 IElement? nominal = zellen[s].QuerySelector(".epos-wirt-nominal");
                 if (r == 0) Assert.Null(nominal);                               // Investition: Jahr 0
-                else Assert.StartsWith("nominal ", nominal!.TextContent);
+                else
+                {
+                    Assert.StartsWith("nominal ", nominal!.TextContent);
+                    // Anwenderentscheid 30.09.2026: der Kurztext an „nominal …".
+                    Assert.Equal("Summe der Zahlungen über 20 Jahre, nicht abgezinst", nominal.GetAttribute("title"));
+                }
                 Assert.False(string.IsNullOrWhiteSpace(Barwert(zellen[s])));
             }
             Assert.Null(zellen[3].QuerySelector(".epos-wirt-nominal"));         // Differenzspalte ohne
@@ -620,19 +717,24 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
                               Unterwerte = new[] { "", "", "", "" } },
             new MatrixZeile { Titel = "Betriebskosten",
                               Zellen = new[] { "−10.000", "−14.000", "−12.000", "−4.000" },
-                              Unterwerte = new[] { "nominal 12.000", "nominal 17.000", "nominal 15.000", "" } },
+                              Unterwerte = new[] { "nominal −12.000", "nominal −17.000", "nominal −15.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Energiekosten", Kennzeichen = "einschließlich CO₂-Abgabe",
                               Zellen = new[] { "−150.000", "−80.000", "−100.000", "+70.000" },
-                              Unterwerte = new[] { "nominal 190.000", "nominal 100.000", "nominal 125.000", "" } },
+                              Unterwerte = new[] { "nominal −190.000", "nominal −100.000", "nominal −125.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Erlöse", Kennzeichen = "zahlungswirksam — Block A",
                               Zellen = new[] { "0", "+3.000", "+20.000", "+3.000" },
-                              Unterwerte = new[] { "nominal 0", "nominal 4.000", "nominal 26.000", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal +4.000", "nominal +26.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Ersatzbeschaffungen",
                               Zellen = new[] { "0", "−2.000", "−5.000", "−2.000" },
-                              Unterwerte = new[] { "nominal 0", "nominal 3.000", "nominal 8.000", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal −3.000", "nominal −8.000", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Restwert am Ende",
                               Zellen = new[] { "0", "+5.300", "+4.000", "+5.300" },
-                              Unterwerte = new[] { "nominal 0", "nominal 9.600", "nominal 7.200", "" } },
+                              Unterwerte = new[] { "nominal 0", "nominal +9.600", "nominal +7.200", "" },
+                              Unterwerttitel = new[] { "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "Summe der Zahlungen über 20 Jahre, nicht abgezinst", "" } },
             new MatrixZeile { Titel = "Nettobarwert", IstSumme = true,
                               Zellen = new[] { "−160.000", "−147.700", "−183.000", "+12.300" } }
         }
@@ -697,6 +799,182 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.StartsWith("3 von 16 Parametern szenariert", danach.TextContent.Trim());
         Assert.DoesNotContain("Was ein Szenario heute variiert", cut.Markup);
         Assert.Empty(cut.FindAll(".epos-wirt-szenariohinweis"));
+    }
+
+    /// <summary>
+    /// Der Ausweis zählt die Stände des LAUFS — Stamm, angehakte Varianten und Referenz
+    /// (Konzept § 2.11.5, § 3.5): Er steht an der Ansicht, ein Haken tauscht ihn wie die
+    /// Bandbreite, an beiden Orten der Seite. Die Szenario-Klappliste behält ihn.
+    /// </summary>
+    [Fact]
+    public void Der_Ausweis_folgt_dem_Haken_und_nicht_der_Klappliste()
+    {
+        const string OHNE_BHKW = "1 von 13 Parametern szenariert: Betrachtungszeitraum";
+        var gefragt = new List<int>();
+        var cut = Zeige(mehr: p => p
+            .Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { })
+            .Add(x => x.Anzeigen, (int id) =>
+            {
+                gefragt.Add(id);
+                ErgebnisAnsicht neu = VolleAnsicht();
+                neu.Szenarioabdeckung = OHNE_BHKW;
+                return neu;
+            }));
+
+        string Ausweis(int abschnitt)
+            => Abschnitt(cut, abschnitt).QuerySelector(".epos-wirt-szenarioabdeckung")!.TextContent.Trim();
+
+        Assert.StartsWith("3 von 16 Parametern szenariert", Ausweis(3));
+
+        // Die Klappliste übernimmt nur die Tafeln darunter — der Ausweis bleibt.
+        cut.Find(".epos-wirt-szenariozeile select").Change("2");
+        Assert.Equal(new[] { 2 }, gefragt);
+        Assert.StartsWith("3 von 16 Parametern szenariert", Ausweis(3));
+
+        // Der Haken an „BHKW" tauscht die Ansicht und mit ihr den Ausweis des Laufs.
+        cut.FindAll(".epos-raster tbody input[type=checkbox]")[2].Change(false);
+        Assert.Equal(new[] { 2, 2 }, gefragt);
+        Assert.Equal(new[] { STAMM, WP }, cut.Instance.Gewaehlte);
+        Assert.Equal(OHNE_BHKW, Ausweis(3));
+
+        // Derselbe Ausweis in Block 4 der ValERI-Bewertung.
+        Umschalter(cut)[1].Click();
+        Assert.Equal(OHNE_BHKW, Ausweis(3));
+    }
+
+    /// <summary>
+    /// <b>Der Veraltet-Hinweis am Haken</b> (Anwenderentscheid 30.09.2026, Register EZ‑18): Ändert
+    /// ein Haken die Stände mit Stromverwendung des Laufs, meldet die Hülle die Gruppenregel als
+    /// geändert (<see cref="ErgebnisAnsicht.GruppenregelVeraltet"/>), und das Warnband zeigt den
+    /// eigenen Satz über dem Knopf „Neu berechnen". Im Prüfstand verwendet allein „WP klein" Strom
+    /// („Kessel neu" nicht): Der Haken an „Kessel neu" ändert nichts, „WP klein" abgehakt setzt das
+    /// Band, wieder angehakt fällt es weg; „Berechnen" rechnet den Lauf der Wahl und räumt es.
+    /// Gerechnet wird nur auf Zuruf.
+    /// </summary>
+    [Fact]
+    public void Der_Haken_an_der_einzigen_Stromvariante_meldet_die_Ergebnisse_als_veraltet()
+    {
+        var gewaehlt = new List<int> { STAMM, WP, BHKW };
+        var gerechnet = new List<int> { STAMM, WP, BHKW };     // der Lauf der gespeicherten Ergebnisse
+        int laeufe = 0;
+
+        // Die Hülle als Delegat: Die Gruppenregel ist die Menge der Stromverwender des Laufs —
+        // hier allein „WP klein".
+        ErgebnisAnsicht Ansicht()
+        {
+            ErgebnisAnsicht a = VolleAnsicht();
+            a.GruppenregelVeraltet = gerechnet.Contains(WP) != gewaehlt.Contains(WP);
+            return a;
+        }
+        WirtschaftlichkeitStand Stand()
+        {
+            WirtschaftlichkeitStand s = Voll();
+            s.Varianten[2].Bezeichner = "Kessel neu";
+            s.GewaehlteVarianten = gewaehlt.ToArray();
+            s.Ansicht = Ansicht();
+            return s;
+        }
+
+        var cut = Render<WirtschaftlichkeitSeite>(p => p
+            .Add(x => x.Laden, Stand)
+            .Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { gewaehlt = l.ToList(); })
+            .Add(x => x.Anzeigen, (int id) => Ansicht())
+            .Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m) =>
+            {
+                laeufe++;
+                gerechnet = new List<int> { STAMM };
+                gerechnet.AddRange(v);
+                return Task.FromResult(new LaufErgebnis { Erfolg = true, Statuszeile = "Berechnet." });
+            }));
+
+        string satz = WindowsFormsApplication1.MyResource.Resource.WIRT_BAND_GRUPPENREGEL_VERALTET;
+        bool Band() => cut.FindAll(".epos-wirt-warnband .epos-warnbanner").Any(b => b.TextContent.Contains(satz));
+        IElement Haken(int zeile) => cut.FindAll(".epos-raster tbody input[type=checkbox]")[zeile];
+
+        Assert.False(cut.Instance.GruppenregelVeraltet);
+        Assert.False(Band());
+
+        // „Kessel neu" abgehakt: keine Wirkung auf die Gruppenregel, kein Band.
+        Haken(2).Change(false);
+        Assert.Equal(new[] { STAMM, WP }, cut.Instance.Gewaehlte);
+        Assert.False(cut.Instance.GruppenregelVeraltet);
+        Assert.False(Band());
+
+        // „WP klein" abgehakt: Die einzige Version mit Stromverwendung fällt aus dem Lauf.
+        Haken(1).Change(false);
+        Assert.True(cut.Instance.GruppenregelVeraltet);
+        Assert.True(Band());
+        Assert.Contains(cut.FindAll(".epos-wirt-warnband button"),
+                        b => b.TextContent.Contains(WindowsFormsApplication1.MyResource.Resource.WIRT_BTN_NEU_BERECHNEN));
+        Assert.Equal(0, laeufe);                                   // kein automatisches Rechnen
+
+        // Wieder angehakt: Es gilt die Gruppenregel der gespeicherten Ergebnisse.
+        Haken(1).Change(true);
+        Assert.False(Band());
+
+        // Abgehakt und „Neu berechnen" im Band: Der Lauf der Wahl ist gerechnet, das Band weg.
+        Haken(1).Change(false);
+        Assert.True(Band());
+        cut.FindAll(".epos-wirt-warnband button")
+           .First(b => b.TextContent.Contains(WindowsFormsApplication1.MyResource.Resource.WIRT_BTN_NEU_BERECHNEN))
+           .Click();
+        cut.WaitForAssertion(() => Assert.False(Band()));
+        Assert.Equal(1, laeufe);
+        Assert.False(cut.Instance.GruppenregelVeraltet);
+    }
+
+    /// <summary>
+    /// <b>Der Laufvermerk nach einem Seitenwechsel</b> (Anwenderentscheid 02.10.2026, Register
+    /// EZ‑19): Die gespeicherten Ergebnisse tragen die Stände ihres Laufs
+    /// (<see cref="WindowsFormsApplication1.WirtschaftlichkeitErgebnis.LaufStaende"/>), und die Hülle
+    /// prüft beim Laden die Läufe der gewählten Stände (<see cref="WindowsFormsApplication1.Laufvermerk"/>)
+    /// gegen die Wahl. Neu geladen mit einer Wahl, die vom gespeicherten Lauf abweicht („WP klein",
+    /// der einzige Stromverwender, ist auf einer anderen Seite abgehakt worden), zeigt die Seite das
+    /// Band sofort, ohne Haken; neu geladen mit der Wahl des Laufs nicht. Gerechnet wird nicht.
+    /// </summary>
+    [Fact]
+    public void Neu_geladen_zeigt_die_Seite_das_Band_nach_dem_Vermerk_des_gespeicherten_Laufs()
+    {
+        string vermerk = WindowsFormsApplication1.Laufvermerk.Schreiben(new[] { STAMM, WP, BHKW });
+        var gespeichert = new[] { STAMM, WP, BHKW }
+            .Select(id => new WindowsFormsApplication1.WirtschaftlichkeitErgebnis { IdProjekt = id, LaufStaende = vermerk })
+            .ToList();
+        int laeufe = 0;
+
+        // Die Hülle als Delegat: die Läufe der gewählten Stände aus ihrem Vermerk, die Gruppenregel
+        // ist die Menge der Stromverwender — hier allein „WP klein".
+        WirtschaftlichkeitStand Stand(List<int> gewaehlt)
+        {
+            WirtschaftlichkeitStand s = Voll();
+            s.GewaehlteVarianten = gewaehlt.ToArray();
+            s.Ansicht = VolleAnsicht();
+            s.Ansicht.GruppenregelVeraltet = WindowsFormsApplication1.Laufvermerk
+                .Laeufe(gespeichert, gewaehlt, gewaehlt)
+                .Any(lauf => lauf.Contains(WP) != gewaehlt.Contains(WP));
+            return s;
+        }
+        IRenderedComponent<WirtschaftlichkeitSeite> Neu(List<int> gewaehlt) => Render<WirtschaftlichkeitSeite>(p => p
+            .Add(x => x.Laden, () => Stand(gewaehlt))
+            .Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m) =>
+            {
+                laeufe++;
+                return Task.FromResult(new LaufErgebnis { Erfolg = true });
+            }));
+
+        string satz = WindowsFormsApplication1.MyResource.Resource.WIRT_BAND_GRUPPENREGEL_VERALTET;
+        bool Band(IRenderedComponent<WirtschaftlichkeitSeite> c) =>
+            c.FindAll(".epos-wirt-warnband .epos-warnbanner").Any(b => b.TextContent.Contains(satz));
+
+        // Abweichende Wahl: Band beim Laden.
+        IRenderedComponent<WirtschaftlichkeitSeite> cut = Neu(new List<int> { STAMM, BHKW });
+        Assert.True(cut.Instance.GruppenregelVeraltet);
+        Assert.True(Band(cut));
+
+        // Gleiche Wahl wie der Lauf: kein Band.
+        cut = Neu(new List<int> { STAMM, WP, BHKW });
+        Assert.False(cut.Instance.GruppenregelVeraltet);
+        Assert.False(Band(cut));
+        Assert.Equal(0, laeufe);
     }
 
     /// <summary>
@@ -1146,5 +1424,36 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
 
         Assert.Equal(5, Abschnittskoepfe(cut).Length);
         Assert.Single(Abschnitt(cut, 1).QuerySelectorAll(".epos-herleitung-text"));
+    }
+
+    /// <summary>
+    /// CSV-3: Das Zahlungsstrombild trägt „CSV…“ im Raster Jahr — je belegter Spalte eine Reihe
+    /// über die Jahre der Tafel; der Klick gibt das Modell an die Naht der Seite.
+    /// </summary>
+    [Fact]
+    public void Das_Zahlungsstrombild_schreibt_CSV_im_Raster_Jahr()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Leitversion = WP;
+        stand.Ansicht.Zahlungsstaende = new[] { (WP, "WP klein") };
+        ZahlungsreihenTafel wp = Zahlungstafel(WP, 0, "W0");
+        wp.Bild = Zahlungsstrombild(-500.0);
+        stand.Ansicht.Zahlungsreihen = new[] { wp };
+        var exporte = new List<(WindowsFormsApplication1.Zeichnung.Zeichenmodell M, WindowsFormsApplication1.Zeitraster R)>();
+        var cut = Zeige(stand, p => p.Add(x => x.CsvSpeichern,
+            (m, t, r) => { exporte.Add((m, r)); return Task.CompletedTask; }));
+
+        Abschnitt(cut, 1).QuerySelector(".epos-wirt-zahlungsstrom-teil button.epos-diagramm-csv")!.Click();
+
+        var (modell, raster) = Assert.Single(exporte);
+        Assert.Equal(WindowsFormsApplication1.Zeitraster.Jahr, raster);
+        Assert.All(WindowsFormsApplication1.ZeitreihenCsv.AusModell(modell), s => Assert.Equal(2, s.Werte.Length));
+        // CSV-4: Die Zeitspalte zählt wie die Tafel ab dem Investitionsjahr 0.
+        string[] zeilen = WindowsFormsApplication1.ZeitreihenCsv.Text(raster, WindowsFormsApplication1.ZeitreihenCsv.AusModell(modell))
+                                                                 .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(3, zeilen.Length);
+        Assert.StartsWith("0;", zeilen[1], StringComparison.Ordinal);
+        Assert.StartsWith("1;", zeilen[2], StringComparison.Ordinal);
     }
 }

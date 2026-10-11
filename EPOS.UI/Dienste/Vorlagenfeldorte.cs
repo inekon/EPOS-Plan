@@ -184,6 +184,8 @@ public static class Vorlagenfeldorte
         O("tabelle.wirtschaft.szenarien", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.bandbreite");
         O("bild.wirtschaft.spanne", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "bild.spanne");
         O("bild.wirtschaft.kapitalwert_szenarien", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "bild.verlauf");
+        // Standwerte mit Positionsform (stand.<n>.…, variante.<n>.…): die Sensitivität nennt je Stand ihrer Tafel die
+        // Form mit Namen, Mehrjahrestafel und Zahlungsstrom die des Stands, den die Klappliste von Block 2 zeigt.
         O("stand.tabelle.sensitivitaet", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.sensitivitaet");
         O("tabelle.wirtschaft.kennzahlen", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.gliederung");
         O("tabelle.wirtschaft.kennzahlen.guenstig", ANSICHT_BERICHTE, REITER_WIRTSCHAFT, "tafel.gliederung");
@@ -230,8 +232,13 @@ public static class Vorlagenfeldorte
         O("stand.bild.waermepumpe", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.produktion");
         O("stand.bild.waermepumpe_strom", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_WAERMEPUMPE), "bild.stromverbrauch");
         O("stand.bild.heizkessel", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_HEIZKESSEL), "bild.heizkessel");
+        // Katalog v11: die Kesseltafel - im Bericht je Kessel Jahresnutzungsgrad, Brennwertanteil und Starts (ähnlich).
+        O("stand.tabelle.heizkessel", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_HEIZKESSEL), "tafel.kessel");
         O("stand.bild.solarthermie", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_SOLARTHERMIE), "bild.solarthermie");
         O("stand.bild.bhkw", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BHKW), "bild.bhkw");
+        // Katalog v12: die Stromlast des BHKW und die Kälteproduktion des Blatts „Kälte“ im Reiter „Ergebnis“ (ähnlich).
+        O("stand.bild.bhkw_strom", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_BHKW), "bild.bhkw_strom");
+        O("stand.bild.kaelte_produktion", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_ERGEBNIS), "bild.kaelte_produktion");
         O("stand.bild.photovoltaik", ANSICHT_SIMULATION, Ergebnisblatt(BLATT_PHOTOVOLTAIK), "bild.photovoltaik");
 
         // ---- Simulation › Ergebnis › Wärmepumpe und Stromspeicher ------------------------

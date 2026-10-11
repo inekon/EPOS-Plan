@@ -46,7 +46,7 @@ namespace WindowsFormsApplication1
             bool ok = false;
             BlazorDialogForm<SolarganglinieDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>(Gaben(besitzer, projektId, liste))
+            var werte = new Dictionary<string, object>(SolarganglinieKatalogGaben.MitGrafik(Gaben(besitzer, projektId, liste)))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -63,6 +63,105 @@ namespace WindowsFormsApplication1
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
             return ok;
+        }
+
+        /// <summary>Innenmaß des Dialogs ohne Projekt (Administrationsmenü).</summary>
+        private static readonly Size MASS_KATALOG = new Size(880, 620);
+
+        /// <summary>Der Unterordner der Ganglinienablage unterhalb von <c>Settings.VDI3805Path</c>.</summary>
+        private const string UNTERORDNER = "Solarthermie";
+
+        /// <summary>
+        /// Zeigt den Dialog OHNE Projekt — der Weg des Administrationsmenüs
+        /// (<c>Masken.SolarganglinieAdmin</c> über <c>WinFormsNavigation</c>): nur die
+        /// Katalogseite, Schluss über „Beenden".
+        /// </summary>
+        internal static bool OeffnenKatalog(IWin32Window besitzer)
+        {
+            bool ok = false;
+            BlazorDialogForm<SolarganglinieDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(SolarganglinieKatalogGaben.KatalogGaben())
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
+                {
+                    ok = b;
+                    if (dlg != null) dlg.Schliessen(b);
+                })
+            };
+
+            dlg = new BlazorDialogForm<SolarganglinieDialog>(MyResource.Resource.SGAD_TITEL, MASS_KATALOG, werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ok;
+        }
+
+        // =================================================================================
+        // Die Dateiwege des Imports (Naht Katalogwege.SolarganglinienDatei)
+        // =================================================================================
+
+        /// <summary>
+        /// Was Windows zum Import einer Ganglinien-Datei beisteuert — eingehängt in
+        /// <c>Program.Main</c>.
+        /// </summary>
+        internal static GanglinienDateiwege Dateiwege()
+        {
+            return new GanglinienDateiwege
+            {
+                DateiWaehlen = DateiWaehlen,
+                Ablegen = Ablegen,
+                MitSystemOeffnen = pfad => System.Threading.Tasks.Task.FromResult(Dienste.Datei.MitSystemOeffnen(pfad)),
+                Ordner = Ablageordner()
+            };
+        }
+
+        /// <summary>Der Ganglinienordner — <c>Settings.VDI3805Path\Solarthermie</c>.</summary>
+        internal static string Ablageordner()
+        {
+            string basis = Properties.Settings.Default.VDI3805Path ?? "";
+            return System.IO.Path.Combine(basis, UNTERORDNER);
+        }
+
+        /// <summary>
+        /// Der Dateiwähler mit dem Ganglinienordner als Startpunkt — HINTER dem
+        /// Blazor-Ereignis (siehe <c>IDateiDienst</c>).
+        /// </summary>
+        private static System.Threading.Tasks.Task<string> DateiWaehlen(string filter)
+        {
+            return Dienste.Datei.DateiOeffnenAsync(
+                MyResource.Resource.SGAD_TITEL,
+                string.IsNullOrEmpty(filter) ? MyResource.Resource.WBAD_DATEIFILTER : filter,
+                Ablageordner());
+        }
+
+        /// <summary>
+        /// Die verlustfreie Originalablage: Trägt der Ordner schon eine gleichnamige
+        /// Datei, wird DIESE weiterverwendet; ein Fehlschlag kommt als Meldung zurück.
+        /// </summary>
+        private static System.Threading.Tasks.Task<EPOS.UI.Dialoge.Bedarf.AblageErgebnis> Ablegen(string quelle)
+        {
+            return System.Threading.Tasks.Task.Run(() =>
+            {
+                if (string.IsNullOrEmpty(quelle)) return new EPOS.UI.Dialoge.Bedarf.AblageErgebnis("");
+
+                try
+                {
+                    string ordner = Ablageordner();
+                    System.IO.Directory.CreateDirectory(ordner);
+                    string ziel = System.IO.Path.Combine(ordner, System.IO.Path.GetFileName(quelle));
+
+                    if (!System.IO.File.Exists(ziel)) System.IO.File.Copy(quelle, ziel, true);
+                    return new EPOS.UI.Dialoge.Bedarf.AblageErgebnis(ziel);
+                }
+                catch (Exception ex)
+                {
+                    return new EPOS.UI.Dialoge.Bedarf.AblageErgebnis("",
+                        string.Format(MyResource.Resource.WBAD_MSG_ABLAGE, ex.Message));
+                }
+            });
         }
 
         /// <summary>Der PARAMETERSATZ des Dialogs.</summary>
@@ -89,14 +188,13 @@ namespace WindowsFormsApplication1
             {
                 ["Zeilen"] = zeilen,
 
-                // W14a-E-10 / S3.2: dieselbe Katalogliste wie in der Verwaltung, mit
-                // Beschreibung, Jahresarbeit und Spitze - und der Spalte "im Projekt
-                // verwendet" (Q12), die es nur im Projektdialog gibt.
-                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
-                    () => ZeitreihenKatalogCtrl.Katalogfilterzeilen(Zeitreihenart.Solarganglinie)),
-                ["Katalogprofil"] = Katalogfilterprofil
-                    .FuerZeitreihe(Zeitreihenart.Solarganglinie, BedarfAdminHuelle.Filtertext)
-                    .MitVerwendungsspalte(BedarfAdminHuelle.Filtertext),
+                // Die Katalogseite des Dialogs: Liste mit Beschreibung, Jahresarbeit und
+                // Spitze und der Spalte "im Projekt verwendet", Vergleichen, Schloss,
+                // Loeschen und Import - plattformfrei in EPOS.UI.Daten.
+                ["Katalogwege"] = SolarganglinieKatalogGaben.Wege(),
+                // "CSV..." an jedem Zeitreihenbild des Dialogs (Satzansicht, Optionendialog des Imports).
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
+                ["Katalogprofil"] = SolarganglinieKatalogGaben.Profil(true),
 
                 ["Aufnehmen"] = new Func<int, ErzeugerZeile>(
                     ganglinieId => Aufnehmen(projektId, liste, zuModell, zaehler, ganglinieId)),
@@ -109,13 +207,6 @@ namespace WindowsFormsApplication1
                         zuModell.Remove(zeile.Schluessel);
                     }),
 
-                // iU9-W14b.2: Die Ganglinienverwaltung ist selbst Blazor und erscheint
-                // als UEBERLAGERUNG im selben Fenster; der Sprung ueber die
-                // Sprungbruecke entfaellt (Risiko R2). Sie laedt ihre Liste selbst -
-                // der Sprungzweig tat das NICHT und zeigte eine leere Liste
-                // (Befund W14-B73).
-                ["VerwaltungGaben"] = SolarganglinieAdminHuelle.Gaben(),
-
                 ["TitelText"] = Text_("SGL_TITEL", "Solarthermieganglinien"),
                 ["LabelProjektliste"] = Text_("SGL_LBL_PROJEKTLISTE", "Ausgewählt im Projekt"),
                 ["LabelKatalogliste"] = Text_("SGL_LBL_KATALOGLISTE", "Solarthermieganglinie aus DB"),
@@ -125,7 +216,6 @@ namespace WindowsFormsApplication1
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["LabelBeschreibung"] = Text_("SGL_LBL_BESCHREIBUNG", "Beschreibung:"),
-                ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };

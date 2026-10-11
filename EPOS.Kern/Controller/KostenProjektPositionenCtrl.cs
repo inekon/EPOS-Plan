@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -91,6 +92,22 @@ namespace WindowsFormsApplication1
             /// <summary>Der Name der Standardvorlage („Standard"); leer, wo
             /// <see cref="VorlagenBemessung"/> leer ist.</summary>
             public string VorlagenName = "";
+
+            /// <summary>
+            /// AUFTRAG P671 (E30-Rest 1): Der WIRKSAME Satz einer Hilfsenergie-Position, deren
+            /// Satz aus dem Hilfsenergieanteil ihrer Anlage stammt
+            /// (<see cref="HilfsenergieAusAnteil"/>, § 3.4) — die Zeile selbst trägt dann keinen
+            /// Satz, und das Satzfeld bliebe leer, obwohl Betrag und Basis stehen. <c>null</c> =
+            /// die Zeile rechnet mit ihrem eigenen Satz (oder ohne). Reine Auskunft: Er wird nie in
+            /// die Zeile zurückgeschrieben — sonst trüge sie einen eigenen Satz, und der hätte
+            /// Vorrang vor dem Anteil (E30‑Q2 a).
+            /// </summary>
+            public double? SatzAusAnlagenanteil;
+
+            /// <summary>Die Herkunft dazu als fertige Zeile unter dem Satzfeld
+            /// („2 % · Satz aus dem Hilfsenergieanteil der Anlage"); leer, wo
+            /// <see cref="SatzAusAnlagenanteil"/> leer ist.</summary>
+            public string SatzAusAnlagenanteilZeile = "";
 
             /// <summary>Projekt und Kategorie der Zeile — damit
             /// <see cref="Speichern"/> den wirksamen Betrag über denselben Rechenweg
@@ -302,6 +319,7 @@ namespace WindowsFormsApplication1
                     z.Raster.BetragNetto = n.BetragJahr;
                     z.Basis = n.Menge;
                     anlageDerZeile = n.Anlage;
+                    SatzAusAnteilUebernehmen(z, n);
                     // U28: Die Betriebsseite hat keine Kaskade (Runde bleibt 0). Ihre
                     // Bezugsgröße ist die Investitionssumme (H4a), eine BAUGRÖSSE der
                     // Anlage oder eine Menge des Simulationslaufs.
@@ -454,6 +472,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// AUFTRAG P671 (E30-Rest 1): Stammt der Satz der Nachweiszeile aus dem
+        /// Hilfsenergieanteil der Anlage (<see cref="HilfsenergieAusAnteil.HERKUNFT_ANLAGENANTEIL"/>),
+        /// trägt die Rasterzeile ihn als <see cref="Zeile.SatzAusAnlagenanteil"/> samt Herkunftszeile —
+        /// derselbe Satz, mit dem der Nachweis den Betrag rechnet (<c>Einheitpreis</c> der
+        /// Nachweiszeile). Die Herkunft ist der Vermerk der Herleitung
+        /// (<see cref="HilfsenergieAusAnteil.HerkunftKurz"/>), beide Sprachen.
+        /// </summary>
+        private static void SatzAusAnteilUebernehmen(Zeile z, KostenPositionNachweis n)
+        {
+            if (z == null || n == null || !n.Einheitpreis.HasValue ||
+                !string.Equals(n.SatzHerkunft, HilfsenergieAusAnteil.HERKUNFT_ANLAGENANTEIL,
+                               StringComparison.Ordinal))
+                return;
+            z.SatzAusAnlagenanteil = n.Einheitpreis;
+            z.SatzAusAnlagenanteilZeile =
+                n.Einheitpreis.Value.ToString("0.###", CultureInfo.CurrentCulture) + " % · " +
+                HilfsenergieAusAnteil.HerkunftKurz();
+        }
+
+        /// <summary>
         /// W5‑B‑7: Zieht Betrag und Bezugsgröße EINER Zeile aus dem Rechenweg des
         /// Kerns nach (Kaskade bzw. Nachweisliste). Still — findet er die Zeile nicht
         /// (Datenbank ohne Schritt 19, fremde Kategorie), bleibt der zuvor errechnete
@@ -461,6 +499,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void NachziehenAusRechenweg(Zeile z)
         {
+            if (z != null) { z.SatzAusAnlagenanteil = null; z.SatzAusAnlagenanteilZeile = ""; }
             if (z == null || z.ProjektId <= 0 || z.Raster.Id <= 0) return;
             try
             {
@@ -476,7 +515,7 @@ namespace WindowsFormsApplication1
                     KostenPositionNachweis n;
                     if (WirtschaftlichkeitCtrl.BetriebNachId(z.ProjektId, WirtschaftlichkeitSzenario.ERWARTET)
                             .TryGetValue(z.Raster.Id, out n))
-                    { z.Raster.BetragNetto = n.BetragJahr; z.Basis = n.Menge; }
+                    { z.Raster.BetragNetto = n.BetragJahr; z.Basis = n.Menge; SatzAusAnteilUebernehmen(z, n); }
                 }
             }
             catch { }
@@ -642,7 +681,9 @@ namespace WindowsFormsApplication1
                 { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
                 { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
                 { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
-                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" },
+                // Gegenstueck zur Ankerkarte in ZuordnungReparieren (07.10.2026).
+                { DbWerte.KOSTEN_KOMPONENTE_KAELTEMASCHINE, "ID_Kaeltemaschine" }
             };
             try
             {
@@ -723,6 +764,16 @@ namespace WindowsFormsApplication1
                 "(SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = " + projektId + ")");
             if (n == null || n == DBNull.Value || Convert.ToInt32(n) == 0) return;
 
+            // Die Heilung ist Pflege, keine Kostenänderung: Sie stellt nur nach, was das
+            // Löschen oder Neuanlegen der Anlage (selbst gestempelt) verursacht hat. Sie läuft
+            // vor jeder Rechnung und vor dem Aufbau der Kostenseite - stempelte sie, hinge das
+            // Band „bitte neu berechnen" davon ab, ob die Kostenseite geöffnet wurde.
+            KostenAenderungsstempel.OhneProjektstempel(projektId, () => ZuordnungUmschluesseln(projektId));
+        }
+
+        /// <summary>Der schreibende Teil von <see cref="ZuordnungReparieren"/>.</summary>
+        private static void ZuordnungUmschluesseln(int projektId)
+        {
             // Landkarte Komponente -> Verweisspalte (dieselbe wie Migration 45/46).
             var verweise = new Dictionary<int, string>();
             try
@@ -735,7 +786,11 @@ namespace WindowsFormsApplication1
                     { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
                     { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
                     { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
-                    { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+                    { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" },
+                    // Anwenderentscheid 07.10.2026: auch die Kaeltemaschine heilt ueber
+                    // ihren Anker - sonst blieb ihre Position fuer immer auf einer
+                    // Anlage, die es nicht mehr gibt.
+                    { DbWerte.KOSTEN_KOMPONENTE_KAELTEMASCHINE, "ID_Kaeltemaschine" }
                 };
                 DataTable komp = DataRepository.GetDataTable(
                     "SELECT ID, Komponente FROM Tab_KostenKomponente");

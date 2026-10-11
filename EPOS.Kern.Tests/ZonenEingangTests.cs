@@ -75,6 +75,38 @@ namespace EPOS.Kern.Tests
             for (int i = 0; i < a.Count; i++)
                 Assert.True(GebaeudeEinzonennetzTests.Bilden(a[i].Werte).Sha256 == GebaeudeEinzonennetzTests.Bilden(b[i].Werte).Sha256,
                             wer + ": Reihe " + a[i].Name + " weicht ab.");
+            // Stufe KP3 (Welle R4): der Kappungsanteil beider Jahresschleifen und seine Summe (Festlegung 20).
+            Assert.True(GebaeudeEinzonennetzTests.Bilden(r1.HeizleistungMaxAnteil).Sha256 == GebaeudeEinzonennetzTests.Bilden(r2.HeizleistungMaxAnteil).Sha256,
+                        wer + ": Reihe HeizleistungMaxAnteil weicht ab.");
+            Assert.Equal(Bits(r1.HeizleistungMaxStundenH), Bits(r2.HeizleistungMaxStundenH));
+            Assert.Equal(r1.Aufheizung == null, r2.Aufheizung == null);
+            if (r1.Aufheizung != null)
+            {
+                Assert.Equal(r1.Aufheizung with { Rampenmaske = null, Nachweisbandtage = null },
+                             r2.Aufheizung with { Rampenmaske = null, Nachweisbandtage = null });
+                Assert.Equal(r1.Aufheizung.Rampenmaske, r2.Aufheizung.Rampenmaske);
+                Assert.Equal(r1.Aufheizung.Nachweisbandtage, r2.Aufheizung.Nachweisbandtage);
+            }
+        }
+
+        /// <summary>
+        /// <b>Das Orakel mit Aufheizplan</b> (Entwurf KP3, Welle R4, B7): Das Bürogebäude mit Rampe — Zielleistung
+        /// und Grenze, diese mit Kappung — rechnet über <see cref="Vdi6007Rechenweg.Laufen"/> mit dem Plan und über
+        /// den Zonenlauf derselben Zone bitgleich, samt Kappungsanteil, Rampenmaske und W3.
+        /// </summary>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Der_Zonenlauf_mit_Aufheizplan_ist_bitgleich_zu_Laufen(bool grenze)
+        {
+            ProjektGebaeudeModel g = Bueroprobe.Gebaeude(grenze ? Bueroprobe.GrenzeKw(1.10) : (double?)null);
+            SolardatenModel[] reihe = grenze ? Bueroprobe.MitKaelteeinbruch() : null;
+            Bueroprobe.Lauf lauf = Bueroprobe.Rechnen(g, Bueroprobe.An(), reihe);
+            Assert.NotNull(lauf.Ergebnis.Aufheizung);
+            Assert.True(lauf.Plan.Geaendert);
+            GebaeudeModellErgebnis ist = Zonenlauf.Laufen(lauf.Zone, 0, g.ID_Gebaeude);
+            Bitgleich(grenze ? "Grenze" : "Ziel", lauf.Eingang, lauf.Ergebnis, lauf.Eingang, ist);
+            if (grenze) Assert.True(lauf.Ergebnis.HeizleistungMaxStundenH > 0.0);
         }
 
         // =====================================================================
@@ -265,14 +297,14 @@ namespace EPOS.Kern.Tests
             lauf.Beginnen(wohnen.Eingang.ThetaSoll[start]);
             for (int h = start; h < 8760; h++)
             {
-                bool s = lauf.Sommerlueftung();
+                bool s = lauf.Sommerlueftung(h);
                 Stundenrand r = wohnen.Rand(h, s, luft);
                 Assert.Equal(Bits(e1.ThetaEq[h]), Bits(r.ThetaEq));
                 lauf.VorlaufUebernehmen(h, lauf.Modell.Schritt(in r));
             }
             for (int h = 0; h < 8760; h++)
             {
-                bool s = lauf.Sommerlueftung();
+                bool s = lauf.Sommerlueftung(h);
                 Stundenrand r = wohnen.Rand(h, s, luft);
                 lauf.Uebernehmen(h, s, lauf.Modell.Schritt(in r));
             }

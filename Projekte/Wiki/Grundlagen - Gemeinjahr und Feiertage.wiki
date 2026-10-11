@@ -1,0 +1,72 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Gemeinjahr und Feiertage
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Gemeinjahr und Feiertage.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+EPOS-Plan rechnet jedes Projekt über ein '''Gemeinjahr''': 365 Tage, 8&nbsp;760 Stunden, ohne 29. Februar. Ein Kalenderjahr steht dahinter in der Regel nicht. Damit Wochenenden, Feiertage und Ferien trotzdem an der richtigen Stelle liegen, legt die Klimaregion ein '''Wochentagsraster''' fest, und die Feiertage liegen nach festen Regeln in diesem Raster.
+
+== Worum es geht ==
+{{Anker|worum-es-geht}}
+
+Klimadaten sind ein typisches Jahr, kein bestimmtes: Sie stammen aus vielen Jahren und haben kein eigenes Datum. Bedarfsprofile, Nutzungskalender und Zapfprofile brauchen aber Wochentage – ein Büro steht am Sonntag leer, ein Wohnhaus zapft am Wochenende anders. Das Wochentagsraster verbindet beides: Es sagt, auf welchen Wochentag der erste Tag des Jahres fällt, und alle weiteren Tage folgen daraus.
+
+[[Datei:Gemeinjahr_Wochentagsraster.svg|mini|600px|Prinzipbild: Wochentagsraster mit Jahrestag 1 am Donnerstag, Ostersonntag als Sonntag am nächsten zum 8. April und die beweglichen Feiertage im Abstand dazu.]]
+
+== So rechnet EPOS-Plan ==
+{{Anker|so-rechnet-epos-plan}}
+
+* {{Anker|wochentagsraster}}'''Ein Raster für alle.''' Der Wochentag des 1. Januar kommt aus der Klimaregion des Projekts. Dasselbe Raster gilt für Gebäudelauf, Zapfprofil, Bedarfsprofile von Brauchwasser, Prozesswärme und Strom sowie für die Kalender der Konditionierung.
+* {{Anker|feste-feiertage}}'''Feste Feiertage''' liegen auf Tag und Monat, etwa Neujahr, der 1. Mai, der 3. Oktober und die Weihnachtstage.
+* {{Anker|ostern}}'''Ostern.''' Ohne Jahr ist der Ostersonntag der Sonntag des Rasters, der dem 8. April (Jahrestag 98) am nächsten liegt; bei gleichem Abstand gilt der Sonntag davor. Karfreitag, Ostermontag, Christi Himmelfahrt, Pfingstmontag und Fronleichnam folgen mit festem Abstand und fallen so immer auf ihren richtigen Wochentag.
+* {{Anker|buss-und-bettag}}'''Buß- und Bettag''' ist der letzte Mittwoch des Rasters vor dem 23. November (Jahrestag 327).
+* {{Anker|preisreihe-mit-jahr}}'''Preisreihe mit Jahr.''' Trägt das Projekt eine Preisreihe mit Jahresangabe, etwa Spotpreise eines bestimmten Jahres, gilt der Kalender dieses Jahres: das Raster seines echten 1. Januar und die echten Daten von Ostern und Buß- und Bettag, abgebildet auf das Gemeinjahr. Preise, Wochenenden und Feiertage passen dann zueinander.
+* {{Anker|wirkung-der-feiertage}}'''Wirkung.''' Ein Feiertag trägt in Bedarfsprofilen und im Zapfprofil den Sonntag des Wochenprofils; in Nutzungskalendern wirkt er ''wie Sonntag'' oder ''aus''. Bundeseinheitliche Feiertage gelten immer, Landesfeiertage mit dem gewählten Bundesland.
+
+{| class="wikitable"
+! Feiertag !! Lage im Raster
+|-
+| Karfreitag || Ostersonntag − 2 Tage
+|-
+| Ostermontag || Ostersonntag + 1 Tag
+|-
+| Christi Himmelfahrt || Ostersonntag + 39 Tage (Donnerstag)
+|-
+| Pfingstmontag || Ostersonntag + 50 Tage
+|-
+| Fronleichnam || Ostersonntag + 60 Tage (Donnerstag)
+|-
+| Buß- und Bettag || letzter Mittwoch vor dem 23. November
+|}
+
+== Eingaben und Wirkung ==
+{{Anker|eingaben-und-wirkung}}
+
+{| class="wikitable"
+! Eingabe !! Wirkung
+|-
+| Klimaregion des Projekts || Wochentag des 1. Januar und damit das ganze Raster
+|-
+| Bundesland eines Kalenders, Feiertagsland eines Gebäudes || welche Landesfeiertage zusätzlich gelten
+|-
+| Preisreihe mit Jahr || Kalender eines echten Jahres für alle Raster und Feiertage
+|-
+| Ferien und Einzeltage der Kalender || Datum ohne Jahr; ein Zeitraum darf über den Jahreswechsel reichen
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* Ein Datum wie der 29. Februar gibt es im Gemeinjahr nicht.
+* Ohne Preisreihe mit Jahr liegt Ostern auf dem Sonntag des Rasters, nicht auf dem Datum eines bestimmten Jahres; das ist gewollt, damit Klima und Wochentage zusammenpassen.
+* Wer zwei Projekte mit verschiedenen Klimaregionen vergleicht, vergleicht auch verschiedene Wochentagsraster.
+* Gemessene Lastgänge mit Datum gleicht EPOS-Plan beim Einlesen an das Gemeinjahr an, auch über Schaltjahr und Sommerzeit hinweg ([[Grundlagen/Strombedarf und Lastprofile#gemessene-lastgaenge|Gemessene Lastgänge]]).
+
+== Weiterführend ==
+{{Anker|weiterfuehrend}}
+
+* [[Grundlagen/Klimadaten#wochentage|Klimadaten: Wochentage und Feiertage]] – woher das Raster kommt
+* [[Programm Dokumentation/Betriebskalender]] – Feiertage und Ferien auf Bedarfsprofilen
+* [[Programm Dokumentation/Gebäude]] – Kalender der Konditionierung mit Einzeltagen
+* [[Grundlagen/Brauchwasser-Zapfprofile]] – Feiertage im Zapfprofil
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

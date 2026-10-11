@@ -72,8 +72,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Tab_Gebaeude.Baujahr", GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, StringComparison.Ordinal);
             Assert.Contains("Tab_Gebaeude.Energiestandard", GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, StringComparison.Ordinal);
             Assert.DoesNotContain("Energiestandard", GebaeudeSchema.SQL_VIEW_NACHTZEIT, StringComparison.Ordinal);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, GebaeudeSchema.SQL_VIEW_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SICHT_AKTUELL);
+            // Die GELTENDE Sicht (der manuellen Aufheizzeit, E59) beginnt mit der des Energiestandards.
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_KALENDERBEDIENUNG, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SICHT_AKTUELL.Take(102));
         }
 
         /// <summary>
@@ -184,17 +185,26 @@ namespace EPOS.Kern.Tests
                                       "Baualtersklasse NOT IN ('A','B','C','D','E','F','G','H','I','J','K','L','M')"));
             }
 
-            Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'NIEDRIGENERGIE'"));
+            Assert.Equal(35L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'NIEDRIGENERGIE'"));   // 34 + der Referenzkatalogbau von 1051 (KP3, RP1)
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'PASSIVHAUS'"));
             Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Energiestandard = 'EH70'"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard IS NOT NULL"));
+            // Einzige Projektkopie mit Energiestandard: das Gebäude von 1051 aus seinem Referenzkatalogbau (KP3, RP1).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard IS NOT NULL" + Konditionierungsbestand.Ausser("Tab_Gebaeude")));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Energiestandard = 'NIEDRIGENERGIE' AND ID IN (" + Konditionierungsbestand.GEBAEUDE_1051 + ")"));
             // Die Projektkopien trugen nur Bauzeitraeume (alt A 18, D 2, F 4, G 2, H 2) - je einen Buchstaben weiter;
-            // H3 mit der Gebaeudekopie des Referenzprojekts Solarthermie 1049 (Vorlage 1018).
+            // H3 mit der Gebaeudekopie des Referenzprojekts Solarthermie 1049 (Vorlage 1018), G5 mit der
+            // des Referenzprojekts Kesselkennlinie 1050 (Vorlage 1023), H4 mit der des Zonenprojekts 1052
+            // (Vorlage 1018, G6d), H5 mit der des Prüfprojekts 1053 (Vorlage 1018), H6 mit der des Referenzprojekts 1054 (Vorlage 1052, AK1z), E3 mit der des Referenzprojekts 1055 (Vorlage 1017, KU3-4b), E4 mit der des Referenzprojekts 1056 (Vorlage 1047, AK2-4), E5 mit der des Referenzprojekts AK3 1058 (Vorlage 1056, AK3-W5a), J1 mit dem Gebäude des Referenzprojekts 1051 aus seinem Referenzkatalogbau (KP3, RP1), B19 mit der Gebäudekopie des Referenzprojekts Erdsonde 1057 (Vorlage 1029).
             var kopien = DataRepository.GetDataTable(
                 "SELECT Baualtersklasse, COUNT(*) AS Anzahl FROM Tab_Gebaeude GROUP BY Baualtersklasse ORDER BY Baualtersklasse")
                 .Rows.Cast<DataRow>()
                 .Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture) + Convert.ToString(r[1], CultureInfo.InvariantCulture));
-            Assert.Equal(new[] { "B18", "E2", "G4", "H3", "I2" }, kopien);
+            // E6: dazu die Gebäudekopie des Referenzprojekts AK3-K 1059 (Vorlage 1058, AK3-K-K5a).
+            // E8: dazu die Gebäudekopien der Referenzprojekte der Kühlkurve 1061 und 1062 (Vorlage 1058, KK5a).
+            // E9: dazu die Gebäudekopie des Referenzprojekts Übergabegrenze 1060 (Vorlage 1056, UB-E2-d).
+            // E10: dazu die Gebäudekopie des Referenzprojekts Kältemaschine Teillast 1063 (Vorlage 1055, KM3).
+            // E11: dazu die Gebäudekopie des Referenzprojekts Freie Kühlung 1064 (Vorlage 1017, FK).
+            Assert.Equal(new[] { "B19", "E11", "G5", "H6", "I2", "J1" }, kopien);
         }
 
         /// <summary>
@@ -247,7 +257,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, b.SpaltenAngelegt);
             Assert.True(b.Umgeschluesselt);
             Assert.True(BaualtersklassenSchema.Vollstaendig());
-            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
+            // Der Durchgang baut die Sicht in SEINER Form; die manuelle Aufheizzeit setzt erst der spätere
+            // Schritt KP-S4 dahinter (er läuft deshalb zuletzt).
+            Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SichtSpalten());
             Assert.Contains(bericht, z => z.Contains("(102 Spalten)", StringComparison.Ordinal));
 
             for (int i = 0; i < alt.Length; i++)

@@ -238,6 +238,15 @@ namespace WindowsFormsApplication1
         public string BerechnungsKurztext =>
             BerechnungsHilfe.RUBRIK_KURZ + ": " + (BerechnungsSeite ?? "");
 
+        /// <summary>
+        /// Der Schluessel des DRITTEN Infoknopfs — der Weg in die Wiki-Rubrik
+        /// „Grundlagen" (Konzept Technikdokumentation, Abschnitt 7). Er sitzt neben
+        /// dem Berechnungsknopf; sein Ziel steht als Seitenpfad in
+        /// <c>help_mapping.txt</c> (<c>/wiki/Grundlagen/…</c>). Sprachneutral wie
+        /// <see cref="BerechnungsSchluessel"/>; leer = kein Knopf.
+        /// </summary>
+        public string GrundlagenSchluessel { get; private set; }
+
         /// <summary>Fenstertitel, bereits uebersetzt.</summary>
         public string Titel { get; private set; }
 
@@ -288,6 +297,9 @@ namespace WindowsFormsApplication1
         public const string FeldBrennwert = "BRENNWERT";
         public const string FeldVorlauf = "VORLAUF";
         public const string FeldRuecklauf = "RUECKLAUF";
+        // Die Abschaltgrenze des Ruecklaufs am BHKW (Spalte Ruecklauf_Max, Schemaschritt 205).
+        // Leer heisst „keine Grenze gepflegt".
+        public const string FeldRuecklaufMax = "RUECKLAUF_MAX";
         public const string FeldKollektortyp = "KOLLEKTORTYP";
         public const string FeldModulflaeche = "MODULFLAECHE";
         public const string FeldAperturflaeche = "APERTURFLAECHE";
@@ -311,6 +323,13 @@ namespace WindowsFormsApplication1
         public const string FeldWirkungsgradGas = "WIRKUNGSGRAD_GAS";
         public const string FeldWirkungsgradOel = "WIRKUNGSGRAD_OEL";
         public const string FeldBBVerlust = "BBVERLUST";
+
+        /// <summary>
+        /// Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026): „kW" oder „%"
+        /// der Nennleistung, sprachneutral und deshalb als Textfeld bedient wie
+        /// <see cref="FeldWartungEinheit"/>.
+        /// </summary>
+        public const string FeldBBEinheit = "BBVERLUST_EINHEIT";
         public const string FeldRaumbedarf = "RAUMBEDARF";
         public const string FeldWartungskosten = "WARTUNGSKOSTEN";
         public const string FeldWartungEinheit = "WARTUNG_EINHEIT";
@@ -320,6 +339,21 @@ namespace WindowsFormsApplication1
         public const string FeldNox = "NOX";
         public const string FeldCo = "CO";
         public const string FeldStaub = "STAUB";
+
+        // Die Kennlinie des Heizkessels (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1):
+        // eta bei 30 % Last, der Schalter der Brennwertkennlinie und die drei Groessen des
+        // Taktmodells. Leer heisst „nicht gepflegt" (Vorgabe).
+        public const string FeldTeillast30 = "WIRKUNGSGRAD_TEILLAST30";
+        public const string FeldKennlinieBrennwert = "KENNLINIE_BRENNWERT";
+        public const string FeldMindestleistung = "MINDESTLEISTUNG";
+        public const string FeldAnfahrverlust = "ANFAHRVERLUST";
+        public const string FeldMindestlaufzeit = "MINDESTLAUFZEIT";
+
+        // Die Teillastkennlinie des BHKW (Welle M4, BH1): die zwei Wirkungsgrade bei 50 % Last.
+        // Anfahrverlust und Mindestlaufzeit (BH2) fuehrt das BHKW unter denselben Schluesseln
+        // wie der Kessel (FeldAnfahrverlust, FeldMindestlaufzeit). Leer heisst „nicht gepflegt".
+        public const string FeldTeillastEl50 = "WIRKUNGSGRAD_EL_TEILLAST50";
+        public const string FeldTeillastTh50 = "WIRKUNGSGRAD_TH_TEILLAST50";
 
         public const string FeldWirkungsgrad = "WIRKUNGSGRAD";
         public const string FeldWirkungsgradEl = "WIRKUNGSGRAD_EL";
@@ -338,6 +372,12 @@ namespace WindowsFormsApplication1
         public const string FeldK2 = "K2";
         public const string FeldKdir = "KDIR";
         public const string FeldKdiff = "KDIFF";
+
+        /// <summary>
+        /// Bezugsfläche der Kollektorkennwerte (ST6, Spalte <c>Bezugsflaeche</c>): „apertur" oder
+        /// „brutto" (<see cref="Solarkreis.BEZUGSFLAECHEN"/>).
+        /// </summary>
+        public const string FeldBezugsflaeche = "BEZUGSFLAECHE";
 
         // -----------------------------------------------------------------
         // Die Gruppe KOSTEN des Stammblatts (Konzept Administrationsdialoge,
@@ -388,6 +428,7 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         HilfeSchluessel = "Form_Heizkessel_Admin.btn_Help",
                         BerechnungsSchluessel = "Form_Heizkessel_Admin.Berechnung",
+                        GrundlagenSchluessel = "Form_Heizkessel_Admin.Grundlagen",
                         BerechnungsSeite = "Heizkessel",
                         Titel = t("KBROW_TITEL_HEIZKESSEL"),
                         Listenbeschriftung = t("KBROW_LISTE_HEIZKESSEL"),
@@ -421,8 +462,33 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldWirkungsgradOel, t("HZKK_LBL_WG_OEL"), "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldBBVerlust,    t("HZKK_LBL_BBVERLUST"), "%",
+                            // Der Bereitschaftsverlust in kW ODER % der Nennleistung (Anwender-
+                            // entscheid 02.10.2026): Die Einheit steht im Feld darunter, wie bei
+                            // den Wartungskosten - eine feste Einheit hier wäre bei % falsch.
+                            new BrowserDetailfeld(FeldBBVerlust,    t("HZKK_LBL_BBVERLUST"), "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldBBEinheit,    t("HZKK_LBL_BB_EINHEIT"), "",
+                                                  BrowserFeldArt.Text, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_BB_EINHEIT")),
+
+                            // Die Kennlinie (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1). Leer
+                            // heisst hier NICHT 0, sondern „Vorgabe" (Entscheid F1) - der Vermerk
+                            // sagt es; der Speicherweg schreibt ein leeres Feld als NULL.
+                            new BrowserDetailfeld(FeldTeillast30,   t("HZKK_LBL_TEILLAST30"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldKennlinieBrennwert, t("HZKK_LBL_KENNLINIE_BRENNWERT"), "",
+                                                  BrowserFeldArt.Schalter, editierbar: true),
+                            new BrowserDetailfeld(FeldMindestleistung, t("HZKK_LBL_MINDESTLEISTUNG"), "kW",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldAnfahrverlust, t("HZKK_LBL_ANFAHRVERLUST"), "kWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldMindestlaufzeit, t("HZKK_LBL_MINDESTLAUFZEIT"), "min",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+
                             new BrowserDetailfeld(FeldRaumbedarf,   t("HZKK_LBL_RAUMBEDARF"), "m³",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldWartungskosten, t("KESSEL_WARTUNG_LBL") + ":", "",
@@ -465,6 +531,7 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         HilfeSchluessel = "Form_BHKWAdmin.btn_Help",
                         BerechnungsSchluessel = "Form_BHKWAdmin.Berechnung",
+                        GrundlagenSchluessel = "Form_BHKWAdmin.Grundlagen",
                         BerechnungsSeite = "BHKW",
                         Titel = t("KBROW_TITEL_BHKW"),
                         Listenbeschriftung = t("KBROW_LISTE_BHKW"),
@@ -493,6 +560,8 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Ganzzahl, editierbar: true),
                             new BrowserDetailfeld(FeldRuecklauf,    t("KBROW_LBL_RUECKLAUF"), "°C",
                                                   BrowserFeldArt.Ganzzahl, editierbar: true),
+                            new BrowserDetailfeld(FeldRuecklaufMax, t("BHKWK_LBL_RUECKLAUF_MAX"), "°C",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
 
                             // Der volle Satz (15.09.2026): Technik, Kosten, Emissionen.
                             new BrowserDetailfeld(FeldBrennstoff,   t("BHKWK_LBL_ENERGIETRAEGER"), "",
@@ -516,6 +585,23 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldWirkungsgrad, t("BHKWK_LBL_WIRKUNGSGRAD"), "",
                                                   BrowserFeldArt.Zahl),
+
+                            // Teillast und Takten (Welle M4: BH1, BH2). Leer heisst hier NICHT 0,
+                            // sondern „Volllastwert" bzw. „kein Takten" - der Speicherweg schreibt
+                            // ein leeres Feld als NULL (BHKWStammCtrl.FelderUebernehmen).
+                            new BrowserDetailfeld(FeldTeillastEl50, t("BHKWK_LBL_ETA_EL50"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldTeillastTh50, t("BHKWK_LBL_ETA_TH50"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldAnfahrverlust, t("BHKWK_LBL_ANFAHRVERLUST"), "kWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+                            new BrowserDetailfeld(FeldMindestlaufzeit, t("BHKWK_LBL_MINDESTLAUFZEIT"), "min",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_LEER_VORGABE")),
+
                             new BrowserDetailfeld(FeldMotortyp,     t("BHKWK_LBL_MOTORTYP"), "",
                                                   BrowserFeldArt.Text, editierbar: true),
                             new BrowserDetailfeld(FeldRaumbedarf,   t("BHKWK_LBL_RAUMBEDARF"), "m³",
@@ -574,6 +660,7 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         HilfeSchluessel = "Form_SolarKollektorenAdmin.btn_Help",
                         BerechnungsSchluessel = "Form_SolarKollektorenAdmin.Berechnung",
+                        GrundlagenSchluessel = "Form_SolarKollektorenAdmin.Grundlagen",
                         BerechnungsSeite = "Solarthermie",
                         Titel = t("KBROW_TITEL_SOLAR"),
                         Listenbeschriftung = t("KBROW_LISTE_SOLAR"),
@@ -607,9 +694,15 @@ namespace WindowsFormsApplication1
                             new BrowserDetailfeld(FeldAperturflaeche, t("KBROW_LBL_APERTURFLAECHE"), "m²",
                                                   BrowserFeldArt.Zahl, editierbar: true),
 
+                            // ST6 (Welle M2): auf welche Fläche η₀, a₁, a₂ bezogen sind - die
+                            // Fläche, mit der die Simulation rechnet.
+                            new BrowserDetailfeld(FeldBezugsflaeche, t("KBROW_LBL_BEZUGSFLAECHE"), "",
+                                                  BrowserFeldArt.Text, editierbar: true,
+                                                  hinweis: t("KBROW_HINT_BEZUGSFLAECHE")),
+
                             // Der volle Satz (15.09.2026): die Kennlinie und der Preis.
-                            // Kdfu heisst im Editor „Kdiff" und hat im Rechenweg keinen
-                            // Leser (ParameterVerwendung); gepflegt wird er trotzdem.
+                            // Kdfu heisst im Editor „Kdiff" und korrigiert die Diffus- und
+                            // Bodenreflexstrahlung (Welle M2 ST5); 0 = Faktor der Direktstrahlung.
                             new BrowserDetailfeld(FeldH0,   "h0:",   "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldK1,   "k1:",   "W/(m²*K)",
@@ -618,7 +711,7 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldKdir, "Kdir:", "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldKdiff, "Kdiff:", "50°",
+                            new BrowserDetailfeld(FeldKdiff, "Kdiff:", "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
                                                   BrowserFeldArt.Zahl, editierbar: true)
@@ -635,6 +728,7 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         HilfeSchluessel = "Form_PufferSp_Admin.btn_Help",
                         BerechnungsSchluessel = "Form_PufferSp_Admin.Berechnung",
+                        GrundlagenSchluessel = "Form_PufferSp_Admin.Grundlagen",
                         BerechnungsSeite = "Pufferspeicher",
                         Titel = t("KBROW_TITEL_PUFFERSP"),
                         Listenbeschriftung = t("KBROW_LISTE_PUFFERSP"),

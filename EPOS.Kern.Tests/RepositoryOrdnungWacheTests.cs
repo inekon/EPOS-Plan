@@ -79,6 +79,20 @@ namespace EPOS.Kern.Tests
         private const string NurDateisystemAusgenommenerPfad = "Referenzlaeufe/Arbeitskopie";
 
         /// <summary>
+        /// Die eine erlaubte Stelle unter <c>.claude</c>: die Agentendefinitionen der Sitzungen
+        /// unter <c>.claude/agents/</c> sind versioniert (Cloud-Sitzungen, Anwenderentscheid
+        /// vom 27.09.2026); die <c>.gitignore</c> nimmt nur diesen Ordner aus. Worktrees,
+        /// lokale Einstellungen und alles andere unter <c>.claude</c> bleiben außen vor.
+        /// </summary>
+        private const string ErlaubterClaudeOrdner = ".claude/agents";
+
+        /// <summary>Wahr für <c>.claude</c> selbst, <c>.claude/agents</c> und alles darunter.</summary>
+        private static bool IstVersionierteAgentendefinition(string pfad) =>
+            pfad == ".claude"
+            || pfad == ErlaubterClaudeOrdner
+            || pfad.StartsWith(ErlaubterClaudeOrdner + "/", StringComparison.Ordinal);
+
+        /// <summary>
         /// Die verbotenen Dateimuster — Sicherungskopien von Quelltexten und
         /// Datenbankdateien. Je Muster ein Name für die Meldung.
         /// </summary>
@@ -122,6 +136,26 @@ namespace EPOS.Kern.Tests
                 "(DB-Backup) sind beide mit #242 entfernt worden - kommt einer zurueck, " +
                 "hat ihn ein Merge oder Sync wieder hereingezogen:\n" +
                 string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// Kein Vorlagenordner der Anwendung in der Repowurzel. <c>Berichtsvorlagen/</c> samt
+        /// <c>Mitgeliefert/</c> und <c>.berichtsvorlagen.json</c> legt das Programm zur Laufzeit
+        /// an (<c>BerichtsvorlagenCtrl</c>); ein Programmstart mit dem Repo als Vorlagenordner
+        /// hat ihn einmal über einen Sync hereingebracht. Er steht in <c>.gitignore</c>; die
+        /// mitgelieferten Vorlagen liegen unter <c>WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/</c>.
+        /// </summary>
+        [Fact]
+        public void Kein_Vorlagenordner_der_Anwendung_in_der_Repowurzel()
+        {
+            List<string> funde = Bestand().Dateien
+                .Where(d => d.StartsWith("Berichtsvorlagen/", StringComparison.Ordinal))
+                .ToList();
+
+            Assert.True(funde.Count == 0,
+                "Der Vorlagenordner der Anwendung gehoert nicht ins Repository - er entsteht " +
+                "zur Laufzeit und steht in .gitignore. Mit 'git rm -r --cached Berichtsvorlagen' " +
+                "entfernen:\n" + string.Join("\n", funde));
         }
 
         /// <summary><c>*.sqlite</c> nur auf der Weißliste — die Testdatenbank.</summary>
@@ -285,6 +319,8 @@ namespace EPOS.Kern.Tests
             NormzahlenOrdner + "/probe.xlsx",
             NormzahlenOrdner + "/din4708/probe.xlsx",
             NormzahlenOrdner + "/zapfprofil/LIESMICH.md",
+            // Die gefüllte Kopie der Paketvorlage A100 (ZU24): lokal zum Prüfen, nie versioniert.
+            NormzahlenOrdner + "/Katalogpaket_A100/Tab_TwwNutzungsart_STAMM.csv",
         };
 
         /// <summary>Alle Pfade unter dem Normzahlenordner außer dem <c>LIESMICH.md</c>.</summary>
@@ -528,10 +564,13 @@ namespace EPOS.Kern.Tests
                             .Concat(NurDateisystemAusgenommeneOrdnernamen)
                             .ToArray();
 
+            // Ausnahme: die versionierten Agentendefinitionen unter .claude/agents/ — ein Ordner
+            // .claude/worktrees/… oder eine andere Datei unter .claude bleibt verboten.
             bool Verboten(string pfad) =>
-                pfad.Split('/').Any(teil => tabu.Contains(teil, StringComparer.OrdinalIgnoreCase))
-                || pfad == NurDateisystemAusgenommenerPfad
-                || pfad.StartsWith(NurDateisystemAusgenommenerPfad + "/", StringComparison.Ordinal);
+                !IstVersionierteAgentendefinition(pfad)
+                && (pfad.Split('/').Any(teil => tabu.Contains(teil, StringComparer.OrdinalIgnoreCase))
+                    || pfad == NurDateisystemAusgenommenerPfad
+                    || pfad.StartsWith(NurDateisystemAusgenommenerPfad + "/", StringComparison.Ordinal));
 
             Assert.DoesNotContain(dateien, Verboten);
             Assert.DoesNotContain(ordner, Verboten);

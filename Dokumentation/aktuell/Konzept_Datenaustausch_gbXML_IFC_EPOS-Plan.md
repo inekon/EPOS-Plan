@@ -2,6 +2,13 @@
 
 **Rev. 2 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
 
+> **Nachgezogen 04.10.2026 mit G7c und G7d:** G7c (IFC-Export S1, 6.3 und 6.5) ist gebaut (Statuszeile #710), G7d
+> (Round-Trip-Anreicherung, 6.6) ist gebaut (#711); die Abweichungen von G7d stehen in 6.6 („So gebaut“), der Stand der
+> Probe 13 in Kapitel 9.
+
+> **Nachgezogen 04.10.2026 mit G7b:** Stufe 2 des gbXML-Exports ist gebaut und freigegeben; die Abweichungen von
+> den Regeln der Planung stehen in 5.5 („So gebaut“) und 5.6, der Stand der Proben in 14.5.
+
 > **Was Rev. 2 ändert:** 7.4 nennt keine festen Schrittnummern mehr — die Gebäudespalten-Schritte
 > tragen die Papiernamen **M3** und **M4**, der Zielstand wird an `SchemaStand.Zielversion`
 > abgelesen; sonst bleibt der Stand der Rev. 1.
@@ -760,6 +767,8 @@ Der IFC-Import steht vollständig im Umsetzungskonzept (Kapitel 3, Stufe G4a) un
 Mehrzonenkonzept (Kapitel 6, Stufe G6c). Hier stehen **vier Ergänzungen**, die erst der
 Datenaustausch braucht — sonst nichts.
 
+**Kopf und Schema (Welle CV, 09.10.2026).** Der Import liest und zeigt die Modellansicht (MVD) aus `FILE_DESCRIPTION` (`IfcModellansicht`; ohne Schemaschritt, im Abbild unter `Modellansichten`, als erste Protokollzeile und im Dialogkopf unter „Schema“). Fehlen Raumgrenzen 2. Ebene und Basismengen, weist der Import auf den Körperweg und die Exporteinstellung hin und empfiehlt IFC4; bei IFC2x3 nennt der Hinweis die nicht gelesenen Stoffwerte und die Rückgabe, die IFC4 braucht. Messbefund eines Prüfplans an Exporten desselben Projekts als IFC4 und als IFC2x3 (Coordination View 2.0) aus demselben CAD-Programm: Beide tragen keine MVD-Angabe und sind in Geometrie, Mengensätzen, Schichten, U-Werten, Öffnungen und Räumen gleich gebaut; im Diagnose-Import unterscheiden sich 5 von 92 Zeilen, allein bei den Stoffwerten (bei IFC2x3 nicht gelesen, mehr Ersatzaufbauten, keine U-Wert-Plausibilisierung gegen die Schichten). Der Halbraumschnitt für Clipping-Körper ist zurückgestellt, bis eine Datei mit Clipping vorliegt; der Export bleibt unverändert (6.2).
+
 | # | Ergänzung | Grund | Stufe |
 |---|---|---|---|
 | **1** | **Persistenz der Zuordnung.** Nach dem OK schreibt der Ablauf eine Zeile in `Tab_Importquelle` und je zugeordnetem Objekt eine in `Tab_Importzuordnung` (Kapitel 7) | Voraussetzung für den Round-Trip G7d (Befund S, 6, Nr. 6) und für die Auskunft „aus welcher Datei stammt diese Zahl" | **G4a** — nicht später, sonst fehlt die Zuordnung für alle vorher importierten Gebäude |
@@ -902,7 +911,7 @@ mit dem U dieses Falls; R_si und R_se kommen aus Neigung und Randbedingung des B
 Bauteil neben einem Aufbau hat im Lauf Vorrang — er wird gemeldet und ist benannter Verlust.
 **Ersatzschichtung mit Bändern:** Die Ersatzschicht trägt U und die flächenbezogene Kapazität κ, mit der
 die Gruppe im Lauf rechnet (Außen- oder Innengruppe, aus `ErsatzparameterRC`); mit c = 1 000 J/(kgK) und
-R = 1/U − R_si − R_se gilt d ∈ [λ_min·R, λ_max·R] ∩ [κ/(ρ_max·c), κ/(ρ_min·c)] ∩ [0,001 m; 1,0 m],
+R = 1/U − R_si − R_se gilt d ∈ [λ_min·R, λ_max·R] ∩ [κ/(ρ_max·c), κ/(ρ_min·c)] ∩ [0,0005 m; 1,0 m],
 bevorzugt die Dicke zu ρ = 1 500 kg/m³, dann λ = d/R und ρ = κ/(d·c). Ein leerer Schnitt, R ≤ 0 oder
 κ = 0 ergibt einen masselosen Stoff mit Meldung. Der Vorbehalt „trifft U-Wert und Gesamtwärmekapazität,
 nicht die Lage der Masse" steht **wörtlich** in `Construction/Description`, im Namen des Stoffs und in der
@@ -1010,6 +1019,21 @@ echte Raumgeometrie, jede Tageslichtrechnung.
 Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie ist
 schematisch erzeugt und bildet den tatsächlichen Grundriss nicht ab."*
 
+**So gebaut (G7b, 04.10.2026).** Der Kern legt die Zonen an, `Zonenkoerper` bildet je schematischem Raum das
+Prisma, `GbxmlSchreiber` schreibt `PolyLoop`, `ShellGeometry` und die Öffnungen. Abweichungen von den Regeln oben:
+
+- **Widerspruch → Stufe 1 statt Einzonenmodell.** Ist die Anordnung widersprüchlich (Überlappung, nicht
+  deckungsgleiche Kante), bleibt dieselbe Datei auf Stufe 1 ohne Raumgeometrie, mit `GEXP_DATEI_GEOMETRIE_ABGELEHNT`
+  und Planwarnung; Punkt 3 wollte nur das Einzonenmodell exportieren.
+- **Keine Drehung.** Der Nachzug der Nachbarpaare dreht keine Räume; ein Paar, dessen Trennwand bei beiden Räumen auf
+  derselben Himmelsseite liegt, wird nicht angelegt und mit `ZGEO_NICHT_ANGELEGT` gemeldet.
+- **Nicht gebaut:** Dachschrägen (Punkt 5; Dächer liegen waagerecht, die Neigung steht in `RectangularGeometry`) und
+  `SurfaceReferenceLocation` (Punkt 7).
+- **`Results`** werden erst geschrieben, wenn der Exportweg Jahresergebnisse je Zone liefert (G7c Teil 2).
+- Die Kennzeichnung „schematisch“ steht nur mit Körper an drei Stellen (`Campus/Description`, `Building/Description`,
+  Planmeldung `GEXP_PROT_GEOMETRIE_SCHEMATISCH`, vom Dialog bestätigt). `GbxmlExportFreigegeben` ist dauerhaft an
+  (F1, D2).
+
 ### 5.6 `Results` — technisch möglich, praktisch fragwürdig
 
 gbXML hat Ergebnisfelder: `resultsTypeEnum` enthält `HeatLoad`, `CoolingLoad`, `Energy`, `Power`,
@@ -1031,6 +1055,10 @@ gewünschte Wert (etwa kWh) dort nicht enthalten, wird in der zulässigen Einhei
 Umrechnung im Text genannt. **Findet sich für eine Ergebnisgröße überhaupt kein zulässiger Wert,
 entfällt ihr `Results`-Block benannt** — „`Results` schreiben" und „fehlerfrei validieren" (Probe 3)
 sind sonst nicht beide zu haben.
+
+**So gebaut (G7b, 04.10.2026).** Einheiten: `Energy` in `KilowattHours`, `HeatLoad` in `Watt`,
+`DryBulbTemperature` in `C`; `resourceType="HotWater"` ist ein Pflichtwert des Schemas, `valueType="Simulated"`.
+Geschrieben wird erst mit Jahresergebnissen je Zone (G7c Teil 2).
 
 ---
 
@@ -1067,6 +1095,8 @@ Anwender; fällig ist das vor der Stufe, die über die semantische hinausgeht (1
 
 ### 6.3 Stufe G7c (S1) — der semantische Export
 
+*Gebaut 04.10.2026 (G7c, Statuszeile #710); Protokoll [`2026-10-04_G7c_IFC-Export_S1.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_G7c_IFC-Export_S1.md).*
+
 Grundlage ist die Abbildungstabelle aus Befund S, 5; hier auf die Tabellen des Mehrzonenkonzepts
 (4.2) bezogen.
 
@@ -1077,6 +1107,8 @@ Grundlage ist die Abbildungstabelle aus Befund S, 5; hier auf die Tabellen des M
 | `Tab_Gebaeude` | `IfcBuilding` | `Pset_BuildingCommon.YearOfConstruction` (Text!) als Bandmitte, `EPOS_Gebaeude.Baualtersklasse` mit dem Klassennamen, `EPOS_Ergebnis` mit den Summen |
 | `Tab_Zone` | `IfcSpace` (`PredefinedType = SPACE`) | `Qto_SpaceBaseQuantities`: `NetFloorArea` ← `Nutzflaeche`, `Height` ← `Raumhoehe`, `NetVolume` ← `Volumen`. `Pset_SpaceThermalRequirements`: `SpaceTemperature` ← `Raumsolltemperatur_Tag`, `SpaceTemperatureSummerMax` ← `Maximaleraumtemperatur`, `DiscontinuedHeating` ← Nachtabsenkung gesetzt, `NaturalVentilationRate` ← `Luftwechsel_Nutzer`. `LongName` = Zonenname |
 | `Tab_Zone.IstBeheizt = 0` | `IfcSpace` ohne `Pset_SpaceThermalRequirements` | `EPOS_Zone.IstBeheizt = FALSE` |
+| Nutzung und Matrixzellen der Zone | `IfcSpace`, Satz `EPOS_Zone` | `Nutzung` (`IfcLabel`, freier Text, E90; ohne Nutzung fehlt sie), `Heizsollwert_Tag` ← `Raumsolltemperatur_Tag`, `Heizsollwert_Nacht` ← `Raumsolltemperatur_Nachtabsenkung` (nur > 0), `Kuehlsollwert` ← `Kuehl_Sollwert` (Temperatur in Kelvin wie oben), `Luftwechsel_Nutzer` ← `Luftwechsel_Nutzer` (`IfcReal`, 1/h im `Description`) — je Zelle Zone vor Gebäude, wie die Zone rechnet. Der Klassenweg hat keine Zone und schreibt sie nicht; ohne Zone bleibt die Datei byte-gleich |
+| Konditionierungskalender der Zone | `IfcSpace`, je Größe ein Satz `EPOS_Kalender_<Größe>` (HEIZSOLL, KUEHLSOLL, LUEFTUNG, GERAETE, PERSONEN) | genau eine Grundangabe: `Grundwert` (Temperatur bzw. `IfcReal` in 1/h oder Anteil 0 … 1), `Aus` (`IfcBoolean` TRUE) oder `Woche` (`IfcText`, die 168 Zellen wie in der Datenbank, Montag 0 Uhr zuerst, „aus“ = abgeschaltet); dazu `Nennwert_W` (`IfcPowerMeasure`), `Bemerkung` (Herkunft und Vermerk) und je Periode `Periode_<Rang>` (`IfcText`) im festen Format `Art;Beginn;Ende;Feiertagsregel;Angabe` — Tage 1 … 365 (0 bei einer Feiertagsregel), Feiertagsregel leer bei einem Zeitraum, Angabe `wert=<Zahl>`, `aus`, `woche=<168 Zellen>` oder `wochentag=<1 … 7>`, Zahlen in invarianter Kultur; der Bezeichner der Periode steht im `Description`. Eine Zone ohne Kalender trägt keinen Satz. Der Beipackzettel nennt die Sätze (`GEXP_PROT_BEIPACK_KONDITIONIERUNG`) |
 | mehrere Zonen | zusätzlich `IfcZone` + `IfcRelAssignsToGroup` | im **Einzonenfall weglassen** — eine Gruppe mit einem Element ist Rauschen |
 | `Tab_Bauteil` AUSSENWAND/INNENWAND | `IfcWall` | `Pset_WallCommon.ThermalTransmittance` ← `U_Wert`, `.IsExternal`; `Qto_WallBaseQuantities.GrossSideArea` ← `Flaeche` |
 | DACH | `IfcSlab` `PredefinedType = ROOF` (bzw. `IfcRoof`) | `Qto_SlabBaseQuantities.GrossArea` |
@@ -1187,6 +1219,8 @@ auch diese Zusage.
 
 ### 6.5 Der Produktausweis in der Datei
 
+*Mit G7c gebaut (04.10.2026): `EPOS_Rechenlauf` trägt den Ausweis, die Beipackzettel-Meldungen stehen vor dem Schreiben.*
+
 `EPOS_Rechenlauf.Validierung` trägt den Wortlaut aus **E10**, unverändert und ohne Umschreibung:
 
 > „Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich
@@ -1253,6 +1287,17 @@ Vorhandene `GlobalId`-Werte sind gewöhnliche Attribute und werden unverändert 
 GUID-Stabilität für Bestandsentitäten ist kostenlos. Nur die **neuen** Entitäten (Eigenschaftssätze,
 Beziehungen) brauchen die eigene Erzeugungsfunktion aus 6.4.
 
+**So gebaut (G7d, 04.10.2026).** `IfcAnreicherung` (`EPOS.Kern/Allgemein/Export/Ifc/`) setzt 6.6 um; Schnittstelle in
+`GebaeudeExportAblauf` (`Dateivorschlag`, `AnreicherungsQuelle`, `AnreicherungVorschau`, `Anreichern`), im Exportdialog die
+Wahl „Originaldatei anreichern“ nur für ein Gebäude mit IFC-Importquelle. Entscheide der Orchestrierung: (1) Der Validator
+läuft vor und nach dem Eingriff; **nur neue Verstöße brechen ab**, Altlasten der Datei erscheinen als Info
+`VERSTOESSE_VORHER`. (2) **Nur STEP**: ifcXML und ifcZIP werden benannt verweigert (`NUR_STEP`) mit dem Angebot einer
+eigenen Datei nach G7c. (3) Bei einer **geteilten Zone** steht das Raumergebnis nur am Gebäude (`ERGEBNIS_GETEILT`), am
+Raum nur, wenn er als einziger seiner Zone zugeordnet ist. Dazu: ein Kopf mit anderem Schema wird verweigert, der
+Beipackzettel D11 ist eine eigene Bestätigung im Dialog, Vorschlag des Dateinamens `<name>_EPOS.ifc`, nie der Originalname.
+Offen: iOS-Dateiwähler mit IFC-Filter auf einem Gerät, keine Größengrenze der Originaldatei. Protokoll:
+[`2026-10-04_G7d_IFC_Round-Trip.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_G7d_IFC_Round-Trip.md).
+
 ### 6.7 Stufe G7e (S3) — schematische Körper
 
 Der Quader über einem Rechteckprofil braucht vier Entitäten und **keine boolesche Operation**:
@@ -1286,6 +1331,8 @@ Prüfbilder aus mindestens zwei Betrachtern.
 
 **S3 kauft Anschaulichkeit und bezahlt mit Verwechslungsgefahr.** Es lohnt erst, wenn im Feld
 tatsächlich jemand die Datei in einem Betrachter erwartet.
+
+**So gebaut (G7e, 04.10.2026).** `IfcKoerper` und `IfcSchreiber` (`EPOS.Kern/Allgemein/Export/Ifc/`) setzen 6.7 um; Körper entstehen nur, wenn das Zonengeometrie-Modell schematische Rechtecke liefert (gleiche Regel wie gbXML Stufe 2), bei abgelehnter Anordnung steht S1 ohne Körper mit Vermerk, ohne Umriss S1 ohne Vermerk; im Dialog gibt es keinen Schalter (Entscheid der Orchestrierung). **Abweichung von oben:** Der Azimut steht nicht in der Drehung des Placements; jedes `IfcProduct` trägt einen `IfcLocalPlacement` auf einer gemeinsamen `IfcAxis2Placement3D` im Ursprung ohne Drehung, Lage und Richtung stehen allein in der `Position` des Körpers, die Koordinaten des Modells bleiben unverändert — so liest der eigene Leser dieselben Azimute wie in S1 (Entscheid der Orchestrierung). Platten: Wand, Boden und Decke 0,1 m nach außen (rechteckig `IfcRectangleProfileDef`, sonst `IfcArbitraryClosedProfileDef` mit `IfcPolyline`); Fenster und Türen 0,05 m dick, 0,1 m vor der Wand, nichts ausgeschnitten, das geometrielose `IfcOpeningElement` bleibt. Kennzeichnung an vier Stellen (Projektname, `FILE_DESCRIPTION`, `Description` je Produkt, `IfcAnnotation`). Protokoll: [`2026-10-04_G7e_IFC_Koerper.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_G7e_IFC_Koerper.md).
 
 ---
 
@@ -1567,7 +1614,7 @@ Geschmacksfrage, und sie steht an drei Stellen:
 | 10 | **IFC-Export: `ExpressValidation.Validator`** | leere Verstoßliste vor `SaveAsStep21`; eine künstlich entfernte `GlobalId` wird gemeldet |
 | 11 | **Determinismus der Kennungen** | zweiter Export desselben Projekts liefert **byte-gleiche** `GlobalId` an **jeder `IfcRoot`-Instanz** — Objekte, Eigenschaftssätze, Mengen, Beziehungen, Raumgrenzen (6.4, Rollenglied) — und dieselben gbXML-`id`; ein dupliziertes Projekt liefert andere. Dazu feste Prüfwerte für die selbstgeschriebene RFC-4122-Version-5-Ableitung |
 | 12 | **Determinismus der Datei** | zweimal exportieren ergibt byte-gleiche Dateien **außer** dem Zeitstempel, und der steht an genau einer Stelle |
-| 13 | **Round-Trip-Sperre** | drei Fälle, je benannte Verweigerung mit Angebot einer eigenen Datei nach G7c: `Tab_Importquelle.FehlendeEntitaeten > 0` (beide Verlustkanäle, 6.6 Nr. 2); **Hash der erneut gewählten Datei ≠ `Tab_Importquelle.Hash`** (6.6 Nr. 1); **`Schemastand ≠ 'IFC4'`** (6.6, Einleitung). Dazu der Wächtertest, dass der Import nie `ignoreTypes`/`SkipTypes` setzt |
+| 13 | **Round-Trip-Sperre** | drei Fälle, je benannte Verweigerung mit Angebot einer eigenen Datei nach G7c: `Tab_Importquelle.FehlendeEntitaeten > 0` (beide Verlustkanäle, 6.6 Nr. 2); **Hash der erneut gewählten Datei ≠ `Tab_Importquelle.Hash`** (6.6 Nr. 1); **`Schemastand ≠ 'IFC4'`** (6.6, Einleitung). Dazu der Wächtertest, dass der Import nie `ignoreTypes`/`SkipTypes` setzt (**grün, G7d**: `IfcAnreicherungTests` 22, Wächter in `IfcImportTests` auch über `Export/Ifc/*.cs`) |
 | 14 | **Persistenz** | nach dem Import findet ein Test **Gebäude und Zone** über `Tab_Importzuordnung.Quellkennung` wieder; **nach einem gewöhnlichen Speichern des Gebäudes stehen Quelle und Zuordnung unverändert** (Kaskadenfalle, Kapitel 7); erst nach dem **Löschen** des Gebäudes sind beide Tabellen leer. (Umgesetzt in `GebaeudeImportCtrlTests`, dazu: das Entfernen eines Ziels löscht genau dessen Paarung, das Löschen des Projekts leert beide Tabellen; Protokoll G4 Abschnitt 4) |
 | 15 | **bSI-Validierungsdienst** | von Hand, je Stufe einmal (S1 und S3); das Ergebnis wird protokolliert. Der Dienst prüft ausdrücklich **keine** Darstellung — eine geometrielose Datei kann dort vollständig bestehen |
 | 16 | **Betrachter-Prüfmatrix** | rund 1 PT: eine geometrielose EPOS-Testdatei durch Archicad, Revit, Solibri, BIMcollab Zoom, FZKViewer, BIMvision schicken und protokollieren, **was öffnet, was anzeigt, was meldet**. Die veröffentlichte Quellenlage reicht dafür nicht (Befund S, 1.8); **erst dieses Ergebnis trägt die Aussage in 6.1** |
@@ -1617,12 +1664,13 @@ Rückfrage beim Anwender; G4c wird ohne iOS-Lauf abgenommen.
 |---|---|---|---|
 | **G4c — gbXML-Import** | Lesemodell (`GbXmlDatei`, `GbXmlEinheiten`, `GbXmlModell`), Einheiten global und lokal, Aggregation auf das Gebäudemodell, Nachbarschaftsauflösung, Fensterabzug, Aufbauprüfung je Aufbau, **Zonenregel X4** (X1…X3 mit G6c, 3.3), Meldungen in beiden `.resx`, Anschluss an den gemeinsamen Zuordnungsdialog — **dazu die Persistenz** (Kapitel 7: Schemaschritt S-F, zwei Tabellen, `ImportzuordnungSchema.cs`, Registerpflege, Reduzierskript, Auslieferungsvorlage, Umbenennungen `IfcGuid` → `Quellkennung` und `IfcHerkunft` → `Importherkunft`) | Proben 1, 5–9, 14, 21, 24; Referenzlauf unverändert; Windows-Sichtabnahme. **Stand 25.09.2026:** gebaut und im Gebäudedialog angebunden (`GbxmlLeser`, `GbxmlEinheiten`, `GbxmlAbbild`, Schemaschritt 138), mit G4a auch der IFC-Weg; Proben 4–9, 14, 21 und 24 grün, Referenzlauf 13/13 byte-gleich, Probe 1 kommt mit G7a; offen die Windows-Sichtabnahme ([Protokoll G4](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md)) | **17–28 PT** |
 | **G7a — gbXML-Export Stufe 1** | `GebaeudeExportAblauf`/`-Profil` (Ordner `Export/Gebaeude/`, Schreiber in `Export/Gbxml/`), Wurzelattribute mit `version="6.01"`, `Campus`/`Building`/`Location`/`Space`/`Zone`/`Surface` mit `RectangularGeometry`/`Opening`, vollständige `Construction`-Kette mit **Schichtumkehr**, **Ersatzschichtung samt Kennzeichnung** (5.3), deterministische Kennungen, XSD-Prüfung im Test | Proben 1, 3, 11, 12. **Stand 26.09.2026:** nach E48 vorab gebaut, hinter dem Freigabeschalter, ausgeliefert erst mit G7b; Proben 1, 3, 11 und 12 grün, Referenzlauf 14/14 byte-gleich; offen die Windows-Sichtabnahme ([Protokoll G7a](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G7a_gbXML-Export.md)) | **9–14 PT** |
-| **G7b — gbXML Stufe 2** | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
-| **G7c — IFC-Export S1** | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |
-| **G7d — IFC-Export S2 (Round-Trip)** | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
-| **G7e — IFC-Export S3 (Körper)** | Quader je Zone, Platte je Bauteil **aus dem Zonengeometrie-Modell** (Nachtrag 1), Placement-Kette, Azimut als Drehung, `TrueNorth` auf der Vorgabe, Kennzeichnung, Prüfbilder | Probe 16 mit Bildern; Validator grün trotz Placement-Pflicht | **8–15 PT** † |
+| **G7b — gbXML Stufe 2** (**gebaut 04.10.2026**) | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
+| **G7c — IFC-Export S1** (**gebaut 04.10.2026**) | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |
+| **G7d — IFC-Export S2 (Round-Trip)** (**gebaut 04.10.2026**) | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
+| **G7e — IFC-Export S3 (Körper)** (**gebaut 04.10.2026**) | Quader je Zone, Platte je Bauteil **aus dem Zonengeometrie-Modell** (Nachtrag 1), Placement-Kette, Azimut als Drehung, `TrueNorth` auf der Vorgabe, Kennzeichnung, Prüfbilder | Probe 16 mit Bildern; Validator grün trotz Placement-Pflicht | **8–15 PT** † |
 | **Gebäudebetrachter (E11)** | Zonengeometrie-Modell im Kern (Polygon, Höhe, Geschoss, Kantenzuordnung), **2D-Grundriss je Geschoss mit G6c**, **3D-Ansicht mit G7b** — eine Komponente, Umschalter „Grundriss \| Körper", three.js lokal, Kennzeichnung „schematisch" (Kapitel 14) | Proben 25–27; Sichtabnahme Windows und iOS | **10–17 PT**, davon **4–7 PT hier** (3D-Ansicht); Zonengeometrie und 2D-Grundriss (**6–10 PT**) rechnet das [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) unter G6c |
-| | **Summe G7** (einschließlich der 3D-Ansicht aus E11) | | **46–79 PT** |
+| **G7f — Raumkörper aus der IFC-Datei (E71)** (Konzept, Reihenfolge offen) | Kern-Leser der Raumdarstellungen ohne Geometriekern (Extrusion, Tessellation, BRep, `IfcMappedItem`, Placement-Kette), `Raumumriss.Koerper`, Ansicht mit Umschalter „Dateikörper \| Exportmodell“, Kennzeichen je Raum, Dreiecksgrenze; Exporte unverändert (Kapitel 15) | Proben 28–31 | **4–6 PT** (nicht in der Summe G7) |
+| | **Summe G7** (einschließlich der 3D-Ansicht aus E11; alle Stufen gebaut) | | **46–79 PT** |
 | | **Summe G4c + G7** | | **63–107 PT** |
 
 † **Ersparnis durch E11:** G7b und G7e rechnen die Geometrie nicht mehr selbst, sondern schreiben das
@@ -1683,6 +1731,13 @@ für G4c noch die kleinere Zahl; sie ist dort nachzuziehen.
    nachzurüsten hieße, für alle vorher importierten Gebäude keine Zuordnung zu haben.
 
 ---
+
+**Logbuch-Entwurf G7b:** „Der Gebäudeexport nach gbXML ist freigegeben und schreibt eine schematische Geometrie; der
+Zuordnungsdialog des Gebäudeimports zeigt die Zonen als Körper.“ Version vom Anwender: offen.
+
+**Logbuch-Entwurf G7d:** „Der Gebäudeexport schreibt wahlweise IFC; eine beim Import gelesene IFC-Datei lässt sich mit den Kennwerten und Ergebnissen aus EPOS-Plan angereichert zurückgeben.“ Version vom Anwender: offen.
+
+**Logbuch-Entwurf G7e:** „Die IFC-Datei des Gebäudeexports zeigt die Zonen als schematische Körper, gekennzeichnet in Datei und Dialog.“ Version vom Anwender: offen.
 
 ## 11. Fragen mit Empfehlung
 
@@ -1815,6 +1870,9 @@ Architekturpapier — es führt das Modell als `Zonengeometrie` mit `Zonenumriss
    10-%-Probe gegen die Nutzfläche und Rückfall auf das Quadrat.
 3. **Im Einzonenmodell** (E7) ist das ein Quader je Gebäude.
 
+Gebaut (#784): ohne Raumgrenzen der Grundriss je Raum aus dem Dateikörper, beim Import gespeichert —
+[HottCAD-Verbund Kapitel 11](Gebaeudesimulation/2026-10-05_Konzept_HottCAD_Verbund_IFC_Projektdatei_Viewer.md).
+
 Die **Anordnung** der Zonen zueinander folgt weiter 5.5, Punkt 3: keine Stapelung, Zonen mit
 gemeinsamer Trennfläche aneinandergelegt, sonst Reihung je Geschoss — und genau deshalb ist sie
 **erfunden**, solange keine Raumgrenzen vorliegen.
@@ -1844,6 +1902,10 @@ Verweis trägt das **Gegenstück der Datei** (`CorrespondingBoundary`), nicht da
 **Eine Komponente, ein Umschalter** „Grundriss \| Körper" (Arbeitsname `GebaeudeAnsicht.razor`) —
 nicht zwei Seiten, die auseinanderlaufen.
 
+### 14.2a Ort der Ansicht außerhalb des Imports (HC-4)
+
+Nach dem Import liegt die Ansicht im **Gebäudedialog**: Der Knopf „Datei erneut lesen…“ im Aktionsschlitz öffnet bei einer Projektkopie mit Importquelle die Überlagerung „Importdatei erneut lesen“. Die Geometrie wird nicht gespeichert (E87 F3); `Tab_Importquelle` hält nur den Dateinamen, nie den Pfad, samt Format, Hash, Größe und Zonenregel. Die Datei wählt der Anwender erneut; passt ihr SHA-256, liest der Kern sie auf dem Weg des Imports und zeigt die Ansicht in beiden Farbmodi, ohne etwas zu schreiben. Einzelheiten: [Protokoll HC-4](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-06_HC-4_Datei_erneut_lesen.md).
+
 ### 14.3 Was sich für G7b und G7e ändert
 
 - **G7b (gbXML Stufe 2)** liest Polygone und Höhen aus dem Zonengeometrie-Modell und schreibt sie
@@ -1853,7 +1915,7 @@ nicht zwei Seiten, die auseinanderlaufen.
 - **G7e (IFC-Export S3)** liest dasselbe Modell und schreibt `IfcRectangleProfileDef` →
   `IfcExtrudedAreaSolid` samt Placement-Kette (6.7). **Derselbe Grundriss, dieselbe Höhe, dieselbe
   Anordnung** wie in der 3D-Ansicht und im gbXML; ein Unterschied zwischen beiden Dateien ist damit
-  ein Fehler, keine Auslegung.
+  ein Fehler, keine Auslegung. **Gebaut (G7e, 04.10.2026):** G7b und G7e schreiben dieselbe Geometrie; Probe 27 ist auf beiden Dateien grün (`IfcKoerperTests`).
 - **Die Ansicht ist der Prüfstand.** Bisher war die Sichtprobe der Exporte ein fremdes Werkzeug
   (Probe 2, Probe 16). Mit der 3D-Ansicht sieht der Anwender **vor** dem Schreiben, was er
   verschickt.
@@ -1879,9 +1941,11 @@ nicht zwei Seiten, die auseinanderlaufen.
 
 | Nr. | Probe | Kriterium |
 |---|---|---|
-| 25 | **Determinismus der Geometrie** | Dieselbe Eingabe liefert dieselben Polygone (Koordinaten auf 1e‑6) und **byteweise gleiche** Exporte; die Probe läuft über das Modell, nicht über das Bild, und ergänzt die Proben 2 und 12 |
-| 26 | **Komponentenprobe** (bunit) | `GebaeudeAnsicht` zeichnet je Zone ein Polygon mit der Zonenfarbe, der Klick meldet die Zone an den Wirt, der Umschalter wechselt die Ansicht, die Kennzeichnung „schematisch" steht im gerenderten Baum; kein Anzeigetext ist Steuerwert |
-| 27 | **Ansicht und Datei zeigen dasselbe** | `PolyLoop` (G7b) und `IfcExtrudedAreaSolid` (G7e) werden **gegen das Zonengeometrie-Modell** gehalten, nicht gegeneinander; Abweichung ist ein Fehler |
+| 25 | **Determinismus der Geometrie** (grün, G7b) | Dieselbe Eingabe liefert dieselben Polygone (Koordinaten auf 1e‑6) und **byteweise gleiche** Exporte; die Probe läuft über das Modell, nicht über das Bild, und ergänzt die Proben 2 und 12 |
+| 26 | **Komponentenprobe** (bunit) (grün, G7b) | `GebaeudeAnsicht` zeichnet je Zone ein Polygon mit der Zonenfarbe, der Klick meldet die Zone an den Wirt, der Umschalter wechselt die Ansicht, die Kennzeichnung „schematisch" steht im gerenderten Baum; kein Anzeigetext ist Steuerwert |
+| 27 | **Ansicht und Datei zeigen dasselbe** (grün, G7b; `PolyLoop` gehalten) | `PolyLoop` (G7b) und `IfcExtrudedAreaSolid` (G7e) werden **gegen das Zonengeometrie-Modell** gehalten, nicht gegeneinander; Abweichung ist ein Fehler |
+
+**Offen:** die Sichtabnahme auf Windows und iOS (Reiter „Körper“, Drehen, Klick).
 
 ### 14.6 Was benannt abgelehnt ist
 
@@ -1891,7 +1955,469 @@ nicht zwei Seiten, die auseinanderlaufen.
 - **Die native xBIM Geometry Engine:** nur Windows, OCCT unter LGPL — gegen
   [`ADR-003`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) und gegen die Plattformfreiheit des Kerns.
 
-Beides bleibt eine **spätere Option nur bei Bedarf aus der Praxis** und ist nicht geplant. **„Datei
+Beides bleibt eine **spätere Option nur bei Bedarf aus der Praxis** und ist nicht geplant. Raumkörper ohne Kern: siehe Nachtrag 2 (Kapitel 15) — der Betrachter zeigt die Räume aus der Datei, nicht die Bauteile. **„Datei
 extern öffnen"** bleibt als Handgriff über `Dienste.Datei` zulässig — für den Anwender, der eine
 fremde IFC-Datei wirklich ansehen will, ist das der ehrlichere Weg als ein halber eigener
 Betrachter.
+
+---
+
+## 15. Nachtrag 2 — Raumkörper aus der IFC-Datei (E71, 04.10.2026)
+
+Der Anwender hat am 04.10.2026 festgelegt (**E71**, [Status](Status_Gebaeudesimulation_VDI6007.md)): Der
+IFC-Betrachter zeigt die **Geometrie der Räume und Zonen aus der Datei** — nicht Wände mit Dicke, nicht
+Öffnungen, nicht Dächer, nicht Bauteile. Dieser Nachtrag legt die Stufe **G7f** vor. Er ergänzt Kapitel 14 und
+lässt dessen Regeln, die Exporte (5.5, 6.7) und [`ADR-003`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) unberührt.
+
+### 15.1 Ziel und Abgrenzung
+
+| Gehört dazu | Gehört nicht dazu |
+|---|---|
+| die wirkliche Form jedes Raums: `IfcSpace`, Darstellung `RepresentationIdentifier = "Body"` | Bauteile (`IfcWall`, `IfcSlab`, `IfcRoof`, `IfcCovering` …), ihre Dicke und ihre Schichten |
+| daraus die Zone als Menge ihrer Raumkörper (Zuordnung wie im Grundriss, 14.1) | Öffnungen (`IfcOpeningElement`, `IfcWindow`, `IfcDoor`) und jede Ausschneidung |
+| Lage über die Placement-Kette in Weltkoordinaten, Längeneinheit der Datei | Rechnen mit dem Körper: Flächen, Volumen und Zonierung bleiben bei Raumgrenzen und Mengen (3.4, 14.1) — ausgenommen die Trennflächen zwischen Räumen einer Datei ohne Raumgrenzen, die aus gemeinsamen Flächen der Raumkörper kommen (Mehrzonenkonzept 6.2) |
+| Herkunft und Vereinfachung je Raum, sichtbar in der Ansicht | Reparatur: offene, überlappende oder verdrehte Netze werden gezeichnet, wie sie sind |
+| die Körper der Hüllbauteile (`IfcWall`, `IfcSlab`, `IfcRoof`, `IfcWindow`, `IfcDoor`) als Anzeige, mit gemeinsamer Dreiecksgrenze mit den Räumen (HottCAD-Verbund HC-1, #740) | der Bauteilkörper als Rechengröße: Dicke, Schichten und Flächen kommen weiter aus Mengen und Katalog |
+| die Hüllflächen der Raumkörper in acht Gruppen R0–R7 als Farbmodus „Randbedingung“ der Ansicht, mit Legende und Flächensummen (HottCAD-Verbund HC-2, #746) | die Gruppe als Rechengröße oder Persistenz: Anzeige am Abbild, die Berechnung liest sie nicht |
+| die Ansicht eines importierten Gebäudes erneut aus der Importdatei, nach Prüfung der Prüfsumme, im Gebäudedialog (HottCAD-Verbund HC-4, #754) | die Geometrie im Projekt: nichts wird gespeichert, der Zonenplan und die Zuordnung bleiben, wie sie sind |
+| Gebaut (#784): der Grundriss je Raum aus dem Dateikörper, gespeichert, als Prisma in Exportmodell und Exporten ([HottCAD-Verbund Kapitel 11](Gebaeudesimulation/2026-10-05_Konzept_HottCAD_Verbund_IFC_Projektdatei_Viewer.md)) | die Dreiecksnetze im Projekt und Dachschrägen im Export |
+
+**Die Datei bleibt Quelle.** Nichts am Körper wird gerechnet, geschlossen oder ausgeglichen; was der Leser nicht
+lesen kann, fällt benannt auf den Umriss zurück. **„Schematisch“ bleibt der benannte Rückfall** für jeden Raum ohne
+Dateikörper und ohne Raumgrenzen (14.4 Nr. 1). Der gbXML-Weg (`Space/ShellGeometry`) könnte dasselbe Modell speisen;
+er ist nicht Teil von G7f und bleibt ein eigener Zuruf.
+
+### 15.2 Was ohne Geometriekern lesbar ist
+
+Gelesen wird über die Schnittstellen `Xbim.Ifc4.Interfaces.IIfc*` — damit gilt jede Zeile für IFC2x3, IFC4 und
+IFC4x3, soweit das Schema die Entität kennt (Tessellation und `IfcIndexedPolyCurve` gibt es erst ab IFC4). Jeder
+Darstellungsträger (`IfcRepresentationItem`) ergibt ein Dreiecksnetz im System seines Raums; mehrere Träger einer
+Darstellung werden **aneinandergehängt, nicht vereinigt**.
+
+| Darstellungsart | Verfahren | Grenze |
+|---|---|---|
+| `IfcExtrudedAreaSolid` über `IfcRectangleProfileDef` | Rechteck um `Position` des Profils (2D) → Prisma längs `ExtrudedDirection` um `Depth`, dann `Position` des Körpers | exakt |
+| … über `IfcArbitraryClosedProfileDef` mit `IfcPolyline` | Ring der Punkte, Schlusspunkt entfernt, Deckflächen per Ohrenschnitt | exakt |
+| … mit `IfcIndexedPolyCurve` (`IfcLineIndex`, `IfcArcIndex`) oder `IfcCompositeCurve` (Segmente aus `IfcPolyline` und `IfcTrimmedCurve` über `IfcCircle`) | Bögen als Sehnenzug mit **fester Sehnenzahl** (Vorschlag: 32 je Vollkreis, je Bogen anteilig, mindestens 2) | Vermerk „vereinfacht (Bogen)“ |
+| … über `IfcCircleProfileDef` | Vieleck mit derselben festen Sehnenzahl | Vermerk „vereinfacht (Bogen)“ |
+| … über `IfcArbitraryProfileDefWithVoids` | Innenringe als Löcher: Ohrenschnitt mit Brückenkanten vom Loch zum Außenring | gelingt die Brücke nicht: nur der Außenring, Vermerk „vereinfacht (Loch)“ |
+| Richtung und Tiefe | `ExtrudedDirection` beliebig (schräges Prisma zulässig), `Depth` in Längeneinheit der Datei | — |
+| `IfcFacetedBrep` (`IfcClosedShell` aus `IfcFace` mit `IfcPolyLoop`) | je Fläche ein ebenes Vieleck, `IfcFaceOuterBound` und `IfcFaceBound` mit `Orientation`, Ohrenschnitt (Löcher wie oben) | nicht ebene Fläche: Fächer vom ersten Punkt, Vermerk „vereinfacht (uneben)“; `IfcFacetedBrepWithVoids`: nur die Außenschale, Vermerk |
+| `IfcShellBasedSurfaceModel`, `IfcFaceBasedSurfaceModel` | wie `IfcFacetedBrep`, auch mit `IfcOpenShell` | offene Schale wird gezeichnet, Vermerk „offen“ (15.6 Nr. 2) |
+| `IfcTriangulatedFaceSet` (IFC4) | `Coordinates` und `CoordIndex` direkt; Normalen aus den Dreiecken, nicht aus `Normals` | exakt |
+| `IfcPolygonalFaceSet` (IFC4) | je `IfcIndexedPolygonalFace(WithVoids)` Ohrenschnitt | wie BRep |
+| `IfcMappedItem` | `MappingSource` (`IfcRepresentationMap` samt `MappingOrigin`) über `MappingTarget` (`IfcCartesianTransformationOperator3D`, auch mit Maßstab und `…NonUniform`) abbilden | `IfcRahmen` bleibt maßstabfrei; der Maßstab steht eigens in der Abbildung |
+| `IfcBooleanClippingResult` (und allgemein `IfcBooleanResult`) | **nur der erste Operand**, rekursiv bis zu einem lesbaren Körper | Vermerk „ohne Beschnitt“ — der Körper kann über die Dachschräge hinausragen |
+| Placement-Kette | `IfcSpace.ObjectPlacement` über `IfcPlatzierung.Weltrahmen`, `Verketten`, `Abbilden` bis in Weltkoordinaten; Längeneinheit der Datei wie beim Import | `IfcGridPlacement`, `IfcLinearPlacement`: kein Körper, Rückfall (wie `IMP_IFC_PROT_PLATZIERUNGSART`) |
+| Nordrichtung | `TrueNorth` bzw. `IfcMapConversion` wie beim Import (`IfcPlatzierung`) — **nur für den Nordpfeil**; die Punkte bleiben im Modellsystem, so decken sich Körper und Grundriss (14.1) | — |
+
+**Benannt nicht lesbar** — Rückfall je Raum auf das Prisma aus dem Umriss der Raumgrenzen, ohne sie auf das
+schematische Rechteck, als Herkunft am Raum ausgewiesen:
+
+| Darstellungsart | Warum |
+|---|---|
+| `IfcAdvancedBrep` (NURBS- und B-Spline-Flächen) | braucht einen Flächenauswerter — das ist ein Geometriekern |
+| `IfcCsgSolid` (Primitive mit booleschen Bäumen) | boolesche Operation auf Körpern |
+| `IfcSweptDiskSolid` | Rohrkörper längs einer Raumkurve, für Räume ohne Gegenstand |
+| `IfcRevolvedAreaSolid` | Drehkörper mit gekrümmter Mantelfläche |
+| `IfcRoundedRectangleProfileDef` | Rechteck mit gerundeten Ecken, braucht eine Bogenzerlegung eigener Art |
+| `IfcRectangleHollowProfileDef`, `IfcCircleHollowProfileDef` | Hohlprofile, für Räume ohne Gegenstand |
+| `IfcExtrudedAreaSolidTapered`, `IfcSectionedSolid…` und jede übrige Art | ohne Messdatei kein Bedarf; die Art wird mit Namen gemeldet |
+
+**Alles plattformfrei im Kern** (`EPOS.Kern/Allgemein/Import/Ifc/`, Arbeitsname `IfcRaumkoerper`), nur mit
+`Xbim.Ifc4`-Typen; kein neues Paket, ADR-003 bleibt. Welche Arten die Werkzeuge aus E69 (Revit, Archicad, HiCAD)
+für Räume schreiben, misst G7f-1 an den lokalen Dateien und trägt es in diese Tabelle nach.
+
+**Messbefund.** Sechs CAD-Exporte unter `Quellen/` (IFC2X3 und IFC4): Die Räume stehen ausschließlich als `IfcFacetedBrep` mit geschlossener Schale, alle Flächen eben, mit absoluter Platzierung; 558 bis 2 259 Dreiecke je Gebäude, das Körperlesen dauert 1 bis 8 ms. Die Bauteile derselben Dateien stehen als `IfcShellBasedSurfaceModel` und werden nicht gelesen. Die Ausgaben von Revit, Archicad und HiCAD sind weiter ungemessen.
+
+### 15.3 Das Modell
+
+| Teil | Festlegung |
+|---|---|
+| `Raumumriss.Koerper` | **optional**, Typ mit Arbeitsnamen `Dateikoerper` (der Name `Raumkoerper` ist mit `Zonenkoerper.cs` belegt); `null` = kein Dateikörper |
+| Inhalt | Punkte in Weltkoordinaten [m] (x Ost, y Nord der Datei, z oben), Dreiecke als Indextripel mit Normale je Dreieck, Umlauf so, dass die Normale vom Raum weg zeigt, wo die Datei das hergibt; dazu die **Randkanten** der Ursprungsflächen (ohne Triangulationsdiagonalen) für die Linien der Ansicht |
+| Träger | `Dateikoerper.Art` nennt den obersten Darstellungsträger (etwa `MappedItem`); gleiche gerundete Punkte werden zusammengelegt; Bogenzwischenpunkte tragen keine senkrechte Randkante |
+| Herkunft | `Datei`, dazu die gelesene Darstellungsart als Schlüssel und die Vermerke je Raum (`Bogen`, `Loch`, `uneben`, `ohne Beschnitt`, `offen`, `Mehrschale`) — sprachneutrale Schlüssel, nie Anzeigetext (14.4 Nr. 4) |
+| Grundriss-Umriss | **unverändert**: aus Raumgrenzen, sonst das schematische Rechteck; der Körper ersetzt ihn nicht und speist weder Fläche noch Zonierung |
+| Zone | die Menge der Körper ihrer Räume, in der Reihenfolge der Datei; keine Vereinigung |
+| Determinismus | Räume in der Reihenfolge von `Zonengeometrie.Raeume`, Träger in der Reihenfolge der Datei, feste Startecke des Ohrenschnitts, Punkte gerundet auf `Zonenkoerper.STELLEN` (1e‑6 m); Probe 25 gilt auch für den Körper |
+
+**Die Exporte bleiben unverändert.** gbXML Stufe 2 und IFC S3 schreiben weiter den Umriss, um die Höhe extrudiert
+(14.3). Der Dateikörper wird nicht zurückgeschrieben: Wer die Architektendatei zurückgibt, gibt sie über G7d
+zurück, und dort trägt sie ihre Geometrie ohnehin unverändert. **Die Ansicht kann damit zwei Dinge zeigen:** den
+Dateikörper (was die Datei sagt) und, per Umschalter, das Exportmodell (was EPOS schreibt — der Prüfstand nach 14.3).
+
+### 15.4 Die Ansicht
+
+| Punkt | Festlegung |
+|---|---|
+| Zeichnen | `epos-gebaeude-koerper.js` zeichnet je Raum mit Dateikörper eine `BufferGeometry` (Position, Index), Zonenfarbe nach der Stelle der Zone wie heute, Randkanten als `LineSegments`; ohne Dateikörper das Prisma aus dem Umriss wie heute |
+| Kennzeichen je Raum | in der Legende und am Raum: **„aus Datei“**, **„aus Umriss“** (Prisma aus Raumgrenzen), **„schematisch“**; „vereinfacht“ mit dem Vermerk als Zusatz; Texte in beiden `.resx`, der Steuerwert ist der Schlüssel |
+| Umschalter | **„Dateikörper \| Exportmodell“** im Reiter „Körper“; „Exportmodell“ ist die Körperansicht aus 14.2 (Umriss extrudiert, Platten je Bauteil); ohne einen einzigen Dateikörper (gbXML, schematisches Gebäude) entfällt der Umschalter |
+| Gebauter Stand | Die Herkunft je Raum steht in einer aufklappbaren Raumliste unter der Legende (nicht als `title` am Canvas); der Umschalter ist ein Knopfpaar, Vorgabe „Dateikörper“; ein Raum ohne Dateikörper erscheint im Modus „Dateikörper“ als Prisma ohne Bauteilplatten; der Nordpfeil bleibt Modell-Nord; die Kennzeichenzeile lautet „n Räume aus Datei, m aus Umriss, k schematisch“ |
+| Klick | wählt die Zone über die Raumkennung wie heute (`ZoneGewaehlt`) |
+| DTO | `GebaeudeAnsichtKoerperraum` bekommt den Dateikörper: Punkte als `float`-Folge **relativ zu einem Bezugspunkt** des Gebäudes (georeferenzierte Dateien tragen Koordinaten im Bereich 10⁶ m, `float` verlöre dort die Zentimeter), Indizes als `int`-Folge, Kennzeichen und Vermerke; Übergabe an JavaScript als Bytefeld statt als Zahlenliste |
+| Dreiecksgrenze iPad | **Vorschlag: 300 000 Dreiecke je Gebäude**. Darüber zeigt die Ansicht für alle Räume das Prisma aus dem Umriss, mit Hinweis „Dateikörper zu groß (n Dreiecke)“ — benannte Vereinfachung, kein Abbruch |
+| Speicher und Ladezeit | Probe 31: Dreieckszahl, Größe des Bytefelds und Zeit bis zum ersten Bild an FZK-Haus und DigitalHub, auf Windows und iPad |
+
+### 15.5 Stufen und Aufwand
+
+| Stufe | Inhalt | Abnahme | Aufwand |
+|---|---|---|---|
+| **G7f-1 — Kern-Leser** | `IfcRaumkoerper`: Extrusion (alle Profile aus 15.2), Tessellation, BRep und Flächenmodelle, `IfcMappedItem`, Clipping als erster Operand, Placement-Kette, Rückfall und Vermerke; `Raumumriss.Koerper`; Tests mit **selbst erzeugten IFC-Dateien** nach 8.3 unter `Referenzlaeufe/Importproben/` und mit dem **Rundlauf über den eigenen Schreiber G7e** (dessen Extrusionen kommen byte-genau als Körper zurück, Probe 27 erweitert); FZK-Haus und DigitalHub **lokal**, nicht im Repositorium, ohne Datei benannt übersprungen | Proben 25, 28, 29 | **2–3 PT** — **Stand 05.10.2026:** gebaut (`IfcRaumkoerper`, `Dateikoerper`, Transport bis `Raumumriss.Koerper`); Proben 28 und 29 (elf Kleinstdateien `Referenzlaeufe/Importproben/ifc*_koerper_*.ifc`) grün |
+| **G7f-2 — Ansicht** | DTO und Hülle `GebaeudeImportAnsicht`, Bytefeld, JavaScript mit `BufferGeometry`, Umschalter, Kennzeichen in der Legende, Dreiecksgrenze; bunit (Probe 26 erweitert), Sichtprobe Windows | Proben 26, 30; Sichtprobe | **1–2 PT** — **Stand 05.10.2026:** gebaut (`GebaeudeAnsicht.razor`, `epos-gebaeude-koerper.js`, `GebaeudeImportAnsicht`); Proben 26 und 30 grün, die Sichtprobe auf dem iPad (Probe 31) offen |
+| **G7f-3 — Papiere** | dieses Kapitel als „So gebaut“, Statuszeile, Wiki-Seite „Gebäudeimport“ Abschnitt „Körper“ (`Projekte/Wiki/`), Logbuch-Entwurf, Protokoll | Linkwache, Gegenlese | **0,5 PT** — **Stand 05.10.2026:** geschrieben (dieses Kapitel, Statuszeile, Wiki-Quelle „Gebäudeimport“) |
+| **G7f-4 — Nachbarschaft aus Raumkörpern** | `Koerpernachbarschaft`: Flächenpaare gegenläufiger ebener Flächen zweier Räume (Winkel ≤ 1°, Abstand ≤ 0,8 m, Überlappung bis 0,05 m, Schnittfläche ≥ 0,1 m²) ergeben Trennwand oder Trenndecke; Rangfolge Raumgrenzen vor Körpern vor Raumbezügen; Körperdecken ersetzen geschätzte Trenndecken; U-Wert aus dem von beiden Räumen referenzierten Bauteil, sonst freie Decke, sonst Vorgabe; Beleg „IFC-Datei (Körper)“; Meldungen `GRENZEN_AUS_KOERPER`, `KOERPERPAAR_SCHWACH`, `KOERPER_OHNE_PAAR`, `KOERPERPAARE_GEZAEHLT` | Tests `KoerpernachbarschaftTests`, `KoerpertrennflaechenTests`; Proben `ifc4_koerper_nachbarn*.ifc`, Probe 32 | **2–3 PT** — **Stand 05.10.2026:** gebaut, Tests und Proben grün |
+| | **zusammen** | | **4–6 PT** |
+
+**Einordnung (Vorschlag, die Reihenfolge legt der Anwender fest):** nach KU3-4b, vor AK2. Probe 31 (iPad) nur auf
+Zuruf und mit dem einen iOS-Lauf, den der Anwender ohnehin freigibt.
+
+### 15.6 Regeln (Ergänzung zu 14.4)
+
+1. **Herkunft je Raum sichtbar:** „aus Datei“, „aus Umriss“ oder „schematisch“, dazu jeder Vermerk; ein Körper ohne
+   Kennzeichen ist ein Fehler.
+2. **Keine Reparatur fremder Geometrie:** Offene Schalen werden gezeichnet, nicht geschlossen; Überlappungen und
+   verdrehte Flächen bleiben; die Ansicht vermerkt „offen“. Beidseitiges Material, damit offene Netze sichtbar
+   bleiben.
+3. **Keine Lizenzänderung:** nur `Xbim.Ifc4`-Typen, kein web-ifc, keine xBIM Geometry Engine, kein neues Paket;
+   three.js bleibt, wie es ist (14.4 Nr. 2).
+4. **iOS-Grenze:** die Dreiecksgrenze aus 15.4 gilt auf allen Plattformen gleich, damit beide Schalen dasselbe
+   Bild zeigen.
+5. **Determinismus:** dieselbe Datei ergibt dasselbe Netz, byteweise (15.3); kein Zufall, keine Hashreihenfolge.
+
+### 15.7 Abnahmeproben (Ergänzung zu 14.5)
+
+| Nr. | Probe | Kriterium |
+|---|---|---|
+| 28 | **Rundlauf eigener Schreiber → Leser** (grün) | Jede Raumextrusion, die G7e schreibt (`IfcRectangleProfileDef` → `IfcExtrudedAreaSolid`), kommt als Dateikörper zurück, dessen Punkte nach Rundung auf 1e‑6 die Schale des `Zonenkoerper` sind; die Ausgabe des Körpers in invarianter Kultur ist byteweise gleich; erweitert Probe 27 |
+| 29 | **Darstellungsarten je Testdatei** (grün) | Je selbst erzeugter Kleinstdatei die erwartete Art und Dreieckszahl: Extrusion mit Polygon, mit Bogen (Vermerk), mit Loch; `IfcFacetedBrep`; `IfcTriangulatedFaceSet` und `IfcPolygonalFaceSet`; `IfcMappedItem` mit Maßstab; Clipping mit Vermerk „ohne Beschnitt“; offene Schale mit Vermerk; `IfcAdvancedBrep` → Rückfall mit Herkunft „aus Umriss“ bzw. „schematisch“ |
+| 30 | **Dateikörper und Exportmodell getrennt** (bunit) (grün) | Der Umschalter wechselt zwischen beiden; „Dateikörper“ trägt die Kennzeichen je Raum, „Exportmodell“ die Kennzeichnung aus 14.4; ohne Dateikörper kein Umschalter; kein Anzeigetext ist Steuerwert |
+| 31 | **iPad-Grenze** (nur auf Zuruf; **offen**) | Dreieckszahl, Bytefeld und Ladezeit an FZK-Haus und DigitalHub; über der Grenze die benannte Vereinfachung statt eines Absturzes |
+| 32 | **Flächenpaare aus Raumkörpern** (grün) | Zwei Quader mit gemeinsamer Wand ergeben eine Trennwand mit der Überlappungsfläche; stehen Raumgrenzen in der Datei, werden die Körperpaare nur gezählt (`KOERPERPAARE_GEZAEHLT`) |
+
+---
+
+## 16. Nachtrag 3 — Nutzungsprofile, Tagesganglinien und Kalender aus der HottCAD-Projektdatei (E80, 05.10.2026)
+
+Der Anwender hat am 05.10.2026 festgelegt (**E80**, [Status](Status_Gebaeudesimulation_VDI6007.md), auf den
+[Befund zur Projektdatei](Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md)): **kein Klimaimport**; der
+eigene IFC-Export schreibt alle vorhandenen Daten; **vorzunehmen** sind die Nutzungsprofile aus `PdProfile` mit der
+DIN-V-18599-Nummer, je Profilklasse die 24-Stunden-Tagesganglinien aus `PdProfileTimeCurve` und die Kalender aus
+`PdProfileTaskSerial`; **die Hülle kommt weiter aus dem IFC-Export.** Dieser Nachtrag legt die Stufe **SQ** vor. Er
+ergänzt Kapitel 15 und das Mehrzonenkonzept 6.4 (Zonenplan, E79) und lässt Leser, Exporte und ADR-003 unberührt.
+
+**Vermerk E90 (05.10.2026):** Die feste Tabelle `Din18599Nutzung` wird mit NP2 zur Vorgabe im Code hinter der änderbaren Zuordnung von DIN-Profilnummer, IFC-Nutzungsklasse und HottCAD-Raumtyp (NP-F12); `EPOS_Zone.Nutzung` ist freier Text ([Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)).
+
+### 16.1 Ziel und Abgrenzung
+
+| Gehört dazu | Gehört nicht dazu |
+|---|---|
+| die Projektdatei (`.sqproj`, SQLite 3) **zusätzlich** zur IFC-Datei desselben Projekts lesen — oder **allein** als eigene Importoption „nur Projektdatei“ neben „IFC“ und „IFC + Projektdatei“: Hülle aus den Hüllflächen mit ihren Raumbezügen, Format und Herkunft `SQPROJ` (Kapitel 17) | die Geometrie der Wände, Fenster und Türen aus den Binär- und XML-Strömen (Befund 3.5) — die Körper der Ansicht entstehen abgeleitet (Kapitel 17) |
+| Zonen (`BmZone`, `BmZoneReference`) in den Zonenplan übernehmen | Klimareihen (`SmDiagram`), Standort, Ergebnisse, Anlage, Katalog |
+| je Zone die Konditionierung aus den Profilen: Heizsollwert, Kühlsollwert, Lüftung, Geräte, Personen als Kalender mit Standardwoche und Perioden | Beleuchtung, Elektro, Trinkwasser, Feuchte, Sonnenschutz (keine Größe in EPOS-Plan — benannt übersprungen) |
+| das DIN-V-18599-Nutzungsprofil (`PdProfileUsage`) als Vorgabe-Matrix und als Nutzung der Zone | das Nachtippen der Normtabelle: ohne Projektdatei gelten die Vorlagen wie heute |
+| Herkunft und Beleg je Wert, sichtbar im Dialog | Rückschreiben in die Projektdatei |
+
+**Die Projektdatei bleibt Quelle.** Was der Leser nicht sicher deuten kann (unbekannte Codes), fällt benannt auf die
+heutige Vorgabe zurück; es wird nichts geraten.
+
+### 16.2 Lesen ohne Fremdbibliothek
+
+Die Projektdatei wird mit `Microsoft.Data.Sqlite` **nur lesend** geöffnet (`Mode=ReadOnly`, nie `VACUUM`, nie ein
+Schreibzugriff, keine Journale neben der Datei des Anwenders). Der Leser prüft zuerst `XmTables.Version` und das
+Vorhandensein der benötigten Tabellen; fehlt eine, wird der Import der Projektdatei benannt abgelehnt, die IFC-Daten
+bleiben. Ein Stream (iOS) wird in eine Arbeitskopie im App-Container gelegt. Die Projektdatei hat eine eigene Größengrenze (`SqprojProfil`: 250 MB unter Windows, 100 MB auf iOS), losgelöst von der IFC-Grenze (50 bzw. 20 MB): Der Leser liest nur die Profil-, Zonen- und Raumtabellen, die Größe der Anwenderdatei stammt aus eingebetteten Bildern. Die iOS-Grenze ist gesetzt, ihre Messung wie beim IFC-Import steht aus; `ZU_GROSS` nennt Größe und Grenze in MB. Gelesen
+wird nur, was Kapitel 16.3 nennt; der Leser hält keine Verbindung über den Import hinaus.
+
+### 16.3 Die Abbildung
+
+**Räume und Zonen.** `BmBuilding → BmFloor → BmRoom` (über `FloorUUID`) und `BmZone` mit `BmZoneReference`
+(`UUID` = Zone, `ReferenceToUUID` = Raum, `ReferenceClass` `TModelRoom`). Der Abgleich mit den `IfcSpace` der
+IFC-Datei läuft über den **Raumnamen je Geschoss** (Geschossname aus `BmFloor` gegen `IfcBuildingStorey.Name`), zweitens
+über `BmRoom.GId` ↔ `IfcSpace.GlobalId` (dieselbe GUID, einmal als Text, einmal in der 22-stelligen Base64-Form, umkodiert — Befund Kapitel 6.6; `BIMUUID` ist die Gebäude-GUID und trifft nichts); trifft kein Weg,
+bleibt der Raum unzugeordnet und wird benannt. Die **Zonierung** ist ein Parameter (`SqprojZonierung`): `Din18599` (Vorgabe, `ZoneType` 5, DIN-V-18599-Zonen mit Nutzungsprofil) oder `Simulation` (`ZoneType` 6, Simulationszonen mit Profilgruppe), wählbar. Die Räume gehören der wirksamen Zonierung und werden deren freie Zonen des Zonenplans (E79) mit Name und Nutzung; die andere Zonierung liefert nur das Nutzungsprofil (bei der DIN-Zone: ihr eigenes Profil und, wo vorhanden, die Profilgruppe der Simulationszone, mit der sie die meisten Räume teilt). Fehlt die gewählte Zonierung, gilt ohne ausdrückliche Wahl die vorhandene. Zonen ohne Raum werden nur für die wirksame Zonierung als leere Zonen gemeldet und nicht angelegt. Die übrigen `ZoneType`-Codes (2 Wohneinheit, 7 Lüftungszone, 10 Systemzonen, 0 und 8 unbekannt) werden gezählt und übersprungen. Das Protokoll nennt die wirksame Zonierung vor der Bilanz (`IMP_SQ_PROT_ZONIERUNG`, bei nur einer vorhandenen `…_ZONIERUNG_EINE`); `Zonenkonditionierung.Zonierung` trägt sie weiter, und der Einzonenweg zählt nur belegte Zonen der wirksamen Zonierung.
+
+**Nutzung.** Die DIN-V-18599-10-Profilnummer (`PdProfileUsage.ProfileUsageType`) wird über eine feste Tabelle im Kern
+auf die Nutzung der Zone abgebildet: Büroprofile (Einzel-, Gruppen-, Großraumbüro, Besprechung, Schalter) → BUERO;
+Schulprofile (Klassenzimmer, Hörsaal, Bibliothek) → SCHULE; Wohnprofile (70, 71 und die Wohnzeilen der Norm) → WOHNEN;
+alles andere → keine Nutzung, die Nummer steht im Beleg. Die Tabelle ist sprachneutral und wird mit Nummer und Normname
+in `Referenzlaeufe/Importproben/LIESMICH_Importproben.md` ausgewiesen. Festgelegt sind (SQ-1, `Din18599Nutzung`; mit NP2 Vorgabe im Code, E90): **BUERO** 1–5, **SCHULE** 8, 9, 28, 29,
+**WOHNEN** 70, 71. Trägt die wirksame Zone kein eigenes Nutzungsprofil, gilt das der anderen Zonierung, mit der sie die
+meisten Räume teilt, sonst die Profilnummer ihrer Gruppe (`PdProfileGroup.ProfileUsageType`).
+
+**Abgleichsschlüssel (Befund Kapitel 6):** `BmRoom.GId` ist dieselbe GUID wie `IfcSpace.GlobalId`; der Abgleich läuft
+deshalb zuerst über `GId` ↔ `GlobalId`, dann über den Raumnamen je Geschoss; `BIMUUID` ist die Gebäude-GUID. Die
+Raumart (`RoomType` ↔ `mrt…`) ist ein Beleg, kein Schlüssel. **Tagesart als Annahme:** `ProfileUsageDayType` 4 →
+Montag–Freitag, 5 → Montag–Samstag, 6 → alle Tage, benannt (`IMP_SQ_PROT_TAGESART_ANNAHME`) und im Beleg genannt; die
+Stunden mit `OperatingModeType` 2 belegen die Nachtstunden (der Nachtwert der freien Tage), gerechnet wird mit den
+Werten der Kurve.
+
+**Vorgabe-Matrix aus dem Nutzungsprofil** (Konditionierungskonzept 3.3): `NominalRoomTemperature` → Zeile TAG des
+Heizsollwerts; `DropOfTemperatureSetback` → NACHT als Absenkung mit `Von`/`Bis` aus `PeriodOfOperationFrom/To` bzw.
+`HeatedFrom/To` (Nullzeit heißt „keine Angabe“ → Vorgabe); `SupplyAirChange` bzw. die Außenluft je Person und Fläche →
+Lüftung TAG (1/h, bezogen auf das Raumvolumen); `UserCount`, `SpecificThermalOutputPowerOfPersons` → Personen-Nennwert
+(W) und TAG 100 %; `SpecificThermalOutputOfDevices` × Nutzfläche → Geräte-Nennwert; `DailyEffectiveLoadHours…` →
+Anteil TAG. Jede Zelle bekommt die Herkunft „aus Projektdatei“ mit Beleg (Tabelle, Spalte, Profilnummer).
+
+**Tagesganglinien** (`PdProfileTimeCurve`, 24 Zeilen je Profil, `HourType` 1…24): Heizen (`Temperature`) →
+HEIZSOLL, Kühlen (`Temperature`) → KUEHLSOLL, Lüftung (`SpecificRatedAirChange`) → LUEFTUNG, Geräte (`Ratio`) → GERAETE
+mit Nennwert aus `PdProfileDevice`, Personen (`Ratio`) → PERSONEN mit Nennwert aus `PdProfilePerson`
+(`RatedPersonOccupancyRate`, `SpecificRatedDryHeatEmission`; ohne Nennwert gilt 70 W je Person wie im Haus). Die 24
+Stunden werden zur **Standardwoche (168 Zellen)** ausgerollt: die Tagesart der Profilgruppe
+(`PdProfileGroup.ProfileUsageDayType`) entscheidet, ob die Kurve für alle sieben Tage gilt oder nur für Werktage (dann
+Samstag und Sonntag „aus“ bzw. der Nachtwert); unbekannte Codes gelten als „alle Tage“ und werden benannt
+(`IMP_SQ_PROT_TAGESART_UNBEKANNT`). `OperatingModeType` (1, 2) wird gezählt und im Beleg genannt, nicht gedeutet.
+Werte außerhalb der Grenzen der Größe (Konditionierungskonzept 3.1) werden benannt begrenzt.
+
+**Kalender** (`PdProfileTaskSerial` über `PdProfileTaskSerialReference`): je Abschnitt eine **Periode** der Art
+ZEITRAUM mit `Beginn`/`Ende` aus `TaskStartDay`/`TaskEndDay` (Tag 1…365; Start nach Ende = über den Jahreswechsel);
+sind Wochentagsschalter gesetzt, bekommt die Periode eine eigene Woche, in der die nicht gewählten Tage „aus“ tragen;
+der Ganzjahresabschnitt ohne Schalter ergibt keine Periode (die Standardwoche genügt). `TaskPeriodType` ≠ 1 wird
+gezählt und als Zeitraum behandelt, benannt. Ferien, Feiertage und Heizperiode kennt die Projektdatei nicht als
+Tabelle; sie bleiben Sache des Anwenders (Perioden von Hand, Feiertagsregel).
+
+**Rangfolge je Zelle:** Tagesganglinie vor Nutzungsprofil vor Vorlage der Nutzung vor Programmvorgabe. Was die
+Projektdatei liefert, ersetzt beim Import die Kalenderkopien der Vorlagen; was sie nicht liefert, kommt wie heute aus
+der Vorlage der Nutzung (E79). Jeder Wert bleibt im Dialog änderbar; eine Handänderung ist manuell.
+
+**IFC-Export (E80):** Der eigene IFC-Export schreibt die vorhandenen Daten der Zonen auch zurück: Nutzung, Sollwerte
+und Kalender als `EPOS_Zone`-Eigenschaften (Standardwoche als Text, Perioden als Liste), zusätzlich zu
+`Pset_SpaceThermalRequirements`. Das ist eine Ergänzung der Stufe G7c.
+
+**Gebauter Stand (05.10.2026):**
+
+- **Schlüssel:** Der Raumabgleich läuft zuerst über `BmRoom.GId` ↔ `IfcSpace.GlobalId`, dann über den Raumnamen je
+  Geschoss (`BmFloor.Name` gegen `IfcBuildingStorey.Name`); was keiner trifft, bleibt benannt unzugeordnet.
+- **Codes:** `ZoneType` 6 (Simulationszone) und 5 (Nutzungszone) werden Zonen, 2, 8 und 10 gezählt und übersprungen;
+  `ProfileGroupType` 4 ist die Gebäudegruppe; die Nutzung folgt der festen Tabelle `Din18599Nutzung` (BUERO 1–5,
+  SCHULE 8, 9, 28, 29, WOHNEN 70, 71), jede andere Nummer steht nur im Beleg.
+- **Annahmen:** Tagesart 4 → Montag–Freitag, 5 → Montag–Samstag, 6 → alle Tage, unbekannte Codes → alle Tage, benannt;
+  an freien Tagen trägt der Heizsollwert den niedrigsten, der Kühlsollwert den höchsten Wert der Stunden außerhalb der
+  Nutzungszeit, Lüftung, Geräte und Personen „aus“. Personen-Nennwert = `RatedPersonOccupancyRate` ×
+  `SpecificRatedDryHeatEmission` (ohne Wärmeabgabe 70 W je Person), Geräte-Nennwert = spezifische Leistung × Nutzfläche,
+  sonst der Nennwert aus dem Nutzungsprofil; der Anteil TAG aus den Vollnutzungsstunden je Betriebsstunde, ohne Angabe
+  100 %.
+- **Einzonenweg:** Trägt genau eine Zone der Projektdatei abgeglichene Räume, nimmt das Gebäude deren Konditionierung,
+  sonst die der Gebäudegruppe (`BmBuilding.ProfileGroupUUID`) — als Gebäudekalender ohne Zone (Konditionierungskonzept
+  5.1), derselbe Schreibweg und Beleg wie bei den Zonen. Im Mehrzonenweg trägt das Gebäude keine.
+- **IFC-Export und Rundlauf:** Die Sätze `EPOS_Zone` und `EPOS_Kalender_<Größe>` stehen in 6.3; die Anreicherung (6.6)
+  schreibt dieselben Sätze und ersetzt die eines früheren Durchlaufs, statt sie zu doppeln. Der IFC-Leser nimmt sie je
+  `IfcSpace` als Zonen-Konditionierung zurück (Herkunft „aus IFC-Datei (EPOS)“); der Zonenplan übernimmt sie mit der
+  Rangfolge **Projektdatei vor IFC-`EPOS_*` vor Vorlage**. Ein nicht lesbarer Satz oder Periodentext wird benannt
+  übersprungen (`IMP_IFC_PROT_KOND_UEBERSPRUNGEN`), der Rest des Kalenders bleibt.
+
+### 16.4 Der Weg im Dialog
+
+Im Zuordnungsdialog steht neben der IFC-Datei der Knopf **„Projektdatei dazuladen (.sqproj)“** (nur bei IFC-Dateien,
+deren `ObjectType` `TModel…` oder Erzeuger HottCAD ist, sonst ausgegraut mit Grund). Nach dem Lesen zeigt der Kopf die
+Bilanz: Räume abgeglichen / nicht abgeglichen, Zonen übernommen, Profile je Größe, Abschnitte, Übersprungenes mit Grund.
+Der Zonenbaum (E79) zeigt die Zonen der Projektdatei mit Nutzung; nicht abgeglichene Räume stehen rechts. Die
+Konditionierung je Zone erscheint in der Zonenzeile (Heizsollwert Tag aus der Ganglinie, Nutzung) und nach dem
+Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. Ohne Projektdatei bleibt alles wie heute. Enthält die gelesene Datei beide Zonierungen, steht neben dem Knopf das Wahlfeld **„DIN-V-18599-Zonen | Simulationszonen“** (`select[data-zonierung]`, Werte `din` und `sim`, Vorgabe DIN); bei nur einer Zonierung fehlt es. Der Wechsel läuft als Planschritt `PROJEKTDATEI` mit dem Feld `Zonierung` ohne erneutes Lesen (das Abbild bleibt im Speicher) und fragt nach, wenn Handschritte verloren gingen; „Nein“ stellt die Wahl zurück. Die Bilanz nennt die Zonierung (`dd[data-wert="zonierung"]`), und jede Zone trägt ihre Herkunft (`data-herkunft` = `projektdatei-din` oder `projektdatei-sim`, Text „aus Projektdatei (DIN-Zonen)“ bzw. „(Simulationszonen)“). Eine Wahl vor der Übernahme gilt erst für die nächste Übernahme.
+
+**Welche Aufbauten gelten (E108).** Beim Weg „IFC + Projektdatei“ prüft die Standprüfung (`Standpruefung`), ob beide Dateien
+zum selben Projektstand gehören: U je Bauteil über die `GUID`, Abweichung über 10 % (`UWERT_ABWEICHUNG_HINWEIS`); die
+Prüfung schlägt an, wenn die abweichenden Bauteile mehr als 5 % der Bruttohüllfläche ausmachen. Der Dialog nennt als
+Anzeichen eines anderen Stands: Kopie im Journal der Projektdatei jünger als der Modellstand der IFC, verschiedenes
+Baujahr, gezeichnete Dicke ungleich Schichtsumme bei mehr als der Hälfte der abweichenden Bauteile. Schlägt die Prüfung
+an, zeigt der Abschnitt „Welche Aufbauten gelten?“ Anteil, Anzeichen und je Bauteilart den Median-U beider Seiten und
+fragt jedes Mal ohne Vorwahl: „Aufbauten der Projektdatei verwenden“ (Aufbau und U aus der Projektdatei,
+`HerkunftU = Sqproj`), „Aufbauten der IFC verwenden“ (Rangfolge E98, Stand der IFC) oder „Abbrechen und neu
+exportieren“. Bis zur Wahl ist Übernehmen gesperrt (Fehler `IMP_SQ_PROT_AUFBAUQUELLE_OFFEN`); nach „Datei erneut lesen“
+wird wieder gefragt, die Wahl wird nicht gespeichert. Schlägt die Prüfung nicht an, gilt E98.
+
+### 16.5 Stufen und Aufwand
+
+| Stufe | Inhalt | Abnahme | Aufwand |
+|---|---|---|---|
+| **SQ-1 — Kern-Leser und Abbildung** | `Import/Sqproj/`: Leser (ReadOnly, Fassungsprüfung, Tabellenprüfung), Abbild (Räume, Zonen, Profile, Kurven, Abschnitte), Raumabgleich gegen das IFC-Abbild, Zonenplan-Übernahme, Konditionierung je Zone (Matrix, Standardwoche, Perioden, Nennwerte) als Kalenderzeilen mit Herkunft; Meldungen de/en; synthetische `.sqproj`-Proben (Erzeuger im Test, nur die benötigten Tabellen) | Proben 33–36; Stand 05.10.2026: gebaut | **3–4 PT** |
+| **SQ-2 — Dialog** | Knopf, Bilanz, Zonenbaum mit Projektdatei, Speichern der Kalender, Dateiweg Windows und iOS (Stream → Arbeitskopie) | Probe 37 (bunit), Sichtprobe Windows; Stand 05.10.2026: gebaut | **1–2 PT** |
+| **SQ-3 — Export und Papiere** | `EPOS_Zone`-Sätze im IFC-Export (Nutzung, Sollwerte, Kalender), Rundlauf Export → Leser; dieses Kapitel als „So gebaut“, Konditionierungskonzept 5.5 (Leser), Mehrzonenkonzept 6.4, Wiki, Logbuch, Protokoll | Probe 38, Wachen; Stand 05.10.2026: gebaut | **1 PT** |
+| **HC-3 — Nachzug E87** | Zonierungswahl mit Vorgabe DIN-V-18599-Zone, eigene Größengrenze der Projektdatei (250 MB Windows, 100 MB iOS), Wahlfeld im Dialog mit Herkunft je Zone | Proben 33, 36, 37 erweitert; Stand 05.10.2026: gebaut | **1 PT** |
+| | **zusammen** | | **5–7 PT** |
+
+### 16.6 Regeln
+
+1. **Nur lesen**, keine Spur an der Datei des Anwenders; die Datei kommt nie ins Repositorium (`*.sqproj` in
+   `.gitignore` unter `Quellen/`, Diagnose wie bei `Quellen/*.ifc` nur, wenn eine Datei lokal liegt).
+2. **Keine gedeuteten Codes:** `ZoneType`, `ProfileUsageDayType`, `OperatingModeType`, `TaskPeriodType` werden nur in den
+   belegten Werten des Befunds genutzt; jeder andere Wert fällt benannt zurück. Eine zweite Projektdatei mit mehreren
+   belegten Zonen und Wochentagskalendern festigt die Tabelle (offen, Kapitel 5 des Befunds).
+3. **Herkunft je Zelle** sichtbar und als Beleg gespeichert, wie beim IFC-Import; Handänderungen schlagen den Import.
+4. **Keine Produktdaten** in Papieren, Proben und Wiki: Proben sind selbst erzeugt mit neutralen Namen und runden Werten.
+5. **Determinismus:** feste Reihenfolgen (Räume nach Geschoss und Name, Profile nach Klasse, Stunden 1…24).
+
+### 16.7 Abnahmeproben
+
+| Nr. | Probe | Kriterium |
+|---|---|---|
+| 33 | **Leser und Fassung** | selbst erzeugte Kleinstdatei mit `XmTables`, `BmBuilding/Floor/Room`, `BmZone/BmZoneReference`, `PdProfile*`, `PdProfileTimeCurve`, `PdProfileTaskSerial(+Reference)`, `PdProfileGroup(+Reference)`: Räume, Zonen, Profile und Abschnitte kommen vollständig an; fehlende Tabelle → benannte Ablehnung; Schreibversuch unmöglich (ReadOnly); Grenze 250/100 MB mit Gegenprobe IFC-Grenze, `ZU_GROSS` in MB |
+| 34 | **Raumabgleich** | Räume treffen über Name je Geschoss, über `BIMUUID` ↔ `GlobalId`, und bleiben benannt unzugeordnet, wenn beides fehlt |
+| 35 | **Konditionierung** | Heiz-/Kühlsollwert, Lüftung, Geräte, Personen aus Ganglinie und Nutzungsprofil ergeben die erwarteten 168 Zellen, Nennwerte und Perioden; Tagesart Werktage lässt das Wochenende „aus“; Grenzen benannt begrenzt; Rangfolge Ganglinie vor Profil vor Vorlage |
+| 36 | **Zonenplan** | Zonen der Projektdatei werden freie Zonen mit Nutzung aus der Profilnummer; Räume gehören der wirksamen Zonierung (Vorgabe DIN, Wahl Simulation, nur eine vorhanden); leere Zonen nur der wirksamen Zonierung gemeldet; Protokollsatz zur Zonierung |
+| 37 | **Dialog** (bunit) | Knopf nur bei HottCAD-IFC, Bilanz, Zonenbaum mit Projektdatei, Speichern schreibt Kalender, Perioden und Vorgaben mit Herkunft; Wahlfeld nur bei beiden Zonierungen, Wechsel mit und ohne Rückfrage |
+| 38 | **Rundlauf Export** | `EPOS_Zone`-Sätze des IFC-Exports kommen über den IFC-Leser als Zonen-Konditionierung zurück |
+
+Stand 05.10.2026: Proben 33 bis 38 grün — 33 `SqprojLeserTests`, 34 `SqprojRaumabgleichTests`, 35
+`SqprojKonditionierungTests`, 36 `SqprojZonenTests`, 37 `GebaeudeImportProjektdateiDialogTests` (bunit) und
+`SqprojHuelleTests`, 38 `IfcKonditionierungRundlaufTests` (Referenzprojekt 1052: drei Zonen, Woche byteweise, Perioden
+und Nennwerte gleich, zweiter Export byte-gleich; alle Angabearten; Gegenproben ohne `EPOS_*`) und der Fall der
+Anreicherung in `IfcAnreicherungTests`.
+
+---
+
+## 17. Ein Gebäudebetrachter für IFC, Projektdatei und gbXML — Körper aus den Flächen der Datei
+
+Die Gebäudeansicht (`GebaeudeAnsicht.razor`, `epos-gebaeude-koerper.js`) zeigt ein Gebäude aus der Projektdatei
+(`.sqproj`) und aus gbXML **mit demselben Umfang wie aus IFC**: Raumkörper und Bauteilkörper in 3D, die Farbmodi Zone,
+Flächengruppe (Randbedingung), Aufbau und Befund, den Steckbrief auf Klick und den Grundriss je Raum. Der Grundsatz:
+**Der Kern bildet aus den Flächen der Datei Körper derselben Art wie bei IFC** (`Dateikoerper` an `Raumumriss.Koerper`
+und `AbbildBauteil.Koerper`, 15.3) — dann laufen Ansicht, Flächenklassifikation, Farbmodi, Steckbrief und Grundriss
+ohne eigene Weiche je Format. Was ein Format nicht hergibt, fällt benannt auf das Umrissprisma bzw. das schematische
+Rechteck zurück (14.4 Nr. 1, 15.6 Nr. 1); nichts wird still weggelassen. Dieses Kapitel gilt für das Gebäude-Abbild
+aus der Projektdatei ebenso wie für den Konditionierungsweg aus Kapitel 16.
+
+### 17.1 Was die Dateien hergeben
+
+**Projektdatei.** Messbefund an einer Anwenderdatei, deren IFC-Ausgabe desselben Gebäudes daneben liegt (beide nur
+lokal, nicht im Repositorium; Zahlen als Anteile und relative Abweichungen):
+
+| Quelle | Inhalt | Befund |
+|---|---|---|
+| `BmData.ClassValue` je Raum (`geometry/Room/room`) | Bodenpolygon (`points/p`, x;y;z in m, absolut), Polygone (`polygons/plg`, Kennzeichen `with_holes`), Höhen je Polygonkante (`heights/height_ext`: Boden am Anfang, Boden am Ende, Decke am Anfang, Decke am Ende), Deckenebenen (`top_planes`) | in **jedem** Raum vorhanden. Polygonfläche gegen Raumfläche Median 0 %, größte Abweichung 21 %; gegen die `Inner`-Schleifen der Bodenflächen Median +0,5 %, gegen die `DIN18599_2011`-Schleifen −16 %. Das Prisma aus Polygon und Höhen trifft das Volumen des IFC-Raumkörpers im Median auf 0 % (90 % der Räume ≤ 2,2 %, Summe −4,6 %). Höhenwechsel längs der Kanten (geneigte Decke) in rund 2 % der Räume, zwei Polygone je Raum in rund 7 % |
+| `BmElement.GeoDesc` je Hüllfläche (Level 3) | 3×3-Matrix mit Verschiebung (`geoDataData`), Schleifen (`geoLoopData`) mit Punkten (`geoPointData`) | **Mehrere Schleifen je Fläche, je Bezugsregel eine** (`LongDesc`): `Inner`, `DIN18599_2011`, teils `DIN18599` und `EN12831`. Die Matrix ist in allen Flächen die Einheit (Punkte absolut). Die Bruttofläche (`GrossArea`) ist bei Wand, Boden, Decke und Dach die Fläche der Schleife `DIN18599_2011` (Median 0 %), bei Fenster und Tür die der Schleife `Inner`; die `Inner`-Schleife opaker Flächen ist 16 bis 21 % kleiner |
+| Lage der Schleife `DIN18599_2011`, gemessen am Raumpolygon in Vielfachen der Wanddicke | — | Außenwand (ein Raum) in der **Außenoberfläche** (rund 92 %), Innenwand (zwei Räume) in der **Achse** (rund 83 %) — das Bezugsmaß nach DIN V 18599 bzw. DIN EN 12831 |
+| Lage der Schleife `Inner` | — | Innenwand in der Innenoberfläche **eines** der beiden Räume (rund 93 %), Außenwand meist in der Außenebene mit den Grenzen des Innenmaßes (rund 85 %): **keine einheitliche Innenschale** |
+| Umlaufsinn | — | uneinheitlich: Die Normale aus dem Umlauf zeigt bei einem Drittel bis zur Hälfte der Wandflächen in den Raum; gegen `Orientation` ist rund die Hälfte um 180° gedreht |
+| Geschlossenheit der Hüllflächen je Raum | — | Kantenpaarung auf 1 mm: Die `Inner`-Schleifen schließen in **keinem** Raum, die `DIN18599_2011`-Schleifen in rund 5 % der Räume; das Volumen der `Inner`-Hülle weicht im Median um +15 % vom Raumvolumen ab |
+| `GmMedia` | 3D-Grafikmodell, gzip, proprietär | **ungenutzt** — kein Leser für ein undokumentiertes Format |
+
+**gbXML.** Die Proben unter `Referenzlaeufe/Importproben/*.xml` tragen **keine** `Space/ShellGeometry/ClosedShell` und
+keine `SpaceBoundary`; `PlanarGeometry/PolyLoop` steht nur in einem kleinen Teil, `AdjacentSpaceId` in fast allen,
+`Layer` und `Material/Thickness` in rund einem Drittel. gbXML legt die Bezugsebene der Flächen nicht fest; Werkzeuge
+schreiben teils Achs-, teils Innenflächen.
+
+### 17.2 Regel 1 — Raumkörper je Raum
+
+| Format | Weg (in dieser Rangfolge) |
+|---|---|
+| **Projektdatei** | (a) **Raumpolygon**: das Bodenpolygon des Raum-XML (Löcher nach `with_holes`, mehrere Polygone als mehrere Ringe), Boden je Punkt aus `height_ext` an erster und zweiter Stelle, Decke aus der dritten und vierten — so entstehen auch geneigte Decken; Mantel je Kante als ebenes Viereck, Boden und Decke per Ohrenschnitt. (b) **Hüllflächen**: nur wenn (a) fehlt und die `DIN18599_2011`-Schleifen der Hüllflächen des Raums, in die Innenoberfläche verschoben (siehe „Bezugsebene“), nach Teilung an T-Stößen schließen. (c) sonst das Umrissprisma |
+| **gbXML** | (a) `Space/ShellGeometry/ClosedShell`, wenn vorhanden und geschlossen. (b) die `PlanarGeometry` der Flächen mit `AdjacentSpaceId` auf den Raum, wenn sie nach Teilung an T-Stößen schließen. (c) sonst das Umrissprisma aus dem `PolyLoop` der Boden- oder Deckenflächen, ohne ihn das schematische Rechteck |
+
+**Bedingungen an jeden gebildeten Körper:**
+
+1. **Geschlossene Hülle**: Jede Kante gehört — nach Teilung an T-Stößen auf 1 mm — genau zwei Dreiecken mit
+   gegenläufigem Umlauf. Weg (a) der Projektdatei ist durch den Bau geschlossen.
+2. **Einheitlicher Umlaufsinn, Normale nach außen**: Der Umlauf der Datei wird **nicht** übernommen (17.1). Die Flächen
+   werden über die Kantenpaare gleichsinnig gerichtet; ist das Volumen danach negativ, wird jede Fläche gewendet.
+3. **Dreieckszerlegung auch nichtkonvexer Polygone und mit Löchern**: derselbe Ohrenschnitt mit Brückenkanten wie
+   beim IFC-Körper (15.2), feste Startecke; eine nicht ebene Fläche als Fächer mit Vermerk `Uneben`.
+4. **Schließt die Hülle nicht**, wird **kein** Körper gebildet: Der Raum fällt auf das Umrissprisma zurück, mit der
+   Meldung `KOERPER_NICHT_GESCHLOSSEN` samt Zahl der offenen Kanten und dem Kennzeichen „aus Umriss“. Anders als ein
+   gezeichneter IFC-Körper (15.6 Nr. 2) wird ein offener abgeleiteter Körper nicht gezeigt — er wäre eine Aussage des
+   Bildners, nicht der Datei.
+
+**Bezugsebene.** Der Raumkörper liegt in der **Innenoberfläche**: Das Raum-XML ist Innenmaß (17.1); im Hüllflächenweg
+wird jede Fläche aus ihrer Bezugsebene (Außenmaß oder Achse, 17.3 Nr. 3) um die Dicke bzw. die halbe Dicke zum Raum
+hin verschoben, bevor die Hülle geprüft wird. So decken sich Raum- und Bauteilkörper wie bei IFC, und zwischen den
+Raumkörpern zweier Nachbarn bleibt die Wanddicke frei.
+
+**Grundriss.** Der gespeicherte Grundriss je Raum (`Tab_Raumgrundriss`) kommt bei der Projektdatei **unmittelbar aus
+dem Raumpolygon**, nicht über `Koerpergrundriss` aus dem abgeleiteten Körper: Herleitung `Boden`, Vermerk
+`Raumpolygon`. Beim gbXML bleibt es bei `Boden` bzw. `Decke` aus dem `PolyLoop`.
+
+### 17.3 Regel 2 — Bauteilkörper
+
+1. **Fläche**: in der Projektdatei die Schleife `DIN18599_2011` (sie trägt die Bruttofläche, mit der gerechnet wird),
+   bei Fenstern und Türen die Schleife `Inner`; in gbXML die `PlanarGeometry` der `Surface` bzw. des `Opening`.
+2. **Dicke** in dieser Rangfolge: in der Projektdatei die **gezeichnete Dicke** des Bauteils (`BmElement.Thickness`),
+   wenn nur sie zur gemessenen Lage der Bezugsebene (Punkt 3) passt; sonst die Summe der Schichtdicken des Aufbaus
+   (Projektdatei über `CatalogDimUUID`; gbXML `Construction` → `LayerId` → `Layer` → `MaterialId` →
+   `Material/Thickness`); sonst eine **benannte Vorgabedicke** je Bauteilart (Konstante im Kern, Vermerk
+   `Vorgabedicke`, im Steckbrief sichtbar). In gbXML gilt die Schichtsumme, sonst die Vorgabedicke.
+3. **Richtung der Extrusion** folgt der Bezugsebene, gemessen am Raumkörper (17.2), nicht angenommen: Liegt die Fläche
+   in der Innenoberfläche des Raums (≤ 1 cm), wird sie um die Dicke **vom Raum weg** extrudiert; liegt sie eine halbe
+   Dicke davor (Achse), **beidseitig** um die halbe Dicke; liegt sie eine Dicke davor (Außenmaß), **zum Raum hin**.
+   Passt keiner der drei Fälle oder fehlt der Raumkörper, gilt die Achse mit Vermerk `Bezugsebene_angenommen`. Für
+   die Projektdatei folgt aus 17.1: Außenwände nach innen, Innenwände beidseitig.
+4. **Öffnungen** sind eigene Körper: Das Öffnungspolygon wird in die Ebene seiner Wandfläche projiziert, in der Wand
+   als **Loch** ausgespart (Ohrenschnitt mit Brückenkante, die Laibung als Mantel des Lochs) und selbst mit seiner
+   Dicke mittig in der Wanddicke extrudiert. Die Wand einer Öffnung ist die Wandfläche desselben Raums, in deren
+   Polygon die Öffnung nach der Projektion liegt (gbXML: die `Surface`, die das `Opening` trägt). Findet sich keine,
+   bleibt die Öffnung ein Körper ohne Aussparung, Meldung `OEFFNUNG_OHNE_WAND`. Berührt oder überschreitet die Öffnung
+   den Rand der Wandfläche (Fenstertür bis zum Boden, Öffnung an der Wandkante), wird sie als **Kerbe** geschnitten:
+   die Differenz Wandpolygon minus Öffnungspolygon in der Wandebene (2 mm Toleranz), die Laibung nur an den Kanten der
+   Kerbe im Inneren der Wand; zerfällt die Fläche, wird jedes Teil extrudiert. Öffnungen, die einander berühren
+   (Fensterband), werden gemeinsam ausgespart. Gelingt der Schnitt nicht, entfällt die Aussparung mit Meldung
+   `OEFFNUNG_RAND` und Grund. Formatfrei im Körperbildner (`Kerbschnitt`), für Projektdatei und gbXML; der IFC-Weg
+   bleibt bei seinen Löchern.
+5. **Jede Hüllfläche einmal**: Eine Fläche, auf die zwei Räume verweisen, ergibt einen Bauteilkörper, nicht zwei.
+
+### 17.4 Regel 3 — Zuordnung Dreieck → Bauteil
+
+Bei abgeleiteten Körpern ist die Zuordnung **durch die Bauweise bekannt** und wird mitgegeben, nicht gesucht:
+
+- Jedes Dreieck eines abgeleiteten Raumkörpers trägt die **Kennung seiner Quellfläche**. Im Hüllflächenweg ist das die
+  Fläche selbst. Beim Raumpolygon wird jede Mantel-, Boden- und Deckenfläche an den Grenzen der Hüllflächen des Raums
+  geteilt (Intervallteilung längs der Kante und in der Höhe), deren Ebene parallel liegt (≤ 1°) und deren Abstand zur
+  Innenoberfläche höchstens die Dicke plus 2 cm beträgt; jedes Teilstück trägt die Fläche mit der größten Überdeckung.
+- Die Flächenklassifikation bekommt dafür eine **erste Regel „Quellfläche“** (Beleg `QUELLFLAECHE`): Trägt ein Dreieck
+  eine Quellfläche, gibt deren wirksame Randbedingung die Gruppe wie in der Regel „Bauteil des Raumbezugs“. Die
+  übrigen Regeln bleiben für Dreiecke ohne Quellfläche, wie sie sind. Körperpaare werden aus gebildeten Körpern gar
+  nicht gebildet.
+- **Warum nicht allein geometrisch:** Die Regel „Bauteil des Raumbezugs“ wählt nach Lage und Orientierung. Hat ein
+  Raum zwei Wände gleicher Richtung mit verschiedener Randbedingung (außen und gegen unbeheizt), trifft sie nicht
+  sicher; die Quellfläche entscheidet nach der Stelle.
+- Die Flächenklassifikation läuft für **jedes** Abbild mit Körpern, nicht allein im IFC-Weg: Ihr Aufruf wandert an
+  eine formatfreie Stelle nach dem Lesen.
+
+### 17.5 Regel 4 — Ehrlichkeit der Herkunft
+
+**Abgeleitete Körper sind kein unabhängiger Beleg.** Sie sind aus denselben Flächen gebildet, aus denen schon Fläche,
+Orientierung und Nachbarschaft stammen.
+
+| Stelle | Festlegung |
+|---|---|
+| Kern: `Dateikoerper` | neue Angabe **Quelle**: `Datei` (der Körper steht so in der Datei — IFC) oder `AusFlaechen` (der Kern hat ihn aus Flächen der Datei gebildet); der Weg als Schlüssel in `Art` (`Raumpolygon`, `Huellflaechen`, `ClosedShell`, `Raumflaechen`, `Flaechenextrusion`) |
+| Körpervergleich | Die Gegenprobe Mengensatz gegen Körper (Meldungen `KOERPER_ABWEICHUNG*`, `KOERPER_REST`) läuft **nur** für Körper mit Quelle `Datei` |
+| Flächenherkunft | Ein Körper mit Quelle `AusFlaechen` setzt **nie** `Flaechenherkunft.Koerper`; die Fläche behält die Herkunft ihres Wegs |
+| Nachbarschaft | Körperpaare werden aus gebildeten Körpern gar nicht gebildet; die Trennflächen kommen aus den Raumbezügen der Hüllflächen bzw. aus `AdjacentSpaceId` |
+| Ansicht | Kennzeichen je Raum **„aus Flächen gebildet“** — ein weiterer Wert der Körperherkunft neben „aus Datei“, „aus Umriss“, „schematisch“ und „aus Dateikörper (Grundriss)“ —, in der Kennzeichenzeile mitgezählt; der Umschalter „Dateikörper \| Exportmodell“ erscheint, sobald ein Raum einen Körper trägt, gleich welcher Quelle |
+| Steckbrief | Zeile **Körper**: „aus Flächen der Datei gebildet“ mit dem Weg, dazu die Vermerke (`Vorgabedicke`, `Bezugsebene_angenommen`, `Uneben`) |
+
+Die Quelle wird **nicht gespeichert**: Körper liegen nie in der Datenbank (15.1), und der gespeicherte Grundriss trägt
+seine Herleitung schon. Ein Schemaschritt entsteht daraus nicht.
+
+### 17.6 Regel 5 — Nordrichtung, Neulesen, Export
+
+1. **Nordrichtung**: Die Projektdatei nennt keinen Nordwinkel; es gilt dieselbe Nordrichtungsabfrage wie bei einer
+   IFC-Datei ohne Nordwinkel. gbXML bringt `CADModelAzimuth` mit (Angabe wie im Import, 3.2). Die Körper bleiben im
+   Modellsystem; nur der Nordpfeil dreht.
+2. **„Datei erneut lesen“** braucht für die Projektdatei eine Importquelle mit dem Format der Projektdatei samt
+   Prüfsumme, den Leser hinter `GebaeudeNeulesen` und den Vergleich der gespeicherten Grundrisse; die Körper entstehen
+   beim Neulesen deterministisch neu. Weil das CAD-Programm die SQLite-Datei bei jedem Speichern ändert, ist eine
+   geänderte Prüfsumme allein kein Befund — erst der Grundrissvergleich entscheidet, ob ein Nachtrag angeboten wird.
+   Die Datei wird nur lesend geöffnet (16.2).
+3. **Export**: Abgeleitete Körper werden **nicht** exportiert, wie Dateikörper (15.3). IFC- und gbXML-Export schreiben
+   die Prismen aus dem gespeicherten Grundriss; geneigte Decken gehen dort benannt verloren.
+
+### 17.7 Regel 6 — Grenzen
+
+- **Dreiecksgrenze**: Raum- und Bauteilkörper zählen gemeinsam gegen `Dateikoerper.DREIECKSGRENZE` (15.4); ein
+  Gebäude aus Prismen und extrudierten Flächen liegt um Größenordnungen darunter.
+- **Rechenzeit**: Der Bildner ist linear in der Zahl der Flächen bis auf den Ohrenschnitt je Polygon; Ziel unter
+  50 ms je Gebäude, gemessen in Probe 42.
+- **Plattformen**: alles im Kern, ohne neues Paket — die Projektdatei liest `Microsoft.Data.Sqlite`, die XML-Ströme
+  `System.Xml.Linq`. Auf iOS gelten dieselbe Grenze und dasselbe Bild (15.6 Nr. 4).
+- **Determinismus**: Dieselbe Datei ergibt dieselben Körper, byteweise (`Dateikoerper.Text`, Probe 25).
+
+### 17.8 Abnahmeproben (Ergänzung zu 14.5 und 15.7)
+
+| Nr. | Probe | Kriterium |
+|---|---|---|
+| 39 | **Körperbildner synthetisch** | Quader, L-Grundriss, Grundriss mit Loch, geneigte Decke: Körper geschlossen, alle Normalen nach außen, Volumen auf 1e‑6 m³, Umlauf der Eingabe beliebig; eine offene Hülle ergibt keinen Körper, sondern den Rückfall mit Meldung |
+| 40 | **Projektdatei-Geometrie** | Probe aus `SqprojProbenErzeuger`: Raumkörper aus dem Raumpolygon, Bauteilkörper in der richtigen Richtung (Außenwand nach innen, Innenwand beidseitig), Fenster ausgespart; ohne Raum-XML der benannte Rückfall |
+| 41 | **gbXML mit `ClosedShell`** | neue Probe unter `Referenzlaeufe/Importproben/`: Raumkörper aus der Schale, Schichtdicken aus `Material/Thickness`; ohne Schale aus den Flächen je Raum, ohne beides das Umrissprisma |
+| 42 | **Gleicher Umfang wie IFC** | Ansicht mit einem Gebäude aus Projektdatei und aus gbXML: Farbmodi Zone, Randbedingung, Aufbau und Befund verfügbar, Steckbrief auf Klick, Kennzeichen „aus Flächen gebildet“; Rechenzeit des Bildners gemessen |
+| 43 | **Keine zweite Quelle** | Mit abgeleiteten Körpern entstehen keine Meldungen `KOERPER_ABWEICHUNG*`, keine Flächenherkunft `KOERPER` und keine gebildeten Körperpaare |

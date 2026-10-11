@@ -122,6 +122,22 @@ public sealed class BerichtStand
 
     /// <summary>Der Zielordner der Ausgabe.</summary>
     public string Zielordner { get; set; } = "";
+
+    /// <summary>
+    /// Die wählbaren Szenarien des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582) — Nummer und Anzeigetext,
+    /// dieselben Nummern wie auf der Wirtschaftlichkeitsseite. Die PERSISTENZWERTE kennt nur die Hülle
+    /// (Drei-Schichten-Regel). Leer = die Seite führt keine Klappliste.
+    /// </summary>
+    public IReadOnlyList<(int Id, string Text)> Szenarien { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Das gewählte Szenario (0 = „Erwartet“, die Vorgabe; <see cref="SZENARIO_VALERI"/> = alle drei).</summary>
+    public int SzenarioId { get; set; }
+
+    /// <summary>
+    /// Die Nummer des vierten Eintrags der Klappliste „Alle drei Szenarien (VALERI)“ (Entscheid VB‑Q1 a): kein Szenario,
+    /// sondern die Szenariodarstellung VALERI; die Nummern 0 bis 2 bleiben die Szenarien der Wirtschaftlichkeitsseite.
+    /// </summary>
+    public const int SZENARIO_VALERI = 3;
 }
 
 /// <summary>
@@ -133,7 +149,9 @@ public sealed class BerichtStand
 /// </summary>
 /// <param name="MitWirtschaftlichkeit">Der Baustein „Wirtschaftlichkeit" wird angehakt.</param>
 /// <param name="Varianten">Die angehakten Versionen der Vergleichsgruppe samt Stamm und Referenz.</param>
-/// <param name="SzenarioId">Das Szenario der Einzelheiten auf der Wirtschaftlichkeitsseite.</param>
+/// <param name="SzenarioId">Das Szenario der Einzelheiten auf der Wirtschaftlichkeitsseite — die Berichtsseite übernimmt
+/// es als Vorbelegung ihrer Klappliste (dieselben Nummern, <see cref="BerichtStand.Szenarien"/>); in der Darstellung
+/// „ValERI-Bewertung“ <see cref="BerichtStand.SZENARIO_VALERI"/> (Entscheid VB‑Q6 a).</param>
 /// <param name="SzenarioText">Sein Anzeigetext.</param>
 public sealed record BerichtVorbelegung(bool MitWirtschaftlichkeit, IReadOnlyList<int> Varianten,
                                         int SzenarioId, string SzenarioText);
@@ -152,6 +170,10 @@ public sealed class BerichtAuftrag
 
     /// <summary>Der Zielordner.</summary>
     public string Zielordner { get; set; } = "";
+
+    /// <summary>Das Szenario des Wirtschaftlichkeitsberichts (<see cref="BerichtStand.Szenarien"/>; 0 = Erwartet) — die
+    /// Hülle bildet es auf den Schlüssel der Konfiguration ab.</summary>
+    public int SzenarioId { get; set; }
 
     /// <summary>Die Zahl der angehakten Versionen inklusive Stamm (für die Rückfrage).</summary>
     public int AnzahlMitStamm { get; set; }
@@ -246,12 +268,43 @@ public sealed record Benannthandlung(string Id, string Name);
 public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = false, string Knopftext = "");
 
 /// <summary>
+/// Die Zeile „Original geändert – übernehmen?“ UNTER der Prüfzeile einer eigenen Vorlage (Konzept
+/// Berichtsvorlagen 10.2, 10.3): Das Original, aus dem „Hinzufügen…“ die Kopie im Vorlagenordner
+/// gemacht hat, trägt nicht mehr die gemerkte Prüfsumme.
+///
+/// <para>Sie entsteht nur, wo es ein Original AUSSERHALB des Vorlagenordners gibt (unter Windows);
+/// auf iOS wird die Vorlage beim Hinzufügen in die Sandbox kopiert, dann bleibt die Zeile weg
+/// (<c>Berichtsvorlagenwege.HerkunftDauerhaft</c>). <c>null</c> = keine Zeile.</para>
+/// </summary>
+/// <param name="Symbol">Das Zeichen vor dem Text; reine Dekoration wie bei <see cref="Pruefstand"/>.</param>
+/// <param name="Text">
+/// „Original geändert – übernehmen? (&lt;Pfad des Originals&gt;)“. Der Pfad steht in der Zeile
+/// SELBST, damit erkennbar ist, welche Datei gemeint ist; ein langer Pfad kommt dabei in der Mitte
+/// gekürzt herein (die Hülle kürzt, nicht die Seite).
+/// </param>
+/// <param name="Uebernehmen">
+/// „Übernehmen“: legt das Original erneut über die Kopie. Wie jede <see cref="Handlung"/> weich
+/// gesperrt, solange die Vorlage in Word geöffnet ist — der Grund steht dann am Knopf.
+/// </param>
+/// <param name="Behalten">
+/// „Behalten“: weist diesen Stand des Originals zurück; die Zeile kommt erst wieder, wenn sich das
+/// Original erneut ändert.
+/// </param>
+/// <param name="Titel">
+/// Derselbe Satz mit dem VOLLEN Pfad — er steht am <c>title</c> der Zeile, damit ein gekürzter Pfad
+/// vollständig lesbar bleibt. Leer = kein <c>title</c>.
+/// </param>
+public sealed record Originalstand(string Symbol, string Text, Handlung Uebernehmen, Handlung Behalten,
+                                   string Titel = "");
+
+/// <summary>
 /// BV-E2 (Konzept Berichtsvorlagen 10.2, „Häkchen (BV-Q1 c)"): <b>was die gewählte Word-Vorlage an
 /// Kapiteln führt</b> — die Grundlage der Häkchenliste. Die Hülle leitet ihn aus der Schnellprüfung
 /// ab (<c>Pruefbefund.Bausteine</c>, <c>Pruefbefund.HatKapitel</c>); die Seite verbindet ihn mit dem
 /// Ausgabeformat: Ein Eintrag steht nur dann ausgegraut da („in dieser Vorlage nicht enthalten",
-/// weich gesperrt, der Grund am Element), wenn Word entsteht, die Vorlage sein Kapitel nicht führt
-/// und — wird Excel mit ausgegeben — auch die Mappe ihn nicht führt (<see cref="BausteinZeile.InExcel"/>).
+/// weich gesperrt, der Grund am Element), wenn Word entsteht und die Vorlage sein Kapitel nicht führt
+/// — wird Excel mit ausgegeben, nur wenn auch die Mappe ihn nicht führt
+/// (<see cref="Vorlagenstand.ExcelBlattstand"/>, ersatzweise <see cref="BausteinZeile.InExcel"/>).
 /// Das Häkchen selbst bleibt gespeichert: Ein Vorlagenwechsel bringt es zurück.
 /// </summary>
 /// <param name="NichtEnthalten">
@@ -261,7 +314,8 @@ public sealed record Pruefstand(string Symbol, string Text, bool HatBefunde = fa
 /// <param name="InhaltAusVorlage">
 /// Die Vorlage führt weder <c>{{bericht.inhalt}}</c> noch ein <c>kapitel.*</c> — nur
 /// Einzelplatzhalter. Entsteht nur Word, steht statt der Liste die leise Zeile „Den Inhalt bestimmt
-/// die Vorlage"; mit Excel bleibt die Liste, denn die Mappe folgt den Häkchen wie heute.
+/// die Vorlage"; mit Excel bleibt die Liste, solange die Mappe Blätter führt. Im Blattstand einer
+/// Excel-Vorlage heißt dasselbe Feld: Sie trägt weder Blattmarke noch Blattanhang.
 /// </param>
 /// <param name="DeckblattAusVorlage">
 /// Der Bausteinschlüssel des Häkchens „Deckblatt", wenn die Vorlage das Deckblatt selbst trägt — aus
@@ -343,6 +397,13 @@ public sealed record Vorlagenstand
     /// <summary>Die Prüfzeile; <c>null</c> = keine.</summary>
     public Pruefstand? Pruefzeile { get; init; }
 
+    /// <summary>
+    /// Die Zeile „Original geändert – übernehmen?“ unter der Prüfzeile der Word-Vorlage;
+    /// <c>null</c> = keine (kein Original außerhalb des Vorlagenordners, unverändert oder
+    /// zurückgewiesen).
+    /// </summary>
+    public Originalstand? Originalzeile { get; init; }
+
     /// <summary>Die erweiterte Startrückfrage; <c>null</c> = die heutige gilt.</summary>
     public Startrueckfrage? Startrueckfrage { get; init; }
 
@@ -371,6 +432,19 @@ public sealed record Vorlagenstand
 
     /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine (etwa „ohne Vorlage“).</summary>
     public Pruefstand? ExcelPruefzeile { get; init; }
+
+    /// <summary>
+    /// Die Zeile „Original geändert – übernehmen?“ unter der Prüfzeile der Excel-Vorlage;
+    /// <c>null</c> = keine. Dieselbe Regel wie <see cref="Originalzeile"/>.
+    /// </summary>
+    public Originalstand? ExcelOriginalzeile { get; init; }
+
+    /// <summary>
+    /// BV-Q2 (c): was die gewählte Excel-Vorlage an Bausteinen führt — dieselbe Form wie
+    /// <see cref="Kapitelstand"/>, gemessen an Blattmarken und Blattanhang der Mappe; <c>null</c> = jeder
+    /// Eintrag frei (ohne Excel-Vorlage, nicht lesbar oder ohne Platzhalter).
+    /// </summary>
+    public Kapitelstand? ExcelBlattstand { get; init; }
 
     /// <summary>
     /// BV-E9: die Einträge des Menüs „…" zur gewählten Excel-Vorlage — Kennungen mit der Vorsilbe <c>excel:</c>, gemeldet über
@@ -441,6 +515,19 @@ public sealed class LaufErgebnis
 
     /// <summary>Mehrzeilige Meldung (Pfade, Hinweise) — leer = keine.</summary>
     public string Meldung { get; set; } = "";
+
+    /// <summary>
+    /// Der Kopf der Meldung für das Banner mit Hinweisliste (etwa „Stamm: … ok
+    /// (Ergebnis-ID 357)"); leer = die Seite zeigt <see cref="Meldung"/> wie bisher.
+    /// <see cref="Meldung"/> bleibt der vollständige Text (Kopf und Hinweise).
+    /// </summary>
+    public string Meldungskopf { get; set; } = "";
+
+    /// <summary>
+    /// Die Hinweise des Laufs, ein Eintrag je Hinweis — das Banner klappt sie ein
+    /// (Simulation der Übersicht); leer = keine.
+    /// </summary>
+    public IReadOnlyList<string> Laufhinweise { get; set; } = Array.Empty<string>();
 
     /// <summary>Die Frage „öffnen?" — leer = keine Rückfrage.</summary>
     public string Frage { get; set; } = "";

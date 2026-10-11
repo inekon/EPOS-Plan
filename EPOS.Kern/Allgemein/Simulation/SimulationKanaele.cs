@@ -842,6 +842,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Netzverlust EINES Kanals</b> (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+        /// Simulationsablauf, Abschnitt 17): ein fester Stundenbetrag [kWh] auf jede Stunde des
+        /// Kanals <paramref name="kanal"/>, ohne Verteilung auf die übrigen Kanäle. Gilt nur für
+        /// einen WÄRMEkanal; ein anderer Kanal bleibt unberührt.
+        /// </summary>
+        /// <param name="kanal">Wärmekanal (<see cref="Kanal.KANAELE_WAERME"/>).</param>
+        /// <param name="betragJeStunde">Netzverlust je Stunde [kWh], konstant über das Jahr.</param>
+        public void KanalverlustAufschlagen(int kanal, double betragJeStunde)
+        {
+            if (!Kanal.IstWaerme(kanal) || betragJeStunde == 0) return;
+            double[] k = Bedarf[kanal];
+            for (int h = 0; h < STUNDEN_JAHR; h++)
+                k[h] = k[h] + betragJeStunde;
+        }
+
+        /// <summary>
         /// Tiefe Kopie: neue Vektoren mit denselben Werten. Nötig, weil die
         /// Erzeugermodule ihre Eingangsvektoren in-place überschreiben — eine flache
         /// Kopie würde den Zustand des Aufrufers mitverändern (Regel B0-2).
@@ -1625,6 +1641,21 @@ namespace WindowsFormsApplication1
             {
                 for (int i = 0; i < Zeilen.Count; i++)
                     if (Zeilen[i] != null && Zeilen[i].IstDirektsenke) return true;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// true, wenn die Anlage den PROZESSKANAL unmittelbar deckt — eine Zeile mit der
+        /// Direktsenke <see cref="Senke.Prozesswaerme"/> (PW1 Stufe 1: nur dann fragt sie das
+        /// Temperaturniveau des Prozesskanals).
+        /// </summary>
+        public bool BedientProzessDirekt
+        {
+            get
+            {
+                for (int i = 0; i < Zeilen.Count; i++)
+                    if (Zeilen[i] != null && Zeilen[i].Ziel == Senke.Prozesswaerme) return true;
                 return false;
             }
         }

@@ -101,6 +101,13 @@
     @* DER REITERWUNSCH (16.09.2026): Wer die Startseite mit einem Auftrag zeigt,
        nennt den Reiter, mit dem sie aufmacht - nach dem Anlegen eines Projekts im
        Assistenten ist das „Waermebedarf". *@
+    @* KT-2: Eine Ansicht, die aus der Startseite heraus nicht aufging (kein Projekt, Ausnahme beim
+       Aufbau der Gaben), sagt es HIER - die Statuszeile der Wurzel steht sonst nur unter der
+       Projektliste, und der Klick auf eine Kachel endete still. *@
+    @if (!string.IsNullOrEmpty(_ansichtFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_ansichtFehler" />
+    }
     <EPOS.UI.Seiten.Start.Startseite @ref="_startseiteSeite"
                                      @attributes="_startseite"
                                      KopfbandZeigen="@(Kopfleiste is null)"
@@ -195,6 +202,26 @@ else if (_ansicht == Seitenschluessel.BauteilaufbauKatalog && _bauteilaufbauKata
     <EPOS.UI.Dialoge.Bedarf.BauteilaufbauDialog @attributes="_bauteilaufbauKatalog"
                                                 Geschlossen="BeiBauteilaufbauKatalogFertig" />
 }
+@* DIE KAELTEMASCHINEN (KU3-1): dieselbe Bauart wie die Kataloge der Gebaeudesimulation. *@
+else if (_ansicht == Seitenschluessel.KaeltemaschineKatalog && _kaeltemaschineKatalog is not null)
+{
+    <EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKatalogDialog @attributes="_kaeltemaschineKatalog"
+                                                          Geschlossen="BeiKaeltemaschineKatalogFertig" />
+}
+@* DIE KAELTEMASCHINEN DES PROJEKTS (KU3-4c): der Erzeugerdialog als freie Ansicht fuer das offene Projekt. *@
+else if (_ansicht == Seitenschluessel.KaeltemaschineAnlage && _kaeltemaschineAnlage is not null)
+{
+    <EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDialog @attributes="_kaeltemaschineAnlage"
+                                                         Geschlossen="BeiKaeltemaschineAnlageFertig" />
+}
+@* DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2): eine
+   freie Ansicht wie die Kataloge der Gebaeudesimulation - die Huelle liegt plattformfrei in
+   EPOS.UI.Daten (BetriebskalenderHuelle). *@
+else if (_ansicht == Seitenschluessel.Betriebskalender && _betriebskalender is not null)
+{
+    <EPOS.UI.Dialoge.Bedarf.BetriebskalenderDialog @attributes="_betriebskalender"
+                                                   Geschlossen="BeiBetriebskalenderFertig" />
+}
 @* DER KATALOG DER BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26): der EINZIGE
    Katalog, der auf iOS aufgeht - die acht uebrigen Katalogverwaltungen bleiben dort
    geschlossen (KI-D-Q10). Unter Windows kommt die Wurzel hier nicht an die Reihe: Die
@@ -287,6 +314,16 @@ else if (_ansicht == Seitenschluessel.StromspeicherAuslegung && _auslegung is no
                                                       @attributes="_auslegung"
                                                       Geschlossen="ZurueckZumAufrufer" />
 }
+else if (_ansicht == Seitenschluessel.PufferAuslegung && _pufferAuslegung is not null)
+{
+    @* DIE PUFFERSPEICHER-AUSLEGUNG als freie Ansicht (Konzept Pufferspeicher-Auslegung, Stufe P2) -
+       dieselbe Bauart wie die Stromspeicher-Auslegung: Der Einstieg meldet seinen Arbeitsgang bei
+       PufferAuslegungHuelle an, die Wurzel holt beim Betreten den Parametersatz, und „← zurück"
+       fuehrt ueber den Rueckwegstapel dorthin, woher man kam. Eine Rueckfrage beim Verlassen gibt
+       es nicht: Geschrieben wird nur mit „Auslegung speichern" und „Uebernehmen". *@
+    <EPOS.UI.Seiten.Pufferspeicher.PufferAuslegungSeite @attributes="_pufferAuslegung"
+                                                       Geschlossen="ZurueckVonPufferAuslegung" />
+}
 else if (_ansicht == Seitenschluessel.KiAssistent && _kiAssistent is not null)
 {
     @* Der KI-Hilfe-Assistent (iU9-W15b.7, Entscheid E-10). Unter Windows steht
@@ -330,6 +367,9 @@ else
     private IReadOnlyDictionary<string, object>? _kiAssistent;
     private IReadOnlyDictionary<string, object>? _assistent;
     private IReadOnlyDictionary<string, object>? _auslegung;
+
+    /// <summary>Der Parametersatz der stehenden Pufferspeicher-Auslegung (Stufe P2).</summary>
+    private IReadOnlyDictionary<string, object>? _pufferAuslegung;
 
     /// <summary>
     /// Die stehende Auslegungsansicht — sie beantwortet, ob der Stand ungespeichert
@@ -425,8 +465,20 @@ else
     private IReadOnlyDictionary<string, object>? _nutzungsartKatalog;
     private IReadOnlyDictionary<string, object>? _baustoffKatalog;
     private IReadOnlyDictionary<string, object>? _bauteilaufbauKatalog;
+    private IReadOnlyDictionary<string, object>? _kaeltemaschineKatalog;
+    private IReadOnlyDictionary<string, object>? _kaeltemaschineAnlage;
+    private IReadOnlyDictionary<string, object>? _betriebskalender;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
+
+    /// <summary>
+    /// Warum die zuletzt über <see cref="OeffneMaske"/> verlangte Ansicht nicht aufging; leer = sie ging
+    /// auf. Steht als Banner über der Startseite (KT-2).
+    /// </summary>
+    private string _ansichtFehler = "";
+
+    /// <summary>Der Grund aus <see cref="_ansichtFehler"/> — lesbar für Prüfstände.</summary>
+    public string AnsichtFehler => _ansichtFehler;
 
     /// <summary>
     /// Die stehende Assistentenseite — sie beantwortet, ob der Lauf ungespeicherte
@@ -608,6 +660,14 @@ else
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? StromspeicherAuslegungGaben { get; set; }
 
     /// <summary>
+    /// Der Parametersatz der Ansicht „Pufferspeicher-Auslegung" (Stufe P2) zum Projekt der Wurzel,
+    /// wenn ihn die Hülle stellt (Windows: <c>PufferAuslegungHuelle.AnsichtGaben</c>). Ohne ihn
+    /// fragt die Wurzel <c>IProjektQuelle.PufferAuslegungGaben</c> — der iOS-Weg. Ein Delegat je
+    /// Betreten: Der Arbeitsgang (Zielpuffer, Einstieg) ist vorher angemeldet.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? PufferAuslegungGaben { get; set; }
+
+    /// <summary>
     /// Der Parametersatz der Ansicht „Simulation", wenn ihn die Hülle stellt
     /// (Windows: <c>SimulationHuelle.AnsichtGaben</c>). Ohne ihn fragt die Wurzel
     /// <c>IProjektQuelle.SimulationGaben</c> — der iOS-Weg (Stufe S2, Auftrag #208).
@@ -637,6 +697,26 @@ else
     /// <c>IProjektQuelle.BauteilaufbauKatalogGaben</c>.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Verwaltung „Kältemaschinen" (KU3-1) — dieselbe Form wie
+    /// <see cref="BaustoffKatalogGaben"/>; ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.KaeltemaschineKatalogGaben</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? KaeltemaschineKatalogGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des Erzeugerdialogs „Kältemaschinen im Projekt" (KU3-4c) für ein Projekt; ohne ihn fragt
+    /// die Wurzel <c>IProjektQuelle.KaeltemaschineAnlageGaben</c>.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? KaeltemaschineAnlageGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Verwaltung „Betriebskalender" (Entscheidungsvorlage PW2, BW2) — dieselbe
+    /// Form wie <see cref="BaustoffKatalogGaben"/>; ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.BetriebskalenderGaben</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }
 
     // =====================================================================
     // Das Lizenzbanner (Welle iF30)
@@ -820,6 +900,7 @@ else
         || ziel == Seitenschluessel.SimulationKonfiguration
         || ziel == Seitenschluessel.SimulationErgebnis
         || ziel == Seitenschluessel.StromspeicherAuslegung
+        || ziel == Seitenschluessel.PufferAuslegung
         || ziel == Seitenschluessel.KiAssistent;
 
     /// <summary>Die Marke der STEHENDEN Ansicht; leer = sie führt keine.</summary>
@@ -1237,16 +1318,54 @@ else
         // bleibt die Ansicht stehen und sagt warum.
         if (maske == Seitenschluessel.BaustoffKatalog)
         {
-            _baustoffKatalog = BaustoffKatalogGaben?.Invoke() ?? Quelle.BaustoffKatalogGaben();
-            if (_baustoffKatalog is null) { _statuszeile = KeinBaustoffKatalogText; return false; }
+            _baustoffKatalog = GabenSicher(maske,
+                () => BaustoffKatalogGaben?.Invoke() ?? Quelle.BaustoffKatalogGaben(), out string? fehler);
+            if (_baustoffKatalog is null) { _statuszeile = fehler ?? KeinBaustoffKatalogText; return false; }
             _ansicht = maske;
             return true;
         }
 
         if (maske == Seitenschluessel.BauteilaufbauKatalog)
         {
-            _bauteilaufbauKatalog = BauteilaufbauKatalogGaben?.Invoke() ?? Quelle.BauteilaufbauKatalogGaben();
-            if (_bauteilaufbauKatalog is null) { _statuszeile = KeinBauteilaufbauKatalogText; return false; }
+            _bauteilaufbauKatalog = GabenSicher(maske,
+                () => BauteilaufbauKatalogGaben?.Invoke() ?? Quelle.BauteilaufbauKatalogGaben(), out string? fehler);
+            if (_bauteilaufbauKatalog is null) { _statuszeile = fehler ?? KeinBauteilaufbauKatalogText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        // ---- Die Kaeltemaschinen (KU3-1) - derselbe Weg ---------------------------
+        if (maske == Seitenschluessel.KaeltemaschineKatalog)
+        {
+            _kaeltemaschineKatalog = GabenSicher(maske,
+                () => KaeltemaschineKatalogGaben?.Invoke() ?? Quelle.KaeltemaschineKatalogGaben(), out string? fehler);
+            if (_kaeltemaschineKatalog is null) { _statuszeile = fehler ?? KeinKaeltemaschineKatalogText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        // ---- Die Kaeltemaschinen des offenen Projekts (KU3-4c) --------------------
+        if (maske == Seitenschluessel.KaeltemaschineAnlage)
+        {
+            // KT-2: Das offene Projekt kennt unter Windows nur der Projektkontext des Kerns — die
+            // Wurzel setzt _projekt allein über die Projektliste (iOS). Ohne diesen Rückfall lehnte
+            // die Ansicht unter Windows JEDEN Klick der Kachel „Kühlung und Kälteanlagen“ ab.
+            int idProjekt = OffenesProjekt();
+            string? fehler = null;
+            _kaeltemaschineAnlage = idProjekt <= 0 ? null
+                : GabenSicher(maske,
+                    () => KaeltemaschineAnlageGaben?.Invoke(idProjekt) ?? Quelle.KaeltemaschineAnlageGaben(idProjekt),
+                    out fehler);
+            if (_kaeltemaschineAnlage is null) { _statuszeile = fehler ?? KeineKaeltemaschineAnlageText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        // ---- Die Betriebskalender der Bedarfsprofile (PW2, BW2) ------------------
+        if (maske == Seitenschluessel.Betriebskalender)
+        {
+            _betriebskalender = BetriebskalenderGaben?.Invoke() ?? Quelle.BetriebskalenderGaben();
+            if (_betriebskalender is null) { _statuszeile = KeinBetriebskalenderText; return false; }
             _ansicht = maske;
             return true;
         }
@@ -1384,6 +1503,21 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.PufferAuslegung)
+        {
+            // Wie die Stromspeicher-Auslegung: der Delegat der Huelle vor der Projektquelle (iOS).
+            int idProjekt = _projekt?.Id ?? 0;
+            _pufferAuslegung = PufferAuslegungGaben?.Invoke(idProjekt) ?? Quelle.PufferAuslegungGaben(idProjekt);
+            if (_pufferAuslegung is null)
+            {
+                _statuszeile = KeinePufferAuslegungText;
+                return false;
+            }
+            if (merken) RueckwegMerken();
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.KiAssistent)
         {
             IReadOnlyDictionary<string, object>? gaben = Quelle.KiAssistentGaben(_projekt?.Id ?? 0);
@@ -1457,6 +1591,8 @@ else
         // Brauchwasser-Nutzungsarten (ZU26).
         _baustoffKatalog = null;
         _bauteilaufbauKatalog = null;
+        _kaeltemaschineKatalog = null;
+        _betriebskalender = null;
         _nutzungsartKatalog = null;
         _auslegungGeklaert = true;
         _rueckweg.Clear();
@@ -1521,8 +1657,17 @@ else
     /// <summary>Die Baustoffverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiBaustoffKatalogFertig(bool ok) => ZurueckZurListe();
 
+    /// <summary>Die Verwaltung der Kältemaschinen ist zu — sie schreibt in ihrem Speicherweg.</summary>
+    private void BeiKaeltemaschineKatalogFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Der Erzeugerdialog der Kältemaschinen ist zu — mit OK hat er geschrieben.</summary>
+    private void BeiKaeltemaschineAnlageFertig(bool ok) => ZurueckZurListe();
+
     /// <summary>Die Aufbauverwaltung ist zu — sie schreibt in ihrem Speicherweg.</summary>
     private void BeiBauteilaufbauKatalogFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Die Betriebskalender sind zu — sie schreiben in ihrem Speicherweg.</summary>
+    private void BeiBetriebskalenderFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>
     /// Der Katalog der Brauchwasser-Nutzungsarten ist zu (ZU26) — er schreibt in EINER
@@ -1638,6 +1783,14 @@ else
 
         if (Zurueck()) return;
 
+        ZurueckZurListe();
+    }
+
+    /// <summary>Die Pufferspeicher-Auslegung ist zu — zurück dorthin, woher sie kam.</summary>
+    private void ZurueckVonPufferAuslegung()
+    {
+        _pufferAuslegung = null;
+        if (Zurueck()) return;
         ZurueckZurListe();
     }
 
@@ -1802,6 +1955,7 @@ else
            || maske == Seitenschluessel.Startseite
            || maske == Seitenschluessel.BerichteKosten
            || maske == Seitenschluessel.StromspeicherAuslegung
+           || maske == Seitenschluessel.PufferAuslegung
            || maske == Seitenschluessel.Projektliste
 
            // Die fuenf Masken aus KI-D-Q8. „Bekannt" heisst hier nur „die
@@ -1827,6 +1981,10 @@ else
            // Assistent (dialog_oeffnen) erreichen sie auf beiden Plattformen.
            || maske == Seitenschluessel.BaustoffKatalog
            || maske == Seitenschluessel.BauteilaufbauKatalog
+           // Die Kaeltemaschinen (KU3-1) - dieselbe Bauart, auf beiden Plattformen.
+           || maske == Seitenschluessel.KaeltemaschineKatalog
+           || maske == Seitenschluessel.KaeltemaschineAnlage
+           || maske == Seitenschluessel.Betriebskalender
 
            // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
            // ZU26) - der einzige Katalog, der auf iOS aufgeht. Unter Windows
@@ -1834,6 +1992,65 @@ else
            // Fenster; hier landet er auf dem iPad und aus dem
            // Hilfe-Assistenten (KiMaskenziele.BRAUCHWASSER_NUTZUNGSARTEN).
            || maske == Seitenschluessel.BrauchwasserNutzungsarten;
+
+    /// <summary>
+    /// Das offene Projekt: das in der Projektliste gewählte (iOS), sonst das des Projektkontexts im
+    /// Kern (<c>Dienste.Projekt</c>, Windows); 0 = keins.
+    /// </summary>
+    private int OffenesProjekt()
+    {
+        if ((_projekt?.Id ?? 0) > 0) return _projekt!.Id;
+        WindowsFormsApplication1.IProjektKontext? kontext = WindowsFormsApplication1.Dienste.Projekt;
+        return kontext is { Vorhanden: true } ? kontext.Id : 0;
+    }
+
+    /// <summary>
+    /// Baut den Parametersatz einer Ansicht und fängt eine Ausnahme dabei ab (KT-2, Hausblatt „benannt
+    /// ablehnen, nie still übergehen“): Dann ist das Ergebnis <c>null</c> und <paramref name="fehler"/>
+    /// nennt Maske und Meldung. Die Ausnahme selbst steht samt Aufrufstapel schon im Ausnahmeprotokoll
+    /// (<c>Logs\Ausnahmen.txt</c> der Windows-Schale schreibt jede beim Auslösen); der Vermerk dazu nennt
+    /// den Maskenschlüssel.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? GabenSicher(
+        string maske, Func<IReadOnlyDictionary<string, object>?> bau, out string? fehler)
+    {
+        fehler = null;
+        try
+        {
+            return bau();
+        }
+        catch (Exception ex)
+        {
+            fehler = AnsichtFehlerFormat(maske, ex.Message);
+            WindowsFormsApplication1.Ausnahmeprotokoll.Vermerken(
+                "Ansicht " + maske + ": Aufbau der Gaben gescheitert - " + ex.GetType().Name + ": " + ex.Message);
+            return null;
+        }
+    }
+
+    /// <summary>„Die Ansicht „…“ konnte nicht geöffnet werden: …“ für einen Maskenschlüssel.</summary>
+    private string AnsichtFehlerFormat(string maske, string grund)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, AnsichtFehlerText, Maskenname(maske), grund);
+
+    /// <summary>Der Anzeigename einer Ansicht für den Banner; ohne eigenen Namen der Schlüssel.</summary>
+    private static string Maskenname(string maske)
+        => maske == Seitenschluessel.KaeltemaschineAnlage ? Resource.START_E_KUEHL_TITEL
+         : maske == Seitenschluessel.KaeltemaschineKatalog ? Resource.KM_TITEL
+         : maske == Seitenschluessel.BaustoffKatalog ? Resource.BST_TITEL
+         : maske == Seitenschluessel.BauteilaufbauKatalog ? Resource.BTA_TITEL
+         : maske;
+
+    /// <summary>
+    /// Eine über <see cref="OeffneMaske"/> verlangte Ansicht ging nicht auf: Der Grund (die Statuszeile,
+    /// die der Fall gesetzt hat) steht als Banner über der Startseite und als Vermerk im Ausnahmeprotokoll.
+    /// </summary>
+    private void AnsichtAbgelehnt(string maske)
+    {
+        _ansichtFehler = string.IsNullOrEmpty(_statuszeile)
+            ? AnsichtFehlerFormat(maske, Resource.WURZEL_NICHT_GEFUEHRT)
+            : _statuszeile;
+        WindowsFormsApplication1.Ausnahmeprotokoll.Vermerken("Ansicht " + maske + " nicht geoeffnet: " + _ansichtFehler);
+    }
 
     /// <inheritdoc />
     public bool OeffneMaske(string maske, params object[] argumente)
@@ -1876,7 +2093,21 @@ else
             if (maske == Seitenschluessel.Startseite) _reiterwunschOffen = platz;
             else if (maske == Seitenschluessel.BerichteKosten) _blattwunschOffen = platz;
 
-            Zeige(maske, betriebsart, marke);
+            // KT-2: Der Wechsel laeuft hier NACH der Rueckgabe; was er ablehnt oder wirft, kaeme beim
+            // Aufrufer nie an (der Task ist verworfen). Deshalb steht der Grund als Banner ueber der
+            // Startseite und als Vermerk im Ausnahmeprotokoll.
+            _ansichtFehler = "";
+            bool gezeigt;
+            try
+            {
+                gezeigt = Zeige(maske, betriebsart, marke);
+            }
+            catch (Exception ex)
+            {
+                gezeigt = false;
+                _statuszeile = AnsichtFehlerFormat(maske, ex.Message);
+            }
+            if (!gezeigt) AnsichtAbgelehnt(maske);
             StateHasChanged();
         });
         return true;
@@ -2051,6 +2282,21 @@ else
 
     /// <summary>Meldung, wenn die Aufbauverwaltung nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBauteilaufbauKatalogText { get; set; } = Resource.BTA_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn die Verwaltung der Kältemaschinen nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinKaeltemaschineKatalogText { get; set; } = Resource.KM_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn der Erzeugerdialog der Kältemaschinen nicht aufzubauen ist (etwa ohne Projekt).</summary>
+    [Parameter] public string KeineKaeltemaschineAnlageText { get; set; } = Resource.KMA_KEINE_ANSICHT;
+
+    /// <summary>Format „Die Ansicht „{0}“ konnte nicht geöffnet werden: {1}“ (Ressource WURZEL_ANSICHT_FEHLER).</summary>
+    [Parameter] public string AnsichtFehlerText { get; set; } = Resource.WURZEL_ANSICHT_FEHLER;
+
+    /// <summary>Meldung, wenn die Verwaltung der Betriebskalender nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinBetriebskalenderText { get; set; } = Resource.BKAL_KEINE_ANSICHT;
+
+    /// <summary>Meldung, wenn die Pufferspeicher-Auslegung nicht aufzubauen ist (kein Projekt, keine Quelle).</summary>
+    [Parameter] public string KeinePufferAuslegungText { get; set; } = Resource.PAUS_KEINE_ANSICHT;
 
     // ---- Der Katalog der Brauchwasser-Nutzungsarten (ZU26) --------------
 

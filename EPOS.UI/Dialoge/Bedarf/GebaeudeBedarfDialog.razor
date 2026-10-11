@@ -35,8 +35,10 @@
 @namespace EPOS.UI.Dialoge.Bedarf
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@using System.Globalization
 @inherits Farbwahlwirt
 @implements IDisposable
+<CascadingValue Value="@CsvNaht">
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -90,6 +92,13 @@
                                 <td colspan="2">@Daten.Modelltext</td>
                             </tr>
                         }
+                        @* Anlagenkopplung AK3 (Festlegung 20): die Auskunft rechnet ohne geschlossenen Kreis - benannt. *@
+                        @if (Daten.Rueckstufe.Length > 0)
+                        {
+                            <tr class="gebb-rueckstufe">
+                                <td colspan="3">@Daten.Rueckstufe</td>
+                            </tr>
+                        }
                         @* Stufe G2 (Konzept 4.6, 8.2): die Kennzahlen, die es nur auf dem
                            VDI-Weg gibt - auf dem Altweg stehen sie nicht da, statt "—" zu zeigen.
                            Kuehlbedarf, Kuehlstunden und Ueberhitzung stehen seit KU1 im Abschnitt
@@ -104,6 +113,16 @@
                             <tr class="gebb-vdi">
                                 <td>@LabelSommerlueftung</td>
                                 <td class="epos-zahl">@Ganzzahl(Daten.SommerlueftungsstundenH)</td>
+                                <td>@EinheitStundenZahl</td>
+                            </tr>
+                        }
+                        @* Stufe KP2, Welle U1 (Konzept Konditionierungsprofile 3.7): die Stunden mit
+                           Nachtauskuehlung - NUR mit Wert, also nur, wenn eine gesetzt ist. *@
+                        @if (Daten.NachtauskuehlstundenH is int nachtauskuehlung)
+                        {
+                            <tr class="gebb-nachtauskuehlung">
+                                <td>@LabelNachtauskuehlung</td>
+                                <td class="epos-zahl">@Ganzzahl(nachtauskuehlung)</td>
                                 <td>@EinheitStundenZahl</td>
                             </tr>
                         }
@@ -143,6 +162,87 @@
             </Kachelraster>
         </div>
     }
+
+    @* ---- Anlagenkopplung AK2 (Konzept 9.4, 5.5, 6.2): die Komfortkacheln NEBEN dem Restbedarf - nie ohne
+       ihn. Am gekoppelt gerechneten Gebaeude (oder im Lauf mit Fahrplan); ein nicht erhobener Wert zeigt „—" (K18). Dazu im
+       Lauf mit Fahrplan der Bedarfsbegriff und die Stunden am Fahrplan. *@
+    @if (Daten.IstVdi6007 && (Daten.IstGekoppelt || Daten.IstKuehlgekoppelt || Daten.KomfortErhoben || Daten.Bedarfsbegriff.Length > 0))
+    {
+        <div class="gebb-komfort" data-komfort="@(Daten.KomfortErhoben ? "erhoben" : "ohne")">
+            <Kachelraster>
+                <KindInhalt>
+                    <Kennzahlkachel Titel="@KachelKomfortStunden" Wert="@Stunden(Daten.KomfortUnterschreitungsstundenH)" Quelle="@QuelleKomfort" />
+                    <Kennzahlkachel Titel="@KachelKomfortKelvin" Wert="@Kelvinstunden(Daten.KomfortKelvinstundenKh)" />
+                    <Kennzahlkachel Titel="@KachelKomfortStrecke" Wert="@Stunden(Daten.KomfortLaengsteStreckeH)" />
+                    <Kennzahlkachel Titel="@KachelRestbedarf" Wert="@RestbedarfWert" Quelle="@QuelleRestbedarf" />
+                    @if (Daten.KomfortUeberschreitungsstundenH.HasValue)
+                    {
+                        <Kennzahlkachel Titel="@KachelKomfortUeber" Wert="@Stunden(Daten.KomfortUeberschreitungsstundenH)" />
+                        <Kennzahlkachel Titel="@KachelKomfortKelvinKuehl" Wert="@Kelvinstunden(Daten.KomfortKelvinstundenKuehlungKh)" />
+                    }
+                    @if (Daten.Bedarfsbegriff.Length > 0)
+                    {
+                        <Kennzahlkachel Titel="@KachelBedarfsbegriff" Wert="@Daten.Bedarfsbegriff" />
+                        <Kennzahlkachel Titel="@KachelFahrplanBegrenzt" Wert="@Stunden(Daten.FahrplanBegrenztStundenH)" />
+                    }
+                </KindInhalt>
+            </Kachelraster>
+            @if (!Daten.KomfortErhoben)
+            {
+                <Herleitungszeile Text="@HinweisKomfortOhne" />
+            }
+        </div>
+    }
+
+    @* ---- Anlagenkopplung AK3 (Entwurf AK3 Festlegung 22): die Kennzahlen des geschlossenen Kreises aus dem letzten
+       Projektlauf - nur, wenn er den Kreis rechnete. *@
+    @if (Daten.Ak3Erhoben)
+    {
+        <div class="gebb-ak3">
+            <Kachelraster>
+                <KindInhalt>
+                    <Kennzahlkachel Titel="@KachelAk3Durchlaeufe" Wert="@Ak3DurchlaeufeWert" Quelle="@QuelleAk3" />
+                    <Kennzahlkachel Titel="@KachelAk3Fallwechsel" Wert="@Anzahl(Daten.Ak3Fallwechsel)" />
+                    <Kennzahlkachel Titel="@KachelAk3Schranke" Wert="@Stunden(Daten.Ak3SchrankeStundenH)" />
+                    <Kennzahlkachel Titel="@KachelAk3SpeicherLeer" Wert="@Stunden(Daten.Ak3SpeicherLeerStundenH)" />
+                    <Kennzahlkachel Titel="@KachelAk3Restbedarf" Wert="@Stunden(Daten.Ak3RestbedarfStundenH)" />
+                </KindInhalt>
+            </Kachelraster>
+        </div>
+    }
+
+    @* ---- AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kaelteseite im Kreis aus dem letzten Projektlauf -
+       jede Seite nur, wenn der Lauf sie erhob; daneben die Kennzahlen der Kuehlkurve (Entwurf KK, Festlegung 12). *@
+    @if (Daten.ZonensperreErhoben || Daten.Ak3KaelteErhoben || Daten.KuehlkurveErhoben)
+    {
+        <div class="gebb-ak3k">
+            <Kachelraster>
+                <KindInhalt>
+                    @if (Daten.ZonensperreErhoben)
+                    {
+                        <Kennzahlkachel Titel="@KachelZonensperreTage" Wert="@Anzahl(Daten.ZonensperreTage)" Quelle="@QuelleZonensperre" />
+                        <Kennzahlkachel Titel="@KachelZonensperreGesperrt" Wert="@GesperrtWert" />
+                    }
+                    @if (Daten.Ak3KaelteErhoben)
+                    {
+                        <Kennzahlkachel Titel="@KachelAk3Kaelteschranke" Wert="@Stunden(Daten.Ak3KaelteschrankeStundenH)" Quelle="@QuelleAk3Kaelte" />
+                        <Kennzahlkachel Titel="@KachelAk3Umschaltung" Wert="@Stunden(Daten.Ak3UmschaltStundenH)" />
+                        <Kennzahlkachel Titel="@KachelAk3Kaelterest" Wert="@KaelterestWert" />
+                    }
+                    @if (Daten.KuehlkurveErhoben)
+                    {
+                        <Kennzahlkachel Titel="@KachelKuehlkurveVorlauf" Wert="@KuehlkurveVorlaufWert" Quelle="@QuelleKuehlkurve" />
+                        <Kennzahlkachel Titel="@KachelKuehlkurveAbsenkung" Wert="@Kelvinstunden(Daten.KuehlkurveAbsenkungKh)" />
+                        <Kennzahlkachel Titel="@KachelKuehlkurveGrenze" Wert="@Stunden(Daten.KuehlkurveVorlaufgrenzeStundenH)" />
+                    }
+                </KindInhalt>
+            </Kachelraster>
+        </div>
+    }
+
+    @* ---- Stufe KP3, Welle O2 (E59, E60): die Gruppe „Aufheizung" - Bemessung, Zaehlungen, Hinweise W1-W5,
+       Zonen und die Auslegungsgroesse mit ihren Teilen; ohne Daten steht sie nicht da. *@
+    <GebaeudeBedarfAufheizung Daten="@Daten.Aufheizung" Texte="@AufheizTexte" />
     </section>
 
     @* ---- Die Zonen (Stufe G6b, Anwenderentscheid A2): eine Zeile je Zone, auch unbeheizt -
@@ -161,6 +261,22 @@
                                 <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteMaxLast, EinheitKw)</th>
                                 <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteRaumtemperatur, "°C")</th>
                                 <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteUeberhitzung, EinheitStundenZahl)</th>
+                                @if (ZonenMitNachtauskuehlung)
+                                {
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteNachtauskuehlung, EinheitStundenZahl)</th>
+                                }
+                                @if (ZonenMitKaelte)
+                                {
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteKaelte, _einheit.Text)</th>
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteKaeltespitze, EinheitKw)</th>
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteKuehlstunden, EinheitStundenZahl)</th>
+                                }
+                                @if (ZonenMitHeizkreis)
+                                {
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteVorlauf, "°C")</th>
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteRuecklauf, "°C")</th>
+                                    <th class="epos-zahl">@Kennzahltext(ZonenTexte.SpalteBegrenzt, EinheitStundenZahl)</th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
@@ -174,12 +290,36 @@
                                     <td class="epos-zahl">@Zahl(z.MaxLastKw)</td>
                                     <td class="epos-zahl">@Zahl(z.MittlereRaumtemperaturC)</td>
                                     <td class="epos-zahl">@Ganzzahl(z.UeberhitzungsstundenH)</td>
+                                    @if (ZonenMitNachtauskuehlung)
+                                    {
+                                        <td class="epos-zahl">@Ganzzahl(z.NachtauskuehlstundenH)</td>
+                                    }
+                                    @if (ZonenMitKaelte)
+                                    {
+                                        <td class="epos-zahl gebb-zone-kaelte">@Energie(z.KaeltebedarfMwh)</td>
+                                        <td class="epos-zahl">@Zahl(z.KaeltespitzeKw)</td>
+                                        <td class="epos-zahl">@Ganzzahl(z.KuehlstundenH)</td>
+                                    }
+                                    @if (ZonenMitHeizkreis)
+                                    {
+                                        <td class="epos-zahl">@Temperatur(z.VorlaufMittelC)</td>
+                                        <td class="epos-zahl">@Temperatur(z.RuecklaufMittelC)</td>
+                                        <td class="epos-zahl">@Stunden(z.UebergabeBegrenztH)</td>
+                                    }
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
                 <Herleitungszeile Text="@ZonenTexte.Herleitung" />
+                @if (Gleichzeitigzeile is string gleichzeitig)
+                {
+                    <Herleitungszeile Text="@gleichzeitig" />
+                }
+                @if (ZonenMitHeizkreis)
+                {
+                    <Herleitungszeile Text="@ZonenTexte.HerleitungUebergabe" />
+                }
             </KindInhalt>
         </Gruppenkopf>
     }
@@ -282,6 +422,19 @@
                      FarbeGewaehlt="FarbeUebernehmen"
                      FarbeZurueckgesetzt="FarbeVerwerfen" />
         <Herleitungszeile Text="@HinweisVorlaufLuecken" />
+    }
+
+    @* ---- Raumtemperatur und Sollwert (Anlagenkopplung AK2, E80): die Woche mit der groessten
+       Unterschreitung, die gezaehlten Stunden markiert. Nur mit erhobenem Komfort und einer Stunde. *@
+    @if (BildauftragKomfortwoche is not null)
+    {
+        <DiagrammSvg Modell="@Komfortwochenmodell" Kennung="gebaeude-komfortwoche" Bezeichnung="@BildtextKomfortwoche"
+                     PlatzhalterText="@PlatzhalterBild" Einheit="°C"
+                     Palette="@Farbpalette.Aktuell"
+                     FarbwahlErlaubt="@Farbwahl"
+                     FarbeGewaehlt="FarbeUebernehmen"
+                     FarbeZurueckgesetzt="FarbeVerwerfen" />
+        <Herleitungszeile Text="@HinweisKomfortwoche" />
     }
 
     @* ---- Kaeltebedarf (Stufe KU1; Kuehlkonzept 8.4; E21, F-K18, K5, K6) ----
@@ -439,12 +592,29 @@
     <SpeichernLeiste OkText="@OkText" MitAbbrechen="false" Ergebnis="BeiErgebnis" />
 </div>
 
+</CascadingValue>
+
 @code {
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster der ersten Spalte); jedes
+    /// Diagramm dieses Dialogs mit Reihen bekommt den Knopf über die Kaskade. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Naht der Kaskade; das Raster folgt der Länge der Reihen.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
     /// <summary>Das eingefrorene Ergebnis; die Hülle rechnet es.</summary>
     [Parameter] public GebaeudeBedarfDaten Daten { get; set; } = new();
 
     /// <summary>Die Texte der Zonentabelle und der Diagrammwahl (Stufe G6b).</summary>
     [Parameter] public GebaeudeBedarfZonenTexte ZonenTexte { get; set; } = new();
+
+    /// <summary>Die Beschriftungen der Gruppe „Aufheizung" (Stufe KP3, Welle O2).</summary>
+    [Parameter] public GebaeudeBedarfAufheizTexte AufheizTexte { get; set; } = new();
 
     /// <summary>
     /// Liefert das Wärmelastbild EINER Zone (Stufe G6b) — Parameter der Platz der Zone in
@@ -480,6 +650,162 @@
     /// gerechnetes Gebäude. <c>null</c> = kein Bild.
     /// </summary>
     [Parameter] public Func<Zeichenmodell?>? BildauftragVorlauf { get; set; }
+
+    // --- Anlagenkopplung AK2 (Konzept Anlagenkopplung 9.4, 5.5) -------------------------
+
+    /// <summary>Liefert das Bild „Raumtemperatur und Sollwert" (Woche mit der größten Unterschreitung); <c>null</c> = kein Bild.</summary>
+    [Parameter] public Func<Zeichenmodell?>? BildauftragKomfortwoche { get; set; }
+
+    /// <summary><c>GEBB_BILD_KOMFORTWOCHE</c></summary>
+    [Parameter] public string BildtextKomfortwoche { get; set; } = "Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung";
+
+    /// <summary><c>GEBB_HRL_KOMFORTWOCHE</c>, fertig formuliert mit dem Wochenbeginn.</summary>
+    [Parameter] public string HinweisKomfortwoche { get; set; } = "";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_STUNDEN</c></summary>
+    [Parameter] public string KachelKomfortStunden { get; set; } = "Unterschreitungsstunden";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_KELVIN</c></summary>
+    [Parameter] public string KachelKomfortKelvin { get; set; } = "Kelvinstunden";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_STRECKE</c></summary>
+    [Parameter] public string KachelKomfortStrecke { get; set; } = "Längste Strecke";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_QUELLE</c></summary>
+    [Parameter] public string QuelleKomfort { get; set; } = "Stunden der Nutzungszeit mehr als 1,0 K unter dem Sollwert";
+
+    /// <summary><c>GEBB_KACHEL_RESTBEDARF</c></summary>
+    [Parameter] public string KachelRestbedarf { get; set; } = "Restbedarf (Projekt, letzter Lauf)";
+
+    /// <summary><c>GEBB_KACHEL_RESTBEDARF_QUELLE</c></summary>
+    [Parameter] public string QuelleRestbedarf { get; set; } = "Wärme, die kein Erzeuger gedeckt hat — steht neben den Komfortstunden";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_UEBER</c></summary>
+    [Parameter] public string KachelKomfortUeber { get; set; } = "Überschreitungsstunden Kühlung";
+
+    /// <summary><c>GEBB_KACHEL_KOMFORT_KELVIN_KUEHL</c></summary>
+    [Parameter] public string KachelKomfortKelvinKuehl { get; set; } = "Kelvinstunden Kühlung";
+
+    /// <summary><c>GEBB_KACHEL_BEDARFSBEGRIFF</c></summary>
+    [Parameter] public string KachelBedarfsbegriff { get; set; } = "Bedarfsbegriff";
+
+    /// <summary><c>GEBB_KACHEL_FAHRPLAN_BEGRENZT</c></summary>
+    [Parameter] public string KachelFahrplanBegrenzt { get; set; } = "Stunden am Fahrplan begrenzt";
+
+    /// <summary><c>GEBB_HRL_KOMFORT_OHNE</c></summary>
+    [Parameter] public string HinweisKomfortOhne { get; set; } = "Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude.";
+
+    /// <summary><c>AK3_GEBB_KACHEL_DURCHLAEUFE</c></summary>
+    [Parameter] public string KachelAk3Durchlaeufe { get; set; } = "Durchläufe je Stunde (Mittel / Höchstwert)";
+
+    /// <summary><c>AK3_GEBB_KACHEL_FALLWECHSEL</c></summary>
+    [Parameter] public string KachelAk3Fallwechsel { get; set; } = "Fallwechsel";
+
+    /// <summary><c>AK3_GEBB_KACHEL_SCHRANKE</c></summary>
+    [Parameter] public string KachelAk3Schranke { get; set; } = "Stunden an der Schranke";
+
+    /// <summary><c>AK3_GEBB_KACHEL_SPEICHER_LEER</c></summary>
+    [Parameter] public string KachelAk3SpeicherLeer { get; set; } = "Stunden mit leerem Speicher";
+
+    /// <summary><c>AK3_GEBB_KACHEL_RESTBEDARF</c></summary>
+    [Parameter] public string KachelAk3Restbedarf { get; set; } = "Stunden mit Restbedarf";
+
+    /// <summary><c>AK3_GEBB_QUELLE</c></summary>
+    [Parameter] public string QuelleAk3 { get; set; } = "Geschlossener Kreis (AK3), Projekt, letzter Lauf";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_SPERRTAGE</c></summary>
+    [Parameter] public string KachelZonensperreTage { get; set; } = "Tage mit Sperre der Gegenseite";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_GESPERRT</c></summary>
+    [Parameter] public string KachelZonensperreGesperrt { get; set; } = "Gesperrte Energie (Heizen / Kühlen)";
+
+    /// <summary><c>AK3K_GEBB_QUELLE_ZONENSPERRE</c></summary>
+    [Parameter] public string QuelleZonensperre { get; set; } = "Zonensperre, Projekt, letzter Lauf";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_KAELTESCHRANKE</c></summary>
+    [Parameter] public string KachelAk3Kaelteschranke { get; set; } = "Stunden an der Kälteschranke";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_UMSCHALTUNG</c></summary>
+    [Parameter] public string KachelAk3Umschaltung { get; set; } = "Umschaltstunden";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_KAELTEREST</c></summary>
+    [Parameter] public string KachelAk3Kaelterest { get; set; } = "Kälte-Restbedarf";
+
+    /// <summary><c>AK3K_GEBB_QUELLE_KREIS</c></summary>
+    [Parameter] public string QuelleAk3Kaelte { get; set; } = "Kälteseite im Kreis (AK3), Projekt, letzter Lauf";
+
+    /// <summary><c>KK_GEBB_KACHEL_VORLAUF_MITTEL</c></summary>
+    [Parameter] public string KachelKuehlkurveVorlauf { get; set; } = "Mittlerer Kühlvorlauf (Kühlkurve)";
+
+    /// <summary><c>KK_GEBB_KACHEL_ABSENKUNG</c></summary>
+    [Parameter] public string KachelKuehlkurveAbsenkung { get; set; } = "Absenkung durch Raumeinfluss";
+
+    /// <summary><c>KK_GEBB_KACHEL_VORLAUFGRENZE</c></summary>
+    [Parameter] public string KachelKuehlkurveGrenze { get; set; } = "Stunden an der Vorlaufgrenze";
+
+    /// <summary><c>KK_GEBB_QUELLE</c></summary>
+    [Parameter] public string QuelleKuehlkurve { get; set; } = "Kühlkurve, Projekt, letzter Lauf";
+
+    /// <summary>„16,3 °C" — der mittlere verlangte Kühlvorlauf; ohne Wert der Leertext.</summary>
+    private string KuehlkurveVorlaufWert
+        => Daten.KuehlkurveVorlaufMittelC is double v
+            ? v.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " °C"
+            : LeerText;
+
+    /// <summary>„0,05 / 0,01 MWh" — gesperrte Raumheizung und Raumkühlung des Probetags; ohne Wert der Leertext.</summary>
+    private string GesperrtWert
+        => Daten.ZonensperreHeizenGesperrtMwh is double h && Daten.ZonensperreKuehlenGesperrtMwh is double c
+            ? h.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " / " +
+              c.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " MWh"
+            : LeerText;
+
+    /// <summary>„3 h, 0,25 MWh" — Stunden und Menge des Kälte-Restbedarfs; ohne Wert der Leertext.</summary>
+    private string KaelterestWert
+        => Daten.Ak3KaelterestStundenH is int s && Daten.Ak3KaelterestMwh is double m
+            ? Stunden(s) + ", " + m.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " MWh"
+            : LeerText;
+
+    /// <summary>„1,84 / 6" — Mittel und Höchstwert der Durchläufe je Stunde; ohne Wert der Leertext.</summary>
+    private string Ak3DurchlaeufeWert
+        => Daten.Ak3DurchlaeufeMittel is double m
+            ? m.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " / " +
+              (Daten.Ak3DurchlaeufeMax is int x ? x.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) : LeerText)
+            : LeerText;
+
+    /// <summary>Eine Zahl ohne Einheit („12"); ohne Wert der Leertext.</summary>
+    private string Anzahl(int? n)
+        => n is int w ? w.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) : LeerText;
+
+    /// <summary>„273 h" — eine Stundenzahl; ohne Wert der Leertext („—").</summary>
+    private string Stunden(int? h)
+        => h is int w ? w.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) + " " + EinheitStundenZahl : LeerText;
+
+    /// <summary>„412,5 Kh" — Kelvinstunden; ohne Wert der Leertext.</summary>
+    private string Kelvinstunden(double? kh)
+        => kh is double w ? w.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " Kh" : LeerText;
+
+    /// <summary>„12,34 MWh/a" — der Restbedarf des Projekts; ohne Lauf der Leertext.</summary>
+    private string RestbedarfWert
+        => Daten.RestbedarfProjektMwh is double r
+            ? r.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " MWh/a"
+            : LeerText;
+
+    /// <summary>Das Bild der Komfortwoche — einmal gerechnet, damit der Zoom stehen bleibt.</summary>
+    private Zeichenmodell? _komfortwochenmodell;
+    private bool _komfortwochenmodellGerechnet;
+    private Zeichenmodell? Komfortwochenmodell
+    {
+        get
+        {
+            if (BildauftragKomfortwoche is null) return null;
+            if (!_komfortwochenmodellGerechnet)
+            {
+                _komfortwochenmodell = BildauftragKomfortwoche();
+                _komfortwochenmodellGerechnet = true;
+            }
+            return _komfortwochenmodell;
+        }
+    }
 
     /// <summary><c>GEBB_BILD_VORLAUF_RUECKLAUF</c></summary>
     [Parameter] public string BildtextVorlauf { get; set; } = "Vorlauf und Rücklauf";
@@ -582,6 +908,32 @@
     [Parameter] public string LabelMittlereRaumtemperatur { get; set; } = "mittlere Raumtemperatur (Nutzungszeit):";
     [Parameter] public string LabelUeberhitzung { get; set; } = "Überhitzungsstunden:";
     [Parameter] public string LabelSommerlueftung { get; set; } = "Stunden mit Sommerlüftung:";
+
+    /// <summary>Zeile der Stunden mit Nachtauskühlung (<c>KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG</c>, Stufe KP2 U1).</summary>
+    [Parameter] public string LabelNachtauskuehlung { get; set; } = "Stunden mit Nachtauskühlung:";
+
+    /// <summary>Trägt eine Zone Stunden mit Nachtauskühlung? Dann steht die Spalte (nur mit Wert).</summary>
+    private bool ZonenMitNachtauskuehlung => Daten.Zonen.Any(z => z.NachtauskuehlstundenH.HasValue);
+
+    /// <summary>Rechnet eine Zone gekühlt (KU3-3)? Dann stehen Kältebedarf, Kältespitze und Kühlstunden je Zone.</summary>
+    private bool ZonenMitKaelte => Daten.Zonen.Any(z => z.KaeltebedarfMwh.HasValue);
+
+    /// <summary>
+    /// Die Zeile zum gleichzeitigen Heizen und Kühlen der Zonen (KU3-3, F-K15, K6) — ausgewiesen, nicht
+    /// saldiert; <c>null</c> ohne solche Stunden.
+    /// </summary>
+    private string? Gleichzeitigzeile
+        => Daten.StundenHeizenUndKuehlenH is int h && h > 0 && Daten.GleichzeitigHeizenKwh is double heiz
+           && Daten.GleichzeitigKuehlenKwh is double kuehl
+            ? string.Format(CultureInfo.CurrentCulture, ZonenTexte.HerleitungGleichzeitig,
+                            h, heiz.ToString("N0", CultureInfo.CurrentCulture), kuehl.ToString("N0", CultureInfo.CurrentCulture))
+            : null;
+
+    /// <summary>
+    /// Rechnet mindestens eine Zone gekoppelt (AK1z, E63)? Nur dann stehen Vorlauf, Rücklauf und die
+    /// begrenzten Stunden je Zone in der Tabelle — eine Zone ohne Heizkreis zeigt dort „—".
+    /// </summary>
+    private bool ZonenMitHeizkreis => Daten.Zonen.Any(z => z.IstGekoppelt);
     [Parameter] public string EinheitStundenZahl { get; set; } = "h";
 
     // --- Texte der Stufe KU1 (Abschnitt „Kältebedarf", Kühlkonzept 8.4) -----------
@@ -692,7 +1044,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
@@ -757,6 +1109,14 @@
 
     /// <summary>Eine nullbare Leistung, Temperatur oder Stundenzahl mit zwei Nachkommastellen; „—" ohne Wert.</summary>
     private string Zahl(double? wert) => wert is double w ? Zahl(w) : LeerText;
+
+    /// <summary>Eine Temperatur mit einer Nachkommastelle wie die Kachel „Vorlauf / Rücklauf"; „—" ohne Wert.</summary>
+    private string Temperatur(double? wert)
+        => wert is double w ? w.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) : LeerText;
+
+    /// <summary>Eine gerechnete Stundenzahl auf ganze Stunden wie die Kachel der begrenzten Übergabe; „—" ohne Wert.</summary>
+    private string Stunden(double? wert)
+        => wert is double w ? w.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) : LeerText;
 
     /// <summary>Eine Stundenzahl ohne Nachkommastellen; „—" ohne Wert.</summary>
     private string Ganzzahl(int? wert)

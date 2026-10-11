@@ -64,7 +64,7 @@ public class GebaeudeZonenlisteTests : EposBunitContext
         {
             Zonen = zonen ?? Array.Empty<ZoneDaten>(),
             Uebernehmen = _ => Task.FromResult(new ZonenuebernahmeDaten(true, "", 1.0, Zone(-1, "Übernahme", 150), 150, "Wohnfläche [m²]", 150, false)),
-            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return ""; }
+            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return ZonenSchreibergebnis.Gut; }
         };
     }
 
@@ -319,14 +319,14 @@ public class GebaeudeZonenlisteTests : EposBunitContext
     }
 
     [Fact]
-    public void Speichern_unter_nennt_die_Zonen_die_an_der_Projektkopie_bleiben()
+    public void Speichern_unter_nennt_die_Zonen_die_der_Katalogsatz_uebernimmt()
     {
         var cut = Aufbauen(new Weg(), DreiZonen());
 
         Assert.Contains(cut.FindAll(".epos-herleitung"),
-                        z => z.TextContent == "Der neue Katalogsatz trägt keine Zonen; die Zonen (3) mit 6 Bauteilen bleiben an der Projektkopie.");
+                        z => z.TextContent == "Der neue Katalogsatz übernimmt die Zonen (3) mit 6 Bauteilen in ihrem gespeicherten Stand.");
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Speichern unter").Click();
-        Assert.Contains("Der Katalogsatz trägt die 3 Zonen mit 6 Bauteilen nicht mit; sie bleiben an der Projektkopie",
+        Assert.Contains("Der Katalogsatz übernimmt die 3 Zonen mit 6 Bauteilen in ihrem gespeicherten Stand",
                         cut.Find(".epos-rueckfrage-text").TextContent);
     }
 

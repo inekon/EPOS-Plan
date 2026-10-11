@@ -87,8 +87,9 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Eine Fläche innerer Masse</b> — beide Nachbarn beheizt. Die Einzonen-Zuordnung übergeht
-    /// sie (keine Hülle); der Bauteilvorschlag führt sie als Innenbauteil (Gruppe IW).
+    /// <b>Eine Fläche innerer Masse</b> — beide Nachbarn beheizt, oder eine Innenwand ohne Nachbarraum
+    /// (<see cref="AbbildBauteil.InnenEinseitig"/>, beide Stellen −1), die einseitig zählt. Die Einzonen-Zuordnung
+    /// übergeht sie (keine Hülle); der Bauteilvorschlag führt sie als Innenbauteil (Gruppe IW).
     /// </summary>
     internal sealed class Innenposten
     {
@@ -103,7 +104,7 @@ namespace WindowsFormsApplication1
         /// <summary>Das Bauteil des Abbilds.</summary>
         internal AbbildBauteil Bauteil { get; }
 
-        /// <summary>Stelle des beheizten Raums DIESES Gebäudes in <see cref="AbbildBauteil.Nachbarn"/> — Seite A.</summary>
+        /// <summary>Stelle des beheizten Raums DIESES Gebäudes in <see cref="AbbildBauteil.Nachbarn"/> — Seite A; −1 = ohne Nachbarraum (einseitig).</summary>
         internal int PosA { get; }
 
         /// <summary>Stelle des zweiten beheizten Raums — Seite B; −1, wenn er in einem anderen Gebäude liegt (dann zählt nur Seite A).</summary>
@@ -172,8 +173,10 @@ namespace WindowsFormsApplication1
     ///
     /// <list type="bullet">
     /// <item><b>Hülle:</b> ein Bauteil mit einem beheizten Nachbarn DIESES Gebäudes; zwei beheizte
-    /// Nachbarn = innere Masse. Ein Außenbauteil ohne Nachbarraum (<see cref="AbbildBauteil.HuelleOhneNachbar"/>)
-    /// zählt nach seiner Randbedingung.</item>
+    /// Nachbarn = innere Masse, eine Innenwand ohne Nachbarraum (<see cref="AbbildBauteil.InnenEinseitig"/>)
+    /// einseitig innere Masse. Ein Hüllbauteil ohne Nachbarraum (<see cref="AbbildBauteil.HuelleOhneNachbar"/>)
+    /// zählt nach seiner Randbedingung — Außenluft, Erdreich oder unbeheizt; gegen unbeheizt sagt
+    /// <see cref="BodenOhneNachbar"/>, ob es Boden oder Decke ist.</item>
     /// <item><b>Seite:</b> ohne zweiten Nachbarn nach der Randbedingung der Art (Außenluft, Erdreich,
     /// sonst unbeheizt); mit einem zweiten, nicht beheizten oder unbekannten Nachbarn unbeheizt.</item>
     /// <item><b>Summenfeld:</b> Außenluft — Außenwand → Außenwand, Dach und Decke → Dach, sonst
@@ -221,8 +224,14 @@ namespace WindowsFormsApplication1
                 if (raeume.TryGetValue(s.Nachbarn[i].Kennung, out AbbildRaum r) && istBeheizt(r)
                     && raumGebaeude[s.Nachbarn[i].Kennung] == index) { hPos = i; break; }
             bool ohneNachbar = hPos < 0 && s.HuelleOhneNachbar && s.Nachbarn.Count == 0
-                               && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich);
-            if (hPos < 0 && !ohneNachbar) return;
+                               && (s.Randbedingung == Randbedingung.Aussenluft || s.Randbedingung == Randbedingung.Erdreich
+                                   || s.Randbedingung == Randbedingung.Unbeheizt);
+            if (hPos < 0 && !ohneNachbar)
+            {
+                // Eine Innenwand ohne Nachbarraum (IFC ohne Raumgrenzen): einseitig innere Masse (Mehrzonenkonzept 6.5).
+                if (s.InnenEinseitig && s.Nachbarn.Count == 0) ergebnis.Innen.Add(new Innenposten(s, -1, -1));
+                return;
+            }
 
             int aPos = -1;
             for (int i = 0; i < s.Nachbarn.Count; i++)
@@ -262,7 +271,7 @@ namespace WindowsFormsApplication1
                     feld = GebaeudeZielfelder.FLAECHE_GRUND;
                     break;
                 default:
-                    boden = IstWaagerechteArt(s.Art) ? Boden(s, hPos, aPos) : null;
+                    boden = !IstWaagerechteArt(s.Art) ? null : hPos < 0 ? BodenOhneNachbar(s) : Boden(s, hPos, aPos);
                     feld = boden == true ? GebaeudeZielfelder.FLAECHE_GRUND
                          : boden == false ? GebaeudeZielfelder.FLAECHE_DACH
                          : GebaeudeZielfelder.FLAECHE_SONSTIGE;
@@ -306,6 +315,14 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// Boden oder Decke eines Hüllbauteils ohne Nachbarraum gegen unbeheizt: die Angabe der Datei
+        /// (<see cref="AbbildBauteil.ZonenbodenOhneNachbar"/>), sonst die Bauteilart — eine Bodenplatte ist
+        /// Boden, ein Dach Decke; eine Decke ohne Angabe bleibt unbestimmt.
+        /// </summary>
+        internal static bool? BodenOhneNachbar(AbbildBauteil s)
+            => s.ZonenbodenOhneNachbar ?? (s.Art == Bauteilart.Bodenplatte ? true : s.Art == Bauteilart.Dach ? false : (bool?)null);
+
         /// <summary>Decke, Bodenplatte und Dach liegen waagerecht — nur sie sind Boden oder Decke.</summary>
         internal static bool IstWaagerechteArt(Bauteilart art)
             => art == Bauteilart.Decke || art == Bauteilart.Bodenplatte || art == Bauteilart.Dach;
@@ -341,6 +358,7 @@ namespace WindowsFormsApplication1
                 else continue;
                 if (o.BruttoflaecheM2.HasValue) p.AbzugM2 += o.BruttoflaecheM2.Value;
             }
+            p.AbzugM2 += s.LochflaecheM2;   // Löcher ohne Füllung (G5-2)
             if (!p.BruttoM2.HasValue) return;
             double netto = p.BruttoM2.Value - p.AbzugM2;
             if (netto < 0.0 && s.NettoflaecheM2 is double eigen && eigen >= 0.0)
@@ -363,6 +381,7 @@ namespace WindowsFormsApplication1
             foreach (AbbildBauteil o in s.Oeffnungen)
                 if ((o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer) && o.BruttoflaecheM2.HasValue)
                     p.AbzugM2 += o.BruttoflaecheM2.Value;
+            p.AbzugM2 += s.LochflaecheM2;
             if (!p.BruttoM2.HasValue) return;
             double netto = p.BruttoM2.Value - p.AbzugM2;
             if (netto < 0.0 && s.NettoflaecheM2 is double eigen && eigen >= 0.0) netto = eigen;

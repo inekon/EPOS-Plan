@@ -24,8 +24,17 @@
        Bauart, Beschreibung; der Name ist Lesewert (umbenannt wird ueber
        Duplizieren...). "Gebaeudetypen..." im Kopf der Gruppe oeffnet die
        Verwaltung Gebaeudetypen als Ueberlagerung.
-     * HUELLE, FENSTER, KENNGROESSEN und - aufklappbar - ALLE DATEN (Temperaturen,
-       Ferien, Modellparameter, Rechenweg, Kuehlung) zeichnet der Baustein
+     * KONDITIONIERUNG (Stufe KP2, Welle U4; Entwurf KP2 Festlegung 6, E56 F3 (a)): fuenf
+       Zustandszeilen (Heizen, Kuehlen, Lueftung, Geraete, Personen - "aus der Matrix",
+       "angelegt, 3 eigene Perioden" ...) und im Kopf "Konditionierung...": Es oeffnet ein
+       BREITES BLATT (Baustein Blattwechsel) mit derselben Komponente wie der Reiter des
+       Katalogeditors (KonditionierungReiter) am SELBEN Arbeitsstand - Vorgabe-Matrix,
+       Kalenderkarten, Sollwerte, Nachtzeit, Ferien, innere Waermegewinne, Infiltration,
+       Nutzerlueftung, Sommerlueftung, Kuehlsollwert und Maximalraumtemperatur stehen nur dort.
+       "Speichern" der Verwaltung schreibt sie mit, "Verwerfen" nimmt sie zurueck; ein
+       Auslieferungssatz steht im Blatt im Lesemodus (Werte als Text).
+     * HUELLE, FENSTER, KENNGROESSEN und - aufklappbar - ALLE DATEN (Modellparameter,
+       Rechenweg, Waermeuebergabe, Kuehlung) zeichnet der Baustein
        GebaeudeStammblattFelder.
    EINE WAHRHEIT: Alle Felder schreiben in DENSELBEN Arbeitsstand wie der
    Katalogeditor (GebaeudeArbeitsstand); "Speichern" prueft mit dessen Regeln,
@@ -36,19 +45,20 @@
    Zeilenwechsel, Neu..., die Ueberlagerungen und Beenden an.
 
    AUSWAHLLEISTE (V8): Vergleichen, Duplizieren..., Schloss aufheben.../setzen...,
-   Loeschen - Loeschen ist weich gesperrt fuer Auslieferungssaetze und fuer
-   Gebaeude, die ein Projekt fuehrt (der Kurztext nennt das Projekt; erkannt an
-   der Projektkopie in Tab_Gebaeude ueber ihren Katalogverweis ID_Gebaeude_Stamm,
-   der Name nur als Rueckfall fuer Altbestand ohne Verweis -
-   GebaeudeStammCtrl.Projektverwendung).
+   Loeschen - Loeschen ist allein fuer Auslieferungssaetze weich gesperrt, dieselbe
+   Regel wie im Projekt-Gebaeudedialog (GebaeudeStammCtrl.Loeschsperrgrund, der
+   Dialog fragt nur). Ein Gebaeude, das Projekte fuehren, wird geloescht; die
+   Rueckfrage nennt die Projekte, die ihre Kopie behalten (Loeschhinweis, allein
+   ueber den Katalogverweis ID_Gebaeude_Stamm, nie ueber den Namen).
 
    DER HILFE-ASSISTENT (#465): eigene Maske Form_Gebaeude_Admin - das Wahlfeld
    "satz" und die Feldliste des Katalogeditors an derselben Sichtklasse;
    Pruefen und Speichern sind die Wege des Knopfes, ein Auslieferungssatz ist
    schreibgeschuetzt.
 
-   TASTATUR: Esc schliesst stufenweise (Ueberlagerung, schmales Blatt,
-   Dialog); Enter ist nicht belegt - die Knoepfe schreiben sofort. *@
+   TASTATUR: Esc schliesst stufenweise (Ueberlagerung, Rueckfrage, Blatt
+   "Konditionierung", schmales Blatt, Dialog); Enter ist nicht belegt - die Knoepfe schreiben
+   sofort. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
@@ -56,10 +66,15 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @implements IDisposable
+<CascadingValue Value="@CsvNaht">
 
 <div class="epos-dialog epos-katalog-dialog epos-gebaeude-admin" tabindex="-1"
      @ref="_wurzel" @onkeydown="BeiTaste">
 
+    @* Stufe KP2, Welle U4: Steht das Blatt "Konditionierung", zeichnet die Verwaltung ihren
+       Haupt-Inhalt nicht (Baustein Blattwechsel, unten). *@
+    @if (!_kondOffen)
+    {
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
@@ -69,6 +84,17 @@
     @if (_meldung.Length > 0)
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* KT-4: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
     }
 
     <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
@@ -119,7 +145,7 @@
                                     <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
                                                  Auswahl="@Index(_arten, _arbeit.Stand.Gebaeudeart)" AuswahlChanged="BeiArt" />
                                     <Auswahlfeld Bezeichnung="@LabelBaualtersklasse" Eintraege="@Klasseneintraege"
-                                                 Auswahl="@_arbeit.KlasseWirksam" Aktiv="@(!_arbeit.KlasseAusBaujahr)"
+                                                 Auswahl="@_arbeit.KlasseWirksam"
                                                  AuswahlChanged="BeiKlasse" />
                                     <Herleitungszeile Text="@_arbeit.KlassenHerleitung" />
                                     <Ganzzahlfeld Bezeichnung="@LabelBaujahr"
@@ -144,6 +170,39 @@
                         </KindInhalt>
                     </Stammblattgruppe>
 
+                    @* KONDITIONIERUNG (Stufe KP2, Welle U4): fuenf Zustandszeilen als Text; der Knopf im
+                       Kopf oeffnet das breite Blatt mit Matrix, Karten und den Altfeldern (E56 F3 (a)). *@
+                    @if (_satz is not null)
+                    {
+                        <Stammblattgruppe Titel="@KonditionierungTexte.Reiter" Lesemodus="true"
+                                          Werte="@Konditionierungswerte">
+                            <Kopf>
+                                <button type="button" class="epos-textknopf epos-gebaeude-kondknopf"
+                                        @onclick="KonditionierungOeffnen">@KonditionierungTexte.KnopfKonditionierung</button>
+                            </Kopf>
+                            <Nachsatz>
+                                @if (_kond.Sperrgrund is string sperre)
+                                {
+                                    <p class="epos-leisezeile epos-gebaeude-kondsperre">@sperre</p>
+                                }
+                            </Nachsatz>
+                        </Stammblattgruppe>
+                    }
+
+                    @* ZONEN (Welle ZK-b): die Zonen des Katalogsatzes als Text; der Knopf im Kopf oeffnet den
+                       Katalogeditor am Satz auf dem Reiter "Zonen" - dort werden sie bearbeitet und mit OK
+                       geschrieben (wie im Projekt). *@
+                    @if (_satz is not null && ZonenGaben is not null)
+                    {
+                        <Stammblattgruppe Titel="@TitelZonenText" Lesemodus="true"
+                                          Werte="@(_satz.Zonen.Count > 0 ? _satz.Zonen : KeineZoneWerte)">
+                            <Kopf>
+                                <button type="button" class="epos-textknopf epos-gebaeude-zonenknopf"
+                                        @onclick="BeiZonen">@BtnZonenText</button>
+                            </Kopf>
+                        </Stammblattgruppe>
+                    }
+
                     @* HUELLE, FENSTER, KENNGROESSEN, ALLE DATEN - der Baustein schreibt in
                        denselben Arbeitsstand; im Lesemodus stehen Huelle und "Alle Daten"
                        als Text, wie der Kern sie formatiert. *@
@@ -157,8 +216,10 @@
                                                   Texte="@HuellTexte" Prueftexte="@Prueftexte"
                                                   Beschriftungen="@Beschriftungen"
                                                   UebergabeHerleitung="@UebergabeHerleitung"
+                                                  ErdreichAuskunft="@ErdreichAuskunft"
                                                   WochenVorschau="@WochenVorschau"
-                                                  EntprellungMs="@EntprellungMs" />
+                                                  EntprellungMs="@EntprellungMs"
+                                                  HinweisAltfelder="@KonditionierungTexte.HinweisVerwaltungAltfelder" />
                     }
                 </Gruppen>
             </Stammblatt>
@@ -193,6 +254,39 @@
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Beenden">@BtnBeendenText</button>
     </div>
+    }
+
+    @* --- Das Blatt "Konditionierung" (Stufe KP2, Welle U4; Entwurf KP2 Festlegung 6) ----------
+       Dieselbe Komponente wie der Reiter des Katalogeditors, am SELBEN Arbeitsstand: Jede Handlung
+       geht in den Arbeitsstand des gewaehlten Satzes, "Speichern" der Fussleiste schreibt sie mit
+       (die leise Zeile sagt es), "Verwerfen" nimmt sie zurueck. Rueckknopf und Esc fuehren zurueck
+       zum Stammblatt, ohne etwas zu verwerfen. Ein Auslieferungssatz steht im Lesemodus. *@
+    <Blattwechsel Offen="@_kondOffen" WirtTitel="@TitelText" Titel="@KonditionierungTexte.Reiter"
+                  ZusatzKlasse="epos-blatt--breit" Zurueck="KonditionierungZurueck">
+        <KindInhalt>
+            @if (_kondOffen)
+            {
+                <div class="epos-gebaeude-kondblatt">
+                    @if (_meldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+                    }
+                    <p class="epos-leisezeile epos-gebaeude-kondblatt-hinweis">@Blatthinweis</p>
+                    <KonditionierungReiter Bearbeitung="@_kond" Texte="@KonditionierungTexte" HuelleTexte="@HuellTexte"
+                                           ProfilTexte="@RaumnutzungTexte"
+                                           Projekt="false" Lesemodus="@_auslieferung" Altweg="@(!_arbeit.IstVdi6007)"
+                                           Kuehlsperre="@Kuehlsperre" Sollwertzeile="@_arbeit.Sollwertzeile"
+                                           LabelMaxTemperatur="@Beschriftungen.LabelMaxTemperatur"
+                                           GruppeFerienAnfang="@Beschriftungen.GruppeFerienAnfang"
+                                           GruppeFerienEnde="@Beschriftungen.GruppeFerienEnde"
+                                           Ferienzeitraeume="@Beschriftungen.Ferienzeitraeume"
+                                           LabelTag="@Beschriftungen.LabelTag" LabelMonat="@Beschriftungen.LabelMonat"
+                                           JaText="@JaText" NeinText="@NeinText" EntprellungMs="@EntprellungMs"
+                                           Geaendert="Nachziehen" FehlerZustand="BeiFehlerzustand" />
+                </div>
+            }
+        </KindInhalt>
+    </Blattwechsel>
 
     @* --- Namensabfrage von "Duplizieren..." (AD-Q11): Vorbelegung "... (Kopie)" -- *@
     <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
@@ -210,8 +304,10 @@
     </Ueberlagerung>
 
     @* --- Der Katalogeditor (W9.1) - nur noch "Neu..." (AD-Q6, #465) --------- *@
+    @* In der BREITEN Ueberlagerung wie im Gebaeudedialog (Stufe KP2, Entwurf Festlegung 7). *@
     <Ueberlagerung Offen="@(_katalogGaben is not null)"
-                   Titel="@BtnNeuText" Geschlossen="KatalogeditorFertig">
+                   Titel="@_katalogTitel" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="KatalogeditorFertig">
         <KindInhalt>
             @if (_katalogGaben is not null)
             {
@@ -241,7 +337,21 @@
                 VorgabeNein="true" JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchlossAntwort" />
 </div>
 
+</CascadingValue>
+
 @code {
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster der ersten Spalte); jedes
+    /// Diagramm dieses Dialogs mit Reihen bekommt den Knopf über die Kaskade. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Naht der Kaskade; das Raster folgt der Länge der Reihen.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
     // =====================================================================
     // Delegaten — die Datenseite liegt in der Hülle (GebaeudeAdminHuelle)
     // =====================================================================
@@ -279,11 +389,17 @@
         = new[] { Resource.GEBK_VERWENDUNG_WOHN, Resource.GEB_TEXT_SONSTIGE };
 
     /// <summary>
-    /// <b>Welche Projekte welches Gebäude führen</b> — je Bezeichner die Projektnamen, EINE
-    /// Abfrage je Liste (<c>GebaeudeStammCtrl.Projektverwendung</c>). Daran hängt die weiche
-    /// Löschsperre samt Projektnamen.
+    /// <b>Warum ein Satz nicht gelöscht wird</b> — der Kern (<c>GebaeudeStammCtrl.Loeschsperrgrund</c>):
+    /// allein ein Auslieferungssatz; leer, wenn er gelöscht werden darf. Dieselbe Regel wie im
+    /// Projekt-Gebäudedialog. Je Liste einmal je Satz gefragt.
     /// </summary>
-    [Parameter] public Func<IReadOnlyDictionary<string, IReadOnlyList<string>>>? Verwendung { get; set; }
+    [Parameter] public Func<string, string>? Loeschsperre { get; set; }
+
+    /// <summary>
+    /// <b>Der Zusatz der Rückfrage</b> — die Projekte, die eine Kopie der zu löschenden Sätze führen
+    /// und behalten (<c>GebaeudeStammCtrl.Loeschhinweis</c>); leer, wenn keines.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<string>, string>? Loeschhinweis { get; set; }
 
     /// <summary>
     /// <b>„Speichern" — der Schreibweg des Katalogeditors</b> (<c>GebaeudeKatalogHuelle.Schreiben</c>,
@@ -301,6 +417,22 @@
 
     /// <summary>Die übrigen Beschriftungen des Stammblatts — sie füllen sich selbst aus <c>MyResource</c>.</summary>
     [Parameter] public GebaeudeStammblattTexte Beschriftungen { get; set; } = new();
+
+    /// <summary>
+    /// Der Weg der Konditionierung des Katalogbaus (Stufe KP2, Welle U4) — derselbe wie im
+    /// Katalogeditor; <c>null</c> = das Blatt nennt den Grund, Matrix, Karten und Handlungen fehlen,
+    /// die Bestandszellen bleiben bedienbar.
+    /// </summary>
+    [Parameter] public KonditionierungWeg? Konditionierung { get; set; }
+
+    /// <summary>Die Texte des Blatts „Konditionierung" (Stufe KP2, Welle U4).</summary>
+    [Parameter] public KonditionierungTexte KonditionierungTexte { get; set; } = new();
+
+    /// <summary>Die Texte der Rückfragen des Blatts „Konditionierung" (Stufe KP2, Welle U4).</summary>
+    [Parameter] public KonditionierungFragetexte KonditionierungFragen { get; set; } = new();
+
+    /// <summary>Die Texte des Nutzungsprofilkatalogs (Präfix <c>RNP_</c>) — „Nutzungsprofil übernehmen…" im Blatt „Konditionierung".</summary>
+    [Parameter] public RaumnutzungTexte RaumnutzungTexte { get; set; } = new();
 
     /// <summary>Löscht einen Satz; <c>false</c> = er blieb stehen.</summary>
     [Parameter] public Func<string, bool>? Loeschen { get; set; }
@@ -324,16 +456,31 @@
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? KatalogGaben { get; set; }
 
+    /// <summary>
+    /// Der Parametersatz des Katalogeditors hinter „Zonen bearbeiten …" am gewählten Satz (Welle ZK-b,
+    /// <c>GebaeudeAdminHuelle.ZonenGaben</c>); <c>null</c> = keine Gruppe „Zonen".
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? ZonenGaben { get; set; }
+
+    /// <summary>Titel der Gruppe „Zonen" im Stammblatt (<c>GEBZ_REITER</c>).</summary>
+    [Parameter] public string TitelZonenText { get; set; } = Resource.GEBZ_REITER;
+
+    /// <summary>Der Knopf im Kopf der Gruppe „Zonen" (<c>GEBA_BTN_ZONEN</c>).</summary>
+    [Parameter] public string BtnZonenText { get; set; } = Resource.GEBA_BTN_ZONEN;
+
     /// <summary>Der Parametersatz der Gebäudetypen-Verwaltung — ohne ihn kein „Gebäudetypen…".</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? GebaeudetypGaben { get; set; }
 
     /// <summary>Die Herleitung der Wärmeübergabe aus dem Kern (Anlagenkopplung 8.4); <c>null</c> = ohne Zahl.</summary>
     [Parameter] public Func<GebaeudeKatalogDaten, UebergabeHerleitungDaten?>? UebergabeHerleitung { get; set; }
 
+    /// <summary>Die Erdreichauskunft der Bodenplatte (B′ und U_g, EV1/E65); <c>null</c> = keine Auskunftszeile.</summary>
+    [Parameter] public Func<GebaeudeKatalogDaten, ErdreichAuskunftDaten?>? ErdreichAuskunft { get; set; }
+
     /// <summary>Das Vorschaubild des Sollwert-Zeitprogramms; <c>null</c> = kein Bild.</summary>
     [Parameter] public Func<double[], WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? WochenVorschau { get; set; }
 
-    /// <summary>Entprellung der Herleitung [ms]; 0 = sofort (Prüfstand).</summary>
+    /// <summary>Entprellung der Herleitung und der Kartenvorschau im Blatt „Konditionierung“ [ms]; 0 = sofort (Prüfstand).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
 
     /// <summary>Der Dialog ist zu Ende — immer <c>true</c>: Jede Aktion hat bereits geschrieben.</summary>
@@ -397,8 +544,8 @@
 
     private IReadOnlyList<string> _typen = Array.Empty<string>();
     private IReadOnlyList<string> _arten = Array.Empty<string>();
-    private IReadOnlyDictionary<string, IReadOnlyList<string>> _verwendung =
-        new Dictionary<string, IReadOnlyList<string>>();
+    // Die Antworten des Kerns auf „gesperrt?" je Satz - je Liste einmal gefragt (KatalogLaden leert).
+    private readonly Dictionary<string, string> _sperren = new(StringComparer.Ordinal);
 
     // ---- der ARBEITSSTAND des Stammblatts (#465) --------------------------
     /// <summary>
@@ -411,6 +558,12 @@
     private GebaeudeKatalogDaten? _geladen;
 
     private string _meldung = "";
+
+    /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
     /// <summary>
     /// Die Statuszeile der Fußleiste. Jede Zuweisung ist eine Erfolgs- oder neutrale
@@ -444,6 +597,16 @@
     private HashSet<string> _vorNeu = new(StringComparer.Ordinal);
     private bool _gebaeudetypOffen;
     private bool _alleDatenOffen;
+
+    // ---- das Blatt „Konditionierung" (Stufe KP2, Welle U4) ----------------------------------
+    /// <summary>Die Bearbeitung der Konditionierung — über DEMSELBEN Arbeitsstand wie das Stammblatt.</summary>
+    private KonditionierungBearbeitung _kond = default!;
+
+    /// <summary>Steht das Blatt „Konditionierung"?</summary>
+    private bool _kondOffen;
+
+    /// <summary>Ist das Blatt eben zu? Dann fokussiert die Verwaltung ihre Wurzel, ohne zu rollen.</summary>
+    private bool _fokusNachBlatt;
 
     private EventCallback _vergleichen;
     private EventCallback _duplizieren;
@@ -486,6 +649,12 @@
     public GebaeudeKatalogDaten Arbeitsstand => _arbeit.Stand;
     /// <summary>Ist „Alle Daten" aufgeklappt? (Prüfhilfe)</summary>
     public bool AlleDatenOffen => _alleDatenOffen;
+    /// <summary>Steht das Blatt „Konditionierung"? (Prüfhilfe)</summary>
+    public bool KonditionierungOffen => _kondOffen;
+    /// <summary>Die Bearbeitung der Konditionierung (Prüfhilfe).</summary>
+    public KonditionierungBearbeitung Konditionierungsbearbeitung => _kond;
+    /// <summary>Der Arbeitsstand selbst (Prüfhilfe: Blatt und Stammblatt teilen ihn).</summary>
+    public GebaeudeArbeitsstand Arbeit => _arbeit;
 
     // =====================================================================
     // Aufbau
@@ -506,19 +675,38 @@
         _typen = Gebaeudetypen?.Invoke() ?? Array.Empty<string>();
         _arten = Gebaeudearten?.Invoke() ?? Array.Empty<string>();
 
+        // Stufe KP2, Welle U4: die Bearbeitung des Blatts „Konditionierung" am Arbeitsstand des
+        // Stammblatts. Eine Fehleingabe in der Matrix und die Maximalraumtemperatur haengen am Blatt
+        // (E56 F3 (a)) - die Pruefung oeffnet es.
+        _kond = new KonditionierungBearbeitung(_arbeit, () => Konditionierung, () => KonditionierungTexte,
+                                               () => KonditionierungFragen)
+        {
+            Melden = Melden
+        };
+        _arbeit.IstKonditionierungsfeld = feld => _kond.IstMatrixfeld(feld)
+                                                  || feld == GebaeudeArbeitsstand.Feld(Beschriftungen.LabelMaxTemperatur);
+
         KatalogLaden();
 
         // #465: eine EIGENE Maske - die Projektdialog-Sicht Form_Gebaeude bleibt beim
         // Projektdialog. Die Feldkarte ist die des Katalogeditors (KiDialoge.GebaeudeVerwaltung),
         // die Sicht dieselbe Klasse auf DEMSELBEN Arbeitsstand.
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_ADMIN, () => KiSicht(), KiHaken());
+        // Stufe KP2, Welle U4: die Vorlagefelder der Matrix (kond_<groesse>_vorlage) als Wahl - dieselben
+        // Listen wie die Karten des Blatts „Konditionierung" (der Weg der Huelle reicht die Vorlagen).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_ADMIN, () => KiSicht(), KiHaken(),
+                                          KonditionierungKiTafel.Vorlagenlisten(() => _kond));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_fokusNachBlatt && !_kondOffen)
+        {
+            _fokusNachBlatt = false;
+            await _wurzel.FocusAsync(preventScroll: true);
+        }
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
@@ -555,7 +743,10 @@
                 HuellTexte.RandErdreich, HuellTexte.RandKeller, HuellTexte.RandAussenluft
             }),
             Ferienname = n => n < Beschriftungen.Ferienzeitraeume.Count ? Beschriftungen.Ferienzeitraeume[n] : "",
-            Texte = HuellTexte
+            Texte = HuellTexte,
+            // Stufe KP2, Welle U4: die Vorgabe-Matrix des Blatts „Konditionierung" als Feldtafel - über
+            // dieselbe Bearbeitung wie die Zellen des Blatts, am selben Arbeitsstand.
+            Konditionierung = _kond
         });
     }
 
@@ -606,7 +797,7 @@
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _auslieferung,
         Schreibschutzgrund = () => Schloss is not null ? Resource.ADM_SB_NUR_LESEN : MeldungSpeichernGesperrt,
-        Pruefen = () => _arbeit.Pruefen(false, Prueftexte, HuellTexte)?.Meldung ?? "",
+        Pruefen = () => _arbeit.Pruefen(false, Pruefwortlaut, HuellTexte)?.Meldung ?? "",
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 
@@ -643,8 +834,8 @@
     /// <summary>Lädt die Liste neu; die bisherige Wahl bleibt, sonst die erste Zeile.</summary>
     public void KatalogLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
-        _verwendung = Verwendung?.Invoke() ?? new Dictionary<string, IReadOnlyList<string>>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
+        _sperren.Clear();
 
         _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
         if (_auswahl.Vergleich) VergleichBauen();
@@ -674,7 +865,11 @@
         _gewaehlt = schluessel ?? "";
         _meldung = "";
         _fokuszeile = _katalog.FirstOrDefault(z => z.Schluessel == _gewaehlt);
-        _satz = _gewaehlt.Length > 0 ? Satz?.Invoke(_gewaehlt) : null;
+        _satzFehler = "";
+        // KT-4: Warf das Lesen, ist das Stammblatt leer (kein halber Satz); der Banner nennt den Grund.
+        _satz = _gewaehlt.Length > 0
+            ? Katalogladung.Satz(() => Satz?.Invoke(_gewaehlt), _fokuszeile?.Bezeichner ?? _gewaehlt, out _satzFehler)
+            : null;
         _auslieferung = _fokuszeile?.Geschuetzt == true || _satz?.Auslieferung == true;
         _geladen = _satz?.FeldsatzOderKenndaten();
         Zuruecksetzen();
@@ -690,8 +885,15 @@
         Zuruecksetzen();
     }
 
-    /// <summary>Der Arbeitsstand wird wieder der gespeicherte Stand (Zeilenwahl, Verwerfen).</summary>
-    private void Zuruecksetzen() => _arbeit.Laden(_geladen, neu: false);
+    /// <summary>
+    /// Der Arbeitsstand wird wieder der gespeicherte Stand (Zeilenwahl, Verwerfen) — samt der
+    /// Konditionierung; „Zurücknehmen" und eine offene Rückfrage des Blatts fallen mit.
+    /// </summary>
+    private void Zuruecksetzen()
+    {
+        _arbeit.Laden(_geladen, neu: false);
+        _kond.Neubeginn();
+    }
 
     // =====================================================================
     // Stammblatt: Kopf und Kenndaten
@@ -803,7 +1005,7 @@
         Nachziehen();
     }
 
-    /// <summary>Die Klassenwahl — nur ohne Baujahr wirksam (E47: das Baujahr führt).</summary>
+    /// <summary>Die Klassenwahl — sie gilt immer; das Baujahr schlägt die Klasse nur vor.</summary>
     private void BeiKlasse(int? index)
     {
         if (_auslieferung) return;
@@ -951,16 +1153,22 @@
     {
         if (Speichern is null) return false;
 
-        GebaeudePruefbefund? befund = _arbeit.Pruefen(false, Prueftexte, HuellTexte);
+        GebaeudePruefbefund? befund = _arbeit.Pruefen(false, Pruefwortlaut, HuellTexte);
         if (befund is not null)
         {
-            if (befund.Bereich != GebaeudePruefbereich.Huelle) _alleDatenOffen = true;
+            // Stufe KP2, Welle U4: Haengt die Regel an Matrix, Nachtzeit oder Ferien, oeffnet sie das
+            // Blatt „Konditionierung" - dort steht das Feld (E56 F3 (a)).
+            if (befund.Temperaturen) _kondOffen = true;
+            else if (befund.Bereich != GebaeudePruefbereich.Huelle) _alleDatenOffen = true;
             SpeichernAbgelehnt(befund.Meldung);
             return false;
         }
 
         _arbeit.Ableiten();
-        GebaeudeKatalogErgebnis erg = Speichern(_arbeit.Stand, false, _gewaehlt);
+        // KT-4: Wirft der Schreibweg, bleibt der Arbeitsstand stehen und die Meldung nennt den Grund.
+        GebaeudeKatalogErgebnis erg = Katalogladung.Schreiben(() => Speichern(_arbeit.Stand, false, _gewaehlt),
+                                                              _fokuszeile?.Bezeichner ?? _gewaehlt,
+                                                              g => new GebaeudeKatalogErgebnis(false, g));
         if (!erg.Erfolg)
         {
             SpeichernAbgelehnt(erg.Meldung.Length > 0 ? erg.Meldung : MeldungFehler);
@@ -979,6 +1187,62 @@
     {
         Zuruecksetzen();
         _meldung = "";
+    }
+
+    // =====================================================================
+    // Das Blatt „Konditionierung" (Stufe KP2, Welle U4)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Prüftexte der Verwaltung: die inneren Wärmegewinne heißen wie ihre Zelle in der Matrix
+    /// (Nennwert der Geräte, E56 F3 (a)) — die Pflichtmeldung nennt das Feld mit dem Namen, den das
+    /// Blatt trägt, wie im Katalogeditor.
+    /// </summary>
+    private GebaeudePrueftexte Pruefwortlaut
+    {
+        get
+        {
+            GebaeudePrueftexte p = Prueftexte.Kopie();
+            p.FeldWaermegewinne = KonditionierungBearbeitung.Feldname(KonditionierungTexte, KonditionierungGroesse.Geraete,
+                                                                      KonditionierungZeile.Nennwert);
+            return p;
+        }
+    }
+
+    /// <summary>Die fünf Zustandszeilen der Gruppe: je Größe „aus der Matrix", „angelegt, 3 eigene Perioden" …</summary>
+    private IReadOnlyList<Stammblattwert> Konditionierungswerte
+        => KonditionierungDaten.Alle.Select(g => new Stammblattwert(_kond.Groessenname(g), _kond.Zustand(g))).ToList();
+
+    /// <summary>
+    /// Die leise Zeile über dem Reiter: Ein eigener Satz sagt, wer schreibt („Speichern" der
+    /// Verwaltung); ein Auslieferungssatz nennt den Grund des Lesemodus.
+    /// </summary>
+    private string Blatthinweis
+        => _auslieferung
+            ? (Schloss is not null ? Resource.ADM_SB_NUR_LESEN : MeldungSpeichernGesperrt)
+            : KonditionierungTexte.HinweisVerwaltungSpeichern;
+
+    /// <summary>
+    /// Der Grund der weich gesperrten Kühlspalte (Teilkonzept 7.2, E32) — ohne „Gebäude wird gekühlt"
+    /// wirkt sie nicht; <c>null</c> = bedienbar. Wie im Katalogeditor.
+    /// </summary>
+    private string? Kuehlsperre => _arbeit.Stand.KuehlungAktiv ? null : KonditionierungTexte.GrundKuehlenGesperrt;
+
+    /// <summary>„Konditionierung…" — das breite Blatt über dem Arbeitsstand des gewählten Satzes.</summary>
+    private void KonditionierungOeffnen()
+    {
+        if (_satz is null) return;
+        _kondOffen = true;
+    }
+
+    /// <summary>
+    /// Rückknopf und Esc des Blatts: zurück zum Stammblatt. Die Eingaben bleiben im Arbeitsstand
+    /// („Speichern" schreibt sie, „Verwerfen" nimmt sie zurück) — nichts geht still verloren.
+    /// </summary>
+    private void KonditionierungZurueck()
+    {
+        _kondOffen = false;
+        _fokusNachBlatt = true;
     }
 
     // =====================================================================
@@ -1015,12 +1279,19 @@
     private bool Geschuetzt(string schluessel)
         => _katalog.FirstOrDefault(z => z.Schluessel == schluessel)?.Geschuetzt == true;
 
-    private IReadOnlyList<string>? Projekte(string name)
-        => _verwendung.TryGetValue(name, out IReadOnlyList<string>? p) && p.Count > 0 ? p : null;
+    /// <summary>Ist der Satz gegen Löschen gesperrt? Die Antwort gibt der Kern (<see cref="Loeschsperre"/>).</summary>
+    private bool Gesperrt(string name)
+    {
+        if (Loeschsperre is null) return false;
+        if (!_sperren.TryGetValue(name, out string? grund))
+            _sperren[name] = grund = Loeschsperre(name) ?? "";
+        return grund.Length > 0;
+    }
 
     /// <summary>
-    /// Warum „Löschen" gerade nicht geht: Ist JEDE Zielzeile ein Auslieferungssatz oder in
-    /// einem Projekt verwendet, ist der Knopf weich gesperrt; der Grund nennt das Projekt.
+    /// Warum „Löschen" gerade nicht geht: Ist JEDE Zielzeile gesperrt (Auslieferungssatz), ist der
+    /// Knopf weich gesperrt. Ein Gebäude, das Projekte führen, sperrt nicht (Anwenderentscheid
+    /// 06.10.2026) — die Rückfrage nennt sie.
     /// </summary>
     private string LoeschSperrgrund
     {
@@ -1028,13 +1299,7 @@
         {
             IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
             if (ziele.Count == 0) return "";
-            foreach (string z in ziele)
-                if (!Geschuetzt(z) && Projekte(z) is null) return "";
-            IReadOnlyList<string>? projekte = ziele.Select(Projekte).FirstOrDefault(p => p is not null);
-            return projekte is not null
-                ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_AW_LOESCHEN_VERWENDET,
-                                string.Join(", ", projekte))
-                : Resource.ADM_AW_LOESCHEN_GESPERRT;
+            return ziele.All(Gesperrt) ? Resource.ADM_AW_LOESCHEN_GESPERRT : "";
         }
     }
 
@@ -1096,7 +1361,7 @@
         var k = CultureInfo.CurrentCulture;
         foreach (string name in namen)
         {
-            GebaeudeStammblattDaten? s = Satz?.Invoke(name);
+            GebaeudeStammblattDaten? s = Katalogladung.SatzDazu(() => Satz?.Invoke(name), name, ref _satzFehler);
             var felder = new List<Vergleichsfeld>
             {
                 new("TYP", LabelGebaeudetyp, s?.Typ ?? ""),
@@ -1123,8 +1388,8 @@
 
     /// <summary>
     /// <b>„Löschen" aus der Auswahlleiste</b> (V8, AD-Q9): wirkt auf die gewählten Zeilen,
-    /// sonst auf die Fokuszeile; Auslieferungssätze und Gebäude, die ein Projekt führt,
-    /// bleiben stehen — die Rückfrage nennt sie.
+    /// sonst auf die Fokuszeile; Auslieferungssätze bleiben stehen — die Rückfrage nennt sie,
+    /// dazu die Projekte, die ihre Kopie behalten.
     /// </summary>
     private void BeiLoeschen()
     {
@@ -1132,13 +1397,12 @@
         IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
         if (ziele.Count == 0) return;
 
-        var loeschbar = ziele.Where(z => !Geschuetzt(z) && Projekte(z) is null).ToList();
-        var geschuetzt = ziele.Where(Geschuetzt).ToList();
-        var verwendet = ziele.Where(z => !Geschuetzt(z) && Projekte(z) is not null).ToList();
+        var loeschbar = ziele.Where(z => !Gesperrt(z)).ToList();
+        var geschuetzt = ziele.Where(Gesperrt).ToList();
         if (loeschbar.Count == 0) { Warnen(LoeschSperrgrund); return; }
 
         _loeschziele = loeschbar;
-        _loeschBleiben = geschuetzt.Count + verwendet.Count;
+        _loeschBleiben = geschuetzt.Count;
 
         string frage = loeschbar.Count == 1
             ? string.Format(VorlageLoeschfrage, loeschbar[0])
@@ -1147,9 +1411,8 @@
         if (geschuetzt.Count > 0)
             frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
                                          string.Join(", ", geschuetzt));
-        if (verwendet.Count > 0)
-            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN_VERWENDET,
-                                         string.Join(", ", verwendet));
+        string hinweis = Loeschhinweis?.Invoke(loeschbar) ?? "";
+        if (hinweis.Length > 0) frage += " " + hinweis;
         _loeschfrageText = frage;
         _loeschfrage = true;
     }
@@ -1161,8 +1424,13 @@
         if (antwort != true || Loeschen is null) return;
 
         int geloescht = 0;
+        string loeschGrund = "";
         foreach (string name in _loeschziele)
-            if (Loeschen(name)) geloescht++;
+        {
+            // KT-4: Wirft der Löschweg, nennt das Warnband den Grund statt der allgemeinen Meldung.
+            if (Katalogladung.Loeschen(() => Loeschen(name), name, out string grund)) geloescht++;
+            else if (grund.Length > 0) loeschGrund = grund;
+        }
 
         int ziele = _loeschziele.Count + _loeschBleiben;
         int blieben = ziele - geloescht;
@@ -1171,7 +1439,7 @@
         _loeschziele = new List<string>();
 
         if (geloescht > 0) KatalogLaden();
-        if (fehlschlag) Warnen(Resource.BADM_MSG_LOESCHEN_FEHLER);
+        if (fehlschlag) Warnen(loeschGrund.Length > 0 ? loeschGrund : Resource.BADM_MSG_LOESCHEN_FEHLER);
         if (geloescht == 0) return;
 
         _status = ziele == 1
@@ -1277,15 +1545,37 @@
         if (Geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
         _meldung = "";
         _vorNeu = new HashSet<string>(_katalog.Select(z => z.Schluessel), StringComparer.Ordinal);
+        _katalogTitel = BtnNeuText;
         _katalogGaben = KatalogGaben();
     }
+
+    /// <summary>
+    /// „Zonen bearbeiten …" (Welle ZK-b) — der Katalogeditor am gewählten Satz auf dem Reiter „Zonen"; geänderte
+    /// Felder des Stammblatts halten an wie bei „Neu…". Ein Satz, den „Speichern unter" dort anlegt, ist danach gewählt.
+    /// </summary>
+    private void BeiZonen()
+    {
+        if (ZonenGaben is null || string.IsNullOrEmpty(_gewaehlt)) return;
+        if (Geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _meldung = "";
+        _vorNeu = new HashSet<string>(_katalog.Select(z => z.Schluessel), StringComparer.Ordinal);
+        _katalogTitel = BtnZonenText;
+        _katalogGaben = ZonenGaben(_gewaehlt);
+    }
+
+    /// <summary>Der Titel der Überlagerung des Katalogeditors: „Neu…" oder „Zonen bearbeiten …".</summary>
+    private string _katalogTitel = "";
+
+    /// <summary>Die Gruppe „Zonen" ohne Zone: eine Zeile mit dem Leertext.</summary>
+    private static readonly IReadOnlyList<Stammblattwert> KeineZoneWerte = new[] { new Stammblattwert("", Resource.GEBZ_LEER) };
 
     /// <summary>Der Editor ist zu: Liste und Stammblatt lesen neu; ein neuer Satz wird gewählt.</summary>
     private void KatalogeditorFertig()
     {
         _katalogGaben = null;
 
-        IReadOnlyList<Katalogfilterzeile> zeilen = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        // Wirft die Liste, nennt KatalogLaden den Grund gleich darauf; hier genügt die leere Liste.
+        IReadOnlyList<Katalogfilterzeile> zeilen = Katalogladung.Lesen(Katalogzeilen, TitelText, out _);
         Katalogfilterzeile? angelegt = zeilen.FirstOrDefault(z => !_vorNeu.Contains(z.Schluessel));
         if (angelegt is not null) _gewaehlt = angelegt.Schluessel;
         KatalogLaden();
@@ -1330,7 +1620,7 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_loeschfrage || _duplizierfrage || _schloss.FrageOffen || _gebaeudetypOffen
-            || _katalogGaben is not null)
+            || _katalogGaben is not null || _kondOffen || _kond.OffeneFrage is not null)
             return Task.CompletedTask;
 
         // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).

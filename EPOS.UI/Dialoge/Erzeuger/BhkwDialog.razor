@@ -1,309 +1,320 @@
 ﻿@* Verwaltung BHKW - der PROJEKTDIALOG (iU9-W6.4).
 
-   VORBILD. Views/BHKW/Form_BHKWEing (940 Z., lokalisiert - die .en-US.resx
-   traegt nur Masse, keine Texte -, 31 Kartenzeilen, 12 MessageBox). Dasselbe
-   Muster wie der Heizkessel (W6.3): links "Ausgewaehlte Module", rechts
-   "Module in Datenbank", dazwischen ◀ und ▶.
+   VORBILD. Views/BHKW/Form_BHKWEing (940 Z.). Dasselbe Muster wie der Heizkessel:
+   oben die Module im Projekt, darunter der Katalog, unten die Detailzeile „gewaehlter
+   Satz". Dort steht die ausfuehrliche Begruendung von Traegerwahl, Assistentenbetrieb
+   und Tastatur.
 
-   ZWEI UNTERSCHIEDE ZUM HEIZKESSEL.
-   * Die Katalogliste hat ZWEI Spalten. Der Vorlaeufer baute dafuer ein
-     DataGridView mit "Name" und einem Mehrzeiler "Eigenschaften" (Firma,
-     Brennstoff, Ptherm, Pel). Hier stehen beide Spalten im Raster; die zweite
-     bricht an ihren Zeilenumbruechen.
-   * Unten steht die SUMME der thermischen Leistungen aller gewaehlten Module
-     (SummeLeistung, Z. 765). Sie wird nach jedem ◀ und ▶ neu erfragt - die
-     Komponente rechnet sie nicht selbst, sie kennt die Ptherm der Geraete
-     nicht.
+   KATALOGAUSWAHL V1, STUFE 3 (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.6, 4.9):
+   das BHKW ist der zweite Wirt nach dem Heizkessel, mit demselben Zuschnitt - Summe kWth
+   in der Projekt-Kopfleiste, Bearbeiten… und „In die Datenbank übernehmen…" im Projekt,
+   Vergleichen…, Schloss…, Loeschen, Bearbeiten… · Neu… im Katalogfuss, Kostenknoepfe,
+   Traeger, Grenzleistung, Vorlauf/Ruecklauf und Senken nur beim Projektsatz.
 
-   DER KATALOG LAESST SICH HIER PFLEGEN: "Bearbeiten…" und "Neu…" oeffnen den
-   Katalogeditor aus W6.2 in einer Ueberlagerung, "Loeschen" fragt nach - und
-   lehnt einen Auslieferungssatz (ReadOnly) mit Begruendung ab, statt ihn
-   anzubieten. Seit dem Anwenderentscheid vom 15.09.2026 traegt der Modulbereich
-   ausserdem den Aufklapper "Alle Daten anzeigen": ALLE Spalten des gewaehlten
-   Katalogsatzes, bearbeitbar, mit eigenem Speichern-Knopf. Er ist der Ersatz
-   fuer die Kosten-, BEHG- und Emissionsgruppen, die aus dem Katalogeditor
-   verschwunden sind.
+   DREI UNTERSCHIEDE ZUM HEIZKESSEL.
+   * Die UNTERE GRENZLEISTUNG steht beim Projektsatz mit ihrer Herleitung (0 = Projekt-
+     vorgabe, W6-E-7). Sie ist zugleich Spalte des Moduls (Tab_BHKW.Grenzleistung,
+     Rangfolge Anlage, Katalog, Projekt) und geht mit dem Rueckweg in den Katalog.
+   * Die Investition hat FUENF Posten (Modul, Montage, Lieferung, Schallschutzhaube,
+     Abgasreinigung); die Investition je kWel ist ihre Ableitung und nur Anzeige - in
+     „Alle Daten" und in der Satzbearbeitung, gerechnet vom Kern.
+   * „Neu…" fragt zuerst den Namen und oeffnet dann den Katalogeditor (BhkwKatalogDialog
+     braucht ihn), dieselbe Ueberlagerung wie bisher.
 
-   Alles Uebrige - geteilte Liste, Traegerwahl vor dem Hinzufuegen,
-   Assistentenbetrieb, Tastatur - ist wie in HeizkesselDialog; dort steht die
-   ausfuehrliche Begruendung.
-
-   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
-   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
-   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
-   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
-   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen stehen im Baustein Zweispaltenauswahl -
+   EIN Aufbau fuer alle Projekt/Datenbank-Dialoge des Hauses. *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Kosten
+@using System.Globalization
 @using WindowsFormsApplication1
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
+    @* KONTEXT IM DIALOGKOPF (Katalogauswahl V1, 4.1 und 4.8) - wie beim Heizkessel. *@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
+        <span class="epos-dialog-kontext" title="@KopfbandText">@KopfbandText</span>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         <Schliesskreuz Geschlossen="Abbrechen" />
     </div>
-
-    <p class="epos-kontextzeile">@KopfbandText</p>
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+    @* P = Kopfleiste „Im Projekt" (Summe kWth, Bearbeiten…, In die Datenbank übernehmen…,
+       Entfernen), K = Kopf- und Fussleiste des Katalogs, S = Detailzeile „gewaehlter Satz",
+       D = Kopf und Fuss des Dialogs. Beide Listen fuehren eine Mehrfachwahl. *@
+    <Zweispaltenauswahl Dialogname="BHKW" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                         UebernehmenText="@LabelHinzu"
-                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        UebernehmenGesperrt="@(KatalogZiele().Count == 0)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
-                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+                        EntfernenGesperrt="@(ProjektZiele().Count == 0)" Entfernen="BeiEntfernen"
+                        ProjektWahl="@_projektWahl" ProjektSichtbar="@ProjektSchluessel()"
+                        KatalogWahl="@_katalogWahl" KatalogSichtbar="@KatalogSichtbar()"
+                        WahlGeaendert="BeiWahlGeaendert"
+                        KatalogFussName="@_katalogZeile?.Bezeichner"
+                        SatzArt="@SatzArt" SatzName="@SatzName" SatzKenndaten="@SatzKenndaten"
+                        SatzNurLesen="@(!FelderSpeicherbar)" SatzUebernehmenGesperrt="@_feldFehler"
+                        SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
+                        SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
+                        SatzZusammenfassung="@Zusammenfassung()"
+                        @ref="_zweispalten">
+
+        <ProjektKopf>
+            @if (SummePtherm is not null)
+            {
+                <span class="epos-zweispalten-summe">@LabelSumme <b>@_summeText</b></span>
+            }
+        </ProjektKopf>
+
+        <Leistenzusatz>
+            @if (ProjektsatzWege is not null)
+            {
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--bearbeiten-projekt"
+                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
+            @if (RueckwegWege is not null)
+            {
+                @* KA-E-9: der Rueckweg in die Datenbank, wirksam auf die Auswahl der Projektliste. *@
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--rueckweg"
+                        title="@Resource.KATRUECK_BTN_HINWEIS"
+                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiRueckweg">@Resource.KATRUECK_BTN</button>
+            }
+        </Leistenzusatz>
 
         <Links>
             <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
                 <KindInhalt>
+                    <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-kaestchen">
+                        <HeaderTemplate>
+                            <Wahlkaestchen Bereich="Auswahlbereich.Projekt" />
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@Projektschluessel(context)"
+                                           Kurztext="@context.Bezeichner" />
+                        </ChildContent>
+                    </TemplateColumn>
                     <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
                         <Zeilenwahl Gewaehlt="@(_projektZeile == context)" Kurztext="@SpalteWahl"
-                                    Gewaehltwerden="() => ProjektZeileWaehlen(context)" />
+                                    Gewaehltwerden="() => ProjektZeileKlick(context)" />
                     </TemplateColumn>
                     <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
                                     Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
+                    @* UeS2: der Stift je Projektzeile - die Projektkopie in der Satz-Ueberlagerung;
+                       nur, wo es den Weg der Projektkopie gibt (wie „Bearbeiten…"). *@
+                    @if (ProjektsatzWege is not null)
+                    {
+                        <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-stift">
+                            <HeaderTemplate>
+                                <Zeilenstift Kopf="true" />
+                            </HeaderTemplate>
+                            <ChildContent>
+                                <Zeilenstift Hinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                                             Geklickt="@(() => BeiProjektStift(context))" />
+                            </ChildContent>
+                        </TemplateColumn>
+                    }
                 </KindInhalt>
             </Raster>
-
-            @* Die Summenzeile gehoert der PROJEKTLISTE (Regel #76) und bleibt
-               links. Kompakt wird sie durch dasselbe Mittel wie der
-               Komponentenblock: Beschriftung neben dem Feld, der Wert kurz
-               (iU8-E-2, Paket P1). *@
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-                    <Textfeld Bezeichnung="@LabelSumme" Wert="@_summeText" NurLesen="true"
-                              Kurz="true" />
-                </KindInhalt>
-            </Formularraster>
         </Links>
 
         <Rechts>
-            @* DIE EINE KATALOGLISTE (W14a-E-10, Stufe S2.1). Die zwei Klapplisten
-               und die ACHT festen Leistungsstufen sind damit weg; an ihrer Stelle
-               stehen ACHT SPALTEN mit Sortierpfeil und Trichter - darunter der
-               Motortyp, der als Klappliste nie brauchbar war (45 verschiedene
-               Werte in 79 Saetzen, Befund O-3) und als Spalte mit Feld genau das
-               leistet, was der Anwender sucht. Die Sammelspalte "Eigenschaften"
-               mit ihren vier Zeilen in EINER Zelle faellt damit ebenfalls: Ihre
-               Werte stehen jetzt einzeln und sind sortierbar. *@
-            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+            @* DIE EINE KATALOGLISTE (W14a-E-10) im Kaestchenmodus: Die Zeile ist die Wahl
+               (Detailzeile), das Kaestchen waehlt mehrere fuer die Bereichsaktionen. *@
+            <Katalogliste @ref="_katalogliste" Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
-                          Vergleichsparameter="@Vergleichsparameter" />
-
-            @* "Bearbeiten…" ist in den Modulbereich gewandert (Anwenderentscheid
-               15.09.2026) - zu dem Satz, auf den es wirkt. "Neu.." und "Loeschen"
-               bleiben HIER: Sie wirken auf die LISTE, nicht auf den gewaehlten Satz. *@
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf" @onclick="() => _namensfrage = true">@BtnNeuText</button>
-                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
-                        @onclick="BeiLoeschen">@BtnLoeschenText</button>
-            </div>
+                          Vergleichsparameter="@Vergleichsparameter"
+                          ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
+                          GewaehlteChanged="BeiKatalogKaestchen" Gefiltert="BeiGefiltert"
+                          Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <KatalogFuss>
+            <button type="button" class="epos-knopf epos-knopf--vergleichen"
+                    title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
+                    disabled="@(KatalogZiele().Count < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
+            <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
+                            Ungespeichert="@_felderGeaendert" JaText="@JaText" NeinText="@NeinText"
+                            Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
+            <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
+                    @onclick="BeiLoeschenGefragt">@BtnLoeschenText</button>
+            <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
+                    title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
+                    disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+        </KatalogFuss>
 
-    <Gruppenkopf Titel="@GruppeModul">
-        <KindInhalt>
-            @* DIE KNOPFZEILE STEHT OBEN (Anwenderentscheid 16.09.2026: "Der
-               Bearbeiten-Button soll weiter oben, z. B. unter der blauen Zeile Modul
-               stehen, so dass er besser sichtbar ist"). EINE Zeile unmittelbar unter
-               dem Gruppenkopf: links die Kostenknoepfe, rechts "Bearbeiten…",
-               dazwischen der Fueller. Dieselbe Bauart in allen sechs
-               Erzeugerdialogen; die Knoepfe selbst sind unveraendert. *@
-            <div class="epos-leiste">
-                @if (!Wizard)
-                {
-                    <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
-                                         InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
-                                         EnergieText="@KostenEnergieText" />
-                }
-                <span class="epos-leiste-fueller"></span>
-                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
-                        @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
-            </div>
+        <KatalogFussRechts>
+            @if (EditorGabenNeu is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--neu" @onclick="() => _namensfrage = true">@BtnNeuText</button>
+            }
+        </KatalogFussRechts>
 
-            @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
-               weil dieser Abschnitt den Rechenweg parametriert - Brennstoffvariante,
-               Grenzleistung, Vorlauf und Ruecklauf. Der Fensterknopf oben rechts
-               bleibt, was er ist. *@
-            <div class="epos-berechnungshilfe">
+        <SatzKopfKnoepfe>
+            @* DIE INFOKNOEPFE IM KOPF DER DETAILZEILE (UeS2b): ohne Ueberlagerung erreichbar; in ihr
+               stehen sie in der Knopfzeile des Fragments (der Baustein zeigt je Ansicht eine Stelle). *@
+            <span class="epos-berechnungshilfe">
+                <InfoKnopf Schluessel="Form_BHKWEing.Grundlagen"
+                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
                 <InfoKnopf Schluessel="Form_BHKWEing.Berechnung"
-                           StandardKurztext="Berechnungsweg BHKW" />
-            </div>
-            @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
-               Feldpaare je Zeile, sobald die Spalte breit genug ist
-               (iU8-E-2, Paket P1). *@
+                           StandardKurztext="Berechnungsweg BHKW" MitAssistent="false" />
+            </span>
+        </SatzKopfKnoepfe>
+
+        <Satz>
+        @* DIE KNOPFZEILE DER SATZFLAECHE: beim Projektsatz die Kostenknoepfe (KA-E-12),
+           rechts der Weg in die Wikirubriken Grundlagen und Berechnung. *@
+        <div class="epos-leiste">
+            @if (!Wizard && _projektZeile is not null)
+            {
+                <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
+                                     InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                                     EnergieText="@KostenEnergieText" />
+            }
+            <span class="epos-leiste-fueller"></span>
+            <span class="epos-berechnungshilfe">
+                <InfoKnopf Schluessel="Form_BHKWEing.Grundlagen"
+                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                <InfoKnopf Schluessel="Form_BHKWEing.Berechnung"
+                           StandardKurztext="Berechnungsweg BHKW" MitAssistent="false" />
+            </span>
+        </div>
+
+        @if (_projektZeile is null && _katalogZeile is null)
+        {
+            <p class="epos-zweispalten-satzleer">@Resource.AUSWAHL_SATZ_LEER</p>
+        }
+        else
+        {
             <Formularraster>
                 <KindInhalt>
-            <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
-            @foreach (var feld in _detail.Felder)
-            {
-                @* BRENNSTOFF TYP UND BRENNSTOFF VARIANTE STEHEN UNTEREINANDER
-                   (Anwenderentscheid 16.09.2026, fuer alle brennstoffgekoppelten
-                   Komponenten). Das Formularraster fliesst ZEILENWEISE: zwei
-                   aufeinanderfolgende Felder stuenden NEBENeinander, nicht
-                   untereinander. Beide zusammen in EINEN Block, der ueber die volle
-                   Rasterbreite geht (.epos-feld--breit), stapelt sie in derselben
-                   Spalte - ohne neues CSS und ohne Sonderregel je Dialog. Den Typ
-                   liefert die Huelle als erstes Feld des Detailblocks. *@
-                @if (_projektZeile is not null && feld.Feld == LabelBrennstofftyp)
+                <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
+                @foreach (var feld in _detail.Felder)
                 {
-                    <div class="epos-feld--breit">
-                        <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
-                        @TraegerwahlFeld
-                    </div>
+                    @* Brennstoff Typ und Brennstoff Variante untereinander (16.09.2026): beide
+                       in EINEM Block ueber die volle Rasterbreite. *@
+                    @if (_projektZeile is not null && feld.Feld == LabelBrennstofftyp)
+                    {
+                        <div class="epos-feld--breit">
+                            <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+                            @TraegerwahlFeld
+                        </div>
+                    }
+                    else
+                    {
+                        <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
+                                  Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
+                    }
                 }
-                else
-                {
-                    @* Eine Zahl bekommt die kurze Feldbreite (iU8-E-2, Paket P1). *@
-                    <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
-                              Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
-                }
-            }
-            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detail.Beschreibung"
-                      NurLesen="true" Mehrzeilig="true" Zeilen="2" />
+                <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detail.Beschreibung"
+                          NurLesen="true" Mehrzeilig="true" Zeilen="2" />
 
-            @if (_projektZeile is not null)
-            {
-                @* Die Traegerwahl steht oben, im Paarblock unter "Brennstoff Typ".
-                   Fuehrt der Detailblock kein solches Feld - ein Wirt ohne Detailweg,
-                   ein Pruefstand -, bleibt sie HIER stehen, statt still zu
-                   verschwinden. *@
-                @if (!BrennstofftypImDetail)
+                @* Traeger, Grenzleistung, Vorlauf/Ruecklauf und Senken gelten nur fuer eine
+                   PROJEKTzeile (4.2: S aufgeklappt, nur Projektsatz). *@
+                @if (_projektZeile is not null)
                 {
-                    @TraegerwahlFeld
+                    @if (!BrennstofftypImDetail)
+                    {
+                        @TraegerwahlFeld
+                    }
+                    <Zahlenfeld Bezeichnung="@LabelGrenzleistung" Einheit="%"
+                                Wert="@_projektZeile.Grenzleistung" WertChanged="BeiGrenzleistung" />
+                    @* W6-E-7 (07.09.2026): womit gerechnet wird, wenn hier 0 steht. *@
+                    @if (Grenzleistungherleitung is not null)
+                    {
+                        <Herleitungszeile Text="@Grenzleistungherleitung" />
+                    }
+                    <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
+                                  Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
+                    <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
+                                  Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
+                    @if (!string.IsNullOrEmpty(_projektZeile.Senken))
+                    {
+                        <Herleitungszeile Text="@_projektZeile.Senken" />
+                    }
                 }
-                <Zahlenfeld Bezeichnung="@LabelGrenzleistung" Einheit="%"
-                            Wert="@_projektZeile.Grenzleistung" WertChanged="BeiGrenzleistung" />
-                @* W6-E-7 (07.09.2026): WOMIT GERECHNET WIRD, wenn hier 0 steht.
-                   Die 0 heisst "kein eigener Wert" und laesst die PROJEKTVORGABE
-                   durchgreifen (SimulationBHKW.Moduldaten_Einlesen). Bis W6-E-7
-                   sprang darunter noch ein stiller Fallback auf 30 % ein; den gibt
-                   es nicht mehr, also muss der Anwender den Projektwert SEHEN -
-                   sonst waere aus dem Dialog heraus nicht erkennbar, ob das Modul
-                   mit 30 % oder ohne Untergrenze rechnet. Die Zeile steht MITTEN im
-                   Raster und ist kein Feld; sie bekommt die volle Breite (Regel
-                   "Formularraster - Paket P1"). *@
-                @if (Grenzleistungherleitung is not null)
-                {
-                    <Herleitungszeile Text="@Grenzleistungherleitung" />
-                }
-                <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
-                              Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
-                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
-                              Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
-                @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026) - wortgleich zum
-                   HeizkesselDialog: fertig formuliert von der Huelle, leer = keine Zeile. *@
-                @if (!string.IsNullOrEmpty(_projektZeile.Senken))
-                {
-                    <Herleitungszeile Text="@_projektZeile.Senken" />
-                }
-            }
                 </KindInhalt>
             </Formularraster>
 
-        @* ALLE DATEN DES GEWAEHLTEN KATALOGSATZES, aufklappbar und BEARBEITBAR
-           (Anwenderentscheid 15.09.2026: "Es soll in diesem Bereich optional alle
-           technischen Daten angezeigt und bearbeitet werden koennen") - wortgleich
-           zum Heizkessel.
+            @* ALLE DATEN DES GEWAEHLTEN SATZES, aufklappbar und BEARBEITBAR (15./16.09.2026):
+               beim Katalogsatz der Katalog (gesperrt nur lesen), beim Projektsatz die
+               Projektkopie - dieselben Felder samt den fuenf Kostenposten, der abgeleiteten
+               Investition je kWel und der Wartung je kWhel. *@
+            @if (AlleDatenDa)
+            {
+                <div class="epos-modulparameter">
+                    <button type="button" class="epos-modulparameter-knopf"
+                            aria-expanded="@(_parameterOffen ? "true" : "false")"
+                            @onclick="ParameterUmschalten">
+                        <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_parameterOffen ? "▾" : "▸")</span>
+                        <span>@LabelAlleParameter</span>
+                    </button>
 
-           ER IST DER ERSATZ FUER DIE ENTFALLENEN GRUPPEN. Aus dem Bearbeiten-Dialog
-           sind Kosten, BEHG und Emissionen verschwunden; ohne diesen Block liesse sich
-           ein Katalogpreis nirgends mehr eintragen. Das Raster ist deshalb DASSELBE,
-           das der Katalogbrowser zeigt - der Baustein Katalogfelder.
-
-           AUFGEKLAPPT IST DIE VORGABE (Anwenderentscheid 16.09.2026: "Unter Bearbeiten
-           sollen alle Parameter angezeigt werden und bearbeitbar sein"). Wer einen
-           Katalogsatz waehlt, sieht seine Daten sofort; zuklappen kann er sie weiterhin
-           mit demselben Knopf. Ohne gewaehlten Katalogsatz gibt es den Block gar nicht,
-           und dann wird auch nichts abgefragt. Der Zustand gehoert der Dialogsitzung
-           und wird nirgends abgelegt.
-
-           DAS BHKW IST DIE EINZIGE FAMILIE MIT SCHREIBSCHUTZ. In der
-           Auslieferungsdatenbank ist JEDER Satz von Tab_BHKW_STAMM geschuetzt;
-           deshalb fragt der Speichern-Knopf hier vorher nach - dieselbe Reihenfolge
-           wie im Katalogbrowser und im Katalogeditor. *@
-        @if (Katalogfelder is not null && _katalogZeile is not null)
-        {
-            <div class="epos-modulparameter">
-                <button type="button" class="epos-modulparameter-knopf"
-                        aria-expanded="@(_parameterOffen ? "true" : "false")"
-                        @onclick="ParameterUmschalten">
-                    <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_parameterOffen ? "▾" : "▸")</span>
-                    <span>@LabelAlleParameter</span>
-                </button>
-
-                @if (_parameterOffen && _felder is not null)
-                {
-                    <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null)"
-                                   Geaendert="FeldGeaendert"
-                                   FehlerZustand="BeiFeldFehler" />
-
-                    @if (KatalogfelderSpeichern is not null)
+                    @if (_parameterOffen && _felder is not null)
                     {
-                        @* Die Rueckmeldung steht AM Knopf (Speichervermerk): „Gespeichert um …"
-                           bzw. der Grund der Ablehnung rot; ohne Aenderung weich gesperrt. *@
-                        <div class="epos-leiste">
-                            <Speichervermerk @ref="_felderVermerk" Text="@BtnFelderSpeichernText"
-                                             Geaendert="@_felderGeaendert" Gesperrt="@_feldFehler"
-                                             Satz="@_katalogZeile?.Bezeichner" Speichern="FelderSpeichern" />
-                        </div>
+                        @if (KatalogsatzGesperrt)
+                        {
+                            <p class="epos-satzbearbeitung-hinweis" role="note">@Resource.SATZBEARB_NUR_LESEN @Resource.ADM_SCHLOSS_ERST_AUFHEBEN</p>
+                        }
+                        <Katalogfelder Felder="@_felder" NurLesen="@(!FelderSpeicherbar)"
+                                       Geaendert="FeldGeaendert"
+                                       FehlerZustand="BeiFeldFehler" />
+                        @* Gespeichert wird ueber das OK der Satz-Ueberlagerung - das Fragment steht nur dort (UeS2). *@
                     }
-                }
-            </div>
+                </div>
+            }
         }
-
-        @* HIER STANDEN DIE KOSTENKNOEPFE UND "Bearbeiten…" (15.09.2026). Sie sind am
-           16.09.2026 an den KOPF des Modulbereichs gewandert - unter die blaue Zeile
-           "Modul", wo der Anwender sie sieht, ohne an den Parametern vorbeizurollen.
-           Die Kostenleiste selbst ist unveraendert: Sie kennt nur "Schalter betrieb
-           ja/nein", WELCHE Zeile gemeint ist, weiss allein dieser Dialog. *@
-        </KindInhalt>
-    </Gruppenkopf>
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
 
-    @* Traegerwahl vor dem Hinzufuegen. *@
+    @* --- Ueberlagerung 1: die Traegerwahl vor dem Hinzufuegen ---------------- *@
     <Ueberlagerung Offen="@(_traegerGaben is not null)"
                    Titel="@TraegerTitel" Geschlossen="() => TraegerFertig(null)">
         <KindInhalt>
             @if (_traegerGaben is not null)
             {
-                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
-                   sie auch das ✕ - TitelText="" hinter dem Satz schaltet beides im Blatt ab. *@
                 <EnergietraegerVarianteDialog @attributes="_traegerGaben" TitelText=""
                                               Geschlossen="TraegerFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    @* Katalogeditor - "Bearbeiten…" laedt den Satz, "Neu…" fragt zuerst den Namen. *@
-    <Ueberlagerung Offen="@(_editorGaben is not null)"
-                   Titel="@EditorTitel" Geschlossen="() => EditorFertig(null)">
+    @* --- Ueberlagerung 2: der Katalogeditor (ein Katalogsatz, Neu…) ---------- *@
+    <Ueberlagerung Offen="@(_editorGaben is not null)" Titel="@EditorTitel"
+                   Kopfzusatz="@MarkeKatalogsatz" Geschlossen="() => EditorFertig(null)">
         <KindInhalt>
             @if (_editorGaben is not null)
             {
-                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
-                   sie auch das ✕ - TitelText="" hinter dem Satz schaltet beides im Blatt ab. *@
                 <BhkwKatalogDialog @attributes="_editorGaben" TitelText=""
                                    Geschlossen="EditorFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    @* "Neu…": erst der Name, dann der Editor - beides in derselben Ueberlagerung. *@
+    @* --- „Neu…": erst der Name, dann der Editor ------------------------------- *@
     <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
                    Geschlossen="() => BeiNeuemNamen(null)">
         <KindInhalt>
@@ -313,128 +324,121 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
-                Frage="@(string.Format(FrageLoeschen, _katalogZeile?.Bezeichner ?? ""))"
-                Beantwortet="BeiLoeschfrage" />
+    @* --- Ueberlagerung 3: Bearbeiten… je Bereich, auch mehrere Saetze (4.6) ---- *@
+    <Ueberlagerung Offen="@(_bearbeitung is not null)"
+                   Titel="@(_bearbeitung is null ? "" : Satzbearbeitungsregel.Titel(_bearbeitung.Value.Art, _bearbeitung.Value.Saetze))"
+                   Kopfzusatz="@(_bearbeitung?.Art == Satzmarke.Projektsatz ? MarkeProjektsatz : MarkeKatalogsatz)"
+                   Geschlossen="() => BearbeitungFertig(false)">
+        <KindInhalt>
+            @if (_bearbeitung is { } b)
+            {
+                <Satzbearbeitung Art="@b.Art" Saetze="@b.Saetze"
+                                 Wege="@(b.Art == Satzmarke.Projektsatz ? ProjektsatzWege : KatalogsatzWege)"
+                                 Geschlossen="BearbeitungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
-    @* Rueckfrage vor dem Ueberschreiben eines AUSLIEFERUNGSsatzes aus dem Aufklapper -
-       derselbe Weg, den der Katalogbrowser geht (KatalogBrowserDialog.BeiSpeichern).
-       Ohne den Delegaten KatalogfelderGeschuetzt gibt es sie nicht: Ein Katalog ohne
-       Schreibschutz soll nicht nach einem Schutz fragen, den es nicht gibt. *@
-    <Rueckfrage Offen="@_schutzfrage" TitelText="@TitelSchutz" JaText="@JaText" NeinText="@NeinText"
-                Frage="@_schutztext" Beantwortet="BeiSchutzAntwort" />
+    @* --- Ueberlagerung 4: Rueckfrage „In die Datenbank übernehmen…" (5.2, KA-E-9) - immer vor dem Schreiben *@
+    <Ueberlagerung Offen="@(_rueckweg is not null)"
+                   Titel="@(_rueckweg is null ? "" : Rueckwegregel.Titel(_rueckweg))"
+                   Kopfzusatz="@MarkeKatalogsatz" Geschlossen="() => RueckwegFertig(null)">
+        <KindInhalt>
+            @if (_rueckweg is not null && RueckwegWege is not null)
+            {
+                <Rueckwegfrage Zeilen="@_rueckweg" Wege="@RueckwegWege" BleibtText="@RueckwegBleibtText"
+                               Geschlossen="RueckwegFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Rueckfrage vor dem Loeschen aus dem KATALOG ------------------------- *@
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
+                Frage="@LoeschfrageText" Beantwortet="BeiLoeschfrage" />
 </div>
 
 @code {
-    /// <summary>Die Zeilen der linken Liste — sie gehört der Hülle und wird in place bearbeitet.</summary>
+    /// <summary>Die Module im Projekt (Projektliste); der Dialog aendert sie ueber ◀ und ▶.</summary>
     [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
 
-    /// <summary>Die Brennstoffgruppen des Filters, „Alle" voran (Index 0).</summary>
+    /// <summary>Das Profil der Katalogliste (Spalten, Filter, Spalte „im Projekt verwendet").</summary>
     [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
-    /// <summary>
-    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
-    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Ohne ihn
-    /// vergleicht die <c>Katalogliste</c> ihre eigenen Spalten.
-    /// </summary>
+
+    /// <summary>Die Zeilen des Vergleichs je Satzname (W14a-E-10, S3.3).</summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
 
-
-    /// <summary>
-    /// Die Zeilen des Katalogs, UNGEFILTERT —
-    /// <c>BHKWStammCtrl.Katalogfilterzeilen()</c>. Gefiltert wird VOR dem Raster,
-    /// im Kern (Konzept 5.6.6).
-    /// </summary>
+    /// <summary>Die Zeilen der Katalogliste; nach jeder Katalogpflege neu erfragt.</summary>
     [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
 
-    /// <summary>Die Beschriftungen der Katalogliste; sie füllen sich selbst aus <c>MyResource</c>.</summary>
     [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
 
-    /// <summary>
-    /// <b>Ein eigener Filterstand statt des Registers</b> — dasselbe Muster wie
-    /// <c>ProfilVorgabe</c>. Ohne ihn holt der Dialog seinen Stand aus dem
-    /// <c>Katalogfilterregister</c> (S2.5: je Katalog EINER, für die Sitzung,
-    /// gemeinsam mit den anderen Dialogen desselben Katalogs). Ein Prüfstand gibt
-    /// hier seinen eigenen herein und bleibt damit von den anderen Fällen getrennt;
-    /// dass das Register wirklich teilt, prüft <c>KatalogfilterstandTests</c>.
-    /// </summary>
+    /// <summary>Der Filterstand des Katalogs fuer die Sitzung (S2.5); leer = Register.</summary>
     [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
-
-    /// <summary>Der Detailblock zu einem KATALOGsatz.</summary>
+    /// <summary>Der Detailblock eines Katalogsatzes nach Namen.</summary>
     [Parameter] public Func<string, ErzeugerDetail?>? KatalogDetail { get; set; }
 
-    /// <summary>Der Detailblock zu einer PROJEKTzeile (über ihren Bezeichner).</summary>
+    /// <summary>Der Detailblock einer Projektzeile nach Namen (im Assistenten aus dem Katalog).</summary>
     [Parameter] public Func<string, ErzeugerDetail?>? ProjektDetail { get; set; }
 
-    /// <summary>Die Trägervarianten der Gruppe eines Trägers.</summary>
     [Parameter] public Func<int, IReadOnlyList<(int Id, string Text)>>? Varianten { get; set; }
-
-    /// <summary>Stammwerte und Auswahlliste vor dem Trägerdialog.</summary>
     [Parameter] public Func<int, TraegerVorbereitung>? Vorbereiten { get; set; }
-
-    /// <summary>Nimmt die Zeile auf (Träger anlegen, Projektkopie, Modell in die Liste).</summary>
     [Parameter] public Func<int, EnergietraegerVarianteErgebnis, AufnahmeErgebnis>? Aufnehmen { get; set; }
-
-    /// <summary>Entfernt die Zeile aus der geteilten Liste (und ggf. die Projektkopie).</summary>
     [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
-
-    /// <summary>Hängt die Projektzuordnung auf einen anderen Träger um — SCHREIBT SOFORT.</summary>
     [Parameter] public Action<ErzeugerZeile, int>? TraegerWechseln { get; set; }
-
-    /// <summary>Übernimmt geänderte Zeilenwerte (Grenzleistung, Vorlauf, Rücklauf).</summary>
     [Parameter] public Action<ErzeugerZeile>? Uebernehmen { get; set; }
 
-    /// <summary>
-    /// Die Summe der thermischen Leistungen aller gewählten Module, fertig formatiert.
-    /// Die Komponente kennt die Ptherm der Geräte nicht und rechnet sie nicht.
-    /// </summary>
+    /// <summary>Die Summe der thermischen Leistungen der Projektliste, fertig formatiert; <c>null</c> = keine Summe.</summary>
     [Parameter] public Func<string>? SummePtherm { get; set; }
 
-    /// <summary>Der Parametersatz des Katalogeditors zu einem Namen; <c>null</c> = kein Knopf.</summary>
+    /// <summary>Die Gaben des Katalogeditors fuer einen Satz („Bearbeiten…", ein ungesperrter Satz, KA-E-13).</summary>
     [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? EditorGaben { get; set; }
 
-    /// <summary>Der Parametersatz des Katalogeditors für einen NEUEN Satz.</summary>
+    /// <summary>Die Gaben des Katalogeditors fuer einen neuen Satz mit dem erfragten Namen („Neu…").</summary>
     [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? EditorGabenNeu { get; set; }
 
-    /// <summary>Der Parametersatz des Trägerdialogs.</summary>
     [Parameter] public Func<TraegerVorbereitung, IReadOnlyDictionary<string, object>>? TraegerGaben { get; set; }
 
-    /// <summary>
-    /// Löscht einen KATALOGsatz. Leere Rückgabe = gelöscht; sonst der Grund — ein
-    /// Auslieferungssatz (ReadOnly) darf nicht gelöscht werden.
-    /// </summary>
+    /// <summary>Loescht einen Katalogsatz (KA-E-16 samt Satzvorlage); leer = geloescht, sonst der Grund.</summary>
     [Parameter] public Func<int, string>? KatalogLoeschen { get; set; }
 
-    /// <summary>Assistentenbetrieb: keine OK/Abbrechen- und keine Kostenleiste.</summary>
-    [Parameter] public bool Wizard { get; set; }
+    /// <summary>
+    /// Die Wege der Satzbearbeitung fuer die PROJEKTKOPIEN (KA-E-8, Stufe 3): Lesen nach
+    /// Geraete-ID, Speichern aller Saetze in einer Transaktion. <c>null</c> = kein Knopf
+    /// „Bearbeiten…" in der Projekt-Kopfleiste (Assistent).
+    /// </summary>
+    [Parameter] public Satzbearbeitungswege? ProjektsatzWege { get; set; }
 
-    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    /// <summary>Die Wege der Satzbearbeitung fuer mehrere oder gesperrte KATALOGsaetze.</summary>
+    [Parameter] public Satzbearbeitungswege? KatalogsatzWege { get; set; }
+
+    /// <summary>Die Wege des Rueckwegs „In die Datenbank übernehmen…" (KA-E-9); <c>null</c> = kein Knopf.</summary>
+    [Parameter] public Rueckwegwege? RueckwegWege { get; set; }
+
+    /// <summary>Was im Projekt bleibt - der Hinweis der Rueckfrage.</summary>
+    [Parameter] public string RueckwegBleibtText { get; set; } = "";
+
+    [Parameter] public bool Wizard { get; set; }
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
-    // --- Kostenleiste ----------------------------------------------------------
-
-    /// <summary>
-    /// Öffnet die Kostenverwaltung zur GEWÄHLTEN Projektzeile; der zweite Parameter
-    /// ist der Schalter <c>betrieb</c> (<c>false</c> = Investitions-, <c>true</c> =
-    /// Betriebskosten). Die Zeile ist <c>null</c>, solange keine gewählt ist — dann
-    /// zeigt die Verwaltung die Komponente ohne Einengung auf eine Anlage.
-    /// Ohne Delegat fehlen beide Knöpfe.
-    /// </summary>
+    /// <summary>Oeffnet Investitions- (<c>false</c>) oder Betriebskosten (<c>true</c>) der gewaehlten Projektzeile.</summary>
     [Parameter] public Func<ErzeugerZeile?, bool, Task>? KostenOeffnen { get; set; }
 
-    /// <summary>
-    /// Öffnet die Energieträgerverwaltung zur GEWÄHLTEN Projektzeile (Träger und
-    /// Gerät gehen mit, die Verwaltung zeigt dann nur die passenden Träger);
-    /// <c>null</c> = keine Wahl. Ohne Delegat fehlt der Knopf.
-    /// </summary>
+    /// <summary>Oeffnet die Energiekosten der gewaehlten Projektzeile.</summary>
     [Parameter] public Func<ErzeugerZeile?, Task>? EnergiekostenOeffnen { get; set; }
 
     [Parameter] public string KostenInvestText { get; set; } = "Investitionskosten…";
     [Parameter] public string KostenBetriebText { get; set; } = "Betriebskosten…";
+
+    /// <summary>
+    /// <b>Invest- und Betriebskosten einer Projektzeile</b> für die Zusammenfassung der
+    /// Detailzeile (UeS2) — die Summen der Kostenverwaltung dieser Anlage in € bzw. €/a.
+    /// <c>null</c> (Assistent, kein Projekt): die Zusammenfassung nennt keine Kosten.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, (double Invest, double Betrieb)>? Kostensumme { get; set; }
     [Parameter] public string KostenEnergieText { get; set; } = "Energiekosten…";
 
     // --- Texte -----------------------------------------------------------------
-
     [Parameter] public string TitelText { get; set; } = "Verwaltung BHKW";
     [Parameter] public string KopfbandText { get; set; } = "Geben Sie Daten zu BHKW ein";
     [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählte Module:";
@@ -447,84 +451,26 @@
     [Parameter] public string BtnNeuText { get; set; } = "Neu..";
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
     [Parameter] public string GruppeModul { get; set; } = "Modul";
-    /// <summary>Beschriftung des Aufklappers ueber den uebrigen Katalogwerten (W6‑E‑1).</summary>
     [Parameter] public string LabelAlleParameter { get; set; } = "Alle Daten anzeigen";
 
-    /// <summary>
-    /// ALLE Felder eines Katalogsatzes — derselbe Weg, aus dem der Katalogbrowser sein
-    /// Raster speist (<c>KatalogBrowserWege.Detail</c>). Ohne ihn gibt es den
-    /// Aufklapper nicht.
-    /// </summary>
+    /// <summary>Die Felder des Aufklappers „Alle Daten" eines Katalogsatzes (dieselben wie im Katalogbrowser).</summary>
     [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>?>? Katalogfelder { get; set; }
 
-    /// <summary>
-    /// Schreibt die geänderten Felder zurück; der dritte Parameter hebt den
-    /// Schreibschutz für GENAU diesen Vorgang auf. <c>null</c> = der Katalog hat keinen
-    /// Speicherweg, dann ist der Aufklapper reine Anzeige.
-    /// </summary>
-    /// <remarks>
-    /// <b>Drei Parameter und nicht zwei — anders als beim Heizkessel.</b> Der
-    /// BHKW-Katalog ist der einzige mit Schreibschutz: In der Auslieferungsdatenbank ist
-    /// JEDER Satz von <c>Tab_BHKW_STAMM</c> geschützt, und <c>AnzeigefelderSchreiben</c>
-    /// verlangt die Antwort auf die Rückfrage als eigenes Argument. Die Signatur ist
-    /// damit dieselbe wie <c>KatalogBrowserWege.Speichern</c> — die Hülle reicht ihn
-    /// unverändert durch.
-    /// </remarks>
+    /// <summary>Schreibt die Felder des Aufklappers in den Katalogsatz; ein gesperrter Satz wird nie geschrieben.</summary>
     [Parameter]
-    public Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>?
+    public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>?
         KatalogfelderSpeichern { get; set; }
 
-    /// <summary>
-    /// Ist dieser Katalogsatz ein Auslieferungssatz (<c>ReadOnly</c>)? Dann fragt der
-    /// Aufklapper vor dem Speichern nach (<c>KatalogBrowserWege.IstGeschuetzt</c>).
-    /// <c>null</c> = kein Schreibschutz, keine Rückfrage.
-    /// </summary>
-    [Parameter] public Func<string, bool>? KatalogfelderGeschuetzt { get; set; }
-
-    /// <summary>Beschriftung des Speicherknopfs im Aufklapper.</summary>
-    [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
     [Parameter] public string LabelName { get; set; } = "Modul-Name:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
-
-    /// <summary>
-    /// <b>Die Beschriftung des Brennstoff-Typ-Feldes</b> — WORTGLEICH die, unter der die
-    /// Hülle es in <c>ErzeugerDetail.Felder</c> legt (<c>HZK_LBL_BRENNSTOFFTYP</c>,
-    /// derselbe Schlüssel wie beim Heizkessel).
-    /// </summary>
-    /// <remarks>
-    /// Sie ist der SCHLÜSSEL, an dem der Dialog das Feld in der Feldschleife wiederfindet:
-    /// <c>ErzeugerDetail.Felder</c> trägt Paare aus Beschriftung und Wert und sonst nichts,
-    /// und die Trägerwahl soll unmittelbar darunter stehen (Anwenderentscheid 16.09.2026).
-    /// Passt keine Beschriftung, bleibt die Trägerwahl an ihrer alten Stelle.
-    /// </remarks>
     [Parameter] public string LabelBrennstofftyp { get; set; } = "Brennstoff Typ:";
-
-    /// <summary>
-    /// Die Trägervariante der Projektzeile. <b>Sie heißt seit dem 16.09.2026 „Brennstoff
-    /// Variante:"</b> (<c>HZK_LBL_TRAEGER</c>) statt „Brennstoff:" — unter „Brennstoff
-    /// Typ" stehend sagt erst das Paar, was es ist, und alle brennstoffgekoppelten
-    /// Komponenten benennen es gleich.
-    /// </summary>
     [Parameter] public string LabelTraeger { get; set; } = "Brennstoff Variante:";
     [Parameter] public string LabelGrenzleistung { get; set; } = "Untere Grenzleistung des ausgewählten Moduls:";
 
-    /// <summary>
-    /// Die PROJEKTWEITE untere Grenzleistung in Prozent
-    /// (<c>Tab_Einstellungen.Leistungsgrenze</c>) — der Wert, mit dem gerechnet wird,
-    /// solange das Modulfeld darüber 0 führt (Anwenderentscheid <b>W6‑E‑7</b> vom
-    /// 07.09.2026).
-    ///
-    /// <para><c>null</c> = die Hülle kennt ihn nicht (Assistentenbetrieb ohne
-    /// gespeichertes Projekt); dann bleibt die Herleitungszeile weg, statt eine Zahl zu
-    /// behaupten. Geändert wird der Wert nicht hier, sondern im Parameterblatt „BHKW"
-    /// der Simulationskonfiguration — dieser Dialog ZEIGT ihn nur.</para>
-    /// </summary>
+    /// <summary>Die Projektvorgabe der Grenzleistung in Prozent; <c>null</c> = unbekannt (keine Herleitung).</summary>
     [Parameter] public int? Projektvorgabe { get; set; }
 
-    /// <summary>Text der Herleitungszeile bei Modulwert 0; <c>{0}</c> = die Vorgabe in %.</summary>
     [Parameter] public string HerleitungVorgabe { get; set; } = "0 = Projektvorgabe ({0} %)";
-
-    /// <summary>Text der Herleitungszeile, wenn auch die Projektvorgabe 0 ist.</summary>
     [Parameter] public string HerleitungKeine { get; set; } =
         "0 = Projektvorgabe (0 %) — keine Untergrenze, das Modul moduliert bis 0.";
     [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf";
@@ -535,24 +481,10 @@
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
-
-    /// <summary>Die Rückfrage vor dem Löschen (<c>btn_DBBHKW_Löschen_Click</c>).</summary>
-    [Parameter] public string FrageLoeschen { get; set; } = "Wollen Sie wirklich das BHKW löschen?";
-
+    [Parameter] public string FrageLoeschen { get; set; } =
+        "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?";
     [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
     [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Namen eingeben!";
-
-    /// <summary>
-    /// Rückfrage vor dem Überschreiben eines Auslieferungssatzes aus dem Aufklapper;
-    /// <c>{0}</c> nimmt den Bezeichner auf (<c>ADM_SCHUTZ_FRAGE</c>, derselbe Text wie
-    /// im Katalogbrowser).
-    /// </summary>
-    [Parameter] public string FrageSchutz { get; set; } =
-        "Der Datensatz \"{0}\" gehört zum Auslieferungskatalog. Trotzdem überschreiben?";
-
-    [Parameter] public string TitelSchutz { get; set; } = "Schreibgeschützter Datensatz";
-
-    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_BHKWEing.btn_Help";
 
     private ElementReference _wurzel;
@@ -561,118 +493,160 @@
     private ErzeugerZeile? _projektZeile;
     private Katalogfilterzeile? _katalogZeile;
     private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
-
-    /// <summary>Der gewählte Bezeichner der KATALOGliste — die Markierung hängt am NAMEN.</summary>
     private string _katalogGewaehlt = "";
-
-    /// <summary>
-    /// Der Filterzustand des Katalogs — er gehört dem WIRT (O‑6) und kommt seit S2.5
-    /// aus dem <c>Katalogfilterregister</c>: je Katalog EINER, für die Sitzung,
-    /// gemeinsam mit der Verwaltung (Q2).
-    /// </summary>
     private Katalogfilterstand _filterstand = new();
     private IReadOnlyList<(int Id, string Text)> _varianten = Array.Empty<(int, string)>();
     private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
 
-    /// <summary>
-    /// Steht der Aufklapper „Alle Daten" offen? Der Zustand gehört der Dialogsitzung
-    /// und überlebt den Satzwechsel, wird aber nirgends abgelegt (W6‑E‑1).
-    /// </summary>
-    /// <remarks>
-    /// <b>Vorgabe OFFEN</b> (Anwenderentscheid 16.09.2026). Deshalb holt schon die
-    /// ERSTE Wahl eines Katalogsatzes die Felder — <see cref="FelderNachziehen"/> tut
-    /// das für jeden Satzwechsel, und ohne gewählten Satz gibt es den Block nicht.
-    /// </remarks>
+    // --- Alle Daten -----------------------------------------------------------
     private bool _parameterOffen = true;
-
-    /// <summary>Steht der Parameterblock offen? (Prüfhilfe für Tests, W6‑E‑1.)</summary>
+    /// <summary>Ist der Aufklapper „Alle Daten" offen (Prüfhilfe)?</summary>
     public bool ParameterOffen => _parameterOffen;
-
-    /// <summary>Die Felder des gewählten Satzes; <c>null</c> = noch nicht geholt.</summary>
     private IReadOnlyList<BrowserFeldwert>? _felder;
-
-    /// <summary>Hat der Anwender im Aufklapper etwas geändert?</summary>
     private bool _felderGeaendert;
-
-    /// <summary>Knopf „Speichern" des Aufklappers samt Rückmeldung daneben.</summary>
-    private Speichervermerk? _felderVermerk;
-
-    /// <summary>Meldung des Katalogs zum letzten gelungenen Speichern — für den Assistenten, nicht als Band.</summary>
     private string _felderErfolg = "";
-
-    /// <summary>Steht in einem Zahlenfeld des Aufklappers etwas Ungültiges?</summary>
     private bool _feldFehler;
 
     private string _summeText = "0";
-
     private IReadOnlyDictionary<string, object>? _traegerGaben;
     private IReadOnlyDictionary<string, object>? _editorGaben;
     private bool _namensfrage;
     private bool _loeschfrage;
-    private bool _schutzfrage;
-    private string _schutztext = "";
-
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
-    /// <summary>
-    /// Führt der Detailblock ein Feld mit der Beschriftung <see cref="LabelBrennstofftyp"/>?
-    /// Nur dann steht die Trägerwahl oben unter ihm statt an ihrer alten Stelle.
-    /// </summary>
+    // =================================================================================
+    // Katalogauswahl V1, Stufe 3: Mehrfachwahl, Bearbeiten je Bereich, Detailzeile
+    // =================================================================================
+
+    private readonly Bereichswahl _projektWahl = new();
+    private readonly Bereichswahl _katalogWahl = new();
+    private IReadOnlyList<string> _katalogKaestchen = new List<string>();
+    private Katalogliste? _katalogliste;
+    private (Satzmarke Art, IReadOnlyList<Bearbeitungssatz> Saetze)? _bearbeitung;
+    private IReadOnlyList<Rueckwegvorschlag>? _rueckweg;
+    private List<Katalogfilterzeile> _loeschziele = new();
+    private List<Katalogfilterzeile> _loeschUebersprungen = new();
+
+    /// <summary>Die Mehrfachwahl der Projektliste (Prüfhilfe).</summary>
+    public Bereichswahl ProjektWahl => _projektWahl;
+    /// <summary>Die Mehrfachwahl des Katalogs (Prüfhilfe).</summary>
+    public Bereichswahl KatalogWahl => _katalogWahl;
+    /// <summary>Die offene Satzbearbeitung (Prüfhilfe).</summary>
+    public (Satzmarke Art, IReadOnlyList<Bearbeitungssatz> Saetze)? Bearbeitung => _bearbeitung;
+    /// <summary>Ist der Katalogeditor offen (Prüfhilfe)?</summary>
+    public bool EditorOffen => _editorGaben is not null;
+    /// <summary>Die offene Rueckfrage des Rueckwegs (Prüfhilfe).</summary>
+    public IReadOnlyList<Rueckwegvorschlag>? Rueckweg => _rueckweg;
+
+    private static string Projektschluessel(ErzeugerZeile z) => z.Schluessel.ToString(CultureInfo.InvariantCulture);
+    private IReadOnlyList<string> ProjektSchluessel() => Zeilen.Select(Projektschluessel).ToList();
+    private IReadOnlyList<string> KatalogSichtbar()
+        => (_katalogliste?.Angezeigt ?? _katalog).Select(z => z.Schluessel).ToList();
+
+    /// <summary>Die Ziele einer Projektaktion: die angekreuzten Zeilen, sonst die zuletzt gewaehlte.</summary>
+    private List<ErzeugerZeile> ProjektZiele()
+    {
+        if (_projektWahl.Anzahl > 0)
+            return _projektWahl.Gewaehlte
+                .Select(s => Zeilen.FirstOrDefault(z => Projektschluessel(z) == s))
+                .OfType<ErzeugerZeile>().ToList();
+        return _projektZeile is null ? new() : new() { _projektZeile };
+    }
+
+    /// <summary>Die Ziele einer Katalogaktion: die angekreuzten Saetze, sonst der gewaehlte.</summary>
+    private List<Katalogfilterzeile> KatalogZiele()
+    {
+        if (_katalogWahl.Anzahl > 0)
+            return _katalogWahl.Gewaehlte
+                .Select(s => _katalog.FirstOrDefault(z => z.Schluessel == s))
+                .OfType<Katalogfilterzeile>().ToList();
+        return _katalogZeile is null ? new() : new() { _katalogZeile };
+    }
+
+    private Satzmarke SatzArt => _projektZeile is not null ? Satzmarke.Projektsatz
+                               : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+    private string? SatzName => _projektZeile?.Bezeichner ?? _katalogZeile?.Bezeichner;
+
+    /// <summary>Die Kenndaten der Detailzeile: die ersten drei gefuellten Felder, beim gesperrten Satz der Hinweis.</summary>
+    private string? SatzKenndaten
+    {
+        get
+        {
+            if (SatzArt == Satzmarke.Keiner) return null;
+            var teile = _detail.Felder.Where(f => !string.IsNullOrWhiteSpace(f.Wert)).Take(3)
+                .Select(f => f.Feld.TrimEnd(':', ' ') + " " + f.Wert).ToList();
+            if (KatalogsatzGesperrt) teile.Add(Resource.AUSWAHL_SATZ_NUR_LESEN);
+            return string.Join(" · ", teile);
+        }
+    }
+
+    private RenderFragment MarkeProjektsatz => @<span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@Resource.AUSWAHL_MARKE_PROJEKTSATZ</span>;
+    private RenderFragment MarkeKatalogsatz => @<span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@Resource.AUSWAHL_MARKE_KATALOGSATZ</span>;
+
+    private bool AlleDatenDa => _projektZeile is not null
+        ? ProjektsatzWege is not null
+        : _katalogZeile is not null && Katalogfelder is not null;
+
+    private bool FelderSpeicherbar => _projektZeile is not null
+        ? ProjektsatzWege?.Speichern is not null
+        : KatalogfelderSpeichern is not null && !KatalogsatzGesperrt;
+
+    private void SummeNachziehen() { if (SummePtherm is not null) _summeText = SummePtherm(); }
+
+    private void ProjektZeileKlick(ErzeugerZeile zeile)
+    {
+        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
+        ProjektZeileWaehlen(zeile);
+    }
+
+    private void BeiWahlGeaendert(Auswahlbereich bereich)
+    {
+        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
+        if (!_projektWahl.IstGewaehlt(s)) return;
+        ErzeugerZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == s);
+        if (zeile is not null && zeile != _projektZeile) ProjektZeileWaehlen(zeile);
+    }
+
+    private void BeiKatalogKaestchen(IReadOnlyList<string> gewaehlt)
+    {
+        _katalogKaestchen = gewaehlt;
+        _katalogWahl.Setzen(gewaehlt);
+    }
+
+    private void BeiGefiltert() { }
+
+    private void KatalogKaestchenLeeren()
+    {
+        _katalogWahl.Leeren();
+        _katalogKaestchen = new List<string>();
+    }
+
     private bool BrennstofftypImDetail
         => _detail.Felder.Any(f => f.Feld == LabelBrennstofftyp);
 
-    /// <summary>
-    /// <b>Die Trägerwahl der Projektzeile</b> — ihr Bauplan steht EINMAL hier, weil sie an
-    /// zwei Stellen erscheinen kann: im Paarblock unter „Brennstoff Typ" (der Regelfall)
-    /// und ersatzweise dort, wo sie bis zum 16.09.2026 stand.
-    /// </summary>
     private RenderFragment TraegerwahlFeld => @<Auswahlfeld Bezeichnung="@LabelTraeger" Eintraege="@_varianten"
                                                             Auswahl="@(_projektZeile is not null && _projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
                                                             AuswahlChanged="BeiTraegerwechsel" />;
 
-    /// <summary>Die gewaehlte Projektzeile (Pruefhilfe fuer Tests).</summary>
+    /// <summary>Die gewaehlte Projektzeile (Prüfhilfe).</summary>
     public ErzeugerZeile? Projektzeile => _projektZeile;
-
-    /// <summary>Die gewaehlte Katalogzeile (Pruefhilfe fuer Tests).</summary>
+    /// <summary>Der gewaehlte Katalogsatz (Prüfhilfe).</summary>
     public Katalogfilterzeile? Katalogzeile => _katalogZeile;
-
-    /// <summary>Die Zeilen des Katalogs (Pruefhilfe fuer Tests).</summary>
     public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
-
-    /// <summary>Der Filterzustand des Katalogs (Pruefhilfe fuer Tests).</summary>
     public Katalogfilterstand Filterstand => _filterstand;
-
-    /// <summary>Steht die Traegerwahl? (Pruefhilfe fuer Tests.)</summary>
     public bool Traegerwahl => _traegerGaben is not null;
-
-    /// <summary>Steht der Katalogeditor? (Pruefhilfe fuer Tests.)</summary>
     public bool Katalogeditor => _editorGaben is not null;
-
-    /// <summary>Steht die Schreibschutzrueckfrage des Aufklappers? (Pruefhilfe fuer Tests.)</summary>
-    public bool Schutzfrage => _schutzfrage;
-
-    /// <summary>Die angezeigte Leistungssumme (Pruefhilfe fuer Tests).</summary>
     public string Summe => _summeText;
-
-    /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
 
     // --- Die Bruecke zur Kostenleiste ------------------------------------------
-    // Ohne Delegat KEIN Rueckruf - sonst zeichnete die Leiste einen Knopf, der
-    // nichts tut (ihre eigene Regel).
-
     private Func<bool, Task>? KostenLeiste
         => KostenOeffnen is null ? null : (Func<bool, Task>)BeiKosten;
-
     private Func<Task>? EnergieLeiste
         => EnergiekostenOeffnen is null ? null : (Func<Task>)BeiEnergiekosten;
-
-    /// <summary>Reicht die gewählte Projektzeile an die Kostenverwaltung durch.</summary>
     private Task BeiKosten(bool betrieb)
         => KostenOeffnen?.Invoke(_projektZeile, betrieb) ?? Task.CompletedTask;
-
-    /// <summary>Reicht die gewählte Projektzeile an die Energieträgerverwaltung durch.</summary>
     private Task BeiEnergiekosten()
         => EnergiekostenOeffnen?.Invoke(_projektZeile) ?? Task.CompletedTask;
 
@@ -681,102 +655,70 @@
         Filtertexte.SpalteWahl = SpalteWahl;
     }
 
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     protected override void OnInitialized()
     {
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Katalogprofil?.Art ?? Anlagenart.Bhkw);
-
         KatalogNeuLaden();
-        SummeNeu();
+        SummeNachziehen();
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
-
-        // Welle KI-F1: die GEWAEHLTE Zeile beim Hilfe-Assistenten anmelden - als
-        // Delegat und nicht als Instanz, denn sie wechselt mit jedem Klick in der
-        // Projektliste.
-        // KI-F1b: Die Brennstoffvariante ist ein WAHLFELD; ihre Einträge kennt nur
-        // dieser Dialog, deshalb geht der Lieferant als Quelle mit.
-        // Welle #458, Stufe 2: angemeldet ist seither die SICHTKLASSE - sie reicht die
-        // gewaehlte Zeile durch und traegt den Aufklapper „Alle Daten" als Feldtafel.
+        // Welle KI-F1 / #458: die Sichtklasse mit der gewaehlten Zeile und „Alle Daten".
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BHKW_PROJEKT,
                                           () => KiSicht(), KiHaken(),
                                           ("energietraeger", Traegereintraege));
     }
 
     private ErzeugerProjektKiSicht? _kiSicht;
-
-    /// <summary>
-    /// Die Sicht des Assistenten: die gewählte Projektzeile und der Aufklapper „Alle
-    /// Daten" des gewählten Katalogsatzes (Welle #458, Stufe 2).
-    /// </summary>
     private ErzeugerProjektKiSicht KiSicht() => _kiSicht ??= new ErzeugerProjektKiSicht
     {
         Zeilenquelle = () => _projektZeile,
+        // Die Zeilenzahl sagt dem Sperrgrund, ob die Einzelwahl greift (genau eine Zeile).
+        Zeilenzahl = () => Zeilen.Count,
+        // Meldung 10.10.2026: ohne gewählte Zeile wählt der Assistent die EINZIGE wie das
+        // Öffnen; bei mehreren rät er nicht, und die Sicht lehnt benannt ab.
+        Einzelwahl = () =>
+        {
+            if (_projektZeile is null && Zeilen.Count == 1) ProjektZeileWaehlen(Zeilen[0]);
+            return _projektZeile;
+        },
+        // Nach dem Setzen derselbe Übernahmeweg wie BeiVorlauf/BeiRuecklauf (Arbeitskopie,
+        // nicht die Datenbank) - sonst stünde der Wert nur in der Zeile.
+        Uebernommen = z => Uebernehmen?.Invoke(z),
         AlleDaten = new AlleDatenTafel
         {
             Felder = () => _parameterOffen ? _felder : null,
-            // Der BHKW-Katalog kennt den Auslieferungssatz ZUSAETZLICH ueber seinen
-            // eigenen Weg (KatalogfelderGeschuetzt) - derselbe, vor dem der Knopf fragt.
-            Sperrgrund = () => AlleDatenTafel.Grund(_parameterOffen ? _felder : null, KatalogfelderSpeichern is not null,
-                                                    _katalogZeile?.Geschuetzt == true ||
-                                                    (_katalogZeile is not null &&
-                                                     KatalogfelderGeschuetzt?.Invoke(_katalogZeile.Bezeichner) == true)),
+            Sperrgrund = () => AlleDatenTafel.Grund(_parameterOffen ? _felder : null,
+                                                    _projektZeile is not null ? ProjektsatzWege?.Speichern is not null
+                                                                              : KatalogfelderSpeichern is not null,
+                                                    _katalogZeile?.Geschuetzt == true),
             Gesetzt = () => _felderGeaendert = true
         }
     };
 
-    /// <summary>Die Brennstoffvarianten der gewählten Zeile für den Assistenten (KI-F1b).</summary>
     private IReadOnlyList<KiWahleintrag> Traegereintraege()
         => KiMaskenanmeldung.Eintraege(_varianten, v => v.Id, v => v.Text);
 
-    // =================================================================================
-    // Der Hilfe-Assistent liest und setzt die Zeilenwerte (Welle KI-F1)
-    // =================================================================================
-
-    /// <summary>
-    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. Sie hält die Getter auf die
-    /// gewählte Projektzeile und fällt mit dem Dialog.
-    /// </summary>
-    /// <remarks>
-    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
-    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
-    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
-    /// </remarks>
     private KiMaskenanmeldung? _kiMaske;
 
-    /// <summary>
-    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3) — dieselben drei
-    /// Haken wie in den fünf Schwesterdialogen der Erzeugerkarte.
-    /// </summary>
-    /// <remarks>
-    /// <para><b>„Speichern" heißt hier ÜBERNEHMEN</b>: die gewählte Projektzeile in das
-    /// Modell zurück, derselbe Weg, den Grenzleistung, Vorlauf und Rücklauf von Hand
-    /// gehen. Ohne gewählte Zeile lehnt die Aktion benannt ab.</para>
-    /// <para><b>Keine eigene Prüfung</b> — die drei Zahlenfelder färben sich selbst;
-    /// eine Knopfprüfung wie in den Katalogeditoren hat dieser Dialog nicht.</para>
-    /// <para><b>Der SCHREIBSCHUTZ hängt am Gerät</b>, auf das die gewählte Zeile
-    /// verweist (<c>ErzeugerZeile.NurLesen</c>).</para>
-    /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
+        // Sperrgrund je Feld vor der Bestätigung: Energieträger nur von Hand, ohne gewählte
+        // Zeile (und ohne Einzelwahl) keine Zeilenfelder.
+        Sperrgrund = f => KiSicht().Sperrgrund(f),
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 
-    /// <summary>
-    /// „Speichern" des Assistenten: Trägt der Aufklapper „Alle Daten" Änderungen, geht
-    /// er den Weg SEINES Knopfes (<see cref="FelderSpeichern"/>) — sonst wird die
-    /// gewählte Projektzeile übernommen wie bisher (Welle #458, Stufe 2).
-    /// </summary>
     private KiKern.KiErgebnis KiSpeichern()
     {
         if (!_felderGeaendert) return KiUebernehmen();
-
         FelderSpeichern();
-
-        // Ein Auslieferungssatz fragt erst nach - die Antwort gibt der Anwender, nicht
-        // der Assistent.
-        if (_schutzfrage) return KiKern.KiErgebnis.Abgelehnt(Resource.ADM_SPEICHERN_GESPERRT);
-
         return _felderGeaendert
             ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
                   : Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText))
@@ -788,48 +730,35 @@
         if (_projektZeile is null || Uebernehmen is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
                                                        .Replace("{0}", TitelText));
-
         Uebernehmen(_projektZeile);
         return KiKern.KiErgebnis.Ok(_projektZeile.Bezeichner, anzahl: 1);
     }
 
-    /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
-    private void SummeNeu() { if (SummePtherm is not null) _summeText = SummePtherm(); }
-
     // =================================================================================
-    // Filter und Listen
+    // Listen
     // =================================================================================
 
-    /// <summary>
-    /// Liest den Katalog neu — nach einem SCHREIBweg (Editor, Neu…, Löschen). Der
-    /// FILTER ruft sie nicht: Er wirkt auf die Anzeige, nie auf die Auswahl.
-    /// </summary>
     private void KatalogNeuLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
         VerwendungStempeln();
-
         _katalogZeile = Katalogsatz(_katalogGewaehlt);
         if (_katalogZeile is null) _katalogGewaehlt = "";
+        _katalogWahl.Bereinigen(_katalog.Select(z => z.Schluessel));
     }
 
-    /// <summary>
-    /// Die Spalte „im Projekt verwendet" (Q12) — EINMAL für die ganze Liste aus der
-    /// LEBENDEN Projektliste; der Dialog schreibt erst beim OK zurück.
-    /// </summary>
     private void VerwendungStempeln()
         => Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Bezeichner));
 
-    /// <summary>Der Katalogsatz zu einem Bezeichner; <c>null</c>, wenn es ihn nicht gibt.</summary>
     private Katalogfilterzeile? Katalogsatz(string bezeichner)
     {
         if (string.IsNullOrEmpty(bezeichner)) return null;
@@ -838,18 +767,15 @@
         return null;
     }
 
-    /// <summary>
-    /// Eine PROJEKTzeile waehlen: Detail aus der Projektkopie (im Assistenten aus dem
-    /// Stamm - das entscheidet die Huelle), Grenzleistung, Vorlauf, Ruecklauf und die
-    /// Traegerliste der Gruppe (<c>ApplySelectedBHKW</c>).
-    /// </summary>
     private void ProjektZeileWaehlen(ErzeugerZeile zeile)
     {
         _projektZeile = zeile;
         _katalogZeile = null;
         _katalogGewaehlt = "";
         _varianten = Varianten is not null ? Varianten(zeile.CarrierId) : Array.Empty<(int, string)>();
-        _detail = (ProjektDetail is not null ? ProjektDetail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+        _detail = Katalogladung.Satz(() => ProjektDetail is not null ? ProjektDetail(zeile.Bezeichner) : null,
+                                     zeile.Bezeichner, out _satzFehler) ?? Leer(zeile.Bezeichner);
+        KostenNachziehen();
         FelderNachziehen();
     }
 
@@ -859,7 +785,8 @@
         _katalogZeile = Katalogsatz(_katalogGewaehlt);
         _projektZeile = null;
         _varianten = Array.Empty<(int, string)>();
-        _detail = (KatalogDetail is not null ? KatalogDetail(_katalogGewaehlt) : null)
+        _detail = Katalogladung.Satz(() => KatalogDetail is not null ? KatalogDetail(_katalogGewaehlt) : null,
+                                     _katalogGewaehlt, out _satzFehler)
                   ?? Leer(_katalogGewaehlt);
         FelderNachziehen();
     }
@@ -868,68 +795,102 @@
         => new(name, "", Array.Empty<(string, string)>());
 
     // =================================================================================
-    // Hinzufuegen und Entfernen
+    // Hinzufuegen und Entfernen (Sammeluebernahme: eine Traegerwahl je Traegergruppe)
     // =================================================================================
 
     private void BeiHinzu()
     {
-        if (_katalogZeile is null || Vorbereiten is null || TraegerGaben is null) return;
+        if (Vorbereiten is null || TraegerGaben is null) return;
+        List<Katalogfilterzeile> ziele = KatalogZiele();
+        if (ziele.Count == 0) return;
+        _aufnahmen.Clear();
+        _traegerJeGruppe.Clear();
+        foreach (Katalogfilterzeile z in ziele) _aufnahmen.Enqueue(z.Id);
+        NaechsteAufnahme();
+    }
 
-        TraegerVorbereitung vor = Vorbereiten(_katalogZeile.Id);
-        if (!string.IsNullOrEmpty(vor.Meldung)) { Melden(vor.Meldung, true); return; }
+    private readonly Queue<int> _aufnahmen = new();
+    private readonly Dictionary<string, EnergietraegerVarianteErgebnis> _traegerJeGruppe = new(StringComparer.Ordinal);
+    private int _aufnahmeId;
+    private string _aufnahmeGruppe = "";
 
-        _traegerGaben = TraegerGaben(vor);
+    private void NaechsteAufnahme()
+    {
+        while (_aufnahmen.Count > 0)
+        {
+            int id = _aufnahmen.Dequeue();
+            TraegerVorbereitung vor = Vorbereiten!(id);
+            if (!string.IsNullOrEmpty(vor.Meldung))
+            {
+                Melden(vor.Meldung, true);
+                continue;
+            }
+            string gruppe = string.Join(",", vor.Energietraeger.Select(e => e.Id));
+            if (_traegerJeGruppe.TryGetValue(gruppe, out EnergietraegerVarianteErgebnis? bekannt))
+            {
+                Aufnahme(id, bekannt);
+                continue;
+            }
+            _aufnahmeId = id;
+            _aufnahmeGruppe = gruppe;
+            _traegerGaben = TraegerGaben!(vor);
+            return;
+        }
+        if (_katalogWahl.Anzahl > 0) KatalogKaestchenLeeren();
     }
 
     private void TraegerFertig(EnergietraegerVarianteErgebnis? ergebnis)
     {
-        var katalog = _katalogZeile;
         _traegerGaben = null;
+        if (ergebnis is null || Aufnehmen is null)
+        {
+            _aufnahmen.Clear();
+            return;
+        }
+        _traegerJeGruppe[_aufnahmeGruppe] = ergebnis;
+        Aufnahme(_aufnahmeId, ergebnis);
+        NaechsteAufnahme();
+    }
 
-        if (ergebnis is null || katalog is null || Aufnehmen is null) return;
-
-        AufnahmeErgebnis aufnahme = Aufnehmen(katalog.Id, ergebnis);
+    private void Aufnahme(int stammId, EnergietraegerVarianteErgebnis ergebnis)
+    {
+        if (Aufnehmen is null) return;
+        AufnahmeErgebnis aufnahme = Aufnehmen(stammId, ergebnis);
         if (!string.IsNullOrEmpty(aufnahme.Meldung)) Melden(aufnahme.Meldung, aufnahme.Fehler);
         if (aufnahme.Zeile is null) return;
-
         Zeilen.Add(aufnahme.Zeile);
         VerwendungStempeln();                 // Q12
         ProjektZeileWaehlen(aufnahme.Zeile);
-        SummeNeu();
+        SummeNachziehen();
     }
 
-    /// <summary>
-    /// „▶": Zeile weg, Summe neu. Steht danach keine Zeile mehr da, waehlt der
-    /// Vorlaeufer die erste Katalogzeile und setzt die Grenzleistung auf „0"
-    /// (<c>btn_BHKW_Löschen_Click</c>, Z. 749-758).
-    /// </summary>
     private void BeiEntfernen()
     {
-        if (_projektZeile is null) return;
-
-        ErzeugerZeile zeile = _projektZeile;
-        Zeilen.Remove(zeile);
-        Entfernen?.Invoke(zeile);
+        List<ErzeugerZeile> ziele = ProjektZiele();
+        if (ziele.Count == 0) return;
+        foreach (ErzeugerZeile zeile in ziele)
+        {
+            Zeilen.Remove(zeile);
+            Entfernen?.Invoke(zeile);
+        }
         VerwendungStempeln();                 // Q12
-
+        _projektWahl.Leeren();
         _projektZeile = null;
         _detail = Leer("");
         _varianten = Array.Empty<(int, string)>();
-        SummeNeu();
-
+        SummeNachziehen();
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
         else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0].Bezeichner);
     }
 
     // =================================================================================
-    // Zeilenwerte
+    // Zeilenwerte der Anlage (nur Projektsatz)
     // =================================================================================
 
     private void BeiTraegerwechsel(int? neu)
     {
         if (_projektZeile is null || !neu.HasValue) return;
-        if (neu.Value == _projektZeile.CarrierId) return;
-
+        if (neu.Value == _projektZeile.CarrierId) return;   // programmatische Vorwahl
         TraegerWechseln?.Invoke(_projektZeile, neu.Value);
         _projektZeile.CarrierId = neu.Value;
     }
@@ -942,18 +903,8 @@
     }
 
     /// <summary>
-    /// Die Herleitungszeile unter dem Grenzleistungsfeld — <c>null</c> = keine Zeile
-    /// (Anwenderentscheid <b>W6‑E‑7</b> vom 07.09.2026).
-    ///
-    /// <para><b>Sie erscheint genau dann, wenn sie etwas zu sagen hat:</b> Das Modulfeld
-    /// steht auf 0 (leer oder ausdrücklich 0 — beides heißt „kein eigener Wert"), und
-    /// die Hülle hat die <see cref="Projektvorgabe"/> mitgegeben. Steht dort eine Zahl,
-    /// ist das der Wert, mit dem gerechnet wird; ist auch die Vorgabe 0, sagt die zweite
-    /// Fassung ausdrücklich, dass es dann KEINE Untergrenze gibt — seit W6‑E‑7 rechnet
-    /// 0 als 0, und genau das darf nicht unsichtbar bleiben.</para>
-    ///
-    /// <para>Führt das Modul einen eigenen Wert, überstimmt er die Vorgabe; dann steht
-    /// die Zahl im Feld und die Zeile schweigt.</para>
+    /// Die Herleitung der Grenzleistung (W6-E-7): Steht am Modul 0, rechnet es mit der
+    /// Projektvorgabe; <c>null</c> = keine Zeile (eigener Wert oder Vorgabe unbekannt).
     /// </summary>
     private string? Grenzleistungherleitung
     {
@@ -962,11 +913,9 @@
             if (_projektZeile is null) return null;
             if (Projektvorgabe is null) return null;
             if ((_projektZeile.Grenzleistung ?? 0) != 0) return null;
-
             return Projektvorgabe.Value == 0
                 ? HerleitungKeine
-                : string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                HerleitungVorgabe, Projektvorgabe.Value);
+                : string.Format(CultureInfo.CurrentCulture, HerleitungVorgabe, Projektvorgabe.Value);
         }
     }
 
@@ -985,129 +934,339 @@
     }
 
     // =================================================================================
-    // Der Aufklapper "Alle Daten" (Anwenderentscheid 15.09.2026)
+    // Alle Daten: beim Katalogsatz der Katalog, beim Projektsatz die Projektkopie
     // =================================================================================
 
-    /// <summary>
-    /// Auf- und zuklappen - und beim AUFklappen die Felder holen.
-    /// </summary>
-    /// <remarks>
-    /// <b>Der Knopf bleibt, die Vorgabe ist offen.</b> Wer zuklappt und wieder
-    /// aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
-    /// </remarks>
     private void ParameterUmschalten()
     {
         _parameterOffen = !_parameterOffen;
         if (_parameterOffen) FelderHolen();
     }
 
-    /// <summary>Holt die Felder des gewählten Katalogsatzes neu.</summary>
     private void FelderHolen()
     {
-        _felder = Katalogfelder is null || _katalogZeile is null
-            ? null
-            : Katalogfelder(_katalogZeile.Bezeichner);
+        _felder = _projektZeile is not null
+            ? Katalogladung.SatzDazu(() => ProjektsatzWege?.Lesen(_projektZeile.GeraetId), _projektZeile.Bezeichner,
+                                     ref _satzFehler)
+            : Katalogfelder is null || _katalogZeile is null
+                ? null
+                : Katalogladung.SatzDazu(() => Katalogfelder(_katalogZeile.Bezeichner), _katalogZeile.Bezeichner,
+                                         ref _satzFehler);
         _felderGeaendert = false;
         _feldFehler = false;
     }
 
-    /// <summary>
-    /// Nach einem SATZWECHSEL: Der offene Aufklapper zeigt die Felder des JETZT
-    /// gewählten Satzes, der geschlossene gar keine.
-    /// </summary>
-    /// <remarks>
-    /// <b>Sonst speicherte der Knopf fremde Werte.</b> <see cref="FelderSpeichern"/>
-    /// schreibt <c>_felder</c> unter dem Bezeichner der GEWÄHLTEN Zeile zurück — bliebe
-    /// der alte Feldsatz stehen, landeten die Werte des vorigen Moduls im neuen.
-    /// </remarks>
     private void FelderNachziehen()
     {
-        if (_parameterOffen && _katalogZeile is not null) { FelderHolen(); return; }
-
+        if (_parameterOffen && (_katalogZeile is not null || _projektZeile is not null)) { FelderHolen(); return; }
         _felder = null;
         _felderGeaendert = false;
         _feldFehler = false;
     }
 
-    /// <summary>Ein Zahlenfeld des Aufklappers meldet einen ungültigen Zustand.</summary>
     private void BeiFeldFehler((string Feldname, bool Fehler) meldung)
         => _feldFehler = meldung.Fehler;
 
-    /// <summary>
-    /// „Speichern" im Aufklapper. Ein AUSLIEFERUNGSSATZ wird vorher erfragt — genau die
-    /// Reihenfolge des Katalogbrowsers (erst die Rückfrage, dann der Schreibvorgang).
-    /// </summary>
-    private void FelderSpeichern()
-    {
-        if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
-
-        if (KatalogfelderGeschuetzt?.Invoke(_katalogZeile.Bezeichner) == true)
-        {
-            _schutztext = string.Format(FrageSchutz, _katalogZeile.Bezeichner);
-            _schutzfrage = true;
-            return;
-        }
-
-        FelderSchreiben(false);
-    }
-
-    /// <summary>„Nein" schreibt nichts, „Ja" hebt den Schutz für DIESEN Vorgang auf.</summary>
-    private void BeiSchutzAntwort(bool? antwort)
-    {
-        _schutzfrage = false;
-        if (antwort != true) return;
-        FelderSchreiben(true);
-    }
-
-    /// <summary>
-    /// Schreibt die geänderten Felder zurück und lädt die Katalogliste neu.
-    /// </summary>
-    /// <remarks>
-    /// <b>Der Befund des Katalogs zählt, nicht die Absicht.</b> Lehnt der Speicherweg ab
-    /// (Prüfmeldung, Schreibschutz), bleibt der geänderte Stand im Aufklapper stehen -
-    /// der Anwender soll ihn verbessern können, statt ihn zu verlieren.
-    /// </remarks>
-    private void FelderSchreiben(bool schutzUebergehen)
-    {
-        if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
-
-        KatalogSpeicherErgebnis ergebnis =
-            KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder, schutzUebergehen);
-
-        if (!ergebnis.Ok)
-        {
-            // Das Band oben bleibt fuer den Fehler - dazu der Grund rot am Knopf.
-            Melden(ergebnis.Meldung, true);
-            _felderVermerk?.Fehler(ergebnis.Meldung);
-            return;
-        }
-
-        // Der Erfolg steht nur noch am Knopf; ein Band einer frueheren Ablehnung faellt weg.
-        _felderGeaendert = false;
-        _meldung = "";
-        _felderErfolg = ergebnis.Meldung;
-        _felderVermerk?.Gespeichert();
-        KatalogNeuLaden();
-    }
-
-    /// <summary>Eine Eingabe im Aufklapper: Speichern geht wieder, der Vermerk fällt weg.</summary>
     private void FeldGeaendert()
     {
         _felderGeaendert = true;
-        _felderVermerk?.Leeren();
     }
 
-    // =================================================================================
-    // Katalogpflege
-    // =================================================================================
-
-    private void BeiKatalogBearbeiten()
+    private void FelderSpeichern()
     {
-        if (_katalogZeile is null || EditorGaben is null) return;
-        _editorGaben = EditorGaben(_katalogZeile.Bezeichner);
+        _letzterSpeicherfehler = null;
+        if (_felder is null) return;
+        KatalogSpeicherErgebnis ergebnis;
+        if (_projektZeile is not null)
+        {
+            if (ProjektsatzWege?.Speichern is null) return;
+            ergebnis = Katalogladung.Schreiben(
+                () => ProjektsatzWege.Speichern(new[] { (_projektZeile.GeraetId, _felder) }), _projektZeile.Bezeichner,
+                g => new KatalogSpeicherErgebnis(false, g, _projektZeile.Bezeichner));
+        }
+        else
+        {
+            if (KatalogfelderSpeichern is null || _katalogZeile is null) return;
+            ergebnis = Katalogladung.Schreiben(
+                () => KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder), _katalogZeile.Bezeichner,
+                g => new KatalogSpeicherErgebnis(false, g, _katalogZeile.Bezeichner));
+        }
+        if (!ergebnis.Ok)
+        {
+            Melden(ergebnis.Meldung, true);
+            _letzterSpeicherfehler = ergebnis.Meldung;
+            return;
+        }
+        _felderGeaendert = false;
+        _meldung = "";
+        _felderErfolg = ergebnis.Meldung;
+        if (_projektZeile is not null) ProjektNeuLesen();
+        else KatalogNeuLaden();
     }
 
-    /// <summary>„Neu…": Erst der Name, dann derselbe Editor im Modus „Neu".</summary>
+    /// <summary>Grund der letzten Ablehnung von <see cref="FelderSpeichern"/>; <c>null</c> = gespeichert.</summary>
+    private string? _letzterSpeicherfehler;
+
+    // =================================================================================
+    // Die Satz-Ueberlagerung (UeS1): „Bearbeiten…" eines Satzes und „Vergrößern"
+    // =================================================================================
+
+    private Zweispaltenauswahl? _zweispalten;
+
+    /// <summary>Steht die Satz-Überlagerung offen? Dann trägt sie das Fragment und ihr OK speichert.</summary>
+    private bool _satzGross;
+
+    /// <summary>Grund einer abgelehnten Übernahme, in der Fußleiste der Überlagerung.</summary>
+    private string? _satzUeberlagerungFehler;
+
+    /// <summary>Der Stand der anlagenbezogenen Felder der Projektzeile beim Öffnen der Überlagerung.</summary>
+    private Anlagenmerker? _anlagenmerker;
+
+    /// <summary>Steht die Satz-Überlagerung offen? (Prüfhilfe.)</summary>
+    public bool SatzUeberlagerungOffen => _satzGross;
+
+    /// <summary>
+    /// Die Überlagerung ist aufgegangen: „Alle Daten" aufgeklappt — frisch gelesen, wenn der
+    /// Aufklapper zu war; ein offener Aufklapper behält seine Eingaben.
+    /// Träger, Grenzleistung, Vorlauf und Rücklauf gehen schon bei der Eingabe in die Anlage — der Merker hält ihren Stand für „Abbrechen".
+    /// </summary>
+    private void BeiSatzVergroessert()
+    {
+        _satzGross = true;
+        _satzUeberlagerungFehler = null;
+        _anlagenmerker = _projektZeile is not null ? Anlagenmerker.Von(_projektZeile) : null;
+        if (AlleDatenDa && (!_parameterOffen || _felder is null))
+        {
+            _parameterOffen = true;
+            FelderHolen();
+        }
+    }
+
+    /// <summary>
+    /// OK der Überlagerung: derselbe Speicherweg wie der Knopf der Satzfläche
+    /// (<see cref="FelderSpeichern"/> über <c>Katalogladung.Schreiben</c>, KT‑4-Fangweg).
+    /// Lehnt er ab, bleibt die Überlagerung mit dem Grund offen.
+    /// </summary>
+    private void BeiSatzUebernommen()
+    {
+        if (FelderSpeicherbar && _felder is not null && _felderGeaendert)
+        {
+            FelderSpeichern();
+            if (_letzterSpeicherfehler is not null)
+            {
+                _satzUeberlagerungFehler = _letzterSpeicherfehler;
+                _zweispalten?.SatzOffenHalten();
+                return;
+            }
+        }
+        _satzGross = false;
+        _satzUeberlagerungFehler = null;
+        _anlagenmerker = null;
+        KostenNachziehen();   // die Kostenknoepfe der Ueberlagerung koennen die Summen geaendert haben
+    }
+
+    /// <summary>
+    /// Abbrechen, ✕, Esc oder Schließen der Überlagerung: der Satz wird neu gelesen, Änderungen
+    /// verworfen — auch die anlagenbezogenen Felder stehen wieder wie beim Öffnen.
+    /// </summary>
+    private void BeiSatzVerworfen()
+    {
+        _satzGross = false;
+        _satzUeberlagerungFehler = null;
+        if (_anlagenmerker is { } merker && _projektZeile is not null)
+            merker.Zurueckschreiben(_projektZeile, TraegerWechseln, Uebernehmen);
+        _anlagenmerker = null;
+        if (_felder is not null) FelderHolen();
+        KostenNachziehen();
+    }
+
+    /// <summary>Nach dem Speichern einer Projektkopie: Kenndaten und Summe neu.</summary>
+    private void ProjektNeuLesen()
+    {
+        if (_projektZeile is null) return;
+        _detail = Katalogladung.SatzDazu(() => ProjektDetail is not null ? ProjektDetail(_projektZeile.Bezeichner) : null,
+                                         _projektZeile.Bezeichner, ref _satzFehler) ?? _detail;
+        SummeNachziehen();
+    }
+
+    // =================================================================================
+    // Katalogpflege und Bearbeiten je Bereich (4.6, KA-E-8, KA-E-13)
+    // =================================================================================
+
+    /// <summary>
+    /// „Bearbeiten…" im Katalogfuss: ein einzelner ungesperrter Satz oeffnet den vollen
+    /// Katalogeditor (KA-E-13), mehrere oder gesperrte Saetze die Satzbearbeitung -
+    /// gesperrte uebersprungen, alle gesperrt nur lesend.
+    /// </summary>
+    private async Task BeiKatalogBearbeiten()
+    {
+        List<Katalogfilterzeile> ziele = KatalogZiele();
+        if (ziele.Count == 0) return;
+        if (ziele.Count == 1 && !ziele[0].Geschuetzt && EditorGaben is not null)
+        {
+            _editorGaben = EditorGaben(ziele[0].Bezeichner);
+            return;
+        }
+        // UeS1: EIN gesperrter Satz oeffnet nur lesend in der Satz-Ueberlagerung („Erst Schloss aufheben").
+        if (ziele.Count == 1 && ziele[0].Geschuetzt && Katalogfelder is not null && _zweispalten is not null)
+        {
+            if (_katalogZeile?.Bezeichner != ziele[0].Bezeichner) KatalogZeileWaehlen(ziele[0].Bezeichner);
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
+        if (KatalogsatzWege is not null)
+        {
+            _bearbeitung = (Satzmarke.Katalogsatz,
+                            ziele.Select(z => new Bearbeitungssatz(z.Id, z.Bezeichner, z.Geschuetzt)).ToList());
+            return;
+        }
+        if (ziele.All(z => z.Geschuetzt)) BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
+    }
+
+    /// <summary>„Bearbeiten…" im Projektbereich: EINE Projektkopie öffnet die Satz-Überlagerung (UeS1), mehrere die Satzbearbeitung.</summary>
+    private async Task BeiProjektBearbeiten()
+    {
+        if (ProjektsatzWege is null) return;
+        List<ErzeugerZeile> ziele = ProjektZiele();
+        var saetze = ziele.GroupBy(z => z.GeraetId)
+            .Select(g => new Bearbeitungssatz(g.Key, g.First().Bezeichner, false)).ToList();
+        if (saetze.Count == 0) return;
+        // UeS1: EINE Projektkopie oeffnet die Satz-Ueberlagerung, mehrere die Satzbearbeitung.
+        if (saetze.Count == 1 && _zweispalten is not null)
+        {
+            if (_projektZeile?.GeraetId != saetze[0].Id) ProjektZeileWaehlen(ziele.First(z => z.GeraetId == saetze[0].Id));
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
+        _bearbeitung = (Satzmarke.Projektsatz, saetze);
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Projektzeile — sie wird gewählt (ohne die Kästchen der
+    /// Mehrfachwahl anzufassen) und ihre Projektkopie öffnet in der Satz-Überlagerung.
+    /// </summary>
+    private async Task BeiProjektStift(ErzeugerZeile zeile)
+    {
+        if (ProjektsatzWege is null || _zweispalten is null) return;
+        if (_projektZeile != zeile) ProjektZeileWaehlen(zeile);
+        await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Katalogzeile (die Katalogliste hat sie schon gewählt) — ein
+    /// gesperrter Satz öffnet nur lesend in der Satz-Überlagerung, ein ungesperrter den
+    /// Katalogeditor (KA‑E‑13); ohne Editor die Überlagerung.
+    /// </summary>
+    private async Task BeiKatalogStift(Katalogfilterzeile zeile)
+    {
+        if (_katalogZeile?.Bezeichner != zeile.Bezeichner) KatalogZeileWaehlen(zeile.Bezeichner);
+        if (!zeile.Geschuetzt && EditorGaben is not null)
+        {
+            _editorGaben = EditorGaben(zeile.Bezeichner);
+            return;
+        }
+        if (Katalogfelder is not null && _zweispalten is not null)
+        {
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
+        if (zeile.Geschuetzt) BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
+    }
+
+    // =================================================================================
+    // Die Zusammenfassung der Detailzeile (UeS2)
+    // =================================================================================
+
+    /// <summary>Die Kostensummen der gewählten Projektzeile — gelesen bei der Wahl und nach der Überlagerung.</summary>
+    private (double Invest, double Betrieb)? _kosten;
+
+    private void KostenNachziehen()
+    {
+        _kosten = null;
+        if (Wizard || Kostensumme is null || _projektZeile is null) return;
+        try { _kosten = Kostensumme(_projektZeile); }
+        catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
+    }
+
+    /// <summary>
+    /// <b>Die Kurzangaben des gewählten Satzes</b> für die Detailzeile. Projektsatz: P_el/P_th,
+    /// Brennstoff, Träger, Grenzleistung, Vorlauf/Rücklauf, Invest, Betrieb, Senken. Katalogsatz:
+    /// Hersteller, Brennstoff, P_el, P_th aus den Spalten des Katalogprofils. Ohne Satz eine leere
+    /// Liste — nie <c>null</c>, sonst zeichnete der Baustein das Fragment in der Detailzeile.
+    /// </summary>
+    internal IReadOnlyList<Satzangabe> Zusammenfassung()
+    {
+        var liste = new List<Satzangabe>();
+        CultureInfo k = CultureInfo.CurrentCulture;
+        if (_projektZeile is ErzeugerZeile p)
+        {
+            var leistung = new List<string>();
+            // UeS2b: die Zahlwerte des Details, nicht die Beschriftungen seiner Felder.
+            if (_detail.Kennwerte?.PelKw is double pel) leistung.Add(Satzangaben.Zahl(pel, "kWel"));
+            if (_detail.Kennwerte?.PthermKw is double pth) leistung.Add(Satzangaben.Zahl(pth, "kWth"));
+            if (leistung.Count > 0) liste.Add(new(Resource.AUSWAHL_ZF_LEISTUNG, string.Join(" / ", leistung)));
+            string? brennstoff = _detail.Felder.Where(f => f.Feld == LabelBrennstofftyp && !string.IsNullOrWhiteSpace(f.Wert))
+                                               .Select(f => f.Wert).FirstOrDefault();
+            if (brennstoff is not null) liste.Add(new(Resource.AUSWAHL_ZF_BRENNSTOFF, brennstoff));
+            string traeger = _varianten.Where(v => v.Id == p.CarrierId).Select(v => v.Text).FirstOrDefault() ?? "";
+            if (traeger.Length > 0) liste.Add(new(Resource.AUSWAHL_ZF_TRAEGER, traeger));
+            if (p.Grenzleistung is double grenze)
+                liste.Add(new(Resource.AUSWAHL_ZF_GRENZLEISTUNG, grenze.ToString("0.##", k) + " %"));
+            Satzangaben.Temperaturpaar(liste, p.Vorlauf, p.Ruecklauf);
+            Satzangaben.Kosten(liste, _kosten);
+            Satzangaben.Senken(liste, p.Senken);
+        }
+        else if (_katalogZeile is Katalogfilterzeile z && Katalogprofil is not null)
+        {
+            Satzangaben.Katalog(liste, z, Katalogprofil, Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpPel,
+                                Katalogfilterprofil.SpPtherm, Katalogfilterprofil.SpBrennstoff);
+        }
+        return liste;
+    }
+
+    /// <summary>Die Satzbearbeitung ist zu; gespeichert: Listen, Detail und Summe neu.</summary>
+    private void BearbeitungFertig(bool gespeichert)
+    {
+        Satzmarke? art = _bearbeitung?.Art;
+        _bearbeitung = null;
+        if (!gespeichert) return;
+        if (art == Satzmarke.Katalogsatz)
+        {
+            KatalogNeuLaden();
+            if (_katalogZeile is not null) KatalogZeileWaehlen(_katalogZeile.Bezeichner);
+        }
+        else if (_projektZeile is not null)
+        {
+            ProjektZeileWaehlen(_projektZeile);
+        }
+        SummeNachziehen();
+    }
+
+    /// <summary>„In die Datenbank übernehmen…" (KA-E-9): die Rueckfrage zu den Projektkopien der Auswahl.</summary>
+    private void BeiRueckweg()
+    {
+        if (RueckwegWege is null) return;
+        var ids = ProjektZiele().Select(z => z.GeraetId).Where(id => id > 0).Distinct().ToList();
+        if (ids.Count == 0) return;
+        IReadOnlyList<Rueckwegvorschlag> zeilen = RueckwegWege.Vorschau(ids);
+        if (zeilen.Count == 0) return;
+        _rueckweg = zeilen;
+    }
+
+    private void RueckwegFertig(string? meldung)
+    {
+        _rueckweg = null;
+        if (meldung is null) return;
+        Melden(meldung, false);
+        KatalogNeuLaden();
+    }
+
+    private void BeiVergleichen()
+    {
+        List<Katalogfilterzeile> ziele = KatalogZiele();
+        if (ziele.Count >= 2) _katalogliste?.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+    }
+
     private void BeiNeuemNamen(string? name)
     {
         _namensfrage = false;
@@ -1119,33 +1278,75 @@
     {
         _editorGaben = null;
         if (name is null) return;
-
         KatalogNeuLaden();
         foreach (var z in _katalog)
             if (z.Bezeichner == name) { KatalogZeileWaehlen(z.Bezeichner); return; }
     }
 
-    /// <summary>
-    /// „Löschen": Ein Auslieferungssatz wird mit Begruendung abgelehnt, BEVOR die
-    /// Rueckfrage kommt - genau die Reihenfolge des Vorlaeufers (IsReadOnly, dann
-    /// Ja/Nein).
-    /// </summary>
-    private void BeiLoeschen()
+    /// <summary>„Löschen": ein Satz fragt nach; bei mehreren werden gesperrte uebersprungen und genannt.</summary>
+    private void BeiLoeschenGefragt()
     {
-        _loeschfrage = _katalogZeile is not null;
+        List<Katalogfilterzeile> ziele = KatalogZiele();
+        if (ziele.Count == 0) return;
+        if (ziele.Count == 1)
+        {
+            _loeschziele = ziele;
+            _loeschUebersprungen = new();
+        }
+        else
+        {
+            _loeschziele = ziele.Where(z => !z.Geschuetzt).ToList();
+            _loeschUebersprungen = ziele.Where(z => z.Geschuetzt).ToList();
+            if (_loeschziele.Count == 0)
+            {
+                BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
+                return;
+            }
+        }
+        _loeschfrage = true;
+    }
+
+    private string LoeschfrageText
+    {
+        get
+        {
+            string text = _loeschziele.Count <= 1
+                ? string.Format(FrageLoeschen, _loeschziele.FirstOrDefault()?.Bezeichner ?? "")
+                : string.Format(Resource.Culture, Resource.AUSWAHL_FRAGE_LOESCHEN_N, _loeschziele.Count,
+                                string.Join(", ", _loeschziele.Select(z => "„" + z.Bezeichner + "“")));
+            if (_loeschUebersprungen.Count > 0)
+                text += " " + string.Format(Resource.Culture, Resource.SATZBEARB_UEBERSPRUNGEN,
+                                            string.Join(", ", _loeschUebersprungen.Select(z => "„" + z.Bezeichner + "“")));
+            return text;
+        }
     }
 
     private void BeiLoeschfrage(bool? antwort)
     {
         _loeschfrage = false;
-        if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
-
-        string grund = KatalogLoeschen(_katalogZeile.Id);
-        if (!string.IsNullOrEmpty(grund)) { Melden(grund, true); return; }
-
-        _katalogZeile = null;
-        _katalogGewaehlt = "";
-        _detail = Leer("");
+        List<Katalogfilterzeile> ziele = _loeschziele;
+        _loeschziele = new();
+        if (antwort != true || KatalogLoeschen is null || ziele.Count == 0) return;
+        string fehler = "";
+        bool fokusWeg = false;
+        int geloescht = 0;
+        foreach (Katalogfilterzeile z in ziele)
+        {
+            // KT-4: Wirft der Löschweg, kommt sein Grund wie eine Ablehnung zurück.
+            string grund = Katalogladung.Loeschen(() => KatalogLoeschen(z.Id) ?? "", z.Bezeichner, g => g);
+            if (grund.Length > 0) { fehler = grund; continue; }
+            geloescht++;
+            if (z.Bezeichner == _katalogGewaehlt) fokusWeg = true;
+        }
+        if (fehler.Length > 0) Melden(fehler, true);
+        if (geloescht == 0) return;
+        KatalogKaestchenLeeren();
+        if (fokusWeg)
+        {
+            _katalogZeile = null;
+            _katalogGewaehlt = "";
+            _detail = Leer("");
+        }
         KatalogNeuLaden();
     }
 
@@ -1164,11 +1365,38 @@
     /// <summary>Der Abbrechen-Weg: schliesst ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
     private Task Abbrechen() => BeiErgebnis(false);
 
+    /// <summary>Esc schliesst; die Ueberlagerungen werten ihn zuerst fuer sich aus. Enter bleibt unbelegt.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
+        if (e.Key == "Escape" && _katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_traegerGaben is not null || _editorGaben is not null ||
-            _namensfrage || _loeschfrage || _schutzfrage) return Task.CompletedTask;
+        if (_traegerGaben is not null || _editorGaben is not null || _bearbeitung is not null || _rueckweg is not null ||
+            _namensfrage || _loeschfrage || _satzGross)
+            return Task.CompletedTask;
         return Abbrechen();
+    }
+
+    // =================================================================================
+    // Schloss setzen / aufheben (AD-Q15) - derselbe Baustein wie in den Verwaltungen
+    // =================================================================================
+
+    [Parameter] public Schlossweg? Schloss { get; set; }
+    private Katalogschloss? _katalogschloss;
+    private bool KatalogsatzGesperrt => _katalogZeile?.Geschuetzt == true;
+    /// <summary>Ist die Rueckfrage des Schlosses offen (Prüfhilfe)?</summary>
+    public bool Schlossfrage => _katalogschloss?.FrageOffen == true;
+
+    private void BeiSchlossGeschaltet(string status)
+    {
+        KatalogNeuLaden();
+        FelderNachziehen();
+        _meldung = status ?? "";
+        _meldungStufe = WarnStufe.Hinweis;
+    }
+
+    private void BeiSchlossAbgelehnt(string grund)
+    {
+        _meldung = grund ?? "";
+        _meldungStufe = WarnStufe.Warnung;
     }
 }

@@ -3,20 +3,179 @@
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Der Dialog '''Photovoltaik''' beschreibt die PV-Anlage des Projekts über Modultyp, Modulanzahl, Neigung und Azimut. Aus den Moduldaten und den Klimadaten berechnet EPOS-Plan Einstrahlung, Zelltemperatur, temperaturkorrigierten Wirkungsgrad und Ertrag.
 
+Wie eine PV-Anlage Strom erzeugt und welche Kennzahlen zählen, steht unter [[Grundlagen/Photovoltaik]]; diese Seite zeigt, wie EPOS-Plan die Anlage einbindet, rechnet und mit den übrigen Techniken verrechnet.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Eine PV-Anlage entsteht in vier Schritten; die Felder im Einzelnen beschreiben [[#Eingaben|Eingaben]] und [[#wechselrichter|Wechselrichter und Stränge]].
+
+# '''Modul im Katalog.''' ''Administration → Energiesysteme → Photovoltaik → PV Module'' pflegt den Modulkatalog. Datensätze aus der CEC-Liste oder im PVsyst-Format liest ''Administration → Daten & Import → Photovoltaik → PV Module (CEC, PAN)...'' ein.
+# {{Anker|beschreibung-der-anlage|modulauswahl}}'''Anlage im Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''Photovoltaik'' den Dialog ''Verwaltung Photovoltaik Module''. Das Modul in ''Module aus Datenbank'' wählen und ''In das Projekt übernehmen'': Jede Übernahme legt eine eigene Anlage an, die als Zeile in ''ausgewählte Module'' steht. Für die markierte Zeile stehen im Block ''PV Anlage Eigenschaften'' die Felder ''Neigung [°]'', ''Azimut [°]'' (0° = Süden, Osten negativ, Westen positiv), der Energieträger und ''Anzahl Module''. ''Gesamtleistung [kW]'' im Block ''Modul Eigenschaften'' zählt alle Anlagen des Projekts zusammen.
+# {{Anker|ertragsberechnung|zelltemperatur|wechselrichterverluste}}'''Rechenweg der Anlage.''' Beim ''Rechenmodell'' rechnet ''Einfach'' mit isotroper Einstrahlung und dem pauschalen ''WR-Wirkungsgrad'' (leer = 0,95), ''Erweitert'' mit anisotroper Einstrahlung nach Hay-Davies, einem Schwachlichtmodell und einer Wechselrichterkennlinie. Die Zelltemperatur folgt in beiden Modellen aus Außentemperatur, Einstrahlung und dem NOCT-Wert des Moduls. ''Systemverluste [%]'' mindern jede Stunde um denselben Anteil (leer = 0 %). ''Albedo [-]'' ist der Bodenreflex vor der Anlage, 0 bis 1 (leer = 0,2); die Zeile darunter nennt Richtwerte. Ein Gerät aus dem Katalog mit Strängen und Clipping rechnet im Weg ''mit Wechselrichter'', siehe [[Programm Dokumentation/Wechselrichter#wechselrichterweg|Wechselrichter]].
+# '''Simulationskonfiguration.''' In Schritt ① der Ansicht ''Simulation'' steht die Photovoltaik in der Gruppe ''Stromerzeuger''. Solange die Kaskade nicht von Hand gepflegt ist, setzt das Programm eine vorhandene PV-Anlage beim Öffnen selbst auf diesen Platz; sonst ''einblenden'', ''+ aufnehmen'' und ''Konfiguration speichern''. Alle PV-Anlagen des Projekts rechnen gemeinsam auf diesem einen Platz ([[Programm Dokumentation/Simulation#erzeugerliste|Simulation]]).
+
+{{Anker|ganglinie}}'''Ganglinie statt Modulen.''' Die Kachel ''Photovoltaik'' trägt die Wahl ''Profil'' oder ''Ganglinie''. ''Profil'' öffnet die Verwaltung der Module, ''Ganglinie'' den Dialog ''Photovoltaik Ganglinie'': Er ordnet dem Projekt eine PV-Ganglinie aus dem Katalog zu, und an derselben Stelle wird der Katalog gepflegt (siehe [[#ganglinie-dialog|Eingaben]]). Eine PV-Ganglinie ist die AC-Leistung der ganzen Anlage in kW, entweder als 8 760 Stundenwerte oder als 35 040 Viertelstundenwerte – etwa eine gemessene Einspeisung oder der Export eines anderen Simulationsprogramms. Ist dem Projekt eine vollständige Ganglinie zugeordnet, rechnet die Simulation sie anstelle der Module; sonst rechnen die Module. Die Wahl der Kachel öffnet nur den Dialog:
+* Stundenwerte verteilt EPOS-Plan wie den Modulertrag nach dem Sonnenstand auf die vier Viertelstunden der Stunde; Viertelstundenwerte gehen unverändert in die Viertelstundenbilanz.
+* Direktverbrauch, Überschuss, Reststrom, Speicher und Einspeisegrenze rechnen wie bei Modulen.
+* Als installierte Leistung gilt die beim Import angegebene Nennleistung, ohne Angabe die Spitze der Ganglinie; sie ist die Bezugsgröße der Einspeisegrenze in Prozent und der Wirtschaftlichkeit.
+* Die Photovoltaik braucht auch mit Ganglinie den Platz ''Stromerzeuger'' in der Simulationskonfiguration.
+
+{{Anker|teilfelder}}'''Teilfelder.''' Eine Dachfläche mit anderer Ausrichtung wird eine eigene Anlage – dasselbe Modul ein zweites Mal übernehmen – oder, im Weg ''mit Wechselrichter'', ein Strang mit eigener Neigung und eigenem Azimut. Teilen sich Dachflächen einen Wechselrichter, müssen es Stränge derselben Anlage sein: Jede Anlage rechnet nur ihre eigenen Geräte. Den Ertrag aller Anlagen addiert der Lauf Stunde für Stunde.
+
+Den Strom einer Stunde verteilt der Projektlauf so:
+
+{{Diagramm-Anfang|titel=Aufteilung des PV-Stroms im Projektlauf}}
+{{Fluss-Anfang}}
+{{Flusskasten|Photovoltaik|Ertrag der Stunde nach Wechselrichter|rolle=solar}}
+{{Flusspfeil|① gleichzeitig}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Strombedarf|Profil oder Messdaten|rolle=strom}}
+{{Flusskasten|Wärmepumpe|mit Heizstab, dazu Elektrokessel und Kälte|rolle=waerme}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|② Überschuss}}
+{{Flusskasten|Stromspeicher|lädt mit der Ladequelle „PV-Überschuss“|rolle=speicher}}
+{{Flusspfeil|③ Rest}}
+{{Flusskasten|Netz|Einspeisung|rolle=netz}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Strombedarf und Wärmepumpe derselben Stunde bilden eine Summe ohne Vorrang; den Strom eines BHKW zieht der Lauf schon vor der Photovoltaik vom Bedarf ab.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+'''Beispielanlage A – Mehrfamilienhaus (Bestand, teilsaniert):''' 12 Wohnungen, Haushaltsstrom 30 MWh im Jahr, Luft-Wasser-Wärmepumpe A mit Kessel 1 als Spitzenlast für 80 MWh Heizwärme und 20 MWh Trinkwarmwasser, Stromspeicher 1 mit 20 kWh. Auf dem Süddach stehen 30 kWp; dieselbe Anlage auf zwei Dachflächen im Weg ''mit Wechselrichter'' zeigt [[Programm Dokumentation/Wechselrichter#beispiel|Wechselrichter: Beispiel]].
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Verwaltung Photovoltaik Module || ''Module aus Datenbank'', dann ''In das Projekt übernehmen'' || Modul 1, 400 W || eine Übernahme ist eine Anlage
+|-
+| rowspan="7" | Verwaltung Photovoltaik Module, ''PV Anlage Eigenschaften'' || ''Neigung [°]'' || 30 || Satteldach
+|-
+| ''Azimut [°]'' || 0 || Süddach
+|-
+| ''Energieträger'' / ''Art'' || vorbelegt lassen || der Stromträger des Projekts; mit ihm bewertet die Wirtschaftlichkeit den Strom
+|-
+| ''Anzahl Module'' || 75 || 75 × 400 W = 30 kWp; ''Gesamtleistung [kW]'' zeigt 30
+|-
+| ''Rechenmodell'' || Erweitert || genauere Einstrahlung; der ''WR-Wirkungsgrad'' ist dann gesperrt
+|-
+| ''Systemverluste [%]'' || 3 || Verschmutzung und Leitungen; leer rechnet mit 0 %
+|-
+| ''Albedo [-]'' || leer || Bodenreflex vor der Anlage, 0 bis 1; leer rechnet mit 0,2 (Gras). Richtwerte: Beton 0,3, helles Dach 0,5 bis 0,6, Schnee 0,7 bis 0,8 – wirksam vor allem bei steilen und Fassadenanlagen
+|-
+| Verwaltung Photovoltaik Module, ''Wechselrichter und Stränge'' || Option || vereinfacht || das Gerät wird ausgelegt, wenn die Größe steht
+|-
+| Standard Stromprofil (Startseite, Reiter ''Strombedarf'', Kachel ''Standardlastprofil'') || Haushaltsprofil aus ''Datenbank Strombedarf'' übernehmen; unter ''Ändern des Jahresverbrauchs'' ''neuer Wert'', dann ''Übernehmen'' || 30 MWh || Haushaltsstrom der zwölf Wohnungen
+|-
+| rowspan="3" | Simulation, ① Konfiguration || Gruppe ''Stromerzeuger'': Photovoltaik || aufgenommen || ohne Platz rechnet keine PV-Anlage
+|-
+| Gruppe ''Energiespeicher'': Stromspeicher || aufgenommen || Speicher 1 lädt aus dem Überschuss; Einstellungen unter [[Programm Dokumentation/Stromspeicher#einbindung|Stromspeicher]]
+|-
+| Karte der Wärmepumpe: Betriebsmodus || ''Laufzeitoptimiert - maximale Leistung'' (Vorgabe); als Variante ''PV-optimiert'' || die Variante zeigt, wie viel Überschuss die Wärmepumpe in Speicher 1 bringt
+|}
+
+'''Was zu erwarten ist.''' In Deutschland liefert eine Süd-Anlage in der Größenordnung von 900 bis 1 000 kWh je kWp, hier also rund 27 bis 30 MWh. Mit rund 30 MWh Wärmepumpenstrom (Jahresarbeitszahl um 3) braucht das Haus etwa doppelt so viel: Der größte Teil bleibt im Haus, Überschuss entsteht von April bis September mittags, und der Speicher trägt einen Teil davon in den Abend.
+
+<!-- Beispielwerte aus einem vereinfachten Stundenmodell, kein Rechenergebnis von EPOS-Plan.
+     Erzeugung: 8 760 Stunden, PV 30 kWp Süd, 950 kWh je kWp; Tagesgang als Halbsinus zwischen Sonnenaufgang und
+     Sonnenuntergang, sonnige und trübe Tage im festen Wechsel, Monatsanteile von rund 2 % im Dezember bis 14 % im Juli.
+     Bedarf: Haushaltsstrom 30 MWh mit Morgen- und Abendspitze, im Winter 15 % über und im Sommer 15 % unter dem Mittel;
+     Wärmepumpe 90 % von 80 MWh Heizwärme, stündlich verteilt nach max(0; 15 °C − Außentemperatur), Leistungszahl
+     3,0 + 0,08 je Kelvin über 2 °C (begrenzt auf 2,0 bis 4,5), dazu 20 MWh Trinkwarmwasser mit Leistungszahl 2,5;
+     zusammen rund 32 MWh Wärmepumpenstrom.
+     Speicher: 20 kWh, nutzbar 10 bis 90 %, 10 kW, Wirkungsgrad je Richtung Wurzel aus 0,90, lädt nur aus PV-Überschuss.
+     Je Stunde: direkt genutzt = min(PV; Bedarf); geladen = min(PV − direkt; 10 kW; freier Platz / Wirkungsgrad);
+     eingespeist = Rest der Erzeugung.
+     Säulenhöhe = Monatswert / Juliertrag (3,9 MWh) × 100. Jahr: 28,5 MWh, davon 16,9 direkt genutzt, 3,5 geladen,
+     8,2 eingespeist. -->
+{{Diagramm-Anfang|titel=Beispielanlage A: PV-Ertrag je Monat und seine Verwendung}}
+{{Säulen-Anfang|achse=MWh je Monat|mindestbreite=480}}
+{{Säule|Jan|solar=19|wert=0,7}}
+{{Säule|Feb|solar=33|wert=1,3}}
+{{Säule|Mär|solar=49|speicher=7|netz=3|wert=2,3}}
+{{Säule|Apr|solar=50|speicher=10|netz=21|wert=3,2}}
+{{Säule|Mai|solar=48|speicher=12|netz=36|wert=3,8}}
+{{Säule|Jun|solar=44|speicher=12|netz=40|wert=3,8}}
+{{Säule|Jul|solar=43|speicher=13|netz=44|wert=3,9}}
+{{Säule|Aug|solar=40|speicher=13|netz=37|wert=3,5}}
+{{Säule|Sep|solar=34|speicher=11|netz=22|wert=2,6}}
+{{Säule|Okt|solar=32|speicher=9|netz=7|wert=1,9}}
+{{Säule|Nov|solar=25|speicher=1|wert=1,0}}
+{{Säule|Dez|solar=15|wert=0,6}}
+{{Säulen-Ende}}
+{{Legende|solar=direkt genutzt|speicher=in den Stromspeicher geladen|netz=eingespeist}}
+{{Diagramm-Ende|Beispielwerte, gerundet – vereinfachte Überschlagsrechnung, kein Ergebnis von EPOS-Plan. Im Jahr rund 28,5 MWh: 59 % direkt genutzt, 12 % über den Speicher, 29 % eingespeist.}}
+
+{{Anker|ergebnisse|deckungsanteil|speicherfuellstand}}'''Wo Sie es prüfen.'''
+* Ergebnisseite (Schritt ③), Reiter ''Photovoltaik'': ''Gesamte Stromerzeugung der Module'', ''davon direkt genutzt'', ''Überschuss'', mit Einspeisegrenze dazu ''Abregelung an der Einspeisegrenze'', ''Abregelung in % der Erzeugung'' und ''Einspeisegrenze'', danach ''Strombedarf'', ''Reststrombedarf'' und ''Strombedarfsdeckung'', darunter je Anlage die Modultabelle. Rechnet das Projekt mit einer PV-Ganglinie, nennt die erste Zeile die ''Quelle'' – „Ganglinie ‚Name‘ (Viertelstundenwerte), Nennleistung … kWp“ –, und Einstrahlung, Fläche und Modulanzahl stehen als ''entfällt (Ganglinie)''; ebenso nennen die Kenndaten der Photovoltaik im Bericht die Quelle statt der Moduldaten, und Excel-Bericht und Variantenvergleich nennen die Quelle der Photovoltaik (Modulmodell oder Ganglinie). Der Knopf ''CSV…'' in der Leiste des Diagramms speichert die Reihe (siehe [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]). Im Diagramm blendet der Schalter ''Speicherfüllstand'' den Ladezustand des Stromspeichers auf einer zweiten Achse ein.
+* Reiter ''Stromspeicher'': ''Einspeisung ohne Speicher'' und ''Einspeisung mit Speicher'', ''Netzbezug ohne Speicher'' und ''Netzbezug mit Speicher'', ''Eigenverbrauchsquote (mit Speicher)'' und ''Autarkiegrad (mit Speicher)''.
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+=== Rangfolge des PV-Stroms ===
+{{Anker|strombilanz-und-eigenverbrauch|eigenverbrauch|netzbezug}}
+
+Der Projektlauf rechnet erst die Wärmeseite, dann die Photovoltaik und zuletzt den Stromspeicher. Für jede Stunde gilt:
+
+# '''Strombedarf:''' das Stromprofil des Projekts plus der Strom der Wärmeseite – Wärmepumpe mit Heizstab, Elektrokessel und Kälte. Den Strom eines BHKW zieht der Lauf schon auf der Wärmeseite davon ab.
+# '''Direktverbrauch:''' Die PV deckt, was von diesem Bedarf in derselben Stunde übrig ist. Haushalt und Wärmepumpe haben dabei keinen Vorrang voreinander.
+# '''Überschuss:''' Der Rest der Erzeugung lädt den Stromspeicher, sofern dessen Ladequelle ''PV-Überschuss'' an ist; was dann noch bleibt, geht als Einspeisung ins Netz.
+# '''Netzbezug:''' Fehlt Strom, entlädt der Speicher; den Rest bezieht das Projekt aus dem Netz.
+
+{| class="wikitable"
+! Technik !! Wirkung auf die PV !! Wirkung der PV !! So rechnet EPOS-Plan
+|-
+| Wärmepumpe || erhöht den gleichzeitigen Bedarf, vor allem im Winter || deckt Wärmepumpenstrom, der in dieselbe Stunde fällt || Wärmepumpen- und Heizstabstrom gehören zum Strombedarf der Stunde; nach der PV richtet sich die Wärmepumpe nur im Betriebsmodus ''PV-optimiert''
+|-
+| Wärmepumpe im Betriebsmodus ''PV-optimiert'' || nimmt Überschuss auf und lädt damit den Pufferspeicher || mehr Direktverbrauch mittags || Der Lauf bestimmt den PV-Überschuss je Stunde vorab (Ertrag minus übriger Bedarf). In Stunden mit Überschuss fährt die Wärmepumpe erhöhte Leistung, begrenzt auf ihn, und lädt den Speicher, am Puffer in der Reihenfolge ''Bei PV-Überschuss'' ([[Programm Dokumentation/Simulation#ladeverhalten|Ladeverhalten]]); sonst arbeitet sie leistungsoptimiert
+|-
+| Heizstab, Elektrokessel || erhöhen den Bedarf || – || Verbraucher, keine Überschussverbraucher: Der Heizstab deckt die Wärme, die die Wärmepumpe offen lässt, unabhängig vom PV-Ertrag
+|-
+| BHKW || deckt Strombedarf vor der PV || weniger Direktverbrauch, mehr Überschuss || BHKW-Strom mindert den Bedarf vor der PV-Verrechnung; sein Überschuss steht getrennt, zählt nicht als PV-Einspeisung und lädt den Stromspeicher nur mit der Ladequelle ''BHKW-Überschuss''
+|-
+| Stromspeicher || nimmt Überschuss auf || verschiebt PV-Strom in den Abend || je Viertelstunde, siehe [[Programm Dokumentation/Stromspeicher#zusammenspiel|Stromspeicher]]
+|-
+| Lastspitzenkappung || – || senkt die Netzlast, wenn die Sonne zur Spitze scheint || gekappt wird am Netzanschluss: Last minus PV minus BHKW
+|}
+
+Den eingespeisten Strom bewertet die Wirtschaftlichkeit mit der Vergütung unter [[Programm Dokumentation/Wirtschaftlichkeit#pv-verguetung|PV-Vergütung]]; Eigenverbrauchsquote und Einspeiseanteil kommen dort aus der Stundensimulation.
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Angelegt, aber nicht aufgenommen.''' Ohne Platz rechnet die Photovoltaik nicht: Das Laufprotokoll meldet „… ist im Projekt angelegt, aber nicht in die Simulation aufgenommen …“, und ein Stromspeicher rechnet ohne Erzeugung. Abhilfe: in Schritt ① ''einblenden'', ''+ aufnehmen'', ''Konfiguration speichern''.
+* '''''PV-optimiert'' ohne Photovoltaik.''' Steht keine Photovoltaik auf dem Platz ''Stromerzeuger'', arbeitet die Wärmepumpe leistungsoptimiert; die Konfiguration meldet das bei der Wahl des Modus.
+* '''''Überschuss'' im Reiter Photovoltaik.''' Ohne aktive Projektflotte ist das der Überschuss vor der Speicherladung, während ''Reststrombedarf'' die Entladung schon abzieht. Die Einspeisung mit Speicher steht im Reiter ''Stromspeicher''.
+* '''Autarkie Analyse mit theoretischem Speicher.''' Kachel und Monatsbild des Blatts ''Autarkie Analyse'' (Reiter ''Ergebnis'') rechnen mit dem Feld ''Theoretischer Speicher (PV) (kWh)'' – vorbelegt mit der Kapazität der Stromspeicher des Projekts; ohne Stromspeicher steht dort 0 kWh, und das Blatt sagt, dass ohne Stromspeicher gerechnet wird – und mit Vorgabewerten (Leistung gleich Kapazität, Band 10 bis 90 %, Umlaufwirkungsgrad 0,90, nur aus PV geladen). Die Zahl wird nicht gespeichert und ändert den Lauf nicht; maßgeblich ist der Reiter ''Stromspeicher''.
+* '''Stundenraster.''' Die Klimadaten sind Stundenwerte: Der PV-Ertrag ist innerhalb der Stunde gleich verteilt, und den Direktverbrauch verrechnet EPOS-Plan gegen den mittleren Bedarf der Stunde. Stromspeicher und Lastspitzenkappung rechnen je Viertelstunde mit diesem gleich verteilten Ertrag.
+* '''Keine Verschattung.''' EPOS-Plan rechnet ohne Horizont und ohne Verschattung durch Nachbargebäude, Bäume oder Modulreihen. Ein Abschlag über ''Systemverluste [%]'' mindert jede Stunde gleich und trifft die Tageszeit einer Verschattung nicht.
+* '''''mit Wechselrichter'' ohne Gerät.''' Der Weg rechnet nur, wenn mindestens eine Strangzeile ein Gerät führt; sonst rechnet die Anlage vereinfacht, und das Protokoll sagt es. Stränge ohne Gerät rechnen nicht mit.
+* '''Einspeisegrenze.''' Neben dem Clipping am Wechselrichter begrenzt die Projekteinstellung ''Einspeisegrenze'' ([[Programm Dokumentation/Simulation#einspeisegrenze|Simulation]]) die Einspeisung je Viertelstunde; abgeregelt wird erst, was der Stromspeicher nicht lädt.
+* '''Ganglinie zugeordnet, aber unvollständig.''' Eine Ganglinie, deren Wertzahl nicht zu ihrem Raster passt oder die leere oder negative Werte trägt, rechnet nicht; der Lauf meldet den Mangel im Protokoll und rechnet mit den Modulen.
+* '''Ganglinie und Module zugleich.''' Ist eine vollständige Ganglinie zugeordnet, rechnet sie – auch wenn die Kachel auf ''Profil'' steht. Wer wieder mit den Modulen rechnen will, entfernt die Ganglinie mit ''Ganglinie'' und ''Aus dem Projekt entfernen'' aus dem Projekt.
+* '''Keine Alterung im Stundenlauf.''' Die ''Degradation [%/a]'' der PV-Vergütung wirkt nur in der Erlösreihe der Wirtschaftlichkeit.
+
 == Eingaben ==
 
-* '''Filtern nach Hersteller''' – schränkt die Liste ''Module aus Datenbank'' ein.
-* '''Modul-Eigenschaften''' – Hersteller und Modul-Leistung in kW; aus dem Katalogeintrag stammen außerdem Fläche, Wirkungsgrad und Temperaturkoeffizient.
-* '''PV-Anlage-Eigenschaften''' – Name, Beschreibung, Anzahl der Module und die daraus folgende Gesamtleistung in kW.
-* '''Ausrichtung''' – Neigung und Azimut in Grad.
-* '''Mehrere Teilfelder''' – für unterschiedliche Dachflächen legen Sie mehrere Anlagen an; das ist in der Praxis oft sinnvoll.
-* '''Modul Bearbeiten… und Modul Löschen''' – pflegen den Katalog der PV-Module.
-* {{Anker|energietraeger}}'''Energieträger''' – im Anlagenblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
+Der Dialog ''Verwaltung Photovoltaik'' hat drei gerahmte Bereiche übereinander: ''Im Projekt'' (oben), ''Katalog (Datenbank)'' und ''Gewählter Satz''. Die Trennlinie zwischen den beiden Listen lässt sich ziehen; die Aufteilung wird je Dialog gemerkt. Beide Listen kennen die Mehrfachwahl mit Kästchen und mit dem Kästchen im Spaltenkopf; die Knöpfe eines Bereichs wirken auf die gewählten Zeilen. Ein Doppelklick oder Enter auf einer Katalogzeile übernimmt sie in das Projekt. Der Stift in einer Zeile öffnet den Satz zum Bearbeiten – in der Projektliste die Projektkopie, in der Katalogliste den Katalogsatz; ein gesperrter Katalogsatz ist nur lesbar, bis das Schloss aufgehoben ist. Auf kleinen Bildschirmen (iPad) werden die Elemente kompakter, Rollbalken erscheinen nur dort, wo sie nötig sind.
+
+Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehmen, Rückweg und die Zeile ''Gewählter Satz'' — steht unter [[Programm Dokumentation/Gerätekataloge#katalogauswahl|Gerätekataloge: Katalogauswahl im Projektdialog]]. Die Summe in der Kopfleiste ''Im Projekt'' ist die Leistung in kWp (Anzahl Module mal Modulleistung). Der Katalogfuß führt kein ''Neu…''; ''Bearbeiten…'' eines einzelnen ungesperrten Katalogsatzes öffnet den Modulkatalog mit diesem Satz, dort stehen ''Neu…'', ''Duplizieren…'', ''Löschen'' und ''Import…''. Felder desselben Moduls teilen sich die Projektkopie. Beim Projektsatz zeigt die Überlagerung ''Bearbeiten'' der Zeile ''Gewählter Satz'' Anzahl Module, Neigung, Azimut, Energieträger, Ertragsmodell samt Albedo und die Kostenknöpfe. ''In die Datenbank übernehmen…'' nimmt Leistung, Spannungen, Ströme, Abmessungen, Wirkungsgrad, Modulkoeffizienten und Modulkosten in den Katalog; Stränge, Wechselrichterzuordnung, Ausrichtung und Energieträger bleiben im Projekt.
+[[Datei:Bildschirmfoto_Photovoltaik.png|mini|zentriert|800px|Photovoltaik – Bildschirmfoto mit Beispieldaten.]]
+
+* '''Katalog (Datenbank)''' – Suchfeld ''Suche über alle Spalten:'' (mit den Platzhaltern ''*'' und ''?'') und Trefferzahl; Spalten Bezeichner, Hersteller, Modulleistung in W, Wirkungsgrad, Technologie, Modulfläche und Nennbetriebstemperatur. Die Spaltenköpfe sortieren und filtern, ''Spalten…'' wählt die angezeigten Spalten, und ein farbiger Punkt ''im Projekt verwendet'' kennzeichnet Katalogzeilen, die im Projekt stehen. ''In das Projekt übernehmen'' legt von den gewählten Katalogsätzen je eine Projektkopie an; die Zeile im Projekt bleibt mit dem Katalogsatz verknüpft. Die Fußleiste führt ''Vergleichen…'' (ab zwei gewählten Sätzen), ''Schloss setzen…''/''Schloss aufheben…'', ''Löschen'', ''Bearbeiten…''. ''Löschen'' entfernt die gewählten Katalogsätze nach einer Rückfrage für alle Projekte. Gesperrte Katalogsätze (Auslieferungssätze) sind nur lesbar, bis das Schloss aufgehoben ist. Bei mehreren gewählten Sätzen öffnet ''Bearbeiten…'' die Mehrfachbearbeitung (‹ 1 von n ›), in der ''für alle gewählten setzen'' einen Wert in allen gewählten Sätzen einträgt; gespeichert wird in einem Zug – alle Sätze oder keiner.
+* '''Im Projekt''' – die Anlagen des Projekts mit der Summe der Leistung in kWp. ''Aus dem Projekt entfernen'' nimmt die gewählten Zeilen aus der Liste; die Projektkopie wird erst mit ''OK'' gelöscht. ''Bearbeiten…'' öffnet die Projektkopien der gewählten Anlagen. ''In die Datenbank übernehmen…'' legt aus den gewählten Projektsätzen neue Katalogsätze unter neuem Namen an oder überschreibt deren Ursprungssatz (nur, wenn er nicht gesperrt ist); die Rückfrage zeigt als Vorschau die Abweichungen. Ein Name, der im Katalog schon vergeben ist, wird abgelehnt.
+* '''Gewählter Satz''' – zugeklappt zeigt er die Marke ''Projektsatz'' oder ''Katalogsatz'', den Namen und die Kenndaten des Satzes; aufgeklappt eine kurze Zusammenfassung der Anlagendaten (Modul, Stückzahl, Gesamtleistung, Neigung, Azimut, Albedo, Kosten). ''Bearbeiten'' rechts öffnet den Satz als Überlagerung in voller Höhe mit allen Feldern, beim Projektsatz mit den Kostenknöpfen. ''OK'' speichert, ''Abbrechen'' verwirft alle Eingaben der Überlagerung samt den Anlagenfeldern. Hersteller und ''Modul Leistung [W]'' kommen aus dem Katalogeintrag, ebenso Fläche, Wirkungsgrad und Temperaturkoeffizient; Name, Beschreibung, Zahl der Module und die daraus folgende Gesamtleistung in kW sowie Neigung und Azimut in Grad stehen am Projektsatz.
+* '''Stränge und Wechselrichter…''' – beim Projektsatz öffnet der Knopf den Abschnitt [[#wechselrichter|Wechselrichter und Stränge]] als Überlagerung.
+* '''Mehrere Teilfelder''' – eine Dachfläche mit anderer Ausrichtung wird eine weitere Anlage oder, im Weg ''mit Wechselrichter'', ein Strang mit eigener Neigung und eigenem Azimut ([[#teilfelder|Teilfelder]]).
+* {{Anker|energietraeger}}'''Energieträger''' – in der Überlagerung des Projektsatzes wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
+* {{Anker|ganglinie-dialog}}'''Dialog Photovoltaik Ganglinie''' – oben ''Ausgewählt im Projekt'', darunter der Katalog mit Bezeichner, Raster, Beschreibung, Jahresarbeit [MWh], Spitze [kW] und Nennleistung [kWp], je Spalte sortier- und filterbar; darunter nennt der Bereich ''Gewählter Satz'' die markierte Ganglinie mit der Marke ''Projektsatz'' oder ''Katalogsatz''. Aufgeklappt nimmt er die übrige Höhe des Dialogs und zeigt Name, Beschreibung, Raster, Jahresarbeit und Nennleistung sowie die Jahresganglinie mit Jahresarbeit, Spitzenlast und Vollbenutzungsstunden, dem Schalter ''sortiert'' (Dauerlinie), der Einheit und dem Zoom; ''Vergrößern'' öffnet das Bild in voller Höhe, ''Bearbeiten'' den Satz als Überlagerung in voller Höhe mit ''OK'' und ''Abbrechen''; ''In das Projekt übernehmen'' und ''Aus dem Projekt entfernen'' ordnen zu. Unter dem Katalog: ''Vergleichen'', ''Schloss setzen…''/''Schloss aufheben…'' und ''Löschen'' – gesperrt für Auslieferungssätze und für Ganglinien, die ein Projekt verwendet; der Knopf nennt den Grund. ''Import…'' liest eine Jahresreihe aus einer Text-, CSV- oder Excel-Datei: 8 760 Stundenwerte oder 35 040 Viertelstundenwerte in kW, eine Spalte oder mit Trennzeichen (Semikolon, Tabulator, senkrechter Strich, Komma), Dezimalpunkt oder Dezimalkomma, wahlweise mit Kopfzeile, Zeitstempelspalte oder laufender Nummer – das Format erkennt EPOS-Plan selbst und legt es nach der Dateiwahl im Dialog ''Format und Vorschau'' vor: Trennzeichen, Dezimaltrenner, Wert- und Zeitspalte, Einheit, Raster und Kopfzeile lassen sich dort ändern, die Vorschau zeigt die ersten Zeilen, die Zahl der gelesenen Datenzeilen mit dem erkannten Raster und die Reihe als Jahresbild; ''Abbrechen'' bricht den Import ab. Das Raster der Datei bleibt erhalten. Der Dateiname wird der Name der Ganglinie, die Kopfzeile ihre Beschreibung; ein schon vergebener Name wird nicht überschrieben. Der Import fragt die ''Nennleistung'' [kWp] ab: Nennt die Kopfzeile eine Leistung in kWp, ist sie damit vorbelegt, sonst mit der Spitze der Reihe; liegt die Spitze über der Nennleistung × 1,1, weist ein Hinweis auf eine falsche Nennleistung oder Einheit der Datei hin. ''Nennleistung bearbeiten…'' setzt die Nennleistung der markierten Ganglinie im Katalog nachträglich – ein leeres Feld heißt „nicht gepflegt“, dann gilt die Spitze der Reihe; derselbe Hinweis erscheint, wenn die Spitze über der Nennleistung × 1,1 liegt. Für Auslieferungssätze ist der Knopf gesperrt und nennt den Grund; Projekte, die die Ganglinie bereits führen, behalten ihre Kopie samt deren Nennleistung. Weicht die Kopie eines Projekts vom Katalogsatz gleichen Namens ab – in Nennleistung, Raster, Jahressumme oder Reihe, etwa nach ''Nennleistung bearbeiten…'' oder einem erneuten Import desselben Namens –, trägt ihre Zeile unter ''Ausgewählt im Projekt'' ein Warnzeichen, und zur markierten Zeile steht „weicht vom Katalog ab: …“ mit dem Knopf ''Aus dem Katalog erneuern…''. Nach einer Rückfrage ersetzt er Beschreibung, Raster, Nennleistung, Jahresarbeit und Reihe der Kopie durch den Katalogstand; die Zuordnung zum Projekt bleibt. Die Ergebnisse ändern sich erst mit der nächsten Simulation. Derselbe Dialog öffnet sich ohne Projekt über ''Administration → Profile & Lastgänge → PV-Ganglinie''; dann zeigt er nur den Katalog und schließt mit ''Beenden''.
 
 == Wechselrichter und Stränge ==
 {{Anker|wechselrichter|straenge}}
 
-Der Abschnitt bietet zwei Wege: ''vereinfacht'' rechnet mit den Pauschalen der Anlage ohne Wechselrichter, ''mit Wechselrichter'' mit Katalog, Strängen, Kennlinie und Clipping.
+Der Abschnitt öffnet im Dialog über ''Stränge und Wechselrichter…'' beim Projektsatz als Überlagerung. Er bietet zwei Wege: ''vereinfacht'' rechnet mit den Pauschalen der Anlage ohne Wechselrichter, ''mit Wechselrichter'' mit Katalog, Strängen, Kennlinie und Clipping.
 
 * {{Anker|geraetewahl}}'''Wechselrichter aus dem Katalog''' – das Auswahlfeld führt die Geräte nach derselben Bewertung und in derselben Reihenfolge wie ''Wechselrichter vorschlagen'', gerechnet mit den Auslegungstemperaturen des Projekts: geeignete Geräte zuerst, mit DC/AC-Verhältnis und Zahl der nötigen Geräte im Text (etwa ''Wechselrichter 1 — geeignet · DC/AC 1,10 · 1 Gerät''), danach bedingte und ungeeignete Geräte mit ihrem wichtigsten Grund in Kurzform (etwa ''bedingt: 6 Geräte nötig'' oder ''ungeeignet: Strangstrom 13,7 A > 12,0 A''). Nach einer Änderung der Auslegungstemperaturen ordnet sich die Liste neu. Das gewählte Gerät bekommt der nächste Strang; in der Tabelle lässt es sich je Strang ändern. Die Klapplisten der einzelnen Zeilen bleiben alphabetisch, denn dort steht das Gerät eines Strangs, die Bewertung gilt dem ganzen Modulfeld.
 * {{Anker|wechselrichtervorschlag}}'''Wechselrichter vorschlagen''' – die Schaltfläche neben dem Auswahlfeld prüft jedes Gerät des Katalogs, das der Herstellerfilter zeigt, für das Modulfeld der Anlage und listet sie in einem eigenen Fenster: Bewertung (''geeignet'', ''bedingt'' oder ''ungeeignet'') mit Grund, DC/AC-Verhältnis, Aufteilung als Geräte × (Stränge × Module in Reihe), Leerlaufspannung im kalten Fall gegen die Höchstspannung des Geräts und die Lage der MPP-Spannung im MPP-Fenster. ''Geeignet'' heißt: alle Module finden einen Strang, alle Spannungsgrenzen sind geprüft, DC/AC liegt zwischen 1,0 und 1,3. ''Bedingt'' nennt den Abstrich – DC/AC über 1,3, Module ohne Strang, mehr als vier Geräte für das Feld, nicht gepflegte Grenzen des Geräts oder eine fehlende Anzahl MPPT im Katalog (''Katalogwerte unvollständig (1 Tracker angenommen)'' – gerechnet wird dann mit einem MPP-Tracker); ''ungeeignet'' nennt, warum keine Aufteilung möglich ist. Fehlt dem Gerät der Kurzschlussstrom je MPPT, gilt der Betriebsstrom als Stromgrenze, und ein Gerät, das daran scheitert, trägt zusätzlich den Vermerk ''Katalogwerte unvollständig (Betriebsstrom als Grenze)''. Geeignete Geräte stehen oben, darunter geordnet nach der Nähe des DC/AC-Verhältnisses zu 1,1…1,2 und nach der Zahl der Geräte. Eine Zeile anklicken und ''Übernehmen'' setzt das Gerät in das Auswahlfeld und den Herstellerfilter auf dessen Hersteller; danach füllt ''Auslegung vorschlagen'' die Strangtabelle. ''Abbrechen'' lässt alles unverändert; gespeichert wird in beiden Fällen nichts. Ohne Modul oder Modulzahl der Anlage ist die Schaltfläche gesperrt, ein Klick nennt dann den Grund.
@@ -29,7 +188,7 @@ Der Abschnitt bietet zwei Wege: ''vereinfacht'' rechnet mit den Pauschalen der A
 Zu jedem Strang und zu jedem Gerät prüft das Programm die Auslegung und zeigt das Ergebnis als farbigen Satz – grün, gelb oder rot. Geprüft wird je Strang die Leerlaufspannung im kalten Fall und das MPP-Fenster im heißen wie im kalten Fall, je Gerät der Eingangsstrom und die Strangzahl an jedem MPP-Tracker, das Verhältnis von Modulleistung zu Wechselrichterleistung (DC/AC, zulässig 1,0 bis 1,5), die DC-Eingangsleistung sowie die Summe der Module gegen die ''Anzahl Module'' der Anlage. Fehlt ein Katalogwert, wird die betroffene Prüfung gelb und nennt den fehlenden Wert.
 
 * '''Kurzschlussstrom je MPPT''' – der Wechselrichter-Gerätedialog führt zusätzlich das optionale Katalogfeld ''max. Kurzschlussstrom je MPPT [A]''. Ist es gepflegt, unterscheidet die Stromprüfung zwei Farben: '''rot''', wenn der Trackerstrom diesen Kurzschlussstrom übersteigt (das Gerät kann Schaden nehmen), '''gelb''', wenn er nur den Betriebsstrom (''max. DC-Strom je MPPT'') übersteigt („Leistung wird abgeregelt"). Ohne das Feld gilt die rote Grenze am Betriebsstrom.
-* {{Anker|meldungen}}'''Meldungen''' – die Sätze nennen die Diagnose und, wo nötig, die Folge: etwa ''U_oc(−10 °C) … V > … V — der Wechselrichter kann bei Frost und Sonne Schaden nehmen'', ''MPP im Sommer … V < … V — der Strang regelt ab'', ''DC/AC … liegt außerhalb 1,0…1,5'' oder ''Modulsumme … weicht von „Anzahl Module" … ab''.
+* {{Anker|meldungen}}'''Meldungen''' – die Sätze nennen die Diagnose und, wo nötig, die Folge: etwa ''<math>U_{\mathrm{oc}}</math>(−10 °C) … V > … V — der Wechselrichter kann bei Frost und Sonne Schaden nehmen'', ''MPP im Sommer … V < … V — der Strang regelt ab'', ''DC/AC … liegt außerhalb 1,0…1,5'' oder ''Modulsumme … weicht von „Anzahl Module" … ab''.
 * {{Anker|auslegungshilfe}}'''passend wären …''' – hinter jeder roten oder gelben Meldung steht der Bereich, der passen würde: ''passend wären 17…18 Module in Reihe'' am Strang, ''passend wären 12…16 Module je Gerät'' am Gerät. Passt zu einem Gerät überhaupt keine Reihenlänge, sagt der Satz auch das.
 * {{Anker|vorschlag}}'''Auslegung vorschlagen''' – die Schaltfläche neben ''Strang anlegen'' füllt die Strangtabelle aus der Auslegungshilfe: Module in Reihe, Stränge parallel je MPP-Tracker und die Gerätenummer, gleich lange Stränge und gleich belegte Geräte. Der Vorschlag '''ersetzt''' die vorhandenen Zeilen, denn er teilt das ganze Modulfeld auf; eine Zeile darunter nennt das Ergebnis („Vorschlag: … — die Strangtabelle wurde ersetzt"). Neigung und Azimut bleiben leer und gelten damit als Anlagenwert. Kommt kein Vorschlag zustande, bleibt die Tabelle unverändert und eine Warnung nennt den Grund. Die Schaltfläche ist gesperrt, solange Gerät, Modul oder Modulzahl fehlen; ein Klick nennt dann, was fehlt.
 
@@ -39,12 +198,13 @@ Nicht geprüft werden Verschattung, Kabel- und Anschlussverluste sowie gemischte
 
 == Siehe auch ==
 
-* [[Photovoltaik]] – Ertragsberechnung, Strombilanz und Eigenverbrauch
+* [[#zusammenspiel|Zusammenspiel mit anderen Technologien]] – Strombilanz und Eigenverbrauch
 * [[Grundlagen/Photovoltaik]] – die fachlichen Hintergründe
+* [[Programm Dokumentation/Stromspeicher|Stromspeicher]] – Speicherung des Überschusses
+* [[Programm Dokumentation/Wechselrichter|Wechselrichter]] – Gerät, Stränge und Clipping
 
 [[Kategorie:Programm Dokumentation]]
 
 
 == Berechnung ==
-Einstrahlung, Modultemperatur, Wechselrichter und Einspeisung stehen unter
-[[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]].
+Einstrahlung, Modultemperatur, Wechselrichter und Einspeisung stehen unter [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]].

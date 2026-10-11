@@ -79,18 +79,13 @@
        die aussah wie eine Schaltflaeche fuer etwas Wichtiges. Jetzt steht das
        Band in der Warnfarbe des Hauses, traegt links die ZAHL als Abzeichen und
        rechts „anzeigen"; der Klick tut dasselbe wie bisher. *@
-    @if (_daten.LaufmeldungenAnzahl > 0)
-    {
-        <button type="button" class="epos-simerg-laufband" @onclick="() => _volltext = true">
-            <span class="epos-simerg-laufband-zahl">@_daten.LaufmeldungenAnzahl</span>
-            <span class="epos-simerg-laufband-text">
-                @(_daten.LaufmeldungenAnzahl == 1
-                    ? Resource.SIM_LAUFMELDUNG_EINER
-                    : string.Format(Resource.SIM_LAUFMELDUNG_MEHRERE, _daten.LaufmeldungenAnzahl))
-            </span>
-            <span class="epos-simerg-laufband-pfeil">@Resource.SIM_LAUFMELDUNG_ANZEIGEN ▾</span>
-        </button>
-    }
+    @* Das Band ist der Baustein Hinweisklappe im Dialogweg (Oeffnen): derselbe Baustein
+       wie die Klappzeilen der Bericht- und der Wirtschaftlichkeitsseite. *@
+    <Hinweisklappe Anzahl="@_daten.LaufmeldungenAnzahl" Stufe="WarnStufe.Warnung"
+                   TextEiner="@Resource.SIM_LAUFMELDUNG_EINER"
+                   TextMehrere="@Resource.SIM_LAUFMELDUNG_MEHRERE"
+                   AnzeigenText="@Resource.SIM_LAUFMELDUNG_ANZEIGEN"
+                   Oeffnen="@(() => _volltext = true)" />
 
     <fieldset class="epos-simerg-bereich" disabled="@_daten.Gesperrt">
 
@@ -100,7 +95,11 @@
         @* Die Position des gezeigten Stands fuer die Positionsform der Platzhaltermarken
            (stand.<n>.…, variante.<n>.…); ohne sie nennt die Marke keine. *@
         <CascadingValue Value="@_daten.Vorlagenfeldposition">
-        <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@Resource.SIMERG_TITEL">
+        @* CSV AM DIAGRAMM: Jedes Zeitreihenbild der Reiter bekommt in seiner Zoomleiste den
+           Knopf „CSV…“; wer einen benannten Export hat, reicht ihn am Bild selbst (CsvExport). *@
+        <CascadingValue Value="@GanglinienexportNaht">
+        <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@Resource.SIMERG_TITEL"
+                Reihenfolge="@Blattfolge">
             <KindInhalt>
 
                 @* DER REITER „PARAMETER" IST MIT #216 GEFALLEN (Windows-Abnahme
@@ -245,12 +244,14 @@
                         <ErgebnisReiter Autarkie="@_daten.Autarkie" Modell="ModellHolen"
                                         KapazitaetGeaendert="KapazitaetGeaendert"
                                         WaermegangInhalt="@Waermegang"
-                                        StromgangInhalt="@Stromgang" />
+                                        StromgangInhalt="@Stromgang"
+                                        KaeltegangInhalt="@(_daten.Bedarf?.Kaelte is null ? null : Kaeltegang)" />
                     </KindInhalt>
                 </Reiterblatt>
 
             </KindInhalt>
         </Reiter>
+        </CascadingValue>
         </CascadingValue>
         </CascadingValue>
 
@@ -505,6 +506,13 @@
             return liste.Select(s => (s, SimulationBlattnamen.Text(s))).ToList();
         }
     }
+
+    /// <summary>
+    /// Die Folge der Blaetter fuer die Leiste — dieselbe wie <see cref="Blaetter"/>: Ein
+    /// Erzeugerblatt, das erst der Lauf nachreicht, steht an seinem Platz und nicht hinter
+    /// „Ergebnis“, das immer das letzte Blatt ist.
+    /// </summary>
+    private IReadOnlyList<string> Blattfolge => Blaetter.Select(b => b.Schluessel).ToList();
 
     /// <summary>Laeuft die Simulation gerade? (Pruefhilfe)</summary>
     public bool Laeuft => _laeuft;
@@ -909,6 +917,21 @@
         FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
         Csv="@(Dienste?.CsvStromgang is null ? default
                 : EventCallback.Factory.Create<IReadOnlyList<string>>(this, r => Dienste!.CsvStromgang!(r)))" />;
+
+    // Der Kaeltegang steht nur, wenn das Projekt Kaelte rechnet: Bedarf.Kaelte ist
+    // null, solange der Projektschalter Kuehlbetrieb aus ist (nicht erhoben).
+    private RenderFragment Kaeltegang => @<KaeltegangReiter Modell="ModellHolen" Teillast="@_daten.Bedarf?.Kaelte?.Teillast"
+        FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />;
+
+    private Ganglinienexport? _ganglinienexport;
+
+    /// <summary>
+    /// Die Naht „Reihen des Diagramms als CSV“ fuer alle Bilder der Reiter — EINE Instanz, damit
+    /// die Kaskade nicht je Zeichenlauf neu verteilt; ohne Delegat der Huelle keine.
+    /// </summary>
+    private Ganglinienexport? GanglinienexportNaht =>
+        Dienste?.CsvGanglinie is null ? null
+            : _ganglinienexport ??= new Ganglinienexport((m, t) => Dienste!.CsvGanglinie!(m, t));
 
     /// <summary>Ein Rueckruf aus einem Delegaten; ohne Delegat bleibt der Knopf weg.</summary>
     private EventCallback Rueckruf(Action? aktion)

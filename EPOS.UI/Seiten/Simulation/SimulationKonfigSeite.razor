@@ -68,7 +68,8 @@
                     LeerText="@SchemaLeerText" WarnungText="@SchemaWarnungText"
                     AbnehmerWarnungText="@SchemaAbnehmerWarnungText"
                     KetteKopfText="@SchemaKetteKopfText" KeineKetteText="@SchemaKeineKetteText"
-                    Ausgewaehlt="SchemaAuswahl" BearbeitenGewuenscht="SchemaBearbeiten" />
+                    Ausgewaehlt="SchemaAuswahl" BearbeitenGewuenscht="SchemaBearbeiten"
+                    Editorhinweis="SchemaEditorhinweis" />
         }
         else
         {
@@ -82,7 +83,7 @@
                        im Kopfband bleibt, was er ist: die Bedienhilfe zur Seite. *@
                     <p class="epos-simkonfig-hinweis">
                         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
-                                   StandardKurztext="@HilfeKurztextBerechnung" />
+                                   StandardKurztext="@HilfeKurztextBerechnung" MitAssistent="false" />
                     </p>
 
                     @* #190 - DIE LUECKE WIRD SICHTBAR (Abnahmeliste „PV mit
@@ -216,6 +217,19 @@
                     <button type="button" class="epos-knopf" disabled="@(IdProjekt <= 0)"
                             @onclick="() => PufferVerwaltungOeffnen(0)">@BtnPufferVerwalten</button>
 
+                    @* DER EINSTIEG IN DIE PUFFERSPEICHER-AUSLEGUNG (Konzept Pufferspeicher-
+                       Auslegung, Stufe P2) - nach dem Muster „Stromspeicher auslegen…": Jede
+                       Speicherart hat ihr Anlegen und ihr Auslegen beieinander. Steht genau EIN
+                       Puffer im Projekt, legt die Auslegung ihn aus; sonst oeffnet sie fuer einen
+                       neuen (die Klasse kommt aus dem Projekt) - einen bestimmten Speicher waehlt
+                       der Knopf „Auslegen…" der Pufferverwaltung. Kein Delegat, kein Knopf. *@
+                    @if (Dienste?.PufferAuslegungOeffnen is not null)
+                    {
+                        <button type="button" class="epos-knopf epos-simkonfig-pufferauslegung"
+                                disabled="@(IdProjekt <= 0)"
+                                @onclick="PufferAuslegungOeffnen">@BtnPufferAuslegen</button>
+                    }
+
                     @* DER EINSTIEG IN DIE STROMSPEICHER-AUSLEGUNG (Auftrag #274,
                        Anwenderwunsch 14.09.2026): „Der Dialog Stromspeicher soll in den
                        Dialog Konfiguration verschoben werden. Aehnlich zu ‚Pufferspeicher
@@ -249,6 +263,117 @@
                     }
                 </section>
             </div>
+
+            @* DER BEREICH „KÄLTE“ (Welle KB-B; Entwurf Kaeltebereich 3, Entscheide E117 F1-F5) - unter dem
+               Waermeteil, im selben fieldset und damit unter derselben Sperre. Im Kopf der Schalter „Kühlung
+               rechnen" (die EINE Stelle, an der das Projekt die Kuehlung an- und abschaltet; Kuehlkonzept 8.3,
+               K10, E27): schreibt sofort, scheitert das Schreiben, kehrt er zurueck (@key) und die Fusszeile sagt
+               es. Links die Kaelteerzeuger in der Rechenfolge des Kerns (Kaeltefolge.Lesen - die Nummer ist
+               Anzeige, die Folge ist fest), rechts die Kaeltespeicher (nur hier, F4). Bei „aus“ klappt der
+               Bereich auf den Kopf zusammen und nennt, was angelegt ist und nicht wirkt. *@
+            @if (KaeltebereichSichtbar)
+            {
+                <section class="epos-simkonfig-kaelte" aria-label="@Resource.SIMKONF_GRP_KAELTE">
+                    <Gruppenkopf Titel="@Resource.SIMKONF_GRP_KAELTE" />
+
+                    @if (KuehlschalterDa)
+                    {
+                        <section class="epos-simkonfig-kuehlung" aria-label="@Resource.SIMKONF_GRP_KUEHLUNG">
+                            @* Hilfe zum Projektschalter: der Abschnitt "Kühlung einschalten" der
+                               Anwendungsseite (Konzept Technikdokumentation, Abschnitt 7). *@
+                            <div class="epos-berechnungshilfe">
+                                <InfoKnopf Schluessel="Form_Simulation_Config_Kuehlung.btn_Help"
+                                           StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" MitAssistent="false" />
+                                <InfoKnopf Schluessel="Form_Simulation_Config_Kuehlung.Grundlagen"
+                                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                                <InfoKnopf Schluessel="Form_Simulation_Config_Kuehlung.Berechnung"
+                                           StandardKurztext="Berechnung: Kühlung" MitAssistent="false" />
+                            </div>
+                            <Formularraster Einspaltig="true" @key="_kuehlbetriebSchluessel">
+                                <KindInhalt>
+                                    <Schalter Bezeichnung="@Resource.SIMKONF_LBL_KUEHLBETRIEB"
+                                              Wert="@_parameter.Kuehlbetrieb"
+                                              Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="KuehlbetriebGesetzt" />
+                                    <Herleitungszeile Text="@Resource.SIMKONF_HRL_KUEHLBETRIEB" />
+                                </KindInhalt>
+                            </Formularraster>
+                        </section>
+                    }
+
+                    @if (!KuehlungAn)
+                    {
+                        <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-aus">@KaelteAusText</p>
+                    }
+                    else
+                    {
+                        <div class="epos-simkonfig-spalten epos-simkonfig-kaelte-spalten">
+                            <div class="epos-simkonfig-kaelte-erzeuger">
+                                <h3 class="epos-simkonfig-gruppe">@Resource.SIMKONF_KAELTE_ERZEUGER</h3>
+                                @foreach (KaelteerzeugerZeile k in _daten.Kaeltebereich.Erzeuger)
+                                {
+                                    KaelteerzeugerZeile kz = k;
+                                    <div class="epos-simkonfig-kaelte-element" data-anlage="@kz.IdAnlage" @key="kz.Kachel.Schluessel">
+                                        <ErzeugerKachel Aufbau="@KaelteKachel(kz)"
+                                                        Parameterbereich="@KaelteParameter(kz)"
+                                                        AufnehmenText="@Resource.SIMKONF_KAELTE_AN"
+                                                        TipHoch="@Resource.SIMKONF_KAELTE_TIP_VOR"
+                                                        TipRunter="@Resource.SIMKONF_KAELTE_TIP_ZURUECK"
+                                                        NachOben="() => KaelteFolgeVerschieben(kz, -1)"
+                                                        NachUnten="() => KaelteFolgeVerschieben(kz, +1)"
+                                                        TipBearbeiten="@Resource.SIMKONF_KAELTE_TIP_KONFIG"
+                                                        TipEntfernen="@Resource.SIMKONF_KAELTE_TIP_AUS"
+                                                        TipAufnehmen="@Resource.SIMKONF_KAELTE_TIP_AN"
+                                                        Bearbeiten="() => KaelteKonfigurieren(kz)"
+                                                        Aufnehmen="() => KuehlbetriebWpSetzen(kz, true)"
+                                                        Entfernen="() => KuehlbetriebWpSetzen(kz, false)" />
+                                    </div>
+                                }
+                                @if (_daten.Kaeltebereich.Erzeuger.Count == 0)
+                                {
+                                    <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-leer">@Resource.SIMKONF_KAELTE_LEER</p>
+                                }
+                                @if (FreieKuehlungText is string frei)
+                                {
+                                    <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-frei">@frei</p>
+                                }
+                                @* KB-D2: die Herleitungszeile sagt, welche Folge gilt (gepflegt oder Vorgabe); der Knopf
+                                   „Vorgabefolge“ steht nur mit Delegat und ist weich gesperrt, solange die Vorgabe gilt. *@
+                                <div class="epos-simkonfig-kaelte-folge">
+                                    <Herleitungszeile Text="@KaelteHerleitung" />
+                                    @if (Dienste?.KaelteVorgabefolge is not null && _daten.Kaeltebereich.Erzeuger.Count > 1)
+                                    {
+                                        <button type="button" class="epos-knopf epos-simkonfig-kaelte-vorgabe"
+                                                disabled="@_daten.Gesperrt"
+                                                aria-disabled="@(_daten.Kaeltebereich.FolgeGepflegt ? null : "true")"
+                                                title="@(_daten.Kaeltebereich.FolgeGepflegt ? Resource.SIMKONF_KAELTE_TIP_VORGABE : Resource.SIMKONF_KAELTE_VORGABE_GILT)"
+                                                @onclick="KaelteVorgabefolgeSetzen">@Resource.SIMKONF_KAELTE_BTN_VORGABE</button>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="epos-simkonfig-kaelte-speicher">
+                                <h3 class="epos-simkonfig-gruppe">@Resource.SIMKONF_KAELTE_SPEICHER</h3>
+                                @foreach (Bausteine.SpeicherKachelDaten s in _daten.Kaeltebereich.Kaeltespeicher)
+                                {
+                                    Bausteine.SpeicherKachelDaten sp = s;
+                                    <SpeicherKachel Inhalt="@sp" Aufgeklappt="@(sp.IdPuffer == _offenerSpeicher)"
+                                                    BilanzText="@BilanzText"
+                                                    TipBearbeiten="@TipSpeicherBearbeiten"
+                                                    TipAufklappen="@TipSpeicherAufklappen"
+                                                    Umschalten="SpeicherUmschalten"
+                                                    Bearbeiten="PufferVerwaltungOeffnen"
+                                                    Ausgewaehlt="SpeicherAusgewaehlt" />
+                                }
+                                @if (_daten.Kaeltebereich.Kaeltespeicher.Count == 0)
+                                {
+                                    <p class="epos-simkonfig-hinweis">@Resource.SIMKONF_KAELTE_SPEICHER_LEER</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </section>
+            }
         }
     </fieldset>
 
@@ -300,17 +425,26 @@
        umrechnet und ueber SimulationKanaele.NetzverlusteVerteilen anteilig auf die
        Bedarfskanaele legt - sie gehoeren zum WAERMEBEDARF des Projekts.
 
-       „Kuehlung rechnen" (Stufe KU1, Kuehlkonzept 8.3; K10, E27) ist die EINE Stelle, an der ein
-       Anwender die Kuehlung projektweit an- und abschaltet - bewusst nicht im Gebaeudedialog.
-       Den Anfangswert eines neuen Projekts setzt die Programmeinstellung. Scheitert das
-       Schreiben, kehrt der Schalter zurueck (@key) und die Seite sagt es.
+       „Kuehlung rechnen" steht im Kopf des Bereichs „Kälte“ oben (Welle KB-B).
 
        „Anlagenkopplung" (Konzept Anlagenkopplung 9.4 und 9.6 Maske 1): Ohne sie ist jede
        Eingabe der Waermeuebergabe am Gebaeude wirkungslos. Waehlbar sind nur die gebauten
        Stufen („aus", „Heizkreis (AK1)"); Fahrplan (AK2) und geschlossener Kreis (AK3) stehen in
        der Liste, sind aber gesperrt und nennen den Grund - steht eine davon schon in der
        Datenbank, zeigt die Liste sie als Wahl (der Lauf rechnet dann AK1 und sagt es).
-       Scheitert das Schreiben, kehrt die Wahl zurueck (@key). *@
+       Scheitert das Schreiben, kehrt die Wahl zurueck (@key).
+
+       „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1): der Schalter (Vorgabe aus) und
+       - nur bei Schalter an - Bemessung, ΔT_K (nur bei „kaelteste Stunde − ΔT_K"), Aufheizreserve
+       ρ in % und Art der Aufheizzeit. Jedes Feld schreibt sofort die GANZE Einstellung
+       (AufheizvorgabeSchreiben, normalisiert nach Festlegung 24: Vorgaben als NULL, ein getippter
+       Wert bleibt); scheitert es, kehrt der Abschnitt zurueck (@key) und die Seite sagt es. Die
+       Herleitungszeilen je Gebaeude stehen nur mit ihrem Delegaten (AufheizHerleitung).
+       Unter der Art (Welle O1b; E59 (2), Festlegungen 35, 36) der Aufschlag in Stunden (0-24) und
+       Prozent (0-100): 0 und leer schreiben NULL, jedes andere Feld traegt ihn unveraendert mit; n'
+       steht in der Herleitungszeile je Gebaeude (die Huelle rechnet es mit der Formel des Kerns).
+       Bei Schalter aus stehen die Felder nicht da - ein gespeicherter Aufschlag bleibt (Festlegung 36)
+       und eine Zeile nennt ihn samt dem Grund, warum er nicht wirkt. *@
     @if (Parameter?.Laden is not null)
     {
         <fieldset class="epos-simkonfig-einstellungen" disabled="@_daten.Gesperrt">
@@ -325,20 +459,52 @@
                                     Aktiv="@(!_daten.Gesperrt && Parameter?.NetzverlusteSchreiben is not null)"
                                     WertChanged="NetzverlusteGesetzt" />
                         <Herleitungszeile Text="@Resource.SIMKONF_HRL_NETZVERLUSTE" />
+                        @if (_parameter.Netzkanaele.JeKanal)
+                        {
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_NV_KANAL_AN" />
+                        }
                     </KindInhalt>
                 </Formularraster>
             </section>
 
-            @if (Parameter.KuehlbetriebSchreiben is not null)
+            @* NETZVERLUSTE JE KANAL UND ZIRKULATION (Entscheidungsvorlage Modellgrenzen BW4; Konzept
+               Simulationsablauf 17). Je Kanal Wert und Einheit; alle leer = der Projektwert darueber.
+               Die Zirkulation gilt nur auf dem Bestandsweg des Brauchwassers. Jedes Feld schreibt SOFORT
+               die ganze Vorgabe; scheitert es, kehrt der Abschnitt zurueck (@key) und die Seite sagt es. *@
+            @if (Parameter.NetzkanaeleSchreiben is not null)
             {
-                <section class="epos-simkonfig-bedarf epos-simkonfig-kuehlung" aria-label="@Resource.SIMKONF_GRP_KUEHLUNG">
-                    <Formularraster Einspaltig="true" @key="_kuehlbetriebSchluessel">
+                <section class="epos-simkonfig-bedarf epos-simkonfig-netzkanaele" aria-label="@Resource.SIMKONF_GRP_NV_KANAL">
+                    <Formularraster Einspaltig="true" @key="_netzkanalSchluessel">
                         <KindInhalt>
-                            <Schalter Bezeichnung="@Resource.SIMKONF_LBL_KUEHLBETRIEB"
-                                      Wert="@_parameter.Kuehlbetrieb"
-                                      Aktiv="@(!_daten.Gesperrt)"
-                                      WertChanged="KuehlbetriebGesetzt" />
-                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_KUEHLBETRIEB" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_HEIZUNG" Feldname="@Resource.SIMKONF_LBL_NV_HEIZUNG"
+                                        Wert="@_parameter.Netzkanaele.HeizungWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.HeizungEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(0, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.HeizungEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(0, i))" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_BRAUCHWASSER" Feldname="@Resource.SIMKONF_LBL_NV_BRAUCHWASSER"
+                                        Wert="@_parameter.Netzkanaele.BrauchwasserWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.BrauchwasserEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(1, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.BrauchwasserEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(1, i))" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_PROZESS" Feldname="@Resource.SIMKONF_LBL_NV_PROZESS"
+                                        Wert="@_parameter.Netzkanaele.ProzessWert" Min="0" Nachkommastellen="2"
+                                        Einheit="@KanalEinheit(_parameter.Netzkanaele.ProzessEinheit)"
+                                        Aktiv="@(!_daten.Gesperrt)" WertChanged="@(w => KanalwertGesetzt(2, w))" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_NV_EINHEIT" Eintraege="@KanalEinheiten"
+                                         Auswahl="@KanalEinheitIndex(_parameter.Netzkanaele.ProzessEinheit)"
+                                         Aktiv="@(!_daten.Gesperrt)" AuswahlChanged="@(i => KanalEinheitGewaehlt(2, i))" />
+                            <Herleitungszeile Text="@(_parameter.Netzkanaele.JeKanal ? Resource.SIMKONF_HRL_NV_KANAL_AN : Resource.SIMKONF_HRL_NV_KANAL_AUS)" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_ZIRK_LEISTUNG" Feldname="@Resource.SIMKONF_LBL_ZIRK_LEISTUNG"
+                                        Wert="@_parameter.Netzkanaele.ZirkulationLeistungKw" Min="0" Max="100" Nachkommastellen="2"
+                                        Einheit="kW" Aktiv="@(!_daten.Gesperrt)" WertChanged="ZirkLeistungGesetzt" />
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_ZIRK_LAUFZEIT" Feldname="@Resource.SIMKONF_LBL_ZIRK_LAUFZEIT"
+                                        Wert="@_parameter.Netzkanaele.ZirkulationLaufzeitHd" Min="0" Max="24" Nachkommastellen="1"
+                                        Einheit="h/d" Aktiv="@(!_daten.Gesperrt)" WertChanged="ZirkLaufzeitGesetzt" />
+                            <Herleitungszeile Text="@ZirkulationZeile" />
                         </KindInhalt>
                     </Formularraster>
                 </section>
@@ -357,6 +523,144 @@
                                          Aktiv="@(!_daten.Gesperrt)"
                                          AuswahlChanged="AnlagenkopplungGewaehlt" />
                             <Herleitungszeile Text="@Kopplungszeile" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+
+            @if (Parameter.AufheizvorgabeSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-aufheizung" aria-label="@Resource.SIMKONF_AUFH_GRP">
+                    @* Hilfe zur Projekteinstellung: die Seite „Gebäudemodell VDI 6007" (help_mapping.txt). *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_Simulation_Config_Aufheizung.btn_Help"
+                                   StandardKurztext="@Resource.SIMKONF_AUFH_HILFE_KNOPF" MitAssistent="false" />
+                    </div>
+                    <Formularraster Einspaltig="true" @key="_aufheizSchluessel">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@Resource.SIMKONF_AUFH_LBL_SCHALTER"
+                                      Wert="@Aufheizung.An"
+                                      Aktiv="@(!_daten.Gesperrt)"
+                                      WertChanged="AufheizSchalterGesetzt" />
+                            @if (Aufheizung.An)
+                            {
+                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_BEMESSUNG"
+                                             Eintraege="@Bemessungseintraege"
+                                             Auswahl="@(Aufheizung.MitAbzug ? 1 : 0)"
+                                             Aktiv="@(!_daten.Gesperrt)"
+                                             AuswahlChanged="AufheizBemessungGewaehlt" />
+                                @if (Aufheizung.MitAbzug)
+                                {
+                                    <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ABZUG"
+                                                Wert="@Aufheizung.AbzugK"
+                                                Einheit="K" Min="0" Max="10"
+                                                Platzhalter="@Vorgabetext(WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_VORGABE_K)"
+                                                Aktiv="@(!_daten.Gesperrt)"
+                                                WertChanged="AufheizAbzugGesetzt" />
+                                }
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_RESERVE"
+                                            Wert="@ReserveProzent"
+                                            Einheit="%" Min="1" Max="100"
+                                            Platzhalter="@Reservevorgabetext"
+                                            Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="AufheizReserveGesetzt" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_RESERVE" />
+                                <Auswahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_LBL_ART"
+                                             Eintraege="@Arteintraege"
+                                             Auswahl="@(Aufheizung.IstFest ? 1 : 0)"
+                                             Aktiv="@(!_daten.Gesperrt)"
+                                             AuswahlChanged="AufheizArtGewaehlt" />
+                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H"
+                                              Wert="@Aufheizung.AufschlagH"
+                                              Min="0" Max="@WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX"
+                                              Platzhalter="@Vorgabetext(0)"
+                                              Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="AufheizAufschlagHGesetzt" />
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT"
+                                            Wert="@Aufheizung.AufschlagProzent"
+                                            Min="0" Max="@WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX"
+                                            Platzhalter="@Vorgabetext(0)"
+                                            Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="AufheizAufschlagProzentGesetzt" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_AUFSCHLAG_HRL" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AN" />
+                                @if (_parameter.Anlagenkopplung == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1)
+                                {
+                                    <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_GEKOPPELT" />
+                                }
+                                @foreach (string zeile in _aufheizZeilen)
+                                {
+                                    <Herleitungszeile Text="@zeile" />
+                                }
+                            }
+                            else
+                            {
+                                <Herleitungszeile Text="@Resource.SIMKONF_AUFH_HRL_AUS" />
+                                @if (Aufheizung.HatAufschlag)
+                                {
+                                    <Herleitungszeile Text="@AufschlagAusZeile" />
+                                }
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+
+            @* „Einspeisegrenze" (Welle M5, PV3): Wert und Einheit (kW oder % der installierten
+               PV-Leistung) schreiben SOFORT die ganze Einstellung (EinspeisegrenzeSchreiben); leer heißt
+               keine Grenze. Scheitert das Schreiben, kehrt der Abschnitt zurueck (@key). *@
+            @if (Parameter.EinspeisegrenzeSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-einspeisegrenze" aria-label="@Resource.SIMKONF_GRP_EINSPEISEGRENZE">
+                    <Formularraster Einspaltig="true" @key="_einspeisegrenzeSchluessel">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_EINSPEISEGRENZE"
+                                        Wert="@Einspeisegrenze.Wert"
+                                        Einheit="@EinspeisegrenzeEinheitText" Min="0"
+                                        Platzhalter="@Resource.SIMKONF_EINSPEISEGRENZE_LEER"
+                                        Aktiv="@(!_daten.Gesperrt)"
+                                        WertChanged="EinspeisegrenzeWertGesetzt" />
+                            <Auswahlfeld Bezeichnung="@Resource.SIMKONF_LBL_EINSPEISEGRENZE_EINHEIT"
+                                         Eintraege="@Einspeiseeinheiten"
+                                         Auswahl="@(Einspeisegrenze.InProzent ? 1 : 0)"
+                                         Aktiv="@(!_daten.Gesperrt)"
+                                         AuswahlChanged="EinspeisegrenzeEinheitGewaehlt" />
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_EINSPEISEGRENZE" />
+                        </KindInhalt>
+                    </Formularraster>
+                </section>
+            }
+
+            @* „Thermische Desinfektion" (Welle M7, BW5): Schalter, Intervall, Stunde, Zieltemperatur und
+               Volumen schreiben SOFORT die ganze Einstellung (DesinfektionSchreiben); leer heisst die
+               Vorgabe. Scheitert das Schreiben, kehrt der Abschnitt zurueck (@key). *@
+            @if (Parameter.DesinfektionSchreiben is not null)
+            {
+                <section class="epos-simkonfig-bedarf epos-simkonfig-desinfektion" aria-label="@Resource.SIMKONF_GRP_DESINFEKTION">
+                    <Formularraster Einspaltig="true" @key="_desinfektionSchluessel">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@Resource.SIMKONF_LBL_DESINFEKTION" Wert="@Desinfektion.Aktiv"
+                                      Aktiv="@(!_daten.Gesperrt)" WertChanged="DesinfektionSchalterGesetzt" />
+                            @if (Desinfektion.Aktiv)
+                            {
+                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_INTERVALL" Einheit="d"
+                                              Wert="@Desinfektion.IntervallTage" Min="1" Max="31"
+                                              Platzhalter="7" Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="w => DesinfektionSchreiben(Desinfektion with { IntervallTage = w })" />
+                                <Ganzzahlfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_STUNDE" Einheit="h"
+                                              Wert="@Desinfektion.Stunde" Min="0" Max="23"
+                                              Platzhalter="2" Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="w => DesinfektionSchreiben(Desinfektion with { Stunde = w })" />
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_ZIEL" Einheit="°C"
+                                            Wert="@Desinfektion.ZielC" Min="55" Max="90"
+                                            Platzhalter="70" Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="w => DesinfektionSchreiben(Desinfektion with { ZielC = w })" />
+                                <Zahlenfeld Bezeichnung="@Resource.SIMKONF_LBL_DESINF_VOLUMEN" Einheit="l"
+                                            Wert="@Desinfektion.VolumenL" Min="0" Max="100000"
+                                            Platzhalter="@Resource.SIMKONF_DESINF_VOLUMEN_LEER" Aktiv="@(!_daten.Gesperrt)"
+                                            WertChanged="w => DesinfektionSchreiben(Desinfektion with { VolumenL = w })" />
+                            }
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_DESINFEKTION" />
                         </KindInhalt>
                     </Formularraster>
                 </section>
@@ -438,6 +742,55 @@
         </Ueberlagerung>
     }
 
+    @* DIE KONFIGURATION EINES KÄLTEERZEUGERS (Welle KB-B, E117 F2/F3/F5): die Kaeltemaschine mit der
+       Komponente KaeltemaschineKonfiguration (dieselbe wie im Dialog „Kältemaschinen im Projekt“), die
+       Waermepumpe mit ihrer Gruppe „Kühlbetrieb“ (dieselbe wie in ihrer Konfiguration). Arbeitskopie; erst
+       OK schreibt, Abbrechen verwirft. Eine Ablehnung steht im Banner der Ueberlagerung, sie bleibt offen. *@
+    @if (_kmArbeit is not null && _kmGaben is not null)
+    {
+        <Ueberlagerung Offen="true" Titel="@_kaelteTitel" Geschlossen="KaelteKonfigSchliessen">
+            <KindInhalt>
+                <div class="epos-dialog epos-simkonfig-kaelte-konfig epos-simkonfig-kaelte-km">
+                    @if (_kaelteMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_kaelteMeldung" />
+                    }
+                    <EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfiguration
+                        Daten="@_kmArbeit" Stromtraeger="@_kmGaben.Stromtraeger"
+                        ProjektStromtraeger="@_kmGaben.ProjektStromtraeger"
+                        AnlagenJeKopie="@_kaelteAnlagenJeKopie" GeraetZeigen="true"
+                        Aktiv="@(!_daten.Gesperrt)" />
+                    <SpeichernLeiste OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                                     OkErlaubt="@(!_daten.Gesperrt)" Ergebnis="KaeltemaschineKonfigFertig" />
+                </div>
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_wpKuehlArbeit is not null && _wpKuehlGaben is not null)
+    {
+        <Ueberlagerung Offen="true" Titel="@_kaelteTitel" Geschlossen="KaelteKonfigSchliessen">
+            <KindInhalt>
+                <div class="epos-dialog epos-simkonfig-kaelte-konfig epos-simkonfig-kaelte-wp">
+                    @if (_kaelteMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_kaelteMeldung" />
+                    }
+                    <div class="epos-wp-konfiguration">
+                        <Formularraster Einspaltig="true">
+                            <KindInhalt>
+                                <EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlbetriebGruppe
+                                    Daten="@_wpKuehlArbeit" Kuehlung="@_wpKuehlGaben" Aktiv="@(!_daten.Gesperrt)" />
+                            </KindInhalt>
+                        </Formularraster>
+                    </div>
+                    <SpeichernLeiste OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                                     OkErlaubt="@(!_daten.Gesperrt)" Ergebnis="WpKuehlKonfigFertig" />
+                </div>
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
     @if (_gaben1 is not null && _ebene1 == Editor.Pufferverwaltung)
     {
         <Ueberlagerung Offen="true" Titel="@VerwaltungTitel" Geschlossen="Ebene1Schliessen">
@@ -476,7 +829,7 @@
 
     @if (_gaben2 is not null && _ebene2 == Editor.QuelleErdreich)
     {
-        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="Ebene2Schliessen">
+        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="() => ErdreichFertig(null)">
             <KindInhalt>
                 <EPOS.UI.Dialoge.Simulation.QuelleErdreichDialog @attributes="_gaben2" TitelAnzeigen="false"
                                                                  Geschlossen="ErdreichFertig" />
@@ -627,6 +980,9 @@
 
     /// <summary>SIM_BTN_SP_AUSLEGUNG (#274) — der Knopf unter der Pufferverwaltung.</summary>
     [Parameter] public string BtnStromspeicherAuslegen { get; set; } = "Stromspeicher auslegen…";
+
+    /// <summary>„Pufferspeicher auslegen…" (<c>PAUS_BTN_KONFIG</c>).</summary>
+    [Parameter] public string BtnPufferAuslegen { get; set; } = "Pufferspeicher auslegen…";
 
     /// <summary>
     /// SIMKONF_BTN_KONFIGURATION — der Knopf an der Erzeugerkarte, der den
@@ -901,6 +1257,7 @@
     private void Neuladen()
     {
         _parameter = Parameter?.Laden?.Invoke() ?? new ParameterDaten();
+        AufheizZeilenLaden();
         KachelnNeuladen();
     }
 
@@ -933,6 +1290,437 @@
         _parameter.Netzverluste = wert ?? 0.0;
         Parameter?.NetzverlusteSchreiben?.Invoke(_parameter.Netzverluste,
                                                  _parameter.NetzverlusteEinheit);
+    }
+
+    // =====================================================================
+    // Netzverluste je Kanal und Zirkulation (Entscheidungsvorlage BW4)
+    // =====================================================================
+
+    /// <summary>@key des Abschnitts — ein Neuaufbau nach gescheitertem Schreiben.</summary>
+    private int _netzkanalSchluessel;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts: 0 = %, 1 = kWh/a.</summary>
+    private static readonly IReadOnlyList<(int Id, string Text)> KanalEinheiten = new[]
+    {
+        (0, WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT),
+        (1, WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH)
+    };
+
+    /// <summary>Der Platz einer Einheit in <see cref="KanalEinheiten"/>; leer gilt als %.</summary>
+    private static int KanalEinheitIndex(string? einheit)
+        => einheit == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH ? 1 : 0;
+
+    /// <summary>Die Einheit hinter dem Zahlenfeld; leer gilt als %.</summary>
+    private static string KanalEinheit(string? einheit) => KanalEinheiten[KanalEinheitIndex(einheit)].Text;
+
+    /// <summary>Die Herleitung der Zirkulation samt Jahresmenge, wenn Leistung und Laufzeit stehen.</summary>
+    private string ZirkulationZeile
+    {
+        get
+        {
+            WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+            if (!v.MitZirkulation) return Resource.SIMKONF_HRL_ZIRK;
+            return Resource.SIMKONF_HRL_ZIRK + " " + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                Resource.SIMKONF_HRL_ZIRK_MENGE, WindowsFormsApplication1.Energieeinheit.MWh.AusKWh(v.ZirkulationJahresKwh));
+        }
+    }
+
+    /// <summary>Der Wert eines Kanals (0 Heizung, 1 Brauchwasser, 2 Prozess); leer = kein Kanalwert.</summary>
+    private void KanalwertGesetzt(int kanal, double? wert)
+    {
+        WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+        NetzkanaeleSchreiben(kanal switch
+        {
+            0 => v with { HeizungWert = wert },
+            1 => v with { BrauchwasserWert = wert },
+            _ => v with { ProzessWert = wert }
+        });
+    }
+
+    /// <summary>Die Einheit eines Kanals; sie wirkt erst mit einem Wert.</summary>
+    private void KanalEinheitGewaehlt(int kanal, int? index)
+    {
+        if (index is null) return;
+        string einheit = KanalEinheiten[index.Value == 1 ? 1 : 0].Text;
+        WindowsFormsApplication1.Netzverlustvorgabe v = _parameter.Netzkanaele;
+        NetzkanaeleSchreiben(kanal switch
+        {
+            0 => v with { HeizungEinheit = einheit },
+            1 => v with { BrauchwasserEinheit = einheit },
+            _ => v with { ProzessEinheit = einheit }
+        });
+    }
+
+    private void ZirkLeistungGesetzt(double? wert)
+        => NetzkanaeleSchreiben(_parameter.Netzkanaele with { ZirkulationLeistungKw = wert });
+
+    private void ZirkLaufzeitGesetzt(double? wert)
+        => NetzkanaeleSchreiben(_parameter.Netzkanaele with { ZirkulationLaufzeitHd = wert });
+
+    /// <summary>
+    /// Schreibt die ganze Vorgabe SOFORT über die Naht der Hülle (Muster Aufheizoptimierung). Eine
+    /// Einheit ohne Wert bleibt im Arbeitsstand stehen, bis ein Wert dazukommt; scheitert das
+    /// Schreiben, zeigt der Abschnitt wieder den gespeicherten Stand (@key) und die Fußzeile meldet es.
+    /// </summary>
+    private void NetzkanaeleSchreiben(WindowsFormsApplication1.Netzverlustvorgabe neu)
+    {
+        if (Parameter?.NetzkanaeleSchreiben is null) return;
+        WindowsFormsApplication1.Netzverlustvorgabe gespeichert = neu.Normalisiert();
+        string? grund = gespeichert.Pruefen();
+        if (grund is null && Parameter.NetzkanaeleSchreiben(gespeichert))
+        {
+            // Die gewählte Einheit eines leeren Kanals bleibt sichtbar stehen.
+            _parameter.Netzkanaele = gespeichert with
+            {
+                HeizungEinheit = gespeichert.HeizungEinheit ?? neu.HeizungEinheit,
+                BrauchwasserEinheit = gespeichert.BrauchwasserEinheit ?? neu.BrauchwasserEinheit,
+                ProzessEinheit = gespeichert.ProzessEinheit ?? neu.ProzessEinheit
+            };
+            return;
+        }
+
+        _netzkanalSchluessel++;
+        Melden(grund ?? Resource.SIMKONF_MSG_NV_KANAL_FEHLER, WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    // Der Bereich „Kälte“ (Welle KB-B; Entwurf Kältebereich 3, Entscheide E117)
+    // =====================================================================
+
+    /// <summary>Steht der Schalter „Kühlung rechnen“? Nur mit Parametersatz und Schreibweg der Hülle.</summary>
+    private bool KuehlschalterDa => Parameter?.Laden is not null && Parameter.KuehlbetriebSchreiben is not null;
+
+    /// <summary>
+    /// Steht der Bereich? Mit dem Schalter oder mit angelegten Kälteerzeugern bzw. Kältespeichern — ohne beides
+    /// gäbe es nichts zu zeigen und nichts zu schalten.
+    /// </summary>
+    private bool KaeltebereichSichtbar => IdProjekt > 0 && (KuehlschalterDa || !_daten.Kaeltebereich.Leer);
+
+    /// <summary>Rechnet das Projekt Kälte? Der Stand des Schalters, ohne Schalter der gelesene Stand des Bereichs.</summary>
+    public bool KuehlungAn => KuehlschalterDa ? _parameter.Kuehlbetrieb : _daten.Kaeltebereich.Kuehlbetrieb;
+
+    /// <summary>Die Hinweiszeile des zusammengeklappten Bereichs: was angelegt ist und nicht wirkt.</summary>
+    private string KaelteAusText
+    {
+        get
+        {
+            KaeltebereichDaten k = _daten.Kaeltebereich;
+            int km = k.Erzeuger.Count(z => z.Art == KaelteStufe.Kaeltemaschine);
+            int wp = k.Erzeuger.Count(z => z.Art == KaelteStufe.Waermepumpe);
+            int ks = k.Kaeltespeicher.Count;
+            return km + wp + ks == 0
+                ? Resource.SIMKONF_KAELTE_AUS_LEER
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_AUS, km, wp, ks);
+        }
+    }
+
+    /// <summary>Die Herleitungszeile der Rechenfolge — aus den Stufen des Kernlesers, nicht aus eigener Sortierung.</summary>
+    private string KaelteFolgeText
+    {
+        get
+        {
+            IReadOnlyList<KaelteStufe> folge = _daten.Kaeltebereich.Folge.Count > 0
+                ? _daten.Kaeltebereich.Folge
+                : new[] { KaelteStufe.FreieKuehlung, KaelteStufe.Kaeltespeicher, KaelteStufe.Waermepumpe, KaelteStufe.Kaeltemaschine };
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_FOLGE,
+                                 string.Join(", ", folge.Select(StufeText)));
+        }
+    }
+
+    private static string StufeText(KaelteStufe s) => s switch
+    {
+        KaelteStufe.FreieKuehlung => Resource.SIMKONF_KAELTE_STUFE_FREI,
+        KaelteStufe.Kaeltespeicher => Resource.SIMKONF_KAELTE_STUFE_SPEICHER,
+        KaelteStufe.Waermepumpe => Resource.SIMKONF_KAELTE_STUFE_WP,
+        _ => Resource.SIMKONF_KAELTE_STUFE_KM
+    };
+
+    /// <summary>
+    /// Die Herleitungszeile unter den Kälteerzeugern (Welle KB-D2): der Hinweis der Hülle, welche Folge gilt
+    /// (<see cref="KaeltebereichDaten.FolgeHinweis"/>); ohne ihn die Stufenzeile des Kernlesers.
+    /// </summary>
+    private string KaelteHerleitung => string.IsNullOrEmpty(_daten.Kaeltebereich.FolgeHinweis)
+        ? KaelteFolgeText
+        : _daten.Kaeltebereich.FolgeHinweis;
+
+    /// <summary>
+    /// Die Kachel eines Kälteerzeugers mit den Pfeilen der Folge (Welle KB-D2): ▲▼ nur mit Schreibweg
+    /// (<see cref="SimulationKonfigDienste.KaelteVerschieben"/>) und nur, wenn der Erzeuger überhaupt rücken kann
+    /// (mehr als ein Erzeuger); am Rand ausgegraut wie in der Wärmekaskade, damit die Kopfzeile nicht springt.
+    /// </summary>
+    private ErzeugerKachelDaten KaelteKachel(KaelteerzeugerZeile z)
+    {
+        ErzeugerKachelDaten k = z.Kachel;
+        bool pfeile = Dienste?.KaelteVerschieben is not null && (z.NachVornMoeglich || z.NachHintenMoeglich);
+        k.Reihenfolge = pfeile;
+        k.AufMoeglich = pfeile && z.NachVornMoeglich && !_daten.Gesperrt;
+        k.AbMoeglich = pfeile && z.NachHintenMoeglich && !_daten.Gesperrt;
+        return k;
+    }
+
+    /// <summary>
+    /// ▲/▼ an einer Kälteerzeugerkachel (Welle KB-D2): rückt den Erzeuger einen Platz nach vorn (<c>-1</c>) oder hinten
+    /// (<c>+1</c>) — schreibt SOFORT über den Kernweg (<c>KaeltefolgeCtrl.Verschieben</c>), danach laden Kacheln und
+    /// Schema neu. Ein Grund der Ablehnung steht im Banner.
+    /// </summary>
+    private void KaelteFolgeVerschieben(KaelteerzeugerZeile z, int richtung)
+    {
+        Func<int, int, string?>? weg = Dienste?.KaelteVerschieben;
+        if (weg is null || _daten.Gesperrt) return;
+
+        string? grund;
+        try { grund = weg(z.IdAnlage, richtung); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        KachelnNeuladen();
+    }
+
+    /// <summary>
+    /// „Vorgabefolge“ (Welle KB-D2): stellt die Vorgabefolge der Kälteerzeuger wieder her — schreibt SOFORT über den
+    /// Kernweg (<c>KaeltefolgeCtrl.VorgabeSetzen</c>). Weich gesperrt, solange die Vorgabe gilt: dann meldet der
+    /// Versuch den Grund.
+    /// </summary>
+    private void KaelteVorgabefolgeSetzen()
+    {
+        Func<string?>? weg = Dienste?.KaelteVorgabefolge;
+        if (weg is null || _daten.Gesperrt) return;
+        if (!_daten.Kaeltebereich.FolgeGepflegt)
+        {
+            Melden(Resource.SIMKONF_KAELTE_VORGABE_GILT, WarnStufe.Hinweis);
+            return;
+        }
+
+        string? grund;
+        try { grund = weg(); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        KachelnNeuladen();
+    }
+
+    /// <summary>Die Lesezeile der freien Kühlung; <c>null</c> = kein Erzeuger kühlt frei.</summary>
+    private string? FreieKuehlungText
+    {
+        get
+        {
+            IReadOnlyList<FreieKuehlungZeile> frei = _daten.Kaeltebereich.FreieKuehlung;
+            if (frei.Count == 0) return null;
+            var c = System.Globalization.CultureInfo.CurrentCulture;
+            return string.Format(c, Resource.SIMKONF_KAELTE_FREI, string.Join(", ", frei.Select(f => string.Format(c,
+                f.VorAllenErzeugern ? Resource.SIMKONF_KAELTE_FREI_VORN : Resource.SIMKONF_KAELTE_FREI_PLATZ, f.Bezeichner))));
+        }
+    }
+
+    /// <summary>Hat der Kälteerzeuger einen Weg zu seiner Konfiguration? Ohne Weg kein Knopf.</summary>
+    private bool KaelteKonfigurierbar(KaelteerzeugerZeile z) => z.Art == KaelteStufe.Kaeltemaschine
+        ? Dienste?.KaeltemaschineKonfigurationLaden is not null && Dienste.KaeltemaschineKonfigurationSpeichern is not null
+        : Parameter?.WaermepumpeKonfigurationLaden is not null && Parameter.WaermepumpeKonfigurationSpeichern is not null
+          && Parameter.WaermepumpeKuehlGaben is not null && z.IdAnlage > 0;
+
+    /// <summary>
+    /// Der Parameterbereich einer Kälteerzeugerkachel: die Gründe am Element (Sperrgrund, „nicht in der
+    /// Wärmekaskade“, „gilt für n Anlagen“) und der Knopf „Konfiguration…“.
+    /// </summary>
+    private RenderFragment<KaelteerzeugerZeile> KaelteParameter => z =>
+        @<div class="epos-simkonfig-kaelte-parameter">
+            @if (z.Art == KaelteStufe.Waermepumpe && !z.InWaermekaskade)
+            {
+                <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-kaskade">@Resource.SIMKONF_KAELTE_NICHT_KASKADE</p>
+            }
+            @if (!z.Kuehlbetrieb && !string.IsNullOrEmpty(z.Sperrgrund))
+            {
+                <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-sperrgrund">@z.Sperrgrund</p>
+            }
+            @if (z.AnlagenJeKopie > 1)
+            {
+                <p class="epos-simkonfig-hinweis">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_GILT_FUER, z.AnlagenJeKopie)</p>
+            }
+            @if (KaelteKonfigurierbar(z))
+            {
+                <button type="button" class="epos-knopf epos-simkonfig-kaelte-konfigknopf" disabled="@_daten.Gesperrt"
+                        @onclick="() => KaelteKonfigurieren(z)">@BtnKonfigurationText</button>
+            }
+        </div>;
+
+    /// <summary>„Konfiguration…“ bzw. ✎ an einer Kälteerzeugerkachel.</summary>
+    private void KaelteKonfigurieren(KaelteerzeugerZeile z)
+    {
+        if (z.Art == KaelteStufe.Kaeltemaschine)
+        {
+            if (!KaeltemaschineKonfigurationOeffnen(z.IdAnlage)) KaeltemaschinenOeffnen();
+            return;
+        }
+        WpKuehlKonfigurationOeffnen(z);
+    }
+
+    /// <summary>
+    /// Aufnehmen/Entfernen an der Kachel einer Wärmepumpe = Kühlbetrieb an/aus — schreibt SOFORT über den Kernweg
+    /// des Kühlschalters (<see cref="SimulationKonfigDienste.KuehlbetriebWpSchreiben"/>). Ein Sperrgrund oder eine
+    /// Ablehnung steht im Banner; geschrieben, laden die Kacheln neu.
+    /// </summary>
+    private void KuehlbetriebWpSetzen(KaelteerzeugerZeile z, bool an)
+    {
+        if (z.Art != KaelteStufe.Waermepumpe || Dienste?.KuehlbetriebWpSchreiben is null || _daten.Gesperrt) return;
+
+        string? grund = KuehlbetriebWpGrund(z, an);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        KachelnNeuladen();
+    }
+
+    /// <summary>Schreibt den Kühlbetrieb einer Wärmepumpe; <c>null</c> = geschrieben, sonst der benannte Grund.</summary>
+    private string? KuehlbetriebWpGrund(KaelteerzeugerZeile z, bool an)
+    {
+        Func<int, bool, string?>? weg = Dienste?.KuehlbetriebWpSchreiben;
+        if (weg is null) return Resource.KI_SIM_KEIN_SCHREIBWEG;
+
+        string? grund;
+        if (an && !string.IsNullOrEmpty(z.Sperrgrund)) grund = z.Sperrgrund;
+        else
+        {
+            try { grund = weg(z.IdGeraet, an); }
+            catch (Exception ex) { grund = ex.Message; }
+        }
+        return string.IsNullOrEmpty(grund) ? null
+            : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_WP_FEHLER, grund);
+    }
+
+    /// <summary>
+    /// Der Hilfe-Assistent (Welle KB-B): der Kühlbetrieb einer Wärmepumpe des Bereichs „Kälte“ — derselbe Weg wie
+    /// Aufnehmen/Entfernen an ihrer Kachel. Rückgabe <c>null</c> = geschrieben, sonst der benannte Grund.
+    /// </summary>
+    public string? KiKuehlbetriebWpSetzen(int idAnlage, bool an)
+    {
+        KaelteerzeugerZeile? z = _daten.Kaeltebereich.Erzeuger
+            .FirstOrDefault(e => e.IdAnlage == idAnlage && e.Art == KaelteStufe.Waermepumpe);
+        if (z is null) return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                            Resource.KI_DLG_SIM_KUEHL_WP_UNBEKANNT, idAnlage);
+        if (z.Kuehlbetrieb == an) return null;
+        if (_daten.Gesperrt) return _daten.Sperrgrund;
+
+        string? grund = KuehlbetriebWpGrund(z, an);
+        if (grund is not null) return grund;
+        KachelnNeuladen();
+        KiZeichnen();
+        return null;
+    }
+
+    // ---- Die Überlagerung der Konfiguration eines Kälteerzeugers ----
+
+    private EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben? _kmGaben;
+    private EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten? _kmArbeit;
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? _wpKuehlArbeit;
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? _wpKuehlGaben;
+    private int _wpKuehlAnlage;
+    private int _kaelteAnlagenJeKopie = 1;
+    private string _kaelteTitel = "";
+    private string _kaelteMeldung = "";
+
+    /// <summary>Steht die Konfiguration einer Kältemaschine offen? (Prüfhilfe)</summary>
+    public bool KaeltemaschineKonfigurationOffen => _kmArbeit is not null;
+
+    /// <summary>Steht die Gruppe „Kühlbetrieb“ einer Wärmepumpe offen? (Prüfhilfe)</summary>
+    public bool WpKuehlKonfigurationOffen => _wpKuehlArbeit is not null;
+
+    /// <summary>
+    /// Öffnet die Konfiguration einer Kältemaschine in der Seite. <c>false</c> = kein Weg (dann nimmt der Aufrufer
+    /// den Dialog über die Navigation); fehlt die Anlage, steht der Grund im Banner und es gilt als behandelt.
+    /// </summary>
+    private bool KaeltemaschineKonfigurationOeffnen(int idAnlage)
+    {
+        Func<int, EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben?>? laden = Dienste?.KaeltemaschineKonfigurationLaden;
+        if (laden is null || Dienste?.KaeltemaschineKonfigurationSpeichern is null || idAnlage <= 0) return false;
+
+        EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben? gaben;
+        try { gaben = laden(idAnlage); }
+        catch (Exception ex) { Melden(ex.Message, WarnStufe.Warnung); return true; }
+        if (gaben is null) { Melden(Resource.SIMKONF_KAELTE_KM_FEHLT, WarnStufe.Warnung); return true; }
+
+        KaelteKonfigSchliessen();
+        _kmGaben = gaben;
+        _kmArbeit = gaben.Daten.Kopie();
+        _kaelteAnlagenJeKopie = _daten.Kaeltebereich.Erzeuger.FirstOrDefault(z => z.IdAnlage == idAnlage)?.AnlagenJeKopie ?? 1;
+        _kaelteTitel = string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_KM_TITEL,
+                                     gaben.Daten.Bezeichner);
+        return true;
+    }
+
+    /// <summary>OK prüft und schreibt über die Hülle; eine Ablehnung hält die Überlagerung offen.</summary>
+    private void KaeltemaschineKonfigFertig(bool ok)
+    {
+        EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten? arbeit = _kmArbeit;
+        if (!ok || arbeit is null || Dienste?.KaeltemaschineKonfigurationSpeichern is null)
+        {
+            KaelteKonfigSchliessen();
+            return;
+        }
+
+        string? grund;
+        try { grund = Dienste.KaeltemaschineKonfigurationSpeichern(arbeit); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (!string.IsNullOrEmpty(grund)) { _kaelteMeldung = grund; return; }
+
+        KaelteKonfigSchliessen();
+        KachelnNeuladen();
+    }
+
+    /// <summary>Öffnet die Gruppe „Kühlbetrieb“ einer Wärmepumpe — dieselbe wie in ihrer Konfiguration.</summary>
+    private void WpKuehlKonfigurationOeffnen(KaelteerzeugerZeile z)
+    {
+        if (!KaelteKonfigurierbar(z)) return;
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? anlage = Parameter!.WaermepumpeKonfigurationLaden!(z.IdAnlage);
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? gaben = Parameter.WaermepumpeKuehlGaben!();
+        if (ZeileZuAnlage(z.IdAnlage) is ErzeugerZeile zeile) gaben = MitFreiSperrgrund(gaben, zeile);
+        if (anlage is null || gaben is null) return;
+
+        KaelteKonfigSchliessen();
+        _wpKuehlArbeit = anlage;
+        _wpKuehlGaben = gaben;
+        _wpKuehlAnlage = z.IdAnlage;
+        _kaelteTitel = string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_WP_TITEL, z.Bezeichner);
+    }
+
+    /// <summary>OK schreibt die Anlagenfelder der Wärmepumpe über ihren Weg; eine Ablehnung hält offen.</summary>
+    private void WpKuehlKonfigFertig(bool ok)
+    {
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? arbeit = _wpKuehlArbeit;
+        Func<int, EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten, AnlagenkonfigErgebnis>? speichern
+            = Parameter?.WaermepumpeKonfigurationSpeichern;
+        if (!ok || arbeit is null || speichern is null)
+        {
+            KaelteKonfigSchliessen();
+            return;
+        }
+
+        AnlagenkonfigErgebnis ergebnis = speichern(_wpKuehlAnlage, arbeit);
+        if (!ergebnis.Ok)
+        {
+            _kaelteMeldung = string.IsNullOrEmpty(ergebnis.Meldung) ? StatusKonfigFehler : ergebnis.Meldung;
+            return;
+        }
+
+        KaelteKonfigSchliessen();
+        KachelnNeuladen();
+    }
+
+    private void KaelteKonfigSchliessen()
+    {
+        _kmGaben = null;
+        _kmArbeit = null;
+        _wpKuehlArbeit = null;
+        _wpKuehlGaben = null;
+        _wpKuehlAnlage = 0;
+        _kaelteMeldung = "";
     }
 
     /// <summary>@key des Kühlschalters — ein Neuaufbau nach gescheitertem Schreiben.</summary>
@@ -1025,9 +1813,13 @@
             string? stufe = _parameter.Anlagenkopplung;
             if (!WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut(stufe))
                 return string.Format(Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT, Kopplungsname(stufe));
-            return stufe == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1
-                ? Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AK1
-                : Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AUS;
+            // AK3 (E102 Q-AK3-1): der geschlossene Kreis mit seinem Erklärtext - Rückwirkung je Stunde, Rechenzeit höher.
+            return stufe switch
+            {
+                WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1 => Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AK1,
+                WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK3 => Resource.AK3_SIMKONF_HRL_ANLAGENKOPPLUNG,
+                _ => Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AUS
+            };
         }
     }
 
@@ -1053,6 +1845,227 @@
 
         _anlagenkopplungSchluessel++;
         Melden(Resource.SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER, WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1)
+    // =====================================================================
+
+    /// <summary>@key des Abschnitts — ein Neuaufbau nach gescheitertem Schreiben.</summary>
+    private int _aufheizSchluessel;
+
+    /// <summary>
+    /// Die Herleitungszeilen je Gebäude (<c>AufheizHerleitung</c>, verdrahtet mit der Welle D2);
+    /// leer ohne Delegat — dann steht keine Zeile da.
+    /// </summary>
+    private IReadOnlyList<string> _aufheizZeilen = Array.Empty<string>();
+
+    /// <summary>Die gespeicherte Einstellung; ohne Stand „aus".</summary>
+    private WindowsFormsApplication1.Aufheizvorgabe Aufheizung
+        => _parameter.Aufheizung ?? WindowsFormsApplication1.Aufheizvorgabe.Aus;
+
+    /// <summary>Die Reserve ρ in Prozent, wie das Feld sie zeigt; <c>null</c> = leer (Vorgabe).</summary>
+    private double? ReserveProzent => Aufheizung.Reserve is double r ? r * 100.0 : null;
+
+    /// <summary>Die zwei Bemessungen (Id 0 = (a) kälteste Stunde, 1 = (b) kälteste Stunde − ΔT_K).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Bemessungseintraege => new[]
+    {
+        (0, Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE),
+        (1, Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG)
+    };
+
+    /// <summary>Die zwei Arten (Id 0 = täglich, 1 = fest).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Arteintraege => new[]
+    {
+        (0, Resource.SIMKONF_AUFH_ART_TAEGLICH),
+        (1, Resource.SIMKONF_AUFH_ART_FEST)
+    };
+
+    /// <summary>
+    /// Der Platzhalter der leeren Reserve („Vorgabe 20 %", EV1/E64): Ohne Eingabe rechnet der Lauf mit
+    /// <see cref="WindowsFormsApplication1.AufheizvorgabeSchema.RESERVE_VORGABE"/> und meldet das als Hinweis.
+    /// </summary>
+    private static string Reservevorgabetext
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_VORGABE_RESERVE,
+                         (WindowsFormsApplication1.AufheizvorgabeSchema.RESERVE_VORGABE * 100.0)
+                             .ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
+
+    /// <summary>Der leise Platzhalter eines leeren Zahlenfeldes („Vorgabe 2") in der Oberflächenkultur.</summary>
+    private static string Vorgabetext(double wert)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_VORGABE,
+                         wert.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
+
+    /// <summary>Liest die Herleitungszeilen je Gebäude neu — ohne Delegat keine.</summary>
+    // =====================================================================
+    //  Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3)
+    // =====================================================================
+
+    /// <summary>Schlüssel des Abschnitts — er wechselt, wenn ein Schreiben scheitert.</summary>
+    private int _einspeisegrenzeSchluessel;
+
+    private WindowsFormsApplication1.Einspeisegrenze Einspeisegrenze
+        => _parameter.Einspeisegrenze ?? WindowsFormsApplication1.Einspeisegrenze.Keine;
+
+    /// <summary>Die zwei Einheiten: kW (Vorgabe) und % der installierten PV-Leistung.</summary>
+    private static IReadOnlyList<(int Id, string Text)> Einspeiseeinheiten => new[]
+    {
+        (0, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_KW),
+        (1, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT)
+    };
+
+    private string EinspeisegrenzeEinheitText => Einspeisegrenze.InProzent ? "%" : "kW";
+
+    private void EinspeisegrenzeWertGesetzt(double? wert)
+        => EinspeisegrenzeSchreiben(new WindowsFormsApplication1.Einspeisegrenze(wert, Einspeisegrenze.Einheit));
+
+    private void EinspeisegrenzeEinheitGewaehlt(int? index)
+    {
+        if (!index.HasValue) return;
+        string einheit = index.Value == 1
+            ? WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT
+            : WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW;
+        EinspeisegrenzeSchreiben(new WindowsFormsApplication1.Einspeisegrenze(Einspeisegrenze.Wert, einheit));
+    }
+
+    private void EinspeisegrenzeSchreiben(WindowsFormsApplication1.Einspeisegrenze neu)
+    {
+        if (Parameter?.EinspeisegrenzeSchreiben is null) return;
+        if (Parameter.EinspeisegrenzeSchreiben(neu))
+        {
+            _parameter.Einspeisegrenze = neu;
+        }
+        else
+        {
+            _einspeisegrenzeSchluessel++;
+            Melden(Resource.SIMKONF_EINSPEISEGRENZE_FEHLER, WarnStufe.Warnung);
+        }
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5)
+    // =====================================================================
+
+    /// <summary>Schlüssel des Abschnitts — er wechselt, wenn ein Schreiben scheitert.</summary>
+    private int _desinfektionSchluessel;
+
+    private WindowsFormsApplication1.Desinfektionsvorgabe Desinfektion
+        => _parameter.Desinfektion ?? WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
+
+    private void DesinfektionSchalterGesetzt(bool an)
+        => DesinfektionSchreiben(Desinfektion with { Aktiv = an });
+
+    /// <summary>
+    /// Schreibt die ganze Vorgabe; ein Wert außerhalb der Grenzen wird benannt abgelehnt
+    /// (<c>Desinfektionsvorgabe.Pruefen</c>), ein gescheitertes Schreiben setzt den Abschnitt zurück.
+    /// </summary>
+    private void DesinfektionSchreiben(WindowsFormsApplication1.Desinfektionsvorgabe neu)
+    {
+        if (Parameter?.DesinfektionSchreiben is null) return;
+        string? fehler = WindowsFormsApplication1.Desinfektionsvorgabe.Pruefen(neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (fehler != null)
+        {
+            _desinfektionSchluessel++;
+            Melden(fehler, WarnStufe.Warnung);
+            return;
+        }
+        var normal = new WindowsFormsApplication1.Desinfektionsvorgabe(neu.Aktiv, neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (Parameter.DesinfektionSchreiben(normal))
+        {
+            _parameter.Desinfektion = normal;
+        }
+        else
+        {
+            _desinfektionSchluessel++;
+            Melden(Resource.SIMKONF_DESINFEKTION_FEHLER, WarnStufe.Warnung);
+        }
+    }
+
+    private void AufheizZeilenLaden()
+        => _aufheizZeilen = Parameter?.AufheizHerleitung?.Invoke() ?? Array.Empty<string>();
+
+    private void AufheizSchalterGesetzt(bool an)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(an, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+    }
+
+    private void AufheizBemessungGewaehlt(int? index)
+    {
+        if (index is null) return;
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        string? bemessung = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, bemessung!, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+    }
+
+    private void AufheizAbzugGesetzt(double? wert)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, wert, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+    }
+
+    /// <summary>Die Reserve kommt in Prozent und wird als Anteil gespeichert (Festlegung 15).</summary>
+    private void AufheizReserveGesetzt(double? prozent)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        double? anteil = prozent is double p ? p / 100.0 : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent));
+    }
+
+    private void AufheizArtGewaehlt(int? index)
+    {
+        if (index is null) return;
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        string? art = index.Value == 1 ? WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST : null;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, art!, a.AufschlagH, a.AufschlagProzent));
+    }
+
+    /// <summary>
+    /// Der Aufschlag in Stunden (Welle O1b, E59 (2)); 0 und leer werden NULL — die Normalisierung macht
+    /// der Record (Festlegung 36), die Grenzen 0 … 24 das Feld.
+    /// </summary>
+    private void AufheizAufschlagHGesetzt(int? stunden)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                    stunden, a.AufschlagProzent));
+    }
+
+    /// <summary>Der Aufschlag in Prozent von n (Welle O1b, E59 (2)); 0 und leer werden NULL (Festlegung 36).</summary>
+    private void AufheizAufschlagProzentGesetzt(double? prozent)
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizung;
+        AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                    a.AufschlagH, prozent));
+    }
+
+    /// <summary>
+    /// Die Zeile bei Schalter aus mit gespeichertem Aufschlag (Festlegung 36: aus behält ihn) — sie nennt
+    /// beide Werte und den Grund, warum er nicht wirkt.
+    /// </summary>
+    private string AufschlagAusZeile
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_AUFH_AUFSCHLAG_HRL_AUS,
+                         Aufheizung.AufschlagHWirksam.ToString(System.Globalization.CultureInfo.CurrentCulture),
+                         Aufheizung.AufschlagProzentWirksam.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
+
+    /// <summary>
+    /// Schreibt die ganze Einstellung SOFORT über die Naht der Hülle (Muster Kühlschalter). Steht
+    /// danach nicht die gewünschte Einstellung, zeigt der Abschnitt wieder den gespeicherten Stand
+    /// (@key), und die Fußzeile meldet es — kein stilles Zurückspringen.
+    /// </summary>
+    private void AufheizSchreiben(WindowsFormsApplication1.Aufheizvorgabe neu)
+    {
+        if (Parameter?.AufheizvorgabeSchreiben is null) return;
+        if (neu.Equals(Aufheizung)) return;
+
+        if (Parameter.AufheizvorgabeSchreiben(neu))
+        {
+            _parameter.Aufheizung = neu;
+            AufheizZeilenLaden();
+            return;
+        }
+
+        _aufheizSchluessel++;
+        Melden(Resource.SIMKONF_AUFH_MSG_FEHLER, WarnStufe.Warnung);
     }
 
     /// <summary>
@@ -1343,6 +2356,18 @@
         Dienste?.AuslegungOeffnen?.Invoke();
     }
 
+    /// <summary>
+    /// Wechselt auf die Ansicht „Pufferspeicher-Auslegung" (Stufe P2): mit dem einzigen Puffer
+    /// des Projekts, sonst für einen neuen. Der Rückweg führt über den Stapel der Wurzel hierher
+    /// zurück, und die Speicherspalte liest dabei frisch.
+    /// </summary>
+    private void PufferAuslegungOeffnen()
+    {
+        if (IdProjekt <= 0) return;
+        int idPuffer = _daten.Speicher.Count == 1 ? _daten.Speicher[0].IdPuffer : 0;
+        Dienste?.PufferAuslegungOeffnen?.Invoke(idPuffer);
+    }
+
     // =====================================================================
     // Fusszeile
     // =====================================================================
@@ -1396,6 +2421,15 @@
     private const string PRAEFIX_ERZEUGER = "ERZEUGER_";
     private const string PRAEFIX_SPEICHER = "SPEICHER_";
 
+    /// <summary>Auftrag KS: Kaeltespeicher der Kaeltebahn (SchemaModell.PRAEFIX_KAELTE_SPEICHER).</summary>
+    private const string PRAEFIX_KAELTE_SPEICHER = "KSPEICHER_";
+
+    /// <summary>Auftrag KS-2: Kaelteerzeuger der Kaeltebahn (SchemaModell.PRAEFIX_KAELTE_ERZEUGER).</summary>
+    private const string PRAEFIX_KAELTE_ERZEUGER = "KERZEUGER_";
+
+    /// <summary>Auftrag KS-2: Rueckkuehlung bzw. Quelle der Kaeltebahn (SchemaModell.PRAEFIX_KAELTE_QUELLE).</summary>
+    private const string PRAEFIX_KAELTE_QUELLE = "KQUELLE_";
+
     private static int IdAusSchluessel(string schluessel, string praefix)
     {
         if (string.IsNullOrEmpty(schluessel) ||
@@ -1421,30 +2455,46 @@
     }
 
     /// <summary>
-    /// Doppelklick im Schema — DERSELBE Editor wie an der Kachel
-    /// (woertlich <c>SchemaBearbeiten</c>:302-342).
+    /// Der Weg eines Doppelklicks im Schema — EINE Entscheidung fuer Doppelklick,
+    /// Eingabetaste und Tooltipp (Auftrag KS-2). <see cref="SchemaBearbeiten"/> fuehrt ihn
+    /// aus, <see cref="SchemaEditorhinweis"/> sagt dem Baustein, ob es ihn gibt.
     /// </summary>
-    private void SchemaBearbeiten(string schluessel)
+    private enum Schemaweg
     {
-        if (string.IsNullOrEmpty(schluessel) || IdProjekt <= 0) return;
+        /// <summary>Kein Editor — das Element traegt keinen Doppelklick.</summary>
+        Keiner,
 
-        _auswahl = schluessel;
+        /// <summary>Die Pufferverwaltung (Puffer und Kaeltespeicher).</summary>
+        Pufferverwaltung,
+
+        /// <summary>Der Senkendialog — der Standard-Editor einer Erzeugerkachel.</summary>
+        Waermesenke,
+
+        /// <summary>Die Quellenwahl — wie der Quellen-Chip der Kachel.</summary>
+        Waermequelle,
+
+        /// <summary>Die Kaeltemaschinen des Projekts — derselbe Weg wie die Kachel „Kühlung und Kälteanlagen“.</summary>
+        Kaeltemaschinen
+    }
+
+    /// <summary>Welcher Weg gehoert zu DIESEM Schluessel, und welche Anlagenzeile traegt ihn?</summary>
+    private (Schemaweg Weg, ErzeugerZeile? Zeile, int IdPuffer, bool Rueckkuehlung) SchemawegZu(string schluessel)
+    {
+        if (string.IsNullOrEmpty(schluessel) || IdProjekt <= 0) return (Schemaweg.Keiner, null, 0, false);
 
         int idPuffer = IdAusSchluessel(schluessel, PRAEFIX_SPEICHER);
-        if (idPuffer > 0)
-        {
-            _offenerSpeicher = idPuffer;
-            PufferVerwaltungOeffnen(idPuffer);
-            return;
-        }
+        if (idPuffer > 0) return (Schemaweg.Pufferverwaltung, null, idPuffer, false);
+
+        // Auftrag KS: Der Kaeltespeicher oeffnet dieselbe Pufferverwaltung.
+        int idKaeltespeicher = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_SPEICHER);
+        if (idKaeltespeicher > 0) return (Schemaweg.Pufferverwaltung, null, idKaeltespeicher, false);
 
         int idAnlage = IdAusSchluessel(schluessel, PRAEFIX_ERZEUGER);
         if (idAnlage > 0)
         {
             // Der Senkendialog ist der Standard-Editor einer Erzeugerkachel.
             ErzeugerZeile? erz = ZeileZuAnlage(idAnlage);
-            if (erz is not null) WaermesenkeBearbeiten(erz);
-            return;
+            return erz is null ? (Schemaweg.Keiner, null, 0, false) : (Schemaweg.Waermesenke, erz, 0, false);
         }
 
         int idQuelle = IdAusSchluessel(schluessel, PRAEFIX_QUELLE);
@@ -1453,8 +2503,111 @@
             // Wie der Quellen-Chip der Kachel: nur Arten mit Quellenwahl bekommen
             // den Editor, die uebrigen bleiben stumm (Etappe D5b).
             ErzeugerZeile? q = ZeileZuAnlage(idQuelle);
-            if (q is not null && q.QuellenwahlMoeglich) WaermequelleBearbeiten(q);
+            return q is not null && q.QuellenwahlMoeglich
+                ? (Schemaweg.Waermequelle, q, 0, false) : (Schemaweg.Keiner, null, 0, false);
         }
+
+        // Auftrag KS-2: die Kaeltebahn. Die Waermepumpe im Kuehlbetrieb oeffnet, was ihr
+        // Kasten in der Waermebahn oeffnet; die Kaeltemaschine ihren Anlagendialog.
+        int idKaelte = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_ERZEUGER);
+        if (idKaelte > 0) return KaeltewegZu(schluessel, idKaelte, rueckkuehlung: false);
+
+        int idRueckkuehlung = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_QUELLE);
+        if (idRueckkuehlung > 0) return KaeltewegZu(schluessel, idRueckkuehlung, rueckkuehlung: true);
+
+        // Heizkreis, Warmwasser, Prozess und Kaeltekreis haben keinen Editor.
+        return (Schemaweg.Keiner, null, 0, false);
+    }
+
+    /// <summary>
+    /// Auftrag KS-2: Kaelteerzeuger und Rueckkuehlung. Ob der Kasten eine Waermepumpe ist,
+    /// sagt das Schema selbst (<c>IstWaermepumpe</c>) — die Kaeltemaschine steht in keiner
+    /// Kachelgruppe dieser Seite. Die Rueckkuehlung einer Waermepumpe ist ihre Quelle: mit
+    /// Quellenwahl die Quellenwahl, sonst der Dialog der Waermepumpe; die Rueckkuehlart einer
+    /// Kaeltemaschine steht in deren Anlagendialog — einen eigenen Rueckkuehl-Dialog gibt es nicht.
+    /// </summary>
+    private (Schemaweg Weg, ErzeugerZeile? Zeile, int IdPuffer, bool Rueckkuehlung) KaeltewegZu(
+        string schluessel, int idAnlage, bool rueckkuehlung)
+    {
+        bool waermepumpe = _schema?.Knoten.Any(k => k.Schluessel == schluessel && k.IstWaermepumpe) == true;
+        ErzeugerZeile? wp = ZeileZuAnlage(idAnlage);
+
+        if (!waermepumpe && wp is null) return (Schemaweg.Kaeltemaschinen, null, 0, rueckkuehlung);
+        if (wp is null) return (Schemaweg.Keiner, null, 0, false);
+
+        return rueckkuehlung && wp.QuellenwahlMoeglich
+            ? (Schemaweg.Waermequelle, wp, 0, true)
+            : (Schemaweg.Waermesenke, wp, 0, rueckkuehlung);
+    }
+
+    /// <summary>
+    /// Die Zeile, die der Baustein <c>Schema</c> in den Tooltipp eines Elements setzt;
+    /// <c>null</c> = kein Editor, das Element traegt dann keinen Doppelklick (KS-2).
+    /// </summary>
+    private string? SchemaEditorhinweis(string schluessel)
+    {
+        var (weg, _, _, rueckkuehlung) = SchemawegZu(schluessel);
+        return weg switch
+        {
+            Schemaweg.Pufferverwaltung => Resource.SIM_SCHEMA_DK_PUFFER,
+            Schemaweg.Waermesenke => Resource.SIM_SCHEMA_DK_SENKE,
+            Schemaweg.Waermequelle => Resource.SIM_SCHEMA_DK_QUELLE,
+            Schemaweg.Kaeltemaschinen => rueckkuehlung
+                ? Resource.SIM_SCHEMA_DK_RUECKKUEHLUNG : Resource.SIM_SCHEMA_DK_KAELTEMASCHINE,
+            _ => null
+        };
+    }
+
+    /// <summary>
+    /// Doppelklick im Schema — DERSELBE Editor wie an der Kachel
+    /// (woertlich <c>SchemaBearbeiten</c>:302-342).
+    /// </summary>
+    private void SchemaBearbeiten(string schluessel)
+    {
+        var (weg, zeile, idPuffer, _) = SchemawegZu(schluessel);
+        if (weg == Schemaweg.Keiner) return;
+
+        _auswahl = schluessel;
+
+        switch (weg)
+        {
+            case Schemaweg.Pufferverwaltung:
+                if (IdAusSchluessel(schluessel, PRAEFIX_SPEICHER) > 0) _offenerSpeicher = idPuffer;
+                PufferVerwaltungOeffnen(idPuffer);
+                break;
+            case Schemaweg.Waermesenke when zeile is not null:
+                WaermesenkeBearbeiten(zeile);
+                break;
+            case Schemaweg.Waermequelle when zeile is not null:
+                WaermequelleBearbeiten(zeile);
+                break;
+            case Schemaweg.Kaeltemaschinen:
+                // KB-B (E117 F5): die Konfiguration in der Seite; ohne Weg der Dialog ueber die Navigation.
+                int idKm = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_ERZEUGER);
+                if (idKm <= 0) idKm = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_QUELLE);
+                if (!KaeltemaschineKonfigurationOeffnen(idKm)) KaeltemaschinenOeffnen();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Auftrag KS-2: oeffnet die Kaeltemaschinen des Projekts ueber <c>Dienste.Navigation</c> —
+    /// DERSELBE Weg wie die Kachel „Kühlung und Kälteanlagen“ (<c>ErzeugerReiter</c>, KT-2).
+    /// Lehnt die Naht ab, steht der Grund im Banner dieser Seite, benannt wie dort: ohne
+    /// gezeichnete Wurzel „keine Oberfläche“, sonst „führt die Ansicht nicht“. Was die Wurzel
+    /// beim Aufbau der Ansicht ablehnt (kein Projekt, Ausnahme in den Gaben), zeigt sie selbst.
+    /// </summary>
+    private void KaeltemaschinenOeffnen()
+    {
+        bool offen = WindowsFormsApplication1.Dienste.Navigation
+            .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, "");
+        if (offen) return;
+
+        string grund = EPOS.UI.Dienste.Navigationsziel.Aktuell is null
+            ? Resource.WURZEL_KEINE_OBERFLAECHE : Resource.WURZEL_NICHT_GEFUEHRT;
+        Melden(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             Resource.WURZEL_ANSICHT_FEHLER, Resource.START_E_KUEHL_TITEL, grund),
+               WarnStufe.Warnung);
     }
 
     private ErzeugerZeile? ZeileZuAnlage(int idAnlage)
@@ -1805,7 +2958,13 @@
         ErzeugerZeile? zeile = _zeile;
         Ebene2Schliessen();
 
-        if (ergebnis is null || zeile is null) return;
+        if (zeile is null) return;
+        if (ergebnis is null)
+        {
+            // Abbrechen, ✕ oder Esc: Ein Lauf mit ungespeicherten Eingaben bleibt nicht stehen.
+            Dienste?.QuelleErdreichAbgebrochen?.Invoke(zeile.IdAnlage);
+            return;
+        }
 
         Dienste?.QuelleErdreichSchreiben?.Invoke(zeile.IdAnlage, ergebnis);
         Neuladen();
@@ -1882,10 +3041,34 @@
         {
             _konfigKatalog = Parameter?.WaermepumpeTraegerkatalog?.Invoke()
                              ?? Array.Empty<EnergietraegerWahl.Eintrag>();
-            _konfigKuehlung = Parameter?.WaermepumpeKuehlGaben?.Invoke();
+            _konfigKuehlung = MitFreiSperrgrund(Parameter?.WaermepumpeKuehlGaben?.Invoke(), zeile);
         }
 
         _ebene1 = Editor.Komponentenkonfig;
+    }
+
+    /// <summary>
+    /// Die Kühlgaben samt Sperrgrund der freien Kühlung (KU3-6, F2), wenn der Weg ihn nicht
+    /// selbst reicht: Die Kartenzeile kennt die Bauart (<c>BauartGebunden</c> = Luft-Wasser oder
+    /// ungepflegt) und die Seite den Quellentyp der Anlage. Ohne Quellenweg prüft der Grund
+    /// allein die Bauart.
+    /// </summary>
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? MitFreiSperrgrund(
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? gaben, ErzeugerZeile zeile)
+    {
+        if (gaben is null || gaben.FreiSperrgrund is not null) return gaben;
+        int idAnlage = zeile.IdAnlage;
+        bool luft = zeile.BauartGebunden;
+        return new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben
+        {
+            Vorlaeufe = gaben.Vorlaeufe,
+            Sperrgrund = gaben.Sperrgrund,
+            Stromtraeger = gaben.Stromtraeger,
+            ProjektStromtraeger = gaben.ProjektStromtraeger,
+            FreiSperrgrund = _ => EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus(
+                luft ? WindowsFormsApplication1.DbWerte.WP_BAUART_LUFT_WASSER : null,
+                Dienste?.QuelleTyp?.Invoke(idAnlage), null)
+        };
     }
 
     /// <summary>
@@ -1923,6 +3106,10 @@
             case Komponentenart.Heizkessel:
                 if (werte.Bereitschaft != _parameter.Bereitschaft)
                     Parameter?.BereitschaftSchreiben?.Invoke(werte.Bereitschaft);
+                // Die Heizgrenze der Kesselbereitschaft - der Dialog hat sie beim OK geprüft;
+                // leer (null) schreibt NULL und damit die Vorgabe.
+                if (werte.Heizgrenze != _parameter.Heizgrenze)
+                    Parameter?.HeizgrenzeSchreiben?.Invoke(werte.Heizgrenze);
                 break;
         }
 

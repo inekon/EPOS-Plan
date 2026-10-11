@@ -27,6 +27,10 @@ public sealed record PspProjektzeile(int Id, string Anzeige);
 /// <para>Die beiden Leistungsgrenzen führen dagegen <c>0</c> für „unbegrenzt" und
 /// werden als LEERES Feld gezeigt: Eine „0" in einem Leistungsfeld liest sich wie
 /// „keine Leistung" und meint das Gegenteil.</para>
+///
+/// <para><b>Die Optionen der Welle M7</b> (Konzept Simulationsablauf 21) stehen dahinter, alle
+/// leer = Rechnung wie zuvor: Bereitschaftsweg (<c>tag</c>/<c>temperatur</c>), Aufstellraum [°C],
+/// Zonenanteile als Text, Frischwassermodul und seine Grädigkeit [K].</para>
 /// </summary>
 public sealed record PspSchichtdaten(
     int Schichten = 1,
@@ -37,7 +41,12 @@ public sealed record PspSchichtdaten(
     double? EntnahmeBW = null,
     double? EntnahmeProzess = null,
     double LadeleistungMax = 0,
-    double EntladeleistungMax = 0);
+    double EntladeleistungMax = 0,
+    string? BereitschaftWeg = null,
+    double? AufstellraumC = null,
+    string? SchichtAnteile = null,
+    bool Frischwassermodul = false,
+    double? FwmGraedigkeitK = null);
 
 /// <summary>
 /// Der vollständige Stand EINES Projektpuffers — was der Dialog beim Auswählen in
@@ -60,7 +69,9 @@ public sealed record PspPufferstand(
     bool Heizung,
     bool Brauchwasser,
     bool Prozess,
-    PspSchichtdaten Schicht);
+    PspSchichtdaten Schicht,
+    string? Katalogherkunft = null,
+    bool Kaelte = false);
 
 /// <summary>
 /// Was der Dialog beim Übernehmen aus seinen Feldern liest — der Satz, der an
@@ -93,7 +104,8 @@ public sealed record PspEingaben(
     bool Brauchwasser,
     bool Prozess,
     PspSchichtdaten Schicht,
-    int Katalogzeile);
+    int Katalogzeile,
+    bool Kaelte = false);
 
 /// <summary>
 /// Eine Zeile der Kontrollanzeige „Ladereihenfolge dieses Speichers" — alle sechs

@@ -28,14 +28,23 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_ZEILE_KATALOG</c></summary>
     public string ZeileKatalog { get; set; } = Resource.GEBZ_ZEILE_KATALOG;
 
+    /// <summary><c>GEBZ_ZEILE_KATALOG_ZONEN</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile (Welle ZK-b).</summary>
+    public string ZeileKatalogZonen { get; set; } = Resource.GEBZ_ZEILE_KATALOG_ZONEN;
+
     /// <summary><c>GEBZ_BTN_UEBERNEHMEN</c></summary>
     public string KnopfUebernehmen { get; set; } = Resource.GEBZ_BTN_UEBERNEHMEN;
 
     /// <summary><c>GEBZ_HINWEIS_UEBERNEHMEN</c> — die leise Erklärzeile unter dem Knopf.</summary>
     public string HinweisUebernehmen { get; set; } = Resource.GEBZ_HINWEIS_UEBERNEHMEN;
 
-    /// <summary><c>GEBZ_SPERRE_KATALOG</c></summary>
-    public string SperreKatalog { get; set; } = Resource.GEBZ_SPERRE_KATALOG;
+    /// <summary><c>GEBZ_SPERRE_OHNE_WEG</c> — kein Zonenweg (ohne Gaben).</summary>
+    public string SperreOhneWeg { get; set; } = Resource.GEBZ_SPERRE_OHNE_WEG;
+
+    /// <summary><c>GEBZ_SPERRE_UEBERNAHME_KATALOG</c> — die Übernahme „als eine Zone" im Katalogsatz (Welle ZK-b).</summary>
+    public string SperreUebernahmeKatalog { get; set; } = Resource.GEBZ_SPERRE_UEBERNAHME_KATALOG;
+
+    /// <summary><c>GEBZ_HINWEIS_SPEICHERN_UNTER_KATALOG</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile (Welle ZK-b).</summary>
+    public string HinweisSpeichernUnterKatalog { get; set; } = Resource.GEBZ_HINWEIS_SPEICHERN_UNTER_KATALOG;
 
     /// <summary><c>GEBZ_SPERRE_ZONE</c> — {0} Zone.</summary>
     public string SperreZone { get; set; } = Resource.GEBZ_SPERRE_ZONE;
@@ -309,6 +318,18 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_SP_AUFBAU</c></summary>
     public string SpalteAufbau { get; set; } = Resource.ZONDLG_SP_AUFBAU;
 
+    /// <summary>Filter der Bauteiltabelle „ohne vollständige Zuordnung" (<c>ZOND_FILTER_UNVOLLSTAENDIG</c>, BA-3).</summary>
+    public string FilterUnvollstaendig { get; set; } = Resource.ZOND_FILTER_UNVOLLSTAENDIG;
+
+    /// <summary>Kurztext der Stufe in der Spalte „Aufbau": {0} Stufe, {1} Name (<c>ZOND_AUFBAU_TITEL</c>).</summary>
+    public string AufbauTitel { get; set; } = Resource.ZOND_AUFBAU_TITEL;
+
+    /// <summary>Die Namen der Zuordnungsstufen (<c>GANS_STUFE_A</c> … <c>GANS_STUFE_OHNE</c>).</summary>
+    public IReadOnlyList<string> Aufbaustufen { get; set; } = new[]
+    {
+        Resource.GANS_STUFE_A, Resource.GANS_STUFE_B, Resource.GANS_STUFE_C, Resource.GANS_STUFE_TRANSPARENT, Resource.GANS_STUFE_OHNE,
+    };
+
     /// <summary><c>GEBZ_SP_AKTIONEN</c></summary>
     public string SpalteAktionen { get; set; } = Resource.GEBZ_SP_AKTIONEN;
 
@@ -392,6 +413,33 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_LBL_STRAHLUNG</c></summary>
     public string LabelStrahlungsanteil { get; set; } = Resource.ZONDLG_LBL_STRAHLUNG;
 
+    /// <summary><c>ZONDLG_GRP_KUEHLUNG</c> — die Kühlgruppe der Zone (KU3-3).</summary>
+    public string KuehlGruppe { get; set; } = Resource.ZONDLG_GRP_KUEHLUNG;
+
+    /// <summary><c>ZONDLG_LBL_KUEHLUNG_AKTIV</c></summary>
+    public string KuehlLabelAktiv { get; set; } = Resource.ZONDLG_LBL_KUEHLUNG_AKTIV;
+
+    /// <summary><c>ZONDLG_LBL_KUEHLLEISTUNG_MAX</c></summary>
+    public string KuehlLabelLeistungMax { get; set; } = Resource.ZONDLG_LBL_KUEHLLEISTUNG_MAX;
+
+    /// <summary><c>ZONDLG_ZEILE_KUEHLUNG</c> — wo die Kühlsollwerte der Zone stehen und was der Projektschalter tut.</summary>
+    public string KuehlZeile { get; set; } = Resource.ZONDLG_ZEILE_KUEHLUNG;
+
+    /// <summary><c>ZONDLG_LBL_KUEHL_UEBERGABE_ART</c></summary>
+    public string KuehlLabelUebergabeArt { get; set; } = Resource.ZONDLG_LBL_KUEHL_UEBERGABE_ART;
+
+    /// <summary><c>ZONDLG_LBL_KUEHL_UEBERGABE_EXPONENT</c></summary>
+    public string KuehlLabelUebergabeExponent { get; set; } = Resource.ZONDLG_LBL_KUEHL_UEBERGABE_EXPONENT;
+
+    /// <summary><c>ZONDLG_LBL_KUEHL_UEBERGABE_NENNLEISTUNG</c></summary>
+    public string KuehlLabelUebergabeNennleistung { get; set; } = Resource.ZONDLG_LBL_KUEHL_UEBERGABE_NENNLEISTUNG;
+
+    /// <summary><c>ZONDLG_KUEHLUEBERGABE_WIE_GEBAEUDE</c> — der erste Eintrag der Art (leer = wie Gebäude).</summary>
+    public string KuehlUebergabeWieGebaeude { get; set; } = Resource.ZONDLG_KUEHLUEBERGABE_WIE_GEBAEUDE;
+
+    /// <summary><c>ZONDLG_ZEILE_KUEHLUEBERGABE</c> — was je Zone gilt und was allein am Gebäude steht.</summary>
+    public string KuehlUebergabeZeile { get; set; } = Resource.ZONDLG_ZEILE_KUEHLUEBERGABE;
+
     /// <summary><c>ZONDLG_LBL_HEIZLEISTUNG_MAX</c></summary>
     public string LabelHeizleistungMax { get; set; } = Resource.ZONDLG_LBL_HEIZLEISTUNG_MAX;
 
@@ -439,6 +487,83 @@ public sealed class ZonenDialogTexte
 
     /// <summary><c>ZONDLG_MSG_VOLUMEN</c> — {0} Zone.</summary>
     public string MeldungVolumen { get; set; } = Resource.ZONDLG_MSG_VOLUMEN;
+
+    // ---- Der Abschnitt „Übergabe" (E63, AK1z) ----
+
+    /// <summary><c>ZONDLG_UEBERGABE_GRUPPE</c></summary>
+    public string UebergabeGruppe { get; set; } = Resource.ZONDLG_UEBERGABE_GRUPPE;
+
+    /// <summary><c>GEBK_LBL_UEBERGABE_ART</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelArt { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_UEBERGABE_ART);
+
+    /// <summary><c>GEBK_LBL_UEBERGABE_EXPONENT</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelExponent { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_UEBERGABE_EXPONENT);
+
+    /// <summary><c>GEBK_LBL_UEBERGABE_NENNLEISTUNG</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelNennleistung { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_UEBERGABE_NENNLEISTUNG);
+
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_VORLAUF</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelVorlauf { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_AUSLEGUNG_VORLAUF);
+
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_RUECKLAUF</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelRuecklauf { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_AUSLEGUNG_RUECKLAUF);
+
+    /// <summary><c>GEBK_LBL_AUSLEGUNG_RAUM</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelRaum { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_AUSLEGUNG_RAUM);
+
+    /// <summary><c>GEBK_LBL_PROPORTIONALBAND</c> ohne Doppelpunkt (Hausblatt des Zonendialogs).</summary>
+    public string UebergabeLabelBand { get; set; } = OhneDoppelpunkt(Resource.GEBK_LBL_PROPORTIONALBAND);
+
+    /// <summary><c>ZONDLG_UEBERGABE_WIE_GEBAEUDE</c> — {0} Art des Gebäudes.</summary>
+    public string UebergabeWieGebaeude { get; set; } = Resource.ZONDLG_UEBERGABE_WIE_GEBAEUDE;
+
+    /// <summary><c>ZONDLG_UEBERGABE_PLATZHALTER</c> — {0} wirksamer Wert.</summary>
+    public string UebergabePlatzhalter { get; set; } = Resource.ZONDLG_UEBERGABE_PLATZHALTER;
+
+    /// <summary><c>ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG</c></summary>
+    public string UebergabePlatzhalterNennleistung { get; set; } = Resource.ZONDLG_UEBERGABE_PLATZHALTER_NENNLEISTUNG;
+
+    /// <summary><c>ZONDLG_UEBERGABE_HERKUNFT_ZONE</c></summary>
+    public string UebergabeHerkunftZone { get; set; } = Resource.ZONDLG_UEBERGABE_HERKUNFT_ZONE;
+
+    /// <summary><c>ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE</c></summary>
+    public string UebergabeHerkunftGebaeude { get; set; } = Resource.ZONDLG_UEBERGABE_HERKUNFT_GEBAEUDE;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_ART</c> — {0} Art, {1} Herkunft, {2} Exponent, {3}/{4} Auslegung, {5} Band.</summary>
+    public string UebergabeZeileArt { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_ART;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_IDEAL</c> — {0} Herkunft.</summary>
+    public string UebergabeZeileIdeal { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_IDEAL;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS</c></summary>
+    public string UebergabeZeileHeizkreisAus { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_HEIZKREIS_AUS;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS</c></summary>
+    public string UebergabeZeileProjektAus { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS;
+
+    /// <summary><c>ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT</c></summary>
+    public string UebergabeZeileUnbeheizt { get; set; } = Resource.ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT;
+
+    /// <summary><c>ZONE_MSG_UEBERGABEART</c> — {0} Zone, {1} Wert.</summary>
+    public string MeldungUebergabeArt { get; set; } = Resource.ZONE_MSG_UEBERGABEART;
+
+    /// <summary><c>ZONE_MSG_AUSLEGUNG_VORLAUF</c> — {0} Zone, {1} Wert, {2}/{3} Band.</summary>
+    public string MeldungUebergabeVorlauf { get; set; } = Resource.ZONE_MSG_AUSLEGUNG_VORLAUF;
+
+    /// <summary><c>ZONE_MSG_AUSLEGUNG_RUECKLAUF</c> — {0} Zone, {1} Rücklauf, {2} Vorlauf.</summary>
+    public string MeldungUebergabeRuecklauf { get; set; } = Resource.ZONE_MSG_AUSLEGUNG_RUECKLAUF;
+
+    /// <summary><c>ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR</c> — {0} Zone, {1} Wert, {2}/{3} Band.</summary>
+    public string MeldungUebergabeRaum { get; set; } = Resource.ZONE_MSG_AUSLEGUNG_RAUMTEMPERATUR;
+
+    /// <summary><c>ZONE_MSG_PROPORTIONALBAND</c> — {0} Zone, {1} Wert, {2}/{3} Band.</summary>
+    public string MeldungUebergabeBand { get; set; } = Resource.ZONE_MSG_PROPORTIONALBAND;
+
+    /// <summary>Eine Beschriftung des Gebäudedialogs („… :") in der Schreibweise des Zonendialogs, ohne Doppelpunkt.</summary>
+    private static string OhneDoppelpunkt(string text) => (text ?? "").TrimEnd(' ', ':');
+
+    /// <summary>Der Anzeigename einer Übergabeart (<c>GEBK_UEBERGABE_*</c>, aus dem Kern).</summary>
+    public Func<string?, string> UebergabeArtname { get; set; } = a => WindowsFormsApplication1.Waermeuebergabevorgaben.Anzeigename(a);
 
     /// <summary><c>ALLG_BTN_OK</c></summary>
     public string Ok { get; set; } = Resource.ALLG_BTN_OK;

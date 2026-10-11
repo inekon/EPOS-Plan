@@ -15,11 +15,15 @@ namespace WindowsFormsApplication1
         /// Träger kommen aus dem Wertesatz (<paramref name="traegername"/>).
         /// </summary>
         public static Berichtstabelle Kaelteerzeuger(ErgebnisWaermepumpeModel wp, Func<int, string> traegername,
-                                                     bool englisch, CultureInfo kultur)
+                                                     bool englisch, CultureInfo kultur,
+                                                     IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null)
         {
             var zeilen = (wp?.Module ?? new List<ErgebnisWaermepumpeModulModel>())
                 .Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
-            if (zeilen.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
+            // KU3-4: die Kältemaschinen nach den Wärmepumpen - Netzbezug und Träger seit Schritt 184 (KU3-4d).
+            var km = (maschinen ?? Array.Empty<ErgebnisKaeltemaschineModel>())
+                .Where(k => k != null && k.Kaelteproduktion_MWh > 0).ToList();
+            if (zeilen.Count == 0 && km.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
 
             var t = new Berichtstabelle().Feste(2600, 1200, 1300, 1000, 1300, 0);
             string[] titel = { "Anlage", "Kälte [MWh/a]", "Kältestrom [MWh/a]", "EER", "aus dem Netz [MWh/a]", "Stromträger" };
@@ -47,6 +51,23 @@ namespace WindowsFormsApplication1
                     Zellen.Text(ProjektbeschreibungBaustein.KuehltraegerText(m, traegername)),
                 });
             }
+            foreach (ErgebnisKaeltemaschineModel k in km)
+            {
+                string name = string.IsNullOrEmpty(k.Bezeichner) ? Tabellenzelle.STRICH : k.Bezeichner;
+                if (k.Anzahl > 1) name += " (" + k.Anzahl.ToString(kultur) + " ×)";
+                t.Zeile(new[]
+                {
+                    Zellen.Text(name),
+                    zahl(k.Kaelteproduktion_MWh, "MWh/a"),
+                    zahl(k.Stromverbrauch_MWh, "MWh/a"),
+                    zahl(k.Stromverbrauch_MWh > 0 ? k.Kaelteproduktion_MWh / k.Stromverbrauch_MWh : (double?)null, null),
+                    // KU3-4d: Netzbezug und Träger aus der Ergebniszeile (Schritt 184); ein Lauf davor bleibt „—".
+                    zahl(k.Kaeltestrom_Netzbezug_MWh, "MWh/a"),
+                    Zellen.Text(k.Kaeltestrom_Netzbezug_MWh.HasValue
+                        ? ProjektbeschreibungBaustein.KuehltraegerText(k.Kuehl_CarrierId, k.Kuehl_EigenerZaehler, traegername)
+                        : Tabellenzelle.STRICH),
+                });
+            }
             return t;
         }
 
@@ -55,15 +76,19 @@ namespace WindowsFormsApplication1
         /// Wärmebedarf, die drei Spitzenwerte und auf dem VDI-Weg die Kühl- und Raumkennzahlen; die Tafel, die das
         /// Kapitel „Projektbeschreibung“ je Gebäude schreibt.
         /// </summary>
-        public static Berichtstabelle Gebaeudeergebnis(ErgebnisGebaeudeModel g, bool englisch, CultureInfo kultur)
+        /// <param name="aufschlag">KP3 Welle O3a: der Aufschlag der Projekteinstellung (<see cref="Aufheizbericht.Aufschlag"/>);
+        /// <c>null</c> = keiner.</param>
+        public static Berichtstabelle Gebaeudeergebnis(ErgebnisGebaeudeModel g, bool englisch, CultureInfo kultur,
+                                                       (double? H, double? Prozent)? aufschlag = null)
         {
             if (g == null) return Leer(nameof(RR.BV_GRUND_KEIN_GEBAEUDE), kultur);
-            return Eigenschaftstabelle(Gebaeudepaare(g, kultur), englisch);
+            return Eigenschaftstabelle(Gebaeudepaare(g, kultur).Concat(Aufheizbericht.Zeilen(g, aufschlag, kultur)), englisch);
         }
 
         /// <summary>
         /// <b><c>tabelle.gebaeude.ergebnis</c></b> — die Kennzahlen aller Gebäude des Stamms in einer Tafel: je Gebäude eine
-        /// Gruppenzeile mit seinem Namen, darunter seine Zeilen wie in <see cref="Gebaeudeergebnis"/>.
+        /// Gruppenzeile mit seinem Namen, darunter seine Zeilen wie in <see cref="Gebaeudeergebnis"/>; mit Anlass die
+        /// benannten Hinweise W1–W5 als Zeile „Hinweise“ (KP3 Welle O3a, Muster der Warnliste der Pufferauslegung).
         /// </summary>
         public static Berichtstabelle Gebaeudeergebnisse(VariantenDaten stamm, bool englisch, CultureInfo kultur)
         {
@@ -72,6 +97,7 @@ namespace WindowsFormsApplication1
             if (zeilen.Count == 0) return Leer(nameof(RR.BV_GRUND_KEIN_GEBAEUDE), kultur);
 
             var t = new Berichtstabelle().Feste(2800, 0);
+            (double? H, double? Prozent)? aufschlag = Aufheizbericht.Aufschlag(stamm.Details);
             foreach (ErgebnisGebaeudeModel g in zeilen)
             {
                 t.Zeile(new[]
@@ -80,7 +106,48 @@ namespace WindowsFormsApplication1
                                 rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
                     Zellen.Text("", rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
                 }, Tabellenrolle.Gruppe);
-                foreach (Tabellenzeile z in Gebaeudeergebnis(g, englisch, kultur).Zeilen) t.Zeile(z.Zellen, z.Rolle);
+                foreach (Tabellenzeile z in Gebaeudeergebnis(g, englisch, kultur, aufschlag).Zeilen) t.Zeile(z.Zellen, z.Rolle);
+                List<string> hinweise = Aufheizbericht.Hinweise(g, kultur);
+                if (hinweise.Count > 0)
+                    t.Zeile(new[]
+                    {
+                        Zellen.Text(Grund(nameof(RR.BV_AUFH_HINWEISE), kultur), fett: true, h: Tabellenhinterlegung.Stamm),
+                        Zellen.Text(string.Join("\n", hinweise)),
+                    });
+            }
+            return t;
+        }
+
+        /// <summary>
+        /// <b><c>tabelle.pufferauslegung</c></b> (Katalog v12, Welle P4c) — die gespeicherten Pufferauslegungen des Stamms
+        /// in einer Tafel: je Auslegung eine Gruppenzeile mit dem Puffernamen, darunter dieselben Eigenschaftspaare wie
+        /// im Baustein (<see cref="ProjektbeschreibungBaustein.PufferauslegungPaare"/>), der Hinweis zur Nachrechnung und
+        /// die Warnliste. Steht der Platzhalter in der Vorlage, entfällt der Standardabschnitt des Bausteins.
+        /// </summary>
+        public static Berichtstabelle Pufferauslegung(VariantenDaten stamm, CultureInfo kultur)
+        {
+            if (stamm == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAMM), kultur);
+            List<PufferAuslegungGespeichert> zeilen = stamm.Pufferauslegungen;
+            if (zeilen == null || zeilen.Count == 0) return Leer(nameof(RR.BV_GRUND_KEINE_PUFFERAUSLEGUNG), kultur);
+
+            var t = new Berichtstabelle().Feste(2800, 0);
+            void Paar(string beschriftung, string wert) => t.Zeile(new[]
+            {
+                Zellen.Text(beschriftung, fett: true, h: Tabellenhinterlegung.Stamm),
+                Zellen.Text(string.IsNullOrEmpty(wert) ? Tabellenzelle.STRICH : wert),
+            });
+            foreach (PufferAuslegungGespeichert g in zeilen)
+            {
+                t.Zeile(new[]
+                {
+                    Zellen.Text(ProjektbeschreibungBaustein.Pufferueberschrift(g), rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
+                    Zellen.Text("", rolle: Tabellenrolle.Gruppe, fett: true, h: Tabellenhinterlegung.Kopf),
+                }, Tabellenrolle.Gruppe);
+                List<string> paare = ProjektbeschreibungBaustein.PufferauslegungPaare(g, kultur);
+                for (int i = 0; i + 1 < paare.Count; i += 2) Paar(paare[i], paare[i + 1]);
+                string nachrechnung = ProjektbeschreibungBaustein.PufferauslegungNachrechnung(g, kultur);
+                if (nachrechnung != null) Paar(RR.BER_PAUS_NACHRECHNUNG, nachrechnung);
+                Paar(RR.PAUS_GRUPPE_WARNUNGEN, string.Join("\n", ProjektbeschreibungBaustein.PufferauslegungWarnzeilen(g, kultur)));
             }
             return t;
         }
@@ -156,7 +223,10 @@ namespace WindowsFormsApplication1
             foreach (ErgebnisPufferspeicherModel p in mitWert)
                 t.Zeile(new[]
                 {
-                    Zellen.Text(string.IsNullOrWhiteSpace(p.Bezeichner) ? Tabellenzelle.STRICH : p.Bezeichner),
+                    // KU3-4d: Ein Kältespeicher mit Temperaturen nennt seine Rolle - die Werte sind kalt, nicht warm.
+                    Zellen.Text((string.IsNullOrWhiteSpace(p.Bezeichner) ? Tabellenzelle.STRICH : p.Bezeichner) +
+                                (WaermesenkeClass.IstKaelteVerwendung(p.Verwendung)
+                                    ? " (" + BerichtTexte.T("Kältespeicher", englisch) + ")" : "")),
                     new Tabellenzelle { Text = Tabellenformat.F(p.T_oben_Mittel.Value, 1, kultur), Zahl = p.T_oben_Mittel,
                                         Format = "N1", Einheit = "°C", Ausrichtung = Tabellenausrichtung.Rechts },
                     Zellen.Zahl(p.T_oben_Min.HasValue ? Tabellenformat.F(p.T_oben_Min.Value, 1, kultur) : Tabellenzelle.STRICH,
@@ -164,5 +234,42 @@ namespace WindowsFormsApplication1
                 });
             return t;
         }
+
+        /// <summary>
+        /// <b><c>tabelle.kaeltespeicher</c></b> (Katalog v12, KU3-4d) — je Kältespeicher des Stamms Kapazität, Ladung,
+        /// Entladung, Wärmeeintrag (die Verluste eines Kältespeichers sind Wärme von außen) und Vollzyklen aus
+        /// <c>Tab_ErgebnisPufferspeicher</c>. Leer ohne Kältespeicher.
+        /// </summary>
+        public static Berichtstabelle Kaeltespeicher(VariantenDaten stamm, bool englisch, CultureInfo kultur)
+        {
+            if (stamm == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAMM), kultur);
+            if (stamm.Ergebnis == null || stamm.Ergebnis.Pufferspeicher == null) return Leer(nameof(RR.BV_GRUND_KEIN_ERGEBNIS), kultur);
+            List<ErgebnisPufferspeicherModel> kalt = KaeltespeicherDesStamms(stamm);
+            if (kalt.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
+
+            var t = new Berichtstabelle().Feste(2600, 1300, 1300, 1300, 1300, 1000);
+            string[] titel = { "Kältespeicher", "Kapazität [kWh]", "Ladung [MWh/a]", "Entladung [MWh/a]",
+                               "Wärmeeintrag [MWh/a]", "Vollzyklen" };
+            t.MitKopf(titel.Select((x, i) => Zellen.Kopf(BerichtTexte.T(x, englisch),
+                                                        i == 0 ? Tabellenausrichtung.Links : Tabellenausrichtung.Rechts)));
+            Func<double, int, string, Tabellenzelle> zahl = (w, dez, einheit) =>
+                Zellen.Zahl(Tabellenformat.F(w, dez, kultur), w, "N" + dez.ToString(CultureInfo.InvariantCulture), einheit: einheit);
+            foreach (ErgebnisPufferspeicherModel p in kalt)
+                t.Zeile(new[]
+                {
+                    Zellen.Text(string.IsNullOrWhiteSpace(p.Bezeichner) ? Tabellenzelle.STRICH : p.Bezeichner),
+                    zahl(p.Q_max, 0, "kWh"),
+                    zahl(p.Ladung_gesamt / 1000.0, 2, "MWh/a"),
+                    zahl(p.Entladung_gesamt / 1000.0, 2, "MWh/a"),
+                    zahl(p.Verluste_gesamt / 1000.0, 2, "MWh/a"),
+                    zahl(p.Vollzyklen, 1, null),
+                });
+            return t;
+        }
+
+        /// <summary>Die Kältespeicher im Ergebnis des Stamms (Verwendung Kälte), in Ergebnisreihenfolge.</summary>
+        internal static List<ErgebnisPufferspeicherModel> KaeltespeicherDesStamms(VariantenDaten stamm)
+            => (stamm?.Ergebnis?.Pufferspeicher ?? new List<ErgebnisPufferspeicherModel>())
+               .Where(p => p != null && WaermesenkeClass.IstKaelteVerwendung(p.Verwendung)).ToList();
     }
 }

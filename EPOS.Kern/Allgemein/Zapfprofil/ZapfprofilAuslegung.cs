@@ -141,7 +141,8 @@ namespace WindowsFormsApplication1
                     w.Menge = Mengengeruest.JahresenergieKwh(z, w.Art, w.Temperaturen, ps, belegung, prot, zapfHinweise);
                     w.Struktur = Formvektor.Bilden(z, w.Art, satz, ps, prot, zapfHinweise);
                     w.Kaltwasserfaktor = Kaltwassergang.Monatsfaktoren(w.Temperaturen, w.Name);
-                    w.Kalender = Zapfkalender.Bilden(e.WochentagJan1, e.We, Zapfkalender.FensterDerZone(z));
+                    w.Kalender = Zapfkalender.Bilden(e.WochentagJan1, Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, z),
+                                                     Zapfkalender.FensterDerZone(z), z.Wochenendtage, z.Feiertage);
                     w.Messwert = Mengengeruest.MesswertAus(z, w.Temperaturen, prot);
                     w.InZ1 = z.Zirkulation && w.Art.Grenze == ZapfBilanzgrenze.Zapfstelle;
                     w.ZapfungKwh = w.Menge.JahresenergieKwh;
@@ -922,7 +923,7 @@ namespace WindowsFormsApplication1
             liste.Add(new Auslegungsablehnung(w.Name, satz));
         }
 
-        /// <summary>Die Bezugsart als Begriff (<c>BEGRIFF_BEZUGSART_1</c> … <c>_7</c>).</summary>
+        /// <summary>Die Bezugsart als Begriff (<c>BEGRIFF_BEZUGSART_1</c> … <c>_8</c>).</summary>
         internal static ZapfSatz Bezugsartbegriff(ZapfBezugsart b)
             => ZapfSatz.Neu("BEGRIFF_BEZUGSART_" + ((int)b).ToString(CultureInfo.InvariantCulture));
 

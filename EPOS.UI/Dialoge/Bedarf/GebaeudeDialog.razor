@@ -47,16 +47,25 @@
 
    DER GEBAEUDEEXPORT (Stufe G7a, Welle W3): der Knopf "Exportieren (gbXML)..." neben "Huelle und
    Zonen..." oeffnet den Exportdialog als siebte Ueberlagerung - fuer die Projektkopie der markierten
-   Zeile, die ohne Kopie (eben aufgenommen) weich gesperrt ist. Hat die Zeile ungespeicherte
+   Zeile; eine eben aufgenommene Zeile ohne Kopie speichert der Klick zuerst still (ListeSpeichern). Hat die Zeile ungespeicherte
    Aenderungen, sagt der Exportdialog, dass der gespeicherte Stand exportiert wird. Nach dem
    Schreiben steht die Rueckmeldung mit Pfad im Banner. Kein Delegat, kein Knopf.
 
-   DIE BAUSTOFF-ZUORDNUNGEN DES PROJEKTS (Nacharbeit G4b): der Knopf "Baustoff-Zuordnungen..." am Ende
-   des Aktionsschlitzes oeffnet die Liste der Zuordnungen von Materialnamen zu Katalogbaustoffen, die
-   sich das Projekt beim Gebaeudeimport gemerkt hat, als achte Ueberlagerung; einzelne lassen sich dort
-   entfernen, geschrieben mit deren OK (nicht mit dem OK dieses Dialogs). Die Zuordnungen gelten fuer
-   das Projekt, nicht fuer die markierte Zeile - deshalb hier und nicht im Import. Kein Delegat, kein
+   DIE BAUSTOFF-ZUORDNUNGEN DES PROJEKTS (Nacharbeit G4b): der Knopf "Baustoff-Zuordnungen..." steht
+   in der Leiste unter dem Katalog gleich neben "Importieren (gbXML, IFC)..." (Anwenderentscheid
+   06.10.2026) - die Zuordnungen von Materialnamen zu Katalogbaustoffen entstehen beim Gebaeudeimport
+   und gelten fuer das Projekt, nicht fuer die markierte Zeile; der Importdialog lebt nur waehrend
+   eines Imports, die Liste soll auch dazwischen erreichbar sein. Er oeffnet sie als achte
+   Ueberlagerung; einzelne lassen sich dort entfernen, geschrieben mit deren OK (nicht mit dem OK
+   dieses Dialogs). Die Rueckmeldung steht unter der Leiste. Im Assistenten und ohne Delegat kein
    Knopf.
+
+   "IN DB UEBERNEHMEN": der dritte Knopf der Uebernahmeleiste schreibt die Projektkopie der
+   markierten Projektzeile als neuen Anwendersatz in den Katalog - nach einer kleinen
+   Namensabfrage (neunte Ueberlagerung, Muster "Kopieren nach ..."), sofort und nicht erst mit
+   dem OK dieses Dialogs. Danach steht der neue Satz gewaehlt in der Katalogliste. Eine eben
+   aufgenommene Zeile ohne Kopie speichert der Klick zuerst still (ListeSpeichern); im Assistenten
+   weich gesperrt. Kein Delegat, kein Knopf.
 
    TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt.
@@ -75,6 +84,7 @@
 @using EPOS.UI.Dialoge.Import
 @using WindowsFormsApplication1
 @implements IDisposable
+<CascadingValue Value="@CsvNaht">
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -86,18 +96,89 @@
 
     <p class="epos-kontextzeile">@KopfbandText</p>
 
-    @if (_meldung.Length > 0)
+    @if (_meldung.Length > 0 && !_meldungAmKatalog)
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* KT-4: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+
     @* Die zwei Listen und die Pfeilspalte: alles im Baustein (Anwenderentscheid
        #76). *@
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+    <Zweispaltenauswahl Dialogname="Gebaeude" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         UebernehmenText="@BtnHinzuText" UebernehmenHinweis="@BtnHinzuHinweis"
                         UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText" EntfernenHinweis="@BtnEntfernenHinweis"
-                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen"
+                        SatzArt="@SatzArt" SatzName="@SatzName">
+
+        @* "In DB uebernehmen": die Projektkopie des markierten Projektgebaeudes als neuer
+           Anwendersatz im Katalog - der Gegenweg zu "In das Projekt uebernehmen". Eine noch
+           nicht gespeicherte Zeile speichert der Klick zuerst still (ListeSpeichern, wie
+           Bearbeiten und Exportieren, Anwenderentscheid 06.10.2026); nur ohne diesen Weg
+           (Assistent) weich gesperrt, der Versuch nennt den Grund. Kein Delegat, kein Knopf. *@
+        <Leistenzusatz>
+            @* "Bearbeiten..." je Bereich (Konzept Katalogauswahl 4.2): die Projektkopie des markierten
+               Projektgebaeudes samt Zonen und Bauteilen, wie Heizkessel und BHKW in der Kopfleiste
+               "Im Projekt". Eine noch nicht gespeicherte Zeile hat keine Projektkopie: Der Klick
+               speichert die Projektliste zuerst still (ListeSpeichern, wie OK ohne Schliessen) und
+               oeffnet dann den Editor; nur ohne diesen Weg (Assistent) weich gesperrt. Ohne Wahl
+               weich gesperrt, der Versuch nennt den Grund. Kein Delegat, kein Knopf; im Assistenten
+               wie die Schlussleiste nicht. *@
+            @if (ProjektGaben is not null && !Wizard)
+            {
+                @if (_gewaehlt is null)
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
+                            aria-disabled="true" title="@SperreWahlProjekt"
+                            @onclick="() => Melden(SperreWahlProjekt, WarnStufe.Hinweis)">
+                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                    </button>
+                }
+                else if (!_gewaehlt.HatProjektkopie && ListeSpeichern is null)
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
+                            aria-disabled="true" title="@SperreNeueZeile"
+                            @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">
+                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
+                            title="@BtnProjektHinweis" @onclick="BeiProjekt">
+                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                    </button>
+                }
+            }
+            @if (InDbUebernehmen is not null)
+            {
+                @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie && ListeSpeichern is null)
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-in-db"
+                            aria-disabled="true" title="@SperreInDb"
+                            @onclick="() => Melden(SperreInDb, WarnStufe.Hinweis)">
+                        <span class="epos-zweispalten-knopftext">@BtnInDbText</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-in-db"
+                            title="@BtnInDbHinweis" disabled="@(_gewaehlt is null)" @onclick="BeiInDb">
+                        <span class="epos-zweispalten-knopftext">@BtnInDbText</span>
+                    </button>
+                }
+            }
+        </Leistenzusatz>
 
         <Links>
             <div class="epos-raster-huelle">
@@ -155,15 +236,53 @@
                     <button type="button" class="epos-knopf epos-importknopf" title="@BtnImportHinweis"
                             @onclick="BeiImport">@BtnImportText</button>
                 }
+                @* Nacharbeit G4b, Anwenderentscheid 06.10.2026: die gemerkten Baustoff-Zuordnungen
+                   des Projekts beim Import, wo sie entstehen - sie gelten fuer das ganze Projekt,
+                   nicht fuer die markierte Zeile. Im Assistenten und ohne Delegat kein Knopf. *@
+                @if (BaustoffzuordnungenGaben is not null && !Wizard)
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
+                            title="@BtnBaustoffzuordnungenHinweis"
+                            @onclick="BeiBaustoffzuordnungen">@BtnBaustoffzuordnungenText</button>
+                }
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
-                <button type="button" class="epos-knopf"
-                        @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
+                <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogzeile"
+                                JaText="@JaText" NeinText="@NeinText"
+                                Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
+                @if (LoeschsperreAnzeige.Length > 0)
+                {
+                    @* Der Grund am Bedienelement: gesperrt (Auslieferungssatz, im Assistenten auch
+                       der Satz einer ungespeicherten Zeile), der Versuch meldet ihn unter der Leiste. *@
+                    <button type="button" class="epos-knopf epos-gebaeude-db-loeschen"
+                            aria-disabled="true" title="@LoeschsperreAnzeige"
+                            @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-db-loeschen"
+                            @onclick="BeiKatalogLoeschen">@BtnDbLoeschenText</button>
+                }
             </div>
+
+            @* Die Meldung der Listenleiste steht UNTER ihr, wo der Anwender hinsieht: Im
+               eigenen Fenster haftet der Kopf, und ein Banner oben im Dialog laege beim
+               Arbeiten an der Katalogliste weit ausserhalb des Bildes (Befund 06.10.2026,
+               „Gebaeude in DB loeschen funktioniert nicht"). *@
+            @if (_meldung.Length > 0 && _meldungAmKatalog)
+            {
+                <div class="epos-katalogmeldung">
+                    <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+                </div>
+            }
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
+    @* KB1: Ohne gewaehlten Satz bleibt die Satzflaeche leer - kein Detailblock mit leeren Feldern,
+       kein Knopf "Ausrichtung aendern...", kein Rollbalken; die Detailzeile sagt "Kein Satz gewaehlt". *@
+    @if (SatzArt != Satzmarke.Keiner)
+    {
     @* --------------------------------------------- Detailblock ------------ *@
     <Gruppenkopf Titel="@GruppeVerbrauch">
         <KindInhalt>
@@ -172,7 +291,7 @@
            Flaeche aus einem Verbrauch zurueckgerechnet wird. *@
         <p class="epos-herleitung">
             <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
-                       StandardKurztext="@HilfeKurztextBerechnung" />
+                       StandardKurztext="@HilfeKurztextBerechnung" MitAssistent="false" />
         </p>
         @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
            zwei Feldpaare je Zeile, die Beschreibung ueber beide Spalten. *@
@@ -183,7 +302,9 @@
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detailBeschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="3" />
             <Textfeld Bezeichnung="@LabelWohnflaeche" Wert="@_detailWohnflaeche" NurLesen="true" />
-            <Textfeld Bezeichnung="@LabelEinheit" Wert="@_detailEinheit" NurLesen="true" />
+            @* Die Art der Angabe als ANZEIGE (Flaechenangabe): der gespeicherte Steuerwert
+               „Wohnfläche [m²]" heisst „Nutzfläche [m²]"; _detailEinheit bleibt der Steuerwert. *@
+            <Textfeld Bezeichnung="@LabelEinheit" Wert="@Flaechenangabe.Anzeige(_detailEinheit)" NurLesen="true" />
             @* Stufe G1 (Konzept 2.7): zwei leise Kennzahlen, nur lesend. *@
             <Textfeld Bezeichnung="@LabelHges" Wert="@_detailHges" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelRechenweg" Wert="@_detailRechenweg" NurLesen="true" />
@@ -196,6 +317,44 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* --- G5-N (N5/N6): die Ausrichtung des gewaehlten Gebaeudes ----------------
+       Dieselbe Eingabe wie im Zuordnungsdialog. "Ausrichtung aendern..." fragt mit der Zahl der Bauteile zurueck und
+       dreht SOFORT (ein Vorgang des Kerns, wie "In DB uebernehmen"); danach die Meldung und neu gelesen. Ohne
+       Importquelle ist der Abschnitt gesperrt, der Hinweis nennt den Grund, der Knopf ist weich gesperrt. *@
+    @if (Ausrichtung is not null && _gewaehlt is not null && AusrichtungVon(_gewaehlt) is GebaeudeAusrichtungDaten ausrichtung)
+    {
+        <Gruppenkopf Titel="@ausrichtung.Titel">
+            <KindInhalt>
+                <div class="epos-gebaeude-ausrichtung" data-aenderbar="@(ausrichtung.Aenderbar ? "ja" : "nein")">
+                    <Nordrichtungswahl Wert="@(_ausrichtungWert ?? ausrichtung.PlanoberseiteGrad)" OnWert="BeiAusrichtungWert"
+                                       Schnellwahl="@ausrichtung.Schnellwahl" Beschriftung="@ausrichtung.Beschriftung"
+                                       Herkunft="@ausrichtung.Herkunft" HerkunftText="@ausrichtung.HerkunftText"
+                                       Aktiv="@ausrichtung.Aenderbar" Hinweis="@ausrichtung.Hinweis" />
+                    @if (AusrichtungAendern is not null)
+                    {
+                        <div class="epos-leiste">
+                            @if (ausrichtung.Aenderbar)
+                            {
+                                <button type="button" class="epos-knopf epos-gebaeude-ausrichtung-aendern" title="@BtnAusrichtungHinweis"
+                                        @onclick="BeiAusrichtungAendern">@BtnAusrichtungText</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="epos-knopf epos-gebaeude-ausrichtung-aendern" aria-disabled="true"
+                                        title="@ausrichtung.Hinweis"
+                                        @onclick="() => Melden(ausrichtung.Hinweis, WarnStufe.Hinweis)">@BtnAusrichtungText</button>
+                            }
+                        </div>
+                    }
+                </div>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+    }
+
+        </Satz>
+    </Zweispaltenauswahl>
+
     @if (!Wizard)
     {
         @* PROJEKT (DL-2, Schritt 7): Die Projektliste ist ein Arbeitsstand des Wirtes -
@@ -204,41 +363,51 @@
            Leiste. *@
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
             <Aktionen>
-                <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                        @onclick="BeiAendern">@BtnAendernText</button>
-
-                @* Stufe G3 (Welle D2): die Projektkopie samt Zonen und Bauteilen. Eine noch nicht
-                   gespeicherte Zeile hat keine Projektkopie - weich gesperrt, der Versuch nennt den
-                   Grund. Kein Delegat, kein Knopf. *@
-                @if (ProjektGaben is not null)
+                @* Grund am Bedienelement: ohne Wahl in der Projektliste weich gesperrt - der
+                   Kurztext nennt den Grund, der Versuch meldet ihn (die Wahl in der DB-Liste
+                   genuegt nicht: skaliert wird die Kopie im Projekt). *@
+                @if (_gewaehlt is null)
                 {
-                    @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie)
-                    {
-                        <button type="button" class="epos-knopf" aria-disabled="true" title="@SperreNeueZeile"
-                                @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">@BtnProjektText</button>
-                    }
-                    else
-                    {
-                        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                                title="@BtnProjektHinweis" @onclick="BeiProjekt">@BtnProjektText</button>
-                    }
+                    <button type="button" class="epos-knopf epos-gebaeude-flaeche" aria-disabled="true"
+                            title="@SperreWahlFlaeche"
+                            @onclick="() => Melden(SperreWahlFlaeche, WarnStufe.Hinweis)">@BtnAendernText</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-flaeche"
+                            @onclick="BeiAendern">@BtnAendernText</button>
                 }
 
                 @* Stufe G7a (Welle W3): der Gebaeudeexport im Format gbXML - aus der Projektkopie. Eine
-                   noch nicht gespeicherte Zeile hat keine: weich gesperrt, der Versuch nennt den Grund.
+                   noch nicht gespeicherte Zeile hat keine: Der Klick speichert die Liste zuerst still,
+                   ohne Speicherweg weich gesperrt.
                    Kein Delegat, kein Knopf (die Huelle reicht ihn nur bei angeschaltetem Schalter). *@
                 @if (ExportGaben is not null)
                 {
-                    @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie)
+                    @if (_gewaehlt is null)
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-export" aria-disabled="true" title="@SperreWahlExport"
+                                @onclick="() => Melden(SperreWahlExport, WarnStufe.Hinweis)">@BtnExportText</button>
+                    }
+                    else if (!_gewaehlt.HatProjektkopie && ListeSpeichern is null)
                     {
                         <button type="button" class="epos-knopf epos-gebaeude-export" aria-disabled="true" title="@SperreExport"
                                 @onclick="() => Melden(SperreExport, WarnStufe.Hinweis)">@BtnExportText</button>
                     }
                     else
                     {
-                        <button type="button" class="epos-knopf epos-gebaeude-export" disabled="@(_gewaehlt is null)"
+                        <button type="button" class="epos-knopf epos-gebaeude-export"
                                 title="@BtnExportHinweis" @onclick="BeiExport">@BtnExportText</button>
                     }
+                }
+
+                @* HC-4 (HottCAD-Verbund 6.5, E87 F3): "Datei erneut lesen" - nur fuer ein importiertes
+                   Gebaeude (die Zeile hat eine Importquelle). Liest die Datei der Quelle und zeigt die
+                   Ansicht in einer eigenen Ueberlagerung; geschrieben wird nichts. Kein Delegat, kein Knopf. *@
+                @if (DateiNeuLesen is not null && QuelleVon(_gewaehlt) is not null)
+                {
+                    <button type="button" class="epos-knopf epos-gebaeude-neulesen"
+                            title="@BtnNeuLesenHinweis" @onclick="BeiNeuLesen">@BtnNeuLesenText</button>
                 }
 
                 @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
@@ -247,9 +416,18 @@
                    Projekt und damit auch nichts zu rechnen. *@
                 @if (BedarfGaben is not null)
                 {
-                    <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                            title="@BtnSimulationHinweis"
-                            @onclick="BeiSimulation">@BtnSimulationText</button>
+                    @if (_gewaehlt is null)
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-simulation" aria-disabled="true"
+                                title="@SperreWahlSimulation"
+                                @onclick="() => Melden(SperreWahlSimulation, WarnStufe.Hinweis)">@BtnSimulationText</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="epos-knopf epos-gebaeude-simulation"
+                                title="@BtnSimulationHinweis"
+                                @onclick="BeiSimulation">@BtnSimulationText</button>
+                    }
                 }
 
                 @* Der Zwilling des Menuepunkts "Gebaeudetypen" (Entscheid DL-Q1 b):
@@ -260,21 +438,17 @@
                             @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
                 }
 
-                @* Nacharbeit G4b: die gemerkten Baustoff-Zuordnungen des Projekts - sie gelten fuer das
-                   ganze Projekt, nicht fuer die markierte Zeile. Kein Delegat, kein Knopf. *@
-                @if (BaustoffzuordnungenGaben is not null)
-                {
-                    <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
-                            title="@BtnBaustoffzuordnungenHinweis"
-                            @onclick="BeiBaustoffzuordnungen">@BtnBaustoffzuordnungenText</button>
-                }
             </Aktionen>
         </SpeichernLeiste>
     }
 
     @* --- Ueberlagerung 1: der Katalogeditor (W9.1), auch vorbelegt aus dem Import (G4) -- *@
+    @* Der Editor steht in JEDER Betriebsart in der BREITEN Ueberlagerung (Stufe KP2, Entwurf
+       Festlegung 7): Die Matrix der Konditionierung braucht die Breite; der Reiter bricht am
+       Container um, nicht am Fenster. *@
     <Ueberlagerung Offen="@(_katalogGaben is not null)"
                    Titel="@(_importweg is not null ? BtnDbNeuText : BtnDbAendernText)"
+                   Zusatzklasse="epos-ueberlagerung--breit"
                    Geschlossen="() => KatalogeditorFertig(false)">
         <KindInhalt>
             @if (_katalogGaben is not null)
@@ -287,6 +461,7 @@
 
     @* --- Ueberlagerung 6: das Gebaeude im Projekt - Huelle und Zonen (G3) ----- *@
     <Ueberlagerung Offen="@(_projektGaben is not null)" Titel="@TitelProjekteditor"
+                   Zusatzklasse="epos-ueberlagerung--breit"
                    Geschlossen="() => ProjekteditorFertig(false)">
         <KindInhalt>
             @if (_projektGaben is not null)
@@ -330,7 +505,7 @@
         <KindInhalt>
             @if (_importGaben is not null)
             {
-                <GebaeudeImportDialog @attributes="_importGaben" Geschlossen="ImportFertig" />
+                <GebaeudeImportDialog @attributes="_importGaben" RaumnutzungKi="@_raumnutzungKi" Geschlossen="ImportFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -371,17 +546,118 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* --- Ueberlagerung 10: "Datei erneut lesen" (HC-4) ---------------------------
+       Eine reine Ansicht: Quelle, Hinweiszeile, die GebaeudeAnsicht mit beiden Farbmodi
+       ("Zonen | Randbedingung"). Kein Speichern, kein Arbeitsstand; das Kreuz und Esc
+       schliessen, der Dialog gilt danach NICHT als geaendert. *@
+    <Ueberlagerung Offen="@_neulesenOffen" Titel="@TitelNeuLesen" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="NeuLesenSchliessen">
+        <KindInhalt>
+            <div class="epos-gebaeude-neulesen-ansicht">
+                @if (_neulesenQuelle is not null)
+                {
+                    <p class="epos-leisezeile epos-gebaeude-neulesen-quelle">@_neulesenQuelle.Quellzeile</p>
+                }
+                @if (_neulesenLaeuft)
+                {
+                    <p class="epos-leisezeile epos-gebaeude-neulesen-laeuft" role="status">@TextNeuLesenLaeuft</p>
+                }
+                else if (_neulesenStand is { } stand)
+                {
+                    <p class="@(stand.Zustand == GebaeudeNeulesezustand.Passend ? "epos-leisezeile" : "epos-kond-feldmeldung") epos-gebaeude-neulesen-hinweis"
+                       role="@(stand.Zustand == GebaeudeNeulesezustand.Passend ? "status" : "alert")">@stand.Hinweis</p>
+                    @* HC-5 (F7): Grundriss übernehmen - nur bei passender Prüfsumme und ohne oder mit älteren gespeicherten Grundrissen. *@
+                    @if (stand.GrundrissNachtragen is not null && _neulesenGrundrissHinweis is null)
+                    {
+                        <p class="epos-leisezeile epos-gebaeude-neulesen-grundriss-angebot">@string.Format(System.Globalization.CultureInfo.CurrentCulture, TextGrundrissAngebot, stand.GrundrissRaeume)</p>
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf epos-gebaeude-neulesen-grundriss" disabled="@_neulesenGrundrissLaeuft"
+                                    @onclick="BeiGrundrissNachtragen">@BtnGrundrissText</button>
+                        </div>
+                    }
+                    @if (_neulesenGrundrissHinweis is not null)
+                    {
+                        <p class="epos-leisezeile epos-gebaeude-neulesen-grundriss-hinweis" role="status">@_neulesenGrundrissHinweis</p>
+                    }
+                    @if (stand.Ansicht is not null)
+                    {
+                        @if (stand.Zonenhinweis.Length > 0)
+                        {
+                            <p class="epos-leisezeile epos-gebaeude-neulesen-zonen">@stand.Zonenhinweis</p>
+                        }
+                        <GebaeudeAnsicht Daten="@stand.Ansicht" Geschoss="@_neulesenGeschoss"
+                                         GeschossChanged="g => _neulesenGeschoss = g" Texte="@_ansichtTexte" />
+                    }
+                    @if (stand.AndereDateiAnbieten)
+                    {
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf epos-gebaeude-neulesen-andere"
+                                    @onclick="BeiNeuLesen">@BtnAndereDateiText</button>
+                        </div>
+                    }
+                }
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 9: "In DB uebernehmen" - die Namensabfrage ------------
+       Muster "Kopieren nach ..." der Vorlagenverwaltung: Name vorbelegt (eindeutig mit
+       Zaehler), ein leerer oder vergebener Name steht AM FELD, die Abfrage bleibt offen.
+       Das OK schreibt SOFORT in den Katalog - nicht erst das OK dieses Dialogs. *@
+    <Ueberlagerung Offen="@_inDbOffen" Titel="@TitelInDb" Geschlossen="InDbAbbrechen">
+        <KindInhalt>
+            <div class="epos-gebaeude-in-db-abfrage">
+                <Formularraster Einspaltig="true">
+                    <KindInhalt>
+                        <div class="epos-gebaeude-in-db-name @(_inDbNameFehler is null ? "" : "epos-kond-feldfehler")">
+                            <Textfeld Bezeichnung="@LabelInDbName" Wert="@_inDbName"
+                                      WertChanged="InDbNameGeaendert" />
+                            @if (_inDbNameFehler is not null)
+                            {
+                                <p class="epos-kond-feldmeldung" role="alert">@_inDbNameFehler</p>
+                            }
+                        </div>
+                    </KindInhalt>
+                </Formularraster>
+                @if (_inDbFehler is not null)
+                {
+                    <p class="epos-kond-feldmeldung epos-gebaeude-in-db-fehler" role="alert">@_inDbFehler</p>
+                }
+                <p class="epos-leisezeile epos-gebaeude-in-db-regel">@TextInDbRegel</p>
+                <SpeichernLeiste OkText="@BtnInDbText" AbbrechenText="@AbbrechenText" Ergebnis="InDbErgebnis" />
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
+
     @* --- Rueckfrage vor dem Loeschen eines Katalogsatzes ------------------- *@
     @* --- Rueckfrage vor dem Entfernen eines Gebaeudes mit Zonen (G6a, A2) --- *@
     <Rueckfrage Offen="@_ausProjektFrage" TitelText="@BtnEntfernenText" Frage="@AusProjektFrage"
                 VorgabeNein="true" Beantwortet="AusProjektBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+
+    @* --- G5-N (N5): Rueckfrage vor dem Drehen aller Bauteile ------------------ *@
+    <Rueckfrage Offen="@(_ausrichtungFrage is not null)" TitelText="@BtnAusrichtungText" Frage="@(_ausrichtungFrage ?? "")"
+                VorgabeNein="true" Beantwortet="AusrichtungBeantwortet" JaText="@JaText" NeinText="@NeinText" />
 
     <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText"
                 Frage="@Loeschfrage" Beantwortet="LoeschenBeantwortet"
                 JaText="@JaText" NeinText="@NeinText" />
 </div>
 
+</CascadingValue>
+
 @code {
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster der ersten Spalte); jedes
+    /// Diagramm dieses Dialogs mit Reihen bekommt den Knopf über die Kaskade. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Naht der Kaskade; das Raster folgt der Länge der Reihen.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
     /// <summary>
     /// Die Gebäude des Projekts — die Liste gehört der Hülle und wird AN ORT UND STELLE
     /// bearbeitet, wie in den Erzeugerdialogen der Wellen 6 und 7.
@@ -424,11 +700,30 @@
     [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
 
     /// <summary>
-    /// Der Sperrgrund eines Katalogsatzes — dieselbe weiche Löschsperre wie in der
-    /// Gebäudeverwaltung (Auslieferungssatz, von einem Projekt geführt; der Text nennt die
-    /// Projekte). Leer heißt löschbar; ein Grund steht als Warnung, statt nachzufragen.
+    /// Der Sperrgrund eines Katalogsatzes — allein der Auslieferungssatz ist gesperrt
+    /// (Anwenderentscheid 06.10.2026). Leer heißt löschbar; ein Grund steht als Warnung,
+    /// statt nachzufragen.
     /// </summary>
     [Parameter] public Func<string, string>? KatalogLoeschsperre { get; set; }
+
+    /// <summary>
+    /// Der Zusatz der Rückfrage: die Projekte, die eine Kopie des Satzes führen und sie
+    /// behalten (<c>GebaeudeStammCtrl.Loeschhinweis</c>). Leer, wenn keines.
+    /// </summary>
+    [Parameter] public Func<string, string>? KatalogLoeschhinweis { get; set; }
+
+    /// <summary>
+    /// <b>Der stille Speicherweg der Projektliste</b> (Anwenderentscheid 06.10.2026) — derselbe Weg
+    /// wie OK, nur ohne Schließen (<c>WizardCtrl.Speichere_Projekt_Gebaeudeliste</c>, ein Abgleich:
+    /// das spätere OK findet nichts mehr zu schreiben). Danach trägt jede neue Zeile ihre echte
+    /// Zuordnungs-Id und ihre Projektkopie; Auswahl und Liste bleiben dieselben Objekte. Gerufen,
+    /// bevor ein Katalogsatz gelöscht wird, aus dem eine ungespeicherte Zeile stammt, und bevor
+    /// „Gebäude im Projekt bearbeiten…", „Exportieren…" oder „In DB übernehmen" eine ungespeicherte
+    /// Zeile öffnen bzw. übernehmen.
+    /// Rückgabe: leer bei Erfolg, sonst die Meldung — dann geschieht nichts weiter. Ohne Delegat
+    /// (Assistent) bleibt es bei der weichen Sperre.
+    /// </summary>
+    [Parameter] public Func<string>? ListeSpeichern { get; set; }
 
     /// <summary>
     /// Meldet der Hülle, dass sich die Projektliste geändert hat — aufgenommen, entfernt
@@ -493,6 +788,39 @@
     [Parameter] public Func<GebaeudeImportweg>? ImportGaben { get; set; }
 
     /// <summary>
+    /// <b>Die Importquelle einer Projektzeile</b> (HC-4): Name, Format, Zeitpunkt; <c>null</c> = nicht importiert
+    /// (kein Knopf „Datei erneut lesen…“). Je Zeile einmal gefragt und im Dialog gemerkt.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, GebaeudeImportquelleAngabe?>? Importquelle { get; set; }
+
+    /// <summary>
+    /// <b>„Datei erneut lesen“</b> (HC-4, E87 F3): Dateiwahl, Hash-Prüfung und Ansicht; <c>null</c> = die Dateiwahl
+    /// wurde abgebrochen. Schreibt nichts. Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, Task<GebaeudeNeulesestand?>>? DateiNeuLesen { get; set; }
+
+    /// <summary>GEB_BTN_NEU_LESEN</summary>
+    [Parameter] public string BtnNeuLesenText { get; set; } = Resource.GEB_BTN_NEU_LESEN;
+
+    /// <summary>GEB_BTN_NEU_LESEN_HINWEIS</summary>
+    [Parameter] public string BtnNeuLesenHinweis { get; set; } = Resource.GEB_BTN_NEU_LESEN_HINWEIS;
+
+    /// <summary>GEB_NL_TITEL</summary>
+    [Parameter] public string TitelNeuLesen { get; set; } = Resource.GEB_NL_TITEL;
+
+    /// <summary>GEB_NL_ANDERE_DATEI</summary>
+    [Parameter] public string BtnAndereDateiText { get; set; } = Resource.GEB_NL_ANDERE_DATEI;
+
+    /// <summary>GEB_NL_GRUNDRISS_KNOPF — HC-5 (F7).</summary>
+    [Parameter] public string BtnGrundrissText { get; set; } = Resource.GEB_NL_GRUNDRISS_KNOPF;
+
+    /// <summary>GEB_NL_GRUNDRISS_ANGEBOT — HC-5 (F7), {0} = Räume.</summary>
+    [Parameter] public string TextGrundrissAngebot { get; set; } = Resource.GEB_NL_GRUNDRISS_ANGEBOT;
+
+    /// <summary>GEB_NL_LAEUFT</summary>
+    [Parameter] public string TextNeuLesenLaeuft { get; set; } = Resource.GEB_NL_LAEUFT;
+
+    /// <summary>
     /// <b>„Exportieren (gbXML)…"</b> (Gebäudesimulation G7a, Welle W3): der Parametersatz des
     /// Exportdialogs für eine Projektzeile; der zweite Wert sagt, ob die Zeile ungespeicherte Änderungen
     /// trägt (dann der Hinweis „gespeicherter Stand"). Kein Delegat = kein Knopf; <c>null</c> als
@@ -509,6 +837,43 @@
     public Func<IReadOnlyDictionary<string, object>>? BaustoffzuordnungenGaben { get; set; }
 
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    /// <summary>
+    /// <b>„In DB übernehmen"</b>: der Namensvorschlag zur markierten Projektzeile — ihr Name, im
+    /// Katalog schon vergeben mit Zähler („… (2)"). Gerufen beim Öffnen der Namensabfrage.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, string>? InDbVorschlag { get; set; }
+
+    /// <summary>
+    /// <b>„In DB übernehmen"</b>: schreibt die Projektkopie der Zeile unter dem Namen als neuen
+    /// Katalogsatz (Kern: <c>GebaeudeStammCtrl.AusProjektUebernehmen</c>) — SOFORT, nicht erst mit
+    /// dem OK dieses Dialogs. Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, string, GebaeudeDbUebernahme>? InDbUebernehmen { get; set; }
+
+    /// <summary>Beschriftung — <c>GEB_BTN_IN_DB</c>; zugleich das OK der Namensabfrage.</summary>
+    [Parameter] public string BtnInDbText { get; set; } = Resource.GEB_BTN_IN_DB;
+
+    /// <summary>Kurztext — <c>GEB_BTN_IN_DB_HINWEIS</c>.</summary>
+    [Parameter] public string BtnInDbHinweis { get; set; } = Resource.GEB_BTN_IN_DB_HINWEIS;
+
+    /// <summary>Titel der Namensabfrage — <c>GEB_TITEL_IN_DB</c>.</summary>
+    [Parameter] public string TitelInDb { get; set; } = Resource.GEB_TITEL_IN_DB;
+
+    /// <summary>Beschriftung des Namensfeldes — <c>GEB_LBL_IN_DB_NAME</c>.</summary>
+    [Parameter] public string LabelInDbName { get; set; } = Resource.GEB_LBL_IN_DB_NAME;
+
+    /// <summary>Was übernommen wird und was im Projekt bleibt — <c>GEB_TEXT_IN_DB_REGEL</c>.</summary>
+    [Parameter] public string TextInDbRegel { get; set; } = Resource.GEB_TEXT_IN_DB_REGEL;
+
+    /// <summary>Grund der weichen Sperre einer ungespeicherten Zeile im Assistenten — <c>GEB_SPERRE_IN_DB_ASSISTENT</c>.</summary>
+    [Parameter] public string SperreInDb { get; set; } = Resource.GEB_SPERRE_IN_DB_ASSISTENT;
+
+    /// <summary>Eine Zeile trägt (auch nach dem stillen Speichern) keine Projektkopie — <c>GEB_MSG_PROJEKTKOPIE_FEHLT</c>.</summary>
+    [Parameter] public string MeldungProjektkopieFehlt { get; set; } = Resource.GEB_MSG_PROJEKTKOPIE_FEHLT;
+
+    /// <summary>Grund der Löschsperre im Assistenten — <c>GEB_SPERRE_LOESCHEN_ASSISTENT</c>.</summary>
+    [Parameter] public string SperreLoeschenAssistent { get; set; } = Resource.GEB_SPERRE_LOESCHEN_ASSISTENT;
+
     [Parameter] public bool Wizard { get; set; }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
@@ -516,23 +881,24 @@
 
     // --- Texte -----------------------------------------------------------------
 
-    /// <summary><c>GEBZ_BTN_PROJEKT</c> — der Knopf „Gebäude im Projekt bearbeiten…".</summary>
-    [Parameter] public string BtnProjektText { get; set; } = Resource.GEBZ_BTN_PROJEKT;
+    /// <summary><c>AUSWAHL_BTN_BEARBEITEN</c> — der Knopf „Bearbeiten…" in der Kopfleiste „Im Projekt"
+    /// (wie Heizkessel und BHKW); er öffnet den Editor der Projektkopie.</summary>
+    [Parameter] public string BtnProjektText { get; set; } = Resource.AUSWAHL_BTN_BEARBEITEN;
 
     /// <summary><c>GEBZ_BTN_PROJEKT_HINWEIS</c> — sein Kurztext.</summary>
     [Parameter] public string BtnProjektHinweis { get; set; } = Resource.GEBZ_BTN_PROJEKT_HINWEIS;
 
-    /// <summary><c>GEXP_BTN_EXPORT</c> bzw. auf iOS <c>GEXP_BTN_EXPORT_IOS</c> — der Knopf „Exportieren (gbXML)…".</summary>
+    /// <summary><c>GEXP_BTN_EXPORT</c> bzw. auf iOS <c>GEXP_BTN_EXPORT_IOS</c> — der Knopf „Exportieren…".</summary>
     [Parameter] public string BtnExportText { get; set; } = Resource.GEXP_BTN_EXPORT;
 
     /// <summary><c>GEXP_BTN_EXPORT_HINWEIS</c> — sein Kurztext.</summary>
     [Parameter] public string BtnExportHinweis { get; set; } = Resource.GEXP_BTN_EXPORT_HINWEIS;
 
-    /// <summary><c>GEXP_SPERRE_UNGESPEICHERT</c> — der Grund der Sperre einer Zeile ohne Projektkopie.</summary>
-    [Parameter] public string SperreExport { get; set; } = Resource.GEXP_SPERRE_UNGESPEICHERT;
+    /// <summary><c>GEXP_SPERRE_ASSISTENT</c> — der Grund der Sperre einer Zeile ohne Projektkopie im Assistenten.</summary>
+    [Parameter] public string SperreExport { get; set; } = Resource.GEXP_SPERRE_ASSISTENT;
 
-    /// <summary><c>GEXP_TITEL</c> — der Titel der Überlagerung.</summary>
-    [Parameter] public string TitelExport { get; set; } = Resource.GEXP_TITEL;
+    /// <summary><c>GEXP_TITEL_FORMATWAHL</c> — der Titel der Überlagerung (Formatwahl gbXML oder IFC).</summary>
+    [Parameter] public string TitelExport { get; set; } = Resource.GEXP_TITEL_FORMATWAHL;
 
     /// <summary><c>GEB_BTN_BAUSTOFFZUORDNUNGEN</c> — der Knopf „Baustoff-Zuordnungen…".</summary>
     [Parameter] public string BtnBaustoffzuordnungenText { get; set; } = Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN;
@@ -546,8 +912,20 @@
     /// <summary><c>GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT</c> — {0} = Zahl der entfernten Zuordnungen.</summary>
     [Parameter] public string MeldungBaustoffzuordnungenEntfernt { get; set; } = Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT;
 
-    /// <summary><c>GEBZ_SPERRE_NEUE_ZEILE</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie.</summary>
-    [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_NEUE_ZEILE;
+    /// <summary><c>GEBZ_SPERRE_PROJEKT_ASSISTENT</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie im Assistenten.</summary>
+    [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_PROJEKT_ASSISTENT;
+
+    /// <summary>Grund am Knopf „Fläche und Verbrauch…" ohne Wahl in der Projektliste (<c>GEB_SPERRE_WAHL_FLAECHE</c>).</summary>
+    [Parameter] public string SperreWahlFlaeche { get; set; } = Resource.GEB_SPERRE_WAHL_FLAECHE;
+
+    /// <summary>Grund am Knopf „Gebäude im Projekt bearbeiten…" ohne Wahl (<c>GEB_SPERRE_WAHL_PROJEKT</c>).</summary>
+    [Parameter] public string SperreWahlProjekt { get; set; } = Resource.GEB_SPERRE_WAHL_PROJEKT;
+
+    /// <summary>Grund am Knopf „Exportieren…" ohne Wahl (<c>GEB_SPERRE_WAHL_EXPORT</c>).</summary>
+    [Parameter] public string SperreWahlExport { get; set; } = Resource.GEB_SPERRE_WAHL_EXPORT;
+
+    /// <summary>Grund am Knopf „Simulation…" ohne Wahl (<c>GEB_SPERRE_WAHL_SIMULATION</c>).</summary>
+    [Parameter] public string SperreWahlSimulation { get; set; } = Resource.GEB_SPERRE_WAHL_SIMULATION;
 
     /// <summary><c>GEBZ_TITEL_PROJEKT</c> — der Titel der Überlagerung des Editors in der Betriebsart Projekt.</summary>
     [Parameter] public string TitelProjekteditor { get; set; } = Resource.GEBZ_TITEL_PROJEKT;
@@ -560,7 +938,7 @@
     [Parameter] public string LabelGebaeudeart { get; set; } = "Gebäudeart";
     [Parameter] public string LabelGebaeudename { get; set; } = "Gebäudename:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
-    [Parameter] public string LabelWohnflaeche { get; set; } = "Wohn-/Nutzfläche:";
+    [Parameter] public string LabelWohnflaeche { get; set; } = "Nutzfläche:";
     [Parameter] public string LabelEinheit { get; set; } = "Art der Angabe:";
 
     /// <summary>Kopf der Spalte „Rechenweg" der Projektliste (<c>GEB_SP_RECHENWEG</c>).</summary>
@@ -655,12 +1033,13 @@
     [Parameter] public string MeldungKeineWahl { get; set; } = "Gebäude in DB auswählen!";
 
     /// <summary>
-    /// „Für dieses Gebäude lässt sich kein Wärmebedarf berechnen…" — die Zeile ist noch
-    /// nicht gespeichert, oder das Projekt führt keine Klimaregion (W9‑E‑2).
+    /// „Für dieses Gebäude lässt sich kein Wärmebedarf berechnen." — die allgemeine Meldung,
+    /// wenn die Datenseite keinen benannten Grund liefert (<see cref="BedarfBefund"/>); jeder
+    /// bekannte Fall (kein Projekt, keine Klimaregion, kein Katalogsatz, Importzeile mit Zone)
+    /// nennt seinen eigenen Grund.
     /// </summary>
     [Parameter] public string MeldungKeinBedarf { get; set; } =
-        "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. " +
-        "Bitte das Projekt speichern und eine Klimaregion auswählen.";
+        "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen.";
 
     /// <summary>
     /// Der benannte Grund, wenn <see cref="BedarfGaben"/> zuletzt <c>null</c> lieferte (Stufe G6a —
@@ -752,7 +1131,28 @@
         => _gewaehlt is null ? "" : string.Format(System.Globalization.CultureInfo.CurrentCulture, FrageAusProjekt,
                _gewaehlt.Name, _gewaehlt.Zonenzahl, _gewaehlt.Bauteilzahl);
     private string _meldung = "";
+
+    /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>
+    /// Steht die Meldung unter der Listenleiste der Katalogspalte statt oben im Dialog? So
+    /// bei jeder Meldung eines Katalogknopfs (ändern, löschen) — dort sieht der Anwender hin.
+    /// </summary>
+    private bool _meldungAmKatalog;
+
+    /// <summary>Steht die Meldung unter der Listenleiste? Prüfhilfe für die Tests.</summary>
+    public bool MeldungAmKatalog => _meldungAmKatalog;
+
+    /// <summary>
+    /// Der Löschsperrgrund des markierten Katalogsatzes, beim Wählen gelesen — leer heißt
+    /// löschbar. Er steht als <c>title</c> am Löschknopf; der Klick prüft frisch.
+    /// </summary>
+    private string _loeschsperre = "";
 
     /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
     public GebaeudeProjektZeile? Gewaehlt => _gewaehlt;
@@ -795,8 +1195,12 @@
     /// <summary>Steht der Wärmebedarf des Gebäudes? Prüfhilfe für die Tests.</summary>
     public bool BedarfOffen => _bedarfGaben is not null;
 
-    private string Loeschfrage
-        => string.Format(MeldungLoeschfrage, _katalogzeile?.Bezeichner ?? "");
+    /// <summary>Die Rückfrage vor dem Löschen, samt den Projekten, die ihre Kopie behalten.</summary>
+    public string Loeschfrage
+        => string.Format(MeldungLoeschfrage, _katalogzeile?.Bezeichner ?? "")
+           + (_loeschhinweis.Length > 0 ? " " + _loeschhinweis : "");
+
+    private string _loeschhinweis = "";
 
     protected override void OnInitialized()
     {
@@ -807,7 +1211,10 @@
         KatalogLaden();
         ProjektauswahlNachziehen();
 
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken());
+        // NP2b-5a: dazu die Einheit der Außenluft des Blatts „Nutzungsprofile" im Importdialog (np_luft_einheit).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken(),
+                                          (WindowsFormsApplication1.KiNutzungsprofilfelder.LUFT_EINHEIT,
+                                           () => WindowsFormsApplication1.KiNutzungsprofilfelder.Lufteinheiten));
     }
 
     // =================================================================================
@@ -815,6 +1222,12 @@
     // =================================================================================
 
     private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Der Zugang des Assistenten zum Blatt „Nutzungsprofile" des Importdialogs (NP2b-5a): Das Blatt bindet sich beim
+    /// Erscheinen an, die Sicht beantwortet darüber die Felder <c>np_*</c>.
+    /// </summary>
+    private readonly RaumnutzungKiZugang _raumnutzungKi = new();
     private GebaeudeKiSicht? _kiSicht;
 
     /// <summary>
@@ -827,6 +1240,7 @@
     {
         return _kiSicht ??= new GebaeudeKiSicht
         {
+            Nutzungsprofile = _raumnutzungKi,
             VerwendungLesen = () => _filterstand.Ausdruck(Katalogfilterprofil.SpVerwendung),
             VerwendungSetzen = w => _filterstand.Setzen(Katalogfilterprofil.SpVerwendung, w),
             VerwendungEintraege = () => Spaltenwahl(Katalogfilterprofil.SpVerwendung),
@@ -846,7 +1260,7 @@
             GebaeudeartLesen = () => _detailArt,
             BeschreibungLesen = () => _detailBeschreibung,
             WohnflaecheLesen = () => _detailWohnflaeche,
-            AngabeartLesen = () => _detailEinheit
+            AngabeartLesen = () => Flaechenangabe.Anzeige(_detailEinheit)
         };
     }
 
@@ -927,7 +1341,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
@@ -942,10 +1356,11 @@
     /// </summary>
     private void KatalogLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
 
         _katalogzeile = Katalogsatz(_katalogGewaehlt);
         if (_katalogzeile is null) _katalogGewaehlt = "";
+        LoeschsperreLesen();
     }
 
     /// <summary>Der Katalogsatz zu einem Schlüssel; <c>null</c>, wenn es ihn nicht gibt.</summary>
@@ -985,11 +1400,19 @@
     // Auswahl und Detailblock
     // =================================================================================
 
+    /// <summary>Was die Detailzeile zeigt: die Projektkopie, der Katalogsatz oder keiner (dann bleibt die Satzfläche leer).</summary>
+    private Satzmarke SatzArt => _gewaehlt is not null ? Satzmarke.Projektsatz
+                               : _katalogzeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
+    private string? SatzName => SatzArt == Satzmarke.Keiner ? null : _detailName;
+
     private void ProjektzeileWaehlen(GebaeudeProjektZeile z)
     {
         _gewaehlt = z;
         _katalogzeile = null;
         _katalogGewaehlt = "";
+        _loeschsperre = "";
         _detailName = z.Name;
         _detailArt = z.Art;
         _detailBeschreibung = z.Beschreibung;
@@ -1016,13 +1439,16 @@
         _katalogGewaehlt = k.Schluessel;
         _katalogzeile = k;
         _gewaehlt = null;
+        LoeschsperreLesen();
 
-        GebaeudeStammDetail? detail = StammDetail?.Invoke(k.Bezeichner);
+        // KT-4: Warf das Lesen, steht der Name der Zeile allein; der Banner nennt den Grund.
+        GebaeudeStammDetail? detail = Katalogladung.Satz(() => StammDetail?.Invoke(k.Bezeichner), k.Bezeichner,
+                                                         out _satzFehler);
         _detailName = detail?.Name ?? k.Bezeichner;
         _detailArt = detail?.Art ?? k.Text(Katalogfilterprofil.SpGebaeudeart);
         _detailBeschreibung = detail?.Beschreibung ?? "";
         _detailWohnflaeche = detail?.Wohnflaeche ?? k.Text(Katalogfilterprofil.SpFlaecheM2);
-        _detailEinheit = "Wohnfläche [m²]";
+        _detailEinheit = Flaechenangabe.GESPEICHERT;
         _detailHges = Leitwert(detail?.HgesWK);
         _detailRechenweg = detail?.Rechenweg ?? "";
     }
@@ -1084,13 +1510,95 @@
     }
 
     // =================================================================================
+    // "In DB uebernehmen" - die Projektkopie als neuer Katalogsatz
+    // =================================================================================
+
+    private bool _inDbOffen;
+    private GebaeudeProjektZeile? _inDbZeile;
+    private string _inDbName = "";
+    private string? _inDbNameFehler;
+    private string? _inDbFehler;
+
+    /// <summary>Steht die Namensabfrage „In DB übernehmen"? Prüfhilfe für die Tests.</summary>
+    public bool InDbOffen => _inDbOffen;
+
+    /// <summary>Der Name im Feld der Abfrage — Prüfhilfe für die Tests.</summary>
+    public string InDbName => _inDbName;
+
+    /// <summary>Die Absage am Namensfeld; <c>null</c> = keine. Prüfhilfe für die Tests.</summary>
+    public string? InDbNameFehler => _inDbNameFehler;
+
+    /// <summary>Öffnet die Namensabfrage, vorbelegt mit dem Vorschlag der Hülle.</summary>
+    private void BeiInDb()
+    {
+        if (_gewaehlt is null || InDbUebernehmen is null) return;
+        // Anwenderentscheid 06.10.2026: eine ungespeicherte Zeile zuerst still speichern; scheitert
+        // das, steht die Meldung und es wird nicht übernommen.
+        if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(SperreInDb)) return;
+
+        _meldung = "";
+        _inDbZeile = _gewaehlt;
+        _inDbName = InDbVorschlag?.Invoke(_gewaehlt) ?? _gewaehlt.Name;
+        _inDbNameFehler = null;
+        _inDbFehler = null;
+        _inDbOffen = true;
+    }
+
+    private void InDbNameGeaendert(string w)
+    {
+        _inDbName = w ?? "";
+        _inDbNameFehler = null;
+        _inDbFehler = null;
+    }
+
+    /// <summary>Abbrechen, Esc und das Kreuz: Die Abfrage geht zu, geschrieben wird nichts.</summary>
+    private void InDbAbbrechen()
+    {
+        _inDbOffen = false;
+        _inDbZeile = null;
+        _inDbName = "";
+        _inDbNameFehler = null;
+        _inDbFehler = null;
+    }
+
+    private void InDbErgebnis(bool ok)
+    {
+        if (ok) InDbSchreiben();
+        else InDbAbbrechen();
+    }
+
+    /// <summary>
+    /// Das OK der Abfrage schreibt SOFORT. Eine Absage am Namen steht am Feld, jede andere in der
+    /// Abfrage; sie bleibt dann offen. Danach liest die Katalogliste neu, der neue Satz ist gewählt
+    /// und steht im Detailblock, die Statuszeile meldet die Übernahme.
+    /// </summary>
+    private void InDbSchreiben()
+    {
+        if (_inDbZeile is null || InDbUebernehmen is null) { InDbAbbrechen(); return; }
+
+        GebaeudeDbUebernahme e = InDbUebernehmen(_inDbZeile, _inDbName);
+        if (!e.Ok)
+        {
+            if (e.AmNamen) _inDbNameFehler = e.Meldung;
+            else _inDbFehler = e.Meldung;
+            return;
+        }
+
+        InDbAbbrechen();
+        KatalogLaden();
+        foreach (Katalogfilterzeile k in _katalog)
+            if (string.Equals(k.Bezeichner, e.Name, StringComparison.Ordinal)) { KatalogzeileWaehlen(k.Schluessel); break; }
+        Melden(e.Meldung, WarnStufe.Erfolg);
+    }
+
+    // =================================================================================
     // Ueberlagerungen
     // =================================================================================
 
     private void BeiKatalogAendern()
     {
         if (KatalogGaben is null) return;
-        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung); return; }
+        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung, amKatalog: true); return; }
 
         _meldung = "";
         _katalogGaben = KatalogGaben(_katalogzeile.Bezeichner);
@@ -1178,10 +1686,10 @@
     private void BeiProjekt()
     {
         if (_gewaehlt is null || ProjektGaben is null) return;
-        if (!_gewaehlt.HatProjektkopie) { Melden(SperreNeueZeile, WarnStufe.Hinweis); return; }
+        if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(SperreNeueZeile)) return;
         _meldung = "";
         _projektGaben = ProjektGaben(_gewaehlt);
-        if (_projektGaben is null) Melden(SperreNeueZeile, WarnStufe.Hinweis);
+        if (_projektGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
     }
 
     /// <summary>
@@ -1205,10 +1713,10 @@
     private void BeiExport()
     {
         if (_gewaehlt is null || ExportGaben is null) return;
-        if (!_gewaehlt.HatProjektkopie) { Melden(SperreExport, WarnStufe.Hinweis); return; }
+        if (!_gewaehlt.HatProjektkopie && !VorherSpeichern(SperreExport)) return;
         _meldung = "";
         _exportGaben = ExportGaben(_gewaehlt, _geaenderteZeilen.Contains(_gewaehlt));
-        if (_exportGaben is null) Melden(SperreExport, WarnStufe.Hinweis);
+        if (_exportGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
     }
 
     /// <summary>„Baustoff-Zuordnungen…" (Nacharbeit G4b) — die Ansicht als Überlagerung, je Klick neu gelesen.</summary>
@@ -1226,7 +1734,7 @@
     private void BaustoffzuordnungenFertig(int? entfernt)
     {
         _baustoffzuordnungenGaben = null;
-        if (entfernt is > 0) Melden(Format(MeldungBaustoffzuordnungenEntfernt, entfernt.Value), WarnStufe.Hinweis);
+        if (entfernt is > 0) Melden(Format(MeldungBaustoffzuordnungenEntfernt, entfernt.Value), WarnStufe.Hinweis, amKatalog: true);
     }
 
     /// <summary>
@@ -1275,6 +1783,15 @@
 
         _meldung = "";
         IReadOnlyDictionary<string, object>? gaben = BedarfGaben(_gewaehlt);
+        // Anwenderentscheid 06.10.2026: Eine ungespeicherte Importzeile, deren Zone mit Bauteilen erst
+        // der Speicherweg anlegt, wird außerhalb des Assistenten zuerst still gespeichert und dann
+        // gerechnet; scheitert das Speichern, steht seine Meldung.
+        if (gaben is null && ListeSpeichern is not null && !_gewaehlt.HatProjektkopie
+            && _gewaehlt.Herkunftsschluessel is not null)
+        {
+            if (!StillSpeichern(amKatalog: false)) return;
+            gaben = BedarfGaben(_gewaehlt);
+        }
         if (gaben is null)
         {
             // Stufe G6a: der benannte Grund der Fassade statt der allgemeinen Meldung.
@@ -1293,16 +1810,21 @@
 
     /// <summary>
     /// „Gebäude in DB löschen" — ohne markierten Katalogsatz die Bitte um eine Wahl; ist
-    /// der Satz gesperrt (Auslieferungssatz, von einem Projekt geführt), steht der
-    /// benannte Grund als Warnung, und es wird nicht erst nachgefragt. Sonst die Rückfrage.
+    /// der Satz gesperrt (Auslieferungssatz), steht der benannte Grund als Warnung, und es
+    /// wird nicht erst nachgefragt. Sonst die Rückfrage; sie nennt die Projekte, die eine
+    /// Kopie führen und behalten.
     /// </summary>
     private void BeiKatalogLoeschen()
     {
-        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung); return; }
+        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung, amKatalog: true); return; }
 
         string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
-        if (sperre.Length > 0) { Melden(sperre, WarnStufe.Warnung); return; }
+        _loeschsperre = sperre;
+        if (sperre.Length > 0) { Melden(sperre, WarnStufe.Warnung, amKatalog: true); return; }
+        string assistentsperre = AssistentLoeschsperre();
+        if (assistentsperre.Length > 0) { Melden(assistentsperre, WarnStufe.Hinweis, amKatalog: true); return; }
 
+        _loeschhinweis = KatalogLoeschhinweis?.Invoke(_katalogzeile.Bezeichner) ?? "";
         _meldung = "";
         _loeschfrage = true;
     }
@@ -1317,24 +1839,269 @@
         _loeschfrage = false;
         if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogzeile.Bezeichner))
+        // Anwenderentscheid 06.10.2026: Stammt eine eben übernommene, noch ungespeicherte Zeile aus
+        // diesem Satz, entsteht ihre Kopie zuerst (stilles Speichern); sonst fände das OK den Satz
+        // nicht mehr. Scheitert das Speichern, wird nicht gelöscht.
+        int satz = _katalogzeile.Id;
+        if (ListeSpeichern is not null && Zeilen.Any(z => !z.HatProjektkopie && z.IdKatalog == satz)
+            && !StillSpeichern(amKatalog: true))
+            return;
+
+        string loeschName = _katalogzeile.Bezeichner;
+        if (!Katalogladung.Loeschen(() => KatalogLoeschen(loeschName), loeschName, out string loeschGrund))
         {
+            // KT-4: Warf der Löschweg, nennt die Meldung seinen Grund.
+            if (loeschGrund.Length > 0) { Melden(loeschGrund, WarnStufe.Warnung, amKatalog: true); return; }
             string sperre = KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
-            Melden(sperre.Length > 0 ? sperre : MeldungLoeschFehler, WarnStufe.Warnung);
+            _loeschsperre = sperre;
+            Melden(sperre.Length > 0 ? sperre : MeldungLoeschFehler, WarnStufe.Warnung, amKatalog: true);
             return;
         }
 
+        // Die Kopien im Projekt bleiben; ihr Verweis ist in der Datenbank jetzt leer
+        // (SET NULL). Die offene Liste zieht ihn nach, damit das Speichern die Kopie als
+        // unverändert erkennt und kein späterer Satz derselben Id sie anbindet.
+        int geloescht = _katalogzeile.Id;
+        foreach (GebaeudeProjektZeile z in Zeilen)
+            if (z.IdKatalog == geloescht) z.IdKatalog = null;
+
         _katalogzeile = null;
         _katalogGewaehlt = "";
+        _loeschhinweis = "";
         KatalogLaden();
-        Melden(MeldungGeloescht, WarnStufe.Hinweis);
+        Melden(MeldungGeloescht, WarnStufe.Hinweis, amKatalog: true);
     }
 
-    private void Melden(string text, WarnStufe stufe)
+    // =================================================================================
+    // "Datei erneut lesen" (HC-4) - Zustand allein im Dialog, nichts wird geschrieben
+    // =================================================================================
+
+    private readonly Dictionary<int, GebaeudeImportquelleAngabe?> _quellen = new();
+    private readonly GebaeudeAnsichtTexte _ansichtTexte = new();
+    private bool _neulesenOffen;
+    private bool _neulesenLaeuft;
+    private GebaeudeNeulesestand? _neulesenStand;
+    private GebaeudeImportquelleAngabe? _neulesenQuelle;
+    private string? _neulesenGeschoss;
+    private bool _neulesenGrundrissLaeuft;
+    private string? _neulesenGrundrissHinweis;
+
+    // =================================================================================
+    // G5-N (N5/N6): Ausrichtung
+    // =================================================================================
+
+    /// <summary>
+    /// Die gespeicherte Ausrichtung einer Zeile (Richtung der Planoberseite, Herkunft, Zahl der Bauteile); ohne Projektkopie
+    /// oder Importquelle gesperrt. Kein Delegat = kein Abschnitt; <c>null</c> als Antwort = kein Abschnitt für diese Zeile.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, GebaeudeAusrichtungDaten?>? Ausrichtung { get; set; }
+
+    /// <summary>„Ausrichtung ändern…“: dreht alle Bauteile der Zeile auf die neue Richtung der Planoberseite und speichert sofort.</summary>
+    [Parameter] public Func<GebaeudeProjektZeile, double, GebaeudeAusrichtungErgebnis>? AusrichtungAendern { get; set; }
+
+    /// <summary>GEB_AUSRICHTUNG_AENDERN</summary>
+    [Parameter] public string BtnAusrichtungText { get; set; } = Resource.GEB_AUSRICHTUNG_AENDERN;
+
+    /// <summary>GEB_AUSRICHTUNG_AENDERN_HINWEIS</summary>
+    [Parameter] public string BtnAusrichtungHinweis { get; set; } = Resource.GEB_AUSRICHTUNG_AENDERN_HINWEIS;
+
+    /// <summary>GEB_AUSRICHTUNG_FRAGE ({0} = Bauteile, {1} = Drehung in Grad)</summary>
+    [Parameter] public string AusrichtungFrageText { get; set; } = Resource.GEB_AUSRICHTUNG_FRAGE;
+
+    /// <summary>GEB_AUSRICHTUNG_UNVERAENDERT</summary>
+    [Parameter] public string AusrichtungUnveraendertText { get; set; } = Resource.GEB_AUSRICHTUNG_UNVERAENDERT;
+
+    private readonly Dictionary<int, GebaeudeAusrichtungDaten?> _ausrichtungen = new();
+    private int? _ausrichtungFuer;
+    private double? _ausrichtungWert;
+    private string? _ausrichtungFrage;
+
+    /// <summary>Die Rückfrage vor dem Drehen, wie sie gerade steht (Prüfhilfe für Tests); <c>null</c> = keine.</summary>
+    public string? AusrichtungFrage => _ausrichtungFrage;
+
+    /// <summary>Die Ausrichtung einer Zeile — je Zeile einmal gefragt, nach einer Änderung neu; der Eingabewert gilt je Zeile.</summary>
+    private GebaeudeAusrichtungDaten? AusrichtungVon(GebaeudeProjektZeile z)
+    {
+        if (Ausrichtung is null) return null;
+        if (_ausrichtungFuer != z.IdZ)
+        {
+            _ausrichtungFuer = z.IdZ;
+            _ausrichtungWert = null;
+            _ausrichtungFrage = null;
+        }
+        if (!_ausrichtungen.TryGetValue(z.IdZ, out GebaeudeAusrichtungDaten? a))
+        {
+            a = Ausrichtung(z);
+            _ausrichtungen[z.IdZ] = a;
+        }
+        return a;
+    }
+
+    /// <summary>Ein bestätigter Wert der Eingabe — noch nichts gedreht; das tut erst „Ausrichtung ändern…“.</summary>
+    private void BeiAusrichtungWert(double wert) => _ausrichtungWert = wert;
+
+    /// <summary>Die Drehung von <paramref name="alt"/> nach <paramref name="neu"/> im Uhrzeigersinn, normiert auf [0, 360).</summary>
+    private static double Drehung(double alt, double neu)
+    {
+        double d = Math.Round(((neu - alt) % 360.0 + 360.0) % 360.0, 1, MidpointRounding.AwayFromZero);
+        return d >= 360.0 ? 0.0 : d;
+    }
+
+    /// <summary>„Ausrichtung ändern…“: unverändert = Hinweis; sonst die Rückfrage mit der Zahl der Bauteile und der Drehung.</summary>
+    private void BeiAusrichtungAendern()
+    {
+        if (_gewaehlt is null || AusrichtungAendern is null || AusrichtungVon(_gewaehlt) is not { Aenderbar: true } a) return;
+        double neu = _ausrichtungWert ?? a.PlanoberseiteGrad;
+        double drehung = Drehung(a.PlanoberseiteGrad, neu);
+        if (drehung == 0.0) { Melden(AusrichtungUnveraendertText, WarnStufe.Hinweis); return; }
+        _ausrichtungFrage = string.Format(System.Globalization.CultureInfo.CurrentCulture, AusrichtungFrageText,
+                                          a.Bauteile, Zahlen.Anzeigetext(drehung));
+    }
+
+    /// <summary>Ja dreht (ein Vorgang des Kerns) und meldet das Ergebnis; danach Ausrichtung und Zeile neu gelesen. Nein lässt alles.</summary>
+    private void AusrichtungBeantwortet(bool? ja)
+    {
+        _ausrichtungFrage = null;
+        if (ja != true || _gewaehlt is not GebaeudeProjektZeile z || AusrichtungAendern is null
+            || AusrichtungVon(z) is not { Aenderbar: true } a) return;
+        GebaeudeAusrichtungErgebnis e = AusrichtungAendern(z, _ausrichtungWert ?? a.PlanoberseiteGrad);
+        Melden(e.Meldung, e.Ok ? WarnStufe.Hinweis : WarnStufe.Fehler);
+        if (!e.Ok) return;
+        _ausrichtungen.Remove(z.IdZ);
+        _ausrichtungWert = null;
+        _neulesenStand = null;   // eine offene Ansicht des Neulesens zeigte die alte Drehung
+        ZeileAuffrischen?.Invoke(z);
+        ProjektzeileWaehlen(z);
+    }
+
+    /// <summary>Ist die Überlagerung „Datei erneut lesen“ offen?</summary>
+    public bool NeuLesenOffen => _neulesenOffen;
+
+    /// <summary>Die Quelle einer Zeile — je Zuordnung einmal gefragt; eine Zeile ohne Projektkopie hat keine.</summary>
+    private GebaeudeImportquelleAngabe? QuelleVon(GebaeudeProjektZeile? z)
+    {
+        if (z is null || Importquelle is null || !z.HatProjektkopie) return null;
+        if (!_quellen.TryGetValue(z.IdZ, out GebaeudeImportquelleAngabe? q))
+        {
+            q = Importquelle(z);
+            _quellen[z.IdZ] = q;
+        }
+        return q;
+    }
+
+    /// <summary>
+    /// Dateiwahl und Lesen; ein Abbruch der Wahl lässt den vorigen Stand stehen (beim ersten Mal bleibt die
+    /// Überlagerung zu). Kein <see cref="Geaendert"/> — das Neulesen ändert nichts am Gebäude.
+    /// </summary>
+    private async Task BeiNeuLesen()
+    {
+        GebaeudeProjektZeile? z = _gewaehlt;
+        if (z is null || DateiNeuLesen is null || _neulesenLaeuft) return;
+        _neulesenQuelle = QuelleVon(z);
+        _neulesenLaeuft = true;
+        GebaeudeNeulesestand? stand;
+        try
+        {
+            stand = await DateiNeuLesen(z);
+        }
+        finally
+        {
+            _neulesenLaeuft = false;
+        }
+        if (stand is null) return;   // Dateiwahl abgebrochen - kein Fehler
+        if (!ReferenceEquals(stand.Ansicht, _neulesenStand?.Ansicht)) _neulesenGeschoss = null;
+        _neulesenStand = stand;
+        _neulesenGrundrissHinweis = null;
+        _neulesenOffen = true;
+    }
+
+    /// <summary>
+    /// HC-5 (F7): „Grundriss übernehmen“ — die Hülle fragt zurück und schreibt; danach die Hinweiszeile statt des Knopfs.
+    /// Ein Nein lässt den Knopf stehen. Kein <see cref="Geaendert"/>: Der Grundriss ändert nichts an den Daten des Dialogs.
+    /// </summary>
+    private async Task BeiGrundrissNachtragen()
+    {
+        if (_neulesenStand?.GrundrissNachtragen is not { } nachtragen || _neulesenGrundrissLaeuft) return;
+        _neulesenGrundrissLaeuft = true;
+        try
+        {
+            _neulesenGrundrissHinweis = await nachtragen();
+        }
+        finally
+        {
+            _neulesenGrundrissLaeuft = false;
+        }
+    }
+
+    private void NeuLesenSchliessen()
+    {
+        _neulesenOffen = false;
+        _neulesenStand = null;
+        _neulesenGeschoss = null;
+        _neulesenGrundrissHinweis = null;
+    }
+
+    /// <summary>
+    /// Vor dem Öffnen oder Übernehmen einer ungespeicherten Zeile: still speichern; ohne Speicherweg
+    /// (Assistent) die weiche Sperre <paramref name="sperre"/>. Fehlt die Kopie trotz Erfolg, steht
+    /// <see cref="MeldungProjektkopieFehlt"/>. <c>true</c>, wenn die Zeile danach ihre Projektkopie trägt.
+    /// </summary>
+    private bool VorherSpeichern(string sperre)
+    {
+        if (ListeSpeichern is null) { Melden(sperre, WarnStufe.Hinweis); return false; }
+        if (!StillSpeichern(amKatalog: false)) return false;
+        if (_gewaehlt is { HatProjektkopie: true }) return true;
+        Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
+        return false;
+    }
+
+    /// <summary>
+    /// <b>Der eine stille Speicherweg</b> (<see cref="ListeSpeichern"/>): bei Erfolg gilt keine Zeile
+    /// mehr als ungespeichert geändert, die Wahl bleibt und ihr Detailblock zieht nach; sonst steht
+    /// die Meldung als Warnung — unter der Katalogleiste (<paramref name="amKatalog"/>) oder oben.
+    /// </summary>
+    private bool StillSpeichern(bool amKatalog)
+    {
+        if (ListeSpeichern is null) return false;
+        // KT-4: Wirft der Schreibweg, kommt sein Grund wie eine Ablehnung zurück.
+        string fehler = Katalogladung.Schreiben(() => ListeSpeichern() ?? "", TitelText, g => g);
+        if (fehler.Length > 0) { Melden(fehler, WarnStufe.Warnung, amKatalog); return false; }
+        _geaenderteZeilen.Clear();
+        // Der Detailblock zeigt die Projektzeile nur, solange kein Katalogsatz markiert ist (das
+        // Löschen wirkt auf den markierten Satz - er bleibt markiert).
+        if (_gewaehlt is not null && _katalogzeile is null) ProjektzeileWaehlen(_gewaehlt);
+        return true;
+    }
+
+    private void Melden(string text, WarnStufe stufe, bool amKatalog = false)
     {
         _meldung = text ?? "";
         _meldungStufe = stufe;
+        _meldungAmKatalog = amKatalog;
     }
+
+    /// <summary>
+    /// Der Sperrgrund am Knopf „Gebäude in DB löschen": zuerst der des Katalogs (Auslieferungssatz),
+    /// sonst der des Assistenten (<see cref="AssistentLoeschsperre"/>); leer = löschbar.
+    /// </summary>
+    private string LoeschsperreAnzeige => _loeschsperre.Length > 0 ? _loeschsperre : AssistentLoeschsperre();
+
+    /// <summary>
+    /// Anwenderentscheid 06.10.2026: Im Assistenten (kein stiller Speicherweg, gespeichert wird erst
+    /// an seinem Ende) ist ein Katalogsatz gesperrt, aus dem eine ungespeicherte Projektzeile stammt —
+    /// sonst fände das spätere Speichern den Satz nicht mehr. Andere Sätze bleiben löschbar.
+    /// </summary>
+    private string AssistentLoeschsperre()
+    {
+        if (ListeSpeichern is not null || _katalogzeile is null) return "";
+        int satz = _katalogzeile.Id;
+        return Zeilen.Any(z => !z.HatProjektkopie && z.IdKatalog == satz) ? SperreLoeschenAssistent : "";
+    }
+
+    /// <summary>Liest den Löschsperrgrund des markierten Katalogsatzes neu.</summary>
+    private void LoeschsperreLesen()
+        => _loeschsperre = _katalogzeile is null
+            ? "" : KatalogLoeschsperre?.Invoke(_katalogzeile.Bezeichner) ?? "";
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
@@ -1343,11 +2110,38 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
+        if (e.Key == "Escape" && _katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
             _loeschfrage || _ausProjektFrage || _projektGaben is not null || _exportGaben is not null ||
-            _baustoffzuordnungenGaben is not null) return Task.CompletedTask;
+            _baustoffzuordnungenGaben is not null || _inDbOffen || _neulesenOffen) return Task.CompletedTask;
         return Abbrechen();
     }
+
+    // =================================================================================
+    // Schloss setzen / aufheben (AD-Q15) - derselbe Baustein wie in den Verwaltungen
+    // =================================================================================
+
+    /// <summary>
+    /// „Schloss setzen…" / „Schloss aufheben…" an der Katalogliste
+    /// (<c>Schlosswege.Aus(…SchlossSetzen)</c>). Ohne ihn steht der Knopf nicht da.
+    /// Die Verwendung im Projekt sperrt nichts: Das Projekt führt eine eigene Kopie.
+    /// </summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    private Katalogschloss? _katalogschloss;
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _katalogschloss?.FrageOffen == true;
+
+    /// <summary>Nach dem Schalten: Liste neu lesen, Status melden.</summary>
+    private void BeiSchlossGeschaltet(string status)
+    {
+        KatalogLaden();
+        Melden(status ?? "", WarnStufe.Hinweis, amKatalog: true);
+    }
+
+    /// <summary>Warum nicht geschaltet wurde.</summary>
+    private void BeiSchlossAbgelehnt(string grund) => Melden(grund ?? "", WarnStufe.Warnung, amKatalog: true);
 }

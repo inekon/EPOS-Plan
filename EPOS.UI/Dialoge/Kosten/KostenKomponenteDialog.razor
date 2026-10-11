@@ -155,6 +155,7 @@
                                EmpfehlungKurztext="@zeile.EmpfehlungKurztext"
                                EmpfehlungZeile="@zeile.EmpfehlungZeile"
                                SatzHerleitung="@zeile.SatzHerleitung"
+                               SatzGesperrt="@zeile.SatzGesperrt"
                                VorlagenHinweis="@zeile.VorlagenHinweis"
                                VorlagenUebernehmenText="@VorlageUebernehmenText"
                                VorlagenUebernehmenKurztext="@VorlageUebernehmenKurztext"
@@ -983,7 +984,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>

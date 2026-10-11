@@ -96,6 +96,16 @@
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* --- STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): die
            Liste LINKS ueber die ganze Hoehe, rechts die Auswahlleiste und das
@@ -173,8 +183,15 @@
                     @* H13 / O-H13b-5: der Weg in die Wikirubrik "Berechnung" - er steht
                        bei den Werten, die der Rechenweg liest. *@
                     <div class="epos-berechnungshilfe">
+                        @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation,
+                           Abschnitt 7) - der Schluessel steht im Profil wie der des Rechenwegs. *@
+                        @if (!string.IsNullOrEmpty(Profil.GrundlagenSchluessel))
+                        {
+                            <InfoKnopf Schluessel="@Profil.GrundlagenSchluessel"
+                                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                        }
                         <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
-                                   StandardKurztext="@Profil.BerechnungsKurztext" />
+                                   StandardKurztext="@Profil.BerechnungsKurztext" MitAssistent="false" />
                     </div>
                 </Nachsatz>
             </Stammblatt>
@@ -706,7 +723,8 @@
         foreach (string name in namen)
         {
             var felder = new List<Vergleichsfeld>();
-            foreach (BrowserFeldwert f in Wege.Detail(name) ?? Array.Empty<BrowserFeldwert>())
+            foreach (BrowserFeldwert f in Katalogladung.SatzDazu(() => Wege.Detail(name), name, ref _satzFehler)
+                                          ?? Array.Empty<BrowserFeldwert>())
             {
                 if (f.Schluessel == KatalogBrowserProfil.FeldBezeichner) continue;
                 felder.Add(new Vergleichsfeld(f.Schluessel, Feldbeschriftung(f), Feldanzeige(f)));
@@ -759,6 +777,12 @@
             ? Resource.ADM_SCHLOSS_DUPLIZIEREN
             : Resource.ADM_SCHLOSS;
     }
+
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
 
     protected override void OnInitialized()
     {
@@ -884,7 +908,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =====================================================================
@@ -903,7 +927,7 @@
     /// </remarks>
     private void ListeAufbauen()
     {
-        _zeilen = Wege.Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _zeilen = Katalogladung.Lesen(Wege.Katalogzeilen, Profil.Titel, out _listeFehler);
 
         _geschuetzt = new HashSet<string>(_zeilen.Where(z => z.Geschuetzt).Select(z => z.Bezeichner),
                                           StringComparer.Ordinal);
@@ -941,9 +965,12 @@
         // (W14a-E-8). Ohne Bezeichner stehen lauter Leerwerte darin.
         _uebersicht = Uebersicht?.Invoke(_gewaehlt) ?? Array.Empty<Parameterwert>();
 
+        // KT-4: Warf das Lesen, ist das Stammblatt leer; der Banner nennt den Grund.
+        _satzFehler = "";
         _felder = _gewaehlt.Length == 0
             ? new List<BrowserFeldwert>()
-            : (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<BrowserFeldwert>()).ToList();
+            : (Katalogladung.Satz(() => Wege.Detail?.Invoke(_gewaehlt), _gewaehlt, out _satzFehler)
+               ?? Array.Empty<BrowserFeldwert>()).ToList();
 
         // Die zwei Gruppen des Stammblatts (V9) teilen DIESELBEN Objekte - geschrieben
         // wird weiter aus _felder.
@@ -1109,7 +1136,9 @@
     /// </summary>
     private bool Schreiben()
     {
-        KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_gewaehlt, _felder, false);
+        // KT-4: Wirft der Schreibweg, bleiben die Felder stehen und die Meldung nennt den Grund.
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Wege.Speichern!(_gewaehlt, _felder), _gewaehlt,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, _gewaehlt));
 
         if (!ergebnis.Ok)
         {
@@ -1326,7 +1355,8 @@
         var gruende = new List<string>();
         foreach (string name in _loeschziele)
         {
-            KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(name);
+            KatalogSpeicherErgebnis ergebnis = Katalogladung.Loeschen(() => Wege.Loeschen(name), name,
+                                                                      g => new KatalogSpeicherErgebnis(false, g, name));
             if (ergebnis.Ok)
             {
                 geloescht++;

@@ -1,0 +1,86 @@
+﻿@page "/legendenprobe"
+@using EPOS.UI.Seiten.Simulation
+@using System.Linq
+
+@*  DIE PRUEFSEITE DER RINGLEGENDE (Ergebnisuebersicht der Simulation).
+
+    WOZU. Die Legende neben den Ringen fuer Waerme, Strom und Kaelte brach bei
+    schmaler Spalte Buchstabe fuer Buchstabe um. bunit hat kein Layout; diese
+    Seite stellt den echten UebersichtReiter mit synthetischen Ringdaten und
+    langen Namen wie im Betrieb, damit legendenprobe.mjs Hoehe, Wortumbruch und
+    die Lage der Legende messen kann. Die Breite des Rahmens setzt die Probe per
+    Skript (#legendenprobe-rahmen), die Fensterbreite ueber den Viewport. *@
+
+<div id="legendenprobe-rahmen" style="width: 100%; box-sizing: border-box;">
+    <UebersichtReiter Kennzahlen="@_zahlen" Daten="@_daten" Bedarf="@_bedarf"
+                      RingWaerme="@_ringWaerme" RingStrom="@_ringStrom" RingKaelte="@_ringKaelte" />
+</div>
+
+@code {
+    private readonly SimulationErgebnisCtrl.UebersichtKennzahlen _zahlen = new()
+    {
+        StrombedarfGesamtMwh = 199.25, WaermebedarfGesamtMwh = 1480.25, RestwaermeMwh = 6.04,
+        ReststromMwh = 130.0, WpWaermeproduktionMwh = 900.0, WpStromverbrauchMwh = 225.0,
+        KesselWaermeproduktionMwh = 374.21, HeizstabStromverbrauchMwh = 2.5, KesselStromverbrauchMwh = 1.25
+    };
+
+    private static Erzeugertabelle Tabelle(string einheit, params string[] namen) => new()
+    {
+        Spalten = new[] { new Tabellenkopf("Erzeuger"), new Tabellenkopf("Erzeugung", einheit) },
+        Zeilen = namen.Select(n => new Erzeugerzeile(n, new[] { "100,00" })).ToArray()
+    };
+
+    private readonly UebersichtDaten _daten = new()
+    {
+        Waermepumpe = true, Heizkessel = true, Bhkw = true, Solarthermie = true, Photovoltaik = true,
+        WaermedeckungProzent = 99.6, StromdeckungProzent = 34.8,
+        WaermebedarfVorhanden = true, StrombedarfVorhanden = true, StromerzeugerVorhanden = true,
+        WaermebedarfMwh = 1480.25, StrombedarfMwh = 199.25, ReststromMwh = 130.0, RestwaermeMwh = 6.04,
+        Kaskade = "Wärmepumpe → Blockheizkraftwerk → Heizkessel",
+        WaermeLegende = new[]
+        {
+            new Ringanteil("Wärmepumpe Luft/Wasser Kaskade 1", 900.0, 60.8, "#2ECC71"),
+            new Ringanteil("Blockheizkraftwerk Erdgas 50 kWel", 150.0, 10.1, "#E67E22"),
+            new Ringanteil("Brennwertkessel Erdgas Spitzenlast", 374.21, 25.3, "#95A5A6"),
+            new Ringanteil("Fernwärmeübergabestation", 50.0, 3.4, "#8E44AD"),
+            new Ringanteil("Rest (ungedeckt)", 6.04, 0.4, "#D9DEE5", IstRest: true)
+        },
+        StromLegende = new[]
+        {
+            new Ringanteil("Photovoltaik Ost-West-Dach Halle 2", 39.25, 19.7, "#F1C40F"),
+            new Ringanteil("Blockheizkraftwerk Eigenstromanteil", 30.0, 15.1, "#E67E22"),
+            new Ringanteil("Netzbezug (ungedeckt)", 130.0, 65.2, "#D9DEE5", IstRest: true)
+        },
+        WaermeTabelle = Tabelle("MWh/a", "Wärmepumpe Luft/Wasser Kaskade 1", "Brennwertkessel Erdgas Spitzenlast"),
+        StromTabelle = Tabelle("MWh/a", "Photovoltaik Ost-West-Dach Halle 2")
+    };
+
+    private readonly BedarfDaten _bedarf = new()
+    {
+        Kaelte = new KaelteDaten
+        {
+            KaeltebedarfMwh = 112.5, KaeltelastMaxKw = 88.25, KaelterestbedarfMwh = 12.5,
+            DeckungsgradProzent = 88.9, KaeltestromMwh = 25.0, EerJahreswert = 4.0, KaeltestromNetzbezugMwh = 18.0,
+            Deckungshinweis = "Kältemaschine und Wärmepumpe decken 100,00 MWh/a des Kältebedarfs.",
+            Erzeuger = new[]
+            {
+                new KaelteerzeugerAnzeige("Kältemaschine mit Trockenrückkühler", 12, 70.0, 17.5, 4.0, 12.6, "eigener Zähler")
+            },
+            Legende = new[]
+            {
+                new Ringanteil("Kältemaschine mit Trockenrückkühler", 70.0, 62.2, "#3498DB"),
+                new Ringanteil("Wärmepumpe Luft/Wasser im Kühlbetrieb", 30.0, 26.7, "#2ECC71"),
+                new Ringanteil("Rest (ungedeckt)", 12.5, 11.1, "#D9DEE5", IstRest: true)
+            }
+        }
+    };
+
+    private static Zeichenmodell Ring(string titel, double mitte, params (string Name, double Wert)[] teile)
+        => ChartRenderer.RingModell(titel,
+               teile.Select(t => new ChartRenderer.Ringsegment(t.Name, t.Wert, ChartRenderer.C_WP)).ToArray(),
+               mitte, "%", "gedeckt", false);
+
+    private readonly Zeichenmodell _ringWaerme = Ring("Wärme", 99.6, ("Wärmepumpe", 900.0), ("Kessel", 374.0));
+    private readonly Zeichenmodell _ringStrom = Ring("Strom", 34.8, ("PV", 39.0), ("Netz", 130.0));
+    private readonly Zeichenmodell _ringKaelte = Ring("Kälte", 88.9, ("KM", 70.0), ("Rest", 12.5));
+}

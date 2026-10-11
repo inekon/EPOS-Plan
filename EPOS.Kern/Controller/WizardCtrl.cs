@@ -119,6 +119,8 @@ namespace WindowsFormsApplication1
             // ST1: Dieselbe Falle ein Gewerk weiter - Z_AnlageStrang haengt mit
             // Loeschweitergabe an der Anlagenzeile (Block ueber StraengeSichern).
             StraengeSichern(projektID);
+            // V14: Tab_Sperrfenster haengt ebenso mit Loeschweitergabe an der Anlagenzeile.
+            SperrfensterSichern(projektID);
             FachspaltenSichern(projektID, TYP_ALLE);
 
             // ID_Type fest im SQL statt als Parameter - dieselbe Begruendung wie bei
@@ -156,6 +158,7 @@ namespace WindowsFormsApplication1
             // ST1: Die Stranglisten werden AUCH im typgefilterten Weg gesichert -
             // wortgleiche Begruendung wie bei den Senken eine Zeile hoeher.
             StraengeSichern(projektID);
+            SperrfensterSichern(projektID);
 
             FachspaltenSichern(projektID, nType);
 
@@ -180,14 +183,7 @@ namespace WindowsFormsApplication1
             // Kosten hinterlassen). NUR hier — die Typ-/Alle-Löschwege sind auch
             // der destruktive Wizard-Neuaufbau; dort heilt die Zuordnung über den
             // Geräteanker (KostenProjektPositionenCtrl.ZuordnungReparieren).
-            try
-            {
-                if (KostenPositionCtrl.StelleSpaltenSicher())
-                    DataRepository.ExecuteSQL(
-                        "DELETE FROM Tab_ProjektWerte WHERE ProjektID = ? AND ID_Anlage = ?",
-                        new DbParam("@p", projektID),
-                        new DbParam("@a", ID_Waermeerzeuger));
-            }
+            try { AnlagenKostenpositionen.Loeschen(null, projektID, ID_Waermeerzeuger); }
             catch { }
 
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID = ?",
@@ -286,6 +282,99 @@ namespace WindowsFormsApplication1
             if (ID > 0) ps.Add(new DbParam("@id", ID));
 
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
+        }
+
+        /// <summary>
+        /// Löscht die Kältebedarfszuordnungen eines Projekts (<paramref name="ID"/> &gt; 0: nur diese Zeile) — Welle K1,
+        /// Muster <see cref="Del_Projekt_Prozess"/>. Die Projektkopien bleiben (wie bei der Prozesswärme). Vor dem
+        /// Schritt <see cref="KaeltebedarfSchema"/> gibt es nichts zu löschen.
+        /// </summary>
+        public bool Del_Projekt_Kaelte(int projektID, int ID = 0, DbVorgang vorgang = null)
+        {
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+            if (!KaeltebedarfSchema.TabellenVorhanden()) return true;
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
+            string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Kaeltebedarf WHERE ID_Projekt = ? AND ID = ?"
+                                  : "DELETE FROM Z_Projekt_Kaeltebedarf WHERE ID_Projekt = ?";
+            List<DbParam> ps = new List<DbParam> { new DbParam("@pID", projektID) };
+            if (ID > 0) ps.Add(new DbParam("@id", ID));
+            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+        }
+
+        /// <summary>
+        /// Schreibt Kältebedarfszuordnungen (Welle K1, Muster <see cref="Add_Projekt_Prozess"/>): Katalogsatz samt Typ bei
+        /// Bedarf ins Projekt kopieren (<see cref="KaeltebedarfStammCtrl.CopyFromStamm"/>, mit <c>ID_Stamm</c>), nie eine
+        /// Katalog-ID in die Zuordnung; die Deckungsfelder geprüft (<see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung"/>)
+        /// und bei „zentral“ geleert. Ein Fehler bricht benannt ab.
+        /// </summary>
+        public bool Add_Projekt_Kaelte(int projektID, List<Z_ProjektKaeltebedarfModel> list, DbVorgang vorgang = null,
+                                       IdNachzug nachzug = null)
+        {
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+            if (list == null || list.Count == 0) return true;
+            if (!KaeltebedarfSchema.TabellenVorhanden())
+            {
+                DataRepository.FehlerMelden("Der Kaeltebedarf braucht den Schemaschritt " +
+                                            KaeltebedarfSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) + ".");
+                return false;
+            }
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
+            int nextID = DataRepository.GetMaxID("Z_Projekt_Kaeltebedarf", "ID") + 1;
+            foreach (var item in list)
+            {
+                Z_ProjektKaeltebedarfCtrl.Normalisieren(item);
+                string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(item);
+                if (grund != null)
+                {
+                    DataRepository.FehlerMelden("Die Deckung des Kaeltebedarfs \"" + (item.Bezeichner ?? "") + "\" ist unzulaessig (" +
+                                                grund + "). Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+
+                int kopie = KaeltebedarfStammCtrl.GetProjektIdUeberId(item.ID_Kaeltebedarf, item.Bezeichner, projektID);
+                if (kopie <= 0) kopie = KaeltebedarfStammCtrl.CopyFromStamm(item.Bezeichner, projektID);
+                if (kopie <= 0)
+                {
+                    DataRepository.FehlerMelden(
+                        "Der Kaeltebedarf \"" + (item.Bezeichner ?? "") + "\" konnte nicht in das Projekt uebernommen werden - " +
+                        "der Katalogsatz fehlt, oder die Kopie ist gescheitert. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+                item.ID_Kaeltebedarf = kopie;
+                if (item.TemperaturGeaendert && !KaeltebedarfStammCtrl.ProjektTemperaturSetzen(kopie, item.Vorlauf, item.Ruecklauf))
+                {
+                    DataRepository.FehlerMelden("Das Temperaturpaar des Kaeltebedarfs \"" + (item.Bezeichner ?? "") +
+                                                "\" ist unzulaessig. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+
+                int idZ = nextID++;
+                bool ok = DataRepository.ExecuteSQL(
+                    "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
+                    "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
+                    "Kuehl_EigenerZaehler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    new DbParam("@id", idZ),
+                    new DbParam("@pID", projektID),
+                    new DbParam("@kb", kopie),
+                    new DbParam("@bez", item.Bezeichner ?? ""),
+                    new DbParam("@sum", item.Summe),
+                    new DbParam("@kal", (object)item.ID_Betriebskalender ?? DBNull.Value),
+                    new DbParam("@deck", item.Deckung),
+                    new DbParam("@weg", (object)item.EerWeg ?? DBNull.Value),
+                    new DbParam("@e1", (object)item.Eer1 ?? DBNull.Value),
+                    new DbParam("@t1", (object)item.Taussen1 ?? DBNull.Value),
+                    new DbParam("@e2", (object)item.Eer2 ?? DBNull.Value),
+                    new DbParam("@t2", (object)item.Taussen2 ?? DBNull.Value),
+                    new DbParam("@car", (object)item.KuehlIdCarrier ?? DBNull.Value),
+                    new DbParam("@zae", item.KuehlEigenerZaehler ? 1 : 0));
+                if (!ok) return false;
+
+                Z_ProjektKaeltebedarfModel zeile = item;
+                nachzug?.Merken(() => { zeile.ID_Z = idZ; zeile.ID_Projekt = projektID; });
+            }
+            return true;
         }
 
         public bool Del_Stromganglinie(int projektID, DbVorgang vorgang = null)
@@ -1582,6 +1671,96 @@ namespace WindowsFormsApplication1
         // sagt deshalb der ZEITPUNKT ihres Anlegens, nicht ihr Inhalt - eine kuenftige
         // Fachspalte mit Vorgabe aendert daran nichts.
 
+        // =============================================================================
+        //  V14: Die Sperrfenster der Waermepumpe (Tab_Sperrfenster) - dieselbe Rettung wie
+        //  die Stranglisten (ST1): Sie haengen mit ON DELETE CASCADE an der Anlagenzeile,
+        //  das Loeschen + Neuanlegen nimmt sie mit. Gesichert wird im Arbeitsspeicher,
+        //  wiedererkannt ueber (ID_Type, Bezeichner); was der Dialog geschrieben hat, bleibt.
+        // =============================================================================
+
+        private sealed class SperrSicherung
+        {
+            public int ID_Type;
+            public string Bezeichner = "";
+            public List<Sperrfenster> Fenster = new List<Sperrfenster>();
+            public bool Verbraucht;
+        }
+
+        private List<SperrSicherung> m_SperrSicherung;
+        private int m_SperrProjekt;
+
+        /// <summary>Sichert die Sperrfenster des Projekts - nur im Arbeitsspeicher; ohne Tabelle nichts.</summary>
+        private void SperrfensterSichern(int projektID)
+        {
+            m_SperrSicherung = null;
+            m_SperrProjekt = 0;
+            if (projektID <= 0 || !SperrfensterCtrl.TabelleVorhanden()) return;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT a.ID, a.ID_Type, a.Bezeichner FROM Tab_Energieanlagen a WHERE a.ID_Projekt = ? " +
+                    "AND EXISTS (SELECT 1 FROM " + WaermepumpeSperrprofilSchema.TAB + " s WHERE s.ID_Energieanlage = a.ID) " +
+                    "ORDER BY a.ID",
+                    new DbParam("@pID", projektID));
+                if (dt == null || dt.Rows.Count == 0) return;
+                var l = new List<SperrSicherung>();
+                foreach (DataRow r in dt.Rows)
+                    l.Add(new SperrSicherung
+                    {
+                        ID_Type = SpZahl(r, "ID_Type"),
+                        Bezeichner = SpText(r, "Bezeichner"),
+                        Fenster = SperrfensterCtrl.Lesen(SpZahl(r, "ID"))
+                    });
+                m_SperrSicherung = l;
+                m_SperrProjekt = projektID;
+            }
+            catch (Exception ex)
+            {
+                m_SperrSicherung = null;
+                m_SperrProjekt = 0;
+                Console.WriteLine("Die Sperrfenster konnten vor dem Loeschen nicht gesichert werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Traegt die gesicherten Sperrfenster auf die Anlagen des Projekts zurueck, die keine fuehren und
+        /// fuer die der Dialog nicht geschrieben hat. <b>Best effort</b>, wie die Strangrettung.
+        /// </summary>
+        private void SperrfensterWiederherstellen(int projektID, HashSet<int> vomDialogGeschrieben)
+        {
+            List<SperrSicherung> sicherung = m_SperrSicherung;
+            int projektDerSicherung = m_SperrProjekt;
+            m_SperrSicherung = null;
+            m_SperrProjekt = 0;
+            if (sicherung == null || sicherung.Count == 0 || projektID <= 0 || projektDerSicherung != projektID) return;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT a.ID, a.ID_Type, a.Bezeichner FROM Tab_Energieanlagen a WHERE a.ID_Projekt = ? " +
+                    "AND NOT EXISTS (SELECT 1 FROM " + WaermepumpeSperrprofilSchema.TAB + " s WHERE s.ID_Energieanlage = a.ID) " +
+                    "ORDER BY a.ID",
+                    new DbParam("@pID", projektID));
+                if (dt == null) return;
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0 || (vomDialogGeschrieben != null && vomDialogGeschrieben.Contains(idAnlage))) continue;
+                    int typ = SpZahl(r, "ID_Type");
+                    string bez = SpText(r, "Bezeichner");
+                    SperrSicherung treffer = sicherung.Find(s => !s.Verbraucht && s.ID_Type == typ &&
+                                                                 string.Equals(s.Bezeichner, bez, StringComparison.Ordinal));
+                    if (treffer == null) continue;
+                    treffer.Verbraucht = true;
+                    if (!SperrfensterCtrl.Schreiben(idAnlage, treffer.Fenster, false))
+                        Console.WriteLine("Sperrfenster-Rettung: \"" + bez + "\" (ID " + idAnlage + ") nicht zurueckgeschrieben.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Sperrfenster konnten nicht wiederhergestellt werden: " + ex.Message);
+            }
+        }
+
         /// <summary>Eine gesicherte Anlagenzeile: Wiedererkennungsmerkmal + ihre Fachspalten.</summary>
         private sealed class FachspaltenSicherung
         {
@@ -1609,44 +1788,16 @@ namespace WindowsFormsApplication1
         /// <summary>Das Projekt, zu dem <see cref="m_FachspaltenSicherung"/> gehoert (siehe <see cref="m_SpVariantenProjekt"/>).</summary>
         private int m_FachspaltenProjekt;
 
-        /// <summary>Die Spalten, die <see cref="SQL_ANLAGE_INSERT"/> nennt - einmal aus der Anweisung gelesen.</summary>
-        private static HashSet<string> m_InsertSpalten;
-
-        private static HashSet<string> InsertSpalten()
-        {
-            if (m_InsertSpalten != null) return m_InsertSpalten;
-
-            HashSet<string> menge = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            int auf = SQL_ANLAGE_INSERT.IndexOf('(');
-            int zu = auf >= 0 ? SQL_ANLAGE_INSERT.IndexOf(')', auf) : -1;
-            if (auf >= 0 && zu > auf)
-            {
-                foreach (string s in SQL_ANLAGE_INSERT.Substring(auf + 1, zu - auf - 1).Split(','))
-                {
-                    string name = s.Trim();
-                    if (name.Length > 0) menge.Add(name);
-                }
-            }
-            m_InsertSpalten = menge;
-            return menge;
-        }
-
         /// <summary>
         /// Die Fachspalten: alle Spalten von <c>Tab_Energieanlagen</c>, die
         /// <see cref="SQL_ANLAGE_INSERT"/> nicht nennt, ohne <c>ID</c> - in
         /// Schemareihenfolge. Leer, wenn die Tabelle nur die Modellspalten fuehrt.
+        /// Weiterleitung auf <see cref="AnlagenFachspalten.Fachspalten"/> - dieselbe Menge
+        /// tragen die Uebernahmewege (Komponentenuebernahme, Flottenstudie).
         /// </summary>
         public static List<string> Fachspalten()
         {
-            List<string> fach = new List<string>();
-            HashSet<string> insert = InsertSpalten();
-            foreach (string spalte in DataRepository.SpaltenVonTabelle("Tab_Energieanlagen"))
-            {
-                if (string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)) continue;
-                if (insert.Contains(spalte)) continue;
-                fach.Add(spalte);
-            }
-            return fach;
+            return AnlagenFachspalten.Fachspalten();
         }
 
         private static string FachspaltenSelect(List<string> fach)
@@ -1833,6 +1984,24 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// Ordnet jeden distinkten <c>ID_Carrier</c> der Anlagenliste dem Projekt zu (Satzpaar aus
+        /// <c>energy_price</c> und <c>energy_project_settings</c> über <see cref="TraegerSatzAnlegen"/>); ein
+        /// schon zugeordneter Träger bleibt unberührt. Liefert die Zahl der neu angelegten Paare.
+        /// </summary>
+        internal int TraegerDerListeZuordnen(int projektID, List<WErzeugerModel> list)
+        {
+            if (projektID <= 0 || list == null) return 0;
+            int neuAngelegt = 0;
+            var erledigt = new HashSet<int>();
+            foreach (WErzeugerModel item in list)
+            {
+                if (item == null || item.ID_Carrier <= 0 || !erledigt.Add(item.ID_Carrier)) continue;
+                if (TraegerSatzAnlegen(projektID, item.ID_Carrier, out bool neu) && neu) neuAngelegt++;
+            }
+            return neuAngelegt;
+        }
+
         public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list, DbVorgang vorgang = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
@@ -1872,6 +2041,9 @@ namespace WindowsFormsApplication1
                 // Der Zustand gehoert dem LAUF und endet mit ihm - StraengeWiederherstellen
                 // bekommt ihn unten als Argument, nicht als Feld (Begruendung dort).
                 HashSet<int> strangGeschrieben = new HashSet<int>();
+
+                // V14: Fuer welche Anlagen der Dialog die Sperrfenster geschrieben hat - wie ST1.
+                HashSet<int> sperrGeschrieben = new HashSet<int>();
 
                 // FS1: Die Anlagenzeilen, die DIESER Lauf anlegt - nur auf sie schreibt
                 // FachspaltenWiederherstellen die gesicherten Fachspalten zurueck. Wie
@@ -2049,8 +2221,8 @@ namespace WindowsFormsApplication1
 
                     // Anweisung und Parameter stehen zentral (siehe SQL_ANLAGE_INSERT):
                     // dieselbe Wahrheit, die auch WErzeugerCtrl.Insert benutzt.
-                    if (!DataRepository.ExecuteSQL(SQL_ANLAGE_INSERT,
-                                                   AnlagenParameter(projektID, item, pufferCache)))
+                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(projektID, item, pufferCache);
+                    if (!DataRepository.ExecuteSQL(sqlAnlage, werteAnlage))
                     {
                         SpVariantenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
                         FachspaltenVerwerfen("das Neuanlegen der Anlagen ist gescheitert");
@@ -2147,6 +2319,25 @@ namespace WindowsFormsApplication1
                         // des Anwenders, keine Luecke, die zu fuellen waere
                         // (Anwenderentscheid 16.09.2026).
                         strangGeschrieben.Add(item.ID);
+                    }
+
+                    // V14: Die im Waermepumpen-Dialog bearbeiteten Sperrfenster - dieselbe Bauart
+                    // wie ST1 darueber: NULL = nicht angefasst (die Rettung unten traegt den Bestand
+                    // ein), eine gesetzte Liste ist die neue Wahrheit, auch leer; ein Fehlschlag
+                    // nimmt den Lauf zurueck.
+                    if (item.WP_Sperrfenster != null && item.ID > 0)
+                    {
+                        if (!SperrfensterCtrl.Schreiben(item.ID, item.WP_Sperrfenster))
+                        {
+                            string grund = "die Sperrfenster des Waermepumpen-Dialogs sind nicht geschrieben worden";
+                            SpVariantenVerwerfen(grund);
+                            FachspaltenVerwerfen(grund);
+                            Console.WriteLine("Die Sperrfenster der Anlage \"" + item.Bezeichner +
+                                              "\" konnten nicht gespeichert werden - das Speichern " +
+                                              "wird zurueckgenommen.");
+                            return false;
+                        }
+                        sperrGeschrieben.Add(item.ID);
                     }
 
                     // S2: Eine Waermeerzeugeranlage, die es vor dem Loeschen nicht gab, ist
@@ -2251,12 +2442,25 @@ namespace WindowsFormsApplication1
                 // die der Block ST1 oben geschrieben hat - auch die, deren Dialogliste
                 // LEER war.
                 StraengeWiederherstellen(projektID, strangGeschrieben);
+                SperrfensterWiederherstellen(projektID, sperrGeschrieben);
 
                 // FS1: Die Fachspalten (KWKG je Anlage, Steuerwahl/Hilfsenergie,
                 // Quell-Einstellungen) auf die Anlagenzeilen zurueck, die dieser Lauf
                 // angelegt hat - ebenfalls VOR dem Aufraeumlauf (Block ueber
                 // FachspaltenSichern).
                 FachspaltenWiederherstellen(projektID, angelegt);
+
+                // TRAEGERZUORDNUNG (Nachzug zu B2, Anwenderwunsch 08.10.2026): Die Erzeugerdialoge waehlen
+                // einem Brenner ohne Traeger den Gas- bzw. Oeltraeger seines Geraets vor
+                // (EnergietraegerZulaessigkeit.Vorauswahl), und dieser Weg schreibt ihn als ID_Carrier.
+                // Ohne Projektzuordnung (energy_project_settings) faende die Wirtschaftlichkeit dafuer weder
+                // Preis noch Emission - deshalb hier je distinktem Traeger das Satzpaar, wie es der Assistent
+                // beim Speichern anlegt (TraegerSatzAnlegen, idempotent). BEST EFFORT wie die Nachbarn.
+                try { TraegerDerListeZuordnen(projektID, list); }
+                catch (Exception exTraeger)
+                {
+                    Console.WriteLine("Traegerzuordnung der Anlagen nicht nachgezogen: " + exTraeger.Message);
+                }
 
                 // ETAPPE H3 (H1-3): Pflichtpositionen der Standardvorlagen an jeder
                 // Anlagenzeile sicherstellen - NACH ZuordnungReparieren/AnkerNachziehen
@@ -2534,15 +2738,22 @@ namespace WindowsFormsApplication1
 
             // Default-Werte aus dem Brennstoff-Stamm (nur noch PREISE — zu den
             // Emissionen siehe den Block vor dem INSERT der Projekt-Einstellungen)
-            double default_arbeitspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Arbeitspreis", idBrennstoff));
-            double default_grundpreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Grundpreis", idBrennstoff));
-            double default_leistungspreis = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Standard_Leistungspreis", idBrennstoff));
+            // Die Vorgaben des Brennstoffs in der Sicht des Projekts (Projektkopie, ProjektBrennstoffe.Sicht).
+            string quelle = ProjektBrennstoffe.Sicht(projektID, out DbParam[] sicht);
+            DataTable dtBs = DataRepository.GetDataTable(
+                "SELECT bs.Standard_Arbeitspreis, bs.Standard_Grundpreis, bs.Standard_Leistungspreis, bs.Hi, bs.Hs, bs.Einheit " +
+                "FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                ProjektBrennstoffe.Mit(sicht, new DbParam("@bs", idBrennstoff)));
+            DataRow rBs = dtBs != null && dtBs.Rows.Count > 0 ? dtBs.Rows[0] : null;
+            double default_arbeitspreis = ToDouble(rBs?["Standard_Arbeitspreis"]);
+            double default_grundpreis = ToDouble(rBs?["Standard_Grundpreis"]);
+            double default_leistungspreis = ToDouble(rBs?["Standard_Leistungspreis"]);
 
             // Hi, Hs und Abrechnungseinheit - im Kosten-Dialog die Felder
-            // SelectedHi / SelectedHs / SelectedBillingUnit aus derselben Stammzeile
-            double hi = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Hi", idBrennstoff));
-            double hs = ToDouble(DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Hs", idBrennstoff));
-            object oEinheit = DataRepository.GetValueById("Tab_Brennstoff_Stamm", "Einheit", idBrennstoff);
+            // SelectedHi / SelectedHs / SelectedBillingUnit aus derselben Zeile
+            double hi = ToDouble(rBs?["Hi"]);
+            double hs = ToDouble(rBs?["Hs"]);
+            object oEinheit = rBs?["Einheit"];
             string einheit = (oEinheit != null) ? oEinheit.ToString() : "";
 
             int convId = ConvIdErmitteln(idBrennstoff, einheit);
@@ -2777,8 +2988,20 @@ namespace WindowsFormsApplication1
                     paarungen = alle;
                 }
 
+                // 3b) Stufe SQ-3: Einzonenweg mit Projektdatei - die Konditionierung der Gebaeudegruppe bzw. der einen
+                //     Zone als Gebaeudekalender (Eigentuemer Gebaeude ohne Zone), derselbe Schreibweg wie bei den Zonen.
+                if (item.Importherkunft.Gebaeudekonditionierung != null)
+                {
+                    string fehler = ZonenplanCtrl.ProjektdateiUebernehmen(idKopie, null, item.Importherkunft.Gebaeudekonditionierung);
+                    if (fehler != null)
+                    {
+                        herkunftsfehler = fehler;
+                        return 0;
+                    }
+                }
+
                 GebaeudeImportCtrl.Ergebnis herkunft = new GebaeudeImportCtrl().SchreibeHerkunft(
-                    idKopie, item.Importherkunft.Quelle, paarungen, Vorgangsklammer.Aktueller);
+                    idKopie, item.Importherkunft.Quelle, paarungen, Vorgangsklammer.Aktueller, item.Importherkunft.Raumgrundrisse);
                 if (!herkunft.Ok)
                 {
                     herkunftsfehler = herkunft.Meldung ?? "";
@@ -3013,14 +3236,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Zeigt die Listenzeile noch auf denselben Katalogsatz wie die vorhandene Kopie?
-        /// Mit Verweis auf beiden Seiten entscheidet die Id; ohne Verweis auf beiden Seiten
-        /// der Gebäudename (Altbestand). Ein Verweis nur auf einer Seite gilt als geändert.
+        /// Trägt die Kopie einen Verweis, entscheidet die Id; eine Zeile ohne Verweis gilt dann
+        /// als geändert. <b>Trägt die Kopie keinen Verweis</b> (Altbestand, oder ihr Katalogsatz
+        /// wurde gelöscht und die Beziehung hat den Verweis geleert), entscheidet allein der
+        /// Gebäudename: Eine Liste, die noch den Verweis von VOR dem Löschen trägt (der
+        /// Gebäudedialog löscht den Satz, während seine Projektliste offen ist), darf die
+        /// vollständige Kopie samt Zonen nicht durch eine neue aus dem Katalog ersetzen — den
+        /// Satz gibt es nicht mehr, oder seine Id ist an einen neuen Satz vergeben.
         /// </summary>
         private static bool GleicherKatalogsatz(Z_ProjGebModel item, int? stammKopie, string nameKopie)
         {
             int? stammZeile = item.ID_Gebaeude_Stamm.HasValue && item.ID_Gebaeude_Stamm.Value > 0
                 ? item.ID_Gebaeude_Stamm : null;
-            if (stammZeile.HasValue || stammKopie.HasValue)
+            if (stammKopie.HasValue)
                 return stammZeile == stammKopie;
             return string.Equals(item.Gebaeudename ?? "", nameKopie ?? "", StringComparison.Ordinal);
         }
@@ -3106,6 +3334,10 @@ namespace WindowsFormsApplication1
                 // zweiten Anlageweg (ProjektCtrl.Insert). Innerhalb der Klammer des Laufs:
                 // Ein Rollback nimmt den Einstellungssatz mit.
                 KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(projektID);
+
+                // Die Brennstoffe des Projekts entstehen mit ihm - wertgleich zum heutigen Katalog,
+                // innerhalb der Klammer des Laufs (ein Rollback nimmt sie mit).
+                ProjektBrennstoffe.Sichern(projektID);
 
                 return true;
             }
@@ -3219,7 +3451,15 @@ namespace WindowsFormsApplication1
                 // (die PROJEKTtabelle) zeigt - daraus wurde "FOREIGN KEY constraint
                 // failed" an einer Stelle, die mit der Ursache nichts zu tun hat. Eine
                 // Katalog-Id gehoert nie in eine Projektzuordnung.
-                int projPwId = ProzesswaermeStammCtrl.CopyFromStamm(item.szProzessname, projektID);
+                //
+                // ZUORDNUNG UEBER DIE ID (Auftrag SV2, wie SV1 beim Stromverbraucher): Zeigt
+                // die Zeile schon auf eine Kopie DIESES Projekts mit ihrem Namen, bleibt es bei
+                // genau dieser Kopie; erst sonst wird ueber den Namen gesucht bzw. aus dem
+                // Katalog kopiert.
+                int projPwId = ProzesswaermeStammCtrl.GetProjektIdUeberId(
+                    item.ID_Prozesswaerme, item.szProzessname, projektID);
+                if (projPwId <= 0)
+                    projPwId = ProzesswaermeStammCtrl.CopyFromStamm(item.szProzessname, projektID);
                 if (projPwId <= 0)
                 {
                     DataRepository.FehlerMelden(
@@ -3229,6 +3469,17 @@ namespace WindowsFormsApplication1
                     return false;
                 }
                 item.ID_Prozesswaerme = projPwId;
+
+                // PW1 Stufe 1: Ein im Dialog geändertes Temperaturpaar geht in DIESE Projektkopie; ohne
+                // Änderung bleibt die Kopie, wie sie ist (eine neue trägt die Vorbelegung des Katalogs).
+                if (item.TemperaturGeaendert &&
+                    !ProzesswaermeStammCtrl.ProjektTemperaturSetzen(projPwId, item.Vorlauf, item.Ruecklauf))
+                {
+                    DataRepository.FehlerMelden(
+                        "Das Temperaturpaar der Prozesswaerme \"" + (item.szProzessname ?? "") + "\" konnte nicht " +
+                        "gespeichert werden. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
 
                 string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
@@ -3242,6 +3493,9 @@ namespace WindowsFormsApplication1
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
+                if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Prozesswaerme", idZ, item.ID_Betriebskalender))
+                    return false;
 
                 Z_ProjektProzesswaermeModel zeile = item;
                 nachzug?.Merken(() => { zeile.ID_Z = idZ; zeile.ID_Projekt = projektID; });
@@ -3277,7 +3531,14 @@ namespace WindowsFormsApplication1
                 // Tab_Stromverbraucher (die PROJEKTtabelle) zeigt - "SQLite Error 19:
                 // FOREIGN KEY constraint failed", weit weg von der Ursache. Eine
                 // Katalog-Id gehoert nie in eine Projektzuordnung.
-                int projSvId = StromverbraucherStammCtrl.CopyFromStamm(item.m_szVerbraucher, projektID);
+                //
+                // ZUORDNUNG UEBER DIE ID (Auftrag SV1 vom 30.09.2026): Zeigt die Zeile schon
+                // auf eine Kopie DIESES Projekts mit ihrem Namen, bleibt es bei genau dieser
+                // Kopie; erst sonst wird ueber den Namen gesucht bzw. aus dem Katalog kopiert.
+                int projSvId = StromverbraucherStammCtrl.GetProjektIdUeberId(
+                    item.m_ID_Stromverbraucher, item.m_szVerbraucher, projektID);
+                if (projSvId <= 0)
+                    projSvId = StromverbraucherStammCtrl.CopyFromStamm(item.m_szVerbraucher, projektID);
                 if (projSvId <= 0)
                 {
                     DataRepository.FehlerMelden(
@@ -3300,6 +3561,9 @@ namespace WindowsFormsApplication1
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+                // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
+                if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Stromverbraucher", idZ, item.ID_Betriebskalender))
+                    return false;
 
                 Z_ProjektStromverbraucherModel zeile = item;
                 nachzug?.Merken(() => { zeile.m_ID_Z = idZ; zeile.m_ID_Projekt = projektID; });
@@ -3404,7 +3668,15 @@ namespace WindowsFormsApplication1
                 // die Kopie, bricht der Schritt BENANNT ab, statt die KATALOG-Id in
                 // Z_Projekt_Brauchwasser zu schreiben, deren Fremdschluessel auf
                 // Tab_Brauchwasser (die PROJEKTtabelle) zeigt.
-                int projBwId = BrauchwasserStammCtrl.CopyFromStamm(item.szBezeichner, projektID);
+                //
+                // ZUORDNUNG UEBER DIE ID (Auftrag SV2, wie SV1 beim Stromverbraucher): Zeigt
+                // die Zeile schon auf eine Kopie DIESES Projekts mit ihrem Namen, bleibt es bei
+                // genau dieser Kopie; erst sonst wird ueber den Namen gesucht bzw. aus dem
+                // Katalog kopiert.
+                int projBwId = BrauchwasserStammCtrl.GetProjektIdUeberId(
+                    item.ID_Brauchwasser, item.szBezeichner, projektID);
+                if (projBwId <= 0)
+                    projBwId = BrauchwasserStammCtrl.CopyFromStamm(item.szBezeichner, projektID);
                 if (projBwId <= 0)
                 {
                     DataRepository.FehlerMelden(
@@ -3417,8 +3689,9 @@ namespace WindowsFormsApplication1
 
                 string sql = "INSERT INTO Z_Projekt_Brauchwasser (ID, ID_Projekt, ID_Brauchwasser, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
+                int idZ = nextID++;
                 DbParam[] ps = {
-                    new DbParam("@id", nextID++),
+                    new DbParam("@id", idZ),
                     new DbParam("@pID", projektID),
                     new DbParam("@bwID", item.ID_Brauchwasser),
                     new DbParam("@bez", item.szBezeichner ?? ""),
@@ -3426,6 +3699,10 @@ namespace WindowsFormsApplication1
                 };
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
+
+                // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
+                if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Brauchwasser", idZ, item.ID_Betriebskalender))
+                    return false;
             }
             return true;
         }

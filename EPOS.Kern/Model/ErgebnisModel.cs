@@ -36,6 +36,9 @@ namespace WindowsFormsApplication1
         public ErgebnisSolarthermieModel Solarthermie;
         public ErgebnisPhotovoltaikModel Photovoltaik;
 
+        // KU3-4 (Schemaschritt 183): eine Zeile je Kaeltemaschine (Tab_ErgebnisKaeltemaschine); leer = keine gerechnet.
+        public List<ErgebnisKaeltemaschineModel> Kaeltemaschinen = new List<ErgebnisKaeltemaschineModel>();
+
         // Pufferspeicher des Laufs (Tab_ErgebnisPufferspeicher, Konzept 6.6):
         // eine Zeile je beteiligtem Speicher - Senkenspeicher UND Quellspeicher.
         // Leere Liste = dieser Lauf hatte keinen Speicher.
@@ -52,6 +55,11 @@ namespace WindowsFormsApplication1
         // der Lauf hatte kein Gebaeude (oder die Datenbank steht vor Schritt 107).
         public List<ErgebnisGebaeudeModel> Gebaeude = new List<ErgebnisGebaeudeModel>();
 
+        // Erdreichpruefung des Laufs (Tab_ErgebnisErdreich, Entscheidungsvorlage Modellgrenzen
+        // EQ1): je Anlage mit Waermequelle Erdreich die Pruefzeilen. Leere Liste = keine
+        // Erdreichquelle (oder die Datenbank steht vor dem Schemaschritt der Katalogfassung).
+        public List<ErdreichErgebnisSpeicher.Zeile> Erdreich = new List<ErdreichErgebnisSpeicher.Zeile>();
+
         public ErgebnisModel()
         {
             Zeitstempel = DateTime.Now;
@@ -64,6 +72,19 @@ namespace WindowsFormsApplication1
     /// Spitzenwerte haben beide Rechenwege; die übrigen Größen gibt es nur auf dem VDI-Weg —
     /// auf dem Tagesbilanz-Weg sind sie <c>null</c> („nicht gerechnet", nie 0).
     /// </summary>
+    /// <summary>
+    /// <b>Die beiden Bedarfsbegriffe eines Projekts mit Anlagenfahrplan</b> (Anlagenkopplung 6.2, E23, F5): Der
+    /// Kanal führt beide, die Deckung unterscheidet sie nicht; nur der VDI-Weg mit Kopplung hat eine Rückwirkung.
+    /// </summary>
+    public enum Bedarfsbegriff
+    {
+        /// <summary>Gekoppelt gerechnet: Die Verfügbarkeit wirkt auf Raumtemperatur, Bedarf und Komfortstunden zurück.</summary>
+        Rueckwirkung,
+
+        /// <summary>Feste Last: Bedarfsvektor wie ohne Fahrplan, zehrt an der Verfügbarkeit, keine Rückwirkung.</summary>
+        FesteLast,
+    }
+
     public class ErgebnisGebaeudeModel
     {
         /// <summary>Die Gebäudezeile des Projekts (<c>Tab_Gebaeude.ID</c>).</summary>
@@ -108,6 +129,12 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden mit eingeschalteter Sommerlüftung [h]; nur VDI-Weg.</summary>
         public int? SommerlueftungsstundenH;
 
+        /// <summary>
+        /// Stunden mit wirksamer Nachtauskühlung [h] (Stufe KP1b, Konzept 3.7); <c>null</c> heißt
+        /// „keine Nachtauskühlung gesetzt" (Muster E30) — dann bleibt die Spalte NULL.
+        /// </summary>
+        public int? NachtauskuehlstundenH;
+
         /// <summary>Die obere Raumtemperatur, gegen die die Überhitzung gezählt ist [°C]; nur VDI-Weg.</summary>
         public double? ObereRaumtemperaturC;
 
@@ -136,6 +163,39 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen die Übergabe die Grenze war [h]; nur mit wirksamer Kopplung.</summary>
         public double? UebergabeBegrenztStundenH;
 
+        /// <summary>
+        /// <c>Fahrplan_Begrenzt_Stunden</c> je Gebäude [h] (AK2): Stunden, in denen die Schranke der Anlagenverfügbarkeit
+        /// die Heizleistung gekappt hat; null ohne Fahrplan. Keine Spalte in <c>Tab_ErgebnisGebaeude</c> — die
+        /// Projektzahl steht in <c>Tab_ErgebnisEnergiebedarf</c>.
+        /// </summary>
+        public int? FahrplanBegrenztStundenH;
+
+        // ---- Komfort und Bedarfsbegriff (AK2-2b; Anlagenkopplung 5.5, 6.2, F5, F8, F9) — keine Spalten in
+        // Tab_ErgebnisGebaeude: Die Projektwerte stehen in Tab_ErgebnisEnergiebedarf, die Darstellung je Gebäude
+        // ist Sache des Berichts (AK2-3). null = nicht erhoben (Gebäude nicht gekoppelt bzw. ohne wirksame Kühlung).
+
+        /// <summary>Stunden der Nutzungszeit mit Unterschreitung des Heizsollwerts um mehr als die Komfortschwelle [h].</summary>
+        public int? KomfortUnterschreitungsstundenH;
+
+        /// <summary>Summe der Unterschreitungen dieser Stunden [Kh], über die Zonen flächengewichtet.</summary>
+        public double? KomfortKelvinstundenKh;
+
+        /// <summary>Längste zusammenhängende Folge solcher Stunden [h].</summary>
+        public int? KomfortLaengsteStreckeH;
+
+        /// <summary>Kälteseite (F9): Stunden der Nutzungszeit mit Überschreitung des Kühlsollwerts [h].</summary>
+        public int? KomfortUeberschreitungsstundenH;
+
+        /// <summary>Kälteseite (F9): Summe der Überschreitungen [Kh].</summary>
+        public double? KomfortKelvinstundenKuehlungKh;
+
+        /// <summary>
+        /// <b>Der Bedarfsbegriff des Gebäudes</b> im Lauf mit Anlagenfahrplan (F5): mit Rückwirkung (VDI-Weg,
+        /// gekoppelt) oder als feste Last (Altweg oder ungekoppelt — zehrt an der Verfügbarkeit, keine
+        /// Komfortstunden, kein gerechneter Vorlauf). <c>null</c> ohne Fahrplan.
+        /// </summary>
+        public Bedarfsbegriff? Bedarfsbegriff;
+
         // ---- Kälteseite der Kopplung (E37, KAK-S3) — dasselbe Muster: null ohne Kühlkopplung ----
 
         /// <summary>
@@ -158,6 +218,85 @@ namespace WindowsFormsApplication1
 
         /// <summary>Davon die Stunden an der Vorlaufgrenze [h] (7.2); nur mit Kühlkopplung.</summary>
         public double? KuehlVorlaufgrenzeStundenH;
+
+        // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
+        //
+        // Gebildet von GebaeudeKennzahlen aus dem Ergebnis des Laufs (eine Quelle je Kennzahl);
+        // ErgebnisCtrl legt die Werte unverändert nach Tab_ErgebnisGebaeude, nur wo die Spalte steht.
+
+        /// <summary>
+        /// Der Zustand der Aufheizrechnung (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c> ohne UNBEHEIZT, Festlegung 25); <c>null</c> heißt
+        /// „Schalter aus" oder Tagesbilanz-Weg — dann sind alle Aufheizwerte <c>null</c> (Grundsatz 4).
+        /// </summary>
+        public string AufheizZustand;
+
+        /// <summary>Die Bemessungsvariante des Laufs (<see cref="DbWerte.AUFHEIZ_BEMESSUNGEN"/>) — der Bericht liest nicht die Projekteinstellung.</summary>
+        public string AufheizBemessung;
+
+        /// <summary>
+        /// Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>, E59, Schritt KP-S4): MANUELL mit manueller
+        /// Aufheizzeit des Gebäudes (dann ist <see cref="AufheizzeitMaxH"/> der manuelle Wert), sonst die Art des
+        /// Projekts; <c>null</c> bei GEKOPPELT und ohne Aufheizrechnung.
+        /// </summary>
+        public string AufheizArt;
+
+        /// <summary>Φ_HL — die stationäre Auslegungsheizlast [kW], skaliert wie P_auf (E60, Festlegung 41); <c>null</c> ohne Herleitung.</summary>
+        public double? AuslegungsheizlastKw;
+
+        /// <summary>Φ_RH — der Aufheizzuschlag max(0, P_auf − Φ_stat) [kW], skaliert wie P_auf (E60, Festlegung 41).</summary>
+        public double? AufheizzuschlagKw;
+
+        /// <summary>t_auf,max — die bemessene Aufheizzeit [h], 0 bis 47; <c>null</c> auch bei UNERREICHBAR.</summary>
+        public int? AufheizzeitMaxH;
+
+        /// <summary>T_a,B — die Außentemperatur der Bemessung [°C] (kälteste Stunde, bei (b) abzüglich ΔT_K).</summary>
+        public double? AufheizAussenC;
+
+        /// <summary>P_auf — die Aufheizleistung [kW], skaliert wie die Spitzen.</summary>
+        public double? AufheizLeistungKw;
+
+        /// <summary>Die Quelle von P_auf (Grenze, Ziel oder gemischt bei Zonen verschiedener Quelle).</summary>
+        public string AufheizLeistungsquelle;
+
+        /// <summary>Tage mit einer Rampe (n &gt; 1).</summary>
+        public int? Aufheiztage;
+
+        /// <summary>Tage, an denen die Absenkdauer die Rampe begrenzt hat (W2).</summary>
+        public int? AufheiztageBegrenzt;
+
+        /// <summary>Tage ohne erreichbare Rampe bis 48 h (W1 je Tag).</summary>
+        public int? AufheiztageUnerreichbar;
+
+        /// <summary>Tage, an denen der Lauf über dem Nachweisband lag (W3).</summary>
+        public int? AufheiztageNachweisband;
+
+        /// <summary>Σ (n − 1) — die Rampenstunden des Jahres [h].</summary>
+        public int? AufheizstundenH;
+
+        /// <summary>Die längste Rampe des Jahres [h] (größtes n − 1).</summary>
+        public int? AufheizzeitLaengsteH;
+
+        /// <summary>
+        /// Der verwendete Aufschlag [h] (E99, Schritt 194): die Stunden, die der Aufschlag der längsten Rampe hinzugefügt hat;
+        /// 0 ohne Rampe mit mehr als einer Stufe oder ohne Aufschlag; <c>null</c> bei „manuell", ohne Aufheizrechnung und in
+        /// einer Ergebniszeile vor dem Schritt.
+        /// </summary>
+        public int? AufheizAufschlagVerwendetH;
+
+        /// <summary>
+        /// Die bemessene Aufheizzeit [h] (E99, Schritt 194): bei „manuell" der manuelle Wert, sonst t_auf,max nach dem
+        /// Aufschlag; <c>null</c> bei UNERREICHBAR, ohne Aufheizrechnung und in einer Ergebniszeile vor dem Schritt.
+        /// </summary>
+        public int? AufheizzeitBemessenH;
+
+        /// <summary>Sprünge aus „aus" ohne Rampe (W4), darunter der Beginn der Heizperiode.</summary>
+        public int? AufheizspruengeAus;
+
+        /// <summary>
+        /// Σ der Kappungsanteile an der Heizleistungsgrenze [h] (<c>HeizleistungMax_H</c>, B22) — eine
+        /// Summe von Zeitanteilen, auch ohne Kopplung.
+        /// </summary>
+        public double? HeizleistungMaxStundenH;
 
         /// <summary>Rechnet das Gebäude auf dem VDI-Weg?</summary>
         public bool IstVdi6007 => Rechenweg == DbWerte.GEBAEUDE_MODELL_VDI6007;
@@ -211,6 +350,83 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden, in denen das Muster des ersten Durchlaufs gehalten wurde [h].</summary>
         public int? MusterwechselH;
+
+        /// <summary>
+        /// Stunden mit wirksamer Nachtauskühlung dieser Zone [h] (Stufe KP1b, Konzept 3.7);
+        /// <c>null</c> heißt „keine Nachtauskühlung gesetzt" (Muster E30).
+        /// </summary>
+        public int? NachtauskuehlstundenH;
+
+        /// <summary>
+        /// Stunden mit eingeschalteter Sommerlüftung dieser Zone [h] (E54 je Zone, KP-S3); <c>null</c>
+        /// heißt „nicht gesetzt".
+        /// </summary>
+        public int? SommerlueftungsstundenH;
+
+        /// <summary>Mittlerer Vorlauf des Zonenkreises [°C] über die Heizstunden (E63, AK1z); <c>null</c> bei idealer Zone.</summary>
+        public double? VorlaufMittelC;
+
+        /// <summary>Mittlerer Rücklauf des Zonenkreises [°C] über die Heizstunden (E63); <c>null</c> bei idealer Zone.</summary>
+        public double? RuecklaufMittelC;
+
+        /// <summary>Stunden, in denen die Übergabe der Zone begrenzt hat [h] (E63); <c>null</c> bei idealer Zone.</summary>
+        public double? UebergabeBegrenztH;
+
+        /// <summary>Die höchste Stunde des Kältebedarfs der Zone [kW] (Schritt 185); <c>null</c> ohne wirksame Kühlung.</summary>
+        public double? KaeltespitzeKw;
+
+        /// <summary>Stunden mit Kältebedarf der Zone [h] (Schritt 185); <c>null</c> ohne wirksame Kühlung.</summary>
+        public int? KuehlstundenH;
+
+        // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
+
+        /// <summary>
+        /// Der Zustand der Aufheizrechnung (<c>DbWerte.AUFHEIZ_ZUSTAND_*</c>, Festlegung 25; GEKOPPELT ab Schritt KP-S4);
+        /// <c>null</c> heißt „Schalter aus" oder Tagesbilanz-Weg — dann sind alle Aufheizwerte <c>null</c> (Grundsatz 4).
+        /// </summary>
+        public string AufheizZustand;
+
+        /// <summary>Die wirksame Art (<see cref="DbWerte.AUFHEIZ_ERGEBNIS_ARTEN"/>) — die Art des Gebäudes (E59, Festlegung 39).</summary>
+        public string AufheizArt;
+
+        /// <summary>t_auf,max — die bemessene Aufheizzeit [h], 0 bis 47; <c>null</c> auch bei UNERREICHBAR.</summary>
+        public int? AufheizzeitMaxH;
+
+        /// <summary>T_a,B — die Außentemperatur der Bemessung [°C] (kälteste Stunde, bei (b) abzüglich ΔT_K).</summary>
+        public double? AufheizAussenC;
+
+        /// <summary>P_auf — die Aufheizleistung [kW], skaliert wie die Spitzen.</summary>
+        public double? AufheizLeistungKw;
+
+        /// <summary>Die Quelle von P_auf (Grenze oder Ziel).</summary>
+        public string AufheizLeistungsquelle;
+
+        /// <summary>Tage mit einer Rampe (n &gt; 1).</summary>
+        public int? Aufheiztage;
+
+        /// <summary>Tage, an denen die Absenkdauer die Rampe begrenzt hat (W2).</summary>
+        public int? AufheiztageBegrenzt;
+
+        /// <summary>Tage ohne erreichbare Rampe bis 48 h (W1 je Tag).</summary>
+        public int? AufheiztageUnerreichbar;
+
+        /// <summary>Tage, an denen der Lauf über dem Nachweisband lag (W3).</summary>
+        public int? AufheiztageNachweisband;
+
+        /// <summary>Σ (n − 1) — die Rampenstunden des Jahres [h].</summary>
+        public int? AufheizstundenH;
+
+        /// <summary>Die längste Rampe des Jahres [h] (größtes n − 1).</summary>
+        public int? AufheizzeitLaengsteH;
+
+        /// <summary>Sprünge aus „aus" ohne Rampe (W4), darunter der Beginn der Heizperiode.</summary>
+        public int? AufheizspruengeAus;
+
+        /// <summary>
+        /// Σ der Kappungsanteile an der Heizleistungsgrenze [h] (<c>HeizleistungMax_H</c>, B22) — eine
+        /// Summe von Zeitanteilen, auch ohne Kopplung.
+        /// </summary>
+        public double? HeizleistungMaxStundenH;
     }
 
     // Detail: Waerme-/Strombedarf (Tab_ErgebnisEnergiebedarf).
@@ -298,6 +514,141 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>Kuehl_Uebergabe_Begrenzt_Stunden</c> [h]: Stunden, in denen die Kühlübergabe (mindestens eines Gebäudes) die Grenze war.</summary>
         public double? KuehlUebergabeBegrenztStundenH;
+
+        // ---- Anlagenfahrplan und Komfort (Schemaschritt 186, AK2-1; Anlagenkopplung 8.3) ----
+        //
+        // null heißt „nicht erhoben" — kein Gebäude rechnete gekoppelt. Der Referenzlauf-Export nimmt eine
+        // NULL-Spalte nicht auf (SpaltenNurMitWert); ein Projekt ohne Kopplung schreibt dieselben Zeilen.
+
+        /// <summary><c>Komfort_Unterschreitungsstunden</c> [h]: Stunden der Nutzungszeit unter dem Sollwert.</summary>
+        public int? KomfortUnterschreitungsstundenH;
+
+        /// <summary><c>Komfort_Kelvinstunden</c> [Kh]: Summe der Unterschreitungen.</summary>
+        public double? KomfortKelvinstundenKh;
+
+        /// <summary><c>Komfort_Laengste_Strecke</c> [h]: längste zusammenhängende Unterschreitung.</summary>
+        public int? KomfortLaengsteStreckeH;
+
+        /// <summary><c>Fahrplan_Begrenzt_Stunden</c> [h]: Stunden, in denen der Fahrplan die Grenze war.</summary>
+        public int? FahrplanBegrenztStundenH;
+
+        /// <summary><c>Komfort_Ueberschreitungsstunden</c> [h]: Stunden der Nutzungszeit über dem Kühlsollwert.</summary>
+        public int? KomfortUeberschreitungsstundenH;
+
+        /// <summary><c>Komfort_Kelvinstunden_Kuehlung</c> [Kh]: Summe der Überschreitungen des Kühlsollwerts.</summary>
+        public double? KomfortKelvinstundenKuehlungKh;
+
+        // ---- Anlagenkopplung AK3, Kennzahlen des geschlossenen Kreises (Ak3Schema; Entwurf AK3 Festlegung 22) ----
+        //
+        // null heißt „nicht erhoben" — jede Stufe außer AK3. Der Referenzlauf-Export nimmt eine NULL-Spalte nicht auf.
+
+        /// <summary><c>Ak3_Durchlaeufe_Mittel</c> [–]: Mittel der begrenzten Durchläufe je Stunde.</summary>
+        public double? Ak3DurchlaeufeMittel;
+
+        /// <summary><c>Ak3_Durchlaeufe_Max</c> [–]: die größte Zahl der Durchläufe einer Stunde.</summary>
+        public int? Ak3DurchlaeufeMax;
+
+        /// <summary><c>Ak3_Fallwechsel</c> [–]: Wechsel der Stützstelle der Wärmepumpe und des Betriebsfalls je Zone.</summary>
+        public int? Ak3Fallwechsel;
+
+        /// <summary><c>Ak3_Schranke_Stunden</c> [h]: Stunden, in denen die Schranke des Angebots eine Zone begrenzte.</summary>
+        public int? Ak3SchrankeStundenH;
+
+        /// <summary><c>Ak3_Speicher_Leer_Stunden</c> [h]: Stunden mit Heizungspuffer am Kreis und nichts entnehmbar.</summary>
+        public int? Ak3SpeicherLeerStundenH;
+
+        /// <summary><c>Ak3_Restbedarf_Stunden</c> [h]: Stunden mit Restbedarf der Kaskade (Festlegung 15).</summary>
+        public int? Ak3RestbedarfStundenH;
+
+        // ---- AK3-K, Zonensperre und Kälteseite im Kreis (Ak3KSchema; Entwurf AK3-K 3.5, Festlegung 20) ----
+        //
+        // null heißt „nicht erhoben": die Zonensperre lief nicht bzw. der Kreis rechnete keine Kälteseite.
+
+        /// <summary><c>Zonensperre_Tage</c> [d]: Zonentage mit Sperre der Gegenseite (Summe über die Zonen).</summary>
+        public int? ZonensperreTage;
+
+        /// <summary><c>Zonensperre_Heizen_Gesperrt_MWh</c> [MWh]: Raumheizung des Probetags an Kühltagen.</summary>
+        public double? ZonensperreHeizenGesperrtMwh;
+
+        /// <summary><c>Zonensperre_Kuehlen_Gesperrt_MWh</c> [MWh]: Raumkühlung des Probetags an Heiztagen.</summary>
+        public double? ZonensperreKuehlenGesperrtMwh;
+
+        /// <summary><c>Ak3_Kaelteschranke_Stunden</c> [h]: Stunden, in denen die Kälteschranke des Kreises griff.</summary>
+        public int? Ak3KaelteschrankeStundenH;
+
+        /// <summary><c>Ak3_Umschalt_Stunden</c> [h]: Stunden mit Umschaltung der Wärmepumpe zwischen Heizen und Kühlen.</summary>
+        public int? Ak3UmschaltStundenH;
+
+        /// <summary><c>Ak3_Kaelterest_Stunden</c> [h]: Stunden mit Kälte-Restbedarf (Festlegung 14).</summary>
+        public int? Ak3KaelterestStundenH;
+
+        /// <summary><c>Ak3_Kaelterest_MWh</c> [MWh]: Kälte-Restbedarf im Jahr.</summary>
+        public double? Ak3KaelterestMwh;
+
+        /// <summary>
+        /// <c>Kuehlkurve_Vorlauf_Mittel_C</c> [°C] (Entwurf KK, Festlegung 12; Schritt 202): der mittlere verlangte Kühlvorlauf
+        /// der Kühlstunden im Kreis mit Kühlkurve. NULL ohne wirksame Kühlkurve.
+        /// </summary>
+        public double? KuehlkurveVorlaufMittelC;
+
+        /// <summary><c>Kuehlkurve_Absenkung_Kh</c> [Kh]: Summe der Absenkung durch den Raumeinfluss der Kühlkurve.</summary>
+        public double? KuehlkurveAbsenkungKh;
+
+        /// <summary><c>Kuehlkurve_Vorlaufgrenze_Stunden</c> [h]: Kühlstunden mit der Kurve am unteren Rand (Vorlaufgrenze).</summary>
+        public int? KuehlkurveVorlaufgrenzeStundenH;
+
+        /// <summary>
+        /// <b>Komfort und Restbedarf nebeneinander</b> (Anlagenkopplung 5.5, F8): Wo Komfortstunden ausgewiesen
+        /// werden, steht der Restbedarf daneben — mit Kopplung ist ein Teil der Unterdeckung eine gesunkene
+        /// Raumtemperatur. <c>null</c>, solange keine Komfortstunden erhoben sind.
+        /// </summary>
+        public (int Unterschreitungsstunden, double KelvinstundenKh, int LaengsteStreckeH, double WaermerestbedarfMwh)? KomfortUndRestbedarf
+            => KomfortUnterschreitungsstundenH.HasValue
+                ? (KomfortUnterschreitungsstundenH.Value, KomfortKelvinstundenKh ?? 0.0, KomfortLaengsteStreckeH ?? 0, Waermerestbedarf)
+                : null;
+    }
+
+    /// <summary>
+    /// <b>Das Ergebnis einer Kältemaschine</b> (KU3-4, <c>Tab_ErgebnisKaeltemaschine</c>): Mengen in MWh/a,
+    /// Stunden in h/a; alle Werte gelten für die ganze Anlagenzeile (Anzahl gleicher Maschinen).
+    /// </summary>
+    public class ErgebnisKaeltemaschineModel
+    {
+        public int? ID_Kaeltemaschine;
+        public string Bezeichner = "";
+        public int Anzahl = 1;
+        public double Kaelteproduktion_MWh;
+        public double Stromverbrauch_MWh;
+        public double Hilfsstrom_MWh;
+        public double FreieKuehlung_MWh;
+        public int FreieKuehlung_Stunden;
+        public int Taktstunden;
+        public double Unterdeckung_MWh;
+        public int Stunden_Leistungsgrenze;
+
+        // KU3-4d (Schemaschritt 184; Kühlkonzept 6.1-6.3, E34/E35): die Abrechnung des Kältestroms der Maschine.
+        /// <summary>Der Netzbezug ihres Kältestroms [MWh/a] — anteilig ein Teil von <c>Stromrestbedarf</c>, mit eigenem
+        /// Zähler daneben; <c>null</c> = vor dem Schritt gerechnet.</summary>
+        public double? Kaeltestrom_Netzbezug_MWh;
+        /// <summary>Der ABWEICHENDE Kühlträger (<c>energy_carrier.id</c>); <c>null</c> = Stromträger des Projekts.</summary>
+        public int? Kuehl_CarrierId;
+        /// <summary>Abrechnung über einen eigenen Zähler; nur mit abweichendem Kühlträger belegt.</summary>
+        public bool? Kuehl_EigenerZaehler;
+        /// <summary>Die Spitze ihres Kältestroms je Stunde [kW] — der Leistungspreis eines eigenen Zählers.</summary>
+        public double? Stromspitze_kW;
+
+        // KM3 (Schemaschritt 210; Fachkonzept Teillast und Takten 5.3): nur für eine Maschine mit Teillast_Weg belegt
+        // (Stunden_Extrapoliert mit Kennfeld_Randweg GUETEGRAD); sonst null = NULL, der Satz bleibt wie ohne KM3.
+        /// <summary>Mehrstrom aus dem Taktverlust [MWh/a] — Teil von <see cref="Stromverbrauch_MWh"/>.</summary>
+        public double? Taktstrom_MWh;
+        /// <summary>Starts im Jahr.</summary>
+        public int? Starts;
+        /// <summary>Verdichterstunden mit PLR_min ≤ PLR &lt; 0,95.</summary>
+        public int? Teillaststunden;
+        /// <summary>Kältegewichteter mittlerer Lastgrad der Verdichterstunden [0…1].</summary>
+        public double? Lastgrad_Mittel;
+        /// <summary>Stunden mit Gütegrad-Extrapolation über den Kennfeldrand.</summary>
+        public int? Stunden_Extrapoliert;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.
@@ -351,6 +702,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? Stromverbrauch_Kuehlung;
 
+        /// <summary>
+        /// KU3-6 (Schemaschritt <see cref="FreieKuehlungSoleSchema.SCHRITT"/>): die Kälte aller Wärmepumpen,
+        /// die frei über die Wärmequelle gedeckt wurde [MWh/a] — ein Teil von <see cref="Kaelteproduktion_WP"/>.
+        /// <c>null</c> = nicht erhoben; Spalte <c>FreieKuehlung_MWh</c>.
+        /// </summary>
+        public double? FreieKuehlung_MWh;
+
+        /// <summary>
+        /// Die Stunden mit freier Kühlung [h], 0 … 8760 (eine Stunde zählt, in der irgendeine Wärmepumpe frei
+        /// kühlt). <c>null</c> = nicht erhoben; Spalte <c>FreieKuehlung_Stunden</c>.
+        /// </summary>
+        public int? FreieKuehlung_Stunden;
+
+        /// <summary>UB‑E2: die Summe der Betriebsbereiche der Module; <c>null</c> = kein Modul mit Bivalenzobjekt (Spalten NULL).</summary>
+        public Bereichskennzahlen Bereiche;
+
         public List<ErgebnisWaermepumpeModulModel> Module = new List<ErgebnisWaermepumpeModulModel>();
     }
 
@@ -384,6 +751,117 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Abrechnungsart des Laufs bei abweichendem Kühlträger: <c>true</c> = eigener Zähler; <c>null</c>/<c>false</c> = anteilig.</summary>
         public bool? Kuehl_EigenerZaehler;
+
+        /// <summary>
+        /// KU3-6 (Schemaschritt <see cref="FreieKuehlungSoleSchema.SCHRITT"/>): die frei über die Wärmequelle
+        /// gedeckte Kälte der Anlage [MWh/a] — ein Teil von <see cref="Kaelteproduktion"/>. <c>null</c> = nicht erhoben.
+        /// </summary>
+        public double? FreieKuehlung_MWh;
+
+        /// <summary>Die Stunden der Anlage mit freier Kühlung [h], 0 … 8760. <c>null</c> = nicht erhoben.</summary>
+        public int? FreieKuehlung_Stunden;
+
+        /// <summary>
+        /// VW1a (Schemaschritt <see cref="VorlaufwahlSchema.SCHRITT"/>): die Stunden je Kennlinienstützstelle, die die
+        /// Wärmepumpe am gerechneten Heizkreisvorlauf gewählt hat, als „Vorlauf:Stunden“ aufsteigend mit „;“ getrennt
+        /// (<see cref="VorlaufwahlSchema.StundenText"/>). <c>null</c> = keine Kennlinienwahl am Vorlauf.
+        /// </summary>
+        public string Vorlaufwahl_Stunden;
+
+        /// <summary>Die Stunden mit Vorlauf über der obersten Stützstelle [h]. <c>null</c> = keine Kennlinienwahl.</summary>
+        public int? Vorlauf_Darueber_Stunden;
+
+        /// <summary>Die Stunden mit Vorlauf unter der untersten Stützstelle [h]. <c>null</c> = keine Kennlinienwahl.</summary>
+        public int? Vorlauf_Darunter_Stunden;
+
+        /// <summary>UB‑E2 (Schemaschritt <see cref="UebergabegrenzeSchema.SCHRITT"/>): Betriebsbereiche des Moduls; <c>null</c> = ohne Bivalenzobjekt (Spalten NULL).</summary>
+        public Bereichskennzahlen Bereiche;
+    }
+
+    /// <summary>
+    /// <b>Die Betriebsbereiche einer Wärmepumpe</b> (Übergabegrenze UB‑E2, Umsetzungskonzept 3.3): Stunden und Wärme der
+    /// Wärmepumpe je Bereich, die Zähler der Spreizungs- und Rücklaufgrenze und — nur am Modul — die Bivalenzpunkte und
+    /// die Übergabegrenze bei Auslegung. Jeder Wert nullbar; <c>null</c> heißt „nicht erhoben".
+    /// </summary>
+    public sealed class Bereichskennzahlen
+    {
+        /// <summary>Stunden je Bereich [h]: WP allein, parallel, Vorwärmung, nur Kessel (B0 und B4).</summary>
+        public int?[] Stunden = new int?[4];
+
+        /// <summary>Wärme der Wärmepumpe je Bereich [MWh], Reihenfolge wie <see cref="Stunden"/>.</summary>
+        public double?[] Mwh = new double?[4];
+
+        /// <summary>Stunden mit unterschrittener Mindestspreizung (taktend) [h]; in UB‑E2 0.</summary>
+        public int? Spreizung_Unterschritten_h;
+
+        /// <summary>Stunden über der Rücklaufgrenze [h]; in UB‑E2 0.</summary>
+        public int? Ruecklauf_Ueberschritten_h;
+
+        /// <summary>θ_biv,1 [°C] (nur Modul).</summary>
+        public double? Bivalenzpunkt_1;
+
+        /// <summary>θ_biv,2 [°C] (nur Modul).</summary>
+        public double? Bivalenzpunkt_2;
+
+        /// <summary>Φ_UE,max bei Auslegungsraumtemperatur [kW] (nur Modul).</summary>
+        public double? Uebergabe_Max_kW;
+
+        /// <summary>Die Werte in der Reihenfolge von <see cref="UebergabegrenzeSchema.SPALTEN_ERGEBNIS"/> bzw. <c>_MODUL</c>.</summary>
+        public object[] Werte(bool modul)
+        {
+            var w = new List<object>();
+            foreach (int? h in Stunden) w.Add(h);
+            foreach (double? m in Mwh) w.Add(m);
+            w.Add(Spreizung_Unterschritten_h);
+            w.Add(Ruecklauf_Ueberschritten_h);
+            if (modul)
+            {
+                w.Add(Bivalenzpunkt_1);
+                w.Add(Bivalenzpunkt_2);
+                w.Add(Uebergabe_Max_kW);
+            }
+            return w.ToArray();
+        }
+
+        /// <summary>
+        /// UB‑E4 (Fachkonzept 7.4): die Werte unter den Spaltennamen des Ergebnisses als Schlüssel — für den CSV-Export
+        /// und die KI-Sicht des Reiters. Reihenfolge wie <see cref="UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL"/>;
+        /// ein nicht erhobener Wert (<c>null</c>) fehlt.
+        /// </summary>
+        public IReadOnlyList<KeyValuePair<string, double>> Schluesselwerte()
+        {
+            object[] w = Werte(true);
+            var l = new List<KeyValuePair<string, double>>();
+            for (int i = 0; i < w.Length && i < UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL.Count; i++)
+                if (w[i] != null) l.Add(new KeyValuePair<string, double>(UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL[i], Convert.ToDouble(w[i])));
+            return l;
+        }
+
+        /// <summary>Die Summe der Module (Stunden und Wärme je Bereich, Zähler); <c>null</c> ohne Modul mit Bereichen.</summary>
+        public static Bereichskennzahlen Summe(IEnumerable<Bereichskennzahlen> module)
+        {
+            Bereichskennzahlen s = null;
+            foreach (Bereichskennzahlen m in module)
+            {
+                if (m == null) continue;
+                if (s == null)
+                    s = new Bereichskennzahlen
+                    {
+                        Stunden = new int?[] { 0, 0, 0, 0 },
+                        Mwh = new double?[] { 0.0, 0.0, 0.0, 0.0 },
+                        Spreizung_Unterschritten_h = 0,
+                        Ruecklauf_Ueberschritten_h = 0,
+                    };
+                for (int i = 0; i < 4; i++)
+                {
+                    s.Stunden[i] += m.Stunden[i] ?? 0;
+                    s.Mwh[i] += m.Mwh[i] ?? 0.0;
+                }
+                s.Spreizung_Unterschritten_h += m.Spreizung_Unterschritten_h ?? 0;
+                s.Ruecklauf_Ueberschritten_h += m.Ruecklauf_Ueberschritten_h ?? 0;
+            }
+            return s;
+        }
     }
 
     // Detail: BHKW-Aggregat (Tab_ErgebnisBHKW) + Modulliste.

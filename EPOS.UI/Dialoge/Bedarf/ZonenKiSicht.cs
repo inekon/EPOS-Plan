@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using EPOS.UI.Dienste;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -9,8 +11,13 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// (Sammlungsform <c>Bauteile[]</c>, Kennzeichen die Nummer) — anlegen, öffnen und entfernen bleiben
 /// Klicks des Anwenders, die Werte eines Bauteils setzt der Assistent im Bauteildialog. Sie hält
 /// keinen Zustand: Jede Eigenschaft ruft bei jedem Zugriff ihren Delegaten.
+/// <para><b>Die Zonenmatrix ist eine FELDTAFEL</b> (Stufe KP2, Welle U4; Teilkonzept 3.4, 7.3): Ihre
+/// Felder erzeugt der Kern aus dem Profil <c>KiKonditionierungsfelder</c> (Zonenkarte); diese Klasse
+/// beantwortet sie über den Schlüssel und die <see cref="Konditionierung"/> des Dialogs — derselbe Weg
+/// wie die Zellen der Matrix. Leer heißt „wie Gebäude". Die Bestandszellen (Sollwerte, Lüftung,
+/// Gewinne) stehen unter den Feldern der Zone und gehen im Dialog ebenfalls über die Bearbeitung.</para>
 /// </summary>
-public sealed class ZonenKiSicht
+public sealed class ZonenKiSicht : IKiFeldtafel
 {
     public Func<string>? BezeichnungLesen { get; init; }
     public Action<string>? BezeichnungSetzen { get; init; }
@@ -47,6 +54,61 @@ public sealed class ZonenKiSicht
     public Action<double?>? StrahlungsanteilSetzen { get; init; }
     public Func<double?>? HeizleistungMaxLesen { get; init; }
     public Action<double?>? HeizleistungMaxSetzen { get; init; }
+
+    // KU3-3 (E67/E68): die Kuehlung je Zone; leer = wie Gebaeude.
+    /// <summary>Liest den Kühlschalter der Zone (<c>null</c> = wie Gebäude).</summary>
+    public Func<bool?>? KuehlungAktivLesen { get; init; }
+    /// <summary>Setzt den Kühlschalter der Zone.</summary>
+    public Action<bool?>? KuehlungAktivSetzen { get; init; }
+    /// <summary>Liest die Kühlleistungsgrenze der Zone.</summary>
+    public Func<double?>? KuehlleistungMaxLesen { get; init; }
+    /// <summary>Setzt die Kühlleistungsgrenze der Zone.</summary>
+    public Action<double?>? KuehlleistungMaxSetzen { get; init; }
+
+    /// <summary>Liest die Kühlübergabeart der Zone (leer = wie Gebäude).</summary>
+    public Func<string?>? KuehlUebergabeArtLesen { get; init; }
+    /// <summary>Setzt die Kühlübergabeart der Zone; ein unbekannter Wert wirft.</summary>
+    public Action<string?>? KuehlUebergabeArtSetzen { get; init; }
+    /// <summary>Liest den Exponenten der Kühlübergabe der Zone.</summary>
+    public Func<double?>? KuehlUebergabeExponentLesen { get; init; }
+    /// <summary>Setzt den Exponenten der Kühlübergabe der Zone.</summary>
+    public Action<double?>? KuehlUebergabeExponentSetzen { get; init; }
+    /// <summary>Liest die Nennleistung der Kühlübergabe der Zone.</summary>
+    public Func<double?>? KuehlUebergabeNennleistungLesen { get; init; }
+    /// <summary>Setzt die Nennleistung der Kühlübergabe der Zone.</summary>
+    public Action<double?>? KuehlUebergabeNennleistungSetzen { get; init; }
+
+    // E63 (AK1z): die Uebergabe je Zone; leer = wie Gebaeude.
+    /// <summary>Liest die Übergabeart der Zone (<c>null</c> = wie Gebäude).</summary>
+    public Func<string?>? UebergabeArtLesen { get; init; }
+    /// <summary>Setzt die Übergabeart; ein unbekannter Wert wirft mit Grund.</summary>
+    public Action<string?>? UebergabeArtSetzen { get; init; }
+    /// <summary>Liest den Exponenten.</summary>
+    public Func<double?>? UebergabeExponentLesen { get; init; }
+    /// <summary>Setzt den Exponenten.</summary>
+    public Action<double?>? UebergabeExponentSetzen { get; init; }
+    /// <summary>Liest die Nennleistung [kW].</summary>
+    public Func<double?>? UebergabeNennleistungLesen { get; init; }
+    /// <summary>Setzt die Nennleistung [kW].</summary>
+    public Action<double?>? UebergabeNennleistungSetzen { get; init; }
+    /// <summary>Liest den Auslegungsvorlauf [°C].</summary>
+    public Func<double?>? AuslegungVorlaufLesen { get; init; }
+    /// <summary>Setzt den Auslegungsvorlauf [°C].</summary>
+    public Action<double?>? AuslegungVorlaufSetzen { get; init; }
+    /// <summary>Liest den Auslegungsrücklauf [°C].</summary>
+    public Func<double?>? AuslegungRuecklaufLesen { get; init; }
+    /// <summary>Setzt den Auslegungsrücklauf [°C].</summary>
+    public Action<double?>? AuslegungRuecklaufSetzen { get; init; }
+    /// <summary>Liest die Auslegungsraumtemperatur [°C].</summary>
+    public Func<double?>? AuslegungRaumLesen { get; init; }
+    /// <summary>Setzt die Auslegungsraumtemperatur [°C].</summary>
+    public Action<double?>? AuslegungRaumSetzen { get; init; }
+    /// <summary>Liest das Proportionalband [K].</summary>
+    public Func<double?>? ProportionalbandLesen { get; init; }
+    /// <summary>Setzt das Proportionalband [K].</summary>
+    public Action<double?>? ProportionalbandSetzen { get; init; }
+    /// <summary>Liest die wirksame Übergabe mit Herkunft je Wert.</summary>
+    public Func<string>? UebergabeWirksamLesen { get; init; }
 
     public Func<IReadOnlyList<BauteilDaten>>? BauteileLesen { get; init; }
 
@@ -106,6 +168,86 @@ public sealed class ZonenKiSicht
 
     /// <summary>Leistungsgrenze der Heizung [kW]; leer = die des Gebäudes (ab zwei Zonen anteilig).</summary>
     public double? HeizleistungMax { get => HeizleistungMaxLesen?.Invoke(); set => HeizleistungMaxSetzen?.Invoke(value); }
+
+    /// <summary>
+    /// Wird die Zone gekühlt — „ja", „nein" oder leer = wie das Gebäude (KU3-3). Ein anderer Text wirft mit Grund.
+    /// </summary>
+    public string KuehlungAktiv
+    {
+        get => KuehlungAktivLesen?.Invoke() switch { true => "ja", false => "nein", _ => "" };
+        set
+        {
+            string w = (value ?? "").Trim().ToLowerInvariant();
+            bool? schalter = w switch
+            {
+                "" => null,
+                "ja" or "yes" or "1" or "true" => true,
+                "nein" or "no" or "0" or "false" => false,
+                _ => throw new ArgumentException("Erlaubt sind „ja\", „nein\" oder leer (wie Gebäude).", nameof(value))
+            };
+            KuehlungAktivSetzen?.Invoke(schalter);
+        }
+    }
+
+    /// <summary>Leistungsgrenze der Kühlung [kW]; leer = die des Gebäudes (ab zwei Zonen anteilig).</summary>
+    public double? KuehlleistungMax { get => KuehlleistungMaxLesen?.Invoke(); set => KuehlleistungMaxSetzen?.Invoke(value); }
+
+    /// <summary>Kühlübergabeart der Zone: leer = wie Gebäude, sonst IDEAL, KUEHLDECKE, FLAECHENKUEHLUNG oder GEBLAESEKONVEKTOR.</summary>
+    public string? KuehlUebergabeArt { get => KuehlUebergabeArtLesen?.Invoke(); set => KuehlUebergabeArtSetzen?.Invoke(value); }
+
+    /// <summary>Exponent der Kühlübergabe der Zone; leer = Gebäudewert bzw. Vorgabe der Art.</summary>
+    public double? KuehlUebergabeExponent { get => KuehlUebergabeExponentLesen?.Invoke(); set => KuehlUebergabeExponentSetzen?.Invoke(value); }
+
+    /// <summary>Nennleistung der Kühlübergabe der Zone in kW; leer = Anteil des Gebäudes nach Nutzfläche.</summary>
+    public double? KuehlUebergabeNennleistung { get => KuehlUebergabeNennleistungLesen?.Invoke(); set => KuehlUebergabeNennleistungSetzen?.Invoke(value); }
+
+    /// <summary>Übergabeart der Zone (IDEAL, RADIATOR, FLAECHE, KONVEKTOR); leer = wie Gebäude.</summary>
+    public string UebergabeArt { get => UebergabeArtLesen?.Invoke() ?? ""; set => UebergabeArtSetzen?.Invoke(value); }
+
+    /// <summary>Exponent der Übergabe; leer = wie Gebäude.</summary>
+    public double? UebergabeExponent { get => UebergabeExponentLesen?.Invoke(); set => UebergabeExponentSetzen?.Invoke(value); }
+
+    /// <summary>Nennleistung der Übergabe [kW]; leer = Anteil des Gebäudes nach Nutzfläche.</summary>
+    public double? UebergabeNennleistung { get => UebergabeNennleistungLesen?.Invoke(); set => UebergabeNennleistungSetzen?.Invoke(value); }
+
+    /// <summary>Auslegungsvorlauf [°C]; leer = wie Gebäude.</summary>
+    public double? AuslegungVorlauf { get => AuslegungVorlaufLesen?.Invoke(); set => AuslegungVorlaufSetzen?.Invoke(value); }
+
+    /// <summary>Auslegungsrücklauf [°C]; leer = wie Gebäude.</summary>
+    public double? AuslegungRuecklauf { get => AuslegungRuecklaufLesen?.Invoke(); set => AuslegungRuecklaufSetzen?.Invoke(value); }
+
+    /// <summary>Auslegungsraumtemperatur [°C]; leer = wie Gebäude.</summary>
+    public double? AuslegungRaumtemperatur { get => AuslegungRaumLesen?.Invoke(); set => AuslegungRaumSetzen?.Invoke(value); }
+
+    /// <summary>Proportionalband des Raumreglers [K]; leer = wie Gebäude.</summary>
+    public double? Proportionalband { get => ProportionalbandLesen?.Invoke(); set => ProportionalbandSetzen?.Invoke(value); }
+
+    /// <summary>Die wirksame Übergabe mit Herkunft je Wert (nur lesen).</summary>
+    public string UebergabeWirksam => UebergabeWirksamLesen?.Invoke() ?? "";
+
+    /// <summary>Liest das zuletzt übernommene Nutzungsprofil der Zone (Stufe NP3b).</summary>
+    public Func<string>? NutzungsprofilLesen { get; init; }
+
+    /// <summary>
+    /// Das zuletzt übernommene Nutzungsprofil der Zone (nur lesen; Stufe NP3b, Konzept Nutzungsprofile 6.3) —
+    /// <c>Tab_Zone.Nutzungsprofil</c> bzw. die Nutzung ihrer Kalender, leer = keines.
+    /// </summary>
+    public string Nutzungsprofil => NutzungsprofilLesen?.Invoke() ?? "";
+
+    /// <summary>
+    /// Die Bearbeitung der Zonenmatrix (<see cref="KonditionierungBearbeitung"/> im Zonenmodus); ohne sie
+    /// stehen die Felder der Matrix nicht zur Verfügung.
+    /// </summary>
+    public KonditionierungBearbeitung? Konditionierung { get; init; }
+
+    /// <summary>Die Feldtafel der Zonenkarte — derselbe Weg wie am Gebäude (<see cref="KonditionierungKiTafel"/>).</summary>
+    private readonly KonditionierungKiTafel _tafel = new(KiKonditionierungsfelder.FindeZone);
+
+    /// <inheritdoc />
+    public object? Lesen(string schluessel) => _tafel.Lesen(Konditionierung, schluessel);
+
+    /// <inheritdoc />
+    public void Setzen(string schluessel, object? wert) => _tafel.Setzen(Konditionierung, schluessel, wert);
 
     /// <summary>Die Bauteile — je Zugriff neu über dem Arbeitsstand, nur lesbar.</summary>
     public IReadOnlyList<ZonenBauteilKiZeile> Bauteile

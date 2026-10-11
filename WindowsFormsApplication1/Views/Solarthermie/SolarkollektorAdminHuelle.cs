@@ -63,7 +63,7 @@ namespace WindowsFormsApplication1
                     profil, SolarkollektorenStammCtrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new SolarkollektorenStammCtrl().Exists(name),
                 Loeschen = Loeschen,
-                Speichern = (name, felder, _) => Schreiben(name, felder),
+                Speichern = Schreiben,
                 // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
                 // "Duplizieren..." legt den eigenen Satz an.
                 Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(SolarkollektorenStammCtrl.Duplizieren(id, name)),
@@ -110,7 +110,30 @@ namespace WindowsFormsApplication1
         private static KatalogSpeicherErgebnis Schreiben(string name,
                                                          IReadOnlyList<BrowserFeldwert> felder)
         {
-            var werte = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
+            SolarkollektorenStammCtrl.SpeicherErgebnis e =
+                SolarkollektorenStammCtrl.AnzeigefelderSchreiben(name, Werte(felder));
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Schreibt die Sätze einer Mehrfachbearbeitung (Katalogauswahl V1, KA‑E‑8) — Projektkopien
+        /// (<paramref name="projektkopie"/>) oder Katalogsätze, alle in EINER Transaktion.
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<SolarkollektorenStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+                liste.Add(new SolarkollektorenStammCtrl.Satzaenderung(id, Werte(felder)));
+            SolarkollektorenStammCtrl.SpeicherErgebnis e =
+                SolarkollektorenStammCtrl.AnzeigefelderSchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder des Aufklappers als Anzeigefelder des Kerns.</summary>
+        internal static SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor Werte(IReadOnlyList<BrowserFeldwert> felder)
+        {
+            return new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldKollektortyp),
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBeschreibung),
@@ -121,11 +144,8 @@ namespace WindowsFormsApplication1
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldK2),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKdir),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKdiff),
-                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten));
-
-            SolarkollektorenStammCtrl.SpeicherErgebnis e =
-                SolarkollektorenStammCtrl.AnzeigefelderSchreiben(name, werte);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten),
+                Bezugsflaeche: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBezugsflaeche));
         }
 
         private static IReadOnlyDictionary<string, object> EditorGaben(string name, bool neu,

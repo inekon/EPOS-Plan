@@ -6,8 +6,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Welche Grenze die Heiz- bzw. Kühlleistung im Raum gekappt hat — die Gebäudeseite der
     /// beiden Aufzählungen aus Anlagenkopplung 5.3, soweit sie in der Stufe AK1 entstehen (4.5,
-    /// Schritt H4 in 10.2, Schritt K in 10.5). Die Anlagenseite (<c>Verfuegbarkeitsgrund</c>) und
-    /// die Gründe <c>VORLAUF_ANLAGE</c>, <c>VERFUEGBARKEIT</c>, <c>UMSCHALTUNG</c> kommen mit AK2.
+    /// Schritt H4 in 10.2, Schritt K in 10.5). Die Anlagenseite ist <see cref="Verfuegbarkeitsgrund"/>;
+    /// <c>VORLAUF_ANLAGE</c> und <c>VERFUEGBARKEIT</c> kommen mit AK2, <c>UMSCHALTUNG</c> mit AK3-K; sie stehen am Ende.
     /// Die Gründe der Kälteseite (E37) stehen <b>am Ende</b>, damit die Heizseite ihre Werte
     /// behält; je Seite gilt dieselbe Rangfolge (Spiegel: Heizgrenze ↔ KeineKaelte,
     /// Uebergabe ↔ KuehlUebergabe, HeizleistungMax ↔ KuehlleistungMax).
@@ -41,6 +41,27 @@ namespace WindowsFormsApplication1
         /// <c>VORLAUFGRENZE_KUEHLUNG</c>. Nur in gesättigten Abschnitten mit gekapptem Vorlauf.
         /// </summary>
         VorlaufgrenzeKuehlung,
+
+        /// <summary>
+        /// <c>VORLAUF_ANLAGE</c> (AK2, F6): Die Übergabe ist gesättigt, und der Vorlauf steht am Angebot der Anlage,
+        /// weil die Heizkurve mehr verlangt — die kleinere Zahl gewinnt (5.2, N-A8).
+        /// </summary>
+        VorlaufAnlage,
+
+        /// <summary>
+        /// <c>VERFUEGBARKEIT</c> (AK2, 4.5): Die Schranke der Anlagenverfügbarkeit hat die Leistung gekappt; der
+        /// Anlagengrund (<see cref="Verfuegbarkeitsgrund"/>) reist daneben mit (Paarungsregel 5.3). Auf der Kälteseite
+        /// (AK3-K) ebenso für die Kälteschranke (<see cref="Stundenrand.MitKaelteverfuegbarkeit"/>).
+        /// </summary>
+        Verfuegbarkeit,
+
+        /// <summary>
+        /// <c>UMSCHALTUNG</c> (Anlagenkopplung 5.3, AK3-K Festlegung 13): Die reversible Wärmepumpe steht der Seite an
+        /// diesem Tag nicht zur Verfügung. Der Wert gehört zur Aufzählung der Gebäudeseite; nach der Paarungsregel trägt
+        /// eine gekappte Stunde gebäudeseitig <see cref="Verfuegbarkeit"/>, und <see cref="Verfuegbarkeitsgrund.Umschaltung"/>
+        /// reist als Anlagengrund daneben — der Löser setzt diesen Wert daher nicht selbst.
+        /// </summary>
+        Umschaltung,
     }
 
     /// <summary>
@@ -213,10 +234,17 @@ namespace WindowsFormsApplication1
         /// 8.1). Sonst rechnet das Gebäude wie bisher — byte-gleich (N-A3).
         /// </summary>
         internal static bool KopplungWirksamFuer(ProjektGebaeudeModel g, string stufe)
+            => g != null && KopplungWirksamFuer(g.Heizkreis_Aktiv, g.Uebergabe_Art, stufe);
+
+        /// <summary>
+        /// Dieselbe Regel über die zwei Spalten des Gebäudes — für den Arbeitsstand eines Editors, der
+        /// keine Gebäudezeile des Laufs hat (Stufe KP2, Welle U1: der Weg der Konditionierung im Projekt).
+        /// </summary>
+        internal static bool KopplungWirksamFuer(bool heizkreisAktiv, string uebergabeArt, string stufe)
         {
-            if (g == null || !StufeAn(stufe) || !g.Heizkreis_Aktiv) return false;
-            return !string.IsNullOrWhiteSpace(g.Uebergabe_Art)
-                   && !string.Equals(g.Uebergabe_Art, DbWerte.UEBERGABE_IDEAL, StringComparison.Ordinal);
+            if (!StufeAn(stufe) || !heizkreisAktiv) return false;
+            return !string.IsNullOrWhiteSpace(uebergabeArt)
+                   && !string.Equals(uebergabeArt, DbWerte.UEBERGABE_IDEAL, StringComparison.Ordinal);
         }
 
         // =====================================================================

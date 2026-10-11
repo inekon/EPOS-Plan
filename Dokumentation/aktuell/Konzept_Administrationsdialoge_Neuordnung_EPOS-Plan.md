@@ -3,7 +3,7 @@
 **Stand:** AD-Q1 bis AD-Q9 sind entschieden, Variante B ist die Grundlage (6.1); mit AD-Q11 ist am
 23.09.2026 auch die letzte offene Frage entschieden (6.2). Mit AD-Q12 bis AD-Q14 hat der Anwender am
 22.09.2026 den Geltungsbereich auf die Verwaltungsdialoge der fünf Menügruppen Gebäude, Klimadaten,
-Wärmebedarf & Heizung, Strombedarf & Speicher und Energiesysteme eingegrenzt (achtzehn Menüpunkte, elf
+Wärme- und Kälteerzeugung, Strombedarf & Speicher und Energiesysteme eingegrenzt (achtzehn Menüpunkte, elf
 Komponenten, 1.4), das Kennzeichen auf das Schloss beschränkt und den Mockup-Reiter „Schmal"
 gestrichen. **Stufe 1 ist umgesetzt** (23.09.2026, Commits `c8e5f775`, `d9ef80b8`): V1, V2 und V7 im
 `Katalograhmen` und in der `Katalogliste`, dazu AD-Q6 im `KatalogBrowserDialog`. **Stufe 2 ist
@@ -63,7 +63,7 @@ C schmales Fenster, D Im Projekt (D ist nicht mehr Gegenstand, Abschnitt 8).
 ein Reiter, geordnet wie das Menü nach den fünf Gruppen; jeder Dialog mit einem Kasten „gleich /
 dialogspezifisch", jeder Rahmen in der Fenstergröße des Anwenders (1 088 × 624 CSS-Pixel).
 **Geltungsbereich:** Anordnung und Bedienung der Verwaltungsdialoge, die das Menü Administration unter
-Gebäude, Klimadaten, Wärmebedarf & Heizung, Strombedarf & Speicher und Energiesysteme öffnet (Liste
+Gebäude, Klimadaten, Wärme- und Kälteerzeugung, Strombedarf & Speicher und Energiesysteme öffnet (Liste
 in 1.4). Nicht Gegenstand sind die Projektdialoge (Erzeugerkacheln, Assistent), Kosten, Daten & Import
 und Einstellungen — Entscheid AD-Q12, Abschnitt 8. Kein Rechenweg, kein Datenbankschema, keine
 Testdatenbank — kein Referenzlauf.
@@ -77,7 +77,7 @@ Anordnungsregeln aus [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md); 3 ist dafü
 
 ### 1.1 Zwei Dialoge hinter einem Gerät
 
-- **Verwaltung** (Menü Administration → Wärmebedarf & Heizung → Heizkessel, die Screenshots):
+- **Verwaltung** (Menü Administration → Wärme- und Kälteerzeugung → Heizkessel, die Screenshots):
   `KatalogBrowserDialog`, Ausprägung Heizkessel (`KatalogBrowserProfil`), Hülle `HeizkesselAdminHuelle`
   → `KatalogBrowserHuelle`, eigenes Fenster `BlazorDialogForm`. Sie kennt kein Projekt.
 - **Projektdialog** „Verwaltung Heizkessel" (Erzeugerkachel, Assistent): `HeizkesselDialog`, Hülle
@@ -122,14 +122,14 @@ Komponenten. Die Spalte **Bestand** verweist auf die Zeile in 3.5.
 | Gebäude | Bearbeiten | `GebaeudeDialog`, Betriebsart Verwaltung | A9 |
 | Gebäude | Gebäudetypen | `GebaeudetypDialog` | A10 |
 | Klimadaten | Klimadaten (Punkt ohne Untermenü) | `KlimadatenDialog` | A4 |
-| Wärmebedarf & Heizung | Brauchwasser | `BedarfAdminDialog` (Brauchwasser) | A5 |
-| Wärmebedarf & Heizung › Profile & Lastgänge | Wärmebedarf Lastgang | `WaermebedarfAdminDialog` | A6 |
-| Wärmebedarf & Heizung › Profile & Lastgänge | Prozesswärme | `BedarfAdminDialog` (Prozesswärme) | A5 |
-| Wärmebedarf & Heizung › Profile & Lastgänge | Solarthermieganglinie | `SolarganglinieAdminDialog` | A7 |
-| Wärmebedarf & Heizung | Heizkessel | `KatalogBrowserDialog` (Heizkessel) | A1 |
-| Wärmebedarf & Heizung | BHKW | `KatalogBrowserDialog` (BHKW) | A1 |
-| Wärmebedarf & Heizung | Wärmepumpen | `WaermepumpeStammDialog` | A3 |
-| Wärmebedarf & Heizung | Solarkollektoren | `KatalogBrowserDialog` (Solarkollektoren) | A1 |
+| Wärme- und Kälteerzeugung | Brauchwasser | `BedarfAdminDialog` (Brauchwasser) | A5 |
+| Wärme- und Kälteerzeugung › Profile & Lastgänge | Wärmebedarf Lastgang | `WaermebedarfAdminDialog` | A6 |
+| Wärme- und Kälteerzeugung › Profile & Lastgänge | Prozesswärme | `BedarfAdminDialog` (Prozesswärme) | A5 |
+| Wärme- und Kälteerzeugung › Profile & Lastgänge | Solarthermieganglinie | `SolarganglinieAdminDialog` | A7 |
+| Wärme- und Kälteerzeugung | Heizkessel | `KatalogBrowserDialog` (Heizkessel) | A1 |
+| Wärme- und Kälteerzeugung | BHKW | `KatalogBrowserDialog` (BHKW) | A1 |
+| Wärme- und Kälteerzeugung | Wärmepumpen | `WaermepumpeStammDialog` | A3 |
+| Wärme- und Kälteerzeugung | Solarkollektoren | `KatalogBrowserDialog` (Solarkollektoren) | A1 |
 | Strombedarf & Speicher | Stromverbraucher | `BedarfAdminDialog` (Stromverbraucher) | A5 |
 | Strombedarf & Speicher | Stromganglinie | `StromganglinieAdminDialog` | A8 |
 | Strombedarf & Speicher | Stromspeicher | `ModulKatalogDialog` (Stromspeicher) | A2 |
@@ -549,7 +549,7 @@ Variante B nennt 6.1, AD-Q9 (entschieden: Ja), AD-Q11 (abgelöst) und AD-Q15 ste
 | **AD-Q1** | Stammblatt **neben** der Liste ab 900 px Dialogbreite, darunter als Blatt über der Liste (V3)? Das ersetzt „Liste über die ganze Breite, Eingabe darunter". | Ja — mit den Spaltenrängen aus V2 reicht die Breite, und der Detailblock ist ohne Rollen sichtbar | **22.09.2026: Ja** — Stammblatt neben der Liste ab 900 px Dialogbreite, darunter schmal als Blatt über der Liste (V3) |
 | **AD-Q6** | Verwaltung: Braucht es „Bearbeiten…" (Katalogeditor mit Überschreiben und Speichern unter) neben dem bearbeitbaren Stammblatt noch? | Nein — „Überschreiben" leistet schon „Speichern" in der Fußleiste, das das Stammblatt schreibt; „Speichern unter" wird „Kopieren…" neben „Neu…" | **22.09.2026: Entfällt** — die Felder sind direkt bedienbar mit Speichern/Verwerfen. **Umgesetzt (23.09.2026)** — im `KatalogBrowserDialog` ohne „Bearbeiten…" |
 | **AD-Q8** | Reihenfolge der Umsetzung (Abschnitt 7)? | wie vorgeschlagen | **22.09.2026: wie vorgeschlagen** — Stufe 1 alle Verwaltungen über den gemeinsamen Rahmen (V1, V2, V7), Stufe 2 Zeilenwahl (V4), Stufe 3 Heizkessel-Projektdialog als Pilot (V3, V5, V6), Stufe 4 übrige Erzeuger, Stufe 5 Bedarf und Zeitreihen. Mit AD-Q12 gelten die Stufen 1 und 2 unverändert; an die Stelle der Stufen 3 bis 5 treten die des Abschnitts 7 |
-| **AD-Q12** | Welche Dialoge umfasst das Schema? | Stand bis dahin: neunzehn Komponenten — sieben Verwaltungen im `Katalograhmen`, zwölf Projektdialoge — und zwei Nachbarn (Stromganglinie, Kostenfaktoren) | **22.09.2026:** „Die Dialoge im Mockup sollen nur auf die Auswahlen des Menüs beschränkt sein; die anderen Dialoge eignen sich nicht für das vorgeschlagene Schema." — Gegenstand sind die Verwaltungsdialoge der fünf Menügruppen Gebäude, Klimadaten, Wärmebedarf & Heizung, Strombedarf & Speicher und Energiesysteme (1.4); Projektdialoge, Kosten, Daten & Import und Einstellungen nicht (Abschnitt 8) |
+| **AD-Q12** | Welche Dialoge umfasst das Schema? | Stand bis dahin: neunzehn Komponenten — sieben Verwaltungen im `Katalograhmen`, zwölf Projektdialoge — und zwei Nachbarn (Stromganglinie, Kostenfaktoren) | **22.09.2026:** „Die Dialoge im Mockup sollen nur auf die Auswahlen des Menüs beschränkt sein; die anderen Dialoge eignen sich nicht für das vorgeschlagene Schema." — Gegenstand sind die Verwaltungsdialoge der fünf Menügruppen Gebäude, Klimadaten, Wärme- und Kälteerzeugung, Strombedarf & Speicher und Energiesysteme (1.4); Projektdialoge, Kosten, Daten & Import und Einstellungen nicht (Abschnitt 8) |
 | **AD-Q13** | Wie zeigt die Zeile einen Auslieferungssatz? | Schloss mit dem Wort „Auslieferung" (V10) | **22.09.2026:** „Hinweis ‚Auslieferung' zu groß, evtl. nur das Schloss-Symbol." — nur das Schloss; das Wort steht im Kurztext und in der Legende (3.4) |
 | **AD-Q14** | Braucht das Mockup einen eigenen Reiter für das schmale Fenster? | Reiter „Schmal · Wärmepumpe" bei 400 px | **22.09.2026:** „Wozu ist Dialog ‚Schmal · Wärmepumpe'?" — der Reiter entfällt; das Verhalten unter 900 px bleibt ein Satz im Schema (3.3) |
 

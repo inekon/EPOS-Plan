@@ -173,6 +173,14 @@ public interface IProjektQuelle
     IReadOnlyDictionary<string, object>? StromspeicherAuslegungGaben(int idProjekt) => null;
 
     /// <summary>
+    /// Der Parametersatz der Ansicht „Pufferspeicher-Auslegung" (Stufe P2) zum Projekt —
+    /// <c>PufferAuslegungHuelle.AnsichtGaben</c>, plattformfrei. Unter Windows reicht die Hülle
+    /// ihn über den Parameter <c>AppWurzel.PufferAuslegungGaben</c>; <c>null</c> = diese Quelle
+    /// führt die Ansicht nicht, die Wurzel nennt den Grund.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? PufferAuslegungGaben(int idProjekt) => null;
+
+    /// <summary>
     /// Der fertige PARAMETERSATZ des KI-Hilfe-Assistenten (iU9-W15b.7,
     /// Entscheid E-10).
     ///
@@ -384,6 +392,26 @@ public interface IProjektQuelle
     /// (<c>Dialoge.Bedarf.BauteilaufbauDialog</c>); <c>null</c> = diese Hülle führt sie nicht.
     /// </summary>
     IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Verwaltung „Kältemaschinen"
+    /// (<c>Dialoge.Erzeuger.KaeltemaschineKatalogDialog</c>, KU3-1); <c>null</c> = diese Hülle führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KaeltemaschineKatalogGaben() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ des Erzeugerdialogs „Kältemaschinen im Projekt"
+    /// (<c>Dialoge.Erzeuger.KaeltemaschineAnlageDialog</c>, KU3-4c) für ein Projekt; <c>null</c> = diese Hülle
+    /// führt ihn nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KaeltemaschineAnlageGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Verwaltung „Betriebskalender"
+    /// (<c>Dialoge.Bedarf.BetriebskalenderDialog</c>; Entscheidungsvorlage PW2, BW2); <c>null</c> =
+    /// diese Hülle führt sie nicht (die Wurzel nennt dann den Grund).
+    /// </summary>
+    IReadOnlyDictionary<string, object>? BetriebskalenderGaben() => null;
 
     // =====================================================================
     //  Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26)

@@ -1,4 +1,4 @@
-@* DIE GROESSEN-SICHT DER SPEICHERFLOTTE (Auftrag #193, Paket P4 des Konzepts
+﻿@* DIE GROESSEN-SICHT DER SPEICHERFLOTTE (Auftrag #193, Paket P4 des Konzepts
    „Stromspeicher-Dialoge", Abschnitt 2.5).
 
    DER BEFUND, DER SIE VERLANGT (Konzept 1.5/1.6): Die Rastersuche gibt es seit
@@ -83,6 +83,8 @@
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @using SpeicherEngine
+@using EPOS.UI.Seiten.Simulation
+@implements IDisposable
 
 <div class="epos-flotte-groessen">
 
@@ -129,14 +131,14 @@
             @if (_stueckmodell is not null)
             {
                 <section class="epos-simerg-block">
-                    <DiagrammSvg Modell="@_stueckmodell" Kennung="flotte-stueckzahl"
+                    <DiagrammSvg Modell="@_stueckmodell" Kennung="flotte-stueckzahl" CsvExport="@CsvVergleich"
                                  Bezeichnung="@Resource.FLOTTE_STUECK_BILD_ALT" />
                 </section>
             }
             else if (_stueckrastermodell is not null)
             {
                 <section class="epos-simerg-block">
-                    <DiagrammSvg Modell="@_stueckrastermodell" Kennung="flotte-stueckraster"
+                    <DiagrammSvg Modell="@_stueckrastermodell" Kennung="flotte-stueckraster" CsvExport="@CsvVergleich"
                                  Bezeichnung="@Resource.FLOTTE_STUECK_RASTER_ALT" />
                 </section>
             }
@@ -176,6 +178,7 @@
                            wo sie gesperrt ist (DG-E3-10). Die Kennung traegt die
                            gewaehlte Einheit: Deren Karte ist eine andere. *@
                         <DiagrammSvg Modell="@_rastermodell" Kennung="@("flotte-raster-" + Einheitenkennung)"
+                                     CsvExport="@CsvVergleich"
                                      Bezeichnung="@Rasterbeschreibung" />
                     </section>
 
@@ -378,9 +381,11 @@
             <p class="epos-katalog-leer">@Resource.FLOTTE_GROESSEN_KEIN_TREFFER</p>
         }
 
-        @if (Csv.HasDelegate)
+        @if (Csv.HasDelegate && !VergleichAmBild)
         {
-            @* Der CSV-Export fuehrt ALLE Kandidaten, nicht die gefilterten: Der Filter
+            @* "CSV..." STEHT AM BILD (Stueckzahl, Stueckraster, Rasterkarte); allein ohne Bild
+               (kein Raster) bleibt dieser Knopf, sonst ginge der Export verloren.
+               Der CSV-Export fuehrt ALLE Kandidaten, nicht die gefilterten: Der Filter
                ist eine Lesehilfe fuer die Tabelle, die Datei eine Ausleitung des Laufs.
                Den TEXT baut der Wirt (SpeicherFlottenAnzeigeCtrl.VergleichCsv braucht
                den ganzen Flottenlauf, nicht nur das Rasterergebnis) — hier steht nur
@@ -425,6 +430,15 @@
     /// Wirt, weil er den ganzen Flottenlauf kennt und nicht nur das Rasterergebnis.
     /// </summary>
     [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>„CSV…“ am Bild der Suche: derselbe Variantenvergleich wie der Knopf darunter.</summary>
+    private EventCallback CsvVergleich => Csv.HasDelegate
+        ? EventCallback.Factory.Create(this, () => Csv.InvokeAsync()) : default;
+
+    /// <summary>Trägt ein Bild der Suche den Export? Dann entfällt der Knopf unter der Tabelle.</summary>
+    private bool VergleichAmBild => Methode == FlottenSuchmethode.Stueckzahl
+        ? _stueckmodell is not null || _stueckrastermodell is not null
+        : _raster is not null && !_raster.IstLeer;
 
     // --- Prüfhilfen der Tests -------------------------------------------------
 
@@ -652,6 +666,57 @@
         _zeile = Stelle(e, _raster.Zeilenwerte.Count);
         Zeichnen();
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Freigabe der Masken, Teil C): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>Das Register der Anzeigeschalter des Wirts; <c>null</c> = ein Prüfstand ohne Wirt.</summary>
+    [CascadingParameter] public Ergebnisanzeige? Anzeige { get; set; }
+
+    protected override void OnInitialized() => Anzeige?.Melden(this, Anzeigeschalter);
+
+    /// <inheritdoc/>
+    public void Dispose() => Anzeige?.Abmelden(this);
+
+    /// <summary>
+    /// Die Schalter der Größenrechnung, wie sie gezeichnet sind: je Einheit eine Option (nur bei
+    /// mehr als einer Einheit) und je Stelle der zwei Schieber eine Option, beschriftet mit dem
+    /// Wert der Achse — ein Schieber steht immer auf einer Stelle, nie dazwischen. Die Filter
+    /// der Kandidatentabelle, „Übernehmen" und CSV bleiben beim Anwender.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter> Anzeigeschalter()
+    {
+        var liste = new List<EPOS.UI.Seiten.Simulation.Anzeigeschalter>();
+        if (Ergebnis is null || Methode == FlottenSuchmethode.Stueckzahl || _raster.IstLeer) return liste;
+
+        if (Einheiten > 1)
+        {
+            foreach ((int Id, string Text) e in Einheitenwahl)
+            {
+                int id = e.Id;
+                liste.Add(Option(Resource.FLOTTE_GROESSEN_LBL_EINHEIT + ": " + e.Text, () => _einheit == id,
+                                 () => EinheitGesetzt(id)));
+            }
+        }
+        for (int i = 0; i < _raster.Spaltenwerte.Count; i++)
+        {
+            int stelle = i;
+            liste.Add(Option(Spaltenschieber + ": " + SpeicherFlottenAnzeigeCtrl.Werttext(_raster.Spaltengroesse, _raster.Spaltenwerte[i]),
+                             () => _spalte == stelle, () => { _spalte = stelle; Zeichnen(); }));
+        }
+        for (int i = 0; i < _raster.Zeilenwerte.Count; i++)
+        {
+            int stelle = i;
+            liste.Add(Option(Zeilenschieber + ": " + SpeicherFlottenAnzeigeCtrl.Werttext(_raster.Zeilengroesse, _raster.Zeilenwerte[i]),
+                             () => _zeile == stelle, () => { _zeile = stelle; Zeichnen(); }));
+        }
+        return liste;
+    }
+
+    private EPOS.UI.Seiten.Simulation.Anzeigeschalter Option(string name, Func<bool> gewaehlt, Action waehlen)
+        => EPOS.UI.Seiten.Simulation.Anzeigeschalter.Wahloption(name, gewaehlt, waehlen,
+                                                                 () => _ = InvokeAsync(StateHasChanged));
 
     /// <summary>Die Stelle aus dem Schieber — außerhalb der Achse wird geklemmt.</summary>
     private static int Stelle(ChangeEventArgs e, int anzahl)

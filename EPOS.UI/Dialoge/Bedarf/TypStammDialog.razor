@@ -88,6 +88,26 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* PW1 Stufe 1: das Temperaturpaar - nur die Prozesswaerme fuehrt es. Leer = ohne
+       Temperaturniveau; die Pruefung (beide oder keine, 0 bis 250 Grad C, Vorlauf nicht
+       unter dem Ruecklauf) kommt als Delegat aus der Huelle. *@
+    @if (MitTemperatur)
+    {
+        <Gruppenkopf Titel="@GruppeTemperatur">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlauf"
+                            Nachkommastellen="1" Wert="@Daten.Vorlauf" WertChanged="w => Daten.Vorlauf = w" />
+                <Zahlenfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@LabelRuecklauf"
+                            Nachkommastellen="1" Wert="@Daten.Ruecklauf" WertChanged="w => Daten.Ruecklauf = w" />
+                    </KindInhalt>
+                </Formularraster>
+                <Herleitungszeile Text="@HinweisTemperatur" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
@@ -143,6 +163,27 @@
 
     /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>
+    /// Prüft das Temperaturpaar (PW1 Stufe 1) — <c>null</c> = zulässig, sonst der Grund. Die
+    /// Regel steht im Kern; die Hülle reicht sie herein. <c>null</c> = keine Prüfung.
+    /// </summary>
+    [Parameter] public Func<double?, double?, string?>? TemperaturPruefen { get; set; }
+
+    /// <summary>Zeigt der Dialog das Temperaturpaar? Nur die Prozesswärme führt eines.</summary>
+    private bool MitTemperatur => Daten.Art == BedarfsArt.Prozesswaerme;
+
+    /// <summary><c>PW_GRP_TEMPERATUR</c></summary>
+    [Parameter] public string GruppeTemperatur { get; set; } = Resource.PW_GRP_TEMPERATUR;
+
+    /// <summary><c>PW_LBL_VORLAUF</c></summary>
+    [Parameter] public string LabelVorlauf { get; set; } = Resource.PW_LBL_VORLAUF;
+
+    /// <summary><c>PW_LBL_RUECKLAUF</c></summary>
+    [Parameter] public string LabelRuecklauf { get; set; } = Resource.PW_LBL_RUECKLAUF;
+
+    /// <summary><c>PW_HINW_TEMPERATUR</c></summary>
+    [Parameter] public string HinweisTemperatur { get; set; } = Resource.PW_HINW_TEMPERATUR;
 
     // --- Texte -----------------------------------------------------------------
 
@@ -316,7 +357,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private string Monatsname(int m)
@@ -346,6 +387,18 @@
                 _meldungStufe = WarnStufe.Warnung;
                 return false;
             }
+
+        // PW1 Stufe 1: das Temperaturpaar der Prozesswärme - dieselbe Prüfung auf jedem Speicherweg.
+        if (MitTemperatur && TemperaturPruefen is not null)
+        {
+            string? grund = TemperaturPruefen(Daten.Vorlauf, Daten.Ruecklauf);
+            if (!string.IsNullOrEmpty(grund))
+            {
+                _meldung = grund;
+                _meldungStufe = WarnStufe.Warnung;
+                return false;
+            }
+        }
         return true;
     }
 

@@ -456,8 +456,9 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         { 0, 0, 0, 0, 0.05, 0.2, 0.4, 0.4, 0.2, 0, 0, 0 };
 
     /// <summary>Ein Satz auf dem VDI-Weg mit dem Tagesbilanz-Weg als Vergleich.</summary>
-    private static GebaeudeBedarfDaten VdiSatz(bool mitVergleich = true) => new()
+    private static GebaeudeBedarfDaten VdiSatz(bool mitVergleich = true, int? nachtauskuehlung = null) => new()
     {
+        NachtauskuehlstundenH = nachtauskuehlung,
         Name = "EFH", HeizwaermeMwh = 60.0, MaxLastKw = 40.0, VollbenutzungsstundenH = 1500.0,
         MonatswerteMwh = new double[12], Modelltext = "VDI 6007", IstVdi6007 = true,
         SpitzeTagesmittelKw = 25.0, SpitzeQuantil95Kw = 20.0,
@@ -492,6 +493,92 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Contains("Stunden mit Sommerlüftung:", cut.Markup);
         Assert.Equal(2, cut.FindAll("tr.gebb-vdi").Count);
         Assert.Equal(6, cut.FindAll("tr.gebb-kaelte").Count);
+    }
+
+    /// <summary>
+    /// <b>Die Stunden mit Nachtauskühlung stehen nur mit Wert</b> (Stufe KP2, Welle U1; Konzept
+    /// Konditionierungsprofile 3.7): Ist eine Nachtauskühlung gesetzt, trägt der Lauf ihre Stunden
+    /// (<c>NachtauskuehlstundenH</c>) — dann steht die Zeile unter der Sommerlüftung, sonst nicht; in der
+    /// Zonentabelle eine Spalte, sobald eine Zone einen Wert trägt.
+    /// </summary>
+    [Fact]
+    public void Die_Stunden_mit_Nachtauskuehlung_stehen_nur_mit_Wert()
+    {
+        var ohne = Aufbauen(VdiSatz());
+        Assert.DoesNotContain("Stunden mit Nachtauskühlung:", ohne.Markup);
+        Assert.Empty(ohne.FindAll("tr.gebb-nachtauskuehlung"));
+
+        var mit = Aufbauen(VdiSatz(nachtauskuehlung: 233));
+        IElement zeile = mit.Find("tr.gebb-nachtauskuehlung");
+        Assert.Equal(new[] { "Stunden mit Nachtauskühlung:", "233", "h" },
+                     zeile.QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray());
+
+        // Auch eine Null ist ein Wert: Die Nachtauskühlung war gesetzt, die Bedingung nie erfüllt.
+        var null_ = Aufbauen(VdiSatz(nachtauskuehlung: 0));
+        Assert.Equal("0", null_.Find("tr.gebb-nachtauskuehlung td.epos-zahl").TextContent.Trim());
+
+        // Die Zonen: eine Spalte, sobald eine Zone einen Wert trägt; „—" für die übrigen.
+        var ohneSpalte = Aufbauen(MitZonen());
+        Assert.Equal(6, ohneSpalte.FindAll("table.gebb-zonen thead th").Count);
+
+        var mitSpalte = Aufbauen(MitZonen(nachtauskuehlungWohnen: 180));
+        Assert.Equal(7, mitSpalte.FindAll("table.gebb-zonen thead th").Count);
+        Assert.Contains("Nachtauskühlung", mitSpalte.FindAll("table.gebb-zonen thead th")[6].TextContent);
+        IReadOnlyList<IElement> zz = mitSpalte.FindAll("table.gebb-zonen tbody tr");
+        Assert.Equal("180", zz[0].QuerySelectorAll("td")[6].TextContent.Trim());
+        Assert.Equal("—", zz[1].QuerySelectorAll("td")[6].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Die Wärmeübergabe je Zone</b> (AK1z, E63): Vorlauf, Rücklauf und die begrenzten Stunden stehen
+    /// nur, wenn mindestens eine Zone gekoppelt rechnet — dann als drei Spalten mit Einheit im Kopf,
+    /// rechtsbündig, eine Zone ohne Heizkreis mit „—", dazu die Herleitung der Spalten. Ohne gekoppelte
+    /// Zone bleibt die Tabelle bei sechs Spalten.
+    /// </summary>
+    [Fact]
+    public void Die_Zonentabelle_zeigt_den_Heizkreis_je_Zone_nur_mit_gekoppelter_Zone()
+    {
+        var ohne = Aufbauen(MitZonen());
+        Assert.Equal(6, ohne.FindAll("table.gebb-zonen thead th").Count);
+        Assert.DoesNotContain("Vorlauf [°C]", ohne.Markup);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.GEBB_HRL_ZONEN_UEBERGABE, ohne.Markup);
+
+        var mit = Aufbauen(MitZonen(gekoppelt: true));
+        IReadOnlyList<IElement> koepfe = mit.FindAll("table.gebb-zonen thead th");
+        Assert.Equal(9, koepfe.Count);
+        Assert.Equal(new[] { "Vorlauf [°C]", "Rücklauf [°C]", "Übergabe begrenzt [h]" },
+                     koepfe.Skip(6).Select(k => k.TextContent.Trim()).ToArray());
+        Assert.All(koepfe.Skip(6), k => Assert.Contains("epos-zahl", k.ClassName));
+
+        IReadOnlyList<IElement> zeilen = mit.FindAll("table.gebb-zonen tbody tr");
+        Assert.Equal(new[] { "45,3", "35,0", "1.211" },
+                     zeilen[0].QuerySelectorAll("td").Skip(6).Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(new[] { "—", "—", "—" },
+                     zeilen[1].QuerySelectorAll("td").Skip(6).Select(z => z.TextContent.Trim()).ToArray());
+        Assert.All(zeilen[0].QuerySelectorAll("td").Skip(6), z => Assert.Contains("epos-zahl", z.ClassName));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.GEBB_HRL_ZONEN_UEBERGABE, mit.Markup);
+
+        // Mit Nachtauskühlung stehen die drei Spalten dahinter.
+        var beide = Aufbauen(MitZonen(nachtauskuehlungWohnen: 180, gekoppelt: true));
+        Assert.Equal(10, beide.FindAll("table.gebb-zonen thead th").Count);
+    }
+
+    /// <summary>
+    /// <b>Der Assistent liest den Heizkreis je Zone</b> (AK1z): die Zonentabelle als Spalten mit dem
+    /// Zonennamen als Kennzeichen, nur zum Lesen; leer ohne Kopplung.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_Vorlauf_Ruecklauf_und_begrenzte_Stunden_je_Zone()
+    {
+        Aufbauen(MitZonen(gekoppelt: true));
+        IReadOnlyList<WindowsFormsApplication1.KiFeldwert> werte = KiMaskenbruecke.Lesen(KiMaskennamen.GEBAEUDE_BEDARF);
+        List<WindowsFormsApplication1.KiFeldwert> vorlauf = werte.Where(w => w.Name.StartsWith("zone_vorlauf", StringComparison.Ordinal)).ToList();
+        Assert.Equal(2, vorlauf.Count);
+        Assert.Equal(45.26, Assert.IsType<double>(vorlauf[0].Rohwert), 9);
+        Assert.Null(vorlauf[1].Rohwert);
+        Assert.All(vorlauf, w => Assert.False(w.Setzbar));
+        Assert.Equal(1211.0, Assert.IsType<double>(werte.First(w => w.Name.StartsWith("zone_uebergabe_begrenzt", StringComparison.Ordinal)).Rohwert), 9);
+        Assert.Equal(35.04, Assert.IsType<double>(werte.First(w => w.Name.StartsWith("zone_ruecklauf", StringComparison.Ordinal)).Rohwert), 9);
     }
 
     [Fact]
@@ -823,7 +910,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>Ein Satz mit zwei Zonen — Wohnen beheizt, Keller unbeheizt (A2).</summary>
-    private static GebaeudeBedarfDaten MitZonen() => new()
+    private static GebaeudeBedarfDaten MitZonen(int? nachtauskuehlungWohnen = null, bool gekoppelt = false) => new()
     {
         Name = "Haus mit Keller",
         HeizwaermeMwh = 12.5,
@@ -833,7 +920,11 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Zonen = new[]
         {
             new GebaeudeBedarfZoneDaten { Name = "Wohnen", IstBeheizt = true, HeizwaermeMwh = 12.5, MaxLastKw = 8.0,
-                                          MittlereRaumtemperaturC = 20.5, UeberhitzungsstundenH = 12 },
+                                          MittlereRaumtemperaturC = 20.5, UeberhitzungsstundenH = 12,
+                                          NachtauskuehlstundenH = nachtauskuehlungWohnen,
+                                          VorlaufMittelC = gekoppelt ? 45.26 : null,
+                                          RuecklaufMittelC = gekoppelt ? 35.04 : null,
+                                          UebergabeBegrenztH = gekoppelt ? 1211.0 : null },
             new GebaeudeBedarfZoneDaten { Name = "Keller", IstBeheizt = false,
                                           MittlereRaumtemperaturC = 11.25, UeberhitzungsstundenH = 0 },
         }
@@ -901,5 +992,204 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll("table.gebb-zonen"));
         Assert.Single(cut.FindAll("select"));                           // nur die Einheit
         Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_BEDARF, "diagramm").Lesen());
+    }
+    // =================================================================================
+    // Anlagenkopplung AK2 (Konzept 9.4, 5.5): Komfort neben Restbedarf
+    // =================================================================================
+
+    /// <summary>Ein gekoppelter Satz mit Komfortkennzahlen, Restbedarf und Fahrplan.</summary>
+    private static GebaeudeBedarfDaten KomfortSatz(bool erhoben) => new()
+    {
+        Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, VollbenutzungsstundenH = 2048.0,
+        MonatswerteMwh = new double[12], Modelltext = "VDI 6007, gekoppelt (AK1)", IstVdi6007 = true,
+        IstGekoppelt = true, VorlaufMittelC = 35.3, RuecklaufMittelC = 32.06, UebergabeBegrenztStundenH = 210.9,
+        KomfortUnterschreitungsstundenH = erhoben ? 273 : null,
+        KomfortKelvinstundenKh = erhoben ? 412.46 : null,
+        KomfortLaengsteStreckeH = erhoben ? 5 : null,
+        RestbedarfProjektMwh = 1.234,
+        Bedarfsbegriff = erhoben ? "mit Rückwirkung" : "",
+        FahrplanBegrenztStundenH = erhoben ? 120 : null
+    };
+
+    /// <summary>
+    /// Die drei Komfortkacheln stehen NEBEN dem Restbedarf (Regel 5.5) im Abschnitt „Wärmebedarf"; im Lauf mit
+    /// Fahrplan dazu der Bedarfsbegriff und die Stunden am Fahrplan.
+    /// </summary>
+    [Fact]
+    public void Komfortkacheln_stehen_neben_dem_Restbedarf()
+    {
+        var cut = Aufbauen(KomfortSatz(erhoben: true));
+
+        IReadOnlyList<IElement> k = cut.FindAll("div.gebb-komfort .epos-kennzahlkachel");
+        Assert.Equal(6, k.Count);
+        Assert.Equal("Unterschreitungsstunden", Kachel(k[0], "titel"));
+        Assert.Equal("273 h", Kachel(k[0], "wert"));
+        Assert.Equal("412,5 Kh", Kachel(k[1], "wert"));
+        Assert.Equal("5 h", Kachel(k[2], "wert"));
+        Assert.Equal("Restbedarf (Projekt, letzter Lauf)", Kachel(k[3], "titel"));
+        Assert.Equal("1,23 MWh/a", Kachel(k[3], "wert"));
+        Assert.Equal("mit Rückwirkung", Kachel(k[4], "wert"));
+        Assert.Equal("120 h", Kachel(k[5], "wert"));
+        Assert.Equal("erhoben", cut.Find("div.gebb-komfort").GetAttribute("data-komfort"));
+        Assert.NotNull(cut.Find("section[data-seite=waerme]").QuerySelector("div.gebb-komfort"));
+    }
+
+    /// <summary>Ein gekoppeltes Gebäude ohne erhobene Kennzahl zeigt „—" und die Zeile dazu (K18) — der Restbedarf bleibt.</summary>
+    [Fact]
+    public void Ohne_erhobenen_Komfort_zeigen_die_Kacheln_den_Strich()
+    {
+        var cut = Aufbauen(KomfortSatz(erhoben: false));
+
+        IReadOnlyList<IElement> k = cut.FindAll("div.gebb-komfort .epos-kennzahlkachel");
+        Assert.Equal(4, k.Count);
+        Assert.Equal("—", Kachel(k[0], "wert"));
+        Assert.Equal("—", Kachel(k[1], "wert"));
+        Assert.Equal("—", Kachel(k[2], "wert"));
+        Assert.Equal("1,23 MWh/a", Kachel(k[3], "wert"));
+        Assert.Contains("Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude.", cut.Markup);
+    }
+
+    // =================================================================================
+    // Anlagenkopplung AK3 (Entwurf AK3 Festlegungen 20 und 22): Kennzahlen des Kreises, Rückstufe
+    // =================================================================================
+
+    /// <summary>Die fünf Kacheln des geschlossenen Kreises stehen nur, wenn der letzte Lauf ihn rechnete.</summary>
+    [Fact]
+    public void Die_Kacheln_des_Kreises_stehen_nur_mit_Lauf_AK3()
+    {
+        var cut = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, IstGekoppelt = true,
+            Ak3DurchlaeufeMittel = 1.8437, Ak3DurchlaeufeMax = 6, Ak3Fallwechsel = 42,
+            Ak3SchrankeStundenH = 311, Ak3SpeicherLeerStundenH = 0, Ak3RestbedarfStundenH = null,
+        });
+        IReadOnlyList<IElement> k = cut.FindAll("div.gebb-ak3 .epos-kennzahlkachel");
+        Assert.Equal(5, k.Count);
+        Assert.Equal("Durchläufe je Stunde (Mittel / Höchstwert)", Kachel(k[0], "titel"));
+        Assert.Equal("1,84 / 6", Kachel(k[0], "wert"));
+        Assert.Equal("42", Kachel(k[1], "wert"));
+        Assert.Equal("311 h", Kachel(k[2], "wert"));
+        Assert.Equal("0 h", Kachel(k[3], "wert"));
+        Assert.Equal("—", Kachel(k[4], "wert"));
+
+        Assert.Empty(Aufbauen(KomfortSatz(erhoben: true)).FindAll("div.gebb-ak3"));
+    }
+
+    /// <summary>
+    /// AK3-K (Entwurf AK3-K 3.5, Festlegung 20): die Kacheln der Zonensperre und der Kälteseite im Kreis — jede Seite nur,
+    /// wenn der letzte Lauf sie erhob; ohne beide steht der Block nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Kacheln_der_Zonensperre_und_der_Kaelteseite_stehen_nur_mit_Wert()
+    {
+        var beide = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, IstGekoppelt = true,
+            ZonensperreTage = 12, ZonensperreHeizenGesperrtMwh = 0.0512, ZonensperreKuehlenGesperrtMwh = 0.0134,
+            Ak3KaelteschrankeStundenH = 37, Ak3UmschaltStundenH = 0, Ak3KaelterestStundenH = 3, Ak3KaelterestMwh = 0.25,
+        });
+        IReadOnlyList<IElement> k = beide.FindAll("div.gebb-ak3k .epos-kennzahlkachel");
+        Assert.Equal(5, k.Count);
+        Assert.Equal("Tage mit Sperre der Gegenseite", Kachel(k[0], "titel"));
+        Assert.Equal("12", Kachel(k[0], "wert"));
+        Assert.Equal("0,05 / 0,01 MWh", Kachel(k[1], "wert"));
+        Assert.Equal("Stunden an der Kälteschranke", Kachel(k[2], "titel"));
+        Assert.Equal("37 h", Kachel(k[2], "wert"));
+        Assert.Equal("0 h", Kachel(k[3], "wert"));
+        Assert.Equal("3 h, 0,25 MWh", Kachel(k[4], "wert"));
+
+        var nurSperre = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, ZonensperreTage = 9, ZonensperreHeizenGesperrtMwh = 0.02, ZonensperreKuehlenGesperrtMwh = 0.01,
+        });
+        Assert.Equal(2, nurSperre.FindAll("div.gebb-ak3k .epos-kennzahlkachel").Count);
+
+        Assert.Empty(Aufbauen(VdiSatz()).FindAll("div.gebb-ak3k"));
+    }
+
+    /// <summary>
+    /// KK (Entwurf KK, Festlegung 12): die Kacheln der Kühlkurve neben der Kälteseite im Kreis — nur, wenn der letzte Lauf
+    /// eine wirksame Kühlkurve rechnete; allein mit Kühlkurve steht der Block mit ihren drei Kacheln.
+    /// </summary>
+    [Fact]
+    public void Die_Kacheln_der_Kuehlkurve_stehen_nur_mit_Wert()
+    {
+        var mit = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, IstGekoppelt = true,
+            Ak3KaelteschrankeStundenH = 37, Ak3UmschaltStundenH = 0, Ak3KaelterestStundenH = 3, Ak3KaelterestMwh = 0.25,
+            KuehlkurveVorlaufMittelC = 16.27, KuehlkurveAbsenkungKh = 412.46, KuehlkurveVorlaufgrenzeStundenH = 120,
+        });
+        IReadOnlyList<IElement> k = mit.FindAll("div.gebb-ak3k .epos-kennzahlkachel");
+        Assert.Equal(6, k.Count);
+        Assert.Equal("Mittlerer Kühlvorlauf (Kühlkurve)", Kachel(k[3], "titel"));
+        Assert.Equal("16,3 °C", Kachel(k[3], "wert"));
+        Assert.Equal("Absenkung durch Raumeinfluss", Kachel(k[4], "titel"));
+        Assert.Equal("412,5 Kh", Kachel(k[4], "wert"));
+        Assert.Equal("Stunden an der Vorlaufgrenze", Kachel(k[5], "titel"));
+        Assert.Equal("120 h", Kachel(k[5], "wert"));
+
+        var nurKurve = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, KuehlkurveAbsenkungKh = 0.0, KuehlkurveVorlaufgrenzeStundenH = 0,
+        });
+        IReadOnlyList<IElement> n = nurKurve.FindAll("div.gebb-ak3k .epos-kennzahlkachel");
+        Assert.Equal(3, n.Count);
+        Assert.Equal("—", Kachel(n[0], "wert"));
+
+        Assert.Empty(Aufbauen(VdiSatz()).FindAll("div.gebb-ak3k"));
+    }
+
+    /// <summary>Die Rückstufe der Auskunft steht als eigene Zeile unter dem Rechenweg — nur mit Text.</summary>
+    [Fact]
+    public void Die_Rueckstufe_steht_unter_dem_Rechenweg()
+    {
+        const string RUECK = "Berechnet ohne geschlossenen Kreis (Profilweg): Probe.";
+        var cut = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "EFH", HeizwaermeMwh = 60.0, MaxLastKw = 40.0, MonatswerteMwh = new double[12],
+            Modelltext = "VDI 6007", IstVdi6007 = true, Rueckstufe = RUECK,
+        });
+        Assert.Equal(RUECK, cut.Find("tr.gebb-rueckstufe").TextContent.Trim());
+        Assert.Empty(Aufbauen(VdiSatz()).FindAll("tr.gebb-rueckstufe"));
+    }
+
+    /// <summary>Ohne Kopplung steht kein Komfortblock — jedes Bestandsgebäude bleibt, wie es war.</summary>
+    [Fact]
+    public void Ohne_Kopplung_steht_kein_Komfortblock()
+    {
+        var cut = Aufbauen(VdiSatz());
+        Assert.Empty(cut.FindAll("div.gebb-komfort"));
+    }
+
+    /// <summary>Das Bild „Raumtemperatur und Sollwert" steht nur mit Delegat, mit seiner Zeile, und wird einmal gerechnet.</summary>
+    [Fact]
+    public void Das_Komfortwochenbild_steht_nur_mit_Delegat()
+    {
+        int aufrufe = 0;
+        var luft = new double[168];
+        var soll = new double[168];
+        var maske = new bool[168];
+        for (int h = 0; h < 168; h++) { soll[h] = 21.0; luft[h] = h < 10 ? 18.5 : 20.8; maske[h] = h < 10; }
+        Zeichenmodell bild = ChartRenderer.KomfortwocheModell("Raumtemperatur und Sollwert", luft, soll, maske,
+                                                              new ChartRenderer.Komfortwochennamen());
+        var cut = Render<GebaeudeBedarfDialog>(p => p
+            .Add(x => x.Daten, KomfortSatz(erhoben: true))
+            .Add(x => x.Bildauftrag, s => s ? DAUER : GANG)
+            .Add(x => x.BildauftragKomfortwoche, () => { aufrufe++; return bild; })
+            .Add(x => x.HinweisKomfortwoche, "Die Woche ab 1. Januar; markiert sind die gezählten Unterschreitungsstunden."));
+
+        Assert.Equal(2, cut.FindAll("svg.epos-flaeche").Count);
+        Assert.Contains("Die Woche ab 1. Januar", cut.Markup);
+        Assert.DoesNotContain("NaN", cut.Markup);
+        cut.Render();
+        Assert.Equal(1, aufrufe);
+
+        Assert.Single(Aufbauen(KomfortSatz(erhoben: true)).FindAll("svg.epos-flaeche"));
     }
 }

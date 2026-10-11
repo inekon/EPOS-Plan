@@ -182,6 +182,7 @@ namespace WindowsFormsApplication1
             Uebergabekennwerte k = e.Uebergabe;
             hk.HeizleistungMaxStundenH = heizleistungMaxStundenH;
             hk.HeizgrenzeStundenH = heizgrenzeStundenH;
+            hk.StundenOhneHeizungH = e.StundenOhneHeizungH;
             hk.GroessteUnterschreitungK = groessteUnterschreitungK;
             hk.UebergabeArt = e.UebergabeArt;
             hk.Exponent = k.Exponent;
@@ -202,6 +203,53 @@ namespace WindowsFormsApplication1
             return hk;
         }
 
+        /// <summary>
+        /// Bildet das Ergebnis des GEBÄUDES im Mehrzonenweg (E63, AK1z) aus seinem Heizkreis und den
+        /// gemischten Reihen der gekoppelten Zonen (<see cref="Gebaeudeheizkreis.Mischen"/>) — dieselben
+        /// Kennzahlen wie <see cref="Bilden(GebaeudeModellEingang, double[], double[], double[], double, double, double[], double)"/>,
+        /// die Übergabewerte vom Gebäude.
+        /// </summary>
+        /// <param name="g">Der Heizkreis des Gebäudes.</param>
+        /// <param name="vorlaufC">Gemeinsamer Vorlauf je Stunde [°C].</param>
+        /// <param name="ruecklaufC">Massenstromgewichteter Rücklauf je Stunde [°C].</param>
+        /// <param name="uebergabeBegrenztAnteil">Begrenzt-Anteil je Stunde, Maximum über die Zonen [–].</param>
+        /// <param name="heizleistungMaxStundenH">Zeitanteile mit <c>Heizleistung_Max</c> als Grenze [h] (Maximum über die Zonen).</param>
+        /// <param name="heizgrenzeStundenH">Zeitanteile an der Heizgrenze [h] (Maximum über die Zonen).</param>
+        /// <param name="heizlastW">Die Heizlast des Gebäudes je Stunde [W] (Summe der Zonen).</param>
+        /// <param name="groessteUnterschreitungK">Größte Unterschreitung einer Zone [K].</param>
+        internal static HeizkreisErgebnis Bilden(Gebaeudeheizkreis g, double[] vorlaufC, double[] ruecklaufC,
+                                                 double[] uebergabeBegrenztAnteil, double heizleistungMaxStundenH,
+                                                 double heizgrenzeStundenH, double[] heizlastW,
+                                                 double groessteUnterschreitungK)
+        {
+            if (g == null) throw new ArgumentNullException(nameof(g));
+            var hk = new HeizkreisErgebnis();
+            hk.KennzahlenBilden(vorlaufC, ruecklaufC, uebergabeBegrenztAnteil, heizlastW);
+
+            Uebergabekennwerte k = g.Uebergabe;
+            hk.HeizleistungMaxStundenH = heizleistungMaxStundenH;
+            hk.HeizgrenzeStundenH = heizgrenzeStundenH;
+            hk.StundenOhneHeizungH = g.StundenOhneHeizungH;
+            hk.GroessteUnterschreitungK = groessteUnterschreitungK;
+            hk.UebergabeArt = g.UebergabeArt;
+            hk.Exponent = k.Exponent;
+            hk.UebergabeNennKw = k.PhiNW / 1000.0;
+            hk.UebergabeNennleistungHergeleitet = g.NennleistungHergeleitet;
+            hk.AuslegungsheizlastKw = g.AuslegungsheizlastW / 1000.0;
+            hk.AuslegungVorlaufC = k.AuslegungVorlaufC;
+            hk.AuslegungRuecklaufC = k.AuslegungRuecklaufC;
+            hk.AuslegungRaumC = k.AuslegungRaumC;
+            hk.AuslegungAussenC = g.AuslegungAussentemperaturC;
+            hk.AuslegungAussenHergeleitet = g.AuslegungAussentemperaturHergeleitet;
+            hk.ReglerbandK = g.ReglerbandK;
+            hk.HeizkurveAktiv = g.HeizkurveAktiv;
+            hk.Vorlaufquelle = g.Vorlaufquelle;
+            hk.VorlaufFestC = g.VorlaufFestC;
+            hk.Strahlungsanteil = g.Strahlungsanteil;
+            hk.SollwertprofilWirksam = g.SollwertprofilWirksam;
+            return hk;
+        }
+
         /// <summary>Zahl der Heizstunden (Heizleistung &gt; 0) — die Stunden der Mittelwerte.</summary>
         internal int Heizstunden => Bedarfsstunden;
 
@@ -210,6 +258,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden an der Heizgrenze der Übergabe [h] (Bericht 9.4).</summary>
         internal double HeizgrenzeStundenH { get; private set; }
+
+        /// <summary>
+        /// <b>Stunden mit Heizsollwert „aus"</b> [h] (Stufe KP1b, E53) — außerhalb der Heizperiode
+        /// oder stundenweise. Dort liefert die Übergabe nichts und der Vorlauf bleibt leer; die
+        /// Stunde zählt <b>getrennt</b>, nicht als Heizgrenzstunde: Die Heizgrenze ist ein Befund
+        /// der Anlage, das „aus" eine Vorgabe des Anwenders. 0 ohne Heizkalender.
+        /// </summary>
+        internal int StundenOhneHeizungH { get; private set; }
 
         /// <summary>Größte Unterschreitung des Sollwerts in einer Stunde mit begrenzter Übergabe [K] (Meldung 9.5).</summary>
         internal double GroessteUnterschreitungK { get; private set; }
@@ -286,11 +342,50 @@ namespace WindowsFormsApplication1
             kk.AuslegungRaumC = k.AuslegungRaumC;
             kk.ReglerbandK = e.ReglerbandK;
             kk.Vorlaufquelle = e.KuehlVorlaufquelle;
-            kk.VorlaufFestC = e.KuehlVorlaufC;
+            // KK (Festlegung 12): mit Kühlkurve weist das Ergebnis den gerechneten Vorlauf aus (Mittel der Kühlstunden).
+            kk.VorlaufFestC = e.KuehlkurveWirksam ? kk.VorlaufMittelC : e.KuehlVorlaufFestC;
             kk.VorlaufQuelleC = e.KuehlVorlaufQuelleC;
             kk.VorlaufGekappt = e.KuehlVorlaufGekappt;
             kk.VorlaufgrenzeC = e.KuehlVorlaufgrenzeC;
             kk.Strahlungsanteil = e.KuehlStrahlungsanteil;
+            return kk;
+        }
+
+        /// <summary>
+        /// Bildet das Ergebnis des Kühlkreises eines Mehrzonengebäudes (Entwurf KK, KZ1) aus dem Kühlkreis des Gebäudes und
+        /// den gemischten Reihen der Zonen (<see cref="Gebaeudeheizkreis.Mischen"/>) — die Kennwerte der Kühlübergabe des
+        /// Gebäudes, sonst wie <see cref="Bilden(GebaeudeModellEingang, double[], double[], double[], double, double, double, double[], double)"/>.
+        /// </summary>
+        internal static KuehlkreisErgebnis Bilden(Gebaeudekuehlkreis g, double[] vorlaufC, double[] ruecklaufC,
+                                                  double[] uebergabeBegrenztAnteil, double kuehlleistungMaxStundenH,
+                                                  double keineKaelteStundenH, double vorlaufgrenzeStundenH,
+                                                  double[] kuehlbedarfW, double groessteUeberschreitungK)
+        {
+            if (g == null) throw new ArgumentNullException(nameof(g));
+            var kk = new KuehlkreisErgebnis();
+            kk.KennzahlenBilden(vorlaufC, ruecklaufC, uebergabeBegrenztAnteil, kuehlbedarfW);
+
+            Uebergabekennwerte k = g.Uebergabe;
+            kk.KuehlleistungMaxStundenH = kuehlleistungMaxStundenH;
+            kk.KeineKaelteStundenH = keineKaelteStundenH;
+            kk.VorlaufgrenzeStundenH = vorlaufgrenzeStundenH;
+            kk.GroessteUeberschreitungK = groessteUeberschreitungK;
+            kk.UebergabeArt = g.UebergabeArt;
+            kk.Exponent = k.Exponent;
+            kk.UebergabeNennKw = k.PhiNW / 1000.0;
+            kk.UebergabeNennleistungHergeleitet = g.NennleistungHergeleitet;
+            kk.AuslegungskuehllastKw = g.AuslegungskuehllastW / 1000.0;
+            kk.AuslegungstagKuehlung = g.AuslegungstagKuehlung;
+            kk.AuslegungVorlaufC = k.AuslegungVorlaufC;
+            kk.AuslegungRuecklaufC = k.AuslegungRuecklaufC;
+            kk.AuslegungRaumC = k.AuslegungRaumC;
+            kk.ReglerbandK = g.ReglerbandK;
+            kk.Vorlaufquelle = g.Vorlaufquelle;
+            kk.VorlaufFestC = g.Kuehlkurve != null ? kk.VorlaufMittelC : g.VorlaufFestC;
+            kk.VorlaufQuelleC = g.VorlaufQuelleC;
+            kk.VorlaufGekappt = g.VorlaufGekappt;
+            kk.VorlaufgrenzeC = g.VorlaufgrenzeC;
+            kk.Strahlungsanteil = g.Strahlungsanteil;
             return kk;
         }
 

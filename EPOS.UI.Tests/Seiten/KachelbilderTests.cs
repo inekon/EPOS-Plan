@@ -81,6 +81,19 @@ public class KachelbilderTests : EposBunitContext
     }
 
     [Fact]
+    public void Das_Kuehlungssymbol_liegt_unter_wwwroot_bilder_start_und_misst_84_Pixel()
+    {
+        string pfad = Path.Combine(Bilderordner(), Kachelbilder.KUEHLUNG_DATEI);
+        Assert.True(File.Exists(pfad), pfad);
+        byte[] kopf = File.ReadAllBytes(pfad).Take(24).ToArray();
+        // PNG-Signatur, danach IHDR mit Breite und Hoehe (big-endian).
+        Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, kopf.Take(4).ToArray());
+        Assert.Equal(84, (kopf[16] << 24) | (kopf[17] << 16) | (kopf[18] << 8) | kopf[19]);
+        Assert.Equal(84, (kopf[20] << 24) | (kopf[21] << 16) | (kopf[22] << 8) | kopf[23]);
+        Assert.False(Kachelbilder.Alle.Values.Any(e => e.Datei == Kachelbilder.KUEHLUNG_DATEI));
+    }
+
+    [Fact]
     public void Die_fuenf_Aktionskarten_tragen_ihr_Symbol()
     {
         // Herkunft: karte_*.KartenBild aus dem eingefrorenen Designer
@@ -120,7 +133,8 @@ public class KachelbilderTests : EposBunitContext
         Assert.Equal("PWP.jpg", Datei(Kachelschluessel.Waermepumpe));
         Assert.Equal("PHeizkessel.jpg", Datei(Kachelschluessel.Heizkessel));
         Assert.Equal("PProjektSolarthermie.jpg", Datei(Kachelschluessel.Solarthermie));
-        Assert.Equal("PBHKW.jpg", Datei(Kachelschluessel.Bhkw));
+        Assert.Equal("PBHKW_Symbol.svg", Datei(Kachelschluessel.Bhkw));
+        Assert.Equal(Kachelbilder.KLASSE_SYMBOL, Kachelbilder.Klasse(Kachelschluessel.Bhkw));
         Assert.Equal("PProjektPV.jpg", Datei(Kachelschluessel.Photovoltaik));
         Assert.Equal("PSSpeicher.jpg", Datei(Kachelschluessel.Stromspeicher));
         Assert.Equal("PPufferSpeicher.jpg", Datei(Kachelschluessel.Pufferspeicher));
@@ -188,7 +202,7 @@ public class KachelbilderTests : EposBunitContext
     }
 
     [Fact]
-    public void Der_Reiter_Energieerzeuger_zeichnet_sieben_Ausschnitte()
+    public void Der_Reiter_Energieerzeuger_zeichnet_sieben_Ausschnitte_und_das_Kuehlungssymbol()
     {
         var cut = Render<ErzeugerReiter>(p => p
             .Add(x => x.Kacheln, Kacheln(Reiterschluessel.Erzeuger,
@@ -201,13 +215,35 @@ public class KachelbilderTests : EposBunitContext
                                          Kachelschluessel.Pufferspeicher)));
 
         var bilder = cut.FindAll(".epos-kachel img");
-        Assert.Equal(7, bilder.Count);
+        // Sieben Ausschnitte der Bestandskacheln, als achtes das eigene Symbol der Kachel
+        // „Kühlung und Kälteanlagen" (ohne Kachelschlüssel).
+        Assert.Equal(8, bilder.Count);
+        Assert.Equal(Kachelbilder.KuehlungQuelle, bilder[7].GetAttribute("src"));
+        Assert.Contains(Kachelbilder.KLASSE_SYMBOL, bilder[7].ClassName);
         Assert.Equal("_content/EPOS.UI/bilder/start/PWP.jpg", bilder[0].GetAttribute("src"));
 
         // Die zwei flachen stehen an fuenfter und sechster Stelle.
         Assert.Contains(Kachelbilder.KLASSE_AUSSCHNITT_FLACH, bilder[5].ClassName);
         Assert.Contains(Kachelbilder.KLASSE_AUSSCHNITT_FLACH, bilder[6].ClassName);
         Assert.Contains(Kachelbilder.KLASSE_AUSSCHNITT, bilder[0].ClassName);
+
+        // Die BHKW-Kachel (vierte Stelle) traegt das eigene Vektorsymbol, keinen Ausschnitt.
+        Assert.Equal("_content/EPOS.UI/bilder/start/PBHKW_Symbol.svg", bilder[3].GetAttribute("src"));
+        Assert.Contains(Kachelbilder.KLASSE_SYMBOL, bilder[3].ClassName);
+        Assert.DoesNotContain(Kachelbilder.KLASSE_AUSSCHNITT, bilder[3].ClassName);
+    }
+
+    [Fact]
+    public void Das_BHKW_Symbol_ist_ein_Vektorbild_von_84_Pixeln()
+    {
+        string pfad = Path.Combine(Bilderordner(), Kachelbilder.BHKW_DATEI);
+        Assert.True(File.Exists(pfad), pfad);
+        var svg = System.Xml.Linq.XDocument.Load(pfad).Root!;
+        Assert.Equal("svg", svg.Name.LocalName);
+        Assert.Equal("84", svg.Attribute("width")?.Value);
+        Assert.Equal("84", svg.Attribute("height")?.Value);
+        // Das alte Blitzbild ist entfernt.
+        Assert.False(File.Exists(Path.Combine(Bilderordner(), "PBHKW.jpg")));
     }
 
     [Fact]

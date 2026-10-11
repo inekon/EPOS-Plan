@@ -16,8 +16,10 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Raumhöhe, Volumen, „beheizt", die vier Sollwerte samt Maximalraumtemperatur, Infiltration und
 /// Nutzerlüftung, innere Gewinne, Bewohner, Strahlungsanteil und Leistungsgrenze der Heizung — und die
 /// Bauteile. Ein leerer Wert (<c>null</c>) übernimmt den des Gebäudes (Vorgabenkaskade
-/// <see cref="Zonenvorgaben"/>). Die Kühl- und Übergabespalten der Zone liest der Dialog nicht
-/// (Anwenderentscheid A4 (a)); die Hülle hält sie beim Schreiben, wie sie stehen.</para>
+/// <see cref="Zonenvorgaben"/>). Die sieben Übergabefelder (E63, AK1z: Art, Exponent, Nennleistung,
+/// Auslegungsvorlauf, -rücklauf, -raumtemperatur, Proportionalband) führt der Abschnitt „Übergabe";
+/// leer heißt „wie Gebäude". Die Kühlspalten der Zone liest der Dialog nicht (Anwenderentscheid A4 (a));
+/// die Hülle hält sie beim Schreiben, wie sie stehen.</para>
 /// </remarks>
 public sealed class ZoneDaten
 {
@@ -72,16 +74,67 @@ public sealed class ZoneDaten
     /// <summary>Leistungsgrenze der Heizung [kW]; <c>null</c> = die des Gebäudes (ab zwei Zonen anteilig).</summary>
     public double? HeizleistungMaxKw { get; set; }
 
-    /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>).</summary>
+    // ---- Die Kühlung der Zone (KU3-3, E67/E68) — leer (null) = wie Gebäude ----
+
+    /// <summary>Wird die Zone gekühlt? <c>null</c> = wie das Gebäude; <c>false</c> schaltet sie aus, auch wenn das Gebäude kühlt.</summary>
+    public bool? KuehlungAktiv { get; set; }
+
+    /// <summary>Kühlsollwert am Tag [°C]; <c>null</c> = der des Gebäudes (Bestandszelle der Kühlspalte der Zonenmatrix).</summary>
+    public double? KuehlSollwert { get; set; }
+
+    /// <summary>Kühlsollwert der Nacht [°C]; <c>null</c> = der des Gebäudes (wirksam über den Kühlkalender).</summary>
+    public double? KuehlSollwertNacht { get; set; }
+
+    /// <summary>Leistungsgrenze der Kühlung [kW]; <c>null</c> = die des Gebäudes (ab zwei Zonen nach dem Flächenanteil).</summary>
+    public double? KuehlleistungMaxKw { get; set; }
+
+    // ---- Die Wärmeübergabe der Zone (E63, AK1z) — leer (null) = wie Gebäude ----
+
+    /// <summary>Übergabeart (<c>DbWerte.UEBERGABE_*</c>); <c>null</c> = die des Gebäudes. <c>IDEAL</c> = diese Zone rechnet ideal.</summary>
+    public string? UebergabeArt { get; set; }
+
+    /// <summary>Exponent der Übergabe [–]; <c>null</c> = Gebäudewert, sonst Vorgabe der wirksamen Art.</summary>
+    public double? UebergabeExponent { get; set; }
+
+    /// <summary>Nennleistung der Übergabe [kW]; <c>null</c> = Anteil des Gebäudes nach Nutzfläche.</summary>
+    public double? UebergabeLeistungNennKw { get; set; }
+
+    /// <summary>Auslegungsvorlauf [°C]; <c>null</c> = Gebäudewert, sonst Vorgabe der wirksamen Art.</summary>
+    public double? AuslegungVorlauf { get; set; }
+
+    /// <summary>Auslegungsrücklauf [°C]; <c>null</c> = Gebäudewert, sonst Vorgabe der wirksamen Art.</summary>
+    public double? AuslegungRuecklauf { get; set; }
+
+    /// <summary>Auslegungsraumtemperatur [°C]; <c>null</c> = Gebäudewert, sonst Soll am Tag der Zone.</summary>
+    public double? AuslegungRaumtemperatur { get; set; }
+
+    /// <summary>Proportionalband des Raumreglers [K]; <c>null</c> = Gebäudewert, sonst Vorgabe 1 K.</summary>
+    public double? ReglerProportionalband { get; set; }
+
+    // ---- Die Kühlübergabe der Zone (Schritt 137, gerechnet seit KZ1; Entwurf KK Festlegung 15) — leer = wie Gebäude ----
+
+    /// <summary>Kühlübergabeart (<c>DbWerte.KUEHLUEBERGABE_*</c>); <c>null</c> = die des Gebäudes. <c>IDEAL</c> = diese Zone kühlt ideal.</summary>
+    public string? KuehlUebergabeArt { get; set; }
+
+    /// <summary>Exponent der Kühlübergabe [–]; <c>null</c> = Gebäudewert, sonst Vorgabe der wirksamen Art.</summary>
+    public double? KuehlUebergabeExponent { get; set; }
+
+    /// <summary>Nennleistung der Kühlübergabe [kW]; <c>null</c> = Anteil des Gebäudes nach Nutzfläche.</summary>
+    public double? KuehlUebergabeLeistungNennKw { get; set; }
+
+    /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>) samt den sieben Übergabefeldern und den vier Kühlfeldern.</summary>
     public Zoneneingaben Eingaben()
         => new(Nutzflaeche, Raumhoehe, Volumen, IstBeheizt, SollTag, SollNacht, SollWochenende, SollFerien,
                Maximaleraumtemperatur, HeizungStrahlungsanteil, HeizleistungMaxKw, LuftwechselInfiltration,
-               LuftwechselNutzer, InterneWaermegewinne, Bewohner);
+               LuftwechselNutzer, InterneWaermegewinne, Bewohner,
+               UebergabeArt, UebergabeExponent, UebergabeLeistungNennKw, AuslegungVorlauf, AuslegungRuecklauf,
+               AuslegungRaumtemperatur, ReglerProportionalband,
+               KuehlungAktiv, KuehlSollwert, KuehlSollwertNacht, KuehlleistungMaxKw);
 
     /// <summary>
     /// Die Zone, deren Duplikat diese ist (Stufe G6a) — ihre Id im Arbeitsstand; <c>null</c> = kein
     /// Duplikat. Die Hülle übernimmt damit die Spalten der Vorlage, die die Oberfläche nicht führt
-    /// (Sollwerte, Lüftung, Kühl- und Übergabeeingaben), statt sie still auf NULL fallen zu lassen;
+    /// (Kühlübergabe), statt sie still auf NULL fallen zu lassen;
     /// Herkunft und Quellkennung der Vorlage gehen nicht mit.
     /// </summary>
     public int? VorlageId { get; set; }
@@ -89,19 +142,43 @@ public sealed class ZoneDaten
     /// <summary>Die Bauteile der Zone in ihrer Reihenfolge (Rang).</summary>
     public List<BauteilDaten> Bauteile { get; set; } = new();
 
-    /// <summary>Eine entkoppelte Kopie samt Bauteilen — der Arbeitsstand eines Dialogs.</summary>
+    /// <summary>
+    /// <b>Das zuletzt übernommene Nutzungsprofil</b> (<c>Tab_Zone.Nutzungsprofil</c>, Q41, NP-F14) — ein Name als Kopie,
+    /// keine Id; <c>null</c> = keines. „Nutzungsprofil übernehmen…" setzt ihn im Arbeitsstand, das OK schreibt ihn.
+    /// </summary>
+    public string? Nutzungsprofil { get; set; }
+
+    /// <summary>
+    /// Die Nutzung der Kalender der Zone beim Öffnen (<c>Tab_Konditionierungskalender.Nutzung</c>) — nur Anzeige: die
+    /// Kopfzeile nennt sie, wenn die Zone keinen <see cref="Nutzungsprofil"/> trägt. Wird nie geschrieben.
+    /// </summary>
+    public string? Kalendernutzung { get; set; }
+
+    /// <summary>
+    /// Die Konditionierung der Zone im Arbeitsstand (Stufe KP2; Teilkonzept 3.4) — leere Zellen heißen
+    /// „wie das Gebäude"; <c>null</c> = die Hülle reicht keine. Sie reist mit dem Zonenweg (Schritt 3
+    /// des OK-Wegs); ihre <see cref="KonditionierungDaten.Fassung"/> zählt in <see cref="GleicheWerte"/>.
+    /// </summary>
+    public KonditionierungDaten? Konditionierung { get; set; }
+
+    /// <summary>Eine entkoppelte Kopie samt Bauteilen und Konditionierung — der Arbeitsstand eines Dialogs.</summary>
     public ZoneDaten Kopie()
     {
         var k = (ZoneDaten)MemberwiseClone();
         k.Bauteile = Bauteile.Select(b => b.Kopie()).ToList();
+        k.Konditionierung = Konditionierung?.Kopie();
         return k;
     }
 
-    /// <summary>Tragen beide dieselben Werte — Zone und jedes Bauteil, in derselben Reihenfolge?</summary>
+    /// <summary>
+    /// Tragen beide dieselben Werte — Zone, Fassung der Konditionierung und jedes Bauteil, in derselben
+    /// Reihenfolge?
+    /// </summary>
     public bool GleicheWerte(ZoneDaten? andere)
     {
         if (andere is null || Id != andere.Id || Bezeichner != andere.Bezeichner || Nutzflaeche != andere.Nutzflaeche
-            || VorlageId != andere.VorlageId || Eingaben() != andere.Eingaben()
+            || VorlageId != andere.VorlageId || Eingaben() != andere.Eingaben() || Nutzungsprofil != andere.Nutzungsprofil
+            || Konditionierung?.Fassung != andere.Konditionierung?.Fassung
             || Bauteile.Count != andere.Bauteile.Count) return false;
         for (int i = 0; i < Bauteile.Count; i++)
             if (!Bauteile[i].GleicheWerte(andere.Bauteile[i])) return false;
@@ -212,7 +289,7 @@ public sealed class BauteilDaten
 /// <c>false</c>) oder aus dem Stammkatalog; <see cref="UWert"/> im Kern gerechnet, <c>null</c> =
 /// nicht bestimmbar.
 /// </summary>
-public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert);
+public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert, bool Ersatz = false);
 
 /// <summary>
 /// <b>Ein Luftstrom zwischen zwei Zonen</b> eines Gebäudes (Stufe G6b; <c>Tab_Zonenluftstrom</c>) — das
@@ -304,10 +381,35 @@ public sealed record ZonenuebernahmeDaten(bool Ok, string Meldung, double Faktor
 public sealed record AufbauUebernahmeErgebnis(bool Ok, string Meldung, AufbauWahl? Wahl);
 
 /// <summary>
-/// <b>Der Zonenweg eines Projektgebäudes</b> — alles, was der Gebäudedialog für Zonen und Bauteile
-/// braucht, als EIN Parameter (Stufe G3, Welle D2). Die Hülle baut ihn nur für ein gespeichertes
-/// Projektgebäude; ohne ihn (Katalogsatz, Verwaltung, ohne Gaben) steht der Zonenreiter mit seinem
-/// Grund da, und der Übernahmeknopf ist weich gesperrt.
+/// <b>Was das Schreiben der Zonen ergab</b> (Stufe KP2, Welle K2; Befund B10) — die Meldung und die
+/// <b>Zuordnung</b> der Ids: Eine neue Zone trägt im Arbeitsstand eine vorläufige Id (≤ 0), der Kern
+/// vergibt die endgültige; ohne Zuordnung legte ein zweites OK sie noch einmal an.
+/// </summary>
+/// <param name="Meldung">Der Grund, wenn nicht geschrieben wurde; leer = gelungen.</param>
+/// <param name="Zonen">Vorläufige Id → endgültige Id jeder neuen Zone.</param>
+/// <param name="Bauteile">Je endgültiger Zonen-Id die Ids ihrer Bauteile in Listenfolge.</param>
+/// <param name="Luftstroeme">Die Ids der Luftströme in Listenfolge; <c>null</c> = ungeändert, nicht geschrieben.</param>
+public sealed record ZonenSchreibergebnis(string Meldung, IReadOnlyDictionary<int, int> Zonen,
+                                          IReadOnlyDictionary<int, IReadOnlyList<int>> Bauteile,
+                                          IReadOnlyList<int>? Luftstroeme)
+{
+    /// <summary>Gelungen?</summary>
+    public bool Ok => string.IsNullOrEmpty(Meldung);
+
+    /// <summary>Gelungen, ohne neue Ids.</summary>
+    public static ZonenSchreibergebnis Gut { get; } =
+        new("", new Dictionary<int, int>(), new Dictionary<int, IReadOnlyList<int>>(), null);
+
+    /// <summary>Der benannte Fehlschlag.</summary>
+    public static ZonenSchreibergebnis Fehler(string meldung) =>
+        new(meldung ?? "", new Dictionary<int, int>(), new Dictionary<int, IReadOnlyList<int>>(), null);
+}
+
+/// <summary>
+/// <b>Der Zonenweg eines Gebäudes</b> — alles, was der Gebäudedialog für Zonen und Bauteile braucht, als EIN
+/// Parameter (Stufe G3, Welle D2): für ein gespeichertes Projektgebäude und (Welle ZK-b, <see cref="Katalog"/>)
+/// für einen Katalogsatz. Ohne ihn (ohne Gaben) steht der Zonenreiter mit seinem Grund da, und die Knöpfe
+/// sind weich gesperrt.
 /// </summary>
 /// <remarks>
 /// <para><b>Geschrieben wird im OK-Weg, in benannten Schritten</b> (Softwarearchitektur 3.3):
@@ -333,10 +435,12 @@ public sealed class GebaeudeZonenweg
 
     /// <summary>
     /// OK-Weg, Schritt 3: schreibt die Zonen des Gebäudes (Abgleich über die Ids) samt ihrer
-    /// Luftströme (Stufe G6b; <see cref="ZonenstandDaten.Luftstroeme"/> <c>null</c> = ungeändert);
-    /// leer = gelungen.
+    /// Luftströme (Stufe G6b; <see cref="ZonenstandDaten.Luftstroeme"/> <c>null</c> = ungeändert) und
+    /// ihrer Konditionierung (Stufe KP2). Das Ergebnis trägt die Zuordnung der vorläufigen Ids
+    /// (<see cref="ZonenSchreibergebnis"/>, Befund B10); der Dialog übernimmt sie in den Arbeitsstand
+    /// (<see cref="GebaeudeArbeitsstand.IdsUebernehmen"/>), damit ein zweites OK nichts doppelt schreibt.
     /// </summary>
-    public Func<ZonenstandDaten, string>? Speichern { get; init; }
+    public Func<ZonenstandDaten, ZonenSchreibergebnis>? Speichern { get; init; }
 
     /// <summary>
     /// Die Prüfregeln des Kerns über die ganze Zonenliste samt Kopplung (<c>GebaeudeZonenCtrl.Pruefen</c>,
@@ -366,4 +470,39 @@ public sealed class GebaeudeZonenweg
     /// Dann bietet der Bauteildialog die Nachbarzone nicht an, und „Luftaustausch …" ist weich gesperrt.
     /// </summary>
     public string? KopplungSperre { get; init; }
+
+    /// <summary>
+    /// Warum die Datenbank die Übergabe je Zone nicht kennt (Schemaschritt der Übergabe je Zone fehlt;
+    /// E63, AK1z); <c>null</c> = sie kennt sie. Dann zeigt der Abschnitt „Übergabe" des Zonendialogs
+    /// statt der Felder diesen Grund — die Zone übernimmt die Übergabe des Gebäudes.
+    /// </summary>
+    public string? UebergabeSperre { get; init; }
+
+    /// <summary>
+    /// Rechnet das Projekt eine Kopplungsstufe (AK1 oder höher)? <c>null</c> = unbekannt (kein Projekt).
+    /// Ohne Stufe zeigt der Abschnitt „Übergabe" den Hinweis „ohne Wirkung".
+    /// </summary>
+    public bool? ProjektKoppelt { get; init; }
+
+    /// <summary>
+    /// Führt der Weg die Zonen eines KATALOGSATZES (Welle ZK-b)? Dann schreibt der OK-Weg des Editors sie in die
+    /// Katalogzwillinge, die Bauteile wählen ihren Aufbau aus dem Aufbaukatalog, und „Gebäude als eine Zone
+    /// übernehmen" fehlt.
+    /// </summary>
+    public bool Katalog { get; init; }
+
+    /// <summary>
+    /// Warum die Zonen hier nicht bearbeitbar sind (etwa: die Datenbank kennt die Katalogzonen nicht);
+    /// <c>null</c> = bearbeitbar. Dann sind „+ Neue Zone …" und die Zeilenhandlungen weich gesperrt.
+    /// </summary>
+    public string? Sperre { get; init; }
+
+    /// <summary>
+    /// Liest die Zonen des Gebäudes neu — nach „Speichern unter" im Katalog am neuen Satz, dessen Zonen der Kern
+    /// im gespeicherten Stand kopiert hat. <c>null</c> = kein Neulesen.
+    /// </summary>
+    public Func<ZonenNeulesung>? Neulesen { get; init; }
 }
+
+/// <summary>Die neu gelesenen Zonen samt Luftströmen (<see cref="GebaeudeZonenweg.Neulesen"/>).</summary>
+public sealed record ZonenNeulesung(IReadOnlyList<ZoneDaten> Zonen, IReadOnlyList<ZonenluftstromDaten> Luftstroeme);

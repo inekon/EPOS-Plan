@@ -39,20 +39,7 @@ namespace WindowsFormsApplication1
             int idRefSpalte = idReferenz > 0 ? idReferenz : stamm.IdProjekt;
             bool paar = daten.Sicht != null && daten.Sicht.IstPaar;
 
-            var spalten = new List<VariantenDaten>();
-            if (paar)
-            {
-                foreach (int id in daten.Sicht.Spalten(null))
-                {
-                    VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == id);
-                    if (v != null) spalten.Add(v);
-                }
-            }
-            else
-            {
-                spalten.Add(stamm);
-                spalten.AddRange(daten.Varianten.Where(v => !v.IstStamm));
-            }
+            List<VariantenDaten> spalten = Kennzahlstaende(daten);
             if (spalten.Count == 0) return Leer(nameof(RR.BV_GRUND_KEIN_PAAR), kultur);
 
             var t = new Berichtstabelle { Teilbar = !paar }.Feste(3100);
@@ -63,43 +50,12 @@ namespace WindowsFormsApplication1
 
             foreach (WirtZeile z in zeilen)
             {
-                Tabellenrolle zeilenrolle = z.IstUeberschrift ? Tabellenrolle.Gruppe
-                                          : z.IstSumme ? Tabellenrolle.Summe : Tabellenrolle.Keine;
-                string titel = (z.Einzug > 0 ? "    " : "") + z.Titel +
-                               (z.Nachrichtlich ? " — " + ValeriAusweis.NachrichtlichLabel() : "");
-                var zellen = new List<Tabellenzelle>
-                {
-                    new Tabellenzelle
-                    {
-                        Text = titel, Fett = z.IstUeberschrift || z.IstSumme, Rolle = zeilenrolle,
-                        Hinterlegung = z.IstUeberschrift ? Tabellenhinterlegung.Kopf : Tabellenhinterlegung.Keine,
-                    },
-                };
+                Tabellenrolle zeilenrolle = Zeilenrolle(z);
+                var zellen = new List<Tabellenzelle> { Kennzahltitel(z, zeilenrolle) };
                 foreach (VariantenDaten v in spalten)
                 {
                     WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x => x.IdProjekt == v.IdProjekt && x.Szenario == szenario);
-                    string txt = z.IstUeberschrift ? "" : z.Anzeige(e, kultur);
-                    string warnung = z.Warnung(e);
-                    Tabellenrolle rolle = zeilenrolle | (v.IdProjekt == idRefSpalte ? Tabellenrolle.Stamm : Tabellenrolle.Keine);
-                    string satz = null;
-                    if (!string.IsNullOrEmpty(warnung))
-                    {
-                        rolle |= Tabellenrolle.Warnung;
-                        satz = WirtschaftlichkeitBaustein.Zellwarnung(v, z, warnung);
-                    }
-                    zellen.Add(new Tabellenzelle
-                    {
-                        Text = txt,
-                        Zahl = z.IstUeberschrift || z.IstText || txt == Tabellenzelle.STRICH ? null : z.ExcelWert(e),
-                        Format = z.IstText ? null : z.Format,
-                        Fett = z.IstSumme,
-                        Rolle = rolle,
-                        Warnung = satz,
-                        Hinterlegung = z.IstUeberschrift ? Tabellenhinterlegung.Kopf
-                                     : v.IdProjekt == idRefSpalte ? Tabellenhinterlegung.Stamm : Tabellenhinterlegung.Keine,
-                        Ausrichtung = z.IstText ? Tabellenausrichtung.Links
-                                    : txt == Tabellenzelle.STRICH ? Tabellenausrichtung.Mitte : Tabellenausrichtung.Rechts,
-                    });
+                    zellen.Add(Kennzahlzelle(z, e, v, zeilenrolle, idRefSpalte, kultur));
                 }
                 t.Zeile(zellen, zeilenrolle);
             }
@@ -108,6 +64,136 @@ namespace WindowsFormsApplication1
                     if (c.Warnung != null && !t.Hinweise.Contains(c.Warnung)) t.Hinweis(c.Warnung);
             if (t.IstLeer) t.Leergrund = Grund(nameof(RR.BV_GRUND_ZEILE_FEHLT), kultur);
             return t;
+        }
+
+        /// <summary>
+        /// Die Stände der Kennzahltafel (Konzept § 2.9, § 2.15): in der Paarsicht genau A | B, sonst der Stamm und die
+        /// Varianten — dieselbe Folge für <see cref="Wirtschaftskennzahlen"/> und die Tafeln je Stand der
+        /// VALERI-Darstellung (<see cref="WirtschaftskennzahlenSzenarien"/>, VB‑Q5 a).
+        /// </summary>
+        public static List<VariantenDaten> Kennzahlstaende(BerichtsDaten daten)
+        {
+            var staende = new List<VariantenDaten>();
+            if (daten == null) return staende;
+            if (daten.Sicht != null && daten.Sicht.IstPaar)
+            {
+                foreach (int id in daten.Sicht.Spalten(null))
+                {
+                    VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == id);
+                    if (v != null) staende.Add(v);
+                }
+                return staende;
+            }
+            VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
+            if (stamm != null) staende.Add(stamm);
+            staende.AddRange(daten.Varianten.Where(v => !v.IstStamm));
+            return staende;
+        }
+
+        // =====================================================================
+        //  Kennzahlen je Szenario (VALERI-Darstellung, Etappe VB‑E2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Tafel „Kennzahlen je Szenario“ eines Stands (Entscheide VB‑Q2 a, VB‑Q4 a): dieselben sichtbaren Zeilen wie
+        /// die Kennzahltafel (<see cref="WirtschaftlichkeitZeilen.Sichtbare"/> gegen die Referenz der Tafel), die Spalten
+        /// Kennzahl | Ungünstig | Erwartet | Günstig (<see cref="WirtschaftsBerichtswerte.ValeriSpalten"/>), Rollen und
+        /// Formate wie in <see cref="Wirtschaftskennzahlen"/>; ist der Stand die Referenz, tragen seine Zellen die Rolle
+        /// Stamm und in den Δ-Zeilen „(Referenz)“. Fehlt dem Stand Günstig oder Ungünstig, steht die ganze Tafel allein
+        /// in Erwartet, und der erste Hinweis sagt es (<c>WIRT_BER_VALERI_RUECKFALL</c>); danach die Warnungen der
+        /// Zellen. Unteilbar.
+        /// </summary>
+        public static Berichtstabelle WirtschaftskennzahlenSzenarien(BerichtsDaten daten, WirtschaftsBerichtswerte werte,
+                                                                     VariantenDaten stand, bool englisch, CultureInfo kultur)
+        {
+            List<WirtschaftlichkeitErgebnis> alle = werte?.Ergebnisse ?? new List<WirtschaftlichkeitErgebnis>();
+            if (alle.Count == 0) return Leer(nameof(RR.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT), kultur);
+            VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
+            if (stamm == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAMM), kultur);
+            if (stand == null) return Leer(nameof(RR.BV_GRUND_KEIN_PAAR), kultur);
+
+            int idReferenz = werte.IdReferenzTafel;
+            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(werte.Zeilen(idReferenz), alle);
+            int idRefSpalte = idReferenz > 0 ? idReferenz : stamm.IdProjekt;
+
+            IReadOnlyList<string> szenarien = werte.ValeriSzenarien(stand.IdProjekt, out List<string> fehlend);
+
+            var t = new Berichtstabelle { Teilbar = false }.Feste(3100);
+            bool paar = daten.Sicht != null && daten.Sicht.IstPaar;
+            foreach (string sz in szenarien)
+                t.Spalte(!paar && stand.IstStamm ? Spaltenart.Stamm : Spaltenart.Stand, 0, stand.IdProjekt);
+            t.MitKopf(new[] { Zellen.Kopf(BerichtTexte.T("Kennzahl", englisch), Tabellenausrichtung.Links) }
+                .Concat(szenarien.Select(sz => Zellen.Kopf(VerlaufZeilen.Szenarioname(sz)))));
+            if (fehlend.Count > 0)
+                t.Hinweis(string.Format(kultur, RR.WIRT_BER_VALERI_RUECKFALL, Standkopf(stand, englisch),
+                                        string.Join(", ", fehlend.Select(VerlaufZeilen.Szenarioname)),
+                                        VerlaufZeilen.Szenarioname(WirtschaftlichkeitSzenario.ERWARTET)));
+
+            foreach (WirtZeile z in zeilen)
+            {
+                Tabellenrolle zeilenrolle = Zeilenrolle(z);
+                var zellen = new List<Tabellenzelle> { Kennzahltitel(z, zeilenrolle) };
+                foreach (string sz in szenarien)
+                {
+                    WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x => x.IdProjekt == stand.IdProjekt && x.Szenario == sz);
+                    zellen.Add(Kennzahlzelle(z, e, stand, zeilenrolle, idRefSpalte, kultur));
+                }
+                t.Zeile(zellen, zeilenrolle);
+            }
+            foreach (Tabellenzeile z in t.Zeilen)
+                foreach (Tabellenzelle c in z.Zellen)
+                    if (c.Warnung != null && !t.Hinweise.Contains(c.Warnung)) t.Hinweis(c.Warnung);
+            if (t.IstLeer) t.Leergrund = Grund(nameof(RR.BV_GRUND_ZEILE_FEHLT), kultur);
+            return t;
+        }
+
+        /// <summary>Die Rolle einer Kennzahlzeile: Rubrik als Gruppe, Summe als Summe.</summary>
+        private static Tabellenrolle Zeilenrolle(WirtZeile z)
+        {
+            return z.IstUeberschrift ? Tabellenrolle.Gruppe : z.IstSumme ? Tabellenrolle.Summe : Tabellenrolle.Keine;
+        }
+
+        /// <summary>Die Titelzelle einer Kennzahlzeile (Einzug, Ausweis „nachrichtlich“).</summary>
+        private static Tabellenzelle Kennzahltitel(WirtZeile z, Tabellenrolle zeilenrolle)
+        {
+            string titel = (z.Einzug > 0 ? "    " : "") + z.Titel +
+                           (z.Nachrichtlich ? " — " + ValeriAusweis.NachrichtlichLabel() : "");
+            return new Tabellenzelle
+            {
+                Text = titel, Fett = z.IstUeberschrift || z.IstSumme, Rolle = zeilenrolle,
+                Hinterlegung = z.IstUeberschrift ? Tabellenhinterlegung.Kopf : Tabellenhinterlegung.Keine,
+            };
+        }
+
+        /// <summary>
+        /// Eine Zahlzelle der Kennzahltafel: der Wert der Zeile im Ergebnis <paramref name="e"/> des Stands
+        /// <paramref name="v"/>; die Referenz trägt die Rolle Stamm, eine Zelle mit Vorbehalt die Rolle Warnung samt Satz.
+        /// </summary>
+        private static Tabellenzelle Kennzahlzelle(WirtZeile z, WirtschaftlichkeitErgebnis e, VariantenDaten v,
+                                                   Tabellenrolle zeilenrolle, int idRefSpalte, CultureInfo kultur)
+        {
+            string txt = z.IstUeberschrift ? "" : z.Anzeige(e, kultur);
+            string warnung = z.Warnung(e);
+            Tabellenrolle rolle = zeilenrolle | (v.IdProjekt == idRefSpalte ? Tabellenrolle.Stamm : Tabellenrolle.Keine);
+            string satz = null;
+            if (!string.IsNullOrEmpty(warnung))
+            {
+                rolle |= Tabellenrolle.Warnung;
+                satz = WirtschaftlichkeitBaustein.Zellwarnung(v, z, warnung);
+            }
+            return new Tabellenzelle
+            {
+                Text = txt,
+                Zahl = z.IstUeberschrift || z.IstText || txt == Tabellenzelle.STRICH ? null : z.ExcelWert(e),
+                Format = z.IstText ? null : z.Format,
+                Fett = z.IstSumme,
+                Rolle = rolle,
+                Warnung = satz,
+                Hinterlegung = z.IstUeberschrift ? Tabellenhinterlegung.Kopf
+                             : v.IdProjekt == idRefSpalte ? Tabellenhinterlegung.Stamm : Tabellenhinterlegung.Keine,
+                Ausrichtung = z.IstText ? Tabellenausrichtung.Links
+                            : txt == Tabellenzelle.STRICH ? Tabellenausrichtung.Mitte : Tabellenausrichtung.Rechts,
+            };
         }
 
         // =====================================================================
@@ -206,11 +292,14 @@ namespace WindowsFormsApplication1
         /// (Gruppenzeilen), je Position Gruppe, Bemessung, Herleitung und Betrag, dazu die Summe (Summenzeile). Die
         /// Probe gegen die angesetzten Betriebskosten steht als Hinweis unter der Tabelle.
         /// </summary>
-        public static Berichtstabelle Betriebskosten(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur)
+        /// <param name="szenario">Das Szenario der Positionen (der Wortbericht: das Szenario des Berichts); <c>null</c> = Erwartet.</param>
+        public static Berichtstabelle Betriebskosten(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur,
+                                                     string szenario = null)
         {
             if (v == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAND), kultur);
+            string imSzenario = WirtschaftlichkeitSzenario.Normiere(szenario);
             WirtschaftlichkeitErgebnis e = (alle ?? new List<WirtschaftlichkeitErgebnis>()).FirstOrDefault(x =>
-                x.Szenario == WirtschaftlichkeitSzenario.ERWARTET && x.Betriebskosten != null && x.Betriebskosten.Count > 0 &&
+                x.Szenario == imSzenario && x.Betriebskosten != null && x.Betriebskosten.Count > 0 &&
                 x.IdProjekt == v.IdProjekt);
             if (e == null) return Leer(alle == null || alle.Count == 0 ? nameof(RR.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT)
                                                                         : nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
@@ -274,11 +363,14 @@ namespace WindowsFormsApplication1
         /// <b><c>stand.tabelle.kwkg_module</c></b> — je BHKW-Modul der KWKG-Rechnung eine Zeile mit elf Spalten (mit dem
         /// zweiten Fall des § 2 Nr. 16 KWKG sechzehn); die Herleitung der Sätze steht als Hinweis darunter.
         /// </summary>
-        public static Berichtstabelle KwkgModule(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur)
+        /// <param name="szenario">Das Szenario der Rechnung (der Wortbericht: das Szenario des Berichts); <c>null</c> = Erwartet.</param>
+        public static Berichtstabelle KwkgModule(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur,
+                                                 string szenario = null)
         {
             if (v == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAND), kultur);
+            string sz = WirtschaftlichkeitSzenario.Normiere(szenario);
             WirtschaftlichkeitErgebnis e = (alle ?? new List<WirtschaftlichkeitErgebnis>()).FirstOrDefault(x =>
-                x.Szenario == WirtschaftlichkeitSzenario.ERWARTET && x.KwkgModule != null && x.KwkgModule.Count > 0 &&
+                x.Szenario == sz && x.KwkgModule != null && x.KwkgModule.Count > 0 &&
                 x.IdProjekt == v.IdProjekt);
             if (e == null) return Leer(alle == null || alle.Count == 0 ? nameof(RR.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT)
                                                                         : nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
@@ -395,19 +487,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b><c>stand.tabelle.vermiedene_kosten</c></b> — der Nachweis der vermiedenen Kosten (Arbeit, Leistung, gesamt)
-        /// im Erwartungsfall; leer, wenn der Stand keine vermiedenen Kosten trägt.
+        /// im Erwartungsfall (der Wortbericht: im Szenario des Berichts); leer, wenn der Stand keine vermiedenen Kosten trägt.
         /// </summary>
-        public static Berichtstabelle VermiedeneKosten(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur)
+        /// <param name="szenario">Das Szenario; <c>null</c> = Erwartet.</param>
+        public static Berichtstabelle VermiedeneKosten(VariantenDaten v, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur,
+                                                       string szenario = null)
         {
             if (v == null) return Leer(nameof(RR.BV_GRUND_KEIN_STAND), kultur);
-            return VermiedeneKosten(v.IdProjekt, alle, kultur);
+            return VermiedeneKosten(v.IdProjekt, alle, kultur, szenario);
         }
 
         /// <summary>Die Nachweistafel der vermiedenen Kosten zu einer Projektkennung (der Weg des Bausteins).</summary>
-        public static Berichtstabelle VermiedeneKosten(int idProjekt, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur)
+        public static Berichtstabelle VermiedeneKosten(int idProjekt, List<WirtschaftlichkeitErgebnis> alle, CultureInfo kultur,
+                                                       string szenario = null)
         {
+            string sz = WirtschaftlichkeitSzenario.Normiere(szenario);
             WirtschaftlichkeitErgebnis e = (alle ?? new List<WirtschaftlichkeitErgebnis>()).FirstOrDefault(x =>
-                x.IdProjekt == idProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                x.IdProjekt == idProjekt && x.Szenario == sz);
             if (e == null) return Leer(nameof(RR.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT), kultur);
             if (e.VermiedenGesamtJahr == 0 && e.VermiedenArbeitJahr == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
 

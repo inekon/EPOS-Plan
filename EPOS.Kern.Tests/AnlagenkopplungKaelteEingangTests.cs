@@ -200,22 +200,22 @@ namespace EPOS.Kern.Tests
             GebaeudeModellEingang kalt = Eingang(Kuehlgekoppelt(), kuehlVorlaufAnlage: 7.0);
             Assert.Equal(Vorlaufquelle.Anlage, kalt.KuehlVorlaufquelle);
             Assert.True(kalt.KuehlVorlaufGekappt);
-            Assert.Equal(16.0, kalt.KuehlVorlaufC);
+            Assert.Equal(16.0, kalt.KuehlVorlaufFestC);
             Assert.Equal(7.0, kalt.KuehlVorlaufQuelleC);
 
             GebaeudeModellEingang warm = Eingang(Kuehlgekoppelt(), kuehlVorlaufAnlage: 18.0);
             Assert.False(warm.KuehlVorlaufGekappt);
-            Assert.Equal(18.0, warm.KuehlVorlaufC);
+            Assert.Equal(18.0, warm.KuehlVorlaufFestC);
 
             GebaeudeModellEingang ohne = Eingang(Kuehlgekoppelt());
             Assert.Equal(Vorlaufquelle.Auslegung, ohne.KuehlVorlaufquelle);
             Assert.False(ohne.KuehlVorlaufGekappt);
-            Assert.Equal(16.0, ohne.KuehlVorlaufC);
+            Assert.Equal(16.0, ohne.KuehlVorlaufFestC);
 
             GebaeudeModellEingang konvektor = Eingang(Kuehlgekoppelt(g => g.Kuehl_Uebergabe_Art = DbWerte.KUEHLUEBERGABE_GEBLAESEKONVEKTOR),
                                                       kuehlVorlaufAnlage: 7.0);
             Assert.False(konvektor.KuehlVorlaufGekappt);
-            Assert.Equal(7.0, konvektor.KuehlVorlaufC);
+            Assert.Equal(7.0, konvektor.KuehlVorlaufFestC);
         }
 
         /// <summary>
@@ -443,6 +443,10 @@ namespace EPOS.Kern.Tests
                 ["AuslegungAussenHergeleitet"] = "AuslegungstagKuehlung",
                 ["HeizkurveAktiv"] = null,           // 7.4 Punkt 5
                 ["SollwertprofilWirksam"] = null,    // 7.4 Punkt 7
+                // Stufe KP1b (E53): Die Stunden mit Heizsollwert "aus" zaehlen getrennt von der
+                // Heizgrenze. Die Kaelteseite hat kein Gegenstueck: Ausserhalb der Kuehlperiode ist
+                // ThetaMax = +unendlich, und daraus entsteht keine Kennzahl, sondern kein Bedarf.
+                ["StundenOhneHeizungH"] = null,
             };
             var props = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly;
             var kuehlNamen = new HashSet<string>(typeof(KuehlkreisErgebnis).GetProperties(props).Select(p => p.Name));

@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 10;
+        public const int KATALOGFASSUNG = 18;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die letzte Katalogfassung, die Einträge mit Ausgabe Word brachte (Katalog v4; v5 brachte nur die Blattmarken der
         /// Excel-Vorlage, BV-E7, v6 die Blattmarke der Diagrammdaten, BV-E8, v7 die drei Tabellen mit reiner Excel-Quelle, v8 die Positionsmuster und v9 die Vergleichsliste und den Kennzahlblock der erzeugten Blätter, alle BV-E9; v10 die
-        /// Ergebnisbilder, den Speicherlauf und die solare Deckung des Simulationsergebnisses, wieder mit Word) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
+        /// Ergebnisbilder, den Speicherlauf und die solare Deckung des Simulationsergebnisses, wieder mit Word; v11 den Betrieb je Heizkessel, Word und Excel; v12 die Stromlast des BHKW, die Kälteproduktion und die Pufferauslegung, Word und Excel; v13 die freie Kühlung der Wärmepumpe über die Wärmequelle, Word und Excel; v14 die Stunden der Wärmepumpe außerhalb der Kennlinienstützstellen, Word und Excel) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
         /// Word-Vorlage kann keinen Schlüssel einer reinen Excel-Fassung nutzen; sie braucht darum keine neue Fassung.
         /// </summary>
         public static int KatalogfassungWord
@@ -676,6 +676,8 @@ namespace WindowsFormsApplication1
             ["tabelle.kaelteerzeuger"] = Berichtskapitel.PROJEKT,
             ["tabelle.speichertemperaturen"] = Berichtskapitel.PROJEKT,
             ["tabelle.gebaeude.ergebnis"] = Berichtskapitel.PROJEKT,
+            ["tabelle.pufferauslegung"] = Berichtskapitel.PROJEKT,
+            ["tabelle.kaeltespeicher"] = Berichtskapitel.PROJEKT,
             ["stamm.bild.speichertemperaturen"] = Berichtskapitel.PROJEKT,
             // Komponenten & Varianten — die Variantenliste gehört zum Kapitel, das die Varianten nennt
             ["tabelle.varianten"] = Berichtskapitel.KOMPONENTEN,
@@ -849,6 +851,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stamm.kennzahl." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stamm,
                     w => StammKennzahl(w, s))
                 {
+                    Seit = SeitDerKennzahl(k),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Ableitung = new Vorlagenfeldableitung(MUSTER_STAMM_KENNZAHL, nameof(R.VF_MUSTER_STAMM_KENNZAHL), s),
@@ -862,11 +865,13 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("kennzahl." + s + ".beschriftung", Vorlagenfeldart.Text, Vorlagenfeldkontext.Bericht,
                     w => w.FindeKennzahl(s)?.Label(w.Englisch))
                 {
+                    Seit = SeitDerKennzahl(k),
                     Ableitung = new Vorlagenfeldableitung(MUSTER_KENNZAHL_BESCHRIFTUNG, nameof(R.VF_MUSTER_KENNZAHL_BESCHRIFTUNG), s),
                 };
                 yield return new Vorlagenfeld("kennzahl." + s + ".einheit", Vorlagenfeldart.Text, Vorlagenfeldkontext.Bericht,
                     w => w.FindeKennzahl(s)?.Einheit)
                 {
+                    Seit = SeitDerKennzahl(k),
                     Leerwert = "",
                     Ableitung = new Vorlagenfeldableitung(MUSTER_KENNZAHL_EINHEIT, nameof(R.VF_MUSTER_KENNZAHL_EINHEIT), s),
                 };

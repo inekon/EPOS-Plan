@@ -1,0 +1,525 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Kühlung | Fassung 3 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/Kaeltekaskade.cs, Kaelte/Kaeltefolge.cs, Kaelte/Kaeltemaschine.cs, Kaelte/Kaeltemaschinenteillast.cs,
+     Kaelte/KaeltemaschinenRand.cs, Kaelte/KaelteFestwerte.cs, Waermepumpentakt.cs, Kaelteangebot.cs, Kuehlkennlinie.cs, KuehlRaumeinfluss.cs,
+     Gebaeude/Kuehlkurve.cs, SimulationKaeltebedarf.cs, SimulationControl.Kaelte.cs; Bericht/KennzahlenKatalog.cs; Update/KaeltemaschineAnlageSchema.cs -->
+
+== Was berechnet wird ==
+{{Anker|was}}
+
+Die Kälteseite deckt den Kältebedarf der gekühlten Gebäude, der Lastgänge im Kanal Kühlung und der Prozesskälte Stunde für Stunde mit Wärmepumpen im Kühlbetrieb, Kältemaschinen und Kältespeichern.
+
+Der Lauf ermittelt je Stunde den '''Kältebedarf''', legt je Tag fest, ob eine reversible Wärmepumpe heizt oder kühlt, und arbeitet die '''Kältefolge''' ab: freie Kühlung der Kältemaschinen, Entladung der Kältespeicher, Wärmepumpen im Kühlbetrieb (zuerst frei über ihre Wärmequelle, dann mit dem Verdichter), zuletzt die Kältemaschinen mit dem Verdichter. Für jede Kältemaschine liest er Kälteleistung und EER aus ihrer Kennlinie über Rückkühl- und Kaltwassertemperatur, rechnet Teillast und Takten und schreibt Verdichter- und Hilfsstrom fort.
+
+Ergebnisgrößen sind die gedeckte und die ungedeckte Kälte, der '''Kältestrom''' samt Hilfsstrom, die Kälte und Stunden der freien Kühlung, die '''Jahresarbeitszahl Kälte''', je Kältemaschine Taktstunden, Starts, Teillastanteil und mittlerer Lastgrad und der Netzbezug des Kältestroms.
+
+== Eingangsgrößen ==
+{{Anker|eingang}}
+
+{| class="wikitable"
+! Größe !! Einheit !! Herkunft im Programm
+|-
+| Kühlung rechnen || — || „Simulation Konfiguration", Bereich „Kühlung", Schalter „Kühlung rechnen"; ohne ihn bleibt der Kühlkanal leer
+|-
+| Kühlreihe der Gebäude || kWh je Stunde || Gebäudelauf nach VDI 6007 mit Kühlsollwert, Kühlleistungsgrenze und Konditionierung ([[Programm Dokumentation/Kühlung|Kühlung]])
+|-
+| Lastgänge im Kanal Kühlung || kWh je Stunde || eingelesene Lastgänge mit dem Kanal „Kühlung"
+|-
+| Außentemperatur, relative Luftfeuchte || °C, % || Klimadatenreihe der Klimaregion, 8&nbsp;760 Stundenwerte
+|-
+| Kühlkennlinie der Wärmepumpe: Kälteleistung und EER je Quelltemperatur und Kühl-Vorlauf || kW, — || Kennlinien-Editor der Wärmepumpe, Reiter Kühlung (Projektkopie)
+|-
+| Kühlbetrieb, Kühl-Vorlauf, Hilfsstromanteil der Wärmepumpe || —, °C, % || „Konfiguration…" der Wärmepumpe, Gruppe „Kühlbetrieb"
+|-
+| Freie Kühlung über die Wärmequelle: Schalter, Grädigkeit, Leistungsgrenze || —, K, kW || dieselbe Gruppe; leer = Vorgabe 3&nbsp;K bzw. Kälteleistung der Kennlinie
+|-
+| Nennkälteleistung, Nenn-EER, Rückkühlart, Mindestteillast, kleinster Kaltwasservorlauf, Hilfsstrom der Rückkühlung || kW, —, —, %, °C, kW || Verwaltung „Kältemaschinen", Gruppe „Kenndaten"
+|-
+| Kennlinie der Kältemaschine: Kälteleistung und EER je Rückkühl- und Kaltwassertemperatur || kW, — || dieselbe Verwaltung, Gruppe „Kennlinie"; wahlweise ein Typkennfeld
+|-
+| Teillastrechnung, Verdichterregelung, Teillastkurve a/b/c, Kurve gültig ab Lastgrad, Taktverlustfaktor <math>C_{\mathrm{d}}</math>, Kennfeldrand || — || dieselbe Verwaltung, Gruppe „Teillast und Takten"
+|-
+| Anzahl, Kaltwasservorlauf, Hilfsstromanteil der Anlage || —, °C, % || Dialog „Kältemaschinen im Projekt"
+|-
+| Kühlträger, eigener Zähler || — || „Konfiguration…" der Wärmepumpe bzw. Dialog „Kältemaschinen im Projekt"
+|-
+| Kältespeicher: Volumen, Kaltwasser-Vorlauf und -Rücklauf, Schwellen, Lade- und Entladeleistung, Bereitschaftsverlust || l, °C, %, kW, — || Dialog „Pufferspeicher im Projekt" mit der Verwendung „Kälte"
+|-
+| Kaskadenplatz der Wärmepumpe || — || „Komponenten der Simulation"; ohne Platz kühlt sie nicht
+|}
+
+== Formelzeichen und Parameter ==
+{{Anker|zeichen}}
+
+Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres (1…8&nbsp;760), <math>d</math> der Tag (1…365), <math>P</math> eine Leistung, <math>Q</math> eine Kältemenge, <math>E</math> eine Strommenge, <math>\vartheta</math> eine Temperatur in Grad Celsius. Weil eine Stunde lang ist, sind Leistung und Energie zahlengleich. Die Leistungszahl der Kälte heißt in der Stunde <math>\operatorname{EER}</math>, über das Jahr <math>\mathrm{JAZ}_{\mathrm{K}}</math>.
+
+=== Parameter ===
+
+Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eines Laufs nicht.
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! Herkunft
+|-
+| <math>\Delta\vartheta_{\mathrm{L}}</math> || Grädigkeit des luftgekühlten Verflüssigers || K || '''Vorgabe 5&nbsp;K'''
+|-
+| <math>\Delta\vartheta_{\mathrm{TK}}</math> || Grädigkeit des Trockenkühlers || K || '''Vorgabe 10&nbsp;K'''
+|-
+| <math>\Delta\vartheta_{\mathrm{NK}}</math> || Grädigkeit des Nasskühlers über der Feuchtkugeltemperatur || K || '''Vorgabe 5&nbsp;K'''; ohne Luftfeuchte gilt Außentemperatur minus 3&nbsp;K
+|-
+| <math>\vartheta_{\mathrm{W}}</math> || Kühlwassertemperatur der wassergekühlten Maschine || °C || '''Vorgabe 25&nbsp;°C''', fest
+|-
+| <math>\Delta\vartheta_{\mathrm{FK}}</math> || Mindestabstand der Rückkühltemperatur unter dem Kaltwasser für freie Kühlung || K || '''Vorgabe 3&nbsp;K'''
+|-
+| <math>\operatorname{EER}_{\mathrm{FK}}</math> || EER-Ersatz der freien Kühlung (Pumpen und Ventilatoren) || — || '''Vorgabe 15'''
+|-
+| <math>\Delta\vartheta_{\mathrm{S}}</math> || Grädigkeit des Wärmetauschers der freien Kühlung über die Wärmequelle || K || Feld „Grädigkeit"; leer = '''Vorgabe 3&nbsp;K'''
+|-
+| <math>P_{\mathrm{S,max}}</math> || Leistungsgrenze der freien Kühlung über die Wärmequelle || kW || Feld „Leistungsgrenze"; leer = Kälteleistung der Kühlkennlinie der Stunde
+|-
+| <math>\vartheta_{\mathrm{KW}}</math> || Kaltwasser- bzw. Kühl-Vorlauf || °C || Anlage bzw. Projektkopie; leer = kleinste Kaltwasser-Stützstelle der Kennlinie, nie unter dem kleinsten Kaltwasservorlauf des Geräts
+|-
+| <math>Q_{\mathrm{nenn}}</math> || Nennkälteleistung je Maschine || kW || Verwaltung „Kältemaschinen"; leer = größte Kälteleistung der Kennlinie
+|-
+| <math>m</math> || Mindestteillast als Anteil der Nennkälteleistung || — || Feld „Mindestteillast" in %
+|-
+| <math>P_{\mathrm{RK}}</math> || elektrische Leistung der Rückkühlung im Nennpunkt || kW || Feld „Hilfsstrom der Rückkühlung"; leer = 0, im EER enthalten
+|-
+| <math>h_{\mathrm{H}}</math> || Hilfsstromanteil des Kältekreises an der Verdichterarbeit || — || Anlage bzw. Projektkopie in %; leer = 0
+|-
+| <math>N</math> || Anzahl gleicher Maschinen der Anlage || — || Dialog „Kältemaschinen im Projekt", mindestens 1
+|-
+| <math>a</math>, <math>b</math>, <math>c</math> || Beiwerte der Teillastkurve <math>a + b \cdot x + c \cdot x^{2}</math> || — || Gruppe „Teillast und Takten"; leer = Vorgabekurve der Verdichterregelung (Ein/Aus, Stufen, Drehzahl), ohne Regelung linear
+|-
+| <math>x_{\mathrm{u}}</math> || untere Gültigkeit der Teillastkurve || — || Feld „Kurve gültig ab Lastgrad"; leer = Mindestteillast
+|-
+| <math>C_{\mathrm{d}}</math> || Teillastkoeffizient (Taktverlustfaktor) || — || Feld „Taktverlustfaktor"; leer = '''Vorgabe 0,9''' nach EN 14825
+|-
+| <math>t_{\mathrm{min}}</math> || Mindestlaufzeit je Start || min || '''Vorgabe 10&nbsp;min''', fest
+|-
+| <math>\Delta T_{\mathrm{min}}</math> || Mindesthub des Carnot-EER || K || '''Vorgabe 5&nbsp;K'''
+|-
+| <math>\Delta T_{\mathrm{ext}}</math> || größte Fortsetzung über den Kennfeldrand je Achse || K || '''Vorgabe 10&nbsp;K'''
+|-
+| <math>x_{\mathrm{TL}}</math> || obere Grenze einer Teillaststunde || — || '''Vorgabe 0,95'''
+|-
+| <math>c_{\mathrm{W}}</math> || Wärmekapazität des Wassers || Wh/(l·K) || Konstante 1,16 (Kältespeicher, siehe Pufferspeicher)
+|}
+
+=== Variablen ===
+
+Größen, die der Lauf je Stunde, je Tag oder je Jahr bildet.
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! berechnet in
+|-
+| <math>Q_{\mathrm{K}}(t)</math> || Kältebedarf der Stunde || kWh || (1)
+|-
+| <math>Q_{\mathrm{K,Geb}}(t)</math>, <math>Q_{\mathrm{K,LG}}(t)</math> || Kühlreihe eines Gebäudes, Lastgang im Kanal Kühlung || kWh || Gebäudelauf bzw. Lastgang
+|-
+| <math>K(d)</math> || Kühltag (1) oder Heiztag (0) || — || (2)
+|-
+| <math>Q_{\mathrm{H}}(t)</math> || Wärmebedarf der Stunde im Heizkanal || kWh || Wärmebedarf
+|-
+| <math>z(t)</math> || Zeitanteil der Stunde, der einer Wärmepumpe für die Kälte bleibt || — || (3)
+|-
+| <math>z_{\mathrm{H}}(t)</math> || Zeitanteil, den der Verdichter in der Stunde für Wärme gelaufen ist || — || Wärmekaskade
+|-
+| <math>s(t)</math> || Sperrstunde der Wärmepumpe (1) || — || Anlagenfahrplan
+|-
+| <math>\vartheta_{\mathrm{RK}}(t)</math> || Rückkühltemperatur der Kältemaschine || °C || (4)
+|-
+| <math>\vartheta_{\mathrm{a}}(t)</math>, <math>\vartheta_{\mathrm{f}}(t)</math> || Außentemperatur, Feuchtkugeltemperatur || °C || Klimareihe, nach Stull
+|-
+| <math>Q_{\mathrm{FK}}(t)</math>, <math>E_{\mathrm{FK}}(t)</math> || Kälte und Strom der freien Kühlung einer Kältemaschine || kWh || (5), (6)
+|-
+| <math>L(t)</math> || offene Last einer Stufe: Restbedarf plus Ladewunsch der Kältespeicher || kWh || Kältefolge
+|-
+| <math>Q_{\mathrm{S}}(t)</math> || Kälte der freien Kühlung über die Wärmequelle || kWh || (7)
+|-
+| <math>\vartheta_{\mathrm{Q}}(t)</math> || Quelltemperatur der Wärmepumpe || °C || Berechnung: Wärmepumpe
+|-
+| <math>P_{\mathrm{K}}(t)</math>, <math>\operatorname{EER}(t)</math> || Kälteleistung und EER der Kühlkennlinie || kW, — || Kühlkennlinie am Vorlauf
+|-
+| <math>Q_{\mathrm{V}}(t)</math>, <math>E_{\mathrm{V}}(t)</math> || Verdichterkälte und Verdichterstrom einer Wärmepumpe || kWh || (8)
+|-
+| <math>E_{\mathrm{WP,K}}(t)</math> || Kältestrom einer Wärmepumpe samt Hilfsstrom || kWh || (9)
+|-
+| <math>Q_{\mathrm{av}}(t)</math>, <math>\operatorname{EER}_{\mathrm{KF}}(t)</math> || verfügbare Kälteleistung und Volllast-EER der Kältemaschine aus dem Kennfeld || kW, — || Kennlinie, Schritt 6
+|-
+| <math>n(t)</math> || laufende Maschinen der Anlage || — || (10)
+|-
+| <math>q(t)</math> || gedeckte Kälte je laufender Maschine || kWh || (11)
+|-
+| <math>x(t)</math> || Lastgrad (PLR) || — || (11)
+|-
+| <math>P_{\mathrm{min}}</math> || kleinste Dauerleistung || kW || (11)
+|-
+| <math>E(x)</math>, <math>g(x)</math> || normierte Teillastkurve, Gütemaß der Teillast || — || (12), (13)
+|-
+| <math>E_{\mathrm{KM}}(t)</math> || Verdichterstrom einer Maschine || kWh || (14), (15)
+|-
+| <math>f(t)</math>, <math>\mathrm{CR}(t)</math> || Teillastfaktor, Lastverhältnis im Takt || — || (16)
+|-
+| <math>\Delta E(t)</math> || Mehrstrom der Taktstunde || kWh || (15)
+|-
+| <math>n_{\mathrm{S}}(t)</math> || Starts der Taktstunde || — || (17)
+|-
+| <math>E_{\mathrm{RK}}(t)</math> || Hilfsstrom der Rückkühlung || kWh || (18)
+|-
+| <math>E_{\mathrm{KMA}}(t)</math> || Kältestrom der Anlage || kWh || (19)
+|-
+| <math>\operatorname{EER}_{\mathrm{C}}</math>, <math>\eta_{\mathrm{R}}</math> || Carnot-EER, Gütegrad am Kennfeldrand || — || (20), (21)
+|-
+| <math>\vartheta_{\mathrm{KW,R}}</math>, <math>\vartheta_{\mathrm{RK,R}}</math>, <math>\operatorname{EER}_{\mathrm{R}}</math> || Randpunkt des Kennfelds und sein EER || °C, — || Kennlinie
+|-
+| <math>\vartheta_{\mathrm{V,K}}(t)</math> || Kühlvorlauf der Kühlkurve || °C || (23)
+|-
+| <math>P_{\mathrm{KS}}(t)</math> || Kälteschranke der Raumkühlung (Stufe AK3) || kW || (24)
+|-
+| <math>N_{\mathrm{K}}</math> || Netzbezug des Kältestroms || kWh/a || (25)
+|-
+| <math>\mathrm{JAZ}_{\mathrm{K}}</math> || Jahresarbeitszahl Kälte || — || (26)
+|-
+| <math>\varphi_{\mathrm{TL}}</math> || Teillastanteil der Verdichterstunden || % || (27)
+|}
+
+== Rechenweg ==
+{{Anker|rechenweg}}
+
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht wiederholt. Die Kälteseite rechnet nur, wenn das Projekt „Kühlung rechnen" eingeschaltet hat; sonst bleiben alle Kältezahlen leer — „nicht erhoben", nicht 0. Die Kältekaskade läuft '''nach''' der Wärmekaskade: Eine reversible Wärmepumpe hat ihre Tagesbetriebsart dann festgelegt und ihr Brauchwasser bedient.
+
+=== Schritt 1 — Kältebedarf je Stunde ===
+{{Anker|kaeltebedarf}}
+
+Der Gebäudelauf liefert je Gebäude in '''einem''' Durchgang Heizlast und Kühlreihe; die Kälteseite rechnet das Gebäude nicht selbst, sie bucht. Gekühlt wird nur ein Gebäude mit wirksamer Kühlung — Kühlsollwert, Kühlleistungsgrenze, Tagesbetriebsart je Zone und Kühlübergabe stehen unter [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] und [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]]. Der Kühlkanal ist die Summe:
+
+: <math>\displaystyle Q_{\mathrm{K}}(t) = \sum_{\mathrm{Geb}} Q_{\mathrm{K,Geb}}(t) + \sum_{\mathrm{LG}} Q_{\mathrm{K,LG}}(t)</math> &nbsp;&nbsp;(1)
+:: <math>Q_{\mathrm{K}}(t)</math> – Kältebedarf der Stunde [kWh]
+:: <math>Q_{\mathrm{K,Geb}}(t)</math> – Kühlreihe eines gekühlten Gebäudes [kWh]
+:: <math>Q_{\mathrm{K,LG}}(t)</math> – eingelesener Lastgang mit dem Kanal Kühlung [kWh]
+
+Die Kälte ist '''sensibel''': ohne Feuchte, Entfeuchtung und latente Last. Der Kühlkanal zählt nicht zum Wärmebedarf; die Kältespitze ist das Maximum von <math>Q_{\mathrm{K}}(t)</math> über das Jahr, und eine eigene Dauerlinie steht neben der Wärmedauerlinie.
+
+=== Schritt 2 — Tagesbetriebsart und Zeitanteil der Wärmepumpe ===
+{{Anker|tagesbetriebsart}}
+
+Eine reversible Wärmepumpe heizt oder kühlt '''je Tag'''. Kühltag ist ein Tag, dessen Kältebedarf seinen Wärmebedarf im Heizkanal übersteigt; Gleichstand und ein Tag ohne jeden Bedarf sind Heiztage:
+
+: <math>\displaystyle K(d) = \begin{cases} 1 & \sum_{t \in d} Q_{\mathrm{K}}(t) > \sum_{t \in d} Q_{\mathrm{H}}(t) \\ 0 & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(2)
+:: <math>K(d)</math> – Kühltag (1) oder Heiztag (0) des Tages <math>d</math> [–]
+:: <math>Q_{\mathrm{K}}(t)</math> – Kältebedarf der Stunde nach (1) [kWh]
+:: <math>Q_{\mathrm{H}}(t)</math> – Wärmebedarf der Stunde im Heizkanal [kWh]
+
+An einem Kühltag ist der Heizkanal der Wärmepumpe gesperrt; Brauchwasser und Prozess bleiben. Für die Kälte bleibt ihr der Teil der Stunde, den der Verdichter nicht für Wärme gelaufen ist — „je Stunde zuerst Brauchwasser, der Rest an die Kälte":
+
+: <math>\displaystyle z(t) = \begin{cases} 0 & K(d) = 0 \text{ oder } s(t) = 1 \\ \max\left(0, 1 - z_{\mathrm{H}}(t)\right) & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(3)
+:: <math>z(t)</math> – Zeitanteil der Stunde für die Kälte [–]
+:: <math>K(d)</math> – Kühltag des Tages, in dem die Stunde liegt, nach (2) [–]
+:: <math>s(t)</math> – Sperrstunde der Wärmepumpe aus Sperrzeit und Sperrfenstern (1 = gesperrt) [–]
+:: <math>z_{\mathrm{H}}(t)</math> – Zeitanteil, den der Verdichter in der Stunde für Brauchwasser, Prozess und Speicherladung gelaufen ist [–]
+
+'''Die Kältemaschine ist an die Tagesbetriebsart nicht gebunden.''' Sie hat keinen Heizbetrieb und keinen Zeitanteil; sie deckt Kälte an jedem Tag, an dem welche anfällt, auch an einem Heiztag, und die Sperrzeit einer Wärmepumpe wirkt auf sie nicht. Allein das '''Laden''' eines Kältespeichers wartet auf einen Kühltag (Schritt 4).
+
+=== Schritt 3 — Die Folge einer Kältestunde ===
+{{Anker|folge}}
+
+Die Ordnung der Kälteseite ist fest. In jeder Stunde gilt:
+
+# '''Ladewunsch der Kältespeicher''' — nur an Kühltagen und in der Ladephase (Schritt 4).
+# '''Freie Kühlung der Kältemaschinen''' mit Trocken- oder Nasskühler, deren Rückkühler kalt genug ist (Schritt 5) — vor allen anderen.
+# '''Entladung der Kältespeicher''' in den Kältebedarf.
+# '''Wärmepumpen im Kühlbetrieb''' in der Folge ihrer Module (Platz in der Kaskade, Anlagenpriorität), jede zuerst frei über ihre Wärmequelle, dann mit dem Verdichter (Schritt 6).
+# '''Kältemaschinen mit dem Verdichter''' in der Folge ihrer Anlagen (Schritt 7). Die Kaskade der Wärmeerzeuger ordnet sie nicht.
+# '''Bereitschaftsverlust''' der Kältespeicher.
+
+Jede Stufe sieht als Last <math>L(t)</math> den offenen Rest des Bedarfs plus den offenen Ladewunsch; der Raum hat Vorrang, was eine Stufe darüber hinaus erzeugt, lädt die Kältespeicher. Was keine Stufe deckt, bleibt als '''Kälte-Restbedarf''' stehen, getrennt nach Kühl- und Heiztagen gezählt. Wärmeerzeuger decken keine Kälte.
+
+=== Schritt 4 — Kältespeicher ===
+{{Anker|kaeltespeicher}}
+
+Ein Pufferspeicher mit der Verwendung „Kälte" rechnet einschichtig auf dem Füllstand des Wärmepuffers, gespiegelt gelesen: Der Füllstand ist der '''Kältevorrat''', kalt heißt geladen. Seine Kapazität folgt aus Volumen und Spreizung zwischen Kaltwasser-Vorlauf und -Rücklauf mit <math>c_{\mathrm{W}}</math>; fehlt das Paar oder liegt der Rücklauf nicht über dem Vorlauf, gelten 6/12&nbsp;°C. Die Ladephase folgt der Hysterese des Wärmepuffers: Sie beginnt an der Einschaltschwelle — der Lauf beginnt mit leerem Speicher, also ladend — und endet an der Abschaltschwelle; der Ladewunsch ist der Abstand zur Abschaltschwelle, begrenzt durch die Ladeleistung. Geladen wird '''nur an Kühltagen''' nach (2), sonst hielte eine Kältemaschine den Vorrat den Winter über gegen den Wärmeeintrag. Entladen wird in jeder Stunde mit Vorrat, auch in der Ladephase, in der Folge der Entladeprioritäten. Der Bereitschaftsverlust ist der Wärmeeintrag aus der Umgebung. Formeln und Schwellen: [[Programm Dokumentation/Berechnung/Pufferspeicher#kaeltespeicher|Berechnung: Pufferspeicher, Kältespeicher]].
+
+=== Schritt 5 — Rückkühlung und freie Kühlung der Kältemaschine ===
+{{Anker|rueckkuehlung}}
+
+Die Kennlinie der Kältemaschine wird über die '''Rückkühltemperatur''' gelesen. Sie folgt aus der Rückkühlart:
+
+: <math>\displaystyle \vartheta_{\mathrm{RK}}(t) = \begin{cases} \vartheta_{\mathrm{a}}(t) + \Delta\vartheta_{\mathrm{L}} & \mathrm{luftgekuehlt} \\ \vartheta_{\mathrm{a}}(t) + \Delta\vartheta_{\mathrm{TK}} & \mathrm{Trockenkuehler} \\ \vartheta_{\mathrm{f}}(t) + \Delta\vartheta_{\mathrm{NK}} & \mathrm{Nasskuehler} \\ \vartheta_{\mathrm{W}} & \mathrm{wassergekuehlt} \end{cases}</math> &nbsp;&nbsp;(4)
+:: <math>\vartheta_{\mathrm{RK}}(t)</math> – Rückkühltemperatur der Stunde [°C]
+:: <math>\vartheta_{\mathrm{a}}(t)</math> – Außentemperatur der Klimareihe [°C]
+:: <math>\Delta\vartheta_{\mathrm{L}}</math> – Grädigkeit des luftgekühlten Verflüssigers, Vorgabe 5 [K]
+:: <math>\Delta\vartheta_{\mathrm{TK}}</math> – Grädigkeit des Trockenkühlers, Vorgabe 10 [K]
+:: <math>\vartheta_{\mathrm{f}}(t)</math> – Feuchtkugeltemperatur aus Außentemperatur und relativer Luftfeuchte nach Stull [°C]
+:: <math>\Delta\vartheta_{\mathrm{NK}}</math> – Grädigkeit des Nasskühlers, Vorgabe 5 [K]
+:: <math>\vartheta_{\mathrm{W}}</math> – Kühlwassertemperatur der wassergekühlten Maschine, Vorgabe 25 [°C]
+
+Führt die Klimareihe keine Luftfeuchte, rechnet der Nasskühler mit der Außentemperatur minus 3&nbsp;K, und das Protokoll nennt die Stunden.
+
+'''Freie Kühlung''' ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Eine Maschine mit Trocken- oder Nasskühler deckt die Kälte direkt über den Rückkühler, solange <math>\vartheta_{\mathrm{RK}}(t) \le \vartheta_{\mathrm{KW}} - \Delta\vartheta_{\mathrm{FK}}</math> — bis zur Nennkälteleistung und mit dem EER-Ersatz:
+
+: <math>\displaystyle Q_{\mathrm{FK}}(t) = \min\left(L(t), N \cdot Q_{\mathrm{nenn}}\right)</math> &nbsp;&nbsp;(5)
+:: <math>Q_{\mathrm{FK}}(t)</math> – Kälte der freien Kühlung [kWh]
+:: <math>L(t)</math> – offene Last der Stufe: Restbedarf plus Ladewunsch [kWh]
+:: <math>N</math> – Anzahl gleicher Maschinen der Anlage [–]
+:: <math>Q_{\mathrm{nenn}}</math> – Nennkälteleistung je Maschine [kW]
+
+: <math>\displaystyle E_{\mathrm{FK}}(t) = \frac{Q_{\mathrm{FK}}(t)}{\operatorname{EER}_{\mathrm{FK}}} \cdot \left(1 + h_{\mathrm{H}}\right) + P_{\mathrm{RK}} \cdot \frac{Q_{\mathrm{FK}}(t)}{Q_{\mathrm{nenn}}}</math> &nbsp;&nbsp;(6)
+:: <math>E_{\mathrm{FK}}(t)</math> – Strom der freien Kühlung [kWh]
+:: <math>Q_{\mathrm{FK}}(t)</math> – Kälte der freien Kühlung nach (5) [kWh]
+:: <math>\operatorname{EER}_{\mathrm{FK}}</math> – EER-Ersatz für Pumpen und Ventilatoren, Vorgabe 15 [–]
+:: <math>h_{\mathrm{H}}</math> – Hilfsstromanteil des Kältekreises [–]
+:: <math>P_{\mathrm{RK}}</math> – elektrische Leistung der Rückkühlung im Nennpunkt [kW]
+:: <math>Q_{\mathrm{nenn}}</math> – Nennkälteleistung je Maschine [kW]
+
+Luftgekühlte und wassergekühlte Maschinen kühlen nicht frei.
+
+=== Schritt 6 — Wärmepumpe im Kühlbetrieb ===
+{{Anker|waermepumpe}}
+
+Eine Wärmepumpe kühlt nur mit Kühlkennlinie, eingeschaltetem Kühlbetrieb und einem Platz in der Kaskade, und nur im Zeitanteil <math>z(t)</math> nach (3). Die Kühlkennlinie wird über die '''Quelltemperatur''' <math>\vartheta_{\mathrm{Q}}(t)</math> gelesen — die Rückkühlung der reversiblen Maschine ist ihre Quelle, rückwärts gelesen — und linear zwischen den zwei Kühl-Vorläufen interpoliert, die den Kühl-Vorlauf einschließen; Kappung und Extrapolation nach oben wie im Heizbetrieb ([[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]]). Das liefert <math>P_{\mathrm{K}}(t)</math> und <math>\operatorname{EER}(t)</math>.
+
+'''Freie Kühlung über die Wärmequelle.''' Ist sie eingeschaltet und trägt die Quelle sie (Sole-Wasser oder Wasser-Wasser mit Erdreich, Konstant, Profil oder CSV), kühlt die Wärmepumpe vor dem Verdichter frei, solange <math>\vartheta_{\mathrm{Q}}(t) + \Delta\vartheta_{\mathrm{S}} \le \vartheta_{\mathrm{KW}}</math>:
+
+: <math>\displaystyle Q_{\mathrm{S}}(t) = \min\left(L(t), z(t) \cdot P_{\mathrm{S,max}}\right)</math> &nbsp;&nbsp;(7)
+:: <math>Q_{\mathrm{S}}(t)</math> – Kälte der freien Kühlung über die Wärmequelle [kWh]
+:: <math>L(t)</math> – offene Last der Stufe [kWh]
+:: <math>z(t)</math> – Zeitanteil der Stunde für die Kälte nach (3) [–]
+:: <math>P_{\mathrm{S,max}}</math> – Leistungsgrenze der freien Kühlung; leer = <math>P_{\mathrm{K}}(t)</math> [kW]
+
+Den Rest deckt der Verdichter nach Kennlinie; der Strom trägt den Hilfsstromanteil, die freie Kühlung den EER-Ersatz:
+
+: <math>\displaystyle Q_{\mathrm{V}}(t) = \min\left(L(t) - Q_{\mathrm{S}}(t), z(t) \cdot P_{\mathrm{K}}(t)\right), \qquad E_{\mathrm{V}}(t) = \frac{Q_{\mathrm{V}}(t)}{\operatorname{EER}(t)}</math> &nbsp;&nbsp;(8)
+:: <math>Q_{\mathrm{V}}(t)</math> – Verdichterkälte der Wärmepumpe [kWh]
+:: <math>L(t)</math> – offene Last der Stufe [kWh]
+:: <math>Q_{\mathrm{S}}(t)</math> – Kälte der freien Kühlung nach (7) [kWh]
+:: <math>z(t)</math> – Zeitanteil nach (3) [–]
+:: <math>P_{\mathrm{K}}(t)</math> – Kälteleistung der Kühlkennlinie [kW]
+:: <math>E_{\mathrm{V}}(t)</math> – Verdichterstrom ohne Taktverlust [kWh]
+:: <math>\operatorname{EER}(t)</math> – EER der Kühlkennlinie [–]
+
+: <math>\displaystyle E_{\mathrm{WP,K}}(t) = \left(E_{\mathrm{V}}(t) + \Delta E(t) + \frac{Q_{\mathrm{S}}(t)}{\operatorname{EER}_{\mathrm{FK}}}\right) \cdot \left(1 + h_{\mathrm{H}}\right)</math> &nbsp;&nbsp;(9)
+:: <math>E_{\mathrm{WP,K}}(t)</math> – Kältestrom der Wärmepumpe samt Hilfsstrom [kWh]
+:: <math>E_{\mathrm{V}}(t)</math> – Verdichterstrom nach (8) [kWh]
+:: <math>\Delta E(t)</math> – Mehrstrom des Taktens nach (15), mit der Mindestleistung der Wärmepumpe im Verhältnis ihrer Heiz-Nennleistung auf <math>P_{\mathrm{K}}(t)</math> umgelegt [kWh]
+:: <math>Q_{\mathrm{S}}(t)</math> – Kälte der freien Kühlung nach (7) [kWh]
+:: <math>\operatorname{EER}_{\mathrm{FK}}</math> – EER-Ersatz, Vorgabe 15 [–]
+:: <math>h_{\mathrm{H}}</math> – Hilfsstromanteil des Kältekreises [–]
+
+Bei einer Erdwärmesonde speist die Kühlwärme ins Sondenfeld zurück ([[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung: Wärmequelle Erdreich]]); der Mehrstrom des Taktens zählt dabei nicht mit.
+
+=== Schritt 7 — Kältemaschine mit dem Verdichter ===
+{{Anker|kaeltemaschine}}
+
+'''Kennlinie.''' Kälteleistung und EER stehen je Stützpunkt aus Rückkühl- und Kaltwassertemperatur. Gelesen wird bilinear: erst linear längs der Rückkühltemperatur in jeder Kaltwasserzeile, dann linear zwischen den zwei einschließenden Zeilen; Leistung und EER je für sich. Außerhalb der Stützstellen gilt der Randwert, auf Wunsch die Fortsetzung mit dem Gütegrad (Schritt 8). Das liefert je Stunde die verfügbare Kälteleistung <math>Q_{\mathrm{av}}(t)</math> und den Volllast-EER <math>\operatorname{EER}_{\mathrm{KF}}(t)</math> bei <math>\vartheta_{\mathrm{RK}}(t)</math> und <math>\vartheta_{\mathrm{KW}}</math>.
+
+'''Folgeschaltung.''' Gleiche Maschinen einer Anlage laufen nur so viele, wie die Last braucht; die laufenden teilen sie gleichmäßig:
+
+: <math>\displaystyle n(t) = \min\left(N, \max\left(1, \left\lceil \frac{L(t)}{Q_{\mathrm{av}}(t)} \right\rceil\right)\right)</math> &nbsp;&nbsp;(10)
+:: <math>n(t)</math> – laufende Maschinen der Anlage [–]
+:: <math>N</math> – Anzahl gleicher Maschinen [–]
+:: <math>L(t)</math> – offene Last der Stufe [kWh]
+:: <math>Q_{\mathrm{av}}(t)</math> – verfügbare Kälteleistung je Maschine [kW]
+
+Ohne Teillastrechnung laufen immer alle <math>N</math> Maschinen mit gleichem Anteil.
+
+: <math>\displaystyle q(t) = \min\left(\frac{L(t)}{n(t)}, Q_{\mathrm{av}}(t)\right), \qquad x(t) = \frac{q(t)}{Q_{\mathrm{av}}(t)}, \qquad P_{\mathrm{min}} = \min\left(m \cdot Q_{\mathrm{nenn}}, Q_{\mathrm{av}}(t)\right)</math> &nbsp;&nbsp;(11)
+:: <math>q(t)</math> – gedeckte Kälte je laufender Maschine [kWh]
+:: <math>L(t)</math> – offene Last der Stufe [kWh]
+:: <math>n(t)</math> – laufende Maschinen nach (10) [–]
+:: <math>Q_{\mathrm{av}}(t)</math> – verfügbare Kälteleistung je Maschine [kW]
+:: <math>x(t)</math> – Lastgrad (PLR) [–]
+:: <math>P_{\mathrm{min}}</math> – kleinste Dauerleistung [kW]
+:: <math>m</math> – Mindestteillast als Anteil [–]
+:: <math>Q_{\mathrm{nenn}}</math> – Nennkälteleistung [kW]
+
+{{Anker|teillast}}'''Teillast.''' Die Teillastkurve wird auf Volllast normiert; das Gütemaß ist das Verhältnis des EER bei Teillast zum EER bei Volllast und bleibt unter der Kurvengültigkeit an <math>x_{\mathrm{u}}</math> stehen:
+
+: <math>\displaystyle E(x) = \frac{a + b \cdot x + c \cdot x^{2}}{a + b + c}</math> &nbsp;&nbsp;(12)
+:: <math>E(x)</math> – normierte Teillastkurve (Leistungsaufnahme bezogen auf Volllast) [–]
+:: <math>a</math>, <math>b</math>, <math>c</math> – Beiwerte der Teillastkurve [–]
+:: <math>x</math> – Lastgrad [–]
+
+: <math>\displaystyle g(x) = \frac{\max(x, x_{\mathrm{u}})}{E\left(\max(x, x_{\mathrm{u}})\right)}</math> &nbsp;&nbsp;(13)
+:: <math>g(x)</math> – Gütemaß der Teillast [–]
+:: <math>x</math> – Lastgrad [–]
+:: <math>x_{\mathrm{u}}</math> – untere Gültigkeit der Kurve [–]
+:: <math>E</math> – normierte Teillastkurve nach (12) [–]
+
+Bei der Teillastrechnung „linear" und ohne Teillastrechnung ist <math>E(x) = x</math> und <math>g = 1</math>. Eine Kurve, die die Plausibilitätsprüfung nicht besteht oder nur teilweise gepflegt ist, fällt auf „linear" zurück. Oberhalb der kleinsten Dauerleistung gilt:
+
+: <math>\displaystyle E_{\mathrm{KM}}(t) = \frac{q(t)}{\operatorname{EER}_{\mathrm{KF}}(t) \cdot g\left(x(t)\right)} \qquad q(t) \ge P_{\mathrm{min}}</math> &nbsp;&nbsp;(14)
+:: <math>E_{\mathrm{KM}}(t)</math> – Verdichterstrom je laufender Maschine [kWh]
+:: <math>q(t)</math> – gedeckte Kälte je Maschine nach (11) [kWh]
+:: <math>\operatorname{EER}_{\mathrm{KF}}(t)</math> – Volllast-EER aus dem Kennfeld [–]
+:: <math>g</math> – Gütemaß der Teillast nach (13) [–]
+:: <math>P_{\mathrm{min}}</math> – kleinste Dauerleistung nach (11) [kW]
+
+{{Anker|takten}}'''Takten.''' Unter der kleinsten Dauerleistung taktet die Maschine. Sie liefert die Last der Stunde; der Strom am Mindestpunkt erhöht sich um den Mehrstrom des Taktverlusts — dieselbe Formel wie an der Wärmepumpe:
+
+: <math>\displaystyle E_{\mathrm{KM}}(t) = \frac{q(t)}{\operatorname{EER}_{\mathrm{KF}}(t) \cdot g\left(P_{\mathrm{min}}/Q_{\mathrm{av}}(t)\right)} + \Delta E(t), \qquad \Delta E(t) = \frac{q(t)}{\operatorname{EER}_{\mathrm{KF}}(t) \cdot g\left(P_{\mathrm{min}}/Q_{\mathrm{av}}(t)\right)} \cdot \left(\frac{1}{f(t)} - 1\right)</math> &nbsp;&nbsp;(15)
+:: <math>E_{\mathrm{KM}}(t)</math> – Verdichterstrom je laufender Maschine im Takt [kWh]
+:: <math>q(t)</math> – gedeckte Kälte je Maschine [kWh]
+:: <math>\operatorname{EER}_{\mathrm{KF}}(t)</math> – Volllast-EER aus dem Kennfeld [–]
+:: <math>g</math> – Gütemaß nach (13), am Mindestpunkt <math>P_{\mathrm{min}}/Q_{\mathrm{av}}(t)</math> [–]
+:: <math>P_{\mathrm{min}}</math> – kleinste Dauerleistung [kW]
+:: <math>Q_{\mathrm{av}}(t)</math> – verfügbare Kälteleistung [kW]
+:: <math>\Delta E(t)</math> – Mehrstrom der Taktstunde [kWh]
+:: <math>f(t)</math> – Teillastfaktor nach (16) [–]
+
+: <math>\displaystyle f(t) = \begin{cases} \frac{\mathrm{CR}(t)}{C_{\mathrm{d}} \cdot \mathrm{CR}(t) + 1 - C_{\mathrm{d}}} & 0 < \mathrm{CR}(t) < 1 \\ 1 & \mathrm{sonst} \end{cases} \qquad \mathrm{CR}(t) = \frac{q(t)}{P_{\mathrm{min}}}</math> &nbsp;&nbsp;(16)
+:: <math>f(t)</math> – Teillastfaktor [–]
+:: <math>\mathrm{CR}(t)</math> – Lastverhältnis im Takt [–]
+:: <math>C_{\mathrm{d}}</math> – Teillastkoeffizient, Vorgabe 0,9 [–]
+:: <math>q(t)</math> – gedeckte Kälte je Maschine [kWh]
+:: <math>P_{\mathrm{min}}</math> – kleinste Dauerleistung [kW]
+
+: <math>\displaystyle n_{\mathrm{S}}(t) = \min\left( \left\lfloor \frac{60}{t_{\mathrm{min}}} \right\rfloor , \left\lceil \frac{q(t)}{P_{\mathrm{min}} \cdot t_{\mathrm{min}}/60} \right\rceil \right) \cdot n(t)</math> &nbsp;&nbsp;(17)
+:: <math>n_{\mathrm{S}}(t)</math> – Starts der Taktstunde aller laufenden Maschinen [–]
+:: <math>t_{\mathrm{min}}</math> – Mindestlaufzeit je Start, Vorgabe 10 [min]
+:: <math>q(t)</math> – gedeckte Kälte je Maschine [kWh]
+:: <math>P_{\mathrm{min}}</math> – kleinste Dauerleistung [kW]
+:: <math>n(t)</math> – laufende Maschinen nach (10) [–]
+
+Ohne Teillastrechnung („Kennlinie bei Volllast") gilt <math>E_{\mathrm{KM}}(t) = q(t)/\operatorname{EER}_{\mathrm{KF}}(t)</math>; eine Stunde unter der Mindestteillast zählt dann als Taktstunde, ohne Mehrstrom und ohne Starts.
+
+'''Hilfsstrom und Kältestrom der Anlage.''' Die Rückkühlung zieht ihre Nennleistung anteilig zur Laufzeit; der Hilfsstromanteil schlägt auf den Verdichter:
+
+: <math>\displaystyle E_{\mathrm{RK}}(t) = P_{\mathrm{RK}} \cdot \frac{q(t)}{Q_{\mathrm{av}}(t)} \cdot n(t)</math> &nbsp;&nbsp;(18)
+:: <math>E_{\mathrm{RK}}(t)</math> – Hilfsstrom der Rückkühlung der Anlage [kWh]
+:: <math>P_{\mathrm{RK}}</math> – elektrische Leistung der Rückkühlung im Nennpunkt [kW]
+:: <math>q(t)</math> – gedeckte Kälte je Maschine [kWh]
+:: <math>Q_{\mathrm{av}}(t)</math> – verfügbare Kälteleistung je Maschine [kW]
+:: <math>n(t)</math> – laufende Maschinen [–]
+
+: <math>\displaystyle E_{\mathrm{KMA}}(t) = n(t) \cdot E_{\mathrm{KM}}(t) \cdot \left(1 + h_{\mathrm{H}}\right) + E_{\mathrm{RK}}(t)</math> &nbsp;&nbsp;(19)
+:: <math>E_{\mathrm{KMA}}(t)</math> – Kältestrom der Anlage [kWh]
+:: <math>n(t)</math> – laufende Maschinen [–]
+:: <math>E_{\mathrm{KM}}(t)</math> – Verdichterstrom je Maschine nach (14) oder (15) [kWh]
+:: <math>h_{\mathrm{H}}</math> – Hilfsstromanteil des Kältekreises [–]
+:: <math>E_{\mathrm{RK}}(t)</math> – Hilfsstrom der Rückkühlung nach (18) [kWh]
+
+Liefert die Kennlinie in einer Stunde keine Leistung oder bleibt nach der Maschine ein Rest, zählt die Stunde als '''Stunde an der Leistungsgrenze''', und der offene Rest steht als Unterdeckung der Maschine.
+
+=== Schritt 8 — Fortsetzung am Kennfeldrand mit dem Gütegrad ===
+{{Anker|kennfeldrand}}
+
+Steht der Kennfeldrand auf „Gütegrad", setzt die Maschine den EER über den Rand des Kennfelds fort, statt den Randwert zu halten. Der Carnot-EER rechnet in Kelvin mit einem Mindesthub:
+
+: <math>\displaystyle \operatorname{EER}_{\mathrm{C}}(\vartheta_{\mathrm{KW}}, \vartheta_{\mathrm{RK}}) = \frac{\vartheta_{\mathrm{KW}} + 273{,}15}{\max\left(\vartheta_{\mathrm{RK}} - \vartheta_{\mathrm{KW}}, \Delta T_{\mathrm{min}}\right)}</math> &nbsp;&nbsp;(20)
+:: <math>\operatorname{EER}_{\mathrm{C}}</math> – Carnot-EER [–]
+:: <math>\vartheta_{\mathrm{KW}}</math> – Kaltwassertemperatur [°C]
+:: <math>\vartheta_{\mathrm{RK}}</math> – Rückkühltemperatur [°C]
+:: <math>\Delta T_{\mathrm{min}}</math> – Mindesthub, Vorgabe 5 [K]
+
+: <math>\displaystyle \eta_{\mathrm{R}} = \frac{\operatorname{EER}_{\mathrm{R}}}{\operatorname{EER}_{\mathrm{C}}(\vartheta_{\mathrm{KW,R}}, \vartheta_{\mathrm{RK,R}})}</math> &nbsp;&nbsp;(21)
+:: <math>\eta_{\mathrm{R}}</math> – Gütegrad am Randpunkt [–]
+:: <math>\operatorname{EER}_{\mathrm{R}}</math> – EER des Kennfelds am Randpunkt, also bei den auf das Kennfeld geklemmten Temperaturen [–]
+:: <math>\operatorname{EER}_{\mathrm{C}}</math> – Carnot-EER nach (20) [–]
+:: <math>\vartheta_{\mathrm{KW,R}}</math>, <math>\vartheta_{\mathrm{RK,R}}</math> – Kaltwasser- und Rückkühltemperatur des Randpunkts [°C]
+
+: <math>\displaystyle \operatorname{EER}_{\mathrm{KF}}(t) = \min\left(\eta_{\mathrm{R}} \cdot \operatorname{EER}_{\mathrm{C}}(\vartheta'_{\mathrm{KW}}, \vartheta'_{\mathrm{RK}}), \max\left(\operatorname{EER}_{\mathrm{R}}, \operatorname{EER}_{\mathrm{FK}}\right)\right)</math> &nbsp;&nbsp;(22)
+:: <math>\operatorname{EER}_{\mathrm{KF}}(t)</math> – fortgesetzter Volllast-EER der Stunde [–]
+:: <math>\eta_{\mathrm{R}}</math> – Gütegrad nach (21) [–]
+:: <math>\operatorname{EER}_{\mathrm{C}}</math> – Carnot-EER nach (20) [–]
+:: <math>\vartheta'_{\mathrm{KW}}</math>, <math>\vartheta'_{\mathrm{RK}}</math> – Temperaturen der Stunde, je Achse höchstens <math>\Delta T_{\mathrm{ext}}</math> = 10&nbsp;K über den Rand hinaus [°C]
+:: <math>\operatorname{EER}_{\mathrm{R}}</math> – EER am Randpunkt [–]
+:: <math>\operatorname{EER}_{\mathrm{FK}}</math> – EER-Ersatz der freien Kühlung als Deckel, Vorgabe 15 [–]
+
+Die Leistung <math>Q_{\mathrm{av}}(t)</math> bleibt am Randwert. Jede Stunde außerhalb der Stützstellen zählt als Randstunde, mit Gütegrad zusätzlich als extrapolierte Stunde.
+
+=== Schritt 9 — Kühlvorlauf je Stunde und Kälteschranke ===
+{{Anker|kaelteschranke}}
+
+Ohne Anlagenkopplung und auf der Stufe ''Heizkreis (AK1)'' rechnet jeder Kälteerzeuger mit seinem festen Kühl- bzw. Kaltwasservorlauf, und das Gebäude wird durch die Kälteanlage nicht begrenzt; ungedeckte Kälte steht als Rest im Laufprotokoll.
+
+Auf der Stufe ''geschlossener Kreis (AK3)'' rechnet die Kältekaskade je Stunde nach der Wärmestunde im Kreis. Fährt ein Gebäude eine '''Kühlkurve''', verlangt es den Vorlauf:
+
+: <math>\displaystyle \vartheta_{\mathrm{V,K}}(t) = \begin{cases} \vartheta_{\mathrm{V,F}} & \vartheta_{\mathrm{a}}(t) \le \vartheta_{\mathrm{max}} \\ \vartheta_{\mathrm{V,F}} + \left(\vartheta_{\mathrm{V,K,N}} - \vartheta_{\mathrm{V,F}}\right) \cdot \frac{\vartheta_{\mathrm{a}}(t) - \vartheta_{\mathrm{max}}}{\vartheta_{\mathrm{a,K,N}} - \vartheta_{\mathrm{max}}} & \vartheta_{\mathrm{max}} < \vartheta_{\mathrm{a}}(t) < \vartheta_{\mathrm{a,K,N}} \\ \vartheta_{\mathrm{V,K,N}} & \vartheta_{\mathrm{a}}(t) \ge \vartheta_{\mathrm{a,K,N}} \end{cases}</math> &nbsp;&nbsp;(23)
+:: <math>\vartheta_{\mathrm{V,K}}(t)</math> – Kühlvorlauf der Kurve [°C]
+:: <math>\vartheta_{\mathrm{V,F}}</math> – Fußpunkt der Kühlkurve; leer = Auslegungsrücklauf der Kühlübergabe [°C]
+:: <math>\vartheta_{\mathrm{a}}(t)</math> – Außentemperatur [°C]
+:: <math>\vartheta_{\mathrm{max}}</math> – Kühlsollwert der Stunde [°C]
+:: <math>\vartheta_{\mathrm{V,K,N}}</math> – Auslegungsvorlauf der Kühlübergabe [°C]
+:: <math>\vartheta_{\mathrm{a,K,N}}</math> – Auslegungs-Außentemperatur der Kühlung nach dem gewählten Auslegungsweg [°C]
+
+Mit Raumeinfluss senkt jede Kelvin Überschreitung des Kühlsollwerts den Vorlauf um den Raumeinfluss; oben hält der Vorlauf 2,5&nbsp;K Abstand zum Kühlsollwert, unten gewinnt immer die Vorlaufgrenze des Gebäudes ([[Programm Dokumentation/Gebäudemodell VDI 6007#kuehlkurve|Gebäudemodell VDI 6007: Kühlkurve]]). Der kälteste verlangte Vorlauf der Stunde geht an die Kälteerzeuger; mit Kältespeicher liegt er nie über dessen Vorlauf. Jede Wärmepumpe wertet ihre Kühlkennlinie an diesem Vorlauf, nie kälter als ihre kleinste Stützstelle, jede Kältemaschine liest ihr Kennfeld an ihm, nie kälter als ihr kleinster Kaltwasservorlauf. Der Kreis endet, wenn sich der Vorlauf um höchstens 0,05&nbsp;K ändert.
+
+Das '''Kälteangebot''' begrenzt als Kälteschranke die Kühlleistung der Zonen:
+
+: <math>\displaystyle P_{\mathrm{KS}}(t) = \max\left(0, \sum P_{\mathrm{Erz}}(t) + \sum \min\left(\mathrm{SOC}_{\mathrm{K}}(t-1), P_{\mathrm{ent}}\right) - Q_{\mathrm{K,LG}}(t)\right)</math> &nbsp;&nbsp;(24)
+:: <math>P_{\mathrm{KS}}(t)</math> – Kälteschranke der Raumkühlung [kW]
+:: <math>P_{\mathrm{Erz}}(t)</math> – verfügbare Kälteleistung eines Kälteerzeugers am Vorlauf der Stunde samt freier Kühlung; eine Wärmepumpe nur im Zeitanteil ihres Kühltags [kW]
+:: <math>\mathrm{SOC}_{\mathrm{K}}(t-1)</math> – Kältevorrat eines Kältespeichers am Stundenbeginn [kWh]
+:: <math>P_{\mathrm{ent}}</math> – Entladeleistung des Kältespeichers [kW]
+:: <math>Q_{\mathrm{K,LG}}(t)</math> – Prozesskälte der Stunde aus den Lastgängen, mit Vorrang vor der Raumkühlung [kWh]
+
+Greift die Schranke, wird der Raum wärmer; das zeigt sich in den Überhitzungsstunden. Eine reversible Wärmepumpe fehlt an ihrem Kühltag der Heizseite und an ihrem Heiztag der Kälteseite.
+
+=== Schritt 10 — Kältestrom, Abrechnung und Kennzahlen ===
+{{Anker|abrechnung}}
+
+Der Kältestrom aller Erzeuger geht als eigene Reihe in den Reststrombedarf und trägt den Stromträger des Projekts. Führt eine Anlage einen '''abweichenden Kühlträger''', zählt ihr der Anteil am Netzbezug zu; mit '''eigenem Zähler''' läuft ihr Kältestrom neben der Stufenrechnung — Photovoltaik und Stromspeicher decken ihn nicht, und er zählt ganz als Netzbezug:
+
+: <math>\displaystyle N_{\mathrm{K}} = \begin{cases} \sum_{k} N(k) \cdot \frac{E_{\mathrm{K}}(k)}{E(k)} & \mathrm{Stufenrechnung} \\ \sum_{k} E_{\mathrm{K}}(k) & \text{eigener Zaehler} \end{cases}</math> &nbsp;&nbsp;(25)
+:: <math>N_{\mathrm{K}}</math> – Netzbezug des Kältestroms der Anlage [kWh/a]
+:: <math>N(k)</math> – Netzbezug der Viertelstunde <math>k</math> [kWh]
+:: <math>E_{\mathrm{K}}(k)</math> – Kältestrom der Anlage in der Viertelstunde [kWh]
+:: <math>E(k)</math> – Stromverbrauch des Projekts in der Viertelstunde [kWh]
+
+: <math>\displaystyle \mathrm{JAZ}_{\mathrm{K}} = \frac{\sum_{t} Q_{\mathrm{Erz}}(t)}{\sum_{t} E_{\mathrm{Erz}}(t)}</math> &nbsp;&nbsp;(26)
+:: <math>\mathrm{JAZ}_{\mathrm{K}}</math> – Jahresarbeitszahl Kälte [–]
+:: <math>Q_{\mathrm{Erz}}(t)</math> – gelieferte Kälte der Erzeuger [kWh]
+:: <math>E_{\mathrm{Erz}}(t)</math> – Kältestrom der Erzeuger samt Hilfsstrom [kWh]
+
+: <math>\displaystyle \varphi_{\mathrm{TL}} = 100 \cdot \frac{\text{Stunden mit } P_{\mathrm{min}}/Q_{\mathrm{av}} \le x(t) < x_{\mathrm{TL}}}{\text{Verdichterstunden}}</math> &nbsp;&nbsp;(27)
+:: <math>\varphi_{\mathrm{TL}}</math> – Teillastanteil einer Kältemaschine mit Teillastrechnung [%]
+:: <math>P_{\mathrm{min}}</math> – kleinste Dauerleistung [kW]
+:: <math>Q_{\mathrm{av}}</math> – verfügbare Kälteleistung [kW]
+:: <math>x(t)</math> – Lastgrad nach (11) [–]
+:: <math>x_{\mathrm{TL}}</math> – obere Grenze einer Teillaststunde, Vorgabe 0,95 [–]
+
+Der mittlere Lastgrad ist kältegewichtet über die Verdichterstunden; der '''Jahres-EER ohne Hilfsstrom''' ist die Verdichterkälte durch den Verdichterstrom ohne Hilfs- und Rückkühlstrom. Kälte und Kältestrom gehen in die Wärmebilanz und die Jahresarbeitszahl der Wärme nicht ein.
+
+=== Beispiel ===
+{{Anker|beispiel}}
+
+Kältemaschine 1, eine Maschine mit 100&nbsp;kW Nennkälteleistung, Trockenkühler, Kaltwasservorlauf 16&nbsp;°C, Mindestteillast 30&nbsp;%, Hilfsstrom der Rückkühlung 2&nbsp;kW, Teillastrechnung „linear", Hilfsstromanteil leer.
+
+* '''Kühle Stunde, 2&nbsp;°C außen, 20&nbsp;kWh Bedarf.''' Nach (4) ist <math>\vartheta_{\mathrm{RK}} = 2 + 10 = 12</math>&nbsp;°C, und <math>12 \le 16 - 3</math> — die Maschine kühlt frei. Nach (5) deckt sie 20&nbsp;kWh, nach (6) mit <math>20/15 + 2 \cdot 20/100 = 1{,}33 + 0{,}40 = 1{,}73</math>&nbsp;kWh Strom.
+* '''Heiße Stunde, 30&nbsp;°C außen, 40&nbsp;kWh Bedarf.''' <math>\vartheta_{\mathrm{RK}} = 40</math>&nbsp;°C; das Kennfeld liefert dort <math>Q_{\mathrm{av}} = 90</math>&nbsp;kW und <math>\operatorname{EER}_{\mathrm{KF}} = 3{,}0</math>. Nach (11) ist <math>x = 40/90 = 0{,}44</math> und <math>P_{\mathrm{min}} = 30</math>&nbsp;kW; die Stunde taktet nicht. Nach (14) mit <math>g = 1</math> ergeben sich <math>40/3{,}0 = 13{,}33</math>&nbsp;kWh, nach (18) <math>2 \cdot 0{,}44 = 0{,}89</math>&nbsp;kWh Rückkühlung, nach (19) zusammen 14,22&nbsp;kWh.
+* '''Schwache Stunde, 30&nbsp;°C außen, 15&nbsp;kWh Bedarf.''' <math>15 < 30</math> — die Maschine taktet. <math>\mathrm{CR} = 0{,}5</math>, nach (16) <math>f = 0{,}5/(0{,}45 + 0{,}1) = 0{,}91</math>; der Strom ohne Taktverlust ist <math>15/3{,}0 = 5{,}0</math>&nbsp;kWh, der Mehrstrom nach (15) <math>5{,}0 \cdot (1/0{,}91 - 1) = 0{,}50</math>&nbsp;kWh, die Starts nach (17) <math>\min(6, \lceil 15/5 \rceil) = 3</math>.
+
+Stünden zwei solche Maschinen in der Anlage, liefe bei 40&nbsp;kWh nach (10) nur eine; bei 150&nbsp;kWh liefen beide mit je 75&nbsp;kWh.
+
+== Grenzen und Annahmen ==
+{{Anker|grenzen}}
+
+* '''Sensible Kälte.''' Feuchte, Entfeuchtung und latente Last rechnet der Kern nicht.
+* '''Feste Folge.''' Die Reihenfolge der Kältestufen ist nicht pflegbar; die Kälteerzeuger rechnen nach den Wärmeerzeugern, und die Kühlung steht in der Knappheitsreihenfolge an letzter Stelle.
+* '''Tagesbetriebsart je Tag.''' Eine reversible Wärmepumpe heizt oder kühlt einen ganzen Tag; Umschaltverluste und eine Umschaltung innerhalb des Tages bildet das Modell nicht ab. Kältemaschinen sind nicht an die Tagesbetriebsart gebunden.
+* '''Takten als Faktor.''' Mindestpausen und das Aufwärmen des Kaltwassers zwischen zwei Läufen bildet das Modell nicht ab; die Mindestlaufzeit ist fest 10&nbsp;min.
+* '''Rückkühlung vereinfacht.''' Die Rückkühltemperatur folgt aus Außen- oder Feuchtkugeltemperatur mit fester Grädigkeit; die wassergekühlte Maschine rechnet mit festem Kühlwasser. Die freie Kühlung ist ein Ein-Aus-Fall je Stunde, ohne Teilentlastung des Verdichters.
+* '''Keine Kältemittelemissionen''' und keine Verluste eines Kältenetzes.
+* '''Rückwirkung nur an der Sonde.''' Die Kühlwärme einer Wärmepumpe mit Erdwärmesonde regeneriert das Sondenfeld; Kältemaschinen kühlen gegen die Umgebung.
+* '''Begrenzung des Gebäudes nur auf AK3.''' Auf den übrigen Stufen rechnet das Gebäude seine Kälte unbegrenzt durch die Erzeuger; ungedeckte Kälte bleibt Rest.
+
+== Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
+
+* '''Simulationsergebnis, Reiter „Übersicht"''' — der Block „Kältedeckung": Kältebedarf, Kältespitze, ungedeckte Kälte, Deckungsgrad, Kältestrom, Jahresarbeitszahl Kälte nach (26), Kältestrom aus dem Netz nach (25) und die Tabelle der Kälteerzeuger.
+* '''Simulationsergebnis, Reiter „Ergebnis", Blatt „Kälteproduktion"''' — je Kälteerzeuger die gedeckte Kälte der Stunde, die ungedeckte Kälte und der Kältebedarf, wahlweise als Dauerlinie; darunter je Kältemaschine mit Teillastrechnung Taktstrom, Starts, Teillastanteil nach (27), mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom.
+* '''Ergebnis je Kältemaschine''' — Anzahl, Kälteproduktion, Stromverbrauch, Hilfsstrom, Kälte und Stunden der freien Kühlung, Taktstunden, Unterdeckung und Stunden an der Leistungsgrenze.
+* '''Ergebnis je Zone''' — Kältespitze und Stunden mit Kältebedarf der Zone.
+* '''Laufprotokoll''' — Kälte-Restbedarf an Kühl- und Heiztagen, gesperrter Heizkanal an Kühltagen, Randstunden der Kennlinien, Nasskühler ohne Luftfeuchte, angehobener Kaltwasservorlauf, auf AK3 die Stunden an der Kälteschranke.
+* '''Bericht''' und '''Wirtschaftlichkeit''' — Abschnitt „Kältebedarf und -deckung" mit Kälteerzeugung, Kältestrom, Jahresarbeitszahl Kälte, Netzbezug, Kosten und CO₂ des Kältestroms; der Kältestrom geht in Energiekosten und Emissionen ein.
+
+== Bezüge ==
+{{Anker|bezuege}}
+
+* [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]] — Bedienung: Kältemaschine, Kühlbetrieb der Wärmepumpe, Kältespeicher, Abrechnung
+* [[Programm Dokumentation/Kühlung|Kühlung]] — Kältebedarf, Kühlung am Gebäude, Kühlübergabe und Kühlkurve
+* [[Grundlagen/Kühlung|Grundlagen: Kühlung]] — Kälteerzeugung, EER, freie Kühlung, Teillast und Takten fachlich
+* [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] — Kühlreihe der Zonen, Tagesbetriebsart, Kühlkurve
+* [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]] — Kennlinie, Quelltemperatur und Takten derselben Maschine
+* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — der Kältespeicher
+* [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung: Wärmequelle Erdreich]] — Rückspeisung der Kühlwärme ins Sondenfeld
+* [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kältekaskade und Anlagenkopplung im Lauf

@@ -184,7 +184,23 @@ public class MenuebandTests : EposBunitContext
         // GEBAEUDESIMULATION G3 (Softwarearchitektur 3.1): „Gebaeude" fuehrt
         // hinter „Gebaeudetypen" die zwei Kataloge „Baustoffe" und
         // „Bauteilaufbauten" - zwei neue Wege. Also 63 Punkte und 49 Handlungen.
-        Assert.Equal(63, Punkte.Count);
+        //
+        // BETRIEBSKALENDER (Entscheidungsvorlage Modellgrenzen PW2, BW2): „Profile &
+        // Lastgaenge" fuehrt die Verwaltung der Betriebskalender - ein neuer Weg.
+        // Also 64 Punkte und 50 Handlungen.
+        //
+        // KATALOGABGLEICH (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1): „Daten &
+        // Import" fuehrt hinter der Dublettenpruefung „Katalog aktualisieren…" - ein
+        // neuer Weg. Also 65 Punkte und 51 Handlungen.
+        //
+        // BRENNSTOFFE DES PROJEKTS (Anwenderentscheid 03.10.2026): „Kosten" fuehrt hinter den
+        // Energietraegern die Projektkopie des Brennstoffkatalogs - ein neuer Weg. Also 66 Punkte
+        // und 52 Handlungen.
+        // KU3-1: der Punkt „Kältemaschinen" neben der Wärmepumpe (66 -> 67, 52 -> 53).
+        // PVG (Schemaschritt 206): der Punkt „PV-Ganglinie" unter „Profile & Lastgänge" (67 -> 68, 53 -> 54).
+        // E119: der Import für Kälteanlagen unter „Daten & Import" (68 -> 69, 54 -> 55).
+        // K-C: der Import der Kältemaschinen dahinter (69 -> 70, 55 -> 56).
+        Assert.Equal(70, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -279,6 +295,8 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_Kessel",
             "MenuItem_BHKW",
             "MenuItem_WP",
+            // KU3-1: die Kaeltemaschinen neben der Waermepumpe.
+            "MenuItem_Kaeltemaschinen",
             "MenuItem_Solarkollektoren",
         }, Kinder(wbund));
 
@@ -289,7 +307,7 @@ public class MenuebandTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_drei_Punkte_in_dieser_Reihenfolge()
+    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_vier_Punkte_in_dieser_Reihenfolge()
     {
         // "Erstelle in 'Waermebedarf & Heizung' Unterrubrik 'Profile &
         // Lastgaenge'; verschiebe in diese Rubrik: 'Waermebedarf Lastgang',
@@ -311,6 +329,10 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_WaermebedarfExtern",
             "MenuItem_Prozesswaerme",
             "MenuItem_SolThermGanglinie",
+            // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien neben dem der Solarthermie.
+            "MenuItem_PvGanglinie",
+            // PW2/BW2: die Betriebskalender der Bedarfsprofile.
+            "MenuItem_Betriebskalender",
         }, Kinder(rubrik));
     }
 
@@ -422,6 +444,10 @@ public class MenuebandTests : EposBunitContext
             // Photovoltaik, Stromspeicher.
             "MenuItem_Import_Heizkessel",
             "MeniItem_VDI3805",
+            // E119: der Import für Kälteanlagen gleich hinter dem Wärmepumpenimport.
+            "MeniItem_VDI3805_Kaelte",
+            // K-C: der Import der Kältemaschinen gleich dahinter.
+            "MenuItem_Import_Kaeltemaschinen",
             "MenuItem_ST_Import",
             "MenuItem_PufferSp_VDI3805",
             "MenuItem_PV_Import_Gruppe",
@@ -431,6 +457,8 @@ public class MenuebandTests : EposBunitContext
             // MN-1: Trennstrich, danach die Dublettenpruefung.
             "MenuItem_TrennerImportDubletten",
             "MenuItem_KatalogDubletten",
+            // KU1 Stufe 1: der Abgleich mit dem Katalogpaket, hinter der Dublettenpruefung.
+            "MenuItem_Katalogabgleich",
         }, Kinder(daten));
 
         Menuepunkt knoten = daten.Untereintraege.Single(p => p.Name == "MenuItem_PV_Import_Gruppe");
@@ -603,10 +631,12 @@ public class MenuebandTests : EposBunitContext
         // "Photovoltaik" - und mit der Katalogreihenfolge der Importe ist er
         // jetzt der LETZTE von ihnen; danach kommen nur noch Trennstrich und
         // Dublettenpruefung.
+        // E119 schiebt den Import fuer Kaelteanlagen hinter den Waermepumpenimport -
+        // alle folgenden Stellen ruecken um eins; K-C mit dem Import der Kaeltemaschinen noch einmal.
         string[] kinder = Kinder(daten);
-        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[4]);
-        Assert.Equal("MenuItem_SP_Import", kinder[5]);
-        Assert.Equal("MenuItem_TrennerImportDubletten", kinder[6]);
+        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[6]);
+        Assert.Equal("MenuItem_SP_Import", kinder[7]);
+        Assert.Equal("MenuItem_TrennerImportDubletten", kinder[8]);
 
         // Und es gibt ihn GENAU EINMAL - der Katalog "Stromspeicher" steht
         // schon unter "Strombedarf & Speicher", sein IMPORT nur hier.
@@ -849,6 +879,8 @@ public class MenuebandTests : EposBunitContext
             // Kataloge der Baustoffe und der Bauteilaufbauten.
             Seitenschluessel.BaustoffKatalog,
             Seitenschluessel.BauteilaufbauKatalog,
+            // PW2/BW2: die Betriebskalender der Bedarfsprofile - ein neuer Weg.
+            Seitenschluessel.Betriebskalender,
             Seitenschluessel.BhkwAdmin,
             Seitenschluessel.BrauchwasserAdmin,
             // Zapfprofilgenerator 5.4: das NEUE Ziel - der Katalog der
@@ -859,8 +891,12 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.GebaeudeAdmin,
             Seitenschluessel.GebaeudetypenAdmin,
             Seitenschluessel.Gesetzeskatalog,
+            // KU3-1: das NEUE Ziel neben der Waermepumpe - die Kaeltemaschinen.
+            Seitenschluessel.KaeltemaschineKatalog,
             Seitenschluessel.HeizkesselAdmin,
             Seitenschluessel.HeizkesselImport,
+            // KU1 Stufe 1: das NEUE Ziel „Katalog aktualisieren…".
+            Seitenschluessel.Katalogabgleich,
             Seitenschluessel.KatalogDubletten,
             Seitenschluessel.Klimadaten,
             Seitenschluessel.Kostenverwaltung,
@@ -869,12 +905,16 @@ public class MenuebandTests : EposBunitContext
             // "Kostenverwaltung". Kein aelteres Ziel ist entfallen.
             Seitenschluessel.NutzungsdauerVerwaltung,
             Seitenschluessel.PeakShaving,
+            // Anwenderentscheid 03.10.2026: das NEUE Ziel „Brennstoffe des Projekts…".
+            Seitenschluessel.ProjektBrennstoffe,
             Seitenschluessel.ProzesswaermeAdmin,
             Seitenschluessel.PufferSpAdmin,
             Seitenschluessel.PufferSpImport,
             Seitenschluessel.PvAdmin,
             Seitenschluessel.PvImport,
             Seitenschluessel.SolarganglinieAdmin,
+            // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien.
+            Seitenschluessel.PvGanglinieAdmin,
             Seitenschluessel.SolarkollektorenAdmin,
             Seitenschluessel.SolarkollektorenImport,
             Seitenschluessel.StromganglinieAdmin,
@@ -891,6 +931,10 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.WechselrichterImport,
             Seitenschluessel.WpAdministration,
             Seitenschluessel.WpImport,
+            // E119: das NEUE Ziel „Import Kälteanlagen VDI 3805".
+            Seitenschluessel.WpKaelteImport,
+            // K-C: das NEUE Ziel „Import Kältemaschinen (CSV, Copper)…".
+            Seitenschluessel.KaeltemaschineImport,
         }.OrderBy(z => z, StringComparer.Ordinal).ToArray(),
                      ziele.OrderBy(z => z, StringComparer.Ordinal).ToArray());
     }
@@ -957,6 +1001,9 @@ public class MenuebandTests : EposBunitContext
         {
             "MenuItem_Kostenvorlagen",
             "MenuItem_Energietraeger",
+            // Anwenderentscheid 03.10.2026: die Projektkopie des Brennstoffkatalogs hinter den
+            // Energietraegern; die gesetzlichen Parameter bleiben das letzte Blatt.
+            "MenuItem_ProjektBrennstoffe",
             "MenuItem_Nutzungsdauer",
             "MenuItem_Gesetzesparameter",
         }, Kinder(kosten));
@@ -988,14 +1035,20 @@ public class MenuebandTests : EposBunitContext
         Menuepunkt daten = Rubrik("MenuItem_DatImport");
         IReadOnlyList<Menuepunkt> kinder = daten.Untereintraege;
 
-        Assert.Equal("MenuItem_KatalogDubletten", kinder[^1].Name);
-        Assert.True(kinder[^2].Trenner);
-        Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^1].Ziel);
-        Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^1].TextSchluessel);
-        Assert.Equal("", kinder[^1].Bild);
+        // KU1 Stufe 1: danach nur noch „Katalog aktualisieren…" - dieselbe Rubrik, die
+        // Pflege der eingelesenen Kataloge.
+        Assert.Equal("MenuItem_Katalogabgleich", kinder[^1].Name);
+        Assert.Equal(Seitenschluessel.Katalogabgleich, kinder[^1].Ziel);
+        Assert.Equal("KABG_MENUE", kinder[^1].TextSchluessel);
+        Assert.Equal("MenuItem_KatalogDubletten", kinder[^2].Name);
+        Assert.True(kinder[^3].Trenner);
+        Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^2].Ziel);
+        Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^2].TextSchluessel);
+        Assert.Equal("", kinder[^2].Bild);
 
-        // Sechs Importe davor, in der Reihenfolge der Kataloge.
-        Assert.Equal(6, kinder.Take(kinder.Count - 2).Count());
+        // Acht Importe davor, in der Reihenfolge der Kataloge (E119: der Import fuer
+        // Kaelteanlagen hinter dem Waermepumpenimport, K-C: der Kaeltemaschinenimport dahinter).
+        Assert.Equal(8, kinder.Take(kinder.Count - 3).Count());
 
         // Und nicht mehr in der obersten Ebene des Kopfes.
         Assert.DoesNotContain("MenuItem_KatalogDubletten", Kinder(Administration));
@@ -1213,8 +1266,21 @@ public class MenuebandTests : EposBunitContext
         //
         // Die Gebaeudesimulation G3 legt zwei echte Wege an - die Kataloge der
         // Baustoffe und der Bauteilaufbauten unter „Gebaeude" (47 -> 49).
+        //
+        // Die Betriebskalender (PW2/BW2) legen unter „Profile & Lastgaenge" einen
+        // echten Weg an (49 -> 50).
+        //
+        // „Katalog aktualisieren…" (KU1 Stufe 1) ist ein echter Weg (50 -> 51).
         Assert.Equal(14, Punkte.Count(p => p.Klappt));
-        Assert.Equal(49, Punkte.Count(p => !p.Klappt));
+        //
+        // „Brennstoffe des Projekts…" (Anwenderentscheid 03.10.2026) ist ein echter Weg (51 -> 52).
+        //
+        // „PV-Ganglinie" (PVG, Schemaschritt 206) ist ein echter Weg (53 -> 54).
+        //
+        // Der Import für Kälteanlagen (E119) ist ein echter Weg (54 -> 55).
+        //
+        // Der Import der Kältemaschinen (K-C) ist ein echter Weg (55 -> 56).
+        Assert.Equal(56, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]
@@ -1908,5 +1974,58 @@ public class MenuebandTests : EposBunitContext
 
         Assert.Contains("position: relative", band, StringComparison.Ordinal);
         Assert.Contains("z-index: 41", band, StringComparison.Ordinal);
+    }
+
+    // =====================================================================
+    //  ENTSCHEID E119 (10.10.2026) — der Import fuer Kaelteanlagen
+    // =====================================================================
+
+    [Fact]
+    public void Der_Import_fuer_Kaelteanlagen_steht_hinter_dem_Waermepumpenimport()
+    {
+        // WORTLAUT des Anwenders: "Fuer Kaelteanlagen gibt es keine VDI-3805-Daten: Aendere den
+        // VDI-3805-Import im Administrationsmenue fuer Kaelteanlagen so, dass nur
+        // kaelteerzeugungsfaehige Waermepumpen aus VDI-3805-Dateien importiert werden koennen."
+        // Der Punkt HANDELT unmittelbar, fuehrt kein Untermenue und kein Argument - er hat sein
+        // eigenes Ziel, das die Huelle auf die Auspraegung WaermepumpeKuehlung abbildet.
+        Menuepunkt daten = Rubrik("MenuItem_DatImport");
+        string[] kinder = Kinder(daten);
+        int wp = Array.IndexOf(kinder, "MeniItem_VDI3805");
+        Assert.Equal("MeniItem_VDI3805_Kaelte", kinder[wp + 1]);
+
+        Menuepunkt punkt = daten.Untereintraege.Single(p => p.Name == "MeniItem_VDI3805_Kaelte");
+        Assert.False(punkt.Klappt);
+        Assert.Equal(Seitenschluessel.WpKaelteImport, punkt.Ziel);
+        Assert.Equal("MENU_VDI3805_KAELTE", punkt.TextSchluessel);
+        Assert.Equal("", punkt.Argument);
+        Assert.Equal("", punkt.Bild);
+        Assert.Single(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.WpKaelteImport);
+        Assert.NotEqual(Seitenschluessel.WpImport, Seitenschluessel.WpKaelteImport);
+    }
+
+    // =====================================================================
+    //  K-C (E118, 10.10.2026) — der Import der Kaeltemaschinen
+    // =====================================================================
+
+    [Fact]
+    public void Der_Import_der_Kaeltemaschinen_steht_hinter_dem_Import_fuer_Kaelteanlagen()
+    {
+        // Stufe K-C der Konzeptpruefung Kaelteanlagen: Der Menuepunkt oeffnet dieselbe Importart wie der
+        // Knopf "Import..." im Katalog der Kaeltemaschinen - mit eigenem Ziel, ohne Argument.
+        Menuepunkt daten = Rubrik("MenuItem_DatImport");
+        string[] kinder = Kinder(daten);
+        int kaelte = Array.IndexOf(kinder, "MeniItem_VDI3805_Kaelte");
+        Assert.Equal("MenuItem_Import_Kaeltemaschinen", kinder[kaelte + 1]);
+
+        Menuepunkt punkt = daten.Untereintraege.Single(p => p.Name == "MenuItem_Import_Kaeltemaschinen");
+        Assert.False(punkt.Klappt);
+        Assert.Equal(Seitenschluessel.KaeltemaschineImport, punkt.Ziel);
+        Assert.Equal("MENU_IMPORT_KAELTEMASCHINEN", punkt.TextSchluessel);
+        Assert.Equal("", punkt.Argument);
+        Assert.Equal("", punkt.Bild);
+        Assert.Single(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.KaeltemaschineImport);
+        Assert.NotEqual(Seitenschluessel.WpKaelteImport, Seitenschluessel.KaeltemaschineImport);
+        // Der Schluessel ist der Hilfeschluessel des Importdialogs dieser Art ("Form_Kaeltemaschine_einlesen").
+        Assert.Equal("Form_Kaeltemaschine_einlesen", Seitenschluessel.KaeltemaschineImport);
     }
 }

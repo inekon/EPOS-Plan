@@ -72,6 +72,51 @@ public sealed class VorlagenfeldpositionTests : VorlagenfeldBunitContext
         Assert.Equal(new[] { "stand.2.bild.deckung_waerme" }, Ablage.Texte);
     }
 
+    /// <summary>
+    /// Eine Tafel über mehrere Stände (Sensitivität): Der Wirt reicht die Positionen als Liste; die Aufklappung nennt
+    /// je Stand seinen Namen und seine Formen in der Folge der Liste, und die Liste geht der kaskadierten Position vor.
+    /// </summary>
+    [Fact]
+    public void Mehrere_Staende_stehen_je_mit_Namen_und_gehen_der_kaskadierten_Position_vor()
+    {
+        var positionen = new[]
+        {
+            new Vorlagenfeldposition(2, 1).MitName("WP klein"),
+            new Vorlagenfeldposition(3, 2, "BHKW"),
+            new Vorlagenfeldposition(0, 0, "unbekannt"),
+        };
+        var cut = Render<Vorlagenfeldknopf>(p =>
+        {
+            p.Add(x => x.Vorlagenfeld, "stand.kennzahl.eff.jaz");
+            p.Add(x => x.Positionen, positionen);
+            p.AddCascadingValue(new Vorlagenfeldposition(1, 0));
+        });
+
+        Assert.Equal(new[]
+        {
+            "stand.2.kennzahl.eff.jaz", "variante.1.kennzahl.eff.jaz",
+            "stand.3.kennzahl.eff.jaz", "variante.2.kennzahl.eff.jaz",
+        }, cut.Instance.Positionsformen);
+        Assert.Equal(new[] { "WP klein", "BHKW" },
+                     cut.FindAll(".epos-vorlagenfeld-auf-positionsname").Select(e => e.TextContent.Trim()).ToArray());
+        Assert.Equal(4, cut.FindAll(".epos-vorlagenfeld-auf-position").Count);
+
+        cut.FindAll(".epos-vorlagenfeld-position-kopieren")[2].Click();
+        Assert.Equal(new[] { "{{stand.3.kennzahl.eff.jaz}}" }, Ablage.Texte);
+
+        // Eine leere Liste nennt keine Form — auch nicht die kaskadierte.
+        var leer = Render<Vorlagenfeldknopf>(p =>
+        {
+            p.Add(x => x.Vorlagenfeld, "stand.kennzahl.eff.jaz");
+            p.Add(x => x.Positionen, Array.Empty<Vorlagenfeldposition>());
+            p.AddCascadingValue(new Vorlagenfeldposition(1, 0));
+        });
+        Assert.Empty(leer.Instance.Positionsformen);
+
+        // Die einzelne kaskadierte Position trägt keinen Namen.
+        Assert.Empty(Marke("stand.kennzahl.eff.jaz", new Vorlagenfeldposition(3, 2)).FindAll(".epos-vorlagenfeld-auf-positionsname"));
+    }
+
     [Fact]
     public void Ohne_Position_oder_ohne_Standwert_steht_keine_Positionsform()
     {
@@ -112,6 +157,9 @@ public sealed class VorlagenfeldPositionsrestTests
     [InlineData("stand.speicher.autarkie", "speicher.autarkie")]
     [InlineData("stand.tabelle.monatswerte", "tabelle.monatswerte")]
     [InlineData("stamm.wirtschaft.investition", "wirtschaft.investition")]
+    [InlineData("stand.tabelle.sensitivitaet", "tabelle.sensitivitaet")]
+    [InlineData("stand.tabelle.mehrjahres", "tabelle.mehrjahres")]
+    [InlineData("stand.bild.zahlungsstrom", "bild.zahlungsstrom")]
     [InlineData("projekt.kunde", "")]
     [InlineData("stamm.bild.speichertemperaturen", "")]
     [InlineData("tabelle.vergleich.liste", "")]
@@ -149,5 +197,22 @@ public sealed class VorlagenfeldPositionsrestTests
         Assert.Equal(new Vorlagenfeldposition(3, 2), VorlagenfeldpositionHuelle.Aus(gruppe, 12));
         Assert.Null(VorlagenfeldpositionHuelle.Aus(gruppe, 99));
         Assert.Null(VorlagenfeldpositionHuelle.Aus(null!, 10));
+    }
+
+    /// <summary>
+    /// Die Positionen einer ganzen Gruppe in einem Zug (Wirtschaftlichkeitsseite): dieselbe Zählung wie
+    /// <c>Aus</c>, je Projekt einmal — ein doppelter Eintrag behält seine erste Stelle.
+    /// </summary>
+    [Fact]
+    public void Die_Positionen_einer_Gruppe_zaehlen_wie_die_einzelne()
+    {
+        var je = VorlagenfeldpositionHuelle.Je(new[] { (10, true), (11, false), (12, false), (11, false) });
+
+        Assert.Equal(3, je.Count);
+        Assert.Equal(new Vorlagenfeldposition(1, 0), je[10]);
+        Assert.Equal(new Vorlagenfeldposition(2, 1), je[11]);
+        Assert.Equal(new Vorlagenfeldposition(3, 2), je[12]);
+        Assert.Empty(VorlagenfeldpositionHuelle.Je(null!));
+        Assert.Equal(new Vorlagenfeldposition(2, 1, "WP"), je[11].MitName(" WP "));
     }
 }

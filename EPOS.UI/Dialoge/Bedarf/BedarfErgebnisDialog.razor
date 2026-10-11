@@ -28,15 +28,21 @@
    MWh als Vorgabe, kWh waehlbar. Das Wahlfeld steht ueber der Reiterleiste, weil
    Kennzahlen, Monatstabelle und Saeulenbild gemeinsam folgen. Umgerechnet wird
    nur, was die Huelle als ZAHL samt Quelleneinheit mitgibt - die beiden
-   Leistungen in kW und der Jahresverlauf bleiben unberuehrt. Das Saeulenbild
+   Leistungen in kW und die Ganglinie bleiben unberuehrt. Das Saeulenbild
    kommt in zwei Fassungen herein; auch ein Zeichenmodell traegt seine Achsen- und
    Zeigetexte fertig formatiert, laesst sich also nicht umrechnen, und die
    Komponente ruft keinen Renderer.
 
-   ZOOMEN NUR, WO EINE ZEITACHSE IST (Etappe DG-E3): Der Jahresverlauf laesst sich
-   im SVG spreizen - ein Zeitausschnitt ist die viewBox seiner Zeichenflaeche. Die
-   Monatssaeulen zaehlen zwoelf starre Faecher; dort gibt es keine Datenkoordinaten
-   und damit nichts zu zoomen, wohl aber den Wert der Saeule unter dem Zeiger.
+   DER GRAFIKREITER WIE DIE JAHRESGANGLINIEN DER SIMULATION (Anwenderwunsch WG,
+   10.10.2026): oben EINE waagerechte Zeile mit zwei Knopfgruppen - Bedarfsart
+   (Mehrfachwahl, nur bei mehr als einer Sicht) und Zeitraster Jahr | Monat |
+   Woche | Tag -, darunter das Bild. "Jahr" ist die Ganglinie ueber alle
+   Stuetzstellen mit Zoomleiste, eine Linie je Bedarfsart; Monat, Woche und Tag
+   sind die Summen als gestapelte Saeulen (12, 52, 365; der 365. Tag gehoert zur
+   52. Woche) in der gewaehlten Einheit. Jedes Bild traegt "CSV...": die Ganglinie
+   ueber den Ganglinienexport der Kaskade, die Saeulen ueber den eigenen Export
+   mit den Summenspalten der Huelle. Bilder und Summen kommen auf Zuruf aus der
+   Huelle (Bedarfsgrafikquelle); die Komponente haelt sie nur zwischen.
 
    DREI KATEGORIEN STATT EINER LISTE (Anwenderwunsch W8-E-2, Windows-Abnahme
    05.09.2026). Der Bestand reihte alle Kennzahlen untereinander - eine LEISTUNG
@@ -44,13 +50,6 @@
    hat beides beanstandet. Das Blatt hat jetzt einen Block je Kategorie mit
    Zwischenueberschrift und die Summe ABGESETZT im tfoot. Wer keine Kategorien
    mitgibt, bekommt weiter die schlichte Liste - Vorgabe ist Kennzahlart.Energie.
-
-   UND DER GRAFIKREITER TRAEGT DREI ZEITSTUFEN (ebenfalls W8-E-2): Jahr wie
-   bisher, dazu Woche und Tag mit Navigator. Das steht in BedarfGangGrafik; ohne
-   Ganglinienquelle erscheint der Umschalter gar nicht, und die drei
-   Waermesichten (Prozesse, Gebaeude, Brauchwasser) bringen ihre eigene
-   Stundenreihe mit - Jahresverlauf hinter dem Schalter, Woche und Tag hinter dem
-   Navigator; die Sichtwahl steht ueber den Zeitstufen und gilt fuer alle drei.
 
    TASTATUR: Esc und Enter schliessen - der Dialog hat nur den einen Knopf. *@
 
@@ -194,74 +193,69 @@
             @* --- Reiter 3: das Bild ------------------------------------------ *@
             <Reiterblatt Schluessel="GRAFIK" Titel="@ReiterGrafik">
                 <KindInhalt>
-                    @* Seit W8-E-2 liegt der Reiter in BedarfGangGrafik: Die Jahressicht
-                       geht unveraendert als KindInhalt hinein, Woche und Tag kommen aus
-                       der Ganglinienquelle. Ohne sie gibt es weder Umschalter noch
-                       Navigator und der Reiter sieht aus wie zuvor.
-
-                       DIE SICHTWAHL STEHT UEBER DEN ZEITSTUFEN: Jede Waermesicht
-                       (Prozesse, Gebaeude, Brauchwasser) traegt ihre eigene
-                       Ganglinie, und die Wahl gilt fuer Jahr, Woche und Tag
-                       gleichermassen - wer in Woche 12 von Prozesse auf Gebaeude
-                       wechselt, sieht dieselbe Woche der anderen Reihe. *@
-                    @if (Daten.Sichten.Count > 1)
-                    {
-                        <Optionsgruppe Eintraege="@Sichtwahl" Auswahl="@_sichtGrafik"
-                                       AuswahlChanged="GrafiksichtWaehlen" />
-                    }
-
-                    <BedarfGangGrafik Quelle="@Gangquelle"
-                                      StufeJahrText="@StufeJahrText"
-                                      StufeWocheText="@StufeWocheText"
-                                      StufeTagText="@StufeTagText"
-                                      MarkeFormat="@MarkeFormat"
-                                      PlatzhalterText="@PlatzhalterBild"
-                                      Kennung="bedarf-gang"
-                                      FarbeSetzen="@FarbeSetzen"
-                                      FarbeZuruecksetzen="@FarbeZuruecksetzen">
-                        <JahresInhalt>
-                            @* Der Schalter steht bei jeder Sicht, fuer die die Huelle einen
-                               Jahresverlauf mitgegeben hat - beim Brauchwasser wie im
-                               Vorlaeufer (checkBox_MonatJahr, AktualisiereGrafik:142), bei
-                               Prozessen und Gebaeude aus ihrer Stundenreihe. *@
-                            @if (JahresverlaufMoeglich)
+                    <div class="epos-bedarfgrafik">
+                        @* EINE Zeile, zwei Knopfgruppen (Schaltknoepfe mit aria-pressed wie
+                           die Kalenderbedienung); auf schmalem Schirm bricht die zweite Gruppe
+                           darunter. *@
+                        <div class="epos-bedarfgrafik-leiste">
+                            @if (Daten.Sichten.Count > 1)
                             {
-                                <Schalter Bezeichnung="@LabelJahresverlauf" Wert="@_jahresverlauf"
-                                          WertChanged="JahresverlaufUmschalten" />
+                                <div class="epos-bedarfgrafik-gruppe epos-bedarfgrafik-reihen" role="group"
+                                     aria-label="@GruppeReihenText">
+                                    @for (int i = 0; i < Daten.Sichten.Count; i++)
+                                    {
+                                        int nr = i;
+                                        bool an = _reihen.Contains(nr);
+                                        <button type="button" data-sicht="@nr"
+                                                class="epos-knopf epos-bedarfgrafik-knopf @(an ? "epos-knopf--gewaehlt" : "")"
+                                                aria-pressed="@(an ? "true" : "false")"
+                                                @onclick="() => ReiheUmschalten(nr)">@Daten.Sichten[nr].Bezeichnung</button>
+                                    }
+                                </div>
                             }
-
-                            @* ZWEI BILDARTEN AUF EINEM BLATT, beide als SVG: Der
-                               JAHRESVERLAUF traegt eine Zeitachse und laesst sich
-                               zoomen (Etappe DG-E3, Gruppe (a)); die MONATSSAEULEN
-                               zaehlen zwoelf starre Faecher - dort gibt es nichts zu
-                               zoomen, wohl aber den Wert der Saeule unter dem Zeiger
-                               (DG-E3-10, Gruppe (c)). Der Baustein schaltet den Zoom
-                               von selbst ab, sobald ein Modell keine Zeichenflaeche
-                               traegt; OhneZoom braucht es dafuer nicht. *@
-                            @if (JahresverlaufMoeglich && _jahresverlauf)
+                            @if (Daten.Grafik is not null)
                             {
-                                <DiagrammSvg Modell="@Jahresverlaufmodell"
-                                             Kennung="bedarf-jahresverlauf"
-                                             Bezeichnung="@Bildtext" Einheit="kW"
+                                <div class="epos-bedarfgrafik-gruppe epos-bedarfgrafik-raster" role="group"
+                                     aria-label="@GruppeRasterText">
+                                    @foreach ((Bedarfsraster raster, string text) in Rasterwahl)
+                                    {
+                                        Bedarfsraster rr = raster;
+                                        bool an = _raster == rr;
+                                        <button type="button" data-raster="@rr"
+                                                class="epos-knopf epos-bedarfgrafik-knopf @(an ? "epos-knopf--gewaehlt" : "")"
+                                                aria-pressed="@(an ? "true" : "false")"
+                                                @onclick="() => RasterWaehlen(rr)">@text</button>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        @if (Daten.Grafik is not null)
+                        {
+                            @* Die Ganglinie traegt eine Zeitachse: Zoom und "CSV..." ueber den
+                               Ganglinienexport der Kaskade. Die Saeulen (Monat, Woche, Tag) haben
+                               keine Zeitachse: Ihre Leiste traegt allein "CSV..." mit dem eigenen
+                               Summenexport. Die Kennung wechselt mit dem Raster - ein Bild je Blatt. *@
+                            <CascadingValue Value="@Exportnaht">
+                                <DiagrammSvg Modell="@Grafikmodell" Kennung="@Grafikkennung"
+                                             CsvExport="@SummenExport"
+                                             Bezeichnung="@Grafiktitel" Einheit="@Grafikeinheit"
                                              PlatzhalterText="@PlatzhalterBild"
                                              Palette="@Farbpalette.Aktuell"
                                              FarbwahlErlaubt="@(FarbeSetzen is not null)"
                                              FarbeGewaehlt="FarbeUebernehmen"
                                              FarbeZurueckgesetzt="FarbeVerwerfen" />
-                            }
-                            else
-                            {
-                                @* KEINE FARBWAHL AN DIESEM BILD: Das Saeulenmodell
-                                   fuehrt weder Legende noch Datenreihe - es gibt
-                                   also kein Farbfeld, an dem der Waehler haengen
-                                   koennte. Die Saeulenfarbe benennt die SICHT und
-                                   kommt mit ihr aus der Huelle. *@
-                                <DiagrammSvg Modell="@Monatsmodell" Kennung="bedarf-monate"
-                                             Bezeichnung="@Bildtext"
-                                             PlatzhalterText="@PlatzhalterBild" />
-                            }
-                        </JahresInhalt>
-                    </BedarfGangGrafik>
+                            </CascadingValue>
+                        }
+                        else
+                        {
+                            @* Ohne Stundenreihen bleiben die Monatssaeulen der ersten gewaehlten
+                               Sicht - fertige Bilder der Huelle, eines je Einheit. *@
+                            <DiagrammSvg Modell="@Monatsmodell" Kennung="bedarf-monate"
+                                         Bezeichnung="@Bildtext"
+                                         PlatzhalterText="@PlatzhalterBild" />
+                        }
+                    </div>
                 </KindInhalt>
             </Reiterblatt>
 
@@ -313,7 +307,6 @@
     /// <summary>Beschriftung des Wahlfeldes über der Reiterleiste.</summary>
     [Parameter] public string LabelEinheit { get; set; } = "Einheit:";
 
-    [Parameter] public string LabelJahresverlauf { get; set; } = "Jahresverlauf";
     [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
     [Parameter] public string OkText { get; set; } = "OK";
 
@@ -323,17 +316,29 @@
     /// <summary>Überschrift des Energieblocks (W8‑E‑2) — Ressource BERG_GRP_ENERGIE.</summary>
     [Parameter] public string GruppeEnergie { get; set; } = "Energie";
 
-    /// <summary>Beschriftung der Zeitstufe „Jahr" — Ressource BERG_STUFE_JAHR.</summary>
-    [Parameter] public string StufeJahrText { get; set; } = "Jahr";
+    /// <summary>Knopf „Jahr“ des Zeitrasters — Ressource BERG_STUFE_JAHR.</summary>
+    [Parameter] public string RasterJahrText { get; set; } = "Jahr";
 
-    /// <summary>Beschriftung der Zeitstufe „Woche" — Ressource BERG_STUFE_WOCHE.</summary>
-    [Parameter] public string StufeWocheText { get; set; } = "Woche";
+    /// <summary>Knopf „Monat“ des Zeitrasters — Ressource BED_GRAFIK_RASTER_MONAT.</summary>
+    [Parameter] public string RasterMonatText { get; set; } = "Monat";
 
-    /// <summary>Beschriftung der Zeitstufe „Tag" — Ressource BERG_STUFE_TAG.</summary>
-    [Parameter] public string StufeTagText { get; set; } = "Tag";
+    /// <summary>Knopf „Woche“ des Zeitrasters — Ressource BERG_STUFE_WOCHE.</summary>
+    [Parameter] public string RasterWocheText { get; set; } = "Woche";
 
-    /// <summary>Marke des Navigators — {0} Nummer, {1} Anzahl, {2} Stufe (BERG_GANG_MARKE).</summary>
-    [Parameter] public string MarkeFormat { get; set; } = "{2} {0} von {1}";
+    /// <summary>Knopf „Tag“ des Zeitrasters — Ressource BERG_STUFE_TAG.</summary>
+    [Parameter] public string RasterTagText { get; set; } = "Tag";
+
+    /// <summary>Name der Knopfgruppe der Bedarfsarten — Ressource BED_GRAFIK_GRP_REIHEN.</summary>
+    [Parameter] public string GruppeReihenText { get; set; } = "Bedarfsart";
+
+    /// <summary>Name der Knopfgruppe des Zeitrasters — Ressource BED_GRAFIK_GRP_RASTER.</summary>
+    [Parameter] public string GruppeRasterText { get; set; } = "Zeitraster";
+
+    /// <summary>
+    /// Der CSV-Weg der Plattform: Bildtitel und Spalten; ohne Delegat kein Knopf „CSV…“.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<ZeitreihenSpalte>, Task>? CsvSpeichern { get; set; }
+
 
     /// <summary>Die zwölf Monatsbeschriftungen der Tabelle.</summary>
     [Parameter]
@@ -354,8 +359,12 @@
 
     private string _reiter = "";
     private int _sichtTabelle;
-    private int _sichtGrafik;
-    private bool _jahresverlauf;
+
+    /// <summary>Die gewählten Bedarfsarten des Grafikreiters (Indizes der Sichten), nie leer.</summary>
+    private readonly SortedSet<int> _reihen = new();
+
+    /// <summary>Das gewählte Zeitraster — „Jahr“ beim Öffnen, wie die Jahresganglinien der Simulation.</summary>
+    private Bedarfsraster _raster = Bedarfsraster.Jahr;
 
     /// <summary>Die gewählte Anzeigeeinheit; beim Aufbau <see cref="Einheit"/>.</summary>
     private Energieeinheit _einheit = Energieeinheit.MWh;
@@ -370,11 +379,14 @@
     /// <summary>Die gewählte Tabellensicht — Prüfhilfe für die Tests.</summary>
     public int Tabellensicht => _sichtTabelle;
 
-    /// <summary>Die gewählte Grafiksicht — Prüfhilfe für die Tests.</summary>
-    public int Grafiksicht => _sichtGrafik;
+    /// <summary>Die erste gewählte Bedarfsart des Grafikreiters — Prüfhilfe für Tests und Assistent.</summary>
+    public int Grafiksicht => _reihen.Count > 0 ? _reihen.Min : 0;
 
-    /// <summary>Steht der Schalter „Jahresverlauf" gerade? Prüfhilfe für die Tests.</summary>
-    public bool JahresverlaufGewaehlt => _jahresverlauf;
+    /// <summary>Alle gewählten Bedarfsarten des Grafikreiters, aufsteigend — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<int> Grafikreihen => _reihen.ToList();
+
+    /// <summary>Das gewählte Zeitraster — Prüfhilfe für die Tests.</summary>
+    public Bedarfsraster Raster => _raster;
 
     /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
     public Energieeinheit Anzeigeeinheit => _einheit;
@@ -472,46 +484,111 @@
         }
     }
 
-    /// <summary>
-    /// Der Schalter erscheint nur, wenn die gewählte Sicht einen Jahresverlauf hat —
-    /// beim Brauchwasser wie im Vorläufer (<c>AktualisiereGrafik</c>:142), bei Prozessen
-    /// und Gebäude aus ihrer Stundenreihe.
-    /// </summary>
-    private bool JahresverlaufMoeglich => Jahresverlaufmodell is not null;
+    private IEnumerable<(Bedarfsraster, string)> Rasterwahl => new[]
+    {
+        (Bedarfsraster.Jahr, RasterJahrText),
+        (Bedarfsraster.Monat, RasterMonatText),
+        (Bedarfsraster.Woche, RasterWocheText),
+        (Bedarfsraster.Tag, RasterTagText)
+    };
 
     /// <summary>
-    /// Der Jahresverlauf der gewählten Grafiksicht: ihr eigener, sonst — bei der
-    /// Brauchwassersicht — der gemeinsame des Datensatzes.
+    /// Die Bilder des Grafikreiters, je Wahl, Raster und Einheit EINMAL von der Hülle geholt —
+    /// <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die Modellreferenz wechselt, und
+    /// behält so Zoom und Zeigerstelle über jeden Zeichenlauf des Dialogs.
     /// </summary>
-    private Zeichenmodell? Jahresverlaufmodell
+    private readonly Dictionary<string, Zeichenmodell?> _bilder = new(StringComparer.Ordinal);
+
+    /// <summary>Die Quelle, zu der der Bildvorrat gehört.</summary>
+    private Bedarfsgrafikquelle? _bildquelle;
+
+    /// <summary>Die Einheit der Summen; die Ganglinie ist eine Leistung und folgt ihr nicht.</summary>
+    private Energieeinheit Grafikeinheitwahl => _raster == Bedarfsraster.Jahr ? Energieeinheit.Vorgabe : _einheit;
+
+    private string Bildschluessel
+        => string.Join(",", _reihen) + "|" + (int)_raster + "|" + Grafikeinheitwahl.Text;
+
+    private Zeichenmodell? Grafikmodell
     {
         get
         {
-            if (_sichtGrafik < 0 || _sichtGrafik >= Daten.Sichten.Count) return null;
-            Monatssicht sicht = Daten.Sichten[_sichtGrafik];
-            return sicht.Jahresverlauf ?? (sicht.IstBrauchwasser ? Daten.JahresverlaufModell : null);
+            Bedarfsgrafikquelle? quelle = Daten.Grafik;
+            if (quelle?.Modell is null) return null;
+            if (!ReferenceEquals(quelle, _bildquelle))
+            {
+                _bildquelle = quelle;
+                _bilder.Clear();
+            }
+            string schluessel = Bildschluessel;
+            if (_bilder.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
+            Zeichenmodell? neu = quelle.Modell(_reihen.ToList(), _raster, Grafikeinheitwahl);
+            _bilder[schluessel] = neu;
+            return neu;
         }
     }
+
+    /// <summary>Die Kennung des Bildes: eine je Raster (sie bildet die clipPath-Namen).</summary>
+    private string Grafikkennung => "bedarf-grafik-" + _raster.ToString().ToLowerInvariant();
+
+    /// <summary>Die Einheit am Zeiger: kW an der Ganglinie, die gewählte Energieeinheit an den Säulen.</summary>
+    private string Grafikeinheit => _raster == Bedarfsraster.Jahr ? "kW" : _einheit.Text;
+
+    /// <summary>Titel des gezeigten Bildes — Dateistamm des CSV-Exports.</summary>
+    private string Grafiktitel => Daten.Grafik?.Titel?.Invoke(_reihen.ToList(), _raster) ?? Bildtext;
+
+    private Ganglinienexport? _exportnaht;
 
     /// <summary>
-    /// Die Quelle für Woche und Tag: die der gewählten Grafiksicht, sonst die gemeinsame
-    /// (Strombedarf). Gibt es irgendwo eine Sichtquelle, bleibt der Umschalter bei jeder
-    /// Sicht stehen — eine Sicht ohne Reihe zeigt dann den Platzhalter.
+    /// Der Ganglinienexport der Kaskade — wie auf der Ergebnisseite: die Reihen, die das Bild zeigt,
+    /// über den Kern (<c>ZeitreihenCsv.AusModell</c>). Ohne Delegat kein Knopf.
     /// </summary>
-    private Ganglinienquelle? Gangquelle
+    private Ganglinienexport? Exportnaht => CsvSpeichern is null ? null
+        : _exportnaht ??= new Ganglinienexport((m, t) => CsvSpeichern(t, ZeitreihenCsv.AusModell(m)));
+
+    /// <summary>
+    /// Steht der eigene „CSV…“ der Säulen? Nur bei Monat, Woche und Tag — an der Ganglinie trägt
+    /// ihn die Zoomleiste über den Ganglinienexport —, und nur mit Naht und Spalten.
+    /// </summary>
+    private bool SummenCsvDa => _raster != Bedarfsraster.Jahr && CsvSpeichern is not null
+                                && Daten.Grafik?.Spalten is not null;
+
+    /// <summary>Der Summenexport der Säulen als Delegat der Leiste; an der Ganglinie keiner.</summary>
+    private EventCallback SummenExport => SummenCsvDa
+        ? EventCallback.Factory.Create(this, SummenSpeichern) : default;
+
+    /// <summary>Die Summenspalten der Hülle (12, 52 oder 365 Zeilen) an die Naht der Plattform.</summary>
+    private Task SummenSpeichern()
     {
-        get
-        {
-            if (_sichtGrafik >= 0 && _sichtGrafik < Daten.Sichten.Count
-                && Daten.Sichten[_sichtGrafik].Ganglinie is Ganglinienquelle eigene)
-                return eigene;
-            if (Daten.Ganglinie is not null) return Daten.Ganglinie;
-            return Daten.Sichten.Any(s => s.Ganglinie is not null) ? LeereQuelle : null;
-        }
+        if (CsvSpeichern is null || Daten.Grafik?.Spalten is null) return Task.CompletedTask;
+        IReadOnlyList<ZeitreihenSpalte> spalten = Daten.Grafik.Spalten(_reihen.ToList(), _raster, _einheit);
+        return CsvSpeichern(Grafiktitel, spalten);
     }
 
-    /// <summary>Eine Quelle ohne Bilder — hält den Umschalter bei einer Sicht ohne Reihe.</summary>
-    private static readonly Ganglinienquelle LeereQuelle = new() { Modell = (_, _) => null };
+    /// <summary>Eine Bedarfsart an- oder abwählen; die letzte gewählte bleibt stehen.</summary>
+    private void ReiheUmschalten(int nr)
+    {
+        if (nr < 0 || nr >= Daten.Sichten.Count) return;
+        if (_reihen.Contains(nr))
+        {
+            if (_reihen.Count > 1) _reihen.Remove(nr);
+        }
+        else _reihen.Add(nr);
+    }
+
+    private void RasterWaehlen(Bedarfsraster raster) => _raster = raster;
+
+    /// <summary>
+    /// Der Weg des Assistenten zum Zeitraster: derselbe wie der Klick auf den Schaltknopf;
+    /// leer heißt Jahr. Ohne Grafik gibt es keine Knopfgruppe und damit nichts zu setzen.
+    /// </summary>
+    private void ZeitrasterSetzen(int? id)
+    {
+        if (Daten.Grafik is null)
+            throw new InvalidOperationException(WindowsFormsApplication1.MyResource.Resource.KI_BERG_ZEITSTUFE_NUR_GRAFIK);
+        var raster = (Bedarfsraster)(id ?? (int)Bedarfsraster.Jahr);
+        if (!Enum.IsDefined(raster)) throw new ArgumentOutOfRangeException(nameof(id));
+        RasterWaehlen(raster);
+    }
 
     /// <summary>
     /// Die MONATSSÄULEN der gewählten Sicht als Zeichenmodell (Etappe DG-E3,
@@ -525,25 +602,25 @@
     /// Der Sicht- oder Einheitenwechsel IST der Modellwechsel, und er soll den Baum
     /// neu bauen.</para>
     ///
-    /// <para>Der JAHRESVERLAUF steht daneben
-    /// (<see cref="BedarfErgebnisDaten.JahresverlaufModell"/>) und geht diesen Weg
-    /// nicht.</para>
+    /// <para>Es steht nur, wenn die Hülle keine <see cref="BedarfErgebnisDaten.Grafik"/>
+    /// mitgibt; sonst kommen alle Bilder des Reiters aus ihr.</para>
     /// </summary>
     private Zeichenmodell? Monatsmodell
     {
         get
         {
-            if (_sichtGrafik < 0 || _sichtGrafik >= Daten.Sichten.Count) return null;
+            int nr = Grafiksicht;
+            if (nr < 0 || nr >= Daten.Sichten.Count) return null;
 
-            Monatssicht sicht = Daten.Sichten[_sichtGrafik];
+            Monatssicht sicht = Daten.Sichten[nr];
             return (ReferenceEquals(_einheit, Energieeinheit.KWh) && sicht.ModellKWh is not null)
                 ? sicht.ModellKWh : sicht.Modell;
         }
     }
 
     private string Bildtext
-        => (_sichtGrafik >= 0 && _sichtGrafik < Daten.Sichten.Count)
-            ? Daten.Sichten[_sichtGrafik].Bezeichnung : "";
+        => (Grafiksicht >= 0 && Grafiksicht < Daten.Sichten.Count)
+            ? Daten.Sichten[Grafiksicht].Bezeichnung : "";
 
     protected override void OnInitialized()
     {
@@ -556,11 +633,16 @@
         // SetPage:421 der Brauchwassermaske setzt mit dem Reiter zugleich beide
         // Optionsgruppen; die beiden anderen Masken beginnen immer bei der ersten Sicht
         // (Init:27: radioBtn_Prozesse.Checked = true).
+        int grafik = 0;
         if (Daten.MitBrauchwasser && start < Daten.Sichten.Count)
         {
             _sichtTabelle = start;
-            _sichtGrafik = start;
+            grafik = start;
         }
+        // Liegt zur Startsicht keine Stundenreihe vor, beginnt die Grafik bei der ersten mit Reihe.
+        IReadOnlyList<int>? mit = Daten.Grafik?.MitReihe;
+        if (mit is { Count: > 0 } && !mit.Contains(grafik)) grafik = mit[0];
+        _reihen.Add(grafik);
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BEDARF_ERGEBNIS,
                                           () => KiSicht(), KiHaken());
@@ -575,8 +657,8 @@
 
     /// <summary>
     /// Die Sicht des Assistenten auf die vier Schalter der Maske. Setzen nimmt
-    /// denselben Weg wie die Hand — ein Sichtwechsel weg vom Brauchwasser nimmt den
-    /// Jahresverlauf mit.
+    /// denselben Weg wie die Hand; die Grafiksicht wählt genau eine Bedarfsart, der
+    /// „Jahresverlauf“ ist das Zeitraster Jahr.
     /// </summary>
     private BedarfErgebnisKiSicht KiSicht()
     {
@@ -589,13 +671,21 @@
 
             TabellensichtLesen = () => _sichtTabelle,
             TabellensichtSetzen = TabellensichtWaehlen,
-            GrafiksichtLesen = () => _sichtGrafik,
+            GrafiksichtLesen = () => Grafiksicht,
             GrafiksichtSetzen = GrafiksichtWaehlen,
             SichtEintraege = () => KiMaskenanmeldung.Eintraege(
                 Sichtwahl, e => e.Id, e => e.Text),
 
-            JahresverlaufLesen = () => _jahresverlauf,
-            JahresverlaufSetzen = JahresverlaufUmschalten
+            // „Jahresverlauf“ des Assistenten ist das Zeitraster Jahr; aus heißt Monat.
+            JahresverlaufLesen = () => Daten.Grafik is not null && _raster == Bedarfsraster.Jahr,
+            JahresverlaufSetzen = an => _raster = an ? Bedarfsraster.Jahr : Bedarfsraster.Monat,
+
+            // Freigabe der Masken, Teil C: das Zeitraster des Grafikreiters (Jahr, Monat,
+            // Woche, Tag) - derselbe Weg wie der Klick auf seinen Schaltknopf.
+            ZeitstufeLesen = () => Daten.Grafik is not null ? (int)_raster : null,
+            ZeitstufeSetzen = ZeitrasterSetzen,
+            ZeitstufeEintraege = () => KiMaskenanmeldung.Eintraege(
+                Rasterwahl, e => (int)e.Item1, e => e.Item2)
         };
     }
 
@@ -608,7 +698,10 @@
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
-        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        // Das Zeitraster gibt es nur, solange der Grafikreiter eine Reihe zeichnet.
+        Sperrgrund = f => f == "zeitstufe" && Daten.Grafik is null
+            ? WindowsFormsApplication1.MyResource.Resource.KI_BERG_ZEITSTUFE_NUR_GRAFIK : null
     };
 
     /// <inheritdoc/>
@@ -618,22 +711,19 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private void TabellensichtWaehlen(int? id) => _sichtTabelle = id ?? 0;
 
+    /// <summary>Der Weg des Assistenten: genau diese eine Bedarfsart zeigen.</summary>
     private void GrafiksichtWaehlen(int? id)
     {
-        _sichtGrafik = id ?? 0;
-
-        // Ein Sichtwechsel weg vom Brauchwasser nimmt den Schalter mit: Der Vorlaeufer
-        // versteckte ihn dabei, und ein verborgener Haken haette beim Zurueckwechseln
-        // still weitergewirkt.
-        if (!JahresverlaufMoeglich) _jahresverlauf = false;
+        int nr = id ?? 0;
+        if (nr < 0 || nr >= Daten.Sichten.Count) return;
+        _reihen.Clear();
+        _reihen.Add(nr);
     }
-
-    private void JahresverlaufUmschalten(bool an) => _jahresverlauf = an;
 
     private string Anzeige(string? wert) => string.IsNullOrEmpty(wert) ? LeerText : wert;
 

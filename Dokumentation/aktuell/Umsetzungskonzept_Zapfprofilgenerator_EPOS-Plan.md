@@ -134,7 +134,9 @@ Der Katalog ist in `EPOS.Kern/Allgemein/Katalog/KatalogRegistry.cs:250-264` als 
 `WizardCtrl.Add_Projekt_Brauchwasser` (`EPOS.Kern/Controller/WizardCtrl.cs:2763`, nimmt einen
 `DbVorgang` an). Die Herkunft der Katalogtypen (vier aus VDI-6002-Bildern digitalisiert, die übrigen
 generisch INEKON) beschreibt [`KONTEXT_Brauchwassertypen_VDI6002.md`](KONTEXT_Brauchwassertypen_VDI6002.md);
-ihre Zählung dort bezieht sich auf den Auslieferungskatalog und weicht von der Testdatenbank ab.
+ihre Zählung dort (11 Wochenprofile, 13 Monatssätze) gilt für den Auslieferungskatalog. Die Testdatenbank
+führt dieselben Zeilen mit denselben Werten und dazu zwei ältere Testtypen und drei Testsätze, die die
+Projekte 1007, 1009 und 1046 benutzen — Abgleich im KONTEXT-Papier, Abschnitt 5.
 
 Projekte mit Brauchwasser in der Testdatenbank: **mit Zuordnung** in `Z_Projekt_Brauchwasser` (sie
 rechnen Brauchwasser über die Sicht) 17 Projekte — 1007, 1009, 1019, 1023, 1024, 1026–1029,
@@ -213,7 +215,7 @@ trägt eine Gültigkeitsprüfung, und das Ergebnis des Verfahrensvergleichs ist 
 
 | Stelle | Konzept bzw. Mockup | Dieses Papier |
 |---|---|---|
-| Konzept Teil 3.0–3.2, 3.5 | WinForms-Tripel, Access, `UpdateDB.ini`, `float`, native DLL, Spaltenfehler `M1…M12` | Kern + Razor + SQLite mit `SchemaMigration`, `double`, C#-Port `BhkwPlan`; der Spaltenfehler ist behoben (`BrauchwasserCtrl.cs:78-102`), die Access-Hygiene entfällt |
+| Konzept Teil 3.0–3.2, 3.5 | WinForms-Tripel, Access, `UpdateDB.ini`, `float`, native DLL, Spaltenfehler `M1…M12` | Kern + Razor + SQLite mit `SchemaMigration`, `double`, C#-Port `BhkwPlan`; der Spaltenfehler ist behoben, die Klasse `BrauchwasserCtrl` entfallen, die Access-Hygiene entfällt |
 | Konzept 3.1 | eigenes Klassenbibliotheks- und Testprojekt | Ordner `EPOS.Kern/Allgemein/Zapfprofil/`, Tests in `EPOS.Kern.Tests` (A1) |
 | Konzept 3.2 | A100- und Ecodesign-Profile als Katalogeinträge `Tab_Zapfprofil` | Bedarfstage der Auslegung als eigener Katalog `Tab_TwwBedarfstag_STAMM` schon in T1 (Normprofile erst nach K1/K8); die Bilanzreihe wird **nicht gespeichert**, sondern je Lauf gerechnet (A2) |
 | Konzept 3.4 | Normkennwerte „im Code als gekapselte Parameter" | Normkonstanten nie im Quelltext, sondern als Parametersatz aus `Tab_TwwParameter_STAMM`; Tests mit erfundenen Parametern (Kapitel 6) |
@@ -404,7 +406,7 @@ in der internen Spalte `Beleg` TEXT je Zeile; Oberfläche, Bericht und KiSicht z
 |---|---|---|
 | `ID` | INTEGER PRIMARY KEY AUTOINCREMENT (N2) | |
 | `Bezeichner`, `Katalogversion` | TEXT NOT NULL, TEXT NOT NULL; UNIQUE (`Bezeichner`, `Katalogversion`) | neutraler Name; der Schlüssel ist zugleich der natürliche Schlüssel für Projektexport und -import (3.2) |
-| `Bezugsart` | INTEGER NOT NULL CHECK (`Bezugsart` IN (1,2,3,4,5,6,7)) | Personen, Wohneinheiten, Betten, Duschplätze, Sitzplätze, Beschäftigte, Fläche (nur Rückfall) |
+| `Bezugsart` | INTEGER NOT NULL CHECK (`Bezugsart` IN (1,2,3,4,5,6,7,8)) | Personen, Wohneinheiten, Betten, Duschplätze, Sitzplätze, Beschäftigte, Fläche (nur Rückfall), Zimmer (8, Kennwerte je Zimmer eines Beherbergungsbetriebs; rechnet wie Betten, eigene Menge) — dieselbe Wertemenge `TwwSchema.BEZUGSART_WERTE` an `Tab_TwwBedarfstag_STAMM.Bezugsart` |
 | `Bedarf_Niedrig`, `Bedarf_Mittel`, `Bedarf_Hoch` | REAL NOT NULL | kWh je Einheit und Tag bei den Bezugstemperaturen |
 | `Bedarf_Niedrig_Min` … `Bedarf_Hoch_Max` | REAL | Bandbreite je Niveau (sechs Spalten) |
 | Provenienz `Bedarf` | vier Spalten | |
@@ -700,7 +702,7 @@ Temperaturen). Toleranz exakt bzw. relativ 1e-12.
 Tagtyp(d), d = 1..365:
   Wochentag(d) = (WochentagJan1 + d − 1) mod 7
   Ferienfenster der Zone enthält d            -> Ruhetag
-  sonst We[d] und Wochentag = Samstag         -> Samstag
+  sonst We[d], Wochentag = Samstag, kein Feiertag -> Samstag
   sonst We[d]                                 -> SonnFeiertag   (Feiertag wie Sonntag)
   sonst                                       -> Werktag
 Tagesgewicht nach Tagtyp:
@@ -715,6 +717,8 @@ Gewicht:     g(d) = f_Monat(m(d)) · f_KW(m(d)) · 7 · w_T(d)
 Tagesmenge:  Q_d = Q_a · g(d) / Σ_d g(d)            -> Σ_d Q_d = Q_a
 Stundenwert: q_h = Q_d · φ_Tagtyp(d)(h),  Σ_h φ = 1 -> Σ_h q_h = Q_a
 ```
+
+Feiertage zählen unter jeder Wochenendmaske als Sonn-/Feiertag: Die Kennzeichen `We` der Klimaregion werden mit den Feiertagen des Kerns vereinigt (Feiertagsland des gebundenen Gebäudes, ohne Gebäude bundeseinheitlich), und ein Feiertag am Samstag trägt den Sonntagsgang (Konzept Konditionierungsprofile 9.10, E112). Die Feiertage liegen nach der Konvention des Gemeinjahrs im Raster `WochentagJan1` der Klimaregion: Ostern ist dessen Sonntag am nächsten zum 8. April, ein Jahr gilt nur mit einer Preisreihe (Konzept Konditionierungsprofile 3.2, E114). Es ist das eine Raster des Projekts, mit dem auch Gebäudelauf und Bedarfsprofile rechnen (`Konditionierungdatenweg.Raster`, E115); mit Preisreihenjahr gilt der Kalender dieses Jahres — `WochentagJan1` ist der Wochentag seines echten 1. Januar, die Wochenendkennzeichen sind seine Wochenenden, die Feiertage liegen auf seinen Daten —, ohne Klimaregion liegt der 1. Januar auf einem Sonntag (`ProfilBedarf.WOCHENTAG_ALTKONVENTION`).
 
 `Runden₉` ist `Math.Round(x, 9)`: Die zwölf Monatswerte entstehen einmal je Lauf und sind danach
 Zahlen ohne Abhängigkeit von der Mathematik-Bibliothek der Plattform (4.4). Der Faktor der Monate
@@ -1420,7 +1424,7 @@ des Anwenders (ZU15) sind am 23.09.2026 nach Empfehlung entschieden (Nachtrag N1
 Die Fragen ZU16–ZU18 sind mit den Umsetzungsbefunden der Stufe Z0 hinzugekommen (Nachtrag N2) und
 am 23.09.2026 entschieden (N6). ZU19 und ZU23 sind mit den Stufen Z3 und Z4b entschieden (N12, N14); am 25.09.2026 sind ZU20, ZU21, ZU22 und ZU24 entschieden, K5 ist zurückgestellt und ZU7 terminiert (Nachtrag N16). ZU25 bis ZU29 sind mit dem Sammelposten N18 hinzugekommen und am 25.09.2026 nach Empfehlung entschieden (Nachtrag N19): ZU25 als ein Schemaschritt nach der Sichtabnahme (umgesetzt, N21), ZU26 als eigene Welle nach iU11, ZU27 zurückgestellt, ZU28 und ZU29 umgesetzt. ZU30 bis ZU33 sind mit dem Katalogimport der Bedarfstage und Parameter am 25.09.2026 entschieden und umgesetzt (N20). Das Validierungswerkzeug der Stufe Z5 steht seit dem 26.09.2026 samt einem ersten Lauf an offen lizenzierten Fremddaten (N22); K5 selbst bleibt zurückgestellt, und N22 nennt mit V1 bis V5 fünf Punkte, die der Lauf aufgeworfen hat. ZU26 ist mit N23 vor iU11 umgesetzt; der iOS-Lauf steht aus. ZU7 ist mit N24 umgesetzt: Projekt
 1045 rechnet sein Brauchwasser über den Generator, siebte Einfrierregel „gesäte
-Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-09-26_R23_KesselBereitschaft`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
+Zapfprofil-Eingaben", eingefroren in der Basis `2026-09-26_R20_Zapfprofil`; aktuelle Basis ist `2026-10-03_R34_Erdreich`. Der zweite Validierungslauf an offen lizenzierten Daten (N27) arbeitet V1 bis V5 ab und stellt die Frage ZU35. ZU35 ist am 26.09.2026 entschieden und samt dem dritten Validierungslauf (V8) umgesetzt (N32). K2–K4, K6, K7 (samt K3a) und A1–A12 waren nicht Gegenstand dieser Entscheide; das Papier setzt ihre
 Empfehlung weiterhin voraus (Mockup Abschnitt 8), entschieden sind sie damit nicht. Die Spalte
 „Entscheid" zeigt den Stand je Punkt.
 
@@ -1908,7 +1912,7 @@ oder es genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis 
   Auswertung der Reihen — größter Monat und Tag, mittlerer Tagesgang je Tagtyp, Woche mit dem größten
   Tagesbedarf — `Zapfauswertung` (Kern, `Allgemein/Zapfprofil/`); die Hülle rechnet keinen Bedarf.
   `SummenlinieModell` kommt mit Z2. `Proben/ChartProben`: fünf Maß-, drei Gegen- und drei
-  SVG-Proben, elf Bilder neu, kein altes geändert; die Linux-Messlatte `Messlatte_2026-09-26.sha256` führt sie.
+  SVG-Proben, elf Bilder neu, kein altes geändert; die Linux-Messlatte `Messlatte_2026-09-30.sha256` führt sie.
 - **(b) Textbündel und Titel (5.1, 5.3).** Drei Bündel: `ZapfprofilTexte` (Dialog),
   `ZapfprofilEinstiegTexte` (Knopf, Titel der Überlagerung, Optionsgruppe, Hinweise und Vermerk der
   Leiste im Bedarfsprofil-Dialog) und `ZapfprofilBildtexte` (Vorschaubilder). Der Dialog trägt den
@@ -1993,7 +1997,7 @@ oder es genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis 
 
 | Punkt | Folge | Verantwortlich | Stufe |
 |---|---|---|---|
-| (a) | die elf Zapfprofilbilder in die Linux-Messlatte aufnehmen — **erledigt:** `Proben/ChartProben/Messlatte_2026-09-26.sha256` (183 Hashes) führt sie, alle älteren Zeilen gleich (Verfahren in `Proben/ChartProben/LIESMICH.md`) | Orchestrator | mit der Statuszeile Z1 |
+| (a) | die elf Zapfprofilbilder in die Linux-Messlatte aufnehmen — **erledigt:** `Proben/ChartProben/Messlatte_2026-09-30.sha256` (194 Hashes) führt sie, alle älteren Zeilen gleich (Verfahren in `Proben/ChartProben/LIESMICH.md`) | Orchestrator | mit der Statuszeile Z1 |
 | (l) | Logbuch-Satz aus 5.8 (Z1) als Punkt „Logbuch" der Statuszeile Z1; Versionsnummer beim Anwender erfragen | Orchestrator | mit der Statuszeile Z1 |
 | (c) | Verweis der leisen Zeile auf die Stufe Erweitert zurückholen | Agent der Stufe Z4 | Z4 |
 | (g) | Hinweis ZU5 in die Warnliste übernehmen | Agent der Stufe Z4 | Z4 |
@@ -2114,7 +2118,7 @@ Kapitel 7). Er enthält **keinen Entscheid** des Anwenders.
   `KennlinienModell` und `SpeicherbetriebModell`, die weder eigene x-Stellen noch Marken führen. Die
   Reihen bildet `ZapfprofilBilder` aus den Ergebnissen des Kerns. `Proben/ChartProben`: vier Maß-, drei
   Gegen- und drei SVG-Proben, zehn Bilder neu, kein altes geändert; die Linux-Messlatte
-  `Messlatte_2026-09-26.sha256` führt sie.
+  `Messlatte_2026-09-30.sha256` führt sie.
 - **(b) Nenninhalte (3.1).** Die Liste bleibt die Einstellung `Zapfprofil.Nenninhalte`; ihre Vorgabe
   kommt aus dem Parametersatz (`Speicherauslegung.Nenninhalt.Liste.{k}`, geordnet nach k), nicht aus dem
   Code — keine Liste im Quelltext (Kapitel 6). Eine ungültige Einstellung oder Vorgabe nennt ein Hinweis
@@ -2167,7 +2171,7 @@ Kapitel 7). Er enthält **keinen Entscheid** des Anwenders.
 
 | Punkt | Folge | Verantwortlich | Stufe |
 |---|---|---|---|
-| (a) | die zehn Auslegungsbilder in die Linux-Messlatte von `Proben/ChartProben` aufnehmen — **erledigt:** `Messlatte_2026-09-26.sha256` (183 Hashes) führt sie (Verfahren in `Proben/ChartProben/LIESMICH.md`) | Orchestrator | Merge Z2 |
+| (a) | die zehn Auslegungsbilder in die Linux-Messlatte von `Proben/ChartProben` aufnehmen — **erledigt:** `Messlatte_2026-09-30.sha256` (194 Hashes) führt sie (Verfahren in `Proben/ChartProben/LIESMICH.md`) | Orchestrator | Merge Z2 |
 | (b) | neutrale Auslieferungswerte der Nenninhaltsliste (`Speicherauslegung.Nenninhalt.Liste.{k}`) ins Katalogpaket | Katalogpflege | mit dem Auslieferungskatalog |
 | (c) | die Marke „Schnellauslegung" nach der Stufe des Dialogs, sobald Erweitert und Experte wählbar sind | Agent der Stufe Z4 | Z4 |
 | (d) | Eingaben des Verfahrensvergleichs als Felder (auto/manuell), Bezug des Füllstands wählbar | Agent der Stufe Z4 | Z4 |
@@ -2487,7 +2491,7 @@ wer zuerst pusht, hat die Nummer); Protokoll
 - **(e) Dauerlinie und Auslastungsgang (5.6).** `Zapfauswertung.Dauerlinie` (8760 sortierte Stunden,
   P50/P90/P95/P99 als ganzzahlige Rangquantile), `Auslastung` (Mittel 1), `Formvektor.Auslastungsgang`
   (4.2, eine Regel für Rechnung und Anzeige); neues Bild `zapfprofil_dauerlinie` (vier Proben in
-  `Proben/ChartProben`, alte Bilder unverändert; in der Linux-Messlatte `Messlatte_2026-09-26.sha256` — Folge N9 (a)).
+  `Proben/ChartProben`, alte Bilder unverändert; in der Linux-Messlatte `Messlatte_2026-09-30.sha256` — Folge N9 (a)).
 - **(f) Eingang (N9 (h), N11 (c)).** Anzeigetemperatur und Stundenschwelle: Laufangabe → Einstellung
   `Zapfprofil.*` → Parametersatz (`Zapfprofil.Anzeigetemperatur` 45 °C, `Zapfprofil.Stundenschwelle`
   0,1 kW im Paketteil); ungültige Werte benannt. Die Stufe geht in den `Auslegungslauf`; in Einfach
@@ -2590,7 +2594,7 @@ verhältnis 1,5; Anzeigetemperatur 45 °C; Stundenschwelle 0,1 kW.
 | (a) | Ecodesign L nach Wohneinheiten skalieren: ja/nein | Anwender (Fachentscheid) | vor Z5 |
 | (b) | Vermerke des Herkunftsprotokolls als Kennung und Werte | Agent der Stufe Z5 | Z5 |
 | (d) | Regel „Ein-/Zweifamilienhaus: größte Einzelentnahme" mit Normwert aus dem Katalogpaket | Katalogpflege nach K1/K8 | nach K8 |
-| (e) | Dauerlinienbild in die Linux-Messlatte von `Proben/ChartProben` — **erledigt** (`Messlatte_2026-09-26.sha256`) | CI-Lauf, Anwender | mit N9 (a) |
+| (e) | Dauerlinienbild in die Linux-Messlatte von `Proben/ChartProben` — **erledigt** (`Messlatte_2026-09-30.sha256`) | CI-Lauf, Anwender | mit N9 (a) |
 | (p) | Konstruktorzeilen in der Datenbank (Schemaschritt) | Agent der Stufe Z5 | **erledigt mit N21** (Schemaschritt 145) |
 | (q) | Berechnungsseite `Zapfprofil.wiki` und Umlenkung von `Form_Zapfprofil_Berechnung` | Wiki-Runde | nächster Upload |
 | (r) | Katalogdialog auf iOS (Naht der Schale) | Agent einer iOS-Welle | nach iU11 |
@@ -2650,10 +2654,8 @@ verhältnis 1,5; Anzeigetemperatur 45 °C; Stundenschwelle 0,1 kW.
     der Strahlung, nicht der Bedeckungsgrad. Unterscheidet das Paket nach Bewölkung und fehlen die
     Tagesmittel, wird die Zone **benannt abgelehnt**; es gibt keinen stillen Rückfall.
   - **Feiertage und Samstag:** Sonntag ist jeder Tag mit dem Kennzeichen „Wochenende oder Feiertag"
-    der Klimaregion, dessen Wochentag **nicht Samstag** ist — ein Feiertag zählt damit als Sonntag,
-    ein Samstag bleibt Werktag. **Abweichung, benannt:** Ein Feiertag, der auf einen Samstag fällt,
-    bleibt Werktag, weil der Klimakalender ihn nicht von einem gewöhnlichen Samstag unterscheidet
-    (A6 bringt den Feiertagskalender).
+    der Zone, dessen Wochentag **nicht Samstag** ist, und jeder Feiertag des Kerns — ein Feiertag zählt
+    damit als Sonntag, auch am Samstag; ein gewöhnlicher Samstag bleibt Werktag (4.2, E112).
   - **Ferien:** Der Urlaubstag der Richtlinie (kein Warmwasser) wird **nicht** umgesetzt; ein
     Ferientag der Zone bleibt Werktag oder Sonntag seiner Jahreszeit, damit die Jahresenergie
     erhalten bleibt. Ein Hinweis nennt das, sobald die Zone Ferienfenster trägt.
@@ -3779,7 +3781,7 @@ Schalen). Der Katalog geht dort über den **Hilfe-Assistenten** auf: KI-Knopf ne
 `dialog_oeffnen` mit `KiMaskenziele` (`BRAUCHWASSER_NUTZUNGSARTEN`, `TWW_NUTZUNGSART_EDITOR`,
 `BRAUCHWASSER_TYPTAGE`, `BRAUCHWASSER_MESSREIHEN` → `Masken.BrauchwasserNutzungsarten`),
 `IosNavigation` → `AppWurzel.OeffneMaske` — derselbe Weg wie für Baustoffe und Bauteilaufbauten.
-Unter Windows bleibt der Menüweg (Administration → Wärmebedarf & Heizung → Brauchwasser). „Beenden"
+Unter Windows bleibt der Menüweg (Administration → Wärme- und Kälteerzeugung → Brauchwasser). „Beenden"
 führt auf dem iPad zur Startansicht (Projektliste), ohne Rückwegstapel — wie bei den Katalogen der
 Gebäudesimulation.
 
@@ -4511,6 +4513,8 @@ Lauf.
 | Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
 ### N35 (26.09.2026) — Alternativen zur Überlagerung bei großen Unterdialogen (#572)
 
+> **Umgesetzt (#589, 29.09.2026):** Variante a, Blattwechsel im Brauchwasser-Dialog (`EPOS.UI/Bausteine/Blattwechsel.razor`), Anwenderentscheid 27.09.2026. Abweichend vom Zuschnitt merkt der Baustein den Rollstand des gemeinsamen Rollbehälters (`epos-blatt.js`); die Hausregel „Blatt statt Überlagerung“ steht in `EPOS.UI/CLAUDE.md`.
+
 **Anlass.** Befund des Anwenders vom 26.09.2026 (Seiten 4 bis 6): Der Zapfprofil-Dialog, geöffnet aus
 „Brauchwasser…" im Gebäudekatalog, stand nicht in der Fläche — links und rechts abgeschnitten, mit
 Querrollbalken, die Wirtsliste schien unten durch; zwei Hilfeknöpfe; „generell sollte eine andere
@@ -4574,3 +4578,124 @@ kleine Unterdialoge, nicht für einen zweispaltigen, gestuften Dialog mit eigene
 
 Aufwand: rund ein Agententag (opus), dazu die Windows-Abnahme am Gebäudekatalog und am eigenen
 Brauchwasserfenster. **Anwenderentscheid offen** (Vorschlag: a).
+
+### N36 (29.09.2026) — Welle #593–#594: Bezugsart Zimmer, FREI-1, Füllstandslinie am Wochenbild
+
+**Wortlaut** (Anwender, 27.09.2026): „Setze Teil A um“ und „Setze Teil D um“ — Teil A: Struktur des
+Zapfprofil-Wegs nach N35, Umgang mit der Import-Dublette FREI-1 (N34 (d)), Weg 3 „eigene Bezugsart
+Zimmer“ (N34); Teil D: die Kleinpunkte der Übergabe 2.4 (Speichergrößen-Auswahl im Wochendiagramm,
+Zählung des Brauchwasserkatalogs). Protokolle
+[Bezugsart Zimmer und FREI-1](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-27_Bezugsart_Zimmer_FREI1.md),
+[Füllstandslinie](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-27_Fuellstandslinie_Wochenbild.md).
+
+**(a) N35 ist mit #589 umgesetzt** (Sitzung „Dialoge und Korrekturen“, Baustein `Blattwechsel`,
+Hausregel „Blatt statt Überlagerung“). Eine zweite, parallel entstandene Fassung dieser Sitzung ist
+verworfen; ihre Browserprobe und ihre Abweichungen stehen im Bericht an die Orchestrierung, nicht im
+Bestand.
+
+**(b) Bezugsart Zimmer (#593, Weg 3).** `ZapfBezugsart.Zimmer = 8`; die Nutzungsart „Hotel (aus Messung,
+je Zimmer)“ trägt sie, ihr Name bleibt. Zimmer verhält sich überall wie Betten, wo Betten eine
+Sonderrolle hat; Zimmer und Betten werden nie summiert. Die Namensregel `BezugsmengeIstZimmerzahl`, der
+Hinweissatz aus N34 (c) und der DTO-Kanal `HinweisBezugsmenge` entfallen; die Einheit „Zimmer“ am Feld
+der Bezugsmenge trägt die Aussage. Schemaschritt **153** (`TwwBezugsartSchema.SCHRITT`; die 152 hat KP1b der Gebäudesimulation zuerst gepusht) baut
+`Tab_TwwNutzungsart_STAMM` und `Tab_TwwBedarfstag_STAMM` mit der Prüfklausel 1..8 neu (Grundschema =
+Schritt), Eintrag in `Paketanhebung.STUFEN`.
+
+**(c) FREI-1 (#593, N34 (d)) — Umbenennen am Platz, eine Regel.** Entscheid der Orchestrierung mit dem
+Auftrag: keine neue Katalogversion, sondern die Regel `PaketteilNachfuehrung` (Allgemein/Update) für
+frühere Stände der ausgelieferten Paketzeilen. Befund: Der Paketteil führt keine eigene Katalogversion,
+`FREI-1` ist die Provenienz (`Bedarf_Version`); die Regel greift nur bei Status `AUSLIEFERUNG`,
+Provenienz `FREI-1`, Herkunftsart `EIGENKONSTRUKTION` und Name samt Bezugsart des früheren Stands. Sie
+wirkt im Schemaschritt (gespeicherte Zeile, dieselbe ID), im Katalogimport und im Projektimport vor dem
+Dublettenscan (Berichtszeile in beiden Sprachen), in der Auslieferungsvorlage und im Validierungswerkzeug;
+das Saatskript spiegelt sie. Eine Anwenderzeile gleichen Namens bleibt unberührt.
+
+**(d) Füllstandslinie (#594, Übergabe 2.4).** Die Aussage der Übergabe galt dem Mockup; in der App war
+der Bezug des Füllstands seit Z4 wählbar (N13 (o)), stand aber bei den Eingaben des Verfahrensvergleichs
+und nannte keine Liter. Die Wahl steht jetzt als „Speichergröße der Füllstandslinie“ unmittelbar über dem
+Wochenbild — **N13 (o) gilt mit diesem Ort** —, jeder Eintrag nennt sein Volumen, ein nicht bestimmbarer
+Eintrag steht gesperrt mit Grund. Der Kern trägt nur neue Ergebnisfelder; kein Rechenweg, kein
+Schemaschritt. Die Volumina der einzelnen Verfahren (DIN 4708, Gleichzeitigkeit, klassisch) stehen nicht
+zur Wahl — das bräuchte einen Schemaschritt an `Tab_TwwProjekt.Fuellstand_Bezug`.
+
+**(e) Zählung des Brauchwasserkatalogs (#594, Übergabe 2.4).** Die Testdatenbank führt die 11
+Wochenprofile und 13 Monatssätze des KONTEXT-Papiers wertgleich, dazu ältere Testzeilen, die die Projekte
+1007, 1009 und 1046 benutzen (Abschnitt 1.2, KONTEXT-Papier Abschnitt 5). Keine Datenänderung.
+
+**Testdatenbank.** Schemastand 153 (auf der Fassung der Gebäudesimulation mit Schritt 152), Zellvergleich: allein `Tab_Applikation.SchemaVersion` und
+`Tab_TwwNutzungsart_STAMM` ID 9 `Bezugsart` 3 → 8. Kein Referenzprojekt benutzt die Hotelzeile; die
+Einfrierregel „gesäte Zapfprofil-Eingaben“ ist nicht berührt. Paketteil und Saat mit Python 3.12
+erzeugt (unter 3.11 weicht `sum()` in der letzten Stelle ab; das Saatskript bricht unter 3.11 ab).
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| #593 | Windows-Abnahme: „Zimmer“ am Feld, Klappliste des Katalogeditors, Importbericht eines älteren Pakets | Anwender | nächste Abnahme |
+| #593 | Kurzlauf des Validierungswerkzeugs mit den neu konvertierten Hotelobjekten (erwartet 3 / 0 / 18) | Orchestrierung | mit dem nächsten Validierungslauf |
+| #593 | Auslieferungsvorlage aus einer Quelle auf Schemastand 153 | Orchestrierung | vor der nächsten Auslieferung |
+| #594 | Windows-Abnahme: Lage des Felds, gesperrter Eintrag in WebView2 und bei Berührung | Anwender | nächste Abnahme |
+| #594 | Volumina der einzelnen Verfahren als Wahl (Schemaschritt) | Anwender | auf Zuruf |
+| Wiki | Logbuch-Sätze unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N37 (29.09.2026) — Welle #608: Verfahrensvolumina als Wahl der Füllstandslinie; K5 ruht
+
+**Wortlaut** (Anwender, 29.09.2026): „setze um: die Volumina der einzelnen Verfahren als Wahl der
+Füllstandslinie“ und „keine eigenen Messobjekte vorerst“. Protokoll
+[Verfahrensvolumina](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-29_Fuellstand_Verfahrensvolumina.md).
+
+**(a) Verfahrensvolumina (#608).** N36 (d) gilt nicht mehr, soweit es die Verfahren ausschloss: Die Wahl
+„Speichergröße der Füllstandslinie“ führt je Verfahren des Vergleichs einen Eintrag — Bezug = Verfahren + 4:
+5 profilbasiert, 6 DIN 4708, 7 Faustwert mit Gleichzeitigkeit, 8 klassischer Faustwert (nachrichtlich).
+Das Volumen ist die Zahl der Vergleichszeile samt ihrem Gültigkeitsmerkmal; ein Verfahren ohne Volumen
+steht benannt gesperrt. Die Vorgabe löst nie auf ein Verfahren auf. Nur Ergebnisfelder und Darstellung,
+kein Rechenweg der Simulation.
+
+**(b) Schemaschritt 155** (`TwwFuellstandSchema.SCHRITT = KesselHeizgrenzeSchema.SCHRITT + 1`): Neubau
+von `Tab_TwwProjekt` mit der Prüfklausel `Fuellstand_Bezug IN (1,…,8)` über dasselbe Rezept wie
+Schritt 153 (`TwwBezugsartSchema.Neubau`), kein DML, Grundschema = Schritt; Eintrag in
+`Paketanhebung.STUFEN` (`Art.Ddl`, ältere Pakete tragen 1–4). Testdatenbank: Zellvergleich allein
+`SchemaVersion` 154 → 155, im Schema die Prüfklausel; `Tab_TwwProjekt` von 1045 zellgleich.
+
+**(c) K5 ruht.** Eigene Messobjekte werden vorerst nicht eingespielt. Damit ruhen auch die Bestätigung
+von ZU35 an eigenen Objekten, die √N-Skalierung und die Gleichzeitigkeit großer Hotels sowie der
+Jahresgang aus einer eigenen Hotelmessung (N34, Validierungsbericht 8.6). Das Validierungswerkzeug
+bleibt für offene Fremdreihen nutzbar; der Versand der Datenanfragen ist davon getrennt offen.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| #608 | Windows-Abnahme: Breite der Klappliste mit den Verfahrensnamen in WebView2, gesperrter Verfahrenseintrag bei Berührung | Anwender | nächste Abnahme |
+| K5 | eigene Messobjekte | Anwender | auf Zuruf |
+| Wiki | Logbuch-Satz unter 1.2.0.5 mit dem Sammel-Upload | Orchestrierung | mit dem Upload |
+
+### N38 (29.09.2026) — Welle #615: Katalogimport eines Pakets ohne Katalogversion
+
+**Anlass** (Anwender, 29.09.2026, Bildschirmfoto aus der Windows-Anwendung): Der Katalogimport der
+Brauchwasser-Nutzungsarten lehnte den freien Paketteil `Referenzlaeufe/Katalogpaket_frei/` ab — „Die Spalte
+‚Katalogversion‘ fehlt“. Der Paketteil führt bewusst keine Katalogversion (seine Regel 2); Auslieferungsvorlage und
+Saatskript setzten sie selbst, der Import verlangte die Spalte. Protokoll
+[Katalogimport Paketteil](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-29_Katalogimport_Paketteil.md).
+
+**(a) Eine Regel der Zielversion.** `ZapfprofilCtrl.Zielkatalogversion` = die Katalogversion der zuletzt angelegten
+Parameterzeile (dieselbe, die der Parametersatz der Stochastik und der Speicherauslegung liest), Rückfall `FREI-1`
+(Tabelle fehlt, leer, Version leer). Das Werkzeug `Auslieferungsvorlage` ruft sie auf; eine zweite Fassung gibt es
+nicht.
+
+**(b) Import.** Führt keine Kopfdatei des Pakets die Spalte, treten alle Zeilen der Zielversion bei, und der Bericht
+nennt sie (`KATALOGIMPORT_OHNE_KATALOGVERSION`); führen sie alle, gilt wie bisher die Version je Zeile; führt sie nur ein
+Teil, ist das Paket benannt abgelehnt (`KATALOGIMPORT_VERSION_GEMISCHT`). Dublettenscan, „(Import n)“, Ersetzen am Platz
+und die Regel der früheren Paketstände (N36 (c)) sind unverändert; die Zielversion entscheidet sie nicht. Weitere
+Formabweichungen des Paketteils gab es nicht; er bleibt unverändert.
+
+**(c) Nachweis.** In eine Kopie der Testdatenbank: 57 Zeilen übersprungen, keine Zelle geändert; in einen leeren
+Katalog: 57 angelegt in `FREI-1`, der Parametersatz liest sie. Ordner und ZIP, auch als Prüflauf. Kein Schemaschritt,
+keine Änderung der Testdatenbank, kein Rechenweg.
+
+**Folgen.**
+
+| Nr. | Gegenstand | Wer | Wann |
+|---|---|---|---|
+| #615 | Windows-Abnahme: Import des Ordners `Katalogpaket_frei` mit und ohne „Nur prüfen“ — Bericht, Hinweiszeile, Hinweistext | Anwender | nächste Abnahme |
+| Wiki | Seite Brauchwasser-Zapfprofil und Logbuch-Satz unter 1.2.0.6 mit dem nächsten Sammel-Upload | Orchestrierung | mit dem Upload |

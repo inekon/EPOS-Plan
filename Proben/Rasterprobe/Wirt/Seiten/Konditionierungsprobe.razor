@@ -1,0 +1,499 @@
+﻿@page "/konditionierungsprobe"
+@using System.Resources
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Dialoge.Bedarf
+@inject NavigationManager Navigation
+
+@*  DIE KONDITIONIERUNGSPROBE (Stufe KP2, Wellen U0b, U1, U2, U3, U4 und U5; Entwurf KP2 Abschnitt 7, Cloud-Vorabnahme) -
+    Pruefstand, nicht Auslieferung.
+
+    Sie stellt den ECHTEN Gebaeude-Katalogeditor (GebaeudeKatalogDialog) in die BREITE
+    Ueberlagerung, wie Gebaeudedialog und Gebaeudeverwaltung ihn zeigen - OHNE Datenbank. Der
+    Parametersatz ist der der Anwendung (GebaeudeKatalogHuelle.Gaben in der Betriebsart Neu, dem
+    Weg der Huelle ohne Datenbankzugriff); darueber legt die Seite je Fall Daten, Betriebsart,
+    Sperre und Zonenweg. Was in der Anwendung die Datenbank fragt oder schreibt, fragt hier die
+    Seite bzw. schreibt nichts: Gebaeudetypen und -arten sind feste Listen, "Speichern" und der
+    Zonenweg melden Erfolg, die hergeleiteten Vorgaben der Waermeuebergabe fehlen (sie lesen die
+    Klimareihe eines Projekts), der Brauchwasserweg ebenso (keine Schale haengt ihn ein).
+
+    DER REITER "KONDITIONIERUNG" (Welle U1) bekommt den WEG OHNE DATENBANK der Huelle
+    (KonditionierungHuelle.ReinerWeg): Zellen, Kalender, Rueckfragen, "aufteilen" und
+    "Zuruecknehmen" rechnen ueber die reinen Schritte des Kerns; "Aus dem Katalog erneut uebernehmen..." im
+    Projekt uebernimmt hier den Stand, wie er ist. Der Satz traegt eine leere Konditionierung - wie ein
+    Satz einer Datenbank mit den Tabellen. DIE VORLAGEN (Welle U2) kommen aus der Ablage ohne Datenbank
+    mit den 14 ausgelieferten Vorlagen der Saat (Konditionierungsvorlagenablage.AusSaat, je Oeffnen neu):
+    Auswahlliste, Vorschau, Uebernehmen, "Als Vorlage speichern..." und die Verwaltung als Blatt wirken
+    wie in der Anwendung, geschrieben wird nur in die Ablage der Seite.
+
+    Gaben ueber die Adresse:
+      ?fall=projekt    Betriebsart Projekt mit zwei Zonen (Zonenweg der Seite)
+      ?fall=gesamt     Betriebsart Bearbeiten; die Lueftung als GESAMTANGABE: nur die
+                       Luftwechselrate, Infiltration und Nutzerlueftung leer
+      ?fall=gesperrt   Betriebsart Bearbeiten, ein ausgelieferter Satz - Gesperrt und SperrGrund,
+                       wie die Huelle sie fuer ReadOnly setzt (KOND_TXT_HINWEIS_LESEMODUS)
+      ?fall=neu        Betriebsart Neu, der leere Satz der Huelle (Vorgabe)
+      ?fall=ohnetabellen  Betriebsart Bearbeiten ohne die Tabellen der Konditionierung - der Weg der
+                       Huelle ohne Datenbank: der Reiter benannt gesperrt (Festlegung 6)
+      ?fall=vorlagen   Betriebsart Bearbeiten, der volle Satz, gekuehlt - die Vorlagen je Karte (Welle U2)
+                       und die Abkuerzung "alle Groessen" in der Zeile "Vorlage" (Welle U5, E57)
+      ?fall=bausteine  die Bausteine der Welle in derselben breiten Ueberlagerung: das
+                       Wochenraster mit "aus" und Umbruch nach Behaelterbreite, dazu das
+                       Gemeinjahrdatum (Saison von/bis)
+      ?fall=karte      Betriebsart Bearbeiten, die KARTE IM EINZELNEN (Welle U3): Heizen angelegt ueber den
+                       Weg ohne Datenbank - Sommerferien aus der Matrix, die neun Feiertage als Regel,
+                       das Zeitfenster Mo-Fr 6-8 Uhr 22 °C und eine eigene Periode ueber den
+                       Jahreswechsel ("aus"); die Probe klappt die Karte auf und misst Wochenraster,
+                       Periodenliste und Teppichbild
+      ?fall=verwaltung die GEBAEUDEVERWALTUNG (Welle U4) wie in ihrem eigenen Fenster, ohne
+                       Ueberlagerung: drei Katalogbauten (einer ausgeliefert), das Stammblatt mit
+                       der Gruppe "Konditionierung" und dem breiten Blatt "Konditionierung..." ueber
+                       demselben Weg ohne Datenbank; "Speichern" meldet Erfolg und schreibt nichts.
+      ?kultur=de-DE|en-US  Kultur und Sprache; Program.cs setzt sie.
+
+    Kreuz und Esc schliessen die Ueberlagerung (Ausgang "kreuz-esc"), Abbrechen und OK den Editor
+    (Ausgang "abbrechen" bzw. "ok"); "Editor oeffnen" stellt ihn neu auf. Gemessen wird die Seite
+    von konditionierungsprobe.mjs (LIESMICH.md). *@
+
+<div class="epos-probe-wirt epos-kondprobe">
+    <section class="epos-dialog">
+        <p id="probe-stand" class="epos-hinweis" data-vorlagen="@(_ablage?.Anzahl ?? 0)">
+            Konditionierungsprobe · Fall <strong>@_fall</strong> · Kultur @CultureInfo.CurrentCulture.Name
+            · ohne Datenbank, geschrieben wird nichts
+        </p>
+        <p class="epos-leisezeile" id="probe-wahl">
+            Fall:
+            @foreach (string f in FAELLE)
+            {
+                string adresse = Adresse(fall: f);
+                <a href="@adresse" class="@(f == _fall ? "epos-kondprobe-aktiv" : null)"
+                   @onclick="() => Laden(adresse)" @onclick:preventDefault>@f</a>
+                @(" ")
+            }
+            · Kultur:
+            <a href="@Adresse(kultur: KulturDe)" @onclick="() => Laden(Adresse(kultur: KulturDe))" @onclick:preventDefault>de-DE</a>
+            <a href="@Adresse(kultur: KulturEn)" @onclick="() => Laden(Adresse(kultur: KulturEn))" @onclick:preventDefault>en-US</a>
+        </p>
+        <p class="epos-leisezeile" id="probe-ausgang" data-ausgang="@_ausgang">
+            @(_fall == VERWALTUNG ? (_ausgang.Length > 0 ? "Die Verwaltung ist beendet." : "Die Verwaltung steht wie in ihrem eigenen Fenster.")
+              : _offen ? "Die Überlagerung steht." : "Die Überlagerung ist zu (" + _ausgang + ").")
+            @if (_gespeichert.Length > 0)
+            {
+                <span id="probe-gespeichert">Gespeichert (Probe, nichts geschrieben): @_gespeichert</span>
+            }
+        </p>
+        @if (!_offen)
+        {
+            <p>
+                <button type="button" class="epos-knopf" id="probe-oeffnen" @onclick="Oeffnen">Editor öffnen</button>
+            </p>
+        }
+    </section>
+
+    @if (_fall == VERWALTUNG)
+    {
+        @* Welle U4: die Verwaltung steht wie in ihrem eigenen Fenster - ohne Ueberlagerung. *@
+        <GebaeudeAdminDialog Katalogzeilen="@(() => VerwaltungZeilen)"
+                             Katalogprofil="@VerwaltungProfil"
+                             Filterstandvorgabe="@_verwaltungFilter"
+                             Satz="@VerwaltungSatz"
+                             Gebaeudetypen="@(() => Typen)"
+                             Gebaeudearten="@(() => Arten)"
+                             Baualtersklassen="@Klassen"
+                             Speichern="@Speichern"
+                             HuellTexte="@_huellTexte" Prueftexte="@_prueftexte"
+                             Konditionierung="@_verwaltungWeg"
+                             KonditionierungTexte="@_kondTexte" KonditionierungFragen="@_kondFragen"
+                             Geschlossen="@(_ => Zu("beenden"))" />
+    }
+
+    <Ueberlagerung Offen="@(_offen && _fall != VERWALTUNG)" Titel="@_titel" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="@(() => Zu("kreuz-esc"))">
+        <KindInhalt>
+            @if (_fall == BAUSTEINE)
+            {
+                <section class="epos-dialog epos-kondprobe-bausteine">
+                    <p class="epos-leisezeile">
+                        Wochenraster mit „aus“ und Umbruch nach Behälterbreite (MitAus, Umbrechend) —
+                        ab 1 150 px 7 × 24, ab 600 px 2 × 12, darunter 4 × 6.
+                    </p>
+                    <Wochenraster Wert="@_woche" WertChanged="w => _woche = w" MitAus="true" Umbrechend="true"
+                                  Einheit="°C" Min="-50" Max="100" Kennung="probe-woche" />
+                    <Formularraster>
+                        <KindInhalt>
+                            <Gemeinjahrdatum Bezeichnung="Saison von :" Wert="@_saisonVon"
+                                             WertChanged="w => _saisonVon = w" Feldname="probe-saison-von" />
+                            <Gemeinjahrdatum Bezeichnung="Saison bis :" Wert="@_saisonBis"
+                                             WertChanged="w => _saisonBis = w" Feldname="probe-saison-bis" />
+                        </KindInhalt>
+                    </Formularraster>
+                    <p class="epos-leisezeile" id="probe-saison">
+                        Jahrestage im Gemeinjahr: @(_saisonVon?.ToString(CultureInfo.InvariantCulture) ?? "—")
+                        bis @(_saisonBis?.ToString(CultureInfo.InvariantCulture) ?? "—")
+                    </p>
+                </section>
+            }
+            else if (_gaben is not null)
+            {
+                <GebaeudeKatalogDialog @attributes="_gaben" TitelAnzeigen="false" Geschlossen="EditorZu" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // ------------------------------------------------------------- Adresse
+    private const string PROJEKT = "projekt", GESAMT = "gesamt", GESPERRT = "gesperrt", NEU = "neu",
+                         OHNE_TABELLEN = "ohnetabellen", VORLAGEN = "vorlagen", BAUSTEINE = "bausteine",
+                         VERWALTUNG = "verwaltung", KARTE = "karte";
+    private static readonly string[] FAELLE =
+        { PROJEKT, GESAMT, GESPERRT, NEU, OHNE_TABELLEN, VORLAGEN, BAUSTEINE, VERWALTUNG, KARTE };
+    private const string KulturDe = "de-DE", KulturEn = "en-US";
+
+    private string _fall = NEU;
+    private string _kultur = "";
+
+    // ------------------------------------------------------------- Zustand
+    private bool _offen;
+    private string _ausgang = "";
+    private string _titel = "";
+    private string _gespeichert = "";
+    private IReadOnlyDictionary<string, object>? _gaben;
+
+    /// <summary>Die Vorlagen der Seite (Welle U2): die 14 der Saat, ohne Datenbank; je Öffnen neu.</summary>
+    private Konditionierungsvorlagenablage? _ablage;
+
+    // Fall "bausteine": eine Woche mit „aus" am Sonntagmorgen, Saison 1. Oktober bis 30. April.
+    private double[]? _woche = Wochenwerte();
+    private int? _saisonVon = 274, _saisonBis = 120;
+
+    private static readonly IReadOnlyList<string> Typen = new[] { "Wohnblock", "Schule", "Hotel", "Verwaltung" };
+    private static readonly IReadOnlyList<string> Arten =
+        new[] { "grosses Mehrfamilienhaus", "Verwaltungsgebaeude", "Einfamilienhaus", "Hotel" };
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("fall", out var f) && FAELLE.Contains(f.ToString())) _fall = f.ToString();
+        if (abfrage.TryGetValue("kultur", out var k)) _kultur = k.ToString();
+        Oeffnen();
+    }
+
+    /// <summary>Die Adresse dieser Seite mit geänderten Gaben — geladen wird NEU (neue Schaltung, neue Kultur).</summary>
+    private string Adresse(string? fall = null, string? kultur = null)
+    {
+        var teile = new List<string> { "fall=" + Uri.EscapeDataString(fall ?? _fall) };
+        string k = kultur ?? _kultur;
+        if (k.Length > 0) teile.Add("kultur=" + Uri.EscapeDataString(k));
+        return "konditionierungsprobe?" + string.Join("&", teile);
+    }
+
+    private void Laden(string adresse) => Navigation.NavigateTo(adresse, forceLoad: true);
+
+    // ------------------------------------------------------------- Öffnen und Schließen
+
+    /// <summary>Stellt den Fall neu auf — je Öffnen ein frischer Parametersatz, wie in der Anwendung.</summary>
+    private void Oeffnen()
+    {
+        _ablage = _fall is BAUSTEINE or OHNE_TABELLEN ? null : Konditionierungsvorlagenablage.AusSaat();
+        _gaben = _fall is BAUSTEINE or VERWALTUNG ? null : Gaben(_fall);
+        // Die Verwaltung (Welle U4) bekommt denselben Weg ohne Datenbank samt den Vorlagen der Saat - wie in
+        // der Anwendung, wo die Hülle ihr den Weg des Katalogbaus mit den Vorlagen reicht.
+        _verwaltungWeg = KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false, vorlagen: _ablage);
+        _titel = _fall switch
+        {
+            PROJEKT => Resource.GEBZ_TITEL_PROJEKT,
+            NEU => Uebersetzt("GEB_BTN_DB_NEU", "Gebäude in DB neu..."),
+            BAUSTEINE => "Bausteine der Konditionierung",
+            VERWALTUNG => Uebersetzt("GEBA_TITEL", "Verwaltung Gebäude"),
+            _ => Uebersetzt("GEB_BTN_DB_AENDERN", "Gebäude in DB ändern...")
+        };
+        _offen = true;
+    }
+
+    private void Zu(string ausgang)
+    {
+        _offen = false;
+        _ausgang = ausgang;
+    }
+
+    private void EditorZu(bool ok) => Zu(ok ? "ok" : "abbrechen");
+
+    // ------------------------------------------------------------- Die Fälle
+
+    /// <summary>
+    /// Der Parametersatz eines Falls: der der Anwendung (Betriebsart Neu, ohne Datenbank), darüber
+    /// Daten, Betriebsart, Sperre und Zonenweg des Falls; die Wege zur Datenbank weichen der Seite.
+    /// </summary>
+    private IReadOnlyDictionary<string, object> Gaben(string fall)
+    {
+        var gaben = new Dictionary<string, object>(GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu))
+        {
+            ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => Typen),
+            ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(() => Arten),
+            ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(Speichern)
+        };
+        gaben.Remove("UebergabeHerleitung");   // liest die Klimareihe eines Projekts
+
+        // Welle U1: der Weg der Konditionierung OHNE Datenbank (die reinen Schritte des Kerns); im
+        // Projekt mit „Aus dem Katalog erneut übernehmen…", das hier den Stand übernimmt, wie er ist.
+        // Welle U2: dazu die Vorlagen aus der Ablage der Seite.
+        if (fall != OHNE_TABELLEN)
+            gaben["Konditionierung"] = fall == PROJEKT
+                ? KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Gebaeude, projekt: true,
+                                                  katalogErneut: s => KonditionierungErgebnis.Gut(s), vorlagen: _ablage)
+                : KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false, vorlagen: _ablage);
+
+        switch (fall)
+        {
+            case PROJEKT:
+                gaben["Daten"] = Satz("Probehaus Projekt");
+                gaben["Modus"] = GebaeudeKatalogModus.Projekt;
+                gaben["Zonen"] = Zonenweg();
+                gaben["HilfeSchluessel"] = GebaeudeKatalogHuelle.HILFE_PROJEKT;
+                break;
+
+            case NEU:
+                // Der leere Satz der Hülle, mit einer leeren Konditionierung wie in einer Datenbank mit Tabellen.
+                if (gaben.TryGetValue("Daten", out object? leer) && leer is GebaeudeKatalogDaten neu)
+                    neu.Konditionierung = new KonditionierungDaten();
+                break;
+
+            case OHNE_TABELLEN:
+                // Der Weg der Hülle ohne Datenbank: keine Tabellen, der Reiter nennt den Grund.
+                GebaeudeKatalogDaten ohne = Satz("Probehaus ohne Tabellen");
+                ohne.Konditionierung = null;
+                gaben["Daten"] = ohne;
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                break;
+
+            case VORLAGEN:
+                // Gekuehlt (Welle U5): Die Abkuerzung "alle Groessen" (E57) uebernimmt dann in allen fuenf
+                // Groessen - ohne "Gebaeude wird gekuehlt" ist "Uebernehmen" der Kuehlkarte gesperrt, Kuehlen bliebe.
+                GebaeudeKatalogDaten vorlagen = Satz("Probehaus Vorlagen");
+                vorlagen.KuehlungAktiv = true;
+                gaben["Daten"] = vorlagen;
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                break;
+
+            case GESAMT:
+                GebaeudeKatalogDaten gesamt = Satz("Probehaus Gesamtangabe");
+                gesamt.Luftwechselrate = 0.6;
+                gesamt.LuftwechselInfiltration = null;
+                gesamt.LuftwechselNutzer = null;
+                gaben["Daten"] = gesamt;
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                break;
+
+            case KARTE:
+                gaben["Daten"] = Kartensatz((KonditionierungWeg)gaben["Konditionierung"]);
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                break;
+
+            case GESPERRT:
+                gaben["Daten"] = Satz("Probehaus ausgeliefert");
+                gaben["Modus"] = GebaeudeKatalogModus.Bearbeiten;
+                gaben["Gesperrt"] = true;
+                gaben["SperrGrund"] = Uebersetzt("KOND_TXT_HINWEIS_LESEMODUS",
+                    "Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar. „Speichern unter“ legt eine " +
+                    "bearbeitbare Kopie an.");
+                break;
+        }
+        return gaben;
+    }
+
+    // ------------------------------------------------------------- Die Verwaltung (Welle U4)
+    private static readonly string[] VERWALTUNG_SAETZE = { "Probehaus Verwaltung", "Probehaus Büro", "Probehaus ausgeliefert" };
+    private static readonly IReadOnlyList<string> Klassen =
+        new[] { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978" };
+    private readonly Katalogfilterstand _verwaltungFilter = new();
+    private Katalogfilterprofil? _verwaltungProfil;
+    private IReadOnlyList<Katalogfilterzeile>? _verwaltungZeilen;
+    private KonditionierungWeg? _verwaltungWeg;
+    private readonly GebaeudeHuelleTexte _huellTexte = GebaeudeKatalogHuelle.Texte();
+    private readonly GebaeudePrueftexte _prueftexte = GebaeudeKatalogHuelle.Prueftexte();
+    private readonly KonditionierungTexte _kondTexte = KonditionierungTexteHuelle.Texte();
+    private readonly KonditionierungFragetexte _kondFragen = KonditionierungTexteHuelle.Fragen();
+
+    private Katalogfilterprofil VerwaltungProfil => _verwaltungProfil ??= Katalogfilterprofil.FuerGebaeude(s => Uebersetzt(s, s));
+
+    /// <summary>Die Liste der Verwaltung: drei Katalogbauten, der letzte ausgeliefert (Schloss).</summary>
+    private IReadOnlyList<Katalogfilterzeile> VerwaltungZeilen => _verwaltungZeilen ??= VERWALTUNG_SAETZE
+        .Select((name, i) => new Katalogfilterzeile(i + 1, name) { Geschuetzt = i == 2 }
+            .MitText(Katalogfilterprofil.SpBezeichner, name)
+            .MitText(Katalogfilterprofil.SpGebaeudeart, Arten[i])
+            .MitText(Katalogfilterprofil.SpVerwendung, "Wohngebäude")
+            .MitText(Katalogfilterprofil.SpBaualtersklasse, Klassen[4])
+            .MitZahl(Katalogfilterprofil.SpFlaecheM2, 150, 0))
+        .ToList();
+
+    /// <summary>Ein Satz der Verwaltung: der vollständig belegte Satz der Probe als Feldsatz (samt leerer Konditionierung).</summary>
+    private GebaeudeStammblattDaten? VerwaltungSatz(string name)
+    {
+        int i = Array.IndexOf(VERWALTUNG_SAETZE, name);
+        if (i < 0) return null;
+        return new GebaeudeStammblattDaten
+        {
+            Id = i + 1,
+            Name = name,
+            Typ = "Wohnblock",
+            Gebaeudeart = Arten[i],
+            Verwendung = "Wohngebaeude",
+            Baualtersklasse = 4,
+            Beschreibung = "Synthetischer Satz der Konditionierungsprobe, ohne Datenbank",
+            Wohnflaeche = 150,
+            HgesWK = 512.3,
+            Rechenweg = "VDI 6007",
+            Auslieferung = i == 2,
+            Huelle = new[]
+            {
+                new Stammblattwert("Außenwand", "200,0 m² · U 0,30 W/(m²K)"),
+                new Stammblattwert("Fenster", "45,0 m² · U 1,30 W/(m²K)"),
+                new Stammblattwert("Dachfläche", "120,0 m² · U 0,20 W/(m²K)"),
+                new Stammblattwert("Grundfläche", "100,0 m² · U 0,35 W/(m²K)")
+            },
+            AlleDaten = new[]
+            {
+                Stammblattwert.Abschnitt("Kenngrößen"),
+                new Stammblattwert("Raumhöhe", "2,50", "m"),
+                new Stammblattwert("Luftwechselrate", "0,50", "1/h")
+            },
+            Feldsatz = Satz(name)
+        };
+    }
+
+    /// <summary>Der Schreibweg der Seite: Er schreibt nichts, er merkt sich den Aufruf.</summary>
+    private GebaeudeKatalogErgebnis Speichern(GebaeudeKatalogDaten daten, bool istNeu, string bezeichner)
+    {
+        _gespeichert = (istNeu ? "neu: " : "überschrieben: ") + (daten?.Name ?? bezeichner);
+        _ = InvokeAsync(StateHasChanged);   // der Rückruf kommt aus einem Kind (dem Dialog)
+        return new GebaeudeKatalogErgebnis(true, "");
+    }
+
+    /// <summary>Ein vollständig belegter Satz (das Maß der bunit-Proben): Hülle, Sollwerte, Lüftung getrennt.</summary>
+    private static GebaeudeKatalogDaten Satz(string name) => new()
+    {
+        Name = name,
+        Konditionierung = new KonditionierungDaten(),
+        Typ = "Wohnblock",
+        Beschreibung = "Synthetischer Satz der Konditionierungsprobe, ohne Datenbank",
+        Gebaeudeart = "grosses Mehrfamilienhaus",
+        Verwendung = "Wohngebaeude",
+        Baualtersklasse = 4,
+        Bauart = 1,
+        WohnflaecheGesamt = 150,
+        FlaecheNutzer = 35,
+        Waermegewinne = 400,
+        Fensterdurchlassgrad = 0.4,
+        Raumhoehe = 2.5,
+        FensterflaecheNord = 10,
+        FensterflaecheSued = 20,
+        FensterflaecheOstWest = 15,
+        FlaecheAussenwand = 200,
+        Dachflaeche = 120,
+        Grundflaeche = 100,
+        SonstigeFlaechen = 5,
+        UWertAussenwand = 0.3,
+        UWertFenster = 1.3,
+        UWertDachflaeche = 0.2,
+        UWertGrundflaeche = 0.35,
+        UWertSonstiges = 0.5,
+        WbvkFensterWand = 0.1,
+        AnschlussFensterWand = 50,
+        SollTag = 20,
+        NachtAbsenkung = 17,
+        MaxTemperatur = 24,
+        WochenendAbsenkung = 0,
+        SollFerien = 0,
+        Luftwechselrate = 0.5,
+        LuftwechselInfiltration = 0.2,
+        LuftwechselNutzer = 0.3
+    };
+
+    /// <summary>
+    /// Fall „karte" (Welle U3): ein Satz mit Sommerferien, dessen Heizkalender über DENSELBEN Weg ohne
+    /// Datenbank angelegt und im Einzelnen bearbeitet ist — die neun Feiertage als Regel, das Zeitfenster
+    /// Mo–Fr 6–8 Uhr 22 °C und eine eigene Periode über den Jahreswechsel („aus"). So steht die Karte
+    /// mit Woche, Vermerk, Matrixbereich, Feiertagsband und Eigenband da, wie sie nach diesen Handlungen
+    /// in der Anwendung stünde.
+    /// </summary>
+    private static GebaeudeKatalogDaten Kartensatz(KonditionierungWeg weg)
+    {
+        GebaeudeKatalogDaten satz = Satz("Probehaus Karte");
+        satz.Ferienbeginn = new[] { 0, 0, 205, 0 };
+        satz.Ferienende = new[] { 0, 0, 246, 0 };
+        satz.SollFerien = 16;
+        satz.Ferien = 1;
+        var ort = new KonditionierungOrt(KonditionierungGroesse.Heizen);
+        var s = new KonditionierungStand(satz, Array.Empty<ZoneDaten>());
+        s = Schritt(s, weg.Anlegen!(s, ort));
+        s = Schritt(s, weg.Feiertage!(s, ort, 7));
+        s = Schritt(s, weg.Zeitfenster!(s, ort, new KonditionierungZeitfenster(new[] { 0, 1, 2, 3, 4 }, 6, 8, 22)));
+        s = Schritt(s, weg.PeriodeSetzen!(s, ort, null, new KonditionierungPeriode
+        {
+            Art = KonditionierungPeriodenart.Zeitraum, Name = "Betriebsruhe zwischen den Jahren", Von = 358, Bis = 1,
+            Angabe = KonditionierungAngabe.Aus
+        }));
+        return s.Gebaeude;
+    }
+
+    /// <summary>Ein Schritt des Kartensatzes — ein Fehlschlag ist ein Aufbaufehler der Probe.</summary>
+    private static KonditionierungStand Schritt(KonditionierungStand vor, KonditionierungErgebnis e)
+        => e is { Ok: true, Stand: KonditionierungStand neu }
+            ? neu
+            : throw new InvalidOperationException("Kartensatz: " + e.Meldung);
+
+    /// <summary>Der Zonenweg der Seite: zwei Zonen mit Bauteilen; „Speichern" meldet Erfolg und schreibt nichts.</summary>
+    private static GebaeudeZonenweg Zonenweg() => new()
+    {
+        Zonen = new[]
+        {
+            new ZoneDaten
+            {
+                Id = 1, Bezeichner = "Wohnen EG", Nutzflaeche = 90,
+                Bauteile =
+                {
+                    new BauteilDaten { Id = 11, Bezeichner = "Außenwand EG", Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
+                                       Flaeche = 120, UWert = 0.3, Azimut = 180 },
+                    new BauteilDaten { Id = 12, Bezeichner = "Fenster Süd EG", Bauteilart = DbWerte.BAUTEILART_FENSTER,
+                                       Flaeche = 20, UWert = 1.3, Azimut = 180 },
+                    new BauteilDaten { Id = 13, Bezeichner = "Bodenplatte", Bauteilart = DbWerte.BAUTEILART_BODENPLATTE,
+                                       Flaeche = 100, UWert = 0.35 }
+                }
+            },
+            new ZoneDaten
+            {
+                Id = 2, Bezeichner = "Büro OG", Nutzflaeche = 60, SollTag = 21,
+                Bauteile =
+                {
+                    new BauteilDaten { Id = 21, Bezeichner = "Außenwand OG", Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
+                                       Flaeche = 80, UWert = 0.3, Azimut = 0 },
+                    new BauteilDaten { Id = 22, Bezeichner = "Dach", Bauteilart = DbWerte.BAUTEILART_DACH,
+                                       Flaeche = 120, UWert = 0.2 }
+                }
+            }
+        },
+        Speichern = _ => ZonenSchreibergebnis.Gut
+    };
+
+    /// <summary>
+    /// Eine Heizwoche: werktags 06–22 Uhr 21 °C, sonst 17 °C; am Wochenende 19 °C, Sonntag 0–5 Uhr
+    /// „aus" (NaN) — damit steht der eigene Zellzustand im Bild.
+    /// </summary>
+    private static double[] Wochenwerte()
+    {
+        var w = new double[Wochenraster.WERTE];
+        for (int tag = 0; tag < Wochenraster.TAGE; tag++)
+            for (int h = 0; h < Wochenraster.STUNDEN; h++)
+                w[tag * Wochenraster.STUNDEN + h] = tag >= 5 ? 19 : (h >= 6 && h < 22 ? 21 : 17);
+        for (int h = 0; h < 6; h++) w[6 * Wochenraster.STUNDEN + h] = double.NaN;
+        return w;
+    }
+
+    private static string Uebersetzt(string schluessel, string rueckfall)
+    {
+        string? text = null;
+        try { text = Resource.ResourceManager.GetString(schluessel); }
+        catch (MissingManifestResourceException) { }
+        return string.IsNullOrEmpty(text) ? rueckfall : text;
+    }
+}

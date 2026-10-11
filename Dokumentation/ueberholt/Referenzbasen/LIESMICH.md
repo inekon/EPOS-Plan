@@ -1,9 +1,9 @@
-# Die Protokolle der 40 entfernten Referenzbasen
+# Die Protokolle der 54 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **40 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **54 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026. **41 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30, das von R31 und das von R32 am 02.10.2026. **51 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-26_R23_KesselBereitschaft`](../../../Referenzlaeufe/2026-09-26_R23_KesselBereitschaft/);
+> [`Referenzlaeufe/2026-10-10_R51_FreieKuehlung`](../../../Referenzlaeufe/2026-10-10_R51_FreieKuehlung/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -68,6 +68,34 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-26_R20_Zapfprofil` | 26.09.2026 | CI-Basis nach Anwenderentscheid ZU7 (Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator); getragen bis zur Testdatenbank `22e67400…` (Speicherauslegung #543); vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R21 am 26.09.2026 | [`2026-09-26_R20_Zapfprofil/protokoll.txt`](2026-09-26_R20_Zapfprofil/protokoll.txt) |
 | `2026-09-26_R21_BhkwDeckung` | 26.09.2026 | CI-Basis nach Welle E30 (#548, Befund N10: der Stromdeckungsgrad des BHKW ist sein Eigenverbrauch am Bedarf aller Verbraucher); getragen bis zur Testdatenbank `41343bce…` (Schemastand 150); vierzehn Projekte, 432 CSV, 2 447 Skalare — abgelöst durch R22 am 26.09.2026 | [`2026-09-26_R21_BhkwDeckung/protokoll.txt`](2026-09-26_R21_BhkwDeckung/protokoll.txt) |
 | `2026-09-26_R22_Solarthermie` | 26.09.2026 | CI-Basis nach #559 (Bereitschaftsverlust des Heizkessels als Leistung in kW) und #560 (Referenzprojekt 1049 „Solarthermie“, fünfzehntes Projekt, CI sieben); getragen bis zur Testdatenbank `09b6c523…` (Tww-Parameter #561); fünfzehn Projekte, 460 CSV, 2 625 Skalare — abgelöst durch R23 am 26.09.2026 | [`2026-09-26_R22_Solarthermie/protokoll.txt`](2026-09-26_R22_Solarthermie/protokoll.txt) |
+| `2026-09-26_R23_KesselBereitschaft` | 26.09.2026 | CI-Basis nach #568 (Bereitschaftsverlust des Heizkessels nur in betriebsbereiten Stunden — Heiztag mit Raumwärmebedarf oder 24 h Nachlauf, Deckel durch die Vorgabe; Elektrokessel ohne Kesselemission), auf Windows eingefroren; getragen bis zur Testdatenbank `6f0d5458…` (Schemastand 152); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R24 am 29.09.2026 | [`2026-09-26_R23_KesselBereitschaft/protokoll.txt`](2026-09-26_R23_KesselBereitschaft/protokoll.txt) |
+| `2026-09-27_R24_Heizgrenze` | 29.09.2026 | CI-Basis nach #595 (Heiztag der Kesselbereitschaft = Tagesmittel der Außentemperatur unter der Heizgrenze des Projekts, Schemaschritt 154), auf Linux eingefroren; getragen bis zur Testdatenbank `2e417b36…` (Schemastand 154); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R25 am 29.09.2026 | [`2026-09-27_R24_Heizgrenze/protokoll.txt`](2026-09-27_R24_Heizgrenze/protokoll.txt) |
+| `2026-09-29_R25_Plattformrand` | 29.09.2026 | CI-Basis nach #599 (Zahlenrand an der Abschaltprüfung der Phase G und am Quellspeicher der Wärmepumpe, Plattformbefund PB-1), auf Windows eingefroren; Testdatenbank `2e417b36…` (Schemastand 154); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R26 am 29.09.2026 | [`2026-09-29_R25_Plattformrand/protokoll.txt`](2026-09-29_R25_Plattformrand/protokoll.txt) |
+| `2026-09-29_R26_Kesselrest` | 29.09.2026 | CI-Basis nach #605 (Kessellauf mit Zahlenrand, Störmodus-Wache), auf Linux eingefroren; getragen bis zur Testdatenbank `111be189…` (Schemastand 156, E1 der Kesselkennlinie samt Nachpflege des Katalogs); fünfzehn Projekte, 460 CSV, 2 685 Skalare — abgelöst durch R27 am 30.09.2026 | [`2026-09-29_R26_Kesselrest/protokoll.txt`](2026-09-29_R26_Kesselrest/protokoll.txt) |
+| `2026-09-30_R27_Kesselteillast` | 30.09.2026 | Basis nach der Etappe E2 der Kesselkennlinie (Teillastkennlinie je Stunde, Normvorgabe η₃₀ nach Bauart, Referenzprojekt 1050), auf Linux eingefroren; getragen bis zur Testdatenbank `052f5aa8…` (Schemastand 157); sechzehn Projekte, 487 CSV, 2 920 Skalare — abgelöst durch R28 am 30.09.2026 | [`2026-09-30_R27_Kesselteillast/protokoll.txt`](2026-09-30_R27_Kesselteillast/protokoll.txt) |
+| `2026-09-30_R28_Kesselbrennwert` | 30.09.2026 | Basis nach den Etappen E2b und E3 der Kesselkennlinie (Brennwertkennzeichen der Projektkessel, Schemaschritt 158; Brennwertkennlinie mit Rücklaufkette), auf Linux eingefroren; getragen bis zur Testdatenbank `5d59041f…` (Schemastand 158); sechzehn Projekte, 487 CSV, 2 984 Skalare — abgelöst durch R29 am 30.09.2026 | [`2026-09-30_R28_Kesselbrennwert/protokoll.txt`](2026-09-30_R28_Kesselbrennwert/protokoll.txt) |
+| `2026-09-30_R29_Kesseltakten` | 30.09.2026 | Basis nach der Etappe E4 der Kesselkennlinie (Takten des Heizkessels unter seiner Mindestleistung: Starts je Taktstunde, Anfahrverlust je Start, Normvorgaben für leere Taktfelder; `Kessel[i].Starts` zählt nach Konzept 4.2), auf Linux eingefroren; Testdatenbank `5d59041f…` (Schemastand 158); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R30 am 30.09.2026 | [`2026-09-30_R29_Kesseltakten/protokoll.txt`](2026-09-30_R29_Kesseltakten/protokoll.txt) |
+| `2026-09-30_R30_Stromverbraucher` | 30.09.2026 | Basis nach SV1 (Zuordnung Projekt ↔ Stromverbraucher über die ID: gepflegte Jahressumme der Zuordnungszeile, Kopf- und Typsatz nur im eigenen Projekt), auf Linux eingefroren; Testdatenbank `5d59041f…` (Schemastand 158), getragen bis zur Fassung `a50f1f49…` (Schemastand 159); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R31 am 02.10.2026 | [`2026-09-30_R30_Stromverbraucher/protokoll.txt`](2026-09-30_R30_Stromverbraucher/protokoll.txt) |
+| `2026-10-02_R31_Rechenwegbefunde` | 02.10.2026 | Basis nach RB1 (untere Grenzleistung des BHKW aus dem Anlagenfeld vor Katalog vor Projekt, in allen drei Betriebsarten; Autarkie ohne Stromspeicher mit 0 kWh; Bedarfsprofil ohne Typbezug übersprungen), auf Linux eingefroren; Testdatenbank `a50f1f49…` (Schemastand 159), getragen bis zur Fassung `05783be1…` (Schemastand 162); sechzehn Projekte, 487 CSV, 3 080 Skalare — abgelöst durch R32 am 02.10.2026 | [`2026-10-02_R31_Rechenwegbefunde/protokoll.txt`](2026-10-02_R31_Rechenwegbefunde/protokoll.txt) |
+| `2026-10-02_R32_Solarthermie` | 02.10.2026 | Basis nach der Welle M2 Solarthermie (Arbeitstemperatur des Kollektorfelds von 1049 aus dem Speicher, Diffus-Einfallswinkelkorrektur, Solarkreisfelder, Bezugsfläche), auf Linux eingefroren; Testdatenbank `486d5b0c…`, getragen bis zur Fassung `7debfd8a…` (Schemastand 165); sechzehn Projekte, 487 CSV, 3 081 Skalare — abgelöst durch R33 am 02.10.2026 | [`2026-10-02_R32_Solarthermie/protokoll.txt`](2026-10-02_R32_Solarthermie/protokoll.txt) |
+| `2026-10-02_R33_Viertelstunden` | 02.10.2026 | Basis nach der Welle M5 „Strom in Viertelstunden“ (PV-Bilanz je Viertelstunde nach dem Sonnenstand, Einspeisegrenze, Standby und Selbstentladung), auf Linux eingefroren; Testdatenbank `2b0dc246…` (Schemastand 168), gehoben bis Schemastand 176; sechzehn Projekte, 487 CSV, 3 082 Skalare — abgelöst durch R34 am 03.10.2026 | [`2026-10-02_R33_Viertelstunden/protokoll.txt`](2026-10-02_R33_Viertelstunden/protokoll.txt) |
+| `2026-10-03_R34_Erdreich` | 03.10.2026 | Basis nach dem Erdreichwiderstand nach DIN EN ISO 13370 (Bauteile am Erdreich), der allgemeinen Innenprüfung der Abschnittsregel im Zonenmodell und den neuen Referenzprojekten 1051 „Konditionierung“ und 1052 „Zonen“, auf Linux eingefroren; Testdatenbank `bb8dd3dc…` (Schemastand 176), gehoben bis Schemastand 181; achtzehn Projekte, 548 CSV, 3 568 Skalare — abgelöst durch R35 am 04.10.2026 | [`2026-10-03_R34_Erdreich/protokoll.txt`](2026-10-03_R34_Erdreich/protokoll.txt) |
+| `2026-10-04_R35_Zonenuebergabe` | 04.10.2026 | Basis nach der Wärmeübergabe je Zone (AK1z, E63) und dem neuen Referenzprojekt 1054 „Zonen mit Heizkreis“, auf Linux eingefroren; Testdatenbank `905096ae…` (Schemastand 185); neunzehn Projekte, 576 CSV, 3 791 Skalare; mit R36 abgelöst. |
+| `2026-10-05_R36_Kaeltemaschine` | 05.10.2026 | Basis mit dem neuen Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“ (KU3-4b, Einfrierregel „gesäte Kältemaschinendaten“), auf Linux eingefroren; Testdatenbank `fc67a865…` (Schemastand 185), gehoben auf Schemastand 186; zwanzig Projekte, 608 CSV, 4 029 Skalare — abgelöst durch R37 am 05.10.2026 | [`2026-10-05_R36_Kaeltemaschine/protokoll.txt`](2026-10-05_R36_Kaeltemaschine/protokoll.txt) |
+| `2026-10-05_R37_Fahrplan` | 05.10.2026 | Basis mit den Komfortspalten für jedes gekoppelte Projekt (F12, E83) und dem neuen Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4), auf Linux eingefroren; Testdatenbank `63b0bdae…` (Schemastand 186), gehoben auf Schemastand 188; einundzwanzig Projekte, 646 CSV, 4 265 Skalare — abgelöst durch R38 am 05.10.2026 | [`2026-10-05_R37_Fahrplan/protokoll.txt`](2026-10-05_R37_Fahrplan/protokoll.txt) |
+| `2026-10-05_R38_Vorlaufwahl` | 05.10.2026 | Basis mit dem Ausweis der Vorlaufwahl der Wärmepumpe an 1047 und 1056 (VW1, E88), auf Linux eingefroren; Testdatenbank `69322344…` (Schemastand 188), gehoben auf Schemastand 190; einundzwanzig Projekte, 646 CSV, 4 271 Skalare — abgelöst durch R39 am 06.10.2026 | [`2026-10-05_R38_Vorlaufwahl/protokoll.txt`](2026-10-05_R38_Vorlaufwahl/protokoll.txt) |
+| `2026-10-06_R39_Auslegungsheizlast` | 06.10.2026 | Basis mit dem Ausweis der Auslegungsheizlast auch ohne Anlagenkopplung an 1051 und 1052 (KP3-R6, E97), auf Linux eingefroren; Testdatenbank `2fec4f14…` (Schemastand 190), gehoben auf Schemastand 195; einundzwanzig Projekte, 646 CSV, 4 275 Skalare — abgelöst durch R40 am 07.10.2026 | [`2026-10-06_R39_Auslegungsheizlast/protokoll.txt`](2026-10-06_R39_Auslegungsheizlast/protokoll.txt) |
+| `2026-10-07_R40_Erdreichquellen` | 07.10.2026 | Basis mit den Erdreichquellen der Referenzprojekte (Sole-Wärmepumpen an der Erdsonde) und dem Referenzprojekt 1057 „Erdsonde“, auf Linux eingefroren; Testdatenbank `29dbf1dd…` (Schemastand 195), gehoben auf Schemastand 196; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R41 am 07.10.2026 | [`2026-10-07_R40_Erdreichquellen/protokoll.txt`](2026-10-07_R40_Erdreichquellen/protokoll.txt) |
+| `2026-10-07_R41_Erdreichpruefung` | 07.10.2026 | Basis mit der Erdreichprüfung je Anlage und dem Entzug des Sondenfelds ohne Taktstrom (Erdwärme-Nachzug), auf Linux eingefroren; Testdatenbank `6f83f95f…` (Schemastand 196), gehoben auf Schemastand 198; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R42 am 07.10.2026 | [`2026-10-07_R41_Erdreichpruefung/protokoll.txt`](2026-10-07_R41_Erdreichpruefung/protokoll.txt) |
+| `2026-10-07_R42_Vorlaufinterpolation_AK3` | 07.10.2026 | Basis mit der Interpolation der Wärmepumpenkennlinie über den Vorlauf (AK3-I, E102) und dem Referenzprojekt 1058 auf Stufe AK3, auf Linux eingefroren; Testdatenbank `e09fceed…` (Schemastand 198), gehoben auf Schemastand 199; dreiundzwanzig Projekte, 718 CSV, 4 862 Skalare — abgelöst durch R43 am 07.10.2026 | [`2026-10-07_R42_Vorlaufinterpolation_AK3/protokoll.txt`](2026-10-07_R42_Vorlaufinterpolation_AK3/protokoll.txt) |
+| `2026-10-07_R43_Kaelteseite_AK3K` | 07.10.2026 | Basis mit der Zonensperre je Zone und der Kälteseite im geschlossenen Kreis auf Stufe AK3 (AK3-K, E103 und E104) und dem Referenzprojekt 1059, auf Linux eingefroren; Testdatenbank `82a1b8c7…` (Schemastand 199 = 201), gehoben auf Schemastand 202; vierundzwanzig Projekte, 759 CSV, 5 196 Skalare — abgelöst durch R44 am 08.10.2026 | [`2026-10-07_R43_Kaelteseite_AK3K/protokoll.txt`](2026-10-07_R43_Kaelteseite_AK3K/protokoll.txt) |
+| `2026-10-08_R44_Kuehlkurve` | 08.10.2026 | Basis mit der Kühlkurve am Gebäude (Entwurf KK, E105 und E106) und den Referenzprojekten 1061 und 1062, auf Linux eingefroren; Testdatenbank `19e38bc2…` (Schemastand 202), gehoben auf Schemastand 203; sechsundzwanzig Projekte, 841 CSV, 5 801 Skalare — abgelöst durch R45 am 09.10.2026 | [`2026-10-08_R44_Kuehlkurve/protokoll.txt`](2026-10-08_R44_Kuehlkurve/protokoll.txt) |
+| `2026-10-09_R45_Uebergabegrenze` | 09.10.2026 | Basis mit der Übergabegrenze und Bivalenz der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E2) und dem Referenzprojekt 1060, auf Linux eingefroren; Testdatenbank `cd50d465…` (Schemastand 203); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R46 am 09.10.2026 | [`2026-10-09_R45_Uebergabegrenze/protokoll.txt`](2026-10-09_R45_Uebergabegrenze/protokoll.txt) |
+| `2026-10-09_R46_Geraetegrenzen` | 09.10.2026 | Basis mit den Gerätegrenzen der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E3: Rücklaufgrenze am gemischten Rücklauf, Spreizungsgrenze), auf Linux eingefroren; Testdatenbank `cd50d465…` (Schemastand 203); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R47 am 09.10.2026 | [`2026-10-09_R46_Geraetegrenzen/protokoll.txt`](2026-10-09_R46_Geraetegrenzen/protokoll.txt) |
+| `2026-10-09_R47_Zapffeiertage` | 09.10.2026 | Basis mit den Feiertagen im Zapfkalender (Anwenderentscheid E112: Feiertage zählen unter jeder Wochenendmaske als Sonntag), auf Linux eingefroren; Testdatenbank `ec23b962…` (Schemastand 207); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R48 am 09.10.2026 | [`2026-10-09_R47_Zapffeiertage/protokoll.txt`](2026-10-09_R47_Zapffeiertage/protokoll.txt) |
+| `2026-10-09_R48_Gemeinjahr` | 09.10.2026 | Basis mit dem Gemeinjahr ohne Jahresdatum (Anwenderentscheid E114 der Statusdatei: die beweglichen Feiertage liegen ohne Preisreihe nach dem Wochentagsraster), auf Linux eingefroren; Testdatenbank `ec23b962…` (Schemastand 207), gehoben auf Schemastand 209 (`7b6b2cc8…`); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R49 am 10.10.2026 | [`2026-10-09_R48_Gemeinjahr/protokoll.txt`](2026-10-09_R48_Gemeinjahr/protokoll.txt) |
+| `2026-10-09_R49_KaeltemaschineTeillast` | 10.10.2026 | Basis mit dem Referenzprojekt 1063 (Teillast und Takten der Kältemaschine, Etappe KM3‑E2) auf dem Rechenstand des Gemeinjahrs, auf Linux eingefroren; Testdatenbank `32af2d32…` (Schemastand 210); achtundzwanzig Projekte, 911 CSV, 6 336 Skalare — abgelöst durch R50 am 10.10.2026 | [`2026-10-09_R49_KaeltemaschineTeillast/protokoll.txt`](2026-10-09_R49_KaeltemaschineTeillast/protokoll.txt) |
+| `2026-10-10_R50_Wochentagsraster` | 10.10.2026 | Basis mit dem Wochentagsraster der Klimaregion für alle Leser (Anwenderentscheid E115), auf Linux eingefroren; Testdatenbank `32af2d32…` (Schemastand 210); achtundzwanzig Projekte, 911 CSV, 6 336 Skalare — abgelöst durch R51 am 10.10.2026 | [`2026-10-10_R50_Wochentagsraster/protokoll.txt`](2026-10-10_R50_Wochentagsraster/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -2888,9 +2916,10 @@ Abschnitt „Aktuelle Basis" von [`Referenzlaeufe/LIESMICH.md`](../../../Referen
 
 Der Abschnitt „Aktuelle Basis“ hat am 26.09.2026 die Basis R22 beschrieben — die zwei Anlässe (#559:
 Bereitschaftsverluste des Heizkessels als Leistung in kW; #560: Referenzprojekt 1049 „Solarthermie“) und
-die A/B-Tafel gegen R21. Er steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt. Der
-Nachtrag der Testdatenbank zwischen R22 und R23 (Tww-Parameter #561, `09b6c523…`) steht weiter in
-[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+die A/B-Tafel gegen R21. Er steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt. Die
+Nachträge der Testdatenbank zwischen R22 und R23 (Tww-Parameter #561, `09b6c523…`; Tww-Nutzungsart #579,
+`1923b7d7…`) stehen am Ende dieses Abschnitts; sie sind mit R24 aus `Referenzlaeufe/LIESMICH.md` hierher
+gewandert.
 
 **`2026-09-26_R22_Solarthermie/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 625 Skalare, Schemastand 150, Testdatenbank
@@ -2962,5 +2991,2511 @@ PASS allein wegen der neuen Skalare `Kessel[i].*`, 445/460 CSV byte-gleich, alle
 > ```
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+<!-- NACHTRÄGE ZWISCHEN R22 UND R23, BEGINN -->
+
+> **Tww-Parameter ohne Neufreigabe (Welle #561, Anwenderentscheide 26.09.2026).** Vier Zeilen
+> `Tab_TwwParameter_STAMM` aus dem freien Paketteil: neu `Zapfprofil.Validierung.Streuung.Unten` 0,85 und
+> `.Streuung.Oben` 0,95 (Folge V10), und `Speicherauslegung.Ladefenster.Beginn` 22 h und
+> `…GLF_Gueltigkeitsgrenze` 30 wechseln vom fiktiven Testkatalog zur INEKON-Setzung (Werte unverändert;
+> Quelle, Ausgabe, Version, Herkunftsart `EIGENKONSTRUKTION`). Kein Schemaschritt. Wiederholbare Befehlsfolge
+> auf der Fassung `14de1c9b…` (Schemastand 150, R22 samt Referenzprojekt 1049; zuerst gesät auf `41343bce…`) — sie lässt sich auf jede spätere Fassung neu aufsetzen:
+> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --paketteil-schreiben`
+> („2 angelegt, 2 nachgeführt"; schreibt zugleich `Katalogpaket_frei/Tab_TwwParameter_STAMM.csv` aus
+> `Skripte/zapfprofil_setzungen_inekon.json`), danach derselbe Aufruf ohne Schalter („0 / 0"). Zellvergleich:
+> allein `Tab_TwwParameter_STAMM` (94 → 96 Zeilen; ID 55, 56 Provenienz, ID 95, 96 neu) und `sqlite_sequence`;
+> `integrity_check` ok, `foreign_key_check` leer; 71 557 120 Byte, LFS-SHA-256
+> `09b6c52350ede9b0bc6e1081452d0ebce060fcd7adad4ed7bd0f6205635e7111`. **Keine Einfrierregel ist berührt:**
+> Kein Referenzprojekt benutzt die vier Zeilen (1045 rechnet eine Bilanz, keine Auslegung, keinen
+> Messvergleich). Referenzlauf der sieben CI-Projekte gegen R22: alle PASS; R23 ist auf dieser Fassung eingefroren.
+
+> **Tww-Nutzungsart umbenannt ohne Neufreigabe (Welle #579, Anwenderentscheid 26.09.2026).** Der
+> Hoteltyp des freien Paketteils heißt „Hotel (aus Messung, je Zimmer)" (Quelle
+> `Skripte/tww_hotel_aus_messung.json`; der Tagesgangsatz behält „Hotel (aus Messung)"). Kein
+> Schemaschritt. Befehlsfolge auf der Fassung `09b6c523…`, wiederholbar auf jeder späteren:
+> `py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite --paketteil-schreiben`
+> („0 angelegt, 1 nachgeführt" — das Skript benennt die Zeile unter dem früheren Bezeichner um, statt eine
+> zweite anzulegen; schreibt zugleich `Katalogpaket_frei/Tab_TwwNutzungsart_STAMM.csv`), danach derselbe
+> Aufruf ohne Schalter („0 / 0"). Zellvergleich: allein `Tab_TwwNutzungsart_STAMM` ID 9, Spalte
+> `Bezeichner`; `integrity_check` ok, `foreign_key_check` leer; 71 557 120 Byte, LFS-SHA-256
+> `1923b7d7abb5f8590bbe52a4369d5a03bfe5c455db87c263eab2255b609b97f4`. **Keine Einfrierregel ist
+> berührt, kein Basiswechsel:** Kein Referenzprojekt benutzt die Zeile (1045 rechnet mit „Wohnen groß
+> (abgeleitet)"). Referenzlauf der sieben CI-Projekte gegen R22: alle PASS.
+
+<!-- NACHTRÄGE ZWISCHEN R22 UND R23, ENDE -->
+
+## Die Basis R23 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat vom 26. bis 29.09.2026 die Basis R23 beschrieben — die zwei Anlässe (#568:
+Bereitschaftsverlust des Heizkessels nur in betriebsbereiten Stunden; Elektrokessel ohne Kesselemission) und
+die A/B-Tafel gegen R22. Er steht unten im Wortlaut. Die Nachträge der Testdatenbank zwischen R23 und R24
+(Schemaschritte 151 bis 154) stehen am Ende dieses Abschnitts; sie sind mit R25 aus
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) hierher gewandert.
+
+**`2026-09-26_R23_KesselBereitschaft/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 685 Skalare, Schemastand 150, Testdatenbank
+`09b6c523…`, auf Windows eingefroren; getragen bis zur Fassung `6f0d5458…` (Schemastand 152, ohne
+Rechenwirkung).
+
+**Abgelöst wurde R23 durch `2026-09-27_R24_Heizgrenze`** (Anwenderentscheid 27.09.2026 zu #568, Punkt d):
+Heiztag der Kesselbereitschaft ist ein Tag, dessen Mittel der Außentemperatur unter der Heizgrenze des
+Projekts liegt (leer 15 °C, `Tab_Einstellungen.Kessel_Heizgrenze`). R24 ist auf Linux eingefroren; derselbe
+Rechenweg rechnet dort in neunzehn Dateien von 1007, 1008, 1023, 1024, 1042 und 1046 anders als auf Windows.
+Allein der Rechenweg (Stand R23 auf Linux → R24): 3/15 PASS, 448/460 CSV byte-gleich, alle Zeitreihen
+byte-gleich; Bereitschaftsstunden 1007/1046 5 931 → 4 335, 1008 5 260 → 3 793, 1017 4 534 → 4 482,
+1047 7 401 → 6 111, 1023 unverändert 3 702 — die Tafel steht unten im Abschnitt R24.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass 1: der Bereitschaftsverlust des Heizkessels fällt nur in betriebsbereiten Stunden an**
+> (Statusnummer #568, Anwenderentscheid 26.09.2026). Die Vorgabe `Tab_Einstellungen.Kessel_Betriebsbereitschaft`
+> [h/a] wurde bis R22 nicht gelesen, und jede Stillstandsstunde des Jahres trug die Bereitschaftsleistung × 1 h.
+> Jetzt ist ein stillstehender Kessel betriebsbereit, wenn der Tag ein Heiztag ist (Raumwärmebedarf des
+> Projekts vor der Kaskade > 0) oder er in den 24 Stunden davor gelaufen ist (Nachlauf); nur dann trägt
+> er den Verlust (`SimulationSPK.IstBetriebsbereit`). Eine Vorgabe > 0 deckelt Lauf- plus
+> Bereitschaftsstunden und meldet den Überhang; das Laufprotokoll nennt je Kessel Laufstunden, Starts,
+> Bereitschaftsstunden und Bereitschaftsverlust. Die Basis führt diese vier Größen neu als
+> `Kessel[i].Laufstunden`, `.Starts`, `.Bereitschaftsstunden`, `.BereitschaftKwh` (60 Skalare mehr).
+>
+> **Anlass 2: der Elektrokessel trägt keine Kesselemission.** Sein Strom steht im Reststrombedarf und damit
+> im Netzbezug, den Emissionsbilanz und Kosten bewerten; `Em.Kessel.*` zählte ihn ein zweites Mal mit dem
+> Stromfaktor. Jetzt ist `Em.Kessel.*` beim Elektrokessel 0 (`EPOS.Kern.Tests/KesselBereitschaftTests`).
+>
+> **A/B gegen R22** (15 Projekte): **0/15 PASS** allein wegen der 60 neuen Skalare; **445/460 CSV
+> byte-gleich**, alle Zeitreihen byte-gleich, verschieden sind nur die fünfzehn `aggregate.csv`. Außer den
+> neuen Einträgen wandern:
+>
+> | Projekt | Bereitschaftsstunden R22 → R23 | Kessel-Verbrauch [MWh] | Jahresnutzungsgrad [%] | Kessel-CO₂ [t] |
+> |---|---|---|---|---|
+> | 1007, 1046 (Gas, 0,05 kW) | 6 963 → 5 931 | 10,68 → 10,63 | 84,74 → 85,16 | 2,563 → 2,550 |
+> | 1008 (Gas, 0,05 kW) | 6 292 → 5 260 | 23,85 → 23,80 | 86,44 → 86,63 | 5,723 → 5,711 |
+> | 1017 (Elektrokessel) | 5 742 → 4 534 | — | 97,92 → 98,24 | 11,51 → 0 |
+> | 1024 (Elektrokessel, 0 kW) | 3 839 → 2 712 | — | — | 28,40 → 0 |
+> | 1047 (Elektrokessel) | 8 694 → 7 401 | — | 66,61 → 70,05 | 0,84 → 0 |
+>
+> Mit dem CO₂ wandern SO₂, NOx und Staub des Kessels (`Em.Kessel.*`). Bei 1023 (0,03 kW) bleiben die
+> Bereitschaftsstunden 3 702, bei 1018, 1030, 1039, 1040, 1041, 1042, 1045 und 1049 ist die
+> Bereitschaftsleistung 0 — dort wandert keine Zahl außer den neuen Einträgen. Die Netzbezugs-Emissionen
+> stehen in keiner Referenz-CSV; die Wirtschaftlichkeit führte den Elektrokessel schon vorher ohne
+> Brennstoffverbrauch.
+>
+> **Kein Fehlschlag, keine Ablehnung:** 15/15 Projekte gerechnet. **Determinismus:** Der Einfrierlauf
+> ist mit dem A/B-Lauf 460/460 CSV byte-gleich.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-26_R23_KesselBereitschaft
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+<!-- NACHTRÄGE ZWISCHEN R23 UND R24, BEGINN -->
+
+> **Nachtrag 27.09.2026 — Schemastand der Testdatenbank auf 151, Basis unverändert.** Die erste Hälfte
+> der Stufe KP1 (Konditionierungsprofile) bringt den Schemaschritt **KP-S1** (Nummer 151): die drei
+> STRICT-Tabellen `Tab_Konditionierungskalender`, `Tab_Konditionierungsperiode` und
+> `Tab_Konditionierungsvorgabe` samt neun Indizes, **reines DDL, kein DML**. Die Testdatenbank steht damit
+> auf Schemastand **151**; ihre Größe bleibt 71 577 600 Byte nach dem `VACUUM` des Werkzeugs.
+>
+> **Die Basis bleibt, weil die Tabellen LEER entstehen** und kein Referenzprojekt eine Zeile trägt: Ohne
+> angelegten Kalender und ohne neue Matrixzelle nimmt der Gebäudeeingang wörtlich den Bestandszweig
+> (Konzept Konditionierungsprofile 6, „Bauvorschrift der Byte-Gleichheit"). Nachgerechnet am 27.09.2026:
+> **GESAMT PASS** über die fünfzehn Projekte und **byte-gleich** — 460 von 461 Dateien byte-identisch,
+> allein `protokoll.txt` weicht ab (nur Information). Die Wache
+> `EPOS.Kern.Tests/KonditionierungStandardfahrplanWacheTests` hält zusätzlich den Generator bitgleich
+> gegen den Bestandsfahrplan über alle 304 Gebäudezeilen der Testdatenbank und alle sieben Wochentage des
+> 1. Januar.
+>
+> **Die neunte Einfrierregel „gesäte Konditionierungsdaten" kommt erst mit KP3** (Konzept
+> Konditionierungsprofile 10.3), zusammen mit dem neuen Referenzprojekt — bis dahin gibt es keine gesäten
+> Konditionierungsdaten, die sie halten müsste.
+
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 152, Basis unverändert.** Die Welle W1 der
+> Stufe KP1b bringt den Schemaschritt **KP-S1v** (Nummer 152, `KonditionierungVorlagenSchema`): die leere
+> STRICT-Tabelle `Tab_Konditionierungsvorlage_STAMM` mit ihrer Namensregel, den Fremdschlüssel
+> `ID_Vorlage` an Kalender- und Vorgabetabelle per Tabellenneubau (IDs und Zählerstände erhalten), acht
+> Teilindizes der Eindeutigkeit und die nullbare Spalte `Nachtauskuehlstunden_H` an `Tab_ErgebnisGebaeude`
+> und `Tab_ErgebnisZone`; kein DML an Bestandsdaten. Die Testdatenbank steht damit auf Schemastand **152**,
+> 71 622 656 Byte, LFS-SHA-256 `1a86846c52fd06f06c861d9b720549a5906c6bf4634d426c677153e076e03de0`. Die
+> Basis bleibt: Die drei Tabellen der Konditionierung sind leer, und die Ergebnistabellen liest der
+> Referenzlauf nicht (von der Gebäudesimulation gegen R23 gezeigt, mit der Heizgrenze unten gegen R24).
+
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 153, Basis unverändert.** Die Bezugsart Zimmer des
+> Zapfprofilgenerators (Auftrag A2, Umsetzungskonzept Zapfprofilgenerator N34 und N36, Weg 3 der Hotel-Durchsicht)
+> bringt den Schemaschritt **153** (`TwwBezugsartSchema`): `Tab_TwwNutzungsart_STAMM` und
+> `Tab_TwwBedarfstag_STAMM` neu gebaut mit der Prüfklausel der Bezugsart 1 bis 8, Zeilen, IDs und Zähler
+> unverändert, dazu die Nachführung der Auslieferungszeilen des Paketteils in einem früheren Stand (in der
+> Testdatenbank keine — ihre Zeilen tragen Status `EIGEN`). Danach führt `Skripte/tww_testkatalog_fiktiv.py`
+> die Hotelzeile auf die Bezugsart Zimmer nach. Zellvergleich gegen die Fassung
+> `1a86846c…`: allein `Tab_Applikation.SchemaVersion` 152 → 153 und `Tab_TwwNutzungsart_STAMM` ID 9
+> `Bezugsart` 3 → 8; im Schema allein die Prüfklausel beider Tabellen. Neue Fassung `621cf64a…`,
+> 71 622 656 Byte. **Die Basis bleibt** (von der Zapfprofil-Sitzung gegen R23 gezeigt, mit der Heizgrenze unten gegen R24): Kein Referenzprojekt benutzt die Hotelzeile (1045 rechnet mit
+> „Wohnen groß (abgeleitet)"), die Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt.
+
+> **Nachtrag 29.09.2026 — Schemaschritt 154 (Heizgrenze der Kesselbereitschaft).** Anwenderentscheid
+> 27.09.2026 zu #568: `Tab_Einstellungen.Kessel_Heizgrenze` (`REAL`, nullbar, ohne Vorgabe; NULL = Vorgabe
+> 15 °C), **reines DDL, kein DML**; Quelle `KesselHeizgrenzeSchema`. Die Testdatenbank wurde aus der Fassung
+> `22b1f882…` (Schemastand 151) mit `Werkzeuge/Testdatenbankschema` nachgezogen — eine Spalte angelegt, ein
+> zweiter Lauf 0/0. Zellvergleich über 11 034 499 Zellen: einzige Abweichungen `Tab_Applikation.SchemaVersion`
+> 151 → 152 und die neue Spalte (25 Zeilen, alle NULL); Tabelle weiter STRICT, `integrity_check` ok,
+> `foreign_key_check` leer; 71 577 600 Byte, LFS-SHA-256
+> `6f0d54587c149b3ac591e3b10209fd63ad9225b915fcc86146647bc82b35cd18`. Mit dem unveränderten Rechenweg
+> rechnen die fünfzehn Projekte darauf auf Linux byte-gleich zum Lauf auf der Fassung `22b1f882…`
+> (460/460 CSV); die Rechenwirkung kommt mit der Regel selbst (Basis R24).
+>
+> **Beim Zusammenführen umnummeriert.** Gebaut und eingefroren wurde die Heizgrenze als Schritt 152 auf der
+> Fassung `6f0d5458…`; inzwischen belegten KP1b der Gebäudesimulation die 152 und die Bezugsart Zimmer des
+> Zapfprofilgenerators die 153. Die Heizgrenze ist deshalb **Schritt 154**, und die Testdatenbank wurde aus der
+> Fassung `621cf64a…` (Schemastand 153) mit `Werkzeuge/Testdatenbankschema` neu nachgezogen: einzige Abweichungen
+> `Tab_Applikation.SchemaVersion` 153 → 154 und die neue Spalte (25 Zeilen, alle NULL); `integrity_check` ok,
+> `foreign_key_check` leer; **71 622 656 Byte, LFS-SHA-256
+> `2e417b36e68147fd4c90fea562df64c0c2dad815142780df83f2004163c6d0b2`**. Die fünfzehn Projekte rechnen darauf auf
+> Linux **byte-gleich zu R24** (460/460 CSV, `vergleich` GESAMT PASS) — KP1b, die Bezugsart Zimmer und der
+> Schrittwechsel lassen die Basis stehen.
+
+<!-- NACHTRÄGE ZWISCHEN R23 UND R24, ENDE -->
+
+## Die Basis R24 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 29.09.2026 die Basis R24 beschrieben — den Anlass (#595: Heiztag der
+Kesselbereitschaft nach der Heizgrenze), das Einfrieren auf Linux mit dem Plattformbefund, den Nachtrag zu
+seiner Ursache (PB-1, #598) und die A/B-Tafel gegen R23. Er steht unten im Wortlaut; die Verweise sind auf
+diesen Ort umgestellt. Die Nachträge der Testdatenbank zwischen R23 und R24 stehen am Ende des Abschnitts
+R23 oben; zwischen R24 und R25 hat sich die Testdatenbank nicht geändert.
+
+**`2026-09-27_R24_Heizgrenze/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 685 Skalare, Schemastand 154, Testdatenbank
+`2e417b36…`, auf Linux eingefroren.
+
+**Abgelöst wurde R24 durch `2026-09-29_R25_Plattformrand`** (Anwenderentscheid 29.09.2026 zum
+Plattformbefund PB-1, #599): Die Abschaltprüfung der Phase G trägt den Zahlenrand der Hysterese, und ein
+Rest unter 10⁻⁹ kWh im Quellspeicher einer Wärmepumpe gilt als leer. R25 ist auf Windows eingefroren.
+Allein der Rechenweg (Windows vor dem Entscheid → R25): 10/15 PASS, 421/460 CSV byte-gleich; es ändern sich
+1008, 1018, 1023, 1039 und 1042 — die Tafel steht in `Referenzlaeufe/LIESMICH.md`. Gegen R24: 10/15 PASS,
+417/460 CSV byte-gleich.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-27_R24_Heizgrenze/`** — **fünfzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), **460 CSV**, **2 685 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 29.09.2026) gegen
+`Kenndaten_Test.sqlite` (eingefroren auf der Fassung `6f0d5458…`; die Testdatenbank steht jetzt auf
+Schemastand **154**, 71 622 656 Byte, LFS-SHA-256
+`2e417b36e68147fd4c90fea562df64c0c2dad815142780df83f2004163c6d0b2`, byte-gleich nachgerechnet — Nachträge am Ende des
+Abschnitts R23 oben). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049)
+jeden Push, `ios.yml` den iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den
+Tagesbilanz-Weg an Projekt 1040, `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die
+Generator-Bilanz von Projekt 1045 und `EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von
+Projekt 1049. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: der Heiztag der Kesselbereitschaft folgt der Außentemperatur** (Anwenderentscheid 27.09.2026 zu
+> #568, Punkt d). Ein stillstehender Heizkessel ist betriebsbereit — und trägt seinen Bereitschaftsverlust —,
+> wenn der Tag ein Heiztag ist oder er in den 24 Stunden davor lief. In R23 war Heiztag jeder Tag mit
+> Raumwärmebedarf > 0, bei den Gebäuden nach VDI 6007 fast jeder Tag. Jetzt ist Heiztag ein Tag, dessen
+> Mittel der Außentemperatur des Laufs über 24 Stunden **unter der Heizgrenze** liegt
+> (`SimulationSPK.HeiztageAus`, strikt, mit Rechenrand); die Heizgrenze steht je Projekt in
+> `Tab_Einstellungen.Kessel_Heizgrenze` (Schemaschritt 154), leer gilt **15 °C**. Nachlauf und Deckel
+> `Kessel_Betriebsbereitschaft` bleiben. Die Referenzprojekte führen keine eigene Heizgrenze; sie haben 254
+> Heiztage, 1018, 1030 und 1049 (andere Klimaregion) 269. Die neue Einfrierregel „gesäte Kesseldaten“ steht oben.
+>
+> **Auf Linux eingefroren — die Plattform zählt.** R23 ist auf Windows eingefroren. Derselbe Rechenweg (Stand
+> R23, `bd820bdb`, Testdatenbank `09b6c523…`) rechnet auf Linux in **19 Dateien** anders als auf Windows:
+> Zeitreihen und Skalare von 1008, 1023 und 1042 **jenseits der Toleranz** (eine Schwelle kippt am letzten
+> Bit: Pufferladung, Laufstunden eines Wärmepumpenmoduls), `heizstab.csv` von 1007 und 1046 sowie
+> `kessel_leistung.csv`/`kessel_strom.csv` von 1024 innerhalb der Toleranz. Keines der sieben CI-Projekte
+> weicht jenseits der Toleranz ab; die CI rechnet auf ubuntu und vergleicht mit R24 Linux gegen Linux. Ein
+> Windows-Lauf gegen R24 zeigt dieselben Unterschiede in der Gegenrichtung.
+>
+> **Ursache belegt (PB-1, #598, 29.09.2026).** Nicht die Arithmetik weicht ab, sondern die C-Bibliothek:
+> `Math.Sin`, `Cos`, `Asin`, `Acos` und `Exp` runden unter Windows (UCRT) bei 0,7–5 % der Argumente von
+> Sonnenstand und Gebäudematrix 1 ULP anders als unter Linux (glibc). Mit korrekt gerundeten Werten rechnet
+> Windows 13 der 15 Projekte byte-gleich zu R24. Es kippen zwei Entscheidungen:
+> - die Abschaltprüfung der Phase G (`Kaskadenschleife.cs:1006–1008`, `SOC >= Q_max · SchwelleAus` **ohne**
+>   Zahlenrand, nachdem die Nachentladung genau auf die Schwelle gesteuert hat) — 1008 ab Stunde 2531,
+>   1023 ab 2500;
+> - die Laufzeitzählung der Wärmepumpe am Quellpuffer, wo ein Rest von 10⁻¹⁶ kWh als volle Betriebsstunde
+>   zählt — 1042.
+>
+> Ein Zahlenrand an beiden Stellen macht die Plattformen gleich, ändert aber den Rechenweg von 1008, 1018,
+> 1023, 1039 und 1042. **Der Anwenderentscheid ist offen**; die Vorlage steht im
+> [Protokoll](../Protokolle/Simulation/PB1_Plattformbefund_Referenzlauf_Protokoll.md).
+> Bis dahin bleibt R24 die Basis. Ein Windows-Lauf gegen R24 mit 1008 (52), 1023 (21) und 1042 (2) FAIL und
+> 441/460 CSV byte-gleich ist der bekannte Stand ([`Werkzeuge/Gate/LIESMICH.md`](../../../Werkzeuge/Gate/LIESMICH.md)).
+>
+> **A/B, allein der Rechenweg** (Stand R23 auf Linux → R24): **3/15 PASS** (1018, 1023, 1041),
+> **448/460 CSV byte-gleich, alle Zeitreihen byte-gleich**; verschieden sind nur zwölf `aggregate.csv`.
+> **A/B gegen die Basis R23** (Windows): 2/15 PASS (1018, 1041), 431/460 CSV byte-gleich — die zwölf
+> `aggregate.csv` und die neunzehn Dateien der Plattform. Es wandern:
+>
+> | Projekt | Bereitschaftsstunden R23 → R24 | Kessel-Verbrauch [MWh] | Jahresnutzungsgrad [%] | Kessel-CO₂ [t] |
+> |---|---|---|---|---|
+> | 1007, 1046 (Gas, 0,05 kW) | 5 931 → 4 335 | 10,63 → 10,55 | 85,16 → 85,80 | 2,550 → 2,531 |
+> | 1008 (Gas, 0,05 kW) | 5 260 → 3 793 | 23,79 → 23,72 (Windows 23,80) | 86,63 → 86,90 | 5,709 → 5,692 |
+> | 1017 (Elektrokessel, 0,057 kW) | 4 534 → 4 482 | — | 98,24 → 98,26 | — |
+> | 1047 (Elektrokessel, 0,057 kW) | 7 401 → 6 111 | — | 70,05 → 73,86 | — |
+> | 1024 (Elektrokessel, 0 kW) | 2 712 → 2 582 | — | — | — |
+> | 1030, 1039, 1040, 1042, 1045, 1049 (0 kW) | 1 852 → 1 713, 3 772 → 2 236, 5 678 → 3 950, 5 446 → 3 355, 5 184 → 3 225, 6 591 → 5 322 | — | — | — |
+>
+> Mit dem CO₂ wandern SO₂, NOx und Staub des Kessels (`Em.Kessel.*`) und bei den Gaskesseln
+> `Heizkessel.Gasverbrauch`. Unverändert bleiben 1018 (3 501), 1023 (3 702 — jede übrige
+> Stillstandsstunde liegt im Nachlauf) und 1041 (der Kessel läuft durch); die Nachbildung aus den CSV
+> von R23 mit `stundentemperatur.csv` sagte dieselben Zahlen voraus. Bei 0 kW Bereitschaftsleistung
+> wandern nur die Stunden.
+>
+> **Kein Fehlschlag, keine Ablehnung:** 15/15 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist
+> mit dem Einfrierlauf 460/460 CSV byte-gleich.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-27_R24_Heizgrenze
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R25 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 29.09.2026 die Basis R25 beschrieben — den Anlass (#599: Zahlenrand an
+Phase G und Quellspeicher), die Vorhersage des Linux-Laufs aus der Nachbildung und die A/B-Tafel gegen den
+Stand vor dem Entscheid und gegen R24. Er steht unten im Wortlaut; die Verweise sind auf diesen Ort
+umgestellt. Zwischen R25 und R26 hat sich die Testdatenbank nicht geändert.
+
+**`2026-09-29_R25_Plattformrand/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 685 Skalare, Schemastand 154, Testdatenbank
+`2e417b36…`, auf Windows eingefroren.
+
+**Abgelöst wurde R25 durch `2026-09-29_R26_Kesselrest`** (Anwenderentscheid 29.09.2026, Nachzug zu PB-1):
+Ein Kessel läuft erst ab dem Zahlenrand von 10⁻⁹ kWh, ein Rechenrest ist keine Laufstunde; R26 ist auf Linux
+eingefroren. A/B gegen R25: 14/15 PASS, 454/460 CSV byte-gleich — der Rechenweg ändert allein
+`aggregate.csv` von 1024 (Kessel-Laufstunden 4 921 → 4 895, Starts 228 → 233), der Plattformwechsel fünf
+Dateien mit Resten im Band. Die Vorhersage der Linux-Zeile hat sich bestätigt: R25-Rechenweg auf Linux gegen
+R25 GESAMT PASS, 455/460. Die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-29_R25_Plattformrand/`** — **fünfzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), **460 CSV**, **2 685 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Windows** (x64, Kultur de-DE, eingefroren am 29.09.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **154**, 71 622 656 Byte, LFS-SHA-256
+`2e417b36e68147fd4c90fea562df64c0c2dad815142780df83f2004163c6d0b2`, unverändert seit R24). Gegen diese Basis
+hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push, `ios.yml` den
+iZ6-Vergleich für 1030, `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 und
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042.
+Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Zahlenrand an der Abschaltprüfung der Phase G und am Quellspeicher der Wärmepumpe**
+> (Plattformbefund PB-1, Anwenderentscheid 29.09.2026 „Rand an Phase G und Quellpuffer, neue Basis R25“,
+> #599). Zwei Entscheidungen hingen am letzten Bit und rechneten deshalb auf Windows und Linux verschieden:
+> - Die Abschaltprüfung der Phase G in `Kaskadenschleife` verglich den Füllstand ohne Zahlenrand mit
+>   `Q_max · SchwelleAus`, auf den die Nachentladung ihn gerade gesteuert hatte. Jetzt nimmt sie
+>   `SimulationPufferspeicher.AbschaltschwelleErreicht()`, dieselbe Prüfung mit Rand wie die Hysterese.
+> - Ein Rest von 10⁻¹⁶ kWh im Quellspeicher einer Wärmepumpe skalierte das Modul auf ebenso wenig, und die
+>   Laufzeitzählung wertete das als volle Betriebsstunde. Jetzt gilt ein Rest unter `Rechenrand.ABSOLUT`
+>   (10⁻⁹ kWh) als leer (`SimulationWaermepumpe.QuellInhalt`).
+>
+> Ursache und Messung stehen im Protokoll
+> [`PB1_Plattformbefund_Referenzlauf_Protokoll.md`](../../../Dokumentation/ueberholt/Protokolle/Simulation/PB1_Plattformbefund_Referenzlauf_Protokoll.md).
+>
+> **Windows und Linux rechnen jetzt innerhalb der Toleranz gleich.** R25 ist auf Windows eingefroren. Die
+> Nachbildung des Linux-Laufs (korrekt gerundete Transzendente) ergibt gegen R25 **GESAMT PASS** über die
+> fünfzehn Projekte. Byte-verschieden sind dabei nur Reste im Band: `heizstab.csv` von 1007 und 1046
+> (8,3·10⁻¹⁷ kWh), `kessel_leistung.csv` und `kessel_strom.csv` von 1024 (6,7·10⁻¹⁶ kWh) und
+> `puffer_soc.csv` von 1042 (Reste im Quellspeicher). Der Lauf auf einem echten Linux-Läufer steht für die
+> sieben CI-Projekte in `kern.yml` und für alle fünfzehn im Cloud-Gate aus.
+>
+> **A/B, allein der Rechenweg** (Windows, Stand vor dem Entscheid → R25): **10/15 PASS**, 421/460 CSV
+> byte-gleich; es ändern sich nur 1008, 1018, 1023, 1039 und 1042 (Skalare der `aggregate.csv`):
+>
+> | Projekt | `Puffer.Ladung_gesamt` | weitere Größen |
+> |---|---|---|
+> | 1008 | 30 542 → 32 940 (+7,9 %) | `Heizkessel.Waermeproduktion` 20,61 → 20,55, `Heizkessel.Gasverbrauch` 23,72 → 23,65, WP-Vollbenutzungsstunden 2 995,61 → 3 000,51 |
+> | 1018 | 36 737 → 45 772 (+24,6 %) | Durchsatz des Puffers 32 679 → 23 644 — die Wärme wandert vom Durchfluss in den Umsatz; die Deckung bleibt (BHKW 84,65 → 84,66 %) |
+> | 1023 | 68 955 → 69 359 (+0,6 %) | `Heizkessel.Waermeproduktion` 79,83 → 79,80, WP-Vollbenutzungsstunden 4 944,78 → 4 951,06 |
+> | 1039 | 149 121 → 149 334 (+0,1 %) | `Heizkessel.Waermeproduktion` 289,11 → 289,27 |
+> | 1042 | unverändert | Betriebsstunden Modul 1 2 073,4 → 1 575,4, WP-Vollbenutzungsstunden 4 034,34 → 3 785,34 |
+>
+> **Gegen R24** (auf Linux eingefroren): 10/15 PASS, 417/460 CSV byte-gleich. Es sind dieselben fünf
+> Projekte, dazu die Reste im Band von 1007, 1024 und 1046 aus dem Plattformwechsel.
+>
+> **Keine Einfrierregel ist berührt**, die Testdatenbank bleibt. **Kein Fehlschlag, keine Ablehnung:** 15/15
+> Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 460/460 CSV byte-gleich.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-29_R25_Plattformrand
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R26 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat vom 29. bis zum 30.09.2026 die Basis R26 beschrieben — die zwei Anlässe
+(Kessellauf mit Zahlenrand, Einfrieren auf Linux) und die A/B-Tafel gegen R25 —, darunter den Abschnitt zur
+Vorgängerbasis R25 mit den Nachträgen der Schemaschritte 155 und 156, die R26 byte-gleich überstanden hat. Beides
+steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt.
+
+**`2026-09-29_R26_Kesselrest/`** — fünfzehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040,
+1041, 1042, 1045, 1046, 1047, 1049), 460 CSV, 2 685 Skalare, auf Linux eingefroren; getragen bis zur Testdatenbank
+`111be189…` (Schemastand 156).
+
+**Abgelöst wurde R26 durch `2026-09-30_R27_Kesselteillast`** (Konzept Kesselkennlinie, Etappe E2, Entscheide F1
+und F4): Ein Brennstoffkessel rechnet je Stunde mit dem Wirkungsgrad seiner Laststufe, ein leeres η₃₀ nimmt die
+Normvorgabe nach Bauart, und das Referenzprojekt 1050 „Kesselkennlinie“ (Kopie von 1023 mit gepflegter Kennlinie)
+ist das sechzehnte Projekt. A/B gegen R26: 14/15 PASS, 459/460 CSV byte-gleich ohne die fünf neuen
+Kennlinienschlüssel — der Rechenweg ändert allein `aggregate.csv` von 1023 (Gasverbrauch 91,42 → 91,02 MWh/a,
+Jahresnutzungsgrad 87,29 → 87,67 %). Die Tafel steht im Abschnitt zur Basis R27 unten, die Tafel je
+Kesselprojekt im Protokoll
+[`SK5_Kessel_Kennlinie_E2_R27_Protokoll.md`](../Protokolle/Simulation/SK5_Kessel_Kennlinie_E2_R27_Protokoll.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-29_R26_Kesselrest/`** — **fünfzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049), **460 CSV**, **2 685 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 29.09.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **154**, 71 622 656 Byte, LFS-SHA-256
+`2e417b36e68147fd4c90fea562df64c0c2dad815142780df83f2004163c6d0b2`, unverändert seit R24). Gegen diese Basis
+hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben
+Projekte ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 und
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass 1: Der Kessellauf trägt den Zahlenrand** (Nachzug zum Plattformbefund PB-1, Anwenderentscheid
+> 29.09.2026). Ein Kessel, der nur den Rest einer Vorstufe deckte (10⁻¹⁶ kWh), zählte eine Laufstunde und
+> einen Start — je Plattform an anderen Stunden, weil der Rest am letzten Bit der C-Bibliothek hängt. Jetzt
+> läuft er erst ab `Rechenrand.ABSOLUT` (10⁻⁹ kWh, `SimulationSPK.KesselLaeuft`), derselbe Rand wie am
+> Quellspeicher. Solche Stunden hat nur Projekt 1024: Kessel-Laufstunden 4 921 → 4 895, Starts 228 → 233,
+> Bereitschaftsstunden 2 582 → 2 608 (Bereitschaftsleistung 0 kW, keine Energie).
+>
+> **Anlass 2: Die Basis steht auf Linux, dem Läufer der CI.** R25 ist auf Windows eingefroren, die CI rechnet
+> auf ubuntu. Der Plattformwechsel zeigt sich in fünf Dateien nur als Rechenrest im Band (höchstens
+> 8,9·10⁻¹⁶): `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024
+> (Stunde 2577) und `puffer_soc.csv` von 1042. Der R25-Rechenweg auf Linux gegen R25 ist **GESAMT PASS,
+> 455/460 CSV byte-gleich**, verschieden genau diese fünf Dateien — die Vorhersage von R25 aus der
+> Nachbildung ist damit auf einem echten Linux-Läufer bestätigt.
+>
+> **A/B gegen R25:** **14/15 PASS, 454/460 CSV byte-gleich**. Zerlegt nach Ursache:
+>
+> | Anteil | CSV | Befund |
+> |---|---|---|
+> | Rechenweg (R25-Rechenweg auf Linux → R26) | 1 | `aggregate.csv` von 1024: `Kessel[0].Laufstunden` 4 921 → 4 895, `.Starts` 228 → 233, `.Bereitschaftsstunden` 2 582 → 2 608 — jenseits der Toleranz |
+> | Plattformwechsel (Windows → Linux) | 5 | `heizstab.csv` 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` 1024, `puffer_soc.csv` 1042 — Reste ≤ 8,9·10⁻¹⁶, innerhalb der Toleranz |
+>
+> Die sieben CI-Projekte sind innerhalb der Toleranz gleich; byte-verschieden ist unter ihnen nur
+> `heizstab.csv` von 1007 und 1046 (Plattformwechsel).
+>
+> **Keine Einfrierregel ist berührt**, auch „gesäte Kesseldaten“ nicht: Heizgrenze, Betriebsbereitschaft und
+> Bereitschaftsleistung bleiben, geändert hat sich die Zählung. **Kein Fehlschlag, keine Ablehnung:** 15/15
+> Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 460/460 CSV byte-gleich.
+> **Plattformnachweis:** gestört gegen ungestört 15/15 PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049 \
+>   --ziel Referenzlaeufe/2026-09-29_R26_Kesselrest
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+### Die Vorgängerbasis R25 `2026-09-29_R25_Plattformrand`
+
+Fünfzehn Projekte, 460 CSV, 2 685 Skalare, Schemastand 154 (`2e417b36…`), auf Windows eingefroren; mit R26
+aus dem Arbeitsbaum gefallen, Protokoll unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen
+R25 und R26 hat sich die Testdatenbank nicht geändert.
+
+> **Nachtrag 29.09.2026 — Schemastand der Testdatenbank auf 155, Basis unverändert.** Die Volumina der
+> einzelnen Verfahren als Wahl der Füllstandslinie (Auftrag F1, Umsetzungskonzept Zapfprofilgenerator N36 (d))
+> bringen den Schemaschritt **155** (`TwwFuellstandSchema`, Nummer als `KesselHeizgrenzeSchema.SCHRITT + 1`):
+> `Tab_TwwProjekt` nach dem Hausrezept neu gebaut mit der Prüfklausel `Fuellstand_Bezug IN (1,…,8)` — 5 … 8 sind
+> die vier Verfahren des Verfahrensvergleichs —, Zeilen, IDs und Zähler unverändert, **kein DML**. Die
+> Testdatenbank wurde aus der Fassung `2e417b36…` (Schemastand 154) mit `Werkzeuge/Testdatenbankschema`
+> nachgezogen, ein zweiter Lauf 0 Änderungen; `integrity_check` ok, `foreign_key_check` leer. Zellvergleich über
+> alle Tabellen: allein `Tab_Applikation.SchemaVersion` 154 → 155, im Schema die Prüfklausel von
+> `Tab_TwwProjekt` und in `sqlite_sequence` die Reihenfolge (gleiche Werte, `Tab_TwwProjekt` ans Ende gewandert —
+> Folge des Tabellenneubaus). Neue Fassung **71 622 656 Byte, LFS-SHA-256
+> `2b28fb6f4783e5c64df8c6e2d1691ffca53f362bc6a6735ca8d97fc612d6ee44`**. **Die Basis bleibt:** Die fünfzehn
+> Projekte rechnen darauf auf Linux byte-gleich zum Lauf auf der Fassung `2e417b36…` (460/460 CSV) und
+> `vergleich` gegen R24 meldet GESAMT PASS. `Tab_TwwProjekt` des Referenzprojekts 1045 bleibt zellgleich — die
+> Einfrierregel „gesäte Zapfprofil-Eingaben" ist nicht berührt, und die Speicherauslegung ist nachrichtlich.
+
+> **Nachtrag 29.09.2026 — Schemaschritt 156 (Kennlinienspalten des Heizkessels), Basis unverändert.** Konzept
+> Kesselkennlinie, Etappe E1 (#569): an `Tab_Heizkessel_STAMM` und `Tab_Heizkessel` je fünf Spalten —
+> `Wirkungsgrad_Teillast30`, `Mindestleistung`, `Anfahrverlust_kWh` (`REAL`, nullbar, ohne Vorgabe),
+> `Mindestlaufzeit_min` (`INTEGER`, nullbar) und `Kennlinie_Brennwert` (`INTEGER NOT NULL DEFAULT 0`, 0/1) —,
+> reines DDL aus `KesselKennlinieSchema` (Nummer als `TwwFuellstandSchema.SCHRITT + 1`). Die Testdatenbank ist
+> aus der Fassung `2b28fb6f…` (Schemastand 155) mit `Werkzeuge/Testdatenbankschema` auf **156** gezogen (zweiter
+> Lauf 0/0; Zellvergleich 11 034 342 Zellen, einzige Abweichung `SchemaVersion` 155 → 156, die neuen Spalten in
+> 63 bzw. 25 Zeilen leer bzw. 0; `integrity_check` ok, `foreign_key_check` leer; Zwischenstand LFS-SHA-256
+> `1aa6f548…`). Kein Rechenweg liest die Spalten.
+>
+> **Danach die Nachpflege des Kesselkatalogs** (Entscheide F2 und F3): `Werkzeuge/Testdatenbankschema
+> Referenzlaeufe/Kenndaten_Test.sqlite --kesselkatalog VDI-3805-Daten/SPK-Daten` (`KesselkatalogNachpflege`
+> im Kern) gleicht die 63 Sätze von `Tab_Heizkessel_STAMM` mit den 14 Kesseldateien (1 650 Sätze) ab: 60
+> zugeordnet und nachgepflegt — η₃₀ in 46, η₁₀₀ aus Satz 710.01 in 27, kleinste Leistung in 60 Sätzen,
+> `Brennwert` 0 → 1 in 40; danach **46 Brennwertgeräte** (vorher 6); ohne Dateisatz bleiben `eloBLOCK VE 10`,
+> `eloBLOCK VE 15` und `Test`. Zellvergleich gegen den Zwischenstand: 173 Zellen, allein in
+> `Tab_Heizkessel_STAMM` (`Wirkungsgrad_Teillast30` 46, `Mindestleistung` 60, `Brennwert` 40,
+> `Wirkungsgrad_Gas` 26, `Wirkungsgrad_Öl` 1); **`Tab_Heizkessel` (die Projektkopien) zellgleich**; ein zweiter
+> Lauf 0 Änderungen; `integrity_check` ok, `foreign_key_check` leer. Neue Fassung **71 626 752 Byte, LFS-SHA-256
+> `111be18945ece5aba5e605eeca082993646e0a267428eb7400d29c3fa2b4c39d`**. **Die Basis bleibt:** Die Projekte rechnen
+> aus ihren Projektkopien, der Lauf der fünfzehn Projekte auf dieser Fassung ist gegen R26 byte-gleich. Die
+> Einfrierregel „gesäte Kesselkennlinie“ (Konzept 3.3) kommt mit dem Rechenweg der Etappe E2.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R27 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 30.09.2026 die Basis R27 beschrieben — die drei Anlässe (Teillastkennlinie,
+Referenzprojekt 1050, neue Skalare) und die A/B-Tafel gegen R26 —, darunter den Abschnitt zur Vorgängerbasis R26 mit
+dem Nachtrag des Schemaschritts 157, den R27 byte-gleich überstanden hat. Beides steht unten im Wortlaut; die
+Verweise sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R27 durch `2026-09-30_R28_Kesselbrennwert`** (Konzept Kesselkennlinie, Etappen E2b und E3;
+Anwenderentscheid B-1 und Entscheid F5): Schemaschritt 158 kennzeichnet die Brennstoffkessel der Projektkopien nach
+ihrem Katalogsatz als Brennwertkessel, und ein Brennwertkessel mit Brennwertkennlinie rechnet je Stunde mit dem
+Rücklauf. A/B gegen R27: 4/16 PASS, 471/487 CSV byte-gleich ohne die vier neuen Brennwertschlüssel — allein
+`aggregate.csv` weicht ab: elf Projekte durch das Kennzeichen (Brennstoff −0,6 bis −5,7 %), 1050 durch die
+Brennwertkennlinie (Gasverbrauch 81,96 → 80,66 MWh/a). Die Tafeln stehen in `Referenzlaeufe/LIESMICH.md` und im
+Protokoll
+[`SK6_Kessel_Brennwert_E3_R28_Protokoll.md`](../Protokolle/Simulation/SK6_Kessel_Brennwert_E3_R28_Protokoll.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-30_R27_Kesselteillast/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **2 920 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 30.09.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **156**, 81 690 624 Byte, LFS-SHA-256
+`5bca909d901db93c211884ade28f9853cb6df60731e54111f7a605922b2909ac`). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049,
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024 und `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023
+und die gesäte Kennlinie des Referenzprojekts 1050. 1050 steht nicht in der CI-Auswahl;
+`Werkzeuge/Gate/gate_linux.sh` rechnet alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass 1: Die Teillastkennlinie des Heizkessels** (Konzept Kesselkennlinie, Etappe E2; Anwenderauftrag
+> 29.09.2026, Entscheide F1 und F4). Ein Brennstoffkessel rechnet je Stunde mit dem Wirkungsgrad seiner
+> Laststufe β = Wärme/Nennleistung: zwischen 30 % und 100 % linear von η₃₀ nach η₁₀₀, darunter η₃₀
+> (`Kesselkennlinie.Eta`, gerufen in `SimulationSPK.Stunde_Abschluss`). Ein leeres η₃₀ nimmt die Normvorgabe
+> nach Bauart (F1, Konzept 7.1): Brennwertkessel (`Brennwert` = 1) η₁₀₀ + 0,06 bis Hs/Hi des Brennstoffs,
+> Standardkessel (VDI-Bauart „Standard…“) η₁₀₀ − 0,03, alle übrigen als Niedertemperaturkessel η₁₀₀. In den
+> fünfzehn bisherigen Projekten trägt kein Kessel ein eigenes η₃₀, und allein 1023 führt in der Projektkopie
+> `Brennwert` = 1. Alle übrigen Brennstoffkessel rechnen deshalb mit flacher Kurve, Stunde für Stunde bitgleich
+> zum festen Wirkungsgrad; die Elektrokessel (1017, 1024, 1047) haben keine Kennlinie.
+>
+> **Anlass 2: Das Referenzprojekt 1050 „Kesselkennlinie“** (Konzept 4.3, F4) — Kopie von 1023 mit gepflegter
+> Kennlinie, sechzehntes Projekt der Basis, nicht in der CI-Auswahl (Abschnitt „Das Referenzprojekt 1050“
+> unten). Brennwertkennlinie und Taktfelder rechnen erst mit den Etappen E3 und E4.
+>
+> **Anlass 3: fünf neue Skalare je Kessel** in `aggregate.csv`: `Kessel[i].Eta100`, `.Eta30` (wirksam, gepflegt
+> oder Normvorgabe), `.EtaBetrieb` (Wärme der Laufstunden durch ihren Brennstoff), `.LaststufeMittel` und
+> `.TeillastKwh` (Mehrbrennstoff aus Teillast gegenüber η₁₀₀, negativ als Ersparnis).
+>
+> **A/B gegen R26** (beide auf Linux; `vergleich` mit `--ohne` für die fünf neuen Schlüssel): **14/15 PASS**,
+> 459/460 CSV byte-gleich, wenn `aggregate.csv` ohne die neuen Schlüssel verglichen wird; 1050 steht nur im
+> neuen Lauf. Zerlegt nach Ursache:
+>
+> | Ursache | CSV | Befund |
+> |---|---|---|
+> | Rechenweg Teillast und Normvorgabe | 1 | `aggregate.csv` von 1023: Gasverbrauch 91,42 → 91,02 MWh/a (−0,4 %), Jahresnutzungsgrad 87,29 → 87,67 %, `Em.Kessel.Co2T` 21,94 → 21,85 t/a, `Em.Kessel.NoxKg` 10,06 → 10,01 kg/a — jenseits der Toleranz. η₃₀ = 0,874 + 0,06 = 0,934; der Kessel läuft im Mittel bei 82 % Last, sein Wirkungsgrad im Betrieb ist 0,878, die Teillast spart 396 kWh/a. Wärme (79,80 MWh/a) und alle Zeitreihen bleiben. |
+> | neue Skalare | 15 | `aggregate.csv` jedes Projekts um die fünf Kennlinienschlüssel je Kessel gewachsen (75 Skalare); die übrigen Werte der vierzehn Projekte außer 1023 byte-gleich |
+> | neues Projekt | 27 | `Projekt_1050/`: bei derselben Wärme wie 1023 Gasverbrauch 81,96 MWh/a, Jahresnutzungsgrad 97,37 %, Wirkungsgrad im Betrieb 0,975, Teillast −424 kWh/a |
+>
+> Die Brennstoffkessel von 1007, 1008, 1018, 1030, 1039, 1040, 1041, 1042, 1045, 1046 und 1049 bleiben
+> unverändert (Tafel je Kesselprojekt im Protokoll
+> [`SK5_Kessel_Kennlinie_E2_R27_Protokoll.md`](../Protokolle/Simulation/SK5_Kessel_Kennlinie_E2_R27_Protokoll.md)).
+> Die sieben CI-Projekte sind innerhalb der Toleranz gleich und bis auf die neuen Schlüssel byte-gleich.
+>
+> **Die Einfrierregel „gesäte Kesseldaten“ ist erweitert** (oben): Kennlinienspalten, `Brennwert` und Bauart
+> eines Referenzkessels sowie das Anlegen oder Entfernen von 1050. **Kein Fehlschlag, keine Ablehnung:** 16/16
+> Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 487/487 CSV byte-gleich.
+> **Plattformnachweis:** gestört gegen ungestört 16/16 PASS, 480/487 CSV byte-gleich — dieselben sieben Dateien
+> wie mit R26.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-09-30_R27_Kesselteillast
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+### Die Vorgängerbasis R26 (Stand der Basis R27)
+
+Fünfzehn Projekte, 460 CSV, 2 685 Skalare, auf Linux eingefroren, getragen bis zur Testdatenbank `111be189…`
+(Schemastand 156 samt Nachpflege des Kesselkatalogs); mit R27 aus dem Arbeitsbaum gefallen, Protokoll, Anlass und
+die Nachträge der Schemaschritte 155 und 156 unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R26
+und R27 hat sich die Testdatenbank allein um das Referenzprojekt 1050 geändert (`111be189…` → `5bca909d…`): Der
+Kopierweg legt nur Zeilen des neuen Projekts an, die Vorlage 1023 ist nach dem Abdruck des Skripts zellgleich.
+
+> **Nachtrag 30.09.2026 — Schemaschritt 157 (die 14 ausgelieferten Konditionierungsvorlagen), Basis
+> unverändert.** KP-S1b nach Entscheid E56 F1 (b) (Teilkonzept Konditionierungsprofile 3.5, Entwurf KP2
+> Abschnitt 4): reines DML aus `KonditionierungsvorlagenSaatSchema` (Nummer als `KesselKennlinieSchema.SCHRITT + 1`,
+> Saat in `KonditionierungsvorlagenSaattabelle`) — 14 Vorlagen mit `ReadOnly = 1` in
+> `Tab_Konditionierungsvorlage_STAMM` (Wohnen, Büro, Schule je Größe, die Lüftung ohne Wohnen), 46 Vorgabezeilen und
+> bei Büro und Schule je ein Kalender ohne Woche mit den neun Feiertagsregeln „wie Sonntag“ (10 Kalender,
+> 90 Perioden). Die Testdatenbank ist aus der Fassung `111be189…` (Schemastand 156) mit
+> `Werkzeuge/Testdatenbankschema` auf **157** gezogen; ein zweiter Lauf legt nichts an (Zeilen gleich).
+> Zeilenvergleich über alle Tabellen: neu allein die 14 + 46 + 10 + 90 Zeilen der vier Konditionierungstabellen,
+> dazu `SchemaVersion` 156 → 157 und vier Zählerzeilen in `sqlite_sequence`; alle übrigen Tabellen zeilengleich,
+> Schema unverändert (153 STRICT-Tabellen); `integrity_check` ok, `foreign_key_check` leer. Neue Fassung
+> **71 634 944 Byte, LFS-SHA-256 `005f36609d7e4adb1d2eefaf16a7697439d2209b52552c4c94e4ddf56e917da5`**. **Die Basis
+> bleibt:** Kein Referenzprojekt trägt eine Vorlage, und die Leser des Laufs filtern über `ID_Gebaeude`; die
+> fünfzehn Projekte rechnen auf dieser Fassung gegen R26 GESAMT PASS mit 460/460 CSV byte-gleich, der gestörte
+> Lauf PASS. Keine Einfrierregel ist berührt; erst ein Referenzprojekt, das eine Vorlage benutzt (KP3), friert
+> ihre Werte ein.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R28 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 30.09.2026 die Basis R28 beschrieben — die drei Anlässe (Brennwertkennzeichen
+der Projektkessel, Brennwertkennlinie, neue Skalare), die Zerlegung des A/B gegen R27 nach Ursache und die Tafel je
+Kesselprojekt —, darunter den Abschnitt zur Vorgängerbasis R27. Beides steht unten im Wortlaut; die Verweise sind
+auf diesen Ort umgestellt.
+
+**Abgelöst wurde R28 durch `2026-09-30_R29_Kesseltakten`** (Konzept Kesselkennlinie, Etappe E4; Entscheid F1): Jeder
+Brennstoffkessel taktet unter seiner Mindestleistung — eine Taktstunde zählt so viele Starts, wie Mindestläufe ihre
+Wärme braucht, und jeder Start kostet den Anfahrverlust; leere Felder nehmen die Normvorgaben. `Kessel[i].Starts`
+zählt damit die Starts nach Konzept 4.2 statt der Laufphasen. A/B gegen R28: 3/16 PASS (die Elektrokessel 1017, 1024,
+1047), 471/487 CSV byte-gleich ohne die sechs neuen Taktschlüssel — allein `aggregate.csv` weicht ab (Starts,
+Brennstoff +0,12 bis +10,6 %, Nutzungsgrad, Kesselemissionen, in neun Projekten die Gasspitze). Die Tafel steht in
+`Referenzlaeufe/LIESMICH.md` und im Protokoll
+[`SK7_Kessel_Takten_E4_R29_Protokoll.md`](../Protokolle/Simulation/SK7_Kessel_Takten_E4_R29_Protokoll.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-30_R28_Kesselbrennwert/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **2 984 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 30.09.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **158**, 81 137 664 Byte, LFS-SHA-256
+`5d59041ffa44d7c0aa9a74c845b0a78e2cfe0c484c244d69603c352742ab27b3`). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049,
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007
+sowie die Brennwertkennlinie des Referenzprojekts 1050 und `EPOS.Kern.Tests/KesselBrennwertNachzugTests` das
+Brennwertkennzeichen der Projektkessel. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet
+alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass 1: Das Brennwertkennzeichen der Projektkessel** (Konzept Kesselkennlinie, Etappe E2b;
+> Anwenderentscheid B-1 vom 30.09.2026, „Auch Projekte nachziehen“). Schemaschritt **158**
+> (`KesselBrennwertNachzug`) setzt `Brennwert` = 1 in jeder Projektkopie `Tab_Heizkessel`, deren Katalogsatz ein
+> Brennwertkessel ist — über den Bezeichner gefunden, nach seinem Schalter oder seiner Bauart —, ohne eindeutigen
+> Katalogsatz nach der Bauart in der Beschreibung der Kopie; nur gesetzt, nie gelöscht. In der Testdatenbank trifft
+> er 19 Projektkopien, darunter die Brennstoffkessel aller Referenzprojekte außer 1023 und 1050, die das
+> Kennzeichen schon trugen; die Elektrokessel (1017, 1024, 1047) bleiben ohne. Ohne eigenes η₃₀ rechnen diese
+> Kessel mit der Normvorgabe des Brennwertkessels η₁₀₀ + 0,06 (höchstens Hs/Hi) statt mit flacher Kurve.
+>
+> **Anlass 2: Die Brennwertkennlinie** (Etappe E3; Konzept 4.1 Punkte 3 bis 5, Entscheid F5). Ein
+> Brennwertkessel mit `Kennlinie_Brennwert` = 1 rechnet je Laufstunde η_eff = η_tr(β) + Δ₃₀ · g(T_RL), mit der
+> trockenen Kurve aus η₃₀,tr = η₃₀ − Δ₃₀ und g = (T_Tau − T_RL)/(T_Tau − 30) auf [0; 1,2], höchstens Hs/Hi
+> (`Kesselkennlinie.EtaBrennwert`, gerufen in `SimulationSPK.Stunde_Abschluss`). Den Rücklauf liefert die Kette
+> Heizkreis der Anlagenkopplung → Senkenspeicher (`RL_eff`, geschichtet die unterste Schicht) → gepflegtes Paar →
+> 50 °C. In der Basis rechnet allein 1050 so — ohne Kopplung, Senkenspeicher und Paar mit dem Rückfall 50 °C.
+>
+> **Anlass 3: vier neue Skalare je Kessel** in `aggregate.csv`: `Kessel[i].RuecklaufMittel` (wärmegewichtet),
+> `.Brennwertstunden`, `.BrennwertWaermeKwh` und `.BrennwertKwh` (Mehrbrennstoff aus Brennwertnutzung gegenüber der
+> trockenen Kurve, negativ als Ersparnis); ohne Brennwertkennlinie je 0.
+>
+> **A/B gegen R27** (beide auf Linux; `vergleich` mit `--ohne` für die vier neuen Schlüssel): **4/16 PASS** (1017,
+> 1023, 1024, 1047), 471/487 CSV byte-gleich — abgewichen ist allein `aggregate.csv`, jede Zeitreihe ist byte-gleich
+> (Wärme und Laufstunden ändern sich nicht, nur der Brennstoff dafür). Zerlegt nach Ursache über einen Zwischenlauf
+> mit dem Rechenweg E3 auf der Testdatenbank `052f5aa8…` (Schemastand 157, vor dem Schritt 158):
+>
+> | Ursache | CSV | Befund |
+> |---|---|---|
+> | E2b: Brennwertkennzeichen (Schritt 158) | 11 | `aggregate.csv` von 1007, 1008, 1018, 1030, 1039, 1040, 1041, 1042, 1045, 1046 und 1049: η₃₀ = η₁₀₀ + 0,06 statt η₁₀₀, Brennstoff −0,6 % (1039, Laststufe 0,76) bis −5,7 % (Kessel meist unter 30 % Last), mit ihm die Kesselemissionen; Tafel unten |
+> | E3: Brennwertkennlinie | 1 | `aggregate.csv` von 1050: Gasverbrauch 81,96 → 80,66 MWh/a, Jahresnutzungsgrad 97,37 → 98,94 %, Wirkungsgrad im Betrieb 0,975 → 0,991 (= 0,97 + 0,08 · 7/27 in jeder der 5 053 Laufstunden), Teillastbrennstoff −424 → 0 kWh/a (η₃₀,tr = 1,05 − 0,08 = η₁₀₀, die trockene Kurve ist flach), Brennwertbrennstoff −1 722 kWh/a, Gasspitze 19,90 → 19,48 kW |
+> | neue Skalare | 16 | `aggregate.csv` jedes Projekts um die vier Schlüssel je Kessel gewachsen (64 Skalare) |
+>
+> Je Projekt mit geändertem Kessel (Brennstoff = `HeizkesselModul[0].Verbrauch` in MWh/a, Nutzungsgrad in %):
+>
+> | Projekt | η₁₀₀ | η₃₀ R27 → R28 | Brennstoff R27 → R28 | Nutzungsgrad R27 → R28 | η Betrieb | Laststufe | Teillast kWh/a | Brennwert kWh/a |
+> |---|---|---|---|---|---|---|---|---|
+> | 1007, 1046 | 0,876 | 0,876 → 0,936 | 10,55 → 10,01 (−5,1 %) | 85,80 → 90,43 | 0,924 | 0,23 | −540 | 0 |
+> | 1008 | 0,876 | 0,876 → 0,936 | 23,65 → 22,86 (−3,3 %) | 86,90 → 89,89 | 0,906 | 0,38 | −787 | 0 |
+> | 1018 | 1,000 | 1,000 → 1,060 | 11,09 → 10,46 (−5,7 %) | 100,00 → 106,00 | 1,060 | 0,03 | −628 | 0 |
+> | 1030 | 1,000 | 1,000 → 1,060 | 5 403,10 → 5 203,20 (−3,7 %) | 100,00 → 103,84 | 1,038 | 0,36 | −199 903 | 0 |
+> | 1039 | 0,980 | 0,980 → 1,040 | 295,17 → 293,35 (−0,6 %) | 98,00 → 98,61 | 0,986 | 0,76 | −1 818 | 0 |
+> | 1040 | 1,000 | 1,000 → 1,060 | 16,19 → 15,27 (−5,7 %) | 100,00 → 105,96 | 1,060 | 0,09 | −911 | 0 |
+> | 1041 | 1,000 | 1,000 → 1,060 | 149,91 → 142,85 (−4,7 %) | 100,00 → 104,94 | 1,049 | 0,21 | −7 061 | 0 |
+> | 1042 | 0,980 | 0,980 → 1,040 | 19,32 → 18,21 (−5,7 %) | 98,00 → 104,00 | 1,040 | 0,05 | −1 115 | 0 |
+> | 1045 | 1,000 | 1,000 → 1,060 | 22,27 → 21,01 (−5,7 %) | 100,00 → 105,97 | 1,060 | 0,09 | −1 255 | 0 |
+> | 1049 | 1,000 | 1,000 → 1,060 | 6,32 → 5,96 (−5,7 %) | 100,00 → 106,00 | 1,060 | 0,06 | −358 | 0 |
+> | 1050 | 0,970 | 1,050 → 1,050 | 81,96 → 80,66 (−1,6 %) | 97,37 → 98,94 | 0,991 | 0,82 | 0 | −1 722 |
+>
+> Die Kessel mit dem Platzhalter η₁₀₀ = 1,0 (1018, 1030, 1040, 1041, 1045, 1049) kommen damit auf einen
+> heizwertbezogenen Jahresnutzungsgrad über 100 % — richtig für einen Brennwertkessel in Teillast und unter Hs/Hi,
+> aber auf einem ungepflegten Nennwert gerechnet; die Ergebnisseite nennt den Platzhalter weiterhin. Von den
+> sieben CI-Projekten verschieben sich 1007, 1030, 1045, 1046 und 1049; 1017 und 1047 (Elektrokessel) wachsen nur
+> um die neuen Schlüssel.
+>
+> **Die Einfrierregel „gesäte Kesseldaten“ ist erweitert** (oben): beim Referenzprojekt 1050 auch, was den Rücklauf
+> seiner Brennwertkennlinie bestimmt. **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet.
+> **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:**
+> gestört gegen ungestört 16/16 PASS, 480/487 CSV byte-gleich — dieselben sieben Dateien wie mit R27.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-09-30_R28_Kesselbrennwert
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
+> [`SK6_Kessel_Brennwert_E3_R28_Protokoll.md`](../Protokolle/Simulation/SK6_Kessel_Brennwert_E3_R28_Protokoll.md).
+
+### Die Vorgängerbasis R27 (Stand der Basis R28)
+
+Sechzehn Projekte, 487 CSV, 2 920 Skalare, auf Linux eingefroren, getragen bis zur Testdatenbank `052f5aa8…`
+(Schemastand 157, 81 698 816 Byte: das Referenzprojekt 1050 und die Saat der 14 Konditionierungsvorlagen, beim
+Zusammenführen beider Stände neu eingespielt; R27 rechnet darauf 487/487 CSV byte-gleich); mit R28 aus dem
+Arbeitsbaum gefallen, Protokoll, Anlass und der Nachtrag des Schemaschritts 157 unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R27 und
+R28 hat sich die Testdatenbank allein um den Schemaschritt 158 geändert (`052f5aa8…` → `5d59041f…`): 19 Zellen
+`Tab_Heizkessel.Brennwert` 0 → 1 und `SchemaVersion` 157 → 158; alle übrigen Tabellen zeilengleich, Schema
+unverändert, `integrity_check` ok, `foreign_key_check` leer.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R29 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 30.09.2026 die Basis R29 beschrieben — die drei Anlässe (Takten des
+Heizkessels, Starts nach Konzept 4.2, sechs neue Skalare je Kessel), das A/B gegen R28 und die Tafel je Kessel —,
+darunter den Abschnitt zur Vorgängerbasis R28. Beides steht unten im Wortlaut; die Verweise sind auf diesen Ort
+umgestellt.
+
+**Abgelöst wurde R29 durch `2026-09-30_R30_Stromverbraucher`** (Auftrag SV1; Anwenderentscheid vom 30.09.2026,
+„Stromverbraucher-Mängel beheben, mit neuer Referenzbasis“): Die Zuordnung Projekt ↔ Stromverbraucher gilt über
+die ID statt über den Bezeichner — die gepflegte Jahressumme der Zuordnungszeile greift auch bei umbenannter
+Projektkopie, und Kopf- wie Typsatz werden nur im eigenen Projekt gelesen. Kein Schemaschritt, die Testdatenbank
+ist unverändert. A/B gegen R29: 14/16 PASS, 477/487 CSV byte-gleich — abgewichen sind allein 1017 und 1047 mit je
+fünf Dateien (Strombedarf 672 → 15 MWh/a, Netzbezug 655,88 → 11,44 bzw. 641,18 → 6,80 MWh/a). Die Tafel steht in
+`Referenzlaeufe/LIESMICH.md` und im Protokoll
+[`SV1_Stromverbraucher_Summe_R30_Protokoll.md`](../Protokolle/Simulation/SV1_Stromverbraucher_Summe_R30_Protokoll.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-30_R29_Kesseltakten/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 080 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 30.09.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **158**, 81 137 664 Byte, LFS-SHA-256
+`5d59041ffa44d7c0aa9a74c845b0a78e2cfe0c484c244d69603c352742ab27b3`). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049,
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050 und
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel. 1050 steht nicht in der
+CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass 1: Das Takten des Heizkessels** (Konzept Kesselkennlinie 4.2, Etappe E4; Entscheid F1). Liegt die
+> brennstoffbasierte Wärme Q eines Brennstoffkessels in einer Laufstunde unter seiner Mindestleistung P_min, taktet
+> er (`Kesselkennlinie.Taktet`, beide Enden am Zahlenrand): Die Stunde zählt min(⌊60/t⌋, ⌈Q/(P_min · t/60)⌉)
+> Starts — so viele Mindestläufe, wie die Wärme braucht, mit dem Zahlenrand an den Vielfachen eines Mindestlaufs
+> (`Kesselkennlinie.StartsImTakt`); jede andere Laufstunde zählt einen Start, wenn der Kessel in der Vorstunde
+> stand. Jeder Start kostet den Anfahrverlust als Brennstoff, auch in der Gasspitze der Stunde. Leere Felder nehmen
+> die Normvorgaben (Konzept 7.1): Mindestleistung 30 % der Nennleistung beim Gas-Brennwertkessel, sonst 60 %,
+> Anfahrverlust 0,002 h × Nennleistung, Mindestlaufzeit 10 min. In der Testdatenbank pflegt allein 1050 Taktwerte
+> (Mindestleistung 3,86 kW, Anfahrverlust 0,1 kWh, Mindestlaufzeit leer); jeder übrige Brennstoffkessel rechnet mit
+> den Normvorgaben. Die Elektrokessel (1017, 1024, 1047) takten nicht.
+>
+> **Anlass 2: `Kessel[i].Starts` zählt die Starts nach Konzept 4.2** statt der Laufphasen im Stundenraster. Die
+> Laufphasen (Übergänge aus → an) stehen daneben; es gilt Starts = Laufphasen + Σ über die Taktstunden (Starts der
+> Stunde − 1, wenn die Vorstunde stand). Beim Elektrokessel sind Starts und Laufphasen gleich.
+>
+> **Anlass 3: sechs neue Skalare je Kessel** in `aggregate.csv`: `Kessel[i].Laufphasen`, `.Taktstunden`,
+> `.AnfahrKwh` (Anfahrverlust im Jahr) und die drei Taktwerte, mit denen der Kessel rechnet —
+> `.MindestleistungKw`, `.AnfahrverlustJeStartKwh`, `.MindestlaufzeitMin` (gepflegt oder Normvorgabe); beim
+> Elektrokessel außer den Laufphasen je 0.
+>
+> **A/B gegen R28** (beide auf Linux; `vergleich` mit `--ohne` für die sechs neuen Schlüssel): **3/16 PASS** (1017,
+> 1024, 1047 — die Elektrokessel), 471/487 CSV byte-gleich — abgewichen ist allein `aggregate.csv`, jede Zeitreihe
+> ist byte-gleich (Wärme und Laufstunden ändern sich nicht, nur Starts und Brennstoff). Abgewichen sind je
+> Brennstoffkessel `Kessel[0].Starts`, der Brennstoff (`Heizkessel.Gasverbrauch`, `HeizkesselModul[0].Verbrauch`),
+> der Jahresnutzungsgrad und die Kesselemissionen, in neun Projekten die Gasspitze (+0,04 bis +1,44 kW: der
+> Anfahrverlust der Starts in der Spitzenstunde; 1018, 1023, 1039, 1040, 1041, 1042, 1045, 1049, 1050).
+>
+> Je Kessel (Brennstoff = `HeizkesselModul[0].Verbrauch`, Nutzungsgrad = `HeizkesselModul[0].Jahresnutzungsgrad`):
+>
+> | Projekt | P_min kW | Anfahrverlust kWh je Start | Laststufe | Laufphasen | Taktstunden | Starts R28 → R29 | Anfahrverlust kWh/a | Brennstoff MWh/a R28 → R29 | Nutzungsgrad % R28 → R29 |
+> |---|---|---|---|---|---|---|---|---|---|
+> | 1007, 1046 | 6,63 | 0,0442 | 0,23 | 259 | 1 323 | 259 → 4 276 | 189,0 | 10,01 → 10,20 (+1,90 %) | 90,43 → 88,75 |
+> | 1008 | 6,63 | 0,0442 | 0,38 | 260 | 1 385 | 260 → 5 248 | 232,0 | 22,86 → 23,09 (+1,01 %) | 89,89 → 88,99 |
+> | 1018 | 24,00 | 0,16 | 0,03 | 381 | 5 259 | 381 → 6 937 | 1 109,9 | 10,46 → 11,57 (+10,61 %) | 106,00 → 95,84 |
+> | 1023 | 5,79 | 0,0386 | 0,82 | 444 | 843 | 444 → 3 269 | 126,2 | 91,02 → 91,15 (+0,14 %) | 87,67 → 87,55 |
+> | 1030 | 660,00 | 4,40 | 0,36 | 398 | 3 012 | 398 → 8 402 | 36 968,8 | 5 203,20 → 5 240,16 (+0,71 %) | 103,84 → 103,11 |
+> | 1039 | 24,00 | 0,16 | 0,76 | 188 | 835 | 188 → 2 080 | 332,8 | 293,35 → 293,69 (+0,12 %) | 98,61 → 98,50 |
+> | 1040 | 24,00 | 0,16 | 0,09 | 252 | 2 113 | 252 → 4 921 | 787,4 | 15,27 → 16,06 (+5,17 %) | 105,96 → 100,77 |
+> | 1041 | 24,00 | 0,16 | 0,21 | 1 | 5 748 | 1 → 14 213 | 2 274,1 | 142,85 → 145,12 (+1,59 %) | 104,94 → 103,30 |
+> | 1042 | 36,00 | 0,24 | 0,05 | 208 | 2 954 | 208 → 4 793 | 1 150,3 | 18,21 → 19,36 (+6,32 %) | 104,00 → 97,82 |
+> | 1045 | 24,00 | 0,16 | 0,09 | 223 | 3 197 | 223 → 7 139 | 1 142,2 | 21,01 → 22,15 (+5,43 %) | 105,97 → 100,51 |
+> | 1049 | 24,00 | 0,16 | 0,06 | 488 | 1 329 | 488 → 2 372 | 379,5 | 5,96 → 6,34 (+6,38 %) | 106,00 → 99,66 |
+> | 1050 | 3,86 (gepflegt) | 0,10 (gepflegt) | 0,82 | 444 | 503 | 444 → 2 035 | 203,5 | 80,66 → 80,87 (+0,26 %) | 98,94 → 98,69 |
+> | 1017, 1024, 1047 | – (Elektrokessel) | – | – | 651, 233, 11 | 0 | unverändert | 0 | unverändert | unverändert |
+>
+> **Plausibel:** Der Anfahrverlust wächst mit der Überdimensionierung. Die Kessel mit einer mittleren Laststufe unter
+> 10 % (1018, 1040, 1042, 1045, 1049) takten in den meisten Laufstunden und brauchen 5 bis 11 % mehr Brennstoff —
+> Beispiel 1018: 80 kW Nennleistung, im Mittel 2,4 kWh Wärme je Laufstunde, ein Mindestlauf 24 kW × 10 min = 4 kWh,
+> also ein Start je Stunde mit 0,16 kWh, rund 6,7 % der Wärme. Die Kessel mit hoher Laststufe (1023, 1039, 1050:
+> 0,76 bis 0,82) takten selten und verlieren 0,1 bis 0,3 %. Die Platzhalter-Kessel mit η₁₀₀ = 1,0 (1018, 1040, 1045,
+> 1049) kommen dadurch von rund 106 % auf 96 bis 101 % Jahresnutzungsgrad. Die Formel des Konzepts nimmt je Taktstunde
+> die größte Startzahl an (jeder Lauf genau eine Mindestlaufzeit): Wärme knapp unter der Mindestleistung zählt sechs
+> Starts, im Mittel der Taktstunden sind es 1,32 (1018) bis 3,75 (1008). **Gegenprobe:** Aus `kessel_leistung.csv`
+> der Basis unabhängig nachgerechnet (Python, dieselbe Regel samt Rand) stimmen Starts, Laufphasen und Taktstunden
+> aller dreizehn Brennstoffkessel mit `aggregate.csv` überein.
+>
+> **Die Einfrierregel „gesäte Kesseldaten“ ist nachgezogen** (oben): Mindestleistung, Anfahrverlust und
+> Mindestlaufzeit rechnen, Bauart und Brennstoff bestimmen die Normvorgabe der Mindestleistung. **Kein Fehlschlag,
+> keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem Einfrierlauf 487/487
+> CSV byte-gleich. **Plattformnachweis:** gestört gegen ungestört 16/16 PASS, 480/487 CSV byte-gleich — dieselben
+> sieben Dateien wie mit R28; `aggregate.csv` bleibt in allen sechzehn Projekten byte-gleich, keine Startzahl kippt.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-09-30_R29_Kesseltakten
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
+> [`SK7_Kessel_Takten_E4_R29_Protokoll.md`](../Protokolle/Simulation/SK7_Kessel_Takten_E4_R29_Protokoll.md).
+
+### Die Vorgängerbasis R28 (Stand der Basis R29)
+
+Sechzehn Projekte, 487 CSV, 2 984 Skalare, auf Linux eingefroren gegen die Testdatenbank `5d59041f…` (Schemastand
+158); mit R29 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Brennwertkennzeichen der Projektkessel,
+Brennwertkennlinie) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R28 und
+R29 hat sich die Testdatenbank nicht geändert; der Wechsel ist allein der Rechenweg der Etappe E4.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R30 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 02.10.2026 die Basis R30 beschrieben — den Anlass (Zuordnung Projekt ↔
+Stromverbraucher über die ID, Mängel (a) und (b)), das A/B gegen R29 und die Tafel für 1017 und 1047, den Nachtrag zum
+Schemaschritt 159 —, darunter den Abschnitt zur Vorgängerbasis R29. Beides steht unten im Wortlaut; die Verweise sind
+auf diesen Ort umgestellt.
+
+**Abgelöst wurde R30 durch `2026-10-02_R31_Rechenwegbefunde`** (Auftrag RB1; Anwenderentscheide aus dem Papier
+„Verbesserungen 29.09.2026“): Die untere Grenzleistung des BHKW aus dem Anlagenfeld wirkt (Anlagenfeld vor Katalog vor
+Projekt, in allen drei Betriebsarten; Werte über 100 % benannt übersprungen), die Autarkie-Analyse ohne Stromspeicher
+rechnet mit 0 kWh, und ein Bedarfsprofil ohne Typbezug wird übersprungen statt die Bedarfsart abzubrechen. Kein
+Schemaschritt, die Testdatenbank ist unverändert. A/B gegen R30: 14/16 PASS, 477/487 CSV byte-gleich — abgewichen sind
+allein 1018 und 1049 mit je fünf Dateien (Anlagenfeld 35 % statt Projektwert 30 %: BHKW-Wärme 58,32 → 54,28 bzw.
+52,00 → 49,09 MWh/a, Kesselwärme 11,09 → 15,14 bzw. 6,32 → 9,23 MWh/a). Die Tafel steht in
+`Referenzlaeufe/LIESMICH.md` und im Protokoll
+[`RB1_Rechenwegbefunde_29-09_Protokoll.md`](../Protokolle/Simulation/RB1_Rechenwegbefunde_29-09_Protokoll.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-30_R30_Stromverbraucher/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 080 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 30.09.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **158**, 81 137 664 Byte, LFS-SHA-256
+`5d59041ffa44d7c0aa9a74c845b0a78e2cfe0c484c244d69603c352742ab27b3`). Die Testdatenbank trägt seither die
+Ergebnisspalte `Tab_ErgebnisWirtschaftlichkeit.Lauf_Staende` (Laufvermerk, P641, über
+`Werkzeuge/Testdatenbankschema` nachgezogen, kein Schemaschritt; alle 48 Bestandszeilen NULL) und die
+Änderungsstempel des Schemaschritts 159 (Nachtrag „Schemaschritt 159“ unten): Schemastand
+**159**, 81 162 240 Byte, LFS-SHA-256 `a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`, kein
+Stempel gesetzt. **Die Basis bleibt**, weil kein Rechenwert betroffen ist: Der Referenzlauf liest weder den
+Laufvermerk noch die Stempel. Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049,
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel und
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle sechzehn. Sie ist die
+**einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Die Zuordnung Projekt ↔ Stromverbraucher gilt über die ID** (Anwenderentscheid vom 30.09.2026,
+> „Stromverbraucher-Mängel beheben, mit neuer Referenzbasis“; Auftrag SV1). Zwei Mängel, eine Ursache: Der
+> Stromzweig löste die Zuordnung über Namen auf.
+>
+> **(a) Die Jahressumme wurde überlesen.** `Z_Projekt_Stromverbraucher.Summe` wurde über den Bezeichner der
+> Projektkopie gesucht; die Zuordnungszeile trägt aber den Namen, unter dem sie angelegt wurde. In 1017 und 1047
+> heißt die Kopie „EFH_3_Pers (P1017)“, die Zeile „EFH_3_Pers“ mit der Summe 15 MWh/a — gerechnet wurde das volle
+> Profil der Kopie (672 MWh/a, die Summe ihrer zwölf Monatswerte). Der Lauf rechnet jetzt je Zuordnungszeile: den
+> Kopfsatz über `ID_Stromverbraucher`, die Summe aus derselben Zeile (`ProfilQuelle.ZuordnungIdSpalte`).
+>
+> **(b) Eine fremde Projektkopie konnte gelten.** Kopf- und Typsatz wurden ohne Projektfilter über den Namen
+> gelesen, es galt die erste gleichnamige Kopie der Tabelle. In der Testdatenbank rechneten 1024 und 1040 bis 1045
+> mit Kopien von 1023, 1046 mit der von 1007 und 1047 mit der von 1017 — zeichengleich zu den eigenen, deshalb
+> ohne Wirkung auf die Zahlen. Die Kopie gilt jetzt nur im eigenen Projekt, das Wochenprofil über
+> `Tab_Stromverbrauchertyp.ID_Stromverbraucher`.
+>
+> **Kein Schemaschritt, die Testdatenbank ist unverändert:** `ID_Stromverbraucher` bestand schon; alle 24
+> Zuordnungszeilen zeigen auf eine Kopie ihres eigenen Projekts, acht davon tragen einen anderen Namen als ihre
+> Kopie (1006, 1008 und 1032 je zwei, 1017 und 1047 je eine).
+>
+> **A/B gegen R29** (beide auf Linux): **14/16 PASS**, 477/487 CSV byte-gleich. Abgewichen sind allein 1017 und
+> 1047, je fünf Dateien (`aggregate.csv`, `strombedarf_viertelstunde.csv`, `reststrom_viertelstunde.csv`,
+> `ssp_gespeichert_viertelstunde.csv`, `pv_speicherfuellstand.csv`) und je 13 Skalare. 1008 trägt dieselbe
+> Namensabweichung („Büro_Type_C“ gegen „Büro_Type_C (P1008)“), aber mit der Summe 365 = Summe der Kopie —
+> byte-gleich.
+>
+> | Größe | 1017 R29 → R30 | 1047 R29 → R30 |
+> |---|---|---|
+> | Strombedarf gesamt MWh/a (`Energiebedarf.Strombedarf_Gesamt`) | 672 → 15 | 672 → 15 |
+> | größter Strombedarf kW (`Energiebedarf.Strombedarf_Max`) | 312,61 → 6,98 | 312,61 → 6,98 |
+> | Netzbezug MWh/a (`Energiebedarf.Stromrestbedarf`) | 655,88 → 11,44 | 641,18 → 6,80 |
+> | Strombedarfsdeckung des BHKW % | 5,31 → 55,15 | 5,30 → 56,20 |
+> | Reststrom nach dem BHKW MWh/a (`BHKW.Reststrombedarf`) | 635,20 → 7,35 | 636,13 → 7,12 |
+> | Reststrom nach dem Kessel MWh/a (`Heizkessel.Reststrombedarf`) | 655,32 → 27,47 | 641,19 → 9,25 |
+> | Stromspeicher, Summe der Reihe `ssp_gespeichert_viertelstunde` | 44 862 → 181 256 | 44 862 → 228 056 |
+>
+> **Unverändert:** Wärmepumpenstrom (1017: 0,02 MWh/a Heizen, 0,55 MWh/a Kühlen; 1047: 3,54 und 0,51), BHKW-Strom
+> (36,80 bzw. 35,87 MWh/a) und Elektrokessel (20,12 bzw. 1,00 MWh/a) — Wärmeseite und Erzeugerfahrplan hängen nicht
+> am Haushaltsstrom.
+>
+> **Plausibel:** 672 MWh/a waren für ein Einfamilienhausprofil nie ein Bedarf, sondern die ungeskalierte Summe der
+> Kopie. Mit den gepflegten 15 MWh/a deckt das BHKW mit rund 36 MWh/a Strom gut die Hälfte des Bedarfs
+> gleichzeitig; der Überschuss lädt den Stromspeicher (vier- bis fünfmal so viel gespeichert), der Netzbezug fällt
+> auf den Rest. **Gegenprobe:** Die Summe der Viertelstundenreihe `strombedarf_viertelstunde.csv` ist 60 000 =
+> 15 MWh × 4 000 (vorher 2 688 000 = 672 MWh × 4 000).
+>
+> **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem
+> Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:** gestört gegen ungestört 16/16 PASS, 480/487 CSV
+> byte-gleich — dieselben sieben Dateien wie mit R29. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-09-30_R30_Stromverbraucher
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
+> [`SV1_Stromverbraucher_Summe_R30_Protokoll.md`](../Protokolle/Simulation/SV1_Stromverbraucher_Summe_R30_Protokoll.md).
+
+> **Nachtrag — Schemaschritt 159 (Änderungsstempel für Kosten, Preise und Kostenkatalog), Basis unverändert.**
+> Reines DDL aus `KostenStempelSchema` (Nummer `KesselBrennwertNachzug.SCHRITT + 1`): die nullbaren Spalten
+> `Tab_Projekt.Kosten_Geaendert` und `Tab_Applikation.Kostenkatalog_Geaendert` (TEXT) und 63 Trigger, die sie bei
+> jeder Änderung an Kosten, Preisen, Wirtschaftlichkeitsparametern und Kostenkatalog setzen (Liste in
+> [`BETRIEB_SQLITE.md`](../../aktuell/BETRIEB_SQLITE.md), Abschnitt 2b). Die Testdatenbank ist aus der
+> Fassung `c1a153dc…` (Schemastand 158 samt Laufvermerk `Lauf_Staende`, P641) mit `Werkzeuge/Testdatenbankschema`
+> auf **159** gezogen; ein zweiter Lauf
+> legt nichts an und setzt — auch über die erneut gefahrenen Schritte davor — keinen Stempel. Zeilenvergleich über
+> alle Tabellen: allein `Tab_Applikation` (`SchemaVersion` 158 → 159); das Schema wächst nur um die zwei Spalten und
+> die 63 Trigger (153 STRICT-Tabellen); die Stempel sind überall leer; `integrity_check` ok, `foreign_key_check`
+> leer. Neue Fassung **81 162 240 Byte, LFS-SHA-256
+> `a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`**. **Die Basis bleibt:** Kein Rechenweg liest
+> die Stempel; die sechzehn Projekte rechnen auf dieser Fassung gegen R30 GESAMT PASS mit 487/487 CSV byte-gleich.
+> Keine Einfrierregel ist berührt.
+
+### Die Vorgängerbasis R29 `2026-09-30_R29_Kesseltakten`
+
+Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testdatenbank `5d59041f…` (Schemastand
+158); mit R30 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Takten des Heizkessels, Etappe E4) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R29 und
+R30 hat sich die Testdatenbank nicht geändert; der Wechsel ist allein der Rechenweg des Stromzweigs (SV1).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R31 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 02.10.2026 die Basis R31 beschrieben — den Anlass (drei Rechenwegbefunde aus dem
+Papier „Verbesserungen 29.09.2026“, Auftrag RB1), das A/B gegen R30 mit der Tafel für 1018 und 1049, die Nachträge zu den
+Schemaschritten 159 bis 162 —, darunter den Abschnitt zur Vorgängerbasis R30. Beides steht unten im Wortlaut; die
+Verweise sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R31 durch `2026-10-02_R32_Solarthermie`** (Welle M2 Solarthermie der Entscheidungsvorlage
+Modellgrenzen, ST1 bis ST6): Schemaschritt 163 mit den Feldern des Kollektorfelds und der Bezugsfläche der Kennwerte,
+Pumpenstrom, Solarkreisverluste als Feld, Diffus-IAM mit `K_dfu`, Arbeitstemperatur aus dem Speicher; das
+Kollektorfeld von 1049 rechnet seither seine Arbeitstemperatur aus der untersten Zone seines Puffers (Grädigkeit 5 K,
+Spreizung 10 K). A/B gegen R31: 15/16 PASS, 475/487 CSV byte-gleich — abgewichen ist allein 1049 mit zwölf Dateien
+(genutzte Solarwärme 10,73 → 9,38 MWh/a, Überschuss 27,13 → 19,73 MWh/a, mittlere Arbeitstemperatur 50 → 65,32 °C).
+Die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-02_R31_Rechenwegbefunde/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 080 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **159**, 81 162 240 Byte, LFS-SHA-256
+`a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`). Die Testdatenbank trägt seither die Spalten
+der Aufheizoptimierung der Schemaschritte 160 und 161 (Nachtrag „Schemaschritte 160 und 161“ unten), Schalter
+überall 0, alles übrige leer, und die Einheitenspalte des Kessel-Bereitschaftsverlusts aus Schemaschritt 162
+(Nachtrag „Schemaschritt 162“ unten), überall `kW`: Schemastand **162**, 81 170 432 Byte, LFS-SHA-256
+`05783be1207e14fd49472abbc50d77d33d9e6d83ce2059cb24d162f097f207f6`. **Die Basis bleibt**, weil kein Rechenwert
+betroffen ist: Der Referenzlauf liest weder Laufvermerk noch Stempel noch Aufheizspalten, und die Vorgabe `kW`
+rechnet den Bereitschaftsverlust wie zuvor. Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049,
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046 und `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet
+alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: drei Rechenwegbefunde aus dem Papier „Verbesserungen 29.09.2026“** (Auftrag RB1, je ein
+> Anwenderentscheid). Eine Zahl der Basis verschiebt allein der erste.
+>
+> **(a) Die untere Grenzleistung des BHKW aus dem Anlagenfeld wirkt.** Das Feld „Untere Grenzleistung des
+> ausgewählten Moduls“ (`Tab_Energieanlagen.Grenzleistung`) gilt, sobald es gepflegt ist (> 0); sonst der
+> Katalogwert des Moduls (`Tab_BHKW.Grenzleistung`), sonst der Projektwert (`Tab_Einstellungen.Leistungsgrenze`).
+> Bis R30 überschrieb der Katalog- bzw. Projektwert das Anlagenfeld immer. Dieselbe Untergrenze gilt jetzt in allen
+> drei Betriebsarten — stromgeführt und ohne Einspeisung nahmen bis R30 nur den Projektwert. Ein Wert über 100 % ist
+> ungültig, wird im Simulationsprotokoll benannt und übersprungen (`SimulationBHKW.Grenzfaktor`).
+> In der Testdatenbank pflegen 1018 und 1049 im Anlagenfeld 35 % bei 30 % im Projekt und ohne Katalogwert — beide
+> rechnen jetzt mit 35 statt 30 %. 1017 und 1047 führen im Anlagenfeld 30 % wie im Projekt, 1030 und 1024 kein
+> Anlagenfeld (Katalog 15 % bzw. Projekt 10 %): byte-gleich. Alle BHKW-Referenzprojekte rechnen wärmegeführt
+> (`Betriebsart` 0 oder leer); die stromseitigen Fahrweisen verschieben keine Zahl der Basis.
+>
+> **(b) Die Autarkie-Analyse ohne Stromspeicher rechnet mit 0 kWh** statt mit einem angenommenen 5-kWh-Speicher.
+> Sie steht in keiner CSV der Basis (Hülle der Ergebnisseite); gehalten von
+> `EPOS.Kern.Tests/AutarkieOhneStromspeicherTests` (1045: Autarkie der PV 10,22 % → 8,77 %).
+>
+> **(c) Ein Bedarfsprofil ohne Typbezug wird übersprungen**, statt die Bedarfsart abzubrechen (Befund PW6). Kein
+> Referenzprojekt führt ein zugeordnetes Profil ohne Typ; gehalten von `EPOS.Kern.Tests/ProfilOhneTypTests`.
+>
+> **A/B gegen R30** (beide auf Linux): **14/16 PASS**, 477/487 CSV byte-gleich. Abgewichen sind allein 1018 und
+> 1049, je fünf Dateien (`aggregate.csv`, `bhkw_waerme.csv`, `bhkw_strom.csv`, `bhkw_restwaerme.csv`,
+> `kessel_leistung.csv`) und je 44 Skalare (BHKW, Heizkessel und ihre Emissionen).
+>
+> | Größe | 1018 R30 → R31 | 1049 R30 → R31 |
+> |---|---|---|
+> | BHKW-Wärme MWh/a (`BHKW.Waermeproduktion`) | 58,32 → 54,28 | 52,00 → 49,09 |
+> | BHKW-Strom MWh/a (`BHKW.Stromproduktion`) | 27,46 → 25,55 | 24,48 → 23,11 |
+> | Betriebsstunden des BHKW h/a | 1 893,62 → 1 762,37 | 1 688,33 → 1 593,84 |
+> | Wärmedeckung des BHKW % | 84,66 → 78,86 | 75,78 → 71,55 |
+> | Kesselwärme MWh/a (`Heizkessel.Waermeproduktion`) | 11,09 → 15,14 | 6,32 → 9,23 |
+> | Kesselstarts (`Kessel[0].Starts`) | 6 937 → 8 149 | 2 372 → 3 242 |
+> | Gasspitze des Kessels kW | 9,19 → 10,64 | 9,20 → 10,65 |
+> | CO₂ des BHKW t/a | 22,34 → 20,79 | 19,92 → 18,80 |
+> | CO₂ des Kessels t/a | 2,78 → 3,74 | 1,52 → 2,22 |
+>
+> **Plausibel:** Mit 35 statt 30 % bleibt das Modul in Stunden mit kleinem Wärmeraum (zwischen 30 und 35 % seiner
+> thermischen Nennleistung) aus; der Kessel deckt diese Stunden. **Gegenprobe:** Die Wärme von BHKW und Kessel bleibt
+> zusammen gleich (1018: 69,41 → 69,42 MWh/a, 1049: 58,32 → 58,32 MWh/a, Rundung der zweiten Stelle).
+>
+> **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem
+> Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:** gestört gegen ungestört 16/16 PASS, 480/487 CSV
+> byte-gleich — dieselben sieben Dateien wie mit R30. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-10-02_R31_Rechenwegbefunde
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Umsetzung im Protokoll
+> [`RB1_Rechenwegbefunde_29-09_Protokoll.md`](../Protokolle/Simulation/RB1_Rechenwegbefunde_29-09_Protokoll.md).
+
+> **Nachtrag — Schemaschritt 159 (Änderungsstempel für Kosten, Preise und Kostenkatalog), Basis unverändert.**
+> Reines DDL aus `KostenStempelSchema` (Nummer `KesselBrennwertNachzug.SCHRITT + 1`): die nullbaren Spalten
+> `Tab_Projekt.Kosten_Geaendert` und `Tab_Applikation.Kostenkatalog_Geaendert` (TEXT) und 63 Trigger, die sie bei
+> jeder Änderung an Kosten, Preisen, Wirtschaftlichkeitsparametern und Kostenkatalog setzen (Liste in
+> [`BETRIEB_SQLITE.md`](../../aktuell/BETRIEB_SQLITE.md), Abschnitt 2b). Die Testdatenbank ist aus der
+> Fassung `c1a153dc…` (Schemastand 158 samt Laufvermerk `Lauf_Staende`, P641) mit `Werkzeuge/Testdatenbankschema`
+> auf **159** gezogen; ein zweiter Lauf
+> legt nichts an und setzt — auch über die erneut gefahrenen Schritte davor — keinen Stempel. Zeilenvergleich über
+> alle Tabellen: allein `Tab_Applikation` (`SchemaVersion` 158 → 159); das Schema wächst nur um die zwei Spalten und
+> die 63 Trigger (153 STRICT-Tabellen); die Stempel sind überall leer; `integrity_check` ok, `foreign_key_check`
+> leer. Neue Fassung **81 162 240 Byte, LFS-SHA-256
+> `a50f1f496df77aa670ac275073cd0a21e59f3d7799f317e5992376f80e79428f`**. **Die Basis bleibt:** Kein Rechenweg liest
+> die Stempel; die sechzehn Projekte rechnen auf dieser Fassung gegen R30 GESAMT PASS mit 487/487 CSV byte-gleich.
+> Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritte 160 und 161 (Aufheizoptimierung, Stufe KP3), Basis unverändert.** Reines DDL aus
+> `AufheizvorgabeSchema` (KP-S2, Nummer `KostenStempelSchema.SCHRITT + 1`) und `AufheizErgebnisSchema` (KP-S3,
+> Nummer `AufheizvorgabeSchema.SCHRITT + 1`), Spezifikation im
+> [Entwurf KP3](../2026-10-02_Entwurf_KP3.md), Abschnitt 4: an
+> `Tab_Einstellungen` der Schalter `Aufheizoptimierung` (0/1, Vorgabe 0) und die nullbaren `Aufheiz_Bemessung`,
+> `Aufheiz_Abzug_K`, `Aufheiz_Reserve`, `Aufheiz_Art` (32 → 37 Spalten); an `Tab_ErgebnisGebaeude` (26 → 40) und
+> `Tab_ErgebnisZone` (15 → 29) je vierzehn nullbare Ergebnisspalten, alle mit ihren Prüfklauseln. Die Testdatenbank
+> ist aus der Fassung `a50f1f49…` (Schemastand 159) mit `Werkzeuge/Testdatenbankschema` auf **161** gezogen; ein
+> zweiter Lauf legt nichts an. Zeilenvergleich über alle Tabellen: allein `Tab_Applikation` (`SchemaVersion`
+> 159 → 161); das Schema wächst nur um die 33 Spalten (153 STRICT-Tabellen, keine neue Tabelle, die Stempeltrigger
+> unberührt); der Schalter steht überall auf 0, alle übrigen neuen Spalten sind leer; `integrity_check` ok,
+> `foreign_key_check` leer. Neue Fassung **81 170 432 Byte, LFS-SHA-256
+> `117f44f96b4530540348202ecb9cbd123128953ff0d7af0e77abb8cded9fe3dd`**. **Die Basis bleibt:** Kein Rechenweg liest
+> die Spalten, und der Referenzlauf liest die Ergebnistabellen der Gebäude und Zonen nicht; die sechzehn Projekte
+> rechnen auf dieser Fassung gegen R30 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 162 (Einheit des Kessel-Bereitschaftsverlusts), Basis unverändert.** Reines DDL aus
+> `KesselBereitschaftEinheitSchema` (Nummer `AufheizErgebnisSchema.SCHRITT + 1`): an `Tab_Heizkessel` und
+> `Tab_Heizkessel_STAMM` je die Spalte `Bereitschaft_Einheit TEXT NOT NULL DEFAULT 'kW' CHECK IN ('kW','%')`.
+> Die Testdatenbank ist aus der Fassung `117f44f9…` (Schemastand 161) mit `Werkzeuge/Testdatenbankschema` auf
+> **162** gezogen (2 Spalten, keine Tabelle); jede Zeile trägt `kW`, der Rechenweg liefert damit dieselbe
+> Bereitschaftsleistung wie vor dem Schritt. Neue Fassung **81 170 432 Byte, LFS-SHA-256
+> `05783be1207e14fd49472abbc50d77d33d9e6d83ce2059cb24d162f097f207f6`**. **Die Basis bleibt:** Die sechzehn
+> Projekte rechnen auf einer so gehobenen Kopie gegen R31 GESAMT PASS mit 487/487 CSV byte-gleich. Keine
+> Einfrierregel ist berührt.
+
+### Die Vorgängerbasis R30 `2026-09-30_R30_Stromverbraucher`
+
+Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testdatenbank `5d59041f…` (Schemastand
+158), getragen bis zur Fassung `a50f1f49…` (Schemastand 159); mit R31 aus dem Arbeitsbaum gefallen, Protokoll und
+Anlass (Stromverbraucher-Zuordnung über die ID, SV1) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R30 und
+R31 hat sich die Testdatenbank nicht geändert; der Wechsel ist allein der Rechenweg der BHKW-Untergrenze (RB1).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R32 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 02.10.2026 die Basis R32 beschrieben — den Anlass (Welle M2 Solarthermie der Entscheidungsvorlage Modellgrenzen, ST1 bis ST6), das A/B gegen R31 mit der Tafel für 1049, den Nachtrag zu den Schemaschritten 163 bis 165 —, darunter den Abschnitt zur Vorgängerbasis R31. Beides steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt.
+
+**Abgelöst wurde R32 durch `2026-10-02_R33_Viertelstunden`** (Welle M5 „Strom in Viertelstunden“ der Entscheidungsvorlage Modellgrenzen, SB1 (a), PV3, SP1): Die PV bilanziert je Viertelstunde mit einer nach dem Sonnenstand verteilten Erzeugungsreihe; Schemaschritt 166 legt Einspeisegrenze und Selbstentladung an (leer). A/B gegen R32: 16/16 PASS, 459/487 CSV byte-gleich — abgewichen sind die vier Projekte mit PV-Ertrag (1007, 1040, 1045, 1046; Direktverbrauch −0,05 bis −0,1 %). Die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-02_R32_Solarthermie/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 081 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
+`Kenndaten_Test.sqlite` (Fassung mit den Feldern des Kollektorfelds, 81 174 528 Byte, LFS-SHA-256
+`486d5b0cf69b02565318dfa50c7d1b611733352e7c0a1db73040950ff32be077`). Die Testdatenbank trägt seither dazu die
+Albedo-Spalte der Anlagenzeile (Schemaschritt 163) und das Temperaturpaar je Prozess samt Saat der acht
+Betriebsweisen (Schemaschritt 164) — Schemastand **165**, 81 186 816 Byte, LFS-SHA-256
+`7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af` (Nachtrag „Testdatenbank“ unten). **Die Basis
+bleibt**, weil kein Rechenwert betroffen ist: Leere Albedo rechnet 0,2, kein Referenzprojekt ordnet einen
+gesäten Prozesssatz zu oder trägt ein Temperaturpaar. Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker dieser Basis (genutzte
+Solarwärme, Überschuss, mittlere Arbeitstemperatur des Felds),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046 und `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet
+alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Welle M2 Solarthermie der
+> [Entscheidungsvorlage Modellgrenzen](../../aktuell/Entscheidungsvorlage_Modellgrenzen_Rechenwege.md)**
+> (ST1 bis ST6, Wellenplan vom Anwender freigegeben). Gebaut sind fünf Teile, eine Zahl der Basis verschiebt allein
+> der letzte:
+>
+> - **Schemaschritt 165** (`SolarthermieFelderSchema`): an `Tab_Energieanlagen` die nullbaren Felder
+>   `Pumpenleistung_W`, `Solarkreisverluste_Prozent`, `Uebertrager_Graedigkeit_K`, `Kollektor_Spreizung_K` und
+>   `Arbeitstemperatur_Weg`, an `Tab_Solarkollektoren(_STAMM)` die Bezugsfläche der Kennwerte (`Bezugsflaeche`,
+>   Vorgabe `apertur`). Leere Felder rechnen ihre Vorgaben.
+> - **ST3 Stufe 1 und ST1:** Verluste des Solarkreises als Feld (leer = 8 %, bitgleich zum früheren Faktor 0,92);
+>   Pumpenstrom je Stunde mit Abgabe des Felds als Verbraucher im Strombedarf. Kein Referenzprojekt pflegt eine
+>   Pumpe oder einen Hilfsenergieanteil an einem Kollektorfeld: byte-gleich.
+> - **ST6:** Der Lauf rechnet mit der Fläche, auf die η₀, a₁, a₂ bezogen sind. Alle Kollektorsätze der
+>   Testdatenbank stehen auf `apertur`: byte-gleich.
+> - **ST5:** Diffus- und Bodenreflexstrahlung bekommen `K_dfu` statt `K_b(θ)`, sobald der Satz `K_dfu > 0` führt.
+>   Kein Kollektorsatz eines Referenzprojekts führt `K_dfu` (1049: 0; 1018 hat kein Kollektorfeld): byte-gleich.
+> - **ST2 mit ST4:** Die Kennlinie rechnet je Stunde in der Stundenschleife; mit `Arbeitstemperatur_Weg = 'speicher'`
+>   ist die mittlere Fluidtemperatur `ϑ_unten + ΔT_WT + ΔT_Koll/2` aus der untersten Zone des Senkenpuffers am Ende
+>   der Vorstunde. Mit fester Arbeitstemperatur rechneten die sechzehn Projekte auf der gehobenen Testdatenbank gegen
+>   R31 GESAMT PASS mit **487/487 CSV byte-gleich** (Nachweis vor der Umstellung).
+>
+> **Die Umstellung:** Das Kollektorfeld von **1049** steht auf `Arbeitstemperatur_Weg = 'speicher'` mit Grädigkeit
+> 5 K und Spreizung 10 K, Verluste und Pumpe leer (8 %, kein Pumpenstrom). Sein Puffer „Pufferspeicher 3000 l“
+> (60/35 °C, eine Zone) liefert die unterste Temperatur.
+>
+> **A/B gegen R31** (beide auf Linux): **15/16 PASS**, 475/487 CSV byte-gleich. Abgewichen ist allein 1049 mit zwölf
+> Dateien (`aggregate.csv`, `solar_produktion.csv`, `solar_restwaerme.csv`, `solar_ueberschuss.csv`, `bhkw_waerme.csv`,
+> `bhkw_strom.csv`, `bhkw_restwaerme.csv`, `kessel_leistung.csv`, `kessel_restwaerme.csv`, `puffer_ladung.csv`,
+> `puffer_entladung.csv`, `puffer_soc.csv`); `aggregate.csv` führt den neuen Skalar
+> `Solarthermie.Feld[0].ArbeitstemperaturMittelC` (nur für Felder mit Arbeitstemperatur aus dem Speicher).
+>
+> | Größe | 1049 R31 → R32 |
+> |---|---|
+> | Mittlere Arbeitstemperatur des Felds °C (potenzialgewichtet) | 50 (fest) → 65,32 |
+> | Kollektorertrag brutto MWh/a (genutzt + Überschuss) | 37,86 → 29,11 |
+> | davon genutzt MWh/a (`Solarthermie.Waermeproduktion`) | 10,73 → 9,38 |
+> | Überschuss MWh/a (`Solarthermie.Ueberschuss`) | 27,13 → 19,73 |
+> | Solare Deckung % (`Solarthermie.Waermebedarfsdeckung`) | 15,06 → 13,11 |
+> | BHKW-Wärme MWh/a | 49,09 → 49,82 |
+> | Betriebsstunden des BHKW h/a | 1 593,84 → 1 617,39 |
+> | Kesselwärme MWh/a | 9,23 → 9,89 |
+> | Kesselstarts (`Kessel[0].Starts`) | 3 242 → 3 449 |
+> | Mittlerer Ladezustand des Puffers % | 55,36 → 57,57 |
+> | CO₂ des BHKW t/a | 18,80 → 19,08 |
+> | CO₂ des Kessels t/a | 2,22 → 2,37 |
+>
+> **Plausibel:** Der Puffer liegt zwischen 35 und 60 °C; mit 5 K Grädigkeit und 5 K halber Spreizung arbeitet der
+> Kollektor im Mittel bei rund 65 °C statt 50 °C, die Wärmeverluste des Kollektors steigen, der Bruttoertrag sinkt
+> um rund 23 %. BHKW und Kessel decken die Lücke. **Gegenprobe:** Solar genutzt + BHKW + Kessel 69,05 → 69,09 MWh/a
+> (Bedarf 68,25 MWh/a plus Pufferverluste 0,78 → 0,81 MWh/a).
+>
+> **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem
+> Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:** gestört gegen die Basis 16/16 PASS, 480/487 CSV
+> byte-gleich — dieselben sieben Dateien wie mit R31. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-10-02_R32_Solarthermie
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Regeln im
+> [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 16.
+
+> **Testdatenbank — Schemaschritte 163 bis 165 und Umstellung von 1049.** Eingefroren ist R32 gegen eine Fassung
+> mit den Feldern des Kollektorfelds und dem umgestellten 1049 (81 174 528 Byte, `486d5b0c…`). Gültig ist die
+> Fassung aus `be9d733c…` (Schemastand 163: Albedo-Spalte an `Tab_Energieanlagen`, jede Zeile leer), mit
+> `Werkzeuge/Testdatenbankschema` auf **165** gezogen: 164 legt das Temperaturpaar je Prozess an
+> `Tab_Prozesswaerme(_STAMM)` an (leer) und sät die acht Betriebsweisen (`ReadOnly = 1`), 165 die Felder des
+> Kollektorfelds (Anlagenspalten leer, jeder Kollektorsatz `apertur`). Danach ist allein die Anlagenzeile des
+> Kollektorfelds von 1049 geändert (`Arbeitstemperatur_Weg = 'speicher'`, `Uebertrager_Graedigkeit_K = 5`,
+> `Kollektor_Spreizung_K = 10`) und die Datei verdichtet. `integrity_check` ok, `foreign_key_check` leer, kein
+> Stempel gesetzt. Neue Fassung **81 186 816 Byte, LFS-SHA-256
+> `7debfd8ad3434cb5da3ae46d3373b47d0dc00cbe336cacf291b48a78b35986af`**. **Die Basis bleibt:** Die sechzehn
+> Projekte rechnen auf dieser Fassung gegen R32 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist
+> berührt.
+> [`Skripte/referenzprojekt_1049_solarthermie.cs`](../../../Referenzlaeufe/Skripte/referenzprojekt_1049_solarthermie.cs) legt die Felder mit
+> an und prüft sie (auf der neuen Fassung: „steht schon mit allen Zielzellen“).
+
+### Die Vorgängerbasis R31 `2026-10-02_R31_Rechenwegbefunde`
+
+Sechzehn Projekte, 487 CSV, 3 080 Skalare, auf Linux eingefroren gegen die Testdatenbank `a50f1f49…` (Schemastand
+159), getragen bis zur Fassung `05783be1…` (Schemastand 162); mit R32 aus dem Arbeitsbaum gefallen, Protokoll und
+Anlass (BHKW-Untergrenze aus dem Anlagenfeld, RB1) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R31 und
+R32 hat die Testdatenbank die Felder des Kollektorfelds und die Umstellung des Kollektorfelds von 1049 bekommen.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R33 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat bis zum 03.10.2026 die Basis R33 beschrieben — den Anlass (Welle M5 „Strom in Viertelstunden“ der Entscheidungsvorlage Modellgrenzen, SB1 (a), PV3, SP1), das A/B gegen R32 mit der Tafel der vier Projekte mit PV-Ertrag und die Nachträge zu den Schemaschritten 166 bis 176 samt den Testdatenbank-Fassungen, darunter den Abschnitt zur Vorgängerbasis R32. Alles steht unten im Wortlaut; die Verweise sind auf diesen Ort umgestellt. Stand der Übernahme: Codestand `87c024218`, Testdatenbank Schemastand 176.
+
+**Abgelöst wurde R33 durch `2026-10-03_R34_Erdreich`** (Erdreichwiderstand nach DIN EN ISO 13370 für Bauteile am Erdreich, allgemeine Innenprüfung der Abschnittsregel im Zonenmodell, dazu die Referenzprojekte 1051 „Konditionierung“ und 1052 „Zonen“): Die Gebäude mit Bauteilen am Erdreich rechnen weniger Heizwärme, 1030 und 1040 bleiben unverändert. Die Tafel steht in `Referenzlaeufe/LIESMICH.md`.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-02_R33_Viertelstunden/`** — **sechzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050), **487 CSV**, **3 082 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 02.10.2026) gegen
+`Kenndaten_Test.sqlite` (Schemastand **176**, 83 120 128 Byte, LFS-SHA-256
+`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; eingefroren auf der Fassung `2b0dc246…`, Nachtrag „Testdatenbank“ unten). Die
+Schemaschritte 166 (Netzverluste je Kanal, Zirkulation, Betriebskalender) und 167 (Teillastfelder von Wärmepumpe
+und BHKW) legen nur leere Felder an und wirken nicht auf die Basis; Schemaschritt 169 (Pufferspeicher-Auslegung,
+Nachtrag unten) legt zwei Tabellen samt Saat an, die kein Rechenweg liest; Schemaschritt 170 (Empfehlungsspannen der
+Hilfsenergie von BHKW und Heizkessel in den Auslieferungsvorlagen auf Weg B, Nachtrag „Schemaschritt 170“ unten)
+ändert nur einen Hinweis am Satzfeld der Kostenvorlagen, den der Referenzlauf nicht liest; Schemaschritt 171
+(Pufferoptionen und thermische Desinfektion) legt nur leere Felder an, ebenso Schemaschritt 174 (Aufschlag und
+manuelle Aufheizzeit der Aufheizoptimierung, Nachtrag unten). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046 und `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten. 1050 steht nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet
+alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Welle M5 „Strom in Viertelstunden“ der
+> [Entscheidungsvorlage Modellgrenzen](../../aktuell/Entscheidungsvorlage_Modellgrenzen_Rechenwege.md)**
+> (SB1 (a), PV3, SP1; Wellenplan vom Anwender freigegeben). Gebaut sind vier Teile, die Zahlen der Basis verschiebt
+> allein der erste:
+>
+> - **SB1 (a) PV-Bilanz auf 35 040 Viertelstunden:** Der Stundenertrag der Photovoltaik wird energieerhaltend nach
+>   dem Sonnenstand auf die vier Viertel verteilt (`P_q = P_h · 4 · cos θ_z,q / Σ cos θ_z`, Sonnenstand in der
+>   Mitte jeder Viertelstunde auf der UTC-Herkunft der Klimazeile; ohne Sonne gleichmäßig). Direktverbrauch
+>   `min(P_q, Last_q)`, Überschuss und Reststrom entstehen je Viertel aus **einer** Auflösung; die Stundenreihen
+>   (`pv_produktion.csv`, `pv_ueberschuss.csv`, `pv_reststrom.csv`) sind die Mittel ihrer vier Viertel. Stromspeicher
+>   und Flotte rechnen mit der glatten Reihe.
+> - **Schemaschritt 168** (`StromViertelstundenSchema`): an `Tab_Einstellungen` die nullbaren Felder
+>   `Einspeisegrenze_Wert` und `Einspeisegrenze_Einheit`, an `Tab_Stromspeicher(_STAMM)`
+>   `Selbstentladung_Prozent_Monat`. Kein Referenzprojekt setzt sie.
+> - **PV3 Einspeisegrenze:** Abregelung über der Grenze nach der Speicherladung; die Flotte liest sie als weiche
+>   Grenze. Ohne Grenze kein Schlüssel `Photovoltaik.AbregelungMwh`: byte-gleich.
+> - **SP1 Standby und Selbstentladung:** Standby aus `Standby_Verbrauch` (in der Testdatenbank überall leer),
+>   Selbstentladung leer. Neu ist allein der Skalar `Stromspeicher.EigenverbrauchSystemMwh` von **1046** (0,438):
+>   Im Flottenpfad ist der Eigenverbrauch des Speichersystems der Hilfsverbrauch der Einheiten, den die Flotte
+>   von 1046 schon rechnete.
+>
+> **A/B gegen R32** (beide auf Linux): **16/16 PASS**, 459/487 CSV byte-gleich. Abgewichen sind genau die vier
+> Projekte mit PV-Ertrag — 1007 (7 Dateien), 1040 (5), 1045 (5), 1046 (11): `aggregate.csv`, `pv_produktion.csv`,
+> `pv_ueberschuss.csv`, `pv_reststrom.csv`, `reststrom_viertelstunde.csv`, mit Speicher dazu
+> `pv_speicherfuellstand.csv` und `ssp_gespeichert_viertelstunde.csv`, bei 1046 die vier Flottenreihen.
+> `pv_produktion_theoretisch.csv` und `pv_strombedarf.csv` bleiben byte-gleich. 1041 und 1042 führen eine
+> PV-Anlage ohne Ertrag und bleiben wie alle Projekte ohne PV byte-gleich.
+>
+> | Größe (kWh/a) | 1007 (Speicher) | 1040 | 1045 | 1046 (Flotte) |
+> |---|---|---|---|---|
+> | Erzeugung der Module | 6 014,3 → 6 014,3 | 6 713,5 → 6 713,5 | 3 545,5 → 3 545,5 | 6 014,3 → 6 014,3 |
+> | Direktverbrauch | 5 081,0 → 5 076,2 | 4 440,7 → 4 436,6 | 2 763,8 → 2 762,1 | 5 081,0 → 5 076,2 |
+> | Überschuss vor Speicher | 933,3 → 938,1 | 2 272,7 → 2 276,9 | 781,6 → 783,4 | 933,3 → 938,1 |
+> | Einspeisung | 330 → 330 (gerundet) | 2 272,7 → 2 276,9 | 781,6 → 783,4 | 894,9 → 899,9 |
+> | Eigenverbrauch (Erzeugung − Einspeisung) | 5 684 → 5 684 (gerundet) | 4 440,7 → 4 436,6 | 2 763,8 → 2 762,1 | 5 119,4 → 5 114,4 |
+> | Restbezug | 62 784,0 → 62 786,1 | 22 986,3 → 22 990,5 | 28 745,2 → 28 747,0 | 63 896,1 → 63 901,1 |
+> | Autarkie % (Bedarf − Restbezug)/Bedarf | 8,237 → 8,234 | 16,191 → 16,176 | 8,772 → 8,766 | 6,611 → 6,604 |
+>
+> **Plausibel:** Die Lastgänge der Referenzprojekte sind Stundenprofile, gleichmäßig auf die Viertel gespreizt; die
+> PV-Reihe folgt jetzt dem Sonnenstand innerhalb der Stunde. In Viertelstunden, in denen die PV über dem Mittel
+> liegt, entsteht Überschuss, den das Stundenmittel verdeckt hatte — der Direktverbrauch sinkt um 0,05 bis 0,1 %,
+> Einspeisung und Restbezug steigen um denselben Betrag. Die Erzeugung bleibt Stunde für Stunde gleich
+> (Energieerhaltung). Größer wird der Unterschied bei Lastgängen mit echten Viertelstundenspitzen
+> (Gewerbelast, Ganglinien mit 35 040 Werten).
+>
+> **Kein Fehlschlag, keine Ablehnung:** 16/16 Projekte gerechnet. **Determinismus:** Ein zweiter Lauf ist mit dem
+> Einfrierlauf 487/487 CSV byte-gleich. **Plattformnachweis:** gestört gegen die Basis 16/16 PASS, 480/487 CSV
+> byte-gleich. Die sieben CI-Projekte gegen die Basis: GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050 \
+>   --ziel Referenzlaeufe/2026-10-02_R33_Viertelstunden
+> ```
+>
+> Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis; die Regeln im
+> [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md), Abschnitt 19.
+
+> **Testdatenbank — Schemaschritt 168.** Eingefroren ist R33 auf der Fassung `2b0dc246…` (aus `7debfd8a…`, Schemastand
+> 165, gehoben um die Spalten der Einspeisegrenze und der Selbstentladung). Die gültige Fassung kommt aus
+> `58d9ba47…` (Schemastand 166, Netzverluste je Kanal, Zirkulation, Betriebskalender) und ist mit
+> `Werkzeuge/Testdatenbankschema` auf **168** gezogen: Schritt 167 legt die leeren Teillastspalten an `Tab_WP(_STAMM)`
+> und `Tab_BHKW(_STAMM)` an, Schritt 168 zwei leere Spalten an `Tab_Einstellungen`, je eine leere
+> Spalte an `Tab_Stromspeicher_STAMM` und `Tab_Stromspeicher`; keine Datenänderung, kein Stempel gesetzt.
+> `integrity_check` ok, `foreign_key_check` leer. Neue Fassung **81 195 008 Byte, LFS-SHA-256
+> `6e5d24aa5da7dafdad6ed1c1b4dabb3eeb13744f100cee8fc201b7f16b9aceae`**. Die sechzehn Projekte rechnen auf ihr gegen R33
+> GESAMT PASS mit 487/487 CSV byte-gleich; keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 169 (Pufferspeicher-Auslegung), Basis unverändert.**
+> `PufferAuslegungSchema` (Nummer `StromViertelstundenSchema.SCHRITT + 1`): die Tabelle `Tab_PufferAuslegung` (STRICT,
+> leer; `ID_Projekt` mit `ON DELETE CASCADE`, `ID_Pufferspeicher` mit `ON DELETE SET NULL`) und die Vorgabetabelle
+> `Tab_PufferAuslegungParameter_STAMM` (STRICT) mit 148 gesäten Vorgabewerten `Pufferauslegung.*` aus
+> `PufferAuslegungVorgaben`. Die Testdatenbank ist aus der Fassung `6e5d24aa…` (168) mit `Werkzeuge/Testdatenbankschema`
+> auf **169** gezogen. Neue Fassung **81 240 064 Byte, LFS-SHA-256
+> `5fdc093e38eb755c4d3fc598c57022180409763cdc7a05e6a069d20dd3fb6d29`**. **Die Basis bleibt:** Kein Rechenweg liest die
+> neuen Tabellen; die Auslegung rechnet und schreibt nur auf Zuruf. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 170 (Katalogempfehlung der Hilfsenergie auf Weg B), Basis unverändert.**
+> `HilfsenergieEmpfehlungNachzug` (Nummer `PufferAuslegungSchema.SCHRITT + 1`), reines DML: In den
+> Auslieferungsvorlagen (`Tab_KostenVorlage.ReadOnly = 1`, Kategorie Betrieb) trägt die Pflichtzeile
+> „Hilfsenergiekosten“ des BHKW (`Tab_KostenVorlagePosition.ID` 62) die Empfehlung 0,5–1,5 % statt 2–4 %, die
+> Pflichtzeile „Hilfsenergiekosten (Strom)“ des Heizkessels (ID 68) 1–2 % statt 4–8 % — beide rechnen als Anteil des
+> Endenergiebedarfs (Weg B), die alten Spannen galten für Weg A. Projektzeilen (`Tab_ProjektWerte`) führen keine
+> Empfehlung und bleiben unberührt. Die Testdatenbank ist aus der Fassung `5fdc093e…` (169) mit
+> `Werkzeuge/Testdatenbankschema` auf **170** gezogen (`--trocken` danach 0 offen, `integrity_check` ok,
+> `foreign_key_check` leer). Neue Fassung **81 240 064 Byte, LFS-SHA-256
+> `bd624ace4a02fb3f146c688018594af03020ed67023cf351afed14d09b4b70c2`**. **Die Basis R33 bleibt:** Der Referenzlauf liest
+> keine Kostenvorlage. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 171 (Pufferoptionen und thermische Desinfektion), Basis unverändert.**
+> `PufferOptionenSchema` (Nummer `HilfsenergieEmpfehlungNachzug.SCHRITT + 1`): an `Tab_Pufferspeicher` (Projektkopie) die
+> nullbaren Spalten `Bereitschaft_Weg` ('tag'/'temperatur'), `Aufstellraum_Temperatur_C`, `Schicht_Anteile`,
+> `Frischwassermodul`, `FWM_Graedigkeit_K`; an `Tab_Einstellungen` `Desinfektion_Aktiv`, `_Intervall_Tage`, `_Stunde`,
+> `_Zieltemperatur_C`, `_Volumen_l`, reines DDL. Die Testdatenbank ist aus der Fassung `bd624ace…` (170) mit
+> `Werkzeuge/Testdatenbankschema` auf **171** gezogen, alle neuen Zellen leer (`integrity_check` ok,
+> `foreign_key_check` leer). Neue Fassung **81 235 968 Byte, LFS-SHA-256
+> `4055798699076f008b90417d47efe726a71d203cd8c4f2d70b2c67580890c8a6`**. **Die Basis bleibt:** Die Projekte der CI-Auswahl
+> rechnen auf ihr gegen R33 GESAMT PASS, alle CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 172 (Katalogfassung, Katalogabgleich, Erdreichprüfung im Ergebnis), Basis unverändert.**
+> `KatalogfassungSchema` (Nummer `PufferOptionenSchema.SCHRITT + 1`): an den Stufe-1-Katalogen (`Tab_WP_STAMM` samt
+> `Tab_Kenndaten_STAMM`/`Tab_Kenndaten_Kuehlung_STAMM`, `Tab_Heizkessel_STAMM`, `Tab_BHKW_STAMM`, `Tab_PV_STAMM`,
+> `Tab_Brauchwasser_STAMM`, `Tab_Brauchwassertyp_STAMM`, `Tab_Prozesswaerme_STAMM`, `Tab_Prozesstyp_STAMM`) die Spalten
+> `Katalog_Schluessel` (Teilindex eindeutig), `Katalog_Pruefsumme`, `Katalog_Ausgelaufen`; `Tab_Applikation.Katalogfassung`;
+> die STRICT-Tabellen `Tab_Katalogabgleich` und `Tab_ErgebnisErdreich`. Die Saat setzt nur Schlüssel und Prüfsumme der
+> Sätze mit `ReadOnly = 1` (keine Fachwerte); Projektkopien unberührt. Die Testdatenbank ist aus der Fassung `40557986…`
+> (171) mit `Werkzeuge/Testdatenbankschema` auf **172** gezogen (36 Spalten, 2 Tabellen; `integrity_check` ok). Neue Fassung
+> **81 293 312 Byte, LFS-SHA-256 `8edc80c49b95d9841d044580dc61a011915f3b330c587de66a41c86c9dab2bfd`**. **Die Basis bleibt:** Die sechzehn
+> Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich; der Katalogabgleich selbst
+> läuft auf der Testdatenbank nie (Einfrierregeln nennen Katalogzeilen der Referenzprojekte). Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 173 (Katalogfassung Stufe 2), Basis unverändert.** `KatalogfassungStufe2Schema` (Nummer
+> `KatalogfassungSchema.SCHRITT + 1`): die drei Katalogspalten `Katalog_Schluessel`, `Katalog_Pruefsumme`, `Katalog_Ausgelaufen`
+> an 16 weiteren Kopftabellen (Baustoffe, Bauteilaufbauten, Brennstoffe, Tagesverteilungen, Gebäude, Konditionierungsvorlagen,
+> Pufferspeicher, Pufferauslegungs-Vorgaben, Solarkollektoren, Solar-, Strom- und Wärmebedarfsganglinien, Stromspeicher,
+> Stromverbraucher und -typen, Wechselrichter); Klima und Zapfprofilkatalog benannt ausgenommen. Die Saat setzt nur Schlüssel
+> und Prüfsumme der Sätze mit `ReadOnly = 1` (BST 132, GEB 6, KV 14, PAP 148, WBGL 3, WR 1), keine Fachwerte; Projektkopien
+> unberührt. Die Testdatenbank ist aus der Fassung `8edc80c4…` (172) mit `Werkzeuge/Testdatenbankschema` auf **173** gezogen
+> (`integrity_check` ok). Neue Fassung **81 412 096 Byte, LFS-SHA-256 `d65e7ef5c67f1ac8302bf17faa350da792535655c67118ddd39679549b249f2b`**.
+> **Die Basis bleibt:** Die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV
+> byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 174 (KP-S4: Aufschlag und manuelle Aufheizzeit der Aufheizoptimierung), Basis unverändert.**
+> `AufheizManuellSchema` (Nummer `KatalogfassungStufe2Schema.SCHRITT + 1`): an `Tab_Einstellungen` `Aufheiz_Aufschlag_H` (0 … 24) und
+> `Aufheiz_Aufschlag_Prozent` (0 … 100), an `Tab_Gebaeude` (nicht am Katalog) `Aufheizzeit_Manuell_H` (1 … 47) samt dem
+> achten Neubau der Sicht `Abfrage_Projektgebaeude` (103 Spalten), an `Tab_ErgebnisGebaeude` `Aufheiz_Art` (TAEGLICH, FEST,
+> MANUELL), `Auslegungsheizlast_Kw` (> 0) und `Aufheizzuschlag_Kw` (≥ 0), an `Tab_ErgebnisZone` `Aufheiz_Art`; alle nullbar
+> mit Prüfklausel. Der Zustand `GEKOPPELT` der Zone kommt per kleinem Neubau allein von `Tab_ErgebnisZone` (STRICT, beide
+> Fremdschlüssel und Indizes erhalten, `foreign_key_check` leer); `Tab_ErgebnisGebaeude` wird nicht neu gebaut. Kein DML an
+> Bestandsdaten. Die Testdatenbank ist aus der Fassung `d65e7ef5…` (173) mit `Werkzeuge/Testdatenbankschema` auf **174**
+> gezogen (7 Spalten, ein Neubau ohne Zeilen, Sicht; `integrity_check` ok). Neue Fassung **81 412 096 Byte, LFS-SHA-256
+> `e85c3bdbd33d618886712fcb0aacb124b44c1a6c123222a33921813d3edf0673`**. **Die Basis bleibt:** Aufschlag und manuelle
+> Aufheizzeit stehen überall leer, `Aufheizoptimierung` = 0 hält jedes Projekt auf „aus“, und der Referenzlauf liest
+> weder `Tab_ErgebnisGebaeude` noch `Tab_ErgebnisZone`; die sechzehn Projekte rechnen auf ihr gegen R33 GESAMT PASS mit
+> 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Schemaschritt 175 (Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben), Basis unverändert.**
+> `ProjektkopienKatalogeSchema` (Nummer `AufheizManuellSchema.SCHRITT + 1`): `Tab_Brennstoff` (STRICT; je Projekt und
+> Brennstoffart die 14 Fachspalten des Stamms samt `Katalogfassung_Herkunft`, `ID_Projekt` mit `ON DELETE CASCADE`) und
+> `Tab_PufferAuslegungParameter` (STRICT; je Projekt und `Schluessel`). Die Saat kopiert wertgleich: je Projekt jeden
+> Stamm-Brennstoff (29 Projekte × 25 Arten = 725 Zeilen), je Projekt mit Pufferauslegung jede Vorgabe (hier 0). Der Kern
+> liest die Brennstoffwerte eines Projekts seither über `ProjektBrennstoffe.Sicht` aus der Kopie, der Katalogabgleich fasst
+> die Kopien nie an. Konditionierungsvorlagen brauchen keine Kopie, ihr Inhalt liegt schon am Gebäude. Die Testdatenbank ist
+> aus der Fassung `e85c3bdb…` (174) mit `Werkzeuge/Testdatenbankschema` auf **175** gezogen (2 Tabellen, 725 Zeilen;
+> `integrity_check` ok). Neue Fassung **81 494 016 Byte, LFS-SHA-256
+> `551a288deae7562b316a798f0c7b669e3b453ce8d22ad01fe6cebbd733c73951`**. **Die Basis bleibt:** Die Kopien tragen dieselben
+> Werte wie der Stamm; die sechzehn Projekte rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV
+> byte-gleich. Berührt ist die Einfrierregel „gesäte Bedarfsdaten“ nur im Wortlaut (`Tab_Brennstoff` der Referenzprojekte
+> gehört seither dazu, siehe `CLAUDE.md`), nicht im Wert.
+
+> **Nachtrag — Testdatenbank: Zonenprojekt 1052 gesät, Basis unverändert.** `Skripte/referenzprojekt_1052_zonen.cs` legt
+> auf der Fassung `551a288d…` (175) das Projekt 1052 „Referenzprojekt Zonen“ an (Abschnitt „Das Referenzprojekt 1052“,
+> Kopie von 1018 samt ihren 25 Projektbrennstoffen; drei Zonen, 31 Bauteile, ein Luftstrom, zwei Zonenkalender,
+> Aufheizoptimierung an). Neue Fassung **82 329 600 Byte, LFS-SHA-256
+> `d33766677c86530624d4ba6f9fc218c3a817856b80f71063798ab2a588ca960b`**. **Die Basis
+> bleibt:** Die Vorlage 1018 ist zeilengleich (Abdruck samt Schlüsseln), kein Referenzprojekt trägt eine Zone oder einen
+> Zonenkalender, und die sechzehn Projekte rechnen gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel
+> ist berührt; 1052 kommt mit RP2 in die Basis.
+
+> **Nachtrag — Schemaschritt 176 (Konditionierungsnutzung an der Kalenderkopie), Basis unverändert.**
+> `KonditionierungNutzungSchema` (Nummer `ProjektkopienKatalogeSchema.SCHRITT + 1`): Spalte `Nutzung` (nullbar, Prüfklausel
+> auf die vier Nutzungen) an `Tab_Konditionierungskalender`. „Vorlage übernehmen“ und der Paketimport setzen sie aus der
+> Vorlage, die Saat füllt bestehende Kalender einmalig aus der Herkunft in `Bemerkung`; die Pufferauslegung liest ihre
+> Vorbelegung seither aus der Kopie statt aus dem Stamm. Die Testdatenbank ist aus der Fassung `d3376667…` (175, mit dem Zonenprojekt 1052) mit
+> `Werkzeuge/Testdatenbankschema` auf **176** gezogen (eine Spalte; 2 der 12 Kalender gesät — die beiden Zonenkalender von 1052 nennen ihre Vorlage in der
+> Bemerkung; `integrity_check` ok). Neue Fassung **82 296 832 Byte, LFS-SHA-256
+> `7cf9aadad95ddc0f11f10de81d692c3c4df148d275a1e56178b606a2c8ef1c35`**. **Die Basis bleibt:** Kein Rechenweg liest die Spalte; die sechzehn Projekte
+> rechnen auf einer so gehobenen Kopie gegen R33 GESAMT PASS mit 487/487 CSV byte-gleich. Keine Einfrierregel ist berührt.
+
+> **Nachtrag — Testdatenbank: Konditionierungsprojekt 1051 gesät, 1052 neu gezogen (176), Basis unverändert.** Auf der
+> Fassung ohne 1052 (175) legt `Skripte/referenzprojekt_1051_konditionierung.cs` das Projekt 1051 „Referenzprojekt
+> Konditionierung“ an (Kopie 1007 auf dem Kopierweg des Programms, Referenzkatalogbau aus dem per Probe gewählten
+> Katalogbau, Bauplan am Projekt); danach zieht `Skripte/referenzprojekt_1052_zonen.cs` das Projekt 1052 erneut (Kopie
+> 1018). Diese Fassung `0c1e193e…` (175) ist mit `Werkzeuge/Testdatenbankschema` auf **176** gezogen (eine Spalte; 12
+> Kalender aus der Herkunftsvorlage gesät). Beide Skripte danach `--trocken` ohne Änderung, `integrity_check` ok,
+> `foreign_key_check` leer. Neue Fassung **83 120 128 Byte, LFS-SHA-256
+> `bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`**. **Die Basis bleibt:** Die Vorlagen 1007 und 1018
+> sind zeilengleich, die sechzehn Projekte unberührt; 1051 und 1052 kommen mit RP2 in die Basis.
+
+### Die Vorgängerbasis R32 `2026-10-02_R32_Solarthermie`
+
+Sechzehn Projekte, 487 CSV, 3 081 Skalare, auf Linux eingefroren gegen die Testdatenbank `486d5b0c…`, getragen
+bis zur Fassung `7debfd8a…` (Schemastand 165); mit R33 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
+(Welle M2 Solarthermie, Arbeitstemperatur des Kollektorfelds von 1049 aus dem Speicher) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Zwischen R32 und
+R33 hat die Testdatenbank die Schemaschritte 166 bis 168 bekommen (leere Felder); der Wechsel ist allein der Rechenweg der
+PV-Bilanz (SB1 a).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R34 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat bis zum 04.10.2026 die Basis R34 beschrieben — den Anlass (Erdreichwiderstand nach DIN EN ISO 13370, Innenprüfung der Abschnittsregel, die Referenzprojekte 1051 und 1052) mit der Tafel der Heizwärme je Projekt, darunter den Abschnitt zur Vorgängerbasis R33. Beides steht unten im Wortlaut; die Nachträge der Schemaschritte 177 bis 181 bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `7a5c161`, Testdatenbank Schemastand 181.
+
+**Abgelöst wurde R34 durch `2026-10-04_R35_Zonenuebergabe`** (Wärmeübergabe je Zone, AK1z, E63, dazu das Referenzprojekt 1054 „Zonen mit Heizkreis“): Die achtzehn Projekte der Basis rechnen byte-gleich (18/18 PASS, 548/548 CSV), neu ist allein 1054.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-03_R34_Erdreich/`** — **achtzehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052), **548 CSV**, **3 568 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 03.10.2026, Stand `87c024218`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **176**, 83 120 128 Byte, LFS-SHA-256
+`bb8dd3dc6519e109605274180e14cff505ca7ae83785472afb3328adef83c39a`; gültige Fassung Schemastand **181**, 83 972 096 Byte, LFS-SHA-256 `bfd9f574a6a1c9af5ce5b996c8e23ebea46063fbecc05e16114d9f58746f5404`, Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052. 1050 und 1052 stehen nicht in der
+CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle achtzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: drei Teile, die Zahlen der Basis verschiebt allein der erste.**
+>
+> **(a) Erdreichwiderstand nach DIN EN ISO 13370.** Bauteile am Erdreich — Kellerboden, Kellerwand und die
+> Bodenplatte — rechnen mit dem Wärmewiderstand des Erdreichs statt mit dem Bauteil-U-Wert allein: charakteristisches
+> Bodenmaß B′ = A / (0,5 · P), äquivalente Dicke d_t, Bodenleitwert U_g für Boden und Wand, mit den Festwerten
+> λ_Erd 2,0 W/(m·K), Randstreifenbreite w 0,3 m und Außenwiderstand R_se 0,04 m²K/W. Der Umfang P kommt aus
+> `Abmessung_Anschluß_Außenwand_Kellerdecke`, aber nur, wenn er mindestens dem Kreisumfang der Fläche entspricht;
+> sonst gilt der Umfang des flächengleichen Quadrats 4·√A (Exportschlüssel `Erdreich_Umfangsquelle`: Feld oder
+> Quadrat). Die Randtemperatur des Erdreichs folgt Kusuda in 1 m Tiefe. Die Heizwärme sinkt gegenüber R33 überall dort,
+> wo ein Gebäude Bauteile am Erdreich trägt:
+>
+> | Projekt | Heizwärme | Spitze |
+> |---|---|---|
+> | 1007, 1046 | −2,3 % | −0,7 % |
+> | 1008 | −6,5 % | −1,9 % |
+> | 1017 | −16,4 % | −4,7 % |
+> | 1018, 1049 (B′ 22,9 m, U_g 0,155 W/(m²K)) | −22,7 % | −7,9 % |
+> | 1023, 1024, 1050 | −11,2 % | −3,5 % |
+> | 1039 | −10,2 % | −3,3 % |
+> | 1041, 1042, 1045 | −3,2 % | −1,1 % |
+> | 1047 | −15,7 % | −7,6 % |
+> | 1052 | −5,4 % | −3,8 % |
+> | 1030, 1040 (ohne Gebäudemodell) | unverändert | unverändert |
+>
+> **(b) Allgemeine Innenprüfung der Abschnittsregel** im Zonenmodell (Obergrenze 8 Abschnitte je Stunde, in
+> `GebaeudeFestwerte`). Messung an allen Referenzprojekten: 0 Stunden innerer Lastumkehr und 0 Bandverletzungen; die
+> Prüfung ändert keine Zahl, die Rechnung war gegen R33 byte-gleich.
+>
+> **(c) Neue Referenzprojekte und Exportschlüssel.** 1051 „Konditionierung“ und 1052 „Zonen“ (unten) kommen in die
+> Basis; neu im Export sind die Schlüssel `Geb[n].Erdreich_B`, `Geb[n].Erdreich_Ug` und
+> `Geb[n].Erdreich_Umfangsquelle`.
+>
+> **Gegenprobe:** Ein zweiter Lauf ist mit dem Einfrierlauf **548/548 CSV byte-gleich** (18/18 PASS, 5 828 968 Werte).
+> **Plattformnachweis:** gestört (`--stoerung ulp`) gegen die Basis 18/18 PASS, 540/548 CSV byte-gleich.
+> Aufbau und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052 \
+>   --ziel Referenzlaeufe/2026-10-03_R34_Erdreich
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+### Die Vorgängerbasis R33 `2026-10-02_R33_Viertelstunden`
+
+Sechzehn Projekte, 487 CSV, 3 082 Skalare, auf Linux eingefroren gegen die Testdatenbank `2b0dc246…` (Schemastand 168),
+gehoben bis Schemastand 176 (leere Felder und Katalogspalten, kein Rechenweg); mit R34 aus dem Arbeitsbaum gefallen,
+Protokoll, Anlass (PV-Bilanz je Viertelstunde, Welle M5) und alle Nachträge der Schemaschritte 166 bis 176 unter
+[`Dokumentation/ueberholt/Referenzbasen/`](LIESMICH.md). Der Wechsel zu R34
+ist der Rechenweg des Erdreichs (a), dazu die zwei neuen Projekte.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R35 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat bis zum 05.10.2026 die Basis R35 beschrieben — den Anlass (Wärmeübergabe je Zone, AK1z, E63, das Referenzprojekt 1054) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `b845355`, Testdatenbank Schemastand 185.
+
+**Abgelöst wurde R35 durch `2026-10-05_R36_Kaeltemaschine`** (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, KU3-4b, Einfrierregel „gesäte Kältemaschinendaten“): Die neunzehn Projekte der Basis rechnen byte-gleich (19/19 PASS, 576/576 CSV), neu ist allein 1055.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Wärmeübergabe je Zone (AK1z, E63) — die Zahlen der achtzehn Vorgängerprojekte sind unverändert, neu ist allein 1054.**
+>
+> Bei gekoppelter Anlage (AK1) rechnet der Schritt H die Wärmeübergabe je Zone am gemeinsamen Vorlauf des Gebäudes: Jede
+> Zone trägt ihre eigene Übergabeart, Auslegung und ihr Proportionalband, der Rücklauf des Gebäudes ist
+> massenstromgewichtet, und die Stunden, in denen die Übergabe an ihre Grenze kommt, werden je Zone gezählt. Schemaschritt
+> 181 legt dafür an `Tab_Zone` vier Spalten (`Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`,
+> `Regler_Proportionalband`; leer heißt „wie Gebäude“) und an `Tab_ErgebnisZone` drei Ergebnisspalten (`Vorlauf_Mittel_C`,
+> `Ruecklauf_Mittel_C`, `Uebergabe_Begrenzt_H`) an. Der Einzonenweg und die ungekoppelten Mehrzonengebäude rechnen
+> unverändert: **Gegen R34 sind die achtzehn Vorgängerprojekte 18/18 PASS und 548/548 CSV byte-gleich.**
+>
+> **Neu ist Projekt 1054 „Zonen mit Heizkreis“**, Kopie von 1052 mit AK1, Radiator und Heizkurve am Gebäude und einer
+> Konvektorzone (Gastronomie und Verwaltung: Auslegung 70/50 °C, Proportionalband 2 K; Abschnitt „Das Referenzprojekt
+> 1054“ unten). Ergebnis: Heizwärme 47,58 MWh, Spitze 26,05 kW, Vorlauf/Rücklauf im Mittel 39,53/36,08 °C, 1 339 begrenzte
+> Stunden (Gästezimmer 293,9 h, Gastronomie 1 106,5 h); die beheizten Zonen stehen im Aufheizzustand GEKOPPELT. Der
+> Vergleichslauf meldet 1054 als „nur im Vergleichslauf vorhanden“, weil R34 das Projekt nicht kennt.
+>
+> **Gegenprobe:** Der Vergleich der neunzehn Projekte gegen R34 steht bei 18/18 PASS, die 548 CSV der Vorgänger sind
+> byte-gleich; 1054 bringt 28 CSV und 223 Skalare dazu. Aufbau und Ausstattung je Projekt stehen im `protokoll.txt` der
+> Basis.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054 \
+>   --ziel Referenzlaeufe/2026-10-04_R35_Zonenuebergabe
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R36 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R36 beschrieben — den Anlass (das Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, KU3-4b) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `328a0dc`, Testdatenbank Schemastand 186.
+
+**Abgelöst wurde R36 durch `2026-10-05_R37_Fahrplan`** (Komfortspalten für jedes gekoppelte Projekt, F12 und E83, und das Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, AK2-4): Die zwanzig Projekte der Basis rechnen je Wert gleich (20/20 Werte PASS), 18 Projekte vollständig byte-gleich, 1047 und 1054 tragen nur sechs bzw. vier neue Zeilen in `aggregate.csv` (Komfort- und Fahrplanspalten); neu ist 1056.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“ (KU3-4b) — die Zahlen der neunzehn Vorgängerprojekte sind unverändert, neu ist allein 1055.**
+>
+> Die Einfrierregel „gesäte Kältemaschinendaten“ (Abschnitt „Die Einfrierregel „gesäte Kältemaschinendaten“ (Referenzprojekt
+> 1055)“ oben) verlangt eine neue Basis, sobald ein Referenzprojekt eine Kältemaschine führt. Der Rechenweg ist unverändert:
+> **Gegen R35 sind die neunzehn Vorgängerprojekte 19/19 PASS und 576/576 CSV byte-gleich.**
+>
+> **Neu ist Projekt 1055**, Kopie von 1017 mit Kältemaschine und Kältespeicher statt Wärmepumpe im Kühlbetrieb (Abschnitt „Das
+> Referenzprojekt 1055“ unten). Der Vergleichslauf meldet 1055 als „nur im Vergleichslauf vorhanden“, weil R35 das Projekt nicht
+> kennt; 1055 bringt 32 CSV und 238 Skalare dazu (gesamt 608 CSV, 4 029 Skalare). 1055 steht nicht in der CI-Auswahl.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055 \
+>   --ziel Referenzlaeufe/2026-10-05_R36_Kaeltemaschine
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R37 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R37 beschrieben — den Anlass (die Komfortspalten für jedes gekoppelte Projekt, F12 und E83, und das Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, AK2-4) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `bd365fe`, Testdatenbank Schemastand 188.
+
+**Abgelöst wurde R37 durch `2026-10-05_R38_Vorlaufwahl`** (Ausweis der Vorlaufwahl der Wärmepumpe, VW1, E88): Die einundzwanzig Projekte rechnen unverändert, 19 Projekte vollständig byte-gleich, 1047 und 1056 tragen nur je drei neue Zeilen in `aggregate.csv` (`WaermepumpeModul[0].Vorlaufwahl_Stunden`, `Vorlauf_Darueber_Stunden`, `Vorlauf_Darunter_Stunden`).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Komfortspalten für jedes gekoppelte Projekt (F12, E83) und Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4) — die Zahlen der zwanzig Vorgängerprojekte sind unverändert, 1047 und 1054 tragen sechs bzw. vier neue Spalten, neu ist 1056.**
+>
+> Der Lauf schreibt `Fahrplan_Begrenzt_Stunden` und die Komfortkennzahlen in `Tab_ErgebnisEnergiebedarf` für jedes Projekt,
+> dessen Anlagenfahrplan lief (Kopplung ab AK1, ein gekoppeltes Gebäude auf dem VDI-Weg), nicht erst bei greifender
+> Schranke; ohne greifende Schranke steht `Fahrplan_Begrenzt_Stunden` auf 0. Der Rechenweg ist sonst unverändert:
+> **Gegen R36 sind die zwanzig Vorgängerprojekte je Wert PASS, 18 Projekte vollständig byte-gleich, von 1047 und 1054
+> je 37 bzw. 27 CSV byte-gleich.** In `aggregate.csv` stehen neu bei 1047 `Energiebedarf.Fahrplan_Begrenzt_Stunden` 0,
+> `Komfort_Unterschreitungsstunden` 875, `Komfort_Kelvinstunden` 1 281,04, `Komfort_Laengste_Strecke` 11,
+> `Komfort_Ueberschreitungsstunden` 32 und `Komfort_Kelvinstunden_Kuehlung` 43; bei 1054 die vier Heizspalten
+> (0, 2 162, 2 138,59, 16 — ohne Kühlung bleiben die zwei Kühlspalten leer). Keine bestehende Zeile ändert sich.
+>
+> **Neu ist Projekt 1056**, Kopie von 1047 mit Nachtsperre der Wärmepumpe, Zeitprogramm an Kessel und BHKW und
+> Vorlaufgrenze 50 °C (Abschnitt „Das Referenzprojekt 1056“ unten). Der Vergleichslauf meldet 1056 als „nur im
+> Vergleichslauf vorhanden“, weil R36 das Projekt nicht kennt; 1056 bringt 38 CSV und 226 Skalare dazu (gesamt 646 CSV,
+> 4 265 Skalare). 1056 steht nicht in der CI-Auswahl.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
+>   --ziel Referenzlaeufe/2026-10-05_R37_Fahrplan
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R38 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R38 beschrieben — den Anlass (den Ausweis der Vorlaufwahl der Wärmepumpe, VW1 und E88) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `7fad5dc`, Testdatenbank Schemastand 190.
+
+**Abgelöst wurde R38 durch `2026-10-06_R39_Auslegungsheizlast`** (Auslegungsheizlast auch ohne Anlagenkopplung, KP3-R6, E97): Die einundzwanzig Projekte rechnen unverändert, 19 Projekte vollständig byte-gleich, 1051 und 1052 tragen nur je zwei neue Zeilen in `aggregate.csv` (`Geb[0].AuslegungsheizlastKw`, `Geb[0].AufheizzuschlagKw`).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Ausweis der Vorlaufwahl der Wärmepumpe (VW1, E88) — die Zahlen aller einundzwanzig Projekte sind unverändert, 1047 und 1056 tragen je drei neue Zeilen in `aggregate.csv`.**
+>
+> Schemaschritt 188 (`VorlaufwahlSchema`) legt an `Tab_ErgebnisWaermepumpeModul` die Spalten `Vorlaufwahl_Stunden`
+> (Paare `Vorlauf:Stunden`, im Export mit Komma getrennt), `Vorlauf_Darueber_Stunden` und `Vorlauf_Darunter_Stunden` an;
+> der Lauf füllt sie nur, wenn die Wärmepumpe ihre Kennlinie am gerechneten Vorlauf wählt (Anlagenkopplung), sonst
+> bleiben sie leer und der Referenzexport führt sie nicht. Schemaschritt 187 (freie Kühlung über die Wärmequelle) ändert
+> an keinem Referenzprojekt eine Zahl. Der Rechenweg ist unverändert: **Gegen R37 sind 19 Projekte
+> vollständig byte-gleich; 1047 und 1056 tragen allein drei neue Zeilen in `aggregate.csv`, die der Vergleich als
+> „Eintrag nur im Vergleichslauf“ meldet, alle übrigen 37 CSV beider Projekte sind byte-gleich.** Neu stehen bei 1047
+> `WaermepumpeModul[0].Vorlaufwahl_Stunden` `35:1549,45:1782,55:122`, `Vorlauf_Darunter_Stunden` 1 851 und
+> `Vorlauf_Darueber_Stunden` 0; bei 1056 `35:1122,45:1411,55:101`, 1 475 und 0. Je Projekt drei Skalare mehr
+> (gesamt 646 CSV, 4 271 Skalare). Keine gesäten Daten sind neu, darum keine neue Einfrierregel.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
+>   --ziel Referenzlaeufe/2026-10-05_R38_Vorlaufwahl
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R39 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 06.10.2026 die Basis R39 beschrieben — den Anlass (die Auslegungsheizlast auch ohne Anlagenkopplung, KP3-R6 und E97) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `6195ea1`, Testdatenbank Schemastand 195.
+
+**Abgelöst wurde R39 durch `2026-10-07_R40_Erdreichquellen`** (Erdreichquellen der Referenzprojekte und Referenzprojekt 1057, Einfrierregel „gesäte Erdreichquellen“): Die dreizehn Projekte ohne Erdreichquelle sind byte-gleich, 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 rechnen ihre Sole-Wärmepumpe an der Erdsonde, 1057 ist neu.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Auslegungsheizlast auch ohne Anlagenkopplung (KP3-R6, E97) — die Zahlen aller einundzwanzig Projekte sind unverändert, 1051 und 1052 tragen je zwei neue Zeilen in `aggregate.csv`.**
+>
+> Die Auslegungsheizlast Φ_HL je Zone entsteht in `GebaeudeModellEingang.Auslegungslasten` aus einer Quelle: mit
+> Kopplung die Zahl des Kopplungswegs, ohne sie derselbe Ausdruck mit Auslegungstag und Auslegungs-Außentemperatur.
+> Damit füllt jedes ungekoppelte Gebäude mit Aufheizoptimierung `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw`
+> seiner Ergebniszeile, und der Ergebnisexport trägt beide am Gebäude als `Geb[n].AuslegungsheizlastKw` und
+> `Geb[n].AufheizzuschlagKw` (nur gesetzt). Ein gekoppeltes Gebäude bemisst nicht; 1054 bleibt darum ohne die
+> Zeilen. Die exakte innere Umkehr des Zonenmodells (ZM-F) ändert keine Zahl. Der Rechenweg ist sonst unverändert:
+> **Gegen R38 sind 19 Projekte vollständig byte-gleich; 1051 und 1052 tragen allein zwei neue Zeilen in
+> `aggregate.csv`, die der Vergleich als „Eintrag nur im Vergleichslauf“ meldet, alle übrigen 35 bzw. 24 CSV beider
+> Projekte sind byte-gleich (644 von 646 CSV).** Neu stehen bei 1051 `Geb[0].AuslegungsheizlastKw` 22,19 kW und
+> `Geb[0].AufheizzuschlagKw` 3,92 kW, bei 1052 30,09 kW und 5,26 kW. Je Projekt zwei Skalare mehr (gesamt 646 CSV,
+> 4 275 Skalare). Keine gesäten Daten sind neu, darum keine neue Einfrierregel.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
+>   --ziel Referenzlaeufe/2026-10-06_R39_Auslegungsheizlast
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R40 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R40 beschrieben — den Anlass (die Erdreichquellen der Referenzprojekte und das Referenzprojekt 1057, Einfrierregel „gesäte Erdreichquellen“) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `7af65de`, Testdatenbank Schemastand 196.
+
+**Abgelöst wurde R40 durch `2026-10-07_R41_Erdreichpruefung`** (Entzug des Sondenfelds ohne Taktstrom, Erdreichprüfung je Anlage, Anwenderentscheid 07.10.2026): 674 von 677 CSV sind byte-gleich; allein der Block `Erdreich[0].*` in `aggregate.csv` von 1008, 1023 und 1050 weicht ab (Jahresentzug 0 → 52 487 bzw. 24 283 kWh/a, Prüfung möglich False → True).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Erdreichquellen der Referenzprojekte und das neue Referenzprojekt 1057 „Erdsonde“ (Erdwärme B und C,
+> Einfrierregel „gesäte Erdreichquellen“) — acht Projekte rechnen ihre Sole-Wärmepumpe an der Erdsonde, 1057 ist neu,
+> die übrigen dreizehn sind byte-gleich.**
+>
+> Die Sole-Wärmepumpen der Referenzprojekte 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 rechneten ohne gepflegte
+> Quelle an der Außenluft. `Skripte/erdreichquellen_referenzprojekte.py` sät an genau diesen Anlagen eine Erdsonde
+> (`WQ_Typ` Erdreich, `WQ_Quellsystem` Sonde, Mergel/Lehm, Länge nach VDI 4640 Blatt 2 mit Energiegrenze, 60 bis 120 m
+> je Sonde, Spreizung Vorgabe 5 K), setzt die eigene Klimaregion jedes Projekts auf Klimazone 6 und legt 1057 an
+> (Abschnitt „Das Referenzprojekt 1057“ unten); Schemaschritt 195 legt die Sondenfeldspalten leer an (Normvorgabe).
+> Damit gilt die neue Einfrierregel „gesäte Erdreichquellen“ oben. **Gegen R39 sind die dreizehn Projekte ohne
+> Erdreichquelle vollständig byte-gleich (575 von 646 CSV); 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 weichen
+> ab, 1057 ist neu.** Jahresarbeitszahl (Wärme der Wärmepumpe durch ihren Strom) und Wärmepumpenstrom alt → neu:
+>
+> | Projekt | JAZ R39 → R40 | WP-Strom R39 → R40 (MWh) | Wirkung |
+> |---|---|---|---|
+> | 1008 | 4,15 → 3,94 | 18,86 → 20,27 | Grundlast, Sole im Mittel 4,5 °C (Außenluft 9,9 °C); Deckung 79,8 → 81,5 % |
+> | 1023, 1050 | 2,38 → 2,38 | 43,01 → 43,23 | praktisch gleich; Deckung 41,6 → 41,8 % |
+> | 1039 | 3,25 → 3,06 | 58,59 → 58,82 | Grundlast, das Erdreich kühlt unter Last aus (Sole im Mittel 1,0 °C); Wärme der WP 190,7 → 180,0 MWh |
+> | 1047 | 3,86 → 4,45 | 2,44 → 2,12 | Kühlprojekt; Kälte-EER 4,63 → 5,24, Kältedeckung 98,2 → 99,6 % |
+> | 1056 | 3,73 → 4,33 | 3,25 → 2,80 | Kühlprojekt; Kälte-EER 4,62 → 5,24, Komfortstunden unverändert |
+> | 1017 | — | 0,01 → 0,00 | Kälte-EER 4,63 → 5,24, Kältedeckung 98,2 → 99,7 % |
+> | 1055 | — | 0,01 → 0,00 | die Kältemaschine bleibt unberührt |
+> | 1057 | neu 3,07 | neu 22,12 | Sonde 4 × 90 m, Sole im Mittel 1,5 °C, Deckung 85,7 % |
+>
+> Je Projekt mit Erdreichquelle kommt der Block `Erdreich[0].*` (15 Skalare) in `aggregate.csv` hinzu. Gesamt 677 CSV,
+> 4 584 Skalare. Zwei Läufe sind byte-gleich; der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057 \
+>   --ziel Referenzlaeufe/2026-10-07_R40_Erdreichquellen
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 23.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R41 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R41 beschrieben — den Anlass (Erdreichprüfung je Anlage, Entzug des Sondenfelds ohne Taktstrom) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `a1ce23b`, Testdatenbank Schemastand 198.
+
+**Abgelöst wurde R41 durch `2026-10-07_R42_Vorlaufinterpolation_AK3`** (Interpolation der Wärmepumpenkennlinie über den Vorlauf, AK3-I, und Referenzprojekt 1058 auf Stufe AK3, Entscheid E102): 665 von 677 CSV sind byte-gleich; abweichend je sechs Dateien von 1047 und 1056 (WP-Strom −0,48 % bzw. −1,04 %, JAZ 4,45 → 4,47 bzw. 4,33 → 4,36), 1058 ist neu.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Erdreichprüfung je Anlage und Entzug des Sondenfelds ohne Taktstrom (Erdwärme-Nachzug, Anwenderentscheid
+> 07.10.2026) — allein der Block `Erdreich[0].*` in `aggregate.csv` von 1008, 1023 und 1050 ändert sich, alle übrigen
+> Zahlen und Projekte sind gleich.**
+>
+> Zwei Korrekturen am Rechenweg der Erdreichquelle: **Der Entzug der Stunde ist Wärme minus Strom ohne den Taktanteil.**
+> Der Mehrstrom aus Taktverlust (`Taktstrom_KWh_WP`, im Kühlbetrieb `Kaelteerzeuger.Taktstrom_stuendlich`) ist
+> elektrische Arbeit beim Anfahren und geht nicht als Wärme über die Sonde; Entzug und Rückspeisung des Sondenfelds
+> rechnen darum ohne ihn. Kein Referenzprojekt mit Erdreichquelle taktet in der Basis mit Mehrstrom, die Wirkung ist hier
+> null (die Tests `ErzeugerTeillastTests` und `ErdsondeReferenzprojektWacheTests` halten sie an 1039 mit Mindestleistung
+> und an 1017 im Kühlbetrieb). **Die Erdreichprüfung rechnet je Anlage mit Erdreichquelle** aus der Reihe, die der Lauf
+> je Modul und Stunde bucht (dieselbe wie das Sondenfeld), statt aus der Summenganglinie Wärme − Strom der ganzen
+> Wärmepumpenkaskade. Steht neben der Sole-Wärmepumpe eine Luft-Wasser-Wärmepumpe — so bei 1008, 1023 und 1050 —, war die
+> Summe nicht je Modul trennbar: Jahresentzug 0, Prüfung aus. Jetzt geht die Luft-Wasser-Wärmepumpe nicht ein, und die
+> Sole-Wärmepumpe wird für sich geprüft. **Gegen R40 sind 674 von 677 CSV byte-gleich; abweichend allein
+> `aggregate.csv` von 1008, 1023 und 1050, dort nur der Erdreichblock** (Werte alt → neu):
+>
+> | Projekt | Jahresentzug (kWh/a) | größter Entzug (kW) | Volllaststunden | Betriebs-/Froststunden | Prüfung möglich, Entzug belastbar |
+> |---|---|---|---|---|---|
+> | 1008 | 0 → 52 487 | 0 → 15,25 | 0 → 3 442 | unverändert | False → True |
+> | 1023, 1050 | 0 → 24 283 | 0 → 6,93 | 0 → 3 504 | 8 760 → 4 721 / 4 097 → 4 052 | False → True |
+>
+> Keine gesäten Daten sind neu, darum keine neue Einfrierregel. Gesamt 677 CSV, 4 584 Skalare. Zwei Läufe sind
+> byte-gleich (677/677 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057 \
+>   --ziel Referenzlaeufe/2026-10-07_R41_Erdreichpruefung
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 23.2 und 23.7.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R42 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R42 beschrieben — den Anlass (Interpolation der Wärmepumpenkennlinie über den Vorlauf, AK3-I, und Referenzprojekt 1058 auf Stufe AK3) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R42 durch `2026-10-07_R43_Kaelteseite_AK3K`** (Zonensperre je Zone auf allen Stufen und Kälteseite im geschlossenen Kreis auf Stufe AK3, AK3-K, Entscheide E103 und E104, dazu das Referenzprojekt 1059): 596 von 718 CSV sind byte-gleich; abweichend allein 1017, 1047, 1055, 1056 (Zonensperre) und 1058 (Zonensperre und Kälteseite im Kreis), 1059 neu (41 CSV); der Bivalenzpunkt von 1047 und 1056 fällt von 17,79 auf −10,03 bzw. −10,04 °C.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Interpolation der Wärmepumpenkennlinie über den Vorlauf (AK3-I, Entscheid E102 zu Q-AK3-6) und das neue
+> Referenzprojekt 1058 auf Stufe AK3 (RP-AK3, E102 zu Q-AK3-7) — allein 1047 und 1056 ändern sich, 1058 ist neu, alle
+> übrigen Projekte sind byte-gleich.**
+>
+> **AK3-I:** Die Wärmepumpe rechnet am gerechneten Vorlauf zwischen den beiden einschließenden Kennlinien linear —
+> Heizleistung und Leistungszahl je für sich, die elektrische Leistung folgt als Quotient (I-1); auf einer Stützstelle
+> rechnet deren Kennlinie, außerhalb gilt die Randregel (I-2); die Kälteseite interpoliert ebenso zwischen den
+> Kühl-Vorläufen (I-3). Das ist eine **EPOS-Lesart** in Anlehnung an VDI 4650 Blatt 1 (Ausgabe 2024) Abschnitt 5 und
+> DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6 ([Entwurf AK3](../2026-10-07_Entwurf_AK3.md)
+> Abschnitt 3); das Halten der obersten Kennlinie über der höchsten Stützstelle benennt der Lauf je Gerät im Hinweis.
+> Wirkung haben nur die gekoppelten Projekte mit Wärmepumpe: Ihr Vorlauf folgt der Heizkurve und liegt meist zwischen
+> zwei Stützstellen; alle ungekoppelten Vorläufe liegen auf einer Stützstelle, der Kühl-Vorlauf 18 °C ist eine.
+> **Gegen R41 sind 665 von 677 CSV byte-gleich; abweichend je sechs Dateien von 1047 und 1056** (`aggregate.csv`,
+> `wp_strom`, `wp_quellentemperatur`, `reststrom_viertelstunde`, `ssp_gespeichert_viertelstunde`,
+> `pv_speicherfuellstand`), je 14 Skalare; die Wärme der Wärmepumpe und die Komfortzahlen bleiben gleich:
+>
+> | Projekt | WP-Strom (kWh/a) | JAZ | Jahresentzug der Sonde (kWh/a) | größter Entzug (kW) | BHKW-Strombedarfsdeckung (%) |
+> |---|---|---|---|---|---|
+> | 1047 | 2 124,6 → 2 114,4 (−0,48 %) | 4,45 → 4,47 | 7 310 → 7 320 | 13,70 → 13,97 | 48,95 → 48,92 |
+> | 1056 | 2 804,5 → 2 775,4 (−1,04 %) | 4,33 → 4,36 | 9 313 → 9 342 | 16,45 → 16,81 | 49,09 → 49,01 |
+>
+> Die Messung mit Schalter vor dem Basiswechsel (auf R39, Wärmepumpe noch ohne Erdsonde) zeigte −0,59 % und −1,14 %.
+>
+> **RP-AK3 (1058):** die Kopie von 1056 auf Stufe AK3 mit Heizungspuffer an der Wärmepumpe und Raumeinfluss der Heizkurve
+> (unten „Das Referenzprojekt 1058“) — 41 CSV, 278 Skalare. Neu sind die Einfrierregeln zur Heizkennlinie der
+> Projektwärmepumpe, zu `Ptherm` der Projektkessel und -BHKW und zu Puffer, Raumeinfluss und Stufe eines gekoppelten
+> Referenzprojekts (Abschnitt „gesäte Auslegungsdaten der Übergabe“ oben). Gesamt 718 CSV, 4 862 Skalare. Zwei Läufe
+> sind byte-gleich (718/718 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058 \
+>   --ziel Referenzlaeufe/2026-10-07_R42_Vorlaufinterpolation_AK3
+> ```
+>
+> Die Regeln stehen im [Entwurf AK3](../2026-10-07_Entwurf_AK3.md) Abschnitt 3
+> und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.3.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R43 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R43 beschrieben — den Anlass (Zonensperre je Zone, Kälteseite im Kreis auf Stufe AK3, Referenzprojekt 1059) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R43 durch `2026-10-08_R44_Kuehlkurve`** (Kühlkurve, Referenzprojekte 1061 und 1062, Zahlenrand an den äußeren Stützstellen der Vorlaufwahl): die 759 CSV der vierundzwanzig Projekte sind byte-gleich; 1061 und 1062 neu (je 41 CSV).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: die Zonensperre je Zone auf allen Stufen und die Kälteseite im geschlossenen Kreis auf Stufe AK3 (AK3-K,
+> Entscheide E103 und E104) samt dem neuen Referenzprojekt 1059 (RP-AK3K) — allein 1017, 1047, 1055, 1056 und 1058
+> ändern sich, 1059 ist neu, die übrigen achtzehn Projekte sind byte-gleich.**
+>
+> **Zonensperre:** Ein Gebäude heizt und kühlt eine Zone nie am selben Tag. Die Tagesbetriebsart je Zone wählt innerhalb
+> der Kalenderfreigabe (Heiz- und Kühlsollwertkalender samt „aus“, Heiz- und Kühlperiode); sind beide Seiten frei,
+> entscheiden die Tagessummen des unbegrenzten Probetags der Zone (Kühltag, wenn mehr Kühlen als Heizen; Gleichstand und
+> ein Tag ohne Bedarf sind Heiztage). Die Gegenseite steht den ganzen Tag auf „aus“. Das gilt auf allen Kopplungsstufen; neu im Ergebnis sind
+> `Zonensperre_Tage`, `Zonensperre_Heizen_Gesperrt_MWh` und `Zonensperre_Kuehlen_Gesperrt_MWh`. Wirkung haben nur die
+> Referenzprojekte mit Kühlung: an 9 bis 12 Tagen je Projekt fallen 0,02 bis 0,05 MWh Heizen und 0,01 MWh Kühlen weg.
+> **Kälteseite im Kreis (nur AK3):** Der Kälteerzeuger und der Kältespeicher stehen mit einer Kälteschranke im
+> Stundenschritt des Kreises; greift die Schranke, wird der Raum wärmer (Rückwirkung auf das Gebäude). Auf AK3 rechnet
+> allein 1058 (Kühlkanal folgt der Kreisreihe; 37 Stunden an der Kälteschranke).
+>
+> **Gegen R42 sind 596 von 718 CSV byte-gleich; abweichend 19 Dateien von 1017, 28 von 1047, 18 von 1055, 28 von 1056 und
+> 29 von 1058; 1059 neu (41 CSV)** (Werte R42 → R43):
+>
+> | Projekt | Kältebedarf (MWh) | Kühlstunden | Kältedeckung (%) | Kältestrom (MWh) | Zonensperre (Tage) | Bivalenzpunkt (°C) |
+> |---|---|---|---|---|---|---|
+> | 1017 | 4,08 → 4,05 | 619 → 604 | 99,70 → 100 | 0,777 → 0,773 | 12 | — |
+> | 1047 | 3,85 → 3,83 | 626 → 616 | 99,63 → 100 | 0,732 → 0,731 | 10 | 17,79 → −10,03 |
+> | 1055 | 4,08 → 4,05 | 619 → 604 | 100 → 100 | 1,256 → 1,246 | 12 | — |
+> | 1056 | 3,85 → 3,83 | 625 → 616 | 98,04 → 98,39 | 0,720 → 0,719 | 9 | 17,79 → −10,04 |
+> | 1058 | 3,85 → 3,81 | 626 → 590 | 98,03 → 100 | 0,721 → 0,727 | 10 | — |
+>
+> An 1058 dazu: Puffer 414,07 → 413,93 Vollzyklen, Fallwechsel 407 → 408, Kühlseite 32 → 34 Überschreitungsstunden und
+> 43 → 45,88 Kh; die Heizseite des Komforts bleibt (683 Stunden, 931,7 Kh).
+>
+> **Der Bivalenzpunkt von 1047 und 1056** ist die höchste Außentemperatur, bei der nach der Wärmepumpe noch Wärmebedarf
+> offen bleibt. In R42 blieb an Kühltagen Heizbedarf offen, weil die Wärmepumpe dort im Kühlbetrieb und für die Wärme
+> gesperrt war — so lag der Punkt bei 17,79 °C. Mit der Zonensperre gibt es an Kühltagen keinen Raumheizbedarf mehr; der
+> Punkt fällt auf die tatsächliche Leistungsgrenze der Wärmepumpe bei −10,0 °C.
+>
+> **RP-AK3K (1059):** die Kopie von 1058 mit einer Kältemaschine (10 kW, Trocken-Rückkühler, eigener Zähler) und dem
+> Kältespeicher aus 1055; die Wärmepumpe heizt nur. Die Maschine ist bewusst zu klein, damit die Kälteschranke greift:
+> **190 Stunden an der Kälteschranke**, Kältedeckung 100 %, 0 Stunden Kälterest, Kältespeicher 86,95 Vollzyklen, Kühlseite
+> 91 Überschreitungsstunden und 158,09 Kh (unten „Das Referenzprojekt 1059“) — 41 CSV, 315 Skalare. Gesamt 759 CSV,
+> 5 196 Skalare. Zwei Läufe sind byte-gleich (759/759 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS,
+> 731/759 CSV byte-gleich.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059 \
+>   --ziel Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K
+> ```
+>
+> Die Regeln stehen im [Entwurf AK3-K](../2026-10-07_Entwurf_AK3-K.md)
+> Abschnitte 3 und 4 und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md).
+>
+> **Schemastand:** Die Kennzahlen der Zonensperre und der Kälteseite legt der Schritt **201** `Ak3KSchema` an (Nachtrag
+> „Schemaschritt 201“ unten); die Basis ist auf seiner vorläufigen Nummer 199 gerechnet, Inhalt gleich.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R44 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 08.10.2026 die Basis R44 beschrieben — den Anlass (Kühlkurve, Referenzprojekte 1061 und 1062) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R44 durch `2026-10-09_R45_Uebergabegrenze`** (Übergabegrenze und Bivalenz der Wärmepumpe, Referenzprojekt 1060, Kennlinienquelle der Bivalenzpunkte am Gerät): die 841 CSV der sechsundzwanzig Projekte sind byte-gleich; 1060 neu (38 CSV).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-08_R44_Kuehlkurve/`** — **sechsundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1061, 1062), **841 CSV**, **5 801 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 08.10.2026, Stand `70f4fea3f`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **202**, 92 979 200 Byte, LFS-SHA-256
+`19e38bc279c04b524dc15b636fbd5185a3ac0b38b4a087692ba73fa12a3be68a`, mit den Projekten 1053 bis 1062; Nachträge der
+Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+sechsundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: die Kühlkurve (Entwurf KK) mit den zwei neuen Referenzprojekten 1061 (RP-KK) und 1062 (RP-KKZ) — die
+> vierundzwanzig Projekte von R43 sind byte-gleich (759/759 CSV), 1061 und 1062 sind neu (je 41 CSV).**
+>
+> **Kühlkurve:** Der Kühlvorlauf eines gekoppelten Gebäudes folgt einer Kühlkurve über der Außentemperatur mit
+> Raumeinfluss, statt fest zu stehen; leere Eingabespalten heißen fester Kühlvorlauf wie bisher — deshalb rechnen alle
+> Bestandsprojekte byte-gleich. Neu im Ergebnis sind `Kuehlkurve_Vorlauf_Mittel_C`, `Kuehlkurve_Absenkung_Kh` und
+> `Kuehlkurve_Vorlaufgrenze_Stunden`. Mit der Basis tragen die äußeren Stützstellen der Vorlaufwahl der Wärmepumpe den
+> Zahlenrand (`SimulationWaermepumpe.VorlaufAuswerten`): Ein Vorlauf, den die Heizkurve auf die oberste Stützstelle
+> begrenzt, zählt nicht mehr am letzten Bit als „darüber“ — der gestörte Lauf von 1062 kippte sonst 2 von 10 Stunden.
+> Kein Projekt von R43 ändert sich dadurch.
+>
+> **RP-KK (1061):** die Kopie von 1058 mit Kühlkurve am Gebäude (`Kuehlkurve_Aktiv` 1, Raumeinfluss 3 K/K,
+> Auslegungsweg `tagesmittel`, Fußpunkt leer = Auslegungsrücklauf) und dem Kühlvorlauf der Wärmepumpe auf 12 °C, damit
+> der Erzeuger an milden Tagen mit der Kurve wärmer gleitet. **RP-KKZ (1062):** die Kopie von 1061 mit zwei Zonen („Süd
+> und West“, „Nord und Ost“, Trennwand) und Kühlübergabe je Zone (die Zone Nord/Ost mit Gebläsekonvektor). Beide auf
+> Stufe AK3, nicht in der CI-Auswahl (Nachtrag „Projekte 1061 und 1062 angelegt“ unten):
+>
+> | Projekt | Kältebedarf (MWh) | Kühlstunden | Kältedeckung (%) | Kältestrom (MWh) | Kälteschranke (h) | Kühlvorlauf Mittel (°C) | Absenkung (Kh) | Vorlaufgrenze (h) | Kühlseite Überschreitung (h / Kh) |
+> |---|---|---|---|---|---|---|---|---|---|
+> | 1058 (Vergleich) | 3,81 | 590 | 100 | 0,727 | 37 | — | — | — | 34 / 45,88 |
+> | 1061 | 3,83 | 588 | 100 | 0,753 | 115 | 17,66 | 684,28 | 83 | 32 / 45,06 |
+> | 1062 | 3,91 | 741 | 100 | 0,772 | 96 | 17,47 | 1 379,33 | 157 | 98 / 90,38 |
+>
+> 1061 weist 63 Stunden Kälterest aus (0 MWh), 1062 keine; die Wärmepumpe von 1062 wählt ihre Kennlinie
+> 35:1506, 45:2017, 55:151 Stunden (0 darüber). 1061 trägt 288, 1062 317 Skalare. Gesamt 841 CSV, 5 801 Skalare. Zwei
+> Läufe sind byte-gleich (841/841 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 797/841 CSV byte-gleich.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1061,1062 \
+>   --ziel Referenzlaeufe/2026-10-08_R44_Kuehlkurve
+> ```
+>
+> Die Regeln stehen im [Entwurf KK](../2026-10-08_Entwurf_KK_Kuehlkurve.md)
+> und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R45 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 09.10.2026 die Basis R45 beschrieben — den Anlass (Übergabegrenze und Bivalenz, Referenzprojekt 1060) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R45 durch `2026-10-09_R46_Geraetegrenzen`** (Gerätegrenzen, Etappe UB‑E3): die 841 CSV der sechsundzwanzig Bestandsprojekte sind byte-gleich; allein 1060 ändert sich.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-09_R45_Uebergabegrenze/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `3f3b5fe36`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **203**, 93 782 016 Byte, LFS-SHA-256
+`cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`, mit den Projekten 1053 bis 1062; Nachträge der
+Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: die Übergabegrenze und Bivalenz der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E2) mit dem
+> neuen Referenzprojekt 1060 — allein 1060 kommt hinzu (38 CSV), die sechsundzwanzig Projekte von R44 sind byte-gleich
+> (841/841 CSV).**
+>
+> **Übergabegrenze:** Mit gesetzter `Einbindung` rechnet die Wärmepumpe im Profilweg je Stunde einen Betriebsbereich
+> (B0 nicht verfügbar, B1 allein, B2 parallel, B3 Vorwärmung mit dem Kessel in Reihe, B4 nur Kessel) und schreibt
+> Bereichsstunden und -wärme, die Bivalenzpunkte und die größte Übergabe bei Auslegung; der Kessel führt die
+> Rücklaufstufe „Vorwärmer“. Leere `Einbindung` heißt Bestandsweg (U‑1) — deshalb rechnen alle Bestandsprojekte
+> byte-gleich. Mit der Basis liest die Herleitung der Bivalenzpunkte im Lauf die Kennlinien am Gerät (`ID_WP`) statt an
+> der Anlagenzeile; die Punkte sind ein Ausweis, kein Bestandsprojekt rechnet sie.
+>
+> **1060 „Referenzprojekt Übergabegrenze“** (Herleitung unten): Heizkörper 75/60 °C, Höchstvorlauf der Wärmepumpe
+> 55 °C, Einbindung direkt, Parallelbetrieb mit Vorwärmbetrieb, Brennwertkessel in Reihe; Stufe AK1, in der CI-Auswahl:
+>
+> | Bereich | Stunden | Wärme (MWh) |
+> |---|---|---|
+> | B1 Wärmepumpe allein | 3 987 | 39,61 |
+> | B2 parallel | 0 | 0 |
+> | B3 Vorwärmung | 1 308 | 13,64 |
+> | B0 und B4 nur Kessel | 0 | 0 |
+>
+> Bivalenzpunkte 1,83 °C und −3,55 °C, größte Übergabe bei Auslegung 22,00 kW (Heizlast 38,73 kW); Wärme der
+> Wärmepumpe 53,25 MWh, des Kessels 15,56 MWh (1 308 Laufstunden, davon 952 Stunden mit dem Rücklauf aus dem Vorlauf
+> der vorwärmenden Wärmepumpe, 1 182 Brennwertstunden); Komfort 993 Unterschreitungsstunden, 1 484,37 Kh. 1060 trägt
+> 270 Skalare. Gesamt 879 CSV, 6 071 Skalare. Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte Lauf
+> (`--stoerung ulp`) ist GESAMT PASS, 835/879 CSV byte-gleich, 1060 byte-gleich (38/38).
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062 \
+>   --ziel Referenzlaeufe/2026-10-09_R45_Uebergabegrenze
+> ```
+>
+> Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
+> und im [Fachkonzept](../Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R46 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 09.10.2026 die Basis R46 beschrieben — den Anlass (Gerätegrenzen der Wärmepumpe, Etappe UB‑E3) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R46 durch `2026-10-09_R47_Zapffeiertage`** (Feiertage im Zapfkalender, Anwenderentscheid E112): die 847 CSV der sechsundzwanzig übrigen Projekte sind byte-gleich; allein 1045 ändert sich.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-09_R46_Geraetegrenzen/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `d19280cef`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **203**; der Übergabeschritt, jetzt 205, gegen origin hinter KM2 und ZK gezählt — Fortschreibung im Nachtrag „Testdatenbank auf 205“, 93 782 016 Byte, LFS-SHA-256
+`cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`, mit den Projekten 1053 bis 1062; Nachträge der
+Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: die Gerätegrenzen der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E3) — allein 1060 ändert sich, die
+> sechsundzwanzig übrigen Projekte sind byte-gleich (841/841 CSV); Dateizahl (879 CSV) und Skalarzahl (6 071) bleiben.**
+>
+> **Rücklaufgrenze am gemischten Rücklauf des Überströmventils:** Die Wärmepumpe rechnet im Profilweg mit der Grenze des
+> Geräts am Rücklauf, der sich hinter dem Überströmventil aus Heizkreisstrom und Mindeststrom mischt (ṁ_min 60 % der
+> 35-kW-Wärmepumpe über dem Heizkreisstrom bei 75/60 °C); wo die Grenze überschritten wird, schaltet das Gerät ab und der
+> Kessel deckt allein. Neu im Ergebnis sind `Ruecklauf_Ueberschritten_h` und `Spreizung_Unterschritten_h` (Taktzähler).
+> Die Grenzen wirken nur im Profilweg mit gesetzter `Einbindung` — deshalb rechnen alle Bestandsprojekte byte-gleich.
+>
+> **1060 „Referenzprojekt Übergabegrenze“** (alt R45 → neu R46):
+>
+> | Bereich | Stunden | Wärme (MWh) |
+> |---|---|---|
+> | B1 Wärmepumpe allein | 3 987 → 3 964 | 39,61 → 39,42 |
+> | B2 parallel | 0 → 0 | 0 → 0 |
+> | B3 Vorwärmung | 1 308 → 620 | 13,64 → 10,18 |
+> | B4 nur Kessel (B0 weiterhin 0) | 0 → 711 | 0 → 0 |
+>
+> 711 Stunden schalten über die Rücklaufgrenze ab (`Ruecklauf_Ueberschritten_h` 0 → 711), 2 566 Stunden unterschreiten die
+> Spreizung (`Spreizung_Unterschritten_h` 0 → 2 566); Bivalenzpunkt der Anlage 1,82 → 2,34 °C (die Gerätepunkte 1,83 °C
+> und −3,55 °C bleiben). Wärme der Wärmepumpe 53,25 → 49,60 MWh, des Kessels 15,56 → 19,11 MWh (1 308 → 1 331
+> Laufstunden, 1 182 → 1 205 Brennwertstunden, 2 000 → 1 590 Starts); Komfort unverändert 993 Unterschreitungsstunden,
+> 1 484,37 Kh. 1060 trägt 270 Skalare. Gesamt 879 CSV, 6 071 Skalare. Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte
+> Lauf (`--stoerung ulp`) ist für R46 nicht gemessen.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062 \
+>   --ziel Referenzlaeufe/2026-10-09_R46_Geraetegrenzen
+> ```
+>
+> Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
+> und im [Fachkonzept](../Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R47 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 09.10.2026 die Basis R47 beschrieben — den Anlass (Feiertage im Zapfkalender, E112) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R47 durch `2026-10-09_R48_Gemeinjahr`** (Gemeinjahr ohne Jahresdatum, Anwenderentscheid E114): die beweglichen Feiertage liegen ohne Preisreihe nach dem Wochentagsraster; 1045, 1051, 1052 und 1054 ändern sich, die übrigen dreiundzwanzig Projekte sind byte-gleich (806/879 CSV).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-09_R47_Zapffeiertage/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `babd4ba81`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **207**, 93 958 144 Byte, LFS-SHA-256
+`ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`, mit den Projekten 1053 bis 1062; Nachträge der
+Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag),
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: die Feiertage im Zapfkalender (Anwenderentscheid E112, Konzept Konditionierungsprofile 9.10) — allein 1045
+> ändert sich, die sechsundzwanzig übrigen Projekte sind byte-gleich (847/847 CSV); Dateizahl (879 CSV) und Skalarzahl
+> (6 071) bleiben.**
+>
+> **Feiertage zählen im Zapfkalender unter jeder Wochenendmaske als Sonntag:** Auch mit der Vorgabe des Gebäudes (leer
+> oder Samstag + Sonntag) vereinigt der Zapfkalender die Kennzeichen „Wochenende oder Feiertag“ der Klimaregion mit den
+> Feiertagen des Kerns für das Bezugsjahr — mit gebundenem Gebäude nach dessen Feiertagsland, ohne Gebäude
+> bundeseinheitlich; ein Feiertag trägt den Sonntagsgang, auch am Samstag. Die Kennzeichen der Klimaregion der
+> Testdatenbank tragen allein das Muster Samstag + Sonntag (104 Tage), deshalb kommen die Feiertage neu hinzu. Es wirkt
+> im Formvektor- und im Typtagweg, im Ensemble und in der Auslegung. Rechenwirkung hat allein der Zapfprofilgenerator,
+> also allein 1045.
+>
+> **1045 „Prüfprojekt Ost/West Stränge“** (alt R46 → neu R47; Gebäude 10651 ohne Feiertagsland und mit der Vorgabe,
+> also die neun bundeseinheitlichen Feiertage): Alle neun fallen im Klimakalender auf einen Werktag (Jahrestage 1, 108,
+> 111, 121, 149, 160, 276, 359, 360) und tragen jetzt die Sonntagsmenge — am 1. Januar 15,14 → 18,84 kWh —; die
+> übrigen 356 Tage verlieren je rund 0,47 %. Die Jahresmenge des Brauchwassers bleibt 5 006,62 kWh (Abweichung
+> 1,6·10⁻⁷ kWh, `ZapfprofilReferenzprojektWacheTests` hält sie unverändert). 16 der 32 CSV ändern sich
+> (`waermebedarf_brauchwasser.csv`, `wp_warmwasserbedarf.csv`, `waermebedarf.csv`, `waermebedarf_dauerlinie.csv`,
+> `wp_produktion.csv`, `wp_strom.csv`, `wp_waermebedarf.csv`, `kessel_leistung.csv`, `kessel_restwaerme.csv`,
+> `kessel_waermebedarf.csv`, die vier `pv_*`-Reihen, `reststrom_viertelstunde.csv`, `aggregate.csv`): Wärmepumpe
+> 61 170,34 → 61 172,05 kWh (5 175,95 → 5 176,10 Vollbenutzungsstunden), Kessel 20 932,37 → 20 930,66 kWh (3 127 →
+> 3 126 Laufstunden, 6 751 → 6 750 Starts), Reststrom 28,409 → 28,405 MWh, Gasspitze 77,95 → 78,08 kW. Gesamt 879 CSV,
+> 6 071 Skalare. Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS,
+> 835/879 CSV byte-gleich (1045 ganz byte-gleich).
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062 \
+>   --ziel Referenzlaeufe/2026-10-09_R47_Zapffeiertage
+> ```
+>
+> Die Regel steht im [Konzept Konditionierungsprofile](../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
+> Abschnitt 9.10, und im [Umsetzungskonzept Zapfprofilgenerator](../../aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md),
+> Abschnitt 4.2.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R48 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 09.10.2026 die Basis R48 beschrieben — den Anlass (Gemeinjahr ohne Jahresdatum, E114 der Statusdatei) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R48 durch `2026-10-09_R49_KaeltemaschineTeillast`** (Referenzprojekt 1063, Teillast und Takten der Kältemaschine, auf dem Rechenstand des Gemeinjahrs eingefroren): die 879 CSV der siebenundzwanzig Projekte sind byte-gleich; hinzu kommt 1063.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-09_R48_Gemeinjahr/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `0a395e3e4`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **209**, 93 958 144 Byte, LFS-SHA-256
+`7b6b2cc8144e581e60304156e7986f8bebc3186c54b9f091eb3a7a156f29ea40`, mit den Projekten 1053 bis 1062; Testdatenbank nach dem Einfrieren (Stand 207, `ec23b962…`) durch Schritte 208–209 gehoben, Ergebnisse unverändert (Gate REST7928); Nachträge der
+Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Gemeinjahr ohne Jahresdatum (Anwenderentscheid E114 vom 09.10.2026, „Im Regelfall ist kein Jahresdatum
+> relevant“, Konzept Konditionierungsprofile 3.2 und 9.10) — vier Projekte ändern sich (1045, 1051, 1052, 1054), die
+> dreiundzwanzig übrigen sind byte-gleich; 806/879 CSV byte-gleich, Dateizahl (879 CSV) und Skalarzahl (6 071) bleiben.**
+>
+> **Die Konvention:** Trägt ein Projekt keine Preisreihe mit Jahr — kein Referenzprojekt trägt eine —, liegen die
+> beweglichen Feiertage nach dem Wochentagsraster des Laufs (`Gemeinjahrkalender`): Ostersonntag ist der Sonntag des
+> Rasters am nächsten zum Jahrestag 98 (8. April; ein Gleichstand kann in einer Woche von sieben Tagen nicht eintreten),
+> Karfreitag −2, Ostermontag +1, Himmelfahrt +39, Pfingstmontag +50, Fronleichnam +60; Buß- und Bettag ist der letzte
+> Mittwoch des Rasters vor dem Jahrestag 327 (23. November). Feste Feiertage bleiben auf Tag und Monat. Mit Preisreihe
+> gelten die echten Daten ihres Jahres. Das Raster ist das, das der Leser ohnehin führt: im Gebäudelauf die
+> Wochenendmaske des Ortszeit-Kalenders (Rasterjahr der Solardaten, Vorgabe 2025: Jahrestag 1 = Mittwoch), im
+> Zapfkalender die Kennzeichen der Klimaregion (Testdatenbank: Jahrestag 1 = Donnerstag).
+>
+> **Was wandert** (bisher die Daten des Vorgabejahrs 2025: Karfreitag 108, Ostermontag 111, Himmelfahrt 149,
+> Pfingstmontag 160):
+>
+> - **Gebäude 1051, 1052, 1054** (Mittwochsraster, Ostern 96): Karfreitag 108 → 94, Ostermontag 111 → 97, Himmelfahrt
+>   149 → 135, Pfingstmontag 160 → 146; Buß- und Bettag bliebe 323. Die Kalender mit Feiertagsregeln: der gemeinsame
+>   Kalender von Gebäude 10657 (1051, Referenzbau Konditionierung), der Heizsollwert der Zone 2 von 10658 (1052) und der
+>   Zone 5 von 10660 (1054). Die Feiertage fallen in kältere Tage: Jahresheizwärme 1051 24,328 → 24,281 MWh
+>   (−0,19 %), 1052 53,996 → 53,958 MWh (−0,07 %), 1054 47,576 → 47,557 MWh (−0,04 %); BHKW-Strom 1052 18 150,6 →
+>   18 124,3 kWh, 1054 13 832,9 → 13 818,0 kWh; Reststrom 1051 34,721 → 34,692 MWh. Geändert 23/36 (1051), 16/25 (1052),
+>   18/28 (1054) CSV.
+> - **1045** (Zapfkalender, Donnerstagsraster, Ostern 95, Gebäude 10651 ohne Feiertagsland): Karfreitag 108 → 93,
+>   Ostermontag 111 → 96, Himmelfahrt 149 → 134, Pfingstmontag 160 → 145 tragen die Sonntagsmenge; die Jahresmenge des
+>   Brauchwassers bleibt. Wärmepumpe 61 172,05 → 61 177,72 kWh, Kessel 20 930,66 → 20 924,99 kWh, Reststrom 28,405 →
+>   28,409 MWh, PV-Einspeisung 0,791 → 0,792 MWh (Anker `StromViertelstundenTests` nachgezogen); 16/32 CSV geändert.
+> - **Unberührt** sind 1056 und 1058 bis 1062: Ihre Gebäude tragen keinen Kalender mit Feiertagsregel; die übrigen
+>   Projekte rechnen weder Konditionierungskalender mit Feiertagen noch den Zapfprofilgenerator.
+>
+> Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 835/879 CSV
+> byte-gleich. **Die nächste Basis wird R49** — die Sitzung Gebäudesimulation plant sie für ihre Kältemaschinen-Welle
+> (Projekt 1063).
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062 \
+>   --ziel Referenzlaeufe/2026-10-09_R48_Gemeinjahr
+> ```
+>
+> Die Regel steht im [Konzept Konditionierungsprofile](../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
+> Abschnitte 3.2 und 9.10 (E114).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R49 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 10.10.2026 die Basis R49 beschrieben — den Anlass (Referenzprojekt 1063, Teillast und Takten der Kältemaschine) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R49 durch `2026-10-10_R50_Wochentagsraster`** (Wochentagsraster der Klimaregion für alle Leser, Anwenderentscheid E115): 1051, 1052 und 1054 ändern sich, die übrigen fünfundzwanzig Projekte sind byte-gleich (911 CSV, 6 336 Skalare).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-09_R49_KaeltemaschineTeillast/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063), **911 CSV**, **6 336 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 10.10.2026, Stand `9c7fe32af`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 94 781 440 Byte, LFS-SHA-256
+`32af2d32d06b104ceb944e82dcb621ec0f481d58312e0d3b6d2b370c62dcf4fa`, mit den Projekten 1053 bis 1063; Nachträge der
+Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
+`EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
+Kältemaschine von Projekt 1063. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: das Referenzprojekt 1063 „Referenzprojekt Kältemaschine Teillast“ (Teillast und Takten der Kältemaschine,
+> Etappe KM3‑E2, Schemaschritt 210) auf dem Rechenstand des Gemeinjahrs — die siebenundzwanzig Projekte der Basis R48
+> (Gemeinjahr) rechnen gegen R48 `GESAMT: PASS` und byte-gleich (879/879 CSV); hinzu kommen 1063 mit 32 CSV und
+> 265 Skalaren. Der Rechenweg der Teillast greift nur bei gesetztem `Teillast_Weg`; 1063 trägt keinen Kalender mit
+> Feiertagsregel und ist mit dem Gemeinjahr byte-gleich zu seiner ersten Einfrierung.**
+>
+> **1063** ist eine Kopie von 1055, an deren Kältemaschine die Teillastkurve 0,10/0,60/0,30 (gültig ab Lastgrad 0,2),
+> Mindestteillast 30 %, Takten mit dem Vorgabe-Taktverlustfaktor 0,9 (`Taktverlustfaktor_Cd` leer),
+> Verdichterregelung `STUFEN` und der Randweg `GUETEGRAD` wirken; gesät von
+> `Skripte/referenzprojekt_1063_kaeltemaschine_teillast.cs`. Die Testdatenbank ist aus der Fassung `7b6b2cc8…`
+> (Schemastand 209, Katalogkosten 208 und 209) mit `Werkzeuge/Testdatenbankschema` auf **210** gezogen (acht Eingabespalten an Katalog und
+> Projektkopie, fünf Kennzahlspalten am Ergebnis, die 34 Typkennfelder des Katalogs um Teillastkurve und
+> Verdichterregelung ergänzt, die Beispielgeräte und Projektkopien leer), danach 1063 gesät und `VACUUM`;
+> `integrity_check` ok; der Neubau auf dem zusammengeführten Stand ergibt byte-gleich dieselbe Datei; gegen diese Fassung
+> rechnen alle achtundzwanzig Projekte gegen R49 `GESAMT: PASS` und byte-gleich
+> (911/911 CSV). 1063 tritt in die CI-Auswahl (kein anderes CI-Projekt rechnet eine Kältemaschine). Die
+> Taktstunden der Kältemaschine stehen in einem Zähler: `Kaelte[0].Taktstunden` und `Takt.Kaelte[0].Taktstunden`
+> zeigen beide 218.
+>
+> | Kennzahl | 1055 | 1063 |
+> |---|---|---|
+> | Kälte der Maschine (MWh) | 4,1526 | 4,1526 |
+> | Kältestrom samt Hilfsstrom (MWh) | 1,24647 | 1,24511 |
+> | Hilfsstrom (MWh) | 0,17961 | 0,17955 |
+> | Jahres-EER (Bedarf / Strom) | 3,2496 | 3,2531 |
+> | Taktstunden (unter der Mindestteillast 30 %) | — | 218 |
+> | Starts | — | 717 |
+> | Taktstrom (Mehrstrom, kWh) | — | 17,27 |
+> | Teillaststunden (Lastgrad < 0,95) | — | 202 |
+> | mittlerer Lastgrad (kältegewichtet) | — | 0,702 |
+> | Stunden mit Gütegrad-Extrapolation | — | 1 |
+> | Kältespeicher Ladung / Entladung (MWh) | 2,478 / 2,376 | 2,478 / 2,376 |
+>
+> Der Strom von 1063 liegt um 1,35 kWh (0,11 %) unter 1055: Die Kurve hebt den EER im Teillastbereich (g(0,5) = 1,05,
+> mittlerer Lastgrad 0,70) und spart mehr, als der Taktverlust (17,3 kWh) kostet. Die Rückkühlung des Trockenkühlers
+> liegt nur in einer Kühlstunde unter dem Kennfeld (25 °C), daher eine extrapolierte Stunde.
+>
+> Zwei Läufe sind byte-gleich (911/911 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 867/911 CSV
+> byte-gleich (1063 ganz byte-gleich).
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063 \
+>   --ziel Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast
+> ```
+>
+> Die Regeln stehen im [Fachkonzept Teillast und Takten der Kältemaschine](../Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md),
+> Abschnitte 5.3 und 8.2.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R50 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 10.10.2026 die Basis R50 beschrieben — den Anlass (Wochentagsraster der Klimaregion für alle Leser, Anwenderentscheid E115) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R50 durch `2026-10-10_R51_FreieKuehlung`** (Referenzprojekt 1064, freie Kühlung über die Wärmequelle): Die achtundzwanzig Projekte von R50 sind byte-gleich, 1064 kommt hinzu (943 CSV, 6 568 Skalare).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-10_R50_Wochentagsraster/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063), **911 CSV**, **6 336 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 10.10.2026, Stand `64cd555ff`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 94 781 440 Byte, LFS-SHA-256
+`32af2d32d06b104ceb944e82dcb621ec0f481d58312e0d3b6d2b370c62dcf4fa`, mit den Projekten 1053 bis 1063; Nachträge der
+Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs im Wochentagsraster der Klimaregion), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
+`EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
+Kältemaschine von Projekt 1063. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Anwenderentscheid E115 (10.10.2026) — ein Wochentagsraster der Klimaregion für alle Leser.** Gebäudelauf,
+> Zapfkalender und Bedarfsprofile rechnen mit demselben Raster: In der Testdatenbank ist der 1. Januar der Klimaregion ein
+> Donnerstag. Der Gebäudelauf nahm vorher den Ortszeit-Kalender zum Solardaten-Jahr 2025 (1. Januar ein Mittwoch). Sonderfall:
+> Eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres; kein Referenzprojekt trägt eine. Schemastand
+> und Testdatenbank (210, `32af2d32…`) bleiben unverändert; die Basis ändert sich allein durch den Rechenweg der
+> Gebäude mit wochentagsabhängigen Kalendern.
+>
+> Gegen R49 ändern sich drei Projekte, die übrigen fünfundzwanzig sind byte-gleich (911 CSV, 6 336 Skalare; 25 PASS,
+> geändert 1051, 1052, 1054 mit 23, 16 und 18 geänderten CSV):
+>
+> | Projekt | Wärmebedarf gesamt (MWh) R49 → R50 | Befund |
+> |---|---|---|
+> | 1051 | 28,34 → 28,28 | `AufheiztageBegrenzt` 1 → 0: im Klimaregion-Raster gibt es keinen Tag mit begrenzter Aufheizzeit mehr (`KonditionierungBauwahlprobeTests` hält nur noch die Rampe) |
+> | 1052 | 53,96 → 54,00 | `AufheizzeitLaengsteH` 13 → 15 |
+> | 1054 (Kopie von 1052) | 47,56 → 47,59 | `Waermelast_Max` 26,05 → 27,47 kW |
+>
+> Zwei Läufe sind byte-gleich (911/911 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 867/911 CSV
+> byte-gleich. Die nächste Basis wird R51.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063 \
+>   --ziel Referenzlaeufe/2026-10-10_R50_Wochentagsraster
+> ```
+>
+> Die Regel steht im [Konzept Konditionierungsprofile](../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
+> Abschnitte 3.2 und 9.10 (E114, E115).
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

@@ -1,0 +1,49 @@
+Der '''Wärmebedarf''' ist die Grundlage jeder Auslegung. EPOS-Plan ermittelt ihn nicht als Jahreswert, sondern als vollständige Zeitreihe über 8.760 Stunden – erst diese zeitliche Auflösung zeigt, wann welche Leistung gebraucht wird und wie sich Erzeuger und Speicher tatsächlich verhalten.
+
+== Modellansatz ==
+{{Anker|modellansatz}}
+
+Vorgabe ist das [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell nach VDI 6007]]: Es rechnet jedes Gebäude Stunde für Stunde als thermisches Raummodell mit zwei Speicherkapazitäten, einer für die Außenbauteile und einer für die Innenbauteile. In die Stundenbilanz gehen die Sonneneinstrahlung je Himmelsrichtung über die Fenster, die Transmission über Außenwand, Fenster, Dach, Grundfläche und sonstige Bauteile mit ihren U-Werten, die Wärmebrücken, die Lüftung und die inneren Gewinne ein. Bauteile am Erdreich gehen mit dem Erdreichwiderstand nach DIN EN ISO 13370 ein ([[Grundlagen/Bauteile am Erdreich|Bauteile am Erdreich]]). Die Speichermasse dämpft die Tagesgänge und sorgt dafür, dass Absenkphasen nicht unmittelbar auf die Heizleistung durchschlagen.
+
+Ein Gebäude lässt sich in mehrere Zonen teilen, etwa Wohnungen und ein unbeheiztes Treppenhaus oder ein Büroteil neben einer kühler gehaltenen Halle; jede Zone rechnet mit eigenen Bauteilen, Sollwerten und Nutzungswerten ([[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]). Ist die Kühlung eingeschaltet, rechnet dasselbe Modell auch den Kältebedarf; er läuft als eigener Kanal neben dem Wärmebedarf ([[Grundlagen/Kühlung|Kühlung]]). Eine Zone heizt und kühlt nie am selben Tag.
+
+Als einfacheres Verfahren bleibt der Rechenweg ''Tagesbilanz'' wählbar: Er bilanziert für jeden der 365 Tage eine Tagesheizlast und legt sie über eine typabhängige Tagesverteilungskurve auf Stundenwerte um. Er rechnet nur Heizwärme und das Gebäude als einen Raum.
+
+== Nutzung und Randbedingungen ==
+{{Anker|nutzung-und-randbedingungen}}
+
+Neben der Bauphysik bestimmt die Nutzung das Ergebnis: Raumsolltemperaturen für Heizen und Kühlen im Tages- und Wochenverlauf, Absenkzeiten, Ferien, Heiz- und Kühlperiode, Lüftung, Personen und Geräte. Gebäude und Zonen tragen diese Angaben als Kalender; Vorlagen dafür liefert der Katalog der [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]]. Gerade bei Nichtwohngebäuden – Verwaltung, Schule, Sporthalle – entscheidet die Nutzung über Höhe und Lage der Lastspitzen, etwa beim Wiederaufheizen nach Wochenenden und Ferien. Die Wochentage folgen dem Wochentagsraster der Klimaregion (siehe [[Grundlagen/Klimadaten#wochentage|Klimadaten]]).
+
+Nur der Rechenweg Tagesbilanz braucht Tagesverteilungskurven: für Wohngebäude acht Kurven nach Jahreszeit und Wochentag, für Nichtwohngebäude fünf Kurven nach Jahreszeit und Bewölkungsgrad. Die Zuordnung erfolgt automatisch über den Gebäudetyp und die aus den Klimadaten abgeleitete Tagtypklassifizierung. Eigene Kurven lassen sich im Katalog anlegen und stundenweise bearbeiten.
+
+== Bedarf aus Verbrauchsdaten ==
+{{Anker|bedarf-aus-verbrauchsdaten}}
+
+Im Bestand ist der gemessene Verbrauch oft die belastbarste Information. Statt der Wohnfläche kann deshalb bei einem Gebäude ohne Zonen der Jahresverbrauch angegeben werden – Heizöl in Litern, Erdgas in Kubikmetern oder Megawattstunden, allgemein Brennstoff in Megawattstunden. Zusammen mit dem Jahresnutzungsgrad der Altanlage rechnet EPOS-Plan daraus die Nutzwärme und skaliert das Gebäudemodell so, dass es genau diesen Bedarf ergibt. Der Jahresgang bleibt dabei physikalisch begründet, die Jahressumme entspricht der Abrechnung.
+
+== Warmwasser, Prozesswärme und Netzverluste ==
+{{Anker|warmwasser-prozesswaerme-und-netzverluste}}
+
+Warmwasser und Prozesswärme werden getrennt geführt, jeweils über zwölf Monatswerte und ein Wochenprofil mit 168 Stundenwerten; ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] legt Feiertage und Betriebsferien darauf. Den Warmwasserbedarf kann außerdem der [[Programm Dokumentation/Brauchwasser-Zapfprofil|Zapfprofilgenerator]] nach VDI 6002 aus Nutzungszonen erzeugen. Diese Trennung ist wichtig, weil der Warmwasserbedarf den Sommerbetrieb allein bestimmt und für die Auslegung von Wärmepumpe und Speicher oft entscheidender ist als die Heizlast; bei vorhandener Zirkulation gehören deren Verluste in den Jahresverbrauch. Prozesswärme wird je Temperaturniveau oder Prozess als eigener Eintrag erfasst, wobei das Wochenprofil den Schichtbetrieb abbildet. Liegt ein gemessener Wärmelastgang vor, lässt er sich als Stunden- oder Viertelstundenreihe einlesen; er wird auf Stundenwerte gemittelt und dem Bedarf addiert. Netzverluste tragen Sie als Prozentsatz des Gesamtbedarfs oder als absoluten Jahreswert ein; sie werden gleichmäßig über das Jahr verteilt und heben insbesondere die Sommerlast an.
+
+== Ergebnisse ==
+{{Anker|ergebnisse}}
+
+Heizung, Brauchwasser und Prozesswärme bleiben als eigene Kanäle getrennt, weil ein Erzeuger einen Kanal bedienen darf und einen anderen nicht. Aus der Summe aller Anteile entstehen der Jahresgang der Wärmeleistung, die maximale Wärmelast, die Monatswerte und die geordnete Jahresdauerlinie. Die Dauerlinie zeigt unmittelbar, welcher Leistungsanteil über wie viele Stunden benötigt wird – die klassische Begründung dafür, den Grundlasterzeuger klein und den Spitzenlasterzeuger groß auszulegen.
+
+Den vollständigen Rechenweg mit allen Gleichungen beschreibt [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]]. Wie der Wärmebedarf im Programmablauf erfasst wird, beschreibt der [[Programmablauf]]; die Einordnung in das Gesamtmodell finden Sie unter [[Grundlagen]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Wärmebedarf erfassen]] – Eingabe des Wärmebedarfs im Programmablauf
+* [[Gebäude und Gebäudetypen]] – Gebäudekenngrößen, Gebäudetypen und Verteilungskurven
+* [[Programm Dokumentation/Gebäude]] – Gebäudedialog mit Bauteilen, Kalendern und Zonen
+* [[Programm Dokumentation/Berechnung/Wärmebedarf]] – Rechenweg mit Gleichungen
+* [[Grundlagen/Gebäudemodell VDI 6007]] – das Stundenmodell, Zonen und Tagesbetriebsart
+* [[Grundlagen/Brauchwasser-Zapfprofile]] – Warmwasserbedarf aus Nutzungszonen
+* [[Grundlagen/Anlagenkopplung und Regelung]] – Heizkreis und Rückwirkung der Anlage auf den Raum
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

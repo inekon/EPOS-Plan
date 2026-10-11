@@ -59,7 +59,7 @@
 > (kein eigener Maskenschlüssel, Überlagerung im Gebäudedialog), **U10** (Lizenzhinweisseite mit der
 > ersten IFC-Stufe) und **U12** (Vorgaben je Baualtersklasse aus dem eigenen EPOS-Gebäudekatalog) —
 > diese stehen in 6 und 6.4, soweit sie den Zonenimport berühren. Mit E27 sind auch **D16**
-> (gbXML-Zonenbildung) und **Q24** (Fälligkeit der Stufe GA) entschieden (0, 2.8, Kapitel 9).
+> (gbXML-Zonenbildung) und **Q24** (Fälligkeit der Stufe GA, mit E89 gegenstandslos) entschieden (0, 2.8, Kapitel 9).
 > M3, M5–M8 und M11–M13 sind nicht Gegenstand von E27 und bleiben mit ihrer Stufe zu entscheiden.
 
 > **Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026 eingearbeitet, Protokoll:
@@ -411,6 +411,15 @@ vor und ist **ohne Änderung nutzbar**:
 (`:29-33`) und heute für die Wärmequelle Erdreich nach VDI 4640 gebaut (`:10`). **Sie ist nicht
 anzupassen, sondern zu rufen** — das hält die Fachänderung an einer Stelle.
 
+**Vorgabe des wirksamen U-Werts der Bodenplatte.** Die Spalte `Erdreich_U_Wirksam` (REAL, > 0, an
+`Tab_Gebaeude` und `Tab_Gebaeude_STAMM`) gibt U_g der Bodenplatte samt Erdreich in W/(m²K) vor. Gesetzt,
+nimmt die Erdreichrechnung den Wert als U_g jedes Bodenbauteils am Erdreich und rechnet kein B′ nach
+DIN EN ISO 13370 (`Erdreichwiderstand.Bauteilsatz`); Kellerwände rechnen unverändert, der Umfang dient dann
+allein ihrer Tiefe. Leer (NULL) gilt die Rechnung aus Grundfläche und Umfang. Der Export nennt die Herkunft
+als `Geb[n].Erdreich_Umfangsquelle = Vorgabe` (sonst `Feld` oder `Quadrat`). Die Katalogkopie ins Projekt
+und das Projektduplikat tragen den Wert mit; der Gebäudedialog führt ihn als Feld „Wirksamer U-Wert
+Bodenplatte" neben dem U-Wert der Grundfläche, wirksam nur bei Randbedingung Erdreich.
+
 | Zone | Hüllflächen | Besonderheit |
 |---|---|---|
 | Keller | Bodenplatte und Kellerwände gegen Erdreich, Kellerdecke gegen beheizte Zonen, ggf. Kellerfenster | großer Speicher, sehr träge — Vorlauf prüfen (2.9) |
@@ -441,6 +450,14 @@ Den einen von der Richtlinie vorgesehenen Strahlungsweg über die Grenze — Q̇
 S. 20, gespeist aus kurzwelliger Einstrahlung und langwelligem Austausch an der Rückseite der
 Innenbauteile (Blatt 1, 6.2, S. 9) — setzt EPOS zu null und benennt das; ein besonntes Treppenhaus
 wirkt damit nur über seine Lufttemperatur (Befund O, 3.4 und 5).
+
+**Wärmeübergabe je Zone.** Ist das Gebäude gekoppelt (`Heizkreis_Aktiv`, Art nicht `IDEAL`), rechnet jede
+beheizte Zone ihre Heizfläche — Art, Exponent, Nennleistung, Auslegungsvorlauf und -rücklauf,
+Auslegungsraumtemperatur, Proportionalband, jeweils NULL = wie Gebäude — am gemeinsamen Vorlauf des
+Gebäudes; der Rücklauf des Gebäudes ist massenstromgewichtet, und `Tab_ErgebnisZone` führt je Zone Vorlauf,
+Rücklauf und begrenzte Stunden. Eine Zone mit der Art `IDEAL` rechnet ideal; die Kühlseite rechnet je Zone
+ideal. Kaskade und Rechenweg: [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md)
+6.5 und 10.2.
 
 ### 2.7 Zonen-Luftaustausch
 
@@ -487,8 +504,7 @@ dass es Zonen gibt.** `SimulationWaermebedarf.Waermebedarf_Max` bleibt das Maxim
 Kanalsummenvektors (`:401`); die Ergebnisgröße `Waermelast_Max` wird davon unverändert abgeleitet
 (`SimulationRunner.cs:358`, Konzept 4.5). **Die Skalierung** `Z_AuswahlWohnflaeche / Wohnflaeche`
 (Konzept 4.7, Entscheid E8) steht im Altweg — dem eingefrorenen Bestandsweg nach E20 und E23, der
-nach E26 mit der Stufe GA abgelöst wird (ohne Datum; fällig nach den vier Bedingungen aus Q24,
-entschieden mit E27) — in
+nach E89 dauerhaft wählbar bleibt — in
 der Physikfunktion selbst (`EPOS.Kern/Allgemein/BhkwPlan.cs:435`, Argumente `:392`) — die in
 Entscheid E8 genannte Fundstelle
 in `SimulationWaermebedarf.cs` trifft den Kopfkommentar von `SummenvektorAusKanaelen` und ist dort
@@ -720,6 +736,9 @@ in [0,005; 500] W/(mK), ρ in [5; 8 000] kg/m³, c in [100; 5 000] J/(kgK); alle
 „nicht geliefert" und läuft in den Rückfall. Das ist keine Vorsicht, sondern Messung: FZK-Haus und
 Institute schreiben `Pset_MaterialThermal` **mit Nullen** — schlimmer als fehlend, weil ein naiver
 Leser λ = 0 übernimmt und einen unendlichen Wärmewiderstand rechnet (Befund P, § 3.4).
+Die Schichtdicke liegt in [0,5 mm; 1 m]: Bleche ab 0,5 mm (das Deckblech eines Sandwichelements trägt
+rund 7 kg/m²) gehören mit ihrer Masse in die Speicherbilanz, Folien und Anstriche darunter tragen weder
+Widerstand noch Masse nennenswert.
 
 ### 3.6 Was ohne Stoffwerte trotzdem geht
 
@@ -793,8 +812,9 @@ Projektware; wiederverwendbar ist der Bauteilaufbau, nicht die Zone).
 | `IstBeheizt` | INTEGER NOT NULL DEFAULT 1 CHECK (IN (0,1)) | — | Schalter, kein Fachwert (Boolean-Regel `BETRIEB_SQLITE.md`) |
 | `Raumsolltemperatur_Tag`, `_Nachtabsenkung`, `_Wochenende`, `_Ferien`, `Maximaleraumtemperatur`, `Heizung_Strahlungsanteil`, `Heizleistung_Max`, `Luftwechsel_Infiltration`, `Luftwechsel_Nutzer` | REAL | ja | NULL = Wert des Gebäudes |
 | `Interne_Waermegewinne`, `Bewohner` | REAL | ja | NULL = anteilig aus dem Gebäude (Flächenschlüssel) |
-| `Kuehl_Sollwert`, `Kuehlleistung_Max`, `Kuehl_Sollwert_Nacht` (REAL), `Kuehlung_Aktiv` (INTEGER, `CHECK (IN (0,1))`) | REAL / INTEGER | ja | **Block aus KU-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1) |
-| `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn` | TEXT / REAL / REAL | ja | **Block aus AK-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 8.1); mehr trägt die Zone nicht |
+| `Kuehl_Sollwert`, `Kuehlleistung_Max`, `Kuehl_Sollwert_Nacht` (REAL), `Kuehlung_Aktiv` (INTEGER, `CHECK (IN (0,1))`) | REAL / INTEGER | ja | **Block aus KU-S1**, gelesen seit KU3-3: NULL = Wert des Gebäudes, Vererbung [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.5 |
+| `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn` | TEXT / REAL / REAL | ja | **Block aus AK-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 8.1) |
+| `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`, `Regler_Proportionalband` | REAL (°C / °C / °C / K, Proportionalband `CHECK (IS NULL OR >= 0)`) | ja | **Schemaschritt 181 `ZonenUebergabeSchema`** (E63): NULL = wie Gebäude, sonst Vorgabe der wirksamen Zonenart bzw. Tagsollwert der Zone bzw. 1 K ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.5); Heizkurve, Sollwertprofil, Auslegungsaußentemperatur und `Heizkreis_Aktiv` bleiben am Gebäude |
 | `Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn` | TEXT (`CHECK IN` der drei Kühlübergabearten samt `IDEAL`) / REAL / REAL | ja | **Block aus KAK-S1** (E37, Konzept N1.42): NULL = Wert des Gebäudes bzw. Anteil der Zonenfläche; ohne Schalter wie die Heizseite. Anders als die übrigen Blöcke kommt er in einem **eigenen Schritt nach S-C** — Schemaschritt **137**, weil `KAK-S1` (Schritt 135) nach S-C entsteht. Das Aggregat je Gebäude, Projektduplikat und Projekttransfer tragen ihn NULL-erhaltend; gerechnet wird er erst ab G6 |
 | `Herkunft`, `Quellkennung` | TEXT | ja | `GBXML`/`IFC`/`KATALOG`/`MANUELL`/`VORGABE` — Großbuchstaben, ASCII, Persistenzwerte in `DbWerte` (Muster `DbWerte.cs:2165-2214`), mit `CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` (Muster `Tab_Wechselrichter.Herkunft`); `Quellkennung` trägt die `IfcGloballyUniqueId` (Base64-22) oder die gbXML-`id`, `CHECK (length ≤ 64)` — Spaltenname, Wertebereich und Länge nach [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 1.4 (Zeile 2) und 7.3, Frage D9 |
 
@@ -1014,7 +1034,7 @@ Rückfall. Je Eingabe:
 |---|---|
 | Zone | `Nutzflaeche > 0`, `Raumhoehe > 0`, `Volumen > 0`; Solltemperaturen 5…40 °C; `Maximaleraumtemperatur` ≥ Tagessollwert; Luftwechsel 0…10 1/h; höchstens 50 Zonen je Gebäude — nach E46, mit E50 (M12) als Vorgabe entschieden (2.9); ab zwei Zonen ist die Nutzfläche Pflicht (G6a) |
 | Bauteil | `Flaeche > 0`; U-Wert 0,1…6 W/(m²K); 0 < g ≤ 1; Rahmenanteil 0,05…0,6; Azimut 0…360°, Neigung 0…180°; `ID_Nachbarzone` gesetzt **genau dann**, wenn `Randbedingung = 'ZONE'`, und ≠ `ID_Zone` |
-| Aufbau/Schicht | `Dicke` 0,001…1,0 m; λ, ρ, c im Band aus 3.5; `Reihenfolge` lückenlos ab 1; mindestens eine Schicht |
+| Aufbau/Schicht | `Dicke` 0,0005…1,0 m; λ, ρ, c im Band aus 3.5; `Reihenfolge` lückenlos ab 1; mindestens eine Schicht |
 | aus 4.8 geerbt | `R_Rest,AW > 0` je Zone (Gl. (28), S. 17 mit den Klemmfällen (28a)–(28c)); `5 ≤ Bauweise/Nutzflaeche ≤ 200 Wh/(m²K)` im Klassenweg |
 
 Neu sind die Prüfungen **zwischen** Zonen, im Dialog wie im Lauf: **Trennflächenbilanz** — jede
@@ -1102,6 +1122,7 @@ Regel, die für die Datei trägt, gewinnt, und der Anwender kann umschalten:
 | Z2 | nach Klassifikation | alle Räume tragen dieselbe Klassifikationsquelle | FZK-Haus: eine Klasse „000 Allgemeines" für alle sieben Räume → eine Zone |
 | Z3 | nach Nutzung (`LongName`) | Nutzungsmuster trifft | FZK-Haus: Schlafen/Bad/Büro/Wohnen/Flur/Küche/Galerie → 4–5 Gruppen |
 | Z4 | **nach Geschoss** | Geschosse vorhanden | FZK-Haus 2, DigitalHub 3 Zonen — der robusteste Vorschlag |
+| Z6 | **nach Raumtemperatur und Nutzung**, gebäudeweit | mehr als ein Raum; die Gruppenbildung ergibt mehr als eine und weniger Gruppen als Räume; Raumgrenzen nicht nötig | an allen sechs CAD-Exporten wählbar: drei bis vier Zonen (etwa 20 °C Büro/Wohnen, 15 °C Verkehr/Lager, 10 °C unbeheizt) |
 | Z5 | eine Zone je Gebäude | immer | der **Einzonen-Rückfall** |
 
 **Vorbelegung: Z4**, sofern mehr als ein Geschoss Räume trägt, sonst Z5 — Z4 ist die einzige Regel,
@@ -1121,13 +1142,38 @@ Untergeschoss ist jedes Geschoss unter dem niedrigsten, dessen Räume Grenzen mi
 ersatzweise unter dem Geschoss mit der kleinsten Elevation ≥ −0,5 m (§ 1.6).
 
 **Beheizt oder unbeheizt** — dieselbe Rangfolge, jede Stufe mit Beleg: B1
-`PredefinedType = EXTERNAL`, B2 `Pset_SpaceCommon.IsExternal = TRUE`, B3
+`PredefinedType = EXTERNAL`, B2 `Pset_SpaceCommon.IsExternal = TRUE` — nicht gegen ein ausdrückliches
+`PredefinedType = INTERNAL`: Widersprechen sich Attribut und Satz, gilt das Attribut, B2 bleibt ohne Wirkung, und
+die Räume werden je Gebäude benannt (`IMP_IFC_PROT_AUSSEN_WIDERSPRUCH`, W; die angereicherte DigitalHub-Fassung
+setzt `IsExternal = TRUE` an 53 von 59 Innenräumen) —, B3
 `Pset_SpaceThermalRequirements` mit `SpaceTemperatureWinterMin` > 12 °C (nur IFC2x3/IFC4, in 4.3
 entfallen) — **der Wert ist vor dem Vergleich über die `THERMODYNAMICTEMPERATUREUNIT` aus
 `UnitsInContext` auf °C zu bringen** (KELVIN und DEGREE_CELSIUS sind beide zulässig, und in Kelvin
-ist jede Raumtemperatur größer 12); ohne auflösbare Einheit greift B3 nicht, sondern B4
+ist jede Raumtemperatur größer 12); ohne auflösbare Einheit greift B3 nicht. Fehlt der Standard, gilt als
+Rückfall zu B3 die Beheizungsart eines CAD-Exports (`HeatingType`, 6.5). Dann B4
 Nutzungsmuster im Namen (`Keller|Garage|Dachboden|Technik|Treppenhaus` und englische
 Entsprechungen), B5 Untergeschoss ohne `EXTERNAL`-Grenze, B6 sonst beheizt.
+
+**Regel Z6 — nach Raumtemperatur und Nutzung.** Für Dateien ohne Zonen, Klassifikation und Raumgrenzen, die je Raum
+eine Temperatur und einen Raumtyp tragen (CAD-Exporte). **Gruppenschlüssel** je Raum: die wirksame Beheizung (mit den
+Haken der Raumliste) und die auf ganze °C gerundete Raumsolltemperatur — der Heizsollwert des Standards (B3), sonst die
+Raumtemperatur der Datei (`InsideTemperature (°C)`, zur Gruppenbildung). **Der Zonenname trägt keinen Sollwert:** „15 °C –
+Verkehr, Lager" ist ein Name; die Zone erbt den Heizsollwert des Gebäudes (Vorgabe Normtemperatur oder Eingabe), einen
+eigenen bekommt sie nur über den Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" (6.5). Ein Raum ohne
+Temperatur geht zur Temperaturgruppe gleicher Beheizung, in der seine **Nutzungsklasse** die größte Fläche hat (bei
+Gleichstand die wärmere); gibt es keine, bildet er mit seinesgleichen eine Gruppe „ohne Sollwert" je Nutzungsklasse. Die
+Nutzungsklasse (Büro, Wohnen, Schlafen, Gastronomie, Küche, Sport, Verkehr, Sanitär, Lager, Technik, Sonstige) folgt aus
+dem Raumtyp der Datei (`RoomType` ohne Präfix `mrt`, sonst `Pset_SpaceCommon.Category`, sonst `ObjectType`) über eine
+feste Tabelle, sonst aus Namensmustern des Raumnamens (deutsch und englisch, die Muster von B4 eingeschlossen). **Name**
+der Zone: „⟨T⟩ °C – ⟨bis zu drei Nutzungsklassen, flächengewichtet⟩", eine unbeheizte Zone neben einer beheizten
+gleicher Temperatur mit dem Zusatz „(unbeheizt)"; Schlüssel sprachneutral, Texte aus den Ressourcen. **Ordnung**:
+absteigend nach Solltemperatur (ohne Sollwert zuletzt), beheizt vor unbeheizt, dann Name. Die Zonen gelten
+geschossübergreifend; Trenndecken und Trennwände entstehen wie bei Z4 aus Raumbezügen bzw. Raumgrenzen, soweit vorhanden,
+sonst warnt `IMP_IFC_PROT_GRENZEN_ENTKOPPELT`. **Mindestgröße unter Z6:** eine zu kleine Zone wird stets der Zone gleicher
+Beheizung (unbeheizt nur zu unbeheizt) mit der nächstliegenden Solltemperatur zugeschlagen — vor der größten gemeinsamen
+Grenzfläche, denn Z6 bildet die Zonen über die Temperatur; bei gleichem Temperaturabstand entscheidet die größere
+gemeinsame Grenzfläche, dann die größere Zone. Unter Z1 bis Z5 gilt die Mindestgröße unverändert. Obergrenze M12, Zuordnung von Hand und Regelwechsel gelten wie bei Z4; die
+Vorgabe (M7) bleibt Z4 bzw. Z5, Z6 steht in der Liste nach Z4.
 
 **Mindestgröße.** Eine Zone unter **max(2 m², 2 % der Gebäudegrundfläche)** wird dem Nachbarn mit
 der größten gemeinsamen Grenzfläche zugeschlagen; gibt es keinen, bleibt sie stehen und der Dialog
@@ -1147,8 +1193,17 @@ Profillänge × `Depth` zu rechnen; nur ein gekrümmtes Profil wird benannt abge
 zwei Fälle noch zu messen). Die Summen 778,2 / 1 358,1 / 22 862,1 m² sind **Bruttosummen aller
 Grenzflächen einschließlich der auf ihnen liegenden Öffnungsgrenzen** und dienen als
 **Reproduktionsprobe des Lesers**, nicht als Hüllfläche; sie stammen aus einer Textauszählung
-(Befund P, § 8) und sind beim ersten Lauf mit xBIM nachzumessen. Abnahmegrundlage sind allein die
-lizenzgeklärten Dateien (8.2, M10).
+(Befund P, § 8). Mit xBIM nachgemessen: Jede Grenze der Beispieldateien trägt eine `IfcCurveBoundedPlane` mit
+`IfcPolyline` bzw. `IfcCompositeCurve` aus Polylinien — der Leser liest **alle** Polygone. Was zur Summe fehlt,
+gehört zu keinem Bauteil der Hülle: virtuelle Grenzen (mit `IfcVirtualElement` oder ohne Bauteil), Stützen und
+Träger, die Glasdächer eines mehrteiligen Dachs. Der Leser zählt diese Grenzen je Art mit Fläche
+(`IMP_IFC_PROT_GRENZEN_OHNE_BAUTEIL`, I). Abnahmegrundlage sind allein die lizenzgeklärten Dateien (8.2, M10).
+
+**Zerlegtes Dach.** Trägt ein `IfcRoof` ohne eigene Flächenmenge die Raumgrenzen selbst, während es aus Platten
+besteht (die Platten werden Bauteile, das Dach nicht), gelten seine Grenzen für seine **einzige** Platte, wenn diese
+keine eigenen trägt (`IMP_IFC_PROT_GRENZEN_DACHPLATTE`, I, mit Zahl der Dächer und Grenzen; DigitalHub mit Raumgrenzen:
+das Flachdach mit 41 Grenzen und 2 874,1 m²). Besteht das Dach aus mehreren Platten, bleibt die Zuordnung ohne
+Geometrie offen; seine Grenzen zählen unter den Grenzen ohne Bauteil.
 
 Drei Umsetzungsfallen: Die Randkurve ist mal eine `IfcPolyline`, mal eine `IfcCompositeCurve` →
 `IfcCompositeCurveSegment` → `IfcPolyline` (beide Wege nötig, `IfcIndexedPolyCurve` dazu); die
@@ -1195,7 +1250,13 @@ Geometrie — Mehrzonigkeit auch für Dateien ohne echte Paare, die kleine lizen
 nutzbar (Probe 18).
 
 **Randbedingung** kommt direkt aus `InternalOrExternalBoundary` — gemessen im DigitalHub
-`.INTERNAL.` 1 538, `.EXTERNAL.` 967, **`.EXTERNAL_EARTH.` 76**:
+`.INTERNAL.` 1 538, `.EXTERNAL.` 967, **`.EXTERNAL_EARTH.` 76**. Für die Randbedingung **des Bauteils** (ohne
+`IsExternal`) gilt: Eine Grenze `EXTERNAL_EARTH` macht es erdberührt, eine Grenze `EXTERNAL*` außen — an einer
+Bodenplatte (`BASESLAB`) erdberührt wie unter `IsExternal = TRUE` —, sonst innen. **Ein äußerer Splitter entscheidet
+nicht:** Trägt das Bauteil auch innere Grenzen und haben seine äußeren alle ein Polygon, zusammen aber weniger als
+5 % seiner gelesenen Grenzfläche, gilt es nach den übrigen Grenzen (`IMP_IFC_PROT_AUSSEN_SPLITTER`, I) — im FZK-Haus
+machte ein Randstreifen von 0,82 m² die Geschossdecke (170,6 m² Grenzfläche) zum Außenbauteil, das der Einzonenweg
+mit 115,6 m² als Dach zählte:
 
 | IFC | EPOS-Randbedingung |
 |---|---|
@@ -1210,8 +1271,8 @@ nutzbar (Probe 18).
 Außen-/Innenwand (die Randbedingung entscheidet, **nicht** `Pset_WallCommon.IsExternal`), `IfcSlab`
 `ROOF`/`IfcRoof` → Dach, `BASESLAB` → Bodenplatte, `FLOOR` → Decke (Neigung entscheidet über
 oben/unten), `IfcWindow` → Fenster, `IfcDoor` → Tür, `IfcColumn`/`IfcBeam`/`IfcMember` →
-Sonstiges (im DigitalHub 150 + 42 Grenzen mit zusammen 198,6 m² — **nicht** zur Außenwand zählen,
-sie sind innere Masse); `IfcCurtainWall`/`IfcPlate` → **eigene Bauteilart „Vorhangfassade"** mit
+kein Bauteil der Hülle (im DigitalHub 150 + 42 Grenzen mit zusammen 198,6 m² — **nicht** zur Außenwand zählen;
+benannt unter den Grenzen ohne Bauteil); `IfcCurtainWall`/`IfcPlate` → **eigene Bauteilart „Vorhangfassade"** mit
 U-Wert und g-Wert wie ein Fenster (im DigitalHub 2 Grenzen / 36,0 m², in den 198,6 m² **nicht**
 enthalten), sonst verliert das Modell die solaren Gewinne einer Pfosten-Riegel-Fassade; `VIRTUAL`
 → **keine Bauteilfläche**, aber eine benannte Luftverbindung: Liegen beide Räume in derselben Zone,
@@ -1248,6 +1309,27 @@ durchhalten und im Dialog benennen** — eine halbe Umrechnung erzeugt eine Hül
 Umrechnung selbst bräuchte Bauteildicken und die Gehrung an jeder Ecke, also Geometrie. Die
 Abweichung ist zu **beziffern** (Kapitel 8, Probe 17); das Bruttomaß bleibt als verworfene
 Möglichkeit Teil der Begründung.
+
+**Trennflächen aus Raumkörpern.** Führt eine Datei keine Raumgrenzen, aber Raumkörper (Datenaustauschkonzept 15.3),
+kommt die Nachbarschaft der Räume aus den Körpern: Je Körper werden die Dreiecke gleicher Normale und gleichen
+Ebenenabstands zu ebenen Flächen zusammengefasst; zwei Flächen verschiedener Räume sind ein Paar, wenn ihre Normalen
+gegenläufig sind (höchstens 1°), sie einander zugewandt höchstens 0,8 m auseinanderliegen (Wand- oder Deckendicke) und
+sich ihre Projektionen auf die gemeinsame Ebene um mindestens 0,1 m² überschneiden. Die Trennfläche ist die
+Schnittfläche (Summe der Schnitte der Dreiecke beider Flächen); eine Normale waagerecht ± 10° ergibt eine Trennwand,
+sonst eine Trenndecke mit dem Raum, dessen Fläche nach unten weist, als oberem. Je Paar entsteht ein Trennbauteil mit
+zwei Grenzen der Herkunft „Körper“, wechselseitig Gegenstück; Seiten, Paarbildung, Gegenprobe (6.6) und Mindestgröße
+(M8) laufen darüber wie über Raumgrenzen. U-Wert, Aufbau und Dicke nimmt das Trennbauteil vom Bauteil gleicher Art,
+das beide Räume referenzieren, sonst von einer Innenwand bzw. Decke, die einer der Räume referenziert, bei einer Decke
+sonst von der freien Decke des Geschosspaars, sonst gilt die Vorgabe; die Zeile des Bauteilvorschlags trägt die
+Herkunft „IFC-Datei (Körper)“ mit Raumpaar und Fläche als Beleg. Ein abgedecktes Bauteil der Datei geht in seinen
+Paaren auf, wenn jeder Raum, der es referenziert, an einem davon liegt, sonst trägt es nur den Rest seiner Fläche. Die
+Trenndecken aus Raumbezügen (6.5) weichen den Körperdecken, wo ein Körperpaar das Geschosspaar verbindet, und bleiben
+sonst Rückfall; der Kopplungswächter gilt für die Körperdecken ebenso (`IMP_IFC_PROT_KOERPERPAAR_SCHWACH`). Die
+Rangfolge lautet **Raumgrenzen vor Körpern vor Raumbezügen**: Mit Raumgrenzen werden die Körperpaare nur gezählt
+(`IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT`). Mit Körperpaaren gelten die Zonen als gekoppelt; statt `GRENZEN_ENTKOPPELT`
+meldet der Import `IMP_IFC_PROT_GRENZEN_AUS_KOERPER` (Zahl, Σ Trennwand, Σ Trenndecke), Räume mit Körper ohne jede
+Trennfläche `IMP_IFC_PROT_KOERPER_OHNE_PAAR`. Z1 bis Z3 bleiben an Raumgrenzen gebunden. Außenflächen kommen weiter aus
+Mengen und Raumbezügen; Flächen und Volumen der Räume bleiben Mengen der Datei.
 
 ### 6.3 Materialien → Aufbauten
 
@@ -1305,9 +1387,10 @@ Ein Dialog, vier Abschnitte, ein OK. Der Aufbau folgt dem Konfliktdialog
 `Katalogliste`, weil die Institute-Datei 78 **Räume** und über 2 000 Flächen liefert; unter der
 Vorbelegung Z4 werden daraus wenige Zonen, unter einer Regel „je Raum eine Zone" 78. (1) **Kopf** —
 Datei, Schema, Gebäudewahl, Zonenregel Z1…Z5, Bilanz (Zonen, beheizte Fläche, Volumen, Σ
-Außenfläche, Σ Trennfläche) und Warnbanner mit der schwersten Meldungsstufe. (2) **Zonen** — je
-Zone Name, Regel, Räume, Fläche, Volumen, Haken „beheizt", Knöpfe „zusammenlegen"/„trennen";
-aufgeklappt die Raumliste mit `LongName`, Geschoss, Fläche, Beheizungsregel B1…B6 und Beleg.
+Außenfläche, Σ Trennfläche) und Warnbanner mit der schwersten Meldungsstufe. (2) **Zonen** — der
+Zonenbaum Gebäude → Zonen → Räume (mit Geschoss) und daneben die Liste „nicht zugeordnete Räume";
+je Zone Name, Nutzung, Räume, Fläche, Volumen, Haken „beheizt"; je Raum `LongName`, Geschoss,
+Fläche, Beheizungsregel B1…B6 und Beleg.
 (3) **Flächen je Zone** — Bauteilart, Fläche, Azimut, Neigung, Randbedingung, Nachbarzone, U-Wert,
 Aufbau, Herkunft, Beleg, mit den Filtern „nur Fehler", „nur ohne Gegenstück", „nur ohne U-Wert",
 „nur ohne Stoffwerte". (4) **Baustoffe** — IFC-Name, Abgleichstufe N1…N7, zugeordneter Baustoff,
@@ -1320,11 +1403,66 @@ Gebäudeimport mit eigener Zuordnung, die das Projekt beim Speichern merkt; Leit
 Unwahrheit (Datenaustauschkonzept 1.4, Nr. 6). Er bekommt **keinen eigenen Maskenschlüssel und
 keine Menüzeile**, sondern erscheint als **Überlagerung im Gebäudedialog** (**A17**).
 
-**Was der Anwender ändern kann:** Regel wählen (der Vorschlag wird neu gebildet, Handeingriffe nach
-Rückfrage verworfen), Zone umbenennen, Räume zusammenlegen (Innengrenzen zwischen ihnen entfallen),
-Zone trennen (vormals interne Flächen werden zu Trennflächen), Haken „beheizt" (die angrenzenden
-Flächen wechseln ihre Randbedingung), „alles in eine Zone" (der Einzonen-Rückfall). Nach jeder
-Änderung rechnet der Dialog die Bilanz neu.
+**Der Zonenplan** (`EPOS.Kern/Allgemein/Import/Gebaeude/Zonenplan.cs`) ist das Modell hinter Abschnitt (2):
+eine geordnete Liste **freier Zonen** — je Zone ein stabiler, sprachneutraler Schlüssel `Z:<n>` (innerhalb
+eines Plans nie wiederverwendet), ein Name (im Plan eindeutig ohne Unterschied der Schreibung) und eine
+**Nutzung** `WOHNEN`, `BUERO`, `SCHULE` oder keine — und die Zuordnung jedes Raums zu einer Zone. Ein Raum
+ohne Zone ist **nicht zugeordnet**; ein Raum, den die Regel bewusst draußen lässt (die unbeheizten Räume
+unter Z5/X4, eine unbeheizte Zone ohne Fläche nach 6.5), liegt **außerhalb**. Die Beheizung einer Zone
+folgt aus ihren Räumen (Haken der Raumliste).
+
+- **Entstehen:** Der Plan entsteht aus dem Regelvorschlag nach 6.1 samt Mindestgröße M8 — jede
+  Vorschlagszone wird eine freie Zone mit ihrem Namen; unter Z6 trägt sie die Nutzung ihrer
+  Nutzungsklasse mit der größten Fläche (Büro → `BUERO`; Wohnen, Schlafen, Küche, Sanitär → `WOHNEN`;
+  sonst keine), unter den übrigen Regeln keine. Gespeicherte Zuordnungen von Hand (`Raumumhaengung`)
+  gehen als Eingang in diesen Vorschlag ein. Danach wird der Plan **nur noch von Hand** geändert.
+- **Operationen** — jede deterministisch; was nicht geht, wird benannt abgelehnt und lässt den Plan
+  unverändert: Zone anlegen (am Ende, leer), löschen (ihre Räume sind danach nicht zugeordnet),
+  umbenennen, Nutzung setzen; **Zonierung aufheben** (alle Räume nicht zugeordnet, die Zonen des
+  Vorschlags entfallen, die angelegten bleiben leer stehen); **Räume zuordnen** (Mehrfachwahl, alle oder
+  keinen; ein Raum anderer Beheizung als die Zone wird benannt abgelehnt, der Ausweg ist der Haken
+  „beheizt" des Raums; ohne Zielzone werden die Räume herausgenommen); **Geschoss zuordnen** (die gleich
+  beheizten Räume des Geschosses, die übrigen bleiben benannt, wo sie waren); **Rest nach Regel
+  zuordnen** (nur die nicht zugeordneten Räume: in die Zone aus derselben Regelzone, sonst in die
+  gleichnamige gleicher Beheizung, sonst in eine neue; was die Regel draußen lässt, liegt danach
+  außerhalb); **nach Regel neu bilden** (der Regelwechsel; Handeingriffe nach Rückfrage verworfen). Eine
+  Zone über der Pflegegrenze von 50 Zonen wird nicht angelegt.
+- **Zonierung aus dem Plan:** Seiten, Trennflächen (Raumgrenzen, Körperpaare, Raumbezüge), Gegenprobe,
+  Obergrenze M12 und Meldungen bilden sich wie in 6.1 bis 6.6, aber über die freien Zonen. Die
+  Mindestgröße M8 wirkt nur im Regelvorschlag: Eine Zone des Plans unter der Mindestgröße wird nicht
+  zugeschlagen, sondern benannt (als Warnung, wenn sie von Hand verändert ist). Nicht zugeordnete Räume
+  liegen in keiner Zone und zählen nicht zur Zonenfläche (Warnung `RAEUME_NICHT_ZUGEORDNET` mit Zahl und
+  bis fünf Namen); eine Zone ohne Raum steht in der Bilanz mit 0 m² und wird nicht übernommen (Info
+  `ZONE_LEER`).
+- **OK:** Mit nicht zugeordneten Räumen wird nicht gespeichert (`ZUORDNUNG_UNVOLLSTAENDIG`, Fehler); der
+  Dialog bietet dafür „Rest nach Regel zuordnen". Beim Speichern trägt `Tab_Zone.Bezeichner` den
+  Zonennamen; eine Zone mit Nutzung bekommt je Größe die erste ausgelieferte Konditionierungsvorlage
+  dieser Nutzung als Kalenderkopie über den Weg „Vorlage übernehmen" (Kopie trägt die Nutzung in
+  `Tab_Konditionierungskalender.Nutzung`; eine unbeheizte Zone ohne Heiz- und Kühlkalender; fragt die
+  Lüftung nach dem Aufteilen der Gesamtangabe, wird aufgeteilt); ohne Nutzung bekommt sie keinen
+  Kalender. `Tab_Importzuordnung` paart jeden Raum mit seiner Zone, `Tab_Importquelle.Zonenregel` hält
+  die Regel. Ein erneuter Import derselben Datei (gleicher SHA-256) findet daraus den Plan wieder:
+  Zonen in ihrer Reihenfolge mit Bezeichner und der Nutzung ihrer Kalender, die Räume über ihre Paarung;
+  ein Raum ohne Paarung liegt außerhalb, wenn die gespeicherte Regel ihn draußen lässt, sonst ist er
+  nicht zugeordnet. Eine leere Zone wird nicht gespeichert und kommt nicht wieder.
+
+**Zonenplan mit Projektdatei** (Datenaustauschkonzept 16.3, 16.4): Ist zur IFC-Datei eines HottCAD-Exports die
+Projektdatei dazugeladen, ersetzt der Schritt „Zonen der Projektdatei übernehmen“ die Zonierung des Plans durch die
+wirksame Zonierung der Projektdatei (`SqprojZonen`; Vorgabe die DIN-V-18599-Zonen, bei Dateien mit beiden Zonierungen im Dialog wählbar: Simulationszonen), je Zone mit Nutzung aus der DIN-V-18599-Profilnummer
+und der Konditionierung aus Ganglinie und Nutzungsprofil (`Planzone.Projektdatei`; die Herkunft je Zone nennt die Zonierung); IFC-Räume ohne Gegenstück bleiben
+nicht zugeordnet, leere Zonen werden gemeldet und nicht angelegt. Trägt eine IFC-Datei von EPOS-Plan je Raum die Sätze
+`EPOS_Zone` und `EPOS_Kalender_*`, übernimmt schon der Regelvorschlag die Konditionierung des ersten Raums der Zone, der
+sie trägt — mit der Rangfolge Projektdatei vor IFC-`EPOS_*` vor Vorlage. Beim Speichern schreibt
+`ZonenplanCtrl.ProjektdateiUebernehmen` die Kalender und Zellen nach den Vorlagen der Nutzung.
+
+> **Vermerk 05.10.2026 (E90):** Die Nutzung der Zone (`WOHNEN`, `BUERO`, `SCHULE` oder keine) wird ein Nutzungsprofil
+> aus einem Katalog mit Kategorien; die Vorbelegung aus Nutzungsklasse und DIN-Profilnummer geht über eine änderbare
+> Zuordnung, der Zonenbaum führt die Profile gruppiert nach Kategorie mit Herleitungszeile, gespeichert werden weiter
+> nur Kopien. Ausgearbeitet in [Konzept Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md) (Stufe NP).
+
+**Was der Anwender sonst ändern kann:** Haken „beheizt" je Raum (die angrenzenden Flächen wechseln ihre
+Randbedingung) und „alles in eine Zone" (der Einzonen-Rückfall). Nach jeder Änderung rechnet der Dialog
+die Bilanz neu.
 
 **Vier Regeln, die nicht verhandelbar sind:** Nichts wird ohne OK geschrieben; **jede Zahl trägt
 ihre Herkunft und ihren Beleg** — eine Zelle ohne Beleg ist eine Vorgabe; kein Anzeigetext ist
@@ -1338,10 +1476,227 @@ Zonenflächen gegen die Summe der Raumflächen (5.3).
 Topologie weg: Bauteile über `IfcRelContainedInSpatialStructure` dem Geschoss zuordnen, Flächen aus
 den Quantity-Sets, Außen/Innen aus `Pset_*Common.IsExternal`. **Nachbarschaft gibt es dann nicht** —
 zwei Geschosszonen ohne Grenzen wären thermisch entkoppelt, und das ist falsch. Deshalb bietet der
-Leser bei fehlenden Grenzen **Z5 als Vorgabe** an und Z4 nur, wenn der Anwender die Trenndecke
-selbst einträgt: **Eine stillschweigend entkoppelte Mehrzonenrechnung wäre schlechter als die
-Einzonenrechnung.** Das ist der Rückfall aus M7 (entschieden mit E50, 26.09.2026). **Ohne Stoffwerte** gilt 3.6: masselos mit U-Wert, Masse aus `Bauweise`, je
-Zone entschieden.
+Leser bei fehlenden Grenzen **Z5 als Vorgabe** an, solange keine Trenndecke die Geschosse verbindet:
+**Eine stillschweigend entkoppelte Mehrzonenrechnung wäre schlechter als die Einzonenrechnung.** Das
+ist der Rückfall aus M7 (entschieden mit E50, 26.09.2026). Die Trenndecke kommt dann aus den
+**Raumbezügen** der Datei, wenn sie welche führt (nächster Absatz, Anwenderentscheid 03.10.2026, ändert
+M7); fehlen auch sie, bleibt Z5 mit dem Hinweis `IMP_IFC_PROT_KEINE_GRENZEN`, und Z4 ist nur mit der
+Warnung `GRENZEN_ENTKOPPELT` zu haben. **Ohne Stoffwerte** gilt 3.6: masselos mit U-Wert, Masse aus
+`Bauweise`, je Zone entschieden.
+
+**Trenndecken und innere Masse über die Raumbezüge** (Anwenderentscheid 03.10.2026, ändert M7). Manche
+CAD-Exporte ohne Raumgrenzen schreiben je Raum ein `IfcRelReferencedInSpatialStructure` mit den
+angrenzenden Bauteilen. Führt ein Gebäude keine Raumgrenze, gibt der Leser daraus Bauteilen ohne eigene
+Grenze ihre Nachbarn — ohne Geometrie, die Fläche bleibt die Menge des Bauteils, je Geschosspaar und
+nicht je Raumpaar (ADR-003):
+
+- **Trenndecke:** Eine Platte oder ein Dach, nicht außen (weder `IsExternal` noch Angrenzung Außenluft
+  oder Erdreich), das Räume **genau zweier Geschosse** referenzieren, trennt diese Geschosse. Nachbarn
+  sind je Geschoss der erste beheizte Raum (sonst der erste), der beheizte zuerst, die Sicht aus der
+  Geschosslage (oben Boden, unten Decke); U-Wert und Aufbau wie bei jedem Bauteil. Unter Z4 wird sie die
+  Trennfläche der beiden Geschosszonen (Randbedingung `ZONE`), zum unbeheizten Keller die Trennfläche
+  zu dessen frei schwingender Zone; im Einzonenweg zwischen zwei beheizten Räumen innere Masse, zu einem
+  unbeheizten Raum Hülle gegen unbeheizt (Boden oder Decke nach der Sicht). Erklärt die Datei die Platte
+  gegen unbeheizt (`btaCellarCeiling`, `btaUppermostStorey`), liegen aber beiderseits beheizte Räume (ein
+  Spitzboden, der nach seinem Namen als beheizt gilt), gilt die Erklärung der Datei, nicht der Bezug —
+  sonst fiele die oberste Geschossdecke aus der Hülle, während die Datei die Dachfläche darüber nicht zur
+  Hülle zählt (bestätigt mit dem Anwenderentscheid 03.10.2026). Der Widerspruch wird benannt
+  (`IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG`, W, mit Bauteil und dem Raum der Seite, die die Datei unbeheizt
+  nennt, und dem Rat, die Beheizung des Raums zu prüfen). Eine Platte, deren U-Wert die Datei mit null oder
+  kleiner angibt und die keinen Aufbau trägt (eine Bodenöffnung, ein Hilfsbauteil), ist nicht bewertet und
+  trennt keine Geschosse (`IMP_IFC_PROT_UWERT_NICHT_POSITIV`).
+- **Fläche aus den Raummengen** (Anwenderentscheid 03.10.2026): Bleibt die Summe der referenzierten
+  Deckenteile eines Geschosspaars unter der kleineren beheizten Grundfläche der beiden Geschosse (Summe
+  der Raumflächen aus den Raummengen), referenziert die Datei nicht alle Deckenteile. Dann gilt diese
+  Grundfläche als Trenndeckenfläche, im Verhältnis ihrer Flächen auf die referenzierten Teile verteilt
+  (ohne Flächen zu gleichen Teilen); U-Wert und Aufbau bleiben die der referenzierten Teile, über die
+  Fläche gewichtet (`IMP_IFC_PROT_TRENNDECKE_GESCHAETZT`, I, mit geschätzter und referenzierter Fläche).
+  Ohne beheizten Raum in einem der beiden Geschosse (Keller) wird nicht geschätzt; ohne referenziertes
+  Deckenteil gibt es keine Trenndecke. Auch das ist keine Geometrierechnung (ADR-003): Es zählen Mengen.
+- **Innenwand zwischen Räumen:** Eine Wand innen oder ohne Angabe, die zwei bis vier Räume desselben
+  Geschosses referenzieren, liegt zwischen zweien davon — zwei beheizten, wenn es sie gibt (innere Masse,
+  beidseitig), sonst einem beheizten und einem unbeheizten (Hülle gegen unbeheizt bzw. Trennfläche zur
+  unbeheizten Zone des Geschosses).
+- **Kopplung:** Ein Geschosspaar trägt, wenn die Fläche seiner Trenndecken mindestens die Hälfte der
+  beheizten Grundfläche des kleineren Geschosses erreicht; darunter wird das Paar benannt
+  (`IMP_IFC_PROT_TRENNDECKE_KLEIN`, W, mit Fläche, Grundfläche und Anteil). Der Wächter bleibt (bestätigt
+  mit dem Anwenderentscheid 03.10.2026); nach der Schätzung aus den Raummengen erreicht jedes Paar mit
+  referenziertem Deckenteil und beheizten Räumen auf beiden Seiten die Hälfte — er wirkt nur noch, wo kein
+  Deckenteil referenziert ist und deshalb keine Trenndecke entsteht. Grenzt jedes Deckenteil eines Paars auf
+  einer Seite an einen unbeheizten Raum eines Geschosses, das auch beheizte Räume hat, liegt die Decke unter Z4
+  an der unbeheizten Gruppe dieses Geschosses: Das Paar verbindet dessen beheizte Räume nicht, wird nicht
+  geschätzt und trägt nicht (ein Geschoss ganz ohne beheizten Raum verbindet weiter). Verbinden tragende Paare alle Geschosse mit beheizten Räumen (auch über ein unbeheiztes
+  Geschoss), ist **Z4 die Vorgabe** ohne `KEINE_GRENZEN` und ohne `GRENZEN_ENTKOPPELT`; ist unter Z4
+  dennoch eine beheizte Zone ohne Verbindung (etwa nach den Haken der Raumliste), warnt
+  `GRENZEN_ENTKOPPELT`. Sonst bleibt Z5 die Vorgabe mit dem bisherigen Hinweis.
+- **Meldung:** je Gebäude `IMP_IFC_PROT_TRENNDECKE_REFERENZ` (I) mit der Zahl der Trenndecken, den
+  Geschosspaaren von unten nach oben und der Zahl der Innenwände mit zwei Nachbarn.
+
+**Trenndecke ohne Raumbezug.** Verbindet kein Raumbezug zwei übereinanderliegende Geschosse mit Räumen, sucht der
+Leser die Trenndecke selbst: Tragen alle Räume beider Geschosse einen Grundriss (Profilring der senkrechten
+Extrusion ihrer Körperdarstellung — Polylinie, indizierte Polylinie ohne Bögen oder Rechteck; andere Darstellungen
+liefern keinen), bekommt jedes Raumpaar, dessen Grundrisse sich in der Projektion um mindestens 1 m² überdecken, eine
+Trenndecke als Paar mit der Überlappung als Fläche (Herkunft `GRUNDRISS`, keine Schätzung aus den Raummengen); U-Wert,
+Aufbau und Dicke stammen von der größten Platte innen ohne Grenze, Nachbarn und Hüllerklärung im oberen (sonst
+unteren) der beiden Geschosse, die in den Paaren aufgeht — ohne sie bleibt das Paar ohne U-Wert (Vorgabe der
+Baualtersklasse). Fehlt ein Grundriss und führt die Datei keine Raumbezüge, trennt jede solche Platte den ersten
+beheizten Raum je Geschoss mit ihrer Menge (Herkunft `GESCHOSS`, wie der Raumbezug samt Schätzung); führt sie
+Raumbezüge, nennen diese die Nachbarn, und eine Platte ohne Bezug trennt nichts. Die Paare zählen für die Kopplung
+wie die aus den Raumbezügen; `GRENZEN_ENTKOPPELT` bleibt nur, wo auch das scheitert. Meldung je Gebäude
+`IMP_IFC_PROT_TRENNDECKE_GRUNDRISS` (I) mit Zahl, Fläche und Geschosspaaren. Die Überlappung rechnet ohne
+Geometriekern: Ohrenschnitt beider Ringe, je Dreieckspaar Sutherland–Hodgman.
+
+**Raumfläche aus dem Grundriss.** Führt die Datei für einen Raum keine Flächenmenge — weder `NetFloorArea` noch
+`GrossFloorArea`, auch nicht über die Rückfallnamen —, gilt die Fläche seines Grundrisses (derselbe Profilring,
+Gaußsche Trapezformel) als Raumfläche, im Abbild gekennzeichnet (`AbbildRaum.FlaecheAusGrundriss`) und je Gebäude
+benannt (`IMP_IFC_PROT_FLAECHE_GRUNDRISS`, I, mit Zahl, Fläche und Räumen). Ein Raum mit Flächenmenge bleibt
+unberührt. DigitalHub ohne Anreicherung: 61 von 64 Räumen, 2 913,7 m².
+
+**Unbeheizte Zone ohne Fläche.** Ohne Raumgrenzen kann eine unbeheizte Zone ohne jede Fläche entstehen: Die
+Datei zählt die Hüllbauteile ihrer Räume nicht zur Hülle, und kein Bezug verbindet sie mit einem beheizten Raum.
+Der Bauteilweg rechnet keine Zone ohne Bauteil, und sie koppelt an nichts — sie entfällt deshalb aus der
+Zonierung, ihre Räume bleiben außerhalb der Zonen (unbeheizt), benannt (`ZONE_OHNE_FLAECHEN`, I, mit Name und
+Fläche). Eine von Hand gebildete Zone bleibt.
+
+**Innenwände ohne Nachbarraum** (Anwenderentscheid 03.10.2026). Eine Wand innen (`IsExternal = FALSE`
+oder Angrenzung `btaHeated`) in einem Gebäude ohne Raumgrenzen, der auch die Raumbezüge keine zwei
+Nachbarn geben (kein Bezug, ein Raum, Räume zweier Geschosse oder mehr als vier), zählt **einseitig** als
+innere Masse — im Einzonenweg in der Innenfläche (Innenflächenfaktor statt leer), unter Z4 in der Zone
+ihres Geschosses —, statt übergangen zu werden; das Protokoll nennt Zahl und Bruttofläche
+(`IMP_IFC_PROT_INNEN_EINSEITIG`, I). Gebäudetrennflächen sind sie nicht.
+
+**Hinweise aus dem Dateinamen** (Anwenderentscheid 03.10.2026). Trägt das Gebäude einer IFC-Datei einen
+Platzhalternamen (`Gebäude`, `Gebaeude`, `Building`, `Default Building`, `Haus`, ohne Groß-/Kleinschreibung),
+schlägt der Dialog den Dateinamen ohne Endung vor (`IMP_IFC_PROT_NAME_PLATZHALTER`, I). Nennt der
+Dateiname genau eine vierstellige Zahl von 1500 bis 2100 und führt die Datei kein Baujahr, nennt das
+Protokoll das Jahr (`IMP_IFC_PROT_BAUJAHR_DATEINAME`, I) — **übernommen wird es nie**: Ein Name wie
+„…EG55-2026" nennt das Planungsjahr, nicht das Baujahr. Führt die Datei ein Baujahr und nennt der Dateiname
+genau ein anderes Jahr, benennt das Protokoll den Widerspruch einmal: „Die Datei nennt 1995, der Dateiname 1970;
+es gilt das Baujahr der Datei" (`IMP_IFC_PROT_BAUJAHR_WIDERSPRUCH`, I). Auch dann wird das Jahr des Namens nie
+übernommen; stimmen beide überein oder nennt der Name mehrere Jahre, schweigt das Protokoll.
+
+**Gemessen an den sechs Anwenderdateien** unter `Quellen/` (HottCAD-Exporte, IFC2X3 und IFC4, ohne Raumgrenzen,
+mit Raumbezügen und Beheizungsart je Raum; `IfcQuelldateienDiagnoseTests` mit Kennzahlen und Durchgang bis zur
+Rechnung je Datei): **MFH 1964** — Spitzboden „Wohnraum" und Kellerraum laut Datei unbeheizt, zehn Räume „getrennt
+beheizt" nach ihrer Raumtemperatur (fünf mit 15 bzw. 20 °C beheizt, fünf Treppen- und Abstellräume mit 10 °C
+unbeheizt); vier Trenndecken, EG/OG1 und OG1/DG1 aus 23,75 bzw. 2,26 m² auf 88,53 m² geschätzt; die beheizten
+Geschosse sind gekoppelt, **Vorgabe Z4** (7 Zonen); 19 Innenwände (89,9 m²) einseitig, Innenflächenfaktor 3,47. **Produktion EG55-2026** — allein der Entsorgungsraum unbeheizt, seine Zone ohne Fläche
+entfällt; EG/OG1 aus 31,8 m² auf 8 794,25 m² geschätzt, **Vorgabe Z4** (2 Zonen). **MFH 1984** — die Praxisräume im
+Keller laut Datei beheizt; die Decke über dem Fitnessraum erklärt die Datei als Kellerdecke (Erklärung vor Bezug),
+das beheizte Kellerteil bleibt ungekoppelt: **Vorgabe Z5**. **Sportheim** — die Decke UG/EG grenzt nur an
+unbeheizte Räume des UG, die beheizten UG-Räume bleiben ungekoppelt: **Vorgabe Z5**. **Verwaltung** — das Paar
+OG1/OG2 trägt keinen Bezug: **Vorgabe Z5**; von 31 Räumen „getrennt beheizt" sind 13 nach ihrer Raumtemperatur
+beheizt und 18 unbeheizt. **WG EH55** — alle Räume beheizt, fünf Bodenöffnungen (U 0, ohne Aufbau)
+trennen nicht, Keller/EG und EG/DG geschätzt: **Vorgabe Z4** (3 Zonen).
+
+**Räume über das Enthaltensein.** Manche CAD-Exporte hängen Geschosse und Räume nicht über
+`IfcRelAggregates`, sondern über `IfcRelContainedInSpatialStructure` an Gebäude bzw. Geschoss — das
+Schema lässt dort jedes `IfcProduct` zu. Der Leser betritt solche räumlichen Kinder wie zerlegte, aber
+erst **nach** der Zerlegung desselben Knotens: Was beide Wege erreichen, nimmt den Weg der Zerlegung
+(und dessen Geschoss), jedes räumliche Element zählt einmal, ein enthaltenes `IfcBuilding` bleibt ein
+eigenes Gebäude. Die Zahl der so gefundenen Geschosse und Räume nennt `IMP_IFC_PROT_STRUKTUR_ENTHALTEN`
+(I) am Gebäude.
+
+**Mengenrückfall der Räume.** Fläche, Volumen und Höhe eines Raums kommen aus
+`Qto_SpaceBaseQuantities` (bzw. `BaseQuantities`, `Qto_SpaceQuantities`). Fehlen dort **beide**
+Flächen `NetFloorArea` und `GrossFloorArea`, fällt der Leser auf **alle** Mengensätze des Raums
+zurück, auch unter fremdem Satznamen (etwa `HSETU_RaumQuantities`), und nimmt je Größe die erste
+positive Menge dieser Namen: Nettofläche `NetFloorArea` → `Area` → `NetArea`, Bruttofläche
+`GrossFloorArea` → `GrossArea` (die Wahl netto/brutto bleibt die der Flächenart), Volumen
+(wenn `NetVolume` und `GrossVolume` fehlen) `NetVolume` → `GrossVolume` → `Volume`, Höhe (wenn
+`Height` fehlt) `Height` → `FinishCeilingHeight`. Ein Wert im Standardsatz geht immer vor. Jeder
+genutzte Rückfall wird je Zielgröße, Satz und Menge mit der Zahl der Räume benannt
+(`IMP_IFC_PROT_MENGE_RUECKFALL`, W) — der Anwender sieht, welcher Mengenname galt. Geometrie wird
+dafür nicht gerechnet (ADR-003).
+
+**Bauteile eines CAD-Exports ohne Raumgrenzen.** Derselbe Export führt an den Bauteilen weder
+`IsExternal` noch Standardmengen; die Angaben stehen in fremden Sätzen. Der Leser fällt je Angabe
+zurück, nur wenn der Standard fehlt, und benennt jeden Rückfall mit Zahl, Satz und Name — ohne
+Geometrierechnung (ADR-003):
+
+- **Flächen:** Bruttofläche `GrossSideArea` → `GrossArea` → `Area`, Nettofläche der Datei
+  `NetSideArea` → `NetArea` (nur ohne Standardmengensatz), je aus einem beliebigen Mengensatz
+  (`IMP_IFC_PROT_BAUTEIL_MENGE_RUECKFALL`, W). **Nur Flächennamen:** Im fremden Satz ist `Width` die
+  Wandlänge und `Length` die Höhe; Dicke und Fläche werden daraus nie abgeleitet. Eine Öffnung nimmt
+  `Area` bzw. Breite × Höhe nur aus dem Standardsatz, dann `OverallWidth × OverallHeight`, zuletzt
+  `Area` → `GrossArea` eines beliebigen Satzes.
+- **U-Wert:** `Pset_<Klasse>Common.ThermalTransmittance` (Vorkommnis vor Typ), sonst
+  `ThermalTransmittance` oder `UValue` in einem beliebigen Satz (`IMP_IFC_PROT_UWERT_RUECKFALL`, I).
+  Verglichen wird der Name ohne angehängte Einheit in Klammern, Groß-/Kleinschreibung egal. Nennt
+  der Name eine andere Einheit als W/(m²K) — der Export schreibt `ThermalTransmittance (W/(m K))` —,
+  gilt der Wert nicht als U-Wert (`IMP_IFC_PROT_UWERT_EINHEIT`, I; W, wenn ein Bauteil dadurch ohne
+  U-Wert bleibt). Ein Wert null oder kleiner ist kein U-Wert — der Export schreibt 0 oder −1 an Bauteile ohne
+  energetische Bewertung —, er wird übergangen; bleibt das Bauteil dadurch ohne U-Wert, nennt es
+  `IMP_IFC_PROT_UWERT_NICHT_POSITIV` (I, je Satz, Name und Wert mit der Zahl der Bauteile).
+- **Außen/innen:** Ohne `IsExternal` und ohne Raumgrenze gilt die Angrenzung `AdjacentType` aus einem
+  beliebigen Satz (Aufzählung oder Text, Präfix `bta` ohne Belang), je Wert benannt
+  (`IMP_IFC_PROT_ANGRENZUNG_*`):
+
+  | `AdjacentType` | Randbedingung | Hülle ohne Nachbarraum | Meldung |
+  |---|---|---|---|
+  | `btaOutside` | Außenluft | ja | `ANGRENZUNG_AUSSEN` (I) |
+  | `btaGround` | Erdreich | ja | `ANGRENZUNG_ERDREICH` (I) |
+  | `btaHeated` | innen | nein (innere Masse ohne Nachbarn) | `ANGRENZUNG_INNEN` (I) |
+  | `btaUnHeated` | unbeheizt; Boden/Decke nach der Bauteilart | ja | `ANGRENZUNG_UNBEHEIZT` (I) |
+  | `btaCellarCeiling` | unbeheizt, Boden der Zone (Kellerdecke) | ja | `ANGRENZUNG_UNBEHEIZT` (I) |
+  | `btaUppermostStorey` | unbeheizt, Decke der Zone (oberste Geschossdecke) | ja | `ANGRENZUNG_UNBEHEIZT` (I) |
+  | `btaNone`, jeder andere Wert | die bisherige Vorgabe (Dach außen, Bodenplatte erdberührt, sonst unbestimmt) | — | `ANGRENZUNG_UNBESTIMMT` (W) |
+
+  Die Angrenzung gilt nach `IsExternal` und nach den Raumgrenzen. Gegen unbeheizt zählt ein
+  Bauteil ohne Nachbarraum zur Hülle (`HuelleOhneNachbar`), Boden oder Decke sagt
+  `ZonenbodenOhneNachbar` (sonst die Bauteilart: Bodenplatte Boden, Dach Decke). Erklärt die Datei
+  ein Bauteil ohne Raumgrenze mit `ElementEnergyConsultingProperties.CladdingSurface = FALSE` als nicht
+  zur Hüllfläche gehörig, zählt es nicht zur Hülle (`IMP_IFC_PROT_NICHT_HUELLE`, I) — so bleiben
+  Kellerwände unter einer Kellerdecke und Dachflächen über einer obersten Geschossdecke draußen.
+- **Himmelsrichtung:** Ist die Außenseite aus Platzierung und Räumen nicht zu bestimmen (ohne
+  Raumgrenze; der Export platziert alle Bauteile im Ursprung), gilt `Orientation (°)` am Bauteil —
+  Zahl oder Text mit Dezimalkomma in [0°, 360°], 0° = Nord, im Uhrzeigersinn, als geografische
+  Richtung ohne Nordwinkel des Modells (`IMP_IFC_PROT_AZIMUT_RUECKFALL`, I); der Platzhalter
+  −987654321,99 liegt außerhalb und bleibt unbestimmt (`SEITE_UNBESTIMMT`).
+- **Beheizungsart der Räume:** Ohne Standardangabe (B1–B3) gilt die Eigenschaft `HeatingType` aus einem
+  beliebigen Satz des Raums (der Export schreibt sie in `HSETU_RaumAllgemein`; Aufzählung oder Text, Präfix
+  `bht` ohne Belang): `bhtHeated` beheizt, `bhtUnHeated` unbeheizt — als Regel B3 mit dem Beleg „Satz.Name =
+  Wert", vor Namensregel (B4) und Lage (B5); je Gebäude gezählt (`IMP_IFC_PROT_BEHEIZUNGSART`, I).
+  `bhtSeparatelyHeated` (getrennt beheizt) entscheidet nach der Raumtemperatur des Exports
+  (`InsideTemperature (°C)` aus einem beliebigen Satz des Raums, nur mit der Einheit °C im Namen): wie Regel B3
+  über 12 °C beheizt, sonst unbeheizt, benannt je Gebäude mit Raum und Temperatur
+  (`IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR`, I). Die Temperatur stuft ein; als Heizsollwert gilt die Vorgabe
+  (Normtemperatur, 20 °C Tag, 18 °C Nacht) oder die Eingabe des Anwenders. **Nur auf Wunsch** übernimmt der Schalter
+  „Raumtemperatur der Datei als Heizsollwert übernehmen" im Kopf des Zuordnungsdialogs (Schlüssel
+  `RaumtemperaturAlsSollwert`, Vorgabe aus; sichtbar, wenn beheizte Räume eine Raumtemperatur und keiner einen
+  Norm-Sollwert trägt) die Raumtemperatur: der Tagsollwert des Gebäudes ist das flächengewichtete Mittel der
+  Raumtemperaturen der beheizten Räume, gerundet auf 0,1 °C (Herkunft Datei, Beleg `GIMP_BELEG_SOLLWERT_CAD` mit Zahl
+  der Räume, Spanne und Räumen ohne Angabe; Räume ohne Temperatur bleiben außen vor), der Nachtsollwert folgt der
+  Regel des Einzonenwegs; das Feld bleibt änderbar. Im Mehrzonenweg trägt jede beheizte Zone das Mittel ihrer
+  beheizten Räume als `Raumsolltemperatur_Tag` (`IMP_IFC_PROT_ZONE_SOLLWERT_CAD`, I), die übrigen Sollwertspalten und
+  unbeheizte Zonen bleiben leer; über 2 K Spanne je Gebäude bzw. Zone `IMP_IFC_PROT_SOLLWERT_CAD_SPANNE` (W).
+  Gespeichert wird mit der Zonenliste in einem Vorgang. Ohne Raumtemperatur und bei jedem anderen Wert sagt die Datei nicht, ob der Raum in der Hülle liegt;
+  es gelten B4 bis B6, benannt (`IMP_IFC_PROT_BEHEIZUNGSART_OFFEN`, I, mit Zahl und Wert).
+- **Wärmekapazität masseloser Schichten:** IFC4-Exporte führen je Baustoff oft Dichte und Wärmeleitfähigkeit,
+  aber keine `SpecificHeatCapacity`. Dann gilt c des Baustoffs, den der Namensabgleich (6.3) im Katalog der
+  Auslieferung trifft, sonst eine kleine benannte Stofftabelle nach DIN EN ISO 10456 (Beton, Mauerwerk, Putz und
+  Gips 1000, Holz 1600, Mineralfaser-Dämmstoff 1030, Schaumkunststoff 1450 J/(kg·K); `Waermekapazitaetsrueckfall`).
+  Die Schicht wird damit vollständig; eine Meldung je Aufbau nennt Schichten, Werte und Quelle
+  (`IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL`, I). Eine Schicht ohne Dichte oder Wärmeleitfähigkeit bleibt masselos
+  und wird benannt (`STOFFWERT_NULL`).
+- **Baujahr:** Fehlt `Pset_BuildingCommon.YearOfConstruction` am Gebäude, gilt `YearOfConstruction` aus
+  einem beliebigen Satz (Name ohne angehängte Einheit, der Export schreibt `YearOfConstruction (Datum)`
+  mit einem Datum als Text), sonst `Constructed` (Ganzzahl); es zählt der erste Wert, aus dem sich ein
+  Jahr lesen lässt (`Baujahrregel`), benannt mit Satz, Name und Text (`IMP_IFC_PROT_BAUJAHR_RUECKFALL`, I).
+  Ein unlesbarer Standardwert fällt nicht zurück. Das Baujahr führt dann die Baualtersklasse wie jedes
+  andere (E47).
+- **Dachfenster:** Fenster und Türen, die über `IfcRelAggregates` Teil eines Bauteils sind statt eine
+  Öffnung zu füllen, werden Öffnungen dieses Bauteils (`IMP_IFC_PROT_OEFFNUNG_TEIL`, I); für die Regel
+  „Dach oder seine Platten“ zählen sie nicht als Platten.
+- **Schichtdicken in Millimetern:** Liegt nach der Längeneinheit der Datei eine Dicke eines
+  `IfcMaterialLayerSet` über 1 m (der Export erklärt `METRE`, schreibt `LayerThickness` aber in
+  Millimetern), gilt der ganze Satz als Millimeter und alle seine Dicken werden durch 1000 geteilt
+  (`IMP_IFC_PROT_SCHICHTDICKE_MM`, W, ein Sammelhinweis je Datei mit Zahl der Sätze und
+  größter Dicke samt Satz). Schichten unter 0,5 mm (Folien, Anstriche) tragen keine
+  Wärmewirkung und werden übergangen (`IMP_IFC_PROT_SCHICHT_DUENN`, I, je Datei, nach Name und Dicke
+  zusammengefasst); die Bauteildicke
+  aus der Schichtsumme rechnet ohne sie. Bleche ab 0,5 mm (etwa das Deckblech eines Sandwichelements)
+  bleiben als Schicht und tragen ihre Masse in die Speicherbilanz.
 
 **Weitere Sonderfälle:** Ein Pset ist **nur über den Namen** zu erkennen, nie über die erwartete
 Eigenschaftsliste — `Pset_SpaceCommon` im FZK-Haus führt kein `IsExternal`, dafür die fremden
@@ -1370,6 +1725,8 @@ Protokoll ist die Meldungsliste in Reihenfolge und wird nicht geschrieben (Befun
 | Bild | Erkennung | Wirkung | Schlüssel |
 |---|---|---|---|
 | keine Raumgrenzen / nur 1. Ebene | `BoundedBy` leer bzw. keine 2ndLevel-Entität und kein `'2nd'` in Name/Description | Z5 vorgeben, Flächen aus Quantities | `IMP_IFC_PROT_KEINE_GRENZEN`, `…_NUR_1STLEVEL` (W) |
+| Trenndecke aus Raumbezügen zu klein | ohne Raumgrenzen: Σ Trenndecke eines Geschosspaars < 50 % der beheizten Grundfläche des kleineren Geschosses | Paar koppelt nicht, Vorgabe nach der Kopplung der übrigen Paare | `IMP_IFC_PROT_TRENNDECKE_KLEIN` (W) |
+| Erklärung gegen unbeheizt, Raum beheizt | ohne Raumgrenzen: Platte `btaCellarCeiling`/`btaUppermostStorey` zwischen Räumen zweier Geschosse, beide beheizt | Erklärung der Datei gilt, keine Trenndecke | `IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG` (W) |
 | Fläche ohne Gegenstück | `INTERNAL`, Rekonstruktion mehrdeutig | Randbedingung `UNBEHEIZT`, Zeile rot | `IMP_IFC_PROT_OHNE_GEGENSTUECK` (W) |
 | Bilanzlücke | Σ Trennfläche A→B ≠ B→A (> 2 %) | beide zeigen, größere nehmen | `IMP_IFC_PROT_TRENNFLAECHE_UNGLEICH` (W) |
 | Überlappung | Innenränder **und** Kindgrenzen auf derselben Fläche | nur einmal abziehen | `IMP_IFC_PROT_UEBERLAPPUNG` (W) |
@@ -1433,8 +1790,11 @@ fünf Präzisierungen gegenüber diesem Abschnitt:
 - **Herkunft je Raum, Zone und Geschoss** („aus Raumgrenzen“ oder „schematisch“, dazu die Herleitung: Boden,
   Decke, Wandflächen, Seitenverhältnis, Quadrat). „schematisch“ steht am Reiter des Geschosses, als Zeile
   über dem Bild, je Raum (gestrichelt) und in der Legende.
-- **Umschalter und Geschosswahl** als Reiter: „Grundriss | Körper“ — „Körper“ ist bis G7b weich gesperrt und
-  nennt den Grund — und die Geschosse, vorbelegt das unterste Geschoss mit Umriss.
+- **Umschalter und Geschosswahl** als Reiter: „Grundriss | Körper“ — „Körper“ ist mit G7b freigeschaltet — und die Geschosse, vorbelegt das unterste Geschoss mit Umriss.
+- **Stand G7b (04.10.2026):** Der Reiter „Körper“ ist freigeschaltet. Das Aneinanderlegen von Zonen mit gemeinsamer
+  Trennwand ist gebaut (Rechtecke im selben Geschoss; keine Drehung der Räume; ein Paar mit Trennwand auf derselben
+  Himmelsseite beider Räume wird nicht angelegt und mit `ZGEO_NICHT_ANGELEGT` gemeldet). Der byteweise gleiche
+  Export ist mit Probe 25 nachgewiesen.
 - **Legende** mit den Zonen des gewählten Geschosses, dazu „ohne Zone“ und „schematisch“; die Zielzone fett,
   die Marken „unbeheizt“ und „von Hand“. Zehn Zonenfarben, ab der elften Zone wiederholen sie sich.
 - **Klick, Tastatur und Weg ohne Grundriss:** Ein Klick — oder Enter bzw. Leertaste auf dem Raum — hängt
@@ -1467,6 +1827,7 @@ die Regel: **Der Abschnitt entfällt vollständig, wenn kein Objekt einen Wert t
 voller ‚—' wäre keine Aussage, sondern eine Frage." Das Gebäude steht heute als Eigenschaftsblock
 (`:35-52`, Daten aus `…/ProjektDetails.cs:39-40`, gefüllt `:72`); die Zonentabelle tritt daneben:
 Zone | Fläche | Volumen | H_T [W/K] | H_ve [W/K] | Heizwärme [kWh/a] | Spitze [kW] | beheizt.
+**Kältebedarf je Zone (KU3-3):** Eine zweite Tabelle „Kältebedarf je Zone“ steht unter der Zonentabelle, gespeist aus dem gespeicherten Ergebnis (`Tab_ErgebnisZone.Kuehlenergie`); sie entfällt, wenn keine Zone Kälte gespeichert hat. Schemaschritt 185 speichert `Tab_ErgebnisZone.Kaeltespitze_kW` und `Kuehlstunden` (nullbar); die Tabelle führt „Kältespitze [kW]“ und „Kühlstunden [h/a]“ nur bei gespeicherten Werten, der Bedarfsdialog liest die Ergebniszeile (ersatzweise den Lauf), der Export gibt die Spitze je gekühlter Zone als IFC `Kaeltelast` und gbXML `CoolingLoad` (Spitze × 1000 W) aus.
 **Kennzahlen** (`…/KennzahlenKatalog.cs:204` ff.) kennen **keine Objektlisten** — als Kennzahl je
 Projekt taugt nur eine Summe oder ein Extremum; H_T je Gebäude ist mit E2 vorgesehen (N1.6).
 
@@ -1554,7 +1915,9 @@ die Proben sind deshalb nicht gefahren. Ersatzweise halten zwei eigene Importpro
 `Referenzlaeufe/Importproben/` die Regeln: `ifc4_zonen.ifc` (drei Geschosse, Polygone, Gegenstück,
 fehlendes Paar, geschachtelte und mehrfache `IfcZone`, Klassifikation, B3/B5, zu kleiner Raum) und
 `gbxml_zonen_viele.xml` (60 Räume, über 50 Zonen); unter Z5 bzw. X4 bleibt der Vorschlag zeilengleich zu
-G4b. Die genannten Proben kommen mit den lizenzgeklärten Dateien nach.
+G4b. Die Proben 13–18 sind an den öffentlichen Beispieldateien gefahren, ihre Befunde behoben
+([Protokoll Importproben](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_MZ-Rest_Importproben.md)); die Regeln
+dazu hält die erzeugte Probe `IfcProbenErzeuger.Importbefunde` (`IfcImportbefundeTests`).
 
 ### 8.3 Referenzprojekt und Einfrierschritt
 
@@ -1584,7 +1947,7 @@ zu ziehen, sobald eine neue Spaltenart oder eine geänderte Zeilenhöhe entsteht
 | **G6a — Datenmodell und Pflege** | **Mit G3 gebaut (25.09.2026, Schritte 132–134):** alle acht Tabellen samt Registerpflege S-D, Baustoffsaat (65 Stoffe und 67 Herstellerprodukte, E39), Baustoff- und Aufbaukatalog unter Administration › Gebäude, Aufbau- und Schichteditor mit Summenfuß R/U/C und T_BT, Controller, Kopierwege, `FK_MAP`/`KINDER`, der Zonen- und Bauteildialog in der Grundform. **G6a behält** die Register-, Editor- und Kopierarbeit, die mehrere Zonen verlangen, und die Bericht-Zonentabelle; `Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone` kommen mit G6b (S-G) | Migrationstests grün, Auslieferungsvorlage grün (Katalog nicht leer), Referenzlauf **byte-gleich** (kein Referenzprojekt hat Zonen), `SqlDialektPruefer` grün | **10–15 PT** geplant; mit G3 lag der größere Teil vor; mit E46 beauftragt, auf 9,5–12 PT beziffert und in vier Wellen umgesetzt (rund 9 PT, Konzept N1.51) |
 | **G6b — Zoneneingabe und Rechenweg** | Schritt **S-G** (`Tab_Zonenluftstrom`, `Tab_Bauteil.ID_Nachbarzone`); Zonenreiter, Zonendialog, Bauteilliste, Bauteildialog, Hülle nach `EPOS.UI.Daten`; die Zonenschleife in `HeizwaermeEinesGebaeudes`; Gruppenbildung AW/IW mit adiabatem Vorlauf für die 4-K-Regel, Gl. (29)/(31), θ_NR,eq nach (40), Gewichtung (41)/(42) mit Σ B_v = 1; Gauß-Seidel mit fester Reihenfolge und den Schwellen 0,01 K / 0,1 W; unbeheizte Zonen; Konsistenzprüfungen; Proben 1–12 samt 12a | Testbeispiel 10 im Normband, Probe 10 **bitgleich zum Stand nach G3** (trägt nur mit der Ausnahme N = 1, 2.4/2.9), Probe 12a ergebnisneutral, Probe 6 gemessen und begründet | **12–18 PT** |
 | **G6c — Zonenimport aus IFC** (mit **D16** auch aus gbXML) | **Wellen A, C und D umgesetzt (26.09.2026, Konzept N1.57, [Protokoll G6c](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md)):** Zonierung im Kern samt Vorschlag für N Zonen, Zuordnungsdialog mit mehreren Zonen, Zonengeometrie-Modell und Grundriss mit Zuordnung von Hand (6.7); offen Welle E (Wiki-Quelle) und die Proben 13–16 und 18 (M10). Umfang: Zonierungsregeln Z1…Z5 (samt Messung von `IfcSpatialZone`) und B1…B6; **nach D16 — entschieden mit E27 — zusätzlich die gbXML-Zonenregeln X1…X3** ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3, **D16** in 11.1; `X4`, der Einzonen-Rückfall, gehört zu **G4c** und ist hier nicht enthalten) — in den 16–26 PT stecken X1…X3 noch **nicht**, ihr Zuwachs wird mit der Beauftragung von G6c beziffert; Polygonflächen, Normale, Azimut/Neigung; `CorrespondingBoundary` und Rekonstruktion; Persistenz der Zuordnung Zone ↔ `GlobalId` samt Dateikennung (Kapitel 6); Öffnungsabzug je Fläche; Schichtrichtung nach `DirectionSense` und Grenznormale; Namensabgleich N1…N7 mit Synonymtabelle aus der Auslieferung (M9 — vorgezogen: mit G4b umgesetzt bzw. in Arbeit, G3, Nachtrag zu E44 in N1.49; nicht G6a); Zuordnungsdialog mit vier Abschnitten, formatfrei benannt, als Überlagerung im Gebäudedialog (A3, A17); Importprobe auf der Datei mit LFS-Zeile (M10); Meldungen in beiden `.resx`; Importproben; **Zonengeometrie-Modell und 2D-Grundriss je Geschoss im Zuordnungsdialog (E11, 6.7)** | Proben 13–18 und die beiden Proben aus 6.7; iOS-Lauf nach Rückfrage (Trimming, Größenlimit gemessen) | **16–26 PT** |
-| **G6d — Referenzprojekt und Einfrieren** | Zonenprojekt in der Testdatenbank säen; Einfrierregel „gesäte Zonendaten" (benannt, nicht durchgezählt); Referenzlauf, Vergleich, Begründung; Wiki-Seite und Logbuch-Eintrag | grüner Kern-Lauf, neue Basis begründet | **2–3 PT** |
+| **G6d — Referenzprojekt und Einfrieren** | Zonenprojekt in der Testdatenbank säen; Einfrierregel „gesäte Zonendaten" (benannt, nicht durchgezählt); Referenzlauf, Vergleich, Begründung; Wiki-Seite und Logbuch-Eintrag. **Gesät ist das Zonenprojekt 1052** „Referenzprojekt Zonen", ein eigenes Projekt neben den sechzehn der Basis (Kopie von 1018, Skript und Bauplan unter `Referenzlaeufe/Skripte/`): Gästezimmer und Gastronomie beheizt mit Trennwand und Luftstrom, ein unbeheizter Keller am Erdreich unter beiden Kellerdecken, je beheizte Zone ein Heizkalender aus den Vorlagen „Wohnen" und „Büro", Aufheizoptimierung an; gehalten von `ZonenReferenzprojektWacheTests`, N-AH8 mit Zonen und N-AH9 rechnen es aus der Datenbank. Der Regeltext „gesäte Zonendaten" steht in `Referenzlaeufe/LIESMICH.md`; das Einfrieren ist erledigt (Basis R34 samt 1051, 1052 nicht in der CI-Auswahl). Die gekoppelte Kopie **1054** „Zonen mit Heizkreis" (Übergabe je Zone, E63, AK1z) kommt mit der Basis **R35 `2026-10-04_R35_Zonenuebergabe`** (neunzehn Projekte) hinzu, ebenfalls nicht in der CI-Auswahl. Wiki-Seite und Logbuch gehören zu G6b (unten) | grüner Kern-Lauf, neue Basis begründet | **2–3 PT** |
 | | **Summe G6** | | **40–62 PT — ohne X1…X3 (D16)** |
 
 **G6b umgesetzt (26.09.2026, Konzept N1.55, N1.56):** sechs Wellen W0 bis W5, rund 16 PT gegen
@@ -1645,7 +2008,7 @@ M12 und M13 entschieden**, alle nach Empfehlung. M11 bleibt mit seiner Stufe zu 
 | **M4** | Kommt der Zonen-Luftaustausch in G6 oder später? | **In G6b**, als Paare mit `CHECK (ID_ZoneA < ID_ZoneB)`. Ohne ihn ist Treppenhaus und offene Küche nicht darstellbar — und er ist der Grund gegen Vorschlag A. Wer ihn streicht, kann A nehmen und spart 2–3 PT — **entschieden 16.09.2026 mit ADR-005 (E17): in G6b** |
 | **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Entschieden mit E49 (26.09.2026, A2): ja** — sie tragen keine Heizlast, aber Temperatur und die achte Gebäudekennzahl **`Ueberhitzungsstunden`** [h] (Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur`, auch mit wirksamer Kühlung — nicht über `Kuehl_Sollwert`, E32) — derselbe Name und dieselbe Bildungsregel wie in Rechenschritte 8.2, Umsetzungskonzept 1.4 und Systementwurf F7; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
 | **M6** | Vorlauf: 30 Tage mit Konvergenzprobe oder fest 90 Tage? | **Entschieden mit E49 (26.09.2026, A3): 30 Tage mit Probe**, Verlängerung auf 90 Tage benannt, nur ab zwei Zonen (2.9); feste 90 Tage kosten Rechenzeit ohne Aussage bei leichten Gebäuden |
-| **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Entschieden mit E50 (26.09.2026): Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen zwingend Z5 (6.5); bei gbXML entspricht Z4 die Regel X2 |
+| **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Entschieden mit E50 (26.09.2026): Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen Z5, es sei denn, Trenndecken aus den Raumbezügen verbinden die beheizten Geschosse (6.5, Anwenderentscheid 03.10.2026); bei gbXML entspricht Z4 die Regel X2 |
 | **M8** | Mindestgröße einer Zone: max(2 m², 2 %)? | **Entschieden mit E50 (26.09.2026): ja**, mit Zuschlag zum Nachbarn mit der größten gemeinsamen Grenzfläche; sonst werden aus der Institute-Datei 78 Zonen (6.1) |
 | **M9** | Synonymtabelle: Auslieferung (`_STAMM`) oder Projektgröße? | **Entschieden mit E27 (22.09.2026): Auslieferung** — die Namen der Autorensysteme wiederholen sich projektübergreifend; je Projekt gepflegte Zuordnungen ergänzen sie |
 | **M10** | Testdateien im Repositorium: DigitalHub (17,6 MB) als Blob? Lizenz der `…_with_SB`-Fassung nachfragen? | **Entschieden mit E27 (22.09.2026): DigitalHub ja — aber nur mit der Zeile `Referenzlaeufe/Importproben/**/*.ifc filter=lfs diff=lfs merge=lfs -text` in `.gitattributes` im selben Schritt** und einem Vermerk in `Referenzlaeufe/LIESMICH.md`, Abschnitt „Git LFS"; ohne sie liegt ein 17,6-MB-Blob dauerhaft in der Geschichte (er ist die einzige Datei mit Schichten **und** echten 2nd-Level-Paaren). **Lizenz der `…_with_SB`-Fassung nachfragen** — MIT ist für das GitHub-Repositorium belegt, nicht für die E3D-GitLab-Fassung (8.2) —, bis dahin nur außerhalb des Repositoriums messen. Alternative: Test holt die Datei zur Laufzeit und schweigt ohne sie |
@@ -1695,6 +2058,6 @@ M12 und M13 entschieden**, alle nach Empfehlung. M11 bleibt mit seiner Stufe zu 
 - **Kühlung als vierter Kanal** (**E12 vom 16.09.2026 nimmt ihn auf** — die Kühllast je Zone und ihre
   Deckung regelt das Kühlkonzept, Konzept N1.18), Kältemaschinen, Bauteilaktivierung, Nachweise nach
   GEG/DIN V 18599,
-  sommerlicher Wärmeschutz nach DIN 4108-2, Nutzungsprofile für Nichtwohngebäude, Validierung an
+  sommerlicher Wärmeschutz nach DIN 4108-2, Normwerte der Nutzungsprofile für Nichtwohngebäude (E90: EPOS-Muster und eigene Profile sind zulässig, siehe [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)), Validierung an
   gemessenen Verbräuchen — wie in Konzept 15 abgegrenzt.
 - **Die Entscheidung, ob und wann G6 beauftragt wird.** Dieses Papier legt vor.

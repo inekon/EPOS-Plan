@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -90,8 +91,8 @@ namespace WindowsFormsApplication1
                 ["Modus"] = neu ? KatalogModus.Neu : KatalogModus.Bearbeiten,
                 ["Brennstoffe"] = Brennstoffe(ctrl),
 
-                ["Ueberschreiben"] = new Func<BhkwKatalogDaten, bool, KatalogSpeicherErgebnis>(
-                    (d, schutz) => Uebersetzen(BHKWStammCtrl.Ueberschreiben(NachModell(d), schutz))),
+                ["Ueberschreiben"] = new Func<BhkwKatalogDaten, KatalogSpeicherErgebnis>(
+                    d => Uebersetzen(BHKWStammCtrl.Ueberschreiben(NachModell(d)))),
 
                 ["Anlegen"] = new Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>(
                     (d, n) => Uebersetzen(BHKWStammCtrl.Anlegen(NachModell(d), n))),
@@ -133,6 +134,32 @@ namespace WindowsFormsApplication1
                 ["FeldVorlauf"] = Text_("BHKWK_FELD_VORLAUF", "Vorlauftemperatur"),
                 ["LabelRuecklauf"] = Text_("BHKWK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["FeldRuecklauf"] = Text_("BHKWK_FELD_RUECKLAUF", "Rücklauftemperatur"),
+                ["LabelRuecklaufMax"] = Text_("BHKWK_LBL_RUECKLAUF_MAX", "Höchster Rücklauf (Abschaltgrenze)"),
+                ["FeldRuecklaufMax"] = Text_("BHKWK_FELD_RUECKLAUF_MAX", "Höchster Rücklauf"),
+                ["PlatzhalterRuecklaufMax"] = Text_("BHKWK_PLATZHALTER_RUECKLAUF_MAX", "leer = keine Grenze"),
+                ["HinweisRuecklaufMax"] = Text_("BHKWK_HINT_RUECKLAUF_MAX",
+                    "Der Auslegungsrücklauf ({0} °C) erreicht die Abschaltgrenze ({1} °C): Bei diesem Rücklauf liefert das Modul nichts."),
+
+                // Welle M4 (BH1, BH2): Teillast und Takten samt der kleinen Kurve - dieselbe Kennlinie
+                // wie der Lauf (BhkwKennlinienbild), zum Arbeitsstand des Dialogs.
+                ["GruppeTeillast"] = Text_("BHKWK_GRP_TEILLAST", "Teillast und Takten"),
+                ["LabelEtaEl50"] = Text_("BHKWK_LBL_ETA_EL50", "El. Wirkungsgrad bei 50 % Last:"),
+                ["FeldEtaEl50"] = Text_("BHKWK_FELD_ETA_EL50", "elektrischer Wirkungsgrad bei 50 % Last"),
+                ["HinweisEtaEl50"] = Text_("BHKWK_HINT_ETA_EL50", "(Faktor, z. B. 0,27)"),
+                ["LabelEtaTh50"] = Text_("BHKWK_LBL_ETA_TH50", "Th. Wirkungsgrad bei 50 % Last:"),
+                ["FeldEtaTh50"] = Text_("BHKWK_FELD_ETA_TH50", "thermischer Wirkungsgrad bei 50 % Last"),
+                ["HinweisEtaTh50"] = Text_("BHKWK_HINT_ETA_TH50", "(Faktor, z. B. 0,64)"),
+                ["LabelAnfahrverlust"] = Text_("BHKWK_LBL_ANFAHRVERLUST", "Anfahrverlust je Start:"),
+                ["FeldAnfahrverlust"] = Text_("BHKWK_FELD_ANFAHRVERLUST", "Anfahrverlust je Start"),
+                ["LabelMindestlaufzeit"] = Text_("BHKWK_LBL_MINDESTLAUFZEIT", "Mindestlaufzeit:"),
+                ["FeldMindestlaufzeit"] = Text_("BHKWK_FELD_MINDESTLAUFZEIT", "Mindestlaufzeit"),
+                ["PlatzhalterVolllast"] = Text_("BHKWK_PLATZHALTER_VOLLLAST", "wie Volllast"),
+                ["PlatzhalterOhneTakten"] = Text_("BHKWK_PLATZHALTER_OHNE_TAKTEN", "kein Takten"),
+                ["HinweisTeillast"] = Text_("BHKWK_HINWEIS_TEILLAST",
+                    "Leer = wie Volllast bzw. kein Takten. Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben."),
+                ["Kennlinienbild"] = new Func<BhkwKatalogDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell>(
+                    BhkwKennlinienbild.Modell),
+                ["BildKennlinieText"] = Text_("BHKWK_BILD_KENNLINIE", "Wirkungsgrad über der elektrischen Last"),
 
                 // HIER STANDEN DIE TEXTE DER GRUPPEN "Kosten", "BEHG" und "Emissionen"
                 // (Anwenderentscheid 15.09.2026). Die Gruppen sind aus dem Katalogeditor
@@ -151,13 +178,6 @@ namespace WindowsFormsApplication1
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
-                ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
-                ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
-                ["FrageSchreibschutz"] = Text_("BHKWK_FRAGE_SCHREIBSCHUTZ",
-                    "Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt." +
-                    Environment.NewLine + Environment.NewLine +
-                    "Soll er trotzdem überschrieben werden?"),
-                ["TitelSchreibschutz"] = Text_("BHKWK_TITEL_SCHREIBSCHUTZ", "Schreibgeschützter Datensatz"),
                 ["MeldungZahlUngueltig"] = Text_("HZKK_MSG_ZAHL",
                     "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt)."),
                 ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!")
@@ -187,6 +207,7 @@ namespace WindowsFormsApplication1
             d.Grenzleistung = m.m_Grenzleistung;
             d.Vorlauf = m.m_Vorlauf;
             d.Ruecklauf = m.m_Ruecklauf;
+            d.RuecklaufMax = m.m_Ruecklauf_Max;   // UB-E3-b: leer bleibt leer (keine Grenze)
             d.KostenModul = m.m_Kosten_Modul;
             d.KostenMontage = m.m_Kosten_Montage;
             d.KostenLieferung = m.m_Kosten_Lieferung;
@@ -202,6 +223,12 @@ namespace WindowsFormsApplication1
             d.CO = m.m_CO;
             d.Staub = m.m_Staub;
             d.Katalogsatz = m.m_bReadOnly;
+
+            // Welle M4 (BH1, BH2): leer bleibt leer - wie Volllast bzw. kein Takten.
+            d.WirkungsgradEl50 = m.m_Wirkungsgrad_el_Teillast50;
+            d.WirkungsgradTh50 = m.m_Wirkungsgrad_th_Teillast50;
+            d.AnfahrverlustKwh = m.m_Anfahrverlust_kWh;
+            d.MindestlaufzeitMin = m.m_Mindestlaufzeit_min;
 
             // SetControls liest 0-basiert zurueck: comboBox_Brennstoff.SelectedIndex =
             // brennstoff >= 1 ? brennstoff : 1. Der Vorlaeufer nahm die 1 auch fuer die
@@ -258,7 +285,16 @@ namespace WindowsFormsApplication1
                     BHKWKosten.Summe(modul, montage, lieferung, schall, abgas), pel),
 
                 // InitDatensatzUpdate: SelectedIndex OHNE + 1, ohne Wahl die 1.
-                m_Brennstoff = d.Brennstoff ?? 1
+                m_Brennstoff = d.Brennstoff ?? 1,
+
+                // Welle M4 (BH1, BH2): NULL-treu - leer heißt „nicht gepflegt", nie 0.
+                m_Wirkungsgrad_el_Teillast50 = d.WirkungsgradEl50,
+                m_Wirkungsgrad_th_Teillast50 = d.WirkungsgradTh50,
+                m_Anfahrverlust_kWh = d.AnfahrverlustKwh,
+                m_Mindestlaufzeit_min = d.MindestlaufzeitMin,
+
+                // UB-E3-b (U-3): die Abschaltgrenze des Ruecklaufs, NULL-treu.
+                m_Ruecklauf_Max = d.RuecklaufMax
             };
         }
 
@@ -339,9 +375,14 @@ namespace WindowsFormsApplication1
         {
             bool ok = false;
             BlazorDialogForm<BhkwDialog> dlg = null;
+            var vormerkung = new Projektkopievormerkung(
+                name => new BHKWCtrl().DeleteFromProjekt(name, projektId),
+                // Nachzug zu A5: eine beim Uebernehmen neu angelegte Traegervariante geht mit Abbrechen.
+                (carrier, zuordnungNeu, katalogNeu) =>
+                    EnergietraegerVarianteCtrl.AnlageZuruecknehmen(projektId, carrier, zuordnungNeu, katalogNeu));
 
             var werte = new Dictionary<string, object>(
-                Gaben(besitzer, projektId, idType, modelle, wizard: false))
+                Gaben(besitzer, projektId, idType, modelle, wizard: false, vormerkung: vormerkung))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -357,6 +398,9 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            // Anwenderwunsch 08.10.2026: Entfernte Projektkopien gehen erst mit OK; Abbrechen
+            // (auch Kreuz und Esc) raeumt nur die in dieser Sitzung neu angelegten ab.
+            vormerkung.Abschliessen(ok, id => modelle.Exists(it => it.ID_Type == idType && it.ID_BHKW == id));
             return ok;
         }
 
@@ -374,7 +418,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
             IWin32Window besitzer, int projektId, int idType,
-            List<WErzeugerModel> modelle, bool wizard)
+            List<WErzeugerModel> modelle, bool wizard, Projektkopievormerkung vormerkung = null)
         {
             var stamm = new BHKWStammCtrl();
             var projekt = new BHKWCtrl();
@@ -384,6 +428,11 @@ namespace WindowsFormsApplication1
             foreach (WErzeugerModel m in modelle)
             {
                 if (m.ID_Type != idType) continue;
+                // Anwenderwunsch 08.10.2026: ohne Traeger die Vorauswahl des Kerns ins Modell - sie wird mit dem
+                // Projekt gespeichert. Im Assistenten zeigt ID_BHKW auf den Stamm, darum dort ohne Geraet.
+                if (m.ID_Carrier <= 0)
+                    m.ID_Carrier = ErzeugerTraegerHuelle.Vorauswahl(
+                        DbWerte.ERZEUGER_BHKW, wizard ? 0 : m.ID_BHKW, projektId);
                 zeilen.Add(ZeileZu(m));
                 zuModell[m.ID] = m;
             }
@@ -430,11 +479,11 @@ namespace WindowsFormsApplication1
                     stammId => Vorbereiten(stamm, stammId)),
 
                 ["Aufnehmen"] = new Func<int, EnergietraegerVarianteErgebnis, AufnahmeErgebnis>(
-                    (stammId, ergebnis) => Aufnehmen(stamm, projektId, idType, wizard, modelle,
+                    (stammId, ergebnis) => Aufnehmen(vormerkung, stamm, projektId, idType, wizard, modelle,
                                                      zuModell, zaehler, stammId, ergebnis)),
 
                 ["Entfernen"] = new Action<ErzeugerZeile>(
-                    zeile => Entfernen(projektId, idType, wizard, modelle, zuModell, zeile)),
+                    zeile => Entfernen(projektId, idType, wizard, modelle, zuModell, zeile, vormerkung)),
 
                 ["TraegerWechseln"] = new Action<ErzeugerZeile, int>(
                     (zeile, neu) =>
@@ -453,7 +502,31 @@ namespace WindowsFormsApplication1
                     }),
 
                 ["SummePtherm"] = new Func<string>(
-                    () => SummeLeistung(projektId, idType, modelle).ToString()),
+                    () => SummeLeistung(projektId, idType, modelle)
+                              .ToString("0.##", System.Globalization.CultureInfo.CurrentCulture)),
+
+                // KATALOGAUSWAHL V1, STUFE 3 (KA-E-8): Bearbeiten je Bereich und Mehrfach-Bearbeiten.
+                // Die Projektkopie gibt es nur ausserhalb des Assistenten - dort zeigt ID_BHKW auf den
+                // Katalog. Geschrieben wird ueber den Kernweg in EINER Transaktion
+                // (BHKWStammCtrl.AnzeigefelderSchreibenAlle) - samt den fuenf Kostenposten; die
+                // Investition je kWel rechnet der Kern nach.
+                ["ProjektsatzWege"] = wizard || projektId <= 0 ? null : new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(BhkwAdminHuelle.Profil(), BHKWStammCtrl.SatzAnzeige(true, id)),
+                    Speichern = saetze => BhkwAdminHuelle.SammelSchreiben(true, saetze)
+                },
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(BhkwAdminHuelle.Profil(), BHKWStammCtrl.SatzAnzeige(false, id)),
+                    Speichern = saetze => BhkwAdminHuelle.SammelSchreiben(false, saetze)
+                },
+
+                // KATALOGAUSWAHL V1, STUFE 3 (KA-E-9): der Rueckweg „In die Datenbank übernehmen…" - nur
+                // ausserhalb des Assistenten (dort gibt es keine Projektkopie). Rueckfrage und Schreibweg kommen
+                // aus dem Kern (BHKWStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
+                ["RueckwegWege"] = wizard || projektId <= 0 ? null : RueckwegWege(),
+                ["RueckwegBleibtText"] = Text_("BHKW_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit."),
 
                 // #187: Die Ueberlagerung traegt den Titel schon (EditorTitel,
                 // derselbe Schluessel BHKWK_TITEL wie KatalogGaben). KatalogGaben
@@ -489,24 +562,19 @@ namespace WindowsFormsApplication1
                 // bekommt; der Aufklapper IST sein Raster. Dieselben Schluessel und
                 // dieselben Texte wie beim Heizkessel - die sechs Erzeugerfamilien
                 // sollen im gleichen Schema stehen.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(BHKWStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => BhkwAdminHuelle.Wege().Detail!(name)!),
 
-                // DREI Argumente, anders als beim Heizkessel: Der BHKW-Katalog ist der
-                // einzige mit Schreibschutz, und der Kern verlangt die Antwort auf die
-                // Rueckfrage als eigenes Argument (AnzeigefelderSchreiben).
+                // Ein Satz mit Schloss wird hier nie geschrieben (AD-Q15): Der Aufklapper zeigt
+                // ihn nur lesbar, bis das Schloss aufgehoben ist.
                 ["KatalogfelderSpeichern"] =
-                    new Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>(
-                        (name, felder, schutz) => BhkwAdminHuelle.Wege().Speichern!(name, felder, schutz)),
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
+                        (name, felder) => BhkwAdminHuelle.Wege().Speichern!(name, felder)),
 
-                // Der Schutz kommt unmittelbar aus dem Kern - KatalogBrowserWege.IstGeschuetzt
-                // ist mit Stufe 3 der Neuordnung gefallen (die Verwaltung liest ihn aus der
-                // Zeile der Liste).
-                ["KatalogfelderGeschuetzt"] = new Func<string, bool>(BHKWStammCtrl.IstSchreibgeschuetzt),
-
-                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
-                ["FrageSchutz"] = MyResource.Resource.ADM_SCHUTZ_FRAGE,
-                ["TitelSchutz"] = MyResource.Resource.ADM_SCHUTZ_TITEL,
 
                 ["LabelName"] = Text_("BHKWV_LBL_NAME", "Modul-Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
@@ -542,7 +610,8 @@ namespace WindowsFormsApplication1
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
                 ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
-                ["FrageLoeschen"] = Text_("BHKWV_FRAGE_LOESCHEN", "Wollen Sie wirklich das BHKW löschen?"),
+                ["FrageLoeschen"] = Text_("BHKWV_FRAGE_LOESCHEN",
+                    "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?"),
                 ["TitelLoeschen"] = Text_("HZK_TITEL_LOESCHEN", "Löschen"),
                 ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!"),
 
@@ -561,6 +630,13 @@ namespace WindowsFormsApplication1
                             besitzer, projektId, DbWerte.ERZEUGER_BHKW, zeile))
                     : null,
 
+                // UeS2: die Kostensummen der Anlage fuer die Zusammenfassung der Detailzeile -
+                // dieselbe Anlagenzuordnung wie die Kostenknoepfe (ErzeugerKostenwege).
+                ["Kostensumme"] = projektId > 0
+                    ? new Func<ErzeugerZeile, (double Invest, double Betrieb)>(
+                        zeile => ErzeugerKostenwege.Summen(projektId, DbWerte.ERZEUGER_BHKW, zeile))
+                    : null,
+
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
                 ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…")
@@ -570,6 +646,34 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Schreibwege hinter den Delegaten
         // =================================================================================
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => BHKWStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = BHKWStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = BHKWStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
 
         private static TraegerVorbereitung Vorbereiten(BHKWStammCtrl stamm, int stammId)
         {
@@ -590,7 +694,7 @@ namespace WindowsFormsApplication1
         /// Nimmt das BHKW auf. Reihenfolge und Abbruchbedingungen wie in
         /// <c>btn_Hinzu_Click</c> (Z. 412).
         /// </summary>
-        private static AufnahmeErgebnis Aufnehmen(
+        private static AufnahmeErgebnis Aufnehmen(Projektkopievormerkung vormerkung,
             BHKWStammCtrl stamm, int projektId, int idType, bool wizard,
             List<WErzeugerModel> modelle, Dictionary<int, WErzeugerModel> zuModell,
             Zaehler zaehler, int stammId, EnergietraegerVarianteErgebnis ergebnis)
@@ -607,6 +711,10 @@ namespace WindowsFormsApplication1
 
             if (traeger.CarrierId <= 0)
                 return new AufnahmeErgebnis(null, traeger.Meldung, true);
+
+            // Was der Aufruf neu schrieb, nimmt ein Abbrechen wieder zurueck (Projektkopievormerkung).
+            vormerkung?.TraegerAngelegt(traeger.CarrierId,
+                traeger.Ausgang == EnergietraegerVarianteCtrl.VariantenAnlage.Angelegt, traeger.KatalogNeu);
 
             var model = new WErzeugerModel
             {
@@ -628,12 +736,16 @@ namespace WindowsFormsApplication1
             // Projekt-Id 0, das laeuft also auf dasselbe hinaus.
             if (!wizard && projektId > 0)
             {
-                int projektKopie = new BHKWCtrl().CopyFromStamm(stammId, projektId);
+                var projektCtrl = new BHKWCtrl();
+                bool schonDa = projektCtrl.GetProjektId(stamm.m_szBezeichner, projektId) > 0;
+                int projektKopie = projektCtrl.CopyFromStamm(stammId, projektId);
                 if (projektKopie <= 0)
                     return new AufnahmeErgebnis(null,
                         Text_("HZK_MSG_KOPIE_FEHLER",
                               "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
                 model.ID_BHKW = projektKopie;
+                // Eine NEUE Kopie raeumt ein Abbrechen wieder ab (Projektkopievormerkung).
+                if (!schonDa) vormerkung?.Angelegt(stamm.m_szBezeichner, projektKopie);
             }
             else
             {
@@ -649,12 +761,16 @@ namespace WindowsFormsApplication1
         private static void Entfernen(int projektId, int idType, bool wizard,
                                       List<WErzeugerModel> modelle,
                                       Dictionary<int, WErzeugerModel> zuModell,
-                                      ErzeugerZeile zeile)
+                                      ErzeugerZeile zeile, Projektkopievormerkung vormerkung = null)
         {
             if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
 
             modelle.Remove(m);
             zuModell.Remove(zeile.Schluessel);
+
+            // Anwenderwunsch 08.10.2026: nur VORMERKEN - geloescht wird beim OK, und nur,
+            // wenn dann keine Zeile mehr auf die Kopie verweist (Projektkopievormerkung).
+            if (!wizard && projektId > 0 && vormerkung != null) { vormerkung.Entfernt(m.Bezeichner, m.ID_BHKW); return; }
 
             // Projekt-Kopie nur entfernen, wenn keine weitere Auswahl mehr darauf
             // verweist (mehrere Instanzen desselben BHKW teilen sich eine Tab_BHKW-Kopie).
@@ -752,7 +868,25 @@ namespace WindowsFormsApplication1
             felder.Add((Text_("BHKWV_LBL_PTHERM", "thermische Leistung [kWth]:"), d.Ptherm.ToString()));
             felder.Add((Text_("BHKWV_LBL_PEL", "elektrische Leistung [kWel]:"), d.Pel.ToString()));
 
-            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
+            // Welle M4 (BH1, BH2): die gepflegten Teillastfelder des Moduls - nur zur Anzeige,
+            // gepflegt wird im Katalogeditor; leere Felder bleiben weg.
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            if (d.Teillast.EtaEl50.HasValue)
+                felder.Add((Text_("BHKWK_LBL_ETA_EL50", "El. Wirkungsgrad bei 50 % Last:"),
+                            d.Teillast.EtaEl50.Value.ToString("0.###", k)));
+            if (d.Teillast.EtaTh50.HasValue)
+                felder.Add((Text_("BHKWK_LBL_ETA_TH50", "Th. Wirkungsgrad bei 50 % Last:"),
+                            d.Teillast.EtaTh50.Value.ToString("0.###", k)));
+            if (d.Teillast.AnfahrverlustKwh.HasValue)
+                felder.Add((Text_("BHKWK_LBL_ANFAHRVERLUST", "Anfahrverlust je Start:"),
+                            d.Teillast.AnfahrverlustKwh.Value.ToString("0.###", k) + " kWh"));
+            if (d.Teillast.MindestlaufzeitMin.HasValue)
+                felder.Add((Text_("BHKWK_LBL_MINDESTLAUFZEIT", "Mindestlaufzeit:"),
+                            d.Teillast.MindestlaufzeitMin.Value.ToString(k) + " min"));
+
+            // UeS2b: die Zahlwerte fuer die Zusammenfassung der Detailzeile - nicht ueber die Beschriftungen.
+            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
+                                      Kennwerte: new ErzeugerKennwerte { PthermKw = d.Ptherm, PelKw = d.Pel });
         }
 
         /// <summary>

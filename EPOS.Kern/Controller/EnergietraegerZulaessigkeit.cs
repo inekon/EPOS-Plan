@@ -122,6 +122,7 @@ namespace WindowsFormsApplication1
             if (Gleich(erzeugerart, DbWerte.ERZEUGER_WAERMEPUMPE)
              || Gleich(erzeugerart, DbWerte.ERZEUGER_PHOTOVOLTAIK)
              || Gleich(erzeugerart, DbWerte.ERZEUGER_STROMSPEICHER)
+             || Gleich(erzeugerart, DbWerte.ERZEUGER_KAELTEMASCHINE)
              || Gleich(erzeugerart, ERZEUGER_HEIZSTAB))
                 return NUR_STROM;
 
@@ -175,8 +176,8 @@ namespace WindowsFormsApplication1
         /// Anlagenzeile engt die Energieträgerverwaltung nicht auf eine Komponente ein,
         /// wohl aber auf das, was die Anlagen des Projekts überhaupt beziehen können).
         /// Anlagenquelle ist <see cref="ProjektEnergietraegerCtrl.AnlagenMitTraeger"/>
-        /// (Komponente und Gerätezeile je Anlagenzeile); der Heizstab ist dort kein
-        /// eigener Eintrag und kommt über
+        /// (Komponente und Gerätezeile je Anlagenzeile); der Heizstab und die
+        /// Kältemaschine sind dort kein eigener Eintrag und kommen über
         /// <see cref="ProjektEnergietraegerCtrl.BrauchtStromTraeger"/> hinzu — dieselbe
         /// Bedingung, die auch die Stromträger-Automatik stellt.
         ///
@@ -226,7 +227,8 @@ namespace WindowsFormsApplication1
             }
 
             // Der Heizstab ist ein Merkmal der Anlagenzeile, kein Eintrag der
-            // Anlagenliste — er hebt sein Projekt aber in die elektrische Welt.
+            // Anlagenliste, und die Kältemaschine führt die Kostenseite eigens — beide
+            // heben ihr Projekt aber in die elektrische Welt (und nur dorthin).
             try
             {
                 if (ProjektEnergietraegerCtrl.BrauchtStromTraeger(projektId)
@@ -308,6 +310,79 @@ namespace WindowsFormsApplication1
                                        StringComparison.CurrentCultureIgnoreCase);
             });
             return liste;
+        }
+
+        // =====================================================================
+        // Die Vorauswahl (Anwenderwunsch 08.10.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Vorauswahl des Energieträgers</b> eines Erzeugers, der noch keinen führt —
+        /// aus den zulässigen Trägern seiner Anlagenart (<see cref="ZulaessigerKatalog"/>).
+        /// Die Hüllen schreiben sie in das Daten-Objekt des Dialogs; gespeichert wird sie mit
+        /// OK, der Anwender kann sie ändern.
+        ///
+        /// <para><b>Rangfolge:</b> (1) der Standard-Stromträger des Projekts
+        /// (<see cref="ProjektEnergietraegerCtrl.StandardStromTraeger"/>), wenn die Anlagenart
+        /// Strom bezieht — <c>energy_carrier</c> trägt kein eigenes Standardkennzeichen, die
+        /// Auslieferungskennung des Stromträgers ist das einzige; (2) der Träger, dessen
+        /// <c>ID_Brennstoff</c> dem Brennstoff des Geräts gleicht (Kessel, BHKW mit Gerät);
+        /// (3) der erste zulässige in Katalogreihenfolge (Gruppe, Name).</para>
+        ///
+        /// <para><b>Keine Vorauswahl (0)</b>, wo die Regel nicht einengt — ein Kessel ohne
+        /// Gerät dürfte jeden Träger führen, „der erste" wäre Zufall — und wo die Anlagenart
+        /// keinen Träger bezieht (Solarthermie, Pufferspeicher).</para>
+        /// </summary>
+        /// <param name="erzeugerart">Persistenzwert aus <see cref="DbWerte"/> (<c>ERZEUGER_*</c>).</param>
+        /// <param name="geraeteId">Gerätezeile des Brenners; 0 = ohne Gerät.</param>
+        /// <param name="projektId">Projekt für den Standard-Stromträger; 0 = nur der Katalog.</param>
+        /// <returns>Die <c>energy_carrier.id</c> der Vorauswahl; 0 = keine.</returns>
+        internal static int Vorauswahl(string erzeugerart, int geraeteId, int projektId)
+        {
+            IReadOnlyList<string> codes = Kategoriecodes(erzeugerart, geraeteId);
+            if (codes == null || codes.Count == 0) return 0;
+
+            IReadOnlyList<string> gruppen = ZulaessigeGruppen(erzeugerart, geraeteId);
+            if (gruppen == null || gruppen.Count == 0) return 0;
+
+            List<EnergyCarrier> katalog = ZulaessigerKatalog(erzeugerart, geraeteId);
+
+            int standard = 0;
+            foreach (string c in codes)
+                if (Gleich(c, CODE_STROM))
+                {
+                    try { standard = ProjektEnergietraegerCtrl.StandardStromTraeger(projektId); }
+                    catch { standard = 0; }
+                    break;
+                }
+
+            return Vorauswahl(gruppen, katalog, standard, BrennstoffDesGeraets(erzeugerart, geraeteId));
+        }
+
+        /// <summary>
+        /// Die Regel der Vorauswahl ohne Datenbank — über einen schon gelesenen Katalog in
+        /// Katalogreihenfolge. Siehe <see cref="Vorauswahl(string, int, int)"/>.
+        /// </summary>
+        /// <param name="gruppen">Die zulässigen Gruppen; <c>null</c> oder leer = keine Vorauswahl.</param>
+        /// <param name="katalog">Die Träger in Katalogreihenfolge.</param>
+        /// <param name="standard">Der bevorzugte Träger (Standard-Stromträger); 0 = keiner.</param>
+        /// <param name="geraetebrennstoff">Brennstoff des Geräts (<c>ID_Brennstoff</c>); 0 = ohne Gerät.</param>
+        internal static int Vorauswahl(IReadOnlyList<string> gruppen, IReadOnlyList<EnergyCarrier> katalog,
+                                       int standard, int geraetebrennstoff)
+        {
+            if (gruppen == null || gruppen.Count == 0 || katalog == null) return 0;
+
+            if (standard > 0)
+                foreach (EnergyCarrier c in katalog)
+                    if (c.ID == standard && PasstGruppe(gruppen, c.GroupCode)) return c.ID;
+
+            if (geraetebrennstoff > 0)
+                foreach (EnergyCarrier c in katalog)
+                    if (c.ID_Brennstoff == geraetebrennstoff && PasstGruppe(gruppen, c.GroupCode)) return c.ID;
+
+            foreach (EnergyCarrier c in katalog)
+                if (PasstGruppe(gruppen, c.GroupCode)) return c.ID;
+            return 0;
         }
 
         // =====================================================================

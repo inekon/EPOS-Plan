@@ -100,6 +100,7 @@
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
+<CascadingValue Value="@CsvNaht">
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -109,7 +110,7 @@
         @* H13: der Rechenweg — wie eine eingelesene Ganglinie in den Waermebedarf
            des Projekts eingeht (Raster, Kanal, Netzverlustanteil). *@
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
-                   StandardKurztext="@HilfeKurztextBerechnung" />
+                   StandardKurztext="@HilfeKurztextBerechnung" MitAssistent="false" />
         @* Im Assistentenbetrieb (Wizard) schliesst nicht einmal Esc diese Seite -
            die Navigation gehoert dem Rahmen. Ein Kreuz, das dann stumm nichts
            taete, entfaellt (Hausregel: nie ein wirkungsloses Kreuz). *@
@@ -126,11 +127,22 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+    <Zweispaltenauswahl Dialogname="WaermebedarfExtern" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         UebernehmenText="@BtnHinzuText"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText"
-                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen"
+                        SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true">
+
+        <ProjektKopf>
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
+                                 Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
+                                 Aktiv="@(_gewaehlt is not null)" />
+                </KindInhalt>
+            </Formularraster>
+        </ProjektKopf>
 
         <Links>
             <div class="epos-raster-huelle">
@@ -160,13 +172,6 @@
             @* W9-E-3: Der Kanal ist ein Parameterfeld und steht deshalb im
                Formularraster (Hausregel iU8-E-2) - Beschriftung NEBEN dem Feld,
                nicht darueber. Einspaltig, weil die linke Spalte schmal ist. *@
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-                    <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
-                                 Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
-                                 Aktiv="@(_gewaehlt is not null)" />
-                </KindInhalt>
-            </Formularraster>
             @* Stufe KU1 (Kuehlkonzept 4.3 #6, K3): Ein Lastgang im Kanal Kuehlung ist KAELTE -
                er geht nicht in einen Waermekanal, und er wirkt nur mit der Projekteinstellung
                „Kuehlung rechnen". Das sagt die Zeile unter der Wahl, nicht erst der Lauf. *@
@@ -198,6 +203,9 @@
                     <button type="button" class="epos-knopf" disabled="@(!KopierenErlaubt)"
                             @onclick="BeiSpeichernUnter">@BtnSpeichernUnterText</button>
                 }
+                <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
+                                JaText="@JaText" NeinText="@NeinText"
+                                Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
                 <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
                         title="@LoeschenGrund" @onclick="BeiLoeschen">@BtnLoeschenText</button>
                 @if (VerwaltungGaben is not null)
@@ -214,18 +222,18 @@
                 <div class="epos-formathinweis">
                     <Herleitungszeile Text="@FormatHinweisText" />
                     <InfoKnopf Schluessel="@HilfeSchluesselImport"
-                               StandardKurztext="@FormatHinweisLangText" />
+                               StandardKurztext="@FormatHinweisLangText" MitAssistent="false" />
                 </div>
             }
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --- Die Grafik der gewaehlten Ganglinie (W9-E-3) -------------------- *@
     @if (_kennzahlen is not null)
     {
         <GanglinienGrafik Schluessel="@Grafikschluessel" Bezeichner="@GewaehlterName"
-                          Kennzahlen="@_kennzahlen" Bildauftrag="@Grafikbild"
+                          Kennzahlen="@_kennzahlen" Bildauftrag="@Grafikbild" BildauftragMass="@GrafikbildMass"
                           Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
                           LabelJahresarbeit="@LabelJahresarbeit" LabelSpitze="@LabelSpitze"
                           LabelVollbenutzung="@LabelVollbenutzung"
@@ -235,6 +243,9 @@
                           FarbeSetzen="@FarbeSetzen"
                           FarbeZuruecksetzen="@FarbeZuruecksetzen" />
     }
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {
@@ -282,7 +293,21 @@
     </Ueberlagerung>
 </div>
 
+</CascadingValue>
+
 @code {
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster der ersten Spalte); jedes
+    /// Diagramm dieses Dialogs mit Reihen bekommt den Knopf über die Kaskade. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Naht der Kaskade; das Raster folgt der Länge der Reihen.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
     /// <summary>
     /// Die Ganglinien-Zuordnungen des Projekts — die Liste gehört der Hülle und wird AN
     /// ORT UND STELLE bearbeitet.
@@ -378,6 +403,13 @@
     /// Zeitausschnitt liegt seither im Bild (DG-E3-9).</para>
     /// </summary>
     [Parameter] public Func<GanglinienWahl, bool, Zeichenmodell?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Das Zeichenmodell in Behältergröße (DZ1‑N2): Wahl, Schalterstellung, Breite und Höhe der
+    /// Zeichenfläche in px. Es geht dem <see cref="Bildauftrag"/> vor — die Kurve nimmt die volle
+    /// Breite der Satzfläche.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, int, int, Zeichenmodell?>? BildauftragMass { get; set; }
 
     /// <summary>Die Farbe einer Rolle anwendungsweit setzen; ohne ihn kein Farbwähler.</summary>
     [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
@@ -693,7 +725,7 @@
         _ersterAufbau = false;
         await KatalogLaden();
         if (_gewaehlt is not null) await GrafikLaden(WahlZu(_gewaehlt));
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
         StateHasChanged();
     }
 
@@ -786,6 +818,14 @@
         _kennzahlen = null;
     }
 
+    /// <summary>Was die Detailzeile zeigt (DZ1): die Zuordnung, den Katalogsatz oder keinen.</summary>
+    private Satzmarke SatzArt => _gewaehlt is not null ? Satzmarke.Projektsatz
+                               : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
+    private string? SatzName => SatzArt == Satzmarke.Keiner ? null
+                              : _gewaehlt?.Bezeichner ?? _katalogZeile?.Bezeichner;
+
     /// <summary>Was gerade markiert ist — die Namenszeile über der Grafik.</summary>
     private string GewaehlterName => _wahl?.Bezeichner ?? "";
 
@@ -804,6 +844,12 @@
         => (Bildauftrag is null || _wahl is null)
             ? null
             : sortiert => Bildauftrag(_wahl, sortiert);
+
+    /// <summary>Der Bildauftrag in Behältergröße (DZ1‑N2) — die Wahl steckt schon darin.</summary>
+    private Func<bool, int, int, Zeichenmodell?>? GrafikbildMass
+        => (BildauftragMass is null || _wahl is null)
+            ? null
+            : (sortiert, breite, hoehe) => BildauftragMass(_wahl, sortiert, breite, hoehe);
 
     // =================================================================================
     // Kanal
@@ -994,6 +1040,7 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
+        if (e.Key == "Escape" && _katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         if (e.Key != "Escape") return Task.CompletedTask;
 
         // Jede Ebene prueft ihre eigenen Schalter, bevor sie Esc fuer sich
@@ -1003,4 +1050,30 @@
 
         return Wizard ? Task.CompletedTask : Abbrechen();
     }
+
+    // =================================================================================
+    // Schloss setzen / aufheben (AD-Q15) - derselbe Baustein wie in den Verwaltungen
+    // =================================================================================
+
+    /// <summary>
+    /// „Schloss setzen…" / „Schloss aufheben…" an der Katalogliste
+    /// (<c>Schlosswege.Aus(…SchlossSetzen)</c>). Ohne ihn steht der Knopf nicht da.
+    /// Die Verwendung im Projekt sperrt nichts: Das Projekt führt eine eigene Kopie.
+    /// </summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    private Katalogschloss? _katalogschloss;
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _katalogschloss?.FrageOffen == true;
+
+    /// <summary>Nach dem Schalten: Liste neu lesen, Status melden.</summary>
+    private async Task BeiSchlossGeschaltet(string status)
+    {
+        await KatalogLaden();
+        Melden(status ?? "", WarnStufe.Hinweis);
+    }
+
+    /// <summary>Warum nicht geschaltet wurde.</summary>
+    private void BeiSchlossAbgelehnt(string grund) => Melden(grund ?? "", WarnStufe.Warnung);
 }

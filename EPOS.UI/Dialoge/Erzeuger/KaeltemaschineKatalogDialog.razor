@@ -1,0 +1,1627 @@
+﻿@* Die Verwaltung "Kaeltemaschinen" (KU3-1, Teil 2) - der Katalog Tab_Kaeltemaschine_STAMM samt
+   Kennlinie.
+
+   GERUEST DER VERWALTUNGEN (Vorbild BaustoffKatalogDialog): Katalograhmen, Katalogliste mit
+   ZeileIstWahl, Auswahlleiste, Stammblatt, Fussleiste Speichern - Verwerfen - Status - Neu... -
+   Beenden. Unter Windows ein eigenes Fenster, auf iOS eine freie Ansicht der AppWurzel; die Datenseite liegt in der
+   Huelle (EPOS.UI.Daten, KaeltemaschineKatalogHuelle) ueber KaeltemaschineStammCtrl.
+
+   DIE LISTE: Bezeichner, Hersteller, Typ, Nennkaelteleistung, Nenn-EER, Rueckkuehlung - Profil und
+   Zeilen aus dem Kern (Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine),
+   KaeltemaschineStammCtrl.Katalogfilterzeilen); das Schloss steht hinter dem Bezeichner.
+
+   DAS STAMMBLATT: zwei Gruppen - Kenndaten und Kennlinie. Die Rueckkuehlart ist eine Auswahl ueber
+   den LISTENPLATZ; der Anzeigetext ist nie ein Steuerwert. Die Kennlinie ist ein Zeilenraster
+   (Rueckkuehltemperatur, Kaltwassertemperatur, EER, Kaelteleistung; Punkt hinzufuegen, entfernen).
+   Ein Auslieferungssatz steht als Text. Geschrieben wird allein mit "Speichern" - Kopf und
+   Kennlinie in EINEM Vorgang, die Pruefregeln des Kerns (KaeltemaschineStammCtrl.Pruefen, darunter
+   das Temperaturpaar je Geraet eindeutig) genau dort.
+
+   TASTATUR: Esc schliesst stufenweise (Ueberlagerung, Rueckfrage, schmales Blatt, Dialog). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-katalog-dialog epos-kaeltemaschine-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+    @if (_katalog.Count == 0)
+    {
+        <p class="epos-leisezeile epos-kaeltemaschine-leer">@Texte.LeerKatalog</p>
+    }
+
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
+        <Liste>
+            <Katalogliste Profil="@Profil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
+                          Vergleichsparameter="@Uebersicht"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen">
+                <Werkzeug>
+                    @* "TYPKENNFELDER AUSBLENDEN" nach dem Muster "nur mit Kuehlfunktion" der
+                       Waermepumpenverwaltung: kein eigener Zustand, der Schalter setzt den
+                       verneinten Trichter auf die Spalte Herkunft (KaeltemaschineStammCtrl.
+                       AusdruckOhneTypkennfelder) - "Filter zuruecksetzen" nimmt ihn mit. *@
+                    <Schalter Bezeichnung="@Texte.SchalterOhneTypkennfelder" Wert="@OhneTypkennfelder"
+                              WertChanged="OhneTypkennfelderGesetzt" />
+                </Werkzeug>
+            </Katalogliste>
+        </Liste>
+
+        <Auswahl>
+            <Auswahlleiste Fokus="@Fokusname" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
+
+        <Blatt>
+            <Stammblatt Name="@_daten.Bezeichner" Unterzeile="@Unterzeile"
+                        Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Entsperrt="@(!_auslieferung && _schloss.Entsperrt(ZeileZu(_gewaehlt)))"
+                        Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck">
+                <Gruppen>
+                    @* KENNDATEN: direkt bedienbar; ein Auslieferungssatz als TEXT. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeKenndaten" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Kenndatenwerte(_daten) : null)">
+                        <KindInhalt>
+                            @Kenndatenfelder(_arbeit)
+                        </KindInhalt>
+                    </Stammblattgruppe>
+
+                    @* TEILLAST UND TAKTEN (KM3-E3-a, Fachkonzept Teillast und Takten 7.1): Teillastrechnung,
+                       Verdichterregelung, Kurve a/b/c, ihre Gueltigkeit, C_d und Kennfeldrand; darunter die Lesezeile
+                       g(0,25)/g(0,5)/g(0,75), die kleine Kurve, die Schnellwahlen und die Auskunft. Die Mindestteillast
+                       bleibt in den Kenndaten. Ein Auslieferungssatz als TEXT, Lesezeile, Kurve und Auskunft bleiben. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeTeillast" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Teillastwerte(_daten) : null)">
+                        <KindInhalt>
+                            @Teillastfelder(_arbeit)
+                            @Teillastlesung(_arbeit)
+                        </KindInhalt>
+                        <Nachsatz>
+                            @Teillastlesung(_daten)
+                        </Nachsatz>
+                    </Stammblattgruppe>
+
+                    @* KENNLINIE: ein Zeilenraster; ein Auslieferungssatz als TEXT. *@
+                    @* KENNLINIE (KD-3): ueber dem Zeilenraster die zwei Bilder EER und Kaelteleistung in Reitern -
+                       wie die Waermepumpe; das Bild folgt jeder Aenderung des Rasters. Ein Auslieferungssatz zeigt
+                       die Punkte als TEXT und darunter dieselben Bilder. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeKennlinie" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Kennlinienwerte(_daten) : null)">
+                        <KindInhalt>
+                            @Kennlinienbild(_arbeit)
+                            @Kennlinienfelder(_arbeit)
+                        </KindInhalt>
+                        <Nachsatz>
+                            @Kennlinienbild(_daten)
+                        </Nachsatz>
+                    </Stammblattgruppe>
+                </Gruppen>
+                <Nachsatz>
+                    @* Der Weg in die Wikirubrik "Berechnung": Rueckkuehlung, Teillast und Takten der
+                       Kaeltemaschine auf der Rechenwegseite Kuehlung, daneben die Grundlagenseite. *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_Kaeltemaschine_Stamm.Grundlagen"
+                                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                        <InfoKnopf Schluessel="Form_Kaeltemaschine_Stamm.Berechnung"
+                                   StandardKurztext="Berechnung: Kühlung" MitAssistent="false" />
+                    </div>
+                </Nachsatz>
+            </Stammblatt>
+        </Blatt>
+    </Katalograhmen>
+
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15): Speichern - Verwerfen - Fueller (Statuszeile) -
+       Neu... - Beenden. Duplizieren..., Schloss und Loeschen stehen in der Auswahlleiste. *@
+    <div class="epos-leiste">
+        @if (Speichern is not null)
+        {
+            @if (_auslieferung)
+            {
+                <button type="button" class="epos-knopf" aria-disabled="true"
+                        title="@Texte.SpeichernGesperrt" @onclick="BeiSpeichern">@Texte.KnopfSpeichern</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                        @onclick="BeiSpeichern">@Texte.KnopfSpeichern</button>
+            }
+            <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                    @onclick="BeiVerwerfen">@Texte.KnopfVerwerfen</button>
+        }
+        <span class="epos-leiste-fueller epos-status@(_statusFehler ? " epos-status--fehler" : "")" role="status">@_status</span>
+        @if (Speichern is not null)
+        {
+            @* KM1: "Import..." (Copper-Kurvendatei, CSV-Kennfeldvorlage) und "Typkennfelder laden...".
+               Ohne Importweg (iOS: keine Dateiwahl) lehnt der Knopf benannt ab statt zu fehlen. *@
+            <button type="button" class="epos-knopf epos-importknopf" @onclick="ImportOeffnen">@Texte.KnopfImport</button>
+            @if (TypkennfelderLaden is not null)
+            {
+                <button type="button" class="epos-knopf epos-kaeltemaschine-typkennfelder"
+                        @onclick="TypkennfelderFragen">@Texte.KnopfTypkennfelder</button>
+            }
+            <button type="button" class="epos-knopf" @onclick="BeiNeu">@Texte.KnopfNeu</button>
+        }
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="Schliessen">@Texte.KnopfBeenden</button>
+    </div>
+
+    @* --- "Neu...": dieselben Kenndaten, OK prueft und legt an; die Kennlinie folgt im Blatt --- *@
+    <Ueberlagerung Offen="@_neuOffen" Titel="@Texte.TitelNeu" Geschlossen="NeuSchliessen">
+        <KindInhalt>
+            @if (_neuOffen)
+            {
+                <div class="epos-kaeltemaschine-neu">
+                    @if (_neuMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_neuMeldung" />
+                    }
+                    @Kenndatenfelder(_neu)
+                    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="NeuErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KM3-E3-a: Wahl eines Typkennfelds - "Kurve aus Typkennfeld..." uebernimmt Beiwerte, x_u und Regelung
+           in den Arbeitsstand; "Typkennfeld auf Datenblatt skalieren..." fuehrt mit dem skalierten Satz in "Neu..." --- *@
+    <Ueberlagerung Offen="@(_typwahl != Typwahl.Zu)" Titel="@TypwahlTitel" Geschlossen="TypwahlSchliessen">
+        <KindInhalt>
+            @if (_typwahl != Typwahl.Zu)
+            {
+                <div class="epos-kaeltemaschine-typwahl">
+                    @if (_typwahlMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_typwahlMeldung" />
+                    }
+                    <Formularraster>
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@Texte.LabelTypkennfeld" Eintraege="@Typkennfeldeintraege"
+                                         Platzhalter="@Texte.TypkennfeldWaehlen"
+                                         Auswahl="@_typwahlPlatz" AuswahlChanged="w => { _typwahlPlatz = w; _typwahlMeldung = string.Empty; }" />
+                            @if (_typwahl == Typwahl.Skalieren)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.LabelNennkaelteleistung" Einheit="@Texte.EinheitKw"
+                                            Feldname="@(Texte.KnopfSkalieren + " – " + Texte.LabelNennkaelteleistung)"
+                                            Wert="@_skalierLeistung" WertChanged="w => _skalierLeistung = w" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelNennEer"
+                                            Feldname="@(Texte.KnopfSkalieren + " – " + Texte.LabelNennEer)"
+                                            Wert="@_skalierEer" WertChanged="w => _skalierEer = w" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    @if (_typwahl == Typwahl.Skalieren)
+                    {
+                        <p class="epos-leisezeile">@Texte.SkalierenHinweis</p>
+                    }
+                    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="TypwahlErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KM3-E3-a: Auskunft "Teillastpunkte pruefen..." (Fachkonzept 3.7) - bis zu vier Paare aus
+           Aussentemperatur und Lastgrad, gerechnet aus dem eigenen Kennfeld; keine Normtafel, keine
+           voreingetragenen Punkte, keine Speicherung. --- *@
+    <Ueberlagerung Offen="@_auskunftOffen" Titel="@Texte.KnopfTeillastpunkte" Geschlossen="AuskunftSchliessen">
+        <KindInhalt>
+            @if (_auskunftOffen)
+            {
+                <div class="epos-kaeltemaschine-auskunft">
+                    <p class="epos-leisezeile">@Texte.AuskunftHinweis</p>
+                    @if (_auskunftMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_auskunftMeldung" />
+                    }
+                    <Formularraster>
+                        <KindInhalt>
+                            @for (int i = 0; i < _auskunftEingaben.Length; i++)
+                            {
+                                int index = i;
+                                string punkt = string.Format(CultureInfo.CurrentCulture, Texte.AuskunftPunkt, AuskunftName(index));
+                                <Zahlenfeld Bezeichnung="@(punkt + " – " + Texte.AuskunftAussen)" Einheit="@Texte.EinheitGradC"
+                                            Feldname="@(punkt + " – " + Texte.AuskunftAussen)"
+                                            Wert="@_auskunftEingaben[index].Aussen" WertChanged="w => _auskunftEingaben[index].Aussen = w" />
+                                <Zahlenfeld Bezeichnung="@(punkt + " – " + Texte.AuskunftLastgrad)" Einheit="@Texte.EinheitProzent"
+                                            Feldname="@(punkt + " – " + Texte.AuskunftLastgrad)"
+                                            Wert="@_auskunftEingaben[index].Lastgrad" WertChanged="w => _auskunftEingaben[index].Lastgrad = w" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    <button type="button" class="epos-knopf epos-kaeltemaschine-rechnen" @onclick="AuskunftRechnen">@Texte.AuskunftRechnen</button>
+                    @if (_auskunftZeilen is { Count: > 0 })
+                    {
+                        <table class="epos-raster epos-kaeltemaschine-auskunfttafel">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>@Texte.AuskunftAussen [@Texte.EinheitGradC]</th>
+                                    <th>@Texte.AuskunftRueckkuehl [@Texte.EinheitGradC]</th>
+                                    <th>@Texte.AuskunftKaelte [@Texte.EinheitKw]</th>
+                                    <th>@Texte.AuskunftLastgradMaschine [@Texte.EinheitProzent]</th>
+                                    <th>@Texte.AuskunftLeistungsaufnahme [@Texte.EinheitKw]</th>
+                                    <th>@Texte.SpalteEer</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (KaeltemaschineAuskunftZeile z in _auskunftZeilen)
+                                {
+                                    <tr @key="z.Name">
+                                        <td>@z.Name</td>
+                                        <td>@z.AussenC.ToString("0.#", CultureInfo.CurrentCulture)</td>
+                                        <td>@z.RueckkuehlC.ToString("0.#", CultureInfo.CurrentCulture)</td>
+                                        <td>@z.KaelteKw.ToString("0.0", CultureInfo.CurrentCulture)</td>
+                                        <td>@((z.LastgradMaschine * 100).ToString("0", CultureInfo.CurrentCulture))</td>
+                                        <td>@z.LeistungsaufnahmeKw.ToString("0.00", CultureInfo.CurrentCulture)</td>
+                                        <td>@z.Eer.ToString("0.00", CultureInfo.CurrentCulture)</td>
+                                        <td>@AuskunftVermerk(z)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf" @onclick="AuskunftSchliessen">@Texte.Ok</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Namensabfrage von "Duplizieren..." (AD-Q11): Vorbelegung "... (Kopie)" -------- *@
+    <Ueberlagerung Offen="@_duplizierfrage" Titel="@Texte.KnopfDuplizieren"
+                   Geschlossen="() => _duplizierfrage = false">
+        <KindInhalt>
+            @if (_duplizierfrage)
+            {
+                <NamensDialog TitelText="" FrageText="@Texte.LabelBezeichner"
+                              Vorbelegung="@_kopievorschlag"
+                              MeldungLeer="@Texte.NameLeer" Pruefung="NameBelegt"
+                              OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen"
+                              Geschlossen="BeiDuplizierName" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@Texte.KnopfLoeschen"
+                Frage="@_loeschfrageText"
+                JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiLoeschfrage" />
+
+    @* --- KM1: Rueckfrage vor dem Laden der eingebauten Typkennfelder ------------------- *@
+    <Rueckfrage Offen="@_typfrage" TitelText="@Texte.KnopfTypkennfelder" Frage="@TypfrageText"
+                JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiTypfrage" />
+
+    @* --- KM1: "Import..." als Ueberlagerung; Titel und Kreuz traegt der Importdialog selbst *@
+    <EPOS.UI.Dialoge.Import.ImportUeberlagerung KatalogGaben="@_importGaben" Geschlossen="ImportFertig" />
+
+    @* --- Rueckfrage vor dem Umschalten des Schlosses (AD-Q15, Vorgabe Nein) *@
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
+                VorgabeNein="true" JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiSchlossAntwort" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle (KaeltemaschineKatalogHuelle)
+    // =====================================================================
+
+    /// <summary>Die Zeilen der Liste (<c>KaeltemaschineStammCtrl.Katalogfilterzeilen</c>); ohne sie ist die Liste leer.</summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Spalten — <c>Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine)</c>; ohne sie das Profil mit den Ressourcentexten.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der Verwaltungen).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>
+    /// Die Anzeigetexte der Rückkühlarten in der Reihenfolge der Listenplätze (aus dem Kern); ohne sie die
+    /// Texte des Bündels. Der Listenplatz ist der Steuerwert.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string>? Rueckkuehlarten { get; set; }
+
+    /// <summary>Lädt eine Kältemaschine samt Kennlinie über ihre Id; <c>null</c> = es gibt sie nicht (mehr).</summary>
+    [Parameter] public Func<int, KaeltemaschineDaten?>? Lies { get; set; }
+
+    /// <summary>
+    /// Die Prüfung des Kerns (<c>KaeltemaschineStammCtrl.Pruefen</c>) — <c>null</c> oder leer = gültig.
+    /// Gerufen genau einmal, im Speicherweg (Stammblatt und „Neu…"), und vom Assistenten.
+    /// </summary>
+    [Parameter] public Func<KaeltemaschineDaten, string?>? Pruefen { get; set; }
+
+    /// <summary>Schreibt einen Satz samt Kennlinie — Id 0 legt an. Ohne ihn weder „Speichern" noch „Neu…".</summary>
+    [Parameter] public Func<KaeltemaschineDaten, KaeltemaschineSpeicherErgebnis>? Speichern { get; set; }
+
+    /// <summary>Löscht einen Satz (<c>KaeltemaschineStammCtrl.Loeschen</c>); ohne ihn keine Handlung.</summary>
+    [Parameter] public Func<int, KaeltemaschineSpeicherErgebnis>? Loeschen { get; set; }
+
+    /// <summary>„Duplizieren…" (<c>KaeltemaschineStammCtrl.Duplizieren</c>); ohne ihn keine Handlung.</summary>
+    [Parameter] public Func<int, string, KaeltemaschineSpeicherErgebnis>? Duplizieren { get; set; }
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15, <c>KaeltemaschineStammCtrl.SchlossSetzen</c>).</summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    // ---- Teillast und Takten (KM3-E3-a): Rechnungen des Kerns über die Hülle ----
+
+    /// <summary>Die Namen der eingebauten Typkennfelder (Schnellwahlen); ohne sie keine Schnellwahl.</summary>
+    [Parameter] public IReadOnlyList<string>? Typkennfeldnamen { get; set; }
+
+    /// <summary>„Kurve aus Typkennfeld…": die Teillastfelder eines Typkennfelds; <c>null</c> = unbekannt.</summary>
+    [Parameter] public Func<string, KaeltemaschineTypkurve?>? KurveAusTypkennfeld { get; set; }
+
+    /// <summary>„Typkennfeld auf Datenblatt skalieren…" (Typkennfeld, Nennkälteleistung, Nenn-EER) — nur Rückgabe.</summary>
+    [Parameter] public Func<string, double?, double?, KaeltemaschineSkalierErgebnis>? Skalieren { get; set; }
+
+    /// <summary>„Teillastpunkte prüfen…": rechnet die Paare am Stand, ohne Speicherung.</summary>
+    [Parameter] public Func<KaeltemaschineDaten, IReadOnlyList<KaeltemaschineAuskunftEingabe>, KaeltemaschineAuskunftErgebnis>? Auskunft { get; set; }
+
+    /// <summary>Die Lesezeile g(0,25)/g(0,5)/g(0,75) samt Hinweis; ohne sie keine Lesezeile.</summary>
+    [Parameter] public Func<KaeltemaschineDaten, KaeltemaschineTeillastLesestand>? Lesezeile { get; set; }
+
+    /// <summary>Der Kontrollwert Nenn-EER (<c>KaeltemaschineStammCtrl.NennEerHinweis</c>); <c>null</c> = kein Hinweis.</summary>
+    [Parameter] public Func<KaeltemaschineDaten, string?>? NennEerHinweis { get; set; }
+
+    /// <summary>Die kleine Kurve „EER-Verhältnis über dem Lastgrad" (<c>KaeltemaschineTeillastbild</c>); ohne sie kein Bild.</summary>
+    [Parameter] public Func<KaeltemaschineDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? Teillastbild { get; set; }
+
+    /// <summary>
+    /// KD-3: die zwei Kennlinienbilder (EER, Kälteleistung) zum Arbeitsstand (<c>KaeltemaschineKennlinienbild</c>);
+    /// ohne sie kein Bild, das Zeilenraster bleibt.
+    /// </summary>
+    [Parameter] public Func<KaeltemaschineDaten, KaeltemaschineKennlinienbilder>? Kennlinienbilder { get; set; }
+
+    /// <summary>
+    /// KD-3: die Parameterübersicht eines Satzes über seinen Bezeichner (<c>KaeltemaschineParameteruebersicht.Werte</c>)
+    /// — die Katalogliste vergleicht damit statt über ihre Spalten.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Uebersicht { get; set; }
+
+    /// <summary>
+    /// KD-3: dieselbe Übersicht über die Id (<c>KaeltemaschineParameteruebersicht.WerteZuId</c>) — „Vergleichen" im
+    /// Stammblatt stellt sie nebeneinander; ohne sie vergleicht es die Kenndaten des Stammblatts.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<Parameterwert>>? UebersichtZuId { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen („Beenden", Esc, Kreuz) — immer <c>true</c>.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public KaeltemaschineKatalogTexte Texte { get; set; } = new();
+
+    /// <summary>Der Titel im Dialogkopf; leer = eingebettet, die Überlagerung des Wirts trägt Titel und Kreuz.</summary>
+    [Parameter] public string TitelText { get; set; } = Resource.KM_TITEL;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Hilfeseite folgt mit dem Wiki (KU3-4).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "KaeltemaschineKatalog.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private Katalogfilterprofil? _profil;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+
+    /// <summary>
+    /// Steht „Typkennfelder ausblenden"? <b>Der Schalter führt keinen eigenen Zustand</b> — er LIEST den
+    /// Filterstand (Muster <c>WaermepumpeStammDialog.NurMitKuehlung</c>): „Filter zurücksetzen" und der Trichter
+    /// der Spalte Herkunft ändern denselben Stand.
+    /// </summary>
+    public bool OhneTypkennfelder
+        => _filterstand.Ausdruck(Katalogfilterprofil.SpHerkunft) == KaeltemaschineStammCtrl.AusdruckOhneTypkennfelder;
+
+    /// <summary>Setzt bzw. nimmt den verneinten Ausdruck „!Typkennfeld" auf der Spalte Herkunft.</summary>
+    private void OhneTypkennfelderGesetzt(bool wert)
+        => _filterstand.Setzen(Katalogfilterprofil.SpHerkunft,
+                               wert ? KaeltemaschineStammCtrl.AusdruckOhneTypkennfelder : "");
+    private string _gewaehlt = "";
+    private bool _auslieferung;
+
+    /// <summary>Der GESPEICHERTE Stand des gewählten Satzes.</summary>
+    private KaeltemaschineDaten _daten = new();
+
+    /// <summary>Der ARBEITSSTAND des Stammblatts — die Felder schreiben hierhin, „Speichern" schreibt ihn.</summary>
+    private KaeltemaschineDaten _arbeit = new();
+    private bool _geaendert;
+
+    private bool _neuOffen;
+    private KaeltemaschineDaten _neu = new();
+    private string _neuMeldung = "";
+
+    private bool _duplizierfrage;
+    private string _kopievorschlag = "";
+    private string _duplizierQuelle = "";
+
+    private bool _loeschfrage;
+    private string _loeschfrageText = "";
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+
+    private readonly Zeilenauswahl _auswahl = new();
+
+    /// <summary>KD-3: der gewählte Reiter der Kennlinienbilder.</summary>
+    private string _kennlinienreiter = "EER";
+
+    /// <summary>
+    /// KD-3: die zwischengespeicherten Bilder je Stand (Arbeitsstand und Lesestand) samt ihrem Abzug — neu gebaut nur,
+    /// wenn sich Punkte oder Rückkühlart ändern; sonst verlöre <c>DiagrammSvg</c> mit der Referenz Zoom und Legendenwahl.
+    /// </summary>
+    private readonly Dictionary<KaeltemaschineDaten, (string Abzug, KaeltemaschineKennlinienbilder Bilder)> _kennlinienbilder =
+        new(ReferenceEqualityComparer.Instance);
+
+    /// <summary>KD-3: der gewählte Reiter der Kennlinienbilder (Prüfhilfe für Tests).</summary>
+    public string Kennlinienreiter => _kennlinienreiter;
+
+    /// <summary>Die Zeilen des Vergleichs im Stammblatt (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+
+    private string _meldung = "";
+
+    /// <summary>Die Statuszeile der Fußleiste; rot färbt allein <see cref="SpeichernAbgelehnt"/>.</summary>
+    private string _status
+    {
+        get => _statusText;
+        set { _statusText = value; _statusFehler = false; }
+    }
+    private string _statusText = "";
+    private bool _statusFehler;
+
+    private EventCallback _vergleichen;
+    private EventCallback _duplizieren;
+    private EventCallback _schlossHandlung;
+    private EventCallback _loeschen;
+    private readonly Schlossumschaltung _schloss = new();
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    // ---- Prüfhilfen für die Tests ---------------------------------------
+    /// <summary>Die Namen der Liste in Listenreihenfolge (Prüfhilfe).</summary>
+    public IReadOnlyList<string> Namensliste => _katalog.Select(z => z.Bezeichner).ToList();
+    /// <summary>Der Schlüssel (die Id) der gewählten Zeile (Prüfhilfe).</summary>
+    public string Gewaehlt => _gewaehlt;
+    /// <summary>Der Arbeitsstand des Stammblatts (Prüfhilfe).</summary>
+    public KaeltemaschineDaten Arbeitsstand => _arbeit;
+    /// <summary>Die stehende Meldung (Prüfhilfe).</summary>
+    public string Meldung => _meldung;
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe).</summary>
+    public string Status => _status;
+    /// <summary>Trägt das Stammblatt geänderte Werte? (Prüfhilfe)</summary>
+    public bool Geaendert => _geaendert;
+    /// <summary>Ist der gewählte Satz ein Auslieferungssatz? (Prüfhilfe)</summary>
+    public bool Auslieferung => _auslieferung;
+    /// <summary>Steht die Überlagerung „Neu…"? (Prüfhilfe)</summary>
+    public bool NeuOffen => _neuOffen;
+    /// <summary>Steht die Löschrückfrage? (Prüfhilfe)</summary>
+    public bool Loeschfrage => _loeschfrage;
+    /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe)</summary>
+    public bool Duplizierfrage => _duplizierfrage;
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe)</summary>
+    public bool Schlossfrage => _schloss.FrageOffen;
+    /// <summary>Steht die Rückfrage „Typkennfelder laden…"? (Prüfhilfe)</summary>
+    public bool Typfrage => _typfrage;
+    /// <summary>Steht die Wahl eines Typkennfelds (Kurve oder Skalierung)? (Prüfhilfe)</summary>
+    public bool TypwahlOffen => _typwahl != Typwahl.Zu;
+    /// <summary>Steht die Auskunft „Teillastpunkte prüfen…"? (Prüfhilfe)</summary>
+    public bool AuskunftOffen => _auskunftOffen;
+    /// <summary>Die Zeilen der letzten Auskunft (Prüfhilfe).</summary>
+    public IReadOnlyList<KaeltemaschineAuskunftZeile>? AuskunftZeilen => _auskunftZeilen;
+    /// <summary>Steht der Import als Überlagerung? (Prüfhilfe)</summary>
+    public bool ImportOffen => _importGaben is not null;
+
+    private Katalogfilterprofil Profil
+        => _profil ??= Katalogprofil
+                       ?? Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine, s => Resource.ResourceManager.GetString(s) ?? s);
+
+    /// <summary>Die Anzeigetexte der Rückkühlarten — aus der Hülle, sonst aus dem Bündel.</summary>
+    private IReadOnlyList<string> Rueckkuehltexte => Rueckkuehlarten ?? Texte.Rueckkuehlarten;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
+    protected override void OnInitialized()
+    {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
+        _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
+        // KT-2/KT-3: Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - Katalogladung fängt
+        // am Rand, der eigene Banner nennt den Grund, das Ausnahmeprotokoll trägt den Vermerk.
+        ListeLaden();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KAELTEMASCHINE_KATALOG, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KaeltemaschineKatalogKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: Die Satzwahl nimmt den Weg eines Klicks, die Felder den Arbeitsstand.</summary>
+    private KaeltemaschineKatalogKiSicht KiSicht()
+    {
+        return _kiSicht ??= new KaeltemaschineKatalogKiSicht
+        {
+            SatzLesen = () => _gewaehlt,
+            SatzSetzen = BeiZeile,
+            SatzEintraege = () => KiMaskenanmeldung.Eintraege(_katalog, z => z.Schluessel, z => z.Bezeichner),
+            Rueckkuehlarten = () => Rueckkuehltexte,
+            TeillastWege = () => Texte.TeillastWege,
+            Verdichterregelungen = () => Texte.Verdichterregelungen,
+            Randwege = () => Texte.Randwege,
+            Geraetearten = () => Texte.Geraetearten,
+            SaisonArten = () => Texte.SaisonArten,
+            ArbeitLesen = () => _daten.Id > 0 && !_auslieferung ? _arbeit : null,
+            Geaendert = Nachziehen
+        };
+    }
+
+    /// <summary>„Speichern" ist der Weg des Knopfes, die Prüfung dieselbe; der Schreibschutz ist der des Satzes.</summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _auslieferung,
+        Schreibschutzgrund = () => Texte.SpeichernGesperrt,
+        Pruefen = () => Pruefbefund(_arbeit) ?? "",
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null || _daten.Id <= 0)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", Texte.Titel));
+        if (_auslieferung) return KiKern.KiErgebnis.Abgelehnt(Texte.SpeichernGesperrt);
+        if (!_geaendert) return KiKern.KiErgebnis.Ok(_daten.Bezeichner, anzahl: 0);
+
+        BeiSpeichern();
+        return _meldung.Length > 0
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(_daten.Bezeichner, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =====================================================================
+    // Liste und Wahl
+    // =====================================================================
+
+    /// <summary>Lädt die Liste; die bisherige Wahl bleibt, sonst die erste Zeile.</summary>
+    private void ListeLaden(string? wunsch = null)
+    {
+        _katalog = Katalogladung.Lesen(Katalogzeilen, Texte.Titel, out _listeFehler);
+
+        _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
+        string ziel = wunsch ?? _gewaehlt;
+        if (_katalog.Count == 0) { SatzWaehlen(""); return; }
+        SatzWaehlen(_katalog.Any(z => z.Schluessel == ziel) ? ziel : _katalog[0].Schluessel);
+    }
+
+    /// <summary>Die Liste meldet eine Zeile. Geänderte Werte halten die Wahl (Konzept 3.3).</summary>
+    private void BeiZeile(string schluessel)
+    {
+        if (_geaendert && schluessel != _gewaehlt)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return;
+        }
+        SatzWaehlen(schluessel);
+    }
+
+    private void SatzWaehlen(string schluessel)
+    {
+        _meldung = "";
+        _gewaehlt = schluessel ?? "";
+        Katalogfilterzeile? zeile = ZeileZu(_gewaehlt);
+        _satzFehler = "";
+        KaeltemaschineDaten? gelesen = zeile is not null
+            ? Katalogladung.Satz(() => Lies?.Invoke(zeile.Id), zeile.Bezeichner, out _satzFehler)
+            : null;
+        // KT-4: Warf das Lesen, bleibt das Stammblatt leer (Id 0, nichts zu speichern) - kein halber Satz.
+        _daten = _satzFehler.Length > 0 ? new KaeltemaschineDaten() : gelesen ?? (zeile is null ? new KaeltemaschineDaten() : new KaeltemaschineDaten { Id = zeile.Id, Bezeichner = zeile.Bezeichner });
+        _auslieferung = zeile?.Geschuetzt == true || _daten.Auslieferung;
+        Zuruecksetzen();
+    }
+
+    /// <summary>Der Arbeitsstand wird wieder der gespeicherte (Wahl, Verwerfen, nach dem Speichern).</summary>
+    private void Zuruecksetzen()
+    {
+        _arbeit = _daten.Kopie();
+        _geaendert = false;
+    }
+
+    private Katalogfilterzeile? ZeileZu(string schluessel) => _katalog.FirstOrDefault(z => z.Schluessel == schluessel);
+
+    private string Fokusname => ZeileZu(_gewaehlt)?.Bezeichner ?? "";
+
+    // =====================================================================
+    // Stammblatt
+    // =====================================================================
+
+    /// <summary>Die Einträge der Rückkühlart: Listenplatz → Anzeigetext.</summary>
+    private IReadOnlyList<(int Id, string Text)> Rueckkuehleintraege
+        => Rueckkuehltexte.Select((t, i) => (i, t)).ToList();
+
+    private string RueckkuehlText(int? platz)
+        => platz is int p && p >= 0 && p < Rueckkuehltexte.Count ? Rueckkuehltexte[p] : "";
+
+    /// <summary>Die siebzehn Kenndaten (zwölf Grundfelder, fünf Katalogfelder K-A) als Felder — im Stammblatt und in „Neu…" dieselben.</summary>
+    private RenderFragment Kenndatenfelder(KaeltemaschineDaten d) => __builder =>
+    {
+        <Formularraster>
+            <KindInhalt>
+                <Textfeld Bezeichnung="@Texte.LabelBezeichner" Wert="@d.Bezeichner"
+                          WertChanged="w => Feld(d, () => d.Bezeichner = w ?? string.Empty)" />
+                <Textfeld Bezeichnung="@Texte.LabelFirma" Wert="@d.Firma"
+                          WertChanged="w => Feld(d, () => d.Firma = w ?? string.Empty)" />
+                <Textfeld Bezeichnung="@Texte.LabelTyp" Wert="@d.Typ"
+                          WertChanged="w => Feld(d, () => d.Typ = w ?? string.Empty)" />
+                <Textfeld Bezeichnung="@Texte.LabelBeschreibung" Wert="@d.Beschreibung"
+                          WertChanged="w => Feld(d, () => d.Beschreibung = w ?? string.Empty)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelNennkaelteleistung" Einheit="@Texte.EinheitKw"
+                            Feldname="@Texte.LabelNennkaelteleistung"
+                            Wert="@d.Nennkaelteleistung" WertChanged="w => Feld(d, () => d.Nennkaelteleistung = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelNennEer" Feldname="@Texte.LabelNennEer"
+                            Wert="@d.NennEer" WertChanged="w => Feld(d, () => d.NennEer = w)" />
+                <Textfeld Bezeichnung="@Texte.LabelKaeltemittel" Wert="@d.Kaeltemittel"
+                          WertChanged="w => Feld(d, () => d.Kaeltemittel = w ?? string.Empty)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelRueckkuehlart" Eintraege="@Rueckkuehleintraege"
+                             Platzhalter="@Texte.RueckkuehlartKeine"
+                             Auswahl="@d.RueckkuehlartIndex" AuswahlChanged="w => Feld(d, () => d.RueckkuehlartIndex = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelMindestteillast" Einheit="@Texte.EinheitProzent"
+                            Feldname="@Texte.LabelMindestteillast"
+                            Wert="@d.Mindestteillast" WertChanged="w => Feld(d, () => d.Mindestteillast = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelHilfsstrom" Einheit="@Texte.EinheitKw"
+                            Feldname="@Texte.LabelHilfsstrom" Platzhalter="@Texte.HilfsstromLeer"
+                            Wert="@d.Hilfsstrom" WertChanged="w => Feld(d, () => d.Hilfsstrom = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasserMin" Einheit="@Texte.EinheitGradC"
+                            Feldname="@Texte.LabelKaltwasserMin"
+                            Wert="@d.KaltwasserMin" WertChanged="w => Feld(d, () => d.KaltwasserMin = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelModulkosten" Einheit="@Texte.EinheitEuro"
+                            Feldname="@Texte.LabelModulkosten"
+                            Wert="@d.Modulkosten" WertChanged="w => Feld(d, () => d.Modulkosten = w)" />
+                @* K-A: die fuenf Katalogfelder hinter den zwoelf Grundfeldern - Geraeteart, Kaeltemittel, saisonale Kennzahl. *@
+                <Auswahlfeld Bezeichnung="@Texte.LabelGeraeteart" Eintraege="@Eintraege(Texte.Geraetearten)"
+                             Platzhalter="@Texte.GeraeteartAusRueckkuehlung"
+                             Auswahl="@d.GeraeteartIndex" AuswahlChanged="w => Feld(d, () => d.GeraeteartIndex = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelGwp" Feldname="@Texte.LabelGwp"
+                            Wert="@d.Gwp" WertChanged="w => Feld(d, () => d.Gwp = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelFuellmenge" Einheit="@Texte.EinheitKg" Feldname="@Texte.LabelFuellmenge"
+                            Wert="@d.Fuellmenge" WertChanged="w => Feld(d, () => d.Fuellmenge = w)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelSaisonArt" Eintraege="@Eintraege(Texte.SaisonArten)"
+                             Platzhalter="@Texte.SaisonArtKeine"
+                             Auswahl="@d.SaisonArtIndex" AuswahlChanged="w => Feld(d, () => d.SaisonArtIndex = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelSaisonkennzahl" Feldname="@Texte.LabelSaisonkennzahl"
+                            Wert="@d.Saisonkennzahl" WertChanged="w => Feld(d, () => d.Saisonkennzahl = w)" />
+            </KindInhalt>
+        </Formularraster>
+    };
+
+    /// <summary>
+    /// <b>Die Kennlinie als Bild</b> (KD-3): Reiter EER und Kälteleistung, je ein <c>DiagrammSvg</c> mit dem Modell der
+    /// Hülle — Abszisse Rückkühltemperatur (bei Luft Außentemperatur), eine Linie je Kaltwassertemperatur. Ohne Weg
+    /// der Hülle kein Bild.
+    /// </summary>
+    private RenderFragment Kennlinienbild(KaeltemaschineDaten d) => __builder =>
+    {
+        if (Kennlinienbilder is null) return;
+        KaeltemaschineKennlinienbilder bilder = BilderZu(d);
+        <div class="epos-kaeltemaschine-kennlinienbild">
+            <Reiter Bezeichnung="@Texte.KennlinienbildBezeichnung" Kennung="km-kennlinie" @bind-Aktiv="_kennlinienreiter">
+                <KindInhalt>
+                    <Reiterblatt Schluessel="EER" Titel="@Texte.ReiterEer">
+                        <KindInhalt>
+                            <DiagrammSvg Modell="@bilder.Eer" Kennung="km-kennlinie-eer"
+                                         Bezeichnung="@Texte.ReiterEer" PlatzhalterText="@Texte.PlatzhalterKennlinienbild" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                    <Reiterblatt Schluessel="LEISTUNG" Titel="@Texte.ReiterLeistung">
+                        <KindInhalt>
+                            <DiagrammSvg Modell="@bilder.Leistung" Kennung="km-kennlinie-leistung"
+                                         Bezeichnung="@Texte.ReiterLeistung" PlatzhalterText="@Texte.PlatzhalterKennlinienbild" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                </KindInhalt>
+            </Reiter>
+        </div>
+    };
+
+    /// <summary>
+    /// Die Bilder zum Stand <paramref name="d"/> aus dem Zwischenspeicher; neu gebaut nur bei geändertem Abzug
+    /// (Rückkühlart und alle Punkte), damit das Bild jeder Eingabe folgt und sonst seine Referenz behält.
+    /// </summary>
+    private KaeltemaschineKennlinienbilder BilderZu(KaeltemaschineDaten d)
+    {
+        if (Kennlinienbilder is null) return KaeltemaschineKennlinienbilder.Leer;
+        string abzug = Kennlinienabzug(d);
+        if (_kennlinienbilder.TryGetValue(d, out var alt) && alt.Abzug == abzug) return alt.Bilder;
+        if (_kennlinienbilder.Count > 8) _kennlinienbilder.Clear();
+        KaeltemaschineKennlinienbilder neu = Kennlinienbilder(d) ?? KaeltemaschineKennlinienbilder.Leer;
+        _kennlinienbilder[d] = (abzug, neu);
+        return neu;
+    }
+
+    private static string Kennlinienabzug(KaeltemaschineDaten d)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append(d.RueckkuehlartIndex?.ToString(CultureInfo.InvariantCulture) ?? "-");
+        foreach (KaeltemaschinePunktDaten p in d.Kennlinie)
+            sb.Append('|').Append(Abzugswert(p.Rueckkuehltemperatur)).Append(';').Append(Abzugswert(p.Kaltwassertemperatur))
+              .Append(';').Append(Abzugswert(p.Eer)).Append(';').Append(Abzugswert(p.Kaelteleistung));
+        return sb.ToString();
+    }
+
+    private static string Abzugswert(double? v) => v?.ToString("R", CultureInfo.InvariantCulture) ?? "-";
+
+    /// <summary>Die Kennlinie als Zeilenraster: vier Zahlen je Punkt, Entfernen je Zeile, Hinzufügen darunter.</summary>
+    private RenderFragment Kennlinienfelder(KaeltemaschineDaten d) => __builder =>
+    {
+        <Zeilenraster Bezeichnung="@Texte.KennlinieRaster" Spalten="@KennlinienSpalten"
+                      Spaltenmass="minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto">
+            <KindInhalt>
+                @for (int i = 0; i < d.Kennlinie.Count; i++)
+                {
+                    int index = i;
+                    KaeltemaschinePunktDaten p = d.Kennlinie[index];
+                    string nummer = string.Format(CultureInfo.CurrentCulture, Texte.Punkt, index + 1);
+                    <div class="epos-zr-zeile epos-kaeltemaschine-punkt" role="row" @key="p">
+                        <div class="epos-zr-zelle" role="cell">
+                            <Zahlenfeld Wert="@p.Rueckkuehltemperatur" Titel="@(nummer + " – " + Texte.SpalteRueckkuehltemperatur)"
+                                        Feldname="@(nummer + " – " + Texte.SpalteRueckkuehltemperatur)"
+                                        WertChanged="w => Punktfeld(() => p.Rueckkuehltemperatur = w)" />
+                        </div>
+                        <div class="epos-zr-zelle" role="cell">
+                            <Zahlenfeld Wert="@p.Kaltwassertemperatur" Titel="@(nummer + " – " + Texte.SpalteKaltwassertemperatur)"
+                                        Feldname="@(nummer + " – " + Texte.SpalteKaltwassertemperatur)"
+                                        WertChanged="w => Punktfeld(() => p.Kaltwassertemperatur = w)" />
+                        </div>
+                        <div class="epos-zr-zelle" role="cell">
+                            <Zahlenfeld Wert="@p.Eer" Titel="@(nummer + " – " + Texte.SpalteEer)"
+                                        Feldname="@(nummer + " – " + Texte.SpalteEer)"
+                                        WertChanged="w => Punktfeld(() => p.Eer = w)" />
+                        </div>
+                        <div class="epos-zr-zelle" role="cell">
+                            <Zahlenfeld Wert="@p.Kaelteleistung" Titel="@(nummer + " – " + Texte.SpalteKaelteleistung)"
+                                        Feldname="@(nummer + " – " + Texte.SpalteKaelteleistung)"
+                                        WertChanged="w => Punktfeld(() => p.Kaelteleistung = w)" />
+                        </div>
+                        <div class="epos-zr-zelle" role="cell">
+                            <span class="epos-zr-aktionen">
+                                <button type="button" class="epos-knopf epos-zr-knopf" title="@Texte.PunktEntfernen"
+                                        aria-label="@(nummer + " – " + Texte.PunktEntfernen)"
+                                        @onclick="() => PunktEntfernen(index)"><span aria-hidden="true">✕</span></button>
+                            </span>
+                        </div>
+                    </div>
+                }
+            </KindInhalt>
+            <AbschlussZeile>
+                <div class="epos-zr-neuzeile epos-kaeltemaschine-punkt-neu" role="row">
+                    @if (d.Kennlinie.Count == 0)
+                    {
+                        <p class="epos-leisezeile">@Texte.KennlinieLeer</p>
+                    }
+                    <button type="button" class="epos-textknopf" @onclick="PunktAnlegen">@Texte.PunktNeu</button>
+                </div>
+            </AbschlussZeile>
+        </Zeilenraster>
+    };
+
+    private IReadOnlyList<string> KennlinienSpalten => new[]
+    {
+        Texte.SpalteRueckkuehltemperatur + " [" + Texte.EinheitGradC + "]",
+        Texte.SpalteKaltwassertemperatur + " [" + Texte.EinheitGradC + "]",
+        Texte.SpalteEer,
+        Texte.SpalteKaelteleistung + " [" + Texte.EinheitKw + "]",
+        ""
+    };
+
+    // =====================================================================
+    // Teillast und Takten (KM3-E3-a)
+    // =====================================================================
+
+    private static IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<string> texte)
+        => texte.Select((t, i) => (i, t)).ToList();
+
+    private static string Text(IReadOnlyList<string> texte, int? platz, string leer)
+        => platz is int p && p >= 0 && p < texte.Count ? texte[p] : leer;
+
+    /// <summary>Die acht Felder der Gruppe — Auswahl und Zahlen, leer = Vorgabe (Platzhalter).</summary>
+    private RenderFragment Teillastfelder(KaeltemaschineDaten d) => __builder =>
+    {
+        <Formularraster>
+            <KindInhalt>
+                <Auswahlfeld Bezeichnung="@Texte.LabelTeillastWeg" Eintraege="@Eintraege(Texte.TeillastWege)"
+                             Platzhalter="@Texte.TeillastWegBestand"
+                             Auswahl="@d.TeillastWegIndex" AuswahlChanged="w => Feld(d, () => d.TeillastWegIndex = w)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelVerdichterregelung" Eintraege="@Eintraege(Texte.Verdichterregelungen)"
+                             Platzhalter="@Texte.RegelungKeine"
+                             Auswahl="@d.VerdichterregelungIndex" AuswahlChanged="w => Feld(d, () => d.VerdichterregelungIndex = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKurveA" Feldname="@Texte.LabelKurveA" Platzhalter="@Texte.PlatzhalterVorgabe"
+                            Wert="@d.KurveA" WertChanged="w => Feld(d, () => d.KurveA = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKurveB" Feldname="@Texte.LabelKurveB" Platzhalter="@Texte.PlatzhalterVorgabe"
+                            Wert="@d.KurveB" WertChanged="w => Feld(d, () => d.KurveB = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKurveC" Feldname="@Texte.LabelKurveC" Platzhalter="@Texte.PlatzhalterVorgabe"
+                            Wert="@d.KurveC" WertChanged="w => Feld(d, () => d.KurveC = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKurveLastgradMin" Feldname="@Texte.LabelKurveLastgradMin"
+                            Platzhalter="@Texte.PlatzhalterVorgabe"
+                            Wert="@d.KurveLastgradMin" WertChanged="w => Feld(d, () => d.KurveLastgradMin = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelCd" Feldname="@Texte.LabelCd" Platzhalter="@Texte.PlatzhalterCd"
+                            Wert="@d.Cd" WertChanged="w => Feld(d, () => d.Cd = w)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelRandweg" Eintraege="@Eintraege(Texte.Randwege)"
+                             Platzhalter="@Texte.PlatzhalterRandweg"
+                             Auswahl="@d.RandwegIndex" AuswahlChanged="w => Feld(d, () => d.RandwegIndex = w)" />
+            </KindInhalt>
+        </Formularraster>
+    };
+
+    /// <summary>Verweis, Lesezeile, Nenn-EER-Hinweis, kleine Kurve, Schnellwahlen und Auskunft zum Stand <paramref name="d"/>.</summary>
+    private RenderFragment Teillastlesung(KaeltemaschineDaten d) => __builder =>
+    {
+        <p class="epos-leisezeile">@Texte.VerweisMindestteillast</p>
+        @if (Lesezeile is not null)
+        {
+            KaeltemaschineTeillastLesestand l = Lesezeile(d);
+            <p class="epos-leisezeile epos-kaeltemaschine-lesezeile">@LesezeileText(l)</p>
+            @if (l.Hinweis.Length > 0)
+            {
+                <p class="epos-leisezeile epos-kaeltemaschine-teillasthinweis">@l.Hinweis</p>
+            }
+        }
+        @if (NennEerHinweis?.Invoke(d) is string nenn && nenn.Length > 0)
+        {
+            <Warnbanner Stufe="WarnStufe.Hinweis" Text="@nenn" />
+        }
+        @if (Teillastbild is not null)
+        {
+            <DiagrammSvg Modell="@Teillastbild(d)" Kennung="km-teillast" Bezeichnung="@Texte.BildTeillast" />
+        }
+        <div class="epos-knopfreihe epos-kaeltemaschine-schnellwahl">
+            @if (!_auslieferung && KurveAusTypkennfeld is not null && TypkennfeldVorhanden)
+            {
+                <button type="button" class="epos-textknopf" @onclick="() => TypwahlOeffnen(Typwahl.Kurve)">@Texte.KnopfKurveTypkennfeld</button>
+            }
+            @if (Skalieren is not null && Speichern is not null && TypkennfeldVorhanden)
+            {
+                <button type="button" class="epos-textknopf" @onclick="() => TypwahlOeffnen(Typwahl.Skalieren)">@Texte.KnopfSkalieren</button>
+            }
+            @if (Auskunft is not null)
+            {
+                <button type="button" class="epos-textknopf" @onclick="AuskunftOeffnen">@Texte.KnopfTeillastpunkte</button>
+            }
+        </div>
+    };
+
+    private string LesezeileText(KaeltemaschineTeillastLesestand l)
+        => string.Format(CultureInfo.CurrentCulture, Texte.Lesezeile,
+                         l.G25.ToString("0.00", CultureInfo.CurrentCulture), l.G50.ToString("0.00", CultureInfo.CurrentCulture),
+                         l.G75.ToString("0.00", CultureInfo.CurrentCulture));
+
+    /// <summary>Die Gruppe als Text — ein Auslieferungssatz; leer heißt Vorgabe.</summary>
+    private IReadOnlyList<Stammblattwert> Teillastwerte(KaeltemaschineDaten d) => new[]
+    {
+        new Stammblattwert(Texte.LabelTeillastWeg, Text(Texte.TeillastWege, d.TeillastWegIndex, Texte.TeillastWegBestand)),
+        new Stammblattwert(Texte.LabelVerdichterregelung, Text(Texte.Verdichterregelungen, d.VerdichterregelungIndex, Texte.RegelungKeine)),
+        new Stammblattwert(Texte.LabelKurveA, Vorgabe(d.KurveA, "0.######")),
+        new Stammblattwert(Texte.LabelKurveB, Vorgabe(d.KurveB, "0.######")),
+        new Stammblattwert(Texte.LabelKurveC, Vorgabe(d.KurveC, "0.######")),
+        new Stammblattwert(Texte.LabelKurveLastgradMin, Vorgabe(d.KurveLastgradMin, "0.###")),
+        new Stammblattwert(Texte.LabelCd, d.Cd.HasValue ? d.Cd.Value.ToString("0.###", CultureInfo.CurrentCulture) : Texte.PlatzhalterCd),
+        new Stammblattwert(Texte.LabelRandweg, Text(Texte.Randwege, d.RandwegIndex, Texte.PlatzhalterRandweg))
+    };
+
+    private string Vorgabe(double? wert, string format)
+        => wert.HasValue ? wert.Value.ToString(format, CultureInfo.CurrentCulture) : Texte.PlatzhalterVorgabe;
+
+    // ---- Schnellwahlen: Kurve aus Typkennfeld, Skalierung auf das Datenblatt ----
+
+    private enum Typwahl { Zu, Kurve, Skalieren }
+
+    private Typwahl _typwahl = Typwahl.Zu;
+    private int? _typwahlPlatz;
+    private string _typwahlMeldung = "";
+    private double? _skalierLeistung;
+    private double? _skalierEer;
+
+    private bool TypkennfeldVorhanden => Typkennfeldnamen is { Count: > 0 };
+
+    private IReadOnlyList<(int Id, string Text)> Typkennfeldeintraege
+        => Eintraege(Typkennfeldnamen ?? Array.Empty<string>());
+
+    private string TypwahlTitel => _typwahl == Typwahl.Skalieren ? Texte.KnopfSkalieren : Texte.KnopfKurveTypkennfeld;
+
+    private void TypwahlOeffnen(Typwahl art)
+    {
+        if (art == Typwahl.Kurve && _auslieferung) { Warnen(Texte.SpeichernGesperrt); return; }
+        if (art == Typwahl.Skalieren && _geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _typwahl = art;
+        _typwahlPlatz = null;
+        _typwahlMeldung = "";
+        _skalierLeistung = null;
+        _skalierEer = null;
+    }
+
+    private void TypwahlSchliessen()
+    {
+        _typwahl = Typwahl.Zu;
+        _typwahlMeldung = "";
+    }
+
+    /// <summary>
+    /// OK der Typkennfeldwahl: „Kurve" schreibt Weg, Beiwerte, x_u und Regelung in den Arbeitsstand (Speichern wie
+    /// jede Eingabe); „Skalieren" öffnet „Neu…" mit dem skalierten, ungespeicherten Satz — es entsteht ein eigener Satz.
+    /// </summary>
+    private void TypwahlErgebnis(bool ok)
+    {
+        if (!ok) { TypwahlSchliessen(); return; }
+        string name = _typwahlPlatz is int p && Typkennfeldnamen is not null && p >= 0 && p < Typkennfeldnamen.Count
+            ? Typkennfeldnamen[p] : "";
+        if (name.Length == 0) { _typwahlMeldung = Texte.MeldungTypkennfeldWaehlen; return; }
+
+        if (_typwahl == Typwahl.Kurve)
+        {
+            KaeltemaschineTypkurve? k = KurveAusTypkennfeld?.Invoke(name);
+            if (k is null) { _typwahlMeldung = Texte.MeldungTypkennfeldWaehlen; return; }
+            _arbeit.TeillastWegIndex = k.TeillastWegIndex;
+            _arbeit.KurveA = k.KurveA;
+            _arbeit.KurveB = k.KurveB;
+            _arbeit.KurveC = k.KurveC;
+            _arbeit.KurveLastgradMin = k.KurveLastgradMin;
+            _arbeit.VerdichterregelungIndex = k.VerdichterregelungIndex;
+            TypwahlSchliessen();
+            Nachziehen();
+            _status = string.Format(CultureInfo.CurrentCulture, Texte.KurveUebernommen, name);
+            return;
+        }
+
+        if (Skalieren is null) return;
+        KaeltemaschineSkalierErgebnis e = Skalieren(name, _skalierLeistung, _skalierEer);
+        if (e.Satz is null) { _typwahlMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
+        TypwahlSchliessen();
+        _meldung = "";
+        _neu = e.Satz;
+        _neu.Id = 0;
+        _neu.Auslieferung = false;
+        _neuMeldung = "";
+        _neuOffen = true;
+    }
+
+    // ---- Auskunft „Teillastpunkte prüfen…" ----
+
+    private sealed class Auskunftseingabe
+    {
+        public double? Aussen { get; set; }
+        public double? Lastgrad { get; set; }
+    }
+
+    private bool _auskunftOffen;
+    private Auskunftseingabe[] _auskunftEingaben = Array.Empty<Auskunftseingabe>();
+    private IReadOnlyList<KaeltemaschineAuskunftZeile>? _auskunftZeilen;
+    private string _auskunftMeldung = "";
+
+    private static string AuskunftName(int index) => ((char)('A' + index)).ToString();
+
+    /// <summary>Öffnet die Auskunft mit vier leeren Paaren — keine voreingetragenen Punkte (Fachkonzept 3.7).</summary>
+    private void AuskunftOeffnen()
+    {
+        _auskunftEingaben = Enumerable.Range(0, 4).Select(_ => new Auskunftseingabe()).ToArray();
+        _auskunftZeilen = null;
+        _auskunftMeldung = "";
+        _auskunftOffen = true;
+    }
+
+    private void AuskunftSchliessen()
+    {
+        _auskunftOffen = false;
+        _auskunftZeilen = null;
+        _auskunftMeldung = "";
+    }
+
+    /// <summary>Rechnet die Paare am Stand des Blatts (Arbeitsstand, beim Auslieferungssatz der gespeicherte).</summary>
+    private void AuskunftRechnen()
+    {
+        if (Auskunft is null) return;
+        var eingaben = _auskunftEingaben
+            .Select((e, i) => new KaeltemaschineAuskunftEingabe(AuskunftName(i), e.Aussen, e.Lastgrad))
+            .ToList();
+        KaeltemaschineAuskunftErgebnis r = Auskunft(_auslieferung ? _daten : _arbeit, eingaben);
+        _auskunftZeilen = r.Zeilen;
+        _auskunftMeldung = r.Zeilen is null ? (r.Meldung.Length > 0 ? r.Meldung : Texte.Fehler) : "";
+    }
+
+    private string AuskunftVermerk(KaeltemaschineAuskunftZeile z)
+    {
+        var teile = new List<string>(2);
+        if (z.Takt) teile.Add(Texte.AuskunftTakt);
+        if (z.Randwert) teile.Add(Texte.AuskunftRand);
+        return string.Join(" · ", teile);
+    }
+
+    /// <summary>Eine Eingabe in ein Feld — im Stammblatt zieht sie „geändert" nach, in „Neu…" nicht.</summary>
+    private void Feld(KaeltemaschineDaten d, Action schritt)
+    {
+        if (ReferenceEquals(d, _arbeit) && _auslieferung) return;
+        schritt();
+        if (ReferenceEquals(d, _arbeit)) Nachziehen();
+        else _neuMeldung = "";
+    }
+
+    private void Punktfeld(Action schritt)
+    {
+        if (_auslieferung) return;
+        schritt();
+        Nachziehen();
+    }
+
+    private void PunktAnlegen()
+    {
+        if (_auslieferung || _daten.Id <= 0) return;
+        _arbeit.Kennlinie.Add(new KaeltemaschinePunktDaten());
+        Nachziehen();
+    }
+
+    private void PunktEntfernen(int index)
+    {
+        if (_auslieferung || index < 0 || index >= _arbeit.Kennlinie.Count) return;
+        _arbeit.Kennlinie.RemoveAt(index);
+        Nachziehen();
+    }
+
+    private void Nachziehen()
+    {
+        _geaendert = _arbeit.Abweichungen(_daten) > 0;
+        _meldung = "";
+        _status = "";
+    }
+
+    /// <summary>„Hersteller · Luftgekühlt · Auslieferungssatz".</summary>
+    private string Unterzeile
+    {
+        get
+        {
+            if (_daten.Bezeichner.Length == 0) return "";
+            var teile = new List<string>(3);
+            if (_daten.Firma.Length > 0) teile.Add(_daten.Firma);
+            string art = RueckkuehlText(_daten.RueckkuehlartIndex);
+            if (art.Length > 0) teile.Add(art);
+            teile.Add(_auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
+            return string.Join(" · ", teile);
+        }
+    }
+
+    /// <summary>Nennkälteleistung, Nenn-EER und die Zahl der Kennlinienpunkte des gespeicherten Standes.</summary>
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen
+    {
+        get
+        {
+            if (_daten.Bezeichner.Length == 0) return Array.Empty<Stammblattkennzahl>();
+            return new[]
+            {
+                new Stammblattkennzahl(Zahl(_daten.Nennkaelteleistung, "0.#", Texte.EinheitKw), Texte.LabelNennkaelteleistung),
+                new Stammblattkennzahl(Zahl(_daten.NennEer, "0.0#", ""), Texte.LabelNennEer),
+                new Stammblattkennzahl(_daten.Kennlinie.Count.ToString(CultureInfo.CurrentCulture), Texte.GruppeKennlinie)
+            };
+        }
+    }
+
+    private static string Zahl(double? wert, string format, string einheit)
+        => wert.HasValue ? (wert.Value.ToString(format, CultureInfo.CurrentCulture) + " " + einheit).Trim() : "–";
+
+    private IReadOnlyList<Stammblattwert> Kenndatenwerte(KaeltemaschineDaten d) => new[]
+    {
+        new Stammblattwert(Texte.LabelBezeichner, d.Bezeichner),
+        new Stammblattwert(Texte.LabelFirma, d.Firma),
+        new Stammblattwert(Texte.LabelTyp, d.Typ),
+        new Stammblattwert(Texte.LabelBeschreibung, d.Beschreibung),
+        new Stammblattwert(Texte.LabelNennkaelteleistung, Zahl(d.Nennkaelteleistung, "0.###", ""), d.Nennkaelteleistung.HasValue ? Texte.EinheitKw : ""),
+        new Stammblattwert(Texte.LabelNennEer, Zahl(d.NennEer, "0.0##", "")),
+        new Stammblattwert(Texte.LabelKaeltemittel, d.Kaeltemittel),
+        new Stammblattwert(Texte.LabelRueckkuehlart, d.RueckkuehlartIndex.HasValue ? RueckkuehlText(d.RueckkuehlartIndex) : Texte.RueckkuehlartKeine),
+        new Stammblattwert(Texte.LabelMindestteillast, Zahl(d.Mindestteillast, "0.#", ""), d.Mindestteillast.HasValue ? Texte.EinheitProzent : ""),
+        new Stammblattwert(Texte.LabelHilfsstrom, d.Hilfsstrom.HasValue ? Zahl(d.Hilfsstrom, "0.###", "") : Texte.HilfsstromLeer,
+                           d.Hilfsstrom.HasValue ? Texte.EinheitKw : ""),
+        new Stammblattwert(Texte.LabelKaltwasserMin, Zahl(d.KaltwasserMin, "0.#", ""), d.KaltwasserMin.HasValue ? Texte.EinheitGradC : ""),
+        new Stammblattwert(Texte.LabelModulkosten, Zahl(d.Modulkosten, "#,##0.##", ""), d.Modulkosten.HasValue ? Texte.EinheitEuro : ""),
+        new Stammblattwert(Texte.LabelGeraeteart, Text(Texte.Geraetearten, d.GeraeteartIndex, Texte.GeraeteartAusRueckkuehlung)),
+        new Stammblattwert(Texte.LabelGwp, Zahl(d.Gwp, "#,##0.#", "")),
+        new Stammblattwert(Texte.LabelFuellmenge, Zahl(d.Fuellmenge, "0.0##", ""), d.Fuellmenge.HasValue ? Texte.EinheitKg : ""),
+        new Stammblattwert(Texte.LabelSaisonArt, Text(Texte.SaisonArten, d.SaisonArtIndex, Texte.SaisonArtKeine)),
+        new Stammblattwert(Texte.LabelSaisonkennzahl, Zahl(d.Saisonkennzahl, "0.0##", ""))
+    };
+
+    /// <summary>Die Kennlinie als Text — je Punkt „35 °C / 7 °C" → „EER 3,6 · 98 kW".</summary>
+    private IReadOnlyList<Stammblattwert> Kennlinienwerte(KaeltemaschineDaten d)
+    {
+        if (d.Kennlinie.Count == 0) return new[] { new Stammblattwert(Texte.GruppeKennlinie, Texte.KennlinieLeer) };
+        return d.Kennlinie.Select(p => new Stammblattwert(
+                    Zahl(p.Rueckkuehltemperatur, "0.#", Texte.EinheitGradC) + " / " + Zahl(p.Kaltwassertemperatur, "0.#", Texte.EinheitGradC),
+                    Texte.SpalteEer + " " + Zahl(p.Eer, "0.0#", "") + " · " + Zahl(p.Kaelteleistung, "0.#", Texte.EinheitKw)))
+                .ToList();
+    }
+
+    private string Aenderungshinweis
+    {
+        get
+        {
+            if (!_geaendert) return "";
+            int n = _arbeit.Abweichungen(_daten);
+            return n == 1 ? Resource.ADM_SB_GEAENDERT_EINS
+                 : string.Format(CultureInfo.CurrentCulture, Resource.ADM_SB_GEAENDERT, n);
+        }
+    }
+
+    // =====================================================================
+    // Speichern, Verwerfen, Neu — der EINE Schreibweg
+    // =====================================================================
+
+    /// <summary>Die Prüfung des Kerns; <c>null</c> = gültig.</summary>
+    private string? Pruefbefund(KaeltemaschineDaten d)
+    {
+        string? befund = Pruefen?.Invoke(d);
+        return string.IsNullOrEmpty(befund) ? null : befund;
+    }
+
+    /// <summary>
+    /// „Speichern": die Prüfregeln EINMAL, dann der Schreibweg der Hülle (Kopf und Kennlinie in einem
+    /// Vorgang); danach liest die Liste neu, die Wahl bleibt. Ein Auslieferungssatz ist weich gesperrt.
+    /// </summary>
+    private void BeiSpeichern()
+    {
+        _meldung = "";
+        if (_auslieferung) { SpeichernAbgelehnt(Texte.SpeichernGesperrt); return; }
+        if (!_geaendert || _daten.Id <= 0 || Speichern is null) return;
+
+        string? befund = Pruefbefund(_arbeit);
+        if (befund is not null) { SpeichernAbgelehnt(befund); return; }
+
+        // KT-4: Wirft der Schreibweg, bleibt der Arbeitsstand stehen und die Meldung nennt den Grund.
+        KaeltemaschineSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_arbeit), _arbeit.Bezeichner,
+                                                                   g => new KaeltemaschineSpeicherErgebnis(false, g, _arbeit.Id));
+        if (!e.Ok) { SpeichernAbgelehnt(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
+
+        _geaendert = false;
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_STATUS_GESPEICHERT,
+                                DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture));
+    }
+
+    private void BeiVerwerfen()
+    {
+        Zuruecksetzen();
+        _meldung = "";
+    }
+
+    private void BeiNeu()
+    {
+        if (Speichern is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _meldung = "";
+        _neu = new KaeltemaschineDaten();
+        _neuMeldung = "";
+        _neuOffen = true;
+    }
+
+    private void NeuSchliessen()
+    {
+        _neuOffen = false;
+        _neuMeldung = "";
+    }
+
+    /// <summary>„Neu…" — OK prüft (dieselbe Prüfung wie „Speichern") und legt an; die neue Zeile ist danach gewählt.</summary>
+    private void NeuErgebnis(bool ok)
+    {
+        if (!ok) { NeuSchliessen(); return; }
+        if (Speichern is null) return;
+
+        _neu.Id = 0;
+        string? befund = Pruefbefund(_neu);
+        if (befund is not null) { _neuMeldung = befund; return; }
+
+        KaeltemaschineSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_neu), _neu.Bezeichner,
+                                                                   g => new KaeltemaschineSpeicherErgebnis(false, g, 0));
+        if (!e.Ok) { _neuMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
+
+        string name = _neu.Bezeichner.Trim();
+        NeuSchliessen();
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Texte.Angelegt, name);
+    }
+
+    // =====================================================================
+    // Auswahlleiste: Vergleichen, Duplizieren..., Schloss, Löschen
+    // =====================================================================
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(4)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Duplizieren is not null)
+            liste.Add(new(Texte.KnopfDuplizieren, _duplizieren)
+            {
+                Hoechstens = 1,
+                ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
+            });
+        if (_schloss.Handlung(Schloss, _schlossHandlung, SchlossZiele, false) is { } schloss)
+            liste.Add(schloss);
+        if (Loeschen is not null)
+            liste.Add(new(Texte.KnopfLoeschen, _loeschen) { Sperrgrund = LoeschSperrgrund });
+        return liste;
+    }
+
+    private bool Geschuetzt(string schluessel) => ZeileZu(schluessel)?.Geschuetzt == true;
+
+    /// <summary>Ist JEDE Zielzeile ein Auslieferungssatz, ist „Löschen" weich gesperrt.</summary>
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0 || ziele.Any(z => !Geschuetzt(z))) return "";
+            return Resource.ADM_AW_LOESCHEN_GESPERRT;
+        }
+    }
+
+    private void Warnen(string text) => _meldung = text ?? "";
+
+    /// <summary>Ein Speichern ist abgelehnt: der Grund im Warnband UND rot in der Statuszeile.</summary>
+    private void SpeichernAbgelehnt(string grund)
+    {
+        Warnen(grund);
+        _status = grund ?? "";
+        _statusFehler = true;
+    }
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary><b>Der Vergleich</b> (V12): die Kenndaten der gewählten Geräte nebeneinander, dazu die Herkunft.</summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> schluessel = _auswahl.Gewaehlte;
+        _vergleichskoepfe = schluessel.Select(s => ZeileZu(s)?.Bezeichner ?? s).ToList();
+
+        var saetze = new List<IReadOnlyList<Vergleichsfeld>>(schluessel.Count);
+        foreach (string s in schluessel)
+        {
+            Katalogfilterzeile? z = ZeileZu(s);
+            if (UebersichtZuId is not null)
+            {
+                // KD-3: die Parameteruebersicht des Kerns - wie die Waermepumpe ihre Kennwerte nebeneinanderstellt.
+                IReadOnlyList<Parameterwert> werte = (z is null ? null : UebersichtZuId(z.Id)) ?? Array.Empty<Parameterwert>();
+                saetze.Add(werte.Select(w => new Vergleichsfeld(w.Eintrag.Spalte,
+                        w.Eintrag.Einheit.Length > 0 && w.Eintrag.Einheit != "-"
+                            ? w.Eintrag.Anzeigetext + " [" + w.Eintrag.Einheit + "]" : w.Eintrag.Anzeigetext,
+                        w.Wert)).ToList());
+                continue;
+            }
+            KaeltemaschineDaten d = (z is null ? null
+                : Katalogladung.SatzDazu(() => Lies?.Invoke(z.Id), z.Bezeichner, ref _satzFehler)) ?? new KaeltemaschineDaten();
+            var felder = Kenndatenwerte(d)
+                .Skip(1)
+                .Select((w, i) => new Vergleichsfeld("F" + i, w.Name, (w.Wert + " " + w.Einheit).Trim()))
+                .ToList();
+            felder.Add(new("KENNLINIE", Texte.GruppeKennlinie,
+                string.Format(CultureInfo.CurrentCulture, Texte.KennlinieAnzahl, d.Kennlinie.Count)));
+            felder.Add(new("HERKUNFT", Resource.ADM_VG_HERKUNFT,
+                Geschuetzt(s) ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ));
+            saetze.Add(felder);
+        }
+        _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
+    }
+
+    /// <summary>
+    /// <b>„Löschen"</b> (V8, AD-Q9): wirkt auf die gewählten Zeilen, sonst auf die Fokuszeile;
+    /// Auslieferungssätze bleiben stehen. Fragt zurück.
+    /// </summary>
+    private void BeiLoeschen()
+    {
+        if (Loeschen is null) return;
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0) return;
+
+        var loeschbar = ziele.Where(z => !Geschuetzt(z)).ToList();
+        var geschuetzt = ziele.Where(Geschuetzt).Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        if (loeschbar.Count == 0) { Warnen(LoeschSperrgrund); return; }
+
+        _loeschziele = loeschbar;
+        _loeschBleiben = geschuetzt.Count;
+
+        var namen = loeschbar.Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        string frage = namen.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Texte.FrageLoeschen, namen[0])
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            namen.Count, string.Join(", ", namen));
+        if (geschuetzt.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", geschuetzt));
+        _loeschfrageText = frage;
+        _loeschfrage = true;
+    }
+
+    private void BeiLoeschfrage(bool? ja)
+    {
+        _loeschfrage = false;
+        if (ja != true || Loeschen is null) return;
+
+        int geloescht = 0;
+        string einzeln = "";
+        string fehler = "";
+        foreach (string s in _loeschziele)
+        {
+            Katalogfilterzeile? z = ZeileZu(s);
+            if (z is null) continue;
+            KaeltemaschineSpeicherErgebnis e = Katalogladung.Loeschen(() => Loeschen(z.Id), z.Bezeichner,
+                                                                      g => new KaeltemaschineSpeicherErgebnis(false, g, z.Id));
+            if (e.Ok) { geloescht++; einzeln = z.Bezeichner; }
+            else if (fehler.Length == 0) fehler = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler;
+        }
+
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        _loeschziele = new List<string>();
+
+        if (geloescht > 0) ListeLaden();
+        if (fehler.Length > 0) Warnen(fehler);
+        if (geloescht == 0) return;
+
+        _status = ziele == 1
+            ? string.Format(CultureInfo.CurrentCulture, Texte.Geloescht, einzeln)
+            : blieben > 0
+                ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
+    }
+
+    private void BeiDuplizieren()
+    {
+        if (Duplizieren is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count != 1) return;
+
+        _duplizierQuelle = ziele[0];
+        _meldung = "";
+        _kopievorschlag = Katalogkopie.Namensvorschlag(ZeileZu(_duplizierQuelle)?.Bezeichner ?? "", NameVergeben);
+        _duplizierfrage = true;
+    }
+
+    /// <summary>Belegt ist ein Name, den ein Satz des Katalogs schon trägt (der Bezeichner ist eindeutig).</summary>
+    private bool NameVergeben(string name)
+        => _katalog.Any(z => string.Equals(z.Bezeichner, (name ?? "").Trim(), StringComparison.Ordinal));
+
+    private string? NameBelegt(string name) => NameVergeben(name) ? Texte.NameBelegt : null;
+
+    private void BeiDuplizierName(string? name)
+    {
+        _duplizierfrage = false;
+        if (name is null || Duplizieren is null) return;
+
+        Katalogfilterzeile? zeile = ZeileZu(_duplizierQuelle);
+        if (zeile is null) return;
+
+        KaeltemaschineSpeicherErgebnis e = Duplizieren(zeile.Id, name);
+        if (!e.Ok) { Warnen(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
+
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_DUPLIZIERT, zeile.Bezeichner, name.Trim());
+    }
+
+    // =====================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =====================================================================
+
+    private IReadOnlyList<Katalogfilterzeile> SchlossZiele
+        => Schlossumschaltung.Zeilen(_auswahl.Ziele(_gewaehlt), _katalog);
+
+    private void BeiSchloss()
+    {
+        string? grund = _schloss.Fragen(Schloss, SchlossZiele, _geaendert);
+        if (grund is not null) { Warnen(grund); return; }
+        _meldung = "";
+    }
+
+    private void BeiSchlossAntwort(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Schloss);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) Warnen(a.Fehler);
+            return;
+        }
+        ListeLaden();
+        _meldung = "";
+        _status = a.Status;
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    // =====================================================================
+    // KM1: "Import..." und "Typkennfelder laden..."
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parametersatz des Katalogimports der Art Kältemaschine (Windows: <c>KatalogImportHuelle.Gaben</c>);
+    /// <c>null</c> = die Plattform führt keinen Dateiimport — der Knopf lehnt dann benannt ab.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? ImportGaben { get; set; }
+
+    /// <summary>Lädt die eingebauten Typkennfelder in den Katalog (<c>KaeltemaschinenTypkennfelder.Einspielen</c>).</summary>
+    [Parameter] public Func<KaeltemaschineTypkennfelderErgebnis>? TypkennfelderLaden { get; set; }
+
+    /// <summary>Die Zahl der eingebauten Typkennfelder — für den Text der Rückfrage.</summary>
+    [Parameter] public int TypkennfelderAnzahl { get; set; }
+
+    private IReadOnlyDictionary<string, object>? _importGaben;
+    private HashSet<string> _vorImport = new(StringComparer.Ordinal);
+    private bool _typfrage;
+
+    private string TypfrageText => string.Format(CultureInfo.CurrentCulture, Texte.FrageTypkennfelder, TypkennfelderAnzahl);
+
+    /// <summary>„Import…" öffnet den Katalogimport; ohne Weg die benannte Ablehnung, geänderte Felder halten an.</summary>
+    private void ImportOeffnen()
+    {
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        IReadOnlyDictionary<string, object>? gaben = ImportGaben?.Invoke();
+        if (gaben is null) { Warnen(Texte.ImportPlattform); return; }
+        _meldung = "";
+        _vorImport = new HashSet<string>(_katalog.Select(z => z.Bezeichner), StringComparer.Ordinal);
+        _importGaben = gaben;
+    }
+
+    /// <summary>Der Import ist zu; hat er geschrieben, liest die Liste neu und die Statuszeile nennt die neuen Sätze.</summary>
+    private void ImportFertig(bool geschrieben)
+    {
+        _importGaben = null;
+        if (!geschrieben) return;
+        ListeLaden();
+        var neu = _katalog.Where(z => !_vorImport.Contains(z.Bezeichner)).ToList();
+        if (neu.Count == 0) return;
+        _status = neu.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_EINGELESEN, neu[0].Bezeichner)
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_IMPORTIERT, neu.Count);
+    }
+
+    private void TypkennfelderFragen()
+    {
+        if (TypkennfelderLaden is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _meldung = "";
+        _typfrage = true;
+    }
+
+    private void BeiTypfrage(bool? ja)
+    {
+        _typfrage = false;
+        if (ja != true || TypkennfelderLaden is null) return;
+        KaeltemaschineTypkennfelderErgebnis e = TypkennfelderLaden();
+        if (!e.Ok) { Warnen(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
+        if (e.Neu > 0) ListeLaden();
+        _status = string.Format(CultureInfo.CurrentCulture, Texte.TypkennfelderGeladen, e.Neu, e.Uebersprungen);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _neuOffen || _loeschfrage || _duplizierfrage || _schloss.FrageOffen
+            || _typfrage || _importGaben is not null)
+            return Task.CompletedTask;
+
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
+        return Schliessen();
+    }
+
+    /// <summary>Schließen — „Beenden", Esc und Schliesskreuz, immer mit <c>true</c>. Geänderte Werte halten an.</summary>
+    private Task Schliessen()
+    {
+        if (_geaendert)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return Task.CompletedTask;
+        }
+        return Geschlossen.InvokeAsync(true);
+    }
+}

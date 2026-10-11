@@ -45,9 +45,10 @@
    ZAPFPROFIL (Umsetzungskonzept Zapfprofilgenerator 5.2; ZU4, ZU6, ZU10). Nur bei der
    Auspraegung Brauchwasser und nur, wo die Huelle den Weg reicht: der Knopf
    "Zapfprofil erzeugen..." im Aktionsschlitz der SpeichernLeiste (nicht in der Leiste
-   "Simulation - monatlicher Verlauf", die sonst zum zweiten Fuss wuerde), die fuenfte
-   Ueberlagerung mit dem ZapfprofilDialog und die sichtbare Optionsgruppe "Rechenweg
-   Brauchwasser". Das OK des Zapfprofils stellt sie auf Zapfprofil; zurueckschalten
+   "Simulation - monatlicher Verlauf", die sonst zum zweiten Fuss wuerde), das BLATT mit dem
+   ZapfprofilDialog (Baustein Blattwechsel, Nachtrag N35: es tauscht den Inhalt dieses Dialogs,
+   statt als fuenfte Ueberlagerung eine dritte Ebene aufzumachen) und die sichtbare
+   Optionsgruppe "Rechenweg Brauchwasser". Das OK des Zapfprofils stellt sie auf Zapfprofil; zurueckschalten
    behaelt die Zonen. Geschrieben wird erst mit dem OK DIESES Dialogs, im selben
    Vorgang wie die Profilzuordnungen, und zwar VOR dem Schliessen (Delegat "Speichern"):
    Lehnt der Schreibweg ab, nennt ein Banner den Grund und der Dialog bleibt offen.
@@ -59,9 +60,17 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
 @implements IDisposable
+<CascadingValue Value="@CsvNaht">
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
+@* N35 (Anwenderentscheid 27.09.2026, Variante a): Auf dem Zapfprofil-BLATT tauscht der
+   Dialog seinen gesamten Haupt-Inhalt - Kopf, Katalog/Projektliste, Infoblock und die
+   uebrigen vier Ueberlagerungen - gegen das Blatt (siehe unten); das haelt die Ebenen
+   flach (Gebaeudekatalog -> "Brauchwasser..." -> Zapfprofil statt einer dritten
+   verschachtelten Ueberlagerung, Befund #572) und zeigt zugleich nur EINE Fussleiste. *@
+@if (!ZapfprofilOffen)
+{
     <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
         @if (!string.IsNullOrEmpty(TitelText))
         {
@@ -72,7 +81,7 @@
            Skalierung auf die Jahressumme und die monatsweise Normierung. Die Huelle
            setzt den Schluessel je Auspraegung. *@
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
-                   StandardKurztext="@HilfeKurztextBerechnung" />
+                   StandardKurztext="@HilfeKurztextBerechnung" MitAssistent="false" />
         @if (!string.IsNullOrEmpty(TitelText))
         {
             <Schliesskreuz Geschlossen="Abbrechen" />
@@ -84,6 +93,17 @@
     @if (_meldung.Length > 0)
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* KT-4: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
     }
 
     @if (MitRechenweg)
@@ -101,11 +121,12 @@
         </div>
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+    <Zweispaltenauswahl Dialogname="Bedarfsprofile" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         UebernehmenText="@BtnHinzuText"
                         UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText"
-                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen"
+                        SatzArt="@SatzArt" SatzName="@SatzName">
 
         <Links>
             <div class="epos-raster-huelle">
@@ -150,6 +171,9 @@
                         @onclick="BeiDbAendern">@BtnDbAendernText</button>
                 <button type="button" class="epos-knopf"
                         @onclick="() => _namensfrage = true">@BtnDbNeuText</button>
+                <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogzeile"
+                                JaText="@JaText" NeinText="@NeinText"
+                                Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
                 <button type="button" class="epos-knopf" disabled="@(_katalogzeile is null)"
                         @onclick="() => _loeschfrage = true">@BtnDbLoeschenText</button>
                 @if (TypProfilGaben is not null)
@@ -160,7 +184,7 @@
             </div>
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --------------------------------------------- Infoblock -------------- *@
     <Gruppenkopf Titel="@GruppeInfo">
@@ -171,6 +195,10 @@
                 <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@_infoName" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelTyp" Wert="@_infoTyp" NurLesen="true" />
+            @if (MitTemperatur)
+            {
+                <Textfeld Bezeichnung="@LabelTemperaturniveau" Wert="@_infoTemperatur" NurLesen="true" />
+            }
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_infoBeschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="3" />
             <Textfeld Bezeichnung="@LabelJahresverbrauch" Wert="@Jahresverbrauch" NurLesen="true" />
@@ -199,6 +227,49 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* PW1 Stufe 1: das Temperaturpaar der gewaehlten PROJEKTZEILE. Uebernommen wird in den
+       Arbeitsstand; geschrieben wird mit OK, wie der Jahresverbrauch. Leer = ohne
+       Temperaturniveau. Die Pruefung kommt als Delegat aus der Huelle. *@
+    @if (MitTemperatur)
+    {
+        <Gruppenkopf Titel="@GruppeTemperatur">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlauf"
+                            Nachkommastellen="1" Wert="@_neuVorlauf" WertChanged="w => _neuVorlauf = w"
+                            Aktiv="@(_gewaehlt is not null)" />
+                <Zahlenfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@LabelRuecklauf"
+                            Nachkommastellen="1" Wert="@_neuRuecklauf" WertChanged="w => _neuRuecklauf = w"
+                            Aktiv="@(_gewaehlt is not null)" />
+                    </KindInhalt>
+                </Formularraster>
+                <Herleitungszeile Text="@HinweisTemperatur" />
+                <button type="button" class="epos-knopf"
+                        @onclick="BeiTemperaturUebernehmen">@BtnTemperaturText</button>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* PW2/BW2: der Betriebskalender der gewaehlten PROJEKTZEILE - Feiertage und Betriebsferien
+       auf ihrem Wochenprofil. Die Wahl geht in den Arbeitsstand der Zeile; geschrieben wird mit
+       OK, wie der Jahresverbrauch. Ohne Liste der Huelle steht die Gruppe nicht da. *@
+    @if (Betriebskalender is not null)
+    {
+        <Gruppenkopf Titel="@GruppeKalender">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                <Auswahlfeld Bezeichnung="@LabelKalender" Eintraege="@KalenderWahlEintraege"
+                             Auswahl="@(_gewaehlt?.KalenderId ?? 0)" AuswahlChanged="KalenderGewaehlt"
+                             Aktiv="@(_gewaehlt is not null)" />
+                    </KindInhalt>
+                </Formularraster>
+                <Herleitungszeile Text="@HinweisKalender" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" @onclick="BeiSimulation">@BtnSimulationText</button>
         @if (Zapfprofilweg)
@@ -206,6 +277,9 @@
             <span class="epos-leisezeile epos-zapfprofil-leiste">@ZapfprofilEinstiegTexte.LeisteZapfprofil</span>
         }
     </div>
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {
@@ -259,9 +333,17 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung 5: das Brauchwasser-Zapfprofil (5.2) ----------------- *@
-    <Ueberlagerung Offen="@(_zapfprofilGaben is not null)" Titel="@ZapfprofilEinstiegTexte.Titel"
-                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _zapfprofilGaben = null">
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText" Frage="@Loeschfrage"
+                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+}
+
+    @* --- Das Zapfprofil-BLATT (N35, Zuschnitt a) statt der fuenften Ueberlagerung ---
+       Blattwechsel tauscht den Inhalt DIESES Dialogs (siehe @if oben) gegen das Blatt;
+       derselbe ZapfprofilDialog, dieselbe Geschlossen-Behandlung wie zuvor (OK uebernimmt,
+       Abbrechen verwirft, beide fuehren zurueck) - nur eine Ebene flacher. *@
+    <Blattwechsel Offen="@ZapfprofilOffen" WirtTitel="@KopfbandText"
+                  Titel="@ZapfprofilEinstiegTexte.Titel" ZusatzKlasse="epos-blatt--breit"
+                  Zurueck="ZapfprofilZurueck">
         <KindInhalt>
             @if (_zapfprofilGaben is not null)
             {
@@ -269,13 +351,24 @@
                                   Geschlossen="ZapfprofilGeschlossen" />
             }
         </KindInhalt>
-    </Ueberlagerung>
-
-    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText" Frage="@Loeschfrage"
-                Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+    </Blattwechsel>
 </div>
 
+</CascadingValue>
+
 @code {
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster der ersten Spalte); jedes
+    /// Diagramm dieses Dialogs mit Reihen bekommt den Knopf über die Kaskade. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Naht der Kaskade; das Raster folgt der Länge der Reihen.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
     /// <summary>Welches der drei Bedarfsblätter. Sie bestimmt Beschriftungen UND Rechenweg.</summary>
     [Parameter] public BedarfsArt Art { get; set; } = BedarfsArt.Prozesswaerme;
 
@@ -318,6 +411,54 @@
 
     /// <summary>Der Infoblock zu einem Profil.</summary>
     [Parameter] public Func<string, BedarfsProfilInfo?>? Info { get; set; }
+
+    /// <summary>
+    /// Prüft ein Temperaturpaar (PW1 Stufe 1) — <c>null</c> = zulässig, sonst der Grund. Nur bei
+    /// der Prozesswärme gereicht; ohne ihn zeigt der Dialog kein Temperaturniveau.
+    /// </summary>
+    [Parameter] public Func<double?, double?, string?>? TemperaturPruefen { get; set; }
+
+    /// <summary><c>PW_GRP_TEMPERATUR</c></summary>
+    [Parameter] public string GruppeTemperatur { get; set; } = Resource.PW_GRP_TEMPERATUR;
+
+    /// <summary><c>PW_LBL_TEMPERATURNIVEAU</c></summary>
+    [Parameter] public string LabelTemperaturniveau { get; set; } = Resource.PW_LBL_TEMPERATURNIVEAU;
+
+    /// <summary><c>PW_LBL_VORLAUF</c></summary>
+    [Parameter] public string LabelVorlauf { get; set; } = Resource.PW_LBL_VORLAUF;
+
+    /// <summary><c>PW_LBL_RUECKLAUF</c></summary>
+    [Parameter] public string LabelRuecklauf { get; set; } = Resource.PW_LBL_RUECKLAUF;
+
+    /// <summary><c>PW_HINW_TEMPERATUR</c></summary>
+    [Parameter] public string HinweisTemperatur { get; set; } = Resource.PW_HINW_TEMPERATUR;
+
+    /// <summary><c>PW_BTN_TEMPERATUR</c></summary>
+    [Parameter] public string BtnTemperaturText { get; set; } = Resource.PW_BTN_TEMPERATUR;
+
+    /// <summary><c>PW_MSG_TEMPERATUR_UEBERNOMMEN</c></summary>
+    [Parameter] public string MeldungTemperaturUebernommen { get; set; } = Resource.PW_MSG_TEMPERATUR_UEBERNOMMEN;
+
+    /// <summary>
+    /// Die Betriebskalender zur Wahl je Zuordnung (PW2/BW2) als (ID, Bezeichner); <c>null</c> = die
+    /// Hülle bietet die Wahl nicht an, dann steht die Gruppe nicht da.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)>? Betriebskalender { get; set; }
+
+    /// <summary><c>BPF_GRP_KALENDER</c></summary>
+    [Parameter] public string GruppeKalender { get; set; } = Resource.BPF_GRP_KALENDER;
+
+    /// <summary><c>BPF_LBL_KALENDER</c></summary>
+    [Parameter] public string LabelKalender { get; set; } = Resource.BPF_LBL_KALENDER;
+
+    /// <summary><c>BPF_KALENDER_KEINER</c> — der Eintrag „ohne Kalender".</summary>
+    [Parameter] public string TextOhneKalender { get; set; } = Resource.BPF_KALENDER_KEINER;
+
+    /// <summary><c>BPF_HINW_KALENDER</c></summary>
+    [Parameter] public string HinweisKalender { get; set; } = Resource.BPF_HINW_KALENDER;
+
+    /// <summary><c>PW_TEMPERATUR_OHNE</c> — die Anzeige ohne Temperaturpaar.</summary>
+    [Parameter] public string TextOhneTemperatur { get; set; } = Resource.PW_TEMPERATUR_OHNE;
 
     /// <summary>Die Summe der zwölf Monatswerte eines Katalogsatzes.</summary>
     [Parameter] public Func<string, double>? Jahressumme { get; set; }
@@ -527,10 +668,21 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
+    /// <summary>N35: Nach dem Rückweg vom Zapfprofil-Blatt bekommt die Wurzel den Fokus zurück
+    /// (derselbe Platz wie beim ersten Aufbau) — der Blattwechsel fokussiert nur SICH SELBST.</summary>
+    private bool _fokusZurueckNoetig;
+
     private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private Katalogfilterstand _filterstand = new();
     private BedarfsProfilZeile? _gewaehlt;
     private Katalogfilterzeile? _katalogzeile;
+
+    /// <summary>Was die Satzzeile zeigt: die Zuordnung, den Katalogsatz oder keinen.</summary>
+    private Satzmarke SatzArt => _gewaehlt is not null ? Satzmarke.Projektsatz
+                               : _katalogzeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Satzzeile.</summary>
+    private string? SatzName => _gewaehlt?.Name ?? _katalogzeile?.Bezeichner;
 
     /// <summary>Der Bezeichner der gewählten Katalogzeile — die Markierung hängt am NAMEN.</summary>
     private string _katalogGewaehlt = "";
@@ -538,6 +690,24 @@
     private string _infoName = "";
     private string _infoBeschreibung = "";
     private string _infoTyp = "";
+    private string _infoTemperatur = "";
+
+    // PW1 Stufe 1: die Eingabefelder des Temperaturpaars der gewählten Projektzeile.
+    private double? _neuVorlauf;
+    private double? _neuRuecklauf;
+
+    /// <summary>Zeigt der Dialog das Temperaturniveau? Nur Prozesswärme mit Prüfdelegat.</summary>
+    private bool MitTemperatur => Art == BedarfsArt.Prozesswaerme && TemperaturPruefen is not null;
+
+    /// <summary>Das Temperaturniveau im Infoblock — Prüfhilfe für die Tests.</summary>
+    public string InfoTemperatur => _infoTemperatur;
+
+    /// <summary>Ein Paar als Anzeigetext „90 / 60 °C"; ohne Paar <see cref="TextOhneTemperatur"/>.</summary>
+    private string TemperaturText(double? vorlauf, double? ruecklauf)
+        => vorlauf is null || ruecklauf is null
+            ? TextOhneTemperatur
+            : vorlauf.Value.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) + " / " +
+              ruecklauf.Value.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture) + " °C";
 
     /// <summary>Der angezeigte Jahresverbrauch IN MWH; <c>null</c> = noch keiner.</summary>
     private double? _jahresverbrauchMWh;
@@ -554,6 +724,12 @@
     private IReadOnlyDictionary<string, object>? _ergebnisGaben;
     private IReadOnlyDictionary<string, object>? _typStammGaben;
     private string _meldung = "";
+
+    /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
     private IReadOnlyDictionary<string, object>? _zapfprofilGaben;
     private ZapfprofilWeg _rechenweg = ZapfprofilWeg.Bestand;
@@ -683,7 +859,13 @@
             RechenwegLesen = () => MitRechenweg ? (int)_rechenweg : null,
             RechenwegSetzen = KiRechenweg,
             RechenwegEintraege = () => KiMaskenanmeldung.Eintraege(
-                Rechenwege, e => e.Id, e => e.Text)
+                Rechenwege, e => e.Id, e => e.Text),
+
+            // PW2/BW2: der Betriebskalender der markierten Zeile - derselbe Weg wie die Wahl.
+            KalenderLesen = () => Betriebskalender is null ? null : _gewaehlt?.KalenderId ?? 0,
+            KalenderSetzen = KalenderGewaehlt,
+            KalenderEintraege = () => KiMaskenanmeldung.Eintraege(
+                KalenderWahlEintraege, e => e.Id, e => e.Text)
         };
     }
 
@@ -753,14 +935,25 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !_ersterAufbau) return;
-        _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        if (firstRender && _ersterAufbau)
+        {
+            _ersterAufbau = false;
+            await _wurzel.FocusAsync(preventScroll: true);
+            return;
+        }
+
+        if (_fokusZurueckNoetig && !ZapfprofilOffen)
+        {
+            // Ohne Rollen: Den Rollstand stellt der Blattwechsel wieder her; ein Fokus auf die
+            // (hohe) Wurzel liesse den Browser ihn sonst neu bestimmen.
+            _fokusZurueckNoetig = false;
+            await _wurzel.FocusAsync(preventScroll: true);
+        }
     }
 
     private void KatalogLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
         VerwendungStempeln();
 
         if (_katalogzeile is null) return;
@@ -809,6 +1002,11 @@
         _katalogGewaehlt = "";
         _jahresverbrauchMWh = z.Summe;
         InfoSetzen(z.Name);
+
+        // PW1 Stufe 1: Die Projektzeile zeigt IHR Paar (die Projektkopie), nicht das des Katalogs.
+        _neuVorlauf = z.Vorlauf;
+        _neuRuecklauf = z.Ruecklauf;
+        _infoTemperatur = TemperaturText(z.Vorlauf, z.Ruecklauf);
     }
 
     /// <summary>
@@ -829,12 +1027,68 @@
 
     private void InfoSetzen(string name)
     {
-        BedarfsProfilInfo? info = Info?.Invoke(name);
+        // KT-4: Warf das Lesen, bleibt das Stammblatt wie es war; der Banner nennt den Grund.
+        BedarfsProfilInfo? info = Katalogladung.Satz(() => Info?.Invoke(name), name, out _satzFehler);
         if (info is null) return;
 
         _infoName = info.Name;
         _infoBeschreibung = info.Beschreibung;
         _infoTyp = info.Typ;
+        _infoTemperatur = TemperaturText(info.Vorlauf, info.Ruecklauf);
+    }
+
+    /// <summary>Die Wahl der Kalender: 0 = ohne, dann die Gaben der Hülle.</summary>
+    private IReadOnlyList<(int Id, string Text)> KalenderWahlEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)> { (0, TextOhneKalender) };
+            if (Betriebskalender is not null) l.AddRange(Betriebskalender);
+            return l;
+        }
+    }
+
+    /// <summary>
+    /// Der Betriebskalender der gewählten Projektzeile (PW2/BW2) — in den Arbeitsstand; geschrieben
+    /// wird mit OK. Ohne gewählte Zeile meldet die Maske, statt still nichts zu tun.
+    /// </summary>
+    private void KalenderGewaehlt(int? id)
+    {
+        if (_gewaehlt is null)
+        {
+            Melden(MeldungKeineAuswahl, WarnStufe.Warnung);
+            return;
+        }
+        int? neu = id is > 0 ? id : null;
+        if (_gewaehlt.KalenderId == neu) return;
+        _gewaehlt.KalenderId = neu;
+        Geaendert?.Invoke();
+    }
+
+    /// <summary>
+    /// „Temperaturen übernehmen" (PW1 Stufe 1): Projektzeile gewählt und ein zulässiges Paar —
+    /// dann geht es in den Arbeitsstand der Zeile; geschrieben wird mit OK.
+    /// </summary>
+    private void BeiTemperaturUebernehmen()
+    {
+        if (_gewaehlt is null)
+        {
+            Melden(MeldungKeineAuswahl, WarnStufe.Warnung);
+            return;
+        }
+        string? grund = TemperaturPruefen?.Invoke(_neuVorlauf, _neuRuecklauf);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+
+        _gewaehlt.Vorlauf = _neuVorlauf;
+        _gewaehlt.Ruecklauf = _neuRuecklauf;
+        _gewaehlt.TemperaturGeaendert = true;
+        _infoTemperatur = TemperaturText(_neuVorlauf, _neuRuecklauf);
+        Geaendert?.Invoke();
+        Melden(MeldungTemperaturUebernommen, WarnStufe.Hinweis);
     }
 
     // =================================================================================
@@ -1002,7 +1256,13 @@
         _loeschfrage = false;
         if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogzeile.Bezeichner)) return;
+        string loeschName = _katalogzeile.Bezeichner;
+        if (!Katalogladung.Loeschen(() => KatalogLoeschen(loeschName), loeschName, out string loeschGrund))
+        {
+            // KT-4: Warf der Löschweg, nennt die Meldung den Grund.
+            if (loeschGrund.Length > 0) Melden(loeschGrund, WarnStufe.Warnung);
+            return;
+        }
 
         _katalogzeile = null;
         KatalogLaden();
@@ -1075,12 +1335,20 @@
     private void ZapfprofilGeschlossen(ZapfprofilErgebnisDaten? ergebnis)
     {
         _zapfprofilGaben = null;
+        _fokusZurueckNoetig = true;
         if (ergebnis is null) return;
 
         ZapfprofilUebernommen?.Invoke(ergebnis);
         _rechenweg = ZapfprofilWeg.Generator;
         _zapfprofilZonen = ergebnis.Eingabe.Zonen.Count;
     }
+
+    /// <summary>
+    /// N35: Rückknopf „‹ {Wirtstitel}" und Esc des Blattes — wie das Kreuz der abgelösten
+    /// Ueberlagerung führen beide zurück, ohne den eingebetteten Dialog zu fragen (Hausregel
+    /// „der Wirt schließt dafür selbst"): kein Übernehmen, kein Rechenweg-Wechsel.
+    /// </summary>
+    private void ZapfprofilZurueck() => ZapfprofilGeschlossen(null);
 
     /// <summary>Die Optionsgruppe: stellt nur den Weg um, die Zonen bleiben (ZU4).</summary>
     private void RechenwegWaehlen(int? id)
@@ -1101,7 +1369,8 @@
     {
         if (ok && Speichern is not null)
         {
-            string grund = Speichern() ?? "";
+            // KT-4: Wirft der Schreibweg, bleibt der Dialog offen und die Meldung nennt den Grund.
+            string grund = Katalogladung.Schreiben(() => Speichern() ?? "", TitelText, g => g);
             if (grund.Length > 0)
             {
                 Melden(grund, WarnStufe.Fehler);
@@ -1116,9 +1385,36 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
+        if (e.Key == "Escape" && _katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         if (e.Key != "Escape" || _ergebnisGaben is not null || _typStammGaben is not null ||
             _typProfilOffen || _namensfrage || _loeschfrage || _zapfprofilGaben is not null)
             return Task.CompletedTask;
         return Abbrechen();
     }
+
+    // =================================================================================
+    // Schloss setzen / aufheben (AD-Q15) - derselbe Baustein wie in den Verwaltungen
+    // =================================================================================
+
+    /// <summary>
+    /// „Schloss setzen…" / „Schloss aufheben…" an der Katalogliste
+    /// (<c>Schlosswege.Aus(…SchlossSetzen)</c>). Ohne ihn steht der Knopf nicht da.
+    /// Die Verwendung im Projekt sperrt nichts: Das Projekt führt eine eigene Kopie.
+    /// </summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    private Katalogschloss? _katalogschloss;
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _katalogschloss?.FrageOffen == true;
+
+    /// <summary>Nach dem Schalten: Liste neu lesen, Status melden.</summary>
+    private void BeiSchlossGeschaltet(string status)
+    {
+        KatalogLaden();
+        Melden(status ?? "", WarnStufe.Hinweis);
+    }
+
+    /// <summary>Warum nicht geschaltet wurde.</summary>
+    private void BeiSchlossAbgelehnt(string grund) => Melden(grund ?? "", WarnStufe.Warnung);
 }

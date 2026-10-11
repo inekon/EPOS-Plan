@@ -1,0 +1,4 @@
+Nummer;Bezeichner;Beschreibung;Nutzung_Von;Nutzung_Bis;Betrieb_Von;Betrieb_Bis;Nutzungstage_Woche;Feiertage_Wie_Sonntag;Heiz_Soll;Heiz_Soll_Ausserhalb;Heiz_Aus_Ausserhalb;Kuehl_Soll;Kuehl_Soll_Ausserhalb;Kuehl_Aus_Ausserhalb;Aussenluft;Aussenluft_Einheit;Aussenluft_Ausserhalb;Personen_Flaeche;Personen_Waerme;Personen_Anteil;Personen_Anteil_Ausserhalb;Geraete_Leistung;Geraete_Anteil;Geraete_Anteil_Ausserhalb;Beleuchtung_Leistung;Beleuchtung_Anteil;Stunden_PERSONEN_WERKTAG;Stunden_PERSONEN_FREI
+B1;Beispielraum A;Phantasiewerte zum Ausprobieren;8;18;7;19;1111100;1;20;15;0;25;;1;2;1/h;0;20;100;1;0;5;1;0.1;5;1;;
+B2;Beispielraum B;"Phantasiewerte; Heizen außerhalb aus";6;22;;;1111110;0;20;;1;;;;;;;40;100;0.5;0;10;1;0;;;;
+B3;Beispielraum C;Phantasiewerte mit Stundenprofil der Personen;0;24;;;1111111;0;20;20;0;;;;1;m3/hm2;1;50;100;;;;;;;;0 0 0 0 0 0 0.5 1 1 1 1 1 1 1 1 1 1 1 0.5 0 0 0 0 0;0 0 0 0 0 0 0 0 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0 0 0 0 0 0 0 0

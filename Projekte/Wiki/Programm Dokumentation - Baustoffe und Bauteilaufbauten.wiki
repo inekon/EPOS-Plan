@@ -13,11 +13,11 @@ Der Baustoffkatalog führt je Stoff einen Namen, eine Gruppe (etwa Mauerwerk, Be
 {| class="wikitable"
 ! Wert !! Einheit !! zulässig
 |-
-| Wärmeleitfähigkeit λ || W/(mK) || 0,005 … 500
+| Wärmeleitfähigkeit <math>\lambda</math> || W/(mK) || 0,005 … 500
 |-
-| Rohdichte ρ || kg/m³ || 5 … 8 000
+| Rohdichte <math>\rho</math> || kg/m³ || 5 … 8 000
 |-
-| spezifische Wärmekapazität c_p || J/(kgK) || 100 … 5 000
+| spezifische Wärmekapazität <math>c_{p}</math> || J/(kgK) || 100 … 5 000
 |}
 
 Die Wärmekapazität steht in '''J'''/(kgK), nicht in kJ/(kgK) wie in manchen Tabellenwerken – 1 kJ/(kgK) sind 1 000 J/(kgK). Ein leeres Feld heißt „nicht angegeben"; eine 0 wäre ein anderer Stoff und wird nicht angenommen. Dazu kommt die ''Quelle'', das Regelwerk oder Datenblatt, aus dem die Werte stammen.
@@ -29,7 +29,7 @@ Die mitgelieferten Stoffe tragen das Schloss: Sie sind nur lesbar. Einen eigenen
 == Bauteilaufbauten ==
 {{Anker|bauteilaufbauten}}
 
-Ein Bauteilaufbau hat einen Namen, eine Bauteilart, eine Beschreibung, eine Quelle und seine '''Schichten'''. Die Liste zeigt je Aufbau die Bauteilart, den U-Wert, den Wärmedurchlasswiderstand R, die flächenbezogene Wärmekapazität, die Zahl der Schichten, die Gesamtdicke und die Herkunft.
+Ein Bauteilaufbau hat einen Namen, eine Bauteilart, eine Beschreibung, eine Quelle und seine '''Schichten'''. Die Liste zeigt je Aufbau die Bauteilart, den U-Wert, den Wärmedurchlasswiderstand <math>R</math>, die flächenbezogene Wärmekapazität, die Zahl der Schichten, die Gesamtdicke und die Herkunft.
 
 Die '''Bauteilart''' (Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, Decke, Vorhangfassade, Sonstiges oder ''für jede Bauteilart'') legt die Neigung fest, mit der der Katalog den U-Wert rechnet: Wand 90°, Dach und Decke 0°, Bodenplatte 180°. Fenster und Vorhangfassade rechnen im Gebäudemodell aus ihrem U-Wert; ein Schichtaufbau ist für sie nicht vorgesehen und wird beim Speichern abgelehnt.
 
@@ -38,11 +38,11 @@ Die '''Bauteilart''' (Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, D
 
 Die Gruppe ''Schichten'' im Stammblatt ist eine Liste, in der jede Zeile eine Schicht ist – von innen (Schicht 1) nach außen. Je Schicht:
 
-* '''Baustoff''' – die Wahl aus dem Baustoffkatalog. Sie übernimmt λ, ρ und c_p des Stoffes als Kopie; danach können Sie jeden Wert überschreiben. ''(freie Eingabe)'' lässt die Werte stehen und löst die Zuordnung.
-* '''Dicke''' in mm, zulässig 1 bis 1 000 mm.
-* '''λ, ρ, c_p''' – die Werte der Schicht. Eine Schicht aus Stoff braucht alle drei; der Bauteilweg rechnet mit ihnen die Speichermasse.
-* '''Luftschicht''' – ohne λ ist die Schicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8 (bis 300 mm), und sie trägt keine Speichermasse. Mit λ rechnet sie wie eine Stoffschicht mit dieser äquivalenten Leitfähigkeit.
-* '''R''' – der Wärmedurchlasswiderstand der Schicht in m²K/W, gerechnet.
+* '''Baustoff''' – die Wahl aus dem Baustoffkatalog. Sie übernimmt <math>\lambda</math>, <math>\rho</math> und <math>c_{p}</math> des Stoffes als Kopie; danach können Sie jeden Wert überschreiben. ''(freie Eingabe)'' lässt die Werte stehen und löst die Zuordnung.
+* '''Dicke''' in mm, zulässig 0,5 bis 1 000 mm.
+* '''<math>\lambda</math>, <math>\rho</math>, <math>c_{p}</math>''' – die Werte der Schicht. Eine Schicht aus Stoff braucht alle drei; der Bauteilweg rechnet mit ihnen die Speichermasse.
+* '''Luftschicht''' – ohne <math>\lambda</math> ist die Schicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8 (bis 300 mm), und sie trägt keine Speichermasse. Mit <math>\lambda</math> rechnet sie wie eine Stoffschicht mit dieser äquivalenten Leitfähigkeit.
+* '''<math>R</math>''' – der Wärmedurchlasswiderstand der Schicht in m²K/W, gerechnet.
 
 Die Knöpfe ▲ und ▼ schieben eine Schicht nach innen oder außen, ✕ nimmt sie heraus, ''+ Neue Schicht …'' hängt außen eine an. Die Nummerierung folgt immer der Reihenfolge der Liste.
 
@@ -51,17 +51,17 @@ Die Knöpfe ▲ und ▼ schieben eine Schicht nach innen oder außen, ✕ nimmt 
 
 Unter den Schichten stehen die Kennwerte des Aufbaus:
 
-* '''R = Σ d/λ''' – der Wärmedurchlasswiderstand aller Schichten einschließlich der ruhenden Luftschichten.
-* '''U = 1/(R_si + R + R_se)''' – mit den Wärmeübergangswiderständen nach DIN EN ISO 6946, Tabelle 7, für die Neigung der Bauteilart an Außenluft. Die Zeile darunter nennt die angesetzten Werte R_si und R_se.
-* '''C = Σ ρ·c_p·d''' – die flächenbezogene Wärmekapazität in kJ/(m²K).
-* '''T_BT''' – die Bezugsperiode nach VDI 6007 Blatt 1, Gl. (10a)–(10d): 7 Tage, oder 2 Tage bei raumseitig abgedeckter Speichermasse (etwa hinter einer Vorsatzschale mit Luftschicht). Daneben steht die wirksame Kapazität C₁ je m² bei dieser Periode.
+* '''<math>R = \sum d / \lambda</math>''' – der Wärmedurchlasswiderstand aller Schichten einschließlich der ruhenden Luftschichten.
+* '''<math>U = 1/(R_{\mathrm{si}} + R + R_{\mathrm{se}})</math>''' – mit den Wärmeübergangswiderständen nach DIN EN ISO 6946, Tabelle 7, für die Neigung der Bauteilart an Außenluft. Die Zeile darunter nennt die angesetzten Werte <math>R_{\mathrm{si}}</math> und <math>R_{\mathrm{se}}</math>.
+* '''<math>C = \sum \rho \cdot c_{p} \cdot d</math>''' – die flächenbezogene Wärmekapazität in kJ/(m²K).
+* '''<math>T_{\mathrm{BT}}</math>''' – die Bezugsperiode nach VDI 6007 Blatt 1, Gl. (10a)–(10d): 7 Tage, oder 2 Tage bei raumseitig abgedeckter Speichermasse (etwa hinter einer Vorsatzschale mit Luftschicht). Daneben steht die wirksame Kapazität <math>C_{1}</math> je m² bei dieser Periode.
 
 Fehlt einer Schicht eine Angabe, bleiben die Summen leer, und die Zeile nennt, was fehlt.
 
 === Speichern und Neu ===
 {{Anker|speichern}}
 
-Geschrieben wird der Aufbau erst mit ''Speichern'' – Kopf und Schichten zusammen. Vorher prüft EPOS-Plan: ein Name, mindestens eine Schicht, jede Dicke im zulässigen Bereich, λ, ρ und c_p im zulässigen Bereich und vorhanden, wo die Schicht sie braucht. Eine verletzte Regel steht als Meldung über der Liste; der Aufbau bleibt ungespeichert, bis Sie sie beheben oder ''Verwerfen'' wählen.
+Geschrieben wird der Aufbau erst mit ''Speichern'' – Kopf und Schichten zusammen. Vorher prüft EPOS-Plan: ein Name, mindestens eine Schicht, jede Dicke im zulässigen Bereich, <math>\lambda</math>, <math>\rho</math> und <math>c_{p}</math> im zulässigen Bereich und vorhanden, wo die Schicht sie braucht. Eine verletzte Regel steht als Meldung über der Liste; der Aufbau bleibt ungespeichert, bis Sie sie beheben oder ''Verwerfen'' wählen.
 
 ''Neu…'' öffnet dieselben Felder samt Schichtenliste als eigenes Blatt über der Verwaltung; ''OK'' prüft mit denselben Regeln und legt den Aufbau an. ''Duplizieren…'' kopiert einen Aufbau samt seinen Schichten unter neuem Namen.
 

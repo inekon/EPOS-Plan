@@ -22,6 +22,7 @@
 # ---------------------------------------------------------------------------
 #
 #   Praefix.Controlpfad = Kurzname[#anker]
+#   Praefix.Controlpfad = /wiki/Seitentitel[#anker]
 #
 #   Praefix       Name des Formulars (Form.Name) bzw. der Name, mit dem
 #                 RegisterControl(container, name) aufgerufen wird.
@@ -32,6 +33,20 @@
 #                 Unterseite, die der Button oeffnen soll - also z. B.
 #                 "Klimadaten" fuer
 #                 https://wiki.epos-plan.de/wiki/Programm_Dokumentation/Klimadaten
+#   /wiki/Seitentitel
+#                 Ein Ziel mit fuehrendem "/wiki/" ist ein SEITENPFAD
+#                 AUSSERHALB der Rubrik (Konzept Technikdokumentation,
+#                 Abschnitt 7): der volle Wiki-Titel, Leerzeichen als
+#                 Unterstrich, Umlaute im Klartext - so, wie MediaWiki den
+#                 Titel in die Adresse schreibt. Beispiel:
+#                 "/wiki/Grundlagen/Kessel_und_Spitzenlast" fuer
+#                 https://wiki.epos-plan.de/wiki/Grundlagen/Kessel_und_Spitzenlast
+#                 Gebraucht fuer die Rubrik "Grundlagen": Ihre Seiten heissen
+#                 teils wie Seiten der Rubrik ("Wärmepumpe", "BHKW"), ein
+#                 Kurzname waere dort mehrdeutig. Der Kurztext lautet
+#                 "Grundlagen: <Titel>" (Kern: Hilfeziel.Kurztext, Ressource
+#                 HILFE_GRUNDLAGEN_KURZTEXT); Einzelheiten im Abschnitt
+#                 "Rubrik Grundlagen" am Dateiende.
 #   #anker        Optional: eine Sprungmarke innerhalb der Seite
 #                 ({{Anker|...}} im Wiki). Sie wird VOR der Katalogaufloesung
 #                 abgetrennt und beim Oeffnen wieder angehaengt.
@@ -51,6 +66,9 @@
 #    verworfen; es wurde nichts konvertiert. Der Katalog kennt ausschliesslich
 #    die Unterseiten der Rubrik "Programm Dokumentation" - er laedt sie ueber
 #    api.php?action=query&list=allpages&apprefix=Programm%20Dokumentation%2F.
+#    Einzige Ausnahme sind die Seiten der Rubrik "Grundlagen": Sie stehen im
+#    mitgelieferten Startbestand (help_cache.json) und ueberleben jeden Abruf
+#    (Abschnitt "Rubrik Grundlagen" am Dateiende).
 #
 # 3. Abgleich ueber die Kleinschreibform. Katalog-Kurzname und Mapping-Ziel
 #    laufen beide durch WikiHelpCatalog.SlugNormalisieren (Trim +
@@ -152,6 +170,10 @@ Form_Prozesswaerme.btn_Help         = Prozesswärme
 # Ueberlagerung des Bedarfsprofil-Dialogs mit eigener Bedienseite. Die Gruppen der
 # Stufen Erweitert und Experte und die Warnliste der Bilanz springen auf ihre Anker.
 Form_Zapfprofil.btn_Help            = Brauchwasser-Zapfprofil
+# Betriebskalender der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2).
+Form_Betriebskalender.btn_Help      = Betriebskalender
+# Die Pufferspeicher-Auslegung (Konzept Pufferspeicher-Auslegung) mit eigener Bedienseite.
+Form_PufferAuslegung.btn_Help       = Pufferspeicher auslegen
 Form_Zapfprofil.grp_Belegung        = Brauchwasser-Zapfprofil#belegung
 Form_Zapfprofil.grp_Schaetzhilfen   = Brauchwasser-Zapfprofil#schaetzhilfen
 Form_Zapfprofil.grp_Fachwerte       = Brauchwasser-Zapfprofil#fachwerte
@@ -287,13 +309,16 @@ Luftaustausch.btn_Help = Gebäude#zonen
 # und Bauteilaufbauten.wiki), je Maske ein Abschnitt.
 BaustoffKatalog.btn_Help = Baustoffe und Bauteilaufbauten#baustoffe
 Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
+# Das Blatt "Nutzungsprofile" (Katalog und Zuordnung der Nutzungsprofile, aus dem Gebaeudeeditor und
+# dem Gebaeudeimport): Razor-Komponente ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente
+# (HilfeSchluessel); die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Nutzungsprofile.wiki).
+Nutzungsprofile.btn_Help = Nutzungsprofile
 # Gebaeudeimport (gbXML, IFC): der Zuordnungsdialog hat eine eigene Seite mit
 # Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki); beide
 # Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).
 Form_GebaeudeImport.btn_Help = Gebäudeimport#zuordnung
-# Gebaeudeexport (gbXML, G7a): bis die Seite den Abschnitt "Gebäudedaten ausgeben" traegt
-# (Wiki-Upload mit G7b), springt er auf den Kopf der Importseite - ohne Anker.
-GebaeudeExport.btn_Help = Gebäudeimport
+# Gebaeudeexport (gbXML): der Abschnitt "Gebäudedaten ausgeben" der Importseite.
+GebaeudeExport.btn_Help = Gebäudeimport#export
 # Die Ansicht "Baustoff-Zuordnungen..." des Gebaeudedialogs: der Abschnitt zu den gemerkten Zuordnungen.
 Baustoffzuordnungen.btn_Help = Gebäudeimport#baustoffzuordnungen
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
@@ -303,6 +328,8 @@ Form_KiEinstellungen.btn_Help = Hilfe-Assistent
 # Dialog - die Anker gibt es auf der Seite, sie waren nur nicht verdrahtet.
 Form_CaseEingabe.btn_Help = Kosten
 Form_Energietraeger.btn_Help = Kosten#energietraegerverwaltung
+# Brennstoffe des Projekts (Projektkopie des Brennstoffkatalogs): eigener Abschnitt der Seite Kosten.
+Form_ProjektBrennstoffe.btn_Help = Kosten#brennstoffe-des-projekts
 Form_KostenAdmin.btn_Help = Kosten
 Form_KostenKomponente.btn_Help = Kosten#komponentenliste
 Form_Kostenprofil.btn_Help = Kosten
@@ -348,6 +375,8 @@ Form_Waermesenke.btn_Help = Simulation
 Form_SolarDB.btn_Help = Solarthermie
 Form_Solarganglinie.btn_Help = Solarthermie
 Form_Solarganglinie_Admin.btn_Help = Solarthermie
+Form_PvGanglinie.btn_Help = Photovoltaik#ganglinie
+Form_PvGanglinie_Admin.btn_Help = Photovoltaik#ganglinie-dialog
 Form_GanglinieImportOptionen.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help_Import = Strombedarf
@@ -430,11 +459,16 @@ Form_AdminStromspeicher.btn_Help    = Gerätekataloge#stromspeicher
 # Abschnitt dazu. Die Importschluessel stehen in KatalogImportDialog (je
 # Auspraegung) bzw. im Kern (ModulImportProfil).
 Form_KatalogDubletten.btn_Help          = Gerätekataloge#dubletten
+# Katalog aktualisieren (Abgleich mit dem Katalogpaket der Auslieferung): eigener
+# Abschnitt derselben Seite.
+Form_Katalogabgleich.btn_Help           = Gerätekataloge#katalog-aktualisieren
 Form_Heizkessel_einlesen.btn_Help       = Gerätekataloge#import
 Form_PufferSp_einlesen.btn_Help         = Gerätekataloge#import
 Form_SolarKollektoren_einlesen.btn_Help = Gerätekataloge#import
 Form_WP_einlesen.btn_Help               = Gerätekataloge#import
+Form_WP_Kaelte_einlesen.btn_Help        = Gerätekataloge#import-kaelteanlagen
 Form_Stromspeicher_einlesen.btn_Help    = Gerätekataloge#import
+Form_Kaeltemaschine_einlesen.btn_Help   = Gerätekataloge#import-kaeltemaschinen
 Main_PV_Test.btn_Help                   = Gerätekataloge#import
 Form_WechselrichterImport.btn_Help      = Gerätekataloge#import
 # Berichtsvorlagen (BV-E1): Die Ueberlagerungen "Pruefliste" und "Platzhalterkatalog"
@@ -643,7 +677,7 @@ UcBericht.lblZiel      = Bericht#zielordner
 # Fensterknopf <Form>.btn_Help: Der zeigt weiter auf die allgemeine Seite OHNE
 # Anker, denn dort ist der Anfang die Antwort.
 #
-# Die Anker sind auf jeder der 13 Seiten dieselben sieben, kleingeschrieben und
+# Die Anker sind auf jeder der 14 Seiten dieselben sieben, kleingeschrieben und
 # ohne Umlaut: was, eingang, zeichen, rechenweg, grenzen, ergebnisse, bezuege;
 # die Photovoltaikseite fuehrt achtens "wechselrichter". Gesetzt werden sie im
 # Wiki mit {{Anker|<name>}} unmittelbar UNTER der Ueberschrift (Vorlage:Anker,
@@ -669,8 +703,20 @@ Form_PufferSp.Berechnung         = Berechnung/Pufferspeicher#rechenweg
 Form_PufferSp_Projekt.Berechnung = Berechnung/Pufferspeicher#rechenweg
 Form_SolarKollektoren.Berechnung = Berechnung/Solarthermie#rechenweg
 Form_Solarganglinie.Berechnung   = Berechnung/Solarthermie#rechenweg
+Form_PvGanglinie.Berechnung      = Berechnung/Photovoltaik#rechenweg
 Form_PV.Berechnung               = Berechnung/Photovoltaik#rechenweg
 Form_Stromspeicher.Berechnung    = Berechnung/Stromspeicher#rechenweg
+
+# Kaelteseite: Anlagendialog der Kaeltemaschinen, Gruppe Kuehlbetrieb der
+# Waermepumpen-Konfiguration und Bereich Kuehlung der Simulation Konfiguration.
+Form_Kaeltemaschine.Berechnung              = Berechnung/Kühlung#rechenweg
+Form_WP_Kuehlung.Berechnung                 = Berechnung/Kühlung#rechenweg
+Form_Simulation_Config_Kuehlung.Berechnung  = Berechnung/Kühlung#rechenweg
+# Neben jedem Rechenwegknopf einer Technik steht ihr Grundlagenknopf
+# (Form_WP_Kuehlung.Grundlagen steht im Abschnitt Kuehlung weiter unten).
+Form_Kaeltemaschine.Grundlagen              = /wiki/Grundlagen/Kühlung
+Form_Kaeltemaschine_Stamm.Grundlagen        = /wiki/Grundlagen/Kühlung
+Form_Simulation_Config_Kuehlung.Grundlagen  = /wiki/Grundlagen/Kühlung
 
 # Teil C (Katalogeditoren) - Anwenderentscheid O-H13b-5 vom 07.09.2026
 # ---------------------------------------------------------------------------
@@ -689,8 +735,9 @@ Form_Stromspeicher.Berechnung    = Berechnung/Stromspeicher#rechenweg
 # BedarfsProfileDialog.
 #
 # ZWEI ABWEICHUNGEN, beide belegt:
-#   Form_AdminWechselrichter zeigt auf die Seite Photovoltaik - der
-#   Wechselrichter ist ein ABSCHNITT darauf und keine eigene Seite.
+#   Form_AdminWechselrichter zeigt auf die Rechenwegseite Photovoltaik - der
+#   Wechselrichter ist dort ein ABSCHNITT und keine eigene Rechenwegseite
+#   (die Bedienungsseite Programm Dokumentation/Wechselrichter gibt es).
 #   Form_WP_Stamm statt Form_WP: Form_WP.Berechnung gehoert seit H13b
 #   (Abweichung A-1) dem Anlagendialog, weil dessen Fensterschluessel noch
 #   Wizard_WPItem.btn_Help lautet.
@@ -702,3 +749,95 @@ Form_PufferSp_Admin.Berechnung      = Berechnung/Pufferspeicher#rechenweg
 Form_AdminPV.Berechnung             = Berechnung/Photovoltaik#rechenweg
 Form_AdminWechselrichter.Berechnung = Berechnung/Photovoltaik#wechselrichter
 Form_AdminStromspeicher.Berechnung  = Berechnung/Stromspeicher#rechenweg
+Form_Kaeltemaschine_Stamm.Berechnung = Berechnung/Kühlung#rechenweg
+
+# ===========================================================================
+# Rubrik Grundlagen (Konzept Technikdokumentation, Abschnitt 7; TD-E1, TD-E2)
+# ===========================================================================
+# Die Wiki-Rubrik "Grundlagen" erklaert jede Technik kurz und knapp, ohne
+# Bezug auf die Bedienung. Sie liegt AUSSERHALB der Rubrik "Programm
+# Dokumentation" und fuehrt teils gleichnamige Seiten (Wärmepumpe, BHKW,
+# Photovoltaik ...). Ihre Ziele stehen deshalb als SEITENPFAD, nie als
+# Kurzname:
+#
+#     /wiki/Grundlagen/<Titel>[#anker]
+#
+# Leerzeichen als Unterstrich, Umlaute im Klartext. Der Windows-Katalog kennt
+# die zehn Seiten aus dem mitgelieferten Startbestand (help_cache.json), auch
+# ohne Netz; ein Onlineabruf verwirft sie nicht
+# (WikiHelpCatalog.GrundlagenRueckfallErgaenzen). Eine WEITERE Grundlagenseite
+# als Ziel braucht deshalb auch eine Zeile im Startbestand. Der Kurztext lautet
+# unter Windows wie auf iOS "Grundlagen: <Titel>" (Kern: Hilfeziel.Kurztext).
+#
+# Der SCHLUESSEL folgt dem Muster <Formname>.Grundlagen. Der Knopf sitzt LINKS
+# neben dem Knopf <Formname>.Berechnung, in derselben Huelle
+# (.epos-berechnungshilfe; bei der Waermequelle Erdreich die Herleitungszeile,
+# in der ihr Rechenwegknopf steht), und zwar in jedem Technikdialog: Projektdialog wie
+# Katalogeditor, je Technik die Grundlagenseite der Technik, deren Rechenweg
+# der Berechnungsknopf zeigt. Die Dialoge des Bedarfs und der Simulation
+# bekommen keinen - sie zeigen keinen Rechenweg einer Technik.
+#
+# Drei Abschnitte ohne eigene Rechenwegseite fuehren ein PAAR aus
+# Anwendungsseite (<Name>.btn_Help) und Grundlagenseite (<Name>.Grundlagen):
+#   Form_PV_Wechselrichter  Wechselrichterwahl im PV-Dialog (PhotovoltaikDialog,
+#                           ueber dem Abschnitt PvStraengeFelder)
+#   Form_Gebaeude_Kuehlung  Gruppe Kuehlung des Gebaeudes (GebaeudeKatalogDialog
+#                           und GebaeudeStammblattFelder)
+#   Form_WP_Kuehlung        Gruppe Kuehlbetrieb der Waermepumpen-Konfiguration
+#                           (WaermepumpeKonfiguration, zwei Wirte)
+# Ihr Praefix beginnt mit dem Praefix des Dialogs; der Hilfe-Assistent findet
+# damit denselben Bereich (KiChatKontext, laengstes passendes Praefix).
+#
+# Waechter: EPOS.UI.Tests/GrundlagenknopfTests (Zeile <-> Knopf, Ziel unter
+# /wiki/Grundlagen/, Nachbar des Berechnungsknopfs) und
+# EPOS.Kern.Tests/HelpMappingAnkerWacheTests (Anker gegen die Repo-Quelle
+# "Projekte/Wiki/Grundlagen - <Titel>.wiki", sobald es sie gibt).
+
+# Projektdialoge
+Form_Heizkessel.Grundlagen       = /wiki/Grundlagen/Kessel_und_Spitzenlast
+Form_BHKWEing.Grundlagen         = /wiki/Grundlagen/BHKW
+Form_WP.Grundlagen               = /wiki/Grundlagen/Wärmepumpe
+Form_Betriebsmodus.Grundlagen    = /wiki/Grundlagen/Wärmepumpe
+Form_PufferSp.Grundlagen         = /wiki/Grundlagen/Pufferspeicher
+Form_PufferSp_Projekt.Grundlagen = /wiki/Grundlagen/Pufferspeicher
+Form_SolarKollektoren.Grundlagen = /wiki/Grundlagen/Solarkollektoren
+Form_Solarganglinie.Grundlagen   = /wiki/Grundlagen/Solarkollektoren
+Form_PvGanglinie.Grundlagen      = /wiki/Grundlagen/Photovoltaik
+Form_PV.Grundlagen               = /wiki/Grundlagen/Photovoltaik
+Form_Stromspeicher.Grundlagen    = /wiki/Grundlagen/Stromspeicher
+Form_QuelleErdreich.Grundlagen   = /wiki/Grundlagen/Wärmequelle_Erdreich
+
+# Katalogeditoren (die Schluessel stehen im Profil des Kerns bzw. in
+# WaermepumpeStammDialog, wie die Berechnungsschluessel)
+Form_Heizkessel_Admin.Grundlagen      = /wiki/Grundlagen/Kessel_und_Spitzenlast
+Form_BHKWAdmin.Grundlagen             = /wiki/Grundlagen/BHKW
+Form_WP_Stamm.Grundlagen              = /wiki/Grundlagen/Wärmepumpe
+Form_SolarKollektorenAdmin.Grundlagen = /wiki/Grundlagen/Solarkollektoren
+Form_PufferSp_Admin.Grundlagen        = /wiki/Grundlagen/Pufferspeicher
+Form_AdminPV.Grundlagen               = /wiki/Grundlagen/Photovoltaik
+Form_AdminWechselrichter.Grundlagen   = /wiki/Grundlagen/Wechselrichter
+Form_AdminStromspeicher.Grundlagen    = /wiki/Grundlagen/Stromspeicher
+
+# Die drei Abschnitte mit Knopfpaar
+Form_PV_Wechselrichter.btn_Help   = Wechselrichter#einbindung
+Form_PV_Wechselrichter.Grundlagen = /wiki/Grundlagen/Wechselrichter
+Form_Gebaeude_Kuehlung.btn_Help   = Kühlung#eingaben
+Form_Gebaeude_Kuehlung.Grundlagen = /wiki/Grundlagen/Kühlung
+Form_WP_Kuehlung.btn_Help         = Kälteerzeugung#kuehlbetrieb
+Form_WP_Kuehlung.Grundlagen       = /wiki/Grundlagen/Kühlung
+
+# Zwei weitere Hilfeknoepfe der Kuehlung, nur mit Anwendungsseite: der
+# Projektschalter "Kühlung rechnen" der Simulationskonfiguration
+# (SimulationKonfigSeite) und der Unterabschnitt "Kühlübergabe" des Gebaeudes
+# (GebaeudeKuehluebergabeFelder, in Katalogeditor und Verwaltung).
+Form_Simulation_Config_Kuehlung.btn_Help = Kühlung#einschalten
+Form_Gebaeude_Kuehluebergabe.btn_Help    = Gebäudemodell VDI 6007#kuehluebergabe
+
+# Die Projekteinstellung "Aufheizoptimierung" der Simulationskonfiguration
+# (SimulationKonfigSeite, Entwurf KP3 Welle O1): bis der Abschnitt der Anwendungsseite
+# mit seinem Anker steht, auf Seitenebene.
+Form_Simulation_Config_Aufheizung.btn_Help = Gebäudemodell VDI 6007
+
+# Kaeltemaschine: Katalogdialog und Anlagendialog (KU3-4b).
+KaeltemaschineKatalog.btn_Help = Kälteerzeugung#kaeltemaschine-katalog
+KaeltemaschineAnlage.btn_Help = Kälteerzeugung#kaeltemaschine-anlage

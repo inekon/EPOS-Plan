@@ -95,6 +95,7 @@ namespace WindowsFormsApplication1
 
             return new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
                 ["Geaendert"] = geaendert,
@@ -106,6 +107,10 @@ namespace WindowsFormsApplication1
                 // W14a-E-10 / S3.2: dieselbe Katalogliste wie in der Verwaltung, mit
                 // Jahresarbeit und Spitze aus EINER Gruppenabfrage - und der Spalte
                 // "im Projekt verwendet" (Q12), die es nur im Projektdialog gibt.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) =>
+                    ZeitreihenKatalogCtrl.SchlossSetzen(Zeitreihenart.Waermebedarf, ids, gesperrt)),
                 ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(
                     WaermebedarfAdminHuelle.KatalogLesen),
                 ["Katalogprofil"] = Katalogfilterprofil
@@ -142,7 +147,9 @@ namespace WindowsFormsApplication1
                 ["Kennzahlen"] = new Func<GanglinienWahl, Task<GanglinienKennzahlen>>(
                     w => Task.FromResult(vorrat.Kennzahlen(w))),
                 ["Bildauftrag"] = new Func<GanglinienWahl, bool, Zeichenmodell>(
-                    (w, sortiert) => vorrat.Modell(w, sortiert)),
+                    (w, sortiert) => vorrat.Modell(w, sortiert, 0, 0)),
+                // DZ1-N2: dasselbe Modell in der gemessenen Groesse der Zeichenflaeche.
+                ["BildauftragMass"] = new Func<GanglinienWahl, bool, int, int, Zeichenmodell>(vorrat.Modell),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
@@ -337,7 +344,9 @@ namespace WindowsFormsApplication1
             /// </summary>
             /// <param name="wahl">Katalogsatz oder Projektkopie.</param>
             /// <param name="sortiert">Dauerlinie statt Ganglinie.</param>
-            internal Zeichenmodell Modell(GanglinienWahl wahl, bool sortiert)
+            /// <param name="breite">Breite der Zeichenflaeche in px; 0 = Vorgabegroesse.</param>
+            /// <param name="hoehe">Hoehe der Zeichenflaeche in px; 0 = Vorgabegroesse.</param>
+            internal Zeichenmodell Modell(GanglinienWahl wahl, bool sortiert, int breite, int hoehe)
             {
                 GanglinienAuswertung a = Lesen(wahl);
                 if (a == null || !a.Erfolgreich) return null;
@@ -355,7 +364,7 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
                     MyResource.Resource.CHART_ACHSE_WAERMELAST,
                     sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                    sortiert);
+                    sortiert, breite: breite, hoehe: hoehe);
             }
 
             /// <summary>Liest die Reihe — oder gibt die schon gelesene zurück.</summary>

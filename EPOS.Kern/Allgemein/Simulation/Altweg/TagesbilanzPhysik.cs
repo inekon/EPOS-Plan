@@ -212,10 +212,10 @@ namespace WindowsFormsApplication1.Altweg
                 }
 
                 // --- Fortschreibung der Raumtemperatur (RC-Modell) ---
-                double a = 1.0 - Math.Exp(-L / C);            // 1 - exp(-L/C)
+                double a = 1.0 - Plattformrundung.Exp(-L / C);            // 1 - exp(-L/C)
                 int solarFlag = (h > 8 && h < 15) ? 1 : 0;    // Solar nur tagsüber
                 double pGesTerm = a * (4.0 * solareGewinne * solarFlag + L * aussenTemp + innereGewinne + pHzg) / L;
-                tPrev = Math.Exp(-L / C) * tPrev + pGesTerm;
+                tPrev = Plattformrundung.Exp(-L / C) * tPrev + pGesTerm;
                 if (tPrev > maxRaumtemp) tPrev = maxRaumtemp; // Kappung auf Maximaltemperatur
             }
 

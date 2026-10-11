@@ -48,7 +48,9 @@ namespace EPOS.Kern.Tests
             // DREIZEHN seit der Stufe Z4b: "TyptagGaben" bringt den Dialog der eingespielten
             // VDI-4655-Typtage als Ueberlagerung des Katalogdialogs herein. VIERZEHN mit ZU26:
             // "OrdnerwahlVerfuegbar" sagt, ob die Plattform einen Paketordner waehlen laesst.
-            Assert.Equal(14, gaben.Count);
+            // FUENFZEHN mit CSV-3: "CsvSpeichern" schreibt die Zapfprofil-Zeitreihe ueber die
+            // Diagrammexportnaht als CSV-Datei (Knopf "CSV..." am Bild).
+            Assert.Equal(15, gaben.Count);
             Assert.Equal(ZapfprofilHuelle.HILFE_KATALOG, gaben["HilfeSchluessel"]);
         }
 
@@ -132,7 +134,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new double?[] { 1, 2, 3 }, a.Entwurf.Bedarf);
             Assert.Equal(1.5, a.Entwurf.BedarfMin[1]);
             Assert.Equal(12, a.Monatsnamen.Count);
-            Assert.Equal(7, a.Bezugsarten.Count);
+            Assert.Equal(8, a.Bezugsarten.Count);
             Assert.Equal(new[] { satz }, a.Tagesgangsaetze.Select(s => s.Id).ToArray());   // der halbe Satz fehlt
             Assert.NotEqual(halb, a.Entwurf.IdTagesgangsatz);
             Assert.Contains("20 %", a.Wochenfaktoren, StringComparison.Ordinal);
@@ -295,7 +297,7 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             IReadOnlyList<Katalogfilterzeile> zeilen = ZapfprofilHuelle.KatalogZeilen();
-            Assert.Equal(9, zeilen.Count);                 // drei fiktive, fünf abgeleitete (Katalogausbau Z5), das Hotel aus Messung (ZU36)
+            Assert.Equal(12, zeilen.Count);                // drei fiktive, fünf abgeleitete (Katalogausbau Z5), das Hotel aus Messung (ZU36), Büro/Schule/Gewerbe (V31)
             Katalogfilterzeile a = zeilen.Single(z => z.Bezeichner == "Testnutzung A (fiktiv)");
             TwwNutzungsartDetailDaten d = ZapfprofilHuelle.KatalogDetail(a.Id);
             Assert.Equal(4, d.Kategorien.Count(k => k.Name.Length > 0));

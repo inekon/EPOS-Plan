@@ -103,34 +103,67 @@ namespace WindowsFormsApplication1
         {
             var ctrl = new PhotovoltaikStammCtrl();
             ctrl.ReadSingle(name);
-            if (ctrl.rows == 0) return null;
-
-            PhotovoltaikModel m = ctrl.items[0];
-            return new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                [ModulKatalogProfil.FeldBezeichner] = m.m_szName ?? "",
-                [ModulKatalogProfil.FeldFirma] = m.m_szFirma ?? "",
-                [ModulKatalogProfil.FeldBeschreibung] = m.m_szBeschreibung ?? "",
-                [ModulKatalogProfil.FeldLeistung] = m.m_Leistung.ToString("F2"),
-                [ModulKatalogProfil.FeldWirkungsgrad] = m.m_Wirkungsgrad.ToString("F2"),
-                [ModulKatalogProfil.FeldUMpp] = m.m_U_Mpp.ToString(),
-                [ModulKatalogProfil.FeldULeerlauf] = m.m_U_Leerlauf.ToString(),
-                [ModulKatalogProfil.FeldIMpp] = m.m_I_Mpp.ToString(),
-                [ModulKatalogProfil.FeldIKurzschluss] = m.m_I_Kurzschluss.ToString(),
-                [ModulKatalogProfil.FeldTempKoeff] = m.m_Temp_Coeff_Pmax.ToString(),
-                [ModulKatalogProfil.FeldLaenge] = m.m_Laenge.ToString(),
-                [ModulKatalogProfil.FeldBreite] = m.m_Breite.ToString(),
-                [ModulKatalogProfil.FeldModulkosten] = m.m_Modulkosten.ToString(),
-                // Paket A/B des PV-Ertragsmodells (Merge 5)
-                [ModulKatalogProfil.FeldTNoct] = m.m_T_NOCT.ToString(),
-                [ModulKatalogProfil.FeldTechnologie] = m.m_Technologie ?? ""
-            };
+            return ctrl.rows == 0 ? null : PhotovoltaikStammCtrl.Anzeige(ctrl.items[0]);
         }
 
         private static KatalogSpeicherErgebnis Schreiben(IReadOnlyList<ModulFeldwert> felder,
                                                          bool neu, string schluessel)
         {
-            var m = new PhotovoltaikModel
+            PhotovoltaikStammCtrl.SpeicherErgebnis e =
+                PhotovoltaikStammCtrl.SpeichernAus(Modell(felder), neu, schluessel);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        // =====================================================================
+        // Katalogauswahl V1, Stufe 3: Bearbeiten je Bereich (KA-E-8)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Felder des Satzes <paramref name="id"/> — Projektkopie oder Katalog — als <see cref="BrowserFeldwert"/>
+        /// für die Satzbearbeitung und „Alle Daten" des Projektsatzes; dieselbe Abbildung wie der Aufklapper des
+        /// Katalogsatzes (<see cref="ModulFeldwertBruecke"/>). <c>null</c> = kein Satz.
+        /// </summary>
+        internal static IReadOnlyList<BrowserFeldwert> SatzFelder(bool projektkopie, int id)
+            => ModulFeldwertBruecke.Felder(new ModulKatalogWege { Detail = _ => Satz(projektkopie, id) }, "");
+
+        /// <summary>
+        /// <b>Schreibt alle Sätze einer Satzbearbeitung in EINER Transaktion</b>
+        /// (<see cref="PhotovoltaikStammCtrl.SchreibenAlle"/>): je Satz frisch gelesen, die editierbaren Felder
+        /// übertragen — was die Liste nicht trägt (Koeffizienten <c>alpha_SC</c>, <c>beta_OC</c>), behält seinen Wert.
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<PhotovoltaikStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+            {
+                IReadOnlyList<ModulFeldwert> satz = Satz(projektkopie, id);
+                if (satz != null)
+                    foreach (ModulFeldwert ziel in satz)
+                    {
+                        if (ziel.Gesperrt || ziel.Art == BrowserFeldArt.Auswahl) continue;
+                        foreach (BrowserFeldwert quelle in felder ?? Array.Empty<BrowserFeldwert>())
+                            if (string.Equals(quelle.Schluessel, ziel.Schluessel, StringComparison.Ordinal))
+                                ziel.Wert = quelle.Wert ?? "";
+                    }
+                // Ein verschwundener Satz geht mit leerem Modell: Der Kern findet ihn nicht und nennt ihn.
+                liste.Add(new PhotovoltaikStammCtrl.Satzaenderung(id, satz == null ? new PhotovoltaikModel() : Modell(satz)));
+            }
+            PhotovoltaikStammCtrl.SpeicherErgebnis e = PhotovoltaikStammCtrl.SchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder eines Satzes nach dem Profil der Ausprägung.</summary>
+        private static IReadOnlyList<ModulFeldwert> Satz(bool projektkopie, int id)
+        {
+            IReadOnlyDictionary<string, string> anzeige = PhotovoltaikStammCtrl.SatzAnzeige(projektkopie, id);
+            return anzeige == null ? null : ModulKatalogHuelle.Felder(Profil(), anzeige);
+        }
+
+        /// <summary>Die Felder als Modell — dieselbe Abbildung für Katalogeditor und Satzbearbeitung.</summary>
+        private static PhotovoltaikModel Modell(IReadOnlyList<ModulFeldwert> felder)
+        {
+            return new PhotovoltaikModel
             {
                 m_szName = ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldBezeichner),
                 m_szFirma = ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldFirma),
@@ -150,10 +183,6 @@ namespace WindowsFormsApplication1
                 m_T_NOCT = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldTNoct),
                 m_Technologie = LeerAlsNull(ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldTechnologie))
             };
-
-            PhotovoltaikStammCtrl.SpeicherErgebnis e =
-                PhotovoltaikStammCtrl.SpeichernAus(m, neu, schluessel);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
         }
 
         private static string LeerAlsNull(string wert)

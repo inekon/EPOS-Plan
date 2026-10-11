@@ -240,7 +240,7 @@ namespace WindowsFormsApplication1
             return Program.GanzzahlParsen(Wert(felder, schluessel), out n) ? n : 0;
         }
 
-        /// <summary>Der Schalterwert eines Feldes (nur „Brennwertkessel").</summary>
+        /// <summary>Der Schalterwert eines Feldes („Brennwertkessel", „Brennwertkennlinie").</summary>
         internal static bool Schalter(IReadOnlyList<BrowserFeldwert> felder, string schluessel)
         {
             return Wert(felder, schluessel) == "1";

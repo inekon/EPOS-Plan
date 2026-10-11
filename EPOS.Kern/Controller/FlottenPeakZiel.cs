@@ -25,11 +25,35 @@ namespace WindowsFormsApplication1
         /// <summary>Der Vorschlag stammt aus einer vorliegenden Zeitreihe; sonst ist es ein benannter Rückfall.</summary>
         public bool AusReihe { get; set; }
 
+        /// <summary>
+        /// Woher der Vorschlag stammt: aus dem Lastgang eines vorliegenden Laufs oder aus dem
+        /// benannten Rückfall. Ein gespeicherter Stand ist kein Vorschlag; ihn kennzeichnet
+        /// <see cref="SpeicherOptimierungVorgaben.PeakZielHerkunft"/>.
+        /// </summary>
+        public FlottenPeakZielHerkunft Herkunft =>
+            AusReihe ? FlottenPeakZielHerkunft.Lastgang : FlottenPeakZielHerkunft.Rueckfall;
+
         /// <summary>Die Herleitungszeile im Klartext; sie gehört unter das Eingabefeld.</summary>
         public string Herleitung { get; set; } = "";
     }
 
     /// <summary>Der Fortschritt der Bisektion „Peak-Ziel bestimmen".</summary>
+    /// <summary>
+    /// Herkunft des Peak-Ziels H₀, mit dem eine Flotte rechnet (Anwenderentscheid 04.10.2026):
+    /// Die Vorgabe eines Projektlaufs stammt immer aus einem vorliegenden Lauf.
+    /// </summary>
+    public enum FlottenPeakZielHerkunft
+    {
+        /// <summary>Aus dem Lastgang ohne Speicher des laufenden bzw. vorliegenden Laufs.</summary>
+        Lastgang = 0,
+
+        /// <summary>Benannter Rückfall aus Bezugsspitze und Entladeleistung — nur ohne Lauf.</summary>
+        Rueckfall = 1,
+
+        /// <summary>Aus dem gespeicherten Flottenstand des Projekts (eingefroren).</summary>
+        Gespeichert = 2
+    }
+
     public sealed class FlottenPeakZielFortschritt
     {
         /// <summary>Zahl der bereits gerechneten Jahresläufe.</summary>

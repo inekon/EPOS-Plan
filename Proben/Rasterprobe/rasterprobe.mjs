@@ -208,6 +208,8 @@ const ABLESEN = (bereich) => {
     echt: echteZeilen.length,
     zeilenhoehen: zeilen.slice(0, 6).map(z => +z.getBoundingClientRect().height.toFixed(3)),
     echtHoehe: echteZeilen.length ? +echteZeilen[0].getBoundingClientRect().height.toFixed(3) : null,
+    // Kompaktstufe (KB1): das Stilblatt skaliert das gesetzte Zeilenmass mit --epos-zeilenskala.
+    zeilenskala: huelle ? (parseFloat(getComputedStyle(huelle).getPropertyValue('--epos-zeilenskala')) || 1) : 1,
     platzhalterHoehe: platzhalterZeilen.length
       ? +platzhalterZeilen[0].getBoundingClientRect().height.toFixed(3) : null,
     abstandshalter: abstand.map(e => ({
@@ -549,9 +551,9 @@ function pruefe(e) {
     const b = e.bei5000;
     if (!/epos-raster-huelle/.test(b.rollbehaelter || ''))
       maengel.push(`Rollbehaelter ist ${b.rollbehaelter}, nicht die Huelle der Liste`);
-    const soll = e.fall.zeile || 53;
+    const soll = +((e.fall.zeile || 53) * (b.zeilenskala || 1)).toFixed(2);
     if (b.echtHoehe !== null && Math.abs(b.echtHoehe - soll) > 0.5)
-      maengel.push(`Zeilenhoehe ${b.echtHoehe} px statt ${soll} (ItemSize)`);
+      maengel.push(`Zeilenhoehe ${b.echtHoehe} px statt ${soll} (ItemSize${b.zeilenskala !== 1 ? ' x Zeilenskala ' + b.zeilenskala : ''})`);
     if (b.platzhalterHoehe !== null && b.platzhalterHoehe !== undefined &&
         Math.abs(b.platzhalterHoehe - soll) > 0.5)
       maengel.push(`Platzhalterzeile ${b.platzhalterHoehe} px statt ${soll}`);

@@ -521,6 +521,20 @@ namespace Berichtsvorlage
                 r.Add(Marke("tabelle.gebaeude.ergebnis"));
                 r.Add(Marke("/wenn"));
 
+                // Katalog v12 (Welle P4c): die gespeicherten Pufferauslegungen - steht die Tafel in der Vorlage, schreibt
+                // der Baustein des Kapitels Projekt seinen Abschnitt nicht.
+                r.Add(Marke("#wenn hat.tabelle.pufferauslegung"));
+                r.Add(H2("Pufferspeicher-Auslegung", "Buffer storage design"));
+                r.Add(Marke("tabelle.pufferauslegung"));
+                r.Add(Marke("/wenn"));
+
+                // Katalog v12 (KU3-4d): die Kältespeicher des Stamms - steht die Tafel in der Vorlage, schreibt der
+                // Baustein des Kapitels Projekt seinen Abschnitt nicht.
+                r.Add(Marke("#wenn hat.tabelle.kaeltespeicher"));
+                r.Add(H2("Kältespeicher", "Cold storage"));
+                r.Add(Marke("tabelle.kaeltespeicher"));
+                r.Add(Marke("/wenn"));
+
                 r.Add(Erklaert(Marke("#wenn hat.tabelle.speichertemperaturen"), new[]
                 {
                     "Jede Strukturtabelle und jedes Bild hat einen Schalter hat.tabelle.<name> bzw. hat.bild.<name>: Mit "
@@ -662,7 +676,12 @@ namespace Berichtsvorlage
                     ("heizkessel", "Heizkessel: Wärmeproduktion, Restwärme und Wärmebedarf", "Boiler: heat production, residual heat and heat demand"),
                     ("solarthermie", "Solarthermie: Wärmeproduktion und Wärmebedarf", "Solar thermal: heat production and heat demand"),
                     ("bhkw", "BHKW: Wärmeproduktion, Restwärme und Wärmebedarf", "CHP: heat production, residual heat and heat demand"),
+                    // Katalog v12: die Stromlast des BHKW und die Kälteproduktion.
+                    ("bhkw_strom", "BHKW: Stromproduktion, Einspeisung, Reststrombedarf und Strombedarf",
+                     "CHP: power production, feed-in, residual power demand and power demand"),
                     ("photovoltaik", "Photovoltaik: Erzeugung, Überschuss und Strombedarf", "Photovoltaics: generation, surplus and electricity demand"),
+                    ("kaelte_produktion", "Kälteproduktion: gedeckte Kälte je Wärmepumpe, ungedeckte Kälte und Kältebedarf",
+                     "Cooling production: covered cooling per heat pump, uncovered cooling and cooling demand"),
                 };
                 foreach ((string schluessel, string de, string en) in ergebnisbilder)
                 {
@@ -671,6 +690,14 @@ namespace Berichtsvorlage
                     r.Add(Beschriftung(de, en));
                     r.Add(Marke("/wenn"));
                 }
+                // Katalog v11: der Betrieb je Heizkessel (Konzept Kesselkennlinie 5) — nur, wenn der Stand Kessel führt.
+                r.Add(Marke("#wenn hat.tabelle.heizkessel"));
+                r.Add(A("Normal", T(L("Betrieb je Heizkessel: Jahresnutzungsgrad, Anteil des Brennwertbetriebs nach Stunden und "
+                                      + "nach Wärme, Starts im Jahr",
+                                      "Operation per boiler: annual efficiency, share of condensing operation by hours and by "
+                                      + "heat, starts per year"))));
+                r.Add(Marke("stand.tabelle.heizkessel"));
+                r.Add(Marke("/wenn"));
                 // Katalog v10: die Kennwerte des Speicherlaufs der Einzelanlage.
                 r.Add(Marke("#wenn stand.hat_speicherlauf"));
                 r.Add(A("Normal", T(L("Stromspeicher: ", "Battery storage: ")), P("stand.speicher.betriebsart"), T(", "),
@@ -694,6 +721,7 @@ namespace Berichtsvorlage
                 ("energiebilanz", "Energiebilanz", "Energy balance"),
                 ("effizienz", "Effizienz", "Efficiency"),
                 ("kaelte", "Kälte", "Cooling"),
+                ("gebaeude", "Gebäude", "Buildings"),          // Katalog v16 (KP3 Welle O3b, E58 F3 (c))
                 ("emissionen", "Emissionen", "Emissions"),
                 ("kosten", "Kosten", "Costs"),
             };
@@ -823,6 +851,21 @@ namespace Berichtsvorlage
                 r.Add(Marke("#wenn hat.tabelle.brennstoffmengen"));
                 r.Add(Standkopf());
                 r.Add(Marke("stand.tabelle.brennstoffmengen"));
+                r.Add(Marke("/wenn"));
+                r.Add(Marke("/je"));
+
+                // Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Gebäudetafel je Stand, ohne Δ — nur, wenn die Kennzahlgruppe
+                // „Gebäude“ Werte trägt (wie der Standardbericht). Höchstens zwei Blockebenen: Der Schalter der Gruppentafel gilt auch
+                // im Block {{#je stand}}; die Stände ohne Gebäudezeile zeigen den Leerwert ihrer Tafel.
+                r.Add(Marke("#wenn hat.tabelle.vergleich.gebaeude"));
+                r.Add(H2("Gebäude je Projekt", "Buildings per project"));
+                r.Add(Hinweis("Je Projekt die Gebäudetafel mit Lüftungs- und Aufheizwerten; die Abweichung zum Stamm zeigt die Kennzahlgruppe „Gebäude“.",
+                              "The building table with ventilation and preheat values per project; the key figure group “Buildings” shows the deviation from the base."));
+                r.Add(Marke("/wenn"));
+                r.Add(Marke("#je stand"));
+                r.Add(Marke("#wenn hat.tabelle.vergleich.gebaeude"));
+                r.Add(Standkopf());
+                r.Add(Marke("stand.tabelle.gebaeude"));
                 r.Add(Marke("/wenn"));
                 r.Add(Marke("/je"));
             }

@@ -363,7 +363,16 @@
 
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
         _baustoffe = Baustoffe?.Invoke() ?? Array.Empty<BaustoffWahl>();
-        ListeLaden();
+        // KT-2: Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - der Banner nennt die Meldung
+        // (Hausblatt „benannt ablehnen, nie still übergehen“; der Fang sitzt am Rand, nicht in der Hülle).
+        try
+        {
+            ListeLaden();
+        }
+        catch (Exception ex)
+        {
+            _meldung = string.Format(CultureInfo.CurrentCulture, Resource.WURZEL_LISTE_FEHLER, Texte.Titel, ex.Message);
+        }
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BAUTEILAUFBAU, () => KiSicht(), KiHaken());
     }
@@ -372,7 +381,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =====================================================================

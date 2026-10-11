@@ -1,0 +1,308 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Heizkessel
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Heizkessel.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Verwaltung Heizkessel''' wählt Kessel aus dem Katalog aus und ordnet sie dem Projekt zu. Ein Kessel wird über Nennleistung, den Wirkungsgrad bei Nennlast und bei 30 % Last, das Kennzeichen Brennwertkessel samt Brennwertkennlinie, Mindestleistung und Anfahrverlust für das Takten und den Betriebsbereitschaftsverlust beschrieben. In der Simulation deckt er an seinem Platz der Erzeugerkaskade, was die Erzeuger vor ihm offen lassen – in der Regel die Spitzenlast –, und rechnet jede Stunde mit dem Wirkungsgrad seiner Laststufe.
+
+Wie ein Kessel arbeitet und welche Kennwerte ihn beschreiben, steht unter [[Grundlagen/Kessel und Spitzenlast]]; diese Seite zeigt, wie Sie ihn in EPOS-Plan einbinden und wie er mit den anderen Erzeugern zusammen rechnet.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Ein Kessel durchläuft vier Stationen:
+
+# '''Katalog.''' Die Gerätedaten pflegt ''Administration → Wärme- und Kälteerzeugung → Heizkessel''; Herstellerdaten liest ''Administration → Daten & Import → Import Heizkessel VDI 3805'' ein ([[Programm Dokumentation/Gerätekataloge#heizkessel|Gerätekataloge: Heizkessel]]); der Import übernimmt dabei den Wirkungsgrad bei Nennlast und bei 30 % Last, die kleinste Leistung als ''Mindestleistung'' und das Kennzeichen ''Brennwertkessel'', die ''Brennwertkennlinie'' schaltet er nicht ein.
+# '''Projekt.''' Auf der Startseite öffnet im Reiter ''Energieerzeuger'' die Kachel ''Heizkessel'' die ''Verwaltung Heizkessel''. ''In das Projekt übernehmen'' fragt den Energieträger und seine Variante ab und legt eine '''projekteigene Kopie''' der Gerätedaten an; mit ihr rechnet die Simulation. Ein neuer Kessel liefert in den Heizkreis, für Heizung und Warmwasser und bei Prozesswärme im Projekt auch für diese; die Zeile ''Senken: …'' nennt es. ''Aus dem Projekt entfernen'' wird erst mit ''OK'' wirksam; ''Abbrechen'' nimmt auch die in dieser Sitzung neu angelegten Projektkopien und Energieträger-Varianten zurück ([[#katalog-und-projektliste|Katalog und Projektliste]]).
+# '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…''). In der Reihenfolge der Kaskade decken die Erzeuger den Bedarf jeder Stunde; sie hat einen Platz je Erzeugerart, alle Kessel teilen sich ihren Platz und decken dort in der Reihenfolge, in der sie angelegt wurden. Eine noch nie gespeicherte Kaskade füllt die Seite mit den angelegten Wärmeerzeugern in der Folge der Ladeprioritäten Solarthermie, Wärmepumpe, BHKW, Heizkessel, der Kessel steht also hinten ([[#fallstricke|Fallstricke]]); erst ''Konfiguration speichern'' legt sie fest, ohne gespeicherte Kaskade meldet die Simulation ''Bitte zuerst die Konfiguration festlegen.'' Fehlt in einer gespeicherten, nicht von Hand gepflegten Kaskade der Kessel, stellt EPOS-Plan ihn beim Öffnen der Konfiguration hinter den letzten belegten Platz ([[Programm Dokumentation/Simulation#kessel-in-kaskade|Simulation: Kaskade und Heizkessel]]). Die Pfeile der Karte verschieben den Platz, ''Wärmesenke bearbeiten'' ändert die Senken, ''Konfiguration…'' führt zu ''Betriebsbereitschaft'' und ''Heizgrenze der Kesselbereitschaft'' ([[#betriebsbereitschaft|Betriebsbereitschaft]]).
+# '''Ergebnis.''' Nach ''Simulation starten'' zeigt der Reiter ''Heizkessel'' Deckung, Brennstoffverbrauch, Betrieb und die Modultabelle ([[#ergebnisse|Ergebnisse]]).
+
+{{Diagramm-Anfang|titel=Kaskade im Beispiel A: wer den Wärmebedarf einer Stunde deckt}}
+{{Fluss-Anfang}}
+{{Flusskasten|Wärmebedarf der Stunde|Heizung und Warmwasser}}
+{{Flusspfeil}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Platz 1: Wärmepumpe A|rund 25 kW bei A−7/W55|rolle=waerme}}
+{{Flusspfeil|laden, entladen|richtung=unten}}
+{{Flusskasten|Speicher 1|1&nbsp;000 l|rolle=speicher}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|offener Rest}}
+{{Flusskasten|Platz 2: Kessel 1|50 kW, Brennwert, Erdgas|rolle=kessel}}
+{{Flusspfeil|offener Rest}}
+{{Flusskasten|Restwärmebedarf|bleibt ungedeckt|rolle=netz}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Speicher 1 gehört zur Wärmepumpe; der Kessel lädt ihn im Beispiel nicht.}}
+
+Wärmepumpe A, Speicher 1 und ein eingeschalteter Heizstab rechnen als eine Stufe Stunde für Stunde: Speicher 1 entlädt vorab, die Wärmepumpe deckt und lädt nach, der Speicher gibt den Rest ab, zuletzt deckt der Heizstab. Kessel 1 lädt keinen Puffer und nutzt keinen als Quelle; er rechnet deshalb an seinem Platz hinter dieser Stufe und bekommt, was danach offen ist – erst mit einer Puffersenke oder Pufferquelle rechnete er in derselben Stundenschleife mit ([[Programm Dokumentation/Berechnung/Simulationsablauf#rechenweg|Berechnung: Simulationsablauf]]). Der Platz in der Kaskade ordnet die direkte Deckung; welcher Erzeuger einen Puffer zuerst lädt, entscheidet die ''Ladeprio'' seiner Wärmesenke – Vorgabe Solarthermie 10, Wärmepumpe 20, BHKW 30, Kessel 40 –, der Platz nur bei gleicher Priorität.
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+'''Beispiel A''' ist ein teilsaniertes Mehrfamilienhaus mit 12 Wohnungen (900 m²): Heizlast 45 kW bei −12 °C, im Jahr 80 MWh Heizwärme und 20 MWh Trinkwarmwasser mit Zirkulation, Heizkörper 55/45 °C. Die Grundlast trägt die Luft-Wasser-Wärmepumpe A (rund 25 kW bei A−7/W55) mit Speicher 1 (Pufferspeicher, 1&nbsp;000 l, Heizung); Kessel 1, ein Gas-Brennwertkessel mit 50 kW, deckt die Spitze und sichert die Versorgung ab.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Verwaltung Heizkessel, Bereich ''Katalog (Datenbank)'' || ''Kessel aus Datenbank'' || Brennwertkessel, <math>P_{\mathrm{th}}</math> 50&nbsp;kW, Brennstoff Erdgas || deckt die Heizlast von 45 kW auch allein – der Kessel ist zugleich Reserve für die Wärmepumpe
+|-
+| Administration Heizkessel (''Bearbeiten...'') || ''Wirkungsgrad Gas, Biogas, Holz und Sonstiges:'' || 0,97 || der Wirkungsgrad bei Nennlast <math>\eta_{100}</math>, auf den Heizwert bezogen. Vor dem Übernehmen prüfen – die Projektkopie behält die Werte
+|-
+| Administration Heizkessel (''Bearbeiten...'') || ''Betriebsbereitschaftsverluste:'' und ''Einheit Bereitschaftsverlust:'' || 0,1 kW oder 0,5 % der Nennleistung || die Einheit wählen Sie neben dem Wert; gerechnet wird in kW, und der Verlust fällt in jeder betriebsbereiten Stillstandsstunde an
+|-
+| Administration Heizkessel (''Bearbeiten...'') || ''Brennwertkessel'' || an || bestimmt die Vorgaben für leere Felder der Gruppe ''Kennlinie'' und gibt die Brennwertkennlinie frei
+|-
+| Administration Heizkessel, Gruppe ''Kennlinie'' || ''Wirkungsgrad bei 30 % Last:'' || 1,05 || <math>\eta_{30}</math> aus dem Datenblatt, gemessen bei 30 °C Rücklauf; leer gälte die Vorgabe des Brennwertkessels <math>0{,}97 + 0{,}06 = 1{,}03</math>
+|-
+| Administration Heizkessel, Gruppe ''Kennlinie'' || ''Brennwertkennlinie'' || an || der Rücklauf 45 °C liegt unter dem Taupunkt von Erdgas (57 °C); ohne sie wirkte der Rücklauf nicht, und unter dem Schalter stünde der Hinweis „Brennwertkessel ohne Brennwertkennlinie …“
+|-
+| Administration Heizkessel, Gruppe ''Kennlinie'' || ''Mindestleistung:'', ''Anfahrverlust je Start:'', ''Mindestlaufzeit:'' || leer – Vorgabe 15 kW, 0,1 kWh, 10 min || die Vorgaben des Gas-Brennwertkessels: 30 % der Nennleistung, 0,002 h mal Nennleistung, 10 min. Nennt das Datenblatt eine kleinere Leistung, diese als Mindestleistung pflegen – der Kessel taktet dann seltener
+|-
+| Energieträger Variante || ''Energieträger:'', ''Energieträger Varianten Bezeichnung:'' || Erdgas, ein eigener Variantenname || über den Energieträger laufen Preis und Emissionsfaktor des Brennstoffs
+|-
+| Verwaltung Heizkessel, Gruppe ''Auslegung für Verteilung'' || ''Vorlauf:'', ''Rücklauf:'' || 55 °C, 45 °C || die Auslegung der Heizkörper; ohne Puffer am Kessel und ohne Anlagenkopplung ist 45 °C der Rücklauf jeder Laufstunde der Brennwertkennlinie
+|-
+| Simulation Konfiguration || Kaskade || Platz 1 Wärmepumpe A, Platz 2 Kessel 1 || Sind beide angelegt, bevor die Kaskade gespeichert ist, schlägt die Seite den Kessel auf Platz 1 vor: Wärmepumpe A mit dem Pfeil nach vorn, dann ''Konfiguration speichern''
+|-
+| Wärmesenke - Kessel 1 || ''Ziel'', ''Bedarfsart'' || ''Heizkreis (direkte Deckung des Bedarfs)'', ''Beides (Warmwasser zuerst)'' || die Vorbelegung beim Anlegen; der Kessel lädt Speicher 1 nicht
+|-
+| Konfiguration an der Karte der Wärmepumpe || ''Heizstab mitrechnen'' || aus || sonst deckt der Heizstab den Rest vor dem Kessel ([[#fallstricke|Fallstricke]])
+|-
+| Konfiguration an der Karte des Kessels || ''Betriebsbereitschaft:'' || 0 h/a || kein Deckel: betriebsbereit ist der Kessel an Heiztagen und 24 Stunden nach seinem letzten Lauf
+|-
+| Konfiguration an der Karte des Kessels || ''Heizgrenze der Kesselbereitschaft'' || leer – Vorgabe 15 °C || Heiztag ist ein Tag, dessen mittlere Außentemperatur unter 15 °C liegt
+|}
+
+'''Was zu erwarten ist.''' Im vereinfachten Modell unten trägt der Kessel rund 15 % der Jahreswärme in etwa 1&nbsp;500 Stunden. Das Modell rechnet die Wärmepumpe mit konstant 25 kW; mit der Leistung, die eine Luft-Wasser-Kennlinie bei milder Witterung zulegt, bleiben dem Kessel nur rund 5 % ([[Programm Dokumentation/Wärmepumpe#zusammenspiel|Wärmepumpe: Zusammenspiel]]). EPOS-Plan rechnet mit Kennlinie, Puffer und Klimadaten; seine Zahlen stehen im Reiter ''Heizkessel'': ''Wärmebedarfsdeckung'', in der Gruppe ''Betrieb'' ''Starts'', ''Bereitschaftsstunden'', ''Bereitschaftsverlust'', ''Taktstunden unter der Mindestleistung'' und ''Anfahrverlust'', in der Modultabelle ''Jahresnutzungsgrad [%]'' und ''Starts [1/a]''. Der Schalter ''sortiert'' zeigt die Dauerlinie.
+
+Weil <math>\eta_{30} = \eta_{100} + 0{,}08</math> genau den Kondensationsgewinn von Erdgas bei 30 °C Rücklauf enthält, ist die trockene Teillastkennlinie von Kessel 1 flach, und sein Rücklauf ist in jeder Laufstunde 45 °C: Er rechnet jede Laufstunde mit <math>\eta \approx 1{,}006</math> ([[#brennwertkennlinie|Brennwertkennlinie]]). Im Reiter steht deshalb ''Mittlerer Wirkungsgrad im Betrieb'' bei rund 100,6 %, ''Mittlerer Rücklauf im Betrieb'' bei 45,0 °C, ''Betriebsstunden im Brennwertbetrieb'' und ''Wärme im Brennwertbetrieb'' bei 100 %, ''Brennstoff aus Teillast gegenüber Nennlast'' bei 0 und ''Brennstoff aus Brennwertnutzung'' bei rund −3,6 % der Kesselwärme. Der Jahresnutzungsgrad liegt um Anfahr- und Bereitschaftsverlust darunter. Hinter der Wärmepumpe deckt Kessel 1 oft nur wenige Kilowatt; jede Laufstunde unter 15 kWh ist eine Taktstunde ([[#takten|Takten]]).
+
+<!-- Modell der Dauerlinie, keine Rechnung von EPOS-Plan.
+     Geordnete Heizlast: L_H(h) = 45 kW * (1 - h / 5 500 h)^k fuer h < 5 500 h, sonst 0;
+     k = 45 kW * 5 500 h / 80 MWh - 1 = 2,09 (Heizwaerme 80 MWh im Jahr).
+     Warmwasser als gleichmaessige Grundlast: 20 MWh / 8 760 h = 2,3 kW.
+     Waermepumpe A deckt min(L; 25 kW), ihre Leistung vereinfacht konstant; Kessel 1 den Rest bis 50 kW;
+     Pufferspeicher und Heizstab nicht beruecksichtigt.
+     Je Saeule das Mittel von 730 Stunden; Hoehe in Prozent der groessten Saeule (41 kW = 100).
+     Ergebnis des Modells: Waermepumpe 84 MWh, Kessel 16 MWh (16 %), Kessel in rund 1 500 Stunden in Betrieb. -->
+{{Diagramm-Anfang|titel=Beispiel A: Dauerlinie mit Wärmepumpe und Spitzenkessel}}
+{{Säulen-Anfang|achse=mittlere Wärmelast in kW}}
+{{Säule|730|waerme=61|kessel=39|wert=41}}
+{{Säule|1460|waerme=61|kessel=14|wert=31}}
+{{Säule|2190|waerme=52|wert=22}}
+{{Säule|2920|waerme=35|wert=15}}
+{{Säule|3650|waerme=22|wert=9}}
+{{Säule|4380|waerme=13|wert=5}}
+{{Säule|5110|waerme=7|wert=3}}
+{{Säule|5840|waerme=6|wert=2}}
+{{Säule|6570|waerme=6|wert=2}}
+{{Säule|7300|waerme=6|wert=2}}
+{{Säule|8030|waerme=6|wert=2}}
+{{Säule|8760|waerme=6|wert=2}}
+{{Säulen-Ende|Stunden des Jahres, nach Wärmelast geordnet; je Säule das Mittel von 730 Stunden}}
+{{Legende|waerme=Wärmepumpe A|kessel=Kessel 1}}
+{{Diagramm-Ende|Beispielwerte, gerundet. Vereinfachtes Modell mit konstanter Leistung der Wärmepumpe, keine Rechnung von EPOS-Plan.}}
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+{| class="wikitable"
+! Technik !! Wirkung auf den Kessel !! Wirkung vom Kessel !! So rechnet EPOS-Plan
+|-
+| Wärmepumpe (Beispiel A) || deckt vorn in der Kaskade; der Kessel bekommt den Rest || sichert die Spitze, die Wärmepumpe darf kleiner sein || Im ''Vorwärmbetrieb (Kessel in Reihe)'' wärmt die Wärmepumpe den Rücklauf bis zum Höchstvorlauf vor, und der Kessel hebt auf den Sollvorlauf ([[Programm Dokumentation/Wärmepumpe#vorwaermbetrieb|Wärmepumpe: Vorwärmbetrieb]]). Mit ''Bivalenter Betrieb'' und ''Alternativbetrieb'' oder ''Teilparallelbetrieb'' ist die Wärmepumpe unterhalb der ''Bivalenztemperatur'' aus, der Kessel deckt dann allein; im ''Parallelbetrieb'' läuft sie weiter. Hinter der Wärmepumpe bleiben dem Kessel oft nur kleine Restmengen; unter seiner ''Mindestleistung'' taktet er, und jeder Start kostet den Anfahrverlust ([[#takten|Takten]]).
+|-
+| Reversible Wärmepumpe (Beispiel D: Bürogebäude, Wärmepumpe A 100 kW, Kessel 1 60 kW) || an Kühltagen heizt sie nicht || übernimmt an diesen Tagen die Heizwärme || Die Wärmepumpe kühlt an Tagen, an denen der Kältebedarf den Heizbedarf übersteigt; ihr Heizkanal ist dann gesperrt, Warmwasser bleibt ([[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kühlung: Kühlbetrieb]]). Die Heizwärme dieser Tage geht an den nächsten Platz, den Kessel.
+|-
+| BHKW (Beispiel B: Hotel, BHKW 1 mit 60 kW thermisch, Kessel 1 und 2 je 150 kW) || trägt die Grundlast || deckt die Spitze über der BHKW-Leistung || Das BHKW steht vor dem Kessel; Kessel 1 deckt bis 150 kW, Kessel 2 darüber. Kessel 2 bekommt nur die Spitze über BHKW und Kessel 1; liegt sie unter seiner ''Mindestleistung'' – beim Gas-Brennwertkessel mit 150 kW nach Vorgabe 45 kW –, taktet er ([[#takten|Takten]]). Lädt ein Kessel denselben Puffer, lädt er nach dem BHKW (''Ladeprio'' 40 gegen 30), füllt aber Raum, den das BHKW in der nächsten Stunde nutzen könnte ([[Programm Dokumentation/BHKW#beispiel|BHKW: Beispiel]]).
+|-
+| Pufferspeicher || Senke oder Quelle des Kessels || – || Mit Puffersenke oder Pufferquelle rechnet der Kessel in der Stundenschleife der Speicherstufe an seinem Platz, sonst als eigene Stufe davor oder danach. Mit Puffersenke lädt er nach allen Erzeugern mit kleinerer ''Ladeprio''; ist er nicht der vorrangige Lader, endet seine Ladung an der nachrangigen Schwelle ([[Programm Dokumentation/Pufferspeicher#schwellen|Pufferspeicher: Schwellen]]). Ohne Direktsenke deckt er nichts unmittelbar, er lädt nur. Mit ''Brennwertkennlinie'' liefert der erste Pufferspeicher seiner Senkenliste den Rücklauf, wenn kein gekoppelter Heizkreis einen liefert: seine Rücklauftemperatur, beim geschichteten Speicher die unterste Schicht zu Beginn der Stunde ([[#brennwertkennlinie|Brennwertkennlinie]]).
+|-
+| Solarthermie || wärmt einen Puffer vor || hebt nur noch den Rest an || Ist dem Kessel ein Pufferspeicher als Wärmequelle zugeordnet, trägt der Puffer den Anteil <math>(\text{Puffertemperatur} - \text{Rücklauf}) / (\text{Vorlauf} - \text{Rücklauf})</math> der Nutzwärme; nur der Rest kostet Brennstoff, und nach ihm richten sich Laststufe und Takten ([[Programm Dokumentation/Berechnung/Heizkessel#rechenweg|Rechenweg, Schritt 4]]). Lädt die Solarthermie denselben Puffer vorrangig, lädt ihn der Kessel bei leerer nachrangiger Schwelle nur bis 30 %.
+|-
+| Photovoltaik, Stromspeicher || – || ein Elektrokessel erhöht den Strombedarf || Sein Strom steht im Reststrombedarf der Stunde; Photovoltaik und Stromspeicher decken ihn wie jeden anderen Verbrauch ([[#elektrokessel|Elektrokessel]]).
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Kessel vor der Wärmepumpe.''' Vorgeschlagen wird der Kessel hinter Solarthermie, Wärmepumpe und BHKW, auch eine später angelegte Wärmepumpe kommt vor ihn. In einer von Hand gepflegten Kaskade bleibt aber die Reihenfolge, die Sie gesetzt haben: Steht der Kessel dort vorn, deckt er zuerst, und die Wärmepumpe bekommt nur, was er offen lässt. Prüfen Sie die Reihenfolge vor ''Konfiguration speichern''.
+* '''Der Heizstab der Wärmepumpe kommt vor dem Kessel.''' Steht ein Kessel ohne Pufferspeicher hinter der Wärmepumpe, rechnet er erst nach ihrer Speicherstufe, und die endet mit dem Heizstab: Ist ''Heizstab mitrechnen'' gesetzt, deckt der Heizstab den Rest bis zu seiner Leistung (Spalte ''Heizstab [MWh/a]'' im Reiter der Wärmepumpe). Soll der Kessel die Spitze tragen, schalten Sie den Heizstab aus. Lädt der Kessel selbst einen Puffer, rechnet er in derselben Stundenschleife an seinem Platz und damit vor dem Heizstab.
+* '''Von Hand geordnet bleibt, wie es ist.''' Jeder Handgriff an der Kaskade – ''+ aufnehmen'', ''×'' oder ein Pfeil – macht sie zu einer von Hand gepflegten: Die Seite schlägt nichts mehr vor, und kein Kessel wird nachgestellt. Steht dann kein Heizkessel in der Kaskade, rechnet ein später angelegter nicht mit; der Lauf meldet ihn. ''Automatik wieder übernehmen'' gibt die Reihenfolge dem Programm zurück.
+* '''Bereitschaftsverlust: Wert und Einheit gehören zusammen.''' ''Betriebsbereitschaftsverluste'' steht in der Einheit, die ''Einheit Bereitschaftsverlust'' daneben nennt: kW oder % der Nennleistung. Ein Datenblattwert in Prozent wird mit der Einheit % erfasst, nicht als kW – sonst rechnet die Simulation 0,5 % als 0,5 kW. Ein Wert über 2 % der Nennleistung wird gerechnet, das Laufprotokoll nennt ihn aber als ungewöhnlich hoch. 0 heißt: kein Bereitschaftsverlust.
+* '''Betriebsbereitschaft und Heizgrenze.''' Bei 0 h/a ist ein stillstehender Kessel an jedem Heiztag – Tagesmittel der Außentemperatur unter der ''Heizgrenze der Kesselbereitschaft'', leer 15 °C – und in den 24 Stunden nach seinem letzten Lauf betriebsbereit und verliert in diesen Stunden. Ein Kessel, der im Sommer täglich Warmwasser bereitet, bleibt so auch über der Heizgrenze fast durchgehend betriebsbereit. Ein Wert größer 0 begrenzt Lauf- und Bereitschaftsstunden zusammen; das Laufprotokoll nennt die gekappten Stunden. Beide Werte gelten für alle Kessel des Projekts ([[#betriebsbereitschaft|Betriebsbereitschaft]]).
+* '''Jahresnutzungsgrad, Wirkungsgrad im Betrieb und Katalogwert.''' Der Jahresnutzungsgrad enthält Anfahr- und Stillstandsverluste und liegt deshalb nie über dem ''Wirkungsgrad im Betrieb'' – je seltener und kürzer ein Kessel läuft, desto weiter darunter. Beim Brennwertkessel können beide über dem Wirkungsgrad bei Nennlast des Katalogs liegen: Teillast und ein Rücklauf unter dem Taupunkt heben den Wirkungsgrad. Einen Katalogwirkungsgrad von genau 1 nennt der Reiter als Platzhalter; mit ihm rechnet ein Brennwertkessel für Gas, Heizöl, Holz oder Pellets ohne eigenes <math>\eta_{30}</math> in Teillast mit 1,06, und sein Jahresnutzungsgrad kann über 100 % steigen.
+* '''Katalog und Projekt sind getrennt.''' Beim Katalogsatz ändern ''Bearbeiten'' und der Stift den Katalog, beim Projektsatz die Projektkopie. Ein bereits übernommener Kessel rechnet weiter mit seiner Projektkopie; damit eine Katalogänderung wirkt, nehmen Sie ihn aus dem Projekt und übernehmen ihn neu. Umgekehrt führt ''In die Datenbank übernehmen…'' eine geänderte Projektkopie in den Katalog zurück.
+* '''Ein zu großer Kessel taktet.''' Der Kessel gibt je Stunde genau den offenen Rest bis zur Nennleistung ab. Liegt dieser Rest unter der ''Mindestleistung'', taktet er: Die Stunde zählt so viele Starts, wie Mindestläufe die Wärme brauchen – mit der Vorgabe von 10 min bis zu sechs –, und jeder Start kostet den ''Anfahrverlust je Start'' ([[#takten|Takten]]). Ein Kessel, der meist unter 10 % seiner Nennleistung läuft, braucht dadurch einige Prozent mehr Brennstoff; ''Starts'' und ''Taktstunden'' im Reiter zeigen es. Ohne eigene Werte gelten die Vorgaben – für ein Gerät mit tiefer Modulation lohnt es, die ''Mindestleistung'' aus dem Datenblatt zu pflegen.
+* '''Teillast hängt am Kennzeichen Brennwertkessel.''' Ohne eigenen ''Wirkungsgrad bei 30 % Last'' nimmt der Kessel die Vorgabe seiner Bauart, und die Bauart liest der Lauf am Kennzeichen der Projektkopie; beim Übernehmen erhält sie es vom Katalogsatz. Trägt ein Brennwertgerät das Kennzeichen nicht, rechnet es wie ein Niedertemperaturkessel ohne Teillastanhebung und mit der Vorgabe-Mindestleistung von 60 % – dann Kennzeichen oder Wirkungsgrad im Katalog pflegen und den Kessel neu ins Projekt übernehmen.
+* '''Brennwertkennlinie nur auf Wahl.''' Das Kennzeichen ''Brennwertkessel'' allein rechnet keinen Rücklauf; erst die gesetzte ''Brennwertkennlinie'' tut es, und der Import schaltet sie nie ein. Solange sie bei einem Brennwertkessel aus ist, steht in ''Administration Heizkessel'' unter dem Schalter der Hinweis „Brennwertkessel ohne Brennwertkennlinie …“. Ohne gekoppelten Heizkreis, ohne Pufferspeicher als Senke und ohne Temperaturpaar gilt ein Rücklauf von 50 °C – für einen Heizkreis mit niedrigen Temperaturen ist das vorsichtig.
+* '''Der Rücklauf bestimmt die Brennwertnutzung.''' Mit Brennwertkennlinie rechnet der Kessel mit dem Rücklauf des gekoppelten Heizkreises, sonst des ersten Pufferspeichers, den er lädt, sonst des Temperaturpaars ''Auslegung für Verteilung''. Lädt er einen geschichteten Puffer, den Wärmepumpe oder BHKW bis unten warm halten, steigt sein Rücklauf mit der untersten Schicht; ein Paar wie 70/50 °C – die Vorbelegung ohne eigenen Eintrag – lässt bei Erdgas nur gut ein Viertel des Kondensationsgewinns (<math>g \approx 0{,}26</math>), und am oder über dem Taupunkt (Erdgas 57 °C) bleibt keiner. ''Mittlerer Rücklauf im Betrieb'' und ''Betriebsstunden im Brennwertbetrieb'' im Reiter zeigen es; liegt der Rücklauf in mindestens der Hälfte der Betriebsstunden am oder über dem Taupunkt, nennt das Laufprotokoll den Kessel.
+* '''Mit Brennwertkennlinie zählt der Rücklauf auch in Teillast.''' <math>\eta_{30}</math> gilt bei 30 °C Rücklauf. Ohne Brennwertkennlinie rechnet ein Brennwertkessel in Teillast mit diesem Gewinn, gleich wie warm der Rücklauf ist; mit ihr rechnet er trocken und legt den Gewinn nach dem Rücklauf der Stunde zu. Ein Rücklauf über 30 °C senkt deshalb den Teillastwirkungsgrad gegenüber der Rechnung ohne Kennlinie, ein Rücklauf unter dem Taupunkt hebt den Wirkungsgrad bei Nennlast – in Beispiel A mit 45 °C bei 30 % Last von 1,05 auf 1,006 und bei Nennlast von 0,97 auf 1,006.
+* '''Kesselvorlauf bei Anlagenkopplung.''' Mit ''Heizkreis (AK1)'' bekommt ein gekoppeltes Gebäude ohne Heizkurve den höchsten Vorlauf der Erzeuger, die Heizwärme liefern – ein hoher Kesselvorlauf wird so zu seinem Vorlauf, und an ihm wählt die Wärmepumpe ihre Kennlinie ([[Programm Dokumentation/Simulation#anlagenkopplung|Simulation: Anlagenkopplung]]).
+* '''Höchstens zehn Kessel''' je Projekt; weitere rechnen nicht mit, das Laufprotokoll nennt die Zahl.
+
+== Eingaben ==
+
+=== Katalog und Projektliste ===
+{{Anker|katalog-und-projektliste}}
+
+Der Dialog ''Verwaltung Heizkessel'' hat drei gerahmte Bereiche übereinander: ''Im Projekt'' (oben), ''Katalog (Datenbank)'' und ''Gewählter Satz''. Die Trennlinie zwischen den beiden Listen lässt sich ziehen; die Aufteilung wird je Dialog gemerkt. Beide Listen kennen die Mehrfachwahl mit Kästchen und mit dem Kästchen im Spaltenkopf; die Knöpfe eines Bereichs wirken auf die gewählten Zeilen. Ein Doppelklick oder Enter auf einer Katalogzeile übernimmt sie in das Projekt. Der Stift in einer Zeile öffnet den Satz zum Bearbeiten – in der Projektliste die Projektkopie, in der Katalogliste den Katalogsatz; ein gesperrter Katalogsatz ist nur lesbar, bis das Schloss aufgehoben ist. Auf kleinen Bildschirmen (iPad) werden die Elemente kompakter, Rollbalken erscheinen nur dort, wo sie nötig sind.
+
+Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehmen, Rückweg und die Zeile ''Gewählter Satz'' — steht unter [[Programm Dokumentation/Gerätekataloge#katalogauswahl|Gerätekataloge: Katalogauswahl im Projektdialog]]. Die Überlagerung ''Bearbeiten'' des gewählten Satzes zeigt die Kennwerte des Kessels und beim Projektsatz Energieträger, Grenzleistung, Temperaturpaar und Senken der Anlage.
+[[Datei:Bildschirmfoto_Heizkessel.png|mini|zentriert|800px|Verwaltung Heizkessel – Bildschirmfoto mit Beispieldaten.]]
+
+* {{Anker|auswahl-aus-dem-katalog|katalog|leistungsklasse}}'''Katalog (Datenbank)''' – Suchfeld ''Suche über alle Spalten:'' (mit den Platzhaltern ''*'' und ''?'') und Trefferzahl; Spalten Bezeichner, Hersteller, Brennstoff, <math>P_{\mathrm{th}}</math> in kW, <math>\eta</math> und Brennwert. Die Spaltenköpfe sortieren und filtern, ''Spalten…'' wählt die angezeigten Spalten, und ein farbiger Punkt ''im Projekt verwendet'' kennzeichnet Katalogzeilen, die im Projekt stehen. ''In das Projekt übernehmen'' legt von den gewählten Katalogsätzen je eine Projektkopie an; die Zeile im Projekt bleibt mit dem Katalogsatz verknüpft. Die Fußleiste führt ''Vergleichen…'' (ab zwei gewählten Sätzen), ''Schloss setzen…''/''Schloss aufheben…'', ''Löschen'', ''Bearbeiten…'' und rechts ''Neu…''. ''Löschen'' entfernt die gewählten Katalogsätze nach einer Rückfrage für alle Projekte. Gesperrte Katalogsätze (Auslieferungssätze) sind nur lesbar, bis das Schloss aufgehoben ist. Bei mehreren gewählten Sätzen öffnet ''Bearbeiten…'' die Mehrfachbearbeitung (‹ 1 von n ›), in der ''für alle gewählten setzen'' einen Wert in allen gewählten Sätzen einträgt; gespeichert wird in einem Zug – alle Sätze oder keiner.
+* '''Im Projekt''' – die Kessel des Projekts mit der Summe der thermischen Leistung (''Summe [kWth]:''). Beim Übernehmen öffnet sich ''Energieträger Variante''; Energieträger und Variante bestimmen, mit welchem Träger Kosten und Emissionen des Kessels gerechnet werden ([[Programm Dokumentation/Kosten#energietraegerverwaltung|Kosten: Energieträgerverwaltung]]). Vorgewählt ist der Träger mit dem Brennstoff des Kessels. ''Aus dem Projekt entfernen'' nimmt die gewählten Zeilen aus der Liste; die Projektkopie wird erst mit ''OK'' gelöscht. ''Bearbeiten…'' öffnet die Projektkopien der gewählten Kessel. ''In die Datenbank übernehmen…'' legt aus den gewählten Projektsätzen neue Katalogsätze unter neuem Namen an oder überschreibt deren Ursprungssatz (nur, wenn er nicht gesperrt ist); die Rückfrage zeigt als Vorschau die Abweichungen. Ein Name, der im Katalog schon vergeben ist, wird abgelehnt. Im Projekt bleiben Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage.
+* '''Gewählter Satz''' – zugeklappt zeigt er die Marke ''Projektsatz'' oder ''Katalogsatz'', den Namen und die Kenndaten des Satzes; aufgeklappt eine kurze Zusammenfassung der Anlagendaten (Leistung, Brennstoff, Wirkungsgrad, Energieträger, Vorlauf und Rücklauf, Senken, Kosten). ''Bearbeiten'' rechts öffnet den Satz als Überlagerung in voller Höhe mit allen Feldern, beim Projektsatz mit den Kostenknöpfen. ''OK'' speichert, ''Abbrechen'' verwirft alle Eingaben der Überlagerung samt den Anlagenfeldern.
+* '''OK''' und '''Abbrechen''' – ''OK'' speichert die Liste des Projekts, ''Abbrechen'' verwirft die Änderungen und nimmt in dieser Sitzung neu angelegte Projektkopien und Energieträger-Varianten zurück.
+
+=== Modul ===
+
+Der Bereich ''Gewählter Satz'' trägt die Marke ''Projektsatz'' oder ''Katalogsatz'' und lässt sich auf- und zuklappen.
+
+* '''Name''', '''Brennstoff Typ''', '''Leistung [kW]''', '''Beschreibung''' – Anzeige des markierten Kessels; bei einer Zeile des Projekts aus dessen Projektkopie. Ein gesperrter Katalogsatz trägt den Vermerk ''nur lesen''.
+* '''Brennstoff Variante''' – nur bei einer Zeile des Projekts: wechselt die Variante des Energieträgers.
+* '''Brennwertkessel''' – Kennzeichen; es bestimmt die Vorgaben für einen leeren ''Wirkungsgrad bei 30 % Last'' ([[#teillastkennlinie|Teillastkennlinie]]) und eine leere ''Mindestleistung'' ([[#takten|Takten]]), und nur mit ihm lässt sich die ''Brennwertkennlinie'' setzen.
+* '''Auslegung für Verteilung: Vorlauf''' und '''Rücklauf''' – in °C, nebeneinander in einer eigenen Gruppe, je Anlage änderbar. Trägt die Anlage kein vollständiges Paar, stehen darin die Werte, mit denen die Simulation ohne Eintrag rechnet – das Paar des Kessels aus dem Katalog, sonst 70/50 °C –, und die Zeile darunter nennt die Herkunft; mit ''OK'' werden sie gespeichert. Steht der Temperaturbezug der Wärmequelle auf ''fest vorgegeben'', bleibt ein unvollständiges Paar leer, und die Zeile bittet um ein Paar. Das Paar wirkt bei der Anlagenkopplung, bei der Prüfung gegen einen Zielspeicher, bei der Brennwertkennlinie als Rücklauf, wenn weder Heizkreis noch Speicher einen liefern ([[#brennwertkennlinie|Brennwertkennlinie]]), und als Temperaturhub eines geteilten Pufferspeichers als Wärmequelle, wenn kein Senkenspeicher des Kessels das Paar stellt ([[Programm Dokumentation/Berechnung/Heizkessel#rechenweg|Rechenweg, Schritt 4]]). Dasselbe Paar schreibt der Dialog ''Wärmequelle Pufferspeicher'' bei ''fest vorgegeben''.
+* '''Senken: …''' – die Wärmesenken der Anlage; gepflegt werden sie in der ''Simulation Konfiguration''.
+* '''Investitionskosten…''', '''Betriebskosten…''', '''Energiekosten…''' – die Kosten des Kessels für die Wirtschaftlichkeit; sie stehen nur bei einem Projektsatz.
+
+=== Kennwerte des Kessels ===
+{{Anker|kennwerte|wirkungsgrad|bereitschaftsverlust}}
+
+''Bearbeiten'' (Stift oder Knopf im Gewählten Satz) zeigt die Kennwerte des gewählten Satzes – beim Katalogsatz die des Katalogs, beim Projektsatz die der Projektkopie:
+
+* '''Thermische Leistung''' – die Nennleistung in kW; sie begrenzt, was der Kessel je Stunde aus Brennstoff erzeugt, und ist der Bezug der Laststufe und der Vorgaben für Mindestleistung und Anfahrverlust.
+* '''Wirkungsgrad Gas, Biogas, Holz und Sonstiges''' und '''Wirkungsgrad Öl''' – der Wirkungsgrad bei Nennlast <math>\eta_{100}</math>, auf den Heizwert bezogen, je als Faktor (z. B. 0,9). Der Öl-Wert gilt für die Heizöle des Brennstoffkatalogs, der andere für alle übrigen Brennstoffe. Werte über 1,5 liest die Simulation als Prozent; steht dort 0, rechnet sie mit 0,90.
+* '''Betriebsbereitschaftsverluste''' und '''Einheit Bereitschaftsverlust''' – der Verlust im betriebsbereiten Stillstand, wahlweise als Leistung in kW oder in Prozent der thermischen Leistung. Die Simulation rechnet einen Prozentwert in kW um (Wert × thermische Leistung ÷ 100). Zulässig sind in kW 0 bis zur thermischen Leistung, in Prozent 0 bis 100; ein Wert außerhalb wird beim Speichern mit einer Meldung abgewiesen. Im Aufklapper ''Alle Daten anzeigen'' steht die Einheit als ''kW'' oder ''%''; ein leeres Feld lässt sie unverändert. Der Import aus VDI 3805 liefert den Wert in kW und setzt die Einheit kW.
+* Die Emissionsfelder sind Herstellerangaben und rechnen nicht mit.
+
+Die Gruppe '''Kennlinie''' beschreibt das Verhalten in Teillast; ein leeres Feld heißt „Vorgabe“:
+
+* '''Wirkungsgrad bei 30 % Last''' – <math>\eta_{30}</math> als Faktor, bezogen auf den Heizwert wie die Wirkungsgrade oben und gemessen bei 30 °C Rücklauf; Werte über 1,5 gelten als Prozent, zulässig sind 0,5 bis 1,2. Leer nimmt der Kessel die Vorgabe seiner Bauart ([[#teillastkennlinie|Teillastkennlinie]]).
+* '''Brennwertkennlinie''' – rechnet den Wirkungsgrad zusätzlich nach dem Rücklauf der Stunde ([[#brennwertkennlinie|Brennwertkennlinie]]); sie lässt sich nur bei einem Brennwertkessel setzen.
+* '''Mindestleistung''' (kW), '''Anfahrverlust je Start''' (kWh Brennstoff), '''Mindestlaufzeit''' (1 bis 60 min) – bestimmen das Takten unter der Mindestleistung ([[#takten|Takten]]); die Mindestleistung liest der Import aus VDI 3805. Leer gilt die Vorgabe, eine gepflegte 0 zählt: Mindestleistung 0 heißt „moduliert bis null“, Anfahrverlust 0 zählt die Starts ohne Brennstoff. Die Mindestleistung darf die thermische Leistung nicht übersteigen.
+
+Ist ein Kessel als Brennwertkessel gekennzeichnet und die ''Brennwertkennlinie'' aus, steht in ''Administration Heizkessel'' unter dem Schalter der Hinweis, dass der Rücklauf dann nicht wirkt und der Kessel allein mit seiner Teillastkennlinie rechnet.
+
+Unter den Feldern der Gruppe zeigt ''Administration Heizkessel'' ein kleines Diagramm '''Wirkungsgrad über der Last''' von 10 bis 100 % der Nennleistung, so wie die Simulation ihn rechnet – mit den Eingaben, wie sie gerade im Dialog stehen, auch vor dem Speichern, und mit der Vorgabe für jedes leere Feld. Mit ''Brennwertkennlinie'' stehen drei Linien für 30, 50 und 60 °C Rücklauf, ohne sie eine ''Teillastkennlinie''; ein Elektrokessel zeigt eine flache Linie. Jeder Punkt nennt beim Zeigen Last und Wirkungsgrad, die Legende blendet Linien aus.
+
+== Berechnung ==
+
+Nutzwärme, Wirkungsgrad und Brennstoffeinsatz des Heizkessels stehen unter [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]].
+
+=== Berechnung in der Simulation ===
+{{Anker|berechnung-in-der-simulation|jahresnutzungsgrad}}
+
+Jede Stunde wird einmal je Kessel gebucht: Gibt er Wärme ab, verbraucht er seine brennstoffbasierte Wärme geteilt durch den Wirkungsgrad seiner Laststufe – beim Brennwertkessel mit Brennwertkennlinie auch seines Rücklaufs – und je Start den Anfahrverlust; steht er und ist betriebsbereit, verbraucht er seine Bereitschaftsleistung ([[#betriebsbereitschaft|Betriebsbereitschaft]]); sonst nichts. Der Jahresnutzungsgrad ist die brennstoffbasierte Nutzwärme geteilt durch den Brennstoffverbrauch einschließlich der Anfahr- und Stillstandsverluste.
+
+=== Teillastkennlinie ===
+{{Anker|teillastkennlinie|teillast|laststufe}}
+
+Die Laststufe <math>\beta</math> einer Stunde ist die brennstoffbasierte Wärme geteilt durch die Nennleistung. Zwischen 30 % und 100 % Last liegt der Wirkungsgrad auf einer Geraden vom ''Wirkungsgrad bei 30 % Last'' (<math>\eta_{30}</math>) zum Wirkungsgrad bei Nennlast (<math>\eta_{100}</math>, ''Wirkungsgrad Gas…'' bzw. ''Wirkungsgrad Öl''); unter 30 % gilt <math>\eta_{30}</math>:
+
+<math>\eta(\beta) = \eta_{30} + (\eta_{100} - \eta_{30}) \cdot \frac{\beta - 0{,}3}{0{,}7}, \quad 0{,}3 \le \beta \le 1</math>
+
+Ist <math>\eta_{30}</math> leer, gilt die Vorgabe der Bauart:
+
+{| class="wikitable"
+! Bauart !! erkannt an !! Vorgabe <math>\eta_{30}</math>
+|-
+| Brennwertkessel || Kennzeichen ''Brennwertkessel'' || <math>\eta_{100} + 0{,}06</math>, höchstens das Verhältnis Brennwert zu Heizwert des Brennstoffs (Gase 1,11, Heizöle 1,06, Holz und Pellets 1,08, sonst 1,0), nie unter <math>\eta_{100}</math>
+|-
+| Standardkessel || ohne Kennzeichen; die Beschreibung beginnt mit der VDI-3805-Bauart „Standard…“ || <math>\eta_{100} - 0{,}03</math>
+|-
+| Niedertemperaturkessel || alle übrigen || <math>\eta_{100}</math> – der Wirkungsgrad ist in jeder Laststufe derselbe
+|}
+
+Ein gepflegter Wert geht immer vor. Ein Elektrokessel rechnet ohne Kennlinie. Das Laufprotokoll nennt je Brennstoffkessel <math>\eta_{100}</math> und <math>\eta_{30}</math> und ob <math>\eta_{30}</math> gepflegt oder die Vorgabe ist.
+
+'''Beispiel.''' Kessel 1 aus Beispiel A ohne Brennwertkennlinie: Erdgas, 50 kW, <math>\eta_{100} = 0{,}97</math>, <math>\eta_{30} = 1{,}05</math>. In einer Stunde mit 30 kWh Wärme ist <math>\beta = 0{,}6</math> und <math>\eta = 1{,}05 + (0{,}97 - 1{,}05) \cdot 0{,}3/0{,}7 \approx 1{,}016</math>; die Stunde braucht 29,5 kWh Brennstoff statt 30,9 kWh bei Nennlastwirkungsgrad.
+
+=== Brennwertkennlinie ===
+{{Anker|brennwertkennlinie|ruecklauf|taupunkt|brennwertbetrieb}}
+
+Ein Brennwertkessel mit gesetzter ''Brennwertkennlinie'' rechnet je Laufstunde zusätzlich mit dem Rücklauf <math>\vartheta_{\mathrm{RL}}</math>. Unter dem Taupunkt des Abgases kondensiert Wasserdampf, und der Wirkungsgrad steigt. <math>\eta_{30}</math> ist bei 30 °C Rücklauf gemessen und enthält diesen Gewinn schon; die Teillastkurve rechnet deshalb „trocken“ mit <math>\eta_{30} - \Delta_{30}</math>, und der Gewinn kommt nach dem Rücklauf dazu (Temperaturen in °C):
+
+<math>\eta = \eta_{\mathrm{tr}}(\beta) + \Delta_{30} \cdot g, \qquad g = \frac{\vartheta_{\mathrm{Tau}} - \vartheta_{\mathrm{RL}}}{\vartheta_{\mathrm{Tau}} - 30}, \quad 0 \le g \le 1{,}2</math>
+
+Am und über dem Taupunkt ist <math>g = 0</math>, bei 30 °C Rücklauf 1; bei 30 % Last und 30 °C trifft die Kennlinie <math>\eta_{30}</math>, bei Nennlast am oder über dem Taupunkt <math>\eta_{100}</math>. Der Wirkungsgrad bleibt höchstens beim Verhältnis Brennwert zu Heizwert.
+
+{| class="wikitable"
+! Brennstoff !! Taupunkt <math>\vartheta_{\mathrm{Tau}}</math> !! Gewinn bei 30 °C Rücklauf <math>\Delta_{30}</math> !! Obergrenze Brennwert/Heizwert
+|-
+| Gase (Stadtgas, Erdgas, Flüssiggas, Biogas) || 57 °C || 0,08 || 1,11
+|-
+| Heizöle || 47 °C || 0,04 || 1,06
+|-
+| Holz, Holzpellets || 50 °C || 0,05 || 1,08
+|}
+
+Übrige Brennstoffe haben keinen Kondensationsgewinn und rechnen ohne Brennwertkennlinie; ein Elektrokessel ebenso.
+
+Der Rücklauf einer Stunde kommt aus der ersten belegten Stufe:
+# dem gerechneten Rücklauf des Heizkreises bei Anlagenkopplung ''Heizkreis (AK1)'' – in Stunden mit Heizbedarf eines gekoppelten Gebäudes,
+# dem ersten Pufferspeicher, den der Kessel als Senke lädt, in der Rangfolge seiner Senken – seine Rücklauftemperatur, beim geschichteten Speicher die unterste Schicht zu Beginn der Stunde,
+# dem Rücklauf des Temperaturpaars der Anlage (''Auslegung für Verteilung''), ohne vollständiges Paar dem des Kessels,
+# 50 °C.
+
+Eine Stunde mit einem Rücklauf unter dem Taupunkt zählt als Brennwertbetrieb.
+
+'''Beispiel.''' Kessel 1 aus Beispiel A (<math>\eta_{100} = 0{,}97</math>, <math>\eta_{30} = 1{,}05</math>) mit Brennwertkennlinie und dem Rücklauf 45 °C aus ''Auslegung für Verteilung'': Die trockene Kurve beginnt bei <math>1{,}05 - 0{,}08 = 0{,}97</math> und ist damit flach; <math>g = (57 - 45)/27 \approx 0{,}444</math>, also <math>\eta \approx 0{,}97 + 0{,}08 \cdot 0{,}444 \approx 1{,}006</math> in jeder Laststufe. Die Stunde mit 30 kWh Wärme braucht 29,8 kWh Brennstoff; beim Rücklauf 50 °C wären es 30,3 kWh (<math>\eta \approx 0{,}991</math>), bei 30 °C Rücklauf 28,6 kWh (<math>\eta = 1{,}05</math>). Ohne Brennwertkennlinie rechnet dieselbe Stunde mit <math>\eta \approx 1{,}016</math> ([[#teillastkennlinie|Teillastkennlinie]]).
+
+[[Datei:Diagramm_Kessel_Brennwert.png|mini|zentriert|800px|Wirkungsgrad eines Brennwertkessels über der Last für drei Rücklauftemperaturen. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
+=== Takten ===
+{{Anker|takten|starts|mindestleistung|anfahrverlust|mindestlaufzeit}}
+
+Ein Brennstoffkessel kann seine Leistung nur bis zur ''Mindestleistung'' <math>P_{\mathrm{min}}</math> absenken. Braucht eine Laufstunde weniger Wärme <math>Q</math>, taktet er: Er läuft jeweils die ''Mindestlaufzeit'' <math>t_{\mathrm{min}}</math> mit <math>P_{\mathrm{min}}</math> und schaltet dazwischen ab. Die Stunde zählt so viele Starts, wie Mindestläufe die Wärme brauchen, höchstens so viele, wie ganz in die Stunde passen:
+
+<math>n = \min\left(\left\lfloor \frac{60}{t_{\mathrm{min}}} \right\rfloor,\ \left\lceil \frac{60 \cdot Q}{P_{\mathrm{min}} \cdot t_{\mathrm{min}}} \right\rceil\right), \quad 0 < Q < P_{\mathrm{min}} \cdot \Delta t</math>
+
+mit <math>t_{\mathrm{min}}</math> in Minuten, <math>Q</math> in kWh, <math>P_{\mathrm{min}}</math> in kW und <math>\Delta t</math> gleich einer Stunde.
+
+Jede andere Laufstunde zählt einen Start, wenn der Kessel in der Stunde davor stand. Jeder Start kostet den ''Anfahrverlust je Start'' als Brennstoff; er geht in Brennstoffverbrauch, Jahresnutzungsgrad, Emissionen und die Brennstoffleistung der Stunde ein. ''Starts'' im Reiter ist die Summe über das Jahr.
+
+{| class="wikitable"
+! Feld !! Vorgabe bei leerem Feld
+|-
+| Mindestleistung || 30 % der Nennleistung beim Gas-Brennwertkessel, 60 % bei jedem übrigen Brennstoffkessel
+|-
+| Anfahrverlust je Start || 0,002 h mal Nennleistung (rund 7 Sekunden Brennstoff bei Nennlast)
+|-
+| Mindestlaufzeit || 10 min
+|}
+
+Ein gepflegter Wert geht vor. Ein Elektrokessel taktet nicht; seine Starts sind die Stunden, in denen er nach einem Stillstand wieder anläuft. Das Laufprotokoll nennt je Brennstoffkessel die drei Werte samt Herkunft (gepflegt oder Vorgabe) und im Jahr Starts, Laufphasen, Taktstunden und Anfahrverlust.
+
+'''Beispiel.''' Kessel 1 aus Beispiel A, die drei Felder leer: Mindestleistung 15 kW (30 % von 50 kW), Mindestlaufzeit 10 min, ein Mindestlauf also 2,5 kWh; Anfahrverlust 0,1 kWh je Start. Eine Stunde mit 6 kWh Wärme liegt unter 15 kWh und zählt <math>\lceil 6 / 2{,}5 \rceil = 3</math> Starts, also 0,3 kWh Brennstoff zusätzlich. Eine Stunde mit 20 kWh moduliert und zählt nur dann einen Start, wenn der Kessel in der Stunde davor stand.
+
+=== Betriebsbereitschaft ===
+{{Anker|betriebsbereitschaft|heizgrenze|heiztag}}
+
+Steht ein Kessel in einer Stunde, verbraucht er seine Bereitschaftsleistung (''Betriebsbereitschaftsverluste'' in kW, ein Prozentwert umgerechnet auf die Nennleistung) nur, wenn er betriebsbereit ist: an einem '''Heiztag''' oder in den 24 Stunden nach seiner letzten Laufstunde. Heiztag ist ein Tag, dessen mittlere Außentemperatur – das Mittel seiner 24 Stundenwerte aus den Klimadaten des Projekts – unter der ''Heizgrenze der Kesselbereitschaft'' liegt; leer gilt 15 °C, ein Tagesmittel genau auf der Grenze ist kein Heiztag. Ist die ''Betriebsbereitschaft'' größer 0 h/a, begrenzt sie die Bereitschaftsstunden je Kessel auf diesen Wert abzüglich seiner Laufstunden. Beide Werte stehen unter ''Konfiguration…'' an der Karte des Kessels und gelten für alle Kessel des Projekts ([[Programm Dokumentation/Simulation#kesselbereitschaft|Simulation: Betriebsbereitschaft des Heizkessels]]); das Laufprotokoll nennt Heizgrenze und Zahl der Heiztage.
+
+'''Beispiel.''' Kessel 1 aus Beispiel A mit 0,1 kW Bereitschaftsverlust: Steht er an einem Wintertag mit 2 °C Tagesmittel 20 Stunden still, verbraucht er in diesen Stunden 2 kWh Erdgas. An einem Sommertag mit 20 °C Tagesmittel verbraucht er im Stillstand nur, solange sein letzter Lauf höchstens 24 Stunden zurückliegt.
+
+=== Brennstoffverbrauch und Emissionen ===
+{{Anker|brennstoffverbrauch-und-emissionen|emissionen|energietraeger}}
+
+Der Verbrauch – Brennstoff der Laufstunden nach der Kennlinie, Anfahrverlust und Bereitschaftsverlust – geht nach dem Brennstoff des Kessels auf die Zähler Gas, Öl, Koks, Kohle, Holz, Pellets, Rapsöl, Tierische Fette oder Sonstige. Die Emissionsfaktoren kommen aus dem Emissionskatalog des Energieträgers, im Berechnungsmodus des Projekts ([[Programm Dokumentation/Emissionen|Emissionen]]); CO führt die Bilanz nicht.
+
+=== Elektrokessel ===
+{{Anker|elektrokessel}}
+
+Ein Kessel mit dem Energieträger ''Elektrische Energie'' ist ein Elektrokessel; als Energieträger im Projekt ist dann nur ein Stromträger zulässig. Sein Stromeinsatz ist seine Nutzwärme; Teillastkennlinie, Brennwertkennlinie und Takten gelten für ihn nicht. Er steht Stunde für Stunde im Reststrombedarf, den danach Photovoltaik und Stromspeicher mindern, und wird mit dem Netzbezug bewertet; einen Brennstoffverbrauch und eine eigene Kesselemission führt er nicht.
+
+=== Ergebnisse ===
+{{Anker|ergebnisse|deckungsanteil|modultabelle}}
+
+Der Reiter ''Heizkessel'' der Simulationsergebnisse zeigt von oben nach unten ''Wärmebedarfsdeckung'', ''Wärmeproduktion der Spitzenkessel'' und ''Restwärmebedarf nach Kessel'', den ''Brennstoffverbrauch der Spitzenkessel'' je Brennstoff und daneben die Gruppe ''Betrieb'' – Summe aller Kessel – mit ''Betriebsstunden gesamt'', ''Starts'', ''Bereitschaftsstunden'' und ''Bereitschaftsverlust''; mit einem Brennstoffkessel kommen ''Mittlerer Wirkungsgrad im Betrieb'', ''Brennstoff aus Teillast gegenüber Nennlast'' (negativ, wo die Teillast Brennstoff spart), ''Taktstunden unter der Mindestleistung'' und ''Anfahrverlust'' dazu, mit Brennwertkennlinie ''Mittlerer Rücklauf im Betrieb'', ''Betriebsstunden im Brennwertbetrieb'', ''Wärme im Brennwertbetrieb'' und ''Brennstoff aus Brennwertnutzung''. Dann folgen die Modultabelle ''Wärmeproduktion der einzelnen Spitzenkessel'' mit Jahresnutzungsgrad, Starts, <math>\eta_{30}</math> (mit „(Vorgabe)“ bei leerem Feld), Wirkungsgrad im Betrieb und mittlerer Laststufe je Kessel, mit Brennwertkennlinie dazu Rücklauf und Anteil des Brennwertbetriebs, das Diagramm der Wärmelast über das Jahr ([[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]) und am Ende unter ''Auslegung'' die ''Gesamte Wärmeleistung der Heizkessel'' und die ''Maximale Brennstoffleistung Gas (Hu)''. Der Wirkungsgrad im Betrieb ist die Wärme der Laufstunden geteilt durch ihren Brennstoff nach der Kennlinie, ohne Anfahr- und Bereitschaftsverlust; die ''Maximale Brennstoffleistung Gas (Hu)'' summiert die Jahreshöchstwerte aller Kessel, die nicht mit Heizöl rechnen, samt Anfahrverlust ihrer Stunde; mit Brennwertkennlinie ist der Teillastbrennstoff gegen die trockene Kurve gerechnet und der Brennwertbrennstoff der Unterschied zu ihr. Der Knopf ''CSV…'' in der Leiste des Diagramms ([[Programm Dokumentation/Simulationsergebnisse#diagrammbedienung|Simulationsergebnisse: Diagrammbedienung]]) führt je Brennstoffkessel den Wirkungsgrad jeder Stunde, mit Brennwertkennlinie auch den Rücklauf. Im Bericht steht je Stand die Kesseltafel mit Jahresnutzungsgrad, Brennwertbetrieb nach Stunden und nach Wärme und Starts.
+
+== Siehe auch ==
+
+* [[Grundlagen/Kessel und Spitzenlast]] – die fachlichen Hintergründe
+* [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]] – der Rechenweg mit Formeln
+* [[Programm Dokumentation/Simulation|Simulation]] – Kaskade, Wärmesenken und Konfiguration
+* [[Programm Dokumentation/Simulation#kesselbereitschaft|Simulation: Betriebsbereitschaft des Heizkessels]] – Heizgrenze und Betriebsbereitschaft
+* [[Programm Dokumentation/BHKW|BHKW]] – Beispiel B mit zwei Kesseln hinter dem BHKW
+* [[Programm Dokumentation/Gerätekataloge#heizkessel|Gerätekataloge: Heizkessel]] – Pflege des Katalogs
+* [[Kosten und Energiepreise]] – Heiz- und Brennwerte sowie Emissionsfaktoren je Energieträger
+
+[[Kategorie:Programm Dokumentation]]

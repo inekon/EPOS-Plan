@@ -70,7 +70,13 @@ namespace EPOS.Kern.Tests
                 {
                     "BEZEICHNER", "BESCHREIBUNG", "BRENNSTOFF", "PTHERM", "INVESTITIONSKOSTEN",
                     "BRENNWERT", "VORLAUF", "RUECKLAUF",
-                    "FIRMA", "WIRKUNGSGRAD_GAS", "WIRKUNGSGRAD_OEL", "BBVERLUST", "RAUMBEDARF",
+                    "FIRMA", "WIRKUNGSGRAD_GAS", "WIRKUNGSGRAD_OEL", "BBVERLUST",
+                    // Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
+                    "BBVERLUST_EINHEIT",
+                    // Die Kennlinie (Konzept Kesselkennlinie, Etappe E1).
+                    "WIRKUNGSGRAD_TEILLAST30", "KENNLINIE_BRENNWERT", "MINDESTLEISTUNG",
+                    "ANFAHRVERLUST", "MINDESTLAUFZEIT",
+                    "RAUMBEDARF",
                     "WARTUNGSKOSTEN", "WARTUNG_EINHEIT", "NUTZUNGSDAUER",
                     "CO2", "SO2", "NOX", "CO", "STAUB"
                 }
@@ -82,7 +88,12 @@ namespace EPOS.Kern.Tests
                 {
                     "BEZEICHNER", "FIRMA", "BESCHREIBUNG", "PTHERM", "PEL", "GRENZLEISTUNG",
                     "VORLAUF", "RUECKLAUF",
+                    // Abschaltgrenze des Ruecklaufs (UB-E3, Schemaschritt 205).
+                    "RUECKLAUF_MAX",
                     "BRENNSTOFF", "WIRKUNGSGRAD_EL", "WIRKUNGSGRAD_TH", "WIRKUNGSGRAD",
+                    // Teillast und Takten (Welle M4: BH1, BH2).
+                    "WIRKUNGSGRAD_EL_TEILLAST50", "WIRKUNGSGRAD_TH_TEILLAST50",
+                    "ANFAHRVERLUST", "MINDESTLAUFZEIT",
                     "MOTORTYP", "RAUMBEDARF",
                     "KOSTEN_MODUL", "KOSTEN_MONTAGE", "KOSTEN_LIEFERUNG",
                     "KOSTEN_SCHALLSCHUTZ", "KOSTEN_ABGASREINIGUNG",
@@ -96,7 +107,7 @@ namespace EPOS.Kern.Tests
                 new[]
                 {
                     "BEZEICHNER", "KOLLEKTORTYP", "FIRMA", "BESCHREIBUNG",
-                    "MODULFLAECHE", "APERTURFLAECHE",
+                    "MODULFLAECHE", "APERTURFLAECHE", "BEZUGSFLAECHE",
                     "H0", "K1", "K2", "KDIR", "KDIFF", "INVESTITIONSKOSTEN"
                 }
             };
@@ -239,7 +250,8 @@ namespace EPOS.Kern.Tests
                      {
                          KatalogBrowserProfil.FeldBrennstoff, KatalogBrowserProfil.FeldFirma,
                          KatalogBrowserProfil.FeldWirkungsgradGas, KatalogBrowserProfil.FeldWirkungsgradOel,
-                         KatalogBrowserProfil.FeldBBVerlust, KatalogBrowserProfil.FeldRaumbedarf,
+                         KatalogBrowserProfil.FeldBBVerlust, KatalogBrowserProfil.FeldBBEinheit,
+                         KatalogBrowserProfil.FeldRaumbedarf,
                          KatalogBrowserProfil.FeldWartungskosten, KatalogBrowserProfil.FeldWartungEinheit,
                          KatalogBrowserProfil.FeldNutzungsdauer, KatalogBrowserProfil.FeldCo2,
                          KatalogBrowserProfil.FeldSo2, KatalogBrowserProfil.FeldNox,
@@ -326,6 +338,75 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("KBROW_", ergebnis.Meldung);
         }
 
+        /// <summary>
+        /// <b>Die Kennlinie</b> (Konzept Kesselkennlinie, Etappe E1): Werte kommen an (Komma
+        /// wie Punkt); ein LEERES Feld heisst hier „Vorgabe" und schreibt NULL, ein
+        /// weggelassenes bleibt stehen. Unlesbarer Text, ein Bruchteil bei der Mindestlaufzeit,
+        /// ein Wert ausser Bereich und die Brennwertkennlinie ohne Brennwertkessel werden
+        /// benannt abgelehnt — und nichts wird geschrieben.
+        /// </summary>
+        [Fact]
+        public void Heizkessel_Kennlinie_leer_heisst_Vorgabe()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            static HeizkesselStammCtrl.AnzeigefelderHeizkessel Satz(
+                bool brennwert, string eta30 = null, bool? kennlinie = null, string pmin = null,
+                string anfahr = null, string laufzeit = null)
+                => new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
+                    "Kennlinie", 22, 5000, brennwert, 70, 50,
+                    Teillast30: eta30, KennlinieBrennwert: kennlinie, Mindestleistung: pmin,
+                    Anfahrverlust: anfahr, Mindestlaufzeit: laufzeit);
+            static string Wert(string feld) => new HeizkesselStammCtrl().KatalogsatzAnzeige(KESSEL)[feld];
+
+            var gepflegt = HeizkesselStammCtrl.AnzeigefelderSchreiben(
+                KESSEL, Satz(true, "1,07", true, "6.5", "0,05", "10"));
+            Assert.True(gepflegt.Ok, gepflegt.Meldung);
+            Assert.Equal("1,07", Wert(KatalogBrowserProfil.FeldTeillast30));
+            Assert.Equal("1", Wert(KatalogBrowserProfil.FeldKennlinieBrennwert));
+            Assert.Equal("6,5", Wert(KatalogBrowserProfil.FeldMindestleistung));
+            Assert.Equal("0,05", Wert(KatalogBrowserProfil.FeldAnfahrverlust));
+            Assert.Equal("10", Wert(KatalogBrowserProfil.FeldMindestlaufzeit));
+
+            // Weggelassen = stehen lassen.
+            Assert.True(HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, Satz(true)).Ok);
+            Assert.Equal("1,07", Wert(KatalogBrowserProfil.FeldTeillast30));
+            Assert.Equal("1", Wert(KatalogBrowserProfil.FeldKennlinieBrennwert));
+            Assert.Equal("10", Wert(KatalogBrowserProfil.FeldMindestlaufzeit));
+
+            // Benannt abgelehnt, nichts geschrieben.
+            foreach (var (falsch, feld) in new[]
+                     {
+                         (Satz(true, eta30: "hoch"), "Wirkungsgrad bei 30 % Last"),
+                         (Satz(true, eta30: "0,3"), "Wirkungsgrad bei 30 % Last"),
+                         (Satz(true, pmin: "30"), "Mindestleistung"),
+                         (Satz(true, anfahr: "-1"), "Anfahrverlust"),
+                         (Satz(true, laufzeit: "7,5"), "Mindestlaufzeit"),
+                         (Satz(true, laufzeit: "99"), "Mindestlaufzeit"),
+                         (Satz(false), "Brennwertkennlinie")
+                     })
+            {
+                var abgelehnt = HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, falsch);
+                Assert.False(abgelehnt.Ok, feld);
+                Assert.Contains(feld, abgelehnt.Meldung);
+                Assert.DoesNotContain("KBROW_", abgelehnt.Meldung);
+            }
+            Assert.Equal("1,07", Wert(KatalogBrowserProfil.FeldTeillast30));
+            Assert.Equal("6,5", Wert(KatalogBrowserProfil.FeldMindestleistung));
+
+            // Leer = Vorgabe: NULL, nicht 0.
+            Assert.True(HeizkesselStammCtrl.AnzeigefelderSchreiben(
+                KESSEL, Satz(false, "", false, "", " ", "")).Ok);
+            foreach (string feld in new[]
+                     {
+                         KatalogBrowserProfil.FeldTeillast30, KatalogBrowserProfil.FeldMindestleistung,
+                         KatalogBrowserProfil.FeldAnfahrverlust, KatalogBrowserProfil.FeldMindestlaufzeit
+                     })
+                Assert.Equal("", Wert(feld));
+            Assert.Equal("0", Wert(KatalogBrowserProfil.FeldKennlinieBrennwert));
+        }
+
         // =================================================================================
         // 3 - BHKW: Rundlauf, Schreibschutz und die abgeleitete Investition
         // =================================================================================
@@ -350,8 +431,7 @@ namespace EPOS.Kern.Tests
                 NOx: 90, SO2: 2, CO: 210, CO2: 199000, Staub: 1,
                 WirkungsgradEl: 0.30, WirkungsgradTh: 0.56);
 
-            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder,
-                                                                schreibschutzUebergehen: true);
+            var ergebnis = EntsperrtSchreiben(BHKW, felder);
             Assert.True(ergebnis.Ok, ergebnis.Meldung);
 
             var nachher = BHKWStammCtrl.KatalogsatzAnzeige(BHKW);
@@ -384,6 +464,65 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Teillast und Takten des BHKW</b> (Welle M4: BH1, BH2): Werte kommen an (Komma wie
+        /// Punkt); ein LEERES Feld heisst „nicht gepflegt" und schreibt NULL, ein weggelassenes
+        /// bleibt stehen. Ein Wirkungsgrad als Prozentzahl, ein Bruchteil bei der Mindestlaufzeit
+        /// und unlesbarer Text werden benannt abgelehnt — und nichts wird geschrieben.
+        /// </summary>
+        [Fact]
+        public void Bhkw_Teillast_leer_heisst_nicht_gepflegt()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            static BHKWStammCtrl.AnzeigefelderBhkw Satz(string el50 = null, string th50 = null,
+                                                        string anfahr = null, string laufzeit = null)
+                => new BHKWStammCtrl.AnzeigefelderBhkw(
+                    "Probe GmbH", 260, 240, 25, 88, 62,
+                    WirkungsgradEl50: el50, WirkungsgradTh50: th50,
+                    AnfahrverlustKwh: anfahr, MindestlaufzeitMin: laufzeit);
+            static string Wert(string feld) => BHKWStammCtrl.KatalogsatzAnzeige(BHKW)[feld];
+            static BHKWStammCtrl.SpeicherErgebnis Schreiben(BHKWStammCtrl.AnzeigefelderBhkw f)
+                => EntsperrtSchreiben(BHKW, f);
+
+            var gepflegt = Schreiben(Satz("0,33", "0.55", "1,5", "15"));
+            Assert.True(gepflegt.Ok, gepflegt.Meldung);
+            Assert.Equal("0,33", Wert(KatalogBrowserProfil.FeldTeillastEl50));
+            Assert.Equal("0,55", Wert(KatalogBrowserProfil.FeldTeillastTh50));
+            Assert.Equal("1,5", Wert(KatalogBrowserProfil.FeldAnfahrverlust));
+            Assert.Equal("15", Wert(KatalogBrowserProfil.FeldMindestlaufzeit));
+
+            // Weggelassen = stehen lassen.
+            Assert.True(Schreiben(Satz()).Ok);
+            Assert.Equal("0,33", Wert(KatalogBrowserProfil.FeldTeillastEl50));
+            Assert.Equal("15", Wert(KatalogBrowserProfil.FeldMindestlaufzeit));
+
+            // Benannt abgelehnt, nichts geschrieben.
+            foreach (var falsch in new[]
+                     {
+                         Satz(el50: "33"), Satz(th50: "hoch"), Satz(anfahr: "-1"),
+                         Satz(laufzeit: "7,5"), Satz(laufzeit: "99")
+                     })
+            {
+                var abgelehnt = Schreiben(falsch);
+                Assert.False(abgelehnt.Ok);
+                Assert.False(string.IsNullOrEmpty(abgelehnt.Meldung));
+                Assert.DoesNotContain("KBROW_", abgelehnt.Meldung);
+            }
+            Assert.Equal("0,33", Wert(KatalogBrowserProfil.FeldTeillastEl50));
+            Assert.Equal("1,5", Wert(KatalogBrowserProfil.FeldAnfahrverlust));
+
+            // Leer = nicht gepflegt: NULL, nicht 0.
+            Assert.True(Schreiben(Satz("", " ", "", "")).Ok);
+            foreach (string feld in new[]
+                     {
+                         KatalogBrowserProfil.FeldTeillastEl50, KatalogBrowserProfil.FeldTeillastTh50,
+                         KatalogBrowserProfil.FeldAnfahrverlust, KatalogBrowserProfil.FeldMindestlaufzeit
+                     })
+                Assert.Equal("", Wert(feld));
+        }
+
+        /// <summary>
         /// <b>Die Investition je kWel wird NACHGERECHNET, nicht eingetippt</b>
         /// (W14a-E-8-B3): 24 000 EUR aus fuenf Posten bei 240 kWel sind 100 EUR/kWel —
         /// in der Anzeige und in der Spalte.
@@ -399,7 +538,7 @@ namespace EPOS.Kern.Tests
                 KostenModul: 20000, KostenMontage: 1000, KostenLieferung: 500,
                 KostenSchallschutzhaube: 2000, KostenAbgasreinigung: 500);
 
-            Assert.True(BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder, true).Ok);
+            Assert.True(EntsperrtSchreiben(BHKW, felder).Ok);
 
             var satz = BHKWStammCtrl.KatalogsatzAnzeige(BHKW);
             Assert.Equal("100", satz[KatalogBrowserProfil.FeldInvestitionJeKwel]);
@@ -422,7 +561,7 @@ namespace EPOS.Kern.Tests
             var felder = new BHKWStammCtrl.AnzeigefelderBhkw(
                 "Geht nicht", 1, 2, 3, 4, 5, Motortyp: "Geht auch nicht");
 
-            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder, false);
+            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder);
 
             Assert.False(ergebnis.Ok);
             Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
@@ -440,7 +579,7 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var felder = new BHKWStammCtrl.AnzeigefelderBhkw("x", 10, 10, 150, 80, 60);
-            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder, true);
+            var ergebnis = EntsperrtSchreiben(BHKW, felder);
 
             Assert.False(ergebnis.Ok);
             Assert.Contains("100", ergebnis.Meldung);
@@ -619,6 +758,32 @@ namespace EPOS.Kern.Tests
             Assert.False(ergebnis.Ok);
             Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
             Assert.Equal("", ergebnis.Name);
+        }
+
+        /// <summary>
+        /// Der Bereitschaftsverlust eines Kessels steht in kW ODER % der Nennleistung
+        /// (Anwenderentscheid 02.10.2026): Das Wertfeld trägt keine feste Einheit, die Einheit
+        /// steht im Feld unmittelbar dahinter — wie im Katalogdialog.
+        /// </summary>
+        [Fact]
+        public void Der_Bereitschaftsverlust_traegt_seine_Einheit_im_Feld_dahinter()
+        {
+            var felder = KatalogBrowserProfil.Finde(KatalogBrowserArt.Heizkessel).Detailfelder.ToList();
+            int bb = felder.FindIndex(f => f.Schluessel == KatalogBrowserProfil.FeldBBVerlust);
+            Assert.True(bb >= 0);
+            Assert.Equal("", felder[bb].Einheit);
+            Assert.Equal(KatalogBrowserProfil.FeldBBEinheit, felder[bb + 1].Schluessel);
+            Assert.True(felder[bb + 1].Editierbar);
+        }
+
+        /// <summary>
+        /// Schreibt die Anzeigefelder eines BHKW-Satzes, nachdem sein Schloss aufgehoben ist — der
+        /// Weg des Anwenders (AD-Q15): Ein Satz mit Schloss wird nie geschrieben.
+        /// </summary>
+        private static BHKWStammCtrl.SpeicherErgebnis EntsperrtSchreiben(string name, BHKWStammCtrl.AnzeigefelderBhkw felder)
+        {
+            Assert.True(BHKWStammCtrl.SchlossSetzen(new[] { BHKWStammCtrl.IdZu(name) }, false).Ok);
+            return BHKWStammCtrl.AnzeigefelderSchreiben(name, felder);
         }
     }
 }

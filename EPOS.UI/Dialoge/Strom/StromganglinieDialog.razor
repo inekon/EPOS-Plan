@@ -118,6 +118,7 @@
 @using SpeicherEngine
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+<CascadingValue Value="@CsvNaht">
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -127,7 +128,7 @@
         @* H13: der Rechenweg — wie ein eingelesener Lastgang in den Strombedarf des
            Projekts eingeht (Raster, Spreizung, Kennzahlen). *@
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
-                   StandardKurztext="@HilfeKurztextBerechnung" />
+                   StandardKurztext="@HilfeKurztextBerechnung" MitAssistent="false" />
         @if (!Wizard)
         {
             <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(false))" />
@@ -139,11 +140,12 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+    <Zweispaltenauswahl Dialogname="Stromganglinie" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
-                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen"
+                        SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true">
 
         <Links>
             <div class="epos-raster-huelle">
@@ -215,18 +217,18 @@
                 <div class="epos-formathinweis">
                     <Herleitungszeile Text="@FormatHinweisText" />
                     <InfoKnopf Schluessel="@HilfeSchluesselImport"
-                               StandardKurztext="@FormatHinweisLangText" />
+                               StandardKurztext="@FormatHinweisLangText" MitAssistent="false" />
                 </div>
             }
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --- Die Grafik der gewaehlten Ganglinie (W12-E-2) ------------------ *@
     @if (_kennzahlen is not null)
     {
         <GanglinienGrafik Schluessel="@Grafikschluessel" Bezeichner="@GewaehlterName"
-                          Kennzahlen="@_kennzahlen" Bildauftrag="@Grafikbild"
+                          Kennzahlen="@_kennzahlen" Bildauftrag="@Grafikbild" BildauftragMass="@GrafikbildMass"
                           Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
                           LabelJahresarbeit="@LabelJahresarbeit" LabelSpitze="@LabelSpitze"
                           LabelVollbenutzung="@LabelVollbenutzung"
@@ -236,6 +238,9 @@
                           FarbeSetzen="@FarbeSetzen"
                           FarbeZuruecksetzen="@FarbeZuruecksetzen" />
     }
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {
@@ -275,7 +280,21 @@
     </Ueberlagerung>
 </div>
 
+</CascadingValue>
+
 @code {
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster der ersten Spalte); jedes
+    /// Diagramm dieses Dialogs mit Reihen bekommt den Knopf über die Kaskade. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Naht der Kaskade; das Raster folgt der Länge der Reihen.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
     // =====================================================================
     // Eingaben und Delegaten
     // =====================================================================
@@ -369,6 +388,13 @@
     /// Zeitausschnitt liegt seither im Bild (DG-E3-9).</para>
     /// </summary>
     [Parameter] public Func<GanglinienWahl, bool, Zeichenmodell?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Das Zeichenmodell in Behältergröße (DZ1‑N2): Wahl, Schalterstellung, Breite und Höhe der
+    /// Zeichenfläche in px. Es geht dem <see cref="Bildauftrag"/> vor — die Kurve nimmt die volle
+    /// Breite der Satzfläche.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, int, int, Zeichenmodell?>? BildauftragMass { get; set; }
 
     /// <summary>Die Farbe einer Rolle anwendungsweit setzen; ohne ihn kein Farbwähler.</summary>
     [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
@@ -613,7 +639,7 @@
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         await KatalogLaden();
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
         StateHasChanged();
     }
 
@@ -694,11 +720,25 @@
         => _wahl is null ? "" : (_wahl.AusKatalog ? "K|" : "P|") + _wahl.GanglinieId
                                 + "|" + _wahl.Bezeichner;
 
+    /// <summary>Was die Detailzeile zeigt (DZ1): die Zuordnung, den Katalogsatz oder keinen.</summary>
+    private Satzmarke SatzArt => _projektZeile is not null ? Satzmarke.Projektsatz
+                               : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
+    private string? SatzName => SatzArt == Satzmarke.Keiner ? null
+                              : _projektZeile?.Bezeichner ?? _katalogZeile?.Bezeichner;
+
     /// <summary>Der Bildauftrag der Grafik — die Wahl steckt schon darin.</summary>
     private Func<bool, Zeichenmodell?>? Grafikbild
         => (Bildauftrag is null || _wahl is null)
             ? null
             : sortiert => Bildauftrag(_wahl, sortiert);
+
+    /// <summary>Der Bildauftrag in Behältergröße (DZ1‑N2) — die Wahl steckt schon darin.</summary>
+    private Func<bool, int, int, Zeichenmodell?>? GrafikbildMass
+        => (BildauftragMass is null || _wahl is null)
+            ? null
+            : (sortiert, breite, hoehe) => BildauftragMass(_wahl, sortiert, breite, hoehe);
 
     private void Melden(string text, WarnStufe stufe)
     {

@@ -87,6 +87,7 @@ namespace Berichtsvorlage
             internal string Ausgangslage, Klimaregion, Ergebnisse, Variante, Waermebedarf, Jaz, Co2, Kapitalwertdiff;
             internal string Empfehlung, BesteVor, BesteMitte, BesteNach, Wirtschaft, Kuehlung, KuehlungVor, KuehlungMitte, KuehlungNach;
             internal string Deckung, Anhang, Stamm, Gruppe, Summe, Warnung;
+            internal string Aufheizung, AufheizVor, AufheizBei, AufheizLeistung, AufheizAuslegung, AufheizAus, AufheizUnd, AufheizNach;
             internal string Titel, Beschreibung;
             internal string[][] Kommentare;
         }
@@ -248,6 +249,23 @@ namespace Berichtsvorlage
             r.Add(Beispielvorlage.Absatz("Normal", Beispielvorlage.Lauf(t.KuehlungVor + " "), P("stamm.kennzahl.kaelte.jahresbedarf"),
                                          Beispielvorlage.Lauf(t.KuehlungMitte + " "), P("stamm.kennzahl.kaelte.deckungsgrad"),
                                          Beispielvorlage.Lauf(t.KuehlungNach)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+
+            // 7a — Aufheizabsatz je Gebäude (KP3 Welle O3a, E58 F4 (b)): nur mit Aufheizoptimierung, Einzelfelder im Satz
+            Paragraph wennAufheizung = Beispielvorlage.Absatz("Normal", new CommentRangeStart { Id = "9" }, P("#wenn hat.aufheizung"));
+            wennAufheizung.Append(Ende("9"));
+            r.Add(wennAufheizung);
+            r.Add(Beispielvorlage.Absatz("Heading2", Beispielvorlage.Lauf(t.Aufheizung)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#je gebaeude")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("gebaeude.name"), Beispielvorlage.Lauf(t.AufheizVor + " "), P("gebaeude.ergebnis.aufheizzeit"),
+                                         Beispielvorlage.Lauf(" " + t.AufheizBei + " "), P("gebaeude.ergebnis.aufheiz_aussentemperatur"),
+                                         Beispielvorlage.Lauf(t.AufheizLeistung + " "), P("gebaeude.ergebnis.aufheizleistung"),
+                                         Beispielvorlage.Lauf(t.AufheizAuslegung + " "), P("gebaeude.ergebnis.auslegungsgroesse"),
+                                         Beispielvorlage.Lauf(" " + t.AufheizAus + " "), P("gebaeude.ergebnis.auslegungsheizlast"),
+                                         Beispielvorlage.Lauf(" " + t.AufheizUnd + " "), P("gebaeude.ergebnis.aufheizzuschlag"),
+                                         Beispielvorlage.Lauf(t.AufheizNach)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("gebaeude.ergebnis.aufheizhinweise")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/je")));
             r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
 
             // 8 — Zwei Bilder nebeneinander je Stand (Bildgröße Stufe 2)
@@ -544,7 +562,7 @@ namespace Berichtsvorlage
 
         // ------------------------------------------------------------- Kommentare, Eigenschaften
 
-        /// <summary>Die Erläuterungen als Word-Kommentare (ohne Datum — die Datei bleibt bei jedem Lauf gleich), Kennungen 0 bis 8.</summary>
+        /// <summary>Die Erläuterungen als Word-Kommentare (ohne Datum — die Datei bleibt bei jedem Lauf gleich), Kennungen 0 bis 9.</summary>
         private static void Kommentare(MainDocumentPart main, Texte t)
         {
             WordprocessingCommentsPart teil = main.WordprocessingCommentsPart ?? main.AddNewPart<WordprocessingCommentsPart>();
@@ -571,7 +589,7 @@ namespace Berichtsvorlage
         /// <summary>
         /// Stilregeln, Validator und die Regeln der Wache: jede Marke in eigenem Run mit <c>w:noProof</c>, kein
         /// „INEKON“, die Kopfzeile mit dem Bildplatzhalter des Logos, drei Bildrahmen mit Schlüssel im Alternativtext
-        /// auf dem Platzhalterbild, neun Kommentare mit je einem Verweis, Blockmarken paarig, die Mustertabelle da und
+        /// auf dem Platzhalterbild, zehn Kommentare mit je einem Verweis, Blockmarken paarig, die Mustertabelle da und
         /// die drei Eigenschaften in <c>custom.xml</c>.
         /// </summary>
         private static bool Abschlusspruefung(string pfad, Texte t, int katalogfassung, TextWriter aus)
@@ -673,6 +691,9 @@ namespace Berichtsvorlage
             Kuehlung = "Kühlung", KuehlungVor = "Der Kältebedarf beträgt", KuehlungMitte = "; davon deckt die Anlage", KuehlungNach = ".",
             Deckung = "Deckung je Variante", Anhang = "Anhang",
             Stamm = "Stamm", Gruppe = "Gruppe", Summe = "Summe", Warnung = "Warnung",
+            Aufheizung = "Aufheizung", AufheizVor = ": Die Aufheizzeit beträgt", AufheizBei = "bei",
+            AufheizLeistung = ", die Aufheizleistung", AufheizAuslegung = "; die Auslegungsgröße",
+            AufheizAus = "setzt sich aus der Auslegungsheizlast", AufheizUnd = "und dem Aufheizzuschlag", AufheizNach = " zusammen.",
             Kommentare = new[]
             {
                 new[]
@@ -737,6 +758,15 @@ namespace Berichtsvorlage
                     + "die Zeilen dieser Rolle in allen Strukturtabellen – Stamm, Gruppe, Summe, Warnung. EPOS-Plan liest sie und "
                     + "entfernt sie aus dem Bericht.",
                 },
+                new[]
+                {
+                    "Ein Absatz je Gebäude, nur mit Aufheizoptimierung: {{#wenn hat.aufheizung}} lässt den Abschnitt entfallen, "
+                    + "wenn kein Gebäude mit ihr gerechnet hat; {{#je gebaeude}} … {{/je}} wiederholt den Absatz für jedes Gebäude, "
+                    + "etwa „Gebäude 1: Die Aufheizzeit beträgt 4 h bei −10,0 °C …“.",
+                    "Die Werte gebaeude.ergebnis.… kommen aus dem Ergebnis des Laufs. Die Auslegungsgröße ist die "
+                    + "Auslegungsheizlast plus der Aufheizzuschlag; {{gebaeude.ergebnis.aufheizhinweise}} nennt die Hinweise W1 bis "
+                    + "W5 und bleibt ohne Anlass leer.",
+                },
             },
         };
 
@@ -756,6 +786,9 @@ namespace Berichtsvorlage
             Kuehlung = "Cooling", KuehlungVor = "The cooling demand is", KuehlungMitte = "; the system covers", KuehlungNach = " of it.",
             Deckung = "Coverage per variant", Anhang = "Appendix",
             Stamm = "Base", Gruppe = "Group", Summe = "Total", Warnung = "Warning",
+            Aufheizung = "Preheating", AufheizVor = ": The preheat time is", AufheizBei = "at",
+            AufheizLeistung = ", the preheat power", AufheizAuslegung = "; the design capacity",
+            AufheizAus = "consists of the design heat load", AufheizUnd = "and the heating-up capacity", AufheizNach = ".",
             Kommentare = new[]
             {
                 new[]
@@ -818,6 +851,15 @@ namespace Berichtsvorlage
                     "The pattern table with the alternative text {{muster.tabelle}}: shading and font of each cell apply to the "
                     + "rows of that role in all structured tables – base, group, total, warning. EPOS-Plan reads it and removes it "
                     + "from the report.",
+                },
+                new[]
+                {
+                    "One paragraph per building, only with preheat optimisation: {{#wenn hat.aufheizung}} omits the section if no "
+                    + "building was calculated with it; {{#je gebaeude}} … {{/je}} repeats the paragraph for every building, for "
+                    + "example “Building 1: The preheat time is 4 h at −10.0 °C …”.",
+                    "The values gebaeude.ergebnis.… come from the result of the run. The design capacity is the design heat "
+                    + "load plus the heating-up capacity; {{gebaeude.ergebnis.aufheizhinweise}} lists the notes W1 to W5 and stays "
+                    + "empty without cause.",
                 },
             },
         };

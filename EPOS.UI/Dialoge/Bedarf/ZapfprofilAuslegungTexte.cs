@@ -410,7 +410,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string KnopfUebergeben { get; set; } = "An Speicherauslegung übergeben…";
 
     /// <summary><c>ZPG_AUS_GRUND_UEBERGEBEN</c></summary>
-    public string GrundUebergeben { get; set; } = "Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.";
+    public string GrundUebergeben { get; set; } = "Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.";
 
     // ------------------------------------------------------------ Warnliste
 
@@ -594,10 +594,19 @@ public sealed class ZapfprofilAuslegungTexte
     public string LabelPersonenManuell { get; set; } = "Personen manuell";
 
     /// <summary><c>ZPG_AUS_LBL_FUELLSTAND_BEZUG</c></summary>
-    public string LabelFuellstandBezug { get; set; } = "Bezug des Füllstands";
+    public string LabelFuellstandBezug { get; set; } = "Speichergröße der Füllstandslinie";
 
     /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE</c></summary>
     public string FuellstandVorgabe { get; set; } = "Vorgabe: Nenninhalt des Punkts, sonst der Punkt";
+
+    /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE_WAHL</c></summary>
+    public string FuellstandVorgabeWahl { get; set; } = "Vorgabe: {0} · {1} l";
+
+    /// <summary><c>ZPG_AUS_FUELLSTAND_WAHL</c></summary>
+    public string FuellstandWahl { get; set; } = "{0} · {1} l";
+
+    /// <summary><c>ZPG_AUS_FUELLSTAND_WAHL_GESPERRT</c></summary>
+    public string FuellstandWahlGesperrt { get; set; } = "{0} · nicht bestimmbar";
 
     /// <summary><c>ZPG_AUS_BTN_VORSCHLAG</c></summary>
     public string KnopfVorschlag { get; set; } = "Als manuellen Wert übernehmen";
@@ -621,7 +630,13 @@ public sealed class ZapfprofilAuslegungTexte
     public string HerleitungAngesetzt { get; set; } = "leer = Vorgabe des Katalogs; angesetzt: {0}";
 
     /// <summary><c>ZPG_AUS_HERL_FUELLSTAND</c></summary>
-    public string HerleitungFuellstand { get; set; } = "Auf dieses Volumen bezieht sich der Füllstand der Kachel; angesetzt: {0}";
+    public string HerleitungFuellstand { get; set; } = "Auf dieses Volumen beziehen sich Füllstandslinie und Kachel „Füllstand“; angesetzt: {0}";
+
+    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND_GESPERRT</c></summary>
+    public string HerleitungFuellstandGesperrt { get; set; } = "{0} nicht bestimmbar: {1}";
+
+    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND_GRUPPE</c></summary>
+    public string HerleitungFuellstandGruppe { get; set; } = "Speichergröße der Füllstandslinie: {0} — gewählt am ersten Wochenbild";
 
     /// <summary><c>ZPG_AUS_HERL_GESPEICHERT</c></summary>
     public string HerleitungGespeichert { get; set; } = "wird mit dem Projekt gespeichert; {0}";

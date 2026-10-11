@@ -2,6 +2,7 @@
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Waermepumpe;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -24,6 +25,11 @@ public class WaermepumpeKuehlbetriebTests : EposBunitContext
     public WaermepumpeKuehlbetriebTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // Die Gruppe traegt die Hilfeknoepfe der Kuehlung (Anwendungs- und
+        // Grundlagenseite) - der InfoKnopf braucht einen Hilfedienst; beide Wirte
+        // des Bausteins haben ihn ohnehin.
+        Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
     }
 
     private const int PROJEKTTRAEGER = 60, KUEHLTRAEGER = 58;
@@ -40,8 +46,10 @@ public class WaermepumpeKuehlbetriebTests : EposBunitContext
         Kuehlbetrieb = kuehlbetrieb
     };
 
-    private static WaermepumpeKuehlGaben Gaben(string? sperrgrund = null, bool mitKennlinie = true) => new()
+    private static WaermepumpeKuehlGaben Gaben(string? sperrgrund = null, bool mitKennlinie = true,
+                                               string? freiSperrgrund = null) => new()
     {
+        FreiSperrgrund = _ => freiSperrgrund,
         Vorlaeufe = _ => mitKennlinie
             ? new[] { new KuehlVorlaufEintrag(7), new KuehlVorlaufEintrag(18), new KuehlVorlaufEintrag(45, "Kennlinie in Heizlage — wird nicht gerechnet") }
             : Array.Empty<KuehlVorlaufEintrag>(),
@@ -200,5 +208,190 @@ public class WaermepumpeKuehlbetriebTests : EposBunitContext
         var cut = Aufbauen(d, Gaben());
         var optionen = Feld(cut, "Stromträger des Kältestroms", "select").QuerySelectorAll("option");
         Assert.Contains(optionen, o => o.GetAttribute("value") == "99" && o.HasAttribute("selected"));
+    }
+
+    // ==== Freie Kühlung über die Wärmequelle (KU3-6, F2, F6) =========================
+
+    private const string FREI_GRUND = "Freie Kühlung nur an einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe — diese Maschine nutzt die Außenluft.";
+
+    private static IElement? Freischalter(IRenderedComponent<WaermepumpeKonfiguration> cut)
+        => cut.FindAll("label.epos-schalter")
+              .FirstOrDefault(l => l.TextContent.Trim() == "Freie Kühlung über die Wärmequelle")
+              ?.QuerySelector("input");
+
+    private static bool HatFeld(IRenderedComponent<WaermepumpeKonfiguration> cut, string bezeichnung)
+        => cut.FindAll(".epos-feld-text").Any(e => e.TextContent.Trim() == bezeichnung);
+
+    /// <summary>Der Schalter steht nur mit Kühlbetrieb, Grädigkeit und Leistungsgrenze nur mit dem Schalter.</summary>
+    [Fact]
+    public void Freie_Kuehlung_steht_nur_mit_Kuehlbetrieb_und_ihre_Felder_nur_mit_dem_Schalter()
+    {
+        WaermepumpeAnlageDaten d = Daten();
+        var cut = Aufbauen(d, Gaben());
+        Assert.Null(Freischalter(cut));
+
+        Kuehlschalter(cut).Change(true);
+        IElement frei = Freischalter(cut)!;
+        Assert.False(frei.HasAttribute("aria-disabled"));
+        Assert.False(HatFeld(cut, "Grädigkeit des Wärmetauschers"));
+        Assert.False(HatFeld(cut, "Leistungsgrenze"));
+
+        frei.Change(true);
+        Assert.True(d.KuehlFrei);
+        Assert.True(HatFeld(cut, "Grädigkeit des Wärmetauschers"));
+        Assert.True(HatFeld(cut, "Leistungsgrenze"));
+        Assert.Contains(cut.FindAll(".epos-herleitung"), e => e.TextContent.StartsWith("Leer = 3,0 K"));
+
+        IElement graed = Feld(cut, "Grädigkeit des Wärmetauschers", "input");
+        Assert.Equal("Vorgabe: 3,0 K", graed.GetAttribute("placeholder"));
+        graed.Input("5");
+        Assert.Equal(5.0, d.KuehlFreiGraedigkeitK);
+
+        IElement leistung = Feld(cut, "Leistungsgrenze", "input");
+        Assert.Equal("Vorgabe: Kälteleistung der Kennlinie", leistung.GetAttribute("placeholder"));
+        leistung.Input("12");
+        Assert.Equal(12.0, d.KuehlFreiLeistungKw);
+
+        // Ausschalten nimmt die Felder weg; die Werte bleiben im Feldsatz.
+        Freischalter(cut)!.Change(false);
+        Assert.False(d.KuehlFrei);
+        Assert.False(HatFeld(cut, "Leistungsgrenze"));
+    }
+
+    /// <summary>
+    /// F2: Ohne Sole-/Wasser-Wasser-Bauart oder gepflegte Quelle ist der Schalter WEICH gesperrt
+    /// (aria-disabled + title, nicht disabled), die Herleitung nennt den Grund, der Klick schaltet
+    /// nicht und meldet ihn. Ein schon gesetzter Schalter lässt sich ausschalten.
+    /// </summary>
+    [Fact]
+    public void Freie_Kuehlung_mit_Sperrgrund_ist_weich_gesperrt_und_nennt_die_Herleitung()
+    {
+        WaermepumpeAnlageDaten d = Daten(kuehlbetrieb: true);
+        var cut = Aufbauen(d, Gaben(freiSperrgrund: FREI_GRUND));
+
+        IElement frei = Freischalter(cut)!;
+        Assert.Equal("true", frei.GetAttribute("aria-disabled"));
+        Assert.False(frei.HasAttribute("disabled"));
+        Assert.Equal(FREI_GRUND, frei.ParentElement!.GetAttribute("title"));
+        Assert.Contains(FREI_GRUND, cut.FindAll(".epos-herleitung").Select(e => e.TextContent.Trim()));
+
+        frei.Click();
+        Assert.False(d.KuehlFrei);
+        Assert.Contains(cut.FindAll(".epos-warnbanner"), b => b.TextContent.Contains(FREI_GRUND));
+        Assert.False(HatFeld(cut, "Grädigkeit des Wärmetauschers"));
+
+        // Ein gesetzter Schalter (Gerätewechsel danach) ist nicht gesperrt — Ausschalten geht immer.
+        WaermepumpeAnlageDaten an = Daten(kuehlbetrieb: true);
+        an.KuehlFrei = true;
+        var cut2 = Aufbauen(an, Gaben(freiSperrgrund: FREI_GRUND));
+        IElement frei2 = Freischalter(cut2)!;
+        Assert.False(frei2.HasAttribute("aria-disabled"));
+        Assert.Contains(FREI_GRUND, cut2.FindAll(".epos-herleitung").Select(e => e.TextContent.Trim()));
+        frei2.Change(false);
+        Assert.False(an.KuehlFrei);
+    }
+
+    /// <summary>Die Prüfregel der freien Kühlung: Grädigkeit 0 bis 20 K, Leistung &gt; 0 kW; leer gilt (Vorgaben); ohne Kühlbetrieb oder Schalter wird nicht geprüft.</summary>
+    [Fact]
+    public void Die_Pruefregel_der_freien_Kuehlung()
+    {
+        var texte = new WaermepumpeKonfigurationTexte();
+        WaermepumpeAnlageDaten d = Daten(true);
+        d.KuehlFrei = true;
+        Assert.Null(WaermepumpeKonfiguration.KuehlFehler(d, Gaben(), texte));
+
+        foreach (double g in new[] { -0.1, 20.1, double.NaN })
+        {
+            d.KuehlFreiGraedigkeitK = g;
+            Assert.Equal(texte.MeldungKuehlFreiGraedigkeit, WaermepumpeKonfiguration.KuehlFehler(d, Gaben(), texte));
+        }
+        foreach (double g in new[] { 0.0, 3.0, 20.0 })
+        {
+            d.KuehlFreiGraedigkeitK = g;
+            Assert.Null(WaermepumpeKonfiguration.KuehlFehler(d, Gaben(), texte));
+        }
+
+        d.KuehlFreiGraedigkeitK = null;
+        foreach (double kw in new[] { 0.0, -5.0 })
+        {
+            d.KuehlFreiLeistungKw = kw;
+            Assert.Equal(texte.MeldungKuehlFreiLeistung, WaermepumpeKonfiguration.KuehlFehler(d, Gaben(), texte));
+        }
+        d.KuehlFreiLeistungKw = 0.5;
+        Assert.Null(WaermepumpeKonfiguration.KuehlFehler(d, Gaben(), texte));
+
+        // Ohne Schalter oder ohne Kühlbetrieb stehen die Felder nicht — sie sperren das OK nicht.
+        d.KuehlFreiLeistungKw = -1;
+        d.KuehlFrei = false;
+        Assert.Null(WaermepumpeKonfiguration.KuehlFehler(d, Gaben(), texte));
+        d.KuehlFrei = true;
+        d.Kuehlbetrieb = false;
+        Assert.Null(WaermepumpeKonfiguration.KuehlFehler(d, Gaben(), texte));
+
+        // Ein Sperrgrund der freien Kühlung ist kein Fehler — der Lauf lehnt sie benannt ab (F2).
+        WaermepumpeAnlageDaten gesperrt = Daten(true);
+        gesperrt.KuehlFrei = true;
+        Assert.Null(WaermepumpeKonfiguration.KuehlFehler(gesperrt, Gaben(freiSperrgrund: FREI_GRUND), texte));
+    }
+
+    /// <summary>Die Regel F2 aus Bauart und Quelle: wirksam nur Sole-/Wasser-Wasser mit Erdreich, Konstant, Profil oder CSV; Unbekanntes wird nicht geprüft.</summary>
+    [Fact]
+    public void Der_Sperrgrund_der_freien_Kuehlung_folgt_Bauart_und_Quelle()
+    {
+        var texte = new WaermepumpeKonfigurationTexte();
+        foreach (string q in new[] { "Erdreich", "Konstant", "Profil", "CSV" })
+        {
+            Assert.Null(WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus("Sole-Wasser", q, texte));
+            Assert.Null(WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus("Wasser-Wasser", q, texte));
+        }
+        foreach (string q in new[] { "Aussenluft", "", "Pufferspeicher" })
+            Assert.Equal(texte.SperrgrundFreiQuelle, WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus("Sole-Wasser", q, texte));
+        Assert.Equal(texte.SperrgrundFreiBauart, WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus("Luft-Wasser", "Erdreich", texte));
+        Assert.Equal(texte.SperrgrundFreiBauart, WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus("", "Erdreich", texte));
+        Assert.Null(WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus(null, null, texte));
+        Assert.Null(WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus("Sole-Wasser", null, texte));
+    }
+
+    /// <summary>Die Wege des Hilfe-Assistenten fahren dieselben Regeln: gesperrt benannt abgelehnt, Bereiche geprüft, leer gilt.</summary>
+    [Fact]
+    public void Die_KI_Wege_der_freien_Kuehlung_fahren_dieselben_Regeln()
+    {
+        WaermepumpeAnlageDaten d = Daten(true);
+        var gesperrt = Assert.Throws<InvalidOperationException>(
+            () => WaermepumpeKuehlKiWege.KuehlFreiSetzen(d, Gaben(freiSperrgrund: FREI_GRUND), true));
+        Assert.Equal(FREI_GRUND, gesperrt.Message);
+        Assert.False(d.KuehlFrei);
+
+        WaermepumpeKuehlKiWege.KuehlFreiSetzen(d, Gaben(), true);
+        Assert.True(d.KuehlFrei);
+        Assert.Throws<InvalidOperationException>(() => WaermepumpeKuehlKiWege.KuehlFreiGraedigkeitSetzen(d, Gaben(), 25));
+        Assert.Throws<InvalidOperationException>(() => WaermepumpeKuehlKiWege.KuehlFreiLeistungSetzen(d, Gaben(), 0));
+        WaermepumpeKuehlKiWege.KuehlFreiGraedigkeitSetzen(d, Gaben(), 4);
+        WaermepumpeKuehlKiWege.KuehlFreiLeistungSetzen(d, Gaben(), null);
+        Assert.Equal(4.0, d.KuehlFreiGraedigkeitK);
+        Assert.Null(d.KuehlFreiLeistungKw);
+
+        // Ohne Kühlgaben kein Weg (keine Gruppe in der Maske).
+        Assert.Throws<InvalidOperationException>(() => WaermepumpeKuehlKiWege.KuehlFreiSetzen(d, null, false));
+    }
+
+    /// <summary>Kopie und Abbrechen-Weg führen die drei Felder der freien Kühlung mit.</summary>
+    [Fact]
+    public void Kopie_und_Kuehlfelder_fuehren_die_freie_Kuehlung_mit()
+    {
+        WaermepumpeAnlageDaten d = Daten(true);
+        d.KuehlFrei = true;
+        d.KuehlFreiGraedigkeitK = 2.5;
+        d.KuehlFreiLeistungKw = 9.0;
+        WaermepumpeAnlageDaten k = d.Kopie();
+        Assert.True(k.KuehlFrei);
+        Assert.Equal(2.5, k.KuehlFreiGraedigkeitK);
+        Assert.Equal(9.0, k.KuehlFreiLeistungKw);
+
+        var ziel = Daten();
+        ziel.KuehlfelderAus(d);
+        Assert.True(ziel.KuehlFrei);
+        Assert.Equal(2.5, ziel.KuehlFreiGraedigkeitK);
+        Assert.Equal(9.0, ziel.KuehlFreiLeistungKw);
     }
 }

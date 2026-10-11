@@ -374,6 +374,10 @@ Ein `KiAufruf` der Stufen 2 und 3 wird **nie** direkt ausgeführt. Ablauf:
    Stufe 3 geben soll, ist offene Entscheidung 4 in Kapitel 9.)
 5. **Verfall.** Eine Vorschau, die älter als eine Minute ist oder auf die eine andere Aktion folgte, wird verworfen
    und neu erzeugt — sonst bestätigt der Anwender einen Zustand, den es nicht mehr gibt.
+6. **Nichts zu ändern.** Trägt der Stand bereits, was verlangt war (`KiAktion.OhneAenderung`, bei `feld_setzen`,
+   `formular_ausfuellen` und `reihe_setzen`), entfällt die Bestätigung: Das Ergebnis ist ein Erfolg mit Status
+   „ausgeführt", Anzahl 0 und `KiErgebnis.Unveraendert` — keine Absage. Der Text nennt Maske, Felder und Werte,
+   der Chat zeigt ihn neutral („Unverändert: …"), das Protokoll vermerkt ihn als ausgeführt mit „0x".
 
 ### 3.6 Rückmeldung und Protokoll
 
@@ -548,6 +552,10 @@ Datenbank-Backup aus der Anwendung heraus existiert **nicht**; `DB-Backup\` sind
 | **Komponenten-Freischaltung** (Bitmaske) | `Views\Hauptformular\Form_Start.cs:15` `public int status`, Abfragen `:644`, `:695` … | Aktionen zu nicht freigeschalteten Modulen werden gar nicht erst angeboten |
 | **Werkzeugwahl je Projekt** (`Tab_Einstellungen.Tool_1..Tool_6`) | `Allgemein\DbWerte.cs:54`, `Controller\KonfigurationCtrl.cs:57`, `:310`, gelesen in `SimulationRunner.cs:145` | wie oben |
 | **Datenbank gesperrt / schreibgeschützt** (`.laccdb`, ACL in `C:\ProgramData`) | `CLAUDE.md` der Wurzel, `BETRIEB_Mehrbenutzer_Datenbank.md` | Sicherungskopie schlägt fehl → Schreibaktionen gesperrt (4.4) |
+
+**Sperrgrund je Feld:** Eine Maske kann einzelne Felder sperren (Haken `Sperrgrund`, Feldschlüssel → Grund), etwa weil ihr
+Handweg sofort in die Datenbank schreibt. Die Prüfung läuft im Schreibschutzschritt der Vorbedingungen, also vor Vorschau
+und Bestätigung; die Absage `KI_FELD_GESPERRT` nennt Feld und Grund (Dialogintegration, 3.4).
 
 Benutzerrollen im engeren Sinn gibt es nicht — die Software wird als Einzelplatzlizenz überlassen
 (`Allgemein\KI\HilfeWissen.cs:155`). Ein Rechtemodell ist deshalb **nicht** zu bauen; die Lizenzstufe ist die

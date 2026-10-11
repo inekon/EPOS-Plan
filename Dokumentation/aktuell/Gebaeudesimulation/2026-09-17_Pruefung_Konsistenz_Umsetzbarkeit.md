@@ -668,7 +668,7 @@ Revisionsstände unten sind die nach dem 22.09.2026.
   neue Indexzeile für dieses Prüfprotokoll.
 - **[Word-Kurzfassung](Gebaeudesimulation_VDI6007_Architektur_Design_Rechenweg_2026-09-16.docx):**
   **nicht** neu gebaut; sie steht weiter auf E1–E25 (16.09.2026), weil Markdown-Quelle und
-  Werkzeuge des Word-Baus verloren sind ([Übergabe](2026-09-22_Uebergabe_Gebaeudesimulation.md),
+  Werkzeuge des Word-Baus verloren sind ([Übergabe](../../ueberholt/2026-09-22_Uebergabe_Gebaeudesimulation.md),
   Abschnitt 2.4). Arbeitsentscheid des Anwenders vom 22.09.2026: Die Word-Datei ruht bis zur
   Beauftragung von G1 (Weg 3); bis dahin gilt dieses Prüfprotokoll als Kurzfassung.
 

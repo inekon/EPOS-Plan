@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using SkiaSharp;
 using WindowsFormsApplication1;
@@ -634,10 +635,14 @@ namespace EPOS.Kern.Tests
             Assert.NotEmpty(teilung);
             Assert.Equal(teilung.Count, rasterlinien);
 
-            // Die Beschriftungen, dann der Achsentitel (CHART_ACHSE_JAHRESSTUNDEN).
-            Assert.Equal(teilung.Count + 1, gezeichnet.Count);
+            // Je Marke Stunde und Datum (Auftrag GX), dann der Achsentitel
+            // (CHART_ACHSE_JAHRESSTUNDEN_DATUM).
+            Assert.Equal(2 * teilung.Count + 1, gezeichnet.Count);
             for (int i = 0; i < teilung.Count; i++)
-                Assert.Equal(teilung[i].Text, gezeichnet[i]);
+            {
+                Assert.Equal(teilung[i].Text, gezeichnet[2 * i]);
+                Assert.Equal(Zeitachse.Markentext(teilung[i].Stunde, 3399 - 2900), gezeichnet[2 * i + 1]);
+            }
 
             // Die Stunden liegen im Fenster und steigen.
             Assert.All(teilung, t => Assert.InRange(t.Stunde, 2900, 3399));
@@ -909,6 +914,92 @@ namespace EPOS.Kern.Tests
         /// <b>Normierte Ganglinie:</b> Die Datenreihen führen die Werte des BILDES,
         /// also PROZENT des gemeinsamen Höchstwerts — die Achse läuft bis 100,2.
         /// </summary>
+        /// <summary>
+        /// DZ1‑N2: Mit Breite und Höhe entsteht das Modell in genau dieser Größe; flach ist es
+        /// kompakt (ohne Titel, Fläche ab der Kopfzeile bis 50 px über dem unteren Rand). Ohne
+        /// Maß bleibt es 1 240 × 560 mit der Fläche bei 100/110 und 1 100 × 360.
+        /// </summary>
+        [Fact]
+        public void GanglinieNormiertModell_nimmt_das_Behaeltermass()
+        {
+            List<ChartRenderer.Reihe> reihen = Stapelreihen();
+            Zeichenmodell vorgabe = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false);
+            Assert.Equal((1240, 560), (vorgabe.Breite, vorgabe.Hoehe));
+            Assert.Equal(110, vorgabe.Flaeche.Bild.Y, 3);
+            Assert.Equal(360, vorgabe.Flaeche.Bild.Hoehe, 3);
+
+            Zeichenmodell flach = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 1100, hoehe: 160);
+            Assert.Equal((1100, 160), (flach.Breite, flach.Hoehe));
+            // R1: kompakt in 9 pt, die Abstände im Maßstab 9/15 — rechts und links 140·0,6.
+            Assert.Equal(1100 - 84, flach.Flaeche.Bild.Breite, 3);
+            Assert.True(flach.Flaeche.Bild.Y <= 40, "Kompakt: Flaeche direkt unter der Kopfzeile");
+            Assert.True(flach.Flaeche.Bild.Y + flach.Flaeche.Bild.Hoehe <= 160 - 30, "Platz fuer Marken und Achsentitel (50 px · 0,6)");
+
+            Zeichenmodell hoch = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 900, hoehe: 600);
+            Assert.Equal((900, 600), (hoch.Breite, hoch.Hoehe));
+            // R1: in 9,75 pt, die Ränder im Maßstab 9,75/15 — oben und unten 200·0,65.
+            Assert.Equal(470, hoch.Flaeche.Bild.Hoehe, 3);
+
+            Zeichenmodell winzig = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 10, hoehe: 10);
+            Assert.Equal((ChartRenderer.MASS_MIN_BREITE, ChartRenderer.MASS_MIN_HOEHE), (winzig.Breite, winzig.Hoehe));
+        }
+
+        /// <summary>Alle Textbefehle eines Modells, auch die in Gruppen.</summary>
+        private static List<Text> AlleTexte(IEnumerable<Zeichenbefehl> befehle)
+        {
+            var texte = new List<Text>();
+            foreach (Zeichenbefehl b in befehle)
+            {
+                if (b is Text t) texte.Add(t);
+                else if (b is Gruppe g) texte.AddRange(AlleTexte(g.Befehle));
+            }
+            return texte;
+        }
+
+        /// <summary>
+        /// R1: Im Behältermaß schreibt das Bild in der Schrift der Oberfläche — 9,75 pt (13 px),
+        /// unter <see cref="ChartRenderer.KOMPAKT_HOEHE"/> 9 pt (12 px) —, und zwar JEDER Text:
+        /// Titel, Legende, Prozentachse, Marken, Achsentitel, Datumszeile und Stufenhinweis.
+        /// Ohne Maß bleibt der Bestand: Achsen 15 pt, Legende 16 pt, Titel 22 pt, 1 240 × 560.
+        /// </summary>
+        [Fact]
+        public void GanglinieNormiertModell_schreibt_im_Behaeltermass_die_Schrift_der_Oberflaeche()
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Heizung", Jahresreihe(60, 45, 12), SKColors.Orange,
+                                        ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Bedarf", Jahresreihe(70, 45, 12), SKColors.Red)
+            };
+
+            Zeichenmodell dialog = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, false,
+                breite: 900, hoehe: 600);
+            List<Text> texte = AlleTexte(dialog.Befehle);
+            Assert.True(texte.Count > 10, "Titel, Legende, Achsen und Hinweis");
+            Assert.All(texte, t => Assert.Equal(9.75f, t.Schrift.Punkt));
+
+            Zeichenmodell kompakt = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, false,
+                breite: 900, hoehe: 300);
+            List<Text> kompaktTexte = AlleTexte(kompakt.Befehle);
+            Assert.NotEmpty(kompaktTexte);
+            Assert.All(kompaktTexte, t => Assert.Equal(9f, t.Schrift.Punkt));
+
+            Zeichenmodell vorgabe = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, false);
+            Assert.Equal((1240, 560), (vorgabe.Breite, vorgabe.Hoehe));
+            List<Text> bestand = AlleTexte(vorgabe.Befehle);
+            Assert.Contains(bestand, t => t.Schrift.Punkt == 15f && t.Inhalt.Contains("%"));
+            Assert.Contains(bestand, t => t.Schrift.Punkt == 16f && t.Inhalt == "Heizung");
+            Assert.Contains(bestand, t => t.Schrift.Punkt == 22f && t.Inhalt == "Waermelast");
+            Assert.DoesNotContain(bestand, t => t.Schrift.Punkt == 9.75f || t.Schrift.Punkt == 9f);
+        }
+
         [Fact]
         public void GanglinieNormiertModell_fuehrt_Prozentwerte()
         {
@@ -971,6 +1062,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Reihenart.Linie, m.Reihen[0].Art);
             Assert.All(m.Reihen.Skip(1), r => Assert.Equal(Reihenart.Flaeche, r.Art));
 
+            // Die Summe begleitet den Stapel: Sie zeichnet ihre Treppe in den Spitzenstunden
+            // (dieselbe Stunde wie die Oberkante), und jede Schicht DECKT — ohne Abwandlung
+            // ihrer Rolle. Die Summe ist die Bezugsgröße der Stufenregel, für ALLE Reihen.
+            Assert.True(m.Reihen[0].Huelle);
+            Assert.All(m.Reihen.Skip(1), r => Assert.Null(r.Ton.Deckung));
+            Assert.All(m.Reihen.Skip(1), r => Assert.False(r.Huelle));
+            Assert.All(m.Reihen, r => Assert.Same(m.Reihen[0].Werte, r.Bezug));
+
             double bezug = summe.Max();
             foreach (int h in new[] { 0, 7, 12, 4380, 8759 })
             {
@@ -988,10 +1087,12 @@ namespace EPOS.Kern.Tests
             }
             Assert.InRange(m.Reihen[3].Werte.Max(), 99.999, 100.001);
 
-            // Dauerlinie: keine Flaeche, jede Reihe fuer sich sortiert.
+            // Dauerlinie: keine Flaeche, jede Reihe fuer sich sortiert - und keine Huelle.
             Zeichenmodell dauer = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, true);
             Assert.All(dauer.Reihen, r => Assert.Equal(Reihenart.Linie, r.Art));
+            Assert.All(dauer.Reihen, r => Assert.False(r.Huelle));
+            Assert.All(dauer.Reihen, r => Assert.Null(r.Bezug));
             Assert.Equal(17.0 / bezug * 100.0,
                          dauer.Reihen.Single(r => r.Name == "Prozess").Werte[100], 9);
 
@@ -1001,10 +1102,278 @@ namespace EPOS.Kern.Tests
                 "Waermelast", reihen.Skip(2).ToList(), "Anteil", ChartRenderer.Achse.Monate,
                 false, null, bezug);
             Assert.Equal((wasser[5] + prozess[5]) / bezug * 100.0, teil.Reihen[1].Werte[5], 9);
+            // Ohne Summenlinie ist die Oberkante des Stapels die Bezugsgröße.
+            Assert.All(teil.Reihen, r => Assert.Equal(teil.Reihen[1].Werte, r.Bezug));
             Zeichenmodell klein = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, null, 1.0);
             Assert.InRange(klein.Reihen[3].Werte.Max(), 99.999, 100.001);
         }
+
+        // ---- Die Stufenregel des Stapels im Bild (Anwenderbefund 29.09.2026) ----------
+        //
+        // „Mit Summe überdeckt das Rot das Bild fast ganz; ohne Summe wirken Heizung und
+        // Brauchwasser blass und durchlöchert." Beides lässt sich im PNG zählen: Die
+        // Schichten stehen in REINEM Rot und Blau, die Summe in Schwarz. Jede Mischung
+        // daraus hat Grün 0 und Rot + Blau um 255; Weiß, das durchscheint, hebt Grün, und
+        // eine Summe, die durchscheint, senkt Rot + Blau.
+
+        /// <summary>
+        /// Eine gestapelte Ganglinie über ein Stundenjahr: Heizung mit Tageszickzack
+        /// (Nachtabsenkung, Morgenspitze), Brauchwasser als Spitzen morgens und abends. Mit
+        /// <paramref name="jahresgang"/> wandert die Heizung mit der Jahreszeit, ohne ihn ist
+        /// jeder Tag gleich — die Tagesspitzen und damit die Oberkante stehen dann waagrecht.
+        /// </summary>
+        private static byte[] DichterStapel(bool jahresgang)
+        {
+            const int N = 8760;
+            var heizung = new double[N];
+            var wasser = new double[N];
+            var summe = new double[N];
+            for (int h = 0; h < N; h++)
+            {
+                int stunde = h % 24;
+                double gang = stunde < 6 ? 0.2 : stunde < 9 ? 1.0 : 0.6;
+                double saison = jahresgang ? 0.6 + 0.4 * Math.Cos(2 * Math.PI * h / N) : 1.0;
+                heizung[h] = (20.0 + 12.0 * gang) * saison;
+                wasser[h] = stunde == 7 || stunde == 19 ? 10.0 : 0.0;
+                summe[h] = heizung[h] + wasser[h];
+            }
+            return ChartRenderer.GanglinieNormiert("Waermelast", new List<ChartRenderer.Reihe>
+                {
+                    new ChartRenderer.Reihe("Summe", summe, new SKColor(0, 0, 0),
+                                            ChartRenderer.Stapelart.Keine,
+                                            ChartRenderer.Strichart.Durchgezogen, 3f),
+                    new ChartRenderer.Reihe("Heizung", heizung, new SKColor(255, 0, 0),
+                                            ChartRenderer.Stapelart.Flaeche),
+                    new ChartRenderer.Reihe("Brauchwasser", wasser, new SKColor(0, 0, 255),
+                                            ChartRenderer.Stapelart.Flaeche)
+                },
+                "Anteil", ChartRenderer.Achse.Monate, false, null, summe.Max());
+        }
+
+        /// <summary>
+        /// Zählt im Stapel (Zeichenfläche 100…1200 × 110…470) je Bildpunktspalte ab drei
+        /// Bildpunkten unter der obersten Schichtfarbe bis zur Achse: alle Bildpunkte, die
+        /// mit Grün über 8 (Weiß scheint durch), mit Grün über 64 (ein Loch) und mit Rot +
+        /// Blau unter 230 (die Summe scheint durch).
+        /// </summary>
+        private static (int Gesamt, int Durchschein, int Loch, int Summe) Stapelbildpunkte(byte[] png)
+        {
+            int gesamt = 0, durchschein = 0, loch = 0, summe = 0;
+            using (SKBitmap bild = SKBitmap.Decode(png))
+                for (int x = 102; x < 1198; x++)
+                {
+                    int oben = -1;
+                    for (int y = 111; y < 468 && oben < 0; y++)
+                    {
+                        SKColor c = bild.GetPixel(x, y);
+                        if (c.Green < 60 && (c.Red > 200 || c.Blue > 200)) oben = y;
+                    }
+                    if (oben < 0) continue;
+                    for (int y = oben + 3; y < 468; y++)
+                    {
+                        SKColor c = bild.GetPixel(x, y);
+                        gesamt++;
+                        if (c.Green > 8) durchschein++;
+                        if (c.Green > 64) loch++;
+                        if (c.Red + c.Blue < 230) summe++;
+                    }
+                }
+            return (gesamt, durchschein, loch, summe);
+        }
+
+        /// <summary>
+        /// <b>Jede Schicht ist ein geschlossenes, DECKENDES Band, und die Summe scheint
+        /// nicht durch.</b> Bei gleichen Tagen steht die Oberkante waagrecht; dann ist
+        /// jeder Bildpunkt des Stapels reines Rot, reines Blau oder — an ihrer gemeinsamen
+        /// Kante — eine Mischung der beiden. Bis zur Stufenregel stand jeder siebte Wert
+        /// halbdeckend (Deckung 210) über einer Summenlinie, die je Bildpunktspalte die
+        /// ganze Spanne ihres Zickzacks füllte: Kein einziger Bildpunkt war rein.
+        /// </summary>
+        [Fact]
+        public void Dichter_Stapel_deckt_jede_Spalte_und_die_Summe_scheint_nicht_durch()
+        {
+            (int gesamt, int durchschein, int loch, int summe) = Stapelbildpunkte(DichterStapel(false));
+
+            Assert.True(gesamt > 200000, "der Stapel fuellt die Flaeche: " + gesamt);
+            Assert.Equal(0, loch);
+            Assert.Equal(0, durchschein);
+            Assert.Equal(0, summe);
+        }
+
+        /// <summary>
+        /// <b>Keine Löcher auch mit Jahresgang</b>: Die Tagesspitzen wechseln von Tag zu Tag,
+        /// die Oberkante springt an jeder Tagesgrenze. Kein Bildpunkt im Stapel ist ein Loch
+        /// (Grün über 64), und nur an den Kanten der Tagesstufen darf die Kantenglättung
+        /// den Hintergrund zu einem kleinen Teil zeigen — höchstens ein Prozent.
+        /// </summary>
+        [Fact]
+        public void Dichter_Stapel_mit_Jahresgang_hat_keine_Loecher()
+        {
+            (int gesamt, int durchschein, int loch, _) = Stapelbildpunkte(DichterStapel(true));
+
+            Assert.True(gesamt > 100000, "der Stapel fuellt die Flaeche: " + gesamt);
+            Assert.Equal(0, loch);
+            Assert.True(durchschein * 100 <= gesamt, durchschein + " von " + gesamt + " scheinen durch");
+        }
+
+        /// <summary>
+        /// Ein Kessel, der TAKTET: Um 3 und 4 Uhr fährt er voll (30 kW) und lädt den Puffer,
+        /// sonst deckt der Puffer bis 12 kW und der Kessel den Rest. Der Bedarf hat seine
+        /// Tagesspitze um 18 Uhr (20 bis 24 kW), sonst 8 kW. Rot und Blau, der Bedarf schwarz.
+        /// </summary>
+        private static (double[] Kessel, double[] Puffer, double[] Bedarf) TaktenderKessel()
+        {
+            const int N = 8760;
+            var kessel = new double[N];
+            var puffer = new double[N];
+            var bedarf = new double[N];
+            for (int t = 0; t < N; t++)
+            {
+                int stunde = t % 24;
+                bedarf[t] = stunde == 18 ? 20.0 + t / 24 % 5 : 8.0;
+                kessel[t] = stunde == 3 || stunde == 4 ? 30.0 : Math.Max(0.0, bedarf[t] - 12.0);
+                puffer[t] = stunde == 3 || stunde == 4 ? 0.0 : Math.Min(bedarf[t], 12.0);
+            }
+            return (kessel, puffer, bedarf);
+        }
+
+        private static Zeichenmodell TaktenderKesselModell()
+        {
+            (double[] kessel, double[] puffer, double[] bedarf) = TaktenderKessel();
+            return TaktenderKesselModell(kessel, puffer, bedarf);
+        }
+
+        private static Zeichenmodell TaktenderKesselModell(double[] kessel, double[] puffer, double[] bedarf,
+                                                           bool luecken = false)
+        {
+            return ChartRenderer.ErzeugerStapelModell("Kessel",
+                new List<ChartRenderer.Reihe>
+                {
+                    new ChartRenderer.Reihe("Kessel", kessel, new SKColor(255, 0, 0), ChartRenderer.Stapelart.Flaeche) { Luecken = luecken },
+                    new ChartRenderer.Reihe("Puffer", puffer, new SKColor(0, 0, 255), ChartRenderer.Stapelart.Flaeche) { Luecken = luecken }
+                },
+                new List<ChartRenderer.Reihe>
+                {
+                    new ChartRenderer.Reihe("Bedarf", bedarf, Farbrolle.BEDARF)
+                },
+                null, "kW", ChartRenderer.Achse.Monate, false);
+        }
+
+        /// <summary>
+        /// <b>Die Schichten summieren sich in jeder Stufe zur Oberkante</b> (Spitzenstunde je
+        /// Stufe): Alle Kanten eines Stapelbilds zeigen je Tag die Werte DERSELBEN Stunde —
+        /// der Spitzenstunde der Bedarfslinie. Die Oberkante des Stapels ist deshalb Punkt für
+        /// Punkt die Treppe des Bedarfs, und die Dicke jeder Schicht ist ihr Wert in dieser
+        /// Stunde. Mit dem Höchstwert je Kante stünde der taktende Kessel als 30-kW-Band da,
+        /// über dem Bedarf (Befund zur ersten Fassung der Stufenregel).
+        /// </summary>
+        [Fact]
+        public void Die_Schichten_summieren_sich_in_jeder_Stufe_zur_Oberkante()
+        {
+            Zeichenmodell m = TaktenderKesselModell();
+            Datenreihe kessel = m.Reihen.Single(r => r.Name == "Kessel");
+            Datenreihe puffer = m.Reihen.Single(r => r.Name == "Puffer");
+            Datenreihe bedarf = m.Reihen.Single(r => r.Name == "Bedarf");
+
+            // Die Bedarfslinie ist die Bezugsgröße aller Reihen des Bildes.
+            Assert.All(m.Reihen, r => Assert.Same(bedarf.Werte, r.Bezug));
+
+            string[] kesselPunkte = Pfadpunkte(SvgSchreiber.Reihenpfad(kessel, m.Flaeche, false));
+            string[] pufferPunkte = Pfadpunkte(SvgSchreiber.Reihenpfad(puffer, m.Flaeche, false));
+            string[] bedarfPunkte = Pfadpunkte(SvgSchreiber.Reihenpfad(bedarf, m.Flaeche, false));
+
+            // Die Oberkante des Stapels (die Oberkante des Puffers, vorwärts) IST die Treppe
+            // des Bedarfs - Punkt für Punkt.
+            Assert.Equal(bedarfPunkte, pufferPunkte.Take(bedarfPunkte.Length).ToArray());
+
+            // Die Unterkante des Puffers (rückwärts) ist die Oberkante des Kessels, und deren
+            // Werte sind die des Kessels um 18 Uhr: 8 bis 12 kW, nie seine 30 kW.
+            string[] kesselOben = kesselPunkte.Take(pufferPunkte.Length - bedarfPunkte.Length).ToArray();
+            Assert.Equal(kesselOben, pufferPunkte.Skip(bedarfPunkte.Length).Reverse().ToArray());
+            double hoehe = m.Flaeche.Bild.Hoehe, max = m.Flaeche.Daten.YBis;
+            foreach (string p in kesselOben)
+            {
+                double kw = (hoehe - double.Parse(p.Split(',')[1], CultureInfo.InvariantCulture)) / hoehe * max;
+                Assert.InRange(kw, 7.9, 12.1);
+            }
+        }
+
+        /// <summary>
+        /// <b>Kein taktender Erzeuger liegt als Band auf Nennleistung über dem Bedarf</b> —
+        /// dasselbe im gemalten Bild (PNG, Berichtsweg): Das Rot des Kessels reicht in keiner
+        /// Bildpunktspalte über 12 kW, obwohl er jeden Tag zwei Stunden mit 30 kW fährt.
+        /// </summary>
+        [Fact]
+        public void Ein_taktender_Erzeuger_liegt_nicht_als_Nennleistungsband_ueber_dem_Bedarf()
+        {
+            Zeichenmodell m = TaktenderKesselModell();
+            double max = m.Flaeche.Daten.YBis;
+            Rahmen rc = m.Flaeche.Bild;
+            float grenze = rc.Unten - (float)(12.5 / max * rc.Hoehe);   // y von 12,5 kW
+
+            int rotSpalten = 0;
+            using (SKBitmap bild = SKBitmap.Decode(SkiaMaler.Png(m)))
+                for (int x = (int)rc.X + 2; x < (int)rc.Rechts - 2; x++)
+                    for (int y = (int)rc.Y + 1; y < (int)rc.Unten - 1; y++)
+                    {
+                        SKColor c = bild.GetPixel(x, y);
+                        if (c.Red < 200 || c.Green > 60 || c.Blue > 60) continue;
+                        rotSpalten++;
+                        Assert.True(y >= grenze - 1, "Kesselrot bei y=" + y + " in Spalte " + x + " (Grenze " + grenze + ")");
+                        break;
+                    }
+            Assert.True(rotSpalten > 1000, "der Kessel steht im Bild: " + rotSpalten);
+        }
+
+        /// <summary>
+        /// <b>Eine Lücke bleibt auch im gemalten Bild eine Lücke</b> (Kopf der Stufenregel): Der
+        /// Kessel, die unterste Schicht, ist eine Woche „aus" (NaN, Tag 70 bis 76), der Puffer
+        /// läuft durch. In den Bildpunktspalten der Woche steht kein Rot — der Kessel liegt dort
+        /// nicht auf null, und keine Nachbarstufe reicht hinein —, der Puffer aber steht weiter,
+        /// auf der Summe ohne den Kessel (<c>Stapelbeitrag</c>); davor und danach steht der
+        /// Kessel. Dieselben Stücke wie der SVG-Weg (<see cref="Pfadregel.Stufenstuecke"/>), und
+        /// im Modell trägt die Schicht die Lücke als NaN, der Puffer darüber nicht.
+        /// </summary>
+        [Fact]
+        public void Eine_Luecke_im_Stapel_bleibt_im_PNG_eine_Luecke()
+        {
+            (double[] kessel, double[] puffer, double[] bedarf) = TaktenderKessel();
+            for (int t = 70 * 24; t < 77 * 24; t++) kessel[t] = double.NaN;
+            // Eine Reihe mit NaN nennt ihre Lücken (Reihe.Luecken) - ohne den Schalter ist sie unbrauchbar.
+            Zeichenmodell m = TaktenderKesselModell(kessel, puffer, bedarf, luecken: true);
+            Datenreihe k = m.Reihen.Single(r => r.Name == "Kessel");
+            Datenreihe p = m.Reihen.Single(r => r.Name == "Puffer");
+            int mitten = 73 * 24 + 18;
+            Assert.True(double.IsNaN(k.Werte[mitten]));
+            Assert.Equal(0.0, p.Unten[mitten]);                       // der Puffer liegt auf der Achse
+            Assert.Equal(puffer[mitten], p.Werte[mitten], 12);
+
+            Rahmen rc = m.Flaeche.Bild;
+            int Spalte(int tag) => (int)(rc.X + tag * 24.0 / 8759.0 * rc.Breite);
+            using (SKBitmap bild = SKBitmap.Decode(SkiaMaler.Png(m)))
+            {
+                int Zaehle(int x0, int x1, Func<SKColor, bool> farbe)
+                {
+                    int n = 0;
+                    for (int x = x0; x < x1; x++)
+                        for (int y = (int)rc.Y + 1; y < (int)rc.Unten - 1; y++)
+                            if (farbe(bild.GetPixel(x, y))) n++;
+                    return n;
+                }
+                bool Blau(SKColor c) => c.Blue > 200 && c.Red < 60 && c.Green < 60;
+                bool Rot(SKColor c) => c.Red > 200 && c.Blue < 60 && c.Green < 60;
+
+                Assert.Equal(0, Zaehle(Spalte(70) + 2, Spalte(77) - 1, Rot));
+                Assert.True(Zaehle(Spalte(70) + 2, Spalte(77) - 1, Blau) > 100, "der Puffer laeuft durch");
+                Assert.True(Zaehle(Spalte(60), Spalte(69), Rot) > 100, "der Kessel steht vor der Luecke");
+                Assert.True(Zaehle(Spalte(78), Spalte(87), Rot) > 100, "der Kessel steht nach der Luecke");
+            }
+        }
+
+        /// <summary>Die Punkte eines Pfads als „x,y"-Paare, in Pfadreihenfolge.</summary>
+        private static string[] Pfadpunkte(string d)
+            => d.Split(' ').Where(s => s.Contains(',')).ToArray();
 
         /// <summary>
         /// <b>Erzeugerstapel:</b> jede Schicht eine FLÄCHE mit ihrer Unterkante, die

@@ -192,13 +192,6 @@ public sealed class ZapfprofilNutzungsartDaten
     /// <summary>Warum die Nutzungsart nicht wählbar ist; leer, solange sie es ist.</summary>
     public string Sperrgrund { get; set; } = "";
 
-    /// <summary>
-    /// Der Hinweis am Feld der Bezugsmenge — etwa bei Kennwerten je Zimmer unter der Bezugsart
-    /// Betten („Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl"); leer = kein Hinweis.
-    /// Der Text kommt aus der Hülle, die Regel aus dem Kern.
-    /// </summary>
-    public string HinweisBezugsmenge { get; set; } = "";
-
     // ---- Stufe Erweitert und Experte (Z4): Vorgaben am Feld, nie Normtabellen -------
 
     /// <summary>Die Kalenderart als Zahl des Kerns (1 Wohnen … 5 Auslastungsgang).</summary>
@@ -1185,7 +1178,11 @@ public enum ZapfprofilKartenstand
     AusserhalbGueltigkeit = 4
 }
 
-/// <summary>Der Bezug des Füllstands im Verfahrensvergleich (N10 (k), N11 (d)); die Zahlen sind die des Kerns.</summary>
+/// <summary>
+/// Der Bezug des Füllstands im Verfahrensvergleich (N10 (k), N11 (d)); die Zahlen sind die des
+/// Kerns: 1 … 4 die Größen der Auslegung, 5 … 8 je ein Verfahren des Verfahrensvergleichs mit
+/// genau dem Volumen, das seine Zeile zeigt. Die Vorgabe löst nie auf ein Verfahren auf.
+/// </summary>
 public enum ZapfprofilFuellstandbezug
 {
     /// <summary>Die Vorgabe: Nenninhalt des Punkts, sonst Punkt; ohne Punkt Nenninhalt des Bands, sonst V_max.</summary>
@@ -1193,7 +1190,19 @@ public enum ZapfprofilFuellstandbezug
     NenninhaltPunkt = 1,
     Punkt = 2,
     NenninhaltBand = 3,
-    BandMax = 4
+    BandMax = 4,
+
+    /// <summary>Das Volumen des profilbasierten Verfahrens.</summary>
+    VerfahrenProfilbasiert = 5,
+
+    /// <summary>Das Volumen nach DIN 4708.</summary>
+    VerfahrenDin4708 = 6,
+
+    /// <summary>Das Volumen des Faustwerts mit Gleichzeitigkeit.</summary>
+    VerfahrenGleichzeitigkeit = 7,
+
+    /// <summary>Das Volumen des klassischen Faustwerts — nachrichtlich, aber wählbar.</summary>
+    VerfahrenKlassisch = 8
 }
 
 /// <summary>Wie schwer ein Eintrag der Warnliste wiegt — nie blockierend.</summary>
@@ -1532,6 +1541,23 @@ public sealed class ZapfprofilVerfahrenDaten
     public string Rechenweg { get; set; } = "";
 }
 
+/// <summary>
+/// Ein Eintrag der Wahl „Speichergröße der Füllstandslinie" (N11 (d)): der Bezug, sein Volumen im
+/// Ergebnis der Speicherauslegung und — ohne Volumen — der Grund, warum er gesperrt steht.
+/// </summary>
+public sealed class ZapfprofilFuellstandwahlDaten
+{
+    public ZapfprofilFuellstandbezug Art { get; set; }
+
+    /// <summary>Das Volumen [l]; <c>null</c> = nicht bestimmbar (der Eintrag steht gesperrt).</summary>
+    public double? VolumenL { get; set; }
+
+    /// <summary>Der Grund der Sperre als Satz des Kerns; leer, solange es ein Volumen gibt.</summary>
+    public string Sperrgrund { get; set; } = "";
+
+    public bool Waehlbar => VolumenL.HasValue;
+}
+
 /// <summary>Der Verfahrensvergleich der Speicherauslegung nach V4 (nur Speicher, nachrichtlich).</summary>
 public sealed class ZapfprofilVergleichDaten
 {
@@ -1565,6 +1591,15 @@ public sealed class ZapfprofilVergleichDaten
 
     /// <summary>Welches Volumen <see cref="FuellstandBezugL"/> ist; <see cref="ZapfprofilFuellstandbezug.Vorgabe"/> ohne Bezug.</summary>
     public ZapfprofilFuellstandbezug FuellstandBezugArt { get; set; }
+
+    /// <summary>
+    /// Die Einträge der Wahl „Speichergröße der Füllstandslinie" (N11 (d)) in der Reihenfolge des
+    /// Schemas: je Bezug sein Volumen aus der Speicherauslegung, ohne Volumen der Grund der Sperre.
+    /// </summary>
+    public List<ZapfprofilFuellstandwahlDaten> FuellstandWahl { get; set; } = new();
+
+    /// <summary>Der Bezug, den die Vorgabe gerade auflöst; <see cref="ZapfprofilFuellstandbezug.Vorgabe"/> ohne jedes Volumen.</summary>
+    public ZapfprofilFuellstandbezug FuellstandVorgabeArt { get; set; }
 
     /// <summary>Die Schätzhilfe der Ladeleistung (Vorschlag, manuell, angesetzt, Rechenweg).</summary>
     public ZapfprofilSchaetzhilfeDaten? Ladeleistung { get; set; }
@@ -1899,7 +1934,8 @@ public sealed class ZapfprofilAuslegungStartDaten
 
     /// <summary>
     /// Die Bezüge des Füllstands (Wertemenge des Schemas, <c>Tab_TwwProjekt.Fuellstand_Bezug</c>) mit ihrem
-    /// Namen; die Vorgabe (0) steht nicht darin — sie nennt der Dialog selbst.
+    /// Namen — die vier Größen der Auslegung (1 … 4) und die vier Verfahren des Vergleichs (5 … 8);
+    /// die Vorgabe (0) steht nicht darin — sie nennt der Dialog selbst.
     /// </summary>
     public List<ZapfprofilKatalogeintragDaten> Fuellstandbezuege { get; set; } = new();
 }

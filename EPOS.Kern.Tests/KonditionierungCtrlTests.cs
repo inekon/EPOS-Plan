@@ -45,6 +45,17 @@ namespace EPOS.Kern.Tests
             => Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + tabelle + "\""),
                                CultureInfo.InvariantCulture);
 
+        /// <summary>
+        /// Die Perioden außerhalb der Vorlagenkalender — die Saat der ausgelieferten Vorlagen (Schritt 156)
+        /// trägt Feiertagsregeln und zählt hier nicht mit; eine Waise zählt.
+        /// </summary>
+        private static long PeriodenOhneVorlagen()
+            => Convert.ToInt64(DataRepository.ExecuteScalar(
+                   "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" NOT IN " +
+                   "(SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Vorlage\" IS NOT NULL) " +
+                   "AND \"ID_Kalender\" NOT IN (" + Zonenbestand.KALENDER_ZONENPROJEKTE + ") AND \"ID_Kalender\" NOT IN (" + Konditionierungsbestand.KALENDER_1051 + ")"),    // ohne die Zonenkalender von 1052 (G6d) und die Kalender von 1051 (KP3, RP1)
+                               CultureInfo.InvariantCulture);
+
         /// <summary>Die Matrix eines Probegebäudes mit Wochenendwert und Heizperiode.</summary>
         private static Vorgabematrix Matrix(int? saisonVon = null, int? saisonBis = null)
         {
@@ -70,7 +81,9 @@ namespace EPOS.Kern.Tests
         {
             if (!Bereit()) return;
             Assert.True(KonditionierungSchema.Vollstaendig());
-            Assert.Equal(KonditionierungSchema.SCHRITT, SchemaStand.Zielversion);
+            // Die Kette bis zum Ziel haelt KonditionierungVorlagenSchemaTests (KP-S1v folgt auf 151).
+            Assert.True(SchemaStand.Zielversion >= KonditionierungSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KonditionierungSchema.SCHRITT + ".");
 
             long kalender = Zaehlen(KonditionierungSchema.TAB_KALENDER);
             long perioden = Zaehlen(KonditionierungSchema.TAB_PERIODE);
@@ -91,9 +104,11 @@ namespace EPOS.Kern.Tests
             if (!Bereit()) return;
             foreach (var (tabelle, spalten) in new[]
                      {
-                         (KonditionierungSchema.TAB_KALENDER, KonditionierungSchema.SPALTENZAHL_KALENDER),
-                         (KonditionierungSchema.TAB_PERIODE, KonditionierungSchema.SPALTENZAHL_PERIODE),
-                         (KonditionierungSchema.TAB_VORGABE, KonditionierungSchema.SPALTENZAHL_VORGABE),
+                         // Schritt ZK: ID_Zone_Stamm an Kalender und Vorgabe (die Periode haengt am Kalender).
+                         (KonditionierungSchema.TAB_KALENDER, KonditionierungNutzungSchema.SPALTENZAHL_KALENDER + 1),
+                         // Schritt K2: Gilt_Fuer und ID_Woche an der Periode.
+                         (KonditionierungSchema.TAB_PERIODE, KalenderbedienungSchema.SPALTENZAHL_PERIODE),
+                         (KonditionierungSchema.TAB_VORGABE, KonditionierungSchema.SPALTENZAHL_VORGABE + 1),
                      })
             {
                 long n = Convert.ToInt64(DataRepository.ExecuteScalar(
@@ -142,7 +157,7 @@ namespace EPOS.Kern.Tests
             // Verwerfen nimmt Kalender UND Perioden zurueck (Kaskade).
             Assert.True(_ctrl.Verwerfen(eigner, Konditionierungsgroesse.Heizsoll).Ok);
             Assert.Empty(_ctrl.Kalender(eigner, out _));
-            Assert.Equal(0, Zaehlen(KonditionierungSchema.TAB_PERIODE));
+            Assert.Equal(0, PeriodenOhneVorlagen());
         }
 
         [Fact]
@@ -198,7 +213,7 @@ namespace EPOS.Kern.Tests
             DataRepository.ExecuteNonQuery("DELETE FROM \"Tab_Gebaeude\" WHERE \"ID\" = ?", new DbParam("@g", id));
             Assert.Empty(_ctrl.Kalender(eigner, out _));
             Assert.Empty(_ctrl.Vorgaben(eigner));
-            Assert.Equal(0, Zaehlen(KonditionierungSchema.TAB_PERIODE));
+            Assert.Equal(0, PeriodenOhneVorlagen());
         }
 
         // =============================================================================

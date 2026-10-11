@@ -45,6 +45,10 @@
    Hintergrundklick der Ueberlagerung). *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using KiKern
+@using EPOS.UI.Dienste
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -421,7 +425,94 @@
 
         AnlagenNachziehen();
         VorschauAktualisieren();
+
+        _kiSicht = new VorlagenUebernahmeKiSicht(KiLesen, KiSetzen, KiWahl, KiSperrgrund);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.VORLAGEN_UEBERNAHME, () => _kiSicht, KiHaken());
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Masken, Teil C)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private VorlagenUebernahmeKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> meldet, was die Vorschau
+    /// gegen eine Übernahme sagt. <b>Kein Speicherweg:</b> „OK" legt die Kostenpositionen sofort
+    /// in der Datenbank an und bleibt ein Klick des Anwenders.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => _uebernahmeMoeglich ? ""
+                      : _vorschau.Length > 0 ? _vorschau
+                      : WindowsFormsApplication1.MyResource.Resource.KI_KUEB_NICHT_MOEGLICH,
+        Sperrgrund = f => _kiSicht?.Sperrgrund(f)
+    };
+
+    private int? KiLesen(string feld) => feld switch
+    {
+        nameof(VorlagenUebernahmeKiSicht.Zielprojekt) => _zielProjekt,
+        nameof(VorlagenUebernahmeKiSicht.Quelle) => _ausVorlage ? QUELLE_VORLAGE : QUELLE_PROJEKT,
+        nameof(VorlagenUebernahmeKiSicht.Kategorie) => _invest ? KATEGORIE_INVEST : KATEGORIE_BETRIEB,
+        nameof(VorlagenUebernahmeKiSicht.Variante) => _quellVorlage,
+        nameof(VorlagenUebernahmeKiSicht.Quellprojekt) => _quellProjekt,
+        nameof(VorlagenUebernahmeKiSicht.Quellanlage) => _quellAnlage,
+        _ => throw new InvalidOperationException(feld)
+    };
+
+    /// <summary>
+    /// Die Wahl je Feld — dieselben Listen wie die Bedienelemente. Eine gesperrte Quelle
+    /// (der Katalog führt keine Vorlage) steht nicht zur Wahl.
+    /// </summary>
+    private IReadOnlyList<KiWahleintrag> KiWahl(string feld)
+    {
+        IEnumerable<(int Id, string Text)> liste = feld switch
+        {
+            nameof(VorlagenUebernahmeKiSicht.Zielprojekt) => Zielprojekte,
+            nameof(VorlagenUebernahmeKiSicht.Quelle) => _quellen.Where(q => _gesperrteQuellen?.Contains(q.Id) != true),
+            nameof(VorlagenUebernahmeKiSicht.Kategorie) => KATEGORIEN,
+            nameof(VorlagenUebernahmeKiSicht.Variante) => _vorlagen,
+            nameof(VorlagenUebernahmeKiSicht.Quellprojekt) => Quellprojekte,
+            _ => _quellAnlagen
+        };
+        return KiMaskenanmeldung.Eintraege(liste, z => z.Id, z => z.Text);
+    }
+
+    /// <summary>
+    /// Der Sperrgrund je Katalogfeld: was die Maske gerade nicht zeigt oder nicht wählen lässt.
+    /// </summary>
+    private string? KiSperrgrund(string feld) => feld switch
+    {
+        "zielprojekt" when !ZielWaehlbar => WindowsFormsApplication1.MyResource.Resource.KI_KUEB_ZIEL_FEST,
+        "kategorie" or "variante" when !_ausVorlage => WindowsFormsApplication1.MyResource.Resource.KI_KUEB_NUR_VORLAGE,
+        "quellprojekt" or "quellanlage" when _ausVorlage => WindowsFormsApplication1.MyResource.Resource.KI_KUEB_NUR_PROJEKT,
+        _ => null
+    };
+
+    /// <summary>
+    /// Der Handweg je Feld — wie das Bedienelement: Ein neues Quellprojekt zieht die Anlagen
+    /// nach, eine neue Kategorie die Varianten, und jede Wahl rechnet die Vorschau neu.
+    /// </summary>
+    private void KiSetzen(string feld, object? wert)
+    {
+        int? id = wert as int?;
+        switch (feld)
+        {
+            case nameof(VorlagenUebernahmeKiSicht.Zielprojekt): BeiZielProjekt(id); break;
+            case nameof(VorlagenUebernahmeKiSicht.Quelle): BeiQuelle(id); break;
+            case nameof(VorlagenUebernahmeKiSicht.Kategorie): BeiKategorie(id); break;
+            case nameof(VorlagenUebernahmeKiSicht.Variante): BeiQuellVorlage(id); break;
+            case nameof(VorlagenUebernahmeKiSicht.Quellprojekt): BeiQuellProjekt(id); break;
+            case nameof(VorlagenUebernahmeKiSicht.Quellanlage): BeiQuellAnlage(id); break;
+            default: throw new InvalidOperationException(feld);
+        }
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>Die Varianten EINER Kategorie; ohne Delegat fuehrt der Katalog nichts.</summary>
     private IReadOnlyList<(int Id, string Text)> VorlagenFuer(bool invest)
@@ -441,7 +532,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private static int? ErsteId(IReadOnlyList<(int Id, string Text)> liste)

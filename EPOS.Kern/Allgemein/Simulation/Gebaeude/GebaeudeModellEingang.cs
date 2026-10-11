@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para>Unveränderlich nach <see cref="Bauen"/>; ohne Datenbank, ohne Protokoll.</para>
     /// </summary>
-    internal sealed class GebaeudeModellEingang
+    internal sealed partial class GebaeudeModellEingang
     {
         private GebaeudeModellEingang() { }
 
@@ -170,11 +170,102 @@ namespace WindowsFormsApplication1
         internal double[] LueftungZusatzleitwertWK { get; private set; }
 
         /// <summary>
+        /// <b>Der Zusatzleitwert des BEDINGTEN Anteils</b> je Stunde [W/K] (Stufe KP1b, Konzept 3.7,
+        /// P9 (b)): der Überschuss der Nutzerlüftung über den Tagwert n_T in den Stunden des
+        /// Nachtfensters, mal derselben Bezugsgröße wie <see cref="LueftungZusatzleitwertWK"/>. Er
+        /// wirkt nur, wenn die <see cref="Sommerlueftungsregel"/> der Nachtauskühlung eingeschaltet
+        /// ist.
+        ///
+        /// <para><c>null</c>, wenn es in KEINER Stunde einen bedingten Anteil gibt — dann wird
+        /// keine Regel gebaut, nichts gezählt, und <see cref="ZusatzleitwertWK(int, bool, bool)"/>
+        /// gibt wörtlich den Bestandsausdruck zurück (N1.61 Nr. 11).</para>
+        /// </summary>
+        internal double[] NachtauskuehlungWK { get; private set; }
+
+        /// <summary>
+        /// Die Vorgabe der Nachtauskühlung, aus der <see cref="NachtauskuehlungWK"/> entstand
+        /// (Nachtfenster, n_T, ΔT); <c>null</c> ohne Lüftungskalender.
+        /// </summary>
+        internal Nachtauskuehlvorgabe Nachtauskuehlung { get; private set; }
+
+        /// <summary>
+        /// <b>Ein Lüftungskalender ohne Tagwert</b> (Konzept 3.7): Dann gibt es keinen bedingten
+        /// Anteil — der Kalender wirkt in jeder Stunde unbedingt, und der Lauf nennt es als Hinweis.
+        /// </summary>
+        internal bool NachtauskuehlungOhneTagwert { get; private set; }
+
+        /// <summary>
         /// Die Stunden ohne Heizung (Heizsollwert „aus", E53) — außerhalb der Heizperiode oder
         /// stundenweise. 0 ohne Heizkalender. Der Kanal Raumwärme ist in diesen Stunden 0, weil der
         /// Löser sie ohne Heizung rechnet (<see cref="Stundenrand.MitHeizung"/>).
         /// </summary>
         internal int StundenOhneHeizungH { get; private set; }
+
+        /// <summary>
+        /// <b>Gilt ein Heizkalender?</b> (Stufe KP1b) Dann steht in <see cref="ThetaSoll"/> seine
+        /// Reihe statt des Bestandsfahrplans; die Auslegungsraumtemperatur der Übergabe und die
+        /// Prüfung F21 halten sich an sie statt an <see cref="SollTag"/> (Konzept 3.6).
+        /// </summary>
+        internal bool HeizkalenderWirksam { get; private set; }
+
+        /// <summary>
+        /// <b>Die Auslegungsraumtemperatur der Wärmeübergabe</b> [°C] (Konzept 3.6): der höchste
+        /// <b>endliche</b> Heizsollwert der Nutzungszeit, sobald ein Heizkalender gilt — sonst
+        /// wörtlich <see cref="SollTag"/> wie im Bestand. Ohne eine endliche Nutzungsstunde bleibt
+        /// es ebenfalls beim Bestand; das Feld <c>Auslegung_Raumtemperatur</c> schlägt beide.
+        /// </summary>
+        internal double AuslegungsraumtemperaturHeizC { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// <b>Der höchste unbedingte Zusatzleitwert der Nutzungszeit</b> [W/K] (Konzept 3.6): Mit
+        /// Lüftungskalender geht er in die Auslegungsheizlast — sie soll den höchsten Luftwechsel
+        /// der Nutzungszeit tragen, nicht das Jahresminimum, mit dem R_ext gebildet ist. <b>Ohne
+        /// Nachtauskühlung</b> (der bedingte Anteil steht in <see cref="NachtauskuehlungWK"/>): Eine
+        /// Auslegung auf die Nachtlüftung bemäße den Kessel auf eine Sommerstunde. 0 ohne
+        /// Lüftungskalender — dort rechnet die Auslegungsheizlast wörtlich wie im Bestand.
+        /// </summary>
+        internal double AuslegungZusatzleitwertWK { get; private set; }
+
+        /// <summary>
+        /// <b>Die Tage außerhalb der Heizperiode</b> (E53): 365 Merker aus der Saisonperiode des
+        /// Heizkalenders (<see cref="Konditionierungssatz.HeizperiodeAussen"/>); <c>null</c> ohne
+        /// Heizkalender oder ohne wirkende Saisonperiode.
+        /// </summary>
+        internal bool[] HeizperiodeAussen { get; private set; }
+
+        /// <summary>
+        /// <b>Die Nutzungsmaske aus dem Personenkalender</b> (F16, Konzept 3.4): wahr, wo die
+        /// Anwesenheit über null liegt. <c>null</c> ohne Personenkalender <b>und</b> ohne eine
+        /// einzige Anwesenheitsstunde — dann zählen die Kennzahlen wörtlich nach der
+        /// <see cref="Nachtzeit"/> wie bisher. Sie wirkt <b>allein in den Kennzahlen</b>
+        /// (<see cref="GebaeudeModellErgebnis"/>), nie im Sollwertfahrplan.
+        /// </summary>
+        internal bool[] Nutzungsmaske { get; private set; }
+
+        /// <summary>
+        /// <b>Ein Personenkalender ohne eine einzige Anwesenheitsstunde</b> (F16): Dann bleibt
+        /// <see cref="Nutzungsmaske"/> leer, es gilt die Nachtzeit, und der Lauf sagt es — eine
+        /// Maske ohne Stunde teilte die mittlere Raumtemperatur durch null.
+        /// </summary>
+        internal bool NutzungsmaskeLeer { get; private set; }
+
+        /// <summary>
+        /// <b>Gilt ein Kühlkalender?</b> (Stufe KP1b) Dann steht in <see cref="ThetaMax"/> seine
+        /// Reihe statt der Konstante, die Schwelle der Sommerlüftung folgt ihr je Stunde
+        /// (Konzept 3.6), und die konstante Kühlprüfung entfällt zugunsten der stündlichen (G6).
+        /// </summary>
+        internal bool KuehlkalenderWirksam { get; private set; }
+
+        /// <summary>
+        /// <b>Die Stunden mit wirksamem Kühl-Nachtwert</b> (R14): wie oft die Reihe des
+        /// Kühlkalenders den Nachtwert der Bestandsspalte <c>Kuehl_Sollwert_Nacht</c> führt. 0 ohne
+        /// Kühlkalender, ohne gesetzten Nachtwert und wo er dem Tagwert gleicht. Der Lauf nennt die
+        /// Zahl als Hinweis — ohne Kalender wirkt die Spalte nicht, mit ihm wirkt sie erstmals.
+        /// </summary>
+        internal int KuehlNachtwertStundenH { get; private set; }
+
+        /// <summary>Der wirksam gewordene Kühl-Nachtwert [°C] (R14); NaN ohne ihn.</summary>
+        internal double KuehlNachtwertC { get; private set; } = double.NaN;
 
         /// <summary>
         /// Die Nachtzeit des Gebäudes (Entscheid E43): <c>Nachtabsenkung_Beginn</c>/<c>_Ende</c>, beide
@@ -191,6 +282,65 @@ namespace WindowsFormsApplication1
         internal double HeizungStrahlungsanteil { get; private set; }
         /// <summary>Heizleistungsgrenze [W]; NaN = unbegrenzt.</summary>
         internal double HeizleistungMaxW { get; private set; }
+
+        /// <summary>
+        /// <b>Die Deckelreihe der Zone</b> [W] je Stunde (8 760 Werte; Entwurf Vorheizrampe Fassung 2, 2.2 und 2.3,
+        /// Welle V1) — die stündliche Leistungsgrenze der Aufheizoptimierung neben dem Skalar
+        /// <see cref="HeizleistungMaxW"/>. <b>Konvention:</b> <c>NaN</c> (ebenso +∞) heißt „keine eigene Grenze in dieser
+        /// Stunde", jeder andere Wert ist endlich und nicht negativ. Wirksam ist je Stunde die kleinere Zahl aus Skalar und
+        /// Reihe (<see cref="HeizleistungMaxBei"/>), mit wirksamer Kopplung danach die Schranke der Verfügbarkeit (AK2,
+        /// <see cref="Stundenrand.MitVerfuegbarkeit"/>). <c>null</c> = keine Reihe: Jede Stunde trägt den Skalar Zeichen
+        /// für Zeichen wie ohne sie. Gesetzt nur über <see cref="HeizleistungMaxReiheSetzen"/>; eine Kopie.
+        /// </summary>
+        internal double[] HeizleistungMaxReiheW { get; private set; }
+
+        /// <summary>
+        /// <b>Setzt die Deckelreihe</b> (<see cref="HeizleistungMaxReiheW"/>) — der Schreibweg des Aufheizplans
+        /// (<see cref="Aufheizoptimierung.PlanSetzen"/>) und der Vorausschau. <c>null</c> nimmt die Reihe zurück. Die Reihe
+        /// wird kopiert; der Eingang hält sie unverändert, auch wenn der Aufrufer sein Feld danach ändert.
+        /// </summary>
+        /// <exception cref="ArgumentException">wenn die Reihe nicht 8 760 Stunden führt oder ein Wert weder „keine Grenze"
+        /// (NaN, +∞) noch endlich und nicht negativ ist.</exception>
+        internal void HeizleistungMaxReiheSetzen(double[] reiheW)
+        {
+            if (reiheW == null)
+            {
+                HeizleistungMaxReiheW = null;
+                return;
+            }
+            if (reiheW.Length != 8760)
+                throw new ArgumentException("Die Deckelreihe muss 8760 Stunden führen.", nameof(reiheW));
+            for (int h = 0; h < reiheW.Length; h++)
+            {
+                double w = reiheW[h];
+                if (double.IsNaN(w) || double.IsPositiveInfinity(w)) continue;
+                if (double.IsInfinity(w) || w < 0.0)
+                    throw new ArgumentException("Die Deckelreihe trägt in Stunde " + h.ToString(CultureInfo.InvariantCulture)
+                                                + " keinen gültigen Wert.", nameof(reiheW));
+            }
+            HeizleistungMaxReiheW = (double[])reiheW.Clone();
+        }
+
+        /// <summary>
+        /// <b>Die wirksame Heizleistungsgrenze der Stunde</b> <paramref name="h"/> [W] vor der Verfügbarkeit: ohne Reihe oder
+        /// mit „keine Grenze" in der Stunde genau <see cref="HeizleistungMaxW"/> (dieselbe Zahl, keine Rechnung — der Lauf
+        /// bleibt bitgleich), sonst die kleinere der beiden Zahlen; NaN = unbegrenzt.
+        /// </summary>
+        internal double HeizleistungMaxBei(int h)
+        {
+            double[] reihe = HeizleistungMaxReiheW;
+            if (reihe == null) return HeizleistungMaxW;
+            double deckel = reihe[h];
+            if (double.IsNaN(deckel) || double.IsPositiveInfinity(deckel)) return HeizleistungMaxW;
+            return double.IsNaN(HeizleistungMaxW) || deckel < HeizleistungMaxW ? deckel : HeizleistungMaxW;
+        }
+
+        /// <summary>
+        /// Die manuelle Aufheizzeit t [h] des Gebäudes (E59, Festlegung 37; <c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c>),
+        /// 1 … 47; <c>null</c> = die Art des Projekts. Jede Zone des Gebäudes trägt denselben Wert (Festlegung 38,
+        /// Teilkonzept 3.4: Zonen erben, ein Zonenfeld gibt es nicht). Gelesen nur von <see cref="Aufheizoptimierung"/>.
+        /// </summary>
+        internal int? AufheizzeitManuellH { get; private set; }
         /// <summary>Randbedingung der Grundfläche (<c>DbWerte.GRUND_*</c>).</summary>
         internal string GrundRandbedingung { get; private set; }
         /// <summary>Kellertemperatur [°C].</summary>
@@ -219,6 +369,12 @@ namespace WindowsFormsApplication1
         /// vorher (N-A3).
         /// </summary>
         internal bool KopplungWirksam { get; private set; }
+
+        /// <summary>
+        /// Erfasst der Lauf die Massen am Stundenende (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V2)? Gesetzt nur von
+        /// <see cref="Vorheizplanung"/>; ohne Schalter rechnet und schreibt jeder Lauf wie zuvor.
+        /// </summary>
+        internal bool MassenErfassen { get; set; }
 
         /// <summary>Die Kennwerte der Übergabe in W und W/K; <c>null</c> ohne wirksame Kopplung.</summary>
         internal Uebergabekennwerte Uebergabe { get; private set; }
@@ -252,6 +408,13 @@ namespace WindowsFormsApplication1
         /// vorhandenen Modells am Auslegungspunkt (8.4), ausdrücklich kein Normnachweis (H-F12).
         /// </summary>
         internal double AuslegungsheizlastW { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// Die Auslegungs-Außentemperatur des Gebäudes, wie eingetragen [°C] (<c>Auslegung_Aussentemperatur</c>);
+        /// <c>null</c> = aus der Klimareihe hergeleitet (H10). Gelesen auch ohne Kopplung — für die Auslegungsheizlast
+        /// eines ungekoppelten Gebäudes (<see cref="Auslegungslasten"/>, E97).
+        /// </summary>
+        internal double? AuslegungAussentemperaturFeldC { get; private set; }
 
         /// <summary>Ist die Nennleistung der Übergabe aus der Auslegungsheizlast hergeleitet (NULL, H7)?</summary>
         internal bool UebergabeNennleistungHergeleitet { get; private set; }
@@ -288,8 +451,42 @@ namespace WindowsFormsApplication1
         /// <summary>Dieselben Kennwerte gespiegelt (−V, −R, −θ_i,N) — so rechnet Schritt K (10.5).</summary>
         internal Uebergabekennwerte KuehlUebergabeGespiegelt { get; private set; }
 
-        /// <summary>Der feste Kaltwasser-Vorlauf am Gebäude [°C] = max(Quelle, Vorlaufgrenze) (7.2); NaN ohne Kälteseite.</summary>
-        internal double KuehlVorlaufC { get; private set; } = double.NaN;
+        /// <summary>
+        /// Der feste Kaltwasser-Vorlauf am Gebäude [°C] = max(Quelle, Vorlaufgrenze) (7.2); NaN ohne Kälteseite und mit
+        /// wirksamer Kühlkurve (dann trägt allein <see cref="KuehlVorlaufC"/> den Vorlauf, wie <see cref="VorlaufFestC"/>).
+        /// </summary>
+        internal double KuehlVorlaufFestC { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// <b>Der Kaltwasser-Vorlauf am Gebäude je Stunde</b> [°C] (Entwurf KK, Schritt KK1): ohne Kühlkurve die konstante Reihe
+        /// des festen Vorlaufs <see cref="KuehlVorlaufFestC"/> (Zeichen für Zeichen wie der frühere Skalar), mit wirksamer
+        /// Kühlkurve deren Vorlauf je Stunde; <c>null</c> ohne Kälteseite. Der Stundenrand liest <c>[h]</c>.
+        /// </summary>
+        internal double[] KuehlVorlaufC { get; private set; }
+
+        /// <summary>
+        /// Steht der Vorlauf der Stunde an der Vorlaufgrenze, weil die Kühlkurve oder der Erzeuger kälter verlangt
+        /// (Festlegung 5)? Nur mit wirksamer Kühlkurve, sonst <c>null</c> — dann gilt <see cref="KuehlVorlaufGekappt"/>.
+        /// </summary>
+        internal bool[] KuehlVorlaufAnGrenze { get; private set; }
+
+        /// <summary>
+        /// <b>Rechnet dieses Gebäude die Kühlkurve?</b> Stufe AK3 (<see cref="Ak3Kernstufe"/>),
+        /// <c>Kuehlkurve_Aktiv</c> und eine wirksame Kälteseite im Einzonenweg (Entwurf KK, Festlegungen 1, 13; E106 Q-KK-2 (a)).
+        /// </summary>
+        internal bool KuehlkurveWirksam { get; private set; }
+
+        /// <summary>Die Kühlkurve des Gebäudes; <c>null</c> ohne <see cref="KuehlkurveWirksam"/>.</summary>
+        internal Kuehlkurve Kuehlkurve { get; private set; }
+
+        /// <summary>Der Raumeinfluss der Kühlkurve k_K [K/K], geprüft; 0 ohne Wert oder ohne wirksame Kurve (Rechnung mit KK3).</summary>
+        internal double KuehlkurveRaumeinflussKK { get; private set; }
+
+        /// <summary>Der Kaltwasser-Vorlauf des Stundenrands [°C]: <c>[h]</c> der Reihe, NaN ohne Kälteseite.</summary>
+        private double KuehlVorlaufBei(int h) => KuehlVorlaufC != null ? KuehlVorlaufC[h] : double.NaN;
+
+        /// <summary>Steht der Vorlauf der Stunde an der Vorlaufgrenze? Mit Kühlkurve je Stunde, sonst der feste Befund.</summary>
+        private bool KuehlVorlaufGekapptBei(int h) => KuehlVorlaufAnGrenze != null ? KuehlVorlaufAnGrenze[h] : KuehlVorlaufGekappt;
 
         /// <summary>Der Kaltwasser-Vorlauf der Quelle [°C] vor dem Hochmischen: der Anlage oder, ohne sie, der Auslegung.</summary>
         internal double KuehlVorlaufQuelleC { get; private set; } = double.NaN;
@@ -315,6 +512,16 @@ namespace WindowsFormsApplication1
         /// Ausdrücklich kein Normnachweis.
         /// </summary>
         internal double AuslegungskuehllastW { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// <b>Die Auslegungsraumtemperatur der Kälte</b> [°C] (Konzept 3.6): der <b>niedrigste
+        /// wirksame endliche</b> Kühlsollwert, sobald ein Kühlkalender gilt — sonst wörtlich
+        /// <see cref="KuehlSollwert"/> wie im Bestand. Sie gilt der Kühlübergabe
+        /// (<see cref="KuehlUebergabe"/>) und dem Auslegungstag
+        /// (<see cref="Auslegungskuehllast"/>); das Feld <c>Kuehl_Auslegung_Raumtemperatur</c>
+        /// schlägt beide. Ohne eine endliche Stunde bleibt es beim Bestand.
+        /// </summary>
+        internal double AuslegungsraumtemperaturKuehlC { get; private set; } = double.NaN;
 
         /// <summary>Der Auslegungstag der Kühlung (0 … 364): der Tag mit dem höchsten Tagesmittel der Außenluft; −1 ohne Herleitung.</summary>
         internal int AuslegungstagKuehlung { get; private set; } = -1;
@@ -397,7 +604,7 @@ namespace WindowsFormsApplication1
             ? Luftwechselrate_h * Nutzflaeche_M2 * Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
             : Luftwechselrate_h * Luftvolumen_M3 * GebaeudeFestwerte.C_RHO_LUFT;
 
-        /// <summary>Die Kühlleistungsgrenze der Zone [kW] aus der Kaskade, wenn sie vom Gebäude abweicht (anteilig ab zwei Zonen, Festlegung 5); sonst <c>null</c>.</summary>
+        /// <summary>Die Kühlleistungsgrenze der Zone [kW] aus der Kaskade, wenn sie vom Gebäude abweicht (eigener Wert der Zone, KU3-3, oder anteilig ab zwei Zonen, Festlegung 5); sonst <c>null</c>.</summary>
         private double? _kuehlgrenzeZoneKw;
 
         /// <summary>Trägt die Zone eigene innere Gewinne? Dann schlüsselt der Flächenschlüssel sie nicht.</summary>
@@ -412,7 +619,8 @@ namespace WindowsFormsApplication1
         /// vorher. Raumhöhe, Volumen, die vier Sollwerte, θ_max, Strahlungsanteil der Heizung,
         /// Heizleistungsgrenze, Infiltration und Nutzerlüftung, eigene innere Gewinne und „beheizt";
         /// danach gelten die Prüfungen der Gebäudedaten für die Werte der Zone. Die Nachtzeit kommt
-        /// vom Gebäude (Festlegung 1), die Kühlwerte ebenso (A4 (a)).
+        /// vom Gebäude (Festlegung 1); die Kühlwerte der Zone löst <see cref="KuehlungAufloesen"/> aus
+        /// derselben Kaskade auf (KU3-3).
         /// </summary>
         private void Zonenwerte(ProjektGebaeudeModel g, int zonenzahl)
         {
@@ -429,7 +637,7 @@ namespace WindowsFormsApplication1
             if (AusZone(v.HeizungStrahlungsanteil)) HeizungStrahlungsanteil = v.HeizungStrahlungsanteil.Wert.Value;
             if (AusZone(v.HeizleistungMaxKw) || v.HeizleistungMaxKw.Herkunft == Vorgabeherkunft.GebaeudeAnteilig)
                 HeizleistungMaxW = 1000.0 * v.HeizleistungMaxKw.Wert.Value;
-            if (v.KuehlleistungMaxKw.Herkunft == Vorgabeherkunft.GebaeudeAnteilig)
+            if (AusZone(v.KuehlleistungMaxKw) || v.KuehlleistungMaxKw.Herkunft == Vorgabeherkunft.GebaeudeAnteilig)
                 _kuehlgrenzeZoneKw = v.KuehlleistungMaxKw.Wert.Value;
             if (AusZone(v.InterneWaermegewinne))
             {
@@ -525,40 +733,53 @@ namespace WindowsFormsApplication1
         /// <see cref="Rand(int, bool)"/>, das wörtlich bleibt; im Löser wirkt die Zulufttemperatur als
         /// <c>gExt·ThetaOut</c>.
         /// </summary>
-        internal Stundenrand Rand(int h, bool sommerlueftung, double thetaEq, double thetaLue)
+        internal Stundenrand Rand(int h, bool sommerlueftung, double thetaEq, double thetaLue,
+                                  bool nachtauskuehlung = false)
+            => MitFahrplan(h, RandOhneFahrplan(h, sommerlueftung, thetaEq, thetaLue, nachtauskuehlung));
+
+        private Stundenrand RandOhneFahrplan(int h, bool sommerlueftung, double thetaEq, double thetaLue,
+                                             bool nachtauskuehlung)
         {
-            if (!KuehlKopplungWirksam)
+            Stundenrand r = RandOhneFahrplanZone(h, sommerlueftung, thetaEq, thetaLue, nachtauskuehlung);
+            // Entwurf KK (KZ1): an einer Zone im Kühlkreis des Gebäudes wirkt das Vorlaufangebot der Kälteschranke.
+            return Gebaeudekuehlkreis != null && KuehlKopplungWirksam ? r with { KuehlVorlaufAmAngebot = true } : r;
+        }
+
+        private Stundenrand RandOhneFahrplanZone(int h, bool sommerlueftung, double thetaEq, double thetaLue,
+                                                 bool nachtauskuehlung)
+        {
+            if (!KuehlKopplungWirksam || !Kuehlstunde(h))
             {
                 if (!KopplungWirksam)
                     return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
                                            PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                           heizleistungMaxW: HeizleistungMaxW,
+                                           heizleistungMaxW: HeizleistungMaxBei(h),
                                            kuehlleistungMaxW: KuehlleistungMaxW,
                                            heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung));
+                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung));
                 return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                       heizleistungMaxW: HeizleistungMaxW,
+                                       heizleistungMaxW: HeizleistungMaxBei(h),
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
+                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
                                        uebergabe: Uebergabe,
                                        vorlaufC: VorlaufC[h],
                                        reglerbandK: ReglerbandK);
             }
             return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
                                    PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                   heizleistungMaxW: HeizleistungMaxW,
+                                   heizleistungMaxW: HeizleistungMaxBei(h),
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
+                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
                                    uebergabe: KopplungWirksam ? Uebergabe : null,
                                    vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
                                    reglerbandK: ReglerbandK,
                                    kuehlUebergabeGespiegelt: KuehlUebergabeGespiegelt,
-                                   kuehlVorlaufC: KuehlVorlaufC,
+                                   kuehlVorlaufC: KuehlVorlaufBei(h),
                                    kuehlStrahlungsanteil: KuehlStrahlungsanteil,
-                                   kuehlVorlaufGekappt: KuehlVorlaufGekappt);
+                                   kuehlVorlaufGekappt: KuehlVorlaufGekapptBei(h));
         }
 
         /// <summary>
@@ -623,8 +844,90 @@ namespace WindowsFormsApplication1
         internal double[] PhiRadIW { get; private set; }
         /// <summary>Konvektive Last an der Raumluft [W].</summary>
         internal double[] PhiConv { get; private set; }
-        /// <summary>Heizsollwert [°C] (E8).</summary>
+        /// <summary>
+        /// Heizsollwert [°C] (E8). Mit Aufheizoptimierung trägt er nach
+        /// <see cref="HeizsollwertMitRampeSetzen"/> die Rampen (Entwurf KP3, Festlegungen 1 und 2) —
+        /// Übergabe, Kälte, F21 und die stündliche Kühlprüfung hat <see cref="Bauen(ProjektGebaeudeModel, GebaeudeKlima, Zonenkopplung, bool, string, double, double, double, Konditionierungssatz)"/>
+        /// vorher an der Reihe ohne Rampe ausgelegt.
+        /// </summary>
         internal double[] ThetaSoll { get; private set; }
+
+        /// <summary>
+        /// <b>Setzt die Heizsollwertreihe mit Rampe</b> (Entwurf KP3, Festlegungen 1, 2 und 8) — der
+        /// einzige Schreibweg nach dem Bauen: <see cref="Aufheizoptimierung.Anwenden"/> ruft ihn, wenn
+        /// die Planung mindestens eine Stunde angehoben hat. Ohne Schalter wird er nie gerufen
+        /// (Grundsatz 3), die Reihe bleibt dann Zeichen für Zeichen die des Bauers.
+        /// </summary>
+        /// <exception cref="ArgumentException">wenn die Reihe nicht 8 760 Stunden führt.</exception>
+        internal void HeizsollwertMitRampeSetzen(double[] reihe)
+        {
+            if (reihe == null || reihe.Length != 8760)
+                throw new ArgumentException("Die Heizsollwertreihe mit Rampe muss 8760 Stunden führen.", nameof(reihe));
+            ThetaSoll = reihe;
+        }
+
+        /// <summary>
+        /// <b>Die äquivalente Außentemperatur am Bemessungspunkt</b> [°C] in der <b>Außenform</b>
+        /// (Entwurf KP3, Befund B4, Festlegung 12): Außenluft und Fenster bei <paramref name="aussenC"/>
+        /// ohne Strahlung, das Erdreich mit seinem Tagesmittel am Tag <paramref name="tag"/>, der
+        /// unbeheizte Raum bei der Kellertemperatur — dieselben Gewichte und dieselbe Rechnung wie am
+        /// Auslegungspunkt der Anlagenkopplung (8.4), nur als Mitglied statt lokal in
+        /// <see cref="Bauen(ProjektGebaeudeModel, GebaeudeKlima, Zonenkopplung, bool, string, double, double, double, Konditionierungssatz)"/>.
+        /// Ohne Sonne und Gewinne.
+        ///
+        /// <para><b>Nur ohne Nachbarglieder:</b> Im Bauteilweg mit Nachbarzonen teilte die Außenform
+        /// durch die U·A-Summe samt Nachbargliedern, summierte aber nur die Außenglieder (B4) — die
+        /// Nachbarn stünden bei 0 °C. Ein solcher Eingang nimmt die Nachbarform
+        /// <see cref="AequivalentN(int, double, ReadOnlySpan{double})"/>; hier lehnt das Mitglied benannt ab.</para>
+        /// </summary>
+        /// <param name="tag">Der Tag des Erdreichs (0 … 364).</param>
+        /// <param name="aussenC">Die Außenlufttemperatur des Bemessungspunkts [°C].</param>
+        /// <exception cref="InvalidOperationException">bei einem Eingang mit Nachbargliedern oder ohne Bau.</exception>
+        internal double AequivalentN(int tag, double aussenC)
+        {
+            if (_aequivalentN == null)
+                throw new InvalidOperationException(Bezeichnung + ": Der Eingang ist nicht gebaut.");
+            if (Nachbarglieder.Count > 0)
+                throw new InvalidOperationException(Bezeichnung + ": Die äquivalente Außentemperatur mit Nachbarzonen braucht die Temperaturen der Nachbarn (Nachbarform).");
+            return _aequivalentN(tag, aussenC);
+        }
+
+        /// <summary>
+        /// <b>Die äquivalente Außentemperatur am Bemessungspunkt in der Nachbarform</b> [°C] (Entwurf
+        /// KP3, Befund B4, Festlegungen 12–14): der Zähler der Außenglieder wie in der Außenform
+        /// (Außenluft und Fenster bei <paramref name="aussenC"/> ohne Strahlung, Erdreich als
+        /// Tagesmittel des Tags <paramref name="tag"/>, unbeheizter Raum bei der Kellertemperatur),
+        /// dahinter Σ U·A_j·θ_j der Nachbarglieder mit den festen Lufttemperaturen
+        /// <paramref name="nachbarC"/> — geteilt durch dieselbe U·A-Summe samt Nachbargliedern.
+        /// Dieselbe Bildung und Reihenfolge wie <see cref="ZonenEingang.ThetaEq"/> (Gl. (41)/(42)):
+        /// Liegt die Stunde ohne Strahlung und ohne Erdreich, sind beide gleich (N-AH9).
+        /// Ohne Nachbarglieder ist das wörtlich die Außenform.
+        /// </summary>
+        /// <param name="tag">Der Tag des Erdreichs (0 … 364).</param>
+        /// <param name="aussenC">Die Außenlufttemperatur des Bemessungspunkts [°C].</param>
+        /// <param name="nachbarC">Je Nachbarglied (<see cref="Nachbarglieder"/>, in deren Reihenfolge) die Lufttemperatur der Nachbarzone [°C].</param>
+        /// <exception cref="InvalidOperationException">ohne Bau.</exception>
+        /// <exception cref="ArgumentException">wenn die Zahl der Temperaturen nicht die der Nachbarglieder ist.</exception>
+        internal double AequivalentN(int tag, double aussenC, ReadOnlySpan<double> nachbarC)
+        {
+            if (_aequivalentN == null)
+                throw new InvalidOperationException(Bezeichnung + ": Der Eingang ist nicht gebaut.");
+            IReadOnlyList<Nachbarglied> glieder = Nachbarglieder;
+            if (nachbarC.Length != glieder.Count)
+                throw new ArgumentException(Bezeichnung + ": " + nachbarC.Length.ToString(CultureInfo.InvariantCulture) +
+                                            " Nachbartemperaturen für " + glieder.Count.ToString(CultureInfo.InvariantCulture) +
+                                            " Nachbarglieder.", nameof(nachbarC));
+            if (glieder.Count == 0) return _aequivalentN(tag, aussenC);
+            double zaehler = _aequivalentZaehlerN(tag, aussenC);
+            for (int k = 0; k < glieder.Count; k++) zaehler += glieder[k].UA_WK * nachbarC[k];
+            return zaehler / UaSummeGewichtung_WK;
+        }
+
+        /// <summary>Die Außenform der äquivalenten Außentemperatur am Bemessungspunkt, gebildet im Bauen (B4).</summary>
+        private Func<int, double, double> _aequivalentN;
+
+        /// <summary>Der Zähler der Außenglieder am Bemessungspunkt (Bauteilweg, B4); <c>null</c> im Klassenweg.</summary>
+        private Func<int, double, double> _aequivalentZaehlerN;
         /// <summary>Obere Regelgrenze je Stunde [°C]: der Kühlsollwert, ohne wirksame Kühlung +∞ (E32).</summary>
         internal double[] ThetaMax { get; private set; }
 
@@ -636,6 +939,26 @@ namespace WindowsFormsApplication1
         internal Fassadenstrahlung Strahlung { get; private set; }
         /// <summary>Fiel die Erdreichrechnung auf Ersatzwerte des Jahresgangs zurück? Im Bauteilweg nur, wenn ein Bauteil am Erdreich liegt.</summary>
         internal bool ErdreichErsatzwerte { get; private set; }
+
+        /// <summary>
+        /// Das Feld des freiliegenden Umfangs der Bodenplatte [m] (Rechenweg RP2a): die Länge des Anschlusses
+        /// Außenwand/Kellerdecke der Gebäudezeile; 0 = nicht vorhanden. Gilt nur, wenn es mindestens dem Umfang
+        /// des flächengleichen Kreises entspricht (<see cref="Erdreichwiderstand.Umfang"/>).
+        /// </summary>
+        internal double ErdreichUmfangFeld_M { get; private set; }
+
+        /// <summary>
+        /// Der wirksame U-Wert der Bodenplatte samt Erdreich [W/(m²K)] als Vorgabe des Gebäudes
+        /// (<c>Erdreich_U_Wirksam</c>, E65); NaN = keine Vorgabe, die Rechnung nach DIN EN ISO 13370.
+        /// </summary>
+        internal double ErdreichUVorgabe_WM2K { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// Die Erdreichkennwerte nach DIN EN ISO 13370 (Rechenweg RP2a): B′, Umfang samt Herkunft, U_g, R_g;
+        /// <c>null</c>, wenn kein Bauteil (Klassenweg: keine Grundfläche) am Erdreich liegt. <see cref="U_Grund"/>
+        /// bleibt der eingetragene Wert; den wirksamen trägt <see cref="Erdreichkennwerte.UWirksam_WM2K"/>.
+        /// </summary>
+        internal Erdreichkennwerte Erdreich { get; private set; }
         /// <summary>Zahl der Stunden mit Gegenstrahlung — nur in ihnen rechnet der langwellige Term (NULL-Regel E5).</summary>
         internal int StundenMitGegenstrahlung { get; private set; }
 
@@ -644,27 +967,62 @@ namespace WindowsFormsApplication1
         /// <paramref name="sommerlueftung"/> legt den Zusatzleitwert der Sommerlüftung parallel
         /// zum Lüftungszweig (Rechenschritte 7.2 — der Zustand gilt die ganze Stunde).
         /// </summary>
-        internal Stundenrand Rand(int h, bool sommerlueftung = false)
+        internal Stundenrand Rand(int h, bool sommerlueftung = false, bool nachtauskuehlung = false)
+            => MitFahrplan(h, RandOhneFahrplan(h, sommerlueftung, nachtauskuehlung));
+
+        // =====================================================================
+        //  Anlagenkopplung, Stufe AK2 (Konzept Anlagenkopplung 4.5, 5.3, 6.2)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Schranke der Anlagenverfügbarkeit dieser Zone</b> je Stunde (8760; AK2) — von der Fassade
+        /// verteilt (Projekt → Gebäude → Zone, <see cref="Verfuegbarkeitsverteilung"/>) und auf den Maßstab
+        /// dieses Eingangs umgerechnet; die Leistung in kW. <c>null</c> = keine Schranke: Der Rand bleibt
+        /// Zeichen für Zeichen der Bestand. Wirkt nur mit wirksamer Kopplung (F10). Das Modul liest damit
+        /// keine Anlagendaten, es bekommt die fertige Reihe (5.3).
+        /// </summary>
+        internal Anlagenverfuegbarkeit[] Verfuegbarkeit { get; set; }
+
+        /// <summary>Trägt dieser Eingang eine wirksame Schranke der Verfügbarkeit?</summary>
+        internal bool FahrplanWirksam => Verfuegbarkeit != null && KopplungWirksam;
+
+        /// <summary>
+        /// Trägt die Stunde <paramref name="h"/> einen Kühlsollwert (nicht „aus")? Eine Stunde ohne ihn rechnet auch mit
+        /// wirksamer Kühlübergabe ohne Kälteseite — wie die Zweige ohne Kühlkopplung (Zonensperre, Entwurf AK3-K 3.1: der
+        /// Heiztag setzt den Kühlsollwert „aus"). Vorher lehnte der Löser eine solche Stunde ab
+        /// (<see cref="GebaeudeModellFehler.RandUngueltig"/>, „KuehlUebergabe ohne Kuehlung"); jeder gültige Lauf bleibt
+        /// damit Zeichen für Zeichen, wie er war.
+        /// </summary>
+        private bool Kuehlstunde(int h) => !double.IsNaN(ThetaMax[h]) && !double.IsPositiveInfinity(ThetaMax[h]);
+
+        private Stundenrand MitFahrplan(int h, Stundenrand r)
+        {
+            if (!FahrplanWirksam) return r;
+            Anlagenverfuegbarkeit v = Verfuegbarkeit[h];
+            return r.MitVerfuegbarkeit(v.LeistungKw * 1000.0, v.Grund, v.VorlaufC);
+        }
+
+        private Stundenrand RandOhneFahrplan(int h, bool sommerlueftung, bool nachtauskuehlung)
         {
             // Die Kühlleistung wirkt in KU1 rein konvektiv am Luftknoten (Kühlkonzept 3.2):
             // kein Anteil an der Innenfläche, keine eigene Übergabeart vor der Anlagenkopplung.
             // Mit wirksamer Kopplung (AK1) trägt die Stunde Übergabe, Vorlauf und Reglerband.
             // Die beiden Zweige ohne Kälteseite stehen WÖRTLICH wie vor E37.
-            if (!KuehlKopplungWirksam)
+            if (!KuehlKopplungWirksam || !Kuehlstunde(h))
             {
                 if (!KopplungWirksam)
                     return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                            PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                           heizleistungMaxW: HeizleistungMaxW,
+                                           heizleistungMaxW: HeizleistungMaxBei(h),
                                            kuehlleistungMaxW: KuehlleistungMaxW,
                                            heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung));
+                                           zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung));
                 return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                        PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                       heizleistungMaxW: HeizleistungMaxW,
+                                       heizleistungMaxW: HeizleistungMaxBei(h),
                                        kuehlleistungMaxW: KuehlleistungMaxW,
                                        heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
+                                       zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
                                        uebergabe: Uebergabe,
                                        vorlaufC: VorlaufC[h],
                                        reglerbandK: ReglerbandK);
@@ -674,17 +1032,17 @@ namespace WindowsFormsApplication1
             // demselben Raumregler; die Wärmeseite, wenn sie wirkt, wie im Zweig darüber.
             return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                    PhiRadAW[h], PhiRadIW[h], PhiConv[h],
-                                   heizleistungMaxW: HeizleistungMaxW,
+                                   heizleistungMaxW: HeizleistungMaxBei(h),
                                    kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
-                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung),
+                                   zusatzleitwertWK: ZusatzleitwertWK(h, sommerlueftung, nachtauskuehlung),
                                    uebergabe: KopplungWirksam ? Uebergabe : null,
                                    vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
                                    reglerbandK: ReglerbandK,
                                    kuehlUebergabeGespiegelt: KuehlUebergabeGespiegelt,
-                                   kuehlVorlaufC: KuehlVorlaufC,
+                                   kuehlVorlaufC: KuehlVorlaufBei(h),
                                    kuehlStrahlungsanteil: KuehlStrahlungsanteil,
-                                   kuehlVorlaufGekappt: KuehlVorlaufGekappt);
+                                   kuehlVorlaufGekappt: KuehlVorlaufGekapptBei(h));
         }
 
         /// <summary>
@@ -778,7 +1136,8 @@ namespace WindowsFormsApplication1
             Konditionierungssatz konditionierung = null)
         {
             if (klima == null) throw new ArgumentNullException(nameof(klima));
-            GebaeudeModellEingang e = Daten(gebaeude);
+            GebaeudeModellEingang e = Daten(gebaeude,
+                                            konditionierung != null && konditionierung.Hat(Konditionierungsgroesse.Heizsoll));
 
             if (zone == null)
             {
@@ -799,7 +1158,10 @@ namespace WindowsFormsApplication1
             e.KonditionierungAufloesen(konditionierung);
 
             if (e.Zone == null)
+            {
                 e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
+                e.Erdreich = e.Parameter.Erdreich;
+            }
             else
             {
                 // Die Werte der Zone (G6b, A5 (a): eine Regel für jede Zahl der Zonen).
@@ -814,6 +1176,7 @@ namespace WindowsFormsApplication1
                     e.LuftaustauschLeitwert_WK = g;
                 }
                 e.Parameter = ErsatzparameterRC.AusBauteilweg(e, e.Bauteile);
+                e.Erdreich = e.Parameter.Erdreich;
             }
             e.Zeitbezug = klima.Zeitbezug;
 
@@ -869,7 +1232,8 @@ namespace WindowsFormsApplication1
                 // Mit Schalter: Wand und Sonstiges senkrecht, Dach waagerecht (Klassenweg, Rechenschritte E5).
                 double uaSenkrecht = e.U_Aussenwand * e.A_Aussenwand_M2 + e.U_Sonstige * e.A_Sonstige_M2;
                 double uaDach = e.U_Dach * e.A_Dach_M2;
-                double uaGrund = e.U_Grund * e.A_Grund_M2;
+                // RP2a: der wirksame U-Wert der Grundfläche (mit Erdreichwiderstand) wie in Gl. (27).
+                double uaGrund = (e.Erdreich?.UWirksam_WM2K ?? e.U_Grund) * e.A_Grund_M2;
                 double uaFenster = p.UA_Fenster_WK;
                 double uaSumme = p.SummeUA_opak_WK + uaFenster;
 
@@ -952,6 +1316,8 @@ namespace WindowsFormsApplication1
             }
 
             e.ThetaEq = thetaEq;
+            // Entwurf KP3 (B4, Festlegung 12): dieselbe Außenform als Mitglied für die Aufheizbemessung.
+            e._aequivalentN = aequivalentN;
             e.PhiRadAW = phiRadAW;
             e.PhiRadIW = phiRadIW;
             e.PhiConv = phiConv;
@@ -962,11 +1328,25 @@ namespace WindowsFormsApplication1
             e.AnlagenkopplungStufe = anlagenkopplung;
             e.HeizkreisAktiv = gebaeude.Heizkreis_Aktiv;
             e.UebergabeArt = gebaeude.Uebergabe_Art;
-            // Mehrzonenweg (G6b, A4 (a)): die Zonen rechnen ideal, eine wirksame Kopplung wird zur
-            // idealen Last - benannt über KopplungAlsIdealeLast, nie still.
+            // E97: das Feld des Auslegungspunkts auch ohne Kopplung - die Auslegungsheizlast (Auslegungslasten).
+            e.AuslegungAussentemperaturFeldC = gebaeude.Auslegung_Aussentemperatur;
             bool kopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung);
-            e.KopplungWirksam = kopplung && !e.Mehrzonenweg;
-            e.ThetaSoll = Bestandsfahrplan(e, gebaeude, wochenende, e.KopplungWirksam);
+            // Mehrzonenweg (E63, AK1z): Schritt H je Zone. Die Art der Zone, sonst die des Gebäudes;
+            // eine Zone mit IDEAL (oder leer), eine unbeheizte Zone und der adiabate Vorlauf der
+            // 4-K-Regel rechnen ohne Übergabe. Die Auflösung der Werte geschieht erst, wenn alle Zonen
+            // stehen (ZonenkopplungAufloesen) - Vorlauf, Heizkurve und Nennleistung kommen vom Gebäude.
+            bool kopplungImVorlaufIdeal = false;
+            if (e.Mehrzonenweg)
+            {
+                string artZone = e.Zone.Eingaben?.UebergabeArt ?? gebaeude.Uebergabe_Art;
+                e.UebergabeArt = artZone;
+                bool zoneGekoppelt = kopplung && e.IstBeheizt && !string.IsNullOrWhiteSpace(artZone)
+                                     && !string.Equals(artZone, DbWerte.UEBERGABE_IDEAL, StringComparison.Ordinal);
+                kopplungImVorlaufIdeal = zoneGekoppelt && zone.OhneUebergabe;
+                e.KopplungWirksam = zoneGekoppelt && !zone.OhneUebergabe;
+            }
+            else e.KopplungWirksam = kopplung;
+            e.ThetaSoll = Bestandsfahrplan(e, gebaeude, wochenende, e.KopplungWirksam || kopplungImVorlaufIdeal);
             // Stufe KP1: mit Heizkalender tritt seine Reihe an die Stelle des Bestandsfahrplans
             // (Konzept 6); "aus" ist NaN, und der Loeser rechnet die Stunde dann ohne Heizung -
             // die Heizleistung der Zone ist 0 und der Kanal Raumwaerme ebenso (E53).
@@ -975,12 +1355,23 @@ namespace WindowsFormsApplication1
             {
                 e.ThetaSoll = heizReihe;
                 e.StundenOhneHeizungH = konditionierung.StundenOhneHeizung();
+                // Stufe KP1b (Konzept 3.6): Auslegung und F21 halten sich jetzt an die Reihe. Die
+                // Pruefung F21 hat Daten() deshalb zurueckgestellt - sie stuende dort vor dem
+                // Kalender und pruefte gegen SollTag. Ohne endliche Nutzungsstunde entfaellt sie.
+                e.HeizkalenderWirksam = true;
+                e.HeizperiodeAussen = konditionierung.HeizperiodeAussen();
+                if (e.HeizauslegungAufloesen()) e.MaximalraumtemperaturPruefen();
             }
 
             // KU1 (Kühlkonzept 3.2, K11): Kühlsollwert und Kühlleistungsgrenze - nur mit
             // wirksamer Kühlung. Ohne sie gibt es keine obere Grenze (+∞): Das Gebäude läuft
             // frei, und die Raumluft darf über θ_max steigen (Entscheid E32).
-            e.KuehlungAufloesen(gebaeude, kuehlbetrieb);
+            // Stufe KP1b (G6): Steht ein Kuehlkalender bereit, tritt seine stuendliche Pruefung an
+            // die Stelle der konstanten (F17) - die konstante lehnte sonst einen gueltigen Kalender
+            // ab. Die Reihe selbst ist rein (Konditionierungssatz.Reihe), sie darf vorgezogen
+            // werden; ohne Konditionierung ist sie null und jede Zeile bleibt woertlich.
+            double[] kuehlkalenderReihe = konditionierung?.Reihe(Konditionierungsgroesse.Kuehlsoll);
+            e.KuehlungAufloesen(gebaeude, kuehlbetrieb, kuehlkalenderReihe != null);
             if (!e.IstBeheizt) e.FreiSchwingend();
             e.ThetaMax = new double[8760];
             for (int h = 0; h < 8760; h++) e.ThetaMax[h] = e.KuehlSollwert;
@@ -988,16 +1379,19 @@ namespace WindowsFormsApplication1
             // Konstante; "aus" ist +unendlich - die Zone schwingt dort nach oben frei (E32). Die
             // stuendliche Pruefung theta_K(h) >= theta_H(h) + 1 K tritt dann an die Stelle der
             // Pruefung gegen den hoechsten Sollwert (F17).
-            double[] kuehlReihe = e.KuehlungWirksam
-                ? konditionierung?.Reihe(Konditionierungsgroesse.Kuehlsoll)
-                : null;
+            double[] kuehlReihe = e.KuehlungWirksam ? kuehlkalenderReihe : null;
             if (kuehlReihe != null)
             {
                 e.ThetaMax = kuehlReihe;
+                e.KuehlkalenderWirksam = true;
                 e.KuehlpruefungStuendlich();
+                e.KuehlNachtwertAufloesen(gebaeude);
+                // Stufe KP1b (Konzept 3.6): die Auslegungsraumtemperatur der Kaelte folgt der
+                // Reihe - der niedrigste wirksame endliche Kuehlsollwert statt der Konstante.
+                e.KuehlauslegungAufloesen();
             }
 
-            if (e.KopplungWirksam)
+            if (e.KopplungWirksam && !e.Mehrzonenweg)
                 e.KopplungAufloesen(gebaeude, aequivalentN, vorlaufAnlageC, nennleistungSkalierung);
 
             // Kälteseite (E37): unabhängig vom Heizkreis, nur mit wirksamer Kühlung (E32), dem
@@ -1005,10 +1399,26 @@ namespace WindowsFormsApplication1
             e.KuehluebergabeAktiv = gebaeude.Kuehluebergabe_Aktiv;
             e.KuehlUebergabeArt = gebaeude.Kuehl_Uebergabe_Art;
             bool kuehlKopplung = Kuehluebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung, kuehlbetrieb);
-            e.KuehlKopplungWirksam = kuehlKopplung && !e.Mehrzonenweg;
-            if (e.KuehlKopplungWirksam)
+            // Entwurf KK (KZ1, Festlegungen 14-16; E106 Q-KK-7 (a)): die Kühlübergabe je Zone im Mehrzonenweg ab AK1 -
+            // aufgelöst erst, wenn alle Zonen stehen (ZonenKuehlkopplungAufloesen).
+            bool kuehlImVorlaufIdeal = false;
+            bool zonenkuehlung = e.Mehrzonenweg;
+            e.KuehlKopplungWirksam = zonenkuehlung
+                ? e.ZonenKuehlkopplungVormerken(gebaeude, anlagenkopplung, kuehlbetrieb, zone, out kuehlImVorlaufIdeal)
+                : kuehlKopplung && !e.Mehrzonenweg;
+            if (e.KuehlKopplungWirksam && !e.Mehrzonenweg)
+            {
                 e.KuehlKopplungAufloesen(gebaeude, kuehlVorlaufAnlageC, nennleistungSkalierung);
-            e.KopplungAlsIdealeLast = e.Mehrzonenweg && e.IstBeheizt && (kopplung || (kuehlKopplung && e.KuehlungWirksam));
+                // Entwurf KK (Schritt KK1): die Kühlkurve nur mit Stufe AK3 und Kuehlkurve_Aktiv;
+                // sonst bleibt die konstante Reihe des festen Vorlaufs (Festlegung 1).
+                if (gebaeude.Kuehlkurve_Aktiv && Ak3Kernstufe.Wirksam(anlagenkopplung))
+                    e.KuehlkurveAufloesen(gebaeude, kuehlVorlaufAnlageC);
+            }
+            // Im Mehrzonenweg bleibt die Kälteseite ideal (A4 (a)); die Wärmeseite nur im adiabaten
+            // Vorlauf der 4-K-Regel (E63).
+            e.KopplungAlsIdealeLast = e.Mehrzonenweg && e.IstBeheizt
+                                      && (kopplungImVorlaufIdeal
+                                          || (zonenkuehlung ? kuehlImVorlaufIdeal : kuehlKopplung && e.KuehlungWirksam));
             return e;
         }
 
@@ -1245,8 +1655,10 @@ namespace WindowsFormsApplication1
 
             // 8.4: am Auslegungspunkt Außenluft und Fenster bei θ_out,N ohne Strahlung, das
             // Erdreich mit seinem Tagesmittel am Auslegungstag, der unbeheizte Raum bei der
-            // Kellertemperatur — die Gewichte dieselben wie in der Stundenreihe.
-            return (tag, aN) =>
+            // Kellertemperatur — die Gewichte dieselben wie in der Stundenreihe. Der Zähler der
+            // Außenglieder steht für sich (Entwurf KP3, B4): Die Nachbarform hängt die Nachbarglieder
+            // dahinter wie ZonenEingang.ThetaEq; die Außenform teilt ihn wie bisher.
+            Func<int, double, double> zaehlerN = (tag, aN) =>
             {
                 double summe = 0.0;
                 foreach (Glied g in glieder)
@@ -1268,8 +1680,10 @@ namespace WindowsFormsApplication1
                     }
                     summe += g.UA_WK * theta;
                 }
-                return uaSumme > 0.0 ? summe / uaSumme : aN;
+                return summe;
             };
+            _aequivalentZaehlerN = zaehlerN;
+            return (tag, aN) => uaSumme > 0.0 ? zaehlerN(tag, aN) / uaSumme : aN;
         }
 
         // =====================================================================
@@ -1302,7 +1716,9 @@ namespace WindowsFormsApplication1
 
             double vN = g.Auslegung_Vorlauf ?? Waermeuebergabe.VorgabeVorlaufC(art);
             double rN = g.Auslegung_Ruecklauf ?? Waermeuebergabe.VorgabeRuecklaufC(art);
-            double iN = g.Auslegung_Raumtemperatur ?? SollTag;
+            // 3.6: Ohne Heizkalender ist AuslegungsraumtemperaturHeizC Zeichen für Zeichen SollTag;
+            // mit ihm der höchste endliche Heizsollwert der Nutzungszeit.
+            double iN = g.Auslegung_Raumtemperatur ?? AuslegungsraumtemperaturHeizC;
             if (g.Auslegung_Vorlauf.HasValue)
                 Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF, vN,
                         GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX);
@@ -1350,9 +1766,13 @@ namespace WindowsFormsApplication1
             // der Hülle der Zone) bei aN und iN, ohne solare und innere Lasten; die Grundfläche
             // bzw. das Erdreich am Auslegungstag, die Fenster und opaken Flächen ohne Strahlung
             // (benannte Festlegung). Ein Aufruf des Lösers.
+            //
+            // Stufe KP1b (Konzept 3.6): Mit Lüftungskalender trägt die Auslegung den höchsten
+            // UNBEDINGTEN Luftwechsel der Nutzungszeit — R_ext führt nur das Jahresminimum, der
+            // Rest läuft als Zusatzleitwert. OHNE Lüftungskalender steht hier wörtlich die
+            // Aufrufzeile des Bestands, ohne zweites Argument (N1.61 Nr. 11).
             double eqN = aequivalentN(auslegungstag, aN);
-            AuslegungsheizlastW = new Zonenmodell2K(Parameter, Bezeichnung)
-                .StationaereHeizlastW(iN, aN, eqN, HeizungStrahlungsanteil);
+            AuslegungsheizlastW = StationaereLastW(iN, aN, eqN);
 
             // H7: Die Nennleistung gilt dem wirklichen Gebäude. Fest eingetragen wird sie auf den
             // Katalogbau umgerechnet; leer ist sie die Auslegungsheizlast des Katalogbaus - nach
@@ -1402,6 +1822,341 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        //  Wärmeübergabe je Zone im Mehrzonenweg (E63, AK1z)
+        // =====================================================================
+
+        /// <summary>Der Heizkreis des Gebäudes, an dem diese gekoppelte Zone hängt (E63); <c>null</c> außerhalb des gekoppelten Mehrzonenwegs.</summary>
+        internal Gebaeudeheizkreis Gebaeudeheizkreis { get; private set; }
+
+        /// <summary>
+        /// <b>Löst die Wärmeübergabe der Zonen eines gekoppelten Mehrzonengebäudes auf</b> (E63, AK1z;
+        /// Schritt H je Zone am gemeinsamen Vorlauf) — gerufen von <see cref="ZonenEingang.Bauen"/>, wenn
+        /// alle Zonen stehen und bevor die Aufheizrampen gesetzt sind:
+        /// <list type="number">
+        /// <item><b>Gebäude, einmal:</b> Art, Exponent, Auslegungspunkt, Proportionalband, Heizkurve und
+        /// Auslegungsaußentemperatur mit den Prüfregeln des Einzonenwegs (9.1, 9.5). Die
+        /// Auslegungsraumtemperatur des Gebäudes ist das Feld, sonst die höchste der beheizten Zonen.</item>
+        /// <item><b>Auslegungsheizlast</b> des Gebäudes: Summe der stationären Lasten der beheizten Zonen
+        /// (8.4) — jede Zone an ihrer Auslegungsraumtemperatur, die Nachbarn in der Nachbarform fest:
+        /// beheizte an ihrer Auslegungsraumtemperatur, unbeheizte an der Auslegungsaußentemperatur
+        /// (benannte Festlegung, auf der sicheren Seite). Die Nennleistung des Gebäudes ist das Feld (kW →
+        /// W; Skalierungsfaktor 1, Festlegung 11), sonst diese Summe.</item>
+        /// <item><b>Vorlauf, einmal:</b> Heizkurve je Stunde am höchsten Heizsollwert der gekoppelten Zonen,
+        /// sonst der feste Vorlauf (Anlage, sonst Auslegungsvorlauf des Gebäudes) — dieselbe Reihe für jede Zone.</item>
+        /// <item><b>Je gekoppelte Zone</b> die Kaskade <see cref="Zonenuebergabevorgaben.Aufloesen"/>, die
+        /// Bänder und die Kette Vorlauf &gt; Rücklauf &gt; Raum (Fehler mit Zonenbezeichner), der
+        /// Strahlungsanteil der Art (H12, nur ohne Zonen- und Gebäudewert) und die Kennwerte.</item>
+        /// </list>
+        /// Eine Zone mit IDEAL rechnet den Bestandsweg; sie zählt in die Auslegungslast und in den
+        /// Flächenschlüssel, trägt aber keinen Heizkreis.
+        /// </summary>
+        /// <returns>Der Heizkreis des Gebäudes; <c>null</c> ohne gekoppelte Zone.</returns>
+        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.UebergabeUngueltig"/>, benannt.</exception>
+        internal static Gebaeudeheizkreis ZonenkopplungAufloesen(ProjektGebaeudeModel g, IReadOnlyList<ZonenEingang> zonen,
+                                                                double vorlaufAnlageC)
+        {
+            if (g == null) throw new ArgumentNullException(nameof(g));
+            if (zonen == null) throw new ArgumentNullException(nameof(zonen));
+            GebaeudeModellEingang erste = null;
+            foreach (ZonenEingang z in zonen)
+                if (z.Eingang.KopplungWirksam) { erste = z.Eingang; break; }
+            if (erste == null) return null;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            int n = zonen.Count;
+
+            // ---- 1. die Werte des Gebäudes (wie KopplungAufloesen) ----
+            string art = g.Uebergabe_Art;
+            if (!Waermeuebergabe.ArtBekannt(art))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABEART_UNBEKANNT, art));
+            double nG = g.Uebergabe_Exponent ?? Waermeuebergabe.VorgabeExponent(art);
+            erste.Bereich(GebaeudeSchema.SPALTE_UEBERGABE_EXPONENT, nG,
+                          GebaeudeFestwerte.UEBERGABE_EXPONENT_MIN, GebaeudeFestwerte.UEBERGABE_EXPONENT_MAX);
+            double vG = g.Auslegung_Vorlauf ?? Waermeuebergabe.VorgabeVorlaufC(art);
+            double rG = g.Auslegung_Ruecklauf ?? Waermeuebergabe.VorgabeRuecklaufC(art);
+            double iMax = double.NegativeInfinity;
+            foreach (ZonenEingang z in zonen)
+                if (z.IstBeheizt && z.Eingang.AuslegungsraumtemperaturHeizC > iMax) iMax = z.Eingang.AuslegungsraumtemperaturHeizC;
+            double iG = g.Auslegung_Raumtemperatur ?? iMax;
+            if (g.Auslegung_Vorlauf.HasValue)
+                erste.Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF, vG,
+                              GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX);
+            if (g.Auslegung_Raumtemperatur.HasValue)
+                erste.Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR, iG,
+                              GebaeudeFestwerte.AUSLEGUNG_RAUM_MIN, GebaeudeFestwerte.AUSLEGUNG_RAUM_MAX);
+            if (!Endlich(vG) || !Endlich(iG) || !(vG > iG))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(k, MyResource.Resource.SIMENG_AK_VORLAUF_UNTER_RAUM, Text(vG), Text(iG)));
+            if (!Endlich(rG) || !(rG > iG) || !(rG < vG))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(k, MyResource.Resource.SIMENG_AK_RUECKLAUF_AUSSERHALB, Text(rG), Text(iG), Text(vG)));
+            double xpG = g.Regler_Proportionalband ?? GebaeudeFestwerte.VORGABE_REGLER_PROPORTIONALBAND_K;
+            erste.Bereich(GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND, xpG,
+                          GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K);
+            double niveau = g.Heizkurve_Niveau ?? GebaeudeFestwerte.VORGABE_HEIZKURVE_NIVEAU_K;
+            double steilheit = g.Heizkurve_Steilheit ?? GebaeudeFestwerte.VORGABE_HEIZKURVE_STEILHEIT;
+            erste.Bereich(GebaeudeSchema.SPALTE_HEIZKURVE_NIVEAU, niveau,
+                          GebaeudeFestwerte.HEIZKURVE_NIVEAU_MIN, GebaeudeFestwerte.HEIZKURVE_NIVEAU_MAX);
+            erste.Bereich(GebaeudeSchema.SPALTE_HEIZKURVE_STEILHEIT, steilheit,
+                          GebaeudeFestwerte.HEIZKURVE_STEILHEIT_MIN, GebaeudeFestwerte.HEIZKURVE_STEILHEIT_MAX);
+            int auslegungstag = KaeltesterTag(erste.ThetaOut, out double kaeltestesMittel);
+            double aN = g.Auslegung_Aussentemperatur ?? Math.Floor(kaeltestesMittel);
+            if (g.Auslegung_Aussentemperatur.HasValue)
+                erste.Bereich(GebaeudeSchema.SPALTE_AUSLEGUNG_AUSSENTEMPERATUR, aN,
+                              GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MIN, GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MAX);
+            if (!Endlich(aN) || !(aN < iG))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(k, MyResource.Resource.SIMENG_AK_AUSSEN_NICHT_UNTER_RAUM, Text(aN), Text(iG)));
+
+            // ---- 2. je Zone: Kaskade, Strahlungsanteil (H12), Bemessungstemperatur ----
+            var eingaben = new List<Zoneneingaben>(n);
+            foreach (ZonenEingang z in zonen) eingaben.Add(z.Eingang.Zone.EingabenOderNutzflaeche());
+            Gebaeudeuebergabe gu = Gebaeudeuebergabe.Aus(g);
+            var u = new Zonenuebergabe[n];
+            var anteil = new double[n];
+            var luftN = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                GebaeudeModellEingang e = zonen[i].Eingang;
+                if (!e.IstBeheizt)
+                {
+                    luftN[i] = aN;
+                    continue;
+                }
+                anteil[i] = Zonenuebergabevorgaben.FlaechenanteilBeheizt(eingaben[i], eingaben);
+                u[i] = Zonenuebergabevorgaben.Aufloesen(eingaben[i], gu, e.AuslegungsraumtemperaturHeizC, double.NaN, anteil[i]);
+                if (e.KopplungWirksam && u[i].Ideal)
+                    e.FehlerZone(string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABEART_UNBEKANNT, e.UebergabeArt));
+                luftN[i] = e.KopplungWirksam ? u[i].AuslegungRaumtemperaturC : e.AuslegungsraumtemperaturHeizC;
+                if (e.KopplungWirksam && eingaben[i].HeizungStrahlungsanteil == null && !g.Heizung_Strahlungsanteil.HasValue)
+                    e.HeizungStrahlungsanteil = Waermeuebergabe.VorgabeStrahlungsanteil(u[i].Art);
+            }
+
+            // ---- 3. die Auslegungsheizlast: Summe der stationären Lasten der beheizten Zonen (8.4) ----
+            var lastW = new double[n];
+            double summeW = 0.0;
+            for (int i = 0; i < n; i++)
+            {
+                if (!zonen[i].IstBeheizt) continue;
+                lastW[i] = zonen[i].Eingang.StationaereAuslegungW(zonen[i], auslegungstag, aN, luftN[i], luftN);
+                summeW += lastW[i];
+            }
+            double phiG;
+            bool hergeleitet;
+            if (g.Uebergabe_Leistung_Nenn.HasValue)
+            {
+                double wertKw = g.Uebergabe_Leistung_Nenn.Value;
+                if (!(wertKw > 0.0))
+                    erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                                 string.Format(k, MyResource.Resource.SIMENG_AK_NENNLEISTUNG_UNGUELTIG, Text(wertKw)));
+                phiG = double.IsPositiveInfinity(wertKw) ? double.PositiveInfinity : 1000.0 * wertKw;
+                hergeleitet = false;
+            }
+            else
+            {
+                if (!(summeW > 0.0) || !Endlich(summeW))
+                    erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                                 string.Format(k, MyResource.Resource.SIMENG_AK_AUSLEGUNGSHEIZLAST_NICHT_POSITIV,
+                                               Text(summeW), Text(aN), Text(iG)));
+                phiG = summeW;
+                hergeleitet = true;
+            }
+
+            // ---- 4. Heizkurve und Vorlauf, einmal (10.1) ----
+            var uebergabeG = new Uebergabekennwerte(phiG, nG, vG, rG, iG);
+            var kurve = new Heizkurve(uebergabeG, aN, niveau, steilheit);
+            bool kurveAktiv = g.Heizkurve_Aktiv;
+            Vorlaufquelle quelle;
+            double fest = double.NaN;
+            var vorlauf = new double[8760];
+            int ohneHeizung = 0;
+            bool profil = false;
+            foreach (ZonenEingang z in zonen) profil |= z.Eingang.KopplungWirksam && z.Eingang.SollwertprofilWirksam;
+            for (int h = 0; h < 8760; h++)
+            {
+                double soll = double.NegativeInfinity;
+                foreach (ZonenEingang z in zonen)
+                {
+                    if (!z.Eingang.KopplungWirksam) continue;
+                    double s = z.Eingang.ThetaSoll[h];
+                    if (Endlich(s) && s > soll) soll = s;
+                }
+                if (double.IsNegativeInfinity(soll)) ohneHeizung++;
+                vorlauf[h] = double.IsNegativeInfinity(soll) ? double.NaN : soll;
+            }
+            if (kurveAktiv)
+            {
+                quelle = Vorlaufquelle.Heizkurve;
+                for (int h = 0; h < 8760; h++)
+                    vorlauf[h] = double.IsNaN(vorlauf[h]) ? double.NaN : kurve.VorlaufC(vorlauf[h], erste.ThetaOut[h]);
+            }
+            else
+            {
+                bool anlage = Endlich(vorlaufAnlageC) && vorlaufAnlageC > 0.0;
+                quelle = anlage ? Vorlaufquelle.Anlage : Vorlaufquelle.Auslegung;
+                fest = anlage ? vorlaufAnlageC : vG;
+                for (int h = 0; h < 8760; h++) vorlauf[h] = fest;
+            }
+
+            var hk = new Gebaeudeheizkreis
+            {
+                UebergabeArt = art,
+                Uebergabe = uebergabeG,
+                NennleistungHergeleitet = hergeleitet,
+                AuslegungsheizlastW = summeW,
+                AuslegungAussentemperaturC = aN,
+                AuslegungAussentemperaturHergeleitet = !g.Auslegung_Aussentemperatur.HasValue,
+                ReglerbandK = xpG,
+                Heizkurve = kurve,
+                HeizkurveAktiv = kurveAktiv,
+                Vorlaufquelle = quelle,
+                VorlaufFestC = fest,
+                VorlaufC = vorlauf,
+                Strahlungsanteil = g.Heizung_Strahlungsanteil ?? Waermeuebergabe.VorgabeStrahlungsanteil(art),
+                StundenOhneHeizungH = ohneHeizung,
+                SollwertprofilWirksam = profil,
+            };
+
+            // ---- 5. je gekoppelte Zone: Prüfung und Kennwerte ----
+            for (int i = 0; i < n; i++)
+            {
+                GebaeudeModellEingang e = zonen[i].Eingang;
+                if (!e.KopplungWirksam) continue;
+                Zonenuebergabe z = u[i];
+                Zoneneingaben ze = eingaben[i];
+                if (z.NennleistungHerkunft == Vorgabeherkunft.GebaeudeAnteilig) z = z with { NennleistungW = phiG * anteil[i] };
+                e.BereichZone(GebaeudeSchema.SPALTE_UEBERGABE_EXPONENT, z.Exponent,
+                              GebaeudeFestwerte.UEBERGABE_EXPONENT_MIN, GebaeudeFestwerte.UEBERGABE_EXPONENT_MAX);
+                if (ze.AuslegungVorlaufC.HasValue || g.Auslegung_Vorlauf.HasValue)
+                    e.BereichZone(GebaeudeSchema.SPALTE_AUSLEGUNG_VORLAUF, z.AuslegungVorlaufC,
+                                  GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MIN, GebaeudeFestwerte.AUSLEGUNG_VORLAUF_MAX);
+                if (ze.AuslegungRaumtemperaturC.HasValue || g.Auslegung_Raumtemperatur.HasValue)
+                    e.BereichZone(GebaeudeSchema.SPALTE_AUSLEGUNG_RAUMTEMPERATUR, z.AuslegungRaumtemperaturC,
+                                  GebaeudeFestwerte.AUSLEGUNG_RAUM_MIN, GebaeudeFestwerte.AUSLEGUNG_RAUM_MAX);
+                double vN = z.AuslegungVorlaufC, rN = z.AuslegungRuecklaufC, iN = z.AuslegungRaumtemperaturC;
+                if (!Endlich(vN) || !Endlich(iN) || !(vN > iN))
+                    e.FehlerZone(string.Format(k, MyResource.Resource.SIMENG_AK_VORLAUF_UNTER_RAUM, Text(vN), Text(iN)));
+                if (!Endlich(rN) || !(rN > iN) || !(rN < vN))
+                    e.FehlerZone(string.Format(k, MyResource.Resource.SIMENG_AK_RUECKLAUF_AUSSERHALB, Text(rN), Text(iN), Text(vN)));
+                e.BereichZone(GebaeudeSchema.SPALTE_REGLER_PROPORTIONALBAND, z.ReglerProportionalbandK,
+                              GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MIN_K, GebaeudeFestwerte.REGLER_PROPORTIONALBAND_MAX_K);
+                if (!(z.NennleistungW > 0.0))
+                    e.FehlerZone(string.Format(k, MyResource.Resource.SIMENG_AK_NENNLEISTUNG_UNGUELTIG,
+                                               Text(ze.UebergabeLeistungNennKw ?? z.NennleistungW / 1000.0)));
+
+                e.UebergabeArt = z.Art;
+                e.Uebergabe = new Uebergabekennwerte(z.NennleistungW, z.Exponent, vN, rN, iN);
+                e.ReglerbandK = z.ReglerProportionalbandK;
+                e.UebergabeNennleistungHergeleitet = z.NennleistungHerkunft != Vorgabeherkunft.Zone && hergeleitet;
+                e.AuslegungsheizlastW = lastW[i];
+                e.AuslegungAussentemperaturC = aN;
+                e.AuslegungAussentemperaturHergeleitet = hk.AuslegungAussentemperaturHergeleitet;
+                e.Heizkurve = kurve;
+                e.HeizkurveAktiv = kurveAktiv;
+                e.Vorlaufquelle = quelle;
+                e.VorlaufFestC = fest;
+                e.VorlaufC = vorlauf;
+                e.Gebaeudeheizkreis = hk;
+            }
+            return hk;
+        }
+
+        /// <summary>
+        /// Die stationäre Auslegungslast DIESER Zone [W] (E63): an <paramref name="iN"/>, Außenluft
+        /// <paramref name="aN"/> am Auslegungstag, die Nachbarn fest an <paramref name="luftN"/> (Nachbarform
+        /// von θ_eq und Zuluft) — sonst dieselbe Bildung wie die Auslegungsheizlast des Einzonenwegs.
+        /// </summary>
+        private double StationaereAuslegungW(ZonenEingang zone, int tag, double aN, double iN, double[] luftN)
+        {
+            double eqN = zone.AequivalentN(tag, aN, luftN);
+            double zusatz = LueftungZusatzleitwertWK == null ? 0.0 : AuslegungZusatzleitwertWK;
+            double zuluft = zone.ZuluftN(aN, zusatz, luftN);
+            return StationaereLastW(iN, zuluft, eqN);
+        }
+
+        /// <summary>
+        /// <b>Die stationäre Last am Auslegungspunkt</b> [W] (8.4) — der eine Ausdruck der Auslegungsheizlast in
+        /// jedem Weg: Raumluft <paramref name="iN"/>, Zuluft <paramref name="zuluftC"/> (Einzone: die
+        /// Auslegungs-Außentemperatur), äquivalente Außentemperatur <paramref name="eqN"/>, ohne solare und
+        /// innere Lasten, mit dem Strahlungsanteil der Heizung und — mit Lüftungskalender — dem höchsten
+        /// unbedingten Zusatzleitwert der Nutzungszeit (KP1b, 3.6). Ohne Lüftungskalender die Aufrufzeile des
+        /// Bestands ohne zweites Argument (N1.61 Nr. 11).
+        /// </summary>
+        private double StationaereLastW(double iN, double zuluftC, double eqN)
+            => LueftungZusatzleitwertWK == null
+                ? new Zonenmodell2K(Parameter, Bezeichnung).StationaereHeizlastW(iN, zuluftC, eqN, HeizungStrahlungsanteil)
+                : new Zonenmodell2K(Parameter, Bezeichnung)
+                    .StationaereHeizlastW(iN, zuluftC, eqN, HeizungStrahlungsanteil, AuslegungZusatzleitwertWK);
+
+        /// <summary>
+        /// <b>Die Auslegungsheizlast Φ_HL je Zone</b> [W] — die eine Quelle der Auslegungsgröße (E60, Festlegung 41;
+        /// E97, Befund O2-B1), gerufen von der Aufheizplanung (<see cref="Aufheizzone.AusZonen"/>):
+        /// <list type="bullet">
+        /// <item><b>Mit wirksamer Anlagenkopplung</b> an einer Zone des Gebäudes die Zahl des Kopplungswegs
+        /// (<see cref="KopplungAufloesen"/>, <see cref="ZonenkopplungAufloesen"/>), unverändert.</item>
+        /// <item><b>Ohne Kopplung dieselbe Bildung</b> (<see cref="StationaereAuslegungW"/>, Schritt 3 von
+        /// <see cref="ZonenkopplungAufloesen"/>): Auslegungstag und Auslegungs-Außentemperatur wie dort — das Feld
+        /// des Gebäudes, sonst das kälteste Tagesmittel abgerundet (H10) —, jede beheizte Zone an ihrer
+        /// Auslegungsraumtemperatur (höchster Heizsollwert der Nutzungszeit, 3.6), so wie der Kopplungsweg eine
+        /// Zone ohne Übergabe führt; Nachbarn fest, unbeheizte an der Auslegungs-Außentemperatur (Festlegung 14 des
+        /// Kopplungswegs). Im Einzonenweg ist das Zeichen für Zeichen der Ausdruck aus
+        /// <see cref="KopplungAufloesen"/> (ohne Nachbarn ist die Zuluft die Außenluft).</item>
+        /// </list>
+        /// Ohne Kopplung lehnt die Bildung nicht ab — die Felder des Auslegungspunkts tragen den Lauf dort nicht:
+        /// Ein Feld außerhalb seiner Grenzen, eine Auslegungs-Außentemperatur nicht unter der Raumtemperatur oder
+        /// eine Last ≤ 0 ergibt NaN (keine Zahl, die Ergebniszeile bleibt NULL). Unbeheizte Zonen: NaN.
+        /// </summary>
+        internal static double[] Auslegungslasten(IReadOnlyList<ZonenEingang> zonen)
+        {
+            if (zonen == null) throw new ArgumentNullException(nameof(zonen));
+            int n = zonen.Count;
+            var lastW = new double[n];
+            bool gekoppelt = false;
+            for (int i = 0; i < n; i++)
+            {
+                lastW[i] = zonen[i].Eingang.AuslegungsheizlastW;
+                gekoppelt |= zonen[i].Eingang.KopplungWirksam;
+            }
+            if (n == 0 || gekoppelt) return lastW;
+
+            GebaeudeModellEingang erste = zonen[0].Eingang;
+            int tag = KaeltesterTag(erste.ThetaOut, out double kaeltestesMittel);
+            double? feld = erste.AuslegungAussentemperaturFeldC;
+            double aN = feld ?? Math.Floor(kaeltestesMittel);
+            if (!Endlich(aN)
+                || (feld.HasValue && (aN < GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MIN || aN > GebaeudeFestwerte.AUSLEGUNG_AUSSEN_MAX)))
+                return lastW;
+
+            var luftN = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                double iN = zonen[i].Eingang.AuslegungsraumtemperaturHeizC;
+                luftN[i] = zonen[i].IstBeheizt && Endlich(iN) ? iN : aN;
+            }
+            for (int i = 0; i < n; i++)
+            {
+                double iN = zonen[i].Eingang.AuslegungsraumtemperaturHeizC;
+                if (!zonen[i].IstBeheizt || !Endlich(iN) || !(aN < iN)) continue;
+                double w = zonen[i].Eingang.StationaereAuslegungW(zonen[i], tag, aN, iN, luftN);
+                if (w > 0.0 && Endlich(w)) lastW[i] = w;
+            }
+            return lastW;
+        }
+
+        /// <summary>Harte Prüfregel eines Werts der Zone (E63): benannter Fehler mit Zonenbezeichner.</summary>
+        private void BereichZone(string spalte, double wert, double min, double max)
+        {
+            if (!Endlich(wert) || wert < min || wert > max)
+                FehlerZone(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK_WERT_AUSSERHALB,
+                                         spalte, Text(wert), Text(min), Text(max)));
+        }
+
+        /// <summary>Der Fehler der Übergabe einer Zone (E63): „Gebäude, Zone …: Text".</summary>
+        private void FehlerZone(string text)
+            => throw new GebaeudeModellException(GebaeudeModellFehler.UebergabeUngueltig,
+                                                 Bezeichnung + ", " + GebaeudeZonenabbildung.Wer(Zone.Bezeichnung) + ": " + text);
+
+        // =====================================================================
         //  Kälteseite der Kopplung (E37; Anlagenkopplung 7.2, 8.1, 8.4, 10.5)
         // =====================================================================
 
@@ -1441,7 +2196,9 @@ namespace WindowsFormsApplication1
 
             double vN = g.Kuehl_Auslegung_Vorlauf ?? Kuehluebergabe.VorgabeVorlaufC(art);
             double rN = g.Kuehl_Auslegung_Ruecklauf ?? Kuehluebergabe.VorgabeRuecklaufC(art);
-            double iN = g.Kuehl_Auslegung_Raumtemperatur ?? KuehlSollwert;
+            // 3.6: Ohne Kühlkalender ist AuslegungsraumtemperaturKuehlC Zeichen für Zeichen
+            // KuehlSollwert; mit ihm der niedrigste wirksame endliche Kühlsollwert der Reihe.
+            double iN = g.Kuehl_Auslegung_Raumtemperatur ?? AuslegungsraumtemperaturKuehlC;
             if (g.Kuehl_Auslegung_Vorlauf.HasValue)
                 Bereich(GebaeudeSchema.SPALTE_KUEHL_AUSLEGUNG_VORLAUF, vN,
                         GebaeudeFestwerte.KUEHL_VORLAUF_MIN, GebaeudeFestwerte.KUEHL_VORLAUF_MAX);
@@ -1479,7 +2236,11 @@ namespace WindowsFormsApplication1
             KuehlVorlaufquelle = anlage ? Vorlaufquelle.Anlage : Vorlaufquelle.Auslegung;
             KuehlVorlaufQuelleC = anlage ? kuehlVorlaufAnlageC : vN;
             KuehlVorlaufGekappt = Endlich(grenze) && KuehlVorlaufQuelleC < grenze;
-            KuehlVorlaufC = KuehlVorlaufGekappt ? grenze : KuehlVorlaufQuelleC;
+            KuehlVorlaufFestC = KuehlVorlaufGekappt ? grenze : KuehlVorlaufQuelleC;
+            // Entwurf KK (KK1): der Vorlauf als Jahresreihe; ohne Kühlkurve konstant = der feste Vorlauf.
+            var reihe = new double[8760];
+            for (int h = 0; h < 8760; h++) reihe[h] = KuehlVorlaufFestC;
+            KuehlVorlaufC = reihe;
 
             // Die Nennleistung (sensibel). Fest eingetragen gilt sie dem wirklichen Gebäude und
             // wird auf den Katalogbau umgerechnet (H7); leer kommt sie aus dem Auslegungstag (A2).
@@ -1504,13 +2265,54 @@ namespace WindowsFormsApplication1
                 if (!(AuslegungskuehllastW > 0.0) || !Endlich(AuslegungskuehllastW))
                     Fehler(GebaeudeModellFehler.UebergabeUngueltig,
                            string.Format(k, MyResource.Resource.SIMENG_AK_AUSLEGUNGSKUEHLLAST_NICHT_POSITIV,
-                                         TagText(tag, k), Text(AuslegungskuehllastW), Text(KuehlSollwert)));
+                                         TagText(tag, k), Text(AuslegungskuehllastW),
+                                         Text(AuslegungsraumtemperaturKuehlC)));
                 phiN = AuslegungskuehllastW;
                 KuehlNennleistungHergeleitet = true;
             }
 
             KuehlUebergabe = new Uebergabekennwerte(phiN, n, vN, rN, iN);
             KuehlUebergabeGespiegelt = Kuehluebergabe.Gespiegelt(phiN, n, vN, rN, iN);
+        }
+
+        /// <summary>
+        /// <b>Die Kühlkurve des Gebäudes</b> (Entwurf KK, 2.1; Festlegungen 2–5, 7), nach <see cref="KuehlKopplungAufloesen"/>:
+        /// Fußpunkt aus <c>Kuehlkurve_Fusspunkt</c> oder, leer, der Auslegungsrücklauf der Kühlübergabe (kälter als der
+        /// Auslegungsvorlauf: geklemmt, Fußpunktregel); Auslegungspunkt der Auslegungsvorlauf bei der Auslegungs-Außentemperatur
+        /// nach <c>Kuehlkurve_Auslegung_Weg</c> (E107, Vorgabe wärmstes Tagesmittel, mindestens Kühlsollwert + Spanne); unten die
+        /// Vorlaufgrenze, kälter als die Anlage nie (Mischgruppe, wie der feste Vorlauf). Die Reihe wird einmal gerechnet,
+        /// am Kühlsollwert der Stunde (<see cref="ThetaMax"/>); der feste Vorlauf entfällt (NaN), wie auf der Heizseite.
+        /// </summary>
+        private void KuehlkurveAufloesen(ProjektGebaeudeModel g, double kuehlVorlaufAnlageC)
+        {
+            double fuss = g.Kuehlkurve_Fusspunkt ?? KuehlUebergabe.AuslegungRuecklaufC;
+            if (g.Kuehlkurve_Fusspunkt.HasValue)
+                Bereich(Kuehlkurve.SPALTE_FUSSPUNKT, fuss, GebaeudeFestwerte.KUEHL_VORLAUF_MIN, GebaeudeFestwerte.KUEHL_VORLAUF_MAX);
+            double kK = g.Kuehlkurve_Raumeinfluss ?? 0.0;
+            if (g.Kuehlkurve_Raumeinfluss.HasValue)
+                Bereich(Kuehlkurve.SPALTE_RAUMEINFLUSS, kK,
+                        GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MIN, GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MAX);
+            KuehlkurveRaumeinflussKK = kK;
+
+            // E107: der Auslegungsweg (leer = wärmstes Tagesmittel, mindestens Kühlsollwert + Mindestspanne); ein
+            // unbekannter Weg bricht ab, ein Rückfall des Wegs „eingabe“ und die Fußpunktregel melden sich im Lauf.
+            if (!Kuehlkurve.WegBekannt(g.Kuehlkurve_Auslegung_Weg))
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK_KUEHLKURVE_WEG_UNBEKANNT,
+                                     g.Kuehlkurve_Auslegung_Weg));
+            Kuehlkurve = Kuehlkurve.Bilden(fuss, KuehlUebergabe.AuslegungVorlaufC, KuehlVorlaufgrenzeC,
+                                           g.Kuehlkurve_Auslegung_Weg, g.Kuehlkurve_Auslegung_Aussen, KuehlSollwert, ThetaOut);
+            double erzeuger = Endlich(kuehlVorlaufAnlageC) ? kuehlVorlaufAnlageC : double.NaN;
+            KuehlkurveErzeugerC = erzeuger;
+            var reihe = new double[8760];
+            var anGrenze = new bool[8760];
+            for (int h = 0; h < 8760; h++)
+                reihe[h] = Kuehlkurve.VorlaufC(ThetaMax[h], ThetaOut[h], erzeuger, out anGrenze[h]);
+            KuehlVorlaufC = reihe;
+            KuehlVorlaufAnGrenze = anGrenze;
+            KuehlVorlaufFestC = double.NaN;
+            KuehlVorlaufGekappt = false;
+            KuehlkurveWirksam = true;
         }
 
         /// <summary>
@@ -1526,11 +2328,14 @@ namespace WindowsFormsApplication1
         private double Auslegungskuehllast(out int tag, out double tagesmittelC)
         {
             tag = WaermsterTag(ThetaOut, out tagesmittelC);
+            // 3.6: Ohne Kühlkalender ist AuslegungsraumtemperaturKuehlC Zeichen für Zeichen
+            // KuehlSollwert; mit ihm der niedrigste wirksame endliche Kühlsollwert der Reihe.
+            double iN = AuslegungsraumtemperaturKuehlC;
             Uebergabekennwerte unbegrenzt = Kuehluebergabe.Gespiegelt(double.PositiveInfinity, 1.0,
                                                                         AUSLEGUNGSTAG_KALTWASSER_C, AUSLEGUNGSTAG_KALTWASSER_C + 1.0,
-                                                                        KuehlSollwert);
+                                                                        iN);
             var modell = new Zonenmodell2K(Parameter, Bezeichnung);
-            modell.Zuruecksetzen(KuehlSollwert);
+            modell.Zuruecksetzen(iN);
             double spitze = 0.0, spitzeVor = double.NaN;
             for (int w = 0; w < AUSLEGUNGSTAG_WIEDERHOLUNGEN_MAX; w++)
             {
@@ -1538,7 +2343,7 @@ namespace WindowsFormsApplication1
                 for (int s = 0; s < 24; s++)
                 {
                     int h = tag * 24 + s;
-                    var r = new Stundenrand(ThetaOut[h], ThetaEq[h], double.NaN, KuehlSollwert,
+                    var r = new Stundenrand(ThetaOut[h], ThetaEq[h], double.NaN, iN,
                                             PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                             reglerbandK: 0.0,
                                             kuehlUebergabeGespiegelt: unbegrenzt,
@@ -1712,30 +2517,59 @@ namespace WindowsFormsApplication1
         /// sie gelten —, und eine gesetzte Kühlleistungsgrenze muss größer null sein. Ohne
         /// wirksame Kühlung ist die obere Grenze +∞ (Entscheid E32): Der Löser kühlt nicht, das
         /// Gebäude läuft frei, und es entsteht keine Kühlreihe.
+        ///
+        /// <para><b>Mit Kühlkalender entfällt die konstante Prüfung</b> (Stufe KP1b, G6): Dann tritt
+        /// <see cref="KuehlpruefungStuendlich"/> an ihre Stelle (F17, Konzept 3.6) — die konstante
+        /// Prüfung gegen den höchsten Heizsollwert des ganzen Fahrplans lehnte sonst einen gültigen
+        /// Kalender ab, dessen Kühlsollwert nur in anderen Stunden tiefer liegt als jener Höchstwert.
+        /// Die Leistungsgrenze bleibt in jedem Fall geprüft.</para>
         /// </summary>
-        private void KuehlungAufloesen(ProjektGebaeudeModel g, bool kuehlbetrieb)
+        /// <param name="kuehlkalender">Gilt ein Kühlkalender? Dann prüft nur die stündliche Regel.</param>
+        private void KuehlungAufloesen(ProjektGebaeudeModel g, bool kuehlbetrieb, bool kuehlkalender)
         {
-            KuehlungWirksam = kuehlbetrieb && g.Kuehlung_Aktiv && g.Kuehl_Sollwert.HasValue;
+            // DIE VERERBUNG DER KÜHLWERTE EINER ZONE (KU3-3, E67/E68; Kühlkonzept 3.5, 7.1; Mehrzonenkonzept 4.2),
+            // in dieser Reihenfolge:
+            //  1. Der Projektschalter Tab_Einstellungen.Kuehlbetrieb steht über allem: ohne ihn kühlt keine Zone.
+            //  2. Der Schalter: Tab_Zone.Kuehlung_Aktiv, NULL = Tab_Gebaeude.Kuehlung_Aktiv. Eine 0 an der Zone
+            //     schaltet sie aus, auch wenn das Gebäude kühlt; eine 1 schaltet sie ein, auch wenn es nicht kühlt.
+            //  3. Der Sollwert: Tab_Zone.Kuehl_Sollwert, NULL = der des Gebäudes; ohne beide ist die Kühlung aus
+            //     (F-K1). Der Nachtwert ebenso (Tab_Zone.Kuehl_Sollwert_Nacht, NULL = der des Gebäudes) — wirksam
+            //     wird er nur über den Kühlkalender (R14).
+            //  4. Die Grenze: Tab_Zone.Kuehlleistung_Max, sonst ab zwei Zonen der Flächenanteil der Gebäudegrenze
+            //     (Festlegung 5), sonst die Gebäudegrenze, sonst unbegrenzt.
+            //  5. Der Kühlkalender: Führt die Zone eine eigene Kühlzeile (Matrix oder Kalender), gilt ihre Reihe
+            //     (Konditionierungdatenweg mit idZone), sonst die des Gebäudes, sonst die Konstante aus 3.
+            //  Eine unbeheizte Zone schwingt frei (FreiSchwingend) — sie kühlt nie.
+            // Ohne Zone (Klassenweg) gelten die Spalten des Gebäudes; ohne eigene Werte der Zone ist jeder
+            // Wert der des Gebäudes, also bitgleich wie vorher.
+            bool aktiv = Vorgaben?.KuehlungAktiv ?? g.Kuehlung_Aktiv;
+            double? sollwert = Vorgaben != null ? Vorgaben.KuehlSollwert.Wert : g.Kuehl_Sollwert;
+            KuehlungWirksam = kuehlbetrieb && aktiv && sollwert.HasValue;
             if (!KuehlungWirksam)
             {
                 KuehlSollwert = double.PositiveInfinity;
+                AuslegungsraumtemperaturKuehlC = KuehlSollwert;
                 KuehlleistungMaxW = double.NaN;
                 return;
             }
 
-            double soll = g.Kuehl_Sollwert.Value;
+            double soll = sollwert.Value;
             double heizMax = double.NegativeInfinity;
             for (int h = 0; h < ThetaSoll.Length; h++)
                 if (Endlich(ThetaSoll[h]) && ThetaSoll[h] > heizMax) heizMax = ThetaSoll[h];
 
-            if (!Endlich(soll) || (Endlich(heizMax) && !(soll >= heizMax + GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K)))
+            if (!kuehlkalender
+                && (!Endlich(soll) || (Endlich(heizMax) && !(soll >= heizMax + GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K))))
                 Fehler(GebaeudeModellFehler.KuehlsollwertUnterHeizsollwert,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT,
                                   Text(soll), Text(heizMax), Text(GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K)));
             KuehlSollwert = soll;
+            // Stufe KP1b (Konzept 3.6): der Bestandswert der Kaelteauslegung; mit Kuehlkalender
+            // tritt der niedrigste wirksame endliche Sollwert der Reihe an seine Stelle.
+            AuslegungsraumtemperaturKuehlC = soll;
 
             KuehlleistungMaxW = double.NaN;
-            // Ab zwei Zonen die anteilige Grenze der Zone (Festlegung 5), sonst die des Gebäudes.
+            // Die Grenze der Zone (eigener Wert, KU3-3, oder ab zwei Zonen anteilig, Festlegung 5), sonst die des Gebäudes.
             double? grenzeKw = _kuehlgrenzeZoneKw ?? g.Kuehlleistung_Max;
             if (grenzeKw.HasValue)
             {
@@ -1752,9 +2586,17 @@ namespace WindowsFormsApplication1
         /// Klimareihen und ohne Ersatzparameter. Grundlage von <see cref="Bauen"/> und von
         /// <see cref="ErsatzparameterRC.AusKlassenweg"/>.
         /// </summary>
+        /// <param name="heizkalender">
+        /// Gilt ein Heizkalender (Stufe KP1b)? Dann stellt <see cref="Daten"/> die Prüfung F21
+        /// zurück: Sie liefe hier <b>vor</b> dem Kalender und hielte die Maximalraumtemperatur gegen
+        /// <see cref="SollTag"/>; <see cref="Bauen"/> prüft sie nach dem Einsetzen der Reihe gegen
+        /// deren höchsten Heizsollwert der Nutzungszeit (Konzept 3.6). <b>Ohne Heizkalender bleibt
+        /// jede Zeile dieser Methode wörtlich, wie sie war</b> — für jeden anderen Aufrufer ändert
+        /// sich nichts.
+        /// </param>
         /// <exception cref="GebaeudeModellException">bei einer verletzten Prüfung des Fahrplans,
         /// der Fensterflächen oder eines Modellparameters.</exception>
-        internal static GebaeudeModellEingang Daten(ProjektGebaeudeModel g)
+        internal static GebaeudeModellEingang Daten(ProjektGebaeudeModel g, bool heizkalender = false)
         {
             if (g == null) throw new ArgumentNullException(nameof(g));
 
@@ -1775,6 +2617,8 @@ namespace WindowsFormsApplication1
                 A_Fenster_M2 = g.gesamte_Fensterflaeche,
                 A_Dach_M2 = g.Dachflaeche,
                 A_Grund_M2 = g.Grundflaeche,
+                ErdreichUmfangFeld_M = g.Abmessung_Anschluß_Außenwand_Kellerdecke,
+                ErdreichUVorgabe_WM2K = g.Erdreich_U_Wirksam ?? double.NaN,
                 A_Sonstige_M2 = g.Sonstige_Flaechen,
                 A_FensterSued_M2 = g.Fensterflaeche_Sued,
                 A_FensterNord_M2 = g.Fensterflaeche_Nord,
@@ -1791,6 +2635,7 @@ namespace WindowsFormsApplication1
                 Innenflaechenfaktor = g.Innenflaechenfaktor ?? GebaeudeFestwerte.VORGABE_INNENFLAECHENFAKTOR,
                 HeizungStrahlungsanteil = g.Heizung_Strahlungsanteil ?? GebaeudeFestwerte.VORGABE_HEIZUNG_STRAHLUNGSANTEIL,
                 HeizleistungMaxW = g.Heizleistung_Max.HasValue ? 1000.0 * g.Heizleistung_Max.Value : double.NaN,
+                AufheizzeitManuellH = g.Aufheizzeit_Manuell_H,
                 GrundRandbedingung = string.IsNullOrEmpty(g.Grundflaeche_Randbedingung)
                     ? DbWerte.GRUND_ERDREICH : g.Grundflaeche_Randbedingung,
                 Kellertemperatur = g.Kellertemperatur ?? GebaeudeFestwerte.VORGABE_KELLERTEMPERATUR,
@@ -1806,6 +2651,11 @@ namespace WindowsFormsApplication1
                 e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Infiltration " + Text(nInf) + " 1/h ist nicht größer null.");
             if (g.Luftwechsel_Nutzer is double nNutz && (!Endlich(nNutz) || nNutz < 0.0))
                 e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Nutzerlüftung " + Text(nNutz) + " 1/h ist negativ oder nicht endlich.");
+            // E59: die manuelle Aufheizzeit nur im Bereich der Pruefklausel (1 bis 47 h).
+            if (g.Aufheizzeit_Manuell_H is int tManuell &&
+                (tManuell < AufheizManuellSchema.MANUELL_MIN_H || tManuell > AufheizManuellSchema.MANUELL_MAX_H))
+                e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die manuelle Aufheizzeit " +
+                         tManuell.ToString(CultureInfo.InvariantCulture) + " h liegt nicht zwischen 1 und 47 h.");
             e.SommerlueftungBilden();
 
             // Ost/West: die NULL-Vorgabe aus dem Bestandsfeld bildet der Vorbereitungsschritt.
@@ -1818,7 +2668,11 @@ namespace WindowsFormsApplication1
                         + g.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke * g.Abmessung_Anschluß_Außenwand_Kellerdecke;
             e.SummePsiL_WK = psiL;
 
-            e.Pruefen(g);
+            // Stufe KP1b (Konzept 3.6): der Bestandswert der Auslegungsraumtemperatur; mit
+            // Heizkalender tritt der hoechste endliche Heizsollwert der Nutzungszeit an seine Stelle.
+            e.AuslegungsraumtemperaturHeizC = e.SollTag;
+
+            e.Pruefen(g, !heizkalender);
             e.NachtzeitAufloesen(g);
             e.Ferientage = Ferienfahrplan(g, e.Bezeichnung);
             return e;
@@ -1831,13 +2685,82 @@ namespace WindowsFormsApplication1
         /// <c>LueftungZusatzleitwertWK == null</c> gibt genau
         /// <c>sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0</c> zurück, ohne Maximum und ohne
         /// Vergleich — der Referenzlauf bleibt byte-gleich.
+        ///
+        /// <para>Auch die Zulufttemperatur gekoppelter Zonen nimmt diesen Wert
+        /// (<see cref="ZonenEingang.ThetaLue"/>, Stufe KP1b, G3): Der Löser rechnet
+        /// (g_ext + Z)·θ_Lue, Zähler und Nenner müssen also denselben Zusatzleitwert tragen, sonst
+        /// käme der Kalenderüberschuss mit Mischluft statt mit Außenluft herein.</para>
         /// </summary>
-        private double ZusatzleitwertWK(int h, bool sommerlueftung)
+        internal double ZusatzleitwertWK(int h, bool sommerlueftung)
         {
             double sommer = sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0;
             if (LueftungZusatzleitwertWK == null) return sommer;
             double kalender = LueftungZusatzleitwertWK[h];
             return kalender > sommer ? kalender : sommer;
+        }
+
+        /// <summary>
+        /// <b>Der Zusatzleitwert einer Stunde mit Nachtauskühlung</b> [W/K] (Stufe KP1b, Konzept
+        /// 3.7): max(Sommerlüftung, L_u(h) + L_b(h)) — der unbedingte Anteil des Lüftungskalenders
+        /// gilt immer, der bedingte nur, wenn die Regel der Nachtauskühlung eingeschaltet ist; von
+        /// Sommerlüftung und Lüftung gewinnt der größere Luftwechsel.
+        ///
+        /// <para><b>Ohne Nachtauskühlung steht hier wörtlich der Bestandsausdruck:</b> Der Zweig
+        /// <c>NachtauskuehlungWK == null</c> ruft genau
+        /// <see cref="ZusatzleitwertWK(int, bool)"/> — dieselbe Zahl wie in KP1a, ohne zweite
+        /// Addition und ohne zweiten Vergleich (N1.61 Nr. 11).</para>
+        /// </summary>
+        internal double ZusatzleitwertWK(int h, bool sommerlueftung, bool nachtauskuehlung)
+        {
+            if (NachtauskuehlungWK == null) return ZusatzleitwertWK(h, sommerlueftung);
+            double sommer = sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0;
+            double kalender = (LueftungZusatzleitwertWK == null ? 0.0 : LueftungZusatzleitwertWK[h])
+                              + (nachtauskuehlung ? NachtauskuehlungWK[h] : 0.0);
+            return kalender > sommer ? kalender : sommer;
+        }
+
+        /// <summary>
+        /// <b>Zählt die Stunde <paramref name="h"/> als Nachtauskühlstunde?</b> (Konzept 3.7): Die
+        /// Regel ist an <em>und</em> es gibt in dieser Stunde einen bedingten Anteil — gleich,
+        /// welcher Luftwechsel am Ende gewinnt. Ohne Nachtauskühlung immer <c>false</c>.
+        /// </summary>
+        internal bool Nachtauskuehlstunde(int h, bool nachtauskuehlung)
+            => nachtauskuehlung && NachtauskuehlungWK != null && NachtauskuehlungWK[h] > 0.0;
+
+        /// <summary>
+        /// <b>Der Startwert einer unbeheizten Zone</b> [°C] (N1.56 Festlegung 7, Konzept 3.6): das
+        /// Mittel der äquivalenten Außentemperatur θ_eq über die Vorlaufstunden ab
+        /// <paramref name="start"/>. Er gilt auch einer beheizten Zone, deren Heizsollwert in der
+        /// ersten Vorlaufstunde „aus" (NaN) ist — ein NaN als Startzustand wäre ein Abbruch.
+        /// </summary>
+        internal double StartwertUnbeheiztC(int start)
+        {
+            double summe = 0.0;
+            for (int h = start; h < 8760; h++) summe += ThetaEq[h];
+            return summe / (8760 - start);
+        }
+
+        /// <summary>
+        /// <b>Der Kühl-Nachtwert, den erst der Kalender wirksam macht</b> (R14): Ohne
+        /// Konditionierungszeile rechnet der Bestandszweig mit der Konstante
+        /// <c>Kuehl_Sollwert</c>, und <c>Kuehl_Sollwert_Nacht</c> bleibt wirkungslos; mit
+        /// abgeleitetem Kühlkalender trägt die Reihe den Nachtwert. Gezählt werden die Stunden, in
+        /// denen die Reihe genau ihn führt — nur wenn er gesetzt ist und vom Tagwert abweicht.
+        /// </summary>
+        private void KuehlNachtwertAufloesen(ProjektGebaeudeModel g)
+        {
+            // KU3-3: an einer Zone die Werte der Kaskade (Zone, sonst Gebäude).
+            double? nacht = Vorgaben != null ? Vorgaben.KuehlSollwertNacht.Wert : g.Kuehl_Sollwert_Nacht;
+            double? tag = Vorgaben != null ? Vorgaben.KuehlSollwert.Wert : g.Kuehl_Sollwert;
+            if (!nacht.HasValue || !Endlich(nacht.Value)) return;
+            double wert = nacht.Value;
+            if (!tag.HasValue || wert == tag.Value) return;
+            int n = 0;
+            for (int h = 0; h < ThetaMax.Length; h++)
+                if (ThetaMax[h] == wert) n++;
+            if (n == 0) return;
+            KuehlNachtwertStundenH = n;
+            KuehlNachtwertC = wert;
         }
 
         /// <summary>
@@ -1860,14 +2783,41 @@ namespace WindowsFormsApplication1
             double[] nutzer = satz.Reihe(Konditionierungsgroesse.Lueftung);
             if (nutzer != null)
             {
-                // Die Infiltration bleibt konstant darunter (F15); ohne Angabe ist sie 0.
-                double infiltration = Konditionierung.Kalender(Konditionierungsgroesse.Lueftung).Nennwert
-                                      ?? 0.0;
+                // Die Infiltration bleibt konstant darunter (F15); ohne Angabe ist sie 0. Sie kommt
+                // aus der Matrixzelle Lueftung/NENNWERT (Konzept 3.1, 3.3, N1.61 Nr. 14), NICHT aus
+                // dem Kalender: Ein Lueftungskalender fuehrt keinen Nennwert, sein Konstruktor lehnt
+                // ihn ab - der frueh gelesene Kalenderwert war deshalb immer leer und die
+                // Infiltration fiel im Kalenderweg auf 0 (Befund R2).
+                double infiltration = Konditionierung.InfiltrationH ?? 0.0;
+
+                // Stufe KP1b (Konzept 3.7, P9 b): Geteilt wird die NUTZERREIHE, bevor die
+                // Infiltration dazukommt - die Infiltration ist nie bedingt (F15). In den Stunden
+                // des Nachtfensters ist max(0, n(h) - n_T) bedingt, der Rest unbedingt; ohne
+                // Nachtauskuehlvorgabe und ohne Tagwert gibt es keinen bedingten Anteil, und die
+                // Schleife rechnet Zeichen fuer Zeichen den Bestandsausdruck.
+                Nachtauskuehlung = satz.Nachtauskuehlung;
+                bool bedingtMoeglich = Nachtauskuehlung != null && Nachtauskuehlung.TraegtBedingtes;
+                NachtauskuehlungOhneTagwert = Nachtauskuehlung != null && !Nachtauskuehlung.TraegtBedingtes;
+                double tagwert = bedingtMoeglich ? Nachtauskuehlung.TagwertH.Value : 0.0;
+
                 var gesamt = new double[8760];
+                var bedingt = bedingtMoeglich ? new double[8760] : null;
+                bool bedingtWirksam = false;
                 double min = double.PositiveInfinity;
                 for (int h = 0; h < 8760; h++)
                 {
-                    double n = infiltration + nutzer[h];
+                    double unbedingt = nutzer[h];
+                    if (bedingtMoeglich && Nachtauskuehlung.Fenster.IstNacht(h))
+                    {
+                        double ueber = unbedingt - tagwert;
+                        if (ueber > 0.0)
+                        {
+                            bedingt[h] = ueber;
+                            unbedingt = tagwert;
+                            bedingtWirksam = true;
+                        }
+                    }
+                    double n = infiltration + unbedingt;
                     if (!Endlich(n) || n < 0.0)
                         Fehler(GebaeudeModellFehler.KalenderUngueltig,
                                "Der Luftwechsel " + Text(n) + " 1/h in Stunde " +
@@ -1886,6 +2836,18 @@ namespace WindowsFormsApplication1
                     double zusatzN = gesamt[h] - min;
                     LueftungZusatzleitwertWK[h] = zusatzN > 0.0 ? zusatzN * LuftwechselBezug() : 0.0;
                 }
+                // Stufe KP1b (Konzept 3.6): die Auslegungsheizlast traegt den hoechsten UNBEDINGTEN
+                // Luftwechsel der Nutzungszeit, nicht das Jahresminimum von R_ext.
+                AuslegungslueftungAufloesen();
+
+                // Der bedingte Anteil als zweiter Leitwert - nur, wenn es ihn in wenigstens einer
+                // Stunde gibt (sonst keine Regel und keine Zaehlung, Konzept 3.7).
+                if (bedingtWirksam)
+                {
+                    NachtauskuehlungWK = new double[8760];
+                    for (int h = 0; h < 8760; h++)
+                        NachtauskuehlungWK[h] = bedingt[h] > 0.0 ? bedingt[h] * LuftwechselBezug() : 0.0;
+                }
             }
 
             // ---- Geräte und Personen: die Lasten je Stunde statt der Konstante ----
@@ -1898,6 +2860,106 @@ namespace WindowsFormsApplication1
                     InnereGewinneReihe_W[h] = (geraete != null ? geraete[h] : InnereGewinne_W)
                                               + (personen != null ? personen[h] : 0.0);
             }
+
+            NutzungsmaskeBilden(satz);
+        }
+
+        /// <summary>
+        /// <b>Die Auslegungswerte des Heizkalenders</b> (Konzept 3.6, F21): der höchste
+        /// <b>endliche</b> Heizsollwert der Nutzungszeit. Er tritt an die Stelle von
+        /// <see cref="SollTag"/> — als Auslegungsraumtemperatur der Übergabe und als Grenze, über
+        /// der die Maximalraumtemperatur liegen muss.
+        ///
+        /// <para>Die Nutzungszeit ist hier die <b>Nachtzeit</b> des Gebäudes
+        /// (<see cref="Nutzungszeit(int)"/>), nicht die Maske des Personenkalenders: Die Auslegung
+        /// folgt dem Fahrplan, nicht der Anwesenheit — F16 wirkt allein in den Kennzahlen.</para>
+        ///
+        /// <para><b>Ohne eine endliche Nutzungsstunde</b> (jede Nutzungsstunde „aus") bleibt der
+        /// Bestandswert stehen und die Prüfung F21 entfällt: Es gibt keinen Heizsollwert, gegen den
+        /// sie hielte.</para>
+        /// </summary>
+        /// <returns><c>true</c>, wenn es eine endliche Nutzungsstunde gab und der Wert ersetzt wurde.</returns>
+        private bool HeizauslegungAufloesen()
+        {
+            double hoechster = double.NegativeInfinity;
+            for (int h = 0; h < ThetaSoll.Length; h++)
+                if (Nutzungszeit(h) && Endlich(ThetaSoll[h]) && ThetaSoll[h] > hoechster) hoechster = ThetaSoll[h];
+            if (!Endlich(hoechster)) return false;
+            AuslegungsraumtemperaturHeizC = hoechster;
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Die Auslegungsraumtemperatur der Kälte aus dem Kühlkalender</b> (Konzept 3.6): der
+        /// niedrigste <b>wirksame endliche</b> Kühlsollwert der Reihe — „aus" (+∞) ist keine
+        /// wirksame Kühlung und kommt nicht in Betracht. Ohne eine endliche Stunde bleibt der
+        /// Bestandswert stehen.
+        /// </summary>
+        private void KuehlauslegungAufloesen()
+        {
+            double niedrigster = double.PositiveInfinity;
+            for (int h = 0; h < ThetaMax.Length; h++)
+                if (Endlich(ThetaMax[h]) && ThetaMax[h] < niedrigster) niedrigster = ThetaMax[h];
+            if (!Endlich(niedrigster)) return;
+            AuslegungsraumtemperaturKuehlC = niedrigster;
+        }
+
+        /// <summary>
+        /// <b>Der höchste unbedingte Zusatzleitwert der Nutzungszeit</b> [W/K] (Konzept 3.6): das
+        /// Maximum von <see cref="LueftungZusatzleitwertWK"/> über die Nutzungsstunden. Der bedingte
+        /// Anteil der Nachtauskühlung bleibt außen vor — er steht in
+        /// <see cref="NachtauskuehlungWK"/> und wird hier nicht addiert.
+        /// </summary>
+        private void AuslegungslueftungAufloesen()
+        {
+            double hoechster = 0.0;
+            for (int h = 0; h < LueftungZusatzleitwertWK.Length; h++)
+                if (Nutzungszeit(h) && LueftungZusatzleitwertWK[h] > hoechster) hoechster = LueftungZusatzleitwertWK[h];
+            AuslegungZusatzleitwertWK = hoechster;
+        }
+
+        /// <summary>
+        /// <b>Die Prüfung F21 gegen den Heizkalender</b> (Konzept 3.6, 9.1 F21): Die
+        /// Maximalraumtemperatur muss über dem höchsten Heizsollwert der Nutzungszeit liegen — mit
+        /// Heizkalender ist das <see cref="AuslegungsraumtemperaturHeizC"/> statt
+        /// <see cref="SollTag"/>. Ohne endliche Nutzungsstunde entfällt sie; ohne Heizkalender
+        /// prüft <see cref="Pruefen"/> wörtlich wie im Bestand.
+        /// </summary>
+        private void MaximalraumtemperaturPruefen()
+        {
+            if (ThetaMaxWert > AuslegungsraumtemperaturHeizC) return;
+            Fehler(GebaeudeModellFehler.SollwertfahrplanUngueltig,
+                "Die obere Raumtemperatur " + Text(ThetaMaxWert) + " °C liegt nicht über dem höchsten Heizsollwert " +
+                Text(AuslegungsraumtemperaturHeizC) + " °C der Nutzungszeit.");
+        }
+
+        /// <summary>
+        /// <b>Die Nutzungsmaske aus dem Personenkalender</b> (F16, Konzept 3.4): eine Stunde ist
+        /// Nutzungszeit, wenn die <b>Anwesenheit</b> über null liegt. Ohne Personenkalender bleibt
+        /// <see cref="Nutzungsmaske"/> <c>null</c> — dann gilt in den Kennzahlen wörtlich die
+        /// Nachtzeit wie bisher (Bauvorschrift der Byte-Gleichheit, N1.61 Nr. 11).
+        ///
+        /// <para><b>Ohne eine einzige Anwesenheitsstunde</b> bleibt sie ebenfalls leer, und der
+        /// Lauf sagt es (<see cref="NutzungsmaskeLeer"/>): Eine Maske ohne Stunde teilte die
+        /// mittlere Raumtemperatur durch null.</para>
+        ///
+        /// <para>Die Maske wirkt <b>allein in den Kennzahlen</b>. Der Sollwertfahrplan und
+        /// <see cref="Nutzungszeit(int)"/> bleiben an der Nachtzeit — sie entscheiden, wann der
+        /// Tagsollwert gilt, und das ist eine Frage des Fahrplans, nicht der Anwesenheit.</para>
+        /// </summary>
+        private void NutzungsmaskeBilden(Konditionierungssatz satz)
+        {
+            double[] anwesend = satz.Reihe(Konditionierungsgroesse.Personen);
+            if (anwesend == null) return;
+            var maske = new bool[8760];
+            bool eine = false;
+            for (int h = 0; h < 8760; h++)
+            {
+                maske[h] = anwesend[h] > 0.0;
+                if (maske[h]) eine = true;
+            }
+            if (!eine) { NutzungsmaskeLeer = true; return; }
+            Nutzungsmaske = maske;
         }
 
         /// <summary>
@@ -1935,7 +2997,12 @@ namespace WindowsFormsApplication1
         //  Prüfungen außerhalb des Klassenwegs (Konzept 4.8, Rechenschritte 1.1)
         // =====================================================================
 
-        private void Pruefen(ProjektGebaeudeModel g)
+        /// <param name="maximalraumtemperatur">
+        /// Die Prüfung F21 hier ausführen? <c>false</c> nur mit Heizkalender (Stufe KP1b): Dann
+        /// prüft <see cref="MaximalraumtemperaturPruefen"/> gegen die Reihe. Jede andere Prüfung
+        /// läuft unverändert.
+        /// </param>
+        private void Pruefen(ProjektGebaeudeModel g, bool maximalraumtemperatur = true)
         {
             if (!(g.Flaeche_Nutzer > 0.0) || double.IsInfinity(g.Flaeche_Nutzer))
                 Fehler(GebaeudeModellFehler.PflichtgroesseFehlt, "Die Fläche je Nutzer ist nicht größer null (" + Text(g.Flaeche_Nutzer) + " m²).");
@@ -1976,7 +3043,7 @@ namespace WindowsFormsApplication1
 
             if (!Endlich(SollTag) || !Endlich(SollNacht) || !Endlich(SollWochenende) || !Endlich(SollFerien) || !Endlich(ThetaMaxWert))
                 Fehler(GebaeudeModellFehler.SollwertfahrplanUngueltig, "Ein Sollwert ist nicht endlich.");
-            if (!(ThetaMaxWert > SollTag))
+            if (maximalraumtemperatur && !(ThetaMaxWert > SollTag))
                 Fehler(GebaeudeModellFehler.SollwertfahrplanUngueltig,
                     "Die obere Raumtemperatur " + Text(ThetaMaxWert) + " °C liegt nicht über dem Tagsollwert " + Text(SollTag) + " °C.");
         }

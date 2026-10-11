@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Einbindung einer Solarthermieanlage in einen geschichteten Pufferspeicher
+
+Inhalt: Das Kollektorfeld gibt seine Wärme über den Solarkreis (Solarstation mit Pumpe) an
+einen Wärmetauscher unten im Pufferspeicher ab. Die Nachheizung (Kessel oder Wärmepumpe)
+speist oben ein und hält nur den oberen Teil warm (Bereitschaftsteil). Warmwasserbereitung
+und Heizung entnehmen oben und geben ihren Rücklauf unten zurück.
+
+Annahmen: Der Speicher schichtet sauber, oben heiß und unten kalt; der Farbverlauf zeigt
+diese Schichtung. Die Temperaturen oben rund 60 °C und unten rund 25 °C sind Beispielwerte.
+Weil die Nachheizung ihren Rücklauf aus der Mitte holt, bleibt der untere Teil kalt und
+kann Sonnenwärme aufnehmen; die Solarpumpe läuft nur, wenn das Kollektorfeld wärmer ist als
+der Speicher unten.
+
+Darstellung: Vorlauf durchgezogen, Rücklauf gestrichelt in derselben Farbe, Pfeile in
+Fließrichtung. Farben nach Vorlage:Diagrammfarbe (solar, waerme, kessel, speicher).
+Prinzipbild mit gerundeten Beispielwerten, keinem Produkt zugeordnet.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs>
+  <linearGradient id="schichtung" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dba371"/><stop offset="0.3" stop-color="#e9c6a8"/><stop offset="0.6" stop-color="#f8ede4"/><stop offset="1" stop-color="#b3dde4"/></linearGradient>
+  <marker id="pfeil-1" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#b38600"/></marker>
+  <marker id="pfeil-2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="13" markerHeight="13" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#c56a1a"/></marker>
+</defs>
+  <rect x="1" y="1" width="898" height="598" rx="12" fill="#fcfcfb" stroke="#d0d7de" stroke-width="1"/>
+  <text x="28" y="38" font-size="18" fill="#1f2328" font-weight="600">Solarthermie mit geschichtetem Pufferspeicher</text>
+  <text x="28" y="61" font-size="14" fill="#57606a">Solare Beladung unten, Nachheizung oben, Entnahme oben und Rücklauf unten</text>
+  <!-- Kollektorfeld und Solarkreis -->
+  <text x="40" y="99" font-size="14" fill="#1f2328" font-weight="600">Kollektorfeld</text>
+  <path d="M56,110 L100,110 L84,158 L40,158 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M63.8,113 L49.8,155 M72.6,113 L58.6,155 M81.4,113 L67.4,155 M90.2,113 L76.2,155" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M106,110 L150,110 L134,158 L90,158 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M113.8,113 L99.8,155 M122.6,113 L108.6,155 M131.4,113 L117.4,155 M140.2,113 L126.2,155" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M156,110 L200,110 L184,158 L140,158 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M163.8,113 L149.8,155 M172.6,113 L158.6,155 M181.4,113 L167.4,155 M190.2,113 L176.2,155" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M206,110 L250,110 L234,158 L190,158 Z" fill="#f1e9d1" stroke="#b38600" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M213.8,113 L199.8,155 M222.6,113 L208.6,155 M231.4,113 L217.4,155 M240.2,113 L226.2,155" stroke="#b38600" stroke-width="1" fill="none"/>
+  <path d="M247,118 L310,118 L310,392 L353.5,392" fill="none" stroke="#b38600" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-1)"/>
+  <path d="M360,444 L140,444 L140,164.5" fill="none" stroke="#b38600" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5" marker-end="url(#pfeil-1)"/>
+  <circle cx="140" cy="300" r="9" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6"/>
+  <path d="M140,291 L147.8,304.5 L132.2,304.5 Z" fill="#57606a"/>
+  <text x="126" y="305" font-size="13" fill="#57606a" text-anchor="end">Solarstation</text>
+  <text x="240" y="470" font-size="13" fill="#57606a" text-anchor="middle">Wärmetauscher</text>
+  <text x="240" y="487" font-size="13" fill="#57606a" text-anchor="middle">unten im Speicher</text>
+  <!-- Geschichteter Pufferspeicher -->
+  <rect x="360" y="112" width="140" height="380" rx="70" ry="24" fill="url(#schichtung)" stroke="#7b4fa3" stroke-width="2"/>
+  <path d="M360,392 L452,392 L368,405 L452,418 L368,431 L452,444 L360,444" fill="none" stroke="#b38600" stroke-width="2" stroke-linejoin="round"/>
+  <text x="430" y="150" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">heiß</text>
+  <text x="430" y="167" font-size="13" fill="#1f2328" text-anchor="middle">rund 60 °C</text>
+  <path d="M366,258 L494,258" stroke="#57606a" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="430" y="249" font-size="13" fill="#1f2328" text-anchor="middle">Bereitschaftsteil</text>
+  <text x="430" y="277" font-size="13" fill="#1f2328" text-anchor="middle">Solarteil</text>
+  <text x="430" y="464" font-size="13" fill="#1f2328" text-anchor="middle" font-weight="600">kalt</text>
+  <text x="430" y="481" font-size="13" fill="#1f2328" text-anchor="middle">rund 25 °C</text>
+  <text x="430" y="516" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Pufferspeicher</text>
+  <!-- Nachheizung -->
+  <rect x="556" y="150" width="124" height="110" rx="8" fill="#f4eeec" stroke="#8c5a3c" stroke-width="2"/>
+  <text x="618" y="192.7" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Nachheizung</text>
+  <text x="618" y="209.7" font-size="13" fill="#57606a" text-anchor="middle">Kessel oder</text>
+  <text x="618" y="226.7" font-size="13" fill="#57606a" text-anchor="middle">Wärmepumpe</text>
+  <path d="M556,170 L506.5,170" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <path d="M500,244 L549.5,244" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5" marker-end="url(#pfeil-2)"/>
+  <circle cx="528" cy="244" r="9" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6"/>
+  <path d="M537,244 L523.5,251.8 L523.5,236.2 Z" fill="#57606a"/>
+  <!-- Entnahme oben: Warmwasser und Heizung -->
+  <path d="M430,112 L430,88 L700,88 L700,316 L709.5,316" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <path d="M700,216 L709.5,216" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" marker-end="url(#pfeil-2)"/>
+  <circle cx="700" cy="216" r="4" fill="#c56a1a"/>
+  <rect x="716" y="190" width="140" height="60" rx="8" fill="#f9f0e8" stroke="#c56a1a" stroke-width="2"/>
+  <text x="786" y="216.2" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Warmwasser</text>
+  <text x="786" y="233.2" font-size="13" fill="#57606a" text-anchor="middle">Frischwasserstation</text>
+  <rect x="716" y="290" width="140" height="60" rx="8" fill="#f9f0e8" stroke="#c56a1a" stroke-width="2"/>
+  <text x="786" y="316.2" font-size="14" fill="#1f2328" text-anchor="middle" font-weight="600">Heizung</text>
+  <text x="786" y="333.2" font-size="13" fill="#57606a" text-anchor="middle">Heizkreis</text>
+  <!-- Rücklauf unten -->
+  <path d="M856,230 L876,230 L876,462 L506.5,462" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5" marker-end="url(#pfeil-2)"/>
+  <path d="M786,350 L786,462" fill="none" stroke="#c56a1a" stroke-width="3" stroke-linejoin="round" stroke-dasharray="8 5"/>
+  <circle cx="786" cy="462" r="4" fill="#c56a1a"/>
+  <!-- Legende -->
+  <path d="M28,550 L58,550" stroke="#c56a1a" stroke-width="3"/>
+  <text x="66" y="554.5" font-size="13" fill="#57606a">Vorlauf</text>
+  <path d="M140.8,550 L171.8,550" stroke="#c56a1a" stroke-width="3" stroke-dasharray="8 5"/>
+  <text x="179.8" y="554.5" font-size="13" fill="#57606a">Rücklauf</text>
+  <path d="M262.1,550 L292.1,550" stroke="#b38600" stroke-width="3"/>
+  <text x="300.1" y="554.5" font-size="13" fill="#57606a">Solarkreis Vorlauf</text>
+  <path d="M457.8,550 L488.8,550" stroke="#b38600" stroke-width="3" stroke-dasharray="8 5"/>
+  <text x="496.8" y="554.5" font-size="13" fill="#57606a">Solarkreis Rücklauf</text>
+  <circle cx="671.1" cy="550" r="9" fill="#fcfcfb" stroke="#57606a" stroke-width="1.6"/>
+  <path d="M680.1,550 L666.6,557.8 L666.6,542.2 Z" fill="#57606a"/>
+  <text x="688.1" y="554.5" font-size="13" fill="#57606a">Pumpe</text>
+  <text x="28" y="582" font-size="13" fill="#57606a">Prinzipbild · Beispielwerte, gerundet</text>
+</svg>

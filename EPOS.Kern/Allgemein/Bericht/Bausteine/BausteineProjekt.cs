@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
 
@@ -56,8 +57,20 @@ namespace WindowsFormsApplication1
 
                     // Stufe G6a: die Zonen dieses Gebaeudes - der Abschnitt entfaellt ohne Zonen;
                     // Stufe G6b: mit den Zonenzeilen des Laufs (Tab_ErgebnisZone, E30).
-                    ZonentabelleSchreiben(k, stamm.Details, g,
-                                          ErgebnisZonen(stamm, (int)(ProjektDetails.D(g, "ID") ?? 0)));
+                    // AK1z (E63): mit dem Heizkreis je Zone, wenn eine Zone gekoppelt gerechnet hat.
+                    int idGebaeude = (int)(ProjektDetails.D(g, "ID") ?? 0);
+
+                    // KP3 Welle O3a (B19, Teilkonzept 7.6): die Kurzform der Konditionierung je Groesse mit dem Namen der
+                    // uebernommenen Vorlage - nur fuer ein Gebaeude mit eigener Angabe; sonst bleibt der Abschnitt, wie er war.
+                    if (stamm.Details.Konditionierung != null &&
+                        stamm.Details.Konditionierung.TryGetValue(idGebaeude, out Konditionierungsstand kond))
+                    {
+                        List<(string Beschriftung, string Text)> kurz = Aufheizbericht.Konditionierung(kond, k.Kultur);
+                        if (kurz.Count > 0) k.Eigenschaften(kurz.SelectMany(x => new[] { x.Beschriftung, x.Text }).ToArray());
+                    }
+
+                    ZonentabelleSchreiben(k, stamm.Details, g, ErgebnisZonen(stamm, idGebaeude),
+                                          GebaeudeZeilen(stamm).FirstOrDefault(x => x.ID_Gebaeude == idGebaeude));
                 }
             }
 
@@ -83,6 +96,37 @@ namespace WindowsFormsApplication1
                 // Gesamtdeckungsgrad verdeckt: ob die Auslegung Warmwasser und Prozess
                 // ebenso trägt wie die Heizung. Ein Kanal ohne Bedarf erscheint als „—" —
                 // ein Deckungsgrad ohne Bedarf ist keine 0, sondern undefiniert.
+                // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - nur, wenn ein Prozess ein
+                // Temperaturpaar trägt; sonst bleibt die Tafel, wie sie war.
+                if (stamm.Details != null && stamm.Details.ProzessVorlaufMax != null && stamm.Details.ProzessRuecklaufMin != null)
+                    k.Eigenschaften(
+                        "Temperaturniveau Prozesswärme",
+                        k.F(stamm.Details.ProzessVorlaufMax.Value, 0) + " / " +
+                        k.F(stamm.Details.ProzessRuecklaufMin.Value, 0) + " °C");
+
+                // BW4: Netzverluste je Kanal und die Zirkulation des Bestandswegs - nur, wenn das
+                // Projekt sie fuehrt; sonst bleibt die Tafel, wie sie war.
+                Netzverlustvorgabe nv = stamm.Details?.Netzkanaele;
+                if (nv != null && nv.JeKanal)
+                    k.Eigenschaften(
+                        "Netzverluste Heizung", NetzKanalWert(k, nv.HeizungWert, nv.HeizungEinheit),
+                        "Netzverluste Brauchwasser", NetzKanalWert(k, nv.BrauchwasserWert, nv.BrauchwasserEinheit),
+                        "Netzverluste Prozesswärme", NetzKanalWert(k, nv.ProzessWert, nv.ProzessEinheit));
+                if (nv != null && nv.MitZirkulation && !stamm.Details.Zapfprofilweg)
+                    k.Eigenschaften(
+                        "Zirkulation Brauchwasser",
+                        k.F(nv.ZirkulationLeistungKw.Value, 1) + " kW · " + k.F(nv.ZirkulationLaufzeitHd.Value, 1) +
+                        " h/d = " + k.F(Energieeinheit.MWh.AusKWh(nv.ZirkulationJahresKwh), 1) + " MWh/a");
+
+                // BW5: die thermische Desinfektion - nur, wenn das Projekt sie fuehrt.
+                Desinfektionsvorgabe dv = stamm.Details?.Desinfektion;
+                if (dv != null && dv.Aktiv)
+                    k.Eigenschaften(
+                        "Thermische Desinfektion",
+                        k.F(dv.IntervallWirksam, 0) + " d · " + k.F(dv.StundeWirksam, 0) + " h · " +
+                        k.F(stamm.Details.DesinfektionVolumenL, 0) + " l · " + k.F(dv.ZielWirksamC, 0) + " °C = " +
+                        k.F(stamm.Details.DesinfektionMwh, 2) + " MWh/a");
+
                 k.Ueberschrift2("Deckungsgrade je Bedarfsart");
                 k.Eigenschaften(
                     "Deckungsgrad Heizung", DeckungWert(k, stamm, "energie.deckung_heizung"),
@@ -100,6 +144,28 @@ namespace WindowsFormsApplication1
 
             // PAKET P2 (Konzept 7.4): die Speichertemperaturen des Schichtmodells.
             SpeichertemperaturenSchreiben(k, stamm);
+
+            // Pufferspeicher-Auslegung P3: die gespeicherten Auslegungen des Stamms.
+            PufferauslegungSchreiben(k, stamm);
+
+            // KU3-4d: die Kältespeicher des Stamms.
+            KaeltespeicherSchreiben(k, stamm);
+        }
+
+        /// <summary>Der Platzhalter der Kältespeichertafel (<c>{{tabelle.kaeltespeicher}}</c>, Katalog v12, KU3-4d).</summary>
+        internal const string PLATZHALTER_KAELTESPEICHER = "tabelle.kaeltespeicher";
+
+        /// <summary>
+        /// <b>Die Kältespeicher</b> (KU3-4d, E68): je Kältespeicher eine Zeile mit Kapazität, Ladung, Entladung, Wärmeeintrag
+        /// und Vollzyklen — dieselbe Tafel wie <c>{{tabelle.kaeltespeicher}}</c>. Der Abschnitt entfällt ohne Kältespeicher
+        /// und, wenn die Vorlage die Tafel selbst setzt.
+        /// </summary>
+        internal static void KaeltespeicherSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            if (Berichtstabellen.KaeltespeicherDesStamms(stamm).Count == 0) return;
+            if (k.Vorlagenfelder != null && k.Vorlagenfelder.Contains(PLATZHALTER_KAELTESPEICHER)) return;
+            k.Ueberschrift2("Kältespeicher");
+            k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Kaeltespeicher(stamm, BerichtTexte.Englisch, k.Kultur)));
         }
 
         /// <summary>Überschrift des Abschnitts (E30) — zugleich Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
@@ -107,6 +173,26 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zeile über der Zonentabelle eines Gebäudes (G6a) — zugleich Schlüssel der Übersetzung.</summary>
         internal const string UEBERSCHRIFT_ZONEN = "Zonen";
+
+        /// <summary>Die Zeile über der Kältetabelle der Zonen (KU3-3) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_ZONEN_KAELTE = "Kältebedarf je Zone";
+
+        /// <summary>Kopf der Kältespalte der Zonen (KU3-3) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string SPALTE_ZONEN_KAELTE = "Kältebedarf [MWh/a]";
+
+        /// <summary>Kopf der Spalte Kältespitze der Zonen (Schritt 185) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string SPALTE_ZONEN_KAELTESPITZE = "Kältespitze [kW]";
+
+        /// <summary>Kopf der Spalte Kühlstunden der Zonen (Schritt 185) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string SPALTE_ZONEN_KUEHLSTUNDEN = "Kühlstunden [h/a]";
+
+        /// <summary>
+        /// Der Hinweis unter der Kältetabelle der Zonen (KU3-3, K6): Summe der Zonen, nicht saldiert. Der Bericht
+        /// liest das gespeicherte Ergebnis — Kältebedarf, Kältespitze und Kühlstunden je Zone (Schritt 185); die
+        /// Summenzeile summiert nur den Kältebedarf. Zugleich Schlüssel der Übersetzung.
+        /// </summary>
+        internal const string HINWEIS_ZONEN_KAELTE =
+            "Die Gebäudesumme ist die Summe der Zonen; Heizen und Kühlen verschiedener Zonen in derselben Stunde werden nicht gegeneinander verrechnet.";
 
         /// <summary>Der Hinweis unter der Zonentabelle, wenn ein Volumen abgeleitet ist — zugleich Schlüssel der Übersetzung.</summary>
         internal const string HINWEIS_ZONENVOLUMEN = "* Volumen aus Nutzfläche × Raumhöhe abgeleitet.";
@@ -132,17 +218,27 @@ namespace WindowsFormsApplication1
         /// unbeheizte Zone und eine Zone ohne Zeile zeigen „—". Die Summenzeile summiert die Heizwärme,
         /// die Spitzen nicht (sie treten nicht gleichzeitig auf). Ohne Zonenzeilen bleibt die Tabelle,
         /// wie sie ist. Der Abschnitt entfällt ohne Zonen.
+        /// <para><b>Wärmeübergabe je Zone (AK1z, E63):</b> Hat mindestens eine Zone gekoppelt gerechnet
+        /// (<see cref="ErgebnisZoneModel.VorlaufMittelC"/> gesetzt), kommen Vorlauf- und Rücklaufmittel und
+        /// die Stunden mit begrenzender Übergabe dazu — „—" bei idealer oder unbeheizter Zone. Die Summenzeile
+        /// trägt Vorlauf und Rücklauf des Gebäudekreises (<paramref name="gebaeudeErgebnis"/>) und als
+        /// begrenzte Stunden das Maximum der Zonen. Die Zeilensumme der Breiten bleibt die der Vorlage.</para>
         /// </summary>
         private static void ZonentabelleSchreiben(WordKontext k, ProjektDetails details, DataRow gebaeude,
-                                                  List<ErgebnisZoneModel> ergebnis)
+                                                  List<ErgebnisZoneModel> ergebnis,
+                                                  ErgebnisGebaeudeModel gebaeudeErgebnis = null)
         {
             if (details == null || gebaeude == null) return;
             List<ZoneModel> zonen = details.ZonenVon((int)(ProjektDetails.D(gebaeude, "ID") ?? 0));
             if (zonen.Count == 0) return;
             bool mitErgebnis = ergebnis != null && ergebnis.Count > 0;
+            bool mitUebergabe = mitErgebnis && ergebnis.Any(e => e.VorlaufMittelC.HasValue);
 
             k.Text(UEBERSCHRIFT_ZONEN);
-            int[] w = mitErgebnis
+            // Die Zeilensumme bleibt in allen drei Formen 9355 (Breite der Vorlage).
+            int[] w = mitUebergabe
+                ? new[] { 1255, 800, 700, 700, 700, 600, 650, 850, 700, 650, 650, 1100 }
+                : mitErgebnis
                 ? new[] { 1755, 1000, 950, 950, 950, 850, 850, 1100, 950 }
                 : new[] { 2355, 1500, 1500, 1400, 1400, 1200 };
             Table t = k.NeueTabelle(w);
@@ -159,6 +255,12 @@ namespace WindowsFormsApplication1
                 kopf.Append(k.Zelle("Heizwärme [MWh/a]", w[7], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
                 kopf.Append(k.Zelle("Spitze [kW]", w[8], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
             }
+            if (mitUebergabe)
+            {
+                kopf.Append(k.Zelle("Vorlauf Mittel [°C]", w[9], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle("Rücklauf Mittel [°C]", w[10], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle("Übergabe begrenzt [h/a]", w[11], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            }
             t.Append(kopf);
 
             double heizwaerme = 0.0;
@@ -166,6 +268,7 @@ namespace WindowsFormsApplication1
             double flaeche = 0.0, volumen = 0.0, ht = 0.0, hve = 0.0;
             bool flaecheBekannt = true, volumenBekannt = true, abgeleitet = false;
             int bauteile = 0;
+            double? begrenztMax = null;
             foreach (ZoneModel z in zonen)
             {
                 Zonenkennwerte kw = details.Kennwerte(z, gebaeude);
@@ -184,6 +287,13 @@ namespace WindowsFormsApplication1
                     tr.Append(k.Zelle(ez?.HeizwaermeMwh is double q ? k.F(q, 1) : "—", w[7], false, null, JustificationValues.Right));
                     tr.Append(k.Zelle(ez?.SpitzeKw is double p ? k.F(p, 1) : "—", w[8], false, null, JustificationValues.Right));
                     if (ez?.HeizwaermeMwh is double s) { heizwaerme += s; heizwaermeDa = true; }
+                    if (mitUebergabe)
+                    {
+                        tr.Append(k.Zelle(ez?.VorlaufMittelC is double vl ? k.F(vl, 1) : "—", w[9], false, null, JustificationValues.Right));
+                        tr.Append(k.Zelle(ez?.RuecklaufMittelC is double rl ? k.F(rl, 1) : "—", w[10], false, null, JustificationValues.Right));
+                        tr.Append(k.Zelle(ez?.UebergabeBegrenztH is double bh ? k.F(bh, 0) : "—", w[11], false, null, JustificationValues.Right));
+                        if (ez?.UebergabeBegrenztH is double b) begrenztMax = Math.Max(begrenztMax ?? b, b);
+                    }
                 }
                 t.Append(tr);
 
@@ -208,9 +318,68 @@ namespace WindowsFormsApplication1
                 summe.Append(k.Zelle(heizwaermeDa ? k.F(heizwaerme, 1) : "—", w[7], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
                 summe.Append(k.Zelle("—", w[8], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
             }
+            if (mitUebergabe)
+            {
+                // Vorlauf und Rücklauf als Gebäudewert (Mittel des Gebäudekreises), die Stunden als Maximum.
+                summe.Append(k.Zelle(gebaeudeErgebnis?.VorlaufMittelC is double gv ? k.F(gv, 1) : "—", w[9], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+                summe.Append(k.Zelle(gebaeudeErgebnis?.RuecklaufMittelC is double gr ? k.F(gr, 1) : "—", w[10], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+                summe.Append(k.Zelle(begrenztMax is double bm ? k.F(bm, 0) : "—", w[11], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            }
             t.Append(summe);
             k.Fuege(t);
             if (abgeleitet) k.Hinweis(HINWEIS_ZONENVOLUMEN);
+            if (mitErgebnis) ZonenkaelteSchreiben(k, zonen, ergebnis);
+        }
+
+        /// <summary>
+        /// <b>Der Kältebedarf je Zone</b> (KU3-3, Kühlkonzept F-K15): eine eigene kleine Tabelle unter der
+        /// Zonentabelle, nur wenn eine Zone mit wirksamer Kühlung gerechnet hat (<see cref="ErgebnisZoneModel.KuehlenergieMwh"/>
+        /// gesetzt, Muster E30) — sonst bleibt der Bericht, wie er war. „—" bei einer Zone ohne Kühlung; die
+        /// Summenzeile ist die Summe der Zonen.
+        /// </summary>
+        private static void ZonenkaelteSchreiben(WordKontext k, List<ZoneModel> zonen, List<ErgebnisZoneModel> ergebnis)
+        {
+            if (!ergebnis.Any(e => e.KuehlenergieMwh.HasValue)) return;
+            k.Text(UEBERSCHRIFT_ZONEN_KAELTE);
+            // Schritt 185: Spitze und Stunden je Zone, wenn der Lauf sie gespeichert hat (sonst die Tabelle wie zuvor).
+            bool mitSpitze = ergebnis.Any(e => e.KaeltespitzeKw.HasValue || e.KuehlstundenH.HasValue);
+            int[] w = mitSpitze ? new[] { 3355, 2000, 2000, 2000 } : new[] { 5355, 4000 };
+            Table t = k.NeueTabelle(w);
+            var kopf = new TableRow();
+            kopf.Append(k.Zelle("Zone", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            kopf.Append(k.Zelle(SPALTE_ZONEN_KAELTE, w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            if (mitSpitze)
+            {
+                kopf.Append(k.Zelle(SPALTE_ZONEN_KAELTESPITZE, w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(k.Zelle(SPALTE_ZONEN_KUEHLSTUNDEN, w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            }
+            t.Append(kopf);
+            double summe = 0.0;
+            foreach (ZoneModel z in zonen)
+            {
+                ErgebnisZoneModel ez = ergebnis.FirstOrDefault(e => e.ID_Zone == z.ID);
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(z.Bezeichner) ? "—" : z.Bezeichner, w[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(ez?.KuehlenergieMwh is double q ? k.F(q, 1) : "—", w[1], false, null, JustificationValues.Right));
+                if (mitSpitze)
+                {
+                    tr.Append(k.Zelle(ez?.KaeltespitzeKw is double p ? k.F(p, 1) : "—", w[2], false, null, JustificationValues.Right));
+                    tr.Append(k.Zelle(ez?.KuehlstundenH is int h ? k.F(h, 0) : "—", w[3], false, null, JustificationValues.Right));
+                }
+                if (ez?.KuehlenergieMwh is double s) summe += s;
+                t.Append(tr);
+            }
+            var fuss = new TableRow();
+            fuss.Append(k.Zelle("Summe", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            fuss.Append(k.Zelle(k.F(summe, 1), w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            if (mitSpitze)
+            {
+                fuss.Append(k.Zelle("", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+                fuss.Append(k.Zelle("", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            }
+            t.Append(fuss);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_ZONEN_KAELTE);
         }
 
         /// <summary>
@@ -273,17 +442,54 @@ namespace WindowsFormsApplication1
             // Strombilanz mit seinem Netzbezug, seinen Kosten und Emissionen. Nur mit gerechneter
             // Kälteerzeugung; ohne Kälteerzeuger steht allein der ungedeckte Bedarf.
             ErgebnisWaermepumpeModel wp = stamm.Ergebnis.Waermepumpe;
-            bool mitErzeugung = wp != null && wp.Kaelteproduktion_WP.HasValue;
+            // KU3-4: die Kältemaschinen (Tab_ErgebnisKaeltemaschine) - ein eigener Erzeugerblock.
+            List<ErgebnisKaeltemaschineModel> km = stamm.Ergebnis.Kaeltemaschinen ?? new List<ErgebnisKaeltemaschineModel>();
+            bool mitWp = wp != null && wp.Kaelteproduktion_WP.HasValue;
+            bool mitKm = km.Count > 0;
+            bool mitErzeugung = mitWp || mitKm;
             if (mitErzeugung)
             {
                 paare.Add("Deckungsgrad Kühlung");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD, 1, "%"));
+            }
+            if (mitWp)
+            {
                 paare.Add("Kälteerzeugung Wärmepumpe");
                 paare.Add(k.F(wp.Kaelteproduktion_WP.Value, 1) + " MWh/a");
                 paare.Add("Kältestrom");
                 paare.Add(Wert(k, wp.Stromverbrauch_Kuehlung, 2, "MWh/a"));
                 paare.Add("Jahresarbeitszahl Kälte");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ, 2, ""));
+                // KU3-6: freie Kühlung über die Wärmequelle - nur, wenn sie an einer Wärmepumpe wirkt.
+                if (wp.FreieKuehlung_MWh.HasValue)
+                {
+                    paare.Add("Kälte in freier Kühlung der Wärmepumpe");
+                    paare.Add(k.F(wp.FreieKuehlung_MWh.Value, 1) + " MWh/a");
+                    paare.Add("Stunden freier Kühlung der Wärmepumpe");
+                    paare.Add(k.F(wp.FreieKuehlung_Stunden ?? 0, 0) + " h/a");
+                }
+            }
+            if (mitKm)
+            {
+                paare.Add("Kälteerzeugung Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Kaelteproduktion_MWh), 1) + " MWh/a");
+                paare.Add("Strom Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Stromverbrauch_MWh), 2) + " MWh/a");
+                paare.Add("davon Hilfsstrom und Rückkühlung");
+                paare.Add(k.F(km.Sum(x => x.Hilfsstrom_MWh), 2) + " MWh/a");
+                paare.Add("Jahresarbeitszahl Kältemaschinen");
+                paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KM_JAZ, 2, ""));
+                paare.Add("Kälte in freier Kühlung");
+                paare.Add(k.F(km.Sum(x => x.FreieKuehlung_MWh), 1) + " MWh/a");
+                paare.Add("Stunden freier Kühlung");
+                paare.Add(k.F(km.Sum(x => x.FreieKuehlung_Stunden), 0) + " h/a");
+                paare.Add("Taktstunden Kältemaschinen");
+                paare.Add(k.F(km.Sum(x => x.Taktstunden), 0) + " h/a");
+                paare.Add("Stunden an der Leistungsgrenze");
+                paare.Add(k.F(km.Sum(x => x.Stunden_Leistungsgrenze), 0) + " h/a");
+            }
+            if (mitErzeugung)
+            {
                 paare.Add("Netzbezug Kältestrom");
                 paare.Add(Wert(k, stamm.KaeltestromNetzbezugMWh, 2, "MWh/a"));
                 paare.Add("Kosten Kältestrom");
@@ -294,7 +500,7 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername);
+            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername, km);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
                                                         k.F(wp.Kaelteproduktion_WP.Value, 2),
@@ -311,10 +517,11 @@ namespace WindowsFormsApplication1
         /// nicht darin.
         /// </summary>
         private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp,
-                                                    Func<int, string> traegername)
+                                                    Func<int, string> traegername,
+                                                    IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null)
         {
-            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}}.
-            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur);
+            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen.
+            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen);
             if (t.IstLeer) return;
 
             k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);
@@ -332,12 +539,16 @@ namespace WindowsFormsApplication1
         /// Wertesatz des Laufs (<see cref="WirtschaftsBerichtswerte.Traegername"/>, BV-E3).
         /// </summary>
         internal static string KuehltraegerText(ErgebnisWaermepumpeModulModel m, Func<int, string> traegername)
+            => KuehltraegerText(m?.Kuehl_CarrierId, m?.Kuehl_EigenerZaehler, traegername);
+
+        /// <summary>Derselbe Text aus Kühlträger und Abrechnungsart — auch für die Kältemaschine (KU3-4d).</summary>
+        internal static string KuehltraegerText(int? traeger, bool? eigenerZaehler, Func<int, string> traegername)
         {
-            if (m == null || !m.Kuehl_CarrierId.HasValue || m.Kuehl_CarrierId.Value <= 0)
+            if (!traeger.HasValue || traeger.Value <= 0)
                 return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
-            string name = (traegername ?? Emissionsquelle.TraegerName)(m.Kuehl_CarrierId.Value);
-            return string.Format(m.Kuehl_EigenerZaehler == true ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
-                                                               : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG, name);
+            string name = (traegername ?? Emissionsquelle.TraegerName)(traeger.Value);
+            return string.Format(eigenerZaehler == true ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
+                                                        : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG, name);
         }
 
         /// <summary>Ein Kennzahlwert der Variante aus dem Katalog — null wird „—".</summary>
@@ -382,6 +593,8 @@ namespace WindowsFormsApplication1
             if (zeilen.Count == 0) return;
 
             k.Ueberschrift2(UEBERSCHRIFT_GEBAEUDE_ERGEBNIS);
+            // KP3 Welle O3a: der Aufschlag der Projekteinstellung - die Ergebniszeile traegt ihn nicht.
+            (double? H, double? Prozent)? aufschlag = Aufheizbericht.Aufschlag(stamm.Details);
             foreach (ErgebnisGebaeudeModel g in zeilen)
             {
                 k.Ueberschrift3Roh(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename);
@@ -389,8 +602,14 @@ namespace WindowsFormsApplication1
                 // Stufe KU1 (Kuehlkonzept 6.4): Der Zusatz „(informativ)" ist entfallen - mit eingeschalteter
                 // Kuehlung ist die Kuehlenergie der Kaeltebedarf des Gebaeudes; ein Gebaeude ohne wirksame Kuehlung
                 // laeuft frei und zeigt „—" (E32, K18). BV-E5: dieselbe Tafel wie in {{tabelle.gebaeude.ergebnis}}.
-                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Gebaeudeergebnis(g, BerichtTexte.Englisch, k.Kultur)));
+                // KP3 Welle O3a: mit den Lueftungs-, Aufheiz- und Auslegungszeilen (Festlegungen 30, 41) - nur mit Wert.
+                k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Gebaeudeergebnis(g, BerichtTexte.Englisch, k.Kultur, aufschlag)));
+                // Festlegung 30: W1-W5 als benannte Hinweiszeilen unter der Tafel des Gebaeudes, nur mit Anlass.
+                foreach (string hinweis in Aufheizbericht.Hinweise(g, k.Kultur)) k.HinweisRoh(hinweis);
             }
+
+            // E60 (Festlegung 41): neben der Auslegungsgroesse der Hinweis, dass die ideale Spitze keine ist.
+            if (zeilen.Any(g => Aufheizbericht.Auslegungsgroesse(g).HasValue)) k.HinweisRoh(Aufheizbericht.HinweisSpitze(k.Kultur));
 
             if (zeilen.Any(g => !g.IstVdi6007))
                 k.Hinweis("Der Tagesbilanz-Weg (Bestandsweg) liefert weder Raumtemperatur noch Kühllast.");
@@ -403,6 +622,256 @@ namespace WindowsFormsApplication1
             HeizkreisSchreiben(k, stamm, zeilen);
             // E37: der Kaeltekreis der kuehlgekoppelt gerechneten Gebaeude.
             KuehlkreisSchreiben(k, stamm, zeilen);
+            // ANLAGENKOPPLUNG AK2 (Konzept 9.4, 5.5): Komfort neben Restbedarf - nur mit Fahrplan.
+            KomfortSchreiben(k, stamm, zeilen);
+            // ANLAGENKOPPLUNG AK3 (Entwurf AK3 Festlegung 22): die Kennzahlen des geschlossenen Kreises - nur mit Wert.
+            Ak3Schreiben(k, stamm);
+            // AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kaelteseite im Kreis - nur mit Wert.
+            Ak3KSchreiben(k, stamm);
+            // KK (Entwurf KK, Festlegung 12): die Kennzahlen der Kuehlkurve - nur mit Wert.
+            KuehlkurveSchreiben(k, stamm);
+        }
+
+        /// <summary>Überschrift der Tafel „Kühlkurve" — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_KUEHLKURVE = "Kühlkurve (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Tafel „Kühlkurve" — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_KUEHLKURVE =
+            "Mit Kühlkurve gleitet der verlangte Kühlvorlauf mit der Außentemperatur; der Raumeinfluss senkt ihn, wenn ein Raum über dem Kühlsollwert liegt. Ausgewiesen werden der mittlere verlangte Kühlvorlauf der Kühlstunden, die Summe der Absenkung durch den Raumeinfluss und die Kühlstunden, in denen die Kurve an der Vorlaufgrenze stand. „—“ heißt: nicht erhoben.";
+
+        /// <summary>Die Spaltenköpfe der Tafel „Kühlkurve" — zugleich Schlüssel der Übersetzung.</summary>
+        internal static readonly string[] TITEL_KUEHLKURVE =
+        {
+            "Kühlvorlauf im Mittel [°C]", "Absenkung durch Raumeinfluss [Kh/a]", "An der Vorlaufgrenze [h/a]"
+        };
+
+        /// <summary>
+        /// <b>KK — die Tafel „Kühlkurve"</b> (Entwurf KK, Festlegung 12): die Projektzeile mit den drei Kennzahlen der
+        /// Kühlkurve, ein fehlender Wert als „—". <b>Der Abschnitt entfällt</b>, wenn der Lauf keine wirksame Kühlkurve
+        /// rechnete.
+        /// </summary>
+        private static void KuehlkurveSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            KuehlkurveKennzahlen kk = KuehlkurveKennzahlen.Aus(stamm?.Ergebnis?.Energiebedarf);
+            if (kk == null) return;
+
+            int breite = 2600;
+            int rest = k.Inhaltsbreite - 2 * breite;
+            int[] b = { breite, breite, rest };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            for (int i = 0; i < TITEL_KUEHLKURVE.Length; i++)
+                kopf.Append(k.Zelle(TITEL_KUEHLKURVE[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            string[] werte =
+            {
+                kk.VorlaufMittelC is double v ? k.F(v, 1) : "—",
+                kk.AbsenkungKh is double a ? k.F(a, 1) : "—",
+                kk.VorlaufgrenzeStundenH is int h ? k.F(h, 0) : "—",
+            };
+            var zeile = new TableRow();
+            for (int i = 0; i < werte.Length; i++)
+                zeile.Append(k.Zelle(werte[i], b[i], false, null, JustificationValues.Right));
+            t.Append(zeile);
+
+            k.Ueberschrift2(UEBERSCHRIFT_KUEHLKURVE);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_KUEHLKURVE);
+        }
+
+        /// <summary>Überschrift der Tafel „Kälteseite im Kreis" (AK3-K) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_AK3K = "Kälteseite im Kreis (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Tafel „Kälteseite im Kreis" — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_AK3K =
+            "In einer Zone wird an einem Tag nie geheizt und gekühlt: Gezählt werden die Zonentage, an denen die Gegenseite gesperrt war, und die Energie, die der Probetag auf ihr gezeigt hätte. Im geschlossenen Kreis zählen die Stunden, in denen die Kälteschranke eine Zone begrenzte, die Stunden mit Umschaltung der Wärmepumpe und der Kälte-Restbedarf. „—“ heißt: nicht erhoben.";
+
+        /// <summary>Die Spaltenköpfe der Tafel „Kälteseite im Kreis" — zugleich Schlüssel der Übersetzung.</summary>
+        internal static readonly string[] TITEL_AK3K =
+        {
+            "Sperrtage [d/a]", "Heizen gesperrt [MWh/a]", "Kühlen gesperrt [MWh/a]",
+            "An der Kälteschranke [h/a]", "Umschaltung [h/a]", "Kälte-Restbedarf [h/a]", "Kälte-Restbedarf [MWh/a]"
+        };
+
+        /// <summary>
+        /// <b>AK3-K — die Tafel „Kälteseite im Kreis"</b> (Entwurf AK3-K 3.5, Festlegung 20): die Projektzeile mit den
+        /// Kennzahlen der Zonensperre und der Kälteseite im Kreis, eine nicht erhobene Seite als „—". <b>Der Abschnitt
+        /// entfällt</b>, wenn keine der beiden Seiten erhoben ist — jedes Projekt ohne wirksame Kühlung.
+        /// </summary>
+        private static void Ak3KSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            Ak3KKennzahlen a = Ak3KKennzahlen.Aus(stamm?.Ergebnis?.Energiebedarf);
+            if (a == null) return;
+
+            int breite = 1250;
+            int rest = k.Inhaltsbreite - 6 * breite;
+            int[] b = { breite, breite, breite, breite, breite, breite, rest };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            for (int i = 0; i < TITEL_AK3K.Length; i++)
+                kopf.Append(k.Zelle(TITEL_AK3K[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            string[] werte =
+            {
+                a.ZonensperreTage is int d ? k.F(d, 0) : "—",
+                a.HeizenGesperrtMwh is double h ? k.F(h, 2) : "—",
+                a.KuehlenGesperrtMwh is double c ? k.F(c, 2) : "—",
+                a.KaelteschrankeStundenH is int s ? k.F(s, 0) : "—",
+                a.UmschaltStundenH is int u ? k.F(u, 0) : "—",
+                a.KaelterestStundenH is int r ? k.F(r, 0) : "—",
+                a.KaelterestMwh is double m ? k.F(m, 2) : "—",
+            };
+            var zeile = new TableRow();
+            for (int i = 0; i < werte.Length; i++)
+                zeile.Append(k.Zelle(werte[i], b[i], false, null, JustificationValues.Right));
+            t.Append(zeile);
+
+            k.Ueberschrift2(UEBERSCHRIFT_AK3K);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_AK3K);
+        }
+
+        /// <summary>Überschrift des Abschnitts Anlagenkopplung AK3 — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_AK3 = "Anlagenkopplung AK3 – geschlossener Kreis (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Tafel des Kreises — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_AK3 =
+            "Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück. Gezählt werden die Durchläufe des Kreises je Stunde, die Wechsel des Betriebsfalls, die Stunden, in denen die Schranke des Angebots eine Zone begrenzte, die Stunden mit leerem Heizungspuffer und die Stunden mit Restbedarf der Kaskade.";
+
+        /// <summary>Die Spaltenköpfe der Tafel des Kreises — zugleich Schlüssel der Übersetzung.</summary>
+        internal static readonly string[] TITEL_AK3 =
+        {
+            "Durchläufe Mittel [–]", "Durchläufe Höchstwert [–]", "Fallwechsel [–]",
+            "An der Schranke [h/a]", "Speicher leer [h/a]", "Restbedarf [h/a]"
+        };
+
+        /// <summary>
+        /// <b>ANLAGENKOPPLUNG AK3 — die Kennzahlen des geschlossenen Kreises</b> (Entwurf AK3 Festlegung 22): eine Tafel
+        /// mit der Projektzeile (Durchläufe Mittel und Höchstwert, Fallwechsel, Stunden an der Schranke, Stunden mit
+        /// leerem Speicher, Restbedarfsstunden) und dem Satz, was gezählt wird. <b>Der Abschnitt entfällt</b>, wenn der
+        /// Lauf den Kreis nicht rechnete (<c>Ak3_Durchlaeufe_Mittel</c> NULL) — jedes Projekt ohne Stufe AK3.
+        /// </summary>
+        private static void Ak3Schreiben(WordKontext k, VariantenDaten stamm)
+        {
+            Ak3Kennzahlen a = Ak3Kennzahlen.Aus(stamm?.Ergebnis?.Energiebedarf);
+            if (a == null) return;
+
+            int rest = k.Inhaltsbreite - 5 * 1500;
+            int[] b = { 1500, 1500, 1500, 1500, 1500, rest };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            for (int i = 0; i < TITEL_AK3.Length; i++)
+                kopf.Append(k.Zelle(TITEL_AK3[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            string[] werte =
+            {
+                k.F(a.DurchlaeufeMittel, 2),
+                a.DurchlaeufeMax is int m ? k.F(m, 0) : "—",
+                a.Fallwechsel is int f ? k.F(f, 0) : "—",
+                a.SchrankeStundenH is int s ? k.F(s, 0) : "—",
+                a.SpeicherLeerStundenH is int l ? k.F(l, 0) : "—",
+                a.RestbedarfStundenH is int r ? k.F(r, 0) : "—",
+            };
+            var zeile = new TableRow();
+            for (int i = 0; i < werte.Length; i++)
+                zeile.Append(k.Zelle(werte[i], b[i], false, null, JustificationValues.Right));
+            t.Append(zeile);
+
+            k.Ueberschrift2(UEBERSCHRIFT_AK3);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_AK3);
+        }
+
+        /// <summary>Überschrift des Abschnitts Komfort (Anlagenkopplung AK2) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_KOMFORT = "Komfort und Restbedarf (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Komforttafel — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_KOMFORT =
+            "Gezählt werden Stunden der Nutzungszeit, in denen die Raumtemperatur mehr als 1,0 K unter dem Sollwert liegt; mit Kopplung ist ein Teil der Unterdeckung eine gesunkene Raumtemperatur, deshalb steht der Restbedarf daneben.";
+
+        /// <summary>
+        /// Steht die Komforttafel? Ja, wenn der Fahrplan gegriffen hat — die Projektspalte
+        /// <c>Fahrplan_Begrenzt_Stunden</c> ist dann gesetzt (sonst NULL), oder eine Gebäudezeile trägt ihren
+        /// <see cref="Bedarfsbegriff"/> — oder wenn der Lauf die Komfortkennzahlen erhoben hat (Stufe AK3: Kreis
+        /// gerechnet, <c>Fahrplan_Begrenzt_Stunden</c> bleibt leer und steht in der Tafel als „—").
+        /// </summary>
+        internal static bool LaufMitKomfort(VariantenDaten v, List<ErgebnisGebaeudeModel> zeilen)
+            => v?.Ergebnis?.Energiebedarf?.FahrplanBegrenztStundenH.HasValue == true
+               || v?.Ergebnis?.Energiebedarf?.KomfortUnterschreitungsstundenH.HasValue == true
+               || (zeilen != null && zeilen.Any(g => g.Bedarfsbegriff.HasValue));
+
+        /// <summary>
+        /// Der Bedarfsbegriff eines Gebäudes im Lauf mit Fahrplan (F5): wie der Lauf ihn setzte, sonst aus der
+        /// gespeicherten Zeile hergeleitet — VDI-Weg mit gekoppeltem Heizkreis = mit Rückwirkung, jedes andere
+        /// Gebäude = feste Last (dieselbe Regel wie <c>SimulationWaermebedarf.FahrplanVorbereiten</c>).
+        /// </summary>
+        internal static Bedarfsbegriff BedarfsbegriffImLauf(ErgebnisGebaeudeModel g)
+            => g.Bedarfsbegriff ?? (g.IstVdi6007 && g.IstGekoppelt ? Bedarfsbegriff.Rueckwirkung : Bedarfsbegriff.FesteLast);
+
+        /// <summary>Der Anzeigetext eines Bedarfsbegriffs — dieselben Wörter wie im Bedarfsdialog.</summary>
+        internal static string Bedarfsbegrifftext(Bedarfsbegriff b)
+            => b == Bedarfsbegriff.Rueckwirkung
+                ? MyResource.Resource.GEB_BEDARFSBEGRIFF_RUECKWIRKUNG
+                : MyResource.Resource.GEB_BEDARFSBEGRIFF_FESTE_LAST;
+
+        /// <summary>
+        /// <b>ANLAGENKOPPLUNG AK2 — Komfort neben Restbedarf</b> (Konzept 9.4, 5.5, 6.2): je Gebäude der
+        /// Bedarfsbegriff, die Unterschreitungsstunden, die Kelvinstunden, die längste Strecke und die Stunden am
+        /// Fahrplan; darunter die Projektzeile mit dem Wärmerestbedarf daneben, die Zahl der Gebäude als feste Last
+        /// und der Hinweis zum Profilweg. Ein Wert, den der Lauf nicht erhoben hat, steht als „—".
+        ///
+        /// <para><b>Der Abschnitt entfällt</b>, wenn der Lauf weder einen greifenden Fahrplan hatte noch die
+        /// Komfortkennzahlen erhoben hat (<see cref="LaufMitKomfort"/>) — jedes Projekt ohne Kopplung und jedes
+        /// Referenzprojekt ohne Zeitprogramm unterhalb der Stufe AK3.</para>
+        /// </summary>
+        private static void KomfortSchreiben(WordKontext k, VariantenDaten stamm, List<ErgebnisGebaeudeModel> zeilen)
+        {
+            if (!LaufMitKomfort(stamm, zeilen)) return;
+            ErgebnisEnergiebedarfModel e = stamm?.Ergebnis?.Energiebedarf;
+
+            int[] b = { 2300, 1700, 1300, 1300, 1200, 1200, k.Inhaltsbreite - 9000 };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            string[] titel = { "Gebäude", "Bedarfsbegriff", "Unterschreitung [h/a]", "Kelvinstunden [Kh/a]",
+                               "Längste Strecke [h]", "Fahrplan begrenzt [h/a]", "Restbedarf [MWh/a]" };
+            for (int i = 0; i < titel.Length; i++)
+                kopf.Append(k.Zelle(titel[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            int festeLast = 0;
+            foreach (ErgebnisGebaeudeModel g in zeilen)
+            {
+                Bedarfsbegriff begriff = BedarfsbegriffImLauf(g);
+                if (begriff == Bedarfsbegriff.FesteLast) festeLast++;
+                var tr = new TableRow();
+                tr.Append(k.Zelle(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename, b[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(Bedarfsbegrifftext(begriff), b[1], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(g.KomfortUnterschreitungsstundenH is int h ? k.F(h, 0) : "—", b[2], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.KomfortKelvinstundenKh is double kh ? k.F(kh, 1) : "—", b[3], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.KomfortLaengsteStreckeH is int l ? k.F(l, 0) : "—", b[4], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle(g.FahrplanBegrenztStundenH is int f ? k.F(f, 0) : "—", b[5], false, null, JustificationValues.Right));
+                tr.Append(k.Zelle("—", b[6], false, null, JustificationValues.Right));
+                t.Append(tr);
+            }
+
+            var summe = new TableRow();
+            summe.Append(k.Zelle("Projekt", b[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            summe.Append(k.Zelle("", b[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            summe.Append(k.Zelle(e?.KomfortUnterschreitungsstundenH is int ph ? k.F(ph, 0) : "—", b[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(e?.KomfortKelvinstundenKh is double pk ? k.F(pk, 1) : "—", b[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(e?.KomfortLaengsteStreckeH is int pl ? k.F(pl, 0) : "—", b[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(e?.FahrplanBegrenztStundenH is int pf ? k.F(pf, 0) : "—", b[5], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            summe.Append(k.Zelle(e != null ? k.F(e.Waermerestbedarf, 2) : "—", b[6], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Right));
+            t.Append(summe);
+
+            k.Ueberschrift2(UEBERSCHRIFT_KOMFORT);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_KOMFORT);
+            k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.GEB_BERICHT_FESTE_LAST, festeLast));
+            k.HinweisRoh(MyResource.Resource.SIMENG_AK2_PROFILWEG_NAEHERUNG);
         }
 
         /// <summary>
@@ -464,8 +933,51 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_HEIZKREIS);
             k.Fuege(t);
+            VorlaufwahlSchreiben(k, stamm);
             k.Hinweis(HINWEIS_HEIZKREIS);
             k.HinweisRoh(MyResource.Resource.GEB_PRODUKTAUSWEIS_ANLAGENKOPPLUNG);
+        }
+
+        /// <summary>
+        /// <b>VW1b (E88) — die Vorlaufwahl der Wärmepumpe</b> je Modul, das am gerechneten Heizkreisvorlauf seine
+        /// Kennlinie gewählt hat (<c>Vorlaufwahl_Stunden</c> belegt): die Stunden je Stützstelle und die Stunden
+        /// darunter (gerechnet mit der untersten Kennlinie) und darüber (nach der Extrapolationsregel). Ein Modul ohne
+        /// Kennlinienwahl steht nicht darin; ohne ein solches Modul entfällt die Tafel.
+        /// </summary>
+        internal static void VorlaufwahlSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            List<ErgebnisWaermepumpeModulModel> module = (stamm?.Ergebnis?.Waermepumpe?.Module
+                ?? new List<ErgebnisWaermepumpeModulModel>())
+                .Where(m => m != null && !string.IsNullOrEmpty(m.Vorlaufwahl_Stunden)).ToList();
+            if (module.Count == 0) return;
+
+            var paare = new List<string>();
+            foreach (ErgebnisWaermepumpeModulModel m in module)
+            {
+                paare.Add("Wärmepumpe");
+                paare.Add(string.IsNullOrWhiteSpace(m.Modul) ? "—" : m.Modul);
+                paare.Add("Vorlaufwahl der Kennlinie");
+                paare.Add(VorlaufwahlText(k.Kultur, m.Vorlaufwahl_Stunden));
+                paare.Add("Stunden außerhalb der Stützstellen");
+                paare.Add(AusserhalbText(k.Kultur, m.Vorlauf_Darunter_Stunden, m.Vorlauf_Darueber_Stunden));
+            }
+            k.Eigenschaften(paare.ToArray());
+        }
+
+        /// <summary>„35 °C 1.549 h, 45 °C 1.782 h, …“ aus dem gespeicherten Text der Vorlaufwahl, Zahlformat der Kultur.</summary>
+        internal static string VorlaufwahlText(CultureInfo kultur, string stunden)
+        {
+            IReadOnlyList<KeyValuePair<int, int>> paare = VorlaufwahlSchema.StundenLesen(stunden);
+            if (paare.Count == 0) return "—";
+            return string.Join(", ", paare.Select(p =>
+                p.Key.ToString("N0", kultur) + " °C " + p.Value.ToString("N0", kultur) + " h"));
+        }
+
+        /// <summary>„darunter 1.851 h, darüber 0 h“ — die Wörter in der Berichtssprache, Zahlformat der Kultur.</summary>
+        internal static string AusserhalbText(CultureInfo kultur, int? darunter, int? darueber)
+        {
+            return BerichtTexte.T("darunter") + " " + (darunter ?? 0).ToString("N0", kultur) + " h, "
+                 + BerichtTexte.T("darüber") + " " + (darueber ?? 0).ToString("N0", kultur) + " h";
         }
 
         /// <summary>Überschrift des Abschnitts Kältekreis (E37) — zugleich Schlüssel der Übersetzung.</summary>
@@ -640,9 +1152,212 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// <b>Pufferspeicher-Auslegung</b> (Konzept Pufferspeicher-Auslegung, Stufe P3): je gespeicherter
+        /// Zeile in <c>Tab_PufferAuslegung</c> Speicherklasse, Vorlage, Nutzungsprofil, Zonenvolumina,
+        /// bemessendes Kriterium mit Herkunft, Empfehlung und gewähltes Volumen, Kennzahlen, Hinweise und
+        /// Berechnungsdatum. Der Abschnitt entfällt, wenn das Projekt keine Zeile trägt. Gelesen wird nur
+        /// <see cref="VariantenDaten.Pufferauslegungen"/> — die Texte kommen aus <c>MyResource</c> und
+        /// stehen damit schon in der Berichtssprache (Roh-Weg).
+        /// </summary>
+        internal static void PufferauslegungSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            List<PufferAuslegungGespeichert> zeilen = stamm?.Pufferauslegungen;
+            if (zeilen == null || zeilen.Count == 0) return;
+            // Steht der Platzhalter {{tabelle.pufferauslegung}} in der Vorlage, schreibt er die Tafel an
+            // seiner Stelle - der Standardabschnitt entfällt (keine doppelte Ausgabe, Welle P4c).
+            if (k.Vorlagenfelder != null && k.Vorlagenfelder.Contains(PLATZHALTER_PUFFERAUSLEGUNG)) return;
+
+            k.Ueberschrift2Roh(MyResource.Resource.PAUS_TITEL);
+            k.TextRoh(MyResource.Resource.BER_PAUS_EINLEITUNG);
+
+            foreach (PufferAuslegungGespeichert g in zeilen)
+            {
+                k.Ueberschrift3Roh(Pufferueberschrift(g));
+                k.Eigenschaften(PufferauslegungPaare(g, k.Kultur).ToArray());
+
+                string abweichung = PufferauslegungNachrechnung(g, k.Kultur);
+                if (abweichung != null) k.HinweisRoh(abweichung);
+
+                // Welle P4d: die Nutzen-Aufwand-Zeile - nur, wenn die gespeicherte Auslegung nachgerechnet wurde.
+                List<string> stufen = PufferauslegungNachbarstufenzeilen(g, k.Kultur);
+                if (stufen.Count > 0)
+                {
+                    k.TextRoh(MyResource.Resource.PAUS_NA_GRUPPE);
+                    foreach (string z in stufen) k.HinweisRoh("• " + z);
+                }
+
+                k.TextRoh(MyResource.Resource.PAUS_GRUPPE_WARNUNGEN);
+                foreach (string w in PufferauslegungWarnzeilen(g, k.Kultur)) k.HinweisRoh("• " + w);
+            }
+        }
+
+        /// <summary>Der Platzhalter der Tafel (<c>{{tabelle.pufferauslegung}}</c>, Katalog v12).</summary>
+        internal const string PLATZHALTER_PUFFERAUSLEGUNG = "tabelle.pufferauslegung";
+
+        /// <summary>Die Überschrift einer gespeicherten Auslegung: Puffername oder „neuer Speicher".</summary>
+        internal static string Pufferueberschrift(PufferAuslegungGespeichert g) =>
+            string.IsNullOrWhiteSpace(g.Puffername) ? MyResource.Resource.BER_PAUS_NEUER_SPEICHER : g.Puffername;
+
+        /// <summary>
+        /// Die Eigenschaftspaare einer gespeicherten Auslegung (Bezeichnung, Wert, …) — EINE Quelle für den
+        /// Baustein und die Tafel <c>{{tabelle.pufferauslegung}}</c>.
+        /// </summary>
+        internal static List<string> PufferauslegungPaare(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            string F(double v, int dez) => v.ToString("N" + dez, kultur);
+            string Liter(double? l) => l.HasValue ? F(l.Value, 0) + " l" : "—";
+            string Wert(double? w, int dez, string einheit) => w.HasValue ? F(w.Value, dez) + " " + einheit : "—";
+
+            var paare = new List<string>
+            {
+                MyResource.Resource.BER_PAUS_SPEICHERKLASSE, Klassentext(g),
+                MyResource.Resource.BER_PAUS_VORLAGE, Vorlagentext(g.Vorlage),
+                MyResource.Resource.PAUS_NUTZUNGSPROFIL, Nutzungsprofiltext(g, kultur)
+            };
+            void Zone(PufferZone zone, double? volumen)
+            {
+                if (!volumen.HasValue) return;
+                paare.Add(Pauskey("PAUS_ZONE_", zone.ToString(), zone.ToString()));
+                paare.Add(Liter(volumen));
+            }
+            Zone(PufferZone.Heizung, g.VolumenHeizungL);
+            Zone(PufferZone.Brauchwasser, g.VolumenBrauchwasserL);
+            Zone(PufferZone.Prozess, g.VolumenProzessL);
+
+            paare.Add(MyResource.Resource.BER_PAUS_BEMESSEND);
+            paare.Add(Bemessendtext(g));
+            paare.Add(MyResource.Resource.PAUS_SPALTE_HERKUNFT);
+            string herkunft = Textbaustein.Aufloesen(g.BemessendHerkunft, kultur);
+            paare.Add(string.IsNullOrWhiteSpace(herkunft) ? "—" : herkunft);
+            paare.Add(MyResource.Resource.PAUS_EMPFEHLUNG);
+            paare.Add(g.EmpfehlungL.HasValue && g.EmpfehlungL.Value <= 0 ? MyResource.Resource.PAUS_KEIN_PUFFER : Liter(g.EmpfehlungL));
+            paare.Add(MyResource.Resource.BER_PAUS_GEWAEHLT);
+            paare.Add(Liter(g.GewaehltL));
+            paare.Add(MyResource.Resource.PAUS_KZ_STARTS_TAG);
+            paare.Add(Wert(g.StartsJeTag, 1, "1/d"));
+            if (g.ProbelaufStartsJeTag.HasValue && g.ProbelaufAm.HasValue)
+            {
+                // Welle P4b: die Gegenprobe der Jahressimulation, wenn in der Sitzung ein Probelauf lief.
+                paare.Add(string.Format(kultur, MyResource.Resource.BER_PAUS_STARTS_PROBELAUF,
+                                        g.ProbelaufAm.Value.ToString("dd.MM.yyyy HH:mm", kultur)));
+                paare.Add(Wert(g.ProbelaufStartsJeTag, 1, "1/d"));
+            }
+            paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_TAG);
+            paare.Add(Wert(g.VerlustKwhJeTag, 2, "kWh/d"));
+            paare.Add(MyResource.Resource.PAUS_KZ_VERLUST_WK);
+            paare.Add(Wert(g.VerlustWJeK, 2, "W/K"));
+            paare.Add(MyResource.Resource.BER_PAUS_BERECHNET_AM);
+            paare.Add(g.BerechnetAm.HasValue ? g.BerechnetAm.Value.ToString("dd.MM.yyyy HH:mm", kultur) : "—");
+            return paare;
+        }
+
+        /// <summary>
+        /// Die Zeilen der Nutzen-Aufwand-Zeile („Stufe 800 l: Deckung …, Starts …, Verlust … — Hinweis“), die
+        /// Empfehlung markiert; leer, wenn die gespeicherte Auslegung nicht nachgerechnet wurde.
+        /// </summary>
+        internal static List<string> PufferauslegungNachbarstufenzeilen(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            var l = new List<string>();
+            if (g?.Nachbarstufen == null || g.Fehlertext != null) return l;
+            foreach (PufferNachbarstufe s in g.Nachbarstufen)
+            {
+                string zeile = string.Format(kultur, MyResource.Resource.PAUS_BERICHT_NA_ZEILE,
+                    s.VolumenL.ToString("N0", kultur),
+                    s.Deckungsgrad.HasValue ? (s.Deckungsgrad.Value * 100).ToString("N1", kultur) + " %" : "—",
+                    s.StartsJeTag.HasValue ? s.StartsJeTag.Value.ToString("N1", kultur) : "—",
+                    (s.Verlust?.KwhJeJahr ?? 0).ToString("N0", kultur));
+                string hinweis = Textbaustein.Aufloesen(s.JazHinweis, kultur);
+                l.Add(hinweis.Length > 0 ? zeile + " — " + hinweis : zeile);
+            }
+            return l;
+        }
+
+        /// <summary>Der Hinweis zur Nachrechnung (fehlt oder weicht ab); <c>null</c> = keiner.</summary>
+        internal static string PufferauslegungNachrechnung(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            if (g.Fehlertext != null)
+                return string.Format(kultur, MyResource.Resource.BER_PAUS_NACHRECHNUNG_FEHLT, g.Fehlertext.Length > 0 ? g.Fehlertext : "—");
+            if (g.NachgerechnetL.HasValue && g.EmpfehlungL.HasValue && Math.Abs(g.NachgerechnetL.Value - g.EmpfehlungL.Value) > 0.5)
+                return string.Format(kultur, MyResource.Resource.BER_PAUS_NACHRECHNUNG_ABWEICHEND, g.NachgerechnetL.Value.ToString("N0", kultur));
+            return null;
+        }
+
+        /// <summary>
+        /// Die Zeilen der Warnliste („Stufe: Text"); ohne Warnung die eine Zeile „keine". Der Klartext mit Zahlen
+        /// in der Berichtssprache (<c>PA_&lt;CODE&gt;_TEXT</c>, Welle P4c); ohne Baustein der Kurztext des Codes.
+        /// </summary>
+        internal static List<string> PufferauslegungWarnzeilen(PufferAuslegungGespeichert g, CultureInfo kultur)
+        {
+            var l = new List<string>();
+            if (g.Warnungen == null || g.Warnungen.Count == 0)
+            {
+                l.Add(MyResource.Resource.PAUS_WARNUNGEN_LEER);
+                return l;
+            }
+            foreach (PufferWarnung w in g.Warnungen)
+                l.Add((w.Stufe == PufferStufe.Warnung ? MyResource.Resource.PAUS_STUFE_WARNUNG : MyResource.Resource.PAUS_STUFE_HINWEIS) +
+                      ": " + (w.TextBaustein != null ? w.TextBaustein.Aufloesen(kultur) : Pauskey("", w.Ressourcenschluessel, w.Text)));
+            return l;
+        }
+
+        /// <summary>Ein Ressourcentext über seinen Schlüssel (Präfix + Wert, „-“ → „_“); Rückfall der Klartext.</summary>
+        private static string Pauskey(string praefix, string wert, string rueckfall)
+        {
+            string t = null;
+            try
+            {
+                t = MyResource.Resource.ResourceManager.GetString(praefix + (wert ?? "").Replace('-', '_').ToUpperInvariant(),
+                                                                  System.Globalization.CultureInfo.CurrentUICulture);
+            }
+            catch (Exception) { t = null; }
+            return string.IsNullOrEmpty(t) ? (rueckfall ?? wert ?? "") : t;
+        }
+
+        private static string Klassentext(PufferAuslegungGespeichert g)
+        {
+            var teile = new List<string>();
+            if (g.KlasseHeizung) teile.Add(MyResource.Resource.PAUS_KLASSE_HEIZUNG);
+            if (g.KlasseBrauchwasser) teile.Add(MyResource.Resource.PAUS_KLASSE_BRAUCHWASSER);
+            if (g.KlasseProzess) teile.Add(MyResource.Resource.PAUS_KLASSE_PROZESS);
+            return teile.Count == 0 ? "—" : string.Join(" + ", teile);
+        }
+
+        private static string Vorlagentext(PufferVorlage? v)
+        {
+            if (!v.HasValue) return "—";
+            string name = Pauskey("PAUS_VORLAGE_", v.Value.ToString(), v.Value.ToString());
+            string unter = Pauskey("PAUS_VORLAGE_", v.Value + "_UNTER", "");
+            return unter.Length == 0 ? name : name + " (" + unter + ")";
+        }
+
+        private static string Nutzungsprofiltext(PufferAuslegungGespeichert g, System.Globalization.CultureInfo kultur)
+        {
+            if (!g.Nutzungsprofil.HasValue) return "—";
+            string name = Pauskey("PAUS_NP_", g.Nutzungsprofil.Value.ToString(), g.Nutzungsprofil.Value.ToString());
+            string herkunft = Textbaustein.Aufloesen(g.NutzungsprofilHerkunft, kultur);
+            return string.IsNullOrWhiteSpace(herkunft) ? name : name + " — " + herkunft;
+        }
+
+        private static string Bemessendtext(PufferAuslegungGespeichert g)
+        {
+            string kennung = g.BemessendeKennung;
+            if (kennung == null) return "—";
+            string krit = Pauskey("PAUS_KRIT_", kennung, kennung) + " (" + kennung + ")";
+            return g.BemessendeZone.HasValue
+                ? Pauskey("PAUS_ZONE_", g.BemessendeZone.Value.ToString(), g.BemessendeZone.Value.ToString()) + ": " + krit
+                : krit;
+        }
+
+        private static string Liter(WordKontext k, double? l) => l.HasValue ? k.F(l.Value, 0) + " l" : "—";
+
         private static string Oder(string a, string b) { return string.IsNullOrWhiteSpace(a) ? b : a; }
 
         /// <summary>PAKET E1: Bedarf eines Kanals [MWh/a]; „—", wenn die Zeile ihn nicht führt.</summary>
+        /// <summary>Ein Kanalwert der Netzverluste (BW4) mit Einheit; ohne Wert „0".</summary>
+        private static string NetzKanalWert(WordKontext k, double? wert, string einheit)
+            => wert.HasValue ? k.F(wert.Value, 1) + " " + (einheit ?? "%") : "0";
+
         private static string KanalWert(WordKontext k, ErgebnisEnergiebedarfModel e, int kanal)
         {
             if (e.Waermebedarf_Kanal == null || kanal >= e.Waermebedarf_Kanal.Length) return "—";

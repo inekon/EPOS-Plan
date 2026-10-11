@@ -1,0 +1,166 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Solarthermie
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Solarthermie.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Eingabe der Solarkollektoren''' beschreibt die Kollektorfelder des Projekts. Aus Kollektortyp, Modulanzahl, Bezugsfläche, Neigung, Azimut und Arbeitstemperatur berechnet EPOS-Plan den Ertrag nach dem Wirkungsgradmodell der EN ISO 9806; die Solarkreispumpe zählt als Stromverbraucher.
+
+Wie ein Kollektor Einstrahlung in Wärme wandelt und wovon sein Wirkungsgrad abhängt, beschreibt [[Grundlagen/Solarkollektoren]]; diese Seite zeigt, wie Sie ein Kollektorfeld in EPOS-Plan einbinden und einstellen und wie es mit Speicher und Nachheizung zusammenwirkt.
+
+== Einbindung in EPOS-Plan ==
+{{Anker|einbindung}}
+
+Ein Kollektorfeld entsteht in fünf Schritten; erst seine Senkenliste entscheidet, wohin die Wärme geht.
+
+# '''Katalog''' – Kollektortypen mit Apertur- und Modulfläche, den Kennwerten <math>h_{0}</math>, <math>k_{1}</math>, <math>k_{2}</math>, <math>K_{\mathrm{dir}}</math> und <math>K_{\mathrm{diff}}</math> nach EN 12975 bzw. ISO 9806 und der ''Bezugsfläche der Kennwerte'' (Aperturfläche oder Bruttofläche) stehen unter ''Administration → Wärme- und Kälteerzeugung → Solarkollektoren''; Herstellerdaten nach VDI 3805 liest ''Administration → Daten & Import → Import Solarthermie VDI 3805'' ein, die Bezugsfläche setzt der Import, wo die Datei sie nennt.
+# '''Kollektorfeld''' – auf der Startseite im Reiter ''Energieerzeuger'' die Kachel ''Solarthermie'' mit der Wahl ''Profil'' öffnen. In ''Eingabe der Solarkollektoren'' holt ''In das Projekt übernehmen'' einen Kollektortyp aus ''Auswahl in DB:''; jede Zeile unter ''Auswahl in Projekt:'' ist ein Feld mit einer Ausrichtung. In der Gruppe ''Kollektor'' tragen Sie ''Modulanzahl:'', ''Neigung [°]:'' und ''Azimut [°]:'' ein, nach Bedarf die Felder des Solarkreises ([[#Eingaben|Eingaben]]), dann ''Übernehmen'' und ''OK''.
+# '''Kaskade''' – in der ''Simulation Konfiguration'' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') steht das Feld als Karte unter ''Komponenten der Simulation''. Die Reihenfolge der Karten ist die Kaskade: Die oberste Karte deckt den Bedarf einer Stunde zuerst. Eine noch nie gespeicherte Kaskade schlägt die angelegten Erzeuger in der Folge der Ladeprioritäten Solarthermie, Wärmepumpe, BHKW, Heizkessel vor, die Solarthermie also vorn; ''Konfiguration speichern'' legt sie fest ([[#fallstricke|Fallstricke]]).
+# '''Wärmesenken''' – ein Doppelklick auf die Karte öffnet ''Wärmesenke - <Name>''. Rang 1 ''Heizkreis (direkte Deckung des Bedarfs)'' deckt zeitgleich, die ''Bedarfsart'' wählt Heizung, Warmwasser oder beides. Eine Puffersenke auf Rang 2 – Ziel Pufferspeicher für Heizung, Brauchwasser, Prozesswärme oder Kombi – nimmt auf, was darüber hinausgeht. Ein neues Feld erhält beim Speichern die Senke ''Heizkreis (Heizung + Warmwasser)'', wenn das Projekt Heiz- oder Warmwasserbedarf führt, bei Prozesswärmebedarf außerdem oder allein die Senke ''Prozesswärme''.
+# '''Pufferspeicher''' – ''Pufferspeicher anlegen…'' im Senkendialog oder ''Pufferspeicher anlegen / verwalten…'' in der Konfiguration öffnet ''Pufferspeicher im Projekt''. Seine ''Verwendung'' muss den Kanal der Senke enthalten; Einzelheiten stehen unter [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]].
+
+Gerechnet wird Stunde für Stunde: zuerst das Bruttopotenzial des Felds aus Einstrahlung, Außentemperatur und Kollektorkennwerten – unabhängig von Bedarf und Speicherstand –, dann die Verteilung: die Direktsenken in Rangfolge, danach die Puffersenken bis zur Obergrenze des Speichers. Was übrig bleibt, ist Überschuss und wird verworfen.
+
+{{Anker|ganglinie}}'''Ganglinie statt Kollektorfeld.''' Statt aus dem Kollektorfeld kann der Ertrag aus einer fertigen Solarthermieganglinie kommen: Die Wahl ''Ganglinie'' der Kachel öffnet den Dialog ''Solarthermieganglinien'': Er ordnet dem Projekt eine Ganglinie aus dem Katalog zu, und an derselben Stelle wird der Katalog gepflegt (siehe [[#ganglinie-dialog|Eingaben]]). Jeder ihrer 8 760 Stundenwerte ist die Wärmeleistung der Stunde in kW, also die Wärmemenge der Stunde in kWh, ohne Bezug auf eine Fläche. Ist dem Projekt eine vollständige Ganglinie zugeordnet, rechnet die Simulation sie anstelle des Kollektorfelds; sonst rechnet das Kollektorfeld. Die Ganglinie ersetzt nur das Bruttopotenzial – die Verteilung auf Direktsenken, Puffer und Überschuss bleibt dieselbe:
+* Mit einem Kollektorfeld im Projekt gelten dessen Wärmesenken, Pufferspeicher und Platz in der Kaskade für die Ganglinie; bei mehreren Feldern die des zuerst angelegten, die übrigen Felder rechnen dann nicht.
+* Ohne Kollektorfeld deckt die Ganglinie Heizung, Warmwasser und Prozesswärme direkt, ohne Puffer. Die Solarthermie braucht auch dann einen Platz in der Kaskade; die Konfiguration schlägt ihn vor.
+* Im Reiter ''Solarthermie'' der Ergebnisse und im Bericht steht die Ganglinie als eine Zeile „Solarthermie-Ganglinie ‚Name‘“ mit Bruttoertrag, genutzter Wärme und Überschuss; Fläche und Modulanzahl hat sie nicht.
+
+{{Diagramm-Anfang|titel=Einbindung der Solarthermie in Beispiel B}}
+{{Fluss-Anfang}}
+{{Flusskasten|Kollektorfeld|50 m², 35° Süd|rolle=solar}}
+{{Flusspfeil|Senken}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|Rang 1: Heizkreis|Warmwasser direkt|rolle=waerme}}
+{{Flusskasten|Rang 2: Speicher 1|3 000 l|rolle=speicher}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|vorgewärmt}}
+{{Flussspalte-Anfang}}
+{{Flusskasten|BHKW 1|60 kW thermisch|rolle=bhkw}}
+{{Flusskasten|Kessel 1 und 2|je 150 kW|rolle=kessel}}
+{{Flussspalte-Ende}}
+{{Flusspfeil|Rest}}
+{{Flusskasten|Warmwasser|220 MWh/a|rolle=waerme}}
+{{Fluss-Ende}}
+{{Diagramm-Ende|Prinzipbild. Rang 1 deckt das Warmwasser zeitgleich, Rang 2 lädt Speicher 1; was fehlt, decken BHKW 1 und die Kessel in der Reihenfolge der Kaskade. EPOS-Plan bilanziert dabei Wärmemengen je Kanal, keine Temperaturstufen.}}
+
+== Beispiel ==
+{{Anker|beispiel}}
+
+Das Hotel der Beispielanlage B (80 Zimmer, 420 MWh Heizwärme und 220 MWh Trinkwarmwasser im Jahr) wärmt sein Trinkwarmwasser mit 50 m² Flachkollektoren vor. Nachgeheizt wird mit BHKW 1 (30 kW elektrisch, 60 kW thermisch) und den Kesseln 1 und 2 mit je 150 kW; Speicher 1 fasst 3 000 l.
+
+{| class="wikitable"
+! Dialog !! Feld !! Wert !! Warum
+|-
+| Eingabe der Solarkollektoren || ''Auswahl in DB:'' → ''In das Projekt übernehmen'' || Flachkollektor, 2,5 m² Apertur je Modul || für Warmwasser genügt ein Flachkollektor; die Kennwerte kommen aus dem Katalog
+|-
+| Eingabe der Solarkollektoren || ''Modulanzahl:'' || 20 || 20 × 2,5 m² = 50 m²; ''Aperturfläche [m²]:'' zeigt 50
+|-
+| Eingabe der Solarkollektoren || ''Neigung [°]:'' / ''Azimut [°]:'' || 35 / 0 || Süddach; der Ertrag fällt vor allem im Sommerhalbjahr an, wenn nur Warmwasser gebraucht wird
+|-
+| Simulation Konfiguration || Reihenfolge unter ''Komponenten der Simulation'' || 1 Solarthermie, 2 BHKW, 3 Heizkessel || die Solarthermie deckt zuerst, das BHKW vor den Kesseln; die Vorwahl stellt sie hinter BHKW und Kessel – zweimal mit dem Pfeil nach vorn, dann ''Konfiguration speichern''
+|-
+| Wärmesenke - Kollektorfeld || Rang 1: ''Ziel'' / ''Bedarfsart'' || Heizkreis (direkte Deckung des Bedarfs) / nur Warmwasser || zeitgleiche Deckung des Warmwassers; die Heizung erhält keine Solarwärme
+|-
+| Wärmesenke - Kollektorfeld || Rang 2: ''Ziel'' / ''Pufferspeicher'' / ''Ladeprio'' || Pufferspeicher Brauchwasser / Speicher 1 / nach Vorgabe (10 - Solarthermie) || der Ertrag über dem Momentanbedarf wird gespeichert statt verworfen; als vorrangiger Lader füllt das Feld bis zur Abschaltschwelle
+|-
+| Pufferspeicher im Projekt || ''Verwendung:'' / ''Vorlauf [°C]:'' / ''Rücklauf [°C]:'' || Brauchwasser / 60 / 35 || passt zur Senke; 25 K Spreizung, der Dialog zeigt <math>Q_{\mathrm{max}}</math> 87,0&nbsp;kWh
+|-
+| Pufferspeicher im Projekt || ''… nachrangig [%]:'' || leer || Automatik 30 %: nachrangige Lader füllen höchstens 26 kWh, der Raum bis 95 % bleibt der Solarthermie
+|-
+| Pufferspeicher im Projekt || ''Mindestfüllstand/Notreserve [%]:'' || 10 || wirkt hier, weil BHKW 1 den Speicher lädt: die untersten 10 % bleiben als Vorrat stehen
+|-
+| Wärmesenke - BHKW 1 || Rang 2: ''Ziel'' / ''Pufferspeicher'' / ''Ladeprio'' || Pufferspeicher Brauchwasser / Speicher 1 / nach Vorgabe (30 - BHKW) || Rang 1 bleibt Heizkreis mit Warmwasservorrang; als nachrangiger Lader füllt das BHKW bis 30 %, und dieser Speicherraum lässt es auch bei kleinem Bedarf laufen ([[Programm Dokumentation/BHKW#beispiel|BHKW: Beispiel]])
+|-
+| Wärmesenke - Kessel 1, Kessel 2 || Rang 1 || Heizkreis (direkte Deckung des Bedarfs) / Beides (Warmwasser zuerst) || die Kessel decken nur den Rest und laden den Speicher nicht
+|}
+
+{{Anker|ergebnisse|deckungsanteil|modultabelle}}'''Was zu erwarten ist und wo Sie es prüfen.''' Als Abschätzung, nicht als Rechenergebnis: 50 m² liefern an einem Standort in Deutschland rund 20 bis 25 MWh im Jahr, gut ein Zehntel des Trinkwarmwassers – im Hochsommer knapp ein Fünftel, im Winter wenige Prozent. Weil das Hotel auch im Sommer mehr Warmwasser zapft, als das Feld liefert, bleibt der Überschuss klein. Der Reiter ''Solarthermie'' der Simulationsergebnisse zeigt ''Kollektorertrag brutto:'', ''davon genutzt:'', ''Überschuss:'', ''Restwärmebedarf:'' und ''Wärmebedarfsdeckung:'' – bezogen auf den ganzen Wärmebedarf des Projekts, hier also nur rund 3 bis 4 % –, darunter die Tabelle je Kollektorfeld mit Fläche, Anzahl und den Jahreswerten brutto, genutzt und Überschuss. ''Ergebnis → Autarkie Analyse'' stellt die Monate im Bild ''Wärmebedarf & Deckung'' dar, mit der Zeile ''Solare Deckung je Monat''. Was das Feld dem BHKW an Laufzeit nimmt, zeigen im Reiter ''BHKW'' die Vollbenutzungsstunden. Der Knopf ''CSV…'' in der Leiste des Diagramms speichert die Jahresganglinie ([[Programm Dokumentation/Simulationsergebnisse#diagrammbedienung|Simulationsergebnisse: Diagrammbedienung]]).
+
+<!-- Modell der Säulen (Abschätzung, kein Rechenergebnis von EPOS-Plan):
+     Solarertrag je Monat Q = 50 m² · H · eta · 0,92 mit
+       H   = Einstrahlung auf 35° Süd an einem Standort in Deutschland [kWh/m²]:
+             45 65 105 140 160 160 165 150 115 85 45 35 (Summe 1 270)
+       eta = mittlerer Kollektorwirkungsgrad bei 50 °C Arbeitstemperatur (Wahl fest):
+             0,20 0,28 0,35 0,40 0,44 0,46 0,47 0,45 0,40 0,33 0,22 0,15
+       0,92 = Vorgabe der Verluste des Solarkreises (8 %) wie im Programm.
+     Q [MWh]: 0,41 0,84 1,69 2,58 3,24 3,39 3,57 3,10 2,12 1,29 0,46 0,24; Jahr 22,9 MWh.
+     Trinkwarmwasser je Monat T = 220 MWh · Tage des Monats / 365 (16,9 bis 18,7 MWh).
+     Der Ertrag gilt als voll genutzt (Warmwasserbedarf und Speicher nehmen ihn auf).
+     Säulenhöhe = Q / 3,57 MWh · 100 (Juli = 100); Zahl über der Säule = Q / T des Monats;
+     Jahr: 22,9 / 220 = 10 %. -->
+{{Diagramm-Anfang|titel=Beispiel B: Solarertrag je Monat und Anteil am Trinkwarmwasser}}
+{{Säulen-Anfang|achse=Solarertrag je Monat, volle Höhe rund 3,6 MWh}}
+{{Säule|Jan|solar=11.6|wert=2 %}}
+{{Säule|Feb|solar=23.5|wert=5 %}}
+{{Säule|Mär|solar=47.4|wert=9 %}}
+{{Säule|Apr|solar=72.2|wert=14 %}}
+{{Säule|Mai|solar=90.8|wert=17 %}}
+{{Säule|Jun|solar=94.9|wert=19 %}}
+{{Säule|Jul|solar=100|wert=19 %}}
+{{Säule|Aug|solar=87.0|wert=17 %}}
+{{Säule|Sep|solar=59.3|wert=12 %}}
+{{Säule|Okt|solar=36.2|wert=7 %}}
+{{Säule|Nov|solar=12.8|wert=3 %}}
+{{Säule|Dez|solar=6.8|wert=1 %}}
+{{Säulen-Ende|Zahl über der Säule: Anteil am Trinkwarmwasser des Monats}}
+{{Legende|solar=Solarertrag, direkt und über Speicher 1 genutzt}}
+{{Diagramm-Ende|Beispielwerte, gerundet: Abschätzung mit mittleren Monatswerten, kein Rechenergebnis von EPOS-Plan. Im Jahr rund 23 MWh, ein Zehntel des Trinkwarmwassers.}}
+
+== Zusammenspiel mit anderen Technologien ==
+{{Anker|zusammenspiel}}
+
+Zwei Reihenfolgen bestimmen, was ein Kollektorfeld deckt: die Kaskade für die Direktdeckung einer Stunde und die ''Ladeprio'' für die Speicherladung. Mit der Vorgabe 10 lädt die Solarthermie vor Wärmepumpe (20), BHKW (30) und Heizkessel (40).
+
+{| class="wikitable"
+! Technik !! Wirkung auf … !! Wirkung von … !! So rechnet EPOS-Plan
+|-
+| Pufferspeicher || die Solarthermie füllt ihn bis zur Abschaltschwelle || er nimmt auf, was über den Momentanbedarf hinausgeht; ohne ihn wird dieser Teil verworfen || Puffersenke mit ''Ladeprio''; lädt die Solarthermie vorrangig und ist ''… nachrangig [%]'' leer, laden alle übrigen Lader nur bis 30 % ([[Programm Dokumentation/Pufferspeicher#bewirtschaftung|Schwellen]])
+|-
+| BHKW || die Solarthermie deckt vor ihm und füllt den gemeinsamen Speicher; das BHKW verliert Laufzeit, vor allem im Sommer || darf das BHKW den Speicher über eine hoch gepflegte Grenze füllen, nimmt es der Solarthermie den Platz || das BHKW schaltet gegen den offenen Bedarf plus den freien Speicherraum bis zu seiner Obergrenze; was es in dieser Stunde einzulagern plant, ist für die übrigen Lader reserviert
+|-
+| Heizkessel || die Solarthermie senkt die Kesselwärme || ein Kessel mit Puffersenke lädt mit seiner freien Leistung bis zu seiner Obergrenze || steht der Kessel am Ende der Kaskade und ohne Puffersenke, deckt er nur den Rest
+|-
+| Wärmepumpe || die Solarthermie deckt vor ihr und füllt den gemeinsamen Speicher || lädt die Wärmepumpe denselben Speicher, gilt für sie die Nachrang-Grenze || eine Wärmepumpe im Betriebsmodus ''PV-optimiert'' mit einem Puffer auf Rang 1 wird in Stunden mit PV-Überschuss vorrangig, wenn ihre Priorität unter ''Bei PV-Überschuss:'' kleiner ist als die der Solarthermie; ist ''… nachrangig [%]'' gepflegt, lädt die Solarthermie in diesen Stunden nur bis zu diesem Wert
+|-
+| Wärmebedarf || – || Warmwasser gibt es auch im Sommer; Heizwärme fehlt, wenn die Sonne am meisten liefert || die ''Bedarfsart'' der Direktsenke und die ''Verwendung'' des Speichers legen fest, welche Kanäle das Feld beliefert
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Nicht in der Kaskade oder hinten eingereiht.''' Ein Feld ohne Platz unter ''Komponenten der Simulation'' rechnet nicht mit; die Konfiguration nennt nicht aufgenommene Erzeuger über den Karten, der Lauf im Protokoll. Solange Sie die Reihenfolge nicht selbst geordnet haben, schlägt die Konfiguration die Solarthermie vor allen anderen Erzeugern vor. In einer von Hand gepflegten Kaskade bleibt sie dort, wo Sie sie hingesetzt haben; steht sie hinter BHKW und Kessel, findet ihre Direktsenke den Bedarf schon gedeckt; ohne Puffersenke deckt das Feld praktisch nichts, und der Ertrag erscheint als Überschuss. Schieben Sie die Karte mit dem Pfeil nach vorn.
+* '''Ohne Puffersenke nur zeitgleich.''' Was über den Momentanbedarf hinausgeht, wird verworfen. Die Karte trägt dann den Hinweis ''Konfiguration prüfen'' mit der Empfehlung, einen Pufferspeicher anzuschließen.
+* '''Nachrang zu hoch.''' Darf ein nachrangiger Lader den Speicher bis 80 % oder höher füllen – über ''… nachrangig [%]'' oder eine ''eigene Ladeobergrenze'' –, halten Kessel oder BHKW ihn in der Heizzeit fast voll, und die Solarwärme kommt nur in Höhe des Momentanbedarfs durch; die Karte der Solarthermie meldet das. Leeren Sie das Feld (Automatik 30 %) oder senken Sie den Wert.
+* {{Anker|ueberschuss-und-dimensionierung|ueberschuss}}'''Überschuss ist der Maßstab.''' Steigt der Überschuss im Reiter ''Solarthermie'' deutlich, ist das Feld für Bedarf und Speicher zu groß. Deckt ein Feld nur Heizwärme, fällt der Sommerertrag größtenteils weg: In einem gerechneten Gebäude mit 68 MWh Heizwärme ohne Warmwasser, 80 m² Kollektorfläche und 3 000 l Puffer wurden von rund 38 MWh Bruttoertrag nur 11 MWh genutzt.
+* '''Übernehmen vergessen.''' Modulanzahl, Neigung und Azimut gelangen erst mit ''Übernehmen'' in das Feld; ''OK'' speichert nur, was übernommen ist.
+* '''Azimut 0° ist Süden.''' Negative Werte zeigen nach Osten, positive nach Westen – anders als bei den Bauteilen des Gebäudes, wo 0° Norden bedeutet.
+* '''Ganglinie zugeordnet, aber unvollständig.''' Eine Ganglinie mit weniger oder mehr als 8 760 Werten oder mit leeren oder negativen Werten rechnet nicht; der Lauf meldet den Mangel im Protokoll und rechnet mit dem Kollektorfeld. Ohne Kollektorfeld liefert die Solarthermie dann nichts, und der Statuspunkt der Kachel bleibt grau.
+* '''Ganglinie und Kollektorfeld zugleich.''' Ist eine vollständige Ganglinie zugeordnet, rechnet sie – auch wenn die Kachel auf ''Profil'' steht. Die Wahl der Kachel öffnet nur den Dialog; wer wieder mit dem Kollektorfeld rechnen will, entfernt die Ganglinie mit ''Ganglinie'' und ''Aus dem Projekt entfernen'' aus dem Projekt.
+* '''Arbeitstemperatur fest oder aus dem Speicher.''' Mit ''fest 50 °C'' rechnet der Kollektor das ganze Jahr gegen 50 °C – ein kalter Speicherboden oder eine Vorwärmstufe bringt dann keinen Mehrertrag, ein Puffer mit hohem Rücklauf keinen Minderertrag. ''aus dem Speicher'' folgt der untersten Zone des Puffers, den das Feld lädt; das ist die genauere Wahl, sobald ein Puffer da ist.
+* '''Bezugsfläche passend zu den Kennwerten.''' Stehen <math>h_{0}</math>, <math>k_{1}</math> und <math>k_{2}</math> im Datenblatt auf der Bruttofläche, gehört im Katalog ''Bruttofläche (Modulfläche)'' gewählt und die Modulfläche gepflegt; sonst liegt der Ertrag um das Verhältnis der beiden Flächen daneben.
+* '''Was EPOS-Plan nicht abbildet.''' Es gibt keine Stagnation und keine Kollektorabschaltung; die Verluste des Solarkreises sind ein Prozentsatz ohne Leitungslänge, der Wärmeübertrager ist eine Grädigkeit. Die Einstrahlung auf die geneigte Fläche wird isotrop gerechnet, und Vor- und Rücklauf des Kollektors sind keine Eingabe – seine Temperatur folgt aus der Arbeitstemperatur.
+
+== Eingaben ==
+
+Der Dialog ''Verwaltung Solarkollektoren'' hat drei gerahmte Bereiche übereinander: ''Im Projekt'' (oben), ''Katalog (Datenbank)'' und ''Gewählter Satz''. Die Trennlinie zwischen den beiden Listen lässt sich ziehen; die Aufteilung wird je Dialog gemerkt. Beide Listen kennen die Mehrfachwahl mit Kästchen und mit dem Kästchen im Spaltenkopf; die Knöpfe eines Bereichs wirken auf die gewählten Zeilen. Ein Doppelklick oder Enter auf einer Katalogzeile übernimmt sie in das Projekt. Der Stift in einer Zeile öffnet den Satz zum Bearbeiten – in der Projektliste die Projektkopie, in der Katalogliste den Katalogsatz; ein gesperrter Katalogsatz ist nur lesbar, bis das Schloss aufgehoben ist. Auf kleinen Bildschirmen (iPad) werden die Elemente kompakter, Rollbalken erscheinen nur dort, wo sie nötig sind.
+
+Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehmen, Rückweg und die Zeile ''Gewählter Satz'' — steht unter [[Programm Dokumentation/Gerätekataloge#katalogauswahl|Gerätekataloge: Katalogauswahl im Projektdialog]]. Beim Kollektorfeld zählt die Summe in der Kopfleiste ''Im Projekt'' die Module der Projektliste. Der Satz ''Kollektor'' mit Modulanzahl, Neigung, Azimut, Albedo und Solarkreis steht beim Projektsatz in der Überlagerung ''Bearbeiten'' der Zeile ''Gewählter Satz''; er gehört zum Feld im Projekt und geht beim Rückweg nicht in den Katalog. ''Neu…'' fragt einen Namen ab und öffnet den Katalogeditor für einen neuen Kollektorsatz, ''Bearbeiten…'' eines einzelnen ungesperrten Satzes öffnet denselben Editor. ''In die Datenbank übernehmen…'' nimmt Flächen, Kennwerte (<math>\eta_{0}</math>, <math>k_{1}</math>, <math>k_{2}</math>, Winkelkorrekturen), Bezugsfläche und Investitionskosten in den Katalog.
+[[Datei:Bildschirmfoto_Solarkollektoren.png|mini|zentriert|800px|Solarkollektoren – Bildschirmfoto mit Beispieldaten.]]
+
+* '''Katalog (Datenbank)''' – Suchfeld ''Suche über alle Spalten:'' (mit den Platzhaltern ''*'' und ''?'') und Trefferzahl; Spalten Bezeichner, Hersteller, Kollektortyp, <math>A_{\mathrm{ap}}</math>, <math>\eta_{0}</math> und <math>k_{1}</math>. Die Spaltenköpfe sortieren und filtern, ''Spalten…'' wählt die angezeigten Spalten, und ein farbiger Punkt ''im Projekt verwendet'' kennzeichnet Katalogzeilen, die im Projekt stehen. ''In das Projekt übernehmen'' legt von den gewählten Katalogsätzen je eine Projektkopie an; die Zeile im Projekt bleibt mit dem Katalogsatz verknüpft. Die Fußleiste führt ''Vergleichen…'' (ab zwei gewählten Sätzen), ''Schloss setzen…''/''Schloss aufheben…'', ''Löschen'', ''Bearbeiten…'' und rechts ''Neu…''. ''Löschen'' entfernt die gewählten Katalogsätze nach einer Rückfrage für alle Projekte. Gesperrte Katalogsätze (Auslieferungssätze) sind nur lesbar, bis das Schloss aufgehoben ist. Bei mehreren gewählten Sätzen öffnet ''Bearbeiten…'' die Mehrfachbearbeitung (‹ 1 von n ›), in der ''für alle gewählten setzen'' einen Wert in allen gewählten Sätzen einträgt; gespeichert wird in einem Zug – alle Sätze oder keiner.
+* '''Im Projekt''' – die Kollektorfelder des Projekts mit der Summe der Module. ''Aus dem Projekt entfernen'' nimmt die gewählten Zeilen aus der Liste; die Projektkopie wird erst mit ''OK'' gelöscht. ''Bearbeiten…'' öffnet die Projektkopien der gewählten Felder. ''In die Datenbank übernehmen…'' legt aus den gewählten Projektsätzen neue Katalogsätze unter neuem Namen an oder überschreibt deren Ursprungssatz (nur, wenn er nicht gesperrt ist); die Rückfrage zeigt als Vorschau die Abweichungen. Ein Name, der im Katalog schon vergeben ist, wird abgelehnt.
+* '''Gewählter Satz''' – zugeklappt zeigt er die Marke ''Projektsatz'' oder ''Katalogsatz'', den Namen und die Kenndaten des Satzes; aufgeklappt eine kurze Zusammenfassung der Anlagendaten (Aperturfläche, Modulanzahl, Neigung, Azimut, Solarkreis, Kosten). ''Bearbeiten'' rechts öffnet den Satz als Überlagerung in voller Höhe mit allen Feldern, beim Projektsatz mit den Kostenknöpfen. ''OK'' speichert, ''Abbrechen'' verwirft alle Eingaben der Überlagerung samt den Anlagenfeldern. ''Investitionskosten…'' und ''Betriebskosten…'' in der Überlagerung des Projektsatzes führen zu den Kosten des Felds.
+* {{Anker|kollektorfeld|beschreibung-des-kollektorfelds|neigung-und-azimut}}'''Kollektor''' – nur beim Projektsatz eines Kollektorfelds, in der Überlagerung ''Bearbeiten'': ''Modulanzahl:'', ''Aperturfläche [m²]:'' als Anzeige (Aperturfläche eines Moduls mal Modulanzahl, die Rechengröße), ''Neigung [°]:'' (0° waagerecht, 90° senkrecht) und ''Azimut [°]:'' (0° Süd, negativ nach Osten, positiv nach Westen) und ''Albedo [-]:'' (Bodenalbedo vor dem Feld, 0 bis 1, leer = 0,2). Dazu der Solarkreis: ''Leistung Solarkreispumpe [W]:'' (leer = kein Pumpenstrom, außer die Anlage führt einen Hilfsenergieanteil; der Strom zählt in jeder Stunde, in der das Feld Wärme abgibt), ''Verluste Solarkreis [%]:'' (leer = 8 %), ''Arbeitstemperatur:'' mit ''fest 50 °C'' oder ''aus dem Speicher'' und, nur mit ''aus dem Speicher'', ''Grädigkeit Wärmeübertrager [K]:'' (leer = 5 K für einen externen Plattenübertrager; ein innenliegendes Glattrohr liegt bei etwa 10 K) und ''Spreizung Kollektorkreis [K]:'' (leer = 10 K). Die Zeile ''Senken:'' nennt die Wärmesenken des Felds. ''OK'' der Überlagerung speichert die Werte am Feld, ''Abbrechen'' verwirft sie.
+* {{Anker|ganglinie-dialog}}'''Dialog Solarthermieganglinien''' – oben ''Im Projekt'', darunter der Katalog mit Bezeichner, Beschreibung, Jahresarbeit [MWh] und Spitze [kW], je Spalte sortier- und filterbar; ''In das Projekt übernehmen'' und ''Aus dem Projekt entfernen'' ordnen zu. Unter ''Gewählter Satz'' zeigt der Dialog aufgeklappt die Jahresganglinie mit Jahresarbeit, Spitzenlast und Vollbenutzungsstunden, dem Schalter ''sortiert'', der Einheit und dem Zoom; ''Vergrößern'' öffnet das Bild in voller Höhe. ''Bearbeiten'' öffnet den Satz als Überlagerung in voller Höhe, ''OK'' speichert, ''Abbrechen'' verwirft die Eingaben. Unter dem Katalog: ''Vergleichen'' stellt die mit Strg-Klick markierten Ganglinien nebeneinander, ''Schloss setzen…''/''Schloss aufheben…'' schaltet den Schreibschutz eines Auslieferungssatzes, ''Ganglinie Löschen'' löscht nach Rückfrage – gesperrt für Auslieferungssätze und für Ganglinien, die ein Projekt verwendet; der Knopf nennt den Grund. ''Import…'' liest eine Jahresreihe aus einer Text-, CSV- oder Excel-Datei: 8 760 Stundenwerte oder 35 040 Viertelstundenwerte in kW (Viertelstunden werden je Stunde gemittelt), eine Spalte oder mit Trennzeichen (Semikolon, Tabulator, senkrechter Strich, Komma), Dezimalpunkt oder Dezimalkomma, wahlweise mit Kopfzeile und Zeitstempelspalte – das Format erkennt EPOS-Plan selbst. Der Dateiname wird der Name der Ganglinie, die Kopfzeile ihre Beschreibung; ein schon vergebener Name wird nicht überschrieben. Nach dem Einlesen ist die neue Ganglinie gewählt, und eine Zeile nennt das erkannte Format, die Zahl der Werte, das Raster, die Jahresarbeit und die Spitze. Derselbe Dialog öffnet sich ohne Projekt über ''Administration → Profile & Lastgänge → Solarthermieganglinie''; dann zeigt er nur den Katalog und schließt mit ''Beenden''.
+
+== Siehe auch ==
+
+* [[Grundlagen/Solarkollektoren]] – die fachlichen Hintergründe
+* [[Programm Dokumentation/Pufferspeicher]] – Speicher, Schwellen und Ladereihenfolge
+* [[Programm Dokumentation/Simulation#senkenliste|Simulation: Wärmesenken einer Anlage]] – Senkenliste und Ladeverhalten
+* [[Grundlagen/Hydraulikschemata|Hydraulikschemata]] – die hydraulische Einbindung als Prinzipschema
+
+[[Kategorie:Programm Dokumentation]]
+
+
+== Berechnung ==
+{{Anker|ertragsberechnung|en-12975|wirkungsgrad}}
+Die Ertragsberechnung folgt dem Wirkungsgradmodell nach EN ISO 9806 mit dem optischen Wirkungsgrad, den beiden Verlustkoeffizienten und den Einfallswinkelkorrekturen der Direkt- und der Diffusstrahlung. Für jede Stunde wertet EPOS-Plan die Einstrahlung auf die geneigte Fläche und die Temperaturdifferenz zwischen der Arbeitstemperatur – fest 50 °C oder aus der untersten Zone des Speichers plus Grädigkeit und halber Spreizung – und der Außenluft aus und zieht die Verluste des Solarkreises ab (Vorgabe 8 %); die Solarkreispumpe geht in jeder Betriebsstunde in den Strombedarf. Der Kollektorertrag aus Einstrahlung und Kollektorkennlinie steht unter [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]].

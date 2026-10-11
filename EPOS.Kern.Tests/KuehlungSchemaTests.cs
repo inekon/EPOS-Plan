@@ -140,7 +140,7 @@ namespace EPOS.Kern.Tests
         /// Die Referenzprojekte mit Kühlung und ihre Gebäude (Einfrierregel „gesäte Kältedaten"):
         /// 1017 mit 10599 und seine Kopie im Referenzprojekt der Anlagenkopplung, 1047 mit 10653.
         /// </summary>
-        private static readonly (int Projekt, int Gebaeude)[] REFERENZEN_MIT_KUEHLUNG = { (1017, 10599), (1047, 10653) };
+        private static readonly (int Projekt, int Gebaeude)[] REFERENZEN_MIT_KUEHLUNG = { (1017, 10599), (1047, 10653), (1055, 10661), (1056, 10662), (1058, 10664), (1059, 10665), (1060, 10668), (1061, 10666), (1062, 10667), (1063, 10669), (1064, 10670) };   // 1064: Kopie von 1017 (FK)   // 1063: Kopie von 1055 (KM3)   // 1060: Kopie von 1056 (UB-E2-d)   // 1055: Kopie von 1017 (KU3-4b), 1056: Kopie von 1047 (AK2-4), 1058: Kopie von 1056 (AK3-W5a), 1059: Kopie von 1058 (AK3-K-K5a)
 
         /// <summary>
         /// Alle Strukturen stehen, und sie tragen allein die gesäten Kältedaten der
@@ -174,7 +174,8 @@ namespace EPOS.Kern.Tests
                             string.Join(", ", REFERENZEN_MIT_KUEHLUNG.Select(r => r.Gebaeude.ToString(CultureInfo.InvariantCulture))) + "))";
             foreach (SchemaSpalte s in GebaeudeSchema.Kuehlspalten)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name +
-                                      "] IS NOT NULL AND [" + s.Name + "] <> 0" + string.Format(ausser, s.Tabelle)));
+                                      "] IS NOT NULL AND [" + s.Name + "] <> 0" + string.Format(ausser, s.Tabelle) +
+                                      Konditionierungsbestand.Ausser(s.Tabelle)));   // 1051: Kuehlung_Aktiv bei Kühlbetrieb aus (KP3, RP1)
             foreach ((int projekt, int gebaeude) in REFERENZEN_MIT_KUEHLUNG)
             {
                 DataRow g = DataRepository.GetDataTable(

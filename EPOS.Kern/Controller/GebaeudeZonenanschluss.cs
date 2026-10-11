@@ -38,8 +38,16 @@ namespace WindowsFormsApplication1
         private static bool? _tabelleVorhanden;
         private static string _pfadKuehl;
         private static bool? _kuehlspaltenVorhanden;
+        private static string _pfadUebergabe;
+        private static bool? _uebergabespaltenVorhanden;
         private static string _pfadKopplung;
         private static bool? _kopplungVorhanden;
+        private static string _pfadNutzungsprofil;
+        private static bool? _nutzungsprofilVorhanden;
+        private static string _pfadFlaechenherkunft;
+        private static bool? _flaechenherkunftVorhanden;
+        private static string _pfadNordherkunft;
+        private static bool? _nordherkunftVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -79,8 +87,16 @@ namespace WindowsFormsApplication1
                 _tabelleVorhanden = null;
                 _pfadKuehl = null;
                 _kuehlspaltenVorhanden = null;
+                _pfadUebergabe = null;
+                _uebergabespaltenVorhanden = null;
                 _pfadKopplung = null;
                 _kopplungVorhanden = null;
+                _pfadNutzungsprofil = null;
+                _nutzungsprofilVorhanden = null;
+                _pfadFlaechenherkunft = null;
+                _flaechenherkunftVorhanden = null;
+                _pfadNordherkunft = null;
+                _nordherkunftVorhanden = null;
             }
         }
 
@@ -131,6 +147,95 @@ namespace WindowsFormsApplication1
             {
                 _pfadKuehl = pfad;
                 _kuehlspaltenVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Zone</c> die vier Spalten der Übergabe je Zone (Schritt
+        /// <see cref="ZonenUebergabeSchema.SCHRITT"/>)? Gemerkt je Datenbankpfad wie
+        /// <see cref="KuehlspaltenVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool UebergabespaltenVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_uebergabespaltenVorhanden.HasValue && string.Equals(pfad, _pfadUebergabe, StringComparison.OrdinalIgnoreCase))
+                    return _uebergabespaltenVorhanden.Value;
+            }
+
+            bool da = ZonenUebergabeSchema.ZoneVorhanden();
+            lock (_sperre)
+            {
+                _pfadUebergabe = pfad;
+                _uebergabespaltenVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Zone</c> die Spalte <c>Nutzungsprofil</c> (Schritt <see cref="RaumnutzungSchema.SCHRITT"/>)?
+        /// Gemerkt je Datenbankpfad wie <see cref="UebergabespaltenVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool NutzungsprofilVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_nutzungsprofilVorhanden.HasValue && string.Equals(pfad, _pfadNutzungsprofil, StringComparison.OrdinalIgnoreCase))
+                    return _nutzungsprofilVorhanden.Value;
+            }
+
+            bool da = RaumnutzungSchema.ZonenspalteVorhanden();
+            lock (_sperre)
+            {
+                _pfadNutzungsprofil = pfad;
+                _nutzungsprofilVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Bauteil</c> die Spalte <c>Flaechenherkunft</c> (Schritt <see cref="FlaechenherkunftSchema.SCHRITT"/>)?
+        /// Gemerkt je Datenbankpfad wie <see cref="NutzungsprofilVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool FlaechenherkunftVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_flaechenherkunftVorhanden.HasValue && string.Equals(pfad, _pfadFlaechenherkunft, StringComparison.OrdinalIgnoreCase))
+                    return _flaechenherkunftVorhanden.Value;
+            }
+
+            bool da = FlaechenherkunftSchema.Vollstaendig();
+            lock (_sperre)
+            {
+                _pfadFlaechenherkunft = pfad;
+                _flaechenherkunftVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Importquelle</c> die Spalte <c>Nordwinkel_Herkunft</c> (Schritt <see cref="NordrichtungSchema.SCHRITT"/>)?
+        /// Gemerkt je Datenbankpfad wie <see cref="FlaechenherkunftVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool NordherkunftVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_nordherkunftVorhanden.HasValue && string.Equals(pfad, _pfadNordherkunft, StringComparison.OrdinalIgnoreCase))
+                    return _nordherkunftVorhanden.Value;
+            }
+
+            bool da = NordrichtungSchema.Vollstaendig();
+            lock (_sperre)
+            {
+                _pfadNordherkunft = pfad;
+                _nordherkunftVorhanden = da;
             }
             return da;
         }

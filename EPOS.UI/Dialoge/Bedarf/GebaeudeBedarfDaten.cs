@@ -79,6 +79,13 @@ public sealed class GebaeudeBedarfDaten
     public int? SommerlueftungsstundenH { get; init; }
 
     /// <summary>
+    /// Stunden mit wirksamer Nachtauskühlung [h] — nur auf dem VDI-Weg mit gesetzter
+    /// Nachtauskühlung, sonst <c>null</c> (Konzept Konditionierungsprofile 3.7). Der Dialog zeigt die
+    /// Zeile nur mit Wert.
+    /// </summary>
+    public int? NachtauskuehlstundenH { get; init; }
+
+    /// <summary>
     /// Der jeweils ANDERE Rechenweg desselben Gebäudes — die zweite Spalte des Vergleichs
     /// alt/neu (Konzept 8.2, Umsetzungskonzept 2.7). <c>null</c> = kein Vergleich (der andere
     /// Weg lieferte nichts). Er lebt, solange es zwei Rechenwege gibt (bis Stufe GA,
@@ -108,6 +115,116 @@ public sealed class GebaeudeBedarfDaten
 
     /// <summary>Die leise Zeile unter der Vorlaufkachel, fertig formuliert: Übergabeart und Auslegungspunkt.</summary>
     public string Heizkreiszeile { get; init; } = "";
+
+    // ---- Anlagenkopplung AK2 (Konzept 9.4, 5.5, 6.2): Komfort neben Restbedarf ------------
+    //
+    // Erhoben nur am gekoppelt gerechneten Gebäude; sonst null - die Kacheln zeigen dann „—" (K18).
+
+    /// <summary>Stunden der Nutzungszeit mehr als die Schwelle unter dem Heizsollwert [h]; <c>null</c> = nicht erhoben.</summary>
+    public int? KomfortUnterschreitungsstundenH { get; init; }
+
+    /// <summary>Summe der Unterschreitungen [Kh]; <c>null</c> = nicht erhoben.</summary>
+    public double? KomfortKelvinstundenKh { get; init; }
+
+    /// <summary>Längste zusammenhängende Unterschreitung [h]; <c>null</c> = nicht erhoben.</summary>
+    public int? KomfortLaengsteStreckeH { get; init; }
+
+    /// <summary>Kälteseite: Stunden über dem Kühlsollwert [h]; <c>null</c> = nicht erhoben.</summary>
+    public int? KomfortUeberschreitungsstundenH { get; init; }
+
+    /// <summary>Kälteseite: Summe der Überschreitungen [Kh]; <c>null</c> = nicht erhoben.</summary>
+    public double? KomfortKelvinstundenKuehlungKh { get; init; }
+
+    /// <summary>Wärmerestbedarf des Projekts aus dem letzten Lauf [MWh/a] — steht neben den Komfortstunden.</summary>
+    public double? RestbedarfProjektMwh { get; init; }
+
+    /// <summary>Der Bedarfsbegriff im Lauf mit Fahrplan („mit Rückwirkung" / „feste Last"); leer ohne Fahrplan.</summary>
+    public string Bedarfsbegriff { get; init; } = "";
+
+    /// <summary>Stunden, in denen der Anlagenfahrplan das Gebäude begrenzt hat [h]; <c>null</c> ohne Fahrplan.</summary>
+    public int? FahrplanBegrenztStundenH { get; init; }
+
+    // ---- Anlagenkopplung AK3 (Entwurf AK3 Festlegungen 20 und 22): Kennzahlen des Kreises, Rückstufe ------
+    //
+    // Die Kennzahlen stammen aus der Projektzeile des letzten Laufs; null, wenn er den Kreis nicht rechnete.
+
+    /// <summary>Durchläufe je Stunde im Mittel [–]; <c>null</c> ohne Lauf mit AK3.</summary>
+    public double? Ak3DurchlaeufeMittel { get; init; }
+
+    /// <summary>Die größte Zahl der Durchläufe einer Stunde [–].</summary>
+    public int? Ak3DurchlaeufeMax { get; init; }
+
+    /// <summary>Wechsel der Stützstelle und des Betriebsfalls [–].</summary>
+    public int? Ak3Fallwechsel { get; init; }
+
+    /// <summary>Stunden, in denen die Schranke des Angebots eine Zone begrenzte [h].</summary>
+    public int? Ak3SchrankeStundenH { get; init; }
+
+    /// <summary>Stunden mit Heizungspuffer am Kreis und nichts entnehmbar [h].</summary>
+    public int? Ak3SpeicherLeerStundenH { get; init; }
+
+    /// <summary>Stunden mit Restbedarf der Kaskade [h].</summary>
+    public int? Ak3RestbedarfStundenH { get; init; }
+
+    /// <summary>Hat der letzte Lauf den geschlossenen Kreis gerechnet?</summary>
+    public bool Ak3Erhoben => Ak3DurchlaeufeMittel.HasValue;
+
+    // ---- AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kälteseite im Kreis ------------------------
+    //
+    // Aus der Projektzeile des letzten Laufs; null, wenn die jeweilige Seite nicht erhoben wurde.
+
+    /// <summary>Zonentage mit Sperre der Gegenseite [d]; <c>null</c> ohne Zonensperre im Lauf.</summary>
+    public int? ZonensperreTage { get; init; }
+
+    /// <summary>Raumheizung des Probetags an Kühltagen, gesperrt [MWh].</summary>
+    public double? ZonensperreHeizenGesperrtMwh { get; init; }
+
+    /// <summary>Raumkühlung des Probetags an Heiztagen, gesperrt [MWh].</summary>
+    public double? ZonensperreKuehlenGesperrtMwh { get; init; }
+
+    /// <summary>Stunden, in denen die Kälteschranke des Kreises griff [h]; <c>null</c> ohne Kälteseite im Kreis.</summary>
+    public int? Ak3KaelteschrankeStundenH { get; init; }
+
+    /// <summary>Stunden mit Umschaltung der Wärmepumpe [h].</summary>
+    public int? Ak3UmschaltStundenH { get; init; }
+
+    /// <summary>Stunden mit Kälte-Restbedarf [h].</summary>
+    public int? Ak3KaelterestStundenH { get; init; }
+
+    /// <summary>Kälte-Restbedarf im Jahr [MWh].</summary>
+    public double? Ak3KaelterestMwh { get; init; }
+
+    /// <summary>Lief im letzten Lauf die Zonensperre?</summary>
+    public bool ZonensperreErhoben => ZonensperreTage.HasValue;
+
+    /// <summary>Rechnete der Kreis im letzten Lauf die Kälteseite?</summary>
+    public bool Ak3KaelteErhoben => Ak3KaelteschrankeStundenH.HasValue;
+
+    // ---- KK (Entwurf KK, Festlegung 12): die Kennzahlen der Kühlkurve ------------------------------------------
+    //
+    // Aus der Projektzeile des letzten Laufs; null, wenn der Lauf keine wirksame Kühlkurve rechnete.
+
+    /// <summary>Mittlerer verlangter Kühlvorlauf der Kühlstunden [°C].</summary>
+    public double? KuehlkurveVorlaufMittelC { get; init; }
+
+    /// <summary>Summe der Absenkung durch den Raumeinfluss der Kühlkurve [Kh].</summary>
+    public double? KuehlkurveAbsenkungKh { get; init; }
+
+    /// <summary>Kühlstunden mit der Kurve an der Vorlaufgrenze [h].</summary>
+    public int? KuehlkurveVorlaufgrenzeStundenH { get; init; }
+
+    /// <summary>Rechnete der letzte Lauf eine wirksame Kühlkurve?</summary>
+    public bool KuehlkurveErhoben
+        => KuehlkurveVorlaufMittelC.HasValue || KuehlkurveAbsenkungKh.HasValue || KuehlkurveVorlaufgrenzeStundenH.HasValue;
+
+    /// <summary>
+    /// Der Hinweis der Rückstufe (Festlegung 20): Mit Stufe AK3 rechnet diese Auskunft ohne geschlossenen Kreis auf
+    /// dem Profilweg; leer ohne Rückstufe.
+    /// </summary>
+    public string Rueckstufe { get; init; } = "";
+
+    /// <summary>Sind am Gebäude Komfortkennzahlen erhoben?</summary>
+    public bool KomfortErhoben => KomfortUnterschreitungsstundenH.HasValue || KomfortUeberschreitungsstundenH.HasValue;
 
     // ---- E37: der Kältekreis (Anlagenkopplung 8.3, 10.5), gespiegelt zum Heizkreis ----------
     //
@@ -150,6 +267,12 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Stunden mit gleichzeitigem Heizen und Kühlen [h] (K6, nicht saldiert).</summary>
     public int? StundenHeizenUndKuehlenH { get; init; }
 
+    /// <summary>Heizwärme in den Stunden mit gleichzeitigem Heizen und Kühlen der Zonen [kWh] (KU3-3, F-K15); <c>null</c> außerhalb des Mehrzonenwegs mit Kühlung.</summary>
+    public double? GleichzeitigHeizenKwh { get; init; }
+
+    /// <summary>Kältebedarf in denselben Stunden [kWh] (KU3-3, F-K15); <c>null</c> wie <see cref="GleichzeitigHeizenKwh"/>.</summary>
+    public double? GleichzeitigKuehlenKwh { get; init; }
+
     /// <summary>Die zwölf Monatssummen der Kühlreihe in <b>MWh</b>; leer = keine Kühlspalte.</summary>
     public IReadOnlyList<double> KuehlMonatswerteMwh { get; init; } = new List<double>();
 
@@ -165,6 +288,12 @@ public sealed class GebaeudeBedarfDaten
     /// je Zone, auch unbeheizt; leer bei höchstens einer Zone.
     /// </summary>
     public IReadOnlyList<GebaeudeBedarfZoneDaten> Zonen { get; init; } = new List<GebaeudeBedarfZoneDaten>();
+
+    /// <summary>
+    /// Die Gruppe „Aufheizung" (Entwurf KP3, Welle O2; E60): Ergebniszeile des Laufs bzw. bei ausgeschalteter
+    /// Optimierung die Auslegungsgröße aus der Auskunft; <c>null</c> = keine Gruppe (Tagesbilanz-Weg, keine Bemessung).
+    /// </summary>
+    public GebaeudeBedarfAufheizDaten? Aufheizung { get; init; }
 }
 
 /// <summary>
@@ -190,4 +319,28 @@ public sealed class GebaeudeBedarfZoneDaten
 
     /// <summary>Stunden der Nutzungszeit über der oberen Raumtemperatur der Zone [h].</summary>
     public int? UeberhitzungsstundenH { get; init; }
+
+    /// <summary>Stunden mit wirksamer Nachtauskühlung der Zone [h]; <c>null</c> ohne Nachtauskühlung.</summary>
+    public int? NachtauskuehlstundenH { get; init; }
+
+    /// <summary>Mittlerer Vorlauf des Zonenkreises über die Heizstunden [°C] (AK1z, E63); <c>null</c> bei idealer oder unbeheizter Zone.</summary>
+    public double? VorlaufMittelC { get; init; }
+
+    /// <summary>Mittlerer Rücklauf des Zonenkreises über die Heizstunden [°C] (E63); <c>null</c> bei idealer oder unbeheizter Zone.</summary>
+    public double? RuecklaufMittelC { get; init; }
+
+    /// <summary>Stunden mit begrenzender Übergabe der Zone [h] (E63); <c>null</c> bei idealer oder unbeheizter Zone.</summary>
+    public double? UebergabeBegrenztH { get; init; }
+
+    /// <summary>Rechnet die Zone gekoppelt (mit eigenem Heizkreis)?</summary>
+    public bool IstGekoppelt => VorlaufMittelC.HasValue;
+
+    /// <summary>Jahressumme des Kältebedarfs der Zone [MWh] (KU3-3); <c>null</c> ohne wirksame Kühlung der Zone.</summary>
+    public double? KaeltebedarfMwh { get; init; }
+
+    /// <summary>Höchste Stunde des Kältebedarfs der Zone [kW] (KU3-3); <c>null</c> wie <see cref="KaeltebedarfMwh"/>.</summary>
+    public double? KaeltespitzeKw { get; init; }
+
+    /// <summary>Stunden mit Kältebedarf der Zone [h] (KU3-3); <c>null</c> wie <see cref="KaeltebedarfMwh"/>.</summary>
+    public int? KuehlstundenH { get; init; }
 }

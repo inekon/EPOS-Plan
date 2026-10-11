@@ -52,6 +52,8 @@ namespace WindowsFormsApplication1
                     PufferzeilenLoeschen(v, idProjekt);
                     DetailzeilenLoeschen(v, TAB_SP, idProjekt);
                     DetailzeilenLoeschen(v, TAB_GEB, idProjekt);
+                    // EQ1: die Erdreichpruefung haengt am Projekt, nicht am Kopf - eigens weg.
+                    ErdreichErgebnisSpeicher.Schreiben(v, idProjekt, null, ErdreichErgebnisSpeicher.Vorhanden());
 
                     //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
                     {
@@ -96,6 +98,9 @@ namespace WindowsFormsApplication1
             StelleKuehlSpaltenSicher();     // Ergebnisspalten des Kuehlkanals (Schritt 110, KU-S4)
             StelleKaelteerzeugerSpaltenSicher(); // Kaelteseite der Waermepumpe (Schritt 119, E34)
             bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
+            // EQ1: die Erdreichpruefung - nur, wo der Schemaschritt der Katalogfassung die Tabelle
+            // angelegt hat; ebenso vor der Transaktion gefragt.
+            bool erdreichTabelle = ErdreichErgebnisSpeicher.Vorhanden();
             // Schritt 128 (Anlagenkopplung AK1): die vier Spalten des Heizkreises je Gebaeude -
             // ebenso vor der Transaktion gefragt; vor 128 bleibt die Zeile die des Schritts 107.
             bool heizkreisSpalten = gebaeudeTabelle && ErgebnisGebaeudeSchema.HeizkreisVollstaendig();
@@ -104,11 +109,51 @@ namespace WindowsFormsApplication1
             bool zonenTabelle = gebaeudeTabelle && TabelleVorhanden(ZonenkopplungSchema.TAB_ERGEBNIS);
             // KAK-S3 (E37): die Ergebnisspalten der Kaelteseite - ebenso vor der Transaktion gefragt;
             // auf einer Datenbank davor bleiben die Zeilen, wie sie waren (Waechter: Spalte vorhanden).
+            // KU3-4d (Schritt 184): die Abrechnungsspalten je Kaeltemaschine - ebenso vor der Transaktion gefragt.
+            bool kmAbrechnung = System.Linq.Enumerable.All(KaeltestromabrechnungSchema.SPALTEN,
+                                    s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte));
+            // KM3 (Schritt 210): die fünf Ergebnisspalten von Teillast und Takten; vor dem Schritt nicht geschrieben.
+            bool kmTeillast = System.Linq.Enumerable.All(KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN,
+                                    s => DataRepository.SpalteVorhanden(KaeltemaschineTeillastSchema.TAB_ERGEBNIS, s.Spalte));
             bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
                                          s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
+            // AK2-1 (Schritt 186): die Komfort- und Fahrplanspalten des Energiebedarfs - ebenso vor der
+            // Transaktion gefragt; auf einer Datenbank davor bleibt die Zeile, wie sie war.
+            bool komfortEnergie = AnlagenfahrplanSchema.ErgebnisspaltenVorhanden();
+            // Stufe AK3 (Ak3Schema): die Kennzahlen des geschlossenen Kreises - vor dem Schritt fehlen die Spalten.
+            bool ak3Energie = Ak3Schema.ErgebnisspaltenVorhanden();
+            // AK3-K (Ak3KSchema): die Kennzahlen der Zonensperre und der Kaelteseite im Kreis - ebenso.
+            bool ak3kEnergie = Ak3KSchema.ErgebnisspaltenVorhanden();
+            // KK (KuehlkurveSchema, Schritt 202): die Kennzahlen der Kühlkurve - ebenso.
+            bool kuehlkurveEnergie = KuehlkurveSchema.ErgebnisspaltenVorhanden();
+            // KU3-6a (Schritt 187): die Zaehler der freien Kuehlung an beiden Ergebnistabellen der Waermepumpe -
+            // ebenso vor der Transaktion gefragt; auf einer Datenbank davor bleiben die Zeilen, wie sie waren.
+            bool freieKuehlungWp = FreieKuehlungSoleSchema.ErgebnisspaltenVorhanden();
+            // VW1a (Schritt 188): der Ausweis der Vorlaufwahl an der Modulzeile der Waermepumpe - ebenso vor der
+            // Transaktion gefragt; auf einer Datenbank davor bleibt die Zeile, wie sie war.
+            bool vorlaufwahlWp = VorlaufwahlSchema.ErgebnisspaltenVorhanden();
+            // UB-E2 (Schritt 205): die Betriebsbereiche an beiden Ergebnistabellen der Waermepumpe - ebenso vor der
+            // Transaktion gefragt; ohne Bivalenzobjekt bleiben die Spalten NULL.
+            bool bereicheWp = UebergabegrenzeSchema.ErgebnisspaltenVorhanden();
             bool kuehlkreisSpalten = heizkreisSpalten &&
                                      System.Linq.Enumerable.All(KuehluebergabeSchema.SpaltenKuehlkreis,
                                          s => DataRepository.SpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key));
+            // Stufe KP1b (Konzept 3.7): die Kennzahl der Nachtauskuehlung - je Tabelle einzeln
+            // gefragt, vor der Transaktion; auf einer Datenbank vor dem Schemaschritt bleiben die
+            // Zeilen, wie sie waren (Muster SpalteVorhanden), und der Referenzlauf bleibt gleich.
+            bool nachtSpalteGebaeude = gebaeudeTabelle && DataRepository.SpalteVorhanden(
+                ErgebnisGebaeudeSchema.TAB, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN);
+            // Stufe G6b/KP3 (B23): die Zonenzeile entsteht aus der Spaltenliste nach Vorhandensein -
+            // jede Spalte, die die Datenbank traegt, wird geschrieben (Nachtauskuehlung KP-S1v,
+            // Sommerlueftung und Aufheizoptimierung KP-S3), ebenso vor der Transaktion gefragt.
+            List<Ergebnisspalte<ErgebnisZoneModel>> zonenSpalten = zonenTabelle
+                ? Vorhandene(ZonenkopplungSchema.TAB_ERGEBNIS, ZONENSPALTEN)
+                : new List<Ergebnisspalte<ErgebnisZoneModel>>();
+            // Stufe KP3 (KP-S3): die vierzehn Aufheizspalten des Gebaeudes - nur, wo sie stehen; auf einer
+            // Datenbank davor bleibt die Zeile, wie sie war.
+            List<Ergebnisspalte<ErgebnisGebaeudeModel>> aufheizSpaltenGebaeude = gebaeudeTabelle
+                ? Vorhandene(ErgebnisGebaeudeSchema.TAB, AUFHEIZSPALTEN_GEBAEUDE)
+                : new List<Ergebnisspalte<ErgebnisGebaeudeModel>>();
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
             // aus Tab_Energieanlagen.ID_Carrier (Befund B1, SimulationRunner), und genau so
@@ -149,6 +194,8 @@ namespace WindowsFormsApplication1
                     // haengt per Loeschweitergabe am Kopf, das DELETE ist Guertel und
                     // Hosentraeger wie bei Puffer und Stromspeicher.
                     DetailzeilenLoeschen(v, TAB_GEB, m.ID_Projekt);
+                    // KU3-4: das Ergebnis je Kaeltemaschine - derselbe Vorablauf (Loeschweitergabe am Kopf).
+                    DetailzeilenLoeschen(v, KaeltemaschineAnlageSchema.TAB_ERGEBNIS, m.ID_Projekt);
 
                     //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
                     //    Notwendig, weil ein frueherer Kopf-Delete OHNE Loeschweitergabe
@@ -229,8 +276,14 @@ namespace WindowsFormsApplication1
                                 ? ", " + KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL + ", " +
                                   KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL + ", " +
                                   KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_STUNDEN
-                                : "") + ") " +
-                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?" + (kuehlkreisEnergie ? ", ?,?,?" : "") + ")";
+                                : "") +
+                            (komfortEnergie ? ", " + string.Join(", ", AnlagenfahrplanSchema.SPALTEN_ERGEBNIS) : "") +
+                            (ak3Energie ? ", " + string.Join(", ", Ak3Schema.SPALTEN_ERGEBNIS) : "") +
+                            (ak3kEnergie ? ", " + string.Join(", ", Ak3KSchema.SPALTEN_ERGEBNIS) : "") +
+                            (kuehlkurveEnergie ? ", " + string.Join(", ", KuehlkurveSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?" + (kuehlkreisEnergie ? ", ?,?,?" : "") +
+                            (komfortEnergie ? ", ?,?,?,?,?,?" : "") + (ak3Energie ? ", ?,?,?,?,?,?" : "") +
+                            (ak3kEnergie ? ", ?,?,?,?,?,?,?" : "") + (kuehlkurveEnergie ? ", ?,?,?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
@@ -256,7 +309,97 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@k2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlRuecklaufMittelC) });
                                 p.Add(new DbParam("@k3", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlUebergabeBegrenztStundenH) });
                             }
+                            // AK2-1 (Schritt 186): NULL, solange kein Gebaeude gekoppelt rechnet; Reihenfolge wie
+                            // AnlagenfahrplanSchema.SPALTEN_ERGEBNIS.
+                            if (komfortEnergie)
+                            {
+                                p.Add(new DbParam("@f1", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KomfortUnterschreitungsstundenH) });
+                                p.Add(new DbParam("@f2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KomfortKelvinstundenKh) });
+                                p.Add(new DbParam("@f3", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KomfortLaengsteStreckeH) });
+                                p.Add(new DbParam("@f4", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.FahrplanBegrenztStundenH) });
+                                p.Add(new DbParam("@f5", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KomfortUeberschreitungsstundenH) });
+                                p.Add(new DbParam("@f6", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KomfortKelvinstundenKuehlungKh) });
+                            }
+                            // Stufe AK3 (Ak3Schema, Festlegung 22): NULL, solange der Kreis nicht rechnete; Reihenfolge wie
+                            // Ak3Schema.SPALTEN_ERGEBNIS.
+                            if (ak3Energie)
+                            {
+                                p.Add(new DbParam("@a3m", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Ak3DurchlaeufeMittel) });
+                                p.Add(new DbParam("@a3x", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3DurchlaeufeMax) });
+                                p.Add(new DbParam("@a3f", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3Fallwechsel) });
+                                p.Add(new DbParam("@a3s", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3SchrankeStundenH) });
+                                p.Add(new DbParam("@a3l", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3SpeicherLeerStundenH) });
+                                p.Add(new DbParam("@a3r", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3RestbedarfStundenH) });
+                            }
+                            // AK3-K (Ak3KSchema, Festlegung 20): NULL ausserhalb des Geltungsbereichs; Reihenfolge wie
+                            // Ak3KSchema.SPALTEN_ERGEBNIS.
+                            if (ak3kEnergie)
+                            {
+                                p.Add(new DbParam("@k3t", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.ZonensperreTage) });
+                                p.Add(new DbParam("@k3h", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.ZonensperreHeizenGesperrtMwh) });
+                                p.Add(new DbParam("@k3k", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.ZonensperreKuehlenGesperrtMwh) });
+                                p.Add(new DbParam("@k3s", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3KaelteschrankeStundenH) });
+                                p.Add(new DbParam("@k3u", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3UmschaltStundenH) });
+                                p.Add(new DbParam("@k3r", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3KaelterestStundenH) });
+                                p.Add(new DbParam("@k3m", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Ak3KaelterestMwh) });
+                            }
+                            // KK (KuehlkurveSchema, Festlegung 12): NULL ohne wirksame Kühlkurve; Reihenfolge wie
+                            // KuehlkurveSchema.SPALTEN_ERGEBNIS.
+                            if (kuehlkurveEnergie)
+                            {
+                                p.Add(new DbParam("@kkm", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlkurveVorlaufMittelC) });
+                                p.Add(new DbParam("@kka", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlkurveAbsenkungKh) });
+                                p.Add(new DbParam("@kkg", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KuehlkurveVorlaufgrenzeStundenH) });
+                            }
                             v.Ausfuehren(sql, p.ToArray());
+                        }
+                    }
+
+                    // 4a. KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine. Ohne Kaeltemaschine keine Zeile.
+                    if (m.Kaeltemaschinen != null && m.Kaeltemaschinen.Count > 0)
+                    {
+                        string sqlKm = "INSERT INTO " + KaeltemaschineAnlageSchema.TAB_ERGEBNIS + " (ID_Ergebnis, ID_Kaeltemaschine, " +
+                            "Bezeichner, Anzahl, Kaelteproduktion_MWh, Stromverbrauch_MWh, Hilfsstrom_MWh, FreieKuehlung_MWh, " +
+                            "FreieKuehlung_Stunden, Taktstunden, Unterdeckung_MWh, Stunden_Leistungsgrenze" +
+                            (kmAbrechnung ? ", Kaeltestrom_Netzbezug_MWh, Kuehl_ID_Carrier, Kuehl_EigenerZaehler, Stromspitze_kW" : "") +
+                            (kmTeillast ? ", Taktstrom_MWh, Starts, Teillaststunden, Lastgrad_Mittel, Stunden_Extrapoliert" : "") +
+                            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?" + (kmAbrechnung ? ",?,?,?,?" : "") + (kmTeillast ? ",?,?,?,?,?" : "") + ")";
+                        foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
+                        {
+                            var pk = new List<DbParam>
+                            {
+                                new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId },
+                                new DbParam("@km", DbParamTyp.Integer) { Wert = km.ID_Kaeltemaschine.HasValue ? (object)km.ID_Kaeltemaschine.Value : DBNull.Value },
+                                new DbParam("@b", DbParamTyp.VarWChar) { Wert = (object)(km.Bezeichner ?? "") },
+                                new DbParam("@n", DbParamTyp.Integer) { Wert = km.Anzahl },
+                                new DbParam("@k", DbParamTyp.Double) { Wert = R(km.Kaelteproduktion_MWh) },
+                                new DbParam("@s", DbParamTyp.Double) { Wert = R(km.Stromverbrauch_MWh) },
+                                new DbParam("@h", DbParamTyp.Double) { Wert = R(km.Hilfsstrom_MWh) },
+                                new DbParam("@f", DbParamTyp.Double) { Wert = R(km.FreieKuehlung_MWh) },
+                                new DbParam("@fs", DbParamTyp.Integer) { Wert = km.FreieKuehlung_Stunden },
+                                new DbParam("@t", DbParamTyp.Integer) { Wert = km.Taktstunden },
+                                new DbParam("@u", DbParamTyp.Double) { Wert = R(km.Unterdeckung_MWh) },
+                                new DbParam("@l", DbParamTyp.Integer) { Wert = km.Stunden_Leistungsgrenze },
+                            };
+                            // KU3-4d (Schritt 184): Netzbezug, abweichender Kuehltraeger samt Abrechnungsart, Stromspitze.
+                            if (kmAbrechnung)
+                            {
+                                bool traeger = km.Kuehl_CarrierId.HasValue && km.Kuehl_CarrierId.Value > 0;
+                                pk.Add(new DbParam("@nb", DbParamTyp.Double) { Wert = km.Kaeltestrom_Netzbezug_MWh.HasValue ? (object)R(km.Kaeltestrom_Netzbezug_MWh.Value) : DBNull.Value });
+                                pk.Add(new DbParam("@kc", DbParamTyp.Integer) { Wert = traeger ? (object)km.Kuehl_CarrierId.Value : DBNull.Value });
+                                pk.Add(new DbParam("@kz", DbParamTyp.Integer) { Wert = traeger && km.Kuehl_EigenerZaehler.HasValue ? (object)(km.Kuehl_EigenerZaehler.Value ? 1 : 0) : DBNull.Value });
+                                pk.Add(new DbParam("@sp", DbParamTyp.Double) { Wert = km.Stromspitze_kW.HasValue ? (object)R(km.Stromspitze_kW.Value) : DBNull.Value });
+                            }
+                            // KM3 (Schritt 210): ohne Teillast_Weg NULL - der Satz bleibt wie ohne KM3.
+                            if (kmTeillast)
+                            {
+                                pk.Add(new DbParam("@tm", DbParamTyp.Double) { Wert = WertOderNull(km.Taktstrom_MWh) });
+                                pk.Add(new DbParam("@st", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Starts) });
+                                pk.Add(new DbParam("@tl", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Teillaststunden) });
+                                pk.Add(new DbParam("@lg", DbParamTyp.Double) { Wert = WertOderNull(km.Lastgrad_Mittel) });
+                                pk.Add(new DbParam("@ex", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Extrapoliert) });
+                            }
+                            v.Ausfuehren(sqlKm, pk.ToArray());
                         }
                     }
 
@@ -273,8 +416,11 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_DECKUNG_PROZESS + ", " +
                             KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ", " +
                             KuehlungSchema.SPALTE_KAELTEPRODUKTION_WP + ", " +
-                            KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?, ?,?)";
+                            KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG +
+                            (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") +
+                            (bereicheWp ? ", " + string.Join(", ", UebergabegrenzeSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?, ?,?" + (freieKuehlungWp ? ", ?,?" : "") +
+                            (bereicheWp ? Platzhalter(UebergabegrenzeSchema.SPALTEN_ERGEBNIS.Count) : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = wpId });
@@ -293,6 +439,13 @@ namespace WindowsFormsApplication1
                             // Schritt 119: die Kaelteseite - NULL, solange keine Kaelteerzeugung gerechnet ist.
                             p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Kaelteproduktion_WP) });
                             p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Stromverbrauch_Kuehlung) });
+                            // Schritt 187 (KU3-6a): die freie Kuehlung - NULL, solange sie nicht erhoben ist.
+                            if (freieKuehlungWp)
+                            {
+                                p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.FreieKuehlung_MWh) });
+                                p.Add(new DbParam("@f2", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Waermepumpe.FreieKuehlung_Stunden) });
+                            }
+                            if (bereicheWp) BereichsParameter(p, m.Waermepumpe.Bereiche, false);
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -308,8 +461,13 @@ namespace WindowsFormsApplication1
                                 KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG + ", " +
                                 KuehlungSchema.SPALTE_KAELTESTROM_NETZBEZUG + ", " +
                                 KuehlungSchema.SPALTE_MODUL_KUEHL_CARRIER + ", " +
-                                KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER + ") " +
-                                "VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?)";
+                                KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER +
+                                (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") +
+                                (vorlaufwahlWp ? ", " + string.Join(", ", VorlaufwahlSchema.SPALTEN_ERGEBNIS) : "") +
+                                (bereicheWp ? ", " + string.Join(", ", UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL) : "") + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?" + (freieKuehlungWp ? ", ?,?" : "") +
+                                (vorlaufwahlWp ? ", ?,?,?" : "") +
+                                (bereicheWp ? Platzhalter(UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL.Count) : "") + ")";
                             foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
                             {
                                 {
@@ -331,6 +489,19 @@ namespace WindowsFormsApplication1
                                     p.Add(new DbParam("@k5", DbParamTyp.Integer)
                                         { Wert = mo.Kuehl_CarrierId.HasValue && mo.Kuehl_CarrierId.Value > 0
                                                      ? (object)(mo.Kuehl_EigenerZaehler == true ? 1 : 0) : DBNull.Value });
+                                    if (freieKuehlungWp)
+                                    {
+                                        p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = WertOderNull(mo.FreieKuehlung_MWh) });
+                                        p.Add(new DbParam("@f2", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.FreieKuehlung_Stunden) });
+                                    }
+                                    if (vorlaufwahlWp)
+                                    {
+                                        p.Add(new DbParam("@v1", DbParamTyp.VarWChar)
+                                            { Wert = string.IsNullOrEmpty(mo.Vorlaufwahl_Stunden) ? DBNull.Value : (object)mo.Vorlaufwahl_Stunden });
+                                        p.Add(new DbParam("@v2", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.Vorlauf_Darueber_Stunden) });
+                                        p.Add(new DbParam("@v3", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.Vorlauf_Darunter_Stunden) });
+                                    }
+                                    if (bereicheWp) BereichsParameter(p, mo.Bereiche, true);
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -688,8 +859,9 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN + ", " +
                             SchemaKatalog.SPALTE_PUFFER_ID_ANLAGE + ", " +
                             SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL + ", " +
-                            SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?)";
+                            SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN + ", " +
+                            KuehlungSchema.SPALTE_PUFFER_ENTLADUNG_KUEHLUNG + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?, ?, ?,?, ?)";
                         foreach (ErgebnisPufferspeicherModel sp in m.Pufferspeicher)
                         {
                             {
@@ -709,8 +881,8 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@a8", DbParamTyp.Double) { Wert = R(sp.Vollzyklen) });
 
                                 // PAKET E1
-                                // Nur die drei Waermekanaele: Entladung_Kuehlung bleibt NULL,
-                                // bis ein Kaeltespeicher rechnet (K7, E31).
+                                // Die drei Waermekanaele; Entladung_Kuehlung steht am Ende und ist
+                                // allein beim Kaeltespeicher belegt (KU3-5), sonst NULL.
                                 WaermekanalParameter(p, sp.Entladung_Kanal);
                                 p.Add(new DbParam("@d1", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Geladen) });
                                 p.Add(new DbParam("@d2", DbParamTyp.Double) { Wert = R(sp.Durchsatz_Entladen) });
@@ -721,6 +893,11 @@ namespace WindowsFormsApplication1
                                 // ohne Speichertemperatur ehrlich leer.
                                 p.Add(new DbParam("@t1", DbParamTyp.Double) { Wert = sp.T_oben_Mittel.HasValue ? (object)R(sp.T_oben_Mittel.Value) : DBNull.Value });
                                 p.Add(new DbParam("@t2", DbParamTyp.Double) { Wert = sp.T_oben_Min.HasValue ? (object)R(sp.T_oben_Min.Value) : DBNull.Value });
+                                p.Add(new DbParam("@kue", DbParamTyp.Double)
+                                {
+                                    Wert = WaermesenkeClass.IstKaelteVerwendung(sp.Verwendung)
+                                        ? (object)R(sp.Entladung_Kanal[Kanal.KUEHLUNG]) : DBNull.Value
+                                });
 
                                 v.Ausfuehren(sqlP, p.ToArray());
                             }
@@ -833,9 +1010,14 @@ namespace WindowsFormsApplication1
                                   KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL_C + ", " +
                                   KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_H + ", " +
                                   KuehluebergabeSchema.SPALTE_KUEHL_VORLAUFGRENZE_H
-                                : "") + ") " +
+                                : "") +
+                            (nachtSpalteGebaeude
+                                ? ", " + KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN
+                                : "") +
+                            Spaltentext(aufheizSpaltenGebaeude) + ") " +
                             "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?" + (heizkreisSpalten ? ", ?,?,?,?" : "") +
-                            (kuehlkreisSpalten ? ", ?,?,?,?,?" : "") + ")";
+                            (kuehlkreisSpalten ? ", ?,?,?,?,?" : "") + (nachtSpalteGebaeude ? ", ?" : "") +
+                            Platzhalter(aufheizSpaltenGebaeude.Count) + ")";
                         foreach (ErgebnisGebaeudeModel g in m.Gebaeude)
                         {
                             List<DbParam> p = new List<DbParam>();
@@ -876,6 +1058,12 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@k4", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlUebergabeBegrenztStundenH) : DBNull.Value });
                                 p.Add(new DbParam("@k5", DbParamTyp.Double) { Wert = kuehlgekoppelt ? Oder(g.KuehlVorlaufgrenzeStundenH) : DBNull.Value });
                             }
+                            // Stufe KP1b: NULL heisst "keine Nachtauskuehlung gesetzt" (E30).
+                            if (nachtSpalteGebaeude)
+                                p.Add(new DbParam("@n1", DbParamTyp.Integer) { Wert = Oder(g.NachtauskuehlstundenH) });
+                            // Stufe KP3 (KP-S3): die Aufheizwerte, wie GebaeudeKennzahlen sie gebildet hat -
+                            // NULL heisst "Schalter aus" (Grundsatz 4).
+                            Parameter(p, aufheizSpaltenGebaeude, g);
                             v.Ausfuehren(sqlG, p.ToArray());
 
                             // Stufe G6b (A6): je Zone eine Zeile, nur Skalare, NULL = nicht gerechnet.
@@ -883,30 +1071,25 @@ namespace WindowsFormsApplication1
                             {
                                 int zeile = gId - 1;
                                 int zId = NextId(v, ZonenkopplungSchema.TAB_ERGEBNIS);
+                                string sqlZ = ZonenEinfuegen(zonenSpalten);
                                 foreach (ErgebnisZoneModel z in g.Zonen)
                                 {
                                     var pz = new List<DbParam>
                                     {
                                         new DbParam("@id", DbParamTyp.Integer) { Wert = zId++ },
                                         new DbParam("@geb", DbParamTyp.Integer) { Wert = zeile },
-                                        new DbParam("@zone", DbParamTyp.Integer) { Wert = z.ID_Zone.HasValue ? (object)z.ID_Zone.Value : DBNull.Value },
-                                        new DbParam("@rang", DbParamTyp.Integer) { Wert = Math.Max(1, z.Rang) },
-                                        new DbParam("@name", DbParamTyp.VarWChar) { Wert = (object)(z.Bezeichner ?? "") },
-                                        new DbParam("@beheizt", DbParamTyp.Integer) { Wert = z.IstBeheizt ? 1 : 0 },
-                                        new DbParam("@z1", DbParamTyp.Double) { Wert = Oder(z.HeizwaermeMwh) },
-                                        new DbParam("@z2", DbParamTyp.Double) { Wert = Oder(z.SpitzeKw) },
-                                        new DbParam("@z3", DbParamTyp.Double) { Wert = Oder(z.KuehlenergieMwh) },
-                                        new DbParam("@z4", DbParamTyp.Double) { Wert = Oder(z.MittlereRaumtemperaturC) },
-                                        new DbParam("@z5", DbParamTyp.Integer) { Wert = Oder(z.UeberhitzungsstundenH) },
-                                        new DbParam("@z6", DbParamTyp.Double) { Wert = Oder(z.DeltaThetaMaxK) },
-                                        new DbParam("@z7", DbParamTyp.Integer) { Wert = Oder(z.DurchlaeufeMax) },
-                                        new DbParam("@z8", DbParamTyp.Integer) { Wert = Oder(z.MusterwechselH) },
                                     };
-                                    v.Ausfuehren(SQL_ZONE_EINFUEGEN, pz.ToArray());
+                                    Parameter(pz, zonenSpalten, z);
+                                    v.Ausfuehren(sqlZ, pz.ToArray());
                                 }
                             }
                         }
                     }
+
+                    // 12. Detail: Erdreichpruefung (Tab_ErgebnisErdreich, EQ1) - die Zeilen des
+                    //     Projekts werden ersetzt; ohne Erdreichquelle bleibt die Tabelle fuer das
+                    //     Projekt leer. Vor dem Schemaschritt fehlt sie, dann geschieht nichts.
+                    ErdreichErgebnisSpeicher.Schreiben(v, m.ID_Projekt, m.Erdreich, erdreichTabelle);
 
                     v.Commit();
                     m.ID = kopfId;
@@ -981,6 +1164,71 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.KuehlVorlaufMittelC = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_VORLAUF_MITTEL);
                 m.Energiebedarf.KuehlRuecklaufMittelC = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL);
                 m.Energiebedarf.KuehlUebergabeBegrenztStundenH = DN(re, KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_STUNDEN);
+                // AK2-1 (Schritt 186): dieselbe Regel; eine fehlende Spalte liest null.
+                m.Energiebedarf.KomfortUnterschreitungsstundenH = GanzOderNull(re, AnlagenfahrplanSchema.SPALTE_UNTERSCHREITUNGSSTUNDEN);
+                m.Energiebedarf.KomfortKelvinstundenKh = DN(re, AnlagenfahrplanSchema.SPALTE_KELVINSTUNDEN);
+                m.Energiebedarf.KomfortLaengsteStreckeH = GanzOderNull(re, AnlagenfahrplanSchema.SPALTE_LAENGSTE_STRECKE);
+                m.Energiebedarf.FahrplanBegrenztStundenH = GanzOderNull(re, AnlagenfahrplanSchema.SPALTE_FAHRPLAN_BEGRENZT);
+                m.Energiebedarf.KomfortUeberschreitungsstundenH = GanzOderNull(re, AnlagenfahrplanSchema.SPALTE_UEBERSCHREITUNGSSTUNDEN);
+                m.Energiebedarf.KomfortKelvinstundenKuehlungKh = DN(re, AnlagenfahrplanSchema.SPALTE_KELVINSTUNDEN_KUEHLUNG);
+                // Stufe AK3 (Ak3Schema): dieselbe Regel; eine fehlende Spalte liest null.
+                m.Energiebedarf.Ak3DurchlaeufeMittel = DN(re, Ak3Schema.SPALTE_DURCHLAEUFE_MITTEL);
+                m.Energiebedarf.Ak3DurchlaeufeMax = GanzOderNull(re, Ak3Schema.SPALTE_DURCHLAEUFE_MAX);
+                m.Energiebedarf.Ak3Fallwechsel = GanzOderNull(re, Ak3Schema.SPALTE_FALLWECHSEL);
+                m.Energiebedarf.Ak3SchrankeStundenH = GanzOderNull(re, Ak3Schema.SPALTE_SCHRANKE_STUNDEN);
+                m.Energiebedarf.Ak3SpeicherLeerStundenH = GanzOderNull(re, Ak3Schema.SPALTE_SPEICHER_LEER_STUNDEN);
+                m.Energiebedarf.Ak3RestbedarfStundenH = GanzOderNull(re, Ak3Schema.SPALTE_RESTBEDARF_STUNDEN);
+                // AK3-K (Ak3KSchema): dieselbe Regel; eine fehlende Spalte liest null.
+                m.Energiebedarf.ZonensperreTage = GanzOderNull(re, Ak3KSchema.SPALTE_ZONENSPERRE_TAGE);
+                m.Energiebedarf.ZonensperreHeizenGesperrtMwh = DN(re, Ak3KSchema.SPALTE_ZONENSPERRE_HEIZEN_MWH);
+                m.Energiebedarf.ZonensperreKuehlenGesperrtMwh = DN(re, Ak3KSchema.SPALTE_ZONENSPERRE_KUEHLEN_MWH);
+                m.Energiebedarf.Ak3KaelteschrankeStundenH = GanzOderNull(re, Ak3KSchema.SPALTE_KAELTESCHRANKE_STUNDEN);
+                m.Energiebedarf.Ak3UmschaltStundenH = GanzOderNull(re, Ak3KSchema.SPALTE_UMSCHALT_STUNDEN);
+                m.Energiebedarf.Ak3KaelterestStundenH = GanzOderNull(re, Ak3KSchema.SPALTE_KAELTEREST_STUNDEN);
+                m.Energiebedarf.Ak3KaelterestMwh = DN(re, Ak3KSchema.SPALTE_KAELTEREST_MWH);
+                // KK (KuehlkurveSchema): dieselbe Regel; eine fehlende Spalte liest null.
+                m.Energiebedarf.KuehlkurveVorlaufMittelC = DN(re, KuehlkurveSchema.SPALTE_VORLAUF_MITTEL);
+                m.Energiebedarf.KuehlkurveAbsenkungKh = DN(re, KuehlkurveSchema.SPALTE_ABSENKUNG_KH);
+                m.Energiebedarf.KuehlkurveVorlaufgrenzeStundenH = GanzOderNull(re, KuehlkurveSchema.SPALTE_VORLAUFGRENZE_STUNDEN);
+            }
+
+            // KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine; vor dem Schritt fehlt die Tabelle.
+            if (DataRepository.TabelleVorhanden(KaeltemaschineAnlageSchema.TAB_ERGEBNIS))
+            {
+                DataTable dk = DataRepository.GetDataTable(
+                    "SELECT * FROM " + KaeltemaschineAnlageSchema.TAB_ERGEBNIS + " WHERE ID_Ergebnis = ? ORDER BY ID",
+                    new DbParam("@e", m.ID));
+                if (dk != null)
+                    foreach (DataRow rk in dk.Rows)
+                    {
+                        double? idKm = DN(rk, KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE);
+                        m.Kaeltemaschinen.Add(new ErgebnisKaeltemaschineModel
+                        {
+                            ID_Kaeltemaschine = idKm.HasValue ? (int?)Convert.ToInt32(idKm.Value) : null,
+                            Bezeichner = S(rk, "Bezeichner"),
+                            Anzahl = Math.Max(1, I(rk, "Anzahl")),
+                            Kaelteproduktion_MWh = D(rk, "Kaelteproduktion_MWh"),
+                            Stromverbrauch_MWh = D(rk, "Stromverbrauch_MWh"),
+                            Hilfsstrom_MWh = D(rk, "Hilfsstrom_MWh"),
+                            FreieKuehlung_MWh = D(rk, "FreieKuehlung_MWh"),
+                            FreieKuehlung_Stunden = I(rk, "FreieKuehlung_Stunden"),
+                            Taktstunden = I(rk, "Taktstunden"),
+                            Unterdeckung_MWh = D(rk, "Unterdeckung_MWh"),
+                            Stunden_Leistungsgrenze = I(rk, "Stunden_Leistungsgrenze"),
+                            // KU3-4d (Schritt 184); vor dem Schritt bzw. aus einem Lauf davor NULL.
+                            Kaeltestrom_Netzbezug_MWh = DN(rk, KaeltestromabrechnungSchema.SPALTE_NETZBEZUG),
+                            Kuehl_CarrierId = KmTraeger(DN(rk, KaeltestromabrechnungSchema.SPALTE_KUEHL_ID_CARRIER)),
+                            Kuehl_EigenerZaehler = DN(rk, KaeltestromabrechnungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER) is double z
+                                ? (bool?)(z != 0) : null,
+                            Stromspitze_kW = DN(rk, KaeltestromabrechnungSchema.SPALTE_STROMSPITZE),
+                            // KM3 (Schritt 210); vor dem Schritt bzw. ohne Teillast_Weg NULL.
+                            Taktstrom_MWh = DN(rk, KaeltemaschineTeillastSchema.SPALTE_TAKTSTROM),
+                            Starts = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_STARTS),
+                            Teillaststunden = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_TEILLASTSTUNDEN),
+                            Lastgrad_Mittel = DN(rk, KaeltemaschineTeillastSchema.SPALTE_LASTGRAD_MITTEL),
+                            Stunden_Extrapoliert = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_STUNDEN_EXTRAPOLIERT),
+                        });
+                    }
             }
 
             // Detail: Waermepumpe (+ Module).
@@ -1006,6 +1254,12 @@ namespace WindowsFormsApplication1
                 // Schritt 119: die Kaelteseite - NULL bleibt null ("keine Kaelteerzeugung gerechnet").
                 w.Kaelteproduktion_WP = DN(rw, KuehlungSchema.SPALTE_KAELTEPRODUKTION_WP);
                 w.Stromverbrauch_Kuehlung = DN(rw, KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG);
+                // Schritt 187 (KU3-6a): die freie Kuehlung - NULL bleibt null; eine fehlende Spalte gilt wie NULL.
+                w.FreieKuehlung_MWh = DN(rw, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_MWH);
+                w.FreieKuehlung_Stunden = GanzOderNull(rw, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_STUNDEN);
+                // UB-E2 (Schritt 205): die Betriebsbereiche - nur nach dem Schritt, NULL bleibt null.
+                bool bereicheLesen = UebergabegrenzeSchema.ErgebnisspaltenVorhanden();
+                if (bereicheLesen) w.Bereiche = BereicheLesen(rw, false);
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_WP_MODUL + " WHERE ID_ErgebnisWaermepumpe = ? ORDER BY ID",
@@ -1028,6 +1282,12 @@ namespace WindowsFormsApplication1
                             ? (int?)Convert.ToInt32(kuehltraeger.Value) : null;
                         double? zaehler = DN(rm, KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER);
                         mo.Kuehl_EigenerZaehler = zaehler.HasValue ? (bool?)(zaehler.Value != 0) : null;
+                        mo.FreieKuehlung_MWh = DN(rm, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_MWH);
+                        mo.FreieKuehlung_Stunden = GanzOderNull(rm, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_STUNDEN);
+                        mo.Vorlaufwahl_Stunden = TextOderNull(rm, VorlaufwahlSchema.SPALTE_VORLAUFWAHL_STUNDEN);
+                        mo.Vorlauf_Darueber_Stunden = GanzOderNull(rm, VorlaufwahlSchema.SPALTE_DARUEBER_STUNDEN);
+                        mo.Vorlauf_Darunter_Stunden = GanzOderNull(rm, VorlaufwahlSchema.SPALTE_DARUNTER_STUNDEN);
+                        if (bereicheLesen) mo.Bereiche = BereicheLesen(rm, true);
                         w.Module.Add(mo);
                     }
 
@@ -1250,6 +1510,9 @@ namespace WindowsFormsApplication1
                     sp.Durchsatz_Entladen = D(rsp, SchemaKatalog.SPALTE_PUFFER_DURCHSATZ_ENTLADEN);
                     sp.T_oben_Mittel = DN(rsp, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MITTEL);
                     sp.T_oben_Min = DN(rsp, SchemaKatalog.SPALTE_PUFFER_T_OBEN_MIN);
+                    // KU3-5: die Kühlkanalentladung des Kältespeichers (NULL bei jedem Wärmespeicher).
+                    double? kuehl = DN(rsp, KuehlungSchema.SPALTE_PUFFER_ENTLADUNG_KUEHLUNG);
+                    if (kuehl.HasValue) sp.Entladung_Kanal[Kanal.KUEHLUNG] = kuehl.Value;
 
                     m.Pufferspeicher.Add(sp);
                 }
@@ -1328,6 +1591,8 @@ namespace WindowsFormsApplication1
                     g.MittlereRaumtemperaturC = DN(rg, "MittlereRaumtemperatur_C");
                     g.UeberhitzungsstundenH = GanzOderNull(rg, "Ueberhitzungsstunden_H");
                     g.SommerlueftungsstundenH = GanzOderNull(rg, "Sommerlueftungsstunden_H");
+                    // Stufe KP1b: fehlt die Spalte oder steht sie auf NULL, bleibt die Kennzahl null.
+                    g.NachtauskuehlstundenH = GanzOderNull(rg, KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN);
                     g.ObereRaumtemperaturC = DN(rg, "ObereRaumtemperatur_C");
                     // Schritt 128 (Anlagenkopplung AK1): NULL bleibt null - "nicht gekoppelt".
                     string art = S(rg, ErgebnisGebaeudeSchema.SPALTE_UEBERGABE_ART);
@@ -1342,6 +1607,8 @@ namespace WindowsFormsApplication1
                     g.KuehlRuecklaufMittelC = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_RUECKLAUF_MITTEL_C);
                     g.KuehlUebergabeBegrenztStundenH = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_H);
                     g.KuehlVorlaufgrenzeStundenH = DN(rg, KuehluebergabeSchema.SPALTE_KUEHL_VORLAUFGRENZE_H);
+                    // Stufe KP3 (KP-S3): fehlt die Spalte oder steht sie auf NULL, bleibt der Wert null.
+                    foreach (Ergebnisspalte<ErgebnisGebaeudeModel> sp in AUFHEIZSPALTEN_GEBAEUDE) sp.Lesen(g, rg);
                     m.Gebaeude.Add(g);
                 }
 
@@ -1354,32 +1621,175 @@ namespace WindowsFormsApplication1
                     int platz = I(rz, "Merkplatz");
                     ErgebnisGebaeudeModel g = m.Gebaeude.Find(x => x.Merkplatz == platz);
                     if (g == null) continue;
-                    int zone = GanzOderNull(rz, "ID_Zone") ?? 0;
-                    g.Zonen.Add(new ErgebnisZoneModel
-                    {
-                        ID_Zone = zone > 0 ? zone : (int?)null,
-                        Rang = I(rz, "Rang"),
-                        Bezeichner = S(rz, "Bezeichner"),
-                        IstBeheizt = I(rz, "IstBeheizt") != 0,
-                        HeizwaermeMwh = DN(rz, "Heizwaerme_Mwh"),
-                        SpitzeKw = DN(rz, "Spitze_Kw"),
-                        KuehlenergieMwh = DN(rz, "Kuehlenergie_Mwh"),
-                        MittlereRaumtemperaturC = DN(rz, "MittlereRaumtemperatur_C"),
-                        UeberhitzungsstundenH = GanzOderNull(rz, "Ueberhitzungsstunden_H"),
-                        DeltaThetaMaxK = DN(rz, "DeltaThetaMax_K"),
-                        DurchlaeufeMax = GanzOderNull(rz, "DurchlaeufeMax"),
-                        MusterwechselH = GanzOderNull(rz, "Musterwechsel_H"),
-                    });
+                    // B23: dieselbe Spaltenliste wie beim Schreiben; eine fehlende Spalte bleibt null.
+                    var z = new ErgebnisZoneModel();
+                    foreach (Ergebnisspalte<ErgebnisZoneModel> sp in ZONENSPALTEN) sp.Lesen(z, rz);
+                    g.Zonen.Add(z);
                 }
 
             return m;
         }
 
-        /// <summary>Die Einfügeanweisung einer Zeile von <c>Tab_ErgebnisZone</c> (Stufe G6b, A6).</summary>
-        private const string SQL_ZONE_EINFUEGEN =
-            "INSERT INTO \"Tab_ErgebnisZone\" (\"ID\", \"ID_ErgebnisGebaeude\", \"ID_Zone\", \"Rang\", \"Bezeichner\", \"IstBeheizt\", " +
-            "\"Heizwaerme_Mwh\", \"Spitze_Kw\", \"Kuehlenergie_Mwh\", \"MittlereRaumtemperatur_C\", \"Ueberhitzungsstunden_H\", " +
-            "\"DeltaThetaMax_K\", \"DurchlaeufeMax\", \"Musterwechsel_H\") VALUES (?,?,?,?,?,?, ?,?,?,?,?, ?,?,?)";
+        // =====================================================================
+        //  Die Spaltenlisten der Gebäude- und Zonenzeilen (Stufe G6b, KP3; Befund B23)
+        // =====================================================================
+
+        /// <summary>
+        /// Eine Spalte einer Ergebniszeile: Name, Parametertyp, der Wert aus dem Modell (NULL als
+        /// <c>DBNull</c>) und der Rückweg in das Modell. Schreiben und Lesen gehen über DIESELBE Liste —
+        /// eine neue Spalte ist eine neue Zeile der Liste, kein zweiter Einfügetext.
+        /// </summary>
+        private sealed class Ergebnisspalte<T>
+        {
+            internal Ergebnisspalte(string name, DbParamTyp typ, Func<T, object> wert, Action<T, DataRow> lesen)
+            {
+                Name = name;
+                Typ = typ;
+                Wert = wert;
+                Lesen = lesen;
+            }
+
+            internal string Name { get; }
+            internal DbParamTyp Typ { get; }
+            internal Func<T, object> Wert { get; }
+            internal Action<T, DataRow> Lesen { get; }
+        }
+
+        private static Ergebnisspalte<T> Ganz<T>(string name, Func<T, int?> wert, Action<T, int?> setzen)
+            => new Ergebnisspalte<T>(name, DbParamTyp.Integer, m => Oder(wert(m)), (m, r) => setzen(m, GanzOderNull(r, name)));
+
+        private static Ergebnisspalte<T> Zahl<T>(string name, Func<T, double?> wert, Action<T, double?> setzen)
+            => new Ergebnisspalte<T>(name, DbParamTyp.Double, m => Oder(wert(m)), (m, r) => setzen(m, DN(r, name)));
+
+        /// <summary>Ein nullbarer Text: leer wird NULL, NULL wird <c>null</c>.</summary>
+        private static Ergebnisspalte<T> Text<T>(string name, Func<T, string> wert, Action<T, string> setzen)
+            => new Ergebnisspalte<T>(name, DbParamTyp.VarWChar,
+                                     m => string.IsNullOrEmpty(wert(m)) ? DBNull.Value : (object)wert(m),
+                                     (m, r) => { string t = S(r, name); setzen(m, t.Length > 0 ? t : null); });
+
+        /// <summary>
+        /// Die Spalten einer Zeile von <c>Tab_ErgebnisZone</c> nach den Schlüsseln <c>ID</c> und
+        /// <c>ID_ErgebnisGebaeude</c>, in Schemareihenfolge: Schritt S-G (G6b, A6), die Nachtauskühlung
+        /// (KP-S1v), dann KP-S3 — die Sommerlüftung und die Aufheizoptimierung. Geschrieben und gelesen
+        /// wird nur, was die Datenbank trägt (<see cref="Vorhandene{T}"/>).
+        /// </summary>
+        private static readonly Ergebnisspalte<ErgebnisZoneModel>[] ZONENSPALTEN =
+        {
+            new Ergebnisspalte<ErgebnisZoneModel>("ID_Zone", DbParamTyp.Integer,
+                z => z.ID_Zone.HasValue ? (object)z.ID_Zone.Value : DBNull.Value,
+                (z, r) => { int id = GanzOderNull(r, "ID_Zone") ?? 0; z.ID_Zone = id > 0 ? id : (int?)null; }),
+            new Ergebnisspalte<ErgebnisZoneModel>("Rang", DbParamTyp.Integer,
+                z => Math.Max(1, z.Rang), (z, r) => z.Rang = I(r, "Rang")),
+            new Ergebnisspalte<ErgebnisZoneModel>("Bezeichner", DbParamTyp.VarWChar,
+                z => z.Bezeichner ?? "", (z, r) => z.Bezeichner = S(r, "Bezeichner")),
+            new Ergebnisspalte<ErgebnisZoneModel>("IstBeheizt", DbParamTyp.Integer,
+                z => z.IstBeheizt ? 1 : 0, (z, r) => z.IstBeheizt = I(r, "IstBeheizt") != 0),
+            Zahl<ErgebnisZoneModel>("Heizwaerme_Mwh", z => z.HeizwaermeMwh, (z, w) => z.HeizwaermeMwh = w),
+            Zahl<ErgebnisZoneModel>("Spitze_Kw", z => z.SpitzeKw, (z, w) => z.SpitzeKw = w),
+            Zahl<ErgebnisZoneModel>("Kuehlenergie_Mwh", z => z.KuehlenergieMwh, (z, w) => z.KuehlenergieMwh = w),
+            Zahl<ErgebnisZoneModel>("MittlereRaumtemperatur_C", z => z.MittlereRaumtemperaturC, (z, w) => z.MittlereRaumtemperaturC = w),
+            Ganz<ErgebnisZoneModel>("Ueberhitzungsstunden_H", z => z.UeberhitzungsstundenH, (z, w) => z.UeberhitzungsstundenH = w),
+            Zahl<ErgebnisZoneModel>("DeltaThetaMax_K", z => z.DeltaThetaMaxK, (z, w) => z.DeltaThetaMaxK = w),
+            Ganz<ErgebnisZoneModel>("DurchlaeufeMax", z => z.DurchlaeufeMax, (z, w) => z.DurchlaeufeMax = w),
+            Ganz<ErgebnisZoneModel>("Musterwechsel_H", z => z.MusterwechselH, (z, w) => z.MusterwechselH = w),
+            Ganz<ErgebnisZoneModel>(KonditionierungVorlagenSchema.SPALTE_NACHTAUSKUEHLSTUNDEN,
+                z => z.NachtauskuehlstundenH, (z, w) => z.NachtauskuehlstundenH = w),
+            Text<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_ZUSTAND, z => z.AufheizZustand, (z, w) => z.AufheizZustand = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_ZEIT_MAX, z => z.AufheizzeitMaxH, (z, w) => z.AufheizzeitMaxH = w),
+            Zahl<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_AUSSEN, z => z.AufheizAussenC, (z, w) => z.AufheizAussenC = w),
+            Zahl<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_LEISTUNG, z => z.AufheizLeistungKw, (z, w) => z.AufheizLeistungKw = w),
+            Text<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_QUELLE, z => z.AufheizLeistungsquelle, (z, w) => z.AufheizLeistungsquelle = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_TAGE, z => z.Aufheiztage, (z, w) => z.Aufheiztage = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_TAGE_BEGRENZT, z => z.AufheiztageBegrenzt, (z, w) => z.AufheiztageBegrenzt = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_TAGE_UNERREICHBAR, z => z.AufheiztageUnerreichbar, (z, w) => z.AufheiztageUnerreichbar = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_TAGE_NACHWEISBAND, z => z.AufheiztageNachweisband, (z, w) => z.AufheiztageNachweisband = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_STUNDEN, z => z.AufheizstundenH, (z, w) => z.AufheizstundenH = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_ZEIT_LAENGSTE, z => z.AufheizzeitLaengsteH, (z, w) => z.AufheizzeitLaengsteH = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_SPRUENGE_AUS, z => z.AufheizspruengeAus, (z, w) => z.AufheizspruengeAus = w),
+            Zahl<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_HEIZLEISTUNG_MAX, z => z.HeizleistungMaxStundenH, (z, w) => z.HeizleistungMaxStundenH = w),
+            Ganz<ErgebnisZoneModel>(AufheizErgebnisSchema.SPALTE_SOMMERLUEFTUNG, z => z.SommerlueftungsstundenH, (z, w) => z.SommerlueftungsstundenH = w),
+            // Schritt KP-S4 (E59): die wirksame Art, geerbt vom Gebaeude.
+            Text<ErgebnisZoneModel>(AufheizManuellSchema.SPALTE_ART, z => z.AufheizArt, (z, w) => z.AufheizArt = w),
+            // Schritt 181 (E63, AK1z): der Kreis der Zone - NULL bei idealer Zone.
+            Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_VORLAUF_MITTEL, z => z.VorlaufMittelC, (z, w) => z.VorlaufMittelC = w),
+            Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_RUECKLAUF_MITTEL, z => z.RuecklaufMittelC, (z, w) => z.RuecklaufMittelC = w),
+            Zahl<ErgebnisZoneModel>(ZonenUebergabeSchema.SPALTE_UEBERGABE_BEGRENZT, z => z.UebergabeBegrenztH, (z, w) => z.UebergabeBegrenztH = w),
+            // Schritt 185 (MZ-Rest): die Kaelte der Zone - NULL ohne wirksame Kuehlung.
+            Zahl<ErgebnisZoneModel>(ZonenKaeltespitzeSchema.SPALTE_KAELTESPITZE, z => z.KaeltespitzeKw, (z, w) => z.KaeltespitzeKw = w),
+            Ganz<ErgebnisZoneModel>(ZonenKaeltespitzeSchema.SPALTE_KUEHLSTUNDEN, z => z.KuehlstundenH, (z, w) => z.KuehlstundenH = w),
+        };
+
+        /// <summary>
+        /// Die vierzehn Aufheizspalten einer Zeile von <c>Tab_ErgebnisGebaeude</c> (KP-S3), in
+        /// Schemareihenfolge; angehängt an die Spalten der Schritte 107 bis KP-S1v.
+        /// </summary>
+        private static readonly Ergebnisspalte<ErgebnisGebaeudeModel>[] AUFHEIZSPALTEN_GEBAEUDE =
+        {
+            Text<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_ZUSTAND, g => g.AufheizZustand, (g, w) => g.AufheizZustand = w),
+            Text<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_BEMESSUNG, g => g.AufheizBemessung, (g, w) => g.AufheizBemessung = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_ZEIT_MAX, g => g.AufheizzeitMaxH, (g, w) => g.AufheizzeitMaxH = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_AUSSEN, g => g.AufheizAussenC, (g, w) => g.AufheizAussenC = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_LEISTUNG, g => g.AufheizLeistungKw, (g, w) => g.AufheizLeistungKw = w),
+            Text<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_QUELLE, g => g.AufheizLeistungsquelle, (g, w) => g.AufheizLeistungsquelle = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_TAGE, g => g.Aufheiztage, (g, w) => g.Aufheiztage = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_TAGE_BEGRENZT, g => g.AufheiztageBegrenzt, (g, w) => g.AufheiztageBegrenzt = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_TAGE_UNERREICHBAR, g => g.AufheiztageUnerreichbar, (g, w) => g.AufheiztageUnerreichbar = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_TAGE_NACHWEISBAND, g => g.AufheiztageNachweisband, (g, w) => g.AufheiztageNachweisband = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_STUNDEN, g => g.AufheizstundenH, (g, w) => g.AufheizstundenH = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_ZEIT_LAENGSTE, g => g.AufheizzeitLaengsteH, (g, w) => g.AufheizzeitLaengsteH = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_SPRUENGE_AUS, g => g.AufheizspruengeAus, (g, w) => g.AufheizspruengeAus = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizErgebnisSchema.SPALTE_HEIZLEISTUNG_MAX, g => g.HeizleistungMaxStundenH, (g, w) => g.HeizleistungMaxStundenH = w),
+            // Schritt KP-S4 (E59, E60): die wirksame Art, Auslegungsheizlast und Aufheizzuschlag.
+            Text<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_ART, g => g.AufheizArt, (g, w) => g.AufheizArt = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_AUSLEGUNGSHEIZLAST, g => g.AuslegungsheizlastKw, (g, w) => g.AuslegungsheizlastKw = w),
+            Zahl<ErgebnisGebaeudeModel>(AufheizManuellSchema.SPALTE_AUFHEIZZUSCHLAG, g => g.AufheizzuschlagKw, (g, w) => g.AufheizzuschlagKw = w),
+            // Schritt 194 (E99): verwendeter Aufschlag und bemessene Aufheizzeit.
+            Ganz<ErgebnisGebaeudeModel>(AufheizAufschlagErgebnisSchema.SPALTE_AUFSCHLAG_VERWENDET,
+                g => g.AufheizAufschlagVerwendetH, (g, w) => g.AufheizAufschlagVerwendetH = w),
+            Ganz<ErgebnisGebaeudeModel>(AufheizAufschlagErgebnisSchema.SPALTE_ZEIT_BEMESSEN,
+                g => g.AufheizzeitBemessenH, (g, w) => g.AufheizzeitBemessenH = w),
+        };
+
+        /// <summary>Die Spalten der Liste, die <paramref name="tabelle"/> trägt (ohne Unterschied von Groß- und Kleinschreibung).</summary>
+        private static List<Ergebnisspalte<T>> Vorhandene<T>(string tabelle, IEnumerable<Ergebnisspalte<T>> liste)
+        {
+            var vorhanden = new HashSet<string>(DataRepository.SpaltenVonTabelle(tabelle), StringComparer.OrdinalIgnoreCase);
+            var ergebnis = new List<Ergebnisspalte<T>>();
+            foreach (Ergebnisspalte<T> s in liste)
+                if (vorhanden.Contains(s.Name)) ergebnis.Add(s);
+            return ergebnis;
+        }
+
+        /// <summary>Die Spaltennamen als Fortsetzung einer Spaltenliste: <c>, "A", "B"</c>; leer ohne Spalte.</summary>
+        private static string Spaltentext<T>(IEnumerable<Ergebnisspalte<T>> spalten)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (Ergebnisspalte<T> s in spalten) sb.Append(", \"").Append(s.Name).Append('"');
+            return sb.ToString();
+        }
+
+        /// <summary>Die Platzhalter als Fortsetzung einer Werteliste: <c>, ?, ?</c>.</summary>
+        private static string Platzhalter(int anzahl)
+        {
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < anzahl; i++) sb.Append(", ?");
+            return sb.ToString();
+        }
+
+        /// <summary>Hängt je Spalte den Wert des Modells als Parameter an.</summary>
+        private static void Parameter<T>(List<DbParam> p, IEnumerable<Ergebnisspalte<T>> spalten, T modell)
+        {
+            foreach (Ergebnisspalte<T> s in spalten)
+                p.Add(new DbParam("@" + s.Name, s.Typ) { Wert = s.Wert(modell) });
+        }
+
+        /// <summary>
+        /// Die Einfügeanweisung einer Zeile von <c>Tab_ErgebnisZone</c> aus der Spaltenliste (B23): die
+        /// beiden Schlüssel, dann jede vorhandene Spalte von <see cref="ZONENSPALTEN"/>.
+        /// </summary>
+        private static string ZonenEinfuegen(List<Ergebnisspalte<ErgebnisZoneModel>> spalten)
+            => "INSERT INTO \"" + ZonenkopplungSchema.TAB_ERGEBNIS + "\" (\"ID\", \"ID_ErgebnisGebaeude\"" +
+               Spaltentext(spalten) + ") VALUES (?, ?" + Platzhalter(spalten.Count) + ")";
 
         /// <summary>Die Zonenzeilen eines Ergebnisses samt Merkplatz des Gebäudes; <c>null</c> ohne Tabelle.</summary>
         private static DataTable ZonenZeilenLesenStill(int idErgebnis)
@@ -1879,7 +2289,8 @@ namespace WindowsFormsApplication1
         /// kurzes Feld wird als 0 geschrieben - die Spalten werden IMMER belegt, damit "nicht
         /// erhoben" (NULL, Zeile vor Schritt 52) und "erhoben und null" unterscheidbar bleiben;
         /// dieselbe Begruendung wie bei Quellwaerme und den Vbh-Spalten. Der Schreibweg der
-        /// Speicherzeile: Ihre vierte Spalte <c>Entladung_Kuehlung</c> bleibt NULL (K7).
+        /// Speicherzeile: Ihre vierte Spalte <c>Entladung_Kuehlung</c> schreibt er selbst - belegt
+        /// allein beim Kaeltespeicher (KU3-5), sonst NULL.
         /// </summary>
         private static void WaermekanalParameter(List<DbParam> p, double[] werte)
         {
@@ -1908,7 +2319,58 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Eine nullbare Stundenzahl: der Wert, oder NULL fuer "nicht erhoben".</summary>
+        private static object GanzOderDbNull(int? wert)
+        {
+            return wert.HasValue ? (object)wert.Value : DBNull.Value;
+        }
+
         /// <summary>Ein nullbarer Ergebniswert: gerundet, oder NULL fuer "nicht erhoben".</summary>
+        /// <summary>
+        /// UB‑E2: die Parameter der Betriebsbereiche in der Reihenfolge von <see cref="UebergabegrenzeSchema.SPALTEN_ERGEBNIS"/>
+        /// (bzw. <c>_MODUL</c>); ohne Bereiche (<c>null</c>) jede Spalte NULL, nicht 0.
+        /// </summary>
+        private static void BereichsParameter(List<DbParam> p, Bereichskennzahlen b, bool modul)
+        {
+            IReadOnlyList<string> spalten = modul ? UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL : UebergabegrenzeSchema.SPALTEN_ERGEBNIS;
+            object[] werte = b?.Werte(modul);
+            for (int i = 0; i < spalten.Count; i++)
+            {
+                object w = werte != null && i < werte.Length ? werte[i] : null;
+                bool ganz = spalten[i].EndsWith("_h", StringComparison.Ordinal);
+                p.Add(new DbParam("@ub" + i, ganz ? DbParamTyp.Integer : DbParamTyp.Double)
+                    { Wert = w == null ? DBNull.Value : ganz ? (object)Convert.ToInt32(w) : Convert.ToDouble(w) });
+            }
+        }
+
+        /// <summary>UB‑E2: die Betriebsbereiche einer Ergebniszeile; <c>null</c>, wenn alle Spalten NULL sind oder fehlen.</summary>
+        private static Bereichskennzahlen BereicheLesen(DataRow r, bool modul)
+        {
+            var b = new Bereichskennzahlen();
+            bool belegt = false;
+            string[] h = { UebergabegrenzeSchema.SPALTE_BEREICH_WPALLEIN_H, UebergabegrenzeSchema.SPALTE_BEREICH_PARALLEL_H,
+                           UebergabegrenzeSchema.SPALTE_BEREICH_VORWAERMUNG_H, UebergabegrenzeSchema.SPALTE_BEREICH_NURKESSEL_H };
+            string[] m = { UebergabegrenzeSchema.SPALTE_BEREICH_WPALLEIN_MWH, UebergabegrenzeSchema.SPALTE_BEREICH_PARALLEL_MWH,
+                           UebergabegrenzeSchema.SPALTE_BEREICH_VORWAERMUNG_MWH, UebergabegrenzeSchema.SPALTE_BEREICH_NURKESSEL_MWH };
+            for (int i = 0; i < 4; i++)
+            {
+                b.Stunden[i] = GanzOderNull(r, h[i]);
+                b.Mwh[i] = DN(r, m[i]);
+                belegt |= b.Stunden[i].HasValue || b.Mwh[i].HasValue;
+            }
+            b.Spreizung_Unterschritten_h = GanzOderNull(r, UebergabegrenzeSchema.SPALTE_SPREIZUNG_UNTERSCHRITTEN_H);
+            b.Ruecklauf_Ueberschritten_h = GanzOderNull(r, UebergabegrenzeSchema.SPALTE_RUECKLAUF_UEBERSCHRITTEN_H);
+            if (modul)
+            {
+                b.Bivalenzpunkt_1 = DN(r, UebergabegrenzeSchema.SPALTE_BIVALENZPUNKT_1);
+                b.Bivalenzpunkt_2 = DN(r, UebergabegrenzeSchema.SPALTE_BIVALENZPUNKT_2);
+                b.Uebergabe_Max_kW = DN(r, UebergabegrenzeSchema.SPALTE_UEBERGABE_MAX);
+                belegt |= b.Bivalenzpunkt_1.HasValue || b.Bivalenzpunkt_2.HasValue || b.Uebergabe_Max_kW.HasValue;
+            }
+            belegt |= b.Spreizung_Unterschritten_h.HasValue || b.Ruecklauf_Ueberschritten_h.HasValue;
+            return belegt ? b : null;
+        }
+
         private static object WertOderNull(double? wert)
         {
             return wert.HasValue ? (object)R(wert.Value) : DBNull.Value;
@@ -2017,6 +2479,8 @@ namespace WindowsFormsApplication1
         private static int I(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? Convert.ToInt32(r[col]) : 0; }
         /// <summary>Wie <see cref="D"/>, aber NULL bleibt NULL (P1-Vorgriff T_oben_*).</summary>
+        /// <summary>Ein Kühlträger aus der Ergebniszeile; 0 oder leer = keiner.</summary>
+        private static int? KmTraeger(double? d) => d.HasValue && d.Value > 0 ? (int?)(int)d.Value : null;
         private static double? DN(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? (double?)Convert.ToDouble(r[col]) : null; }
         private static double D(DataRow r, string col)
@@ -2025,5 +2489,9 @@ namespace WindowsFormsApplication1
         { return r.Table.Columns.Contains(col) && r[col] != DBNull.Value && Convert.ToBoolean(r[col]); }
         private static string S(DataRow r, string col)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? r[col].ToString() : ""; }
+
+        /// <summary>Text oder <c>null</c> — fehlt die Spalte oder steht NULL, bleibt es <c>null</c> (NULL-erhaltend).</summary>
+        private static string TextOderNull(DataRow r, string col)
+        { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? r[col].ToString() : null; }
     }
 }

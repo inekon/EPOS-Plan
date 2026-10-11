@@ -93,9 +93,12 @@ namespace EPOS.UI.Bausteine
 
         /// <summary>Kennt das Profil überhaupt eine Spalte, die weichen darf?</summary>
         public static bool HatRaenge(Katalogfilterprofil? profil)
+            => profil is not null && HatRaenge(profil.Spalten);
+
+        /// <summary>Dieselbe Frage fuer die ANGEZEIGTEN Spalten (Spaltenwahl, Konzept 4.10).</summary>
+        public static bool HatRaenge(IReadOnlyList<Katalogspalte> spalten)
         {
-            if (profil is null) return false;
-            foreach (Katalogspalte s in profil.Spalten)
+            foreach (Katalogspalte s in spalten)
                 if (s.Rang != Katalogspaltenrang.Immer) return true;
             return false;
         }
@@ -152,6 +155,16 @@ namespace EPOS.UI.Bausteine
                                                      IReadOnlyDictionary<string, int> laengen,
                                                      Func<Katalogspalte, bool> festgehalten,
                                                      bool mitWahlspalte = true)
+            => Stufen(profil.Spalten, laengen, festgehalten, mitWahlspalte);
+
+        /// <summary>
+        /// Dieselbe Rechnung ueber die ANGEZEIGTEN Spalten (Konzept 4.10): Eine Spalte, die
+        /// standardmaessig fehlt („im Projekt verwendet“), nimmt keinem Rang den Platz.
+        /// </summary>
+        public static Dictionary<string, int> Stufen(IReadOnlyList<Katalogspalte> spalten,
+                                                     IReadOnlyDictionary<string, int> laengen,
+                                                     Func<Katalogspalte, bool> festgehalten,
+                                                     bool mitWahlspalte = true)
         {
             var stufen = new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -159,7 +172,7 @@ namespace EPOS.UI.Bausteine
             // und jede Spalte mit Rang Immer oder mit Filter.
             int grund = RAHMEN + (mitWahlspalte ? WAHLSPALTE : 0);
             var weichend = new List<Katalogspalte>();
-            foreach (Katalogspalte s in profil.Spalten)
+            foreach (Katalogspalte s in spalten)
             {
                 if (IstElastisch(s))
                 {
@@ -178,7 +191,7 @@ namespace EPOS.UI.Bausteine
             // BeiPlatz, dann Breit, je Rang in der Folge des Profils. Die Summe steigt,
             // also steigen auch die Stufen - wird die Liste schmaler, weicht die letzte
             // zuerst.
-            var folge = new List<Katalogspalte>(profil.Spalten);
+            var folge = new List<Katalogspalte>(spalten);
             weichend.Sort((a, b) => a.Rang != b.Rang
                 ? a.Rang.CompareTo(b.Rang)
                 : folge.IndexOf(a).CompareTo(folge.IndexOf(b)));

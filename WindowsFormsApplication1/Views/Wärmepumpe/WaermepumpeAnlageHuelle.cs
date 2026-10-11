@@ -51,6 +51,8 @@ namespace WindowsFormsApplication1
             BlazorDialogForm<WaermepumpeAnlageDialog> dlg = null;
 
             WaermepumpeAnlageDaten daten = AusModell(modell);
+            // Uebergabegrenze UB-E1: Herleitungszeile und Schnellwahl - gelesen erst beim Zeichnen, je Dialog einmal.
+            BivalenzAbbildung.Lesen(modell, daten);
 
             var werte = new Dictionary<string, object>(Gaben(besitzer, daten, modell, projektId))
             {
@@ -61,6 +63,8 @@ namespace WindowsFormsApplication1
                     {
                         NachModell(daten, modell);
                         ErzeugerTraegerHuelle.Zuordnen(projektId, false, modell.ID_Carrier);
+                        // Uebergabegrenze UB-E2 (U-2): die Kaeltemittelwahl gehoert dem Geraet (Projektkopie).
+                        BivalenzAbbildung.GeraetSchreiben(daten);
                     }
                     if (dlg != null) dlg.Schliessen(b);
                 })
@@ -86,7 +90,7 @@ namespace WindowsFormsApplication1
             WErzeugerModel modell, int projektId)
         {
             // ET-5: Vorgabe der Stromtraeger des Projekts, solange die Anlage keinen fuehrt.
-            if (daten.CarrierId <= 0) daten.CarrierId = ErzeugerTraegerHuelle.Standard(projektId);
+            if (daten.CarrierId <= 0) daten.CarrierId = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_WAERMEPUMPE, 0, projektId);
 
             return new Dictionary<string, object>
             {
@@ -107,7 +111,11 @@ namespace WindowsFormsApplication1
                 // KU2 Welle 3 (Kuehlkonzept 8.2): die Kuehlgaben der Konfiguration -
                 // Stuetzstellen, Sperrgrund und Stromtraeger des Projekts, plattformfrei gebaut.
                 // Ohne Projekt keine Gruppe "Kuehlbetrieb".
-                ["Kuehlung"] = projektId > 0 ? WaermepumpeKuehlGabenBau.Bauen(projektId) : null,
+                // KU3-6 (F2): mit der Quelle der Anlagenzeile traegt der Satz den Sperrgrund der
+                // freien Kuehlung; eine neue Anlage ohne Zeile kennt ihre Quelle noch nicht.
+                ["Kuehlung"] = projektId > 0
+                    ? WaermepumpeKuehlGabenBau.Bauen(projektId, modell != null ? (modell.WQ_Typ ?? "") : null)
+                    : null,
 
                 ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
@@ -141,6 +149,12 @@ namespace WindowsFormsApplication1
                 ["Stammdaten"] = new Func<int, WaermepumpeStammDaten>(StammdatenZu),
 
                 ["TemperaturenPruefen"] = new Func<int?, int?, string>(TemperaturenPruefen),
+
+                // Anwenderauftrag 30.09.2026: Der Dialog zieht einen noch unberuehrten
+                // Rueckfallvorschlag nach, wenn ein anderer Vorlauf gewaehlt wird - ueber
+                // denselben Weg, den AusModell beim Aufbau nimmt.
+                ["RuecklaufVorbelegen"] = new Action<WaermepumpeAnlageDaten>(
+                    d => TemperaturVorbelegung.Waermepumpe(d)),
 
                 ["KostenBereit"] = new Func<bool>(
                     () => WErzeugerCtrl.AnlagenzeileNachziehen(modell, projektId)),
@@ -258,12 +272,15 @@ namespace WindowsFormsApplication1
                 ["LabelVorlauf"] = Text_("WPA_LBL_VORLAUF", "Vorlauf"),
                 ["LabelRuecklauf"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
                 ["LabelRuecklaufKurz"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
-                ["LabelNutzungszeit"] = Text_("WPA_LBL_NUTZUNGSZEIT", "Nutzungsdauer"),
                 ["LabelKennlinien"] = Text_("WPS_LBL_KENNLINIEN", "Kenndaten Kennlinien:"),
                 ["HerleitungKatalog"] = Text_("WPA_HERLEITUNG_KATALOG",
                     "Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien."),
                 ["BtnKennlinienText"] = Text_("WPA_BTN_KENNLINIEN_KATALOG",
                     "Kennlinien aus dem Katalog übernehmen"),
+                ["HerleitungKuehlKatalog"] = Text_("WPA_HERLEITUNG_KUEHL_KATALOG",
+                    "Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt."),
+                ["BtnKuehlKennlinieText"] = Text_("WPA_BTN_KUEHLKENNLINIE_KATALOG",
+                    "Kühlkennlinie aus dem Katalog übernehmen"),
                 ["TextKennlinienUebernommen"] = Text_("WPA_MSG_KENNLINIEN_UEBERNOMMEN",
                     "{0} Stützstellen aus dem Katalog in das Projekt übernommen."),
                 ["TextKennlinienOhneKatalog"] = Text_("WPA_MSG_KENNLINIEN_OHNE_KATALOG",
@@ -362,7 +379,7 @@ namespace WindowsFormsApplication1
             return Task.CompletedTask;
         }
 
-        private static KennlinienBilder BilderZuAnlage(int idWp)
+        internal static KennlinienBilder BilderZuAnlage(int idWp)
         {
             WaermepumpeKennlinienCtrl.Quelle quelle = WaermepumpeKennlinienCtrl.FuerAnlage(idWp);
             if (quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Ohne)
@@ -379,7 +396,8 @@ namespace WindowsFormsApplication1
                     quelle.Satz.Leistung, ChartRenderer.Kennlinienmarke.Kreuz),
                 quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Katalog
                     ? Kennlinienherkunft.Katalog : Kennlinienherkunft.Projekt,
-                quelle.Nachholbar);
+                quelle.Nachholbar,
+                quelle.KuehlNachholbar);
         }
 
         /// <summary>
@@ -459,7 +477,7 @@ namespace WindowsFormsApplication1
                                                         int projektId)
             => WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(modelle, projektId);
 
-        private static WaermepumpeStammDaten StammdatenZu(int idWp)
+        internal static WaermepumpeStammDaten StammdatenZu(int idWp)
         {
             WPModel m = WaermepumpeGeraeteCtrl.Geraetedaten(idWp);
             if (m == null) return null;
@@ -480,6 +498,9 @@ namespace WindowsFormsApplication1
                 Modulkosten = m.Modulkosten,
                 MaxPtherm = m.maxPTherm,
                 Bauart = m.Bauart ?? "",
+                // Welle M4 (WP1): die Taktwerte des Geräts - im Anlagendialog nur lesend.
+                MindestleistungKw = m.MindestleistungKw,
+                TaktverlustfaktorCd = m.TaktverlustfaktorCd,
                 NurLesen = m.m_bReadOnly
             };
         }
@@ -537,7 +558,11 @@ namespace WindowsFormsApplication1
                 Sperrung = m.Sperrung,
                 SperrzeitVon = m.Sperrzeit_von,
                 SperrzeitBis = m.Sperrzeit_bis,
-                Nutzungszeit = m.Nutzungszeit,
+                // V14: die Sperrfenster samt aktivem Altfenster als erste Zeile.
+                Sperrfenster = SperrfensterAbbildung.Lesen(m.ID, m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis),
+                // Die Nutzungsdauer (Tab_Energieanlagen.Nutzungszeit) fuehrt der Feldsatz
+                // nicht mehr (Anwenderauftrag 30.09.2026) - der Wert bleibt am Modell, wie
+                // er gelesen wurde, und reist mit Loeschen + Neuanlegen unveraendert mit.
                 BivalenterBetrieb = m.Bivalenter_Betrieb,
                 CarrierId = m.ID_Carrier,
 
@@ -577,11 +602,34 @@ namespace WindowsFormsApplication1
                 KuehlCarrierId = m.Kuehl_ID_Carrier,
                 KuehlEigenerZaehler = m.Kuehl_EigenerZaehler,
 
+                // KU3-6 (F1): die freie Kuehlung ueber die Waermequelle - drei Felder der Anlagenzeile.
+                KuehlFrei = m.Kuehl_Frei,
+                KuehlFreiGraedigkeitK = m.Kuehl_Frei_Graedigkeit_K,
+                KuehlFreiLeistungKw = m.Kuehl_Frei_Leistung_kW,
+
                 Modulkosten = m.Modulkosten,
                 Volumen = m.Volumen,
                 Solaranteil = m.Solaranteil,
                 RendeMix = m.rendeMix
             };
+
+            // Welle M4 (WP1): Mindestleistung und C_d der Projektkopie - nur zur Anzeige; sie reisen
+            // mit der Übernahme aus dem Katalog und werden hier nicht zurückgeschrieben.
+            WPModel geraet = m.ID_WP > 0 ? WaermepumpeGeraeteCtrl.Geraetedaten(m.ID_WP) : null;
+            if (geraet != null)
+            {
+                d.MindestleistungKw = geraet.MindestleistungKw;
+                d.TaktverlustfaktorCd = geraet.TaktverlustfaktorCd;
+            }
+
+            // Anwenderauftrag 30.09.2026: ein Ruecklauf 0/leer wird aus dem Vorlauf
+            // vorbelegt (Kern-Regel ueber TemperaturVorbelegung) - im FELDSATZ; ins Modell
+            // kommt er erst mit dem OK (NachModell).
+            // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
+            BetriebszeitenAbbildung.Lesen(m, d);
+            // Uebergabegrenze UB-E2: Einbindung und Vorwaermbetrieb, leer bleibt leer (U-1).
+            BivalenzAbbildung.AnlageLesen(m, d);
+            TemperaturVorbelegung.Waermepumpe(d);
             return d;
         }
 
@@ -598,6 +646,12 @@ namespace WindowsFormsApplication1
             m.Sperrung = d.Sperrung;
             m.Sperrzeit_bis = d.SperrzeitBis ?? 0;
             m.Sperrzeit_von = d.SperrzeitVon ?? 0;
+            // V14: die Liste der Sperrfenster - sie ueberfuehrt das Altfenster (Sperrung = 0).
+            SperrfensterAbbildung.NachModell(d, m);
+            // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
+            BetriebszeitenAbbildung.Schreiben(d, m);
+            // Uebergabegrenze UB-E2: Einbindung und Vorwaermbetrieb reisen als Modellspalten (AnlagenSql).
+            BivalenzAbbildung.AnlageSchreiben(d, m);
             m.Ruecklauf = d.Ruecklauf ?? 0;
             m.Vorlauf = d.Vorlauf ?? 0;
             m.Bivalenter_Betrieb = d.BivalenterBetrieb;
@@ -619,7 +673,6 @@ namespace WindowsFormsApplication1
             m.Volumen = d.Volumen;
             m.rendeMix = d.RendeMix;
             m.Solaranteil = d.Solaranteil;
-            m.Nutzungszeit = d.Nutzungszeit ?? 0;
 
             // Ä23: Die Stammfelder der gewaehlten Waermepumpe gehoeren zur Zeile -
             // sonst zeigte die Verwaltungsliste nach einem Wechsel 0 kW. Seit dem
@@ -644,6 +697,11 @@ namespace WindowsFormsApplication1
             // Zeile sie traegt (KuehlfelderGeladen, gesetzt beim Fuellen in AusModell).
             m.Kuehl_ID_Carrier = d.KuehlCarrierId is int kt && kt > 0 ? kt : (int?)null;
             m.Kuehl_EigenerZaehler = d.KuehlEigenerZaehler == true ? true : (bool?)null;
+            // KU3-6 (F1): die drei Felder der freien Kuehlung reisen mit der Anlagenzeile;
+            // leere Werte bleiben NULL (Festwert bzw. Kaelteleistung der Kennlinie).
+            m.Kuehl_Frei = d.KuehlFrei;
+            m.Kuehl_Frei_Graedigkeit_K = d.KuehlFreiGraedigkeitK;
+            m.Kuehl_Frei_Leistung_kW = d.KuehlFreiLeistungKw;
             if (m.KuehlfelderGeladen)
             {
                 m.Kuehlbetrieb = d.Kuehlbetrieb;

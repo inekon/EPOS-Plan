@@ -832,7 +832,7 @@ namespace WindowsFormsApplication1
             var sb = new StringBuilder();
             sb.AppendLine(string.Format(CultureInfo.CurrentCulture,
                                         MyResource.Resource.KI_DIALOGDATEN_BLOCK_KOPF,
-                                        anzeige, werte.Count));
+                                        anzeige, werte.Count, schluessel));
 
             foreach (KiFeldwert w in werte)
             {

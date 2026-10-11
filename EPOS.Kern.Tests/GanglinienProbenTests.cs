@@ -563,5 +563,65 @@ namespace EPOS.Kern.Tests
             Assert.Equal("TAB", GanglinienDatei.TrennzeichenText('\t'));
             Assert.Equal(";", GanglinienDatei.TrennzeichenText(';'));
         }
+
+        // ==================================================================
+        // Dezimaltrenner nur aus den Datenzeilen (Nachzug zu D1)
+        // ==================================================================
+
+        private static string Zeitweilig(string name, IEnumerable<string> zeilen)
+        {
+            string pfad = Path.Combine(Path.GetTempPath(), "epos-n6-" + Guid.NewGuid().ToString("N") + "-" + name);
+            File.WriteAllText(pfad, string.Join("\r\n", zeilen) + "\r\n");
+            return pfad;
+        }
+
+        [Fact]
+        public void Ein_Komma_in_der_Kopfzeile_entscheidet_nicht_gegen_Werte_mit_drei_Nachkommastellen()
+        {
+            // Werte mit genau drei Nachkommastellen entscheiden für sich nichts (Tausendertrenner?);
+            // das Komma im Beschreibungstext der Kopfzeile darf sie nicht zu 51 470 machen.
+            var zeilen = new List<string> { "Nr\tSued 45 Grad, Leistung kW" };
+            for (int i = 1; i <= 24; i++)
+                zeilen.Add(i.ToString(CultureInfo.InvariantCulture) + "\t" + (50 + i).ToString(CultureInfo.InvariantCulture) + ".470");
+            string pfad = Zeitweilig("kopfkomma.txt", zeilen);
+            try
+            {
+                GanglinienVorschau v = GanglinienDatei.Erkenne(pfad);
+                Assert.True(v.Lesbar);
+                Assert.True(v.Vorschlag.Kopfzeile);
+                Assert.Equal('\t', v.Vorschlag.Trennzeichen);
+                Assert.Equal('.', v.Vorschlag.Dezimaltrenner);
+
+                v.Vorschlag.WertSpalte = 1;      // die laufende Nummer ist keine Wertspalte (das löst der Aufrufer)
+                GanglinienRohdaten r = GanglinienDatei.Lies(pfad, v.Vorschlag);
+                Assert.Equal(51.47, r.Werte[0], 6);
+            }
+            finally { File.Delete(pfad); }
+        }
+
+        [Fact]
+        public void Ein_Punkt_in_der_Kopfzeile_entscheidet_nicht_gegen_Dezimalkomma_der_Werte()
+        {
+            // Umgekehrt: zwei Kopffelder mit Punkt, Werte mit Dezimalkomma (die meisten mit drei Stellen,
+            // einer mit einer) - entschieden wird allein in den Datenzeilen, also Komma.
+            var zeilen = new List<string> { "Nr v1.5\tLeistung 2.0 kW" };
+            for (int i = 1; i <= 23; i++)
+                zeilen.Add(i.ToString(CultureInfo.InvariantCulture) + "\t" + (50 + i).ToString(CultureInfo.InvariantCulture) + ",470");
+            zeilen.Add("24\t7,5");
+            string pfad = Zeitweilig("kopfpunkt.txt", zeilen);
+            try
+            {
+                GanglinienVorschau v = GanglinienDatei.Erkenne(pfad);
+                Assert.True(v.Lesbar);
+                Assert.True(v.Vorschlag.Kopfzeile);
+                Assert.Equal(',', v.Vorschlag.Dezimaltrenner);
+
+                v.Vorschlag.WertSpalte = 1;      // die laufende Nummer ist keine Wertspalte (das löst der Aufrufer)
+                GanglinienRohdaten r = GanglinienDatei.Lies(pfad, v.Vorschlag);
+                Assert.Equal(51.47, r.Werte[0], 6);
+                Assert.Equal(7.5, r.Werte[23], 6);
+            }
+            finally { File.Delete(pfad); }
+        }
     }
 }

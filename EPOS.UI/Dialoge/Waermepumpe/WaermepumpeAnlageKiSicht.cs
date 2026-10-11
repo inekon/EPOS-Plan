@@ -1,4 +1,5 @@
-﻿using KiKern;
+﻿using EPOS.UI.Dienste;
+using KiKern;
 
 namespace EPOS.UI.Dialoge.Waermepumpe;
 
@@ -68,9 +69,31 @@ public sealed class WaermepumpeAnlageKiSicht
     /// <summary>Bezeichner der gewählten Wärmepumpe (nur lesbar im Katalog).</summary>
     public string Bezeichner => D?.Bezeichner ?? "";
 
-    public int? Vorlauf { get => D?.Vorlauf; set { if (D is { } d) d.Vorlauf = value; } }
-    public int? Ruecklauf { get => D?.Ruecklauf; set { if (D is { } d) d.Ruecklauf = value; } }
-    public int? Nutzungszeit { get => D?.Nutzungszeit; set { if (D is { } d) d.Nutzungszeit = value; } }
+    /// <summary>
+    /// Der Vorlauf geht den Weg seines Eingabefelds (<see cref="VorlaufWeg"/>): Steht der
+    /// Rücklauf noch auf der Vorgabe, zieht die Hand ihn mit — dasselbe tut der Assistent.
+    /// </summary>
+    public int? Vorlauf
+    {
+        get => D?.Vorlauf;
+        set
+        {
+            if (VorlaufWeg is not null) { VorlaufWeg(value); return; }
+            if (D is { } d) d.Vorlauf = value;
+        }
+    }
+
+    /// <summary>
+    /// Der Handweg des Vorlaufs (<c>BeiVorlauf</c> des Dialogs) samt Rücklauf-Vorbelegung;
+    /// <c>null</c> = nur der Wert.
+    /// </summary>
+    public Action<int?>? VorlaufWeg { get; init; }
+
+    public int? Ruecklauf
+    {
+        get => D?.Ruecklauf;
+        set { if (D is { } d) { d.Ruecklauf = value; d.RuecklaufHerleitung = ""; } }
+    }
 
     // ---- Die Konfiguration ------------------------------------------------------
 
@@ -78,10 +101,130 @@ public sealed class WaermepumpeAnlageKiSicht
     public bool Sperrung { get => D?.Sperrung ?? false; set { if (D is { } d) d.Sperrung = value; } }
     public int? SperrzeitVon { get => D?.SperrzeitVon; set { if (D is { } d) d.SperrzeitVon = value; } }
     public int? SperrzeitBis { get => D?.SperrzeitBis; set { if (D is { } d) d.SperrzeitBis = value; } }
+
+    /// <summary>
+    /// Die Sperrfenster (Welle V14) als Text „Beginn-Ende; …“ in Stunden (invariant). Gesetzt wird
+    /// jedes Fenster für alle Tage mit mitgesperrtem Heizstab; ein Text, der sich nicht lesen
+    /// lässt, ändert nichts. Leer = keine Fenster.
+    /// </summary>
+    public string Sperrfenster
+    {
+        get => SperrfensterText(D?.Sperrfenster);
+        set { if (D is { } d && SperrfensterLesen(value) is { } l) d.Sperrfenster = l; }
+    }
+
+    /// <summary>Die Liste als Text „11-13; 17-19“.</summary>
+    public static string SperrfensterText(IEnumerable<SperrfensterZeile>? zeilen)
+    {
+        if (zeilen is null) return "";
+        var ci = System.Globalization.CultureInfo.InvariantCulture;
+        return string.Join("; ", zeilen.Where(z => z.VonH.HasValue && z.DauerH.HasValue)
+            .Select(z => z.VonH!.Value.ToString(ci) + "-" + ((z.VonH.Value + z.DauerH!.Value) % 24).ToString(ci)));
+    }
+
+    /// <summary>Liest „11-13; 17-19“; <c>null</c>, wenn ein Teil sich nicht lesen lässt.</summary>
+    public static List<SperrfensterZeile>? SperrfensterLesen(string? text)
+    {
+        var l = new List<SperrfensterZeile>();
+        if (string.IsNullOrWhiteSpace(text)) return l;
+        var ci = System.Globalization.CultureInfo.InvariantCulture;
+        foreach (string teil in text.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            string[] g = teil.Split('-', StringSplitOptions.TrimEntries);
+            if (g.Length != 2 ||
+                !double.TryParse(g[0], System.Globalization.NumberStyles.Float, ci, out double von) ||
+                !double.TryParse(g[1], System.Globalization.NumberStyles.Float, ci, out double bis) ||
+                von < 0 || von > 24 || bis < 0 || bis > 24) return null;
+            double dauer = bis > von ? bis - von : bis + 24 - von;
+            if (dauer <= 0 || dauer > 24) return null;
+            l.Add(new SperrfensterZeile { VonH = von, DauerH = dauer });
+        }
+        return l;
+    }
     public bool BivalenterBetrieb { get => D?.BivalenterBetrieb ?? false; set { if (D is { } d) d.BivalenterBetrieb = value; } }
     public int CarrierId { get => D?.CarrierId ?? 0; set { if (D is { } d) d.CarrierId = value; } }
     public string Betriebsart { get => D?.Betriebsart ?? ""; set { if (D is { } d) d.Betriebsart = value ?? ""; } }
     public double? Abschaltpunkt { get => D?.Abschaltpunkt; set { if (D is { } d) d.Abschaltpunkt = value; } }
+
+    /// <summary>
+    /// Die Herleitungszeile „Übergabe und Bivalenz" (Übergabegrenze UB‑E1) — nur lesbar, derselbe Wortlaut wie unter
+    /// in der Gruppe „Bivalenz und Übergabe"; leer ohne Herleitung.
+    /// </summary>
+    public string BivalenzHerleitung => WaermepumpeBivalenzText.Zeile(D, new WaermepumpeKonfigurationTexte());
+
+    // ---- Gruppe „Bivalenz und Übergabe" (Übergabegrenze UB‑E2) --------------------------------------
+
+    /// <summary>Die Einbindung als Steuerwert (DIREKT, PUFFER, WEICHE); leer = nicht gewählt. Ein anderer Wert wird abgelehnt.</summary>
+    public string Einbindung
+    {
+        get => D?.Einbindung ?? "";
+        set
+        {
+            if (D is not { } d) return;
+            if (string.IsNullOrWhiteSpace(value)) { d.Einbindung = null; return; }
+            string? wert = WaermepumpeKonfiguration.EINBINDUNGEN.FirstOrDefault(
+                e => string.Equals(e, value.Trim(), StringComparison.OrdinalIgnoreCase));
+            d.Einbindung = wert ?? throw new ArgumentException(value);
+        }
+    }
+
+    /// <summary>Die drei Einbindungen der Klappliste — Schlüssel ist der Steuerwert, Text die Anzeige der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> EinbindungWahl
+    {
+        get
+        {
+            var t = new WaermepumpeKonfigurationTexte();
+            string[] anzeige = { t.EinbindungDirekt, t.EinbindungPuffer, t.EinbindungWeiche };
+            return KiMaskenanmeldung.Eintraege(WaermepumpeKonfiguration.EINBINDUNGEN.Select((e, i) => (e, anzeige[i])),
+                                               x => x.e, x => x.Item2);
+        }
+    }
+
+    /// <summary>Vorwärmbetrieb; bei alternativ gesperrt — die Setzung „ein" wird dann benannt abgelehnt.</summary>
+    public bool Vorwaermbetrieb
+    {
+        get => D?.Vorwaermbetrieb ?? false;
+        set
+        {
+            if (D is not { } d) return;
+            if (value && d.Betriebsart == WindowsFormsApplication1.DbWerte.WP_BETRIEBSART_ALTERNATIV)
+                throw new InvalidOperationException(new WaermepumpeKonfigurationTexte().HinweisVorwaermbetriebAlternativ);
+            d.Vorwaermbetrieb = value;
+        }
+    }
+
+    /// <summary>Das Kältemittel — die Setzung wirkt wie die Schnellwahl (füllt nur ein leeres „Höchster Vorlauf").</summary>
+    public string Kaeltemittel
+    {
+        get => D?.Kaeltemittel ?? "";
+        set { if (D is { } d) WaermepumpeKonfiguration.SchnellwahlAnwenden(d, value); }
+    }
+
+    /// <summary>Die Codes der Klappliste „Kältemittel" (leer ohne Abbildung).</summary>
+    public IReadOnlyList<KiWahleintrag> KaeltemittelWahl
+        => KiMaskenanmeldung.Eintraege(D?.Kaeltemittelliste ?? Array.Empty<KaeltemittelEintrag>(), e => e.Code,
+                                       e => new WaermepumpeKonfigurationTexte().KaeltemittelText(e.Code));
+
+    /// <summary>Die Lesewerte der Gruppe (Gerätegrenzen mit Herkunft), Zeilen mit „ | " getrennt — nur lesbar.</summary>
+    public string Lesewerte => D is { } d
+        ? string.Join(" | ", WaermepumpeKonfiguration.Lesewertzeilen(d, WaermepumpeBivalenzText.Werte(d), new WaermepumpeKonfigurationTexte()))
+        : "";
+
+    /// <summary>Die Herleitung des Abschaltpunkts (eingegeben · berechnet · maßgebend) — nur lesbar; leer ohne.</summary>
+    public string AbschaltpunktHerleitung
+        => WaermepumpeBivalenzText.AbschaltpunktZeile(WaermepumpeBivalenzText.Werte(D), new WaermepumpeKonfigurationTexte());
+
+    /// <summary>Die weichen Sperren und Hinweise der Gruppe, mit „ | " getrennt — nur lesbar; leer ohne.</summary>
+    public string BivalenzBefunde
+    {
+        get
+        {
+            var texte = new WaermepumpeKonfigurationTexte();
+            return WaermepumpeBivalenzText.Werte(D)?.Befunde is { Count: > 0 } b
+                ? string.Join(" | ", b.Select(x => WaermepumpeBivalenzText.Befundtext(x, texte)))
+                : "";
+        }
+    }
 
     // ---- Der Kühlbetrieb (Stufe KU2 Welle 3; Kühlkonzept 8.2, E15, E33, E34) -----
     //
@@ -135,6 +278,27 @@ public sealed class WaermepumpeAnlageKiSicht
 
     /// <summary>Die zwei Abrechnungsarten der Maske — dieselben Texte wie ihre Optionsgruppe.</summary>
     public IReadOnlyList<KiWahleintrag> KuehlAbrechnungWahl => WaermepumpeKuehlKiWege.AbrechnungWahl();
+
+    /// <summary>„Freie Kühlung über die Wärmequelle" (KU3-6) — gesperrt ohne Sole-/Wasser-Wasser-Bauart oder gepflegte Quelle.</summary>
+    public bool KuehlFrei
+    {
+        get => D?.KuehlFrei ?? false;
+        set => WaermepumpeKuehlKiWege.KuehlFreiSetzen(D, G, value);
+    }
+
+    /// <summary>Die Grädigkeit des Wärmetauschers der freien Kühlung [K]; leer = 3,0 K.</summary>
+    public double? KuehlFreiGraedigkeitK
+    {
+        get => D?.KuehlFreiGraedigkeitK;
+        set => WaermepumpeKuehlKiWege.KuehlFreiGraedigkeitSetzen(D, G, value);
+    }
+
+    /// <summary>Die Leistungsgrenze der freien Kühlung [kW]; leer = Kälteleistung der Kennlinie.</summary>
+    public double? KuehlFreiLeistungKw
+    {
+        get => D?.KuehlFreiLeistungKw;
+        set => WaermepumpeKuehlKiWege.KuehlFreiLeistungSetzen(D, G, value);
+    }
 
     // ---- Die Stammfelder des Geräts ---------------------------------------------
 

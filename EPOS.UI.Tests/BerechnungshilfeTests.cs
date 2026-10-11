@@ -489,7 +489,21 @@ public sealed class BerechnungshilfeTests : EposBunitContext
             // Fassung 6 mit dem Abschnitt "Adaptive Entladeschwelle - die kausale
             // Ratsche" (Spezifikation 5.1.1). Auftrag #247: Fassung 7 - der
             // Abschnitt "Rastersuche" nennt die zwei Suchmethoden.
-            { "Stromspeicher", "Fassung 7" }
+            // Welle M5: Standby und Selbstentladung (Stromspeicher), Viertelstundenbilanz
+            // und Einspeisegrenze (Photovoltaik), Viertelstunden-Abzug (Strombedarf).
+            { "Stromspeicher", "Fassung 8" },
+            { "Photovoltaik", "Fassung 4" },
+            { "Strombedarf", "Fassung 4" },
+            // Welle M2: Arbeitstemperatur aus dem Speicher, Diffus-IAM, Bezugsflaeche
+            // und Solarkreis (Pumpenstrom, Verluste).
+            { "Solarthermie", "Fassung 4" },
+            // Welle M4: Takten der Waermepumpe (WP1), Teillast und Takten des BHKW (BH1, BH2).
+            { "Wärmepumpe", "Fassung 4" },
+            { "BHKW", "Fassung 4" },
+            // Welle M7: Bereitschaft nach Temperatur, Zonenanteile, Frischwassermodul (Pufferspeicher),
+            // thermische Desinfektion (Brauchwasser).
+            { "Pufferspeicher", "Fassung 4" },
+            { "Brauchwasser", "Fassung 4" }
         };
 
     /// <summary>
@@ -591,7 +605,7 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     {
         var daten = new TheoryData<string>();
         foreach (string name in new[] { "Heizkessel", "BHKW", "Wärmepumpe", "Pufferspeicher",
-                                        "Solarthermie", "Photovoltaik", "Stromspeicher" })
+                                        "Solarthermie", "Photovoltaik", "Stromspeicher", "Kühlung" })
             daten.Add(name);
         return daten;
     }
@@ -781,6 +795,25 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     };
 
     /// <summary>
+    /// UeS2: Wirte mit Zusammenfassung, deren Infoknöpfe NUR im Satzfragment stehen — es steht
+    /// ausschließlich in der Satz-Überlagerung. Heizkessel, BHKW, Puffer- und Stromspeicher legen
+    /// ihre Infoknöpfe seit UeS2b zusätzlich in den Kopf der Detailzeile (<c>SatzKopfKnoepfe</c>)
+    /// und stehen deshalb NICHT hier: ihre Knöpfe sind ohne Überlagerung erreichbar.
+    /// </summary>
+    internal static readonly HashSet<string> NurInDerUeberlagerung = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// UeS2: Ein Wirt aus <see cref="NurInDerUeberlagerung"/> zeichnet sein Satzfragment samt
+    /// Infoknöpfen nur in der Satz-Überlagerung — sie wird dafür geöffnet.
+    /// </summary>
+    internal static void SatzUeberlagerungOeffnen(IRenderedComponent<DynamicComponent> gezeichnet, string komponente)
+    {
+        if (!NurInDerUeberlagerung.Contains(komponente)) return;
+        var baustein = gezeichnet.FindComponent<EPOS.UI.Bausteine.Zweispaltenauswahl>();
+        gezeichnet.InvokeAsync(() => baustein.Instance.SatzUeberlagerungOeffnen()).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
     /// Der Berechnungsknopf ist im gezeichneten Dialog wirklich da — nicht nur im
     /// Quelltext. Gezeichnet wird auf dem Weg der Windows-Hülle (Wörterbuch →
     /// Parametersatz, Muster <c>StartkachelDialogeTests</c>), also mit dem
@@ -794,6 +827,7 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     public void Jeder_Dialog_traegt_seinen_Berechnungsknopf(string komponente, string schluessel)
     {
         var gezeichnet = AusHuelle(Komponente(komponente), Gaben(komponente));
+        SatzUeberlagerungOeffnen(gezeichnet, komponente);
 
         string[] schluesselImDialog = gezeichnet.FindComponents<InfoKnopf>()
                                                 .Select(k => k.Instance.Schluessel)
@@ -811,6 +845,7 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     public void Der_Fensterknopf_bleibt_neben_dem_Berechnungsknopf(string komponente, string schluessel)
     {
         var gezeichnet = AusHuelle(Komponente(komponente), Gaben(komponente));
+        SatzUeberlagerungOeffnen(gezeichnet, komponente);
 
         string[] schluesselImDialog = gezeichnet.FindComponents<InfoKnopf>()
                                                 .Select(k => k.Instance.Schluessel)

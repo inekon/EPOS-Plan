@@ -109,7 +109,7 @@ public sealed class TwwNutzungsartEntwurfDaten
     public string Bezeichner { get; set; } = "";
     public string Katalogversion { get; set; } = "";
 
-    /// <summary>Die Bezugsart (Id wie im Kern, 1 … 7); 0 = keine.</summary>
+    /// <summary>Die Bezugsart (Id wie im Kern, 1 … 8); 0 = keine.</summary>
     public int Bezugsart { get; set; }
 
     /// <summary>Bedarf je Einheit und Tag [kWh] je Niveau (niedrig, mittel, hoch).</summary>

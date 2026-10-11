@@ -203,6 +203,13 @@ public sealed class ParameterDaten
     // ---- P5: Heizkessel ----
     public double Bereitschaft;
 
+    /// <summary>
+    /// Die Heizgrenze der Kesselbereitschaft [°C] (<c>Tab_Einstellungen.Kessel_Heizgrenze</c>):
+    /// Ein Tag, dessen mittlere Außentemperatur darunter liegt, ist Heiztag. <c>null</c> = leer,
+    /// dann gilt die Vorgabe <c>SimulationSPK.HEIZGRENZE_VORGABE_C</c>.
+    /// </summary>
+    public double? Heizgrenze;
+
     // ---- Kühlung (Stufe KU1, Kühlkonzept 8.3; K10, E27) ----
 
     /// <summary>
@@ -218,6 +225,39 @@ public sealed class ParameterDaten
     /// Steuerwert (<c>DbWerte.ANLAGENKOPPLUNG_*</c>); <c>null</c> = aus (NULL in der Spalte).
     /// </summary>
     public string? Anlagenkopplung;
+
+    // ---- Aufheizoptimierung (Entwurf KP3, Grundsatz 5; Welle O1) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Aufheizoptimierung" (<c>Tab_Einstellungen.Aufheizoptimierung</c> und
+    /// <c>Aufheiz_*</c>) in der gespeicherten, normalisierten Form (Festlegung 24): Schalter,
+    /// Bemessung, ΔT_K, Reserve als Anteil, Art. Ohne Einstellungssatz und ohne Spalten „aus".
+    /// </summary>
+    public WindowsFormsApplication1.Aufheizvorgabe Aufheizung = WindowsFormsApplication1.Aufheizvorgabe.Aus;
+
+    // ---- Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4) ----
+
+    /// <summary>
+    /// Netzverluste je Kanal und Zirkulation (<c>Tab_Einstellungen</c>, Schritt
+    /// <c>BedarfNetzKalenderSchema</c>) in der gespeicherten, normalisierten Form; alle Kanalwerte
+    /// leer = der Projektwert <see cref="Netzverluste"/> gilt.
+    /// </summary>
+    public WindowsFormsApplication1.Netzverlustvorgabe Netzkanaele = WindowsFormsApplication1.Netzverlustvorgabe.Leer;
+    // ---- Einspeisegrenze (Welle M5, PV3) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Einspeisegrenze" (<c>Tab_Einstellungen.Einspeisegrenze_Wert</c> und
+    /// <c>Einspeisegrenze_Einheit</c>) in der gespeicherten Form; ohne Satz und ohne Spalten „keine".
+    /// </summary>
+    public WindowsFormsApplication1.Einspeisegrenze Einspeisegrenze = WindowsFormsApplication1.Einspeisegrenze.Keine;
+
+    // ---- Thermische Desinfektion (Welle M7, BW5) ----
+
+    /// <summary>
+    /// Die Projekteinstellung „Thermische Desinfektion" (<c>Tab_Einstellungen.Desinfektion_*</c>) in der
+    /// gespeicherten Form; ohne Satz und ohne Spalten „aus".
+    /// </summary>
+    public WindowsFormsApplication1.Desinfektionsvorgabe Desinfektion = WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
 
     /// <summary>
     /// Die ARBEITSKOPIE für einen Dialog, der erst im OK-Weg schreiben darf
@@ -236,8 +276,13 @@ public sealed class ParameterDaten
         UntersteLeistungsgrenze = UntersteLeistungsgrenze,
         Speicher = Speicher,
         Bereitschaft = Bereitschaft,
+        Heizgrenze = Heizgrenze,
         Kuehlbetrieb = Kuehlbetrieb,
-        Anlagenkopplung = Anlagenkopplung
+        Anlagenkopplung = Anlagenkopplung,
+        Aufheizung = Aufheizung,
+        Netzkanaele = Netzkanaele,
+        Einspeisegrenze = Einspeisegrenze,
+        Desinfektion = Desinfektion
     };
 }
 
@@ -331,6 +376,12 @@ public sealed class KaelteDaten
     /// <summary>Die Kälteerzeugertabelle (#32) — die Wärmeerzeugertabelle bleibt bei drei Kanälen.</summary>
     public IReadOnlyList<KaelteerzeugerAnzeige> Erzeuger = Array.Empty<KaelteerzeugerAnzeige>();
 
+    /// <summary>
+    /// KM3‑E3‑b (Fachkonzept Teillast und Takten 7.2): je Kältemaschine MIT Teillastweg die Kachelzeile des
+    /// Kältereiters; leer ohne solche Maschine — dann keine Kachelzeile.
+    /// </summary>
+    public IReadOnlyList<KaeltemaschineTeillastKachel> Teillast = Array.Empty<KaeltemaschineTeillastKachel>();
+
     /// <summary>Die HTML-Legende des Kälterings — dieselbe Segmentliste wie das Bild.</summary>
     public IReadOnlyList<Ringanteil> Legende = Array.Empty<Ringanteil>();
 
@@ -350,6 +401,14 @@ public sealed class KaelteDaten
     /// <summary>BV-E6: der Hinweis der Marken der Stufe „ähnlich“; sonst leer.</summary>
     public string KennzahlHinweis = "";
 }
+
+/// <summary>
+/// KM3‑E3‑b: die Kachelzeile „Teillast und Takten“ einer Kältemaschine mit Teillastweg — Taktstrom [kWh/a], Starts,
+/// Teillastanteil [%] (Teillaststunden / Verdichterstunden), kältegewichteter mittlerer Lastgrad und Jahres-EER ohne
+/// Hilfsstrom; ein nicht erhobener Wert ist <c>null</c>.
+/// </summary>
+public sealed record KaeltemaschineTeillastKachel(string Anlage, double TaktstromKwh, int? Starts, double? TeillastanteilProzent,
+                                                 double? Lastgrad, double? EerOhneHilfsstrom);
 
 /// <summary>
 /// Eine Zeile der Kälteerzeugertabelle der Übersicht (Stufe KU2 Welle 3; Kühlkonzept 8.4) —
@@ -589,6 +648,13 @@ public sealed class AutarkieDaten
     public double SpeicherKwh;
 
     /// <summary>
+    /// Rechnet die Analyse OHNE Stromspeicher (Kapazität 0 kWh)? Ohne Speicher im Projekt ist
+    /// das die Vorbelegung — es wird kein Speicher angenommen, den das Projekt nicht hat; die
+    /// Seite sagt es in einer Zeile unter dem Feld.
+    /// </summary>
+    public bool OhneStromspeicher => SpeicherKwh <= 0.0;
+
+    /// <summary>
     /// Die Platzhalter der Kacheln und des Monatsstapels (Katalog v10, „ähnlich im Bericht“): Autarkie der
     /// Photovoltaik, solare Deckung, Strombilanz je Monat und die Monatswerte (nur Excel); leer = keine Marke.
     /// Die Hülle setzt sie nach dem Stand (Stamm → <c>stamm.*</c>, Variante → <c>stand.*</c>).
@@ -681,6 +747,15 @@ public sealed class SpeicherErgebnisDaten
     /// <summary>Übernommene Projektflotte und tatsächlicher letzter Flottenlauf.</summary>
     public bool FlotteImProjektAktiv;
     public SpeicherEngine.FlottenStudieKonfiguration? AktiveFlotte;
+
+    /// <summary>
+    /// Das Peak-Ziel H₀ [kW], mit dem die Flotte des angezeigten Laufs gerechnet hat;
+    /// <c>null</c> ohne Flottenlauf.
+    /// </summary>
+    public double? PeakZielKw;
+
+    /// <summary>Woher <see cref="PeakZielKw"/> stammt (Lastgang, Rückfall, gespeichert).</summary>
+    public WindowsFormsApplication1.FlottenPeakZielHerkunft? PeakZielHerkunft;
     public bool FlottenAenderungOhneNeuenLauf;
     public SpeicherFlottenErgebnis? Flottenergebnis;
     /// <summary>Gab es ueberhaupt einen Speicherlauf?</summary>
@@ -984,6 +1059,9 @@ public static class Bilder
     public const string Heizkessel = "HEIZKESSEL";
     public const string Solarthermie = "SOLARTHERMIE";
     public const string Bhkw = "BHKW";
+
+    /// <summary>Die Stromlast des BHKW — das zweite Bild des BHKW-Reiters, unter der Wärmelast.</summary>
+    public const string BhkwStrom = "BHKW_STROM";
     public const string Photovoltaik = "PHOTOVOLTAIK";
     public const string SpeicherBetrieb = "SPEICHER_BETRIEB";
     public const string AutarkieMonate = "AUTARKIE_MONATE";
@@ -992,6 +1070,9 @@ public static class Bilder
     public const string WaermeAutarkieMonate = "WAERME_AUTARKIE_MONATE";
     public const string Waermegang = "WAERMEGANG";
     public const string Stromgang = "STROMGANG";
+
+    /// <summary>Die Kälteproduktion des Ergebnisreiters — nur, wenn das Projekt Kälte rechnet.</summary>
+    public const string Kaeltegang = "KAELTEGANG";
 }
 
 // Das Ergebnis eines Schreib- oder Rechenwegs meldet der Datensatz
@@ -1145,6 +1226,13 @@ public sealed class SimulationErgebnisDienste
     /// der Grenze der Zahl in der Kopfzeile; ohne Delegat kein Knopf.
     /// </summary>
     public Action? CsvKaelte;
+
+    /// <summary>
+    /// <b>CSV am Diagramm</b> für jedes Bild ohne eigenen Export: die Hülle schreibt die Reihen des
+    /// Zeichenmodells (Name, Einheit, Werte) mit dem Diagrammtitel als Dateistamm. Die Seite reicht
+    /// ihn als <c>Ganglinienexport</c> an alle Diagramme der Reiter; ohne Delegat kein Knopf.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, System.Threading.Tasks.Task>? CsvGanglinie;
     public Action? CsvWaermepumpe;
     public Action? CsvHeizkessel;
     public Action? CsvSpeicher;

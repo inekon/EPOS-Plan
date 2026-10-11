@@ -9,9 +9,10 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <summary>
 /// Die Auslegung mit den Feldern der Stufe Z4, Gruppe 2b (Umsetzungskonzept Zapfprofilgenerator
 /// 4.7, N10 (i)/(j), N11 (d)): die Eingaben des Verfahrensvergleichs (Ladeleistung auto/manuell mit
-/// Vorschlag, Ladezeitfenster, Personen auto/manuell, nutzbarer Anteil, Zuschlag, Bezug des
-/// Füllstands), die Erzeugerart als gespeicherte Wahl mit dem Vorschlag des Projekts und der Bezug
-/// des konstruierten Tags (Bezugsart und Bezugsmenge) — an den Feldern und beim Assistenten.
+/// Vorschlag, Ladezeitfenster, Personen auto/manuell, nutzbarer Anteil, Zuschlag; die Speichergröße
+/// der Füllstandslinie steht am Wochenbild), die Erzeugerart als gespeicherte Wahl mit dem Vorschlag
+/// des Projekts und der Bezug des konstruierten Tags (Bezugsart und Bezugsmenge) — an den Feldern
+/// und beim Assistenten.
 ///
 /// <para>Die Auslegung kommt aus einem Prüfdelegaten — der Dialog rechnet nicht. Kultur de-DE,
 /// alle Zahlen erfunden.</para>
@@ -28,8 +29,30 @@ public partial class ZapfprofilAuslegungDialogTests
         g.Vergleich.PersonenVorschlag = 40;
         g.Vergleich.FuellstandBezug = "Nenninhalt des Punkts";
         g.Vergleich.FuellstandBezugL = 400;
+        g.Vergleich.FuellstandBezugArt = ZapfprofilFuellstandbezug.NenninhaltPunkt;
+        // Vier Größen der Auslegung und vier Verfahren des Vergleichs (N36 (d)); die
+        // Gleichzeitigkeit ist hier nicht gerechnet und steht darum gesperrt.
+        Fuellstandwahl(g.Vergleich, ZapfprofilFuellstandbezug.NenninhaltPunkt,
+                       (400, ""), (370, ""), (500, ""), (1540, ""),
+                       (1540, ""), (620, ""), (null, GRUND_OHNE_GLF), (1800, ""));
         g.Vergleich.Ladeleistung = new ZapfprofilSchaetzhilfeDaten { Auto = true, Vorschlag = 9.5, Angesetzt = 9.5, Einheit = "kW" };
         return g;
+    }
+
+    /// <summary>
+    /// Die Wahl der Speichergröße der Füllstandslinie, wie die Hülle sie füllt: je Bezug 1 … 8 das
+    /// Volumen (<c>null</c> = gesperrt mit Grund) und der Bezug, den die Vorgabe auflöst.
+    /// </summary>
+    private static void Fuellstandwahl(ZapfprofilVergleichDaten v, ZapfprofilFuellstandbezug vorgabe,
+                                       params (double? VolumenL, string Grund)[] je)
+    {
+        v.FuellstandVorgabeArt = vorgabe;
+        v.FuellstandWahl.Clear();
+        for (int i = 0; i < je.Length; i++)
+            v.FuellstandWahl.Add(new ZapfprofilFuellstandwahlDaten
+            {
+                Art = (ZapfprofilFuellstandbezug)(i + 1), VolumenL = je[i].VolumenL, Sperrgrund = je[i].Grund
+            });
     }
 
     /// <summary>Der Start mit den Wertemengen des Schemas für Bezugsart und Füllstandsbezug.</summary>
@@ -42,6 +65,10 @@ public partial class ZapfprofilAuslegungDialogTests
         s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 2, Name = "Punkt" });
         s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 3, Name = "Nenninhalt des Bands" });
         s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 4, Name = "Obergrenze des Bands" });
+        s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 5, Name = "profilbasiert" });
+        s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 6, Name = "DIN 4708" });
+        s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 7, Name = "Faustwert mit Gleichzeitigkeit" });
+        s.Fuellstandbezuege.Add(new ZapfprofilKatalogeintragDaten { Id = 8, Name = "klassischer Faustwert (nachrichtlich)" });
         return s;
     }
 
@@ -59,7 +86,8 @@ public partial class ZapfprofilAuslegungDialogTests
             Assert.NotNull(Feld(cut, f));
         Assert.Contains("Angesetzt: 9,5 kW (auto) · Ladeweg der Probe", cut.Markup);
         Assert.Contains("auto = aus dem Mengengerüst der Zonen: 40,0; angesetzt: 40,0", cut.Markup);
-        Assert.Contains("Auf dieses Volumen bezieht sich der Füllstand der Kachel; angesetzt: Nenninhalt des Punkts 400 l", cut.Markup);
+        Assert.Contains("Auf dieses Volumen beziehen sich Füllstandslinie und Kachel „Füllstand“; angesetzt: Nenninhalt des Punkts 400 l",
+                        cut.Markup);
 
         // Der Vorschlag der Ladeleistung wird der manuelle Wert, der Umschalter „manuell".
         IElement vorschlag = cut.FindAll(".epos-vorschlagszeile").First(z => z.TextContent.Contains("Vorschlag: 9,5 kW"));
@@ -74,9 +102,11 @@ public partial class ZapfprofilAuslegungDialogTests
         Feld(cut, "Nutzbarer Anteil").Input("0,8");
         Feld(cut, "Zuschlag").Input("0,15");
         Feld(cut, "Ladezeitfenster").Input("6");
-        IElement bezug = Feld(cut, "Bezug des Füllstands", "select");
-        Assert.Equal(5, bezug.QuerySelectorAll("option").Length);
-        Assert.Equal("Vorgabe: Nenninhalt des Punkts, sonst der Punkt", bezug.QuerySelectorAll("option")[0].TextContent.Trim());
+        // Die Speichergröße der Füllstandslinie steht am Wochenbild, nicht bei diesen Feldern — sie geht
+        // aber mit denselben Eingaben zurück.
+        IElement bezug = Feld(cut, "Speichergröße der Füllstandslinie", "select");
+        Assert.Equal(9, bezug.QuerySelectorAll("option").Length);   // Vorgabe, vier Größen, vier Verfahren
+        Assert.Equal("Vorgabe: Nenninhalt des Punkts · 400 l", bezug.QuerySelectorAll("option")[0].TextContent.Trim());
         bezug.Change("4");
 
         Knopf(cut, "OK").Click();

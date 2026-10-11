@@ -61,6 +61,12 @@ namespace WindowsFormsApplication1
         public const string ERZEUGER_BHKW = "BHKW";
         public const string ERZEUGER_PHOTOVOLTAIK = "Photovoltaik";
         public const string ERZEUGER_STROMSPEICHER = "Stromspeicher";
+        /// <summary>
+        /// Erzeugerart „Kältemaschine“ (KU3-1, Schritt <see cref="KaeltemaschineSchema.SCHRITT"/>): der eigene
+        /// Kälteerzeuger neben der Wärmepumpe im Kühlbetrieb. Erzeugerdialog und Rechenweg folgen (KU3-2, KU3-4).
+        /// Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string ERZEUGER_KAELTEMASCHINE = "Kältemaschine";
 
         /// <summary>
         /// Sammelzuordnung in <c>Z_ProjektPufferSp.Erzeuger</c>: der Puffer gehört keinem
@@ -186,6 +192,10 @@ namespace WindowsFormsApplication1
         /// <summary>Bestandskomponente „BHKW" (<c>ID = 7</c>).
         /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
         public const string KOSTEN_KOMPONENTE_BHKW = "BHKW";
+        /// <summary>Komponente „Kältemaschine“ (KU3-1). Die Zeile in <c>Tab_KostenKomponente</c> legt erst die
+        /// Welle der Wirtschaftlichkeit an, zusammen mit Kostengruppe, Vorlagen und Nutzungsdauer.
+        /// <inheritdoc cref="KOSTEN_KOMPONENTE_WAERMEPUMPE" path="/summary/text()[last()]"/></summary>
+        public const string KOSTEN_KOMPONENTE_KAELTEMASCHINE = "Kältemaschine";
 
         // =====================================================================
         // Nebenkosten-Positionen einer Kostenkomponente
@@ -360,6 +370,94 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="KESSEL_WARTUNG_EINHEIT_JAHR" path="/summary/para[last()]"/>
         /// </summary>
         public const string KESSEL_WARTUNG_EINHEIT_PROZENT = "%/a";
+
+        // =====================================================================
+        // Einheit des Bereitschaftsverlusts des Heizkessels
+        //   Tab_Heizkessel.Bereitschaft_Einheit und
+        //   Tab_Heizkessel_STAMM.Bereitschaft_Einheit
+        //   (Schemaschritt KesselBereitschaftEinheitSchema.SCHRITT)
+        //   Persistenzwert, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// <c>Betriebsbereitschaftverlust</c> ist eine LEISTUNG in kW — die Vorgabe jeder
+        /// Bestandszeile und die Einheit des Imports aus VDI 3805.
+        /// </summary>
+        public const string KESSEL_BEREITSCHAFT_EINHEIT_KW = "kW";
+
+        /// <summary>
+        /// <c>Betriebsbereitschaftverlust</c> ist ein ANTEIL DER NENNLEISTUNG in Prozent; die
+        /// Rechnung macht daraus kW (<c>KesselBereitschaft.LeistungKw</c>).
+        /// </summary>
+        public const string KESSEL_BEREITSCHAFT_EINHEIT_PROZENT = "%";
+
+        // =====================================================================
+        // Auslegungsweg der Kühlkurve (Entwurf KK, Festlegung 3; E107)
+        //   Tab_Gebaeude(_STAMM).Kuehlkurve_Auslegung_Weg (KuehlkurveSchema, Schritt 202),
+        //   TEXT CHECK IN ('stunde','tagesmittel','eingabe'); leer = 'tagesmittel'
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Weg 1: die höchste Stundentemperatur der Klimareihe ist die Auslegungs-Außentemperatur der Kühlung.</summary>
+        public const string KUEHLKURVE_AUSLEGUNG_STUNDE = "stunde";
+
+        /// <summary>Weg 2, die Vorgabe (auch leer): das wärmste Tagesmittel, mindestens Kühlsollwert + Mindestspanne.</summary>
+        public const string KUEHLKURVE_AUSLEGUNG_TAGESMITTEL = "tagesmittel";
+
+        /// <summary>Weg 3: die Eingabe am Gebäude (<c>Kuehlkurve_Auslegung_Aussen</c>); nicht über dem Sollwert → Weg 2.</summary>
+        public const string KUEHLKURVE_AUSLEGUNG_EINGABE = "eingabe";
+
+        // =====================================================================
+        // Kollektorfeld der Solarthermie (Welle M2, ST2 und ST6)
+        //   Tab_Energieanlagen.Arbeitstemperatur_Weg und
+        //   Tab_Solarkollektoren(_STAMM).Bezugsflaeche
+        //   (Schemaschritt SolarthermieFelderSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>
+        /// Arbeitstemperatur des Kollektors FEST: mittlere Fluidtemperatur 50 °C für das ganze
+        /// Jahr — die Vorgabe; leer heißt dasselbe.
+        /// </summary>
+        public const string SOLAR_ARBEITSTEMPERATUR_FEST = "fest";
+
+        /// <summary>
+        /// Arbeitstemperatur des Kollektors AUS DEM SPEICHER: je Stunde aus der untersten Zone
+        /// des Senkenpuffers (bzw. dem Rücklauf der Senke) plus Grädigkeit und halber Spreizung.
+        /// </summary>
+        public const string SOLAR_ARBEITSTEMPERATUR_SPEICHER = "speicher";
+
+        /// <summary>Die Kollektorkennwerte sind auf die APERTURFLÄCHE bezogen — die Vorgabe.</summary>
+        public const string SOLAR_BEZUGSFLAECHE_APERTUR = "apertur";
+
+        /// <summary>Die Kollektorkennwerte sind auf die BRUTTOFLÄCHE (Modulfläche) bezogen.</summary>
+        public const string SOLAR_BEZUGSFLAECHE_BRUTTO = "brutto";
+
+        // =====================================================================
+        // Einspeisegrenze des Projekts (Welle M5, PV3)
+        //   Tab_Einstellungen.Einspeisegrenze_Einheit
+        //   (Schemaschritt StromViertelstundenSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Die Einspeisegrenze steht in kW am Netzanschlusspunkt — die Vorgabe; leer heißt dasselbe.</summary>
+        public const string EINSPEISEGRENZE_KW = "kW";
+
+        /// <summary>Die Einspeisegrenze steht in Prozent der installierten PV-Leistung (kWp).</summary>
+        public const string EINSPEISEGRENZE_PROZENT = "%";
+
+        // =====================================================================
+        // Bereitschaftsweg des Pufferspeichers (Welle M7, PS1 (c))
+        //   Tab_Pufferspeicher.Bereitschaft_Weg
+        //   (Schemaschritt PufferOptionenSchema.SCHRITT)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Bereitschaftsverlust als Tageswert anteilig zum Füllstand — die Vorgabe; leer heißt dasselbe.</summary>
+        public const string PSP_BEREITSCHAFT_TAG = "tag";
+
+        /// <summary>Bereitschaftsverlust je Zone aus dem Verlustkoeffizienten und der Übertemperatur gegen den Aufstellraum.</summary>
+        public const string PSP_BEREITSCHAFT_TEMPERATUR = "temperatur";
 
         /// <summary>
         /// Altbestand: <c>Tool_5</c>/<c>Tool_6</c> trugen früher einen Bool-Text statt des
@@ -615,6 +713,9 @@ namespace WindowsFormsApplication1
         //   den Satz beim Umschalten der Bemessung NICHT stillschweigend uebernehmen.
         //
         //   ERFAHRUNGSWERTE gelten fuer Weg A: BHKW 2-4 %, Heizkessel 4-8 %.
+        //   Fuer Weg B (Anteil des Brennstoffeinsatzes als Strommenge) fuehrt die Saat
+        //   der Auslieferungsvorlagen BHKW 0,5-1,5 % und Heizkessel 1-2 % - Herleitung
+        //   und Nachzug im Bestand: HilfsenergieEmpfehlungNachzug (Auftrag P671).
         //
         //   NUR WEG C bei Puffer- und Stromspeicher sowie Photovoltaik: Ihre
         //   Umwandlungsverluste stecken bereits im Wirkungsgrad der Speicherrechnung
@@ -674,9 +775,10 @@ namespace WindowsFormsApplication1
         /// Hilfsenergie als Anteil des <b>Endenergiebedarfs</b> der Anlage [%] (Weg B) —
         /// dieselbe Menge wie bei <see cref="BEMESSUNG_PROZENT_ENDENERGIEKOSTEN"/>, aber
         /// unbewertet. Ergibt unmittelbar eine Strommenge [kWh], die mit dem
-        /// Strombezugspreis bewertet wird. <b>Keine Auslieferungsvorlage nutzt diesen
-        /// Weg</b> — er steht als ausdrückliche Alternative zur Kostenbasis zur Wahl
-        /// (Festlegung 29.08.2026). Die Sätze beider Wege sind NICHT austauschbar.
+        /// Strombezugspreis bewertet wird. Die Hilfsenergie-Pflichtzeilen der
+        /// Auslieferungsvorlagen von BHKW, Heizkessel und Wärmepumpe rechnen mit diesem
+        /// Weg (Schritt 94), ihre Empfehlung ist auf ihn bezogen
+        /// (<c>HilfsenergieEmpfehlungNachzug</c>). Die Sätze beider Wege sind NICHT austauschbar.
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/>
         /// </summary>
         public const string BEMESSUNG_PROZENT_ENDENERGIEBEDARF = "PROZENT_ENDENERGIEBEDARF";
@@ -1673,6 +1775,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string PSP_VERWENDUNG_QUELLE = "Quelle";
 
+        /// <summary>
+        /// KÄLTESPEICHER (Kaltwasserspeicher, KU3-5, Entscheid E68; Kühlkonzept 4.6, 5.5): Ein Puffer
+        /// mit dieser Verwendung gehört allein der Kältekaskade — er entlädt in den Kühlkanal vor den
+        /// verdichtenden Kälteerzeugern und lädt aus ihrer freien Leistung. Kein Wärmekanal, kein
+        /// Klassen-Set-Eintrag (<c>Nutzung_*</c> bleiben 0). Persistenzwert, immer deutsch und ohne
+        /// Umlaut wie <see cref="WS_ZIEL_KAELTEKREIS"/>, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string PSP_VERWENDUNG_KAELTE = "Kaelte";
+
         // =====================================================================
         // Pufferspeicher — Speichertyp
         //   Tab_Pufferspeicher.Speichertyp
@@ -2463,13 +2574,19 @@ namespace WindowsFormsApplication1
         /// <summary>Herkunft: aus einer gbXML-Datei eingelesen.</summary>
         public const string HERKUNFT_GBXML = "GBXML";
 
+        /// <summary>
+        /// Herkunft: aus der Projektdatei eines Gebäudemodells (<c>.sqproj</c>) eingelesen — ein eigener Wert, damit die
+        /// Herkunft wahr bleibt (kein <see cref="HERKUNFT_IFC"/> ohne IFC-Datei; Schritt <see cref="ProjektdateiImportSchema"/>).
+        /// </summary>
+        public const string HERKUNFT_SQPROJ = "SQPROJ";
+
         /// <summary>Herkunft: Auslieferungssaat (Norm- oder Richtwert mit Quelle je Zeile).</summary>
         public const string HERKUNFT_VORGABE = "VORGABE";
 
-        /// <summary>Die fuenf Herkunftswerte in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        /// <summary>Die sechs Herkunftswerte in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
         public static readonly System.Collections.Generic.IReadOnlyList<string> HERKUENFTE = new[]
         {
-            HERKUNFT_MANUELL, HERKUNFT_KATALOG, HERKUNFT_IFC, HERKUNFT_GBXML, HERKUNFT_VORGABE
+            HERKUNFT_MANUELL, HERKUNFT_KATALOG, HERKUNFT_IFC, HERKUNFT_GBXML, HERKUNFT_VORGABE, HERKUNFT_SQPROJ
         };
 
         /// <summary>
@@ -2480,11 +2597,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Format eines Gebäudeimports: gbXML (<c>Tab_Importquelle.Format</c>).</summary>
         public const string IMPORT_FORMAT_GBXML = "GBXML";
+        /// <summary>Format eines Gebäudeimports allein aus der Projektdatei (<c>.sqproj</c>).</summary>
+        public const string IMPORT_FORMAT_SQPROJ = "SQPROJ";
 
-        /// <summary>Die zwei Importformate in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        /// <summary>
+        /// Die drei Importformate in Schemareihenfolge (Quelle des <c>CHECK</c>); <see cref="IMPORT_FORMAT_SQPROJ"/> ist die
+        /// Projektdatei eines Gebäudemodells (<c>.sqproj</c>, Schritt <see cref="ProjektdateiImportSchema"/>).
+        /// </summary>
         public static readonly System.Collections.Generic.IReadOnlyList<string> IMPORT_FORMATE = new[]
         {
-            IMPORT_FORMAT_IFC, IMPORT_FORMAT_GBXML
+            IMPORT_FORMAT_IFC, IMPORT_FORMAT_GBXML, IMPORT_FORMAT_SQPROJ
         };
 
         // =====================================================================
@@ -2526,6 +2648,81 @@ namespace WindowsFormsApplication1
         /// <summary>Kopplungsstufe AK3 — der geschlossene Kreis. Zugelassen wie <see cref="ANLAGENKOPPLUNG_AK2"/>,
         /// angeboten erst mit dem Rechenweg.</summary>
         public const string ANLAGENKOPPLUNG_AK3 = "AK3";
+
+        // =====================================================================
+        // Aufheizoptimierung, Stufe KP3 (Entwurf KP3 Abschnitt 4; Schemaschritte
+        //   KP-S2 an Tab_Einstellungen und KP-S3 an Tab_ErgebnisGebaeude und
+        //   Tab_ErgebnisZone). Persistenzwerte, eingefroren und ASCII (in SQL
+        //   verglichen, Quelle der CHECK-Klauseln). NULL heisst in der
+        //   Projekteinstellung „die Vorgabe", im Ergebnis „Schalter aus".
+        // =====================================================================
+
+        /// <summary>
+        /// Bemessung der Aufheizzeit (a): an der kältesten Stunde des Referenzjahres
+        /// (<c>Tab_Einstellungen.Aufheiz_Bemessung</c>). <b>Auch NULL bedeutet (a)</b>; geschrieben
+        /// wird NULL (Festlegung 24).
+        /// </summary>
+        public const string AUFHEIZ_BEMESSUNG_STUNDE = "STUNDE";
+
+        /// <summary>Bemessung der Aufheizzeit (b): an der kältesten Stunde abzüglich ΔT_K (<c>Aufheiz_Abzug_K</c>).</summary>
+        public const string AUFHEIZ_BEMESSUNG_STUNDE_ABZUG = "STUNDE_ABZUG";
+
+        /// <summary>Die zwei Bemessungsvarianten in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_BEMESSUNGEN = new[]
+        {
+            AUFHEIZ_BEMESSUNG_STUNDE, AUFHEIZ_BEMESSUNG_STUNDE_ABZUG
+        };
+
+        /// <summary>
+        /// Art der Aufheizzeit: täglich neu aus der Außenluft des Tages
+        /// (<c>Tab_Einstellungen.Aufheiz_Art</c>). <b>Auch NULL bedeutet TAEGLICH</b>; geschrieben
+        /// wird NULL (Festlegung 24).
+        /// </summary>
+        public const string AUFHEIZ_ART_TAEGLICH = "TAEGLICH";
+
+        /// <summary>Art der Aufheizzeit: fest, jeden Tag die bemessene Aufheizzeit.</summary>
+        public const string AUFHEIZ_ART_FEST = "FEST";
+
+        /// <summary>Die zwei Arten in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_ARTEN = new[]
+        {
+            AUFHEIZ_ART_TAEGLICH, AUFHEIZ_ART_FEST
+        };
+
+        /// <summary>
+        /// Art der Aufheizzeit im ERGEBNIS: manuell — das Gebäude rampt an jedem Sprung mit seiner
+        /// manuellen Aufheizzeit <c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c> (E59, Festlegungen 37, 39). Nur
+        /// in <c>Tab_ErgebnisGebaeude.Aufheiz_Art</c>/<c>Tab_ErgebnisZone.Aufheiz_Art</c>, nie in
+        /// <c>Tab_Einstellungen.Aufheiz_Art</c> — die Art des Projekts bleibt täglich oder fest.
+        /// </summary>
+        public const string AUFHEIZ_ART_MANUELL = "MANUELL";
+
+        /// <summary>Die drei Arten der Ergebnisspalte <c>Aufheiz_Art</c> in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> AUFHEIZ_ERGEBNIS_ARTEN = new[]
+        {
+            AUFHEIZ_ART_TAEGLICH, AUFHEIZ_ART_FEST, AUFHEIZ_ART_MANUELL
+        };
+
+        /// <summary>Zustand der Aufheizrechnung im Ergebnis: bemessen (Festlegung 25).</summary>
+        public const string AUFHEIZ_ZUSTAND_BEMESSEN = "BEMESSEN";
+
+        /// <summary>Zustand: der Bemessungsfall ist mit keiner Rampe bis 48 h erreichbar (W1); t_auf,max bleibt NULL.</summary>
+        public const string AUFHEIZ_ZUSTAND_UNERREICHBAR = "UNERREICHBAR";
+
+        /// <summary>Zustand: das Gebäude bzw. die Zone rechnet gekoppelt (W5); an der Zone ab Schritt KP-S4 (<see cref="AufheizManuellSchema"/>).</summary>
+        public const string AUFHEIZ_ZUSTAND_GEKOPPELT = "GEKOPPELT";
+
+        /// <summary>Zustand: die Zone ist unbeheizt, ohne Rampe — nur an der Zone.</summary>
+        public const string AUFHEIZ_ZUSTAND_UNBEHEIZT = "UNBEHEIZT";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: die Heizleistungsgrenze der Zone.</summary>
+        public const string AUFHEIZ_QUELLE_GRENZE = "GRENZE";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: die Zielleistung (1 + ρ)·Φ_stat.</summary>
+        public const string AUFHEIZ_QUELLE_ZIEL = "ZIEL";
+
+        /// <summary>Quelle der Aufheizleistung P_auf: Zonen verschiedener Quelle — nur am Gebäude.</summary>
+        public const string AUFHEIZ_QUELLE_GEMISCHT = "GEMISCHT";
 
         // =====================================================================
         // Anlagenkopplung, Kaelteseite (Entscheid E37, Konzept Anlagenkopplung
@@ -3381,6 +3578,52 @@ namespace WindowsFormsApplication1
             KOND_FEIERTAG_EINHEIT, KOND_FEIERTAG_WEIHNACHTEN_1, KOND_FEIERTAG_WEIHNACHTEN_2
         };
 
+        /// <summary>Feiertagsregel eines Landes: Heilige Drei Könige (6. Januar; BW, BY, ST).</summary>
+        public const string KOND_FEIERTAG_HEILIGE_DREI_KOENIGE = "HEILIGE_DREI_KOENIGE";
+
+        /// <summary>Feiertagsregel eines Landes: Internationaler Frauentag (8. März; BE, MV).</summary>
+        public const string KOND_FEIERTAG_FRAUENTAG = "FRAUENTAG";
+
+        /// <summary>Feiertagsregel eines Landes: Fronleichnam (Ostersonntag + 60; BW, BY, HE, NW, RP, SL).</summary>
+        public const string KOND_FEIERTAG_FRONLEICHNAM = "FRONLEICHNAM";
+
+        /// <summary>Feiertagsregel eines Landes: Mariä Himmelfahrt (15. August; landesweit nur SL).</summary>
+        public const string KOND_FEIERTAG_MARIAE_HIMMELFAHRT = "MARIAE_HIMMELFAHRT";
+
+        /// <summary>Feiertagsregel eines Landes: Weltkindertag (20. September; TH).</summary>
+        public const string KOND_FEIERTAG_WELTKINDERTAG = "WELTKINDERTAG";
+
+        /// <summary>Feiertagsregel eines Landes: Reformationstag (31. Oktober; BB, HB, HH, MV, NI, SN, ST, SH, TH).</summary>
+        public const string KOND_FEIERTAG_REFORMATIONSTAG = "REFORMATIONSTAG";
+
+        /// <summary>Feiertagsregel eines Landes: Allerheiligen (1. November; BW, BY, NW, RP, SL).</summary>
+        public const string KOND_FEIERTAG_ALLERHEILIGEN = "ALLERHEILIGEN";
+
+        /// <summary>Feiertagsregel eines Landes: Buß- und Bettag (Mittwoch vor dem 23. November; SN).</summary>
+        public const string KOND_FEIERTAG_BUSS_UND_BETTAG = "BUSS_UND_BETTAG";
+
+        /// <summary>
+        /// Die acht Feiertagsregeln der Länder (Schemaschritt <c>KalenderbedienungSchema</c>); welches Land welche
+        /// Regel führt, steht in <see cref="Landesfeiertage.Regeln"/>. Die neun bundeseinheitlichen Regeln
+        /// (<see cref="KOND_FEIERTAGE"/>) bleiben in Bedeutung und Rang unverändert.
+        /// </summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_FEIERTAGE_LAENDER = new[]
+        {
+            KOND_FEIERTAG_HEILIGE_DREI_KOENIGE, KOND_FEIERTAG_FRAUENTAG, KOND_FEIERTAG_FRONLEICHNAM,
+            KOND_FEIERTAG_MARIAE_HIMMELFAHRT, KOND_FEIERTAG_WELTKINDERTAG, KOND_FEIERTAG_REFORMATIONSTAG,
+            KOND_FEIERTAG_ALLERHEILIGEN, KOND_FEIERTAG_BUSS_UND_BETTAG
+        };
+
+        /// <summary>Alle siebzehn Feiertagsregeln — Quelle des erweiterten <c>CHECK</c> der Periode.</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_FEIERTAGE_ALLE =
+            System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(KOND_FEIERTAGE, KOND_FEIERTAGE_LAENDER));
+
+        /// <summary>
+        /// Pseudogröße des gemeinsamen Kalenders „alle Größen" eines Eigentümers (Schemaschritt
+        /// <c>KalenderbedienungSchema</c>); seine Perioden tragen die Größenmaske <c>Gilt_Fuer</c>.
+        /// </summary>
+        public const string KOND_GROESSE_ALLE = "ALLE";
+
         /// <summary>Zeile der Vorgabe-Matrix: der Nennwert [W] bzw. die Infiltration (Konzept 3.3).</summary>
         public const string KOND_ZEILE_NENNWERT = "NENNWERT";
 
@@ -3412,5 +3655,29 @@ namespace WindowsFormsApplication1
         /// bei der Lueftung 0 1/h, bei Anteilen 0.
         /// </summary>
         public const string KOND_WOCHE_AUS = "aus";
+
+        // ----------------------------------------------------------------------------------
+        // KONDITIONIERUNGSVORLAGEN (Konzept Konditionierungsprofile 5.7, Schritt KP-S1v): die
+        // Nutzung einer Vorlage ordnet die Liste je Groesse. Persistenzwerte wie oben: ASCII,
+        // eingefroren, GROSS; NULL heisst „ohne Nutzung".
+        // ----------------------------------------------------------------------------------
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Wohnen.</summary>
+        public const string KOND_NUTZUNG_WOHNEN = "WOHNEN";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Büro und Verwaltung.</summary>
+        public const string KOND_NUTZUNG_BUERO = "BUERO";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: Schule und Bildung.</summary>
+        public const string KOND_NUTZUNG_SCHULE = "SCHULE";
+
+        /// <summary>Nutzung einer Konditionierungsvorlage: alle übrigen.</summary>
+        public const string KOND_NUTZUNG_SONSTIGE = "SONSTIGE";
+
+        /// <summary>Die vier Nutzungen in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_NUTZUNGEN = new[]
+        {
+            KOND_NUTZUNG_WOHNEN, KOND_NUTZUNG_BUERO, KOND_NUTZUNG_SCHULE, KOND_NUTZUNG_SONSTIGE
+        };
     }
 }

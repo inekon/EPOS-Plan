@@ -118,6 +118,14 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Listenzeile wurde markiert (Id, Name) — die Kostenseite folgt ihr.</summary>
         internal event Action<int, string> ProjektMarkiert;
 
+        /// <summary>
+        /// Die Liste der Vergleichsgruppe ist geladen: Stammprojekt, Zahl der Versionen und wie
+        /// viele davon nicht simuliert oder veraltet sind. Der Wirt nennt es in der Statuszeile
+        /// des Reiters (Konzept Navigation Berichte &amp; Kosten, A2) — gezählt wird, was dieses
+        /// Laden ohnehin liest.
+        /// </summary>
+        internal event Action<int, int, int> Geladen;
+
         /// <summary>Der Datensatz einer Übernahmezeile (Vorbild <c>UebernahmeZeile</c>).</summary>
         private sealed class UebernahmeSatz
         {
@@ -329,6 +337,8 @@ namespace WindowsFormsApplication1
             }
             stand.AnlegenMoeglich = _stand.IdStamm > 0;
 
+            Geladen?.Invoke(_stand.IdStamm, zeilen.Count, zeilen.Count(z => z.Auffaellig));
+
             // --- der Komponentenbereich -------------------------------------
             Komponentenbereich(stand);
             return stand;
@@ -463,7 +473,7 @@ namespace WindowsFormsApplication1
             foreach (KomponentenVergleichZeile z in KomponentenVergleich.Gegenueberstellung(versionen))
                 ziel.Add(new VergleichZeile
                 {
-                    Gewerk = z.Gewerk,
+                    Gewerk = AbweichungsErmittler.Gewerkname(z.Gewerk),
                     Merkmal = z.Merkmal,
                     Zellen = z.Zellen,
                     Kurztexte = z.Kurztexte
@@ -505,12 +515,12 @@ namespace WindowsFormsApplication1
                     Merkmal = a.Merkmal
                 };
                 satz.Feld = AbweichungsErmittler.Felder
-                    .FirstOrDefault(x => x.Gewerk == a.Gewerk && x.Label == a.Merkmal);
+                    .FirstOrDefault(x => x.Gewerk == a.Gewerk && AbweichungsErmittler.Schluessel(x) == a.Schluessel);
 
                 var zeile = new VergleichZeile
                 {
                     Schluessel = schluessel,
-                    Gewerk = a.Gewerk,
+                    Gewerk = AbweichungsErmittler.Gewerkname(a.Gewerk),
                     Merkmal = a.Merkmal,
                     Zellen = new List<string> { a.WertStamm, a.WertVariante },
                     MitAktion = true,
@@ -536,7 +546,7 @@ namespace WindowsFormsApplication1
             if (s.Feld == null || string.IsNullOrEmpty(s.Feld.Tabelle) || string.IsNullOrEmpty(s.Feld.Spalte))
                 return KomponentenUebernahmeCtrl.Unterstuetzt(s.Gewerk)
                     ? null
-                    : string.Format(MyResource.Resource.BK_MSG_KOMP_GEWERK_UNBEKANNT, s.Gewerk);
+                    : string.Format(MyResource.Resource.BK_MSG_KOMP_GEWERK_UNBEKANNT, AbweichungsErmittler.Gewerkname(s.Gewerk));
 
             // Stufe 3: der Bezeichner ist der Schluessel der Zuordnung selbst.
             if (MerkmalUebernahmeCtrl.IstSchluesselspalte(s.Feld.Spalte))
@@ -785,6 +795,8 @@ namespace WindowsFormsApplication1
             try
             {
                 var meldungen = new List<string>();
+                var koepfe = new List<string>();
+                var hinweisliste = new List<string>();
                 for (int i = 0; i < laeufe.Count; i++)
                 {
                     Tuple<int, string> lauf = laeufe[i];
@@ -799,9 +811,17 @@ namespace WindowsFormsApplication1
                         string fehler;
                         var runner = new SimulationRunner();
                         int erg = runner.SimuliereUndSpeichere(lauf.Item1, out fehler);
-                        meldungen.Add(erg > 0
+                        string kopf = erg > 0
                             ? string.Format(MyResource.Resource.BK_MSG_SIM_OK, lauf.Item2, erg)
-                            : string.Format(MyResource.Resource.BK_MSG_SIM_FEHLER, lauf.Item2, fehler));
+                            : string.Format(MyResource.Resource.BK_MSG_SIM_FEHLER, lauf.Item2, fehler);
+                        meldungen.Add(kopf);
+                        koepfe.Add(kopf);
+
+                        // Die Hinweise als Liste für den Klapper des Banners; laufen
+                        // Stamm und Variante, nennt jeder Hinweis seinen Stand.
+                        if (runner.Protokoll != null)
+                            foreach (string h in runner.Protokoll.HinweiseFuerAnzeige())
+                                hinweisliste.Add(laeufe.Count > 1 ? lauf.Item2 + ": " + h : h);
 
                         // Auch ein ERFOLGREICHER Lauf kann mit einer
                         // Ersatzannahme gerechnet haben (Paket-8-Fehlerkanal).
@@ -818,7 +838,9 @@ namespace WindowsFormsApplication1
                 {
                     Erfolg = true,
                     Statuszeile = string.Format(MyResource.Resource.BK_MSG_SIM_FERTIG, laeufe.Count),
-                    Meldung = string.Join("\r\n", meldungen)
+                    Meldung = string.Join("\r\n", meldungen),
+                    Meldungskopf = string.Join(" · ", koepfe),
+                    Laufhinweise = hinweisliste
                 };
             }
             catch (Exception ex)
@@ -850,7 +872,8 @@ namespace WindowsFormsApplication1
             {
                 ["TitelText"] = mitKlartext ? MyResource.Resource.BK_UEB_TITEL_KOMP
                                             : MyResource.Resource.BK_UEB_TITEL_FELD,
-                ["Gegenstand"] = mitKlartext ? s.Gewerk : s.Gewerk + " · " + s.Merkmal,
+                ["Gegenstand"] = mitKlartext ? AbweichungsErmittler.Gewerkname(s.Gewerk)
+                                             : AbweichungsErmittler.Gewerkname(s.Gewerk) + " · " + s.Merkmal,
                 ["ZielName"] = ZielName(s.IdVariante),
                 ["Quellen"] = (IReadOnlyList<UebernahmeQuelle>)quellen,
                 ["MitKlartext"] = mitKlartext,

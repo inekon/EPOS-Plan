@@ -52,6 +52,12 @@ namespace Auslieferungsvorlage.Tests
         {
             get
             {
+                // Ein GEHOBENER Stand der Testdatenbank (Werkzeuge/Testdatenbankschema auf einer Kopie),
+                // solange ein neuer Schemaschritt die Datei im Repository noch nicht erreicht hat: Die
+                // Abnahme des Werkzeugs verlangt den Zielstand. Die Datei im Repository bleibt unberuehrt.
+                string umweg = Environment.GetEnvironmentVariable("EPOS_TESTDATENBANK");
+                if (!string.IsNullOrEmpty(umweg) && File.Exists(umweg)) return umweg;
+
                 string p = Path.Combine(Repowurzel, "Referenzlaeufe", "Kenndaten_Test.sqlite");
                 return File.Exists(p) ? p : null;
             }
@@ -78,6 +84,36 @@ namespace Auslieferungsvorlage.Tests
 
             throw new FileNotFoundException("Das gebaute Werkzeug wurde nicht gefunden", starter);
         }
+
+        /// <summary>
+        /// <b>Die Registerkataloge der Testdatenbank mit leerem Paketteil</b>: Sie fuehren Zeilen, aber keinen
+        /// Satz mit <c>ReadOnly = 1</c>, und brechen ohne benannte Ausnahme mit Code 6 ab (Konzept Setup 6.5.4
+        /// E2). Dieselbe Liste nimmt der CI-Setup-Lauf (<c>windows.yml</c>, Job <c>installer</c>); die Wache
+        /// <c>KatalogpaketSetupWacheTests</c> haelt beide gleich. Waechst die Pflege der Testdatenbank, wird
+        /// die Liste kuerzer - nie laenger, ohne dass ein Katalog dazukommt. Gebraucht wird sie nur im Modus
+        /// <c>alle</c>: Im Modus <c>readonly</c> leert die ReadOnly-Regel jeden dieser Kataloge, ein Lauf dort
+        /// kommt ohne Ausnahme aus (<c>KatalogregelTests.K2</c>).
+        /// </summary>
+        internal static readonly string[] LEERE_PAKETTEILE_DER_TESTDATENBANK =
+        {
+            "Tab_Heizkessel_STAMM", "Tab_PV_STAMM", "Tab_Brennstoff_Stamm", "Tab_DBTagV_STAMM",
+            "Tab_Pufferspeicher_STAMM", "Tab_Solarkollektoren_STAMM", "Tab_Solarganglinie_STAMM",
+            "Tab_Stromspeicher_STAMM", "Tab_Stromganglinie_STAMM"
+        };
+
+        /// <summary>Die Argumente samt je einem <c>--ohne-paket</c> fuer jeden leeren Paketteil der Testdatenbank.</summary>
+        internal static string[] MitAusnahmen(params string[] argumente)
+        {
+            var alle = new List<string>(argumente);
+            foreach (string t in LEERE_PAKETTEILE_DER_TESTDATENBANK) { alle.Add("--ohne-paket"); alle.Add(t); }
+            return alle.ToArray();
+        }
+
+        /// <summary>
+        /// Ein Lauf mit den benannten Ausnahmen der Testdatenbank: fuer jeden Fall im Modus <c>alle</c>, der
+        /// nicht den Abbruch bei leerem Paketteil selbst prueft.
+        /// </summary>
+        internal static Ergebnis StartenMitAusnahmen(params string[] argumente) => Starten(MitAusnahmen(argumente));
 
         internal static Ergebnis Starten(params string[] argumente)
         {

@@ -147,8 +147,9 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         var gruppe = Kenndaten(cut);
-        // Name, Hersteller (Text), Nennleistung, Heizstab (Ganzzahl), Kuehlleistung (Zahl).
-        Assert.Equal(5, gruppe.QuerySelectorAll("input").Length);
+        // Name, Hersteller (Text), Nennleistung, Heizstab (Ganzzahl), Kuehlleistung (Zahl),
+        // Mindestleistung und C_d (Zahl, Welle M4).
+        Assert.Equal(7, gruppe.QuerySelectorAll("input").Length);
         Assert.Single(gruppe.QuerySelectorAll("textarea"));
         // Vier Klapplisten: Typ, Leistungsstufen, Aufstellung, Baujahr.
         Assert.Equal(4, gruppe.QuerySelectorAll("select").Length);
@@ -847,16 +848,16 @@ public class WaermepumpeStammDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Ä19 bleibt gewahrt.</b> Der Wert steht als Text da, nicht als gesperrtes
-    /// Eingabefeld: Der Feldbestand des Blocks zählt weiterhin fünf <c>input</c>
-    /// (Name, Hersteller, Nennleistung, Heizstab, Kühlleistung), und die Zelle der
-    /// Modulkosten führt weder <c>input</c> noch <c>textarea</c> noch <c>select</c>.
+    /// Eingabefeld: Der Feldbestand des Blocks zählt sieben <c>input</c>
+    /// (Name, Hersteller, Nennleistung, Heizstab, Kühlleistung, Mindestleistung, C_d), und die
+    /// Zelle der Modulkosten führt weder <c>input</c> noch <c>textarea</c> noch <c>select</c>.
     /// </summary>
     [Fact]
     public void Die_Modulkosten_sind_kein_Eingabefeld()
     {
         var cut = Aufbauen();
 
-        Assert.Equal(5, Kenndaten(cut).QuerySelectorAll("input").Length);
+        Assert.Equal(7, Kenndaten(cut).QuerySelectorAll("input").Length);
 
         var feld = Kostengruppe(cut);
         Assert.Empty(feld.QuerySelectorAll("input"));
@@ -1048,7 +1049,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
 
         var titel = cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToList();
         // Stufe 4: die eigene Gruppe Kosten (die Modulkosten, aus den Kenndaten heraus).
-        Assert.Equal(new[] { "Kennlinie", "Kenndaten", "Kosten" }, titel);
+        Assert.Equal(new[] { "Kennlinie", "Gerätegrenzen", "Kenndaten", "Kosten" }, titel);
         var kennlinie = cut.FindAll(".epos-stammblattgruppe")[0];
         Assert.NotNull(kennlinie.QuerySelector(".epos-reiter"));
         Assert.Contains("Kennliniendaten...", kennlinie.QuerySelector(".epos-stammblattgruppe-kopf")!.TextContent);

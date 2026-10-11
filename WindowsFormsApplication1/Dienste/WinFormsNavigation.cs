@@ -43,8 +43,8 @@ namespace WindowsFormsApplication1
                 case Masken.StromspeicherAdmin:
                     return StromspeicherAdminHuelle.Oeffnen(null);
 
-                // iU9-W9.2: Die Gebaeudeverwaltung ist die Razor-Komponente GebaeudeDialog
-                // im Modus Admin; Form_Gebaeude ist im selben Schritt GELOESCHT (Regel M1).
+                // iU9-W9.2: Die Gebaeudeverwaltung ist die Razor-Komponente GebaeudeAdminDialog
+                // mit der Datenseite GebaeudeAdminHuelle (GebaeudeFenster.Katalogverwaltung).
                 // Die Huelle liefert dasselbe true/false wie MitOk.
                 case Masken.GebaeudeAdmin:
                     return GebaeudeFenster.Katalogverwaltung(null);
@@ -80,13 +80,15 @@ namespace WindowsFormsApplication1
                 case Masken.StromganglinieAdmin:
                     return StromganglinieAdminFenster.Oeffnen(null);
 
-                // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
-                // Razor-Komponente SolarganglinieAdminDialog; die Huelle zeigt sie
-                // modal. Der Rueckgabewert sagt jetzt etwas: Beim Vorlaeufer war er
-                // IMMER false, weil btn_OK_Click nur ein Feld "result" setzte und nie
-                // this.DialogResult (Befund W14-B4).
+                // Der Katalog der Solarthermieganglinien ist der Dialog "Solarthermie
+                // Ganglinie" ohne Projekt (nur die Katalogseite, Schluss ueber Beenden).
                 case Masken.SolarganglinieAdmin:
-                    return SolarganglinieAdminHuelle.Oeffnen(null);
+                    return SolarganglinieHuelle.OeffnenKatalog(null);
+
+                // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien - der Dialog "Photovoltaik
+                // Ganglinie" ohne Projekt.
+                case Masken.PvGanglinieAdmin:
+                    return PvGanglinieHuelle.OeffnenKatalog(null);
 
                 case Masken.BrauchwasserAdmin:
                     return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Brauchwasser);
@@ -96,6 +98,18 @@ namespace WindowsFormsApplication1
                 case Masken.BrauchwasserNutzungsarten:
                     return TwwNutzungsartAdminHuelle.Oeffnen(null);
 
+                // Die Verwaltung der Kaeltemaschinen (KiMaskenziele.KAELTEMASCHINE_KATALOG) oeffnet ein
+                // EIGENES Fenster wie die Waermepumpe; auf iOS bleibt sie eine freie Ansicht der Wurzel.
+                // Der Weg kommt auch aus einem Knopf einer Razor-Ansicht (Anlagendialog, "Katalogverwaltung...")
+                // - darum ueber Blazorsprung wie der Assistent: "true" heisst "behandelt", das Fenster
+                // geht nach dem Ereignis auf, und kein Rueckweg meldet sein Schliessen.
+                case Seitenschluessel.KaeltemaschineKatalog:
+                    {
+                        Form wirt = Blazorsprung.Wirtsfenster(Form.ActiveForm);
+                        Blazorsprung.Verzoegert(wirt, () => KaeltemaschineKatalogFensterHuelle.Oeffnen(wirt));
+                        return true;
+                    }
+
                 // iU9-W13.1: Die vier VDI-3805-Katalogimporte sind EINE
                 // Razor-Komponente mit vier Auspraegungen; die Huelle waehlt sie
                 // ueber KatalogImportArt. Der Rueckgabewert sagt jetzt, ob etwas
@@ -104,6 +118,15 @@ namespace WindowsFormsApplication1
                 // (Befund W13-B4b).
                 case Masken.WpImport:
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Waermepumpe);
+
+                // E119: derselbe Import im Kaeltemodus - nur Waermepumpen mit Kuehlfunktion.
+                case Masken.WpKaelteImport:
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.WaermepumpeKuehlung);
+
+                // K-C: der Kaeltemaschinenimport aus dem Menue "Daten & Import" - dieselbe Auspraegung wie
+                // der Knopf "Import..." im Katalog der Kaeltemaschinen.
+                case Masken.KaeltemaschineImport:
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Kaeltemaschine);
 
                 // iU9-W14a.1: Die vier Erzeuger-Katalogbrowser sind EINE
                 // Razor-Komponente mit vier Auspraegungen (KatalogBrowserProfil im
@@ -291,6 +314,8 @@ namespace WindowsFormsApplication1
                 // (KiMaskenziele.BAUSTOFF_KATALOG, …BAUTEILAUFBAU_KATALOG) die Verwaltungen.
                 case Seitenschluessel.BaustoffKatalog:
                 case Seitenschluessel.BauteilaufbauKatalog:
+                // Die Kaeltemaschinen des Projekts (KU3-4c): dieselbe freie Ansicht (KiMaskenziele.KAELTEMASCHINE_ANLAGE).
+                case Seitenschluessel.KaeltemaschineAnlage:
                     return AnsichtZeigen(maske, "");
 
             }
@@ -383,8 +408,14 @@ namespace WindowsFormsApplication1
         /// </param>
         private static bool AnsichtZeigen(string ansicht, string argument)
         {
-            return EPOS.UI.Dienste.Navigationsziel.Aktuell?
-                       .OeffneMaske(ansicht, argument) ?? false;
+            EPOS.UI.Dienste.INavigationsZiel ziel = EPOS.UI.Dienste.Navigationsziel.Aktuell;
+            if (ziel != null) return ziel.OeffneMaske(ansicht, argument);
+
+            // KT-2: Ohne gezeichnete Wurzel bleibt es bei false (der Aufrufer meldet es benannt), aber
+            // nicht spurlos: ein Vermerk mit dem Maskenschluessel im Ausnahmeprotokoll (Logs\Ausnahmen.txt).
+            // Keine MessageBox - der Aufruf kommt aus einem Blazor-Ereignis (Hausregel b).
+            Ausnahmeprotokoll.Vermerken("Ansicht " + ansicht + " nicht geoeffnet: keine Wurzel angemeldet");
+            return false;
         }
 
         /// <summary>Die MARKE aus dem ersten Argument; leer = keine.</summary>

@@ -293,6 +293,10 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Ferienende_3") && row["Ferienende_3"] != DBNull.Value) item.Ferienende_3 = Convert.ToDouble(row["Ferienende_3"]);
             if (dt.Columns.Contains("Ferienbeginn_4") && row["Ferienbeginn_4"] != DBNull.Value) item.Ferienbeginn_4 = Convert.ToDouble(row["Ferienbeginn_4"]);
             if (dt.Columns.Contains("Ferienende_4") && row["Ferienende_4"] != DBNull.Value) item.Ferienende_4 = Convert.ToDouble(row["Ferienende_4"]);
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) && row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE] != DBNull.Value)
+                item.Wochenendtage = Convert.ToInt32(row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE], System.Globalization.CultureInfo.InvariantCulture);
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_FEIERTAGSLAND) && row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND] != DBNull.Value)
+                item.Feiertagsland = Convert.ToString(row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND], System.Globalization.CultureInfo.InvariantCulture);
             if (dt.Columns.Contains("WW_Bedarf") && row["WW_Bedarf"] != DBNull.Value) item.WW_Bedarf = Convert.ToDouble(row["WW_Bedarf"]);
             if (dt.Columns.Contains("spez_Waermeverbrauch") && row["spez_Waermeverbrauch"] != DBNull.Value) item.spez_Waermeverbrauch = Convert.ToDouble(row["spez_Waermeverbrauch"]);
             if (dt.Columns.Contains("Waermebedarf") && row["Waermebedarf"] != DBNull.Value) item.Waermebedarf = Convert.ToDouble(row["Waermebedarf"]);
@@ -418,6 +422,18 @@ namespace WindowsFormsApplication1
                 new DbParam("@b94", DbParamTyp.Integer) { Wert = Wert(m.Nachtabsenkung_Ende) },
                 // Der Energiestandard (E47, BaualtersklassenSchema.SCHRITT): der Code, leer = NULL (keiner)
                 new DbParam("@b95", DbParamTyp.VarWChar) { Wert = Standardwert(m.Energiestandard) },
+                // Der wirksame U-Wert der Bodenplatte (E65, ErdreichVorgabeSchema.SCHRITT): NULL-erhaltend,
+                // NULL = Erdreichkorrektur nach DIN EN ISO 13370
+                new DbParam("@b96", DbParamTyp.Double) { Wert = Wert(m.Erdreich_U_Wirksam) },
+                // Der Raumeinfluss der Heizkurve (AK3, Ak3Schema.SCHRITT): NULL-erhaltend, NULL = aus
+                new DbParam("@b97", DbParamTyp.Double) { Wert = Wert(m.Heizkurve_Raumeinfluss) },
+                // Die Kuehlkurve (KK, KuehlkurveSchema.SCHRITT): alle fuenf NULL-erhaltend, NULL = aus bzw. Vorgabe
+                // (Fusspunkt: Auslegungsruecklauf; Raumeinfluss: aus; Weg: tagesmittel)
+                new DbParam("@b98", DbParamTyp.Integer) { Wert = m.Kuehlkurve_Aktiv.HasValue ? (object)(m.Kuehlkurve_Aktiv.Value ? 1 : 0) : DBNull.Value },
+                new DbParam("@b99", DbParamTyp.Double) { Wert = Wert(m.Kuehlkurve_Fusspunkt) },
+                new DbParam("@b100", DbParamTyp.Double) { Wert = Wert(m.Kuehlkurve_Raumeinfluss) },
+                new DbParam("@b101", DbParamTyp.VarWChar) { Wert = Standardwert(m.Kuehlkurve_Auslegung_Weg) },
+                new DbParam("@b102", DbParamTyp.Double) { Wert = Wert(m.Kuehlkurve_Auslegung_Aussen) },
             };
         }
 
@@ -438,15 +454,44 @@ namespace WindowsFormsApplication1
 
         // Legt einen neuen Gebaeude-Stammdatensatz an. ID explizit als MAX(ID)+1
         // (beim Kopieren einer Access-Tabelle wird die Autonummerierung zu einer normalen Long-Zahl).
-        public bool Insert(GebaeudeModel m)
+        public bool Insert(GebaeudeModel m) => Insert(m, out _);
+
+        /// <summary>
+        /// Dieselbe Anlage, dazu die ID des neuen Satzes — „Speichern unter" braucht sie, um dem
+        /// neuen Katalogbau seine Konditionierung mitzugeben (<see cref="SpeichernUnter"/>).
+        /// <paramref name="neueId"/> ist 0, wenn nichts angelegt wurde.
+        /// </summary>
+        public bool Insert(GebaeudeModel m, out int neueId)
         {
             int newId = DataRepository.GetMaxID(TABLE) + 1;
-            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [Energiestandard], [ReadOnly]) VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            neueId = newId;
+            string sql = "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [Energiestandard], [Erdreich_U_Wirksam], [Heizkurve_Raumeinfluss], [Kuehlkurve_Aktiv], [Kuehlkurve_Fusspunkt], [Kuehlkurve_Raumeinfluss], [Kuehlkurve_Auslegung_Weg], [Kuehlkurve_Auslegung_Aussen], [ReadOnly]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             var ps = new List<DbParam>();
             ps.Add(new DbParam("@bid", DbParamTyp.Integer) { Wert = newId });
             ps.AddRange(BuildValueParams(m));
             ps.Add(new DbParam("@bro", DbParamTyp.Boolean) { Wert = false });
-            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+            bool ok = DataRepository.ExecuteSQL(sql, ps.ToArray()) && KalenderspaltenSchreiben(TABLE, "ID", newId, m);
+            if (!ok) neueId = 0;
+            return ok;
+        }
+
+        /// <summary>
+        /// Wochenende und Feiertagsland (Schemaschritt <see cref="KalenderbedienungSchema"/>) — eine eigene Anweisung neben der
+        /// langen Spaltenliste; leer heißt Sa + So bzw. nur bundeseinheitlich. Ohne die Spalten (älterer Stand) nichts.
+        /// </summary>
+        internal static bool KalenderspaltenSchreiben(string tabelle, string schluesselspalte, object schluessel, GebaeudeModel m,
+                                                      string zusatz = null, object zusatzwert = null)
+        {
+            if (!DataRepository.SpalteVorhanden(tabelle, KalenderbedienungSchema.SPALTE_WOCHENENDTAGE)) return true;
+            var ps = new List<DbParam>
+            {
+                new DbParam("@w", m.Wochenendtage == KalenderbedienungSchema.WOCHENENDE_VORGABE ? null : (object)m.Wochenendtage),
+                new DbParam("@f", string.IsNullOrWhiteSpace(m.Feiertagsland) ? null : (object)m.Feiertagsland.Trim()),
+                new DbParam("@k", schluessel),
+            };
+            if (zusatz != null) ps.Add(new DbParam("@z", zusatzwert));
+            return DataRepository.ExecuteSQL("UPDATE [" + tabelle + "] SET [Wochenendtage] = ?, [Feiertagsland] = ? WHERE [" + schluesselspalte +
+                                             "] = ?" + (zusatz != null ? " AND [" + zusatz + "] = ?" : ""), ps.ToArray());
         }
 
         // Ueberschreibt einen vorhandenen Stammdatensatz (Schluessel = Bezeichner), sofern nicht schreibgeschuetzt.
@@ -461,7 +506,14 @@ namespace WindowsFormsApplication1
             string sql = "UPDATE [" + TABLE + "] SET " + SET_SPALTEN + " WHERE Bezeichner = ?";
             var ps = new List<DbParam>(BuildValueParams(m));
             ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
-            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+            // Die Namen der Ferienzeitraeume 1 bis 4 ueberstehen das Schreiben der Ferienspalten (Spiegel-Trigger).
+            object id = DataRepository.ExecuteScalar("SELECT [ID] FROM [" + TABLE + "] WHERE [Bezeichner] = ? ORDER BY [ID] LIMIT 1",
+                                                     new DbParam("@bname", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
+            var schluessel = id == null || id == DBNull.Value ? null
+                : Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Katalogbau(
+                      Convert.ToInt64(id, System.Globalization.CultureInfo.InvariantCulture)));
+            return Kalendergemeinschaft.MitFeriennamen(schluessel, () =>
+                DataRepository.ExecuteSQL(sql, ps.ToArray()) && KalenderspaltenSchreiben(TABLE, "Bezeichner", m.Gebaeudename ?? "", m));
         }
 
         /// <summary>
@@ -469,7 +521,7 @@ namespace WindowsFormsApplication1
         /// die SET-Liste von <see cref="Overwrite"/> (Katalog, Namensspalte <c>Bezeichner</c>) und
         /// von <see cref="ProjektkopieUeberschreiben"/> (Projektkopie, Namensspalte <c>Gebaeudename</c>).
         /// </summary>
-        private const string SET_SPALTEN = "[Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ?, [Nachtabsenkung_Beginn] = ?, [Nachtabsenkung_Ende] = ?, [Energiestandard] = ?";
+        private const string SET_SPALTEN = "[Bezeichner] = ?, [Typ] = ?, [Beschreibung] = ?, [Wohnflaeche_gesamt] = ?, [Bewohner] = ?, [Flaeche_Nutzer] = ?, [Interne_Waermegewinne] = ?, [Bauweise] = ?, [Fensterflaeche_Sued] = ?, [Fensterflaeche_Ost_West] = ?, [Fensterflaeche_Nord] = ?, [Fensterdurchlassgrad] = ?, [Raumsolltemperatur_Nachtabsenkung] = ?, [Raumsolltemperatur_Tag] = ?, [Raumsolltemperatur_Wochenende] = ?, [Raumsolltemperatur_Ferien] = ?, [Maximaleraumtemperatur] = ?, [k_Wert_Außenwand] = ?, [k_Wert_Fenster] = ?, [k_Wert_Dachflaeche] = ?, [k_Wert_Grundflaeche] = ?, [k_Wert_Sonstiges] = ?, [Flaeche_Außenwand] = ?, [gesamte_Fensterflaeche] = ?, [Dachflaeche] = ?, [Grundflaeche] = ?, [Sonstige_Flaechen] = ?, [Nutzflaeche] = ?, [Raumhoehe] = ?, [WBVK_Anschluß_Fenster_Wand] = ?, [WBVK_Anschluß_Wand_Dach] = ?, [WBVK_Anschluß_Außenwand_Kellerdecke] = ?, [Abmessung_Anschluß_Fenster_Wand] = ?, [Abmessung_Anschluß_Wand_Dach] = ?, [Abmessung_Anschluß_Außenwand_Kellerdecke] = ?, [Luftwechselrate] = ?, [Wochenende] = ?, [Ferien] = ?, [Ferienbeginn_1] = ?, [Ferienende_1] = ?, [Ferienbeginn_2] = ?, [Ferienende_2] = ?, [Ferienbeginn_3] = ?, [Ferienende_3] = ?, [Ferienbeginn_4] = ?, [Ferienende_4] = ?, [WW_Bedarf] = ?, [spez_Waermeverbrauch] = ?, [Waermebedarf] = ?, [Baualtersklasse] = ?, [Gebaeudeart] = ?, [Wohngebaeude_Nicht_Wohngebaeude] = ?, [Gebaeude_Modell] = ?, [Fensterflaeche_Ost] = ?, [Fensterflaeche_West] = ?, [Rahmenanteil] = ?, [Verschattungsfaktor] = ?, [Grundflaeche_Randbedingung] = ?, [Kellertemperatur] = ?, [Masseanteil_Aussen] = ?, [Innenflaechenfaktor] = ?, [Heizung_Strahlungsanteil] = ?, [Heizleistung_Max] = ?, [Aussenbauteile_Strahlung] = ?, [Luftwechsel_Infiltration] = ?, [Luftwechsel_Nutzer] = ?, [Sommerlueftung] = ?, [Kuehl_Sollwert] = ?, [Kuehlleistung_Max] = ?, [Kuehlung_Aktiv] = ?, [Kuehl_Sollwert_Nacht] = ?, [Heizkreis_Aktiv] = ?, [Uebergabe_Art] = ?, [Uebergabe_Exponent] = ?, [Uebergabe_Leistung_Nenn] = ?, [Auslegung_Vorlauf] = ?, [Auslegung_Ruecklauf] = ?, [Auslegung_Raumtemperatur] = ?, [Auslegung_Aussentemperatur] = ?, [Heizkurve_Aktiv] = ?, [Heizkurve_Niveau] = ?, [Heizkurve_Steilheit] = ?, [Regler_Proportionalband] = ?, [Sollwertprofil] = ?, [Kuehluebergabe_Aktiv] = ?, [Kuehl_Uebergabe_Art] = ?, [Kuehl_Uebergabe_Exponent] = ?, [Kuehl_Uebergabe_Leistung_Nenn] = ?, [Kuehl_Auslegung_Vorlauf] = ?, [Kuehl_Auslegung_Ruecklauf] = ?, [Kuehl_Auslegung_Raumtemperatur] = ?, [Kuehl_Vorlaufgrenze] = ?, [Baujahr] = ?, [Nachtabsenkung_Beginn] = ?, [Nachtabsenkung_Ende] = ?, [Energiestandard] = ?, [Erdreich_U_Wirksam] = ?, [Heizkurve_Raumeinfluss] = ?, [Kuehlkurve_Aktiv] = ?, [Kuehlkurve_Fusspunkt] = ?, [Kuehlkurve_Raumeinfluss] = ?, [Kuehlkurve_Auslegung_Weg] = ?, [Kuehlkurve_Auslegung_Aussen] = ?";
 
         /// <summary>
         /// <b>Überschreibt die PROJEKTKOPIE eines Gebäudes</b> (<c>Tab_Gebaeude</c>, Stufe G3,
@@ -494,7 +546,11 @@ namespace WindowsFormsApplication1
             var ps = new List<DbParam>(new GebaeudeStammCtrl().BuildValueParams(m));
             ps.Add(new DbParam("@gid", DbParamTyp.Integer) { Wert = idGebaeude });
             ps.Add(new DbParam("@pid", DbParamTyp.Integer) { Wert = idProjekt });
-            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+            // Die Namen der Ferienzeitraeume 1 bis 4 ueberstehen das Schreiben der Ferienspalten (Spiegel-Trigger).
+            return Kalendergemeinschaft.MitFeriennamen(
+                Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude)),
+                () => DataRepository.ExecuteSQL(sql, ps.ToArray()) &&
+                      KalenderspaltenSchreiben(TABLE_PROJ, "ID", idGebaeude, m, "ID_Projekt", idProjekt));
         }
 
         #endregion
@@ -573,6 +629,22 @@ namespace WindowsFormsApplication1
             // ein Leertext gilt wie NULL.
             string standard = Text(row, GebaeudeSchema.SPALTE_ENERGIESTANDARD);
             item.Energiestandard = string.IsNullOrEmpty(standard) ? null : standard;
+
+            // Der wirksame U-Wert der Bodenplatte (E65, ErdreichVorgabeSchema.SCHRITT): NULL-ERHALTEND,
+            // null = Erdreichkorrektur nach DIN EN ISO 13370.
+            item.Erdreich_U_Wirksam = Zahl(row, GebaeudeSchema.SPALTE_ERDREICH_U_WIRKSAM);
+
+            // Der Raumeinfluss der Heizkurve (AK3, Ak3Schema.SCHRITT): NULL-ERHALTEND, null = aus.
+            item.Heizkurve_Raumeinfluss = Zahl(row, GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS);
+
+            // Die Kuehlkurve (KK, KuehlkurveSchema.SCHRITT): NULL-ERHALTEND, auch der Schalter (NULL = aus).
+            int? kurve = Ganzzahl(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AKTIV);
+            item.Kuehlkurve_Aktiv = kurve.HasValue ? kurve.Value != 0 : (bool?)null;
+            item.Kuehlkurve_Fusspunkt = Zahl(row, GebaeudeSchema.SPALTE_KUEHLKURVE_FUSSPUNKT);
+            item.Kuehlkurve_Raumeinfluss = Zahl(row, GebaeudeSchema.SPALTE_KUEHLKURVE_RAUMEINFLUSS);
+            string weg = Text(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_WEG);
+            item.Kuehlkurve_Auslegung_Weg = string.IsNullOrEmpty(weg) ? null : weg;
+            item.Kuehlkurve_Auslegung_Aussen = Zahl(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_AUSSEN);
         }
 
         private static object Roh(DataRow row, string spalte)
@@ -651,9 +723,64 @@ namespace WindowsFormsApplication1
             DataRow r = Katalogzeile(idStamm, szBezeichner);
             if (r == null) return 0;
 
+            // Stufe KP1b (Konzept 5.5): Kopf, Tagesverteilung UND Konditionierung in DERSELBEN
+            // Transaktion — scheitert ein Schritt, bleibt keine halbe Kopie zurück. Unter dem
+            // Assistenten läuft schon eine Klammer; daraus wird ein Sicherungspunkt statt einer
+            // zweiten Verbindung an der Schreibsperre (Vorgangsklammer).
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    int id = Kopfkopie(r, idProjekt, idProjektGebaeude);
+                    if (id == 0)
+                    {
+                        vorgang.Rollback();
+                        return 0;
+                    }
+
+                    Konditionierungskopie.Befund befund = Konditionierungskopie.Kopieren(
+                        vorgang,
+                        KonditionierungCtrl.Eigner.Katalogbau(Convert.ToInt64(r["ID"])),
+                        KonditionierungCtrl.Eigner.Gebaeude(id),
+                        Konditionierungskopie.Auswahl.Alles);
+                    if (!befund.Ok)
+                    {
+                        vorgang.Rollback();
+                        return 0;
+                    }
+
+                    // Schritt ZK: die Zonen des Katalogsatzes samt Bauteilen, Luftstroemen und Zonen-Konditionierung -
+                    // die Projektkopie rechnet danach nach dem Zonenmodell wie jedes Gebaeude mit Zonen.
+                    Zonenkopie.Befund zonen = Zonenkopie.Kopieren(vorgang, Zonenebene.Katalog, Convert.ToInt64(r["ID"]),
+                                                                  Zonenebene.Projekt, id, idProjekt);
+                    if (!zonen.Ok)
+                    {
+                        vorgang.Rollback();
+                        return 0;
+                    }
+
+                    vorgang.Commit();
+                    return id;
+                }
+                catch (Exception)
+                {
+                    vorgang.Rollback();
+                    return 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Der Kopfsatz der Projektkopie samt Tagesverteilung — der bisherige Rumpf von
+        /// <see cref="CopyFromStamm(int?, string, int, int)"/>, unverändert und ohne eigene
+        /// Transaktion: Die Klammer hält der Aufrufer.
+        /// </summary>
+        private int Kopfkopie(DataRow r, int idProjekt, int idProjektGebaeude)
+        {
             int newId = DataRepository.GetMaxID(TABLE_PROJ) + 1;
 
-            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [Energiestandard], [ID_Gebaeude_Stamm]) VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            string sql = "INSERT INTO [" + TABLE_PROJ + "] ([ID], [ID_ProjektGebaeude], [ID_Projekt], [Gebaeudename], [Typ], [Beschreibung], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [Energiestandard], [Erdreich_U_Wirksam], [Heizkurve_Raumeinfluss], [Kuehlkurve_Aktiv], [Kuehlkurve_Fusspunkt], [Kuehlkurve_Raumeinfluss], [Kuehlkurve_Auslegung_Weg], [Kuehlkurve_Auslegung_Aussen], [ID_Gebaeude_Stamm]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = new DbParam[]
             {
                 new DbParam("@c00", DbParamTyp.Integer) { Wert = newId },
@@ -774,12 +901,34 @@ namespace WindowsFormsApplication1
                 // Der Energiestandard (E47, BaualtersklassenSchema.SCHRITT): dieselbe Regel - NULL bleibt
                 // NULL (keiner), ein Code geht unveraendert hinueber.
                 new DbParam("@c98", DbParamTyp.VarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_ENERGIESTANDARD) },
+                // Der wirksame U-Wert der Bodenplatte (E65, ErdreichVorgabeSchema.SCHRITT): dieselbe Regel -
+                // NULL bleibt NULL (Rechnung nach DIN EN ISO 13370), ein Wert geht unveraendert hinueber.
+                new DbParam("@cerd", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_ERDREICH_U_WIRKSAM) },
+                // Der Raumeinfluss der Heizkurve (AK3, Ak3Schema.SCHRITT): dieselbe Regel - NULL bleibt NULL (aus),
+                // ein Wert geht unveraendert hinueber.
+                new DbParam("@craum", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS) },
+                // Die Kuehlkurve (KK, KuehlkurveSchema.SCHRITT): dieselbe Regel - NULL bleibt NULL (Vorgabe bzw. aus),
+                // ein Wert geht unveraendert hinueber.
+                new DbParam("@ckk1", DbParamTyp.Integer) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHLKURVE_AKTIV) },
+                new DbParam("@ckk2", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHLKURVE_FUSSPUNKT) },
+                new DbParam("@ckk3", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHLKURVE_RAUMEINFLUSS) },
+                new DbParam("@ckk4", DbParamTyp.VarWChar) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_WEG) },
+                new DbParam("@ckk5", DbParamTyp.Double) { Wert = Roh(r, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_AUSSEN) },
                 // Schemaschritt 121 (Welle #468): Die Kopie merkt sich, aus welchem
                 // Katalogsatz sie stammt - eine Umbenennung des Satzes zerreisst die Klammer
                 // der Loeschsperre dann nicht mehr (GebaeudeKatalogverweis).
                 new DbParam("@c99", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
             };
             bool ok = DataRepository.ExecuteSQL(sql, ps);
+
+            // Schritt K2: Wochenende und Feiertagsland reisen mit (die Spalten stehen nicht in der langen Liste oben).
+            if (ok && r.Table.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE))
+                ok = DataRepository.ExecuteSQL(
+                    "UPDATE [" + TABLE_PROJ + "] SET [Wochenendtage] = (SELECT [Wochenendtage] FROM [" + TABLE + "] WHERE [ID] = ?), " +
+                    "[Feiertagsland] = (SELECT [Feiertagsland] FROM [" + TABLE + "] WHERE [ID] = ?) WHERE [ID] = ?",
+                    new DbParam("@s1", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
+                    new DbParam("@s2", DbParamTyp.Integer) { Wert = Convert.ToInt32(r["ID"]) },
+                    new DbParam("@n", DbParamTyp.Integer) { Wert = newId });
 
             // Tagesverteilung des Gebaeudetyps (Tab_Gebaeude.Typ) mitkopieren.
             if (ok)
@@ -924,9 +1073,597 @@ namespace WindowsFormsApplication1
         /// <b>„Duplizieren…"</b> (Stufe 5; Entscheid AD-Q11) — der Gebaeudesatz als EIGENER
         /// Satz unter <paramref name="neuerName"/>, alle Spalten ausser ID, Bezeichner und
         /// ReadOnly. Die Regel steht einmal in <see cref="Katalogkopie.Duplizieren(string, int, string, Katalogkopie.Kindtabelle[])"/>.
+        ///
+        /// <para><b>Stufe KP1b:</b> Matrix, Kalender und Perioden des Katalogbaus folgen ihm
+        /// (Konzept 5.5) — in DERSELBEN Transaktion wie der Kopfsatz. <see cref="Katalogkopie"/>
+        /// bleibt dafür unverändert; sie kennt nur EINE Kindebene und gibt keine
+        /// Alt→Neu-Zuordnung heraus, die die Perioden brauchen.</para>
         /// </summary>
         public static Katalogkopie.Ergebnis Duplizieren(int id, string neuerName)
-            => Katalogkopie.Duplizieren(TABLE, id, neuerName);
+        {
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    // Der innere Vorgang der Katalogkopie wird unter dieser Klammer ein
+                    // Sicherungspunkt auf DERSELBEN Verbindung.
+                    Katalogkopie.Ergebnis kopf = Katalogkopie.Duplizieren(TABLE, id, neuerName);
+                    if (!kopf.Ok)
+                    {
+                        vorgang.Rollback();
+                        return kopf;
+                    }
+
+                    Konditionierungskopie.Befund befund = Konditionierungskopie.Kopieren(
+                        vorgang,
+                        KonditionierungCtrl.Eigner.Katalogbau(id),
+                        KonditionierungCtrl.Eigner.Katalogbau(kopf.Id),
+                        Konditionierungskopie.Auswahl.Alles);
+                    if (!befund.Ok)
+                    {
+                        vorgang.Rollback();
+                        return new Katalogkopie.Ergebnis(false, 0, "", befund.Meldung);
+                    }
+
+                    // Schritt ZK: die Zonen des Satzes werden mit dupliziert.
+                    Zonenkopie.Befund zonen = Zonenkopie.Kopieren(vorgang, Zonenebene.Katalog, id, Zonenebene.Katalog, kopf.Id, 0);
+                    if (!zonen.Ok)
+                    {
+                        vorgang.Rollback();
+                        return new Katalogkopie.Ergebnis(false, 0, "", zonen.Meldung);
+                    }
+
+                    vorgang.Commit();
+                    return kopf;
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return new Katalogkopie.Ergebnis(false, 0, "",
+                        MyResource.Resource.ADM_MSG_KOPIE_FEHLER + " " + ex.Message);
+                }
+            }
+        }
+
+        // =================================================================
+        //  Konditionierung: erneut übernehmen und „Speichern unter" (Stufe KP1b)
+        // =================================================================
+
+        /// <summary>
+        /// <b>„Konditionierung erneut übernehmen"</b> (Konzept 5.5; Entwurf KP2, Festlegung 4, Befund
+        /// B9): Die <b>ganze Gebäudeebene</b> wird die des Katalogbaus — Vorgabezeilen, Kalender samt
+        /// Perioden, die neun Bestandszellen, Nachtzeiten, Merker, Ferienzeiträume und
+        /// <c>Luftwechselrate</c> (<see cref="Konditionierungsarbeit.KatalogErneut"/>). Die Zeilen der
+        /// ZONEN bleiben — sie sind eine andere Ebene; der Befund zählt sie. Eine dünne Hülle: Lesen →
+        /// reiner Schritt → Schreiben, alles in EINEM Vorgang. Die Rückfrage entsteht vorher
+        /// (<see cref="KonditionierungErneutUebernehmenRueckfrage"/>). Der Katalogbau wird allein über den
+        /// Verweis der Kopie gesucht (<c>ID_Gebaeude_Stamm</c>, <see cref="KatalogbauDerKopie"/>); ohne
+        /// Verweis gibt es keinen — ein gleichnamiger Satz wird nicht angebunden.
+        /// </summary>
+        public static Konditionierungskopie.Befund KonditionierungErneutUebernehmen(int idGebaeude)
+        {
+            long? idKatalog = KatalogbauDerKopie(idGebaeude);
+            if (!idKatalog.HasValue)
+                return Konditionierungskopie.Befund.Fehler(MyResource.Resource.ADM_MSG_KOPIE_FEHLT);
+            if (!KonditionierungSchema.Lesbar()) return Konditionierungskopie.Befund.Nichts;
+
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    var ctrl = new KonditionierungCtrl();
+                    KonditionierungCtrl.Eigner gebaeude = KonditionierungCtrl.Eigner.Gebaeude(idGebaeude);
+                    Konditionierungsstand projekt = ctrl.StandLesen(gebaeude, out _);
+                    Konditionierungsstand katalog = ctrl.StandLesen(
+                        KonditionierungCtrl.Eigner.Katalogbau(idKatalog.Value), out string meldung);
+                    if (meldung != null)
+                    {
+                        vorgang.Rollback();
+                        return Konditionierungskopie.Befund.Fehler(meldung);
+                    }
+
+                    Konditionierungsschritt s = Konditionierungsarbeit.KatalogErneut(
+                        new Konditionierungsarbeitsstand(projekt, null), katalog);
+                    if (!s.Ok)
+                    {
+                        vorgang.Rollback();
+                        return Konditionierungskopie.Befund.Fehler(s.Meldung);
+                    }
+                    KonditionierungCtrl.Ergebnis e = ctrl.StandSchreiben(vorgang, gebaeude, s.Stand.Gebaeude,
+                                                                          mitBestand: true, out _);
+                    if (!e.Ok)
+                    {
+                        vorgang.Rollback();
+                        return Konditionierungskopie.Befund.Fehler(e.Meldung);
+                    }
+
+                    int perioden = 0;
+                    foreach (Konditionierungskalender k in katalog.Angelegt().Values) perioden += k.Perioden.Count;
+                    int zonen = Konditionierungskopie.Zonenzeilen(vorgang, idGebaeude);
+                    vorgang.Commit();
+                    return new Konditionierungskopie.Befund(true, katalog.VorgabenAnzahl, katalog.KalenderAnzahl,
+                                                            perioden, zonen, "");
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return Konditionierungskopie.Befund.Fehler(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Rückfrage VOR „erneut übernehmen"</b> (Festlegung 3, 4; Befund B9): was die erneute
+        /// Übernahme am Gebäude ersetzt, was bleibt und welche Zonen ihre eigenen Werte behalten, mit
+        /// Namen — gelesen, nicht geschrieben (<see cref="Konditionierungsarbeit.Rueckfrage"/>).
+        /// <c>null</c>, wenn es keinen Katalogbau oder keine Konditionierungstabellen gibt.
+        /// </summary>
+        public static Konditionierungsbilanz KonditionierungErneutUebernehmenRueckfrage(int idGebaeude)
+        {
+            long? idKatalog = KatalogbauDerKopie(idGebaeude);
+            if (!idKatalog.HasValue || !KonditionierungSchema.Lesbar()) return null;
+            var ctrl = new KonditionierungCtrl();
+            Konditionierungsarbeitsstand projekt = ctrl.ArbeitsstandLesen(idGebaeude, null, out _);
+            Konditionierungsstand katalog = ctrl.StandLesen(KonditionierungCtrl.Eigner.Katalogbau(idKatalog.Value), out _);
+            return Konditionierungsarbeit.Rueckfrage(projekt, null, Konditionierungshandlung.KatalogErneut, katalog);
+        }
+
+        /// <summary>
+        /// <b>Die Konditionierung des Katalogbaus einer Projektkopie</b> — die Ebene, aus der „erneut
+        /// übernehmen" liest (Stufe KP2, Festlegung 4); <c>null</c>, wenn es keinen Katalogbau oder keine
+        /// Konditionierungstabellen gibt. Für die Hülle, die den Schritt am Arbeitsstand fährt.
+        /// </summary>
+        public static Konditionierungsstand KatalogebeneDerKopie(int idGebaeude, out string meldung)
+        {
+            meldung = null;
+            long? idKatalog = KatalogbauDerKopie(idGebaeude);
+            if (!idKatalog.HasValue || !KonditionierungSchema.Lesbar()) return null;
+            return new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Katalogbau(idKatalog.Value), out meldung);
+        }
+
+        /// <summary>
+        /// Der Katalogbau einer Projektkopie — allein über ihren Verweis <c>ID_Gebaeude_Stamm</c>;
+        /// <c>null</c> = keiner. <b>Kein Namensrückfall:</b> Jede Kopie trägt ihren Verweis, seit die
+        /// Übernahme ihn setzt und Schemaschritt 121 den Altbestand über eindeutige Namen nachgetragen
+        /// hat. Leer ist er nur, wenn es den Satz nicht (mehr) gibt — gelöscht („Gebäude in DB
+        /// löschen"), beim Nachtrag ohne Treffer, am Ziel eines Pakets ohne Treffer. Ein später
+        /// angelegter Satz gleichen Namens ist ein FREMDER Satz und wird nicht angebunden.
+        /// </summary>
+        private static long? KatalogbauDerKopie(int idGebaeude)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT s.[ID] FROM [" + TABLE_PROJ + "] AS g " +
+                "INNER JOIN [" + TABLE + "] AS s ON s.[ID] = g.[ID_Gebaeude_Stamm] WHERE g.[ID] = ?",
+                new DbParam("@g", idGebaeude));
+            return v == null || v == DBNull.Value
+                ? (long?)null
+                : Convert.ToInt64(v, System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Was der OK-Weg eines Katalogbaus ergeben hat (<see cref="KatalogSchreiben"/>): die Id des
+        /// Satzes und ob die Konditionierung Zeilen geschrieben hat.
+        /// </summary>
+        public sealed record Katalogschreibergebnis(bool Ok, int Id, bool KonditionierungGeschrieben, string Meldung)
+        {
+            /// <summary>Der benannte Fehlschlag — nichts ist geschrieben.</summary>
+            public static Katalogschreibergebnis Fehler(string meldung) => new Katalogschreibergebnis(false, 0, false, meldung ?? "");
+        }
+
+        /// <summary>
+        /// <b>Der OK-Weg eines Katalogbaus</b> (Stufe KP2, Welle K2; Entwurf KP2 Abschnitt 2 „eine
+        /// Schreibstelle"): Kopf und Konditionierung in EINEM Vorgang. <paramref name="neu"/> legt den
+        /// Satz an — sein Eigner entsteht im Vorgang —, sonst wird er unter <paramref name="ursprungsname"/>
+        /// überschrieben (der Name steht im Modell). Die Konditionierung kommt aus dem Arbeitsstand
+        /// (<paramref name="stand"/>; nur Geändertes, <see cref="KonditionierungCtrl.StandSchreiben"/>); ohne
+        /// Stand bekommt ein neuer Satz die Kopie der <paramref name="quelle"/> („Speichern unter" wie
+        /// Duplizieren), ohne beides nur den Kopf. Scheitert ein Schritt, fällt alles zurück. Das Schloss und
+        /// den freien Namen prüft der Aufrufer (die Hülle meldet es mit eigenem Text).
+        /// </summary>
+        /// <param name="zonenquelle">Schritt ZK: der Satz, dessen Zonen ein NEUER Satz in ihrem gespeicherten Stand übernimmt
+        /// (Projektgebäude oder Katalogbau, <see cref="Zonenkopie"/>); <c>null</c> ohne Zonen.</param>
+        public static Katalogschreibergebnis KatalogSchreiben(GebaeudeModel modell, bool neu, string ursprungsname,
+                                                              Konditionierungsstand stand,
+                                                              KonditionierungCtrl.Eigner quelle = null,
+                                                              KonditionierungCtrl.Eigner zonenquelle = null)
+        {
+            if (modell == null) throw new ArgumentNullException(nameof(modell));
+            if (!neu) modell.Gebaeudename = ursprungsname;
+
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    var ctrl = new GebaeudeStammCtrl();
+                    int id;
+                    if (neu)
+                    {
+                        if (!ctrl.Insert(modell, out id) || id <= 0)
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler(MyResource.Resource.KOND_MSG_KOPF_NICHT_ANGELEGT);
+                        }
+                    }
+                    else
+                    {
+                        // Overwrite bewahrt die Namen der Ferienzeitraeume 1 bis 4 (Kalendergemeinschaft.MitFeriennamen).
+                        if (!ctrl.Overwrite(modell))
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler("");
+                        }
+                        id = ctrl.Lies(modell.Gebaeudename)?.ID ?? 0;
+                    }
+
+                    bool geschrieben = false;
+                    if (stand != null && id > 0)
+                    {
+                        KonditionierungCtrl.Ergebnis e = new KonditionierungCtrl().StandSchreiben(
+                            vorgang, KonditionierungCtrl.Eigner.Katalogbau(id), stand.AlsArt(Kalendereigentuemer.Katalogbau),
+                            mitBestand: false, out geschrieben);
+                        if (!e.Ok)
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler(e.Meldung);
+                        }
+                    }
+                    else if (neu && quelle != null)
+                    {
+                        Konditionierungskopie.Befund b = Konditionierungskopie.Kopieren(
+                            vorgang, quelle, KonditionierungCtrl.Eigner.Katalogbau(id), Konditionierungskopie.Auswahl.Alles);
+                        if (!b.Ok)
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler(b.Meldung);
+                        }
+                        geschrieben = b.Vorgaben + b.Kalender > 0;
+                    }
+
+                    if (neu && id > 0 && (zonenquelle ?? quelle) != null)
+                    {
+                        Zonenkopie.Befund z = ZonenDerQuelle(vorgang, zonenquelle ?? quelle, id);
+                        if (!z.Ok)
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler(z.Meldung);
+                        }
+                    }
+
+                    vorgang.Commit();
+                    return new Katalogschreibergebnis(true, id, geschrieben, "");
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return Katalogschreibergebnis.Fehler(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// <b>OK im Projekt, Schritt 1</b> (Stufe KP2, Welle K2): die Projektkopie
+        /// (<see cref="ProjektkopieUeberschreiben"/>) samt ihrer Konditionierung aus dem Arbeitsstand in
+        /// EINEM Vorgang — nur Geändertes; <paramref name="stand"/> <c>null</c> lässt die Tabellen stehen.
+        /// </summary>
+        public static KonditionierungCtrl.Ergebnis ProjektkopieSchreiben(int idGebaeude, int idProjekt, GebaeudeModel modell,
+                                                                         Konditionierungsstand stand)
+        {
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    // ProjektkopieUeberschreiben bewahrt die Namen der Ferienzeitraeume 1 bis 4 (Kalendergemeinschaft.MitFeriennamen).
+                    if (!ProjektkopieUeberschreiben(idGebaeude, idProjekt, modell))
+                    {
+                        vorgang.Rollback();
+                        return KonditionierungCtrl.Ergebnis.Fehler(MyResource.Resource.GEBZ_MSG_GEBAEUDE);
+                    }
+                    if (stand != null)
+                    {
+                        KonditionierungCtrl.Ergebnis e = new KonditionierungCtrl().StandSchreiben(
+                            vorgang, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), stand.AlsArt(Kalendereigentuemer.Gebaeude),
+                            mitBestand: false, out _);
+                        if (!e.Ok)
+                        {
+                            vorgang.Rollback();
+                            return e;
+                        }
+                    }
+                    vorgang.Commit();
+                    return KonditionierungCtrl.Ergebnis.Gut;
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return KonditionierungCtrl.Ergebnis.Fehler(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Schritt ZK: die Zonen der <paramref name="quelle"/> — eines Projektgebäudes oder eines Katalogbaus — an den
+        /// neuen Katalogbau <paramref name="idKatalog"/>, im laufenden Vorgang. Ohne Quelle oder bei einer Zone oder
+        /// Vorlage als Quelle nichts.
+        /// </summary>
+        private static Zonenkopie.Befund ZonenDerQuelle(DbVorgang vorgang, KonditionierungCtrl.Eigner quelle, int idKatalog)
+        {
+            if (quelle == null) return Zonenkopie.Befund.Nichts;
+            if (quelle.Art == Kalendereigentuemer.Katalogbau)
+                return Zonenkopie.Kopieren(vorgang, Zonenebene.Katalog, quelle.IdStamm, Zonenebene.Katalog, idKatalog, 0);
+            if (quelle.Art != Kalendereigentuemer.Gebaeude) return Zonenkopie.Befund.Nichts;
+            object projekt = vorgang.Skalar("SELECT COALESCE([ID_Projekt], 0) FROM [" + TABLE_PROJ + "] WHERE [ID] = ?",
+                                            new DbParam("@g", quelle.IdGebaeude));
+            int idProjekt = projekt == null || projekt == DBNull.Value ? 0 : Convert.ToInt32(projekt, System.Globalization.CultureInfo.InvariantCulture);
+            return Zonenkopie.Kopieren(vorgang, Zonenebene.Projekt, quelle.IdGebaeude, Zonenebene.Katalog, idKatalog, idProjekt);
+        }
+
+        /// <summary>Was „Speichern unter" ergeben hat: der neue Katalogbau und sein Kopierbefund.</summary>
+        public sealed record SpeichernUnterErgebnis(bool Ok, int Id,
+                                                    Konditionierungskopie.Befund Befund, string Meldung);
+
+        /// <summary>
+        /// <b>„Speichern unter"</b> (Konzept 5.5, Festlegung 10): Der Satz
+        /// <paramref name="modell"/> wird als NEUER Katalogbau angelegt, und die Konditionierung
+        /// der <paramref name="quelle"/> — eines Projektgebäudes oder eines Katalogbaus — kommt in
+        /// DERSELBEN Transaktion mit, dazu ihre Zonen samt Bauteilen, Luftströmen und Zonen-Konditionierung
+        /// (Schritt ZK, <see cref="Zonenkopie"/>).
+        ///
+        /// <para>Im Katalogmodus ist die Quelle der Ursprungs-Katalogbau — dann wirkt „Speichern
+        /// unter" wie Duplizieren. <paramref name="quelle"/> <c>null</c> legt nur den Kopf an.</para>
+        /// </summary>
+        public static SpeichernUnterErgebnis SpeichernUnter(GebaeudeModel modell,
+                                                            KonditionierungCtrl.Eigner quelle)
+        {
+            if (modell == null) throw new ArgumentNullException(nameof(modell));
+
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    var ctrl = new GebaeudeStammCtrl();
+                    if (!ctrl.Insert(modell, out int id) || id <= 0)
+                    {
+                        vorgang.Rollback();
+                        return new SpeichernUnterErgebnis(false, 0, null,
+                            MyResource.Resource.KOND_MSG_KOPF_NICHT_ANGELEGT);
+                    }
+
+                    Konditionierungskopie.Befund befund = quelle == null
+                        ? Konditionierungskopie.Befund.Nichts
+                        : Konditionierungskopie.Kopieren(vorgang, quelle,
+                                                         KonditionierungCtrl.Eigner.Katalogbau(id),
+                                                         Konditionierungskopie.Auswahl.Alles);
+                    if (!befund.Ok)
+                    {
+                        vorgang.Rollback();
+                        return new SpeichernUnterErgebnis(false, 0, befund, befund.Meldung);
+                    }
+
+                    Zonenkopie.Befund zonen = ZonenDerQuelle(vorgang, quelle, id);
+                    if (!zonen.Ok)
+                    {
+                        vorgang.Rollback();
+                        return new SpeichernUnterErgebnis(false, 0, befund, zonen.Meldung);
+                    }
+
+                    vorgang.Commit();
+                    return new SpeichernUnterErgebnis(true, id, befund, "");
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return new SpeichernUnterErgebnis(false, 0, null, ex.Message);
+                }
+            }
+        }
+
+        // =================================================================
+        //  „In DB übernehmen": ein Projektgebäude als neuer Katalogsatz
+        // =================================================================
+
+        /// <summary>Warum <see cref="AusProjektUebernehmen"/> nichts geschrieben hat.</summary>
+        public enum Projektuebernahmeabsage
+        {
+            /// <summary>Keine Absage — der Satz steht im Katalog.</summary>
+            Keine,
+
+            /// <summary>Kein Projektgebäude gewählt, oder es hat (noch) keine Projektkopie.</summary>
+            KeinGebaeude,
+
+            /// <summary>Der Name ist leer.</summary>
+            NameLeer,
+
+            /// <summary>Ein Katalogsatz trägt den Namen schon.</summary>
+            NameVergeben,
+
+            /// <summary>Das Schreiben ist gescheitert; der Grund steht in der Meldung.</summary>
+            Fehler,
+        }
+
+        /// <summary>
+        /// Was „In DB übernehmen" ergeben hat: die Id und der Name des neuen Katalogsatzes, der
+        /// Kopierbefund der Konditionierung und die Zahl der Zonen und Bauteile, die der Katalogsatz übernommen
+        /// hat (Schritt ZK) — oder die benannte Absage.
+        /// </summary>
+        public sealed record ProjektuebernahmeErgebnis(bool Ok, int Id, string Name, Projektuebernahmeabsage Absage,
+                                                       string Meldung, Konditionierungskopie.Befund Befund,
+                                                       int Zonen, int Bauteile)
+        {
+            /// <summary>Steht die Absage am Namensfeld (leer oder vergeben)?</summary>
+            public bool AmNamen => Absage == Projektuebernahmeabsage.NameLeer || Absage == Projektuebernahmeabsage.NameVergeben;
+
+            /// <summary>Die benannte Absage — nichts ist geschrieben.</summary>
+            public static ProjektuebernahmeErgebnis Abgelehnt(Projektuebernahmeabsage absage, string meldung)
+                => new ProjektuebernahmeErgebnis(false, 0, "", absage, meldung ?? "", null, 0, 0);
+        }
+
+        /// <summary>
+        /// Die 95 Fachspalten des Gebäudemodells, die Projektkopie (<c>Tab_Gebaeude</c>) und Katalog
+        /// (<c>Tab_Gebaeude_STAMM</c>) gleich führen — alle Spalten des Katalogs außer <c>ID</c>,
+        /// <c>Bezeichner</c>, <c>Beschreibung</c> und <c>ReadOnly</c>. Dieselbe Liste wie die Anlage
+        /// <see cref="Insert(GebaeudeModel, out int)"/>, in derselben Reihenfolge.
+        /// </summary>
+        internal const string KOPFSPALTEN = "[Typ], [Wohnflaeche_gesamt], [Bewohner], [Flaeche_Nutzer], [Interne_Waermegewinne], [Bauweise], [Fensterflaeche_Sued], [Fensterflaeche_Ost_West], [Fensterflaeche_Nord], [Fensterdurchlassgrad], [Raumsolltemperatur_Nachtabsenkung], [Raumsolltemperatur_Tag], [Raumsolltemperatur_Wochenende], [Raumsolltemperatur_Ferien], [Maximaleraumtemperatur], [k_Wert_Außenwand], [k_Wert_Fenster], [k_Wert_Dachflaeche], [k_Wert_Grundflaeche], [k_Wert_Sonstiges], [Flaeche_Außenwand], [gesamte_Fensterflaeche], [Dachflaeche], [Grundflaeche], [Sonstige_Flaechen], [Nutzflaeche], [Raumhoehe], [WBVK_Anschluß_Fenster_Wand], [WBVK_Anschluß_Wand_Dach], [WBVK_Anschluß_Außenwand_Kellerdecke], [Abmessung_Anschluß_Fenster_Wand], [Abmessung_Anschluß_Wand_Dach], [Abmessung_Anschluß_Außenwand_Kellerdecke], [Luftwechselrate], [Wochenende], [Ferien], [Ferienbeginn_1], [Ferienende_1], [Ferienbeginn_2], [Ferienende_2], [Ferienbeginn_3], [Ferienende_3], [Ferienbeginn_4], [Ferienende_4], [WW_Bedarf], [spez_Waermeverbrauch], [Waermebedarf], [Baualtersklasse], [Gebaeudeart], [Wohngebaeude_Nicht_Wohngebaeude], [Gebaeude_Modell], [Fensterflaeche_Ost], [Fensterflaeche_West], [Rahmenanteil], [Verschattungsfaktor], [Grundflaeche_Randbedingung], [Kellertemperatur], [Masseanteil_Aussen], [Innenflaechenfaktor], [Heizung_Strahlungsanteil], [Heizleistung_Max], [Aussenbauteile_Strahlung], [Luftwechsel_Infiltration], [Luftwechsel_Nutzer], [Sommerlueftung], [Kuehl_Sollwert], [Kuehlleistung_Max], [Kuehlung_Aktiv], [Kuehl_Sollwert_Nacht], [Heizkreis_Aktiv], [Uebergabe_Art], [Uebergabe_Exponent], [Uebergabe_Leistung_Nenn], [Auslegung_Vorlauf], [Auslegung_Ruecklauf], [Auslegung_Raumtemperatur], [Auslegung_Aussentemperatur], [Heizkurve_Aktiv], [Heizkurve_Niveau], [Heizkurve_Steilheit], [Regler_Proportionalband], [Sollwertprofil], [Kuehluebergabe_Aktiv], [Kuehl_Uebergabe_Art], [Kuehl_Uebergabe_Exponent], [Kuehl_Uebergabe_Leistung_Nenn], [Kuehl_Auslegung_Vorlauf], [Kuehl_Auslegung_Ruecklauf], [Kuehl_Auslegung_Raumtemperatur], [Kuehl_Vorlaufgrenze], [Baujahr], [Nachtabsenkung_Beginn], [Nachtabsenkung_Ende], [Energiestandard], [Erdreich_U_Wirksam], [Heizkurve_Raumeinfluss], [Kuehlkurve_Aktiv], [Kuehlkurve_Fusspunkt], [Kuehlkurve_Raumeinfluss], [Kuehlkurve_Auslegung_Weg], [Kuehlkurve_Auslegung_Aussen], [Wochenendtage], [Feiertagsland]";
+
+        /// <summary>
+        /// Der Name, den „In DB übernehmen" für die Projektkopie des Projektgebäudes
+        /// <paramref name="idProjektGebaeude"/> (<c>Z_ProjektGebaeude.ID</c>) vorschlägt: ihr Name, und ist
+        /// er im Katalog vergeben, mit Zähler („… (2)", „… (3)" …). Leer, wenn es die Kopie nicht gibt.
+        /// </summary>
+        public static string NamensvorschlagAusProjekt(int idProjektGebaeude)
+        {
+            DataRow r = Projektkopiezeile(idProjektGebaeude);
+            if (r == null) return "";
+            string basis = Spaltentext(r, "Gebaeudename").Trim();
+            if (basis.Length == 0) return "";
+            if (!NameVergeben(basis)) return basis;
+            for (int n = 2; n < 10000; n++)
+            {
+                string kandidat = basis + " (" + n.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")";
+                if (!NameVergeben(kandidat)) return kandidat;
+            }
+            return basis;
+        }
+
+        /// <summary>Trägt ein Katalogsatz den Namen <paramref name="name"/> schon (eindeutiger Index auf <c>Bezeichner</c>)?</summary>
+        public static bool NameVergeben(string name)
+        {
+            object n = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM [" + TABLE + "] WHERE [Bezeichner] = ?",
+                new DbParam("@bez", name ?? ""));
+            return n != null && n != DBNull.Value && Convert.ToInt64(n, System.Globalization.CultureInfo.InvariantCulture) > 0;
+        }
+
+        /// <summary>
+        /// <b>„In DB übernehmen"</b> — die Projektkopie des Projektgebäudes
+        /// <paramref name="idProjektGebaeude"/> (<c>Z_ProjektGebaeude.ID</c>, die Zuordnung der Projektliste)
+        /// als NEUER Anwendersatz im Katalog unter <paramref name="name"/>: der Spiegel von
+        /// <see cref="CopyFromStamm(int?, string, int, int)"/>.
+        ///
+        /// <list type="bullet">
+        /// <item><b>Kopf:</b> alle 101 Fachspalten (<see cref="KOPFSPALTEN"/>) wörtlich aus
+        /// <c>Tab_Gebaeude</c> — NULL bleibt NULL, Schalter bleiben 0/1. Neue Id, <c>ReadOnly = 0</c>;
+        /// Projekt, Zuordnung und Katalogverweis der Kopie gehören nicht zum Katalog.</item>
+        /// <item><b>Beschreibung:</b> die der Kopie, darunter die Herkunft „aus Projekt …, Datum"
+        /// (<c>GEB_TEXT_HERKUNFT_PROJEKT</c>).</item>
+        /// <item><b>Konditionierung:</b> die Gebäudeebene (Vorgaben, Kalender samt Perioden) über
+        /// <see cref="Konditionierungskopie"/> — wie „Speichern unter".</item>
+        /// <item><b>Zonen</b> samt Bauteilen, Luftströmen und Zonen-Konditionierung reisen mit (Schritt ZK,
+        /// <see cref="Zonenkopie"/>); ihre Zahl steht im Ergebnis.</item>
+        /// <item>Die Tagesverteilung hängt im Katalog am Gebäudetyp (<c>Typ</c>), der mitreist.</item>
+        /// </list>
+        ///
+        /// <para>Alles in EINEM Vorgang; das Projekt bleibt unberührt. Benannte Absagen: kein Gebäude
+        /// (oder keine Projektkopie), Name leer, Name vergeben.</para>
+        /// </summary>
+        public static ProjektuebernahmeErgebnis AusProjektUebernehmen(int idProjektGebaeude, string name,
+                                                                      DateTime? stichtag = null)
+        {
+            DataRow r = idProjektGebaeude > 0 ? Projektkopiezeile(idProjektGebaeude) : null;
+            if (r == null)
+                return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.KeinGebaeude,
+                                                           MyResource.Resource.GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE);
+
+            string neuerName = (name ?? "").Trim();
+            if (neuerName.Length == 0)
+                return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.NameLeer,
+                                                           MyResource.Resource.GEB_MSG_DB_UEBERNAHME_NAME_LEER);
+            if (NameVergeben(neuerName))
+                return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.NameVergeben,
+                                                           MyResource.Resource.GEBK_MSG_NAME_VERGEBEN);
+
+            int idGebaeude = Convert.ToInt32(r["ID"], System.Globalization.CultureInfo.InvariantCulture);
+            string beschreibung = Herkunftsbeschreibung(Spaltentext(r, "Beschreibung"),
+                                                        Projektname(Ganzzahl(r, "ID_Projekt")),
+                                                        stichtag ?? DateTime.Today);
+
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                try
+                {
+                    int id = DataRepository.GetMaxID(TABLE) + 1;
+                    bool ok = DataRepository.ExecuteSQL(
+                        "INSERT INTO [" + TABLE + "] ([ID], [Bezeichner], [Beschreibung], [ReadOnly], " + KOPFSPALTEN + ") " +
+                        "SELECT ?, ?, ?, 0, " + KOPFSPALTEN + " FROM [" + TABLE_PROJ + "] WHERE [ID] = ?",
+                        new DbParam("@nid", DbParamTyp.Integer) { Wert = id },
+                        new DbParam("@nbez", DbParamTyp.VarWChar) { Wert = neuerName },
+                        new DbParam("@nbes", DbParamTyp.VarWChar) { Wert = beschreibung },
+                        new DbParam("@gid", DbParamTyp.Integer) { Wert = idGebaeude });
+                    if (!ok || !NameVergeben(neuerName))
+                    {
+                        vorgang.Rollback();
+                        return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler,
+                                                                   MyResource.Resource.KOND_MSG_KOPF_NICHT_ANGELEGT);
+                    }
+
+                    Konditionierungskopie.Befund befund = KonditionierungSchema.Lesbar()
+                        ? Konditionierungskopie.Kopieren(vorgang, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude),
+                                                         KonditionierungCtrl.Eigner.Katalogbau(id),
+                                                         Konditionierungskopie.Auswahl.Alles)
+                        : Konditionierungskopie.Befund.Nichts;
+                    if (!befund.Ok)
+                    {
+                        vorgang.Rollback();
+                        return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler, befund.Meldung);
+                    }
+
+                    Zonenkopie.Befund zonen = Zonenkopie.Kopieren(vorgang, Zonenebene.Projekt, idGebaeude, Zonenebene.Katalog, id,
+                                                                  Ganzzahl(r, "ID_Projekt") ?? 0);
+                    if (!zonen.Ok)
+                    {
+                        vorgang.Rollback();
+                        return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler, zonen.Meldung);
+                    }
+
+                    vorgang.Commit();
+                    return new ProjektuebernahmeErgebnis(true, id, neuerName, Projektuebernahmeabsage.Keine, "",
+                                                         befund, zonen.Zonen, zonen.Bauteile);
+                }
+                catch (Exception ex)
+                {
+                    vorgang.Rollback();
+                    return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler, ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Die Beschreibung des neuen Katalogsatzes: die der Projektkopie, darunter die Herkunft
+        /// (<c>GEB_TEXT_HERKUNFT_PROJEKT</c>: {0} Projekt, {1} Datum in der Kultur der Oberfläche).
+        /// </summary>
+        internal static string Herkunftsbeschreibung(string beschreibung, string projekt, DateTime stichtag)
+        {
+            string herkunft = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                            MyResource.Resource.GEB_TEXT_HERKUNFT_PROJEKT,
+                                            projekt ?? "", stichtag.ToString("d", System.Globalization.CultureInfo.CurrentCulture));
+            string vorher = (beschreibung ?? "").TrimEnd();
+            return vorher.Length == 0 ? herkunft : vorher + "\n" + herkunft;
+        }
+
+        /// <summary>Die Projektkopie (<c>Tab_Gebaeude</c>) einer Zuordnung der Projektliste; <c>null</c> = keine.</summary>
+        private static DataRow Projektkopiezeile(int idProjektGebaeude)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT [ID], [ID_Projekt], [Gebaeudename], [Beschreibung] FROM [" + TABLE_PROJ + "] " +
+                "WHERE [ID_ProjektGebaeude] = ? ORDER BY [ID]",
+                new DbParam("@zid", idProjektGebaeude));
+            return dt == null || dt.Rows.Count == 0 ? null : dt.Rows[0];
+        }
+
+        /// <summary>Der Name eines Projekts; leer, wenn es ihn nicht gibt.</summary>
+        private static string Projektname(int? idProjekt)
+        {
+            if (!idProjekt.HasValue) return "";
+            object n = DataRepository.ExecuteScalar("SELECT [Projektname] FROM [Tab_Projekt] WHERE [ID] = ?",
+                                                    new DbParam("@pid", idProjekt.Value));
+            return n == null || n == DBNull.Value ? "" : Convert.ToString(n, System.Globalization.CultureInfo.InvariantCulture);
+        }
 
         /// <summary>
         /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): schaltet das
@@ -938,93 +1675,117 @@ namespace WindowsFormsApplication1
             => Auslieferungskennzeichen.SetzenInTabelle(TABLE, ids, gesperrt);
 
         /// <summary>
-        /// <b>Welche Projekte ein Gebaeude fuehren</b> (Stufe 5, V8: die weiche Loeschsperre
-        /// nennt das Projekt) — je KATALOGNAME die Projektnamen, EINE Abfrage fuer die ganze
-        /// Liste. Ein Projekt fuehrt eine KOPIE des Katalogsatzes (<c>Tab_Gebaeude</c>).
-        ///
-        /// <para><b>Zuerst die ID, dann der Name</b> (Schemaschritt 121, Welle #468; Konzept
-        /// Administrationsdialoge 7.1 (a)). Traegt die Kopie ihren Katalogverweis
-        /// (<c>ID_Gebaeude_Stamm</c>), kommt der Schluessel aus dem KATALOGSATZ selbst — er
-        /// ueberlebt die Umbenennung des Satzes wie die der Kopie. Nur eine Kopie OHNE Verweis
-        /// (Altbestand, deren Name beim Nachtrag keinen Katalogsatz traf, ein geloeschter
-        /// Katalogsatz, ein Paket ohne Treffer am Ziel) sperrt weiter ueber ihren Namen —
-        /// gross/klein egal, wie bisher.</para>
-        /// </summary>
-        public static IReadOnlyDictionary<string, IReadOnlyList<string>> Projektverwendung()
-        {
-            var sammlung = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            DataTable dt = DataRepository.GetDataTable(
-                "SELECT COALESCE(s.Bezeichner, g.Gebaeudename) AS Katalogname, p.Projektname " +
-                "FROM [" + TABLE_PROJ + "] AS g " +
-                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt " +
-                "LEFT JOIN [" + TABLE + "] AS s ON s.ID = g.ID_Gebaeude_Stamm " +
-                "ORDER BY p.Projektname");
-            if (dt != null)
-            {
-                foreach (DataRow r in dt.Rows)
-                {
-                    string name = Spaltentext(r, "Katalogname").Trim();
-                    string projekt = Spaltentext(r, "Projektname");
-                    if (name.Length == 0) continue;
-                    if (!sammlung.TryGetValue(name, out List<string> projekte))
-                        sammlung[name] = projekte = new List<string>();
-                    if (!projekte.Contains(projekt)) projekte.Add(projekt);
-                }
-            }
-
-            var ergebnis = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
-            foreach (KeyValuePair<string, List<string>> p in sammlung) ergebnis[p.Key] = p.Value;
-            return ergebnis;
-        }
-
-        /// <summary>
-        /// <b>Die Loeschsperre eines Katalogsatzes</b>: die Projekte, die ihn fuehren — leer,
-        /// wenn keines. Dieselbe Wahrheit wie <see cref="Projektverwendung"/> (zuerst der
-        /// Katalogverweis, dann der Name); die Verwaltung nennt diese Projekte im Sperrgrund.
-        /// </summary>
-        public static IReadOnlyList<string> Loeschsperre(string bezeichner)
-        {
-            if (string.IsNullOrWhiteSpace(bezeichner)) return Array.Empty<string>();
-            return Projektverwendung().TryGetValue(bezeichner.Trim(), out IReadOnlyList<string> projekte)
-                ? projekte : Array.Empty<string>();
-        }
-
-        /// <summary>
         /// <b>Warum ein Katalogsatz nicht gelöscht wird</b> — der benannte Sperrgrund für
-        /// „Gebäude in DB löschen" des Projekt-Gebäudedialogs, aus derselben Wahrheit wie die
-        /// Gebäudeverwaltung: ein Auslieferungssatz (<c>ReadOnly</c>) oder ein Satz, den ein
-        /// Projekt führt (<see cref="Loeschsperre"/>, der Text nennt die Projekte). Leer, wenn
-        /// der Satz gelöscht werden darf (oder kein Name gewählt ist).
+        /// „Gebäude in DB löschen" des Projekt-Gebäudedialogs und für „Löschen" der
+        /// Gebäudeverwaltung (dieselbe Regel in beiden, Anwenderentscheid 06.10.2026): allein ein Auslieferungssatz
+        /// (<c>ReadOnly</c>). Ein Satz, den Projekte führen, ist löschbar (Anwenderentscheid
+        /// 06.10.2026): Jedes Projekt trägt eine VOLLSTÄNDIGE Kopie (Kopf, Zonen, Bauteile,
+        /// Luftströme, Konditionierung als eigene Zeilen), nichts davon hängt am Katalogsatz;
+        /// beim Löschen leert die Beziehung (<c>ON DELETE SET NULL</c>) nur den Verweis
+        /// <c>ID_Gebaeude_Stamm</c>. Welche Projekte ihre Kopie behalten, nennt
+        /// <see cref="Loeschhinweis"/> in der Rückfrage. Leer, wenn der Satz gelöscht werden
+        /// darf (oder kein Name gewählt ist).
         /// </summary>
         public static string Loeschsperrgrund(string bezeichner)
         {
             if (string.IsNullOrWhiteSpace(bezeichner)) return "";
-            if (new GebaeudeStammCtrl().IsReadOnly(bezeichner))
-                return MyResource.Resource.BADM_MSG_SCHREIBGESCHUETZT;
-            IReadOnlyList<string> projekte = Loeschsperre(bezeichner);
-            return projekte.Count > 0
-                ? string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                MyResource.Resource.ADM_AW_LOESCHEN_VERWENDET,
-                                string.Join(", ", projekte))
+            return new GebaeudeStammCtrl().IsReadOnly(bezeichner)
+                ? MyResource.Resource.BADM_MSG_SCHREIBGESCHUETZT
                 : "";
         }
 
         /// <summary>
+        /// <b>Die Projekte, deren Kopie auf den Katalogsatz verweist</b> — genau die, deren Verweis
+        /// <c>ID_Gebaeude_Stamm</c> das Löschen leert; nach Projektnamen geordnet, ohne Doppel.
+        /// <b>Allein über den Verweis</b>, nicht über den Namen: Eine Kopie ohne Verweis gehört zu
+        /// keinem Katalogsatz (ihr Satz ist gelöscht oder fand sich nie), auch nicht zu einem
+        /// später angelegten gleichnamigen. Schreibt nichts.
+        /// </summary>
+        public static IReadOnlyList<string> Projektkopien(string bezeichner)
+        {
+            var projekte = new List<string>();
+            if (string.IsNullOrWhiteSpace(bezeichner)) return projekte;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT DISTINCT p.Projektname FROM [" + TABLE_PROJ + "] AS g " +
+                "INNER JOIN Tab_Projekt AS p ON p.ID = g.ID_Projekt " +
+                "INNER JOIN [" + TABLE + "] AS s ON s.ID = g.ID_Gebaeude_Stamm " +
+                "WHERE s.Bezeichner = ? ORDER BY p.Projektname",
+                new DbParam("@bez", bezeichner.Trim()));
+            if (dt != null)
+                foreach (DataRow r in dt.Rows)
+                {
+                    string name = Spaltentext(r, "Projektname");
+                    if (!projekte.Contains(name)) projekte.Add(name);
+                }
+            return projekte;
+        }
+
+        /// <summary>
+        /// <b>Der Zusatz der Rückfrage vor dem Löschen</b>: die Projekte, die eine Kopie des
+        /// Katalogsatzes führen (<see cref="Projektkopien"/>), und dass ihre Kopien bleiben
+        /// (<c>GEB_MSG_LOESCHHINWEIS_KOPIEN</c>). Leer, wenn kein Projekt den Satz führt.
+        /// </summary>
+        public static string Loeschhinweis(string bezeichner) => Loeschhinweis(bezeichner, null);
+
+        /// <summary>
+        /// <see cref="Loeschhinweis(string)"/> samt einem Projekt, dessen Kopie erst noch entsteht:
+        /// Der Gebäudedialog speichert eine eben übernommene, noch ungespeicherte Projektzeile des
+        /// Satzes vor dem Löschen still (Anwenderentscheid 06.10.2026) — dieses Projekt behält dann
+        /// ebenfalls seine Kopie und steht mit in der Rückfrage. <c>null</c> oder leer: keines.
+        /// </summary>
+        public static string Loeschhinweis(string bezeichner, string weiteresProjekt)
+        {
+            var projekte = new List<string>(Projektkopien(bezeichner));
+            if (!string.IsNullOrWhiteSpace(weiteresProjekt) && !projekte.Contains(weiteresProjekt))
+            {
+                projekte.Add(weiteresProjekt);
+                projekte.Sort(StringComparer.Ordinal);
+            }
+            return projekte.Count == 0
+                ? ""
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                MyResource.Resource.GEB_MSG_LOESCHHINWEIS_KOPIEN,
+                                string.Join(", ", projekte));
+        }
+
+        /// <summary>
+        /// <b>Der Zusatz der Rückfrage für mehrere Sätze</b> — der Weg der Gebäudeverwaltung, die
+        /// eine Mehrfachwahl löscht: die Projekte, die eine Kopie eines der Sätze führen, je einmal
+        /// und nach Namen geordnet (<c>GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR</c>). Ein einzelner Satz
+        /// bekommt den Text von <see cref="Loeschhinweis(string)"/>. Leer, wenn kein Projekt einen
+        /// der Sätze führt.
+        /// </summary>
+        public static string Loeschhinweis(IReadOnlyList<string> bezeichner)
+        {
+            if (bezeichner == null || bezeichner.Count == 0) return "";
+            if (bezeichner.Count == 1) return Loeschhinweis(bezeichner[0]);
+            var projekte = new SortedSet<string>(StringComparer.Ordinal);
+            foreach (string name in bezeichner)
+                foreach (string projekt in Projektkopien(name)) projekte.Add(projekt);
+            return projekte.Count == 0
+                ? ""
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                MyResource.Resource.GEB_MSG_LOESCHHINWEIS_KOPIEN_MEHR,
+                                string.Join(", ", projekte));
+        }
+
+        /// <summary>
         /// Loescht einen Katalogsatz OHNE Rueckmeldung ueber einen Kasten — der Weg der
-        /// Gebaeudeverwaltung (Stufe 5): Die Oberflaeche sperrt Auslieferungssaetze und
-        /// benutzte Gebaeude weich und fragt vorher zurueck; <see cref="Delete"/> meldete die
+        /// Gebaeudeverwaltung (Stufe 5) und des Projekt-Gebaeudedialogs: Die Oberflaeche sperrt
+        /// Auslieferungssaetze weich und fragt vorher zurueck; <see cref="Delete"/> meldete die
         /// Sperre ueber <c>Meldung.Hinweis</c>, und das waere in der WebView ein modaler Kasten.
         ///
-        /// <para><b>Die Sperre haelt auch hier</b> (Welle #468): Ein Satz, den ein Projekt
-        /// fuehrt (<see cref="Loeschsperre"/>), wird nicht geloescht — die Oberflaeche reicht
-        /// ihn ohnehin nicht herein, aber der Kern verlaesst sich nicht darauf.</para>
+        /// <para><b>Allein der Auslieferungssatz ist gesperrt</b> (Anwenderentscheid 06.10.2026,
+        /// <see cref="Loeschsperrgrund"/>): Ein Satz, den Projekte fuehren, wird geloescht; ihre
+        /// Kopien samt Zonen, Bauteilen, Luftstroemen und Konditionierung bleiben unberuehrt, die
+        /// Beziehung leert nur ihren Verweis <c>ID_Gebaeude_Stamm</c> (<c>SET NULL</c>). Die
+        /// Katalogkalender, Perioden und Vorgaben des Satzes fallen per <c>CASCADE</c> weg.</para>
         /// </summary>
         /// <returns><c>true</c>, wenn der Satz geloescht wurde.</returns>
         public static bool Loeschen(string bezeichner)
         {
             if (string.IsNullOrEmpty(bezeichner)) return false;
             if (new GebaeudeStammCtrl().IsReadOnly(bezeichner)) return false;
-            if (Loeschsperre(bezeichner).Count > 0) return false;
             return DataRepository.ExecuteSQL(
                 "DELETE FROM [" + TABLE + "] WHERE Bezeichner = ? AND ReadOnly = 0",
                 new DbParam("@bez", bezeichner));

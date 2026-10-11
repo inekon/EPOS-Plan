@@ -80,12 +80,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Zahl der Detailfelder je Auspraegung — 7 / 5 / 11 / 10. Der Solarwert
+        /// Die Zahl der Detailfelder je Auspraegung — 9 / 5 / 11 / 10 (der Heizkessel mit eta30
+        /// und Mindestleistung aus Satz 710.01, Konzept Kesselkennlinie 3.4). Der Solarwert
         /// ist 11 und nicht 10, weil das Beschreibungsfeld mitzaehlt: Es steht im
         /// Designer, wurde vom Vorlaeufer aber nie befuellt (Befund W13-B25).
         /// </summary>
         [Theory]
-        [InlineData(KatalogImportArt.Heizkessel, 7)]
+        [InlineData(KatalogImportArt.Heizkessel, 9)]
         [InlineData(KatalogImportArt.Pufferspeicher, 5)]
         [InlineData(KatalogImportArt.Solarkollektoren, 11)]
         [InlineData(KatalogImportArt.Waermepumpe, 10)]
@@ -118,9 +119,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal("VDI_Waermepumpe", wp.Unterordner);
             Assert.Equal("VDI", wp.UnterordnerRueckfall);
 
-            // Nur die Waermepumpe hat ueberhaupt einen Rueckfall.
-            Assert.Single(KatalogImportProfil.AlleArten,
-                x => KatalogImportProfil.Finde(x).UnterordnerRueckfall.Length > 0);
+            // Nur die Waermepumpe hat ueberhaupt einen Rueckfall - in beiden Auspraegungen
+            // (E119: der Kaelteimport liest dieselben Dateien).
+            Assert.Equal(new[] { KatalogImportArt.Waermepumpe, KatalogImportArt.WaermepumpeKuehlung },
+                KatalogImportProfil.AlleArten
+                    .Where(x => KatalogImportProfil.Finde(x).UnterordnerRueckfall.Length > 0).ToArray());
         }
 
         /// <summary>
@@ -735,8 +738,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Heizkessel rechnet: Brennstoffdeckel, Oel-/Gas-Weiche und der
-        /// Wirkungsgrad durch 100. Der Vaillant-Ausschnitt fuehrt Erdgas (Index 3),
-        /// der Buderus-Ausschnitt Heizoel (Index 9).
+        /// Wirkungsgrad als Faktor (Prozentregel &gt; 1,5). Der erste Ausschnitt fuehrt Erdgas
+        /// (Index 3), der zweite Heizoel (Index 9). Der Nennlastwert kommt seit Entscheid F3
+        /// (29.09.2026) aus Satz 710.01 Spalte 6, dazu eta30 (Spalte 7), die kleinste Leistung
+        /// und Brennwert aus der Bauart (Konzept Kesselkennlinie 3.4).
         /// </summary>
         [Fact]
         public void DerHeizkesselVerteiltDenWirkungsgradAufGasUndOel()
@@ -749,10 +754,16 @@ namespace EPOS.Kern.Tests
             HeizkesselModel mg = g.NachModell("Probe Gas", g.Deckel);
 
             Assert.Equal(3, mg.Brennstoff);
-            Assert.Equal(0.874, mg.Wirkungsgrad_Gas, 9);
+            Assert.Equal(0.96, mg.Wirkungsgrad_Gas, 9);
             Assert.Equal(0.0, mg.Wirkungsgrad_Oel);
             Assert.Equal(19.3, mg.Ptherm, 9);
             Assert.Equal("Brennwert-Kessel", mg.Beschreibung);
+            Assert.True(mg.Brennwert);
+            Assert.False(mg.Kennlinie_Brennwert);
+            Assert.Equal(1.079, mg.Wirkungsgrad_Teillast30.Value, 9);
+            Assert.Equal(6.0, mg.Mindestleistung.Value, 9);
+            Assert.Null(mg.Anfahrverlust_kWh);
+            Assert.Null(mg.Mindestlaufzeit_min);
 
             KatalogImportAblauf oel = Ablauf(KatalogImportArt.Heizkessel);
             oel.Lesen(Probe("heizkessel_buderus.vdi"));
@@ -760,7 +771,10 @@ namespace EPOS.Kern.Tests
             HeizkesselModel mo = o.NachModell("Probe Oel", o.Deckel);
 
             Assert.Equal(9, mo.Brennstoff);
-            Assert.Equal(0.913, mo.Wirkungsgrad_Oel, 9);
+            Assert.Equal(0.97, mo.Wirkungsgrad_Oel, 9);
+            Assert.Equal(1.046, mo.Wirkungsgrad_Teillast30.Value, 9);
+            Assert.Equal(10.0, mo.Mindestleistung.Value, 9);
+            Assert.True(mo.Brennwert);
             Assert.Equal(0.0, mo.Wirkungsgrad_Gas);
             Assert.Equal(14.0, mo.CO2, 9);
             Assert.Equal(95.0, mo.NOx, 9);

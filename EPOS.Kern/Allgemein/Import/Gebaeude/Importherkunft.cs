@@ -38,13 +38,20 @@
         /// unterschieden wird danach über den Beleg (<see cref="GebaeudeVorgaben.BELEG_FREI"/>).
         /// </summary>
         VorgabeFrei = 6,
+
+        /// <summary>Aus der Projektdatei eines Gebäudemodells (<c>.sqproj</c>) gelesen — beim Import allein aus der Projektdatei.</summary>
+        Sqproj = 7,
     }
 
     /// <summary>
     /// Die Persistenzwerte der Herkunft je ZEILE (<c>Tab_Zone.Herkunft</c>, <c>Tab_Bauteil.Herkunft</c>
     /// und die beiden Aufbau-/Baustofftabellen, Datenaustauschkonzept 7.3):
-    /// <c>CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))</c>. Datenbankwerte,
-    /// nie übersetzt (Glossar § 10).
+    /// <c>CHECK (Herkunft IN ('MANUELL','KATALOG','IFC','GBXML','VORGABE','SQPROJ'))</c>
+    /// (<see cref="BaustoffSchema.WERTE_HERKUNFT"/>). Datenbankwerte, nie übersetzt (Glossar § 10).
+    ///
+    /// <para>Je Format die gleichnamige Herkunft: Format <see cref="DbWerte.IMPORT_FORMAT_IFC"/> → <see cref="IFC"/>,
+    /// <see cref="DbWerte.IMPORT_FORMAT_GBXML"/> → <see cref="GBXML"/>, <see cref="DbWerte.IMPORT_FORMAT_SQPROJ"/> →
+    /// <see cref="SQPROJ"/> (<see cref="ZuFormat"/>).</para>
     /// </summary>
     internal static class ImportherkunftWerte
     {
@@ -53,6 +60,12 @@
 
         /// <summary>Persistenzwert „aus einer IFC-Datei".</summary>
         public const string IFC = "IFC";
+
+        /// <summary>
+        /// Persistenzwert „aus der Projektdatei eines Gebäudemodells (<c>.sqproj</c>)" — ein eigener Wert, damit die
+        /// Herkunft wahr bleibt (kein <see cref="IFC"/> ohne IFC-Datei; Schritt <see cref="ProjektdateiImportSchema"/>).
+        /// </summary>
+        public const string SQPROJ = DbWerte.HERKUNFT_SQPROJ;
 
         /// <summary>Persistenzwert „aus dem Katalog kopiert".</summary>
         public const string KATALOG = "KATALOG";
@@ -75,6 +88,7 @@
             {
                 case Importherkunft.GbXml: return GBXML;
                 case Importherkunft.Ifc: return IFC;
+                case Importherkunft.Sqproj: return SQPROJ;
                 case Importherkunft.Katalog: return KATALOG;
                 case Importherkunft.Manuell: return MANUELL;
                 case Importherkunft.Vorgabe:
@@ -82,6 +96,40 @@
                 default: return null;
             }
         }
+
+        /// <summary>
+        /// Die Herkunft einer Zeile, die aus einer Quelle des Formats <paramref name="format"/>
+        /// (<see cref="DbWerte.IMPORT_FORMATE"/>) gelesen ist — je Format die gleichnamige Herkunft; ein unbekanntes
+        /// Format ergibt <c>null</c>.
+        /// </summary>
+        public static string ZuFormat(string format)
+        {
+            switch (format)
+            {
+                case DbWerte.IMPORT_FORMAT_IFC: return IFC;
+                case DbWerte.IMPORT_FORMAT_GBXML: return GBXML;
+                case DbWerte.IMPORT_FORMAT_SQPROJ: return SQPROJ;
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// Die Herkunft der Zahlen einer Datei des Formats <paramref name="format"/> — <see cref="Importherkunft.Ifc"/>,
+        /// <see cref="Importherkunft.GbXml"/> oder <see cref="Importherkunft.Sqproj"/>; ein unbekanntes Format zählt wie gbXML.
+        /// </summary>
+        public static Importherkunft AusFormat(string format)
+        {
+            switch (format)
+            {
+                case DbWerte.IMPORT_FORMAT_IFC: return Importherkunft.Ifc;
+                case DbWerte.IMPORT_FORMAT_SQPROJ: return Importherkunft.Sqproj;
+                default: return Importherkunft.GbXml;
+            }
+        }
+
+        /// <summary>Stammt die Zahl aus der gelesenen Datei (IFC, gbXML oder Projektdatei)?</summary>
+        public static bool IstDatei(Importherkunft herkunft)
+            => herkunft == Importherkunft.Ifc || herkunft == Importherkunft.GbXml || herkunft == Importherkunft.Sqproj;
 
         /// <summary>Ist die Herkunft eine Vorgabe — aus dem Katalog oder der freie Wert (E51)?</summary>
         public static bool IstVorgabe(Importherkunft herkunft)

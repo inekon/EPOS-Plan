@@ -159,13 +159,25 @@
 
         @if (Daten.Module.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
-                        <th scope="col">@Resource.SIM_ERZEUGERNAME_BHKW</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_ERZEUGERNAME_BHKW</th>
                         <th scope="col">@Resource.SIM_SPALTE_NAME</th>
-                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
-                        <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                        @* Welle M4 (BH1, BH2): Mehrbrennstoff der Teillastkennlinie, Starts und
+                           Anfahrverlust - nur, wenn ein Modul sie rechnet; sonst bleibt die
+                           Tabelle, wie sie war. *@
+                        @if (MitKennlinie)
+                        {
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF</th>
+                        }
+                        @if (MitTakten)
+                        {
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STARTS</th>
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_ANFAHRVERLUST</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -179,6 +191,15 @@
                             <td>@(string.IsNullOrEmpty(m.Name) ? Resource.SIM_BHKW_MODUL_STANDARD : m.Name)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.WaermeMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.StromMwh)</td>
+                            @if (MitKennlinie)
+                            {
+                                <td class="epos-simerg-zahl">@(m.MitKennlinie ? m.TeillastMehrbrennstoffKwh.ToString("N0", Kultur) : "—")</td>
+                            }
+                            @if (MitTakten)
+                            {
+                                <td class="epos-simerg-zahl">@(m.MitTakten ? m.Starts.ToString("N0", Kultur) : "—")</td>
+                                <td class="epos-simerg-zahl">@(m.MitTakten ? m.AnfahrverlustKwh.ToString("N0", Kultur) : "—")</td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -215,6 +236,32 @@
                          Vorlagenfeld="stand.bild.bhkw" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                          VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                          Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                         Einheit="kW"
+                         Palette="@Farbpalette.Aktuell"
+                         FarbwahlErlaubt="@Farbwahl"
+                         FarbeGewaehlt="FarbeUebernehmen"
+                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+
+            @* DIE STROMLAST darunter - dieselbe Bauform wie die Waermelast: die vier
+               Reihen in der Reihenfolge des Bildes, dann das Bild mit eigenem Zoom und
+               eigener clipPath-Kennung. „sortiert" oben gilt fuer BEIDE Bilder: ein
+               Schalter je Darstellungsart, wie ein Reiter mit einem Bild ihn fuehrt, und
+               ein eindeutiger Name fuer den Hilfe-Assistenten. *@
+            <div class="epos-simerg-schalter epos-simerg-bhkw-strom">
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_STROMPRODUKTION"
+                          Wert="@_stromproduktion" WertChanged="@(w => _stromproduktion = w)" />
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_EINSPEISUNG"
+                          Wert="@_einspeisung" WertChanged="@(w => _einspeisung = w)" />
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_RESTSTROM"
+                          Wert="@_reststrom" WertChanged="@(w => _reststrom = w)" />
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_STROMBEDARF"
+                          Wert="@_strombedarf" WertChanged="@(w => _strombedarf = w)" />
+            </div>
+
+            <DiagrammSvg Modell="@ModellBhkwStrom" Kennung="simerg-bhkw-strom"
+                         Vorlagenfeld="stand.bild.bhkw_strom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                         VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
+                         Bezeichnung="@Resource.SIMDET_BHKW_TITEL_STROMLAST"
                          Einheit="kW"
                          Palette="@Farbpalette.Aktuell"
                          FarbwahlErlaubt="@Farbwahl"
@@ -274,6 +321,26 @@
     private bool _restwaerme = true;
     private bool _bedarf = true;
 
+    // Das Strombild: vier Reihen, alle vorbelegt an; „sortiert" teilt es mit der Waermelast.
+    private bool _stromproduktion = true;
+    private bool _einspeisung = true;
+    private bool _reststrom = true;
+    private bool _strombedarf = true;
+
+    /// <summary>Die eingeschalteten Reihen des Strombilds (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteStromreihen => Stromreihen();
+
+    /// <summary>Die Serienschluessel des Strombilds - dieselbe Regel wie <see cref="Reihen"/>.</summary>
+    private IReadOnlyList<string> Stromreihen()
+    {
+        var liste = new List<string>();
+        if (_stromproduktion) liste.Add("STROMPRODUKTION");
+        if (_einspeisung) liste.Add("EINSPEISUNG");
+        if (_reststrom) liste.Add("RESTSTROM");
+        if (_strombedarf) liste.Add("STROMBEDARF");
+        return liste;
+    }
+
     /// <summary>
     /// Die Serienschluessel des Bildes - sprachneutral, die Beschriftung setzt
     /// die Huelle. Eine LEERE Liste heisst „keine Reihe" und nicht „alle": Der
@@ -303,12 +370,21 @@
     private Zeichenmodell? ModellBhkw =>
         Modell?.Invoke(new Bildauftrag(Bilder.Bhkw, _sortiert, -1, Reihen()));
 
+    private Zeichenmodell? ModellBhkwStrom =>
+        Modell?.Invoke(new Bildauftrag(Bilder.BhkwStrom, _sortiert, -1, Stromreihen()));
+
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
     /// 08.09.2026 (W11b‑B‑13): F2 schreibt „4485", N2 schreibt „4.485" — dieselbe
     /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
+
+    /// <summary>Rechnet ein Modul mit Teillastkennlinie (Welle M4, BH1)?</summary>
+    private bool MitKennlinie => Daten?.Module?.Any(m => m.MitKennlinie) == true;
+
+    /// <summary>Taktet ein Modul unter seiner Untergrenze (Welle M4, BH2)?</summary>
+    private bool MitTakten => Daten?.Module?.Any(m => m.MitTakten) == true;
 
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
@@ -332,7 +408,7 @@
     //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
     // =====================================================================
 
-    /// <summary>Die fünf Schalter über dem Bild — nur, solange das Bild steht.</summary>
+    /// <summary>Die neun Schalter über den zwei Bildern — nur, solange die Bilder stehen.</summary>
     protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
         => Daten is null || !Praesent
             ? Array.Empty<Anzeigeschalter>()
@@ -343,6 +419,11 @@
                 Umschalter(Resource.SIMDET_BHKW_SERIE_SPEICHERLADUNG, () => _speicherladung,
                            w => _speicherladung = w),
                 Umschalter(Resource.CHART_SEGMENT_RESTWAERME, () => _restwaerme, w => _restwaerme = w),
-                Umschalter(Resource.CHART_LEGENDE_WAERMEBEDARF, () => _bedarf, w => _bedarf = w)
+                Umschalter(Resource.CHART_LEGENDE_WAERMEBEDARF, () => _bedarf, w => _bedarf = w),
+                Umschalter(Resource.SIMDET_BHKW_SERIE_STROMPRODUKTION, () => _stromproduktion,
+                           w => _stromproduktion = w),
+                Umschalter(Resource.SIMDET_BHKW_SERIE_EINSPEISUNG, () => _einspeisung, w => _einspeisung = w),
+                Umschalter(Resource.SIMDET_BHKW_SERIE_RESTSTROM, () => _reststrom, w => _reststrom = w),
+                Umschalter(Resource.SIMDET_BHKW_SERIE_STROMBEDARF, () => _strombedarf, w => _strombedarf = w)
             };
 }

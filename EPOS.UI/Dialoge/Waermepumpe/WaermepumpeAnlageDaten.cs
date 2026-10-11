@@ -45,6 +45,14 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Rücklauftemperatur [°C] — frei eingebbar, die Liste ist ein Vorschlag.</summary>
     public int? Ruecklauf { get; set; }
 
+    /// <summary>
+    /// Die Herkunft eines VORBELEGTEN Rücklaufs (Anwenderauftrag 30.09.2026) — fertig
+    /// formuliert von der Hülle (Kern: <c>AnlagenTemperaturen.WaermepumpeRuecklaufHerleitung</c>),
+    /// etwa „Rücklauf vorbelegt: Vorlauf 55 °C − 10 K = 45 °C (Rückfall-Spreizung).". Leer =
+    /// der Rücklauf ist der der Anlage; eine Eingabe leert es.
+    /// </summary>
+    public string RuecklaufHerleitung { get; set; } = "";
+
     // --- Spitzenlast und Betrieb -----------------------------------------------
 
     /// <summary>Wärmeerzeuger Spitzenlast (Heizstab) vorhanden?</summary>
@@ -62,8 +70,55 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Sperrzeit bis [h] — Pflichtangabe.</summary>
     public int? SperrzeitBis { get; set; }
 
-    /// <summary>Nutzungsdauer [h/Tag] — Pflichtangabe.</summary>
-    public int? Nutzungszeit { get; set; }
+    /// <summary>
+    /// Die Sperrfenster der Anlage (Welle V14, <c>Tab_Sperrfenster</c>) — das aktive Altfenster
+    /// (<see cref="Sperrung"/>) steht als erste Zeile darin und wird beim Speichern überführt.
+    /// <c>null</c> = die Hülle liefert keine Liste (dann bleibt alles, wie es ist).
+    /// </summary>
+    public List<SperrfensterZeile>? Sperrfenster { get; set; }
+
+    /// <summary>
+    /// Das Zeitprogramm der Anlage (<c>Tab_Energieanlagen.Zeitprogramm</c>, Anlagenkopplung 9.3): 168 Faktoren
+    /// 0 … 1 im Format des Sollwertprofils; <c>null</c> = nicht gepflegt, die Anlage ist immer verfügbar. Ein
+    /// ungültiger Text bleibt stehen, wie er gelesen wurde — der Dialog nennt den Fehler.
+    /// </summary>
+    public string? Zeitprogramm { get; set; }
+
+    /// <summary>Der höchste Vorlauf der Anlage [°C] (<c>Vorlauf_Max</c>); <c>null</c> = der projektierte <see cref="Vorlauf"/>.</summary>
+    public double? VorlaufMax { get; set; }
+
+    /// <summary>
+    /// Die Klappliste „Kältemittel" der Schnellwahl (Übergabegrenze U‑2): die Codes des Kerns mit dem Höchstvorlauf
+    /// ihrer Klasse; gefüllt von der Abbildung, leer = keine Schnellwahl.
+    /// </summary>
+    public IReadOnlyList<KaeltemittelEintrag> Kaeltemittelliste { get; set; } = Array.Empty<KaeltemittelEintrag>();
+
+    /// <summary>
+    /// Die gewählte Kältemittelklasse — in UB‑E1 nur Dialogzustand: Gespeichert wird sie erst mit dem Schemaschritt
+    /// der Spalte <c>Kaeltemittel</c>; <c>null</c> = nicht gewählt.
+    /// </summary>
+    public string? Kaeltemittel { get; set; }
+
+    /// <summary>
+    /// Hydraulische Einbindung (<c>Tab_Energieanlagen.Einbindung</c>: <c>DIREKT</c>, <c>PUFFER</c>, <c>WEICHE</c>);
+    /// <c>null</c> = nicht gewählt — die Übergabegrenze ruht (U‑1).
+    /// </summary>
+    public string? Einbindung { get; set; }
+
+    /// <summary>Vorwärmbetrieb, Kessel in Reihe (<c>Tab_Energieanlagen.Vorwaermbetrieb</c>); wirksam bei parallel und teilparallel.</summary>
+    public bool Vorwaermbetrieb { get; set; }
+
+    /// <summary>
+    /// Die Werte der Herleitungszeile „Übergabe und Bivalenz", wie sie die Hülle beim Öffnen gerechnet hat;
+    /// <c>null</c> = keine Herleitung. Der Dialog zeigt den Stand von <see cref="BivalenzRechnen"/>, wenn es ihn gibt.
+    /// </summary>
+    public WaermepumpeBivalenzWerte? Bivalenz { get; set; }
+
+    /// <summary>
+    /// Rechnet die Herleitung zum Arbeitsstand neu (Höchstvorlauf, Betriebsart, Abschaltpunkt) — von der Abbildung
+    /// gesetzt, die Datenbankseite bleibt in der Hülle; <c>null</c> = es gilt <see cref="Bivalenz"/>.
+    /// </summary>
+    public Func<WaermepumpeAnlageDaten, WaermepumpeBivalenzWerte?>? BivalenzRechnen { get; set; }
 
     /// <summary>Bivalenter Betrieb.</summary>
     public bool BivalenterBetrieb { get; set; }
@@ -148,6 +203,32 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Abrechnung des Kältestroms bei abweichendem Träger (<c>Kuehl_EigenerZaehler</c>, E34): <c>true</c> = eigener Zähler, sonst anteilig am Netzbezug.</summary>
     public bool? KuehlEigenerZaehler { get; set; }
 
+    // --- Freie Kühlung über die Wärmequelle (KU3-6, Festlegungen F1, F2, F6) ----
+    //
+    // Drei Felder der ANLAGENZEILE (Tab_Energieanlagen). Wirksam nur an einer Sole-/Wasser-
+    // Wasser-Maschine mit gepflegter Wärmequelle; den Grund, warum nicht, reicht der Wirt
+    // über WaermepumpeKuehlGaben.FreiSperrgrund.
+
+    /// <summary>„Freie Kühlung über die Wärmequelle" (<c>Tab_Energieanlagen.Kuehl_Frei</c>).</summary>
+    public bool KuehlFrei { get; set; }
+
+    /// <summary>Grädigkeit des Wärmetauschers [K], 0 bis 20 (<c>Kuehl_Frei_Graedigkeit_K</c>); <c>null</c> = Vorgabe 3,0 K.</summary>
+    public double? KuehlFreiGraedigkeitK { get; set; }
+
+    /// <summary>Leistungsgrenze der freien Kühlung [kW], &gt; 0 (<c>Kuehl_Frei_Leistung_kW</c>); <c>null</c> = Kälteleistung der Kennlinie.</summary>
+    public double? KuehlFreiLeistungKw { get; set; }
+
+    // --- Taktverlust (Welle M4, WP1) — Werte des Geräts, nur zur Anzeige --------
+
+    /// <summary>
+    /// Kleinste Modulationsleistung der Projektkopie [kW] (<c>Tab_WP.Mindestleistung_kW</c>);
+    /// <c>null</c> = keine Taktrechnung. Der Anlagendialog zeigt sie nur — gepflegt wird im Katalog.
+    /// </summary>
+    public double? MindestleistungKw { get; set; }
+
+    /// <summary>Teillastkoeffizient C_d der Projektkopie (<c>Tab_WP.Taktverlustfaktor_Cd</c>); <c>null</c> = 0,9.</summary>
+    public double? TaktverlustfaktorCd { get; set; }
+
     // --- Verborgen mitlaufend --------------------------------------------------
 
     /// <summary>Modulkosten [€] — Ä19, nicht gezeichnet.</summary>
@@ -162,6 +243,30 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Pufferspeicher mit optimiertem Ladesystem — Ä19, nicht gezeichnet.</summary>
     public bool RendeMix { get; set; }
 
+    /// <summary>
+    /// Übernimmt JEDEN Wert von <paramref name="quelle"/> (alle les- und schreibbaren Eigenschaften, die Sperrfenster
+    /// als eigene Kopie) — der Rückweg eines abgebrochenen „Anlage…" (Katalogauswahl V1, Stufe 3): Die Überlagerung
+    /// bearbeitet die Zeile an Ort und Stelle, Abbrechen setzt sie auf den Stand beim Öffnen zurück.
+    /// </summary>
+    public void WerteVon(WaermepumpeAnlageDaten quelle)
+    {
+        ArgumentNullException.ThrowIfNull(quelle);
+        foreach (System.Reflection.PropertyInfo p in typeof(WaermepumpeAnlageDaten).GetProperties())
+        {
+            if (!p.CanRead || !p.CanWrite || p.GetIndexParameters().Length > 0) continue;
+            p.SetValue(this, p.GetValue(quelle));
+        }
+        Sperrfenster = quelle.Sperrfenster?.Select(z => z.Kopie()).ToList();
+    }
+
+    /// <summary>Ein Schnappschuss mit JEDEM Wert (<see cref="WerteVon"/>) — anders als <see cref="Kopie"/> vollständig.</summary>
+    public WaermepumpeAnlageDaten Schnappschuss()
+    {
+        var s = new WaermepumpeAnlageDaten();
+        s.WerteVon(this);
+        return s;
+    }
+
     /// <summary>Eine wortgleiche Kopie — der Dialog bearbeitet nie das Original der Hülle.</summary>
     public WaermepumpeAnlageDaten Kopie() => new()
     {
@@ -169,12 +274,21 @@ public sealed class WaermepumpeAnlageDaten
         IdWp = IdWp,
         Vorlauf = Vorlauf,
         Ruecklauf = Ruecklauf,
+        RuecklaufHerleitung = RuecklaufHerleitung,
         Heizstab = Heizstab,
         HeizstabLeistung = HeizstabLeistung,
         Sperrung = Sperrung,
         SperrzeitVon = SperrzeitVon,
         SperrzeitBis = SperrzeitBis,
-        Nutzungszeit = Nutzungszeit,
+        Sperrfenster = Sperrfenster?.Select(z => z.Kopie()).ToList(),
+        Zeitprogramm = Zeitprogramm,
+        VorlaufMax = VorlaufMax,
+        Kaeltemittelliste = Kaeltemittelliste,
+        Kaeltemittel = Kaeltemittel,
+        Einbindung = Einbindung,
+        Vorwaermbetrieb = Vorwaermbetrieb,
+        Bivalenz = Bivalenz,
+        BivalenzRechnen = BivalenzRechnen,
         BivalenterBetrieb = BivalenterBetrieb,
         CarrierId = CarrierId,
         Betriebsart = Betriebsart,
@@ -192,13 +306,18 @@ public sealed class WaermepumpeAnlageDaten
         KuehlHilfsstromanteil = KuehlHilfsstromanteil,
         KuehlCarrierId = KuehlCarrierId,
         KuehlEigenerZaehler = KuehlEigenerZaehler,
+        KuehlFrei = KuehlFrei,
+        KuehlFreiGraedigkeitK = KuehlFreiGraedigkeitK,
+        KuehlFreiLeistungKw = KuehlFreiLeistungKw,
+        MindestleistungKw = MindestleistungKw,
+        TaktverlustfaktorCd = TaktverlustfaktorCd,
         Modulkosten = Modulkosten,
         Volumen = Volumen,
         Solaranteil = Solaranteil,
         RendeMix = RendeMix
     };
 
-    /// <summary>Schreibt die fünf Kühlfelder eines anderen Satzes zurück — der Abbrechen-Weg der Konfiguration.</summary>
+    /// <summary>Schreibt die acht Kühlfelder eines anderen Satzes zurück — der Abbrechen-Weg der Konfiguration.</summary>
     public void KuehlfelderAus(WaermepumpeAnlageDaten quelle)
     {
         if (quelle is null) return;
@@ -207,6 +326,9 @@ public sealed class WaermepumpeAnlageDaten
         KuehlHilfsstromanteil = quelle.KuehlHilfsstromanteil;
         KuehlCarrierId = quelle.KuehlCarrierId;
         KuehlEigenerZaehler = quelle.KuehlEigenerZaehler;
+        KuehlFrei = quelle.KuehlFrei;
+        KuehlFreiGraedigkeitK = quelle.KuehlFreiGraedigkeitK;
+        KuehlFreiLeistungKw = quelle.KuehlFreiLeistungKw;
     }
 }
 
@@ -230,6 +352,14 @@ public sealed class WaermepumpeKuehlGaben
     /// <summary>Der Sperrgrund des Kühlbetriebs eines Geräts (keine Kennlinie, Quellspeicher); <c>null</c> = frei.</summary>
     public Func<int, string?>? Sperrgrund { get; init; }
 
+    /// <summary>
+    /// Warum die freie Kühlung über die Wärmequelle an dieser Anlage nicht wirkt (KU3-6, F2):
+    /// Bauart nicht Sole-/Wasser-Wasser oder Wärmequelle nicht gepflegt (Außenluft, leer,
+    /// Pufferspeicher). Je Gerät gefragt wie <see cref="Sperrgrund"/>; <c>null</c> = wirksam.
+    /// Die Regel samt Texten steht in <c>WaermepumpeKonfiguration.FreieKuehlungSperrgrundAus</c>.
+    /// </summary>
+    public Func<int, string?>? FreiSperrgrund { get; init; }
+
     /// <summary>Die Stromträger des Projekts für die Wahl des Kühlträgers — Id und Name.</summary>
     public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; init; } = Array.Empty<(int, string)>();
 
@@ -238,4 +368,35 @@ public sealed class WaermepumpeKuehlGaben
     /// weicht der Kühlträger davon ab, bietet der Baustein die Abrechnungsart an (E34).
     /// </summary>
     public int ProjektStromtraeger { get; init; }
+}
+
+/// <summary>
+/// Ein Sperrfenster der Wärmepumpe im Feldsatz (Welle V14): Beginn und Dauer in Stunden, die
+/// Wochentage als Bitmaske (Mo = 1 … So = 64) und ob der Heizstab mitgesperrt ist.
+/// </summary>
+public sealed class SperrfensterZeile
+{
+    /// <summary>Alle sieben Tage.</summary>
+    public const int ALLE_TAGE = 127;
+
+    /// <summary>Beginn [h des Tages, 0 … 24].</summary>
+    public double? VonH { get; set; }
+
+    /// <summary>Dauer [h, 0 … 24]; über Mitternacht läuft das Fenster in den Folgetag.</summary>
+    public double? DauerH { get; set; }
+
+    /// <summary>Wochentage als Bitmaske, Mo = 1 … So = 64.</summary>
+    public int Wochentage { get; set; } = ALLE_TAGE;
+
+    /// <summary>Liefert auch der Heizstab im Fenster nichts?</summary>
+    public bool HeizstabGesperrt { get; set; } = true;
+
+    /// <summary>Gilt das Fenster am Wochentag <paramref name="tag"/> (Montag = 0 … Sonntag = 6)?</summary>
+    public bool GiltAm(int tag) => (Wochentage & (1 << tag)) != 0;
+
+    /// <summary>Eine flache Kopie.</summary>
+    public SperrfensterZeile Kopie() => new()
+    {
+        VonH = VonH, DauerH = DauerH, Wochentage = Wochentage, HeizstabGesperrt = HeizstabGesperrt
+    };
 }

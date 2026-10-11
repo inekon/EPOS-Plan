@@ -115,6 +115,12 @@ namespace WindowsFormsApplication1
                     new Func<IReadOnlyDictionary<string, object>>(
                         StromspeicherAuslegungHuelle.AnsichtGaben),
 
+                // DIE PUFFERSPEICHER-AUSLEGUNG (Stufe P2) - ein Delegat je Betreten wie die
+                // Stromspeicher-Auslegung; die Huelle ist plattformfrei und holt den
+                // angemeldeten Arbeitsgang ab.
+                ["PufferAuslegungGaben"] =
+                    new Func<int, IReadOnlyDictionary<string, object>>(PufferAuslegungHuelle.AnsichtGaben),
+
                 // DIE SIMULATION als EINE freie Ansicht (Auftrag #207, SIM-Q1).
                 // Wie die zwei darueber ein DELEGAT je Betreten: Der Satz bringt
                 // den Stand der zwei Huelleninstanzen mit - den gerechneten Lauf,
@@ -134,6 +140,21 @@ namespace WindowsFormsApplication1
                 ["BauteilaufbauKatalogGaben"] =
                     new Func<IReadOnlyDictionary<string, object>>(BauteilaufbauHuelle.Gaben),
 
+                // DIE KAELTEMASCHINEN (KU3-1) - die Huelle liegt in EPOS.UI.Daten. Unter Windows oeffnet die
+                // Verwaltung ein eigenes Fenster (KaeltemaschineKatalogFensterHuelle, WinFormsNavigation);
+                // die freie Ansicht bekommt fuer Wege an der Navigation vorbei dieselben Gaben, samt "Import..."
+                // (Copper-Kurvendatei, CSV-Kennfeldvorlage) ueber den Dateiwaehler.
+                ["KaeltemaschineKatalogGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogFensterHuelle.Gaben),
+                // Die Kaeltemaschinen des offenen Projekts (KU3-4c) - der Erzeugerdialog als freie Ansicht.
+                ["KaeltemaschineAnlageGaben"] =
+                    new Func<int, IReadOnlyDictionary<string, object>>(KaeltemaschineAnlageHuelle.Gaben),
+
+                // DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage PW2, BW2) als freie
+                // Ansicht der Wurzel - dieselbe Bauart wie die Kataloge darueber.
+                ["BetriebskalenderGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(BetriebskalenderHuelle.Gaben),
+
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
                 // Katalog, der Produktname bleibt eine Konstante — ein Markenname
@@ -150,7 +171,13 @@ namespace WindowsFormsApplication1
                 // Zeichenfaden (Regel S-2 aus W15c). Was hineingeht, ist ein
                 // fertiger Satz samt Dringlichkeit — kein Token, kein Anker,
                 // kein Schlüssel.
-                ["Lizenzlage"] = LizenzLage.Ermitteln()
+                ["Lizenzlage"] = LizenzLage.Ermitteln(),
+
+                // DER BERICHT DES KATALOGABGLEICHS BEIM START (KU1 Stufe 1): einmal abgeholt, als
+                // Ueberlagerung des Fensters; leer, wenn der Start nichts abgeglichen hat.
+                ["Starthinweis"] = Katalogabgleich.StartberichtAbholen()?.Starttext() ?? "",
+                ["StarthinweisTitel"] = MyResource.Resource.KABG_START_TITEL,
+                ["StarthinweisOk"] = MyResource.Resource.KABG_OK
             };
         }
 
@@ -314,6 +341,12 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.EnergietraegerVerwaltung:
                     return () => EnergietraegerFenster.Oeffnen(_besitzer?.Invoke(), 0);
 
+                // Anwenderentscheid 03.10.2026: die Brennstoffe des Projekts (Projektkopie des
+                // Brennstoffkatalogs) - die Datenseite liegt plattformfrei in
+                // ProjektBrennstoffeHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.ProjektBrennstoffe:
+                    return () => ProjektBrennstoffeFenster.Oeffnen(_besitzer?.Invoke());
+
                 // ANWENDERENTSCHEID ND-Q3 (14.09.2026): die Nutzungsdauern (AfA) als
                 // dritter Punkt der Rubrik Kostenverwaltung. Der Adapter ist duenn -
                 // Fenster und Parametersatz -, die Datenseite liegt plattformfrei in
@@ -329,6 +362,11 @@ namespace WindowsFormsApplication1
 
                 case Seitenschluessel.KatalogDubletten:
                     return () => KatalogDublettenHuelle.Oeffnen(_besitzer?.Invoke());
+
+                // KU1 Stufe 1: „Katalog aktualisieren…" - die Datenseite liegt plattformfrei in
+                // KatalogabgleichHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.Katalogabgleich:
+                    return () => KatalogabgleichFenster.Oeffnen(_besitzer?.Invoke());
 
                 // ANWENDERENTSCHEID MN-1 (19.09.2026): Der Fall
                 // Seitenschluessel.LizenzVerwaltung ist WEG. Der Menuepunkt

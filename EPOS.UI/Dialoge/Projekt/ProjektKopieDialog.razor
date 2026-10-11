@@ -63,7 +63,7 @@
             <ProjektListe Zeilen="@Zeilen"
                           Suche="@_suche" SucheChanged="@(s => _suche = s)"
                           Markiert="@_markiert" MarkiertChanged="BeiMarkierung"
-                          Gewaehlt="BeiDoppelklick"
+                          Gewaehlt="BeiDoppelklick" MarkierteOben="true"
                           AnzahlFormat="@AnzahlFormat"
                           SpalteName="@SpalteName" SpalteKunde="@SpalteKunde"
                           SpalteGeaendert="@SpalteGeaendert" SpalteArt="@SpalteArt"
@@ -114,6 +114,14 @@
 @code {
     /// <summary>Die wählbaren Quellprojekte (<c>ProjektCtrl.NamenListe</c>).</summary>
     [Parameter] public IReadOnlyList<ProjektKopfZeile> Zeilen { get; set; } = Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>
+    /// Id des gerade offenen Projekts (<c>Dienste.Projekt.Id</c>, aus der Hülle);
+    /// <c>0</c> = keins. Steht es in <see cref="Zeilen"/>, ist es beim Öffnen die Wahl —
+    /// Beschreibung, Kunde und Bearbeiter sind daraus vorbelegt wie nach einem Klick, die
+    /// Liste rollt die Zeile nach oben. Sonst wählt die Liste wie gewohnt ihre erste Zeile.
+    /// </summary>
+    [Parameter] public int AktivesProjekt { get; set; }
 
     /// <summary>
     /// Beschreibung, Kunde und Bearbeiter des QUELLPROJEKTS; <c>null</c> = unbekannt.
@@ -237,6 +245,21 @@
     {
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PROJEKT_KOPIE,
                                           () => KiSicht(), KiHaken());
+        AktivesVorwaehlen();
+    }
+
+    /// <summary>
+    /// Das offene Projekt ist die erste Wahl (Anwenderwunsch 10.10.2026: „Bei Kachel
+    /// ‚Speichern unter…' soll das gerade aktive Projekt als erste Auswahl stehen").
+    /// Derselbe Weg wie ein Klick in die Liste; Suche, Sortierung und der neue Name
+    /// bleiben unberührt. Vor dem ersten Zeichnen gesetzt, damit die Liste nicht erst
+    /// ihre erste Zeile vorwählt.
+    /// </summary>
+    private void AktivesVorwaehlen()
+    {
+        if (AktivesProjekt <= 0) return;
+        foreach (ProjektKopfZeile z in Zeilen)
+            if (z.Id == AktivesProjekt) { BeiMarkierung(z); return; }
     }
 
     /// <summary>

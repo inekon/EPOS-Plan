@@ -92,8 +92,6 @@ public class GebaeudeWaermeuebergabeTests : EposBunitContext
             .Add(x => x.Gebaeudetypen, () => new[] { "Einfamilienhaus" })
             .Add(x => x.Gebaeudearten, () => new[] { "Hotel" })
             .Add(x => x.Baualtersklassen, new[] { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968" })
-            .Add(x => x.Katalognamen, () => new[] { "Haus A" })
-            .Add(x => x.Lies, _ => Satz())
             .Add(x => x.Speichern, speichern ?? ((_, _, _) => new GebaeudeKatalogErgebnis(true, "")))
             .Add(x => x.UebergabeHerleitung, herleitung)
             .Add(x => x.EntprellungMs, entprellungMs));
@@ -284,6 +282,46 @@ public class GebaeudeWaermeuebergabeTests : EposBunitContext
 
         Assert.False(geschrieben.HeizkreisAktiv);
         Assert.True(geschrieben.HeizkurveAktiv);
+    }
+
+    // =================================================================================
+    // Anlagenkopplung AK3 (Festlegung 23): der Raumeinfluss der Heizkurve
+    // =================================================================================
+
+    private const string RAUMEINFLUSS = "Raumeinfluss der Heizkurve :";
+
+    /// <summary>
+    /// Das Feld steht nur mit Heizkurve, samt Zeile „wirkt nur mit AK3"; der Wert wird geschrieben, leer bleibt null.
+    /// </summary>
+    [Fact]
+    public void Der_Raumeinfluss_steht_mit_Heizkurve_und_wird_geschrieben()
+    {
+        GebaeudeKatalogDaten d = Radiator();
+        Assert.Null(FeldOderNull(Aufbauen(d), RAUMEINFLUSS));
+
+        d = Radiator();
+        d.HeizkurveAktiv = true;
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(d, speichern: (x, _, _) => { geschrieben = x; return new(true, ""); });
+        Assert.NotNull(FeldOderNull(cut, RAUMEINFLUSS));
+        Assert.Contains("„geschlossener Kreis (AK3)“", Gruppe(cut));
+
+        Eingabe(cut, RAUMEINFLUSS).Input("1,5");
+        Ok(cut);
+        Assert.Equal(1.5, geschrieben.HeizkurveRaumeinfluss);
+    }
+
+    /// <summary>Ein Raumeinfluss über 10 K/K wird nicht geschrieben (Prüfklausel des Schemas).</summary>
+    [Fact]
+    public void Ein_Raumeinfluss_ueber_dem_Hoechstwert_wird_nicht_geschrieben()
+    {
+        GebaeudeKatalogDaten d = Radiator();
+        d.HeizkurveAktiv = true;
+        d.HeizkurveRaumeinfluss = 11;
+        bool geschrieben = false;
+        var cut = Aufbauen(d, speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
+        Ok(cut);
+        Assert.False(geschrieben);
     }
 
     // =================================================================================

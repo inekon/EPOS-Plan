@@ -9,8 +9,11 @@ namespace WindowsFormsApplication1
     // Die fehleranfällige und pauschale Jahres-Verlustberechnung (mit den fiktiven Betriebsstunden und der asymmetrischen Bereitschaft)
     // wurde komplett entfernt. Stattdessen wird der Brennstoffverbrauch nun stündlich direkt in der Simulationsschleife ermittelt:
     //
-    // - Läuft ein Kessel in einer Stunde, wird sein Verbrauch über den stündlichen Wirkungsgrad ermittelt.
-    // - Steht er in einer Stunde still und ist er betriebsbereit (Heizperiode oder Nachlauf, #568), wird
+    // - Läuft ein Kessel in einer Stunde, wird sein Verbrauch über den Wirkungsgrad seiner Laststufe
+    //   ermittelt (Teillastkennlinie, Kesselkennlinie.Eta; Konzept Kesselkennlinie 4.1), beim
+    //   Brennwertkessel mit Brennwertkennlinie zusätzlich über den Rücklauf der Stunde
+    //   (Kesselkennlinie.EtaBrennwert, Etappe E3).
+    // - Steht er in einer Stunde still und ist er betriebsbereit (Heiztag oder Nachlauf, #568), wird
     //   ihm für diese exakte Stunde der Bereitschaftsverlust als Brennstoffverbrauch (Wärmeverlust)
     //   aufgeschlagen; außerhalb der Betriebsbereitschaft ist er abgeschaltet und verliert nichts.
     //
@@ -60,23 +63,68 @@ namespace WindowsFormsApplication1
         public int Vorgabe_Betriebsbereitschaft;
 
         /// <summary>
-        /// RAUMWÄRMEBEDARF des Projekts VOR der Erzeugerkaskade [kWh je Stunde], 8760 Werte
-        /// (Kanal <see cref="Kanal.HEIZUNG"/>) — die Grundlage der HEIZPERIODE
-        /// (<see cref="HeiztageAus"/>). Gesetzt von <c>SimulationControl</c> vor
-        /// <see cref="Vorbereiten_Zweikanalig"/>, wie <see cref="Vorgabe_Betriebsbereitschaft"/>;
-        /// <see cref="Init"/> lässt es stehen, denn es ist Eingang, nicht Laufzustand.
-        /// <c>null</c> = Heizperiode unbekannt; dann gilt jeder Tag als Heiztag.
+        /// AUSSENTEMPERATUR des Laufs [°C je Stunde], 8760 Werte — dieselbe Reihe, mit der
+        /// die Simulation rechnet (<c>SimulationControl.Stundentemperatur</c>, Klimaregion des
+        /// Projekts in Ortszeit); die Grundlage der HEIZTAGE (<see cref="HeiztageAus"/>).
+        /// Gesetzt von <c>SimulationControl</c> vor <see cref="Vorbereiten_Zweikanalig"/>, wie
+        /// <see cref="Vorgabe_Betriebsbereitschaft"/>; <see cref="Init"/> lässt sie stehen, denn
+        /// sie ist Eingang, nicht Laufzustand. <c>null</c> = keine Temperaturreihe; dann gilt
+        /// jeder Tag als Heiztag.
         /// </summary>
-        public double[] Raumwaermebedarf_Projekt;
+        public double[] Aussentemperatur_Projekt;
+
+        /// <summary>
+        /// HEIZGRENZE des Projekts [°C] (<c>Tab_Einstellungen.Kessel_Heizgrenze</c>): Ein Tag ist
+        /// Heiztag, wenn das Tagesmittel der Außentemperatur darunter liegt. <c>null</c> = die
+        /// Vorgabe <see cref="HEIZGRENZE_VORGABE_C"/>. Gesetzt von <c>SimulationControl</c> wie
+        /// <see cref="Aussentemperatur_Projekt"/>; wirksam ist <see cref="Heizgrenze_C"/>.
+        /// </summary>
+        public double? Vorgabe_Heizgrenze;
+
+        /// <summary>
+        /// Die VORGABE der Heizgrenze [°C] — sie gilt, solange das Projekt keine eigene führt
+        /// (Anwenderentscheid 27.09.2026 zu #568).
+        /// </summary>
+        public const double HEIZGRENZE_VORGABE_C = 15;
+
+        /// <summary>Untere Plausibilitätsgrenze der Heizgrenze [°C] — die Oberfläche lässt nichts darunter zu.</summary>
+        public const double HEIZGRENZE_MIN_C = 0;
+
+        /// <summary>Obere Plausibilitätsgrenze der Heizgrenze [°C] — die Oberfläche lässt nichts darüber zu.</summary>
+        public const double HEIZGRENZE_MAX_C = 30;
+
+        /// <summary>
+        /// Ist <paramref name="heizgrenze"/> eine zulässige Eingabe? Leer (<c>null</c> = Vorgabe) oder
+        /// eine Zahl von <see cref="HEIZGRENZE_MIN_C"/> bis <see cref="HEIZGRENZE_MAX_C"/>. Die Regel
+        /// der Oberfläche; der Rechenweg selbst nimmt jede endliche Zahl
+        /// (<see cref="HeizgrenzeWirksam"/>).
+        /// </summary>
+        public static bool HeizgrenzePlausibel(double? heizgrenze)
+        {
+            return !heizgrenze.HasValue ||
+                   (heizgrenze.Value >= HEIZGRENZE_MIN_C && heizgrenze.Value <= HEIZGRENZE_MAX_C);
+        }
+
+        /// <summary>
+        /// Die WIRKSAME Heizgrenze des Laufs [°C] — <see cref="HeizgrenzeWirksam"/> aus
+        /// <see cref="Vorgabe_Heizgrenze"/>, gebildet in <see cref="Vorbereiten_Zweikanalig"/>.
+        /// </summary>
+        public double Heizgrenze_C { get; private set; } = HEIZGRENZE_VORGABE_C;
+
+        /// <summary>
+        /// Die Zahl der HEIZTAGE des Laufs (0 … 365) — Tage, an denen ein stillstehender Kessel
+        /// betriebsbereit ist, gleich wann er zuletzt lief; ohne Temperaturreihe 365.
+        /// </summary>
+        public int Heiztage_Anzahl { get; private set; } = 365;
 
         /// <summary>
         /// Stunden, die ein Kessel nach seiner letzten Laufstunde betriebsbereit bleibt
-        /// (Nachlauf), auch außerhalb der Heizperiode — ein Kessel, der im Sommer Warmwasser
-        /// oder Prozesswärme bereitet, wird zwischen seinen Laufstunden warm gehalten.
+        /// (Nachlauf), auch an einem Tag über der Heizgrenze — ein Kessel, der im Sommer
+        /// Warmwasser oder Prozesswärme bereitet, wird zwischen seinen Laufstunden warm gehalten.
         /// </summary>
         internal const int BEREITSCHAFT_NACHLAUF_STUNDEN = 24;
 
-        /// <summary>Heiztage des Laufs (365), aus <see cref="Raumwaermebedarf_Projekt"/>; <c>null</c> = jeder Tag.</summary>
+        /// <summary>Heiztage des Laufs (365), aus <see cref="Aussentemperatur_Projekt"/>; <c>null</c> = jeder Tag.</summary>
         private bool[] _heiztage;
 
         /// <summary>Letzte Laufstunde je Kessel; <see cref="int.MinValue"/> = noch nie gelaufen.</summary>
@@ -94,11 +142,40 @@ namespace WindowsFormsApplication1
         public int[] Laufstunden_Spk = new int[MAX_SPK];
 
         /// <summary>
-        /// STARTS je Kessel [1/a]: Laufstunden, denen eine Stillstandsstunde vorausgeht
-        /// (die erste Laufstunde des Jahres zählt als Start). Im Stundenraster ist das die
-        /// Zahl der Laufphasen, nicht der Brennerstarts innerhalb einer Stunde.
+        /// STARTS je Kessel [1/a] nach Konzept Kesselkennlinie 4.2 (Etappe E4): In einer
+        /// TAKTSTUNDE (0 &lt; Q &lt; Mindestleistung, <see cref="Kesselkennlinie.Taktet"/>) zählt die
+        /// Stunde so viele Starts, wie Mindestläufe ihre Wärme braucht
+        /// (<see cref="Kesselkennlinie.StartsImTakt"/>); jede andere Laufstunde zählt einen Start,
+        /// wenn der Kessel in der Vorstunde stand (die erste Laufstunde des Jahres zählt als Start).
+        /// Der Elektrokessel hat kein Taktmodell: Seine Starts sind seine <see cref="Laufphasen_Spk"/>.
+        ///
+        /// <para><b>Wie beide Zählungen zusammenhängen:</b> Außerhalb der Taktstunden ist ein Start
+        /// genau ein Übergang aus → an, also eine Laufphase. In einer Taktstunde ersetzt die Startzahl
+        /// des Takts den Übergang (er ist ihr erster Start, wenn die Vorstunde stand). Damit gilt
+        /// Starts = Laufphasen + Σ über die Taktstunden (Starts der Stunde − 1, wenn die Vorstunde
+        /// stand, sonst − 0) — nie weniger als die Laufphasen, gleich ihnen ohne Taktstunde.</para>
         /// </summary>
         public int[] Starts_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// LAUFPHASEN je Kessel [1/a]: Laufstunden, denen eine Stillstandsstunde vorausgeht (die erste
+        /// Laufstunde des Jahres zählt mit) — die Übergänge aus → an im Stundenraster, die bis zur
+        /// Etappe E4 als „Starts“ gezählt wurden.
+        /// </summary>
+        public int[] Laufphasen_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// TAKTSTUNDEN je Kessel [h/a]: Laufstunden eines Brennstoffkessels, deren Wärme unter der
+        /// Mindestleistung liegt (<see cref="Kesselkennlinie.Taktet"/>).
+        /// </summary>
+        public int[] Taktstunden_Spk = new int[MAX_SPK];
+
+        /// <summary>
+        /// ANFAHRVERLUST je Kessel [kWh/a]: Starts mal Anfahrverlust je Start
+        /// (Konzept 4.2) — Brennstoff, aber keine Wärme; Teil von <see cref="Kessel_Verbrauch_MWh_Spk"/>.
+        /// Beim Elektrokessel 0.
+        /// </summary>
+        public double[] Anfahrverlust_KWh_Spk = new double[MAX_SPK];
 
         /// <summary>
         /// BEREITSCHAFTSSTUNDEN je Kessel [h/a]: Stillstandsstunden, in denen der Kessel
@@ -181,8 +258,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Brennstoffeinsatz JE KESSEL [MWh/a] — Nutzwärme über den Wirkungsgrad plus
-        /// die Bereitschaftsverluste der Stillstandsstunden, indexgleich zu
-        /// <see cref="spk_list"/>.
+        /// der Anfahrverlust der Starts (Etappe E4) plus die Bereitschaftsverluste der
+        /// Stillstandsstunden, indexgleich zu <see cref="spk_list"/>.
         ///
         /// <para><b>Öffentlich wie seine drei Nachbarn</b> (<c>s_waerme_Gas_Spk</c>,
         /// <c>s_waerme_Oel_Spk</c>, <c>Kessel_Jahresnutzungsgrad_Spk</c>): Der
@@ -206,18 +283,225 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// BEREITSCHAFTSLEISTUNG je Kessel [kW] — der Brennstoffeinsatz einer
         /// Stillstandsstunde ist dieser Wert mal eine Stunde (<see cref="Stunde_Abschluss"/>).
-        /// Quelle ist <c>Tab_Heizkessel.Betriebsbereitschaftverlust</c>, und das ist eine
-        /// LEISTUNG in kW, kein Anteil der Nennleistung: Der Import liest sie aus
-        /// VDI 3805 Blatt 3, Satz 700, Spalte 28 (die Bereitschaftsleistung des
-        /// Produktdatenblatts, im Katalog 0,03 … 0,16 kW, bei einer Baureihe gleich über
-        /// alle Leistungsgrößen) und weist sie in kW aus (<c>KatalogImportProfil</c>,
-        /// Feld VERLUSTE). Siehe <see cref="BereitschaftsleistungKw"/>.
+        /// Quelle ist <c>Tab_Heizkessel.Betriebsbereitschaftverlust</c> in der Einheit
+        /// <c>Tab_Heizkessel.Bereitschaft_Einheit</c>: kW (Vorgabe; der Import liest die
+        /// Bereitschaftsleistung aus VDI 3805 Blatt 3, Satz 700, Spalte 28, im Katalog
+        /// 0,03 … 0,16 kW) oder Prozent der Nennleistung. Hier steht immer die Leistung in kW
+        /// (<see cref="KesselBereitschaft.LeistungKw"/>, gerufen über
+        /// <see cref="BereitschaftsleistungKw(double, string, double)"/>).
         /// </summary>
         double[] Betriebsbereitschaft_Verluste = new double[MAX_SPK];
         string[] Kessel_Name = new string[MAX_SPK];
         int[] Brennstoff_Betrieb_Spk = new int[MAX_SPK];
         int[] Brennstoff_Art = new int[MAX_SPK];
         double[] Kessel_Leistung_Spk = new double[MAX_SPK];
+
+        // ------------------------------------------------------------------
+        // TEILLASTKENNLINIE (Konzept Kesselkennlinie 4.1, Etappe E2)
+        //
+        // Je Stunde rechnet ein Brennstoffkessel mit dem Wirkungsgrad seiner Laststufe
+        // (Kesselkennlinie.Eta), gestützt auf η₁₀₀ (Wirkungsgrad_Gas/_Öl) und η₃₀
+        // (Wirkungsgrad_Teillast30, leer = Normvorgabe nach Bauart, Entscheid F1). Das
+        // wirksame η₃₀ bildet Stunde_Abschluss aus dem η₁₀₀ derselben Stunde — so folgt die
+        // Vorgabe immer dem Nennwert, mit dem der Kessel wirklich rechnet.
+        // ------------------------------------------------------------------
+
+        /// <summary>Gepflegtes η₃₀ je Kessel, wie es in der Projektkopie steht; <c>null</c> = leer.</summary>
+        private readonly double?[] _eta30Gepflegt = new double?[MAX_SPK];
+
+        /// <summary>Bauart je Kessel für die Normvorgabe (<see cref="Kesselkennlinie.Bauart"/>).</summary>
+        private readonly KesselBauart[] _bauart = new KesselBauart[MAX_SPK];
+
+        /// <summary>Brennstoffbasierte Wärme der Laufstunden je Kessel [kWh/a] — Bezug der Mittelwerte.</summary>
+        private readonly double[] _waermeBetriebKwh = new double[MAX_SPK];
+
+        /// <summary>
+        /// Wirkungsgrad je Kessel und Stunde (Faktor) — in Laufstunden η(β), sonst 0; angelegt in
+        /// <see cref="Vorbereiten_Zweikanalig"/> für die Kessel des Laufs, sonst <c>null</c>.
+        /// Nur Anzeige und Export (Konzept 5), keine Rechengröße.
+        /// </summary>
+        private readonly double[][] _wirkungsgradStunde = new double[MAX_SPK][];
+
+        /// <summary>
+        /// BRENNSTOFF DER LAUFSTUNDEN je Kessel [kWh/a]: Σ Wärme/η(β) — der Brennstoffeinsatz
+        /// nach der Kennlinie, ohne Anfahr- und Bereitschaftsverlust. <see cref="Kessel_Verbrauch_MWh_Spk"/>
+        /// ist dieser Wert plus <see cref="Anfahrverlust_KWh_Spk"/> plus <see cref="Bereitschaftsverlust_KWh_Spk"/>.
+        /// </summary>
+        public double[] BrennstoffBetrieb_KWh_Spk = new double[MAX_SPK];
+
+        /// <summary>
+        /// MEHRBRENNSTOFF AUS TEILLAST je Kessel [kWh/a] gegenüber dem Betrieb mit η₁₀₀:
+        /// Σ (Wärme/η(β) − Wärme/η₁₀₀) über die Laufstunden (Konzept 4.1 Punkt 7). Negativ, wo
+        /// der Kessel in Teillast besser arbeitet als bei Nennlast (Brennwertkessel); beim
+        /// Niedertemperatur- und beim Elektrokessel 0.
+        /// </summary>
+        public double[] TeillastMehrbrennstoff_KWh_Spk = new double[MAX_SPK];
+
+        // ------------------------------------------------------------------
+        // BRENNWERTKENNLINIE (Konzept Kesselkennlinie 4.1 Punkte 3 bis 5, Etappe E3)
+        //
+        // Ein Brennwertkessel mit Kennlinie_Brennwert = 1 rechnet je Laufstunde mit
+        // η_eff = η_tr(β) + Δ₃₀ · g(T_RL) (Kesselkennlinie.EtaBrennwert). Den Rücklauf der Stunde
+        // liefert die Kette (Kesselkennlinie.Ruecklauf): (a) Heizkreisrücklauf der
+        // Anlagenkopplung, (b) Senkenspeicher, EINMAL je Stunde in Stunde_Start gelesen,
+        // (c) gepflegtes Paar, (d) Rückfall 50 °C. Jeder andere Kessel rechnet Stunde für
+        // Stunde wie in E2.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Der gerechnete RÜCKLAUF DES HEIZKREISES [°C je Stunde], NaN ohne gekoppelten Bedarf
+        /// (Anlagenkopplung AK1, <c>HeizkreisProjekt.RuecklaufC</c>) — Stufe (a) der Rücklaufkette.
+        /// Eingang wie <see cref="Aussentemperatur_Projekt"/>, gesetzt von <c>SimulationControl</c>
+        /// vor <see cref="Vorbereiten_Zweikanalig"/>; <c>null</c> ohne Kopplung.
+        /// </summary>
+        public double[] Heizkreisruecklauf;
+
+        /// <summary>
+        /// Der VORLAUF DER VORWÄRMENDEN WÄRMEPUMPE [°C je Stunde] (Übergabegrenze UB‑E2,
+        /// <c>SimulationWaermepumpe.Vorwaermvorlauf</c>): θ_WP,max in Stunden mit Vorwärmbetrieb und laufender
+        /// Wärmepumpe (B3), sonst NaN — Stufe „Vorwärmer" vor dem Heizkreis. <c>null</c> ohne Wärmepumpe.
+        /// </summary>
+        public double[] Vorwaermvorlauf;
+
+        /// <summary>
+        /// Liest das GEPFLEGTE Paar einer Anlage (<c>Tab_Energieanlagen.ID</c>) und liefert seinen
+        /// Rücklauf [°C], <c>null</c> ohne Paar — Stufe (c) der Rücklaufkette. Eingang, gesetzt von
+        /// <c>SimulationControl</c> (dieselbe Kette Anlage → Heizkessel wie der Kessel-Hub);
+        /// <c>null</c> = keine Stufe (c). Gefragt nur für Kessel mit Brennwertkennlinie.
+        /// </summary>
+        public Func<int, double?> RuecklaufPaarLesen;
+
+        // ------------------------------------------------------------------
+        // TEMPERATURNIVEAU DES PROZESSKANALS (Entscheidungsvorlage Modellgrenzen PW1 Stufe 1)
+        //
+        // (b) Ein Kessel, dessen GEPFLEGTER Vorlauf (Kette Anlage -> Heizkessel, wie W3) unter dem
+        // geforderten Prozessvorlauf der Stunde liegt, deckt den Prozesskanal in dieser Stunde
+        // nicht. (c) Ein Brennwertkessel mit Kennlinie sieht für den Anteil seiner Wärme, der in den
+        // Prozesskanal ging, den Prozessrücklauf. Ohne Temperaturniveau (null) ist beides wirkungslos.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Das Temperaturniveau des Prozesskanals (PW1 Stufe 1); <c>null</c> = kein Prozess mit
+        /// Temperaturpaar. Eingang, gesetzt von <c>SimulationControl</c> vor <see cref="Vorbereiten_Zweikanalig"/>.
+        /// </summary>
+        public Prozesstemperatur Prozesstemperatur;
+
+        /// <summary>
+        /// Liest den GEPFLEGTEN Vorlauf einer Anlage (<c>Tab_Energieanlagen.ID</c>) [°C], <c>null</c>
+        /// ohne vollständiges Paar — dieselbe Kette Anlage → Heizkessel wie <see cref="RuecklaufPaarLesen"/>.
+        /// Gefragt nur mit <see cref="Prozesstemperatur"/>.
+        /// </summary>
+        public Func<int, double?> VorlaufPaarLesen;
+
+        /// <summary>Gepflegter Vorlauf je Kessel [°C]; <c>null</c> = keiner (erreicht jeden Prozessvorlauf).</summary>
+        private readonly double?[] _prozessErzeugerVorlauf = new double?[MAX_SPK];
+
+        /// <summary>In der laufenden Stunde in den Prozesskanal abgegebene Wärme je Kessel [kWh].</summary>
+        private readonly double[] _prozessAbgabe = new double[MAX_SPK];
+
+        private readonly int[] _prozessGesperrtStunden = new int[MAX_SPK];
+        private readonly double[] _prozessGesperrtMax = new double[MAX_SPK];
+        private readonly int[] _prozessRuecklaufStunden = new int[MAX_SPK];
+        private readonly double[] _prozessRuecklaufSumme = new double[MAX_SPK];
+        private readonly double[] _prozessRuecklaufGewicht = new double[MAX_SPK];
+
+        /// <summary>Stunden, in denen Kessel <paramref name="index"/> den Prozesskanal nicht deckte (PW1 Stufe 1).</summary>
+        public int ProzessGesperrtStunden(int index)
+            => index >= 0 && index < MAX_SPK ? _prozessGesperrtStunden[index] : 0;
+
+        /// <summary>Laufstunden, in denen der Prozessrücklauf in den Rücklauf der Brennwertkennlinie einging (PW1 Stufe 1).</summary>
+        public int ProzessRuecklaufStunden(int index)
+            => index >= 0 && index < MAX_SPK ? _prozessRuecklaufStunden[index] : 0;
+
+        /// <summary>
+        /// Meldet am Ende des Laufs je Kessel die Stunden ohne Prozessdeckung und die Stunden mit
+        /// Prozessrücklauf (PW1 Stufe 1). Ohne Temperaturniveau meldet sie nichts.
+        /// </summary>
+        public void ProzessMelden()
+        {
+            if (Prozesstemperatur == null) return;
+            for (int i = 0; i < _anzahlZweikanalig && i < spk_list.Count; i++)
+            {
+                if (_prozessGesperrtStunden[i] > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_NICHT_ERREICHT,
+                        spk_list[i], _prozessGesperrtStunden[i], _prozessGesperrtMax[i], _prozessErzeugerVorlauf[i] ?? 0));
+                if (_prozessRuecklaufStunden[i] > 0 && _prozessRuecklaufGewicht[i] > 0)
+                    SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_PROZESS_KESSEL_RUECKLAUF,
+                        spk_list[i], _prozessRuecklaufStunden[i],
+                        _prozessRuecklaufSumme[i] / _prozessRuecklaufGewicht[i]));
+            }
+        }
+
+        /// <summary>Rechnet der Kessel mit der Brennwertkennlinie?</summary>
+        private readonly bool[] _brennwertKennlinie = new bool[MAX_SPK];
+
+        /// <summary>Rücklauf des gepflegten Paars je Kessel [°C]; <c>null</c> = keins (Stufe c).</summary>
+        private readonly double?[] _ruecklaufPaar = new double?[MAX_SPK];
+
+        /// <summary>Senkenspeicher je Kessel (Stufe b); <c>null</c> = keiner.</summary>
+        private readonly SimulationPufferspeicher[] _ruecklaufSpeicher = new SimulationPufferspeicher[MAX_SPK];
+
+        /// <summary>Rücklauf aus dem Senkenspeicher der laufenden Stunde [°C]; NaN ohne Speicher.</summary>
+        private readonly double[] _speicherRuecklauf = new double[MAX_SPK];
+
+        /// <summary>
+        /// Rücklauf je Kessel und Stunde [°C] — in Laufstunden der Brennwertkennlinie T_RL, sonst 0;
+        /// angelegt nur für Kessel mit Brennwertkennlinie. Nur Anzeige und Export (Konzept 5).
+        /// </summary>
+        private readonly double[][] _ruecklaufStunde = new double[MAX_SPK][];
+
+        /// <summary>Laufstunden je Kessel und Stufe der Rücklaufkette (Protokoll).</summary>
+        private readonly int[][] _ruecklaufStufen = new int[MAX_SPK][];
+
+        /// <summary>Σ Wärme · Rücklauf der Laufstunden je Kessel [kWh·°C] — Zähler des mittleren Rücklaufs.</summary>
+        private readonly double[] _ruecklaufGewichtet = new double[MAX_SPK];
+
+        /// <summary>
+        /// BRENNWERTSTUNDEN je Kessel [h/a]: Laufstunden der Brennwertkennlinie mit einem Rücklauf
+        /// unter dem Taupunkt (<see cref="Kesselkennlinie.Brennwertbetrieb"/>).
+        /// </summary>
+        public int[] Brennwertstunden_Spk = new int[MAX_SPK];
+
+        /// <summary>Brennstoffbasierte Wärme der <see cref="Brennwertstunden_Spk"/> je Kessel [kWh/a].</summary>
+        public double[] BrennwertWaerme_KWh_Spk = new double[MAX_SPK];
+
+        /// <summary>
+        /// MEHRBRENNSTOFF AUS BRENNWERTNUTZUNG je Kessel [kWh/a] gegenüber der trockenen Teillastkurve:
+        /// Σ (Wärme/η_eff − Wärme/η_tr(β)) über die Laufstunden (Konzept 4.1 Punkt 7) — negativ, wo der
+        /// Kondensationsgewinn Brennstoff spart; ohne Brennwertkennlinie 0. Zusammen mit
+        /// <see cref="TeillastMehrbrennstoff_KWh_Spk"/> (dann gegenüber η_tr) ist das der Mehrbrennstoff
+        /// gegenüber η₁₀₀.
+        /// </summary>
+        public double[] BrennwertMehrbrennstoff_KWh_Spk = new double[MAX_SPK];
+
+        // ------------------------------------------------------------------
+        // TAKTEN (Konzept Kesselkennlinie 4.2, Etappe E4)
+        //
+        // Ein Brennstoffkessel, dessen Wärme in einer Laufstunde unter der Mindestleistung liegt,
+        // taktet: Die Stunde zählt so viele Starts, wie Mindestläufe die Wärme braucht, und jeder
+        // Start kostet den Anfahrverlust. Mindestleistung, Anfahrverlust und Mindestlaufzeit sind
+        // gepflegt oder nehmen die Normvorgaben (Konzept 7.1, Entscheid F1); einmal je Lauf in
+        // Kesseldaten_Einlesen gebildet. Der Elektrokessel rechnet ohne Taktmodell.
+        // ------------------------------------------------------------------
+
+        /// <summary>Rechnet der Kessel das Takten (jeder Brennstoffkessel)?</summary>
+        private readonly bool[] _takten = new bool[MAX_SPK];
+
+        /// <summary>Wirksame Mindestleistung je Kessel [kW].</summary>
+        private readonly double[] _mindestleistungKw = new double[MAX_SPK];
+
+        /// <summary>Wirksamer Anfahrverlust je Start und Kessel [kWh].</summary>
+        private readonly double[] _anfahrverlustKwh = new double[MAX_SPK];
+
+        /// <summary>Wirksame Mindestlaufzeit je Kessel [min].</summary>
+        private readonly int[] _mindestlaufzeitMin = new int[MAX_SPK];
+
+        /// <summary>Die drei Taktwerte der Projektkopie, wie sie dort stehen (für die Herkunft „Vorgabe“).</summary>
+        private readonly double?[] _mindestleistungGepflegt = new double?[MAX_SPK];
+        private readonly double?[] _anfahrverlustGepflegt = new double?[MAX_SPK];
+        private readonly int?[] _mindestlaufzeitGepflegt = new int?[MAX_SPK];
 
         // PAKET A1: Hier stand "Berechnung(int ID_Projekt)" - der Einstieg des
         // einkanaligen Altpfads (Jahressumme, Kesseldaten_Einlesen,
@@ -326,14 +610,42 @@ namespace WindowsFormsApplication1
                 // und auf ~0.01 zerlegt. Echte Prozentwerte liegen >= 50, echte Faktoren
                 // <= ~1.1; 1.5 trennt beide sauber (dieselbe Schwelle nutzt
                 // WirtschaftlichkeitCtrl.LiesReferenzkessel seit Review 11).
-                if (Kessel_Wirk_Gas_Spk[i] > 1.5) Kessel_Wirk_Gas_Spk[i] /= 100.0;
-                if (Kessel_Wirk_Oel_Spk[i] > 1.5) Kessel_Wirk_Oel_Spk[i] /= 100.0;
+                // Dieselbe Regel nimmt die Kurve des Katalogeditors (Kesselkennlinie.WirkungsgradAlsFaktor).
+                Kessel_Wirk_Gas_Spk[i] = Kesselkennlinie.WirkungsgradAlsFaktor(Kessel_Wirk_Gas_Spk[i]);
+                Kessel_Wirk_Oel_Spk[i] = Kesselkennlinie.WirkungsgradAlsFaktor(Kessel_Wirk_Oel_Spk[i]);
 
                 Brennstoff_Betrieb_Spk[i] = heizkesselctrl.items[0].Brennstoff;
                 Brennstoff_Art[i] = Brennstoff_Betrieb_Spk[i];
 
+                // Konzept Kesselkennlinie 4.1 (Etappe E2): η₃₀ der Projektkopie und die Bauart
+                // für die Normvorgabe eines leeren Felds (7.1, Entscheid F1).
+                _eta30Gepflegt[i] = heizkesselctrl.items[0].Wirkungsgrad_Teillast30;
+                _bauart[i] = Kesselkennlinie.Bauart(heizkesselctrl.items[0].Brennwert,
+                                                    heizkesselctrl.items[0].Beschreibung);
+                // Etappe E3: die Brennwertkennlinie nur auf ausdrückliche Wahl am Brennwertkessel
+                // (Konzept 3.1) und mit einem Brennstoff, der kondensiert.
+                _brennwertKennlinie[i] = Kesselkennlinie.RechnetMitBrennwertkennlinie(
+                    heizkesselctrl.items[0].Brennwert, heizkesselctrl.items[0].Kennlinie_Brennwert, Brennstoff_Art[i]);
+                if (Kesselkennlinie.RechnetMitKennlinie(Brennstoff_Art[i]))
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "KESSEL_KENNLINIE_" + spk_list[i],
+                        MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                            System.Globalization.CultureInfo.CurrentCulture,
+                            TeillastwirkungsgradIstVorgabe(i)
+                                ? MyResource.Resource.SIMENG_KESSEL_KENNLINIE_VORGABE
+                                : MyResource.Resource.SIMENG_KESSEL_KENNLINIE_GEPFLEGT,
+                            spk_list[i],
+                            Nennwirkungsgrad(i).ToString("N3", System.Globalization.CultureInfo.CurrentCulture),
+                            Teillastwirkungsgrad(i).ToString("N3", System.Globalization.CultureInfo.CurrentCulture),
+                            BauartText(_bauart[i])));
+
+                // Etappe E4 (Konzept 4.2): die Taktwerte - gepflegt oder die Normvorgabe (7.1, F1).
+                TaktwerteBilden(i, heizkesselctrl.items[0]);
+
                 Betriebsbereitschaft_Verluste[i] =
-                    BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust);
+                    BereitschaftsleistungKw(heizkesselctrl.items[0].Betriebsbereitschaftverlust,
+                                            heizkesselctrl.items[0].Bereitschaft_Einheit,
+                                            heizkesselctrl.items[0].Ptherm);
 
                 // Ein Katalogwert über 2 % der Nennleistung ist für eine Bereitschafts-
                 // leistung ungewöhnlich hoch — der Lauf rechnet mit ihm, nennt ihn aber,
@@ -354,6 +666,47 @@ namespace WindowsFormsApplication1
 
             return true;
         }
+
+        /// <summary>
+        /// Die TAKTWERTE des Kessels <paramref name="i"/> (Konzept Kesselkennlinie 4.2, Etappe E4):
+        /// Mindestleistung, Anfahrverlust je Start und Mindestlaufzeit aus der Projektkopie, ein leeres
+        /// Feld mit der Normvorgabe (7.1, Entscheid F1). Braucht Nennleistung, Brennstoff und Bauart des
+        /// Kessels, also nach deren Einlesen gerufen. Der Elektrokessel bekommt kein Taktmodell.
+        /// </summary>
+        private void TaktwerteBilden(int i, HeizkesselModel kessel)
+        {
+            _mindestleistungGepflegt[i] = kessel.Mindestleistung;
+            _anfahrverlustGepflegt[i] = kessel.Anfahrverlust_kWh;
+            _mindestlaufzeitGepflegt[i] = kessel.Mindestlaufzeit_min;
+
+            _takten[i] = Kesselkennlinie.RechnetMitTakten(Brennstoff_Art[i]);
+            if (!_takten[i])
+            {
+                _mindestleistungKw[i] = 0;
+                _anfahrverlustKwh[i] = 0;
+                _mindestlaufzeitMin[i] = 0;
+                return;
+            }
+
+            _mindestleistungKw[i] = Kesselkennlinie.MindestleistungWirksam(
+                kessel.Mindestleistung, Kessel_Leistung_Spk[i], _bauart[i], Brennstoff_Art[i]);
+            _anfahrverlustKwh[i] = Kesselkennlinie.AnfahrverlustWirksam(kessel.Anfahrverlust_kWh, Kessel_Leistung_Spk[i]);
+            _mindestlaufzeitMin[i] = Kesselkennlinie.MindestlaufzeitWirksam(kessel.Mindestlaufzeit_min);
+
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "KESSEL_TAKTWERTE_" + spk_list[i],
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(k,
+                    MyResource.Resource.SIMENG_KESSEL_TAKTWERTE,
+                    spk_list[i],
+                    _mindestleistungKw[i].ToString("N2", k), Herkunft(!MindestleistungIstVorgabe(i)),
+                    _mindestlaufzeitMin[i], Herkunft(!MindestlaufzeitIstVorgabe(i)),
+                    _anfahrverlustKwh[i].ToString("N3", k), Herkunft(!AnfahrverlustIstVorgabe(i))));
+        }
+
+        /// <summary>Der Herkunftstext eines Kennlinienwerts im Laufprotokoll: „gepflegt“ oder „Normvorgabe“.</summary>
+        private static string Herkunft(bool gepflegt)
+            => gepflegt ? MyResource.Resource.KESSEL_WERT_GEPFLEGT : MyResource.Resource.KESSEL_WERT_VORGABE;
 
         /// <summary>
         /// Der Energieträger EINES Kessels aus <see cref="spk_carrier"/> (W14a-E-8-B1);
@@ -383,10 +736,16 @@ namespace WindowsFormsApplication1
         /// Zweiundzwanzigfache. Negativ oder nicht gesetzt heißt: kein Bereitschaftsverlust.</para>
         /// </summary>
         internal static double BereitschaftsleistungKw(double katalogwertKw)
-        {
-            if (double.IsNaN(katalogwertKw) || katalogwertKw <= 0) return 0;
-            return katalogwertKw;
-        }
+            => KesselBereitschaft.LeistungKw(katalogwertKw, DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW, 0);
+
+        /// <summary>
+        /// Die Bereitschaftsleistung [kW] aus Wert und Einheit des Katalogsatzes — bei kW der
+        /// Wert selbst (wie <see cref="BereitschaftsleistungKw(double)"/>), bei Prozent
+        /// <c>Wert × Nennleistung / 100</c>. Die Regel steht einmal in
+        /// <see cref="KesselBereitschaft.LeistungKw"/>.
+        /// </summary>
+        internal static double BereitschaftsleistungKw(double wert, string einheit, double nennleistungKw)
+            => KesselBereitschaft.LeistungKw(wert, einheit, nennleistungKw);
 
         private int CarrierZuKessel(string bezeichner)
         {
@@ -457,9 +816,7 @@ namespace WindowsFormsApplication1
         public bool WirkungsgradIstPlatzhalter(int index)
         {
             if (index < 0 || index >= MAX_SPK || IstStromkessel(index)) return false;
-            int art = Brennstoff_Art[index];
-            bool oel = art >= 6 && art <= 9 || art >= 18 && art <= 22;
-            double wirk = oel ? Kessel_Wirk_Oel_Spk[index] : Kessel_Wirk_Gas_Spk[index];
+            double wirk = Kesselkennlinie.IstOel(Brennstoff_Art[index]) ? Kessel_Wirk_Oel_Spk[index] : Kessel_Wirk_Gas_Spk[index];
             return Math.Abs(wirk - 1.0) < 1e-9;
         }
 
@@ -1192,8 +1549,26 @@ namespace WindowsFormsApplication1
             // Schritt 2 aus Berechnung() — EINE Fassung für beide Wege (Nacharbeit N6).
             if (!Kesseldaten_Einlesen(heizkesselctrl, Anzahl)) return false;
 
-            // #568: Heizperiode des Laufs - Grundlage der Betriebsbereitschaft.
-            _heiztage = HeiztageAus(Raumwaermebedarf_Projekt);
+            // #568: Heiztage des Laufs - Grundlage der Betriebsbereitschaft: Tagesmittel der
+            // Aussentemperatur unter der Heizgrenze des Projekts.
+            Heizgrenze_C = HeizgrenzeWirksam(Vorgabe_Heizgrenze);
+            _heiztage = HeiztageAus(Aussentemperatur_Projekt, Heizgrenze_C);
+            Heiztage_Anzahl = _heiztage == null ? 365 : _heiztage.Count(t => t);
+            if (Anzahl > 0)
+                SimulationProtokoll.Aktuell.Hinweis(
+                    MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        MyResource.Resource.SIMENG_KESSEL_HEIZGRENZE,
+                        Heizgrenze_C, Heiztage_Anzahl));
+
+            // PW1 Stufe 1: die Zähler des Prozesskanals auf den Laufanfang.
+            Array.Clear(_prozessErzeugerVorlauf, 0, MAX_SPK);
+            Array.Clear(_prozessAbgabe, 0, MAX_SPK);
+            Array.Clear(_prozessGesperrtStunden, 0, MAX_SPK);
+            Array.Clear(_prozessGesperrtMax, 0, MAX_SPK);
+            Array.Clear(_prozessRuecklaufStunden, 0, MAX_SPK);
+            Array.Clear(_prozessRuecklaufSumme, 0, MAX_SPK);
+            Array.Clear(_prozessRuecklaufGewicht, 0, MAX_SPK);
 
             // Senkenliste je Kessel: keine Physik, sondern die Konfiguration des
             // zweikanaligen Wegs — deshalb hier und nicht im gemeinsamen Einlesen.
@@ -1201,6 +1576,21 @@ namespace WindowsFormsApplication1
             {
                 int idAnlage = (i < spk_anlagen_ids.Count) ? spk_anlagen_ids[i] : 0;
                 _kesselSenke.Add(SenkeZuAnlage(senken, idAnlage));
+                _wirkungsgradStunde[i] = new double[8760];
+
+                // PW1 Stufe 1: der gepflegte Vorlauf - nur mit Temperaturniveau des Prozesskanals.
+                _prozessErzeugerVorlauf[i] = (Prozesstemperatur != null && VorlaufPaarLesen != null && idAnlage > 0)
+                    ? VorlaufPaarLesen(idAnlage) : null;
+
+                // Etappe E3: Stufe (c) der Rücklaufkette und die Mitschrift - nur für Kessel mit
+                // Brennwertkennlinie; jeder andere Kessel liest nichts zusätzlich.
+                if (_brennwertKennlinie[i])
+                {
+                    _ruecklaufPaar[i] = (RuecklaufPaarLesen != null && idAnlage > 0) ? RuecklaufPaarLesen(idAnlage) : null;
+                    _ruecklaufStunde[i] = new double[8760];
+                    _ruecklaufStufen[i] = new int[5];
+                    BrennwertkennlinieMelden(i);
+                }
             }
 
             _anzahlZweikanalig = Anzahl;
@@ -1243,6 +1633,16 @@ namespace WindowsFormsApplication1
                 _kesselStunde[i] = 0;
                 _kesselAbgabe[i] = 0;
                 _restLeistung[i] = Kessel_Leistung_Spk[i];
+                _prozessAbgabe[i] = 0;
+
+                // Etappe E3, Stufe (b) der Rücklaufkette: der Senkenspeicher EINMAL je Stunde, am
+                // Stundenanfang - der Zustand am Ende der Vorstunde, wie der Lesepunkt „Davor" der
+                // Booster-Quelltemperatur. Geschichtet die unterste Schicht, sonst RL_eff.
+                if (_brennwertKennlinie[i])
+                {
+                    SimulationPufferspeicher sp = _ruecklaufSpeicher[i];
+                    _speicherRuecklauf[i] = sp == null ? double.NaN : (sp.Geschichtet ? sp.T_unten : sp.RL_eff);
+                }
             }
 
             double eingang = Kaskadenschleife.RestSumme(rest);
@@ -1296,12 +1696,37 @@ namespace WindowsFormsApplication1
                 Senkenliste senken = _kesselSenke[i];
                 if (senken != null && !senken.HatDirektsenke) continue;
 
+                // PW1 STUFE 1 (b): Erreicht der gepflegte Vorlauf des Kessels den geforderten
+                // Prozessvorlauf der Stunde nicht, ist der Prozesskanal für ihn gesperrt - für die
+                // Dauer dieses Kessels auf 0, danach unverändert zurückgelegt (Muster KU2 der
+                // Wärmepumpe). Ohne Temperaturniveau ist die Bedingung falsch.
+                bool prozessDirekt = Prozesstemperatur != null && senken != null && senken.BedientProzessDirekt;
+                bool prozessGesperrt = false;
+                double prozessZurueck = 0;
+                if (prozessDirekt && rest[Kanal.PROZESS] > 0)
+                {
+                    double gefordert = Prozesstemperatur.Vorlauf(stunde);
+                    if (!Prozesstemperatur.Erreicht(_prozessErzeugerVorlauf[i] ?? 0, gefordert))
+                    {
+                        prozessGesperrt = true;
+                        prozessZurueck = rest[Kanal.PROZESS];
+                        rest[Kanal.PROZESS] = 0;
+                        _prozessGesperrtStunden[i]++;
+                        if (gefordert > _prozessGesperrtMax[i]) _prozessGesperrtMax[i] = gefordert;
+                    }
+                }
+                try
+                {
+
                 double verfuegbar = Kanalabzug.Offen(senken, rest);
 
                 if (verfuegbar <= 0) continue;
 
                 double menge = Math.Min(MaxAbgabe(i), verfuegbar);
                 if (menge <= 0) continue;
+
+                // PW1 Stufe 1 (c): der Prozessanteil dieser Abgabe, gemessen am Kanalrest.
+                double prozessVorher = rest[Kanal.PROZESS];
 
                 // K2: Abzug über die eine Kanalregel, mit gemessener Aufschlüsselung je
                 // Kanal (Konzept 4.4). Die abgezogene Gesamtmenge ist konstruktiv genau
@@ -1311,6 +1736,8 @@ namespace WindowsFormsApplication1
                 // Stunde - aus derselben gemessenen rest-Differenz.
                 Kanalabzug.Abziehen(senken, menge, rest, Direktdeckung_Kanal,
                                     Direktdeckung_KanalStuendlich, stunde);
+
+                if (prozessDirekt) _prozessAbgabe[i] += prozessVorher - rest[Kanal.PROZESS];
 
                 _kesselAbgabe[i] += menge;
 
@@ -1325,6 +1752,11 @@ namespace WindowsFormsApplication1
                 // Klemmung fängt allein die Gleitkomma-Reste. Ohne Quellbezug ist
                 // _restLeistung nie negativ und die Zeile wirkungslos.
                 if (_restLeistung[i] < 0) _restLeistung[i] = 0;
+                }
+                finally
+                {
+                    if (prozessGesperrt) rest[Kanal.PROZESS] = prozessZurueck;
+                }
             }
 
             if (stunde >= 0 && stunde < 8760)
@@ -1403,7 +1835,8 @@ namespace WindowsFormsApplication1
         /// Brennstoffbilanz der Stunde — GENAU EINMAL je Stunde und Kessel (Konzept 6.5).
         ///
         /// Das ist die zentrale Bedingung der zweikanaligen Umstellung: Läuft der Kessel,
-        /// folgt sein Verbrauch dem Wirkungsgrad; steht er und ist er betriebsbereit
+        /// folgt sein Verbrauch dem Wirkungsgrad, dazu je Start der Anfahrverlust (Etappe E4,
+        /// Konzept Kesselkennlinie 4.2); steht er und ist er betriebsbereit
         /// (<see cref="IstBetriebsbereit"/>, #568), wird ihm der
         /// BEREITSCHAFTSVERLUST als Verbrauch aufgeschlagen. Würde diese Entscheidung je
         /// Kanal getroffen, fiele der Stillstandsverlust in einer Stunde zweimal an — der
@@ -1418,13 +1851,20 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
                 double KesselLeistung = _kesselStunde[i];
-                bool laeuft = _kesselAbgabe[i] > 0;
+                // Ein Rest unter dem Zahlenrand ist kein Lauf (KesselLaeuft).
+                bool laeuft = KesselLaeuft(_kesselAbgabe[i]);
 
-                bool oel = Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9 ||
-                           Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22;
+                bool oel = Kesselkennlinie.IstOel(Brennstoff_Art[i]);
 
-                double wirk = oel ? Kessel_Wirk_Oel_Spk[i] : Kessel_Wirk_Gas_Spk[i];
-                if (wirk <= 0) wirk = 0.90; // Fallback
+                // η₁₀₀ nach Brennstoff, 0,90 für einen fehlenden Wert - dieselbe Funktion wie die Kurve des
+                // Katalogeditors (Kesselkennlinie.Kurven).
+                double eta100 = Kesselkennlinie.Nennwirkungsgrad(Kessel_Wirk_Gas_Spk[i], Kessel_Wirk_Oel_Spk[i], Brennstoff_Art[i]);
+
+                // Konzept Kesselkennlinie 4.1 (Etappe E2): der Wirkungsgrad der Laststufe
+                // β = Wärme/Nennleistung. Der Elektrokessel rechnet mit η₁₀₀ wie bisher; beim
+                // Niedertemperaturkessel ohne eigenes η₃₀ ist η₃₀ = η₁₀₀ und die Kurve flach —
+                // beide Wege sind Stunde für Stunde bitgleich zum festen Wirkungsgrad.
+                double wirk = WirkungsgradDerStunde(i, KesselLeistung, eta100);
 
                 double stuendlicherBrennstoffverbrauchKW;
 
@@ -1433,11 +1873,84 @@ namespace WindowsFormsApplication1
                 // Verzweigung ist Wort für Wort die bisherige.
                 if (laeuft)
                 {
+                    // Etappe E3 (Konzept 4.1 Punkte 3 bis 5): Der Brennwertkessel mit Kennlinie rechnet
+                    // mit η_eff aus Laststufe UND Rücklauf der Stunde; die trockene Kurve η_tr trennt den
+                    // Teillastanteil vom Kondensationsgewinn. Jeder andere Kessel: wirk wie in E2.
+                    double wirkTrocken = wirk;
+                    double ruecklauf = double.NaN;
+                    if (_brennwertKennlinie[i])
+                    {
+                        ruecklauf = RuecklaufDerStunde(i, stunde, out Ruecklaufstufe stufe);
+
+                        // PW1 Stufe 1 (c): Ging ein Teil der Wärme in den Prozesskanal, sieht dieser
+                        // Anteil den Prozessrücklauf der Stunde - gewichtet mit der Abgabe der Stunde.
+                        if (_prozessAbgabe[i] > 0 && Prozesstemperatur != null)
+                        {
+                            double rlProzess = Prozesstemperatur.Ruecklauf(stunde);
+                            if (!double.IsNaN(rlProzess))
+                            {
+                                double anteil = _prozessAbgabe[i] / _kesselAbgabe[i];
+                                ruecklauf = Prozesstemperatur.MischRuecklauf(anteil, rlProzess, ruecklauf);
+                                _prozessRuecklaufStunden[i]++;
+                                double w = Math.Min(_prozessAbgabe[i], _kesselAbgabe[i]);
+                                _prozessRuecklaufSumme[i] += w * rlProzess;
+                                _prozessRuecklaufGewicht[i] += w;
+                            }
+                        }
+                        wirk = WirkungsgradBrennwert(i, KesselLeistung, eta100, ruecklauf, out wirkTrocken);
+                        _ruecklaufStufen[i][(int)stufe]++;
+                    }
+
                     // Kessel läuft -> Verbrauch über Wirkungsgrad (in dieser Stunde kein Stillstandsverlust)
-                    stuendlicherBrennstoffverbrauchKW = KesselLeistung / wirk;
+                    double brennstoffKennlinie = KesselLeistung / wirk;
+
+                    // Etappe E4 (Konzept 4.2): die Starts der Stunde - im Takt unter der Mindestleistung
+                    // so viele, wie Mindestläufe die Wärme braucht, sonst einer nach einer
+                    // Stillstandsstunde -, und je Start der Anfahrverlust. Der Elektrokessel taktet nicht.
+                    int starts;
+                    if (_takten[i] && Kesselkennlinie.Taktet(KesselLeistung, _mindestleistungKw[i]))
+                    {
+                        starts = Kesselkennlinie.StartsImTakt(KesselLeistung, _mindestleistungKw[i], _mindestlaufzeitMin[i]);
+                        Taktstunden_Spk[i]++;
+                    }
+                    else
+                    {
+                        starts = _liefVorstunde[i] ? 0 : 1;
+                    }
+                    double anfahrverlust = _takten[i] ? starts * _anfahrverlustKwh[i] : 0;
+                    Starts_Spk[i] += starts;
+                    if (!_liefVorstunde[i]) Laufphasen_Spk[i]++;
+                    Anfahrverlust_KWh_Spk[i] += anfahrverlust;
+
+                    stuendlicherBrennstoffverbrauchKW = brennstoffKennlinie + anfahrverlust;
+
+                    // E2: der Brennstoff der Laufstunde und sein Teillastanteil gegenüber η₁₀₀ - beim
+                    // Brennwertkessel mit Kennlinie der trockenen Kurve, der Rest ist Brennwertnutzung (E3).
+                    // Beides ohne den Anfahrverlust (E4), der für sich gezählt wird.
+                    _waermeBetriebKwh[i] += KesselLeistung;
+                    BrennstoffBetrieb_KWh_Spk[i] += brennstoffKennlinie;
+                    if (_brennwertKennlinie[i])
+                    {
+                        double brennstoffTrocken = KesselLeistung / wirkTrocken;
+                        TeillastMehrbrennstoff_KWh_Spk[i] += brennstoffTrocken - KesselLeistung / eta100;
+                        BrennwertMehrbrennstoff_KWh_Spk[i] += brennstoffKennlinie - brennstoffTrocken;
+                        _ruecklaufGewichtet[i] += KesselLeistung * ruecklauf;
+                        if (_ruecklaufStunde[i] != null && stunde >= 0 && stunde < 8760)
+                            _ruecklaufStunde[i][stunde] = ruecklauf;
+                        if (Kesselkennlinie.Brennwertbetrieb(ruecklauf, Kesselkennlinie.Taupunkt(Brennstoff_Art[i])))
+                        {
+                            Brennwertstunden_Spk[i]++;
+                            BrennwertWaerme_KWh_Spk[i] += KesselLeistung;
+                        }
+                    }
+                    else
+                    {
+                        TeillastMehrbrennstoff_KWh_Spk[i] += brennstoffKennlinie - KesselLeistung / eta100;
+                    }
+                    if (_wirkungsgradStunde[i] != null && stunde >= 0 && stunde < 8760)
+                        _wirkungsgradStunde[i][stunde] = wirk;
 
                     Laufstunden_Spk[i]++;
-                    if (!_liefVorstunde[i]) Starts_Spk[i]++;
                     _letzteLaufstunde[i] = stunde;
 
                     if (oel)
@@ -1448,13 +1961,15 @@ namespace WindowsFormsApplication1
                     {
                         s_waerme_Gas_Spk[i] += KesselLeistung;
 
-                        double Gasleistung = KesselLeistung / wirk;
+                        // Die Gasspitze aus demselben Wert wie der Brennstoff der Stunde (Konzept 4.1
+                        // Punkt 6), also samt Anfahrverlust.
+                        double Gasleistung = stuendlicherBrennstoffverbrauchKW;
                         if (_gasspitzeKessel[i] < Gasleistung) _gasspitzeKessel[i] = Gasleistung;
                     }
                 }
                 else if (IstBetriebsbereit(_heiztage, stunde, _letzteLaufstunde[i]))
                 {
-                    // Kessel steht still, ist aber BETRIEBSBEREIT (Heizperiode oder Nachlauf)
+                    // Kessel steht still, ist aber BETRIEBSBEREIT (Heiztag oder Nachlauf)
                     // -> Bereitschaftsverlust, EINMAL: die Bereitschaftsleistung [kW] über
                     // eine Stunde. Sie ist eine Leistung, kein Anteil der Nennleistung
                     // (BereitschaftsleistungKw).
@@ -1464,7 +1979,7 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    // Kessel steht still und ist abgeschaltet (außerhalb der Heizperiode,
+                    // Kessel steht still und ist abgeschaltet (Tag über der Heizgrenze,
                     // Nachlauf abgelaufen): kein Bereitschaftsverlust.
                     stuendlicherBrennstoffverbrauchKW = 0;
                 }
@@ -1477,12 +1992,278 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Der Wirkungsgrad des Kessels <paramref name="i"/> in einer Stunde mit der
+        /// brennstoffbasierten Wärme <paramref name="waermeKwh"/> (Konzept Kesselkennlinie 4.1):
+        /// <see cref="Kesselkennlinie.Eta"/> bei der Laststufe der Stunde, mit dem wirksamen η₃₀
+        /// zu <paramref name="eta100"/>. Der Elektrokessel rechnet mit <paramref name="eta100"/>.
+        /// </summary>
+        private double WirkungsgradDerStunde(int i, double waermeKwh, double eta100)
+        {
+            if (!Kesselkennlinie.RechnetMitKennlinie(Brennstoff_Art[i])) return eta100;
+            double eta30 = Kesselkennlinie.Eta30Wirksam(_eta30Gepflegt[i], eta100, _bauart[i], Brennstoff_Art[i]);
+            return Kesselkennlinie.Eta(Kesselkennlinie.Laststufe(waermeKwh, Kessel_Leistung_Spk[i]), eta100, eta30);
+        }
+
+        /// <summary>
+        /// Der Wirkungsgrad eines Kessels MIT Brennwertkennlinie in einer Laufstunde (Konzept 4.1
+        /// Punkte 3 bis 5, Etappe E3): <see cref="Kesselkennlinie.EtaBrennwert"/> bei Laststufe und
+        /// Rücklauf der Stunde, mit dem wirksamen η₃₀ (gepflegt oder Normvorgabe) zu
+        /// <paramref name="eta100"/>. <paramref name="wirkTrocken"/> ist η_tr(β).
+        /// </summary>
+        private double WirkungsgradBrennwert(int i, double waermeKwh, double eta100, double ruecklaufC,
+                                             out double wirkTrocken)
+        {
+            double eta30 = Kesselkennlinie.Eta30Wirksam(_eta30Gepflegt[i], eta100, _bauart[i], Brennstoff_Art[i]);
+            return Kesselkennlinie.EtaBrennwert(Kesselkennlinie.Laststufe(waermeKwh, Kessel_Leistung_Spk[i]),
+                                                eta100, eta30, ruecklaufC, Brennstoff_Art[i], out wirkTrocken);
+        }
+
+        /// <summary>
+        /// Der RÜCKLAUF einer Stunde für den Kessel <paramref name="i"/> nach der Kette
+        /// (<see cref="Kesselkennlinie.Ruecklauf"/>): Heizkreis der Anlagenkopplung, Senkenspeicher (in
+        /// <see cref="Stunde_Start"/> gelesen), gepflegtes Paar, Rückfall 50 °C.
+        /// </summary>
+        private double RuecklaufDerStunde(int i, int stunde, out Ruecklaufstufe stufe)
+        {
+            double heizkreis = (Heizkreisruecklauf != null && stunde >= 0 && stunde < Heizkreisruecklauf.Length)
+                ? Heizkreisruecklauf[stunde] : double.NaN;
+            double vorwaermer = (Vorwaermvorlauf != null && stunde >= 0 && stunde < Vorwaermvorlauf.Length)
+                ? Vorwaermvorlauf[stunde] : double.NaN;
+            return Kesselkennlinie.Ruecklauf(vorwaermer, heizkreis, _speicherRuecklauf[i], _ruecklaufPaar[i], out stufe);
+        }
+
+        /// <summary>
+        /// Setzt den SENKENSPEICHER eines Kessels mit Brennwertkennlinie — Stufe (b) der Rücklaufkette
+        /// (Etappe E3). Aufgerufen von <c>SimulationControl</c>, nachdem die Speicher-Registry offen ist,
+        /// mit dem ersten Puffer der Senkenliste in Rangfolge. Ohne Brennwertkennlinie wirkungslos.
+        /// </summary>
+        public void RuecklaufSpeicherSetzen(int index, SimulationPufferspeicher speicher)
+        {
+            if (index < 0 || index >= MAX_SPK || !_brennwertKennlinie[index]) return;
+            _ruecklaufSpeicher[index] = speicher;
+        }
+
+        /// <summary>Rechnet der Kessel <paramref name="index"/> mit der Brennwertkennlinie (Etappe E3)?</summary>
+        public bool RechnetMitBrennwertkennlinie(int index)
+            => index >= 0 && index < MAX_SPK && _brennwertKennlinie[index];
+
+        /// <summary>
+        /// Der MITTLERE RÜCKLAUF der Laufstunden des Kessels <paramref name="index"/> [°C], wärmegewichtet;
+        /// NaN ohne Brennwertkennlinie oder ohne Laufstunde.
+        /// </summary>
+        public double RuecklaufMittel(int index)
+        {
+            if (!RechnetMitBrennwertkennlinie(index)) return double.NaN;
+            double w = _waermeBetriebKwh[index];
+            return w > 0 ? _ruecklaufGewichtet[index] / w : double.NaN;
+        }
+
+        /// <summary>
+        /// Die Stundenreihe des Rücklaufs des Kessels <paramref name="index"/> [°C; in Stillstandsstunden
+        /// 0] — nur mit Brennwertkennlinie, sonst <c>null</c>. Lesezugriff für den Zeitreihen-Export.
+        /// </summary>
+        public double[] RuecklaufStunden(int index)
+            => RechnetMitBrennwertkennlinie(index) ? _ruecklaufStunde[index] : null;
+
+        /// <summary>
+        /// Laufstunden des Kessels <paramref name="index"/> je Stufe der Rücklaufkette; 0 ohne
+        /// Brennwertkennlinie.
+        /// </summary>
+        public int RuecklaufStufenstunden(int index, Ruecklaufstufe stufe)
+            => RechnetMitBrennwertkennlinie(index) && _ruecklaufStufen[index] != null ? _ruecklaufStufen[index][(int)stufe] : 0;
+
+        /// <summary>Laufprotokoll beim Aufbau: Stützwerte der Brennwertkennlinie eines Kessels.</summary>
+        private void BrennwertkennlinieMelden(int i)
+        {
+            int art = Brennstoff_Art[i];
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "KESSEL_BRENNWERTKENNLINIE_" + spk_list[i],
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_KESSEL_BRENNWERTKENNLINIE,
+                    spk_list[i],
+                    Kesselkennlinie.Taupunkt(art).ToString("0.#", System.Globalization.CultureInfo.CurrentCulture),
+                    Kesselkennlinie.Kondensationsgewinn30(art).ToString("N2", System.Globalization.CultureInfo.CurrentCulture),
+                    Kesselkennlinie.Eta30Trocken(Teillastwirkungsgrad(i), art).ToString("N3", System.Globalization.CultureInfo.CurrentCulture),
+                    Kesselkennlinie.HsHi(art).ToString("N2", System.Globalization.CultureInfo.CurrentCulture),
+                    (_ruecklaufPaar[i].HasValue ? _ruecklaufPaar[i].Value : Kesselkennlinie.RUECKLAUF_RUECKFALL_C)
+                        .ToString("0.#", System.Globalization.CultureInfo.CurrentCulture)));
+        }
+
+        /// <summary>
+        /// Laufprotokoll am Jahresende: woher der Rücklauf der Laufstunden kam, sein Mittel und der
+        /// Brennwertbetrieb; dazu die Kohärenzzeile (Konzept 5), wenn der Rücklauf in mindestens der
+        /// Hälfte der Betriebsstunden über dem Taupunkt lag.
+        /// </summary>
+        private void BrennwertBetriebMelden(int i)
+        {
+            if (!_brennwertKennlinie[i] || Laufstunden_Spk[i] <= 0) return;
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.Hinweis(
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(k,
+                    MyResource.Resource.SIMENG_KESSEL_BRENNWERT_BETRIEB,
+                    spk_list[i],
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Heizkreis),
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Speicher),
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Paar),
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Rueckfall),
+                    RuecklaufMittel(i).ToString("0.0", k),
+                    Brennwertstunden_Spk[i], Laufstunden_Spk[i],
+                    // UB-E2 (U-4): die Stufe „Vorwärmer" nur mit Stunden - sonst bleibt der Hinweis wie im Bestand.
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Vorwaermer) > 0
+                        ? string.Format(k, MyResource.Resource.SIMENG_KESSEL_BRENNWERT_VORWAERMER,
+                                        RuecklaufStufenstunden(i, Ruecklaufstufe.Vorwaermer))
+                        : ""));
+
+            // Ganzzahlig verglichen (Stunden über dem Taupunkt ≥ die Hälfte der Laufstunden) - die
+            // Kohärenzzeile kippt so nicht an der Rundung eines Quotienten.
+            int stundenUeber = Laufstunden_Spk[i] - Brennwertstunden_Spk[i];
+            double ueber = stundenUeber / (double)Laufstunden_Spk[i];
+            if (stundenUeber * 2 >= Laufstunden_Spk[i])
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "KESSEL_BRENNWERT_UEBER_TAUPUNKT_" + spk_list[i],
+                    MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(k,
+                        MyResource.Resource.SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT,
+                        spk_list[i], (ueber * 100.0).ToString("0", k),
+                        Kesselkennlinie.Taupunkt(Brennstoff_Art[i]).ToString("0.#", k)));
+        }
+
+        /// <summary>
+        /// Der Wirkungsgrad bei Nennlast η₁₀₀, mit dem der Kessel <paramref name="index"/> rechnet
+        /// (Faktor, Öl- oder Gasfeld nach Brennstoff, 0,90 für einen fehlenden Wert); 0 außerhalb.
+        /// </summary>
+        public double Nennwirkungsgrad(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            return Kesselkennlinie.Nennwirkungsgrad(Kessel_Wirk_Gas_Spk[index], Kessel_Wirk_Oel_Spk[index], Brennstoff_Art[index]);
+        }
+
+        /// <summary>
+        /// Das wirksame η₃₀ des Kessels <paramref name="index"/> (Faktor) — gepflegt oder die
+        /// Normvorgabe nach Bauart; beim Elektrokessel η₁₀₀ (keine Kennlinie). 0 außerhalb.
+        /// </summary>
+        public double Teillastwirkungsgrad(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            double eta100 = Nennwirkungsgrad(index);
+            if (!Kesselkennlinie.RechnetMitKennlinie(Brennstoff_Art[index])) return eta100;
+            return Kesselkennlinie.Eta30Wirksam(_eta30Gepflegt[index], eta100, _bauart[index], Brennstoff_Art[index]);
+        }
+
+        /// <summary>
+        /// Rechnet der Kessel <paramref name="index"/> mit der NORMVORGABE für η₃₀ (Feld leer,
+        /// Konzept 7.1)? Der Elektrokessel nicht — er hat keine Kennlinie.
+        /// </summary>
+        public bool TeillastwirkungsgradIstVorgabe(int index)
+        {
+            if (index < 0 || index >= MAX_SPK || IstStromkessel(index)) return false;
+            return !Kesselkennlinie.Eta30IstGepflegt(KesselKennlinieWerte.AlsFaktor(_eta30Gepflegt[index]));
+        }
+
+        /// <summary>Die Bauart des Kessels <paramref name="index"/> für die Normvorgabe.</summary>
+        public KesselBauart Bauart(int index)
+            => index >= 0 && index < MAX_SPK ? _bauart[index] : KesselBauart.Niedertemperatur;
+
+        /// <summary>Der Anzeigetext einer Bauart (Laufprotokoll, Ergebnisreiter).</summary>
+        public static string BauartText(KesselBauart bauart)
+        {
+            switch (bauart)
+            {
+                case KesselBauart.Brennwert: return MyResource.Resource.KESSEL_BAUART_BRENNWERT;
+                case KesselBauart.Standard: return MyResource.Resource.KESSEL_BAUART_STANDARD;
+                default: return MyResource.Resource.KESSEL_BAUART_NIEDERTEMPERATUR;
+            }
+        }
+
+        /// <summary>
+        /// Der MITTLERE WIRKUNGSGRAD IM BETRIEB des Kessels <paramref name="index"/> (Faktor):
+        /// Wärme der Laufstunden durch ihren Brennstoff, also η(β) wärmegewichtet über das Jahr —
+        /// ohne Bereitschaftsverlust, anders als der Jahresnutzungsgrad. 0 ohne Laufstunde.
+        /// </summary>
+        public double WirkungsgradBetrieb(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            double b = BrennstoffBetrieb_KWh_Spk[index];
+            return b > 0 ? _waermeBetriebKwh[index] / b : 0;
+        }
+
+        /// <summary>
+        /// Die Stundenreihe des Wirkungsgrads des Kessels <paramref name="index"/> (Faktor; in
+        /// Stillstandsstunden 0) — Lesezugriff für den Zeitreihen-Export; <c>null</c> außerhalb.
+        /// </summary>
+        public double[] WirkungsgradStunden(int index)
+            => index >= 0 && index < MAX_SPK ? _wirkungsgradStunde[index] : null;
+
+        /// <summary>
+        /// Die brennstoffbasierte WÄRME DER LAUFSTUNDEN des Kessels <paramref name="index"/>
+        /// [kWh/a] — der Zähler von <see cref="WirkungsgradBetrieb"/>. 0 außerhalb.
+        /// </summary>
+        public double WaermeBetriebKwh(int index)
+            => index >= 0 && index < MAX_SPK ? _waermeBetriebKwh[index] : 0;
+
+        /// <summary>
+        /// Die MITTLERE LASTSTUFE IM BETRIEB des Kessels <paramref name="index"/> (0 … 1):
+        /// Wärme der Laufstunden durch Laufstunden mal Nennleistung. 0 ohne Laufstunde.
+        /// </summary>
+        public double LaststufeMittel(int index)
+        {
+            if (index < 0 || index >= MAX_SPK) return 0;
+            double nenn = Kessel_Leistung_Spk[index] * Laufstunden_Spk[index];
+            return nenn > 0 ? _waermeBetriebKwh[index] / nenn : 0;
+        }
+
+        /// <summary>Rechnet der Kessel <paramref name="index"/> das Takten (Etappe E4)? Jeder Brennstoffkessel.</summary>
+        public bool RechnetMitTakten(int index)
+            => index >= 0 && index < MAX_SPK && _takten[index];
+
+        /// <summary>Die wirksame MINDESTLEISTUNG des Kessels <paramref name="index"/> [kW]; 0 ohne Taktmodell.</summary>
+        public double Mindestleistung(int index)
+            => RechnetMitTakten(index) ? _mindestleistungKw[index] : 0;
+
+        /// <summary>Der wirksame ANFAHRVERLUST je Start des Kessels <paramref name="index"/> [kWh]; 0 ohne Taktmodell.</summary>
+        public double AnfahrverlustJeStart(int index)
+            => RechnetMitTakten(index) ? _anfahrverlustKwh[index] : 0;
+
+        /// <summary>Die wirksame MINDESTLAUFZEIT des Kessels <paramref name="index"/> [min]; 0 ohne Taktmodell.</summary>
+        public int Mindestlaufzeit(int index)
+            => RechnetMitTakten(index) ? _mindestlaufzeitMin[index] : 0;
+
+        /// <summary>Rechnet der Kessel mit der Normvorgabe der Mindestleistung (Feld leer, Konzept 7.1)?</summary>
+        public bool MindestleistungIstVorgabe(int index)
+            => RechnetMitTakten(index) && !Kesselkennlinie.MindestleistungIstGepflegt(_mindestleistungGepflegt[index]);
+
+        /// <summary>Rechnet der Kessel mit der Normvorgabe des Anfahrverlusts (Feld leer, Konzept 7.1)?</summary>
+        public bool AnfahrverlustIstVorgabe(int index)
+            => RechnetMitTakten(index) && !Kesselkennlinie.AnfahrverlustIstGepflegt(_anfahrverlustGepflegt[index]);
+
+        /// <summary>Rechnet der Kessel mit der Normvorgabe der Mindestlaufzeit (Feld leer, Konzept 7.1)?</summary>
+        public bool MindestlaufzeitIstVorgabe(int index)
+            => RechnetMitTakten(index) && !Kesselkennlinie.MindestlaufzeitIstGepflegt(_mindestlaufzeitGepflegt[index]);
+
+        /// <summary>
+        /// Laufprotokoll am Jahresende: Starts, Laufphasen, Taktstunden und Anfahrverlust eines Kessels
+        /// mit Taktmodell (Etappe E4).
+        /// </summary>
+        private void TaktenMelden(int i)
+        {
+            if (!_takten[i] || Laufstunden_Spk[i] <= 0) return;
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.Hinweis(
+                MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL + string.Format(k,
+                    MyResource.Resource.SIMENG_KESSEL_TAKTEN_BETRIEB,
+                    spk_list[i], Starts_Spk[i], Laufphasen_Spk[i], Taktstunden_Spk[i],
+                    Anfahrverlust_KWh_Spk[i]));
+        }
+
         /// <summary>Jahressummen, Emissionen und Jahresnutzungsgrad des zweikanaligen Wegs.</summary>
         public void Abschluss_Zweikanalig()
         {
             for (int i = 0; i < _anzahlZweikanalig; i++)
             {
                 BereitschaftDeckeln(i);
+                BrennwertBetriebMelden(i);
+                TaktenMelden(i);
 
                 s_waerme_Gas_Spk[i] /= 1000;
                 s_waerme_Oel_Spk[i] /= 1000;
@@ -1540,15 +2321,35 @@ namespace WindowsFormsApplication1
         // ===================================================================
 
         /// <summary>
+        /// LÄUFT der Kessel in dieser Stunde? Er läuft, wenn seine Abgabe den Zahlenrand
+        /// <see cref="Rechenrand.ABSOLUT"/> erreicht; ein Rest darunter ist kein Lauf — keine
+        /// Laufstunde, kein Start, und die Stunde bleibt eine Stillstands- oder
+        /// Bereitschaftsstunde.
+        ///
+        /// <para><b>Warum</b> (Plattformbefund PB‑1, Anwenderentscheid vom 29.09.2026 zum
+        /// Nachzug): Deckt der Kessel nur den Rest einer Vorstufe, sind das 10⁻¹⁶ kWh — ein ulp
+        /// des Bedarfs, den die Stufe davor fast ganz gedeckt hat. Ob dieser Rest 0 ist oder
+        /// nicht, hängt am letzten Bit von <c>Math.Exp</c>/<c>Math.Sin</c> weiter vorn, und das
+        /// rundet Windows anders als Linux: In Projekt 1024 zählte der blanke Vergleich
+        /// <c>&gt; 0</c> je Plattform andere Stunden als Laufstunden (Windows 2577, Linux 5204).
+        /// Derselbe Rand wie am Quellspeicher (<see cref="SimulationWaermepumpe.QuellInhalt"/>).</para>
+        /// </summary>
+        internal static bool KesselLaeuft(double abgabe)
+        {
+            return abgabe >= Rechenrand.ABSOLUT;
+        }
+
+        /// <summary>
         /// DIE STUNDENREGEL der Betriebsbereitschaft: Ein stillstehender Kessel ist in der
         /// Stunde <paramref name="stunde"/> betriebsbereit — und trägt dann seinen
         /// Bereitschaftsverlust —, wenn
         /// <list type="number">
-        /// <item>der Tag der Stunde ein HEIZTAG ist (<see cref="HeiztageAus"/>) oder</item>
+        /// <item>der Tag der Stunde ein HEIZTAG ist (<see cref="HeiztageAus"/>: Tagesmittel der
+        /// Außentemperatur unter der Heizgrenze) oder</item>
         /// <item>der Kessel in den <see cref="BEREITSCHAFT_NACHLAUF_STUNDEN"/> Stunden davor
         /// gelaufen ist (Nachlauf).</item>
         /// </list>
-        /// Außerhalb der Heizperiode und nach Ablauf des Nachlaufs ist er abgeschaltet und
+        /// An einem Tag über der Heizgrenze und nach Ablauf des Nachlaufs ist er abgeschaltet und
         /// verliert nichts. <paramref name="heiztage"/> <c>null</c> = jeder Tag ist Heiztag.
         /// </summary>
         internal static bool IstBetriebsbereit(bool[] heiztage, int stunde, int letzteLaufstunde)
@@ -1560,18 +2361,47 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die HEIZTAGE des Jahres aus dem stündlichen Raumwärmebedarf [kWh]: ein Tag, an dem
-        /// die Tagessumme größer 0 ist. Tage statt Stunden, weil ein Kessel zwischen einer
-        /// Nacht mit Heizbedarf und dem Mittag ohne nicht abkühlt. <c>null</c> ohne Reihe.
+        /// Die HEIZTAGE des Jahres aus der stündlichen Außentemperatur [°C]: ein Tag, dessen
+        /// Mittel über seine 24 Stunden UNTER der <paramref name="heizgrenze"/> liegt — genau
+        /// auf der Grenze ist kein Heiztag. Tage statt Stunden, weil ein Kessel zwischen einer
+        /// kalten Nacht und einem warmen Mittag nicht abkühlt. Eine Regel für jedes
+        /// Gebäudemodell und für Projekte ohne Gebäude.
+        ///
+        /// <para><b>Der Vergleich trägt den Zahlenrand</b> (<see cref="Rechenrand.SchwelleErreicht"/>):
+        /// Tagesmittel und Heizgrenze stammen aus getrennten Rechenketten, und ein Mittel, das
+        /// dezimal genau auf der Grenze liegt, darf nicht an der Rundung der Summe kippen.</para>
+        ///
+        /// <para><c>null</c> ohne Reihe (dann ist jeder Tag Heiztag); ein Tag, dessen Stunden die
+        /// Reihe nicht vollständig trägt, gilt ebenso als Heiztag.</para>
         /// </summary>
-        internal static bool[] HeiztageAus(double[] raumwaerme)
+        internal static bool[] HeiztageAus(double[] aussentemperatur, double heizgrenze)
         {
-            if (raumwaerme == null) return null;
+            if (aussentemperatur == null) return null;
 
             bool[] tage = new bool[365];
-            for (int h = 0; h < raumwaerme.Length && h < 8760; h++)
-                if (raumwaerme[h] > 0) tage[h / 24] = true;
+            for (int tag = 0; tag < 365; tag++)
+            {
+                int beginn = tag * 24;
+                if (beginn + 24 > aussentemperatur.Length) { tage[tag] = true; continue; }
+
+                double summe = 0;
+                for (int h = beginn; h < beginn + 24; h++) summe += aussentemperatur[h];
+                double mittel = summe / 24.0;
+                tage[tag] = !Rechenrand.SchwelleErreicht(mittel, heizgrenze);
+            }
             return tage;
+        }
+
+        /// <summary>
+        /// Die WIRKSAME Heizgrenze [°C]: der Wert des Projekts, ohne ihn — oder bei einem Wert,
+        /// der keine endliche Zahl ist — die Vorgabe <see cref="HEIZGRENZE_VORGABE_C"/>. Die
+        /// Plausibilitätsgrenzen hält die Oberfläche; der Rechenweg nimmt jede endliche Zahl.
+        /// </summary>
+        public static double HeizgrenzeWirksam(double? heizgrenze)
+        {
+            if (!heizgrenze.HasValue || double.IsNaN(heizgrenze.Value) || double.IsInfinity(heizgrenze.Value))
+                return HEIZGRENZE_VORGABE_C;
+            return heizgrenze.Value;
         }
 
         /// <summary>
@@ -1663,14 +2493,49 @@ namespace WindowsFormsApplication1
             SpeicherentladungAndere_Kwh = 0;
 
             // #568: Betriebsbereitschaft - Zähler und Laufgedächtnis sind Laufzustand;
-            // die Heiztage bildet Vorbereiten_Zweikanalig aus dem Raumwärmebedarf neu.
+            // Heizgrenze und Heiztage bildet Vorbereiten_Zweikanalig aus der Außentemperatur neu.
             _heiztage = null;
+            Heizgrenze_C = HEIZGRENZE_VORGABE_C;
+            Heiztage_Anzahl = 365;
             Array.Clear(Laufstunden_Spk, 0, MAX_SPK);
             Array.Clear(Starts_Spk, 0, MAX_SPK);
             Array.Clear(Bereitschaftsstunden_Spk, 0, MAX_SPK);
             Array.Clear(Bereitschaftsverlust_KWh_Spk, 0, MAX_SPK);
             Array.Clear(_liefVorstunde, 0, MAX_SPK);
+
+            // Kesselkennlinie (Etappe E2): Kennlinienwerte und Mitschrift sind Laufzustand.
+            Array.Clear(_eta30Gepflegt, 0, MAX_SPK);
+            Array.Clear(_bauart, 0, MAX_SPK);
+            Array.Clear(_waermeBetriebKwh, 0, MAX_SPK);
+            Array.Clear(BrennstoffBetrieb_KWh_Spk, 0, MAX_SPK);
+            Array.Clear(TeillastMehrbrennstoff_KWh_Spk, 0, MAX_SPK);
+            Array.Clear(_wirkungsgradStunde, 0, MAX_SPK);
             for (int j = 0; j < MAX_SPK; j++) _letzteLaufstunde[j] = int.MinValue;
+
+            // Brennwertkennlinie (Etappe E3): Schalter, Rücklaufkette und Mitschrift sind Laufzustand;
+            // Heizkreisruecklauf und RuecklaufPaarLesen sind Eingang und bleiben.
+            Array.Clear(_brennwertKennlinie, 0, MAX_SPK);
+            Array.Clear(_ruecklaufPaar, 0, MAX_SPK);
+            Array.Clear(_ruecklaufSpeicher, 0, MAX_SPK);
+            for (int j = 0; j < MAX_SPK; j++) _speicherRuecklauf[j] = double.NaN;
+            Array.Clear(_ruecklaufStunde, 0, MAX_SPK);
+            Array.Clear(_ruecklaufStufen, 0, MAX_SPK);
+            Array.Clear(_ruecklaufGewichtet, 0, MAX_SPK);
+            Array.Clear(Brennwertstunden_Spk, 0, MAX_SPK);
+            Array.Clear(BrennwertWaerme_KWh_Spk, 0, MAX_SPK);
+            Array.Clear(BrennwertMehrbrennstoff_KWh_Spk, 0, MAX_SPK);
+
+            // Takten (Etappe E4): Taktwerte und Zähler sind Laufzustand.
+            Array.Clear(_takten, 0, MAX_SPK);
+            Array.Clear(_mindestleistungKw, 0, MAX_SPK);
+            Array.Clear(_anfahrverlustKwh, 0, MAX_SPK);
+            Array.Clear(_mindestlaufzeitMin, 0, MAX_SPK);
+            Array.Clear(_mindestleistungGepflegt, 0, MAX_SPK);
+            Array.Clear(_anfahrverlustGepflegt, 0, MAX_SPK);
+            Array.Clear(_mindestlaufzeitGepflegt, 0, MAX_SPK);
+            Array.Clear(Laufphasen_Spk, 0, MAX_SPK);
+            Array.Clear(Taktstunden_Spk, 0, MAX_SPK);
+            Array.Clear(Anfahrverlust_KWh_Spk, 0, MAX_SPK);
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);

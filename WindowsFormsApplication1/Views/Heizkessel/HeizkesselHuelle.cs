@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -156,11 +157,44 @@ namespace WindowsFormsApplication1
                 ["HinweisWirkungsgrad"] = Text_("HZKK_HINT_WIRKUNGSGRAD", "(z. B. 0,9)"),
                 ["LabelBBVerlust"] = Text_("HZKK_LBL_BBVERLUST", "Betriebsbereitschaftsverluste:"),
                 ["LabelBBVerlustKurz"] = Text_("HZKK_FELD_BBVERLUST", "Betriebsbereitschaftsverluste"),
+                // Die Einheitenwahl des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
+                ["LabelBBEinheit"] = Text_("HZKK_LBL_BB_EINHEIT", "Einheit Bereitschaftsverlust:"),
+                ["BBEinheiten"] = (IReadOnlyList<(int Id, string Text)>)new (int, string)[]
+                {
+                    (HeizkesselKatalogDialog.BB_EINHEIT_KW, Text_("HZKK_BB_EINHEIT_KW", "kW")),
+                    (HeizkesselKatalogDialog.BB_EINHEIT_PROZENT,
+                     Text_("HZKK_BB_EINHEIT_PROZENT", "% der Nennleistung"))
+                },
                 ["LabelBrennwert"] = Text_("HZKK_LBL_BRENNWERT", "Brennwertkessel"),
                 ["LabelVorlauf"] = Text_("HZKK_LBL_VORLAUF", "Vorlauf:"),
                 ["LabelVorlaufKurz"] = Text_("HZKK_FELD_VORLAUF", "Vorlauf"),
                 ["LabelRuecklauf"] = Text_("HZKK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["LabelRuecklaufKurz"] = Text_("HZKK_FELD_RUECKLAUF", "Rücklauf"),
+
+                // Gruppe „Kennlinie" (Konzept Kesselkennlinie 3.1 und 3.4, Etappe E1).
+                ["GruppeKennlinie"] = Text_("HZKK_GRP_KENNLINIE", "Kennlinie"),
+                ["LabelTeillast30"] = Text_("HZKK_LBL_TEILLAST30", "Wirkungsgrad bei 30 % Last:"),
+                ["LabelTeillast30Kurz"] = Text_("HZKK_FELD_TEILLAST30", "Wirkungsgrad bei 30 % Last"),
+                ["HinweisTeillast30"] = Text_("HZKK_HINT_TEILLAST30", "(z. B. 1,05)"),
+                ["LabelKennlinieBrennwert"] = Text_("HZKK_LBL_KENNLINIE_BRENNWERT", "Brennwertkennlinie"),
+                ["LabelMindestleistung"] = Text_("HZKK_LBL_MINDESTLEISTUNG", "Mindestleistung:"),
+                ["LabelMindestleistungKurz"] = Text_("HZKK_FELD_MINDESTLEISTUNG", "Mindestleistung"),
+                ["LabelAnfahrverlust"] = Text_("HZKK_LBL_ANFAHRVERLUST", "Anfahrverlust je Start:"),
+                ["LabelAnfahrverlustKurz"] = Text_("HZKK_FELD_ANFAHRVERLUST", "Anfahrverlust je Start"),
+                ["LabelMindestlaufzeit"] = Text_("HZKK_LBL_MINDESTLAUFZEIT", "Mindestlaufzeit:"),
+                ["LabelMindestlaufzeitKurz"] = Text_("HZKK_FELD_MINDESTLAUFZEIT", "Mindestlaufzeit"),
+                ["PlatzhalterVorgabe"] = Text_("HZKK_PLATZHALTER_VORGABE", "Vorgabe"),
+                ["HinweisKennlinie"] = Text_("HZKK_HINT_KENNLINIE",
+                    "Leer = Vorgabe. Die Brennwertkennlinie gilt nur für einen Brennwertkessel."),
+                ["HinweisOhneKennlinie"] = Text_("HZKK_HINT_OHNE_KENNLINIE",
+                    "Brennwertkessel ohne Brennwertkennlinie: Der Rücklauf wirkt nicht, der Kessel rechnet allein " +
+                    "mit seiner Teillastkennlinie."),
+
+                // Die kleine Kurve der Gruppe (Konzept Kesselkennlinie 5): plattformfrei gerechnet in
+                // HeizkesselKennlinienbild - dieselbe Kernfunktion wie der Lauf, zum Arbeitsstand des Dialogs.
+                ["Kennlinienbild"] = new Func<HeizkesselKatalogDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell>(
+                    HeizkesselKennlinienbild.Modell),
+                ["BildKennlinieText"] = Text_("HZKK_BILD_KENNLINIE", "Wirkungsgrad über der Last"),
 
                 // HIER STANDEN DIE TEXTSCHLÜSSEL der Gruppen „Kosten",
                 // „Emissionen nach BEHG-V" und „Emissionsfaktoren" (GruppeKosten,
@@ -202,6 +236,7 @@ namespace WindowsFormsApplication1
             d.Wirkungsgrad_Gas = m.Wirkungsgrad_Gas;
             d.Wirkungsgrad_Oel = m.Wirkungsgrad_Oel;
             d.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            d.BereitschaftProzent = KesselBereitschaft.IstProzent(m.Bereitschaft_Einheit);
             d.Investitionskosten = m.Investitionskosten;
             d.Wartungskosten = m.Wartungskosten;
             d.WartungEinheit = EinheitIndex(m.Wartungskosten_Einheit);
@@ -215,6 +250,13 @@ namespace WindowsFormsApplication1
             d.Brennwert = m.Brennwert;
             d.Vorlauf = m.Vorlauf;
             d.Ruecklauf = m.Ruecklauf;
+
+            // Kennlinie (Konzept Kesselkennlinie 3.1): leer bleibt leer - null heisst „Vorgabe".
+            d.Wirkungsgrad_Teillast30 = m.Wirkungsgrad_Teillast30;
+            d.Kennlinie_Brennwert = m.Kennlinie_Brennwert;
+            d.Mindestleistung = m.Mindestleistung;
+            d.Anfahrverlust_kWh = m.Anfahrverlust_kWh;
+            d.Mindestlaufzeit_min = m.Mindestlaufzeit_min;
 
             // Bereichspruefung wie in SetControls (Z. 358-362): Brennstoff ist eine
             // 1-basierte Id, die Liste kann kuerzer sein.
@@ -241,6 +283,9 @@ namespace WindowsFormsApplication1
                 Wirkungsgrad_Gas = d.Wirkungsgrad_Gas ?? 0,
                 Wirkungsgrad_Oel = d.Wirkungsgrad_Oel ?? 0,
                 Betriebsbereitschaftverlust = d.Betriebsbereitschaftverlust ?? 0,
+                Bereitschaft_Einheit = d.BereitschaftProzent
+                    ? DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_PROZENT
+                    : DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW,
                 Investitionskosten = d.Investitionskosten ?? 0,
                 Wartungskosten = d.Wartungskosten ?? 0,
                 Wartungskosten_Einheit = EinheitWert(d.WartungEinheit),
@@ -255,11 +300,46 @@ namespace WindowsFormsApplication1
                 Vorlauf = d.Vorlauf ?? 0,
                 Ruecklauf = d.Ruecklauf ?? 0,
 
+                // Kennlinie: hier gilt NICHT „leer = 0" - leer ist die Vorgabe (NULL).
+                Wirkungsgrad_Teillast30 = d.Wirkungsgrad_Teillast30,
+                Kennlinie_Brennwert = d.Kennlinie_Brennwert && d.Brennwert,
+                Mindestleistung = d.Mindestleistung,
+                Anfahrverlust_kWh = d.Anfahrverlust_kWh,
+                Mindestlaufzeit_min = d.Mindestlaufzeit_min,
+
                 // Wie InitDatensatzUpdate (Z. 606-610): ohne Wahl gilt die 1.
                 Brennstoff = d.Brennstoff.HasValue && d.Brennstoff.Value >= 1 ? d.Brennstoff.Value : 1
             };
             return m;
         }
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => HeizkesselStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = HeizkesselStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = HeizkesselStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
 
         private static KatalogSpeicherErgebnis Uebersetzen(HeizkesselStammCtrl.SpeicherErgebnis e)
         {
@@ -352,9 +432,14 @@ namespace WindowsFormsApplication1
         {
             bool ok = false;
             BlazorDialogForm<HeizkesselDialog> dlg = null;
+            var vormerkung = new Projektkopievormerkung(
+                name => new HeizkesselCtrl().DeleteFromProjekt(name, projektId),
+                // Nachzug zu A5: eine beim Uebernehmen neu angelegte Traegervariante geht mit Abbrechen.
+                (carrier, zuordnungNeu, katalogNeu) =>
+                    EnergietraegerVarianteCtrl.AnlageZuruecknehmen(projektId, carrier, zuordnungNeu, katalogNeu));
 
             var werte = new Dictionary<string, object>(
-                Gaben(besitzer, projektId, idType, modelle, wizard: false))
+                Gaben(besitzer, projektId, idType, modelle, wizard: false, vormerkung: vormerkung))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -370,6 +455,9 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            // Anwenderwunsch 08.10.2026: Entfernte Projektkopien gehen erst mit OK; Abbrechen
+            // (auch Kreuz und Esc) raeumt nur die in dieser Sitzung neu angelegten ab.
+            vormerkung.Abschliessen(ok, id => modelle.Exists(it => it.ID_Type == idType && it.ID_Kessel == id));
             return ok;
         }
 
@@ -387,7 +475,7 @@ namespace WindowsFormsApplication1
         /// </remarks>
         internal static IReadOnlyDictionary<string, object> Gaben(
             IWin32Window besitzer, int projektId, int idType,
-            List<WErzeugerModel> modelle, bool wizard)
+            List<WErzeugerModel> modelle, bool wizard, Projektkopievormerkung vormerkung = null)
         {
             var stamm = new HeizkesselStammCtrl();
             var projekt = new HeizkesselCtrl();
@@ -401,7 +489,13 @@ namespace WindowsFormsApplication1
             foreach (WErzeugerModel m in modelle)
             {
                 if (m.ID_Type != idType) continue;
-                zeilen.Add(ZeileZu(m));
+                // Anwenderwunsch 08.10.2026: ohne Traeger die Vorauswahl des Kerns (Kategorie des Geraets) ins
+                // Modell - sie wird mit dem Projekt gespeichert. Im Assistenten zeigt ID_Kessel auf den Stamm,
+                // darum dort ohne Geraet (dann bleibt der Kessel ohne Vorauswahl).
+                if (m.ID_Carrier <= 0)
+                    m.ID_Carrier = ErzeugerTraegerHuelle.Vorauswahl(
+                        DbWerte.ERZEUGER_HEIZKESSEL, wizard ? 0 : m.ID_Kessel, projektId);
+                zeilen.Add(ZeileZu(m, Vorbelegen(m, wizard)));
                 zuModell[m.ID] = m;
             }
 
@@ -449,10 +543,10 @@ namespace WindowsFormsApplication1
 
                 ["Aufnehmen"] = new Func<int, EnergietraegerVarianteErgebnis, AufnahmeErgebnis>(
                     (stammId, ergebnis) => Aufnehmen(stamm, projektId, idType, wizard, modelle,
-                                                     zuModell, zaehler, stammId, ergebnis)),
+                                                     zuModell, zaehler, stammId, ergebnis, vormerkung)),
 
                 ["Entfernen"] = new Action<ErzeugerZeile>(
-                    zeile => Entfernen(projektId, idType, wizard, modelle, zuModell, zeile)),
+                    zeile => Entfernen(projektId, idType, wizard, modelle, zuModell, zeile, vormerkung)),
 
                 ["TraegerWechseln"] = new Action<ErzeugerZeile, int>(
                     (zeile, neu) =>
@@ -480,6 +574,30 @@ namespace WindowsFormsApplication1
                     TraegerGaben),
 
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
+                // KATALOGAUSWAHL V1, STUFE 2 (KA-E-8): Bearbeiten je Bereich und Mehrfach-
+                // Bearbeiten. Die Projektkopie gibt es nur ausserhalb des Assistenten - dort
+                // zeigt ID_Kessel auf den Katalog. Geschrieben wird ueber den Kernweg in EINER
+                // Transaktion (HeizkesselStammCtrl.AnzeigefelderSchreibenAlle).
+                ["ProjektsatzWege"] = wizard ? null : new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(HeizkesselAdminHuelle.Profil(), stamm.SatzAnzeige(true, id)),
+                    Speichern = saetze => HeizkesselAdminHuelle.SammelSchreiben(true, saetze)
+                },
+                // KATALOGAUSWAHL V1, STUFE 2 (KA-E-9): der Rueckweg „In die Datenbank übernehmen…" - nur
+                // ausserhalb des Assistenten (dort gibt es keine Projektkopie). Rueckfrage und Schreibweg kommen aus
+                // dem Kern (HeizkesselStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
+                ["RueckwegWege"] = wizard ? null : RueckwegWege(),
+                ["RueckwegBleibtText"] = Text_("HZK_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage."),
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(HeizkesselAdminHuelle.Profil(), stamm.SatzAnzeige(false, id)),
+                    Speichern = saetze => HeizkesselAdminHuelle.SammelSchreiben(false, saetze)
+                },
+                ["NeuGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => OhneTitel(Gaben("", "", neu: true))),
+                ["SummePtherm"] = new Func<string>(() => SummeLeistung(idType, wizard, modelle)),
+                ["LabelSumme"] = Text_("HZK_LBL_SUMME", "Summe [kWth]:"),
 
                 // OHNE "VerwaltungGaben" seit dem 15.09.2026: Der Knopf
                 // "Administration..." und die Ueberlagerung dahinter sind entfallen -
@@ -500,12 +618,15 @@ namespace WindowsFormsApplication1
                 // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
                 // Sie kommen aus derselben Quelle, aus der auch der - jetzt entfallene -
                 // Katalogbrowser sie bekam; der Aufklapper IST sein Raster.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(HeizkesselStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => HeizkesselAdminHuelle.Wege().Detail!(name)!),
                 ["KatalogfelderSpeichern"] =
                     new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
-                        (name, felder) => HeizkesselAdminHuelle.Wege().Speichern!(name, felder, false)),
-                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
+                        (name, felder) => HeizkesselAdminHuelle.Wege().Speichern!(name, felder)),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
 
@@ -518,6 +639,7 @@ namespace WindowsFormsApplication1
                 ["LabelTraeger"] = Text_("HZK_LBL_TRAEGER", "Brennstoff Variante:"),
                 ["LabelVorlauf"] = Text_("HZKK_LBL_VORLAUF", "Vorlauf:"),
                 ["LabelRuecklauf"] = Text_("HZKK_LBL_RUECKLAUF", "Rücklauf:"),
+                ["GruppeAuslegung"] = Text_("HZK_GRP_AUSLEGUNG", "Auslegung für Verteilung"),
                 ["TraegerTitel"] = MyResource.Resource.KAUSW_TITEL,
                 ["EditorTitel"] = Text_("HZKK_TITEL", "Administration Heizkessel"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
@@ -545,10 +667,39 @@ namespace WindowsFormsApplication1
                             besitzer, projektId, DbWerte.ERZEUGER_HEIZKESSEL, zeile))
                     : null,
 
+                // UeS2: die Kostensummen der Anlage fuer die Zusammenfassung der Detailzeile -
+                // dieselbe Anlagenzuordnung wie die Kostenknoepfe (ErzeugerKostenwege).
+                ["Kostensumme"] = projektId > 0
+                    ? new Func<ErzeugerZeile, (double Invest, double Betrieb)>(
+                        zeile => ErzeugerKostenwege.Summen(projektId, DbWerte.ERZEUGER_HEIZKESSEL, zeile))
+                    : null,
+
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
                 ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…")
             };
+        }
+
+        /// <summary>
+        /// Die Summe der thermischen Leistungen der Projektliste: die Projektkopien, im
+        /// Assistenten die Katalogsaetze (dort zeigt <c>ID_Kessel</c> auf den Katalog).
+        /// </summary>
+        private static string SummeLeistung(int idType, bool wizard, List<WErzeugerModel> modelle)
+        {
+            double summe = 0;
+            var projekt = new HeizkesselCtrl();
+            var stamm = new HeizkesselStammCtrl();
+            foreach (WErzeugerModel m in modelle)
+            {
+                if (m.ID_Type != idType) continue;
+                if (!wizard) summe += projekt.ProjektDetail(m.ID_Kessel)?.Ptherm ?? 0;
+                else
+                {
+                    stamm.ReadById(m.ID_Kessel);
+                    if (stamm.rows > 0) summe += stamm.Ptherm;
+                }
+            }
+            return summe.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
         }
 
         // =================================================================================
@@ -585,7 +736,8 @@ namespace WindowsFormsApplication1
         private static AufnahmeErgebnis Aufnehmen(
             HeizkesselStammCtrl stamm, int projektId, int idType, bool wizard,
             List<WErzeugerModel> modelle, Dictionary<int, WErzeugerModel> zuModell,
-            Zaehler zaehler, int stammId, EnergietraegerVarianteErgebnis ergebnis)
+            Zaehler zaehler, int stammId, EnergietraegerVarianteErgebnis ergebnis,
+            Projektkopievormerkung vormerkung = null)
         {
             stamm.ReadById(stammId);
             if (stamm.rows == 0)
@@ -602,6 +754,10 @@ namespace WindowsFormsApplication1
             if (traeger.CarrierId <= 0)
                 return new AufnahmeErgebnis(null, traeger.Meldung, true);
 
+            // Was der Aufruf neu schrieb, nimmt ein Abbrechen wieder zurueck (Projektkopievormerkung).
+            vormerkung?.TraegerAngelegt(traeger.CarrierId,
+                traeger.Ausgang == EnergietraegerVarianteCtrl.VariantenAnlage.Angelegt, traeger.KatalogNeu);
+
             var model = new WErzeugerModel
             {
                 ID = zaehler.Naechster++,
@@ -611,33 +767,41 @@ namespace WindowsFormsApplication1
                 ID_Carrier = traeger.CarrierId
             };
 
-            // W6-E-4 (06.09.2026): Vor- und Ruecklauf kommen aus dem Katalogsatz - aus
-            // der EINEN Wahrheit im Kern statt aus einer zweiten Abschrift
-            // "Vorlauf = stamm.Vorlauf". Sie setzt das Paar nur, wenn der Feldsatz noch
-            // keines traegt; ein frisches Modell traegt 0/0.
-            AnlagenTemperaturen.AusStammsatz(model, stammId);
-
             // Außerhalb des Assistenten den Stammsatz sofort in die Projekttabelle
             // kopieren (idempotent) und die PROJEKT-Id referenzieren; im Wizard nur die
             // Stamm-Id als Platzhalter - die Kopie macht WizardCtrl beim Speichern.
             if (!wizard && projektId > 0)
             {
-                int projektKopie = new HeizkesselCtrl().CopyFromStamm(stammId, projektId);
+                var projektCtrl = new HeizkesselCtrl();
+                bool schonDa = projektCtrl.GetProjektId(stamm.Name, projektId) > 0;
+                int projektKopie = projektCtrl.CopyFromStamm(stammId, projektId);
                 if (projektKopie <= 0)
                     return new AufnahmeErgebnis(null,
                         Text_("HZK_MSG_KOPIE_FEHLER",
                               "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
                 model.ID_Kessel = projektKopie;
+                // Die Kopie entsteht sofort (Detailblock und „Alle Daten" lesen sie); eine NEUE
+                // raeumt ein Abbrechen wieder ab (Projektkopievormerkung).
+                if (!schonDa) vormerkung?.Angelegt(stamm.Name, projektKopie);
             }
             else
             {
                 model.ID_Kessel = stammId;
             }
 
+            // W6-E-4 (06.09.2026): Vor- und Ruecklauf kommen aus dem Katalogsatz - aus
+            // der EINEN Wahrheit im Kern statt aus einer zweiten Abschrift
+            // "Vorlauf = stamm.Vorlauf". Seit dem Anwenderauftrag vom 30.09.2026 ueber die
+            // Vorbelegung des Dialogs: Sie liest das Paar des Kessels, auf den ID_Kessel
+            // jetzt zeigt (die eben gezogene Projektkopie bzw. im Assistenten den
+            // Katalogsatz), und traegt ohne Paar die Vorgabe 70/50 °C ein - samt der Zeile,
+            // woher das Paar stammt. Ein frisches Modell traegt 0/0.
+            string herleitung = Vorbelegen(model, wizard);
+
             modelle.Add(model);
             zuModell[model.ID] = model;
 
-            return new AufnahmeErgebnis(ZeileZu(model), traeger.Meldung, false);
+            return new AufnahmeErgebnis(ZeileZu(model, herleitung), traeger.Meldung, false);
         }
 
         /// <summary>
@@ -648,18 +812,24 @@ namespace WindowsFormsApplication1
         private static void Entfernen(int projektId, int idType, bool wizard,
                                       List<WErzeugerModel> modelle,
                                       Dictionary<int, WErzeugerModel> zuModell,
-                                      ErzeugerZeile zeile)
+                                      ErzeugerZeile zeile, Projektkopievormerkung vormerkung = null)
         {
             if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
 
             modelle.Remove(m);
             zuModell.Remove(zeile.Schluessel);
 
+            if (wizard || projektId <= 0) return;
+
+            // Anwenderwunsch 08.10.2026: nur VORMERKEN - geloescht wird beim OK, und nur,
+            // wenn dann keine Zeile mehr auf die Kopie verweist (Projektkopievormerkung).
+            if (vormerkung != null) { vormerkung.Entfernt(m.Bezeichner, m.ID_Kessel); return; }
+
             bool nochReferenziert = false;
             foreach (WErzeugerModel it in modelle)
                 if (it.ID_Type == idType && it.ID_Kessel == m.ID_Kessel) { nochReferenziert = true; break; }
 
-            if (!wizard && projektId > 0 && !nochReferenziert)
+            if (!nochReferenziert)
                 new HeizkesselCtrl().DeleteFromProjekt(m.Bezeichner, projektId);
         }
 
@@ -667,7 +837,16 @@ namespace WindowsFormsApplication1
         // Abbildungen
         // =================================================================================
 
-        private static ErzeugerZeile ZeileZu(WErzeugerModel m)
+        /// <summary>
+        /// DIE VORBELEGUNG VON VOR- UND RUECKLAUF (Anwenderauftrag 30.09.2026) - der
+        /// plattformfreie Weg <see cref="TemperaturVorbelegung.Kessel"/>: ein
+        /// unvollstaendiges Paar bekommt das Paar, mit dem die Simulation ohne Eintrag
+        /// rechnet, IM MODELL; zurueck kommt die Herleitungszeile.
+        /// </summary>
+        private static string Vorbelegen(WErzeugerModel m, bool wizard)
+            => TemperaturVorbelegung.Kessel(m, wizard);
+
+        private static ErzeugerZeile ZeileZu(WErzeugerModel m, string temperaturHerleitung)
         {
             return new ErzeugerZeile
             {
@@ -677,6 +856,7 @@ namespace WindowsFormsApplication1
                 CarrierId = m.ID_Carrier,
                 Vorlauf = m.Vorlauf,
                 Ruecklauf = m.Ruecklauf,
+                TemperaturHerleitung = temperaturHerleitung ?? "",
                 // SENKEN (Anwenderentscheid 23.09.2026): die Zeile "Senken: ...", fertig
                 // formuliert im Kern; leer beim Referenzkessel und ohne Projekt.
                 Senken = Senkenvorbelegung.Anzeigezeile(m.ID_Projekt, m.ID, m.ID_Type)
@@ -709,7 +889,8 @@ namespace WindowsFormsApplication1
             };
 
             return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
-                                      (Text_("HZKK_LBL_BRENNWERT", "Brennwertkessel"), d.Brennwert));
+                                      (Text_("HZKK_LBL_BRENNWERT", "Brennwertkessel"), d.Brennwert),
+                                      new ErzeugerKennwerte { PthermKw = d.Ptherm });   // UeS2b: fuer die Zusammenfassung
         }
 
 

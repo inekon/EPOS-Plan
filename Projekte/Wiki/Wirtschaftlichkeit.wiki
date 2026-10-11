@@ -1,0 +1,197 @@
+Die '''Wirtschaftlichkeit''' bewertet eine ganze Vergleichsgruppe in einem Zug – das Stammprojekt und alle daraus abgeleiteten Varianten. Gerechnet wird nach der Kapitalwertmethode gemäß DIN EN 17463, ergänzt um Szenarien mit Bandbreite, einen Vorschlag zur Entscheidung, Sensitivitäten, die Regeln für Förderung und CO₂-Abgabe sowie eine Emissionsbilanz. Die Bedienung des Bereichs beschreibt [[Programm Dokumentation/Wirtschaftlichkeit|Programm-Dokumentation: Wirtschaftlichkeit]].
+
+== Stammprojekt als Referenz ==
+{{Anker|stammprojekt-als-referenz|referenzprinzip}}
+
+Referenz ist das Stammprojekt; auf der Seite lässt sich auch ein anderer Stand der Gruppe als Referenz wählen. Die Kennzahlen einer Variante sind Differenzen gegen die Referenz, und die Gruppe wird stets gemeinsam gerechnet – anders ließe sich eine Differenz nicht bilden. Wie Vergleichsgruppen entstehen, beschreibt [[Varianten und Bericht]].
+
+Dahinter steht die Sicht, die DIN EN 17463 für energiebezogene Investitionen verlangt: bewertet wird nicht die Maßnahme für sich, sondern die '''Maßnahme gegen den Weiterbetrieb'''. Das Stammprojekt ist in dieser Lesart die Unterlassensalternative – das, was ohne die Investition geschähe. Eine positive Kapitalwertdifferenz heißt deshalb nicht „die Anlage verdient Geld", sondern „die Anlage ist über den Betrachtungszeitraum günstiger als der Weiterbetrieb". Beides kann auseinanderfallen: Eine Sanierung mit negativem absolutem Kapitalwert kann gegenüber einem noch teureren Weiterbetrieb sehr wohl vorteilhaft sein.
+
+== Kapitalwert, Annuität und Barwerte ==
+{{Anker|kapitalwert-annuitaet-und-barwerte|kapitalwert|annuitaet}}
+
+Für jedes Projekt der Gruppe werden Kapitalwert, Annuität und die Barwerte der einzelnen Zahlungsreihen ausgewiesen. Die Kennzahltabelle führt sie untereinander: Investition und – falls vorhanden – der Investitionszuschuss als negative Zeile, danach Betriebskosten, Energiekosten und CO₂-Abgabe, die Einspeiseerlöse mit ihren Anteilen, die gesetzlichen Erlösreihen (KWK-Zuschlag, Energie- und Stromsteuer) und die vermiedenen Kosten.
+
+Unmittelbar vor dem Kapitalwert stehen zwei eigene Zeilen: '''Ersatzbeschaffungen, Barwert''' und '''Restwert, Barwert'''. DIN EN 17463 verlangt beide als ausgewiesene Position und nicht als Saldo. Die Ersatzzeile erscheint nur dort, wo überhaupt ersetzt wird – also wo eine Position eine Nutzungsdauer kürzer als der Betrachtungszeitraum trägt.
+
+Darunter folgen Nettobarwert (Kapitalwert), Kapitalwertdifferenz zum Stamm, Annuität, dynamische Amortisationszeit, interner Zinsfuß und die Gestehungskosten. Ersatzbeschaffungen innerhalb des Betrachtungszeitraums werden auf ganze Jahre gerundet gebucht; der Restwert am Ende wird linear ermittelt. Wie beide preislich fortgeschrieben werden, beschreibt der Abschnitt [[#preisindizierung|Preisindizierung der Ersatzbeschaffung]].
+
+{{Hinweis|Fehlt ein Preis, rechnet das Programm nicht mit null weiter. Die betroffene Kennzahl bleibt offen und wird mit einer Begründung ausgewiesen. Ein solcher Datenmangel wirkt in allen drei Szenarien gleich – er ist keine Frage der Bandbreite, sondern eine der Kostenerfassung.}}
+
+== Szenarien ==
+{{Anker|szenarien|erwartung|best-worst|parametersatz|vorrangregel}}
+
+Drei Szenarien stehen nebeneinander: '''Ungünstig''', '''Erwartet''' und '''Günstig'''; im Parameterdialog heißen die Spalten der beiden Randfälle ''Best'' und ''Worst''. Sie lassen sich im Ergebnis, im Bericht und im Kapitalwert-Verlauf gegeneinanderstellen. Die Bandbreite speist sich dabei aus '''zwei Quellen''':
+
+* '''Gepflegte günstige und ungünstige Werte je Kostenzeile.''' Zu jeder Kostenposition lassen sich ein günstiger und ein ungünstiger Betrag sowie eine abweichende Nutzungsdauer erfassen. Was dort steht, gilt – ohne Zuschlag und ohne Abschlag.
+* '''Ein pauschaler Parametersatz je Szenario.''' Er greift überall dort, wo für eine Zeile nichts gepflegt ist, und spannt die Bandbreite über sieben Größen auf: Kalkulationszins, Preissteigerung Energie, Preissteigerung Betrieb, Preissteigerung Investition/Ersatz, Investitionsänderung, Ertragsänderung und Nutzungsdaueränderung. Darüber hinaus können ''Günstig'' und ''Ungünstig'' einen eigenen Betrachtungszeitraum, eine Mengenänderung und eigene Werte für Energieträgerpreise und Einspeisevergütungen führen; ohne sie rechnen sie mit dem Wert von ''Erwartet''. Gesetzliche Sätze haben keine Werte je Szenario.
+
+'''Die Vorrangregel:''' Ein gepflegter Szenariowert schlägt den pauschalen Parametersatz – und zwar je Zeile, nicht als Korrektur der Summe. Wer für eine Position 55.000 € als ungünstigen Fall erfasst hat, meint diese Zahl, nicht diese Zahl plus zehn Prozent. Ohne diese Regel entstünde eine Doppelzählung.
+
+'''Erwartet ist der Projektparametersatz.''' Das Szenario „Erwartet" bekommt keinen eigenen Satz: Es rechnet mit den Werten, die im Abschnitt ''Allgemein'' des Parameterdialogs stehen. Eine zweite Pflegestelle für dieselbe Zahl gäbe es sonst zweimal – und irgendwann zweimal verschieden.
+
+Solange niemand ein Feld gepflegt hat, gelten die folgenden '''Vorgaben''' – Vorschläge, keine festen Größen:
+
+{| class="wikitable"
+! Größe !! Günstig !! Ungünstig
+|-
+| Kalkulationszins || i − 1 Prozentpunkt (nie unter 0) || i + 1 Prozentpunkt
+|-
+| Preissteigerung Energie || p_E − 1 Prozentpunkt || p_E + 1 Prozentpunkt
+|-
+| Preissteigerung Betrieb || p_B − 1 Prozentpunkt || p_B + 1 Prozentpunkt
+|-
+| Preissteigerung Investition/Ersatz || p_I − 1 Prozentpunkt || p_I + 1 Prozentpunkt
+|-
+| Investition || − 10 Prozent || + 10 Prozent
+|-
+| Erträge || + 10 Prozent || − 10 Prozent
+|-
+| Nutzungsdauer || + 2 Jahre || − 2 Jahre
+|}
+
+Ein Feld, das Sie nie angefasst haben, bleibt an die Projektangabe gebunden: Ändern Sie den Kalkulationszins von 3 auf 4 Prozent, folgt der beste Fall selbsttätig auf 3 Prozent. Sobald Sie tippen, gilt Ihr Wert; die Schaltfläche ''Vorgaben'' im Parameterdialog stellt den ursprünglichen Zustand wieder her. Eine abgeleitete Nutzungsdauer fällt nie unter ein Jahr, weil das im Rechenkern „keine Nutzungsdauer gepflegt" bedeutet – und diese Bedeutung darf eine Bandbreite nicht versehentlich auslösen. Positionen, die ohnehin keine Nutzungsdauer tragen, bleiben unberührt.
+
+'''Nicht mitskaliert''' werden drei Gruppen: '''Zuschüsse''' – eine bewilligte Förderzusage über einen festen Betrag ändert sich nicht, weil die Anlage zehn Prozent mehr kostet; '''Betriebskostenzeilen mit festem Betrag''' – für sie ist die Preissteigerung Betrieb der Hebel, ein zweiter multiplikativer Ausschlag wäre Doppelzählung (anders die Zeilen „x Prozent der Investitionssumme“, siehe unten); und die '''gesetzlichen Erlösreihen''' KWK-Zuschlag, Energiesteuer und Stromsteuerentlastung – sie hängen an Sätzen und Kontingenten des Gesetzeskatalogs, nicht an einer Ertragserwartung. Für das Regulierungsrisiko gibt es die eigene Sensitivitätszeile „KWKG-Bonus entfällt". Die Ertragsänderung wirkt auf den Einspeiseerlös und auf die PV-Vergütungsreihe.
+
+'''Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag.''' Eine Betriebskostenzeile, die als „x Prozent der Investitionssumme" bemessen ist – Wartung, Versicherung, Verwaltung –, bemisst sich im Szenario an der Investition '''dieses''' Szenarios. Kostet die Anlage im ungünstigen Fall zehn Prozent mehr, kostet ihre Wartung entsprechend mehr. Skaliert wird auch hier je Zeile und nach derselben Vorrangregel: Eine Investitionszeile mit gepflegtem ungünstigem Betrag von 50.000 € geht mit genau 50.000 € in die Bemessungsbasis ein.
+
+'''Die Statuszeile.''' Unter der Szenariowahl steht, mit welchem Satz gerade gerechnet wird und woher er stammt – „Vorgaben" oder „gepflegte Werte" –, jeweils mit den wirksamen Zahlen: Zins, die drei Preissteigerungen (Energie, Betrieb, Investition/Ersatz), Investitions-, Ertrags- und Nutzungsdaueränderung. Für „Erwartet" nennt sie den unveränderten Projektparametersatz. Dieselbe Annahmenzeile steht im Bericht.
+
+{{Hinweis|Die Kostenverwaltung und die Kostenseite zeigen weiterhin die '''gepflegten''' Positionswerte ohne pauschalen Ausschlag. Dort geht es um erfasste Zahlen; die Bandbreite entsteht erst in der Rechnung.}}
+
+== Vorschlag zur Entscheidung ==
+{{Anker|vorschlag-zur-entscheidung|empfehlung|einstufung}}
+
+Ein Bewertungsbericht nach DIN EN 17463 endet nicht mit einer Zahl, sondern mit einer Empfehlung. EPOS-Plan stuft deshalb jede Variante ein und schlägt eine davon vor. Maßstab ist die '''Kapitalwertdifferenz zum Stammprojekt''', nicht der absolute Kapitalwert – der Stamm ist der Referenzfall.
+
+{| class="wikitable"
+! Einstufung !! Bedingung
+|-
+| '''empfohlen''' || Die Differenz ist im ungünstigen, im erwarteten und im besten Fall positiv.
+|-
+| '''bedingt empfohlen''' || Die Differenz ist im erwarteten Fall positiv, im ungünstigen (oder im besten) jedoch nicht.
+|-
+| '''nicht empfohlen''' || Die Differenz ist im erwarteten Fall nicht positiv.
+|}
+
+Fehlt eine der beiden Randrechnungen, urteilt die Regel allein nach dem Erwartungsfall und schreibt den Zusatz „'''Bandbreite nicht berechnet'''" dazu – eine Bandbreite zu behaupten, die niemand gerechnet hat, wäre irreführend.
+
+Der '''Gesamtvorschlag''' nimmt die Variante mit der höchsten Erwartet-Differenz unter den empfohlenen; gibt es keine, die unter den bedingt empfohlenen. Trägt sich keine, lautet der Satz: ''Keine Variante ist gegenüber dem Stammprojekt wirtschaftlich; Weiterbetrieb (Referenzfall).'' Liegt für keine Variante ein Ergebnis im Erwartungsfall vor, erscheint überhaupt kein Satz – ein Vorschlag ohne Zahlen wäre eine Behauptung.
+
+Ist eine Variante die Referenz und schneidet das Stammprojekt am besten ab, lautet der Vorschlag ''Stammprojekt beibehalten''. Einstufung und Vorschlagssatz stehen auf der Seite unter den Empfehlungskarten und in der Bandbreite sowie in beiden Berichten. Der Vorschlag folgt der Vergleichswahl: Nehmen Sie eine Version aus der Gruppe heraus, wird er ohne neuen Rechenlauf neu gebildet.
+
+{{Achtung|Der Vorschlag ist eine Rechenaussage über Kapitalwertdifferenzen, keine Entscheidung. Er berücksichtigt weder nicht monetäre Wirkungen noch Finanzierungs-, Genehmigungs- oder Betriebsrisiken.}}
+
+== Differenz-Kennzahlen ==
+{{Anker|differenz-kennzahlen|amortisation|interner-zinsfuss}}
+
+Gegen die Referenz werden je Variante die Kapitalwert-Differenz, die dynamische Amortisationszeit – zwischen den Jahren interpoliert – und der interne Zinsfuß bestimmt. Die Amortisationszeit wird ohne Restwert geführt: Sie sagt, wann die Differenz-Zahlungsreihe erstmals ins Plus dreht, und ein Restwert am Ende des Betrachtungszeitraums gehört nicht zu dieser Frage.
+
+== Betrachtungszeitraum und Nutzungsdauern ==
+{{Anker|betrachtungszeitraum-und-nutzungsdauern|nutzungsdauern}}
+
+Der Betrachtungszeitraum T ist frei wählbar (1 bis 50 Jahre). Ob er zu den Anlagen passt, entscheidet sein Verhältnis zu den Nutzungsdauern der Investitionspositionen – und genau daran hängt, ob am Ende ein Restwert steht und ob zwischendurch ersetzt wird. Eine Hinweiszeile im Nachweisblock der Ergebnisseite und im Bericht stellt beides nebeneinander: den gewählten Zeitraum sowie die kürzeste und die längste gepflegte Nutzungsdauer, dazu die Folge:
+
+* '''T liegt unter der längsten Nutzungsdauer''' – am Ende wird ein Restwert angesetzt.
+* '''T liegt über der kürzesten Nutzungsdauer''' – im genannten Jahr fällt eine Ersatzbeschaffung an.
+* '''deckungsgleich''' – weder Ersatzbeschaffung noch Restwert.
+* '''keine gepflegte Nutzungsdauer''' – kein Ersatz, kein Restwert; alle Positionen laufen rechnerisch über den ganzen Zeitraum.
+
+Nutzungsdauern unter einem Jahr gelten dabei als „nicht gepflegt" und zählen nicht mit. Die Zeile ist reiner Ausweis: Sie verhindert nichts und schlägt nichts vor, sie macht nur sichtbar, was die Rechnung ohnehin tut. Ein Betrachtungszeitraum von 20 Jahren über einer Anlage mit 15 Jahren Nutzungsdauer erzeugt eine Ersatzbeschaffung im Jahr 15 und einen Restwert für die verbleibenden 10 Jahre – wer das nicht will, verkürzt den Zeitraum oder begründet ihn.
+
+== Preisindizierung der Ersatzbeschaffung ==
+{{Anker|preisindizierung|preissteigerung-investition}}
+
+Investitionsgüter werden über zwanzig Jahre teurer. VDI 2067 Blatt 1 schreibt die kapitalgebundenen Kosten deshalb mit einem eigenen Preisänderungsfaktor fort, und EPOS-Plan folgt dem. Der Satz heißt '''Preissteigerung Investition/Ersatz''' (p_I) und gilt gemeinsam für alle Positionen, nicht je Zeile.
+
+* Die '''Erstbeschaffung''' geht '''nominal''' ein – auch die auf ein späteres Startjahr verschobene. Der eingegebene Betrag ist der Betrag zum Zahlungszeitpunkt und kein auf heute zurückgerechneter Preisstand.
+* Jede '''Ersatzbeschaffung''' wird auf ihr Zahlungsjahr indiziert: Betrag × (1 + p_I) hoch Jahr, wobei das '''absolute''' Jahr zählt und nicht der Abstand zum Startjahr.
+* Der '''Restwert''' steht auf der Preisbasis der '''letzten''' Beschaffung. Wurde die Anlage im Jahr 16 zu den Preisen von Jahr 16 gekauft, ist die halbe Nutzungsdauer am Ende auch die Hälfte '''dieses''' Betrags wert.
+
+'''Zahlenbeispiel.''' Eine Position über 10.000 € mit 8 Jahren Nutzungsdauer, Betrachtungszeitraum 20 Jahre, p_I = 2 %/a: Der Ersatz im Jahr 8 kostet 11.717 €, der im Jahr 16 kostet 13.728 €. Der Restwert am Ende bemisst sich an den 13.728 € – vier von acht Jahren sind verbraucht, es bleiben 6.864 € vor Abzinsung.
+
+'''Leeres Feld heißt „wie p_B".''' Bleibt die Preissteigerung Investition ungepflegt, gilt die Preissteigerung Betrieb. Eine Vorbelegung mit null hätte behauptet, Investitionsgüter würden nie teurer – eine Aussage, die niemand getroffen hat; der einzige gepflegte Satz, der eine allgemeine Kostensteigerung ausdrückt, ist p_B. Je Szenario ist p_I mitgeführt: Die Vorgabe spannt sich um das wirksame p_I des Erwartungsfalls, einen Prozentpunkt nach unten für ''Günstig'' und nach oben für ''Ungünstig'' – folgt p_I dem Betriebssatz, ist das genau das p_B des jeweiligen Szenarios. Ein getippter Wert gilt, wie überall im Parametersatz.
+
+
+== Sensitivitäten ==
+{{Anker|sensitivitaeten}}
+
+Vier Größen werden automatisch variiert: der Kalkulationszins um ±1 Prozentpunkt, die Energiepreissteigerung um ±1 Prozentpunkt, die Investition der Variante um ±10 Prozent und die Energiekosten der Variante um ±10 Prozent einschließlich CO₂-Abgabe. Eine zusätzliche Zeile zeigt, wie sich das Ergebnis ohne den KWKG-Bonus darstellt.
+
+'''Sensitivität und Szenario beantworten verschiedene Fragen.''' Die Sensitivität fragt: ''Wie empfindlich reagiert das Ergebnis, wenn ich genau eine Annahme verändere?'' Sie verändert deshalb immer nur eine Größe und lässt alle übrigen stehen. Das Szenario fragt: ''Wie sieht ein durchgängig ungünstiger Verlauf aus?'' Es verschiebt alle Annahmen gemeinsam in dieselbe Richtung. Die Sensitivitätsanalyse rechnet aus diesem Grund stets auf dem Szenario „Erwartet" und mit ihren eigenen Ausschlägen; beide Ausschläge treffen nie zusammen und können sich nicht doppeln.
+
+== Annahmen und Vereinfachungen ==
+{{Anker|annahmen-und-vereinfachungen|vereinfachungen|nicht-monetaere-wirkungen}}
+
+DIN EN 17463 verlangt, die Annahmen einer Bewertung offenzulegen. Der Nachweisblock der Ergebnisseite und der Parameterabschnitt des Word-Berichts führen deshalb neben Zins, Zeitraum, Preissteigerungen, Bilanzierungsregeln und Rechenstand auch das, was das Programm '''nicht''' rechnet:
+
+* '''Kein Endjahr je Kostenposition.''' Eine Kostenzeile kann ein Startjahr tragen, aber kein Ende; sie läuft danach bis zum Ende des Betrachtungszeitraums.
+* '''Keine Degradation außer beim PV-Ertrag.''' Nachlassende Leistung über die Jahre ist nur für die Photovoltaik modelliert, nicht für andere Erzeuger oder für Nutzenfaktoren.
+* '''Energiekosten als Gesamtrechnung ab Jahr 1.''' Die Simulation liefert ein volles Betriebsjahr; sie kennt keine komponentenweisen Inbetriebnahmejahre. Die Energiekosten gelten deshalb ab dem ersten Jahr in voller Höhe.
+
+Umgekehrt weist der Block eine Größe ausdrücklich als '''hergeleitet''' aus: Eigenverbrauchsquote und Einspeiseanteil der Photovoltaik stammen aus der Stundensimulation und sind '''nicht''' als Annahme gesetzt. Der Hinweis erscheint nur, wenn die Gruppe überhaupt Photovoltaik führt. Er steht da, damit niemand die Zahl für eine Schätzung hält – üblich ist in Bewertungsvorlagen nämlich genau das.
+
+Für alles, was sich nicht in Euro fassen lässt – Komfort, Versorgungssicherheit, Arbeitssicherheit, Redundanz, Ausfallfolgen –, gibt es im Block ''Bewertung nach DIN EN 17463'' der Seite die Liste '''Nicht monetäre Wirkungen'''. Was dort steht, erscheint im Bericht. DIN EN 17463 verlangt eine solche qualitative Beschreibung, und sie ist oft der Teil, an dem eine Entscheidung tatsächlich hängt.
+
+== KWKG 2025 ==
+{{Anker|kwkg-2025|zuschlag|vollbenutzungsstunden}}
+
+Für KWK-Anlagen berücksichtigt die Rechnung die Zuschlagsregeln des KWKG 2025: die degressive Staffel der förderfähigen Vollbenutzungsstunden – von 5.000 Stunden im Jahr 2020 auf 2.500 Stunden ab 2030 –, das Kontingent von 30.000 Vollbenutzungsstunden, das sich bei Bedarf anpassen lässt, sowie die Fristen nach § 6 mit Stichtag 31.12.2026 und Realisierung bis zum 31.12. des vierten Folgejahres. Anlagen über 500 kW und neue Heizölanlagen bleiben ausgenommen. Ein Abschlag für Zeiten negativer Strompreise wird berücksichtigt; die betroffenen Stunden schonen das Kontingent. Wie der Zuschlag zustande kommt, weist eine eigene Nachweiszeile im Ergebnis, im Word-Bericht und im Excel-Blatt aus.
+
+== CO₂-Abgabe nach dem BEHG ==
+{{Anker|co2-abgabe-nach-dem-behg|behg}}
+
+Für fossile Brennstoffe wird die CO₂-Abgabe nach dem Brennstoffemissionshandelsgesetz auf die Energiekosten aufgeschlagen. Nicht fossile Energieträger bleiben davon unberührt. Der Preispfad stammt jahresgenau aus dem Gesetzeskatalog; ein im Parameterdialog gepflegter Preis ersetzt ihn als konstanter Wert. Die Abgabe wächst mit der Preissteigerung Energie.
+
+== Strommatrix ==
+{{Anker|strommatrix|ht-nt|leistungspreis}}
+
+Aus den Stundenreihen der Simulation entsteht eine Strommatrix mit den Jahressummen von Netzbezug, PV-Einspeisung, KWK-Einspeisung und KWK-Eigenstrom sowie der höchsten Last des Netzbezugs. Bepreist wird der Netzbezug mit dem Stromträger der Kostenverwaltung – Arbeits-, Grund- und Leistungspreis, wahlweise mit einer Leistungspreis-Staffel an der Viertelstundenspitze ([[Kosten und Energiepreise]]) – oder, bei aktiver Tarifstruktur im Rollenmodell, mit den Preisen des Tarifsatzes ([[Programm Dokumentation/Wirtschaftlichkeit#strombezug|Tarifstruktur]]). Führt eine Version keinen Erzeuger, der Strom verwendet, gilt für ihren Netzbezug im Vergleich eine eigene Regel: Er wird mit Arbeits- und Grundpreis bepreist, der Leistungspreis wird nicht angesetzt, und ein Hinweis unter der Kostentafel und auf der Ergebnisseite nennt ihn mit Satz und Träger ([[Programm Dokumentation/Wirtschaftlichkeit#bericht-gruppenregel|Netzbezug ohne Stromverwendung]]).
+
+== Emissionsbilanz ==
+{{Anker|emissionsbilanz|kraftwerkspark|referenzkessel}}
+
+Die Emissionsbilanz stellt die gekoppelte Erzeugung der getrennten Erzeugung gegenüber und weist die vermiedene CO₂-Menge aus. Als Vergleich für den Strom wählen Sie einen Referenz-Kraftwerkspark; der Referenzkessel für die Wärme wird selbst ermittelt: Wirkungsgrad und Brennstoff stammen aus dem größten Heizkessel des Stammprojekts, bei Heizöl aus dem Öl-, sonst aus dem Gaswirkungsgrad. Liegt der Wert außerhalb des plausiblen Bereichs von 50 bis 115 Prozent, greift die hinterlegte Vorgabe. Der Bericht weist aus, woher der Wert stammt. Die Bilanz erscheint, sobald die Ergebnisse der Gruppe auf aktuellem Rechenstand sind – nach einem Berichtslauf ist das stets der Fall.
+
+== Kapitalwert-Verlauf ==
+{{Anker|kapitalwert-verlauf|verlauf}}
+
+Der Abschnitt ''Der Verlauf über die Zeit — alle drei Szenarien'' zeigt den kumulierten Barwert der Differenz zur Referenz je Jahr, je Version eine Farbe und je Szenario eine Strichart; der Nulldurchgang einer Linie ist die dynamische Amortisation. Der Zeitraum reicht von 2 bis 60 Jahren und darf auch über den Betrachtungszeitraum hinausgehen; ''Aktualisieren'' rechnet den Verlauf für den gewählten Zeitraum, ''Verlauf nach Excel…'' speichert ihn als eigene Arbeitsmappe. Die gespeicherten Ergebnisse bleiben davon unberührt. Im Word-Bericht erscheint der Verlauf als Diagramm, im Excel-Bericht als Jahresreihe. Die Reihen werden ohne Restwert geführt; die Restwert-Barwerte sind gesondert ausgewiesen.
+
+== Parameter ==
+{{Anker|parameter|parameterdialog}}
+
+Die Randbedingungen pflegen Sie im Dialog ''Parameter…''. Diese Abschnitte sind immer sichtbar:
+
+* '''Allgemein''' – Kalkulationszins, Betrachtungszeitraum, Preissteigerung Energie, Preissteigerung Betrieb und die Preissteigerung Investition/Ersatz.
+* '''Szenarien''' – eine Tabelle mit den drei Spalten ''Erwartet'', ''Best'' (Günstig) und ''Worst'' (Ungünstig) über die sieben Größen des Parametersatzes (Zins, die drei Preissteigerungen, Investition, Erträge, Nutzungsdauer), dazu Betrachtungszeitraum und Mengenänderung je Szenario. Die Erwartet-Spalte ist reine Anzeige: Sie wiederholt, was oben unter ''Allgemein'' gepflegt wird. Die Felder zeigen stets den '''wirksamen''' Wert, damit sichtbar bleibt, womit gerechnet wird – wer tippt, pflegt; die Schaltfläche ''Vorgaben'' setzt alle Felder zurück. Eine Zeile darunter nennt für Best und Worst, ob der Satz aus Vorgaben oder aus gepflegten Werten besteht.
+* '''Risiko (DIN EN 17463, 6.5)''' – wahlweise kein Risiko, ein Zinszuschlag oder ein Zahlungsstromabzug; das Risiko gilt in allen drei Szenarien gleich.
+* '''Strom''' – Einspeisevergütung für PV-Überschuss und für KWK-Strom sowie die Anzeige, ob die Aufschläge auf den Strombezug berücksichtigt werden; deren Pflege liegt im Energieträgerdialog.
+
+Die übrigen Abschnitte erscheinen nur, wenn der zugehörige Erzeuger in der Vergleichsgruppe vorkommt: '''BHKW''' verweist auf den eigenen Dialog ''BHKW-Wirtschaftlichkeit'' mit den Angaben zum KWKG 2025 und zu den Steuern, '''Brennstoff''' führt CO₂-Preis, Kraftwerkspark, den ermittelten Referenzkessel und die Bilanzierungsregeln. Werte ausgeblendeter Abschnitte bleiben beim Speichern erhalten.
+
+== Ausgabe ==
+{{Anker|ausgabe|bericht}}
+
+Die Ergebnisse stehen auf dem Reiter ''Wirtschaftlichkeit'' im Bereich ''Berichte & Kosten'', als Kapitel im Word-Bericht und als Blatt in der Excel-Arbeitsmappe. Zeilen erscheinen nur, wenn die zugehörige Funktion im Projekt aktiv ist.
+
+Der '''Word-Bericht''' führt zuerst die Methodik und den Parameternachweis – einschließlich der Hinweiszeilen zu Betrachtungszeitraum, Herleitung der Eigennutzung und Vereinfachungen –, dann die Kennzahlen in dem Szenario, das auf der Berichtsseite gewählt ist, den KWK-Zuschlag je Modul, die Betriebskosten nach Kostenarten, den Kapitalwert-Verlauf mit der Mehrjahresübersicht und schließlich die Szenarienübersicht. Deren Tabelle führt je Variante die '''Kapitalwertdifferenz''' in den drei Szenarien – ausgewiesen als ''ΔKW'' in ''Ungünstig'', ''Erwartet'' und ''Günstig'' –, die Amortisationszeit und die '''Einstufung'''. Eine Fußzeile erklärt, was Δ bedeutet und wann „—" erscheint. Darunter stehen die Annahmenzeilen für ''Günstig'' und ''Ungünstig'' mit ihrer Herkunft sowie der Vorschlag zur Entscheidung. Es folgen Sensitivitätsanalyse, Strommatrix und Emissionsbilanz.
+
+Das '''Excel-Blatt''' führt dieselben Kennzahlen in drei Blöcken – je einem für Erwartet, Günstig und Ungünstig –, mit der Annahmenzeile unmittelbar unter jeder Blocküberschrift und dem Vorschlag zur Entscheidung unter den drei Blöcken. Verlauf, Sensitivität, Strommatrix und Emissionsbilanz schließen sich an.
+
+{{Achtung|Die Rechnung bewertet Annahmen, nicht Tatsachen. Förderungen, steuerliche Wirkungen und vertragliche Rahmenbedingungen sind projektbezogen zu prüfen; die Ergebnisse ersetzen keine steuerliche oder rechtliche Beratung.}}
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Wirtschaftlichkeitsrechnung|Grundlagen: Wirtschaftlichkeitsrechnung]] – die fachlichen Hintergründe
+* [[Grundlagen/Kostenrechnung|Grundlagen: Kostenrechnung]] – Systematik der Kostenarten
+* [[Grundlagen/Erlösrechnung|Grundlagen: Erlösrechnung]] – Bewertung der erzeugten Mengen
+* [[Kosten und Energiepreise]] – Eingangsgrößen aus dem Kostenmodul
+* [[Varianten und Bericht]] – Vergleichsgruppe anlegen und Ergebnisse ausgeben
+* [[Programm Dokumentation/Wirtschaftlichkeit|Programm-Dokumentation: Wirtschaftlichkeit]] – der Bereich mit Parameterdialog und Ausgabe im Einzelnen
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

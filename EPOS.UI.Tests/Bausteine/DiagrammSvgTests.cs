@@ -436,7 +436,9 @@ public class DiagrammSvgTests : EposBunitContext
         await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(4000));
 
         string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
-        Assert.Contains("4.000 h", zeile);
+        // Stunde, Datum und Uhrzeit des Gemeinjahres (Auftrag GX): Stunde 4 000 beginnt
+        // am Tag 166 (ab 0) um 16 Uhr - dem 16. Juni.
+        Assert.StartsWith("4.000 h · 16. Juni 16:00 · ", zeile);
         Assert.Contains(MIT_ROLLE + ": ", zeile);
         Assert.Contains(OHNE_ROLLE + ": ", zeile);
         Assert.Contains("°C", zeile);
@@ -447,6 +449,74 @@ public class DiagrammSvgTests : EposBunitContext
 
         await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(null));
         Assert.Equal("", cut.Find(".epos-diagramm-zeigerzeile").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Auftrag GX: der Zeiger läuft ohne Rundlauf.</b> Der Baustein gibt dem Modul die
+    /// Zeigertafel EINMAL je Zeichnen — die Reihen beim ersten Mal, danach nur den
+    /// geänderten Zustand —, und nimmt das Modul sie an, führt ES Balken und Zeile: Der
+    /// Baustein zeichnet keine Zeigerlinie und keinen Zeilentext mehr, und eine gemeldete
+    /// Stelle löst keinen Zeichenlauf aus. Strenger JS-Modus: jeder andere Aufruf bräche.
+    /// </summary>
+    [Fact]
+    public async Task GX_Die_Zeigertafel_geht_einmal_je_Zeichnen_an_das_Modul()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        modul.SetupVoid("binden", _ => true).SetVoidResult();
+        modul.SetupVoid("nachziehen", _ => true).SetVoidResult();
+        var tafel = modul.Setup<bool>("zeigertafel", _ => true);
+        tafel.SetResult(true);
+
+        var cut = Zeige();
+        cut.WaitForAssertion(() => Assert.Single(tafel.Invocations));
+
+        // Die erste Tafel traegt die Reihen, und das Modul fuehrt ab jetzt die Zeile.
+        Assert.NotNull(tafel.Invocations.First().Arguments[1]);
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-diagramm-zeigerzeile--modul")));
+        Assert.Single(cut.FindAll(".epos-diagramm-zeigerbalken"));
+
+        // Ein Zeichenlauf ohne Aenderung gibt nichts weiter.
+        cut.Render();
+        Assert.Single(tafel.Invocations);
+
+        // Eine gemeldete Stelle zeichnet weder Linie noch Text - das tut das Modul.
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(4000));
+        Assert.Empty(cut.FindAll("line.epos-diagramm-zeiger"));
+        Assert.Equal("", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+
+        // Eine abgewaehlte Reihe aendert den Zustand: eine Tafel mehr, ohne Reihen.
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, tafel.Invocations.Count));
+        Assert.Null(tafel.Invocations.Last().Arguments[1]);
+    }
+
+    /// <summary>
+    /// Kein Blazor-Handler je Mausbewegung (Auftrag GX): Weder Fläche noch Bild tragen
+    /// einen <c>pointermove</c>- oder <c>mousemove</c>-Handler des Bausteins — die Bewegung
+    /// gehört allein dem Modul.
+    /// </summary>
+    [Fact]
+    public void GX_Kein_Blazor_Handler_je_Mausbewegung()
+    {
+        var cut = Zeige();
+        Assert.DoesNotContain("onpointermove", cut.Markup, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("onmousemove", cut.Markup, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Ohne angenommene Tafel (Prüfstand, kein Modul) bleibt alles beim Baustein: Linie und
+    /// Zeile mit Datum, wie bisher.
+    /// </summary>
+    [Fact]
+    public async Task GX_Ohne_Tafel_zeichnet_der_Baustein_Linie_und_Zeile()
+    {
+        var cut = Zeige();
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(0));
+        Assert.Single(cut.FindAll("line.epos-diagramm-zeiger"));
+        Assert.StartsWith("0 h · 1. Jan. 00:00", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(8759));
+        Assert.StartsWith("8.759 h · 31. Dez. 23:00", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
     }
 
     /// <summary>
@@ -509,11 +579,18 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.NotEmpty(ticks);
         Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
 
-        // Die Beschriftungen sind die der Teilung, dazu der Achsentitel.
+        // Die Beschriftungen sind die der Teilung, je Marke mit Datumszeile (Auftrag GX),
+        // dazu der Achsentitel.
         var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
-        Assert.Equal(ticks.Count + 1, texte.Count);
-        foreach ((int _, string text) in ticks) Assert.Contains(text, texte);
-        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN, texte);
+        Assert.Equal(2 * ticks.Count + 1, texte.Count);
+        foreach ((int stunde, string text) in ticks)
+        {
+            Assert.Contains(text, texte);
+            Assert.Contains(Zeitachse.Markentext(stunde, 400), texte);
+        }
+        Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks text.epos-diagramm-datum").Count);
+        Assert.Contains("6. Mai", texte);   // Stunde 3 000 = Tag 125 = 6. Mai
+        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM, texte);
 
         Assert.Equal((3000, 3400), cut.Instance.Fenster);
         Assert.Single(fenster);
@@ -982,8 +1059,13 @@ public class DiagrammSvgTests : EposBunitContext
         // zaehlt auf x Stuetzstellen einer ZEITREIHE, seine Zeichenflaeche sagt
         // Achsenart.Stunden - und damit steht „h" hinter der Zahl. Bis zum Abschluss
         // der Etappe E3 sagte das ein Parameter der Aufrufstelle; zwei Stellen, die
-        // dasselbe behaupten, gehen irgendwann auseinander.
-        Assert.Contains("500 h", zeile);
+        // dasselbe behaupten, gehen irgendwann auseinander. Der Stapel ist dicht (3 000
+        // Stuetzstellen auf rund 1 000 Spalten): Die Zeile nennt die Spitzenstunde der
+        // Stufe unter dem Zeiger - ohne Jahresraster als Stelle, nicht als Datum.
+        Datenreihe schicht = cut.Instance.Modell!.Reihen.Single(r => r.Name == FLAECHE);
+        int stunde = SvgSchreiber.Stufenstunde(schicht, cut.Instance.Modell.Flaeche, 500);
+        Assert.InRange(stunde, 498, 502);
+        Assert.StartsWith(stunde.ToString("N0", CultureInfo.CurrentCulture) + " h", zeile);
     }
 
     /// <summary>
@@ -1212,6 +1294,176 @@ public class DiagrammSvgTests : EposBunitContext
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
 
         Assert.Empty(cut.Instance.Ausschnittpfade);
+    }
+
+    /// <summary>
+    /// <b>Ein dichter Stapel ist nie roh — auch unter der Rohgrenze</b> (Stufenregel des
+    /// Stapels, Anwenderbefund 29.09.2026): Drei Reihen über 8 760 Stunden gingen nach
+    /// <c>Pfadregel.Roh</c> Stunde für Stunde in den Pfad; die Schichten und die Summe, die
+    /// sie begleitet, gehen aber als Treppe ihrer Tageshöchstwerte hinein. Zoomt der
+    /// Anwender über das Vierfache, rechnet der Baustein sie deshalb nach — sonst zeigte
+    /// der Zoom gedehnte Tagesstufen statt der Stunden.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Ein_dichter_Stapel_unter_der_Rohgrenze_wird_nachgerechnet()
+    {
+        const int N = 8760;
+        var heizung = new double[N];
+        var wasser = new double[N];
+        var summe = new double[N];
+        for (int h = 0; h < N; h++)
+        {
+            heizung[h] = 20.0 + 10.0 * Math.Sin(2 * Math.PI * h / 24.0);
+            wasser[h] = h % 24 == 7 ? 8.0 : 0.0;
+            summe[h] = heizung[h] + wasser[h];
+        }
+        Zeichenmodell modell = ChartRenderer.GanglinieNormiertModell(
+            "Wärmelast Jahresganglinie",
+            new[]
+            {
+                new ChartRenderer.Reihe("Summe Wärmebedarf", summe, ChartRenderer.C_BEDARF),
+                new ChartRenderer.Reihe("Heizung", heizung, ChartRenderer.C_WP, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Brauchwasser", wasser, ChartRenderer.C_PV, ChartRenderer.Stapelart.Flaeche)
+            },
+            "Wärmelast", ChartRenderer.Achse.Monate, false);
+        Assert.True(Pfadregel.Roh(N, modell.Reihen.Count));
+
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "stapelroh");
+        });
+        string vollpfad = cut.Find("path[data-reihe='Heizung']").GetAttribute("d")!;
+
+        // 400 von 8 760 Stunden sind rund das Zweiundzwanzigfache.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+
+        Assert.Equal(3, cut.Instance.Ausschnittpfade.Count);
+        Datenreihe heizschicht = modell.Reihen.Single(r => r.Name == "Heizung");
+        string erwartet = SvgSchreiber.Reihenpfad(heizschicht, modell.Flaeche, 3000, 3400, true);
+        Assert.Equal(erwartet, cut.Find("path[data-reihe='Heizung']").GetAttribute("d"));
+        Assert.NotEqual(vollpfad, erwartet);
+    }
+
+    /// <summary>
+    /// <b>Die überlagerte Produktion steht als KANTE über dem Bedarf</b> (Wärmepumpenseite,
+    /// Befund W11b-B-18 und Anwenderbefund 29.09.2026): Als halbtransparente Fläche mischte
+    /// sie sich mit dem Bedarf zu Farben, die in keiner Legende stehen. Jede ihrer Schichten
+    /// ist jetzt eine Linie ohne Füllung auf der Oberkante ihrer Summe — und die
+    /// Zeigerzeile nennt trotzdem ihren EIGENEN Beitrag, nicht die Summe.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Die_Kante_der_ueberlagerten_Produktion_nennt_ihren_Beitrag()
+    {
+        const int N = 8760;
+        double[] Gleich(double w) => Enumerable.Repeat(w, N).ToArray();
+        Zeichenmodell modell = ChartRenderer.ErzeugerStapelModell(
+            "Wärmelast Jahresganglinie",
+            new[]
+            {
+                new ChartRenderer.Reihe("Heizwärmebedarf", Gleich(30.0), ChartRenderer.C_WP,
+                                        ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Warmwasserbedarf", Gleich(10.0), ChartRenderer.C_PV,
+                                        ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Wärmeproduktion", Gleich(28.0), ChartRenderer.C_NETZ,
+                                        ChartRenderer.Stapelart.Saeule),
+                new ChartRenderer.Reihe("Heizstab", Gleich(12.0), ChartRenderer.C_BEDARF,
+                                        ChartRenderer.Stapelart.Saeule)
+            },
+            new ChartRenderer.Reihe[0], null, "Wärmelast [kW]", ChartRenderer.Achse.Jahresstunden, false);
+
+        Datenreihe kante = modell.Reihen.Single(r => r.Name == "Heizstab");
+        Assert.Equal(Reihenart.Linie, kante.Art);
+        Assert.True(kante.Huelle);
+        Assert.Equal(40.0, kante.Werte[100]);      // die Oberkante der Summe 28 + 12
+        Assert.Equal(28.0, kante.Unten![100]);
+
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "kante");
+            p.Add(x => x.Einheit, "kW");
+        });
+        Assert.Equal("none", cut.Find("path[data-reihe='Heizstab']").GetAttribute("fill"));
+        Assert.NotEqual("none", cut.Find("path[data-reihe='Heizwärmebedarf']").GetAttribute("fill"));
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(100));
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.Contains("Heizstab: 12 kW", zeile);
+        Assert.Contains("Wärmeproduktion: 28 kW", zeile);
+        Assert.Contains("Warmwasserbedarf: 10 kW", zeile);
+    }
+
+    /// <summary>
+    /// <b>Zusammengefasst nennt die Zeigerzeile die Spitzenstunde</b> (Stufenregel des
+    /// Stapels): Im Jahresbild zeigt jeder Tag die Werte EINER Stunde — der, in der die
+    /// Summe ihre Tagesspitze hat. Die Zeile nennt diese Stunde mit Datum und Uhrzeit und
+    /// liest ALLE Reihen darin, auch wenn der Zeiger auf einer anderen Stunde des Tages
+    /// steht. Im engen Ausschnitt steht jede Stunde, und die Zeile nennt wieder die Stelle.
+    /// Unter der Achse steht, was eine Stufe zeigt — im Ausschnitt zeichnet der Baustein
+    /// den Hinweis selbst, im engen Ausschnitt fällt er weg.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Zusammengefasst_nennt_die_Zeigerzeile_die_Spitzenstunde()
+    {
+        const int N = 8760;
+        var heizung = new double[N];
+        var wasser = new double[N];
+        var summe = new double[N];
+        for (int h = 0; h < N; h++)
+        {
+            int stunde = h % 24;
+            heizung[h] = stunde < 6 ? 30.0 : 20.0;            // eigene Spitze nachts
+            wasser[h] = stunde == 18 ? 25.0 : 1.0;            // die Summe hat ihre Spitze um 18 Uhr
+            summe[h] = heizung[h] + wasser[h];
+        }
+        Zeichenmodell modell = ChartRenderer.GanglinieNormiertModell(
+            "Wärmelast Jahresganglinie",
+            new[]
+            {
+                new ChartRenderer.Reihe("Summe Wärmebedarf", summe, ChartRenderer.C_BEDARF),
+                new ChartRenderer.Reihe("Heizung", heizung, ChartRenderer.C_WP, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Brauchwasser", wasser, ChartRenderer.C_PV, ChartRenderer.Stapelart.Flaeche)
+            },
+            "Wärmelast", ChartRenderer.Achse.Monate, false);
+
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "spitzenstunde");
+        });
+        const string HINWEIS_TAG = "je Tag die Stunde der Tagesspitze";
+        Assert.Contains(cut.FindAll("text"), t => t.TextContent == HINWEIS_TAG);
+
+        // Der Zeiger steht am 14. Januar um 3 Uhr - der Tag zeigt 18 Uhr.
+        double bezug = summe.Max();
+        string Prozent(double w) => (w / bezug * 100.0).ToString("0.###", CultureInfo.CurrentCulture);
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(13 * 24 + 3));
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.StartsWith("Spitzenstunde 14. Januar, 18:00", zeile);
+        Assert.Contains("Heizung: " + Prozent(20.0), zeile);        // nicht die 30 der Nacht
+        Assert.Contains("Brauchwasser: " + Prozent(25.0), zeile);
+        Assert.Contains("Summe Wärmebedarf: " + Prozent(45.0), zeile);
+
+        // Gezoomt unter dem Vierfachen: derselbe Vollpfad, derselbe Tag, der Hinweis
+        // steht unter der nachgezeichneten Achse.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 4379));
+        Assert.Equal(HINWEIS_TAG, cut.Find(".epos-diagramm-stufenhinweis").TextContent);
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(13 * 24 + 3));
+        Assert.StartsWith("Spitzenstunde 14. Januar, 18:00", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+
+        // Knapp über dem Vierfachen: nachgerechnet, je Bildpunkt eine Stufe.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(500, 2689));
+        Assert.Equal("je Bildpunkt die Stunde der Spitze",
+                     cut.Find(".epos-diagramm-stufenhinweis").TextContent);
+
+        // Eng gezoomt: jede Stunde steht, die Zeile nennt die Stelle, der Hinweis fällt weg.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(300, 330));
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(13 * 24 + 3));
+        zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.StartsWith("315 h", zeile);
+        Assert.Contains("Heizung: " + Prozent(30.0), zeile);
+        Assert.Empty(cut.FindAll(".epos-diagramm-stufenhinweis"));
     }
 
     /// <summary>Die volle Ansicht räumt den nachgerechneten Ausschnitt ab.</summary>
@@ -1853,5 +2105,84 @@ public class DiagrammSvgTests : EposBunitContext
 
         Assert.Single(cut.FindAll(".epos-farbwahl"));
         Assert.False(cut.Instance.IstAus(GERECHNET));   // geschaltet wird dabei NICHT
+    }
+
+    /// <summary>
+    /// <b>CSV am Säulenbild</b> (CSV-2): Ein Bild ohne Zeichenfläche, das seine Reihen im Modell
+    /// trägt (Monatsstapel), zeigt die Leiste allein mit „CSV…“ — ohne Stufe, Bereich und 1:1.
+    /// Ohne Naht steht keine Leiste.
+    /// </summary>
+    [Fact]
+    public void Saeulenbild_mit_Reihen_zeigt_die_Leiste_nur_mit_CSV()
+    {
+        var reihen = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Direkt", Enumerable.Repeat(1.0, 12).ToArray(), SkiaSharp.SKColors.Gold)
+        };
+        Zeichenmodell modell = ChartRenderer.MonatsStapelModell("Deckung", "kWh", reihen);
+
+        var ohne = Render<DiagrammSvg>(p => p.Add(x => x.Modell, modell).Add(x => x.Kennung, "s0"));
+        Assert.Empty(ohne.FindAll("div.epos-diagramm-leiste"));
+
+        var exporte = new List<(Zeichenmodell Modell, string Titel, Zeitraster Raster)>();
+        var naht = new Ganglinienexport((m, t, r) => { exporte.Add((m, t, r)); return Task.CompletedTask; });
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, modell).Add(x => x.Kennung, "s1").Add(x => x.Bezeichnung, "Deckung")
+            .AddCascadingValue(naht));
+
+        IElement leiste = cut.Find("div.epos-diagramm-leiste");
+        Assert.Single(leiste.QuerySelectorAll("button"));
+        Assert.Empty(leiste.QuerySelectorAll(".epos-diagramm-stufe"));
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, titel, raster) = Assert.Single(exporte);
+        Assert.Equal("Deckung", titel);
+        Assert.Equal(Zeitraster.Monat, raster);
+        Assert.Equal(12, ZeitreihenCsv.AusModell(m)[0].Werte.Length);
+    }
+
+    /// <summary>Das ausdrückliche Raster der Naht schlägt die Länge (24 Werte als Jahre).</summary>
+    [Fact]
+    public void Ganglinienexport_nimmt_das_ausdrueckliche_Raster()
+    {
+        Zeichenmodell modell = new(10, 10, new Farbton(default(Farbrolle)));
+        modell.FuegeReihe(new Datenreihe("A", new Farbton(default(Farbrolle)), 1f, null, new double[24]));
+        Zeitraster? gemeldet = null;
+        var jahre = new Ganglinienexport((_, _, r) => { gemeldet = r; return Task.CompletedTask; }, Zeitraster.Jahr);
+        jahre.Speichern(modell, "x");
+        Assert.Equal(Zeitraster.Jahr, gemeldet);
+        Assert.Equal(Zeitraster.Tagesstunde, new Ganglinienexport((_, _) => Task.CompletedTask).RasterFuer(modell));
+        Assert.True(jahre.Passt(modell));
+    }
+
+    /// <summary>
+    /// CSV-4: Ein Kalenderteppich trägt keine Reihe, aber seine Tafel 365 × 24 — unter einer Naht
+    /// zeigt seine Leiste „CSV…“, der Klick gibt das Modell mit dem Raster Kalendertag weiter.
+    /// </summary>
+    [Fact]
+    public void Kalenderteppich_traegt_CSV_im_Raster_Kalendertag()
+    {
+        Zeichenmodell modell = ChartRenderer.KalenderteppichModell(Kalenderteppich.ImGemeinjahr(
+            new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, Kalenderangabe.AusWert(20.0), null, null),
+            new Gemeinjahrkalender(3)));
+
+        var ohne = Render<DiagrammSvg>(p => p.Add(x => x.Modell, modell).Add(x => x.Kennung, "t0").Add(x => x.OhneZoom, true));
+        Assert.Empty(ohne.FindAll("button.epos-diagramm-csv"));
+
+        var exporte = new List<(Zeichenmodell Modell, string Titel, Zeitraster Raster)>();
+        var naht = new Ganglinienexport((m, t, r) => { exporte.Add((m, t, r)); return Task.CompletedTask; });
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, modell).Add(x => x.Kennung, "t1").Add(x => x.Bezeichnung, "Teppichbild")
+            .Add(x => x.OhneZoom, true).Add(x => x.LegendeSchaltbar, false)
+            .AddCascadingValue(naht));
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, titel, raster) = Assert.Single(exporte);
+        Assert.Equal("Teppichbild", titel);
+        Assert.Equal(Zeitraster.Kalendertag, raster);
+        string[] zeilen = ZeitreihenCsv.Kalenderteppich(m.Tafel).Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(366, zeilen.Length);
+        Assert.Equal(26, zeilen[1].Split(';').Length);
+        Assert.StartsWith("01.01.;Do;20,0;", zeilen[1], StringComparison.Ordinal);
     }
 }

@@ -301,6 +301,24 @@ public sealed class SimulationKiSicht
     }
 
     /// <summary>
+    /// Die Heizgrenze der Kesselbereitschaft [°C]; <c>null</c> = leer (Vorgabe 15 °C). Ein Wert
+    /// außerhalb der Grenzen steht danach im Arbeitsstand und meldet sich in der Prüfung der
+    /// Maske — geschrieben wird er nicht.
+    /// </summary>
+    public double? KesselHeizgrenze
+    {
+        get => Parameter?.Heizgrenze;
+        set
+        {
+            ParameterDaten? p = Parameter;
+            if (p is null) return;
+            p.Heizgrenze = value;
+            if (WindowsFormsApplication1.SimulationSPK.HeizgrenzePlausibel(value))
+                Wege?.HeizgrenzeSchreiben?.Invoke(value);
+        }
+    }
+
+    /// <summary>
     /// Der Lesepunkt des Wärmepumpen-Kennfelds: <c>true</c> = vor dem Speicher ablesen
     /// (Welle KI‑F2).
     /// </summary>
@@ -350,6 +368,79 @@ public sealed class SimulationKiSicht
         }
     }
 
+    // ---- Der Bereich „Kälte“ (Welle KB-B; Entwurf Kältebereich 3, 5.4) ----
+
+    /// <summary>
+    /// Die Kälteerzeuger in Rechenfolge (nur lesend) — „Nummer. Name (Kennwerte)“, wie die Kacheln des Bereichs.
+    /// </summary>
+    public string Kaelteerzeuger
+        => string.Join("; ", (_konfiguration()?.Kaeltebereich.Erzeuger ?? Array.Empty<KaelteerzeugerZeile>())
+               .Select(z => z.Nummer.ToString(System.Globalization.CultureInfo.CurrentCulture) + ". " + z.Bezeichner +
+                            " (" + string.Join(", ", z.Kachel.Chips.Select(c => c.Text)
+                                .Concat(z.Art == KaelteStufe.Waermepumpe && !z.Kuehlbetrieb
+                                    ? new[] { Resource.KI_DLG_SIM_KUEHL_AUS } : Array.Empty<string>())) + ")"));
+
+    /// <summary>Die Kältespeicher des Bereichs „Kälte“ (nur lesend): Name, Volumen, Temperaturpaar.</summary>
+    public string Kaeltespeicher
+        => string.Join("; ", (_konfiguration()?.Kaeltebereich.Kaeltespeicher ?? Array.Empty<Bausteine.SpeicherKachelDaten>())
+               .Select(s => string.Join(" · ", new[] { s.Bezeichner, s.Volumen, s.Temperaturpaar }.Where(t => !string.IsNullOrEmpty(t)))));
+
+    /// <summary>
+    /// Die Wärmepumpen im Kühlbetrieb, durch Komma getrennt — setzbar: Jede genannte Wärmepumpe des Bereichs schaltet
+    /// den Kühlbetrieb an, jede ungenannte aus, über denselben Weg wie die Kachel (<c>KuehlbetriebWpSchreiben</c>),
+    /// sofort. Ein unbekannter Name oder ein Sperrgrund lehnt benannt ab.
+    /// </summary>
+    public string KuehlbetriebWaermepumpen
+    {
+        get => string.Join(", ", (_konfiguration()?.Kaeltebereich.Erzeuger ?? Array.Empty<KaelteerzeugerZeile>())
+                   .Where(z => z.Art == KaelteStufe.Waermepumpe && z.Kuehlbetrieb).Select(z => z.Bezeichner));
+        set
+        {
+            SimulationKonfigSeite seite = SeiteOderAbsage();
+            List<KaelteerzeugerZeile> wps = (_konfiguration()?.Kaeltebereich.Erzeuger ?? Array.Empty<KaelteerzeugerZeile>())
+                .Where(z => z.Art == KaelteStufe.Waermepumpe).ToList();
+            List<string> namen = (value ?? "").Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+            foreach (string n in namen)
+                if (!wps.Any(w => string.Equals(w.Bezeichner, n, StringComparison.OrdinalIgnoreCase)))
+                    throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_KUEHL_WP_UNBEKANNT, n));
+            foreach (KaelteerzeugerZeile w in wps)
+            {
+                bool an = namen.Any(n => string.Equals(w.Bezeichner, n, StringComparison.OrdinalIgnoreCase));
+                Absage(seite.KiKuehlbetriebWpSetzen(w.IdAnlage, an));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Die Folge der Kälteerzeuger (Welle KB-D): die Namen in der Folge, in der sie decken — nach freier Kühlung und
+    /// Kältespeicher. Abgeleitet, ohne Setzer: umgeordnet wird über die Pfeile des Bereichs „Kälte“.
+    /// </summary>
+    public string Kaeltefolge
+        => string.Join(" → ", (_konfiguration()?.Kaeltebereich?.Erzeuger ?? new List<KaelteerzeugerZeile>())
+                                  .Select(z => z.Bezeichner));
+
+    /// <summary>
+    /// Ist die Folge der Kälteerzeuger gepflegt (Welle KB-D)? <c>false</c> setzen stellt die Vorgabefolge her — über
+    /// denselben Delegaten wie der Knopf (<see cref="SimulationKonfigDienste.KaelteVorgabefolge"/>), sofort; <c>true</c>
+    /// lehnt die Sicht benannt ab (gepflegt wird über die Pfeile).
+    /// </summary>
+    public bool KaeltefolgeGepflegt
+    {
+        get => _konfiguration()?.Kaeltebereich?.FolgeGepflegt ?? false;
+        set
+        {
+            if (value) throw new InvalidOperationException(Resource.KI_SIM_KAELTEFOLGE_NUR_VORGABE);
+            SimulationKonfigDaten? d = _konfiguration();
+            Func<string?>? vorgabe = _konfigwege?.Invoke()?.KaelteVorgabefolge;
+            if (d is null || vorgabe is null)
+                throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+            string? grund = vorgabe();
+            if (grund is not null) throw new InvalidOperationException(grund);
+            d.Kaeltebereich.FolgeGepflegt = false;
+        }
+    }
+
     /// <summary>
     /// Die Projekteinstellung „Anlagenkopplung" (Konzept Anlagenkopplung 9.4) als Steuerwert
     /// (<c>DbWerte.ANLAGENKOPPLUNG_*</c>) — geschrieben über denselben Delegaten wie die Wahl
@@ -385,6 +476,411 @@ public sealed class SimulationKiSicht
                .Where(WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut)
                .Select(s => new KiWahleintrag(s, SimulationKonfigSeite.Kopplungsname(s)))
                .ToList();
+
+    // =====================================================================
+    //  Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4)
+    // =====================================================================
+    //
+    // Acht Felder über EINEN Delegaten (NetzkanaeleSchreiben): Jede Setzung schreibt die ganze
+    // Vorgabe sofort, wie ein Feld des Abschnitts. Leer = kein Kanalwert; sind alle drei leer, gilt
+    // der Projektwert „netzverluste". Eine Einheit ohne Wert bleibt im Arbeitsstand, bis ein Wert
+    // dazukommt.
+
+    /// <summary>Netzverlust des Heizkanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustHeizung
+    {
+        get => Netzkanaele.HeizungWert;
+        set => NetzkanalSetzen(v => v with { HeizungWert = value });
+    }
+
+    /// <summary>Einheit des Heizkanalwerts: <c>%</c> oder <c>kWh/a</c>.</summary>
+    public string NetzverlustHeizungEinheit
+    {
+        get => Netzkanaele.HeizungEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { HeizungEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Netzverlust des Brauchwasserkanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustBrauchwasser
+    {
+        get => Netzkanaele.BrauchwasserWert;
+        set => NetzkanalSetzen(v => v with { BrauchwasserWert = value });
+    }
+
+    /// <summary>Einheit des Brauchwasserkanalwerts.</summary>
+    public string NetzverlustBrauchwasserEinheit
+    {
+        get => Netzkanaele.BrauchwasserEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { BrauchwasserEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Netzverlust des Prozesskanals in seiner Einheit; leer = kein Kanalwert.</summary>
+    public double? NetzverlustProzess
+    {
+        get => Netzkanaele.ProzessWert;
+        set => NetzkanalSetzen(v => v with { ProzessWert = value });
+    }
+
+    /// <summary>Einheit des Prozesskanalwerts.</summary>
+    public string NetzverlustProzessEinheit
+    {
+        get => Netzkanaele.ProzessEinheit ?? WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT;
+        set => NetzkanalSetzen(v => v with { ProzessEinheit = KanalEinheit(value) });
+    }
+
+    /// <summary>Die Zirkulationsleistung des Bestandswegs [kW]; leer = keine Zirkulation.</summary>
+    public double? ZirkulationLeistung
+    {
+        get => Netzkanaele.ZirkulationLeistungKw;
+        set => NetzkanalSetzen(v => v with { ZirkulationLeistungKw = value });
+    }
+
+    /// <summary>Die Laufzeit der Zirkulation [h/d]; leer = keine Zirkulation.</summary>
+    public double? ZirkulationLaufzeit
+    {
+        get => Netzkanaele.ZirkulationLaufzeitHd;
+        set => NetzkanalSetzen(v => v with { ZirkulationLaufzeitHd = value });
+    }
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustHeizungEinheitWahl => Kanaleinheiten;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustBrauchwasserEinheitWahl => Kanaleinheiten;
+
+    /// <summary>Die zwei Einheiten eines Kanalwerts.</summary>
+    public IReadOnlyList<KiWahleintrag> NetzverlustProzessEinheitWahl => Kanaleinheiten;
+
+    private static readonly IReadOnlyList<KiWahleintrag> Kanaleinheiten = new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT,
+                          WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT),
+        new KiWahleintrag(WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH,
+                          WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH)
+    };
+
+    private WindowsFormsApplication1.Netzverlustvorgabe Netzkanaele
+        => Parameter?.Netzkanaele ?? WindowsFormsApplication1.Netzverlustvorgabe.Leer;
+
+    /// <summary>Eine Einheit aus der Wahl; eine fremde lehnt die Sicht benannt ab.</summary>
+    private static string KanalEinheit(string? wert)
+    {
+        string w = (wert ?? "").Trim();
+        if (w == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_PROZENT ||
+            w == WindowsFormsApplication1.BedarfNetzKalenderSchema.EINHEIT_KWH) return w;
+        throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_NV_EINHEIT_UNBEKANNT, w));
+    }
+
+    /// <summary>Schreibt die ganze Vorgabe sofort; scheitert es, steht der Grund in der Ausnahme.</summary>
+    private void NetzkanalSetzen(Func<WindowsFormsApplication1.Netzverlustvorgabe, WindowsFormsApplication1.Netzverlustvorgabe> aenderung)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Netzverlustvorgabe, bool>? schreiben = Wege?.NetzkanaeleSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        WindowsFormsApplication1.Netzverlustvorgabe neu = aenderung(p.Netzkanaele);
+        WindowsFormsApplication1.Netzverlustvorgabe gespeichert = neu.Normalisiert();
+        string? grund = gespeichert.Pruefen();
+        if (grund is not null) throw new InvalidOperationException(grund);
+        if (!schreiben(gespeichert))
+            throw new InvalidOperationException(Resource.SIMKONF_MSG_NV_KANAL_FEHLER);
+        p.Netzkanaele = gespeichert with
+        {
+            HeizungEinheit = gespeichert.HeizungEinheit ?? neu.HeizungEinheit,
+            BrauchwasserEinheit = gespeichert.BrauchwasserEinheit ?? neu.BrauchwasserEinheit,
+            ProzessEinheit = gespeichert.ProzessEinheit ?? neu.ProzessEinheit
+        };
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1)
+    // =====================================================================
+    //
+    // Fünf Felder über EINEN Delegaten (AufheizvorgabeSchreiben): Jede Setzung schreibt die ganze
+    // Einstellung sofort, wie ein Feld des Abschnitts. Die Normalisierung macht der Record
+    // (Festlegung 24): „kälteste Stunde" und „täglich" werden NULL, ein leeres Zahlenfeld NULL, ein
+    // getippter Wert bleibt. Was die Maske nicht zeigt, lehnt die Sicht benannt ab: die vier
+    // Werte bei Schalter aus, ΔT_K bei der Bemessung „kälteste Stunde".
+
+    /// <summary>Der Projektschalter „Aufheizoptimierung rechnen"; aus behält die übrigen Werte.</summary>
+    public bool Aufheizoptimierung
+    {
+        get => Aufheizstand.An;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = Aufheizstand;
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(value, a.Bemessung, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+        }
+    }
+
+    /// <summary>
+    /// Die Bemessung als Steuerwert (<c>DbWerte.AUFHEIZ_BEMESSUNG_*</c>): <c>STUNDE</c> (Vorgabe) oder
+    /// <c>STUNDE_ABZUG</c>; leer heißt die Vorgabe.
+    /// </summary>
+    public string AufheizBemessung
+    {
+        get => Aufheizstand.BemessungWirksam;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNGEN,
+                                     WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, wert, a.AbzugK, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+        }
+    }
+
+    /// <summary>Die zwei Bemessungen mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> AufheizBemessungWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE, Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE),
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG, Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG)
+    };
+
+    /// <summary>ΔT_K [K] der Bemessung „kälteste Stunde − ΔT_K"; <c>null</c> = leer (Vorgabe 2 K).</summary>
+    public double? AufheizAbzugK
+    {
+        get => Aufheizstand.AbzugK;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            if (!a.MitAbzug)
+                throw new InvalidOperationException(Resource.KI_DLG_SIM_AUFH_NUR_ABZUG);
+            Bereich(value, WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MIN_K,
+                    WindowsFormsApplication1.AufheizvorgabeSchema.ABZUG_MAX_K, Resource.SIMKONF_AUFH_LBL_ABZUG);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, value, a.Reserve, a.Art, a.AufschlagH, a.AufschlagProzent));
+        }
+    }
+
+    /// <summary>
+    /// Die Aufheizreserve ρ in Prozent, wie das Feld sie zeigt; gespeichert als Anteil (Festlegung 15).
+    /// <c>null</c> = leer (Vorgabe 20 %).
+    /// </summary>
+    public double? AufheizReserveProzent
+    {
+        get => Aufheizstand.Reserve is double r ? r * 100.0 : null;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            Bereich(value, 1.0, 100.0, Resource.SIMKONF_AUFH_LBL_RESERVE);
+            double? anteil = value is double p ? p / 100.0 : null;
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, anteil, a.Art, a.AufschlagH, a.AufschlagProzent));
+        }
+    }
+
+    /// <summary>
+    /// Die Art der Aufheizzeit als Steuerwert (<c>DbWerte.AUFHEIZ_ART_*</c>): <c>TAEGLICH</c>
+    /// (Vorgabe) oder <c>FEST</c>; leer heißt die Vorgabe.
+    /// </summary>
+    public string AufheizArt
+    {
+        get => Aufheizstand.ArtWirksam;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            string wert = Steuerwert(value, WindowsFormsApplication1.DbWerte.AUFHEIZ_ARTEN,
+                                     WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, wert, a.AufschlagH, a.AufschlagProzent));
+        }
+    }
+
+    /// <summary>Die zwei Arten mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> AufheizArtWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_TAEGLICH, Resource.SIMKONF_AUFH_ART_TAEGLICH),
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.AUFHEIZ_ART_FEST, Resource.SIMKONF_AUFH_ART_FEST)
+    };
+
+    // Der Aufschlag (Welle O1b; E59 (2), Festlegungen 35, 36): zwei Felder über denselben Delegaten,
+    // nur bei Schalter an (sonst benannt abgelehnt wie die Maske, die sie dann nicht zeigt); 0 und
+    // leer werden NULL (der Record normalisiert), die übrigen Werte gehen unverändert mit.
+
+    /// <summary>Der Aufschlag in Stunden 0 … 24; <c>null</c> = leer (kein Aufschlag).</summary>
+    public int? AufheizAufschlagH
+    {
+        get => Aufheizstand.AufschlagH;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            Bereich(value, 0, WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_H_MAX, Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_H);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                        value, a.AufschlagProzent));
+        }
+    }
+
+    /// <summary>Der Aufschlag in Prozent der Stufenzahl n, 0 … 100; <c>null</c> = leer (kein Aufschlag).</summary>
+    public double? AufheizAufschlagProzent
+    {
+        get => Aufheizstand.AufschlagProzent;
+        set
+        {
+            WindowsFormsApplication1.Aufheizvorgabe a = AufheizEingeschaltet();
+            Bereich(value, 0, WindowsFormsApplication1.Aufheizvorgabe.AUFSCHLAG_PROZENT_MAX,
+                    Resource.SIMKONF_AUFH_AUFSCHLAG_LBL_PROZENT);
+            AufheizSchreiben(new WindowsFormsApplication1.Aufheizvorgabe(a.An, a.Bemessung, a.AbzugK, a.Reserve, a.Art,
+                                                                        a.AufschlagH, value));
+        }
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3)
+    // =====================================================================
+
+    /// <summary>Der Zahlenwert der Einspeisegrenze in ihrer Einheit; <c>null</c> = keine Grenze.</summary>
+    public double? Einspeisegrenze
+    {
+        get => Einspeisestand.Wert;
+        set
+        {
+            if (value is double w && (double.IsNaN(w) || w < 0))
+                Bereich(value, 0.0, double.MaxValue, Resource.SIMKONF_LBL_EINSPEISEGRENZE);
+            EinspeisegrenzeSetzen(new WindowsFormsApplication1.Einspeisegrenze(value, Einspeisestand.Einheit));
+        }
+    }
+
+    /// <summary>
+    /// Die Einheit als Steuerwert (<c>DbWerte.EINSPEISEGRENZE_*</c>): <c>kW</c> (Vorgabe) oder <c>%</c>
+    /// der installierten PV-Leistung; leer heißt die Vorgabe.
+    /// </summary>
+    public string EinspeisegrenzeEinheit
+    {
+        get => Einspeisestand.EinheitWirksam;
+        set
+        {
+            string wert = Steuerwert(value, new[] { WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW,
+                                                    WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT },
+                                     WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW);
+            EinspeisegrenzeSetzen(new WindowsFormsApplication1.Einspeisegrenze(Einspeisestand.Wert, wert));
+        }
+    }
+
+    /// <summary>Die zwei Einheiten mit ihren Namen auf der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> EinspeisegrenzeEinheitWahl => new[]
+    {
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_KW, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_KW),
+        new KiWahleintrag(WindowsFormsApplication1.DbWerte.EINSPEISEGRENZE_PROZENT, Resource.SIMKONF_EINSPEISEGRENZE_EINHEIT_PROZENT)
+    };
+
+    private WindowsFormsApplication1.Einspeisegrenze Einspeisestand
+        => Parameter?.Einspeisegrenze ?? WindowsFormsApplication1.Einspeisegrenze.Keine;
+
+    /// <summary>Schreibt über den Delegaten des Abschnitts; ohne Weg und bei Fehlschlag benannt.</summary>
+    private void EinspeisegrenzeSetzen(WindowsFormsApplication1.Einspeisegrenze neu)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Einspeisegrenze, bool>? schreiben = Wege?.EinspeisegrenzeSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        if (!schreiben(neu))
+            throw new InvalidOperationException(Resource.SIMKONF_EINSPEISEGRENZE_FEHLER);
+        p.Einspeisegrenze = neu;
+    }
+
+    // =====================================================================
+    //  Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5)
+    // =====================================================================
+
+    /// <summary>Läuft die thermische Desinfektion?</summary>
+    public bool Desinfektion
+    {
+        get => Desinfektionsstand.Aktiv;
+        set => DesinfektionSetzen(Desinfektionsstand with { Aktiv = value });
+    }
+
+    /// <summary>Intervall [Tage], 1 … 31; leer heißt 7.</summary>
+    public int? DesinfektionIntervall
+    {
+        get => Desinfektionsstand.IntervallTage;
+        set => DesinfektionSetzen(Desinfektionsstand with { IntervallTage = value });
+    }
+
+    /// <summary>Stunde des Tages, 0 … 23; leer heißt 2.</summary>
+    public int? DesinfektionStunde
+    {
+        get => Desinfektionsstand.Stunde;
+        set => DesinfektionSetzen(Desinfektionsstand with { Stunde = value });
+    }
+
+    /// <summary>Zieltemperatur [°C], 55 … 90; leer heißt 70.</summary>
+    public double? DesinfektionZieltemperatur
+    {
+        get => Desinfektionsstand.ZielC;
+        set => DesinfektionSetzen(Desinfektionsstand with { ZielC = value });
+    }
+
+    /// <summary>Volumen [l], 0 … 100 000; leer heißt das Volumen der Brauchwasserspeicher.</summary>
+    public double? DesinfektionVolumen
+    {
+        get => Desinfektionsstand.VolumenL;
+        set => DesinfektionSetzen(Desinfektionsstand with { VolumenL = value });
+    }
+
+    private WindowsFormsApplication1.Desinfektionsvorgabe Desinfektionsstand
+        => Parameter?.Desinfektion ?? WindowsFormsApplication1.Desinfektionsvorgabe.Aus;
+
+    /// <summary>Prüft und schreibt über den Delegaten des Abschnitts; ohne Weg und bei Fehlschlag benannt.</summary>
+    private void DesinfektionSetzen(WindowsFormsApplication1.Desinfektionsvorgabe neu)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Desinfektionsvorgabe, bool>? schreiben = Wege?.DesinfektionSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        string? fehler = WindowsFormsApplication1.Desinfektionsvorgabe.Pruefen(neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (fehler != null) throw new ArgumentOutOfRangeException(nameof(neu), fehler);
+        var normal = new WindowsFormsApplication1.Desinfektionsvorgabe(neu.Aktiv, neu.IntervallTage, neu.Stunde, neu.ZielC, neu.VolumenL);
+        if (!schreiben(normal))
+            throw new InvalidOperationException(Resource.SIMKONF_DESINFEKTION_FEHLER);
+        p.Desinfektion = normal;
+    }
+
+    /// <summary>Die gespeicherte Einstellung; ohne Stand „aus".</summary>
+    private WindowsFormsApplication1.Aufheizvorgabe Aufheizstand
+        => Parameter?.Aufheizung ?? WindowsFormsApplication1.Aufheizvorgabe.Aus;
+
+    /// <summary>Der Stand für einen Wert, den die Maske nur bei Schalter an zeigt — sonst benannt abgelehnt.</summary>
+    private WindowsFormsApplication1.Aufheizvorgabe AufheizEingeschaltet()
+    {
+        WindowsFormsApplication1.Aufheizvorgabe a = Aufheizstand;
+        if (!a.An) throw new InvalidOperationException(Resource.KI_DLG_SIM_AUFH_NICHT_AN);
+        return a;
+    }
+
+    /// <summary>
+    /// Ein Steuerwert der Wertliste (ohne Rücksicht auf Groß- und Kleinschreibung); leer heißt die
+    /// Vorgabe, ein fremder Wert wird benannt abgelehnt.
+    /// </summary>
+    private static string Steuerwert(string? roh, IReadOnlyList<string> liste, string vorgabe)
+    {
+        if (string.IsNullOrWhiteSpace(roh)) return vorgabe;
+        string t = roh.Trim();
+        foreach (string w in liste)
+            if (string.Equals(w, t, StringComparison.OrdinalIgnoreCase)) return w;
+        throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_AUFH_UNBEKANNT, t, string.Join(", ", liste)));
+    }
+
+    /// <summary>Prüft die Grenzen des Eingabefeldes; leer ist zulässig.</summary>
+    private static void Bereich(double? wert, double min, double max, string feld)
+    {
+        if (wert is not double w) return;
+        if (!double.IsNaN(w) && w >= min && w <= max) return;
+        CultureInfo k = CultureInfo.CurrentCulture;
+        throw new InvalidOperationException(string.Format(k, Resource.KI_FELD_BEREICH, feld, w.ToString(k),
+            string.Format(k, Resource.KI_FELD_BEREICH_VON_BIS, min.ToString(k), max.ToString(k))));
+    }
+
+    /// <summary>
+    /// Schreibt die ganze Einstellung über den Delegaten des Abschnitts und zieht den Stand erst nach,
+    /// wenn das Schreiben angekommen ist; ohne Weg und bei Fehlschlag benannt.
+    /// </summary>
+    private void AufheizSchreiben(WindowsFormsApplication1.Aufheizvorgabe neu)
+    {
+        ParameterDaten? p = Parameter;
+        Func<WindowsFormsApplication1.Aufheizvorgabe, bool>? schreiben = Wege?.AufheizvorgabeSchreiben;
+        if (p is null || schreiben is null)
+            throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+        if (!schreiben(neu))
+            throw new InvalidOperationException(Resource.SIMKONF_AUFH_MSG_FEHLER);
+        p.Aufheizung = neu;
+    }
 
     /// <summary>
     /// Die gewählte Karte mit Quellenwahl (Wärmepumpe oder Heizkessel) als
@@ -741,6 +1237,40 @@ public sealed class SimulationKiSicht
     /// findet die Erklärung damit auch ohne Modell.
     /// </remarks>
     public string Laufhinweise => _ergebnis()?.Laufmeldungen ?? "";
+
+    /// <summary>
+    /// UB‑E4 (Fachkonzept Übergabegrenze 7.4): die Betriebsbereiche der Wärmepumpe des Laufs — je Wert
+    /// „Spaltenname=Wert“ mit den Spaltennamen des Ergebnisses als Schlüssel; leer ohne Bivalenzobjekt.
+    /// </summary>
+    public string WpBetriebsbereiche
+    {
+        get
+        {
+            WindowsFormsApplication1.Bereichskennzahlen? b = _ergebnis()?.Waermepumpe?.Bereiche;
+            if (b is null) return "";
+            return string.Join("; ", b.Schluesselwerte().Select(kv =>
+                kv.Key + "=" + kv.Value.ToString("0.###", CultureInfo.InvariantCulture)));
+        }
+    }
+
+    /// <summary>
+    /// KM3‑E3‑b (Fachkonzept Teillast und Takten 5.4): Teillast und Takten je Kältemaschine mit Teillastweg —
+    /// „Anlage: Spaltenname=Wert; …“, Maschinen durch „ | “ getrennt; leer ohne solche Maschine.
+    /// </summary>
+    public string KmTeillast
+    {
+        get
+        {
+            IReadOnlyList<KaeltemaschineTeillastKachel>? l = _ergebnis()?.Bedarf?.Kaelte?.Teillast;
+            if (l is null || l.Count == 0) return "";
+            static string W(double? x) => x is double d ? d.ToString("0.###", CultureInfo.InvariantCulture) : "";
+            return string.Join(" | ", l.Select(k => k.Anlage + ": " + string.Join("; ", new[]
+            {
+                "Taktstrom_kWh=" + W(k.TaktstromKwh), "Starts=" + W(k.Starts), "Teillastanteil_Prozent=" + W(k.TeillastanteilProzent),
+                "Lastgrad_Mittel=" + W(k.Lastgrad), "EER_ohne_Hilfsstrom=" + W(k.EerOhneHilfsstrom)
+            })));
+        }
+    }
 
     /// <summary>
     /// Die Speicherkapazität [kWh] der Autarkierechnung auf dem Blatt „Ergebnis"

@@ -50,10 +50,26 @@ namespace WindowsFormsApplication1
             if (besitzer == null) throw new ArgumentNullException(nameof(besitzer));
             _kontext = kontext ?? throw new ArgumentNullException(nameof(kontext));
 
+            // KATALOGAUSWAHL V1, STUFE 3: dieselbe Projektkopievormerkung wie in
+            // WaermepumpenHuelle.Oeffnen - je Oeffnen des Dialogs eine; Abbrechen raeumt die in
+            // der Sitzung angelegten Kopien ab, OK die nicht mehr referenzierten.
+            Projektkopievormerkung vormerkung = null;
             _quelle = new SimulationAnsichtQuelle(bedarf, new SimulationPlattformwege
             {
                 WaermepumpeGaben = (idProjekt, modelle) =>
-                    WaermepumpenHuelle.Gaben(besitzer(), idProjekt, modelle, wizard: false),
+                {
+                    vormerkung = new Projektkopievormerkung(
+                        name => new WPCtrl().DeleteFromProjekt(name, idProjekt));
+                    return WaermepumpenHuelle.Gaben(besitzer(), idProjekt, modelle, wizard: false,
+                                                    vormerkung: vormerkung);
+                },
+                WaermepumpeAbschluss = (ok, modelle) =>
+                {
+                    Projektkopievormerkung offen = vormerkung;
+                    vormerkung = null;
+                    offen?.Abschliessen(ok, id => modelle.Exists(it => it.ID_WP == id &&
+                        (it.ID_Type == WizardItemClass.WP_TYP || it.ID_Type == WizardItemClass.REF_WP_TYP)));
+                },
 
                 // ANWENDERWUNSCH 16.09.2026: die Konfiguration EINER Waermepumpe hinter
                 // dem Knopf ihrer Karte. Windows ist hier nicht die Ursache - die
@@ -92,7 +108,14 @@ namespace WindowsFormsApplication1
             if (m == null) return null;
 
             WaermepumpeGeraeteCtrl.GeraetedatenFuellen(m, m.ID_WP);
-            return WaermepumpeAnlageHuelle.AusModell(m);
+            WaermepumpeAnlageDaten d = WaermepumpeAnlageHuelle.AusModell(m);
+            // Anwenderwunsch 08.10.2026: ohne Traeger die Vorauswahl des Kerns - sie steht im Feldsatz und
+            // wird mit OK gespeichert; der Anwender kann sie aendern.
+            if (d.CarrierId <= 0) d.CarrierId = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_WAERMEPUMPE, 0, idProjekt);
+            // Uebergabegrenze UB-E1/E2: Herleitungszeile, Schnellwahl und Kaeltemittel des Geraets; geschrieben werden
+            // Vorlauf_Max (MitBetriebszeiten), Einbindung und Vorwaermbetrieb (MitUebergabe) und das Kaeltemittel.
+            BivalenzAbbildung.Lesen(m, d);
+            return d;
         }
 
         /// <summary>
@@ -132,9 +155,10 @@ namespace WindowsFormsApplication1
 
             WErzeugerCtrl.SpeicherErgebnis e = WErzeugerCtrl.KonfigurationSchreiben(
                 idAnlage, idProjekt,
-                new WErzeugerCtrl.KonfigurationFelder(
+                BivalenzAbbildung.MitUebergabe(BetriebszeitenAbbildung.MitBetriebszeiten(new WErzeugerCtrl.KonfigurationFelder(
                     Heizstab: daten.Heizstab,
-                    Sperrung: daten.Sperrung,
+                    // V14: Mit Fensterliste ist das Altfenster in die Liste ueberfuehrt.
+                    Sperrung: daten.Sperrfenster is null && daten.Sperrung,
                     SperrzeitVon: daten.SperrzeitVon ?? 0,
                     SperrzeitBis: daten.SperrzeitBis ?? 0,
                     BivalenterBetrieb: daten.BivalenterBetrieb,
@@ -148,11 +172,26 @@ namespace WindowsFormsApplication1
                     // Abrechnungsart (false = anteilig, NULL) - gelesen mit der Zeile, also
                     // unveraendert, wenn niemand sie angefasst hat.
                     KuehlIdCarrier: daten.KuehlCarrierId ?? 0,
-                    KuehlEigenerZaehler: daten.KuehlEigenerZaehler == true));
+                    KuehlEigenerZaehler: daten.KuehlEigenerZaehler == true,
+                    // KU3-6 (F1): die drei Anlagenfelder der freien Kuehlung ueber die Waermequelle -
+                    // der Gruppenschalter sagt dem Kern, dass sie geschrieben werden sollen.
+                    FreieKuehlung: true,
+                    KuehlFrei: daten.KuehlFrei,
+                    KuehlFreiGraedigkeitK: daten.KuehlFreiGraedigkeitK,
+                    KuehlFreiLeistungKw: daten.KuehlFreiLeistungKw), daten), daten));
 
             // ET-5: der gewaehlte Traeger gehoert dem Projekt zugeordnet. Idempotent;
             // er steht auch dann an, wenn der Satz sonst unveraendert blieb.
             if (e.Ok) ErzeugerTraegerHuelle.Zuordnen(idProjekt, false, daten.CarrierId);
+
+            // Uebergabegrenze UB-E2 (U-2): die Kaeltemittelwahl gehoert dem Geraet (Projektkopie).
+            if (e.Ok) BivalenzAbbildung.GeraetSchreiben(daten);
+
+            // V14: die Sperrfenster der Anlage - die Liste ersetzt den Bestand.
+            if (e.Ok && daten.Sperrfenster is not null &&
+                !SperrfensterCtrl.Schreiben(idAnlage, SperrfensterAbbildung.Fenster(daten.Sperrfenster)))
+                return new AnlagenkonfigErgebnis(false, Text_("ANL_KONFIG_MSG_FEHLER",
+                    "Die Konfiguration der Anlage konnte nicht gespeichert werden."));
 
             // KU2 Welle 3 (Kuehlkonzept 8.2): die drei Geraetefelder des Kuehlbetriebs in die
             // Projektkopie - ueber den einen Schreibweg des Kerns samt Sperrgruenden, nur wenn

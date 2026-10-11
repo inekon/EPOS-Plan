@@ -186,9 +186,12 @@ namespace WindowsFormsApplication1
                 Tabelle = SchemaKatalog.TAB_HEIZKESSEL_STAMM,
                 AusschlussSpalten = new[] { "Investitionskosten", "Wartungskosten",
                     "Wartungskosten_Einheit", "Nutzungsdauer" },
+                // Konzept Kesselkennlinie 3.4 (Etappe E1): Brennwert aus der Bauart, eta30 und
+                // Mindestleistung aus Satz 710.01 - HeizkesselImportSatz.Vergleichswerte.
                 ImportSpalten = new[] { "Firma", "Ptherm", "Brennstoff", "Wirkungsgrad_Gas",
                     "Wirkungsgrad_Öl", "Raumbedarf", "CO2", "SO2", "NOx", "CO", "Staub",
-                    "Betriebsbereitschaftverlust" }
+                    "Betriebsbereitschaftverlust", KesselBereitschaftEinheitSchema.SPALTE, "Brennwert",
+                    "Wirkungsgrad_Teillast30", "Mindestleistung" }
             },
             new KatalogDefinition
             {
@@ -203,8 +206,9 @@ namespace WindowsFormsApplication1
                 Schluessel = "SOLARKOLLEKTOREN",
                 Tabelle = "Tab_Solarkollektoren_STAMM",
                 AusschlussSpalten = new[] { "Investitionskosten" },
+                // ST6 (Welle M2): die Bezugsflaeche der Kennwerte setzt der Import, wo die Quelle sie nennt.
                 ImportSpalten = new[] { "Firma", "Kollektortyp", "Modulflaeche", "Aperturflaeche",
-                    "h0", "k1", "k2", "Kdir", "Kdfu" }
+                    "h0", "k1", "k2", "Kdir", "Kdfu", SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE }
             },
             new KatalogDefinition
             {
@@ -243,6 +247,34 @@ namespace WindowsFormsApplication1
                 // VerwendungsPruefungen: LEER - Kopiersemantik. Projekte verweisen auf
                 // die Projektkopie Tab_Wechselrichter (WechselrichterCtrl.CopyFromStamm),
                 // nie auf den Katalog.
+            },
+            new KatalogDefinition
+            {
+                // KU3-1: die Kaeltemaschine. "Modulkosten" ist ein Anwenderfeld wie bei der Waermepumpe.
+                Schluessel = "KAELTEMASCHINE",
+                Tabelle = KaeltemaschineSchema.TAB_STAMM,
+                AusschlussSpalten = new[] { KaeltemaschineSchema.SPALTE_MODULKOSTEN },
+                Datenbloecke = new[]
+                {
+                    new KatalogDatenblock
+                    {
+                        Tabelle = KaeltemaschineSchema.TAB_KENNDATEN_STAMM,
+                        FkSpalte = KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE,
+                        Sortierung = KaeltemaschineSchema.SPALTE_RUECKKUEHLTEMPERATUR + ", " + KaeltemaschineSchema.SPALTE_KALTWASSERTEMPERATUR,
+                        WertSpalten = KaeltemaschineSchema.KennlinienSpalten
+                    }
+                }
+                // VerwendungsPruefungen: LEER - Kopiersemantik. Projekte verweisen auf die Projektkopie
+                // Tab_Kaeltemaschine (KaeltemaschineCtrl.AusKatalogUebernehmen), nie auf den Katalog.
+            },
+            new KatalogDefinition
+            {
+                // K-F1: das Rueckkuehlwerk. "Modulkosten" ist ein Anwenderfeld wie bei der Kaeltemaschine.
+                Schluessel = "RUECKKUEHLWERK",
+                Tabelle = RueckkuehlwerkSchema.TAB_STAMM,
+                AusschlussSpalten = new[] { RueckkuehlwerkSchema.SPALTE_MODULKOSTEN }
+                // VerwendungsPruefungen: LEER - Kopiersemantik. Die Anlagenzeile verweist auf die Projektkopie
+                // Tab_Rueckkuehlwerk (RueckkuehlwerkCtrl.AusKatalogUebernehmen), nie auf den Katalog.
             },
             new KatalogDefinition
             {
@@ -509,6 +541,24 @@ namespace WindowsFormsApplication1
                     new VerwendungsPruefung { Tabelle = "Tab_Prozesswaerme_STAMM", Spalte = "Typ", UeberName = true }
                 }
             },
+            // K1: Kaeltebedarf nach dem Muster der Prozesswaerme. Die Projektkopien verweisen ueber ID_Stamm
+            // (ON DELETE SET NULL) - eine Kopie haelt ihren Katalogsatz nicht, sie rechnet auf ihrem Stand weiter.
+            new KatalogDefinition
+            {
+                Schluessel = "KAELTEBEDARF",
+                Tabelle = KaeltebedarfSchema.TAB_KOPF_STAMM
+            },
+            new KatalogDefinition
+            {
+                Schluessel = "KAELTETYP",
+                Tabelle = KaeltebedarfSchema.TAB_TYP_STAMM,
+                VerwendungsPruefungen = new[]
+                {
+                    // Kaeltebedarf-Koepfe verweisen per Typ = Bezeichner auf ihr Typprofil
+                    // (KaeltebedarfStammCtrl.CopyFromStamm liest TYP_STAMM WHERE Bezeichner = Kopf.Typ).
+                    new VerwendungsPruefung { Tabelle = KaeltebedarfSchema.TAB_KOPF_STAMM, Spalte = "Typ", UeberName = true }
+                }
+            },
             new KatalogDefinition
             {
                 Schluessel = "STROMGANGLINIE",
@@ -539,6 +589,22 @@ namespace WindowsFormsApplication1
                         WertSpalten = new[] { "Wert" }
                     }
                 }
+            },
+            new KatalogDefinition
+            {
+                Schluessel = "PVGANGLINIE",
+                Tabelle = "Tab_PvGanglinie_STAMM",
+                Datenbloecke = new[]
+                {
+                    new KatalogDatenblock
+                    {
+                        Tabelle = "Tab_PvGanglinieDaten_STAMM",
+                        FkSpalte = "ID_Ganglinie",
+                        Sortierung = "ID",
+                        WertSpalten = new[] { "Wert" }
+                    }
+                },
+                ImportSpalten = new[] { "Raster_Minuten" }
             },
             new KatalogDefinition
             {
@@ -588,6 +654,20 @@ namespace WindowsFormsApplication1
                         WertSpalten = new[] { "Verteilung" }
                     }
                 }
+            },
+            new KatalogDefinition
+            {
+                // DIE KONDITIONIERUNGSVORLAGEN (Anwenderentscheid 08.10.2026): Sie stehen im Register der
+                // Katalogfassung und bekommen hier ihren Eintrag, damit Auslieferungskennzeichen ihr Schloss
+                // umschaltet (KonditionierungsvorlageCtrl.SchlossSetzen). Derselbe Name darf in jeder der
+                // fuenf Groessen einmal stehen - die Groesse ist zweiter Teil des natuerlichen Schluessels.
+                // Gepflegt wird in der Vorlagenverwaltung, nicht im Dublettendialog.
+                // VerwendungsPruefungen: LEER - Kopiersemantik. Uebernommene Vorlagen sind Kopien am
+                // Gebaeude bzw. an der Zone, nie Verweise auf den Katalog.
+                Schluessel = "KONDITIONIERUNGSVORLAGE",
+                Tabelle = SchemaKatalog.TAB_KONDITIONIERUNGSVORLAGE_STAMM,
+                ImDublettendialog = false,
+                SchluesselZusatzSpalten = new[] { "Groesse" }
             },
         };
 
@@ -648,8 +728,10 @@ namespace WindowsFormsApplication1
                 case "PROZESSTYP": return MyResource.Resource.ADM_KATALOG_PROZESSTYP;
                 case "STROMGANGLINIE": return MyResource.Resource.ADM_KATALOG_STROMGANGLINIE;
                 case "SOLARGANGLINIE": return MyResource.Resource.ADM_KATALOG_SOLARGANGLINIE;
+                case "PVGANGLINIE": return MyResource.Resource.ADM_KATALOG_PVGANGLINIE;
                 case "WAERMEBEDARF": return MyResource.Resource.ADM_KATALOG_WAERMEBEDARF;
                 case "GEBAEUDETYP": return MyResource.Resource.ADM_KATALOG_GEBAEUDETYP;
+                case "KONDITIONIERUNGSVORLAGE": return MyResource.Resource.ADM_KATALOG_KONDITIONIERUNGSVORLAGE;
                 default: return schluessel ?? "";
             }
         }

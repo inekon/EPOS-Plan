@@ -164,7 +164,7 @@ namespace EPOS.Kern.Tests
         /// Die Referenzprojekte mit Kühlung — ausdrücklich eingeschaltet (Einfrierregel „gesäte
         /// Kältedaten"): 1017 und seine Kopie im Referenzprojekt der Anlagenkopplung 1047.
         /// </summary>
-        private static readonly int[] REFERENZEN_MIT_KUEHLUNG = { 1017, 1047 };
+        private static readonly int[] REFERENZEN_MIT_KUEHLUNG = { 1017, 1047, 1055, 1056, 1058, 1059, 1060, 1061, 1062, 1063, 1064 };   // 1064: Kopie von 1017 (FK)   // 1063: Kopie von 1055 (KM3)   // 1060: Kopie von 1056 (UB-E2-d)   // 1055: Kopie von 1017 (KU3-4b), 1056: Kopie von 1047 (AK2-4), 1058: Kopie von 1056 (AK3-W5a), 1059: Kopie von 1058 (AK3-K-K5a)
 
         /// <summary>
         /// Nach KU-S2 trägt jedes vorhandene Projekt 0 — auch wenn die Programmeinstellung an
@@ -339,6 +339,39 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(KonfigurationCtrl.LiesProjekt(an));
             Assert.True(KonfigurationCtrl.KuehlbetriebLesen(an));
             Assert.False(KonfigurationCtrl.KuehlbetriebLesen(aus));
+        }
+
+        /// <summary>
+        /// <b>Die Vorwahl folgt den Ladeprioritäten</b> (Solarthermie, Wärmepumpe, BHKW,
+        /// Heizkessel). Ohne Einstellungssatz wählt die Konfigurationsseite die Anlagen des
+        /// Projekts 1026 (Wärmepumpe, Solarthermie, Heizkessel) in dieser Folge vor. Steht
+        /// schon ein leerer, ungepflegter Satz, setzt <c>HeizkesselNachziehen</c> den Kessel
+        /// auf Platz 1 — die vorgewählte Wärmepumpe kommt trotzdem vor ihn.
+        /// </summary>
+        [Fact]
+        public void Die_Vorwahl_folgt_den_Ladeprioritaeten()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            int ohneSatz = PerAssistentAnlegen("Kaskadenprobe Ladeprio");
+            AnlagenUebernehmen(1026, ohneSatz);
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_SOLARTHERMIE, DbWerte.ERZEUGER_WAERMEPUMPE,
+                                            DbWerte.ERZEUGER_HEIZKESSEL },
+                         Aufgenommen(Kaskadendienste(ohneSatz).Laden(ohneSatz)));
+
+            int mitSatz = PerAssistentAnlegen("Kaskadenprobe Nachzug");
+            Assert.True(Kaskadendienste(mitSatz).Speichern());
+            Assert.Equal(new List<string> { "", "", "", "" }, Plaetze(mitSatz));
+            AnlagenUebernehmen(1023, mitSatz);                 // Wärmepumpe und Heizkessel
+
+            SimulationKonfigDienste dienste = Kaskadendienste(mitSatz);
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_HEIZKESSEL, "", "", "" }, Plaetze(mitSatz));
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_HEIZKESSEL },
+                         Aufgenommen(dienste.Laden(mitSatz)));
+            Assert.True(dienste.Speichern());
+            Assert.Equal(new List<string> { DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_HEIZKESSEL, "", "" },
+                         Plaetze(mitSatz));
         }
 
         /// <summary>

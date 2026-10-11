@@ -1,0 +1,327 @@
+﻿@* DIE GRUPPE „KÜHLBETRIEB“ EINER WÄRMEPUMPE (Stufe KU2 Welle 3; Kuehlkonzept 8.2; E15, E33, E34) -
+   herausgeloest aus WaermepumpeKonfiguration (Welle KB-B, Entscheid E117 F3), damit die Konfiguration
+   der Waermepumpe und der Bereich „Kälte“ der Simulationskonfiguration DIESELBE Gruppe zeigen: Kuehlbetrieb
+   an/aus, Kuehlvorlauf, Hilfsstromanteil, freie Kuehlung, Kuehltraeger und Abrechnung.
+
+   Der Baustein schreibt AN ORT UND STELLE in den Feldsatz des Wirts und meldet jede Eingabe ueber
+   „Geaendert“; geschrieben in die Datenbank wird erst im OK-Weg des Wirts. Die Regeln der Kuehlfelder
+   (Kuehltraeger, Abrechnung, Prozent/Anteil) stehen EINMAL als statische Wege in WaermepumpeKonfiguration -
+   Maske und Hilfe-Assistent fahren dieselben. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+@using static EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKonfiguration
+
+@* KUEHLBETRIEB (Stufe KU2 Welle 3; Kuehlkonzept 8.2; E15, E33, E34). Eine
+   Projektentscheidung, darum hier und nicht im Katalogdialog. Nur mit den
+   Kuehlgaben des Wirts - ohne sie keine Gruppe (Prüfstand, Plattform ohne Weg).
+
+   DER SPERRGRUND HAENGT AN DER KENNLINIE, NICHT AN DER NENNLEISTUNG (5.0.1):
+   Ohne Kuehlkennlinie im Projekt oder mit Quellspeicher ist der Schalter WEICH
+   gesperrt (aria-disabled + title, der Klick meldet den Grund), und die Zeile
+   darunter nennt ihn. Ausschalten geht immer. Die Felder darunter erscheinen
+   mit dem Haken; die Abrechnungsart nur, wenn der Kuehltraeger vom
+   Stromtraeger des Projekts abweicht (E34 - sonst wirkt sie nicht). *@
+<Formulargruppe Titel="@Texte.GruppeKuehlbetrieb">
+    <KindInhalt>
+        @* Hilfe zur Kuehlung (Konzept Technikdokumentation, Abschnitt 7): die
+           Anwendungsseite an ihrem Abschnitt "Kuehlbetrieb der Waermepumpe"
+           und die Grundlagenseite. Der Raster ist einspaltig - die Huelle
+           steht damit als eigene Zeile unter der Zwischenueberschrift. *@
+        <div class="epos-berechnungshilfe">
+            <InfoKnopf Schluessel="Form_WP_Kuehlung.btn_Help"
+                       StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" MitAssistent="false" />
+            <InfoKnopf Schluessel="Form_WP_Kuehlung.Grundlagen"
+                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+            <InfoKnopf Schluessel="Form_WP_Kuehlung.Berechnung"
+                       StandardKurztext="Berechnung: Kühlung" MitAssistent="false" />
+        </div>
+        @if (KuehlSperrgrund is string grund && !Daten.Kuehlbetrieb)
+        {
+            <label class="epos-schalter epos-wp-kuehlbetrieb" title="@grund">
+                <input class="epos-schalter-kasten" type="checkbox" checked="@false"
+                       aria-disabled="true" @onclick:preventDefault
+                       @onclick="KuehlbetriebGesperrt" />
+                <span class="epos-feld-text">@Texte.LabelKuehlbetrieb</span>
+            </label>
+            @* Der Grund steht EINMAL: nach dem Klick als Hinweis darunter, sonst als Zeile. *@
+            @if (_kuehlMeldung.Length == 0)
+            {
+                <Herleitungszeile Text="@grund" />
+            }
+            @if (NennkuehlleistungOhneKennlinie)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@Texte.WarnungNennkuehlleistungOhneKennlinie" />
+            }
+        }
+        else
+        {
+            <Schalter Bezeichnung="@Texte.LabelKuehlbetrieb" Wert="@Daten.Kuehlbetrieb"
+                      WertChanged="BeiKuehlbetrieb" Aktiv="@Aktiv" />
+            @if (KuehlSperrgrund is string grundAn)
+            {
+                <Herleitungszeile Text="@grundAn" />
+            }
+        }
+
+        @if (_kuehlMeldung.Length > 0)
+        {
+            <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_kuehlMeldung" />
+        }
+
+        @if (Daten.Kuehlbetrieb)
+        {
+            <Auswahlfeld Bezeichnung="@Texte.LabelKuehlVorlauf" Eintraege="@VorlaufEintraege"
+                         Auswahl="@Daten.KuehlVorlauf" Platzhalter="@PlatzhalterVorlauf"
+                         GesperrteEintraege="@GesperrteVorlaeufe" GesperrtHinweise="@VorlaufSperrgruende"
+                         Aktiv="@Aktiv" AuswahlChanged="BeiKuehlVorlauf" />
+            <Herleitungszeile Text="@Texte.HinweisUmschaltung" />
+
+            <Zahlenfeld Bezeichnung="@Texte.LabelHilfsstrom" Einheit="%"
+                        Feldname="@Texte.LabelHilfsstrom" Wert="@HilfsstromProzent"
+                        Platzhalter="@Texte.PlatzhalterHilfsstrom" Min="0"
+                        Aktiv="@Aktiv" WertChanged="BeiHilfsstrom" />
+            <Herleitungszeile Text="@Texte.HinweisHilfsstrom" />
+
+            @* FREIE KUEHLUNG UEBER DIE WAERMEQUELLE (KU3-6, F2, F6). Wirksam nur an
+               einer Sole-/Wasser-Wasser-Maschine mit gepflegter Quelle; sonst ist
+               der Schalter WEICH gesperrt wie der Kuehlbetrieb (aria-disabled +
+               title, der Klick meldet den Grund, Ausschalten geht immer). EIN
+               Kaestchen fuer beide Lagen - die Sperre haengt am preventDefault. *@
+            <label class="epos-schalter epos-wp-kuehl-frei" title="@KuehlFreiSperrgrund">
+                <input class="epos-schalter-kasten" type="checkbox" checked="@Daten.KuehlFrei"
+                       disabled="@(!Aktiv)" aria-disabled="@(KuehlFreiGesperrt ? "true" : null)"
+                       @onclick="BeiKuehlFreiKlick" @onclick:preventDefault="@KuehlFreiGesperrt"
+                       @onchange="BeiKuehlFrei" />
+                <span class="epos-feld-text">@Texte.LabelKuehlFrei</span>
+            </label>
+            @if (_freiMeldung.Length > 0)
+            {
+                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_freiMeldung" />
+            }
+            else if (KuehlFreiSperrgrund is string freiGrund)
+            {
+                <Herleitungszeile Text="@freiGrund" />
+            }
+
+            @if (Daten.KuehlFrei)
+            {
+                <Herleitungszeile Text="@Texte.HinweisKuehlFrei" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlFreiGraedigkeit" Einheit="K"
+                            Feldname="@Texte.LabelKuehlFreiGraedigkeit" Wert="@Daten.KuehlFreiGraedigkeitK"
+                            Platzhalter="@Texte.PlatzhalterKuehlFreiGraedigkeit" Min="0" Max="20"
+                            Aktiv="@Aktiv" WertChanged="BeiKuehlFreiGraedigkeit" />
+                <Herleitungszeile Text="@Texte.HinweisKuehlFreiGraedigkeit" />
+
+                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlFreiLeistung" Einheit="kW"
+                            Feldname="@Texte.LabelKuehlFreiLeistung" Wert="@Daten.KuehlFreiLeistungKw"
+                            Platzhalter="@Texte.PlatzhalterKuehlFreiLeistung" Min="0"
+                            Aktiv="@Aktiv" WertChanged="BeiKuehlFreiLeistung" />
+            }
+
+            <Auswahlfeld Bezeichnung="@Texte.LabelKuehltraeger" Eintraege="@TraegerEintraege"
+                         Auswahl="@Daten.KuehlCarrierId" Platzhalter="@Texte.PlatzhalterKuehltraeger"
+                         Aktiv="@Aktiv" AuswahlChanged="BeiKuehltraeger" />
+
+            @if (KuehltraegerAbweichend)
+            {
+                <Optionsgruppe Bezeichnung="@Texte.LabelAbrechnung" Eintraege="@Abrechnungsarten"
+                               Auswahl="@(Daten.KuehlEigenerZaehler == true ? 1 : 0)"
+                               Aktiv="@Aktiv" AuswahlChanged="BeiAbrechnung" />
+                <Herleitungszeile Text="@(Daten.KuehlEigenerZaehler == true ? Texte.HinweisZaehler : Texte.HinweisAnteilig)" />
+            }
+            else if (Daten.KuehlCarrierId.HasValue)
+            {
+                <Herleitungszeile Text="@Texte.HinweisWieProjekt" />
+            }
+
+            @if (Kuehlung.Stromtraeger.Count <= 1)
+            {
+                <Herleitungszeile Text="@Texte.HinweisKuehltraegerWeitere" />
+            }
+        }
+    </KindInhalt>
+</Formulargruppe>
+
+@code {
+    /// <summary>Der bearbeitete Feldsatz der Anlage — derselbe, den der Wirt führt.</summary>
+    [Parameter] public WaermepumpeAnlageDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen — das Bündel der Wärmepumpen-Konfiguration.</summary>
+    [Parameter] public WaermepumpeKonfigurationTexte Texte { get; set; } = new();
+
+    /// <summary>Bedienbar? <c>false</c> sperrt jedes Feld.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Jede Eingabe meldet sich; der Wirt zieht nach, was davon abhängt.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private Task Melden() => Geaendert.InvokeAsync();
+
+    /// <summary>
+    /// Die Kühlgaben des Wirts — Stützstellen, Sperrgrund und die Stromträger des Projekts.
+    /// <c>null</c> = keine Gruppe „Kühlbetrieb" (Prüfstand, Plattform ohne Weg); die fünf
+    /// Kühlfelder laufen dann unverändert mit.
+    /// </summary>
+    [Parameter, EditorRequired] public WaermepumpeKuehlGaben Kuehlung { get; set; } = new();
+
+    /// <summary>Die Meldung eines gesperrten Umschaltversuchs (weiche Sperre); verfällt mit der nächsten Eingabe.</summary>
+    private string _kuehlMeldung = "";
+
+    // Die Antworten der Kühlgaben je Gerät — einmal gefragt, solange das Gerät bleibt; ein
+    // Gerätewechsel im Anlagendialog (IdWp) fragt neu.
+    private int _kuehlGeraet = int.MinValue;
+    private WaermepumpeKuehlGaben? _kuehlGabenGefragt;
+    private IReadOnlyList<KuehlVorlaufEintrag> _vorlaeufe = Array.Empty<KuehlVorlaufEintrag>();
+    private string? _sperrgrund;
+    private string? _freiSperrgrund;
+
+    private void KuehlgabenFragen()
+    {
+        if (Kuehlung is null) return;
+        if (_kuehlGeraet == Daten.IdWp && ReferenceEquals(_kuehlGabenGefragt, Kuehlung)) return;
+        _kuehlGeraet = Daten.IdWp;
+        _kuehlGabenGefragt = Kuehlung;
+        _vorlaeufe = Kuehlung.Vorlaeufe?.Invoke(Daten.IdWp) ?? Array.Empty<KuehlVorlaufEintrag>();
+        _sperrgrund = Kuehlung.Sperrgrund?.Invoke(Daten.IdWp);
+        if (string.IsNullOrEmpty(_sperrgrund)) _sperrgrund = null;
+        _freiSperrgrund = Kuehlung.FreiSperrgrund?.Invoke(Daten.IdWp);
+        if (string.IsNullOrEmpty(_freiSperrgrund)) _freiSperrgrund = null;
+    }
+
+    /// <summary>Der Sperrgrund des Kühlbetriebs für das gewählte Gerät; <c>null</c> = frei.</summary>
+    public string? KuehlSperrgrund { get { KuehlgabenFragen(); return _sperrgrund; } }
+
+    /// <summary>Die Vorlauf-Stützstellen der Kühlkennlinie des gewählten Geräts.</summary>
+    public IReadOnlyList<KuehlVorlaufEintrag> KuehlVorlaeufe { get { KuehlgabenFragen(); return _vorlaeufe; } }
+
+    /// <summary>8.2: Nennkühlleistung, aber keine Kühlkennlinie — die Maschine rechnet nur Wärme.</summary>
+    private bool NennkuehlleistungOhneKennlinie
+        => Daten.Kuehlleistung is double kw && kw > 0 && KuehlVorlaeufe.Count == 0;
+
+    /// <summary>
+    /// Die Einträge der Vorlaufwahl: die Stützstellen, dazu ein gespeicherter Wert, der keine
+    /// (mehr) ist — die Liste schuldet den gespeicherten Wert als Eintrag.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> VorlaufEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            foreach (KuehlVorlaufEintrag e in KuehlVorlaeufe) l.Add((e.Vorlauf, e.Vorlauf + " °C"));
+            if (Daten.KuehlVorlauf is int v && !KuehlVorlaeufe.Any(e => e.Vorlauf == v)) l.Add((v, v + " °C"));
+            return l;
+        }
+    }
+
+    private IReadOnlyCollection<int> GesperrteVorlaeufe
+        => KuehlVorlaeufe.Where(e => e.Sperrgrund.Length > 0).Select(e => e.Vorlauf).ToList();
+
+    private IReadOnlyDictionary<int, string> VorlaufSperrgruende
+        => KuehlVorlaeufe.Where(e => e.Sperrgrund.Length > 0).ToDictionary(e => e.Vorlauf, e => e.Sperrgrund);
+
+    /// <summary>Die Vorgabe-Anzeige: der kleinste Stützwert, mit dem ohne Wahl gerechnet wird (K21).</summary>
+    private string PlatzhalterVorlauf
+        => KuehlVorlaeufe.Count > 0
+            ? string.Format(Texte.PlatzhalterKuehlVorlauf, KuehlVorlaeufe.Min(e => e.Vorlauf))
+            : string.Format(Texte.PlatzhalterKuehlVorlauf, "—");
+
+    /// <summary>Der Hilfsstromanteil in Prozent — gespeichert wird der Anteil [—].</summary>
+    private double? HilfsstromProzent => AnteilAlsProzent(Daten.KuehlHilfsstromanteil);
+
+    /// <summary>Die Stromträger des Projekts, dazu ein gespeicherter Kühlträger, der keiner (mehr) ist.</summary>
+    private IReadOnlyList<(int Id, string Text)> TraegerEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>(Kuehlung?.Stromtraeger ?? Array.Empty<(int, string)>());
+            if (Daten.KuehlCarrierId is int id && !l.Any(e => e.Item1 == id))
+                l.Add((id, "#" + id.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            return l;
+        }
+    }
+
+    /// <summary>Weicht der Kühlträger vom Stromträger des Projekts ab? Nur dann wirkt die Abrechnungsart (E34).</summary>
+    public bool KuehltraegerAbweichend => KuehltraegerWeichtAb(Daten, Kuehlung);
+
+    private IReadOnlyList<(int Id, string Text)> Abrechnungsarten
+        => new[] { (ABRECHNUNG_ANTEILIG, Texte.OptionAnteilig), (ABRECHNUNG_ZAEHLER, Texte.OptionZaehler) };
+
+    private Task KuehlbetriebGesperrt()
+    {
+        _kuehlMeldung = KuehlSperrgrund ?? "";
+        return Task.CompletedTask;
+    }
+
+    private Task BeiKuehlbetrieb(bool wert)
+    {
+        _kuehlMeldung = "";
+        if (wert && KuehlSperrgrund is string grund) { _kuehlMeldung = grund; return Melden(); }
+        Daten.Kuehlbetrieb = wert;
+        return Melden();
+    }
+
+    private Task BeiKuehlVorlauf(int? wert) { _kuehlMeldung = ""; Daten.KuehlVorlauf = wert; return Melden(); }
+
+    private Task BeiHilfsstrom(double? prozent)
+    {
+        _kuehlMeldung = "";
+        Daten.KuehlHilfsstromanteil = ProzentAlsAnteil(prozent);
+        return Melden();
+    }
+
+    // ---- Freie Kühlung über die Wärmequelle (KU3-6) ----
+
+    /// <summary>Die Meldung eines gesperrten Einschaltversuchs der freien Kühlung; verfällt mit der nächsten Eingabe.</summary>
+    private string _freiMeldung = "";
+
+    /// <summary>Warum die freie Kühlung an dieser Anlage nicht wirkt; <c>null</c> = wirksam (oder keine Gaben).</summary>
+    public string? KuehlFreiSperrgrund { get { KuehlgabenFragen(); return _freiSperrgrund; } }
+
+    /// <summary>Weich gesperrt: ein Grund liegt vor und der Schalter ist aus — Ausschalten geht immer.</summary>
+    private bool KuehlFreiGesperrt => !Daten.KuehlFrei && KuehlFreiSperrgrund is not null;
+
+    private Task BeiKuehlFreiKlick()
+    {
+        if (KuehlFreiGesperrt) _freiMeldung = KuehlFreiSperrgrund ?? "";
+        return Task.CompletedTask;
+    }
+
+    private Task BeiKuehlFrei(ChangeEventArgs e)
+    {
+        _kuehlMeldung = "";
+        _freiMeldung = "";
+        bool wert = e.Value is bool b && b;
+        if (wert && KuehlFreiSperrgrund is string grund) { _freiMeldung = grund; return Melden(); }
+        Daten.KuehlFrei = wert;
+        return Melden();
+    }
+
+    private Task BeiKuehlFreiGraedigkeit(double? wert)
+    {
+        _freiMeldung = "";
+        Daten.KuehlFreiGraedigkeitK = wert;
+        return Melden();
+    }
+
+    private Task BeiKuehlFreiLeistung(double? wert)
+    {
+        _freiMeldung = "";
+        Daten.KuehlFreiLeistungKw = wert;
+        return Melden();
+    }
+
+    private Task BeiKuehltraeger(int? id)
+    {
+        _kuehlMeldung = "";
+        KuehltraegerSetzen(Daten, id, Kuehlung);
+        return Melden();
+    }
+
+    private Task BeiAbrechnung(int? wahl)
+    {
+        AbrechnungSetzen(Daten, wahl);
+        return Melden();
+    }
+
+}

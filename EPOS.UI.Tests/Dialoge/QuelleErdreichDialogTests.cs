@@ -66,9 +66,9 @@ public class QuelleErdreichDialogTests : EposBunitContext
         QuelleErdreichDaten daten,
         Action<QuelleErdreichDaten?>? geschlossen = null,
         ErdreichAuswertung.ErdreichLaufErgebnis? lauf = null,
-        Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>>? simulieren = null,
+        Func<QuelleErdreichDaten, Task<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>>? simulieren = null,
         bool titelAnzeigen = true,
-        Func<double[], double[]?, Task<Zeichenmodell?>>? modell = null)
+        Func<double[], double[]?, double[]?, Task<Zeichenmodell?>>? modell = null)
     {
         return Render<QuelleErdreichDialog>(p =>
         {
@@ -121,11 +121,11 @@ public class QuelleErdreichDialogTests : EposBunitContext
         // Zwei Wahlknoepfe (Kollektor/Sonde), je einer in seiner Rubrik.
         Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
 
-        // Vier Zweigfelder + Spreizung = fuenf Zahlenfelder (davon eins ganzzahlig).
-        Assert.Equal(5, cut.FindAll("input.epos-eingabe").Count);
+        // Vier Zweigfelder + fuenf Felder des Sondenfeldes + Spreizung = zehn Zahlenfelder.
+        Assert.Equal(10, cut.FindAll("input.epos-eingabe").Count);
 
-        // Zwei Klapplisten: Bodentyp und Klimazone.
-        Assert.Equal(2, cut.FindAll("select").Count);
+        // Drei Klapplisten: Anordnung des Sondenfeldes, Bodentyp und Klimazone.
+        Assert.Equal(3, cut.FindAll("select").Count);
 
         Assert.NotNull(cut.Find("button.epos-infoknopf"));
         Assert.Equal(2, cut.FindAll(".epos-leiste button").Count);
@@ -139,7 +139,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
     public void Die_Klimazonenliste_traegt_die_Null_und_fuenfzehn_Zonen()
     {
         var cut = Zeige(Kollektor());
-        var zonen = cut.FindAll("select")[1].QuerySelectorAll("option");
+        var zonen = cut.FindAll("select")[2].QuerySelectorAll("option");
 
         Assert.Equal(1 + VDI4640Pruefung.KLIMAZONEN, zonen.Length);
         Assert.Equal("0 — nicht zugeordnet", zonen[0].TextContent);
@@ -255,7 +255,11 @@ public class QuelleErdreichDialogTests : EposBunitContext
         // Rubrik 2: ein Optionsfeld, dann Laenge je Sonde und Anzahl Sonden.
         Assert.Single(rubriken[1].QuerySelectorAll("input[type=radio]"));
         string[] sonde = Feldnamen(rubriken[1]);
-        Assert.Equal(new[] { "Länge je Sonde:", "Anzahl Sonden:" }, sonde);
+        Assert.Equal(new[]
+            {
+                "Länge je Sonde:", "Anzahl Sonden:", "Sondenabstand:", "Anordnung:", "Bohrlochdurchmesser:",
+                "Bohrlochwiderstand:", "Kopfüberdeckung:", "Betrachtungsjahr:",
+            }, sonde);
     }
 
     /// <summary>Die Beschriftungen der Felder einer Rubrik, in Anzeigereihenfolge.</summary>
@@ -312,7 +316,8 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.True(zweige[1].ClassList.Contains("epos-erdreich-zweig--ruht"));
 
         // Die Felder der ruhenden Rubrik stehen weiter da - gesperrt, nicht verborgen.
-        Assert.Equal(2, zweige[1].QuerySelectorAll("input.epos-eingabe").Length);
+        // Laenge, Anzahl und die fuenf Zahlenfelder des Sondenfeldes.
+        Assert.Equal(7, zweige[1].QuerySelectorAll("input.epos-eingabe").Length);
         foreach (var feld in zweige[1].QuerySelectorAll("input.epos-eingabe"))
             Assert.True(feld.HasAttribute("disabled"));
 
@@ -347,7 +352,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
         // Ein anderer Katalogeintrag - der Schluessel folgt der Auswahl, nicht der
         // Anzeigeposition.
         int anderer = index == 0 ? 1 : 0;
-        cut.FindAll("select")[0].Change(anderer.ToString());
+        cut.FindAll("select")[1].Change(anderer.ToString());
         Assert.Equal(ErdreichTemperatur.Katalog[anderer].Schluessel, cut.Instance.Bodentyp);
     }
 
@@ -361,7 +366,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
 
         string vorher = cut.Instance.Bodenkennwerte;
         int index = ErdreichTemperatur.KatalogIndex(ErdreichTemperatur.BODENTYP_DEFAULT);
-        cut.FindAll("select")[0].Change((index == 0 ? 1 : 0).ToString());
+        cut.FindAll("select")[1].Change((index == 0 ? 1 : 0).ToString());
         Assert.NotEqual(vorher, cut.Instance.Bodenkennwerte);
     }
 
@@ -435,6 +440,121 @@ public class QuelleErdreichDialogTests : EposBunitContext
 
         Assert.Equal("Luft-Wasser: wird nicht gerechnet", cut.Instance.Pruefungstext);
         Assert.False(cut.Instance.PruefungWarnt);
+    }
+
+    /// <summary>
+    /// EQ1: Ein GESPEICHERTES Ergebnis (aus Tab_ErgebnisErdreich, kein Lauf in dieser Sitzung)
+    /// nennt seinen Lauf; ein Lauf der Sitzung (ohne Laufstempel) nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_gespeichertes_Ergebnis_nennt_den_Stand_des_Laufs()
+    {
+        var gespeichert = MitLauf() with { Laufstempel = "2026-10-03 09:30:00" };
+        var cut = Zeige(Kollektor(), lauf: gespeichert);
+        Assert.Equal("Stand des Laufs vom 2026-10-03 09:30:00.", cut.Find(".epos-erdreich-laufstand").TextContent.Trim());
+
+        Assert.Empty(Zeige(Kollektor(), lauf: MitLauf()).FindAll(".epos-erdreich-laufstand"));
+    }
+
+    // ================================================================== Vorprüfung und Sondenhinweis
+
+    /// <summary>Auslegungswerte eines Sole-Geräts: 10 kW, COP 4,5 bei B0/W35.</summary>
+    private static WpAuslegung[] EinGeraet()
+        => new[] { new WpAuslegung("WP Sole", 10, 4.5, "B0/W35") };
+
+    /// <summary>
+    /// Bei der ERDSONDE sagt eine leise Zeile unter der Vorschau, dass sie die ungestörte
+    /// Temperatur zeigt und die Soletemperatur im Lauf mit dem Entzug sinkt; beim Kollektor
+    /// steht sie nicht.
+    /// </summary>
+    [Fact]
+    public void Bei_der_Sonde_steht_der_Hinweis_zur_Soletemperatur_im_Lauf()
+    {
+        const string kern = "sinkt die Soletemperatur mit dem Entzug";
+
+        var sonde = Zeige(Sonde());
+        Assert.Contains(sonde.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains(kern));
+
+        var kollektor = Zeige(Kollektor());
+        Assert.DoesNotContain(kollektor.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains(kern));
+    }
+
+    /// <summary>
+    /// OHNE Lauf, aber mit Auslegungswerten rechnet die VORPRÜFUNG — gekennzeichnet, mit
+    /// der Herleitung und der Prüfung nach Tabelle B2.
+    /// </summary>
+    [Fact]
+    public void Ohne_Lauf_steht_die_gekennzeichnete_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = EinGeraet() });
+
+        Assert.True(cut.Instance.IstVorpruefung);
+        Assert.Equal("Vorprüfung aus Auslegungswerten (noch kein Simulationslauf)",
+                     cut.Find(".epos-erdreich-vorpruefung").TextContent.Trim());
+        Assert.DoesNotContain("noch kein Simulationslauf", cut.Instance.Pruefungstext);
+        // 10 kW · (1 − 1/4,5) = 7 778 W
+        Assert.Contains("7.778 W", cut.Instance.Pruefungstext);
+        Assert.Contains("W/m", cut.Instance.Pruefungstext);
+    }
+
+    /// <summary>Ein Laufergebnis ERSETZT die Vorprüfung samt Kennzeichnung.</summary>
+    [Fact]
+    public void Das_Laufergebnis_ersetzt_die_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = EinGeraet() }, lauf: MitLauf(9000));
+
+        Assert.False(cut.Instance.IstVorpruefung);
+        Assert.Empty(cut.FindAll(".epos-erdreich-vorpruefung"));
+        Assert.Contains("9.000 W", cut.Instance.Pruefungstext);
+        Assert.DoesNotContain("7.778", cut.Instance.Pruefungstext);
+    }
+
+    /// <summary>Ein Lauf aus dem Dialog ersetzt die Vorprüfung, die vorher stand.</summary>
+    [Fact]
+    public void Der_Lauf_aus_dem_Dialog_ersetzt_die_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = EinGeraet() },
+            simulieren: _ => Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>(
+                (MitLauf(), null)));
+        Assert.True(cut.Instance.IstVorpruefung);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+
+        Assert.False(cut.Instance.IstVorpruefung);
+        Assert.Empty(cut.FindAll(".epos-erdreich-vorpruefung"));
+    }
+
+    /// <summary>
+    /// Eine Luft-Wasser-Wärmepumpe: keine Vorprüfung, allein der Hinweis, dass die
+    /// Erdreichquelle in der Simulation nicht gerechnet wird.
+    /// </summary>
+    [Fact]
+    public void Bei_Luft_Wasser_steht_der_Hinweis_statt_der_Vorpruefung()
+    {
+        var cut = Zeige(Sonde() with { Auslegung = new[] { new WpAuslegung("WP Luft", 10, 4, "A2/W35", true) } });
+
+        Assert.False(cut.Instance.IstVorpruefung);
+        Assert.Empty(cut.FindAll(".epos-erdreich-vorpruefung"));
+        Assert.Contains("Luft-Wasser-Anlage", cut.Instance.Pruefungstext);
+        Assert.DoesNotContain("noch kein Simulationslauf", cut.Instance.Pruefungstext);
+        Assert.DoesNotContain("W/m", cut.Instance.Pruefungstext);
+    }
+
+    /// <summary>Fehlt ein Auslegungswert, gibt es keine Vorprüfung — der Bereich nennt ihn.</summary>
+    [Fact]
+    public void Fehlt_ein_Wert_nennt_der_Bereich_ihn()
+    {
+        var ohneCop = Zeige(Sonde() with { Auslegung = new[] { new WpAuslegung("WP Sole", 10, 0, "") } });
+        Assert.False(ohneCop.Instance.IstVorpruefung);
+        Assert.Contains("noch kein Simulationslauf", ohneCop.Instance.Pruefungstext);
+        Assert.Contains("Keine Vorprüfung aus Auslegungswerten möglich", ohneCop.Instance.Pruefungstext);
+        Assert.Contains("„WP Sole“", ohneCop.Instance.Pruefungstext);
+
+        var ohneWp = Zeige(Sonde());
+        Assert.Contains("eine Wärmepumpe an der Anlage", ohneWp.Instance.Pruefungstext);
+
+        var ohneZone = Zeige(Sonde() with { Auslegung = EinGeraet(), Klimazone = 0 });
+        Assert.Contains("die Klimazone", ohneZone.Instance.Pruefungstext);
     }
 
     // ================================================================== Änderungshinweis
@@ -543,18 +663,91 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Contains("noch kein Simulationslauf", cut.Instance.Pruefungstext);
     }
 
-    /// <summary>Nach dem Lauf AUS DIESEM DIALOG steht der andere Aenderungshinweis.</summary>
+    /// <summary>
+    /// Der Lauf AUS DIESEM DIALOG rechnet mit den ANGEZEIGTEN Eingaben (Anwendermeldung 10.10.2026): Der
+    /// Rückruf bekommt den Satz, den OK zurückgäbe. Ohne Änderung danach steht kein Hinweis; eine Eingabe
+    /// nach dem Lauf verlangt einen neuen.
+    /// </summary>
     [Fact]
-    public void Nach_einem_Lauf_aus_dem_Dialog_steht_der_zweite_Hinweis()
+    public void Der_Lauf_aus_dem_Dialog_rechnet_mit_den_angezeigten_Eingaben()
     {
-        var cut = Zeige(Kollektor(),
-            simulieren: _ => Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>(
-                (MitLauf(), null)));
+        QuelleErdreichDaten? gerechnet = null;
+        var cut = Zeige(Sonde(),
+            simulieren: satz =>
+            {
+                gerechnet = satz;
+                return Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>((MitLauf(), null));
+            });
+
+        cut.FindAll("input.epos-eingabe")[2].Input("90");   // Länge je Sonde
+        cut.FindAll("input.epos-eingabe")[3].Input("8");    // Anzahl Sonden
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+
+        Assert.NotNull(gerechnet);
+        Assert.Equal(ErdreichTemperatur.QUELLSYSTEM_SONDE, gerechnet!.Quellsystem);
+        Assert.Equal(90, gerechnet.Tiefe);
+        Assert.Equal(8, gerechnet.Anzahl);
+        Assert.Equal("", cut.Instance.Aenderungshinweis);
+
+        cut.FindAll("input.epos-eingabe")[3].Input("9");
+        Assert.Contains("neu starten", cut.Instance.Aenderungshinweis);
+    }
+
+    /// <summary>
+    /// „CSV…“ nach dem Lauf aus dem Dialog: Der Export trägt das gezeigte Modell — also auch die
+    /// gerechnete Reihe des Laufs neben der ungestörten.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Lauf_traegt_der_CSV_Export_die_gerechnete_Reihe()
+    {
+        var reihe = new double[8760];
+        for (int i = 0; i < reihe.Length; i++) reihe[i] = 3.0;
+        var lauf = MitLauf() with { QuelltemperaturStuendlich = reihe };
+        Func<double[], double[]?, double[]?, Task<Zeichenmodell?>> zeichner = (quelle, _, gerechnet) =>
+        {
+            var reihen = new List<ChartRenderer.Reihe> { new("ungestört", quelle, ChartRenderer.C_QUELLTEMPERATUR) };
+            if (gerechnet is not null)
+                reihen.Add(new ChartRenderer.Reihe("gerechnet (letzter Lauf)", gerechnet, ChartRenderer.C_QUELLTEMPERATUR));
+            return Task.FromResult<Zeichenmodell?>(ChartRenderer.JahresgangModell("Jahresgang", reihen, "Monat", "°C"));
+        };
+
+        var exporte = new List<Zeichenmodell>();
+        var cut = Render<QuelleErdreichDialog>(p =>
+        {
+            p.Add(x => x.Daten, Sonde());
+            p.Add(x => x.Lauf, ErdreichAuswertung.ErdreichLaufErgebnis.Keines);
+            p.Add(x => x.Jahresgangmodell, zeichner);
+            p.Add(x => x.Simulieren, _ => Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>((lauf, null)));
+            p.Add(x => x.CsvSpeichern, (m, t, r) => { exporte.Add(m); return Task.CompletedTask; });
+        });
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Bild));
 
         cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
-        cut.FindAll("input.epos-eingabe")[0].Input("2,5");
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.Instance.Bild!.Reihen.Count));
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
 
-        Assert.Contains("GESPEICHERTEN", cut.Instance.Aenderungshinweis);
+        var spalten = ZeitreihenCsv.AusModell(Assert.Single(exporte));
+        Assert.Equal(2, spalten.Count);
+        Assert.Equal(reihe, spalten[1].Werte);
+    }
+
+    /// <summary>Eine verletzte Regel hält den Lauf an und meldet wie OK.</summary>
+    [Fact]
+    public void Eine_verletzte_Regel_haelt_den_Lauf_an()
+    {
+        bool gerufen = false;
+        var cut = Zeige(Sonde(),
+            simulieren: _ =>
+            {
+                gerufen = true;
+                return Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>((MitLauf(), null));
+            });
+
+        cut.FindAll("input.epos-eingabe")[3].Input("0");
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+
+        Assert.False(gerufen);
+        Assert.Contains("mindestens eine Sonde", cut.Instance.Meldung);
     }
 
     // ================================================================== Karte
@@ -637,9 +830,103 @@ public class QuelleErdreichDialogTests : EposBunitContext
 
         // Beide: Spreizung 0
         cut = Zeige(Kollektor());
-        cut.FindAll("input.epos-eingabe")[4].Input("0");
+        cut.FindAll("input.epos-eingabe")[9].Input("0");
         cut.Find("button.epos-knopf--primaer").Click();
         Assert.Contains("nutzbare Spreizung größer als 0 K", cut.Instance.Meldung);
+
+        // Sonde: ein Wert des Sondenfeldes ausserhalb seiner Pruefklausel
+        cut = Zeige(Sonde());
+        cut.FindAll("input.epos-eingabe")[4].Input("0");
+        cut.Find("button.epos-knopf--primaer").Click();
+        Assert.Contains("Sondenabstand, Bohrlochdurchmesser und Bohrlochwiderstand", cut.Instance.Meldung);
+    }
+
+    // ---------------------------------------------------------------------
+    //  Das Sondenfeld je Anlage (Schemaschritt 195): leer = Vorgabe
+    // ---------------------------------------------------------------------
+
+    /// <summary>Die sechs Felder des Sondenfeldes sind nur beim Quellsystem Sonde frei; leer zeigen sie die Vorgabe.</summary>
+    [Fact]
+    public void Die_Sondenfeldfelder_gelten_nur_bei_der_Sonde_und_zeigen_die_Vorgabe()
+    {
+        var kollektor = Zeige(Kollektor());
+        var felder = kollektor.FindAll("input.epos-eingabe");
+        for (int i = 4; i <= 8; i++)
+            Assert.True(felder[i].HasAttribute("disabled"), "Feld " + i);
+        Assert.True(kollektor.FindAll("select")[0].HasAttribute("disabled"));
+
+        var sonde = Zeige(Sonde());
+        felder = sonde.FindAll("input.epos-eingabe");
+        for (int i = 4; i <= 8; i++)
+        {
+            Assert.False(felder[i].HasAttribute("disabled"), "Feld " + i);
+            Assert.Equal("", felder[i].GetAttribute("value") ?? "");
+        }
+        Assert.False(sonde.FindAll("select")[0].HasAttribute("disabled"));
+        Assert.Equal("Vorgabe 6", felder[4].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 150", felder[5].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 0,1", felder[6].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 2", felder[7].GetAttribute("placeholder"));
+        Assert.Equal("Vorgabe 10", felder[8].GetAttribute("placeholder"));
+        Assert.Contains("Vorgabe Quadratisch", sonde.FindAll("select")[0].TextContent);
+    }
+
+    /// <summary>Leere Felder kommen als null (Vorgabe) zurück, gepflegte als Wert.</summary>
+    [Fact]
+    public void OK_schreibt_das_Sondenfeld_leer_als_Vorgabe_zurueck()
+    {
+        QuelleErdreichDaten? ergebnis = null;
+        var cut = Zeige(Sonde(), d => ergebnis = d);
+        cut.Find("button.epos-knopf--primaer").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Null(ergebnis!.Sondenabstand);
+        Assert.Null(ergebnis.Bohrlochdurchmesser);
+        Assert.Null(ergebnis.Bohrlochwiderstand);
+        Assert.Null(ergebnis.Kopfueberdeckung);
+        Assert.Null(ergebnis.Betrachtungsjahr);
+        Assert.Null(ergebnis.Sondenanordnung);
+
+        ergebnis = null;
+        cut = Zeige(Sonde(), d => ergebnis = d);
+        var felder = cut.FindAll("input.epos-eingabe");
+        felder[4].Input("8");
+        cut.FindAll("input.epos-eingabe")[5].Input("180");
+        cut.FindAll("input.epos-eingabe")[6].Input("0,08");
+        cut.FindAll("input.epos-eingabe")[7].Input("0");
+        cut.FindAll("input.epos-eingabe")[8].Input("25");
+        cut.FindAll("select")[0].Change(((int)Sondenanordnung.Reihe).ToString(CultureInfo.InvariantCulture));
+        cut.Find("button.epos-knopf--primaer").Click();
+        Assert.NotNull(ergebnis);
+        Assert.Equal(8.0, ergebnis!.Sondenabstand);
+        Assert.Equal(180.0, ergebnis.Bohrlochdurchmesser);
+        Assert.Equal(0.08, ergebnis.Bohrlochwiderstand);
+        Assert.Equal(0.0, ergebnis.Kopfueberdeckung);
+        Assert.Equal(25, ergebnis.Betrachtungsjahr);
+        Assert.Equal("Reihe", ergebnis.Sondenanordnung);
+    }
+
+    /// <summary>Gespeicherte Werte stehen beim Öffnen in den Feldern; der Assistent setzt sie über die Sichtklasse.</summary>
+    [Fact]
+    public void Gespeicherte_Sondenfeldwerte_stehen_im_Feld_und_der_Assistent_setzt_sie()
+    {
+        var cut = Zeige(Sonde() with { Sondenabstand = 7.5, Betrachtungsjahr = 20, Sondenanordnung = "Reihe" });
+        var felder = cut.FindAll("input.epos-eingabe");
+        Assert.Equal("7,5", felder[4].GetAttribute("value"));
+        Assert.Equal("20", felder[8].GetAttribute("value"));
+
+        WindowsFormsApplication1.KiFeldzugang abstand =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "sondenabstand");
+        Assert.NotNull(abstand);
+        Assert.Equal(7.5, abstand.Lesen());
+        abstand.Setzen(9.0);
+        Assert.Equal(9.0, abstand.Lesen());
+
+        WindowsFormsApplication1.KiFeldzugang anordnung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "sondenanordnung");
+        Assert.NotNull(anordnung);
+        Assert.Equal("Reihe", anordnung.Lesen());
+        anordnung.Setzen("Quadratisch");
+        Assert.Equal("Quadratisch", anordnung.Lesen());
     }
 
     /// <summary>
@@ -821,7 +1108,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
     [Fact]
     public void Die_Vorschau_steht_als_DiagrammSvg()
     {
-        var cut = Zeige(Kollektor(), modell: (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+        var cut = Zeige(Kollektor(), modell: (_, _, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
 
         // Das Bild entsteht NACH dem ersten Zeichenlauf (OnAfterRenderAsync) - der
         // Zeichner laeuft auf einem eigenen Faden. Also auf den Stand warten, statt
@@ -843,7 +1130,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
     [Fact]
     public void Ohne_Farbdelegat_bietet_die_Vorschau_keinen_Waehler()
     {
-        var ohne = Zeige(Kollektor(), modell: (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+        var ohne = Zeige(Kollektor(), modell: (_, _, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
         Assert.False(ohne.FindComponent<DiagrammSvg>().Instance.FarbwahlErlaubt);
 
         var mit = Render<QuelleErdreichDialog>(p =>
@@ -851,11 +1138,101 @@ public class QuelleErdreichDialogTests : EposBunitContext
             p.Add(x => x.Daten, Kollektor());
             p.Add(x => x.Lauf, ErdreichAuswertung.ErdreichLaufErgebnis.Keines);
             p.Add(x => x.Jahresgangmodell,
-                  (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+                  (_, _, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
             p.Add(x => x.FarbeSetzen, (_, _) => Task.CompletedTask);
         });
 
         Assert.True(mit.FindComponent<DiagrammSvg>().Instance.FarbwahlErlaubt);
+    }
+
+    /// <summary>
+    /// Nach einem Lauf (Anwenderwunsch 08.10.2026) bekommt die Vorschau die gerechnete Quelltemperatur als
+    /// dritte Reihe, und eine eigene Kennwertzeile nennt min/max/Mittel; ohne Lauf bleibt beides aus.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Lauf_zeigt_die_Vorschau_die_gerechnete_Quelltemperatur()
+    {
+        var reihe = new double[8760];
+        for (int i = 0; i < reihe.Length; i++) reihe[i] = i < 4380 ? 2.0 : 6.0;
+        var lauf = MitLauf() with { QuelltemperaturStuendlich = reihe };
+
+        double[]? erhalten = null;
+        int aufrufe = 0;
+        var cut = Zeige(Sonde(), lauf: lauf, modell: (_, _, gerechnet) =>
+        {
+            aufrufe++;
+            erhalten = gerechnet;
+            return Task.FromResult<Zeichenmodell?>(_vorschau);
+        });
+
+        cut.WaitForAssertion(() => Assert.True(aufrufe > 0));
+        Assert.NotNull(erhalten);
+        Assert.Equal(reihe, erhalten);
+        Assert.Contains("gerechnet (letzter Lauf)", cut.Instance.KennwertzeileLauf, StringComparison.Ordinal);
+        Assert.Contains("6", cut.Instance.KennwertzeileLauf, StringComparison.Ordinal);
+        Assert.NotEmpty(cut.FindAll("[data-zeile=kennwerte-lauf]"));
+
+        double[]? ohneLauf = new double[1];
+        int aufrufeOhne = 0;
+        var ohne = Zeige(Sonde(), modell: (_, _, gerechnet) =>
+        {
+            aufrufeOhne++;
+            ohneLauf = gerechnet;
+            return Task.FromResult<Zeichenmodell?>(_vorschau);
+        });
+        ohne.WaitForAssertion(() => Assert.True(aufrufeOhne > 0));
+        Assert.Null(ohneLauf);
+        Assert.Equal("", ohne.Instance.KennwertzeileLauf);
+        Assert.Empty(ohne.FindAll("[data-zeile=kennwerte-lauf]"));
+    }
+
+    /// <summary>
+    /// Anwendermeldung 10.10.2026 („Referenzprojekt AK3-K“): Der Lauf AUS DEM DIALOG zeigt sein Ergebnis
+    /// sofort — Kennwertzeile und zweite Reihe im Bild —, nicht erst nach OK und Wiederöffnen. Lauf und
+    /// Zeichenmodell kommen wie in der Hülle von einem fremden Faden.
+    /// </summary>
+    [Fact]
+    public void Der_Lauf_aus_dem_Dialog_zeigt_Kennwerte_und_Reihe_sofort()
+    {
+        var reihe = new double[8760];
+        for (int i = 0; i < reihe.Length; i++) reihe[i] = i < 4380 ? 1.0 : 7.0;
+        var lauf = MitLauf() with { QuelltemperaturStuendlich = reihe };
+
+        double[]? erhalten = null;
+        var cut = Zeige(Sonde(),
+            simulieren: async _ =>
+            {
+                await Task.Run(() => Thread.Sleep(30));
+                return (lauf, null);
+            },
+            modell: async (quelle, _, gerechnet) =>
+            {
+                await Task.Run(() => Thread.Sleep(10));
+                if (gerechnet is not null) erhalten = gerechnet;
+                var reihen = new List<ChartRenderer.Reihe>
+                {
+                    new("ungestört", quelle, ChartRenderer.C_QUELLTEMPERATUR)
+                };
+                if (gerechnet is not null)
+                    reihen.Add(new ChartRenderer.Reihe("gerechnet (letzter Lauf)", gerechnet, ChartRenderer.C_QUELLTEMPERATUR));
+                return ChartRenderer.JahresgangModell("Jahresgang", reihen, "Monat", "°C");
+            });
+
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Bild));
+        Assert.Empty(cut.FindAll("[data-zeile=kennwerte-lauf]"));
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-zeile=kennwerte-lauf]")), TimeSpan.FromSeconds(5));
+        cut.WaitForAssertion(() => Assert.Equal(reihe, erhalten), TimeSpan.FromSeconds(5));
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.Instance.Bild!.Reihen.Count), TimeSpan.FromSeconds(5));
+        Assert.Contains("gerechnet (letzter Lauf)", cut.Markup, StringComparison.Ordinal);
+
+        // Die Kennwerte charakterisieren den Lauf: Jahresmittel, Tiefstwert mit Zeitpunkt, Höchstwert.
+        string zeile = cut.Find("[data-zeile=kennwerte-lauf]").TextContent;
+        Assert.Contains("Jahresmittel 4,0 °C", zeile, StringComparison.Ordinal);
+        Assert.Contains("Tiefstwert 1,0 °C am 01.01., 00:00 Uhr", zeile, StringComparison.Ordinal);
+        Assert.Contains("Höchstwert 7,0 °C am 02.07., 12:00 Uhr", zeile, StringComparison.Ordinal);
     }
 
     // =====================================================================
@@ -973,5 +1350,38 @@ public class QuelleErdreichDialogTests : EposBunitContext
                                          .Single(f => f.Name == "klimazone");
         Assert.StartsWith("11 ", wert.Text);
         Assert.Equal("11", wert.Schluessel);
+    }
+
+    /// <summary>
+    /// <b>„CSV…“ am Jahresgang</b> (CSV-3): Mit dem Delegat der Hülle trägt die Vorschau den
+    /// Knopf; der Klick gibt das gezeigte Modell an die Naht — 8 760 Stundenwerte, Raster Stunde.
+    /// Ohne Delegat kein Knopf.
+    /// </summary>
+    [Fact]
+    public void Der_Jahresgang_schreibt_CSV_ueber_die_Naht()
+    {
+        Func<double[], double[]?, double[]?, Task<Zeichenmodell?>> zeichner = (quelle, _, _) =>
+            Task.FromResult<Zeichenmodell?>(ChartRenderer.JahresgangModell("Jahresgang",
+                new[] { new ChartRenderer.Reihe("Quelltemperatur", quelle, ChartRenderer.C_QUELLTEMPERATUR) },
+                "Monat", "Quelltemperatur [°C]"));
+
+        var ohne = Zeige(Kollektor(), modell: zeichner);
+        ohne.WaitForAssertion(() => Assert.NotNull(ohne.FindComponent<DiagrammSvg>().Instance.Modell));
+        Assert.Empty(ohne.FindAll("button.epos-diagramm-csv"));
+
+        var exporte = new List<(Zeichenmodell M, string T, Zeitraster R)>();
+        var cut = Render<QuelleErdreichDialog>(p =>
+        {
+            p.Add(x => x.Daten, Kollektor());
+            p.Add(x => x.Lauf, ErdreichAuswertung.ErdreichLaufErgebnis.Keines);
+            p.Add(x => x.Jahresgangmodell, zeichner);
+            p.Add(x => x.CsvSpeichern, (m, t, r) => { exporte.Add((m, t, r)); return Task.CompletedTask; });
+        });
+        cut.WaitForAssertion(() => Assert.NotNull(cut.FindComponent<DiagrammSvg>().Instance.Modell));
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, _, r) = Assert.Single(exporte);
+        Assert.Equal(8760, ZeitreihenCsv.AusModell(m)[0].Werte.Length);
+        Assert.Equal(Zeitraster.Stunde, r);
     }
 }

@@ -314,6 +314,18 @@ namespace WindowsFormsApplication1
         public const string KANAL_OHNE_VERSORGER = "KANAL_OHNE_VERSORGER";
 
         /// <summary>
+        /// KU3-5 (E68; Kühlkonzept 4.3 #18): Ein Kältespeicher steht im Projekt, aber kein Kälteerzeuger
+        /// (keine Wärmepumpe im Kühlbetrieb, keine Kältemaschine) lädt ihn — er rechnet nicht. WEICH.
+        /// </summary>
+        public const string KAELTESPEICHER_OHNE_ERZEUGER = "KAELTESPEICHER_OHNE_ERZEUGER";
+
+        /// <summary>
+        /// KU3-5: Ein Kältespeicher steht im Projekt, die Kühlung des Projekts ist aber ausgeschaltet
+        /// (<c>Tab_Einstellungen.Kuehlbetrieb</c>) — er rechnet nicht. WEICH.
+        /// </summary>
+        public const string KAELTESPEICHER_OHNE_KUEHLUNG = "KAELTESPEICHER_OHNE_KUEHLUNG";
+
+        /// <summary>
         /// Untergrenze [MWh/a], ab der ein Kanal als „mit Bedarf" gilt. Darunter liegt
         /// nur Rundungsrauschen der Netzverlustverteilung; gemeldet würde sonst
         /// „0,0 MWh/a".
@@ -400,7 +412,38 @@ namespace WindowsFormsApplication1
                 SolarNachrangPruefen(bild, idPuffer, befunde);
             }
 
+            KaeltespeicherPruefen(idProjekt, befunde);
+
             return befunde;
+        }
+
+        /// <summary>
+        /// <see cref="KAELTESPEICHER_OHNE_ERZEUGER"/> und <see cref="KAELTESPEICHER_OHNE_KUEHLUNG"/> — je
+        /// Kältespeicher des Projekts (KU3-5). Ohne Kältespeicher eine einzige Abfrage und kein Befund.
+        /// </summary>
+        public static void KaeltespeicherPruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            if (idProjekt <= 0 || befunde == null) return;
+            List<WaermesenkeClass.PufferInfo> speicher =
+                WaermesenkeClass.ProjektPufferListe(idProjekt, WaermesenkeClass.VERWENDUNG_KAELTE);
+            if (speicher.Count == 0) return;
+
+            bool kuehlung = KonfigurationCtrl.KuehlbetriebLesen(idProjekt);
+            int erzeuger = WPCtrl.AnlagenImKuehlbetrieb(idProjekt) + StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE)));
+
+            foreach (WaermesenkeClass.PufferInfo p in speicher)
+            {
+                string name = string.IsNullOrEmpty(p.Bezeichner) ? p.ID.ToString() : p.Bezeichner;
+                if (!kuehlung)
+                    befunde.Add(Befund(KAELTESPEICHER_OHNE_KUEHLUNG, false, 0, p.ID,
+                        string.Format(MyResource.Resource.SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG, name)));
+                if (erzeuger <= 0)
+                    befunde.Add(Befund(KAELTESPEICHER_OHNE_ERZEUGER, false, 0, p.ID,
+                        string.Format(MyResource.Resource.SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER, name)));
+            }
         }
 
         /// <summary>
@@ -796,6 +839,23 @@ namespace WindowsFormsApplication1
                                          Z_AnlageSenkeModel senke, int rang,
                                          List<Warnbefund> befunde)
         {
+            // --- W3, Prozessvorlauf (PW1 Stufe 1) --------------------------------------
+            //
+            // Eine DIREKTSENKE Prozesswärme an einem Erzeuger, dessen gepflegter Vorlauf unter
+            // dem höchsten Prozessvorlauf des Projekts liegt: In Stunden mit diesem Bedarf deckt
+            // der Lauf den Prozesskanal an diesem Erzeuger nicht (Ausschluss). Die Wärmepumpe
+            // ist ausgenommen - sie wertet ihr Kennfeld am Prozessvorlauf aus, ihr projektierter
+            // Vorlauf ist keine Grenze. Ohne Prozess mit Temperaturpaar schlägt nichts an.
+            if (senke != null && string.Equals(senke.Ziel, WaermesenkeClass.ZIEL_PROZESSWAERME, StringComparison.Ordinal))
+            {
+                double tProzess = bild.ProzessVorlaufMax();
+                int vorlauf = bild.AnlagenVorlauf(idAnlage);
+                if (tProzess > 0 && vorlauf > 0 && vorlauf < tProzess && !bild.IstWaermepumpe(idAnlage))
+                    befunde.Add(Befund(W3_VORLAUF_ZU_NIEDRIG, false, idAnlage, 0,
+                        string.Format(MyResource.Resource.SIMWARN_W3_UNTER_PROZESS,
+                                      bild.Anlagenname(idAnlage), Grad(vorlauf), Grad(tProzess))));
+            }
+
             if (senke == null || senke.ID_Puffer <= 0) return;
 
             int[] kanaele = ZielKanaele(senke.Ziel);
@@ -890,6 +950,10 @@ namespace WindowsFormsApplication1
         {
             Pufferdaten p = bild.Puffer(idPuffer);
             if (p == null) return;
+
+            // KU3-5: Der Kältespeicher prüft KaeltespeicherPruefen - sein Paar (kalt unten) ist kein
+            // vertauschtes Wärmepaar, und die Wärmekriterien gelten für ihn nicht.
+            if (p.Set != null && p.Set.Kaelte) return;
 
             // --- HART: leeres Klassen-Set ---------------------------------------------
             //
@@ -1006,9 +1070,9 @@ namespace WindowsFormsApplication1
                 // (WaermequelleClass.OhneQuelle ueber DbWerte.WQ_TYP_OHNE). Bis dahin
                 // stand hier Trim().Length > 0 - zeichengleich in der Wirkung, aber der
                 // Persistenzwert kam als Literal-Vergleich daher statt aus DbWerte.
-                if (!WaermequelleClass.OhneQuelle(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")))) continue;
-
                 int idAnlage = (int)StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (!WaermequelleClass.OhneQuelle(
+                        ErdreichLaufvorgabe.Quelltyp(idAnlage, StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))))) continue;
                 befunde.Add(Befund(QUELLE_NICHT_KONFIGURIERT, false, idAnlage, 0,
                     string.Format(MyResource.Resource.SIMWARN_QUELLE_FEHLT,
                                   StilleDb.Text(StilleDb.Feld(r, "Bezeichner")), bauart)));
@@ -1039,7 +1103,8 @@ namespace WindowsFormsApplication1
 
             foreach (DataRow r in dt.Rows)
             {
-                if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                if (!string.Equals(ErdreichLaufvorgabe.Quelltyp((int)StilleDb.Zahl(StilleDb.Feld(r, "ID")),
+                                                                StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))),
                                    WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
                     continue;
 
@@ -1205,6 +1270,7 @@ namespace WindowsFormsApplication1
             if (set.Heizung) teile.Add(KanalAnzeige(Kanal.HEIZUNG));
             if (set.Brauchwasser) teile.Add(KanalAnzeige(Kanal.BRAUCHWASSER));
             if (set.Prozess) teile.Add(KanalAnzeige(Kanal.PROZESS));
+            if (set.Kaelte) teile.Add(KanalAnzeige(Kanal.KUEHLUNG));
 
             return Verbinden(teile);
         }
@@ -1378,9 +1444,9 @@ namespace WindowsFormsApplication1
                 {
                     case Kanal.BRAUCHWASSER: return Set.Brauchwasser;
                     case Kanal.PROZESS: return Set.Prozess;
-                    // Kühlkonzept 4.3 #25: benannte Ablehnung statt Rückfall auf Heizung -
-                    // ein Speicher bedient keine Kälte, solange kein Kältespeicher rechnet (K7).
-                    case Kanal.KUEHLUNG: return false;
+                    // Kühlkonzept 4.3 #25: benannte Ablehnung statt Rückfall auf Heizung - den
+                    // Kühlkanal bedient allein der Kältespeicher (KU3-5).
+                    case Kanal.KUEHLUNG: return Set.Kaelte;
                     default: return Set.Heizung;
                 }
             }
@@ -1523,6 +1589,41 @@ namespace WindowsFormsApplication1
             public string Anlagenname(int idAnlage)
             {
                 return Bild.Name(idAnlage);
+            }
+
+            private double? _prozessVorlaufMax;
+
+            /// <summary>
+            /// Der höchste Vorlauf der Prozesswärmesätze des Projekts mit vollständigem Paar [°C]
+            /// (PW1 Stufe 1) — über die Zuordnungszeilen, die der Lauf rechnet; 0 ohne Paar. Still
+            /// gelesen: Vor dem Schemaschritt fehlen die Spalten, dann ist es 0.
+            /// </summary>
+            public double ProzessVorlaufMax()
+            {
+                if (_prozessVorlaufMax == null)
+                {
+                    object o = StilleDb.Scalar(
+                        "SELECT MAX(p.Vorlauf) FROM Tab_Prozesswaerme p INNER JOIN Z_Projekt_Prozesswaerme z " +
+                        "ON z.ID_Prozesswaerme = p.ID WHERE z.ID_Projekt = ? AND p.ID_Projekt = ? " +
+                        "AND p.Vorlauf IS NOT NULL AND p.Ruecklauf IS NOT NULL",
+                        StilleDb.Par("@proj", DbParamTyp.Integer, _idProjekt),
+                        StilleDb.Par("@proj2", DbParamTyp.Integer, _idProjekt));
+                    double wert = 0;
+                    if (o != null && o != DBNull.Value)
+                    {
+                        try { wert = Convert.ToDouble(o, CultureInfo.InvariantCulture); }
+                        catch { wert = 0; }
+                    }
+                    _prozessVorlaufMax = wert;
+                }
+                return _prozessVorlaufMax.Value;
+            }
+
+            /// <summary>Ist die Anlage eine Wärmepumpe (<c>ID_Type</c> = <see cref="ProjektPuffer.TYP_WP"/>)?</summary>
+            public bool IstWaermepumpe(int idAnlage)
+            {
+                Hydraulikbild.AnlagenEintrag a;
+                return Bild.JeId.TryGetValue(idAnlage, out a) && a.ID_Type == ProjektPuffer.TYP_WP;
             }
 
             public int AnlagenVorlauf(int idAnlage)

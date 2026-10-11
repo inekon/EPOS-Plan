@@ -34,6 +34,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const int FASSUNG_EXCEL_BLATTTABELLEN = 9;
 
+        /// <summary>
+        /// Die Fassung des Betriebs je Heizkessel (Katalog v11, Konzept Kesselkennlinie 5): Jahresnutzungsgrad,
+        /// Brennwertanteil nach Stunden und Wärme und Starts als Tabelle je Stand, Word und Excel.
+        /// </summary>
+        internal const int FASSUNG_KESSEL = 11;
+
+        /// <summary>
+        /// Die Fassung der Tafel „Kennzahlen je Szenario“ (Katalog v15, Etappe VB‑E4, Entscheid VB‑Q8 a):
+        /// <c>stand.tabelle.wirtschaft_szenarien</c>, Word und Excel.
+        /// </summary>
+        internal const int FASSUNG_WIRTSCHAFT_SZENARIEN = 15;
+
+        /// <summary>Die Fassung der Pufferauslegungstafel (Katalog v12, Welle P4c): <c>tabelle.pufferauslegung</c>, Word und Excel.</summary>
+        internal const int FASSUNG_PUFFERAUSLEGUNG = 12;
+
         /// <summary>Der Alternativtext der Mustertabelle (Konzept 6.4 Nr. 2).</summary>
         public const string MUSTER_TABELLE = "muster.tabelle";
 
@@ -110,7 +125,8 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld(SchalterDerTabelle(q.Schluessel), Vorlagenfeldart.Schalter, Vorlagenfeldkontext.Gruppe,
                     w => jeStand ? Hat(w, v => HatZeilen(quelle.Bau(w.MitStand(v)))) : (object)HatZeilen(quelle.Bau(w)))
                 {
-                    Seit = FASSUNG_TABELLEN,
+                    // Der Schalter ist so alt wie seine Tabelle (die Tabellen der Fassung 4 und die Kesseltafel v11).
+                    Seit = q.Seit,
                     Bedarf = q.Bedarf,
                     Ableitung = new Vorlagenfeldableitung(MUSTER_HAT_TABELLE, nameof(R.VF_MUSTER_HAT_TABELLE), tabelle)
                     {
@@ -149,9 +165,19 @@ namespace WindowsFormsApplication1
                 yield return q;
             }
             yield return Q("tabelle.kaelteerzeuger", ST, w => Berichtstabellen.Kaelteerzeuger(w.Stamm?.Ergebnis?.Waermepumpe,
-                id => w.Wirtschaft.Traegername(id), w.Englisch, w.Kultur));
+                id => w.Wirtschaft.Traegername(id), w.Englisch, w.Kultur, w.Stamm?.Ergebnis?.Kaeltemaschinen));
             yield return Q("tabelle.speichertemperaturen", ST, w => Berichtstabellen.Speichertemperaturen(w.Stamm, w.Englisch, w.Kultur));
             yield return Q("tabelle.gebaeude.ergebnis", ST, w => Berichtstabellen.Gebaeudeergebnisse(w.Stamm, w.Englisch, w.Kultur));
+            // Katalog v12 (Welle P4c): die gespeicherten Pufferauslegungen - dieselbe Tafel wie der Baustein.
+            Tabellenquelle puffer = Q(ProjektbeschreibungBaustein.PLATZHALTER_PUFFERAUSLEGUNG, ST,
+                                      w => Berichtstabellen.Pufferauslegung(w.Stamm, w.Kultur));
+            puffer.Seit = FASSUNG_PUFFERAUSLEGUNG;
+            yield return puffer;
+            // Katalog v12 (KU3-4d): die Kältespeicher des Stamms - dieselbe Tafel wie der Baustein.
+            Tabellenquelle kaeltespeicher = Q(ProjektbeschreibungBaustein.PLATZHALTER_KAELTESPEICHER, ST,
+                                              w => Berichtstabellen.Kaeltespeicher(w.Stamm, w.Englisch, w.Kultur));
+            kaeltespeicher.Seit = FASSUNG_PUFFERAUSLEGUNG;
+            yield return kaeltespeicher;
 
             // ---------------- Variantenvergleich ----------------
             yield return Q("tabelle.vergleich", G, w => Berichtstabellen.Vergleichsgesamt(w.Daten, w.Englisch, w.Kultur));
@@ -163,6 +189,8 @@ namespace WindowsFormsApplication1
                 {
                     Bezeichnung = k => BerichtTexte.T(gr, k.Name.StartsWith("en", StringComparison.OrdinalIgnoreCase)),
                 };
+                // Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Kennzahlgruppe „Gebäude“ kam mit dieser Fassung.
+                if (gr == KennzahlenKatalog.GR_GEBAEUDE) q.Seit = FASSUNG_AUFHEIZUNG;
                 yield return q;
             }
             yield return Q("tabelle.vergleich.delta_prozent", G, w => Berichtstabellen.DeltaProzent(w.Daten, w.Englisch, w.Kultur));
@@ -185,7 +213,8 @@ namespace WindowsFormsApplication1
             yield return Q("tabelle.anhang.simulationsstaende", B, w => Berichtstabellen.Simulationsstaende(w.Daten, w.Englisch, w.Kultur));
             yield return Q("tabelle.anhang_e.checkliste", B, w => w.Wirtschaft.Ergebnisse.Count == 0
                 ? Berichtstabellen.Leer(nameof(R.BV_GRUND_KEINE_WIRTSCHAFTLICHKEIT), w.Kultur)
-                : Berichtstabellen.AnhangE(AnhangECheckliste.AusBericht(w.Daten, w.Kapitelstellen), w.Kultur));
+                : Berichtstabellen.AnhangE(AnhangECheckliste.AusBericht(w.Daten, w.Kapitelstellen,
+                    WirtschaftlichkeitSzenario.ERWARTET, WirtschaftsBerichtswerte.IstValeri(w.Konfiguration)), w.Kultur));
 
             // ---------------- je Stand ----------------
             yield return Q(STAND_TABELLE + "kennzahlen", S, jeStand((w, v) => Berichtstabellen.Standkennzahlen(v, w.Englisch, w.Kultur)));
@@ -203,6 +232,40 @@ namespace WindowsFormsApplication1
                 v, w.Wirtschaft.Ergebnisse.Count == 0 ? null : w.Wirtschaft.Strommatrizen, w.Englisch, w.Kultur)));
             yield return Q(STAND_TABELLE + "emissionsbilanz", S, jeStand((w, v) => Berichtstabellen.Emissionsbilanz(v, w.Wirtschaft, w.Englisch, w.Kultur)),
                            Vorlagenbedarf.Emissionsbilanz);
+
+            // ---------------- je Stand, Katalog v11: der Betrieb je Heizkessel (Werte des Laufs, darum Zeitreihen) ----------------
+            Tabellenquelle kessel = Q(STAND_TABELLE + "heizkessel", S, jeStand((w, v) => Berichtstabellen.Heizkessel(v, w.Englisch, w.Kultur)),
+                                      Vorlagenbedarf.Zeitreihen);
+            kessel.Seit = FASSUNG_KESSEL;
+            yield return kessel;
+
+            // ---------------- je Stand, Katalog v17 (UB-E4): die Tafel „Bivalenz und Uebergabe“, Word und Excel ----------------
+            Tabellenquelle bivalenz = Q(STAND_TABELLE + "bivalenz", S, jeStand((w, v) => Berichtstabellen.Bivalenz(v, w.Kultur)));
+            bivalenz.Seit = FASSUNG_BIVALENZ;
+            yield return bivalenz;
+
+            // ---------------- je Stand, Katalog v18 (KM3-E3-b): die Tafel „Teillast und Takten der Kaeltemaschinen“ ----------------
+            // Der Teillastanteil braucht die Verdichterstunden des Laufs (Zeitreihensatz), darum Vorlagenbedarf.Zeitreihen.
+            Tabellenquelle kmTeillast = Q(STAND_TABELLE + "km_teillast", S, jeStand((w, v) => Berichtstabellen.KaeltemaschineTeillast(v, w.Kultur)),
+                                          Vorlagenbedarf.Zeitreihen);
+            kmTeillast.Seit = FASSUNG_KM_TEILLAST;
+            yield return kmTeillast;
+
+            // ---------------- je Stand, Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Gebäudetafel je Stand, ohne Δ ----------------
+            // Dieselbe Tafel wie tabelle.gebaeude.ergebnis (Berichtstabellen.Gebaeudeergebnisse) für den laufenden Stand: je Gebäude
+            // Rechenweg, Spitzen, Lüftungs- und Aufheizzeilen, Hinweise W1–W5 — keine zweite Quelle. Das Δ trägt die Kennzahlgruppe
+            // „Gebäude“ (tabelle.vergleich.gebaeude).
+            Tabellenquelle gebaeude = Q(STAND_TABELLE + "gebaeude", S, jeStand((w, v) => Berichtstabellen.Gebaeudeergebnisse(v, w.Englisch, w.Kultur)));
+            gebaeude.Seit = FASSUNG_AUFHEIZUNG;
+            yield return gebaeude;
+
+            // ---------------- je Stand, Katalog v15 (VB‑E4): die Kennzahlen je Szenario (VALERI-Darstellung) ----------------
+            // Dieselbe Tafel wie im Kapitel in VALERI-Darstellung; fehlt dem Stand Günstig oder Ungünstig, steht sie allein
+            // in Erwartet, und der Hinweis darunter sagt es (VB‑Q4 a).
+            Tabellenquelle szenarien = Q(STAND_TABELLE + "wirtschaft_szenarien", S, jeStand((w, v) =>
+                Berichtstabellen.WirtschaftskennzahlenSzenarien(w.Daten, w.Wirtschaft, v, w.Englisch, w.Kultur)));
+            szenarien.Seit = FASSUNG_WIRTSCHAFT_SZENARIEN;
+            yield return szenarien;
 
             // ---------------- nur Excel (Katalog v7, BV-E9): die drei Tabellen mit reiner Excel-Quelle ----------------
             Tabellenquelle X(Tabellenquelle q) { q.Seit = FASSUNG_EXCEL_TABELLEN; q.Ausgaben = Vorlagenausgabe.Excel; return q; }

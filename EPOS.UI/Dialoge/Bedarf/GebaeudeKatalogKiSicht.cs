@@ -1,4 +1,6 @@
-﻿using KiKern;
+﻿using EPOS.UI.Dienste;
+using KiKern;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -21,9 +23,17 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// Klappliste.</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff ihren
-/// Delegaten bzw. liest den lebenden Satz.</para>
+/// Delegaten bzw. liest den lebenden Satz — bis auf die halbe Angabe eines Zeitfensters (siehe
+/// <see cref="Setzen"/>).</para>
+///
+/// <para><b>Die Vorgabe-Matrix ist eine FELDTAFEL</b> (Stufe KP2, Welle U1): Ihre Felder erzeugt der
+/// Kern aus dem Profil <c>KiKonditionierungsfelder</c>; diese Klasse beantwortet sie über den
+/// Schlüssel (<see cref="IKiFeldtafel"/>) und geht dabei denselben Weg wie die Zellen des Reiters
+/// (<see cref="Konditionierung"/>, die <see cref="KonditionierungBearbeitung"/> des Editors) — mit
+/// Zellenort, Folgeregel und der Rückfrage „aufteilen". Die Bestandszellen behalten ihre Namen und
+/// gehen, wo der Editor die Bearbeitung reicht, ebenfalls über sie.</para>
 /// </summary>
-public sealed class GebaeudeKatalogKiSicht
+public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
 {
     // =====================================================================
     //  Der Satz des ERSTEN Reiterblatts
@@ -165,9 +175,8 @@ public sealed class GebaeudeKatalogKiSicht
     // =====================================================================
 
     /// <summary>
-    /// Der Bezeichner des Satzes. In der KATALOGVERWALTUNG wählt er den Satz aus,
-    /// den die Maske lädt — denselben Weg nimmt dort die Klappliste; in den beiden
-    /// anderen Betriebsarten benennt er den Satz, der geschrieben wird.
+    /// Der Bezeichner des Satzes. Im Katalogeditor benennt er den Satz, der geschrieben wird;
+    /// in der Gebäudeverwaltung ist er nur lesbar — dort wählt <see cref="Satz"/>.
     /// </summary>
     public string Name
     {
@@ -218,19 +227,19 @@ public sealed class GebaeudeKatalogKiSicht
     }
 
     /// <summary>
-    /// Die Baualtersklasse als Platz in der Klappliste — mit Baujahr die Klasse aus dem Jahr; eine Wahl
-    /// wirkt nur ohne Baujahr (DAS BAUJAHR FÜHRT, E47).
+    /// Die Baualtersklasse als Platz in der Klappliste — die gewählte; das Baujahr schlägt sie nur vor, eine
+    /// Wahl gilt immer.
     /// </summary>
     public int Baualtersklasse
     {
-        get => Daten is GebaeudeKatalogDaten d ? WindowsFormsApplication1.Gebaeudeklassen.IndexWirksam(d.Baujahr, d.Baualtersklasse) : 0;
-        set { if (Daten is GebaeudeKatalogDaten d && !d.KlasseAusBaujahr) d.Baualtersklasse = value; }
+        get => Daten is GebaeudeKatalogDaten d ? d.Baualtersklasse : 0;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Baualtersklasse = value; }
     }
 
     /// <summary>Setzt das Baujahr samt Klasse (Weg des Arbeitsstands); ohne Weg der Feldsatz selbst.</summary>
     public Action<int?>? BaujahrSetzen { get; init; }
 
-    /// <summary>Das Baujahr als Jahreszahl (1500 … 2100); leer = unbekannt. Ist es gesetzt, folgt die Klasse ihm.</summary>
+    /// <summary>Das Baujahr als Jahreszahl (1500 … 2100); leer = unbekannt. Ein neues Jahr setzt die Klasse auf seinen Vorschlag.</summary>
     public int? Baujahr
     {
         get => Daten?.Baujahr;
@@ -304,7 +313,11 @@ public sealed class GebaeudeKatalogKiSicht
     public double? Waermegewinne
     {
         get => Daten?.Waermegewinne;
-        set { if (Daten is GebaeudeKatalogDaten d) d.Waermegewinne = value; }
+        set
+        {
+            if (UeberMatrix(KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert, value)) return;
+            if (Daten is GebaeudeKatalogDaten d) d.Waermegewinne = value;
+        }
     }
 
     /// <summary>Der Gesamtenergiedurchlassgrad der Fenster als Anteil (z. B. 0,4).</summary>
@@ -421,14 +434,14 @@ public sealed class GebaeudeKatalogKiSicht
     public double? SollTag
     {
         get => SollTagLesen?.Invoke();
-        set => SollTagSetzen?.Invoke(value);
+        set { if (!UeberMatrix(KonditionierungGroesse.Heizen, KonditionierungZeile.Tag, value)) SollTagSetzen?.Invoke(value); }
     }
 
     /// <summary>Die Nachtabsenkung [°C].</summary>
     public double? Nachtabsenkung
     {
         get => NachtabsenkungLesen?.Invoke();
-        set => NachtabsenkungSetzen?.Invoke(value);
+        set { if (!UeberMatrix(KonditionierungGroesse.Heizen, KonditionierungZeile.Nacht, value)) NachtabsenkungSetzen?.Invoke(value); }
     }
 
     /// <summary>Beginn der Nachtabsenkung [Stunde 0 … 23]; mit dem Ende leer = Vorgabe 22 Uhr (E43).</summary>
@@ -456,14 +469,14 @@ public sealed class GebaeudeKatalogKiSicht
     public double? Wochenendabsenkung
     {
         get => WochenendabsenkungLesen?.Invoke();
-        set => WochenendabsenkungSetzen?.Invoke(value);
+        set { if (!UeberMatrix(KonditionierungGroesse.Heizen, KonditionierungZeile.Wochenende, value)) WochenendabsenkungSetzen?.Invoke(value); }
     }
 
     /// <summary>Die Solltemperatur in den Ferien [°C]; über 0 schaltet sie den Betrieb ein.</summary>
     public double? SollFerien
     {
         get => SollFerienLesen?.Invoke();
-        set => SollFerienSetzen?.Invoke(value);
+        set { if (!UeberMatrix(KonditionierungGroesse.Heizen, KonditionierungZeile.Ferien, value)) SollFerienSetzen?.Invoke(value); }
     }
 
     // =====================================================================
@@ -565,6 +578,25 @@ public sealed class GebaeudeKatalogKiSicht
         set { if (Daten is GebaeudeKatalogDaten d) d.HeizleistungMax = value; }
     }
 
+    /// <summary>
+    /// Die manuelle Aufheizzeit des Projektgebäudes in h (Stufe KP3, Welle O2; E59) — derselbe Arbeitsstand wie das Feld
+    /// im Reiter „Konditionierung", geschrieben im OK-Weg; leer = Art des Projekts. Nur in der Betriebsart Projekt,
+    /// außerhalb 1–47 benannt abgelehnt.
+    /// </summary>
+    public int? AufheizzeitManuellH
+    {
+        get => Daten?.AufheizzeitManuellH;
+        set
+        {
+            if (Betriebsart != GebaeudeKatalogModus.Projekt.ToString())
+                throw new InvalidOperationException(WindowsFormsApplication1.MyResource.Resource.KOND_AUFH_MANUELL_KI_NUR_PROJEKT);
+            if (value is int h && (h < 1 || h > 47))
+                throw new ArgumentOutOfRangeException(nameof(value), string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    WindowsFormsApplication1.MyResource.Resource.KOND_AUFH_MANUELL_MSG_BEREICH, 1, 47));
+            if (Daten is GebaeudeKatalogDaten d) d.AufheizzeitManuellH = value;
+        }
+    }
+
     /// <summary>Rechnet Sonneneinstrahlung und langwellige Abstrahlung auf die opaken Außenbauteile ein (VDI 6007).</summary>
     public bool AussenbauteileStrahlung
     {
@@ -576,14 +608,22 @@ public sealed class GebaeudeKatalogKiSicht
     public double? LuftwechselInfiltration
     {
         get => Daten?.LuftwechselInfiltration;
-        set { if (Daten is GebaeudeKatalogDaten d) d.LuftwechselInfiltration = value; }
+        set
+        {
+            if (UeberMatrix(KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert, value)) return;
+            if (Daten is GebaeudeKatalogDaten d) d.LuftwechselInfiltration = value;
+        }
     }
 
     /// <summary>Luftwechsel durch Fensterlüftung der Nutzer (VDI 6007); zusammen mit der Infiltration der Luftwechsel des Stundenmodells.</summary>
     public double? LuftwechselNutzer
     {
         get => Daten?.LuftwechselNutzer;
-        set { if (Daten is GebaeudeKatalogDaten d) d.LuftwechselNutzer = value; }
+        set
+        {
+            if (UeberMatrix(KonditionierungGroesse.Lueftung, KonditionierungZeile.Tag, value)) return;
+            if (Daten is GebaeudeKatalogDaten d) d.LuftwechselNutzer = value;
+        }
     }
 
     /// <summary>Erhöhter Luftwechsel an warmen Tagen, wenn die Außenluft kühler ist (VDI 6007).</summary>
@@ -615,6 +655,16 @@ public sealed class GebaeudeKatalogKiSicht
     }
 
     /// <summary>
+    /// Der wirksame U-Wert der Bodenplatte samt Erdreich in W/(m²K) als Vorgabe; leer = Erdreichkorrektur nach
+    /// DIN EN ISO 13370. Wirkt nur bei Randbedingung Erdreich.
+    /// </summary>
+    public double? ErdreichUWirksam
+    {
+        get => Daten?.ErdreichUWirksam;
+        set { if (Daten is GebaeudeKatalogDaten d) d.ErdreichUWirksam = value; }
+    }
+
+    /// <summary>
     /// Wird das Gebäude gekühlt? (Stufe KU1) Wirkt nur mit Kühlsollwert und in einem Projekt mit
     /// der Projekteinstellung „Kühlung rechnen".
     /// </summary>
@@ -628,7 +678,11 @@ public sealed class GebaeudeKatalogKiSicht
     public double? KuehlSollwert
     {
         get => Daten?.KuehlSollwert;
-        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlSollwert = value; }
+        set
+        {
+            if (UeberMatrix(KonditionierungGroesse.Kuehlen, KonditionierungZeile.Tag, value)) return;
+            if (Daten is GebaeudeKatalogDaten d) d.KuehlSollwert = value;
+        }
     }
 
     /// <summary>Größte Kühlleistung in kW; leer = unbegrenzt.</summary>
@@ -757,6 +811,13 @@ public sealed class GebaeudeKatalogKiSicht
         set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveSteilheit = value; }
     }
 
+    /// <summary>Raumeinfluss der Heizkurve in K/K (0 bis 10); leer oder 0 = aus, wirksam nur mit Stufe AK3.</summary>
+    public double? HeizkurveRaumeinfluss
+    {
+        get => Daten?.HeizkurveRaumeinfluss;
+        set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveRaumeinfluss = value; }
+    }
+
     /// <summary>Proportionalband des Raumreglers in K (0 bis 5); leer = 1 K.</summary>
     public double? Proportionalband
     {
@@ -866,12 +927,70 @@ public sealed class GebaeudeKatalogKiSicht
         set { if (Daten is GebaeudeKatalogDaten d) d.KuehlVorlaufgrenze = value; }
     }
 
+    // ---- Die Kühlkurve (Entwurf KK): Haken und Weg über die Wege des Arbeitsstands, die Zahlen unmittelbar ----
+
+    /// <summary>Der Weg des Hakens „Kühlkurve" (trägt beim Einschalten den Vorgabewert des Raumeinflusses ein).</summary>
+    public Action<bool>? KuehlkurveSetzen { get; init; }
+
+    /// <summary>Wählt den Auslegungsweg über seinen Steuerwert; Rückgabe: der Grund einer Ablehnung, sonst <c>null</c>.</summary>
+    public Func<string, string?>? KuehlkurveWegSetzen { get; init; }
+
+    /// <summary>Die Auslegungswege als Einträge des Wahlfeldes (Schlüssel = Steuerwert).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? KuehlkurveWegEintraege { get; init; }
+
+    /// <summary>„Kühlkurve" — gleitender Kühlvorlauf über die Außentemperatur; gerechnet auf Stufe AK3.</summary>
+    public bool KuehlkurveAktiv
+    {
+        get => Daten?.KuehlkurveAktiv == true;
+        set
+        {
+            if (KuehlkurveSetzen is not null) KuehlkurveSetzen(value);
+            else if (Daten is GebaeudeKatalogDaten d) d.KuehlkurveAktiv = value;
+        }
+    }
+
+    /// <summary>Fußpunkt der Kühlkurve in °C; leer = der Auslegungsrücklauf der Kühlübergabe.</summary>
+    public double? KuehlkurveFusspunkt
+    {
+        get => Daten?.KuehlkurveFusspunkt;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlkurveFusspunkt = value; }
+    }
+
+    /// <summary>Raumeinfluss der Kühlkurve in K/K; leer oder 0 = aus.</summary>
+    public double? KuehlkurveRaumeinfluss
+    {
+        get => Daten?.KuehlkurveRaumeinfluss;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlkurveRaumeinfluss = value; }
+    }
+
+    /// <summary>Der Auslegungsweg als Steuerwert: stunde, tagesmittel (Vorgabe) oder eingabe.</summary>
+    public string KuehlkurveAuslegungWeg
+    {
+        get => string.IsNullOrEmpty(Daten?.KuehlkurveAuslegungWeg) ? WindowsFormsApplication1.DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL : Daten!.KuehlkurveAuslegungWeg!;
+        set
+        {
+            string? grund = KuehlkurveWegSetzen?.Invoke(value ?? "");
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+        }
+    }
+
+    /// <summary>Die drei Auslegungswege.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlkurveAuslegungWegWahl
+        => KuehlkurveWegEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Auslegungs-Außentemperatur der Kühlung in °C; wirkt nur mit dem Weg „eingabe".</summary>
+    public double? KuehlkurveAuslegungAussen
+    {
+        get => Daten?.KuehlkurveAuslegungAussen;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlkurveAuslegungAussen = value; }
+    }
+
     /// <summary>Der Rechenweg, auf dem das Gebäude rechnet — nur lesend (VDI 6007 oder Tagesbilanz).</summary>
     public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Daten?.Modell);
 
     /// <summary>
-    /// Die Betriebsart der Maske — Bearbeiten, Neu oder Katalogverwaltung. Sie
-    /// entscheidet, welcher der beiden Speicherwege frei ist.
+    /// Die Betriebsart der Maske — Bearbeiten, Neu oder Projekt. Sie entscheidet, welcher der
+    /// beiden Speicherwege frei ist.
     /// </summary>
     public string Betriebsart => BetriebsartLesen?.Invoke() ?? "";
 
@@ -902,12 +1021,84 @@ public sealed class GebaeudeKatalogKiSicht
     public Func<IReadOnlyList<GebaeudeZoneKiZeile>>? ZonenLesen { get; init; }
 
     /// <summary>
-    /// Die Zonen eines Gebäudes im Projekt als RASTER zum LESEN (Stufe G6a) — Name, Nutzfläche,
+    /// Die Zonen eines Gebäudes im Projekt oder eines Katalogsatzes (Welle ZK-b) als RASTER zum LESEN (Stufe G6a) — Name, Nutzfläche,
     /// H_T und Zahl der Bauteile aus der EINEN Formel des Kerns (<c>Zonenkennwerte</c>).
     /// Anlegen, Öffnen, Duplizieren, Umordnen und Entfernen bleiben Klicks des Anwenders.
     /// </summary>
     public IReadOnlyList<GebaeudeZoneKiZeile> Zonen
         => ZonenLesen?.Invoke() ?? Array.Empty<GebaeudeZoneKiZeile>();
+
+    // =====================================================================
+    //  Die Vorgabe-Matrix als FELDTAFEL (Stufe KP2, Welle U1)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Bearbeitung der Vorgabe-Matrix — der Katalogeditor (Reiter „Konditionierung") und die
+    /// Verwaltung (Blatt „Konditionierung", Stufe KP2, Welle U4) reichen sie; ohne sie stehen die Felder
+    /// der Matrix nicht zur Verfügung, und die Bestandszellen gehen unmittelbar in den Satz.
+    /// </summary>
+    public KonditionierungBearbeitung? Konditionierung { get; init; }
+
+    /// <summary>Die Feldtafel der Matrix — derselbe Weg wie im Zonendialog (<see cref="KonditionierungKiTafel"/>).</summary>
+    private readonly KonditionierungKiTafel _tafel = new(KiKonditionierungsfelder.Finde);
+
+    /// <summary>
+    /// Setzt eine Bestandszelle über die Bearbeitung des Reiters — derselbe Weg wie die Zelle der
+    /// Matrix; <c>false</c> = es gibt keine, der Aufrufer schreibt wie bisher.
+    /// </summary>
+    private bool UeberMatrix(KonditionierungGroesse g, KonditionierungZeile z, double? wert)
+    {
+        if (Konditionierung is not KonditionierungBearbeitung b) return false;
+        if (!b.WertSetzen(g, z, wert)) throw KonditionierungKiTafel.Ablehnung(b);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public object? Lesen(string schluessel)
+        => RaumnutzungKiZugang.IstFeld(schluessel) ? Nutzungsprofile?.Lesen(schluessel)
+           : _tafel.Lesen(Konditionierung, schluessel);
+
+    /// <summary>
+    /// <inheritdoc />
+    /// Ein Zeitfenster hat nur beide Grenzen zusammen (E53, E43): Die erste gesetzte Grenze wartet auf
+    /// die zweite — erst beide oder keine gehen an den Weg, wie im Reiter. Die Felder des Blatts
+    /// „Nutzungsprofile" (<c>np_*</c>) gehen an dessen Entwurf.
+    /// </summary>
+    public void Setzen(string schluessel, object? wert)
+    {
+        if (!RaumnutzungKiZugang.IstFeld(schluessel))
+        {
+            _tafel.Setzen(Konditionierung, schluessel, wert);
+            return;
+        }
+        if (Nutzungsprofile is null) throw new InvalidOperationException(KiNutzungsprofilfelder.GrundOhneBlatt);
+        Nutzungsprofile.Setzen(schluessel, wert);
+    }
+
+    // =====================================================================
+    //  Das Blatt „Nutzungsprofile" (NP3c; Konzept Nutzungsprofile 6.1)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Zugang zum Blatt „Nutzungsprofile" — nur der Katalogeditor trägt das Blatt und reicht ihn; ohne
+    /// ihn (Verwaltung) oder bei geschlossenem Blatt lesen die Felder <c>np_*</c> leer und Setzen lehnt ab.
+    /// </summary>
+    public RaumnutzungKiZugang? Nutzungsprofile { get; init; }
+
+    /// <summary>
+    /// Die Zeilen der Zuordnungstabelle des Blatts als RASTER zum LESEN (Art, Schlüssel, Profil); Profilwahl,
+    /// neue Zeile und Löschen schreiben sofort in den Katalog und bleiben Klicks des Anwenders.
+    /// </summary>
+    public IReadOnlyList<RaumnutzungZuordnungKiZeile> Nutzungsprofilzuordnungen
+        => Nutzungsprofile?.Zuordnungen ?? Array.Empty<RaumnutzungZuordnungKiZeile>();
+
+    /// <summary>Das Zeilenbild im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
+    public IReadOnlyList<RaumnutzungZeilenbildKiZeile> Nutzungsprofilzeilenbild
+        => Nutzungsprofile?.Zeilenbildzeilen ?? Array.Empty<RaumnutzungZeilenbildKiZeile>();
+
+    /// <summary>Die Stundenprofile im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
+    public IReadOnlyList<RaumnutzungStundenKiZeile> Nutzungsprofilstunden
+        => Nutzungsprofile?.Stundenzeilen ?? Array.Empty<RaumnutzungStundenKiZeile>();
 }
 
 /// <summary>

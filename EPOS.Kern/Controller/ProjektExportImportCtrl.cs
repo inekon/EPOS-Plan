@@ -98,6 +98,9 @@ namespace WindowsFormsApplication1
             { "ID_Tagesgangsatz", TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM },
             { "ID_Bedarfstag",    TwwSchema.TAB_TWW_BEDARFSTAG_STAMM },
             { "ID_Ausstattung",   TwwSchema.TAB_TWW_DIN4708_WERT_STAMM },
+            // Betriebskalender der Bedarfsprofile (PW2/BW2): projektuebergreifend, im Ziel ueber den
+            // Bezeichner wiedergefunden; fehlt er dort, steht die Zuordnung ohne Kalender.
+            { BedarfNetzKalenderSchema.SPALTE_ID_KALENDER, BedarfNetzKalenderSchema.TAB_KALENDER },
             // TODO: bei Bedarf ID_Stamm / StammID / KategorieID ergänzen.
         };
 
@@ -113,6 +116,7 @@ namespace WindowsFormsApplication1
             { TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, new[] { "Bezeichner", "Katalogversion" } },
             { TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,    new[] { "Bezeichner", "Katalogversion" } },
             { TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,  new[] { "Art", "Schluessel", "Katalogversion" } },
+            { BedarfNetzKalenderSchema.TAB_KALENDER, new[] { BedarfNetzKalenderSchema.SPALTE_BEZEICHNER } },
         };
         // -----------------------------------------------------------------------------------
 
@@ -274,6 +278,14 @@ namespace WindowsFormsApplication1
                                         // der Original-Id zeigte er dort auf ein fremdes Geraet
                                         // oder legte einen Katalogsatz an.
                                         if (IstWaermepumpenkatalog(fk.RefTab)) continue;
+                                        // Dieselbe Regel fuer den Katalog der Kaeltemaschine (KU3-1).
+                                        if (string.Equals(fk.RefTab, KaeltemaschineSchema.TAB_STAMM, StringComparison.OrdinalIgnoreCase)) continue;
+                                        // Ebenso der Katalog des Rueckkuehlwerks (K-F1).
+                                        if (string.Equals(fk.RefTab, RueckkuehlwerkSchema.TAB_STAMM, StringComparison.OrdinalIgnoreCase)) continue;
+                                        // Die Katalogverweise der Pufferauslegung (Welle P4c) reisen
+                                        // nicht: Konditionierungsvorlage und Pufferkatalog des Ziels
+                                        // kennen die Id nicht oder unter einem anderen Satz.
+                                        if (IstReiseloserKatalog(fk.RefTab)) continue;
                                         if (!dt.Columns.Contains(fk.Col)) continue;
                                         if (!fuellRefs.TryGetValue(fk.RefTab, out var eintrag))
                                             fuellRefs[fk.RefTab] = eintrag = new KeyValuePair<string, HashSet<long>>(fk.RefCol, new HashSet<long>());
@@ -537,6 +549,21 @@ namespace WindowsFormsApplication1
         /// beides).</para>
         /// </summary>
         internal int ImportierenIntern(string quellPfad, string gewuenschterName, BeiVorhandenem modus,
+            IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, Sammelstand stand, out string fehler)
+        {
+            object hoechste = DataRepository.ExecuteScalar("SELECT COALESCE(MAX(ID), 0) FROM Tab_Projekt");
+            long vorher = hoechste == null || hoechste == DBNull.Value ? 0 : Convert.ToInt64(hoechste, CultureInfo.InvariantCulture);
+            int neu = ImportierenPaket(quellPfad, gewuenschterName, modus, fortschritt, stand, out fehler);
+            // Ein Paket ohne Brennstoffkopien (aelterer Stand) bekommt sie sofort aus dem Katalog des Ziels -
+            // je eingespieltem Projekt jede fehlende Brennstoffart, stehende Kopien bleiben.
+            if (neu > 0) ProjektBrennstoffe.SichernAlle();
+            // Ebenso die Nutzung der Konditionierungskalender (Schemaschritt 176): aus der Herkunft in
+            // Bemerkung, nur an den eingespielten Projekten (IDs nach dem Import), stehende Werte bleiben.
+            if (neu > 0) KonditionierungNutzungSchema.SaatNachImport(vorher);
+            return neu;
+        }
+
+        private int ImportierenPaket(string quellPfad, string gewuenschterName, BeiVorhandenem modus,
             IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, Sammelstand stand, out string fehler)
         {
             fehler = null;
@@ -1255,6 +1282,18 @@ namespace WindowsFormsApplication1
         private static bool IstGebaeudekatalog(string tabelle) =>
             string.Equals(tabelle, GebaeudeKatalogverweis.TABELLE_STAMM, StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Ist das ein Katalog, dessen Verweis nicht reist (<c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c)?
+        /// Der Verweis kommt am Ziel leer an.
+        /// </summary>
+        /// <para>Ebenso die Kataloge der Ursprungsverweise und der Kostenvorlage aus Schritt
+        /// <see cref="KatalogkostenUrsprungSchema.SCHRITT"/>: Unter der Original-Id zeigte ein Verweis am Ziel auf einen
+        /// fremden Satz, und „Ursprung überschreiben" träfe ihn. <see cref="VerweiseNachtragen"/> leert die Ursprünge.</para>
+        private static bool IstReiseloserKatalog(string tabelle) =>
+            string.Equals(tabelle, PufferAuslegungErgaenzungSchema.TAB_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(tabelle, KatalogkostenUrsprungSchema.TAB_KOSTENVORLAGE, StringComparison.OrdinalIgnoreCase) ||
+            KatalogkostenUrsprungSchema.KOPIEN_OHNE_URSPRUNG.Any(k => string.Equals(tabelle, k.Katalog, StringComparison.OrdinalIgnoreCase));
+
         /// <summary>Ist das der Wärmepumpenkatalog, auf den <c>Tab_WP.ID_Stamm</c> zeigt?</summary>
         private static bool IstWaermepumpenkatalog(string tabelle) =>
             string.Equals(tabelle, WaermepumpeKatalogverweis.TABELLE_STAMM, StringComparison.OrdinalIgnoreCase);
@@ -1278,6 +1317,27 @@ namespace WindowsFormsApplication1
             if (wp != null && wp.ContainsKey(WaermepumpeKatalogverweis.SPALTE))
                 foreach (int id in ids)
                     v.Ausfuehren(WaermepumpeKatalogverweis.SqlNachtragProjekt(), new DbParam("@projekt", id));
+
+            Dictionary<string, Type> km = ZielTypen(KaeltemaschineSchema.TAB_PROJEKT);
+            if (km != null && km.ContainsKey(KaeltemaschineSchema.SPALTE_ID_STAMM))
+                foreach (int id in ids)
+                    v.Ausfuehren(KaeltemaschineSchema.SqlNachtragProjekt(), new DbParam("@projekt", id));
+
+            Dictionary<string, Type> rkw = ZielTypen(RueckkuehlwerkSchema.TAB_PROJEKT);
+            if (rkw != null && rkw.ContainsKey(RueckkuehlwerkSchema.SPALTE_ID_STAMM))
+                foreach (int id in ids)
+                    v.Ausfuehren(RueckkuehlwerkSchema.SqlNachtragProjekt(), new DbParam("@projekt", id));
+
+            // Die Ursprungsverweise aus Schritt KatalogkostenUrsprungSchema.SCHRITT reisen nicht: Am Ziel kommt die Kopie
+            // ohne Ursprung an („Ursprung nicht bekannt"), damit ein Rückweg nie einen fremden Satz überschreibt.
+            foreach ((string Kopie, string Katalog) k in KatalogkostenUrsprungSchema.KOPIEN_OHNE_URSPRUNG)
+            {
+                Dictionary<string, Type> sp = ZielTypen(k.Kopie);
+                if (sp == null || !sp.ContainsKey(KatalogkostenUrsprungSchema.SPALTE_ID_STAMM)) continue;
+                foreach (int id in ids)
+                    v.Ausfuehren("UPDATE \"" + k.Kopie + "\" SET \"" + KatalogkostenUrsprungSchema.SPALTE_ID_STAMM +
+                                 "\" = NULL WHERE \"ID_Projekt\" = ?", new DbParam("@projekt", id));
+            }
         }
 
         // ---- Umschlüsselung ----------------------------------------------------------------
@@ -1299,6 +1359,20 @@ namespace WindowsFormsApplication1
             // Dieselbe Regel fuer den Katalogverweis der Waermepumpen-Projektkopie (Schritt 80).
             if (tab.Equals(WaermepumpeKatalogverweis.TABELLE, StringComparison.OrdinalIgnoreCase) &&
                 col.Equals(WaermepumpeKatalogverweis.SPALTE, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+            // Ebenso der Katalogverweis der Kaeltemaschinen-Projektkopie (KU3-1).
+            if (tab.Equals(KaeltemaschineSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(KaeltemaschineSchema.SPALTE_ID_STAMM, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+            // Ebenso der Katalogverweis der Rueckkuehlwerk-Projektkopie (K-F1).
+            if (tab.Equals(RueckkuehlwerkSchema.TAB_PROJEKT, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(RueckkuehlwerkSchema.SPALTE_ID_STAMM, StringComparison.OrdinalIgnoreCase))
+                return DBNull.Value;
+
+            // Der Katalogverweis des Projektpuffers (Welle P4c) reist nicht - die Id eines fremden
+            // Katalogs sagt am Ziel nichts; der Verweis ist eine Herkunftsangabe, kein Rechenwert.
+            if (tab.Equals(SchemaKatalog.TAB_PUFFERSPEICHER, StringComparison.OrdinalIgnoreCase) &&
+                col.Equals(PufferAuslegungErgaenzungSchema.SPALTE_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase))
                 return DBNull.Value;
 
             if (col.Equals("ID_Projekt", StringComparison.OrdinalIgnoreCase) ||
@@ -1394,6 +1468,9 @@ namespace WindowsFormsApplication1
             foreach (var row in rows)
             {
                 long altId = row[k.pk].GetInt64();
+                // Eine Paketzeile des Hotels in einem früheren Stand liest der Import als die heutige
+                // (Schritt TwwBezugsartSchema.SCHRITT, PaketteilNachfuehrung) - VOR der Suche.
+                if (IstTwwKatalog(k.name)) TwwFruehererStand(k, row);
                 var wo = new List<string>(); var ps = new List<DbParam>(); int i = 0;
                 foreach (var key in k.naturalKey)
                 {

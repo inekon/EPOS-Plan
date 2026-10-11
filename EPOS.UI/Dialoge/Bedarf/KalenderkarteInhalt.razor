@@ -1,0 +1,420 @@
+﻿@* DIE KARTE IM EINZELNEN (Stufe KP2, Welle U3; Teilkonzept Konditionierungsprofile 3.2, 3.5, 7.5;
+   Entwurf KP2 Festlegungen 7, 8, 11, 14, 15) - der Inhalt der AUFGEKLAPPTEN Kalenderkarte einer
+   Groesse: die Grundangabe (Ebene 1), die Standardwoche im Wochenraster (Ebene 2).
+
+   JEDE HANDLUNG GEHT UEBER DIE BEARBEITUNG. Die Komponente rechnet nichts: Grundangabe und Woche gehen
+   ueber ihren Delegaten im KonditionierungWeg (Kern: Konditionierungsarbeit, Kalenderwerkzeuge) in den
+   Arbeitsstand; geschrieben wird mit dem OK des Editors, "Zuruecknehmen" im Reiterkopf nimmt je
+   Handlung eine Stufe zurueck.
+
+   NUR AN EINEM ANGELEGTEN KALENDER. Ohne angelegten Kalender gibt es nichts zu aendern - der Kern lehnt
+   es benannt ab, statt still einen anzulegen; die Karte nennt den Grund in einer leisen Zeile, und
+   "Kalender anlegen" steht im Kopf der Karte. Im Lesemodus (ausgelieferter Satz) steht nichts zur
+   Bearbeitung. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
+
+<div class="epos-kond-inhalt" data-groesse="@((int)Groesse)">
+    @if (Sperre is string grund)
+    {
+        <p class="epos-leisezeile epos-kond-inhalt-grund">@grund</p>
+    }
+    else
+    {
+        @if (Kalender?.Vermerk is { Length: > 0 } vermerk)
+        {
+            @* Der letzte Werkzeugvermerk (B8: Bemerkung = Herkunft · Vermerk) - was zuletzt gewirkt hat. *@
+            <p class="epos-leisezeile epos-kond-vermerk">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.TextVermerk, vermerk)</p>
+        }
+
+        @* ---- Grundangabe (Ebene 1) ---- *@
+        <section class="epos-kond-abschnitt epos-kond-grundangabe" aria-label="@Texte.LabelGrundangabe">
+            <h4 class="epos-kond-abschnitt-titel">@Texte.LabelGrundangabe</h4>
+            @if (Kalender?.Angabe == KonditionierungAngabe.Woche)
+            {
+                <p class="epos-leisezeile epos-kond-grundangabe-woche">@Texte.TextGrundangabeWoche</p>
+            }
+            else
+            {
+                <Formularraster>
+                    <KindInhalt>
+                        <Zahlenfeld Bezeichnung="@Texte.LabelGrundangabe" Einheit="@Einheit" Min="@Minimum" Max="@Maximum"
+                                    AusText="@Texte.ZelleAus"
+                                    Wert="@Grundwert" WertChanged="GrundangabeGeaendert" />
+                    </KindInhalt>
+                </Formularraster>
+                <p class="epos-leisezeile">@Texte.HinweisGrundangabe</p>
+            }
+        </section>
+
+        @* ---- Zeitfenster "Tage, von, bis, Wert" (Teilkonzept 3.5, 7.5): der Weg zur Standardwoche ohne
+           Zellenarbeit - sieben Tagesknoepfe, von, bis, Wert oder "aus". Es ersetzt nur seine Stunden;
+           der Vermerk kommt in die Herkunft (B8). Weich gesperrt, solange etwas fehlt - der Grund am Knopf. *@
+        @if (Bearbeitung.Bietet(KonditionierungHandlung.Zeitfenster))
+        {
+            string? fenstergrund = Fenstergrund;
+            <section class="epos-kond-abschnitt epos-kond-zeitfenster" aria-label="@Texte.LabelZeitfenster">
+                <h4 class="epos-kond-abschnitt-titel">@Texte.LabelZeitfenster</h4>
+                <div class="epos-kond-tage" role="group" aria-label="@Texte.LabelZeitfensterTage">
+                    @for (int t = 0; t < 7; t++)
+                    {
+                        int tag = t;
+                        bool an = _tage.Contains(tag);
+                        <button type="button" class="epos-knopf epos-kond-tag @(an ? "epos-knopf--gewaehlt" : "")"
+                                aria-pressed="@(an ? "true" : "false")" data-tag="@tag"
+                                @onclick="() => TagUmschalten(tag)">@Raster.Tagesnamen[tag]</button>
+                    }
+                </div>
+                <Formularraster>
+                    <KindInhalt>
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelZeitfensterVon" Min="0" Max="23" Wert="@_von"
+                                      WertChanged="w => _von = w" />
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelZeitfensterBis" Min="1" Max="24" Wert="@_bis"
+                                      WertChanged="w => _bis = w" />
+                        <Zahlenfeld Bezeichnung="@Texte.LabelZeitfensterWert" Einheit="@Einheit" Min="@Minimum" Max="@Maximum"
+                                    AusText="@Texte.ZelleAus" Wert="@_fensterwert" WertChanged="w => _fensterwert = w" />
+                    </KindInhalt>
+                </Formularraster>
+                <div class="epos-zeilenknoepfe">
+                    <button type="button" class="epos-knopf epos-kond-zeitfenster-eintragen"
+                            aria-disabled="@(fenstergrund is null ? null : "true")"
+                            title="@(fenstergrund ?? Texte.HinweisZeitfenster)"
+                            @onclick="() => ZeitfensterEintragen(fenstergrund)">@Texte.KnopfZeitfenster</button>
+                </div>
+                <p class="epos-leisezeile">@Texte.HinweisZeitfenster</p>
+            </section>
+        }
+
+        @* ---- Standardwoche (Ebene 2) im Wochenraster: "aus" als Zellzustand, umbrechend ---- *@
+        <section class="epos-kond-abschnitt epos-kond-woche" aria-label="@Texte.LabelStandardwoche">
+            <h4 class="epos-kond-abschnitt-titel">@Texte.LabelStandardwoche</h4>
+            <Wochenraster Wert="@Woche" WertChanged="WocheGeaendert" Vorgabe="@Bearbeitung.Grundangabewoche(Groesse)"
+                          Min="@Minimum" Max="@Maximum" Einheit="@Einheit" MitAus="true" Umbrechend="true"
+                          Kennung="@("kond-woche-" + (int)Groesse)" Texte="@Raster"
+                          FehlerZustand="FehlerZustand" />
+        </section>
+
+        @* ---- Periodenliste (Ebene 3, Festlegung 15): Matrixbereich nur lesbar, eigene Perioden
+           ZEITRAUM oder FEIERTAG, Rang im Eigenband ---- *@
+        <section class="epos-kond-abschnitt epos-kond-periodenabschnitt" aria-label="@Texte.LabelPerioden">
+            <h4 class="epos-kond-abschnitt-titel">@Texte.LabelPerioden</h4>
+            <Periodenliste Perioden="@(Kalender?.Perioden ?? new List<KonditionierungPeriode>())" Texte="@Texte"
+                           Wochentage="@Raster.Tagesnamen" Feiertagsregeln="@Bearbeitung.Feiertagsregeln"
+                           Einheit="@Einheit" Minimum="@Minimum" Maximum="@Maximum"
+                           Setzen="@(Bearbeitung.Bietet(KonditionierungHandlung.PeriodeSetzen) ? (r, p) => Bearbeitung.PeriodeSetzen(Groesse, r, p) : null)"
+                           Verschieben="@(Bearbeitung.Bietet(KonditionierungHandlung.RangVerschieben) ? (r, h) => Bearbeitung.RangVerschieben(Groesse, r, h) : null)"
+                           Loeschen="@(Bearbeitung.Bietet(KonditionierungHandlung.PeriodeLoeschen) ? r => Bearbeitung.PeriodeLoeschen(Groesse, r) : null)"
+                           Geaendert="Geaendert" Verweigert="Verweigert" />
+        </section>
+
+        @* ---- Werkzeuge (Teilkonzept 3.5): die Feiertage als Regel (F11) und "Zeitstruktur uebernehmen"
+           (Festlegung 11, nur Kuehlen, Lueftung, Geraete). Jedes ersetzt genau seinen Zielbereich und
+           hinterlaesst einen Vermerk in der Herkunft (B8). ---- *@
+        @if (Bearbeitung.Bietet(KonditionierungHandlung.Feiertage))
+        {
+            <section class="epos-kond-abschnitt epos-kond-feiertage" aria-label="@Texte.LabelWerkzeugFeiertage">
+                <h4 class="epos-kond-abschnitt-titel">@Texte.LabelWerkzeugFeiertage</h4>
+                <div class="epos-zeilenknoepfe">
+                    <button type="button" class="epos-knopf epos-kond-feiertage-anlegen" title="@Texte.HinweisFeiertage"
+                            @onclick="FeiertageAnlegen">@Texte.KnopfFeiertage</button>
+                </div>
+                <p class="epos-leisezeile">@Texte.HinweisFeiertage</p>
+            </section>
+        }
+        @if (MitZeitstruktur)
+        {
+            <section class="epos-kond-abschnitt epos-kond-zeitstruktur" aria-label="@Texte.KnopfZeitstruktur">
+                <h4 class="epos-kond-abschnitt-titel">@Texte.KnopfZeitstruktur</h4>
+                <div class="epos-zeilenknoepfe">
+                    <button type="button" class="epos-knopf epos-kond-wie-heizung" title="@Texte.HinweisZeitstruktur"
+                            @onclick="() => ZeitstrukturUebernehmen(KonditionierungZeitstruktur.WieHeizung)">@Texte.LabelWieHeizung</button>
+                    <button type="button" class="epos-knopf epos-kond-wie-anwesenheit" title="@Texte.HinweisZeitstruktur"
+                            @onclick="() => ZeitstrukturUebernehmen(KonditionierungZeitstruktur.WieAnwesenheit)">@Texte.LabelWieAnwesenheit</button>
+                </div>
+                <p class="epos-leisezeile">@Texte.HinweisZeitstruktur</p>
+            </section>
+        }
+    }
+
+    @* ---- Teppichbild (Teilkonzept 7.5, Festlegung 8): Tage x Stunden des Kalenders, wie er gilt - auch
+       vor dem Anlegen; "aus" als eigene Flaeche, das Bezugsjahr im Titel. Antippen eines Felds nennt
+       Zeitraum, Wert und Quelle (data-wert). Entprellt wie die Vorschau: beim Oeffnen sofort, nach einer
+       Eingabe erst EntprellungMs nach der letzten. ---- *@
+    @if (Bearbeitung.Weg.Teppichbild is not null && Bearbeitung.MitWeg)
+    {
+        <section class="epos-kond-abschnitt epos-kond-teppich" aria-label="@Texte.LabelTeppichbild">
+            <h4 class="epos-kond-abschnitt-titel">@Texte.LabelTeppichbild</h4>
+            @if (_teppich is null)
+            {
+                <p class="epos-leisezeile epos-kond-teppich-leer">@Texte.TextTeppichLeer</p>
+            }
+            else
+            {
+                <DiagrammSvg Modell="@_teppich" Kennung="@("kond-teppich-" + (int)Groesse)" Bezeichnung="@Texte.LabelTeppichbild"
+                             Einheit="@Einheit" OhneZoom="true" LegendeSchaltbar="false" />
+            }
+            @if (Teppichzeile is string zeile)
+            {
+                <p class="epos-leisezeile epos-kond-teppich-zeile">@zeile</p>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    /// <summary>Die Bearbeitung des Arbeitsstands (der Wirt hält sie).</summary>
+    [Parameter, EditorRequired] public KonditionierungBearbeitung Bearbeitung { get; set; } = default!;
+
+    /// <summary>Die Größe der Karte.</summary>
+    [Parameter] public KonditionierungGroesse Groesse { get; set; }
+
+    /// <summary>Die Texte der Konditionierung.</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Beschriftungen des Wochenrasters (Bestand <c>WRASTER_*</c>); die Karte setzt ihre eigenen darüber.</summary>
+    [Parameter] public WochenrasterTexte Rastertexte { get; set; } = new();
+
+    /// <summary>Lesemodus: nichts zu bearbeiten.</summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary>Meldet jede Änderung des Arbeitsstands — der Wirt zeichnet neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Meldet den Fehlerzustand einer Zelle des Wochenrasters an den Arbeitsstand.</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    /// <summary>Meldet den Versuch an einer weich gesperrten Handlung — mit ihrem Grund.</summary>
+    [Parameter] public EventCallback<string> Verweigert { get; set; }
+
+    /// <summary>Der Kalender der Größe im Arbeitsstand.</summary>
+    private KonditionierungKalender? Kalender => Bearbeitung.Kalender(Groesse);
+
+    /// <summary>Warum hier nichts zu bearbeiten ist; <c>null</c> = frei.</summary>
+    private string? Sperre => Lesemodus ? null : Bearbeitung.Kartensperre(Groesse);
+
+    /// <summary>Die Standardwoche; <c>null</c> = keine (dann zeigt das Raster die Grundangabe gesperrt).</summary>
+    private double[]? Woche => Kalender is { Angabe: KonditionierungAngabe.Woche, Woche: { Length: 168 } w } ? w : null;
+
+    /// <summary>Der Wert der Grundangabe im Feld: „aus" als NaN (Zustand des Felds).</summary>
+    private double? Grundwert => Kalender switch
+    {
+        { Angabe: KonditionierungAngabe.Aus } => double.NaN,
+        { Angabe: KonditionierungAngabe.Wert } k => k.Wert,
+        _ => null
+    };
+
+    /// <summary>Die Einheit der Spalte.</summary>
+    private string Einheit => Groesse switch
+    {
+        KonditionierungGroesse.Lueftung => "1/h",
+        KonditionierungGroesse.Geraete or KonditionierungGroesse.Personen => "%",
+        _ => "°C"
+    };
+
+    /// <summary>Die Untergrenze im Feld — genau prüft der Kern (Grenzen der Größe, Rundlauf).</summary>
+    private double? Minimum => Groesse switch
+    {
+        KonditionierungGroesse.Heizen => null,
+        KonditionierungGroesse.Kuehlen => Konditionierungsgroessen.Min(Konditionierungsgroesse.Kuehlsoll),
+        _ => 0
+    };
+
+    /// <summary>Die Obergrenze im Feld: Kühlsollwert nach der Zellgrenze des Kerns, Luftwechsel 10 1/h, Anteile 100 %.</summary>
+    private double? Maximum => Groesse switch
+    {
+        KonditionierungGroesse.Heizen => null,
+        KonditionierungGroesse.Kuehlen => Konditionierungsgroessen.Max(Konditionierungsgroesse.Kuehlsoll),
+        KonditionierungGroesse.Lueftung => 10,
+        _ => 100
+    };
+
+    private WochenrasterTexte? _raster;
+    private WochenrasterTexte? _rasterQuelle;
+    private KonditionierungTexte? _rasterTexte;
+
+    /// <summary>
+    /// Die Beschriftungen des Rasters: der Bestand, darüber die Knöpfe der Standardwoche und der Zustand
+    /// „aus"; der Zellname trägt die Größe, damit die Felder der fünf Karten verschieden heißen.
+    /// </summary>
+    private WochenrasterTexte Raster
+    {
+        get
+        {
+            if (_raster is null || !ReferenceEquals(_rasterQuelle, Rastertexte) || !ReferenceEquals(_rasterTexte, Texte))
+            {
+                WochenrasterTexte r = Rastertexte;
+                _raster = new WochenrasterTexte
+                {
+                    Wochentage = r.Wochentage,
+                    KopfTag = r.KopfTag,
+                    Zelle = Bearbeitung.Groessenname(Groesse) + " · " + r.Zelle,
+                    LabelZeile = r.LabelZeile,
+                    LabelZeilenwert = r.LabelZeilenwert,
+                    KnopfZeileSetzen = r.KnopfZeileSetzen,
+                    KnopfWerktage = r.KnopfWerktage,
+                    KnopfWochenende = r.KnopfWochenende,
+                    KnopfAlle = r.KnopfAlle,
+                    KnopfAnlegen = Texte.KnopfWocheAnlegen,
+                    KnopfVerwerfen = Texte.KnopfWocheVerwerfen,
+                    ZeileVorgabe = Texte.TextWocheVorgabe,
+                    BildTitel = r.BildTitel,
+                    BildAchseX = r.BildAchseX,
+                    Aus = Texte.ZelleAus,
+                    HinweisAus = Texte.HinweisAus,
+                };
+                _rasterQuelle = Rastertexte;
+                _rasterTexte = Texte;
+            }
+            return _raster;
+        }
+    }
+
+    // ------------------------------------------------------------ Das Teppichbild, entprellt
+
+    /// <summary>Entprellung des Teppichbilds nach einer Eingabe [ms]; 0 = sofort (Prüfstand).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    private Zeichenmodell? _teppich;
+    private string? _teppichSchluessel;
+    private bool _teppichGerechnet;
+    private CancellationTokenSource? _entprellung;
+
+    /// <summary>Wie oft das Teppichbild gerechnet wurde. Prüfhilfe (entprellt, nicht je Eingabe).</summary>
+    public int Teppichlaeufe { get; private set; }
+
+    /// <summary>
+    /// Die Bildunterschrift (E115): mit Preisreihenjahr das Bezugsjahr, sonst das Raster („Gemeinjahr,
+    /// 1. Januar = Donnerstag"); ohne beides keine.
+    /// </summary>
+    private string? Teppichzeile
+        => Bearbeitung.Weg.Bezugsjahr is int jahr
+            ? string.Format(CultureInfo.CurrentCulture, Texte.TextTeppichbild, jahr.ToString(CultureInfo.InvariantCulture))
+            : Bearbeitung.Weg.WochentagJan1 is int w0
+                ? string.Format(CultureInfo.CurrentCulture, Texte.TextTeppichbildRaster, Kalendertage.Wochentagname(w0))
+                : null;
+
+    protected override void OnParametersSet()
+    {
+        if (Bearbeitung.Weg.Teppichbild is null || !Bearbeitung.MitWeg)
+        {
+            _entprellung?.Cancel();
+            _teppich = null;
+            _teppichGerechnet = false;
+            return;
+        }
+        string schluessel = Bearbeitung.Vorschauschluessel(Groesse);
+        if (_teppichGerechnet && schluessel == _teppichSchluessel) return;
+        bool sofort = !_teppichGerechnet || EntprellungMs <= 0;
+        _teppichSchluessel = schluessel;
+        _teppichGerechnet = true;
+        _entprellung?.Cancel();
+        if (sofort) Teppichrechnen();
+        else _ = Entprellt(schluessel);
+    }
+
+    private async Task Entprellt(string schluessel)
+    {
+        var cts = _entprellung = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(EntprellungMs, cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        if (cts.IsCancellationRequested || schluessel != _teppichSchluessel) return;
+        Teppichrechnen();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Teppichrechnen()
+    {
+        Teppichlaeufe++;
+        _teppich = Bearbeitung.Teppichbild(Groesse);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _entprellung?.Cancel();
+
+    // ------------------------------------------------------------ Die Werkzeuge Feiertage und Zeitstruktur
+
+    /// <summary>„Zeitstruktur übernehmen" gibt es nur für Kühlen, Lüftung und Geräte (Festlegung 11).</summary>
+    private bool MitZeitstruktur
+        => Bearbeitung.Bietet(KonditionierungHandlung.Zeitstruktur)
+           && Groesse is KonditionierungGroesse.Kuehlen or KonditionierungGroesse.Lueftung or KonditionierungGroesse.Geraete;
+
+    /// <summary>Die neun Feiertage als Regel „wie Sonntag" (F11); eine vorhandene Regel wird nicht doppelt angelegt.</summary>
+    private async Task FeiertageAnlegen()
+    {
+        Bearbeitung.FeiertageAnlegen(Groesse);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>„wie Heizung" bzw. „wie Anwesenheit": ersetzt nur die Standardwoche (Festlegung 11).</summary>
+    private async Task ZeitstrukturUebernehmen(KonditionierungZeitstruktur quelle)
+    {
+        Bearbeitung.ZeitstrukturUebernehmen(Groesse, quelle);
+        await Geaendert.InvokeAsync();
+    }
+
+    // ------------------------------------------------------------ Das Zeitfenster
+
+    /// <summary>Die gewählten Tage des Zeitfensters (0 = Montag … 6 = Sonntag); Vorgabe Mo–Fr.</summary>
+    private readonly SortedSet<int> _tage = new() { 0, 1, 2, 3, 4 };
+    private int? _von;
+    private int? _bis;
+    private double? _fensterwert;
+
+    /// <summary>Die gewählten Tage des Zeitfensters. Prüfhilfe für die Tests.</summary>
+    public IReadOnlyCollection<int> Fenstertage => _tage;
+
+    /// <summary>Warum „Zeitfenster eintragen" weich gesperrt steht; <c>null</c> = frei.</summary>
+    private string? Fenstergrund
+        => _tage.Count == 0 ? Texte.GrundZeitfensterTage
+           : _von is null || _bis is null ? Texte.GrundZeitfensterZeiten
+           : _fensterwert is null ? Texte.GrundZeitfensterWert
+           : null;
+
+    private void TagUmschalten(int tag)
+    {
+        if (!_tage.Remove(tag)) _tage.Add(tag);
+    }
+
+    /// <summary>
+    /// „Zeitfenster eintragen": über den Weg in die Standardwoche — der Kern ersetzt nur die Stunden des
+    /// Fensters und vermerkt es in der Herkunft; ein weich gesperrter Knopf meldet seinen Grund.
+    /// </summary>
+    private async Task ZeitfensterEintragen(string? grund)
+    {
+        if (grund is not null)
+        {
+            await Verweigert.InvokeAsync(grund);
+            return;
+        }
+        double w = _fensterwert!.Value;
+        var fenster = new KonditionierungZeitfenster(_tage.ToList(), _von!.Value, _bis!.Value, double.IsNaN(w) ? null : w);
+        Bearbeitung.ZeitfensterAnwenden(Groesse, fenster);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Die Grundangabe: eine Zahl oder „aus" (NaN); ein geleertes Feld ändert nichts.</summary>
+    private async Task GrundangabeGeaendert(double? w)
+    {
+        if (w is not double wert) return;
+        Bearbeitung.GrundangabeSetzen(Groesse, double.IsNaN(wert) ? null : wert);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Die Woche aus dem Raster — oder <c>null</c> nach „Standardwoche verwerfen".</summary>
+    private async Task WocheGeaendert(double[]? woche)
+    {
+        Bearbeitung.StandardwocheSetzen(Groesse, woche);
+        await Geaendert.InvokeAsync();
+    }
+}

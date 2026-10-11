@@ -259,7 +259,11 @@ namespace WindowsFormsApplication1
         /// <summary>Weicht die Sprache der Vorlage von der des Berichts ab (Anlass der Rückfrage vor dem Start)?</summary>
         public bool SpracheAbweichend { get; }
 
-        /// <summary>Nutzt die Vorlage Kapitel (Kapitelart, <c>kapitel.*</c>, <c>baustein.*</c>)?</summary>
+        /// <summary>
+        /// Nutzt die Vorlage Kapitel (Kapitelart, <c>kapitel.*</c>, <c>baustein.*</c>)? Bei einer
+        /// Excel-Vorlage die Entsprechung (BV-Q2 (c)): Führt sie Blätter — trägt sie eine Blattmarke oder
+        /// hängt sie die erzeugten Blätter an (<see cref="ExcelBlattstand.FuehrtBlaetter"/>)?
+        /// </summary>
         public bool HatKapitel { get; }
 
         /// <summary>
@@ -275,6 +279,8 @@ namespace WindowsFormsApplication1
         /// Vorlage ohne Platzhalter bekommt den Sammelanker ans Ende und führt damit alle. Der Anhang E
         /// zählt zum Häkchen „Wirtschaftlichkeit“. Die übrigen Häkchen graut die Hülle aus („in dieser
         /// Vorlage nicht enthalten“, Konzept 10.2).
+        /// <para>Bei einer Excel-Vorlage die Häkchen, deren Blatt die Mappe führt
+        /// (<see cref="ExcelBlattstand.Gefuehrt"/>, BV-Q2 (c)).</para>
         /// </summary>
         public IReadOnlyList<string> Bausteine { get; }
 

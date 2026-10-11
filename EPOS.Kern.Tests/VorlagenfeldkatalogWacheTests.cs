@@ -96,8 +96,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jeder_Eintrag_hat_Quelle_Art_Kontext_und_Fassung()
         {
-            Assert.Equal(10, Vorlagenfeldkatalog.KATALOGFASSUNG);
-            Assert.Equal(10, Vorlagenfeldkatalog.KatalogfassungWord);
+            Assert.Equal(18, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(18, Vorlagenfeldkatalog.KatalogfassungWord);
             Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, Vorlagenfeldkatalog.Katalogfassung);
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle)
             {
@@ -122,7 +122,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Katalog_v2_zaehlt_52_handgepflegte_und_je_Kennzahl_drei_erzeugte_Eintraege()
         {
-            int kennzahlen = KennzahlenKatalog.Alle().Count;
+            // Die Kennzahlen der Kältemaschine (Schritt 183) stehen erst ab Fassung 12.
+            int kennzahlen = KennzahlenKatalog.Alle().Count(k => Vorlagenfeldkatalog.SeitDerKennzahl(k) <= 2);
             List<Vorlagenfeld> v2 = Vorlagenfeldkatalog.Alle.Where(f => f.Seit <= 2).ToList();
             Assert.Equal(52, v2.Count(f => f.Handgepflegt));
             Assert.Equal(27, v2.Count(f => f.Handgepflegt && f.Seit == 1));
@@ -262,6 +263,8 @@ namespace EPOS.Kern.Tests
                                                  "tabelle.kaelteerzeuger", "hat.tabelle.kaelteerzeuger",
                                                  "tabelle.speichertemperaturen", "hat.tabelle.speichertemperaturen",
                                                  "tabelle.gebaeude.ergebnis", "hat.tabelle.gebaeude.ergebnis",
+                                                 "tabelle.pufferauslegung", "hat.tabelle.pufferauslegung",
+                                                 "tabelle.kaeltespeicher", "hat.tabelle.kaeltespeicher",
                                                  "stamm.bild.speichertemperaturen", "hat.bild.speichertemperaturen",
                                                  "text.kapitel_projekt", "baustein.projekt",
                                              }),

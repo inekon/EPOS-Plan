@@ -14,7 +14,7 @@ Rev. 2 (Kapitel 13 Q26, Kapitel 15).
 Nachgezogen am 22.09.2026 mit **E27** (N1.32): Q24, Q25 und Q26 sind entschieden — die Stufe GA
 wird beauftragbar, sobald das Ablösekriterium aus Q24 erfüllt ist, ihr Umfang ist die Löschliste
 (Q25), der Stufenplan der Anlagenkopplung folgt der Empfehlung (Q26); Kapitel 0, 4.1, 4.4, 6.1,
-6.4, 10.4, 11, 13, 15 und 16 folgen.
+6.4, 10.4, 11, 13, 15 und 16 folgen. Q24, Q25 und die Stufe GA sind mit **E89** gegenstandslos (N1.70).
 Nachgezogen am 22.09.2026 mit **E28** (N1.33): U4 und U9 sind nach Empfehlung entschieden — der
 Glossarabschnitt „Gebäudehülle und Gebäudemodell" entsteht vor den Übersetzungen (vor G1), die
 Grenze von 100 Gebäuden im Bestandsweg fällt in GB; vor G0, GB und G1 ist kein Anwenderentscheid
@@ -86,6 +86,17 @@ Bauteilen und Aufbauten der Datei** ins Projekt und rechnet den Bauteilweg; die 
 Datenlage (Innenbauteile beider Seiten oder der Innenflächenfaktor aus der Datei), bei vollständigen
 Schichten bleibt der U-Wert leer, Vorhangfassaden rechnen transparent (E45); kein Schemaschritt,
 ergebnisneutral. Kapitel 4.3, 4.7, 6.3 und 7.6 folgen, das Register zählt weiter 8 offene Punkte.
+Nachgezogen am 04.10.2026 mit **N1.69** (KP4): Die Festlegungen der Umsetzung KP3 und der Welle EV1 stehen in N1.69;
+4.4 führt die Sollwerte aus den Konditionierungskalendern und das Erdreich nach DIN EN ISO 13370 mit der Vorgabe U_g,
+4.5 die Aufheizrampe als Ergänzung der idealen Regelung, 15 den Stand der Konditionierungsprofile.
+Nachgezogen am 05.10.2026 mit **E88** und **E89** (N1.70): Die Vorlaufwahl der Wärmepumpe wird im Ergebnis
+ausgewiesen (Welle VW1, ohne Rechenwirkung). Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe
+**GA — Altweg ablösen** entfällt endgültig, Q24 und Q25 sind gegenstandslos; Kapitel 0, 4.1, 6.1, 8, 10.4, 11, 13,
+14, 15 und 16 folgen.
+Nachgezogen am 06.10.2026 mit **E97** und **E99** (N1.69): Die Oberflächenwellen O1b, O2 und O3 der Aufheizoptimierung sind gebaut — Aufschlag (h, %) in der Projekteinstellung, Gruppe „Aufheizung“ im Bedarfsdialog mit Auslegungsgröße, „Aufheizzeit manuell (h)“ im Gebäudedialog, Bericht (Gebäudetafel, Kurzbericht, Vorlagenfelder, Katalogfassung 16) und Variantenvergleich (Kennzahlgruppe „Gebäude“, Abweichungsmerkmale); die Auslegungsheizlast entsteht auch ohne Anlagenkopplung (E97, Basis R39), die innere Umkehr der geregelten Heizlast im Zonenmodell wird exakt bestimmt; zwei Ergebnisspalten (verwendeter Aufschlag, bemessene Aufheizzeit) folgen mit Welle A (E99).
+Nachgezogen am 06.10.2026 mit **E90** bis **E92** (N1.71): Die Nutzung der Zonen wird ein frei definierbarer Katalog
+von Nutzungsprofilen mit Kategorien (Stufe NP, [Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md)); der Ausschluss
+in Kapitel 15 gilt nur noch für Normwerte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -111,9 +122,9 @@ wurde (Kapitel 5). Den Rechenweg des Bestands beschreibt das überholte Papier
 Bauform und Abnahme folgen dem Vorbild des PV-Zweigs
 ([`Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`](Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md),
 Stufe E2: ein Persistenzwert entscheidet über den Rechenweg). Anders als dort **löst das neue
-Modell das alte ab**: die beiden Wege liegen in getrennten Modulen, und der Tagesbilanz-Weg
-bleibt als eingefrorener Bestandsweg im Produkt, bis die Stufe GA ihn ablöst
-(E20, E23, E26).
+Modell das alte als Vorgabe ab**: die beiden Wege liegen in getrennten Modulen, und der
+Tagesbilanz-Weg bleibt dauerhaft als wählbarer, eingefrorener Bestandsweg im Produkt
+(E20, E23, E89).
 
 Alle Zahlen dieses Papiers sind gerechnet, nicht geschätzt; Datei- und Zeilenbelege wurden
 in einer zweiten Runde gegengelesen. Die Prüfwerkzeuge (Datenbankprobe, Prototyp, Adapter)
@@ -151,7 +162,7 @@ liegen außerhalb des Repositoriums und sind keine Auslieferung.
 5. **Vorschlag: ein Ein-Zonen-Modell 7R2C nach VDI 6007-1 als vorgegebener Rechenweg
    für alle Gebäude.** Es löst die Tagesbilanz ab (E20, 16.09.2026). Diese wandert Zeichen
    für Zeichen in ein eigenes Modul `Altweg/`, bekommt keine neue Funktion mehr und bleibt
-   für die Dauer des Übergangs als **Bestandsweg** je Gebäude wählbar (E23, E26). Eine
+   dauerhaft als **Bestandsweg** je Gebäude wählbar (E23, E89). Eine
    Weiche am Eingang der Gebäudebedarfsrechnung ruft genau ein Modul; die Referenzbasis wird
    mit G1 neu eingefroren.
 6. **Drei Datenbefunde sind unabhängig vom Modell zu beheben:** ein Gebäude der
@@ -164,9 +175,9 @@ liegen außerhalb des Repositoriums und sind keine Auslieferung.
    die Ausbeute gering. gbXML ist eine spätere Ergänzung.
 8. **Reihenfolge:** G0 Löser mit Normtests im Kern → GB Bestandsbefunde → G1 Trennung der
    Rechenwege und Anbindung des VDI-Modells → G2 Ergebnisdarstellung → G3 Bauteilkatalog mit
-   Schichtaufbau → G4 IFC-Import → G5 Geometrieableitung und gbXML (bei Bedarf). Letzte
-   Stufe ist **GA — Altweg ablösen**; sie wird beauftragbar, sobald das Ablösekriterium erfüllt
-   ist (Q24, E27), ihre 5–8 PT stecken in keiner Summe (E23, E26).
+   Schichtaufbau → G4 IFC-Import → G5 Geometrieableitung und gbXML (bei Bedarf). Eine
+   Stufe **GA — Altweg ablösen** gibt es nicht: Der Altweg bleibt dauerhaft als wählbarer
+   Rechenweg (E89).
 
 ---
 
@@ -587,12 +598,12 @@ nicht, misst Kapitel 5.9; daraus folgen die Pflichtfelder in 6.1.
 ### 4.1 Grundsatz: ein Rechenweg (VDI 6007), der Altweg als eingefrorener Bestandsweg
 
 - **VDI 6007 ist der Rechenweg, die Tagesbilanz der Bestandsweg.** Das neue Modell löst das
-  alte als Vorgabe ab (E20, 16.09.2026); die Tagesbilanz bleibt **jetzt** je Gebäude wählbar
-  — als funktionierender Übergang, den der VDI-Weg später vollständig ablöst (E23, E26). Das
-  Ende des Übergangs ist die Stufe **GA — Altweg ablösen** (Kapitel 11); sie wird
-  beauftragbar, sobald die vier Bedingungen des Ablösekriteriums erfüllt sind (Q24, E27).
+  alte als Vorgabe ab (E20, 16.09.2026); die Tagesbilanz bleibt **dauerhaft** je Gebäude wählbar
+  — als eigenständig funktionierender Rechenweg, der gepflegt, aber nicht weiterentwickelt
+  wird; Fachänderungen werden nur im VDI-Weg gemacht (E23, E89). Beide Wege arbeiten
+  eigenständig (E26). Eine Stufe **GA — Altweg ablösen** gibt es nicht (Kapitel 11).
 - **Ein Feld entscheidet:** `Tab_Gebaeude.Gebaeude_Modell` trägt den **Rechenweg** —
-  NULL = VDI 6007 (Vorgabe), Wert `TAGESBILANZ` = Altweg, wählbar bis zur Ablösung —,
+  NULL = VDI 6007 (Vorgabe), Wert `TAGESBILANZ` = Altweg, dauerhaft wählbar —,
   Persistenzwerte `GEBAEUDE_MODELL_TAGESBILANZ` / `GEBAEUDE_MODELL_VDI6007` in `DbWerte`.
   Gelesen wird es an **einer** Stelle; alles Weitere (Skalierung, Kanal, Summen, Dauerlinie,
   Energieprobe, Mischfälle mit Ganglinien) bleibt unverändert.
@@ -606,17 +617,18 @@ nicht, misst Kapitel 5.9; daraus folgen die Pflichtfelder in 6.1.
   [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 1.3. Es gibt
   keinen zweiten Verzweigungspunkt, und keiner der beiden Wege ruft den anderen.
 - **Der Tagesbilanz-Weg wandert Zeichen für Zeichen in den Altweg.** Modul
-  `EPOS.Kern/Allgemein/Simulation/Altweg/`, abgeschlossen, ohne neue Funktion, bis zur
-  Ablösung nur noch Fehlerbehebung. Die Verschiebung ist ergebnisneutral und wird mit einem
+  `EPOS.Kern/Allgemein/Simulation/Altweg/`, abgeschlossen, ohne neue Funktion, dauerhaft
+  nur Pflege und Fehlerbehebung. Die Verschiebung ist ergebnisneutral und wird mit einem
   **byte-gleichen** Referenzlauf abgenommen, bevor der VDI-Weg angebunden wird. Ein
-  Referenzprojekt rechnet danach auf VDI 6007, ein weiteres hält bis zur Stufe GA
+  Referenzprojekt rechnet danach auf VDI 6007, ein weiteres hält dauerhaft
   den Rückweg-Test; die Basis wird mit G1 neu eingefroren (10.4).
 - **Der VDI-Weg ist eigenständig.** Er braucht nichts aus `Altweg/`; die
   **Modultrennungswache** prüft beide Richtungen und die Altweg-Datenquellen. Die
   **Ausbauprobe** hält die Eigenständigkeit nachweisbar: statisch nennt außer der Weiche, dem
-  Rückweg-Test und der Wache keine Datei des Kerns `Altweg/`; als Gate der Stufe GA übersetzt
+  Rückweg-Test und der Wache keine Datei des Kerns `Altweg/`; als Probe übersetzt
   ein Bau mit umbenanntem Ordner `Altweg/` nach Entfernen der Weiche, und der Referenzlauf
-  aller Projekte ohne Altweg-Gebäude bleibt byte-gleich (E26).
+  aller Projekte ohne Altweg-Gebäude bleibt byte-gleich (E26); sie belegt die Eigenständigkeit,
+  ein Ablösen folgt ihr nicht (E89).
 - **Die Physik lebt in einer reinen Rechenklasse** ohne `DataRepository` und ohne
   `SimulationProtokoll` (Vorbild `EPOS.Kern/Allgemein/Simulation/PvErweitertesModell.cs`):
   Namensraum `EPOS.Kern/Allgemein/Simulation/Gebaeude/`, Klassen `Zonenmodell7R2C`
@@ -763,6 +775,13 @@ Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Meh
   10 °C, 6.1), angebunden als äquivalente Nachbarraumtemperatur θ_NR,eq — kein
   Reduktionsfaktor gegen θ_out (N1.3). **Außenluft:** θ_out. Der Unterschied zwischen Erdreich und dem Bestandsfaktor 0,45 beträgt
   2,3–14,1 % der Jahresenergie, streng nach Grundflächenanteil (5.8) — deshalb ein Feld.
+  **Wärmedurchgang am Erdreich nach DIN EN ISO 13370:** Die Kusuda-Temperatur ist die Randtemperatur; zum Bauteil tritt
+  der Erdreichwiderstand R_g in Reihe, aus dem Bodenplattenmaß B′ = A/(0,5·P), der wirksamen Gesamtdicke d_t und U_g
+  der Norm (Kellerwände nach 9.3.3), mit λ_Erd = 2,0 W/(m·K); der wirksame U-Wert ist nie größer als der eingetragene.
+  Der Umfang P kommt aus dem Feld `Abmessung_Anschluß_Außenwand_Kellerdecke`, sonst aus dem flächengleichen Quadrat mit
+  Laufhinweis. **Vorgabe:** `Erdreich_U_Wirksam` (Gebäude und Katalog) setzt U_g jedes Bodens am Erdreich ohne B′;
+  leer gilt die Rechnung nach der Norm. Gegenüber dem Bauteil ohne Erdreichwiderstand sinkt die Jahresheizwärme der
+  Referenzgebäude um 2 bis 23 % ([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) E6, N1.69).
 - **Solar durch Fenster** je Orientierung o ∈ {N, O, S, W} (G3: je Bauteil mit Neigung):
   `Φ_sol = Σ_o A_w,o · g · F_F · F_S · F_W · I_o(h)`; `I_o` rechnet das Modell mit
   `CalculateHourlyHayDavies` aus GHI/DNI/DHI und Sonnengeometrie (die isotropen `Sol_*` sind
@@ -771,7 +790,7 @@ Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Meh
   heute nicht gibt, 6.1), F_S = `Verschattungsfaktor` (Vorgabe 0,9 frei stehend, 0,8 Reihe,
   0,7 Innenstadt), F_W = 0,9 (Winkelkorrektur, ISO 13790). `Fensterflaeche_Ost` und `_West`
   getrennt (6.1); solange beide NULL sind, bildet der **Vorbereitungsschritt** je die Hälfte
-  der Summenfläche — eine Abhängigkeit vom Bestandsfeld, die nur für den Übergang gilt (6.1).
+  der Summenfläche — eine Abhängigkeit vom Bestandsfeld, das der Altweg weiter liest (6.1).
   Eintrag radiativ auf die
   Oberflächen mit **9 % konvektiv an die Luft** — wie in den Normtestfällen und im Prototyp
   (5.3); die Verteilung auf AW und IW folgt `splitFacVal`. F_F·F_S = 0,63 gegen den
@@ -783,9 +802,10 @@ Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Meh
   `BhkwPlan.cs:357/359` — der reine Zahlenwechsel hebt H_ve um 2 %). G2: Trennung Infiltration (Vorgabe 0,3 1/h) und
   Nutzerlüftung (0,4 1/h) sowie eine **Sommerlüftungsregel** (n auf 2,0 1/h, wenn
   θ_air > 23 °C und θ_out < θ_air − 2 K), ohne die das Modell 184–1 425 Stunden über 24 °C
-  meldet (5.7).
-- **Innere Gewinne** `Interne_Waermegewinne` (W), 50 % konvektiv / 50 % radiativ, in G1
-  zeitlich konstant; ein Wochenprofil ist G2+.
+  meldet (5.7). Mit Lüftungskalender trägt die Nachtzeile eine **Nachtauskühlung**: Ihr Überschuss über den Tagwert wirkt
+  nur unter der Bedingung der Sommerlüftung mit eigenem Außenabstand (Rechenschritte 7.6).
+- **Innere Gewinne** `Interne_Waermegewinne` (W), 50 % konvektiv / 50 % radiativ; ohne Kalender zeitlich konstant,
+  mit Kalender je Stunde aus den Größen Geräte und Personen.
 - **Sollwerte** wie im Bestand: Stunden 7–22 `Raumsolltemperatur_Tag`, sonst
   `Nachtabsenkung` — die Nachtzeit ist je Gebäude einstellbar (`Nachtabsenkung_Beginn`/`_Ende`,
   leer = 22 bis 6 Uhr, also genau diese Stunden; E43, N1.48); an den Wochenendtagen der Maske `WE[365]`
@@ -797,6 +817,11 @@ Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Meh
   benannt abgelehnt wird allein ein Tag außerhalb 1…365 in einem aktiven Fahrplan (3.3,
   [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Schritt E).
   Obere Grenze `Maximaleraumtemperatur`.
+- **Sollwerte aus Kalendern:** Trägt ein Gebäude oder eine Zone Konditionierungskalender, kommen Heiz- und
+  Kühlsollwert, Lüftung und innere Lasten je Stunde aus Kalender, Vorgabe-Matrix und Vorlage — Quelle je Größe in der
+  Kette Zone → Gebäude → aus der Matrix abgeleitet, mit Heiz- und Kühlperiode („aus" außerhalb) und Feiertagen
+  ([Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3; Rechenschritte 7.5, K1). Ohne
+  angelegten Kalender und ohne neue Matrixzelle gilt der Fahrplan oben wörtlich.
 
 ### 4.5 Regelung, Heizen, Kühlen
 
@@ -807,6 +832,22 @@ Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Meh
   Stundenmittel. Bei Umschaltungen innerhalb der Stunde (Sollwertsprung, Übergang
   Heizen/frei) sucht der Löser den Umschaltzeitpunkt per Bisektion (bis zu 60 Schritte);
   das ist die einzige Iteration, und sie ist deterministisch.
+- **Innere Umkehr (Abschnittsregel):** Innerhalb eines Abschnitts ist die geregelte Leistung — im
+  Totband und in den Lagen mit Leitwert die Raumluft — eine Konstante plus zwei abklingende Moden;
+  ihre Ableitung hat höchstens eine Nullstelle, und die ist geschlossen bekannt
+  (t* = ln(−α₂/α₁)/(λ₁ − λ₂), bei zusammenfallenden Eigenwerten −p/r). Diese exakte Nullstelle ist
+  der Regelweg: Liegt sie strikt im Innern des Abschnitts und verletzt der Wert dort die Grenze des
+  Falls über den Zahlenrand hinaus (Heizleistung unter null, Kühlleistung über null, Raumluft
+  außerhalb ihres Bands), endet der Abschnitt am ersten Austritt, den die Bisektion auf [0; t*]
+  findet (60 Halbierungen, Abbruch an der Maschinengenauigkeit); danach wählt die Zone ihren Fall
+  neu. Weder die Ableitung am Abschnittsende noch eine Suche über den ganzen Abschnitt entscheidet:
+  In schnellen Zonen — kleine Massen hinter kleinen Widerständen, große Glasflächen, langsame
+  Zeitkonstante unter rund τ/37, bei einer vollen Stunde also unter anderthalb Minuten — ist die
+  Ableitung am Ende nur Rundungsrauschen, und eine Suche sähe nur den Endwert. Geregelte Fälle und
+  Totband schneiden so in den ersten acht Abschnitten einer Stunde auch bei zulässigem Mittel;
+  danach und für die Lagen mit Leitwert greift derselbe Weg, sobald das Abschnittsmittel die
+  Abschnittsregel verletzen würde. Die Abschnittsregel selbst bleibt scharf: ein benannter Fehler,
+  keine Klemmung.
 - Φ_h ≥ 0, optional Φ_h ≤ `Heizleistung_Max` (NULL = unbegrenzt). Strahlungsanteil der
   Heizung `Heizung_Strahlungsanteil` (Vorgabe 0,3 für Heizkörper; 0 = rein konvektiv; der
   Prototyp lief mit 0).
@@ -831,6 +872,14 @@ Hüllzeilen des Dialogs abgeleitete Anzeigen aus den Bauteilen (Summenregel, Meh
 - Zwischen Heiz- und Kühlsollwert liegt ein Totband (der Abstand zweier Sollwerte, keine
   Hysterese); keine Reglerdynamik: das Modell liefert den Bedarf, die Deckung rechnet
   `SimulationControl` wie heute.
+- **Aufheizrampe — Ergänzung der idealen Regelung:** Mit dem Projektschalter `Aufheizoptimierung` steigt der
+  Heizsollwert vor jedem Sprung nach oben über n − 1 Stunden linear an; n folgt je Gebäude und Zone aus der
+  Stufenformel des eigenen 2K-Modells so, dass die Leistung die Aufheizleistung P_auf nicht übersteigt — P_auf ist
+  `Heizleistung_Max` oder die Zielleistung (1 + ρ)·Φ_stat bei der kältesten Stunde. Die Rampe ist ein Vorab-Fahrplan
+  vor der Stundenschleife; die Regelung bleibt ideal, sie folgt nur dem neuen Sollwert. Bemessung (a)/(b), Art
+  täglich/fest/manuell, Aufschlag, Hinweise W1–W5 und Kennzahlen stehen im Teilkonzept
+  [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 4 und in den Rechenschritten 7.5 (K2); eine
+  Ergänzung außerhalb der Richtlinie (Rechenschritte 11, Zeile 22). Schalter aus: byte-gleich.
 
 ### 4.6 Zeitraster, Vorlauf, Ergebnisreihen
 
@@ -1200,7 +1249,7 @@ PV-Zweig). Beide Tabellen, weil der Katalog in das Projekt kopiert wird.
 
 | Spalte | Typ | Bedeutung | NULL bedeutet |
 |---|---|---|---|
-| `Gebaeude_Modell` | TEXT | Schalter „Rechenweg": `TAGESBILANZ` = Altweg (Bestandsweg, bis zur Ablösung durch GA); NULL = VDI 6007 | VDI 6007 |
+| `Gebaeude_Modell` | TEXT | Schalter „Rechenweg": `TAGESBILANZ` = Altweg (Bestandsweg, dauerhaft wählbar); NULL = VDI 6007 | VDI 6007 |
 | `Fensterflaeche_Ost` | REAL m² | Fenster Ost | ½ `Fensterflaeche_Ost_West` |
 | `Fensterflaeche_West` | REAL m² | Fenster West | ½ `Fensterflaeche_Ost_West` |
 | `Rahmenanteil` | REAL | Anteil Rahmen an der Fensterfläche | 0,3 |
@@ -1233,19 +1282,18 @@ die Summe in `Ost_West` mit — eine Wahrheit im Dialog, zwei Leser im Kern; das
 `Fensterflaeche_Ost` wird dabei in `Fensterflaeche_OstWest` umbenannt, damit die Namensfalle
 (2.1, Punkt 4) verschwindet.
 
-**Die NULL-Vorgabe der Ost- und Westfläche ist eine Abhängigkeit vom Bestandsfeld, die nur für
-den Übergang gilt.** Sind beide Spalten NULL, bildet sie der **Vorbereitungsschritt** der
+**Die NULL-Vorgabe der Ost- und Westfläche ist eine Abhängigkeit vom Bestandsfeld, das der
+Altweg weiter liest.** Sind beide Spalten NULL, bildet sie der **Vorbereitungsschritt** der
 Fassade aus `Fensterflaeche_Ost_West` (je die Hälfte), nicht das VDI-Modul — so bleibt das
-Modul frei von Altweg-Feldern (4.1, 4.4). Die Stufe GA füllt `Fensterflaeche_Ost` und `_West`
-einmalig aus `Fensterflaeche_Ost_West`, **bevor** sie das Bestandsfeld entfernt (E26).
+Modul frei von Altweg-Feldern (4.1, 4.4). Das Bestandsfeld bleibt, weil der Altweg dauerhaft
+wählbar ist (E89).
 
-**Kein zweites Datenmodell, und die Altweg-Spalten bleiben für den Übergang stehen**
-(E20, E23, E26): Es gibt keine zweite Gebäudetabelle; Spalten, die **nur der Altweg** liest,
-fasst M3 nicht an. Sie bleiben, solange der Übergang läuft, ebenso `Gebaeude_Modell` selbst.
-Entfernt werden sie mit der Stufe **GA — Altweg ablösen** in einem eigenen Schemaschritt
-(`DROP COLUMN` je Tabelle und Sichtneubau); derselbe Schritt nimmt die leserlosen Spalten
-`WW_Bedarf` und `Waermebedarf` mit. Er wird fällig, sobald das Ablösekriterium erfüllt ist (Q24, E27); sein Umfang (Q25, E27) steht in
-Kapitel 11 und in der Löschliste des
+**Kein zweites Datenmodell, und die Altweg-Spalten bleiben stehen**
+(E20, E23, E89): Es gibt keine zweite Gebäudetabelle; Spalten, die **nur der Altweg** liest,
+fasst M3 nicht an. Sie bleiben dauerhaft, ebenso `Gebaeude_Modell` selbst; einen Schemaschritt, der sie
+entfernt, gibt es nicht. Die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` sind ein
+gewöhnlicher Aufräumpunkt ohne eigene Stufe. Das Inventar der Altweg-Bestandteile führt
+Kapitel 6.1 des
 [Umsetzungskonzepts](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md).
 Welche Spalte zu welchem Weg gehört —
 „nur Altweg", „beide", „nur VDI" —, weist je Feld ein eigener Befund aus:
@@ -1295,8 +1343,8 @@ Spalte `Gebaeude_Modell` und Werte nach dem PV-Vorbild (`Tab_Energieanlagen.PV_M
 `DbWerte.cs:2173/2180`): `DbWerte.GEBAEUDE_MODELL_TAGESBILANZ = "TAGESBILANZ"`, `GEBAEUDE_MODELL_VDI6007 = "VDI6007"`,
 `GRUND_ERDREICH/KELLER/AUSSENLUFT`; gelesen ausschließlich in der Weiche am Eingang (4.1), im
 Eingangsbauer und in der Anzeige. In der Oberfläche heißt das Feld **„Rechenweg"** mit der
-Vorgabe „VDI 6007" (NULL) und dem Wert „Tagesbilanz"; Schalter, Spalte und Werte bleiben, bis
-die Stufe GA sie entfernt (E20, E23, E26; beauftragbar nach dem Ablösekriterium, Q24, E27).
+Vorgabe „VDI 6007" (NULL) und dem Wert „Tagesbilanz"; Schalter, Spalte und Werte bleiben
+dauerhaft (E20, E23, E89).
 
 ---
 
@@ -1496,9 +1544,8 @@ Grundfläche, die Modellparameter aus 6.1 (Masseanteil außen, Innenflächenfakt
 Außenbauteile mit Strahlung), Infiltration und Nutzerlüftung, Heizung mit Strahlungsanteil
 und Leistungsgrenze — jeweils mit Vorgabe-Anzeige („Vorgabe 0,3"). **Die Modellparameter sind
 immer sichtbar und bearbeitbar**, auch bei einem Gebäude des Bestandswegs; sie gelten dort
-nach einer Umstellung. Der Schalter **„Rechenweg"** trägt für die Dauer des Übergangs die
-Werte „VDI 6007" (Vorgabe) und „Tagesbilanz" samt Herleitungszeile; mit der Stufe GA entfällt
-er (E23, E26). Felder, die
+nach einer Umstellung. Der Schalter **„Rechenweg"** trägt dauerhaft die
+Werte „VDI 6007" (Vorgabe) und „Tagesbilanz" samt Herleitungszeile (E23, E89). Felder, die
 **nur der Altweg** liest, erscheinen allein bei einem Gebäude des Bestandswegs, in einem
 eingeklappten Abschnitt **„Tagesbilanz (Bestandsweg)"** mit dem Hinweis, dass dieser Weg
 keine neue Funktion mehr bekommt; die Feldzuordnung steht in Befund X (6.1). Dieselbe
@@ -1512,9 +1559,8 @@ erscheinen benannt beim Speichern.
 `GebaeudeBedarfDialog.razor` zeigt bei VDI 6007 zusätzlich: Raumtemperatur-Jahresverlauf
 (Luft und operativ, mit Sollwertband), Kühlbedarf informativ, die Kennzahlen aus 4.6 mit den
 drei Spitzenwerten, und den Vergleich „Tagesbilanz | VDI 6007" für dasselbe Gebäude (beide
-Wege sind Auskünfte über `GebaeudeBedarfCtrl`) — dieser Vergleich bleibt, **solange der Altweg
-besteht**; er gehört zum Übergang und entfällt mit der Stufe GA, zusammen mit dem vierten
-Controller-Parameter `modellErzwungen` (E23, E26). Ein Gebäude des Bestandswegs trägt statt des
+Wege sind Auskünfte über `GebaeudeBedarfCtrl`) — dieser Vergleich bleibt **dauerhaft**,
+zusammen mit dem vierten Controller-Parameter `modellErzwungen` (E23, E89). Ein Gebäude des Bestandswegs trägt statt des
 Produktausweises nach E10 die Zeile **„Tagesbilanz (Bestandsweg)"** (E20, E23). Reihenfolge
 und Steuerzeile nach `Doku_Simulationsergebnis_Darstellung.md`.
 
@@ -1598,10 +1644,9 @@ konsistent; Mischfall Gebäude plus Ganglinie (Projekt 1041) summiert richtig.
 - **Bestandsprojekte:** unverändert gegen die dann gültige Basis — die Abnahmesperre von G1.
 - **Referenzprojekte beider Wege:** ein Projekt (Kopie eines Einzelgebäude-Projekts, etwa
   1045) rechnet auf dem VDI-Weg — nach E20 ist das die Vorgabe, `Gebaeude_Modell` bleibt dort
-  NULL —, ein weiteres steht **für die Dauer des Übergangs** auf
+  NULL —, ein weiteres steht **dauerhaft** auf
   `Gebaeude_Modell = TAGESBILANZ` und hält den Rückweg-Test. Beides wird mit jeder Basis
-  eingefroren, bis die Stufe GA das Projekt auf VDI 6007 umstellt und den Rückweg-Test
-  einstellt; GA ist dafür ein eigener Einfrierschritt (E23, E26). Nach A15 (E27): **ein**
+  eingefroren; das Projekt bleibt auf dem Altweg, der Rückweg-Test bleibt (E23, E89). Nach A15 (E27): **ein**
   Referenzprojekt in der jeweils aktuellen Basis, kein zweiter Basisordner; die Arbeitskopie gegen
   die GB-Basis nur bis zum Merge G1 + G2. Mit G1 wird die
   Basis neu eingefroren und
@@ -1650,16 +1695,15 @@ dazu die Hüllenwegwache, sobald die Gebäudehülle wandert (8.3).
 | **G0 — Löser und Normtests im Kern** | `Zonenmodell7R2C`, `ErsatzparameterRC`, Diskretisierung, Regelung nach Hausregeln neu benannt (der Prototyp ist die Vorlage); `GebaeudeModellNormfallTests` und Rechenproben (10.1, 10.2); Klärung des Drifts in Testfall 9/10; keine Datenbank, keine Oberfläche | zwölf Normtestfälle bestanden; Kern-Filter grün | klein, 2–4 PT |
 | **GB — Bestandsbefunde** | Warnungen statt stiller NaN im Tagesmodell (Q18), `_prevRoomTemp` als Instanzzustand mit `ResetState` je Gebäude (Q23), Korrektur 10576 in der Testdatenbank (Q22), vierte Einfrierregel „gesäte Gebäudedaten" | Referenzergebnisse von 1008 ändern sich (1039 bleibt byte-gleich, 10.4) — eigener, begründeter Einfrierschritt; läuft **vor** der Verschiebung des Altwegs, damit das verschobene Modul der geprüfte Stand ist | klein, 1–2 PT |
 | **G1 — Trennung der Wege und Anbindung des VDI-Modells** | **zuerst:** Tagesbilanz-Weg Zeichen für Zeichen nach `EPOS.Kern/Allgemein/Simulation/Altweg/`, Fassade `SimulationWaermebedarf` mit modellfreiem Vorbereitungsschritt und **einer** Weiche am Eingang; **dann:** der Gebäudespalten-Schritt M3, Namensleser, `DbWerte`, `GebaeudeModellEingang` (Klassenweg 4.3, Randbedingungen 4.4, Hay-Davies je Orientierung), Plausibilitätsprüfungen, Vorlauf, Anbindung des Moduls `Gebaeude/`, Dialoge in VDI-Struktur mit Schalter „Rechenweg" und eingeklapptem Abschnitt „Tagesbilanz (Bestandsweg)" (8.1), Hülle nach `EPOS.UI.Daten`, Texte | Verschiebung **byte-gleich** gegen die Basis, als eigener Schritt vor der Anbindung; danach Referenzlauf der Bestandsprojekte unverändert; Referenzprojekte beider Wege, Basis neu eingefroren; Kriterien 10.4 | mittel, 10–16 PT |
-| **G2 — Ergebnisdarstellung** | Raumtemperatur, Kühlbedarf informativ, drei Spitzenwerte, Bild, Bericht, Vergleich Tagesbilanz/VDI 6007 im Bedarfsdialog (bleibt bis GA), Ausweis „Tagesbilanz (Bestandsweg)", Sommerlüftungsregel und Infiltration/Nutzerlüftung, Wiki-Seite; der Klimaspalten-Schritt M4 ist durch Schemaschritt 95 (19.09.2026) vorweggenommen und umgesetzt (2.3) | ChartProben grün; Sichtabnahme Windows | klein–mittel, 3–5 PT |
+| **G2 — Ergebnisdarstellung** | Raumtemperatur, Kühlbedarf informativ, drei Spitzenwerte, Bild, Bericht, Vergleich Tagesbilanz/VDI 6007 im Bedarfsdialog (bleibt dauerhaft), Ausweis „Tagesbilanz (Bestandsweg)", Sommerlüftungsregel und Infiltration/Nutzerlüftung, Wiki-Seite; der Klimaspalten-Schritt M4 ist durch Schemaschritt 95 (19.09.2026) vorweggenommen und umgesetzt (2.3) | ChartProben grün; Sichtabnahme Windows | klein–mittel, 3–5 PT |
 | **G3 — Bauteilkatalog** | die acht Tabellen der Schritte 132–134 (6.3), Verwaltungen „Baustoffe" und „Bauteilaufbauten", Zonen- und Bauteildialog im Gebäudedialog, Bauteilweg mit Kettenmatrix-Reduktion und Normnachweis, geneigte Fenster, echte Hülle statt Nachmultiplikation (E40) — **abgeschlossen 25.09.2026** (N1.44–N1.46) | Reduktion trifft die Parameter der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C | mittel–groß, 8–12 PT |
 | **G4 — IFC-Import Stufe 1** | `Xbim.Ifc4` im Kern, `IfcImportAblauf`, `IfcImportSatz`, Zuordnungsdialog, Vorgaben je Baualtersklasse, `Baujahr`, Importprobe KIT, iOS-Trimming-Nachweis | Importprobe bestanden; Windows-Nachweis; iOS-Lauf nach Rückfrage | mittel–groß, 10–20 PT (mit G3-Anbindung +5) |
 | **G5 — Geometrieableitung, gbXML** | eigene Auswertung von `IfcExtrudedAreaSolid` und Placement-Kette, Öffnungsabzug; gbXML-Leser | nur bei Bedarf aus der Praxis | groß, 30–60 PT; gbXML 10–15 PT |
-| **GA — Altweg ablösen** (letzte Stufe) | Modul `Altweg/`, Weiche, `IGebaeudeRechenweg`, Modultrennungswache, Schalter „Rechenweg", Abschnitt „Tagesbilanz (Bestandsweg)", Spalte `Gebaeude_Modell` und die nur vom Altweg gelesenen Spalten (`DROP COLUMN` je Tabelle und Sichtneubau; dabei `Fensterflaeche_Ost`/`_West` einmalig aus `Fensterflaeche_Ost_West` füllen, 6.1), `Tab_DBTagV`/`Tab_DBTagVDaten`, Vergleich alt/neu samt `modellErzwungen`, Ausweis und Kältebedarf-0-Hinweis, der AK-Sonderfall „feste Last", die Schreibstellen der Flags `Wochenende`/`Ferien`, Referenzprojekt auf VDI 6007 umstellen, Rückweg-Test einstellen, Basis neu einfrieren. Umfang: Q25 (E27: vollständige Ablösung nach der Löschliste), N1.25 Punkt 4, N1.31; die Löschliste führt das [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | **Ausbauprobe** grün: ein Bau mit umbenanntem Ordner `Altweg/` übersetzt nach Entfernen der Weiche, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt byte-gleich; eigener, begründeter Einfrierschritt | **5–8 PT; beauftragbar, sobald die vier Bedingungen aus Q24 erfüllt sind (E27; Prüfung mit jeder Abnahme, Stand in der Statusdatei), in keiner Summe** |
+| **GA — Altweg ablösen: entfällt** (E89) | Der Altweg bleibt dauerhaft als wählbarer Rechenweg: Modul `Altweg/`, Weiche, `IGebaeudeRechenweg`, Modultrennungswache, Schalter „Rechenweg", Abschnitt „Tagesbilanz (Bestandsweg)", die nur vom Altweg gelesenen Spalten, `Tab_DBTagV`/`Tab_DBTagVDaten`, Vergleich alt/neu samt `modellErzwungen`, Ausweis und Kältebedarf-0-Hinweis, der AK-Sonderfall „feste Last", Referenzprojekt auf dem Altweg und Rückweg-Test bleiben; das Inventar führt das [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) in 6.1; Q24 und Q25 sind gegenstandslos | **Ausbauprobe** grün als Nachweis der Eigenständigkeit des VDI-Wegs (4.1) | — |
 
 Aufwände sind Größenordnungen für Entwicklung und Nachweis; Agentenarbeit verkürzt die
 Kalenderzeit, nicht die Prüfzeit. **Summen:** G0+GB 3–6 PT; G0–G1 13–22 PT; G0–G2
-16–27 PT; G0–G3 24–39 PT; G0–G4 34–64 PT — die 5–8 PT der Stufe GA stecken in **keiner**
-dieser Summen. Die **verbindlichen** Aufwände führt das
+16–27 PT; G0–G3 24–39 PT; G0–G4 34–64 PT; eine Stufe GA gibt es nicht (E89). Die **verbindlichen** Aufwände führt das
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) in Kapitel 4;
 es misst die Stufen gegen den Bestand und liegt deshalb über den Größenordnungen dieser
 Tabelle. Bei Abweichung gilt das Umsetzungskonzept.
@@ -1684,11 +1728,11 @@ Tabelle. Bei Abweichung gilt das Umsetzungskonzept.
   Klimaspalten (M4) sind bereits umgesetzt (Schemaschritt 95: drei in `Tab_Solar(_STAMM)`, zwei in
   `Tab_Klimaregion(_STAMM)`; Schritt 97: `Szenario`, `Bezugsjahr`); dazu acht Tabellen (G3, Schritte 132–134); eine
   Spalte und Herkunftskennzeichen (G4). `Gebaeude_Modell` und die Spalten, die nur der Altweg liest,
-  bleiben bis zur Stufe GA (E23, E26; Befund X, 6.1).
+  bleiben dauerhaft (E23, E89; Befund X, 6.1).
 - **Aufwand der Trennung (E20, 16.09.2026):** rund **3–5 PT** zusätzlich in G1 für
   Verschiebung des Altwegs, Fassade, Vorbereitungsschritt und den byte-gleichen Nachweis und
-  rund **1 PT** für den Abschnitt „Tagesbilanz (Bestandsweg)" im Dialog; das Ablösen des
-  Altwegs kostet später **5–8 PT** und steckt in keiner Summe (Stufe GA, Kapitel 11). Der
+  rund **1 PT** für den Abschnitt „Tagesbilanz (Bestandsweg)" im Dialog; der Altweg wird
+  danach gepflegt, nicht weiterentwickelt; eine Ablösung gibt es nicht (E89). Der
   Dialogumbau selbst war mit E2 und E13 bereits geplant. Verbindlich sind die Aufwände des
   [Umsetzungskonzepts](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Kapitel 4.
 - **Abhängigkeiten:** G0–G3 ohne NuGet; G4 `Xbim.Ifc4`/`Xbim.IO.MemoryModel` (rund 10 MB
@@ -1723,8 +1767,8 @@ Tabelle. Bei Abweichung gilt das Umsetzungskonzept.
 | **Q21** | Eine Zeitbasis (Ortszeit) für das Gebäudemodell, wie PV und Solarthermie? | **Ja** — das Modell braucht `Tab_Klimadaten` nicht — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
 | **Q22** | `Bauweise` von Gebäude 10576 in der Testdatenbank auf 15 200 Wh/K korrigieren (Projekt 1008 ändert sich, Basis neu einfrieren) und dafür eine vierte Einfrierregel „gesäte Gebäudedaten" anlegen? | **Ja, im Einfrierschritt GB** (Kapitel 11) |
 | **Q23** | Statischen Zustand `_prevRoomTemp` im Bestand beheben (Instanzzustand, `ResetState` je Gebäude)? Das ändert Projekte mit mehreren Gebäuden und damit die Basis — gemessen in GB allein 1008, 1039 bleibt byte-gleich (10.4) | **Ja, aber als eigener, begründeter Einfrierschritt** — nicht still mit G1 |
-| **Q24** | Wann ist der VDI-Weg bewährt genug, dass die Stufe **GA — Altweg ablösen** beauftragt wird (Modul, Weiche, Schalter „Rechenweg", Altweg-Spalten, Übergangs-Referenzprojekt, Neu-Einfrieren)? | **entschieden (E27, 22.09.2026, N1.32): Option (a), das Ablösekriterium** — GA wird beauftragbar und fällig, sobald alle vier Bedingungen erfüllt sind: (1) alle Referenz- und Bestandsprojekte des Anwenders sind einmal auf VDI 6007 gerechnet und die Abweichung zum Altweg ist je Projekt erklärt; (2) eine Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg; (3) KU1 und, falls beauftragt, AK1 sind abgenommen; (4) die Ausbauprobe ist grün (4.1); geprüft wird mit jeder Abnahme, der Stand steht in der Statusdatei |
-| **Q25** | Umfang der Stufe GA (Befund X): Bleibt `Typ` (Gebäudetyp mit Tagesverteilung) als Katalogmerkmal in der Hauptstruktur, und was wird aus `Tab_DBTagV` und dem `GebaeudetypDialog`, wenn der Altweg als einziger Rechenleser entfällt? Fallen die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` mit dem GA-Schemaschritt? | **entschieden (E27, 22.09.2026, N1.32): Option (a), vollständige Ablösung nach der Löschliste** (Umsetzungskonzept Kapitel 6), im Sinne von N1.25 Punkt 4 und der Stufenzeile GA in Kapitel 11: `Typ` und die Tagesverteilungstabellen fallen mit dem Altweg, die Altweg-Spalten mit einem Schemaschritt (`DROP COLUMN` je Tabelle, Sichtneubau), und die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` gehen im selben Schritt mit |
+| **Q24** | Wann ist der VDI-Weg bewährt genug, dass die Stufe **GA — Altweg ablösen** beauftragt wird (Modul, Weiche, Schalter „Rechenweg", Altweg-Spalten, Übergangs-Referenzprojekt, Neu-Einfrieren)? | **gegenstandslos mit E89 (N1.70):** der Altweg bleibt dauerhaft wählbar, eine Stufe GA gibt es nicht. Zuvor **entschieden (E27, 22.09.2026, N1.32): Option (a), das Ablösekriterium** — GA wird beauftragbar und fällig, sobald alle vier Bedingungen erfüllt sind: (1) alle Referenz- und Bestandsprojekte des Anwenders sind einmal auf VDI 6007 gerechnet und die Abweichung zum Altweg ist je Projekt erklärt; (2) eine Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg; (3) KU1 und, falls beauftragt, AK1 sind abgenommen; (4) die Ausbauprobe ist grün (4.1); geprüft wird mit jeder Abnahme, der Stand steht in der Statusdatei |
+| **Q25** | Umfang der Stufe GA (Befund X): Bleibt `Typ` (Gebäudetyp mit Tagesverteilung) als Katalogmerkmal in der Hauptstruktur, und was wird aus `Tab_DBTagV` und dem `GebaeudetypDialog`, wenn der Altweg als einziger Rechenleser entfällt? Fallen die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` mit dem GA-Schemaschritt? | **gegenstandslos mit E89 (N1.70):** es gibt keine Stufe GA und keine Löschliste; die Liste im Umsetzungskonzept ist nur noch Inventar. Zuvor **entschieden (E27, 22.09.2026, N1.32): Option (a), vollständige Ablösung nach der Löschliste** (Umsetzungskonzept Kapitel 6), im Sinne von N1.25 Punkt 4 und der Stufenzeile GA in Kapitel 11: `Typ` und die Tagesverteilungstabellen fallen mit dem Altweg, die Altweg-Spalten mit einem Schemaschritt (`DROP COLUMN` je Tabelle, Sichtneubau), und die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` gehen im selben Schritt mit |
 | **Q26** | Stufenplan der Anlagenkopplung (E22): Welche Stufen werden beauftragt und wann — **AK1** (Heizkreis als Randbedingung) nach G2, **AK2** (Erzeugerfahrplan als Verfügbarkeit) und **AK3** (geschlossener Kreis) danach? | **AK1 nach G2 einplanen; AK2 nach abgenommenem AK1 und einer Feldphase des VDI-Wegs, AK3 danach**; Aufwand nach dem Papier (Rev. 2): AK0 1–2 PT, AK1 **10–15 PT**, AK2 11–15 PT, AK3 23–38 PT, AK0–AK3 zusammen **45–70 PT** zuzüglich rund 0,5 PT je Einfrierschritt, in keiner Summe von Kapitel 11; jede Stufe je Gebäude oder Projekt wählbar mit Vorgabe aus und eigenem Einfrierschritt — **entschieden (E27, 22.09.2026, N1.32) nach Empfehlung (a)**; AK3 bleibt nach H6 (E24) erst nach der Feldphase von AK1 und AK2 zugesagt (E22, E23, N1.27; eigenes Papier [`Anlagenkopplung`](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md)) |
 
 ---
@@ -1736,7 +1780,7 @@ Tabelle. Bei Abweichung gilt das Umsetzungskonzept.
 | Testfall 11 offen (zwei Umschaltstunden 3,4 W bzw. 2,8 W neben dem Band, 5.2) | der Löser trifft den Wechsel Heizen → Kühlen rund 45 s zu früh; mit Flächenkühlung wäre das rechenwirksam | Ursache in G0 klären (getrennter Knoten für die Kühldecke) oder als benannte Grenze ausweisen; der Normfalltest weist die Reserve je Fall aus |
 | Normreferenzwerte nur über AixLib (Lizenz, Zitierfähigkeit, 5.1) | Tests dürfen die Zahlen nicht ausliefern | Richtlinie beziehen; Referenzreihen bis dahin interne Prüfdaten (Q2) |
 | Mehrfaches Neu-Einfrieren der Basis (GB, G1 + G2, G6d — Zonenprojekt, siehe [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md)) | Regressionsnetz zeitweise ohne belastbare Basis | jeden Einfrierschritt einzeln begründen; die Verschiebung des Altwegs ist byte-gleich und kein Einfrierschritt; Reihenfolge Kapitel 16 |
-| Zwei Rechenwege nebeneinander — **bis GA** (E23, E26) | Referenzprojekt und Rückweg-Test in jeder Basis, gemeinsam genutzte Stellen zweifach zu prüfen; jede Stufe, die einen Altweg-Sonderfall einführt, verlängert die Löschliste | Modultrennung, Modultrennungswache und Ausbauprobe halten die Kosten klein; die Löschliste im Umsetzungskonzept hält die Stufe GA beauftragbar (Q24) |
+| Zwei Rechenwege nebeneinander — **dauerhaft** (E23, E89) | Referenzprojekt und Rückweg-Test in jeder Basis, gemeinsam genutzte Stellen zweifach zu prüfen; jede Stufe, die einen Altweg-Sonderfall einführt, verlängert das Inventar des Altwegs | Modultrennung, Modultrennungswache und Ausbauprobe halten die Kosten klein; Fachänderungen nur im VDI-Weg, der Altweg wird gepflegt, nicht weiterentwickelt (E89) |
 | CDDL-Auflagen für xBIM (7.4) | G4 ohne Bibliothek, wenn die Freigabe fehlt | NuGet-Einbindung ohne Fork; MIT-Ausweg GeometryGymIFC (Q9) |
 | iOS-Trimming mit xBIM (7.4) | IFC-Import auf iOS nicht lauffähig | `TrimmerRootDescriptor`, früher iOS-Lauf nach Rückfrage (Q10) |
 | Keine Validierung an Messwerten (5.14) | Katalogkennzahl bleibt die einzige äußere Referenz | ein Projekt mit gemessenem Verbrauch in die Testdatenbank aufnehmen, sobald eines vorliegt |
@@ -1754,7 +1798,7 @@ Bauteilaktivierung (Testfall 11 nur als Test), die Kopplung von Vorlauftemperatu
 Erzeugerfahrplan an die Raumtemperatur (**seit E22, N1.27 eine benannte Erweiterung mit eigenem
 Papier** — [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md), Stufen AK1 bis AK3 nach G2 bzw. nach AK1 (Q26, E27); Aufwand nach
 dessen Rev. 2 für AK1 rund 10–15 PT, für AK0–AK3 rund 45–70 PT; kein Bestandteil der
-Stufen G0 bis GA), sommerlicher Wärmeschutz als Nachweis nach
+G-Stufen), sommerlicher Wärmeschutz als Nachweis nach
 DIN 4108-2, Nachweise nach GEG/DIN V 18599, Verschattung durch Nachbarbebauung (nur als
 Faktor), Lüftung mit Wärmerückgewinnung (kann als wirksamer Luftwechsel eingegeben werden),
 Normprofile für Nichtwohngebäude (SIA 2024 / DIN V 18599-10; EPOS-Nutzungsmuster als Voreinstellung
@@ -1765,7 +1809,10 @@ Kalender der Konditionierungsgrößen (Heiz- und Kühlsollwert, Lüftung, innere
 Gebäude, Zone und Katalogbau, ihre Vorgabe-Matrix mit Heiz- und Kühlperiode, Vorlagen je Größe, eine Nachtauskühlung
 und eine Aufheizoptimierung vor Sollwertsprüngen beschreibt das eigene Papier
 [Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Rev. 3; P1–P8 entschieden mit E52, N1.59,
-P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0–KP4 auf Auftrag, kein Bestandteil der Stufen G0 bis GA.
+P9–P13 und die Heizperiode mit E53, N1.60): Stufen KP0 bis KP2 umgesetzt (Festlegungen der Umsetzung N1.61, N1.63 und
+N1.66), KP3 entschieden (E58, N1.67; Aufschlag, manuelle Aufheizzeit und Auslegungsgröße mit E59 und
+E60, N1.68) und in Rechenweg, Daten, Referenzprojekt und Basis gebaut (Festlegungen N1.69; Oberflächenwellen O1b, O2 und O3 gebaut, Nachtrag N1.69; Welle A offen), KP4 mit den Papieren nachgezogen; kein Bestandteil der
+G-Stufen.
 
 Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
 abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
@@ -1787,11 +1834,9 @@ abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
    Basis neu einfrieren; Statuszeile und Protokoll.
 5. **G2**, dann **G3**; **G4** erst, wenn G2 im Feld ist. Wiki-Seite mit G2, Logbuch beim
    Upload.
-6. **GA — Altweg ablösen** ist die letzte Stufe (E23, E26). Bis dahin bleibt der Altweg als
-   eingefrorener Bestandsweg im Produkt — Modul, Weiche, Schalter „Rechenweg",
-   Altweg-Spalten, Referenzprojekt auf dem Altweg und Rückweg-Test. GA wird beauftragbar,
-   sobald das Ablösekriterium aus Q24 erfüllt ist (E27, Kapitel 13); der Umfang (Q25) steht in
-   Kapitel 11.
+6. **Der Altweg bleibt dauerhaft** als wählbarer, eingefrorener Bestandsweg im Produkt (E23, E89) —
+   Modul, Weiche, Schalter „Rechenweg", Altweg-Spalten, Referenzprojekt auf dem Altweg und
+   Rückweg-Test. Er wird gepflegt, nicht weiterentwickelt; eine Stufe GA gibt es nicht.
 
 ---
 
@@ -1952,8 +1997,8 @@ Geometriebibliothek OCCT unter LGPL nachzieht. Der Ausweg, falls CDDL nicht frei
 wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres Ökosystem).
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
-Referenzbasis ist der eingefrorene Ergebnissatz der fünfzehn Testprojekte
-(`Referenzlaeufe/2026-09-26_R23_KesselBereitschaft`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+Referenzbasis ist der eingefrorene Ergebnissatz der sechzehn Testprojekte
+(`Referenzlaeufe/2026-10-03_R34_Erdreich`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
@@ -4767,3 +4812,415 @@ Projekt und „Speichern unter", `KINDER` für Duplikat und Variante, der `.wpx`
 Auslieferungsvorlage samt Prüfbericht, die Werkzeuge der Karte, der Hinweis auf Untertemperatur
 außerhalb der Heizperiode, die Auslegungswerte aus 3.6 und die Nutzungszeit aus dem Personenkalender
 (F16).
+
+### N1.62 Entscheid E54 — Konditionierungsprofile: Inhalt eigener Vorlagen, Lüftungsstunden in Bericht und Export
+
+**Anlass.** Die Synthese des Entwurfs der zweiten Hälfte von KP1
+([`ueberholt/Entwurf_KP1b_Konditionierungsprofile.md`](../ueberholt/Entwurf_KP1b_Konditionierungsprofile.md)) hat aus zwei
+Entwürfen und einer Gegenprüfung zwei Fragen an den Anwender gestellt; alles Übrige legt sie als Festlegungen der
+Umsetzung vor, die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet beide per Auswahl.
+
+**Entscheid E54 (Anwender, 27.09.2026):**
+
+| # | Frage | Entscheid |
+|---|---|---|
+| 1 | Was nimmt „Als Vorlage speichern" an Nennwert und Saison mit? | **Weder Nennwert noch Saison — abweichend von der Empfehlung** (Saison ja, Nennwert nein): Eine eigene Vorlage trägt Zeitstruktur und die Werte der Nutzungszeilen; Nennwert und Heiz- bzw. Kühlperiode gehören dem Objekt und bleiben beim Ziel |
+| 2 | Kommen mit der Nachtauskühlung auch die Sommerlüftungsstunden in Bericht und Export? | **Beide Kennzahlen**, nach Empfehlung: KP3 bringt `Nachtauskuehlstunden_H` und `Sommerlueftungsstunden_H` in Bericht, CSV-Export, KI-Sicht und Variantenvergleich |
+
+**Folgen.** Das [Teilkonzept](Konzept_Konditionierungsprofile_EPOS-Plan.md) ist in 3.5, 3.7, 5.7, 8 und 9.4
+fortgeschrieben; der Vorlagen-Controller (KP1b) speichert und kopiert keine Zeilen `NENNWERT` und `SAISON`, keine
+Saisonperiode und keinen `Nennwert` am Kalender einer Vorlage; die Wache der ausgelieferten Vorlagen (KP2) prüft es
+mit. KP3 wächst um rund 0,25 PT. Kein Registerpunkt ist berührt; das Register zählt weiter einen offenen Punkt (M11).
+
+### N1.63 Festlegungen der Umsetzung KP1b (zweite Hälfte von KP1) — benannt, nicht entschieden
+
+**Anlass.** Die zweite Hälfte der Stufe KP1 ist gebaut (29.09.2026;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md),
+[Entwurf](../ueberholt/Entwurf_KP1b_Konditionierungsprofile.md)): Schemaschritt 152, Kopierwege, Vorlagen, Werkzeuge
+der Karte, Prüfbericht, Nachtauskühlung, Nutzungszeit, Auslegungswerte, F21, Hinweise und Korrekturen am Bestand aus
+KP1a. Was die Papiere offenließen, hat die Umsetzung festgelegt; die Liste nennt es, damit es nicht als
+Anwenderentscheid gelesen wird. Widerspruch ist möglich und wäre ein eigener Entscheid.
+
+| # | Festlegung | Wo |
+|---|---|---|
+| 1 | **Fremdschlüssel `ID_Vorlage` per Tabellenneubau** in Schritt 152 (`KP-S1v`), nicht im Controller — hebt N1.61 Nr. 1 auf und stellt 5.1 her; nur so räumt `--kataloge readonly` eigene Vorlagen samt Kalendern, Perioden und Vorgaben über die Kaskade. Zieltext aus `sqlite_master`, `RENAME` unter `legacy_alter_table`, sonst schriebe SQLite den Verweis der Periodentabelle um | Konditionierungsprofile 5.1, 5.4 |
+| 2 | **Acht Teilindizes** der Eindeutigkeit je Eigentümerart (Gebäude ohne Zone, Zone, Katalogbau, Vorlage); Dubletten brechen den Schritt benannt ab, nichts wird still gelöscht; Waisen an `ID_Vorlage` werden gezählt und gelöscht (0 in der Testdatenbank); keine Trigger | 5.1, 5.6 |
+| 3 | **Namensregel der Vorlagen:** getrimmt, 1–80 Zeichen, eindeutig je Größe mit `OrdinalIgnoreCase` im Controller; der NOCASE-Index ist die Rückfallsperre, weil SQLite nur ASCII faltet („Büro"/„BÜRO") | 5.7 |
+| 4 | **Nachtauskühlung:** Fenster, Tagwert n_T und ΔT kommen aus der Matrix des Eigentümers, dessen Lüftungskalender gilt — auch bei angelegtem, geändertem Kalender; geteilt wird die Nutzerreihe (die Infiltration ist nie bedingt): im Fenster ist max(0, n(h) − n_T) bedingt, außerhalb alles unbedingt, ohne n_T nichts bedingt (Hinweis); das Jahresminimum über den unbedingten Teil | 3.7, P9 |
+| 5 | **Eine Regelklasse** für Sommerlüftung und Nachtauskühlung (`Sommerlueftungsregel` mit Feld für den Außenabstand, eine Schaltstelle); Schwelle je Stunde θ_K(h) − 3 K, wo die Kühlung wirkt, sonst 23 °C; eine Stunde zählt, wenn die Regel an ist und der bedingte Anteil > 0 — gleich, welcher Luftwechsel gewinnt; das Gebäude zählt sie, wenn eine beheizte Zone sie hat; `Nachtauskuehlstunden_H` ist NULL ohne Nachtauskühlung | 3.6, 3.7 |
+| 6 | **Zwischenspeicher des freien Falls** mit vier Plätzen und bitgenauem Schlüssel — gemessen 2 418 statt 2 Neubauten im freien Lauf, rund 17 % Laufzeit; bitgleich zur Einzelrechnung | R7 |
+| 7 | **Der KP1a-Test der unbedingten Nachtlüftung** ist als Mechanikprobe „Werktag über Wochenende" umgeschrieben — ein Semantikwechsel nach P9, kein stilles Nachziehen | P9 |
+| 8 | **Vorlaufstart bei „aus":** Startwert der unbeheizten Zone (N1.56 Nr. 7) auf allen drei Startwegen, in der Zonenschleife „beheizt und endlich", mit Hinweis | 3.6 |
+| 9 | **Die konstante Kühlprüfung gilt nur ohne Kühlkalender** (F17); der Hinweis auf den wirksamen Kühl-Nachtwert (R14) kommt, wo ein abgeleiteter Kühlkalender die Bestandsspalte erstmals wirksam macht | 3.6, P13 |
+| 10 | **Der Vorlauf der Übergabe steht nur in Stunden mit Heizung** — außerhalb der Heizperiode bleibt er leer, auch bei festem Anlagenvorlauf; die Stunden zählen getrennt (`StundenOhneHeizungH`), nicht in der Heizgrenze | E53, 6 |
+| 11 | **F16 wirkt nur in den Kennzahlen:** die Nutzungsmaske (Anwesenheit > 0) ersetzt dort die Nachtzeit; `GebaeudeModellEingang.Nutzungszeit` und der Sollwertfahrplan bleiben an der Nachtzeit; ohne Anwesenheitsstunde gilt die Nachtzeit mit Hinweis; im Mehrzonenlauf zählt das Gebäude eine Stunde, wenn eine beheizte Zone in Nutzung ist | 3.4, F16 |
+| 12 | **Auslegung und F21 nehmen als Nutzungszeit die Nachtzeit**, nicht die Personenmaske — Folge von Nr. 11; höchster endlicher Heizsollwert der Nutzungsstunden (Übergabe, F21), niedrigster wirksamer endlicher Kühlsollwert (beide Kältestellen), höchster unbedingter Luftwechsel (Heizlast); ohne endliche Nutzungsstunde gilt der Bestand, F21 entfällt. Die Umstellung auf die Maske wäre je Auflöser eine Zeile. **Vom Anwender bestätigt: E55 (N1.64)** | 3.6, F21 |
+| 13 | **Untertemperatur** nur als Protokollhinweis mit Zahl und tiefster Unterschreitung; „außerhalb der Heizperiode" heißt: die Saisonperiode (Rang 900) trägt den Tag — eine eigene Betriebspause ist gewolltes „aus" | 3.6, E53 |
+| 14 | **Infiltration im Kalenderweg** aus der wirksamen Matrixzelle Lüftung/`NENNWERT` (Zone → Gebäude → Bestand); bei Gesamtangabe wie ohne Trennung 0 unter der Gesamtreihe | 3.1, 3.3, F15 |
+| 15 | **Ein SQL-Kopierer** (`Konditionierungskopie`, Spalten aus `pragma_table_info`, Alt→Neu-Zuordnung im selben Vorgang) für alle Wege Katalog ↔ Projekt, Katalog → Katalog und Vorlage ↔ Ziel; `Katalogkopie` bleibt unverändert; Duplikat, Variante und `.wpx` bleiben beim `KINDER`-Plan | 5.5 |
+| 16 | **Zellenort-Weiche** (`Matrixzellenort`) auf allen Schreibwegen: der Wert einer Bestandszelle in die Bestandsspalte, nur „aus", Zeiten und `Bedingt_K` in die Vorgabezeile; der Leser folgt 5.6; eine unbelegte Bestandszelle lässt die Spalte unberührt | 5.6 |
+| 17 | **Das Schloss sperrt jeden Schreibweg** auf gesperrte Katalogbauten und Vorlagen, benannt | 5.1, 5.7 |
+| 18 | **„Speichern unter"** ist eine Kernmethode (`GebaeudeStammCtrl.SpeichernUnter`) und nimmt nur die Gebäudeebene mit; im Katalogmodus wirkt es wie Duplizieren; der Befund `ZonenZurueck` zählt die Seite, die ein Gebäude ist (Quelle bei „Speichern unter", Ziel bei „erneut übernehmen") | 5.5 |
+| 19 | **Vorlagen:** Herkunft nur als Text in `Bemerkung`, nie als Id am Ziel; Inhalt nach E54 nur die Nutzungszeilen; die Nachtzeiten der Quelle kommen aus `Nachtabsenkung_Beginn/_Ende`, wo sie keine eigene Zeile trägt; ein Bestandswert außerhalb der Grenzen wird benannt abgelehnt | 3.5, 5.7, E54 |
+| 20 | **Rangbänder** an einer Stelle (`Standardfahrplan`): Feiertage 100–108 unter den Ferien (sonst heizte ein Feiertag in den Ferien „wie Sonntag"), Ferien 200 + k, eigene und übernommene Perioden 310–899, Saison 900; Kollision benannt abgelehnt | 3.2, N1.61 Nr. 5 |
+| 21 | **Zeitfenster:** `von` 0…23, `bis` 1…24 ausschließlich, `bis` unter `von` über Mitternacht, 0…24 der ganze Tag, gleiche Werte benannt abgelehnt | 3.5 |
+| 22 | **Stufenzuordnung:** gbXML `SollHeizenC`, Ferien des Zapfprofils und „Zeitstruktur übernehmen" in die erste Kernwelle von KP2; Bericht, CSV, KI-Sicht und Variantenvergleich der Lüftungsstunden in KP3 (E54) | 5.5, 8 |
+
+**Nachweise.** Die Proben der sieben Wellen (`KonditionierungVorlagenSchemaTests`, `KonditionierungKorrekturenTests`,
+`NachtauskuehlungTests`, `KonditionierungNutzungAuslegungTests`, `KonditionierungskopieTests`,
+`KonditionierungKopierwegeTests`, `MatrixzellenortTests`, `KonditionierungArbeitsstandTests`,
+`KonditionierungProjektplanTests`, `KonditionierungsvorlageCtrlTests`, `KalenderwerkzeugeTests` und im Werkzeug
+`KonditionierungVorlageTests`) halten die Festlegungen; jede Welle ist gegen ihren Ausgangsstand byte-gleich, der
+Referenzlauf der fünfzehn Projekte gegen die Basis R24 ebenfalls.
+
+**Offen (KP3):** siehe [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-29_KP1b_Konditionierung_zweite_Haelfte.md)
+Abschnitt 7; die dort für KP2 genannten Punkte sind mit KP2 gebaut (N1.66).
+
+### N1.64 Entscheid E55 — Nutzungszeit der Auslegung und der Prüfung F21
+
+**Anlass.** N1.63 Nr. 12 hat benannt, dass Auslegung und F21 als Nutzungszeit die Nachtzeit nehmen und nicht die
+Personenmaske (F16); Widerspruch war möglich. Der Anwender entscheidet am 29.09.2026: **„bei der Nachtzeit bleiben“**,
+nach Empfehlung.
+
+**Inhalt.** Nutzungszeit der Auslegung sind die Stunden außerhalb der Nachtzeit des Gebäudes bzw. der Zone
+(`GebaeudeModellEingang.Nutzungszeit`; ohne Angabe gilt die Nacht von 22 bis 6 Uhr). Das gilt für die
+Auslegungsraumtemperatur der Übergabe (höchster endlicher Heizsollwert), die Auslegung der Kälte (niedrigster wirksamer
+endlicher Kühlsollwert), die Auslegungsheizlast (höchster unbedingter Luftwechsel) und die Prüfung der
+Maximalraumtemperatur (F21). Die Personenmaske (Anwesenheit > 0) bestimmt allein die Kennzahlen der Nutzungszeit (F16,
+N1.63 Nr. 11).
+
+**Gründe.** Die Auslegung deckt jede beheizte oder gekühlte Stunde des Tagbetriebs, auch eine Aufheizspitze oder
+Vorlüftung vor der Anwesenheit, und folgt derselben Zeit wie der Sollwertfahrplan der Simulation. Mit der Personenmaske
+fiele sie knapper aus, sobald sich Sollwert oder Luftwechsel im Tagfenster außerhalb der Anwesenheit ändern.
+
+**Folgen.** Keine Codeänderung — so ist KP1b gebaut; Teilkonzept 3.6 und 9.5 nennen die Nutzungszeit der Auslegung
+ausdrücklich. Ohne Personenkalender sind beide Wege gleich; kein Referenzprojekt führt Kalender, die Basis ist nicht
+berührt.
+
+### N1.65 Entscheid E56 — Konditionierungsprofile: Saat, Folgen der Matrix, Altfelder, Vorlagenverwaltung, Luftwechsel
+
+**Anlass.** Der Entwurf der Stufe KP2
+([`ueberholt/2026-09-29_Entwurf_KP2.md`](../ueberholt/2026-09-29_Entwurf_KP2.md)) — zwei Leser, zwei
+unabhängige Entwürfe, eine Gegenprüfung — legt fünf Fragen vor; alles Übrige benennt er als Festlegungen der Umsetzung,
+die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet am 29.09.2026 alle fünf per Auswahl, nach
+Empfehlung.
+
+| Frage | Entscheid |
+|---|---|
+| F1 Saat der 14 Vorlagen | die vervollständigte Tabelle des Entwurfs (46 Vorgabezeilen; „sonst" = Nacht, Wochenende, Ferien; Schule mit eigenen Zeiten; Nachtfenster ausdrücklich), dazu bei Büro und Schule die neun bundeseinheitlichen Feiertage „wie Sonntag" als Regeln ohne eigene Woche |
+| F2 Folgen der Matrix | ein angelegter, nicht von Hand geänderter Kalender folgt der Matrix ohne Rückfrage, solange sein Matrixbereich dem Generator gleicht; eigene Perioden bleiben; danach gilt P12 |
+| F3 Altfelder | Wärmegewinne, Infiltration, Nutzerlüftung, Kühlsollwert, Sommerlüftung und Maximalraumtemperatur nur im Reiter „Konditionierung"; Reiter 1 zeigt eine Herleitungszeile |
+| F4 Vorlagenverwaltung | aus jeder Kalenderkarte als Blatt im Katalogeditor, auf beiden Plattformen; kein Menüpunkt |
+| F5 Luftwechsel | die Gesamtangabe wird nach einer Rückfrage aufgeteilt: Infiltration = min(0,3 1/h; Rate), Nutzerlüftung = der Rest; der wirksame Luftwechsel bleibt gleich |
+
+**Folgen.** Teilkonzept Konditionierungsprofile 3.1, 3.3, 3.5, 7.1, 7.2, 7.4 und 8 fortgeschrieben, Entscheide in 9.6. Der
+Entwurf veranschlagt KP2 mit 19–22 PT (Konzept 14–18), weil die Oberfläche einen Arbeitsstand im Kern braucht, den das
+Konzept nicht veranschlagt hatte. Umgesetzt mit KP2; die Festlegungen der Umsetzung stehen in N1.66.
+
+### N1.66 Festlegungen der Umsetzung KP2 (E56, E57) — Konditionierungsprofile: Oberfläche und erste Kernwellen
+
+**Anlass.** Die Stufe KP2 ist gebaut und abgeschlossen (02.10.2026;
+[Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md),
+[Entwurf](../ueberholt/2026-09-29_Entwurf_KP2.md)): elf Wellen in zwei Spuren — K1 bis K4 für Kern und Daten, U0a bis U5
+für die Oberfläche; der Entwurf hatte zehn geplant, U0 ist in Glossar und Texte (U0a) und Grundlagen (U0b) geteilt —,
+Schemaschritt 157 mit der Saat der 14 Vorlagen, der Reiter „Konditionierung" in allen Modi des Gebäudeeditors samt
+Vorlagen je Karte und Vorlagenverwaltung, die Zonenmatrix, die Konditionierung in der Gebäudeverwaltung, die
+Kalenderkarte im Einzelnen und mit der letzten Welle die Abkürzung nach E57. Der Entwurf hatte seine Festlegungen
+benannt (Abschnitt 5) und für diesen Nachtrag vorgesehen; die Liste nennt sie, wie sie gebaut sind, dazu die
+Festlegungen der Wellen und der Abkürzung, damit nichts davon als Anwenderentscheid gelesen wird. Widerspruch ist möglich
+und wäre ein eigener Entscheid.
+
+**Entscheid E57.** Die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" hatte der Entwurf nicht gefragt,
+sondern an die gezählten Handgriffe gebunden. Gezählt im Zählfall KN6 („Büro" in allen fünf Größen) waren ohne
+Abkürzung 11 Handgriffe breit, 12 an der Gesamtangabe der Lüftung, 16 mit fünf angelegten Kalendern und 15 schmal. Der
+Anwender entscheidet am 30.09.2026 an diesen Zahlen, vor der Sichtabnahme SA1 (Wortlaut „nehme auf"): **aufnehmen** —
+ein Eintrag in der Zeile „Vorlage", eine Rückfrage für alle Größen, kein Satzbegriff; P11 bleibt (Teilkonzept 9.7).
+
+| # | Festlegung | Wo |
+|---|---|---|
+| | **Entwurf KP2, Abschnitt 5 — wie gebaut** | |
+| 1 | **Arbeitsstand und OK-Weg:** Jede Handlung des Reiters wirkt auf einen reinen Arbeitsstand im Kern (`Konditionierungsstand`, `Konditionierungsarbeit`); jeder Schritt liefert einen neuen Stand und einen benannten Befund, „Zurücknehmen" ist der vorige Stand. Geschrieben wird nur mit OK und an einer Stelle: Katalog neu, bearbeiten und „Speichern unter" in einem Vorgang, im Projekt Gebäude und Zonen mit Id-Zuordnung — ein zweites OK schreibt nichts doppelt | 7.2 |
+| 2 | **„Speichern unter"** schließt nicht (E27) und meldet den angelegten Satz; im Katalogmodus arbeitet der Dialog danach am neuen Satz (das nächste OK trifft nicht das Original, das Schloss gilt ihm nicht), im Projektmodus bleibt der Projektzustand unberührt. Die Konditionierung des neuen Satzes kommt aus dem Arbeitsstand, ohne Konditionierungstabellen die Kopie des Ursprungssatzes | 5.5, 7.3 |
+| 3 | **Rückfragen** entstehen vor dem Schreiben aus dem Befund des Arbeitsstands und nennen Zonen mit Namen, eine Frage je Handlung; „Speichern unter" im Projekt fragt einmal für Zonen, Bauteile und Konditionierung | 7.2, 7.3 |
+| 4 | **„Aus dem Katalog erneut übernehmen…"** steht im Reiterkopf (nur Projekt, Vorgabe „Nein", eigener Text) und ersetzt die ganze Gebäudeebene samt Bestandszellen, Nachtzeiten und Ferienzeiträumen; die Zonen bleiben | 7.3 |
+| 5 | **Heiz-Nachtzeiten** stehen an Gebäude und Katalogbau in `Nachtabsenkung_Beginn/_Ende`, an einer Zone macht eine eigene Heiz-Nachtzeile die Spalte wirksam; **Anlegen** am Gebäude legt die Kalender der Zonen mit eigenen Zellen mit an; P1 gilt beim Übergang der Personenspalte; Merker folgen jedem Schreibweg; `Bemerkung` = Herkunft · letzter Werkzeugvermerk | 3.4, 5.6 |
+| 6 | **Orte:** der Reiter in allen Modi des Gebäudeeditors (Projekt, Katalog neu und bearbeiten); in der Gebäudeverwaltung eine Stammblattgruppe mit fünf Zustandszeilen und ein breites Blatt am selben Arbeitsstand; ein gesperrter Satz steht im Lesemodus mit Grund, „Speichern unter" bleibt frei; ohne Konditionierungstabellen ist der Reiter benannt gesperrt; `Modus.Admin` entfällt | 7.1, 7.3 |
+| 7 | **Layout:** breite Überlagerung; der Reiter bricht am Behälter bei 900 px um (breit Matrix und fünf Karten, schmal fünf Reiter je Größe); `Wochenraster` mit abschaltbaren Zusätzen („aus"; 4 × 6, ab 600 px 2 × 12, ab 1 150 px 7 × 24), ohne Zusätze das Markup des Bestands; der Zonendialog ist ein Blatt; Vorschau und Teppichbild sind entprellt | 7.2, 7.5 |
+| 8 | **Teppichbild:** `Kalenderteppich` mit Rohreihe (NaN für „aus" bei jeder Größe) und Quelle je Tag, dieselbe Entscheidung wie der Lauf; der Renderer zeichnet höchstens 2 000 Elemente, darüber benannt gröber; „aus" als eigene Rolle; Bezugsjahr im Projekt das des Laufs, im Katalog 2025; drei neue ChartProben-Bilder in einer neuen Messlatte-Datei | 7.5 |
+| 9 | **gbXML `SollHeizenC`** mit Heizkalender (Zone vor Gebäude): der häufigste endliche Wert der Standardwoche Mo–Fr außerhalb der Nachtzeit (E55), bei Gleichstand der höhere; „Kalender" in der Verlustliste; ohne Kalender der Bestand | 5.5 |
+| 10 | **Ferien des Zapfprofils** mit Heizkalender des gebundenen Gebäudes: dessen FERIEN-Perioden, höchstens vier nach Rang, mehr mit Vorhinweis; sonst der Bestandszweig (Projekt 1045 unverändert) | 5.5 |
+| 11 | **„Zeitstruktur übernehmen":** „wie Heizung" = Stunden mit endlichem Wert ≥ Tagwert der Heizspalte, „wie Anwesenheit" = Anteil > 0; diese Stunden bekommen den Tagwert des Ziels, die übrigen dessen Nachtwert; ersetzt wird nur die Standardwoche | 3.5 |
+| 12 | **B13:** Ferien im Gemeinjahr über `Feiertage.Gemeinjahrestag/Datum`; der 29.02. ist eine Fehleingabe | 3.2 |
+| 13 | **„Als Vorlage speichern…" und die Vorlagenverwaltung** schreiben sofort mit eigenem OK, eine Zeile unter dem Knopf sagt es; die Verwaltung steht als Blatt im Katalogeditor (E56 F4) und ist von U4 nach U2 gewandert, damit nur eine Welle die Karte anfasst | 7.4 |
+| 14 | **Assistent und Texte:** Feldtafel je Zelle (`KiKonditionierungsfelder`), die Woche als Text, je Wirt über `KonditionierungKiTafel` (Editor, Verwaltung, Zone); eine ersetzende Handlung stellt auch für den Assistenten ihre Rückfrage, beantwortet wird sie vom Anwender; Glossar § 13 vor den Ressourcen, Vorlagennamen bleiben deutsch (Glossar § 10) | 7.7 |
+| 15 | **Periodenliste:** der Matrixbereich nur lesbar, neue Perioden ZEITRAUM oder FEIERTAG im Eigenband 310–899, Rang nur dort verschiebbar, das Feiertagsband 100–108 weich gesperrt; unter 600 px ohne die Spalten „Art" und „Von–Bis"; die Spalte „Kalender" der Katalogauswahl und der Verwaltung zählt angelegte Kalender | 7.3, 7.5 |
+| | **Festlegungen der Wellen** | |
+| 16 | **Saat als Schemaschritt 157** (156 hat die Kessel-Kennlinie belegt), reines DML, Schlüssel (Größe, Name) ohne Groß-/Kleinschreibung; angelegt wird nur, was fehlt, eine eigene gleichnamige Vorlage bleibt und steht im Bericht | 3.5, 5.4 |
+| 17 | **Feiertagsregeln einer Vorlage** stehen beim Übernehmen im Feiertagsband 100–108 unter den Ferien; ein belegter Rang wird benannt | 3.2, 3.5 |
+| 18 | **Die Kette nach 3.4 wörtlich:** Unter einem angelegten Gebäudekalender wirken Zonenzelle und Heiz-Nachtzeile der Zone erst, wenn die Zone einen eigenen Kalender führt („vom Gebäude übernehmen und anpassen"); bis dahin steht die Spalte „vom Gebäude" mit Grund | 3.4, 7.3 |
+| 19 | **Tagesbilanz-Weg:** Die Matrix zeigt nur die Altweg-Felder (2.2), der Kühlsollwert ist dort nicht bearbeitbar | 2.2, 7.2 |
+| 20 | **Kühlspalte:** gesperrt allein über „Kühlung aktiv"; der Projektbezug (Referenzjahr, Kühlbetrieb, Anlagenkopplung aus dem Projekt) schließt den Kühlbetrieb ein wie die Rechnung; an der Zone bis KU3 gesperrt | 7.2, 7.3 |
+| 21 | **Aktionswissen deutsch,** die englischen Suchwörter in den Titeln; die Setzer des Assistenten für die Bestandsfelder laufen im Editor über den Weg | 7.7 |
+| 22 | **Zone:** Personen-Nennwert als eigener Wert oder Flächenanteil statt des vollen Gebäudewerts; die Zone rechnet in Vorschau und Lauf auf ihrem aufgelösten Bestand (`Konditionierungseingang.ZonenBestand`); „aufteilen" an der Zone benannt abgelehnt; die Karten der Zone bieten keine Vorlagen an (die Zone erbt oder kopiert den Gebäudekalender) | 3.4, 7.3 |
+| 23 | **Verwaltung:** „Speichern" schreibt das Blatt mit (die Fassung zählt als Abweichung), „Verwerfen" nimmt alles zurück; eine Regel an Matrix, Nachtzeit oder Ferien öffnet das Blatt; die Altfelder stehen nur im Blatt (F3 a) | 7.1, 7.3 |
+| 24 | **Karte:** Grundangabe und Standardwoche schließen sich aus, „Standardwoche verwerfen" übernimmt den häufigsten Wert; die Werkzeuge greifen nur am angelegten Kalender, sonst weich gesperrt mit Grund; „In den Kalender übernehmen" an der Wärmeübergabe mit Rückfrage am angelegten Kalender und einem Schritt Zurücknehmen; Geräte und Personen ohne Anteile zeigen einen benannten Leerzustand | 7.5 |
+| | **Die Abkürzung nach E57** | |
+| 25 | **Ort:** eine Liste „alle Größen" in der Kopfzelle der Zeile „Vorlage", Platzhalter „—", Hinweis am Element, Bedienziel ≥ 44 px, breit und schmal; nur mit Vorlagen, nicht im Lesemodus, nicht an der Zone, nicht ohne Weg und nicht auf dem Tagesbilanz-Weg | 7.2, 7.4 |
+| 26 | **Einträge:** jeder Name, der in mindestens einer der fünf Listen steht, einmal, in der Reihenfolge des Kerns (ausgelieferte zuerst) und nach der Namensregel der Vorlagen (getrimmt, ohne Groß-/Kleinschreibung); ein Schloss, wenn eine Vorlage dieses Namens ausgeliefert ist; die Wahl ändert den Arbeitsstand nicht und steht nur, solange ihre Rückfrage steht | 7.4 |
+| 27 | **Eine Rückfrage, immer,** Vorgabe „Nein", aus den Befunden aller Größen vor dem Schreiben: je Größe eine Zeile — „übernehmen"; am angelegten Kalender, was nach P12 ersetzt wird und was bleibt; an der Gesamtangabe der Lüftung die Aufteilung (F5); „keine Vorlage dieses Namens — bleibt"; „gesperrt" mit dem Grund der Karte (Kühlen ohne Kühlung); die betroffenen Zonen einmal mit Namen. „Nein" und Abbrechen lassen alles | 7.4 |
+| 28 | **Ein Schritt:** „Ja" übernimmt Heizen bis Personen über den Kernschritt der Karte, teilt die Gesamtangabe vorher ohne zweite Frage auf und übergeht Größen ohne gleichnamige Vorlage und gesperrte; ein Fehler bricht ab, wird gemeldet und lässt den Arbeitsstand; „Zurücknehmen" nimmt alle Größen in einem Schritt zurück; danach nennen Karten und Zeile „Vorlage" die Herkunft, die Liste steht wieder auf „—"; ohne übernommene Größe entsteht kein Schritt | 7.4 |
+| 29 | **Assistent:** das Feld `kond_vorlage_alle` als Wahl vor den Spalten an Editor und Verwaltung, nicht an der Zone; Lesen nennt die gemeinsame Herkunft, Setzen stellt die eine Rückfrage; Aktionswissen „Konditionierung: Vorlage übernehmen" ergänzt | 7.7 |
+| 30 | **Zählfall KN6 mit Abkürzung:** 3 Handgriffe in allen vier Fällen (Reiter, Wahl, „Ja") statt 11 bis 16; die Übernahme je Karte bleibt unverändert (P11) | 7.4, R16 |
+
+**Nachweise.** Die Proben der elf Wellen halten die Festlegungen — darunter `KonditionierungsarbeitTests`,
+`KonditionierungsvorlagenWacheTests`, `KonditionierungMatrixTests`, `KonditionierungKn6Tests`, `PeriodenlisteTests`,
+`KiKonditionierungsfelderTests`, `KiMaskenabdeckungWacheTests` und die ChartProben des Teppichbilds —, dazu die
+Konditionierungsprobe in vier Fensterbreiten und, mit der Abkürzung, in beiden Kulturen. Jede Welle ist mit Gate
+abgenommen; der Referenzlauf blieb byte-gleich gegen die jeweils geltende Basis, zuletzt 487/487 CSV der sechzehn
+Projekte gegen R29.
+
+**Folgen.** Teilkonzept Konditionierungsprofile im Kopf und in 7.2, 7.4, 8, 9.7, 10.5, 11 (R16) und 12 fortgeschrieben;
+Entwurf KP2 und die zwei Übergaben der Sitzung liegen unter `ueberholt/`. Offen beim Anwender: die Sichtabnahme SA1 unter Windows, die SA2
+weitgehend mit abdeckt, samt der Bestätigung von Nr. 27 („eine Rückfrage, immer"). KP3, KP4 und KU3 folgen auf Auftrag.
+
+### N1.67 Entscheid E58 — Konditionierungsprofile: Aufheizoptimierung, Variantenvergleich, Kurzbericht, Referenzprojekt 1051, Einfrieren, Reserve, Nachtlüftung
+
+**Anlass.** Der Entwurf der Stufe KP3
+([`2026-10-02_Entwurf_KP3.md`](../ueberholt/2026-10-02_Entwurf_KP3.md)) — zwei Leser, zwei
+unabhängige Entwürfe (einer vom Rechenweg und den Nachweisen her, einer von Daten, Ergebnissen, Darstellung und
+Regressionsnetz her), eine Gegenprüfung jeder code-gestützten Aussage am Code, an der Testdatenbank und mit
+Rechenproben, die Synthese in einem Papier — legt acht Fragen vor; alles Übrige benennt er als 33 Festlegungen der
+Umsetzung, die mit der Umsetzung als eigener Nachtrag folgen. Der Anwender entscheidet am 02.10.2026 alle acht per
+Auswahl: F1, F2, F5, F6 und F8 nach Empfehlung, **F3, F4 und F7 abweichend**.
+
+| Frage | Entscheid |
+|---|---|
+| F1 Welche Leistung hält die Rampe bei Quelle `Heizleistung_Max`? | **(b)**, nach Empfehlung: der **Augenblickswert** bei Quelle Grenze (Leistung am Beginn der Sprungstunde, das Maximum über die Rampe bei festen Rändern), das **Stundenmittel** bei Zielleistung — die Grenze ist im Löser ein Augenblickswert, die Zielleistung eine Stundengröße des Erzeugers; am Prüfsatz n = 7 statt 5, die Sprungstunde kappt bei festen Rändern nicht |
+| F2 Ab welchem Sollwert bemisst sich ein Sprung nach gestufter Absenkung? | **(b)**, nach Empfehlung: θ_N ist der **kleinste endliche Sollwert im Fenster der Rampe** — sicher auch nach einer Wochenend- oder Ferienabsenkung unter dem Nachtwert (Prüfsatz n = 10 statt 2); bei einfacher Nachtabsenkung gleich s(h_s − 1) |
+| F3 Wo stehen Nachtauskühl-, Sommerlüftungs- und Aufheizwerte im Variantenvergleich? | **(c) beides, abweichend von der Empfehlung (a):** die Gebäudetafel je Stand im Vergleichskapitel (Marke `stand.tabelle.gebaeude`, je Variante jedes Gebäude, ohne Δ) **und** eine Kennzahlgruppe „Gebäude" im Kennzahlenkatalog mit Δ (Höchstwert über die Gebäude, P_auf als Summe; neue Kennzahlen nur mit `Kennzahl.Seit`); +0,75 PT. **Warum es trägt:** Die Tafel zeigt je Gebäude, was sich über Gebäude nicht addieren lässt; die Gruppe gibt dem Vergleich das Δ, das die Empfehlung allein `energie.waermelast` überlassen hätte, und legt die Verdichtung ausdrücklich fest (Höchstwert, Summe). Mit `Kennzahl.Seit` bleiben die eingefrorenen Listen v1–v11 unberührt, beides fällt in die Katalogfassung 12, die KP3 ohnehin hebt |
+| F4 Kurzbericht und Einzelfelder? | **(b), abweichend von der Empfehlung (a):** die Einzelfelder `gebaeude.ergebnis.*` für eigene Vorlagen **und** ein Aufheizabsatz im ausgelieferten Kurzbericht in beiden Sprachen; +0,25 PT. **Warum es trägt:** Die Kurzberichte werden mit der Fassung 12 ohnehin über `Werkzeuge/Berichtsvorlage` neu gebaut, der Absatz entsteht im selben Lauf und unter denselben Vorlagenwachen; nach dem Grundsatz „NULL heißt Schalter aus" (Entwurf Abschnitt 2) bleibt er ohne wirksamen Schalter leer |
+| F5 Zuschnitt des Referenzprojekts 1051 | **(a)**, nach Empfehlung: „Referenzprojekt Konditionierung", Kopie von 1007, Bau per Probe mit dem echten Kern, „Büro" in allen fünf Größen, `Kuehlung_Aktiv` = 1 bei Kühlbetrieb aus, Nachtauskühlung nach F8, Sommerlüftung an, Ferien 23.12.–6.1. und 1.–14.8., Heizperiode 1.10.–30.4., Bemessung „kälteste Stunde − 2 K", täglich, ρ leer, Zuordnung mit der Fläche des Baus; die CI rechnet es als achtes Projekt |
+| F6 Wann wird eingefroren? | **(a)**, nach Empfehlung: nach Rechenweg, Export und Referenzprojekt (RP2 nach RP1); Oberfläche und Bericht (O1–O3) danach byte-gleich gegen die neue Basis R34 — die Basis hängt nur an Kern und Export |
+| F7 Bleibt die Aufheizreserve ρ bei 20 %? | **(c) Entscheid nach der Messung, abweichend von der Empfehlung (a):** RP1 misst ρ_min aller 17 VDI-Gebäude der Referenzprojekte mit dem echten Kern und legt sie dem A/B-Protokoll bei; bis dahin gilt 20 %, danach entscheidet der Anwender (offener Entscheid, Register P14). **Warum es trägt:** Die Werte über 20 % (rund 22–25 % an 1008, 1018 und 1049) sind aus der konvektiven KP0-Probe auf den Strahlungsanteil 0,3 hochgerechnet; die Messung ersetzt die Hochrechnung, bevor ein Wert in eine Basis eingeht. Die Wellen bis RP1 hängen nicht am Zahlenwert — ρ ist eine Spalte mit Vorgabe, die Vorgabe eine Zahl im Kern —, fällig ist der Entscheid vor dem Einfrieren RP2, weil 1051 mit ρ leer die Vorgabe rechnet |
+| F8 Lüftungsvorlage „Büro" gegen Nachtauskühlung | **(a)**, nach Empfehlung: Das Skript übernimmt „Büro" in allen fünf Größen und überschreibt danach die Lüftungs-Nachtzeile mit der Nachtauskühlung (2,0 1/h, 18–7 Uhr, bedingt); Wochenende und Ferien bleiben 0,1 1/h — Vorlage und Anpassung stehen im Netz, die ausgelieferte Saat bleibt |
+
+**Folgen.** Das [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) ist in 4.1, 4.3,
+4.4, 4.5, 5.4, 6, 7.6, 8, 10.1, 10.2 und 12 fortgeschrieben, die Entscheide stehen in 9.8; der Entwurf trägt je Frage
+den Entscheid. F3 (c) und F4 (b) heben die Welle O3 auf 2,5–3 PT und KP3 auf **14–18,25 PT** (Entwurf 13–17,25 PT,
+Teilkonzept 6–9 PT). F7 bleibt bis zur Messung in RP1 offen; das [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+zählt danach **2 offene Punkte** (M11, P14). Die Festlegungen der Umsetzung — im Entwurf Abschnitt 5 benannt — folgen
+mit der Umsetzung als **N1.69**; N1.68 hält E59 und E60.
+
+### N1.68 Entscheide E59 und E60 — Konditionierungsprofile: individuelle Rampe mit Aufschlag, manuelle Aufheizzeit je Gebäude, Auslegungsgröße
+
+**Anlass E59.** Nach E58 gibt der Anwender am 02.10.2026 eine Vorgabe zur Aufheizoptimierung: „Die Rampe soll jeweils
+individuell für ein Gebäude ermittelt werden und nicht pauschal. Ein Aufschlag auf diesen Wert könnte sinnvoll sein
+(Benutzervorgabe). Außerdem soll es einen manuellen Wert als Eingabe geben — mit plausiblen Vorschlägen." Drei Rückfragen
+beantwortet er am selben Tag. Der [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) führt die Vorgabe als F9
+(Abschnitt 6) und ihre Ausgestaltung als Festlegungen 34–40, 42 und 43 (Abschnitt 5).
+
+| Frage | Entscheid |
+|---|---|
+| (1) Wo liegt der manuelle Wert? | **Je Gebäude.** Eine dritte Art „manuell" neben täglich und fest, am Gebäude statt am Projekt: `Tab_Gebaeude.Aufheizzeit_Manuell_H` (1–47 h, NULL = Art des Projekts). Ein Gebäude mit Wert rampt an jedem Sprung mit n = Wert + 1 (der Wert ist die Aufheizzeit t = n − 1), begrenzt auf Absenkdauer und Deckel 48, gekappt an θ_K − 1 K; die Bemessung läuft weiter und liefert die Herleitungszeile, entscheidet aber nicht. Zonen erben den Wert ihres Gebäudes, der Katalog trägt kein Feld, die Übernahme Katalog → Projekt lässt NULL. Ergebnisspalte `Aufheiz_Art` = `MANUELL` (Schemaweg vom 03.10.2026, unten), `Aufheizzeit_Max_H` = Wert, Zustand BEMESSEN; der Export nennt `Geb[n].Aufheizzeit_Manuell` nur, wenn gesetzt |
+| (2) In welcher Einheit wird der Aufschlag eingegeben? | **Stunden und Prozent, es gilt das Maximum.** Projektvorgabe in `Tab_Einstellungen`: `Aufheiz_Aufschlag_H` (0–24) und `Aufheiz_Aufschlag_Prozent` (0–100), NULL = 0, beim Schreiben wird 0 zu NULL. Wirksam ist n' = min(48, n + max(Aufschlag_H, ⌈n · Prozent/100⌉)) auf ermittelte n der Arten täglich und fest — nach P16 (03.10.2026, unten) nur auf Rampen eines Kalendersprungs mit n > 1 —, nicht auf den manuellen Wert; die Rampe beginnt entsprechend früher, die Absenkdauer begrenzt n' wie jedes n (W2 zählt mit n'), t_auf,max bleibt die bemessene Zeit |
+| (3) Wann wird umgesetzt? | **Nach D2, vor RP1.** Welle R5 (Rechenweg, ein Schemaschritt `AufheizManuellSchema` mit den drei Spalten und den Ergebnisspalten nach dem Schemaweg unten, Testdatenbank, Export; Nachweise N-AH11 Aufschlag und N-AH12 manuell), O1b (zwei Aufschlagfelder in der Projekteinstellung, KI-Felder), Erweiterung von O2 (Feld „Aufheizzeit manuell" im Gebäudedialog mit zwei Vorschlägen: die bemessene Zeit des Gebäudes zum Übernehmen und eine Spanne, nach P15 aus τ₂ des Gebäudes; außerhalb Hinweis, keine Sperre) und O3 (Abweichungsmerkmale). Reihenfolge D2 → R5 → O1b/O2 → O3 → RP1 → RP2 → A |
+
+**„Individuell, nicht pauschal".** Der Rechenweg ermittelt die Rampe schon je Gebäude und Zone — Stufenformel, Bemessung und
+P_auf mit eigenen Massen, eigenem Φ_stat und eigener Quelle. Pauschal je Projekt bleiben allein die Aufheizreserve ρ (offen
+bis zur Messung, P14), die Art täglich/fest und der neue Aufschlag; E59 benennt das ausdrücklich und ändert daran nichts.
+
+**Anlass E60.** Am 03.10.2026 fragt der Anwender, ob ein Filter (FFT, Z-Transformation, Tiefpass in einem zweiten Durchlauf)
+die Heizlastspitzen nach Sollwertsprüngen glätten soll, weil sie eine zu hohe Spitzenleistung für die Auslegung ergeben. Das
+[Konzept Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md) prüft beide Filterwege und
+schlägt vor, die Frage in der Auswertung zu beantworten. **Entschieden: Vorschlag 1.** Auslegungsgröße der Heizung ist die
+stationäre Auslegungsheizlast plus die Aufheizleistung P_auf aus der KP3-Bemessung; Bedarfsdialog (O2) und Bericht (O3)
+weisen ideale Spitze (`SpitzeKw`), Tagesmittel (`SpitzeTagesmittelKw`) und P_auf mit Quelle nebeneinander aus, mit dem
+Hinweis, dass die ideale Spitze bei Schalter aus keine Auslegungsgröße ist. Kein Filter im Rechenweg; die Kennzahl „Spitze
+als n-h-Mittel" (Vorschlag 2) ist nicht beauftragt. Entwurf Festlegung 41.
+
+**Folgeentscheide vom 03.10.2026.** Die Ausgestaltung warf drei Fragen auf (Register P15–P17) und eine Wahl im Schema; der
+Anwender entscheidet alle vier am selben Tag:
+
+| Frage | Entscheid |
+|---|---|
+| P16 Trifft der Aufschlag auch Sprünge ohne Rampe? | **Nein — kalenderbezogen.** Der Aufschlag gilt nur an Rampen, die ein Sprung des Heizsollwerts (Heizkalender) auslöst, und verlängert nur Rampen mit n > 1; an Sprüngen ohne Rampe (n = 1) und an Tagen ohne Sprung kein Aufschlag. Begrenzung auf D + 1 und W2 bleiben (Entwurf Festlegung 35) |
+| P17 Wie ist „Auslegungsheizlast plus P_auf" zu lesen? | **(b)**: Auslegungsheizlast Φ_HL plus Aufheizzuschlag Φ_RH = max(0, P_auf − Φ_stat) nach dem Muster der DIN EN 12831-1 — P_auf enthält die stationäre Last am Bemessungspunkt schon, die wörtliche Summe zählte sie doppelt. Die Ergebniszeile des Gebäudes trägt dafür `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw` (Festlegung 41) |
+| P15 Woher kommt die Vorschlagsspanne der manuellen Aufheizzeit? | **(b)**: aus τ₂ des Gebäudes, der langsamen Zeitkonstante des Zweikapazitätenmodells (`Zonenmodell2K.Aufheizantwort`), keine feste Bauart-Tabelle; dazu die bemessene Zeit. Regel der Umsetzung: [max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] Stunden (Festlegung 40) |
+| Schemaweg des Schritts KP-S4 | **Ergebnisspalte `Aufheiz_Art`** (`TAEGLICH`, `FEST`, `MANUELL`) per `ADD COLUMN` an `Tab_ErgebnisGebaeude` und `Tab_ErgebnisZone`; `Aufheiz_Bemessung` behält die Variante, `Tab_ErgebnisGebaeude` wird nicht neu gebaut; `GEKOPPELT` an der Zone als kleiner Neubau von `Tab_ErgebnisZone` im selben Schritt; Export `Geb[n].Aufheizart`, Abweichungsmerkmal „Art" (Festlegungen 39, 43). Die Nummer bleibt Platzhalter 171, spät gegen origin |
+
+**Folgen.** Das [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) ist in 3.4,
+4.6, 4.8, 4.9, 5.3, 5.4, 5.5, 7.6, 7.7, 8, 10.3 und 13 fortgeschrieben, die Entscheide stehen in 9.9. KP3 wächst um
+R5 (1,25–1,75 PT) und O1b (0,25–0,5 PT), O2 um 0,75 PT, O3 um 0,5 PT, auf **16,75–21,75 PT**; die Basis R34 sieht weder
+Aufschlag noch Art „manuell", ihr Netz sind N-AH11 und N-AH12. Das
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) führt P15, P16 und P17 als entschieden und zählt wieder
+**2 offene Punkte** (M11, P14). Die Festlegungen der Umsetzung KP3 folgen als **N1.69**.
+
+### N1.69 Festlegungen der Umsetzung KP3 (und EV1) — benannt, nicht entschieden
+
+**Anlass.** Die Rechen-, Daten- und Referenzwellen der Stufe KP3 sind gebaut (02.–04.10.2026;
+[Protokoll KP3](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-02_KP3_Aufheizoptimierung.md),
+[A/B-Protokoll RP1](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-03_KP3_RP1_AB-Protokoll_1051.md),
+[Entwurf](../ueberholt/2026-10-02_Entwurf_KP3.md)): R1 (Aufheizantwort, Stufenformel, Kappungsanteil), D1
+(Schemaschritte 160 und 161, Datenweg), R2 (Aufheizplan im Einzonenlauf), O1 (Projekteinstellung), R3 (Mehrzonenweg), R4
+(Lauf, Ergebnis, Laufhinweise), D2 (Kennzahlen, Export, Auskunft), R5 (Aufschlag und manuelle Aufheizzeit nach E59,
+Schemaschritt 174), RP1 (Referenzprojekt 1051, Wache, Messung ρ_min), RP2a (Erdreichwiderstand nach DIN EN ISO 13370,
+Innenprüfung) und RP2b (Basis `2026-10-03_R34_Erdreich`, achtzehn Projekte, CI-Auswahl mit 1051). Die Welle **EV1**
+(04.10.2026; [Protokoll](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md))
+setzt E64 (Reserve ist Nutzereingabe, leer gilt 20 % mit Laufhinweis) und E65 (Erdreichkorrektur nach DIN EN ISO 13370 als
+Standard, wirksamer U-Wert der Bodenplatte als Vorgabe je Gebäude, Schemaschritt 180) um; die Basis R34 bleibt byte-gleich.
+Der Entwurf hatte seine Festlegungen benannt (Abschnitt 5) und für diesen Nachtrag vorgesehen; die Liste nennt sie, wie sie
+gebaut sind, dazu die Festlegungen der Wellen, die bestätigten Abweichungen der Welle D2 von der Spurenregel und die
+Festlegungen von EV1, damit nichts davon als Anwenderentscheid gelesen wird. Widerspruch ist möglich und wäre ein eigener
+Entscheid. Rechenweg und Formeln stehen in den [Rechenschritten](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+7.5 (Schritt K), 7.6 (Schritt L) und E6.
+
+| # | Festlegung, wie gebaut | Wo |
+|---|---|---|
+| | **Entwurf KP3, Abschnitt 5 — Rechenweg** | |
+| 1 | **Einbau nach dem Bauen:** Einzone in `Vdi6007Rechenweg.Rechnen` über `ZonenEingang.Einzeln`, Mehrzonen am Ende von `ZonenEingang.Bauen` in beiden Aufbauten; `GebaeudeModellEingang.Bauen` bleibt unberührt | Teilkonzept 6 |
+| 2 | **Die Auslegung sieht die Reihe ohne Rampe;** die Rampe hält die Kühlprüfung durch die Kappung an θ_K(h) − 1 K; die Ergebnisreihe `Heizsollwert` trägt die Rampe | 3.6, 4.7 |
+| 3 | **Eine Bemessung, zwei Verwendungen:** `Aufheizoptimierung.Bemessen` für Lauf und Herleitungszeile; die Auskunft (`Aufheizauskunft`) baut mit dem Konditionierungssatz wie der Lauf | 4.3, 7.6 |
+| 4 | `Zonenmodell2K.Aufheizantwort(strahlungsanteil, zusatzleitwertWK)`, zustandsfrei, Speicher mit vier Plätzen und bitgenauem Schlüssel; der Puffer `_heizen` bleibt unberührt | 6 |
+| 5 | **Matrixfunktionen statt Modalsummen;** jede Exponentialfunktion über `Uebergangsrechner.Bei`, die Wahl von n über `Rechenrand` | 4.3 |
+| 6 | **Ring am Jahreswechsel:** Stunde 0 vergleicht mit 8 759, D und Rampe laufen über 8 759 → 0 | 4.1 |
+| 7 | **Sprung** bei ΔT > 0,01 K zwischen endlichen Sollwerten; D = zusammenhängende endliche Stunden unter θ_T; ein Übergang aus „aus" bekommt keine Rampe (W4), auch am Beginn der Heizperiode | 4.1, 4.7 |
+| 8 | **Schreiben** s′(h) = max(s(h), min(θ_N + ΔT·j/n, θ_K(h) − 1 K)), die Sprungstunde nie, n = 1 schreibt nichts, Überlappung über max, gekappte Stunden gezählt; „die Sprungstunde nie" gilt je eigener Rampe — die Rampe eines späteren Sprungs darf die Sprungstunde eines früheren anheben | 4.1 |
+| 9 | **Fenster des Tages** W = min(D, t_auf,max + 1) Stunden vor h_s; T_a über W und h_s; θ_N = kleinster endlicher Sollwert in W (E58 F2); n ≤ min(t_auf,max + 1, D + 1, 48) | 4.3, 4.6 |
+| 10 | **Rampenstunden** fallen aus der Nutzungszeit der Kennzahlen (`NutzungBei`), getragen durch `Skaliert` und die Zonen; der Untertemperatur-Hinweis bleibt | 3.4 |
+| 11 | **Bemessungsfall** = ungünstigstes Sprungpaar bei T_a,B, je Paar das kleinste n ≤ 48, t_auf,max = Maximum | 4.5 |
+| 12 | **Φ_stat und Antwort** mit `AequivalentN` (Erdreich als Tagesmittel, Außenflächen bei T_a, ohne Sonne und Gewinne) und dem unbedingten Zusatzleitwert der Sprungstunde | 4.3, 4.7 |
+| 13 | **P_auf:** Grenze = `Heizleistung_Max` der Zone; Ziel = (1 + ρ)·Φ_stat(θ_T,max, T_a,min) mit θ_T,max aus der eigenen Reihe, Luftwechsel der Auslegung, beheizten Nachbarn bei θ_T,max, unbeheizten beim Startwert nach N1.56 Nr. 7. Die Startwertregel steht in `Zonenschleife.StartwerteRechnen` (der Zeilenverweis des Entwurfs zeigte auf die Auslegungsheizlast der Kopplung) | 4.4 |
+| 14 | **Nachbarn im Sprung:** beheizte bei s_k(h_s − 1) ohne Rampe, „aus" oder unbeheizte beim Startwert | 4.7 |
+| 15 | **ρ > 0:** `Aufheiz_Reserve` prüft > 0 und ≤ 1, Oberfläche und Assistent nehmen 1–100 % | 4.4, 5.3 |
+| 16 | **Skalierung:** P_auf (und Φ_HL, Φ_RH) wie die Spitzen; Zeiten, Zählungen und T_a,B nicht; die Herleitungszeile nennt bei Faktor ≠ 1 Eingabe und Faktor | 4.4 |
+| 17 | **W1:** kein n ≤ 48 hält, Unterzahl „P_auf ≤ Φ_stat"; Bemessung unerreichbar: t_auf,max NULL, im Lauf 47 als Obergrenze | 4.5, 4.7 |
+| 18 | **W2:** n − 1 = D bei größerem Bedarf, auch am Deckel; der Bemessungshinweis vergleicht t_auf,max mit der kürzesten Absenkdauer der gerampten Sprünge | 4.6, 4.8 |
+| 19 | **W3** nur an Tagen ohne W1/W2: Grenze — Kappungsanteil > 0, Ziel — Stundenleistung > 1,01·P_auf, im Fenster [h_s − n + 1, h_s + 2] bis Stunde 8 759 | 4.3, 4.8 |
+| 20 | **Kappungsanteil** aus den Abschnitten `Heizgrenze` in eigenem Akkumulator beider Jahresschleifen; `HeizleistungMax_H` = Σ der Anteile, keine bestehende Summe ändert sich | 4.3, 4.8 |
+| 21 | **Laufhinweise** `SIMENG_AUFH_W1` … `W5` und `W2_BEMESSUNG` einmal je Gebäude, nicht im Probelauf | 4.8 |
+| 22 | **Gebäude mit Zonen:** Tage und Stunden als Vereinigung, t_auf,max und längste Rampe als Maximum, T_a,B als Minimum, P_auf als Summe, Quelle `GEMISCHT`, `HeizleistungMax_H` = Σ_h max_z Anteil | 4.7, 4.8 |
+| | **Entwurf KP3, Abschnitt 5 — Daten, Ergebnis, Export** | |
+| 23 | **Zwei Schritte** 160 (Projektspalten) und 161 (Ergebnisspalten), Nummern spät gegen origin | 5.4 |
+| 24 | **Normalisierung beim Schreiben:** (a) und „täglich" werden NULL, ein leeres Zahlenfeld NULL, ein getippter Wert bleibt; Schalter aus behält die übrigen Spalten | 5.3 |
+| 25 | **Zustände** `BEMESSEN`, `UNERREICHBAR` (t_auf,max NULL), `GEKOPPELT` (W5, nur Zustand und `HeizleistungMax_H`), `UNBEHEIZT` (nur Zone); Tagesbilanz-Weg und Schalter aus: alles NULL | 4.8 |
+| 26 | **Sommerlüftungsstunden NULL ohne Sommerlüftung** (wie die Nachtauskühlstunden), am Gebäude und je Zone; Kennzeichen `SommerlueftungGesetzt` | 3.7 |
+| 27 | **„CSV-Export" ist der Ergebnisexport** (`GebaeudeErgebnisexport`); eine Anwender-CSV je Gebäude gibt es nicht | 9.4 |
+| 28 | **Export:** `Geb[n].Aufheizzustand`, `…bemessung`, `…leistungsquelle` als Text, die Zahlen nur bei Zustand, Nachtauskühl- und Sommerlüftungsstunden nur gesetzt, Zonenschlüssel `Geb[n].Zone[k].*`, `heizsollwert_<n>.csv` bei Heizkalender oder Aufheizung | 4.8 |
+| 29 | Abweichungsmerkmale `ABW_MERKMAL_AUFH_*` — **nicht gebaut** (Welle O3) | 4.8 |
+| 30 | Bericht mit Lüftungs- und Aufheizzeilen, W1–W5 als Hinweiszeilen, Fassung 12 — **nicht gebaut** (Welle O3) | 7.6 |
+| | **Entwurf KP3, Abschnitt 5 — Referenzprojekt und Netz** | |
+| 31 | **Bauwahl per Probe** mit dem echten Kern: gewählt `Verw_I_40` (100 Rampentage, längste Rampe 13 h, ein W2-Tag, Spitze 30,96 statt 42,83 kW); kein Rückfall nötig | 10.2 |
+| 32 | **Saat über die Programmwege** (`ProjektDuplizierenCtrl` 1007 → 1051, Katalogkopie zum Referenzkatalogbau, Vorlagen über den Arbeitsstand, `KonfigurationCtrl`); Bemessung (b) 2 K, Reserve leer, täglich, Kühlbetrieb aus | 10.2 |
+| 33 | **Wache** `KonditionierungReferenzprojektWacheTests`: genau 1051 trägt Kalender und Schalter, jede gesäte Zelle, bitgleicher Abdruck, Heizreihe mit Rampe gegen die Basis | 10.2, 10.3 |
+| | **Entwurf KP3, Abschnitt 5 — E59 und E60** | |
+| 34 | **Individuell je Gebäude** ist der Rechenweg; pauschal je Projekt bleiben ρ, die Art und der Aufschlag; der manuelle Wert liegt am Gebäude | 4.6 |
+| 35 | **Aufschlag** n′ = min(48, n + max(A_h, ⌈n·A_%/100⌉)) nur auf Rampen eines Sprungs des Heizkalenders mit n > 1, danach ≤ D + 1, W2 zählt mit n′; die Aufrundung trägt `Rechenrand.Zu` | 4.6 |
+| 36 | **Aufschlag 0 und leer** schreiben NULL; Schalter aus behält beide | 5.3 |
+| 37 | **Art „manuell":** n = min(t_m + 1, D + 1, 48) an jedem Sprung, Fenstergrenze W = min(D, t_m + 1), ohne Aufschlag, ohne W1; die Bemessung läuft weiter und entscheidet nicht; der Eingangsbauer lehnt t_m außerhalb 1–47 benannt ab | 4.6 |
+| 38 | **Vererbung und Kopierwege:** Zonen erben t_m; kein Katalogfeld; Duplikat, Variante und `.wpx` tragen den Wert, Katalogkopie und Importe schreiben NULL | 3.4, 5.5 |
+| 39 | **Ergebniszeile:** `Aufheiz_Art` (NULL bei `GEKOPPELT`, `UNBEHEIZT`), bei `MANUELL` Zustand `BEMESSEN` und `Aufheizzeit_Max_H` = t_m; Export `Geb[n].Aufheizart` nur am Gebäude, `Geb[n].Aufheizzeit_Manuell` nur gesetzt; Merkmale „Art" und „Aufschlag" mit O3 | 4.8 |
+| 40 | Vorschläge im Gebäudedialog (bemessene Zeit, Spanne aus τ₂) — **nicht gebaut** (Welle O2); die Auskunft liefert τ₂ | 7.6 |
+| 41 | **Auslegungsgröße** Φ_HL + Φ_RH mit Φ_RH = max(0, P_auf − Φ_stat(θ_T,max, T_a,B)), bei W1 0, Mehrzonen als Summe; `Auslegungsheizlast_Kw` NULL ohne Übergabe; nicht im Export. Φ_stat wird am Bemessungspunkt der **wirksamen Variante** gerechnet: Bei Quelle Ziel ist Φ_RH = ρ·Φ_stat nur mit Bemessung (a), mit (b) kleiner | 4.8, 7.6 |
+| 42 | **Netz:** R34 rechnet 1051 ohne Aufschlag und ohne „manuell"; Netz dafür sind N-AH11 und N-AH12 | 10.3 |
+| 43 | **Ein Schritt für E59:** Schemaschritt 174 per `ADD COLUMN`, kleiner Neubau von `Tab_ErgebnisZone` für `GEKOPPELT`, Sicht `Abfrage_Projektgebaeude` neu | 5.4 |
+| | **Festlegungen der Wellen** (Protokoll KP3, Abschnitt 5) | |
+| 44 | **R1:** Index 1 der schnelle, Index 2 der langsame Modus; im zusammenfallenden Zweig τ₁ = τ₂ = −1/μ; unerreichbar = N = 0 mit der Leistung bei n_max; `FormZurQuelle(bool)` statt eines Quellen-Enums | 4.2, 4.3 |
+| 45 | **D1:** `ErgebnisCtrl` schreibt das Modell unverändert, die NULL-Regeln setzt allein `GebaeudeKennzahlen.Aufheizwerte`; ein ungültiger Wert scheitert an der Spalte (`false`, Zeile unverändert) | 5.3 |
+| 46 | **R2:** Bemessungsfenster min(D, 48), im Lauf min(D, t_auf,max + 1); W2 täglich nur bei erreichbarem Bedarf (W1 hat Vorrang); `AufheizstundenH` = Σ (n − 1); θ_T,max ohne Nutzungsstunde = höchster endlicher Sollwert; `Heizleistung_Max` nur wenn endlich | 4.5, 4.6 |
+| 47 | **O1:** die Naht übergibt die Einstellung als Ganzes; Reserve 1–100 % in Oberfläche und Assistent; Zeile zu W5 bei AK1 | 7.6 |
+| 48 | **R3:** `GEKOPPELT` im Mehrzonenweg bei Kopplung als ideale Last mit wirksamer Heizseite; feste Nachbarwerte aus den Reihen ohne Rampe; Gebäude `GEKOPPELT` nur, wenn alle beheizten Zonen gekoppelt sind, sonst `UNERREICHBAR`, sobald eine geplante Zone es ist; `AufheizstundenH` des Gebäudes = Vereinigung der Rampenfenster | 4.7 |
+| 49 | **R4:** W3 zählt jeden Sprung, auch n = 1; W3 am Gebäude = Vereinigung der Zonen; P_auf NaN wird `null`; Hinweise ohne kW, weil vor der Skalierung | 4.8 |
+| 50 | **D2:** P_auf in Spalte und Export nur endlich und > 0, die Auskunft behält +∞ roh; Faktor der Auskunft (Fläche wie der Lauf, Zone 1, Verbrauch `null`); feste Nennleistung geht nicht ein; C_w nicht in der Herleitungszeile; je eine Zeile auch für Tagesbilanz-Gebäude und Fehler des Eingangsbauers; Hinweis `SIMENG_AUFH_VERBRAUCH` nur bei geplantem Zustand mit Rampentag | 7.6 |
+| 51 | **D2, außerhalb der Spurenregel bestätigt:** Kennzeichen `SommerlueftungGesetzt` und `HeizkalenderWirksam` als init-Eigenschaften in `GebaeudeModellErgebnis`; Auslagerungen `Vdi6007Rechenweg.EingangBauen`, `ZonenBauen`, `Mehrzonenweg`, `Zonenklima`, `Zonenkonditionierung` und `Zonenrechnung.ZonenBauen`, die der Lauf selbst ruft (Regel „Auskunft ruft den Rechenweg") | 6 |
+| 52 | **R5:** die manuelle Zeit ersetzt auch die Fenstergrenze; Auskunft behält Zustand und t_auf,max der Bemessung; Sicht neu gebaut, `Tab_ErgebnisGebaeude` nicht | 4.6, 5.4 |
+| 53 | **RP1:** Messung ρ_min an allen VDI-Gebäuden der Referenzprojekte (W1 = 0 und W3 = 0): größtes ρ_min 8,75 % (1051), ρ_bem 13,75 % (1051, Bemessung (b)); bei 20 % sind W1 und W3 überall 0. Bemessung (b) ändert P_auf nicht, sie prüft die Erreichbarkeit bei T_a,min − ΔT_K | 4.4 |
+| 54 | **RP2a:** Erdreichwiderstand nach DIN EN ISO 13370 in Reihe zum Bauteil (B′, d_t, U_g, U_bw, R_g; λ_Erd 2,0, w 0,3 m, R_se 0,04), Umfang aus dem Feld oder flächengleiches Quadrat; Randtemperatur weiter nach Kusuda; Innenprüfung der Lastumkehr mit Obergrenze 8 Abschnitte | 4.4, Rechenschritte E6 |
+| | **Welle EV1** (E64, E65) | |
+| 55 | **Reserve leer = 20 %** mit Laufhinweis `SIMENG_AUFH_RESERVE_VORGABE` (einmal je Lauf, nur bei eingeschalteter Optimierung); Herleitungszeile „Reserve 20 % (Vorgabe)"; Auskunft mit `ReserveAnteil` und `ReserveVorgabe` | 4.4 |
+| 56 | **Vorgabe U_g** `Erdreich_U_Wirksam` (Schritt 180, Gebäude und Katalog, > 0): U_g jedes Bodens am Erdreich, kein B′, Exportquelle `Vorgabe`, kein Umfanghinweis; Kellerwände rechnen nach 9.3.3; NULL-erhaltend in allen Kopierwegen | Rechenschritte E6 |
+| 57 | **Gebäudedialog:** Feld „Wirksamer U-Wert Bodenplatte" in Katalog- und Projektmodus, nur in der freien Hüll-Tabelle; bei Keller oder Außenluft über `disabled` mit Grundzeile gesperrt, der Wert bleibt; Gebäude mit Zonen zeigen kein Bodenplattenfeld; im Lesemodus der Verwaltung steht der Wert nicht eigens | Mehrzonenkonzept 2.5 |
+| 58 | **Schlüssel und Ort:** Zeilenschlüssel `…_ZEILE_RESERVE` (`SIMKONF_AUFH_HRL_RESERVE` war belegt); die Herleitungszeile baut `SimulationErgebnisHuelle`; die Aufheizoptimierung steht im Wiki auf der Seite „Simulation", ohne eigene Seite | 7.6 |
+
+**Was offen bleibt.**
+
+- **O1b:** die Aufschlagfelder in der Projekteinstellung und im Assistenten. Bis dahin baut die Seite die Einstellung bei
+  jeder Feldänderung ohne Aufschlag neu — ein gespeicherter Aufschlag fiele still auf NULL zurück; O1b reicht beide Werte
+  in allen Settern und in `SimulationKiSicht` durch.
+- **O2:** Feld „Aufheizzeit manuell (h)" mit Vorschlägen (Festlegung 40) und weicher Sperre, Setzweg in
+  `GebaeudeStammCtrl.SET_SPALTEN`, Darstellung der Ergebniszeile und der Auslegungsgröße im Bedarfsdialog.
+- **O3:** Bericht und Variantenvergleich (Festlegungen 29, 30, 39, 41; E58 F3, F4).
+- **Welle A von KP3:** Teilkonzept 4.3 (n = 37 bei a = 0,3 in der Augenblicksform), 4.7, 5.3 `GEMISCHT`, 10.3, Glossar
+  „Nachweisband", `BETRIEB_SQLITE.md` 6.5.
+- **Folge von P14:** entschieden mit E64 und umgesetzt mit EV1 (Festlegung 55); die Frage aus RP1, ob die Bemessung nach
+  W1/W3 oder nach „Bemessungsfall erreichbar" zu messen ist, ist damit gegenstandslos, weil die Reserve Eingabe ist.
+- **Sichtproben unter Windows** für O1, die EV1-Dialoge und die KP2-Oberfläche (SA1); Windows-Prüfsummen
+  `GebaeudeEinzonennetzTests`; die Ferienperioden des Heizkalenders von 1051 (Ferien nur in den Gebäudespalten).
+- **B14 für die Übergabe-Auskunft:** `UebergabeEingang` und `KuehluebergabeEingang` bauen ohne Konditionierungssatz.
+
+**Folgen.** Die [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) führen die Schritte K und L
+(7.5, 7.6) und das Erdreich nach DIN EN ISO 13370 (E6); 4.4 und 4.5 dieses Papiers, die
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) (1.3, 2.2, 5) und das
+[Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) (Kopf, 4.4, 5.4, 8) sind
+nachgezogen (KP4, 04.10.2026).
+
+### N1.70 Entscheide E88 und E89 — Ausweis der Vorlaufwahl; der Altweg bleibt dauerhaft, Stufe GA entfällt
+
+**Entscheid E88 (Anwender, 05.10.2026), zu Q35:** Weg 2 — „Ausweis der Vorlaufwahl im Ergebnis". Anlass ist die
+Berichtigung zu E86: Die Kennlinienwahl der Wärmepumpe am gerechneten Vorlauf je Stunde ist seit AK1 gebaut
+(`SimulationWaermepumpe.KenndatenDerStunde`, Stützstellenwahl nach H-F4), der Teilschritt AK3-V hatte keinen Gegenstand.
+
+**Was mit E88 gilt.** Die Stunden je Kennlinienstützstelle der Wärmepumpe und die Stunden über bzw. unter den
+Stützstellen — heute allein im Simulationsprotokoll (`SimulationWaermepumpe.VorlaufwahlMelden`) — werden als Spalten an
+`Tab_ErgebnisWaermepumpeModul` geschrieben (Schemaschritt 188, Welle **VW1**) und erscheinen als Berichtszeilen und
+Kennzahlen. Kein Rechenwert ändert sich. Zweck ist der Messwert für die Feldphase, auf die der volle Kreis der Stufe
+AK3 nach H6 (E24) wartet; Iterationsrahmen, Umkehr der Laufordnung und Speicherladezustand in der Verfügbarkeit bleiben
+für den Entscheid nach der Feldphase offen. Die Basis R38 bekommt nur neue Zeilen für 1047 und 1056.
+
+**Entscheid E89 (Anwender, 05.10.2026), zu Q36 (Stufe GA), im Wortlaut:** „Der Altweg bleibt dauerhaft als wählbarer
+Rechenweg."
+
+**Was mit E89 gilt.** Die Stufe **GA — Altweg ablösen** entfällt endgültig. Der Tagesbilanz-Weg (`Altweg/`) bleibt
+dauerhaft als wählbarer Rechenweg: Schalter „Rechenweg", Weiche `IGebaeudeRechenweg`, Modultrennungswache, Abschnitt
+„Tagesbilanz (Bestandsweg)", die Altweg-Spalten samt `Gebaeude_Modell`, der Vergleich alt/neu im Bedarfsdialog und
+Projekt 1040 als dauerhafter Rückweg-Test in jeder Basis. Die Lesart von E23 (N1.28, „Der Altweg bleibt: Stufe GA
+entfällt") gilt wieder; die Klarstellung E26 („Übergang", N1.31) ist in diesem Punkt überholt. Aus E26 bleibt: Beide
+Wege müssen eigenständig funktionieren — die Modultrennungswache in beide Richtungen und die Ausbauprobe bleiben als
+Nachweis dieser Eigenständigkeit, nicht als Gate einer Ablösung. Fachänderungen werden nur im VDI-Weg gemacht; der
+Altweg wird gepflegt (Fehlerbehebung), nicht weiterentwickelt — keine neue Funktion, keine Kühllast, keine
+Anlagenkopplung, keine Zonen; Altweg-Gebäude gehen in Deckung und Kopplung als feste Last ein.
+
+**Was entfällt.** Die Stufe GA samt ihrem Aufwand von 5–8 PT und ihrem Einfrierschritt; das Ablösekriterium **Q24**
+(E27) und der Umfang **Q25** (E27) sind gegenstandslos; die Löschliste im
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (6.1) ist keine Löschliste mehr, sondern
+nur noch das Inventar der Altweg-Bestandteile. In der Reihenfolge E67 ist GA gestrichen. Die leserlosen Spalten
+`WW_Bedarf` und `Waermebedarf` (Befund X) sind ein gewöhnlicher Aufräumpunkt ohne eigene Stufe.
+
+**Nachgezogen:** Kapitel 0, 4.1, 6.1, 8.1, 8.2, 10.4, 11, 13 (Q24, Q25), 14, 15 und 16 dieses Papiers;
+[Statusdatei](Status_Gebaeudesimulation_VDI6007.md) (E88, E89, E26, E67, Q24, Q25, AK3, GA);
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 6.1;
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 12 und Register (AK3, H6).
+
+### N1.71 Entscheide E90 bis E92 — Nutzungsprofile als Katalog mit Kategorien (Stufe NP)
+
+**Entscheid E90 (Anwender, 05.10.2026), zu Q37:** Die Nutzung der Zonen (bisher drei feste Werte, beim HottCAD-Import ohne
+Wirkung) wird ein **frei definierbarer Katalog von Nutzungsprofilen** mit Katalogkategorien (EPOS-Muster, DIN V 18599-10,
+SIA 2024, VDI 2078, eigene Kataloge), dazu eine **änderbare Zuordnung** der DIN-Profilnummern, IFC-Nutzungsklassen und
+HottCAD-Raumtypen auf Profile; Zugang aus dem Gebäudeeditor, dem Zonenbaum und dem Zonendialog. Ein Profil ist ein
+Parametersatz, ein Generator macht daraus die fünf Konditionierungskalender; am Rechenweg ändert sich nichts. **Normwerte
+werden weiterhin nicht ausgeliefert** (B15, P4): Die Kategorien liefern Struktur und Nummern, die Werte trägt der Anwender
+ein oder importiert sie. Der Ausschluss „Nutzungsprofile für Nichtwohngebäude“ in Kapitel 15 gilt damit nur noch für
+Normwerte.
+
+**Entscheid E91 (Anwender, 05.10.2026):** Die Fragen **Q38 bis Q47** des Konzepts
+[Nutzungsprofile](Konzept_Nutzungsprofile_EPOS-Plan.md) sind alle nach Empfehlung entschieden; die Festlegungen NP-F1 bis
+NP-F24 gelten mit E91 und der Beauftragung von NP1. **Entscheid E92 (Anwender, 05.10.2026):** Die Sitzung
+„Gebäudesimulation“ baut die ganze Stufe NP (NP1 bis NP4).
+
+**Was gilt.** Die Nutzungsspalte der Konditionierungskalender wird freier Text (NP-F15, Schemaschritt 189); die feste Tabelle
+`Din18599Nutzung` wird mit NP2 Vorgabe im Code hinter der änderbaren Zuordnung (NP-F12). Ergebnisneutral, die
+Referenzbasis bleibt unverändert.
+
+**Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) (E90 bis E92, Zeile NP);
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md); die Ausschlusskataloge in Anlagenkopplung, Umsetzungskonzept,
+Systementwurf, Softwarearchitektur, Kühlkonzept und Mehrzonenkonzept; Konditionierungsprofile 5.7;
+[Datenaustausch](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 16.

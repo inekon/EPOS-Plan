@@ -413,4 +413,213 @@ public class GebaeudeDialogImportTests : EposBunitContext
         Assert.Contains("Eine Baualtersklasse gibt U-Werte, g-Wert und Wärmebrücken vor.", imp.Instance.Meldung);
         Assert.Single(zeilen);
     }
+
+    // =================================================================================
+    // HC-4: "Datei erneut lesen" (HottCAD-Verbund 6.5, E87 F3)
+    // =================================================================================
+
+    /// <summary>Was der Leseweg gesehen hat.</summary>
+    private sealed class Neulesung
+    {
+        public List<GebaeudeProjektZeile> Gelesen { get; } = new();
+        public Queue<GebaeudeNeulesestand?> Antworten { get; } = new();
+        public List<int> QuellenGefragt { get; } = new();
+    }
+
+    private static GebaeudeImportquelleAngabe ProbeQuelle() =>
+        new("haus.ifc", "IFC", "05.10.2026 10:00", "Importquelle: haus.ifc (IFC), importiert am 05.10.2026 10:00");
+
+    /// <summary>Der echte Stand der Hülle für eine passende Probe — samt Gruppen nach Randbedingung.</summary>
+    private static GebaeudeNeulesestand PassenderStand()
+    {
+        string pfad = Probe("ifc4_koerper_bauteile.ifc");
+        byte[] b = File.ReadAllBytes(pfad);
+        var q = new WindowsFormsApplication1.ImportquelleModel
+        {
+            ID = 1, ID_Gebaeude = 1, Format = "IFC", Dateiname = Path.GetFileName(pfad),
+            Hash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(b)), Groesse = b.LongLength,
+            Zeitpunkt = "2026-10-05T10:00:00+02:00"
+        };
+        return new WindowsFormsApplication1.GebaeudeNeulesenHuelle(ios: false).LesenAsync(pfad, q, "").GetAwaiter().GetResult();
+    }
+
+    private IRenderedComponent<GebaeudeDialog> MitNeulesen(Protokoll p, Neulesung n, List<GebaeudeProjektZeile> zeilen)
+        => Render<GebaeudeDialog>(c => c
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Katalogzeilen, () => Array.Empty<WindowsFormsApplication1.Katalogfilterzeile>())
+            .Add(x => x.Filterstandvorgabe, new WindowsFormsApplication1.Katalogfilterstand())
+            .Add(x => x.KatalogGaben, _ => new Dictionary<string, object>())
+            .Add(x => x.Importquelle, z =>
+            {
+                n.QuellenGefragt.Add(z.IdZ);
+                return z.IdZ == 1 ? ProbeQuelle() : null;
+            })
+            .Add(x => x.DateiNeuLesen, z =>
+            {
+                n.Gelesen.Add(z);
+                return Task.FromResult(n.Antworten.Dequeue());
+            })
+            .Add(x => x.Geaendert, () => p.Geaendert++)
+            .Add(x => x.Geschlossen, b => p.Geschlossen.Add(b)));
+
+    private static List<GebaeudeProjektZeile> ZweiZeilen() => new()
+    {
+        new GebaeudeProjektZeile { IdZ = 1, IdGebaeude = 7, IdKatalog = 42, Name = "Importhaus", HatProjektkopie = true, Wohnflaeche = 150 },
+        new GebaeudeProjektZeile { IdZ = 2, IdGebaeude = 8, IdKatalog = 43, Name = "Altbau", HatProjektkopie = true, Wohnflaeche = 90 },
+    };
+
+    private static void Zeile(IRenderedComponent<GebaeudeDialog> cut, int index)
+        => cut.FindAll(".epos-raster-huelle table.epos-raster tbody tr")[index].QuerySelector("button")!.Click();
+
+    [Fact]
+    public void HC4_Der_Knopf_steht_nur_bei_einem_importierten_Gebaeude()
+    {
+        var p = new Protokoll();
+        var n = new Neulesung();
+        var cut = MitNeulesen(p, n, ZweiZeilen());
+
+        Zeile(cut, 1);
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-neulesen"));
+        Zeile(cut, 0);
+        IElement knopf = cut.Find("button.epos-gebaeude-neulesen");
+        Assert.Equal("Datei erneut lesen…", knopf.TextContent.Trim());
+        Assert.Contains("gespeichert wird nichts", knopf.GetAttribute("title"));
+        Zeile(cut, 1);
+        Zeile(cut, 0);
+        Assert.Equal(new[] { 2, 1 }, n.QuellenGefragt.Distinct().OrderByDescending(x => x));   // je Zeile einmal gefragt
+        Assert.Equal(2, n.QuellenGefragt.Count);
+
+        // Ohne Delegat kein Knopf; eine Zeile ohne Projektkopie hat keine Quelle.
+        var ohne = Aufbauen(p, new List<GebaeudeProjektZeile>
+        {
+            new() { IdZ = 1, IdGebaeude = 7, Name = "Importhaus", HatProjektkopie = true }
+        });
+        Zeile(ohne, 0);
+        Assert.Empty(ohne.FindAll("button.epos-gebaeude-neulesen"));
+    }
+
+    [Fact]
+    public void HC4_Nach_dem_Lesen_steht_die_Ansicht_mit_Umschalter_und_der_Dialog_bleibt_unveraendert()
+    {
+        var p = new Protokoll();
+        var n = new Neulesung();
+        n.Antworten.Enqueue(PassenderStand());
+        var cut = MitNeulesen(p, n, ZweiZeilen());
+        Zeile(cut, 0);
+
+        cut.Find("button.epos-gebaeude-neulesen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.NeuLesenOffen));
+        Assert.Single(n.Gelesen);
+        Assert.Equal("Importhaus", n.Gelesen[0].Name);
+        Assert.Contains("Importquelle: haus.ifc (IFC), importiert am 05.10.2026 10:00", cut.Find(".epos-gebaeude-neulesen-quelle").TextContent);
+        Assert.Contains("stimmt mit der Importquelle überein", cut.Find(".epos-gebaeude-neulesen-hinweis").TextContent);
+        Assert.Contains("Zuordnungen von Hand", cut.Find(".epos-gebaeude-neulesen-zonen").TextContent);
+
+        IRenderedComponent<GebaeudeAnsicht> ansicht = cut.FindComponent<GebaeudeAnsicht>();
+        Assert.True(ansicht.Instance.Daten!.RandbedingungWaehlbar);
+        Assert.Equal("zonen", ansicht.Instance.Farbmodus);
+        cut.Find(".epos-gebansicht-farbmodus button[data-farbmodus='randbedingung']").Click();
+        cut.WaitForAssertion(() => Assert.Equal("randbedingung", cut.FindComponent<GebaeudeAnsicht>().Instance.Farbmodus));
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-neulesen-andere"));
+
+        // Kein Speichern, keine Änderung: weder "geändert" noch geschlossen; das Kreuz schließt nur die Ansicht.
+        cut.Find(".epos-ueberlagerung[aria-label='Importdatei erneut lesen'] button.epos-ueberlagerung-zu").Click();
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.NeuLesenOffen));
+        Assert.Equal(0, p.Geaendert);
+        Assert.Empty(p.Geschlossen);
+        Assert.Equal(2, cut.Instance.Zeilen.Count);
+    }
+
+    [Fact]
+    public void HC4_Abweichender_Hash_nennt_den_Grund_ohne_Ansicht_und_bietet_eine_andere_Datei()
+    {
+        var p = new Protokoll();
+        var n = new Neulesung();
+        n.Antworten.Enqueue(new GebaeudeNeulesestand
+        {
+            Zustand = GebaeudeNeulesezustand.HashAbweichend,
+            Hinweis = "Die Datei „haus.ifc“ (geändert am 06.10.2026 09:00) ist nicht die Datei des Imports: SHA-256 0123456789ab… statt ba9876543210…. Es wird keine Ansicht gezeigt."
+        });
+        n.Antworten.Enqueue(null);   // die zweite Wahl wird abgebrochen
+        var cut = MitNeulesen(p, n, ZweiZeilen());
+        Zeile(cut, 0);
+
+        cut.Find("button.epos-gebaeude-neulesen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.NeuLesenOffen));
+        IElement hinweis = cut.Find(".epos-gebaeude-neulesen-hinweis");
+        Assert.Equal("alert", hinweis.GetAttribute("role"));
+        Assert.Contains("nicht die Datei des Imports", hinweis.TextContent);
+        Assert.Empty(cut.FindComponents<GebaeudeAnsicht>());
+
+        // "Andere Datei wählen…" - abgebrochen: der Stand bleibt, kein Fehler.
+        IElement andere = cut.Find("button.epos-gebaeude-neulesen-andere");
+        Assert.Equal("Andere Datei wählen…", andere.TextContent.Trim());
+        andere.Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, n.Gelesen.Count));
+        Assert.True(cut.Instance.NeuLesenOffen);
+        Assert.Contains("nicht die Datei des Imports", cut.Find(".epos-gebaeude-neulesen-hinweis").TextContent);
+        Assert.Equal(0, p.Geaendert);
+    }
+
+    [Fact]
+    public void HC4_Abbruch_der_ersten_Dateiwahl_oeffnet_nichts()
+    {
+        var p = new Protokoll();
+        var n = new Neulesung();
+        n.Antworten.Enqueue(null);
+        var cut = MitNeulesen(p, n, ZweiZeilen());
+        Zeile(cut, 0);
+        cut.Find("button.epos-gebaeude-neulesen").Click();
+        cut.WaitForAssertion(() => Assert.Single(n.Gelesen));
+        Assert.False(cut.Instance.NeuLesenOffen);
+        Assert.Empty(cut.FindAll(".epos-gebaeude-neulesen-hinweis"));
+        Assert.Equal(0, p.Geaendert);
+    }
+
+    // ---------------------------------------------------------------- HC-5 (F7): Grundriss übernehmen
+
+    [Fact]
+    public void HC5_F7_Der_Knopf_steht_nur_mit_Angebot_fragt_und_meldet_danach_die_Zahl()
+    {
+        var p = new Protokoll();
+        var n = new Neulesung();
+        var antworten = new Queue<string?>(new[] { null, "Grundriss von 3 Räumen übernommen." });
+        int gerufen = 0;
+        n.Antworten.Enqueue(new GebaeudeNeulesestand { Zustand = GebaeudeNeulesezustand.Passend, Hinweis = "passt" });
+        n.Antworten.Enqueue(new GebaeudeNeulesestand
+        {
+            Zustand = GebaeudeNeulesezustand.Passend, Hinweis = "passt", GrundrissRaeume = 3,
+            GrundrissNachtragen = () => { gerufen++; return Task.FromResult(antworten.Dequeue()); },
+        });
+        var cut = MitNeulesen(p, n, ZweiZeilen());
+        Zeile(cut, 0);
+
+        // Ohne Angebot (gespeichert und gleich, abweichende Prüfsumme) kein Knopf.
+        cut.Find("button.epos-gebaeude-neulesen").Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.NeuLesenOffen));
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss"));
+        cut.Find(".epos-ueberlagerung[aria-label='Importdatei erneut lesen'] button.epos-ueberlagerung-zu").Click();
+
+        cut.Find("button.epos-gebaeude-neulesen").Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss")));
+        Assert.Contains("3 Räume", cut.Find(".epos-gebaeude-neulesen-grundriss-angebot").TextContent);
+        IElement knopf = cut.Find("button.epos-gebaeude-neulesen-grundriss");
+        Assert.Equal("Grundriss übernehmen", knopf.TextContent.Trim());
+
+        // Nein: nichts geschrieben, der Knopf bleibt.
+        knopf.Click();
+        cut.WaitForAssertion(() => Assert.Equal(1, gerufen));
+        Assert.NotEmpty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss"));
+        Assert.Empty(cut.FindAll(".epos-gebaeude-neulesen-grundriss-hinweis"));
+
+        // Ja: die Hinweiszeile statt des Knopfs; der Dialog bleibt unverändert.
+        cut.Find("button.epos-gebaeude-neulesen-grundriss").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, gerufen));
+        IElement hinweis = cut.Find(".epos-gebaeude-neulesen-grundriss-hinweis");
+        Assert.Equal("status", hinweis.GetAttribute("role"));
+        Assert.Equal("Grundriss von 3 Räumen übernommen.", hinweis.TextContent);
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-neulesen-grundriss"));
+        Assert.Equal(0, p.Geaendert);
+        Assert.Empty(p.Geschlossen);
+    }
 }

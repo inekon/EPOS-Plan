@@ -1,0 +1,73 @@
+EPOS-Plan ist eine Planungssoftware für die integrierte Auslegung von Wärme- und Stromversorgungssystemen. Der Name steht für '''E'''nergie, '''P'''lanung, '''O'''ptimierung und '''S'''imulation – die vier Aufgaben, die das Programm zusammenführt. Entwickelt, gepflegt und vertrieben wird es von INEKON – Intelligente Energiekonzepte in Stuttgart.
+
+== Ein Modell für das gesamte Energiesystem ==
+{{Anker|ein-modell-fuer-das-gesamte-energiesystem}}
+
+Das Programm bildet den Wärmebedarf von Gebäuden, Warmwasser und Prozessen ebenso ab wie den Strombedarf, den Kältebedarf gekühlter Gebäude, die erzeugende Technik von der Wärmepumpe über Heizkessel, BHKW, Kältemaschine und Solarthermie bis zur Photovoltaik sowie thermische und elektrische Speicher. Auf dieser Grundlage rechnet EPOS-Plan ein vollständiges Jahr durch: 8.760 Stundenwerte auf der Wärmeseite und 35.040 Viertelstundenwerte auf der Stromseite. Erst diese zeitliche Auflösung zeigt, wie sich eine geplante Anlage im Betrieb tatsächlich verhält – wie hoch der Heizstabanteil im Februar wirklich ausfällt, wie viele Betriebsstunden ein Erzeuger erreicht und ab welcher Speichergröße der Eigenverbrauch nicht mehr nennenswert steigt.
+
+== Für Neubau, Bestand und Sanierung ==
+{{Anker|fuer-neubau-bestand-und-sanierung}}
+
+Durch die integrierte Wärmebedarfsberechnung eignet sich das Programm für Neubauten ebenso wie für Sanierungen. Gebäude rechnet es Stunde für Stunde nach VDI 6007, auf Wunsch in mehreren Zonen und mit Kühlung. Aus einer umfangreichen Gebäudedatenbank lassen sich Gebäudetypen nach Nutzung und Baualtersklasse übernehmen und mit wenigen Angaben an das konkrete Objekt anpassen; Gebäude aus gbXML- und IFC-Dateien liest der Gebäudeimport ein. Liegen statt Flächen Verbrauchsdaten vor, kann der Bedarf aus dem Jahresverbrauch an Öl, Gas oder anderen Brennstoffen zurückgerechnet werden – der Jahresgang bleibt physikalisch begründet, die Jahressumme entspricht der Abrechnung. Bestehende Solarthermie- oder Photovoltaikanlagen werden ebenso berücksichtigt wie geplante Erweiterungen.
+
+== Herstellerdaten statt Pauschalwerte ==
+{{Anker|herstellerdaten-statt-pauschalwerte}}
+
+Für Wärmepumpen, Heizkessel, BHKW-Module, Solarkollektoren, Photovoltaikmodule und Speicher stehen umfangreiche Kataloge mit Herstellerdaten bereit. Wärmepumpen werden mit dem vollständigen Kennfeld gerechnet: Zu Quellen- und Vorlauftemperaturen sind Leistung und Leistungszahl hinterlegt, zwischen denen die Simulation stündlich interpoliert. Eigene Datensätze lassen sich jederzeit anlegen, Herstellerdaten nach VDI 3805 einlesen und aktualisierte Datenbestände über unseren Server nachladen. Klimadaten bezieht das Programm auf Wunsch selbst, als typisches meteorologisches Jahr über PVGIS oder aus den Testreferenzjahren des Deutschen Wetterdienstes; der Datensatz wird geladen und auf die vier Hauptausrichtungen umgerechnet.
+
+== Varianten vergleichen und bewerten ==
+{{Anker|varianten-vergleichen-und-bewerten}}
+
+Die Erzeuger arbeiten in einer frei konfigurierbaren Kaskade; jeder deckt so viel Bedarf, wie Kennfeld, Betriebsgrenzen und Speicherstand zulassen. Als Ergebnis stehen Deckungsanteile, Bivalenzpunkt, Vollbenutzungsstunden, Jahresnutzungsgrade, Brennstoffverbräuche, Emissionen, Eigenverbrauchsquote, Autarkiegrad und CO₂-Einsparung bereit – als Kennzahlen, als Jahresganglinien und Dauerlinien sowie als Tabellen. Sämtliche Zeitreihen lassen sich als CSV-Datei exportieren. Auf dieser Grundlage werden Investitions-, Betriebs- und Energiekosten erfasst, sodass technische und wirtschaftliche Bewertung auf demselben Datenstand beruhen.
+
+== Einfach in der Handhabung ==
+{{Anker|einfach-in-der-handhabung}}
+
+Ein Assistent führt durch neue Projekte und blendet nur die tatsächlich benötigten Schritte ein; die Startseite zeigt für jeden Baustein, ob Daten vorliegen. Kurzhinweise an den Eingabefeldern verweisen auf das passende Kapitel der Online-Dokumentation, und ein Hilfe-Assistent beantwortet Fragen im Kontext des aktuellen Programmbereichs und kann in den Masken auf Wunsch Werte setzen. EPOS-Plan läuft als eigenständige Windows-Anwendung (Windows 10 und 11, 64 Bit) und als iOS-App für das iPad. Beide Schalen rechnen mit demselben Rechenkern und derselben Oberfläche, die Oberfläche passt sich auf dem iPad der Fenstergröße an. Das Programm benötigt kein Excel und steht in Deutsch und Englisch zur Verfügung.
+
+Einen vollständigen Überblick geben die [[Programmfunktionen]], die Bedienung beschreibt der [[Programmablauf]], ausgearbeitete Anwendungsfälle finden Sie unter [[Beispiele]].
+
+== Historie ==
+{{Anker|historie}}
+
+Hauptinitiator, Entwickler und Ansprechpartner von EPOS-Plan ist '''INEKON – Intelligente Energiekonzepte''' in Stuttgart. INEKON hat die Software aus der eigenen Planungspraxis heraus entwickelt, treibt ihre Weiterentwicklung voran und betreut Anwenderinnen und Anwender im Rahmen von Lizenz- und Wartungsverträgen.
+
+=== Aus der Praxis entstanden ===
+{{Anker|aus-der-praxis-entstanden}}
+
+Am Anfang stand eine Frage, die sich in jedem Projekt neu stellte: Wie groß muss ein Erzeuger wirklich sein, damit er über das Jahr wirtschaftlich läuft? Überschlägige Verfahren beantworten das nur unzureichend, weil sie mit Jahressummen arbeiten. Entscheidend ist der zeitliche Verlauf von Bedarf und Erzeugung – und genau darauf wurde EPOS-Plan von Beginn an ausgelegt: auf eine Jahressimulation in Stundenschritten, die Auslegung, Betrieb und Wirtschaftlichkeit zusammenführt.
+
+=== Die erste Programmgeneration ===
+{{Anker|die-erste-programmgeneration}}
+
+Über viele Jahre wurde die Software als Berechnungsprogramm auf Basis von Excel gepflegt und laufend erweitert. Der Funktionsumfang wuchs von der Auslegung von Blockheizkraftwerken über die Wärmebedarfsberechnung für Gebäude und Nahwärmegebiete bis zu Solarthermie, Photovoltaik, Speichern und einer vollständigen Wirtschaftlichkeitsbetrachtung. Wesentliche Entwicklungsschritte dieser Generation waren die fortlaufende Anpassung an die Kraft-Wärme-Kopplungs-Gesetzgebung der Jahre 2009, 2012, 2016 und 2020, die Aktualisierung der Klimadatensätze bis hin zu TRY 2015 samt Prognosedaten, die Erweiterung der Gebäude- und Anlagendatenbanken sowie 2024 die Umstellung der Wirtschaftlichkeitsrechnung auf die Kapitalwertmethode und die Berichtsausgabe als Word-Dokument.
+
+=== Neuentwicklung als eigenständige Anwendung ===
+{{Anker|neuentwicklung-als-eigenstaendige-anwendung}}
+
+Mit den gewachsenen Anforderungen – höhere Zeitauflösung für Eigenverbrauch und Speicher, größere Datenmengen, moderne Bedienoberfläche, Unabhängigkeit von Office-Versionen – stieß die Excel-Basis an ihre Grenzen. INEKON hat EPOS-Plan deshalb vollständig neu entwickelt: als eigenständige Anwendung für Windows mit eigener Datenbank, eigener Ergebnisdarstellung und einem plattformfreien Rechenkern, der die Wärmeseite in 8.760 Stunden und die Stromseite in 35.040 Viertelstunden abbildet. Eine App für das iPad rechnet mit demselben Rechenkern; sie ist noch nicht allgemein verfügbar. Hinzugekommen sind unter anderem der automatische Bezug von Klimadaten, Wärmepumpen-Kennfelder mit wählbarer Wärmequelle und Betriebsstrategie, die Bewirtschaftung thermischer Speicher mit Schaltschwellen, die Autarkie- und Eigenverbrauchsanalyse, der CSV-Export sämtlicher Zeitreihen sowie ein Hilfesystem mit Kontexthinweisen und Assistent.
+
+Mit dieser Neuentwicklung beginnt auch die Versionszählung neu. Welche Funktionen mit welcher Version hinzukommen, führt das [[Update-Logbuch]] auf.
+
+== Software-Service ==
+{{Anker|software-service}}
+
+Mit dem Kauf des Programms EPOS-Plan ist automatisch ein Wartungs- und Updatevertrag verbunden. Dieser ist für die ersten 3 Monate kostenlos, danach entstehen dem Käufer jährliche Kosten. Sollte kein weiterer Wartungs- und Updateservice gewünscht werden, wird der Vertrag nach den ersten drei Monaten nicht verlängert. Es besteht jedoch keine andere Möglichkeit, EPOS-Plan zu aktualisieren; dies ist nur im Rahmen des Wartungsvertrags möglich. INEKON – Intelligente Energiekonzepte bietet im Rahmen der Wartung folgende Leistungen an:
+
+* Telefonische Unterstützung an Werktagen von 9.00 Uhr bis 16.00 Uhr.<br>Telefon: 0711 9959 826 50<br>Fax: 0711 9959 826 59<br>Bitte halten Sie Ihre Kundennummer, Betriebssystemversion und EPOS-Plan-Version bereit.<br>E-Mail: [mailto:info@inekon.de info@inekon.de]
+* Beantwortung von Fragen über das Internet. Antworten auf häufig gestellte Fragen finden Sie in den [[FAQ]] und auf unserer Internetseite unter www.epos-plan.de.
+* Update und Wartung erfolgen über unseren Server.
+* In Problemfällen bieten wir mit TeamViewer eine Fernwartung an.
+* Aktualisierte Herstellerdaten – von Wärmepumpen über Heizkessel und BHKW-Module bis zu Kollektoren und Speichern – bieten wir über unseren Server zum Download an.
+* Den Zugang zum Server erhalten Sie im Rahmen eines Wartungsvertrages. In den ersten 3 Monaten nach Kauf des Programms ist dieser kostenlos, danach können Sie einen Wartungs- und Updatevertrag abschließen.
+
+== Anbieter ==
+{{Anker|anbieter}}
+
+EPOS-Plan wird von INEKON – Intelligente Energiekonzepte entwickelt, gepflegt und vertrieben. Lizenzen, Wartungsverträge, Schulungen und die akademische Nutzung laufen ebenfalls über INEKON.
+
+INEKON – Intelligente Energiekonzepte<br>Breitwiesenstraße 13<br>70565 Stuttgart<br>Telefon: 0711 9959 826 50<br>Fax: 0711 9959 826 59<br>E-Mail: [mailto:info@inekon.de info@inekon.de]
+
+Die vollständigen Anbieterangaben stehen im [[Impressum]]. Für Hochschulen und Forschungseinrichtungen gibt es die {{Website|/epos-plan/epos-plan-akademische-lizenz/|Akademische Lizenz}}.
+
+[[Kategorie:Einstieg]]

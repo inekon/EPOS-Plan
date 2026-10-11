@@ -122,6 +122,17 @@ namespace WindowsFormsApplication1
     /// Kühlübergabe bleibt die Kühlung des Bestands wörtlich. Gründe und Zeitanteile stehen je
     /// Seite im Ergebnis.</para>
     ///
+    /// <para><b>Der Kappungsanteil</b> (Entwurf KP3, Befund B1, Festlegung 20): Jede Stunde trägt
+    /// den Zeitanteil, in dem <c>Heizleistung_Max</c> gekappt hat (Betriebsfall
+    /// <see cref="Betriebsfall.Heizgrenze"/>), in <see cref="Stundenergebnis.HeizleistungMaxAnteil"/> —
+    /// mit Übergabe wie gehabt aus den Begrenzungsgründen, ohne sie aus einem eigenen Akkumulator.
+    /// Ein neuer Ausgang, keine geänderte Zahl.</para>
+    ///
+    /// <para><b>Die Aufheizantwort</b> (<see cref="Aufheizantwort(double, double)"/>, Entwurf KP3
+    /// Abschnitt 2 Nr. 2, Festlegung 4) liefert die Größen des geregelten Falls, aus denen
+    /// <see cref="Aufheizstufen"/> die Stufenformel rechnet — zustandsfrei, ohne den Rechenpuffer
+    /// der Heizlage zu berühren.</para>
+    ///
     /// <para>Ohne Datenbank, ohne Protokoll, ohne Statik, einfädig, durchgehend
     /// <c>double</c>.</para>
     /// </summary>
@@ -135,6 +146,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Halbierungen der Bisektion eines Umschaltzeitpunkts.</summary>
         internal const int HALBIERUNGEN = 60;
+
+        /// <summary>
+        /// <b>Obergrenze der allgemeinen Innenprüfung</b> (Rechenweg RP2a, Entscheid E62): Nur die ersten
+        /// Abschnitte einer Stunde suchen eine innere Umkehr und schneiden an ihr; ab diesem Abschnitt bleibt die
+        /// Stunde, wie die Endpunktprüfung sie lässt (und das Netz des Rechenbefunds RB-Z4 bei verletztem Mittel),
+        /// und zählt als gedeckelt (<see cref="Stundenergebnis.InnenpruefungGedeckelt"/>, Laufhinweis
+        /// <c>SIMENG_ZONE_ABSCHNITTE</c>). Das hält ein Pendeln an einer Grenze endlich.
+        /// </summary>
+        internal const int INNENPRUEFUNG_ABSCHNITTE = 8;
 
         private readonly ErsatzparameterRC _p;
         private readonly string _bezeichnung;
@@ -156,10 +176,65 @@ namespace WindowsFormsApplication1
 
         // Rechenpuffer der geregelten Lagen, je Übergabeanteil, und des freien Laufs mit
         // stündlichem Zusatzleitwert (kein Zustand).
-        private Fallsystem _freiZusatz;
+        private readonly Fallsystem[] _freiZusatz = new Fallsystem[FREISYSTEM_PLAETZE];
+        private readonly long[] _freiZusatzSchluessel = new long[FREISYSTEM_PLAETZE];
+        private int _freiZusatzBelegt;
+        private int _freiZusatzNaechster;
+
+        /// <summary>
+        /// Die Plätze des Zwischenspeichers freier Fallsysteme (Stufe KP1b, R7): Mit
+        /// Lüftungskalender und Nachtauskühlung kommen je Stunde wenige verschiedene
+        /// Zusatzleitwerte vor, die einander in einem einzigen Platz ständig verdrängten.
+        /// </summary>
+        internal const int FREISYSTEM_PLAETZE = 4;
+
+        /// <summary>Zähler der Neubauten von <see cref="Freisystem"/> — nur Messung (R7), ohne Wirkung.</summary>
+        internal int FreisystemNeubauten;
+
+        /// <summary>
+        /// Die belegbaren Plätze des Zwischenspeichers — <b>nur für die Probe</b> (R7): 0 rechnet
+        /// jedes System einzeln, <see cref="FREISYSTEM_PLAETZE"/> ist der Lauf. Die Zahlen sind in
+        /// jedem Fall dieselben; ein Fallsystem entsteht deterministisch aus seinem Schlüssel.
+        /// </summary>
+        internal int FreisystemPlaetzeFuerProbe { get; set; } = FREISYSTEM_PLAETZE;
         private Fallsystem _heizen;
         private Fallsystem _kuehlen;
         private Fallsystem _kuehlenUebergabe;
+
+        /// <summary>
+        /// Die Plätze des Speichers der Aufheizantworten (Entwurf KP3, Befund B3, Festlegung 4): je
+        /// (Strahlungsanteil, Zusatzleitwert der Sprungstunde) eine Antwort; mit Lüftungskalender kommen
+        /// wenige verschiedene Zusatzleitwerte vor (Muster <see cref="FREISYSTEM_PLAETZE"/>, R7).
+        /// </summary>
+        internal const int AUFHEIZANTWORT_PLAETZE = 4;
+
+        // Rechenpuffer der Aufheizantworten (kein Zustand): bitgenauer Schlüssel, Ersatz der Reihe nach.
+        private readonly Aufheizantwort[] _aufheizantwort = new Aufheizantwort[AUFHEIZANTWORT_PLAETZE];
+        private int _aufheizantwortBelegt;
+        private int _aufheizantwortNaechster;
+
+        /// <summary>Zähler der Neubauten einer <see cref="Aufheizantwort(double, double)"/> — nur Messung, ohne Wirkung.</summary>
+        internal int AufheizantwortNeubauten;
+
+        /// <summary>
+        /// Der Schalter der <b>Messung der inneren Lastumkehr</b> (Rechenweg RP2a), als
+        /// <see cref="AppContext"/>-Schalter (etwa in der <c>runtimeconfig.json</c> eines Werkzeugs). Vorgabe
+        /// aus; die Messung ändert keine Zahl des Laufs, sie zählt nur (<see cref="Innenumkehrmessung"/>).
+        /// </summary>
+        internal const string SCHALTER_INNENUMKEHR = "EPOS.Gebaeude.Innenumkehrmessung";
+
+        /// <summary>
+        /// Misst das Modell die innere Lastumkehr und die innere Bandverletzung je Abschnitt
+        /// (<see cref="Stundenergebnis.MessungUmkehrJ"/> …)? Vorgabe: der Schalter
+        /// <see cref="SCHALTER_INNENUMKEHR"/>; die Proben setzen ihn je Modell.
+        /// </summary>
+        internal bool Innenumkehrmessung { get; set; }
+
+        /// <summary>
+        /// Die Obergrenze der Innenprüfung je Stunde — <b>nur für die Probe</b>: 0 schaltet die allgemeine
+        /// Innenprüfung ab (der Rechenweg vor RP2a), <see cref="INNENPRUEFUNG_ABSCHNITTE"/> ist der Lauf.
+        /// </summary>
+        internal int InnenpruefungObergrenzeFuerProbe { get; set; } = INNENPRUEFUNG_ABSCHNITTE;
 
         // Der Zustand: die beiden Massentemperaturen [°C].
         private double _thetaMAw;
@@ -203,6 +278,7 @@ namespace WindowsFormsApplication1
             _wIW = p.A_IW_M2 / aSumme;
 
             _frei = new Fallsystem(this, geregelt: false, anteilAW: 0.0, anteilIW: 0.0, anteilLuft: 1.0, gExt: _gExt, schluessel: 0.0);
+            Innenumkehrmessung = AppContext.TryGetSwitch(SCHALTER_INNENUMKEHR, out bool messen) && messen;
             Zuruecksetzen(20.0);
         }
 
@@ -257,6 +333,54 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Sichert den Zustand der Zone</b> (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V1) — für die Vorausschau: sichern,
+        /// n Stunden rechnen, mit <see cref="ZustandSetzen"/> zurück; dieselben n Stunden ergeben danach bitgleiche Werte.
+        /// Zwischen zwei Stunden trägt das Modell nur die beiden Massentemperaturen; der Regler der Übergabe
+        /// (<see cref="SchrittUebergabe"/>) rechnet je Stunde aus Rand und Zustand und führt keinen Übertrag. Mitgesichert wird
+        /// das Muster der zuletzt gerechneten Stunde (<see cref="LetztesMuster"/>, <see cref="LetzteFolgeGleich"/>), damit auch
+        /// die Mustertreue der Zonenschleife denselben Stand sieht. Die Rechenpuffer (Fallsysteme, Aufheizantworten) sind
+        /// kein Zustand und bleiben samt ihren Zählern unberührt.
+        /// </summary>
+        internal Zonenzustand ZustandSichern()
+            => new Zonenzustand(_thetaMAw, _thetaMIw, _letzteAnzahl > 0 ? LetztesMuster : null);
+
+        /// <summary>
+        /// <b>Setzt einen gesicherten Zustand</b> (<see cref="ZustandSichern"/>): beide Massentemperaturen und das Muster der
+        /// zuletzt gerechneten Stunde. Ein Zustand eines anderen Modells derselben Parameter ist erlaubt.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.RandUngueltig"/> bei einem nicht
+        /// endlichen Zustand (etwa <c>default</c>); das Modell bleibt dann unverändert.</exception>
+        internal void ZustandSetzen(in Zonenzustand zustand)
+        {
+            Zuruecksetzen(zustand.ThetaMAw, zustand.ThetaMIw);
+            Stundenmuster muster = zustand.Muster;
+            if (muster == null || muster.Anzahl > _letzteFolge.Length)
+            {
+                _letzteAnzahl = 0;
+                return;
+            }
+            muster.Folge.CopyTo(_letzteFolge);
+            muster.Dauer.CopyTo(_letzteDauer);
+            _letzteAnzahl = muster.Anzahl;
+        }
+
+        /// <summary>
+        /// <b>Die Raumluft im Augenblick am Beginn der Stunde</b> (Entwurf Vorheizrampe Fassung 2, 2.1 „Ankunft“, Welle V2;
+        /// E58 F1 (b)): der Fall, den der Löser im Zustand der Massen für den Rand <paramref name="r"/> zuerst wählt, und
+        /// darin die Raumluft — im geregelten Fall der Sollwert (bzw. die obere Grenze), sonst die freie Luft des Falls
+        /// (Heizgrenze, Totband, Übergabe mit Leitwert). Rein: Zustand, Muster und Zähler bleiben unberührt.
+        /// </summary>
+        internal double LuftAmBeginn(in Stundenrand r)
+        {
+            RandPruefen(in r);
+            Vektor2 x = new Vektor2(_thetaMAw, _thetaMIw);
+            Betriebsfall fall = FallWaehlen(x, in r, out Abschnitt ab);
+            if (ab.System.Geregelt)
+                return fall == Betriebsfall.KuehlenGeregelt ? r.ThetaMax : r.ThetaSoll;
+            return ab.Ausgang(2, x);
+        }
+
+        /// <summary>
         /// Rechnet eine Blockstunde mit den Randbedingungen <paramref name="r"/> und
         /// schreibt den Zustand fort.
         /// </summary>
@@ -282,6 +406,15 @@ namespace WindowsFormsApplication1
             tauJeGrund.Clear();
             Span<double> tauJeGrundKuehl = stackalloc double[GRUENDE];
             tauJeGrundKuehl.Clear();
+            // Der Kappungsanteil von Heizleistung_Max [s] auch im idealen Fall (Entwurf KP3, Befund B1,
+            // Festlegung 20): ein eigener Akkumulator, nur geschrieben, nie in eine andere Summe gelesen.
+            double akkKappung = 0.0;
+            // AK3-K: der Kappungsanteil an der Kälteschranke [s] im idealen Fall — nur geschrieben, nie in eine andere Summe.
+            double akkKuehlKappung = 0.0;
+            // Messung RP2a (nur mit Innenumkehrmessung): innere Lastumkehr [J] und Bandverletzung [K·s].
+            double mUmkehrJ = 0.0, mBandKs = 0.0;
+            int mUmkehrAb = 0, mBandAb = 0;
+            bool gedeckelt = false;
 
             while (t < STUNDE_S)
             {
@@ -315,7 +448,48 @@ namespace WindowsFormsApplication1
                 }
                 if (abschnitte <= dauer.Length) dauer[abschnitte - 1] = tau;
 
+                // Die allgemeine Innenprüfung (Rechenweg RP2a, Entscheid E62): Jeder geregelte Abschnitt, dessen
+                // Leistung im Innern das Vorzeichen wechselt, und jeder Totband-Abschnitt, dessen Raumluft das Band
+                // im Innern verlässt, endet am ersten Austritt — auch bei zulässigem Mittel und Endpunkt. Das
+                // Extremum ist die exakte Nullstelle der Ableitung (InneresExtremum); geschnitten wird nur, wenn sie im
+                // Innern liegt und die Grenze verletzt (InnenUmkehr) — jeder andere Abschnitt bleibt Zeichen für Zeichen.
+                if (InnenUmkehr(fall, in ab, x, u.Ende(x, ab.B), tau, in r, out double tExtremum, out double grenze, out double richtung))
+                {
+                    if (abschnitte < InnenpruefungObergrenzeFuerProbe)
+                    {
+                        double tauInnen = Austritt(in ab, x, 0.0, tExtremum, grenze, richtung, vorwaerts: true);
+                        if (tauInnen < tau)
+                        {
+                            tau = tauInnen;
+                            u = ab.System.Rechner.Bei(tau);
+                            if (abschnitte <= dauer.Length) dauer[abschnitte - 1] = tau;
+                        }
+                    }
+                    else gedeckelt = true;
+                }
+
                 Vektor2 xMittel = u.Mittel(x, ab.B);
+                // Die Verletzung im Innern des Abschnitts (Rechenbefund RB-Z4): Die Bisektion prüft den
+                // Endpunkt. Im geregelten Fall ist die Leistung eine Summe zweier Exponentialmoden und
+                // kann nach dem Beginn unter null fallen und bis zum Ende wieder steigen — etwa wenn die
+                // Innenbauteilmasse wärmer als die Raumluft ist und die schnelle Mode die Last binnen
+                // Minuten umkehrt. Dann wäre der ganze Rest der Stunde „geregelt" mit falschem
+                // Vorzeichen im Mittel. Das Netz für alles, was die Innenprüfung nicht schneidet (Lagen mit
+                // Leitwert, Abschnitte ab der Obergrenze): Nur bei verletztem Mittel wird gesucht, am exakten
+                // Extremum wie in der Innenprüfung — jeder Abschnitt mit zulässigem Mittel bleibt Zeichen für Zeichen.
+                if (MittelVerletzt(fall, in ab, xMittel) || LeitwertMittelVerletzt(fall, in ab, xMittel))
+                {
+                    double tauInnen = ErsteInnereVerletzung(fall, in ab, x, tau, in r);
+                    if (tauInnen < tau)
+                    {
+                        tau = tauInnen;
+                        u = ab.System.Rechner.Bei(tau);
+                        if (abschnitte <= dauer.Length) dauer[abschnitte - 1] = tau;
+                        xMittel = u.Mittel(x, ab.B);
+                    }
+                }
+                if (Innenumkehrmessung)
+                    Messen(fall, in ab, x, u.Ende(x, ab.B), tau, in r, ref mUmkehrJ, ref mUmkehrAb, ref mBandKs, ref mBandAb);
                 double s1 = ab.Ausgang(0, xMittel);
                 double s2 = ab.Ausgang(1, xMittel);
                 double z2 = ab.Ausgang(2, xMittel);
@@ -357,6 +531,8 @@ namespace WindowsFormsApplication1
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
                 }
+                if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
+                else if (fall == Betriebsfall.Kuehlgrenze) akkKuehlKappung += tau;
                 if (ab.Gekoppelt && ab.K.Seite == Uebergabeseite.Kuehlen) tauJeGrundKuehl[(int)ab.Grund] += tau;
                 else if (r.MitUebergabe) tauJeGrund[(int)ab.Grund] += tau;
                 // Spiegelbildlich zur Heizseite zählt ein ungekoppelter Abschnitt auf der Kälteseite
@@ -392,12 +568,30 @@ namespace WindowsFormsApplication1
                     akkM2 / STUNDE_S,
                     x.A,
                     x.B,
-                    abschnitte);
+                    abschnitte,
+                    heizleistungMaxAnteil: r.VerfuegbarkeitIstGrenze ? 0.0 : akkKappung / STUNDE_S)
+                {
+                    VerfuegbarkeitAnteil = r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0,
+                    Verfuegbarkeitsgrund = r.VerfuegbarkeitIstGrenze && akkKappung > 0.0
+                        ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                    KaelteverfuegbarkeitAnteil = r.KaelteverfuegbarkeitIstGrenze ? akkKuehlKappung / STUNDE_S : 0.0,
+                    Kaelteverfuegbarkeitsgrund = r.KaelteverfuegbarkeitIstGrenze && akkKuehlKappung > 0.0
+                        ? r.GrundBeiKaeltekappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                    MessungUmkehrJ = mUmkehrJ,
+                    MessungUmkehrAbschnitte = mUmkehrAb,
+                    MessungBandKs = mBandKs,
+                    MessungBandAbschnitte = mBandAb,
+                    InnenpruefungGedeckelt = gedeckelt,
+                };
 
             // Anlagenkopplung (10.2 H6, 10.4): Vorlauf der Stunde und Rücklauf zur GELIEFERTEN
             // mittleren Leistung; der Grund mit dem größten Zeitanteil — je Seite.
+            // Stufe KP1b (E53): Eine Stunde mit Heizsollwert "aus" hat keine Uebergabe - der
+            // Vorlauf bleibt leer wie jenseits der Heizgrenze, und die Stunde zaehlt getrennt
+            // (StundenOhneHeizungH), nicht als Heizgrenzstunde. Ohne Heizkalender ist ThetaSoll
+            // nie NaN, der Ausdruck also derselbe wie bisher.
             double heizMittel = akkHeiz / STUNDE_S;
-            double vorlauf = r.MitUebergabe ? r.VorlaufC : double.NaN;
+            double vorlauf = r.MitUebergabe && r.MitHeizung ? r.VorlaufC : double.NaN;
             double ruecklauf = double.IsNaN(vorlauf) ? double.NaN : Waermeuebergabe.RuecklaufC(r.Uebergabe, vorlauf, heizMittel);
             int grund = 0;
             for (int i = 1; i < GRUENDE; i++) if (tauJeGrund[i] > tauJeGrund[grund]) grund = i;
@@ -425,8 +619,11 @@ namespace WindowsFormsApplication1
                 vorlauf,
                 ruecklauf,
                 (Begrenzungsgrund)grund,
-                tauJeGrund[(int)Begrenzungsgrund.Uebergabe] / STUNDE_S,
-                tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S,
+                (tauJeGrund[(int)Begrenzungsgrund.Uebergabe] + tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage]) / STUNDE_S,
+                // Mit Übergabe wie gehabt aus den Gründen; eine Stunde nur mit Kühlübergabe heizt ideal
+                // und trägt den Anteil aus dem eigenen Akkumulator (Entwurf KP3, Festlegung 20).
+                r.MitUebergabe ? tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S
+                    : r.VerfuegbarkeitIstGrenze ? 0.0 : akkKappung / STUNDE_S,
                 tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S,
                 kuehlVorlauf,
                 kuehlRuecklauf,
@@ -434,11 +631,50 @@ namespace WindowsFormsApplication1
                 (tauJeGrundKuehl[(int)Begrenzungsgrund.KuehlUebergabe] + tauVorlaufgrenze) / STUNDE_S,
                 tauVorlaufgrenze / STUNDE_S,
                 tauJeGrundKuehl[(int)Begrenzungsgrund.KuehlleistungMax] / STUNDE_S,
-                tauJeGrundKuehl[(int)Begrenzungsgrund.KeineKaelte] / STUNDE_S);
+                tauJeGrundKuehl[(int)Begrenzungsgrund.KeineKaelte] / STUNDE_S)
+            {
+                VerfuegbarkeitAnteil = VerfuegbarkeitAnteilDerStunde(tauJeGrund, akkKappung, in r),
+                VorlaufAnlageAnteil = tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage] / STUNDE_S,
+                Verfuegbarkeitsgrund = VerfuegbarkeitAnteilDerStunde(tauJeGrund, akkKappung, in r) > 0.0
+                    ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                KaelteverfuegbarkeitAnteil = KaelteverfuegbarkeitAnteilDerStunde(tauJeGrundKuehl, akkKuehlKappung, in r),
+                Kaelteverfuegbarkeitsgrund = KaelteverfuegbarkeitAnteilDerStunde(tauJeGrundKuehl, akkKuehlKappung, in r) > 0.0
+                    ? r.GrundBeiKaeltekappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                MessungUmkehrJ = mUmkehrJ,
+                MessungUmkehrAbschnitte = mUmkehrAb,
+                MessungBandKs = mBandKs,
+                MessungBandAbschnitte = mBandAb,
+                InnenpruefungGedeckelt = gedeckelt,
+            };
         }
 
+        /// <summary>
+        /// Der Grund einer gekappten Heizleistung (4.5): Ist die Schranke der Anlagenverfügbarkeit die kleinere
+        /// Grenze, heißt er <see cref="Begrenzungsgrund.Verfuegbarkeit"/>, sonst wie im Bestand
+        /// <see cref="Begrenzungsgrund.HeizleistungMax"/>.
+        /// </summary>
+        private static Begrenzungsgrund KappungsgrundHeizen(in Stundenrand r)
+            => r.VerfuegbarkeitIstGrenze ? Begrenzungsgrund.Verfuegbarkeit : Begrenzungsgrund.HeizleistungMax;
+
+        /// <summary>Zeitanteil der Stunde an der Schranke der Verfügbarkeit [–]: mit Übergabe aus den Gründen, sonst aus der Kappung.</summary>
+        private static double VerfuegbarkeitAnteilDerStunde(Span<double> tauJeGrund, double akkKappung, in Stundenrand r)
+            => r.MitUebergabe ? tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] / STUNDE_S
+               : r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0;
+
+        /// <summary>
+        /// Der Grund einer gekappten Kühlleistung (AK3-K, 4.2): Ist die Kälteschranke die kleinere Grenze, heißt er
+        /// <see cref="Begrenzungsgrund.Verfuegbarkeit"/>, sonst wie im Bestand <see cref="Begrenzungsgrund.KuehlleistungMax"/>.
+        /// </summary>
+        private static Begrenzungsgrund KappungsgrundKuehlen(in Stundenrand r)
+            => r.KaelteverfuegbarkeitIstGrenze ? Begrenzungsgrund.Verfuegbarkeit : Begrenzungsgrund.KuehlleistungMax;
+
+        /// <summary>Zeitanteil der Stunde an der Kälteschranke [–]: mit Kühlübergabe aus den Gründen, sonst aus der Kappung.</summary>
+        private static double KaelteverfuegbarkeitAnteilDerStunde(Span<double> tauJeGrundKuehl, double akkKuehlKappung, in Stundenrand r)
+            => r.MitKuehluebergabe ? tauJeGrundKuehl[(int)Begrenzungsgrund.Verfuegbarkeit] / STUNDE_S
+               : r.KaelteverfuegbarkeitIstGrenze ? akkKuehlKappung / STUNDE_S : 0.0;
+
         /// <summary>Zahl der Begrenzungsgründe beider Seiten (Länge der Zeitsummen je Grund).</summary>
-        private const int GRUENDE = 8;
+        private const int GRUENDE = 11;
 
         // Das Muster der zuletzt gerechneten Stunde (G6b W3): Fallfolge und Abschnittsdauern.
         private readonly Betriebsfall[] _letzteFolge = new Betriebsfall[ABSCHNITTSDECKEL];
@@ -487,20 +723,54 @@ namespace WindowsFormsApplication1
         /// bitgleich (Probe). Mit einem anderen Rand rechnet sie das festgehaltene Muster unter
         /// geänderten Randbedingungen — so hält die Zonenschleife eine Pendelstunde fest.
         ///
-        /// <para>Nur ohne Übergabe: Die Lagen mit Übergabe hängen am Arbeitspunkt des
-        /// Abschnittsbeginns und lassen sich nicht aus dem Fall allein bilden — im Zonenweg rechnen
-        /// die Zonen ideal (Anwenderentscheid A4). Die Abschnittsregel (F-K3) gilt wie in
-        /// <see cref="Schritt"/>. Das Muster muss die Stunde genau füllen.</para>
+        /// <para><b>Mit Wärmeübergabe (E63, Schritt H je Zone):</b> Auch die Fälle
+        /// <see cref="Betriebsfall.UebergabeGesaettigt"/> und <see cref="Betriebsfall.UebergabeRegelbereich"/>
+        /// werden festgehalten. Ihre Lage hängt am Arbeitspunkt des Abschnittsbeginns; im festen Fall
+        /// wird die Leistung deshalb mit der Leistungsgleichung DIESES Falls am Zustand des
+        /// Abschnittsbeginns unter dem neuen Rand neu gelöst — ohne Fallwahl und ohne Bisektion, genau
+        /// wie <see cref="Betriebsfall.HeizenGeregelt"/> im Muster gehalten wird: gesättigt Φ_ue,max am
+        /// freien Lauf θ₀ (Sekantenleitwert G_H, H5), im Regelbereich der Arbeitspunkt mit
+        /// y = (θ_soll − θ_i)/Xp auf [0, 1] und dem Leitwert Φ_ue,max/Xp + y·G_H (Anlagenkopplung
+        /// 10.2 H5). Liefert der Fall dort keine Leistung (Vorlauf nicht über θ₀, kein Leitwert) oder
+        /// läge sie über <c>Heizleistung_Max</c>, ist das Muster nicht haltbar
+        /// (<see cref="GebaeudeModellFehler.AbschnittsregelVerletzt"/>) — die Zonenschleife rechnet die
+        /// Stunde dann frei (<see cref="Schritt"/>), die Kappung bleibt so beim Fall der Leistungsgrenze.
+        /// Die Fälle ohne Leitwert rechnen wie ohne Übergabe; Rücklauf und Gründe der Stunde wie in
+        /// <see cref="Schritt"/>. Eine Kühlübergabe (Schritt K) bleibt ausgeschlossen — die
+        /// Zonenschleife rechnet eine Stunde mit Kühlübergabe je Zone (Entwurf KK, KZ1) frei.</para>
+        /// <para>Die Abschnittsregel (F-K3) gilt wie in <see cref="Schritt"/>. Das Muster muss die Stunde
+        /// genau füllen.</para>
         /// </summary>
-        /// <exception cref="ArgumentException">bei einem Rand mit Übergabe, einem Fall mit Übergabe
-        /// oder einem Muster, das die Stunde nicht genau füllt; der Zustand bleibt dann unverändert.</exception>
+        /// <exception cref="ArgumentException">bei einem Rand mit Kühlübergabe, einem Fall mit Kühlübergabe,
+        /// einem Übergabefall ohne Übergabe im Rand oder einem Muster, das die Stunde nicht genau füllt;
+        /// der Zustand bleibt dann unverändert.</exception>
         /// <exception cref="GebaeudeModellException">bei ungültigem Rand oder verletzter Abschnittsregel.</exception>
         internal Stundenergebnis SchrittMitMuster(in Stundenrand r, Stundenmuster muster)
         {
+            if (!VersucheSchrittMitMuster(in r, muster, out Stundenergebnis ergebnis, out string bruch))
+                throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt, bruch);
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Derselbe Schritt mit festem Muster, ohne Ausnahme im erwarteten Fall</b> — so fragt die Zonenschleife,
+        /// ob das Muster hält: Bricht es die Abschnittsregel (falsches Vorzeichen, Umkehr im Innern, keine haltbare
+        /// Übergabe), kommt <c>false</c> mit dem Grund in <paramref name="bruch"/> zurück, und der Zustand bleibt
+        /// unverändert. Ein Muster, das nicht hält, ist ein regulärer Ausgang der Iteration (Mehrzonenkonzept 2.4),
+        /// kein Fehler; als Ausnahme geworfen und gleich wieder gefangen, hielte er einen Debugger an, der bei
+        /// geworfenen Ausnahmen stoppt — mit einer Meldung, die wie ein Rechenfehler aussieht. Rechnung und Ergebnis
+        /// sind dieselben wie in <see cref="SchrittMitMuster"/>.
+        /// </summary>
+        /// <exception cref="ArgumentException">wie <see cref="SchrittMitMuster"/>.</exception>
+        /// <exception cref="GebaeudeModellException">bei ungültigem Rand.</exception>
+        internal bool VersucheSchrittMitMuster(in Stundenrand r, Stundenmuster muster, out Stundenergebnis ergebnis, out string bruch)
+        {
+            ergebnis = default;
+            bruch = null;
             RandPruefen(in r);
             if (muster == null) throw new ArgumentNullException(nameof(muster));
-            if (r.MitUebergabe || r.MitKuehluebergabe)
-                throw new ArgumentException(_bezeichnung + ": Eine Stunde mit Übergabe lässt sich nicht mit festem Muster nachrechnen.", nameof(r));
+            if (r.MitKuehluebergabe)
+                throw new ArgumentException(_bezeichnung + ": Eine Stunde mit Kühlübergabe lässt sich nicht mit festem Muster nachrechnen.", nameof(r));
             int n = muster.Anzahl;
             if (n < 1 || n > ABSCHNITTSDECKEL)
                 throw new ArgumentException(_bezeichnung + ": Das Muster hat " + n.ToString(CultureInfo.InvariantCulture) +
@@ -510,6 +780,13 @@ namespace WindowsFormsApplication1
             double t = 0.0;
             double akkHeiz = 0.0, akkKuehl = 0.0, akkAir = 0.0;
             double akkS1 = 0.0, akkS2 = 0.0, akkM1 = 0.0, akkM2 = 0.0;
+            double akkKappung = 0.0;     // Kappungsanteil wie in Schritt (Entwurf KP3, Festlegung 20)
+            double akkKuehlKappung = 0.0; // Kappung an der Kälteschranke wie in Schritt (AK3-K)
+            double mUmkehrJ = 0.0, mBandKs = 0.0;
+            int mUmkehrAb = 0, mBandAb = 0;
+            // E63: Zeit je Begrenzungsgrund [s], nur mit Übergabe geführt (wie in Schritt).
+            Span<double> tauJeGrund = stackalloc double[GRUENDE];
+            tauJeGrund.Clear();
             for (int i = 0; i < n; i++)
             {
                 if (!(t < STUNDE_S))
@@ -523,10 +800,17 @@ namespace WindowsFormsApplication1
                     case Betriebsfall.Kuehlgrenze:
                     case Betriebsfall.Totband:
                         break;
+                    case Betriebsfall.UebergabeGesaettigt:
+                    case Betriebsfall.UebergabeRegelbereich:
+                        if (r.MitUebergabe) break;
+                        throw new ArgumentException(_bezeichnung + ": Der Fall " + fall + " braucht eine Übergabe im Rand.", nameof(muster));
                     default:
-                        throw new ArgumentException(_bezeichnung + ": Der Fall " + fall + " hat eine Übergabe und lässt sich nicht mit festem Muster nachrechnen.", nameof(muster));
+                        throw new ArgumentException(_bezeichnung + ": Der Fall " + fall + " hat eine Kühlübergabe und lässt sich nicht mit festem Muster nachrechnen.", nameof(muster));
                 }
-                Abschnitt ab = Aufbauen(fall, in r);
+                bool uebergabefall = fall == Betriebsfall.UebergabeGesaettigt || fall == Betriebsfall.UebergabeRegelbereich;
+                Abschnitt ab;
+                if (!uebergabefall) ab = Aufbauen(fall, in r);
+                else if (!UebergabeImMuster(fall, x, in r, i, out ab, out bruch)) return false;
 
                 double rest = STUNDE_S - t;
                 double tau = muster.Dauer[i];
@@ -537,6 +821,17 @@ namespace WindowsFormsApplication1
                 if (tau < rest) u = ab.System.Rechner.Bei(tau);
 
                 Vektor2 xMittel = u.Mittel(x, ab.B);
+                // Die allgemeine Innenprüfung (RP2a, E62) im festen Muster: Kehrt ein Abschnitt im Innern um, ist
+                // das Muster nicht haltbar — die Zonenschleife rechnet die Stunde dann frei (Schritt).
+                if (InnenpruefungObergrenzeFuerProbe > 0
+                    && InnenUmkehr(fall, in ab, x, u.Ende(x, ab.B), tau, in r, out double tExtremum, out _, out _))
+                {
+                    bruch = _bezeichnung + ": Der Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture) + " im Betriebsfall " + fall +
+                            " kehrt nach " + tExtremum.ToString("F1", CultureInfo.InvariantCulture) + " s im Innern um; das Muster ist nicht haltbar.";
+                    return false;
+                }
+                if (Innenumkehrmessung)
+                    Messen(fall, in ab, x, u.Ende(x, ab.B), tau, in r, ref mUmkehrJ, ref mUmkehrAb, ref mBandKs, ref mBandAb);
                 double s1 = ab.Ausgang(0, xMittel);
                 double s2 = ab.Ausgang(1, xMittel);
                 double z2 = ab.Ausgang(2, xMittel);
@@ -547,15 +842,25 @@ namespace WindowsFormsApplication1
                 {
                     case Betriebsfall.HeizenGeregelt:
                     case Betriebsfall.Heizgrenze:
-                        if (-q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
+                        if (-q > Rechenrand.Zu(0.0)) { bruch = Abschnittsregeltext(fall, q); return false; }
                         akkHeiz += Math.Max(q, 0.0) * tau;
                         break;
                     case Betriebsfall.KuehlenGeregelt:
                     case Betriebsfall.Kuehlgrenze:
-                        if (q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
+                        if (q > Rechenrand.Zu(0.0)) { bruch = Abschnittsregeltext(fall, q); return false; }
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
+                    case Betriebsfall.UebergabeGesaettigt:
+                    case Betriebsfall.UebergabeRegelbereich:
+                        // Derselbe Zahlenrand des Leitwerts wie in Schritt.
+                        if (-q > Rechenrand.Zu(0.0) + ab.LeitwertWK * Rechenrand.Zu(ab.ThetaHC))
+                            { bruch = Abschnittsregeltext(fall, q); return false; }
+                        akkHeiz += Math.Max(q, 0.0) * tau;
+                        break;
                 }
+                if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
+                else if (fall == Betriebsfall.Kuehlgrenze) akkKuehlKappung += tau;
+                if (r.MitUebergabe) tauJeGrund[(int)GrundImMuster(fall, x, in r)] += tau;
                 akkAir += air * tau;
                 akkS1 += s1 * tau;
                 akkS2 += s2 * tau;
@@ -576,8 +881,45 @@ namespace WindowsFormsApplication1
             double s1Mittel = akkS1 / STUNDE_S;
             double s2Mittel = akkS2 / STUNDE_S;
             double opMittel = 0.5 * airMittel + 0.5 * (_wAW * s1Mittel + _wIW * s2Mittel);
-            return new Stundenergebnis(
-                akkHeiz / STUNDE_S,
+            if (!r.MitUebergabe)
+            {
+                ergebnis = new Stundenergebnis(
+                    akkHeiz / STUNDE_S,
+                    akkKuehl / STUNDE_S,
+                    airMittel,
+                    opMittel,
+                    s1Mittel,
+                    s2Mittel,
+                    akkM1 / STUNDE_S,
+                    akkM2 / STUNDE_S,
+                    x.A,
+                    x.B,
+                    n,
+                    heizleistungMaxAnteil: r.VerfuegbarkeitIstGrenze ? 0.0 : akkKappung / STUNDE_S)
+                {
+                    VerfuegbarkeitAnteil = r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0,
+                    Verfuegbarkeitsgrund = r.VerfuegbarkeitIstGrenze && akkKappung > 0.0
+                        ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                    KaelteverfuegbarkeitAnteil = r.KaelteverfuegbarkeitIstGrenze ? akkKuehlKappung / STUNDE_S : 0.0,
+                    Kaelteverfuegbarkeitsgrund = r.KaelteverfuegbarkeitIstGrenze && akkKuehlKappung > 0.0
+                        ? r.GrundBeiKaeltekappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                    MessungUmkehrJ = mUmkehrJ,
+                    MessungUmkehrAbschnitte = mUmkehrAb,
+                    MessungBandKs = mBandKs,
+                    MessungBandAbschnitte = mBandAb,
+                };
+                return true;
+            }
+
+            // E63: Vorlauf und Rücklauf zur gelieferten mittleren Leistung, der Grund mit dem größten
+            // Zeitanteil - dieselben Ausdrücke wie in Schritt (ohne Kälteseite).
+            double heizMittel = akkHeiz / STUNDE_S;
+            double vorlauf = r.MitHeizung ? r.VorlaufC : double.NaN;
+            double ruecklauf = double.IsNaN(vorlauf) ? double.NaN : Waermeuebergabe.RuecklaufC(r.Uebergabe, vorlauf, heizMittel);
+            int grund = 0;
+            for (int i = 1; i < GRUENDE; i++) if (tauJeGrund[i] > tauJeGrund[grund]) grund = i;
+            ergebnis = new Stundenergebnis(
+                heizMittel,
                 akkKuehl / STUNDE_S,
                 airMittel,
                 opMittel,
@@ -587,7 +929,107 @@ namespace WindowsFormsApplication1
                 akkM2 / STUNDE_S,
                 x.A,
                 x.B,
-                n);
+                n,
+                vorlauf,
+                ruecklauf,
+                (Begrenzungsgrund)grund,
+                (tauJeGrund[(int)Begrenzungsgrund.Uebergabe] + tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage]) / STUNDE_S,
+                tauJeGrund[(int)Begrenzungsgrund.HeizleistungMax] / STUNDE_S,
+                tauJeGrund[(int)Begrenzungsgrund.Heizgrenze] / STUNDE_S,
+                double.NaN,
+                double.NaN,
+                (Begrenzungsgrund)0,
+                0.0,
+                0.0,
+                0.0,
+                0.0)
+            {
+                VerfuegbarkeitAnteil = tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] / STUNDE_S,
+                VorlaufAnlageAnteil = tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage] / STUNDE_S,
+                Verfuegbarkeitsgrund = tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] > 0.0
+                    ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                KaelteverfuegbarkeitAnteil = r.KaelteverfuegbarkeitIstGrenze ? akkKuehlKappung / STUNDE_S : 0.0,
+                Kaelteverfuegbarkeitsgrund = r.KaelteverfuegbarkeitIstGrenze && akkKuehlKappung > 0.0
+                    ? r.GrundBeiKaeltekappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                MessungUmkehrJ = mUmkehrJ,
+                MessungUmkehrAbschnitte = mUmkehrAb,
+                MessungBandKs = mBandKs,
+                MessungBandAbschnitte = mBandAb,
+            };
+            return true;
+        }
+
+        /// <summary>
+        /// Der Abschnitt eines festgehaltenen Übergabefalls (E63; Regel: <see cref="SchrittMitMuster"/>) —
+        /// die Leistungsgleichung des Falls am Zustand <paramref name="x"/> unter dem Rand <paramref name="r"/>,
+        /// mit denselben Aufrufen wie H5 in <see cref="SchrittUebergabe"/>.
+        /// </summary>
+        /// <returns><c>false</c>, wenn das Muster nicht haltbar ist; der Grund steht dann in <paramref name="bruch"/>.</returns>
+        private bool UebergabeImMuster(Betriebsfall fall, Vektor2 x, in Stundenrand r, int i, out Abschnitt ab, out string bruch)
+        {
+            ab = default;
+            bruch = null;
+            Uebergabekennwerte k = r.Uebergabe;
+            double soll = r.ThetaSoll;
+            double xp = r.ReglerbandK;
+            double vorlauf = r.VorlaufC;
+            double a = r.HeizungStrahlungsanteil;
+            double eAW = a * _wAW, eIW = a * _wIW, eLuft = 1.0 - a;
+            Abschnitt frei = Aufbauen(Betriebsfall.Totband, in r);
+            double theta0 = frei.Ausgang(2, x);
+            double s = frei.System.Empfindlichkeit(eAW, eIW, eLuft);
+
+            double thetaStern, phiStern, leitwert;
+            Begrenzungsgrund grund;
+            bool haltbar = r.MitHeizung && !double.IsNaN(vorlauf) && vorlauf > theta0;
+            if (!haltbar)
+            {
+                thetaStern = phiStern = leitwert = double.NaN;
+                grund = Begrenzungsgrund.Heizgrenze;
+            }
+            else if (fall == Betriebsfall.UebergabeGesaettigt)
+            {
+                phiStern = Waermeuebergabe.LeistungGesaettigtW(k, vorlauf, theta0, s);
+                thetaStern = theta0 + s * phiStern;
+                leitwert = Waermeuebergabe.SteigungOffenWK(k, phiStern, vorlauf, thetaStern);
+                grund = r.VorlaufAnlageGekappt ? Begrenzungsgrund.VorlaufAnlage : Begrenzungsgrund.Uebergabe;
+            }
+            else
+            {
+                Waermeuebergabe.ArbeitspunktRegelbereich(k, vorlauf, soll, xp, theta0, s,
+                                                         out thetaStern, out phiStern, out leitwert);
+                grund = Begrenzungsgrund.KeineBegrenzung;
+            }
+            if (!haltbar || !(phiStern > 0.0) || !(leitwert > 0.0) || !Endlich(leitwert)
+                || (Begrenzt(r.HeizleistungMaxW) && phiStern > r.HeizleistungMaxW))
+            {
+                bruch = _bezeichnung + ": Der Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture) + " im Betriebsfall " + fall +
+                        " liefert am Zustand des Abschnittsbeginns keine haltbare Übergabe; das Muster ist nicht haltbar.";
+                return false;
+            }
+            double thetaH = thetaStern + phiStern / leitwert;
+            ab = FreiMitLeitwert(leitwert, thetaH, eAW, eIW, eLuft, in r,
+                                   Kopplung.Leitwert(grund, leitwert, thetaH, double.NegativeInfinity, double.PositiveInfinity));
+            return true;
+        }
+
+        /// <summary>
+        /// Der Begrenzungsgrund eines festgehaltenen Abschnitts in einer Stunde mit Übergabe (E63) — wie ihn
+        /// <see cref="SchrittUebergabe"/> setzt: gesättigt die Übergabe, Leistungsgrenze <c>Heizleistung_Max</c>,
+        /// das Totband mit Wärmebedarf (q₀ &gt; 0) die Heizgrenze der Übergabe, sonst keine Begrenzung.
+        /// </summary>
+        private Begrenzungsgrund GrundImMuster(Betriebsfall fall, Vektor2 x, in Stundenrand r)
+        {
+            switch (fall)
+            {
+                case Betriebsfall.UebergabeGesaettigt:
+                    return r.VorlaufAnlageGekappt ? Begrenzungsgrund.VorlaufAnlage : Begrenzungsgrund.Uebergabe;
+                case Betriebsfall.Heizgrenze: return KappungsgrundHeizen(in r);
+                case Betriebsfall.Totband:
+                    return r.MitHeizung && Aufbauen(Betriebsfall.HeizenGeregelt, in r).Ausgang(2, x) > 0.0
+                        ? Begrenzungsgrund.Heizgrenze : Begrenzungsgrund.KeineBegrenzung;
+                default: return Begrenzungsgrund.KeineBegrenzung;
+            }
         }
 
         /// <summary>
@@ -598,13 +1040,104 @@ namespace WindowsFormsApplication1
         /// Aufruf des vorhandenen Lösers mit fester Randbedingung, ausdrücklich kein
         /// Normnachweis (H-F12). Der Zustand des Modells bleibt unberührt.
         /// </summary>
-        internal double StationaereHeizlastW(double thetaRaumC, double thetaOutC, double thetaEqC, double strahlungsanteil)
+        /// <param name="zusatzleitwertWK">
+        /// Ein masseloser Zusatzleitwert Außenluft ↔ Raumluft [W/K] (Stufe KP1b, Konzept 3.6): der
+        /// Luftwechsel <b>über</b> dem Jahresminimum, mit dem R_ext gebildet ist. 0 heißt „nur das
+        /// Minimum" und ist Zeichen für Zeichen die Rechnung des Bestands.
+        /// </param>
+        internal double StationaereHeizlastW(double thetaRaumC, double thetaOutC, double thetaEqC, double strahlungsanteil,
+                                             double zusatzleitwertWK = 0.0)
         {
             var r = new Stundenrand(thetaOutC, thetaEqC, thetaRaumC, double.PositiveInfinity, 0.0, 0.0, 0.0,
-                                    heizungStrahlungsanteil: strahlungsanteil);
+                                    heizungStrahlungsanteil: strahlungsanteil,
+                                    zusatzleitwertWK: zusatzleitwertWK);
             Abschnitt h = Aufbauen(Betriebsfall.HeizenGeregelt, in r);
             Vektor2 xStationaer = -1.0 * (h.System.Rechner.A.Inverse() * h.B);
             return h.Ausgang(2, xStationaer);
+        }
+
+        /// <summary>
+        /// <b>Der eingeschwungene Zustand</b> der beiden Massenknoten [°C] im geregelten Fall bei
+        /// festen Randbedingungen — x = −A⁻¹·b, dieselbe Rechnung wie in
+        /// <see cref="StationaereHeizlastW"/>. Der Anfangszustand der Gleichgewichtsform der
+        /// Stufenformel (Entwurf KP3 Abschnitt 2 Nr. 2, Nachweise N-AH1 und N-AH2). Der Zustand des
+        /// Modells bleibt unberührt.
+        /// </summary>
+        internal Vektor2 StationaererZustand(double thetaRaumC, double thetaOutC, double thetaEqC, double strahlungsanteil,
+                                             double zusatzleitwertWK = 0.0)
+        {
+            var r = new Stundenrand(thetaOutC, thetaEqC, thetaRaumC, double.PositiveInfinity, 0.0, 0.0, 0.0,
+                                    heizungStrahlungsanteil: strahlungsanteil,
+                                    zusatzleitwertWK: zusatzleitwertWK);
+            Abschnitt h = Aufbauen(Betriebsfall.HeizenGeregelt, in r);
+            return -1.0 * (h.System.Rechner.A.Inverse() * h.B);
+        }
+
+        /// <summary>
+        /// <b>Die Aufheizantwort des geregelten Falls</b> (Entwurf KP3 Abschnitt 2 Nr. 2, Festlegungen 4
+        /// und 5; Teilkonzept Konditionierungsprofile 4.2, 4.3, 6): die Systemmatrix A der Heizlage zum
+        /// Strahlungsanteil, die Ausgangszeile z = (Z₂₀, Z₂₁) der Leistung, die Empfindlichkeit
+        /// ΔB = ∂b/∂θ_soll und G_0 = ∂c₂/∂θ_soll beim Zusatzleitwert <paramref name="zusatzleitwertWK"/>;
+        /// daraus <see cref="WindowsFormsApplication1.Aufheizantwort"/> H_s, τ_k, C_k und C_w.
+        ///
+        /// <para><b>Zustandsfrei.</b> Das Fallsystem entsteht neu aus dem Parametersatz — derselbe
+        /// Bau wie die Heizlage des Lösers, aber ohne deren Rechenpuffer zu berühren; Zustand und
+        /// Lauf ändern sich nicht. Jede Exponentialfunktion läuft über
+        /// <see cref="Uebergangsrechner.Bei"/>, also über die Naht <see cref="Plattformrundung"/>.</para>
+        ///
+        /// <para><b>Warum der Zusatzleitwert</b> (Befund B3): Die Matrix der geregelten Lage enthält
+        /// g_ext nicht, die rechte Seite schon. Mit Strahlungsanteil &gt; 0 hängen ΔB, G_0 und damit
+        /// H_s und C_w vom Luftwechsel ab, die Zeitkonstanten nicht. Die Antworten liegen deshalb je
+        /// (Strahlungsanteil, Zusatzleitwert) in einem kleinen geordneten Speicher
+        /// (<see cref="AUFHEIZANTWORT_PLAETZE"/>, bitgenauer Schlüssel, Ersatz der Reihe nach); er
+        /// ändert keine Zahl, eine Antwort entsteht deterministisch aus ihrem Schlüssel.</para>
+        /// </summary>
+        /// <param name="strahlungsanteil">Strahlungsanteil der Heizung [–], 0 … 1.</param>
+        /// <param name="zusatzleitwertWK">Zusatzleitwert Außenluft ↔ Raumluft [W/K] über dem
+        /// Jahresminimum, endlich und ≥ 0 (der unbedingte Wert der Sprungstunde, Festlegung 12).</param>
+        /// <exception cref="ArgumentOutOfRangeException">bei einem Anteil außerhalb 0 … 1 oder einem
+        /// negativen oder nicht endlichen Zusatzleitwert.</exception>
+        internal Aufheizantwort Aufheizantwort(double strahlungsanteil, double zusatzleitwertWK)
+        {
+            if (!AnteilGueltig(strahlungsanteil))
+                throw new ArgumentOutOfRangeException(nameof(strahlungsanteil), strahlungsanteil,
+                    _bezeichnung + ": Der Strahlungsanteil der Aufheizantwort muss zwischen 0 und 1 liegen.");
+            if (!Endlich(zusatzleitwertWK) || zusatzleitwertWK < 0.0)
+                throw new ArgumentOutOfRangeException(nameof(zusatzleitwertWK), zusatzleitwertWK,
+                    _bezeichnung + ": Der Zusatzleitwert der Aufheizantwort muss endlich und nicht negativ sein.");
+
+            // Der Schlüssel ist BITGENAU, wie im Speicher der freien Fallsysteme.
+            long bitsAnteil = BitConverter.DoubleToInt64Bits(strahlungsanteil);
+            long bitsZusatz = BitConverter.DoubleToInt64Bits(zusatzleitwertWK);
+            for (int i = 0; i < _aufheizantwortBelegt; i++)
+            {
+                Aufheizantwort vorhanden = _aufheizantwort[i];
+                if (BitConverter.DoubleToInt64Bits(vorhanden.Strahlungsanteil) == bitsAnteil
+                    && BitConverter.DoubleToInt64Bits(vorhanden.ZusatzleitwertWK) == bitsZusatz)
+                    return vorhanden;
+            }
+
+            AufheizantwortNeubauten++;
+            var s = new Fallsystem(this, geregelt: true,
+                                   anteilAW: strahlungsanteil * _wAW,
+                                   anteilIW: strahlungsanteil * _wIW,
+                                   anteilLuft: 1.0 - strahlungsanteil,
+                                   gExt: _gExt,
+                                   schluessel: strahlungsanteil);
+
+            // ∂r′/∂θ_soll der geregelten Lage (Geregelt): (G_c,AW, G_c,IW, −(G_c,AW + G_c,IW + g_ext + Zusatz));
+            // c = −L⁻¹·r′ ist linear, also ∂c/∂θ = Konstante(∂r′/∂θ). b = ((G_Rest·θ_eq + G1·c₀)/C₁, G2·c₁/C₂).
+            double gExt = _gExt + zusatzleitwertWK;
+            s.Konstante(_gcAW, _gcIW, -(_gcAW + _gcIW + gExt), out double dc0, out double dc1, out double dc2);
+            var deltaB = new Vektor2((_g1 * dc0) / _c1, (_g2 * dc1) / _c2);
+            var antwort = new Aufheizantwort(strahlungsanteil, zusatzleitwertWK, s.Rechner,
+                                             new Vektor2(s.Z20, s.Z21), deltaB, dc2);
+
+            int platz;
+            if (_aufheizantwortBelegt < AUFHEIZANTWORT_PLAETZE) platz = _aufheizantwortBelegt++;
+            else { platz = _aufheizantwortNaechster; _aufheizantwortNaechster = (platz + 1) % AUFHEIZANTWORT_PLAETZE; }
+            _aufheizantwort[platz] = antwort;
+            return antwort;
         }
 
         // =============================================================================
@@ -694,7 +1227,7 @@ namespace WindowsFormsApplication1
 
             // Die Gründe und Fälle der Seite (Spiegel: Heizgrenze ↔ KeineKaelte usw.).
             Begrenzungsgrund grundNichts = heizen ? Begrenzungsgrund.Heizgrenze : Begrenzungsgrund.KeineKaelte;
-            Begrenzungsgrund grundLeistungMax = heizen ? Begrenzungsgrund.HeizleistungMax : Begrenzungsgrund.KuehlleistungMax;
+            Begrenzungsgrund grundLeistungMax = heizen ? KappungsgrundHeizen(in r) : KappungsgrundKuehlen(in r);
             Betriebsfall fallGrenze = heizen ? Betriebsfall.Heizgrenze : Betriebsfall.Kuehlgrenze;
 
             // Der freie Lauf ohne Heizung am Abschnittsbeginn und die Antwort der Raumluft auf
@@ -759,7 +1292,7 @@ namespace WindowsFormsApplication1
                 fall = heizen ? Betriebsfall.UebergabeGesaettigt : Betriebsfall.KuehluebergabeGesaettigt;
                 // Die Vorlaufgrenze der Kälteseite (7.2) ist nur dann der Grund, wenn die Übergabe
                 // gesättigt ist UND der Vorlauf an der Grenze steht.
-                grund = heizen ? Begrenzungsgrund.Uebergabe
+                grund = heizen ? (sr.VorlaufGekappt ? Begrenzungsgrund.VorlaufAnlage : Begrenzungsgrund.Uebergabe)
                         : sr.VorlaufGekappt ? Begrenzungsgrund.VorlaufgrenzeKuehlung : Begrenzungsgrund.KuehlUebergabe;
             }
             else
@@ -955,14 +1488,35 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Das System des freien Laufs. Der Zusatzleitwert steckt in der Luftbilanz und damit
         /// in A — ohne ihn gilt das im Erbauer gebildete System.
+        ///
+        /// <para><b>Der Zwischenspeicher</b> (Stufe KP1b, R7): Mit Lüftungskalender und
+        /// Nachtauskühlung wechselt der Zusatzleitwert stündlich zwischen wenigen Werten; ein
+        /// einziger Platz baute darum in fast jeder Stunde ein neues Fallsystem. Der Speicher hält
+        /// <see cref="FREISYSTEM_PLAETZE"/> davon, geordnet nach dem <b>bitgenauen</b> Schlüssel,
+        /// und ersetzt bei Überlauf der Reihe nach. Er ändert keine Zahl — das Fallsystem entsteht
+        /// deterministisch aus <c>_gExt + zusatzleitwert</c>.</para>
         /// </summary>
         private Fallsystem Freisystem(double zusatzleitwert)
         {
             if (zusatzleitwert == 0.0) return _frei;
-            if (_freiZusatz == null || _freiZusatz.Schluessel != zusatzleitwert)
-                _freiZusatz = new Fallsystem(this, geregelt: false, anteilAW: 0.0, anteilIW: 0.0, anteilLuft: 1.0,
-                                             gExt: _gExt + zusatzleitwert, schluessel: zusatzleitwert);
-            return _freiZusatz;
+            // Der Schluessel ist BITGENAU: Zwei Zusatzleitwerte, die sich im letzten Bit
+            // unterscheiden, sind zwei Systeme - der Speicher darf nie das falsche liefern.
+            long bits = BitConverter.DoubleToInt64Bits(zusatzleitwert);
+            for (int i = 0; i < _freiZusatzBelegt; i++)
+                if (_freiZusatzSchluessel[i] == bits) return _freiZusatz[i];
+
+            FreisystemNeubauten++;
+            var neu = new Fallsystem(this, geregelt: false, anteilAW: 0.0, anteilIW: 0.0, anteilLuft: 1.0,
+                                     gExt: _gExt + zusatzleitwert, schluessel: zusatzleitwert);
+            int plaetze = FreisystemPlaetzeFuerProbe;
+            if (plaetze <= 0) return neu;
+            if (plaetze > FREISYSTEM_PLAETZE) plaetze = FREISYSTEM_PLAETZE;
+            int platz;
+            if (_freiZusatzBelegt < plaetze) platz = _freiZusatzBelegt++;
+            else { platz = _freiZusatzNaechster; _freiZusatzNaechster = (platz + 1) % plaetze; }
+            _freiZusatz[platz] = neu;
+            _freiZusatzSchluessel[platz] = bits;
+            return neu;
         }
 
         private Fallsystem Heizsystem(double strahlungsanteil)
@@ -1008,16 +1562,212 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Bucht der geregelte Abschnitt im Mittel <paramref name="xMittel"/> eine Leistung mit falschem
+        /// Vorzeichen über den Zahlenrand hinaus? Nur die geregelten Fälle: Ihre Leistung ist der dritte
+        /// Ausgang und folgt dem Zustand; die Fälle fester Leistung und die Lagen mit Leitwert kehren
+        /// ihr Vorzeichen im Abschnitt nicht um.
+        /// </summary>
+        private static bool MittelVerletzt(Betriebsfall fall, in Abschnitt ab, Vektor2 xMittel)
+        {
+            if (!ab.System.Geregelt) return false;
+            double q = ab.Ausgang(2, xMittel);
+            return fall == Betriebsfall.HeizenGeregelt ? -q > Rechenrand.Zu(0.0)
+                 : fall == Betriebsfall.KuehlenGeregelt && q > Rechenrand.Zu(0.0);
+        }
+
+        /// <summary>
+        /// Bucht eine Lage mit Leitwert (Übergabe gesättigt oder im Regelbereich, beide Seiten) im Mittel
+        /// <paramref name="xMittel"/> eine Leistung mit falschem Vorzeichen — genau über den Zahlenrand, mit dem
+        /// die Abschnittsregel in <see cref="Schritt"/> abbräche? Die Raumluft des freien Laufs mit Leitwert kann
+        /// im Innern des Abschnitts über θ_H steigen und bis zum Ende wieder fallen; Endpunkt und Bisektion sehen
+        /// das nicht (Befund Abschnittsregel bei steifer Zone, Übergabeweg).
+        /// </summary>
+        private static bool LeitwertMittelVerletzt(Betriebsfall fall, in Abschnitt ab, Vektor2 xMittel)
+        {
+            if (!ab.MitLeitwert) return false;
+            double q = ab.LeitwertWK * (ab.ThetaHC - ab.Ausgang(2, xMittel));
+            double rand = Rechenrand.Zu(0.0) + ab.LeitwertWK * Rechenrand.Zu(ab.ThetaHC);
+            switch (fall)
+            {
+                case Betriebsfall.UebergabeGesaettigt:
+                case Betriebsfall.UebergabeRegelbereich:
+                    return -q > rand;
+                case Betriebsfall.KuehluebergabeGesaettigt:
+                case Betriebsfall.KuehluebergabeRegelbereich:
+                    return q > rand;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// <b>Das innere Extremum eines Abschnitts</b> (Rechenweg RP2a, Regelweg jeder Suche nach einer inneren
+        /// Umkehr): Der dritte Ausgang (Leistung bzw. Raumluft) ist auf dem Abschnitt c + a₁·e^(λ₁t) + a₂·e^(λ₂t) mit
+        /// reellen λ₁, λ₂ &lt; 0; seine Ableitung hat höchstens eine Nullstelle, und die ist geschlossen bekannt
+        /// (<see cref="Uebergangsrechner.NullstelleAbleitung"/>, im zusammenfallenden Zweig t* = −p/r). Geliefert wird
+        /// sie nur strikt im Innern, 0 &lt; t* &lt; τ, sonst <c>NaN</c>. Der Weg hängt weder an der Ableitung am
+        /// Abschnittsende — in einer schnellen Zone (beide Moden lange vor dem Ende abgeklungen, langsame Zeitkonstante
+        /// unter rund τ/37) ist sie nur noch Rundungsrauschen — noch an einer Suche über [0; τ], die dort nur die Ebene
+        /// des Endwerts sähe. Eine ungenaue Lage von t* bei fast gleichen Eigenwerten schadet nicht: Am Extremum ist der
+        /// Ausgang flach, und jede Prüfung danach misst den Ausgang selbst.
+        /// </summary>
+        private static double InneresExtremum(in Abschnitt ab, Vektor2 x, double tau)
+        {
+            double tStern = ab.System.Rechner.NullstelleAbleitung(ab.System.Z20, ab.System.Z21, ab.System.Rechner.A * x + ab.B);
+            return tStern > 0.0 && tStern < tau ? tStern : double.NaN;
+        }
+
+        /// <summary>
+        /// <b>Der erste Austritt im Innern eines Abschnitts, dessen Mittel die Abschnittsregel verletzt</b> (Rechenbefund
+        /// RB-Z4) — für die geregelten Fälle wie für die Lagen mit Leitwert (Übergabe gesättigt oder im Regelbereich,
+        /// beide Seiten). Der dritte Ausgang hat höchstens ein Extremum, das exakte <see cref="InneresExtremum"/>. Ist der
+        /// Fall dort über den Zahlenrand hinaus verletzt (<see cref="Verletzt"/>), sucht die Bisektion auf [0; t*] — dort
+        /// ist der Ausgang monoton — den ersten Austritt, wie die Bisektion des Endpunkts (Rand der Rechenschritte 7.1):
+        /// höchstens <see cref="HALBIERUNGEN"/> Halbierungen, Abbruch, sobald die Mitte nicht mehr echt zwischen ihren
+        /// Grenzen liegt. Die Stunde geht danach mit der Fallwahl am neuen Zustand weiter (freier Lauf); so bucht kein
+        /// Abschnitt Wärme und Kälte gegeneinander, und die Bilanz bleibt die des Modells. Ohne inneres Extremum oder ohne
+        /// Verletzung dort kommt <paramref name="tau"/> unverändert zurück — ein Mittel mit falschem Vorzeichen fällt dann
+        /// laut als Abschnittsregel. Gerechnet wird nur, wenn das Mittel die Regel verletzt
+        /// (<see cref="MittelVerletzt"/>, <see cref="LeitwertMittelVerletzt"/>).
+        /// </summary>
+        private static double ErsteInnereVerletzung(Betriebsfall fall, in Abschnitt ab, Vektor2 x, double tau, in Stundenrand r)
+        {
+            double tStern = InneresExtremum(in ab, x, tau);
+            if (!(tStern > 0.0)) return tau;
+            if (!Verletzt(fall, in ab, ab.System.Rechner.Bei(tStern).Ende(x, ab.B), in r)) return tau;
+            double unten = 0.0, oben = tStern;
+            for (int i = 0; i < HALBIERUNGEN; i++)
+            {
+                double mitte = 0.5 * (unten + oben);
+                if (!(mitte > unten) || !(mitte < oben)) break;
+                if (Verletzt(fall, in ab, ab.System.Rechner.Bei(mitte).Ende(x, ab.B), in r)) oben = mitte;
+                else unten = mitte;
+            }
+            return oben;
+        }
+
+        /// <summary>
+        /// Die Ableitung des dritten Ausgangs (Leistung bzw. Raumluft) im Zustand <paramref name="x"/>:
+        /// dz/dt = (Z₂₀, Z₂₁)·(A·x + b).
+        /// </summary>
+        private static double Ableitung(in Abschnitt ab, Vektor2 x)
+        {
+            Vektor2 v = ab.System.Rechner.A * x + ab.B;
+            return ab.System.Z20 * v.A + ab.System.Z21 * v.B;
+        }
+
+        /// <summary>
+        /// <b>Die innere Umkehr eines Abschnitts</b> (Rechenweg RP2a): Der dritte Ausgang ist auf dem Abschnitt
+        /// c + a₁·e^(λ₁t) + a₂·e^(λ₂t) und hat höchstens ein Extremum, die exakte Nullstelle der Ableitung
+        /// (<see cref="InneresExtremum"/>). Sie entscheidet allein, ob das Extremum im Innern liegt; die Ableitung am
+        /// Abschnittsende wird nicht gelesen. Die Art des Extremums folgt aus dem Vorzeichen der Ableitung am Anfang
+        /// (fällt der Ausgang, ist es ein Minimum). Geprüft wird die Grenze, die das Extremum verletzen kann:
+        /// geregeltes Heizen am Minimum gegen q = 0, geregeltes Kühlen am Maximum gegen q = 0, das Totband am Minimum
+        /// gegen θ_soll (mit Heizung) und am Maximum gegen θ_max (mit Kühlung). Wahr nur, wenn das Extremum strikt im
+        /// Innern liegt (0 &lt; t* &lt; τ), Anfang und Ende bis auf den Zahlenrand (<see cref="Rechenrand.Zu"/>) zulässig
+        /// sind und das Extremum die Grenze über den Zahlenrand hinaus verletzt; dann tragen
+        /// <paramref name="tExtremum"/>, <paramref name="grenze"/> und <paramref name="richtung"/> (−1 Minimum, +1
+        /// Maximum) die Lage. Die Überschreitung ist richtung·(z − grenze).
+        /// </summary>
+        private static bool InnenUmkehr(Betriebsfall fall, in Abschnitt ab, Vektor2 x, Vektor2 xEnde, double tau, in Stundenrand r,
+                                        out double tExtremum, out double grenze, out double richtung)
+        {
+            tExtremum = double.NaN;
+            grenze = double.NaN;
+            richtung = 0.0;
+            if (fall != Betriebsfall.HeizenGeregelt && fall != Betriebsfall.KuehlenGeregelt && fall != Betriebsfall.Totband)
+                return false;
+            double w0 = Ableitung(in ab, x);
+            if (!(w0 != 0.0)) return false;
+            richtung = w0 < 0.0 ? -1.0 : 1.0;
+            switch (fall)
+            {
+                case Betriebsfall.HeizenGeregelt:
+                    if (richtung < 0.0) grenze = 0.0;
+                    break;
+                case Betriebsfall.KuehlenGeregelt:
+                    if (richtung > 0.0) grenze = 0.0;
+                    break;
+                default:
+                    if (richtung < 0.0 && r.MitHeizung) grenze = r.ThetaSoll;
+                    else if (richtung > 0.0 && r.MitKuehlung) grenze = r.ThetaMax;
+                    break;
+            }
+            if (!Endlich(grenze)) return false;
+            double rand = Rechenrand.Zu(grenze);
+            if (richtung * (ab.Ausgang(2, x) - grenze) > rand) return false;
+            if (richtung * (ab.Ausgang(2, xEnde) - grenze) > rand) return false;
+            double tStern = InneresExtremum(in ab, x, tau);
+            if (!(tStern > 0.0)) return false;
+            Vektor2 xs = ab.System.Rechner.Bei(tStern).Ende(x, ab.B);
+            if (!(richtung * (ab.Ausgang(2, xs) - grenze) > rand)) return false;
+            tExtremum = tStern;
+            return true;
+        }
+
+        /// <summary>
+        /// Der erste (<paramref name="vorwaerts"/>) bzw. letzte Austritt über die Grenze einer inneren Umkehr:
+        /// Bisektion auf [0; t*] bzw. [t*; τ], wo der Ausgang monoton ist. Vorwärts der erste Zeitpunkt jenseits
+        /// der Grenze, rückwärts der erste danach wieder diesseits.
+        /// </summary>
+        private static double Austritt(in Abschnitt ab, Vektor2 x, double von, double bis, double grenze, double richtung, bool vorwaerts)
+        {
+            double rand = Rechenrand.Zu(grenze);
+            double unten = von, oben = bis;
+            for (int i = 0; i < HALBIERUNGEN; i++)
+            {
+                double mitte = 0.5 * (unten + oben);
+                if (!(mitte > unten) || !(mitte < oben)) break;
+                bool jenseits = richtung * (ab.Ausgang(2, ab.System.Rechner.Bei(mitte).Ende(x, ab.B)) - grenze) > rand;
+                if (jenseits == vorwaerts) oben = mitte;
+                else unten = mitte;
+            }
+            return oben;
+        }
+
+        /// <summary>
+        /// <b>Die Messung der inneren Lastumkehr</b> (Rechenweg RP2a, nur mit <see cref="Innenumkehrmessung"/>):
+        /// Hat der Abschnitt [0; τ] eine innere Umkehr (<see cref="InnenUmkehr"/>), zählt sie — geregelte Fälle
+        /// als Lastumkehr mit dem Integral der Leistung jenseits null [J], das Totband als Bandverletzung mit dem
+        /// Integral jenseits der Bandgrenze [K·s]. Exakt über das Mittel des Zustands auf [t₁; t₂]. Ändert nichts.
+        /// </summary>
+        private static void Messen(Betriebsfall fall, in Abschnitt ab, Vektor2 x, Vektor2 xEnde, double tau, in Stundenrand r,
+                                   ref double umkehrJ, ref int umkehrAb, ref double bandKs, ref int bandAb)
+        {
+            if (!InnenUmkehr(fall, in ab, x, xEnde, tau, in r, out double tE, out double grenze, out double richtung)) return;
+            double t1 = Austritt(in ab, x, 0.0, tE, grenze, richtung, vorwaerts: true);
+            double t2 = Austritt(in ab, x, tE, tau, grenze, richtung, vorwaerts: false);
+            double wert = 0.0;
+            if (t2 > t1)
+            {
+                Vektor2 x1 = t1 > 0.0 ? ab.System.Rechner.Bei(t1).Ende(x, ab.B) : x;
+                Vektor2 m = ab.System.Rechner.Bei(t2 - t1).Mittel(x1, ab.B);
+                wert = Math.Max(0.0, (t2 - t1) * richtung * (ab.Ausgang(2, m) - grenze));
+            }
+            if (ab.System.Geregelt)
+            {
+                umkehrJ += wert;
+                umkehrAb++;
+            }
+            else
+            {
+                bandKs += wert;
+                bandAb++;
+            }
+        }
+
+        /// <summary>
         /// Die Abschnittsregel ist verletzt (F-K3): Ein Heizfall hat Kälte bzw. ein Kühlfall
         /// Wärme gebucht. Kein Teilstundenergebnis, der Zustand bleibt unverändert.
         /// </summary>
         private void AbschnittsregelVerletzt(Betriebsfall fall, double q)
-        {
-            throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt,
-                _bezeichnung + ": Ein Abschnitt im Betriebsfall " + fall + " bucht die Leistung " +
-                q.ToString("G6", CultureInfo.InvariantCulture) + " W mit falschem Vorzeichen " +
-                "(Abschnittsregel: je Abschnitt nie Heizen und Kühlen zugleich).");
-        }
+            => throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt, Abschnittsregeltext(fall, q));
+
+        /// <summary>Der Text einer verletzten Abschnittsregel (F-K3) — geworfen in <see cref="Schritt"/>, als Grund gemeldet im Musterweg.</summary>
+        private string Abschnittsregeltext(Betriebsfall fall, double q)
+            => _bezeichnung + ": Ein Abschnitt im Betriebsfall " + fall + " bucht die Leistung " +
+               q.ToString("G6", CultureInfo.InvariantCulture) + " W mit falschem Vorzeichen " +
+               "(Abschnittsregel: je Abschnitt nie Heizen und Kühlen zugleich).";
 
         private void RandPruefen(in Stundenrand r)
         {
@@ -1292,13 +2042,13 @@ namespace WindowsFormsApplication1
             /// <summary>Strahlungsanteil der Übergabe [–].</summary>
             internal double Strahlungsanteil { get; }
 
-            /// <summary>Kälteseite: Steht der Vorlauf an der Vorlaufgrenze (7.2)? Wärmeseite: nie.</summary>
+            /// <summary>Kälteseite: Steht der Vorlauf an der Vorlaufgrenze (7.2)? Wärmeseite: am Angebot der Anlage (F6, AK2).</summary>
             internal bool VorlaufGekappt { get; }
 
             /// <summary>Die Wärmeseite (Schritt H).</summary>
             internal static Seitenrand Heizseite(in Stundenrand r)
                 => new Seitenrand(r.ThetaSoll, r.VorlaufC, r.HeizleistungMaxW, r.Uebergabe,
-                                  r.HeizungStrahlungsanteil, false);
+                                  r.HeizungStrahlungsanteil, r.VorlaufAnlageGekappt);
 
             /// <summary>Die Kälteseite (Schritt K, E37).</summary>
             internal static Seitenrand Kaelteseite(in Stundenrand r)
@@ -1374,6 +2124,31 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// <b>Der Zustand einer Zone zwischen zwei Stunden</b> (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V1) — unveränderlich:
+    /// die Massentemperaturen der Außen- und Innenbauteile [°C] und das Muster der zuletzt gerechneten Stunde
+    /// (<c>null</c> vor der ersten Stunde). Gebildet von <see cref="Zonenmodell2K.ZustandSichern"/>, gesetzt mit
+    /// <see cref="Zonenmodell2K.ZustandSetzen"/>.
+    /// </summary>
+    internal readonly struct Zonenzustand
+    {
+        internal Zonenzustand(double thetaMAw, double thetaMIw, Stundenmuster muster)
+        {
+            ThetaMAw = thetaMAw;
+            ThetaMIw = thetaMIw;
+            Muster = muster;
+        }
+
+        /// <summary>Massentemperatur der Außenbauteile [°C].</summary>
+        internal double ThetaMAw { get; }
+
+        /// <summary>Massentemperatur der Innenbauteile [°C].</summary>
+        internal double ThetaMIw { get; }
+
+        /// <summary>Das Muster der zuletzt gerechneten Stunde; <c>null</c> vor der ersten Stunde.</summary>
+        internal Stundenmuster Muster { get; }
     }
 
     /// <summary>

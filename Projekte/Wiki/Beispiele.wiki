@@ -1,0 +1,131 @@
+Die folgenden Beispiele zeigen, wie typische Aufgabenstellungen in EPOS-Plan abgebildet werden: welche Module Sie benötigen, welche Eingaben den Ausschlag geben, worauf bei der Auslegung zu achten ist und welche Ergebnisgrößen die eigentliche Aussage liefern.
+
+{{Hinweis|Die genannten Zahlenwerte sind Größenordnungen zur Orientierung und ersetzen keine objektbezogene Berechnung.}}
+
+== Einfamilienhaus mit Wärmepumpe ==
+{{Anker|einfamilienhaus-mit-waermepumpe|ab-efh}}
+
+'''Ausgangssituation.''' Ein bestehendes Einfamilienhaus, Baujahr 1985, rund 160 Quadratmeter Wohnfläche, soll von einem Ölkessel auf eine Luft-Wasser-Wärmepumpe umgestellt werden. Aus der Abrechnung sind 2.400 Liter Heizöl pro Jahr bekannt, die Heizkörper sind für 55 Grad Vorlauf ausgelegt, ein Teilaustausch gegen Flächenheizung steht zur Diskussion.
+
+'''Vorgehen.''' Legen Sie das Projekt mit den Bausteinen Gebäude, Brauchwasser und Wärmepumpe an und wählen Sie die Klimaregion des Standorts. Für das Gebäude greifen Sie auf den Katalog zurück, filtern auf Wohngebäude und die Baualtersklasse 1984–1994. Statt der Wohnfläche geben Sie als Bezugsgröße den Ölverbrauch an; EPOS-Plan rechnet ihn mit dem Jahresnutzungsgrad des alten Kessels in Nutzwärme um und skaliert das Gebäudemodell entsprechend. Damit ist der Jahresgang an den tatsächlichen Verbrauch gebunden und nicht an eine theoretische Norm-Heizlast. Den Warmwasserbedarf ergänzen Sie über einen Brauchwassertyp mit Jahresverbrauch, typisch sind 12 bis 15 Kilowattstunden je Quadratmeter und Jahr oder rund 500 Kilowattstunden je Person und Jahr.
+
+'''Auslegung.''' Wählen Sie die Wärmepumpe aus dem Katalog und filtern Sie auf Luft/Wasser, stetige Regelung und einen Vorlauftemperaturbereich, der 55 Grad einschließt. Entscheidend ist, das Kennfeld für die richtige Vorlauftemperatur zu verwenden: Zwischen 35 und 55 Grad Vorlauf liegen bei gleicher Maschine schnell 30 Prozent Unterschied in der Leistungszahl. Aktivieren Sie den Heizstab und stellen Sie die Betriebsweise auf parallel oder teilparallel. Rechnen Sie beide Varianten – 55 Grad im Bestand und 40 Grad nach Heizkörpertausch – und vergleichen Sie die Ergebnisse.
+
+'''Worauf zu achten ist.''' Die aussagekräftigsten Größen sind der Anteil des Heizstabs an der Jahreswärme, der ermittelte Bivalenzpunkt und die Vollbenutzungsstunden. Ein Heizstabanteil über etwa fünf Prozent deutet auf eine zu klein gewählte Maschine oder eine zu hohe Vorlauftemperatur hin. Im Diagramm Leistung über Außentemperatur sehen Sie unmittelbar, ab welcher Temperatur die Wärmepumpe den Bedarf nicht mehr allein deckt. Sind Sperrzeiten des Netzbetreibers vereinbart, tragen Sie diese ein – sie verschieben den Bivalenzpunkt spürbar.
+
+== Mehrfamilienhaus ==
+{{Anker|mehrfamilienhaus|ab-mfh}}
+
+'''Ausgangssituation.''' Ein Mehrfamilienhaus mit 18 Wohneinheiten und rund 1.400 Quadratmetern Wohnfläche soll klimafreundlich versorgt werden. Der Warmwasserbedarf ist ganzjährig hoch, eine Zirkulationsleitung ist vorhanden, auf dem Dach stehen etwa 300 Quadratmeter für Photovoltaik zur Verfügung.
+
+'''Vorgehen.''' Neben Gebäude und Brauchwasser aktivieren Sie Wärmepumpe, Pufferspeicher, Photovoltaik und Stromspeicher sowie die Stromverbraucher für den Allgemeinstrom. Im Unterschied zum Einfamilienhaus verschiebt sich das Verhältnis der Bedarfsanteile deutlich: Warmwasser kann ein Drittel der Jahreswärme ausmachen und bestimmt den Sommerbetrieb vollständig. Legen Sie den Warmwasseranteil deshalb sorgfältig fest und berücksichtigen Sie die Zirkulationsverluste im Jahresverbrauch – sie liegen erfahrungsgemäß in der Größenordnung des Nutzwarmwassers selbst.
+
+'''Auslegung.''' Ordnen Sie der Wärmepumpe einen Pufferspeicher zu und legen Sie die Ein- und Abschaltschwellen fest. Im Sommer zeigt die Simulation dann das gewünschte Verhalten: Die Maschine läuft in Zyklen, lädt den Speicher und bleibt anschließend aus, bis die Einschaltschwelle wieder unterschritten wird. Setzen Sie zwei Wärmepumpen ein, geben Sie ihnen unterschiedliche Prioritäten; eine kleinere Maschine für Warmwasser mit der Wärmesenke Warmwasser und eine größere für die Heizung ist eine bewährte Aufteilung. Die Photovoltaik legen Sie über Modulanzahl, Neigung und Azimut an; der Stromspeicher wird zunächst mit einer moderaten Kapazität angesetzt.
+
+'''Worauf zu achten ist.''' Rechnen Sie den Stromspeicher in mehreren Größen und beobachten Sie in der Autarkieanalyse, ab wann der Zuwachs an Eigenverbrauch abflacht – üblicherweise deutlich unterhalb der Kapazität, die aus dem Tagesverbrauch überschlägig folgen würde. Prüfen Sie zusätzlich, ob der PV-optimierte Betriebsmodus der Wärmepumpe den Eigenverbrauch weiter erhöht, indem er die Maschine in den Mittagsstunden hochfährt und den Puffer als thermischen Speicher nutzt.
+
+== Verwaltungsgebäude ==
+{{Anker|verwaltungsgebaeude|ab-verwaltung}}
+
+'''Ausgangssituation.''' Ein Bürogebäude mit 4.500 Quadratmetern Nutzfläche, Betrieb werktags von 7 bis 18 Uhr, geringer Warmwasserbedarf, hoher Strombedarf durch Beleuchtung, IT und Lüftung.
+
+'''Vorgehen.''' Wählen Sie im Gebäudekatalog ein Nichtwohngebäude; EPOS-Plan rechnet es Stunde für Stunde nach VDI 6007. Entscheidend sind hier die Nutzungsrandbedingungen im Reiter ''Konditionierung'': Sollwerte für Tag, Nacht und Wochenende, Ferien- beziehungsweise Betriebsruhezeiten, Lüftung, Geräte und Personen; Vorlagen dafür liefert der Katalog der [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]]. Wird das Gebäude gekühlt, rechnet EPOS-Plan den Kältebedarf stündlich mit und deckt ihn mit Wärmepumpe im Kühlbetrieb oder Kältemaschine ([[Programm Dokumentation/Kühlung|Kühlung]]). Der Strombedarf wird über Verbrauchertypen erfasst; liegt ein Viertelstundenlastgang des Netzbetreibers vor, lesen Sie ihn direkt ein – für Bürogebäude ist das die mit Abstand belastbarste Grundlage.
+
+'''Auslegung.''' Typisch ist die Kombination aus Wärmepumpe und Photovoltaik. Der Vorteil liegt in der Gleichzeitigkeit: Anders als im Wohngebäude fällt der Strombedarf genau dann an, wenn die Sonne scheint, sodass sich hohe Eigenverbrauchsanteile ohne großen Batteriespeicher erreichen lassen. Prüfen Sie deshalb zuerst die Variante ohne Speicher und ergänzen Sie ihn nur, wenn die Autarkieanalyse einen nennenswerten Zuwachs zeigt.
+
+'''Worauf zu achten ist.''' Die Wärmelast eines Bürogebäudes ist stark von internen Gewinnen und Wochenendabsenkung geprägt; achten Sie auf die Montagmorgen-Spitzen im Jahresgang, die die erforderliche Erzeugerleistung bestimmen. Ein Blick auf die Jahresdauerlinie lohnt sich: Wenige hundert Stunden im Jahr bestimmen die Spitzenlast, was die klassische Auslegung mit Grundlasterzeuger und Spitzenlastkessel begründet.
+
+== Schwimmbad ==
+{{Anker|schwimmbad|ab-schwimmbad}}
+
+'''Ausgangssituation.''' Ein Hallenbad mit 25-Meter-Becken und Lehrschwimmbecken. Der Wärmebedarf besteht aus Beckenwassererwärmung, Verdunstungsverlusten, Lüftungswärme, Duschwarmwasser und Raumheizung – und ist über das ganze Jahr nahezu konstant.
+
+'''Vorgehen.''' Das Charakteristische am Schwimmbad ist der hohe, gleichmäßige Grundlastbedarf. Bilden Sie ihn über den Baustein Prozesswärme ab: Sie hinterlegen die Monatswerte für Beckenerwärmung und Verdunstung sowie ein Wochenprofil, das die Öffnungszeiten und die Nachtabdeckung abbildet. Duschwarmwasser erfassen Sie separat über einen Brauchwassertyp mit ausgeprägten Tagesspitzen, die Raumheizung über das Gebäudemodul mit den erhöhten Raumsolltemperaturen der Badehalle.
+
+'''Auslegung.''' Genau diese flache Bedarfskurve macht das Schwimmbad zum klassischen Einsatzfall für ein Blockheizkraftwerk in wärmegeführter Fahrweise: Hohe Vollbenutzungsstunden sind die Voraussetzung für einen wirtschaftlichen Betrieb, und ein Bad erreicht sie mühelos. Ergänzen Sie einen Spitzenlastkessel und ordnen Sie beiden Erzeugern einen Pufferspeicher zu, damit das BHKW nicht taktet. Alternativ oder ergänzend lässt sich eine Wärmepumpe rechnen, die die Abwärme der Lüftungsanlage als Quelle nutzt – dafür hinterlegen Sie ein eigenes Quellprofil oder eine konstante Quellentemperatur statt der Außenluft.
+
+'''Worauf zu achten ist.''' Prüfen Sie die Betriebsstunden des BHKW und den Wärmeüberschuss. Wird Wärme weggekühlt, ist das Modul zu groß oder der Pendelspeicher zu klein. Vergleichen Sie außerdem die wärmegeführte mit der stromgeführten Fahrweise; im Bad mit hohem Eigenstrombedarf für Umwälzpumpen und Lüftung kann letztere wirtschaftlich vorteilhaft sein.
+
+== Industriebetrieb mit Prozesswärme ==
+{{Anker|industriebetrieb-mit-prozesswaerme|ab-industrie}}
+
+'''Ausgangssituation.''' Ein produzierender Betrieb im Zweischichtbetrieb benötigt Prozesswärme auf zwei Temperaturniveaus, dazu Hallenheizung und einen hohen, gleichmäßigen Strombedarf. Die Frage lautet, welcher Anteil sich elektrifizieren lässt und ob ein BHKW wirtschaftlich bleibt.
+
+'''Vorgehen.''' Erfassen Sie die Prozesswärme über eigene Prozesstypen mit Monatswerten und einem Wochenprofil, das den Schichtbetrieb abbildet – zwei Schichten von Montag bis Freitag ergeben ein völlig anderes Profil als ein durchlaufender Prozess und führen zu anderen Erzeugergrößen. Legen Sie für jedes Temperaturniveau einen eigenen Prozesswärmeeintrag an. Die Hallenheizung kommt aus dem Gebäudemodul, der Strombedarf idealerweise aus dem gemessenen Viertelstundenlastgang.
+
+'''Auslegung.''' Konfigurieren Sie die Erzeuger als Kaskade: zuerst der Grundlasterzeuger – BHKW oder Hochtemperatur-Wärmepumpe –, danach der Kessel für die Spitzen. Für die Wärmepumpe entscheidet die verfügbare Wärmequelle über die Wirtschaftlichkeit; steht Prozessabwärme zur Verfügung, hinterlegen Sie sie als konstante Quellentemperatur oder als Quellprofil; ist ihre Menge begrenzt, bilden Sie das über die Quelle Pufferspeicher mit ihrer Regeneration ab.
+
+'''Worauf zu achten ist.''' Achten Sie auf den Restwärmebedarf am Ende der Kaskade – er zeigt, ob die Auslegung die Lastspitzen trägt. Der CSV-Export der Stundenwerte ist hier besonders nützlich, weil sich Prozess- und Heizwärme in der Weiterverarbeitung getrennt auswerten und mit Betriebsdaten abgleichen lassen. Bei elektrifizierten Prozessen sollten Sie die Rückwirkung auf die Netzanschlussleistung prüfen: Der Jahreshöchstwert des Strombedarfs steigt durch Wärmepumpen und Elektrokessel deutlich an.
+
+Weitere gewerbliche Anwendungen sind unter [[Industrie und Gewerbe]] zusammengestellt.
+
+== Quartier mit Wärmenetz ==
+{{Anker|quartier-mit-waermenetz|ab-quartier}}
+
+'''Ausgangssituation.''' Mehrere Gebäude unterschiedlichen Alters und unterschiedlicher Nutzung sollen über ein Nahwärmenetz aus einer gemeinsamen Energiezentrale versorgt werden.
+
+'''Vorgehen.''' Legen Sie jedes Gebäude als eigenen Eintrag im Projekt an – mit eigener Baualtersklasse, eigener Fläche oder eigenem Verbrauch. EPOS-Plan addiert die Stundenprofile, sodass die Gleichzeitigkeit realistisch abgebildet wird und nicht über einen pauschalen Gleichzeitigkeitsfaktor abgeschätzt werden muss. Die Netzverluste tragen Sie als Prozentsatz oder als absoluten Jahreswert ein; sie werden gleichmäßig über das Jahr aufgeschlagen und wirken sich auf die Erzeugerauslegung unmittelbar aus.
+
+'''Auslegung.''' In der Zentrale bestimmen Sie die Reihenfolge der Erzeuger, üblicherweise Wärmepumpe oder BHKW in der Grundlast, Solarthermie als Ergänzung und Kessel für die Spitzen. Der zentrale Pufferspeicher wird den Grundlasterzeugern zugeordnet und über die Schwellenwerte bewirtschaftet.
+
+'''Worauf zu achten ist.''' Vergleichen Sie den Summenjahresgang mit der Summe der Einzelspitzen – der Unterschied ist der eigentliche Vorteil des Netzes und rechtfertigt eine kleinere Erzeugerleistung. Beobachten Sie außerdem, wie stark die Netzverluste die Sommerlast anheben; sie bestimmen, ob sich ein Sommerbetrieb des Grundlasterzeugers noch lohnt.
+
+== Gewerbebetrieb mit Photovoltaik und Speicher ==
+{{Anker|gewerbebetrieb-mit-photovoltaik-und-speicher|ab-gewerbe}}
+
+'''Ausgangssituation.''' Ein Handwerks- oder Gewerbebetrieb mit Werkstatt und Büro, hohem Tagstromverbrauch, Halle mit Heizungsbedarf und großer, gut ausgerichteter Dachfläche.
+
+'''Vorgehen.''' Der gemessene Lastgang ist hier die wichtigste Eingangsgröße; bereits ein Jahr Viertelstundenwerte des Netzbetreibers verbessert die Aussage erheblich gegenüber einem Standardprofil. Die Photovoltaik legen Sie mit realer Modulanzahl, Neigung und Azimut an, gegebenenfalls in mehreren Teilfeldern für Ost- und Westdach, was die Erzeugung über den Tag verteilt und den Eigenverbrauch erhöht.
+
+'''Auslegung.''' Rechnen Sie zunächst die reine PV-Anlage und lesen Sie Eigenverbrauchsanteil und Überschuss ab. Ergänzen Sie danach schrittweise Batteriespeicher und Wärmepumpe. Der PV-optimierte Betriebsmodus der Wärmepumpe verschiebt Wärmeerzeugung in die Mittagsstunden und nutzt Puffer- und Gebäudemasse als Speicher – häufig günstiger als zusätzliche Batteriekapazität.
+
+'''Worauf zu achten ist.''' Entscheidend sind Eigenverbrauchsquote und Autarkiegrad, nicht der Jahresertrag der Anlage. Ein Blick auf einen einzelnen Sommertag im Stromdiagramm zeigt anschaulich, wie Erzeugung, Direktverbrauch, Speicherladung und Einspeisung zusammenspielen.
+
+== Hotel und Pflegeheim ==
+{{Anker|hotel-und-pflegeheim|ab-hotel}}
+
+'''Ausgangssituation.''' Beherbergung oder Pflege mit ganzjährig hohem Warmwasserbedarf, Zirkulation, erhöhten Hygieneanforderungen an die Speichertemperatur und gleichmäßigem Strombedarf für Küche, Wäscherei und Lüftung.
+
+'''Vorgehen.''' Der Schwerpunkt liegt auf dem Brauchwasser. Wählen Sie einen Typ mit passendem Tagesprofil – im Hotel mit ausgeprägter Morgenspitze, im Pflegeheim gleichmäßiger über den Tag verteilt – und setzen Sie den Jahresverbrauch einschließlich Zirkulationsverlusten an. Alternativ erzeugt das [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] den Bedarf nach VDI 6002 aus Nutzungszonen, mit der Zirkulation als eigener Teilreihe. Die Raumheizung ergänzen Sie über das Gebäudemodul.
+
+'''Auslegung.''' Die hohen Temperaturanforderungen sprechen für eine Kombination: Eine Wärmepumpe deckt Heizung und Warmwasservorwärmung, ein zweiter Erzeuger übernimmt die Nacherwärmung. In EPOS-Plan bilden Sie das über die Wärmesenken ab – eine Maschine mit der Senke Heizung, eine zweite mit der Senke Warmwasser, jeweils mit eigener Vorlauftemperatur und eigener Priorität. Der gleichmäßige Bedarf macht das Objekt zugleich zu einem guten Einsatzfall für ein BHKW.
+
+'''Worauf zu achten ist.''' Beobachten Sie den Sommerbetrieb: Wenn außer Warmwasser nichts anliegt, entscheidet die Speicherbewirtschaftung darüber, ob die Erzeuger sinnvoll laufen oder takten. Die getrennte Darstellung von Heizwärme und Warmwasser im Bedarfsdiagramm zeigt die Verhältnisse unmittelbar.
+
+== Schule und Sporthalle ==
+{{Anker|schule-und-sporthalle|ab-schule}}
+
+'''Ausgangssituation.''' Schulgebäude mit angeschlossener Sporthalle, Unterrichtsbetrieb an Werktagen, ausgeprägte Ferienzeiten, Hallennutzung durch Vereine auch abends und am Wochenende.
+
+'''Vorgehen.''' Hier zahlen sich die [[Programm Dokumentation/Gebäude#kalender|Kalender]] des Gebäudes aus: Ferien, Feiertage und Betriebspausen als Perioden mit eigenen Sollwerten bilden den realen Betrieb ab. Legen Sie Schulgebäude und Sporthalle als getrennte Gebäude an, da sich Nutzungszeiten und Solltemperaturen unterscheiden. Die Duschen der Halle erfassen Sie über einen eigenen Brauchwassertyp mit Abendspitzen.
+
+'''Auslegung.''' Die stark schwankende Last mit ausgeprägten Aufheizspitzen nach Wochenenden und Ferien ist die eigentliche Herausforderung. Ein Pufferspeicher glättet die Spitzen und erlaubt eine kleinere Grundlastmaschine; rechnen Sie mehrere Speichergrößen und beobachten Sie die Wirkung auf die Spitzenkesselleistung.
+
+'''Worauf zu achten ist.''' Der Kennwert „minimale Spitzenkesselleistung“ im Ergebnisbereich der Wärmepumpe zeigt, welche Reserve tatsächlich benötigt wird. Prüfen Sie außerdem, ob die Aufheizspitzen durch eine zeitigere Anhebung der Solltemperatur entschärft werden können – im Modell lässt sich das über die Kalender oder die [[Programm Dokumentation/Gebäudemodell VDI 6007#aufheizoptimierung|Aufheizoptimierung]] unmittelbar nachvollziehen.
+
+== Empfohlenes Vorgehen bei eigenen Projekten ==
+{{Anker|empfohlenes-vorgehen-bei-eigenen-projekten|ab-vorgehen}}
+
+Unabhängig vom Anwendungsfall hat sich dieselbe Reihenfolge bewährt. Beginnen Sie mit dem Bedarf und prüfen Sie ihn gegen bekannte Verbrauchsdaten, bevor Sie Technik hinzufügen – ein um zwanzig Prozent falscher Bedarf macht jede nachfolgende Auslegung wertlos. Rechnen Sie anschließend eine einfache Referenzvariante, etwa nur Kessel, um eine Vergleichsbasis zu haben. Fügen Sie danach die Komponenten einzeln hinzu und beobachten Sie jeweils, welche Kennzahl sich wie verändert; so bleibt nachvollziehbar, welcher Baustein welchen Beitrag leistet. Erst wenn die Technik steht, hinterlegen Sie Investitions-, Betriebs- und Energiekosten, denn dann liegen die Mengen fest, auf die sich die Kosten beziehen.
+
+== Beispielrechnungen zum Download ==
+{{Anker|beispielrechnungen-zum-download|ab-schulung}}
+
+Um Ihnen den Umgang mit dem Programm EPOS-Plan näherzubringen, haben wir einige Beispielrechnungen zusammengestellt. Sie stammen aus dem Schulungsbereich und werden derzeit für die aktuelle Programmversion überarbeitet; sobald die Dateien vorliegen, werden sie hier bereitgestellt.
+
+Vorgesehen sind folgende Beispielaufgaben:
+* Projektdatei Aufbau und Inhalt
+* Verzeichnisstruktur EPOS-Plan
+* Einfügen eines Firmenlogos
+* Krankenhaus
+* Mehrfamilienhaus
+* Stromverbraucher eingeben
+* Hotel mit Schwimmbad (mit Umstellung von Öl auf Erdgas)
+* Reihenhaussiedlung (Neubau)
+* Industriehalle
+* Saunalandschaft
+* Schulkomplex
+
+{{Navigation Beispiele}}
+
+[[Kategorie:Beispiele]]

@@ -35,7 +35,10 @@ namespace WindowsFormsApplication1
                 ImOrdnerZeigen = ImOrdnerZeigen,
                 InWordOeffnen = InWordOeffnen,
                 SchreibgeschuetztOeffnen = SchreibgeschuetztOeffnen,
-                OrdnerWaehlbar = true
+                OrdnerWaehlbar = true,
+                // Unter Windows bleibt die Datei liegen, aus der „Hinzufügen…“ kopiert hat — es gibt
+                // ein Original, das sich ändern kann („Original geändert – übernehmen?“).
+                HerkunftDauerhaft = true
             };
         }
 

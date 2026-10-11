@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
 using SkiaSharp;
@@ -51,7 +52,6 @@ namespace WindowsFormsApplication1
         private static readonly Farbrolle ROLLE_PROZESS = Farbrolle.PROZESSWAERME;
         private static readonly Farbrolle ROLLE_GEBAEUDE = Farbrolle.HEIZWAERME;
         private static readonly Farbrolle ROLLE_BRAUCHWASSER = Farbrolle.WARMWASSER;
-        private static readonly Farbrolle ROLLE_JAHR = Farbrolle.WARMWASSER;
 
         /// <summary>
         /// Der Feldsatz des Strombedarfs — seit iU9-W9.5 eigene Methode.
@@ -101,71 +101,163 @@ namespace WindowsFormsApplication1
                     Sicht(Text_("BERG_OPT_STROM", "Strombedarf"), simulation.Strombedarf_monat,
                           Text_("BERG_BILD_STROM", "Strombedarf Monatsübersicht"), ROLLE_STROM)
                 },
-                Ganglinie = Gangquelle(simulation)
+                Grafik = Grafikquelle(new[] { StromReihe(simulation) },
+                                      Text_("BERG_OPT_STROM", "Strombedarf"),
+                                      Text_("BERG_ACHSE_STROMBEDARF", "Strombedarf [kW]"))
             };
         }
 
         /// <summary>
-        /// Die Bildquelle der Zeitstufen WOCHE und TAG (Anwenderwunsch W8‑E‑2).
-        ///
-        /// <para><b>Auf Zuruf gezeichnet, nicht auf Vorrat.</b> 52 Wochen und 365 Tage
-        /// sind 417 Bilder; die Hülle gibt deshalb einen Delegaten hinein und zeichnet
-        /// erst, wenn der Anwender die Stufe wählt — dasselbe Muster wie beim
-        /// Stromgang-Reiter der Ergebnisseite (W11b).</para>
-        ///
-        /// <para><b>Kein neues Renderer-Bild.</b> Gezeichnet wird mit
-        /// <c>ChartRenderer.Jahresverlauf</c> und einem <c>Achsenfenster</c> — dem
-        /// Zuschnitt, den die Ergebnisseite für ihren Datenzoom schon benutzt.</para>
-        ///
-        /// <para><b>Das Raster kommt aus dem Rechenobjekt.</b>
-        /// <c>Strombedarf_viertelStundenwerte</c> trägt je nach Weg 8 760 Stunden- oder
-        /// 35 040 Viertelstundenwerte; <c>Stuetzstellen</c> sagt, welches von beidem
-        /// vorliegt. Ohne diese Angabe träfe „Woche 12" die falschen Stunden.</para>
+        /// Die Stromreihe des Grafikreiters. <c>Strombedarf_viertelStundenwerte</c> trägt je nach
+        /// Weg 8 760 Stunden- oder 35 040 Viertelstundenwerte [kW]; <c>Stuetzstellen</c> sagt, wie
+        /// viele davon belegt sind.
         /// </summary>
-        private static Ganglinienquelle Gangquelle(SimulationStrombedarf simulation)
+        private static Grafikreihe StromReihe(SimulationStrombedarf simulation)
         {
-            if (simulation == null) return null;
+            double[] reihe = simulation?.Strombedarf_viertelStundenwerte;
+            if (reihe == null) return null;
+            int belegt = Math.Min(simulation.Stuetzstellen, reihe.Length);
+            if (belegt <= 0) return null;
+            var werte = new double[belegt];
+            Array.Copy(reihe, werte, belegt);
+            return new Grafikreihe(Text_("BERG_OPT_STROM", "Strombedarf"), werte, ROLLE_STROM);
+        }
 
-            double[] reihe = simulation.Strombedarf_viertelStundenwerte;
-            int belegt = Math.Min(simulation.Stuetzstellen, reihe == null ? 0 : reihe.Length);
-
-            return Gangquelle(reihe, belegt,
-                              Text_("BERG_BILD_STROM_GANG", "Strombedarf Ganglinie"),
-                              Text_("BERG_ACHSE_STROMBEDARF", "Strombedarf [kW]"), ROLLE_STROM);
+        /// <summary>Eine Bedarfsreihe des Grafikreiters: Legendenname, Leistung je Stützstelle [kW], Farbrolle.</summary>
+        private sealed record Grafikreihe(string Name, double[] Werte, Farbrolle Rolle)
+        {
+            /// <summary>Volles Jahr im Stunden- oder Viertelstundenraster?</summary>
+            public bool Brauchbar => Werte != null && (Werte.Length == 8760 || Werte.Length == 35040);
         }
 
         /// <summary>
-        /// Die Wochen- und Tagesquelle einer beliebigen Bedarfsreihe — der Strom und die
-        /// drei Wärmesichten (Prozesse, Gebäude, Brauchwasser) gehen denselben Weg.
-        /// <paramref name="belegt"/> Werte werden gelesen; mehr als 8 760 heißt
-        /// Viertelstundenraster. <c>null</c> bei weniger als zwei Tagen.
+        /// <b>Die Bildquelle des Grafikreiters</b> (Anwenderwunsch WG vom 10.10.2026): je Auswahl der
+        /// Sichten und Raster ein Bild — die Jahresganglinie (<c>JahresgangModell</c>, eine Linie je
+        /// Sicht, Zeitachse mit Zoom) oder die Summen je Monat, Woche und Tag
+        /// (<c>SaeulenstapelModell</c>, eine Schicht je Sicht). Die Summen rechnet der Kern
+        /// (<see cref="Zeitsummen"/>); umgerechnet wird über <see cref="Energieeinheit"/>.
+        /// <paramref name="reihen"/> steht Index für Index neben den Sichten; <c>null</c> = keine Sicht
+        /// hat ein volles Jahr.
         /// </summary>
-        private static Ganglinienquelle Gangquelle(double[] reihe, int belegt, string titel,
-                                                   string yTitel, Farbrolle rolle)
+        private static Bedarfsgrafikquelle Grafikquelle(IReadOnlyList<Grafikreihe> reihen,
+                                                        string sammelname, string yTitel)
         {
-            belegt = Math.Min(belegt, reihe == null ? 0 : reihe.Length);
-            if (belegt < 48) return null;
+            var mit = new List<int>();
+            for (int i = 0; i < reihen.Count; i++)
+                if (reihen[i] != null && reihen[i].Brauchbar) mit.Add(i);
+            if (mit.Count == 0) return null;
 
-            // Werte je Stunde: 1 im Stundenraster, 4 im Viertelstundenraster.
-            int jeStunde = belegt > 8760 ? 4 : 1;
-            double[] werte = new double[belegt];
-            for (int i = 0; i < belegt; i++) werte[i] = reihe[i];
+            List<Grafikreihe> Gewaehlt(IReadOnlyList<int> wahl)
+                => (wahl ?? Array.Empty<int>()).Where(i => mit.Contains(i)).Distinct().OrderBy(i => i)
+                                               .Select(i => reihen[i]).ToList();
 
-            return new Ganglinienquelle
+            string Titel(List<Grafikreihe> g, Bedarfsraster raster)
             {
-                Wochen = Math.Max(1, belegt / (168 * jeStunde)),
-                Tage = Math.Max(1, belegt / (24 * jeStunde)),
-                Modell = (stufe, nummer) =>
+                string name = g.Count == 1 ? g[0].Name : sammelname;
+                string format = raster switch
                 {
-                    int schritt = (stufe == Gangstufe.Woche ? 168 : 24) * jeStunde;
-                    int von = nummer * schritt;
-                    if (von < 0 || von >= belegt) return null;
-                    int bis = Math.Min(belegt, von + schritt);
+                    Bedarfsraster.Monat => Text_("BED_GRAFIK_TITEL_MONAT", "{0} Monatssummen"),
+                    Bedarfsraster.Woche => Text_("BED_GRAFIK_TITEL_WOCHE", "{0} Wochensummen"),
+                    Bedarfsraster.Tag => Text_("BED_GRAFIK_TITEL_TAG", "{0} Tagessummen"),
+                    _ => Text_("BED_GRAFIK_TITEL_JAHR", "{0} Jahresganglinie")
+                };
+                return string.Format(CultureInfo.CurrentCulture, format, name);
+            }
 
-                    return ChartRenderer.JahresverlaufModell(titel, werte, yTitel, rolle,
-                        new ChartRenderer.Achsenfenster(von, bis));
+            return new Bedarfsgrafikquelle
+            {
+                MitReihe = mit,
+                Titel = (wahl, raster) =>
+                {
+                    List<Grafikreihe> g = Gewaehlt(wahl);
+                    return g.Count == 0 ? null : Titel(g, raster);
+                },
+                Modell = (wahl, raster, einheit) =>
+                {
+                    List<Grafikreihe> g = Gewaehlt(wahl);
+                    if (g.Count == 0) return null;
+                    if (raster == Bedarfsraster.Jahr)
+                    {
+                        string xTitel = g[0].Werte.Length > 8760
+                            ? Text_("BED_GRAFIK_ACHSE_VIERTELSTUNDE", "Viertelstunde")
+                            : Text_("BED_GRAFIK_ACHSE_STUNDE", "Stunde");
+                        return ChartRenderer.JahresgangModell(Titel(g, raster),
+                            g.Select(r => new ChartRenderer.Reihe(r.Name, r.Werte, r.Rolle)).ToList(),
+                            xTitel, yTitel, minimumNull: true);
+                    }
+                    Energieeinheit e = einheit ?? Energieeinheit.Vorgabe;
+                    (string[] namen, string[] achse) = Faecher(raster);
+                    return ChartRenderer.SaeulenstapelModell(Titel(g, raster), e.Text,
+                        g.Select(r => new ChartRenderer.Reihe(r.Name, Summen(r.Werte, raster, e), r.Rolle)).ToList(),
+                        namen, achse);
+                },
+                Spalten = (wahl, raster, einheit) =>
+                {
+                    List<Grafikreihe> g = Gewaehlt(wahl);
+                    if (raster == Bedarfsraster.Jahr)
+                        return g.Select(r => new ZeitreihenSpalte(r.Name, EINHEIT_KW, r.Werte)).ToList();
+                    Energieeinheit e = einheit ?? Energieeinheit.Vorgabe;
+                    return g.Select(r => new ZeitreihenSpalte(r.Name, e.Text, Summen(r.Werte, raster, e))).ToList();
                 }
             };
+        }
+
+        /// <summary>Die Summen einer Reihe im Raster, aus den MWh des Kerns in die Anzeigeeinheit.</summary>
+        private static double[] Summen(double[] werte, Bedarfsraster raster, Energieeinheit einheit)
+        {
+            Zeitraster zr = raster switch
+            {
+                Bedarfsraster.Woche => Zeitraster.Woche,
+                Bedarfsraster.Tag => Zeitraster.Tag,
+                _ => Zeitraster.Monat
+            };
+            double[] mwh = Zeitsummen.SummenMwh(werte, zr) ?? Array.Empty<double>();
+            return mwh.Select(v => einheit.Aus(Energieeinheit.MWh, v)).ToArray();
+        }
+
+        /// <summary>
+        /// Name je Fach (Zeigetext) und Beschriftung an der Achse: die zwölf Monate; jede vierte
+        /// Woche ab der ersten; beim Tag der Monatsname am Monatsersten.
+        /// </summary>
+        private static (string[] Namen, string[] Achse) Faecher(Bedarfsraster raster)
+        {
+            string[] monate = MonateKurz();
+            switch (raster)
+            {
+                case Bedarfsraster.Woche:
+                {
+                    string format = Text_("BED_GRAFIK_WOCHE_NR", "Woche {0}");
+                    var namen = new string[Zeitsummen.WOCHEN];
+                    var achse = new string[Zeitsummen.WOCHEN];
+                    for (int w = 0; w < namen.Length; w++)
+                    {
+                        namen[w] = string.Format(CultureInfo.CurrentCulture, format, w + 1);
+                        achse[w] = w % 4 == 0 ? (w + 1).ToString(CultureInfo.CurrentCulture) : "";
+                    }
+                    return (namen, achse);
+                }
+                case Bedarfsraster.Tag:
+                {
+                    string format = Text_("BED_GRAFIK_TAG_NR", "Tag {0}");
+                    var namen = new string[Zeitsummen.TAGE];
+                    var achse = new string[Zeitsummen.TAGE];
+                    int erster = 0, monat = 0;
+                    for (int t = 0; t < namen.Length; t++)
+                    {
+                        namen[t] = string.Format(CultureInfo.CurrentCulture, format, t + 1);
+                        if (monat < 12 && t == erster)
+                        {
+                            achse[t] = monate[monat];
+                            erster += Zeitsummen.MONATSTAGE[monat];
+                            monat++;
+                        }
+                        else achse[t] = "";
+                    }
+                    return (namen, achse);
+                }
+                default:
+                    return (monate, monate);
+            }
         }
 
         /// <summary>Der Feldsatz des Wärmebedarfs — seit iU9-W9.5 eigene Methode.</summary>
@@ -173,26 +265,28 @@ namespace WindowsFormsApplication1
                                                        bool mitBrauchwasser, int startReiter,
                                                        string titelZusatz)
         {
-            // Jede Sicht traegt ihre Stundenreihe mit: Jahresverlauf hinter dem Schalter,
-            // Woche und Tag hinter dem Navigator. Es ist die Reihe, deren Monatssummen die
-            // Tabelle zeigt (reiner Profilanteil bzw. Heizkanal, ohne Netzverlust).
+            // Je Sicht die Stundenreihe [kW] fuer den Grafikreiter - die Reihe, deren Monatssummen
+            // die Tabelle zeigt (reiner Profilanteil bzw. Heizkanal, ohne Netzverlust).
             var sichten = new List<Monatssicht>
             {
-                MitGanglinie(
-                    Sicht(Text_("BERG_OPT_PROZESSE", "Prozesse"), simulation.Waermebedarf_Prozess_Monat,
-                          Text_("BERG_BILD_PROZESS", "Prozesswärme"), ROLLE_PROZESS),
-                    simulation.Waermebedarf_Prozess_Stunde,
-                    Text_("BERG_BILD_PROZESS_GANG", "Prozesswärme Ganglinie"), ROLLE_PROZESS, true),
-                MitGanglinie(
-                    Sicht(Text_("BERG_OPT_GEBAEUDE", "Gebäude (incl. ext. Wärmebedarf)"),
-                          simulation.Waermebedarf_Gebaeude_Monat,
-                          Text_("BERG_BILD_GEBAEUDE", "Gebäudewärme"), ROLLE_GEBAEUDE),
-                    simulation.Waermebedarf_Heizkanal_Stunde,
-                    Text_("BERG_BILD_GEBAEUDE_GANG", "Gebäudewärme Ganglinie"), ROLLE_GEBAEUDE, true)
+                Sicht(Text_("BERG_OPT_PROZESSE", "Prozesse"), simulation.Waermebedarf_Prozess_Monat,
+                      Text_("BERG_BILD_PROZESS", "Prozesswärme"), ROLLE_PROZESS),
+                Sicht(Text_("BERG_OPT_GEBAEUDE", "Gebäude (incl. ext. Wärmebedarf)"),
+                      simulation.Waermebedarf_Gebaeude_Monat,
+                      Text_("BERG_BILD_GEBAEUDE", "Gebäudewärme"), ROLLE_GEBAEUDE)
+            };
+            var reihen = new List<Grafikreihe>
+            {
+                new Grafikreihe(Text_("BERG_BILD_PROZESS", "Prozesswärme"),
+                                AlsDouble(simulation.Waermebedarf_Prozess_Stunde), ROLLE_PROZESS),
+                new Grafikreihe(Text_("BERG_BILD_GEBAEUDE", "Gebäudewärme"),
+                                AlsDouble(simulation.Waermebedarf_Heizkanal_Stunde), ROLLE_GEBAEUDE)
             };
 
-            Zeichenmodell jahresmodell = null;
-            bool zapfprofil = mitBrauchwasser && simulation.Zapfprofil != null;
+            // Zapfung und Zirkulation getrennt: auf dem Zapfprofilweg und auf dem Bestandsweg mit
+            // Zirkulation (Entscheidungsvorlage Modellgrenzen BW4) - derselbe Posten, derselbe Stapel.
+            bool zapfprofil = mitBrauchwasser &&
+                              (simulation.Zapfprofil != null || simulation.Brauchwasser_Zirkulation_Mwh > 0);
             if (mitBrauchwasser)
             {
                 Monatssicht brauchwasser = Sicht(Text_("BERG_OPT_BRAUCHWASSER", "Brauchwasser"),
@@ -201,18 +295,12 @@ namespace WindowsFormsApplication1
                                                  ROLLE_BRAUCHWASSER, istBrauchwasser: true);
                 // Der Zapfprofilweg (Umsetzungskonzept Zapfprofilgenerator 2.2, 5.2): dieselben
                 // Monatswerte, das Bild aber gestapelt aus Zapfung und Zirkulation - die
-                // Zirkulation ist eine eigene Teilreihe desselben Kanals.
+                // Zirkulation ist eine eigene Teilreihe desselben Kanals. Es steht im Reiter, wenn
+                // keine Stundenreihe vorliegt.
                 if (zapfprofil) brauchwasser = ZapfprofilStapel(brauchwasser, simulation);
-                // Der Jahresverlauf des Brauchwassers bleibt der gemeinsame (unten); die
-                // Sicht bekommt nur Woche und Tag aus derselben Reihe.
-                sichten.Add(MitGanglinie(brauchwasser, simulation.brauchwasserwerte,
-                                         Text_("BERG_BILD_BRAUCHWASSER_GANG", "Brauchwasserwärme Ganglinie"),
-                                         ROLLE_BRAUCHWASSER, false));
-
-                jahresmodell = ChartRenderer.JahresverlaufModell(
-                    Text_("BERG_BILD_JAHR", "Jahresübersicht"),
-                    AlsDouble(simulation.brauchwasserwerte),
-                    Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]"), ROLLE_JAHR);
+                sichten.Add(brauchwasser);
+                reihen.Add(new Grafikreihe(Text_("BERG_BILD_BRAUCHWASSER", "Brauchwasserwärme"),
+                                           AlsDouble(simulation.brauchwasserwerte), ROLLE_BRAUCHWASSER));
             }
 
             var daten = new BedarfErgebnisDaten
@@ -221,7 +309,8 @@ namespace WindowsFormsApplication1
                 MitBrauchwasser = mitBrauchwasser,
                 StartReiter = startReiter,
                 TitelZusatz = titelZusatz ?? "",
-                JahresverlaufModell = jahresmodell,
+                Grafik = Grafikquelle(reihen, Text_("BED_GRAFIK_WAERMEBEDARF", "Wärmebedarf"),
+                                      Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]")),
                 Kennzahlen = new[]
                 {
                     // DIESELBE GLIEDERUNG WIE BEIM STROM (Anwenderwunsch W8-E-2, hier
@@ -265,6 +354,17 @@ namespace WindowsFormsApplication1
                 liste.Insert(summe < 0 ? liste.Count : summe,
                              Energie(Text_("BERG_LBL_DAVON_ZIRKULATION", "davon Zirkulation:"),
                                      simulation.Brauchwasser_Zirkulation_Mwh, Energieeinheit.MWh));
+                daten.Kennzahlen = liste;
+            }
+            if (mitBrauchwasser && simulation.Brauchwasser_Desinfektion_Mwh > 0)
+            {
+                // Die thermische Desinfektion (BW5, Konzept Simulationsablauf 21) als eigener Posten VOR der
+                // Summe: Sie steht im Brauchwasserkanal, nicht im Profilanteil darüber.
+                var liste = new List<ErgebnisKennzahl>(daten.Kennzahlen);
+                int summe = liste.FindIndex(k => k.Art == Kennzahlart.Summe);
+                liste.Insert(summe < 0 ? liste.Count : summe,
+                             Energie(Text_("BERG_LBL_DAVON_DESINFEKTION", "davon thermische Desinfektion:"),
+                                     simulation.Brauchwasser_Desinfektion_Mwh, Energieeinheit.MWh));
                 daten.Kennzahlen = liste;
             }
             return daten;
@@ -348,14 +448,17 @@ namespace WindowsFormsApplication1
                 ["LabelEinheit"] = Text_("ALLG_LBL_EINHEIT", "Einheit:"),
                 ["Einheit"] = BedarfEinheitWahl.Lies(),
                 ["EinheitGewaehlt"] = new Action<Energieeinheit>(BedarfEinheitWahl.Schreib),
-                ["LabelJahresverlauf"] = Text_("BERG_SCH_JAHRESVERLAUF", "Jahresverlauf"),
-                // Die drei Kategorien und der Zeitnavigator (Anwenderwunsch W8-E-2).
+                // Die drei Kategorien (Anwenderwunsch W8-E-2).
                 ["GruppeLeistung"] = Text_("BERG_GRP_LEISTUNG", "Leistung"),
                 ["GruppeEnergie"] = Text_("BERG_GRP_ENERGIE", "Energie"),
-                ["StufeJahrText"] = Text_("BERG_STUFE_JAHR", "Jahr"),
-                ["StufeWocheText"] = Text_("BERG_STUFE_WOCHE", "Woche"),
-                ["StufeTagText"] = Text_("BERG_STUFE_TAG", "Tag"),
-                ["MarkeFormat"] = Text_("BERG_GANG_MARKE", "{2} {0} von {1}"),
+                // Der Grafikreiter: Bedarfsart und Zeitraster als Knopfgruppen, CSV am Bild.
+                ["RasterJahrText"] = Text_("BERG_STUFE_JAHR", "Jahr"),
+                ["RasterMonatText"] = Text_("BED_GRAFIK_RASTER_MONAT", "Monat"),
+                ["RasterWocheText"] = Text_("BERG_STUFE_WOCHE", "Woche"),
+                ["RasterTagText"] = Text_("BERG_STUFE_TAG", "Tag"),
+                ["GruppeReihenText"] = Text_("BED_GRAFIK_GRP_REIHEN", "Bedarfsart"),
+                ["GruppeRasterText"] = Text_("BED_GRAFIK_GRP_RASTER", "Zeitraster"),
+                ["CsvSpeichern"] = new Func<string, IReadOnlyList<ZeitreihenSpalte>, Task>(CsvSpeichern),
                 ["Monatsnamen"] = Monatsnamen(),
                 // Die Farbe einer Reihe gilt ANWENDUNGSWEIT (Farbrollen, Bedienung
                 // Teil 2): Diagrammfarben schreibt sie ueber EinstellungenCtrl, und
@@ -447,28 +550,6 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>
-        /// Hängt einer Wärmesicht ihre Stundenreihe [kWh je Stunde = kW] an: den
-        /// JAHRESVERLAUF (Zeitachse, Zoom „Bereich · 1:1") und die Quelle für WOCHE und TAG —
-        /// dasselbe Bild und derselbe Navigator wie beim Strombedarf. Eine Sicht ohne Reihe
-        /// bleibt, wie sie ist.
-        /// </summary>
-        private static Monatssicht MitGanglinie(Monatssicht sicht, double[] stunden, string titel,
-                                                Farbrolle rolle, bool mitJahresverlauf)
-        {
-            if (sicht == null || stunden == null || stunden.Length < 48) return sicht;
-
-            string yTitel = Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]");
-            double[] werte = AlsDouble(stunden);
-            return sicht with
-            {
-                Jahresverlauf = mitJahresverlauf
-                    ? ChartRenderer.JahresverlaufModell(titel, werte, yTitel, rolle)
-                    : null,
-                Ganglinie = Gangquelle(werte, werte.Length, titel, yTitel, rolle)
-            };
-        }
-
         /// <summary>Die Formatierung der Vorläufer: <c>ToString("F2")</c> in der Anzeigekultur.</summary>
         private static string F2(double wert) => wert.ToString("F2", CultureInfo.CurrentCulture);
 
@@ -512,6 +593,17 @@ namespace WindowsFormsApplication1
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
+
+        /// <summary>
+        /// <b>CSV am Bild des Grafikreiters</b>: dieselbe Datei wie „CSV…“ an den Diagrammen der
+        /// Ergebnisseite (<see cref="CsvExportClass.ExportZeitreihen"/>, Dateiname aus dem Bildtitel
+        /// nach dem Muster <c>…_Projekt_{n}.csv</c>), das Raster aus der Zeilenzahl.
+        /// </summary>
+        private static Task CsvSpeichern(string titel, IReadOnlyList<ZeitreihenSpalte> spalten)
+            => CsvExportClass.ExportZeitreihen(
+                string.Format(MyResource.Resource.CHART_DATEI_GANGLINIE, ZeitreihenCsv.Dateistamm(titel),
+                              Dienste.Projekt.Id),
+                ZeitreihenCsv.RasterAus(spalten), spalten);
 
         // =================================================================
         // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)

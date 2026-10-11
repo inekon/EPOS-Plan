@@ -49,15 +49,17 @@ namespace WindowsFormsApplication1
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn ab W10b
         /// auch die Überlagerung in der Simulationsseite nehmen kann.
         /// </summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(QuelleErdreichDaten daten)
+        internal static IReadOnlyDictionary<string, object> Gaben(QuelleErdreichDaten daten,
+                                                                  ErdreichLaufsitzung sitzung = null)
         {
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
-                ["Lauf"] = ErdreichAuswertung.ErgebnisZuordnen(
-                    ErgebnisDesLaufs(daten)),
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(daten.IdProjekt),
+                ["Lauf"] = LaufOderGespeichert(daten),
+                ["StandDesLaufs"] = MyResource.Resource.SIMQ_ERDREICH_STAND_LAUF,
 
-                ["Simulieren"] = Simulationslauf(daten),
+                ["Simulieren"] = Simulationslauf(daten, sitzung),
                 ["Jahresgangmodell"] = Modellzeichner(),
 
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
@@ -69,6 +71,10 @@ namespace WindowsFormsApplication1
                 ["GbStandort"] = MyResource.Resource.SIMQ_ERDREICH_GB_STANDORT,
                 ["GbVorschau"] = MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU,
                 ["GbPruefung"] = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG,
+                ["VorpruefungKopf"] = MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_KOPF,
+                ["HinweisSondeKonstant"] = MyResource.Resource.SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT,
+                ["HinweisKollektorLauf"] = MyResource.Resource.SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF,
+                ["KennwerteLaufZeile"] = MyResource.Resource.SIMQ_ERDREICH_KENNWERTE_LAUF,
                 ["RbKollektor"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR,
                 ["RbSonde"] = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE,
                 ["RbKollektorWahl"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL,
@@ -83,6 +89,16 @@ namespace WindowsFormsApplication1
                 ["LblKlimazoneHinweis"] = MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE_HINWEIS,
                 ["LblSpreizung"] = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG,
                 ["LblSpreizungHinweis"] = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG_HINWEIS,
+                ["LblSondenabstand"] = MyResource.Resource.SIMQ_ERDREICH_SONDENABSTAND,
+                ["LblBohrlochdurchmesser"] = MyResource.Resource.SIMQ_ERDREICH_BOHRLOCHDURCHMESSER,
+                ["LblBohrlochwiderstand"] = MyResource.Resource.SIMQ_ERDREICH_BOHRLOCHWIDERSTAND,
+                ["LblKopfueberdeckung"] = MyResource.Resource.SIMQ_ERDREICH_KOPFUEBERDECKUNG,
+                ["LblBetrachtungsjahr"] = MyResource.Resource.SIMQ_ERDREICH_BETRACHTUNGSJAHR,
+                ["LblSondenanordnung"] = MyResource.Resource.SIMQ_ERDREICH_SONDENANORDNUNG,
+                ["LblAnordnungQuadratisch"] = MyResource.Resource.SIMQ_ERDREICH_ANORDNUNG_QUADRATISCH,
+                ["LblAnordnungReihe"] = MyResource.Resource.SIMQ_ERDREICH_ANORDNUNG_REIHE,
+                ["LblVorgabe"] = MyResource.Resource.SIMQ_ERDREICH_VORGABE,
+                ["LblSondenfeldHinweis"] = MyResource.Resource.SIMQ_ERDREICH_SONDENFELD_HINWEIS,
                 // Der Knopftext ist ein SYMBOL und bleibt unuebersetzt (Katalogregel);
                 // was er tut, steht im Kurztext daneben.
                 ["BtnKarte"] = "…",
@@ -104,7 +120,6 @@ namespace WindowsFormsApplication1
                 ["HinweisVorbehalt"] =
                     Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_HINWEIS_VORBEHALT),
                 ["AenderungHinweis"] = MyResource.Resource.SIMQ_ERDREICH_AENDERUNG_HINWEIS,
-                ["SimNurGespeichert"] = MyResource.Resource.SIMQ_ERDREICH_SIM_NUR_GESPEICHERT,
 
                 ["WarteTitel"] = MyResource.Resource.SIMQ_ERDREICH_BTN_SIMULATION,
                 ["WarteText"] = MyResource.Resource.SIMQ_ERDREICH_SIM_LAEUFT,
@@ -118,6 +133,7 @@ namespace WindowsFormsApplication1
                 ["MsgZahlSonde"] = MyResource.Resource.SIMQ_ERDREICH_MSG_ZAHL_SONDE,
                 ["MsgLaengeNull"] = MyResource.Resource.SIMQ_ERDREICH_MSG_LAENGE_NULL,
                 ["MsgAnzahlMin"] = MyResource.Resource.SIMQ_ERDREICH_MSG_ANZAHL_MIN,
+                ["MsgSondenfeld"] = MyResource.Resource.SIMQ_ERDREICH_MSG_SONDENFELD,
                 ["MsgSpreizung"] =
                     Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_MSG_SPREIZUNG),
 
@@ -133,34 +149,120 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die AUSLEGUNGSWERTE der Wärmepumpen dieser Anlage für die Vorprüfung ohne Lauf:
+        /// Heizleistung und COP am Normpunkt der Kennlinie der Projektkopie, gelesen im
+        /// Kern (<c>ErdreichVorpruefungCtrl</c>). Ein Lesefehler ergibt eine leere Liste —
+        /// der Dialog nennt dann den fehlenden Wert.
+        /// </summary>
+        internal static IReadOnlyList<WpAuslegung> Auslegung(int idProjekt, int idAnlage)
+        {
+            var liste = new List<WpAuslegung>();
+            foreach (VDI4640Pruefung.Auslegungswert a in
+                     ErdreichVorpruefungCtrl.Auslegungswerte(idProjekt, idAnlage))
+                liste.Add(new WpAuslegung(a.Modul, a.NennheizleistungKw, a.Cop, a.Normpunkt, a.LuftWasser));
+            return liste;
+        }
+
+        /// <summary>
         /// Der Delegat <c>Simulieren</c>: rechnet das Projekt durch und ordnet der
         /// Anlage ihr Ergebnis zu. Der LAUF läuft auf einem eigenen Faden.
+        ///
+        /// <para><b>Gerechnet wird mit den ANGEZEIGTEN Eingaben</b> (Anwendermeldung 10.10.2026):
+        /// Der Dialog reicht seinen geprüften Eingabesatz herein, und die Hülle legt ihn als
+        /// <see cref="ErdreichLaufvorgabe"/> über die gespeicherten Werte der Anlage — gelesen, nicht
+        /// geschrieben; geschrieben wird erst im OK-Weg. Ohne Satz rechnet der Lauf mit dem Stand beim
+        /// Öffnen.</para>
         /// </summary>
-        private static Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis, string)>>
-            Simulationslauf(QuelleErdreichDaten daten)
+        private static Func<QuelleErdreichDaten, Task<(ErdreichAuswertung.ErdreichLaufErgebnis, string)>>
+            Simulationslauf(QuelleErdreichDaten daten, ErdreichLaufsitzung sitzung)
         {
-            return idProjekt => SpeicherEngine.Kulturweitergabe.Starten(() =>
+            return eingaben => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
-                string fehler;
-                bool ok = new SimulationRunner().Simuliere(idProjekt, out fehler);
-                if (!ok)
+                QuelleErdreichDaten satz = eingaben ?? daten;
+                sitzung?.VorDemLauf();
+                using (Laufvorgabe(satz).Anwenden())
+                try
                 {
-                    // Ein Lauf ohne Fehlertext ist kein stiller Erfolg - der Dialog
-                    // braucht etwas zu sagen.
-                    return (null,
-                            string.IsNullOrEmpty(fehler)
-                                ? MyResource.Resource.SIMQ_ERDREICH_MSG_SIM_OHNE_ERGEBNIS
-                                : fehler);
-                }
+                    string fehler;
+                    bool ok = new SimulationRunner().Simuliere(satz.IdProjekt, out fehler);
+                    if (!ok)
+                    {
+                        // Ein Lauf ohne Fehlertext ist kein stiller Erfolg - der Dialog
+                        // braucht etwas zu sagen.
+                        return (null,
+                                string.IsNullOrEmpty(fehler)
+                                    ? MyResource.Resource.SIMQ_ERDREICH_MSG_SIM_OHNE_ERGEBNIS
+                                    : fehler);
+                    }
 
-                ErdreichAuswertung.ErdreichLaufErgebnis erg =
-                    ErdreichAuswertung.ErgebnisZuordnen(ErgebnisDesLaufs(daten));
-                return (erg.Vorhanden ? erg : null, (string)null);
+                    ErdreichAuswertung.ErdreichLaufErgebnis erg =
+                        ErdreichAuswertung.ErgebnisZuordnen(ErgebnisDesLaufs(satz));
+                    return (erg.Vorhanden ? erg : null, (string)null);
+                }
+                finally
+                {
+                    sitzung?.NachDemLauf(satz);
+                }
             });
         }
 
         /// <summary>
-        /// Der Delegat <c>Jahresgangmodell</c>: zwei Stundenreihen hinein, ein
+        /// Der Schlüssel eines Eingabesatzes, wie ihn der OK-Weg schreibt: Quelle, Sondenfeld und
+        /// Klimazone. Zwei Sätze mit gleichem Schlüssel rechnen denselben Lauf.
+        /// </summary>
+        internal static string Eingabeschluessel(QuelleErdreichDaten e)
+        {
+            if (e == null) return "";
+            QuelleErgebnis q = Quelle(e);
+            ErdsondenfeldEingabe f = Sondenfeld(e);
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            return string.Join("|",
+                (q.Quellsystem ?? "").ToUpperInvariant(), q.Tiefe.ToString("R", ci), q.Flaeche.ToString("R", ci),
+                q.Anzahl.ToString(ci), q.Bodentyp ?? "", q.SpreizungErdreich.ToString("R", ci),
+                f?.AbstandM?.ToString("R", ci), f?.BohrlochdurchmesserMm?.ToString("R", ci),
+                f?.Bohrlochwiderstand?.ToString("R", ci), f?.KopfueberdeckungM?.ToString("R", ci),
+                f?.Betrachtungsjahr?.ToString(ci), f?.Anordnung?.ToString(), e.Klimazone.ToString(ci));
+        }
+
+        /// <summary>
+        /// Die Wärmequelle des Eingabesatzes, wie der OK-Weg sie schreibt
+        /// (<see cref="WaermequelleClass.QuelleSchreiben"/>, Typ Erdreich) — EINE Abbildung für
+        /// Schreiben und Lauf.
+        /// </summary>
+        internal static QuelleErgebnis Quelle(QuelleErdreichDaten e) => new QuelleErgebnis
+        {
+            Typ = WaermequelleClass.TYP_ERDREICH,
+            Quellsystem = e.Quellsystem,
+            Tiefe = e.Tiefe,
+            Flaeche = e.Flaeche,
+            Anzahl = e.Anzahl,
+            Bodentyp = e.Bodentyp,
+            SpreizungErdreich = e.Spreizung
+        };
+
+        /// <summary>
+        /// Das Sondenfeld des Eingabesatzes (Konzept 23.3) — nur beim Quellsystem Sonde, sonst
+        /// <c>null</c>; leer heißt Vorgabe.
+        /// </summary>
+        internal static ErdsondenfeldEingabe Sondenfeld(QuelleErdreichDaten e)
+            => string.Equals(e.Quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE, StringComparison.OrdinalIgnoreCase)
+                ? new ErdsondenfeldEingabe
+                {
+                    AbstandM = e.Sondenabstand,
+                    BohrlochdurchmesserMm = e.Bohrlochdurchmesser,
+                    Bohrlochwiderstand = e.Bohrlochwiderstand,
+                    KopfueberdeckungM = e.Kopfueberdeckung,
+                    Betrachtungsjahr = e.Betrachtungsjahr,
+                    Anordnung = ErdsondenfeldCtrl.AnordnungAusText(e.Sondenanordnung)
+                }
+                : null;
+
+        /// <summary>Der Eingabesatz als Vorgabe des Laufs (<see cref="ErdreichLaufvorgabe"/>).</summary>
+        internal static ErdreichLaufvorgabe Laufvorgabe(QuelleErdreichDaten e)
+            => ErdreichLaufvorgabe.Aus(e.IdProjekt, e.IdAnlage, Quelle(e), Sondenfeld(e), e.Klimazone);
+
+        /// <summary>
+        /// Der Delegat <c>Jahresgangmodell</c>: zwei Stundenreihen (dazu nach einem Lauf die gerechnete) hinein, ein
         /// ZEICHENMODELL heraus. Die Außentemperatur darf fehlen — dann zeichnet der
         /// Renderer eine Reihe.
         ///
@@ -177,16 +279,25 @@ namespace WindowsFormsApplication1
         /// Bedingung des Bausteins: Er baut seinen Knotenbaum nur neu, wenn die
         /// REFERENZ des Modells wechselt.</para>
         /// </summary>
-        private static Func<double[], double[], Task<Zeichenmodell>> Modellzeichner()
+        private static Func<double[], double[], double[], Task<Zeichenmodell>> Modellzeichner()
         {
-            return (quelle, aussen) => SpeicherEngine.Kulturweitergabe.Starten(() =>
+            return (quelle, aussen, gerechnet) => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
+                // Nach einem Lauf (Anwenderwunsch 08.10.2026) heisst die Auslegungsreihe „ungestört",
+                // daneben steht die gerechnete Soletemperatur des letzten Laufs. Ohne Lauf bleibt das
+                // Bild, wie es war.
+                bool mitLauf = gerechnet != null && gerechnet.Length > 1;
                 var reihen = new List<ChartRenderer.Reihe>
                 {
                     new ChartRenderer.Reihe(
-                        MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR, quelle,
+                        mitLauf ? MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT
+                                : MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR, quelle,
                         Farbrolle.QUELLTEMPERATUR)
                 };
+                if (mitLauf)
+                    reihen.Add(new ChartRenderer.Reihe(
+                        MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR_GERECHNET, gerechnet,
+                        Farbrolle.SERIE_2));
                 if (aussen != null && aussen.Length > 1)
                     reihen.Add(new ChartRenderer.Reihe(
                         MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR, aussen,
@@ -225,6 +336,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Das Ergebnis, mit dem der Dialog öffnet (EQ1): der Lauf DIESER Sitzung, wenn es einen
+        /// gibt — sonst die gespeicherte Prüfung des letzten gespeicherten Laufs
+        /// (<c>Tab_ErgebnisErdreich</c>) samt Laufstempel, den der Dialog als „Stand des Laufs
+        /// vom …" zeigt.
+        /// </summary>
+        internal static ErdreichAuswertung.ErdreichLaufErgebnis LaufOderGespeichert(QuelleErdreichDaten daten)
+        {
+            ErdreichAuswertung.ErdreichLaufErgebnis frisch =
+                ErdreichAuswertung.ErgebnisZuordnen(ErgebnisDesLaufs(daten));
+            if (frisch.Vorhanden || daten == null || daten.IdProjekt <= 0) return frisch;
+            try { return ErdreichErgebnisSpeicher.Gespeichert(daten.IdProjekt, daten.IdAnlage); }
+            catch { return frisch; }
+        }
+
+        /// <summary>
         /// Das Ergebnis DIESER Anlage aus dem letzten Lauf des Projekts — die drei
         /// Stufen aus <c>ErgebnisDesLaufs</c>:1126-1142: erst die Anlagen-Id, dann der
         /// Modulname, dann „es gibt nur eines".
@@ -249,6 +375,52 @@ namespace WindowsFormsApplication1
             }
 
             return anzahl == 1 ? einziges : null;
+        }
+    }
+
+    /// <summary>
+    /// Ein geöffneter Erdreichdialog und seine Läufe (Hausregel „Abbrechen schließt ohne zu
+    /// speichern“): Vor dem ersten Lauf sichert sie den Stand des Projekts im Zwischenspeicher
+    /// (<see cref="ErdreichAuswertung.StandDesProjekts"/>); endet der Dialog mit Abbrechen, ✕ oder Esc
+    /// und hat der letzte Lauf mit einem Eingabesatz gerechnet, der vom gespeicherten abweicht, legt
+    /// sie den gesicherten Stand zurück. Ein Lauf mit dem gespeicherten Satz und jeder Lauf vor einem
+    /// OK bleibt.
+    /// </summary>
+    internal sealed class ErdreichLaufsitzung
+    {
+        private readonly int _idProjekt;
+        private readonly string _gespeichert;
+        private bool _gesichert;
+        private List<ErdreichAuswertung.AnlageErgebnis> _vorher;
+        private bool _abweichend;
+
+        /// <param name="gespeichert">Der Satz beim Öffnen — der gespeicherte Stand der Anlage.</param>
+        public ErdreichLaufsitzung(QuelleErdreichDaten gespeichert)
+        {
+            _idProjekt = gespeichert?.IdProjekt ?? 0;
+            _gespeichert = QuelleErdreichHuelle.Eingabeschluessel(gespeichert);
+        }
+
+        /// <summary>Hat der letzte Lauf mit einem ungespeicherten Satz gerechnet?</summary>
+        public bool LaufAbweichend => _abweichend;
+
+        internal void VorDemLauf()
+        {
+            if (_gesichert) return;
+            _vorher = ErdreichAuswertung.StandDesProjekts(_idProjekt);
+            _gesichert = true;
+        }
+
+        internal void NachDemLauf(QuelleErdreichDaten satz)
+            => _abweichend = !string.Equals(QuelleErdreichHuelle.Eingabeschluessel(satz), _gespeichert,
+                                            StringComparison.Ordinal);
+
+        /// <summary>Der Dialog endet ohne OK: einen Lauf mit ungespeicherten Eingaben verwerfen.</summary>
+        public void Abgebrochen()
+        {
+            if (!_gesichert || !_abweichend) return;
+            ErdreichAuswertung.StandZuruecklegen(_idProjekt, _vorher);
+            _abweichend = false;
         }
     }
 }

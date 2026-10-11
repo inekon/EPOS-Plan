@@ -188,7 +188,7 @@ namespace EPOS.Kern.Tests
                                                  Kalenderangabe.AusWoche(w), null, null);
             for (int w0 = 0; w0 < 7; w0++)
             {
-                double[] r = k.Auswerten(w0, JAHR);
+                double[] r = k.Auswerten(w0, 0);
                 for (int d = 0; d < 365; d++)
                     Assert.Equal((w0 + d) % 7, (int)Math.Floor(r[d * 24]));
             }
@@ -207,7 +207,7 @@ namespace EPOS.Kern.Tests
                     Kalenderregel.Zeitraum(900, DbWerte.KOND_ART_BETRIEBSPAUSE, "Pause", 155, 156,
                                            Kalenderangabe.Abgeschaltet),
                 });
-            double[] r = k.Auswerten(0, JAHR);
+            double[] r = k.Auswerten(2, JAHR);
             Assert.Equal(20.0, r[50 * 24]);                       // keine Periode
             Assert.Equal(18.0, r[110 * 24]);                      // Rang 100
             Assert.Equal(16.0, r[152 * 24]);                      // Rang 300 über Rang 100
@@ -241,7 +241,7 @@ namespace EPOS.Kern.Tests
                     Kalenderregel.Zeitraum(400, DbWerte.KOND_ART_ZEITRAUM, "Brückentag", 123, 123,
                                            Kalenderangabe.Abgeschaltet),
                 });
-            double[] r = k.Auswerten(0, JAHR);
+            double[] r = k.Auswerten(2, JAHR);
             Assert.Equal(20.0, r[121 * 24]);
             for (int s = 0; s < 24; s++) Assert.True(double.IsNaN(r[122 * 24 + s]));
             Assert.Equal(20.0, r[123 * 24]);
@@ -269,15 +269,15 @@ namespace EPOS.Kern.Tests
         public void Die_neun_Regeln_loesen_sich_gegen_das_Referenzjahr_auf()
         {
             Assert.Equal(9, Feiertage.Regeln.Count);
-            Assert.Equal(1, Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_NEUJAHR, 2025));
-            Assert.Equal(31 + 28 + 31 + 30 + 1, Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_ERSTER_MAI, 2025));
-            Assert.Equal(359, Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_WEIHNACHTEN_1, 2025));
-            Assert.Equal(360, Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_WEIHNACHTEN_2, 2025));
-            Assert.Equal(-1, Feiertage.Jahrestag("ROSENMONTAG", 2025));
+            Assert.Equal(1, Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_NEUJAHR, Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Equal(31 + 28 + 31 + 30 + 1, Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_ERSTER_MAI, Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Equal(359, Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_WEIHNACHTEN_1, Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Equal(360, Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_WEIHNACHTEN_2, Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Equal(-1, Feiertage.Jahrestag("ROSENMONTAG", Gemeinjahrkalender.Kalenderjahr(2025)));
 
             // Karfreitag 2025 = 18.4. (Tag 108), 2024 = 29.3. (Tag 88) - das Jahr verschiebt ihn.
-            Assert.Equal(Feiertage.Gemeinjahrestag(4, 18), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_KARFREITAG, 2025));
-            Assert.Equal(Feiertage.Gemeinjahrestag(3, 29), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_KARFREITAG, 2024));
+            Assert.Equal(Feiertage.Gemeinjahrestag(4, 18), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_KARFREITAG, Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Equal(Feiertage.Gemeinjahrestag(3, 29), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_KARFREITAG, Gemeinjahrkalender.Kalenderjahr(2024)));
         }
 
         [Fact]
@@ -289,8 +289,8 @@ namespace EPOS.Kern.Tests
                     Kalenderregel.Feiertag(700, "Karfreitag", DbWerte.KOND_FEIERTAG_KARFREITAG,
                                            Kalenderangabe.AusWert(16.0)),
                 });
-            int t2025 = Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_KARFREITAG, 2025) - 1;
-            int t2024 = Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_KARFREITAG, 2024) - 1;
+            int t2025 = Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_KARFREITAG, Gemeinjahrkalender.Kalenderjahr(2025)) - 1;
+            int t2024 = Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_KARFREITAG, Gemeinjahrkalender.Kalenderjahr(2024)) - 1;
             Assert.NotEqual(t2025, t2024);
 
             double[] r25 = k.Auswerten(2, 2025);

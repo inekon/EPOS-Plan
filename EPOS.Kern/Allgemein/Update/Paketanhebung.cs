@@ -206,6 +206,216 @@ namespace WindowsFormsApplication1
             new Stufe(149, Art.Katalog, "Gebäudesätze der Klassen M und A"),
             new Stufe(150, Art.Ddl, "Vorlauf und Rücklauf am Kollektor entfernt"),
             new Stufe(151, Art.Ddl, "Konditionierungskalender, Perioden und Vorgabezellen"),
+            new Stufe(152, Art.Ddl, "Konditionierungsvorlagen, Fremdschlüssel und Eindeutigkeit, Nachtauskühlstunden"),
+            new Stufe(TwwBezugsartSchema.SCHRITT, Art.Import,
+                      "Bezugsart Zimmer — der Import liest eine Paketzeile des Hotels in einem früheren Stand als die heutige"),
+            new Stufe(154, Art.Ddl, "Heizgrenze der Kesselbereitschaft"),
+            new Stufe(TwwFuellstandSchema.SCHRITT, Art.Ddl,
+                      "Verfahrensvolumina als Bezug der Füllstandslinie — Tab_TwwProjekt mit der Prüfklausel 1 bis 8"),
+            new Stufe(KesselKennlinieSchema.SCHRITT, Art.Ddl, "Kennlinienspalten des Heizkessels"),
+            new Stufe(KonditionierungsvorlagenSaatSchema.SCHRITT, Art.Katalog,
+                      "die 14 ausgelieferten Konditionierungsvorlagen"),
+            new Stufe(KesselBrennwertNachzug.SCHRITT, Art.Umformung,
+                      "Brennwertkennzeichen der Projektkessel nach Katalogsatz oder Beschreibung", SchrittKesselBrennwert),
+            // Ein Paket führt keine Trigger: Die Stempelspalten kommen leer an, und der Import selbst
+            // stempelt im Ziel - dessen Trigger feuern beim Einfügen der Projektzeilen.
+            new Stufe(KostenStempelSchema.SCHRITT, Art.Ddl,
+                      "Änderungsstempel für Kosten, Preise und Kostenkatalog (zwei Spalten und ihre Trigger)"),
+            // KP-S2 und KP-S3 (Entwurf KP3 Abschnitt 4): reine Spalten. Ein Paket davor kommt mit dem
+            // Schalter 0 (Spaltenvorgabe) und leeren Aufheizspalten an - „aus", wie es gerechnet hat.
+            new Stufe(AufheizvorgabeSchema.SCHRITT, Art.Ddl,
+                      "Aufheizoptimierung als Projekteinstellung (Schalter, Bemessung, Abzug, Reserve, Art)"),
+            new Stufe(AufheizErgebnisSchema.SCHRITT, Art.Ddl,
+                      "Ergebnisspalten der Aufheizoptimierung je Gebäude und Zone"),
+            // Die Spalte kommt mit der Vorgabe kW an - die Einheit, in der ein Paketwert rechnet.
+            new Stufe(KesselBereitschaftEinheitSchema.SCHRITT, Art.Ddl,
+                      "Einheit des Bereitschaftsverlusts am Heizkessel (kW oder % der Nennleistung)"),
+            // Die Spalte kommt leer an - leer rechnet die Vorgabe 0,2, wie das Paket gerechnet hat.
+            new Stufe(AlbedoSchema.SCHRITT, Art.Ddl,
+                      "Bodenalbedo je Photovoltaik- und Solarthermie-Anlage"),
+            // Die Spalten kommen leer an - ein Paketsatz ohne Temperaturpaar rechnet wie zuvor.
+            new Stufe(ProzesswaermeTemperaturSchema.SCHRITT, Art.Ddl,
+                      "Temperaturpaar je Prozesswärmesatz (Vorlauf, Rücklauf) und Katalog typischer Betriebsweisen"),
+            // Die Anlagenspalten kommen leer an (Vorgaben: kein Pumpenstrom, 8 % Verluste, feste
+            // Arbeitstemperatur), der Kollektorsatz mit der Vorgabe apertur - so, wie er rechnet.
+            new Stufe(SolarthermieFelderSchema.SCHRITT, Art.Ddl,
+                      "Felder des Kollektorfelds (Pumpe, Verluste, Grädigkeit, Spreizung, Arbeitstemperatur) und Bezugsfläche des Kollektorsatzes"),
+            // Alles kommt leer an - leer rechnet wie zuvor (Projektwert der Netzverluste, kein Kalender).
+            new Stufe(BedarfNetzKalenderSchema.SCHRITT, Art.Ddl,
+                      "Netzverluste je Kanal, Zirkulation im Bestandsweg und Betriebskalender der Bedarfsprofile"),
+            // Die Spalten kommen leer an - ohne Teillastfelder rechnen Wärmepumpe und BHKW wie das Paket.
+            new Stufe(ErzeugerTeillastSchema.SCHRITT, Art.Ddl,
+                      "Teillastfelder der Wärmepumpe (Mindestleistung, C_d) und des BHKW (Wirkungsgrade bei 50 % Last, Anfahrverlust, Mindestlaufzeit)"),
+            // Die Spalten kommen leer an - keine Einspeisegrenze, keine Selbstentladung; ein Paketsatz
+            // rechnet wie zuvor.
+            new Stufe(StromViertelstundenSchema.SCHRITT, Art.Ddl,
+                      "Einspeisegrenze des Projekts (kW oder % der PV-Leistung) und Selbstentladung des Stromspeichers"),
+            // Die Auslegungstabelle kommt leer an, die Vorgabetabelle mit ihrer Saat - die Auslegung
+            // rechnet nur auf Zuruf, der Paketstand rechnet wie zuvor.
+            new Stufe(PufferAuslegungSchema.SCHRITT, Art.Ddl,
+                      "Pufferspeicher-Auslegung: Auslegungstabelle je Projektpuffer und Vorgabewerte"),
+            // Ein Paket fuehrt keine Kostenvorlagen; die Empfehlung ist Hinweis, kein Projektwert.
+            new Stufe(HilfsenergieEmpfehlungNachzug.SCHRITT, Art.Katalog,
+                      "Empfehlung der Hilfsenergiekosten von BHKW und Heizkessel auf den Endenergiebedarf (Weg B)"),
+            // Die Spalten kommen leer an - Bereitschaft als Tageswert, gleich große Zonen, kein
+            // Frischwassermodul, keine Desinfektion; ein Paketsatz rechnet wie zuvor.
+            new Stufe(PufferOptionenSchema.SCHRITT, Art.Ddl,
+                      "Optionen des Pufferspeichers (Bereitschaftsweg, Aufstellraum, Zonenanteile, Frischwassermodul) und thermische Desinfektion"),
+            // Katalogspalten und Saat betreffen nur Kataloge und globale Tabellen, die das Ziel schon
+            // führt; die Erdreichprüfung kommt mit einem Paket davor schlicht nicht mit - der Dialog
+            // zeigt sie nach dem nächsten Lauf.
+            new Stufe(KatalogfassungSchema.SCHRITT, Art.Katalog,
+                      "Katalogfassung (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze, Protokoll des Abgleichs) und gespeicherte Erdreichprüfung"),
+            // Dieselben Katalogspalten an den übrigen Katalogen; ein Paket führt keine Kataloge.
+            new Stufe(KatalogfassungStufe2Schema.SCHRITT, Art.Katalog,
+                      "Katalogfassung der übrigen Kataloge (Schlüssel, Prüfsumme, Auslaufkennzeichen der ausgelieferten Sätze)"),
+            new Stufe(AufheizManuellSchema.SCHRITT, Art.Ddl,
+                      "Aufschlag und manuelle Aufheizzeit der Aufheizoptimierung, Art, Auslegungsheizlast und Aufheizzuschlag im Ergebnis, Zustand GEKOPPELT der Zone"),
+            // Ein älteres Paket bringt keine Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben
+            // mit; die Projektanlage und der Paketimport legen sie aus dem Katalog des Ziels an.
+            new Stufe(ProjektkopienKatalogeSchema.SCHRITT, Art.Ddl,
+                      "Projektkopien der Brennstoffe und der Vorgaben der Pufferauslegung"),
+            // Ein älteres Paket bringt die Nutzung seiner Kalender nicht mit; sie bleibt leer, bis
+            // „Vorlage übernehmen" sie setzt - die Vorbelegung der Pufferauslegung kennt dann keine.
+            new Stufe(KonditionierungNutzungSchema.SCHRITT, Art.Ddl,
+                      "Nutzung der Konditionierungsvorlage am Kalender des Projekts"),
+            // Die Tabelle kommt leer an; ein Paket ohne Sperrfenster rechnet mit dem Altfenster wie zuvor.
+            new Stufe(WaermepumpeSperrprofilSchema.SCHRITT, Art.Ddl,
+                      "Sperrfenster der Wärmepumpe (Beginn, Dauer, Wochentage, Heizstab)"),
+            // Ein älteres Paket bringt die Zuordnung der Nutzungsprofile nicht mit; die Auslegung fällt auf
+            // die Vorgabe im Code zurück, bis die Datenbank des Ziels den Schritt trägt.
+            new Stufe(ProzessNutzungSchema.SCHRITT, Art.Ddl,
+                      "Zuordnung der Nutzungsprofile über IDs, Zapf-Nutzungsarten Büro, Schule und Gewerbe"),
+            // Ein älteres Paket bringt die Ergänzungsspalten der Pufferauslegung nicht mit; sie bleiben leer.
+            new Stufe(PufferAuslegungErgaenzungSchema.SCHRITT, Art.Ddl,
+                      "Sitzungseingaben der Pufferauslegung, Katalogverweis am Projektpuffer, Vorgaben des Aufheizkriteriums"),
+            // Ein älteres Paket bringt den wirksamen U-Wert der Bodenplatte nicht mit; leer rechnet nach DIN EN ISO 13370.
+            new Stufe(ErdreichVorgabeSchema.SCHRITT, Art.Ddl,
+                      "Wirksamer U-Wert der Bodenplatte als Vorgabe am Gebäude"),
+            // Ein älteres Paket bringt Auslegungspunkt und Proportionalband der Zonen nicht mit; leer rechnet die Zone wie ihr Gebäude.
+            new Stufe(ZonenUebergabeSchema.SCHRITT, Art.Ddl,
+                      "Auslegungspunkt und Regler der Wärmeübergabe je Zone"),
+            // Ein älteres Paket führt keine Kältemaschine; die Tabellen kommen leer an, der Katalog mit der Saat.
+            new Stufe(KaeltemaschineSchema.SCHRITT, Art.Ddl,
+                      "Katalog, Projektkopie und Kennlinien der Kältemaschine"),
+            // Ein älteres Paket führt keine Anlagenzeile der Kältemaschine; die Spalten kommen leer bzw. mit 1 an.
+            new Stufe(KaeltemaschineAnlageSchema.SCHRITT, Art.Ddl,
+                      "Kältemaschine als Anlage: Verweis, Anzahl, Kühleingaben, Kostenkomponente, Ergebnis je Maschine"),
+            // Ein älteres Paket führt kein Ergebnis der Kältemaschine mit Abrechnung; die Spalten kommen leer an.
+            new Stufe(KaeltestromabrechnungSchema.SCHRITT, Art.Ddl,
+                      "Kältestromabrechnung der Kältemaschine: Netzbezug, Kühlträger, Stromspitze; Stempeltrigger"),
+            // Ein älteres Paket führt keine Kältespitze je Zone; die Spalten kommen leer an.
+            new Stufe(ZonenKaeltespitzeSchema.SCHRITT, Art.Ddl,
+                      "Kältespitze und Kühlstunden je Zone im Ergebnis"),
+            // Ein älteres Paket führt kein Zeitprogramm und kein Vorlaufangebot am Erzeuger und keine Komfortspalten;
+            // die Spalten kommen leer an (immer verfügbar, Vorlauf der Anlage, „nicht erhoben").
+            new Stufe(AnlagenfahrplanSchema.SCHRITT, Art.Ddl,
+                      "Anlagenfahrplan: Zeitprogramm und Vorlauf_Max am Erzeuger, Komfort und Fahrplanbegrenzung im Ergebnis"),
+            // Ein älteres Paket führt keine freie Kühlung über die Wärmequelle; der Schalter kommt aus (0), Grädigkeit,
+            // Leistungsgrenze und die Zähler im Ergebnis kommen leer an (Festwert, Kälteleistung, „nicht erhoben").
+            new Stufe(FreieKuehlungSoleSchema.SCHRITT, Art.Ddl,
+                      "Freie Kühlung über die Wärmequelle: Schalter, Grädigkeit, Leistungsgrenze; Kälte und Stunden im Ergebnis"),
+            // Ein älteres Paket führt keinen Ausweis der Vorlaufwahl; die Spalten kommen leer an („keine Wahl").
+            new Stufe(VorlaufwahlSchema.SCHRITT, Art.Ddl,
+                      "Vorlaufwahl der Wärmepumpe: Stunden je Kennlinienstützstelle, darüber und darunter im Ergebnis"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (das Ziel führt ihn samt Saat); die Nutzung seiner
+            // Kalender bleibt, wie sie ist, und der Profilname der Zone kommt leer an.
+            new Stufe(RaumnutzungSchema.SCHRITT, Art.Ddl,
+                      "Katalog der Nutzungsprofile, freie Nutzung an Kalender und Vorlage, Profilname an der Zone"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile; die Kategorie DIN des Ziels steht schon auf der Ausgabe 2025.
+            new Stufe(RaumnutzungDinTsSchema.SCHRITT, Art.Katalog,
+                      "Kategorie DIN der Nutzungsprofile nach DIN/TS 18599-10:2025-10: Nummern und Namen ohne Werte"),
+            // Ein älteres Paket führt keine Grundrisse je importiertem Raum; die Tabelle entsteht leer, die
+            // Gebäude exportieren schematisch wie vor dem Schritt.
+            new Stufe(RaumgrundrissSchema.SCHRITT, Art.Ddl,
+                      "Grundriss je importiertem Raum (Ringe, Boden, Höhe, Herleitung) an der Importquelle"),
+            // Ein älteres Paket führt kein Kennzeichen des Ersatzaufbaus; die Spalte kommt leer an (= echter Aufbau).
+            new Stufe(TypaufbauSchema.SCHRITT, Art.Ddl,
+                      "Kennzeichen Typaufbau an Projekt- und Katalogaufbau, Saat der Typaufbauten"),
+            // Ein Paket führt keinen Katalog des Strombedarfs (das Ziel führt die drei Sätze samt Saat); die
+            // Projektkopien seiner Stromverbraucher bleiben, wie sie sind.
+            new Stufe(StandardlastprofilSchema.SCHRITT, Art.Katalog,
+                      "BDEW-Standardlastprofile Strom 2025 (H25, G25, L25) im Katalog des Strombedarfs"),
+            // Ein älteres Paket führt weder verwendeten Aufschlag noch bemessene Aufheizzeit im Ergebnis; die Spalten
+            // kommen leer an (der Bericht nennt dann den Aufschlag der Projekteinstellung).
+            new Stufe(AufheizAufschlagErgebnisSchema.SCHRITT, Art.Ddl,
+                      "Verwendeter Aufschlag und bemessene Aufheizzeit in der Ergebniszeile des Gebäudes"),
+            // Ein älteres Paket führt keine Kennzahlen des Sondenfeldes; die Spalten kommen leer an (= Normvorgabe).
+            new Stufe(ErdsondenfeldSchema.SCHRITT, Art.Ddl,
+                      "Geometrie und Bohrlochkennwerte des Erdsondenfeldes je Anlage"),
+            // Ein Paket führt keinen Katalog des Strombedarfs (das Ziel führt die zwei Sätze samt Saat); die
+            // Projektkopien seiner Stromverbraucher bleiben, wie sie sind.
+            new Stufe(StandardlastprofilPvSchema.SCHRITT, Art.Katalog,
+                      "BDEW-Netzbezugsprofile Strom 2025 (P25, S25) im Katalog des Strombedarfs"),
+            // Ein älteres Paket führt keine Herkunft der Bauteilfläche; die Spalte kommt leer an (= Bestand).
+            new Stufe(FlaechenherkunftSchema.SCHRITT, Art.Ddl,
+                      "Herkunft der Bauteilfläche (Mengensatz, Raumgrenze, Körper, schematisch)"),
+            // Ein älteres Paket führt keinen Raumeinfluss der Heizkurve und keine Kennzahlen des Kreises; die Spalten
+            // kommen leer an (Raumeinfluss aus, „nicht erhoben").
+            new Stufe(Ak3Schema.SCHRITT, Art.Ddl,
+                      "Stufe AK3: Raumeinfluss der Heizkurve am Gebäude, Kennzahlen des geschlossenen Kreises im Ergebnis"),
+            // Ein älteres Paket führt keine Herkunft des Nordwinkels; die Spalte kommt leer an, der Leseweg nimmt dann
+            // Nordwinkel vorhanden → Datei, NULL → Annahme.
+            new Stufe(NordrichtungSchema.SCHRITT, Art.Ddl,
+                      "Herkunft des Nordwinkels an der Importquelle (Datei, Eingabe, Annahme)"),
+            // Ein älteres Paket führt nur die Formate IFC und gbXML und die fünf alten Herkünfte; seine Zeilen bleiben gültig,
+            // die Prüfklauseln nehmen danach auch SQPROJ an.
+            new Stufe(ProjektdateiImportSchema.SCHRITT, Art.Ddl,
+                      "Format und Herkunft SQPROJ für den Gebäudeimport aus der Projektdatei"),
+            // Ein älteres Paket führt keine Kennzahlen der Zonensperre und der Kälteseite im Kreis; die Spalten kommen
+            // leer an („nicht erhoben").
+            new Stufe(Ak3KSchema.SCHRITT, Art.Ddl,
+                      "AK3-K: Kennzahlen der Zonensperre und der Kälteseite im Kreis im Ergebnis"),
+            // Ein älteres Paket führt keine Kühlkurve und keine ihrer Kennzahlen; die Spalten kommen leer an (fester
+            // Vorlauf, „nicht erhoben").
+            new Stufe(KuehlkurveSchema.SCHRITT, Art.Ddl,
+                      "Kühlkurve am Gebäude (Schalter, Fußpunkt, Raumeinfluss, Auslegungsweg), Kennzahlen im Ergebnis"),
+            // Ein Paket führt keinen Katalog der Kältemaschinen (das Ziel führt die Typkennfelder samt Saat); die
+            // Projektkopien seiner Kältemaschinen bleiben, wie sie sind.
+            new Stufe(KaeltemaschinenTypkennfelderSchema.SCHRITT, Art.Katalog,
+                      "Eingebaute Typkennfelder der Kältemaschinen im Katalog"),
+            // Ein Paket führt keinen Gebäudekatalog (die Zonen eines Katalogsatzes bleiben im Ziel); die Konditionierung seiner
+            // Projektgebäude kommt ohne ID_Zone_Stamm an, die Spalte bleibt leer.
+            new Stufe(ZonenKatalogSchema.SCHRITT, Art.Katalog,
+                      "Zonen im Gebäudekatalog (Katalogzwillinge der Zonentabellen, Eigentümerspalte der Konditionierung)"),
+            // Ein älteres Paket führt keine Übergabegrenzen, keine Einbindung und keine Betriebsbereiche; die Spalten kommen
+            // leer an (Bestandsweg, „nicht erhoben").
+            new Stufe(UebergabegrenzeSchema.SCHRITT, Art.Ddl,
+                      "Übergabegrenze und Bivalenz: Grenzen an Wärmepumpe und BHKW, Einbindung, Bereiche im Ergebnis"),
+            // Ein Paket führt keinen Katalog der PV-Ganglinien (der Katalog bleibt im Ziel); seine Projekte rechnen ihre
+            // Photovoltaik über die Module wie bisher, Projektkopie und Zuordnung bleiben leer.
+            new Stufe(PvGanglinieSchema.SCHRITT, Art.Katalog,
+                      "Photovoltaik mit Ganglinie (Katalog, Projektkopie und Zuordnung der PV-Ganglinie)"),
+            // Ein Paket fuehrt die Konditionierung seiner Projektgebaeude; die Anhebung fuehrt deren gekoppelte Kopien
+            // zusammen und spiegelt die Ferienspalten in die Ferienliste - kein Rechenergebnis aendert sich.
+            new Stufe(KalenderbedienungSchema.SCHRITT, Art.Ddl,
+                      "Kalenderbedienung Stufe 2 (gemeinsamer Kalender, benannte Wochen, Wochenende, Laenderfeiertage, Ferienliste)"),
+            // Ein älteres Paket führt weder Kostenvorlage am Katalogsatz noch Ursprung an den Projektkopien; die Spalten
+            // kommen leer an (Standardvorlage des Gewerks, „Ursprung nicht bekannt").
+            new Stufe(KatalogkostenUrsprungSchema.SCHRITT, Art.Ddl,
+                      "Katalogkosten und Ursprung (Kostenvorlage am Katalogsatz, Ursprungsverweis an den Projektkopien)"),
+            // Ein älteres Paket führt keine Investitionsvorlage am Katalogsatz; die Spalte kommt leer an.
+            new Stufe(KatalogkostenInvestitionSchema.SCHRITT, Art.Ddl,
+                      "Katalogkosten Investition (Investitionsvorlage am Katalogsatz)"),
+            // Ein Paket fuehrt keinen Katalog der Kaeltemaschinen (das Ziel fuehrt die Typkennfelder samt Ergaenzung); die
+            // Projektkopien seiner Kaeltemaschinen und ihre Ergebnisse bekommen die Spalten leer (heutiger Weg).
+            new Stufe(KaeltemaschineTeillastSchema.SCHRITT, Art.Katalog,
+                      "Teillast und Takten der Kältemaschine (Teillastkurve, C_d, Verdichterregelung, Randweg, Kennzahlen)"),
+            // Ein Paket fuehrt keinen Katalog der Kaeltemaschinen (das Ziel fuehrt ihn samt Rueckfuellung); die Projektkopien
+            // seiner Kaeltemaschinen bekommen die Katalogfelder leer, die Geraeteart liest sich nach der Rueckfuellregel.
+            new Stufe(KaelteKatalogfelderSchema.SCHRITT, Art.Katalog,
+                      "Katalogfelder der Kälteerzeuger (Geräteart, GWP und Füllmenge des Kältemittels, saisonale Kennzahl)"),
+            // Ein älteres Paket führt keinen Rang der Kälteerzeuger; die Spalte kommt leer an (Vorgabefolge).
+            new Stufe(KaelteRangSchema.SCHRITT, Art.Ddl,
+                      "Pflegbare Kältefolge (Rang der Kälteerzeuger an der Anlagenzeile)"),
+            // Ein älteres Paket führt keinen Kältebedarf; die Tabellen kommen leer an, die Deckungsspalten seiner
+            // Lastgänge stehen auf 'zentral' (heutiger Weg), die Ergebnisspalten leer.
+            new Stufe(KaeltebedarfSchema.SCHRITT, Art.Ddl,
+                      "Kältebedarf (Profile, Typkatalog, Zuordnung mit Deckungsart)"),
+            // Ein Paket fuehrt keinen Katalog der Rueckkuehlwerke (der Katalog bleibt im Ziel); seine Kaeltemaschinen kommen
+            // ohne Rueckkuehlwerk und ohne Wasserpreis an (heutiger Weg ueber die Rueckkuehlart), die Ergebnisspalten leer.
+            new Stufe(RueckkuehlwerkSchema.SCHRITT, Art.Katalog,
+                      "Rückkühlwerk als eigenes Glied (Katalog, Projektkopie, Verweis und Wasserpreis an der Anlage, Kennzahlen)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
@@ -291,8 +501,9 @@ namespace WindowsFormsApplication1
         {
             if (!db.SpalteVorhanden(BhkwLeistungsgrenzeVorgabe.TABELLE, BhkwLeistungsgrenzeVorgabe.SPALTE)) return null;
             int n = db.Ausfuehren(BhkwLeistungsgrenzeVorgabe.Anhebung());
-            return n > 0 ? Zeilen(n, "Projekteinstellung(en) ohne BHKW-Leistungsuntergrenze auf " +
-                                     BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT.ToString(CultureInfo.InvariantCulture) + " % gesetzt") : null;
+            return n > 0 ? Zeilen(n, string.Format(CultureInfo.InvariantCulture,
+                Text("TRANSFER_ANHEBUNG_S67", "Projekteinstellung(en) ohne BHKW-Leistungsuntergrenze auf {0} % gesetzt"),
+                BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT)) : null;
         }
 
         /// <summary>
@@ -337,9 +548,9 @@ namespace WindowsFormsApplication1
                 db.Ausfuehren(PvKoeffizientenReparatur.Leerung(t, s));
 
             if (vorher <= 0) return null;
-            return Zeilen((int)vorher, "PV-Modul(e) mit verdorbenem Koeffizienten: " +
-                          (vorher - ohneTreffer).ToString(CultureInfo.InvariantCulture) + " repariert, " +
-                          ohneTreffer.ToString(CultureInfo.InvariantCulture) + " ohne Treffer auf leer gesetzt");
+            return Zeilen((int)vorher, string.Format(CultureInfo.InvariantCulture,
+                Text("TRANSFER_ANHEBUNG_S69", "PV-Modul(e) mit verdorbenem Koeffizienten: {0} repariert, {1} ohne Treffer auf leer gesetzt"),
+                vorher - ohneTreffer, ohneTreffer));
         }
 
         /// <summary>76 — <see cref="ProjektEnergietraegerEindeutig.SQL_ENTDOPPELN"/>: je Projekt
@@ -349,7 +560,7 @@ namespace WindowsFormsApplication1
             if (!Hat(db, ProjektEnergietraegerEindeutig.TABELLE, "ID", ProjektEnergietraegerEindeutig.SPALTE_PROJEKT,
                      ProjektEnergietraegerEindeutig.SPALTE_TRAEGER)) return null;
             int n = db.Ausfuehren(ProjektEnergietraegerEindeutig.SQL_ENTDOPPELN);
-            return n > 0 ? Zeilen(n, "überzählige(r) Trägersatz/-sätze entfernt") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S76", "überzählige(r) Trägersatz/-sätze entfernt")) : null;
         }
 
         /// <summary>79 — <see cref="HeizstabJeWaermepumpe.SqlUebernahme"/>: jede Wärmepumpe
@@ -360,7 +571,7 @@ namespace WindowsFormsApplication1
                 !Hat(db, HeizstabJeWaermepumpe.TABELLE_ANLAGEN, "ID_Type", "ID_Projekt")) return null;
             db.SpalteSicherstellen(HeizstabJeWaermepumpe.TABELLE_ANLAGEN, HeizstabJeWaermepumpe.SPALTE_ANLAGE);
             int n = db.Ausfuehren(HeizstabJeWaermepumpe.SqlUebernahme());
-            return n > 0 ? Zeilen(n, "Wärmepumpe(n) tragen den Heizstab-Schalter ihres Projekts") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S79", "Wärmepumpe(n) tragen den Heizstab-Schalter ihres Projekts")) : null;
         }
 
         /// <summary>83 — <see cref="StrompreisZerlegung.Falten(Umformzugriff)"/>: der wirksame
@@ -381,7 +592,7 @@ namespace WindowsFormsApplication1
             db.NachschlagenSicherstellen(StrompreisZerlegung.TABELLE_TRAEGER, "id", "pricing_model", "hi_kwh_per_unit", "price_work");
             db.NachschlagenSicherstellen(StrompreisZerlegung.TABELLE_PREIS, "ID_Projekt", "carrier_id", "arbeitspreis", "valid_from");
             int n = StrompreisZerlegung.Falten(db.Zugriff).Count;
-            return n > 0 ? Zeilen(n, "Stromträgersatz/-sätze: Aufschlag in den Arbeitspreis gefaltet oder Anteile stillgelegt") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S83", "Stromträgersatz/-sätze: Aufschlag in den Arbeitspreis gefaltet oder Anteile stillgelegt")) : null;
         }
 
         /// <summary>84 — <see cref="VerguetungUmzug.Umziehen(Umformzugriff)"/>: die Vergütung
@@ -398,7 +609,7 @@ namespace WindowsFormsApplication1
                 db.SpalteSicherstellen(p, s);
             db.NachschlagenSicherstellen(VerguetungUmzug.TABELLE_TRAEGER, "id", "pricing_model");
             int n = VerguetungUmzug.Umziehen(db.Zugriff).Count(z => z.Contains("(Parametersatz"));
-            return n > 0 ? Zeilen(n, "Projekt(e): Einspeisevergütung der Trägerkarte in die Wirtschaftlichkeitsparameter übernommen") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S84", "Projekt(e): Einspeisevergütung der Trägerkarte in die Wirtschaftlichkeitsparameter übernommen")) : null;
         }
 
         /// <summary>87 — <see cref="SpeicherVarianteAktivEindeutig.SQL_ENTDOPPELN"/>: je Projekt
@@ -409,7 +620,7 @@ namespace WindowsFormsApplication1
                      SpeicherVarianteAktivEindeutig.SPALTE_ANLAGE) ||
                 !Hat(db, SpeicherVarianteAktivEindeutig.TABELLE_ANLAGEN, "ID", "ID_Projekt")) return null;
             int n = db.Ausfuehren(SpeicherVarianteAktivEindeutig.SQL_ENTDOPPELN);
-            return n > 0 ? Zeilen(n, "zweite aktive Speichervariante(n) abgeschaltet") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S87", "zweite aktive Speichervariante(n) abgeschaltet")) : null;
         }
 
         /// <summary>89 — <see cref="KwkAnlagenwahrheit.Uebertragung"/> je Spaltenpaar: der
@@ -425,7 +636,7 @@ namespace WindowsFormsApplication1
                 db.SpalteSicherstellen(KwkAnlagenwahrheit.TABELLE, paar.Anlage);
                 n += db.Ausfuehren(KwkAnlagenwahrheit.Uebertragung(paar));
             }
-            return n > 0 ? Zeilen(n, "KWKG-Angabe(n) vom Projekt an die BHKW-Anlage übertragen") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S89", "KWKG-Angabe(n) vom Projekt an die BHKW-Anlage übertragen")) : null;
         }
 
         /// <summary>90 — <see cref="KostenErfassungsgruppenAltzeilen.SqlLoeschen"/>: Nullzeilen
@@ -440,7 +651,7 @@ namespace WindowsFormsApplication1
             db.NachschlagenSicherstellen(KostenErfassungsgruppenAltzeilen.TABELLE_FAKTOR, "StammID",
                                          KostenErfassungsgruppenAltzeilen.SPALTE_HAUPTKOMPONENTE);
             int n = db.Ausfuehren(KostenErfassungsgruppenAltzeilen.SqlLoeschen());
-            return n > 0 ? Zeilen(n, "Nullzeile(n) der Erfassungsgruppen entfernt") : null;
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_S90", "Nullzeile(n) der Erfassungsgruppen entfernt")) : null;
         }
 
         /// <summary>98 — <see cref="BhkwWirkungsgradFaktor.SqlUmrechnen"/> an der Projektkopie.</summary>
@@ -668,6 +879,25 @@ namespace WindowsFormsApplication1
                 ? string.Format(CultureInfo.CurrentCulture,
                     Text("TRANSFER_ANHEBUNG_S148_UNKLAR", "{0} (unklar: {1})"), zeile, string.Join("; ", unklar))
                 : zeile;
+        }
+
+        /// <summary>
+        /// <see cref="KesselBrennwertNachzug.SCHRITT"/> — <see cref="KesselBrennwertNachzug"/> an den
+        /// Projektkesseln des Pakets. Den Katalogsatz sucht die Stufe dort, wo ihn das Programm nach
+        /// dem Einspielen sucht: im Katalog des Ziels, über den Bezeichner. Ohne lesbaren Katalog gilt
+        /// die Beschreibung.
+        /// </summary>
+        private static string SchrittKesselBrennwert(Paketarbeitsdatenbank db)
+        {
+            if (!Hat(db, KesselBrennwertNachzug.TAB_PROJEKT, "ID", KesselBrennwertNachzug.SPALTE, "Bezeichner"))
+                return null;
+            db.SpalteSicherstellen(KesselBrennwertNachzug.TAB_PROJEKT, "Beschreibung");
+            db.SpalteSicherstellen(KesselBrennwertNachzug.TAB_PROJEKT, "Ptherm");
+            db.SpalteSicherstellen(KesselBrennwertNachzug.TAB_PROJEKT, "ID_Projekt");
+            KesselBrennwertNachzug.Bericht b = KesselBrennwertNachzug.Ausfuehren(db.Zugriff, Umformzugriff.Datenbank, null);
+            if (b.Gesetzt == 0) return null;
+            return Zeilen(b.Gesetzt, Text("TRANSFER_ANHEBUNG_KESSEL_BRENNWERT",
+                "Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung)"));
         }
 
         // =================================================================

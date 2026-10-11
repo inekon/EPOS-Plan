@@ -55,6 +55,7 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyDictionary<string, object> KatalogGaben()
             => new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(Dienste.Projekt.Id),
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(KatalogZeilen),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerTwwNutzungsart(Katalogtexte.Fuer),
                 ["Detail"] = new Func<int, TwwNutzungsartDetailDaten>(KatalogDetail),

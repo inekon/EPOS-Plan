@@ -43,6 +43,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// Baustein <c>DiagrammSvg</c>: Der Zeitausschnitt ist die viewBox seiner
 /// Zeichenfläche, „Bereich" und „1:1" bedienen sie, und kein Zoom kostet mehr
 /// einen Rundlauf in den Kern (DG-E3-9).</para>
+/// <para>Im Kesselreiter steht die Auslegung am Ende, nach der Jahresganglinie
+/// (Anwenderwunsch 06.10.2026) — dieselbe Folge wie im Wärmepumpenreiter.</para>
 /// </summary>
 public class ErzeugerReiterTests : EposBunitContext
 {
@@ -251,8 +253,9 @@ public class ErzeugerReiterTests : EposBunitContext
         erg.AusPufferAndereMwh = 4.5;
         erg.Laufstunden = 1797;
         erg.Starts = 312;
-        erg.Bereitschaftsstunden = 5931;
-        erg.BereitschaftsverlustKwh = 296.55;
+        erg.Bereitschaftsstunden = 4335;
+        erg.BereitschaftsverlustKwh = 216.75;
+        erg.HeizgrenzeC = 12.5;
         erg.NutzungsgradPlatzhalter.Add("Kessel 1");
 
         var seite = KesselZeichnen(erg);
@@ -271,10 +274,151 @@ public class ErzeugerReiterTests : EposBunitContext
                           .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Contains("4,50", text);
         Assert.Contains("1.797", text);
-        Assert.Contains("5.931", text);
-        Assert.Contains("296,55", text);
+        Assert.Contains("4.335", text);
+        Assert.Contains("216,75", text);
+
+        // Der Hinweis der Gruppe „Betrieb" nennt die wirksame Heizgrenze des Laufs.
+        Assert.Contains(string.Format(Resource.SIMERG_TIP_BETRIEB_SPK, "12,5"), text);
         Assert.Contains(string.Format(Resource.SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER, "Kessel 1"), text);
         Assert.Contains(Resource.SIMERG_TIP_MAX_BRENNSTOFFLEISTUNG_GAS, text);
+    }
+
+    /// <summary>
+    /// Konzept Kesselkennlinie 5 (Etappe E2): Mit einem Brennstoffkessel nennt die Gruppe
+    /// „Betrieb" den mittleren Wirkungsgrad und den Teillastbrennstoff, die Kesseltabelle η₃₀
+    /// (mit „(Vorgabe)", wenn die Normvorgabe gilt), den Wirkungsgrad im Betrieb und die
+    /// Laststufe; die Zeile des Elektrokessels trägt dort Striche. Ohne Brennstoffkessel fehlen
+    /// Zeilen und Spalten.
+    /// </summary>
+    [Fact]
+    public void Kessel_zeigt_die_Teillastgroessen_nur_mit_Brennstoffkessel()
+    {
+        var erg = Kessel();
+        erg.MitKennlinie = true;
+        erg.WirkungsgradBetriebProzent = 91.23;
+        erg.TeillastMehrbrennstoffKwh = -1234.5;
+        erg.Module.Clear();
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 1", 190.0, 0.0, 88.1,
+                                                                     true, 93.4, true, 89.5, 62.0));
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 2", 10.0, 0.0, 99.5));
+
+        var seite = KesselZeichnen(erg);
+        string[] betrieb = seite.FindAll("dl.epos-simerg-werte")
+                                .Select(l => l.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray())
+                                .First(z => z.Contains(Resource.SIMERG_LBL_BETRIEBSSTUNDEN));
+        Assert.Contains(Resource.SIMERG_LBL_WIRKUNGSGRAD_BETRIEB, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_TEILLAST_MEHRBRENNSTOFF, betrieb);
+        Assert.Contains("91,23", seite.Markup);
+        Assert.Contains("-1.234,50", seite.Markup);
+
+        // Neun Spalten: Nummer, Name, Brennstoffe, Öl, Nutzungsgrad, Starts (Etappe E4) und die drei
+        // Kennliniengrößen.
+        Assert.Equal(9, seite.FindAll("table.epos-raster thead th").Count);
+        var zellen = seite.FindAll("table.epos-raster tbody tr")
+                          .Select(r => r.QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray())
+                          .ToArray();
+        Assert.Equal(new[] { string.Format(Resource.SIMERG_ETA30_VORGABE, "93,4"), "89,5", "62" },
+                     zellen[0].Skip(6).ToArray());
+        Assert.Equal(new[] { "–", "–", "–" }, zellen[1].Skip(6).ToArray());
+
+        var ohne = KesselZeichnen(Kessel());
+        Assert.Equal(6, ohne.FindAll("table.epos-raster thead th").Count);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_WIRKUNGSGRAD_BETRIEB, ohne.Markup);
+    }
+
+    /// <summary>
+    /// Konzept Kesselkennlinie 5 (Etappe E3): Rechnet ein Kessel mit der Brennwertkennlinie, nennt die
+    /// Gruppe „Betrieb" den mittleren Rücklauf, den Anteil der Stunden und der Wärme im
+    /// Brennwertbetrieb und den Brennwertbrennstoff; die Kesseltabelle trägt Rücklauf und
+    /// Brennwertanteil, die Zeile eines Kessels ohne Brennwertkennlinie Striche. Ohne einen solchen
+    /// Kessel fehlen Zeilen und Spalten.
+    /// </summary>
+    [Fact]
+    public void Kessel_zeigt_die_Brennwertgroessen_nur_mit_Brennwertkennlinie()
+    {
+        var erg = Kessel();
+        erg.MitKennlinie = true;
+        erg.MitBrennwertkennlinie = true;
+        erg.RuecklaufMittelC = 43.21;
+        erg.BrennwertStundenProzent = 87.6;
+        erg.BrennwertWaermeProzent = 91.4;
+        erg.BrennwertMehrbrennstoffKwh = -2345.6;
+        erg.Module.Clear();
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 1", 190.0, 0.0, 98.1,
+                                                                     true, 105.0, false, 99.1, 62.0,
+                                                                     true, 43.21, 87.6));
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 2", 10.0, 0.0, 90.5,
+                                                                     true, 93.4, true, 89.5, 30.0));
+
+        var seite = KesselZeichnen(erg);
+        string[] betrieb = seite.FindAll("dl.epos-simerg-werte")
+                                .Select(l => l.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray())
+                                .First(z => z.Contains(Resource.SIMERG_LBL_BETRIEBSSTUNDEN));
+        Assert.Contains(Resource.SIMERG_LBL_RUECKLAUF_MITTEL, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_BRENNWERT_STUNDENANTEIL, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_BRENNWERT_WAERMEANTEIL, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_BRENNWERT_MEHRBRENNSTOFF, betrieb);
+        Assert.Contains("43,2", seite.Markup);
+        Assert.Contains("-2.345,60", seite.Markup);
+
+        Assert.Equal(11, seite.FindAll("table.epos-raster thead th").Count);
+        var zellen = seite.FindAll("table.epos-raster tbody tr")
+                          .Select(r => r.QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray())
+                          .ToArray();
+        Assert.Equal(new[] { "43,2", "88" }, zellen[0].Skip(9).ToArray());
+        Assert.Equal(new[] { "–", "–" }, zellen[1].Skip(9).ToArray());
+
+        erg.MitBrennwertkennlinie = false;
+        var ohne = KesselZeichnen(erg);
+        Assert.Equal(9, ohne.FindAll("table.epos-raster thead th").Count);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_RUECKLAUF_MITTEL, ohne.Markup);
+    }
+
+    /// <summary>
+    /// Konzept Kesselkennlinie 5 (Etappe E4): Mit einem Brennstoffkessel nennt die Gruppe „Betrieb" die
+    /// Taktstunden unter der Mindestleistung und den Anfahrverlust; die Kesseltabelle trägt je Kessel
+    /// seine Starts — auch der Elektrokessel, dessen Starts seine Laufphasen sind. Ohne
+    /// Brennstoffkessel fehlen die beiden Zeilen, die Spalte „Starts" bleibt.
+    /// </summary>
+    [Fact]
+    public void Kessel_zeigt_Takten_und_Starts_je_Kessel()
+    {
+        var erg = Kessel();
+        erg.MitKennlinie = true;
+        erg.Starts = 4321;
+        erg.Taktstunden = 1323;
+        erg.AnfahrverlustKwh = 189.04;
+        erg.Module.Clear();
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 1", 190.0, 0.0, 88.1,
+                                                                     true, 93.4, true, 89.5, 62.0,
+                                                                     Starts: 4276));
+        erg.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 2", 10.0, 0.0, 99.5, Starts: 45));
+
+        var seite = KesselZeichnen(erg);
+        string[] betrieb = seite.FindAll("dl.epos-simerg-werte")
+                                .Select(l => l.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray())
+                                .First(z => z.Contains(Resource.SIMERG_LBL_BETRIEBSSTUNDEN));
+        Assert.Contains(Resource.SIMERG_LBL_TAKTSTUNDEN, betrieb);
+        Assert.Contains(Resource.SIMERG_LBL_ANFAHRVERLUST, betrieb);
+        Assert.Contains("1.323", seite.Markup);
+        Assert.Contains("189,04", seite.Markup);
+        Assert.Contains(Resource.SIMERG_TIP_TAKTEN_SPK, seite.Markup);
+
+        var kopf = seite.FindAll("table.epos-raster thead th").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal(Resource.SIM_SPALTE_STARTS, kopf[5]);
+        var zellen = seite.FindAll("table.epos-raster tbody tr")
+                          .Select(r => r.QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray())
+                          .ToArray();
+        Assert.Equal("4.276", zellen[0][5]);
+        Assert.Equal("45", zellen[1][5]);
+
+        var ohne = Kessel();
+        ohne.Module.Clear();
+        ohne.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Elektrokessel", 10.0, 0.0, 99.0, Starts: 651));
+        var elektro = KesselZeichnen(ohne);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_TAKTSTUNDEN, elektro.Markup);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_ANFAHRVERLUST, elektro.Markup);
+        Assert.Equal("651", elektro.FindAll("table.epos-raster tbody tr")[0].QuerySelectorAll("td")[5].TextContent.Trim());
     }
 
     /// <summary>Ohne Platzhalter steht keine Kohärenzzeile.</summary>
@@ -302,13 +446,11 @@ public class ErzeugerReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Anwenderwunsch 09.09.2026 (W11b‑B‑22).</b> „Wärme", „Strom" und
-    /// „Auslegung" standen als h3-Unterabschnitte UNTEREINANDER in EINER Spalte,
-    /// der Brennstoffblock als einzige Gruppe mit dunklem Balken daneben. Jetzt
-    /// sind es VIER gleichrangige Hauptgruppen mit Balken in ZWEI Rasterzeilen:
-    /// oben Wärme | Strom (wie im Bedarfs- und im Übersichtsreiter), darunter
-    /// Auslegung | Brennstoffverbrauch. Kein <c>h3</c> bleibt übrig; die
-    /// Zeilenfolge JEDER Gruppe ist die von W11b‑B‑15.
+    /// <b>Die Kennzahlen in Hauptgruppen mit Balken.</b> Oben Wärme | Strom
+    /// nebeneinander (wie im Bedarfs- und im Übersichtsreiter), darunter ebenso
+    /// Brennstoffverbrauch | Betrieb, am Ende des Reiters die Auslegung allein in
+    /// ihrer Rasterzeile. Kein <c>h3</c> bleibt
+    /// übrig; die Zeilenfolge JEDER Gruppe ist die von W11b‑B‑15.
     /// </summary>
     [Fact]
     public void Kessel_gliedert_seine_Felder_in_vier_Gruppen_mit_Balken()
@@ -317,15 +459,16 @@ public class ErzeugerReiterTests : EposBunitContext
 
         // Der fünfte Balken steht über der Kesseltabelle - sein Titel trägt seit
         // W11b‑B‑23 keinen Doppelpunkt mehr (SIMERG_GRP_MODULE_SPK).
-        // #568: die dritte Rasterzeile „Betrieb".
-        Assert.Equal(new[] { "Wärme", "Strom", "Auslegung", "Brennstoffverbrauch der Spitzenkessel",
-                             "Betrieb", "Wärmeproduktion der einzelnen Spitzenkessel" },
+        // Die Auslegung steht am Ende.
+        Assert.Equal(new[] { "Wärme", "Strom", "Brennstoffverbrauch der Spitzenkessel",
+                             "Betrieb", "Wärmeproduktion der einzelnen Spitzenkessel", "Auslegung" },
                      seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
         Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
 
-        // Zwei Rasterzeilen mit je zwei Listen - nicht vier Gruppen in einer.
-        Assert.Equal(2, seite.FindAll("div.epos-simerg-spalten")
-                             .Count(z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2));
+        // Drei Rasterzeilen: Wärme | Strom, Brennstoff | Betrieb, die Auslegung allein.
+        Assert.Equal(new[] { 2, 2, 1 },
+                     seite.FindAll("div.epos-simerg-spalten")
+                          .Select(z => z.QuerySelectorAll("dl.epos-simerg-werte").Length).ToArray());
 
         var listen = seite.FindAll("dl.epos-simerg-werte");
         Assert.Equal(5, listen.Count);          // vier Gruppen + der Brennstoffblock
@@ -339,14 +482,54 @@ public class ErzeugerReiterTests : EposBunitContext
             new[] { "Strombedarf:", "Reststrombedarf:" },
             listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
-            new[] { "Gesamte Wärmeleistung der Heizkessel:", "Maximale Brennstoffleistung Gas (Hu):" },
+            new[] { "Gasverbrauch (Hu):", "Ölverbrauch:" },
             listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
             new[] { "Betriebsstunden gesamt", "Starts", "Bereitschaftsstunden", "Bereitschaftsverlust" },
+            listen[3].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Gesamte Wärmeleistung der Heizkessel:", "Maximale Brennstoffleistung Gas (Hu):" },
             listen[4].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
 
         Assert.Equal(new[] { "Restwärmebedarf nach Kessel:", "Reststrombedarf:" },
                      seite.FindAll("dt.epos-simerg-abschluss").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// <b>Die Auslegung steht am Ende des Reiters</b> (Anwenderwunsch 06.10.2026),
+    /// dieselbe Folge wie im Wärmepumpenreiter: erst Wärme und Strom, dann
+    /// Brennstoffverbrauch und Betrieb, dann die Kesseltabelle, die zwei
+    /// Schalterzeilen und die Jahresganglinie, zuletzt der Block „Auslegung“ —
+    /// nur noch gefolgt vom Knopf des CSV-Exports.
+    /// </summary>
+    [Fact]
+    public void Kessel_zeigt_die_Auslegung_nach_der_Ganglinie_am_Ende()
+    {
+        var seite = KesselZeichnen(Kessel(), csv: () => { });
+
+        var folge = seite.FindAll(
+                "h2.epos-gruppenkopf-titel, table.epos-raster, div.epos-simerg-schalter, "
+                + "div.epos-diagramm-svg, button.epos-diagramm-csv")
+            .Select(e => e.TagName.ToLowerInvariant() switch
+            {
+                "h2" => e.TextContent.Trim(),
+                "table" => "Tabelle",
+                "button" => "CSV",
+                _ => e.ClassList.Contains("epos-diagramm-svg") ? "Ganglinie" : "Schalter",
+            })
+            .ToArray();
+
+        Assert.Equal(new[]
+        {
+            "Wärme", "Strom", "Brennstoffverbrauch der Spitzenkessel", "Betrieb",
+            "Wärmeproduktion der einzelnen Spitzenkessel", "Tabelle",
+            "Schalter", "Schalter", "Ganglinie", "CSV",
+            "Auslegung",
+        }, folge);
+
+        // Die Ganglinie ist das einzige Bild des Reiters und steht vor der Auslegung.
+        Assert.Equal("simerg-heizkessel",
+                     Assert.Single(seite.FindComponents<DiagrammSvg>()).Instance.Kennung);
     }
 
     /// <summary>
@@ -376,6 +559,33 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Single(seite.FindAll("[role='alert']"));
         Assert.Equal(4, seite.FindAll("dl.epos-simerg-werte").Count);   // ohne Brennstoffliste
+    }
+
+    /// <summary>
+    /// <b>Brennstoff | Betrieb bleiben nebeneinander, auch ohne Brennstoffzeile.</b>
+    /// Die Brennstoffgruppe verschwindet nicht, sie trägt ihren Leerhinweis; die
+    /// Betriebsgruppe steht rechts daneben in derselben Rasterzeile — wie Wärme |
+    /// Strom in der ersten. Beide Leerhinweise (nicht gelaufen, kein Brennstoff).
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Kessel_haelt_Brennstoff_und_Betrieb_ohne_Brennstoffzeile_nebeneinander(bool brennstoffDefiniert)
+    {
+        var seite = KesselZeichnen(Kessel(), brennstoffe: Array.Empty<Brennstoffzeile>(),
+                                   brennstoffDefiniert: brennstoffDefiniert);
+
+        var zeilen = seite.FindAll("div.epos-simerg-spalten");
+        Assert.Equal(3, zeilen.Count);
+        var gruppen = zeilen[1].QuerySelectorAll("section.epos-simerg-block");
+        Assert.Equal(2, gruppen.Length);
+        Assert.Equal("Brennstoffverbrauch der Spitzenkessel",
+                     gruppen[0].QuerySelector("h2.epos-gruppenkopf-titel")!.TextContent.Trim());
+        Assert.Null(gruppen[0].QuerySelector("dl.epos-simerg-werte"));
+        Assert.NotNull(gruppen[0].QuerySelector("[role='alert'], [role='status']"));
+        Assert.Equal("Betrieb",
+                     gruppen[1].QuerySelector("h2.epos-gruppenkopf-titel")!.TextContent.Trim());
+        Assert.NotNull(gruppen[1].QuerySelector("dl.epos-simerg-werte"));
     }
 
     // ---- W11b‑B‑21: die drei Reihen des Kesselbildes sind wählbar ----------
@@ -481,7 +691,7 @@ public class ErzeugerReiterTests : EposBunitContext
         int gerufen = 0;
         var seite = KesselZeichnen(Kessel(), csv: () => gerufen++);
 
-        seite.Find("button.epos-simerg-knopf").Click();
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
         Assert.Equal(1, gerufen);
     }
 
@@ -518,6 +728,25 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Contains("40,50", seite.Markup);
         Assert.Equal(7, seite.FindAll("table.epos-raster thead th").Count);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Solarthermie);
+    }
+
+    /// <summary>
+    /// Der Pumpenstrom der Solarkreise (Welle M2, ST1) steht nur mit Wert: ohne gepflegte Pumpe
+    /// keine Zeile, mit Pumpe der Jahreswert in MWh/a.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_zeigt_den_Pumpenstrom_nur_mit_Wert()
+    {
+        var ohne = SolarZeichnen();
+        Assert.DoesNotContain("Pumpenstrom Solarkreis:", ohne.Markup);
+
+        var e = Solar();
+        e.PumpenstromMwh = 0.123;
+        var mit = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+        var liste = mit.FindAll("dl.epos-simerg-werte")[0];
+        string[] titel = liste.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = liste.QuerySelectorAll("dd:not(.epos-simerg-einheit)").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal("0,12", werte[Array.IndexOf(titel, "Pumpenstrom Solarkreis:")]);
     }
 
     /// <summary>Ohne bekannten Bezug bleibt das Deckungsfeld LEER (woertlich :4603).</summary>
@@ -624,6 +853,24 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(new[] { "57,76", "5,43", "52,33" }, a[4..]);
         string[] b = zeilen[1].QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToArray();
         Assert.Equal(new[] { "0,02", "0,01", "0,01" }, b[4..]);
+    }
+
+    /// <summary>
+    /// Die Zeile der SOLARTHERMIEGANGLINIE (Folgeauftrag 4) hat weder Fläche noch Anzahl —
+    /// dort steht ein Strich statt „0,00“ und „0“; Ertrag, Nutzung und Überschuss wie bei
+    /// einem Kollektorfeld.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_Ganglinienzeile_zeigt_keine_Flaeche_und_keine_Anzahl()
+    {
+        var e = Solar();
+        e.Module.Clear();
+        e.Module.Add(new SimulationErgebnisCtrl.SolarModulZeile("Solarthermie-Ganglinie ‚Dach‘", 0, 0, 30.0, 20.0, true));
+        var seite = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+
+        string[] z = Assert.Single(seite.FindAll("table.epos-raster tbody tr"))
+                           .QuerySelectorAll("td").Select(t => t.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "1", "Solarthermie-Ganglinie ‚Dach‘", "–", "–", "50,00", "30,00", "20,00" }, z);
     }
 
     // ---- W11b‑B‑19: die zwei Linien des Solarbildes sind wählbar ----------
@@ -966,6 +1213,65 @@ public class ErzeugerReiterTests : EposBunitContext
                      _auftraege.Last(a => a.Bild == Bilder.Bhkw).Reihen!.ToArray());
     }
 
+    // ---- Die Stromlast des BHKW: das zweite Bild unter der Wärmelast ---------
+
+    /// <summary>
+    /// Unter der Wärmelast steht die „Stromlast Jahresganglinie“: eine dritte Schalterzeile
+    /// mit den vier Reihen in der Reihenfolge des Bildes, alle AN, und ein eigener
+    /// Bildauftrag <c>Bilder.BhkwStrom</c> mit allen vier Schlüsseln.
+    /// </summary>
+    [Fact]
+    public void Bhkw_zeigt_unter_der_Waermelast_die_Stromlast_mit_vier_Reihen()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+
+        Assert.Equal(3, seite.FindAll("div.epos-simerg-schalter").Count);
+        Assert.Equal(new[] { "Stromproduktion", "Stromeinspeisung", "Reststrombedarf", "Strombedarf" },
+                     Schalterzeile(seite, 2));
+
+        string[] alle = { "STROMPRODUKTION", "EINSPEISUNG", "RESTSTROM", "STROMBEDARF" };
+        Assert.Equal(alle, seite.Instance.GewaehlteStromreihen.ToArray());
+        Bildauftrag strom = _auftraege.Last(a => a.Bild == Bilder.BhkwStrom);
+        Assert.Equal(alle, strom.Reihen!.ToArray());
+        Assert.False(strom.Sortiert);
+
+        // Das Wärmebild bleibt, was es war.
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "SPEICHERLADUNG", "RESTWAERME", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Bhkw).Reihen!.ToArray());
+        Assert.Contains("simerg-bhkw-strom", seite.Markup);
+        Assert.Contains("Stromlast Jahresganglinie", seite.Markup);
+    }
+
+    /// <summary>Die Abwahl einer Stromreihe nimmt nur ihren Schlüssel aus dem Strom-Auftrag.</summary>
+    [Fact]
+    public void Bhkw_nimmt_die_abgewaehlte_Stromreihe_aus_dem_Strom_Auftrag()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+        _auftraege.Clear();
+
+        Kasten(seite, 1, 2).Change(false);              // Stromeinspeisung
+
+        Assert.Equal(new[] { "STROMPRODUKTION", "RESTSTROM", "STROMBEDARF" },
+                     seite.Instance.GewaehlteStromreihen.ToArray());
+        Assert.Equal(new[] { "STROMPRODUKTION", "RESTSTROM", "STROMBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.BhkwStrom).Reihen!.ToArray());
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "SPEICHERLADUNG", "RESTWAERME", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Bhkw).Reihen!.ToArray());
+    }
+
+    /// <summary>„sortiert“ gilt für beide Bilder: ein Schalter, zwei Dauerlinien.</summary>
+    [Fact]
+    public void Bhkw_sortiert_gilt_fuer_Waerme_und_Strom()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+        _auftraege.Clear();
+
+        Kasten(seite, 0, 0).Change(true);
+
+        Assert.True(_auftraege.Last(a => a.Bild == Bilder.Bhkw).Sortiert);
+        Assert.True(_auftraege.Last(a => a.Bild == Bilder.BhkwStrom).Sortiert);
+    }
+
     /// <summary>Ohne Praesenz: kein Diagramm, kein Umschalter, keine Speicherzeilen.</summary>
     [Fact]
     public void Bhkw_ohne_Praesenz_zeigt_kein_Diagramm()
@@ -1124,6 +1430,60 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Contains("0,00", seite.Markup);
         Assert.DoesNotContain("NaN", seite.Markup);
+    }
+
+    /// <summary>
+    /// Welle M5 (PV3): Ohne Einspeisegrenze steht keine Abregelungszeile; mit Grenze und Abregelung
+    /// stehen Abregelung in MWh/a und in % der Erzeugung sowie die Grenze in kW.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_zeigt_die_Abregelung_nur_mit_Einspeisegrenze()
+    {
+        var ohne = PvZeichnen();
+        Assert.DoesNotContain(Resource.SIMERG_LBL_PV_ABREGELUNG, ohne.Markup);
+        Assert.DoesNotContain(Resource.SIMERG_LBL_PV_EINSPEISEGRENZE, ohne.Markup);
+
+        var daten = Pv();
+        daten.AbregelungMwh = 1.25;
+        daten.AbregelungProzent = 9.5;
+        daten.EinspeisegrenzeKw = 7.0;
+        var mit = Render<PhotovoltaikReiter>(p => p.Add(x => x.Daten, daten).Add(x => x.Modell, Modell));
+        string text = mit.Markup;
+        Assert.Contains(Resource.SIMERG_LBL_PV_ABREGELUNG, text);
+        Assert.Contains("1,25", text);
+        Assert.Contains("9,50", text);
+        Assert.Contains(Resource.SIMERG_LBL_PV_EINSPEISEGRENZE, text);
+        Assert.Contains("7,00", text);
+    }
+
+    /// <summary>
+    /// PVG: Rechnet die Photovoltaik über eine PV-Ganglinie, nennt der Reiter die Quelle (Name, Raster,
+    /// Nennleistung) und zeigt Einstrahlung, Fläche und Modulanzahl als „entfällt (Ganglinie)"; im
+    /// Modulmodell bleibt alles, wie es war.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_kennzeichnet_die_Ganglinie_als_Quelle()
+    {
+        var ohne = PvZeichnen();
+        Assert.DoesNotContain(Resource.PVG_AUSWEIS_ENTFAELLT, ohne.Markup);
+        Assert.DoesNotContain(Resource.PVG_AUSWEIS_MERKMAL_QUELLE + "<", ohne.Markup);
+
+        var daten = new SimulationErgebnisCtrl.PhotovoltaikErgebnis
+        {
+            StromproduktionMwh = 9.5,
+            MaxEinstrahlungWm2 = 0,
+            Ganglinie = new PvGanglinieAusweis
+            {
+                Bezeichner = "PV Dach Ost", Viertelstunden = true, NennleistungKwp = 9.8, NennleistungGepflegt = true
+            }
+        };
+        daten.Module.Add(new SimulationErgebnisCtrl.PvModulZeile("PV Dach Ost", 0, 0, 9.5));
+        var mit = Render<PhotovoltaikReiter>(p => p.Add(x => x.Daten, daten).Add(x => x.Modell, Modell));
+
+        Assert.Contains("Ganglinie ‚PV Dach Ost‘ (Viertelstundenwerte), Nennleistung 9,80 kWp", mit.Markup);
+        Assert.DoesNotContain("W/m²", mit.Markup);
+        var zellen = mit.FindAll("tbody tr").Last().QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "1", "PV Dach Ost", Resource.PVG_AUSWEIS_ENTFAELLT, Resource.PVG_AUSWEIS_ENTFAELLT, "9,50" }, zellen);
     }
 
     // ---- W11b‑B‑19: EINE Reihenzeile mit ALLEN vier Reihen -----------------
@@ -1293,8 +1653,30 @@ public class ErzeugerReiterTests : EposBunitContext
         => Bildpruefung(SolarZeichnen(), "simerg-solarthermie");
 
     [Fact]
-    public void Der_Bhkwreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()
-        => Bildpruefung(BhkwZeichnen(Bhkw()), "simerg-bhkw");
+    public void Der_Bhkwreiter_traegt_zwei_DiagrammSvg_mit_ihren_Kennungen()
+    {
+        // Wärmelast oben, Stromlast darunter - je Bild eine eigene Kennung (eigener Zoom, eigener clipPath).
+        var seite = BhkwZeichnen(Bhkw());
+        var bilder = seite.FindComponents<DiagrammSvg>();
+        Assert.Equal(new[] { "simerg-bhkw", "simerg-bhkw-strom" },
+                     bilder.Select(b => b.Instance.Kennung).ToArray());
+        Assert.All(bilder, b => Assert.Equal("kW", b.Instance.Einheit));
+        Assert.Equal(2, seite.FindAll("svg.epos-flaeche").Count);
+    }
+
+    /// <summary>
+    /// Katalog v12: Beide Bilder des BHKW-Reiters tragen ihre Marke — die Wärmelast <c>stand.bild.bhkw</c>, die Stromlast
+    /// <c>stand.bild.bhkw_strom</c>, je „ähnlich im Bericht“ (der Bericht zeigt alle Reihen ohne Schalter).
+    /// </summary>
+    [Fact]
+    public void Beide_Bilder_des_Bhkwreiters_tragen_ihr_Vorlagenfeld()
+    {
+        var bilder = BhkwZeichnen(Bhkw()).FindComponents<DiagrammSvg>();
+        Assert.Equal(new[] { "stand.bild.bhkw", "stand.bild.bhkw_strom" },
+                     bilder.Select(b => b.Instance.Vorlagenfeld).ToArray());
+        Assert.All(bilder, b => Assert.Equal(Vorlagenfeldstufe.Aehnlich, b.Instance.VorlagenfeldStufe));
+        Assert.All(bilder, b => Assert.NotNull(Vorlagenfeldkatalog.Finde(b.Instance.Vorlagenfeld)));
+    }
 
     [Fact]
     public void Der_Pvreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()
@@ -1322,5 +1704,156 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(soll, Knoepfe(SolarZeichnen()));
         Assert.Equal(soll, Knoepfe(BhkwZeichnen(Bhkw())));
         Assert.Equal(soll, Knoepfe(PvZeichnen()));
+    }
+
+    // =====================================================================
+    //  CSV AM DIAGRAMM: der Ganglinienexport aus der Kaskade
+    // =====================================================================
+
+    private readonly List<(Zeichenmodell Modell, string Titel)> _exporte = new();
+
+    /// <summary>Die Naht der Ergebnisseite als Fälschung: merkt Modell und Titel.</summary>
+    private Ganglinienexport Naht() => new((m, t) =>
+    {
+        _exporte.Add((m, t));
+        return Task.CompletedTask;
+    });
+
+    /// <summary>
+    /// Der Klick auf „CSV…“ gibt das GEZEIGTE Modell samt Diagrammtitel an die Naht; der Schreiber
+    /// des Kerns macht daraus Kopf plus je Stützstelle eine Zeile, erste Spalte die Stunde.
+    /// </summary>
+    private void PruefeExport<T>(IRenderedComponent<T> seite, int bilder) where T : IComponent
+    {
+        var knoepfe = seite.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv");
+        Assert.Equal(bilder, knoepfe.Count);
+        for (int i = 0; i < knoepfe.Count; i++)
+        {
+            seite.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv")[i].Click();
+            (Zeichenmodell modell, string titel) = _exporte[^1];
+            Assert.False(string.IsNullOrWhiteSpace(titel));
+
+            IReadOnlyList<ZeitreihenSpalte> spalten = ZeitreihenCsv.AusModell(modell);
+            Assert.NotEmpty(spalten);
+            string[] zeilen = ZeitreihenCsv.Text(ZeitreihenCsv.RasterAus(spalten), spalten)
+                                           .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+            int laenge = spalten.Max(s => s.Werte.Length);
+            Assert.Equal(laenge + 1, zeilen.Length);
+            Assert.Equal(spalten.Count + 1, zeilen[0].Split(';').Length);
+        }
+        Assert.Equal(bilder, _exporte.Count);
+    }
+
+    [Fact]
+    public void Bhkw_traegt_CSV_an_beiden_Bildern()
+    {
+        var seite = Render<BhkwReiter>(p => p
+            .Add(x => x.Daten, Bhkw())
+            .Add(x => x.Praesent, true)
+            .Add(x => x.Modell, Modell)
+            .AddCascadingValue(Naht()));
+        PruefeExport(seite, 2);
+    }
+
+    [Fact]
+    public void Photovoltaik_traegt_CSV_am_Bild()
+    {
+        var seite = Render<PhotovoltaikReiter>(p => p
+            .Add(x => x.Daten, Pv())
+            .Add(x => x.Modell, Modell)
+            .AddCascadingValue(Naht()));
+        PruefeExport(seite, 1);
+    }
+
+    [Fact]
+    public void Solarthermie_traegt_CSV_am_Bild()
+    {
+        var seite = Render<SolarthermieReiter>(p => p
+            .Add(x => x.Daten, Solar())
+            .Add(x => x.Modell, Modell)
+            .AddCascadingValue(Naht()));
+        PruefeExport(seite, 1);
+    }
+
+    /// <summary>
+    /// Ein benannter Export am Bild hat Vorrang: Der Kesselreiter führt seine eigene Datei, die
+    /// Naht der Kaskade bleibt ungerufen.
+    /// </summary>
+    [Fact]
+    public void Der_benannte_Export_hat_Vorrang_vor_der_Naht()
+    {
+        int gerufen = 0;
+        var seite = Render<HeizkesselReiter>(p => p
+            .Add(x => x.Daten, Kessel())
+            .Add(x => x.Modell, Modell)
+            .Add(x => x.Csv, EventCallback.Factory.Create(this, () => gerufen++))
+            .AddCascadingValue(Naht()));
+
+        var knoepfe = seite.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv");
+        Assert.Single(knoepfe);
+        knoepfe[0].Click();
+        Assert.Equal(1, gerufen);
+        Assert.Empty(_exporte);
+    }
+
+    /// <summary>Ohne Naht und ohne benannten Export kein Knopf; eine Punktwolke (x = Wert) bekommt keinen.</summary>
+    [Fact]
+    public void Ohne_Naht_kein_Knopf_und_keine_Punktwolke()
+    {
+        Assert.Empty(PvZeichnen().FindAll("button.epos-diagramm-csv"));
+
+        Zeichenmodell bild = Erzeugerbild(Bilder.Photovoltaik, false);
+        Assert.True(Naht().Passt(bild));
+        bild.Flaeche = bild.Flaeche with { X = Achsenart.Wert };
+        Assert.False(Naht().Passt(bild));
+        Assert.False(Naht().Passt(null));
+    }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Kesseltabelle: Zahlenköpfe rechts wie ihre Werte, Name links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Kesseltabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabelle = KesselZeichnen(Kessel()).Find("table.epos-raster");
+        Assert.True(Tabellenausrichtung.Pruefe(tabelle) >= 5);
+        Tabellenausrichtung.TextkopfLinks(tabelle, 1);
+    }
+
+    /// <summary>BHKW-Tabelle: Zahlenköpfe rechts wie ihre Werte, Name links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Bhkw_Tabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabelle = BhkwZeichnen(Bhkw()).Find("table.epos-raster");
+        Assert.True(Tabellenausrichtung.Pruefe(tabelle) >= 3);
+        Tabellenausrichtung.TextkopfLinks(tabelle, 1);
+    }
+
+    /// <summary>Kollektortabelle: Zahlenköpfe rechts wie ihre Werte, Name links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Kollektortabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabelle = SolarZeichnen().Find("table.epos-raster");
+        Assert.Equal(6, Tabellenausrichtung.Pruefe(tabelle));
+        Tabellenausrichtung.TextkopfLinks(tabelle, 1);
+    }
+
+    /// <summary>Wechselrichter- und Modultabelle der Photovoltaik: Zahlenköpfe rechts
+    /// wie ihre Werte, Anlage, Gerät und Name links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Photovoltaiktabellen_richten_Kopf_und_Wert_gleich_aus()
+    {
+        var daten = Pv();
+        daten.Wechselrichter.Add(new SimulationErgebnisCtrl.PvWechselrichterZeile(
+            "Anlage 1", "Wechselrichter 1", 1.2, 10.0, 50.0, 0.5, 1000.0, 0.95, 3.0));
+        var raster = Render<PhotovoltaikReiter>(p => p.Add(x => x.Daten, daten).Add(x => x.Modell, Modell))
+            .FindAll("table.epos-raster");
+
+        Assert.Equal(new[] { 7, 4 }, Tabellenausrichtung.PruefeAlle(raster));
+        Tabellenausrichtung.TextkopfLinks(raster[0], 0);
+        Tabellenausrichtung.TextkopfLinks(raster[0], 1);
+        Tabellenausrichtung.TextkopfLinks(raster[1], 1);
     }
 }

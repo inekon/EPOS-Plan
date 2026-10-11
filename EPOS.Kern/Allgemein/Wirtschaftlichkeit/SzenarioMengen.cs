@@ -125,7 +125,13 @@ namespace WindowsFormsApplication1
                     // Kühlträger und Abrechnungsart sind Konfiguration und bleiben. Ohne sie verlöre
                     // ein Mengenszenario Kosten und Emissionen des Kältestroms eines Kühlträgers.
                     Kaelteproduktion_WP = Mal(w.Kaelteproduktion_WP, f),
-                    Stromverbrauch_Kuehlung = Mal(w.Stromverbrauch_Kuehlung, f)
+                    Stromverbrauch_Kuehlung = Mal(w.Stromverbrauch_Kuehlung, f),
+                    // KU3-6: freie Kühlung über die Wärmequelle wie bei der Kältemaschine - die Kälte skaliert,
+                    // die Stunden bleiben; null bleibt null.
+                    FreieKuehlung_MWh = Mal(w.FreieKuehlung_MWh, f),
+                    FreieKuehlung_Stunden = w.FreieKuehlung_Stunden,
+                    // UB-E4: die Betriebsbereiche sind ein Ausweis des Laufs - sie bleiben wie die Vorlaufstunden.
+                    Bereiche = w.Bereiche
                 };
                 if (w.Module != null)
                     foreach (ErgebnisWaermepumpeModulModel mo in w.Module)
@@ -140,11 +146,47 @@ namespace WindowsFormsApplication1
                             Kaelteproduktion = Mal(mo.Kaelteproduktion, f),
                             Stromverbrauch_Kuehlung = Mal(mo.Stromverbrauch_Kuehlung, f),
                             Kaeltestrom_Netzbezug = Mal(mo.Kaeltestrom_Netzbezug, f),
+                            FreieKuehlung_MWh = Mal(mo.FreieKuehlung_MWh, f),
+                            FreieKuehlung_Stunden = mo.FreieKuehlung_Stunden,
+                            // VW1b: die Vorlaufwahl sind Stunden, keine Mengen - sie bleiben; null bleibt null.
+                            Vorlaufwahl_Stunden = mo.Vorlaufwahl_Stunden,
+                            Vorlauf_Darueber_Stunden = mo.Vorlauf_Darueber_Stunden,
+                            Vorlauf_Darunter_Stunden = mo.Vorlauf_Darunter_Stunden,
                             Kuehl_CarrierId = mo.Kuehl_CarrierId,
-                            Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler
+                            Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler,
+                            Bereiche = mo.Bereiche
                         });
                 k.Waermepumpe = wk;
             }
+
+            // KU3-4d: die Kältemaschinen skalieren wie die Module der Wärmepumpe - Mengen, Netzbezug und Spitze
+            // ihres Kältestroms; Anzahl, Kühlträger und Abrechnungsart sind Konfiguration und bleiben.
+            if (m.Kaeltemaschinen != null)
+                foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
+                    k.Kaeltemaschinen.Add(km == null ? null : new ErgebnisKaeltemaschineModel
+                    {
+                        ID_Kaeltemaschine = km.ID_Kaeltemaschine,
+                        Bezeichner = km.Bezeichner,
+                        Anzahl = km.Anzahl,
+                        Kaelteproduktion_MWh = km.Kaelteproduktion_MWh * f,
+                        Stromverbrauch_MWh = km.Stromverbrauch_MWh * f,
+                        Hilfsstrom_MWh = km.Hilfsstrom_MWh * f,
+                        FreieKuehlung_MWh = km.FreieKuehlung_MWh * f,
+                        FreieKuehlung_Stunden = km.FreieKuehlung_Stunden,
+                        Taktstunden = km.Taktstunden,
+                        Unterdeckung_MWh = km.Unterdeckung_MWh * f,
+                        Stunden_Leistungsgrenze = km.Stunden_Leistungsgrenze,
+                        Kaeltestrom_Netzbezug_MWh = Mal(km.Kaeltestrom_Netzbezug_MWh, f),
+                        Kuehl_CarrierId = km.Kuehl_CarrierId,
+                        Kuehl_EigenerZaehler = km.Kuehl_EigenerZaehler,
+                        Stromspitze_kW = Mal(km.Stromspitze_kW, f),
+                        // KM3: der Mehrstrom skaliert als Menge, Starts, Stunden und Lastgrad bleiben.
+                        Taktstrom_MWh = Mal(km.Taktstrom_MWh, f),
+                        Starts = km.Starts,
+                        Teillaststunden = km.Teillaststunden,
+                        Lastgrad_Mittel = km.Lastgrad_Mittel,
+                        Stunden_Extrapoliert = km.Stunden_Extrapoliert,
+                    });
 
             if (m.BHKW != null)
             {

@@ -88,8 +88,10 @@ namespace WindowsFormsApplication1
         {
             string sql = @"INSERT INTO [Tab_Heizkessel] (Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff,
                             Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf,
-                            Wartungskosten, Wartungskosten_Einheit, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, Brennwert)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            Wartungskosten, Wartungskosten_Einheit, Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust,
+                            Bereitschaft_Einheit, Brennwert,
+                            Wirkungsgrad_Teillast30, Kennlinie_Brennwert, Mindestleistung, Anfahrverlust_kWh, Mindestlaufzeit_min)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             // ARBEITSPAKET S4b, ALTFEHLER BEHOBEN: dieselbe Stelle wie in
             // BrauchwasserCtrl.Insert - @@IDENTITY wurde auf einer FRISCHEN Verbindung
@@ -130,7 +132,9 @@ namespace WindowsFormsApplication1
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
                             Raumbedarf = ?, Wartungskosten = ?, Wartungskosten_Einheit = ?, Nutzungsdauer = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
-                            Betriebsbereitschaftverlust = ?, Brennwert = ?
+                            Betriebsbereitschaftverlust = ?, Bereitschaft_Einheit = ?, Brennwert = ?,
+                            Wirkungsgrad_Teillast30 = ?, Kennlinie_Brennwert = ?, Mindestleistung = ?,
+                            Anfahrverlust_kWh = ?, Mindestlaufzeit_min = ?
                           WHERE ID = ?";
 
             return DataRepository.ExecuteSQL(sql, CreateParameters(true));
@@ -195,11 +199,24 @@ namespace WindowsFormsApplication1
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Ptherm, Brennstoff,
                      Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf, Wartungskosten,
                      Wartungskosten_Einheit,
-                     Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust, Brennwert,
-                     Vorlauf, Ruecklauf)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     Nutzungsdauer, CO2, SO2, NOx, CO, Staub, Betriebsbereitschaftverlust,
+                     Bereitschaft_Einheit, Brennwert,
+                     Vorlauf, Ruecklauf,
+                     Wirkungsgrad_Teillast30, Kennlinie_Brennwert, Mindestleistung, Anfahrverlust_kWh,
+                     Mindestlaufzeit_min)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                            ?, ?, ?, ?, ?, ?)";
 
-                DbParam[] ps = {
+                // Die fuenf Kennlinienfelder gehen wie die uebrigen Kesselspalten mit in die
+                // Projektkopie (Konzept Kesselkennlinie 3.1) - ueber das Modell, damit dieselbe
+                // Regel gilt wie beim Schreiben: leer bleibt leer, der Schalter nur mit Brennwert.
+                var kennlinie = new HeizkesselModel
+                {
+                    Brennwert = s["Brennwert"] != DBNull.Value && Convert.ToBoolean(s["Brennwert"])
+                };
+                KesselKennlinieWerte.AusZeile(kennlinie, s);
+
+                var ps = new List<DbParam> {
                     new DbParam("@id", neueId),
                     new DbParam("@idProj", idProjekt),
                     P("@bez", s["Bezeichner"]),
@@ -224,12 +241,22 @@ namespace WindowsFormsApplication1
                     P("@co", s["CO"]),
                     P("@sta", s["Staub"]),
                     P("@bbv", s["Betriebsbereitschaftverlust"]),
+                    // Die Einheit des Bereitschaftsverlusts geht mit, sonst rechnete ein
+                    // Prozentwert der Projektkopie als kW; ohne Spalte (nicht migriert) gilt kW.
+                    P("@bbe", KesselBereitschaft.Einheit(
+                        ColOrNull(s, KesselBereitschaftEinheitSchema.SPALTE) as string)),
                     P("@brn", s["Brennwert"]),
                     P("@vor", ColOrNull(s, "Vorlauf")),
                     P("@rue", ColOrNull(s, "Ruecklauf"))
                 };
+                ps.AddRange(KesselKennlinieWerte.Parameter(kennlinie));
 
-                bool ok = DataRepository.ExecuteSQL(sql, ps);
+                bool ok = DataRepository.ExecuteSQL(sql, ps.ToArray());
+                // Der Ursprung der Kopie (Schemaschritt KatalogkostenUrsprungSchema): Der Rueckweg „In die Datenbank
+                // uebernehmen…" kann ihn dann ueberschreiben, und die Kostenvorlage des Satzes geht der Standardvorlage vor.
+                if (ok && KatalogkostenUrsprungSchema.UrsprungLesbar("Tab_Heizkessel"))
+                    DataRepository.ExecuteSQL("UPDATE [Tab_Heizkessel] SET [ID_Stamm] = ? WHERE [ID] = ?",
+                                              new DbParam("@st", stammId), new DbParam("@id", neueId));
                 return ok ? neueId : -1;
             }
             catch (Exception ex)
@@ -309,7 +336,12 @@ namespace WindowsFormsApplication1
             p.Add(new DbParam("@co", this.CO));
             p.Add(new DbParam("@sta", this.Staub));
             p.Add(new DbParam("@bbv", this.Betriebsbereitschaftverlust));
+            p.Add(new DbParam("@bbe", KesselBereitschaft.Einheit(this.Bereitschaft_Einheit)));
             p.Add(new DbParam("@brn", this.Brennwert));
+
+            // Die fuenf Kennlinienfelder (Konzept Kesselkennlinie 3.1): leer bleibt leer, der
+            // Schalter der Brennwertkennlinie geht nur mit Brennwert in die Datenbank.
+            p.AddRange(KesselKennlinieWerte.Parameter(this));
 
             // Bei Update steht der Schlüssel im WHERE-Teil (am Ende) — seit Befund D6
             // der Primärschlüssel ID statt des projektübergreifend mehrdeutigen Bezeichners.
@@ -340,7 +372,12 @@ namespace WindowsFormsApplication1
             target.CO = row["CO"] != DBNull.Value ? Convert.ToDouble(row["CO"]) : 0.0;
             target.Staub = row["Staub"] != DBNull.Value ? Convert.ToDouble(row["Staub"]) : 0.0;
             target.Betriebsbereitschaftverlust = row["Betriebsbereitschaftverlust"] != DBNull.Value ? Convert.ToDouble(row["Betriebsbereitschaftverlust"]) : 0.0;
-            target.Brennwert = row["Brennwert"] != DBNull.Value ? Convert.ToBoolean(row["Brennwert"]) : false;  
+            // Spaltenprüfung wie bei der Wartungseinheit: ohne Spalte (nicht migriert) gilt kW.
+            target.Bereitschaft_Einheit = KesselBereitschaft.Einheit(
+                ColOrNull(row, KesselBereitschaftEinheitSchema.SPALTE) as string);
+            target.Brennwert = row["Brennwert"] != DBNull.Value ? Convert.ToBoolean(row["Brennwert"]) : false;
+            // Die fuenf Kennlinienfelder; eine noch nicht migrierte Datenbank liefert sie leer.
+            KesselKennlinieWerte.AusZeile(target, row);
         }
 
         private HeizkesselModel MapRowToModel(DataRow row)
