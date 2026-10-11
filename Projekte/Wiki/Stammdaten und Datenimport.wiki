@@ -56,7 +56,7 @@ Für Wärmepumpen kann außerdem ein Quellentemperaturprofil als CSV-Datei mit S
 * [[Klimadaten festlegen]] – der zugehörige Schritt im Programmablauf
 * [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse und Schnittstellen
 * [[Datenexport]] – Ausgabe von Zeitreihen als CSV-Datei
-* [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] – Gebäude aus gbXML-, IFC- und Projektdateien (.sqproj) einlesen
+* [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] – Gebäude aus gbXML- und IFC-Dateien einlesen
 
 {{Navigation Programmfunktionen}}
 
