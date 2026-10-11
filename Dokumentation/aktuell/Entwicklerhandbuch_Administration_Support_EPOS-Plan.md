@@ -3,7 +3,7 @@
 **Für wen.** INEKON — Entwicklung und Support. Nicht für Anwender; nichts aus diesem Handbuch kommt
 ins Wiki, und die Entwicklerbereiche werden in der Anwenderdokumentation nicht erwähnt.
 
-**Stand.** 11.10.2026, Stufe 1 ist umgesetzt (11.10.2026, #968; offen: Nachzug Zapfprofil-Vorgaben als Anwenderrubrik, Entscheid 11.10.2026); Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
+**Stand.** 11.10.2026, Stufen 1 und 2 umgesetzt (11.10.2026, #968 und #969); Nachzug Zapfprofil-Vorgaben offen (Anwenderrubrik, Entscheid 11.10.2026); Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
 ([`Konzept_Administration_Support_EPOS-Plan.md`](Konzept_Administration_Support_EPOS-Plan.md)).
 Jeder Abschnitt trägt die Stufe, ab der er gilt: **[heute]** vorhanden, **[Stufe 1]**
 Entwicklermodus, **[Stufe 2]** Fernwartung, **[Stufe 3]** Dialog „Über EPOS-Plan" und
@@ -176,7 +176,7 @@ Repositoriums; sie stehen nie in diesem Handbuch und nie im Quelltext.
 
 1. *Hilfe → Fernwartung…* öffnet den Dialog: Kontakt, die Angaben für den Support (Abschnitt 3.3),
    der Erklärtext und der Knopf „Fernwartungsseite öffnen". Ohne bezahlte Lizenz ist der Knopf
-   gesperrt, der Grund steht dabei (Abschnitt 4.4).
+   gesperrt, der Grund steht dabei (Abschnitt 4.4). Telefon und E-Mail (Link) stehen im Dialog immer.
 2. Auf der Fernwartungsseite lädt er `EPOS-Plan-Fernwartung.exe` und startet sie; keine
    Installation, keine Administratorrechte. Bis INEKON ein Codesignaturzertifikat hat, erscheint der
    SmartScreen-Hinweis „Unbekannter Herausgeber"; die Seite erklärt „Weitere Informationen →
@@ -194,16 +194,17 @@ Repositoriums; sie stehen nie in diesem Handbuch und nie im Quelltext.
 3. Soll ein Update eingespielt werden, braucht das Setup Administratorrechte. Die Windows-Abfrage
    sieht der Support nur, wenn der Fernwartungs-Client mit Administratorrechten läuft; sonst muss
    der Anwender sie selbst bestätigen. Vorher mit dem Anwender absprechen.
-4. Nach der Sitzung: kein Eintrag in EPOS-Plan; das Sitzungsprotokoll der Web-Konsole (wer wann mit
+4. Ob der Anwender die Fernwartung nutzen darf, prüft der Support an `LizenzCtrl.FernwartungErlaubt()` (Erlaubt, Grund) oder am Menüpunkt: ist er gesperrt, steht der Grund im Tooltip. Ist die Lage unklar, lässt er sich den Diagnoseblock aus dem Dialog (Knopf „Kopieren“) per E-Mail schicken. Führt der Knopf ins Leere, fehlt die Fernwartungsseite `Fernwartung.SEITE` (`EPOS.Kern/Allgemein/Support/Fernwartung.cs`) bei INEKON: Seite und Client prüfen (4.6) und bis dahin den Weg Telefon und E-Mail nehmen.
+5. Nach der Sitzung: kein Eintrag in EPOS-Plan; das Sitzungsprotokoll der Web-Konsole (wer wann mit
    wem) ist die einzige Aufzeichnung.
 
 ### 4.4 Die Lizenzbedingung (AS-Q8, Lesart b)
 
 Der Knopf ist frei, wenn ein Lizenz-Token vom Typ `person` oder `firma` vorhanden ist — gleich ob
-gültig, in Kulanz oder abgelaufen (Lesemodus). Gesperrt bleibt er in der Testversion (`demo`), ohne
-Aktivierung (`NichtAktiviert`) und bei manipulierter Uhr (`UhrManipuliert`). Für diese Fälle gilt
+gültig, in Kulanz oder abgelaufen (Lesemodus). Gesperrt bleibt er in der Testversion (`demo`, Grund `FW_SPERRE_TEST`), ohne
+Aktivierung (`NichtAktiviert`, Grund `FW_SPERRE_LIZENZ`), bei manipulierter Uhr (`UhrManipuliert`), bei unbekanntem Lizenztyp und bei einem Token eines fremden Geräts. Für diese Fälle gilt
 Telefon und E-Mail mit Diagnosedaten; eine Testversion bekommt keine Fernwartung. Die Frage stellt
-`LizenzCtrl.FernwartungErlaubt(LizenzLage)`; ein Supportvertrag im Token (`support_bis`) ist Stufe 4
+`LizenzCtrl.FernwartungErlaubt()` (ohne Nebenwirkung, liefert `Fernwartungsfreigabe(Erlaubt, Grund)`); ein Supportvertrag im Token (`support_bis`) ist Stufe 4
 und ändert die Regel erst dann.
 
 ### 4.5 iPad
@@ -262,7 +263,11 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 | Ausnahmeprotokoll | `EPOS.Kern/Allgemein/Diagnose/Ausnahmeprotokoll.cs`, eingeschaltet in `Program.Main` | heute |
 | Lizenzstand | `EPOS.Kern/Allgemein/Lizenz/LizenzManager.cs` (`LizenzStatus`), `LizenzToken.cs` (`Typ`), `EPOS.Kern/Controller/LizenzCtrl.cs` | heute |
 | Adresse öffnen | `EPOS.Kern/Allgemein/Dienste/IDateiDienst.cs` (`AdresseOeffnen`), `WindowsFormsApplication1/Dienste/WindowsDateiDienst.cs`; der iOS-Adapter liefert heute die Vorgabe `false` | heute |
-| Fernwartungsdialog | `EPOS.UI/Dialoge/Hilfe/FernwartungDialog.razor`, Hülle `EPOS.UI.Daten/Hilfe/FernwartungHuelle.cs` | 2 |
+| Fernwartungsdialog | `EPOS.UI/Dialoge/Hilfe/FernwartungDialog.razor`, `FernwartungDaten.cs` (mit `FernwartungTexte`), Hülle `EPOS.UI.Daten/Hilfe/FernwartungHuelle.cs`, Fenster `WindowsFormsApplication1/Views/Help/FernwartungFenster.cs` | 2 |
+| Fernwartungsregel, Adresse | `EPOS.Kern/Allgemein/Support/Fernwartung.cs` (`SEITE`, `Fernwartungsfreigabe`), `EPOS.Kern/Controller/LizenzCtrl.cs` (`FernwartungErlaubt`), `LizenzManager.AnkerOhneSchreiben` | 2 |
+| Menüsperre | `EPOS.UI/Bausteine/Menuepunkt.cs` (`Sperrgrund`), `Menuetabelle.cs` (Punkt `MenuItem_Fernwartung`), `Menueband.razor`, `HauptfensterHuelle.cs` (Fall `Fernwartung`) | 2 |
+| Tests der Fernwartung | `EPOS.Kern.Tests/FernwartungFreigabeTests.cs`, `EPOS.UI.Tests/Dialoge/FernwartungDialogTests.cs`, `MenuebandTests` | 2 |
+| Wiki-Quelle | `Projekte/Wiki/Programm Dokumentation - Fernwartung.wiki` | 2 |
 | Über-Dialog, Diagnosedaten | `EPOS.UI/Dialoge/Hilfe/UeberDialog.razor`, `EPOS.Kern/Allgemein/Diagnose/Diagnosedaten.cs` | 3 |
 | Maschinenweite Werte | `EPOS.Kern/Allgemein/Dienste/IEinstellungen.cs` (`LiesMaschine`), `WindowsFormsApplication1/Dienste/RegistryEinstellungen.cs` | heute |
 
@@ -272,7 +277,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 | Stufe | Inhalt | Stand |
 |---|---|---|
 | 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #968); **Nachzug offen:** Zapfprofil-Vorgaben als Anwenderrubrik „Zapfprofil" statt Entwicklerbereich (Entscheid 11.10.2026) |
-| 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | offen |
+| 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #969); offen beim Anwender: Fernwartungsseite, Server, signierter Client |
 | 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | offen |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |
 
