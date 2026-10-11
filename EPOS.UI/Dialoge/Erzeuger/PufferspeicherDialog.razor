@@ -567,7 +567,7 @@
         => KostenOeffnen is null ? null : (Func<bool, Task>)BeiKosten;
 
     private Task BeiKosten(bool betrieb)
-        => KostenOeffnen?.Invoke(_projektZeile, betrieb) ?? Task.CompletedTask;
+        => KostenwegGefangen(KostenOeffnen is null ? null : () => KostenOeffnen(_projektZeile, betrieb));
 
     protected override void OnParametersSet()
     {
@@ -1037,8 +1037,11 @@
             catch { _angaben = null; }   // Anzeige: ohne Werte fehlen die Angaben
         }
         if (Wizard || Kostensumme is null) return;
-        try { _kosten = Kostensumme(_projektZeile); }
-        catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
+        // KT-8a: über die Fangstelle — wirft die Summe, fehlt die Angabe, und der Banner nennt den Grund.
+        Func<ErzeugerZeile, (double Invest, double Betrieb)> summe = Kostensumme;
+        _kosten = Katalogladung.Wert<(double Invest, double Betrieb)?>(() => summe(_projektZeile), _projektZeile?.Bezeichner, null,
+                                                                      out string kostenGrund);
+        if (kostenGrund.Length > 0) Melden(kostenGrund, true);
     }
 
     /// <summary>Die projektbezogenen Werte der gewählten Projektzeile — gelesen mit den Kosten, nicht je Zeichnung.</summary>
@@ -1203,6 +1206,18 @@
     // =================================================================================
     // Abschluss
     // =================================================================================
+
+    /// <summary>
+    /// KT-8a: Der Weg in die Kosten- bzw. Energieträgerverwaltung läuft über die Fangstelle
+    /// (<c>Katalogladung.SchreibenAsync</c>): Wirft er, nennt der Banner den Grund, das Protokoll
+    /// hat einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    private async Task KostenwegGefangen(Func<Task>? weg)
+    {
+        if (weg is null) return;
+        string grund = await Katalogladung.SchreibenAsync(async () => { await weg(); return ""; }, _projektZeile?.Bezeichner, g => g);
+        if (grund.Length > 0) { Melden(grund, true); StateHasChanged(); }
+    }
 
     private void Melden(string text, bool fehler)
     {

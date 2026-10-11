@@ -2213,6 +2213,10 @@
         internal static string BadmJahressummeName => MyResource.Resource.KI_DLG_BADM_JAHRESSUMME_NAME;
         internal static string BadmJahressummeErl => MyResource.Resource.KI_DLG_BADM_JAHRESSUMME_ERL;
 
+        // KT-8b: der Ladestand der Katalogdialoge - die Bannertexte der Fangstelle (Katalogladung).
+        internal static string LadestandName => MyResource.Resource.KI_DLG_LADESTAND_NAME;
+        internal static string LadestandErl => MyResource.Resource.KI_DLG_LADESTAND_ERL;
+
         internal static string BergEinheitName => MyResource.Resource.ALLG_LBL_EINHEIT;
         internal static string BergEinheitErl => MyResource.Resource.KI_DLG_BERG_EINHEIT_ERL;
         internal static string BergTabellensichtName => MyResource.Resource.KI_DLG_BERG_TABELLE_NAME;

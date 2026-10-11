@@ -26,7 +26,8 @@
     {
         <button type="button" class="epos-knopf epos-katalogschloss"
                 disabled="@(Zeile is null || h.Aus)"
-                title="@(h.Kurztext.Length > 0 ? h.Kurztext : null)"
+                title="@(h.Sperrgrund.Length > 0 ? h.Sperrgrund : h.Kurztext.Length > 0 ? h.Kurztext : null)"
+                aria-disabled="@(h.Sperrgrund.Length > 0 ? "true" : null)"
                 @onclick="BeiKlick">@h.Text</button>
     }
     <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"

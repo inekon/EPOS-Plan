@@ -46070,6 +46070,21 @@ Chart</value>
   <data name="WURZEL_LOESCHEN_FEHLER" xml:space="preserve">
     <value>Der Satz „{0}“ wurde nicht gelöscht: {1}</value>
   </data>
+  <data name="WURZEL_LESEMODUS_FEHLER" xml:space="preserve">
+    <value>Die Prüfung, ob der Satz geändert werden darf, ist gescheitert; der Satz gilt als gesperrt: {0}</value>
+  </data>
+  <data name="KI_DLG_LISTE_NICHT_GELADEN" xml:space="preserve">
+    <value>Die Liste ist nicht geladen; der Assistent ändert hier nichts, bis sie sich lesen lässt. {0}</value>
+  </data>
+  <data name="KI_DLG_SATZ_NICHT_GELADEN" xml:space="preserve">
+    <value>Der gewählte Satz ist nicht vollständig geladen; der Assistent ändert ihn nicht. Ein anderer Satz lässt sich wählen. {0}</value>
+  </data>
+  <data name="KI_DLG_LADESTAND_NAME" xml:space="preserve">
+    <value>Ladestand</value>
+  </data>
+  <data name="KI_DLG_LADESTAND_ERL" xml:space="preserve">
+    <value>Was der Dialog nicht lesen konnte, im Wortlaut seines Warnbanners (Liste oder gewählter Satz). Leer heißt: alles geladen. Steht hier ein Grund, setzt der Assistent keine Felder und speichert nicht.</value>
+  </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Kältemaschinen im Projekt</value>
   </data>

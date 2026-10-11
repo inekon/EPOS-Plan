@@ -62939,6 +62939,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was der Dialog nicht lesen konnte, im Wortlaut seines Warnbanners (Liste oder gewählter Satz). Leer heißt: alles geladen. Steht hier ein Grund, setzt der Assistent keine Felder und speichert nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_LADESTAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_LADESTAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladestand ähnelt.
+        /// </summary>
+        public static string KI_DLG_LADESTAND_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_LADESTAND_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld darf leer bleiben; leer zählt wie 0. ähnelt.
         /// </summary>
         public static string KI_DLG_LEER_ERLAUBT {
@@ -62953,6 +62971,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_LEER_PFLICHT {
             get {
                 return ResourceManager.GetString("KI_DLG_LEER_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Liste ist nicht geladen; der Assistent ändert hier nichts, bis sie sich lesen lässt. {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_LISTE_NICHT_GELADEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_LISTE_NICHT_GELADEN", resourceCulture);
             }
         }
         
@@ -65968,6 +65995,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_REIHE_WOCHENSTUNDE {
             get {
                 return ResourceManager.GetString("KI_DLG_REIHE_WOCHENSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Satz ist nicht vollständig geladen; der Assistent ändert ihn nicht. Ein anderer Satz lässt sich wählen. {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_SATZ_NICHT_GELADEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_SATZ_NICHT_GELADEN", resourceCulture);
             }
         }
         
@@ -141079,6 +141115,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WURZEL_KEINE_OBERFLAECHE {
             get {
                 return ResourceManager.GetString("WURZEL_KEINE_OBERFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung, ob der Satz geändert werden darf, ist gescheitert; der Satz gilt als gesperrt: {0} ähnelt.
+        /// </summary>
+        public static string WURZEL_LESEMODUS_FEHLER {
+            get {
+                return ResourceManager.GetString("WURZEL_LESEMODUS_FEHLER", resourceCulture);
             }
         }
         

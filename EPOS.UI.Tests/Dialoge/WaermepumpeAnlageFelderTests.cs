@@ -2287,4 +2287,96 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
         List<string> vermerke = Kt7Mitschreiben(() => Aufbauen());
         lock (vermerke) Assert.Empty(vermerke);
     }
+
+    // =================================================================================
+    // KT-8a: Kosten-Rückrufe, Projektkopie und Vergleich über die Fangstelle
+    // =================================================================================
+
+    private const string KT8A_GRUND = "Kostenweg gesperrt";
+
+    private static string Banner(IRenderedComponent<WaermepumpeAnlageFelder> cut)
+        => string.Join("\n", cut.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+
+    [Fact]
+    public void KT8a_wirft_KostenBereit_nennt_der_Banner_den_Grund_und_die_Leiste_bleibt_zu()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(kostenBereit: () => throw new InvalidOperationException(KT8A_GRUND),
+                           kostenOeffnen: _ => Task.CompletedTask, energiekosten: _ => Task.CompletedTask,
+                           geschlossen: b => geschlossen = b);
+
+        Assert.Contains(KT8A_GRUND, Banner(cut));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void KT8a_wirft_die_Kostensumme_nennt_der_Banner_den_Grund_und_die_Zeile_steht_ohne_Summe()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gelesen = 0;
+        var cut = Aufbauen(kostensumme: () => { gelesen++; throw new InvalidOperationException(KT8A_GRUND); });
+        cut.Render();
+        cut.Render();
+
+        Assert.Contains(KT8A_GRUND, Banner(cut));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Equal(1, gelesen);   // nicht je Zeichenlauf
+        Assert.NotEmpty(cut.Find(".epos-kostenleiste-hinweis").TextContent.Trim());
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void KT8a_wirft_der_Weg_in_die_Kostenverwaltung_nennt_der_Banner_den_Grund(int knopf)
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(kostenOeffnen: _ => throw new InvalidOperationException(KT8A_GRUND),
+                           energiekosten: _ => throw new InvalidOperationException(KT8A_GRUND),
+                           geschlossen: b => geschlossen = b);
+
+        cut.FindAll(KOSTENKNOEPFE)[knopf].Click();
+
+        Assert.Contains(KT8A_GRUND, Banner(cut));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Null(geschlossen);
+        Assert.Equal(3, cut.FindAll(KOSTENKNOEPFE).Count);
+    }
+
+    [Fact]
+    public void KT8a_wirft_ProjektkopieVorhanden_sperrt_weich_nennt_den_Grund_und_fragt_einmal()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gefragt = 0;
+        var cut = Aufbauen(projektkopieVorhanden: _ => { gefragt++; throw new InvalidOperationException(KT8A_GRUND); },
+                           kennlinien: _ => Array.Empty<KennlinienZeile>());
+        cut.Render();
+        cut.Render();
+
+        Assert.Contains(KT8A_GRUND, Banner(cut));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Equal(1, gefragt);
+        Assert.Equal("true", Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_kein_Banner_und_kein_Vermerk()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gefragt = 0;
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask, energiekosten: _ => Task.CompletedTask,
+                           projektkopieVorhanden: _ => { gefragt++; return true; });
+        cut.FindAll(KOSTENKNOEPFE)[0].Click();
+        cut.FindAll(KOSTENKNOEPFE)[2].Click();
+        int nachKlick = gefragt;
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+        Assert.True(vermerke.Leer);
+        Assert.Equal(nachKlick, gefragt);
+    }
 }
