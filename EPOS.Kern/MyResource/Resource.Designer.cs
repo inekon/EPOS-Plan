@@ -84912,6 +84912,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tage ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_EINZELTAGE_ANZAHL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_EINZELTAGE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Tag ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_EINZELTAGE_EINER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_EINZELTAGE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die je Größe getrennt ähnelt.
         /// </summary>
         public static string KOND_TXT_KALB_GETRENNT {

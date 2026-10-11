@@ -50020,6 +50020,12 @@ Chart</value>
   <data name="KOND_LBL_KALB_EINZELTAGE" xml:space="preserve">
     <value>Einzeltage (Feiertage, Ausnahmen)</value>
   </data>
+  <data name="KOND_TXT_KALB_EINZELTAGE_EINER" xml:space="preserve">
+    <value>1 Tag</value>
+  </data>
+  <data name="KOND_TXT_KALB_EINZELTAGE_ANZAHL" xml:space="preserve">
+    <value>{0} Tage</value>
+  </data>
   <data name="KOND_LBL_KALB_DATUM" xml:space="preserve">
     <value>Datum</value>
   </data>

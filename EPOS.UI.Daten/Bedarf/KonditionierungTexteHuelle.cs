@@ -281,6 +281,8 @@ namespace WindowsFormsApplication1
             t.KnopfKalbMonatKopieren = Text_("KOND_BTN_KALB_MONAT_KOPIEREN", t.KnopfKalbMonatKopieren);
             t.HinweisKalbMonat = Text_("KOND_TXT_KALB_HINWEIS_MONAT", t.HinweisKalbMonat);
             t.LabelKalbEinzeltage = Text_("KOND_LBL_KALB_EINZELTAGE", t.LabelKalbEinzeltage);
+            t.TextKalbEinzeltageEiner = Text_("KOND_TXT_KALB_EINZELTAGE_EINER", t.TextKalbEinzeltageEiner);
+            t.TextKalbEinzeltageAnzahl = Text_("KOND_TXT_KALB_EINZELTAGE_ANZAHL", t.TextKalbEinzeltageAnzahl);
             t.LabelKalbDatum = Text_("KOND_LBL_KALB_DATUM", t.LabelKalbDatum);
             t.LabelKalbWieSonntag = Text_("KOND_LBL_KALB_WIE_SONNTAG", t.LabelKalbWieSonntag);
             t.KnopfKalbEinzeltagNeu = Text_("KOND_BTN_KALB_EINZELTAG_NEU", t.KnopfKalbEinzeltagNeu);
