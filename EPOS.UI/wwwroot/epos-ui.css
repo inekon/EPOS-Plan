@@ -3752,6 +3752,23 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 /* DIE SUMME DER PROJEKT-KOPFLEISTE HAT VORRANG (Sichtabnahme 10.10.2026, Konzept 4.10):
    Zahl und Einheit werden nie gekuerzt; zuerst geben Ueberschrift und Knoepfe nach. */
 .epos-zweispalten-summe { color: var(--epos-text-leise); flex: 0 0 auto !important; white-space: nowrap; }
+/* DIE KANALWAHL IN DER PROJEKT-KOPFLEISTE (Waermebedarf extern, Stufe 4): eine Zeile, die
+   Beschriftung vor dem Feld wie .epos-ganglinie-kopf > .epos-feld; der Hinweis des Kuehlkanals
+   kuerzt mit Auslassung (voller Wortlaut im Tooltipp) und macht die Leiste nie hoeher. */
+.epos-zweispalten-kanal { display: flex; flex: 0 1 auto; min-width: 0; }
+.epos-zweispalten-kanal > .epos-feld { flex-direction: row; align-items: center; gap: 6px; min-width: 0; margin: 0; }
+.epos-zweispalten-kanal .epos-feld-text { white-space: nowrap; }
+.epos-zweispalten-kanal .epos-feld-zeile { min-width: 0; }
+.epos-zweispalten-kanal .epos-eingabe { width: 11em; min-width: 6em; }
+.epos-zweispalten-kanalhinweis {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--epos-text-leise);
+}
+.epos-formathinweis-knopf, .epos-dialog-kontext { display: inline-flex; flex: 0 0 auto; }
 
 /* ---- SPALTENWAHL UND VERWENDUNGSMARKE (Konzept 4.10) ----------------
    Die Marke: ein Punkt in der Projektfarbe (die Farbe der Plakette "IM PROJEKT")

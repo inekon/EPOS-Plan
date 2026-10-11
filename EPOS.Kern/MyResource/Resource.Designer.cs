@@ -28022,6 +28022,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersprungen (im Projekt zugeordnet): {0} ähnelt.
+        /// </summary>
+        public static string GANGL_UEBERSPRUNGEN_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("GANGL_UEBERSPRUNGEN_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außen ähnelt.
         /// </summary>
         public static string GANS_AUFBAU_AUSSEN {

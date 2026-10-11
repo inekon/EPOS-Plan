@@ -51858,5 +51858,8 @@ chart</value>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} heated zones have no design heat load; they receive no share of the building cap and remain uncapped.</value>
   </data>
+  <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Skipped (assigned in the project): {0}</value>
+  </data>
 </root>
 

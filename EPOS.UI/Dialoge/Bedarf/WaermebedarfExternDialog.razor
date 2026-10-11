@@ -106,7 +106,8 @@
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
-        <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* Der Kontext des Dialogs (frueher eine eigene Zeile) steht als Tooltipp am Infoknopf. *@
+        <span class="epos-dialog-kontext" title="@KopfbandText"><InfoKnopf Schluessel="@HilfeSchluessel" /></span>
         @* H13: der Rechenweg — wie eine eingelesene Ganglinie in den Waermebedarf
            des Projekts eingeht (Raster, Kanal, Netzverlustanteil). *@
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
@@ -120,28 +121,52 @@
         }
     </div>
 
-    <p class="epos-kontextzeile">@KopfbandText</p>
-
     @if (_meldung.Length > 0)
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen der gewählten Ganglinie, nennt dieser Banner den Grund (Katalogladung.SatzAsync). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
+    @* Stufe 4 der Katalogauswahl (Konzept 4.2, 4.9): P = Kopfleiste „Im Projekt" mit der
+       Kanalwahl in EINER Zeile, K = Kopf- und Fussleiste des Katalogs (Formathinweis als
+       Infoknopf im Kopf; Speichern unter, Schloss, Loeschen, Bearbeiten links, Importieren
+       rechts im Fuss), S = Detailzeile mit der Ganglinie. Beide Listen fuehren eine
+       Mehrfachwahl und je Zeile einen Stift. *@
     <Zweispaltenauswahl Dialogname="WaermebedarfExtern" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+                        KatalogZeile="@((int)EPOS.UI.Bausteine.Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                         UebernehmenText="@BtnHinzuText"
-                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        UebernehmenGesperrt="@(KatalogZiele().Count == 0)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText"
-                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen"
-                        SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true">
+                        EntfernenGesperrt="@(ProjektZiele().Count == 0)" Entfernen="BeiEntfernen"
+                        ProjektWahl="@_projektWahl" ProjektSichtbar="@ProjektSchluessel()"
+                        KatalogWahl="@_katalogWahl" KatalogSichtbar="@KatalogSichtbar()"
+                        WahlGeaendert="BeiWahlGeaendert"
+                        KatalogFussName="@_katalogZeile?.Bezeichner"
+                        SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true"
+                        @ref="_zweispalten">
 
         <ProjektKopf>
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-                    <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
-                                 Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
-                                 Aktiv="@(_gewaehlt is not null)" />
-                </KindInhalt>
-            </Formularraster>
+            @* Die Kanalwahl EINZEILIG in der Kopfleiste: Beschriftung vor dem Feld (wie
+               .epos-ganglinie-kopf > .epos-feld). Der Kuehlkanal sagt in einer kurzen Zeile
+               daneben, dass er Kaelte ist (KU1, K3); der volle Wortlaut steht im Tooltipp. *@
+            <span class="epos-zweispalten-kanal">
+                <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
+                             Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
+                             Aktiv="@(_gewaehlt is not null)" />
+            </span>
+            @if (IstKuehlkanal)
+            {
+                <span class="epos-zweispalten-kanalhinweis" title="@HinweisKanalKuehlung">@HinweisKanalKuehlung</span>
+            }
         </ProjektKopf>
 
         <Links>
@@ -149,8 +174,10 @@
                 <table class="epos-raster">
                     <thead>
                         <tr>
+                            <th class="epos-spalte-kaestchen"><Wahlkaestchen Bereich="Auswahlbereich.Projekt" /></th>
                             <th>@SpalteWahl</th>
                             <th>@SpalteName</th>
+                            <th class="epos-spalte-stift"><Zeilenstift Kopf="true" /></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -158,74 +185,80 @@
                         {
                             WaermebedarfExternZeile z = zeile;
                             <tr class="@(z == _gewaehlt ? "epos-zeile--markiert" : null)">
+                                <td class="epos-spalte-kaestchen">
+                                    <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@Projektschluessel(z)"
+                                                   Kurztext="@z.Bezeichner" />
+                                </td>
                                 <td>
                                     <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => ProjektZeileWaehlen(z)" />
+                                                Gewaehltwerden="() => ProjektZeileKlick(z)" />
                                 </td>
                                 <td>@z.Bezeichner</td>
+                                <td class="epos-spalte-stift">
+                                    <Zeilenstift Hinweis="@Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS"
+                                                 Geklickt="@(() => BeiProjektStift(z))" />
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-
-            @* W9-E-3: Der Kanal ist ein Parameterfeld und steht deshalb im
-               Formularraster (Hausregel iU8-E-2) - Beschriftung NEBEN dem Feld,
-               nicht darueber. Einspaltig, weil die linke Spalte schmal ist. *@
-            @* Stufe KU1 (Kuehlkonzept 4.3 #6, K3): Ein Lastgang im Kanal Kuehlung ist KAELTE -
-               er geht nicht in einen Waermekanal, und er wirkt nur mit der Projekteinstellung
-               „Kuehlung rechnen". Das sagt die Zeile unter der Wahl, nicht erst der Lauf. *@
-            @if (IstKuehlkanal)
-            {
-                <Herleitungszeile Text="@HinweisKanalKuehlung" />
-            }
         </Links>
 
         <Rechts>
-            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2):
-               Suchzeile unmittelbar ueber der Liste (#76 woertlich), Filter im
-               Spaltenkopf, dazu die zwei Kennzahlen Jahresarbeit und Spitze aus
-               EINER Gruppenabfrage - dieselben Zahlen, die die Grafik darunter
-               fuer den markierten Satz zeigt (W9-E-3). Das PROFIL traegt die
-               Spalte "im Projekt verwendet" (Q12). *@
-            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+            @* DIE EINE KATALOGLISTE (W14a-E-10) im Kaestchenmodus: Die Zeile ist die Wahl
+               (Detailzeile), das Kaestchen waehlt mehrere fuer die Bereichsaktionen, der
+               Stift oeffnet den Satz (UeS2). Das PROFIL traegt die Spalte "im Projekt
+               verwendet" (Q12). *@
+            <Katalogliste @ref="_katalogliste" Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
-                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen" />
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
+                          ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
+                          GewaehlteChanged="BeiKatalogKaestchen"
+                          Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
+        </Rechts>
 
-            <div class="epos-leiste">
-                @if (ImportMoeglich)
-                {
-                    <button type="button" class="epos-knopf" disabled="@_laeuft"
-                            @onclick="BeiImportieren">@BtnImportierenText</button>
-                }
-                @if (KopierenMoeglich)
-                {
-                    <button type="button" class="epos-knopf" disabled="@(!KopierenErlaubt)"
-                            @onclick="BeiSpeichernUnter">@BtnSpeichernUnterText</button>
-                }
-                <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
-                                JaText="@JaText" NeinText="@NeinText"
-                                Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
-                <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
-                        title="@LoeschenGrund" @onclick="BeiLoeschen">@BtnLoeschenText</button>
-                @if (VerwaltungGaben is not null)
-                {
-                    <button type="button" class="epos-knopf"
-                            @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
-                }
-            </div>
-
+        <KatalogKopf>
             @if (ImportMoeglich)
             {
-                @* W9-E-3: Was fuer eine Datei erwartet wird - sichtbar, nicht erst
-                   im Protokoll. EINE Zeile; der volle Wortlaut haengt am Infoknopf. *@
-                <div class="epos-formathinweis">
-                    <Herleitungszeile Text="@FormatHinweisText" />
+                @* W9-E-3: Was fuer eine Datei erwartet wird - als Infoknopf im Katalogkopf,
+                   keine eigene Zeile; der Kurztext nennt das Format, der Hilfeknopf den vollen Wortlaut. *@
+                <span class="epos-formathinweis-knopf" title="@FormatHinweisText">
                     <InfoKnopf Schluessel="@HilfeSchluesselImport"
                                StandardKurztext="@FormatHinweisLangText" MitAssistent="false" />
-                </div>
+                </span>
             }
-        </Rechts>
+        </KatalogKopf>
+
+        <KatalogFuss>
+            @if (KopierenMoeglich)
+            {
+                <button type="button" class="epos-knopf epos-knopf--speichern-unter" disabled="@(!KopierenErlaubt)"
+                        @onclick="BeiSpeichernUnter">@BtnSpeichernUnterText</button>
+            }
+            <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
+                            JaText="@JaText" NeinText="@NeinText"
+                            Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
+            @if (KatalogLoeschen is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(!LoeschenErlaubt)"
+                        title="@LoeschenGrund" @onclick="BeiLoeschen">@BtnLoeschenText</button>
+            }
+            @if (VerwaltungGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
+                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS"
+                        @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+            }
+        </KatalogFuss>
+
+        <KatalogFussRechts>
+            @if (ImportMoeglich)
+            {
+                <button type="button" class="epos-knopf epos-knopf--import" disabled="@_laeuft"
+                        @onclick="BeiImportieren">@BtnImportierenText</button>
+            }
+        </KatalogFussRechts>
 
         <Satz>
 
@@ -255,7 +288,7 @@
     @* W9-O-9: Die Rueckfrage traegt den DIALOGTITEL wie beim Strom
        (StromganglinieDialog:249) - der Knopftext "Loeschen" waere als
        Ueberschrift nichtssagend. *@
-    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelText" Frage="@Loeschfrage"
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelText" Frage="@LoeschfrageText"
                 Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
 
     @* --- "Speichern unter": der Name der Kopie (W9-E-3) ------------------ *@
@@ -633,14 +666,132 @@
     private bool KopierenMoeglich => Kopieren is not null;
 
     private bool KopierenErlaubt => _katalogZeile is not null && !_laeuft;
-    private bool LoeschenErlaubt => _katalogZeile is not null && !_laeuft;
+    private bool LoeschenErlaubt => KatalogZiele().Count > 0 && !_laeuft;
 
     /// <summary>
     /// Der Grund am Knopf selbst — solange er SYNCHRON bekannt ist. Die
     /// Projektzuordnung ist es nicht (sie fragt die Datenbank); sie meldet sich
     /// nach dem Versuch als Banner (Staffelung W16b‑E‑6).
     /// </summary>
-    private string? LoeschenGrund => _katalogZeile?.Geschuetzt == true ? TextSchreibgeschuetzt : null;
+    private string? LoeschenGrund
+    {
+        get
+        {
+            List<Katalogfilterzeile> ziele = KatalogZiele();
+            return ziele.Count > 0 && ziele.All(z => z.Geschuetzt) ? TextSchreibgeschuetzt : null;
+        }
+    }
+
+    // =================================================================================
+    // Katalogauswahl V1, Stufe 4: Mehrfachwahl, Stift je Zeile, Fangweg
+    // =================================================================================
+
+    private readonly Bereichswahl _projektWahl = new();
+    private readonly Bereichswahl _katalogWahl = new();
+    private IReadOnlyList<string> _katalogKaestchen = new List<string>();
+    private Katalogliste? _katalogliste;
+    private Zweispaltenauswahl? _zweispalten;
+    private string _listeFehler = "";
+    private string _satzFehler = "";
+    private List<Katalogfilterzeile> _loeschziele = new();
+    private List<Katalogfilterzeile> _loeschGesperrt = new();
+    private List<Katalogfilterzeile> _loeschZugeordnet = new();
+
+    /// <summary>Ein Schlüssel je Projektzeile (die Zeile selbst, nicht ihr Name: zwei Zuordnungen derselben Ganglinie sind zwei Zeilen).</summary>
+    private readonly Dictionary<WaermebedarfExternZeile, string> _projektschluessel = new(ReferenceEqualityComparer.Instance);
+
+    /// <summary>Die Mehrfachwahl der Projektliste (Prüfhilfe).</summary>
+    public Bereichswahl ProjektWahl => _projektWahl;
+    /// <summary>Die Mehrfachwahl des Katalogs (Prüfhilfe).</summary>
+    public Bereichswahl KatalogWahl => _katalogWahl;
+    /// <summary>Steht die Satz-Überlagerung offen? (Prüfhilfe)</summary>
+    public bool SatzUeberlagerungOffen => _zweispalten?.SatzUeberlagerungOffen == true;
+
+    private string Projektschluessel(WaermebedarfExternZeile z)
+    {
+        if (!_projektschluessel.TryGetValue(z, out string? s))
+        {
+            s = "p" + (_projektschluessel.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            _projektschluessel[z] = s;
+        }
+        return s;
+    }
+
+    private IReadOnlyList<string> ProjektSchluessel() => Zeilen.Select(Projektschluessel).ToList();
+
+    private IReadOnlyList<string> KatalogSichtbar()
+        => (_katalogliste?.Angezeigt ?? _katalog).Select(z => z.Schluessel).ToList();
+
+    /// <summary>Die Ziele einer Projektaktion: die angekreuzten Zeilen, sonst die markierte.</summary>
+    private List<WaermebedarfExternZeile> ProjektZiele()
+    {
+        if (_projektWahl.Anzahl > 0)
+            return Zeilen.Where(z => _projektWahl.IstGewaehlt(Projektschluessel(z))).ToList();
+        return _gewaehlt is null ? new() : new() { _gewaehlt };
+    }
+
+    /// <summary>Die Ziele einer Katalogaktion: die angekreuzten Sätze, sonst der gewählte.</summary>
+    private List<Katalogfilterzeile> KatalogZiele()
+    {
+        if (_katalogWahl.Anzahl > 0)
+            return _katalogWahl.Gewaehlte
+                .Select(s => _katalog.FirstOrDefault(z => z.Schluessel == s))
+                .OfType<Katalogfilterzeile>().ToList();
+        return _katalogZeile is null ? new() : new() { _katalogZeile };
+    }
+
+    private Task ProjektZeileKlick(WaermebedarfExternZeile zeile)
+    {
+        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
+        return ProjektZeileWaehlen(zeile);
+    }
+
+    private async Task BeiWahlGeaendert(Auswahlbereich bereich)
+    {
+        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
+        if (!_projektWahl.IstGewaehlt(s)) return;
+        WaermebedarfExternZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == s);
+        if (zeile is not null && zeile != _gewaehlt) await ProjektZeileWaehlen(zeile);
+    }
+
+    private void BeiKatalogKaestchen(IReadOnlyList<string> gewaehlt)
+    {
+        _katalogKaestchen = gewaehlt;
+        _katalogWahl.Setzen(gewaehlt);
+    }
+
+    private void KatalogKaestchenLeeren()
+    {
+        _katalogWahl.Leeren();
+        _katalogKaestchen = new List<string>();
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Projektzeile — sie wird gewählt (ohne die Kästchen anzufassen) und ihre
+    /// Ganglinie öffnet in der Satz-Überlagerung (nur Ansicht, Kurve in voller Größe). Eine
+    /// Projektkopie mit eigenem Editor gibt es hier nicht: Die Zuordnung trägt nur den Kanal.
+    /// </summary>
+    private async Task BeiProjektStift(WaermebedarfExternZeile zeile)
+    {
+        if (_gewaehlt != zeile) await ProjektZeileWaehlen(zeile);
+        if (_zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Katalogzeile (die Katalogliste hat sie schon gewählt) — ein gesperrter
+    /// Satz öffnet nur zur Ansicht in der Satz-Überlagerung, ein ungesperrter die Verwaltung
+    /// (KA‑E‑13); ohne Verwaltung die Überlagerung.
+    /// </summary>
+    private async Task BeiKatalogStift(Katalogfilterzeile zeile)
+    {
+        if (_katalogGewaehlt != zeile.Bezeichner) await KatalogZeileWaehlen(zeile.Bezeichner);
+        if (!zeile.Geschuetzt && VerwaltungGaben is not null)
+        {
+            BeiBearbeiten();
+            return;
+        }
+        if (_zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+    }
 
     /// <summary>
     /// Der Kanal der markierten Zeile. Ein leerer oder unbekannter Wert fällt auf den
@@ -733,8 +884,11 @@
     public async Task KatalogLaden()
     {
         if (Katalogzeilen is null) return;
-        _katalog = await Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
+        // KT-3: Wirft die Quelle, bleibt die Liste leer und der Banner nennt den Grund.
+        (_katalog, _listeFehler) = await Katalogladung.LesenAsync(Katalogzeilen, TitelText);
         VerwendungStempeln();
+        _katalogWahl.Bereinigen(_katalog.Select(z => z.Schluessel));
+        _katalogKaestchen = _katalogWahl.Gewaehlte.ToList();
 
         if (_katalogZeile is null) return;
 
@@ -803,9 +957,11 @@
     {
         _wahl = wahl;
         _kennzahlen = null;
+        _satzFehler = "";
 
         if (Kennzahlen is null) return;
-        _kennzahlen = await Kennzahlen(wahl);
+        // KT-4: Wirft das Lesen der Ganglinie, nennt der Banner Satz und Grund; die Listen bleiben bedienbar.
+        (_kennzahlen, _satzFehler) = await Katalogladung.SatzAsync(() => Kennzahlen(wahl), wahl.Bezeichner);
     }
 
     /// <summary>
@@ -875,14 +1031,24 @@
     /// </summary>
     private async Task BeiHinzu()
     {
-        if (_katalogZeile is null || Aufnehmen is null) return;
+        if (Aufnehmen is null) return;
+        List<Katalogfilterzeile> ziele = KatalogZiele();
+        if (ziele.Count == 0) return;
 
-        WaermebedarfExternZeile? neu = Aufnehmen(_katalogZeile.Bezeichner);
-        if (neu is null) return;
+        // Sammelübernahme (4.5): je angekreuzter Katalogzeile eine Zuordnung; gewählt ist danach die letzte neue.
+        WaermebedarfExternZeile? letzte = null;
+        foreach (Katalogfilterzeile k in ziele)
+        {
+            WaermebedarfExternZeile? neu = Aufnehmen(k.Bezeichner);
+            if (neu is null) continue;
+            Zeilen.Add(neu);
+            letzte = neu;
+        }
+        if (letzte is null) return;
 
-        Zeilen.Add(neu);
         _meldung = "";
-        await ProjektZeileWaehlen(neu);
+        if (_katalogWahl.Anzahl > 0) KatalogKaestchenLeeren();
+        await ProjektZeileWaehlen(letzte);
         Geaendert?.Invoke();
     }
 
@@ -893,9 +1059,12 @@
     /// </summary>
     private async Task BeiEntfernen()
     {
-        if (_gewaehlt is null) return;
+        List<WaermebedarfExternZeile> ziele = ProjektZiele();
+        if (ziele.Count == 0) return;
 
-        Zeilen.Remove(_gewaehlt);
+        // Entfernt GENAU die gewählten Zeilen (die angekreuzten, sonst die markierte).
+        foreach (WaermebedarfExternZeile z in ziele) Zeilen.Remove(z);
+        _projektWahl.Leeren();
         _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
         _meldung = "";
 
@@ -956,39 +1125,88 @@
     /// </summary>
     private void BeiLoeschen()
     {
-        if (!LoeschenErlaubt || _katalogZeile is null) return;
+        if (!LoeschenErlaubt) return;
+        List<Katalogfilterzeile> ziele = KatalogZiele();
+        if (ziele.Count == 0) return;
 
-        // Sperre 1: eine zugeordnete Ganglinie bleibt stehen.
-        if (HatProjektzuordnung is not null && HatProjektzuordnung(_katalogZeile.Bezeichner))
+        // Die zwei Sperren: Eine zugeordnete Ganglinie und ein Auslieferungssatz bleiben stehen.
+        // Delete prueft das Schloss selbst; hier steht es davor, damit die Rueckfrage nicht kommt.
+        // EIN Satz meldet seine Sperre; bei mehreren nennt die eine Rueckfrage die uebersprungenen.
+        if (ziele.Count == 1)
         {
-            Melden(MeldungZuordnung, WarnStufe.Warnung);
-            return;
+            Katalogfilterzeile z = ziele[0];
+            if (HatProjektzuordnung is not null && HatProjektzuordnung(z.Bezeichner))
+            {
+                Melden(MeldungZuordnung, WarnStufe.Warnung);
+                return;
+            }
+            if (z.Geschuetzt)
+            {
+                Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
+                return;
+            }
+            _loeschziele = ziele;
+            _loeschGesperrt = new();
+            _loeschZugeordnet = new();
         }
-
-        // Sperre 2: Auslieferungssaetze bleiben stehen. Delete prueft es selbst;
-        // hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
-        if (_katalogZeile.Geschuetzt)
+        else
         {
-            Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
-            return;
+            _loeschGesperrt = ziele.Where(z => z.Geschuetzt).ToList();
+            _loeschZugeordnet = ziele.Where(z => !z.Geschuetzt && HatProjektzuordnung is not null
+                                                 && HatProjektzuordnung(z.Bezeichner)).ToList();
+            _loeschziele = ziele.Except(_loeschGesperrt).Except(_loeschZugeordnet).ToList();
+            if (_loeschziele.Count == 0)
+            {
+                Melden(_loeschZugeordnet.Count > 0 ? MeldungZuordnung : TextSchreibgeschuetzt, WarnStufe.Warnung);
+                return;
+            }
         }
 
         _meldung = "";
         _loeschfrage = true;
     }
 
+    /// <summary>Die EINE Rückfrage: ein Satz mit Namen, mehrere mit Zahl und Namen, dazu die übersprungenen.</summary>
+    private string LoeschfrageText
+    {
+        get
+        {
+            string text = _loeschziele.Count <= 1
+                ? string.Format(MeldungLoeschfrage, _loeschziele.FirstOrDefault()?.Bezeichner ?? Katalogname ?? "")
+                : string.Format(Resource.Culture, Resource.AUSWAHL_FRAGE_LOESCHEN_N, _loeschziele.Count,
+                                string.Join(", ", _loeschziele.Select(z => "„" + z.Bezeichner + "“")));
+            if (_loeschGesperrt.Count > 0)
+                text += " " + string.Format(Resource.Culture, Resource.SATZBEARB_UEBERSPRUNGEN,
+                                            string.Join(", ", _loeschGesperrt.Select(z => "„" + z.Bezeichner + "“")));
+            if (_loeschZugeordnet.Count > 0)
+                text += " " + string.Format(Resource.Culture, Resource.GANGL_UEBERSPRUNGEN_ZUGEORDNET,
+                                            string.Join(", ", _loeschZugeordnet.Select(z => "„" + z.Bezeichner + "“")));
+            return text;
+        }
+    }
+
     private async Task LoeschenBeantwortet(bool? antwort)
     {
         _loeschfrage = false;
-        if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
+        List<Katalogfilterzeile> ziele = _loeschziele;
+        _loeschziele = new();
+        if (antwort != true || KatalogLoeschen is null || ziele.Count == 0) return;
 
-        string name = _katalogZeile.Bezeichner;
-        bool weg = KatalogLoeschen(name);
+        var geloescht = new List<string>();
+        string fehler = "";
+        foreach (Katalogfilterzeile z in ziele)
+        {
+            // KT-4: Wirft der Löschweg, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            bool weg = Katalogladung.Loeschen(() => KatalogLoeschen(z.Bezeichner), z.Bezeichner, out string grund);
+            if (weg) geloescht.Add(z.Bezeichner);
+            else if (fehler.Length == 0) fehler = grund.Length > 0 ? grund : TextSchreibgeschuetzt;
+        }
 
-        if (weg) { _katalogZeile = null; _katalogGewaehlt = ""; }
+        if (geloescht.Contains(_katalogGewaehlt)) { _katalogZeile = null; _katalogGewaehlt = ""; GrafikVerwerfen(); }
+        if (geloescht.Count > 0) KatalogKaestchenLeeren();
         await KatalogLaden();
-        Melden(weg ? string.Format(VorlageGeloescht, name) : TextSchreibgeschuetzt,
-               weg ? WarnStufe.Erfolg : WarnStufe.Warnung);
+        if (fehler.Length > 0) Melden(fehler, WarnStufe.Warnung);
+        else Melden(string.Format(VorlageGeloescht, string.Join(", ", geloescht)), WarnStufe.Erfolg);
     }
 
     private void BeiSpeichernUnter()
@@ -1017,9 +1235,11 @@
         if (string.IsNullOrWhiteSpace(name) || Kopieren is null || _katalogZeile is null) return;
 
         string quelle = _katalogZeile.Bezeichner;
-        bool ok = await Kopieren(quelle, name!);
+        // KT-4: Wirft der Schreibweg, kommt die Ablehnung mit Grund zurück (Katalogladung.SchreibenAsync).
+        string grund = "";
+        bool ok = await Katalogladung.SchreibenAsync(() => Kopieren(quelle, name!), name, g => { grund = g; return false; });
         await KatalogLaden();
-        Melden(ok ? string.Format(VorlageKopiert, quelle, name) : TextKopieFehler,
+        Melden(ok ? string.Format(VorlageKopiert, quelle, name) : grund.Length > 0 ? grund : TextKopieFehler,
                ok ? WarnStufe.Erfolg : WarnStufe.Fehler);
     }
 
@@ -1045,7 +1265,7 @@
 
         // Jede Ebene prueft ihre eigenen Schalter, bevor sie Esc fuer sich
         // auswertet - so schliesst Esc immer nur die oberste (Muster W7.5).
-        if (_loeschfrage || _verwaltungOffen || _kopieOffen
+        if (_loeschfrage || _verwaltungOffen || _kopieOffen || _zweispalten?.SatzUeberlagerungOffen == true
             || _import?.EtwasOffen == true) return Task.CompletedTask;
 
         return Wizard ? Task.CompletedTask : Abbrechen();

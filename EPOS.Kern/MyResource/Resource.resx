@@ -51865,5 +51865,8 @@ Chart</value>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt.</value>
   </data>
+  <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Übersprungen (im Projekt zugeordnet): {0}</value>
+  </data>
 </root>
 
