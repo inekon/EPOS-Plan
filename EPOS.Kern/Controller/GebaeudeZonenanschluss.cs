@@ -48,6 +48,8 @@ namespace WindowsFormsApplication1
         private static bool? _flaechenherkunftVorhanden;
         private static string _pfadNordherkunft;
         private static bool? _nordherkunftVorhanden;
+        private static string _pfadVorheizzeit;
+        private static bool? _vorheizzeitVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -97,6 +99,8 @@ namespace WindowsFormsApplication1
                 _flaechenherkunftVorhanden = null;
                 _pfadNordherkunft = null;
                 _nordherkunftVorhanden = null;
+                _pfadVorheizzeit = null;
+                _vorheizzeitVorhanden = null;
             }
         }
 
@@ -192,6 +196,28 @@ namespace WindowsFormsApplication1
             {
                 _pfadNutzungsprofil = pfad;
                 _nutzungsprofilVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Zone</c> die Spalte <c>Vorheizzeit_H</c> (Schritt <see cref="VorheizenSchema.SCHRITT"/>)?
+        /// Gemerkt je Datenbankpfad wie <see cref="NutzungsprofilVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool VorheizzeitVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_vorheizzeitVorhanden.HasValue && string.Equals(pfad, _pfadVorheizzeit, StringComparison.OrdinalIgnoreCase))
+                    return _vorheizzeitVorhanden.Value;
+            }
+
+            bool da = DataRepository.SpalteVorhanden(VorheizenSchema.TAB_ZONE, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT);
+            lock (_sperre)
+            {
+                _pfadVorheizzeit = pfad;
+                _vorheizzeitVorhanden = da;
             }
             return da;
         }

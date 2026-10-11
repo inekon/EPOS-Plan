@@ -3334,6 +3334,8 @@ namespace WindowsFormsApplication1
                 // zweiten Anlageweg (ProjektCtrl.Insert). Innerhalb der Klammer des Laufs:
                 // Ein Rollback nimmt den Einstellungssatz mit.
                 KonfigurationCtrl.KuehlbetriebAnfangswertSetzen(projektID);
+                // AH-V4 (F14): ebenso die Vorbelegung der Toleranz des Vorheizens.
+                KonfigurationCtrl.VorheiztoleranzAnfangswertSetzen(projektID);
 
                 // Die Brennstoffe des Projekts entstehen mit ihm - wertgleich zum heutigen Katalog,
                 // innerhalb der Klammer des Laufs (ein Rollback nimmt sie mit).

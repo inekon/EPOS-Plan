@@ -95,6 +95,8 @@ namespace WindowsFormsApplication1
                             // Schritt 185 (MZ-Rest): die Kälte der Zone wie im Bedarfsdialog - NULL ohne wirksame Kühlung.
                             KaeltespitzeKw = z.Ergebnis.KaeltespitzeKw,
                             KuehlstundenH = z.Ergebnis.StundenMitKuehlbedarf,
+                            // AH-V4: die Vorheizgroessen der Zone - null bei Sollwertrampe.
+                            Vorheizen = Vorheizwerte(z.Vorheizen),
                         }.MitAufheizwerten(Aufheizwerte(z.Ergebnis.Aufheizung, zone: true)));
 
                 e.KuehlenergieMwh = vdi.KuehlenergieMwh;
@@ -110,6 +112,8 @@ namespace WindowsFormsApplication1
 
                 // Stufe KP3 (Entwurf Abschnitt 4, Festlegung 25): die Aufheizwerte - NULL heisst Schalter aus.
                 e.MitAufheizwerten(Aufheizwerte(vdi.Aufheizung, zone: false));
+                // AH-V4: die Vorheizgroessen des Gebaeudes - null bei Sollwertrampe (alle Spalten NULL).
+                e.Vorheizen = Vorheizwerte(vdi.Vorheizen);
 
                 // Anlagenkopplung (AK1): die Kennzahlen des Heizkreises je Gebäude.
                 HeizkreisErgebnis hk = vdi.Heizkreis;
@@ -222,6 +226,40 @@ namespace WindowsFormsApplication1
 
         private static double? Endlich(double? x)
             => x is double w && !double.IsNaN(w) && !double.IsInfinity(w) ? w : (double?)null;
+
+        /// <summary>
+        /// <b>Die achtzehn Vorheizgrößen einer Ergebniszeile</b> (AH-V4, <see cref="VorheizenSchema.ERGEBNISSPALTEN"/>) aus den
+        /// Werten des Laufs (<see cref="Vorheizgebaeude"/>, skaliert wie die Spitzen) — die EINE Stelle der NULL-Regeln:
+        /// <c>null</c> ohne Vorheizen (Sollwertrampe), Leistungen in kW, die Mehrwärme in MWh, nicht endliche Werte NULL,
+        /// Bedarf 0 als 0 (keiner).
+        /// </summary>
+        internal static Vorheizkennzahlen Vorheizwerte(Vorheizgebaeude v)
+        {
+            if (v == null) return null;
+            static double? Kw(double w) => Endlich(w / 1000.0);
+            static double? NichtNegativ(double? w) => w is double x && x >= 0.0 ? x : (double?)null;
+            return new Vorheizkennzahlen
+            {
+                Verfahren = v.Berechnet ? VorheizenSchema.VERFAHREN_BERECHNET : VorheizenSchema.VERFAHREN_VORGABE,
+                VorheizzeitH = v.VorheizzeitMaxH,
+                VorheizzeitBedarfMaxH = v.BedarfMaxH,
+                BezugKw = NichtNegativ(Kw(v.PhiKMaxW)),
+                DeckelKw = NichtNegativ(Kw(v.DeckelW)),
+                LeistungKw = NichtNegativ(Kw(v.VorheizleistungW)),
+                SprungVorlaufMaxKw = Kw(v.Sprung0MaxW),
+                SprungLaufMaxKw = Kw(v.SprungMaxW),
+                TageVerfehlt = v.TageOhneAnkunftAnzahl,
+                TageUeberVorheizzeit = v.TageUeberVorheizzeit,
+                UnterschreitungMaxK = NichtNegativ(Endlich(v.UnterschreitungMaxK)),
+                UnterschreitungH = v.UnterschreitungsstundenH,
+                DeckelstundenH = v.DeckelstundenH,
+                FloorstundenH = v.FloorstundenH,
+                NaechteOhneAbsenkung = v.NaechteOhneAbsenkung,
+                UnerreichbarTage = v.TageUnerreichbar,
+                SperrzeitTage = v.TageSperrzeit,
+                MehrwaermeMwh = Endlich(v.MehrwaermeKwh / 1000.0),
+            };
+        }
 
         /// <summary>Setzt die Aufheizwerte in die Gebäudezeile; <c>null</c> lässt sie NULL.</summary>
         private static ErgebnisGebaeudeModel MitAufheizwerten(this ErgebnisGebaeudeModel e, Aufheizkennzahlen a)
