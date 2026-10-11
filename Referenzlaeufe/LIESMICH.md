@@ -1179,6 +1179,13 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > byte-gleich (330 von 330 Dateien). Ein Rang in einem Referenzprojekt friert neu ein
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_KB-D_Kaeltefolge_pflegbar.md)).
 
+> **Nachtrag — Schema 213 (Rückkühlwerk, K‑F1) als Arbeitskette, Basis R51 unberührt.** `RueckkuehlwerkSchema`
+> (`KaelteRangSchema.SCHRITT + 1`, angemeldet als 214, hängt beim Push an 213) legt `Tab_Rueckkuehlwerk(_STAMM)`,
+> `Tab_Energieanlagen.ID_Rueckkuehlwerk` und `Wasserpreis_EUR_m3` sowie sechs Ergebnisspalten an
+> `Tab_ErgebnisKaeltemaschine` an; nur leere Tabellen und Spalten, die 183 Bestandstabellen der Testdatenbank sind
+> inhaltsgleich. Ohne gewähltes Rückkühlwerk rechnen 1055 und 1063 byte-gleich (je 32 Dateien)
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Kaelteanlagen/2026-10-10_K-F1_Rueckkuehlwerk_Glied.md)).
+
 ### Die Vorgängerbasis R50 (Wochentagsraster)
 
 Achtundzwanzig Projekte, 911 CSV, 6 336 Skalare, auf Linux eingefroren gegen die Testdatenbank `32af2d32…`
