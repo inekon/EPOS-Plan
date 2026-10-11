@@ -23,6 +23,22 @@ public sealed record UeberDaten(string Produktname, string Claim, string Version
 }
 
 /// <summary>
+/// Das ERGEBNIS von „Supportpaket speichern…" in der Anzeigeform — die Huelle bildet es aus dem
+/// Kern-Ergebnis (<c>Supportpaketergebnis</c>). Ohne Pfad und ohne Fehler: Abbruch.
+/// </summary>
+/// <param name="Pfad">Die geschriebene ZIP-Datei; leer bei Abbruch oder Fehler.</param>
+/// <param name="Enthalten">Die Eintraege im Paket.</param>
+/// <param name="Fehlend">Die Quellen, die es nicht gab.</param>
+/// <param name="Fehler">Leer, wenn das Paket steht; sonst die Meldung des Schreibfehlers.</param>
+public sealed record SupportpaketAnzeige(string Pfad, IReadOnlyList<string> Enthalten,
+                                         IReadOnlyList<string> Fehlend, string Fehler)
+{
+    /// <summary>Abbruch im Speicherdialog.</summary>
+    public static SupportpaketAnzeige Abgebrochen { get; } =
+        new SupportpaketAnzeige("", Array.Empty<string>(), Array.Empty<string>(), "");
+}
+
+/// <summary>
 /// Der ANSTOSS der Geste des Entwicklermodus (Konzept 3.2, Entwicklerhandbuch Abschnitt 1): Die
 /// Schale faengt Strg+Umschalt+Alt+E im Fenster ab (unter Windows in <c>ProcessCmdKey</c>, bevor
 /// die WebView die Taste sieht) und stoesst den Dialog an; der Dialog ruft daraufhin seinen
@@ -85,6 +101,33 @@ public sealed class UeberTexte
 
     /// <summary><c>UEB_MODUS_GEWECHSELT</c></summary>
     public string ModusGewechselt { get; init; } = "Die Diagnosedaten sind aktualisiert.";
+
+    /// <summary><c>SUP_PAKET_KNOPF</c></summary>
+    public string Supportpaket { get; init; } = "Supportpaket speichern…";
+
+    /// <summary><c>SUP_PAKET_HINWEIS</c></summary>
+    public string SupportpaketHinweis { get; init; } =
+        "Das Supportpaket enthält die Diagnosedaten und die Protokolle des Programms, keine Projektdaten " +
+        "und keine Datenbank. Hängen Sie die Datei an Ihre E-Mail an den Support.";
+
+    /// <summary><c>SUP_PAKET_HAKEN</c></summary>
+    public string KiProtokoll { get; init; } = "KI-Protokoll beilegen";
+
+    /// <summary><c>SUP_PAKET_HAKEN_HINWEIS</c></summary>
+    public string KiProtokollHinweis { get; init; } =
+        "Das KI-Protokoll kann Ihre Eingaben an den Assistenten enthalten.";
+
+    /// <summary><c>SUP_PAKET_GESPEICHERT</c> — {0} ist der Pfad.</summary>
+    public string SupportpaketGespeichert { get; init; } = "Supportpaket gespeichert: {0}";
+
+    /// <summary><c>SUP_PAKET_ENTHALTEN</c> — {0} ist die Liste der Eintraege.</summary>
+    public string SupportpaketEnthalten { get; init; } = "Enthalten: {0}";
+
+    /// <summary><c>SUP_PAKET_FEHLEND</c> — {0} ist die Liste der fehlenden Quellen.</summary>
+    public string SupportpaketFehlend { get; init; } = "Nicht vorhanden: {0}";
+
+    /// <summary><c>SUP_PAKET_FEHLER</c> — {0} ist die Meldung.</summary>
+    public string SupportpaketFehler { get; init; } = "Das Supportpaket konnte nicht gespeichert werden: {0}";
 
     /// <summary><c>UEB_SCHLIESSEN</c></summary>
     public string Schliessen { get; init; } = "Schließen";

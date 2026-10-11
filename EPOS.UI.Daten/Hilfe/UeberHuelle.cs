@@ -36,6 +36,22 @@ namespace WindowsFormsApplication1
         /// <summary>Der Diagnoseblock des Kerns — auch der Rueckgabewert nach der Geste.</summary>
         public static string Diagnosetext(string programmversion) => Diagnosedaten.Textblock(programmversion);
 
+        /// <summary>
+        /// Das Supportpaket nach <paramref name="zielpfad"/> (Kern <see cref="Supportpaket"/>) mit dem
+        /// Diagnoseblock dieser Programmversion; leeres Ziel = Abbruch im Speicherdialog.
+        /// </summary>
+        public static SupportpaketAnzeige SupportpaketSpeichern(string zielpfad, string programmversion, bool mitKiProtokoll) =>
+            string.IsNullOrEmpty(zielpfad)
+                ? SupportpaketAnzeige.Abgebrochen
+                : Anzeige(Supportpaket.Erstellen(zielpfad, Diagnosetext(programmversion), mitKiProtokoll));
+
+        /// <summary>Das Kern-Ergebnis in der Anzeigeform des Dialogs.</summary>
+        public static SupportpaketAnzeige Anzeige(Supportpaketergebnis erg) =>
+            erg == null
+                ? SupportpaketAnzeige.Abgebrochen
+                : new SupportpaketAnzeige(erg.Pfad ?? "", erg.Enthalten ?? Array.Empty<string>(),
+                                          erg.Fehlend ?? Array.Empty<string>(), erg.Fehler ?? "");
+
         /// <summary>Der PARAMETERSATZ der Komponente — ohne <c>Geschlossen</c>.</summary>
         /// <param name="produktname">Der Produktname der Schale.</param>
         /// <param name="version">Die Version der Kopfzeile (wie die Kopfleiste des Hauptfensters).</param>
@@ -47,6 +63,7 @@ namespace WindowsFormsApplication1
         /// <param name="fernwartungOeffnen">Oeffnet den Fernwartungsdialog; <c>null</c> = kein Knopf.</param>
         /// <param name="entwicklermodusSchalten">Schaltet den Modus und liefert den neuen Block; <c>null</c> = keine Geste.</param>
         /// <param name="anstoss">Der Anstoss der Geste; <c>null</c> = keine Geste.</param>
+        /// <param name="supportpaketSpeichern">Speichert das Supportpaket (Haken KI-Protokoll); <c>null</c> = kein Knopf.</param>
         public static IReadOnlyDictionary<string, object> Gaben(string produktname, string version, string baudatum,
                                                                 string programmversion,
                                                                 Func<string, bool> adresseOeffnen,
@@ -54,7 +71,8 @@ namespace WindowsFormsApplication1
                                                                 Action protokollordnerOeffnen = null,
                                                                 Action fernwartungOeffnen = null,
                                                                 Func<string> entwicklermodusSchalten = null,
-                                                                UeberAnstoss anstoss = null)
+                                                                UeberAnstoss anstoss = null,
+                                                                Func<bool, System.Threading.Tasks.Task<SupportpaketAnzeige>> supportpaketSpeichern = null)
         {
             var gaben = new Dictionary<string, object>
             {
@@ -67,6 +85,7 @@ namespace WindowsFormsApplication1
             if (fernwartungOeffnen != null) gaben["FernwartungOeffnen"] = fernwartungOeffnen;
             if (entwicklermodusSchalten != null) gaben["EntwicklermodusSchalten"] = entwicklermodusSchalten;
             if (anstoss != null) gaben["Anstoss"] = anstoss;
+            if (supportpaketSpeichern != null) gaben["SupportpaketSpeichern"] = supportpaketSpeichern;
             return gaben;
         }
 
@@ -98,6 +117,14 @@ namespace WindowsFormsApplication1
             Fernwartung = MyResource.Resource.UEB_FERNWARTUNG,
             MailFehler = MyResource.Resource.UEB_MAIL_FEHLER,
             ModusGewechselt = MyResource.Resource.UEB_MODUS_GEWECHSELT,
+            Supportpaket = MyResource.Resource.SUP_PAKET_KNOPF,
+            SupportpaketHinweis = MyResource.Resource.SUP_PAKET_HINWEIS,
+            KiProtokoll = MyResource.Resource.SUP_PAKET_HAKEN,
+            KiProtokollHinweis = MyResource.Resource.SUP_PAKET_HAKEN_HINWEIS,
+            SupportpaketGespeichert = MyResource.Resource.SUP_PAKET_GESPEICHERT,
+            SupportpaketEnthalten = MyResource.Resource.SUP_PAKET_ENTHALTEN,
+            SupportpaketFehlend = MyResource.Resource.SUP_PAKET_FEHLEND,
+            SupportpaketFehler = MyResource.Resource.SUP_PAKET_FEHLER,
             Schliessen = MyResource.Resource.UEB_SCHLIESSEN,
         };
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Hilfe;
 using Microsoft.AspNetCore.Components;
@@ -52,12 +53,24 @@ namespace WindowsFormsApplication1
             Action protokollordner = () => Spaeter(dlg, EntwicklungHuelle.ProtokollordnerOeffnen);
             Action fernwartung = () => Spaeter(dlg, () => FernwartungFenster.Oeffnen(dlg));
 
+            // Das Supportpaket: Speicherdialog und Schreiben eine Nachricht spaeter; der Dialog wartet auf das Ergebnis.
+            Func<bool, Task<SupportpaketAnzeige>> supportpaket = mitKi =>
+            {
+                var fertig = new TaskCompletionSource<SupportpaketAnzeige>();
+                Spaeter(dlg, () =>
+                {
+                    try { fertig.TrySetResult(SupportpaketSpeichern(dlg, programmversion, mitKi)); }
+                    catch (Exception ex) { fertig.TrySetResult(new SupportpaketAnzeige("", Array.Empty<string>(), Array.Empty<string>(), ex.Message)); }
+                });
+                return fertig.Task;
+            };
+
             // Die Windows-Schale hat VOR dem Anstoss geschaltet (s. o.); der Rueckruf liefert den Block danach.
             Func<string> schalten = () => UeberHuelle.Diagnosetext(programmversion);
 
             var werte = new Dictionary<string, object>(UeberHuelle.Gaben(
                 Hauptfensterrahmen.PRODUKTNAME, version, Baudatum(), programmversion,
-                AdresseOeffnen, kopieren, protokollordner, fernwartung, schalten, anstoss))
+                AdresseOeffnen, kopieren, protokollordner, fernwartung, schalten, anstoss, supportpaket))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -99,6 +112,31 @@ namespace WindowsFormsApplication1
                 return File.GetLastWriteTime(pfad).ToString("d", CultureInfo.CurrentCulture);
             }
             catch { return ""; }
+        }
+
+        /// <summary>
+        /// „Supportpaket speichern…": der Speicherdialog im Dokumentenordner mit dem Vorgabenamen
+        /// <see cref="Supportpaket.Vorgabename"/>; Abbruch liefert ein Ergebnis ohne Pfad.
+        /// </summary>
+        private static SupportpaketAnzeige SupportpaketSpeichern(IWin32Window besitzer, string programmversion, bool mitKiProtokoll)
+        {
+            string ziel;
+            using (var wahl = new SaveFileDialog
+            {
+                Title = MyResource.Resource.SUP_PAKET_DIALOGTITEL,
+                Filter = MyResource.Resource.SUP_PAKET_DATEIFILTER,
+                DefaultExt = "zip",
+                AddExtension = true,
+                OverwritePrompt = true,
+                FileName = Supportpaket.Vorgabename(DateTime.Now),
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            })
+            {
+                DialogResult antwort = besitzer != null ? wahl.ShowDialog(besitzer) : wahl.ShowDialog();
+                if (antwort != DialogResult.OK) return SupportpaketAnzeige.Abgebrochen;
+                ziel = wahl.FileName;
+            }
+            return UeberHuelle.SupportpaketSpeichern(ziel, programmversion, mitKiProtokoll);
         }
 
         /// <summary>Eine Nachricht später auf dem Faden des Fensters; ohne Fenster sofort.</summary>

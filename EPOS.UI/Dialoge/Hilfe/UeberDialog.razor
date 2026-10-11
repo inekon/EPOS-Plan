@@ -9,7 +9,8 @@
 
    AUFBAU von oben nach unten: Kopf (Produktname, Claim, Version mit Baudatum, Haus),
    Diagnosedaten, Kontakt, Fussleiste. Kein Arbeitsstand, deshalb nur „Schliessen". Keine
-   Hilfepille: Der Dialog ist selbst die Auskunft.
+   Hilfepille: Der Dialog ist selbst die Auskunft. Im Diagnoseblock speichert „Supportpaket
+   speichern…" die ZIP-Datei fuer die E-Mail (Kern: Supportpaket); das KI-Protokoll nur mit Haken.
 
    KEINE DATENBANK, KEIN KERN (Hausregel EPOS.UI): Alle Angaben kommen fertig aus der Huelle
    (EPOS.UI.Daten/Hilfe/UeberHuelle.cs); Zwischenablage, Ordner, Browser, Fernwartung und das
@@ -56,6 +57,32 @@
                 {
                     <button type="button" class="epos-knopf epos-ueber-protokollordner"
                             @onclick="BeiProtokollordner">@T.Protokollordner</button>
+                }
+            </div>
+        }
+        @if (SupportpaketSpeichern is not null)
+        {
+            @* Das Supportpaket (Konzept 5, AS-Q6): ZIP ohne Projektdaten; das KI-Protokoll nur mit Haken. *@
+            <div class="epos-ueber-supportpaket">
+                <p class="epos-dialog-einleitung">@T.SupportpaketHinweis</p>
+                <label class="epos-schalter epos-ueber-ki-haken" title="@T.KiProtokollHinweis">
+                    <input class="epos-schalter-kasten" type="checkbox" checked="@_mitKiProtokoll"
+                           @onchange="BeiKiHaken" />
+                    <span class="epos-feld-text">@T.KiProtokoll</span>
+                </label>
+                <p class="epos-feld-hinweis epos-ueber-ki-hinweis">@T.KiProtokollHinweis</p>
+                <div class="epos-kontextleiste">
+                    <button type="button" class="epos-knopf epos-ueber-supportpaket-knopf"
+                            @onclick="BeiSupportpaket">@T.Supportpaket</button>
+                </div>
+                @if (_paketzeilen.Count > 0)
+                {
+                    <ul class="epos-ueber-paketergebnis">
+                        @foreach (string zeile in _paketzeilen)
+                        {
+                            <li>@zeile</li>
+                        }
+                    </ul>
                 }
             </div>
         }
@@ -129,6 +156,14 @@
     /// </summary>
     [Parameter] public Func<string?>? EntwicklermodusSchalten { get; set; }
 
+    /// <summary>
+    /// Speichert das Supportpaket (Auswahl des Ziels, Sache der Plattform); der Wert ist der Haken
+    /// „KI-Protokoll beilegen". Ein Ergebnis ohne Pfad und ohne Fehler ist ein Abbruch. Ohne
+    /// Rueckruf kein Knopf. Asynchron, weil die Plattform ihren Speicherdialog eine Nachricht
+    /// spaeter oeffnet (nie aus dem Rueckruf der WebView heraus).
+    /// </summary>
+    [Parameter] public Func<bool, Task<SupportpaketAnzeige>>? SupportpaketSpeichern { get; set; }
+
     /// <summary>Der Anstoss der Geste; die Schale loest ihn aus, wenn sie Strg+Umschalt+Alt+E faengt.</summary>
     [Parameter] public UeberAnstoss? Anstoss { get; set; }
 
@@ -154,6 +189,12 @@
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
     private UeberAnstoss? _angemeldet;
+
+    /// <summary>Der Haken „KI-Protokoll beilegen" — Vorgabe aus.</summary>
+    private bool _mitKiProtokoll;
+
+    /// <summary>Die Ergebniszeile des letzten Supportpakets: Pfad, Enthalten, Fehlend.</summary>
+    private readonly List<string> _paketzeilen = new();
 
     protected override void OnParametersSet()
     {
@@ -208,6 +249,35 @@
         if (FernwartungOeffnen is null) return;
         try { FernwartungOeffnen(); }
         catch (Exception ex) { Melden(WarnStufe.Fehler, ex.Message); }
+    }
+
+    private void BeiKiHaken(ChangeEventArgs e) => _mitKiProtokoll = e.Value is bool b && b;
+
+    private async Task BeiSupportpaket()
+    {
+        if (SupportpaketSpeichern is null) return;
+        SupportpaketAnzeige? erg;
+        try { erg = await SupportpaketSpeichern(_mitKiProtokoll); }
+        catch (Exception ex)
+        {
+            _paketzeilen.Clear();
+            Melden(WarnStufe.Fehler, string.Format(T.SupportpaketFehler, ex.Message));
+            return;
+        }
+        _paketzeilen.Clear();
+        if (erg is null) return;
+        if (!string.IsNullOrEmpty(erg.Fehler))
+        {
+            Melden(WarnStufe.Fehler, string.Format(T.SupportpaketFehler, erg.Fehler));
+            return;
+        }
+        if (string.IsNullOrEmpty(erg.Pfad)) return;   // Abbruch im Speicherdialog
+        _meldung = "";
+        _paketzeilen.Add(string.Format(T.SupportpaketGespeichert, erg.Pfad));
+        if (erg.Enthalten.Count > 0)
+            _paketzeilen.Add(string.Format(T.SupportpaketEnthalten, string.Join(", ", erg.Enthalten)));
+        if (erg.Fehlend.Count > 0)
+            _paketzeilen.Add(string.Format(T.SupportpaketFehlend, string.Join(", ", erg.Fehlend)));
     }
 
     private void BeiMail()
