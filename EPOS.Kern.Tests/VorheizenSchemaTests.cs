@@ -138,8 +138,8 @@ namespace EPOS.Kern.Tests
             foreach (var s in VorheizenSchema.SPALTEN)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL" +
                                       (s.Tabelle == VorheizenSchema.TAB_EINSTELLUNGEN ? " AND ID_Projekt <> " + REFERENZPROJEKT_VORHEIZEN : "")));
-            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(VorheizenSchema.TAB_ERGEBNIS_GEBAEUDE).Count);
-            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(VorheizenSchema.TAB_ERGEBNIS_ZONE).Count);
+            Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(VorheizenSchema.TAB_ERGEBNIS_GEBAEUDE).Count);
+            Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(VorheizenSchema.TAB_ERGEBNIS_ZONE).Count);
             Assert.Equal((long)SchemaStand.Zielversion, Zahl("SELECT SchemaVersion FROM Tab_Applikation"));
         }
 

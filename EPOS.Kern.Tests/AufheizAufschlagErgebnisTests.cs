@@ -65,7 +65,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(AufheizAufschlagErgebnisSchema.Vollstaendig());
-            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
+            Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
                          DataRepository.SpaltenVonTabelle(AufheizAufschlagErgebnisSchema.TAB_ERGEBNIS_GEBAEUDE).Count);
             Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM \"Tab_ErgebnisGebaeude\" WHERE \"Aufheiz_Aufschlag_Verwendet_H\" IS NOT NULL OR \"Aufheizzeit_Bemessen_H\" IS NOT NULL")));
@@ -101,7 +101,7 @@ namespace EPOS.Kern.Tests
             foreach (var s in AufheizAufschlagErgebnisSchema.SPALTEN)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"" + s.Tabelle + "\" DROP COLUMN \"" + s.Spalte + "\"");
             Assert.False(AufheizAufschlagErgebnisSchema.Vollstaendig());
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE + VorheizenSchema.ERGEBNISSPALTEN.Count,
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE + VorheizenSchema.ERGEBNISSPALTEN.Count + SchnellaufheizungSchema.ERGEBNISSPALTEN.Count,
                          DataRepository.SpaltenVonTabelle(AufheizAufschlagErgebnisSchema.TAB_ERGEBNIS_GEBAEUDE).Count);
             var bericht = new List<string>();
             Assert.Equal(2, AufheizAufschlagErgebnisSchema.Ausfuehren(bericht));

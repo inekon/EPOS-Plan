@@ -144,8 +144,8 @@ namespace EPOS.Kern.Tests
             Assert.True(AufheizManuellSchema.Vollstaendig());
             Assert.Empty(AufheizManuellSchema.SPALTEN.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte)));
             Assert.False(DataRepository.SpalteVorhanden(GebaeudeSchema.TAB_GEBAEUDE_STAMM, AufheizManuellSchema.SPALTE_MANUELL));
-            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude").Count);
-            Assert.Equal(VorheizenSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone").Count);
+            Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude").Count);
+            Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone").Count);
             Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
             Assert.Equal(GebaeudeSchema.SQL_VIEW_AKTUELL, Text("SELECT sql FROM sqlite_master WHERE type = 'view' AND name = ?", GebaeudeSchema.VIEW));
 
@@ -187,8 +187,8 @@ namespace EPOS.Kern.Tests
             Assert.False(AufheizManuellSchema.ZoneKenntGekoppelt());
             Assert.False(AufheizManuellSchema.SichtSteht());
             // Die achtzehn des Vorheizens (Schritt 215) bleiben stehen.
-            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE + VorheizenSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude").Count);
-            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE + VorheizenSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone").Count);
+            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE + VorheizenSchema.ERGEBNISSPALTEN.Count + SchnellaufheizungSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude").Count);
+            Assert.Equal(AufheizErgebnisSchema.SPALTENZAHL_ERGEBNIS_ZONE + VorheizenSchema.ERGEBNISSPALTEN.Count + SchnellaufheizungSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone").Count);
             Assert.True(StilleDb.NonQuery("UPDATE Tab_ErgebnisZone SET Aufheiz_Zustand = 'GEKOPPELT'") < 0);
 
             string gebaeudeVorher = Text("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", "Tab_ErgebnisGebaeude");
@@ -205,8 +205,8 @@ namespace EPOS.Kern.Tests
             string gebaeudeNachher = Text("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", "Tab_ErgebnisGebaeude");
             Assert.StartsWith(gebaeudeVorher.TrimEnd().Substring(0, gebaeudeVorher.TrimEnd().Length - ") STRICT".Length), gebaeudeNachher, StringComparison.Ordinal);
             // Die achtzehn des Vorheizens (Schritt 215) stehen weiter.
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE + VorheizenSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude").Count);
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE + VorheizenSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone").Count);
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE + VorheizenSchema.ERGEBNISSPALTEN.Count + SchnellaufheizungSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle("Tab_ErgebnisGebaeude").Count);
+            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_ZONE + VorheizenSchema.ERGEBNISSPALTEN.Count + SchnellaufheizungSchema.ERGEBNISSPALTEN.Count, DataRepository.SpaltenVonTabelle("Tab_ErgebnisZone").Count);
 
             // Zeilen und IDs der Zone erhalten, Fremdschluessel und Indizes stehen, foreign_key_check leer.
             Assert.Equal(zonenVorher, Bestand("SELECT ID, ID_ErgebnisGebaeude, ID_Zone, Rang, Bezeichner, IstBeheizt, Aufheiz_Zustand FROM Tab_ErgebnisZone ORDER BY ID"));
