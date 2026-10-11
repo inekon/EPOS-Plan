@@ -91,10 +91,12 @@
                                     @* Jeder Zeitraum traegt seinen Namen; die ersten vier im Bezeichner ihrer Spiegelperiode. *@
                                     <Textfeld Bezeichnung="@Texte.LabelKalbFerienName" Wert="@_ferien[n].Name"
                                               WertChanged="t => FerienNameSetzen(n, t)" />
-                                    <Datumsfeld Bezeichnung="@Texte.LabelKalbVon" Wert="@_ferien[n].Von" Min="@ErsterTag" Max="@LetzterTag"
-                                                WertChanged="d => FerienFeld(n, d, true)" />
-                                    <Datumsfeld Bezeichnung="@Texte.LabelKalbBis" Wert="@_ferien[n].Bis" Min="@ErsterTag" Max="@LetzterTag"
-                                                WertChanged="d => FerienFeld(n, d, false)" />
+                                    <Gemeinjahrdatum Bezeichnung="@Texte.LabelKalbVon" Wert="@Kalendertage.Jahrestag(_ferien[n].Von)"
+                                                     Platzhalter="@Texte.PlatzhalterDatumBeginn" Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
+                                                     WertChanged="t => FerienFeld(n, Kalendertage.Datum(t, Jahr), true)" />
+                                    <Gemeinjahrdatum Bezeichnung="@Texte.LabelKalbBis" Wert="@Kalendertage.Jahrestag(_ferien[n].Bis)"
+                                                     Platzhalter="@Texte.PlatzhalterDatumEnde" Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
+                                                     WertChanged="t => FerienFeld(n, Kalendertage.Datum(t, Jahr), false)" />
                                     <button type="button" class="epos-knopf epos-kalb-ferien-entfernen" @onclick="() => FerienEntfernen(n)"
                                             aria-label="@(FerienName(n) + " · " + Texte.KnopfKalbEntfernen)"
                                             @attributes="Sperre(FerienSperre)">@Texte.KnopfKalbEntfernen</button>
@@ -111,10 +113,14 @@
 
                 <div class="epos-kalb-feldgruppe epos-kalb-saison">
                     <h5 class="epos-kalb-titel">@string.Format(CultureInfo.CurrentCulture, Texte.LabelKalbSaison, Bearbeitung.Groessenname(Groesse))</h5>
-                    <Datumsfeld Bezeichnung="@Texte.LabelKalbVon" Wert="@_saisonVon" Min="@ErsterTag" Max="@LetzterTag"
-                                WertChanged="d => SaisonFeld(d, true)" />
-                    <Datumsfeld Bezeichnung="@Texte.LabelKalbBis" Wert="@_saisonBis" Min="@ErsterTag" Max="@LetzterTag"
-                                WertChanged="d => SaisonFeld(d, false)" />
+                    @* Tag und Monat ohne Jahr (Gemeinjahrdatum): kein Datumswaehler, der ein Jahr und mit ihm
+                       den 29.02. anboete; gespeichert wird wie zuvor der Jahrestag. *@
+                    <Gemeinjahrdatum Bezeichnung="@Texte.LabelKalbVon" Wert="@Kalendertage.Jahrestag(_saisonVon)"
+                                     Platzhalter="@Texte.PlatzhalterDatumBeginn" Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
+                                     WertChanged="t => SaisonFeld(Kalendertage.Datum(t, Jahr), true)" />
+                    <Gemeinjahrdatum Bezeichnung="@Texte.LabelKalbBis" Wert="@Kalendertage.Jahrestag(_saisonBis)"
+                                     Platzhalter="@Texte.PlatzhalterDatumEnde" Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
+                                     WertChanged="t => SaisonFeld(Kalendertage.Datum(t, Jahr), false)" />
                     <div class="epos-zeilenknoepfe">
                         <button type="button" class="epos-knopf epos-kalb-ganzjaehrig" @onclick="Ganzjaehrig"
                                 @attributes="Sperre(Handlungssperre(KonditionierungHandlung.SaisonSetzen))">@Texte.KnopfKalbGanzjaehrig</button>
@@ -449,8 +455,6 @@
     /// <summary>Die Anzeige eines Jahrestags: „Do 15.01." im Raster, mit Preisreihe „15.01.2027".</summary>
     private string Tagtext(int tag) => Kalendertage.Anzeige(tag, W0, Bearbeitung.Weg.Bezugsjahr);
 
-    private DateOnly ErsterTag => new(Jahr, 1, 1);
-    private DateOnly LetzterTag => new(Jahr, 12, 31);
 
     protected override void OnParametersSet()
     {
@@ -936,11 +940,14 @@
             <KindInhalt>
                 @if (e.Alt?.IstFeiertag != true)
                 {
-                    <Datumsfeld Bezeichnung="@(e.Einzeltag ? Texte.LabelKalbDatum : Texte.LabelKalbVon)" Wert="@e.Von" Min="@ErsterTag" Max="@LetzterTag"
-                                WertChanged="d => e.Von = d" />
+                    <Gemeinjahrdatum Bezeichnung="@(e.Einzeltag ? Texte.LabelKalbDatum : Texte.LabelKalbVon)" Wert="@Kalendertage.Jahrestag(e.Von)"
+                                     Platzhalter="@(e.Einzeltag ? "" : Texte.PlatzhalterDatumBeginn)" Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
+                                     WertChanged="t => e.Von = Kalendertage.Datum(t, Jahr)" />
                     @if (!e.Einzeltag)
                     {
-                        <Datumsfeld Bezeichnung="@Texte.LabelKalbBis" Wert="@e.Bis" Min="@ErsterTag" Max="@LetzterTag" WertChanged="d => e.Bis = d" />
+                        <Gemeinjahrdatum Bezeichnung="@Texte.LabelKalbBis" Wert="@Kalendertage.Jahrestag(e.Bis)"
+                                         Platzhalter="@Texte.PlatzhalterDatumEnde" Hinweis="@Texte.HinweisDatumFormat" JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
+                                         WertChanged="t => e.Bis = Kalendertage.Datum(t, Jahr)" />
                     }
                     <Textfeld Bezeichnung="@Texte.LabelKalbName" Wert="@e.Name" WertChanged="t => e.Name = t" />
                 }

@@ -90,8 +90,8 @@ public class BetriebskalenderDialogTests : EposBunitContext
         cut.Find("input[type=text]").Input("Werk Süd");
         cut.FindAll("select")[1].Change("1");                    // Bayern
         var daten = cut.FindAll(".epos-gemeinjahrdatum input");
-        daten[0].Input("01.08.");
-        cut.FindAll(".epos-gemeinjahrdatum input")[1].Input("21.08.");
+        daten[0].Change("01.08.");
+        cut.FindAll(".epos-gemeinjahrdatum input")[1].Change("21.08.");
         Knopf(cut, "OK").Click();
 
         Assert.True(ergebnis);
@@ -110,12 +110,12 @@ public class BetriebskalenderDialogTests : EposBunitContext
         bool? ergebnis = null;
         var cut = Verwaltung(a, b => ergebnis = b);
 
-        cut.FindAll(".epos-gemeinjahrdatum input")[0].Input("01.08.");
+        cut.FindAll(".epos-gemeinjahrdatum input")[0].Change("01.08.");
         Knopf(cut, "OK").Click();
         Assert.Null(ergebnis);
         Assert.Contains("Ferienzeitraum", cut.Instance.Meldung);
 
-        cut.FindAll(".epos-gemeinjahrdatum input")[1].Input("21.08.");
+        cut.FindAll(".epos-gemeinjahrdatum input")[1].Change("21.08.");
         Knopf(cut, "OK").Click();
         Assert.Null(ergebnis);
         Assert.Equal("Name fehlt", cut.Instance.Meldung);

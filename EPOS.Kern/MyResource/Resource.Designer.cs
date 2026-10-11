@@ -84408,6 +84408,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn TT.MM. ähnelt.
+        /// </summary>
+        public static string KOND_PLH_DATUM_BEGINN {
+            get {
+                return ResourceManager.GetString("KOND_PLH_DATUM_BEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ende TT.MM. ähnelt.
+        /// </summary>
+        public static string KOND_PLH_DATUM_ENDE {
+            get {
+                return ResourceManager.GetString("KOND_PLH_DATUM_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Landesfeiertag {0} ähnelt.
         /// </summary>
         public static string KOND_TEXT_BEDIENUNG_LANDESFEIERTAG {
@@ -84458,6 +84476,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_AUS_MATRIX {
             get {
                 return ResourceManager.GetString("KOND_TXT_AUS_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.10. bis 30.04. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_DATUM_FORMAT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_DATUM_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_DATUM_JAHR {
+            get {
+                return ResourceManager.GetString("KOND_TXT_DATUM_JAHR", resourceCulture);
             }
         }
         

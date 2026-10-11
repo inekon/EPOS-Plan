@@ -173,6 +173,10 @@ namespace WindowsFormsApplication1
             t.HinweisTagesbilanz = Text_("KOND_TXT_HINWEIS_TAGESBILANZ", t.HinweisTagesbilanz);
             t.HinweisLesemodus = Text_("KOND_TXT_HINWEIS_LESEMODUS", t.HinweisLesemodus);
             t.MeldungGemeinjahr = Text_("KOND_TXT_GEMEINJAHR", t.MeldungGemeinjahr);
+            t.HinweisDatumFormat = Text_("KOND_TXT_DATUM_FORMAT", t.HinweisDatumFormat);
+            t.HinweisDatumJahr = Text_("KOND_TXT_DATUM_JAHR", t.HinweisDatumJahr);
+            t.PlatzhalterDatumBeginn = Text_("KOND_PLH_DATUM_BEGINN", t.PlatzhalterDatumBeginn);
+            t.PlatzhalterDatumEnde = Text_("KOND_PLH_DATUM_ENDE", t.PlatzhalterDatumEnde);
             t.HinweisAus = Text_("KOND_TXT_HINWEIS_AUS", t.HinweisAus);
             t.HinweisNachtauskuehlung = Text_("KOND_TXT_HINWEIS_NACHTAUSKUEHLUNG", t.HinweisNachtauskuehlung);
             t.HinweisNachtfensterLeer = Text_("KOND_TXT_HINWEIS_NACHTFENSTER", t.HinweisNachtfensterLeer);

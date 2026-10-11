@@ -15187,7 +15187,15 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     font-size: 12px;
 }
 
-.epos-formularraster .epos-gemeinjahrdatum-meldung {
+/* Der Formathinweis unter dem Feld ("Format TT.MM., ohne Jahr ...") - leise wie eine
+   Herleitungszeile; eine Fehlermeldung ERSETZT ihn, sie steht nicht zusaetzlich darunter. */
+.epos-gemeinjahrdatum-hinweis {
+    color: var(--epos-text-leise);
+    font-size: 12px;
+}
+
+.epos-formularraster .epos-gemeinjahrdatum-meldung,
+.epos-formularraster .epos-gemeinjahrdatum-hinweis {
     grid-column: 2;
 }
 
