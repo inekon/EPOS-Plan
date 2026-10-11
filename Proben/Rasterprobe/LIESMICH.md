@@ -1695,7 +1695,11 @@ node wikibilder.mjs --ziel ../../Projekte/Wiki/Dateien [--url http://127.0.0.1:5
 
 Das Skript nimmt je Bild das Dialogelement auf (nicht die leere Seite), Fenster 1280 × 800
 bei `deviceScaleFactor` 1 (die Reiter des Gebäudeeditors in einem hohen Fenster, damit ihr
-Inhalt ganz darin steht), klappt bei den Erzeugern mit Satzbeschreibung und bei Brauchwasser
+Inhalt ganz darin steht); Brauchwasser, Prozesswärme, Wärmepumpe und Stromspeicher in 1400 × 800 mit
+einem auf 1380 px verbreiterten Dialog und festem Suchfeld (Attribut `data-breit` der Seite), damit
+Katalogtitel, Suchplatzhalter und alle Knöpfe der Kopfzeile ungekürzt stehen. Bei Brauchwasser und
+Prozesswärme gibt die Seite die Delegaten und Texte der Hülle mit Beispielwerten mit („Typ in DB
+ändern“, beim Brauchwasser Rechenweg und „Zapfprofil erzeugen…“), klappt bei den Erzeugern mit Satzbeschreibung und bei Brauchwasser
 und Prozesswärme den Bereich „Gewählter Satz“ auf und schreibt `Bildschirmfoto_<Maske>.png`.
 Es meldet Breite und Größe je Bild; über den Grenzen der Wache `WikiBilderWacheTests`
 (Breite ≤ 1400 px, ≤ 300 KB) versucht es ein kleineres Fenster und endet sonst mit `1`.
