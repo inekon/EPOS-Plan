@@ -282,7 +282,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Freigabe der Importdialoge, Teil A (10.10.2026): alle Eingabestellen im Katalog.
         new("SpeicherFlottenCsvDialog", 26),
         // IM-3: erste Datenzeile und Zeilenzahl (Katalogfelder erste_datenzeile, zeilenzahl): 9 → 11.
-        new("GanglinieImportOptionenDialog", 11),
+        // IM-4: das Jahresfeld der Formate mit Jahr (Katalogfeld jahr): 11 → 12.
+        new("GanglinieImportOptionenDialog", 12),
         new("SpotpreisImportDialog", 2, "die Dateiwahl (Betriebssystemdialog) und das Protokoll zählen nicht; Bezeichnung und Ablage stehen im Katalog"),
         new("ImportKonflikteDialog", 2, "Name und Aktion je Zeile stehen als Spalten im Katalog"),
         // Freigabe der Masken, Teil C (10.10.2026).
@@ -350,9 +351,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // GebaeudeKiSicht auf den Filterstand; eigene Eingabestellen trägt die Maske keine mehr: 4 → 0.
         // „In DB übernehmen": das Namensfeld der Abfrage gehört zur Handlung, die mit eigenem OK sofort
         // einen Katalogsatz schreibt — kein Einstellwert der Maske: 0 → 1.
-        new("GebaeudeDialog", 1, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
-            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand; der Name der Abfrage „In DB übernehmen“ " +
-            "gehört zur Handlung, die mit eigenem OK sofort schreibt"),
+        // Stufe 4 (Katalogauswahl V1): die Namensabfrage weicht der Rückfrage des Rückwegs (Baustein Rueckwegfrage,
+        // eigene Komponente mit eigenem Übernehmen) - im Dialog bleibt keine Eingabestelle: 1 → 0.
+        new("GebaeudeDialog", 0, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
+            "filter_gebaeudeart, filter_baujahr, suche über den Filterstand; der Name der Rückfrage „In die Datenbank " +
+            "übernehmen…“ steht im Baustein Rueckwegfrage und gehört zur Handlung, die mit eigenem Übernehmen sofort schreibt"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
         // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.

@@ -17,7 +17,14 @@
    freigeschaltet - eine Beschriftung "OK" wuerde genau das verdecken. Die
    Begruendung steht so schon im Vorlaeufer.
 
-   TASTATUR: Esc schliesst. Enter ist NICHT belegt (A-7 aus B5b). *@
+   FORMAT UND VORSCHAU (IM-4). Die gewaehlte Datei geht zuerst durch den Optionendialog
+   (Baustein GanglinienFormatLauf, Format GanglinienImportFormat.Spotpreis): Preis je Stunde in
+   ct/kWh, Jahresbild der aufbereiteten Reihe, Jahresfeld mit dem Jahr der Datei als Vorschlag.
+   Erst nach OK prueft die Huelle wie zuvor - mit dem bestaetigten Jahr. Abbruch laesst alles,
+   wie es war; eine Ablehnung steht im Banner.
+
+   TASTATUR: Esc schliesst (nicht, solange der Optionendialog steht). Enter ist NICHT belegt
+   (A-7 aus B5b). *@
 
 @namespace EPOS.UI.Dialoge.Kosten
 @using KiKern
@@ -72,6 +79,8 @@
         <Kohaerenzzeile Text="@_status" Zustand="KohaerenzZustand.Ok" />
     }
 
+    <GanglinienFormatLauf @ref="_formatLauf" Wege="@Formatwege" />
+
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
@@ -91,10 +100,17 @@
     [Parameter] public Func<string, Task<string?>>? Waehlen { get; set; }
 
     /// <summary>
-    /// Prueft die Datei, ohne zu schreiben (<c>SpotpreisImportCtrl.Pruefe</c>).
-    /// Die Huelle laesst den Lauf auf einem eigenen Faden laufen.
+    /// Prueft die Datei, ohne zu schreiben (<c>SpotpreisImportCtrl.Pruefe</c>), im Jahr aus
+    /// „Format und Vorschau“ (0 = das Jahr der Datei). Die Huelle laesst den Lauf auf einem
+    /// eigenen Faden laufen.
     /// </summary>
-    [Parameter] public Func<string, Task<SpotpreisPruefung>>? Pruefen { get; set; }
+    [Parameter] public Func<string, int, Task<SpotpreisPruefung>>? Pruefen { get; set; }
+
+    /// <summary>
+    /// Die Wege des Optionendialogs „Format und Vorschau“ (Huelle: <c>GanglinienFormatnaht.Wege()</c>,
+    /// hinter der Fangstelle). Ohne sie prueft der Dialog die Datei sofort im Jahr der Datei.
+    /// </summary>
+    [Parameter] public GanglinienFormatwege? Formatwege { get; set; }
 
     /// <summary>
     /// Schreibt die geprueften Werte: Bezeichner, Ziel (<c>true</c> = Stamm,
@@ -181,7 +197,17 @@
     private bool _statusFehler;
     private bool _geprueftOk;
     private bool _laeuft;
+    private int _jahr;
+    private GanglinienFormatLauf? _formatLauf;
 
+    /// <summary>Das Format des Optionendialogs: Preis je Stunde, Preisachse, Jahresfeld.</summary>
+    private static GanglinienImportFormat SpotFormat => GanglinienImportFormat.Spotpreis();
+
+    /// <summary>Das Jahr der geprueften Reihe; 0 ohne Pruefung (Pruefhilfe fuer Tests und KI).</summary>
+    public int Jahr => _jahr;
+
+    /// <summary>Steht der Optionendialog „Format und Vorschau“? (Pruefhilfe fuer Tests.)</summary>
+    public bool OptionenOffen => _formatLauf?.EtwasOffen == true;
     /// <summary>Der Text der Statuszeile (Pruefhilfe fuer Tests).</summary>
     public string Status => _status;
 
@@ -208,7 +234,8 @@
             BezeichnungLesen = () => _bezeichner,
             BezeichnungSetzen = w => { _bezeichner = w; _ = InvokeAsync(StateHasChanged); },
             StammLesen = () => _stamm,
-            StammSetzen = w => { _stamm = w; _ = InvokeAsync(StateHasChanged); }
+            StammSetzen = w => { _stamm = w; _ = InvokeAsync(StateHasChanged); },
+            JahrLesen = () => _jahr
         };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SPOTPREIS_IMPORT, () => _kiSicht, KiHaken());
     }
@@ -242,15 +269,33 @@
 
     private async Task BeiDatei(string pfad)
     {
+        int jahr = 0;
+        if (_formatLauf is not null && _formatLauf.Bereit && !string.IsNullOrEmpty(pfad))
+        {
+            GanglinienFormatErgebnis? ergebnis = await _formatLauf.Lesen(pfad, SpotFormat);
+            if (ergebnis is null) return;                   // Optionendialog abgebrochen: nichts geändert
+            if (!ergebnis.Erfolgreich)
+            {
+                _pfad = pfad;
+                _protokoll = "";
+                _geprueftOk = false;
+                _jahr = 0;
+                Melden(string.Format(WindowsFormsApplication1.MyResource.Resource.IMPORT_MSG_FORMAT_ABGELEHNT,
+                                     ergebnis.Grund), true);
+                return;
+            }
+            jahr = ergebnis.Optionen?.Jahr ?? 0;
+        }
+
         _pfad = pfad;
 
         // Wie im Vorlaeufer: Ein leeres Bezeichnerfeld bekommt den Dateinamen.
         if (_bezeichner.Trim().Length == 0) _bezeichner = OhneEndung(pfad);
 
-        await Pruefen_(pfad);
+        await Pruefen_(pfad, jahr);
     }
 
-    private async Task Pruefen_(string pfad)
+    private async Task Pruefen_(string pfad, int jahr)
     {
         if (Pruefen is null) return;
 
@@ -260,10 +305,11 @@
 
         try
         {
-            SpotpreisPruefung lauf = await Pruefen(pfad);
+            SpotpreisPruefung lauf = await Pruefen(pfad, jahr);
 
             _protokoll = lauf.Protokoll ?? "";
             _geprueftOk = lauf.Erfolgreich;
+            _jahr = lauf.Erfolgreich ? lauf.Jahr : 0;
             Melden(lauf.Erfolgreich
                        ? string.Format(VorlageBereit, lauf.Jahr)
                        : TextUnbrauchbar,
@@ -344,7 +390,7 @@
         return punkt > 0 ? name.Substring(0, punkt) : name;
     }
 
-    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    private Task BeiTaste(KeyboardEventArgs e) => OptionenOffen ? Task.CompletedTask : e.Key switch
     {
         // Enter ist NICHT belegt: "Uebernehmen" schreibt 8 760 Zeilen.
         "Escape" => BeiSchliessen(),

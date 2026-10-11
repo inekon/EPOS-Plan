@@ -111,6 +111,8 @@
 
     <!-- UB-E4-a: das Bivalenzdiagramm der Waermepumpe - Mass- und Gegenproben. -->
     <Compile Include="Program.Bivalenzdiagramm.cs" />
+    <!-- Wiki-Fassungen der Waerme- und Strombilder aus einem stimmigen Satz (Schalter wiki). -->
+    <Compile Include="Program.Wiki.cs" />
   </ItemGroup>
 
   <ItemGroup>

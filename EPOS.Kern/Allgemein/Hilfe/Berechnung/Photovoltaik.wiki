@@ -79,7 +79,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\gamma</math> || Azimut der Modulebene || ° || derselbe Abschnitt, Feld „Azimut"; im Strangweg wahlweise je Strang
 |-
-| <math>n</math> || Anzahl Module der Anlage || Stück || derselbe Abschnitt, Feld „Anzahl Module" (Anlagenzeile <code>PV_Leistung</code>)
+| <math>n</math> || Anzahl Module der Anlage || Stück || derselbe Abschnitt, Feld „Anzahl Module"
 |-
 | <math>P_{\mathrm{Mod}}</math> || Nennleistung eines Moduls unter Standardbedingungen || W || Modulkatalog, Feld „Leistung"
 |-
@@ -93,13 +93,13 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>k_{1} \dots k_{6}</math> || Koeffizienten des Schwachlichtmodells || — || fest je Zelltechnologie, Tabelle in Schritt 4
 |-
-| <math>\eta_{\mathrm{WR}}</math> || pauschaler Wechselrichter-Wirkungsgrad || — || Anlagenzeile <code>PV_WrWirkungsgrad</code>; '''Vorgabe: 0,95'''. Nur im einfachen Modell
+| <math>\eta_{\mathrm{WR}}</math> || pauschaler Wechselrichter-Wirkungsgrad || — || PV-Anlage, Feld „Wechselrichter-Wirkungsgrad"; '''Vorgabe: 0,95'''. Nur im einfachen Modell
 |-
-| <math>v_{\mathrm{Sys}}</math> || Systemverluste (Verschmutzung, Leitung, Mismatch) || % || Anlagenzeile <code>PV_Systemverluste</code>; '''Vorgabe: 0&nbsp;%'''
+| <math>v_{\mathrm{Sys}}</math> || Systemverluste (Verschmutzung, Leitung, Mismatch) || % || PV-Anlage, Feld „Systemverluste"; '''Vorgabe: 0&nbsp;%'''
 |-
-| <math>P_{\mathrm{AC,nenn}}</math> || AC-Nennleistung des Wechselrichters || kW || Anlagenzeile <code>PV_WrNennleistungKw</code> bzw. Wechselrichterkatalog; leer = kein Clipping
+| <math>P_{\mathrm{AC,nenn}}</math> || AC-Nennleistung des Wechselrichters || kW || PV-Anlage, Feld „AC-Nennleistung" bzw. Wechselrichterkatalog; leer = kein Clipping
 |-
-| <math>\eta_{10}</math>, <math>\eta_{50}</math>, <math>\eta_{100}</math> || Stützstellen der Anlagenkennlinie bei 10 / 50 / 100&nbsp;% Auslastung || — || Anlagenzeile <code>PV_WrEta10/50/100</code>; '''Vorgaben: 0,94 / 0,975 / 0,97'''
+| <math>\eta_{10}</math>, <math>\eta_{50}</math>, <math>\eta_{100}</math> || Stützstellen der Anlagenkennlinie bei 10 / 50 / 100&nbsp;% Auslastung || — || PV-Anlage, Felder „Wirkungsgrad bei 10 / 50 / 100 % Auslastung"; '''Vorgaben: 0,94 / 0,975 / 0,97'''
 |-
 | <math>\eta_{5} \dots \eta_{100}</math> || sechs Stützstellen der Gerätekennlinie (5, 10, 20, 30, 50, 100&nbsp;%) || — || Wechselrichterkatalog; fehlende Punkte werden übersprungen
 |-

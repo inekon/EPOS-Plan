@@ -43,6 +43,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@using EPOS.UI.Bausteine
 @inherits Farbwahlwirt
 @implements IDisposable
 
@@ -152,7 +153,7 @@
                         <Herleitungszeile Text="@HinweisWerte" />
 
                         <div class="epos-leiste">
-                            @if (CsvLesen is not null)
+                            @if (CsvBereit)
                             {
                                 <button type="button" class="epos-knopf"
                                         @onclick="() => _csvFrageOffen = true">@BtnCsv</button>
@@ -208,6 +209,11 @@
     @* --- Die CSV-Rückfrage --------------------------------------------------- *@
     <Rueckfrage Offen="@_csvFrageOffen" Frage="@CsvHinweistext" TitelText="@Titel"
                 Beantwortet="CsvBeantwortet" JaText="@OkText" NeinText="@AbbrechenText" />
+
+    @* --- Format und Vorschau (IM-4): die gewählte Datei läuft über den gemeinsamen
+           Optionendialog mit der Formatbeschreibung des Quellprofils (°C, feste Werteanzahl,
+           Temperaturachse, ohne Summe und Nennleistung). ------------------------------- *@
+    <GanglinienFormatLauf @ref="_formatLauf" Wege="@CsvWege" />
 </div>
 
 @code {
@@ -245,10 +251,17 @@
     [Parameter] public Func<QuellprofilInhalt, int>? Speichern { get; set; }
 
     /// <summary>
-    /// Liest eine CSV-Datei mit der Sollzahl an Werten; <c>null</c> = fehlgeschlagen
-    /// oder abgebrochen. Ohne Delegat fehlt der Knopf — Hausregel.
+    /// Die Dateiwahl der Plattform für „CSV…“; leer = abgebrochen. Ohne sie (oder ohne
+    /// <see cref="CsvWege"/>) fehlt der Knopf — Hausregel.
     /// </summary>
-    [Parameter] public Func<int, Task<double[]?>>? CsvLesen { get; set; }
+    [Parameter] public Func<Task<string>>? CsvWaehlen { get; set; }
+
+    /// <summary>
+    /// Erkennen und Neuzerlegen der gewählten Datei (IM-4) — von der Hülle, hinter ihrer
+    /// Fangstelle. Gelesen wird über den Optionendialog „Format und Vorschau“ mit dem Format
+    /// <see cref="GanglinienImportFormat.Quellprofil(string)"/> der aktuellen Betriebsart.
+    /// </summary>
+    [Parameter] public GanglinienFormatwege? CsvWege { get; set; }
 
     /// <summary>
     /// „CSV…“ am Jahresbild: die Naht der Hülle (Modell, Bildtitel, Raster); ohne Delegat kein
@@ -373,6 +386,13 @@
     private string _abfrageTitel = "";
     private string _abfrageText = "";
     private bool _csvFrageOffen;
+    private GanglinienFormatLauf? _formatLauf;
+
+    /// <summary>Ist der CSV-Weg verkabelt (Dateiwahl und Formatwege)?</summary>
+    private bool CsvBereit => CsvWaehlen is not null && CsvWege is not null;
+
+    /// <summary>Die Formatbeschreibung des Imports zur aktuellen Betriebsart (Prüfhilfe).</summary>
+    public GanglinienImportFormat CsvFormat => GanglinienImportFormat.Quellprofil(Betriebsart);
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
@@ -782,26 +802,33 @@
     private async Task CsvBeantwortet(bool? ja)
     {
         _csvFrageOffen = false;
-        if (ja != true || CsvLesen is null) return;
+        if (ja != true || !CsvBereit || _formatLauf is null) return;
 
         int soll = Soll;
         if (soll <= 0) return;
 
-        double[]? gelesen = await CsvLesen(soll);
-        if (gelesen is null)
+        // Der Wähler läuft HINTER dem Blazor-Ereignis (Befund W13-B-1) - deshalb await.
+        string pfad = await CsvWaehlen!();
+        if (string.IsNullOrEmpty(pfad)) return;             // abgebrochen: nichts melden
+
+        // Format und Vorschau: Die Datei läuft über den Optionendialog mit der
+        // Formatbeschreibung des Quellprofils. Eine abweichende Werteanzahl lehnt schon dessen OK
+        // benannt ab; hier kommt nur noch an, was unlesbar war (Grund) oder abgebrochen (null).
+        GanglinienFormatErgebnis? ergebnis = await _formatLauf.Lesen(pfad, CsvFormat);
+        if (ergebnis is null) return;                       // Optionendialog abgebrochen
+        if (!ergebnis.Erfolgreich || ergebnis.Werte.Length != soll)
         {
-            // Abgebrochen ODER unlesbar. Der Vorlaeufer unterschied beides nicht
-            // (der Dateidialog kehrte still zurueck, die leere Datei meldete) -
-            // die Huelle liefert deshalb null nur nach einem gewaehlten, aber
-            // unbrauchbaren Pfad.
-            _meldung = string.Format(MsgCsvFehler, soll);
+            _meldung = string.Format(MsgCsvFehler, soll)
+                       + (ergebnis.Grund.Length > 0 ? "\n" + ergebnis.Grund : "");
             _meldungStufe = WarnStufe.Warnung;
+            await InvokeAsync(StateHasChanged);
             return;
         }
 
         _meldung = "";
-        _werte = gelesen;
+        _werte = (double[])ergebnis.Werte.Clone();
         _modell = null;
+        await InvokeAsync(StateHasChanged);
     }
 
     // --- Grafik -----------------------------------------------------------------
@@ -884,6 +911,7 @@
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_abfrage != Abfrageart.Keine) { _abfrage = Abfrageart.Keine; return Task.CompletedTask; }
         if (_csvFrageOffen) { _csvFrageOffen = false; return Task.CompletedTask; }
+        if (_formatLauf?.EtwasOffen == true) return Task.CompletedTask;   // der Optionendialog führt Esc selbst
         return Geschlossen.InvokeAsync(null);
     }
 }

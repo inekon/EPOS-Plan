@@ -55,6 +55,7 @@ public class ProzessTemperaturDialogTests : EposBunitContext
         int geaendert = 0;
         var cut = Projektdialog(BedarfsArt.Prozesswaerme, new List<BedarfsProfilZeile> { zeile },
                                 geaendert: () => geaendert++);
+        cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();   // Stufe 4: Felder in der Satz-Überlagerung
 
         Assert.Contains("Temperaturniveau des Prozesses", cut.Markup);
         Assert.Equal("80 / 60 °C", cut.Instance.InfoTemperatur);
@@ -79,6 +80,7 @@ public class ProzessTemperaturDialogTests : EposBunitContext
     {
         var zeile = new BedarfsProfilZeile { IdZ = 1, IdStamm = 3, Name = "Bad", Summe = 10 };
         var cut = Projektdialog(BedarfsArt.Prozesswaerme, new List<BedarfsProfilZeile> { zeile });
+        cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();   // Stufe 4: Felder in der Satz-Überlagerung
 
         Assert.Equal("ohne", cut.Instance.InfoTemperatur);
         cut.FindAll("input[inputmode=decimal]")[1].Input("40");
@@ -98,6 +100,7 @@ public class ProzessTemperaturDialogTests : EposBunitContext
     {
         var cut = Projektdialog(art, new List<BedarfsProfilZeile> { new() { IdZ = 1, Name = "X", Summe = 1 } },
                                 mitPruefung);
+        cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();   // Stufe 4: Felder in der Satz-Überlagerung
         Assert.DoesNotContain("Temperaturniveau des Prozesses", cut.Markup);
         Assert.Single(cut.FindAll("input[inputmode=decimal]"));
     }

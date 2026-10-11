@@ -202,6 +202,9 @@
         </Gruppenkopf>
     }
 
+    @* --- Format und Vorschau (IM-4): die Tagesansicht der gewaehlten Datei ---------- *@
+    <GanglinienFormatLauf @ref="_formatLauf" Wege="@Formatwege" />
+
     @* --- Rueckfragen ---------------------------------------------------------------- *@
     <Rueckfrage Offen="@_frageOffen" Frage="@_frage" TitelText="@Texte.Titel" VorgabeNein="true"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="FrageBeantwortet" />
@@ -248,6 +251,20 @@
     /// <summary>Das Löschen einer Reihe (<c>TwwMessreihenCtrl.Loeschen</c>); ohne Delegat kein Knopf.</summary>
     [Parameter] public Func<string, TwwMessreihenergebnisDaten>? Loeschen { get; set; }
 
+    /// <summary>
+    /// Die Wege des Optionendialogs „Format und Vorschau“ (Hülle: <c>GanglinienFormatnaht.Wege()</c>,
+    /// hinter der Fangstelle). Mit <see cref="Messformat"/> geht jede gewählte Datei zuerst durch
+    /// ihn — Tagesansicht statt Jahresbild; ohne beide wird sie sofort geprüft.
+    /// </summary>
+    [Parameter] public GanglinienFormatwege? Formatwege { get; set; }
+
+    /// <summary>
+    /// Das Format einer Messreihe unter den Eingaben der Maske (Größe, Lückenschwelle,
+    /// Zeitrechnung) — von der Hülle, denn deren Leser öffnet den Strom
+    /// (<c>GanglinienImportFormat.TwwMessreihe</c>).
+    /// </summary>
+    [Parameter] public Func<TwwMessreiheneingabeDaten, GanglinienImportFormat>? Messformat { get; set; }
+
     /// <summary>Die Beschriftungen.</summary>
     [Parameter] public TwwMessreihenTexte Texte { get; set; } = new();
 
@@ -282,7 +299,16 @@
     private string _status = "";
     private bool _geaendert;
     private string _gewaehlt = "";
+    private GanglinienFormatLauf? _formatLauf;
 
+    /// <summary>Die Kennzahlenzeile aus „Format und Vorschau“ (gelesene Tage, gezeigter Tag); leer ohne.</summary>
+    private string _vorschau = "";
+
+    /// <summary>Die Kennzahlenzeile aus „Format und Vorschau“ (Prüfhilfe für Tests und KI).</summary>
+    public string Vorschau => _vorschau;
+
+    /// <summary>Steht der Optionendialog „Format und Vorschau“? (Prüfhilfe für Tests.)</summary>
+    public bool OptionenOffen => _formatLauf?.EtwasOffen == true;
     private bool _frageOffen;
     private string _frage = "";
     private string _frageLoeschen = "";
@@ -426,10 +452,32 @@
     private async Task<string?> DateiWahl(string filter)
         => DateiWaehlen is null ? null : await DateiWaehlen(filter);
 
-    /// <summary>Eine neue Datei: Sie wird SOFORT geprüft — ohne Schreibzugriff.</summary>
-    private void BeiDatei(string pfad)
+    /// <summary>
+    /// Eine neue Datei: Sie geht zuerst durch „Format und Vorschau“ (Tagesansicht, gelesen mit dem
+    /// Leser des Einspielens unter den Eingaben der Maske), danach wird sie geprüft — ohne
+    /// Schreibzugriff, wie zuvor. Ein Abbruch lässt alles, wie es war; eine Ablehnung steht im Banner.
+    /// </summary>
+    private async Task BeiDatei(string pfad)
     {
-        _pfad = pfad ?? "";
+        pfad ??= "";
+        if (pfad.Length > 0 && Messformat is not null && _formatLauf is not null && _formatLauf.Bereit)
+        {
+            GanglinienFormatErgebnis? ergebnis = await _formatLauf.Lesen(pfad, Messformat(_eingabe.Kopie()));
+            if (ergebnis is null) return;                   // Optionendialog abgebrochen: nichts geändert
+            if (!ergebnis.Erfolgreich)
+            {
+                PruefungVerwerfen();
+                _pfad = "";
+                _bericht = null;
+                _vorschau = "";
+                _meldung = string.Format(Resource.IMPORT_MSG_FORMAT_ABGELEHNT, ergebnis.Grund);
+                _stufe = WarnStufe.Fehler;
+                return;
+            }
+            _vorschau = ergebnis.Probe?.Kennzahlen ?? "";
+        }
+        else _vorschau = "";
+        _pfad = pfad;
         _meldung = "";
         Pruefung();
     }
@@ -634,7 +682,7 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        if (_frageOffen || e.Key != "Escape") return Task.CompletedTask;
+        if (_frageOffen || OptionenOffen || e.Key != "Escape") return Task.CompletedTask;
         return Beenden();
     }
 
@@ -659,7 +707,8 @@
         QuelleLesen = () => Wahl?.Quelle ?? "",
         ImportdatumLesen = () => Wahl?.DatumImport ?? "",
         GrundLesen = () => _stand.Reihen.Count > 0 ? "" : (_stand.Grund.Length > 0 ? _stand.Grund : Texte.Leer),
-        BerichtLesen = () => _bericht is null ? "" : (_bericht.Abgebrochen ? _bericht.Abbruch : _bericht.Zusammenfassung)
+        BerichtLesen = () => _bericht is null ? "" : (_bericht.Abgebrochen ? _bericht.Abbruch : _bericht.Zusammenfassung),
+        VorschauLesen = () => _vorschau
     };
 
     private KiMaskenhaken KiHaken() => new KiMaskenhaken

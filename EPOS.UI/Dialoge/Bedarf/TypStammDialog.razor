@@ -171,7 +171,7 @@
     [Parameter] public Func<double?, double?, string?>? TemperaturPruefen { get; set; }
 
     /// <summary>Zeigt der Dialog das Temperaturpaar? Nur die Prozesswärme führt eines.</summary>
-    private bool MitTemperatur => Daten.Art == BedarfsArt.Prozesswaerme;
+    private bool MitTemperatur => Daten.Art is BedarfsArt.Prozesswaerme or BedarfsArt.Kaelte;
 
     /// <summary><c>PW_GRP_TEMPERATUR</c></summary>
     [Parameter] public string GruppeTemperatur { get; set; } = Resource.PW_GRP_TEMPERATUR;

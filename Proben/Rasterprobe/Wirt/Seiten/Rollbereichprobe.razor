@@ -65,9 +65,17 @@
                                     Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
             break;
         case "bedarfsprofile":
-            <BedarfsProfileDialog Art="BedarfsArt.Stromverbraucher" TitelText="Strombedarf"
+            @* Stufe 4 der Katalogauswahl: die Prozesswärme (mit Temperaturpaar und Kalender) - die
+               vollste der Ausprägungen; Kopfleiste, Fussleiste, Stift, Zusammenfassung, Überlagerung. *@
+            <BedarfsProfileDialog Art="BedarfsArt.Prozesswaerme" TitelText="Prozesswärme"
                                   Zeilen="@BedarfZeilen" Katalogprofil="@BedarfProfil"
                                   Katalogzeilen="@(() => BedarfKatalog)" Filterstandvorgabe="@_filterstand"
+                                  Info="@(n => new BedarfsProfilInfo(n, "Prozesswärme einer Fertigungslinie im Zweischichtbetrieb", "Typ 1", 60, 40))"
+                                  Jahressumme="@(_ => 120.0)"
+                                  TemperaturPruefen="@((v, r) => null)"
+                                  Betriebskalender="@(new[] { (1, "Werkskalender"), (2, "Betriebsferien Sommer") })"
+                                  TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
+                                  TypProfilGaben="@(() => new Dictionary<string, object>())"
                                   Geschlossen="@(b => Beendet(b))" />
             break;
         case "waermebedarf":
@@ -214,12 +222,12 @@
     // ------------------------------------------------------- Bedarf
     private Katalogfilterprofil? _bedarfProfil;
     private Katalogfilterprofil BedarfProfil
-        => _bedarfProfil ??= Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, Uebersetzt);
+        => _bedarfProfil ??= Katalogfilterprofil.FuerBedarf(BedarfsArt.Prozesswaerme, Uebersetzt);
     private IReadOnlyList<Katalogfilterzeile>? _bedarfKatalog;
     private IReadOnlyList<Katalogfilterzeile> BedarfKatalog => _bedarfKatalog ??= Zeilenbau.Voll(BedarfProfil, _anzahl);
     private List<BedarfsProfilZeile>? _bedarfZeilen;
     private List<BedarfsProfilZeile> BedarfZeilen => _bedarfZeilen ??= Enumerable.Range(1, _projekt)
-        .Select(i => new BedarfsProfilZeile { IdZ = i, IdStamm = 100 + i, Name = "Verbraucher " + i, Summe = 1000 * i })
+        .Select(i => new BedarfsProfilZeile { IdZ = i, IdStamm = 100 + i, Name = "Prozess " + i, Summe = 100 * i, Vorlauf = 60, Ruecklauf = 40, KalenderId = 1 })
         .ToList();
 
     // ------------------------------------------------------- Zeitreihen

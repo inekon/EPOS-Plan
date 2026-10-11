@@ -186,6 +186,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return summe.ToString("F2", CultureInfo.CurrentCulture);
                 case BedarfsArt.Prozesswaerme:    return summe.ToString(CultureInfo.CurrentCulture);
+                case BedarfsArt.Kaelte:           return summe.ToString("F2", CultureInfo.CurrentCulture);
                 default:                          return summe.ToString("F3", CultureInfo.CurrentCulture);
             }
         }
@@ -245,6 +246,7 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Stromverbraucher:
                     return BedarfErgebnisHuelle.Gaben(v.Strom, 1);
                 case BedarfsArt.Prozesswaerme:
+                case BedarfsArt.Kaelte:
                     return BedarfErgebnisHuelle.Gaben(v.Waerme, false, 1, "");
                 default:
                     return BedarfErgebnisHuelle.Gaben(v.Waerme, true, 2, name);
@@ -262,6 +264,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return MyResource.Resource.BADM_TITEL_STROM;
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_TITEL_PROZESS;
+                case BedarfsArt.Kaelte:           return MyResource.Resource.BADM_TITEL_KAELTE;
                 default:                          return MyResource.Resource.BADM_TITEL_BRAUCHWASSER;
             }
         }
@@ -272,6 +275,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return MyResource.Resource.BADM_LBL_KATALOG_STROM;
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_LBL_KATALOG_PROZESS;
+                case BedarfsArt.Kaelte:           return MyResource.Resource.BADM_LBL_KATALOG_KAELTE;
                 default:                          return MyResource.Resource.BADM_LBL_KATALOG_BRAUCHWASSER;
             }
         }
@@ -282,6 +286,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return MyResource.Resource.BADM_LBL_JAHRESSUMME_STROM;
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_LBL_JAHRESSUMME_PROZESS;
+                case BedarfsArt.Kaelte:           return MyResource.Resource.BADM_LBL_JAHRESSUMME_KAELTE;
                 default:                          return MyResource.Resource.BADM_LBL_JAHRESSUMME_BRAUCHWASSER;
             }
         }
@@ -303,6 +308,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return MyResource.Resource.BADM_BTN_AENDERN_STROM;
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_BTN_AENDERN_PROZESS;
+                case BedarfsArt.Kaelte:           return MyResource.Resource.BADM_BTN_AENDERN_KAELTE;
                 default:                          return MyResource.Resource.BADM_BTN_AENDERN_BRAUCHWASSER;
             }
         }
@@ -313,6 +319,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return MyResource.Resource.BADM_BTN_NEU_STROM;
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_BTN_NEU_PROZESS;
+                case BedarfsArt.Kaelte:           return MyResource.Resource.BADM_BTN_NEU_KAELTE;
                 default:                          return MyResource.Resource.BADM_BTN_NEU_BRAUCHWASSER;
             }
         }
@@ -323,6 +330,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return MyResource.Resource.BADM_BTN_TYP_STROM;
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_BTN_TYP_PROZESS;
+                case BedarfsArt.Kaelte:           return MyResource.Resource.BADM_BTN_TYP_KAELTE;
                 default:                          return MyResource.Resource.BADM_BTN_TYP_BRAUCHWASSER;
             }
         }
@@ -333,6 +341,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return MyResource.Resource.BADM_BTN_LOESCHEN_STROM;
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_BTN_LOESCHEN_PROZESS;
+                case BedarfsArt.Kaelte:           return MyResource.Resource.BADM_BTN_LOESCHEN_KAELTE;
                 default:                          return MyResource.Resource.BADM_BTN_LOESCHEN_BRAUCHWASSER;
             }
         }
@@ -348,6 +357,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return MyResource.Resource.BADM_MSG_KEINE_WAHL_STROM;
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_MSG_KEINE_WAHL_PROZESS;
+                case BedarfsArt.Kaelte:           return MyResource.Resource.BADM_MSG_KEINE_WAHL_KAELTE;
                 default:                          return MyResource.Resource.BADM_MSG_KEINE_WAHL_BRAUCHWASSER;
             }
         }
@@ -371,6 +381,8 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return "Form_Stromverbraucher_Admin.btn_Help";
                 case BedarfsArt.Prozesswaerme:    return "Form_Prozesswaerme_Admin.btn_Help";
+                // Kältezweig (K4/K5 folgen): bis eine eigene Hilfeseite steht, die der Prozesswärme.
+                case BedarfsArt.Kaelte:           return "Form_Prozesswaerme_Admin.btn_Help";
                 default:                          return "Form_Brauchwasser_Admin.btn_Help";
             }
         }

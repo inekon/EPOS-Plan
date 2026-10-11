@@ -396,7 +396,15 @@ public class GebaeudeDialogAusrichtungTests : EposBunitContext
                !aenderbar ? "angenommen (Planoberseite = Nord)" : eingegeben ? "eingegeben" : "aus der Datei",
                "Ausrichtung", "Planoberseite zeigt nach", Array.Empty<GebaeudeNordSchnellwahl>(), bauteile);
 
+    /// <summary>Der Dialog mit offener Satz-Überlagerung - dort steht die Ausrichtung (Stufe 4).</summary>
     private IRenderedComponent<GebaeudeDialog> Bauen(Pruefstand p)
+    {
+        IRenderedComponent<GebaeudeDialog> cut = BauenRoh(p);
+        GebaeudeDialogProbe.SatzOeffnen(cut);
+        return cut;
+    }
+
+    private IRenderedComponent<GebaeudeDialog> BauenRoh(Pruefstand p)
         => Render<GebaeudeDialog>(c => c
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>
             {

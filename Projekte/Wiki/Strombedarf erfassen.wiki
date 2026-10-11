@@ -5,6 +5,13 @@ Beim Schritt '''Strombedarf erfassen''' entsteht der Bedarf auf demselben Weg wi
 
 Sie wählen einen Verbrauchertyp aus dem Katalog – darunter die BDEW-Standardlastprofile Strom 2025 für Haushalt, Gewerbe und Landwirtschaft sowie die Netzbezugsprofile für Haushalte mit Photovoltaik – und geben den Jahresverbrauch an; die Verteilung über das Jahr übernehmen die hinterlegten Monatswerte und das Wochenprofil mit 168 Stundenwerten. Je Zuordnung kann ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] Feiertage und Betriebsferien auf das Wochenprofil legen.
 
+=== Dialog Strombedarf ===
+{{Anker|dialog-strombedarf|bedarfsprofile}}
+
+Der Dialog zeigt oben die Liste ''Im Projekt'' mit der Jahressumme aller Zuordnungen in der Kopfleiste, darunter den ''Katalog (Datenbank)'' und unten die Zeile ''gewählter Satz''. ''In das Projekt übernehmen'' (auch Doppelklick oder Enter) nimmt einen oder mehrere angekreuzte Katalogsätze auf und legt dabei die Projektkopie an; ''Aus dem Projekt entfernen'' wirkt auf die Auswahl. Die Zeile ''gewählter Satz'' fasst Typ, Jahressumme, Kalender und Beschreibung zusammen. ''Bearbeiten'' oder der Stift am Ende einer Projektzeile öffnet den Satz über dem Dialog: Dort stehen der neue Jahresverbrauch mit Einheit und der Betriebskalender; ''OK'' übernimmt die Eingaben, ''Abbrechen'' stellt den Stand beim Öffnen wieder her. ''Simulation…'' in der Kopfleiste rechnet den Bedarf mit dem Stand des Dialogs und zeigt Kennzahlen, Monate und Grafik.
+
+Die Fußleiste des Katalogs trägt ''Typ ändern…'' (die Wochenprofile der Typen), ''DB ändern…'' (der gewählte Katalogsatz im Katalogeditor), ''Schloss setzen…'' bzw. ''Schloss aufheben…'' und ''Löschen''; rechts legt ''Neu…'' einen Katalogsatz an. Ein gesperrter Katalogsatz öffnet über den Stift nur zum Lesen. Beim Löschen mehrerer Sätze fragt der Dialog einmal und überspringt gesperrte und im Projekt zugeordnete Sätze; die Rückfrage nennt sie.
+
 == Rechnen in Viertelstundenwerten ==
 {{Anker|rechnen-in-viertelstundenwerten|viertelstundenwerte|zeitraster}}
 

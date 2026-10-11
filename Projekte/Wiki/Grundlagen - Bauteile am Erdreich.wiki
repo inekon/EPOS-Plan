@@ -8,7 +8,7 @@ Ein '''Bauteil am Erdreich''' – Bodenplatte, Kellerboden oder Kellerwand – g
 
 Unter der Mitte einer großen Bodenplatte ist der Weg zur Außenluft lang, am Rand kurz. Der Wärmestrom fließt deshalb vor allem über den Plattenrand ab, und eine große, kompakte Platte verliert je Quadratmeter deutlich weniger als eine kleine oder langgestreckte. Diese Geometrie fasst das {{Anker|charakteristisches-mass}}'''charakteristische Bodenplattenmaß''' zusammen: <math>B' = A / (0{,}5 \cdot P)</math> mit der Grundfläche <math>A</math> und dem freiliegenden Umfang <math>P</math>. Je größer <math>B'</math>, desto kleiner der Wärmedurchgang der Platte samt Erdreich.
 
-[[Datei:Bauteil_Erdreich.svg|mini|600px|Prinzipbild: Wärmestrom einer Bodenplatte durch das Erdreich, Randweg und Mittelweg, charakteristisches Maß B′ und Erdreichtemperatur in 1 m Tiefe.]]
+[[Datei:Bauteil_Erdreich.svg|mini|zentriert|800px|Prinzipbild: Wärmestrom einer Bodenplatte durch das Erdreich, Randweg und Mittelweg, charakteristisches Maß B′ und Erdreichtemperatur in 1 m Tiefe.]]
 
 == So rechnet EPOS-Plan ==
 {{Anker|so-rechnet-epos-plan}}

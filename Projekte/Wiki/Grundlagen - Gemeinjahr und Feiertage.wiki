@@ -8,7 +8,7 @@ EPOS-Plan rechnet jedes Projekt über ein '''Gemeinjahr''': 365 Tage, 8&nbsp;760
 
 Klimadaten sind ein typisches Jahr, kein bestimmtes: Sie stammen aus vielen Jahren und haben kein eigenes Datum. Bedarfsprofile, Nutzungskalender und Zapfprofile brauchen aber Wochentage – ein Büro steht am Sonntag leer, ein Wohnhaus zapft am Wochenende anders. Das Wochentagsraster verbindet beides: Es sagt, auf welchen Wochentag der erste Tag des Jahres fällt, und alle weiteren Tage folgen daraus.
 
-[[Datei:Gemeinjahr_Wochentagsraster.svg|mini|600px|Prinzipbild: Wochentagsraster mit Jahrestag 1 am Donnerstag, Ostersonntag als Sonntag am nächsten zum 8. April und die beweglichen Feiertage im Abstand dazu.]]
+[[Datei:Gemeinjahr_Wochentagsraster.svg|mini|zentriert|800px|Prinzipbild: Wochentagsraster mit Jahrestag 1 am Donnerstag, Ostersonntag als Sonntag am nächsten zum 8. April und die beweglichen Feiertage im Abstand dazu.]]
 
 == So rechnet EPOS-Plan ==
 {{Anker|so-rechnet-epos-plan}}
