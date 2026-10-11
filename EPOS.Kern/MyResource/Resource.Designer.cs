@@ -205,6 +205,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geltung der Vorheizzeit ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_GELTUNG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_GELTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regelgenauigkeit ε ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_REGELGENAUIGKEIT {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_REGELGENAUIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheiztoleranz ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_TOLERANZ {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_TOLERANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Vorheiztoleranz ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_TOLERANZ_ART {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_TOLERANZ_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verfahren des Vorheizens ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_VERFAHREN {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_VERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_WERT_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_WERT_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_WERT_KW {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_WERT_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozent ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_WERT_PROZENT {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_WERT_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sollwertrampe ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_WERT_RAMPE {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_WERT_RAMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_WERT_ZONE {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_WERT_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit (h) ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_VORH_ZEIT {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_VORH_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Σ Nutzfläche der Zonen ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_ZONENFLAECHE {
@@ -16687,6 +16786,258 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_VGL_AUFH_GEBAEUDE_HINWEIS {
             get {
                 return ResourceManager.GetString("BV_VGL_AUFH_GEBAEUDE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Vorheizbedarf t_nötig ähnelt.
+        /// </summary>
+        public static string BV_VORH_BEDARF_MAX {
+            get {
+                return ResourceManager.GetString("BV_VORH_BEDARF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsleistung Φ_K,max ähnelt.
+        /// </summary>
+        public static string BV_VORH_BEZUG {
+            get {
+                return ResourceManager.GetString("BV_VORH_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckel P_K ähnelt.
+        /// </summary>
+        public static string BV_VORH_DECKEL {
+            get {
+                return ResourceManager.GetString("BV_VORH_DECKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden am Deckel ähnelt.
+        /// </summary>
+        public static string BV_VORH_DECKELSTUNDEN {
+            get {
+                return ResourceManager.GetString("BV_VORH_DECKELSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden an der Untergrenze ähnelt.
+        /// </summary>
+        public static string BV_VORH_FLOORSTUNDEN {
+            get {
+                return ResourceManager.GetString("BV_VORH_FLOORSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_V [kW] ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrwärme [MWh/a] ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_MEHRWAERME {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_MEHRWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unterschreitung max. [K] ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_UNTERSCHREITUNG {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_UNTERSCHREITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage ohne Ankunft ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_VERFEHLT {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_VERFEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die t_V [h] ähnelt.
+        /// </summary>
+        public static string BV_VORH_KOPF_ZEIT {
+            get {
+                return ResourceManager.GetString("BV_VORH_KOPF_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizleistung P_V ähnelt.
+        /// </summary>
+        public static string BV_VORH_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_VORH_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrwärme des Vorheizens ähnelt.
+        /// </summary>
+        public static string BV_VORH_MEHRWAERME {
+            get {
+                return ResourceManager.GetString("BV_VORH_MEHRWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nächte ohne Absenkung ähnelt.
+        /// </summary>
+        public static string BV_VORH_NAECHTE {
+            get {
+                return ResourceManager.GetString("BV_VORH_NAECHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit gesperrter Vorheizstunde ähnelt.
+        /// </summary>
+        public static string BV_VORH_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("BV_VORH_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Sprung im Lauf S_max ähnelt.
+        /// </summary>
+        public static string BV_VORH_SPRUNG_LAUF {
+            get {
+                return ResourceManager.GetString("BV_VORH_SPRUNG_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Sprung im Vorlauf S_max,0 ähnelt.
+        /// </summary>
+        public static string BV_VORH_SPRUNG_VORLAUF {
+            get {
+                return ResourceManager.GetString("BV_VORH_SPRUNG_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit Sprung über t_V ähnelt.
+        /// </summary>
+        public static string BV_VORH_TAGE_UEBER {
+            get {
+                return ResourceManager.GetString("BV_VORH_TAGE_UEBER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage ohne Ankunft ähnelt.
+        /// </summary>
+        public static string BV_VORH_TAGE_VERFEHLT {
+            get {
+                return ResourceManager.GetString("BV_VORH_TAGE_VERFEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit unerreichbarem Sprung ähnelt.
+        /// </summary>
+        public static string BV_VORH_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("BV_VORH_UNERREICHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden unter dem Sollwert ähnelt.
+        /// </summary>
+        public static string BV_VORH_UNTERSCHREITUNG_H {
+            get {
+                return ResourceManager.GetString("BV_VORH_UNTERSCHREITUNG_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größte Unterschreitung des Sollwerts ähnelt.
+        /// </summary>
+        public static string BV_VORH_UNTERSCHREITUNG_MAX {
+            get {
+                return ResourceManager.GetString("BV_VORH_UNTERSCHREITUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizen – Verfahren ähnelt.
+        /// </summary>
+        public static string BV_VORH_VERFAHREN {
+            get {
+                return ResourceManager.GetString("BV_VORH_VERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit berechnet ähnelt.
+        /// </summary>
+        public static string BV_VORH_VERFAHREN_BERECHNET {
+            get {
+                return ResourceManager.GetString("BV_VORH_VERFAHREN_BERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit vorgegeben ähnelt.
+        /// </summary>
+        public static string BV_VORH_VERFAHREN_VORGABE {
+            get {
+                return ResourceManager.GetString("BV_VORH_VERFAHREN_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit t_V (berechnet, Quantil) ähnelt.
+        /// </summary>
+        public static string BV_VORH_ZEIT_BERECHNET {
+            get {
+                return ResourceManager.GetString("BV_VORH_ZEIT_BERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit t_V (vorgegeben) ähnelt.
+        /// </summary>
+        public static string BV_VORH_ZEIT_VORGABE {
+            get {
+                return ResourceManager.GetString("BV_VORH_ZEIT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string BV_VORH_ZONE {
+            get {
+                return ResourceManager.GetString("BV_VORH_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizen je Zone ähnelt.
+        /// </summary>
+        public static string BV_VORH_ZONEN_TITEL {
+            get {
+                return ResourceManager.GetString("BV_VORH_ZONEN_TITEL", resourceCulture);
             }
         }
         
@@ -121564,6 +121915,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizleistung P_V des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZLEISTUNG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verfahren des Vorheizens des laufenden Gebäudes (vorgegeben oder berechnet); leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZVERFAHREN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZVERFAHREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit t_V des laufenden Gebäudes (vorgegeben bzw. berechnetes Quantil); leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Vorheizbedarf t_nötig des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT_BEDARF_MAX {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZZEIT_BEDARF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsleistung Φ_K,max des Vorheizens des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_BEZUG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckel P_K des Vorheizens des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKEL {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden am Deckel des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKELSTUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_DECKELSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden an der Untergrenze des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_FLOORSTUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_FLOORSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrwärme des Vorheizens des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_MEHRWAERME {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_MEHRWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nächte ohne Absenkung des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_NAECHTE_OHNE_ABSENKUNG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_NAECHTE_OHNE_ABSENKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Sprung im Lauf S_max des laufenden Gebäudes; leer ohne Sprung oder bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_LAUF {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Sprung im Vorlauf S_max,0 des laufenden Gebäudes; leer ohne Sprung oder bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_VORLAUF {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_SPRUNG_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit gesperrter Vorheizstunde des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit Sprung über t_V des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UEBER {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UEBER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit unerreichbarem Sprung des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_UNERREICHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage ohne Ankunft des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_VERFEHLT {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_TAGE_VERFEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden unter dem Sollwert beim Vorheizen des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNGSSTUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNGSSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größte Unterschreitung des Sollwerts beim Vorheizen des laufenden Gebäudes; leer bei Sollwertrampe. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__VORHEIZ_UNTERSCHREITUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wohn- bzw. Nutzfläche des laufenden Gebäudes. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__FLAECHE {
@@ -121938,6 +122451,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_HAT__VERALTET {
             get {
                 return ResourceManager.GetString("VF_HAT__VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit vorgegebener oder berechneter Vorheizzeit gerechnet? ähnelt.
+        /// </summary>
+        public static string VF_HAT__VORHEIZEN {
+            get {
+                return ResourceManager.GetString("VF_HAT__VORHEIZEN", resourceCulture);
             }
         }
         

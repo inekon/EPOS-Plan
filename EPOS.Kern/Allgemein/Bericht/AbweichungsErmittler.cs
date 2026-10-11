@@ -272,6 +272,21 @@ namespace WindowsFormsApplication1
                         "ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT"),
             new Merkmal("Gebäude", "Tab_Gebaeude", AufheizManuellSchema.SPALTE_MANUELL, "Aufheizzeit manuell (h)", "h", 0,
                         "ABW_MERKMAL_AUFH_MANUELL"),
+
+            // AH-V6 (Schritt 215): das Vorheizen der Fassung 2 - Verfahren, Vorheizzeit, Toleranz, Regelgenauigkeit und Geltung.
+            // NULL heißt die Vorgabe: Verfahren, Art der Toleranz und Geltung über ihren Anzeigenamen, ε über die Zahlvorgabe.
+            new Merkmal("Gebäude", "Tab_Einstellungen", VorheizenSchema.SPALTE_VERFAHREN, "Verfahren des Vorheizens", "", TEXT,
+                        "ABW_MERKMAL_VORH_VERFAHREN"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", VorheizenSchema.SPALTE_VORHEIZZEIT, "Vorheizzeit (h)", "h", 0,
+                        "ABW_MERKMAL_VORH_ZEIT"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", VorheizenSchema.SPALTE_TOLERANZ_ART, "Art der Vorheiztoleranz", "", TEXT,
+                        "ABW_MERKMAL_VORH_TOLERANZ_ART"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", VorheizenSchema.SPALTE_TOLERANZ, "Vorheiztoleranz", "", 1,
+                        "ABW_MERKMAL_VORH_TOLERANZ"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", VorheizenSchema.SPALTE_REGELGENAUIGKEIT, "Regelgenauigkeit ε", "K", 1,
+                        "ABW_MERKMAL_VORH_REGELGENAUIGKEIT"),
+            new Merkmal("Gebäude", "Tab_Einstellungen", VorheizenSchema.SPALTE_GELTUNG, "Geltung der Vorheizzeit", "", TEXT,
+                        "ABW_MERKMAL_VORH_GELTUNG"),
         };
 
         /// <summary>
@@ -304,6 +319,25 @@ namespace WindowsFormsApplication1
             return dt.Rows[0];
         }
 
+        /// <summary>Der Anzeigename des Verfahrens (AH-V6): NULL und <c>RAMPE</c> heißen beide „Sollwertrampe“.</summary>
+        private static string Verfahrensname(string steuerwert)
+            => steuerwert == VorheizenSchema.VERFAHREN_VORGABE ? MyResource.Resource.BV_VORH_VERFAHREN_VORGABE
+             : steuerwert == VorheizenSchema.VERFAHREN_BERECHNET ? MyResource.Resource.BV_VORH_VERFAHREN_BERECHNET
+             : string.IsNullOrEmpty(steuerwert) || steuerwert == VorheizenSchema.VERFAHREN_RAMPE ? MyResource.Resource.ABW_MERKMAL_VORH_WERT_RAMPE
+             : steuerwert;
+
+        /// <summary>Der Anzeigename der Art der Toleranz (AH-V6): NULL und <c>PROZENT</c> heißen beide „Prozent“.</summary>
+        private static string Toleranzartname(string steuerwert)
+            => steuerwert == VorheizenSchema.TOLERANZ_KW ? MyResource.Resource.ABW_MERKMAL_VORH_WERT_KW
+             : string.IsNullOrEmpty(steuerwert) || steuerwert == VorheizenSchema.TOLERANZ_PROZENT ? MyResource.Resource.ABW_MERKMAL_VORH_WERT_PROZENT
+             : steuerwert;
+
+        /// <summary>Der Anzeigename der Geltung (AH-V6): NULL und <c>GEBAEUDE</c> heißen beide „Gebäude“.</summary>
+        private static string Geltungsname(string steuerwert)
+            => steuerwert == VorheizenSchema.GELTUNG_ZONE ? MyResource.Resource.ABW_MERKMAL_VORH_WERT_ZONE
+             : string.IsNullOrEmpty(steuerwert) || steuerwert == VorheizenSchema.GELTUNG_GEBAEUDE ? MyResource.Resource.ABW_MERKMAL_VORH_WERT_GEBAEUDE
+             : steuerwert;
+
         /// <summary>Der Anzeigename der Bemessung: NULL und <c>STUNDE</c> heißen beide „kälteste Stunde“ (Variante (a)).</summary>
         private static string Bemessungsname(string steuerwert)
             => steuerwert == DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG ? MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG
@@ -334,6 +368,7 @@ namespace WindowsFormsApplication1
                 { "Tab_Einstellungen." + AufheizvorgabeSchema.SPALTE_RESERVE, (AufheizvorgabeSchema.RESERVE_VORGABE, 100.0) },
                 { "Tab_Einstellungen." + AufheizManuellSchema.SPALTE_AUFSCHLAG_H, (0.0, 1.0) },
                 { "Tab_Einstellungen." + AufheizManuellSchema.SPALTE_AUFSCHLAG_PROZENT, (0.0, 1.0) },
+                { "Tab_Einstellungen." + VorheizenSchema.SPALTE_REGELGENAUIGKEIT, (Vorheizvorgabe.GENAUIGKEIT_VORGABE_K, 1.0) },
             };
 
         /// <summary>Der wirksame Zahlwert eines Merkmals: der Spaltenwert, NULL über die Zahlvorgabe, mal dem Anzeigefaktor.</summary>
@@ -359,6 +394,9 @@ namespace WindowsFormsApplication1
                 { ProjektDetails.ZONENMERKMALE + ".Huellrechenweg", ProjektDetails.Huellrechenwegtext },
                 { "Tab_Einstellungen." + AufheizvorgabeSchema.SPALTE_BEMESSUNG, Bemessungsname },
                 { AUFHEIZMERKMALE + "." + SPALTE_AUFHEIZART, Artname },
+                { "Tab_Einstellungen." + VorheizenSchema.SPALTE_VERFAHREN, Verfahrensname },
+                { "Tab_Einstellungen." + VorheizenSchema.SPALTE_TOLERANZ_ART, Toleranzartname },
+                { "Tab_Einstellungen." + VorheizenSchema.SPALTE_GELTUNG, Geltungsname },
             };
 
         /// <summary>Der Anzeigeweg eines Textmerkmals mit Steuerwerten; <c>null</c> = der Wert, wie er ist.</summary>
