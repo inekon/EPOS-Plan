@@ -33,11 +33,11 @@ public class StartseiteTests : EposBunitContext
     }
 
     // =====================================================================
-    //  Probendaten - die 21 Kacheln in der Reihenfolge des Bestands
+    //  Probendaten - die 24 Kacheln in der Reihenfolge der Reiter
     // =====================================================================
 
     /// <summary>
-    /// Die 21 Kacheln, wie sie die Hülle liefert. <paramref name="bitmaske"/> ist
+    /// Die 24 Kacheln, wie sie die Hülle liefert. <paramref name="bitmaske"/> ist
     /// die Bitmaske des Kerns (<c>KomponentenBestandCtrl.Bitmaske</c>); die
     /// dreizehn Bestandskacheln lesen ihren Zustand daraus, die fünf
     /// Projektkacheln und der Konfigurationsknopf führen keinen.
@@ -58,6 +58,10 @@ public class StartseiteTests : EposBunitContext
             Mit(Kachelschluessel.WaermebedarfDaten, Reiterschluessel.Waermebedarf, "Daten importieren", Stand(16)),
             Mit(Kachelschluessel.Prozesswaerme, Reiterschluessel.Waermebedarf, "Prozesswärme", Stand(32)),
             Mit(Kachelschluessel.Brauchwasser, Reiterschluessel.Waermebedarf, "Brauchwasserwärme", Stand(4096)),
+
+            Mit(Kachelschluessel.KaeltebedarfExtern, Reiterschluessel.Kaeltebedarf, "Kältebedarf extern", Stand(8192)),
+            Mit(Kachelschluessel.Kaeltebedarfsprofile, Reiterschluessel.Kaeltebedarf, "Kältebedarfsprofile", Stand(16384)),
+            Mit(Kachelschluessel.Gebaeudekuehlung, Reiterschluessel.Kaeltebedarf, "Gebäudekühlung", Stand(0)),
 
             Mit(Kachelschluessel.StromStandardprofil, Reiterschluessel.Strombedarf, "Standardlastprofil", Stand(64)),
             Mit(Kachelschluessel.StromEigenesProfil, Reiterschluessel.Strombedarf, "Eigenes Profil", Stand(0)),
@@ -127,27 +131,29 @@ public class StartseiteTests : EposBunitContext
     }
 
     // =====================================================================
-    //  Die sechs Reiter
+    //  Die sieben Reiter
     // =====================================================================
 
     /// <summary>
-    /// SECHS Reiter, in der Reihenfolge des Bestands — <c>tabPage1</c> …
-    /// <c>tabPage6</c>. Der sechste ist die Seite aus W5.
+    /// SIEBEN Reiter — <c>tabPage1</c> … <c>tabPage6</c> des Bestands und der
+    /// Reiter „Kältebedarf" an dritter Stelle (Konzept Kältebedarf 3.1, OP-1).
+    /// Der letzte ist die Seite aus W5.
     /// </summary>
     [Fact]
-    public void Die_Startseite_fuehrt_sechs_Reiter()
+    public void Die_Startseite_fuehrt_sieben_Reiter()
     {
         var cut = Zeige();
 
         var knoepfe = cut.FindAll("[role='tab']");
-        Assert.Equal(6, knoepfe.Count);
+        Assert.Equal(7, knoepfe.Count);
 
         Assert.Equal("Projekt", knoepfe[0].TextContent.Trim());
         Assert.Equal("Wärmebedarf", knoepfe[1].TextContent.Trim());
-        Assert.Equal("Strombedarf", knoepfe[2].TextContent.Trim());
-        Assert.Equal("Energieerzeuger", knoepfe[3].TextContent.Trim());
-        Assert.Equal("Simulation", knoepfe[4].TextContent.Trim());
-        Assert.Equal("Berichte & Kosten", knoepfe[5].TextContent.Trim());
+        Assert.Equal("Kältebedarf", knoepfe[2].TextContent.Trim());
+        Assert.Equal("Strombedarf", knoepfe[3].TextContent.Trim());
+        Assert.Equal("Energieerzeuger", knoepfe[4].TextContent.Trim());
+        Assert.Equal("Simulation", knoepfe[5].TextContent.Trim());
+        Assert.Equal("Berichte & Kosten", knoepfe[6].TextContent.Trim());
     }
 
     /// <summary>
@@ -246,17 +252,17 @@ public class StartseiteTests : EposBunitContext
         => cut.FindAll(selektor).Where(e => e.Closest(".epos-startkachel-kuehlung") is null).ToList();
 
     /// <summary>
-    /// <b>21 Kacheln über sechs Reiter</b> — fünf, vier, drei, sieben und zwei
-    /// (ein Knopf und eine Kachel). Gezählt wird über alle Reiter hinweg, denn
+    /// <b>24 Kacheln über sieben Reiter</b> — fünf, vier, drei (Kältebedarf),
+    /// drei, sieben und zwei (ein Knopf und eine Kachel). Gezählt wird über alle Reiter hinweg, denn
     /// ein ungewähltes <c>Reiterblatt</c> zeichnet gar nichts.
     /// </summary>
     [Fact]
-    public void Die_Startseite_fuehrt_einundzwanzig_Kacheln()
+    public void Die_Startseite_fuehrt_vierundzwanzig_Kacheln()
     {
         var cut = Zeige();
 
         int gezaehlt = 0;
-        int[] soll = { 5, 4, 3, 7, 2 };
+        int[] soll = { 5, 4, 3, 3, 7, 2 };
 
         for (int i = 0; i < soll.Length; i++)
         {
@@ -277,7 +283,7 @@ public class StartseiteTests : EposBunitContext
         }
 
         Assert.Equal(Kachelschluessel.Anzahl, gezaehlt);
-        Assert.Equal(21, gezaehlt);
+        Assert.Equal(24, gezaehlt);
     }
 
     /// <summary>
@@ -303,11 +309,11 @@ public class StartseiteTests : EposBunitContext
     {
         var cut = Zeige();
 
-        // Die VIER Reiter mit Kachelraster. Der sechste ist die Kostenseite, und
-        // der fünfte ("Simulation") trägt seit Auftrag #233 keines mehr: Er hat
+        // Die FÜNF Reiter mit Kachelraster. Der siebte ist die Kostenseite, und
+        // der sechste ("Simulation") trägt seit Auftrag #233 keines mehr: Er hat
         // zwei Spalten, und ein festes Dreispaltenraster hätte darin nur eine
         // einzige Kachel als Streifen (Anwenderrückmeldung 12.09.2026).
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 5; i++)
         {
             cut.FindAll("[role='tab']")[i].Click();
 
@@ -364,7 +370,7 @@ public class StartseiteTests : EposBunitContext
         List<string> gemeldet = new List<string>();
         var cut = Zeige(geklickt: s => gemeldet.Add(s));
 
-        cut.FindAll("[role='tab']")[4].Click();
+        cut.FindAll("[role='tab']")[5].Click();
         cut.Find(".epos-startreiter-leiste .epos-knopf").Click();
 
         Assert.Equal(new[] { Kachelschluessel.SimulationKonfiguration }, gemeldet);
@@ -385,7 +391,7 @@ public class StartseiteTests : EposBunitContext
     public void Der_Kachelzustand_kommt_aus_der_Bitmaske()
     {
         var cut = Zeige(bitmaske: 2 | 1024);
-        cut.FindAll("[role='tab']")[3].Click();
+        cut.FindAll("[role='tab']")[4].Click();
 
         var kacheln = Registerkacheln(cut, ".epos-kachel");
         Assert.Equal(7, kacheln.Count);
@@ -440,7 +446,7 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.ProjektId, () => 1030));
 
         Assert.Equal(1, gelesen);
-        cut.FindAll("[role='tab']")[3].Click();
+        cut.FindAll("[role='tab']")[4].Click();
         Assert.All(cut.FindAll(".epos-kachel-statuspunkt"),
                    e => Assert.Contains("epos-kachel-statuspunkt--aus", e.ClassList));
 
@@ -512,7 +518,7 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.Kacheln, () => Kacheln(0))
             .Add(x => x.ProjektId, () => id));
 
-        cut.FindAll("[role='tab']")[3].Click();
+        cut.FindAll("[role='tab']")[4].Click();
         Assert.Equal(Reiterschluessel.Erzeuger, cut.Instance.AktiverReiter);
 
         // SeitenZustand meldet nur eine echte Aenderung; er steht anfangs auf
@@ -558,7 +564,7 @@ public class StartseiteTests : EposBunitContext
     }
 
     /// <summary>
-    /// „Weiter" und „Zurück" wandern durch die sechs Reiter und bleiben an den
+    /// „Weiter" und „Zurück" wandern durch die sieben Reiter und bleiben an den
     /// Enden stehen — wörtlich <c>btn_Weiter_Click</c> (:1568) und
     /// <c>btn_Zurueck_Click</c> (:1641).
     /// </summary>
@@ -578,7 +584,7 @@ public class StartseiteTests : EposBunitContext
         Zurueck().Click();
         Assert.Equal(Reiterschluessel.Projekt, cut.Instance.AktiverReiter);
 
-        for (int i = 0; i < 5; i++) Weiter().Click();
+        for (int i = 0; i < 6; i++) Weiter().Click();
         Assert.Equal(Reiterschluessel.BerichteKosten, cut.Instance.AktiverReiter);
         Assert.True(Weiter().HasAttribute("disabled"));
     }
@@ -666,7 +672,7 @@ public class StartseiteTests : EposBunitContext
         var cut = Zeige(bericht: () =>
             new Zusammenfassung("Referenzprojekt", "123,45 MWh/a", "67,89 MWh/a", "Heizkessel, BHKW"));
 
-        cut.FindAll("[role='tab']")[4].Click();
+        cut.FindAll("[role='tab']")[5].Click();
 
         string text = cut.Find(".epos-startzusammenfassung").TextContent;
         Assert.Contains("Referenzprojekt", text, StringComparison.Ordinal);
@@ -685,7 +691,7 @@ public class StartseiteTests : EposBunitContext
     {
         var cut = Zeige(bericht: () => null);
 
-        cut.FindAll("[role='tab']")[4].Click();
+        cut.FindAll("[role='tab']")[5].Click();
 
         Assert.Equal(Reiterschluessel.Projekt, cut.Instance.AktiverReiter);
         Assert.Contains("Die Klimaregion ist nicht gesetzt!",
@@ -906,7 +912,7 @@ public class StartseiteTests : EposBunitContext
         List<string> gemeldet = new List<string>();
         var cut = Zeige(geklickt: sch => gemeldet.Add(sch));
 
-        cut.FindAll("[role='tab']")[4].Click();
+        cut.FindAll("[role='tab']")[5].Click();
         cut.Find(".epos-startreiter-leiste .epos-knopf").Click();
 
         // Seit Auftrag #233 ist "Simulation starten" der HAUPTKNOPF des
@@ -938,7 +944,7 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.ProjektId, () => 1030)
             .Add(x => x.SolarartGewaehlt, an => gemeldet.Add(an)));
 
-        cut.FindAll("[role='tab']")[3].Click();
+        cut.FindAll("[role='tab']")[4].Click();
 
         var knoepfe = WahlVon(cut, "Solarthermie");
         Assert.Equal(2, knoepfe.Count);
@@ -973,7 +979,7 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.SolarartGewaehlt, an => solar.Add(an))
             .Add(x => x.PvartGewaehlt, an => pv.Add(an)));
 
-        cut.FindAll("[role='tab']")[3].Click();
+        cut.FindAll("[role='tab']")[4].Click();
 
         var knoepfe = WahlVon(cut, "Photovoltaik");
         Assert.Equal(2, knoepfe.Count);
@@ -1255,7 +1261,7 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.Kacheln, () => Kacheln(0))
             .Add(x => x.ProjektId, () => 1030));
 
-        cut.FindAll("[role='tab']")[3].Click();
+        cut.FindAll("[role='tab']")[4].Click();
 
         // Genau eine Karte fuehrt die Weiche, und die Weiche steht IN ihr. Die Kachel
         // „Kühlung“ ist eine gewoehnliche Kachel ohne Wirt (eigene Probe: ErzeugerReiterKuehlungTests).

@@ -1,4 +1,4 @@
-﻿/* ===================================================================   epos-ui.css - Thema und Bausteingestaltung der Oberflaechenbibliothek
+﻿﻿/* ===================================================================   epos-ui.css - Thema und Bausteingestaltung der Oberflaechenbibliothek
    EPOS.UI (Umsetzungskonzept iOS, Paket iU8).
 
    Diese Datei wird als statisches Web-Asset ausgeliefert und von der Huelle
@@ -9258,6 +9258,25 @@ table.epos-simerg-tabelle {
 
 .epos-startreiter-hinweis .epos-startseite-status {
     font-size: inherit;
+}
+
+/* Reiter „Kaeltebedarf“ (K4): der Sprung der Hinweiszeile in die Simulationskonfiguration
+   - ein Verweis in der Zeile, kein Knopf daneben (Form wie .epos-simerg-verweis). */
+.epos-startreiter-verweis {
+    border: 0;
+    background: none;
+    padding: 4px 0;
+    min-height: var(--epos-touchziel);
+    font: inherit;
+    font-weight: 400;
+    color: var(--epos-marke);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.epos-startreiter-verweis:hover,
+.epos-startreiter-verweis:focus-visible {
+    text-decoration-thickness: 2px;
 }
 
 .epos-startreiter-leiste {
