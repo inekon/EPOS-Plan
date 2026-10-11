@@ -48,8 +48,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(FELDER, KaelteKatalogfelderSchema.SPALTEN.Where(x => x.Tabelle == "Tab_Kaeltemaschine").Select(x => x.Spalte));
             Assert.All(KaelteKatalogfelderSchema.SPALTEN, x => Assert.DoesNotContain("NOT NULL", x.Typ, StringComparison.Ordinal));
             Assert.All(KaelteKatalogfelderSchema.SPALTEN, x => Assert.DoesNotContain("DEFAULT", x.Typ, StringComparison.Ordinal));
-            Assert.Equal(FELDER, KaeltemaschineSchema.Fachspalten.Skip(20));
-            Assert.Equal(FELDER, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(20));
+            Assert.Equal(FELDER, KaeltemaschineSchema.Fachspalten.Skip(20).Take(FELDER.Length));
+            Assert.Equal(FELDER, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(20).Take(FELDER.Length));
         }
 
         /// <summary>Die Geräteart kennt die Folgestufen schon: Split, Multisplit und VRF (K-D, K-E) und Absorption (K-G).</summary>

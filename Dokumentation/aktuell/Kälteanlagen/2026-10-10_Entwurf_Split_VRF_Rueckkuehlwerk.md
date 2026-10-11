@@ -307,6 +307,48 @@ An `Tab_Energieanlagen` (Typ 13): `ID_Rueckkuehlwerk` (Projektkopie, `SET NULL`)
   Abflutung = Verdunstung / (`Eindickung` − 1), Drift als Anteil — in m³ je Stunde und Jahr. Kosten: Frage 8.
 - **Hinweis zur 42. BImSchV** (Verdunstungskühlanlagen) bei `KUEHLTURM_*`, `HYBRID`, `ADIABAT` — nur Hinweis, keine Prüfung.
 
+**Festlegungen K-F2** (gebaut in `Rueckkuehlwerk.cs`, Vorgaben in `KaelteFestwerte`):
+
+- **Lastanteil** x = Abwärme / `Nennleistung_kW`; ohne Nennleistung der Lastanteil der Maschinen (Kälte / Kapazität der
+  Stunde), mit Hinweis. **Luftanteil** L: ohne Regelung und `EIN_AUS` 1, `STUFEN` die nächsthöhere Stufe ⌈x·n⌉/n,
+  `DREHZAHL` max(x, kleinste Drehzahl), bei x ≥ 1 immer 1.
+- **Regelung × Annäherungsweg:** `FEST` hält ΔT_Nenn in jeder Stunde, die Regelung bestimmt nur den Ventilatorstrom.
+  `LASTABHAENGIG` rechnet ΔT = ΔT_Nenn · x / L — `DREHZAHL` hält so die Nenn-Annäherung (unter der kleinsten Drehzahl
+  sinkt sie), `EIN_AUS` und ohne Ventilator sinkt sie mit der Last, `STUFEN` zwischen den Stufen.
+- **Überlast** (x > 1): keine Begrenzung auf ΔT_Nenn — bei festem Luftstrom wächst die Grädigkeit eines Übertragers mit
+  der Wärme; ΔT = ΔT_Nenn · x, höchstens `ANNAEHERUNG_MAX_K` (30 K), die Stunden über Nennleistung meldet der Lauf.
+- **Ein Schritt:** Die Stunde rechnet bei der Nenn-Annäherung, schätzt daraus die Abwärme, bildet die lastabhängige
+  Rückkühltemperatur und rechnet die Stunde damit einmal neu. Freie Kühlung (`PARALLEL`) entscheidet und rechnet an der
+  Nenn-Annäherung.
+- **Ventilator:** Die Energie folgt dem Luftanteil der Annäherungsrechnung. `EIN_AUS` (auch leer gepflegt) unter `FEST`
+  taktet auf den Lastanteil und hält so im Mittel ΔT_Nenn: P · min(x, 1). `EIN_AUS` unter `LASTABHAENGIG` läuft voll,
+  solange die Maschine läuft — nur so sinkt die Annäherung auf ΔT_Nenn · x: P · Laufanteil der Maschine (1 bei
+  modulierendem Betrieb, in einer Taktstunde die Zeit am Mindestpunkt). Freie Kühlung rechnet an der Nenn-Annäherung und
+  damit taktend. `STUFEN` P · Stufe (n gleich große Ventilatorgruppen mit Nenndrehzahl); `DREHZAHL` P · L³. Mit `Ventilator_Nenn_kW` ersetzt er `Hilfsstrom_Rueckkuehlung_kW`; der Ergebniswert
+  `Ventilatorstrom_MWh` ist der Strom der Rückkühlung (ohne Ventilator der Hilfsstrom der Rückkühlung wie heute).
+- **Nass abgeführte Wärme:** Kühlturm die ganze Abwärme; adiabat und hybrid die Vorkühlwärme der Luft = Abwärme ·
+  Vorkühlung / Lufterwärmung (10 K, höchstens die Abwärme). Drift: Kühlturm als Anteil des Umlaufwassers (Wärme /
+  (c_p · 5 K)), adiabat und hybrid als Anteil der Verdunstung. Ohne Feuchte rechnen adiabat und hybrid trocken (Hinweis),
+  der Kühlturm nimmt den Ausweichweg und verdunstet weiter.
+- **Wasserkosten** = Menge × `Wasserpreis_EUR_m3`, leer = keine Kosten; beides als Hinweis im Lauf. Eine Zeile der
+  Betriebskosten braucht eine Kostenkomponente in `Tab_KostenKomponente` (Daten) — offen.
+
+Alle Quellenangaben sind aus der Fachliteratur zitiert und **nicht am Wortlaut geprüft (vorläufig)**; „Annahme“ heißt
+eigene Festlegung mit fachlicher Begründung.
+
+| Feld | Vorgabe | Quelle bzw. Begründung |
+|---|---|---|
+| `Befeuchtung_Wirkungsgrad` | 0,8 | ASHRAE Handbook — HVAC Systems and Equipment, „Evaporative Air-Cooling Equipment“ (Benetzungsmatten etwa 70–95 %) — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| `Befeuchtung_Ab_C` | 25 °C | Annahme: ein Trockenkühler mit 10 K Grädigkeit hält bis 25 °C Außenluft etwa 35 °C Kühlwasservorlauf, wie ihn wassergekühlte Verflüssiger üblich erwarten; darüber lohnt die Befeuchtung |
+| `Verdunstung_Faktor` | Kühlturm 0,9; adiabat/hybrid 1,0 | ASHRAE Handbook — HVAC Systems and Equipment, „Cooling Towers“ (Verdunstung ≈ 0,00085 · Umlauf · Spreizung [°F]) — Quelle nicht am Wortlaut geprüft (vorläufig); Vorkühlung isenthalp |
+| `Eindickung` | 3 | Annahme, übliche Größenordnung nach Fachliteratur (etwa 2–6, z. B. ASHRAE „Water Treatment“) — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| `Drift_Anteil` | Kühlturm 0,0001 des Umlaufs; adiabat/hybrid 0 | VDI 2047 Blatt 2, Anforderung an Tropfenabscheider — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| `Ventilator_Drehzahl_Min` | 0,2 | Annahme, übliche Größenordnung nach Fachliteratur (Stellbereich bis etwa 20 %, z. B. Recknagel) — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| `Ventilator_Stufen` | 2 | Schema (mindestens 2) |
+| Verdampfungsenthalpie | 2 450 kJ/kg | Stoffwert von Wasser bei rund 20 °C (z. B. VDI-Wärmeatlas) — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| Umlaufspreizung Kühlturm | 5 K | Annahme: übliche Kühlwasserspreizung wassergekühlter Verflüssiger (etwa 30/35 °C) |
+| Lufterwärmung adiabat/hybrid | 10 K | Annahme: üblicher Auslegungspunkt eines Trockenkühlers (Lufteintritt um 25 °C, Fluid um 40/35 °C) |
+
 ### 5.4 Klimadaten
 
 `Luftfeuchte` [%] steht je Stunde in `Tab_Solar` (Projektkopie) und `Tab_Solar_STAMM`; PVGIS-TMY und DWD-TRY füllen sie

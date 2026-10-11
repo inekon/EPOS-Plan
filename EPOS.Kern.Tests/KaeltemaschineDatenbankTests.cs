@@ -317,5 +317,123 @@ namespace EPOS.Kern.Tests
                 v.Rollback();
             }
         }
+
+        // =================================================================
+        //  KM4-E1-b: der Verweis ID_Kaeltemittel
+        // =================================================================
+
+        private static object IdKaeltemittel(string tabelle, int id) => DataRepository.ExecuteScalar(
+            "SELECT ID_Kaeltemittel FROM " + tabelle + " WHERE ID = ?", new DbParam("?", id));
+
+        private static int Kmt(string code) => KaeltemittelCtrl.IdZumCode(code).Value;
+
+        /// <summary>
+        /// Der Schreibschritt gleicht den Text gegen die Codes ab: Treffer (Trim, ohne Groß/Klein) → ID, kein Treffer → NULL,
+        /// leer → NULL; eine ID im Modell ohne passenden Text zählt nicht. Das Modell trägt danach die geschriebene ID.
+        /// </summary>
+        [Fact]
+        public void Schreiben_setzt_die_ID_aus_dem_Code_ohne_Treffer_und_leer_NULL()
+        {
+            if (!_db.Vorhanden) return;
+            KaeltemaschineModel m = Teillastsatz("Kältemittel Abgleich");
+            m.Kaeltemittel = "  r410a ";
+            KaeltemaschineStammCtrl.SpeicherErgebnis s = KaeltemaschineStammCtrl.Speichern(m);
+            Assert.True(s.Ok, s.Meldung);
+            Assert.Equal((long)Kmt("R410A"), Convert.ToInt64(IdKaeltemittel(KaeltemaschineSchema.TAB_STAMM, s.Id), CultureInfo.InvariantCulture));
+            Assert.Equal(Kmt("R410A"), m.ID_Kaeltemittel);
+            KaeltemaschineModel g = KaeltemaschineStammCtrl.Laden(s.Id);
+            Assert.Equal(Kmt("R410A"), g.ID_Kaeltemittel);
+            Assert.Equal("  r410a ", g.Kaeltemittel); // der Text bleibt, wie er steht
+
+            // Kein Treffer: NULL - auch wenn das Modell noch eine ID traegt.
+            g.Kaeltemittel = "Frigen X";
+            Assert.True(KaeltemaschineStammCtrl.Speichern(g).Ok);
+            Assert.True(IdKaeltemittel(KaeltemaschineSchema.TAB_STAMM, s.Id) is null or DBNull);
+            Assert.Null(KaeltemaschineStammCtrl.Laden(s.Id).ID_Kaeltemittel);
+
+            // Wieder ein Treffer, dann leer: NULL, nie 0.
+            g.Kaeltemittel = "R513A";
+            Assert.True(KaeltemaschineStammCtrl.Speichern(g).Ok);
+            Assert.Equal(Kmt("R513A"), KaeltemaschineStammCtrl.Laden(s.Id).ID_Kaeltemittel);
+            g.Kaeltemittel = "   ";
+            Assert.True(KaeltemaschineStammCtrl.Speichern(g).Ok);
+            Assert.True(IdKaeltemittel(KaeltemaschineSchema.TAB_STAMM, s.Id) is null or DBNull);
+            g.Kaeltemittel = null;
+            g.ID_Kaeltemittel = Kmt("R32");
+            Assert.True(KaeltemaschineStammCtrl.Speichern(g).Ok);
+            Assert.True(IdKaeltemittel(KaeltemaschineSchema.TAB_STAMM, s.Id) is null or DBNull);
+            Assert.Null(g.ID_Kaeltemittel);
+
+            // Pruefen bleibt ohne Datenbank: ein unbekannter Text ist kein Fehler.
+            g.Kaeltemittel = "Frigen X";
+            Assert.Null(KaeltemaschineStammCtrl.Pruefen(g));
+        }
+
+        /// <summary>
+        /// Die Projektkopie trägt die ID ihres Katalogsatzes — auch den Verweis, den der Katalog über seinen Schlüssel
+        /// führt („R1234ze“ → R1234ze(E)) und den der Code-Abgleich nicht fände.
+        /// </summary>
+        [Fact]
+        public void Die_Projektkopie_traegt_die_ID_des_Katalogsatzes()
+        {
+            if (!_db.Vorhanden) return;
+            int nass = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM " + KaeltemaschineSchema.TAB_STAMM + " WHERE Katalog_Schluessel = ?",
+                new DbParam("?", KaeltemittelSchema.BEISPIEL_SCHLUESSEL)), CultureInfo.InvariantCulture);
+            KaeltemaschineModel katalog = KaeltemaschineStammCtrl.Laden(nass);
+            Assert.Equal(KaeltemittelSchema.BEISPIEL_TEXT, katalog.Kaeltemittel);
+            Assert.Equal(Kmt(KaeltemittelSchema.BEISPIEL_CODE), katalog.ID_Kaeltemittel);
+
+            int kopie = KaeltemaschineCtrl.EigeneKopieAnlegen(nass, PROJEKT);
+            KaeltemaschineModel k = KaeltemaschineCtrl.Laden(kopie);
+            Assert.Equal(KaeltemittelSchema.BEISPIEL_TEXT, k.Kaeltemittel);
+            Assert.Equal(Kmt(KaeltemittelSchema.BEISPIEL_CODE), k.ID_Kaeltemittel);
+
+            int kopie2 = KaeltemaschineCtrl.AusKatalogUebernehmen(Stamm(LUFTGEKUEHLT), PROJEKT);
+            Assert.Equal(Kmt("R32"), KaeltemaschineCtrl.Laden(kopie2).ID_Kaeltemittel);
+        }
+
+        /// <summary>
+        /// Spaltenprobe: Eine Datenbank vor Schritt 216 (ohne die Spalte) liest den Verweis als <c>null</c> und speichert
+        /// alles Übrige wie zuvor.
+        /// </summary>
+        [Fact]
+        public void Ohne_die_Spalte_liest_sich_null_und_das_Speichern_gelingt()
+        {
+            if (!_db.Vorhanden) return;
+            int stamm = Stamm(LUFTGEKUEHLT);
+            DataRepository.ExecuteNonQuery("ALTER TABLE " + KaeltemaschineSchema.TAB_STAMM + " DROP COLUMN ID_Kaeltemittel");
+            Assert.Null(KaeltemaschineStammCtrl.Laden(stamm).ID_Kaeltemittel);
+            KaeltemaschineModel m = Teillastsatz("Ohne Verweisspalte");
+            m.Kaeltemittel = "R32";
+            KaeltemaschineStammCtrl.SpeicherErgebnis s = KaeltemaschineStammCtrl.Speichern(m);
+            Assert.True(s.Ok, s.Meldung);
+            KaeltemaschineModel g = KaeltemaschineStammCtrl.Laden(s.Id);
+            Assert.Equal("R32", g.Kaeltemittel);
+            Assert.Null(g.ID_Kaeltemittel);
+        }
+
+        /// <summary>
+        /// Beim Duplizieren eines Projekts bleibt <c>ID_Kaeltemittel</c> gleich: Die Kältemitteltabelle ist ein Katalog ohne
+        /// Projektkopie, der Verweis wird nicht versetzt.
+        /// </summary>
+        [Fact]
+        public void Beim_Duplizieren_des_Projekts_bleibt_der_Verweis()
+        {
+            if (!_db.Vorhanden) return;
+            const string QUELLE = "Kältemaschine mit Kältespeicher"; // Referenzprojekt 1055
+            int neu = new ProjektDuplizierenCtrl().Duplizieren(QUELLE, QUELLE + " Kopie Kältemittel");
+            Assert.True(neu > 0);
+            var kopien = KaeltemaschineCtrl.IdsImProjekt(neu);
+            var quelle = KaeltemaschineCtrl.IdsImProjekt(1055);
+            Assert.NotEmpty(kopien);
+            Assert.Equal(quelle.Count, kopien.Count);
+            for (int i = 0; i < kopien.Count; i++)
+            {
+                Assert.NotEqual(quelle[i], kopien[i]);
+                Assert.Equal(KaeltemaschineCtrl.Laden(quelle[i]).ID_Kaeltemittel, KaeltemaschineCtrl.Laden(kopien[i]).ID_Kaeltemittel);
+                Assert.Equal(Kmt("R513A"), KaeltemaschineCtrl.Laden(kopien[i]).ID_Kaeltemittel);
+            }
+        }
 }
 }

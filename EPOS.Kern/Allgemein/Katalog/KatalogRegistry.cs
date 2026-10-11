@@ -269,6 +269,23 @@ namespace WindowsFormsApplication1
             },
             new KatalogDefinition
             {
+                // KM4-E1: die Kaeltemitteltabelle (Name ist der Code). Die Kaeltemaschine verweist ueber die ID
+                // (Katalog und Projektkopie); eine verwendete Zeile ist unveraenderlich (Konzept Kaeltemittel 3.2).
+                // Ohne Oberflaeche bis KM4-E3, deshalb nicht im Dublettendialog.
+                Schluessel = "KAELTEMITTEL",
+                Tabelle = KaeltemittelSchema.TAB_STAMM,
+                NamensSpalte = KaeltemittelSchema.SPALTE_CODE,
+                AusschlussSpalten = new[] { KaeltemittelSchema.SPALTE_SORTIERUNG },
+                VerwendungsPruefungen = new[]
+                {
+                    new VerwendungsPruefung { Tabelle = KaeltemaschineSchema.TAB_STAMM, Spalte = KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL, UeberName = false },
+                    new VerwendungsPruefung { Tabelle = KaeltemaschineSchema.TAB_PROJEKT, Spalte = KaeltemittelSchema.SPALTE_ID_KAELTEMITTEL, UeberName = false },
+                },
+                VerwendungSperrt = true,
+                ImDublettendialog = false
+            },
+            new KatalogDefinition
+            {
                 // K-F1: das Rueckkuehlwerk. "Modulkosten" ist ein Anwenderfeld wie bei der Kaeltemaschine.
                 Schluessel = "RUECKKUEHLWERK",
                 Tabelle = RueckkuehlwerkSchema.TAB_STAMM,

@@ -233,6 +233,10 @@ namespace WindowsFormsApplication1
                     // nur, wenn beide Tabellen die Spalten führen.
                     bool paar = Temperaturspalten(TABLE) && Temperaturspalten(TABLE_PROJ);
                     if (paar) { cols.Append(", Vorlauf, Ruecklauf"); vals.Append(", ?, ?"); }
+                    // Stufe 4 der Katalogauswahl: die Kopie nennt ihren Ursprung (ID_Stamm) - wie Kessel,
+                    // BHKW und Kältebedarf; nur, wenn die Projekttabelle die Spalte führt.
+                    bool stamm = DataRepository.SpalteVorhanden(TABLE_PROJ, "ID_Stamm");
+                    if (stamm) { cols.Append(", ID_Stamm"); vals.Append(", ?"); }
                     {
                         List<DbParam> p = new List<DbParam>();
                         p.Add(new DbParam("@hid", neuProzId));
@@ -248,6 +252,7 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@hvl", ColOrNull(h, ProzesswaermeTemperaturSchema.SPALTE_VORLAUF)));
                             p.Add(new DbParam("@hrl", ColOrNull(h, ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF)));
                         }
+                        if (stamm) p.Add(new DbParam("@hstamm", Convert.ToInt64(h["ID"], System.Globalization.CultureInfo.InvariantCulture)));
                         v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
                     }
 

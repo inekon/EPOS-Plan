@@ -343,10 +343,12 @@ namespace EPOS.Kern.Tests
                                  // KM3-E3-b (Katalog v18): die fuenf Kennzahlen „Teillast und Takten“.
                                  "kaelte.km.taktstrom", "kaelte.km.starts", "kaelte.km.teillastanteil", "kaelte.km.lastgrad",
                                  "kaelte.km.jaz_verdichter",
+                                 // K-F2 (Katalog v20): Strom und Wasser der Rückkühlwerke.
+                                 "kaelte.rk.ventilator", "kaelte.rk.wasser_m3",
                                  "kaelte.rest", "kaelte.jaz", "kaelte.strom",
                                  "kaelte.netzbezug", "kaelte.kosten", "kaelte.co2" },
                          kaelte.Where(k => k.Gruppe == KennzahlenKatalog.GR_KAELTE).Select(k => k.Schluessel));
-            Assert.Equal(25, kaelte.Count);
+            Assert.Equal(27, kaelte.Count);
         }
 
         /// <summary>

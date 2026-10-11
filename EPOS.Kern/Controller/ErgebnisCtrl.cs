@@ -116,6 +116,10 @@ namespace WindowsFormsApplication1
             // KM3 (Schritt 210): die fünf Ergebnisspalten von Teillast und Takten; vor dem Schritt nicht geschrieben.
             bool kmTeillast = System.Linq.Enumerable.All(KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN,
                                     s => DataRepository.SpalteVorhanden(KaeltemaschineTeillastSchema.TAB_ERGEBNIS, s.Spalte));
+            // K-F2 (RueckkuehlwerkSchema, Schritt 214): vier der sechs Ergebnisspalten des Rueckkuehlwerks (TeilFreikuehlung_*
+            // folgt mit K-F3); vor dem Schritt nicht geschrieben.
+            bool kmRueckkuehlung = System.Linq.Enumerable.All(RueckkuehlwerkSchema.SPALTEN_ERGEBNIS,
+                                    s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte));
             bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
                                          s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
             // AK2-1 (Schritt 186): die Komfort- und Fahrplanspalten des Energiebedarfs - ebenso vor der
@@ -364,7 +368,11 @@ namespace WindowsFormsApplication1
                             "FreieKuehlung_Stunden, Taktstunden, Unterdeckung_MWh, Stunden_Leistungsgrenze" +
                             (kmAbrechnung ? ", Kaeltestrom_Netzbezug_MWh, Kuehl_ID_Carrier, Kuehl_EigenerZaehler, Stromspitze_kW" : "") +
                             (kmTeillast ? ", Taktstrom_MWh, Starts, Teillaststunden, Lastgrad_Mittel, Stunden_Extrapoliert" : "") +
-                            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?" + (kmAbrechnung ? ",?,?,?,?" : "") + (kmTeillast ? ",?,?,?,?,?" : "") + ")";
+                            (kmRueckkuehlung ? ", " + RueckkuehlwerkSchema.SPALTE_VENTILATORSTROM + ", " + RueckkuehlwerkSchema.SPALTE_WASSER +
+                                               ", " + RueckkuehlwerkSchema.SPALTE_STUNDEN_NASS + ", " +
+                                               RueckkuehlwerkSchema.SPALTE_RUECKKUEHLTEMPERATUR_MITTEL : "") +
+                            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?" + (kmAbrechnung ? ",?,?,?,?" : "") + (kmTeillast ? ",?,?,?,?,?" : "") +
+                            (kmRueckkuehlung ? ",?,?,?,?" : "") + ")";
                         foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
                         {
                             var pk = new List<DbParam>
@@ -399,6 +407,14 @@ namespace WindowsFormsApplication1
                                 pk.Add(new DbParam("@tl", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Teillaststunden) });
                                 pk.Add(new DbParam("@lg", DbParamTyp.Double) { Wert = WertOderNull(km.Lastgrad_Mittel) });
                                 pk.Add(new DbParam("@ex", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Extrapoliert) });
+                            }
+                            // K-F2 (Schritt 214): ohne Rueckkuehlwerk NULL - der Satz bleibt wie ohne K-F2.
+                            if (kmRueckkuehlung)
+                            {
+                                pk.Add(new DbParam("@rv", DbParamTyp.Double) { Wert = WertOderNull(km.Ventilatorstrom_MWh) });
+                                pk.Add(new DbParam("@rw", DbParamTyp.Double) { Wert = WertOderNull(km.Wasser_m3) });
+                                pk.Add(new DbParam("@rn", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Nass) });
+                                pk.Add(new DbParam("@rt", DbParamTyp.Double) { Wert = WertOderNull(km.Rueckkuehltemperatur_Mittel) });
                             }
                             v.Ausfuehren(sqlKm, pk.ToArray());
                         }
@@ -1228,6 +1244,11 @@ namespace WindowsFormsApplication1
                             Teillaststunden = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_TEILLASTSTUNDEN),
                             Lastgrad_Mittel = DN(rk, KaeltemaschineTeillastSchema.SPALTE_LASTGRAD_MITTEL),
                             Stunden_Extrapoliert = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_STUNDEN_EXTRAPOLIERT),
+                            // K-F2 (Schritt 214); vor dem Schritt bzw. ohne Rueckkuehlwerk NULL.
+                            Ventilatorstrom_MWh = DN(rk, RueckkuehlwerkSchema.SPALTE_VENTILATORSTROM),
+                            Wasser_m3 = DN(rk, RueckkuehlwerkSchema.SPALTE_WASSER),
+                            Stunden_Nass = GanzOderNull(rk, RueckkuehlwerkSchema.SPALTE_STUNDEN_NASS),
+                            Rueckkuehltemperatur_Mittel = DN(rk, RueckkuehlwerkSchema.SPALTE_RUECKKUEHLTEMPERATUR_MITTEL),
                         });
                     }
             }

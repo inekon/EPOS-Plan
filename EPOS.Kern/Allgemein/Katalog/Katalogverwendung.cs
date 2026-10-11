@@ -63,5 +63,30 @@ namespace WindowsFormsApplication1
             }
             return treffer;
         }
+
+        /// <summary>
+        /// Dasselbe Kennzeichen über die <b>Katalog-Id</b> statt über den Namen — für Gewerke, deren Projektkopie ihren
+        /// Ursprung als Verweis trägt (Gebäude: <c>Tab_Gebaeude.ID_Gebaeude_Stamm</c>). Eine umbenannte Kopie bleibt so
+        /// ihrem Satz zugeordnet, ein gleichnamiger fremder Satz wird nicht gestempelt.
+        /// </summary>
+        /// <returns>Die Zahl der gestempelten Katalogzeilen.</returns>
+        public static int StempelnUeberId(IEnumerable<Katalogfilterzeile> katalog, IEnumerable<int> idsImProjekt)
+        {
+            if (katalog == null) return 0;
+            var ids = new HashSet<int>();
+            if (idsImProjekt != null)
+                foreach (int id in idsImProjekt)
+                    if (id > 0) ids.Add(id);
+            int treffer = 0;
+            foreach (Katalogfilterzeile z in katalog)
+            {
+                if (z == null) continue;
+                bool ja = ids.Contains(z.Id);
+                if (ja) treffer++;
+                z.ImProjekt = ja;
+                z.MitKennzeichen(Katalogfilterprofil.SpVerwendet, ja);
+            }
+            return treffer;
+        }
     }
 }

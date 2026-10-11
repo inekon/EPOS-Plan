@@ -83,6 +83,9 @@ public sealed class GebaeudeProjektZeile
     /// <summary>Die Zahl der Bauteile aller Zonen der Projektkopie (G6a) — für dieselbe Rückfrage.</summary>
     public int Bauteilzahl { get; set; }
 
+    /// <summary>Ist an der Projektkopie die Kühlung aktiv (<c>Kuehlung_Aktiv</c>)? Für die Zusammenfassung der Detailzeile.</summary>
+    public bool KuehlungAktiv { get; set; }
+
     /// <summary>
     /// Der UNDURCHSICHTIGE Schlüssel der ausstehenden Herkunft einer Zeile aus dem Gebäudeimport
     /// (Stufe G4, Welle 4); <c>null</c> = keine. Quelle und Paarungen selbst bleiben in der Hülle —
@@ -136,9 +139,11 @@ public sealed class GebaeudeImportweg
 /// <param name="Wohnflaeche">Die Gesamtfläche als Text.</param>
 /// <param name="Rechenweg">Der Rechenweg als Anzeigetext (Stufe G1).</param>
 /// <param name="HgesWK">Der Wärmeleitwert H_ges [W/K]; <c>null</c> = nicht bekannt.</param>
+/// <param name="UWerte">Die U-Werte kurz (Außenwand, Fenster, Dach, Grundfläche) als Anzeigetext; leer = nicht bekannt.</param>
+/// <param name="Zonenzahl">Die Zahl der Zonen des Katalogsatzes.</param>
 public sealed record GebaeudeStammDetail(
     string Name, string Art, string Beschreibung, string Wohnflaeche,
-    string Rechenweg = "", double? HgesWK = null);
+    string Rechenweg = "", double? HgesWK = null, string UWerte = "", int Zonenzahl = 0);
 
 /// <summary>
 /// Was „In DB übernehmen" ergeben hat — die Antwort der Hülle auf den Weg

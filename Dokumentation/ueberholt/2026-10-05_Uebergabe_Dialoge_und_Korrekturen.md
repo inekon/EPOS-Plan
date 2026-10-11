@@ -1,7 +1,7 @@
 # Übergabe der Sitzung „Dialoge und Korrekturen“ (05.10.2026)
 
 > **Abgelöst** durch die Übergabe vom 08.10.2026
-> ([`2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../aktuell/Dialoge/2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md)).
+> ([`2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](./2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md)).
 
 Übergabe auf ein anderes Konto. Dieses Papier nennt den Stand, die geltenden Regeln der
 Sitzung, die laufenden Arbeiten und die offenen Punkte. Der Einstiegs-Prompt für die neue

@@ -174,9 +174,14 @@ namespace EPOS.Kern.Tests
         /// stehen in Oberflächentexten des Zapfprofilgenerators und — geklebt — in den Schlüsseln
         /// seines Parameterkatalogs (<c>A100.Ladungsfaktor</c>, <c>W551.Mindesttemperatur</c>); ein
         /// Produkt sind sie nicht. Dazu die Kältemittelbezeichnung <c>R744</c> (CO₂, ISO 817), die die
-        /// Oberfläche der Wärmepumpe im Feld „Kältemittel“ und in den Gerätegrenzen so nennt.
+        /// Oberfläche der Wärmepumpe im Feld „Kältemittel“ und in den Gerätegrenzen so nennt. Ebenso jede
+        /// Kältemittelbezeichnung der Saat der Kältemitteltabelle (<see cref="KaeltemittelSchema.SAAT"/>, Normbezeichnungen
+        /// nach DIN EN 378 / ISO 817 wie <c>R410A</c>, <c>R1234ze(E)</c>; Isomerangabe in Klammern abgeschnitten, da der
+        /// Typcode vor der Klammer endet) — keine Produkte, auch wenn das Typcode-Muster sie trifft.
         /// </summary>
-        private static readonly string[] Normbezeichnungen = { "A100", "W551", "R744" };
+        private static readonly string[] Normbezeichnungen = new[] { "A100", "W551", "R744" }
+            .Concat(KaeltemittelSchema.SAAT.Select(k => k.Code.Split('(')[0]))
+            .Distinct(StringComparer.Ordinal).ToArray();
 
         // =====================================================================
         //  Der Wächter

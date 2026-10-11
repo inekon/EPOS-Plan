@@ -171,6 +171,12 @@ namespace WindowsFormsApplication1
                     pKopf.Add(new DbParam("@hbesch", ColOrNull(h, "Beschreibung")));
                     for (int i = 1; i <= 12; i++)
                         pKopf.Add(new DbParam("@mon" + i.ToString("D2"), ColOrNull(h, "Monat_" + i)));
+                    // Stufe 4 der Katalogauswahl: die Kopie nennt ihren Ursprung (ID_Stamm).
+                    if (DataRepository.SpalteVorhanden(TABLE_PROJ, "ID_Stamm"))
+                    {
+                        cols.Append(", ID_Stamm"); vals.Append(", ?");
+                        pKopf.Add(new DbParam("@hstamm", Convert.ToInt64(h["ID"], System.Globalization.CultureInfo.InvariantCulture)));
+                    }
                     v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")",
                                  pKopf.ToArray());
 
