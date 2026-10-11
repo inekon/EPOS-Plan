@@ -207,6 +207,7 @@ Die sechs Sätze (#935) sind am 11.10.2026 im Wiki-Abschnitt „Version 1.2.0.10
 - Seit 10.10.2026: Die Programmdokumentation zu Simulation, Gerätekatalogen, Gebäude, Brauchwasser und Prozesswärme ist auf den aktuellen Stand gebracht, mit Konfiguration und hydraulischer Einbindung. (#935)
 - Seit 10.10.2026: Beispieldiagramme und Bildschirmfotos veranschaulichen die Seiten. (#935)
 - Seit 10.10.2026: Die Satzzeile des Bedarfsdialogs zeigt bei gewählter Zeile den gewählten Satz. (#935)
+- Seit 11.10.2026: Die Grundlagenseite Pufferspeicher erklärt den Schichtspeicher; die Programmdokumentation zeigt, wie man die Schichtung einstellt und ihre Wirkung prüft. (#966)
 
 ### Version 1.2.0.9 — veröffentlicht 10.10.2026 (Revision 827)
 
