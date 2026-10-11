@@ -317,13 +317,15 @@ async function massAbwartenUeberlagerung(seite) {
 /** UeS1c: oeffnet in einem Ganglinien-Wirt die Projektzeile, klappt die Detailzeile auf und vergroessert. */
 async function gangliniePerVergroessern(seite) {
   // Die Zeilenwahl der Projektzeile (nicht ihr Kaestchen und nicht der Stift).
-  const wahl = seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-anlagenwahl');
+  // AW3b: die Zeile ist die Wahl - ihre Namenszelle (.epos-projektzeile) statt des Wahlknopfs.
+  const wahl = seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-anlagenwahl, .epos-zweispalten-bereich--projekt tbody tr .epos-projektzeile');
   if (await wahl.count()) await wahl.first().click();
   else if (await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').count())
     await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').first().click();
   await ruhe(seite);
   await satz(seite, true);
-  await seite.locator('.epos-zweispalten-vergroessern').click();
+  // AW3b: Solar- und PV-Ganglinie oeffnen die Ansicht ueber „Bearbeiten…" am Satz (dieselbe Ueberlagerung).
+  await seite.locator('.epos-zweispalten-vergroessern, ' + BEARBEITEN_AM_SATZ).first().click();
   await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
   await massAbwartenUeberlagerung(seite);
 }
@@ -571,8 +573,10 @@ try {
         if (await taste(seite, 'End')) await mess('Trennlinie unten');
         // Ganglinien-Dialoge (DZ1): erst eine Projektzeile waehlen - die Detailzeile zeigt dann ihre Ganglinie.
         // Stufe 4: die Zeile traegt vor der Wahl ein Kaestchen - gewaehlt wird ueber den Wahlknopf.
-        if (/ganglinie|waermebedarf/.test(fall) && await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button.epos-anlagenwahl').count()) {
-          await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button.epos-anlagenwahl').first().click();
+        // AW3b: oder ueber die Namenszelle (die Zeile ist die Wahl).
+        const zeilenwahl = '.epos-zweispalten-bereich--projekt tbody tr button.epos-anlagenwahl, .epos-zweispalten-bereich--projekt tbody tr .epos-projektzeile';
+        if (/ganglinie|waermebedarf/.test(fall) && await seite.locator(zeilenwahl).count()) {
+          await seite.locator(zeilenwahl).first().click();
           await ruhe(seite);
         }
         if (await satz(seite, true)) {
@@ -698,6 +702,52 @@ try {
           if (await seite.locator('.epos-rueckweg').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Rueckfrage nicht`);
         }
+        // AW3a: BHKW, Puffer- und Stromspeicher, Solarkollektoren und Photovoltaik nach dem Schema des
+        // Heizkessels (AW1) - die Knopfleiste steht am gewaehlten Satz, keine Fussleiste unter dem Katalog,
+        // kein Stift in der Detailzeile, keine Wahlspalte; die Projektzeile ist die Wahl (hervorgehoben,
+        // ↓ waehlt die naechste), beim Projektsatz sind Schloss und Loeschen weich gesperrt, beim
+        // Katalogsatz nicht. Fotos je Dialog mit Projekt- und mit Katalogsatz (1 280 x 800).
+        if (['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'photovoltaik'].includes(fall)) {
+          const kennAw = `${fall} ${fenster.breite}x${fenster.hoehe}`;
+          const awFehler = m => { verstoesse.push(`${kennAw}: ${m} (AW1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); };
+          const projektZellen = seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-zeilenzelle');
+          if (await projektZellen.count() < 2) awFehler('Projektliste mit weniger als zwei Zeilen');
+          else {
+            await projektZellen.first().click();
+            await ruhe(seite);
+            if (await seite.locator('.epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe button').count() < 2)
+              awFehler('Knopfleiste nicht am gewaehlten Satz');
+            if (await seite.locator('.epos-zweispalten-fussleiste, .epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten').count() !== 0)
+              awFehler('Fussleiste oder Stift der Detailzeile steht noch');
+            if (await seite.locator('.epos-zweispalten-bereich--projekt .epos-anlagenwahl, .epos-zweispalten-bereich--projekt .epos-zeilenwahl').count() !== 0)
+              awFehler('Wahlspalte in der Projektliste');
+            if (await seite.locator('.epos-zweispalten-bereich--projekt tbody tr.epos-zeile--gewaehlt').count() !== 1)
+              awFehler('gewaehlte Projektzeile nicht hervorgehoben');
+            const weich = await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--loeschen[aria-disabled=true], '
+              + '.epos-zweispalten-satzknoepfe .epos-katalogschloss[aria-disabled=true]').count();
+            const schlossDa = await seite.locator('.epos-zweispalten-satzknoepfe .epos-katalogschloss').count();
+            const loeschDa = await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--loeschen').count();
+            if (weich !== schlossDa + loeschDa) awFehler('Schloss/Loeschen beim Projektsatz nicht weich gesperrt');
+            if (FOTOS && fenster.breite === 1280 && fenster.hoehe === 800 && !fenster.neu)
+              await seite.screenshot({ path: `${FOTOS}/${fall}_projektsatz_${fenster.breite}x${fenster.hoehe}.png` });
+            await seite.locator('.epos-zweispalten-bereich--projekt .epos-raster-huelle').first().focus();
+            await seite.keyboard.press('ArrowDown');   // nicht taste(): die faengt am Trenner
+            await ruhe(seite);
+            if (await seite.locator('.epos-zweispalten-bereich--projekt tbody tr').nth(1).evaluate(tr => tr.classList.contains('epos-zeile--gewaehlt')) !== true)
+              awFehler('↓ bewegt die Wahl der Projektliste nicht');
+            await seite.locator('.epos-zweispalten-bereich--katalog tbody tr .epos-zeilenzelle').first().click();
+            await ruhe(seite);
+            if (await seite.locator('.epos-zweispalten-satzknoepfe [aria-disabled=true]').count() !== 0)
+              awFehler('Katalogknoepfe beim Katalogsatz weich gesperrt');
+            if (await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog').count() !== 1)
+              awFehler('beim Katalogsatz kein „Bearbeiten…" des Katalogs');
+            if (FOTOS && fenster.breite === 1280 && fenster.hoehe === 800 && !fenster.neu)
+              await seite.screenshot({ path: `${FOTOS}/${fall}_katalogsatz_${fenster.breite}x${fenster.hoehe}.png` });
+            await mess('AW1 Knopfleiste am Satz');
+            await projektZellen.first().click();          // Ausgang fuer die folgenden Schritte: der Projektsatz
+            await ruhe(seite);
+          }
+        }
         // UeS2b: alle sechs Wirte wie der Heizkessel - Detailzeile auf = Zusammenfassung ohne die Besonderheit
         // des Wirts und ohne Vorrang, im Kopf der Detailzeile die Infoknoepfe (Waermepumpe: „Anlage…"); dieselbe
         // Satz-Ueberlagerung je Fenster ueber „Bearbeiten…" der Projektkopie (danach Esc), ueber „Bearbeiten" der
@@ -816,7 +866,8 @@ try {
               if (await seite.locator('.epos-ueberlagerung--satz').count())
                 verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Schließen schliesst die Ansicht ueber den Stift nicht`);
             } else { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Projektliste ohne Stift`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
-            if (await seite.locator('.epos-zweispalten-fussleiste .epos-knopf--import').count() !== 1
+            // AW3b: Import steht in der Knopfleiste am Satz (die Fussleiste entfaellt).
+            if (await seite.locator('.epos-zweispalten-fussleiste .epos-knopf--import, .epos-zweispalten-satzknoepfe .epos-knopf--import').count() !== 1
                 || await seite.locator('.epos-zweispalten-bereich--katalog .epos-zweispalten-kopfleiste .epos-formathinweis-knopf').count() !== 1
                 || await seite.locator('.epos-formathinweis, body > #app > .epos-dialog > .epos-kontextzeile').count())
               { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Fussleiste/Formathinweis nicht nach Stufe 4`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
@@ -826,7 +877,9 @@ try {
         // (links Vergleichen, Loeschen; rechts Import), der Formathinweis als Infoknopf im Katalogkopf, der
         // Stift beider Listen oeffnet die Ansicht (Kurve fuellt den Koerper), zwei Kaestchen nennen „2 Saetze".
         if (fall === 'solarganglinie' || fall === 'pvganglinie') {
-          const fuss = '.epos-zweispalten-fussleiste';
+          // AW3b: mit der Knopfleiste am Satz stehen die Knoepfe dort; die Satzzahl nennt die Leiste dann nicht.
+          const amSatz = await seite.locator('.epos-zweispalten-satzknoepfe').count() > 0;
+          const fuss = amSatz ? '.epos-zweispalten-satzknoepfe' : '.epos-zweispalten-fussleiste';
           for (const [k, name] of [['.epos-knopf--vergleichen', 'Vergleichen'], ['.epos-katalog-loeschen', 'Loeschen'], ['.epos-importknopf', 'Import']])
             if (await seite.locator(`${fuss} ${k}`).count() !== 1) {
               verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Fussleiste ohne ${name}`); console.log('  VERSTOSS ' + verstoesse.at(-1));
@@ -856,7 +909,7 @@ try {
           const kk = seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input');
           if (await kk.count() >= 2) {
             await kk.nth(0).check(); await kk.nth(1).check(); await ruhe(seite);
-            const name = (await seite.locator(`${fuss} .epos-zweispalten-fussname`).textContent() || '').trim();
+            const name = amSatz ? '2' : (await seite.locator(`${fuss} .epos-zweispalten-fussname`).textContent() || '').trim();
             if (!/^2\b/.test(name)) { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Fussleiste nennt bei zwei Kaestchen „${name}"`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
             if (await seite.locator(`${fuss} .epos-knopf--vergleichen[disabled]`).count()) { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Vergleichen bei zwei Saetzen gesperrt`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
             await mess('Mehrfachwahl');
@@ -869,7 +922,8 @@ try {
         if (fall === 'gebaeude') {
           const v = (t) => { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${t}`); console.log('  VERSTOSS ' + verstoesse.at(-1)); };
           const foto = async (name) => { if (FOTOS && fenster.breite === 1280 && fenster.hoehe === 800) await seite.screenshot({ path: `${FOTOS}/${fall}_${name}_${fenster.breite}x${fenster.hoehe}.png` }); };
-          if (await seite.locator('.epos-zweispalten-fussleiste button').count() < 3) v('Katalog-Fussleiste ohne ihre Knoepfe');
+          // AW3b: die Knoepfe stehen in der Knopfleiste am Satz.
+          if (await seite.locator('.epos-zweispalten-fussleiste button, .epos-zweispalten-satzknoepfe button').count() < 3) v('Katalog-Fussleiste ohne ihre Knoepfe');
           if (await seite.locator('.epos-zweispalten-bereich--katalog .epos-leiste').count()) v('alte Listenleiste unter dem Katalog');
           await satz(seite, true);
           await massAbwarten(seite);
@@ -879,7 +933,7 @@ try {
           await mess('Detailzeile auf, Zusammenfassung');
           await foto('zusammenfassung');
           await satz(seite, false);
-          await seite.locator('.epos-zweispalten-bearbeiten').click();
+          await seite.locator('.epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten, .epos-zweispalten-satzknoepfe .epos-zweispalten-vergroessern').first().click();   // AW3b: „Vergrößern" am Projektsatz
           await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
           await mess('Satz-Ueberlagerung offen');
@@ -915,7 +969,7 @@ try {
             await seite.locator('.epos-satzueberlagerung-fuss button').last().click();
             await ruhe(seite);
           } else v('Katalogliste ohne Stift');
-          await seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-anlagenwahl').first().click();
+          await seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-anlagenwahl, .epos-zweispalten-bereich--projekt tbody tr .epos-projektzeile').first().click();
           await ruhe(seite);
           await seite.locator('.epos-zweispalten-bereich--projekt button.epos-gebaeude-in-db').click();
           await seite.waitForSelector('.epos-rueckweg', { timeout: 5000 });
@@ -992,7 +1046,7 @@ try {
       const s8 = await k8.newPage();
       await s8.goto(WURZEL + '/fensterprobe?fall=gebaeude', { waitUntil: 'networkidle' });
       await s8.waitForSelector('.epos-zweispalten');
-      await s8.locator('.epos-zweispalten-bearbeiten').click();
+      await s8.locator('.epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten, .epos-zweispalten-satzknoepfe .epos-zweispalten-vergroessern').first().click();   // AW3b: „Vergrößern" am Projektsatz
       await s8.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
       await s8.locator('.epos-satzueberlagerung-koerper button.epos-gebaeude-simulation').first().click();
       await s8.waitForSelector('.epos-dialog-rollkoerper', { timeout: 5000 });

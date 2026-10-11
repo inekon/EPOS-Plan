@@ -74,6 +74,9 @@
                         SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
+                        KnopfleisteAmSatz="true"
+                        ProjektGewaehlt="@(_projektZeile is null ? null : Projektschluessel(_projektZeile))"
+                        ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
 
         <ProjektKopf>
@@ -84,12 +87,7 @@
         </ProjektKopf>
 
         <Leistenzusatz>
-            @if (ProjektsatzWege is not null)
-            {
-                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--bearbeiten-projekt"
-                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
-                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
-            }
+            @* „Bearbeiten…" steht nur noch EINMAL, in der Knopfleiste am gewaehlten Satz (AW1). *@
             @if (RueckwegWege is not null)
             {
                 @* KA-E-9: der Rueckweg in die Datenbank, wirksam auf die Auswahl der Projektliste. *@
@@ -100,7 +98,12 @@
         </Leistenzusatz>
 
         <Links>
-            <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
+            @* DIE ZEILE IST DIE WAHL (AW1): kein Wahlknopf - ein Klick in die Namenszelle waehlt die Zeile
+               (Hervorhebung wie in der Katalogliste), ↑ ↓ Pos1 Ende bewegen die Wahl, die Liste ist ein
+               Tabulatorhalt; das Kaestchen bleibt die Mehrfachwahl. *@
+            <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()"
+                    Zeilenklasse="@ProjektZeilenklasse" Tastenfuehrung="BeiProjektTaste"
+                    Tastenbeschriftung="@LabelProjektliste">
                 <KindInhalt>
                     <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-kaestchen">
                         <HeaderTemplate>
@@ -111,12 +114,11 @@
                                            Kurztext="@context.Bezeichner" />
                         </ChildContent>
                     </TemplateColumn>
-                    <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
-                        <Zeilenwahl Gewaehlt="@(_projektZeile == context)" Kurztext="@SpalteWahl"
-                                    Gewaehltwerden="() => ProjektZeileKlick(context)" />
+                    <TemplateColumn TGridItem="ErzeugerZeile" Title="@LabelProjektliste" Class="epos-spalte-zeilenzelle">
+                        <span class="epos-zeilenzelle epos-projektzeile" title="@context.Bezeichner"
+                              aria-current="@(_projektZeile == context ? "true" : null)"
+                              @onclick="() => ProjektZeileKlick(context)">@context.Bezeichner</span>
                     </TemplateColumn>
-                    <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
-                                    Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
                     @* UeS2: der Stift je Projektzeile - die Projektkopie in der Satz-Ueberlagerung;
                        nur, wo es den Weg der Projektkopie gibt (wie „Bearbeiten…"). *@
                     @if (ProjektsatzWege is not null)
@@ -150,15 +152,34 @@
         <KatalogFuss>
             <button type="button" class="epos-knopf epos-knopf--vergleichen"
                     title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
-                    disabled="@(KatalogZiele().Count < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
+                    disabled="@(VergleichsZahl < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
+                            Sperrgrund="@KatalogSperrgrund"
                             Ungespeichert="@_felderGeaendert" JaText="@JaText" NeinText="@NeinText"
                             Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
-            <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
-                    @onclick="BeiLoeschenGefragt">@BtnLoeschenText</button>
-            <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
-                    title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
-                    disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+            @if (KatalogSperrgrund is string grund)
+            {
+                <button type="button" class="epos-knopf epos-knopf--loeschen" aria-disabled="true" title="@grund"
+                        @onclick="() => BeiSchlossAbgelehnt(grund)">@BtnLoeschenText</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
+                        @onclick="BeiLoeschenGefragt">@BtnLoeschenText</button>
+            }
+            @if (SatzArt == Satzmarke.Projektsatz)
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt"
+                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@BtnBearbeitenText</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
+                        title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
+                        disabled="@(KatalogZiele().Count == 0)" 
+                        @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+            }
         </KatalogFuss>
 
         <KatalogFussRechts>
@@ -594,11 +615,39 @@
 
     private void SummeNachziehen() { if (SummePtherm is not null) _summeText = SummePtherm(); }
 
+    /// <summary>
+    /// Klick in eine Projektzeile (AW1): Die Zeile wird der gewählte Satz, die Detailzeile folgt;
+    /// die Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
     private void ProjektZeileKlick(ErzeugerZeile zeile)
     {
-        _projektWahl.Klick(Projektschluessel(zeile), strg: false, umschalt: false, ProjektSchluessel());
-        ProjektZeileWaehlen(zeile);
+        if (_projektZeile != zeile) ProjektZeileWaehlen(zeile);
     }
+
+    /// <summary>Die Hervorhebung der gewählten Projektzeile — dieselbe Klasse wie in der Katalogliste.</summary>
+    private string? ProjektZeilenklasse(ErzeugerZeile zeile) => zeile == _projektZeile ? "epos-zeile--gewaehlt" : null;
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private void BeiProjektTastenwahl(string schluessel)
+    {
+        ErzeugerZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
+        if (zeile is not null) ProjektZeileKlick(zeile);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen (AW1): Sie wirken nur auf
+    /// Katalogsätze; steht ein Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
+
+    /// <summary>Wie viele Sätze „Vergleichen…" im Bereich des gewählten Satzes vergleichen würde.</summary>
+    private int VergleichsZahl => SatzArt == Satzmarke.Projektsatz
+        ? (ProjektsatzWege is null ? 0 : ProjektZiele().Select(z => z.GeraetId).Distinct().Count())
+        : KatalogZiele().Count;
 
     private void BeiWahlGeaendert(Auswahlbereich bereich)
     {
@@ -1169,13 +1218,27 @@
                             ziele.Select(z => new Bearbeitungssatz(z.Id, z.Bezeichner, z.Geschuetzt)).ToList());
             return;
         }
+        // AW1: ohne Editor und Sammelweg zeigt „Bearbeiten…" den einen Satz in der Ueberlagerung
+        // (wie zuvor der Stift der Detailzeile).
+        if (ziele.Count == 1 && _zweispalten is not null)
+        {
+            if (_katalogZeile?.Bezeichner != ziele[0].Bezeichner) KatalogZeileWaehlen(ziele[0].Bezeichner);
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
         if (ziele.All(z => z.Geschuetzt)) BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
     }
 
     /// <summary>„Bearbeiten…" im Projektbereich: EINE Projektkopie öffnet die Satz-Überlagerung (UeS1), mehrere die Satzbearbeitung.</summary>
     private async Task BeiProjektBearbeiten()
     {
-        if (ProjektsatzWege is null) return;
+        if (ProjektsatzWege is null)
+        {
+            // AW1: ohne Weg der Projektkopie zeigt „Bearbeiten…" den Projektsatz in der Ueberlagerung
+            // (wie zuvor der Stift der Detailzeile).
+            if (_projektZeile is not null && _zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
         List<ErzeugerZeile> ziele = ProjektZiele();
         var saetze = ziele.GroupBy(z => z.GeraetId)
             .Select(g => new Bearbeitungssatz(g.Key, g.First().Bezeichner, false)).ToList();
@@ -1313,10 +1376,37 @@
         KatalogNeuLaden();
     }
 
+    /// <summary>
+    /// „Vergleichen…" — zwei oder mehr Sätze nebeneinander, im Bereich des gewählten Satzes
+    /// (AW1): beim Projektsatz die angekreuzten Projektkopien (je Gerät einmal), sonst die
+    /// gewählten Katalogsätze.
+    /// </summary>
     private void BeiVergleichen()
     {
+        if (SatzArt == Satzmarke.Projektsatz)
+        {
+            ProjektVergleichen();
+            return;
+        }
         List<Katalogfilterzeile> ziele = KatalogZiele();
         if (ziele.Count >= 2) _katalogliste?.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+    }
+
+    /// <summary>Die angekreuzten Projektkopien nebeneinander — ihre Felder aus dem Weg der Projektkopie.</summary>
+    private void ProjektVergleichen()
+    {
+        if (ProjektsatzWege is null || _katalogliste is null) return;
+        var saetze = new List<(string, IReadOnlyList<(string, string)>)>();
+        foreach (var g in ProjektZiele().GroupBy(z => z.GeraetId))
+        {
+            IReadOnlyList<BrowserFeldwert>? felder = Katalogladung.Satz(() => ProjektsatzWege.Lesen(g.Key),
+                                                                          g.First().Bezeichner, out _satzFehler);
+            if (felder is null) return;
+            saetze.Add((g.First().Bezeichner, felder
+                .Select(f => (f.Einheit.Length > 0 ? f.Feldname + " [" + f.Einheit + "]" : f.Feldname, f.Wert))
+                .ToList()));
+        }
+        _katalogliste.VergleichenWerte(saetze);
     }
 
     private void BeiNeuemNamen(string? name)

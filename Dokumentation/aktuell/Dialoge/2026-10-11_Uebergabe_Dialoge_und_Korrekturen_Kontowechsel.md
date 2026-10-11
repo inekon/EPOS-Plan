@@ -23,6 +23,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   - #988 AW1 Knopfleiste am Satz (Heizkessel, Wärmepumpe); #989 AW2 Wärmepumpe Überlagerung mit Anlage.
     PV-Ganglinie; #963 BP Bedarfsprofile; #964 GEB Gebäude (Rückweg, Dialog, Überlagerung);
     #965 diese Übergabe.
+  - #998 AW3a Erzeuger, #999 AW3b Stufe 4/5 und Kältemaschine: Knopfleiste am Satz in allen Wirten der Katalogauswahl.
 - **Katalogauswahl V1:** Stufen 1 bis 5 umgesetzt (Baustein, Heizkessel, sieben Erzeuger,
   Zeitreihen, Bedarfsprofile, Gebäude, Kältemaschine) samt Satz-Überlagerung (ÜS1) und Stift und
   Zusammenfassung (ÜS2).
@@ -170,7 +171,7 @@ Keine Zugangsdaten ins Repository. **Antworten:** auf Deutsch, knapp.
    `.epos-gebaeude-in-db` öffnet seit dem Gebäudeumbau die Rückfrage „In die Datenbank übernehmen“ statt einer
    Meldung, deshalb erscheint kein Banner. Kein Fehler im Dialog; Empfehlung: den Auslöser der Probe auf eine
    Meldung des Gebäudedialogs umstellen (z. B. Löschen eines gesperrten Satzes) und die Gegenprobe prüfen.
-   Die übrigen Fälle (`heizkessel`, `bhkw`) sind erfüllt.
+   Die übrigen Fälle (`heizkessel`, `bhkw`) sind erfüllt. — erledigt mit #999: die Probe ist grün.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 

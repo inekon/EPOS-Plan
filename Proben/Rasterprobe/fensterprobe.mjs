@@ -342,7 +342,8 @@ async function ueberlagerung(browser, f, marke) {
   const seite = await oeffnen(browser, 'gebaeude', f, marke ? '' : '&marke=0');
   // Katalogauswahl V1, Stufe 4: „Simulation…" steht in der Satz-Ueberlagerung („Bearbeiten" der Detailzeile);
   // die Bedarfsansicht oeffnet darueber.
-  await seite.locator('.epos-zweispalten-bearbeiten').click();
+  // AW3b: mit der Knopfleiste am Satz oeffnet „Vergrößern" den Satz des Projektgebaeudes.
+  await seite.locator('.epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten, .epos-zweispalten-satzknoepfe .epos-zweispalten-vergroessern').first().click();
   await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
   await seite.evaluate(() => {
     const k = [...document.querySelectorAll('.epos-satzueberlagerung-koerper button')].find(b => b.textContent.trim() === 'Simulation...');
