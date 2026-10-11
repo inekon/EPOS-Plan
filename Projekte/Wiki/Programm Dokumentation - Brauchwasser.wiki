@@ -12,7 +12,7 @@ Der Brauchwasserbedarf eines Projekts entsteht in vier Schritten; die ersten bei
 
 Jede Zuordnung eines Profils zum Projekt ist eine eigene Zeile mit gepflegter Jahressumme; das Profil im Projekt ist eine Kopie des Katalogsatzes, ihre Änderung berührt den Katalog nicht. Brauchwasser, Prozesswärme und Stromverbraucher werden in Bedarfsprofil-Dialogen desselben Aufbaus verwaltet.
 
-[[Datei:Tagesgang_Brauchwasser.svg|mini|600px|Prinzipbild: derselbe Tagesbedarf als Stundenmittel des Bestandsprofils und als eine Realisierung des Zapfprofils.]]
+[[Datei:Tagesgang_Brauchwasser.svg|mini|zentriert|800px|Prinzipbild: derselbe Tagesbedarf als Stundenmittel des Bestandsprofils und als eine Realisierung des Zapfprofils.]]
 
 Welcher Weg passt, hängt von der Frage ab: Für die Energiebilanz eines Jahres genügt das Bestandsprofil mit seinem geglätteten Stundengang. Wer Spitzen, Speichergröße und Zirkulation aus Leitungsdaten braucht oder mehrere Nutzungen in einem Gebäude hat, nimmt das Zapfprofil. Hintergrund unter [[Grundlagen/Brauchwasser|Grundlagen: Brauchwasser]].
 
@@ -39,7 +39,7 @@ Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwert
 
 Der Brauchwasserbedarf ist einer der drei Wärmekanäle der Simulation – neben Heizung und Prozesswärme. Gedeckt wird er von den Erzeugern, deren Wärmesenke ihn bedient; eingestellt wird das in der ''Simulation Konfiguration'' über ''Wärmesenken…'' je Anlage ([[Programm Dokumentation/Simulation#senkenliste|Wärmesenken einer Anlage]]).
 
-[[Datei:Einbindung_Brauchwasser.svg|mini|600px|Prinzipbild: Kessel und Wärmepumpe laden einen Kombispeicher, das Frischwassermodul zapft oben, die Zirkulation läuft zum Modul zurück.]]
+[[Datei:Einbindung_Brauchwasser.svg|mini|zentriert|800px|Prinzipbild: Kessel und Wärmepumpe laden einen Kombispeicher, das Frischwassermodul zapft oben, die Zirkulation läuft zum Modul zurück.]]
 
 * '''Direkt über den Heizkreis''' – das Ziel ''Heizkreis'' deckt das Brauchwasser unmittelbar in der Stunde des Bedarfs. Die ''Bedarfsart'' teilt die Lieferung: beides mit Warmwasservorrang, nur Warmwasser oder nur Heizwärme. Eine neu angelegte Anlage erhält diese Senke mit Warmwasservorrang, sobald das Projekt Heizung oder Brauchwasser führt.
 * '''Über einen Brauchwasserspeicher''' – das Ziel ''Pufferspeicher Brauchwasser'' lädt einen Speicher, dessen ''Nutzung'' Brauchwasser einschließt; aus ihm wird der Kanal in der Stunde des Bedarfs entladen.

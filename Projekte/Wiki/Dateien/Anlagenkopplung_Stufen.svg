@@ -2,12 +2,12 @@
 <!--
 Stufen der Anlagenkopplung (Prinzipbild)
 
-Inhalt: Drei Zeilen für die rechnenden Stufen. "aus": Das Gebäude meldet seinen Bedarf,
-die Erzeuger decken ihn, der Raum hält den Sollwert ideal. "Heizkreis (AK1)": Zwischen
+Inhalt: Drei Zeilen für die rechnenden Stufen. "ohne Kopplung": Das Gebäude meldet seinen Bedarf,
+die Erzeuger decken ihn, der Raum hält den Sollwert ideal. "Heizkreis": Zwischen
 Gebäude und Erzeuger liegt der Heizkreis mit Vorlauf, Rücklauf und der Grenze der
 Heizfläche; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf; der Anlagenfahrplan
-(Sperrzeiten, Zeitprogramm, Höchstvorlauf) wirkt ab dieser Stufe. "Geschlossener Kreis
-(AK3)": Die Leistung von Erzeugern und Heizungspuffer wirkt in jeder Stunde auf den Raum
+(Sperrzeiten, Zeitprogramm, Höchstvorlauf) wirkt ab dieser Stufe. "Geschlossener Kreis":
+Die Leistung von Erzeugern und Heizungspuffer wirkt in jeder Stunde auf den Raum
 zurück; auf der Kälteseite begrenzt die Kälteschranke die Raumkühlung.
 
 Darstellung: Farben nach Vorlage:Diagrammfarbe (waerme, kaelte, speicher, strom, netz).
@@ -25,7 +25,7 @@ Prinzipbild ohne Zahlenwerte, keinem Produkt zugeordnet.
 
   <!-- Zeile aus -->
   <rect x="20" y="82" width="860" height="110" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-  <text x="36" y="110" font-size="16" fill="#1f2328" font-weight="600">aus</text>
+  <text x="36" y="110" font-size="16" fill="#1f2328" font-weight="600">ohne Kopplung</text>
   <text x="36" y="130" font-size="12" fill="#57606a">ideale Regelung</text>
   <rect x="180" y="100" width="170" height="74" rx="8" fill="#f9f0e8" stroke="#57606a" stroke-width="1.5"/>
   <text x="196" y="128" font-size="14" fill="#1f2328" font-weight="600">Gebäude</text>
@@ -38,11 +38,11 @@ Prinzipbild ohne Zahlenwerte, keinem Produkt zugeordnet.
   <text x="626" y="148" font-size="12" fill="#57606a">decken, was sie können;</text>
   <text x="626" y="163" font-size="12" fill="#57606a">Rest bleibt ungedeckt</text>
 
-  <!-- Zeile AK1 -->
+  <!-- Zeile Heizkreis -->
   <rect x="20" y="204" width="860" height="140" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-  <text x="36" y="232" font-size="16" fill="#1f2328" font-weight="600">AK1</text>
-  <text x="36" y="252" font-size="12" fill="#57606a">Heizkreis,</text>
-  <text x="36" y="267" font-size="12" fill="#57606a">Einbahnstraße</text>
+  <text x="36" y="232" font-size="16" fill="#1f2328" font-weight="600">Heizkreis</text>
+  <text x="36" y="252" font-size="12" fill="#57606a">Einbahnstraße vom</text>
+  <text x="36" y="267" font-size="12" fill="#57606a">Gebäude zur Anlage</text>
   <rect x="180" y="222" width="170" height="74" rx="8" fill="#f9f0e8" stroke="#57606a" stroke-width="1.5"/>
   <text x="196" y="250" font-size="14" fill="#1f2328" font-weight="600">Gebäude</text>
   <text x="196" y="270" font-size="12" fill="#57606a">Heizfläche, Regler,</text>
@@ -59,13 +59,14 @@ Prinzipbild ohne Zahlenwerte, keinem Produkt zugeordnet.
   <text x="626" y="285" font-size="12" fill="#57606a">gerechneten Vorlauf</text>
   <rect x="520" y="304" width="350" height="32" rx="6" fill="#eef1f4" stroke="#7a828c"/>
   <text x="532" y="325" font-size="12" fill="#1f2328">Fahrplan: Sperrzeit · Zeitprogramm · Höchstvorlauf</text>
-  <text x="180" y="326" font-size="12" fill="#57606a">ab AK1 auch Kälteseite mit festem Kaltwasser-Vorlauf</text>
+  <text x="180" y="326" font-size="12" fill="#57606a">auch Kälteseite mit festem Kaltwasser-Vorlauf</text>
 
-  <!-- Zeile AK3 -->
+  <!-- Zeile geschlossener Kreis -->
   <rect x="20" y="356" width="860" height="168" rx="10" fill="#ffffff" stroke="#d0d7de"/>
-  <text x="36" y="384" font-size="16" fill="#1f2328" font-weight="600">AK3</text>
-  <text x="36" y="404" font-size="12" fill="#57606a">geschlossener</text>
-  <text x="36" y="419" font-size="12" fill="#57606a">Kreis</text>
+  <text x="36" y="384" font-size="16" fill="#1f2328" font-weight="600">Geschlossener</text>
+  <text x="36" y="402" font-size="16" fill="#1f2328" font-weight="600">Kreis</text>
+  <text x="36" y="422" font-size="12" fill="#57606a">Rückwirkung</text>
+  <text x="36" y="437" font-size="12" fill="#57606a">auf den Raum</text>
   <rect x="180" y="374" width="170" height="74" rx="8" fill="#f9f0e8" stroke="#57606a" stroke-width="1.5"/>
   <text x="196" y="402" font-size="14" fill="#1f2328" font-weight="600">Gebäude</text>
   <text x="196" y="422" font-size="12" fill="#57606a">Raumtemperatur folgt</text>
@@ -84,6 +85,6 @@ Prinzipbild ohne Zahlenwerte, keinem Produkt zugeordnet.
   <text x="300" y="464" font-size="12" fill="#c56a1a">Rückwirkung je Stunde: fehlt Leistung, wird der Raum kühler</text>
   <rect x="180" y="482" width="420" height="32" rx="6" fill="#e8f5f7" stroke="#1f9bb0"/>
   <text x="192" y="503" font-size="12" fill="#1f9bb0">Kälteseite: Kälteschranke aus Kälteerzeugern und Kältespeichern</text>
-  <rect x="612" y="482" width="258" height="32" rx="6" fill="#eef1f4" stroke="#7a828c"/>
-  <text x="622" y="503" font-size="12" fill="#1f2328">Komfortstunden zählen Unterschreitungen</text>
+  <rect x="604" y="482" width="270" height="32" rx="6" fill="#eef1f4" stroke="#7a828c"/>
+  <text x="614" y="503" font-size="12" fill="#1f2328">Komfortstunden zählen Unterschreitungen</text>
 </svg>

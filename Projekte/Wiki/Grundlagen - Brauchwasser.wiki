@@ -29,7 +29,7 @@ Auf beiden Wegen liegt der Wochengang auf dem Wochentagsraster der Klimaregion; 
 
 Gedeckt wird der Kanal von den Erzeugern, deren Wärmesenke ihn bedient – direkt oder über einen Brauchwasser- oder Kombispeicher. Die Temperatur wirkt am Speicher: Ein geschichteter Speicher gibt an das Brauchwasser nur aus warmen Schichten ab, ein Frischwassermodul nur, solange oben die Zapftemperatur plus Grädigkeit anliegt.
 
-[[Datei:Einbindung_Brauchwasser.svg|mini|600px|Prinzipbild: Kessel und Wärmepumpe laden einen Kombispeicher, das Frischwassermodul zapft oben, die Zirkulation läuft zum Modul zurück.]]
+[[Datei:Einbindung_Brauchwasser.svg|mini|zentriert|800px|Prinzipbild: Kessel und Wärmepumpe laden einen Kombispeicher, das Frischwassermodul zapft oben, die Zirkulation läuft zum Modul zurück.]]
 
 == Eingaben und Wirkung ==
 {{Anker|eingaben-und-wirkung}}

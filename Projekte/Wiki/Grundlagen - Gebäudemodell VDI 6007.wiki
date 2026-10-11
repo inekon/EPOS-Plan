@@ -10,7 +10,7 @@ Ein Gebäude reagiert träge: Wände und Decken speichern Wärme, Absenkzeiten k
 
 Ein {{Anker|zone|zonen}}'''Zonenmodell''' teilt ein Gebäude in Bereiche unterschiedlicher Nutzung und Temperatur – etwa Wohnungen und ein unbeheiztes Treppenhaus oder Büro und Halle. Jede Zone rechnet mit ihren eigenen Bauteilen, Sollwerten und Nutzungsdaten; Trennflächen und Luftaustausch koppeln die Zonen. Ohne Zonen ist das Gebäude ein einziger Raum.
 
-[[Datei:Gebaeudemodell_Zonen.svg|mini|600px|Prinzipbild: Zwei Zonen mit ihren Wärmeströmen – Transmission, Lüftung, Sonne, innere Gewinne, Erdreich und die Trennfläche zwischen den Zonen.]]
+[[Datei:Gebaeudemodell_Zonen.svg|mini|zentriert|800px|Prinzipbild: Zwei Zonen mit ihren Wärmeströmen – Transmission, Lüftung, Sonne, innere Gewinne, Erdreich und die Trennfläche zwischen den Zonen.]]
 
 == So rechnet EPOS-Plan ==
 {{Anker|so-rechnet-epos-plan}}

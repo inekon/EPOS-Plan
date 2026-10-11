@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.Zeichnung;
 
@@ -63,6 +64,26 @@ namespace ChartProben
 
         private static byte[] BivalenzPlatzhalterbild()
             => ChartRenderer.Bivalenzdiagramm(BivalenzdiagrammModell.Aus(BivalenzHerleitung(false)));
+
+        /// <summary>
+        /// Die Marken der Wiki-Fassung (Schalter <c>--wiki</c>): Das Wiki richtet sich an Anwender, deshalb erklären die
+        /// Marken, was am Punkt geschieht, statt Formelzeichen zu nennen. Deutsch, weil das Wiki deutsch ist; Flächen,
+        /// Legende und Achsen bleiben in den Begriffen der Oberfläche.
+        /// </summary>
+        private static BivalenzdiagrammTexte BivalenzWikitexte() => new BivalenzdiagrammTexte
+        {
+            ErsterBivalenzpunkt = "Kessel hilft unter {0} °C",
+            ZweiterBivalenzpunkt = "Kessel allein {0} °C",
+            NachKennfeld = "Kennfeld {0} °C",
+        };
+
+        /// <summary>Schreibt die Wiki-Fassung des Bivalenzdiagramms: dieselbe Probe wie „bivalenzdiagramm“, eigene Marken.</summary>
+        private static void BivalenzWikibild(string ordner)
+        {
+            Bivalenzherleitung h = BivalenzHerleitung(true);
+            File.WriteAllBytes(Path.Combine(ordner, "Diagramm_Bivalenz.png"),
+                               ChartRenderer.Bivalenzdiagramm(BivalenzdiagrammModell.Aus(h, null, BivalenzWikitexte())));
+        }
 
         private static void BivalenzdiagrammProben(string ziel)
         {

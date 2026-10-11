@@ -238,7 +238,7 @@ public static class Wikibeispiele
     public static readonly (string Name, string Typ, double Mwh, string Beschreibung)[] Brauchwasser =
     {
         ("Wohnhaus 10 Wohnungen", "Mehrfamilienhaus", 30, "zehn Wohnungen, Bestandsprofil"),
-        ("Wohnhaus 20 Wohnungen", "Mehrfamilienhaus", 60, "zwanzig Wohnungen, Bestandsprofil"),
+        ("Wohnhaus 20 Wohnungen", "Mehrfamilienhaus", 60, "zwanzig Wohnungen"),
         ("Einfamilienhaus", "Einfamilienhaus", 4, "vier Personen"),
         ("Hotel 50 Zimmer", "Hotel", 120, "Hotel mit Frühstück"),
         ("Büro 100 Arbeitsplätze", "Büro", 10, "Handwaschbecken und Teeküchen"),

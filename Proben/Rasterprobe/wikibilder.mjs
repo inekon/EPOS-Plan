@@ -58,6 +58,7 @@ const BILDER = [
 
 // Bei diesen Bildern steht der Bereich "Gewaehlter Satz" aufgeklappt - die Wiki-Seite
 // beschreibt seine Felder.
+const BREIT = new Set(['brauchwasser', 'prozesswaerme', 'waermepumpe', 'stromspeicher']);
 const SATZ_OFFEN = new Set(['heizkessel', 'bhkw', 'solarkollektoren', 'brauchwasser', 'prozesswaerme']);
 
 if (!ZIEL) {
@@ -74,7 +75,11 @@ try {
     if (NUR && name !== NUR) continue;
     // Erst im ueblichen Fenster; ist das Bild zu gross, im kleineren noch einmal.
     let geschrieben = false;
-    const fenster = fremd ? [[1280, fremd.hoehe], [1100, fremd.hoehe]] : [[1280, 800], [1100, 720]];
+    // Brauchwasser, Prozesswaerme, Waermepumpe, Stromspeicher: die Kopfzeile der Katalogliste (Titel, Suchfeld, Zaehler,
+    // Spalten..., Vergleichen, Uebernehmen) steht erst ab rund 1380 px ungekuerzt; die Seite
+    // /wikibild laesst den Dialog dafuer breiter werden (Bildbreite bleibt <= 1400 px).
+    const fenster = fremd ? [[1280, fremd.hoehe], [1100, fremd.hoehe]]
+      : BREIT.has(name) ? [[1400, 800]] : [[1280, 800], [1100, 720]];
     for (const [w, h] of fenster) {
       const kontext = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, locale: 'de-DE' });
       const seite = await kontext.newPage();
