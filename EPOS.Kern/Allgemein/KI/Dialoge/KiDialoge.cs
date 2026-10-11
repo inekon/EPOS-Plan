@@ -781,7 +781,52 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public static KiDialogKatalog Katalog
         {
-            get { return _kataloge.GetOrAdd(Kulturschluessel(), _ => Erzeuge()); }
+            // Der Entwicklermodus gehört zum Schlüssel: Ohne ihn fehlen die Felder der Entwicklerbereiche (NurEntwickler).
+            get { return _kataloge.GetOrAdd(Kulturschluessel() + (Entwicklermodus.Aktiv ? "|entwickler" : ""), _ => Erzeuge()); }
+        }
+
+        /// <summary>
+        /// <b>Felder nur für Entwickler</b> (Entwicklerbereich <see cref="Entwicklerbereiche.PROJEKTDATEI_KI"/>, Konzept
+        /// Administration und Support 3.3 b): Maske → logische Feldnamen, die nur im Entwicklermodus ins Register kommen —
+        /// die Feldkarten der Projektdatei des CAD-Programms. Ohne Modus zeigt die Maske sie nicht; der Assistent nimmt sie
+        /// nicht ins Register und sagt benannt ab (<see cref="NurEntwicklerAbsage"/>), statt einen Knopf zu drücken, den die
+        /// Maske nicht zeigt.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, string[]> NUR_ENTWICKLER =
+            new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+            {
+                [KiMaskennamen.GEBAEUDE_IMPORT] = new[] { "zonierung" },
+            };
+
+        /// <summary>true, wenn <paramref name="feld"/> (logischer Name oder Anzeigename) der Maske nur im Entwicklermodus geführt wird.</summary>
+        public static bool NurEntwickler(string maskenname, string feld)
+        {
+            if (string.IsNullOrWhiteSpace(maskenname) || string.IsNullOrWhiteSpace(feld)) return false;
+            if (!NUR_ENTWICKLER.TryGetValue(maskenname, out string[] namen)) return false;
+            string f = feld.Trim();
+            foreach (string n in namen)
+                if (string.Equals(n, f, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(Anzeigename(maskenname, n), f, StringComparison.CurrentCultureIgnoreCase))
+                    return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Die benannte Absage für ein Feld eines Entwicklerbereichs ohne Entwicklermodus; <c>null</c>, wenn das Feld keines
+        /// ist oder der Modus läuft.
+        /// </summary>
+        public static string NurEntwicklerAbsage(string maskenname, string feld)
+            => !Entwicklermodus.Aktiv && NurEntwickler(maskenname, feld) ? MyResource.Resource.KI_ABSAGE_NUR_ENTWICKLER : null;
+
+        /// <summary>Gehört das Feld ins Register? Ohne Entwicklermodus nicht, wenn es ein Feld eines Entwicklerbereichs ist.</summary>
+        private static bool ImRegister(string maskenname, string feld) => Entwicklermodus.Aktiv || !NurEntwickler(maskenname, feld);
+
+        private static string Anzeigename(string maskenname, string feld)
+        {
+            if (string.Equals(maskenname, KiMaskennamen.GEBAEUDE_IMPORT, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(feld, "zonierung", StringComparison.OrdinalIgnoreCase))
+                return KiDialogTexte.GimpZonierungName;
+            return null;
         }
 
         /// <summary>
@@ -2058,6 +2103,7 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.GEBAEUDE_IMPORT,
                 anzeigename: KiDialogTexte.MaskeGebaeudeImport,
+                // Die Zonierung der Projektdatei nur im Entwicklermodus (NurEntwickler, PROJEKTDATEI_KI).
                 felder: new[]
                 {
                     new KiDialogFeld("baualtersklasse", SICHT + "Baualtersklasse", KiDialogTexte.GimpKlasseName, KiParameterTyp.Wahl,
@@ -2078,7 +2124,7 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GimpZonierungErl),
                     new KiDialogFeld("als_zone", SICHT + "AlsZone", KiDialogTexte.GimpAlsZoneName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.GimpAlsZoneErl)
-                });
+                }.Where(f => ImRegister(KiMaskennamen.GEBAEUDE_IMPORT, f.Name)).ToArray());
         }
 
         // =====================================================================

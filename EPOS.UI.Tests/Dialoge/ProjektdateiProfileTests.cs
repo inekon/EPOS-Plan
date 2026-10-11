@@ -238,6 +238,7 @@ public class ProjektdateiProfileTests : EposBunitContext
             Assert.False(g.ContainsKey("ProjektdateiProfile"));   // ohne Projekt keine Datenbank, kein Knopf
             IRenderedComponent<GebaeudeImportDialog> cut = Render<GebaeudeImportDialog>(c =>
             {
+                c.Add(x => x.ProjektdateiFreigegeben, true);   // Entwicklerbereich: der Bestand prüft mit Kennzeichen
                 c.Add(x => x.Profil, g["Profil"] as GebaeudeImportProfilDaten);
                 c.Add(x => x.Baualtersklassen, (IReadOnlyList<string>)g["Baualtersklassen"]);
                 c.Add(x => x.DateiWaehlen, (Func<string, Task<GebaeudeDateiwahl?>>)(_ =>

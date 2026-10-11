@@ -34,9 +34,11 @@ public class RaumnutzungBlattTests : EposBunitContext
         internal readonly List<RaumnutzungZuordnungDaten> Zuordnungen = new();
         internal RaumnutzungProfilDaten Geschrieben;
         internal long NaechsteId = 90;
+        internal ProjektdateiProfileWeg? Projektdatei;
 
         internal RaumnutzungWeg Weg() => new RaumnutzungWeg
         {
+            Projektdatei = Projektdatei,
             Kategorien = () => Kategorien.ToList(),
             Profile = id => Profile.Where(p => p.IdKategorie == id).ToList(),
             Zuordnungen = () => Zuordnungen.ToList(),
@@ -140,6 +142,30 @@ public class RaumnutzungBlattTests : EposBunitContext
 
     /// <summary>Die Hilfepille des Blatts braucht den Hilfedienst; im Prüfstand einer ohne Wirkung.</summary>
     public RaumnutzungBlattTests() => Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
+
+    /// <summary>
+    /// Entwicklerbereich PROJEKTDATEI_PROFILE: ohne Weg (die Hülle gibt ihn nur im Entwicklermodus) kein Kopfknopf
+    /// „Aus Projektdatei…“ und kein Element des Bereichs; mit Weg steht der Knopf im Bereich.
+    /// </summary>
+    [Fact]
+    public void Aus_Projektdatei_nur_mit_dem_Weg_des_Entwicklermodus()
+    {
+        var ohne = Blatt(new Probeweg());
+        Assert.Empty(ohne.FindAll("[data-bereich='PROJEKTDATEI_PROFILE']"));
+        Assert.Empty(ohne.FindAll("[data-aktion='projektdateiprofile']"));
+
+        var w = new Probeweg
+        {
+            Projektdatei = new ProjektdateiProfileWeg
+            {
+                Laden = () => Task.FromResult<ProjektdateiProfileVorschau?>(null),
+                Uebernehmen = _ => new ProjektdateiProfileErgebnis(true, "", System.Array.Empty<string>()),
+            },
+        };
+        var mit = Blatt(w);
+        IElement bereich = mit.Find("[data-stufe='entwickler'][data-bereich='PROJEKTDATEI_PROFILE']");
+        Assert.NotNull(bereich.QuerySelector("[data-aktion='projektdateiprofile']"));
+    }
 
     private IRenderedComponent<RaumnutzungBlatt> Blatt(Probeweg w)
         => Render<RaumnutzungBlatt>(p => p

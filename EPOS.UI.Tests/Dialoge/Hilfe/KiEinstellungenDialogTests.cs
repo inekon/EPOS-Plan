@@ -36,10 +36,12 @@ public class KiEinstellungenDialogTests : EposBunitContext
         string schluessel = "AIzaSyGEHEIM",
         bool wegB = false,
         Func<string, Task<string>>? modellNeu = null,
-        EventCallback<KiEinstellungenErgebnis?>? geschlossen = null)
+        EventCallback<KiEinstellungenErgebnis?>? geschlossen = null,
+        bool entwickler = true)
     {
         return Render<KiEinstellungenDialog>(p =>
         {
+            p.Add(x => x.Entwickler, entwickler);   // Entwicklerbereich KI_WERKZEUGE
             p.Add(x => x.Schluessel, schluessel)
              .Add(x => x.Tageslimit, 50)
              .Add(x => x.Modellzeile, "Modell: gemini-2.5-flash-lite (kostengünstige Klasse).")
@@ -69,6 +71,20 @@ public class KiEinstellungenDialogTests : EposBunitContext
     /// erkennen", Limitbeschriftung, Limitwert, dreiteiliger Hinweis, Weg-B-Schalter,
     /// OK, Abbrechen.
     /// </summary>
+    /// <summary>Entwicklerbereich KI_WERKZEUGE: ohne Kennzeichen kein „Modell neu erkennen“ und kein „Weg B erzwingen“.</summary>
+    [Fact]
+    public void Ohne_Entwicklermodus_fehlen_Modell_und_Weg_B()
+    {
+        var ohne = Zeigen(entwickler: false);
+        Assert.Empty(ohne.FindAll("[data-bereich='KI_WERKZEUGE']"));
+        Assert.Empty(ohne.FindAll("button.epos-kieinst-modellneu"));
+        Assert.DoesNotContain("Rückfallweg B", ohne.Markup);
+        Assert.NotNull(ohne.Find("input[type=password]"));
+
+        var mit = Zeigen();
+        Assert.Equal(2, mit.FindAll("[data-stufe='entwickler'][data-bereich='KI_WERKZEUGE']").Count);
+    }
+
     [Fact]
     public void Der_Feldbestand_ist_vollstaendig()
     {
