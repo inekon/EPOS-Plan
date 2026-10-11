@@ -13,6 +13,8 @@ Der Dialog hat vier Zonen von oben nach unten:
 * '''Fernwartung''' – ein Erklärtext, die drei Schritte einer Sitzung und der Knopf '''Fernwartungsseite öffnen'''. Er öffnet die Fernwartungsseite von INEKON im Browser (<code>https://epos-plan.de/support/fernwartung</code>). Schlägt das Öffnen fehl, etwa weil kein Browser eingerichtet ist, nennt der Dialog den Grund.
 * '''Schließen''' – beendet den Dialog. Er hat keinen Arbeitsstand, den es zu bestätigen gäbe.
 
+Dieselben Angaben stehen im Dialog '''Über EPOS-Plan''' unter {{Menü|Hilfe|Version}}, dort als Block ''Diagnosedaten'' mit den Knöpfen ''Diagnosedaten kopieren'' und ''Protokollordner öffnen''; der Knopf ''Fernwartung…'' öffnet den hier beschriebenen Dialog. ''Supportpaket speichern…'' legt eine ZIP-Datei mit den Protokollen für den Support ab: die Diagnosedaten, die Ausnahmeprotokolle, das Migrationsprotokoll und einen Auszug des Katalogabgleichs, keine Projektdaten. Das Protokoll des KI-Assistenten kommt nur mit, wenn Sie ''KI-Protokoll beilegen'' ankreuzen, weil es Eingaben von Ihnen enthalten kann. Die Datei hängen Sie selbst an Ihre E-Mail; das geht auch in der Testversion. Der Dialog erscheint nur unter Windows.
+
 == Voraussetzung ==
 {{Anker|voraussetzung}}
 
