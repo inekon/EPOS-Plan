@@ -70,7 +70,7 @@ Feiertage, Anlagenkopplung und Regelung; Programm Dokumentation Kälteerzeugung;
 
 ## Abnahme
 
-Gate 933: Gate 931 auf 646d4eac grün: Kern-Filter 0 Fehler, ChartProben 222 Hashes gleich Messlatte_2026-10-10, Tests KiKern 553, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), UI 8478, Kern 13303 (7 übersprungen), Doku-Wachen 35, Referenzlauf 29 von 29 Projekten PASS (10036768 Werte innerhalb der Toleranz), CSV byte-gleich 943/943, Plattformnachweis (--stoerung ulp) PASS 29 von 29; Nachtest auf 9ce75a0b: UI 8480/8480, Kern-Auswahl 296/296, Build 0 Fehler. CI: CI-Vermerk ⟨folgt nach dem Push⟩.
+Gate 933: Gate 931 auf 646d4eac grün: Kern-Filter 0 Fehler, ChartProben 222 Hashes gleich Messlatte_2026-10-10, Tests KiKern 553, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), UI 8478, Kern 13303 (7 übersprungen), Doku-Wachen 35, Referenzlauf 29 von 29 Projekten PASS (10036768 Werte innerhalb der Toleranz), CSV byte-gleich 943/943, Plattformnachweis (--stoerung ulp) PASS 29 von 29; Nachtest auf 9ce75a0b: UI 8480/8480, Kern-Auswahl 296/296, Build 0 Fehler. CI: CI: Sitzungszweig-Lauf 38096502258 auf `2cbc658e` grün; Lauf 38096503917 auf `ios_migration_september` durch fremde Pushes abgebrochen.
 
 ## Offen
 
