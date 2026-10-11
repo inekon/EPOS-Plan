@@ -53485,5 +53485,20 @@ chart</value>
   <data name="ABW_MERKMAL_VORH_UEBERHOEHUNG" xml:space="preserve">
     <value>Setpoint boost Δθ</value>
   </data>
+  <data name="KAELTE_ART_LABEL" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="KAELTE_ART_RAUM" xml:space="preserve">
+    <value>Space cooling</value>
+  </data>
+  <data name="KAELTE_ART_PROZESS" xml:space="preserve">
+    <value>Process cooling</value>
+  </data>
+  <data name="KAELTE_ART_HINWEIS" xml:space="preserve">
+    <value>Process cooling stays in the cooling demand and is carried as a separate item; the cooling generators cover it before space cooling. Its temperature pair is information without effect on the generators.</value>
+  </data>
+  <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
+    <value>Type of cooling demand</value>
+  </data>
 </root>
 

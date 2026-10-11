@@ -1864,7 +1864,8 @@ eine Verallgemeinerung des Bestands (Regeneration als Reihe), kein zweiter Speic
   sind bei einem Kältespeicher gesperrt (die Prozesskälte ersetzt die Regeneration); **zu einer Speicherquelle sind keine
   Felder einer zweiten Quelle gesetzt** (`WQ_Typ` Außenluft/Erdreich samt Sondenfeldern, `Kuehl_Frei`) — sonst die Meldung
   „Eine Wärmepumpe mit Speicher als Quelle hat genau diese Quelle“. Ob die heutige Quellenwahl einen Kältespeicher schon
-  anbietet, prüft KWN-0; tut sie es, lehnt der Lauf ihn bis KWN-2S benannt ab.
+  anbietet, prüft KWN-0: Sie tut es (`QuellePufferspeicherHuelle` listet jeden Projektpuffer ohne Verwendungsfilter); die
+  benannte Ablehnung im Lauf ist noch nicht gebaut und gehört zu KWN-2S.
 - **Oberfläche** (beschrieben, nicht gebaut): Die Karte der Wärmepumpe in der Simulationskonfiguration zeigt im Chip
   „Quelle:“ den Kältespeicher mit dem Zusatz „(Prozesskälte)“; der Quellendialog listet die Kältespeicher des Projekts
   neben den Puffern, getrennt überschrieben, und zeigt ihr Temperaturpaar als Kaltwasser-Vorlauf/-Rücklauf. Die Karte des
@@ -1942,7 +1943,7 @@ keine Kopplung bzw. Vorgabe — ohne Eingabe rechnet jedes Projekt wie heute.
 | | `Kopplung_Kond_Vorlauf_Max` | Einsatzgrenze des Kondensators [°C]; NULL = Rand der Kennlinie |
 | | `Kopplung_Graedigkeit_K` | Grädigkeit beider Übertrager [K]; NULL = Festwert in `KaelteFestwerte` |
 | `Z_AnlageSenke` | Senkenzeilen der Kopplung | Wärmeseite: Heizkreis, Brauchwasser, Prozesswärme, Puffer (Bestand); Kälteseite: neue Ziele „Raumkühlung“ und „Prozesskälte“ (zu `WS_ZIEL_KAELTEKREIS`, 4.6) und ein gekoppelter Kältespeicher |
-| `Z_Projekt_Kaeltebedarf`, Kühlzeilen in `Z_ProjektWaermebedarf` | `Kaelte_Art` | TEXT `RAUM` (NULL) oder `PROZESS` — der Prozesskälteanteil wird in der Fassade `SimulationKaeltebedarf` als **Unterposten** `Kaeltebedarf_Prozess` geführt, **kein fünfter Kanal** (Knappheit, Persistenz und Kennzahlen bleiben unberührt, KWN‑Q7); er belegt zugleich die Naht `Kaelteangebot.Prozesskaelte` |
+| `Z_Projekt_Kaeltebedarf`, `Z_ProjektWaermebedarf` | `Kaelte_Art` | **gebaut (KWN-0, Schritt 218 `KaelteArtSchema`):** TEXT, Vorgabe `'RAUM'`, Prüfklausel `IS NULL OR IN ('RAUM','PROZESS')`, Werte `DbWerte.KAELTE_ART_RAUM`/`_PROZESS`; leer heißt Raum, an `Z_ProjektWaermebedarf` wirkt die Art nur im Kanal Kühlung (jeder andere Kanal schreibt `RAUM`). Der Prozesskälteanteil wird in der Fassade `SimulationKaeltebedarf` als **Unterposten** `Kaeltebedarf_Prozess` [kWh je Stunde] samt `Kaeltebedarf_Prozess_Mwh` geführt, **kein fünfter Kanal** (Knappheit, Persistenz und Kennzahlen bleiben unberührt, KWN‑Q7); der Raumanteil ist Kühlkanal minus Unterposten (`Kaeltebedarf_Raum(h)`). Der zentral gedeckte Teil belegt die Naht `Kaelteschranke.Prozesskaelte` (`ProzesskaelteDerKaskade`, nur im AK3-Weg wirksam); der dezentral (Split) gedeckte Teil zählt dort nicht |
 | `Z_Projekt_Kaeltebedarf`, Kühlzeilen in `Z_ProjektWaermebedarf` | `ID_Pufferspeicher` | INTEGER, Verweis auf einen Kältespeicher (Projektkopie, `ON DELETE SET NULL`), nur bei `Kaelte_Art = PROZESS`: diese Prozesskälte entlädt diesen Speicher (5.6.7); NULL = Kühlkanal allgemein |
 | `Tab_Energieanlagen` (Wärmepumpe mit Speicherquelle) | — | **keine neue Spalte**: `WQ_Typ = Pufferspeicher` und `WQ_ID_Puffer` auf einen Kältespeicher; **keine Felder für eine Rückfallquelle** (KWN‑Q11) |
 | Ergebnistabellen (Muster `KU-S4`) | je Kopplungsgerät | `Kopplung_Waerme_MWh`, `Kopplung_Kaelte_MWh`, `Kopplung_Strom_MWh`, `Kopplung_Stunden`, `Kopplung_Ueberschuss_Waerme_MWh`, `Kopplung_Ueberschuss_Kaelte_MWh`, `Kopplung_Hub_Stunden` |
@@ -1982,7 +1983,7 @@ ein Gerät koppelt (Muster 4.7).
 #### 5.6.11 Byte-Gleichheit und Referenzprojekte
 
 **Ohne `Kopplung_Aktiv = 1` entsteht kein Objekt der Kopplungsvorstufe** (Muster `Prozesstemperatur`: ohne gepflegtes Paar
-`null`), und jeder Leser rechnet Zeichen für Zeichen wie zuvor. `Kaelte_Art = NULL` ist Raumkühlung; der Unterposten
+`null`), und jeder Leser rechnet Zeichen für Zeichen wie zuvor. `Kaelte_Art = NULL` und die Vorgabe `RAUM` sind Raumkühlung; der Unterposten
 `Kaeltebedarf_Prozess` ist dann null und erscheint als Datei und Schlüssel nur, wenn er > 0 ist. Jedes bestehende
 Referenzprojekt bleibt byte-gleich; das ist die Abnahme jeder Welle bis zum Einfrieren.
 
@@ -2026,7 +2027,7 @@ Entfernen eines Referenzprojekts mit Kälte-Wärme-Kopplung.
 
 | Welle | Inhalt | Aufwand | Abnahme |
 |---|---|---|---|
-| **KWN-0** | Bedarfsseite: `Kaelte_Art` an den Kältebedarfszeilen, Unterposten `Kaeltebedarf_Prozess`, Naht `Kaelteangebot.Prozesskaelte` verdrahtet, Dialogfeld „Art“ in „Kältebedarf extern“ und „Kältebedarfsprofile“ | 2–3 PT | Kern-Filter grün; Schematests, `SqlDialektPruefer`; Bedarfsprobe Kälte ohne Fehler; Referenzlauf aller Projekte **byte-gleich** |
+| **KWN-0** | **gebaut:** Schema 218 `KaelteArtSchema` (`Kaelte_Art` an beiden Zuordnungen), Unterposten `Kaeltebedarf_Prozess` mit Jahressumme `Kaeltebedarf_Prozess_Mwh`, Naht `Kaelteschranke.Prozesskaelte` verdrahtet (zentral gedeckter Prozessanteil, im AK3-Weg), Auswahlfeld „Art“ (Raumkühlung/Prozesskälte) in „Kältebedarf extern“ (Kopfleiste, nur Kanal Kühlung) und „Kältebedarfsprofile“ (eigene Gruppe). Das Temperaturpaar der Prozesskälte bleibt ohne Wirkung (E-K3 bis KWN‑1); Ergebnisspalte, Bericht und Kennzahl des Unterpostens folgen mit KWN‑4, die Quellenwahl der Wärmepumpe bietet einen Kältespeicher an (ohne Verwendungsfilter) — die benannte Ablehnung im Lauf bleibt offen bis KWN‑2S | 2–3 PT | Kern-Filter grün; Schematests, `SqlDialektPruefer`; Bedarfsprobe Kälte ohne Fehler; Proben Raum + Prozess = Kanal, Kanal byte-gleich, ohne `PROZESS` 0, Rundreise; Referenzlauf byte-gleich |
 | **KWN-1** | Schema `KWN-S1`, Kopplungsvorstufe mit Schnittmenge für die **Kältemaschine**, ein Wärme- und ein Kälteziel (Fälle a, b, c), Kopplungsbuchung, Kopplungsprobe, erweiterte Deckungsprobe, eigene Reihen und Stromposition, Hubgrenze | 5–7 PT | Rechenproben ohne Datenbank (Bilanz je Stunde, Hubgrenze, Schnittmenge an beiden Grenzen, τ_kop + Rest ≤ 1); Kopplungs- und Deckungsprobe ohne Fehler; Referenzlauf byte-gleich |
 | **KWN-2** | dasselbe für die **Wärmepumpe** (Sole/Wasser-Wasser) samt Brauchwasser als Senke; Erdreich unberührt; Führungen kälte- und wärmegeführt mit Überschuss an Rückkühlung bzw. Quelle | 3–4 PT | Rechenproben; Probe „Entzugsganglinie unverändert bei Kopplung“; Referenzlauf byte-gleich |
 | **KWN-2S** | Kopplung über Speicher (5.6.7): Kältespeicher als Quelle der Wärmepumpe, Regeneration als Stundenreihe aus der gebundenen Prozesskälte, Kälteüberlauf an die Kältekaskade, Prüfungen der Konfiguration (Verwendung, Temperaturfenster, Kreisschluss, keine zweite Quelle), Quellenwahl und Chip in der Simulationskonfiguration | 3–4 PT | Rechenproben (Speicher an der unteren Grenze, Puffer voll, Überlauf); Quellspeicherfälle des Bestands byte-gleich; bunit der Quellenwahl; Schale auf Linux (0 Fehler); Referenzlauf byte-gleich |

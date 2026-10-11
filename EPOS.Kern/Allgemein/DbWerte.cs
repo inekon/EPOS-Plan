@@ -1448,6 +1448,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KANAL_KUEHLUNG = "Kuehlung";
 
+        /// <summary>
+        /// Art einer Kältebedarfszeile „Raum“ (KWN-0, Schritt <see cref="KaelteArtSchema.SCHRITT"/>,
+        /// Spalte <c>Kaelte_Art</c>): Raumkühlung — die Vorgabe; leer (NULL) heißt ebenfalls Raum. ASCII, eingefroren.
+        /// </summary>
+        public const string KAELTE_ART_RAUM = "RAUM";
+
+        /// <summary>
+        /// Art einer Kältebedarfszeile „Prozess“ (KWN-0, E127/KWN-Q7): Prozesskälte. Sie bleibt im EINEN Kühlkanal und wird
+        /// als Unterposten <c>Kaeltebedarf_Prozess</c> mitgeführt — kein fünfter Kanal. ASCII, eingefroren.
+        /// </summary>
+        public const string KAELTE_ART_PROZESS = "PROZESS";
+
         // =====================================================================
         // Kanal-Knappheitsreihenfolge
         //   Tab_Einstellungen.Kanal_Knappheitsreihenfolge  (Migrationsschritt 49,

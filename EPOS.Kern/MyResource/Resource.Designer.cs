@@ -51135,6 +51135,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art des Kältebedarfs ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_GRUPPE {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesskälte bleibt im Kältebedarf und wird als eigener Posten mitgeführt; die Kälteerzeuger decken sie vor der Raumkühlung. Ihr Temperaturpaar ist eine Angabe ohne Wirkung auf die Erzeuger. ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_HINWEIS {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_LABEL {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesskälte ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_PROZESS {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumkühlung ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_RAUM {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber. ähnelt.
         /// </summary>
         public static string KAELTE_GRENZE_FEUCHTE {

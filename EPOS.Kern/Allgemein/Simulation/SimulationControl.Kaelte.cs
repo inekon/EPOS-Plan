@@ -842,6 +842,11 @@ namespace WindowsFormsApplication1
             }
             schranke = new Kaelteschranke(erzeuger, new Kaeltespeicherleser(_kaeltestunde.Speicher),
                                           simulation_Waermebedarf.KuehlVorlaufAnlageC);
+            // KWN-0: Die Naht Prozesskälte wird belegt, sobald eine Zeile mit Kaelte_Art = PROZESS gebucht hat - der zentral
+            // gedeckte Unterposten hat Vorrang vor der Raumkühlung. Ohne Prozesszeile bleibt sie leer (null), wie zuvor.
+            SimulationKaeltebedarf kaelteseite = simulation_Waermebedarf.Kaelteseite;
+            if (kaelteseite != null && kaelteseite.MitProzess)
+                schranke.Prozesskaelte = kaelteseite.ProzesskaelteDerKaskade;
             return schranke;
         }
 

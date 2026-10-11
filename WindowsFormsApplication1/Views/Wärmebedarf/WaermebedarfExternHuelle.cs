@@ -246,7 +246,8 @@ namespace WindowsFormsApplication1
                 IdZ = m.m_ID_Z,
                 IdGanglinie = m.m_ID_Ganglinie,
                 Bezeichner = m.m_szBezeichner ?? "",
-                Kanal = Z_ProjektGebGanglinieCtrl.KanalOderHeizung(m.Kanal)
+                Kanal = Z_ProjektGebGanglinieCtrl.KanalOderHeizung(m.Kanal),
+                KaelteArt = KaelteArtSchema.Normal(m.KaelteArt)
             };
         }
 
@@ -258,7 +259,8 @@ namespace WindowsFormsApplication1
                 m_ID_Projekt = projektId,
                 m_ID_Ganglinie = z.IdGanglinie,
                 m_szBezeichner = z.Bezeichner,
-                Kanal = Z_ProjektGebGanglinieCtrl.KanalOderHeizung(z.Kanal)
+                Kanal = Z_ProjektGebGanglinieCtrl.KanalOderHeizung(z.Kanal),
+                KaelteArt = KaelteArtSchema.Normal(z.KaelteArt)
             };
         }
 

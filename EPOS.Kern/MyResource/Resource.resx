@@ -53492,5 +53492,20 @@ Chart</value>
   <data name="ABW_MERKMAL_VORH_UEBERHOEHUNG" xml:space="preserve">
     <value>Überhöhung Δθ</value>
   </data>
+  <data name="KAELTE_ART_LABEL" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="KAELTE_ART_RAUM" xml:space="preserve">
+    <value>Raumkühlung</value>
+  </data>
+  <data name="KAELTE_ART_PROZESS" xml:space="preserve">
+    <value>Prozesskälte</value>
+  </data>
+  <data name="KAELTE_ART_HINWEIS" xml:space="preserve">
+    <value>Prozesskälte bleibt im Kältebedarf und wird als eigener Posten mitgeführt; die Kälteerzeuger decken sie vor der Raumkühlung. Ihr Temperaturpaar ist eine Angabe ohne Wirkung auf die Erzeuger.</value>
+  </data>
+  <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
+    <value>Art des Kältebedarfs</value>
+  </data>
 </root>
 

@@ -313,7 +313,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfErgebnisDialog", 2, "die Knopfgruppen Bedarfsart und Zeitraster des Grafikreiters sind Schaltknöpfe; der Assistent setzt sie über „grafiksicht“, „jahresverlauf“ und „zeitstufe“"),
         new("BedarfReiter", 3),
         // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
-        new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
+        new("BedarfsProfileDialog", 7, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
         // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
         // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.
         new("BetriebskalenderDialog", 8),

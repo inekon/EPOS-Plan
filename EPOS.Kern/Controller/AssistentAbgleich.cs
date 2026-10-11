@@ -120,8 +120,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string DeckungAbdruck(Z_ProjWaermebedarfModel w)
         {
-            if (!Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(w) || w.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT) return "";
-            return "|" + w.Deckung + "|" + (w.EerWeg ?? "") + "|" + Zahl(w.Eer1) + "|" + Zahl(w.Taussen1) + "|" +
+            if (!Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(w)) return "";
+            // KWN-0: Prozesskälte zählt ebenso; eine Raumzeile lässt den Abdruck, wie er war.
+            string art = KaelteArtSchema.IstProzess(w.KaelteArt) ? "|" + KaelteArtSchema.PROZESS : "";
+            if (w.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT) return art;
+            return art + "|" + w.Deckung + "|" + (w.EerWeg ?? "") + "|" + Zahl(w.Eer1) + "|" + Zahl(w.Taussen1) + "|" +
                    Zahl(w.Eer2) + "|" + Zahl(w.Taussen2) + "|" +
                    (w.KuehlIdCarrier?.ToString(CultureInfo.InvariantCulture) ?? "") + "|" +
                    (w.KuehlEigenerZaehler ? "1" : "0");
