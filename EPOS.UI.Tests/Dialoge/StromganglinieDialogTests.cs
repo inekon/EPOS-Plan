@@ -96,7 +96,7 @@ public class StromganglinieDialogTests : EposBunitContext
     /// <summary>Die Fussleiste des Katalogs (Stufe 4: links nach dem Namen, rechts Importieren).</summary>
     private static IHtmlCollection<IElement> Katalogknoepfe(
         IRenderedComponent<StromganglinieDialog> cut)
-        => Spalte(cut, 1).QuerySelectorAll(".epos-zweispalten-fussleiste button");
+        => cut.Find(".epos-zweispalten").QuerySelectorAll(".epos-zweispalten-satzknoepfe button:not(.epos-zweispalten-vergroessern)");   // AW3b: Knopfleiste am Satz, ohne „Vergrößern"
 
     private static IElement Katalogknopf(IRenderedComponent<StromganglinieDialog> cut, string text)
         => Katalogknoepfe(cut).First(b => b.TextContent.Contains(text, StringComparison.Ordinal));
@@ -108,7 +108,7 @@ public class StromganglinieDialogTests : EposBunitContext
         => Spalte(cut, spalte).QuerySelectorAll("tbody tr");
 
     private static void Waehle(IRenderedComponent<StromganglinieDialog> cut, int spalte, int zeile)
-        => Zeilen(cut, spalte)[zeile].QuerySelector(".epos-zeilenzelle--name, button.epos-anlagenwahl")!.Click();
+        => Zeilen(cut, spalte)[zeile].QuerySelector(".epos-zeilenzelle--name, .epos-projektzeile")!.Click();
 
     private static IElement Hinzu(IRenderedComponent<StromganglinieDialog> cut)
         => cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0];
@@ -141,7 +141,7 @@ public class StromganglinieDialogTests : EposBunitContext
         Assert.Equal("Aus dem Projekt entfernen",
                      cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
 
-        // "Bearbeiten..." steht unter der Katalogliste, OK und Abbrechen im Fuss.
+        // "Bearbeiten..." steht am gewaehlten Satz (AW3b; dort ausserdem „Vergrößern"), OK und Abbrechen im Fuss.
         // OHNE die Gaben der Katalogpflege (W12-E-1) ist es der EINZIGE Knopf dort —
         // kein Delegat, kein Knopf.
         Assert.Single(Katalogknoepfe(cut));
@@ -1201,5 +1201,52 @@ public class StromganglinieDialogTests : EposBunitContext
             .Add(x => x.Schloss, new Schlossweg((ids, g) => new SchlossErgebnis(true, ""))));
         Waehle(mit, 1, 0);
         Assert.Contains(Katalogknoepfe(mit), b => b.TextContent.Contains("Schloss", StringComparison.Ordinal));
+    }
+
+    // =================================================================================
+    // AW3b: eine Wahl je Zeile, Knopfleiste am gewaehlten Satz (Schema AW1)
+    // =================================================================================
+
+    private IRenderedComponent<StromganglinieDialog> ZeigeAw3b(Schlosspruefung schloss)
+        => Render<StromganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<GanglinienProjektZeile>
+            {
+                new(7, 3, "Werk Nord"), new(8, 4, "Werk Mitte"), new(9, 5, "Werk Süd")
+            })
+            .Add(x => x.Katalogzeilen, () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)Katalog()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Verwaltung, VerwaltungsGaben())
+            .Add(x => x.Loeschen, n => Task.FromResult(true))
+            .Add(x => x.HatProjektzuordnung, n => Task.FromResult(false))
+            .Add(x => x.Schloss, schloss.Weg()));
+
+    [Fact]
+    public void AW3b_Die_Zeile_ist_die_Wahl_mit_Hervorhebung_und_Tasten()
+    {
+        var cut = ZeigeAw3b(new Schlosspruefung());
+        KnopfleisteAmSatzPruefung.ZeileIstWahl(cut, 3);
+        KnopfleisteAmSatzPruefung.KlickWaehlt(cut, 1, "Werk Mitte");
+        KnopfleisteAmSatzPruefung.PfeiltastenBewegen(cut, "Werk Nord", "Werk Mitte", "Werk Süd");
+    }
+
+    [Fact]
+    public void AW3b_Beim_Projektsatz_weich_gesperrt_beim_Katalogsatz_frei()
+    {
+        var schloss = new Schlosspruefung();
+        var cut = ZeigeAw3b(schloss);
+        KnopfleisteAmSatzPruefung.Projektzeilen(cut)[0].Click();
+        KnopfleisteAmSatzPruefung.WeichGesperrt(cut, schloss);
+
+        KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--bearbeiten-projekt").Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        cut.FindAll(".epos-satzueberlagerung-schliessen, .epos-satzueberlagerung-abbrechen")[0].Click();
+
+        Waehle(cut, 1, 0);
+        KnopfleisteAmSatzPruefung.KatalogsatzFrei(cut);
+        KnopfleisteAmSatzPruefung.Schlussleiste(cut, WindowsFormsApplication1.MyResource.Resource.SIM_BTN_OK,
+                                                WindowsFormsApplication1.MyResource.Resource.IMPORT_BTN_ABBRECHEN);
+        KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--bearbeiten-katalog").Click();   // ungesperrt: die Verwaltung
+        Assert.NotEmpty(cut.FindAll("[role='dialog']"));
     }
 }
