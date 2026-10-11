@@ -1035,6 +1035,9 @@ namespace EPOS.Kern.Tests
                 // Schritt SchnellaufheizungSchema.SCHRITT (SA2): Schalter und Ueberhoehung der Schnellaufheizung, sechs
                 // Ergebnisspalten je Gebaeude und Zone, leer, reines DDL. Wiederholbar.
                 SchnellaufheizungSchema.Ausfuehren(null);
+                // Schritt KaelteArtSchema.SCHRITT (KWN-0): Kaelte_Art an Profil- und Lastgangzuordnung, Vorgabe RAUM,
+                // reines DDL. Wiederholbar.
+                KaelteArtSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
