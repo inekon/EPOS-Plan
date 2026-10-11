@@ -182,6 +182,25 @@ namespace EPOS.Kern.Tests
         //  2 - Die Spalte „im Projekt verwendet" (S2.3, Frage Q12)
         // =================================================================
 
+        /// <summary>
+        /// <b>Über die Katalog-Id</b> (Gebäude: <c>ID_Gebaeude_Stamm</c>): Eine umbenannte Kopie bleibt ihrem Satz
+        /// zugeordnet, ein gleichnamiger Satz ohne Verweis wird nicht gestempelt.
+        /// </summary>
+        [Fact]
+        public void Stempeln_ueber_die_Id_folgt_dem_Verweis_nicht_dem_Namen()
+        {
+            var katalog = Katalog();
+
+            Assert.Equal(1, Katalogverwendung.StempelnUeberId(katalog, new[] { 3, 0, 99 }));
+
+            Assert.Equal(NEIN, katalog[0].Text(Katalogfilterprofil.SpVerwendet));
+            Assert.Equal(NEIN, katalog[1].Text(Katalogfilterprofil.SpVerwendet));
+            Assert.Equal(JA, katalog[2].Text(Katalogfilterprofil.SpVerwendet));
+            Assert.True(katalog[2].ImProjekt);
+            Assert.Equal(0, Katalogverwendung.StempelnUeberId(katalog, null));
+            Assert.False(katalog[2].ImProjekt);
+        }
+
         private static List<Katalogfilterzeile> Katalog()
             => new List<Katalogfilterzeile>
             {

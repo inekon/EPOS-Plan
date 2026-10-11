@@ -623,11 +623,11 @@ const FAELLE = [
   // ohne Eingrenzung rollte die Probe die falsche. GD3 hat das Mass der Testdatenbank
   // (269 Gebaeude, weiter virtualisiert).
   { name: 'GD1_gebaeude_6654_Dialog_1088x624', modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
-    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 53, bereich: '.epos-katalogliste' },
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 46, bereich: '.epos-katalogliste' },
   { name: 'GD2_gebaeude_6654_Dialog_400x624',  modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1,
-    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 53, bereich: '.epos-katalogliste' },
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 46, bereich: '.epos-katalogliste' },
   { name: 'GD3_gebaeude_269_Dialog_1088x624',  modus: 'sofort', zeilen: 269, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
-    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=269', zeile: 53, bereich: '.epos-katalogliste' },
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=269', zeile: 46, bereich: '.epos-katalogliste' },
   { name: 'Z1_wohnungen_12_1088x624',    modus: 'sofort', zeilen: 12, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
     klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")' },

@@ -180,8 +180,9 @@ public class BetriebskalenderDialogTests : EposBunitContext
         var cut = Projektdialog(art, new List<BedarfsProfilZeile> { zeile },
                                 new[] { (4, "Werk"), (9, "Sommer") }, () => geaendert++);
 
-        Assert.Contains("Kalender der Zuordnung", cut.Markup);
         cut.Find("tbody button, tbody input").Click();              // die Projektzeile wählen
+        cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();   // Stufe 4: Satz-Überlagerung
+        Assert.Contains("Kalender der Zuordnung", cut.Markup);
         IElement wahl = cut.FindAll("select").First(s => s.InnerHtml.Contains("ohne Kalender"));
         wahl.Change("9");
         Assert.Equal(9, zeile.KalenderId);

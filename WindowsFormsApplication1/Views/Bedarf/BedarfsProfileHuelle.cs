@@ -135,6 +135,43 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der KÄLTEBEDARF eines Projekts (Konzept Kältebedarf 3.3) — derselbe Dialog mit
+        /// <c>BedarfsArt.Kaelte</c>, Temperaturpaar wie die Prozesswärme. Die Deckungsfelder der
+        /// Zuordnung (K4/K5) reicht der Dialog unverändert durch: Der Rückweg schreibt nur Name,
+        /// Kopie, Summe, Temperaturpaar und Kalender in die Modelle des Aufrufers zurück.
+        /// </summary>
+        internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
+                                     List<Z_ProjektKaeltebedarfModel> modelle)
+        {
+            var zeilen = new List<BedarfsProfilZeile>();
+            foreach (Z_ProjektKaeltebedarfModel m in modelle)
+                zeilen.Add(new BedarfsProfilZeile
+                {
+                    IdZ = m.ID_Z, IdStamm = m.ID_Kaeltebedarf, Name = m.Bezeichner ?? "", Summe = m.Summe,
+                    Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf, TemperaturGeaendert = m.TemperaturGeaendert,
+                    KalenderId = m.ID_Betriebskalender
+                });
+
+            var vorher = new Dictionary<int, Z_ProjektKaeltebedarfModel>();
+            foreach (Z_ProjektKaeltebedarfModel m in modelle) vorher[m.ID_Z] = m;
+            Action geaendert = () =>
+            {
+                modelle.Clear();
+                foreach (BedarfsProfilZeile z in zeilen)
+                {
+                    Z_ProjektKaeltebedarfModel m = vorher.TryGetValue(z.IdZ, out var alt) ? alt
+                        : new Z_ProjektKaeltebedarfModel { ID_Z = z.IdZ, ID_Projekt = projektId };
+                    m.ID_Kaeltebedarf = z.IdStamm; m.Bezeichner = z.Name; m.Summe = z.Summe;
+                    m.Vorlauf = z.Vorlauf; m.Ruecklauf = z.Ruecklauf; m.TemperaturGeaendert = z.TemperaturGeaendert;
+                    m.ID_Betriebskalender = z.KalenderId;
+                    modelle.Add(m);
+                }
+            };
+
+            return Zeigen(besitzer, BedarfsArt.Kaelte, projektId, zeilen, geaendert, wizard: false);
+        }
+
+        /// <summary>
         /// Der PARAMETERSATZ der PROZESSWÄRME-Seite des Assistenten (Seite 4).
         ///
         /// <para>iU9-W16a.5: Die Fabrikmethode <c>AssistentSeiteProzess()</c> ist
@@ -232,9 +269,13 @@ namespace WindowsFormsApplication1
         {
             bool ok = false;
             BlazorDialogForm<BedarfsProfileDialog> dlg = null;
+            // Stufe 4 der Katalogauswahl: „In das Projekt übernehmen" legt die Projektkopie sofort an;
+            // Abbrechen räumt die in dieser Sitzung neu angelegten wieder ab (Projektkopievormerkung).
+            var vormerkung = new Projektkopievormerkung(name => BedarfStammCtrl.ProjektkopieEntfernen(
+                art, BedarfStammCtrl.ProjektkopieId(art, name, projektId), projektId));
 
             var werte = new Dictionary<string, object>(
-                Gaben(besitzer, art, projektId, zeilen, geaendert, wizard, behaelter))
+                Gaben(besitzer, art, projektId, zeilen, geaendert, wizard, behaelter, vormerkung))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -256,6 +297,7 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            vormerkung.Abschliessen(ok, id => zeilen.Exists(z => z.IdStamm == id));
             return ok;
         }
 
@@ -270,7 +312,7 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyDictionary<string, object> Gaben(
             IWin32Window besitzer, BedarfsArt art, int projektId,
             List<BedarfsProfilZeile> zeilen, Action geaendert, bool wizard,
-            ZapfprofilBehaelter behaelter = null)
+            ZapfprofilBehaelter behaelter = null, Projektkopievormerkung vormerkung = null)
         {
             int[] naechsteId = { STARTINDEX };
             bool zapfprofil = art == BedarfsArt.Brauchwasser && behaelter != null;
@@ -307,7 +349,7 @@ namespace WindowsFormsApplication1
                 ["Jahressumme"] = new Func<string, double>(
                     name => BedarfStammCtrl.Jahressumme(art, name)),
                 ["Aufnehmen"] = new Func<string, BedarfsProfilZeile>(
-                    name => Aufnehmen(art, name, naechsteId)),
+                    name => Aufnehmen(art, name, naechsteId, projektId, wizard, vormerkung)),
                 ["KatalogLoeschen"] = new Func<string, bool>(name => KatalogLoeschen(art, name)),
                 ["ProjektGespeichert"] = new Func<bool>(() => ProjektCtrl.Existiert(projektId)),
                 ["SummeSichern"] = new Action<string, double>(
@@ -362,16 +404,21 @@ namespace WindowsFormsApplication1
                 // Zweispaltenauswahl je nach Anordnung - der Knopf traegt Klartext.
                 ["BtnHinzuText"] = TextEinfach("AUSWAHL_BTN_UEBERNEHMEN", "In das Projekt übernehmen"),
                 ["BtnEntfernenText"] = TextEinfach("AUSWAHL_BTN_ENTFERNEN", "Aus dem Projekt entfernen"),
-                ["BtnDbAendernText"] = Text_(art, "BPF_BTN_DB_AENDERN",
+                // Stufe 4 der Katalogauswahl: die Fussleiste des Katalogs (4.9) mit kurzen Texten;
+                // die Ueberlagerungen nennen weiter, was sie tun.
+                ["BtnDbAendernText"] = TextEinfach("BPF_BTN_KAT_DB_AENDERN", "DB ändern…"),
+                ["BtnDbNeuText"] = TextEinfach("BPF_BTN_KAT_NEU", "Neu…"),
+                ["BtnDbLoeschenText"] = TextEinfach("BPF_BTN_KAT_LOESCHEN", "Löschen"),
+                ["BtnTypAendernText"] = TextEinfach("BPF_BTN_KAT_TYP_AENDERN", "Typ ändern…"),
+                ["BtnSimulationText"] = TextEinfach("BPF_BTN_SIMULATION_LEISTE", "Simulation…"),
+                ["TitelDbAendern"] = Text_(art, "BPF_BTN_DB_AENDERN",
                     "Prozess in DB ändern", "Stromverbraucher ändern...", "Profil in DB ändern"),
-                ["BtnDbNeuText"] = Text_(art, "BPF_BTN_DB_NEU",
+                ["TitelDbNeu"] = Text_(art, "BPF_BTN_DB_NEU",
                     "Prozess in DB neu", "Stromverbraucher neu...", "Profil in DB neu"),
-                ["BtnDbLoeschenText"] = Text_(art, "BPF_BTN_DB_LOESCHEN",
+                ["TitelDbLoeschen"] = Text_(art, "BPF_BTN_DB_LOESCHEN",
                     "Prozess in DB löschen", "Stromverbraucher löschen", "Profil in DB löschen"),
-                ["BtnTypAendernText"] = Text_(art, "BPF_BTN_TYP_AENDERN",
+                ["TitelTypAendern"] = Text_(art, "BPF_BTN_TYP_AENDERN",
                     "Typ in DB ändern", "Typ in DB ändern...", "Typ in DB ändern"),
-                ["BtnSimulationText"] = Text_(art, "BPF_BTN_SIMULATION",
-                    "Simulation", "Simulation...", "Simulation"),
                 ["BtnUebernehmenText"] = TextEinfach("BPF_BTN_UEBERNEHMEN", "Übernehmen"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
@@ -415,6 +462,10 @@ namespace WindowsFormsApplication1
             // (Prozesstemperatur.Paarpruefung), dieselbe wie die Pruefklauseln des Schemas.
             if (art == BedarfsArt.Prozesswaerme)
                 gaben["TemperaturPruefen"] = new Func<double?, double?, string>(Prozesstemperatur.Paarpruefung);
+            // Kälte (Konzept Kältebedarf 3.3): das Temperaturpaar als Angabe wie bei der Prozesswärme,
+            // mit der Prüfung des Kältebedarfs (Kaltwasser auch unter 0 °C).
+            if (art == BedarfsArt.Kaelte)
+                gaben["TemperaturPruefen"] = new Func<double?, double?, string>(KaeltebedarfSchema.Paarpruefung);
 
             // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,
             // BEVOR der Dialog schliesst - lehnt der Schreibweg ab, bleibt er offen und nennt den
@@ -551,6 +602,14 @@ namespace WindowsFormsApplication1
                                                 p.m_Vorlauf, p.m_Ruecklauf)
                         : null;
 
+                case BedarfsArt.Kaelte:
+                    var k = new KaeltebedarfStammCtrl();
+                    k.ReadSingle(name);
+                    return k.rows > 0
+                        ? new BedarfsProfilInfo(name, k.m_szBeschreibung ?? "", k.m_szTyp ?? "",
+                                                k.m_Vorlauf, k.m_Ruecklauf)
+                        : null;
+
                 default:
                     var b = new BrauchwasserStammCtrl();
                     b.ReadSingle(name);
@@ -564,11 +623,25 @@ namespace WindowsFormsApplication1
         /// „◀" — die Stamm-Id per Name, die Summe als Σ der zwölf Monatswerte
         /// (<c>btn_Hinzu_Click</c> der drei Vorläufer).
         /// </summary>
-        private static BedarfsProfilZeile Aufnehmen(BedarfsArt art, string name, int[] naechsteId)
+        private static BedarfsProfilZeile Aufnehmen(BedarfsArt art, string name, int[] naechsteId,
+                                                    int projektId, bool wizard, Projektkopievormerkung vormerkung)
         {
             int idStamm = DataRepository.GetIdByName(BedarfStammCtrl.KopfTabelle(art),
                                                      "Bezeichner", name);
             if (idStamm <= 0) return null;
+
+            // Stufe 4 der Katalogauswahl (4.9, Muster BHKW): Bei gespeichertem Projekt entsteht die
+            // Projektkopie sofort (mit ID_Stamm); die Zeile zeigt auf sie. Eine NEUE Kopie raeumt ein
+            // Abbrechen wieder ab. Im Assistenten (ohne Projekt) bleibt es bei der Katalog-Id - die
+            // Kopie entsteht dort beim Speichern des Projekts (WizardCtrl).
+            if (!wizard && projektId > 0 && ProjektCtrl.Existiert(projektId))
+            {
+                bool schonDa = BedarfStammCtrl.ProjektkopieId(art, name, projektId) > 0;
+                int kopie = BedarfStammCtrl.CopyFromStamm(art, name, projektId);
+                if (kopie <= 0) return null;
+                if (!schonDa) vormerkung?.Angelegt(name, kopie);
+                idStamm = kopie;
+            }
 
             // PW1 Stufe 1: die Vorbelegung des Katalogs - die Kopie übernimmt sie beim Speichern.
             (double? vorlauf, double? ruecklauf) = BedarfStammCtrl.Temperaturpaar(art, name);
@@ -589,6 +662,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return new StromverbraucherStammCtrl().Delete(name);
                 case BedarfsArt.Prozesswaerme:    return new ProzesswaermeStammCtrl().Delete(name);
+                case BedarfsArt.Kaelte:           return new KaeltebedarfStammCtrl().Delete(name);
                 default:                          return new BrauchwasserStammCtrl().Delete(name);
             }
         }
@@ -603,6 +677,9 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Prozesswaerme:
                     new Z_ProjektProzesswaermeCtrl().UpdateSumme(wert, name, projektId);
                     break;
+                case BedarfsArt.Kaelte:
+                    Z_ProjektKaeltebedarfCtrl.UpdateSumme(wert, name, projektId);
+                    break;
                 default:
                     new Z_ProjektBrauchwasserCtrl().UpdateSumme(wert, name, projektId);
                     break;
@@ -616,7 +693,7 @@ namespace WindowsFormsApplication1
         internal static string Titel(BedarfsArt art)
         {
             return Text_(art, "BPF_TITEL", "Prozesswärme", "Standard Stromprofil",
-                         "Brauchwasserwärme");
+                         "Brauchwasserwärme", "Kältebedarfsprofile");
         }
 
         private static string HilfeSchluessel(BedarfsArt art)
@@ -625,6 +702,8 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return "Form_Stromverbraucher.btn_Help";
                 case BedarfsArt.Prozesswaerme:    return "Form_Prozesswaerme.btn_Help";
+                // Kältezweig: bis eine eigene Hilfeseite steht, die der Prozesswärme (gleicher Rechenweg).
+                case BedarfsArt.Kaelte:           return "Form_Prozesswaerme.btn_Help";
                 default:                          return "Form_Brauchwasser.btn_Help";
             }
         }
@@ -640,6 +719,8 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return "Form_Stromverbraucher.Berechnung";
                 case BedarfsArt.Prozesswaerme:    return "Form_Prozesswaerme.Berechnung";
+                // Kältezweig: bis eine eigene Hilfeseite steht, die der Prozesswärme (gleicher Rechenweg).
+                case BedarfsArt.Kaelte:           return "Form_Prozesswaerme.Berechnung";
                 default:                          return "Form_Brauchwasser.Berechnung";
             }
         }
@@ -654,7 +735,7 @@ namespace WindowsFormsApplication1
             return Text_(art, "BPF_HILFE_BERECHNUNG",
                          "Berechnungsweg: Prozesswärme",
                          "Berechnungsweg: Strombedarf",
-                         "Berechnungsweg: Brauchwasser");
+                         "Berechnungsweg: Brauchwasser", "Berechnungsweg: Kältebedarf");
         }
 
         /// <summary>
@@ -662,10 +743,11 @@ namespace WindowsFormsApplication1
         /// Ausprägung angehängt (<c>_PROZ</c>, <c>_STROM</c>, <c>_BW</c>).
         /// </summary>
         private static string Text_(BedarfsArt art, string schluessel,
-                                    string prozess, string strom, string brauchwasser)
+                                    string prozess, string strom, string brauchwasser, string kaelte = null)
         {
             switch (art)
             {
+                case BedarfsArt.Kaelte:           return TextEinfach(schluessel + "_KAELTE", kaelte ?? prozess);
                 case BedarfsArt.Stromverbraucher: return TextEinfach(schluessel + "_STROM", strom);
                 case BedarfsArt.Prozesswaerme:    return TextEinfach(schluessel + "_PROZ", prozess);
                 default:                          return TextEinfach(schluessel + "_BW", brauchwasser);

@@ -107,6 +107,28 @@ public class BedarfsProfileDialogTests : EposBunitContext
             .Add(x => x.MeldungGeloescht, meldungGeloescht)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
+    /// <summary>Stufe 4: eine Katalogzeile wählen — die Zeile ist die Wahl (Klick auf die Namenszelle).</summary>
+    private static void KatalogKlick(IRenderedComponent<BedarfsProfileDialog> cut, int i)
+        => cut.FindAll(".epos-katalogliste .epos-zeilenzelle--name")[i].Click();
+
+    /// <summary>
+    /// Stufe 4 (UeS2): Die Felder des Satzes stehen nur in der Satz-Überlagerung — „Bearbeiten" der
+    /// Detailzeile öffnet sie (falls zu); zurück kommt ihr Körper.
+    /// </summary>
+    private static IElement Satz(IRenderedComponent<BedarfsProfileDialog> cut)
+    {
+        if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
+            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+        return cut.Find(".epos-satzueberlagerung-koerper");
+    }
+
+    /// <summary>Ein Feld der Satz-Überlagerung (öffnet sie, falls zu).</summary>
+    private static IElement Feld(IRenderedComponent<BedarfsProfileDialog> cut, string selektor)
+    {
+        Satz(cut);
+        return cut.Find(".epos-satzueberlagerung-koerper " + selektor);
+    }
+
     private static IElement Knopf(IRenderedComponent<BedarfsProfileDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
@@ -129,14 +151,17 @@ public class BedarfsProfileDialogTests : EposBunitContext
     public void Prozesswaerme_traegt_die_Felder_ihrer_Karte()
     {
         var cut = Aufbauen(BedarfsArt.Prozesswaerme);
+        Assert.Contains("Summe aller ausgew. Prozesse:", cut.Find(".epos-zweispalten-summe").TextContent);
+        Satz(cut);   // Stufe 4: die Felder stehen in der Satz-Überlagerung
 
         Assert.Contains("jährlicher Prozesswärmebedarf:", cut.Markup);
         Assert.Contains("Summe aller ausgew. Prozesse:", cut.Markup);
         Assert.Contains("Ändern des Jahresverbrauchs", cut.Markup);
 
-        // Ein Zahlenfeld ("neuer Wert"), vier gesperrte Textfelder + ein Textbereich.
+        // Ein Zahlenfeld ("neuer Wert"), drei gesperrte Textfelder (Name, Typ, Jahresverbrauch;
+        // die Summe steht in der Projekt-Kopfleiste) + ein Textbereich.
         Assert.Single(cut.FindAll("input[inputmode=decimal]"));
-        Assert.Equal(4, cut.FindAll("input[type=text][readonly]").Count);
+        Assert.Equal(3, cut.FindAll(".epos-satzueberlagerung-koerper input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 
         // Seit Stufe S3.1 zeigen ALLE DREI Auspraegungen dieselben fuenf Spalten
@@ -145,11 +170,11 @@ public class BedarfsProfileDialogTests : EposBunitContext
         // Stromverbraucher keine; der Unterschied war Bestand, keine Fachaussage.
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);   // Kästchen + vier Spalten + Stift (Stufe 4); „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
 
-        foreach (string t in new[] { "Prozess in DB ändern", "Prozess in DB neu",
-                                     "Prozess in DB löschen", "Simulation",
+        foreach (string t in new[] { "Prozess in DB ändern", "Neu…",
+                                     "Löschen", "Simulation…",
                                      "Übernehmen", "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
 
@@ -178,12 +203,13 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            labelSumme: "Summe aller ausgewählten Strombedarfe:",
                            btnDbAendern: "Stromverbraucher ändern...",
                            meldungGeloescht: "");
+        Satz(cut);
 
         Assert.Contains("jährlicher Strombedarf:", cut.Markup);
         Assert.Contains("Summe aller ausgewählten Strombedarfe:", cut.Markup);
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);   // Kästchen + vier Spalten + Stift (Stufe 4); „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Stromverbraucher ändern..."));
     }
@@ -196,12 +222,13 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            labelSumme: "Summe Brauchwasserprofile:",
                            btnDbAendern: "Profil in DB ändern",
                            meldungGeloescht: "");
+        Satz(cut);
 
         Assert.Contains("jährlicher Wärmebedarf:", cut.Markup);
         Assert.Contains("Summe Brauchwasserprofile:", cut.Markup);
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);   // Kästchen + vier Spalten + Stift (Stufe 4); „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Profil in DB ändern"));
     }
@@ -222,7 +249,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();   // erste Katalogzeile
+        KatalogKlick(cut, 0);   // erste Katalogzeile
 
         Assert.Equal("42,00", cut.Instance.Jahresverbrauch);
         Assert.Equal("Profil A", cut.Instance.InfoName);
@@ -254,7 +281,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var zeilen = new List<BedarfsProfilZeile>();
         var cut = Aufbauen(zeilen: zeilen, geaendert: () => gemeldet = true);
 
-        cut.FindAll("button.epos-anlagenwahl").First().Click();
+        KatalogKlick(cut, 0);
         Uebernehmen(cut).Click();
 
         Assert.Single(zeilen);
@@ -268,7 +295,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var zeilen = new List<BedarfsProfilZeile> { Zeile(1), Zeile(2, "Profil B") };
         var cut = Aufbauen(zeilen: zeilen);
 
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();   // zweite Projektzeile
         Entfernen(cut).Click();
 
         Assert.Single(zeilen);
@@ -291,7 +318,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, "Wohnhaus 10 Wohnungen") });
 
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();   // erste Katalogzeile
+        KatalogKlick(cut, 0);   // erste Katalogzeile
 
         Assert.Equal("Profil A", cut.Find(".epos-zweispalten-satzname").TextContent.Trim());
     }
@@ -305,9 +332,12 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile>());
 
-        Knopf(cut, "Übernehmen").Click();
-
-        Assert.Contains("Liste auswählen", cut.Instance.Meldung);
+        // Stufe 4: Ohne Projektzeile gibt es weder „Bearbeiten…" noch die Verbrauchsfelder.
+        Assert.True(cut.Find(".epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
+        KatalogKlick(cut, 0);
+        Satz(cut);
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Übernehmen");
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=decimal]"));
     }
 
     [Fact]
@@ -316,7 +346,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var zeilen = new List<BedarfsProfilZeile> { Zeile(1, summe: 1) };
         var cut = Aufbauen(zeilen: zeilen);
 
-        cut.Find("input[inputmode=decimal]").Input("33,5");
+        Feld(cut, "input[inputmode=decimal]").Input("33,5");
         Knopf(cut, "Übernehmen").Click();
 
         Assert.Equal(33.5, zeilen[0].Summe);
@@ -337,7 +367,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     public void Ein_negativer_Wert_meldet_die_gewaehlte_Einheit(BedarfsArt art)
     {
         var cut = Aufbauen(art);
-        cut.Find("input[inputmode=decimal]").Input("-1");
+        Feld(cut, "input[inputmode=decimal]").Input("-1");
         Knopf(cut, "Übernehmen").Click();
 
         Assert.Equal("Bitte den Jahresverbrauch als Zahl in MWh eingeben, z. B. 12,5.",
@@ -349,12 +379,16 @@ public class BedarfsProfileDialogTests : EposBunitContext
     // =================================================================================
 
     private static IElement Einheitenfeld(IRenderedComponent<BedarfsProfileDialog> cut)
-        => cut.FindAll("select").Last();
+    {
+        Satz(cut);
+        return cut.FindAll(".epos-satzueberlagerung-koerper select").First();
+    }
 
     [Fact]
     public void Die_Vorgabe_ist_MWh()
     {
         var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5) });
+        Satz(cut);
 
         Assert.Same(Energieeinheit.MWh, cut.Instance.Anzeigeeinheit);
         Assert.Equal("12,50", cut.Instance.Jahresverbrauch);
@@ -421,7 +455,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var zeilen = new List<BedarfsProfilZeile> { Zeile(1, summe: 1) };
         var cut = Aufbauen(zeilen: zeilen, einheit: Energieeinheit.KWh);
 
-        cut.Find("input[inputmode=decimal]").Input("33500");
+        Feld(cut, "input[inputmode=decimal]").Input("33500");
         Knopf(cut, "Übernehmen").Click();
 
         Assert.Equal(33.5, zeilen[0].Summe, 10);
@@ -438,7 +472,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var zeilen = new List<BedarfsProfilZeile> { Zeile(1, summe: 1) };
         var cut = Aufbauen(zeilen: zeilen);
 
-        cut.Find("input[inputmode=decimal]").Input("12,5");
+        Feld(cut, "input[inputmode=decimal]").Input("12,5");
         Einheitenfeld(cut).Change("1");
         Knopf(cut, "Übernehmen").Click();
 
@@ -450,7 +484,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen(einheit: Energieeinheit.KWh);
 
-        cut.Find("input[inputmode=decimal]").Input("-1");
+        Feld(cut, "input[inputmode=decimal]").Input("-1");
         Knopf(cut, "Übernehmen").Click();
 
         Assert.Equal("Bitte den Jahresverbrauch als Zahl in kWh eingeben, z. B. 12,5.",
@@ -483,7 +517,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         var cut = Aufbauen(zeilen: new List<BedarfsProfilZeile>(),
                            simulieren: _ => { gerechnet = true; return new Dictionary<string, object>(); });
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
 
         Assert.False(gerechnet);
         Assert.Contains("Liste auswählen", cut.Instance.Meldung);
@@ -497,7 +531,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            zeilen: new List<BedarfsProfilZeile> { Zeile(1, "Profil A"), Zeile(2, "Profil B") },
                            simulieren: n => { uebergeben = n; return new Dictionary<string, object>(); });
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
 
         Assert.Equal(new[] { "Profil A", "Profil B" }, uebergeben);
         Assert.True(cut.Instance.ErgebnisOffen);
@@ -515,7 +549,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            zeilen: new List<BedarfsProfilZeile> { Zeile(1, "Profil A"), Zeile(2, "Profil B") },
                            simulieren: n => { uebergeben = n; return new Dictionary<string, object>(); });
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
 
         Assert.Single(uebergeben);
         Assert.Equal("Profil A", uebergeben[0]);
@@ -530,10 +564,10 @@ public class BedarfsProfileDialogTests : EposBunitContext
         int laeufe = 0;
         var cut = Aufbauen(simulieren: _ => { laeufe++; return new Dictionary<string, object>(); });
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
         Assert.True(cut.Instance.ErgebnisOffen);
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
         Assert.Equal(2, laeufe);
     }
 
@@ -551,9 +585,9 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            einheit: Energieeinheit.KWh,
                            simulieren: _ => { gesehen = zeile.Summe; return new Dictionary<string, object>(); });
 
-        cut.Find("input[inputmode=decimal]").Input("150000");
+        Feld(cut, "input[inputmode=decimal]").Input("150000");
         Knopf(cut, "Übernehmen").Click();
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
 
         Assert.Equal(150.0, gesehen, 9);
     }
@@ -575,8 +609,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            summeSichern: (_, _) => gesichert = true,
                            simulieren: _ => { gesehen = zeile.Summe; return new Dictionary<string, object>(); });
 
-        cut.Find("input[inputmode=decimal]").Input("10");
-        Knopf(cut, "Simulation").Click();
+        Feld(cut, "input[inputmode=decimal]").Input("10");
+        Knopf(cut, "Simulation…").Click();
 
         Assert.False(gesichert);
         Assert.Equal(10.0, gesehen, 9);
@@ -592,8 +626,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            projektGespeichert: () => true,
                            summeSichern: (_, w) => gesichert = w);
 
-        cut.Find("input[inputmode=decimal]").Input("150000");
-        Knopf(cut, "Simulation").Click();
+        Feld(cut, "input[inputmode=decimal]").Input("150000");
+        Knopf(cut, "Simulation…").Click();
 
         Assert.Equal(150.0, gesichert, 9);
     }
@@ -606,8 +640,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            projektGespeichert: () => true,
                            summeSichern: (_, w) => gesichert = w);
 
-        cut.Find("input[inputmode=decimal]").Input("10");
-        Knopf(cut, "Simulation").Click();
+        Feld(cut, "input[inputmode=decimal]").Input("10");
+        Knopf(cut, "Simulation…").Click();
 
         Assert.Equal(10.0, gesichert);
     }
@@ -624,8 +658,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
                            projektGespeichert: () => false,
                            summeSichern: (_, w) => gesichert = w);
 
-        cut.Find("input[inputmode=decimal]").Input("8");
-        Knopf(cut, "Simulation").Click();
+        Feld(cut, "input[inputmode=decimal]").Input("8");
+        Knopf(cut, "Simulation…").Click();
 
         Assert.Equal(8.0, gesichert);
         Assert.DoesNotContain("noch nicht gespeichert", cut.Instance.Meldung);
@@ -645,6 +679,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
             return new Dictionary<string, object>();
         });
 
+        KatalogKlick(cut, 0);
         Knopf(cut, "Prozess in DB ändern").Click();
 
         Assert.True(cut.Instance.TypStammOffen);
@@ -661,7 +696,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
             return new Dictionary<string, object>();
         });
 
-        Knopf(cut, "Prozess in DB neu").Click();
+        Knopf(cut, "Neu…").Click();
         Assert.False(cut.Instance.TypStammOffen);
 
         cut.Find("[role=dialog] input[type=text]").Input("Neues Profil");
@@ -674,8 +709,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
     [Fact]
     public void Ohne_Delegat_gibt_es_keinen_Typ_aendern_Knopf()
     {
-        Assert.DoesNotContain("Typ in DB ändern", Aufbauen().Markup);
-        Assert.Contains("Typ in DB ändern",
+        Assert.DoesNotContain("Typ ändern…", Aufbauen().Markup);
+        Assert.Contains("Typ ändern…",
                         Aufbauen(typProfilGaben: () => new Dictionary<string, object>()).Markup);
     }
 
@@ -685,8 +720,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
         string geloescht = "";
         var cut = Aufbauen(katalogLoeschen: n => { geloescht = n; return true; });
 
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();
-        Knopf(cut, "Prozess in DB löschen").Click();
+        KatalogKlick(cut, 0);
+        Knopf(cut, "Löschen").Click();
 
         Assert.Contains("wirklich gelöscht", cut.Markup);
         Knopf(cut, "Ja").Click();
@@ -716,7 +751,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         bool gerufen = false;
         var cut = Aufbauen(geschlossen: _ => gerufen = true);
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.False(gerufen);
@@ -756,7 +791,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
         Assert.True(cut.Instance.ErgebnisOffen);
 
         cut.Find(".epos-ueberlagerung-zu").Click();
@@ -774,7 +809,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
@@ -790,6 +825,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen(typStammGaben: (_, _, _, _) => new Dictionary<string, object>());
 
+        KatalogKlick(cut, 0);
         Knopf(cut, "Prozess in DB ändern").Click();
         Assert.True(cut.Instance.TypStammOffen);
 
@@ -807,7 +843,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = Aufbauen(typProfilGaben: () => new Dictionary<string, object>());
 
-        Knopf(cut, "Typ in DB ändern").Click();
+        Knopf(cut, "Typ ändern…").Click();
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
@@ -858,6 +894,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     public void Infoblock_und_Jahresverbrauch_stehen_im_Formularraster()
     {
         var cut = Aufbauen(BedarfsArt.Prozesswaerme);
+        Satz(cut);
 
         Assert.Equal(2, cut.FindAll(".epos-formularraster").Count);
         Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
@@ -991,8 +1028,9 @@ public class BedarfsProfileDialogTests : EposBunitContext
         string[] knoepfe = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray();
         Assert.Equal(new[] { "Zapfprofil erzeugen…", "Abbrechen", "OK" }, knoepfe);
 
-        IElement simulation = cut.FindAll(".epos-leiste").First(l => l.TextContent.Contains("Simulation"));
-        Assert.DoesNotContain("Zapfprofil erzeugen…", simulation.TextContent);
+        // Stufe 4: „Simulation…" steht in der Projekt-Kopfleiste, nicht in der Fussleiste.
+        IElement simulation = cut.Find(".epos-knopf--simulation");
+        Assert.DoesNotContain("Zapfprofil erzeugen…", simulation.ParentElement!.TextContent);
     }
 
     /// <summary>Kein Delegat, kein Knopf — und nur bei Brauchwasser.</summary>
@@ -1123,15 +1161,15 @@ public class BedarfsProfileDialogTests : EposBunitContext
                                      geschlossen: b => geschlossen = b,
                                      speichern: () => { geschrieben++; return ""; });
 
-        cut.Find("input[inputmode=decimal]").Input("33,5");
+        Feld(cut, "input[inputmode=decimal]").Input("33,5");
         Knopf(cut, "Übernehmen").Click();
-        cut.Find("input[inputmode=decimal]").Input("44,5");   // angefangen, nicht übernommen
+        Feld(cut, "input[inputmode=decimal]").Input("44,5");   // angefangen, nicht übernommen
 
         ZapfprofilKnopf(cut)!.Click();
         cut.Find(".epos-blatt-zurueck").Click();
 
         Assert.Equal(33.5, zeilen[0].Summe, 6);
-        Assert.Equal("44,5", cut.Find("input[inputmode=decimal]").GetAttribute("value"));
+        Assert.Equal("44,5", Feld(cut, "input[inputmode=decimal]").GetAttribute("value"));
         Assert.Same(zeilen[0], cut.Instance.Gewaehlt);
         Assert.Equal(0, geschrieben);
 
@@ -1226,7 +1264,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
                                      simulieren: n => { namen = n; return new Dictionary<string, object>(); },
                                      simulationMeldung: () => "Zone „Zone 1“ trägt 0: Bezugsmenge fehlt.");
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
 
         Assert.NotNull(namen);
         Assert.Empty(namen!);
@@ -1242,7 +1280,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
                                      wegGesetzt: _ => { }, simulieren: _ => null,
                                      simulationMeldung: () => "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau.");
 
-        Knopf(cut, "Simulation").Click();
+        Knopf(cut, "Simulation…").Click();
 
         Assert.False(cut.Instance.ErgebnisOffen);
         Assert.Contains("keine Klimaregion", cut.Find(".epos-warnbanner").TextContent);
@@ -1397,5 +1435,229 @@ public class BedarfsProfileDialogTests : EposBunitContext
             KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSPROFILE, "rechenweg");
         var ex = Assert.Throws<InvalidOperationException>(() => weg.Setzen((int)ZapfprofilWeg.Generator));
         Assert.Equal("Das Zapfprofil braucht ein gespeichertes Projekt.", ex.Message);
+    }
+
+    // =================================================================================
+    // Stufe 4 der Katalogauswahl: Kopfleiste, Fussleiste, Stift, Zusammenfassung,
+    // Satz-Ueberlagerung, Mehrfachloeschen, Kaeltezweig
+    // =================================================================================
+
+    private IRenderedComponent<BedarfsProfileDialog> AufbauenS4(
+        List<BedarfsProfilZeile> zeilen, IReadOnlyList<Katalogfilterzeile>? katalog = null,
+        BedarfsArt art = BedarfsArt.Prozesswaerme, Func<string, bool>? loeschen = null,
+        Func<string, string, string, bool, IReadOnlyDictionary<string, object>>? typStamm = null,
+        IReadOnlyList<(int Id, string Text)>? kalender = null, Action? geaendert = null)
+        => Render<BedarfsProfileDialog>(p => p
+            .Add(x => x.Art, art)
+            .Add(x => x.TitelText, "Bedarf")
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Katalogzeilen, () => katalog ?? Katalogzeilen())
+            .Add(x => x.Katalogprofil, Profil(art))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Info, n => new BedarfsProfilInfo(n, "Beschreibung " + n, "Typ 1", 6.0, 12.0))
+            .Add(x => x.Jahressumme, _ => 42.0)
+            .Add(x => x.Aufnehmen, n => new BedarfsProfilZeile { IdZ = 100000, IdStamm = 9, Name = n, Summe = 42.0 })
+            .Add(x => x.KatalogLoeschen, loeschen ?? (_ => true))
+            .Add(x => x.TypStammGaben, typStamm)
+            .Add(x => x.TypProfilGaben, () => new Dictionary<string, object>())
+            .Add(x => x.TemperaturPruefen, (v, r) => v is < -50 ? "zu kalt" : null)
+            .Add(x => x.Betriebskalender, kalender)
+            .Add(x => x.Geaendert, geaendert)
+            .Add(x => x.Einheit, Energieeinheit.MWh));
+
+    [Fact]
+    public void S4_Die_Kopfleiste_traegt_Jahressumme_Bearbeiten_und_Simulation()
+    {
+        var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5), Zeile(2, "Profil B", 7.5) });
+
+        Assert.Contains("20,00", cut.Find(".epos-zweispalten-summe").TextContent);
+        Assert.False(cut.Find(".epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
+        Assert.NotNull(cut.Find(".epos-knopf--simulation"));
+        // Zwei angekreuzte Zeilen: „Bearbeiten…" wirkt auf genau eine.
+        foreach (int i in new[] { 0, 1 })
+            cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
+        Assert.True(cut.Find(".epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void S4_Die_Fussleiste_des_Katalogs_steht_im_Baustein_ohne_alte_Leiste()
+    {
+        var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1) },
+                             typStamm: (_, _, _, _) => new Dictionary<string, object>());
+
+        IElement fuss = cut.Find(".epos-zweispalten-fussleiste");
+        string text = fuss.TextContent;
+        foreach (string t in new[] { "Typ ändern…", "DB ändern…", "Löschen", "Neu…" })
+            Assert.Contains(t, text);
+        // Die alte Knopfleiste unter der Katalogliste ist entfallen.
+        Assert.Empty(cut.FindAll(".epos-zweispalten-spalte .epos-katalogliste + .epos-leiste"));
+        // „DB ändern…" braucht genau einen Katalogsatz.
+        Assert.True(fuss.QuerySelector(".epos-knopf--db-aendern")!.HasAttribute("disabled"));
+        KatalogKlick(cut, 0);
+        Assert.False(cut.Find(".epos-knopf--db-aendern").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void S4_Der_Stift_der_Projektzeile_oeffnet_die_Satz_Ueberlagerung()
+    {
+        var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1), Zeile(2, "Profil B") });
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-zeilenstift")[1].Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("Profil B", cut.Instance.Gewaehlt?.Name);
+        Assert.NotEmpty(cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=decimal]"));
+    }
+
+    [Fact]
+    public void S4_Der_Stift_der_Katalogzeile_oeffnet_gesperrt_nur_lesend_sonst_den_Katalogeditor()
+    {
+        var katalog = Katalogzeilen().ToList();
+        katalog[1].Geschuetzt = true;
+        bool editor = false;
+        var cut = AufbauenS4(new List<BedarfsProfilZeile>(), katalog,
+                             typStamm: (_, _, _, neu) => { editor = !neu; return new Dictionary<string, object>(); });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift")[0].Click();
+        Assert.True(editor);
+        Assert.True(cut.Instance.TypStammOffen);
+
+        var cut2 = AufbauenS4(new List<BedarfsProfilZeile>(), katalog,
+                              typStamm: (_, _, _, _) => new Dictionary<string, object>());
+        cut2.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift")[1].Click();
+        Assert.True(cut2.Instance.SatzUeberlagerungOffen);
+        Assert.False(cut2.Instance.TypStammOffen);
+        Assert.NotEmpty(cut2.FindAll(".epos-satzueberlagerung-schliessen"));
+        Assert.Empty(cut2.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    [Fact]
+    public void S4_Die_Detailzeile_zeigt_die_Zusammenfassung_des_Satzes()
+    {
+        var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5) },
+                             kalender: new[] { (4, "Werk") });
+
+        string zf = cut.Find(".epos-satzzusammenfassung").TextContent;
+        Assert.Contains("Typ 1", zf);
+        Assert.Contains("12,50", zf);
+        Assert.Contains("Kalender", zf);
+        Assert.Contains("Beschreibung Profil A", zf);
+        // Ohne Ueberlagerung stehen die Felder nicht im Dialog.
+        Assert.Empty(cut.FindAll("input[inputmode=decimal]"));
+
+        KatalogKlick(cut, 1);
+        zf = cut.Find(".epos-satzzusammenfassung").TextContent;
+        Assert.Contains("Beschreibung Profil B", zf);
+        Assert.Contains("6/12", zf.Replace(" ", "").Replace(",0", ""));
+    }
+
+    [Fact]
+    public void S4_OK_der_Ueberlagerung_nimmt_die_angefangene_Eingabe_mit()
+    {
+        int geaendert = 0;
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5) };
+        var cut = AufbauenS4(zeilen, geaendert: () => geaendert++);
+
+        Feld(cut, "input[inputmode=decimal]").Input("33,5");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(33.5, zeilen[0].Summe, 6);
+        Assert.True(geaendert > 0);
+    }
+
+    [Fact]
+    public void S4_Eine_abgelehnte_Eingabe_haelt_die_Ueberlagerung_mit_Grund_offen()
+    {
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5) };
+        var cut = AufbauenS4(zeilen);
+
+        Feld(cut, "input[inputmode=decimal]").Input("-1");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(12.5, zeilen[0].Summe, 6);
+        Assert.NotEmpty(cut.FindAll(".epos-satzueberlagerung-fuss .epos-status--fehler"));
+    }
+
+    [Fact]
+    public void S4_Abbrechen_stellt_den_Stand_beim_Oeffnen_wieder_her()
+    {
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5) };
+        var cut = AufbauenS4(zeilen, kalender: new[] { (4, "Werk") });
+
+        Feld(cut, "input[inputmode=decimal]").Input("33,5");
+        Knopf(cut, "Übernehmen").Click();
+        cut.FindAll(".epos-satzueberlagerung-koerper select").First(s => s.InnerHtml.Contains("Werk")).Change("4");
+        Assert.Equal(33.5, zeilen[0].Summe, 6);
+        Assert.Equal(4, zeilen[0].KalenderId);
+
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(12.5, zeilen[0].Summe, 6);
+        Assert.Null(zeilen[0].KalenderId);
+    }
+
+    [Fact]
+    public void S4_Mehrere_Katalogsaetze_loeschen_mit_einer_Rueckfrage_gesperrte_und_zugeordnete_uebersprungen()
+    {
+        var katalog = new List<Katalogfilterzeile>
+        {
+            Katalogzeile(1, "Profil A", "Typ 1", 1, "a"), Katalogzeile(2, "Profil B", "Typ 1", 1, "b"),
+            Katalogzeile(3, "Profil C", "Typ 1", 1, "c"), Katalogzeile(4, "Profil D", "Typ 1", 1, "d")
+        };
+        katalog[3].Geschuetzt = true;
+        var geloescht = new List<string>();
+        var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1, "Profil A") }, katalog,
+                             loeschen: n => { geloescht.Add(n); return true; });
+
+        for (int i = 0; i < 4; i++)
+            cut.FindAll(".epos-raster")[1].QuerySelectorAll("td .epos-kaestchenzelle input")[i].Change(true);
+        cut.Find(".epos-knopf--loeschen").Click();
+
+        string frage = cut.Find(".epos-rueckfrage").TextContent;
+        Assert.Contains("„Profil B“", frage);
+        Assert.Contains("„Profil D“", frage);   // gesperrt, genannt
+        Assert.Contains("„Profil A“", frage);   // zugeordnet, genannt
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(new[] { "Profil B", "Profil C" }, geloescht);
+    }
+
+    [Fact]
+    public void S4_Die_Sammeluebernahme_nimmt_alle_angekreuzten_Katalogsaetze()
+    {
+        var zeilen = new List<BedarfsProfilZeile>();
+        var cut = AufbauenS4(zeilen);
+
+        for (int i = 0; i < 2; i++)
+            cut.FindAll(".epos-raster")[1].QuerySelectorAll("td .epos-kaestchenzelle input")[i].Change(true);
+        Uebernehmen(cut).Click();
+
+        Assert.Equal(new[] { "Profil A", "Profil B" }, zeilen.Select(z => z.Name));
+        Assert.Equal(2, cut.Instance.ProjektWahl.Anzahl);
+    }
+
+    [Fact]
+    public void S4_Kaelte_zeigt_Katalog_und_Projektliste_mit_Temperaturpaar()
+    {
+        var katalog = new List<Katalogfilterzeile>
+        {
+            Katalogzeile(1, "Serverraum", "Serverraum", 20, "Kühlung eines Serverraums"),
+            Katalogzeile(2, "Kühlraum", "Kühlraum", 10, "Kühlraum")
+        };
+        var zeilen = new List<BedarfsProfilZeile>
+        {
+            new() { IdZ = 1, IdStamm = 3, Name = "Serverraum", Summe = 20, Vorlauf = 18, Ruecklauf = 24 }
+        };
+        var cut = AufbauenS4(zeilen, katalog, BedarfsArt.Kaelte);
+
+        Assert.Equal(2, cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr").Length);
+        Assert.Contains("Serverraum", cut.FindAll(".epos-raster")[0].TextContent);
+        Assert.Contains("18", cut.Find(".epos-satzzusammenfassung").TextContent);
+        Satz(cut);
+        // Kälte führt das Temperaturpaar wie die Prozesswärme (Konzept Kältebedarf 3.3).
+        Assert.Equal(3, cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=decimal]").Count);
     }
 }

@@ -283,6 +283,67 @@ namespace EPOS.Kern.Tests
         //  Kleinkram
         // =====================================================================
 
+        // =====================================================================
+        //  Stufe 4 der Katalogauswahl: Ursprung der Kopie und Abräumen
+        // =====================================================================
+
+        /// <summary>
+        /// Jede Kopie nennt ihren Katalogsatz (<c>ID_Stamm</c>) — wie Kessel, BHKW und Kältebedarf; der
+        /// Verteiler <c>BedarfStammCtrl.CopyFromStamm</c> geht denselben Weg.
+        /// </summary>
+        [Theory]
+        [InlineData(BedarfsArt.Stromverbraucher, SV_KATALOG)]
+        [InlineData(BedarfsArt.Brauchwasser, BW_KATALOG)]
+        [InlineData(BedarfsArt.Prozesswaerme, PW_KATALOG)]
+        [InlineData(BedarfsArt.Kaelte, "Serverraum")]
+        public void Die_Kopie_traegt_die_Id_ihres_Katalogsatzes(BedarfsArt art, string katalog)
+        {
+            using var _ = new Kulturvorrichtung();
+            if (!_db.Vorhanden) return;
+
+            int stammId = DataRepository.GetIdByName(BedarfStammCtrl.KopfTabelle(art), "Bezeichner", katalog);
+            Assert.True(stammId > 0, "Katalogsatz fehlt: " + katalog);
+
+            int id = BedarfStammCtrl.CopyFromStamm(art, katalog, PROJEKT);
+            Assert.True(id > 0, "CopyFromStamm hat keine Projektkopie geliefert (" + id + ").");
+
+            string kopf = BedarfStammCtrl.ProjektTabellen(art).Kopf;
+            Assert.Equal((long)stammId, Zahl("SELECT ID_Stamm FROM " + kopf + " WHERE ID = ?", id));
+            Assert.Equal(id, BedarfStammCtrl.ProjektkopieId(art, katalog, PROJEKT));
+        }
+
+        /// <summary>
+        /// Abbrechen nach „In das Projekt übernehmen": Die frische Kopie geht samt Typprofil; eine Kopie,
+        /// auf die eine Zuordnung zeigt, bleibt stehen.
+        /// </summary>
+        [Theory]
+        [InlineData(BedarfsArt.Stromverbraucher, SV_KATALOG)]
+        [InlineData(BedarfsArt.Brauchwasser, BW_KATALOG)]
+        [InlineData(BedarfsArt.Prozesswaerme, PW_KATALOG)]
+        [InlineData(BedarfsArt.Kaelte, "Serverraum")]
+        public void Die_frische_Kopie_geht_samt_Typprofil_eine_zugeordnete_bleibt(BedarfsArt art, string katalog)
+        {
+            using var _ = new Kulturvorrichtung();
+            if (!_db.Vorhanden) return;
+
+            int id = BedarfStammCtrl.CopyFromStamm(art, katalog, PROJEKT);
+            Assert.True(id > 0);
+            (string kopf, string typ, string zuordnung, string bezug) = BedarfStammCtrl.ProjektTabellen(art);
+
+            // Mit Zuordnung: bleibt.
+            int idZ = DataRepository.GetMaxID(zuordnung, "ID") + 1;
+            DataRepository.ExecuteSQL("INSERT INTO " + zuordnung + " (ID, ID_Projekt, " + bezug + ", Bezeichner, Summe) VALUES (?, ?, ?, ?, 0)",
+                new DbParam("@id", idZ), new DbParam("@p", PROJEKT), new DbParam("@k", id), new DbParam("@b", katalog));
+            Assert.False(BedarfStammCtrl.ProjektkopieEntfernen(art, id, PROJEKT));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + kopf + " WHERE ID = ?", id));
+
+            // Ohne Zuordnung: geht samt Typprofil.
+            DataRepository.ExecuteSQL("DELETE FROM " + zuordnung + " WHERE ID = ?", new DbParam("@id", idZ));
+            Assert.True(BedarfStammCtrl.ProjektkopieEntfernen(art, id, PROJEKT));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + kopf + " WHERE ID = ?", id));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + typ + " WHERE " + bezug + " = ?", id));
+        }
+
         /// <summary>Irgendeine Id aus einem Katalog — die Id, die vor FK-1 durchschlug.</summary>
         private static int KatalogId(string tabelle)
         {

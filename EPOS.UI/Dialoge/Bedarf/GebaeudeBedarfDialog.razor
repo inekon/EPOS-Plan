@@ -56,6 +56,12 @@
 
     <p class="epos-kontextzeile">@Daten.Name</p>
 
+    @* DER ROLLKOERPER (geb3, Konzept Katalogauswahl 4.8 und 7.7): Kopf, Kontextzeile und Fussleiste stehen
+       fest, alles dazwischen rollt in GENAU diesem einen Bereich. Die Tabellen darin rollen nicht selbst
+       (keine eigene Hoehe, kein overflow) - sie fliessen im Koerper; der Wirt traegt die Ueberlagerung mit
+       Zusatzklasse epos-ueberlagerung--rollkoerper. *@
+    <div class="epos-dialog-rollkoerper">
+
     @* Die Einheit gilt fuer die Kennzahl und die Monatstabelle; sie steht deshalb
        ueber beiden. *@
     <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@Einheitenwahl"
@@ -588,6 +594,8 @@
             </KindInhalt>
         </Gruppenkopf>
     }
+
+    </div>
 
     <SpeichernLeiste OkText="@OkText" MitAbbrechen="false" Ergebnis="BeiErgebnis" />
 </div>
