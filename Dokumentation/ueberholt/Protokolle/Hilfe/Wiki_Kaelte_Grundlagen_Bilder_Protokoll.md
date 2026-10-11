@@ -76,6 +76,6 @@ Gate 933: Gate 931 auf 646d4eac grün: Kern-Filter 0 Fehler, ChartProben 222 Has
 
 - Upload erledigt 11.10.2026 (04:10–04:27 UTC, Bot-Konto, Stand `31f31a7d`): 39 Dateien (6 bestehende gleich, 11 SVG und 22 PNG neu, SHA-1-Rücklese gleich), 128 Seiten gleich (5 neu, übrige ersetzt; 0 Fehler, 0 Parse-Warnungen, Rücklese byte-gleich), 19 Weiterleitungen gleich; Update-Logbuch: sechs Sätze unter „Version 1.2.0.10 – Oktober 2026“, Revision 933. Bildschirmfotos der Gebäudedialoge zurückgestellt.
 - Sichtabnahme der Bilder durch den Anwender.
-- Nicht abgebildete Masken (acht entfernte Platzhalter, siehe Bildwelle).
+- Nicht abgebildete Masken (acht entfernte Platzhalter, siehe Bildwelle): Anwenderentscheid 11.10.2026 „später“ — kein Nachliefern aus der Windows-Anwendung; Bilder erst, wenn der Prüfstand eine neutrale Beispieldatenbank hat.
 - Befund „Kältemaschine nicht an Kühltage gebunden“ für die Fachsitzung.
 - Schönheitsfehler des Prüfstands `Proben/ChartProben`: Diagrammproben mit „Waerme“ ohne Umlaut und Fußzeile „Paket iU7-3“.
