@@ -106001,6 +106001,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Vorheizfenster liegt an {0} Tagen ganz in einer Sperrzeit der Anlage ({1} Uhr, {2} Fensterstunden ohne verfügbare Wärme); dort kann nicht vorgeheizt werden. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_SPERRZEIT_GANZ {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_SPERRZEIT_GANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter). ähnelt.
         /// </summary>
         public static string SIMENG_VORH_TAGE {

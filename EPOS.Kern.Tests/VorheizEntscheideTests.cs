@@ -179,6 +179,19 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Liegt_das_Fenster_ganz_in_der_Sperrzeit_nennt_der_Hinweis_keine_freien_Stunden()
+        {
+            using var k = new Kulturvorrichtung("de-DE");
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+            var sperre = new bool[24];
+            sperre[5] = true;
+            var v = new Vorheizgebaeude { VorheizzeitMaxH = 1, TageSperrzeit = 359, FensterstundenGesperrt = 359, SperrUhr = sperre };
+            Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Keiner, v, "Gebäude T");
+            Assert.Contains(p.Hinweise, z => z.Contains("Das Vorheizfenster liegt an 359 Tagen ganz in einer Sperrzeit der Anlage (5–6 Uhr, 359 Fensterstunden ohne verfügbare Wärme); dort kann nicht vorgeheizt werden.", StringComparison.Ordinal));
+            Assert.DoesNotContain(p.Hinweise, z => z.Contains("vorheizen können nur", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public void Eine_Teilsperre_mit_verfuegbarer_Waerme_und_eine_Zone_ohne_Heizkreis_melden_nichts()
         {
             GebaeudeModellEingang e = VorheizAnkunftsbezugTests.Gekoppelt(1.5);

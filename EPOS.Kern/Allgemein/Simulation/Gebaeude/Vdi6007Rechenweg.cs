@@ -731,8 +731,10 @@ namespace WindowsFormsApplication1
             if (v.TageUnerreichbar > 0)
                 p.HinweisEinmal("vorh-unerreichbar-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_UNERREICHBAR,
                     v.TageUnerreichbar.ToString(k), v.NaechteOhneAbsenkung.ToString(k)));
+            // F20 (V3c): ohne freie Fensterstunde ein eigener Text — das Fenster liegt ganz in der Sperrzeit.
             if (v.TageSperrzeit > 0)
-                p.HinweisEinmal("vorh-sperrzeit-" + wer, kopf + string.Format(k, MyResource.Resource.SIMENG_VORH_SPERRZEIT,
+                p.HinweisEinmal("vorh-sperrzeit-" + wer, kopf + string.Format(k,
+                    v.FreiUhr.Any(x => x) ? MyResource.Resource.SIMENG_VORH_SPERRZEIT : MyResource.Resource.SIMENG_VORH_SPERRZEIT_GANZ,
                     v.TageSperrzeit.ToString(k), Vorheizplanung.Uhrzeiten(v.SperrUhr), v.FensterstundenGesperrt.ToString(k),
                     Vorheizplanung.Uhrzeiten(v.FreiUhr)));
             if (v.TageAbweichung > 0)

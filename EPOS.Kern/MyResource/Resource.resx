@@ -51865,6 +51865,9 @@ Chart</value>
   <data name="SIMENG_VORH_SPERRZEIT" xml:space="preserve">
     <value>Das Vorheizfenster liegt an {0} Tagen in einer Sperrzeit der Anlage ({1} Uhr, {2} Fensterstunden ohne verfügbare Wärme); vorheizen können nur die Stunden {3} Uhr.</value>
   </data>
+  <data name="SIMENG_VORH_SPERRZEIT_GANZ" xml:space="preserve">
+    <value>Das Vorheizfenster liegt an {0} Tagen ganz in einer Sperrzeit der Anlage ({1} Uhr, {2} Fensterstunden ohne verfügbare Wärme); dort kann nicht vorgeheizt werden.</value>
+  </data>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt.</value>
   </data>
