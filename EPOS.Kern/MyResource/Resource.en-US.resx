@@ -4516,6 +4516,30 @@ Please run the simulation with photovoltaics first.</value>
   <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
     <value>{0} data rows read → no interval: {1}</value>
   </data>
+  <data name="IMPORT_PROBE_WERTE" xml:space="preserve">
+    <value>{0} data rows read → {1} values in {2}</value>
+  </data>
+  <data name="IMPORT_PROBE_ABGELEHNT" xml:space="preserve">
+    <value>{0} data rows read → rejected: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_WERTEANZAHL" xml:space="preserve">
+    <value>The file supplies {0} values; exactly {1} are expected.</value>
+  </data>
+  <data name="IMPORT_PROBE_SUMME" xml:space="preserve">
+    <value>Annual total {0} {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_NENNLEISTUNG" xml:space="preserve">
+    <value>Peak power {0} {1}</value>
+  </data>
+  <data name="IMPORT_TITEL_QUELLPROFIL" xml:space="preserve">
+    <value>Import source profile – format and preview</value>
+  </data>
+  <data name="IMPORT_LBL_JAHR" xml:space="preserve">
+    <value>Year of the series:</value>
+  </data>
+  <data name="IMPORT_MSG_FORMAT_ABGELEHNT" xml:space="preserve">
+    <value>The file does not match the format and is not imported: {0}</value>
+  </data>
   <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
     <value>hour</value>
   </data>
@@ -51402,6 +51426,15 @@ chart</value>
   <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
     <value>A worksheet only exists for an Excel workbook.</value>
   </data>
+  <data name="KI_DLG_GIO_JAHR_ERL" xml:space="preserve">
+    <value>The calendar year of the series — only for formats with a year field (such as spot prices); it fixes weekdays and holidays.</value>
+  </data>
+  <data name="KI_GIO_FORMAT_FEST" xml:space="preserve">
+    <value>This format fixes the field; it is not shown.</value>
+  </data>
+  <data name="KI_GIO_KEIN_JAHR" xml:space="preserve">
+    <value>A year field only exists for formats with a year (such as spot prices).</value>
+  </data>
   <data name="KI_DLG_SPOT_BEZEICHNER_ERL" xml:space="preserve">
     <value>The name under which the price series is stored; if empty, it is prefilled with the file name when the file is chosen.</value>
   </data>
@@ -52328,6 +52361,51 @@ chart</value>
   </data>
   <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
     <value>Zone</value>
+  </data>
+  <data name="IMPORT_ACHSE_SPOTPREIS" xml:space="preserve">
+    <value>Spot price [ct/kWh]</value>
+  </data>
+  <data name="IMPORT_TITEL_SPOTPREIS" xml:space="preserve">
+    <value>Import spot market prices – format and preview</value>
+  </data>
+  <data name="IMPORT_PROBE_SPOTPREIS" xml:space="preserve">
+    <value>Year of file {0} · mean {1} ct/kWh · range {2} to {3} ct/kWh</value>
+  </data>
+  <data name="IMPORT_TITEL_TWW_MESSREIHE" xml:space="preserve">
+    <value>Import measured series – format and preview</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_ENERGIE" xml:space="preserve">
+    <value>Draw-off energy [kWh]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_VOLUMEN" xml:space="preserve">
+    <value>Draw-off volume [m³]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAGESSTUNDE" xml:space="preserve">
+    <value>Hour of day [h]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAG_DER_REIHE" xml:space="preserve">
+    <value>Day of series</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE" xml:space="preserve">
+    <value>{0} days read · shown: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE_TAGESREIHE" xml:space="preserve">
+    <value>{0} days read · shown: the first {1} days</value>
+  </data>
+  <data name="KI_DLG_SPOT_JAHR_ERL" xml:space="preserve">
+    <value>The year of the checked series — from the year field of “Format and preview”; the year of the file is proposed. It sets weekdays and public holidays.</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_NAME" xml:space="preserve">
+    <value>File preview</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_ERL" xml:space="preserve">
+    <value>The key figure line from “Format and preview”: days read and the day shown in the day view.</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_NAME" xml:space="preserve">
+    <value>Chart type</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
+    <value>How the preview shows the series read: year (annual profile) or day (day view of the DHW measured series).</value>
   </data>
 </root>
 
