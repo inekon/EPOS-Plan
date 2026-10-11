@@ -464,3 +464,6 @@ Quellen/*.sqproj
 
 # FUSE-Temporaerdateien (Sync von einem gemounteten Laufwerk)
 .fuse_hidden*
+
+# Probenfotos der Agenten, nie im Repositorium
+.proben-fotos/
