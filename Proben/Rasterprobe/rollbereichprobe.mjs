@@ -108,7 +108,7 @@ const FAELLE = [
 
 const verstoesse = [];
 const kurven = [];      // DZ1-N2: gemessene Kurvenmasse je Fall, Fenster und Zustand
-const befunde = [];     // ausserhalb des Bausteins: Kaeltemaschinenkatalog (Stufe 5), Ueberlagerungen des Hauses
+const befunde = [];     // ausserhalb des Bausteins: Ueberlagerungen des Hauses
 const zeilen = [];
 
 // ---------------------------------------------------------------------------
@@ -412,7 +412,7 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
     kurven.push(`${fall} ${fenster.breite}x${fenster.hoehe} ${zustand}: Kurve ${m.bildBreite} x ${m.bild} px, Satzflaeche ${m.satzBreite} px, Modell ${m.modell ? m.modell.breite + ' x ' + m.modell.hoehe : '-'}, Dialog rollt ${m.dialogUeberhang} px`);
   }
   if (m.eng && (fenster.neu || (m.satzOffen && m.ganglinie))) { befunde.push(kennung + ': Dialogkoerper rollt (unter der Mindesthoehe)'); m = { ...m, dialogRollt: false }; }
-  const aussen = p => fall === 'kaeltemaschine' || / in div\.epos-ueberlagerung/.test(p);
+  const aussen = p => / in div\.epos-ueberlagerung/.test(p);
   const eigen = m.verschachtelt.filter(p => !aussen(p)), fremd = m.verschachtelt.filter(aussen);
   if (eigen.length) fehler.push('Rollbereich im Rollbereich: ' + eigen.join('; '));
   if (fremd.length) befunde.push(kennung + ': ' + fremd.join('; '));
@@ -485,7 +485,7 @@ try {
         await seite.evaluate(erreichbar, rand(fenster)));
 
       await mess('Vorgabe');
-      if (FOTOS && fenster.neu && (fall === 'heizkessel' || fall === 'gebaeude' || (fenster.ipad && fall === 'kaeltemaschine')))
+      if (FOTOS && fenster.neu && (fall === 'heizkessel' || fall === 'gebaeude'))
         await seite.screenshot({ path: `${FOTOS}/${fall}_${fenster.breite}x${fenster.hoehe}.png` });
       if (istWirt) {
         if (await taste(seite, 'Home')) await mess('Trennlinie oben');
@@ -616,8 +616,9 @@ try {
           pufferspeicher: ['button.epos-pspd-auslegen', '„Auslegen…"'], stromspeicher: ['.epos-traegerwahl select', 'Traegerwahl'],
           solarkollektoren: ['.epos-gruppenkopf-koerper input', 'Kollektorfelder'],
           waermepumpen: ['button.epos-knopf--anlage', '„Anlage…"', '.epos-wp-satz'],
-          photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'] };
-        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik'];
+          photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'],
+          kaeltemaschine: ['.epos-kostenleiste button', 'Kostenknoepfe', '.epos-kaeltemaschine-satz'] };
+        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine'];
         // Kopf der Detailzeile: zwei Infoknoepfe; die Waermepumpe traegt dort „Anlage…" (Grundlagen und Berechnung
         // stehen in ihrem Anlagendialog).
         const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 1, '„Anlage…"'] };
@@ -638,7 +639,8 @@ try {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${kopfWas} fehlen im Kopf der Detailzeile`); console.log('  VERSTOSS ' + verstoesse.at(-1));
           }
           await mess('Detailzeile auf, Zusammenfassung');
-          if (FOTOS && fall !== 'pufferspeicher' && fenster.breite === 1280 && fenster.hoehe === 800)
+          if (FOTOS && fall !== 'pufferspeicher' && ((fenster.breite === 1280 && fenster.hoehe === 800)
+                        || (fall === 'kaeltemaschine' && fenster.breite === 1194 && fenster.hoehe === 834)))
             await seite.screenshot({ path: `${FOTOS}/${fall}_zusammenfassung_${fenster.breite}x${fenster.hoehe}.png` });
           }
           await satz(seite, false);

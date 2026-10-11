@@ -81,9 +81,9 @@ const FENSTERDIALOGE = ['dubletten'];
 // Projektdialoge mit Katalogauswahl (Baustein Zweispaltenauswahl, Konzept Projektdialoge mit
 // Katalogauswahl 4.1): Sie fuellen ihr Fenster, die Haftregel ist fuer sie gegenstandslos. Die
 // Probe misst hier "nichts rollt ausser den Listen und der Detailzeile".
-const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude'];
+const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'kaeltemaschine'];
 // UeS2: Wirte mit Zusammenfassung - ihre Detailzeile hat keinen Vorrang (DZ1 entfaellt).
-const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren']);
+const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren', 'kaeltemaschine']);
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);

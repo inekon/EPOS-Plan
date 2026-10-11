@@ -383,7 +383,7 @@ vollen Fensterhöhe halten sie frei, gemessen zusätzlich in den iPad-11-Zoll-Fe
 | Gebäude | — | Neu, Import, Baustoffzuordnungen, Schloss, Löschen | Kenndaten; Projektsatz: Wohnfläche, Ausrichtung, Simulation, Export | Gebäudedaten… |
 | Bedarfsprofile | Jahressumme | Neu, Typ ändern, DB ändern, Schloss, Löschen | Verbrauch, Temperatur, Kalender | — |
 | Wärmebedarf extern, Strom-, Solarthermie-, PV-Ganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten (Solarthermie und PV: Vergleichen, Schloss, Löschen, Import) | Ganglinie mit Kennzahlen; Solarthermie und PV davor Name, Beschreibung (PV: Raster, Jahresarbeit, Nennleistung) | — |
-| Kältemaschine (Katalogauswahl) | — | Schloss, Löschen, Bearbeiten | Kenndaten | die Anlage bleibt im Anlagendialog |
+| Kältemaschine | Summe kW Kälte | Vergleichen, Schloss, Löschen, Bearbeiten · Typkennfelder laden, Katalogverwaltung | Projektsatz: Anlagenfelder, Kosten, Kenndaten (Kennlinie, Teillast); Katalogsatz: Kenndaten | — (Wärmepumpen im Kühlbetrieb als Zeile unter der Auswahl) |
 
 **Präzisiert in DZ1 (Anwenderentscheid 10.10.2026: „Alle Dialoge mit CSV-Import … sollen unter ‚Gewählter
 Satz‘ analog zum Dialog Wärmebedarf extern den Lastgang darstellen“):** Alle vier Ganglinien-Dialoge übergeben der
@@ -831,6 +831,39 @@ Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier 
   „Modul Bearbeiten…" öffnete den Modulkatalog ohne Vorwahl auch ohne gewählten Satz. Ist nur ein gesperrter Satz
   gewählt, ist Neu… allein über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
 
+### 5.10 Wie gebaut (Stufe 5, Kältemaschine)
+
+Die Kältemaschine folgt dem BHKW (5.4); hier steht nur, was abweicht.
+
+- **Wirt statt Katalogüberlagerung:** `KaeltemaschineAnlageDialog` ist Wirt der `Zweispaltenauswahl` (Dialogname
+  `Kaeltemaschine`). Oben die Anlagenzeilen des Projekts (Bezeichner, Nennkälteleistung, EER/SEER, Rückkühlart, Anzahl,
+  Kühlträger, eigener Zähler; Kopfleiste mit der Summe kW Kälte aus Nennkälteleistung mal Anzahl, „Bearbeiten…" und
+  „Aus dem Projekt entfernen"), darunter `Tab_Kaeltemaschine_STAMM` in der Katalogliste mit Spaltenwahl und
+  Verwendungsmarke (über den Gerätenamen der Projektkopie). Die frühere Überlagerung „Hinzufügen…" entfällt.
+- **Kein Rückweg:** Die Kennwerte des Geräts pflegt allein der Katalogeditor; „In die Datenbank übernehmen…" gibt es nicht.
+  Kein Schemaschritt, kein neuer Kernweg: Anlegen, Speichern und Löschen laufen wie bisher über
+  `KaeltemaschineAnlageCtrl`, die Projektkopie über `KaeltemaschineCtrl.EigeneKopieAnlegen` (sie trägt `ID_Stamm`).
+- **Projektkopie und Anlagenzeile sofort:** „In das Projekt übernehmen" legt beide sofort an; die in der Sitzung
+  angelegten Anlagen merkt der Dialog sich (Muster `Projektkopievormerkung`), Abbrechen, Kreuz und Esc löschen sie samt
+  Kostenpositionen wieder. „Aus dem Projekt entfernen" nimmt eine neue Anlage sofort weg und merkt eine gespeicherte bis
+  zum OK vor.
+- **Satz-Überlagerung:** Die Detailzeile zeigt die Zusammenfassung (Projektsatz: Nennkälteleistung, gesamt bei mehr als
+  einer Maschine, EER/SEER, Rückkühlart, Anzahl, Kühlträger, Zähler, Investition und Betrieb der Kostenkomponente 11;
+  Katalogsatz: Hersteller, Nennkälteleistung, EER, Rückkühlart, Geräteart). „Bearbeiten" und der Stift öffnen die
+  Überlagerung: beim Projektsatz die Betriebseingaben (`KaeltemaschineKonfiguration`, dieselbe Komponente wie im Bereich
+  „Kälte" der Simulationskonfiguration), die Kostenknöpfe, die Gerätewerte zum Lesen und die Kenndaten als Bild
+  (Kennlinie EER und Kälteleistung, Teillastkurve). OK prüft mit `KaeltemaschineAnlageCtrl.Pruefen` und schreibt über
+  `Katalogladung.Schreiben`; Abbrechen stellt die Anlagenfelder wieder her. Das Abbrechen des Dialogs schreibt einer in der
+  Sitzung gespeicherten Anlage ihren Stand beim Öffnen zurück.
+- **Katalogfuß:** „Vergleichen…" über die Parameterübersicht der Verwaltung, Schloss, „Löschen" (Fangweg
+  `Katalogladung.Loeschen`), „Bearbeiten…" öffnet den Katalogeditor `KaeltemaschineKatalogDialog` als Überlagerung mit dem
+  gewählten Satz (Parameter `Vorwahl`); ein gesperrter Satz öffnet nur lesend in der Satz-Überlagerung. Rechts
+  „Typkennfelder laden…" und „Katalogverwaltung…" (der Editor ohne Vorwahl; ohne Gaben über `Dienste.Navigation`).
+- **Nähte:** `KaeltemaschineAnlageHuelle` (plattformfrei) reicht Vergleich, Schloss, Katalogloeschen, Kostensumme und
+  Kenndatenbilder; die Windows-Schale ergänzt in `KaeltemaschineAnlageFensterHuelle` die Kostenknöpfe
+  (`ErzeugerKostenwege`) und den Katalogeditor samt „Import…". Auf iOS fehlen die Kostenknöpfe.
+- **Wärmepumpen im Kühlbetrieb:** Die Schalter stehen als Zeile unter der Katalogauswahl und werden beim OK geschrieben.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
@@ -887,7 +920,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | **2 Heizkessel** (umgesetzt 09.10.2026, Statuszeile #873; Teil a Knöpfe und Bearbeiten, Teil b Rückweg und Schemaschritt 208) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
 | **3 Erzeuger** (umgesetzt 10.10.2026: BHKW Statuszeile #887, übrige Erzeuger Statuszeilen #905–#909, ÜS1/ÜS2 Statuszeilen #939/#940) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
 | **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
-| **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
+| **5 Kältemaschine und Abschluss** (Kältemaschine umgesetzt 11.10.2026, Statuszeile folgt) | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 
 **Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus
 dem Raster statt `max-height`), `fensterprobe.mjs` (Kopf und Fuß im eigenen Fenster; sie misst für diese

@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
             {
                 ["Anlagen"] = new Func<IReadOnlyList<KaeltemaschineAnlageDaten>>(() => Liste(projektId)),
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(KaeltemaschineStammCtrl.Katalogfilterzeilen),
-                ["Katalogprofil"] = Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine, Katalogtexte.Fuer),
+                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(Anlagenart.Kaeltemaschine, Katalogtexte.Fuer),
                 ["Katalogwerte"] = new Func<int, KaeltemaschineGeraetwerte>(id => Werte(KaeltemaschineStammCtrl.Laden(id))),
                 ["Stromtraeger"] = (IReadOnlyList<(int Id, string Text)>)traeger,
                 ["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId),

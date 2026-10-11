@@ -204,6 +204,8 @@
             }
             else
             {
+                @* Die Marke des Fragments (Rollbereichprobe): genau einmal, nur in der Satz-Ueberlagerung. *@
+                <div class="epos-kaeltemaschine-satz">
                 @if (Aktuell is Zeile a)
                 {
                     @* Die Betriebseingaben: dieselbe Komponente wie im Bereich „Kälte" der Simulations-
@@ -248,6 +250,7 @@
                         </KindInhalt>
                     </Formulargruppe>
                 }
+                </div>
             }
         </Satz>
     </Zweispaltenauswahl>
@@ -256,7 +259,7 @@
     @if (Waermepumpen is not null)
     {
         <div class="epos-kaeltemaschine-waermepumpen" role="group" aria-label="@Texte.GruppeWaermepumpen">
-            <span class="epos-feld-bezeichnung">@Texte.GruppeWaermepumpen</span>
+            <span class="epos-feld-bezeichnung">@(Texte.GruppeWaermepumpen + ": ")</span>
             @if (_wpGelesen.Count == 0)
             {
                 <span class="epos-leisezeile epos-kaeltemaschine-wp-leer">@Texte.WaermepumpenLeer</span>
@@ -455,7 +458,7 @@
 
     private Katalogfilterprofil Profil
         => _profil ??= Katalogprofil
-                       ?? Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine, s => Resource.ResourceManager.GetString(s) ?? s);
+                       ?? Katalogfilterprofil.MitVerwendung(Anlagenart.Kaeltemaschine, s => Resource.ResourceManager.GetString(s) ?? s);
 
     // ---- Prüfhilfen für die Tests ---------------------------------------
     /// <summary>Die Namen der sichtbaren Anlagen in Listenreihenfolge (Prüfhilfe).</summary>

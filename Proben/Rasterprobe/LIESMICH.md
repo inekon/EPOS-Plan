@@ -1202,15 +1202,15 @@ Abschnitt 4 und 8) füllen ihr Fenster; es rollen allein Projektliste, Katalogli
 Detailzeile, keine in der anderen. bunit sieht weder Lage noch Rollbereich — die Probe misst es im echten
 Chromium. Die Seite `/rollbereichprobe?fall=…` trägt ohne Datenbank Pufferspeicher, Stromspeicher,
 Photovoltaik, Solarkollektoren, Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie und die
-Kältemaschinenauswahl (`KaeltemaschineKatalogDialog`); Heizkessel, BHKW, Wärmepumpen und Gebäude nimmt die
-Probe von `/fensterprobe`.
+Kältemaschinen (`KaeltemaschineAnlageDialog` als Wirt des Bausteins, Stufe 5); Heizkessel, BHKW, Wärmepumpen und
+Gebäude nimmt die Probe von `/fensterprobe`, die dazu auch die Kältemaschinen trägt (`/fensterprobe?fall=kaeltemaschine`).
 
 ```bash
 node rollbereichprobe.mjs --url http://127.0.0.1:5299 [--nur <fall>] [--ohne-gegenprobe]
 ```
 
 **Fälle.** Vierzehn Fälle (Heizkessel, BHKW, Wärmepumpen, Gebäude, Pufferspeicher, Stromspeicher, Photovoltaik,
-Solarkollektoren, Bedarfsprofile, Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie, Kältemaschinenauswahl) × zehn
+Solarkollektoren, Bedarfsprofile, Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie, Kältemaschinen) × zehn
 Fenster (1 280 × 800, 1 280 × 720, 1 024 × 768, 1 024 × 700, 1 093 × 614, 1 180 × 820, 1 194 × 834, 1 210 × 834,
 834 × 1 194, 768 × 1 024) × die Zustände Vorgabe, Trennlinie oben (Pos1), Trennlinie unten (Ende), Detailzeile auf bei
 beiden Grenzen, Detailzeile wieder zu, mit der Maus gezogen, neu geladen (die Höhe kommt über `Dienste.Einstellungen`
@@ -1355,10 +1355,15 @@ Gegenproben rot** — Rückgabe 0; Fensterprobe erfüllt (Gegenprobe rot), `rast
 
 Am selben Stand `diagrammprobe.mjs` erfüllt (41 Schritte, größter Abstand 0,50 px, Gegenprobe ohne Tafel verfehlt).
 
-Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein
-Katalogdialog (`.epos-katalog-dialog` mit `overflow: auto` als Notnagel um Liste und Stammblatt) und kein
-Wirt des Bausteins; die Überlagerung „Simulation…" des Gebäudes rollt als Ganzes um zwei Listen. Beide je
-drei Fenster.
+Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Überlagerung „Simulation…" des
+Gebäudes rollt als Ganzes um zwei Listen, je drei Fenster. Die Kältemaschinen sind seit Stufe 5 Wirt des Bausteins
+und zählen wie jeder Wirt: Zusammenfassung in der Detailzeile, Satz-Überlagerung über „Bearbeiten…", „Bearbeiten"
+und den Stift mit der Marke `.epos-kaeltemaschine-satz` und den Kostenknöpfen im Körper.
+
+**Messung Stufe 5 (Kältemaschine, 11.10.2026):** `rollbereichprobe.mjs --nur kaeltemaschine` 110 Zustände in zehn
+Fenstern, 0 Verstöße, die elf Gegenproben rot (Rückgabe 0); `fensterprobe.mjs --nur kaeltemaschine` erfüllt — in
+1 088 × 624, 520 × 624 und 1 194 × 834 rollen nur die zwei Listen, Gegenproben rot; `rasterprobe.mjs` 29 von 29 Fällen
+erfüllt.
 
 **Grenzen.** Bei 720 und 700 px Fensterhöhe behält der Heizkessel Kopf und zwei Katalogzeilen; die
 Wirte ohne eigenes Zeilenmaß (Stufe 3 und 4: Kontextzeile noch unter dem Kopf) klemmen dort weiter auf
