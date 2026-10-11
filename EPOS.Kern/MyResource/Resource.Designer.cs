@@ -119538,6 +119538,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf definieren ähnelt.
+        /// </summary>
+        public static string START_KB_KOPF {
+            get {
+                return ResourceManager.GetString("START_KB_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte — einschalten in der Simulationskonfiguration. ähnelt.
+        /// </summary>
+        public static string START_KB_OHNE_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("START_KB_OHNE_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erfassen Sie den Kältebedarf Ihres Projekts. ähnelt.
+        /// </summary>
+        public static string START_KB_TEXT {
+            get {
+                return ResourceManager.GetString("START_KB_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelastgang und Kältebedarfsprofil erfassen Kältebedarf ohne Gebäudemodell. Die Kühlung der Projektgebäude rechnet das Gebäudemodell selbst. ähnelt.
+        /// </summary>
+        public static string START_KB_TIPP {
+            get {
+                return ResourceManager.GetString("START_KB_TIPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tipp ähnelt.
+        /// </summary>
+        public static string START_KB_TIPP_TITEL {
+            get {
+                return ResourceManager.GetString("START_KB_TIPP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zur Simulationskonfiguration ähnelt.
+        /// </summary>
+        public static string START_KB_ZUR_KONFIG {
+            get {
+                return ResourceManager.GetString("START_KB_ZUR_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}) ähnelt.
         /// </summary>
         public static string START_KLIMA_EINTRAG {
@@ -119682,6 +119736,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt rechnet keine Kälte ähnelt.
+        /// </summary>
+        public static string START_K_GEBKUEHL_AUS {
+            get {
+                return ResourceManager.GetString("START_K_GEBKUEHL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung der Projektgebäude einstellen ähnelt.
+        /// </summary>
+        public static string START_K_GEBKUEHL_B {
+            get {
+                return ResourceManager.GetString("START_K_GEBKUEHL_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Gebäuden gekühlt ähnelt.
+        /// </summary>
+        public static string START_K_GEBKUEHL_STAND {
+            get {
+                return ResourceManager.GetString("START_K_GEBKUEHL_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudekühlung ähnelt.
+        /// </summary>
+        public static string START_K_GEBKUEHL_T {
+            get {
+                return ResourceManager.GetString("START_K_GEBKUEHL_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konventionelle Wärmeerzeugung ähnelt.
         /// </summary>
         public static string START_K_HEIZKESSEL_B {
@@ -119696,6 +119786,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_K_HEIZKESSEL_T {
             get {
                 return ResourceManager.GetString("START_K_HEIZKESSEL_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelastgang als CSV einlesen und zuordnen ähnelt.
+        /// </summary>
+        public static string START_K_KBEXTERN_B {
+            get {
+                return ResourceManager.GetString("START_K_KBEXTERN_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf extern ähnelt.
+        /// </summary>
+        public static string START_K_KBEXTERN_T {
+            get {
+                return ResourceManager.GetString("START_K_KBEXTERN_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf aus Typprofil, Jahressumme und Kalender ähnelt.
+        /// </summary>
+        public static string START_K_KBPROFIL_B {
+            get {
+                return ResourceManager.GetString("START_K_KBPROFIL_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string START_K_KBPROFIL_T {
+            get {
+                return ResourceManager.GetString("START_K_KBPROFIL_T", resourceCulture);
             }
         }
         
@@ -120002,6 +120128,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_REITER_ERZEUGER {
             get {
                 return ResourceManager.GetString("START_REITER_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string START_REITER_KAELTE {
+            get {
+                return ResourceManager.GetString("START_REITER_KAELTE", resourceCulture);
             }
         }
         
