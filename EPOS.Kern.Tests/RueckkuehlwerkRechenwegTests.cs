@@ -406,7 +406,7 @@ namespace EPOS.Kern.Tests
             foreach (Kennzahl k in KennzahlenKatalog.Alle().Where(k => k.Schluessel.StartsWith("kaelte.rk.", StringComparison.Ordinal)))
             {
                 Assert.NotEqual(k.LabelDe, k.LabelEn);
-                Assert.Equal(20, k.Seit);
+                Assert.Equal(k.Schluessel.StartsWith("kaelte.rk.teilfrei", StringComparison.Ordinal) ? 21 : 20, k.Seit);
                 Assert.False(string.IsNullOrEmpty(k.Einheit));
             }
         }
