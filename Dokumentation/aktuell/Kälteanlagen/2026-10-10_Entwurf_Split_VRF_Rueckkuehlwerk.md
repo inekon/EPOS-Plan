@@ -373,8 +373,12 @@ die freie Kühlung über die Wärmequelle (`Kaeltekaskade.cs`, Weg KU3-6). `PARA
 - **Schwelle:** Die Teil-Freikühlung greift, wenn θ_FK ≤ θ_R − 3 K, verglichen über `Rechenrand.SchwelleErreicht` (Schwelle
   θ_R − 3 K, Wert θ_FK, als Untergrenze vertauscht). θ_FK ist die Rückkühltemperatur mit Nenn-Annäherung — an ihr fällt die
   Entscheidung, wie bei `PARALLEL`.
-- **Kaltwasserstrom ohne Iteration:** ṁ·c_p = Q̇_Nenn / Δθ (Nennkälteleistung × Anzahl der Anlagenzeile, Auslegungsspreizung);
-  c_p kürzt sich, Q̇_FK = min(Last, Q̇_Nenn · (θ_R − θ_FK) / Δθ, Rückkühlerleistung).
+- **Annahme: Spreizung konstant, Kaltwasserstrom folgt der Last.** Der Massenstrom ist der der Stunde, ṁ·c_p = Last / (θ_R − θ_V);
+  der Vorkühler kühlt den Rücklauf höchstens auf θ_FK und deckt den Temperaturanteil der Last, ohne Iteration (c_p kürzt
+  sich): Q̇_FK = min(Last · clamp((θ_R − θ_FK) / (θ_R − θ_V), 0, 1), Rückkühlerleistung). θ_FK am Vorlauf oder darunter deckt
+  die ganze Last; eine Spreizung der Stunde ≤ 0 (über `Rechenrand`) gibt keine Teil-Freikühlung. Beispiel: θ_V 7 °C,
+  θ_R 17 °C, θ_FK 13 °C, Last 40 % → 40 % der Last frei. Die Variante mit konstantem Massenstrom (Nenn-Massenstrom bei
+  wechselndem Rücklauf) ist ausdrücklich **nicht** gebaut.
 - **Rückkühlerleistung** = `Nennleistung_kW` des Rückkühlwerks; leer die Nennkälteleistung der Anlagenzeile (die Grenze der
   parallelen freien Kühlung).
 - **Rücklauf:** auf AK3 der Kühlrücklauf der Lösung der Stunde, kühlleistungsgewichtet über die Zonen mit Kühlübergabe; sonst

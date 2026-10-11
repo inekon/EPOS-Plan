@@ -37,8 +37,8 @@
 
         /// <summary>
         /// K-F3 (Entwurf Split/VRF/Rückkühlwerk 5.5): Auslegungsspreizung des Kaltwassers [K] für die Teil-Freikühlung in Reihe,
-        /// wenn kein Gebäude des Projekts eine Kühlübergabe pflegt — Bezug des Kaltwasserstroms (ṁ·c_p = Q̇_Nenn / Δθ) und, ohne
-        /// gerechneten Rücklauf, des Rücklaufs (Vorlauf + Δθ). Quelle: Normbedingung „Kaltwasser 12/7 °C“ der DIN EN 14511-2
+        /// wenn kein Gebäude des Projekts eine Kühlübergabe pflegt — ohne
+        /// gerechneten Rücklauf Bezug des Rücklaufs (Vorlauf + Δθ); der Kaltwasserstrom folgt der Last (ṁ·c_p = Last / Δθ). Quelle: Normbedingung „Kaltwasser 12/7 °C“ der DIN EN 14511-2
         /// (Flüssigkeitskühlsätze, Anwendung Gebläsekonvektor) — Quelle nicht am Wortlaut geprüft (vorläufig).
         /// </summary>
         public const double REIHE_SPREIZUNG_K = 5.0;

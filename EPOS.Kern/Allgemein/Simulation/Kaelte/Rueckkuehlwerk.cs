@@ -259,26 +259,31 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// K-F3 (Entwurf 5.5): die Kälte der Teil-Freikühlung einer Stunde [kWh] —
-        /// Q̇_FK = min(Kälte der Stunde, ṁ·c_p·(θ_R − θ_FK), Rückkühlerleistung). Der Kaltwasserstrom kommt ohne Iteration aus
-        /// Nennkälteleistung und Spreizung: ṁ·c_p = Q̇_Nenn / Δθ — c_p kürzt sich heraus, ṁ·c_p·(θ_R − θ_FK) =
-        /// Q̇_Nenn · (θ_R − θ_FK) / Δθ. 0, wenn die Teil-Freikühlung nicht greift (<see cref="TeilFreikuehlungGreift"/>) oder
-        /// eine Größe fehlt.
+        /// K-F3 (Entwurf 5.5): die Kälte der Teil-Freikühlung einer Stunde [kWh]. Annahme: Die Spreizung der Stunde
+        /// θ_R − θ_V ist gegeben, der Kaltwasserstrom folgt der Last — ṁ·c_p = Last / (θ_R − θ_V). Der Vorkühler kühlt den
+        /// Rücklauf von θ_R höchstens auf θ_FK und deckt so den Anteil (θ_R − θ_FK) / (θ_R − θ_V) der Last, begrenzt auf 0…1:
+        /// Q̇_FK = min(Last · clamp((θ_R − θ_FK) / (θ_R − θ_V), 0, 1), Rückkühlerleistung). c_p kürzt sich, keine Iteration.
+        /// Die Variante mit konstantem (Nenn-)Massenstrom ist nicht gebaut. 0, wenn die Teil-Freikühlung nicht greift
+        /// (<see cref="TeilFreikuehlungGreift"/>), die Spreizung nicht über 0 liegt (<see cref="Rechenrand.SchwelleErreicht"/>)
+        /// oder eine Größe fehlt.
         /// </summary>
         /// <param name="kaelteKwh">Kälte der Stunde, die die Maschine decken soll [kWh].</param>
-        /// <param name="nennKaelteKw">Nennkälteleistung aller Maschinen der Anlagenzeile [kW] — Bezug des Kaltwasserstroms.</param>
-        /// <param name="spreizungK">Auslegungsspreizung des Kaltwassers [K] — Bezug des Kaltwasserstroms.</param>
-        /// <param name="ruecklaufC">Kaltwasserrücklauf der Stunde [°C].</param>
+        /// <param name="vorlaufC">Kaltwasservorlauf der Stunde [°C].</param>
+        /// <param name="ruecklaufC">Kaltwasserrücklauf der Stunde [°C] (ohne AK3 Vorlauf + Auslegungsspreizung, auf AK3 gerechnet).</param>
         /// <param name="fluidC">Fluidtemperatur des Rückkühlers (Bezug + Annäherung) [°C].</param>
         /// <param name="rueckkuehlerKw">Leistungsgrenze des Rückkühlers [kW].</param>
-        public static double TeilFreikuehlungKwh(double kaelteKwh, double nennKaelteKw, double spreizungK, double ruecklaufC,
-                                                 double fluidC, double rueckkuehlerKw)
+        public static double TeilFreikuehlungKwh(double kaelteKwh, double vorlaufC, double ruecklaufC, double fluidC,
+                                                 double rueckkuehlerKw)
         {
-            if (!(kaelteKwh > 0) || !(nennKaelteKw > 0) || !(spreizungK > 0) || !(rueckkuehlerKw > 0)) return 0.0;
+            if (!(kaelteKwh > 0) || !(rueckkuehlerKw > 0) || double.IsNaN(vorlaufC) || double.IsInfinity(vorlaufC)) return 0.0;
             if (!TeilFreikuehlungGreift(ruecklaufC, fluidC)) return 0.0;
-            double tauscher = nennKaelteKw * (ruecklaufC - fluidC) / spreizungK;
-            if (!(tauscher > 0)) return 0.0;
-            double q = kaelteKwh < tauscher ? kaelteKwh : tauscher;
+            double spreizung = ruecklaufC - vorlaufC;
+            // Spreizung der Stunde ≤ 0 (am Rand): kein Kaltwasserstrom, den der Rückkühler vorkühlen könnte.
+            if (Rechenrand.SchwelleErreicht(0.0, spreizung)) return 0.0;
+            double anteil = (ruecklaufC - fluidC) / spreizung;
+            if (!(anteil > 0)) return 0.0;
+            if (anteil > 1.0) anteil = 1.0;
+            double q = kaelteKwh * anteil;
             return q < rueckkuehlerKw ? q : rueckkuehlerKw;
         }
 

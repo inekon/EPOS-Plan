@@ -422,7 +422,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// K-F3: Auslegungsspreizung des Kaltwassers [K] für die Teil-Freikühlung in Reihe — die kleinste gepflegte Spreizung
         /// der Kühlübergabe der Gebäude (<c>Kuehl_Auslegung_Ruecklauf − Kuehl_Auslegung_Vorlauf</c>), ohne Kühlübergabe
-        /// <see cref="KaelteFestwerte.REIHE_SPREIZUNG_K"/>. Bezug des Kaltwasserstroms und des Rücklaufs ohne AK3.
+        /// <see cref="KaelteFestwerte.REIHE_SPREIZUNG_K"/>. Bezug des Rücklaufs ohne AK3 (Vorlauf + Spreizung).
         /// </summary>
         public double ReiheSpreizungK = KaelteFestwerte.REIHE_SPREIZUNG_K;
 
@@ -446,7 +446,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// K-F3 (Entwurf 5.5): eine Stunde mit Rückkühlwerk in Reihe. Liegt die Fluidtemperatur des Rückkühlers (Bezug +
         /// Nenn-Annäherung) mindestens <see cref="KaelteFestwerte.FREIE_KUEHLUNG_ABSTAND_K"/> unter dem Rücklauf, kühlt er ihn
-        /// vor: Q̇_FK = min(Last, Q̇_Nenn · (θ_R − θ_FK) / Δθ, Rückkühlerleistung) (<see cref="Rueckkuehlwerk.TeilFreikuehlungKwh"/>;
+        /// vor: Q̇_FK = min(Last · clamp((θ_R − θ_FK) / (θ_R − θ_V), 0, 1), Rückkühlerleistung) — der Kaltwasserstrom folgt der Last (<see cref="Rueckkuehlwerk.TeilFreikuehlungKwh"/>;
         /// Rückkühlerleistung = <c>Nennleistung_kW</c> des Rückkühlwerks, leer die Nennkälteleistung der Anlagenzeile). Den
         /// Rest deckt der Verdichter am Kaltwasservorlauf mit seinem EER an der Rückkühltemperatur der Stunde (mit
         /// <c>LASTABHAENGIG</c> genau ein Schätzschritt wie in K-F2) — Vorbild ist die freie Kühlung über die Wärmequelle
@@ -462,7 +462,7 @@ namespace WindowsFormsApplication1
             double nenn = NennleistungKw * anzahl;
             double rkNenn = RueckkuehltemperaturDerStunde(h);
             double fk = FreieKuehlungMoeglich
-                ? Rueckkuehlwerk.TeilFreikuehlungKwh(lastKwh, nenn, ReiheSpreizungK, RuecklaufDerStunde(kaltwasserC, ruecklaufC),
+                ? Rueckkuehlwerk.TeilFreikuehlungKwh(lastKwh, kaltwasserC, RuecklaufDerStunde(kaltwasserC, ruecklaufC),
                                                      rkNenn, r.NennleistungKw ?? nenn)
                 : 0.0;
             if (!(fk > 0)) return StundeMitRueckkuehlwerk(h, lastKwh, kaltwasserC);
