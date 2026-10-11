@@ -831,6 +831,36 @@ Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier 
   „Modul Bearbeiten…" öffnete den Modulkatalog ohne Vorwahl auch ohne gewählten Satz. Ist nur ein gesperrter Satz
   gewählt, ist Neu… allein über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
 
+### 5.14 Wie gebaut (Stufe 4, Gebäude — Rückweg)
+
+Der Gebäudeweg folgt Regel 5.2 mit eigenem Kernweg — `Rueckweggewerk` ist anlagenzentriert (Anlagenverweis,
+Kostenkomponente, Kostenvorlagen) und passt nicht auf das Gebäude. Hier steht, was gebaut ist; der Dialog folgt.
+
+- **Kernweg:** `GebaeudeRueckweg` (`EPOS.Kern/Allgemein/Katalog/`) mit `Vorschau(idProjektGebaeude)`,
+  `Rueckweg(idProjektGebaeude, Rueckwegart, name)`, `NameBelegt` und `Namensvorschlag`; `GebaeudeStammCtrl` reicht sie
+  als `RueckwegVorschau`, `Rueckweg` und `RueckwegNameBelegt`. Schlüssel ist die Zuordnung `Z_ProjektGebaeude.ID`, der
+  Ursprung ist `Tab_Gebaeude.ID_Gebaeude_Stamm`. Ergebnis und Absagen wie beim Gerätekernweg (`Rueckwegergebnis`,
+  `Rueckwegabsage`: Kopie fehlt, Name leer, Name belegt, Ursprung gesperrt, fehlt oder unbekannt, Datenbankfehler).
+- **Vorschau:** Ursprung samt Name, Sperrgrund, Namensvorschlag nach 5.2 („(Projekt)", „(Projekt 2)" …), die
+  abweichenden Kopfspalten (Spalte, Wert am Ursprung, Wert im Projekt) und je Art die Zahl der Kindzeilen an Projektgebäude
+  und Ursprung (Zonen, Bauteile, Luftströme, Kalender, Vorgabezeilen, Perioden; Gebäude- und Zonenebene zusammen);
+  `AlsZeile()` liefert die Zeile im Muster der Geräte-Rückfrage.
+- **Neu:** der Weg `GebaeudeStammCtrl.AusProjektUebernehmen` (Kopf, Herkunft in der Beschreibung, Konditionierung, Zonen
+  samt Bauteilen, Luftströmen und Zonen-Konditionierung); im selben Vorgang bekommt das Projektgebäude den neuen Satz als
+  Ursprung. Der Name der Projektkopie bleibt.
+- **Überschreiben:** in EINEM Vorgang die 103 Fachspalten und die Beschreibung des Ursprungs wörtlich aus der Kopie; Name,
+  `ReadOnly` und `Katalog_*` bleiben, die Prüfsumme wird nicht nachgeführt (Abschnitt 7 Punkt 6). Die Kindzeilen des
+  Ursprungs fallen und kommen aus dem Projektgebäude neu (Abschnitt 7 Punkt 5): Zonen samt Bauteilen, Luftströmen und
+  Zonen-Konditionierung über `Zonenkopie` (Nachbarzonen umgeschlüsselt), danach die Konditionierung der Gebäudeebene samt
+  Perioden und Wochen ersetzend. Die ID bleibt — die Verweise anderer Projektgebäude auf den Ursprung bleiben gültig.
+  Scheitert ein Schritt, ist nichts geschrieben.
+- **Hülle:** `GebaeudeHuelle` reicht die Gaben `RueckwegVorschau` (Zeile → Vorschau) und `Rueckweg` (Zeile, überschreiben,
+  Name → Antwort mit Statuszeile); `InDbUebernehmen` bleibt der heutige Aufruf und ist der Rückweg mit der Wahl „neu". Der
+  Gebäudedialog führt beide Gaben als Parameter, schließt sie aber noch nicht an.
+- **Offen (Dialogauftrag):** Knopf „In die Datenbank übernehmen…" mit der Rückfrage-Überlagerung der Geräte (Wahl
+  neu/überschreiben, Sperrgrund, Namensfeld, Abweichungen und Kindzeilen aus der Vorschau, Hinweis auf das, was im Projekt
+  bleibt: Zuordnung, Wohnfläche, Ausrichtung) an Stelle der Namensabfrage; Mehrfachauswahl; Wiki und Logbuch.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
@@ -886,7 +916,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | **1 Baustein** (umgesetzt 09.10.2026, Statuszeile #861) | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
 | **2 Heizkessel** (umgesetzt 09.10.2026, Statuszeile #873; Teil a Knöpfe und Bearbeiten, Teil b Rückweg und Schemaschritt 208) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
 | **3 Erzeuger** (umgesetzt 10.10.2026: BHKW Statuszeile #887, übrige Erzeuger Statuszeilen #905–#909, ÜS1/ÜS2 Statuszeilen #939/#940) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
-| **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
+| **4 Bedarf und Zeitreihen** (Gebäude-Rückweg umgesetzt 11.10.2026 (Statuszeile folgt), Gebäudedialog offen) | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 
 **Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus
