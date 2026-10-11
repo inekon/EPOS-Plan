@@ -4027,6 +4027,51 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-satzueberlagerung-hinweis { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .epos-satzueberlagerung-hinweis:not(.epos-status--fehler) { color: var(--epos-text-leise); }
 
+/* DIE UEBERLAGERUNG MIT ROLLKOERPER (geb3, Konzept 4.8 und 7.7): Ein langer Unterdialog (Gebaeude ->
+   „Simulation...") rollte als Ganzes, und seine Tabellen rollten in sich - ein Rollbereich im Rollbereich.
+   Mit der Zusatzklasse rollt die Ueberlagerung nicht mehr: Ihr Kopf (Titel, Kreuz) steht fest, der
+   eingebettete Dialog steht als Spalte darunter, sein Kopf, seine Kontextzeile und seine Fussleiste
+   (SpeichernLeiste) behalten ihre Hoehe, und GENAU EIN Bereich - .epos-dialog-rollkoerper - nimmt den Rest
+   und rollt. Hoehe wie jede Ueberlagerung: so hoch wie der Inhalt, hoechstens die Regelhoehe; die Kompaktstufe
+   gilt ueber die Token. Gemessen: Proben/Rasterprobe/rollbereichprobe.mjs (Fall gebaeude, Zustand
+   „Ueberlagerung Simulation...") und fensterprobe.mjs (Teil ueberlagerung). */
+.epos-ueberlagerung.epos-ueberlagerung--rollkoerper {
+    overflow: hidden;
+    box-sizing: border-box;
+}
+.epos-ueberlagerung--rollkoerper > .epos-ueberlagerung-kopf { flex: 0 0 auto; }
+.epos-ueberlagerung--rollkoerper > .epos-ueberlagerung-inhalt,
+.epos-ueberlagerung--rollkoerper > .epos-ueberlagerung-inhalt > .epos-dialog {
+    flex: 0 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.epos-ueberlagerung--rollkoerper > .epos-ueberlagerung-inhalt > .epos-dialog > * { flex: 0 0 auto; }
+.epos-ueberlagerung--rollkoerper > .epos-ueberlagerung-inhalt > .epos-dialog > .epos-dialog-rollkoerper {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow: auto;                       /* der eine Rollbereich; quer nur, wenn eine Tabelle breiter ist */
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    padding-right: 4px;
+}
+/* Die Fussleiste haftet nicht mehr (nichts rollt um sie herum), sie steht am Boden der Spalte. */
+.epos-ueberlagerung--rollkoerper > .epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste:has(> .epos-status) {
+    position: static;
+}
+/* Tabellen im Rollkoerper fliessen: keine Hoechsthoehe, kein eigener Rollbalken. */
+.epos-dialog-rollkoerper .epos-raster-huelle {
+    max-height: none;
+    overflow: visible;
+}
+/* Die Zeigerzeile eines Bildes haftet am Boden des Rollkoerpers, nicht ueber einer Fussleiste in ihm. */
+.epos-ueberlagerung.epos-ueberlagerung--rollkoerper:has(> .epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste > .epos-status) {
+    --epos-ueberlagerung-fuss: 0px;
+}
+
 .epos-zweispalten-satz {
     display: flex;
     flex-direction: column;

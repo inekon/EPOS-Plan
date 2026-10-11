@@ -537,7 +537,8 @@
     </Ueberlagerung>
 
     @* --- Ueberlagerung 4: der Waermebedarf des Gebaeudes (W9-E-2) ---------- *@
-    <Ueberlagerung Offen="@(_bedarfGaben is not null)"
+    @* Kopf und Fussleiste stehen fest, nur der Rollkoerper der Bedarfsansicht rollt (geb3, Konzept 7.7). *@
+    <Ueberlagerung Offen="@(_bedarfGaben is not null)" Zusatzklasse="epos-ueberlagerung--rollkoerper"
                    Titel="@BtnSimulationText" Geschlossen="BedarfFertig">
         <KindInhalt>
             @if (_bedarfGaben is not null)

@@ -137,6 +137,30 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — unter
     /// der Kennung <c>gebaeude-bedarf</c> und mit der Einheit <c>kW</c>.
     /// </summary>
+    /// <summary>
+    /// geb3 (Konzept Katalogauswahl 7.7): Kopf, Kontextzeile und Fußleiste stehen außerhalb des EINEN Rollkörpers; jede
+    /// Tabelle und jedes Bild steht in ihm (die Tabellen fließen dort, statt selbst zu rollen).
+    /// </summary>
+    [Fact]
+    public void Kopf_und_Fussleiste_stehen_ausserhalb_des_einen_Rollkoerpers()
+    {
+        var cut = Aufbauen();
+        IElement koerper = Assert.Single(cut.FindAll(".epos-dialog > .epos-dialog-rollkoerper"));
+        IElement dialog = cut.Find(".epos-dialog");
+        Assert.Null(koerper.QuerySelector(".epos-dialog-kopf"));
+        Assert.Null(koerper.QuerySelector(".epos-kontextzeile"));
+        Assert.NotNull(dialog.QuerySelector(":scope > .epos-kontextzeile"));
+        // Die Fußleiste (SpeichernLeiste mit Statusspanne) ist das letzte Kind des Dialogs, nicht im Körper.
+        IElement fuss = dialog.Children.Last();
+        Assert.Contains("epos-leiste", fuss.ClassList);
+        Assert.NotNull(fuss.QuerySelector(".epos-status"));
+        Assert.Null(koerper.QuerySelector(".epos-status"));
+        IReadOnlyList<IElement> tabellen = cut.FindAll(".epos-raster-huelle");
+        Assert.NotEmpty(tabellen);
+        Assert.All(tabellen, t => Assert.True(koerper.Contains(t)));
+        Assert.All(cut.FindAll(".epos-diagramm-svg"), d => Assert.True(koerper.Contains(d)));
+    }
+
     [Fact]
     public void Die_Ganglinie_steht_als_DiagrammSvg()
     {

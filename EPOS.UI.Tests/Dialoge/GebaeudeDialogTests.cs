@@ -1367,6 +1367,25 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
 
+    /// <summary>
+    /// geb3 (Konzept Katalogauswahl 7.7): Die Bedarfs-Überlagerung rollt nicht als Ganzes — sie trägt die Zusatzklasse
+    /// des Rollkörpers, und der eingebettete Dialog bringt genau einen Rollkörper mit.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Bedarf_rollt_nur_in_ihrem_Rollkoerper()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(4711) },
+                           bedarfGaben: z => new Dictionary<string, object>
+                           {
+                               ["Daten"] = new GebaeudeBedarfDaten { Name = z.Name }
+                           });
+
+        Knopf(cut, "Simulation...").Click();
+        IElement u = cut.FindAll(".epos-ueberlagerung").Last();
+        Assert.Contains("epos-ueberlagerung--rollkoerper", u.ClassList);
+        Assert.Single(u.QuerySelectorAll(".epos-ueberlagerung-inhalt > .epos-dialog > .epos-dialog-rollkoerper"));
+    }
+
     [Fact]
     public void OK_meldet_true()
     {
