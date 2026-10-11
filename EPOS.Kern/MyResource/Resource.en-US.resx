@@ -51984,5 +51984,8 @@ chart</value>
   <data name="KMA_SP_WAHL" xml:space="preserve">
     <value>Select</value>
   </data>
+  <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Skipped (assigned in the project): {0}</value>
+  </data>
 </root>
 

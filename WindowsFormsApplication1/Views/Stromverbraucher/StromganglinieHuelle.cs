@@ -97,6 +97,9 @@ namespace WindowsFormsApplication1
                 ["Loeschen"] = new Func<string, Task<bool>>(StromganglinieAdminHuelle.Loeschen),
                 ["HatProjektzuordnung"] = new Func<string, Task<bool>>(HatProjektzuordnung),
                 ["Kopieren"] = new Func<string, string, Task<bool>>(Kopieren),
+                // AD-Q15, Stufe 4: das Schloss laesst sich nach Rueckfrage umschalten - derselbe Weg wie in der Verwaltung.
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) =>
+                    ZeitreihenKatalogCtrl.SchlossSetzen(Zeitreihenart.Stromganglinie, ids, gesperrt)),
 
                 // iU9-W12-E-2: die Grafik der markierten Ganglinie. Gerechnet wird im
                 // Kern (GanglinienAuswertungCtrl), das ZEICHENMODELL auch

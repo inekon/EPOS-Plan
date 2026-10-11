@@ -51991,5 +51991,8 @@ Chart</value>
   <data name="KMA_SP_WAHL" xml:space="preserve">
     <value>Wahl</value>
   </data>
+  <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
+    <value>Übersprungen (im Projekt zugeordnet): {0}</value>
+  </data>
 </root>
 

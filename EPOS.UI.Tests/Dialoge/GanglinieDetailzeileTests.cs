@@ -54,7 +54,7 @@ public class GanglinieDetailzeileTests : EposBunitContext
 
     /// <summary>Wählt die Zeile <paramref name="index"/> der Liste <paramref name="liste"/> (0 = Projekt, 1 = Katalog).</summary>
     private static void Waehlen<T>(IRenderedComponent<T> cut, int liste, int index) where T : Microsoft.AspNetCore.Components.IComponent
-        => cut.FindAll(".epos-raster")[liste].QuerySelectorAll("tbody tr")[index].QuerySelector("button")!.Click();
+        => cut.FindAll(".epos-raster")[liste].QuerySelectorAll("tbody tr")[index].QuerySelector(".epos-zeilenzelle--name, button.epos-anlagenwahl")!.Click();
 
     /// <summary>Klappt die Detailzeile auf und liefert, ob sie die Ganglinie trägt.</summary>
     private static bool AufgeklapptMitGanglinie<T>(IRenderedComponent<T> cut) where T : Microsoft.AspNetCore.Components.IComponent

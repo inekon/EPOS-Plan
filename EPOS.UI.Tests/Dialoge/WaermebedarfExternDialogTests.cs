@@ -202,10 +202,13 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         => cut.FindComponent<NamensDialog>()
               .FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
 
-    /// <summary>Der Wahlknopf der n-ten KATALOGzeile (die Projektliste steht davor).</summary>
+    /// <summary>
+    /// Die n-te KATALOGzeile: Die Zeile ist die Wahl (Stufe 4), geklickt wird ihre Namenszelle.
+    /// <paramref name="projektzeilen"/> bleibt der Lesbarkeit halber stehen.
+    /// </summary>
     private static IElement KatalogWahl(IRenderedComponent<WaermebedarfExternDialog> cut,
                                         int projektzeilen, int index)
-        => cut.FindAll("button.epos-anlagenwahl")[projektzeilen + index];
+        => cut.FindAll(".epos-zweispalten-spalte--unten .epos-zeilenzelle--name")[index];
 
     // =================================================================================
     // Feldbestand
@@ -281,12 +284,16 @@ public class WaermebedarfExternDialogTests : EposBunitContext
     /// Katalog (Regel des Bausteins <c>Zweispaltenauswahl</c>).
     /// </summary>
     [Fact]
-    public void Das_Kanalfeld_steht_im_Formularraster_der_linken_Spalte()
+    public void Das_Kanalfeld_steht_einzeilig_in_der_Projekt_Kopfleiste()
     {
         var cut = Aufbauen();
 
-        IElement raster = cut.Find(".epos-zweispalten-spalte--oben .epos-formularraster");
-        Assert.NotNull(raster.QuerySelector("select"));
+        IElement kopf = cut.Find(".epos-zweispalten-spalte--oben .epos-zweispalten-kopfleiste .epos-zweispalten-kanal");
+        Assert.NotNull(kopf.QuerySelector("select"));
+        // Beschriftung vor dem Feld, keine eigene Formularzeile, keine Kontextzeile mehr.
+        Assert.NotNull(kopf.QuerySelector(".epos-feld .epos-feld-text"));
+        Assert.Empty(cut.FindAll(".epos-formularraster"));
+        Assert.Empty(cut.FindAll(".epos-kontextzeile"));
     }
 
     [Fact]
@@ -315,7 +322,7 @@ public class WaermebedarfExternDialogTests : EposBunitContext
     /// Importieren, Speichern unter, Löschen, Bearbeiten.
     /// </summary>
     [Fact]
-    public void Die_Katalogleiste_traegt_vier_Knoepfe_in_dieser_Reihenfolge()
+    public void Die_Katalog_Fussleiste_traegt_vier_Knoepfe_in_dieser_Reihenfolge()
     {
         var cut = Aufbauen(
             verwaltung: new Dictionary<string, object>(),
@@ -323,14 +330,15 @@ public class WaermebedarfExternDialogTests : EposBunitContext
             einlesen: (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis()),
             kopieren: (_, __) => Task.FromResult(true));
 
-        var texte = cut.FindAll(".epos-zweispalten-spalte--unten .epos-leiste button")
+        var texte = cut.FindAll(".epos-zweispalten-fussleiste button")
                        .Select(b => b.TextContent.Trim()).ToList();
 
+        // Stufe 4: links nach dem gewählten Namen Speichern unter, Löschen, Bearbeiten; rechts Importieren.
         Assert.Equal(new[]
         {
-            "CSV-Datei importieren...", "Speichern unter...",
-            "Löschen", "Bearbeiten..."
+            "Speichern unter...", "Löschen", "Bearbeiten...", "CSV-Datei importieren..."
         }, texte);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-spalte--unten .epos-leiste"));
     }
 
     /// <summary>
@@ -362,9 +370,11 @@ public class WaermebedarfExternDialogTests : EposBunitContext
             dateiWaehlen: _ => Task.FromResult<string?>(""),
             einlesen: (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis()));
 
-        IElement hinweis = cut.Find(".epos-formathinweis");
-        Assert.Contains("8.760 Stunden- oder 35.040 Viertelstundenwerte", hinweis.TextContent);
-        Assert.Contains("ein Wert je Zeile", hinweis.TextContent);
+        // Stufe 4: ein Infoknopf im Katalogkopf, keine eigene Zeile; der Kurztext steht am Tooltipp.
+        Assert.Empty(cut.FindAll(".epos-formathinweis"));
+        IElement hinweis = cut.Find(".epos-zweispalten-spalte--unten .epos-zweispalten-kopfleiste .epos-formathinweis-knopf");
+        Assert.Contains("8.760 Stunden- oder 35.040 Viertelstundenwerte", hinweis.GetAttribute("title"));
+        Assert.Contains("ein Wert je Zeile", hinweis.GetAttribute("title"));
 
         IElement knopf = hinweis.QuerySelector("button")!;
         string kurztext = knopf.GetAttribute("title") ?? "";
@@ -464,7 +474,7 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         var zeilen = new List<WaermebedarfExternZeile>();
         var cut = Aufbauen(zeilen: zeilen, geaendert: () => gemeldet = true);
 
-        cut.FindAll("button.epos-anlagenwahl").First().Click();   // erste Katalogzeile
+        KatalogWahl(cut, 0, 0).Click();   // erste Katalogzeile
         Uebernehmen(cut).Click();
 
         Assert.Single(zeilen);
@@ -713,7 +723,7 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         var zeilen = new List<WaermebedarfExternZeile>();
         var cut = ZeigeMitGrafik(zeilen: zeilen);
 
-        cut.FindAll("button.epos-anlagenwahl").First().Click();   // erste Katalogzeile
+        KatalogWahl(cut, 0, 0).Click();   // erste Katalogzeile
         Uebernehmen(cut).Click();
 
         Assert.NotNull(cut.Instance.Grafikwahl);
@@ -1003,5 +1013,140 @@ public class WaermebedarfExternDialogTests : EposBunitContext
 
         // In der Zeile steht der STEUERWERT der Kanalliste, nicht der Anzeigetext.
         Assert.Equal("BRAUCHWASSER", zeilen[0].Kanal);
+    }
+
+    // =================================================================================
+    // Stufe 4 der Katalogauswahl: Mehrfachwahl, Stift je Zeile, Ueberlagerung
+    // =================================================================================
+
+    /// <summary>Das Kästchen der n-ten Katalogzeile.</summary>
+    private static IElement KatalogKaestchen(IRenderedComponent<WaermebedarfExternDialog> cut, int index)
+        => cut.FindAll(".epos-zweispalten-spalte--unten td .epos-kaestchenzelle input")[index];
+
+    /// <summary>
+    /// Zwei angekreuzte Katalogsätze löschen mit EINER Rückfrage, die Zahl und Namen nennt; ein
+    /// gesperrter angekreuzter Satz wird übersprungen und genannt.
+    /// </summary>
+    [Fact]
+    public void Mehrere_Katalogsaetze_loeschen_mit_einer_Rueckfrage()
+    {
+        var geloescht = new List<string>();
+        var cut = Aufbauen(katalogLoeschen: n => { geloescht.Add(n); return true; });
+
+        KatalogKaestchen(cut, 0).Change(true);
+        KatalogKaestchen(cut, 1).Change(true);   // Ganglinie B ist gesperrt
+        KatalogKaestchen(cut, 2).Change(true);
+        Assert.Equal(3, cut.Instance.KatalogWahl.Anzahl);
+        Knopf(cut, "Löschen").Click();
+
+        string frage = cut.Find(".epos-rueckfrage").TextContent;
+        Assert.Contains("2", frage);
+        Assert.Contains("„Ganglinie A“", frage);
+        Assert.Contains("„Ganglinie C“", frage);
+        Assert.Contains(string.Format(Resource.SATZBEARB_UEBERSPRUNGEN, "„Ganglinie B“"), frage);
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(new[] { "Ganglinie A", "Ganglinie C" }, geloescht);
+        Assert.Equal(0, cut.Instance.KatalogWahl.Anzahl);
+    }
+
+    /// <summary>Ein angekreuzter, im Projekt zugeordneter Satz wird beim Mehrfachlöschen übersprungen und genannt.</summary>
+    [Fact]
+    public void Mehrfachloeschen_ueberspringt_die_zugeordneten_Saetze()
+    {
+        var geloescht = new List<string>();
+        var cut = Aufbauen(hatZuordnung: n => n == "Ganglinie A",
+                           katalogLoeschen: n => { geloescht.Add(n); return true; });
+
+        KatalogKaestchen(cut, 0).Change(true);
+        KatalogKaestchen(cut, 2).Change(true);
+        Knopf(cut, "Löschen").Click();
+
+        Assert.Contains(string.Format(Resource.GANGL_UEBERSPRUNGEN_ZUGEORDNET, "„Ganglinie A“"),
+                        cut.Find(".epos-rueckfrage").TextContent);
+        Knopf(cut, "Ja").Click();
+        Assert.Equal(new[] { "Ganglinie C" }, geloescht);
+    }
+
+    /// <summary>Angekreuzte Katalogzeilen übernimmt „▲" in einem Zug; die Kästchen sind danach leer.</summary>
+    [Fact]
+    public void Sammeluebernahme_legt_je_angekreuzter_Zeile_eine_Zuordnung_an()
+    {
+        var zeilen = new List<WaermebedarfExternZeile>();
+        var cut = Aufbauen(zeilen: zeilen);
+
+        KatalogKaestchen(cut, 0).Change(true);
+        KatalogKaestchen(cut, 2).Change(true);
+        Uebernehmen(cut).Click();
+
+        Assert.Equal(new[] { "Ganglinie A", "Ganglinie C" }, zeilen.Select(z => z.Bezeichner));
+        Assert.Same(zeilen[1], cut.Instance.Gewaehlt);
+        Assert.Equal(0, cut.Instance.KatalogWahl.Anzahl);
+    }
+
+    /// <summary>Angekreuzte Projektzeilen entfernt „▼" in einem Zug.</summary>
+    [Fact]
+    public void Mehrere_Projektzeilen_entfernen()
+    {
+        var zeilen = new List<WaermebedarfExternZeile>
+        {
+            Zeile(1, "Ganglinie A", "HEIZUNG"), Zeile(2, "Ganglinie A", "PROZESS"), Zeile(3, "Ganglinie C", "HEIZUNG")
+        };
+        var cut = Aufbauen(zeilen: zeilen);
+
+        var kaestchen = cut.FindAll(".epos-zweispalten-spalte--oben tbody .epos-wahlkaestchen");
+        kaestchen[0].Click();
+        cut.FindAll(".epos-zweispalten-spalte--oben tbody .epos-wahlkaestchen")[2].Click();
+        Entfernen(cut).Click();
+
+        Assert.Single(zeilen);
+        Assert.Equal(2, zeilen[0].IdZ);
+    }
+
+    /// <summary>Jede Zeile beider Listen trägt einen Stift (UeS2); der Kopf der Projektliste die Stiftspalte.</summary>
+    [Fact]
+    public void Beide_Listen_tragen_je_Zeile_einen_Stift()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindAll(".epos-zweispalten-spalte--oben tbody .epos-zeilenstift"));
+        Assert.Equal(3, cut.FindAll(".epos-zweispalten-spalte--unten .epos-zeilenstift").Count);
+    }
+
+    /// <summary>Der Stift der Projektzeile wählt sie und öffnet ihre Ganglinie in der Satz-Überlagerung (nur „Schließen").</summary>
+    [Fact]
+    public void Der_Stift_der_Projektzeile_oeffnet_die_Ueberlagerung_zur_Ansicht()
+    {
+        var cut = ZeigeMitGrafik();
+
+        cut.Find(".epos-zweispalten-spalte--oben tbody .epos-zeilenstift").Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-ganglinie-grafik"));
+    }
+
+    /// <summary>
+    /// Der Stift einer gesperrten Katalogzeile öffnet die Satz-Überlagerung zur Ansicht; der einer
+    /// ungesperrten die Verwaltung (KA‑E‑13).
+    /// </summary>
+    [Fact]
+    public void Der_Stift_der_Katalogzeile_oeffnet_Ansicht_oder_Verwaltung()
+    {
+        var cut = Aufbauen(verwaltung: new Dictionary<string, object>());
+
+        cut.FindAll(".epos-zweispalten-spalte--unten .epos-zeilenstift")[1].Click();   // Ganglinie B, gesperrt
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("Ganglinie B", cut.Instance.Katalogname);
+    }
+
+    [Fact]
+    public void Der_Stift_einer_ungesperrten_Katalogzeile_oeffnet_die_Verwaltung()
+    {
+        var cut = Aufbauen(verwaltung: new Dictionary<string, object>());
+
+        cut.FindAll(".epos-zweispalten-spalte--unten .epos-zeilenstift")[0].Click();   // Ganglinie A
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("Ganglinie A", cut.Instance.Katalogname);
+        Assert.Single(cut.FindAll("[role='dialog']"));
     }
 }

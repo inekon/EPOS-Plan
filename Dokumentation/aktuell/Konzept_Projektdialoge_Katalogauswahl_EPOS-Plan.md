@@ -864,6 +864,44 @@ Die Kältemaschine folgt dem BHKW (5.4); hier steht nur, was abweicht.
   (`ErzeugerKostenwege`) und den Katalogeditor samt „Import…". Auf iOS fehlen die Kostenknöpfe.
 - **Wärmepumpen im Kühlbetrieb:** Die Schalter stehen als Zeile unter der Katalogauswahl und werden beim OK geschrieben.
 
+### 5.11 Wie gebaut (Stufe 4, Wärmebedarf extern und Stromganglinie)
+
+Beide Dialoge sind zwei Kopien desselben Gerüsts und folgen dem BHKW (5.4) in der Bedienung; einen Rückweg in die
+Datenbank haben sie nicht (die Zuordnung trägt nur Name und Kanal, die Projektkopie ist die unveränderte Reihe).
+
+- **Fußleiste des Katalogs:** über die Slots des Bausteins — links nach dem gewählten Namen „Speichern unter…“, „Schloss
+  setzen…/aufheben…“, „Löschen“, „Bearbeiten…“ (`KatalogFuss`), rechts „CSV-Datei importieren…“ (`KatalogFussRechts`). Die
+  Knopfleiste unter der Liste und die Zeile des Formathinweises entfallen; der Hinweis ist ein Infoknopf im Katalogkopf
+  (`KatalogKopf`, Kurztext als Tooltipp, voller Wortlaut am Knopf). Die Stromganglinie trägt das Schloss neu (Hülle reicht
+  denselben `Schlossweg` wie ihre Verwaltung).
+- **Kopfleiste „Im Projekt“ (Wärmebedarf extern):** die Kanalwahl einzeilig, Beschriftung vor dem Feld (wie
+  `.epos-ganglinie-kopf > .epos-feld`); im Kühlkanal daneben der Hinweis „Kälte“ als kurze Zeile mit Auslassung, voller
+  Wortlaut im Tooltipp. Die Kontextzeile unter dem Dialogkopf entfällt, ihr Text steht als Tooltipp am Infoknopf des Dialogs.
+- **Mehrfachwahl (4.5):** Kästchen und Kopfhäkchen in beiden Listen; „In das Projekt übernehmen“ legt je angekreuzter
+  Katalogzeile eine Zuordnung an, „Aus dem Projekt entfernen“ nimmt die angekreuzten Zeilen, „Löschen“ fragt für mehrere
+  Katalogsätze einmal mit Zahl und Namen und nennt die übersprungenen — gesperrte (`SATZBEARB_UEBERSPRUNGEN`) und im
+  Projekt zugeordnete (`GANGL_UEBERSPRUNGEN_ZUGEORDNET`). Ein einzelner Satz meldet seine Sperre wie bisher als Banner.
+- **Stift je Zeile (ÜS2):** Projektzeile → ihre Ganglinie in der Satz-Überlagerung (nur Ansicht, „Schließen“); gesperrte
+  Katalogzeile → dieselbe Ansicht; ungesperrte → die Verwaltung (KA‑E‑13). Die Detailzeile behält die Kurve
+  (`GanglinienGrafik`, „Vergrößern“, `SatzNurAnsicht`), keine Zusammenfassung.
+- **Fangweg (KT‑3/KT‑4):** Die Ganglinienwege warten; `Katalogladung` hat dafür `LesenAsync`, `SatzAsync`, `SchreibenAsync`
+  und `LoeschenAsync` (dieselben Gründe und Vermerke wie die übrigen Wirte). Liste, Kennzahlen der gewählten Ganglinie,
+  „Speichern unter“ und Löschen gehen über sie.
+- **Projektkopie und Ursprung:** Die Kopie entsteht weiter erst beim Speichern des Projekts (`WizardCtrl.Add_WaermebedarfExtern`
+  bzw. Rückschreiben der Stromganglinie → `ApplyGanglinieToProjekt`); im Dialog entsteht keine, deshalb braucht es keine
+  `Projektkopievormerkung`. `CopyGanglinieToProjekt` trägt jetzt `ID_Stamm` der Kopie ein (`Tab_Waermebedarf`,
+  `Tab_Stromganglinie`). `WizardCtrl.Del_WaermebedarfExtern(projekt, kanal)` löscht nur die Zeilen eines Kanals (leerer Kanal
+  zählt als Heizung) — Vorbereitung für den Modus „nur Kühlung“ (Konzept Kältebedarf K5, 3.3); kein Aufrufer nutzt ihn jetzt.
+- **Höhe (Rest 3 aus DZ1‑N2):** Mit offener Ganglinie behält die Katalogliste Kopf und eine Zeile (die Option aus DZ1‑N1),
+  die Kurve reicht bis an den unteren Rand der Satzfläche (die Untergrenze zählt Kopf, Rahmen und oberes Polster); das gilt
+  für alle vier Ganglinien-Dialoge. Gemessen (Rollbereichprobe, Kurve Breite × Höhe, Dialogkörper rollt):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 |
+|---|---|---|---|
+| Wärmebedarf extern, vorher | 1 110 × 153 px, 100 px | 1 118 × 154 px, 80 px | 982 × 154 px, 32 px |
+| Wärmebedarf extern, nachher | 1 110 × 152 px, 0 px | 1 118 × 160 px, 0 px | 982 × 208 px, 0 px |
+| Stromganglinie, nachher | 1 110 × 152 px, 0 px | 1 118 × 160 px, 0 px | 982 × 208 px, 0 px |
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
@@ -919,7 +957,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | **1 Baustein** (umgesetzt 09.10.2026, Statuszeile #861) | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
 | **2 Heizkessel** (umgesetzt 09.10.2026, Statuszeile #873; Teil a Knöpfe und Bearbeiten, Teil b Rückweg und Schemaschritt 208) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
 | **3 Erzeuger** (umgesetzt 10.10.2026: BHKW Statuszeile #887, übrige Erzeuger Statuszeilen #905–#909, ÜS1/ÜS2 Statuszeilen #939/#940) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
-| **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
+| **4 Bedarf und Zeitreihen** (Wärmebedarf extern, Stromganglinie umgesetzt 11.10.2026, Statuszeile folgt; Solar-/PV-Ganglinie, Bedarfsprofile, Gebäude offen) | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** (Kältemaschine umgesetzt 11.10.2026, Statuszeile folgt) | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 
 **Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus

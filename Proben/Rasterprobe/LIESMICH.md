@@ -1262,6 +1262,20 @@ Dialogkörper rollt, obwohl die Kurve über ihrer Untergrenze steht) müssen rot
 | Stromganglinie | 1 110 × 153 (14) | 1 118 × 154 (6) | 982 × 196 | 982 × 154 (26) | 1 051 × 154 (112) | 726 × 451 |
 | Solarthermie-, PV-Ganglinie | 1 110 × 153 (57) | 1 118 × 154 (42) | 982 × 160 | 982 × 154 (62) | 1 051 × 154 (148) | 726 × 396 |
 
+**Stufe 4 (Wärmebedarf extern, Stromganglinie, 11.10.2026).** Der Wirt reicht beiden Dialogen die Katalogpflege
+(Import, Speichern unter, Schloss, Löschen, Verwaltung), damit die Fußleiste wie in der Anwendung steht. Die Probe wählt
+die Projektzeile über ihren Wahlknopf (die Zeile trägt davor ein Kästchen), verlangt mit offener Ganglinie Kopf und
+**eine** Katalogzeile, öffnet nach „Vergrößern“ die Ansicht zusätzlich über den Stift der Projektzeile (nur
+„Schließen“), prüft Importknopf in der Fußleiste, Formathinweis als Infoknopf im Katalogkopf und das Fehlen von
+Knopfleiste und Kontextzeile, und hält **Rest 3**: Für `waermebedarf` und `stromganglinie` rollt der Dialogkörper mit
+offener Ganglinie in 1 280 × 800, 1 280 × 720 und 1 024 × 768 gar nicht (`ROLLT_GAR_NICHT`). Die Gegenprobe
+„Satzfläche 600 px“ setzt dafür auch `--epos-satz-offen-min`. Ergebnis je Fall 110 Zustände, 0 Verstöße; Kurve
+Breite × Höhe in px (Überhang des Dialogkörpers):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 1 024 × 700 | 1 093 × 614 | 768 × 1 024 |
+|---|---|---|---|---|---|---|
+| Wärmebedarf extern, Stromganglinie | 1 110 × 152 (0) | 1 118 × 160 (0) | 982 × 208 (0) | 982 × 151 (11) | 1 051 × 151 (97) | 726 × 463 |
+
 **Heizkessel (Stufe 2a).** Zusätzlich je Fenster: Detailzeile auf mit Kosten (die Satzfläche muss die
 Kostenknöpfe tragen), Überlagerung „Bearbeiten…" für die Projektkopie und für zwei angekreuzte Katalogsätze
 (Blätterleiste oder Hinweiszeile „übersprungen"), danach geschlossen mit Esc. Für den Heizkessel gilt in
