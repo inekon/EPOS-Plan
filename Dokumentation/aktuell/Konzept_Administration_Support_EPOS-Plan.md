@@ -9,7 +9,7 @@ RustDesk und mit AS-Q10 iOS abstimmen — evtl nur (c) aus AS-Q9." und danach �
 (remote) zurück, wird später bearbeitet." Dazu der Entscheid „Änderung in der Wiki vornehmen: kein
 TeamViewer als Support" — die beiden Wiki-Quellen nennen seither keinen Produktnamen mehr (1.1).
 Abschnitt 4 ist auf RustDesk umgeschrieben; die Tabelle 4.1 hält den Vergleich als Begründung fest.
-Nichts aus diesem Papier ist umgesetzt; die Umsetzung läuft in den Stufen aus Abschnitt 8. Die Entwicklerseite
+**Stufe 1 ist umgesetzt** (11.10.2026, #960; Protokoll [`2026-10-11_AS1_Entwicklermodus.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS1_Entwicklermodus.md)); die übrigen Stufen aus Abschnitt 8 sind offen. Die Entwicklerseite
 (Tastenfolgen, Schlüssel, Pfade, Supportablauf) steht im
 [`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](Entwicklerhandbuch_Administration_Support_EPOS-Plan.md),
 mit Word-Fassung daneben.
@@ -197,6 +197,8 @@ Release-Anwendung, auch beim Kunden.
 | **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+Alt+E** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" (löscht die Einstellung) |
 | **Umgebungsvariable** `EPOS_ENTWICKLER=1` | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf | einmal im System setzen | Variable entfernen |
 
+Die Geste liegt bis Stufe 3 im Hauptfenster (`Hauptfensterrahmen.ProcessCmdKey`), weil „Hilfe → Version“ bis dahin ein Meldungsfeld ist; mit Stufe 3 wandert sie in den Dialog „Über EPOS-Plan“.
+
 Was eingeschaltet ist, sieht man: die Kopfleiste trägt rechts neben der Versionsnummer die
 **Marke „Entwickler"** (Warnfarbe `--epos-warn`, Tooltip mit der Quelle), der Fenstertitel den
 Zusatz „(Entwicklermodus)", und am Ende der obersten Menüebene — vor *Sprache* — erscheint der
@@ -267,6 +269,8 @@ Erstbestand (jeder Punkt eine kleine Hülle, kein Fachwissen in der Schale):
 | Entwicklerwerkzeuge der Oberfläche | WebView2-DevTools | löst `#if DEBUG` ab |
 | Auslieferungsstand wiederherstellen… | `KatalogabgleichDialog`, Reparaturzweig | aus *Daten & Import* hierher (3.4) |
 | Entwicklermodus ausschalten | löscht `Entwicklermodus`; bei Umgebung/Startargument benannte Absage | letzter Punkt |
+
+„Diagnosedaten kopieren“ ist mit Stufe 1 gebaut (Kern-Baustein `Diagnosedaten` aus Welle 0).
 
 Was **nicht** ins Menü kommt: Referenzlauf, Proben, Werkzeuge — sie bleiben eigene Programme
 außerhalb der Auslieferung; eine SQL-Konsole gibt es nicht und soll es nicht geben (Schreibnaht,
@@ -530,7 +534,7 @@ en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fuß
 
 | Stufe | Inhalt | Abnahme |
 |---|---|---|
-| **1 — Entwicklermodus und Projektdatei** | `Entwicklermodus`, `Freigabestufe` am Menüpunkt, `Menuetabelle.Sichtbar`, Marke, Kopf *Entwicklung* mit den sieben Punkten (3.5), die drei Einstiege der Projektdatei, iOS-Dateifilter, KI-Feldkarten, `Program.Main(args)` | Kern-Filter grün; `EntwicklerbereicheWacheTests`, `MenuebandTests` mit zwei Bäumen; Windows-Build auf Linux (Schale berührt); Sichtprobe: ohne Modus kein Projektdatei-Knopf und kein Kopf *Entwicklung*, mit `--entwickler` beides und die Marke; HKLM-Sperre schlägt alles |
+| **1 — Entwicklermodus und Projektdatei** | `Entwicklermodus`, `Freigabestufe` am Menüpunkt, `Menuetabelle.Sichtbar`, Marke, Kopf *Entwicklung* mit den sieben Punkten (3.5), die drei Einstiege der Projektdatei, iOS-Dateifilter, KI-Feldkarten, `Program.Main(args)` | Kern-Filter grün; `EntwicklerbereicheWacheTests`, `MenuebandTests` mit zwei Bäumen; Windows-Build auf Linux (Schale berührt); Sichtprobe: ohne Modus kein Projektdatei-Knopf und kein Kopf *Entwicklung*, mit `--entwickler` beides und die Marke; HKLM-Sperre schlägt alles — **umgesetzt** (11.10.2026, #960) |
 | **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **Zuarbeit des Anwenders vor der Stufe (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur |
 | **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`; Sichtprobe: Textblock vollständig, Geste schaltet |
 | **4 — Supportvertrag im Token** (auf Zuruf) | `support_bis` im Server, tolerantes Lesen im Client, Lesart (d) wählbar | Serverseite durch den Anwender ausgerollt; Clienttest mit Token ohne und mit Feld |

@@ -3,7 +3,7 @@
 **Für wen.** INEKON — Entwicklung und Support. Nicht für Anwender; nichts aus diesem Handbuch kommt
 ins Wiki, und die Entwicklerbereiche werden in der Anwenderdokumentation nicht erwähnt.
 
-**Stand.** 11.10.2026, Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
+**Stand.** 11.10.2026, Stufe 1 ist umgesetzt (11.10.2026, #960); Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
 ([`Konzept_Administration_Support_EPOS-Plan.md`](Konzept_Administration_Support_EPOS-Plan.md)).
 Jeder Abschnitt trägt die Stufe, ab der er gilt: **[heute]** vorhanden, **[Stufe 1]**
 Entwicklermodus, **[Stufe 2]** Fernwartung, **[Stufe 3]** Dialog „Über EPOS-Plan" und
@@ -15,7 +15,7 @@ Diagnosedaten. Wer eine Stufe umsetzt, zieht dieses Handbuch und die Word-Fassun
 wird mit jeder Änderung neu erzeugt (Abschnitt 8).
 
 
-## 1 Entwicklermodus ein- und ausschalten [Stufe 1]
+## 1 Entwicklermodus ein- und ausschalten [heute]
 
 Der Entwicklermodus ist eine Sichtbarkeitsstufe, kein Rechtemodell: Er zeigt Bereiche, die ein
 Anwender nicht sieht. Was er zeigt, steht in Abschnitt 2.
@@ -24,7 +24,7 @@ Anwender nicht sieht. Was er zeigt, steht in Abschnitt 2.
 
 | Weg | Wann | So geht es | Wieder aus |
 |---|---|---|---|
-| **Tastenfolge** | am Kundenrechner oder am eigenen Rechner, dauerhaft | *Hilfe → Version* öffnen (ab Stufe 3 heißt der Dialog „Über EPOS-Plan"), dann **Strg + Umschalt + Alt + E**, Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten." bestätigen. iPad: fünfmal auf die Versionszeile tippen. | Menü *Entwicklung → Entwicklermodus ausschalten* |
+| **Tastenfolge** | am Kundenrechner oder am eigenen Rechner, dauerhaft | im Hauptfenster von EPOS-Plan (bis Stufe 3; danach im Dialog „Über EPOS-Plan") **Strg + Umschalt + Alt + E**, Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten." bestätigen. iPad: fünfmal auf die Versionszeile tippen. | Menü *Entwicklung → Entwicklermodus ausschalten* |
 | **Startargument** | ein einzelner Lauf, Vorführung, Fehlersuche in einer Fernwartungssitzung | `EPOS_Plan.exe --entwickler`. Praktisch: eine Verknüpfung „EPOS-Plan (Entwickler)" mit diesem Ziel selbst anlegen; das Setup legt sie absichtlich nicht an. Nur Windows. | nächster Start ohne Argument |
 | **Umgebungsvariable** | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf, iOS-Simulator | `EPOS_ENTWICKLER=1` als Benutzer- oder Systemvariable. iOS-Simulator wie beim Prüfmodus: `SIMCTL_CHILD_EPOS_ENTWICKLER=1`. | Variable entfernen |
 | **Sperre des Administrators** | Kundeninstallation, deren Verwaltung den Modus verbietet | Registrywert `HKLM\SOFTWARE\wp-plan\EntwicklermodusGesperrt = 1` (in beiden Registry-Sichten gelesen, wie der KI-Abschalter). Die Sperre schlägt alle drei anderen Wege. | Wert löschen; aus der Anwendung heraus nie |
@@ -58,7 +58,7 @@ starten beziehungsweise die Variable entfernen.
   Modus lesbar und trägt seine Herkunft; nur das Anlegen neuer Importe ist dann verborgen (AS-Q5).
 
 
-## 2 Die Entwicklerbereiche [Stufe 1]
+## 2 Die Entwicklerbereiche [heute]
 
 Das Register `Entwicklerbereiche.Alle` im Kern führt jeden Bereich mit einem Schlüssel; die Wache
 (Abschnitt 5) prüft, dass jeder Schlüssel eine Fundstelle hat und dass der Anwenderbaum keinen davon
@@ -68,15 +68,15 @@ enthält.
 
 | Schlüssel | Bereich | Wo | Wozu |
 |---|---|---|---|
-| `PROJEKTDATEI_IMPORT` | Projektdatei des CAD-Programms (`.sqproj`) im Gebäudeimport: Quellenwahl „Format mit Projektdatei" und „nur Projektdatei", Knopf „Projektdatei dazuladen (.sqproj)…", „Projektdatei entfernen", Zonierungswahl DIN/Simulation | `EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor`, Hülle `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs`, Kern `EPOS.Kern/Allgemein/Import/Sqproj/` (Datenaustauschkonzept Kapitel 16) | Zonen, Nutzung, Ganglinien und Kalender aus HottCAD zur IFC-Datei dazuladen |
-| `PROJEKTDATEI_PROFILE` | „Aus Projektdatei…" im Blatt Nutzungsprofile und „Nutzungsprofile der Datei übernehmen…" im Import | `EPOS.UI/Dialoge/Bedarf/ProjektdateiProfile.razor`, Wirt `RaumnutzungBlatt.razor`, Hülle `ProjektdateiProfileHuelle.cs` | Profile je DIN-Nummer in einer eigenen Katalogkategorie anlegen |
-| `PROJEKTDATEI_IOS` | Dateiendung `.sqproj` in der iOS-Dateiwahl | `EPOS.iOS/Dienste/Dateifilter.cs` | nur im Modus wählbar |
-| `PROJEKTDATEI_KI` | Feldkarten und Aktionen der Projektdatei für den Hilfe-Assistenten | `EPOS.Kern/Allgemein/KI/Dialoge/KiDialoge.cs`, Kennzeichen `nurEntwickler` | ohne Modus benannte Absage des Assistenten |
-| `KATALOG_WIEDERHERSTELLEN` | „Auslieferungsstand wiederherstellen…" des Katalogabgleichs | `KatalogabgleichDialog.razor`, Kern `Katalogabgleich.Wiederherstellen`; im Modus über *Entwicklung* | Reparatur eines behaltenen Katalogsatzes |
-| `KI_WERKZEUGE` | KI-Chat: „Werkzeuge…", „Protokoll anzeigen", Modellwahl und „Weg B" in den KI-Einstellungen | `EPOS.UI/Dialoge/Hilfe/KiChatDialog.razor`, `KiEinstellungenDialog.razor` | Prüf- und Fehlersuchwerkzeuge des Assistenten; „Was wird gesendet?" bleibt für alle |
-| `EXPORT_IDS` | „Exportzusage (IDS) öffnen…" im Gebäudeexport | `EPOS.UI/Dialoge/Export/GebaeudeExportDialog.razor` | Prüfartefakt des IFC-Exports |
-| `ZAPFPROFIL_VORGABEN` | Rubrik „Entwicklung" im Einstellungsdialog mit den fünf Rechenvorgaben `Zapfprofil.Anzeigetemperatur`, `Zapfprofil.Stundenschwelle`, `Zapfprofil.Nenninhalte`, `Zapfprofil.Katalogordner`, `Zapfprofil.Importordner` | `EinstellungenDialog.razor`; gelesen in `ZapfprofilCtrl.Eingang.cs`, `ZapfprofilCtrl.Auslegung.cs`, `ZapfprofilHuelle.*` | heute nur per Registry setzbar; ungültige Werte werden mit Hinweis verworfen |
-| `WEBVIEW_WERKZEUGE` | Entwicklerwerkzeuge der WebView2 (Strg + Umschalt + I) | `WindowsFormsApplication1/Allgemein/Blazor/BlazorDienste.cs` (`AddBlazorWebViewDeveloperTools`, heute `#if DEBUG`) | DOM, Stilblatt, Konsole, Netz der Razor-Oberfläche im Release beim Kunden |
+| `PROJEKTDATEI_IMPORT` | Projektdatei des CAD-Programms (`.sqproj`) im Gebäudeimport: Quellenwahl „Format mit Projektdatei" und „nur Projektdatei", Knopf „Projektdatei dazuladen (.sqproj)…", „Projektdatei entfernen", Zonierungswahl DIN/Simulation | `EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor`, Hülle `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs` (Parameter `ProjektdateiFreigegeben`), Kern `EPOS.Kern/Allgemein/Import/Sqproj/` (Datenaustauschkonzept Kapitel 16) | Zonen, Nutzung, Ganglinien und Kalender aus HottCAD zur IFC-Datei dazuladen |
+| `PROJEKTDATEI_PROFILE` | „Aus Projektdatei…" im Blatt Nutzungsprofile und „Nutzungsprofile der Datei übernehmen…" im Import | `EPOS.UI/Dialoge/Bedarf/ProjektdateiProfile.razor`, Wirt `RaumnutzungBlatt.razor`, Hülle `ProjektdateiProfileHuelle.cs`; Parameter `RaumnutzungWeg.ProjektdateiFreigegeben` | Profile je DIN-Nummer in einer eigenen Katalogkategorie anlegen |
+| `PROJEKTDATEI_IOS` | Dateiendung `.sqproj` in der iOS-Dateiwahl | `EPOS.iOS/Dienste/Dateifilter.cs` (ohne Modus ohne `.sqproj`; nicht gebaut) | nur im Modus wählbar |
+| `PROJEKTDATEI_KI` | Feldkarten und Aktionen der Projektdatei für den Hilfe-Assistenten | `EPOS.Kern/Allgemein/KI/Dialoge/KiDialoge.cs` (`KiDialoge.NUR_ENTWICKLER`), Absage `KI_ABSAGE_NUR_ENTWICKLER` in `KiAktionenDialog.FeldzugangGrund` | ohne Modus benannte Absage des Assistenten |
+| `KATALOG_WIEDERHERSTELLEN` | „Auslieferungsstand wiederherstellen…" des Katalogabgleichs | `KatalogabgleichDialog.razor` (Parameter `Entwickler`), Kern `Katalogabgleich.Wiederherstellen`; im Modus über *Entwicklung* | Reparatur eines behaltenen Katalogsatzes |
+| `KI_WERKZEUGE` | KI-Chat: „Werkzeuge…", „Protokoll anzeigen", Modellwahl und „Weg B" in den KI-Einstellungen | `EPOS.UI/Dialoge/Hilfe/KiChatDialog.razor`, `KiEinstellungenDialog.razor` (je Parameter `Entwickler`) | Prüf- und Fehlersuchwerkzeuge des Assistenten; „Was wird gesendet?" bleibt für alle |
+| `EXPORT_IDS` | „Exportzusage (IDS) öffnen…" im Gebäudeexport | `EPOS.UI/Dialoge/Export/GebaeudeExportDialog.razor` (Parameter `ZusageFreigegeben`) | Prüfartefakt des IFC-Exports |
+| `ZAPFPROFIL_VORGABEN` | Rubrik „Entwicklung" im Einstellungsdialog mit den fünf Rechenvorgaben `Zapfprofil.Anzeigetemperatur`, `Zapfprofil.Stundenschwelle`, `Zapfprofil.Nenninhalte`, `Zapfprofil.Katalogordner`, `Zapfprofil.Importordner` | `EinstellungenDialog.razor` (Parameter `Entwickler`, Reiterblatt `ENTWICKLUNG`; Felder `Zapf*` in `EinstellungenCtrl`); gelesen in `ZapfprofilCtrl.Eingang.cs`, `ZapfprofilCtrl.Auslegung.cs`, `ZapfprofilHuelle.*` | heute nur per Registry setzbar; ungültige Werte werden mit Hinweis verworfen |
+| `WEBVIEW_WERKZEUGE` | Entwicklerwerkzeuge der WebView2 (Strg + Umschalt + I) | `WindowsFormsApplication1/Allgemein/Blazor/BlazorDienste.cs` (`WebviewWerkzeugeFreigegeben`: Debug-Build oder Modus; `AddBlazorWebViewDeveloperTools`) | DOM, Stilblatt, Konsole, Netz der Razor-Oberfläche im Release beim Kunden |
 
 Bewusst **kein** Entwicklerbereich: Katalog-Dublettensuche, Schloss eines Auslieferungssatzes,
 Zapfprofil-Stufe „Experte", Gebäude-Rechenweg „Tagesbilanz", „Was wird gesendet?" im KI-Chat.
@@ -90,7 +90,7 @@ Bewusst **Build-Schalter** bleiben die elf Prüfhaken `#if DEBUG` unter
 | Ausnahmeprotokoll öffnen | öffnet `Logs\Ausnahmen.txt` mit dem Standardprogramm | erster Handgriff bei einem wortlosen Absturz (Abschnitt 3.2) |
 | Protokollordner öffnen | Explorer auf `Logs\` | Ausnahmen, Migration, KI-Aktionen |
 | Datenbankordner öffnen | Explorer auf `%ProgramData%\EPOS_PLAN` | Datenbank, `DB-Backup`, Vorlage |
-| Diagnosedaten kopieren | Textblock aus Abschnitt 3.3 in die Zwischenablage | derselbe Block wie im Dialog „Über EPOS-Plan" |
+| Diagnosedaten kopieren | Textblock aus Abschnitt 3.3 in die Zwischenablage | heute schon der Kern-Baustein `Diagnosedaten`; derselbe Block erscheint später im Dialog „Über EPOS-Plan" |
 | Entwicklerwerkzeuge der Oberfläche | WebView2-Entwicklerwerkzeuge | ersetzt `#if DEBUG` |
 | Auslieferungsstand wiederherstellen… | Reparaturzweig des Katalogabgleichs | aus *Daten & Import* hierher verlegt |
 | Entwicklermodus ausschalten | löscht die Einstellung | bei Startargument oder Umgebung benannte Absage |
@@ -128,6 +128,8 @@ Kopf des nächsten Laufs. Diese Datei anfordern, nicht den Weg raten (Fallstrick
 
 ### 3.3 Diagnosedaten und Supportpaket [Stufe 3]
 
+Der Diagnoseblock selbst ist seit Stufe 1 gebaut und über *Entwicklung → Diagnosedaten kopieren* erreichbar; Stufe 3 bringt den Dialog und das Supportpaket.
+
 Der Dialog „Über EPOS-Plan" (*Hilfe → Version*) zeigt den Diagnoseblock aus dem Kern-Baustein
 `Diagnosedaten` (`EPOS.Kern/Allgemein/Diagnose/`): Programmversion und Baudatum, Plattform und
 Betriebssystemfassung, Sprache, Datenbankpfad, Schemastand (`Tab_Applikation.SchemaVersion` gegen
@@ -147,8 +149,8 @@ steht auch der Testversion offen.
 | Ort | Inhalt |
 |---|---|
 | `HKLM\SOFTWARE\INEKON\EPOS-Plan` | `InstallDir`, `Version` (vom Setup) |
-| `HKCU\Software\wp-plan` | Sprache, KI-Werte, Einwilligung, Lizenzanker, ab Stufe 1 `Entwicklermodus` |
-| `HKLM\SOFTWARE\wp-plan` | maschinenweite Sperren: `KiDeaktiviert`, ab Stufe 1 `EntwicklermodusGesperrt` |
+| `HKCU\Software\wp-plan` | Sprache, KI-Werte, Einwilligung, Lizenzanker, `Entwicklermodus` |
+| `HKLM\SOFTWARE\wp-plan` | maschinenweite Sperren: `KiDeaktiviert`, `EntwicklermodusGesperrt` |
 | `user.config` der Anwendung | `DBPath`, `DBName`, Web-Adressen, Pfade (Einstellungsdialog) |
 | `%APPDATA%\wp-plan\` | `lizenz.dat`, `lizenz-zeit.dat`, `ki-schluessel.dat` (DPAPI) |
 | `%ProgramData%\EPOS_PLAN\` | `Kenndaten.sqlite`, `DB-Backup\`, `Logs\` |
@@ -223,10 +225,11 @@ vom iPad ist bis dahin Telefon und E-Mail.
 
 | Wache | Hält | Stufe |
 |---|---|---|
-| `EPOS.UI.Tests/EntwicklerbereicheWacheTests` | Anwenderbaum ohne Entwicklerpunkt, keine leeren Untermenüs, keine doppelten Trenner; jeder Schlüssel des Registers hat eine Fundstelle; jedes `data-stufe="entwickler"` hängt an einem Gaben-Kennzeichen | 1 |
-| `MenuebandTests` | Zählungen beider Bäume, Regel „kein Untermenü mit nur einem Punkt" | 1 |
-| bunit `GebaeudeImportDialog`, `RaumnutzungBlatt` | ohne Kennzeichen kein Projektdatei-Element, mit Kennzeichen alle | 1 |
-| `EntwicklermodusTests` (Kern) | Sperre schlägt alles; Quelle richtig benannt | 1 |
+| `EPOS.UI.Tests/Bausteine/EntwicklerbereicheWacheTests` (Teil 1) | Anwenderbaum ohne Entwicklerpunkt, keine leeren Untermenüs, keine doppelten Trenner; jeder Schlüssel des Registers hat eine Fundstelle; jedes `data-stufe="entwickler"` hängt an einem Gaben-Kennzeichen | heute |
+| `EPOS.UI.Tests/Bausteine/EntwicklerbereicheQuellenWacheTests` (Teil 2), `KiEntwicklerbereichTests` | Quellen der Elemente tragen `data-stufe`/`data-bereich` und hängen am Gaben-Kennzeichen; KI-Feldkarten und Absage ohne Modus | heute |
+| `MenuebandTests` | Zählungen beider Bäume, Regel „kein Untermenü mit nur einem Punkt" | heute |
+| bunit `GebaeudeImportDialog`, `RaumnutzungBlatt`, `HauptfensterTests` (Marke, Menü) | ohne Kennzeichen kein Projektdatei-Element, mit Kennzeichen alle | heute |
+| `EntwicklermodusTests` (Kern) | Sperre schlägt alles; Quelle richtig benannt | heute |
 | `LizenzCtrlTests` | `FernwartungErlaubt` für die vier Lesarten | 2 |
 | bunit `FernwartungDialog` | gesperrt und frei; Knopf ruft die Adresse | 2 |
 | `DiagnosedatenTests`, bunit `UeberDialog` | Textblock vollständig; Geste schaltet | 3 |
@@ -249,10 +252,10 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 
 | Baustein | Pfad | Stufe |
 |---|---|---|
-| Entwicklermodus, Freigabestufe, Register | `EPOS.Kern/Allgemein/Freigabe/Entwicklermodus.cs`, `Entwicklerbereiche.cs` | 1 |
-| Menüzeile mit Stufe, Zuschnitt | `EPOS.UI/Bausteine/Menuepunkt.cs`, `Menuetabelle.cs` (`Sichtbar`) | 1 |
-| Marke und Fenstertitel | `EPOS.UI/Seiten/Hauptfenster.razor`, `WindowsFormsApplication1/Views/Hauptformular/` | 1 |
-| Startargument | `WindowsFormsApplication1/Program.cs` (`Main(string[] args)`) | 1 |
+| Entwicklermodus, Freigabestufe, Register | `EPOS.Kern/Allgemein/Freigabe/Entwicklermodus.cs`, `Entwicklerbereiche.cs` | heute |
+| Menüzeile mit Stufe, Zuschnitt | `EPOS.UI/Bausteine/Menuepunkt.cs`, `Menuetabelle.cs` (`Sichtbar`) | heute |
+| Marke und Fenstertitel | `EPOS.UI/Seiten/Hauptfenster.razor`, `WindowsFormsApplication1/Views/Hauptformular/` | heute |
+| Startargument | `WindowsFormsApplication1/Program.cs` (`Main(string[] args)`) | heute |
 | Projektdatei-Einstiege | siehe Abschnitt 2.1 | heute |
 | Ausnahmeprotokoll | `EPOS.Kern/Allgemein/Diagnose/Ausnahmeprotokoll.cs`, eingeschaltet in `Program.Main` | heute |
 | Lizenzstand | `EPOS.Kern/Allgemein/Lizenz/LizenzManager.cs` (`LizenzStatus`), `LizenzToken.cs` (`Typ`), `EPOS.Kern/Controller/LizenzCtrl.cs` | heute |
@@ -266,7 +269,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 
 | Stufe | Inhalt | Stand |
 |---|---|---|
-| 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | offen (Konzept entschieden 11.10.2026) |
+| 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #960) |
 | 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | offen |
 | 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | offen |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |
