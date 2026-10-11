@@ -46,7 +46,8 @@ namespace WindowsFormsApplication1
         /// <param name="bezug">Der Ankunftsbezug (V3b); (b) wirkt nur an einer Zone mit Heizkreis.</param>
         internal Vorheizvorausschau(ZonenEingang zone, double[] soll, GebaeudeModellErgebnis vorlauf,
                                     IReadOnlyList<GebaeudeModellErgebnis> alle, double vorheizleistungW, double deckelW,
-                                    double genauigkeitK, Vorheizankunftsbezug bezug = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE)
+                                    double genauigkeitK, Vorheizankunftsbezug bezug = Vorheizvorgabe.ANKUNFTSBEZUG_VORGABE,
+                                    double ueberhoehungK = 0.0)
         {
             _zone = zone ?? throw new ArgumentNullException(nameof(zone));
             _soll = soll ?? throw new ArgumentNullException(nameof(soll));
@@ -64,6 +65,29 @@ namespace WindowsFormsApplication1
             DeckelW = deckelW;
             GenauigkeitK = genauigkeitK;
             Ankunftsbezug = bezug;
+            UeberhoehungK = ueberhoehungK > 0.0 && _e.UeberhoehungMoeglich ? ueberhoehungK : 0.0;
+        }
+
+        /// <summary>
+        /// Schnellaufheizung (SA1, E128): die Überhöhung Δθ [K], mit der die Vorausschau die Fensterstunden rechnet — dieselbe
+        /// Entscheidung „Ende bei Ankunft“ wie im Lauf (<see cref="Zonenmodell2K.Schritt"/>); 0 = ohne. Der Ankunftsbezug
+        /// θ_stat bleibt ohne Überhöhung.
+        /// </summary>
+        internal double UeberhoehungK { get; }
+
+        /// <summary>Kann die Schnellaufheizung an dieser Zone wirken (wirksamer Heizkreis mit Heizkurve)?</summary>
+        internal bool UeberhoehungMoeglich => _e.UeberhoehungMoeglich;
+
+        /// <summary>
+        /// Der Ankunftsbezug des Sprungs <paramref name="hs"/> als Schwelle [°C]: min(θ_T, θ_stat) − ε — dasselbe Maß wie
+        /// <see cref="Ankunft"/> (θ_stat aus dem Vorlauf, ohne Überhöhung). Die Schnellaufheizung endet, sobald die Raumluft ihn
+        /// erreicht.
+        /// </summary>
+        internal double AnkunftsschwelleC(int hs, double phiRefW)
+        {
+            double thetaT = _soll[hs];
+            Stundenrand rs = _zone.Rand(hs, false, Nachbarn(hs), false).MitVorheizen(thetaT, Grenze(Math.Max(DeckelW, phiRefW)));
+            return BezugC(hs, thetaT, in rs) - GenauigkeitK;
         }
 
         /// <summary>Der Ankunftsbezug (V3b).</summary>
@@ -99,6 +123,7 @@ namespace WindowsFormsApplication1
             _nachtregel?.Setzen(false);
             double luftVor = _vorlauf.Raumtemperatur[hv], aussenVor = _e.ThetaOut[hv];
             double grenzeFenster = Grenze(VorheizleistungW);
+            double ankunft = UeberhoehungK > 0.0 ? AnkunftsschwelleC(hs, phiRefW) : double.NaN;
             for (int k = 0; k < t; k++)
             {
                 int h = Ring(h0 + k);
@@ -115,6 +140,9 @@ namespace WindowsFormsApplication1
                 double s = _soll[h];
                 if (!double.IsNaN(s) && s > wert) wert = s;
                 r = r.MitVorheizen(wert, grenzeFenster);
+                // SA1b: Die Heizkurve fährt im Fenster am Fenstersollwert wie im Lauf (VorlaufNachSollwertBilden).
+                r = _e.KurveAmSollwert(in r, h, wert);
+                if (UeberhoehungK > 0.0) r = _e.Ueberhoehen(in r, h, wert, UeberhoehungK, ankunft);
                 Stundenergebnis erg = _modell.Schritt(in r);
                 luftVor = erg.ThetaAirMittel;
                 aussenVor = _e.ThetaOut[h];

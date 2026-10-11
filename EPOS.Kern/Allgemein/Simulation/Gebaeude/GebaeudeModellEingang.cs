@@ -735,7 +735,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Stundenrand Rand(int h, bool sommerlueftung, double thetaEq, double thetaLue,
                                   bool nachtauskuehlung = false)
-            => MitFahrplan(h, RandOhneFahrplan(h, sommerlueftung, thetaEq, thetaLue, nachtauskuehlung));
+            => MitFahrplan(h, MitUeberhoehung(h, RandOhneFahrplan(h, sommerlueftung, thetaEq, thetaLue, nachtauskuehlung)));
 
         private Stundenrand RandOhneFahrplan(int h, bool sommerlueftung, double thetaEq, double thetaLue,
                                              bool nachtauskuehlung)
@@ -867,6 +867,55 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Bildet die Vorlaufreihe der Heizkurve neu am Heizsollwert, der jetzt gilt</b> (SA1b): Schritt E rechnet die Reihe
+        /// beim Bauen aus der Sollwertreihe ohne Rampe; nach <see cref="HeizsollwertMitRampeSetzen"/> fährt die Kurve sonst im
+        /// Vorheizfenster am abgesenkten Sollwert, während der Raumregler θ_T sieht. Die Reihe wird an Ort und Stelle beschrieben —
+        /// im Mehrzonenweg die eine Reihe des Gebäudeheizkreises (Heizkurve am höchsten Heizsollwert der gekoppelten Zonen, wie
+        /// <see cref="ZonenkopplungAufloesen"/>), im Einzonenweg die des Eingangs (wie Schritt E). Ohne wirksamen Heizkreis mit
+        /// Heizkurve (fester Vorlauf) nichts. Ein unveränderter Sollwert ergibt Zeichen für Zeichen dieselbe Reihe.
+        /// </summary>
+        /// <param name="zonen">Die Zonen eines Gebäudes (Einzone: eine).</param>
+        internal static void VorlaufNachSollwertBilden(IReadOnlyList<ZonenEingang> zonen)
+        {
+            if (zonen == null) throw new ArgumentNullException(nameof(zonen));
+            GebaeudeModellEingang erste = null;
+            foreach (ZonenEingang z in zonen)
+                if (z.Eingang.KopplungWirksam) { erste = z.Eingang; break; }
+            if (erste == null || !erste.HeizkurveAktiv || erste.Heizkurve == null || erste.VorlaufC == null) return;
+            Heizkurve kurve = erste.Heizkurve;
+            double[] vorlauf = erste.VorlaufC;
+            if (erste.Gebaeudeheizkreis == null)
+            {
+                for (int h = 0; h < 8760; h++) vorlauf[h] = kurve.VorlaufC(erste.ThetaSoll[h], erste.ThetaOut[h]);
+                return;
+            }
+            for (int h = 0; h < 8760; h++)
+            {
+                double soll = double.NegativeInfinity;
+                foreach (ZonenEingang z in zonen)
+                {
+                    if (!z.Eingang.KopplungWirksam) continue;
+                    double s = z.Eingang.ThetaSoll[h];
+                    if (Endlich(s) && s > soll) soll = s;
+                }
+                vorlauf[h] = double.IsNegativeInfinity(soll) ? double.NaN : kurve.VorlaufC(soll, erste.ThetaOut[h]);
+            }
+        }
+
+        /// <summary>
+        /// <b>Der Rand mit der Heizkurve am Fenstersollwert</b> (SA1b) für die Vorausschau des Vorheizplans: der Vorlauf der Kurve
+        /// bei <paramref name="sollC"/>, nie unter dem Vorlauf des Randes (der gemeinsame Vorlauf folgt im Mehrzonenweg dem höchsten
+        /// Sollwert), gekappt am Vorlaufangebot der Anlage. Ohne wirksamen Heizkreis mit Heizkurve derselbe Rand.
+        /// </summary>
+        internal Stundenrand KurveAmSollwert(in Stundenrand r, int h, double sollC)
+        {
+            if (!KopplungWirksam || !HeizkurveAktiv || Heizkurve == null || !r.MitUebergabe || double.IsNaN(sollC)) return r;
+            double k = Heizkurve.VorlaufC(sollC, ThetaOut[h]);
+            if (double.IsNaN(k) || (!double.IsNaN(r.VorlaufC) && !(k > r.VorlaufC))) return r;
+            return r.MitKurvenvorlauf(k);
+        }
+
+        /// <summary>
         /// <b>Die äquivalente Außentemperatur am Bemessungspunkt</b> [°C] in der <b>Außenform</b>
         /// (Entwurf KP3, Befund B4, Festlegung 12): Außenluft und Fenster bei <paramref name="aussenC"/>
         /// ohne Strahlung, das Erdreich mit seinem Tagesmittel am Tag <paramref name="tag"/>, der
@@ -968,7 +1017,61 @@ namespace WindowsFormsApplication1
         /// zum Lüftungszweig (Rechenschritte 7.2 — der Zustand gilt die ganze Stunde).
         /// </summary>
         internal Stundenrand Rand(int h, bool sommerlueftung = false, bool nachtauskuehlung = false)
-            => MitFahrplan(h, RandOhneFahrplan(h, sommerlueftung, nachtauskuehlung));
+            => MitFahrplan(h, MitUeberhoehung(h, RandOhneFahrplan(h, sommerlueftung, nachtauskuehlung)));
+
+        // =====================================================================
+        //  Schnellaufheizung (SA1, E128)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Überhöhung je Stunde</b> Δθ [K] der Schnellaufheizung — Δθ in den Fensterstunden des Vorheizplans, sonst NaN;
+        /// <c>null</c> = keine (jede Stunde trägt den Rand Zeichen für Zeichen wie ohne sie). Gesetzt nur über
+        /// <see cref="UeberhoehungSetzen"/> (<see cref="Aufheizoptimierung.PlanSetzen"/>).
+        /// </summary>
+        internal double[] UeberhoehungReiheK { get; private set; }
+
+        /// <summary>Der Ankunftsbezug je Fensterstunde [°C] (min(θ_T, θ_stat) − ε des Sprungs); NaN außerhalb.</summary>
+        internal double[] UeberhoehungAnkunftReiheC { get; private set; }
+
+        /// <summary>
+        /// <b>Setzt die Reihen der Schnellaufheizung</b> (Kopien); <c>null</c> nimmt sie zurück.
+        /// </summary>
+        /// <exception cref="ArgumentException">wenn eine Reihe nicht 8 760 Stunden führt.</exception>
+        internal void UeberhoehungSetzen(double[] reiheK, double[] ankunftC)
+        {
+            if (reiheK == null)
+            {
+                UeberhoehungReiheK = null;
+                UeberhoehungAnkunftReiheC = null;
+                return;
+            }
+            if (reiheK.Length != 8760 || ankunftC == null || ankunftC.Length != 8760)
+                throw new ArgumentException("Die Reihen der Schnellaufheizung müssen 8760 Stunden führen.", nameof(reiheK));
+            UeberhoehungReiheK = (double[])reiheK.Clone();
+            UeberhoehungAnkunftReiheC = (double[])ankunftC.Clone();
+        }
+
+        /// <summary>Kann die Schnellaufheizung an dieser Zone wirken — wirksamer Heizkreis mit Heizkurve?</summary>
+        internal bool UeberhoehungMoeglich => KopplungWirksam && HeizkurveAktiv && Heizkurve != null;
+
+        private Stundenrand MitUeberhoehung(int h, Stundenrand r)
+        {
+            double[] k = UeberhoehungReiheK;
+            if (k == null || !(k[h] > 0.0)) return r;
+            return Ueberhoehen(in r, h, ThetaSoll[h], k[h], UeberhoehungAnkunftReiheC[h]);
+        }
+
+        /// <summary>
+        /// <b>Der Rand mit Überhöhung</b> der Stunde <paramref name="h"/>: der Vorlauf der Heizkurve bei
+        /// <paramref name="sollC"/> + <paramref name="deltaK"/> ohne Deckel des Auslegungsvorlaufs und der Ankunftsbezug
+        /// <paramref name="ankunftC"/>; ob sie wirkt, entscheidet der Löser (<see cref="Zonenmodell2K.Schritt"/>). Ohne
+        /// wirksamen Heizkreis mit Heizkurve derselbe Rand — auch der Weg der Vorausschau.
+        /// </summary>
+        internal Stundenrand Ueberhoehen(in Stundenrand r, int h, double sollC, double deltaK, double ankunftC)
+        {
+            if (!UeberhoehungMoeglich || !(deltaK > 0.0) || double.IsNaN(sollC)) return r;
+            return r.MitUeberhoehung(Heizkurve.VorlaufUngedeckeltC(sollC + deltaK, ThetaOut[h]), ankunftC);
+        }
 
         // =====================================================================
         //  Anlagenkopplung, Stufe AK2 (Konzept Anlagenkopplung 4.5, 5.3, 6.2)

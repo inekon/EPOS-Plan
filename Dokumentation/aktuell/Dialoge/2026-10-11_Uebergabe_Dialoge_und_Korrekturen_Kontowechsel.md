@@ -20,6 +20,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   - #939 ÜS1 Satz-Überlagerung in voller Höhe; #940 ÜS2 Stift, Zusammenfassung, „Bearbeiten“.
   - #942 Wiki-Quellen der Katalogauswahl; #943 Konzept Kältebedarf; #944 K1 Schema 213.
   - #960 KM5 Kältemaschine; #961 ZR1 Wärmebedarf extern und Stromganglinie; #962 ZR2 Solar- und
+  - #988 AW1 Knopfleiste am Satz (Heizkessel, Wärmepumpe); #989 AW2 Wärmepumpe Überlagerung mit Anlage.
     PV-Ganglinie; #963 BP Bedarfsprofile; #964 GEB Gebäude (Rückweg, Dialog, Überlagerung);
     #965 diese Übergabe.
 - **Katalogauswahl V1:** Stufen 1 bis 5 umgesetzt (Baustein, Heizkessel, sieben Erzeuger,

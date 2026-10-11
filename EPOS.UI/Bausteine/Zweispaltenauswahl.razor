@@ -43,6 +43,16 @@
    Schluessel der gefilterten Liste, nennt die Kopfleiste „n gewaehlt, m verborgen",
    und Wahlkaestchen in der Liste (Zeile und Kopfhaekchen) rechnen ueber den Baustein.
 
+   KNOPFLEISTE AM SATZ (AW1, Anwenderentscheid 11.10.2026; Schalter KnopfleisteAmSatz, Vorgabe aus).
+   Eingeschaltet wandern die Knoepfe der Katalog-Fussleiste (Vergleichen…, Schloss…, Loeschen,
+   Bearbeiten…, Neu…) in den Kopf der Detailzeile „gewaehlter Satz" - sie wirken auf den gewaehlten
+   Satz, der Wirt sperrt sie je Satzart weich. Der Stift „Bearbeiten" der Detailzeile entfaellt
+   („Bearbeiten…" uebernimmt), die Fussleiste unter dem Katalog auch. In der Projektliste ist dann
+   die Zeile die Wahl wie in der Katalogliste: Der Wirt zeichnet die gewaehlte Zeile mit der Klasse
+   epos-zeile--gewaehlt, ein Klick in ihre Zelle (epos-zeilenzelle) waehlt sie, die Liste ist ein
+   Tabulatorhalt und reicht ↑ ↓ Pos1 Ende an ProjektTasteAsync; die Kaestchen bleiben die
+   Mehrfachwahl. Ausgeschaltet bleibt alles wie bisher.
+
    TASTATUR (4.7). Enter in der Katalogliste und Doppelklick auf eine Katalogzeile
    uebernehmen; Enter in der Projektliste klappt die Detailzeile auf; Entf in der
    Projektliste entfernt; Strg+A waehlt die gefilterte Liste; Esc klappt zuerst die
@@ -82,7 +92,7 @@
                     <span class="epos-zweispalten-knopftext">@EntfernenText</span>
                 </button>
             </div>
-            <div class="epos-zweispalten-inhalt">
+            <div class="@(KnopfleisteAmSatzAktiv ? "epos-zweispalten-inhalt epos-zweispalten-inhalt--zeilenwahl" : "epos-zweispalten-inhalt")">
                 @Links
             </div>
         </section>
@@ -125,7 +135,7 @@
                 @Rechts
             </CascadingValue>
         </div>
-        @if (KatalogFuss is not null || KatalogFussRechts is not null)
+        @if (!KnopfleisteAmSatzAktiv && (KatalogFuss is not null || KatalogFussRechts is not null))
         {
             @* DIE FUSSLEISTE DES KATALOGS (4.2, Ort K-Fuss): der gewaehlte Name, dann die
                Knoepfe, die auf die Auswahl des Katalogs wirken; rechts Neu…. Bei
@@ -170,7 +180,16 @@
                        ihr Fragment samt Knoepfen; dann fehlen sie hier (eine Stelle je Ansicht). *@
                     <span class="epos-zweispalten-satzkopfknoepfe">@SatzKopfKnoepfe</span>
                 }
-                @if (SatzZusammenfassung is not null)
+                @if (KnopfleisteAmSatzAktiv)
+                {
+                    @* DIE KNOPFLEISTE AM SATZ (AW1): die Knoepfe der Katalog-Fussleiste, wirksam auf den
+                       gewaehlten Satz; „Bearbeiten…" ersetzt den Stift der Detailzeile. *@
+                    <span class="epos-zweispalten-satzknoepfe" role="group" aria-label="@Resource.AUSWAHL_SATZ_KNOEPFE">
+                        @KatalogFuss
+                        @KatalogFussRechts
+                    </span>
+                }
+                else if (SatzZusammenfassung is not null)
                 {
                     @* BEARBEITEN (UeS2): ersetzt „Details" und „Vergroessern" - derselbe Weg in die
                        Satz-Ueberlagerung; beim gesperrten Katalogsatz nur lesend. *@
@@ -358,6 +377,58 @@
                 return string.Format(Resource.Culture, Resource.AUSWAHL_FUSS_SAETZE, w.Anzahl);
             return string.IsNullOrEmpty(KatalogFussName) ? null : KatalogFussName + ":";
         }
+    }
+
+    /// <summary>
+    /// <b>Die Knopfleiste am gewählten Satz</b> (AW1, Anwenderentscheid 11.10.2026). Gesetzt
+    /// stehen <see cref="KatalogFuss"/> und <see cref="KatalogFussRechts"/> im Kopf der
+    /// Detailzeile statt in einer Fußleiste unter dem Katalog, der Stift „Bearbeiten" der
+    /// Detailzeile entfällt, und in der Projektliste ist die Zeile die Wahl
+    /// (<see cref="ProjektGewaehlt"/>, <see cref="ProjektTasteAsync"/>). Die Knöpfe wirken
+    /// dann auf den gewählten Satz; welche bei einem Projektsatz weich gesperrt sind, weiß der
+    /// Wirt. Vorgabe aus: die Form mit Fußleiste. Ohne <see cref="Satz"/> wirkt er nicht.
+    /// </summary>
+    [Parameter] public bool KnopfleisteAmSatz { get; set; }
+
+    /// <summary>Wirkt <see cref="KnopfleisteAmSatz"/>? Nur mit Detailzeile und Projektbereich.</summary>
+    public bool KnopfleisteAmSatzAktiv => KnopfleisteAmSatz && Satz is not null && !NurRechts;
+
+    /// <summary>
+    /// Schlüssel der gewählten Projektzeile (der Projektsatz) — Ausgangspunkt der
+    /// Tastenführung der Projektliste. <c>null</c>: keine Projektzeile gewählt.
+    /// </summary>
+    [Parameter] public string? ProjektGewaehlt { get; set; }
+
+    /// <summary>Die Tastenführung der Projektliste hat eine andere Zeile gewählt (ihr Schlüssel).</summary>
+    [Parameter] public EventCallback<string> ProjektGewaehltChanged { get; set; }
+
+    /// <summary>
+    /// <b>Die Tastenführung der Projektliste</b> (AW1, dieselbe Regel wie in der
+    /// <c>Katalogliste</c>): ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an Anfang und
+    /// Ende der sichtbaren Liste (<see cref="ProjektSichtbar"/>); steht die Wahl nicht in der
+    /// Liste, beginnen ↑ und ↓ bei der ersten Zeile. Alle übrigen Tasten tun hier nichts —
+    /// Enter und Entf führt das Skript des Bausteins. Die Kästchen bleiben unberührt.
+    /// </summary>
+    public async Task ProjektTasteAsync(string taste)
+    {
+        if (!KnopfleisteAmSatzAktiv) return;
+        IReadOnlyList<string> liste = ProjektSichtbar ?? Array.Empty<string>();
+        int n = liste.Count;
+        if (n == 0) return;
+        int i = -1;
+        for (int k = 0; k < n; k++)
+            if (liste[k] == ProjektGewaehlt) { i = k; break; }
+        int ziel = taste switch
+        {
+            "ArrowDown" => i < 0 ? 0 : Math.Min(i + 1, n - 1),
+            "ArrowUp" => i < 0 ? 0 : Math.Max(i - 1, 0),
+            "Home" => 0,
+            "End" => n - 1,
+            _ => -1
+        };
+        if (ziel < 0 || ziel == i) return;
+        ProjektGewaehlt = liste[ziel];
+        await ProjektGewaehltChanged.InvokeAsync(liste[ziel]);
     }
 
     /// <summary>
@@ -620,6 +691,7 @@
             if (SatzflaecheOffen) k += " epos-zweispalten--satz-offen";
             if (SatzZusammenfassung is not null) k += " epos-zweispalten--zusammenfassung";
             if (KatalogZeile > 0) k += " epos-zweispalten--zeilenmass";
+            if (KnopfleisteAmSatzAktiv) k += " epos-zweispalten--knopfleiste-am-satz";
             if (!string.IsNullOrEmpty(Zusatzklasse)) k += " " + Zusatzklasse;
             return k;
         }

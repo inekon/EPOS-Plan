@@ -479,6 +479,10 @@ public static class Seitenschluessel
     /// <summary>Menue „Hilfe -> Dokumentation" - das Wiki im Browser.</summary>
     public const string Dokumentation = "DOKUMENTATION";
 
+    /// <summary>Menue „Hilfe -> Fernwartung…" - Kontakt, Diagnosedaten und die Fernwartungsseite
+    /// (Konzept Administration und Support, Abschnitt 4.2; nur Windows).</summary>
+    public const string Fernwartung = "FERNWARTUNG";
+
     /// <summary>Menue „Deutsch" - Oberflaechensprache umstellen und neu starten.</summary>
     public const string SpracheDeutsch = "SPRACHE_DEUTSCH";
 
@@ -535,7 +539,7 @@ public static class Seitenschluessel
         BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
         Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, Kaeltemittel, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
-        Version, Dokumentation, SpracheDeutsch, SpracheEnglisch,
+        Version, Dokumentation, Fernwartung, SpracheDeutsch, SpracheEnglisch,
         EntwAusnahmeprotokoll, EntwProtokollordner, EntwDatenbankordner, EntwDiagnosedaten,
         EntwWebWerkzeuge, EntwModusAus
     };

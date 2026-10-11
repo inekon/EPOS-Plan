@@ -216,6 +216,7 @@ namespace WindowsFormsApplication1
             { "Form_ErgBrauchwasserwaerme",    B_BRAUCHWASSER },
             { "Form_ErgProzesswaerme",         B_PROZESSWAERME },
             { "Form_ErgStromverbraucher",      B_STROMVERBRAUCHER },
+            { "Form_Fernwartung",              B_HILFE },
             { "Form_GanglinieImportOptionen",  B_STROMVERBRAUCHER },
             { "Form_GebWohnflaeche",           B_GEBAEUDE },
             { "Form_Gebaeude",                 B_GEBAEUDE },

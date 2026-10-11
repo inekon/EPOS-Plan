@@ -96,8 +96,6 @@ namespace WindowsFormsApplication1
                 ["KiAbgeschaltet"] = kiAus,
                 ["MaschinenRiegel"] = riegel,
                 ["KiLesbar"] = kiLesbar,
-                // Entwicklerbereich ZAPFPROFIL_VORGABEN: die Rubrik „Entwicklung“ nur im Entwicklermodus.
-                ["Entwickler"] = Entwicklermodus.Aktiv,
                 ["OrdnerWaehler"] = new Func<string, Task<string>>(OrdnerWaehlen),
                 ["Speichern"] = new Func<Einstellungensatz, bool, Task<SpeicherBefund>>(Speichern),
                 ["Zuruecksetzen"] = new Func<Task<Einstellungensatz>>(

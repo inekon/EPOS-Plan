@@ -79,10 +79,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("Rueckwegfrage",                  "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
         new("WaermepumpeStammFelder",         "WaermepumpeStammDialog",      KiMaskennamen.WAERMEPUMPE),
         new("WaermepumpeGeraetegrenzenFelder", "WaermepumpeStammDialog",     KiMaskennamen.WAERMEPUMPE),
-        new("WaermepumpeKonfiguration",       "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
+        new("WaermepumpeKonfiguration",       "WaermepumpeAnlageFelder",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
         // KB-B: die Gruppe „Kühlbetrieb“ (in WaermepumpeKonfiguration, auch im Bereich „Kälte“ der
         // Simulationskonfiguration) und die Betriebseingaben der Kältemaschine (im Dialog und im Bereich „Kälte“).
-        new("WaermepumpeKuehlbetriebGruppe",  "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
+        new("WaermepumpeKuehlbetriebGruppe",  "WaermepumpeAnlageFelder",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
         new("KaeltemaschineKonfiguration",    "KaeltemaschineAnlageDialog",  KiMaskennamen.KAELTEMASCHINE_ANLAGE),
         new("EnergietraegerEinstellungen",    "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
         new("BrennstoffBestandteile",         "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
@@ -338,7 +338,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // AH-V5 (F14 (a)): die Vorbelegung der Vorheiztoleranz - Katalogfelder neue_projekte_vorheiz_art und
         // neue_projekte_vorheiz_wert (12 → 14).
         // Zusammen mit AH-V5 (neue_projekte_vorheiz_art und -wert, 14) und den fünf Zapfprofil-Vorgaben: 19.
-        new("EinstellungenDialog", 19, "die fünf Rechenvorgaben des Zapfprofils der Rubrik „Entwicklung“ (Entwicklerbereich ZAPFPROFIL_VORGABEN, nur im Entwicklermodus) bleiben draußen — der Assistent steuert keinen Entwicklerbereich; Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2); die zwei Vorgaben der Installation sind die Wahlfelder bericht_vorgabe_word und bericht_vorgabe_excel"),
+        new("EinstellungenDialog", 19, "die fünf Rechenvorgaben des Zapfprofils der Anwenderrubrik „Zapfprofil“ bleiben draußen — Textfelder ohne Katalogfeld, der Assistent setzt keine Rechenvorgabe des Generators; Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen ohne Katalogfeld; der Vorlagenordner ist eine Dateiwahl mit Katalogfeld bericht_vorlagenordner, die Firma das Katalogfeld bericht_firma (BV-E1), das Logo eine Dateiwahl mit Katalogfeld bericht_logo (BV-E2); die zwei Vorgaben der Installation sind die Wahlfelder bericht_vorgabe_word und bericht_vorgabe_excel"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),
@@ -569,7 +569,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WaermegangReiter", 3, "die Erzeuger- und die Speicherauswahl (Mehrfachauswahl) stehen als Anzeigeschalter mit im Katalog"),
         // Anwenderauftrag 30.09.2026: das Ganzzahlfeld „Nutzungsdauer" ist in den Kostendialog
         // gegangen, mit ihm das Feld nutzungsdauer der Feldkarte (5 -> 4).
-        new("WaermepumpeAnlageDialog", 4, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
+        new("WaermepumpeAnlageFelder", 4, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
         // KU3-6 (F6): die freie Kühlung über die Wärmequelle — ihr Schalter (ein nacktes input, weich
         // gesperrt über aria-disabled und title) und die Zahlenfelder Grädigkeit und Leistungsgrenze; die
         // Feldkarte führt sie als kuehl_frei, kuehl_frei_graedigkeit, kuehl_frei_leistung (19 -> 22).

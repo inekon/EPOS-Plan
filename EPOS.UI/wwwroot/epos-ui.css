@@ -4296,6 +4296,23 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten { flex: 0 0 auto; margin-right: 4px; gap: 6px; }
 /* Die Kopfknoepfe des Wirts (UeS2b): seine Infoknoepfe rechts vor „Bearbeiten", Sinnbilder in jeder Stufe. */
 .epos-zweispalten-satzkopf > .epos-zweispalten-satzkopfknoepfe { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; }
+/* DIE KNOPFLEISTE AM SATZ (AW1): die Knoepfe der Katalog-Fussleiste rechts im Kopf der Detailzeile;
+   sie brechen nicht um und geben nicht nach - zuerst kuerzen Name und Kenndaten des Satzes. */
+.epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe { flex: 0 0 auto; display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 8px; margin: 0 4px 0 4px; }
+.epos-zweispalten-satzknoepfe > * { flex: 0 0 auto; white-space: nowrap; }
+/* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
+/* Die Projektzeile behaelt ihr Mass (53 px, Kompaktstufe 46 px - Zweispaltenauswahl.ZEILE, nach dem die
+   Trennlinie rechnet); nur die Klickflaeche fuellt sie jetzt ganz. */
+.epos-zweispalten-inhalt--zeilenwahl .epos-zeilenzelle.epos-projektzeile {
+    height: calc(53px * var(--epos-zeilenskala, 1) - 1px);
+    line-height: calc(53px * var(--epos-zeilenskala, 1) - 1px);
+}
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr > td.epos-zelle-wahl { padding: 0; }
+/* Die Namensspalte nimmt die Breite, Kaestchen und Stift bleiben schmal; Kopf und Name stehen links. */
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster .epos-spalte-zeilenzelle { width: 100%; text-align: start; }
+/* Am Satz geht der Name den Kenndaten vor: er kuerzt erst ab 24 Zeichen, die Kenndaten zuerst. */
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzname { flex: 0 0 auto !important; max-width: 24ch; }
 
 /* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9; verdichtet DZ1-N1): Der Baustein GanglinienGrafik
    fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,
@@ -9789,6 +9806,55 @@ table.epos-simerg-tabelle {
     background: var(--epos-menue-marke);
 }
 
+/* Ein gesperrter Punkt (Konzept Administration und Support 4.2): sichtbar, gedaempft,
+   der Grund steht im title; kein Handzeiger, kein Klick. */
+.epos-menueband-zeile.epos-menue-gesperrt,
+.epos-menueband-knopf.epos-menue-gesperrt {
+    color: var(--epos-text-sehr-leise);
+    cursor: default;
+}
+
+/* ===== Fernwartung (Administration und Support, Stufe 2; Konzept 4.2) ===== */
+.epos-fernwartung-zone {
+    margin: 0 0 12px 0;
+}
+
+.epos-fernwartung-kontakt th {
+    text-align: left;
+    font-weight: 400;
+    color: var(--epos-text-leise);
+    padding: 2px 16px 2px 0;
+}
+
+.epos-fw-schritte {
+    margin: 4px 0 8px 0;
+    padding-left: 22px;
+}
+
+.epos-fw-sperrgrund {
+    margin: 4px 0;
+    color: var(--epos-text-leise);
+}
+
+/* ===== Über EPOS-Plan (Administration und Support, Stufe 3; Konzept 5) ===== */
+.epos-ueber-zone {
+    margin: 0 0 12px 0;
+}
+
+.epos-ueber-kopf p {
+    margin: 0 0 2px 0;
+}
+
+.epos-ueber-produkt {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+}
+
+.epos-ueber-claim,
+.epos-ueber-haus {
+    color: var(--epos-text-leise);
+}
+
 .epos-menueband-bild {
     width: 16px;
     height: 16px;
@@ -10707,11 +10773,13 @@ table.epos-simerg-tabelle {
 
 /* Die Fokuszeile: Flaeche und linker Balken - wie im Mockup
    Administrationsdialoge_Schema. */
-.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
+.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td,
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
     background: var(--epos-karte-flaeche-hover);
 }
 
-.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td:first-child {
+.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td:first-child,
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
 }
 
@@ -10791,7 +10859,8 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 
 @media (forced-colors: active) {
     .epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td,
-    table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td {
+    table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td,
+    .epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
         outline: 2px solid Highlight;
         outline-offset: -2px;
     }
@@ -12860,13 +12929,6 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
 }
 
-/* Der Dialog des Hauses ist auf 1160 px gedeckelt, damit im maximierten */
-/* Fenster keine Bandwurmzeilen entstehen. Drei Spalten sind keine       */
-/* Bandwurmzeile - hier zaehlt die Breite der Spalte, nicht die der      */
-/* Seite.                                                                */
-.epos-wp-anlage {
-    max-width: none;
-}
 /* W7-B-3 (08.09.2026): die Detailansicht eingebettet in der Waermepumpen
    Verwaltung - kein zweiter Dialograhmen, ein Strich trennt sie von der Auswahl. */
 /* W10b-B-3 (08.09.2026): der Extrapolationsschalter bei den Kennlinien der Waermepumpe. */
@@ -12895,36 +12957,46 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     justify-content: flex-end;
 }
 
-.epos-wp-spalten {
+/* DIE SATZ-UEBERLAGERUNG DER WAERMEPUMPE (AW2): Projektsatz und Katalogsatz gleich gebaut -
+   die Kostenzeile oben, darunter „Auslegung fuer Verteilung" (schmal) neben „Waermepumpen
+   Kenndaten", die Kennlinien ueber die volle Breite. Unter 900 px stehen alle drei
+   untereinander. Der Koerper der Ueberlagerung ist der einzige Rollbereich. */
+.epos-wp-satzueberlagerung {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+.epos-wp-abschnitte {
+    display: grid;
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1fr);
+    align-items: start;
     gap: var(--epos-rand);
 }
-
-.epos-wp-spalte {
+.epos-wp-abschnitt {
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;                           /* laesst das Raster waagerecht rollen */
 }
-
-.epos-wp-spalte--links {
-    flex: 1.25 1 420px;
-}
-
-/* Die schmalste Spalte des Vorbilds. Damit die Beschriftung trotzdem    */
-/* NEBEN dem Feld bleibt, senkt sie die zwei Token des Formularrasters - */
-/* das ist die eine Stelle, an der 12 rem Beschriftungsspalte zu viel    */
-/* waeren.                                                               */
-.epos-wp-spalte--mitte {
-    flex: 0.6 1 300px;
+/* Die schmale Spalte: die Beschriftung bleibt NEBEN dem Feld. */
+.epos-wp-abschnitt--auslegung {
     --epos-beschriftung-breite: 8rem;
     --epos-formularspalte: 17rem;
 }
-
-.epos-wp-spalte--rechts {
-    flex: 1 1 400px;
+.epos-wp-abschnitt--kennlinien {
+    grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+    .epos-wp-abschnitte {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+/* Die weiche Sperre „nur im Projekt" am Katalogsatz: der Hinweis steht als Text in der Gruppe. */
+.epos-nurprojekt-hinweis {
+    margin: 0;
+    color: var(--epos-text-leise);
+    font-style: italic;
 }
 
 /* Die HERKUNFT der Kennlinien (Windows-Abnahme V2 07.09.2026, Befund     */
@@ -12948,22 +13020,6 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     margin-bottom: var(--epos-rand);
 }
 
-/* Ueberschrift und "Modul-Katalog..." stehen in EINER Zeile - im        */
-/* Vorbild label_WP bei 16/13 und btn_Katalog bei 286/10.                */
-.epos-wp-auswahl-kopf {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--epos-rand);
-}
-
-/* Die Liste rollt IN SICH und schiebt die Spalte nicht auseinander      */
-/* (Hausregel W9-B-2). Sie ist niedriger als --epos-listenhoehe (22 rem),*/
-/* weil unter ihr in derselben Spalte noch der ganze Spitzenlastblock    */
-/* steht; im Vorbild war sie sogar nur eine Klappliste von 23 px.        */
-.epos-wp-auswahlliste {
-    max-height: 11rem;
-}
 
 /* Die DREI Erklaerkaesten des Vorbilds - label21 (128,255,128 gruen),   */
 /* label22 (255,255,128 gelb) und label23 (Aqua). Sie tragen viel Text   */

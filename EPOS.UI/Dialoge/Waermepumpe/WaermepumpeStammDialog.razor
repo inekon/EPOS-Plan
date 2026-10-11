@@ -431,6 +431,12 @@
     /// <summary>Der Satz, der beim Öffnen gewählt ist (Name); leer oder unbekannt = die erste Zeile.</summary>
     [Parameter] public string? Vorwahl { get; set; }
 
+    /// <summary>
+    /// AW2: der Editor geht im Modus Neu auf — „Neu…" der Knopfleiste am Satz im Wärmepumpendialog legt immer einen
+    /// Katalogsatz an.
+    /// </summary>
+    [Parameter] public bool NeuBeimStart { get; set; }
+
     // --- Feste Listen ----------------------------------------------------------
 
     /// <summary>Die vier Wärmepumpentypen (<c>SetControls</c>:219-222).</summary>
@@ -983,6 +989,7 @@
             : _liste.FirstOrDefault(z => z.Bezeichner == Vorwahl);
         if (vorwahl is not null) ZeileWaehlen(vorwahl);
         else if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+        if (NeuBeimStart) BeiNeu();
 
         // KI-F1b: Die vier Klapplisten der Stammfelder sind WAHLFELDER; ihre Einträge
         // sind genau die Listen, die der Baustein zeichnet.

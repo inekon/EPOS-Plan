@@ -360,9 +360,9 @@
                         <thead>
                             <tr>
                                 <th scope="col">@Texte.VergleichSpalteParameter</th>
-                                @foreach (Katalogfilterzeile z in Vergleichszeilen())
+                                @foreach (string kopf in Vergleichskoepfe())
                                 {
-                                    <th scope="col">@z.Bezeichner</th>
+                                    <th scope="col">@kopf</th>
                                 }
                             </tr>
                         </thead>
@@ -499,6 +499,46 @@
     /// Weniger als zwei bekannte Zeilen: nichts.
     /// </summary>
     public void Vergleichen(IReadOnlyList<string> schluessel)
+        => VergleichenNach(schluessel);
+
+    /// <summary>
+    /// <b>Vergleicht Sätze, die nicht in dieser Liste stehen</b> (AW1: die Projektkopien der
+    /// Projektliste) — in derselben Vergleichsansicht. Je Satz sein Name und seine Werte
+    /// (Beschriftung, Wert); die Reihenfolge der Zeilen ist die des ersten Satzes, ein Wert,
+    /// den ein anderer Satz nicht führt, bleibt leer. Unter zwei Sätzen geschieht nichts.
+    /// </summary>
+    public void VergleichenWerte(IReadOnlyList<(string Name, IReadOnlyList<(string Beschriftung, string Wert)> Werte)> saetze)
+    {
+        ArgumentNullException.ThrowIfNull(saetze);
+        if (saetze.Count < 2) return;
+        var zeilen = new List<Vergleichzeile>();
+        foreach (var (beschriftung, _) in saetze[0].Werte)
+        {
+            var werte = new List<string>();
+            foreach (var satz in saetze)
+            {
+                string w = ParameterVerwendung.LEER;
+                foreach (var (b, wert) in satz.Werte)
+                    if (b == beschriftung) { w = wert; break; }
+                werte.Add(w);
+            }
+            zeilen.Add(new Vergleichzeile(beschriftung, werte, Abweichend(werte)));
+        }
+        _vergleichKoepfe = saetze.Select(s => s.Name).ToList();
+        _vergleich = zeilen;
+        _markierhinweis = "";
+        _vergleichOffen = true;
+        StateHasChanged();
+    }
+
+    /// <summary>Die Spaltenköpfe des Vergleichs: die Namen fremder Sätze oder die der Vergleichszeilen.</summary>
+    private IEnumerable<string> Vergleichskoepfe()
+        => _vergleichKoepfe ?? Vergleichszeilen().Select(z => z.Bezeichner);
+
+    /// <summary>Gesetzt, solange ein Vergleich fremder Sätze (<see cref="VergleichenWerte"/>) steht.</summary>
+    private IReadOnlyList<string>? _vergleichKoepfe;
+
+    private void VergleichenNach(IReadOnlyList<string> schluessel)
     {
         ArgumentNullException.ThrowIfNull(schluessel);
         var geraete = new List<Katalogfilterzeile>();
@@ -506,6 +546,7 @@
             foreach (Katalogfilterzeile z in Zeilen)
                 if (z.Schluessel == s) { geraete.Add(z); break; }
         if (geraete.Count < 2) return;
+        _vergleichKoepfe = null;
         _vergleich = Vergleichsparameter is null ? AusSpalten(geraete) : AusParametern(geraete);
         _markierhinweis = "";
         _vergleichOffen = true;
@@ -1802,6 +1843,7 @@
         IReadOnlyList<Katalogfilterzeile> geraete = Vergleichszeilen();
         if (geraete.Count < 2) return;
 
+        _vergleichKoepfe = null;
         _vergleich = Vergleichsparameter is null
             ? AusSpalten(geraete)
             : AusParametern(geraete);

@@ -13057,9 +13057,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
     <value>cooling function only</value>
   </data>
-  <data name="WPK_BTN_KATALOG" xml:space="preserve">
-    <value>📋  Module catalogue...</value>
-  </data>
   <data name="WPK_SP_MODELL" xml:space="preserve">
     <value>Model</value>
   </data>
@@ -13233,12 +13230,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="WPS_MSG_NAME_BELEGT" xml:space="preserve">
     <value>Name already exists!</value>
-  </data>
-  <data name="WPA_TITEL" xml:space="preserve">
-    <value>Detail view</value>
-  </data>
-  <data name="WPA_LBL_WP" xml:space="preserve">
-    <value>Heat pump selection:</value>
   </data>
   <data name="WPA_GRP_KENNDATEN" xml:space="preserve">
     <value>Heat pump characteristics</value>
@@ -50400,6 +50391,12 @@ chart</value>
   <data name="AUSWAHL_SATZ_BEARBEITEN" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="AUSWAHL_SATZ_KNOEPFE" xml:space="preserve">
+    <value>Actions for the selected record</value>
+  </data>
+  <data name="AUSWAHL_SPERRE_KATALOGSATZ" xml:space="preserve">
+    <value>Select a catalogue record</value>
+  </data>
   <data name="AUSWAHL_SATZ_BEARBEITEN_HINWEIS" xml:space="preserve">
     <value>Edit the selected record over the dialog</value>
   </data>
@@ -51381,15 +51378,6 @@ chart</value>
   <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
     <value>Switching needs exactly one heat pump in the project and exactly one catalogue entry.</value>
   </data>
-  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
-    <value>System…</value>
-  </data>
-  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
-    <value>Edit operating mode, temperatures, blocking times, heating rod, heat source and transfer of this system</value>
-  </data>
-  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
-    <value>System – {0}</value>
-  </data>
   <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
     <value>Please check the system and confirm with OK.</value>
   </data>
@@ -52077,6 +52065,18 @@ chart</value>
   <data name="SIMENG_VORH_SPERRZEIT_GANZ" xml:space="preserve">
     <value>On {0} days the preheat window lies entirely in a blocking period of the plant ({1} h, {2} window hours without available heat); no preheating is possible there.</value>
   </data>
+  <data name="SIMENG_VORH_SCHNELL" xml:space="preserve">
+    <value>Rapid heat-up with {0} K setpoint boost: {1} hours with raised flow temperature, highest flow {2} °C, limited by the maximum flow temperature of the plant in {3} hours.</value>
+  </data>
+  <data name="SIMENG_VORH_SCHNELL_GRENZE" xml:space="preserve">
+    <value>In {0} window hours the rapid heat-up has no effect: the flow temperature is already at the maximum flow temperature of the plant (Vorlauf_Max).</value>
+  </data>
+  <data name="SIMENG_VORH_SCHNELL_SPERRZEIT" xml:space="preserve">
+    <value>In {0} window hours the rapid heat-up falls into a blocking period of the plant and has no effect there.</value>
+  </data>
+  <data name="SIMENG_VORH_SCHNELL_OHNE_HEIZKREIS" xml:space="preserve">
+    <value>The rapid heat-up only acts on zones with a heating circuit and heating curve; it has no effect on {0} zones.</value>
+  </data>
   <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
     <value>{0} heated zones have no design heat load; they receive no share of the building cap and remain uncapped.</value>
   </data>
@@ -52683,50 +52683,8 @@ chart</value>
   <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
     <value>Zone</value>
   </data>
-  <data name="IMPORT_ACHSE_SPOTPREIS" xml:space="preserve">
-    <value>Spot price [ct/kWh]</value>
-  </data>
-  <data name="IMPORT_TITEL_SPOTPREIS" xml:space="preserve">
-    <value>Import spot market prices – format and preview</value>
-  </data>
-  <data name="IMPORT_PROBE_SPOTPREIS" xml:space="preserve">
-    <value>Year of file {0} · mean {1} ct/kWh · range {2} to {3} ct/kWh</value>
-  </data>
-  <data name="IMPORT_TITEL_TWW_MESSREIHE" xml:space="preserve">
-    <value>Import measured series – format and preview</value>
-  </data>
-  <data name="IMPORT_ACHSE_TWW_ENERGIE" xml:space="preserve">
-    <value>Draw-off energy [kWh]</value>
-  </data>
-  <data name="IMPORT_ACHSE_TWW_VOLUMEN" xml:space="preserve">
-    <value>Draw-off volume [m³]</value>
-  </data>
-  <data name="IMPORT_ACHSE_TAGESSTUNDE" xml:space="preserve">
-    <value>Hour of day [h]</value>
-  </data>
-  <data name="IMPORT_ACHSE_TAG_DER_REIHE" xml:space="preserve">
-    <value>Day of series</value>
-  </data>
-  <data name="IMPORT_PROBE_TAGE" xml:space="preserve">
-    <value>{0} days read · shown: {1}</value>
-  </data>
-  <data name="IMPORT_PROBE_TAGE_TAGESREIHE" xml:space="preserve">
-    <value>{0} days read · shown: the first {1} days</value>
-  </data>
-  <data name="KI_DLG_SPOT_JAHR_ERL" xml:space="preserve">
-    <value>The year of the checked series — from the year field of “Format and preview”; the year of the file is proposed. It sets weekdays and public holidays.</value>
-  </data>
-  <data name="KI_DLG_ZPGM_VORSCHAU_NAME" xml:space="preserve">
-    <value>File preview</value>
-  </data>
-  <data name="KI_DLG_ZPGM_VORSCHAU_ERL" xml:space="preserve">
-    <value>The key figure line from “Format and preview”: days read and the day shown in the day view.</value>
-  </data>
-  <data name="KI_DLG_GIO_BILDART_NAME" xml:space="preserve">
-    <value>Chart type</value>
-  </data>
-  <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
-    <value>How the preview shows the series read: year (annual profile) or day (day view of the DHW measured series).</value>
+  <data name="WPV_NUR_IM_PROJEKT" xml:space="preserve">
+    <value>Project only: these settings belong to the plant in the project, not to the catalogue record.</value>
   </data>
   <!-- Administration und Support, Stufe 1 -->
   <data name="ENTW_QUELLE_KEINE" xml:space="preserve">
@@ -52880,12 +52838,6 @@ chart</value>
   <!-- Administration und Support, Stufe 1 (Welle 1b) -->
   <data name="KI_ABSAGE_NUR_ENTWICKLER" xml:space="preserve">
     <value>This function is not enabled in your edition.</value>
-  </data>
-  <data name="ADM_SET_RUBRIK_ENTWICKLUNG" xml:space="preserve">
-    <value>Development</value>
-  </data>
-  <data name="ADM_SET_HINT_ENTWICKLUNG" xml:space="preserve">
-    <value>Calculation defaults of the draw-off profile for development and testing. An empty field means: the programme default applies.</value>
   </data>
   <data name="ADM_SET_LBL_ZAPF_ANZEIGETEMPERATUR" xml:space="preserve">
     <value>Draw-off profile: temperature of the litre display</value>
@@ -53234,6 +53186,205 @@ chart</value>
   </data>
   <data name="KM_KMT_GWP_UEBERNEHMEN_TIP" xml:space="preserve">
     <value>Sets the device GWP to the value of the refrigerant table.</value>
+  </data>
+  <!-- Administration und Support, Stufe 2 (Welle 2a) -->
+  <data name="MENU_FERNWARTUNG" xml:space="preserve">
+    <value>Remote support…</value>
+  </data>
+  <data name="SUP_KONTAKT_TELEFON" xml:space="preserve">
+    <value>+49 711 9959 826 50</value>
+  </data>
+  <data name="SUP_KONTAKT_MAIL" xml:space="preserve">
+    <value>info@inekon.de</value>
+  </data>
+  <data name="SUP_KONTAKT_ZEITEN" xml:space="preserve">
+    <value>weekdays 9 am to 4 pm</value>
+  </data>
+  <data name="FW_SPERRE_TEST" xml:space="preserve">
+    <value>Remote support is not available in the trial version. You can reach us by e-mail.</value>
+  </data>
+  <data name="FW_SPERRE_LIZENZ" xml:space="preserve">
+    <value>Remote support is part of the maintenance contract. First activate your license under Help → License.</value>
+  </data>
+  <data name="FW_TITEL" xml:space="preserve">
+    <value>Remote support</value>
+  </data>
+  <data name="FW_ZONE_KONTAKT" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="FW_TELEFON" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="FW_MAIL" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="FW_ZEITEN" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="FW_ZONE_ANGABEN" xml:space="preserve">
+    <value>Your details for support</value>
+  </data>
+  <data name="FW_ANGABEN_HINWEIS" xml:space="preserve">
+    <value>These details let support identify your installation. Copy them into your e-mail or read them out on the phone.</value>
+  </data>
+  <data name="FW_KOPIEREN" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="FW_KOPIERT" xml:space="preserve">
+    <value>The details have been copied to the clipboard.</value>
+  </data>
+  <data name="FW_ZONE_FERNWARTUNG" xml:space="preserve">
+    <value>Remote support</value>
+  </data>
+  <data name="FW_ERKLAERUNG" xml:space="preserve">
+    <value>During remote support, a member of our support team sees your screen and can show you how to use the program or fix a problem with you. Only the support person you are talking to sees your screen; EPOS-Plan records nothing. You accept every connection yourself in the remote support program and can end it there at any time.</value>
+  </data>
+  <data name="FW_SCHRITT_1" xml:space="preserve">
+    <value>Download the remote support program from the remote support page and start it.</value>
+  </data>
+  <data name="FW_SCHRITT_2" xml:space="preserve">
+    <value>Tell support the ID and the one-time password shown.</value>
+  </data>
+  <data name="FW_SCHRITT_3" xml:space="preserve">
+    <value>Accept the request in the program.</value>
+  </data>
+  <data name="FW_SEITE_OEFFNEN" xml:space="preserve">
+    <value>Open remote support page</value>
+  </data>
+  <data name="FW_SEITE_FEHLER" xml:space="preserve">
+    <value>The remote support page could not be opened. Open {0} in your browser or call us.</value>
+  </data>
+  <data name="FW_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="IMPORT_ACHSE_SPOTPREIS" xml:space="preserve">
+    <value>Spot price [ct/kWh]</value>
+  </data>
+  <data name="IMPORT_TITEL_SPOTPREIS" xml:space="preserve">
+    <value>Import spot market prices – format and preview</value>
+  </data>
+  <data name="IMPORT_PROBE_SPOTPREIS" xml:space="preserve">
+    <value>Year of file {0} · mean {1} ct/kWh · range {2} to {3} ct/kWh</value>
+  </data>
+  <data name="IMPORT_TITEL_TWW_MESSREIHE" xml:space="preserve">
+    <value>Import measured series – format and preview</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_ENERGIE" xml:space="preserve">
+    <value>Draw-off energy [kWh]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TWW_VOLUMEN" xml:space="preserve">
+    <value>Draw-off volume [m³]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAGESSTUNDE" xml:space="preserve">
+    <value>Hour of day [h]</value>
+  </data>
+  <data name="IMPORT_ACHSE_TAG_DER_REIHE" xml:space="preserve">
+    <value>Day of series</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE" xml:space="preserve">
+    <value>{0} days read · shown: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_TAGE_TAGESREIHE" xml:space="preserve">
+    <value>{0} days read · shown: the first {1} days</value>
+  </data>
+  <data name="KI_DLG_SPOT_JAHR_ERL" xml:space="preserve">
+    <value>The year of the checked series — from the year field of “Format and preview”; the year of the file is proposed. It sets weekdays and public holidays.</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_NAME" xml:space="preserve">
+    <value>File preview</value>
+  </data>
+  <data name="KI_DLG_ZPGM_VORSCHAU_ERL" xml:space="preserve">
+    <value>The key figure line from “Format and preview”: days read and the day shown in the day view.</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_NAME" xml:space="preserve">
+    <value>Chart type</value>
+  </data>
+  <data name="KI_DLG_GIO_BILDART_ERL" xml:space="preserve">
+    <value>How the preview shows the series read: year (annual profile) or day (day view of the DHW measured series).</value>
+  </data>
+  <!-- Administration und Support, Zapfprofil-Nachzug -->
+  <data name="ADM_SET_RUBRIK_ZAPFPROFIL" xml:space="preserve">
+    <value>Draw-off profile</value>
+  </data>
+  <data name="ADM_SET_HINT_ZAPFPROFIL" xml:space="preserve">
+    <value>Calculation defaults of the draw-off profile generator for all projects: temperature of the litre display, hourly threshold, nominal volumes of the storage selection and the start folders for catalogue package and type days. An empty field means: the programme default applies; an invalid value is discarded with a notice and the default is used.</value>
+  </data>
+  <!-- Administration und Support, Stufe 3 (Welle 3a) -->
+  <data name="UEB_VERSION_BAUDATUM" xml:space="preserve">
+    <value>Version {0} built {1}</value>
+  </data>
+  <data name="UEB_ZONE_DIAGNOSE" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="UEB_DIAGNOSE_HINWEIS" xml:space="preserve">
+    <value>With this information, support can identify your installation. Copy it into your e-mail or read it out on the phone.</value>
+  </data>
+  <data name="UEB_KOPIEREN" xml:space="preserve">
+    <value>Copy diagnostic data</value>
+  </data>
+  <data name="UEB_KOPIERT" xml:space="preserve">
+    <value>The diagnostic data is on the clipboard.</value>
+  </data>
+  <data name="UEB_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="UEB_ZONE_KONTAKT" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="UEB_TELEFON" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="UEB_MAIL" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="UEB_ZEITEN" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="UEB_FERNWARTUNG" xml:space="preserve">
+    <value>Remote support…</value>
+  </data>
+  <data name="UEB_MAIL_FEHLER" xml:space="preserve">
+    <value>The e-mail program could not be opened. Please write to {0}.</value>
+  </data>
+  <data name="UEB_MODUS_GEWECHSELT" xml:space="preserve">
+    <value>The diagnostic data has been updated.</value>
+  </data>
+  <data name="UEB_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <!-- Administration und Support, Stufe 3 (Welle 3b) -->
+  <data name="SUP_PAKET_KNOPF" xml:space="preserve">
+    <value>Save support package…</value>
+  </data>
+  <data name="SUP_PAKET_HAKEN" xml:space="preserve">
+    <value>Include AI log</value>
+  </data>
+  <data name="SUP_PAKET_HAKEN_HINWEIS" xml:space="preserve">
+    <value>The AI log may contain what you entered for the assistant.</value>
+  </data>
+  <data name="SUP_PAKET_HINWEIS" xml:space="preserve">
+    <value>The support package contains the diagnostic data and the program logs, no project data and no database. Attach the file to your e-mail to support.</value>
+  </data>
+  <data name="SUP_PAKET_GESPEICHERT" xml:space="preserve">
+    <value>Support package saved: {0}</value>
+  </data>
+  <data name="SUP_PAKET_ENTHALTEN" xml:space="preserve">
+    <value>Included: {0}</value>
+  </data>
+  <data name="SUP_PAKET_FEHLEND" xml:space="preserve">
+    <value>Not present: {0}</value>
+  </data>
+  <data name="SUP_PAKET_FEHLER" xml:space="preserve">
+    <value>The support package could not be saved: {0}</value>
+  </data>
+  <data name="SUP_PAKET_KEIN_ZIEL" xml:space="preserve">
+    <value>No target given for the support package.</value>
+  </data>
+  <data name="SUP_PAKET_DIALOGTITEL" xml:space="preserve">
+    <value>Save support package</value>
+  </data>
+  <data name="SUP_PAKET_DATEIFILTER" xml:space="preserve">
+    <value>ZIP archive (*.zip)|*.zip</value>
   </data>
 </root>
 

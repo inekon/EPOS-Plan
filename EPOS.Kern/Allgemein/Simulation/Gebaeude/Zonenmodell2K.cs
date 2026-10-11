@@ -388,6 +388,58 @@ namespace WindowsFormsApplication1
         /// der Zustand bleibt dann unverändert.</exception>
         internal Stundenergebnis Schritt(in Stundenrand r)
         {
+            if (!r.HatUeberhoehung) return SchrittRand(in r);
+            Stundenrand w = Ueberhoehen(in r);
+            return Markiert(SchrittRand(in w), in w);
+        }
+
+        /// <summary>
+        /// <b>Schnellaufheizung (SA1, E128): das Ende bei Ankunft</b> — entschieden am Beginn der Stunde aus dem Zustand der
+        /// Massen: Hat die Raumluft im Augenblick am Beginn der Stunde (<see cref="LuftAmBeginn"/>, mit dem Rand OHNE
+        /// Überhöhung — dasselbe Maß wie die Ankunft des Nachweises) den Ankunftsbezug erreicht, rechnet die Stunde ohne
+        /// Überhöhung, sonst mit dem überhöhten Vorlauf (<see cref="Stundenrand.UeberhoehungAnwenden"/>). Die Entscheidung gilt
+        /// die ganze Stunde; sie braucht keinen Zustand außer den Massen und gilt damit in Lauf, Vorausschau, Zonenschleife und
+        /// Kreis gleich.
+        /// </summary>
+        private Stundenrand Ueberhoehen(in Stundenrand r)
+        {
+            // Die Zonenschleife rechnet eine Stunde mehrmals aus demselben Zustand (Gauß-Seidel, Musterprobe); die Nachbarluft
+            // im Rand ändert sich dabei. Die Entscheidung fällt deshalb EINMAL je Ausgangszustand — beim ersten Durchlauf — und
+            // gilt für die Wiederholungen; sonst kippte sie an der Schwelle zwischen den Durchläufen und die Kopplung
+            // konvergierte nicht.
+            bool gleich = _ueberEntschieden
+                          && BitConverter.DoubleToInt64Bits(_ueberAw) == BitConverter.DoubleToInt64Bits(_thetaMAw)
+                          && BitConverter.DoubleToInt64Bits(_ueberIw) == BitConverter.DoubleToInt64Bits(_thetaMIw)
+                          && BitConverter.DoubleToInt64Bits(_ueberAnkunft) == BitConverter.DoubleToInt64Bits(r.UeberhoehungAnkunftC)
+                          && BitConverter.DoubleToInt64Bits(_ueberRoh) == BitConverter.DoubleToInt64Bits(r.UeberhoehungVorlaufRohC);
+            if (!gleich)
+            {
+                _ueberAngekommen = Rechenrand.SchwelleErreicht(LuftAmBeginn(in r), r.UeberhoehungAnkunftC);
+                _ueberAw = _thetaMAw;
+                _ueberIw = _thetaMIw;
+                _ueberAnkunft = r.UeberhoehungAnkunftC;
+                _ueberRoh = r.UeberhoehungVorlaufRohC;
+                _ueberEntschieden = true;
+            }
+            return _ueberAngekommen ? r.OhneUeberhoehung() : r.UeberhoehungAnwenden();
+        }
+
+        // Schnellaufheizung: die letzte Entscheidung samt Ausgangszustand (siehe Ueberhoehen).
+        private bool _ueberEntschieden, _ueberAngekommen;
+        private double _ueberAw, _ueberIw, _ueberAnkunft, _ueberRoh;
+
+        private static Stundenergebnis Markiert(in Stundenergebnis e, in Stundenrand w)
+            => !w.UeberhoehungWirksam && !w.UeberhoehungBegrenzt && !w.UeberhoehungWirkungslos
+                ? e
+                : e with
+                {
+                    Ueberhoeht = w.UeberhoehungWirksam,
+                    UeberhoehungBegrenzt = w.UeberhoehungBegrenzt,
+                    UeberhoehungWirkungslos = w.UeberhoehungWirkungslos,
+                };
+
+        private Stundenergebnis SchrittRand(in Stundenrand r)
+        {
             RandPruefen(in r);
 
             Vektor2 x = new Vektor2(_thetaMAw, _thetaMIw);
@@ -764,6 +816,15 @@ namespace WindowsFormsApplication1
         /// <exception cref="ArgumentException">wie <see cref="SchrittMitMuster"/>.</exception>
         /// <exception cref="GebaeudeModellException">bei ungültigem Rand.</exception>
         internal bool VersucheSchrittMitMuster(in Stundenrand r, Stundenmuster muster, out Stundenergebnis ergebnis, out string bruch)
+        {
+            if (!r.HatUeberhoehung) return VersucheSchrittMitMusterRand(in r, muster, out ergebnis, out bruch);
+            Stundenrand w = Ueberhoehen(in r);
+            bool gehalten = VersucheSchrittMitMusterRand(in w, muster, out ergebnis, out bruch);
+            if (gehalten) ergebnis = Markiert(in ergebnis, in w);
+            return gehalten;
+        }
+
+        private bool VersucheSchrittMitMusterRand(in Stundenrand r, Stundenmuster muster, out Stundenergebnis ergebnis, out string bruch)
         {
             ergebnis = default;
             bruch = null;

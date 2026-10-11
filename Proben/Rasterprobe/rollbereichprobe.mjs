@@ -299,6 +299,10 @@ function pruefeKurveImKoerper(fall, fenster, k) {
   return fehler.length;
 }
 
+/** „Bearbeiten" der Detailzeile: der Stift (UeS2) oder - Knopfleiste am Satz (AW1) - „Bearbeiten…" dort. */
+const BEARBEITEN_AM_SATZ = '.epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten, '
+  + '.epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog';
+
 /** UeS1c: wartet, bis das Modell der Kurve im Koerper der Ueberlagerung im gemessenen Mass steht (hoechstens 4 s). */
 async function massAbwartenUeberlagerung(seite) {
   await seite.waitForFunction(t => {
@@ -634,8 +638,15 @@ try {
           await ruhe(seite);
           if (await seite.locator('.epos-ueberlagerung--satz').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Satz-Ueberlagerung nicht`);
-          // Derselbe Weg ueber „Bearbeiten" in der Detailzeile (UeS2); Abbrechen schliesst.
-          await seite.locator('.epos-zweispalten-bearbeiten').click();
+          // AW1: die Knopfleiste steht am gewaehlten Satz - keine Fussleiste unter dem Katalog, kein Stift
+          // in der Detailzeile, keine Wahlspalte in der Projektliste.
+          if (await seite.locator('.epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe button').count() < 3
+              || await seite.locator('.epos-zweispalten-fussleiste, .epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten').count() !== 0
+              || await seite.locator('.epos-zweispalten-bereich--projekt .epos-anlagenwahl').count() !== 0) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Knopfleiste nicht am gewaehlten Satz (AW1)`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
+          // Derselbe Weg ueber „Bearbeiten…" am Satz (AW1, vorher der Stift der Detailzeile); Abbrechen schliesst.
+          await seite.locator(BEARBEITEN_AM_SATZ).click();
           await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
           pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Bearbeiten', await seite.evaluate(satzUeberlagerung, rand(fenster)));
@@ -652,6 +663,9 @@ try {
             await seite.keyboard.press('Escape');
             await ruhe(seite);
           } else verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Projektliste ohne Stift`);
+          // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist.
+          await seite.locator('.epos-zweispalten-bereich--katalog tbody tr .epos-zeilenzelle').first().click();
+          await ruhe(seite);
           const k = seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input');
           await k.nth(0).check();
           await k.nth(1).check();
@@ -669,7 +683,10 @@ try {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst "Bearbeiten..." nicht`);
           await mess('nach Bearbeiten');
           // Stufe 2b: die Rueckfrage „In die Datenbank übernehmen…" als Ueberlagerung - drei Zeilen, kein eigener
-          // Rollbereich; Esc schliesst sie.
+          // Rollbereich; Esc schliesst sie. AW1: der Rueckweg wirkt auf die gewaehlte Projektzeile - erst waehlen.
+          if (await seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-zeilenzelle').count())
+            await seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-zeilenzelle').first().click();
+          await ruhe(seite);
           await seite.locator('.epos-knopf--rueckweg').click();
           await seite.waitForSelector('.epos-rueckweg', { timeout: 5000 });
           await ruhe(seite);
@@ -691,7 +708,8 @@ try {
         const SATZ_WIRTE = { bhkw: ['.epos-kostenleiste button', 'Kostenknoepfe'],
           pufferspeicher: ['button.epos-pspd-auslegen', '„Auslegen…"'], stromspeicher: ['.epos-traegerwahl select', 'Traegerwahl'],
           solarkollektoren: ['.epos-gruppenkopf-koerper input', 'Kollektorfelder'],
-          waermepumpen: ['button.epos-knopf--anlage', '„Anlage…"', '.epos-wp-satz'],
+          // AW2: Satz und Anlage sind EINE Ueberlagerung - ihr Koerper traegt die Auslegung fuer Verteilung.
+          waermepumpen: ['.epos-wp-abschnitt--auslegung', '„Auslegung für Verteilung"', '.epos-wp-satzueberlagerung'],
           photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'],
           kaeltemaschine: ['.epos-kostenleiste button', 'Kostenknoepfe', '.epos-kaeltemaschine-satz'],
           // Stufe 4: die Bedarfsprofile - Verbrauch, Temperatur und Kalender allein in der Ueberlagerung.
@@ -699,7 +717,8 @@ try {
         const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile'];
         // Kopf der Detailzeile: zwei Infoknoepfe; die Waermepumpe traegt dort „Anlage…" (Grundlagen und Berechnung
         // stehen in ihrem Anlagendialog).
-        const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 1, '„Anlage…"'],
+        // AW2: Die Waermepumpe hat keine Kopfknoepfe mehr - „Anlage…" ist in der Satz-Ueberlagerung aufgegangen.
+        const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 0, 'kein „Anlage…"'],
           // Bedarfsprofile: der Rechenweg der Auspraegung (eine Grundlagenseite gibt es nicht).
           bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
         if (SATZ_WIRTE[fall]) {
@@ -741,7 +760,7 @@ try {
           if (!zusammen) {
             await satz(seite, true);
             await seite.locator('.epos-zweispalten-vergroessern').click();
-          } else await seite.locator('.epos-zweispalten-bearbeiten').click();
+          } else await seite.locator(BEARBEITEN_AM_SATZ).click();
           await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
           pruefeSatzUeberlagerung(fall, fenster, zusammen ? 'Satz-Ueberlagerung ueber Bearbeiten' : 'Satz-Ueberlagerung ueber Vergroessern', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke }));

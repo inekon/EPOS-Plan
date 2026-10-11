@@ -127,12 +127,21 @@ namespace WindowsFormsApplication1
             return abdruck.Length <= KURZFORM_LAENGE ? abdruck : abdruck.Substring(0, KURZFORM_LAENGE);
         }
 
-        private static string Protokollordner()
+        /// <summary>
+        /// Der PROTOKOLLORDNER: <c>Logs</c> neben der Datenbank (wie <c>Program.Main</c>); leer,
+        /// wenn kein Datenbankpfad bekannt ist. Der Weg der Schalen zu „Protokollordner öffnen".
+        /// </summary>
+        public static string ProtokollordnerPfad()
         {
             string db = DataRepository.GetDBPath();
             string ordner = string.IsNullOrWhiteSpace(db) ? null : Path.GetDirectoryName(db);
-            return string.IsNullOrWhiteSpace(ordner) ? MyResource.Resource.DIAG_NICHT_ERMITTELBAR
-                                                     : Path.Combine(ordner, "Logs");
+            return string.IsNullOrWhiteSpace(ordner) ? "" : Path.Combine(ordner, "Logs");
+        }
+
+        private static string Protokollordner()
+        {
+            string ordner = ProtokollordnerPfad();
+            return ordner.Length == 0 ? MyResource.Resource.DIAG_NICHT_ERMITTELBAR : ordner;
         }
 
         // ------------------------------------------------------------------

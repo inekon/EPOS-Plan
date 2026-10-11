@@ -62,11 +62,9 @@ public class EinstellungenDialogTests : EposBunitContext
         Func<Einstellungensatz, bool, Task<SpeicherBefund>>? speichern = null,
         Func<Task<Einstellungensatz>>? zuruecksetzen = null,
         Action<bool>? geschlossen = null,
-        IReadOnlyList<Farbrollengabe>? farbrollen = null,
-        bool entwickler = false)
+        IReadOnlyList<Farbrollengabe>? farbrollen = null)
     {
         return Render<EinstellungenDialog>(p => p
-            .Add(x => x.Entwickler, entwickler)
             .Add(x => x.Satz, satz ?? Satz())
             .Add(x => x.Farbrollen, farbrollen ?? Diagrammfarben.Gaben())
             .Add(x => x.KiAbgeschaltet, kiAus)
@@ -83,29 +81,33 @@ public class EinstellungenDialogTests : EposBunitContext
         => cut.FindAll(".epos-reiter-knopf")[nummer].Click();
 
     /// <summary>
-    /// Entwicklerbereich ZAPFPROFIL_VORGABEN: die Rubrik „Entwicklung“ nur mit Kennzeichen; sie zeigt die fünf Vorgaben
-    /// des Satzes als Eingabefelder mit Hinweis und gibt eine Änderung mit dem Satz an „Speichern“.
+    /// Die Anwenderrubrik „Zapfprofil“ steht immer — ohne Entwicklerkennzeichen und ohne Stufenmarke; sie zeigt die fünf
+    /// Vorgaben des Satzes als Eingabefelder mit Hinweis, und eine Änderung reist mit dem Satz an „Speichern“.
     /// </summary>
     [Fact]
-    public void Die_Rubrik_Entwicklung_steht_nur_mit_Kennzeichen()
+    public void Die_Rubrik_Zapfprofil_steht_immer_und_reicht_die_Werte_durch()
     {
-        var ohne = Zeige();
-        int blaetter = ohne.FindAll(".epos-reiter-knopf").Count;
-        Assert.DoesNotContain(ohne.FindAll(".epos-reiter-knopf"), k => k.TextContent.Trim() == "Entwicklung");
-        Assert.Empty(ohne.FindAll("[data-bereich='ZAPFPROFIL_VORGABEN']"));
-
         Einstellungensatz satz = Satz();
         satz.ZapfNenninhalte = "300; 400";
         satz.ZapfAnzeigetemperatur = "45";
-        var mit = Zeige(satz: satz, entwickler: true);
-        Assert.Equal(blaetter + 1, mit.FindAll(".epos-reiter-knopf").Count);
-        mit.FindAll(".epos-reiter-knopf").Single(k => k.TextContent.Trim() == "Entwicklung").Click();
-        AngleSharp.Dom.IElement bereich = mit.Find("[data-stufe='entwickler'][data-bereich='ZAPFPROFIL_VORGABEN']");
+        Einstellungensatz? gespeichert = null;
+        var cut = Zeige(satz: satz, speichern: (s, _) => { gespeichert = s; return Task.FromResult(new SpeicherBefund(true, "")); });
+
+        Assert.Empty(cut.FindAll("[data-stufe]"));
+        Assert.Empty(cut.FindAll("[data-bereich]"));
+        cut.FindAll(".epos-reiter-knopf").Single(k => k.TextContent.Trim() == "Zapfprofil").Click();
+        AngleSharp.Dom.IElement bereich = cut.Find(".epos-einst-zapfprofil");
         var felder = bereich.QuerySelectorAll("input");
         Assert.Equal(5, felder.Length);
         Assert.Contains(felder, f => f.GetAttribute("value") == "300; 400");
         Assert.Contains(felder, f => f.GetAttribute("value") == "45");
-        Assert.Contains("Liter", bereich.TextContent);
+        Assert.Contains("Vorgabe des Programms", bereich.TextContent);
+
+        cut.Find(".epos-einst-zapfprofil input[value='45']").Input("50");
+        cut.FindAll("button.epos-knopf--primaer").Last().Click();
+        Assert.NotNull(gespeichert);
+        Assert.Equal("50", gespeichert!.ZapfAnzeigetemperatur);
+        Assert.Equal("300; 400", gespeichert.ZapfNenninhalte);
     }
 
     // =====================================================================
@@ -122,13 +124,13 @@ public class EinstellungenDialogTests : EposBunitContext
     /// waren.</para>
     /// </summary>
     [Fact]
-    public void Die_sechs_Rubriken_sind_sechs_Reiter()
+    public void Die_sieben_Rubriken_sind_sieben_Reiter()
     {
         var cut = Zeige();
         var reiter = cut.FindAll(".epos-reiter-knopf").Select(e => e.TextContent.Trim()).ToList();
 
         Assert.Equal(new[] { "VDI Datensätze", "Datenbank", "Web-Schnittstellen (API)",
-                             "Klimadaten", "Diagramme", "Anwendung" },
+                             "Klimadaten", "Zapfprofil", "Diagramme", "Anwendung" },
                      reiter);
     }
 
@@ -160,7 +162,7 @@ public class EinstellungenDialogTests : EposBunitContext
 
         // Rubrik 5 "Diagramme": je Farbrolle ein Waehler und ein Hexfeld, dazu das
         // Vorgabemuster - und keine Dateiwahl.
-        Reiter(cut, 4);
+        Reiter(cut, 5);
         int rollen = Diagrammfarben.Rollen.Count;
         Assert.Equal(rollen, cut.FindAll("input[type=color]").Count);
         Assert.Equal(rollen, cut.FindAll(".epos-farbfeld-hex").Count);
@@ -170,7 +172,7 @@ public class EinstellungenDialogTests : EposBunitContext
         // Rubrik 6: der Allgemein-Pfad, der KI-Schalter UND die Programmeinstellung
         // "Neue Projekte mit Kuehlung anlegen" (E27, K10) - zwei Schalter, der KI-Schalter
         // zuerst.
-        Reiter(cut, 5);
+        Reiter(cut, 6);
         // Der Allgemein-Pfad und die Vorbelegung der Vorheiztoleranz (AH-V5).
         Assert.Equal(2, cut.FindAll("input[type=text]").Count);
         Assert.Single(cut.FindAll(".epos-dateiwahl button"));
@@ -242,12 +244,12 @@ public class EinstellungenDialogTests : EposBunitContext
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
     }
 
-    /// <summary>Zählt über alle sechs Rubriken — ein Reiterblatt zeichnet nur, wenn es aktiv ist.</summary>
+    /// <summary>Zählt über alle sieben Rubriken — ein Reiterblatt zeichnet nur, wenn es aktiv ist.</summary>
     private static (int Felder, int NurLesend, int Knoepfe) Pfadfelder(
         IRenderedComponent<EinstellungenDialog> cut)
     {
         int felder = 0, lesend = 0, knoepfe = 0;
-        for (int r = 0; r < 6; r++)
+        for (int r = 0; r < 7; r++)
         {
             Reiter(cut, r);
             var pfade = cut.FindAll(".epos-dateiwahl input");
@@ -389,7 +391,7 @@ public class EinstellungenDialogTests : EposBunitContext
     public void Der_KI_Schalter_zeigt_den_Registry_Stand()
     {
         var cut = Zeige(kiAus: true);
-        Reiter(cut, 5);
+        Reiter(cut, 6);
 
         Assert.True(cut.Instance.KiAus);
         Assert.True(cut.Find("input[type=checkbox]").HasAttribute("checked"));
@@ -403,7 +405,7 @@ public class EinstellungenDialogTests : EposBunitContext
     public void Ein_Maschinenriegel_sperrt_den_Schalter_und_sagt_warum()
     {
         var cut = Zeige(kiAus: true, riegel: true);
-        Reiter(cut, 5);
+        Reiter(cut, 6);
 
         Assert.True(cut.Find("input[type=checkbox]").HasAttribute("disabled"));
         Assert.Contains("verwaltungsseitig gesperrt", cut.Markup);
@@ -461,7 +463,7 @@ public class EinstellungenDialogTests : EposBunitContext
             uebergeben = s;
             return Task.FromResult(new SpeicherBefund(true, ""));
         });
-        Reiter(cut, 5);
+        Reiter(cut, 6);
 
         Assert.False(Kuehlschalter(cut).HasAttribute("checked"));
         Assert.False(cut.Instance.Werte.NeueProjekteMitKuehlung);
@@ -483,7 +485,7 @@ public class EinstellungenDialogTests : EposBunitContext
         Einstellungensatz satz = Satz();
         satz.NeueProjekteMitKuehlung = true;
         var cut = Zeige(satz: satz);
-        Reiter(cut, 5);
+        Reiter(cut, 6);
 
         Assert.True(Kuehlschalter(cut).HasAttribute("checked"));
         Assert.True(cut.Instance.Werte.NeueProjekteMitKuehlung);
@@ -507,7 +509,7 @@ public class EinstellungenDialogTests : EposBunitContext
         cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>()
            .FindAll("button").First(b => b.TextContent.Trim() == "Ja").Click();
 
-        Reiter(cut, 5);
+        Reiter(cut, 6);
         Assert.False(cut.Instance.Werte.NeueProjekteMitKuehlung);
         Assert.False(Kuehlschalter(cut).HasAttribute("checked"));
         Assert.Equal(0, gespeichert);
@@ -520,7 +522,7 @@ public class EinstellungenDialogTests : EposBunitContext
     /// <summary>
     /// Der Dialog trägt <b>genau eine</b> Fußleiste, und sie läuft
     /// <b>Standardwerte · Füller · Abbrechen · OK (primär)</b>. „Standardwerte" wirkt
-    /// auf alle sechs Rubriken zugleich und steht deshalb im Aktionsschlitz der
+    /// auf alle sieben Rubriken zugleich und steht deshalb im Aktionsschlitz der
     /// <c>SpeichernLeiste</c>, links vom Füller — die zweite Leiste darüber ist
     /// entfallen (Konzept Knopfleisten der Administrationsdialoge, Nr. 10;
     /// Anwenderentscheid DL-Q6 vom 20.09.2026: der Schlussknopf heißt „OK").
@@ -737,7 +739,7 @@ public class EinstellungenDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>Die Rubrik ist der fünfte Reiter (Index 4) — dorthin schaltet jeder Fall unten.</summary>
-    private const int REITER_DIAGRAMME = 4;
+    private const int REITER_DIAGRAMME = 5;
 
     /// <summary>Das Hexfeld einer Rolle.</summary>
     private static AngleSharp.Dom.IElement Hexfeld(
@@ -887,7 +889,7 @@ public class EinstellungenDialogTests : EposBunitContext
         Reiter(cut, REITER_DIAGRAMME);
 
         Assert.Empty(cut.FindAll(".epos-farbfeld"));
-        Assert.Equal(6, cut.FindAll(".epos-reiter-knopf").Count);
+        Assert.Equal(7, cut.FindAll(".epos-reiter-knopf").Count);
     }
 
     // =====================================================================
@@ -969,7 +971,7 @@ public class EinstellungenDialogTests : EposBunitContext
             uebergeben = s;
             return Task.FromResult(new SpeicherBefund(true, ""));
         });
-        Reiter(cut, 5);
+        Reiter(cut, 6);
 
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.ADM_SET_HINT_NEUE_PROJEKTE_VORHEIZ, cut.Markup);
         Assert.Single(cut.FindAll("input[type=text]"), i => i.GetAttribute("placeholder") == "Vorgabe 20 %");
@@ -986,7 +988,7 @@ public class EinstellungenDialogTests : EposBunitContext
         Einstellungensatz satz = Satz();
         satz.NeueProjekteVorheizToleranz = 15.0;
         var gezeigt = Zeige(satz: satz);
-        Reiter(gezeigt, 5);
+        Reiter(gezeigt, 6);
         Assert.Equal(15.0, gezeigt.Instance.Werte.NeueProjekteVorheizToleranz);
         Assert.Contains(gezeigt.FindAll("input[type=text]"), i => i.GetAttribute("value") == "15");
     }
