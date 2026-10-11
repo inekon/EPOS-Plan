@@ -52880,5 +52880,48 @@ chart</value>
   <data name="ADM_SET_HINT_ZAPFPROFIL" xml:space="preserve">
     <value>Calculation defaults of the draw-off profile generator for all projects: temperature of the litre display, hourly threshold, nominal volumes of the storage selection and the start folders for catalogue package and type days. An empty field means: the programme default applies; an invalid value is discarded with a notice and the default is used.</value>
   </data>
+  <!-- Administration und Support, Stufe 3 (Welle 3a) -->
+  <data name="UEB_VERSION_BAUDATUM" xml:space="preserve">
+    <value>Version {0} built {1}</value>
+  </data>
+  <data name="UEB_ZONE_DIAGNOSE" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="UEB_DIAGNOSE_HINWEIS" xml:space="preserve">
+    <value>With this information, support can identify your installation. Copy it into your e-mail or read it out on the phone.</value>
+  </data>
+  <data name="UEB_KOPIEREN" xml:space="preserve">
+    <value>Copy diagnostic data</value>
+  </data>
+  <data name="UEB_KOPIERT" xml:space="preserve">
+    <value>The diagnostic data is on the clipboard.</value>
+  </data>
+  <data name="UEB_PROTOKOLLORDNER" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="UEB_ZONE_KONTAKT" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="UEB_TELEFON" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="UEB_MAIL" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="UEB_ZEITEN" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="UEB_FERNWARTUNG" xml:space="preserve">
+    <value>Remote support…</value>
+  </data>
+  <data name="UEB_MAIL_FEHLER" xml:space="preserve">
+    <value>The e-mail program could not be opened. Please write to {0}.</value>
+  </data>
+  <data name="UEB_MODUS_GEWECHSELT" xml:space="preserve">
+    <value>The diagnostic data has been updated.</value>
+  </data>
+  <data name="UEB_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
 </root>
 

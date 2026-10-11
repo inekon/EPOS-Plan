@@ -122627,6 +122627,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit diesen Angaben erkennt der Support Ihre Installation. Kopieren Sie sie in Ihre E-Mail oder lesen Sie sie am Telefon vor. ähnelt.
+        /// </summary>
+        public static string UEB_DIAGNOSE_HINWEIS {
+            get {
+                return ResourceManager.GetString("UEB_DIAGNOSE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartung… ähnelt.
+        /// </summary>
+        public static string UEB_FERNWARTUNG {
+            get {
+                return ResourceManager.GetString("UEB_FERNWARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagnosedaten kopieren ähnelt.
+        /// </summary>
+        public static string UEB_KOPIEREN {
+            get {
+                return ResourceManager.GetString("UEB_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Diagnosedaten stehen in der Zwischenablage. ähnelt.
+        /// </summary>
+        public static string UEB_KOPIERT {
+            get {
+                return ResourceManager.GetString("UEB_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E-Mail ähnelt.
+        /// </summary>
+        public static string UEB_MAIL {
+            get {
+                return ResourceManager.GetString("UEB_MAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das E-Mail-Programm konnte nicht geöffnet werden. Schreiben Sie an {0}. ähnelt.
+        /// </summary>
+        public static string UEB_MAIL_FEHLER {
+            get {
+                return ResourceManager.GetString("UEB_MAIL_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Diagnosedaten sind aktualisiert. ähnelt.
+        /// </summary>
+        public static string UEB_MODUS_GEWECHSELT {
+            get {
+                return ResourceManager.GetString("UEB_MODUS_GEWECHSELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokollordner öffnen ähnelt.
+        /// </summary>
+        public static string UEB_PROTOKOLLORDNER {
+            get {
+                return ResourceManager.GetString("UEB_PROTOKOLLORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string UEB_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("UEB_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Telefon ähnelt.
+        /// </summary>
+        public static string UEB_TELEFON {
+            get {
+                return ResourceManager.GetString("UEB_TELEFON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version {0} vom {1} ähnelt.
+        /// </summary>
+        public static string UEB_VERSION_BAUDATUM {
+            get {
+                return ResourceManager.GetString("UEB_VERSION_BAUDATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erreichbar ähnelt.
+        /// </summary>
+        public static string UEB_ZEITEN {
+            get {
+                return ResourceManager.GetString("UEB_ZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagnosedaten ähnelt.
+        /// </summary>
+        public static string UEB_ZONE_DIAGNOSE {
+            get {
+                return ResourceManager.GetString("UEB_ZONE_DIAGNOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontakt ähnelt.
+        /// </summary>
+        public static string UEB_ZONE_KONTAKT {
+            get {
+                return ResourceManager.GetString("UEB_ZONE_KONTAKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen ähnelt.
         /// </summary>
         public static string VAR_BTN_UMBENENNEN {

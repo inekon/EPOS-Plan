@@ -9796,6 +9796,25 @@ table.epos-simerg-tabelle {
     color: var(--epos-text-leise);
 }
 
+/* ===== Über EPOS-Plan (Administration und Support, Stufe 3; Konzept 5) ===== */
+.epos-ueber-zone {
+    margin: 0 0 12px 0;
+}
+
+.epos-ueber-kopf p {
+    margin: 0 0 2px 0;
+}
+
+.epos-ueber-produkt {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+}
+
+.epos-ueber-claim,
+.epos-ueber-haus {
+    color: var(--epos-text-leise);
+}
+
 .epos-menueband-bild {
     width: 16px;
     height: 16px;

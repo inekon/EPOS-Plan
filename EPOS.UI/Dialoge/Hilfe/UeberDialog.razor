@@ -1,0 +1,259 @@
+﻿@* UEBER EPOS-PLAN (Konzept Administration und Support, Abschnitt 5; Entwicklerhandbuch
+   Abschnitte 1 und 3.3).
+
+   WOZU. Hilfe -> Version zeigt Produkt und Version und buendelt, was der Support braucht: den
+   Diagnoseblock des Kerns zum Kopieren, den Protokollordner, den Kontakt und den Weg zur
+   Fernwartung. Im geoeffneten Dialog schaltet die Geste Strg+Umschalt+Alt+E den
+   Entwicklermodus (Konzept 3.2); die Schale faengt die Taste ab und stoesst den Dialog ueber
+   UeberAnstoss an, der Dialog zeigt danach den neuen Diagnoseblock.
+
+   AUFBAU von oben nach unten: Kopf (Produktname, Claim, Version mit Baudatum, Haus),
+   Diagnosedaten, Kontakt, Fussleiste. Kein Arbeitsstand, deshalb nur „Schliessen". Keine
+   Hilfepille: Der Dialog ist selbst die Auskunft.
+
+   KEINE DATENBANK, KEIN KERN (Hausregel EPOS.UI): Alle Angaben kommen fertig aus der Huelle
+   (EPOS.UI.Daten/Hilfe/UeberHuelle.cs); Zwischenablage, Ordner, Browser, Fernwartung und das
+   Schalten des Modus sind Rueckrufe der Plattform. Ohne Rueckruf kein Knopf. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+@using EPOS.UI.Dialoge.Allgemein
+@implements IDisposable
+
+<div class="epos-dialog epos-ueber" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@T.Titel</h1>
+        <Schliesskreuz Geschlossen="Schliessen" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* (1) Kopf — wie das fruehere Meldungsfeld. *@
+    <section class="epos-ueber-zone epos-ueber-kopf">
+        <p class="epos-ueber-produkt">@D.Produktname</p>
+        <p class="epos-ueber-claim">@D.Claim</p>
+        <p class="epos-ueber-version">@D.Versionszeile</p>
+        <p class="epos-ueber-haus">@D.Herstellerzeile</p>
+    </section>
+
+    @* (2) Diagnosedaten — nur lesbar, mit Kopieren und Protokollordner. *@
+    <section class="epos-ueber-zone epos-ueber-diagnose">
+        <h2 class="epos-untergruppe">@T.ZoneDiagnose</h2>
+        <p class="epos-dialog-einleitung">@T.DiagnoseHinweis</p>
+        <Textfeld Wert="@_diagnosetext" Mehrzeilig="true" Zeilen="10" Festbreite="true" NurLesen="true"
+                  Titel="@T.ZoneDiagnose" />
+        @if (Kopieren is not null || ProtokollordnerOeffnen is not null)
+        {
+            <div class="epos-kontextleiste">
+                @if (Kopieren is not null)
+                {
+                    <button type="button" class="epos-knopf epos-ueber-kopieren" @onclick="BeiKopieren">@T.Kopieren</button>
+                }
+                @if (ProtokollordnerOeffnen is not null)
+                {
+                    <button type="button" class="epos-knopf epos-ueber-protokollordner"
+                            @onclick="BeiProtokollordner">@T.Protokollordner</button>
+                }
+            </div>
+        }
+    </section>
+
+    @* (3) Kontakt — wie Zone 1 des Fernwartungsdialogs, dazu der Weg zur Fernwartung. *@
+    <section class="epos-ueber-zone epos-ueber-kontakt">
+        <h2 class="epos-untergruppe">@T.ZoneKontakt</h2>
+        <table class="epos-fernwartung-kontakt">
+            <tbody>
+                <tr><th scope="row">@T.Telefon</th><td class="epos-ueber-telefon">@D.Telefon</td></tr>
+                <tr>
+                    <th scope="row">@T.Mail</th>
+                    <td>
+                        @if (AdresseOeffnen is not null && D.Mail.Length > 0)
+                        {
+                            <a class="epos-ueber-mail" href="@("mailto:" + D.Mail)"
+                               @onclick="BeiMail" @onclick:preventDefault="true">@D.Mail</a>
+                        }
+                        else
+                        {
+                            <span class="epos-ueber-mail">@D.Mail</span>
+                        }
+                    </td>
+                </tr>
+                <tr><th scope="row">@T.Zeiten</th><td class="epos-ueber-zeiten">@D.Zeiten</td></tr>
+            </tbody>
+        </table>
+        @if (FernwartungOeffnen is not null)
+        {
+            <div class="epos-kontextleiste">
+                <button type="button" class="epos-knopf epos-ueber-fernwartung" @onclick="BeiFernwartung">@T.Fernwartung</button>
+            </div>
+        }
+    </section>
+
+    @* (4) Fussleiste nach Hausregel: Fueller · Schliessen. *@
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer epos-ueber-schliessen"
+                @onclick="Schliessen">@T.Schliessen</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Kopf, Diagnoseblock und Kontakt.</summary>
+    [Parameter] public UeberDaten? Daten { get; set; }
+
+    /// <summary>Legt einen Text in die Zwischenablage; ohne Rueckruf kein Knopf „Diagnosedaten kopieren".</summary>
+    [Parameter] public Action<string>? Kopieren { get; set; }
+
+    /// <summary>Oeffnet den Protokollordner (Windows); ohne Rueckruf kein Knopf.</summary>
+    [Parameter] public Action? ProtokollordnerOeffnen { get; set; }
+
+    /// <summary>Oeffnet den Fernwartungsdialog; ohne Rueckruf kein Knopf „Fernwartung…".</summary>
+    [Parameter] public Action? FernwartungOeffnen { get; set; }
+
+    /// <summary>
+    /// Oeffnet eine Adresse (mailto-) im Standardprogramm; <c>false</c> = misslungen. Ohne
+    /// Rueckruf ist die E-Mail kein Link.
+    /// </summary>
+    [Parameter] public Func<string, bool>? AdresseOeffnen { get; set; }
+
+    /// <summary>
+    /// Schaltet den Entwicklermodus (samt Rueckfrage und Meldung bei Sperre, Sache der Plattform)
+    /// und liefert den neuen Diagnoseblock; <c>null</c> oder leer = nichts geaendert.
+    /// </summary>
+    [Parameter] public Func<string?>? EntwicklermodusSchalten { get; set; }
+
+    /// <summary>Der Anstoss der Geste; die Schale loest ihn aus, wenn sie Strg+Umschalt+Alt+E faengt.</summary>
+    [Parameter] public UeberAnstoss? Anstoss { get; set; }
+
+    /// <summary>Der Dialog ist zu (immer <c>false</c>: er schreibt nichts).</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Beschriftungen; ohne Gabe die deutschen Rueckfalltexte.</summary>
+    [Parameter] public UeberTexte? Texte { get; set; }
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private UeberDaten D => Daten ?? UeberDaten.Leer;
+    private UeberTexte T => Texte ?? _vorgabeTexte;
+    private readonly UeberTexte _vorgabeTexte = new();
+
+    /// <summary>Der angezeigte Diagnoseblock — nach der Geste der neue.</summary>
+    private string _diagnosetext = "";
+    private UeberDaten? _gezeigteDaten;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private UeberAnstoss? _angemeldet;
+
+    protected override void OnParametersSet()
+    {
+        // Neue Gaben ersetzen den Block; dieselben lassen einen geschalteten Block stehen.
+        if (!ReferenceEquals(_gezeigteDaten, Daten))
+        {
+            _gezeigteDaten = Daten;
+            _diagnosetext = D.Diagnosetext;
+        }
+
+        if (!ReferenceEquals(_angemeldet, Anstoss))
+        {
+            if (_angemeldet is not null) _angemeldet.Empfaenger = null;
+            _angemeldet = Anstoss;
+            if (_angemeldet is not null) _angemeldet.Empfaenger = () => _ = InvokeAsync(BeiGeste);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_angemeldet is not null) _angemeldet.Empfaenger = null;
+        _angemeldet = null;
+    }
+
+    // =====================================================================
+    // Handlungen
+    // =====================================================================
+
+    private void BeiKopieren()
+    {
+        if (Kopieren is null) return;
+        try
+        {
+            Kopieren(_diagnosetext);
+            Melden(WarnStufe.Erfolg, T.Kopiert);
+        }
+        catch (Exception ex)
+        {
+            Melden(WarnStufe.Fehler, ex.Message);
+        }
+    }
+
+    private void BeiProtokollordner()
+    {
+        if (ProtokollordnerOeffnen is null) return;
+        try { ProtokollordnerOeffnen(); }
+        catch (Exception ex) { Melden(WarnStufe.Fehler, ex.Message); }
+    }
+
+    private void BeiFernwartung()
+    {
+        if (FernwartungOeffnen is null) return;
+        try { FernwartungOeffnen(); }
+        catch (Exception ex) { Melden(WarnStufe.Fehler, ex.Message); }
+    }
+
+    private void BeiMail()
+    {
+        if (AdresseOeffnen is null || D.Mail.Length == 0) return;
+        bool offen;
+        try { offen = AdresseOeffnen("mailto:" + D.Mail); }
+        catch { offen = false; }
+        if (offen) _meldung = "";
+        else Melden(WarnStufe.Fehler, string.Format(T.MailFehler, D.Mail));
+    }
+
+    /// <summary>
+    /// Die Geste: den Modus ueber die Plattform schalten und den neuen Block zeigen. Eine
+    /// Ausnahme des Rueckrufs meldet der Banner — sie laeuft nie aus dem Dialog heraus.
+    /// </summary>
+    private void BeiGeste()
+    {
+        if (EntwicklermodusSchalten is null) return;
+        try
+        {
+            string? neu = EntwicklermodusSchalten();
+            if (!string.IsNullOrEmpty(neu) && neu != _diagnosetext)
+            {
+                _diagnosetext = neu;
+                Melden(WarnStufe.Hinweis, T.ModusGewechselt);
+            }
+        }
+        catch (Exception ex)
+        {
+            Melden(WarnStufe.Fehler, ex.Message);
+        }
+        StateHasChanged();
+    }
+
+    private void Melden(WarnStufe stufe, string text)
+    {
+        _meldungStufe = stufe;
+        _meldung = text ?? "";
+    }
+
+    private async Task Schliessen() => await Geschlossen.InvokeAsync(false);
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+        await Schliessen();
+    }
+}

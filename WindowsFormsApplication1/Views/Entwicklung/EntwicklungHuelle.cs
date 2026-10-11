@@ -6,24 +6,19 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die Wege des Menuekopfs „Entwicklung" (Administration und Support, Stufe 1; Konzept
-    /// Abschnitte 3.3 bis 3.6, Entwicklerhandbuch Abschnitt 5) und die Tastenfolge
-    /// Strg+Umschalt+Alt+E. Eine Huelle ohne Fachwissen: Sie oeffnet Dateien und Ordner,
+    /// Abschnitte 3.3 bis 3.6, Entwicklerhandbuch Abschnitt 5) und die Geste
+    /// Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan". Eine Huelle ohne Fachwissen: Sie oeffnet Dateien und Ordner,
     /// kopiert den Diagnoseblock des Kerns und schaltet den Modus ueber
     /// <see cref="Entwicklermodus"/>. Gerufen wird sie aus <c>HauptfensterHuelle.Ablauf</c>
     /// (schon eine Nachricht spaeter, also auf dem UI-Faden) und aus
-    /// <c>Hauptfensterrahmen.ProcessCmdKey</c>.
+    /// <c>UeberFenster</c>.
     ///
     /// <para><b>Ein Supportwerkzeug wirft nie.</b> Was nicht geht, meldet die Huelle benannt.</para>
     /// </summary>
     internal static class EntwicklungHuelle
     {
         /// <summary>Der Protokollordner: <c>Logs</c> neben der Datenbank (wie <c>Program.Main</c>).</summary>
-        internal static string Protokollordner()
-        {
-            string db = DataRepository.GetDBPath();
-            string ordner = string.IsNullOrWhiteSpace(db) ? null : Path.GetDirectoryName(db);
-            return string.IsNullOrWhiteSpace(ordner) ? "" : Path.Combine(ordner, "Logs");
-        }
+        internal static string Protokollordner() => Diagnosedaten.ProtokollordnerPfad();
 
         /// <summary>„Ausnahmeprotokoll oeffnen": <c>Logs\Ausnahmen.txt</c> mit dem System oeffnen.</summary>
         internal static void AusnahmeprotokollOeffnen()
@@ -114,26 +109,40 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Tastenfolge Strg+Umschalt+Alt+E: Ist der Modus aus, fragt sie nach und schaltet ihn
-        /// dauerhaft ein; liegt die Sperre des Administrators, meldet sie das; ist er schon an,
-        /// geschieht nichts.
+        /// Die Geste Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" (<c>UeberFenster</c>; Konzept
+        /// 3.2): Ist der Modus aus, fragt sie nach und schaltet ihn dauerhaft ein — liegt die Sperre
+        /// des Administrators, meldet sie das; ist er an, schaltet sie ihn aus — läuft er über
+        /// Umgebung oder Startargument, nennt die Meldung den Grund. Nach einem Wechsel versorgt
+        /// <paramref name="neuVersorgen"/> Menü, Marke und Titel sofort.
         /// </summary>
-        internal static void EinschaltenNachRueckfrage(Action neuVersorgen)
+        /// <returns><c>true</c>, wenn der Modus gewechselt hat.</returns>
+        internal static bool GesteUmschalten(Action neuVersorgen)
         {
-            if (Entwicklermodus.Aktiv) return;
+            if (Entwicklermodus.Aktiv)
+            {
+                if (!Entwicklermodus.Ausschalten(out string grund))
+                {
+                    Melden(grund);
+                    return false;
+                }
+                neuVersorgen?.Invoke();
+                return true;
+            }
+
             if (Entwicklermodus.Gesperrt)
             {
                 Melden(MyResource.Resource.ENTW_EIN_GESPERRT);
-                return;
+                return false;
             }
-            if (!Dienste.Dialog.Frage(MyResource.Resource.ENTW_EIN_FRAGE, MyResource.Resource.ENTW_TITEL)) return;
+            if (!Dienste.Dialog.Frage(MyResource.Resource.ENTW_EIN_FRAGE, MyResource.Resource.ENTW_TITEL)) return false;
 
             if (!Entwicklermodus.Einschalten())
             {
                 Melden(MyResource.Resource.ENTW_EIN_GESPERRT);
-                return;
+                return false;
             }
             neuVersorgen?.Invoke();
+            return true;
         }
 
         // ------------------------------------------------------------------
