@@ -475,6 +475,31 @@ public static class Seitenschluessel
     /// <summary>Menue „Englisch" - Oberflaechensprache umstellen und neu starten.</summary>
     public const string SpracheEnglisch = "SPRACHE_ENGLISCH";
 
+    // ------------------------------------------------------------------
+    //  Menuekopf „Entwicklung" (Administration und Support, Stufe 1;
+    //  Konzept Abschnitte 3.1 bis 3.6). Nur im Entwicklermodus sichtbar
+    //  (Menuetabelle.Sichtbar); die Arbeit macht die Windows-Huelle
+    //  (EntwicklungHuelle). Auf iOS fallen die Schluessel durch.
+    // ------------------------------------------------------------------
+
+    /// <summary>Menue „Entwicklung -> Ausnahmeprotokoll oeffnen" (<c>Logs\Ausnahmen.txt</c> neben der Datenbank).</summary>
+    public const string EntwAusnahmeprotokoll = "ENTW_AUSNAHMEPROTOKOLL";
+
+    /// <summary>Menue „Entwicklung -> Protokollordner oeffnen" (Explorer).</summary>
+    public const string EntwProtokollordner = "ENTW_PROTOKOLLORDNER";
+
+    /// <summary>Menue „Entwicklung -> Datenbankordner oeffnen" (Explorer).</summary>
+    public const string EntwDatenbankordner = "ENTW_DATENBANKORDNER";
+
+    /// <summary>Menue „Entwicklung -> Diagnosedaten kopieren" (<c>Diagnosedaten.Textblock</c> in die Zwischenablage).</summary>
+    public const string EntwDiagnosedaten = "ENTW_DIAGNOSEDATEN";
+
+    /// <summary>Menue „Entwicklung -> Entwicklerwerkzeuge der Oberflaeche" (DevTools der WebView).</summary>
+    public const string EntwWebWerkzeuge = "ENTW_WEBWERKZEUGE";
+
+    /// <summary>Menue „Entwicklung -> Entwicklermodus ausschalten".</summary>
+    public const string EntwModusAus = "ENTW_MODUS_AUS";
+
     /// <summary>
     /// Alle Schluessel dieser Klasse - fuer den Nachweis, dass sie ASCII,
     /// sprachneutral und untereinander verschieden sind (N4, W16c.1).
@@ -500,6 +525,8 @@ public static class Seitenschluessel
         BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
         Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
-        Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
+        Version, Dokumentation, SpracheDeutsch, SpracheEnglisch,
+        EntwAusnahmeprotokoll, EntwProtokollordner, EntwDatenbankordner, EntwDiagnosedaten,
+        EntwWebWerkzeuge, EntwModusAus
     };
 }
