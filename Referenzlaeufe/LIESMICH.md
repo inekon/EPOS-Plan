@@ -1179,6 +1179,16 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > byte-gleich (330 von 330 Dateien). Ein Rang in einem Referenzprojekt friert neu ein
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_KB-D_Kaeltefolge_pflegbar.md)).
 
+> **Nachtrag — Testdatenbank auf 213 (Kältebedarf, K1), Basis R51 unberührt.** `KaeltebedarfSchema`
+> (213 = `KaelteRangSchema.SCHRITT + 1`) legt `Tab_Kaeltebedarf_STAMM`, `Tab_Kaeltetyp_STAMM`, `Tab_Kaeltebedarf`,
+> `Tab_Kaeltetyp` und `Z_Projekt_Kaeltebedarf` an (STRICT), dazu acht Deckungsspalten an `Z_ProjektWaermebedarf`
+> (Vorgabe `zentral`) und fünf leere Ergebnisspalten an `Tab_ErgebnisEnergiebedarf`; gesät sind sechs neutrale
+> Kältebedarfe (`KaeltetypSaat`, ReadOnly, mit Katalogschlüssel und Prüfsumme). Gehoben aus dem Stand 212 (`5b7a63e2…`)
+> mit `Werkzeuge/Testdatenbankschema`; kein Referenzprojekt ordnet einen Kältebedarf zu, beide Lastgänge stehen auf
+> `zentral`. Die Testdatenbank steht auf **213** (`quick_check` ok, `foreign_key_check` leer, SQL-Dialektprüfer
+> 0 Fundstellen): **95 694 848 Byte, LFS-SHA-256 `23bbf212b45062f3dcdcfc649865b64a82e82f506a3fcb3e84974d45c430bc0c`**.
+> **Die Basis `2026-10-10_R51_FreieKuehlung` bleibt.** Ein Kältebedarfsprofil oder eine Split-Zeile in einem
+> Referenzprojekt friert neu ein (Konzept Kältebedarf, Abschnitt 8.1).
 > **Nachtrag — Schema 213 (Rückkühlwerk, K‑F1) als Arbeitskette, Basis R51 unberührt.** `RueckkuehlwerkSchema`
 > (`KaelteRangSchema.SCHRITT + 1`, angemeldet als 214, hängt beim Push an 213) legt `Tab_Rueckkuehlwerk(_STAMM)`,
 > `Tab_Energieanlagen.ID_Rueckkuehlwerk` und `Wasserpreis_EUR_m3` sowie sechs Ergebnisspalten an

@@ -3265,6 +3265,18 @@ Beide zeigen auf {0} „{1}".</value>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
     <value>Prozesswärme: Der Typ des Prozesses '{0}' ist nicht definiert. Der Prozess wird übersprungen, sein Anteil bleibt 0; die übrigen Prozesse werden vollständig gerechnet.</value>
   </data>
+  <data name="SIMENG_PRAEFIX_KAELTE" xml:space="preserve">
+    <value>Kältebedarf: </value>
+  </data>
+  <data name="SIMENG_KAELTE_KOPF_FEHLT" xml:space="preserve">
+    <value>Kältebedarf: Zum Kältebedarf '{0}' ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_KAELTE_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Kältebedarf: Zum Typ '{0}' des Kältebedarfs '{1}' ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_KAELTE_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Kältebedarf: Der Typ des Kältebedarfs '{0}' ist nicht definiert. Der Kältebedarf wird übersprungen, sein Anteil bleibt 0; die übrigen werden vollständig gerechnet.</value>
+  </data>
   <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
     <value>Simulation abgebrochen: {0}</value>
   </data>
@@ -12568,9 +12580,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="HZK_LBL_ALLE_DATEN" xml:space="preserve">
     <value>Alle Daten anzeigen</value>
-  </data>
-  <data name="HZK_BTN_FELDER_SPEICHERN" xml:space="preserve">
-    <value>Speichern</value>
   </data>
   <data name="HZK_GRP_MODUL" xml:space="preserve">
     <value>Modul</value>
@@ -43295,6 +43304,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KABG_KATALOG_PWT" xml:space="preserve">
     <value>Prozesswärme-Wochenprofile</value>
   </data>
+  <data name="KABG_KATALOG_KB" xml:space="preserve">
+    <value>Kältebedarfsprofile</value>
+  </data>
+  <data name="KABG_KATALOG_KBT" xml:space="preserve">
+    <value>Kältebedarf-Wochenprofile</value>
+  </data>
   <data name="KABG_KATALOG_BAUSTOFF" xml:space="preserve">
     <value>Baustoffe</value>
   </data>
@@ -50227,6 +50242,102 @@ Chart</value>
   <data name="AUSWAHL_SATZ_NUR_LESEN" xml:space="preserve">
     <value>nur lesen</value>
   </data>
+  <data name="AUSWAHL_SATZ_VERGROESSERN" xml:space="preserve">
+    <value>Vergrößern</value>
+  </data>
+  <data name="AUSWAHL_SATZ_VERGROESSERN_HINWEIS" xml:space="preserve">
+    <value>Den gewählten Satz in voller Höhe über dem Dialog öffnen</value>
+  </data>
+  <data name="AUSWAHL_SATZ_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="AUSWAHL_SATZ_BEARBEITEN_HINWEIS" xml:space="preserve">
+    <value>Den gewählten Satz über dem Dialog bearbeiten</value>
+  </data>
+  <data name="AUSWAHL_SATZ_ANSEHEN_HINWEIS" xml:space="preserve">
+    <value>Den gewählten Satz über dem Dialog ansehen (nur lesen)</value>
+  </data>
+  <data name="AUSWAHL_SATZ_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>Kurzangaben des gewählten Satzes</value>
+  </data>
+  <data name="AUSWAHL_ZEILE_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="AUSWAHL_ZF_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="AUSWAHL_ZF_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="AUSWAHL_ZF_TRAEGER" xml:space="preserve">
+    <value>Träger</value>
+  </data>
+  <data name="AUSWAHL_ZF_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Vorlauf/Rücklauf</value>
+  </data>
+  <data name="AUSWAHL_ZF_BRENNWERT" xml:space="preserve">
+    <value>Brennwert</value>
+  </data>
+  <data name="AUSWAHL_ZF_INVEST" xml:space="preserve">
+    <value>Invest</value>
+  </data>
+  <data name="AUSWAHL_ZF_BETRIEB" xml:space="preserve">
+    <value>Betrieb</value>
+  </data>
+  <data name="AUSWAHL_ZF_SENKEN" xml:space="preserve">
+    <value>Senken</value>
+  </data>
+  <data name="AUSWAHL_ZF_EURO" xml:space="preserve">
+    <value>{0:N0} €</value>
+  </data>
+  <data name="AUSWAHL_ZF_EURO_JAHR" xml:space="preserve">
+    <value>{0:N0} €/a</value>
+  </data>
+  <data name="AUSWAHL_ZF_GRENZLEISTUNG" xml:space="preserve">
+    <value>Grenzleistung</value>
+  </data>
+  <data name="AUSWAHL_ZF_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="AUSWAHL_ZF_SCHWELLEN" xml:space="preserve">
+    <value>Schwellen</value>
+  </data>
+  <data name="AUSWAHL_ZF_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="AUSWAHL_ZF_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="AUSWAHL_ZF_ANZAHL" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
+  <data name="AUSWAHL_ZF_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="AUSWAHL_ZF_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="AUSWAHL_ZF_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlbetrieb</value>
+  </data>
+  <data name="AUSWAHL_ZF_LEISTUNG_GESAMT" xml:space="preserve">
+    <value>Leistung gesamt</value>
+  </data>
+  <data name="AUSWAHL_ZF_ALBEDO" xml:space="preserve">
+    <value>Albedo</value>
+  </data>
+  <data name="AUSWAHL_ZF_ERTRAGSMODELL" xml:space="preserve">
+    <value>Ertragsmodell</value>
+  </data>
+  <data name="AUSWAHL_ZF_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="AUSWAHL_ZF_AUSRICHTUNG" xml:space="preserve">
+    <value>Neigung/Azimut</value>
+  </data>
+  <data name="AUSWAHL_ZF_SOLARKREIS" xml:space="preserve">
+    <value>Solarkreis</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Projektsatz bearbeiten – {0}</value>
   </data>
@@ -51735,6 +51846,45 @@ Chart</value>
   </data>
   <data name="SIMKONF_KAELTE_VORGABE_GILT" xml:space="preserve">
     <value>Die Vorgabefolge gilt bereits. Die Pfeile an den Kacheln pflegen die Folge der Kälteerzeuger.</value>
+  </data>
+  <data name="SIMENG_VORH_KENNZAHLEN" xml:space="preserve">
+    <value>Vorheizen {0} h vor Nutzungsbeginn: höchste Heizlast am Nutzungsbeginn {1} kW, Deckel {2} kW, Vorheizleistung {3} kW, Spitze des Laufs {4} kW; {5} Nächte ohne Absenkung; Mehrwärme {6} MWh ({7} %).</value>
+  </data>
+  <data name="SIMENG_VORH_TAGE" xml:space="preserve">
+    <value>An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter).</value>
+  </data>
+  <data name="SIMENG_VORH_FLOOR" xml:space="preserve">
+    <value>In {0} Stunden der Nutzung liegt die Heizlast ohne Aufheizanteil über dem Deckel; dort gilt sie als Grenze.</value>
+  </data>
+  <data name="SIMENG_VORH_TOLERANZ_NULL" xml:space="preserve">
+    <value>Der zulässige Sprung zum Nutzungsbeginn ist 0: Der Deckel liegt auf der höchsten Heizlast am Nutzungsbeginn, und das Vorheizen braucht meist die ganze Nacht.</value>
+  </data>
+  <data name="SIMENG_VORH_OHNE_SPRUNG" xml:space="preserve">
+    <value>{0} beheizte Zonen haben keinen Nutzungsbeginn im Heizkalender; dort wird nicht vorgeheizt.</value>
+  </data>
+  <data name="SIMENG_VORH_AUS" xml:space="preserve">
+    <value>{0} Übergänge aus „aus“ (Heizperiode, Kalender) bekommen kein Vorheizen und zählen nicht in die Prüfung.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_HEIZKREIS" xml:space="preserve">
+    <value>Gebäude mit Heizkreis sind vom Vorheizen ausgenommen; es gilt die Sollwertrampe nach Aufheizleistung.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_OHNE_ZEIT" xml:space="preserve">
+    <value>Für „Vorheizzeit vorgeben“ fehlt die Vorheizzeit; es gilt die Sollwertrampe nach Aufheizleistung.</value>
+  </data>
+  <data name="SIMENG_VORH_BERECHNET" xml:space="preserve">
+    <value>Vorheizzeit berechnet: {0} h aus dem größten Bedarf des Jahres (Median der Nutzungsbeginne {1} h); sie gilt an jedem Nutzungsbeginn.</value>
+  </data>
+  <data name="SIMENG_VORH_TAGE_BEDARF" xml:space="preserve">
+    <value>An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter); nötig wären bis {2} h Vorheizen statt {3} h.</value>
+  </data>
+  <data name="SIMENG_VORH_UNERREICHBAR" xml:space="preserve">
+    <value>An {0} Tagen reicht die Vorheizleistung selbst ohne Absenkung der Nacht nicht, um den Sollwert zum Nutzungsbeginn zu erreichen (unerreichbar); {1} Nächte bleiben ohne Absenkung.</value>
+  </data>
+  <data name="SIMENG_VORH_ABWEICHUNG" xml:space="preserve">
+    <value>An {0} Tagen verfehlt der Lauf den Sollwert zum Nutzungsbeginn, den die Vorausschau als erreichbar sah (Nachbarzonen oder Heizkreis).</value>
+  </data>
+  <data name="SIMENG_VORH_OHNE_HEIZLAST" xml:space="preserve">
+    <value>{0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt.</value>
   </data>
   <data name="KABG_KATALOG_RUECKKUEHLWERK" xml:space="preserve">
     <value>Rückkühlwerke</value>

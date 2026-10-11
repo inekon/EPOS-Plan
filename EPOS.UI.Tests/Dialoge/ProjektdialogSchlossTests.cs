@@ -93,8 +93,24 @@ public class ProjektdialogSchlossTests : EposBunitContext
     private static AngleSharp.Dom.IElement KatalogBearbeiten(IRenderedComponent<BhkwDialog> cut)
         => cut.Find(".epos-knopf--bearbeiten-katalog");
 
+    /// <summary>
+    /// UeS2: Speichern steht, wenn die Satz-Überlagerung („Bearbeiten" der Detailzeile) ein OK
+    /// trägt — sie wird dafür geöffnet und wieder geschlossen.
+    /// </summary>
     private static bool SpeichernSteht(IRenderedComponent<BhkwDialog> cut)
-        => cut.FindAll(".epos-modulparameter .epos-speichervermerk").Count > 0;
+    {
+        SatzOeffnen(cut);
+        bool steht = cut.FindAll(".epos-satzueberlagerung-ok").Count > 0;
+        cut.FindAll(".epos-satzueberlagerung-abbrechen, .epos-satzueberlagerung-schliessen")[0].Click();
+        return steht;
+    }
+
+    /// <summary>UeS2: „Alle Daten" stehen in der Satz-Überlagerung — „Bearbeiten" der Detailzeile öffnet sie.</summary>
+    private static void SatzOeffnen(IRenderedComponent<BhkwDialog> cut)
+    {
+        if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
+            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+    }
 
     [Fact]
     public void Die_BHKW_Verwaltung_zeigt_Schloss_setzen_und_Schloss_aufheben()
@@ -135,14 +151,19 @@ public class ProjektdialogSchlossTests : EposBunitContext
         KatalogsatzWaehlen(cut, 0);
 
         // Gesperrt: kein Speichern im Aufklapper; „Bearbeiten…" im Katalogfuss bleibt
-        // bedienbar, nennt den Grund und öffnet keinen Katalogeditor (KA-E-13, 4.6).
+        // bedienbar, nennt den Grund und öffnet keinen Katalogeditor (KA-E-13, 4.6) -
+        // sondern die Satz-Ueberlagerung nur lesend mit „Erst Schloss aufheben" (UeS1).
         Assert.False(SpeichernSteht(cut));
         var bearbeiten = KatalogBearbeiten(cut);
         Assert.False(bearbeiten.HasAttribute("disabled"));
         Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, bearbeiten.GetAttribute("title"));
         bearbeiten.Click();
         Assert.False(cut.Instance.EditorOffen);
-        Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Instance.Meldung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+        cut.Find(".epos-satzueberlagerung-schliessen").Click();
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
 
         // „Schloss aufheben…" - obwohl der Satz im Projekt verwendet wird.
         Schlossknopf(cut).Click();
@@ -160,8 +181,9 @@ public class ProjektdialogSchlossTests : EposBunitContext
         Assert.True(SpeichernSteht(cut));
         Assert.Equal(Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS, KatalogBearbeiten(cut).GetAttribute("title"));
 
+        SatzOeffnen(cut);
         cut.Find(".epos-modulparameter input").Input("Anderes Werk");
-        Knopf(cut, "Speichern").Click();
+        cut.Find(".epos-satzueberlagerung-ok").Click();
         Assert.Equal("Modul A", gespeichert);
 
         // Ein einzelner ungesperrter Satz öffnet den vollen Katalogeditor (KA-E-13).
@@ -180,8 +202,9 @@ public class ProjektdialogSchlossTests : EposBunitContext
 
         KatalogsatzWaehlen(cut, 0);       // „Modul A" steht in der Projektliste
 
+        SatzOeffnen(cut);
         cut.Find(".epos-modulparameter input").Input("Anderes Werk");
-        Knopf(cut, "Speichern").Click();
+        cut.Find(".epos-satzueberlagerung-ok").Click();
         Assert.Equal("Modul A", gespeichert);
 
         Knopf(cut, "Löschen").Click();
@@ -213,6 +236,8 @@ public class ProjektdialogSchlossTests : EposBunitContext
         var cut = Aufbauen(pruefung);
 
         KatalogsatzWaehlen(cut, 1);
+        // UeS2: geaendert wird in der Satz-Ueberlagerung; der Riegel gilt fuer jeden Weg zum Schloss.
+        SatzOeffnen(cut);
         cut.Find(".epos-modulparameter input").Input("Anderes Werk");
         Schlossknopf(cut).Click();
 

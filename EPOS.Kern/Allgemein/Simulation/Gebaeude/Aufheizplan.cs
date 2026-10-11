@@ -469,6 +469,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Φ_RH der Zone [W] (<see cref="Aufheizbemessung.AufheizzuschlagW"/>); NaN ohne Bemessung.</summary>
         internal double AufheizzuschlagW => Bemessung?.AufheizzuschlagW ?? double.NaN;
+
+        /// <summary>
+        /// Das Vorheizen nach Option 1 (Entwurf Vorheizrampe Fassung 2, Welle V2): Vorlauf, Deckel, Sprünge und nach dem Lauf
+        /// der Nachweis; <c>null</c> für die Sollwertrampe (<see cref="Vorheizplanung"/>).
+        /// </summary>
+        internal Vorheizplan Vorheizen { get; init; }
     }
 
     /// <summary>

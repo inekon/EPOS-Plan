@@ -575,7 +575,6 @@ namespace WindowsFormsApplication1
                     new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
                         (name, felder) => BhkwAdminHuelle.Wege().Speichern!(name, felder)),
 
-                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
 
                 ["LabelName"] = Text_("BHKWV_LBL_NAME", "Modul-Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
@@ -629,6 +628,13 @@ namespace WindowsFormsApplication1
                     ? new Func<ErzeugerZeile, Task>(
                         zeile => ErzeugerKostenwege.Energiekosten(
                             besitzer, projektId, DbWerte.ERZEUGER_BHKW, zeile))
+                    : null,
+
+                // UeS2: die Kostensummen der Anlage fuer die Zusammenfassung der Detailzeile -
+                // dieselbe Anlagenzuordnung wie die Kostenknoepfe (ErzeugerKostenwege).
+                ["Kostensumme"] = projektId > 0
+                    ? new Func<ErzeugerZeile, (double Invest, double Betrieb)>(
+                        zeile => ErzeugerKostenwege.Summen(projektId, DbWerte.ERZEUGER_BHKW, zeile))
                     : null,
 
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
@@ -878,7 +884,9 @@ namespace WindowsFormsApplication1
                 felder.Add((Text_("BHKWK_LBL_MINDESTLAUFZEIT", "Mindestlaufzeit:"),
                             d.Teillast.MindestlaufzeitMin.Value.ToString(k) + " min"));
 
-            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
+            // UeS2b: die Zahlwerte fuer die Zusammenfassung der Detailzeile - nicht ueber die Beschriftungen.
+            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
+                                      Kennwerte: new ErzeugerKennwerte { PthermKw = d.Ptherm, PelKw = d.Pel });
         }
 
         /// <summary>

@@ -161,6 +161,25 @@ namespace WindowsFormsApplication1
             return 0;
         }
 
+        /// <summary>
+        /// Invest- und Betriebskostensumme der Anlage zu einer Projektzeile (UeS2, Zusammenfassung
+        /// der Detailzeile) — dieselbe Anlagenzuordnung wie <see cref="Kosten(IWin32Window, int, string, ErzeugerZeile, bool)"/>.
+        /// Ohne Anlage beide 0.
+        /// </summary>
+        internal static (double Invest, double Betrieb) Summen(int projektId, string erzeugerart, ErzeugerZeile zeile)
+            => Summen(projektId, AnlageZu(projektId, erzeugerart, zeile));
+
+        /// <summary>
+        /// Invest- und Betriebssumme einer schon bekannten Anlagenzeile (<c>Tab_Energieanlagen.ID</c>)
+        /// — für Wirte, die ihre Anlage selbst führen (Wärmepumpe); 0 = nicht gespeichert, keine Kosten.
+        /// </summary>
+        internal static (double Invest, double Betrieb) Summen(int projektId, int idAnlage)
+        {
+            if (projektId <= 0 || idAnlage <= 0) return (0, 0);
+            return (KostenSummenCtrl.AnlagenSumme(projektId, KostenSummenCtrl.KATEGORIE_INVESTITION, idAnlage),
+                    KostenSummenCtrl.AnlagenSumme(projektId, KostenSummenCtrl.KATEGORIE_BETRIEB, idAnlage));
+        }
+
         /// <summary>Der Projektname für die Titelzeile der Kostenverwaltung.</summary>
         private static string Projektname(int projektId)
         {

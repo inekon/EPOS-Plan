@@ -3387,6 +3387,24 @@ namespace Testdatenbankschema
                                   ", Zeilen mit Rang: " + KaelteRangSchema.ZeilenMitRang() + " (erwartet True, 0).");
             }
 
+            // ---- Schritt KaeltebedarfSchema.SCHRITT (K1): Kaeltebedarfsprofile, Typkatalog, Zuordnung mit Deckungsart,
+            //      Deckungsspalten an Z_ProjektWaermebedarf, Ergebnisspalten, Saat. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Kaeltebedarf.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt ordnet einen Kaeltebedarf zu, jeder Lastgang steht auf 'zentral'.
+            string nrKb = KaeltebedarfSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb + " - Kaeltebedarf: " +
+                              (KaeltebedarfSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKb = new List<string>();
+                angelegt += KaeltebedarfSchema.Ausfuehren(berichtKb);
+                foreach (string zeile in berichtKb)
+                    Console.WriteLine("Schritt " + nrKb + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb + " - vollstaendig: " + KaeltebedarfSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Rueckkuehlwerk als eigenes Glied - Katalog und Projektkopie
             //      (leer, keine Saat), ID_Rueckkuehlwerk und Wasserpreis_EUR_m3 an Tab_Energieanlagen, sechs Kennzahlen an
             //      Tab_ErgebnisKaeltemaschine. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Rueckkuehlwerk.

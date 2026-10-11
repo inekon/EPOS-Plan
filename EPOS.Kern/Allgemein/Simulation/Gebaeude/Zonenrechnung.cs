@@ -129,13 +129,8 @@ namespace WindowsFormsApplication1
                                                            out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
                                                            out Dictionary<(int, int), double> deltaVorlauf,
                                                            out double zeitAdiabat, vorlaufAnlageC, kuehlVorlaufAnlageC,
-                                                           kuehlErzeugerMinC);
-
-            // AK2 (6.2, zweite Verteilungsstufe): die Schranke je Zone - von der Fassade verteilt, in der
-            // Reihenfolge der Zonen; ohne Reihe bleibt jede Zone, wie sie ist.
-            if (verfuegbarkeitJeZone != null)
-                for (int z = 0; z < zonen.Count && z < verfuegbarkeitJeZone.Count; z++)
-                    zonen[z].Eingang.Verfuegbarkeit = verfuegbarkeitJeZone[z];
+                                                           kuehlErzeugerMinC, verfuegbarkeitJeZone);
+            bool vorheizen = Vorheizplanung.Anwendbar(aufheizvorgabe);
 
             // Die Schleife.
             // Der Jahreslauf über den Gebäude-Stepper (Entwurf AK3 2.2): Vorlauf, dann je Stunde Schritt und Festschreiben.
@@ -155,7 +150,9 @@ namespace WindowsFormsApplication1
                 paare.Add(new Zonenpaarzuordnung(a, b, deltaVorlauf[(a, b)], zuordnung[(a, b)], d));
             }
 
+            if (vorheizen) Vorheizplanung.NachweisenZonen(zonen, ergebnisse);
             GebaeudeModellErgebnis summe = Summe(zonen, ergebnisse, schleife, index, idGebaeude, out Aufheizgebaeude aufheiz);
+            if (vorheizen) summe.Vorheizen = Vorheizplanung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan), summe.HeizlastW);
             uhr.Stop();
             return new Mehrzonenergebnis(summe, ergebnisse, zonen, schleife, paare,
                                          uhr.Elapsed.TotalMilliseconds, zeitAdiabat + zeitVorlauf, aufheiz);
@@ -190,8 +187,23 @@ namespace WindowsFormsApplication1
         {
             GebaeudeModellErgebnis[] e = stepper.Abschluss(index, idGebaeude);
             Zonenschleife s = stepper.Schleife;
-            if (s == null) return e[0];
-            return Summe(s.Laeufe.Select(l => l.Zone).ToList(), e, s, index, idGebaeude, out _);
+            if (s == null)
+            {
+                // V3b: der Nachweis des Vorheizens am Kreisergebnis (der Plan reiste mit dem Eingang in den Stepper).
+                Aufheizplan plan = stepper.ZoneEinzone?.Aufheizplan;
+                if (plan?.Vorheizen != null)
+                {
+                    Vorheizplanung.Nachweisen(stepper.ZoneEinzone, plan, e[0], null);
+                    e[0].Vorheizen = Vorheizplanung.Gebaeudewerte(new[] { plan });
+                }
+                return e[0];
+            }
+            List<ZonenEingang> zonen = s.Laeufe.Select(l => l.Zone).ToList();
+            bool vorheizen = zonen.Any(z => z.Aufheizplan?.Vorheizen != null);
+            if (vorheizen) Vorheizplanung.NachweisenZonen(zonen, e);
+            GebaeudeModellErgebnis summe = Summe(zonen, e, s, index, idGebaeude, out _);
+            if (vorheizen) summe.Vorheizen = Vorheizplanung.Gebaeudewerte(zonen.Select(z => z.Aufheizplan), summe.HeizlastW);
+            return summe;
         }
 
         /// <summary>
@@ -214,7 +226,8 @@ namespace WindowsFormsApplication1
                                                              out double zeitAdiabatMs,
                                                              double vorlaufAnlageC = double.NaN,
                                                              double kuehlVorlaufAnlageC = double.NaN,
-                                                             double kuehlErzeugerMinC = double.NaN)
+                                                             double kuehlErzeugerMinC = double.NaN,
+                                                             IReadOnlyList<Anlagenverfuegbarkeit[]> verfuegbarkeitJeZone = null)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -248,13 +261,26 @@ namespace WindowsFormsApplication1
             // 2. Die Zonen.
             Trennflaechenzuordnung VierK(int a, int b)
                 => gruppen.TryGetValue(Paar(a, b), out Trennflaechenzuordnung g) ? g : Trennflaechenzuordnung.Regel;
-            return ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, VierK,
+            IReadOnlyList<ZonenEingang> zonen = ZonenEingang.Bauen(gebaeude, klima, kuehlbetrieb, anlagenkopplung, VierK,
                                       konditionierung: konditionierung,
                                       aufheizvorgabe: aufheizvorgabe,
                                       aufheizleistungTestW: aufheizleistungTestW,
                                       vorlaufAnlageC: vorlaufAnlageC,
                                       kuehlVorlaufAnlageC: kuehlVorlaufAnlageC,
                                       kuehlErzeugerMinC: kuehlErzeugerMinC);
+
+            // AK2 (6.2, zweite Verteilungsstufe): die Schranke je Zone - von der Fassade verteilt, in der
+            // Reihenfolge der Zonen; ohne Reihe bleibt jede Zone, wie sie ist.
+            if (verfuegbarkeitJeZone != null)
+                for (int z = 0; z < zonen.Count && z < verfuegbarkeitJeZone.Count; z++)
+                    zonen[z].Eingang.Verfuegbarkeit = verfuegbarkeitJeZone[z];
+
+            // Welle V2 (Entwurf Vorheizrampe Fassung 2, 2.4, 2.5): Option 1/2 — der Vorlauf über dieselben Zonen samt Schranke
+            // der Verfügbarkeit, dann die Pläne; ohne neues Verfahren geschieht nichts. V3b: hier, damit Lauf und Auskunft
+            // (Vdi6007Rechenweg.ZonenBauen) dieselben Pläne bekommen.
+            if (Vorheizplanung.Anwendbar(aufheizvorgabe))
+                Vorheizplanung.AnwendenZonen(zonen, aufheizvorgabe, index, idGebaeude, Wer(gebaeude), aufheizleistungTestW);
+            return zonen;
         }
 
         /// <summary>

@@ -149,14 +149,16 @@ namespace EPOS.Kern.Tests
                        RueckkuehlwerkSchema.SPALTEN_ANLAGE.Count;   // + Verweis und Wasserpreis des Rueckkuehlwerks (K-F1)
             Assert.Equal(new[] { "Zeitprogramm", "Vorlauf_Max" }, anlagen.Skip(anlagen.Count - frei - 2).Take(2).ToArray());
             // Dahinter stehen allein die sechs Kennzahlen des Kreises (Ak3Schema), die sieben von AK3-K (Ak3KSchema) und
-            // die drei der Kuehlkurve (KuehlkurveSchema).
-            int kk = KuehlkurveSchema.SPALTEN_ERGEBNIS.Count;
+            // die drei der Kuehlkurve (KuehlkurveSchema) und die fuenf des Kaeltebedarfs (KaeltebedarfSchema, Schritt 213).
+            int kb = KaeltebedarfSchema.ERGEBNISSPALTEN.Count;
+            int kk = KuehlkurveSchema.SPALTEN_ERGEBNIS.Count + kb;
             int ak3k = Ak3KSchema.SPALTEN_ERGEBNIS.Count + kk;
             int ak3 = Ak3Schema.SPALTEN_ERGEBNIS.Count + ak3k;
             Assert.Equal(AnlagenfahrplanSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3 - 6).Take(6).ToArray());
             Assert.Equal(Ak3Schema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3).Take(ak3 - ak3k).ToArray());
             Assert.Equal(Ak3KSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3k).Take(ak3k - kk).ToArray());
-            Assert.Equal(KuehlkurveSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - kk).ToArray());
+            Assert.Equal(KuehlkurveSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - kk).Take(kk - kb).ToArray());
+            Assert.Equal(KaeltebedarfSchema.ERGEBNISSPALTEN.ToArray(), ergebnis.Skip(ergebnis.Count - kb).ToArray());
             Assert.Equal(21 + 6 + ak3, ergebnis.Count);
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",
                                                                        new DbParam("@n", AnlagenfahrplanSchema.TAB_ERGEBNIS)));

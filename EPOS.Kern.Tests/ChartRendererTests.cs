@@ -932,18 +932,72 @@ namespace EPOS.Kern.Tests
             Zeichenmodell flach = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 1100, hoehe: 160);
             Assert.Equal((1100, 160), (flach.Breite, flach.Hoehe));
-            Assert.Equal(1100 - 140, flach.Flaeche.Bild.Breite, 3);
+            // R1: kompakt in 9 pt, die Abstände im Maßstab 9/15 — rechts und links 140·0,6.
+            Assert.Equal(1100 - 84, flach.Flaeche.Bild.Breite, 3);
             Assert.True(flach.Flaeche.Bild.Y <= 40, "Kompakt: Flaeche direkt unter der Kopfzeile");
-            Assert.True(flach.Flaeche.Bild.Y + flach.Flaeche.Bild.Hoehe <= 160 - 40, "Platz fuer Marken und Achsentitel");
+            Assert.True(flach.Flaeche.Bild.Y + flach.Flaeche.Bild.Hoehe <= 160 - 30, "Platz fuer Marken und Achsentitel (50 px · 0,6)");
 
             Zeichenmodell hoch = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 900, hoehe: 600);
             Assert.Equal((900, 600), (hoch.Breite, hoch.Hoehe));
-            Assert.Equal(400, hoch.Flaeche.Bild.Hoehe, 3);
+            // R1: in 9,75 pt, die Ränder im Maßstab 9,75/15 — oben und unten 200·0,65.
+            Assert.Equal(470, hoch.Flaeche.Bild.Hoehe, 3);
 
             Zeichenmodell winzig = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 10, hoehe: 10);
             Assert.Equal((ChartRenderer.MASS_MIN_BREITE, ChartRenderer.MASS_MIN_HOEHE), (winzig.Breite, winzig.Hoehe));
+        }
+
+        /// <summary>Alle Textbefehle eines Modells, auch die in Gruppen.</summary>
+        private static List<Text> AlleTexte(IEnumerable<Zeichenbefehl> befehle)
+        {
+            var texte = new List<Text>();
+            foreach (Zeichenbefehl b in befehle)
+            {
+                if (b is Text t) texte.Add(t);
+                else if (b is Gruppe g) texte.AddRange(AlleTexte(g.Befehle));
+            }
+            return texte;
+        }
+
+        /// <summary>
+        /// R1: Im Behältermaß schreibt das Bild in der Schrift der Oberfläche — 9,75 pt (13 px),
+        /// unter <see cref="ChartRenderer.KOMPAKT_HOEHE"/> 9 pt (12 px) —, und zwar JEDER Text:
+        /// Titel, Legende, Prozentachse, Marken, Achsentitel, Datumszeile und Stufenhinweis.
+        /// Ohne Maß bleibt der Bestand: Achsen 15 pt, Legende 16 pt, Titel 22 pt, 1 240 × 560.
+        /// </summary>
+        [Fact]
+        public void GanglinieNormiertModell_schreibt_im_Behaeltermass_die_Schrift_der_Oberflaeche()
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Heizung", Jahresreihe(60, 45, 12), SKColors.Orange,
+                                        ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Bedarf", Jahresreihe(70, 45, 12), SKColors.Red)
+            };
+
+            Zeichenmodell dialog = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, false,
+                breite: 900, hoehe: 600);
+            List<Text> texte = AlleTexte(dialog.Befehle);
+            Assert.True(texte.Count > 10, "Titel, Legende, Achsen und Hinweis");
+            Assert.All(texte, t => Assert.Equal(9.75f, t.Schrift.Punkt));
+
+            Zeichenmodell kompakt = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, false,
+                breite: 900, hoehe: 300);
+            List<Text> kompaktTexte = AlleTexte(kompakt.Befehle);
+            Assert.NotEmpty(kompaktTexte);
+            Assert.All(kompaktTexte, t => Assert.Equal(9f, t.Schrift.Punkt));
+
+            Zeichenmodell vorgabe = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, false);
+            Assert.Equal((1240, 560), (vorgabe.Breite, vorgabe.Hoehe));
+            List<Text> bestand = AlleTexte(vorgabe.Befehle);
+            Assert.Contains(bestand, t => t.Schrift.Punkt == 15f && t.Inhalt.Contains("%"));
+            Assert.Contains(bestand, t => t.Schrift.Punkt == 16f && t.Inhalt == "Heizung");
+            Assert.Contains(bestand, t => t.Schrift.Punkt == 22f && t.Inhalt == "Waermelast");
+            Assert.DoesNotContain(bestand, t => t.Schrift.Punkt == 9.75f || t.Schrift.Punkt == 9f);
         }
 
         [Fact]

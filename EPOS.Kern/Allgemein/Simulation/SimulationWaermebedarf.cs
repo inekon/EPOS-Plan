@@ -305,13 +305,21 @@ namespace WindowsFormsApplication1
             get
             {
                 if (_aufheizvorgabeProjekt == null)
-                    _aufheizvorgabeProjekt = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
+                    _aufheizvorgabeProjekt = AufheizvorgabeTestnaht?.Invoke(m_ID_Projekt)
+                                             ?? KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
                 return _aufheizvorgabeProjekt;
             }
             set { _aufheizvorgabeProjekt = value ?? Aufheizvorgabe.Aus; }
         }
 
         private Aufheizvorgabe _aufheizvorgabeProjekt;
+
+        /// <summary>
+        /// <b>Testnaht des Projektlaufs</b> (Welle V3b): liefert je Projekt die Aufheizvorgabe statt der gelesenen — für Proben und
+        /// Messungen über den ganzen Lauf (AK3-Kreis), solange die Spalten des Vorheizens fehlen (V4). <c>null</c> (Vorgabe) oder
+        /// eine Rückgabe <c>null</c> = die Projektvorgabe gilt. Prozessweit: nur in der seriellen Testsammlung setzen.
+        /// </summary>
+        internal static Func<int, Aufheizvorgabe> AufheizvorgabeTestnaht { get; set; }
 
         /// <summary>
         /// Netzverluste je Kanal und Zirkulation im Bestandsweg dieses Projekts
@@ -1590,8 +1598,8 @@ namespace WindowsFormsApplication1
                 }
 
                 GebaeudeModellEingang eingang = _vdi6007.EingangBauen(item, gemeinsam);
-                Aufheizplan plan = Aufheizoptimierung.Planen(Aufheizzone.Aus(ZonenEingang.Einzeln(eingang)), vorgabe,
-                                                            _vdi6007.AufheizleistungTestW);
+                // V3b: dieselbe Weiche wie der Lauf (Rückfall, Option 1/2 mit Vorlauf, sonst die Sollwertrampe).
+                Aufheizplan plan = _vdi6007.AufheizplanEinzone(eingang, 0, item.ID_Gebaeude, out _);
                 Aufheizbemessung b = plan.Bemessung;
                 if (b == null) return leer with { Zustand = plan.Zustand };
 

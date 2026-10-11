@@ -284,6 +284,99 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
+        /// <summary>
+        /// Löscht die Kältebedarfszuordnungen eines Projekts (<paramref name="ID"/> &gt; 0: nur diese Zeile) — Welle K1,
+        /// Muster <see cref="Del_Projekt_Prozess"/>. Die Projektkopien bleiben (wie bei der Prozesswärme). Vor dem
+        /// Schritt <see cref="KaeltebedarfSchema"/> gibt es nichts zu löschen.
+        /// </summary>
+        public bool Del_Projekt_Kaelte(int projektID, int ID = 0, DbVorgang vorgang = null)
+        {
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+            if (!KaeltebedarfSchema.TabellenVorhanden()) return true;
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
+            string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Kaeltebedarf WHERE ID_Projekt = ? AND ID = ?"
+                                  : "DELETE FROM Z_Projekt_Kaeltebedarf WHERE ID_Projekt = ?";
+            List<DbParam> ps = new List<DbParam> { new DbParam("@pID", projektID) };
+            if (ID > 0) ps.Add(new DbParam("@id", ID));
+            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+        }
+
+        /// <summary>
+        /// Schreibt Kältebedarfszuordnungen (Welle K1, Muster <see cref="Add_Projekt_Prozess"/>): Katalogsatz samt Typ bei
+        /// Bedarf ins Projekt kopieren (<see cref="KaeltebedarfStammCtrl.CopyFromStamm"/>, mit <c>ID_Stamm</c>), nie eine
+        /// Katalog-ID in die Zuordnung; die Deckungsfelder geprüft (<see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung"/>)
+        /// und bei „zentral“ geleert. Ein Fehler bricht benannt ab.
+        /// </summary>
+        public bool Add_Projekt_Kaelte(int projektID, List<Z_ProjektKaeltebedarfModel> list, DbVorgang vorgang = null,
+                                       IdNachzug nachzug = null)
+        {
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+            if (list == null || list.Count == 0) return true;
+            if (!KaeltebedarfSchema.TabellenVorhanden())
+            {
+                DataRepository.FehlerMelden("Der Kaeltebedarf braucht den Schemaschritt " +
+                                            KaeltebedarfSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) + ".");
+                return false;
+            }
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
+            int nextID = DataRepository.GetMaxID("Z_Projekt_Kaeltebedarf", "ID") + 1;
+            foreach (var item in list)
+            {
+                Z_ProjektKaeltebedarfCtrl.Normalisieren(item);
+                string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(item);
+                if (grund != null)
+                {
+                    DataRepository.FehlerMelden("Die Deckung des Kaeltebedarfs \"" + (item.Bezeichner ?? "") + "\" ist unzulaessig (" +
+                                                grund + "). Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+
+                int kopie = KaeltebedarfStammCtrl.GetProjektIdUeberId(item.ID_Kaeltebedarf, item.Bezeichner, projektID);
+                if (kopie <= 0) kopie = KaeltebedarfStammCtrl.CopyFromStamm(item.Bezeichner, projektID);
+                if (kopie <= 0)
+                {
+                    DataRepository.FehlerMelden(
+                        "Der Kaeltebedarf \"" + (item.Bezeichner ?? "") + "\" konnte nicht in das Projekt uebernommen werden - " +
+                        "der Katalogsatz fehlt, oder die Kopie ist gescheitert. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+                item.ID_Kaeltebedarf = kopie;
+                if (item.TemperaturGeaendert && !KaeltebedarfStammCtrl.ProjektTemperaturSetzen(kopie, item.Vorlauf, item.Ruecklauf))
+                {
+                    DataRepository.FehlerMelden("Das Temperaturpaar des Kaeltebedarfs \"" + (item.Bezeichner ?? "") +
+                                                "\" ist unzulaessig. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+
+                int idZ = nextID++;
+                bool ok = DataRepository.ExecuteSQL(
+                    "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
+                    "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
+                    "Kuehl_EigenerZaehler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    new DbParam("@id", idZ),
+                    new DbParam("@pID", projektID),
+                    new DbParam("@kb", kopie),
+                    new DbParam("@bez", item.Bezeichner ?? ""),
+                    new DbParam("@sum", item.Summe),
+                    new DbParam("@kal", (object)item.ID_Betriebskalender ?? DBNull.Value),
+                    new DbParam("@deck", item.Deckung),
+                    new DbParam("@weg", (object)item.EerWeg ?? DBNull.Value),
+                    new DbParam("@e1", (object)item.Eer1 ?? DBNull.Value),
+                    new DbParam("@t1", (object)item.Taussen1 ?? DBNull.Value),
+                    new DbParam("@e2", (object)item.Eer2 ?? DBNull.Value),
+                    new DbParam("@t2", (object)item.Taussen2 ?? DBNull.Value),
+                    new DbParam("@car", (object)item.KuehlIdCarrier ?? DBNull.Value),
+                    new DbParam("@zae", item.KuehlEigenerZaehler ? 1 : 0));
+                if (!ok) return false;
+
+                Z_ProjektKaeltebedarfModel zeile = item;
+                nachzug?.Merken(() => { zeile.ID_Z = idZ; zeile.ID_Projekt = projektID; });
+            }
+            return true;
+        }
+
         public bool Del_Stromganglinie(int projektID, DbVorgang vorgang = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser

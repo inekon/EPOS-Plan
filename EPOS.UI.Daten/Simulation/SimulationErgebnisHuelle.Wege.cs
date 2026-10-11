@@ -449,23 +449,45 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Nach dem Übernehmen die Anlagen des Projekts neu schreiben — wörtlich
-        /// <c>listView_SimWP_MouseDown</c> :5145-5150.
+        /// Der Wärmepumpendialog ist geschlossen: nach dem Übernehmen die Anlagen des
+        /// Projekts neu schreiben — wörtlich <c>listView_SimWP_MouseDown</c> :5145-5150 —
+        /// und in jedem Fall die Projektkopien der Sitzung abschließen
+        /// (<see cref="SimulationPlattformwege.WaermepumpeAbschluss"/>).
         /// </summary>
         private void WaermepumpenFertig(bool uebernommen)
-        {
-            if (!uebernommen || _wpModelle == null) return;
+            => WaermepumpenAbschliessen(uebernommen, _wpModelle, WaermepumpenSchreiben,
+                                        _wege.WaermepumpeAbschluss);
 
+        /// <summary>
+        /// <b>Die Reihenfolge beim Schließen des Wärmepumpendialogs</b> (Katalogauswahl Stufe 3, R2):
+        /// Mit OK erst die Anlagen schreiben (Del+Add und Nachzug der Projektkopien), DANACH der
+        /// Abschluss mit <c>true</c> — er löscht die Kopien, auf die keine Zeile mehr verweist. Mit
+        /// Abbrechen nur der Abschluss mit <c>false</c> — er räumt die in der Sitzung angelegten Kopien
+        /// ab. Ohne Liste (der Dialog war nicht offen) geschieht nichts; ohne Abschluss-Naht (iOS)
+        /// bleibt es beim Schreiben.
+        /// </summary>
+        internal static void WaermepumpenAbschliessen(bool uebernommen, List<WErzeugerModel> modelle,
+                                                      Action<List<WErzeugerModel>> schreiben,
+                                                      Action<bool, List<WErzeugerModel>> abschluss)
+        {
+            if (modelle == null) return;
+            if (uebernommen) schreiben?.Invoke(modelle);
+            abschluss?.Invoke(uebernommen, modelle);
+        }
+
+        /// <summary>Die Anlagen des Projekts aus der Liste des Dialogs neu schreiben (Del+Add, Nachzug).</summary>
+        private void WaermepumpenSchreiben(List<WErzeugerModel> modelle)
+        {
             WizardCtrl wizctrl = new WizardCtrl();
             wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, WizardItemClass.WP_TYP);
-            wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, _wpModelle);
+            wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, modelle);
 
             // Anwenderentscheid 16.09.2026: Die STAMMFELDER des Anlagendialogs gehoeren
             // der PROJEKTKOPIE (Tab_WP), und der Del+Add-Weg schreibt nur
             // Tab_Energieanlagen. Erst NACH dem Add zeigt ID_WP auf die Kopie - deshalb
             // steht der Nachzug hier und nicht im Uebernehmen des Dialogs. Die Ablehnung
             // wird GEMELDET, auf demselben Weg, den diese Huelle schon fuehrt.
-            string grund = WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(_wpModelle, m_ID_Projekt);
+            string grund = WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(modelle, m_ID_Projekt);
             if (!string.IsNullOrEmpty(grund))
                 Dienste.Dialog.Meldung(grund, MyResource.Resource.WPV_TITEL);
         }

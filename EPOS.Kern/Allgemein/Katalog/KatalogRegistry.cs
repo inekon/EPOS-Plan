@@ -541,6 +541,24 @@ namespace WindowsFormsApplication1
                     new VerwendungsPruefung { Tabelle = "Tab_Prozesswaerme_STAMM", Spalte = "Typ", UeberName = true }
                 }
             },
+            // K1: Kaeltebedarf nach dem Muster der Prozesswaerme. Die Projektkopien verweisen ueber ID_Stamm
+            // (ON DELETE SET NULL) - eine Kopie haelt ihren Katalogsatz nicht, sie rechnet auf ihrem Stand weiter.
+            new KatalogDefinition
+            {
+                Schluessel = "KAELTEBEDARF",
+                Tabelle = KaeltebedarfSchema.TAB_KOPF_STAMM
+            },
+            new KatalogDefinition
+            {
+                Schluessel = "KAELTETYP",
+                Tabelle = KaeltebedarfSchema.TAB_TYP_STAMM,
+                VerwendungsPruefungen = new[]
+                {
+                    // Kaeltebedarf-Koepfe verweisen per Typ = Bezeichner auf ihr Typprofil
+                    // (KaeltebedarfStammCtrl.CopyFromStamm liest TYP_STAMM WHERE Bezeichner = Kopf.Typ).
+                    new VerwendungsPruefung { Tabelle = KaeltebedarfSchema.TAB_KOPF_STAMM, Spalte = "Typ", UeberName = true }
+                }
+            },
             new KatalogDefinition
             {
                 Schluessel = "STROMGANGLINIE",

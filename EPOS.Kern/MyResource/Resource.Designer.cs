@@ -3084,6 +3084,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den gewählten Satz über dem Dialog ansehen (nur lesen) ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_ANSEHEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_ANSEHEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den gewählten Satz über dem Dialog bearbeiten ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_BEARBEITEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_BEARBEITEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Details ähnelt.
         /// </summary>
         public static string AUSWAHL_SATZ_DETAILS {
@@ -3116,6 +3143,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_SATZ_NUR_LESEN {
             get {
                 return ResourceManager.GetString("AUSWAHL_SATZ_NUR_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergrößern ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_VERGROESSERN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_VERGROESSERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den gewählten Satz in voller Höhe über dem Dialog öffnen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_VERGROESSERN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_VERGROESSERN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurzangaben des gewählten Satzes ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_ZUSAMMENFASSUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_ZUSAMMENFASSUNG", resourceCulture);
             }
         }
         
@@ -3170,6 +3224,240 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_WAHL_ZEILE {
             get {
                 return ResourceManager.GetString("AUSWAHL_WAHL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZEILE_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZEILE_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Albedo ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_ALBEDO {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_ANZAHL {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung/Azimut ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_AUSRICHTUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_AUSRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BETRIEB {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwert ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BRENNWERT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertragsmodell ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_ERTRAGSMODELL {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_ERTRAGSMODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:N0} € ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_EURO {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_EURO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:N0} €/a ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_EURO_JAHR {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_EURO_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_FLAECHE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grenzleistung ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_GRENZLEISTUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Invest ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_INVEST {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_LEISTUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung gesamt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_LEISTUNG_GESAMT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_QUELLE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwellen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_SCHWELLEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_SCHWELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Senken ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_SENKEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_SENKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarkreis ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_SOLARKREIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_SOLARKREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Träger ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_TRAEGER {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_VOLUMEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf/Rücklauf ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_VORLAUF_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_VORLAUF_RUECKLAUF", resourceCulture);
             }
         }
         
@@ -41763,15 +42051,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
-        /// </summary>
-        public static string HZK_BTN_FELDER_SPEICHERN {
-            get {
-                return ResourceManager.GetString("HZK_BTN_FELDER_SPEICHERN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string HZK_BTN_LOESCHEN {
@@ -48437,6 +48716,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KABG_KATALOG_KAELTEMASCHINE {
             get {
                 return ResourceManager.GetString("KABG_KATALOG_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KB {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf-Wochenprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KBT {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KBT", resourceCulture);
             }
         }
         
@@ -104597,6 +104894,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf: Zum Kältebedarf '{0}' ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KOPF_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KOPF_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}“: {1} MWh/a Netzbezug des Kältestroms (Kältestrom {2} MWh/a) tragen den Stromträger „{3}“. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_KUEHLTRAEGER_MENGE {
@@ -104692,6 +104998,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_RKW_NICHT_GERECHNET {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_RKW_NICHT_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf: Zum Typ '{0}' des Kältebedarfs '{1}' ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_TYPPROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_TYPPROFIL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf: Der Typ des Kältebedarfs '{0}' ist nicht definiert. Der Kältebedarf wird übersprungen, sein Anteil bleibt 0; die übrigen werden vollständig gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_TYP_UNDEFINIERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_TYP_UNDEFINIERT", resourceCulture);
             }
         }
         
@@ -105326,6 +105650,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf:  ähnelt.
+        /// </summary>
+        public static string SIMENG_PRAEFIX_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMENG_PRAEFIX_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme:  ähnelt.
         /// </summary>
         public static string SIMENG_PRAEFIX_PROZESSWAERME {
@@ -105862,6 +106195,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_VERBUND_SCHICHTUNG {
             get {
                 return ResourceManager.GetString("SIMENG_VERBUND_SCHICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen verfehlt der Lauf den Sollwert zum Nutzungsbeginn, den die Vorausschau als erreichbar sah (Nachbarzonen oder Heizkreis). ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Übergänge aus „aus“ (Heizperiode, Kalender) bekommen kein Vorheizen und zählen nicht in die Prüfung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizzeit berechnet: {0} h aus dem größten Bedarf des Jahres (Median der Nutzungsbeginne {1} h); sie gilt an jedem Nutzungsbeginn. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_BERECHNET {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_BERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} Stunden der Nutzung liegt die Heizlast ohne Aufheizanteil über dem Deckel; dort gilt sie als Grenze. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_FLOOR {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_FLOOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorheizen {0} h vor Nutzungsbeginn: höchste Heizlast am Nutzungsbeginn {1} kW, Deckel {2} kW, Vorheizleistung {3} kW, Spitze des Laufs {4} kW; {5} Nächte ohne Absenkung; Mehrwärme {6} MWh ({7} %). ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Zonen haben keine Auslegungsheizlast; sie erhalten keinen Anteil am Deckel des Gebäudes und bleiben ungedeckelt. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_OHNE_HEIZLAST {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_OHNE_HEIZLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Zonen haben keinen Nutzungsbeginn im Heizkalender; dort wird nicht vorgeheizt. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_OHNE_SPRUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_OHNE_SPRUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude mit Heizkreis sind vom Vorheizen ausgenommen; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_RUECKFALL_HEIZKREIS {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_HEIZKREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für „Vorheizzeit vorgeben“ fehlt die Vorheizzeit; es gilt die Sollwertrampe nach Aufheizleistung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_RUECKFALL_OHNE_ZEIT {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_RUECKFALL_OHNE_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter). ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_TAGE {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter); nötig wären bis {2} h Vorheizen statt {3} h. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_TAGE_BEDARF {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_TAGE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der zulässige Sprung zum Nutzungsbeginn ist 0: Der Deckel liegt auf der höchsten Heizlast am Nutzungsbeginn, und das Vorheizen braucht meist die ganze Nacht. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_TOLERANZ_NULL {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_TOLERANZ_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An {0} Tagen reicht die Vorheizleistung selbst ohne Absenkung der Nacht nicht, um den Sollwert zum Nutzungsbeginn zu erreichen (unerreichbar); {1} Nächte bleiben ohne Absenkung. ähnelt.
+        /// </summary>
+        public static string SIMENG_VORH_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("SIMENG_VORH_UNERREICHBAR", resourceCulture);
             }
         }
         

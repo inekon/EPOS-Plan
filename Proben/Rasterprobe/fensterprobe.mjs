@@ -1,4 +1,4 @@
-// =====================================================================
+﻿// =====================================================================
 //  FENSTERPROBE - KOPF UND FUSS STEHEN (Anwenderentscheid 30.09.2026)
 // =====================================================================
 //
@@ -82,6 +82,8 @@ const FENSTERDIALOGE = ['dubletten'];
 // Katalogauswahl 4.1): Sie fuellen ihr Fenster, die Haftregel ist fuer sie gegenstandslos. Die
 // Probe misst hier "nichts rollt ausser den Listen und der Detailzeile".
 const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude'];
+// UeS2: Wirte mit Zusammenfassung - ihre Detailzeile hat keinen Vorrang (DZ1 entfaellt).
+const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren']);
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);
@@ -349,6 +351,32 @@ async function ueberlagerung(browser, f, marke) {
   return { oben, unten };
 }
 
+/** UeS1: die Satz-Ueberlagerung des Heizkessels im eigenen Fenster (Bearbeiten… der Projektkopie). */
+async function satzueberlagerung(browser, f, marke) {
+  const seite = await oeffnen(browser, 'heizkessel', f, marke ? '' : '&marke=0');
+  await seite.locator('.epos-knopf--bearbeiten-projekt').click();
+  await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+  await seite.waitForTimeout(400);
+  const m = await seite.evaluate(() => {
+    const u = document.querySelector('.epos-ueberlagerung--satz');
+    const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.top * 10) / 10, Math.round(b.bottom * 10) / 10]; };
+    const w = document.querySelector('body > #app > .epos-dialog');
+    const wfuss = [...w.children].find(e => e.querySelector(':scope > .epos-knopf--primaer'));
+    const wb = wfuss.getBoundingClientRect(), wk = w.firstElementChild.getBoundingClientRect();
+    const unter = (x, y) => { const e = document.elementFromPoint(x, y); return e ? String(e.className).split(' ')[0] : ''; };
+    const k = u.querySelector('.epos-satzueberlagerung-koerper');
+    return {
+      ueberlagerung: r(u), kopf: r(u.querySelector(':scope > .epos-ueberlagerung-kopf')), fuss: r(u.querySelector('.epos-satzueberlagerung-fuss')),
+      koerper: r(k), koerperRollt: getComputedStyle(k).overflowY, ganzRollt: u.scrollHeight > u.clientHeight + 1,
+      dokumentRollt: getComputedStyle(document.documentElement).overflow !== 'hidden',
+      unterFensterfuss: unter(4, Math.min(wb.top + wb.height / 2, innerHeight - 2)), unterFensterkopf: unter(4, wk.top + wk.height / 2),
+    };
+  });
+  if (FOTOS && marke) await seite.screenshot({ path: `${FOTOS}/satzueberlagerung_${f.breite}.png` });
+  await seite.close();
+  return m;
+}
+
 async function katalog(browser, f, marke) {
   const seite = await oeffnen(browser, 'katalog', f, marke ? '' : '&marke=0');
   const m = await seite.evaluate(lage);
@@ -375,7 +403,11 @@ function rollstand(unten = 0) {
   if (eng && fuss) { const v = d.scrollTop; d.scrollTop = d.scrollHeight; fussErreichbar = fuss.getBoundingClientRect().bottom <= innerHeight - unten + 1; d.scrollTop = v; }
   // DZ1: aufgeklappt Listen auf ihrer Untergrenze, die Satzflaeche reicht bis an den unteren Rand des Bausteins.
   const zw = d.querySelector(':scope > .epos-zweispalten.epos-zweispalten--satz-offen');
-  const satzfl = zw && zw.querySelector(':scope > .epos-zweispalten-bereich--satz > .epos-zweispalten-satz');
+  // UeS2: mit Zusammenfassung (alle Erzeuger-Wirte, hier Heizkessel, BHKW, Waermepumpen) gibt es keinen Vorrang - die
+  // Listen behalten ihre Aufteilung;
+  // das haelt die Rollbereichprobe ("Vorrang trotz Zusammenfassung").
+  const satzfl = zw && !zw.classList.contains('epos-zweispalten--zusammenfassung')
+    && zw.querySelector(':scope > .epos-zweispalten-bereich--satz > .epos-zweispalten-satz');
   const ueber = sel => { const e = zw && zw.querySelector(sel); return e ? Math.round(e.getBoundingClientRect().height - (parseFloat(getComputedStyle(e).minHeight) || 0)) : 0; };
   const vorrang = satzfl ? { rest: Math.round(zw.getBoundingClientRect().bottom - satzfl.getBoundingClientRect().bottom),
     projekt: ueber('.epos-zweispalten-bereich--projekt .epos-raster-huelle'), katalog: ueber('.epos-zweispalten-bereich--katalog .epos-raster-huelle'),
@@ -498,6 +530,26 @@ try {
         + `mit = ohne Marke: ${a === b}`);
     }
 
+    if (!NUR || NUR === 'satzueberlagerung') {
+      const name = `satzueberlagerung ${kennung}`;
+      console.log(`- ${name}`);
+      const mit = await satzueberlagerung(browser, f, true);
+      const ohne = await satzueberlagerung(browser, f, false);
+      if (mit.ganzRollt) melde(name, 'die Satz-Ueberlagerung rollt als Ganzes');
+      if (mit.koerperRollt !== 'auto') melde(name, 'der Koerper der Satz-Ueberlagerung ist kein Rollbereich (' + mit.koerperRollt + ')');
+      if (mit.dokumentRollt) melde(name, 'das Dokument rollt unter der Satz-Ueberlagerung');
+      if (mit.ueberlagerung[0] < rand(f).oben - TOL || mit.ueberlagerung[1] > f.hoehe - rand(f).unten + TOL)
+        melde(name, `Satz-Ueberlagerung ${mit.ueberlagerung[0]}..${mit.ueberlagerung[1]} px nicht zwischen den sicheren Abstaenden`);
+      if (mit.kopf[0] < mit.ueberlagerung[0] - TOL || mit.fuss[1] > mit.ueberlagerung[1] + TOL || mit.koerper[0] < mit.kopf[1] - TOL || mit.koerper[1] > mit.fuss[0] + TOL)
+        melde(name, `Kopf ${JSON.stringify(mit.kopf)}, Koerper ${JSON.stringify(mit.koerper)}, Fuss ${JSON.stringify(mit.fuss)} nicht in dieser Folge in der Ueberlagerung`);
+      if (mit.unterFensterfuss !== 'epos-ueberlagerung-hintergrund' || mit.unterFensterkopf !== 'epos-ueberlagerung-hintergrund')
+        melde(name, `Kopf/Fuss des Fensters liegen nicht unter der Abdunkelung (${mit.unterFensterkopf}/${mit.unterFensterfuss})`);
+      const a = JSON.stringify([mit.ueberlagerung, mit.kopf, mit.koerper, mit.fuss]), b = JSON.stringify([ohne.ueberlagerung, ohne.kopf, ohne.koerper, ohne.fuss]);
+      if (a !== b) melde(name, `mit Marke ${a} != ohne Marke ${b}`);
+      console.log(`    Satz-Ueberlagerung ${JSON.stringify(mit.ueberlagerung)}, Kopf ${JSON.stringify(mit.kopf)}, Koerper ${JSON.stringify(mit.koerper)}, `
+        + `Fuss ${JSON.stringify(mit.fuss)}; mit = ohne Marke: ${a === b}`);
+    }
+
     if (!NUR || NUR === 'katalog') {
       const name = `katalog ${kennung}`;
       console.log(`- ${name}`);
@@ -571,7 +623,7 @@ try {
     }
     // Vorrang der Detailzeile (DZ1): eine auf 40 px begrenzte Satzflaeche muss rot werden.
     for (const f of FENSTER) for (const fall of KATALOGAUSWAHL) {
-      if (NUR && NUR !== fall) continue;
+      if ((NUR && NUR !== fall) || ZUSAMMENFASSUNG.has(fall)) continue;
       const s6 = await oeffnen(browser, fall, f);
       await s6.addStyleTag({ content: '.epos-zweispalten-satz { max-height: 40px !important; }' });
       const r6 = await nichtsRollt(s6, '', false, rand(f));

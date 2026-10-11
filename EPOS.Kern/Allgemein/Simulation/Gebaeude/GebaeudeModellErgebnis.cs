@@ -432,6 +432,22 @@ namespace WindowsFormsApplication1
         internal double[] Kuehlsollwertreihe { get; init; }
 
         /// <summary>
+        /// Die Massentemperatur der Außenbauteile am Ende jeder Stunde [°C] (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V2) —
+        /// nur mit <see cref="ZonenEingang.MassenErfassen"/>, sonst <c>null</c>. Ausgangspunkt der Vorausschau (V3) und der
+        /// Ankunftsprüfung (<see cref="Vorheizplanung.Nachweisen"/>).
+        /// </summary>
+        internal double[] MassenEndeAw { get; init; }
+
+        /// <summary>Die Massentemperatur der Innenbauteile am Ende jeder Stunde [°C]; wie <see cref="MassenEndeAw"/>.</summary>
+        internal double[] MassenEndeIw { get; init; }
+
+        /// <summary>
+        /// Die Gebäudewerte des Vorheizens nach Option 1 (Entwurf Vorheizrampe Fassung 2, 2.5; Welle V2) — der
+        /// Ergebnisschreiber (V4) holt sie hier ab; <c>null</c> für die Sollwertrampe und ohne Schalter.
+        /// </summary>
+        internal Vorheizgebaeude Vorheizen { get; set; }
+
+        /// <summary>
         /// Die Kennzahlen der Zonensperre dieser Zone (Entwurf AK3-K 3.5; Welle KZ) — nur mit wirksamer
         /// Kühlung, sonst <c>null</c>; am Mehrzonengebäude die Summe der Zonen.
         /// </summary>
@@ -466,6 +482,9 @@ namespace WindowsFormsApplication1
                 FahrplanBegrenzt = FahrplanBegrenzt,
                 Kuehlsollwertreihe = Kuehlsollwertreihe,
                 Zonensperre = Zonensperre?.Skaliert(faktor),
+                MassenEndeAw = MassenEndeAw,
+                MassenEndeIw = MassenEndeIw,
+                Vorheizen = Vorheizen?.Skaliert(faktor),
             };
         }
     }

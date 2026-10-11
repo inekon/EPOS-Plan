@@ -1007,6 +1007,11 @@ namespace WindowsFormsApplication1
         /// <see cref="KaelteRangSchema.SCHRITT"/>: der Rang eines Kälteerzeugers an seiner Anlagenzeile
         /// (<c>Tab_Energieanlagen.Kaelte_Rang</c>, <see cref="KaelteRangSchema"/>). <b>Ergebnisneutral:</b> Jede Zeile
         /// steht danach auf NULL, und NULL ist die Vorgabefolge.
+        /// Danach, mit dem KÄLTEBEDARF OHNE GEBÄUDEMODELL (K1, Entscheide E-K1 bis E-K3), steht das Ziel auf
+        /// <see cref="KaeltebedarfSchema.SCHRITT"/>: Kältebedarfsprofile, Typkatalog und Zuordnung mit Deckungsart
+        /// (<see cref="KaeltebedarfSchema"/>), Deckungsspalten an <c>Z_ProjektWaermebedarf</c>, fünf leere Ergebnisspalten,
+        /// sechs neutrale Typsätze (<see cref="KaeltetypSaat"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt ordnet einen
+        /// Kältebedarf zu, jeder Lastgang steht auf „zentral“.
         /// Danach, mit dem RÜCKKÜHLWERK ALS EIGENEM GLIED (K-F1, Entscheid E120), steht das Ziel auf
         /// <see cref="RueckkuehlwerkSchema.SCHRITT"/>: Katalog und Projektkopie des Rückkühlwerks, sein Verweis und der
         /// Wasserpreis an der Anlagenzeile der Kältemaschine, sechs Kennzahlen der Rückkühlung an ihrem Ergebnis
