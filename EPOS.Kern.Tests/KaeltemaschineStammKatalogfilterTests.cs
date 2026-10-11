@@ -78,7 +78,11 @@ namespace EPOS.Kern.Tests
 
             Katalogfilterprofil wp = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, s => R.ResourceManager.GetString(s) ?? s);
             Assert.Equal(R.WPS_LBL_NENNLEISTUNG, wp.Spalte(Katalogfilterprofil.SpNennleistung).Langtext);
-            Assert.Single(wp.Spalten, s => s.HatLangtext);
+            Assert.Equal(5, wp.Spalten.Count(s => s.HatLangtext));
+            Assert.Equal("Mindestvorlauf", wp.Spalte(Katalogfilterprofil.SpVlMin).Langtext);
+            Assert.Equal("Höchstvorlauf", wp.Spalte(Katalogfilterprofil.SpVlMax).Langtext);
+            Assert.Equal("Leistungszahl im Heizbetrieb", wp.Spalte(Katalogfilterprofil.SpCop).Langtext);
+            Assert.Equal("Elektrische Zuheizung", wp.Spalte(Katalogfilterprofil.SpZuheizung).Langtext);
 
             foreach (Anlagenart art in Katalogfilterprofil.AlleArten)
             {
@@ -95,6 +99,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Nominal cooling capacity", R.ResourceManager.GetString("KFLT_LT_NENNKAELTELEISTUNG", en));
             Assert.Equal("Nominal EER", R.ResourceManager.GetString("KFLT_LT_EER", en));
             Assert.Equal("Heat rejection type", R.ResourceManager.GetString("KFLT_LT_RUECKKUEHLART", en));
+            Assert.Equal("Minimum flow temperature", R.ResourceManager.GetString("KFLT_LT_VLMIN", en));
+            Assert.Equal("Maximum flow temperature", R.ResourceManager.GetString("KFLT_LT_VLMAX", en));
+            Assert.Equal("Coefficient of performance, heating", R.ResourceManager.GetString("KFLT_LT_COP", en));
+            Assert.Equal("Electric backup heater", R.ResourceManager.GetString("KFLT_LT_ZUHEIZUNG", en));
             Assert.Equal("Recool.", R.ResourceManager.GetString("KFLT_SP_RUECKKUEHLART", en));
         }
 
