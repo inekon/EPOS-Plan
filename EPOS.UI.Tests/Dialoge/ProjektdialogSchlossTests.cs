@@ -268,4 +268,37 @@ public class ProjektdialogSchlossTests : EposBunitContext
         Assert.False(geschlossen);
         Assert.True(cut.Instance.Schlossfrage);
     }
+
+    /// <summary>
+    /// AW2: Die Wärmepumpe trägt dieselbe Knopfleiste am Satz wie die anderen Projektdialoge — „Schloss setzen…"
+    /// schaltet den gewählten Katalogsatz; beim Projektsatz ist der Knopf weich gesperrt („Katalogsatz wählen").
+    /// </summary>
+    [Fact]
+    public void Die_Waermepumpe_schaltet_das_Schloss_am_Katalogsatz_und_sperrt_es_beim_Projektsatz_weich()
+    {
+        var pruefung = new Schlosspruefung();
+        var katalog = new[]
+        {
+            new Katalogfilterzeile(1, "WP Eins").MitText(Katalogfilterprofil.SpBezeichner, "WP Eins"),
+            new Katalogfilterzeile(2, "WP Zwei").MitText(Katalogfilterprofil.SpBezeichner, "WP Zwei")
+        };
+        var cut = Render<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog>(p => p
+            .Add(x => x.Zeilen, new List<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten>
+                 { new() { Bezeichner = "WP Eins", IdWp = 1 } })
+            .Add(x => x.Katalog, () => katalog)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.MitVerwendung(Anlagenart.Waermepumpe))
+            .Add(x => x.Schloss, pruefung.Weg()));
+
+        var schloss = cut.Find(".epos-zweispalten-satzknoepfe .epos-katalogschloss");
+        Assert.Equal("true", schloss.GetAttribute("aria-disabled"));
+        Assert.Equal(Resource.AUSWAHL_SPERRE_KATALOGSATZ, schloss.GetAttribute("title"));
+        schloss.Click();
+        Assert.Empty(pruefung.Aufrufe);
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[1].Click();
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-katalogschloss").Click();
+        Schlosspruefung.Ja(cut);
+        Assert.Equal(new[] { 2 }, pruefung.Aufrufe.Single().Ids);
+        Assert.True(pruefung.Aufrufe.Single().Gesperrt);
+    }
 }

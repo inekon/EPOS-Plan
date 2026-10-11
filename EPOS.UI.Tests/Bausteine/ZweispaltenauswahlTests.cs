@@ -1479,4 +1479,137 @@ public class ZweispaltenauswahlTests : EposBunitContext
     [Fact]
     public void UeS2b_Ohne_Kopfknoepfe_kein_Behaelter()
         => Assert.Empty(MitZusammenfassung(new Rufe()).FindAll(".epos-zweispalten-satzkopfknoepfe"));
+
+    // =================================================================================
+    // AW1: die Knopfleiste am gewaehlten Satz (Schalter KnopfleisteAmSatz)
+    // =================================================================================
+
+    private IRenderedComponent<Zweispaltenauswahl> AmSatz(bool amSatz, List<string>? gewaehlt = null,
+                                                          string? projektGewaehlt = null)
+        => Render<Zweispaltenauswahl>(p => p
+            .Add(x => x.Dialogname, "")
+            .Add(x => x.LinksTitel, "Projekt").Add(x => x.RechtsTitel, "Katalog")
+            .Add(x => x.KatalogFuss, Knopf("k-loeschen", "Löschen"))
+            .Add(x => x.KatalogFussRechts, Knopf("k-neu", "Neu…"))
+            .Add(x => x.KatalogFussName, "Kessel A")
+            .Add(x => x.Satz, Absatz("satzinhalt", "Felder"))
+            .Add(x => x.SatzArt, Satzmarke.Katalogsatz)
+            .Add(x => x.SatzName, "Kessel A")
+            .Add(x => x.SatzZusammenfassung, new[] { new Satzangabe("Leistung", "100 kW") })
+            .Add(x => x.SatzKopfKnoepfe, Knopf("k-info", "i"))
+            .Add(x => x.ProjektSichtbar, new[] { "1", "2", "3" })
+            .Add(x => x.ProjektGewaehlt, projektGewaehlt)
+            .Add(x => x.ProjektGewaehltChanged, (string s) => gewaehlt?.Add(s))
+            .Add(x => x.KnopfleisteAmSatz, amSatz));
+
+    /// <summary>
+    /// AW1: Eingeschaltet stehen die Knöpfe der Katalog-Fußleiste im Kopf der Detailzeile — nach
+    /// Marke, Name und Infoknöpfen —, die Fußleiste unter dem Katalog und der Stift entfallen.
+    /// </summary>
+    [Fact]
+    public void AW1_Die_Knopfleiste_steht_am_gewaehlten_Satz_statt_im_Katalogfuss()
+    {
+        var cut = AmSatz(true);
+
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-bearbeiten"));
+        var kopf = cut.Find(".epos-zweispalten-satzkopf").Children.ToList();
+        Assert.Contains("epos-zweispalten-satzzeile", kopf[0].ClassList);
+        Assert.Contains("epos-zweispalten-satzkopfknoepfe", kopf[1].ClassList);
+        Assert.Contains("epos-zweispalten-satzknoepfe", kopf[2].ClassList);
+        var leiste = kopf[2].Children.ToList();
+        Assert.Equal(new[] { "k-loeschen", "k-neu" },
+                     leiste.Select(e => e.ClassList.First(k => k.StartsWith("k-", StringComparison.Ordinal))).ToArray());
+        Assert.Equal(Resource.AUSWAHL_SATZ_KNOEPFE, kopf[2].GetAttribute("aria-label"));
+        Assert.Contains("epos-zweispalten--knopfleiste-am-satz", cut.Find(".epos-zweispalten").ClassList);
+        Assert.NotNull(cut.Find(".epos-zweispalten-bereich--projekt .epos-zweispalten-inhalt--zeilenwahl"));
+        // Die Zeile bleibt zugeklappt und aufklappbar (KA-E-4).
+        Assert.Equal("false", cut.Find(".epos-zweispalten-satzzeile").GetAttribute("aria-expanded"));
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+        Assert.Equal("true", cut.Find(".epos-zweispalten-satzzeile").GetAttribute("aria-expanded"));
+    }
+
+    /// <summary>AW1: Ausgeschaltet (Vorgabe) bleibt die heutige Form — Fußleiste, Stift, keine Zeilenwahl.</summary>
+    [Fact]
+    public void AW1_Ausgeschaltet_bleibt_die_Fussleiste_und_der_Stift()
+    {
+        var cut = AmSatz(false);
+
+        Assert.Single(cut.FindAll(".epos-zweispalten-bereich--katalog > .epos-zweispalten-fussleiste .k-loeschen"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-inhalt--zeilenwahl"));
+        Assert.DoesNotContain("epos-zweispalten--knopfleiste-am-satz", cut.Find(".epos-zweispalten").ClassList);
+    }
+
+    /// <summary>AW1: Ohne Detailzeile wirkt der Schalter nicht — die Knöpfe bleiben in der Fußleiste.</summary>
+    [Fact]
+    public void AW1_Ohne_Detailzeile_bleibt_die_Fussleiste()
+    {
+        var cut = Render<Zweispaltenauswahl>(p => p
+            .Add(x => x.Dialogname, "")
+            .Add(x => x.KatalogFuss, Knopf("k-loeschen", "Löschen"))
+            .Add(x => x.KnopfleisteAmSatz, true));
+        Assert.Single(cut.FindAll(".epos-zweispalten-fussleiste .k-loeschen"));
+        Assert.False(cut.Instance.KnopfleisteAmSatzAktiv);
+    }
+
+    /// <summary>
+    /// AW1: Die Tastenführung der Projektliste — ↑ ↓ Pos1 Ende über die sichtbaren Schlüssel,
+    /// ohne Wahl beginnen ↑ und ↓ bei der ersten Zeile, am Rand und bei anderen Tasten nichts.
+    /// </summary>
+    [Theory]
+    [InlineData(null, "ArrowDown", "1")]
+    [InlineData(null, "ArrowUp", "1")]
+    [InlineData("1", "ArrowDown", "2")]
+    [InlineData("2", "ArrowUp", "1")]
+    [InlineData("2", "Home", "1")]
+    [InlineData("1", "End", "3")]
+    [InlineData("3", "ArrowDown", null)]
+    [InlineData("1", "ArrowUp", null)]
+    [InlineData("2", "Enter", null)]
+    [InlineData("2", "Delete", null)]
+    public void AW1_Die_Pfeiltasten_bewegen_die_Wahl_der_Projektliste(string? vorher, string taste, string? erwartet)
+    {
+        var gewaehlt = new List<string>();
+        var cut = AmSatz(true, gewaehlt, vorher);
+
+        cut.InvokeAsync(() => cut.Instance.ProjektTasteAsync(taste)).GetAwaiter().GetResult();
+
+        Assert.Equal(erwartet is null ? Array.Empty<string>() : new[] { erwartet }, gewaehlt.ToArray());
+    }
+
+    /// <summary>AW1: Ausgeschaltet führt der Baustein keine Tasten der Projektliste.</summary>
+    [Fact]
+    public void AW1_Ausgeschaltet_fuehrt_der_Baustein_keine_Projekttasten()
+    {
+        var gewaehlt = new List<string>();
+        var cut = AmSatz(false, gewaehlt, "1");
+        cut.InvokeAsync(() => cut.Instance.ProjektTasteAsync("ArrowDown")).GetAwaiter().GetResult();
+        Assert.Empty(gewaehlt);
+    }
+
+    /// <summary>
+    /// AW1: Die Hervorhebung der gewählten Projektzeile nimmt DIESELBE Regel wie die Katalogliste
+    /// (Fläche und linker Balken, im Hochkontrast der Rahmen), und die Klickfläche füllt die Namenszelle.
+    /// </summary>
+    [Fact]
+    public void AW1_Die_Projektliste_nimmt_die_Hervorhebung_der_Katalogliste()
+    {
+        string css = Stilblatt();
+        foreach (string regel in new[]
+                 {
+                     ".epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {",
+                     ".epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td:first-child {",
+                 })
+        {
+            int i = css.IndexOf(regel, StringComparison.Ordinal);
+            Assert.True(i > 0, regel);
+            // Dieselbe Regel: der Selektor der Katalogliste steht in derselben Liste davor.
+            string davor = css.Substring(Math.Max(0, i - 200), 200);
+            Assert.Contains(".epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td", davor);
+        }
+        Assert.Contains(".epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }", css);
+        Assert.Matches(new Regex(@"forced-colors[^@]*epos-zweispalten-inhalt--zeilenwahl table\.epos-raster > tbody > tr\.epos-zeile--gewaehlt > td \{\s*outline"), css);
+    }
 }

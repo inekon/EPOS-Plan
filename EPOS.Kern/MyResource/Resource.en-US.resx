@@ -13057,9 +13057,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
     <value>cooling function only</value>
   </data>
-  <data name="WPK_BTN_KATALOG" xml:space="preserve">
-    <value>📋  Module catalogue...</value>
-  </data>
   <data name="WPK_SP_MODELL" xml:space="preserve">
     <value>Model</value>
   </data>
@@ -13233,12 +13230,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="WPS_MSG_NAME_BELEGT" xml:space="preserve">
     <value>Name already exists!</value>
-  </data>
-  <data name="WPA_TITEL" xml:space="preserve">
-    <value>Detail view</value>
-  </data>
-  <data name="WPA_LBL_WP" xml:space="preserve">
-    <value>Heat pump selection:</value>
   </data>
   <data name="WPA_GRP_KENNDATEN" xml:space="preserve">
     <value>Heat pump characteristics</value>
@@ -50400,6 +50391,12 @@ chart</value>
   <data name="AUSWAHL_SATZ_BEARBEITEN" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="AUSWAHL_SATZ_KNOEPFE" xml:space="preserve">
+    <value>Actions for the selected record</value>
+  </data>
+  <data name="AUSWAHL_SPERRE_KATALOGSATZ" xml:space="preserve">
+    <value>Select a catalogue record</value>
+  </data>
   <data name="AUSWAHL_SATZ_BEARBEITEN_HINWEIS" xml:space="preserve">
     <value>Edit the selected record over the dialog</value>
   </data>
@@ -51380,15 +51377,6 @@ chart</value>
   </data>
   <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
     <value>Switching needs exactly one heat pump in the project and exactly one catalogue entry.</value>
-  </data>
-  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
-    <value>System…</value>
-  </data>
-  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
-    <value>Edit operating mode, temperatures, blocking times, heating rod, heat source and transfer of this system</value>
-  </data>
-  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
-    <value>System – {0}</value>
   </data>
   <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
     <value>Please check the system and confirm with OK.</value>
@@ -52694,6 +52682,9 @@ chart</value>
   </data>
   <data name="ABW_MERKMAL_VORH_WERT_ZONE" xml:space="preserve">
     <value>Zone</value>
+  </data>
+  <data name="WPV_NUR_IM_PROJEKT" xml:space="preserve">
+    <value>Project only: these settings belong to the plant in the project, not to the catalogue record.</value>
   </data>
   <!-- Administration und Support, Stufe 1 -->
   <data name="ENTW_QUELLE_KEINE" xml:space="preserve">

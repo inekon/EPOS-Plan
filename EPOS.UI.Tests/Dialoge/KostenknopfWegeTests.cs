@@ -201,7 +201,7 @@ public sealed class KostenknopfWegeTests
         // Die Wärmepumpe steht eingebettet in der Wärmepumpen Verwaltung, und DIE ist
         // Schritt 7 des Assistenten. Ihre Weiche ist derselbe Schalter, den der Wirt
         // durchreicht.
-        "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor",
+        "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageFelder.razor",
     };
 
     /// <summary>

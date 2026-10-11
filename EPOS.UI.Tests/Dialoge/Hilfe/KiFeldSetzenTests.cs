@@ -628,7 +628,7 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         // UeS2: Die Felder stehen in der Satz-Ueberlagerung; die Zusammenfassung nennt den Wert sofort.
         cut.WaitForAssertion(() =>
             Assert.Contains("70/65 °C", cut.Find(".epos-zweispalten-satz--zusammenfassung").TextContent));
-        cut.Find(".epos-zweispalten-bearbeiten").Click();
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt").Click();   // AW1: Bearbeiten… am Satz
         cut.WaitForAssertion(() =>
             Assert.Equal("65", cut.FindAll("input[inputmode=numeric]")[1].GetAttribute("value")));
     }
