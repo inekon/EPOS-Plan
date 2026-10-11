@@ -51954,5 +51954,68 @@ chart</value>
   <data name="RKW_MSG_SCHEMA_FEHLT" xml:space="preserve">
     <value>The database does not know the heat rejection unit yet (schema step {0} is missing).</value>
   </data>
+  <data name="GEB_ZF_UWERTE" xml:space="preserve">
+    <value>U-values</value>
+  </data>
+  <data name="GEB_ZF_UWERTE_WERT" xml:space="preserve">
+    <value>wall {0} · window {1} · roof {2} · ground {3} W/(m²·K)</value>
+  </data>
+  <data name="GEB_ZF_AUSRICHTUNG" xml:space="preserve">
+    <value>Orientation</value>
+  </data>
+  <data name="GEB_ZF_AUSRICHTUNG_WERT" xml:space="preserve">
+    <value>Plan top {0}°</value>
+  </data>
+  <data name="GEB_ZF_KUEHLUNG" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="GEB_ZF_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEB_RUECKWEG_BLEIBT" xml:space="preserve">
+    <value>The project keeps the building's assignment, floor area and orientation.</value>
+  </data>
+  <data name="GEB_RUECKWEG_ABWEICHUNGEN" xml:space="preserve">
+    <value>Header columns differing from the origin “{0}”: {1}</value>
+  </data>
+  <data name="GEB_RUECKWEG_ABW_ZEILE" xml:space="preserve">
+    <value>{0} ({1} → {2})</value>
+  </data>
+  <data name="GEB_RUECKWEG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>No header columns differ from the origin “{0}”.</value>
+  </data>
+  <data name="GEB_RUECKWEG_KINDZEILEN" xml:space="preserve">
+    <value>Child rows in the project / at the origin: {0}</value>
+  </data>
+  <data name="GEB_RUECKWEG_KIND_ZEILE" xml:space="preserve">
+    <value>{0} {1} / {2}</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_BAUTEILE" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_LUFTSTROEME" xml:space="preserve">
+    <value>Air flows</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_KALENDER" xml:space="preserve">
+    <value>Calendars</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_VORGABEN" xml:space="preserve">
+    <value>Setpoint rows</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_PERIODEN" xml:space="preserve">
+    <value>Periods</value>
+  </data>
+  <data name="GEB_SPERRE_RUECKWEG_MEHRERE" xml:space="preserve">
+    <value>Only for exactly one selected project building – transfer several buildings one after another.</value>
+  </data>
+  <data name="GEB_SPERRE_BEARBEITEN_EINER" xml:space="preserve">
+    <value>“Edit…” works on exactly one selected record.</value>
+  </data>
+  <data name="GEB_MSG_LOESCHEN_N" xml:space="preserve">
+    <value>{0} buildings deleted.</value>
+  </data>
 </root>
 
