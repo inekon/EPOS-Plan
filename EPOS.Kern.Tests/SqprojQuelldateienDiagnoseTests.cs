@@ -82,5 +82,110 @@ namespace EPOS.Kern.Tests
                 }
             }
         }
+
+        /// <summary>
+        /// <b>Raumtabelle samt Herleitung</b> je Datei unter <c>Quellen/</c> (<c>*.sqproj</c> und <c>*.ifc</c>): je Raum Geschoss,
+        /// Name, die Fläche des Abbilds (so zeigt sie der Gebäudeimport), ihre Herkunft, die Fläche des Grundrisspolygons
+        /// (Projektdatei: Raum-XML abzüglich Löcher; IFC: Profilring der Körperdarstellung), Volumen, Höhe, Beheizung mit
+        /// Zustandsangabe und Zone der Datei; danach die Summen wie im Kopf des Dialogs. Stehen Projektdatei und IFC gleichen
+        /// Namens nebeneinander, kommt je Raum der Gegenwert der IFC über die HottCAD-GUID dazu.
+        /// </summary>
+        [Fact]
+        public void Raumtabelle_mit_Herleitung()
+        {
+            string ordner = Quellen();
+            if (ordner == null || !Directory.Exists(ordner)) return;
+            var dateien = Directory.GetFiles(ordner, "*.sqproj").Concat(Directory.GetFiles(ordner, "*.ifc"))
+                                   .OrderBy(p => p, StringComparer.Ordinal).ToList();
+            foreach (string pfad in dateien)
+            {
+                bool projektdatei = pfad.EndsWith(".sqproj", StringComparison.OrdinalIgnoreCase);
+                if (projektdatei ? !SqprojLeser.IstSqlite(pfad) : new FileInfo(pfad).Length < 1024) continue;   // LFS-Zeiger
+                AbbildGebaeude g = Lesen(pfad, out GebaeudeAbbild abbild);
+                if (g == null) { _aus.WriteLine(Path.GetFileName(pfad) + ": kein Gebäude"); continue; }
+                AbbildGebaeude gegen = null;
+                string ifc = Path.ChangeExtension(pfad, ".ifc");
+                if (projektdatei && File.Exists(ifc)) gegen = Lesen(ifc, out _);
+                var ifcJeGuid = gegen?.Raeume.Where(r => r.HottcadGuid != null).GroupBy(r => r.HottcadGuid, StringComparer.OrdinalIgnoreCase)
+                                     .ToDictionary(x => x.Key, x => x.First(), StringComparer.OrdinalIgnoreCase);
+                _aus.WriteLine("=== " + Path.GetFileName(pfad) + " — Räume " + g.Raeume.Count);
+                _aus.WriteLine("Geschoss | Raum | Fläche Abbild | Herkunft | Fläche Polygon | Boden Körper | Volumen | Volumen Körper | Höhe | Beheizt (Zustand) | Zone"
+                               + (gegen != null ? " | IFC Raum | IFC Fläche | Δ" : ""));
+                var geschoss = g.Geschosse.Where(x => x.Kennung != null).GroupBy(x => x.Kennung, StringComparer.OrdinalIgnoreCase)
+                                  .ToDictionary(x => x.Key, x => x.First().Anzeigename, StringComparer.OrdinalIgnoreCase);
+                string Geschoss(AbbildRaum r) => r.GeschossName ?? (r.GeschossKennung != null && geschoss.TryGetValue(r.GeschossKennung, out string n) ? n : "—");
+                foreach (AbbildRaum r in g.Raeume.OrderBy(r => Geschoss(r), StringComparer.Ordinal).ThenBy(r => r.Name, StringComparer.Ordinal))
+                {
+                    double? polygon = projektdatei ? PolygonflaecheProjektdatei(abbild, r.Kennung) : Polygonflaeche(r.GrundrissM);
+                    string herkunft = projektdatei ? "BmRoom.Area" : r.FlaecheAusGrundriss ? "Grundriss" : "Menge";
+                    (double? boden, double? raum) = Koerpermasse(r.Koerper);
+                    string zeile = Geschoss(r) + " | " + r.Name + " | " + Z(r.FlaecheM2) + " | " + herkunft + " | " + Z(polygon)
+                                   + " | " + Z(boden) + " | " + Z(r.VolumenM3) + " | " + Z(raum) + " | " + Z(r.HoeheM) + " | " + (r.Beheizt ? "ja" : "nein") + " (" + (r.Zustandsangabe ?? "—")
+                                   + ", " + r.BeheiztQuelle + ") | " + (r.ZonenName ?? "—");
+                    if (ifcJeGuid != null)
+                    {
+                        AbbildRaum i = r.HottcadGuid != null && ifcJeGuid.TryGetValue(r.HottcadGuid, out AbbildRaum t) ? t : null;
+                        zeile += " | " + (i?.Name ?? "—") + " | " + Z(i?.FlaecheM2) + " | " + Z(i?.FlaecheM2 - r.FlaecheM2);
+                    }
+                    _aus.WriteLine(zeile);
+                }
+                var warm = g.Raeume.Where(r => r.Beheizt).ToList();
+                _aus.WriteLine("Summe: Fläche alle " + Z(g.Raeume.Sum(r => r.FlaecheM2 ?? 0)) + " m², beheizt " + Z(warm.Sum(r => r.FlaecheM2 ?? 0))
+                               + " m² (" + warm.Count + " Räume), Volumen beheizt " + Z(warm.Sum(r => r.VolumenM3 ?? 0)) + " m³, ohne Zone "
+                               + string.Join(", ", g.Raeume.Where(r => r.ZonenName == null).Select(r => r.Name)));
+            }
+        }
+
+        private static AbbildGebaeude Lesen(string pfad, out GebaeudeAbbild abbild)
+        {
+            var ablauf = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                ablauf.Lesen(s, pfad, GebaeudeImportProfil.FuerDatei(pfad));
+            abbild = ablauf.Abbild;
+            return abbild == null || abbild.Gebaeude.Count == 0 ? null : abbild.Gebaeude[0];
+        }
+
+        /// <summary>Fläche der Raumpolygone der Projektdatei: Außenringe abzüglich Löcher, waagerecht projiziert [m²].</summary>
+        private static double? PolygonflaecheProjektdatei(GebaeudeAbbild abbild, string kennung)
+        {
+            if (abbild is not SqprojGebaeudeAbbild s || !s.Raumpolygone.TryGetValue(kennung, out var polygone)) return null;
+            return polygone.Sum(p => (Polygonflaeche(p.Aussen?.Punkte) ?? 0) - p.Loecher.Sum(l => Polygonflaeche(l.Punkte) ?? 0));
+        }
+
+        /// <summary>Gaußsche Trapezformel in der Waagerechten (x, y) [m²]; <c>null</c> = kein Ring.</summary>
+        private static double? Polygonflaeche(System.Collections.Generic.IReadOnlyList<double[]> p)
+        {
+            if (p == null || p.Count < 3) return null;
+            double a = 0;
+            for (int i = 0; i < p.Count; i++)
+            {
+                double[] u = p[i], v = p[(i + 1) % p.Count];
+                a += u[0] * v[1] - v[0] * u[1];
+            }
+            return Math.Abs(a) / 2.0;
+        }
+
+        /// <summary>
+        /// Aus dem Körper des Raums: die Bodenfläche (Dreiecke mit Normale nach unten, waagerecht projiziert) und das
+        /// Volumen (Divergenzsatz) [m², m³]; <c>null</c> = kein Körper.
+        /// </summary>
+        private static (double?, double?) Koerpermasse(Dateikoerper k)
+        {
+            if (k == null || k.Dreiecke.Count == 0) return (null, null);
+            double boden = 0, volumen = 0;
+            foreach (int[] d in k.Dreiecke)
+            {
+                double[] a = k.PunkteM[d[0]], b = k.PunkteM[d[1]], c = k.PunkteM[d[2]];
+                double nx = (b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]);
+                double ny = (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]);
+                double nz = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+                double betrag = Math.Sqrt(nx * nx + ny * ny + nz * nz);
+                if (betrag > 0 && nz / betrag < -0.99) boden += betrag / 2.0;
+                volumen += (a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6.0;
+            }
+            return (boden, Math.Abs(volumen));
+        }
+
+        private static string Z(double? x) => x.HasValue ? x.Value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) : "—";
     }
 }
