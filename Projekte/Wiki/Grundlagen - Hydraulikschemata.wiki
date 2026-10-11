@@ -378,7 +378,7 @@ Ein eigener Brauchwasserspeicher wird von den Erzeugern geladen, die ihn als Sen
 === Prozesswärme direkt und über einen Prozesspuffer ===
 {{Anker|prozesswaerme-einbindung|gl-prozesswaerme-einbindung}}
 
-[[Datei:Einbindung_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
+[[Datei:Einbindung_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Wärmepumpe und Heizkessel laden einen gemeinsamen Prozesspuffer, die Wärmepumpe mit der besseren Ladepriorität zuerst; der Puffer versorgt den Prozess mit Vorrang und mit dem Rest den Heizkreis.]]
 
 Prozesswärme folgt dem Schichtplan, nicht dem Wetter, und braucht oft ein höheres Temperaturniveau als die Raumheizung. Deshalb wird sie meist von einem Erzeuger mit hohem Vorlauf gedeckt – Kessel, BHKW oder eine Hochtemperatur-Wärmepumpe – und hydraulisch vom Heizkreis getrennt: direkt über einen eigenen Verteiler oder über einen Prozesspuffer, der Schichtwechsel und Anfahrspitzen ausgleicht. Ein Erzeuger, der den Prozessvorlauf nicht erreicht, kann den Prozess nicht versorgen, wohl aber die Heizung.
 

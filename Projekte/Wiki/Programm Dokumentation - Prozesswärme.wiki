@@ -38,11 +38,12 @@ Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwert
 
 Die Prozesswärme ist ein eigener Wärmekanal der Simulation, getrennt von Heizung und Brauchwasser. Ein Erzeuger deckt ihn nur, wenn eine seiner Wärmesenken ihn bedient; die Senke ''Heizkreis'' bedient ihn nicht. Eingestellt wird das in der ''Simulation Konfiguration'' über ''Wärmesenken…'' je Anlage ([[Programm Dokumentation/Simulation#senkenliste|Wärmesenken einer Anlage]]).
 
-[[Datei:Einbindung_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
+[[Datei:Einbindung_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Wärmepumpe und Heizkessel laden einen gemeinsamen Prozesspuffer, die Wärmepumpe mit der besseren Ladepriorität zuerst; der Puffer versorgt den Prozess mit Vorrang und mit dem Rest den Heizkreis.]]
 
 * '''Direktsenke Prozesswärme''' – das Ziel ''Prozesswärme'' deckt den Prozess in der Stunde des Bedarfs unmittelbar. Eine neu angelegte Anlage erhält diese Senke auf dem nächsten Rang nach dem Heizkreis, wenn das Projekt bereits Prozesswärme führt.
 * '''Puffer für Prozesswärme''' – das Ziel ''Pufferspeicher Prozesswärme'' lädt einen Speicher, dessen ''Nutzung'' Prozesswärme einschließt. Er gleicht Schichtwechsel und Anfahrspitzen aus und erlaubt einem kleineren Erzeuger, über den Tag vorzuladen.
 * '''Rangfolge der Senken''' – die Senkenliste einer Anlage wird von oben beliefert: Steht die Prozesswärme auf Rang 1 und der Heizkreis auf Rang 2, deckt die Anlage zuerst den Prozess und gibt den Rest der Stunde an die Heizung. Über mehrere Erzeuger entscheidet die Kaskade.
+* '''Ladepriorität am gemeinsamen Puffer''' – laden mehrere Erzeuger denselben Pufferspeicher, entscheidet ihre ''Ladepriorität'' (Erzeugerkarte der Simulationskonfiguration, die kleinere Zahl lädt zuerst), wer zuerst lädt; die Vorgabe setzt die Wärmepumpe vor BHKW und Kessel. Erst mit einem gemeinsamen Puffer hat diese Reihenfolge eine Wirkung.
 * '''Vorrang bei knappem Vorrat''' – die Pufferspeicher bedienen bei knappem Vorrat in der Vorbelegung zuerst das Brauchwasser, dann die Prozesswärme, dann die Heizung.
 
 '''Temperaturniveau.''' Trägt ein Prozess ein Temperaturpaar, bildet die Simulation je Stunde den höchsten geforderten Vorlauf aller laufenden Prozesse und ihren mengengewichteten Rücklauf. Daran wird gemessen:
@@ -58,7 +59,7 @@ Prinzipschemata zur Einbindung stehen unter [[Grundlagen/Hydraulikschemata#brauc
 == Beispiel ==
 {{Anker|beispiel}}
 
-Ein Betrieb braucht im Jahr 200&nbsp;MWh Prozesswärme bei 80/60&nbsp;°C im Zweischichtbetrieb und daneben Heizwärme für die Halle. Ein Heizkessel deckt den Prozess über einen Puffer, eine Wärmepumpe die Heizung.
+Ein Betrieb braucht im Jahr 200&nbsp;MWh Prozesswärme bei 60/40&nbsp;°C im Zweischichtbetrieb und daneben Heizwärme für die Halle. Eine Wärmepumpe mit Kennlinie bis 70&nbsp;°C und ein Heizkessel laden einen gemeinsamen Puffer, der Prozess und Heizung versorgt; die Wärmepumpe lädt zuerst.
 
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
@@ -67,15 +68,17 @@ Ein Betrieb braucht im Jahr 200&nbsp;MWh Prozesswärme bei 80/60&nbsp;°C im Zwe
 |-
 | Prozesswärme || ''Ändern des Jahresverbrauchs'' / ''Einheit:'' || 200 / MWh || skaliert die Monatswerte, das Wochenprofil bleibt
 |-
-| Prozesswärme || ''Temperaturniveau des Prozesses'' || Vorlauf 80 °C / Rücklauf 60 °C || die Simulation misst Erzeuger und Speicher am Prozessvorlauf
+| Prozesswärme || ''Temperaturniveau des Prozesses'' || Vorlauf 60 °C / Rücklauf 40 °C || die Simulation misst Erzeuger und Speicher am Prozessvorlauf
 |-
 | Prozesswärme || ''Betriebskalender'' || ein Kalender mit Feiertagen und drei Wochen Betriebsferien im August || Feiertage tragen den Sonntag, Ferientage den Ferienfaktor
 |-
-| Pufferspeicher im Projekt || ''Nutzung'' / ''Schichten'' || Prozesswärme / 4 || nur Schichten ab 80 °C geben an den Prozess ab
+| Pufferspeicher im Projekt || ''Nutzung'' / ''Schichten'' || Heizung und Prozesswärme / 4 || nur Schichten ab 60 °C geben an den Prozess ab; bei knappem Vorrat geht der Prozess vor
 |-
-| Wärmesenken des Heizkessels || Rang 1 / Rang 2 || Pufferspeicher Prozesswärme / Heizkreis || der Prozess hat Vorrang, der Rest heizt
+| Wärmesenken des Heizkessels || Rang 1 || Pufferspeicher || lädt den gemeinsamen Puffer
 |-
-| Wärmesenken der Wärmepumpe || Rang 1 || Heizkreis || sie erreicht 80 °C nicht und bleibt bei der Heizung
+| Wärmesenken der Wärmepumpe || Rang 1 || Pufferspeicher || ihr Vorlauf bis 70 °C erreicht den Prozessvorlauf
+|-
+| Simulationskonfiguration, Erzeugerkarte || ''Ladepriorität'' || Wärmepumpe 20, Heizkessel 40 || die kleinere Zahl lädt zuerst; die Werte sind die Vorgaben
 |}
 
 == Fallstricke ==

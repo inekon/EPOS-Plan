@@ -23,9 +23,9 @@ EPOS-Plan führt die Prozesswärme als eigenen Wärmekanal neben Heizung und Bra
 
 Trägt ein Prozess ein Temperaturpaar, bildet der Lauf je Stunde den höchsten geforderten Vorlauf aller laufenden Prozesse und ihren mengengewichteten Rücklauf. Ein Erzeuger, der diesen Vorlauf nicht erreicht, deckt den Prozess in dieser Stunde nicht; eine Wärmepumpe rechnet an der Kennlinie, die ihn erreicht; ein geschichteter Speicher gibt nur aus ausreichend heißen Schichten ab. Ohne Temperaturpaar ist der Prozess eine reine Wärmemenge.
 
-Gedeckt wird der Kanal nur von Erzeugern, deren Wärmesenke ihn ausdrücklich bedient – direkt oder über einen Pufferspeicher mit der Nutzung Prozesswärme. Die Rangfolge der Senken einer Anlage entscheidet, ob der Prozess vor der Heizung beliefert wird.
+Gedeckt wird der Kanal nur von Erzeugern, deren Wärmesenke ihn ausdrücklich bedient – direkt oder über einen Pufferspeicher mit der Nutzung Prozesswärme. Die Rangfolge der Senken einer Anlage entscheidet, ob der Prozess vor der Heizung beliefert wird. Laden mehrere Erzeuger einen gemeinsamen Pufferspeicher, entscheidet ihre Ladepriorität, wer zuerst lädt – etwa die Wärmepumpe vor dem Kessel; nur mit gemeinsamem Puffer hat diese Reihenfolge eine Wirkung.
 
-[[Datei:Einbindung_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
+[[Datei:Einbindung_Prozesswaerme.svg|mini|zentriert|800px|Prinzipbild: Wärmepumpe und Heizkessel laden einen gemeinsamen Prozesspuffer, die Wärmepumpe mit der besseren Ladepriorität zuerst; der Puffer versorgt den Prozess mit Vorrang und mit dem Rest den Heizkreis.]]
 
 == Eingaben und Wirkung ==
 {{Anker|eingaben-und-wirkung}}
