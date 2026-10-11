@@ -39,7 +39,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(214, RueckkuehlwerkSchema.SCHRITT);
             Assert.Equal(KaeltebedarfSchema.SCHRITT + 1, RueckkuehlwerkSchema.SCHRITT);
-            Assert.Equal(RueckkuehlwerkSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(RueckkuehlwerkSchema.SCHRITT <= SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == RueckkuehlwerkSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog, s.Wirkung);
             Assert.Null(s.Umformung);

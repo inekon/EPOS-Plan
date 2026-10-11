@@ -5418,6 +5418,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_RUECKKUEHLWERK = RueckkuehlwerkSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="VorheizenSchema.SCHRITT"/> — <b>Vorheizen der Aufheizoptimierung</b> (AH-V4, Fassung 2; E122,
+        /// E124, E125): sieben Einstellungsspalten an <c>Tab_Einstellungen</c>, <c>Tab_Zone.Vorheizzeit_H</c> und achtzehn
+        /// Ergebnisspalten an <c>Tab_ErgebnisGebaeude</c> und <c>Tab_ErgebnisZone</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Spalte steht auf NULL, und NULL ist die Sollwertrampe.</para>
+        /// </summary>
+        public const int SCHRITT_VORHEIZEN = VorheizenSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7929,6 +7938,14 @@ namespace WindowsFormsApplication1
                         "Eine Kaeltemaschine koennte kein Rueckkuehlwerk aus einem Katalog waehlen. KEIN Rechenergebnis aendert " +
                         "sich - der Katalog entsteht leer, jede Spalte steht auf NULL.",
                         Schritt_Rueckkuehlwerk),
+            // AH-V4: Vorheizen der Aufheizoptimierung. Quelle ist VorheizenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_VORHEIZEN,
+                        "Tab_Einstellungen: Aufheiz_Verfahren, Aufheiz_Vorheizzeit_H, Aufheiz_Toleranz_Art, Aufheiz_Toleranz, " +
+                        "Aufheiz_Regelgenauigkeit_K, Aufheiz_Geltung, Aufheiz_Heizkreis_Einbeziehen; Tab_Zone: Vorheizzeit_H; " +
+                        "Tab_ErgebnisGebaeude und Tab_ErgebnisZone: achtzehn Vorheizgroessen",
+                        "Ein Projekt koennte das Vorheizen (Vorheizzeit vorgeben oder berechnen) nicht speichern. KEIN " +
+                        "Rechenergebnis aendert sich - jede Spalte steht auf NULL, und NULL ist die Sollwertrampe.",
+                        Schritt_Vorheizen),
         };
 
         /// <summary>
@@ -15318,6 +15335,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Kaeltebedarf - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Schemaanweisung(en).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Vorheizen der Aufheizoptimierung" — Anlass und Wirkung stehen bei <see cref="SCHRITT_VORHEIZEN"/>,
+        /// die Anweisungen bei <see cref="VorheizenSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Vorheizen(Lauf l)
+        {
+            string nr = VorheizenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in VorheizenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = VorheizenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!VorheizenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Das Vorheizen (Einstellungs-, Zonen- und Ergebnisspalten) steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Vorheizen der Aufheizoptimierung - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

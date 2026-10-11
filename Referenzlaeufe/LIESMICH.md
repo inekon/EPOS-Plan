@@ -1197,6 +1197,17 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **214** (`integrity_check` ok, `foreign_key_check` leer): **95 711 232 Byte, LFS-SHA-256
 > `cbc100d23791054cfab08cfeea488a29af1a9a21468880f87a33090dcbaa3ba6`**. Ohne gewähltes Rückkühlwerk rechnen 1055 und 1063 byte-gleich (je 32 Dateien)
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Kaelteanlagen/2026-10-10_K-F1_Rueckkuehlwerk_Glied.md)).
+> **Nachtrag — Schema 215 (Vorheizen der Aufheizoptimierung, AH‑V4, hängt an 214 K‑F1), Basis R51 unberührt.**
+> `VorheizenSchema` (215 = `RueckkuehlwerkSchema.SCHRITT + 1`) legt sieben Spalten an `Tab_Einstellungen`
+> (`Aufheiz_Verfahren`, `Aufheiz_Vorheizzeit_H`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`,
+> `Aufheiz_Geltung`, `Aufheiz_Heizkreis_Einbeziehen`), `Vorheizzeit_H` an `Tab_Zone` und `Tab_Zone_STAMM` und je achtzehn
+> Ergebnisspalten an `Tab_ErgebnisGebaeude` und `Tab_ErgebnisZone` an — 45 leere, nullbare Spalten mit Prüfklausel, keine neue Tabelle, die
+> 190 STRICT-Tabellen bleiben. Gehoben aus der Fassung 214 (`cbc100d2…`) mit `Werkzeuge/Testdatenbankschema`; der
+> Zellvergleich zeigt nur `Tab_Applikation.SchemaVersion`. Die Testdatenbank steht auf **215** (`integrity_check` ok,
+> `foreign_key_check` leer): **95 711 232 Byte, LFS-SHA-256
+> `cc9222a80172a6809b24e45d3706c7bb2eff4fc1fdbe43f95aef79601609121d`**. NULL ist die Sollwertrampe; kein Referenzprojekt
+> trägt ein Verfahren
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V4_Schema215.md)).
 
 ### Die Vorgängerbasis R50 (Wochentagsraster)
 

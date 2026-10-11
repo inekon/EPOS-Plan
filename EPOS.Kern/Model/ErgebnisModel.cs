@@ -289,6 +289,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int? AufheizzeitBemessenH;
 
+        /// <summary>Das Vorheizen (AH-V4, Schritt 215); <c>null</c> bei Sollwertrampe, ohne Aufheizrechnung und vor dem Schritt.</summary>
+        public Vorheizkennzahlen Vorheizen;
+
         /// <summary>Sprünge aus „aus" ohne Rampe (W4), darunter der Beginn der Heizperiode.</summary>
         public int? AufheizspruengeAus;
 
@@ -313,6 +316,67 @@ namespace WindowsFormsApplication1
     /// „nicht gerechnet": die Energiespalten einer unbeheizten Zone (A2), die Kühlenergie ohne wirksame
     /// Kühlung, Δϑ_max einer Zone ohne Nachbarzone.
     /// </summary>
+    /// <summary>
+    /// <b>Die Ergebnisgrößen des Vorheizens</b> (AH-V4, Schritt 215) an einer Gebäude- oder Zonenzeile — <c>null</c> am Modell,
+    /// solange das Verfahren die Sollwertrampe ist (dann stehen alle Spalten auf NULL).
+    /// </summary>
+    public sealed class Vorheizkennzahlen
+    {
+        /// <summary>Das Verfahren (<c>VORGABE</c> oder <c>BERECHNET</c>).</summary>
+        public string Verfahren;
+
+        /// <summary>t_V [h]: wirksam (Vorgabe) bzw. Bemessungswert, das Quantil (Berechnet); am Gebäude das Maximum der Zonen.</summary>
+        public int? VorheizzeitH;
+
+        /// <summary>Der größte Bedarf t_nötig [h]; 0 = keiner.</summary>
+        public int? VorheizzeitBedarfMaxH;
+
+        /// <summary>Φ_K,max [kW].</summary>
+        public double? BezugKw;
+
+        /// <summary>Der Deckel P_K [kW].</summary>
+        public double? DeckelKw;
+
+        /// <summary>Die Vorheizleistung P_V [kW].</summary>
+        public double? LeistungKw;
+
+        /// <summary>S_max,0 im Vorlauf [kW]; leer ohne Sprung.</summary>
+        public double? SprungVorlaufMaxKw;
+
+        /// <summary>S_max im Lauf [kW]; leer ohne Sprung.</summary>
+        public double? SprungLaufMaxKw;
+
+        /// <summary>Tage ohne Ankunft.</summary>
+        public int? TageVerfehlt;
+
+        /// <summary>Tage mit einem Sprung über t_V (Berechnet).</summary>
+        public int? TageUeberVorheizzeit;
+
+        /// <summary>Die größte Unterschreitung [K].</summary>
+        public double? UnterschreitungMaxK;
+
+        /// <summary>Unterschreitungsstunden [h].</summary>
+        public int? UnterschreitungH;
+
+        /// <summary>Deckelstunden [h].</summary>
+        public int? DeckelstundenH;
+
+        /// <summary>Floorstunden [h].</summary>
+        public int? FloorstundenH;
+
+        /// <summary>Nächte ohne Absenkung.</summary>
+        public int? NaechteOhneAbsenkung;
+
+        /// <summary>Tage mit einem unerreichbaren Sprung.</summary>
+        public int? UnerreichbarTage;
+
+        /// <summary>Tage mit einer gesperrten Fensterstunde.</summary>
+        public int? SperrzeitTage;
+
+        /// <summary>Die Mehrwärme des Vorheizens [MWh].</summary>
+        public double? MehrwaermeMwh;
+    }
+
     public class ErgebnisZoneModel
     {
         /// <summary>Die Zone (<c>Tab_Zone.ID</c>); <c>null</c>, wenn sie inzwischen gelöscht ist.</summary>
@@ -377,6 +441,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stunden mit Kältebedarf der Zone [h] (Schritt 185); <c>null</c> ohne wirksame Kühlung.</summary>
         public int? KuehlstundenH;
+
+        /// <summary>Das Vorheizen der Zone (AH-V4, Schritt 215); <c>null</c> bei Sollwertrampe und vor dem Schritt.</summary>
+        public Vorheizkennzahlen Vorheizen;
 
         // ---- Aufheizoptimierung (Stufe KP3, Schemaschritt KP-S3) — NULL heißt „Schalter aus" ----
 

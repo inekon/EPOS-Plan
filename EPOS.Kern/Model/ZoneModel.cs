@@ -118,6 +118,10 @@ namespace WindowsFormsApplication1
         /// <summary>AK1z: Proportionalband des Reglers [K]; <c>null</c> = Wert des Gebäudes, sonst 1 K.</summary>
         public double? Regler_Proportionalband;
 
+        /// <summary>AH-V4: Vorheizzeit der Zone [h], 1 bis 47; <c>null</c> = erbt (Gebäude, dann Projekt). Wirksam nur im
+        /// Verfahren „Vorgabe“ mit Geltung Zone.</summary>
+        public int? Vorheizzeit_H;
+
         /// <summary>Herkunft (<see cref="DbWerte.HERKUENFTE"/>); <c>null</c> = nicht angegeben.</summary>
         public string Herkunft;
 
