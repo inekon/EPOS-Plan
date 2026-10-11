@@ -70,6 +70,9 @@ public sealed class AufheizzeitManuellTexte
     /// <summary><c>KOND_AUFH_MANUELL_HRL_OHNE_VORSCHLAG</c></summary>
     public string HinweisOhneVorschlag { get; set; } = Resource.KOND_AUFH_MANUELL_HRL_OHNE_VORSCHLAG;
 
+    /// <summary><c>KOND_AUFH_MANUELL_HRL_VERFAHREN</c> — was der Wert je Verfahren bedeutet (AH-V5).</summary>
+    public string HinweisVerfahren { get; set; } = Resource.KOND_AUFH_MANUELL_HRL_VERFAHREN;
+
     /// <summary><c>KOND_AUFH_MANUELL_HRL_ZONEN</c> — {0} Zahl der Zonen, {1} der geerbte Wert.</summary>
     public string HinweisZonen { get; set; } = Resource.KOND_AUFH_MANUELL_HRL_ZONEN;
 

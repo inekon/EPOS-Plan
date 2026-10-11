@@ -11,9 +11,10 @@ using R = WindowsFormsApplication1.MyResource.Resource;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// <b>Der Erzeugerdialog „Kältemaschinen im Projekt"</b> (KU3-4c) gegen einen Stub der Hülle: eine gespeicherte
-/// Anlage, zwei Stammgeräte, die Prüfregeln des Kerns (<c>KaeltemaschineAnlageHuelle.Pruefen</c>, ohne
-/// Datenbank) und Schreibwege als Listen. Geschrieben wird erst mit „OK".
+/// <b>Der Erzeugerdialog „Kältemaschinen im Projekt"</b> als Wirt der Zweispaltenauswahl (Katalogauswahl V1,
+/// Stufe 5) gegen einen Stub der Hülle: eine gespeicherte Anlage, zwei Stammgeräte, die Prüfregeln des Kerns
+/// (<c>KaeltemaschineAnlageHuelle.Pruefen</c>, ohne Datenbank) und Schreibwege als Listen. „In das Projekt
+/// übernehmen" legt sofort an, Abbrechen räumt ab; die Satz-Überlagerung schreibt mit ihrem OK.
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt; die englische Oberfläche prüft
 /// <see cref="KaeltemaschineAnlageDialogEnglischTests"/>.</para>
@@ -36,11 +37,11 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         {
             new KaeltemaschineAnlageDaten
             {
-                AnlagenId = 7, GeraetId = 70, Bezeichner = "KM Bestand", Anzahl = 2,
+                AnlagenId = 7, GeraetId = 70, Bezeichner = "KM Bestand", Anzahl = 2, KuehlCarrierId = STROM,
                 Geraet = new KaeltemaschineGeraetwerte
                 {
                     Bezeichner = "Kältemaschine 100 kW", Firma = "Neutral", Rueckkuehlart = R.KM_RUECKKUEHLART_LUFT,
-                    Nennkaelteleistung = 100, NennEer = 3.2, KaltwasserMin = 5,
+                    Nennkaelteleistung = 100, NennEer = 3.2, KaltwasserMin = 5, Saisonkennzahl = 5.1, SaisonkennzahlArt = "SEER",
                     Kaltwasserstuetzstellen = new[] { 6.0, 12.0, 18.0 }
                 }
             }
@@ -48,108 +49,341 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         internal readonly List<(int Stamm, string Name)> Angelegt = new();
         internal readonly List<KaeltemaschineAnlageDaten> Gespeichert = new();
         internal readonly List<int> Geloescht = new();
+        internal readonly List<int> KatalogGeloescht = new();
+        internal bool Gesperrt;
+        internal string? Wurf;            // Anlegen, Satzlesen, Speichern und Katalogloeschen werfen mit diesem Text
         internal bool? Geschlossen;
 
         internal IReadOnlyList<Katalogfilterzeile> Katalog() => new[]
         {
-            Zeile(11, "Kältemaschine 50 kW", 50, 3.0),
-            Zeile(12, "Kältemaschine 200 kW", 200, 4.1)
+            Zeile(11, "Kältemaschine 50 kW", 50, 3.0, Gesperrt),
+            Zeile(12, "Kältemaschine 200 kW", 200, 4.1, false)
         };
 
-        private static Katalogfilterzeile Zeile(int id, string name, double kw, double eer)
-            => new Katalogfilterzeile(id, name) { Schluessel = id.ToString(System.Globalization.CultureInfo.InvariantCulture) }
+        private static Katalogfilterzeile Zeile(int id, string name, double kw, double eer, bool gesperrt)
+            => new Katalogfilterzeile(id, name) { Schluessel = id.ToString(System.Globalization.CultureInfo.InvariantCulture), Geschuetzt = gesperrt }
                    .MitText(Katalogfilterprofil.SpBezeichner, name)
+                   .MitText(Katalogfilterprofil.SpHersteller, "Neutral")
                    .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, kw, 1)
                    .MitZahl(Katalogfilterprofil.SpEer, eer, 2)
                    .MitText(Katalogfilterprofil.SpRueckkuehlart, R.KM_RUECKKUEHLART_WASSER);
 
-        internal KaeltemaschineGeraetwerte? Werte(int stamm) => stamm == 12
+        internal KaeltemaschineGeraetwerte? Werte(int stamm) => Wurf is not null ? throw new InvalidOperationException(Wurf + " Satz") : stamm == 12
             ? new KaeltemaschineGeraetwerte { Bezeichner = "Kältemaschine 200 kW", Nennkaelteleistung = 200, NennEer = 4.1,
                                               Kaltwasserstuetzstellen = new[] { 7.0, 10.0 } }
             : null;
 
+        /// <summary>Liest die Anlagen wie die Hülle: gespeicherte und die angelegten.</summary>
+        internal IReadOnlyList<KaeltemaschineAnlageDaten> Lesen() => Gespeicherte.Select(a => a.Kopie()).ToList();
+
         internal int Anlegen(int stamm, string name)
         {
+            if (Wurf is not null) throw new InvalidOperationException(Wurf + " Anlegen");
             Angelegt.Add((stamm, name));
-            return stamm == 12 ? 99 : -1;
+            if (stamm != 12) return -1;
+            Gespeicherte.Add(new KaeltemaschineAnlageDaten
+            {
+                AnlagenId = 99, GeraetId = 990, Bezeichner = name, Anzahl = 1, KuehlCarrierId = STROM, Geraet = Werte(12)
+            });
+            return 99;
         }
 
         internal string? Speichern(KaeltemaschineAnlageDaten d)
         {
+            if (Wurf is not null) throw new InvalidOperationException(Wurf + " Speichern");
             string grund = KaeltemaschineAnlageHuelle.Pruefen(d);
             if (grund != null) return grund;
             Gespeichert.Add(d.Kopie());
             return null;
         }
+
+        internal void Loeschen(int id)
+        {
+            Geloescht.Add(id);
+            Gespeicherte.RemoveAll(a => a.AnlagenId == id);
+        }
     }
 
-    internal static IRenderedComponent<KaeltemaschineAnlageDialog> Aufbauen(BunitContext ctx, Projekt p)
-        => ctx.Render<KaeltemaschineAnlageDialog>(b => b
-            .Add(x => x.Anlagen, () => p.Gespeicherte.Select(a => a.Kopie()).ToList())
-            .Add(x => x.Katalogzeilen, p.Katalog)
-            .Add(x => x.Katalogwerte, p.Werte)
-            .Add(x => x.Stromtraeger, new[] { (STROM, "Strom"), (OEKOSTROM, "Ökostrom") })
-            .Add(x => x.ProjektStromtraeger, STROM)
-            .Add(x => x.Pruefen, KaeltemaschineAnlageHuelle.Pruefen)
-            .Add(x => x.Anlegen, p.Anlegen)
-            .Add(x => x.Speichern, p.Speichern)
-            .Add(x => x.Loeschen, id => p.Geloescht.Add(id))
-            .Add(x => x.Geschlossen, ok => p.Geschlossen = ok));
-
-    private static IElement Knopf(IRenderedComponent<KaeltemaschineAnlageDialog> cut, string text)
-        => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+    internal static IRenderedComponent<KaeltemaschineAnlageDialog> Aufbauen(BunitContext ctx, Projekt p,
+        Action<ComponentParameterCollectionBuilder<KaeltemaschineAnlageDialog>>? mehr = null)
+        => ctx.Render<KaeltemaschineAnlageDialog>(b =>
+        {
+            b.Add(x => x.Anlagen, p.Lesen)
+             .Add(x => x.Katalogzeilen, p.Katalog)
+             .Add(x => x.Katalogwerte, p.Werte)
+             .Add(x => x.Stromtraeger, new[] { (STROM, "Strom"), (OEKOSTROM, "Ökostrom") })
+             .Add(x => x.ProjektStromtraeger, STROM)
+             .Add(x => x.Pruefen, KaeltemaschineAnlageHuelle.Pruefen)
+             .Add(x => x.Anlegen, p.Anlegen)
+             .Add(x => x.Speichern, p.Speichern)
+             .Add(x => x.Loeschen, p.Loeschen)
+             .Add(x => x.KatalogLoeschen, id => { if (p.Wurf is not null) throw new InvalidOperationException(p.Wurf + " Loeschen"); p.KatalogGeloescht.Add(id); return ""; })
+             .Add(x => x.Geschlossen, ok => p.Geschlossen = ok);
+            mehr?.Invoke(b);
+        });
 
     private static IElement Fussknopf(IRenderedComponent<KaeltemaschineAnlageDialog> cut, string text)
         => cut.FindAll(".epos-kaeltemaschine-anlage > .epos-leiste button").First(b => b.TextContent.Trim() == text);
 
-    private static IElement Feld(IRenderedComponent<KaeltemaschineAnlageDialog> cut, string bezeichnung)
+    internal static IElement Feld(IRenderedComponent<KaeltemaschineAnlageDialog> cut, string bezeichnung)
         => cut.FindAll("label").First(l => l.TextContent.Trim().StartsWith(bezeichnung, StringComparison.Ordinal))
               .QuerySelector("input, select")
            ?? cut.FindAll(".epos-feld").First(f => f.TextContent.Trim().StartsWith(bezeichnung, StringComparison.Ordinal))
                  .QuerySelector("input, select")!;
 
-    [Fact]
-    public void Die_Liste_zeigt_Name_Anzahl_und_Nennkaelteleistung_und_das_Geraet_zum_Lesen()
-    {
-        var p = new Projekt();
-        var cut = Aufbauen(this, p);
+    private static void Uebernehmen(IRenderedComponent<KaeltemaschineAnlageDialog> cut)
+        => cut.Find(".epos-zweispalten-knopf--uebernehmen").Click();
 
-        Assert.Equal(R.KMA_TITEL, cut.Find(".epos-dialog-titel").TextContent);
-        string zeile = cut.Find(".epos-kaeltemaschine-anlagen tbody tr").TextContent;
-        Assert.Contains("KM Bestand", zeile);
-        Assert.Contains("200", zeile);                                   // 2 × 100 kW
-        Assert.Contains(R.KMA_HINWEIS_KATALOG, cut.Markup);
-        Assert.Contains(R.KMA_HINWEIS_REIHENFOLGE, cut.Markup);
-        Assert.Contains(string.Format(R.KMA_HINWEIS_VORLAUF_MIN, "5"), cut.Markup);
-        Assert.Contains(string.Format(R.KMA_PLATZHALTER_VORLAUF, "6"), cut.Markup);
-        Assert.Contains(R.KM_RUECKKUEHLART_LUFT, cut.Markup);
-        Assert.Equal(new[] { R.KMA_BTN_HINZU, R.KMA_BTN_LOESCHEN, R.ALLG_BTN_ABBRECHEN, R.ALLG_BTN_OK },
-                     cut.FindAll(".epos-kaeltemaschine-anlage > .epos-leiste button").Select(b => b.TextContent.Trim()).ToArray());
+    private static void Entfernen(IRenderedComponent<KaeltemaschineAnlageDialog> cut)
+        => cut.Find(".epos-zweispalten-knopf--entfernen").Click();
+
+    /// <summary>Öffnet die Satz-Überlagerung über den Stift der Projektzeile <paramref name="i"/>.</summary>
+    private static IElement ProjektStift(IRenderedComponent<KaeltemaschineAnlageDialog> cut, int i = 0)
+    {
+        cut.Find(".epos-zweispalten-bereich--projekt").QuerySelectorAll(".epos-zeilenstift")[i].Click();
+        return cut.Find(".epos-satzueberlagerung-koerper");
     }
 
-    /// <summary>
-    /// KB-B (E117 F2): Die Betriebseingaben stehen in der Komponente <see cref="KaeltemaschineKonfiguration"/> —
-    /// derselben wie im Bereich „Kälte“ der Simulationskonfiguration —, und die Liste zieht einer Eingabe nach.
-    /// </summary>
+    private static Dictionary<string, string> Angaben(IRenderedComponent<KaeltemaschineAnlageDialog> cut)
+        => cut.FindAll(".epos-satzzusammenfassung-angabe")
+              .ToDictionary(a => a.QuerySelector("dt")!.TextContent, a => a.QuerySelector("dd")!.TextContent);
+
     [Fact]
-    public void Die_Betriebseingaben_sind_die_Komponente_der_Simulationskonfiguration()
+    public void Der_Aufbau_ist_der_der_Erzeuger_Projekt_oben_Katalog_unten()
+    {
+        var cut = Aufbauen(this, new Projekt(), b => b.Add(x => x.Vergleichsparameter, _ => Array.Empty<Parameterwert>())
+                                                         .Add(x => x.TypkennfelderLaden, () => new KaeltemaschineTypkennfelderErgebnis(true, 0, 0, "")));
+
+        var p = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste");
+        Assert.Contains(R.KMA_SUMME, p.TextContent);
+        Assert.Contains("200", p.QuerySelector(".epos-zweispalten-summe")!.TextContent);       // 2 × 100 kW
+        Assert.NotNull(p.QuerySelector(".epos-knopf--bearbeiten-projekt"));
+        Assert.NotNull(p.QuerySelector(".epos-zweispalten-knopf--entfernen"));
+        Assert.DoesNotContain(cut.FindAll("button"), k => k.TextContent.Contains("Datenbank übernehmen"));
+
+        string zeile = cut.Find(".epos-zweispalten-bereich--projekt tbody tr").TextContent;
+        foreach (string teil in new[] { "KM Bestand", "100", "3,2 / SEER 5,1", R.KM_RUECKKUEHLART_LUFT, "2", "Strom", R.ALLG_BTN_NEIN })
+            Assert.Contains(teil, zeile);
+        Assert.Equal(2, Zeilenklick.Zeilen(cut).Count);
+        Assert.NotNull(cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-zweispalten-knopf--uebernehmen"));
+
+        string fuss = cut.Find(".epos-zweispalten-fussleiste").TextContent;
+        foreach (string knopf in new[] { R.AUSWAHL_BTN_VERGLEICHEN, R.KMA_BTN_LOESCHEN, R.AUSWAHL_BTN_BEARBEITEN, R.KM_BTN_TYPKENNFELDER, R.KM_ANL_BTN_VERWALTUNG })
+            Assert.Contains(knopf, fuss);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung--offen .epos-katalogliste"));             // keine Katalogüberlagerung mehr
+    }
+
+    [Fact]
+    public void In_das_Projekt_uebernehmen_legt_sofort_an_und_Abbrechen_raeumt_ab()
     {
         var p = new Projekt();
         var cut = Aufbauen(this, p);
 
-        IRenderedComponent<KaeltemaschineKonfiguration> komponente = cut.FindComponent<KaeltemaschineKonfiguration>();
-        Assert.Same(cut.Instance.Arbeitsstand, komponente.Instance.Daten);
+        Zeilenklick.Zeile(cut, 1);
+        Uebernehmen(cut);
+        Assert.Equal(new[] { (12, "Kältemaschine 200 kW") }, p.Angelegt);                      // sofort angelegt
+        Assert.Equal(new[] { "KM Bestand", "Kältemaschine 200 kW" }, cut.Instance.Namensliste);
+        Assert.Equal(99, cut.Instance.Arbeitsstand!.AnlagenId);                                // gewählt, bearbeitbar
+        Assert.Equal(new[] { 99 }, cut.Instance.Angelegte);
+        Assert.Contains("400", cut.Find(".epos-zweispalten-summe").TextContent);
 
+        Fussknopf(cut, R.ALLG_BTN_ABBRECHEN).Click();
+        Assert.Equal(new[] { 99 }, p.Geloescht);                                               // Projektkopievormerkung
+        Assert.False(p.Geschlossen);
+
+        var q = new Projekt();
+        var zwei = Aufbauen(this, q);
+        Zeilenklick.Zeile(zwei, 1);
+        Uebernehmen(zwei);
+        Fussknopf(zwei, R.ALLG_BTN_OK).Click();
+        Assert.Empty(q.Geloescht);
+        Assert.True(q.Geschlossen);
+    }
+
+    [Fact]
+    public void Ein_fehlender_Katalogsatz_wird_gemeldet_und_nichts_kommt_hinzu()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        Zeilenklick.Zeile(cut, 0);
+        Uebernehmen(cut);
+        Assert.Contains(string.Format(R.KMA_MSG_ANLEGEN_FEHLT, "Kältemaschine 50 kW"), cut.Markup);
+        Assert.Single(cut.Instance.Namensliste);
+    }
+
+    [Fact]
+    public void Entfernen_merkt_vor_und_loescht_beim_OK_eine_neue_Anlage_geht_sofort()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        Entfernen(cut);
+        Assert.Empty(cut.Instance.Namensliste);
+        Assert.Empty(p.Geloescht);                                                            // vorgemerkt
+        Fussknopf(cut, R.ALLG_BTN_OK).Click();
+        Assert.Equal(new[] { 7 }, p.Geloescht);
+
+        var q = new Projekt();
+        var zwei = Aufbauen(this, q);
+        Zeilenklick.Zeile(zwei, 1);
+        Uebernehmen(zwei);
+        Entfernen(zwei);                                                                       // die neue, gewählte
+        Assert.Equal(new[] { 99 }, q.Geloescht);
+        Fussknopf(zwei, R.ALLG_BTN_ABBRECHEN).Click();
+        Assert.Equal(new[] { 99 }, q.Geloescht);                                               // nichts doppelt
+    }
+
+    [Fact]
+    public void Die_Zusammenfassung_nennt_Anlage_und_Katalogsatz()
+    {
+        var k = System.Globalization.CultureInfo.CurrentCulture;
+        var cut = Aufbauen(this, new Projekt(), b => b.Add(x => x.Kostensumme, _ => (12345.0, 678.0)));
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+        var a = Angaben(cut);
+        Assert.Equal("100 kW", a[R.KM_LBL_NENNKAELTELEISTUNG]);
+        Assert.Equal("200 kW", a[R.AUSWAHL_ZF_LEISTUNG_GESAMT]);
+        Assert.Equal("3,2 / SEER 5,1", a[R.KMA_SP_EER]);
+        Assert.Equal(R.KM_RUECKKUEHLART_LUFT, a[R.KM_LBL_RUECKKUEHLART]);
+        Assert.Equal("2", a[R.AUSWAHL_ZF_ANZAHL]);
+        Assert.Equal("Strom", a[R.KMA_LBL_TRAEGER]);
+        Assert.Equal(R.ALLG_BTN_NEIN, a[R.KMA_LBL_ZAEHLER]);
+        Assert.Equal(string.Format(k, R.AUSWAHL_ZF_EURO, 12345.0), a[R.AUSWAHL_ZF_INVEST]);
+        Assert.Equal(string.Format(k, R.AUSWAHL_ZF_EURO_JAHR, 678.0), a[R.AUSWAHL_ZF_BETRIEB]);
+        Assert.Empty(cut.FindAll(".epos-satzzusammenfassung " + "input"));                    // Felder nur in der Überlagerung
+
+        Zeilenklick.Zeile(cut, 1);
+        a = Angaben(cut);
+        Assert.Equal(R.AUSWAHL_MARKE_KATALOGSATZ, cut.Find(".epos-zweispalten-satzzeile .epos-zweispalten-marke--satz").TextContent);
+        Assert.Contains("Neutral", a.Values);
+        Assert.Contains(a.Values, w => w.Contains("200"));
+        Assert.Contains(R.KM_RUECKKUEHLART_WASSER, a.Values);
+    }
+
+    [Fact]
+    public void Der_Stift_oeffnet_die_Ueberlagerung_OK_schreibt_ueber_den_Fangweg()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p, b => b.Add(x => x.KostenOeffnen, (_, _) => Task.CompletedTask));
+        IElement satz = ProjektStift(cut);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.NotEmpty(satz.QuerySelectorAll(".epos-kostenleiste button.epos-knopf"));
+        Assert.Contains(R.KMA_GRUPPE_GERAET, satz.TextContent);
         Feld(cut, R.KMA_LBL_ANZAHL).Input("3");
-        Assert.Contains("300", cut.Find(".epos-kaeltemaschine-anlagen tbody tr").TextContent);   // 3 × 100 kW
+        Feld(cut, R.KMA_LBL_VORLAUF).Input("9");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        KaeltemaschineAnlageDaten d = p.Gespeichert.Single();
+        Assert.Equal((7, 3, 9.0), (d.AnlagenId, d.Anzahl!.Value, d.KuehlVorlauf!.Value));
+        Assert.Contains("300", cut.Find(".epos-zweispalten-summe").TextContent);
+
+        Fussknopf(cut, R.ALLG_BTN_ABBRECHEN).Click();                                         // Stand beim Öffnen zurück
+        Assert.Equal(2, p.Gespeichert.Count);
+        Assert.Equal(2, p.Gespeichert[1].Anzahl);
+        Assert.False(p.Geschlossen);
     }
 
-    /// <summary>
-    /// KM3-E3-b (Fachkonzept Teillast und Takten 7.2): die Lesewerte der Teillastrechnung der Projektkopie und der
-    /// Hinweis „Folgeschaltung von n Maschinen“ - nur bei Anzahl &gt; 1 und gesetztem Weg.
-    /// </summary>
     [Fact]
-    public void Die_Teillast_Lesewerte_stehen_und_die_Folgeschaltung_nur_mit_Weg_und_mehreren_Maschinen()
+    public void Abbrechen_der_Ueberlagerung_stellt_die_Anlagenfelder_wieder_her()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        ProjektStift(cut);
+        Feld(cut, R.KMA_LBL_ANZAHL).Input("5");
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+        Assert.Equal(2, cut.Instance.Arbeitsstand!.Anzahl);
+        Assert.Empty(p.Gespeichert);
+        Fussknopf(cut, R.ALLG_BTN_OK).Click();                                                // nichts zu schreiben
+        Assert.Empty(p.Gespeichert);
+        Assert.True(p.Geschlossen);
+    }
+
+    [Fact]
+    public void Die_Pruefregeln_halten_die_Ueberlagerung_offen_und_schreiben_nichts()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        ProjektStift(cut);
+        Feld(cut, R.KMA_LBL_ANZAHL).Input("0");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Empty(p.Gespeichert);
+
+        Feld(cut, R.KMA_LBL_ANZAHL).Input("1");
+        Feld(cut, R.KMA_LBL_HILFSSTROM).Input("100");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Empty(p.Gespeichert);
+    }
+
+    [Fact]
+    public void Ein_Wurf_beim_Speichern_meldet_ueber_den_Fangweg()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        ProjektStift(cut);
+        p.Wurf = "Platte voll";
+        Feld(cut, R.KMA_LBL_ANZAHL).Input("3");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains("Platte voll", cut.Markup);
+    }
+
+    [Fact]
+    public void Ein_Wurf_beim_Anlegen_und_beim_Satzlesen_meldet_im_Banner()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        p.Wurf = "kaputt";
+        Zeilenklick.Zeile(cut, 1);
+        Assert.Contains("kaputt Satz", cut.Markup);
+        Uebernehmen(cut);
+        Assert.Contains("kaputt Anlegen", cut.Markup);
+        Assert.Single(cut.Instance.Namensliste);
+    }
+
+    [Fact]
+    public void Der_gesperrte_Katalogsatz_oeffnet_nur_lesend_der_freie_den_Katalogeditor()
+    {
+        var p = new Projekt { Gesperrt = true };
+        var cut = Aufbauen(this, p, b => b.Add(x => x.KatalogGaben, () => new Dictionary<string, object>
+        {
+            ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(p.Katalog)
+        }));
+        cut.FindAll(".epos-katalogliste .epos-zeilenstift")[0].Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.False(cut.Instance.EditorOffen);
+        Assert.Contains(R.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-koerper").TextContent);
+        cut.FindAll(".epos-satzueberlagerung-abbrechen, .epos-satzueberlagerung-schliessen")[0].Click();
+
+        cut.FindAll(".epos-katalogliste .epos-zeilenstift")[1].Click();
+        Assert.True(cut.Instance.EditorOffen);
+        Assert.Equal(12, cut.Instance.EditorVorwahl);
+        Assert.NotNull(cut.Find(".epos-ueberlagerung .epos-kaeltemaschine-katalog, .epos-ueberlagerung [class*=kaeltemaschine]"));
+    }
+
+    [Fact]
+    public void Loeschen_im_Katalog_fragt_zurueck_und_geht_ueber_den_Fangweg()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        Zeilenklick.Zeile(cut, 1);
+        cut.Find(".epos-zweispalten-fussleiste .epos-knopf--loeschen").Click();
+        Assert.True(cut.Instance.Loeschfrage);
+        Assert.Contains("„Kältemaschine 200 kW“", cut.Find(".epos-rueckfrage").TextContent);
+        cut.Find(".epos-rueckfrage").QuerySelectorAll(".epos-knopf").First(b => b.TextContent.Trim() == R.ALLG_BTN_JA).Click();
+        Assert.Equal(new[] { 12 }, p.KatalogGeloescht);
+
+        var q = new Projekt();
+        var zwei = Aufbauen(this, q);
+        Zeilenklick.Zeile(zwei, 1);
+        q.Wurf = "gesperrt im Kern";
+        zwei.Find(".epos-zweispalten-fussleiste .epos-knopf--loeschen").Click();
+        zwei.Find(".epos-rueckfrage").QuerySelectorAll(".epos-knopf").First(b => b.TextContent.Trim() == R.ALLG_BTN_JA).Click();
+        Assert.Contains("gesperrt im Kern", zwei.Markup);
+    }
+
+    [Fact]
+    public void Die_Teillast_Lesewerte_und_die_Folgeschaltung_stehen_in_der_Ueberlagerung()
     {
         var p = new Projekt();
         KaeltemaschineGeraetwerte alt = p.Gespeicherte[0].Geraet!;
@@ -161,22 +395,15 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
             Taktverlustfaktor = R.KM_PH_CD_VORGABE, Kennfeldrand = R.KM_RANDWEG_GUETEGRAD, TeillastGesetzt = true
         };
         var cut = Aufbauen(this, p);
+        ProjektStift(cut);
         Assert.Equal(R.KM_TT_WEG_VORGABEKURVE, Feld(cut, R.KM_LBL_TEILLAST_WEG).GetAttribute("value"));
         Assert.Equal(R.KM_REGELUNG_STUFEN, Feld(cut, R.KM_LBL_VERDICHTERREGELUNG).GetAttribute("value"));
         Assert.Equal(R.KM_PH_CD_VORGABE, Feld(cut, R.KM_LBL_TAKTVERLUST_CD).GetAttribute("value"));
         Assert.Equal(R.KM_RANDWEG_GUETEGRAD, Feld(cut, R.KM_LBL_KENNFELD_RANDWEG).GetAttribute("value"));
         string folge = string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KMA_HINWEIS_FOLGESCHALTUNG, 2);
         Assert.Contains(folge, cut.Markup);
-
-        // Eine Maschine: kein Hinweis.
         Feld(cut, R.KMA_LBL_ANZAHL).Input("1");
         Assert.DoesNotContain(folge, cut.Markup);
-        Assert.DoesNotContain(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KMA_HINWEIS_FOLGESCHALTUNG, 1), cut.Markup);
-
-        // Ohne Weg (Bestand): kein Hinweis, auch bei zwei Maschinen.
-        var q = new Projekt();
-        var ohne = Aufbauen(this, q);
-        Assert.DoesNotContain(folge, ohne.Markup);
     }
 
     /// <summary>KM3-E3-b: die Hülle liest die Lesewerte über den Kern (Kaeltemaschinenteillast), wie der Lauf.</summary>
@@ -185,151 +412,19 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
     {
         KaeltemaschineGeraetwerte w = KaeltemaschineAnlageHuelle.Werte(new KaeltemaschineModel
         {
-            Teillast_Weg = KaeltemaschineTeillastSchema.WEG_KURVE, Verdichterregelung = KaeltemaschineTeillastSchema.REGELUNG_DREHZAHL
+            Teillast_Weg = KaeltemaschineTeillastSchema.WEG_KURVE, Verdichterregelung = KaeltemaschineTeillastSchema.REGELUNG_DREHZAHL,
+            Saisonkennzahl = 5.5, Saisonkennzahl_Art = "SEER"
         });
         Assert.True(w.TeillastGesetzt);
         Assert.Equal(R.KM_TT_WEG_VORGABEKURVE, w.TeillastWeg);
         Assert.Equal(R.KM_REGELUNG_DREHZAHL, w.Verdichterregelung);
         Assert.Equal(R.KM_PH_CD_VORGABE, w.Taktverlustfaktor);
         Assert.Equal(R.KM_PH_RANDWEG_VORGABE, w.Kennfeldrand);
+        Assert.Equal((5.5, "SEER"), (w.Saisonkennzahl!.Value, w.SaisonkennzahlArt));
         KaeltemaschineGeraetwerte b = KaeltemaschineAnlageHuelle.Werte(new KaeltemaschineModel());
         Assert.False(b.TeillastGesetzt);
         Assert.Equal(R.KM_TEILLAST_WEG_BESTAND, b.TeillastWeg);
-    }
-
-    [Fact]
-    public void Die_Katalogwahl_legt_die_Projektkopie_erst_beim_OK_an()
-    {
-        var p = new Projekt();
-        var cut = Aufbauen(this, p);
-
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-        Assert.True(cut.Instance.KatalogOffen);
-        Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
-        Knopf(cut, R.KMA_BTN_UEBERNEHMEN).Click();
-        Assert.Contains(R.KMA_KATALOG_KEINE_WAHL, cut.Markup);       // ohne Wahl nichts übernommen
-
-        Zeilenklick.Zeile(cut, 1);
-        Knopf(cut, R.KMA_BTN_UEBERNEHMEN).Click();
-        Assert.False(cut.Instance.KatalogOffen);
-        Assert.Equal(new[] { "KM Bestand", "Kältemaschine 200 kW" }, cut.Instance.Namensliste);
-        Assert.Equal(12, cut.Instance.Arbeitsstand!.StammId);
-        Assert.Contains(R.KMA_HINWEIS_NEU, cut.Markup);
-        Assert.Empty(p.Angelegt);                                     // nichts ohne OK
-
-        Fussknopf(cut, R.ALLG_BTN_OK).Click();
-        Assert.Equal(new[] { (12, "Kältemaschine 200 kW") }, p.Angelegt);
-        Assert.Equal(99, p.Gespeichert.Single().AnlagenId);
-        Assert.True(p.Geschlossen);
-    }
-
-    [Fact]
-    public void Eine_neue_Anlage_traegt_die_Vorauswahl_des_Kuehltraegers()
-    {
-        var p = new Projekt();
-        var cut = Render<KaeltemaschineAnlageDialog>(b => b
-            .Add(x => x.Anlagen, () => p.Gespeicherte.Select(a => a.Kopie()).ToList())
-            .Add(x => x.Katalogzeilen, p.Katalog)
-            .Add(x => x.Katalogwerte, p.Werte)
-            .Add(x => x.Stromtraeger, new[] { (STROM, "Strom"), (OEKOSTROM, "Ökostrom") })
-            .Add(x => x.ProjektStromtraeger, STROM)
-            .Add(x => x.KuehltraegerVorauswahl, STROM)
-            .Add(x => x.Anlegen, p.Anlegen)
-            .Add(x => x.Speichern, p.Speichern));
-
-        cut.InvokeAsync(() => cut.Instance.KatalogUebernehmen(12, "Kältemaschine 200 kW"));
-
-        Assert.Equal(STROM, cut.Instance.Arbeitsstand!.KuehlCarrierId);
-    }
-
-    [Fact]
-    public void Ohne_Vorauswahl_bleibt_der_Kuehltraeger_einer_neuen_Anlage_leer()
-    {
-        var p = new Projekt();
-        var cut = Aufbauen(this, p);
-        cut.InvokeAsync(() => cut.Instance.KatalogUebernehmen(12, "Kältemaschine 200 kW"));
-        Assert.Null(cut.Instance.Arbeitsstand!.KuehlCarrierId);
-    }
-
-    [Fact]
-    public void Ein_fehlender_Katalogsatz_wird_beim_OK_gemeldet()
-    {
-        var p = new Projekt();
-        var cut = Aufbauen(this, p);
-        cut.InvokeAsync(() => cut.Instance.KatalogUebernehmen(11, "Kältemaschine 50 kW"));
-
-        Fussknopf(cut, R.ALLG_BTN_OK).Click();
-        Assert.Equal(string.Format(R.KMA_MSG_ANLEGEN_FEHLT, "Kältemaschine 50 kW"), cut.Instance.Meldung);
-        Assert.Null(p.Geschlossen);
-    }
-
-    [Fact]
-    public void Die_Pruefregeln_melden_Anzahl_0_und_Hilfsstrom_100_Prozent_und_schreiben_nichts()
-    {
-        var p = new Projekt();
-        var cut = Aufbauen(this, p);
-
-        Feld(cut, R.KMA_LBL_ANZAHL).Input("0");
-        Fussknopf(cut, R.ALLG_BTN_OK).Click();
-        Assert.Equal(R.KM_ANLAGE_ANZAHL_UNGUELTIG, cut.Instance.Meldung);
-
-        Feld(cut, R.KMA_LBL_ANZAHL).Input("3");
-        Feld(cut, R.KMA_LBL_HILFSSTROM).Input("100");
-        Fussknopf(cut, R.ALLG_BTN_OK).Click();
-        Assert.Equal(R.KM_ANLAGE_HILFSSTROM_UNGUELTIG, cut.Instance.Meldung);
-        Assert.Empty(p.Gespeichert);
-        Assert.Null(p.Geschlossen);
-    }
-
-    [Fact]
-    public void OK_speichert_die_Eingaben_und_Abbrechen_verwirft()
-    {
-        var p = new Projekt();
-        var cut = Aufbauen(this, p);
-        Feld(cut, R.KMA_LBL_ANZAHL).Input("3");
-        Feld(cut, R.KMA_LBL_VORLAUF).Input("9");
-        Feld(cut, R.KMA_LBL_HILFSSTROM).Input("4");
-        Fussknopf(cut, R.ALLG_BTN_OK).Click();
-
-        KaeltemaschineAnlageDaten d = p.Gespeichert.Single();
-        Assert.Equal((7, 3, 9.0), (d.AnlagenId, d.Anzahl!.Value, d.KuehlVorlauf!.Value));
-        Assert.Equal(0.04, d.KuehlHilfsstromanteil!.Value, 9);
-        Assert.True(p.Geschlossen);
-
-        var q = new Projekt();
-        var zwei = Aufbauen(this, q);
-        Feld(zwei, R.KMA_LBL_ANZAHL).Input("5");
-        Fussknopf(zwei, R.ALLG_BTN_ABBRECHEN).Click();
-        Assert.Empty(q.Gespeichert);
-        Assert.False(q.Geschlossen);
-
-        var r = new Projekt();
-        var drei = Aufbauen(this, r);
-        Fussknopf(drei, R.ALLG_BTN_OK).Click();                       // unverändert: nichts zu schreiben
-        Assert.Empty(r.Gespeichert);
-        Assert.True(r.Geschlossen);
-    }
-
-    [Fact]
-    public void Loeschen_fragt_zurueck_und_loescht_erst_beim_OK()
-    {
-        var p = new Projekt();
-        var cut = Aufbauen(this, p);
-
-        Fussknopf(cut, R.KMA_BTN_LOESCHEN).Click();
-        Assert.True(cut.Instance.Loeschfrage);
-        Assert.Contains("„KM Bestand“", cut.Find(".epos-rueckfrage").TextContent);
-        cut.Find(".epos-rueckfrage").QuerySelectorAll(".epos-knopf").First(b => b.TextContent.Trim() == R.ALLG_BTN_NEIN).Click();
-        Assert.Single(cut.Instance.Namensliste);
-
-        Fussknopf(cut, R.KMA_BTN_LOESCHEN).Click();
-        cut.Find(".epos-rueckfrage").QuerySelectorAll(".epos-knopf").First(b => b.TextContent.Trim() == R.ALLG_BTN_JA).Click();
-        Assert.Empty(cut.Instance.Namensliste);
-        Assert.Empty(p.Geloescht);                                    // vorgemerkt
-
-        Fussknopf(cut, R.ALLG_BTN_OK).Click();
-        Assert.Equal(new[] { 7 }, p.Geloescht);
-        Assert.True(p.Geschlossen);
+        Assert.Equal("", b.SaisonkennzahlArt);
     }
 
     [Fact]
@@ -337,15 +432,12 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
     {
         var p = new Projekt();
         var cut = Aufbauen(this, p);
-
+        ProjektStift(cut);
         IElement auswahl = Feld(cut, R.KMA_LBL_TRAEGER);
         Assert.Contains("Ökostrom", auswahl.TextContent);
         Assert.DoesNotContain(auswahl.QuerySelectorAll("option"), o => (o.GetAttribute("value") ?? "").Contains("strom", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(R.KMA_HINWEIS_ZAEHLER, cut.Markup);
         auswahl.Change(OEKOSTROM.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        Assert.DoesNotContain(R.KMA_HINWEIS_ZAEHLER, cut.Markup);       // abweichend: der Zähler wirkt
-        Fussknopf(cut, R.ALLG_BTN_OK).Click();
-
+        cut.Find(".epos-satzueberlagerung-ok").Click();
         Assert.Equal(OEKOSTROM, p.Gespeichert.Single().KuehlCarrierId);
     }
 
@@ -367,11 +459,21 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         Assert.Equal((4, 0.05, (int?)OEKOSTROM), (arbeit.Anzahl!.Value, arbeit.KuehlHilfsstromanteil!.Value, arbeit.KuehlCarrierId));
         sicht.Kuehltraeger = "Ökostrom";                              // ein Anzeigetext steuert nichts
         Assert.Null(arbeit.KuehlCarrierId);
-        Assert.Equal(new[] { "1", "2" }, sicht.KuehltraegerWahl.Select(w => w.Schluessel).ToArray());
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(p.Geschlossen);
         Assert.Empty(p.Gespeichert);
+    }
+
+    [Fact]
+    public void OK_schreibt_die_Eingaben_des_Assistenten()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        cut.Instance.Arbeitsstand!.Anzahl = 3;
+        Fussknopf(cut, R.ALLG_BTN_OK).Click();
+        Assert.Equal(3, p.Gespeichert.Single().Anzahl);
+        Assert.True(p.Geschlossen);
     }
 }
 
@@ -391,17 +493,17 @@ public sealed class KaeltemaschineAnlageDialogEnglischTests : EposBunitContext
         var cut = KaeltemaschineAnlageDialogTests.Aufbauen(this, p);
 
         Assert.Equal("Chillers in the project", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Contains("Chillers in the database:", cut.Markup);
+        Assert.Contains("Total rated cooling capacity [kW]:", cut.Markup);
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-zeilenstift").Click();
         Assert.Contains("Chilled water supply", cut.Markup);
-        Assert.Contains("The chillers are dispatched after the heat pumps in cooling mode.", cut.Markup);
-        Assert.Contains("Add…", cut.Find(".epos-kaeltemaschine-anlage > .epos-leiste").TextContent);
     }
 }
 
 /// <summary>
-/// <b>Die Wege zum Katalog in der Katalogwahl „Hinzufügen…"</b>: „Typkennfelder laden…" über die Gabe der Hülle
-/// und „Katalogverwaltung…" über die Naht <c>Dienste.Navigation</c> — bei leerem Katalog unter dem Leertext, bei
-/// gefülltem als Nebenknöpfe unter der Liste. Der Fall tauscht <c>Dienste.Navigation</c> und steht deshalb in der
-/// seriellen Sammlung.
+/// <b>Die Wege zum Katalog rechts im Katalogfuß</b>: „Typkennfelder laden…" über die Gabe der Hülle und
+/// „Katalogverwaltung…" — mit Gaben des Katalogeditors als Überlagerung, sonst über die Naht
+/// <c>Dienste.Navigation</c>. Der Fall tauscht <c>Dienste.Navigation</c> und steht deshalb in der seriellen Sammlung.
 /// </summary>
 [Collection("KiDialogweg")]
 public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
@@ -431,14 +533,12 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
     {
         internal readonly KaeltemaschineAnlageDialogTests.Projekt Projekt = new();
         internal bool Gefuellt;
-        internal int Ladungen;
 
         internal IReadOnlyList<Katalogfilterzeile> Zeilen()
             => Gefuellt ? Projekt.Katalog() : Array.Empty<Katalogfilterzeile>();
 
         internal KaeltemaschineTypkennfelderErgebnis Laden()
         {
-            Ladungen++;
             Gefuellt = true;
             return new KaeltemaschineTypkennfelderErgebnis(true, 2, 0, "");
         }
@@ -447,7 +547,7 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
     private IRenderedComponent<KaeltemaschineAnlageDialog> Aufbauen(Katalogstand k, bool mitTypkennfeldern = true)
         => Render<KaeltemaschineAnlageDialog>(b =>
         {
-            b.Add(x => x.Anlagen, () => k.Projekt.Gespeicherte.Select(a => a.Kopie()).ToList())
+            b.Add(x => x.Anlagen, k.Projekt.Lesen)
              .Add(x => x.Katalogzeilen, k.Zeilen)
              .Add(x => x.Katalogwerte, k.Projekt.Werte)
              .Add(x => x.Stromtraeger, new[] { (KaeltemaschineAnlageDialogTests.STROM, "Strom") })
@@ -455,6 +555,7 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
              .Add(x => x.Pruefen, KaeltemaschineAnlageHuelle.Pruefen)
              .Add(x => x.Anlegen, k.Projekt.Anlegen)
              .Add(x => x.Speichern, k.Projekt.Speichern)
+             .Add(x => x.Loeschen, k.Projekt.Loeschen)
              .Add(x => x.Geschlossen, ok => k.Projekt.Geschlossen = ok);
             if (mitTypkennfeldern) b.Add(x => x.TypkennfelderLaden, k.Laden);
         });
@@ -463,42 +564,17 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
     private static string[] Katalogwege(IRenderedComponent<KaeltemaschineAnlageDialog> cut)
-        => cut.FindAll(".epos-kaeltemaschine-katalogwege button").Select(b => b.TextContent.Trim()).ToArray();
-
-    [Fact]
-    public void Leerer_Katalog_zeigt_den_Leertext_und_beide_Knoepfe()
-    {
-        var k = new Katalogstand();
-        var cut = Aufbauen(k);
-
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-
-        Assert.Contains(R.KMA_KATALOG_LEER, cut.Markup);
-        Assert.Empty(cut.FindAll(".epos-katalogliste"));
-        Assert.Equal(new[] { R.KM_BTN_TYPKENNFELDER, R.KM_ANL_BTN_VERWALTUNG }, Katalogwege(cut));
-    }
+        => cut.FindAll(".epos-kaeltemaschine-typkennfelder, .epos-kaeltemaschine-verwaltung").Select(b => b.TextContent.Trim()).ToArray();
 
     [Fact]
     public void Typkennfelder_laden_fuellt_die_Liste_ueber_die_Gabe_und_meldet_im_Banner()
     {
         var k = new Katalogstand();
         var cut = Aufbauen(k);
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-
+        Assert.Empty(Zeilenklick.Zeilen(cut));
         Knopf(cut, R.KM_BTN_TYPKENNFELDER).Click();
-
-        Assert.Equal(1, k.Ladungen);
-        Assert.True(cut.Instance.KatalogOffen);
-        Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
-        Assert.DoesNotContain(R.KMA_KATALOG_LEER, cut.Markup);
-        Assert.Contains(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KM_MSG_TYPKENNFELDER, 2, 0),
-                        cut.Markup);
-
-        // Das geladene Gerät lässt sich gleich übernehmen.
-        Zeilenklick.Zeile(cut, 1);
-        Knopf(cut, R.KMA_BTN_UEBERNEHMEN).Click();
-        Assert.False(cut.Instance.KatalogOffen);
-        Assert.Equal(12, cut.Instance.Arbeitsstand!.StammId);
+        Assert.Equal(2, Zeilenklick.Zeilen(cut).Count);
+        Assert.Contains(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KM_MSG_TYPKENNFELDER, 2, 0), cut.Markup);
     }
 
     [Fact]
@@ -506,89 +582,50 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
     {
         var k = new Katalogstand();
         var cut = Render<KaeltemaschineAnlageDialog>(b => b
-            .Add(x => x.Anlagen, () => k.Projekt.Gespeicherte.Select(a => a.Kopie()).ToList())
+            .Add(x => x.Anlagen, k.Projekt.Lesen)
             .Add(x => x.Katalogzeilen, k.Zeilen)
             .Add(x => x.TypkennfelderLaden, () => new KaeltemaschineTypkennfelderErgebnis(false, 0, 0, "Grund des Kerns")));
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-
         Knopf(cut, R.KM_BTN_TYPKENNFELDER).Click();
-
         Assert.Contains("Grund des Kerns", cut.Markup);
-        Assert.Contains(R.KMA_KATALOG_LEER, cut.Markup);
     }
 
     [Fact]
-    public void Katalogverwaltung_schliesst_die_Ueberlagerung_und_ruft_die_Naht()
+    public void Katalogverwaltung_ohne_Editorgaben_ruft_die_Naht()
     {
-        var k = new Katalogstand();
-        var cut = Aufbauen(k);
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-
+        var cut = Aufbauen(new Katalogstand());
         Knopf(cut, R.KM_ANL_BTN_VERWALTUNG).Click();
-
         Assert.Equal(new[] { EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineKatalog }, Navigation.Masken);
-        Assert.False(cut.Instance.KatalogOffen);
-
-        // Der nächste Klick auf „Hinzufügen…" liest den Katalog neu.
-        k.Gefuellt = true;
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-        Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
     }
 
     [Fact]
-    public void Lehnt_die_Plattform_ab_bleibt_die_Ueberlagerung_offen_und_nennt_es()
+    public void Lehnt_die_Plattform_ab_nennt_es_der_Banner()
     {
         Navigation.Antwort = false;
         var cut = Aufbauen(new Katalogstand());
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-
         Knopf(cut, R.KM_ANL_BTN_VERWALTUNG).Click();
-
         Assert.Single(Navigation.Masken);
-        Assert.True(cut.Instance.KatalogOffen);
         Assert.Contains(R.KM_ANL_MSG_VERWALTUNG_NICHT, cut.Markup);
     }
 
     [Fact]
-    public void Ungespeicherte_Aenderungen_halten_die_Katalogverwaltung_an()
+    public void Ungespeicherte_Aenderungen_halten_die_Naht_an()
     {
         var k = new Katalogstand { Gefuellt = true };
         var cut = Aufbauen(k);
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
         Zeilenklick.Zeile(cut, 1);
-        Knopf(cut, R.KMA_BTN_UEBERNEHMEN).Click();          // neue Anlage im Arbeitsstand, noch ohne OK
-
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
+        cut.Find(".epos-zweispalten-knopf--uebernehmen").Click();     // angelegt, Abbrechen nähme es zurück
         Knopf(cut, R.KM_ANL_BTN_VERWALTUNG).Click();
-
         Assert.Empty(Navigation.Masken);
-        Assert.True(cut.Instance.KatalogOffen);
         Assert.Contains(R.KM_ANL_MSG_UNGESPEICHERT, cut.Markup);
     }
 
     [Fact]
-    public void Gefuellter_Katalog_zeigt_die_Knoepfe_als_Nebenknoepfe_unter_der_Liste()
+    public void Die_Wege_stehen_rechts_im_Katalogfuss_ohne_Gabe_kein_Typkennfelderknopf()
     {
         var cut = Aufbauen(new Katalogstand { Gefuellt = true });
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-
-        var wahl = cut.Find(".epos-kaeltemaschine-katalogwahl");
-        var kinder = wahl.Children.ToList();
-        int liste = kinder.FindIndex(e => e.QuerySelector(".epos-katalogliste") is not null
-                                          || e.ClassList.Contains("epos-katalogliste"));
-        int wege = kinder.FindIndex(e => e.ClassList.Contains("epos-kaeltemaschine-katalogwege"));
-        Assert.True(liste >= 0 && wege > liste);
         Assert.Equal(new[] { R.KM_BTN_TYPKENNFELDER, R.KM_ANL_BTN_VERWALTUNG }, Katalogwege(cut));
-        Assert.Empty(cut.FindAll(".epos-kaeltemaschine-katalogwege .epos-knopf--primaer"));
-        Assert.DoesNotContain(R.KMA_KATALOG_LEER, cut.Markup);
-    }
-
-    [Fact]
-    public void Ohne_Gabe_kein_Knopf_Typkennfelder_laden()
-    {
-        var cut = Aufbauen(new Katalogstand(), mitTypkennfeldern: false);
-        Knopf(cut, R.KMA_BTN_HINZU).Click();
-
-        Assert.Equal(new[] { R.KM_ANL_BTN_VERWALTUNG }, Katalogwege(cut));
+        Assert.Empty(cut.FindAll(".epos-kaeltemaschine-katalogwahl"));
+        var ohne = Aufbauen(new Katalogstand(), mitTypkennfeldern: false);
+        Assert.Equal(new[] { R.KM_ANL_BTN_VERWALTUNG }, Katalogwege(ohne));
     }
 }

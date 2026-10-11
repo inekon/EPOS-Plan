@@ -328,8 +328,9 @@ namespace EPOS.Kern.Tests
             };
             Vdi6007Rechenweg.HinweisVorheizen(Vorheizrueckfall.Keiner, v, "Gebäude A");
             Assert.Contains(p.Hinweise, z => z.Contains("An 12 Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis 1,4 K darunter); nötig wären bis 9 h Vorheizen statt 6 h.", StringComparison.Ordinal));
-            Assert.Contains(p.Hinweise, z => z.Contains("An 3 Tagen reicht die Vorheizleistung selbst ohne Absenkung", StringComparison.Ordinal)
-                                             && z.Contains("3 Nächte bleiben ohne Absenkung", StringComparison.Ordinal));
+            // AH-V5: Der Text der unerreichbaren Tage nennt keine Nächte ohne Absenkung mehr (E125 F18 (b)).
+            Assert.Contains(p.Hinweise, z => z.Contains("An 3 Tagen erreicht die Raumtemperatur den Sollwert zum Nutzungsbeginn selbst mit dem längsten möglichen Vorheizfenster nicht", StringComparison.Ordinal)
+                                             && !z.Contains("Nächte", StringComparison.Ordinal));
             Assert.Contains(p.Hinweise, z => z.Contains("An 2 Tagen verfehlt der Lauf den Sollwert zum Nutzungsbeginn, den die Vorausschau als erreichbar sah", StringComparison.Ordinal));
             Assert.DoesNotContain(p.Hinweise, z => z.Contains("Vorheizzeit berechnet", StringComparison.Ordinal));
 

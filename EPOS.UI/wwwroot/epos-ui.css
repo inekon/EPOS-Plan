@@ -3752,6 +3752,23 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 /* DIE SUMME DER PROJEKT-KOPFLEISTE HAT VORRANG (Sichtabnahme 10.10.2026, Konzept 4.10):
    Zahl und Einheit werden nie gekuerzt; zuerst geben Ueberschrift und Knoepfe nach. */
 .epos-zweispalten-summe { color: var(--epos-text-leise); flex: 0 0 auto !important; white-space: nowrap; }
+/* DIE KANALWAHL IN DER PROJEKT-KOPFLEISTE (Waermebedarf extern, Stufe 4): eine Zeile, die
+   Beschriftung vor dem Feld wie .epos-ganglinie-kopf > .epos-feld; der Hinweis des Kuehlkanals
+   kuerzt mit Auslassung (voller Wortlaut im Tooltipp) und macht die Leiste nie hoeher. */
+.epos-zweispalten-kanal { display: flex; flex: 0 1 auto; min-width: 0; }
+.epos-zweispalten-kanal > .epos-feld { flex-direction: row; align-items: center; gap: 6px; min-width: 0; margin: 0; }
+.epos-zweispalten-kanal .epos-feld-text { white-space: nowrap; }
+.epos-zweispalten-kanal .epos-feld-zeile { min-width: 0; }
+.epos-zweispalten-kanal .epos-eingabe { width: 11em; min-width: 6em; }
+.epos-zweispalten-kanalhinweis {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--epos-text-leise);
+}
+.epos-formathinweis-knopf, .epos-dialog-kontext { display: inline-flex; flex: 0 0 auto; }
 
 /* ---- SPALTENWAHL UND VERWENDUNGSMARKE (Konzept 4.10) ----------------
    Die Marke: ein Punkt in der Projektfarbe (die Farbe der Plakette "IM PROJEKT")
@@ -4178,6 +4195,23 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
         8px
         min-content
         minmax(var(--epos-satz-min), 1fr);
+}
+
+/* MIT OFFENER GANGLINIE (Stufe 4, Konzept 4.9 DZ1-N1 "kleinere Untergrenze der Katalogliste"): Die Kurve
+   ist der Inhalt, den der Anwender sehen will; die Katalogliste behaelt dann Kopf und EINE Zeile samt Kopf-
+   und Fussleiste, damit Kurve (mindestens --epos-kurve-min) und Listen in 1 280 x 800, 1 280 x 720 und
+   1 024 x 768 ohne Rollen des Dialogkoerpers stehen. Zugeklappt gilt wieder die Untergrenze mit zwei Zeilen. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) > .epos-zweispalten-bereich--katalog .epos-raster-huelle {
+    --epos-katalog-min: calc(53px + var(--epos-katalog-zeile, 53px) + 2px);
+}
+/* Die Kurve reicht bis an den unteren Rand der Satzflaeche (die Achsenbeschriftung haelt ihren Abstand im
+   Bild selbst); die Untergrenze der Satzflaeche zaehlt dann nur Kopf, Rahmen und oberes Polster
+   (3 + 1 + 4 + 1 px) statt der 20 px der Satzflaeche mit Feldern. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) {
+    --epos-satz-min: calc(var(--epos-touchziel) + 9px + var(--epos-satz-offen-min, 0px));
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen > .epos-zweispalten-bereich--satz .epos-zweispalten-satz:has(.epos-ganglinie-grafik) {
+    padding-bottom: 0;
 }
 
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog:not(.epos-zweispalten--zusammenfassung) {
@@ -10926,6 +10960,19 @@ table.epos-simerg-tabelle {
     width: calc(var(--epos-touchziel) + 4px);
     padding: 0 2px;
     text-align: center;
+}
+
+/* Die Zuordnungsliste der Ganglinien-Wirte (Waermebedarf extern, Stromganglinie; eine schlichte Tabelle):
+   Kaestchen- und Wahlspalte so schmal wie ihr Beruehrungsziel, der Name nimmt den Rest. */
+.epos-raster-huelle table.epos-raster--zuordnung th.epos-spalte-kaestchen,
+.epos-raster-huelle table.epos-raster--zuordnung td.epos-spalte-kaestchen,
+.epos-raster-huelle table.epos-raster--zuordnung th.epos-spalte-wahl,
+.epos-raster-huelle table.epos-raster--zuordnung td.epos-spalte-wahl {
+    width: calc(var(--epos-touchziel) + 4px);
+    padding-left: 2px;
+    padding-right: 2px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .epos-zeilenstift {
