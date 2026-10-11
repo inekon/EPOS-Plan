@@ -911,6 +911,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Dateiname der Kanalreihe — nach dem Muster der Kanaldateien <c>waermebedarf_&lt;kanal&gt;.csv</c> (K17).</summary>
         public const string DATEI = "waermebedarf_kuehlung.csv";
 
+        /// <summary>Die Reihe der dezentral (Split) gedeckten Kälte [kWh je Stunde] (K3) — nur mit Wert.</summary>
+        public const string DATEI_DEZENTRAL = "kaeltebedarf_dezentral.csv";
+
+        /// <summary>Die Reihe des Stroms der dezentralen Deckung [kWh je Stunde] (K3) — nur mit Wert.</summary>
+        public const string DATEI_STROM_DEZENTRAL = "strom_kaelte_dezentral.csv";
+
         /// <summary>
         /// Die Kanalreihe unter ihrem Dateinamen — oder gar keine, wenn der Lauf keine Kälte
         /// erhoben hat oder sein Kältebedarf 0 ist.
@@ -920,6 +926,12 @@ namespace WindowsFormsApplication1
             var reihen = new List<KeyValuePair<string, double[]>>();
             if (kaelte != null && kaelte.Gerechnet && kaelte.Kaeltebedarf_Gesamt > 0)
                 reihen.Add(new KeyValuePair<string, double[]>(DATEI, kaelte.Kaeltebedarf));
+            // K3 (Konzept Kältebedarf 4.3): die dezentrale Deckung nur mit Wert - sonst keine neue Datei.
+            if (kaelte != null && kaelte.Gerechnet && kaelte.MitDezentral && kaelte.Kaeltebedarf_Dezentral_Gesamt > 0)
+            {
+                reihen.Add(new KeyValuePair<string, double[]>(DATEI_DEZENTRAL, kaelte.Kaeltebedarf_Dezentral));
+                reihen.Add(new KeyValuePair<string, double[]>(DATEI_STROM_DEZENTRAL, kaelte.Strom_Dezentral));
+            }
             return reihen;
         }
 
@@ -937,7 +949,26 @@ namespace WindowsFormsApplication1
         {
             var s = new List<KeyValuePair<string, double>>();
             Kaeltekaskade k = kaelte?.Kaskade;
-            if (kaelte == null || !kaelte.Gerechnet || k == null || k.Erzeuger.Count == 0) return s;
+            if (kaelte == null || !kaelte.Gerechnet) return s;
+            KaskadeSkalare(kaelte, k, s);
+
+            // K3 (Konzept Kältebedarf 4.3): Profil und dezentrale Deckung nur mit Wert - ohne sie kein neuer Schlüssel.
+            if (kaelte.MitProfil)
+                s.Add(new KeyValuePair<string, double>("Kaelte.ProfilMwh", kaelte.Kaeltebedarf_Profil_Gesamt));
+            if (kaelte.MitDezentral)
+            {
+                s.Add(new KeyValuePair<string, double>("Kaelte.DezentralMwh", kaelte.Kaeltebedarf_Dezentral_Gesamt));
+                s.Add(new KeyValuePair<string, double>("Kaelte.DezentralSpitzeKw", kaelte.Kaelte_Dezentral_Max));
+                s.Add(new KeyValuePair<string, double>("Kaelte.DezentralStromMwh", kaelte.Strom_Dezentral_Gesamt));
+                s.Add(new KeyValuePair<string, double>("Kaelte.DezentralJahresEer", kaelte.Jahres_EER_Dezentral));
+            }
+            return s;
+        }
+
+        /// <summary>Die Skalare der Kältekaskade — nur mit gerechnetem Kälteerzeuger (Bestand vor K3, Zeichen für Zeichen).</summary>
+        private static void KaskadeSkalare(SimulationKaeltebedarf kaelte, Kaeltekaskade k, List<KeyValuePair<string, double>> s)
+        {
+            if (k == null || k.Erzeuger.Count == 0) return;
 
             s.Add(new KeyValuePair<string, double>("Kaelte.ErzeugungMwh", k.DeckungGesamtKwh / 1000.0));
             s.Add(new KeyValuePair<string, double>("Kaelte.StromMwh", k.StromGesamtKwh / 1000.0));
@@ -997,7 +1028,6 @@ namespace WindowsFormsApplication1
                     s.Add(new KeyValuePair<string, double>(p + "VerlusteMwh", sp.Verluste_gesamt / 1000.0));
                     s.Add(new KeyValuePair<string, double>(p + "Vollzyklen", sp.Vollzyklen));
                 }
-            return s;
         }
 
         /// <summary>Der Satz, der mit jeder exportierten Kältezahl reist (K5): sensible Kälte ohne Entfeuchtung.</summary>

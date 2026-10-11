@@ -664,6 +664,24 @@ namespace WindowsFormsApplication1
         /// <summary><c>Kuehlkurve_Vorlaufgrenze_Stunden</c> [h]: Kühlstunden mit der Kurve am unteren Rand (Vorlaufgrenze).</summary>
         public int? KuehlkurveVorlaufgrenzeStundenH;
 
+        // ---- Kältebedarf ohne Gebäudemodell (Schemaschritt 213, K3; Konzept Kältebedarf 4.3) --
+        // NULL = "nicht erhoben": ohne Kälteprofil bzw. ohne dezentral gedeckte Zeile bleiben die Spalten leer.
+
+        /// <summary>Jahressumme der Kältebedarfsprofile [MWh] (<c>Kaeltebedarf_Profil_MWh</c>); null ohne Profilzeile.</summary>
+        public double? KaeltebedarfProfilMwh;
+
+        /// <summary>Dezentral (Split) gedeckter Kältebedarf [MWh] (<c>Kaeltebedarf_Dezentral_MWh</c>); null ohne Split-Zeile.</summary>
+        public double? KaeltebedarfDezentralMwh;
+
+        /// <summary>Spitze der dezentralen Deckung [kW] (<c>Kaelte_Dezentral_Spitze_kW</c>); null ohne Split-Zeile.</summary>
+        public double? KaelteDezentralSpitzeKw;
+
+        /// <summary>Strom der dezentralen Deckung [MWh] (<c>Strom_Dezentral_MWh</c>); null ohne Split-Zeile.</summary>
+        public double? StromDezentralMwh;
+
+        /// <summary>Jahres-EER der dezentralen Deckung (<c>Jahres_EER_Dezentral</c>); null ohne Split-Zeile.</summary>
+        public double? JahresEerDezentral;
+
         /// <summary>
         /// <b>Komfort und Restbedarf nebeneinander</b> (Anlagenkopplung 5.5, F8): Wo Komfortstunden ausgewiesen
         /// werden, steht der Restbedarf daneben — mit Kopplung ist ein Teil der Unterdeckung eine gesunkene
