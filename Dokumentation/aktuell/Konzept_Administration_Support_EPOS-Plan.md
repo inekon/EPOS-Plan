@@ -194,10 +194,16 @@ Release-Anwendung, auch beim Kunden.
 | Weg | Wann | Handhabung | Wieder aus |
 |---|---|---|---|
 | **Verknüpfung „EPOS-Plan (Entwickler)"** mit `--entwickler` | Entwicklerrechner, Vorführung, Fehlersuche beim Kunden über Fernwartung | Verknüpfung einmal anlegen (das Setup legt sie **nicht** an — sie bleibt dem Entwickler vorbehalten); Start über sie | nächster Start ohne Argument |
-| **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+Alt+E** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" (löscht die Einstellung) |
+| **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+Alt+E** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" oder dieselbe Geste im Dialog (löscht die Einstellung) |
 | **Umgebungsvariable** `EPOS_ENTWICKLER=1` | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf | einmal im System setzen | Variable entfernen |
 
-Die Geste liegt bis Stufe 3 im Hauptfenster (`Hauptfensterrahmen.ProcessCmdKey`), weil „Hilfe → Version“ bis dahin ein Meldungsfeld ist; mit Stufe 3 wandert sie in den Dialog „Über EPOS-Plan“.
+Die Geste wirkt nur im geöffneten Dialog „Über EPOS-Plan“, nicht im Hauptfenster. Unter Windows fängt
+das Fenster (`UeberFenster`) die Tastenfolge über `BlazorDialogForm.Befehlstaste` ab, bevor die WebView
+sie sieht, und schaltet eine Nachricht später: Ist der Modus aus, nach der Rückfrage ein (bei Sperre
+des Administrators eine Meldung), ist er an, aus — läuft er über Umgebung oder Startargument, nennt
+die Meldung den Grund. Danach zeigt der Dialog den neuen Diagnoseblock, und das Hauptfenster versorgt
+Menü, Marke und Titel neu (`HauptfensterHuelle.FreigabeNeuVersorgen`). Das Tippen auf die
+Versionszeile am iPad ist nicht gebaut.
 
 Was eingeschaltet ist, sieht man: die Kopfleiste trägt rechts neben der Versionsnummer die
 **Marke „Entwickler"** (Warnfarbe `--epos-warn`, Tooltip mit der Quelle), der Fenstertitel den
@@ -459,17 +465,18 @@ im Client. Der Vergleich der Kosten gehört zur Zuarbeit des Anwenders vor Stufe
 
 ## 5 Der Dialog „Über EPOS-Plan" und die Diagnosedaten
 
-Der Menüpunkt *Version* wird vom Meldungsfeld zum Razor-Dialog `Dialoge/Hilfe/UeberDialog.razor`
-(Hülle `UeberHuelle`), denn drei Dinge brauchen denselben Ort: die Diagnosedaten (4.2 Zone 2), der
+Der Menüpunkt *Version* öffnet den Razor-Dialog `Dialoge/Hilfe/UeberDialog.razor`
+(Hülle `EPOS.UI.Daten/Hilfe/UeberHuelle.cs`, Windows-Fenster `Views/Help/UeberFenster.cs`), denn drei Dinge brauchen denselben Ort: die Diagnosedaten (4.2 Zone 2), der
 Kontakt und die Geste des Entwicklermodus (3.2). Inhalt:
 
-- Kopf: Produktname, Claim, Version mit Baudatum, INEKON — wie heute.
+- Kopf: Produktname, Claim, Version mit Baudatum (Schreibzeitpunkt der Programmdatei), INEKON.
 - **Diagnoseblock** (Kern-Baustein `EPOS.Kern/Allgemein/Diagnose/Diagnosedaten.cs`, plattformfrei;
   gibt einen Textblock und Einzelwerte): Programmversion, Plattform und Betriebssystemfassung,
   Sprache, Datenbankpfad, Schemastand (`Tab_Applikation.SchemaVersion` gegen `SchemaStand.Zielversion`),
   Katalogfassung, Lizenztyp, Lizenznummer, Firma, Status, gültig bis, Gerätekennung-Kurzform
   (erste acht Zeichen des Abdrucks — genug zum Wiederfinden im Portal), Protokollordner,
-  Entwicklermodus (Quelle). Knöpfe „Diagnosedaten kopieren" und „Protokollordner öffnen" (Windows).
+  Entwicklermodus (Quelle). Knöpfe „Diagnosedaten kopieren" und „Protokollordner öffnen" (Windows;
+  der Ordner kommt aus `Diagnosedaten.ProtokollordnerPfad`). Ohne Rückruf der Plattform kein Knopf.
 - Kontakt (wie 4.2 Zone 1) und der Knopf „Fernwartung…" (öffnet den Fernwartungsdialog).
 - Fußleiste: Füller · „Schließen".
 
@@ -534,7 +541,7 @@ en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fuß
 |---|---|---|
 | **1 — Entwicklermodus und Projektdatei** | `Entwicklermodus`, `Freigabestufe` am Menüpunkt, `Menuetabelle.Sichtbar`, Marke, Kopf *Entwicklung* mit den sieben Punkten (3.5), die drei Einstiege der Projektdatei, iOS-Dateifilter, KI-Feldkarten, `Program.Main(args)` | Kern-Filter grün; `EntwicklerbereicheWacheTests`, `MenuebandTests` mit zwei Bäumen; Windows-Build auf Linux (Schale berührt); Sichtprobe: ohne Modus kein Projektdatei-Knopf und kein Kopf *Entwicklung*, mit `--entwickler` beides und die Marke; HKLM-Sperre schlägt alles — **umgesetzt** (11.10.2026, #968) |
 | **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **umgesetzt** (11.10.2026, #969, Commit `bb594b7a`; Protokoll [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); **offen beim Anwender (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur, Sichtprobe |
-| **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`; Sichtprobe: Textblock vollständig, Geste schaltet |
+| **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`, `UeberDialogTests`; Sichtprobe: Textblock vollständig, Geste schaltet — **3a umgesetzt** (Dialog, Geste im Dialog); 3b offen |
 | **4 — Supportvertrag im Token** (auf Zuruf) | `support_bis` im Server, tolerantes Lesen im Client, Lesart (d) wählbar | Serverseite durch den Anwender ausgerollt; Clienttest mit Token ohne und mit Feld |
 
 Reihenfolge: 1 → 2 → 3; Stufe 3 kann mit Stufe 2 zusammen laufen, weil der Diagnoseblock beiden

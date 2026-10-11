@@ -24,7 +24,7 @@ Anwender nicht sieht. Was er zeigt, steht in Abschnitt 2.
 
 | Weg | Wann | So geht es | Wieder aus |
 |---|---|---|---|
-| **Tastenfolge** | am Kundenrechner oder am eigenen Rechner, dauerhaft | im Hauptfenster von EPOS-Plan (bis Stufe 3; danach im Dialog „Über EPOS-Plan") **Strg + Umschalt + Alt + E**, Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten." bestätigen. iPad: fünfmal auf die Versionszeile tippen. | Menü *Entwicklung → Entwicklermodus ausschalten* |
+| **Tastenfolge** | am Kundenrechner oder am eigenen Rechner, dauerhaft | *Hilfe → Version* öffnen; im Dialog „Über EPOS-Plan" **Strg + Umschalt + Alt + E**, Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten." bestätigen. Im Hauptfenster wirkt die Tastenfolge nicht. Der Diagnoseblock des Dialogs zeigt danach „Entwickler (Einstellung)". iPad: nicht gebaut (geplant: fünfmal auf die Versionszeile tippen). | Menü *Entwicklung → Entwicklermodus ausschalten* oder dieselbe Tastenfolge im Dialog |
 | **Startargument** | ein einzelner Lauf, Vorführung, Fehlersuche in einer Fernwartungssitzung | `EPOS_Plan.exe --entwickler`. Praktisch: eine Verknüpfung „EPOS-Plan (Entwickler)" mit diesem Ziel selbst anlegen; das Setup legt sie absichtlich nicht an. Nur Windows. | nächster Start ohne Argument |
 | **Umgebungsvariable** | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf, iOS-Simulator | `EPOS_ENTWICKLER=1` als Benutzer- oder Systemvariable. iOS-Simulator wie beim Prüfmodus: `SIMCTL_CHILD_EPOS_ENTWICKLER=1`. | Variable entfernen |
 | **Sperre des Administrators** | Kundeninstallation, deren Verwaltung den Modus verbietet | Registrywert `HKLM\SOFTWARE\wp-plan\EntwicklermodusGesperrt = 1` (in beiden Registry-Sichten gelesen, wie der KI-Abschalter). Die Sperre schlägt alle drei anderen Wege. | Wert löschen; aus der Anwendung heraus nie |
@@ -44,7 +44,8 @@ und auf iOS in den `Preferences` unter `wp-plan.Entwicklermodus`. Der Kern-Baust
 
 ### 1.3 Ausschalten
 
-*Entwicklung → Entwicklermodus ausschalten* löscht die Einstellung. Läuft der Modus über
+*Entwicklung → Entwicklermodus ausschalten* oder die Tastenfolge im Dialog „Über EPOS-Plan" löscht
+die Einstellung. Läuft der Modus über
 Startargument oder Umgebungsvariable, sagt der Punkt das und tut nichts: dann ohne Argument neu
 starten beziehungsweise die Variable entfernen.
 
@@ -128,17 +129,23 @@ WebView2 herausgelaufen. Die Ursache steht in `Logs\Ausnahmen.txt` — der letzt
 Kopf des nächsten Laufs. Diese Datei anfordern, nicht den Weg raten (Fallstricke in
 `WindowsFormsApplication1/CLAUDE.md`).
 
-### 3.3 Diagnosedaten und Supportpaket [Stufe 3]
+### 3.3 Diagnosedaten [heute] und Supportpaket [Stufe 3b]
 
-Der Diagnoseblock selbst ist seit Stufe 1 gebaut und über *Entwicklung → Diagnosedaten kopieren* erreichbar; Stufe 3 bringt den Dialog und das Supportpaket.
+Den Diagnoseblock findet der Anwender unter *Hilfe → Version* im Dialog „Über EPOS-Plan" (unter dem
+Kopf mit Produktname, Claim, Version mit Baudatum und INEKON) als nur lesbares Textfeld; ebenso in
+*Hilfe → Fernwartung…* (Zone „Ihre Angaben") und für Entwickler unter *Entwicklung → Diagnosedaten
+kopieren*.
 
-Der Dialog „Über EPOS-Plan" (*Hilfe → Version*) zeigt den Diagnoseblock aus dem Kern-Baustein
+Der Dialog „Über EPOS-Plan" zeigt den Diagnoseblock aus dem Kern-Baustein
 `Diagnosedaten` (`EPOS.Kern/Allgemein/Diagnose/`): Programmversion und Baudatum, Plattform und
 Betriebssystemfassung, Sprache, Datenbankpfad, Schemastand (`Tab_Applikation.SchemaVersion` gegen
 `SchemaStand.Zielversion`), Katalogfassung, Lizenztyp, Lizenznummer, Firma, Status, gültig bis,
 Gerätekennung-Kurzform (erste acht Zeichen des Abdrucks), Protokollordner, Entwicklermodus mit
-Quelle. Knöpfe: „Diagnosedaten kopieren", „Protokollordner öffnen", „Supportpaket speichern…",
-„Fernwartung…".
+Quelle. Knöpfe unter dem Block: „Diagnosedaten kopieren" (Zwischenablage) und „Protokollordner
+öffnen" (Windows; der Explorer im Ordner `Logs` neben der Datenbank, `Diagnosedaten.ProtokollordnerPfad`;
+fehlt der Ordner, sagt eine Meldung den Pfad). Darunter der Kontakt (Telefon, E-Mail als
+`mailto:`-Link, Erreichbarkeit) mit dem Knopf „Fernwartung…", der den Fernwartungsdialog öffnet.
+„Supportpaket speichern…" kommt mit Stufe 3b.
 
 Das Supportpaket ist eine ZIP-Datei mit `Diagnosedaten.txt`, `Ausnahmen.txt`,
 `Ausnahmen.alt.txt`, `migration_protokoll.txt` und dem Auszug aus `Tab_Katalogabgleich` — ohne
@@ -268,7 +275,10 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 | Menüsperre | `EPOS.UI/Bausteine/Menuepunkt.cs` (`Sperrgrund`), `Menuetabelle.cs` (Punkt `MenuItem_Fernwartung`), `Menueband.razor`, `HauptfensterHuelle.cs` (Fall `Fernwartung`) | 2 |
 | Tests der Fernwartung | `EPOS.Kern.Tests/FernwartungFreigabeTests.cs`, `EPOS.UI.Tests/Dialoge/FernwartungDialogTests.cs`, `MenuebandTests` | 2 |
 | Wiki-Quelle | `Projekte/Wiki/Programm Dokumentation - Fernwartung.wiki` | 2 |
-| Über-Dialog, Diagnosedaten | `EPOS.UI/Dialoge/Hilfe/UeberDialog.razor`, `EPOS.Kern/Allgemein/Diagnose/Diagnosedaten.cs` | 3 |
+| Über-Dialog | `EPOS.UI/Dialoge/Hilfe/UeberDialog.razor`, `UeberDaten.cs` (mit `UeberAnstoss`, `UeberTexte`), Hülle `EPOS.UI.Daten/Hilfe/UeberHuelle.cs`, Fenster `WindowsFormsApplication1/Views/Help/UeberFenster.cs`, Fall `Version` in `HauptfensterHuelle.cs` | heute |
+| Geste des Entwicklermodus | `UeberFenster` (Abfang über `BlazorDialogForm.Befehlstaste`), `WindowsFormsApplication1/Views/Entwicklung/EntwicklungHuelle.cs` (`GesteUmschalten`) | heute |
+| Diagnosedaten | `EPOS.Kern/Allgemein/Diagnose/Diagnosedaten.cs` (`Textblock`, `ProtokollordnerPfad`) | heute |
+| Tests des Über-Dialogs | `EPOS.UI.Tests/Dialoge/UeberDialogTests.cs`, `EPOS.Kern.Tests/DiagnosedatenTests.cs` | heute |
 | Maschinenweite Werte | `EPOS.Kern/Allgemein/Dienste/IEinstellungen.cs` (`LiesMaschine`), `WindowsFormsApplication1/Dienste/RegistryEinstellungen.cs` | heute |
 
 
@@ -278,7 +288,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 |---|---|---|
 | 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #968); **Nachzug offen:** Zapfprofil-Vorgaben als Anwenderrubrik „Zapfprofil" statt Entwicklerbereich (Entscheid 11.10.2026) |
 | 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #969); offen beim Anwender: Fernwartungsseite, Server, signierter Client |
-| 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | offen |
+| 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | 3a umgesetzt (Dialog, Diagnoseblock, Geste im Dialog); 3b Supportpaket offen |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |
 
 
