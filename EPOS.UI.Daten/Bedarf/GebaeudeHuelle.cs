@@ -176,6 +176,12 @@ namespace WindowsFormsApplication1
                     z => { idsNachziehen(); return z == null || !z.HatProjektkopie ? "" : GebaeudeStammCtrl.NamensvorschlagAusProjekt(z.IdZ); }),
                 ["InDbUebernehmen"] = new Func<GebaeudeProjektZeile, string, GebaeudeDbUebernahme>(
                     (z, name) => { idsNachziehen(); return InDbUebernehmen(z, name); }),
+                // Regel 5.2 (Gebäude-Rückweg): die Rückfrage und die Wahl neu/überschreiben — der Dialog schließt sie im
+                // Folgeauftrag an; die Namensabfrage nutzt weiter „InDbUebernehmen" (= neu).
+                ["RueckwegVorschau"] = new Func<GebaeudeProjektZeile, GebaeudeRueckwegVorschau>(
+                    z => { idsNachziehen(); return RueckwegVorschau(z); }),
+                ["Rueckweg"] = new Func<GebaeudeProjektZeile, bool, string, GebaeudeDbUebernahme>(
+                    (z, ueberschreiben, name) => { idsNachziehen(); return Rueckweg(z, ueberschreiben, name); }),
 
                 // Die Gebaeudetypen-Verwaltung liegt noch in der Windows-Schale - ein
                 // Haken der Naht (Gebaeudewege); ohne ihn kein Knopf.
@@ -369,23 +375,41 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// „In DB übernehmen" — der Weg des Kerns (<see cref="GebaeudeStammCtrl.AusProjektUebernehmen"/>)
-        /// als Antwort für den Dialog: bei Erfolg die Statuszeile (mit Zonen: dazu, dass sie im
-        /// Projekt bleiben), sonst die benannte Absage, am Namensfeld oder in der Abfrage.
+        /// „In DB übernehmen" — der Gebäude-Rückweg des Kerns mit der Wahl „neu" (<see cref="Rueckweg"/>): bei Erfolg die
+        /// Statuszeile (mit Zonen samt Bauteilen), sonst die benannte Absage, am Namensfeld oder in der Abfrage.
         /// </summary>
-        internal static GebaeudeDbUebernahme InDbUebernehmen(GebaeudeProjektZeile z, string name)
+        internal static GebaeudeDbUebernahme InDbUebernehmen(GebaeudeProjektZeile z, string name) => Rueckweg(z, false, name);
+
+        /// <summary>
+        /// Die Rückfrage des Rückwegs (Regel 5.2) zur Zeile: Ursprung, ob er überschrieben werden kann, Namensvorschlag,
+        /// abweichende Kopfspalten und Kindzeilen (<see cref="GebaeudeRueckweg.Vorschau"/>); <c>null</c> ohne Projektkopie.
+        /// </summary>
+        internal static GebaeudeRueckwegVorschau RueckwegVorschau(GebaeudeProjektZeile z)
+            => z == null || !z.HatProjektkopie ? null : GebaeudeRueckweg.Vorschau(z.IdZ);
+
+        /// <summary>
+        /// <b>Der Rückweg</b> (Regel 5.2) der Zeile: <paramref name="ueberschreiben"/> ersetzt den Ursprung (der Name bleibt),
+        /// sonst neu unter <paramref name="name"/> (<see cref="GebaeudeRueckweg.Rueckweg"/>). Die Antwort für den Dialog: die
+        /// Statuszeile oder die benannte Absage — am Namensfeld bei leerem oder vergebenem Namen.
+        /// </summary>
+        internal static GebaeudeDbUebernahme Rueckweg(GebaeudeProjektZeile z, bool ueberschreiben, string name)
         {
             if (z == null || !z.HatProjektkopie)
                 return new GebaeudeDbUebernahme(false, "", MyResource.Resource.GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE);
 
-            GebaeudeStammCtrl.ProjektuebernahmeErgebnis e = GebaeudeStammCtrl.AusProjektUebernehmen(z.IdZ, name);
-            if (!e.Ok) return new GebaeudeDbUebernahme(false, "", e.Meldung, e.AmNamen);
+            Rueckwegergebnis e = GebaeudeRueckweg.Rueckweg(z.IdZ, ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu, name);
+            if (!e.Ok)
+                return new GebaeudeDbUebernahme(false, "", e.Meldung,
+                                                e.Absage == Rueckwegabsage.NameLeer || e.Absage == Rueckwegabsage.NameBelegt);
 
-            string text = e.Zonen > 0
+            Rueckwegsatz satz = e.Saetze[0];
+            Dictionary<string, int> kinder = GebaeudeRueckweg.Kindzeilen(null, Zonenebene.Katalog, satz.IdKatalog);
+            int zonen = kinder[GebaeudeRueckweg.ART_ZONEN];
+            string text = zonen > 0
                 ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_ZONEN,
-                                e.Name, e.Zonen, e.Bauteile)
-                : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_UEBERNOMMEN, e.Name);
-            return new GebaeudeDbUebernahme(true, e.Name, text);
+                                satz.Name, zonen, kinder[GebaeudeRueckweg.ART_BAUTEILE])
+                : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_UEBERNOMMEN, satz.Name);
+            return new GebaeudeDbUebernahme(true, satz.Name, text);
         }
 
         // =================================================================================

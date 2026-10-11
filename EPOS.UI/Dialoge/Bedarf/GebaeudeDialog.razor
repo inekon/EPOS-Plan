@@ -850,6 +850,18 @@
     /// </summary>
     [Parameter] public Func<GebaeudeProjektZeile, string, GebaeudeDbUebernahme>? InDbUebernehmen { get; set; }
 
+    /// <summary>
+    /// Rückweg nach Regel 5.2 (Konzept Katalogauswahl 5.14): die Rückfrage zur Zeile — Ursprung, Sperrgrund,
+    /// Namensvorschlag, Abweichungen, Kindzeilen (Kern: <c>GebaeudeRueckweg.Vorschau</c>). Noch nicht angeschlossen.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, WindowsFormsApplication1.GebaeudeRueckwegVorschau?>? RueckwegVorschau { get; set; }
+
+    /// <summary>
+    /// Rückweg nach Regel 5.2: <c>true</c> überschreibt den Ursprung, sonst neu unter dem Namen (Kern:
+    /// <c>GebaeudeRueckweg.Rueckweg</c>). Noch nicht angeschlossen; die Namensabfrage nutzt <see cref="InDbUebernehmen"/>.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, bool, string, GebaeudeDbUebernahme>? Rueckweg { get; set; }
+
     /// <summary>Beschriftung — <c>GEB_BTN_IN_DB</c>; zugleich das OK der Namensabfrage.</summary>
     [Parameter] public string BtnInDbText { get; set; } = Resource.GEB_BTN_IN_DB;
 
