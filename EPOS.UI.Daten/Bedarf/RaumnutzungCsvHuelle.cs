@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
                 return new RaumnutzungErgebnis(b.Ok, b.Meldung ?? "", b.IdKatalog);
             }, a => new RaumnutzungErgebnis(false, a.Text));
 
-        /// <summary>Die Dateiwahl der Plattform und das Lesen; abgebrochen = <c>null</c>, ein Lesefehler als Ausnahme mit Text.</summary>
+        /// <summary>Die Dateiwahl der Plattform und das Lesen; abgebrochen = <c>null</c>, ein Lesefehler als Ausnahme mit Text, vermerkt im Ausnahmeprotokoll.</summary>
         private static async Task<RaumnutzungCsvDatei> DateiWaehlen()
         {
             string pfad = await Dienste.Datei.DateiOeffnenAsync(MyResource.Resource.RNP_CSV_DLG_IMPORT,
@@ -95,6 +95,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException || ex is NotSupportedException)
             {
+                // Die Anzeige bleibt der Satz mit Grund; der Vermerk im Ausnahmeprotokoll kommt über die Fangstelle der Importe.
+                Importfang.Vermerken(pfad, ex);
                 throw new InvalidOperationException(Format(MyResource.Resource.RNP_CSV_MSG_LESEFEHLER, ex.Message), ex);
             }
         }
