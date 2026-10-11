@@ -28871,6 +28871,177 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit diesen Angaben erkennt der Support Ihre Installation. Kopieren Sie sie in Ihre E-Mail oder lesen Sie sie am Telefon vor. ähnelt.
+        /// </summary>
+        public static string FW_ANGABEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("FW_ANGABEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Den Bildschirm sieht nur der Support, mit dem Sie gerade sprechen; EPOS-Plan zeichnet dabei nichts auf. Jede Verbindung nehmen Sie im Fernwartungsprogramm selbst an, und Sie können sie dort jederzeit beenden. ähnelt.
+        /// </summary>
+        public static string FW_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("FW_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren ähnelt.
+        /// </summary>
+        public static string FW_KOPIEREN {
+            get {
+                return ResourceManager.GetString("FW_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Angaben stehen in der Zwischenablage. ähnelt.
+        /// </summary>
+        public static string FW_KOPIERT {
+            get {
+                return ResourceManager.GetString("FW_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E-Mail ähnelt.
+        /// </summary>
+        public static string FW_MAIL {
+            get {
+                return ResourceManager.GetString("FW_MAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string FW_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("FW_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden Sie das Fernwartungsprogramm von der Fernwartungsseite und starten Sie es. ähnelt.
+        /// </summary>
+        public static string FW_SCHRITT_1 {
+            get {
+                return ResourceManager.GetString("FW_SCHRITT_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennen Sie dem Support die angezeigte Kennung und das Einmalkennwort. ähnelt.
+        /// </summary>
+        public static string FW_SCHRITT_2 {
+            get {
+                return ResourceManager.GetString("FW_SCHRITT_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nehmen Sie die Anfrage im Programm an. ähnelt.
+        /// </summary>
+        public static string FW_SCHRITT_3 {
+            get {
+                return ResourceManager.GetString("FW_SCHRITT_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fernwartungsseite konnte nicht geöffnet werden. Öffnen Sie {0} in Ihrem Browser oder rufen Sie uns an. ähnelt.
+        /// </summary>
+        public static string FW_SEITE_FEHLER {
+            get {
+                return ResourceManager.GetString("FW_SEITE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartungsseite öffnen ähnelt.
+        /// </summary>
+        public static string FW_SEITE_OEFFNEN {
+            get {
+                return ResourceManager.GetString("FW_SEITE_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre Lizenz unter Hilfe → Lizenz. ähnelt.
+        /// </summary>
+        public static string FW_SPERRE_LIZENZ {
+            get {
+                return ResourceManager.GetString("FW_SPERRE_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fernwartung steht in der Testversion nicht zur Verfügung. Sie erreichen uns per E-Mail. ähnelt.
+        /// </summary>
+        public static string FW_SPERRE_TEST {
+            get {
+                return ResourceManager.GetString("FW_SPERRE_TEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Telefon ähnelt.
+        /// </summary>
+        public static string FW_TELEFON {
+            get {
+                return ResourceManager.GetString("FW_TELEFON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartung ähnelt.
+        /// </summary>
+        public static string FW_TITEL {
+            get {
+                return ResourceManager.GetString("FW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erreichbar ähnelt.
+        /// </summary>
+        public static string FW_ZEITEN {
+            get {
+                return ResourceManager.GetString("FW_ZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Angaben für den Support ähnelt.
+        /// </summary>
+        public static string FW_ZONE_ANGABEN {
+            get {
+                return ResourceManager.GetString("FW_ZONE_ANGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartung ähnelt.
+        /// </summary>
+        public static string FW_ZONE_FERNWARTUNG {
+            get {
+                return ResourceManager.GetString("FW_ZONE_FERNWARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontakt ähnelt.
+        /// </summary>
+        public static string FW_ZONE_KONTAKT {
+            get {
+                return ResourceManager.GetString("FW_ZONE_KONTAKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Diagramm vorhanden ähnelt.
         /// </summary>
         public static string GANGLINIE_KEIN_DIAGRAMM {
@@ -85872,6 +86043,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartung… ähnelt.
+        /// </summary>
+        public static string MENU_FERNWARTUNG {
+            get {
+                return ResourceManager.GetString("MENU_FERNWARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
         /// </summary>
         public static string MENU_GEBAEUDE {
@@ -120409,6 +120589,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SUCHAUSWAHL_PLATZHALTER {
             get {
                 return ResourceManager.GetString("SUCHAUSWAHL_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die info@inekon.de ähnelt.
+        /// </summary>
+        public static string SUP_KONTAKT_MAIL {
+            get {
+                return ResourceManager.GetString("SUP_KONTAKT_MAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0711 9959 826 50 ähnelt.
+        /// </summary>
+        public static string SUP_KONTAKT_TELEFON {
+            get {
+                return ResourceManager.GetString("SUP_KONTAKT_TELEFON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die werktags 9 bis 16 Uhr ähnelt.
+        /// </summary>
+        public static string SUP_KONTAKT_ZEITEN {
+            get {
+                return ResourceManager.GetString("SUP_KONTAKT_ZEITEN", resourceCulture);
             }
         }
         

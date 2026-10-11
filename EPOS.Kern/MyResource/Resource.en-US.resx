@@ -52521,5 +52521,75 @@ chart</value>
   <data name="ADM_SET_MSG_ZAPF_FEHLER" xml:space="preserve">
     <value>The calculation defaults of the draw-off profile could not be saved: {0}</value>
   </data>
+  <!-- Administration und Support, Stufe 2 (Welle 2a) -->
+  <data name="MENU_FERNWARTUNG" xml:space="preserve">
+    <value>Remote support…</value>
+  </data>
+  <data name="SUP_KONTAKT_TELEFON" xml:space="preserve">
+    <value>+49 711 9959 826 50</value>
+  </data>
+  <data name="SUP_KONTAKT_MAIL" xml:space="preserve">
+    <value>info@inekon.de</value>
+  </data>
+  <data name="SUP_KONTAKT_ZEITEN" xml:space="preserve">
+    <value>weekdays 9 am to 4 pm</value>
+  </data>
+  <data name="FW_SPERRE_TEST" xml:space="preserve">
+    <value>Remote support is not available in the trial version. You can reach us by e-mail.</value>
+  </data>
+  <data name="FW_SPERRE_LIZENZ" xml:space="preserve">
+    <value>Remote support is part of the maintenance contract. First activate your license under Help → License.</value>
+  </data>
+  <data name="FW_TITEL" xml:space="preserve">
+    <value>Remote support</value>
+  </data>
+  <data name="FW_ZONE_KONTAKT" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="FW_TELEFON" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="FW_MAIL" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="FW_ZEITEN" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="FW_ZONE_ANGABEN" xml:space="preserve">
+    <value>Your details for support</value>
+  </data>
+  <data name="FW_ANGABEN_HINWEIS" xml:space="preserve">
+    <value>These details let support identify your installation. Copy them into your e-mail or read them out on the phone.</value>
+  </data>
+  <data name="FW_KOPIEREN" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="FW_KOPIERT" xml:space="preserve">
+    <value>The details have been copied to the clipboard.</value>
+  </data>
+  <data name="FW_ZONE_FERNWARTUNG" xml:space="preserve">
+    <value>Remote support</value>
+  </data>
+  <data name="FW_ERKLAERUNG" xml:space="preserve">
+    <value>During remote support, a member of our support team sees your screen and can show you how to use the program or fix a problem with you. Only the support person you are talking to sees your screen; EPOS-Plan records nothing. You accept every connection yourself in the remote support program and can end it there at any time.</value>
+  </data>
+  <data name="FW_SCHRITT_1" xml:space="preserve">
+    <value>Download the remote support program from the remote support page and start it.</value>
+  </data>
+  <data name="FW_SCHRITT_2" xml:space="preserve">
+    <value>Tell support the ID and the one-time password shown.</value>
+  </data>
+  <data name="FW_SCHRITT_3" xml:space="preserve">
+    <value>Accept the request in the program.</value>
+  </data>
+  <data name="FW_SEITE_OEFFNEN" xml:space="preserve">
+    <value>Open remote support page</value>
+  </data>
+  <data name="FW_SEITE_FEHLER" xml:space="preserve">
+    <value>The remote support page could not be opened. Open {0} in your browser or call us.</value>
+  </data>
+  <data name="FW_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
 </root>
 
