@@ -8,10 +8,10 @@ namespace EPOS.Kern.Tests
     public sealed class EntwicklerbereicheTests
     {
         [Fact]
-        public void Neun_Eintraege_mit_eindeutigem_Schluessel_und_Zweck()
+        public void Acht_Eintraege_mit_eindeutigem_Schluessel_und_Zweck()
         {
-            Assert.Equal(9, Entwicklerbereiche.Alle.Count);
-            Assert.Equal(9, Entwicklerbereiche.Alle.Select(b => b.Schluessel).Distinct().Count());
+            Assert.Equal(8, Entwicklerbereiche.Alle.Count);
+            Assert.Equal(8, Entwicklerbereiche.Alle.Select(b => b.Schluessel).Distinct().Count());
             Assert.All(Entwicklerbereiche.Alle, b =>
             {
                 Assert.False(string.IsNullOrWhiteSpace(b.Schluessel));
@@ -27,7 +27,7 @@ namespace EPOS.Kern.Tests
                 Entwicklerbereiche.PROJEKTDATEI_IMPORT, Entwicklerbereiche.PROJEKTDATEI_PROFILE,
                 Entwicklerbereiche.PROJEKTDATEI_IOS, Entwicklerbereiche.PROJEKTDATEI_KI,
                 Entwicklerbereiche.KATALOG_WIEDERHERSTELLEN, Entwicklerbereiche.KI_WERKZEUGE,
-                Entwicklerbereiche.EXPORT_IDS, Entwicklerbereiche.ZAPFPROFIL_VORGABEN,
+                Entwicklerbereiche.EXPORT_IDS,
                 Entwicklerbereiche.WEBVIEW_WERKZEUGE,
             };
             Assert.Equal(konstanten, Entwicklerbereiche.Alle.Select(b => b.Schluessel).ToArray());

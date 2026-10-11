@@ -1,0 +1,192 @@
+﻿@* FERNWARTUNG (Konzept Administration und Support, Abschnitte 4.2 bis 4.4; Entwicklerhandbuch
+   Abschnitt 4).
+
+   WOZU. Hilfe -> Fernwartung... buendelt, was der Anwender fuer den Support braucht: Kontakt,
+   seine Angaben (der Diagnoseblock des Kerns zum Kopieren) und den Weg zur Fernwartung. EPOS-Plan
+   oeffnet dafuer allein die Fernwartungsseite von INEKON im Browser (AS-Q9, Lesart c); das
+   Programm selbst laedt und startet der Anwender dort.
+
+   VIER ZONEN von oben nach unten: Kontakt, Ihre Angaben, Fernwartung, Fussleiste. Ohne bezahlte
+   Lizenz bleibt die dritte Zone SICHTBAR, der Knopf ist gesperrt, der Grund steht darueber.
+   Kein Einwilligungshaken: Die Einwilligung ist die Annahme der Verbindung im
+   Fernwartungsprogramm. Kein Arbeitsstand, deshalb nur „Schliessen".
+
+   KEINE DATENBANK, KEIN KERN (Hausregel EPOS.UI): Freigabe, Grund, Kontakt und Diagnoseblock
+   kommen fertig aus der Huelle (EPOS.UI.Daten/Hilfe/FernwartungHuelle.cs); Browser und
+   Zwischenablage sind Rueckrufe der Plattform. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog epos-fernwartung" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@T.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@T.Titel" />
+        <Schliesskreuz Geschlossen="Schliessen" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* (1) Kontakt — der Teil, der immer nuetzt. *@
+    <section class="epos-fernwartung-zone epos-fw-kontakt">
+        <h2 class="epos-untergruppe">@T.ZoneKontakt</h2>
+        <table class="epos-fernwartung-kontakt">
+            <tbody>
+                <tr><th scope="row">@T.Telefon</th><td class="epos-fw-telefon">@D.Telefon</td></tr>
+                <tr>
+                    <th scope="row">@T.Mail</th>
+                    <td>
+                        @if (AdresseOeffnen is not null && D.Mail.Length > 0)
+                        {
+                            <a class="epos-fw-mail" href="@("mailto:" + D.Mail)"
+                               @onclick="BeiMail" @onclick:preventDefault="true">@D.Mail</a>
+                        }
+                        else
+                        {
+                            <span class="epos-fw-mail">@D.Mail</span>
+                        }
+                    </td>
+                </tr>
+                <tr><th scope="row">@T.Zeiten</th><td class="epos-fw-zeiten">@D.Zeiten</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    @* (2) Ihre Angaben fuer den Support — der Diagnoseblock, nur lesbar. *@
+    <section class="epos-fernwartung-zone epos-fw-angaben">
+        <h2 class="epos-untergruppe">@T.ZoneAngaben</h2>
+        <p class="epos-dialog-einleitung">@T.AngabenHinweis</p>
+        <Textfeld Wert="@D.Diagnosetext" Mehrzeilig="true" Zeilen="8" Festbreite="true" NurLesen="true"
+                  Titel="@T.ZoneAngaben" />
+        @if (Kopieren is not null)
+        {
+            <div class="epos-kontextleiste">
+                <button type="button" class="epos-knopf epos-fw-kopieren" @onclick="BeiKopieren">@T.Kopieren</button>
+            </div>
+        }
+    </section>
+
+    @* (3) Fernwartung — Erklaerung, drei Schritte, der primaere Knopf. *@
+    <section class="epos-fernwartung-zone epos-fw-fernwartung">
+        <h2 class="epos-untergruppe">@T.ZoneFernwartung</h2>
+        <p class="epos-fw-erklaerung">@T.Erklaerung</p>
+        <ol class="epos-fw-schritte">
+            <li>@T.Schritt1</li>
+            <li>@T.Schritt2</li>
+            <li>@T.Schritt3</li>
+        </ol>
+        @if (!D.Erlaubt && D.Sperrgrund.Length > 0)
+        {
+            <p class="epos-fw-sperrgrund" role="note">@D.Sperrgrund</p>
+        }
+        <div class="epos-kontextleiste">
+            <button type="button" class="epos-knopf epos-knopf--primaer epos-fw-seite"
+                    disabled="@(!SeiteAktiv)" @onclick="BeiSeite">@T.SeiteOeffnen</button>
+        </div>
+    </section>
+
+    @* (4) Fussleiste nach Hausregel: Fueller · Schliessen. *@
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer epos-fw-schliessen"
+                @onclick="Schliessen">@T.Schliessen</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Freigabe, Kontakt, Diagnoseblock und Adresse der Fernwartungsseite.</summary>
+    [Parameter] public FernwartungDaten? Daten { get; set; }
+
+    /// <summary>
+    /// Oeffnet eine Adresse (https- oder mailto-) im Standardprogramm; <c>false</c> = misslungen.
+    /// Ohne Rueckruf ist der Knopf gesperrt und die E-Mail kein Link.
+    /// </summary>
+    [Parameter] public Func<string, bool>? AdresseOeffnen { get; set; }
+
+    /// <summary>Legt einen Text in die Zwischenablage; ohne Rueckruf kein Knopf „Kopieren".</summary>
+    [Parameter] public Action<string>? Kopieren { get; set; }
+
+    /// <summary>Der Dialog ist zu (immer <c>false</c>: er schreibt nichts).</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Beschriftungen; ohne Gabe die deutschen Rueckfalltexte.</summary>
+    [Parameter] public FernwartungTexte? Texte { get; set; }
+
+    /// <summary>Der Hilfeschluessel der Hilfepille (Zuordnung in <c>help_mapping.txt</c>).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Fernwartung.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private FernwartungDaten D => Daten ?? FernwartungDaten.Leer;
+    private FernwartungTexte T => Texte ?? _vorgabeTexte;
+    private readonly FernwartungTexte _vorgabeTexte = new();
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Frei nur mit Freigabe, Adresse und Rueckruf — kein Delegat, kein Knopf.</summary>
+    private bool SeiteAktiv => D.Erlaubt && D.Seite.Length > 0 && AdresseOeffnen is not null;
+
+    // =====================================================================
+    // Handlungen
+    // =====================================================================
+
+    private void BeiSeite()
+    {
+        if (!SeiteAktiv) return;
+        if (Oeffnen(D.Seite)) { _meldung = ""; return; }
+        Melden(WarnStufe.Fehler, string.Format(T.SeiteFehler, D.Seite));
+    }
+
+    private void BeiMail()
+    {
+        if (AdresseOeffnen is null || D.Mail.Length == 0) return;
+        string adresse = "mailto:" + D.Mail;
+        if (!Oeffnen(adresse)) Melden(WarnStufe.Fehler, string.Format(T.SeiteFehler, adresse));
+    }
+
+    private void BeiKopieren()
+    {
+        if (Kopieren is null) return;
+        try
+        {
+            Kopieren(D.Diagnosetext);
+            Melden(WarnStufe.Erfolg, T.Kopiert);
+        }
+        catch (Exception ex)
+        {
+            Melden(WarnStufe.Fehler, ex.Message);
+        }
+    }
+
+    /// <summary>Der Rueckruf in eigener Schranke: eine Ausnahme zaehlt als misslungen.</summary>
+    private bool Oeffnen(string adresse)
+    {
+        try { return AdresseOeffnen!(adresse); }
+        catch { return false; }
+    }
+
+    private void Melden(WarnStufe stufe, string text)
+    {
+        _meldungStufe = stufe;
+        _meldung = text ?? "";
+    }
+
+    private async Task Schliessen() => await Geschlossen.InvokeAsync(false);
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+        await Schliessen();
+    }
+}

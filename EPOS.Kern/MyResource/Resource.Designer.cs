@@ -1692,15 +1692,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenvorgaben des Zapfprofils für Entwicklung und Prüfung. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms. ähnelt.
-        /// </summary>
-        public static string ADM_SET_HINT_ENTWICKLUNG {
-            get {
-                return ResourceManager.GetString("ADM_SET_HINT_ENTWICKLUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gilt nur für neu angelegte Projekte. Vorhandene Projekte behalten ihre Einstellung, ein kopiertes Projekt übernimmt die seiner Vorlage. ähnelt.
         /// </summary>
         public static string ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG {
@@ -1724,6 +1715,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_HINT_PFADE_FEST {
             get {
                 return ResourceManager.GetString("ADM_SET_HINT_PFADE_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenvorgaben des Zapfprofilgenerators für alle Projekte: Anzeigetemperatur der Literangabe, Stundenschwelle, Nenninhalte der Speicherauswahl und die Startordner für Katalogpaket und Typtage. Ein leeres Feld heißt: Es gilt die Vorgabe des Programms; einen ungültigen Wert verwirft die Rechnung mit Hinweis und rechnet mit der Vorgabe. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_ZAPFPROFIL", resourceCulture);
             }
         }
         
@@ -2052,15 +2052,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Entwicklung ähnelt.
-        /// </summary>
-        public static string ADM_SET_RUBRIK_ENTWICKLUNG {
-            get {
-                return ResourceManager.GetString("ADM_SET_RUBRIK_ENTWICKLUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
         /// </summary>
         public static string ADM_SET_RUBRIK_KLIMA {
@@ -2084,6 +2075,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_RUBRIK_WEB {
             get {
                 return ResourceManager.GetString("ADM_SET_RUBRIK_WEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_ZAPFPROFIL", resourceCulture);
             }
         }
         
@@ -29227,6 +29227,177 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FORTSCHRITT_LAEUFT {
             get {
                 return ResourceManager.GetString("FORTSCHRITT_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit diesen Angaben erkennt der Support Ihre Installation. Kopieren Sie sie in Ihre E-Mail oder lesen Sie sie am Telefon vor. ähnelt.
+        /// </summary>
+        public static string FW_ANGABEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("FW_ANGABEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Den Bildschirm sieht nur der Support, mit dem Sie gerade sprechen; EPOS-Plan zeichnet dabei nichts auf. Jede Verbindung nehmen Sie im Fernwartungsprogramm selbst an, und Sie können sie dort jederzeit beenden. ähnelt.
+        /// </summary>
+        public static string FW_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("FW_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren ähnelt.
+        /// </summary>
+        public static string FW_KOPIEREN {
+            get {
+                return ResourceManager.GetString("FW_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Angaben stehen in der Zwischenablage. ähnelt.
+        /// </summary>
+        public static string FW_KOPIERT {
+            get {
+                return ResourceManager.GetString("FW_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E-Mail ähnelt.
+        /// </summary>
+        public static string FW_MAIL {
+            get {
+                return ResourceManager.GetString("FW_MAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string FW_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("FW_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden Sie das Fernwartungsprogramm von der Fernwartungsseite und starten Sie es. ähnelt.
+        /// </summary>
+        public static string FW_SCHRITT_1 {
+            get {
+                return ResourceManager.GetString("FW_SCHRITT_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennen Sie dem Support die angezeigte Kennung und das Einmalkennwort. ähnelt.
+        /// </summary>
+        public static string FW_SCHRITT_2 {
+            get {
+                return ResourceManager.GetString("FW_SCHRITT_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nehmen Sie die Anfrage im Programm an. ähnelt.
+        /// </summary>
+        public static string FW_SCHRITT_3 {
+            get {
+                return ResourceManager.GetString("FW_SCHRITT_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fernwartungsseite konnte nicht geöffnet werden. Öffnen Sie {0} in Ihrem Browser oder rufen Sie uns an. ähnelt.
+        /// </summary>
+        public static string FW_SEITE_FEHLER {
+            get {
+                return ResourceManager.GetString("FW_SEITE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartungsseite öffnen ähnelt.
+        /// </summary>
+        public static string FW_SEITE_OEFFNEN {
+            get {
+                return ResourceManager.GetString("FW_SEITE_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre Lizenz unter Hilfe → Lizenz. ähnelt.
+        /// </summary>
+        public static string FW_SPERRE_LIZENZ {
+            get {
+                return ResourceManager.GetString("FW_SPERRE_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fernwartung steht in der Testversion nicht zur Verfügung. Sie erreichen uns per E-Mail. ähnelt.
+        /// </summary>
+        public static string FW_SPERRE_TEST {
+            get {
+                return ResourceManager.GetString("FW_SPERRE_TEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Telefon ähnelt.
+        /// </summary>
+        public static string FW_TELEFON {
+            get {
+                return ResourceManager.GetString("FW_TELEFON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartung ähnelt.
+        /// </summary>
+        public static string FW_TITEL {
+            get {
+                return ResourceManager.GetString("FW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erreichbar ähnelt.
+        /// </summary>
+        public static string FW_ZEITEN {
+            get {
+                return ResourceManager.GetString("FW_ZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Angaben für den Support ähnelt.
+        /// </summary>
+        public static string FW_ZONE_ANGABEN {
+            get {
+                return ResourceManager.GetString("FW_ZONE_ANGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartung ähnelt.
+        /// </summary>
+        public static string FW_ZONE_FERNWARTUNG {
+            get {
+                return ResourceManager.GetString("FW_ZONE_FERNWARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontakt ähnelt.
+        /// </summary>
+        public static string FW_ZONE_KONTAKT {
+            get {
+                return ResourceManager.GetString("FW_ZONE_KONTAKT", resourceCulture);
             }
         }
         
@@ -86718,6 +86889,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartung… ähnelt.
+        /// </summary>
+        public static string MENU_FERNWARTUNG {
+            get {
+                return ResourceManager.GetString("MENU_FERNWARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
         /// </summary>
         public static string MENU_GEBAEUDE {
@@ -121646,6 +121826,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die info@inekon.de ähnelt.
+        /// </summary>
+        public static string SUP_KONTAKT_MAIL {
+            get {
+                return ResourceManager.GetString("SUP_KONTAKT_MAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0711 9959 826 50 ähnelt.
+        /// </summary>
+        public static string SUP_KONTAKT_TELEFON {
+            get {
+                return ResourceManager.GetString("SUP_KONTAKT_TELEFON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die werktags 9 bis 16 Uhr ähnelt.
+        /// </summary>
+        public static string SUP_KONTAKT_ZEITEN {
+            get {
+                return ResourceManager.GetString("SUP_KONTAKT_ZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ZIP-Archiv (*.zip)|*.zip ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_DATEIFILTER {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_DATEIFILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Supportpaket speichern ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_DIALOGTITEL {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_DIALOGTITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Enthalten: {0} ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_ENTHALTEN {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_ENTHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht vorhanden: {0} ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_FEHLEND {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_FEHLEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Supportpaket konnte nicht gespeichert werden: {0} ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_FEHLER {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Supportpaket gespeichert: {0} ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KI-Protokoll beilegen ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_HAKEN {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_HAKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das KI-Protokoll kann Ihre Eingaben an den Assistenten enthalten. ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_HAKEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_HAKEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Supportpaket enthält die Diagnosedaten und die Protokolle des Programms, keine Projektdaten und keine Datenbank. Hängen Sie die Datei an Ihre E-Mail an den Support. ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_HINWEIS {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Ziel für das Supportpaket angegeben. ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_KEIN_ZIEL {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_KEIN_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Supportpaket speichern… ähnelt.
+        /// </summary>
+        public static string SUP_PAKET_KNOPF {
+            get {
+                return ResourceManager.GetString("SUP_PAKET_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe absolut [{0}] ähnelt.
         /// </summary>
         public static string SZP_ABSOLUT {
@@ -122785,6 +123091,132 @@ namespace WindowsFormsApplication1.MyResource {
         public static string TRANSFER_STAMM_BEREITS {
             get {
                 return ResourceManager.GetString("TRANSFER_STAMM_BEREITS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit diesen Angaben erkennt der Support Ihre Installation. Kopieren Sie sie in Ihre E-Mail oder lesen Sie sie am Telefon vor. ähnelt.
+        /// </summary>
+        public static string UEB_DIAGNOSE_HINWEIS {
+            get {
+                return ResourceManager.GetString("UEB_DIAGNOSE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fernwartung… ähnelt.
+        /// </summary>
+        public static string UEB_FERNWARTUNG {
+            get {
+                return ResourceManager.GetString("UEB_FERNWARTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagnosedaten kopieren ähnelt.
+        /// </summary>
+        public static string UEB_KOPIEREN {
+            get {
+                return ResourceManager.GetString("UEB_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Diagnosedaten stehen in der Zwischenablage. ähnelt.
+        /// </summary>
+        public static string UEB_KOPIERT {
+            get {
+                return ResourceManager.GetString("UEB_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E-Mail ähnelt.
+        /// </summary>
+        public static string UEB_MAIL {
+            get {
+                return ResourceManager.GetString("UEB_MAIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das E-Mail-Programm konnte nicht geöffnet werden. Schreiben Sie an {0}. ähnelt.
+        /// </summary>
+        public static string UEB_MAIL_FEHLER {
+            get {
+                return ResourceManager.GetString("UEB_MAIL_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Diagnosedaten sind aktualisiert. ähnelt.
+        /// </summary>
+        public static string UEB_MODUS_GEWECHSELT {
+            get {
+                return ResourceManager.GetString("UEB_MODUS_GEWECHSELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokollordner öffnen ähnelt.
+        /// </summary>
+        public static string UEB_PROTOKOLLORDNER {
+            get {
+                return ResourceManager.GetString("UEB_PROTOKOLLORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string UEB_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("UEB_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Telefon ähnelt.
+        /// </summary>
+        public static string UEB_TELEFON {
+            get {
+                return ResourceManager.GetString("UEB_TELEFON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version {0} vom {1} ähnelt.
+        /// </summary>
+        public static string UEB_VERSION_BAUDATUM {
+            get {
+                return ResourceManager.GetString("UEB_VERSION_BAUDATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erreichbar ähnelt.
+        /// </summary>
+        public static string UEB_ZEITEN {
+            get {
+                return ResourceManager.GetString("UEB_ZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagnosedaten ähnelt.
+        /// </summary>
+        public static string UEB_ZONE_DIAGNOSE {
+            get {
+                return ResourceManager.GetString("UEB_ZONE_DIAGNOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontakt ähnelt.
+        /// </summary>
+        public static string UEB_ZONE_KONTAKT {
+            get {
+                return ResourceManager.GetString("UEB_ZONE_KONTAKT", resourceCulture);
             }
         }
         

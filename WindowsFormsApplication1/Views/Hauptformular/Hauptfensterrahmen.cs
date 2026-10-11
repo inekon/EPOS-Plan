@@ -179,17 +179,6 @@ namespace WindowsFormsApplication1
         /// </remarks>
         protected override bool ProcessCmdKey(ref Message nachricht, Keys taste)
         {
-            // DIE TASTENFOLGE DES ENTWICKLERMODUS (Administration und Support, Stufe 1):
-            // Strg+Umschalt+Alt+E. Das Konzept legt die Geste in den Dialog „Ueber EPOS-Plan";
-            // bis der kommt, ist „Hilfe -> Version" ein Meldungsfeld, und die Folge liegt hier.
-            // Die Rueckfrage laeuft eine Nachricht spaeter, nicht mitten in der Tastenverarbeitung.
-            if (taste == (Keys.Control | Keys.Shift | Keys.Alt | Keys.E) && !DesignMode)
-            {
-                BeginInvoke(new Action(() => EntwicklungHuelle.EinschaltenNachRueckfrage(
-                    () => _huelle?.FreigabeNeuVersorgen())));
-                return true;
-            }
-
             if (taste == Keys.F1 && !DesignMode)
             {
                 // OHNE Aufrufkontext (Auftrag #199): F1 ist der globale Weg und kennt
