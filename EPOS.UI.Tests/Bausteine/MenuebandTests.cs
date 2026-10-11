@@ -7,6 +7,7 @@ using System.Threading;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten;
+using WindowsFormsApplication1;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Xunit;
@@ -200,22 +201,27 @@ public class MenuebandTests : EposBunitContext
         // PVG (Schemaschritt 206): der Punkt „PV-Ganglinie" unter „Profile & Lastgänge" (67 -> 68, 53 -> 54).
         // E119: der Import für Kälteanlagen unter „Daten & Import" (68 -> 69, 54 -> 55).
         // K-C: der Import der Kältemaschinen dahinter (69 -> 70, 55 -> 56).
-        Assert.Equal(70, Punkte.Count);
+        // Administration und Support, Stufe 1: der Kopf „Entwicklung" mit sieben handelnden
+        // Punkten, nur im Entwicklermodus sichtbar (70 -> 78, 56 -> 63). Die Zahlen hier gelten
+        // fuer den VOLLSTAENDIGEN Baum Eintraege; den Zuschnitt je Stufe pruefen die Faelle
+        // zu Menuetabelle.Sichtbar weiter unten und EntwicklerbereicheWacheTests.
+        Assert.Equal(78, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
         // MN-1 bringt FUENF: vier in der obersten Ebene des Kopfes
         // "Administration" (Ort | Anlagen | Kosten | Daten & Import |
         // Einstellungen) und einen in "Daten & Import" vor der
-        // Dublettenpruefung. Also 8 + 5 = 13.
-        Assert.Equal(13, Menuetabelle.Alle.Count(p => p.Trenner));
+        // Dublettenpruefung. Also 8 + 5 = 13. Der Kopf „Entwicklung" bringt zwei (15).
+        Assert.Equal(15, Menuetabelle.Alle.Count(p => p.Trenner));
 
         // VIER Koepfe der obersten Ebene: Projekt, Administration, Hilfe,
         // Sprache. Im Bestand waren es fuenf (menuToolbar.Items.AddRange =
         // Projekt, Administration, Hilfe, Deutsch, Englisch); die zwei
         // Sprachpunkte sind mit W16c-E-2 unter EINEN Kopf gewandert.
-        Assert.Equal(4, Menuetabelle.Eintraege.Count);
-        Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
+        // Der vollstaendige Baum fuehrt dazu den Kopf „Entwicklung" vor „Sprache" (fuenf).
+        Assert.Equal(5, Menuetabelle.Eintraege.Count);
+        Assert.Equal(new[] { "Projekte", "Administration", "Help", "MenuItem_Entwicklung", "Sprache" },
                      Menuetabelle.Eintraege.Select(p => p.Name).ToArray());
     }
 
@@ -588,7 +594,7 @@ public class MenuebandTests : EposBunitContext
         // der Punkt kam erst nach einem zweiten Klick.
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Administration").Click();
@@ -684,7 +690,7 @@ public class MenuebandTests : EposBunitContext
         // in den DOM.
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Administration").Click();
@@ -718,7 +724,7 @@ public class MenuebandTests : EposBunitContext
         // eine Ebene hoeher.
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Administration").Click();
@@ -750,7 +756,7 @@ public class MenuebandTests : EposBunitContext
         // Die dritte Stufe muss auch mit der TASTATUR aufgehen: → oeffnet das
         // Untermenue des markierten Punktes, ← schliesst GENAU eine Ebene
         // (Nachweis N4 / Befund W16c-B13).
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
         var band = cut.Find(".epos-menueband");
 
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Administration
@@ -1145,7 +1151,7 @@ public class MenuebandTests : EposBunitContext
         // Derselbe Weg am gezeichneten Band: Administration ▸ Waermebedarf &
         // Heizung ▸ Profile & Lastgaenge. Erst dort stehen die drei
         // Zeitreihen im DOM.
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         cut.Find("#menue-Administration").Click();
         cut.Find("#menue-MenuItem_WBundHeizung").Click();
@@ -1271,7 +1277,7 @@ public class MenuebandTests : EposBunitContext
         // echten Weg an (49 -> 50).
         //
         // „Katalog aktualisieren…" (KU1 Stufe 1) ist ein echter Weg (50 -> 51).
-        Assert.Equal(14, Punkte.Count(p => p.Klappt));
+        Assert.Equal(15, Punkte.Count(p => p.Klappt));
         //
         // „Brennstoffe des Projekts…" (Anwenderentscheid 03.10.2026) ist ein echter Weg (51 -> 52).
         //
@@ -1280,17 +1286,62 @@ public class MenuebandTests : EposBunitContext
         // Der Import für Kälteanlagen (E119) ist ein echter Weg (54 -> 55).
         //
         // Der Import der Kältemaschinen (K-C) ist ein echter Weg (55 -> 56).
-        Assert.Equal(56, Punkte.Count(p => !p.Klappt));
+        //
+        // Der Kopf „Entwicklung" (Administration und Support, Stufe 1) klappt auf (14 -> 15)
+        // und fuehrt sieben handelnde Punkte (56 -> 63).
+        Assert.Equal(63, Punkte.Count(p => !p.Klappt));
+    }
+
+    // =====================================================================
+    //  Zuschnitt je Freigabestufe (Administration und Support, Stufe 1)
+    // =====================================================================
+
+    [Fact]
+    public void Der_Baum_des_Anwenders_ist_der_Bestand_ohne_den_Kopf_Entwicklung()
+    {
+        List<Menuepunkt> anwender = Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender)).ToList();
+
+        // 78 - 8 = 70 Punkte, 15 - 2 = 13 Trenner, 63 - 7 = 56 handelnde: der Stand vor Stufe 1.
+        Assert.Equal(70, anwender.Count(p => !p.Trenner));
+        Assert.Equal(13, anwender.Count(p => p.Trenner));
+        Assert.Equal(56, anwender.Count(p => !p.Trenner && !p.Klappt));
+        Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
+                     Menuetabelle.Sichtbar(Freigabestufe.Anwender).Select(p => p.Name).ToArray());
+        Assert.All(anwender, p => Assert.Equal(Freigabestufe.Anwender, p.Stufe));
     }
 
     [Fact]
-    public void Nur_der_PV_Import_traegt_ein_Argument()
+    public void Der_Baum_des_Entwicklers_ist_der_vollstaendige_Baum()
     {
+        List<Menuepunkt> entwickler = Flach(Menuetabelle.Sichtbar(Freigabestufe.Entwickler)).ToList();
+        List<Menuepunkt> alle = Menuetabelle.Alle.ToList();
+
+        Assert.Equal(alle.Select(p => p.Name), entwickler.Select(p => p.Name));
+        Assert.Equal(78, entwickler.Count(p => !p.Trenner));
+        Assert.Equal(15, entwickler.Count(p => p.Trenner));
+    }
+
+    [Fact]
+    public void Sichtbar_bildet_den_Zuschnitt_je_Stufe_einmal()
+    {
+        Assert.Same(Menuetabelle.Sichtbar(Freigabestufe.Anwender), Menuetabelle.Sichtbar(Freigabestufe.Anwender));
+        Assert.Same(Menuetabelle.Sichtbar(Freigabestufe.Entwickler), Menuetabelle.Sichtbar(Freigabestufe.Entwickler));
+        // Eintraege bleibt der vollstaendige Baum.
+        Assert.Contains(Menuetabelle.Eintraege, p => p.Name == "MenuItem_Entwicklung");
+    }
+
+    [Fact]
+    public void Im_Baum_des_Anwenders_traegt_nur_der_PV_Import_ein_Argument()
+    {
+        // Administration und Support, Stufe 1: Der Entwicklerpunkt „Auslieferungsstand
+        // wiederherstellen…" traegt „wiederherstellen" zum Katalogabgleich - er steht nur im
+        // Baum des Entwicklers (EntwicklerbereicheWacheTests). Im Baum des Anwenders gilt:
         // Masken.PvImport ist der einzige Schluessel des Bestands mit einer
         // Zusatzangabe ("CEC" bzw. "PAN"). Der zweite Menuepunkt dafuer
         // (MenuItem_PV_Import_PAN) stand in KEINEM Designer - sein Handler war
         // tot (Befund W16-B24) und faellt mit W16c.3.
-        Menuepunkt[] mitArgument = Punkte.Where(p => p.Argument.Length > 0).ToArray();
+        Menuepunkt[] mitArgument = Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender))
+            .Where(p => !p.Trenner && p.Argument.Length > 0).ToArray();
 
         Assert.Single(mitArgument);
         Assert.Equal("MenuItem_PV_Import_CEC", mitArgument[0].Name);
@@ -1380,7 +1431,7 @@ public class MenuebandTests : EposBunitContext
     [Fact]
     public void Das_Band_zeigt_die_vier_Punkte_der_obersten_Ebene()
     {
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         var knoepfe = cut.FindAll(".epos-menueband > .epos-menueband-punkt > .epos-menueband-knopf, " +
                                   ".epos-menueband > .epos-menueband-knopf");
@@ -1406,7 +1457,7 @@ public class MenuebandTests : EposBunitContext
         // ANWENDERWUNSCH 05.09.2026 (W16c-E-4): "Sprache soll oben rechts sein"
         // - so wie im Bestand die zwei Sprachpunkte, die als letzte Eintraege
         // des MenuStrip rechtsbuendig am Rand sassen.
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         // Genau EIN Kopf traegt das Kennzeichen, und es ist der letzte.
         var rechts = cut.FindAll(".epos-menueband > .epos-menueband-punkt--rechts");
@@ -1447,7 +1498,7 @@ public class MenuebandTests : EposBunitContext
     [Fact]
     public void Ein_Klick_auf_einen_Kopf_klappt_sein_Untermenue_auf()
     {
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
 
@@ -1467,7 +1518,7 @@ public class MenuebandTests : EposBunitContext
     {
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Projekte").Click();
@@ -1484,7 +1535,7 @@ public class MenuebandTests : EposBunitContext
     [Fact]
     public void Ein_Untermenue_der_dritten_Ebene_klappt_seitlich_auf()
     {
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         cut.Find("#menue-Administration").Click();
         cut.Find("#menue-MenuItem_Energiesysteme").Click();
@@ -1501,7 +1552,7 @@ public class MenuebandTests : EposBunitContext
         // ▸ Photovoltaik ▸ PV Module. Das Band kann das seit W16c-E-6
         // (Muster "Profile & Lastgaenge") - der Zaehler ist der Nachweis, dass
         // es die Klappen SCHACHTELT und nicht ersetzt.
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         cut.Find("#menue-Administration").Click();
         cut.Find("#menue-MenuItem_Energiesysteme").Click();
@@ -1536,7 +1587,7 @@ public class MenuebandTests : EposBunitContext
         // HauptfensterHuelle.SpracheSetzen das Programm neu startet.
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         // Zugeklappt gibt es die Sprachpunkte nicht.
@@ -1558,7 +1609,7 @@ public class MenuebandTests : EposBunitContext
     {
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Sprache").Click();
@@ -1575,7 +1626,7 @@ public class MenuebandTests : EposBunitContext
         // Die Tastatur bedient das Band unveraendert (A-1); nur sind es seit
         // W16c-E-2 VIER Koepfe statt fuenf, und der letzte klappt auf, statt zu
         // handeln. Nach links vom ersten ist der letzte - das ist "Sprache".
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
         var band = cut.Find(".epos-menueband");
 
         band.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
@@ -1598,7 +1649,7 @@ public class MenuebandTests : EposBunitContext
     [Fact]
     public void Escape_klappt_das_offene_Menue_zu()
     {
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         cut.Find("#menue-Administration").Click();
         Assert.Single(cut.FindAll(".epos-menueband-klappe"));
