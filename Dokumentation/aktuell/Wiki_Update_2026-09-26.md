@@ -276,7 +276,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
 - Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#911)
 
-*Die folgenden zweiunddreißig Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939, #940, #951, #953, #960 bis #964, #966, #982, #988, #989, #998 und #999) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden dreiunddreißig Sätze (#891 bis #898, #900, #902, #905 bis #910, #914, #924, #926, #939, #940, #951, #953, #960 bis #964, #966, #982, #988, #989, #998, #999 und #1009) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -310,6 +310,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 11.10.2026: In der Wärmepumpen-Verwaltung öffnet „Bearbeiten…“ einen gemeinsamen Dialog für Anlage, Kenndaten und Kennlinien, für Projekt- und Katalogsätze gleich aufgebaut. (#989)
 - Seit 11.10.2026: In den Verwaltungsdialogen für BHKW, Pufferspeicher, Stromspeicher, Solarthermie und Photovoltaik wählt der Klick auf die Zeile den Satz; die Knöpfe Vergleichen…, Schloss, Löschen, Bearbeiten… und, wo vorhanden, Neu… stehen in der Zeile „Gewählter Satz“. (#998)
 - Seit 11.10.2026: Kältemaschinen, Bedarfsprofile, Wärmebedarf extern, Stromganglinie, Solar- und PV-Ganglinien sowie Gebäude haben ebenfalls die Knopfleiste am gewählten Satz; „DB ändern…“ heißt jetzt „Bearbeiten…“. (#999)
+- Seit 11.10.2026: Die Einzeltage (Feiertage, Ausnahmen) im Kalender der Konditionierung lassen sich auf- und zuklappen; der Kopf nennt ihre Anzahl, „+ Einzeltag“ und „Feiertage laden“ stehen in der Kopfzeile.
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
