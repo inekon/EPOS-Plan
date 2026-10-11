@@ -9839,6 +9839,14 @@ table.epos-simerg-tabelle {
 }
 
 /* ===== Über EPOS-Plan (Administration und Support, Stufe 3; Konzept 5) ===== */
+/* Im eigenen Fenster fuellt die Wurzel das Fenster: Ein Klick in die freie Flaeche trifft
+   dann das Wurzel-div (tabindex="-1") und laesst den Fokus dort - sonst landet er auf body,
+   und @onkeydown sieht weder die Geste Strg+Umschalt+F12 noch Escape. Kopf und Schlussleiste
+   bleiben unberuehrt; die Hoehe zaehlt mit border-box die Polster mit. */
+#app:has(> .epos-fenstermarke) > .epos-dialog.epos-ueber {
+    min-height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
+}
+
 .epos-ueber-zone {
     margin: 0 0 12px 0;
 }
