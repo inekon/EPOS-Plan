@@ -12849,13 +12849,6 @@ table.epos-simerg-tabelle {
     max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
 }
 
-/* Der Dialog des Hauses ist auf 1160 px gedeckelt, damit im maximierten */
-/* Fenster keine Bandwurmzeilen entstehen. Drei Spalten sind keine       */
-/* Bandwurmzeile - hier zaehlt die Breite der Spalte, nicht die der      */
-/* Seite.                                                                */
-.epos-wp-anlage {
-    max-width: none;
-}
 /* W7-B-3 (08.09.2026): die Detailansicht eingebettet in der Waermepumpen
    Verwaltung - kein zweiter Dialograhmen, ein Strich trennt sie von der Auswahl. */
 /* W10b-B-3 (08.09.2026): der Extrapolationsschalter bei den Kennlinien der Waermepumpe. */
@@ -12884,36 +12877,46 @@ table.epos-simerg-tabelle {
     justify-content: flex-end;
 }
 
-.epos-wp-spalten {
+/* DIE SATZ-UEBERLAGERUNG DER WAERMEPUMPE (AW2): Projektsatz und Katalogsatz gleich gebaut -
+   die Kostenzeile oben, darunter „Auslegung fuer Verteilung" (schmal) neben „Waermepumpen
+   Kenndaten", die Kennlinien ueber die volle Breite. Unter 900 px stehen alle drei
+   untereinander. Der Koerper der Ueberlagerung ist der einzige Rollbereich. */
+.epos-wp-satzueberlagerung {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+.epos-wp-abschnitte {
+    display: grid;
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1fr);
+    align-items: start;
     gap: var(--epos-rand);
 }
-
-.epos-wp-spalte {
+.epos-wp-abschnitt {
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;                           /* laesst das Raster waagerecht rollen */
 }
-
-.epos-wp-spalte--links {
-    flex: 1.25 1 420px;
-}
-
-/* Die schmalste Spalte des Vorbilds. Damit die Beschriftung trotzdem    */
-/* NEBEN dem Feld bleibt, senkt sie die zwei Token des Formularrasters - */
-/* das ist die eine Stelle, an der 12 rem Beschriftungsspalte zu viel    */
-/* waeren.                                                               */
-.epos-wp-spalte--mitte {
-    flex: 0.6 1 300px;
+/* Die schmale Spalte: die Beschriftung bleibt NEBEN dem Feld. */
+.epos-wp-abschnitt--auslegung {
     --epos-beschriftung-breite: 8rem;
     --epos-formularspalte: 17rem;
 }
-
-.epos-wp-spalte--rechts {
-    flex: 1 1 400px;
+.epos-wp-abschnitt--kennlinien {
+    grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+    .epos-wp-abschnitte {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+/* Die weiche Sperre „nur im Projekt" am Katalogsatz: der Hinweis steht als Text in der Gruppe. */
+.epos-nurprojekt-hinweis {
+    margin: 0;
+    color: var(--epos-text-leise);
+    font-style: italic;
 }
 
 /* Die HERKUNFT der Kennlinien (Windows-Abnahme V2 07.09.2026, Befund     */
@@ -12937,22 +12940,6 @@ table.epos-simerg-tabelle {
     margin-bottom: var(--epos-rand);
 }
 
-/* Ueberschrift und "Modul-Katalog..." stehen in EINER Zeile - im        */
-/* Vorbild label_WP bei 16/13 und btn_Katalog bei 286/10.                */
-.epos-wp-auswahl-kopf {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--epos-rand);
-}
-
-/* Die Liste rollt IN SICH und schiebt die Spalte nicht auseinander      */
-/* (Hausregel W9-B-2). Sie ist niedriger als --epos-listenhoehe (22 rem),*/
-/* weil unter ihr in derselben Spalte noch der ganze Spitzenlastblock    */
-/* steht; im Vorbild war sie sogar nur eine Klappliste von 23 px.        */
-.epos-wp-auswahlliste {
-    max-height: 11rem;
-}
 
 /* Die DREI Erklaerkaesten des Vorbilds - label21 (128,255,128 gruen),   */
 /* label22 (255,255,128 gelb) und label23 (Aqua). Sie tragen viel Text   */

@@ -784,7 +784,7 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     {
         { "HeizkesselDialog",        "Form_Heizkessel.Berechnung" },
         { "BhkwDialog",              "Form_BHKWEing.Berechnung" },
-        { "WaermepumpeAnlageDialog", "Form_WP.Berechnung" },
+        { "WaermepumpeAnlageFelder", "Form_WP.Berechnung" },
         { "BetriebsmodusDialog",     "Form_Betriebsmodus.Berechnung" },
         { "PufferspeicherDialog",    "Form_PufferSp.Berechnung" },
         { "PufferSpProjektDialog",   "Form_PufferSp_Projekt.Berechnung" },

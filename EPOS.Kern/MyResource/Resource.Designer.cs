@@ -136805,15 +136805,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Auswahl: ähnelt.
-        /// </summary>
-        public static string WPA_LBL_WP {
-            get {
-                return ResourceManager.GetString("WPA_LBL_WP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm ähnelt.
         /// </summary>
         public static string WPA_LBL_ZEITPROGRAMM {
@@ -137035,15 +137026,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_RUECKLAUF_VORSCHLAG {
             get {
                 return ResourceManager.GetString("WPA_RUECKLAUF_VORSCHLAG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Detailansicht ähnelt.
-        /// </summary>
-        public static string WPA_TITEL {
-            get {
-                return ResourceManager.GetString("WPA_TITEL", resourceCulture);
             }
         }
         
@@ -137413,15 +137395,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_BTN_FILTERN {
             get {
                 return ResourceManager.GetString("WPK_BTN_FILTERN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 📋  Modul-Katalog... ähnelt.
-        /// </summary>
-        public static string WPK_BTN_KATALOG {
-            get {
-                return ResourceManager.GetString("WPK_BTN_KATALOG", resourceCulture);
             }
         }
         
@@ -138506,15 +138479,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage… ähnelt.
-        /// </summary>
-        public static string WPV_BTN_ANLAGE {
-            get {
-                return ResourceManager.GetString("WPV_BTN_ANLAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht ähnelt.
         /// </summary>
         public static string WPV_BTN_ANSICHT {
@@ -138632,6 +138596,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur im Projekt: Diese Angaben gehören zur Anlage im Projekt, nicht zum Katalogsatz. ähnelt.
+        /// </summary>
+        public static string WPV_NUR_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("WPV_NUR_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Gerät gehen Heiz- und Kühlkennlinie mit allen Stützstellen. Im Projekt bleiben die Anlagendaten: Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten, Wärmequelle, Einbindung und Übergabegrenzen der Anlage sowie die Senken. ähnelt.
         /// </summary>
         public static string WPV_RUECK_BLEIBT {
@@ -138695,15 +138668,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten ähnelt.
-        /// </summary>
-        public static string WPV_TIP_ANLAGE {
-            get {
-                return ResourceManager.GetString("WPV_TIP_ANLAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die links markierte Wärmepumpe durch die rechts markierte ersetzen — Betriebsdaten und Kosten der Zeile bleiben. ähnelt.
         /// </summary>
         public static string WPV_TIP_UMSTELLEN {
@@ -138727,15 +138691,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPV_TITEL {
             get {
                 return ResourceManager.GetString("WPV_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage – {0} ähnelt.
-        /// </summary>
-        public static string WPV_TITEL_ANLAGE {
-            get {
-                return ResourceManager.GetString("WPV_TITEL_ANLAGE", resourceCulture);
             }
         }
         
