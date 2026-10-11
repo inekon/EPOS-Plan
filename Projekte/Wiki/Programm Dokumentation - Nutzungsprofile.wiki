@@ -90,7 +90,7 @@ Nummer;Bezeichner;Beschreibung;Stunden_PERSONEN_WERKTAG;Zeile_HEIZSOLL_TAG
 </pre>
 
 == Hinweise ==
-
+* Die Jahresprofile von Strom, Warmwasser und Prozesswärme eines Projekts wählt der Dialog der Bedarfsprofile mit Projektliste, Katalog und Zusammenfassung des gewählten Satzes ([[Strombedarf erfassen#dialog-strombedarf|Strombedarf]], [[Wärmebedarf erfassen#dialog-bedarfsprofile|Warmwasser und Prozesswärme]]).
 * Ausgelieferte Profile sind schreibgeschützt; ändern lässt sich nur eine Kopie.
 * Ein Profil ohne Werte, etwa ein DIN-Profil, überträgt nichts. Die Vorschau zeigt das an.
 * Im Gebäudeimport mit nur einer Zone setzt das Programm kein Profil von selbst; es nennt den Vorschlag, den Sie im Gebäudeeditor zuweisen.

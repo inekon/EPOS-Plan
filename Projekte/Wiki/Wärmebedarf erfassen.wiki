@@ -44,6 +44,13 @@ Warmwasser und Prozesswärme werden nach demselben Muster erfasst: Sie wählen e
 
 Für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag an, wahlweise mit Vorlauf und Rücklauf des Prozesses; der Katalog liefert acht typische Betriebsweisen als Vorlage. Je Zuordnung wählt ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] Feiertage und Betriebsferien, die das Wochenprofil tageweise ersetzen.
 
+=== Dialoge Warmwasser und Prozesswärme ===
+{{Anker|dialog-bedarfsprofile|bedarfsprofile}}
+
+Der Dialog zeigt oben die Liste ''Im Projekt'' mit der Jahressumme aller Zuordnungen in der Kopfleiste, darunter den ''Katalog (Datenbank)'' und unten die Zeile ''gewählter Satz''. ''In das Projekt übernehmen'' (auch Doppelklick oder Enter) nimmt einen oder mehrere angekreuzte Katalogsätze auf und legt dabei die Projektkopie an; ''Aus dem Projekt entfernen'' wirkt auf die Auswahl. Die Zeile ''gewählter Satz'' fasst Typ, Jahressumme, Kalender und Beschreibung zusammen, bei der Prozesswärme auch Vorlauf und Rücklauf. ''Bearbeiten'' oder der Stift am Ende einer Projektzeile öffnet den Satz über dem Dialog: Dort stehen der neue Jahresverbrauch mit Einheit, bei der Prozesswärme das Temperaturniveau und der Betriebskalender; ''OK'' übernimmt die Eingaben, ''Abbrechen'' stellt den Stand beim Öffnen wieder her. ''Simulation…'' in der Kopfleiste rechnet den Bedarf mit dem Stand des Dialogs und zeigt Kennzahlen, Monate und Grafik.
+
+Die Fußleiste des Katalogs trägt ''Typ ändern…'' (die Wochenprofile der Typen), ''DB ändern…'' (der gewählte Katalogsatz im Katalogeditor), ''Schloss setzen…'' bzw. ''Schloss aufheben…'' und ''Löschen''; rechts legt ''Neu…'' einen Katalogsatz an. Ein gesperrter Katalogsatz öffnet über den Stift nur zum Lesen. Beim Löschen mehrerer Sätze fragt der Dialog einmal und überspringt gesperrte und im Projekt zugeordnete Sätze; die Rückfrage nennt sie. Beim Warmwasser wählt die Optionsgruppe ''Rechenweg Brauchwasser'' über den Listen zwischen den Bestandsprofilen und dem Zapfprofil.
+
 Statt der Bestandsprofile kann der Zapfprofilgenerator den Brauchwasserbedarf aus Nutzungszonen des Gebäudes erzeugen – mit Zirkulation als eigener Teilreihe, stochastischer Jahresreihe und Speicherauslegung ([[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]]).
 
 {{Tipp|Ein zu niedrig angesetzter Warmwasserbedarf lässt den Sommerbetrieb zu günstig aussehen; bei Zirkulation sind die Verluste mitzurechnen.}}

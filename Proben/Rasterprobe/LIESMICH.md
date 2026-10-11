@@ -1353,6 +1353,16 @@ die Liste darunter nicht mehr über. `fensterprobe.mjs` führt Heizkessel, BHKW 
 Gegenproben rot** — Rückgabe 0; Fensterprobe erfüllt (Gegenprobe rot), `rasterprobe.mjs` 29 von 29 Fällen erfüllt,
 `katalogprobe.mjs` alle 66 Fälle ohne Überlagerung.
 
+**Bedarfsprofile (Stufe 4 der Katalogauswahl).** Der Fall `bedarfsprofile` der Rollbereichprobe zeigt den Dialog als
+Prozesswärme (Temperaturpaar, Betriebskalender, Typ- und Katalogeditor als Gaben) und steht in `ZUSAMMENFASSUNG_WIRTE`:
+Kurzangaben in der Detailzeile ohne die Verbrauchsfelder (`SATZ_WIRTE`: `input[inputmode=decimal]`, Fragment
+`.epos-bpf-satz`), im Kopf der Detailzeile der eine Infoknopf „Berechnung" (`KOPFKNOEPFE`), dieselbe Satz-Überlagerung
+über „Bearbeiten…", „Bearbeiten" und den Stift. `fensterprobe.mjs` führt den Fall in `ZUSAMMENFASSUNG`. **Ergebnis vom
+11.10.2026** (`--nur bedarfsprofile`, Wirt Release, Chromium headless): **110 Zustände, 0 Verstöße**, Gegenproben rot,
+Rückgabe 0; in 1 093 × 614 rollt der Dialogkörper bei offener Detailzeile (Befund unter der Mindesthöhe). Am selben Stand
+Fensterprobe erfüllt (Gegenprobe rot), `rasterprobe.mjs` 29 von 29 Fällen erfüllt, `katalogprobe.mjs` alle 66 Fälle
+ohne Überlagerung. Fotos: `bedarfsprofile_zusammenfassung_1280x800.png`, `bedarfsprofile_satzueberlagerung_1280x800.png`.
+
 Am selben Stand `diagrammprobe.mjs` erfüllt (41 Schritte, größter Abstand 0,50 px, Gegenprobe ohne Tafel verfehlt).
 
 Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein

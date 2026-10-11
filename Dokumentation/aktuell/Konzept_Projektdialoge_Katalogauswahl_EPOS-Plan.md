@@ -831,6 +831,46 @@ Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier 
   „Modul Bearbeiten…" öffnete den Modulkatalog ohne Vorwahl auch ohne gewählten Satz. Ist nur ein gesperrter Satz
   gewählt, ist Neu… allein über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
 
+### 5.13 Wie gebaut (Stufe 4, Bedarfsprofile)
+
+Die Bedarfsprofile (Stromverbraucher, Prozesswärme, Brauchwasser, vorbereitet Kälte) folgen dem BHKW (5.4) in der Form
+nach ÜS1/ÜS2; einen Rückweg gibt es nicht (4.9). Hier steht nur, was abweicht.
+
+- **Ein Dialog, vier Ausprägungen:** `BedarfsProfileDialog` mit `BedarfsArt`; die Hülle `BedarfsProfileHuelle` bleibt in
+  der Windows-Schale (der Dialog läuft nur dort und im Assistenten). Sie reicht je Art Texte, Katalog, Prüfung des
+  Temperaturpaars und die Wege; Kälte bekommt einen eigenen Einstieg über `Z_ProjektKaeltebedarfModel` (die
+  Deckungsfelder der Zuordnung reicht der Rückweg unverändert durch), die Texte `…_KAELTE` und die Prüfung
+  `KaeltebedarfSchema.Paarpruefung`. `TypStammHuelle`, `BedarfAdminHuelle` und `TypStammDialog` führen den Kältezweig
+  mit (Texte, Temperaturpaar wie die Prozesswärme); Kachel, Menü und Deckungsart folgen mit K4/K5.
+- **Kopfleiste „Im Projekt":** Jahressumme aller Zuordnungen in der gewählten Einheit (MWh/kWh), „Bearbeiten…" (genau eine
+  Projektzeile → Satz-Überlagerung), „Simulation…" (rechnet die Projektliste, beim Brauchwasser die gewählte Zeile — deshalb
+  hier statt in der Satzfläche), „Aus dem Projekt entfernen" (Auswahl). Die Projektliste ist ein `Raster` mit Kästchen,
+  Wahl, Name, Jahressumme und Stift.
+- **Fußleiste des Katalogs über die Slots:** links „Typ ändern…" (Wochen-Stundenprofile), „DB ändern…" (Katalogeditor
+  `TypStammDialog` mit dem einen gewählten Satz; gesperrt nennt er den Grund), „Schloss setzen…/aufheben…", „Löschen";
+  rechts „Neu…" (Namensfrage, dann der Katalogeditor). Die alte Knopfleiste unter der Katalogliste entfällt. „Löschen"
+  mehrerer Sätze fragt einmal; gesperrte und im Projekt zugeordnete werden übersprungen und in der Rückfrage genannt.
+- **Stift und Zusammenfassung:** Der Stift der Projektzeile öffnet ihre Zuordnung in der Satz-Überlagerung, der einer
+  gesperrten Katalogzeile nur lesend, der einer ungesperrten „DB ändern…". Die Detailzeile zeigt als Projektsatz Typ,
+  Jahressumme, Vorlauf/Rücklauf (Prozesswärme, Kälte), Kalender und die Beschreibung gekürzt, als Katalogsatz Typ,
+  Jahressumme, Vorlauf/Rücklauf und Beschreibung. Der Infoknopf „Berechnung" (Rechenweg der Ausprägung) steht im Kopf der
+  Detailzeile; eine Grundlagenseite gibt es für die Bedarfsprofile nicht.
+- **Satz-Überlagerung:** Satz (Name, Typ, Temperaturniveau, Beschreibung, Jahresverbrauch), beim Projektsatz dazu
+  Jahresverbrauch ändern (Einheit, neuer Wert, „Übernehmen"), Temperaturniveau und Betriebskalender. Alles geht in den
+  Arbeitsstand der Zeile; geschrieben wird wie bisher mit dem OK des Dialogs bzw. beim Speichern des Projekts. OK nimmt
+  angefangene Eingaben (Wert, Paar) über den Fangweg `Katalogladung.Schreiben` mit; lehnt die Prüfung ab, bleibt sie mit
+  dem Grund offen. Abbrechen, ✕ und Esc schreiben den Merker zurück (Jahressumme, Temperaturpaar samt Kennzeichen,
+  Kalender). Der Rechenweg Brauchwasser (Bestand/Zapfprofil) bleibt eine Wahl des Dialogs über den Listen.
+- **Projektkopie sofort:** „In das Projekt übernehmen" legt bei gespeichertem Projekt die Kopie samt Typprofil sofort an
+  (`BedarfStammCtrl.CopyFromStamm`, die drei Kopierer setzen jetzt `ID_Stamm` wie der Kältebedarf); die Zeile zeigt auf
+  sie, `WizardCtrl` findet sie über die ID wieder. Eine neue Kopie merkt die `Projektkopievormerkung`; Abbrechen räumt sie
+  ab (`BedarfStammCtrl.ProjektkopieEntfernen`, nur ohne Zuordnung, samt Typprofil, eine Transaktion), OK räumt die ab,
+  auf die keine Zeile mehr zeigt. Im Assistenten (ohne Projekt) entsteht die Kopie weiter beim Speichern. Kein Schemaschritt;
+  die Zuordnungen und Kopien der Referenzprojekte bleiben unverändert.
+- **Gemessen** (Rollbereichprobe, Fall `bedarfsprofile` als Prozesswärme, zehn Fenster): 110 Zustände ohne Verstoß —
+  Kopfleiste, Fußleiste, Zusammenfassung, Satz-Überlagerung über „Bearbeiten…", „Bearbeiten" der Detailzeile und den Stift;
+  in 1 093 × 614 rollt der Dialogkörper bei offener Detailzeile (unter der Mindesthöhe, Befund wie bei den übrigen Wirten).
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
@@ -886,7 +926,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | **1 Baustein** (umgesetzt 09.10.2026, Statuszeile #861) | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
 | **2 Heizkessel** (umgesetzt 09.10.2026, Statuszeile #873; Teil a Knöpfe und Bearbeiten, Teil b Rückweg und Schemaschritt 208) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
 | **3 Erzeuger** (umgesetzt 10.10.2026: BHKW Statuszeile #887, übrige Erzeuger Statuszeilen #905–#909, ÜS1/ÜS2 Statuszeilen #939/#940) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
-| **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
+| **4 Bedarf und Zeitreihen** (Bedarfsprofile umgesetzt 11.10.2026, Statuszeile folgt; Gebäude offen) | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 
 **Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus
