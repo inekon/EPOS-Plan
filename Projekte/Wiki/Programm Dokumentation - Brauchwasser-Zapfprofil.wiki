@@ -272,6 +272,8 @@ Die Liste '''Eingespielte Messreihen''' führt je Reihe Bezeichnung, gemessene G
 
 Die gewählte Datei wird sofort geprüft, ohne dass etwas geschrieben wird. Die '''Prüfung der Datei''' nennt entweder Datei, Zeile und Grund der Ablehnung oder, wenn die Datei taugt, was ein Einspielen ablegen würde: Bezeichnung, gemessene Größe, Auflösung, Beginn, Ende, Zeitschritte, Tage, gefüllte Lücken, Schalttage und Quelle. Darunter stehen die '''Hinweise''': gefüllte Lücken, die beiden Sprünge der Sommerzeit und ein 29. Februar.
 
+{{Anker|messdaten-vorschau}}Nach der Dateiwahl öffnet der Dialog ''Messreihe einlesen – Format und Vorschau'', wie beim [[Programm Dokumentation/Photovoltaik#ganglinie-dialog|Import einer Photovoltaik-Ganglinie]]. Statt eines Jahresbilds zeigt er eine '''Tagesansicht''': den ersten vollständigen Tag der Datei, Stunde 0 bis 24, je Stunde die Summe der Zapfung in kWh oder m³ auf der Achse ''Zapfenergie [kWh]'' bzw. ''Zapfvolumen [m³]''. Eine Reihe in Tageswerten zeigt stattdessen die Tagesmengen der ersten 31 Tage über der Achse ''Tag der Reihe''. Die Kennzahlenzeile nennt die gelesenen Tage und den gezeigten Tag, etwa ''30 Tage gelesen · gezeigt: …''. Die Spaltenwahl im Dialog wirkt auf die Vorschautabelle und die Zeilenzählung; gelesen wird mit dem Messreihenleser der Prüfung.
+
 ''Einspielen'' schreibt die Reihe; eine Reihe gleicher Bezeichnung desselben Projekts wird nach einer Rückfrage vollständig ersetzt. ''Löschen'' entfernt die gewählte Reihe nach einer Rückfrage. Beides wirkt sofort – es gibt nichts zu verwerfen. ''Beenden'', ✕ und ''Esc'' schließen die Überlagerung.
 
 == Vergleich und Kalibrierung ==
