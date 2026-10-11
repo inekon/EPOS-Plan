@@ -485,6 +485,18 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_MSG_RAUMHOEHE</c> — {0} Zone.</summary>
     public string MeldungRaumhoehe { get; set; } = Resource.ZONDLG_MSG_RAUMHOEHE;
 
+    /// <summary><c>ZONDLG_LBL_VORHEIZZEIT</c></summary>
+    public string LabelVorheizzeit { get; set; } = Resource.ZONDLG_LBL_VORHEIZZEIT;
+
+    /// <summary><c>ZONDLG_PLATZHALTER_VORHEIZZEIT</c></summary>
+    public string PlatzhalterVorheizzeit { get; set; } = Resource.ZONDLG_PLATZHALTER_VORHEIZZEIT;
+
+    /// <summary><c>ZONDLG_HRL_VORHEIZZEIT</c></summary>
+    public string ZeileVorheizzeit { get; set; } = Resource.ZONDLG_HRL_VORHEIZZEIT;
+
+    /// <summary><c>ZONDLG_MSG_VORHEIZZEIT</c> — {0} Zone, {1} von, {2} bis [h].</summary>
+    public string MeldungVorheizzeit { get; set; } = Resource.ZONDLG_MSG_VORHEIZZEIT;
+
     /// <summary><c>ZONDLG_MSG_VOLUMEN</c> — {0} Zone.</summary>
     public string MeldungVolumen { get; set; } = Resource.ZONDLG_MSG_VOLUMEN;
 

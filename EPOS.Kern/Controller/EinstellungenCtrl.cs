@@ -57,6 +57,17 @@ namespace WindowsFormsApplication1
         /// nicht über <c>Properties.Settings</c>.
         /// </summary>
         public bool NeueProjekteMitKuehlung;
+
+        /// <summary>
+        /// Die Vorbelegung des zulässigen Sprungs zum Nutzungsbeginn neuer Projekte (Entwurf Vorheizrampe, F14 (a); AH-V5) —
+        /// Wert in der Einheit von <see cref="NeueProjekteVorheizToleranzArt"/>; <c>null</c> = keine Vorbelegung (Kern-Vorgabe
+        /// 20 %). Gelesen und geschrieben über <c>Dienste.Einstellungen</c>
+        /// (<see cref="EinstellungenCtrl.VorheiztoleranzLesen"/>).
+        /// </summary>
+        public double? NeueProjekteVorheizToleranz;
+
+        /// <summary>Die Einheit der Vorbelegung: Prozent (Vorgabe) oder kW.</summary>
+        public Vorheiztoleranzart NeueProjekteVorheizToleranzArt;
     }
 
     /// <summary>Das Ergebnis des Speicherns: gelungen oder mit Grund gescheitert.</summary>
@@ -237,6 +248,7 @@ namespace WindowsFormsApplication1
             s.TryRegionalUrl = Properties.Settings.Default.TRYRegionalUrl ?? "";
             s.DiagrammFarben = Properties.Settings.Default.DiagrammFarben ?? "";
             s.NeueProjekteMitKuehlung = NeueProjekteMitKuehlungLesen();
+            (s.NeueProjekteVorheizToleranz, s.NeueProjekteVorheizToleranzArt) = VorheiztoleranzLesen();
             return s;
         }
 
@@ -255,6 +267,8 @@ namespace WindowsFormsApplication1
             // Der Wert aus Dienste.Einstellungen kennt kein Reset() - die Werksvorgabe wird
             // hier gesetzt und wie alles andere erst mit „OK" gespeichert.
             s.NeueProjekteMitKuehlung = NEUE_PROJEKTE_MIT_KUEHLUNG_VORGABE;
+            s.NeueProjekteVorheizToleranz = null;
+            s.NeueProjekteVorheizToleranzArt = Vorheiztoleranzart.Prozent;
             return s;
         }
 
@@ -312,6 +326,10 @@ namespace WindowsFormsApplication1
             try
             {
                 NeueProjekteMitKuehlungSchreiben(s.NeueProjekteMitKuehlung);
+                // AH-V5 (F14 (a)): die Vorbelegung der Toleranz neuer Projekte über denselben Weg.
+                double? toleranz = s.NeueProjekteVorheizToleranz is double t && !double.IsNaN(t) && !double.IsInfinity(t) && t >= 0.0
+                    ? t : null;
+                VorheiztoleranzSchreiben(toleranz, s.NeueProjekteVorheizToleranzArt);
             }
             catch (Exception ex)
             {

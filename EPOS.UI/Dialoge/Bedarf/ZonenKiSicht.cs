@@ -75,6 +75,12 @@ public sealed class ZonenKiSicht : IKiFeldtafel
     public Action<double?>? KuehlUebergabeExponentSetzen { get; init; }
     /// <summary>Liest die Nennleistung der Kühlübergabe der Zone.</summary>
     public Func<double?>? KuehlUebergabeNennleistungLesen { get; init; }
+
+    /// <summary>Liest die Vorheizzeit der Zone [h] (AH-V5); <c>null</c> = wie Gebäude.</summary>
+    public Func<int?>? VorheizzeitLesen { get; init; }
+
+    /// <summary>Setzt die Vorheizzeit der Zone [h] im Arbeitsstand.</summary>
+    public Action<int?>? VorheizzeitSetzen { get; init; }
     /// <summary>Setzt die Nennleistung der Kühlübergabe der Zone.</summary>
     public Action<double?>? KuehlUebergabeNennleistungSetzen { get; init; }
 
@@ -200,6 +206,9 @@ public sealed class ZonenKiSicht : IKiFeldtafel
 
     /// <summary>Nennleistung der Kühlübergabe der Zone in kW; leer = Anteil des Gebäudes nach Nutzfläche.</summary>
     public double? KuehlUebergabeNennleistung { get => KuehlUebergabeNennleistungLesen?.Invoke(); set => KuehlUebergabeNennleistungSetzen?.Invoke(value); }
+
+    /// <summary>Die Vorheizzeit der Zone [h] 1 … 47; leer = wie Gebäude (AH-V5).</summary>
+    public int? Vorheizzeit { get => VorheizzeitLesen?.Invoke(); set => VorheizzeitSetzen?.Invoke(value); }
 
     /// <summary>Übergabeart der Zone (IDEAL, RADIATOR, FLAECHE, KONVEKTOR); leer = wie Gebäude.</summary>
     public string UebergabeArt { get => UebergabeArtLesen?.Invoke() ?? ""; set => UebergabeArtSetzen?.Invoke(value); }
