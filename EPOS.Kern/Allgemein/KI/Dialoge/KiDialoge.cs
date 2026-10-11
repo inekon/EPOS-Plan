@@ -5172,6 +5172,7 @@ namespace WindowsFormsApplication1
                                             KiDialogTexte.Monat(m), KiParameterTyp.Zahl,
                                             KiDialogTexte.BadmMonatErl(m),
                                             einheit: KiDialogTexte.EINHEIT_MWH));
+            felder.Add(Ladestandfeld("BedarfAdminKiSicht."));
 
             return new KiDialog(
                 maskenname: maskenname,
@@ -5492,7 +5493,8 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("stundenwerte", "GebaeudetypKiSicht.Stundenwerte",
                                      KiDialogTexte.GtypStundenwerteName, KiParameterTyp.ZahlListe,
                                      KiDialogTexte.GtypStundenwerteErl,
-                                     reihe: KiZahlenreihen.Stunden())
+                                     reihe: KiZahlenreihen.Stunden()),
+                    Ladestandfeld("GebaeudetypKiSicht.")
                 },
                 knoepfe: new[]
                 {
@@ -5500,6 +5502,17 @@ namespace WindowsFormsApplication1
                     new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
                 });
         }
+
+        /// <summary>
+        /// KT-8b: Der LADESTAND eines Katalogdialogs — nur lesbar, der Wortlaut der Warnbanner, die
+        /// die Fangstelle (<c>Katalogladung</c>) bei einer gescheiterten Liste oder einem gescheiterten
+        /// Satz zeigt; leer = alles geladen. Steht ein Grund, sperrt der Dialog die Felder
+        /// (<c>KiMaskenhaken.Sperrgrund</c>) und lehnt Speichern mit demselben Grund ab.
+        /// </summary>
+        private static KiDialogFeld Ladestandfeld(string sicht)
+            => new KiDialogFeld("ladestand", sicht + "Ladestand", KiDialogTexte.LadestandName,
+                                KiParameterTyp.Text, KiDialogTexte.LadestandErl,
+                                leerErlaubt: true, nurLesen: true);
 
         // =====================================================================
         // BaustoffKatalog, Bauteilaufbau  ->  die zwei Kataloge der Gebaeudesimulation (G3)
@@ -5545,7 +5558,8 @@ namespace WindowsFormsApplication1
                                      einheit: KiDialogTexte.EINHEIT_CP, leerErlaubt: true,
                                      min: BaustoffCtrl.CP_MIN, max: BaustoffCtrl.CP_MAX),
                     new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.BstQuelleName,
-                                     KiParameterTyp.Text, KiDialogTexte.BstQuelleErl, leerErlaubt: true)
+                                     KiParameterTyp.Text, KiDialogTexte.BstQuelleErl, leerErlaubt: true),
+                    Ladestandfeld(SICHT)
                 },
                 knoepfe: new[]
                 {
@@ -5766,7 +5780,8 @@ namespace WindowsFormsApplication1
                                      min: BaustoffCtrl.CP_MIN, max: BaustoffCtrl.CP_MAX),
                     new KiDialogFeld("schicht_luftschicht", schicht + "IstLuftschicht",
                                      KiDialogTexte.BtaSchichtLuftschichtName, KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.BtaSchichtLuftschichtErl, zeilenkennzeichen: NUMMER)
+                                     KiDialogTexte.BtaSchichtLuftschichtErl, zeilenkennzeichen: NUMMER),
+                    Ladestandfeld(SICHT)
                 },
                 knoepfe: new[]
                 {
@@ -6897,6 +6912,8 @@ namespace WindowsFormsApplication1
                 felder.Add(new KiDialogFeld("zone_bauteile", ZONE + "Bauteile", KiDialogTexte.GebzZoneBauteileName,
                                             KiParameterTyp.Ganzzahl, KiDialogTexte.GebzZoneBauteileErl,
                                             leerErlaubt: true, zeilenkennzeichen: "Nummer", nurLesen: true));
+                // KT-8b: der Ladestand (Klapplisten der Gebaeudetypen und -arten, Fangstelle).
+                felder.Add(Ladestandfeld("GebaeudeKatalogKiSicht."));
             }
             return felder;
         }
@@ -7620,6 +7637,7 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.WpaAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
+                    Ladestandfeld("WaermepumpeAnlageKiSicht."),
 
                     // ---- Auslegung fuer die Verteilung ------------------------------
                     new KiDialogFeld("vorlauf", "WaermepumpeAnlageKiSicht.Vorlauf",

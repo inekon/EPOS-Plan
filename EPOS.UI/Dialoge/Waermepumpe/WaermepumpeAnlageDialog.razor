@@ -1236,7 +1236,9 @@
             VorlaufWeg = BeiVorlauf,
             ExtrapolationLesen = () => _extrapolation,
             ExtrapolationSetzen = KiExtrapolationSetzen,
-            Kuehlgaben = () => Kuehlung
+            Kuehlgaben = () => Kuehlung,
+            // KT-8b: was die Fangstelle nicht lesen konnte (Stammliste, Stammsatz, Kennlinien, Kosten).
+            LadestandLesen = () => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler)
         };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE_ANLAGE,
                                           () => _kiSicht, KiHaken(),

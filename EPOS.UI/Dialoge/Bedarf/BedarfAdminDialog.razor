@@ -864,7 +864,8 @@
             MonatLesen = m => _arbeitMonate[m],
             MonatSetzen = BeiMonat,
             JahressummeLesen = () => _jahressumme,
-            BedarfsartLesen = () => Art.ToString()
+            BedarfsartLesen = () => Art.ToString(),
+            LadestandLesen = () => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler)
         };
     }
 
@@ -912,6 +913,8 @@
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _auslieferung,
         Schreibschutzgrund = () => MeldungSpeichernGesperrt,
+        // KT-8b: Liste oder Satz nicht geladen (Fangstelle) - der Grund des Banners sperrt.
+        Sperrgrund = f => KatalogKiSperre.Feldsperre(f, _listeFehler, _satzFehler, "satz"),
         Pruefen = () => Pruefbefund() ?? "",
         Speichern = () => Task.FromResult(KiSpeichern())
     };
@@ -923,6 +926,9 @@
     /// </summary>
     private KiErgebnis KiSpeichern()
     {
+        // KT-8b: Eine nicht geladene Liste oder ein nicht geladener Satz erklärt zuerst.
+        if (KatalogKiSperre.Aktionssperre(_listeFehler, _satzFehler) is { } sperre)
+            return KiErgebnis.Abgelehnt(sperre);
         if (Speichern is null)
             return KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText));
         if (_gewaehlt.Length == 0)

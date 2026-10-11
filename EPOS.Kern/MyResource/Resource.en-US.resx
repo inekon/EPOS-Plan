@@ -46072,6 +46072,21 @@ chart</value>
   <data name="WURZEL_LOESCHEN_FEHLER" xml:space="preserve">
     <value>The record “{0}” was not deleted: {1}</value>
   </data>
+  <data name="WURZEL_LESEMODUS_FEHLER" xml:space="preserve">
+    <value>Checking whether the record may be changed failed; the record is treated as locked: {0}</value>
+  </data>
+  <data name="KI_DLG_LISTE_NICHT_GELADEN" xml:space="preserve">
+    <value>The list is not loaded; the assistant changes nothing here until it can be read. {0}</value>
+  </data>
+  <data name="KI_DLG_SATZ_NICHT_GELADEN" xml:space="preserve">
+    <value>The selected record is not fully loaded; the assistant does not change it. Another record can be selected. {0}</value>
+  </data>
+  <data name="KI_DLG_LADESTAND_NAME" xml:space="preserve">
+    <value>Load state</value>
+  </data>
+  <data name="KI_DLG_LADESTAND_ERL" xml:space="preserve">
+    <value>What the dialog could not read, in the words of its warning banner (list or selected record). Empty means: everything is loaded. If a reason is shown here, the assistant sets no fields and does not save.</value>
+  </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Chillers in the project</value>
   </data>

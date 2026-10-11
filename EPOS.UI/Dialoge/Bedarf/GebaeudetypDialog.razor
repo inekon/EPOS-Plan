@@ -542,7 +542,8 @@
             StundenwerteLesen = () => _daten.Kurven > 0
                 ? Kurve(_verteilung, _kurve).Select(w => (double?)w).ToArray()
                 : null,
-            StundenwerteSetzen = KiStundenwerteSetzen
+            StundenwerteSetzen = KiStundenwerteSetzen,
+            LadestandLesen = () => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler)
         };
     }
 
@@ -581,11 +582,16 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => !_daten.Aenderbar,
+        // KT-8b: Liste oder Satz nicht geladen (Fangstelle) - der Grund des Banners sperrt.
+        Sperrgrund = f => KatalogKiSperre.Feldsperre(f, _listeFehler, _satzFehler, "typ"),
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 
     private KiKern.KiErgebnis KiSpeichern()
     {
+        // KT-8b: Eine nicht geladene Liste oder ein nicht geladener Satz erklärt zuerst.
+        if (KatalogKiSperre.Aktionssperre(_listeFehler, _satzFehler) is { } sperre)
+            return KiKern.KiErgebnis.Abgelehnt(sperre);
         if (Speichern is null || _daten.Name.Length == 0)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
                                                        .Replace("{0}", TitelText));

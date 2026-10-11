@@ -1799,7 +1799,7 @@
             Konditionierung = _kond,
             // NP3c: das Blatt „Nutzungsprofile" - Entwurf des Profileditors und Zuordnungszeilen.
             Nutzungsprofile = _raumnutzungKi
-        });
+        }).MitLadestand(() => KatalogKiSperre.Ladestand(_listeFehler));
     }
 
     /// <summary>Die Verwendungen: Schlüssel ist der STEUERWERT, Text der Eintrag der Maske.</summary>
@@ -1840,11 +1840,18 @@
         // Absage nennt den Grund samt Weg („Speichern unter").
         Schreibgeschuetzt = () => IstGesperrt,
         Schreibschutzgrund = () => IstGesperrt ? SperrGrund : "",
+        // KT-8b: Die Klapplisten der Gebäudetypen und -arten sind nicht geladen (Fangstelle) — der
+        // Grund des Banners sperrt die zwei Wahlfelder, die aus ihnen wählen, und das Speichern.
+        Sperrgrund = f => f is "gebaeudetyp" or "gebaeudeart"
+            ? KatalogKiSperre.Feldsperre(f, _listeFehler, null, null) : "",
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 
     private KiKern.KiErgebnis KiSpeichern()
     {
+        // KT-8b: Eine nicht geladene Liste oder ein nicht geladener Satz erklärt zuerst.
+        if (KatalogKiSperre.Aktionssperre(_listeFehler, null) is { } sperre)
+            return KiKern.KiErgebnis.Abgelehnt(sperre);
         if (Speichern is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
                                                        .Replace("{0}", TitelText));
