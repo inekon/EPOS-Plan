@@ -121,6 +121,12 @@ KA‑Q1 bis KA‑Q9 des Entwurfs (Zuordnung in der letzten Spalte).
 | **KA‑E‑14** | **Investitionspositionen gehen mit:** Der Rückweg nimmt neben den Betriebs- auch die Investitionspositionen der Anlage in die Satzvorlage des Katalogsatzes; der Planwert reist weiter als Spalte. Ein zweiter Rückweg ersetzt die Positionen der eigenen, ungesperrten Vorlage vollständig (Betrieb und Investition). Bei der Übernahme Katalog → Projekt gilt der Vorrang der Satzvorlage für Investitionspositionen wie für Betriebspositionen: an einer Anlage ohne Positionen alle, danach nur Pflichtpositionen. | 09.10.2026 | — |
 | **KA‑E‑15** | **Der Name der Projektkopie bleibt** nach „neu“ unverändert, auch wenn der Katalogsatz einen Zusatz „(Projekt)“ bekommt. | 09.10.2026 | — |
 | **KA‑E‑16** | **Satzvorlage beim Löschen mitlöschen:** Wird ein Katalogsatz gelöscht, dessen Kostenvorlage nicht als Standard markiert ist, geht sie mit, wenn kein anderer Katalogsatz auf sie verweist; sonst bleibt sie. Brauchen Kostenpositionen in Projekten sie als Herkunft, bleibt sie ebenfalls, und die Meldung nennt es. | 09.10.2026 | — |
+| **KA‑E‑17** | Eine Wahl je Zeile: nur das Kästchen; die gewählte Projektzeile wird wie in der Katalogliste farbig hervorgehoben, Klick auf die Zeile wählt, Ankreuzen wählt nicht. | 11.10.2026 | AW1 |
+| **KA‑E‑18** | Die Knopfleiste des Katalogs (Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…, Neu…) steht in der Zeile „gewählter Satz“; der Stift dort entfällt, die Stifte je Listenzeile bleiben und tun dasselbe wie Bearbeiten…. | 11.10.2026 | AW1 |
+| **KA‑E‑19** | Schloss setzen… und Löschen wirken nur auf Katalogsätze; beim gewählten Projektsatz sind sie weich gesperrt mit Grund „Katalogsatz wählen“. Neu… legt immer einen Katalogsatz an, Vergleichen… vergleicht die Auswahl des Bereichs. | 11.10.2026 | AW1 |
+| **KA‑E‑20** | Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt; „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben dort. | 11.10.2026 | AW1 |
+| **KA‑E‑21** | Geltung zunächst für Heizkessel und Wärmepumpe (Schalter `KnopfleisteAmSatz`); die übrigen Dialoge folgen auf Auftrag. | 11.10.2026 | AW1 |
+| **KA‑E‑22** | Wärmepumpe: Bearbeiten… öffnet für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (Auslegung für Verteilung, Kenndaten mit einer Feldgruppe, Kennlinien); die Auswahlliste des Anlagen-Dialogs entfällt; je Aufruf eine Anlage mit ihrer Kennlinie; Abschnitte ohne Daten beim Katalogsatz weich gesperrt „nur im Projekt“. | 11.10.2026 | AW2 |
 
 ## 4 Zielbild V1
 
@@ -257,6 +263,10 @@ Ganglinien-Wirte) bleibt die Detailzeile wie oben. Gemessen am Heizkessel (Rollb
 die Zusammenfassung eine Zeile hoch (29 px in 1 280 × 800); die Projektliste folgt der Trennlinie (138 px wie
 zugeklappt, 214 px mit der Trennlinie unten, 85 px oben), die Katalogliste gibt nur die Höhe der Detailzeile ab
 (259 → 223 px).
+
+### 4.4a Knopfleiste am gewählten Satz (Heizkessel, Wärmepumpe)
+
+Heizkessel und Wärmepumpe führen eine Wahl je Zeile (KA‑E‑17): Das Kästchen markiert nur für Sammelaktionen, die gewählte Projektzeile ist farbig hervorgehoben, und der Klick auf die Zeile wählt. Die Knopfleiste des Katalogs steht in der Zeile „gewählter Satz“ und der Stift dort entfällt (KA‑E‑18); Schloss setzen… und Löschen wirken nur auf Katalogsätze und sind beim Projektsatz mit dem Grund „Katalogsatz wählen“ weich gesperrt (KA‑E‑19). Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt, „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben (KA‑E‑20); der Schalter `KnopfleisteAmSatz` begrenzt die Geltung auf diese zwei Dialoge (KA‑E‑21). Bei der Wärmepumpe öffnet Bearbeiten… für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (KA‑E‑22). Die Knopfmatrix K/S/D und die Abschnitte 4.2 und 4.4 gelten für die übrigen fünf Erzeugerdialoge und die Stufen 4 und 5 weiter, bis sie nachziehen.
 
 ### 4.5 Mehrfachauswahl
 
