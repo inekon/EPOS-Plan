@@ -76,7 +76,7 @@ gegen `origin` messen.
 - EUR‑Lex‑Volltext der Verordnung (EU) 2024/573 (Anhänge I, II, IV, Art. 13) vom Anwender bereitstellen lassen (die
   Umgebung erreicht EUR‑Lex nicht); mit dem Text sind Regeln und Werte in KM4‑E2‑c gesichert.
 - Schemanummer (nächste freie zur Bauzeit; 213 ist für K1 Kältebedarf vergeben) in der Kopfzeile „Schemaschritt angemeldet“ der
-  [Statusdatei](../Status_iOS_Migration.md) mit dem Vermerk „Sitzung Kälteanlagen“ anmelden und allein pushen.
+  [Statusdatei](../aktuell/Status_iOS_Migration.md) mit dem Vermerk „Sitzung Kälteanlagen“ anmelden und allein pushen.
 
 ### 3.1 KM4‑E1 — Kältemitteltabelle, Verweis, Inbetriebnahmejahr, Zuordnung
 
@@ -275,3 +275,35 @@ Dazu die Orchestrierung (`fable`): vier Merges mit Gate (`sonnet`), Statuszeilen
 Anmeldung der Schemanummer, die Abstimmungen mit den Sitzungen Gebäudesimulation (UB, KB‑B, KB‑D, Kühlkonzept §14)
 und „Dialoge und Korrekturen“ (Katalogdialog, Stufe 5), und die Bereitstellung des EUR‑Lex‑Volltexts durch den
 Anwender.
+
+## 7 Umsetzung — wie gebaut
+
+KM4 ist mit den Wellen E1 bis E4 gebaut; die Papiere sind Geschichte, gültig ist der Code.
+
+| Welle | Gebaut | Statuszeile | Protokoll |
+|---|---|---|---|
+| **E1‑a, E1‑b** | Schemaschritt 216 `KaeltemittelSchema`: `Tab_Kaeltemittel_STAMM` mit 18 Codes im Katalogregister (`KMT`), Verweis `ID_Kaeltemittel` an `Tab_Kaeltemaschine(_STAMM)` neben der bleibenden Textspalte, `Tab_Projekt.Inbetriebnahmejahr`, Zuordnung des Textbestands über den Code, `KaeltemittelCtrl`, Paketweg, Wachen (E123) | #958 | [`2026-10-11_KM4-E1_Kaeltemitteltabelle.md`](Protokolle/Kaelteanlagen/2026-10-11_KM4-E1_Kaeltemitteltabelle.md) |
+| **E2‑a, E2‑b** | Regelzeilen `FGAS` als Generation 10 des Gesetzeskatalogs (13 Zeilen nach Anhang IV der VO (EU) 2024/573), reine Klasse `Kaeltemittelzulaessigkeit`, Datenbankweg `KaeltemittelProjektpruefung`, Warnkriterium `KAELTEMITTEL_STICHTAG`, Laufhinweis, Warntext an der Kältebahn, Berichtsspalte „Kältemittel“; ohne Schemaschritt | #970 | [`2026-10-11_KM4-E2_Regelsaat_Zulaessigkeit.md`](Protokolle/Kaelteanlagen/2026-10-11_KM4-E2_Regelsaat_Zulaessigkeit.md) |
+| **E2‑c** | die 18 Kältemittelzeilen am Volltext der VO (EU) 2024/573 gesichert (`GESICHERT` mit Fundstelle je Zeile); bestehende Datenbanken erhalten den Stand über den Katalogabgleich mit dem Katalogpaket | #975 | wie E2 |
+| **E3‑a, E3‑b, E3‑c** | Klappliste „Kältemittel“ und Lesezeilen im Katalogdialog der Kältemaschine mit Schnellwahl des GWP und KI‑Sicht (E3‑a); Feld „Inbetriebnahmejahr“ an den Projektdaten, Lesezeilen der Wärmepumpe, Zeile „Zulässigkeit“ im Anlagendialog, Hinweis an der Kachel „Kühlung und Kälteanlagen“ (E3‑b); Verwaltung „Kältemittel…“ unter „Daten & Import“ (E3‑c) | #993 | [`2026-10-11_KM4-E3_Oberflaeche.md`](Protokolle/Kaelteanlagen/2026-10-11_KM4-E3_Oberflaeche.md) |
+| **E4‑a, E4‑b** | Wiki‑Quellen Gerätekataloge (Abschnitt `kaeltemittel`), Kälteerzeugung, Wärmepumpe und Kurzanleitung, Hilfeziel `Kaeltemittel.btn_Help`, Logbuch‑Entwurf in `Wiki_Update_2026-09-26.md` (Version offen); Nachzug des Kühlkonzepts §14 und 6.3, Text der Spalte `Kaeltemittel` in `ParameterVerwendung`, dieser Abschnitt, Umzug beider Papiere nach `ueberholt/` | #994 | — (Statuszeile) |
+
+Statuszeilen in der [Statusdatei](../aktuell/Status_iOS_Migration.md). Testdatenbank auf Schema 216 mit den 18 Kältemittelzeilen und den 13
+Regelzeilen; die Referenzbasis ist über alle Wellen unverändert geblieben.
+
+**Abweichungen vom Konzept:**
+
+- Der PFAS‑Wert „enthält einen Bestandteil“ heißt `BESTANDTEIL` (die Saatliste schrieb `ENTHAELT`).
+- **Nr. 7 d** des Anhangs IV nennt im deutschen Wortlaut „GWP von 750“ ohne „oder mehr“; nach **E126** gilt die Lesart
+  ≥ 750 wie in Nr. 9 e, die Zeile ist `GESICHERT` mit Vermerk in `Quelle`.
+- Begriff F‑Gas nach Art. 2 Buchst. a (nicht Art. 3 Nr. 1); Nr. 7 a gilt nur für HFKW.
+- **R1233zd(E)** ist nach dem Volltext ein HFCKW, kein F‑Gas im Sinne der Verordnung; in der Tabelle steht es als
+  chlorhaltiges Olefin in der Gruppe `HFO`.
+- Die gewählte Zeile der Verwaltung „Kältemittel…“ ist auf **Anwenderwunsch** hervorgehoben (auch im Kontrastmodus).
+- **E3‑a** lief nach Freigabe des Anwenders vom 11.10.2026 **ohne Abstimmung** mit der Sitzung „Dialoge und
+  Korrekturen“, im Aufbau der Stufe 5.
+- Die Wiki‑Quelle für die Kältemaschine ist „Kälteerzeugung“, nicht „Kühlung“.
+
+**Offen:** die Windows‑Sichtabnahme (Punkte unter „Nach #993“ der Statusdatei), der Wiki‑Upload der vier Seiten samt
+Logbuch‑Eintrag (Version beim Anwender offen) und vor der nächsten Auslieferung der Abgleich der produktiven Datenbank,
+damit das Katalogpaket den gesicherten Stand der Kältemitteltabelle trägt.

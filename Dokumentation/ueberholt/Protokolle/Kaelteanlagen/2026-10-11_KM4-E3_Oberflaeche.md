@@ -1,8 +1,8 @@
 # Protokoll KM4‑E3 — Oberfläche des Kältemittels: Klappliste und Lesezeilen, Inbetriebnahmejahr, Zulässigkeitszeile, Kachelhinweis, Verwaltung
 
 **11.10.2026 · Sitzung Kälteanlagen · Wellen E3‑a, E3‑b und E3‑c des Kältemittels als Stammdatum.** Grundlage:
-[Fachkonzept](../../../aktuell/Kälteanlagen/Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) (E123, E126);
-[Umsetzungskonzept](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md), Stufe E3.
+[Fachkonzept](../../Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) (E123, E126);
+[Umsetzungskonzept](../../Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md), Stufe E3.
 Ohne Schemaschritt (`Tab_Projekt.Inbetriebnahmejahr` und `Tab_Kaeltemittel(_STAMM)` stammen aus Schritt 216, KM4‑E1);
 Testdatenbank unverändert; Basis unverändert.
 

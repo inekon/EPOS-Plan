@@ -1,8 +1,8 @@
 # Protokoll KM4‑E2 — Regelsaat `FGAS`, Zulässigkeitsprüfung nach Anhang IV, Warnkriterium, Kältebahn, Berichtsspalte
 
 **11.10.2026 · Sitzung Kälteanlagen · Wellen E2‑a und E2‑b des Kältemittels als Stammdatum.** Grundlage:
-[Fachkonzept](../../../aktuell/Kälteanlagen/Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) 3.1, 3.3, 4.5, 5.1, 9 (E123,
-E126); [Umsetzungskonzept](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) 3.2. Ohne
+[Fachkonzept](../../Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) 3.1, 3.3, 4.5, 5.1, 9 (E123,
+E126); [Umsetzungskonzept](../../Umsetzungskonzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) 3.2. Ohne
 Schemaschritt; Basis unverändert.
 
 ## Was gebaut ist
