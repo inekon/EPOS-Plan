@@ -1336,6 +1336,23 @@ Kurve in der Satz-Überlagerung, Breite × Höhe in px (Breite = Innenbreite des
 | Wärmebedarf extern, Stromganglinie | 1 226 × 581 | 1 234 × 534 | 978 × 514 | 978 × 582 | 722 × 837 | 1 047 × 428 | 1 134 × 590 | 1 148 × 604 | 1 164 × 604 | 788 × 963 |
 | Solarthermie-, PV-Ganglinie | 1 226 × 548 | 1 234 × 506 | 978 × 486 | 978 × 554 | 722 × 774 | 1 047 × 400 | 1 134 × 562 | 1 148 × 576 | 1 164 × 576 | 788 × 917 |
 
+**Zusammenfassung der Detailzeile (ÜS2).** Alle sieben Erzeuger-Wirte (Heizkessel, BHKW, Puffer- und Stromspeicher,
+Solarkollektoren, Wärmepumpe, Photovoltaik) zeigen aufgeklappt nur ihre Kurzangaben: Die Probe verlangt mindestens eine
+Angabe, keine Besonderheit des Wirts in der Detailzeile, keinen Vorrang und im Kopf der Detailzeile die zwei Infoknöpfe
+(Wärmepumpe: „Anlage…“, Liste `KOPFKNOEPFE`). Die Satz-Überlagerung öffnet je Fenster über „Bearbeiten…“ der
+Projektkopie (danach Esc), über „Bearbeiten“ der Detailzeile (danach Abbrechen) und über den Stift der Projektzeile
+(danach Esc); ihr Körper trägt die Besonderheit des Wirts (Liste `SATZ_WIRTE`). Die Wirtseiten geben dafür
+`Kostensumme`, `Projektangaben` und Zahlwerte am Detail (`ErzeugerKennwerte`), den Projektzeilen Modulanzahl, Neigung
+und Azimut, der Wärmepumpe Quelle und Kostensumme. Mit `--fotos` legt sie
+`<fall>_zusammenfassung_1280x800.png` ab (ohne Pufferspeicher). **Gegenproben:** eine Angabe je Zeile in der
+Zusammenfassung (Vorrang trotz Zusammenfassung) und eine auf 100 px begrenzte Satzfläche müssen rot werden; die
+Kopfleiste der Wärmepumpe mit 6 px Rand am Umstellknopf wird über die Touchziel-Regel rot — mit der Zusammenfassung läuft
+die Liste darunter nicht mehr über. `fensterprobe.mjs` führt Heizkessel, BHKW und Wärmepumpen in `ZUSAMMENFASSUNG`
+(Photovoltaik und Solarkollektoren stehen dort mit, misst aber nur die Rollbereichprobe): Für sie entfällt die Gegenprobe des Vorrangs (DZ1).
+**Ergebnis vom 11.10.2026, ÜS2b** (alle Fälle, Wirt Release, Chromium headless): **1 370 Zustände, 0 Verstöße, alle
+Gegenproben rot** — Rückgabe 0; Fensterprobe erfüllt (Gegenprobe rot), `rasterprobe.mjs` 29 von 29 Fällen erfüllt,
+`katalogprobe.mjs` alle 66 Fälle ohne Überlagerung.
+
 Am selben Stand `diagrammprobe.mjs` erfüllt (41 Schritte, größter Abstand 0,50 px, Gegenprobe ohne Tafel verfehlt).
 
 Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein

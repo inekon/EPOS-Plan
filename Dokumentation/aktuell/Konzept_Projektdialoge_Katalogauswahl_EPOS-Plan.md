@@ -456,9 +456,20 @@ Brennstoff, P_el, P_th. Pufferspeicher — Projektsatz: Volumen (l), Vorlauf/Rü
 Verwendung, Invest, Betrieb; Temperaturpaar, Schwellen und Verwendung liest die Hülle an der Projektkopie
 (`Projektangaben`, `WaermesenkeClass.PufferLesen`); Katalogsatz: Hersteller, Volumen, Bereitschaftsverlust.
 Stromspeicher — Projektsatz: Kapazität (kWh), Leistung (kW), Träger, Anzahl (Projektzeilen auf derselben
-Projektkopie), Invest, Betrieb; Katalogsatz: Hersteller, Kapazität, Leistung. Alle drei tragen die Stifte beider
-Listen wie der Heizkessel und ihre Infoknöpfe im Kopf der Detailzeile (4.4). Photovoltaik, Solarkollektoren und
-Wärmepumpe: folgt in ÜS2b. Die Ganglinien-Dialoge behalten die Ganglinie in der Detailzeile.
+Projektkopie, nur ab zwei), Invest, Betrieb; Katalogsatz: Hersteller, Kapazität, Leistung. Solarkollektoren —
+Projektsatz: Modulanzahl, Fläche (Aperturfläche eines Moduls × Anzahl, m²), Neigung/Azimut, Solarkreis
+(Arbeitstemperaturweg „fest“ oder „aus dem Speicher“ mit Spreizung Δ in K), Invest, Betrieb, Senken; Katalogsatz:
+Hersteller, Aperturfläche, η0, k1. Wärmepumpe — Projektsatz: Leistung (kW), Quelle (Typ der Wärmepumpe),
+Vorlauf/Rücklauf, Betriebsart, Kühlbetrieb (Ja/Nein), Invest, Betrieb; Katalogsatz: Hersteller, Quelle, P_N,
+VL max. Die Zusammenfassung ist nur Anzeige, die Anlage bleibt der Weg über „Anlage…“. Photovoltaik — Projektsatz:
+Stückzahl (aus den Strängen, sonst die Eingabe), Leistung gesamt (kWp), Neigung/Azimut, Albedo (leer 0,2),
+Ertragsmodell (einfach/erweitert), Invest, Betrieb; Katalogsatz: Hersteller, P_MPP, Wirkungsgrad, Modulfläche;
+„Stränge und Wechselrichter…“ steht im Fragment der Satz-Überlagerung. Leistung, Volumen und Kapazität liest jede
+Zusammenfassung aus den Zahlwerten des Details (`ErzeugerKennwerte`), die die Hülle aus dem Modell setzt — nie aus
+den Beschriftungen der Anzeigefelder. Alle sieben Wirte tragen die Stifte beider Listen und im Kopf der Detailzeile
+ihre Infoknöpfe „Grundlagen“ und „Berechnung“ (4.4); die Wärmepumpe trägt dort „Anlage…“, ihre Infoknöpfe stehen im
+Anlagendialog. Beim Projektsatz ist die Satz-Überlagerung nie nur lesend: ihr OK übernimmt die Anlagenfelder auch
+ohne Weg der Projektkopie (Assistent). Die Ganglinien-Dialoge behalten die Ganglinie in der Detailzeile.
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 

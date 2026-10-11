@@ -1,4 +1,4 @@
-// =====================================================================
+﻿// =====================================================================
 //  FENSTERPROBE - KOPF UND FUSS STEHEN (Anwenderentscheid 30.09.2026)
 // =====================================================================
 //
@@ -83,7 +83,7 @@ const FENSTERDIALOGE = ['dubletten'];
 // Probe misst hier "nichts rollt ausser den Listen und der Detailzeile".
 const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude'];
 // UeS2: Wirte mit Zusammenfassung - ihre Detailzeile hat keinen Vorrang (DZ1 entfaellt).
-const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw']);
+const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren']);
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);
@@ -403,7 +403,8 @@ function rollstand(unten = 0) {
   if (eng && fuss) { const v = d.scrollTop; d.scrollTop = d.scrollHeight; fussErreichbar = fuss.getBoundingClientRect().bottom <= innerHeight - unten + 1; d.scrollTop = v; }
   // DZ1: aufgeklappt Listen auf ihrer Untergrenze, die Satzflaeche reicht bis an den unteren Rand des Bausteins.
   const zw = d.querySelector(':scope > .epos-zweispalten.epos-zweispalten--satz-offen');
-  // UeS2: mit Zusammenfassung (Heizkessel, BHKW) gibt es keinen Vorrang - die Listen behalten ihre Aufteilung;
+  // UeS2: mit Zusammenfassung (alle Erzeuger-Wirte, hier Heizkessel, BHKW, Waermepumpen) gibt es keinen Vorrang - die
+  // Listen behalten ihre Aufteilung;
   // das haelt die Rollbereichprobe ("Vorrang trotz Zusammenfassung").
   const satzfl = zw && !zw.classList.contains('epos-zweispalten--zusammenfassung')
     && zw.querySelector(':scope > .epos-zweispalten-bereich--satz > .epos-zweispalten-satz');

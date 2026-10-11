@@ -1,4 +1,4 @@
-// Rollbereichprobe - "kein Rollbereich im Rollbereich" (Konzept Projektdialoge mit
+﻿// Rollbereichprobe - "kein Rollbereich im Rollbereich" (Konzept Projektdialoge mit
 // Katalogauswahl, Abschnitt 4.8 und 8, Probenpflicht). Pruefstand, nicht Auslieferung.
 //
 // Je Projektdialog mit Katalogauswahl, je Fenster (1 280 x 800, 1 280 x 720, 1 024 x 700)
@@ -605,20 +605,22 @@ try {
           if (await seite.locator('.epos-rueckweg').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Rueckfrage nicht`);
         }
-        // UeS2b: BHKW, Pufferspeicher und Stromspeicher wie der Heizkessel - Detailzeile auf = Zusammenfassung
-        // ohne die Besonderheit des Wirts und ohne Vorrang; dieselbe Satz-Ueberlagerung je Fenster ueber
-        // „Bearbeiten…" der Projektkopie (danach Esc), ueber „Bearbeiten" der Detailzeile (danach Abbrechen) und
-        // ueber den Stift der Projektzeile (danach Esc); ihr Koerper traegt die Besonderheit des Wirts (BHKW
-        // Kostenknoepfe, Pufferspeicher „Auslegen…", Stromspeicher Traeger).
-        // UeS1b/UeS1c (Wirte ohne Zusammenfassung: Solarkollektoren, Waermepumpe, Photovoltaik): ueber
-        // „Bearbeiten…" der Projektkopie (danach Esc) und ueber „Vergroessern" (danach Abbrechen); Solarkollektoren
-        // (Kollektorfelder), Waermepumpe („Anlage…", Fragment .epos-wp-satz), Photovoltaik („Stränge und Wechselrichter…").
+        // UeS2b: alle sechs Wirte wie der Heizkessel - Detailzeile auf = Zusammenfassung ohne die Besonderheit
+        // des Wirts und ohne Vorrang, im Kopf der Detailzeile die Infoknoepfe (Waermepumpe: „Anlage…"); dieselbe
+        // Satz-Ueberlagerung je Fenster ueber „Bearbeiten…" der Projektkopie (danach Esc), ueber „Bearbeiten" der
+        // Detailzeile (danach Abbrechen) und ueber den Stift der Projektzeile (danach Esc); ihr Koerper traegt die
+        // Besonderheit des Wirts (BHKW Kostenknoepfe, Pufferspeicher „Auslegen…", Stromspeicher Traeger,
+        // Solarkollektoren Kollektorfelder, Waermepumpe „Anlage…" im Fragment .epos-wp-satz, Photovoltaik
+        // „Stränge und Wechselrichter…").
         const SATZ_WIRTE = { bhkw: ['.epos-kostenleiste button', 'Kostenknoepfe'],
           pufferspeicher: ['button.epos-pspd-auslegen', '„Auslegen…"'], stromspeicher: ['.epos-traegerwahl select', 'Traegerwahl'],
           solarkollektoren: ['.epos-gruppenkopf-koerper input', 'Kollektorfelder'],
           waermepumpen: ['button.epos-knopf--anlage', '„Anlage…"', '.epos-wp-satz'],
           photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'] };
-        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher'];
+        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik'];
+        // Kopf der Detailzeile: zwei Infoknoepfe; die Waermepumpe traegt dort „Anlage…" (Grundlagen und Berechnung
+        // stehen in ihrem Anlagendialog).
+        const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 1, '„Anlage…"'] };
         if (SATZ_WIRTE[fall]) {
           const [wahl, was, marke] = SATZ_WIRTE[fall];
           const zusammen = ZUSAMMENFASSUNG_WIRTE.includes(fall);
@@ -631,8 +633,9 @@ try {
           if (await seite.locator('.epos-zweispalten-satz ' + wahl).count() !== 0) {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${was} in der Zusammenfassung`); console.log('  VERSTOSS ' + verstoesse.at(-1));
           }
-          if (await seite.locator('.epos-zweispalten-satzkopf .epos-zweispalten-satzkopfknoepfe .epos-hilfepille').count() !== 2) {
-            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Infoknoepfe fehlen im Kopf der Detailzeile`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          const [kopfWahl, kopfZahl, kopfWas] = KOPFKNOEPFE[fall] ?? ['.epos-hilfepille', 2, 'Infoknoepfe'];
+          if (await seite.locator('.epos-zweispalten-satzkopf .epos-zweispalten-satzkopfknoepfe ' + kopfWahl).count() !== kopfZahl) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${kopfWas} fehlen im Kopf der Detailzeile`); console.log('  VERSTOSS ' + verstoesse.at(-1));
           }
           await mess('Detailzeile auf, Zusammenfassung');
           if (FOTOS && fall !== 'pufferspeicher' && fenster.breite === 1280 && fenster.hoehe === 800)
@@ -800,8 +803,10 @@ try {
       await k3.close();
     }
 
-    // Kopfleiste (MO3): ein Rand von 6 px am Umstellknopf der Waermepumpen laesst die Kopfleiste der
-    // Projektliste bei aufgeklappter Detailzeile ueberlaufen - das muss rot werden.
+    // Kopfleiste (MO3): ein Rand von 6 px am Umstellknopf der Waermepumpen hebt die Kopfleiste der
+    // Projektliste ueber das Touchziel - das muss rot werden. UeS2b: Mit der Zusammenfassung hat die
+    // Detailzeile keinen Vorrang mehr; die Liste behaelt ihren Platz, und die hoehere Kopfleiste laeuft
+    // nicht mehr ueber - rot macht sie die Touchziel-Regel, die die Kopfleiste misst.
     {
       const k5 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
       const s5 = await k5.newPage();
@@ -811,7 +816,7 @@ try {
       await satz(s5, true);
       const vor = verstoesse.length, n = zeilen.length, b = befunde.length;
       pruefen('waermepumpen', { breite: 1280, hoehe: 800 }, 'Gegenprobe Kopfleiste', await s5.evaluate(messen, KOMPAKT), [], true, null);
-      const rot = verstoesse.slice(vor).some(v => v.includes('Touchziel')) && verstoesse.slice(vor).some(v => v.includes('Ueberlauf'));
+      const rot = verstoesse.slice(vor).some(v => v.includes('Touchziel'));
       verstoesse.splice(vor); zeilen.splice(n); befunde.splice(b);
       console.log(`Gegenprobe Kopfleiste: Umstellknopf mit 6 px Rand - ${rot ? 'rot' : 'gruen'}`);
       if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Kopfleiste nicht'); rueckgabe = 1; }
