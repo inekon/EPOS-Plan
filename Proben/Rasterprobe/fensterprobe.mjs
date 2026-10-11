@@ -57,8 +57,11 @@
 //    rollt (scrollHeight > clientHeight) und ist unverdeckt (elementFromPoint); ausser ihr rollt
 //    nur das Dokument, kein Dialogkoerper. Das Mausrad ueber der Liste rollt die Liste bis an
 //    ihr Ende, das Dokument bleibt stehen, Kopf, Banner und Leiste bleiben an Ort.
-//    Gegenprobe: ohne Hoehengrenze der Liste, mit position: static am Banner und ohne
-//    Fenstermarke muss die Messung rot werden.
+//    Dann der Tabulator von oben durch alle Felder: jedes angesprungene Feld steht ganz
+//    sichtbar unter dem aufgeklappten Banner und ueber der Schlussleiste - das Polster
+//    (scroll-padding-top) rechnet die gemessene Bannerhoehe (--epos-meldung-hoehe).
+//    Gegenprobe: ohne Hoehengrenze der Liste, mit position: static am Banner, ohne
+//    Fenstermarke und mit dem Token auf eine Bannerzeile muss die Messung rot werden.
 //
 //  GEGENPROBE (laeuft mit, abschaltbar mit --ohne-gegenprobe): dieselben
 //  Fensterdialoge OHNE Fenstermarke (?marke=0) muessen die Haft-Kriterien
@@ -595,7 +598,8 @@ async function meldungsliste(browser, f, melden, zusatz = '', stil = '') {
     if (Math.abs(l1.kopf.top - l0.kopf.top) > TOL || Math.abs(l1.fuss.bottom - l0.fuss.bottom) > TOL || Math.abs(l1.banner.top - l0.banner.top) > TOL)
       m('Mausrad: Kopf, Leiste oder Banner verschoben');
   }
-  // Auskunft: angesprungene Felder unter dem aufgeklappten Banner (das Polster rechnet eine Bannerzeile).
+  // Der Tabulator: jedes angesprungene Feld steht ganz sichtbar zwischen Banner und Schlussleiste
+  // (das Polster rechnet die gemessene Hoehe des aufgeklappten Banners).
   let unterBanner = 0, schritte = 0;
   await rollen(seite, 0);
   await seite.evaluate(() => document.querySelector('body > #app > .epos-dialog').focus());
@@ -605,13 +609,21 @@ async function meldungsliste(browser, f, melden, zusatz = '', stil = '') {
       const a = document.activeElement;
       if (!a || a.tagName !== 'INPUT' || !a.closest('.epos-meldungslistenprobe-absatz')) return null;
       const b = a.getBoundingClientRect();
-      const bn = document.querySelector('body > #app > .epos-dialog > .epos-warnbanner').getBoundingClientRect();
-      return b.top < bn.bottom - 0.5 && b.bottom > bn.top + 0.5;
+      const d = document.querySelector('body > #app > .epos-dialog');
+      const bn = d.querySelector(':scope > .epos-warnbanner').getBoundingClientRect();
+      const fuss = [...d.children].find(e => e.querySelector(':scope > .epos-knopf--primaer') || e.matches('.epos-dialog-fuss'));
+      const fu = fuss ? fuss.getBoundingClientRect().top : innerHeight;
+      return { verdeckt: b.top < bn.bottom - 0.5 || b.bottom > fu + 0.5, top: b.top, bottom: b.bottom, banner: bn.bottom, fuss: fu };
     });
     if (t === null) continue;
     schritte++;
-    if (t) unterBanner++;
+    if (t.verdeckt) {
+      unterBanner++;
+      if (unterBanner <= 3) m(`Tabulator: Feld ${schritte} bei ${zahl(t.top)}..${zahl(t.bottom)} px nicht ganz zwischen Banner (bis ${zahl(t.banner)}) und Leiste (ab ${zahl(t.fuss)})`);
+      else n++;
+    }
   }
+  if (schritte < 16) m(`Tabulator: nur ${schritte} Felder angesprungen`);
   if (FOTOS && melden) { await rollen(seite, mitteY); await seite.screenshot({ path: `${FOTOS}/meldungsliste_${f.breite}.png` }); }
   await seite.close();
   return { n, h: h.zahlen, oben: staende.oben, mitte: staende.Mitte, ende: staende.Ende, rad, schritte, unterBanner, dok: oben.dokument };
@@ -740,7 +752,7 @@ try {
         + `Dokument ${r.dok} px; Banner oben ${b(r.oben)}, Mitte ${b(r.mitte)}, Ende ${b(r.ende)} px; `
         + `Liste ${r.ende.listeFenster}/${r.ende.listeHoehe} px (${r.ende.eintraege} Eintraege, 40 % = ${zahl(0.4 * r.ende.innen)} px)`);
       if (r.rad) console.log(`    Mausrad: Liste ${r.rad.stand}/${r.rad.max} px gerollt, Dokument ${r.rad.vorY} -> ${r.rad.y} px`);
-      console.log(`    Auskunft Tabulator: ${r.schritte} Felder angesprungen, davon unter dem aufgeklappten Banner ${r.unterBanner}`);
+      console.log(`    Tabulator: ${r.schritte} Felder angesprungen, davon nicht ganz zwischen Banner und Leiste ${r.unterBanner}`);
     }
   }
 
@@ -840,9 +852,10 @@ try {
         ['ohne Hoehengrenze der Liste', '', '.epos-hinweisklappe-inhalt { max-height: none !important; }'],
         ['Banner static', '', '#app > .epos-dialog > .epos-warnbanner { position: static !important; }'],
         ['ohne Marke', '&marke=0', ''],
+        ['Polster mit einer Bannerzeile', '', ':root { --epos-meldung-hoehe: calc(22px + 2 * var(--epos-rand)) !important; }'],
       ]) {
         const g = await meldungsliste(browser, f, false, zusatz, stil);
-        console.log(`    Meldungsliste ${was} ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+        console.log(`    Meldungsliste ${was} ${f.breite}x${f.hoehe}: ${g.n} Verstoesse (Tabulator: ${g.unterBanner} von ${g.schritte} Feldern verdeckt)`);
         if (g.n === 0) gegenGruen++;
       }
     }
